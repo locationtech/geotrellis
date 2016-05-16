@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 class SparkUtils(object):
     @staticmethod
     def hadoopConfiguration(jvm):

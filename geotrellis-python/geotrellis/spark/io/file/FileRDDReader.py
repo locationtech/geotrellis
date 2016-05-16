@@ -1,9 +1,10 @@
+from __future__ import absolute_import
 from geotrellis.spark.io.index.MergeQueue import mergeQueue
 from geotrellis.spark.io.index.IndexRanges import IndexRanges
 from geotrellis.spark.io.avro.AvroEncoder import AvroEncoder
 from geotrellis.spark.io.avro.codecs.KeyValueRecordCodec import KeyValueRecordCodec
 from geotrellis.spark.KeyBounds import KeyBounds
-from geotrellis.python.util.utils import getOrElse, file_exists
+from geotrellis.python.util.utils import getOrElse, file_exists, flat_map
 
 class FileRDDReader(object):
     def __init__(self, sc):
@@ -18,12 +19,12 @@ class FileRDDReader(object):
             writerSchema = None,
             numPartitions = None):
         if not queryKeyBounds:
-            return sc.emptyRDD()
+            return self.sc.emptyRDD()
 
         ranges = flat_map(queryKeyBounds, decomposeBounds)
-        if len(queryKeyBouns) > 1:
+        if len(queryKeyBounds) > 1:
             ranges = mergeQueue(ranges)
-        bins = IndexRanges.bin(ranges, getOrElse(numPartitions, sc.defaultParallelism))
+        bins = IndexRanges.bin(ranges, getOrElse(numPartitions, self.sc.defaultParallelism))
         boundable = K.implicits["Boundable"]() # TODO will it work for all types?
         includeKey = lambda key: KeyBounds.includeKey(queryKeyBounds, key, boundable)
         recordCodec = KeyValueRecordCodec(K, V)
@@ -54,4 +55,4 @@ class FileRDDReader(object):
                         append_from(path)
             return resultPartition
 
-        return self.sc.parallelize(bins, bins.size).mapPartitions(mapper)
+        return self.sc.parallelize(bins, len(bins)).mapPartitions(mapper)

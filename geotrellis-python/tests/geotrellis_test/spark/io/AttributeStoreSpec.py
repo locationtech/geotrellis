@@ -1,7 +1,8 @@
+from __future__ import absolute_import
 from spec import Spec, skip
 from nose import tools
 from nose.tools import ok_
-from tests.geotrellis.spark.TestEnvironment import _TestEnvironment
+from tests.geotrellis_test.spark.TestEnvironment import _TestEnvironment
 from geotrellis.python.util.utils import JSONFormat
 from geotrellis.spark.LayerId import LayerId
 from geotrellis.python.spray.json.package_scala import DeserializationException

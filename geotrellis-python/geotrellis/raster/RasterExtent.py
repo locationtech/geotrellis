@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.spark.io.package_scala import ExceptionWithCause
 from geotrellis.raster.GridDefinition import GridDefinition
 from geotrellis.raster.Tile import Tile

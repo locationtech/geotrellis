@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.spark.KeyBounds import Bounds, EmptyBounds
 from geotrellis.python.util.utils import flatten_list
 
@@ -6,7 +7,8 @@ class LayerQuery(object):
         self._filterChain = filterChain
 
     def __call__(self, metadata):
-        bounds = metadata.getComponent(Bounds[K])
+        #bounds = metadata.getComponent(Bounds[K])
+        bounds = metadata.getComponent(Bounds)
         if bounds is EmptyBounds:
             return []
         else:

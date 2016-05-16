@@ -1,7 +1,14 @@
+from __future__ import absolute_import
 from geotrellis.spark.SpatialKey import SpatialKey
 from geotrellis.spark.io.index.KeyIndex import KeyIndex
 
+def _generateFormat():
+    from geotrellis.spark.io.json.KeyIndexFormats import RowMajorSpatialKeyIndexFormat
+    return RowMajorSpatialKeyIndexFormat()
+
 class RowMajorSpatialKeyIndex(KeyIndex[SpatialKey]):
+    implicits = {"format": _generateFormat}
+
     def __init__(self, keyBounds):
         self._keyBounds = keyBounds
         self.minCol = keyBounds.minKey.col

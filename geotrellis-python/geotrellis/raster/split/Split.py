@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.raster.GridBounds import GridBounds
 from geotrellis.raster.CroppedTile import CroppedTile
 

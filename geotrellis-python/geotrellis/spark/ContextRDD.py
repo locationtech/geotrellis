@@ -1,15 +1,14 @@
+from __future__ import absolute_import
 from pyspark.rdd import RDD
 from geotrellis.spark.Metadata import Metadata
 
 class ContextRDD(RDD, Metadata):
-    def __init__(self, K, V, rdd, metadata):
-        self.K = K
-        self.V = V
-
+    def __init__(self, rdd, metadata):
         jrdd = rdd._jrdd
         ctx = rdd.ctx
 
-        new_jrdd = ctx._jvm.org.apache.spark.api.java.JavaRDD.fromRDD(jrdd)
+        #new_jrdd = ctx._jvm.JavaRDD.fromRDD(jrdd.rdd(), None)
+        new_jrdd = jrdd
 
         RDD.__init__(self, new_jrdd, ctx)
 
@@ -17,5 +16,5 @@ class ContextRDD(RDD, Metadata):
         # override val partitioner = rdd.partitioner
 
     @staticmethod
-    def fromTuple(K, V, tup):
-        return ContextRDD(K, V, tup[0], tup[1])
+    def fromTuple(tup):
+        return ContextRDD(tup[0], tup[1])

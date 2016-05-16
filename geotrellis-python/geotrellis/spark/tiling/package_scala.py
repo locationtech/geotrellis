@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.vector.Extent import Extent
 from geotrellis.vector.reproject.Implicits import reproject
 from geotrellis.proj4.LatLng import LatLng

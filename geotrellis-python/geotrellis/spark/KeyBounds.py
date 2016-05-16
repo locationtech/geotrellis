@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.spark.io.json.KeyFormats import KeyBoundsFormat
 # from geotrellis.spark.SpatialKey import SpatialKey # we have to postpone the import to avoid errors caused by circular imports
 from geotrellis.raster.GridBounds import GridBounds
@@ -86,6 +87,7 @@ class _KeyBoundsMeta(object):
             return self.items[keyType]
         class tempo(_KeyBounds):
             implicits = {'format': lambda: KeyBoundsFormat(keyType.implicits['format']())}
+            K = keyType
         self.items[keyType] = tempo
         return tempo
 

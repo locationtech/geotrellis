@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.python.util.utils import fold_left
 
 class IndexRanges(object):

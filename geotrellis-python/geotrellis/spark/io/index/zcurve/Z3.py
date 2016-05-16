@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 #from geotrellis.spark.io.index.zcurve.Z3Range import Z3Range
 from geotrellis.spark.io.index.package_scala import zdiv
 from geotrellis.spark.io.index.MergeQueue import MergeQueue
@@ -34,10 +35,10 @@ class Z3(object):
                 Z3.combine(self.z >> 2))
 
     def dim(self, i):
-        return Z3.combine(z >> i)
+        return Z3.combine(self.z >> i)
 
     def inRange(self, rmin, rmax):
-        x,y,z = decode
+        x,y,z = self.decode
         return (x >= rmin.dim(0) and
                 x <= rmax.dim(0) and
                 y >= rmin.dim(1) and
@@ -61,7 +62,7 @@ class Z3(object):
                 )
 
     def __str__(self):
-        return "" + z + self.decode()
+        return "{z}{dec}".format(z = self.z, dec = self.decode)
 
     MAX_BITS = 21
     MAX_MASK = 0x1fffffL
@@ -122,14 +123,14 @@ class Z3(object):
                 mq += (qr.min.z, qr.max.z)
                 report_counter += 1
             elif offset > 0 and sr.overlaps(qr):
-                _zranges(min, offset - Z3.MAX_DIM, 0)
-                _zranges(min, offset - Z3.MAX_DIM, 1)
-                _zranges(min, offset - Z3.MAX_DIM, 2)
-                _zranges(min, offset - Z3.MAX_DIM, 3)
-                _zranges(min, offset - Z3.MAX_DIM, 4)
-                _zranges(min, offset - Z3.MAX_DIM, 5)
-                _zranges(min, offset - Z3.MAX_DIM, 6)
-                _zranges(min, offset - Z3.MAX_DIM, 7)
+                _zranges(_min, offset - Z3.MAX_DIM, 0)
+                _zranges(_min, offset - Z3.MAX_DIM, 1)
+                _zranges(_min, offset - Z3.MAX_DIM, 2)
+                _zranges(_min, offset - Z3.MAX_DIM, 3)
+                _zranges(_min, offset - Z3.MAX_DIM, 4)
+                _zranges(_min, offset - Z3.MAX_DIM, 5)
+                _zranges(_min, offset - Z3.MAX_DIM, 6)
+                _zranges(_min, offset - Z3.MAX_DIM, 7)
 
         prefix = 0
         offset = Z3.MAX_BITS * Z3.MAX_DIM

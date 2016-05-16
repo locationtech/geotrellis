@@ -1,5 +1,6 @@
-from tests.geotrellis.spark.TestEnvironment import _TestEnvironment
-from tests.geotrellis.spark.testfiles.SpatialTestFileValues import (
+from __future__ import absolute_import
+from tests.geotrellis_test.spark.TestEnvironment import _TestEnvironment
+from tests.geotrellis_test.spark.testfiles.SpatialTestFileValues import (
         ConstantSpatialTiles,
         IncreasingSpatialTiles,
         DecreasingSpatialTiles,

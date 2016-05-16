@@ -1,7 +1,8 @@
+from __future__ import absolute_import
 from geotrellis.spark.io.index.KeyIndex import KeyIndex
 from geotrellis.spark.SpatialKey import SpatialKey
 from geotrellis.spark.io.json.KeyIndexFormats import ZSpatialKeyIndexFormat
-from Z2 import Z2
+from geotrellis.spark.io.index.zcurve.Z2 import Z2
 
 class ZSpatialKeyIndex(KeyIndex[SpatialKey]):
     implicits = {'format': lambda: ZSpatialKeyIndexFormat()}

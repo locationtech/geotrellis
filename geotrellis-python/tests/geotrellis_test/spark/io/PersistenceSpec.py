@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.python.util.utils import fullname
 from nose import tools
 
@@ -33,7 +34,7 @@ class _PersistenceSpec(object):
         return result
 
     @tools.istest
-    def persistence_spec_checks(self):
+    def test_persistence_spec_checks(self):
         K, V, M = self.K, self.V, self.M
         for (keyIndexMethodName, keyIndexMethod,
                 (layerId, deleteLayerId, copiedLayerId, movedLayerId, reindexedLayerId)) in self.specLayerIds:

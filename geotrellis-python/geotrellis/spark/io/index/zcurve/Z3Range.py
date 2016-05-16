@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.spark.io.index.zcurve.Z3 import Z3
 
 class Z3Range(object):
@@ -25,7 +26,7 @@ class Z3Range(object):
 
     def contains(self, bits):
         if isinstance(z, Z3):
-            x,y,z = bits.decode()
+            x,y,z = bits.decode
             _min = self.min
             _max = self.max
             return (x >= _min.dim(0) and

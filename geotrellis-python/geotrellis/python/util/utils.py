@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import absolute_import
 import os.path
 
 _INTMIN = - (2 ** 31)
@@ -28,6 +29,9 @@ def isclose(a, b, rel_tol=1e-06, abs_tol=0.0):
 def file_exists(path):
     return os.path.isfile(path)
 
+def dir_exists(path):
+    return os.path.isdir(path)
+
 def fullname(typeObject):
     name = typeObject.__name__
     module = typeObject.__module__
@@ -38,12 +42,45 @@ def fullname(typeObject):
 def getOrElse(first, second):
     return first if first is not None else second
 
+from json import JSONEncoder, JSONDecoder
+
 class JSONFormat(object):
     def get_fields(self, dct, *fieldnames):
         try:
             return map(lambda name: dct[name], fieldnames)
         except KeyError:
             return None
+
+    def encode(self, o):
+        return self.to_dict(o)
+
+    def decode(self, s):
+        dct = JSONDecoder.decode(self, s)
+        return self.from_dict(dct)
+
+    @property
+    def encoder(self):
+        class tempo(JSONEncoder):
+            def encode(innerself, o):
+                return self.encode(o)
+        return tempo
+
+    @property
+    def decoder(self):
+        class tempo(JSONDecoder):
+            def decode(innerself, dct):
+                return self.decode(dct)
+        return tempo
+
+import avro.schema 
+
+class SchemaFormat(JSONFormat):
+    def to_dict(self, o):
+        return o.to_json()
+    def from_dict(self, dct):
+        return avro.schema.make_avsc_object(dct)
+    def decode(self, s):
+        return avro.schema.parse(s)
 
 from itertools import ifilter
 
@@ -60,7 +97,8 @@ def fold_left(seq, zero, func):
 
 def flat_map(seq, func):
     mapped = map(func, seq)
-    return reduce(lambda a, b: a + [b], [[]] + mapped)
+    reduced = reduce(lambda a, b: a + [b], [[]] + mapped)
+    return flatten_list(reduced)
 
 def flatten_list(lst):
     def flat(acc, b):
@@ -79,7 +117,7 @@ def get_format_for_key_index_type(key_index_type):
 
 from avro.io import DatumReader, BinaryDecoder
 from avro.datafile import DataFileReader
-import avro.schema 
+#import avro.schema 
 
 import zlib
 import json

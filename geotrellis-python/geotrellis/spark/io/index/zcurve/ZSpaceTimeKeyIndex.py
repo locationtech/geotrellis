@@ -1,8 +1,14 @@
+from __future__ import absolute_import
 from geotrellis.spark.io.index.KeyIndex import KeyIndex
 from geotrellis.spark.io.index.zcurve.Z3 import Z3
 from geotrellis.spark.SpaceTimeKey import SpaceTimeKey
 
+def _generateFormat():
+    from geotrellis.spark.io.json.KeyIndexFormats import ZSpaceTimeKeyIndexFormat
+    return ZSpaceTimeKeyIndexFormat()
+
 class ZSpaceTimeKeyIndex(KeyIndex[SpaceTimeKey]):
+    implicits = {"format": _generateFormat}
     def __init__(self, keyBounds, temporalResolution):
         self.keyBounds = keyBounds
         self.temporalResolution = temporalResolution

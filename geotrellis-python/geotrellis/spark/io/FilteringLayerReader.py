@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.spark.io.LayerQuery import LayerQuery, BoundLayerQuery
 from geotrellis.spark.io.LayerReader import LayerReader
 
@@ -7,14 +8,14 @@ class FilteringLayerReader(LayerReader):
         return self._read2(K, V, M, _id, rasterQuery, self.defaultNumPartitions)
 
     def _read2(self, K, V, M, _id, rasterQuery, numPartitions):
-        indexFilterOnly = false
+        indexFilterOnly = False
         return self._read3(K, V, M, _id, rasterQuery, numPartitions, indexFilterOnly)
 
     def _read3(self, K, V, M, _id, rasterQuery, numPartitions, indexFilterOnly):
         pass
 
     def _read_id_num(self, K, V, M, _id, numPartitions):
-        return self.read2(K, V, M, _id, LayerQuery(), numPartitions)
+        return self._read2(K, V, M, _id, LayerQuery(), numPartitions)
 
     def query(self, K, V, M, layerid, numPartitions = None):
         if numPartitions is None:

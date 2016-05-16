@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 
 class CustomComparator(object):
     def __init__(self, value, lt_func):

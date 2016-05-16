@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.raster.CellSize import CellSize
 #from geotrellis.raster.RasterExtent import RasterExtent, GeoAttrsError
 from geotrellis.vector.Extent import Extent

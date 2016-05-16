@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.spark.io.file.FileValueReader import file_value_reader
 from geotrellis.spark.SpatialKey import SpatialKey
 from geotrellis.spark.LayerId import LayerId

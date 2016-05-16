@@ -1,6 +1,7 @@
+from __future__ import absolute_import
 from geotrellis.spark.io.avro.AvroRecordCodec import AvroRecordCodec
 from geotrellis.spark.io.avro.codecs.TupleCodec import TupleCodec
-from edited_avro.avro_builder import AvroSchemaBuilder
+from geotrellis.python.edited_avro.avro_builder import AvroSchemaBuilder
 import avro.schema
 
 class KeyValueRecordCodec(AvroRecordCodec):

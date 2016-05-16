@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.spark.io.Reader import Reader
 
 class LayerReader(object):

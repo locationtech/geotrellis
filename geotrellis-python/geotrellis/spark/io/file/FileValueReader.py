@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.spark.io.index.Index import Index
 from geotrellis.spark.io.package_scala import TileNotFoundError
 from geotrellis.spark.io.file.FileAttributeStore import FileAttributeStore

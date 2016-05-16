@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.raster.Tile import Tile
 from geotrellis.raster.ArrayTile import ArrayTile
 from geotrellis.raster.CellType import (BitCellType, ByteConstantNoDataCellType,

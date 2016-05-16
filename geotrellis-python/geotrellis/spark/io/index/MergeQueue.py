@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 
 from geotrellis.python.util.CustomComparator import CustomComparatorSeq, CustomComparator
 import bisect
@@ -23,15 +24,15 @@ class MergeQueue(object):
         del self._array[i]
         self._size -= 1
 
-    def _insert_element(_range, i):
+    def _insert_element(self, _range, i):
         self._ensure_size(self._size + 1)
         if i == self._size:
-            self._array[i] = _range
+            self._array.append(_range)
         else:
             self._array = self._array[:i] + [_range] + self._array[i:]
         self._size += 1
 
-    def _ensure_size(n):
+    def _ensure_size(self, n):
         pass
 
     def __iadd__(self, _range):

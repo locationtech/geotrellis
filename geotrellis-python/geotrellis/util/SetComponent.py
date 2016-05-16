@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 class SetComponent(object):
     def set(self):
         pass

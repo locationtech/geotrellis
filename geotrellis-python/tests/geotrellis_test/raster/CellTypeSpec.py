@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from spec import Spec
 from nose import tools
 from nose.tools import ok_

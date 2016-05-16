@@ -1,3 +1,10 @@
+from __future__ import absolute_import
+
+def _formatGeneratorFunc(key):
+    def func():
+        from geotrellis.spark.io.json.KeyIndexFormats import KeyIndexJsonFormatFactory
+        return KeyIndexJsonFormatFactory.getKeyIndexJsonFormat(key)
+    return func
 
 class _KeyIndexMeta(object):
     items = {}
@@ -5,7 +12,7 @@ class _KeyIndexMeta(object):
         if key in self.items:
             return self.items[key]
         class tempo(_KeyIndex):
-            pass
+            implicits = {"format": _formatGeneratorFunc(key)}
         self.items[key] = tempo
         return tempo
 

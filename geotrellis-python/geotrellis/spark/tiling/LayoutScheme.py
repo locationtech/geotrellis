@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 
 class LayoutScheme(object):
     def levelFor(extent, cellSize):

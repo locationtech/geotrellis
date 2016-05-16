@@ -1,16 +1,27 @@
+from __future__ import absolute_import
 from geotrellis.python.util.utils import JSONFormat
 from geotrellis.raster.CellType import CellType
 from geotrellis.raster.TileLayout import TileLayout
+from geotrellis.python.spray.json.package_scala import DeserializationException
 
-class _CellTypeFormat(JSONFormat):
+class CellTypeFormat(JSONFormat):
+    def to_dict(self, obj):
+        return str(obj)
+
     def from_dict(self, value):
-        if not isinstance(value, str):
+        if not isinstance(value, str) and not isinstance(value, unicode):
             raise DeserializationException("CellType must be a string")
         return CellType.fromString(value)
 
-CellTypeFormat = _CellTypeFormat()
+    def decode(self, s):
+        return self.from_dict(s)
 
 class TileLayoutFormat(JSONFormat):
+    def to_dict(self, obj):
+        return {"layoutCols":   obj.layoutCols,
+                "layoutRows":   obj.layoutRows,
+                "tileCols":     obj.tileCols,
+                "tileRows":     obj.tileRows }
     def from_dict(self, dct):
         fields = self.get_fields(dct, "layoutCols", "layoutRows", "tileCols", "tileRows")
         if not fields:

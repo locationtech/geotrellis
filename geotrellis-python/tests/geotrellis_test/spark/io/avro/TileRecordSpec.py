@@ -1,4 +1,5 @@
-from tests.geotrellis.spark.io.avro.AvroTools import AvroTools
+from __future__ import absolute_import
+from tests.geotrellis_test.spark.io.avro.AvroTools import AvroTools
 from geotrellis.spark.io.avro.codecs.KeyValueRecordCodec import KeyValueRecordCodec
 from geotrellis.spark.io.avro.codecs.TileCodecs import DoubleArrayTileCodec
 from geotrellis.raster.DoubleArrayTile import DoubleArrayTile

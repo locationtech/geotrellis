@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.spark.tiling.LayoutScheme import LayoutScheme, LayoutLevel
 from geotrellis.spark.tiling.LayoutDefinition import LayoutDefinition
 from geotrellis.raster.GridExtent import GridExtent

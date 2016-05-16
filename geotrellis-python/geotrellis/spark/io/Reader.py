@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 class Reader(object):
     def read(self, key):
         pass

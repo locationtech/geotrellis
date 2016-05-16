@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.raster.FloatArrayTile import FloatArrayTile
 
 class TestFileSpatialTiles(object):

@@ -1,5 +1,8 @@
+from __future__ import absolute_import
 from geotrellis.spark.io.LayerWriter import LayerWriter
 from geotrellis.spark.io.file.LayerPath import LayerPath
+from geotrellis.spark.io.file.FileLayerHeader import FileLayerHeader
+from geotrellis.spark.io.file.FileRDDWriter import FileRDDWriter
 from geotrellis.spark.io.avro.codecs.KeyValueRecordCodec import KeyValueRecordCodec
 from geotrellis.spark.LayerId import LayerId
 from geotrellis.spark.io.index.Index import Index
@@ -18,7 +21,7 @@ class FileLayerWriter(LayerWriter[LayerId]):
 
     def _write(self, K, V, M, layerid, rdd, keyIndex):
         codec = KeyValueRecordCodec(K, V)
-        schema = codec.schema()
+        schema = codec.schema
 
         if self.attributeStore.layerExists(layerid):
             raise Exception("{layerid} already exists".format(layerid = str(layerid)))
@@ -31,8 +34,8 @@ class FileLayerWriter(LayerWriter[LayerId]):
         layerPath = os.path.join(self._catalogPath, path)
 
         try:
-            self.attributeStore.writeLayerAttributes(layerid, header, metadata, keyIndex, schema)
-            FileRDDWriter.write(rdd, layerPath, keyPath)
+            self.attributeStore.writeLayerAttributes(FileLayerHeader, rdd.M, type(keyIndex), layerid, header, metadata, keyIndex, schema)
+            FileRDDWriter.write(K, V, rdd, layerPath, keyPath)
         except Exception as e:
             raise LayerWriteError(layerid, cause = e)
 

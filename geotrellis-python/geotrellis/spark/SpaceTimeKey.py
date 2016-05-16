@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.spark.SpatialKey import SpatialKey
 from geotrellis.spark.TemporalKey import TemporalKey
 from geotrellis.spark.io.json.KeyFormats import SpaceTimeKeyFormat

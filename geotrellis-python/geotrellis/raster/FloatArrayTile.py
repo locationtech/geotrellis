@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.raster.UserDefinedNoDataConversions import UserDefinedFloatNoDataConversions
 from geotrellis.raster.MutableArrayTile import MutableArrayTile
 from geotrellis.raster.CellType import FloatCellType, FloatConstantNoDataCellType, FloatUserDefinedNoDataCellType
@@ -6,7 +7,13 @@ from geotrellis.raster.package_scala import f2i, i2f, f2d, d2f
 import array
 import struct
 
+def _generateRecordCodec():
+    from geotrellis.spark.io.avro.codecs.TileCodecs import FloatArrayTileCodec
+    return FloatArrayTileCodec()
+
 class FloatArrayTile(MutableArrayTile):
+    implicits = {"AvroRecordCodec": _generateRecordCodec}
+
     def __init__(self, arr, cols, rows):
         if isinstance(arr, list):
             self.array = array.array('f', arr)

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.python.util.utils import fold_left, flat_map
 from geotrellis.raster.CellGrid import CellGrid
 

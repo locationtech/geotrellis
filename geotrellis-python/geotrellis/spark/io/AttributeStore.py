@@ -1,7 +1,8 @@
 from __future__ import absolute_import
+from __future__ import absolute_import
 from geotrellis.spark.io.index.KeyIndex import KeyIndex
 from geotrellis.spark.io.AttributeCaching import AttributeCaching
-from geotrellis.python.util.utils import get_format_for_key_index_type
+from geotrellis.python.util.utils import get_format_for_key_index_type, SchemaFormat
 import avro.schema
 import json
 
@@ -47,7 +48,8 @@ class BlobLayerAttributeStore(AttributeStore):
     def readKeyIndex(self, key_type, layer_id):
         key_index = self.cacheRead(None, layer_id, Fields.metadataBlob)[Fields.keyIndex]
         # TODO temporary workaround. see geotrellis.spark.io.json.KeyIndexFormats
-        key_index_format = get_format_for_key_index_type(KeyIndex[key_type])
+        #key_index_format = get_format_for_key_index_type(KeyIndex[key_type])
+        key_index_format = KeyIndex[key_type].implicits['format']()
         return key_index_format.from_dict(key_index)
 
     def readSchema(self, layer_id):
@@ -55,23 +57,28 @@ class BlobLayerAttributeStore(AttributeStore):
         schema_json_string = json.dumps(schema_as_dict)
         return avro.schema.parse(schema_json_string)
 
-    def readLayerAttributes(self, header_type, metadata_type, key_index_type, layer_id):
-        # TODO get decoder from type (for example: header_type.implicits['format']() gives format)
-        blob = self.cacheRead(None, layer_id, Fields.metadataBlob)
+    def readLayerAttributes(self, header_type, metadata_type, key_type, layer_id):
+        headerFormat =    header_type.implicits['format']()
+        metaFormat =    metadata_type.implicits['format']()
+        keyindFormat = KeyIndex[key_type].implicits['format']()
+        schemaFormat = SchemaFormat()
+        blob = self.cacheRead(dict, layer_id, Fields.metadataBlob)
         return LayerAttributes(
-                    json.loads(blob[Fields.header], cls = self.header_decoder),
-                    json.loads(blob[Fields.metadata], cls = self.metadata_decoder),
-                    json.loads(blob[Fields.keyIndex], cls = self.key_index_decoder),
-                    json.loads(blob[Fields.schema], cls = self.schema_decoder)
-                    )
+                    headerFormat.from_dict(blob[Fields.header]),
+                    metaFormat.from_dict(blob[Fields.metadata]),
+                    keyindFormat.from_dict(blob[Fields.keyIndex]),
+                    schemaFormat.from_dict(blob[Fields.schema]))
 
     def writeLayerAttributes(self, header_type, metadata_type, key_index_type, layer_id, header, meta, key_index, schema):
-        # TODO get encoder from type (for example: header_type.implicits['format']() gives format)
-        jsobj = json.dumps({
-                Fields.header:      json.dumps(header, cls = self.header_encoder),
-                Fields.metadata:    json.dumps(meta, cls = self.metadata_encoder),
-                Fields.keyIndex:   json.dumps(key_index, cls = self.key_index_encoder),
-                Fields.schema:      json.dumps(schema, cls = self.schema_encoder)
-            })
-        self.cacheWrite(None, layer_id, Fields.metadataBlob, jsobj)
+        headerFormat =    header_type.implicits['format']()
+        metaFormat =    metadata_type.implicits['format']()
+        keyindFormat = key_index_type.implicits['format']()
+        schemaFormat = SchemaFormat()
+        jsobj = {
+                Fields.header:      headerFormat.to_dict(header),
+                Fields.metadata:    metaFormat.to_dict(meta),
+                Fields.keyIndex:    keyindFormat.to_dict(key_index),
+                Fields.schema:      schemaFormat.to_dict(schema)
+            }
+        self.cacheWrite(dict, layer_id, Fields.metadataBlob, jsobj)
 

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.python.util.utils import find
 from avro.io import DatumReader, DatumWriter, BinaryEncoder, BinaryDecoder
 import avro.schema as schema

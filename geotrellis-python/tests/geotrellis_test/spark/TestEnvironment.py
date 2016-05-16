@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from nose import tools
 
 @tools.nottest
@@ -21,7 +22,7 @@ add_pyspark_path() # Now we can import pyspark
 from pyspark import SparkContext, SparkConf
 from geotrellis.spark.util.SparkUtils import SparkUtils
 from geotrellis.spark.io.hadoop.HdfsUtils import HdfsUtils
-from geotrellis.python.util.utils import file_exists, fullname
+from geotrellis.python.util.utils import dir_exists, fullname
 import os
 import os.path
 
@@ -33,10 +34,10 @@ def get_temp_dir():
 
 @tools.nottest
 class _TestEnvironment(object):
+    sc = None
     def __init__(self):
         self.outputHome = "testFiles"
         self.afterAlls = []
-        self.sc = None
         self._sc()
         self._jvm = self.sc._jvm
         self.name = fullname(type(self))
@@ -47,12 +48,12 @@ class _TestEnvironment(object):
         def outputPaths(jvm):
             tmpdir = get_temp_dir()
             outputHomeLocalHandle = os.path.join(tmpdir, self.outputHome)
-            if not file_exists(outputHomeLocalHandle):
+            if not dir_exists(outputHomeLocalHandle):
                 os.makedirs(outputHomeLocalHandle)
             hadoopTmpDir = HdfsUtils.getTempDir(self.conf)
 
             outputLocalHandle = os.path.join(outputHomeLocalHandle, self.name)
-            if not file_exists(outputLocalHandle):
+            if not dir_exists(outputLocalHandle):
                 os.makedirs(outputLocalHandle)
             return (jvm.org.apache.hadoop.fs.Path(outputHomeLocalHandle),
                     jvm.org.apache.hadoop.fs.Path(hadoopTmpDir),
@@ -79,11 +80,13 @@ class _TestEnvironment(object):
         return jvm.org.apache.hadoop.fs.Path(localFS.getWorkingDirectory(), "spark/src/test/recources/")
 
     def setKryoRegistrator(self, conf):
-        conf.set("spark.kryo.registrator", "geotrellis.spark.TestRegistrator")
+        # TODO
+        #conf.set("spark.kryo.registrator", "geotrellis.spark.TestRegistrator")
+        pass
 
     def _sc(self):
-        if self.sc:
-            return self.sc
+        if _TestEnvironment.sc:
+            return _TestEnvironment.sc
 
         os.environ["spark.driver.port"] = "0"
         os.environ["spark.hostPort"] = "0"
@@ -93,32 +96,37 @@ class _TestEnvironment(object):
         conf.setMaster("local")
         conf.setAppName("Test Context")
 
-        if "GEOTRELLIS_USE_JAVA_SER" not in os.environ.keys():
-            conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-            conf.set("spark.kryoserializer.buffer.max", "500m")
-            self.setKryoRegistrator(conf)
+        # <python-version-only>
+        conf.set('spark.yarn.dist.files','file:/usr/local/spark/python/lib/pyspark.zip,file:/usr/local/spark/python/lib/py4j-0.8.2.1-src.zip')
+        conf.setExecutorEnv('PYTHONPATH','pyspark.zip:py4j-0.8.2.1-src.zip')
+        # </python-version-only>
 
-        sparkContext = SparkContext(conf = conf)
+        #if "GEOTRELLIS_USE_JAVA_SER" not in os.environ.keys():
+        #    conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+        #    conf.set("spark.kryoserializer.buffer.max", "500m")
+        #    self.setKryoRegistrator(conf)
+
+        sparkContext = SparkContext(conf = conf, pyFiles = ['file:/data/zipped/Geotrellis-0.1-py2.7.egg'])
 
         del os.environ["spark.driver.port"]
         del os.environ["spark.hostPort"]
         del os.environ["spark.ui.enabled"]
         
-        self.sc = sparkContext
+        _TestEnvironment.sc = sparkContext
         return sparkContext
 
     def mkdir(self, _dir):
         handle = dir.toUri().toString()
-        if not file_exists(handle):
+        if not dir_exists(handle):
             os.makedirs(handle)
 
     def clearTestDirectory(self):
-        f = self._jvm.java.io.File(self.outputLocal.toUri())
+        f = self._jvm.java.io.File(self.outputLocal.toUri().toString())
         self._jvm.org.apache.hadoop.fs.FileUtil.fullyDelete(f)
 
     def afterAll(self):
         self.clearTestDirectory()
-        sc.stop()
+        self.sc.stop()
         if self.afterAlls:
             for func in self.afterAlls:
                 func()

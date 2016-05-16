@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.raster.CellGrid import CellGrid
 from geotrellis.raster.CellSet import CellSet
 #from geotrellis.raster.ArrayTile import ArrayTile

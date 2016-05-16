@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.raster.GridDefinition import GridDefinition
 
 class GridExtent(GridDefinition):

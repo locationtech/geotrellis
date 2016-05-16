@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.spark.io.json.KeyFormats import SpatialKeyFormat
 from geotrellis.spark.Boundable import Boundable
 import functools
@@ -10,7 +11,8 @@ def generateCodec():
 class SpatialKey(object):
     implicits = {
             'format': lambda: SpatialKeyFormat(),
-            'AvroRecordCodec': generateCodec}
+            'AvroRecordCodec': generateCodec,
+            'Boundable': lambda: SpatialKey.boundable}
 
     def __init__(self, col, row):
         self.col = int(col)

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 def zdiv(load_func, dims):
     def inner(xd, rmin, rmax):
         if rmin >= rmax:

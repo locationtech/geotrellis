@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.spark.io.index.RowMajorKeyIndexMethod import RowMajorKeyIndexMethod
 from geotrellis.spark.io.index.ZCurveKeyIndexMethod import ZCurveKeyIndexMethod
 

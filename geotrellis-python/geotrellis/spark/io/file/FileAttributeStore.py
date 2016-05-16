@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.spark.io.AttributeStore import BlobLayerAttributeStore
 from geotrellis.spark.io.json.Implicits import LayerIdFormat
 from geotrellis.spark.io.package_scala import AttributeNotFoundError, LayerNotFoundError
@@ -49,7 +50,7 @@ class FileAttributeStore(BlobLayerAttributeStore):
             with open(filepath) as f:
                 lst = json.loads(f.read())
                 lst[0] = LayerIdFormat().from_dict(lst[0])
-                if attr_type:
+                if not _isJsonType(attr_type):
                     attr_format = attr_type.implicits['format']()
                     lst[1] = attr_format.from_dict(lst[1])
                 return lst
@@ -65,17 +66,25 @@ class FileAttributeStore(BlobLayerAttributeStore):
 
     def write(self, attr_type, layer_id, attr_name, value):
         filepath = self.attributeFile(layer_id, attr_name)
-        # TODO encode layer_id and value (use layer_id_format and value_format)
-        layer_id_format = LayerIdFormat()
-        value_format = attr_type.implicits['format']()
-        value = json.dumps(value)
-        tup = (layer_id, value)
+
+        json_layer_id = LayerIdFormat().to_dict(layer_id)
+        if _isJsonType(attr_type):
+            json_value = value
+        else:
+            value_format = attr_type.implicits['format']()
+            json_value = value_format.to_dict(value)
+        tup = (json_layer_id, json_value)
         with open(filepath, 'w') as f:
             f.write(json.dumps(tup))
 
     def layerAttributeFiles(self, layer_id):
-        filter_str = (self.attributeDirectory + '/' + layer_id.name + sep +
-                layer_id.zoom + sep + '*.json')
+        #filter_str = (self.attributeDirectory + '/' + layer_id.name + sep +
+        #        layer_id.zoom + sep + '*.json')
+        filter_str = "{dir}/{layerid}{sep}{zoom}{sep}*.json".format(
+                dir = self.attributeDirectory,
+                layerid = layer_id.name,
+                sep = sep,
+                zoom = layer_id.zoom)
         return glob.glob(filter_str)
 
     def layerExists(self, layer_id):
@@ -114,3 +123,5 @@ class FileAttributeStore(BlobLayerAttributeStore):
             return attr
         return map(to_attribute, layer_files)
 
+def _isJsonType(tp):
+    return tp in [dict, list, str, int, long, float]

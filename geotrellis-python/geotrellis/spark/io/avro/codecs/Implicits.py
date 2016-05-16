@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 def tileUnionCodec():
     from geotrellis.raster.Tile import Tile
     from geotrellis.spark.io.avro.AvroUnionCodec import AvroUnionCodec

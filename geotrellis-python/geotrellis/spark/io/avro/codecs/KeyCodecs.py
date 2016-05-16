@@ -1,5 +1,6 @@
+from __future__ import absolute_import
 from geotrellis.spark.io.avro.AvroRecordCodec import AvroRecordCodec
-from edited_avro.avro_builder import AvroSchemaBuilder
+from geotrellis.python.edited_avro.avro_builder import AvroSchemaBuilder
 
 from geotrellis.spark.SpatialKey import SpatialKey
 from geotrellis.spark.SpaceTimeKey import SpaceTimeKey

@@ -1,7 +1,7 @@
 try:
-        from setuptools import setup
+        from setuptools import setup, find_packages
 except ImportError:
-        from distutils.core import setup
+        from distutils.core import setup, find_packages
 
 setup(
         name='Geotrellis',
@@ -10,5 +10,6 @@ setup(
         author='Geotrellis team',
         url='https://github.com/geotrellis/geotrellis',
         install_requires = ['avro >=1.8.0'],
-        packages=['geotrellis']
+        packages=find_packages(),
+        include_package_data=True
         )

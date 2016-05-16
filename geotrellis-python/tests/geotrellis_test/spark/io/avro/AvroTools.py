@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.raster.CellType import (
         BitCells,
         ShortCells, ShortConstantNoDataCellType, ShortCellType,

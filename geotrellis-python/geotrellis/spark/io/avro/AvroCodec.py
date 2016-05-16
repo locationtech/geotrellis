@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 
 class AvroCodec(object):
     def __init__(self, thing_type):

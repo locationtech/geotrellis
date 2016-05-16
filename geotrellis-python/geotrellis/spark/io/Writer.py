@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 class Writer(object):
     def write(self, key, value):
         pass

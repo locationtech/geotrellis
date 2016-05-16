@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.spark.KeyBounds import KeyBounds
 
 class Boundable(object):

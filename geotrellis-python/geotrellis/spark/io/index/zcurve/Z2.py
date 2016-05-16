@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 #from geotrellis.spark.io.index.zcurve.Z2Range import Z2Range
 from geotrellis.spark.io.index.package_scala import zdiv
 from geotrellis.spark.io.index.MergeQueue import MergeQueue
@@ -39,10 +40,10 @@ class Z2(object):
 
     @property
     def decode(self):
-        return (Z2.combine(z), Z2.combine(z >> 1))
+        return (Z2.combine(self.z), Z2.combine(self.z >> 1))
 
     def dim(self, i):
-        return Z2.combine(z >> i)
+        return Z2.combine(self.z >> i)
 
     def mid(self, p):
         if p.z < self.z:
@@ -59,7 +60,7 @@ class Z2(object):
                 )
 
     def __str__(self):
-        return "" + z + self.decode
+        return "{z}{dec}".format(z = self.z, dec = self.decode)
 
     MAX_BITS = 31
     MAX_MASK = 0x7fffffff
@@ -104,30 +105,30 @@ class Z2(object):
     @staticmethod
     def zranges(min_z2, max_z2):
         from geotrellis.spark.io.index.zcurve.Z2Range import Z2Range
-        mq = MergeQueue()
-        sr = Z2Range(min_z2, max_z2)
+        mq = [MergeQueue()] # wrap with list to use in inner function
+        sr = [Z2Range(min_z2, max_z2)]
 
-        rec_counter = 0
-        report_counter = 0
+        #rec_counter = [0]
+        #report_counter = [0]
 
         def _zranges(prefix, offset, quad):
-            rec_counter += 1
+            #rec_counter[0] += 1
 
             _min = prefix | (quad << offset)
             _max = _min | (1L << offset) - 1
 
             qr = Z2Range(Z2(_min), Z2(_max))
-            if sr.contains(qr):
-                mq += (qr.min.z, qr.max.z)
-                report_counter += 1
-            elif offset > 0 and sr.overlaps(qr):
-                _zranges(min, offset - Z2.MAX_DIM, 0)
-                _zranges(min, offset - Z2.MAX_DIM, 1)
-                _zranges(min, offset - Z2.MAX_DIM, 2)
-                _zranges(min, offset - Z2.MAX_DIM, 3)
+            if sr[0].contains(qr):
+                mq[0] += (qr.min.z, qr.max.z)
+                #report_counter[0] += 1
+            elif offset > 0 and sr[0].overlaps(qr):
+                _zranges(_min, offset - Z2.MAX_DIM, 0)
+                _zranges(_min, offset - Z2.MAX_DIM, 1)
+                _zranges(_min, offset - Z2.MAX_DIM, 2)
+                _zranges(_min, offset - Z2.MAX_DIM, 3)
 
         prefix = 0
         offset = Z2.MAX_BITS * Z2.MAX_DIM
         _zranges(prefix, offset, 0)
-        return mq.toSeq
+        return mq[0].toSeq
 

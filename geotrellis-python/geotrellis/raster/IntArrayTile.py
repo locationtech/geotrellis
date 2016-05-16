@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.raster.UserDefinedNoDataConversions import UserDefinedIntNoDataConversions
 from geotrellis.raster.MutableArrayTile import MutableArrayTile
 from geotrellis.raster.CellType import IntCellType, IntConstantNoDataCellType, IntUserDefinedNoDataCellType

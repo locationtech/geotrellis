@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 class AttributeCaching(object):
     def __init__(self):
         self._cache = {}

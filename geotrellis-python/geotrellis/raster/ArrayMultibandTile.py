@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.raster.MultibandTile import MultibandTile
 from geotrellis.raster.ArrayTile import ArrayTile
 

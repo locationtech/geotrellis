@@ -1,5 +1,6 @@
+from __future__ import absolute_import
 from geotrellis.spark.io.avro.AvroRecordCodec import AvroRecordCodec
-from edited_avro.avro_builder import AvroSchemaBuilder
+from geotrellis.python.edited_avro.avro_builder import AvroSchemaBuilder
 from geotrellis.raster.CellType import (
         ShortConstantNoDataCellType, ShortCellType, ShortUserDefinedNoDataCellType,
         UShortConstantNoDataCellType, UShortCellType, UShortUserDefinedNoDataCellType,
@@ -196,15 +197,15 @@ class FloatArrayTileCodec(AvroRecordCodec):
         dct["cols"] = tile.cols
         dct["rows"] = tile.rows
         dct["cells"] = tile.array.tolist()
-        if tile.cellType is FloatConstantNoDataCellType:
+        if tile.cellType == FloatConstantNoDataCellType:
             dct["noDataValue"] = True
-        elif tile.cellType is FloatCellType:
+        elif tile.cellType == FloatCellType:
             dct["noDataValue"] = False
         elif isinstance(tile.cellType, FloatUserDefinedNoDataCellType):
             dct["noDataValue"] = tile.cellType.noDataValue
         else:
             raise Exception(
-                    "CellType {ct} was unexpected".format(ct = tile.cellType))
+                    "CellType {ct} was unexpected. {tp}".format(ct = tile.cellType, tp = type(tile.cellType)))
 
     def decode(self, dct):
         arr = array.array('f', dct["cells"])

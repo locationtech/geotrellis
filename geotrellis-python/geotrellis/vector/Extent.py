@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.spark.io.package_scala import ExceptionWithCause
 from geotrellis.vector.reproject.Implicits import reproject
 

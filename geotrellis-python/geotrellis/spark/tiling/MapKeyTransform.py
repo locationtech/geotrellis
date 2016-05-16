@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.raster.GridBounds import GridBounds
 from geotrellis.spark.SpatialKey import SpatialKey
 from geotrellis.spark.tiling.package_scala import worldExtent

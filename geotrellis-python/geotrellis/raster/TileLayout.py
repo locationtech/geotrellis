@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.raster.CellSize import CellSize
 
 class TileLayout(object):

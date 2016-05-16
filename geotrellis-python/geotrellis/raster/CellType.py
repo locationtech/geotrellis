@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.python.util.utils import float_eq
 import re
 import math
@@ -171,56 +172,52 @@ class _BitCellTypeTemp(BitCells, NoNoData):
 
 BitCellType = _BitCellTypeTemp()
 
-ByteCellType = type("ByteCellType", (NoNoData, ByteCells), {})()
-ByteConstantNoDataCellType = type(
-    "ByteConstantNoDataCellType",
-    (ConstantNoData, ByteCells),
-    {})()
+class _ByteCellType(NoNoData, ByteCells): pass
+ByteCellType = _ByteCellType()
+class _ByteConstantNoDataCellType(ConstantNoData, ByteCells): pass
+ByteConstantNoDataCellType = _ByteConstantNoDataCellType()
 class ByteUserDefinedNoDataCellType(UserDefinedNoData, ByteCells):
     def __init__(self, noDataValue):
         self._noDataValue = noDataValue
 
-UByteCellType = type("UByteCellType", (NoNoData, UByteCells), {})()
-UByteConstantNoDataCellType = type(
-    "UByteConstantNoDataCellType",
-    (ConstantNoData, UByteCells),
-    {})()
+class _UByteCellType(NoNoData, UByteCells): pass
+UByteCellType = _UByteCellType()
+class _UByteConstantNoDataCellType(ConstantNoData, UByteCells): pass
+UByteConstantNoDataCellType = _UByteConstantNoDataCellType()
 class UByteUserDefinedNoDataCellType(UserDefinedNoData, UByteCells):
     def __init__(self, noDataValue):
         self._noDataValue = noDataValue
 
-ShortCellType = type("ShortCellType", (NoNoData, ShortCells), {})()
-ShortConstantNoDataCellType = type(
-    "ShortConstantNoDataCellType",
-    (ConstantNoData, ShortCells),
-    {})()
+class _ShortCellType(NoNoData, ShortCells): pass
+ShortCellType = _ShortCellType()
+class _ShortConstantNoDataCellType(ConstantNoData, ShortCells): pass
+ShortConstantNoDataCellType = _ShortConstantNoDataCellType()
 class ShortUserDefinedNoDataCellType(UserDefinedNoData, ShortCells):
     def __init__(self, noDataValue):
         self._noDataValue = noDataValue
 
-UShortCellType = type("UShortCellType", (NoNoData, UShortCells), {})()
-UShortConstantNoDataCellType = type(
-    "UShortConstantNoDataCellType",
-    (ConstantNoData, UShortCells),
-    {})()
+class _UShortCellType(NoNoData, UShortCells): pass
+UShortCellType = _UShortCellType()
+class _UShortConstantNoDataCellType(ConstantNoData, UShortCells): pass
+UShortConstantNoDataCellType = _UShortConstantNoDataCellType()
 class UShortUserDefinedNoDataCellType(UserDefinedNoData, UShortCells):
     def __init__(self, noDataValue):
         self._noDataValue = noDataValue
 
-IntCellType = type("IntCellType", (NoNoData, IntCells), {})()
-IntConstantNoDataCellType = type(
-    "IntConstantNoDataCellType",
-    (ConstantNoData, IntCells),
-    {})()
+class _IntCellType(NoNoData, IntCells): pass
+IntCellType = _IntCellType()
+class _IntConstantNoDataCellType(ConstantNoData, IntCells): pass
+IntConstantNoDataCellType = _IntConstantNoDataCellType()
 class IntUserDefinedNoDataCellType(UserDefinedNoData, IntCells):
     def __init__(self, noDataValue):
         self._noDataValue = noDataValue
 
-FloatCellType = type("FloatCellType", (NoNoData, FloatCells), {})()
-FloatConstantNoDataCellType = type(
-    "FloatConstantNoDataCellType",
-    (ConstantNoData, FloatCells),
-    {})()
+class _FloatCellType(NoNoData, FloatCells): pass
+FloatCellType = _FloatCellType()
+class _FloatConstantNoDataCellType(ConstantNoData, FloatCells):
+    def __eq__(self, other):
+        return isinstance(other, _FloatConstantNoDataCellType)
+FloatConstantNoDataCellType = _FloatConstantNoDataCellType()
 class FloatUserDefinedNoDataCellType(UserDefinedNoData, FloatCells):
     def __init__(self, noDataValue):
         self._noDataValue = noDataValue
@@ -229,11 +226,10 @@ class FloatUserDefinedNoDataCellType(UserDefinedNoData, FloatCells):
             return False
         return float_eq(self.noDataValue, other.noDataValue)
 
-DoubleCellType = type("DoubleCellType", (NoNoData, DoubleCells), {})()
-DoubleConstantNoDataCellType = type(
-    "DoubleConstantNoDataCellType",
-    (ConstantNoData, DoubleCells),
-    {})()
+class _DoubleCellType(NoNoData, DoubleCells): pass
+DoubleCellType = _DoubleCellType()
+class _DoubleConstantNoDataCellType(ConstantNoData, DoubleCells): pass
+DoubleConstantNoDataCellType = _DoubleConstantNoDataCellType()
 class DoubleUserDefinedNoDataCellType(UserDefinedNoData, DoubleCells):
     def __init__(self, noDataValue):
         self._noDataValue = noDataValue

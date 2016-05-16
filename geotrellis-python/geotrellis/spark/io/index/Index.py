@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 class Index(object):
     @staticmethod
     def encode(index, max_len):

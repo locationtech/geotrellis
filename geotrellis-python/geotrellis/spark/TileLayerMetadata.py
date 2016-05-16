@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.spark.KeyBounds import Bounds, EmptyBounds, KeyBounds
 from geotrellis.spark.SpatialKey import SpatialKey
 from geotrellis.raster.CellSize import CellSize
@@ -5,7 +6,52 @@ from geotrellis.vector.Extent import Extent, ProjectedExtent
 from geotrellis.python.crs.CRSWrapper import CRS
 from geotrellis.spark.tiling.LayoutDefinition import LayoutDefinition
 
-class TileLayerMetadata(object):
+def _formatGenerator(keyType):
+    def func():
+        from geotrellis.spark.io.json.Implicits import TileLayerMetadataFormat
+        return TileLayerMetadataFormat(keyType)
+    return func
+
+class _TileLayerMetadataMeta(object):
+    items = {}
+    def __getitem__(self, key_type):
+        if self.items.has_key(key_type):
+            return self.items[key_type]
+        class tempo(_TileLayerMetadata):
+            implicits = {'format': _formatGenerator(key_type)}
+        self.items[key_type] = tempo
+        return tempo
+
+    def __call__(self, cellType, layout, extent, crs, bounds):
+        K = bounds.K
+        metadataK = self[K]
+        return metadataK(cellType, layout, extent, crs, bounds)
+
+    # static method
+
+    def fromRdd(self, rdd, first, second = None):
+        if (isinstance(first, CRS) and
+                isinstance(second, LayoutDefinition)):
+            crs, layout = first, second
+            extent, cellType, _cellSize, bounds = _collectMetadata(rdd)
+            kb = bounds.setSpatialBounds(KeyBounds(layout.mapTransform(extent)))
+            keyType = kb.K
+            return TileLayerMetadata[keyType](cellType, layout, extent, crs, kb)
+        elif isinstance(first, LayoutDefinition) and second is None:
+            layout = first
+            extent, cellType, _cellSize, bounds, crs = _collectMetadataWithCRS(rdd)
+            kb = bounds.setSpatialBounds(KeyBounds(layout.mapTransform(extent)))
+            keyType = kb.K
+            return TileLayerMetadata[keyType](cellType, layout, extent, crs, kb)
+        else:
+            # TODO implement LayoutScheme case
+            raise Exception("Not implemented")
+
+
+TileLayerMetadata = _TileLayerMetadataMeta()
+
+class _TileLayerMetadata(object):
+
     def __init__(self, cellType, layout, extent, crs, bounds):
         self.cellType = cellType
         self.layout = layout
@@ -98,23 +144,6 @@ class TileLayerMetadata(object):
             return self._copy(bounds = value)
         else:
             raise Exception("wrong argument: {0}".format(value))
-
-    @staticmethod
-    def fromRdd(rdd, first, second = None):
-        if (isinstance(first, CRS) and
-                isinstance(second, LayoutDefinition)):
-            crs, layout = first, second
-            extent, cellType, _cellSize, bounds = _collectMetadata(rdd)
-            kb = bounds.setSpatialBounds(KeyBounds(layout.mapTransform(extent)))
-            return TileLayerMetadata(cellType, layout, extent, crs, kb)
-        elif isinstance(first, LayoutDefinition) and second is None:
-            layout = first
-            extent, cellType, _cellSize, bounds, crs = _collectMetadataWithCRS(rdd)
-            kb = bounds.setSpatialBounds(KeyBounds(layout.mapTransform(extent)))
-            return TileLayerMetadata(cellType, layout, extent, crs, kb)
-        else:
-            # TODO implement LayoutScheme case
-            raise Exception("Not implemented")
 
 
 def _collectMetadata(rdd):

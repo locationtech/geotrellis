@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.spark.io.index.zcurve.Z2 import Z2
 
 class Z2Range(object):
@@ -25,7 +26,7 @@ class Z2Range(object):
 
     def contains(self, z):
         if isinstance(z, Z2):
-            x,y = z.decode()
+            x,y = z.decode
             _min = self.min
             _max = self.max
             return (x >= _min.dim(0) and

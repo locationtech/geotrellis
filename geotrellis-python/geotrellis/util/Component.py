@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.util.GetComponent import GetComponent
 from geotrellis.util.SetComponent import SetComponent
 

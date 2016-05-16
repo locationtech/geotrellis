@@ -1,10 +1,13 @@
+from __future__ import absolute_import
 from geotrellis.spark.io.FilteringLayerReader import FilteringLayerReader
-from geotrellis.spark.io.package_scala import LayerNotFoundError
+from geotrellis.spark.io.package_scala import LayerNotFoundError, AttributeNotFoundError
 from geotrellis.spark.io.index.Index import Index
+from geotrellis.spark.io.file.FileLayerHeader import FileLayerHeader
 from geotrellis.spark.io.file.KeyPathGenerator import generate_key_path_func
 from geotrellis.spark.io.file.FileRDDReader import FileRDDReader
 from geotrellis.spark.io.file.FileAttributeStore import FileAttributeStore
 from geotrellis.spark.ContextRDD import ContextRDD
+from geotrellis.spark.KeyBounds import KeyBounds
 
 def _get_params(first, second):
     if second is None:
@@ -20,8 +23,8 @@ def _get_params(first, second):
 class FileLayerReader(FilteringLayerReader):
     def __init__(self, sc, attributeStore, catalogPath = None):
         attribute_store, catalog_path = _get_params(attributeStore, catalogPath)
-        self.attributeStore = attributeStore
-        self._catalogPath = catalogPath
+        self.attributeStore = attribute_store
+        self._catalogPath = catalog_path
         self._sc = sc
 
     @property
@@ -44,7 +47,7 @@ class FileLayerReader(FilteringLayerReader):
         layerPath = header.path
         queryKeyBounds = rasterQuery(metadata)
         maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
-        keyPath = generate_key_path_func(catalogPath, layerPath, maxWidth)
-        decompose = lambda bounds: keyIndex.indexRanges(bounds)
-        rdd = FileRDDReader.read(K, V, keyPath, queryKeyBounds, decompose, filterIndexOnly, writerSchema, numPartitions)
-        return ContextRDD(K, V, rdd, metadata)
+        keyPath = generate_key_path_func(self._catalogPath, layerPath, maxWidth)
+        decompose = lambda bounds: keyIndex.indexRanges(KeyBounds.toTuple(bounds))
+        rdd = FileRDDReader(self._sc).read(K, V, keyPath, queryKeyBounds, decompose, filterIndexOnly, writerSchema, numPartitions)
+        return ContextRDD(rdd, metadata)

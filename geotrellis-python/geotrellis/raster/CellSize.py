@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 #from geotrellis.vector.Extent import Extent
 import math
 

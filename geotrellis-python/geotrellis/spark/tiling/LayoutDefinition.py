@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from geotrellis.raster.GridDefinition import GridDefinition
 from geotrellis.raster.TileLayout import TileLayout
 #from geotrellis.vector.Extent import Extent

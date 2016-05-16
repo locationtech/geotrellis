@@ -1,4 +1,7 @@
+from __future__ import absolute_import
 from geotrellis.spark.io.Writer import Writer
+from geotrellis.spark.io.index.KeyIndex import KeyIndex
+from geotrellis.spark.io.index.KeyIndexMethod import KeyIndexMethod
 from geotrellis.spark.KeyBounds import Bounds, EmptyBounds
 
 class _LayerWriterMeta(object):
@@ -19,7 +22,8 @@ class _LayerWriter(object):
         pass
     
     def write(self, K, V, M, _id, layer, keyIndexOrMethod):
-        bounds = layer.metadata.getComponent(Bounds[K])
+        #bounds = layer.metadata.getComponent(Bounds[K])
+        bounds = layer.metadata.getComponent(Bounds)
         if bounds is EmptyBounds:
             raise EmptyBoundsError("Cannot write layer with empty bounds.")
         def getKeyIndex():
