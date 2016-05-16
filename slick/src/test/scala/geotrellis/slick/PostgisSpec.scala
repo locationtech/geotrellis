@@ -57,7 +57,14 @@ class PostgisSpec extends FlatSpec with ShouldMatchers with TestDatabase with Sc
   }
   val CityTable = TableQuery[City]
 
-  def createSchema() = db.run(CityTable.schema.create).futureValue
+  def createSchema() =
+    try {
+      db.run(CityTable.schema.create).futureValue
+    } catch {
+      case _ =>
+        println("A script for setting up the PSQL environment necessary to run these tests can be found at scripts/slickTestDB.sh - requires a working docker setup")
+    }
+
   def dropSchema()  =    db.run(CityTable.schema.drop).futureValue
   "Environment" should "be sane" in {
 
