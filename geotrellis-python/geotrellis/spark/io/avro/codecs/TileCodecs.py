@@ -53,9 +53,9 @@ class ShortArrayTileCodec(AvroRecordCodec):
         dct["cols"] = tile.cols
         dct["rows"] = tile.rows
         dct["cells"] = tile.array.tolist()
-        if tile.cellType is ShortConstantNoDataCellType:
+        if tile.cellType == ShortConstantNoDataCellType:
             dct["noDataValue"] = shortNODATA
-        elif tile.cellType is ShortCellType:
+        elif tile.cellType == ShortCellType:
             dct["noDataValue"] = None # TODO find matching java's null alternative
         elif isinstance(tile.cellType, ShortUserDefinedNoDataCellType):
             dct["noDataValue"] = tile.cellType.noDataValue
@@ -101,9 +101,9 @@ class UShortArrayTileCodec(AvroRecordCodec):
         dct["cols"] = tile.cols
         dct["rows"] = tile.rows
         dct["cells"] = tile.array.tolist()
-        if tile.cellType is UShortConstantNoDataCellType:
+        if tile.cellType == UShortConstantNoDataCellType:
             dct["noDataValue"] = ushortNODATA
-        elif tile.cellType is UShortCellType:
+        elif tile.cellType == UShortCellType:
             dct["noDataValue"] = None
         elif isinstance(tile.cellType, UShortUserDefinedNoDataCellType):
             dct["noDataValue"] = tile.cellType.noDataValue
@@ -149,9 +149,9 @@ class IntArrayTileCodec(AvroRecordCodec):
         dct["cols"] = tile.cols
         dct["rows"] = tile.rows
         dct["cells"] = tile.array.tolist()
-        if tile.cellType is IntConstantNoDataCellType:
+        if tile.cellType == IntConstantNoDataCellType:
             dct["noDataValue"] = NODATA
-        elif tile.cellType is IntCellType:
+        elif tile.cellType == IntCellType:
             dct["noDataValue"] = None
         elif isinstance(tile.cellType, IntUserDefinedNoDataCellType):
             dct["noDataValue"] = tile.cellType.noDataValue
@@ -245,9 +245,9 @@ class DoubleArrayTileCodec(AvroRecordCodec):
         dct["cols"] = tile.cols
         dct["rows"] = tile.rows
         dct["cells"] = tile.array.tolist()
-        if tile.cellType is DoubleConstantNoDataCellType:
+        if tile.cellType == DoubleConstantNoDataCellType:
             dct["noDataValue"] = True
-        elif tile.cellType is DoubleCellType:
+        elif tile.cellType == DoubleCellType:
             dct["noDataValue"] = False
         elif isinstance(tile.cellType, DoubleUserDefinedNoDataCellType):
             dct["noDataValue"] = tile.cellType.noDataValue
@@ -293,9 +293,9 @@ class ByteArrayTileCodec(AvroRecordCodec):
         dct["rows"] = tile.rows
         #dct["cells"] = tile.array.tolist() # TODO wrap if needed
         dct["cells"] = tile.array.tostring()
-        if tile.cellType is ByteConstantNoDataCellType:
+        if tile.cellType == ByteConstantNoDataCellType:
             dct["noDataValue"] = byteNODATA
-        elif tile.cellType is ByteCellType:
+        elif tile.cellType == ByteCellType:
             dct["noDataValue"] = None
         elif isinstance(tile.cellType, ByteUserDefinedNoDataCellType):
             dct["noDataValue"] = tile.cellType.noDataValue
@@ -342,9 +342,9 @@ class UByteArrayTileCodec(AvroRecordCodec):
         dct["rows"] = tile.rows
         #dct["cells"] = tile.array.tolist() # TODO wrap if needed
         dct["cells"] = tile.array.tostring()
-        if tile.cellType is UByteConstantNoDataCellType:
+        if tile.cellType == UByteConstantNoDataCellType:
             dct["noDataValue"] = ubyteNODATA
-        elif tile.cellType is UByteCellType:
+        elif tile.cellType == UByteCellType:
             dct["noDataValue"] = None
         elif isinstance(tile.cellType, UByteUserDefinedNoDataCellType):
             dct["noDataValue"] = tile.cellType.noDataValue

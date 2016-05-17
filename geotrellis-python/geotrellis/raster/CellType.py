@@ -38,6 +38,9 @@ class DataType(object):
     def __str__(self):
         return self.name
 
+    def __eq__(self, other):
+        return isinstance(other, type(self))
+
 class BitCells(DataType):
     @property
     def bits(self):
@@ -214,9 +217,7 @@ class IntUserDefinedNoDataCellType(UserDefinedNoData, IntCells):
 
 class _FloatCellType(NoNoData, FloatCells): pass
 FloatCellType = _FloatCellType()
-class _FloatConstantNoDataCellType(ConstantNoData, FloatCells):
-    def __eq__(self, other):
-        return isinstance(other, _FloatConstantNoDataCellType)
+class _FloatConstantNoDataCellType(ConstantNoData, FloatCells): pass
 FloatConstantNoDataCellType = _FloatConstantNoDataCellType()
 class FloatUserDefinedNoDataCellType(UserDefinedNoData, FloatCells):
     def __init__(self, noDataValue):

@@ -102,9 +102,9 @@ class ShortNoDataChecker(NoDataChecker):
 
     def doCheck(self, nodata):
         cellType = self.cellType
-        if cellType is ShortConstantNoDataCellType:
+        if cellType == ShortConstantNoDataCellType:
             assert nodata == ({"int": SHORTMIN},)
-        elif cellType is ShortCellType:
+        elif cellType == ShortCellType:
             assert nodata == (None,)
         elif isinstance(cellType, ShortUserDefinedNoDataCellType):
             assert nodata == ({"int": cellType.noDataValue},)
@@ -118,9 +118,9 @@ class UShortNoDataChecker(NoDataChecker):
 
     def doCheck(self, nodata):
         cellType = self.cellType
-        if cellType is UShortConstantNoDataCellType:
+        if cellType == UShortConstantNoDataCellType:
             assert nodata == ({"int": 0},)
-        elif cellType is UShortCellType:
+        elif cellType == UShortCellType:
             assert nodata == (None,)
         elif isinstance(cellType, UShortUserDefinedNoDataCellType):
             assert nodata == ({"int": cellType.noDataValue},)
@@ -134,9 +134,9 @@ class IntNoDataChecker(NoDataChecker):
 
     def doCheck(self, nodata):
         cellType = self.cellType
-        if cellType is IntConstantNoDataCellType:
+        if cellType == IntConstantNoDataCellType:
             assert nodata == ({"int": NODATA},)
-        elif cellType is IntCellType:
+        elif cellType == IntCellType:
             assert nodata == (None,)
         elif isinstance(cellType, IntUserDefinedNoDataCellType):
             assert nodata == ({"int": cellType.noDataValue},)
@@ -150,9 +150,9 @@ class FloatNoDataChecker(NoDataChecker):
 
     def doCheck(self, nodata):
         cellType = self.cellType
-        if cellType is FloatConstantNoDataCellType:
+        if cellType == FloatConstantNoDataCellType:
             assert nodata == ({"boolean": True},)
-        elif cellType is FloatCellType:
+        elif cellType == FloatCellType:
             assert nodata == ({"boolean": False},)
         elif isinstance(cellType, FloatUserDefinedNoDataCellType):
             #assert nodata == ({"float": cellType.noDataValue},)
@@ -169,9 +169,9 @@ class DoubleNoDataChecker(NoDataChecker):
 
     def doCheck(self, nodata):
         cellType = self.cellType
-        if cellType is DoubleConstantNoDataCellType:
+        if cellType == DoubleConstantNoDataCellType:
             assert nodata == ({"boolean": True},)
-        elif cellType is DoubleCellType:
+        elif cellType == DoubleCellType:
             assert nodata == ({"boolean": False},)
         elif isinstance(cellType, DoubleUserDefinedNoDataCellType):
             #assert nodata == ({"double": cellType.noDataValue},)
@@ -188,9 +188,9 @@ class ByteNoDataChecker(NoDataChecker):
 
     def doCheck(self, nodata):
         cellType = self.cellType
-        if cellType is ByteConstantNoDataCellType:
+        if cellType == ByteConstantNoDataCellType:
             assert nodata == ({"int": byteNODATA},)
-        elif cellType is ByteCellType:
+        elif cellType == ByteCellType:
             assert nodata == (None,)
         elif isinstance(cellType, ByteUserDefinedNoDataCellType):
             assert nodata == ({"int": cellType.noDataValue},)
@@ -204,9 +204,9 @@ class UByteNoDataChecker(NoDataChecker):
 
     def doCheck(self, nodata):
         cellType = self.cellType
-        if cellType is UByteConstantNoDataCellType:
+        if cellType == UByteConstantNoDataCellType:
             assert nodata == ({"int": ubyteNODATA},)
-        elif cellType is UByteCellType:
+        elif cellType == UByteCellType:
             assert nodata == (None,)
         elif isinstance(cellType, UByteUserDefinedNoDataCellType):
             assert nodata == ({"int": cellType.noDataValue},)
