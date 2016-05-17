@@ -16,7 +16,7 @@ Interoperability between GeoTrellis and rasterio will allow for complex, multi-s
 The library will work with the following versions of dependencies (the command is `python setup.py install` under the main folder of the repo):
 - https://github.com/shiraeeshi/spec/tree/feature/options
 - https://github.com/shiraeeshi/python-avro-json-serializer/tree/feature/fullname
-- https://github.com/shiraeeshi/avro/tree/feature/GenericRecord
+- https://github.com/shiraeeshi/avro/tree/temp/with180version
 
 There are pending pull requests made to original repositories, the library will be compatible with original versions as soon as they accept those pull requests.
 
