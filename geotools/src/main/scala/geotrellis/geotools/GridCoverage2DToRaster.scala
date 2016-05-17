@@ -30,18 +30,18 @@ import scala.math.{min, max}
 
 
 /**
-  * The [[GridCoverage2DRaster]] object, contains a constructor, as
-  * well as other functions for converting a [[GridCoverage2D]] to a
-  * Geotrellis [[Raster]].
+  * The [[GridCoverage2DToRaster]] object, contains a constructor, as
+  * well as other functions for converting a GridCoverage2D to a
+  * Geotrellis Raster.
   */
 object GridCoverage2DToRaster {
 
   /**
-    * This constructor takes a [[GridCoverage2D]] and returns a
-    * sequence of Geotrellis [[Raster]]s.
+    * This constructor takes a GridCoverage2D and returns a sequence
+    * of Geotrellis Rasters.
     *
     * @param  gridCoverage  The  GeoTools GridCoverage2D object
-    * @return               A sequence of rasters of singleband Geotrellis [[Tile]]s
+    * @return               A sequence of rasters of singleband Geotrellis Tiles
     */
   def apply(gridCoverage: GridCoverage2D): Seq[Raster[Tile]] = {
     val extent = GridCoverage2DToRaster.extent(gridCoverage)
@@ -53,8 +53,8 @@ object GridCoverage2DToRaster {
   }
 
   /**
-    * This function extracts a Geotrellis [[Extent]] from the extent
-    * information stored in the given [[GridCoverage2D]].
+    * This function extracts a Geotrellis Extent from the extent
+    * information stored in the given GridCoverage2D.
     *
     * @param  gridCoverage  The GeoTools GridCoverage2D object
     */
@@ -67,8 +67,8 @@ object GridCoverage2DToRaster {
   }
 
   /**
-    * This function extracts a Geotrellis [[CRS]] from the CRS
-    * information stored in the given [[GridCoverage2D]].
+    * This function extracts a Geotrellis CRS from the CRS information
+    * stored in the given GridCoverage2D.
     *
     * @param  gridCoverage  The GeoTools GridCoverage2D object
     */
@@ -94,7 +94,7 @@ object GridCoverage2DToRaster {
   }
 
   /**
-    * Get the number of bands present in a [[GridCoverage2D]].
+    * Get the number of bands present in a GridCoverage2D.
     *
     * @param  gridCoverage  The GeoTools GridCoverage2D object
     */

@@ -39,38 +39,31 @@ import scala.collection.mutable
 
 trait RasterToGridCoverage2D {
 
+  /**
+    * Given a Geotrellis MultibandTile, produce a Java WritableRaster
+    * containing the same data.
+    *
+    * At present, this function does not support Float- or
+    * Double-typed Geotrellis MultibandTiles because creating a banked
+    * Raster of Doubles is not allowed.  This simple expedient of
+    * creating an interleaved raster does not work because the data
+    * must be interleaved at least at the row level.
+    *
+    * @param  tile  The Geotrellis MultibandTile
+    * @return       A Java WritableRaster
+    */
   def writableRaster(tile: MultibandTile): WritableRaster = {
     val n = tile.bandCount
     val buffer = tile.cellType match {
       case _: ByteCells | _: UByteCells =>
         new DataBufferByte(tile.bands.map(_.toBytes).toArray, tile.cols * tile.rows)
       case _: FloatCells | _: DoubleCells => {
-        // // Banked double rasters are NOT ALLOWED, so we are compelled
-        // // to create an interleaved raster instead.
-        // val ab = tile.bands
-        //   .map(_.toArrayDouble)
-        //   .foldLeft(mutable.ArrayBuffer.empty[Double])(_ ++= _)
-        // new DataBufferDouble(ab.toArray, ab.length)
         throw new Exception("Float and Double MultibandTiles not supported")
       }
       case _ =>
         new DataBufferInt(tile.bands.map(_.toArray).toArray, tile.cols * tile.rows)
     }
 
-    // tile.cellType match {
-    //   case _: FloatCells | _: DoubleCells => {
-    //     val n = tile.bandCount
-    //     val m = n * tile.cols * tile.rows
-
-    //     AwtRaster.createInterleavedRaster(
-    //       buffer, // interleaved buffer
-    //       tile.cols, tile.rows, // width, height
-    //       tile.cols,  1, // scanline stride, pixel stride
-    //       (0 until m by n).toArray, // band offsets
-    //       null // location
-    //     )
-    //   }
-    //   case _ =>
     AwtRaster.createBandedRaster(
       buffer, // banked buffer
       tile.cols, tile.rows, tile.cols, // width, height, scanline stride
@@ -78,9 +71,24 @@ trait RasterToGridCoverage2D {
       Array.fill(n)(0), // band offsets
       null // location
     )
-    // }
   }
 
+  /**
+    * Given a Geotrellis Tile, produce a Java BufferedImage containing
+    * the same data.
+    *
+    *    - Signed and unsigned Tiles are converted to 8bpp grayscale
+    *      images.
+    *    - Signed and unsigned short Tiles are converted to 64bpp RGB
+    *      images with all three samples equal (essentially
+    *      grayscale).
+    *    - Int Tiles are converted to 32bpp RGBa images.
+    *    - Float and double tiles are converted to 64bpp grayscale
+    *      images.
+    *
+    * @param  tile  The Geotrellis Tile
+    * @return       A Java BufferedImage
+    */
   def bufferedImage(tile: Tile): BufferedImage = {
     tile.cellType match {
 
@@ -164,6 +172,14 @@ trait RasterToGridCoverage2D {
     }
   }
 
+  /**
+    * A function to produce a GeoTools Envelope2D from a Geotrellis
+    * raster and CRS.
+    *
+    * @param  raster  The Geotrellis raster
+    * @param  crs     The CRS of the raster
+    * @return         A GeoTools Envelope2D
+    */
   def envelope2D[T <: CellGrid](raster: Raster[T], crs: Option[CRS]): Envelope2D = {
     val Raster(tile, Extent(xmin, ymin, xmax, ymax)) = raster
     val geoToolsCRS = crs match {
@@ -175,7 +191,14 @@ trait RasterToGridCoverage2D {
     new Envelope2D(geoToolsCRS, xmin, ymin, (xmax - xmin), (ymax - ymin))
   }
 
-  def noData(cellType: CellType): Array[Double] = {
+  /**
+    * A function to extract the NODATA value from a Geotrellis
+    * CellType and return it as an optional double.
+    *
+    * @param  cellType  The CellType
+    * @return           The NODATA value, if there is one
+    */
+  def noData(cellType: CellType): Option[Double] = {
     cellType match {
       case ByteUserDefinedNoDataCellType(nd) =>
         if (nd > 0) Option(nd)
@@ -197,6 +220,15 @@ trait RasterToGridCoverage2D {
     }
   }
 
+  /**
+    * A function to compute the SampleDimensionType associated with a
+    * particular CellType.  This function produces data types that
+    * work with the WritableRaster (respectively BufferedImage)
+    * produced by 'writableRaster' (respectively 'bufferedImage').
+    *
+    * @param  cellType  The Geotrellis CellType
+    * @return           The associated SampleDimensionType
+    */
   def sampleDimensionType(cellType: CellType): SampleDimensionType = {
     cellType match {
       case _: ByteCells => SampleDimensionType.SIGNED_8BITS
@@ -210,6 +242,18 @@ trait RasterToGridCoverage2D {
     }
   }
 
+  /**
+    * A function that returns the minimum and maximum possible values
+    * for a given CellType.
+    *
+    * There appears to be a bug in the Java sample dimension machinery
+    * wherein the range of a byte must contain only non-negative
+    * numbers, this function assigns a range of [0,2^7) to signed
+    * bytes.
+    *
+    * @param  cellType  The Geotrellis CellType
+    * @return           A tuple of doubles, the min and max of the range
+    */
   def minMax(cellType: CellType): (Double, Double) = {
     cellType match {
       case _: ByteCells => (0, (1<<7)-1) // sic(!)
@@ -223,6 +267,14 @@ trait RasterToGridCoverage2D {
     }
   }
 
+  /**
+    * Produce an array of GridSampleDimensions that is compatible with
+    * the BufferedImage produced by 'bufferedImage'.  This is
+    * necessary to provide the NODATA metadata.
+    *
+    * @param  cellType  A Geotrellis CellType
+    * @return           An array of GeoTools GridSampleDimensions
+    */
   def tileSampleDimensions(cellType: CellType): Array[GridSampleDimension] = {
     val dims = cellType match {
       case _: IntCells => 4
@@ -232,6 +284,15 @@ trait RasterToGridCoverage2D {
     sampleDimensions(cellType, dims)
   }
 
+  /**
+    * Produce an array of GridSampleDimensions that is compatible with
+    * the WritableRaster (respectively BufferedImage) produced by
+    * 'writableRaster' (respectively 'bufferedImage').
+    *
+    * @param  cellType  A Geotrellis CellType
+    * @param  dims      The number of dimensions that the final image will have
+    * @return           An array of GeoTools GridSampleDimensions
+    */
   def sampleDimensions(cellType: CellType, dims: Int): Array[GridSampleDimension] = {
     val description = cellType.toString
     val dimType = sampleDimensionType(cellType)
@@ -252,8 +313,22 @@ trait RasterToGridCoverage2D {
   }
 }
 
+
+/**
+  * An object housing constructors for converting a Geotrellis
+  * Raster[Tile] to GridCoverage2D.
+  */
 object TileRasterToGridCoverage2D extends RasterToGridCoverage2D {
 
+  /**
+    * Given a Geotrellis Tile Raster and a CRS, produce a GeoTools
+    * GridCoverage2D.  A (hopefully) suitable GridSampleDimensions
+    * will be provided by the 'sampleDimensions' function.
+    *
+    * @param  raster  The Geotrellis raster
+    * @param  crs     The Geotrellis CRS
+    * @return         The GeoTools GridCoverage2D
+    */
   def apply(raster: Raster[Tile], crs: Option[CRS]): GridCoverage2D = {
     val cellType = raster.tile.cellType
     val bands = cellType match {
@@ -307,6 +382,16 @@ object TileRasterToGridCoverage2D extends RasterToGridCoverage2D {
     apply(raster, bands, crs)
   }
 
+  /**
+    * Given a Geotrellis Tile Raster, an array of GridSampleDimension
+    * objects, and a Geotrellis CRS, produce a GeoTools
+    * GridCoverage2D.
+    *
+    * @param  raster  The Geotrellis raster
+    * @param  bands   An array of GridSampleDimension objects
+    * @param  crs     The Geotrellis CRS
+    * @return         The GeoTools GridCoverage2D
+    */
   def apply(raster: Raster[Tile], bands: Array[GridSampleDimension], crs: Option[CRS]): GridCoverage2D = {
     val name = raster.toString
     val image = bufferedImage(raster.tile)
@@ -323,14 +408,39 @@ object TileRasterToGridCoverage2D extends RasterToGridCoverage2D {
   }
 }
 
+
+/**
+  * An object housing constructors for converting a Geotrellis
+  * Raster[MultibandTile] to GridCoverage2D.
+  */
 object MultibandTileRasterToGridCoverage2D extends RasterToGridCoverage2D {
 
+  /**
+    * Given a Geotrellis MultibandTile Raster and a CRS, produce a
+    * GeoTools GridCoverage2D.  A (hopefully) suitable
+    * GridSampleDimensions will be provided by the 'sampleDimensions'
+    * function.
+    *
+    * @param  raster  The Geotrellis raster
+    * @param  crs     The Geotrellis CRS
+    * @return         The GeoTools GridCoverage2D
+    */
   def apply(raster: Raster[MultibandTile], crs: Option[CRS]): GridCoverage2D = {
     val bands = sampleDimensions(raster.tile.cellType, raster.tile.bandCount)
 
     apply(raster, bands, crs)
   }
 
+  /**
+    * Given a Geotrellis MultibandTile Raster, an array of
+    * GridSampleDimension objects, and a Geotrellis CRS, produce a
+    * GeoTools GridCoverage2D.
+    *
+    * @param  raster  The Geotrellis raster
+    * @param  bands   An array of GridSampleDimension objects
+    * @param  crs     The Geotrellis CRS
+    * @return         The GeoTools GridCoverage2D
+    */
   def apply(raster: Raster[MultibandTile], bands: Array[GridSampleDimension], crs: Option[CRS]): GridCoverage2D = {
     val name = raster.toString
     val writable = writableRaster(raster)

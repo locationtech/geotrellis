@@ -32,8 +32,8 @@ import scala.collection.JavaConverters._
 object GridCoverage2DTile {
 
   /**
-    * Takes a [[GridCoverage2D]] and an index, and produces a
-    * singleband tile in which only the given band is accessible.
+    * Takes a GridCoverage2D and an index, and produces a singleband
+    * tile in which only the given band is accessible.
     *
     * @param  gridCoverage2D  The GeoTools GridCoverage2D object
     * @param  bandIndex       The index in gridCoverage2D to expose as the sole band of this tile
@@ -42,10 +42,9 @@ object GridCoverage2DTile {
     new GridCoverage2DTile(gridCoverage, bandIndex)
 
   /**
-    * Given a [[GridCoverage2D]] and an index, this function
-    * optionally produces the unique NODATA value of the band (if
-    * there is one), otherwise it produces None or raises an
-    * exception.
+    * Given a GridCoverage2D and an index, this function optionally
+    * produces the unique NODATA value of the band (if there is one),
+    * otherwise it produces None or raises an exception.
     *
     * @param  gridCoverage2D  The GeoTools GridCoverage2D object
     * @param  bandIndex       The index in gridCoverage2D to expose as the sole band of this tile
@@ -63,9 +62,9 @@ object GridCoverage2DTile {
   }
 
   /**
-    * Given a [[GridCoverage2D]] and an index, this function return
-    * the Geotrellis [[CellType]] that best approximates that of the
-    * given layer.
+    * Given a GridCoverage2D and an index, this function return the
+    * Geotrellis CellType that best approximates that of the given
+    * layer.
     *
     * @param  gridCoverage2D  The GeoTools GridCoverage2D object
     * @param  bandIndex       The index in gridCoverage2D to expose as the sole band of this tile
@@ -113,7 +112,7 @@ object GridCoverage2DTile {
 }
 
 /**
-  * A Geotrellis [[Tile]]-derived class that wraps a GeoTools
+  * A Geotrellis Tile-derived class that wraps a GeoTools
   * GridCoverage2D object.
   *
   * @param  gridCoverage  The GeoTools GridCoverage2D object to wrap
@@ -136,7 +135,7 @@ class GridCoverage2DTile(gridCoverage: GridCoverage2D, bandIndex: Int) extends T
   val cols: Int = renderedImage.getWidth
 
   /**
-    * Execute an [[DoubleTileVisitor]] at each cell of the
+    * Execute an DoubleTileVisitor at each cell of the
     * [[GridCoverage2DTile]].
     *
     * @param  visitor  A DoubleTileVisitor
@@ -152,7 +151,7 @@ class GridCoverage2DTile(gridCoverage: GridCoverage2D, bandIndex: Int) extends T
   }
 
   /**
-    * Execute an [[IntTileVisitor]] at each cell of the
+    * Execute an IntTileVisitor at each cell of the
     * [[GridCoverage2DTile]].
     *
     * @param  visitor  An IntTileVisitor
@@ -168,10 +167,10 @@ class GridCoverage2DTile(gridCoverage: GridCoverage2D, bandIndex: Int) extends T
   }
 
   /**
-    * Map an [[DoubleTileMapper]] over the present tile.
+    * Map an DoubleTileMapper over the present tile.
     *
     * @param   mapper  The mapper
-    * @return          The result, a [[Tile]]
+    * @return          The result, a Tile
     */
   def mapDoubleMapper(mapper: DoubleTileMapper): Tile = {
     val tile = ArrayTile.alloc(cellType.union(DoubleCellType), cols, rows)
@@ -188,10 +187,10 @@ class GridCoverage2DTile(gridCoverage: GridCoverage2D, bandIndex: Int) extends T
   }
 
   /**
-    * Map an [[IntTileMapper]] over the present tile.
+    * Map an IntTileMapper over the present tile.
     *
     * @param   mapper  The mapper
-    * @return          The result, a [[Tile]]
+    * @return          The result, a Tile
     */
   def mapIntMapper(mapper: IntTileMapper): Tile = {
     val tile = ArrayTile.alloc(cellType, cols, rows)
@@ -208,8 +207,8 @@ class GridCoverage2DTile(gridCoverage: GridCoverage2D, bandIndex: Int) extends T
   }
 
   /**
-    * Combine the cells of an [[GridCoverage2DTile]] and a [[Tile]]
-    * into a new Tile using the given function. For every (x, y) cell
+    * Combine the cells of an [[GridCoverage2DTile]] and a Tile into a
+    * new Tile using the given function. For every (x, y) cell
     * coordinate, get each of the Tiles' integer value, map them to a
     * new value, and assign it to the output's (x, y) cell.
     *
@@ -234,8 +233,8 @@ class GridCoverage2DTile(gridCoverage: GridCoverage2D, bandIndex: Int) extends T
   }
 
   /**
-    * Combine the cells of an [[GridCoverage2DTile]] and a [[Tile]]
-    * into a new Tile using the given function. For every (x, y) cell
+    * Combine the cells of an [[GridCoverage2DTile]] and a Tile into a
+    * new Tile using the given function. For every (x, y) cell
     * coordinate, get tiles' double values, map them to a new value,
     * and assign it to the output's (x, y) cell.
     *
@@ -260,7 +259,7 @@ class GridCoverage2DTile(gridCoverage: GridCoverage2D, bandIndex: Int) extends T
   }
 
   /**
-    * Returns a [[Tile]] equivalent to the present
+    * Returns a Tile equivalent to the present
     * [[GridCoverage2DTile]], except with cells of the given type.
     *
     * @param   cellType  The type of cells that the result should have
@@ -348,7 +347,7 @@ class GridCoverage2DTile(gridCoverage: GridCoverage2D, bandIndex: Int) extends T
     * function.
     *
     * @param   f  A function from Int to Int, executed at each point of the tile
-    * @return     The result, a [[Tile]]
+    * @return     The result, a Tile
     */
   def map(f: Int => Int): Tile = {
     val tile = ArrayTile.alloc(cellType, cols, rows)
@@ -369,7 +368,7 @@ class GridCoverage2DTile(gridCoverage: GridCoverage2D, bandIndex: Int) extends T
     * function.
     *
     * @param   f  A function from Double to Double, executed at each point of the tile
-    * @return     The result, a [[Tile]]
+    * @return     The result, a Tile
     */
   def mapDouble(f: Double => Double): Tile = {
     val tile = ArrayTile.alloc(cellType.union(DoubleCellType), cols, rows)
@@ -386,13 +385,13 @@ class GridCoverage2DTile(gridCoverage: GridCoverage2D, bandIndex: Int) extends T
   }
 
   /**
-    * Return an [[ArrayTile]] whose contents are taken from the
+    * Return an ArrayTile whose contents are taken from the
     * present [[GridCoverage2DTile]].  This is fairly expensive.
     */
   def toArrayTile(): ArrayTile = convert(cellType)
 
   /**
-    * Return a [[MutableArrayTile]] whose contents are taken from the
+    * Return a MutableArrayTile whose contents are taken from the
     * present [[GridCoverage2DTile]].  This is fairly expensive.
     */
   def mutable: MutableArrayTile = toArrayTile.mutable
