@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from spec import Spec
-from tests.geotrellis_test.spark.io.PersistenceSpec import PersistenceSpec
+from nose import tools
+from tests.geotrellis_test.spark.io.PersistenceSpec import _PersistenceSpec
 from tests.geotrellis_test.spark.io.SpatialKeyIndexMethods import _SpatialKeyIndexMethods
 from tests.geotrellis_test.spark.TestEnvironment import _TestEnvironment
 from tests.geotrellis_test.spark.testfiles.TestFiles import _TestFiles
@@ -12,13 +13,18 @@ from geotrellis.spark.io.file.FileLayerReader import FileLayerReader
 from geotrellis.spark.io.file.FileLayerWriter import FileLayerWriter
 from geotrellis.spark.LayerId import LayerId
 from geotrellis.spark.io.index.ZCurveKeyIndexMethod import ZCurveKeyIndexMethod
+from geotrellis.spark.io.file.FileValueReader import file_value_reader
 
+@tools.nottest
 class FileSpatialSpec(
         Spec,
-        PersistenceSpec[SpatialKey, Tile, TileLayerMetadata[SpatialKey]],
+        # TODO Tile doesn't have implicits to get AvroRecordCodec from
+        #_PersistenceSpec[SpatialKey, Tile, TileLayerMetadata[SpatialKey]],
+        _PersistenceSpec[SpatialKey, FloatArrayTile, TileLayerMetadata[SpatialKey]],
         _SpatialKeyIndexMethods,
         _TestFiles,
-        _TestEnvironment):
+        _TestEnvironment,
+        object):
 
     @property
     def reader(self):
@@ -28,10 +34,13 @@ class FileSpatialSpec(
     def writer(self):
         return FileLayerWriter(self.outputLocalPath)
 
-    def test_persistence_spec_checks(self):
-        "persistence spec checks"
-        pers_spec = PersistenceSpec[SpatialKey, Tile, TileLayerMetadata[SpatialKey]]
-        pers_spec.test_persistence_spec_checks(self)
+    @property
+    def tiles(self):
+        return file_value_reader(self.outputLocalPath)
+
+    @property
+    def sample(self):
+        return self.AllOnesTestFile
 
     class inner(object):
         "Filesystem layer names"

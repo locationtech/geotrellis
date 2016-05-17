@@ -36,24 +36,24 @@ class BlobLayerAttributeStore(AttributeStore):
     def __init__(self):
         super(BlobLayerAttributeStore, self).__init__()
     def readHeader(self, header_type, layer_id):
-        header = self.cacheRead(None, layer_id, Fields.metadataBlob)[Fields.header]
+        header = self.cacheRead(dict, layer_id, Fields.metadataBlob)[Fields.header]
         header_format = header_type.implicits['format']()
         return header_format.from_dict(header)
 
     def readMetadata(self, metadata_type, layer_id):
-        meta = self.cacheRead(None, layer_id, Fields.metadataBlob)[Fields.metadata]
+        meta = self.cacheRead(dict, layer_id, Fields.metadataBlob)[Fields.metadata]
         metadata_format = metadata_type.implicits['format']()
         return metadata_format.from_dict(meta)
 
     def readKeyIndex(self, key_type, layer_id):
-        key_index = self.cacheRead(None, layer_id, Fields.metadataBlob)[Fields.keyIndex]
+        key_index = self.cacheRead(dict, layer_id, Fields.metadataBlob)[Fields.keyIndex]
         # TODO temporary workaround. see geotrellis.spark.io.json.KeyIndexFormats
         #key_index_format = get_format_for_key_index_type(KeyIndex[key_type])
         key_index_format = KeyIndex[key_type].implicits['format']()
         return key_index_format.from_dict(key_index)
 
     def readSchema(self, layer_id):
-        schema_as_dict = self.cacheRead(None, layer_id, Fields.metadataBlob)[Fields.schema]
+        schema_as_dict = self.cacheRead(dict, layer_id, Fields.metadataBlob)[Fields.schema]
         schema_json_string = json.dumps(schema_as_dict)
         return avro.schema.parse(schema_json_string)
 

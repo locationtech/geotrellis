@@ -34,11 +34,11 @@ def get_temp_dir():
 
 @tools.nottest
 class _TestEnvironment(object):
-    sc = None
+    _sc = None
     def __init__(self):
         self.outputHome = "testFiles"
         self.afterAlls = []
-        self._sc()
+        self.sc
         self._jvm = self.sc._jvm
         self.name = fullname(type(self))
         self.conf = SparkUtils.hadoopConfiguration(self._jvm)
@@ -65,7 +65,7 @@ class _TestEnvironment(object):
         self.outputLocal = local
         self.outputLocalPath = localPath
 
-    def registerAfterAll(func):
+    def registerAfterAll(self, func):
         self.afterAlls.append(func)
 
     @staticmethod
@@ -84,9 +84,10 @@ class _TestEnvironment(object):
         #conf.set("spark.kryo.registrator", "geotrellis.spark.TestRegistrator")
         pass
 
-    def _sc(self):
-        if _TestEnvironment.sc:
-            return _TestEnvironment.sc
+    @property
+    def sc(self):
+        if _TestEnvironment._sc:
+            return _TestEnvironment._sc
 
         os.environ["spark.driver.port"] = "0"
         os.environ["spark.hostPort"] = "0"
@@ -112,7 +113,7 @@ class _TestEnvironment(object):
         del os.environ["spark.hostPort"]
         del os.environ["spark.ui.enabled"]
         
-        _TestEnvironment.sc = sparkContext
+        _TestEnvironment._sc = sparkContext
         return sparkContext
 
     def mkdir(self, _dir):
@@ -126,7 +127,9 @@ class _TestEnvironment(object):
 
     def afterAll(self):
         self.clearTestDirectory()
-        self.sc.stop()
+        if _TestEnvironment._sc is not None:
+            self.sc.stop()
+            _TestEnvironment._sc = None
         if self.afterAlls:
             for func in self.afterAlls:
                 func()

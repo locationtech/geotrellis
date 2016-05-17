@@ -30,22 +30,22 @@ class FileRDDReader(object):
         recordCodec = KeyValueRecordCodec(K, V)
         # kwWriterSchema = KryoWrapper(writerSchema)
 
-        def mapper(iterator):
-            resultPartition = []
+        def mapper(partition):
+            resultPartition = [[]] # we have to wrap it to be able to use it in inner function
 
             def append_from(path):
                 if not file_exists(path):
                     return
                 with open(path) as f:
                     bytesarray = f.read()
-                    recs = AvroEnvoder.fromBinary(
+                    recs = AvroEncoder.fromBinary(
                             getOrElse(writerSchema, recordCodec.schema),
                             bytesarray,
                             codec = recordCodec)
                     if filterIndexOnly:
-                        resultPartition += recs
+                        resultPartition[0] += recs
                     else:
-                        resultPartition += filter(lambda row: includeKey(row[0]), recs)
+                        resultPartition[0] += filter(lambda row: includeKey(row[0]), recs)
 
             for rangeList in partition:
                 for _range in rangeList:
@@ -53,6 +53,6 @@ class FileRDDReader(object):
                     for index in xrange(start, end+1):
                         path = keyPath(index)
                         append_from(path)
-            return resultPartition
+            return resultPartition[0]
 
         return self.sc.parallelize(bins, len(bins)).mapPartitions(mapper)

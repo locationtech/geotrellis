@@ -9,6 +9,7 @@ import glob
 import os
 import os.path
 import json
+import ntpath
 
 sep = "__.__"
 
@@ -109,7 +110,8 @@ class FileAttributeStore(BlobLayerAttributeStore):
     def layerIds(self):
         filenames = glob.glob(self.attributeDirectory + '/*.json')
         def to_layer_id(f):
-            splitted = f.split(sep)[:2]
+            name = ntpath.basename(f)
+            splitted = name.split(sep)[:2]
             name     = splitted[0]
             zoom_str = splitted[1]
             return LayerId(name, int(zoom_str))

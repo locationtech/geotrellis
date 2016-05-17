@@ -25,7 +25,7 @@ class Z3Range(object):
         return self.max.z - self.min.z
 
     def contains(self, bits):
-        if isinstance(z, Z3):
+        if isinstance(bits, Z3):
             x,y,z = bits.decode
             _min = self.min
             _max = self.max

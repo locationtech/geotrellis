@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 from geotrellis.python.util.utils import fullname
+from geotrellis.spark.LayerId import LayerId
+from geotrellis.spark.io.package_scala import LayerNotFoundError
 from nose import tools
 
 class _PersistenceSpecMeta(object):
@@ -7,15 +9,15 @@ class _PersistenceSpecMeta(object):
     def __getitem__(self, key):
         if key in self.items.keys():
             return self.items[key]
-        class tempo(_PersistenceSpec):
+        class tempo(_PersistenceSpecClass):
             K, V, M = key
         self.items[key] = tempo
         return tempo
 
-PersistenceSpec = _PersistenceSpecMeta()
+_PersistenceSpec = _PersistenceSpecMeta()
 
-@tools.nottest
-class _PersistenceSpec(object):
+#@tools.nottest
+class _PersistenceSpecClass(object):
     def getLayerIds(self, keyIndexMethod):
         suffix = keyIndexMethod.replace(" ", "_")
         name = fullname(type(self))
@@ -29,7 +31,7 @@ class _PersistenceSpec(object):
     @property
     def specLayerIds(self):
         result = []
-        for keyIndexMethodName, keyIndexMethod in self.keyIndexMethod:
+        for keyIndexMethodName, keyIndexMethod in self.keyIndexMethods.items():
             result.append((keyIndexMethodName, keyIndexMethod, self.getLayerIds(keyIndexMethodName)))
         return result
 
@@ -40,14 +42,14 @@ class _PersistenceSpec(object):
                 (layerId, deleteLayerId, copiedLayerId, movedLayerId, reindexedLayerId)) in self.specLayerIds:
             print("using key index method {mn}".format(mn=keyIndexMethodName))
             print("should not find layer before write")
-            assert_raises(LayerNotFoundError, lambda: self.reader.read(K, V, M, layerId))
+            tools.assert_raises(LayerNotFoundError, lambda: self.reader.read(K, V, M, layerId))
             print("should write a layer")
-            self.writer.write(K, V, M, layerId, sample, keyIndexMethod)
+            self.writer.write(K, V, M, layerId, self.sample, keyIndexMethod)
 
             print("should read a layer back")
             actual = self.reader.read(K, V, M, layerId).keys().collect()
             expected = self.sample.keys().collect()
-            assert Set(actual) == Set(expected)
+            assert set(actual) == set(expected)
 
             print("should read a single value")
             tileReader = self.tiles.reader(K, V, layerId)

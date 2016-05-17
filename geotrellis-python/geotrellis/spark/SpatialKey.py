@@ -33,7 +33,11 @@ class SpatialKey(object):
         return (self.col == other.col and
                 self.row == other.row)
     def __hash__(self):
-        return hash((col, row))
+        return hash((self.col, self.row))
+    def __str__(self):
+        return "SpatialKey(col={col}, row={row})".format(col=self.col, row=self.row)
+    def __repr__(self):
+        return str(self)
 
     @staticmethod
     def toTuple(key):

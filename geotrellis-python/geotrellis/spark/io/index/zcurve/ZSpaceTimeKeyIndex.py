@@ -10,7 +10,7 @@ def _generateFormat():
 class ZSpaceTimeKeyIndex(KeyIndex[SpaceTimeKey]):
     implicits = {"format": _generateFormat}
     def __init__(self, keyBounds, temporalResolution):
-        self.keyBounds = keyBounds
+        self._keyBounds = keyBounds
         self.temporalResolution = temporalResolution
 
     def _toz(self, key):

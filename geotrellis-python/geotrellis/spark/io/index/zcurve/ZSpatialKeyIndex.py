@@ -8,9 +8,6 @@ class ZSpatialKeyIndex(KeyIndex[SpatialKey]):
     implicits = {'format': lambda: ZSpatialKeyIndexFormat()}
     def __init__(self, keyBounds):
         self._keyBounds = keyBounds
-    @property
-    def keyBounds(self):
-        return self._keyBounds
     def _toz(self, key):
         return Z2(key.col, key.row)
     def toIndex(self, key):

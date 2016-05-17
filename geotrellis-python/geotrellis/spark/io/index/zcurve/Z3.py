@@ -105,24 +105,24 @@ class Z3(object):
 
     @staticmethod
     def zranges(min_z3, max_z3):
-        mq = MergeQueue()
-        sr = Z2Range(min_z3, max_z3)
+        mq = [MergeQueue()]
+        from geotrellis.spark.io.index.zcurve.Z3Range import Z3Range
+        sr = [Z3Range(min_z3, max_z3)]
 
-        rec_counter = 0
-        report_counter = 0
+        #rec_counter = 0
+        #report_counter = 0
 
         def _zranges(prefix, offset, quad):
-            rec_counter += 1
+            #rec_counter += 1
 
             _min = prefix | (quad << offset)
             _max = _min | (1L << offset) - 1
 
-            from geotrellis.spark.io.index.zcurve.Z3Range import Z3Range
             qr = Z3Range(Z3(_min), Z3(_max))
-            if sr.contains(qr):
-                mq += (qr.min.z, qr.max.z)
-                report_counter += 1
-            elif offset > 0 and sr.overlaps(qr):
+            if sr[0].contains(qr):
+                mq[0] += (qr.min.z, qr.max.z)
+                #report_counter += 1
+            elif offset > 0 and sr[0].overlaps(qr):
                 _zranges(_min, offset - Z3.MAX_DIM, 0)
                 _zranges(_min, offset - Z3.MAX_DIM, 1)
                 _zranges(_min, offset - Z3.MAX_DIM, 2)
@@ -135,4 +135,4 @@ class Z3(object):
         prefix = 0
         offset = Z3.MAX_BITS * Z3.MAX_DIM
         _zranges(prefix, offset, 0)
-        return mq.toSeq
+        return mq[0].toSeq

@@ -1,28 +1,41 @@
 from __future__ import absolute_import
 from spec import Spec
-from tests.geotrellis_test.spark.io.PersistenceSpec import PersistenceSpec
+from nose import tools
+from tests.geotrellis_test.spark.io.PersistenceSpec import _PersistenceSpec
 from tests.geotrellis_test.spark.io.SpaceTimeKeyIndexMethods import _SpaceTimeKeyIndexMethods
 from tests.geotrellis_test.spark.TestEnvironment import _TestEnvironment
 from tests.geotrellis_test.spark.testfiles.TestFiles import _TestFiles
-from geotrellis.spark.SpatialKey import SpatialKey
+from geotrellis.spark.SpaceTimeKey import SpaceTimeKey
 from geotrellis.raster.Tile import Tile
+from geotrellis.raster.FloatArrayTile import FloatArrayTile
 from geotrellis.spark.TileLayerMetadata import TileLayerMetadata
 from geotrellis.spark.io.file.FileLayerReader import FileLayerReader
 from geotrellis.spark.io.file.FileLayerWriter import FileLayerWriter
-from geotrellis.spark.LayerId import LayerId
-from geotrellis.spark.io.index.ZCurveKeyIndexMethod import ZCurveKeyIndexMethod
+from geotrellis.spark.io.file.FileValueReader import file_value_reader
 
+@tools.nottest
 class FileSpaceTimeSpec(
         Spec,
-        PersistenceSpec[SpatialKey, Tile, TileLayerMetadata],
+        # TODO Tile doesn't have implicits to get AvroRecordCodec from
+        #_PersistenceSpec[SpaceTimeKey, Tile, TileLayerMetadata[SpatceTimeey]],
+        _PersistenceSpec[SpaceTimeKey, FloatArrayTile, TileLayerMetadata[SpaceTimeKey]],
         _SpaceTimeKeyIndexMethods,
         _TestFiles,
-        _TestEnvironment):
+        _TestEnvironment,
+        object):
 
     @property
     def reader(self):
-        return FileLayerReader(self.outputLocalPath)
+        return FileLayerReader(self.sc, self.outputLocalPath)
 
     @property
     def writer(self):
         return FileLayerWriter(self.outputLocalPath)
+
+    @property
+    def tiles(self):
+        return file_value_reader(self.outputLocalPath)
+
+    @property
+    def sample(self):
+        return self.CoordinateSpaceTime

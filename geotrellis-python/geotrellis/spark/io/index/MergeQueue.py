@@ -41,7 +41,7 @@ class MergeQueue(object):
             lt_func = self._lt_func
             haystack = self._array if lt_func is None else CustomComparatorSeq(self._array, lt_func)
             needle = _range if lt_func is None else CustomComparator(_range, lt_func)
-            res = bisect.bisect_left(haystack, needle)
+            res = - bisect.bisect_left(haystack, needle) - 1
         if res < 0:
             i = -(res + 1)
             this_start, this_end = _range

@@ -5,7 +5,7 @@ class LayerId(object):
     implicits = {'format': lambda: LayerIdFormat()}
     def __init__(self, name, zoom):
         self.name = name
-        self.zoom = zoom
+        self.zoom = int(zoom)
 
     def __eq__(self, other):
         if not isinstance(other, LayerId):

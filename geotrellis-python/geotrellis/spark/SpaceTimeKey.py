@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from geotrellis.spark.SpatialKey import SpatialKey
 from geotrellis.spark.TemporalKey import TemporalKey
 from geotrellis.spark.io.json.KeyFormats import SpaceTimeKeyFormat
@@ -16,12 +15,26 @@ def generateCodec():
 class SpaceTimeKey(object):
     implicits = {
             'format': lambda: SpaceTimeKeyFormat(),
-            'AvroRecordCodec': generateCodec}
+            'AvroRecordCodec': generateCodec,
+            'Boundable': lambda: SpaceTimeKey.boundable}
 
-    def __init__(self, col, row, instant):
+    def __init__(self, first, second, third = None):
+        if third is None:
+            spatialKey = first
+            temporalKey = second
+            col, row, time = (spatialKey.col, spatialKey.row, temporalKey.time)
+        else:
+            col, row, time = first, second, third
+
+        if isinstance(time, datetime.datetime):
+            epoch = datetime.datetime.fromtimestamp(0, pytz.utc)
+            millis = (time - epoch).total_seconds() * 1000
+        else:
+            millis = time
+
         self.col = col
         self.row = row
-        self.instant = instant
+        self.instant = long(millis)
 
     @property
     def spatialKey(self):

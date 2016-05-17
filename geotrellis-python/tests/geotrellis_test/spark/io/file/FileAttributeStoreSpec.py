@@ -7,6 +7,7 @@ from nose import tools
 class FileAttributeStoreSpec(_AttributeStoreSpec):
     def __init__(self):
         _AttributeStoreSpec.__init__(self)
+        self._store = None
 
     @property
     @tools.nottest

@@ -34,17 +34,17 @@ class _AttributeStoreSpec(_TestEnvironment):
     def test_03_should_read_layer_ids(self):
         """should read layer ids"""
         store = self.attributeStore
-        layerids = sorted(store.layerIds(), key = lambda layerid: layerid.zoom)
-        ok_(layerids == [LayerId("test1", 1), LayerId("test2", 2), LayerId("test3", 3)])
+        layerids = sorted(store.layerIds, key = lambda layerid: layerid.zoom)
+        assert layerids == [LayerId("test1", 1), LayerId("test2", 2), LayerId("test3", 3)]
 
     @tools.istest
     def test_04_should_clear_out(self):
         """should clear out the attribute store"""
         store = self.attributeStore
-        for layerid in store.layerIds():
+        for layerid in store.layerIds:
             store.delete(layerid)
 
-        length = len(store.layerIds())
+        length = len(store.layerIds)
         ok_(length == 0)
 
     @tools.istest

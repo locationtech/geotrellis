@@ -6,6 +6,9 @@ from tests.geotrellis_test.spark.testfiles.SpatialTestFileValues import (
         DecreasingSpatialTiles,
         EveryOtherSpatialTiles,
         ModSpatialTiles)
+from tests.geotrellis_test.spark.testfiles.SpaceTimeTestFileValues import (
+        ConstantSpaceTimeTestTiles,
+        CoordinateSpaceTimeTestTiles)
 from geotrellis.raster.GridBounds import GridBounds
 from geotrellis.raster.TileLayout import TileLayout
 from geotrellis.raster.CellType import FloatConstantNoDataCellType
@@ -15,8 +18,11 @@ from geotrellis.spark.tiling.package_scala import worldExtent
 from geotrellis.proj4.LatLng import LatLng
 from geotrellis.spark.KeyBounds import KeyBounds
 from geotrellis.spark.SpatialKey import SpatialKey
+from geotrellis.spark.SpaceTimeKey import SpaceTimeKey
 from geotrellis.spark.TileLayerMetadata import TileLayerMetadata
 from geotrellis.spark.ContextRDD import ContextRDD
+from datetime import datetime
+import pytz
 
 class _TestFiles(_TestEnvironment):
 
@@ -81,12 +87,48 @@ class _TestFiles(_TestEnvironment):
                 tiles.append(tup)
         return ContextRDD(sc.parallelize(tiles, _TestFiles.partitionCount), md)
 
+    @staticmethod
+    def generateSpaceTime(layerName, sc):
+        times = map(lambda i: datetime(2010+i, 1,1,0,0,0,0, pytz.utc), range(0, 5))
+        def generateMetadata():
+            cellType = FloatConstantNoDataCellType
+            crs = LatLng
+            tileLayout = TileLayout(8,8,3,4)
+            mapTransform = MapKeyTransform(crs, tileLayout.layoutDimensions)
+            gridBounds = GridBounds(1,1,6,7)
+            extent = mapTransform(gridBounds)
+            keyBounds = KeyBounds(SpaceTimeKey(1, 1, min(times)), SpaceTimeKey(6, 7, max(times)))
+            return TileLayerMetadata(cellType, LayoutDefinition(worldExtent(crs), tileLayout), extent, crs, keyBounds)
+            
+        md = generateMetadata()
+        gridBounds = md.gridBounds
+        tileLayout = md.tileLayout
+        def generateSpaceTimeTestTiles():
+            if layerName == "spacetime-all-ones":
+                return ConstantSpaceTimeTestTiles (tileLayout, 1)
+            elif layerName == "spacetime-all-twos":
+                return ConstantSpaceTimeTestTiles (tileLayout, 2)
+            elif layerName == "spacetime-all-hundreds":
+                return ConstantSpaceTimeTestTiles (tileLayout, 100)
+            elif layerName == "spacetime-coordinates":
+                return CoordinateSpaceTimeTestTiles (tileLayout)
+        spaceTimeTestTiles = generateSpaceTimeTestTiles()
+        tiles = []
+        for row in xrange(gridBounds.rowMin, gridBounds.rowMax+1):
+            for col in xrange(gridBounds.colMin, gridBounds.colMax+1):
+                for timeIndex in xrange(0, len(times)):
+                    time = times[timeIndex]
+                    key = SpaceTimeKey(col, row, time)
+                    tile = spaceTimeTestTiles(key, timeIndex)
+                    tup = (key, tile)
+                    tiles.append(tup)
+        return ContextRDD(sc.parallelize(tiles, _TestFiles.partitionCount), md)
+
     def spatialTestFile(self, name):
-        return _TestFiles.generateSpatial(name, self._sc())
+        return _TestFiles.generateSpatial(name, self.sc)
 
     def spaceTimeTestFile(self, name):
-        # return _TestFiles.generateSpaceTime(name)
-        pass
+        return _TestFiles.generateSpaceTime(name, self.sc)
 
     @property
     def AllOnesTestFile(self):

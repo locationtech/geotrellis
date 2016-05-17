@@ -21,7 +21,7 @@ KeyIndex = _KeyIndexMeta()
 class _KeyIndex(object):
     @property
     def keyBounds(self):
-        pass
+        return self._keyBounds
     def toIndex(self, key):
         pass
     def indexRanges(self, keyRange):

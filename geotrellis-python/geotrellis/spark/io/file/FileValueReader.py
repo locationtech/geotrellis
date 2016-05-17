@@ -4,7 +4,9 @@ from geotrellis.spark.io.package_scala import TileNotFoundError
 from geotrellis.spark.io.file.FileAttributeStore import FileAttributeStore
 from geotrellis.spark.io.file.FileLayerHeader import FileLayerHeader
 from geotrellis.python.util.utils import file_exists, find, to_pairs, from_file
-from KeyPathGenerator import generate_key_path_func
+from geotrellis.spark.io.file.KeyPathGenerator import generate_key_path_func
+from geotrellis.spark.io.avro.AvroEncoder import AvroEncoder
+from geotrellis.spark.io.avro.codecs.KeyValueRecordCodec import KeyValueRecordCodec
 
 def file_value_reader(first, second = None):
     def get_params():
@@ -29,12 +31,14 @@ def file_value_reader(first, second = None):
             path = key_path(key)
             if not file_exists(path):
                raise TileNotFoundError(key, layer_id)
-            recs = to_pairs(from_file(writer_schema, path))
-            found = find(recs, lambda pair: pair._1 == key)
+            with open(path) as f:
+               recs = AvroEncoder.fromBinary(writer_schema, f.read(), codec = KeyValueRecordCodec(key_type, value_type))
+            #recs = to_pairs(from_file(writer_schema, path))
+            found = find(recs, lambda pair: pair[0] == key)
             if found is None:
                 raise TileNotFoundError(key, layer_id)
             else:
-                return found._2
+                return found[1]
         return Reader(read_func)
     return ReaderGenerator(reader)
 
