@@ -10,7 +10,6 @@ class FileAttributeStoreSpec(_AttributeStoreSpec):
         self._store = None
 
     @property
-    @tools.nottest
     def attributeStore(self):
         if self._store:
             return self._store

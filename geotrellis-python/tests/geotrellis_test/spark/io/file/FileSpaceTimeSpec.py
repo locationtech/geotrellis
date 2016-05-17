@@ -13,7 +13,7 @@ from geotrellis.spark.io.file.FileLayerReader import FileLayerReader
 from geotrellis.spark.io.file.FileLayerWriter import FileLayerWriter
 from geotrellis.spark.io.file.FileValueReader import file_value_reader
 
-@tools.nottest
+@tools.istest
 class FileSpaceTimeSpec(
         Spec,
         # TODO Tile doesn't have implicits to get AvroRecordCodec from

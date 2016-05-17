@@ -15,7 +15,7 @@ from geotrellis.spark.LayerId import LayerId
 from geotrellis.spark.io.index.ZCurveKeyIndexMethod import ZCurveKeyIndexMethod
 from geotrellis.spark.io.file.FileValueReader import file_value_reader
 
-@tools.nottest
+@tools.istest
 class FileSpatialSpec(
         Spec,
         # TODO Tile doesn't have implicits to get AvroRecordCodec from
@@ -42,9 +42,11 @@ class FileSpatialSpec(
     def sample(self):
         return self.AllOnesTestFile
 
+    @tools.istest
     class inner(object):
         "Filesystem layer names"
 
+        @tools.istest
         def test_bad_characters(self):
             "should not throw with bad characters in name"
             layer = self.AllOnesTestFile

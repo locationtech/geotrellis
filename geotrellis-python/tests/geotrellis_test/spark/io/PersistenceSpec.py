@@ -16,7 +16,6 @@ class _PersistenceSpecMeta(object):
 
 _PersistenceSpec = _PersistenceSpecMeta()
 
-#@tools.nottest
 class _PersistenceSpecClass(object):
     def getLayerIds(self, keyIndexMethod):
         suffix = keyIndexMethod.replace(" ", "_")

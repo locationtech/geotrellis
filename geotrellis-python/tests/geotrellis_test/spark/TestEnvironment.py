@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 from nose import tools
 
-@tools.nottest
 def add_pyspark_path():
     """
     Add PySpark to the PYTHONPATH
@@ -27,12 +26,10 @@ import os
 import os.path
 
 
-@tools.nottest
 def get_temp_dir():
     #return os.environ["java.io.tmpdir"] # TODO is it ok to use java.io.tmpdir here?
     return "/tmp"
 
-@tools.nottest
 class _TestEnvironment(object):
     _sc = None
     def __init__(self):
@@ -48,6 +45,9 @@ class _TestEnvironment(object):
         def outputPaths(jvm):
             tmpdir = get_temp_dir()
             outputHomeLocalHandle = os.path.join(tmpdir, self.outputHome)
+            if dir_exists(outputHomeLocalHandle):
+                import shutil
+                shutil.rmtree(outputHomeLocalHandle)
             if not dir_exists(outputHomeLocalHandle):
                 os.makedirs(outputHomeLocalHandle)
             hadoopTmpDir = HdfsUtils.getTempDir(self.conf)
@@ -98,7 +98,10 @@ class _TestEnvironment(object):
         conf.setAppName("Test Context")
 
         # <python-version-only>
-        conf.set('spark.yarn.dist.files','file:/usr/local/spark/python/lib/pyspark.zip,file:/usr/local/spark/python/lib/py4j-0.8.2.1-src.zip')
+        conf.set('spark.yarn.dist.files','file:{pysparkpath},file:{py4jpath}'.format(
+            pysparkpath = os.path.join(os.environ['SPARK_HOME'], "python", "lib", "pyspark.zip"),
+            py4jpath = os.path.join(os.environ['SPARK_HOME'], "python", "lib", "py4j-0.8.2.1-src")
+            ))
         conf.setExecutorEnv('PYTHONPATH','pyspark.zip:py4j-0.8.2.1-src.zip')
         # </python-version-only>
 
@@ -107,7 +110,14 @@ class _TestEnvironment(object):
         #    conf.set("spark.kryoserializer.buffer.max", "500m")
         #    self.setKryoRegistrator(conf)
 
-        sparkContext = SparkContext(conf = conf, pyFiles = ['file:/data/zipped/Geotrellis-0.1-py2.7.egg'])
+        def eggFileLocation():
+            currentpath = os.path.dirname(os.path.realpath(__file__))
+            folder_name = 'geotrellis-python'
+            ind = currentpath.rfind(folder_name) + len(folder_name)
+            currentpath = currentpath[:ind]
+            return os.path.join(currentpath, 'dist', 'Geotrellis-0.1-py2.7.egg')
+
+        sparkContext = SparkContext(conf = conf, pyFiles = ['file:{egg}'.format(egg=eggFileLocation())])
 
         del os.environ["spark.driver.port"]
         del os.environ["spark.hostPort"]

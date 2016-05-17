@@ -32,9 +32,7 @@ import json
 
 from nose import tools
 
-@tools.nottest
 class AvroTools(object):
-    @tools.nottest
     def roundTrip(self, thing, codec = None):
         T = type(thing)
         bytesarray = AvroEncoder.toBinary(thing, codec)
@@ -44,7 +42,6 @@ class AvroTools(object):
         fromJson = AvroEncoder.fromJson(T, jason, codec=codec)
         assert fromJson == thing
 
-    @tools.nottest
     def roundTripWithNoDataCheck(self, thing, codec = None):
         T = type(thing)
         bytesarray = AvroEncoder.toBinary(thing, codec)
@@ -85,25 +82,20 @@ def _nodataChecker(thing):
 
 _noDataAttrName = "noDataValue"
 
-@tools.nottest
 class NoDataChecker(object):
-    @tools.nottest
     def checkNoData(self, jason):
         dct = json.loads(jason)
         nodata = self.extractNoData(dct)
         self.doCheck(nodata)
-    @tools.nottest
     def extractNoData(self, dct):
         if dct.has_key(_noDataAttrName):
             nodata = dct[_noDataAttrName]  
             return (nodata,)
         else:
             return None
-    @tools.nottest
     def doCheck(self, nodata):
         pass
 
-@tools.nottest
 class ShortNoDataChecker(NoDataChecker):
     def __init__(self, cellType):
         self.cellType = cellType
@@ -120,7 +112,6 @@ class ShortNoDataChecker(NoDataChecker):
             raise Exception(
                     "The cellType {ct} was not expected.".format(ct=cellType))
 
-@tools.nottest
 class UShortNoDataChecker(NoDataChecker):
     def __init__(self, cellType):
         self.cellType = cellType
@@ -137,7 +128,6 @@ class UShortNoDataChecker(NoDataChecker):
             raise Exception(
                     "The cellType {ct} was not expected.".format(ct=cellType))
 
-@tools.nottest
 class IntNoDataChecker(NoDataChecker):
     def __init__(self, cellType):
         self.cellType = cellType
@@ -154,7 +144,6 @@ class IntNoDataChecker(NoDataChecker):
             raise Exception(
                     "The cellType {ct} was not expected.".format(ct=cellType))
 
-@tools.nottest
 class FloatNoDataChecker(NoDataChecker):
     def __init__(self, cellType):
         self.cellType = cellType
@@ -174,7 +163,6 @@ class FloatNoDataChecker(NoDataChecker):
             raise Exception(
                     "The cellType {ct} was not expected.".format(ct=cellType))
 
-@tools.nottest
 class DoubleNoDataChecker(NoDataChecker):
     def __init__(self, cellType):
         self.cellType = cellType
@@ -194,7 +182,6 @@ class DoubleNoDataChecker(NoDataChecker):
             raise Exception(
                     "The cellType {ct} was not expected.".format(ct=cellType))
 
-@tools.nottest
 class ByteNoDataChecker(NoDataChecker):
     def __init__(self, cellType):
         self.cellType = cellType
@@ -211,7 +198,6 @@ class ByteNoDataChecker(NoDataChecker):
             raise Exception(
                     "The cellType {ct} was not expected.".format(ct=cellType))
 
-@tools.nottest
 class UByteNoDataChecker(NoDataChecker):
     def __init__(self, cellType):
         self.cellType = cellType
@@ -228,7 +214,6 @@ class UByteNoDataChecker(NoDataChecker):
             raise Exception(
                     "The cellType {ct} was not expected.".format(ct=cellType))
 
-@tools.nottest
 class BitNoDataChecker(NoDataChecker):
     def __init__(self, cellType):
         self.cellType = cellType
@@ -236,7 +221,6 @@ class BitNoDataChecker(NoDataChecker):
     def doCheck(self, nodata):
         assert nodata is None
 
-@tools.nottest
 class MultibandNoDataChecker(NoDataChecker):
     def __init__(self, cellType):
         self.cellType = cellType

@@ -5,10 +5,13 @@ from geotrellis.spark.io.avro.codecs.TileCodecs import DoubleArrayTileCodec
 from geotrellis.raster.DoubleArrayTile import DoubleArrayTile
 from geotrellis.spark.SpatialKey import SpatialKey
 from spec import Spec
+from nose import tools
 
+@tools.istest
 class TileRecordSpec(AvroTools, Spec):
     "TileRecordCodecs"
 
+    @tools.istest
     def test_pairs(self):
         "encodes (key,tile) pairs"
 
