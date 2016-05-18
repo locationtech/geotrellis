@@ -26,6 +26,7 @@ import com.vividsolutions.jts.index.strtree.STRtree
 import spire.syntax.cfor._
 
 import scala.collection.JavaConverters._
+import math.{min, max, ceil, floor}
 
 
 /**
@@ -254,38 +255,43 @@ object PolygonRasterizer {
     interactions
       .sortWith(_._1 < _._1)
       .foreach({ edge =>
+        val topIntervalStop = lineAxisIntersection(edge, top)._1
+        val botIntervalStop = lineAxisIntersection(edge, bot)._1
+        val touchesTop = (topIntervalStop != Double.NegativeInfinity)
+        val touchesBot = (botIntervalStop != Double.NegativeInfinity)
+
         /* Create top intervals: Generate  the list of intervals which
          * are due to  intersections of the polygon  boundary with the
          * top  of  the  scan-rectangle.    The  correctness  of  this
          * approach comes from the ASSUMPTION stated above. */
-        val touchesTop = (lineAxisIntersection(edge, top)._1 != Double.NegativeInfinity)
         if (touchesTop) {
           if (topInterval == false) { // Start new top interval
             topInterval = true
-            topIntervalStart =
-              if (partial) math.floor(edge._1)
-              else math.ceil(edge._1)
+            topIntervalStart = topIntervalStop
           }
           else if (topInterval == true) { // Finish current top interval
             topInterval = false
-            if (partial) intervals += ((topIntervalStart, math.ceil(edge._3)))
-            else topIntervals += ((topIntervalStart, math.floor(edge._3)))
+            val smaller = min(topIntervalStart, topIntervalStop)
+            val larger = max(topIntervalStart, topIntervalStop)
+            if (partial)
+              intervals += ((floor(smaller), ceil(larger)))
+            else
+              topIntervals += ((ceil(smaller), floor(larger)))
           }
         }
 
         /* Create bottom intervals. */
-        val touchesBot = (lineAxisIntersection(edge, bot)._1 != Double.NegativeInfinity)
         if (touchesBot) {
-          if (botInterval == false) { // Start new bottom interval
+          if (botInterval == false) { // Start new bot interval
             botInterval = true
-            botIntervalStart =
-              if (partial) math.floor(edge._1)
-              else math.ceil(edge._1)
+            botIntervalStart = botIntervalStop
           }
-          else if (botInterval == true) { // Finish current bottom interval
+          else if (botInterval == true) { // Finish current bot interval
             botInterval = false
-            if (partial) intervals += ((botIntervalStart, math.ceil(edge._3)))
-            else botIntervals += ((botIntervalStart, math.floor(edge._3)))
+            val smaller = min(botIntervalStart, botIntervalStop)
+            val larger = max(botIntervalStart, botIntervalStop)
+            if (partial) intervals += ((floor(smaller), ceil(larger)))
+            else botIntervals += ((ceil(smaller), floor(larger)))
           }
         }
 
@@ -308,6 +314,8 @@ object PolygonRasterizer {
 
       sortedTopIntervals.zip(sortedBotIntervals).map({ case(a,b) =>
         val intersection = intervalIntersection(a,b)
+        /* Thanks to the ASSUMPTION stated above, middle intervals imply
+         * partial pixels in their x-extents. */
         val differences = midIntervals.foldLeft(intersection)(intervalDifference)
         intervals ++= differences
       })
