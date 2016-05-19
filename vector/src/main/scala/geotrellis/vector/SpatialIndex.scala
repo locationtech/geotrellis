@@ -92,60 +92,59 @@ class SpatialIndex[T](val measure: Measure = Measure.Euclidean) extends Serializ
   def pointsInExtentAsJavaList(extent: Extent): java.util.List[T] =
     rtree.query(new Envelope(extent.xmin, extent.xmax, extent.ymin, extent.ymax)).asInstanceOf[java.util.List[T]]
 
-  def kNearest(x: Double, y: Double, k: Int): List[T] =
+  def kNearest(x: Double, y: Double, k: Int): Seq[T] =
     kNearest(new Envelope(new Coordinate(x, y)), k)
 
-  def kNearest(pt: (Double, Double), k: Int): List[T] =
+  def kNearest(pt: (Double, Double), k: Int): Seq[T] =
     kNearest(new Envelope(new Coordinate(pt._1, pt._2)), k)
 
-  def kNearest(ex: Extent, k: Int): List[T] = {
-    case class PQitem[A](d: Double, x: A) extends Ordered[PQitem[A]] {
-      import scala.math.Ordered.orderingToOrdered
-      def compare(that: PQitem[A]): Int = { (this.d) compare (that.d) }
+  def kNearest(ex: Extent, k: Int): Seq[T] = {
+    case class PQitem[A](val d: Double, val x: A) extends Ordered[PQitem[A]] {
+      def compare(that: PQitem[A]) = (this.d) compare (that.d)
     }
 
     val gf = new GeometryFactory()
     val env = ex.jtsEnvelope
-    val pq = (new mutable.PriorityQueue(): mutable.PriorityQueue[PQitem[AbstractNode]]).reverse
-    val best = (new mutable.PriorityQueue(): mutable.PriorityQueue[PQitem[T]])
+    val pq = (new mutable.PriorityQueue[PQitem[AbstractNode]]()).reverse
+    val kNNqueue = new mutable.PriorityQueue[PQitem[T]]()
 
-    def addToBest (elem: PQitem[T]) = {
-      if (best.size < k)
-        best.enqueue(elem)
+    def addToClosest (elem: PQitem[T]) = {
+      if (kNNqueue.size < k)
+        kNNqueue.enqueue(elem)
       else {
-        if (elem.d < best.head.d) {
-          best.enqueue(elem)
-          best.dequeue()
+        if (elem.d < kNNqueue.head.d) {
+          kNNqueue.enqueue(elem)
+          kNNqueue.dequeue()
         }
       }
     }
-    def ibToPQitem (ib: ItemBoundable): PQitem[T] = {
+    def rtreeLeafAsPQitem (ib: ItemBoundable): PQitem[T] = {
       PQitem(DistanceOp.distance(gf.toGeometry(env), gf.toGeometry(ib.getBounds.asInstanceOf[Envelope])), ib.getItem.asInstanceOf[T])
     }
-    def anToPQitem (nd: AbstractNode): PQitem[AbstractNode] = {
+    def rtreeNodeAsPQitem (nd: AbstractNode): PQitem[AbstractNode] = {
       PQitem(DistanceOp.distance(gf.toGeometry(env), gf.toGeometry(nd.getBounds.asInstanceOf[Envelope])), nd)
     }
 
-    pq.enqueue(anToPQitem(rtree.getRoot))
+    pq.enqueue(rtreeNodeAsPQitem(rtree.getRoot))
 
     do {
       val item = pq.dequeue
 
-      if (best.size < k || item.d < best.head.d) {
+      if (kNNqueue.size < k || item.d < kNNqueue.head.d) {
         if (item.x.getLevel == 0) {
           // leaf node
           item.x.getChildBoundables.map { 
-            ibraw => ibToPQitem(ibraw.asInstanceOf[ItemBoundable]) 
-          }.foreach(addToBest)
+            leafNode => rtreeLeafAsPQitem(leafNode.asInstanceOf[ItemBoundable]) 
+          }.foreach(addToClosest)
         } else {
           item.x.getChildBoundables.map {
-            subtree => anToPQitem(subtree.asInstanceOf[AbstractNode])
+            subtree => rtreeNodeAsPQitem(subtree.asInstanceOf[AbstractNode])
           }.foreach(pq.enqueue(_))
         }
       }
     } while (! pq.isEmpty )
 
-    best.toList.map{ _.x }
+    kNNqueue.toSeq.map{ _.x }
   }
 }
 
