@@ -25,12 +25,43 @@ trait Resulting[T] {
   def result: T
 }
 
+sealed trait TargetCell extends Serializable {
+  def mask(tile: MutableArrayTile): MutableArrayTile
+}
+object TargetCell {
+  object NoData extends TargetCell {
+    override def mask(tile: MutableArrayTile): MutableArrayTile =
+      new MaskedMutableArrayTile(true, tile)
+  }
+  object Data extends TargetCell {
+    override def mask(tile: MutableArrayTile): MutableArrayTile =
+      new MaskedMutableArrayTile(false, tile)
+  }
+  object All extends TargetCell {
+    override def mask(tile: MutableArrayTile): MutableArrayTile = tile
+  }
+}
+
+private class MaskedMutableArrayTile(changeData: Boolean, val tile: MutableArrayTile) extends MutableArrayTile {
+  def update(i: Int, z: Int): Unit =
+    if (changeData ^ isData(tile.apply(i))) tile.update(i, z)
+  def updateDouble(i: Int, z: Double): Unit =
+    if (changeData ^ isData(tile.applyDouble(i))) tile.updateDouble(i, z)
+  def apply(i: Int): Int = tile.apply(i)
+  def applyDouble(i: Int): Double = tile.applyDouble(i)
+  def copy = new MaskedMutableArrayTile(changeData, tile.copy.mutable)
+  def toBytes = tile.toBytes
+  def cellType = tile.cellType
+  def cols = tile.cols
+  def rows = tile.rows
+}
+
 /**
  * A calculation that a FocalStrategy uses to complete
  * a focal operation.
  */
 abstract class FocalCalculation[T](
-    val r: Tile, n: Neighborhood, analysisArea: Option[GridBounds])
+    val r: Tile, n: Neighborhood, analysisArea: Option[GridBounds], val target: TargetCell)
   extends Resulting[T]
 {
   val bounds: GridBounds = analysisArea.getOrElse(GridBounds(r))
@@ -41,8 +72,8 @@ abstract class FocalCalculation[T](
 /**
  * A focal calculation that uses the Cursor focal strategy.
  */
-abstract class CursorCalculation[T](tile: Tile, n: Neighborhood, val analysisArea: Option[GridBounds])
-  extends FocalCalculation[T](tile, n, analysisArea)
+abstract class CursorCalculation[T](tile: Tile, n: Neighborhood, val analysisArea: Option[GridBounds], target: TargetCell)
+  extends FocalCalculation[T](tile, n, analysisArea, target)
 {
   def traversalStrategy = TraversalStrategy.DEFAULT
 
@@ -58,8 +89,8 @@ abstract class CursorCalculation[T](tile: Tile, n: Neighborhood, val analysisAre
 /**
  * A focal calculation that uses the Cursor focal strategy.
  */
-abstract class KernelCalculation[T](tile: Tile, kernel: Kernel, val analysisArea: Option[GridBounds])
-    extends FocalCalculation[T](tile, kernel, analysisArea)
+abstract class KernelCalculation[T](tile: Tile, kernel: Kernel, val analysisArea: Option[GridBounds], target: TargetCell)
+    extends FocalCalculation[T](tile, kernel, analysisArea, target)
 {
   // Benchmarking has declared ScanLineTraversalStrategy the unclear winner as a default (based on Convolve).
   def traversalStrategy = ScanLineTraversalStrategy
@@ -77,8 +108,8 @@ abstract class KernelCalculation[T](tile: Tile, kernel: Kernel, val analysisArea
  * A focal calculation that uses the Cellwise focal strategy
  */
 abstract class CellwiseCalculation[T] (
-    r: Tile, n: Neighborhood, analysisArea: Option[GridBounds])
-  extends FocalCalculation[T](r, n, analysisArea)
+    r: Tile, n: Neighborhood, analysisArea: Option[GridBounds], target: TargetCell)
+  extends FocalCalculation[T](r, n, analysisArea, target)
 {
   def traversalStrategy: Option[TraversalStrategy] = None
 
@@ -111,9 +142,13 @@ trait BitArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] 
   /** [[BitArrayTile]] that will be returned by the focal calculation */
   val cols: Int = bounds.width
   val rows: Int = bounds.height
-  val resultTile: BitArrayTile = BitArrayTile.empty(cols, rows)
+  val resultTile = target.mask(BitArrayTile.empty(rows, cols))
 
-  def result = resultTile
+  def result = 
+    resultTile match {
+      case (t: MaskedMutableArrayTile) => t.tile
+      case _ => resultTile
+    }
 }
 
 /**
@@ -125,9 +160,13 @@ trait ByteArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile]
   /** [[ByteArrayTile]] that will be returned by the focal calculation */
   val cols: Int = bounds.width
   val rows: Int = bounds.height
-  val resultTile: ByteArrayTile = ByteArrayTile.empty(cols, rows)
+  val resultTile = target.mask(ByteArrayTile.empty(cols, rows))
 
-  def result = resultTile
+  def result = 
+    resultTile match {
+      case (t: MaskedMutableArrayTile) => t.tile
+      case _ => resultTile
+    }
 }
 
 /**
@@ -139,9 +178,13 @@ trait ShortArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile
   /** [[ShortArrayTile]] that will be returned by the focal calculation */
   val cols: Int = bounds.width
   val rows: Int = bounds.height
-  val resultTile: ShortArrayTile = ShortArrayTile(Array.ofDim[Short](cols * rows), cols, rows)
+  val resultTile = target.mask(ShortArrayTile(Array.ofDim[Short](cols * rows), cols, rows))
 
-  def result = resultTile
+  def result = 
+    resultTile match {
+      case (t: MaskedMutableArrayTile) => t.tile
+      case _ => resultTile
+    }
 }
 
 /**
@@ -153,9 +196,13 @@ trait IntArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] 
   /** [[IntArrayTile]] that will be returned by the focal calculation */
   val cols: Int = bounds.width
   val rows: Int = bounds.height
-  val resultTile = IntArrayTile.empty(cols, rows)
+  val resultTile = target.mask(IntArrayTile.empty(cols, rows))
 
-  def result = resultTile
+  def result = 
+    resultTile match {
+      case (t: MaskedMutableArrayTile) => t.tile
+      case _ => resultTile
+    }
 }
 
 /**
@@ -167,9 +214,13 @@ trait FloatArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile
   /** [[FloatArrayTile]] that will be returned by the focal calculation */
   val cols: Int = bounds.width
   val rows: Int = bounds.height
-  val resultTile: FloatArrayTile = FloatArrayTile.empty(cols, rows)
+  val resultTile = target.mask(FloatArrayTile.empty(cols, rows))
 
-  def result = resultTile
+  def result = 
+    resultTile match {
+      case (t: MaskedMutableArrayTile) => t.tile
+      case _ => resultTile
+    }
 }
 
 /**
@@ -181,16 +232,24 @@ trait DoubleArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Til
   /** [[DoubleArrayTile]] that will be returned by the focal calculation */
   val cols: Int = bounds.width
   val rows: Int = bounds.height
-  val resultTile = DoubleArrayTile.empty(cols, rows)
+  val resultTile = target.mask(DoubleArrayTile.empty(cols, rows))
 
-  def result = resultTile
+  def result = 
+    resultTile match {
+      case (t: MaskedMutableArrayTile) => t.tile
+      case _ => resultTile
+    }
 }
 
 trait ArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] =>
   def resultCellType: DataType with NoDataHandling = r.cellType
   val cols: Int = bounds.width
   val rows: Int = bounds.height
-  val resultTile: MutableArrayTile = ArrayTile.empty(resultCellType, cols, rows)
+  val resultTile: MutableArrayTile = target.mask(ArrayTile.empty(resultCellType, cols, rows))
 
-  def result = resultTile
+  def result = 
+    resultTile match {
+      case (t: MaskedMutableArrayTile) => t.tile
+      case _ => resultTile
+    }
 }

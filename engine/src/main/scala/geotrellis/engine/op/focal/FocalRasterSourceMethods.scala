@@ -22,13 +22,13 @@ import geotrellis.raster.mapalgebra.focal._
 
 @deprecated("geotrellis-engine has been deprecated", "Geotrellis Version 0.10")
 trait FocalRasterSourceMethods extends RasterSourceMethods with FocalOperation {
-  def focalSum(n: Neighborhood) = focal(n)(Sum.apply)
-  def focalMin(n: Neighborhood) = focal(n)(Min.apply)
-  def focalMax(n: Neighborhood) = focal(n)(Max.apply)
-  def focalMean(n: Neighborhood) = focal(n)(Mean.apply)
-  def focalMedian(n: Neighborhood) = focal(n)(Median.apply)
-  def focalMode(n: Neighborhood) = focal(n)(Mode.apply)
-  def focalStandardDeviation(n: Neighborhood) = focal(n)(StandardDeviation.apply)
+  def focalSum(n: Neighborhood) = focal(n)(Sum(_, _, _))
+  def focalMin(n: Neighborhood) = focal(n)(Min(_, _, _))
+  def focalMax(n: Neighborhood) = focal(n)(Max(_, _, _))
+  def focalMean(n: Neighborhood) = focal(n)(Mean(_, _, _))
+  def focalMedian(n: Neighborhood) = focal(n)(Median(_, _, _))
+  def focalMode(n: Neighborhood) = focal(n)(Mode(_, _, _))
+  def focalStandardDeviation(n: Neighborhood) = focal(n)(StandardDeviation(_, _, _))
   def focalConway() = focal(Square(1))(Conway.apply)
 
   def tileMoransI(n: Neighborhood) =

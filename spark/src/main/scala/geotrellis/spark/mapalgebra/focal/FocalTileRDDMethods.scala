@@ -8,15 +8,34 @@ import geotrellis.util.MethodExtensions
 
 trait FocalTileLayerRDDMethods[K] extends FocalOperation[K] {
 
-  def focalSum(n: Neighborhood) = focal(n) { (tile, bounds) => Sum(tile, n, bounds) }
-  def focalMin(n: Neighborhood) = focal(n) { (tile, bounds) => Min(tile, n, bounds) }
-  def focalMax(n: Neighborhood) = focal(n) { (tile, bounds) => Max(tile, n, bounds) }
-  def focalMean(n: Neighborhood) = focal(n) { (tile, bounds) => Mean(tile, n, bounds) }
-  def focalMedian(n: Neighborhood) = focal(n) { (tile, bounds) => Median(tile, n, bounds) }
-  def focalMode(n: Neighborhood) = focal(n) { (tile, bounds) => Mode(tile, n, bounds) }
-  def focalStandardDeviation(n: Neighborhood) = focal(n) { (tile, bounds) => StandardDeviation(tile, n, bounds) }
-  def focalConway() = { val n = Square(1) ; focal(n) { (tile, bounds) => Sum(tile, n, bounds) } }
-  def focalConvolve(k: Kernel) = { focal(k) { (tile, bounds) => Convolve(tile, k, bounds) } }
+  def focalSum(n: Neighborhood, target: TargetCell = TargetCell.All) =
+    focal(n) { (tile, bounds) => Sum(tile, n, bounds, target) }
+
+  def focalMin(n: Neighborhood, target: TargetCell = TargetCell.All) =
+    focal(n) { (tile, bounds) => Min(tile, n, bounds, target) }
+
+  def focalMax(n: Neighborhood, target: TargetCell = TargetCell.All) =
+    focal(n) { (tile, bounds) => Max(tile, n, bounds, target) }
+
+  def focalMean(n: Neighborhood, target: TargetCell = TargetCell.All) =
+    focal(n) { (tile, bounds) => Mean(tile, n, bounds, target) }
+
+  def focalMedian(n: Neighborhood, target: TargetCell = TargetCell.All) =
+    focal(n) { (tile, bounds) => Median(tile, n, bounds, target) }
+
+  def focalMode(n: Neighborhood, target: TargetCell = TargetCell.All) =
+    focal(n) { (tile, bounds) => Mode(tile, n, bounds, target) }
+
+  def focalStandardDeviation(n: Neighborhood, target: TargetCell = TargetCell.All) =
+    focal(n) { (tile, bounds) => StandardDeviation(tile, n, bounds, target) }
+
+  def focalConway() = {
+    val n = Square(1)
+    focal(n) { (tile, bounds) => Sum(tile, n, bounds, TargetCell.All) }
+  }
+
+  def focalConvolve(k: Kernel, target: TargetCell = TargetCell.All) =
+   focal(k) { (tile, bounds) => Convolve(tile, k, bounds, target) }
 
   def aspect() = {
     val n = Square(1)
