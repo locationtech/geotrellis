@@ -2,26 +2,24 @@ package geotrellis.spark.knn
 
 import geotrellis.spark._
 import geotrellis.vector._
-import com.vividsolutions.jts.geom.Envelope
-import com.vividsolutions.jts.geom.Coordinate
 
 import org.apache.spark.rdd.RDD
 
 object KNearestRDD {
-  def kNearest[T](rdd: RDD[T], x: Double, y: Double, k: Int)(f: T => Extent): List[T] =
-    kNearest(rdd, new Envelope(new Coordinate(x, y)), k)(f)
+  def kNearest[T](rdd: RDD[T], x: Double, y: Double, k: Int)(f: T => Extent): Seq[T] =
+    kNearest(rdd, new Extent(x, y, x, y), k)(f)
 
-  def kNearest[T](rdd: RDD[T], p: (Double, Double), k: Int)(f: T => Extent): List[T] =
-    kNearest(rdd, new Envelope(new Coordinate(p._1, p._2)), k)(f)
+  def kNearest[T](rdd: RDD[T], p: (Double, Double), k: Int)(f: T => Extent): Seq[T] =
+    kNearest(rdd, new Extent(p._1, p._2, p._1, p._2), k)(f)
 
   /**
    * Determines the k-nearest neighbors of an RDD of objects which can be coerced into Extents.
    */
-  def kNearest[T](rdd: RDD[T], ex: Extent, k: Int)(f: T => Extent): List[T] = {
-    val candidates = rdd.glom.map { 
-        arr => SpatialIndex.fromExtents(arr)(f)
-      }.map (_.kNearest (ex, k)).reduce( _ ++ _ )
+  def kNearest[T](rdd: RDD[T], ex: Extent, k: Int)(f: T => Extent): Seq[T] = {
+    implicit def orderByDist(a: T): Ordered[T] = new Ordered[T] {
+      def compare(b: T) = (ex distance (f(a))) compare (ex distance (f(b)))
+    }
 
-    SpatialIndex.fromExtents(candidates)(f).kNearest(ex, k)
+    rdd.takeOrdered(k)
   }
 }
