@@ -30,18 +30,23 @@ trait GridCoverage2DToRasterSpec
     extends FunSpec
     with Matchers {
 
+  /**
+    * A function to load a given GeoTiff from the filesystem.  The
+    * initialization code is partially cribbed from
+    * http://gis.stackexchange.com/questions/106882/how-to-read-each-pixel-of-each-band-of-a-multiband-geotiff-with-geotools-java
+    */
   def getImage(path: String): GridCoverage2D = {
     val gridSize = AbstractGridFormat.SUGGESTED_TILE_SIZE.createValue
     val file = new java.io.File(path)
+    val preImage = new GeoTiffReader(file).read(null).getRenderedImage
+    val height = preImage.getHeight
+    val width = preImage.getWidth
     val reader = new GeoTiffReader(file)
 
-    gridSize.setValue("1024,1024")
+    gridSize.setValue(s"$width,$height")
 
     val image = reader.read(Array(gridSize))
     val renderedImage = image.getRenderedImage
-
-    require(renderedImage.getHeight <= 1024)
-    require(renderedImage.getWidth <= 1024)
 
     image
   }
