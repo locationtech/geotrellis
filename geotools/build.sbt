@@ -24,10 +24,4 @@ initialCommands in console :=
   import org.geotools.coverage.grid.io._
   import org.geotools.gce.geotiff._
 
-  val policy = AbstractGridFormat.OVERVIEW_POLICY.createValue
-  policy.setValue(OverviewPolicy.IGNORE)
-  val gridSize = AbstractGridFormat.SUGGESTED_TILE_SIZE.createValue
-  gridSize.setValue("1024,1024")
-  val useJaiRead = AbstractGridFormat.USE_JAI_IMAGEREAD.createValue
-  useJaiRead.setValue(true)
   """
