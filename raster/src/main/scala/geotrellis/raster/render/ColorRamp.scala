@@ -138,7 +138,7 @@ object ColorRamp {
      * will still perform as expected and refuse to colour NODATA locations,
      * thanks to the `noDataColor` field in `ColorMap.Options`.
      */
-    if (n == 0) return Vector.empty[Int]
+    if (n < 1) return Vector.empty[Int]
 
     val colors2 = new Array[Int](n)
     colors2(0) = colors(0)
