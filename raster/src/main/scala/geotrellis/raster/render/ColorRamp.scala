@@ -125,7 +125,20 @@ object ColorRamp {
     * @param n       Length of list to return
     */
   def spread(colors: Vector[Int], n: Int): Vector[Int] = {
+    /* The requested spread matches the original */
     if (colors.length == n) return colors
+
+    /* 2016 May 20 @ 14:21
+     * In the case of a Layer comprised entirely of NODATA, a call to
+     * `classBreaksDouble` will yield an empty `Array`. That propagates here,
+     * where an attempt to index below results in a bounds exception.
+     *
+     * Guarding on this condition and returning an empty `Vector` instead
+     * is still valid; a `ColorMap` that contains an empty `colors` field
+     * will still perform as expected and refuse to colour NODATA locations,
+     * thanks to the `noDataColor` field in `ColorMap.Options`.
+     */
+    if (n == 0) return Vector.empty[Int]
 
     val colors2 = new Array[Int](n)
     colors2(0) = colors(0)
