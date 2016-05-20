@@ -15,7 +15,9 @@ import geotrellis.vector._
 import org.apache.spark.rdd._
 import org.joda.time.DateTime
 
-trait LayerUpdateSpaceTimeTileTests extends TileLayerRDDBuilders with TileBuilders { self: PersistenceSpec[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]] with TestEnvironment =>
+trait LayerUpdateSpaceTimeTileFeatureSpec
+    extends TileLayerRDDBuilders
+    with TileBuilders { self: PersistenceSpec[SpaceTimeKey, TileFeature[Tile, Tile], TileLayerMetadata[SpaceTimeKey]] with TestEnvironment =>
 
   def dummyTileLayerMetadata =
     TileLayerMetadata(

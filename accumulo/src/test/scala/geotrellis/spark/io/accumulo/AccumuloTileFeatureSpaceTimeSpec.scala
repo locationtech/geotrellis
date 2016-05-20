@@ -1,22 +1,23 @@
 package geotrellis.spark.io.accumulo
 
-import geotrellis.raster.Tile
+import geotrellis.raster.{Tile, TileFeature}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index._
-import geotrellis.spark.testfiles.TestFiles
+import geotrellis.spark.testfiles.TestTileFeatureFiles
 
 import com.github.nscala_time.time.Imports._
 import org.joda.time.DateTime
 
-class AccumuloSpaceTimeSpec
-  extends PersistenceSpec[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]]
+
+class AccumuloTileFeatureSpaceTimeSpec
+  extends PersistenceSpec[SpaceTimeKey, TileFeature[Tile, Tile], TileLayerMetadata[SpaceTimeKey]]
     with SpaceTimeKeyIndexMethods
     with TestEnvironment
     with AccumuloTestEnvironment
-    with TestFiles
-    with CoordinateSpaceTimeSpec
-    with LayerUpdateSpaceTimeTileSpec {
+    with TestTileFeatureFiles
+    with CoordinateSpaceTimeTileFeatureSpec
+    with LayerUpdateSpaceTimeTileFeatureSpec {
   implicit lazy val instance = MockAccumuloInstance()
 
   lazy val reader    = AccumuloLayerReader(instance)

@@ -1,18 +1,20 @@
 package geotrellis.spark.io.file
 
-import geotrellis.raster.Tile
+import geotrellis.raster.{Tile, TileFeature}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index._
-import geotrellis.spark.testfiles.TestFiles
+import geotrellis.spark.testfiles.TestTileFeatureFiles
+
+import org.apache.spark.rdd.RDD
 
 
-class FileSpatialSpec
-    extends PersistenceSpec[SpatialKey, Tile, TileLayerMetadata[SpatialKey]]
+class FileTileFeatureSpatialSpec
+    extends PersistenceSpec[SpatialKey, TileFeature[Tile, Tile], TileLayerMetadata[SpatialKey]]
     with SpatialKeyIndexMethods
     with TestEnvironment
-    with TestFiles
-    with AllOnesTestTileSpec {
+    with TestTileFeatureFiles
+    with AllOnesTestTileFeatureSpec {
   lazy val reader = FileLayerReader(outputLocalPath)
   lazy val writer = FileLayerWriter(outputLocalPath)
   lazy val deleter = FileLayerDeleter(outputLocalPath)
@@ -29,8 +31,8 @@ class FileSpatialSpec
       val layerId = LayerId("Some!layer:%@~`{}id", 10)
 
       println(outputLocalPath)
-      writer.write[SpatialKey, Tile, TileLayerMetadata[SpatialKey]](layerId, layer, ZCurveKeyIndexMethod)
-      val backin = reader.read[SpatialKey, Tile, TileLayerMetadata[SpatialKey]](layerId)
+      writer.write[SpatialKey, TileFeature[Tile, Tile], TileLayerMetadata[SpatialKey]](layerId, layer, ZCurveKeyIndexMethod)
+      val backin = reader.read[SpatialKey, TileFeature[Tile, Tile], TileLayerMetadata[SpatialKey]](layerId)
     }
   }
 }
