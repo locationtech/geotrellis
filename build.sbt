@@ -51,12 +51,7 @@ lazy val commonSettings = Seq(
         </developer>
       </developers>),
   shellPrompt := { s => Project.extract(s).currentProject.id + " > " },
-  dependencyUpdatesExclusions := moduleFilter(organization = "org.scala-lang"),
-
-  resolvers ++= Seq(
-    "geosolutions" at "http://maven.geo-solutions.it/",
-    "osgeo" at "http://download.osgeo.org/webdav/geotools/"
-  )
+  dependencyUpdatesExclusions := moduleFilter(organization = "org.scala-lang")
 )
 
 lazy val root = Project("geotrellis", file(".")).
@@ -157,4 +152,3 @@ lazy val shapefile = Project("shapefile", file("shapefile")).
 
 lazy val util = Project("util", file("util")).
   settings(commonSettings: _*)
-

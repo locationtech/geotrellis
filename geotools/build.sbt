@@ -12,6 +12,11 @@ libraryDependencies ++= Seq(
   spire,
   scalatest % "test")
 
+resolvers ++= Seq(
+  "geosolutions" at "http://maven.geo-solutions.it/",
+  "osgeo" at "http://download.osgeo.org/webdav/geotools/"
+)
+
 fork in Test := false
 parallelExecution in Test := false
 
