@@ -22,6 +22,7 @@ rm -r s3/target
 rm -r accumulo/target
 rm -r engine/target
 rm -r engine-test/target
+rm -r geotools/target
 rm -r slick/target
 rm -r shapefile/target
 rm -r util/target
