@@ -6,8 +6,10 @@ import geotrellis.vector._
 /** Trait used to implicitly extend [[Line]] instances with transformation methods */
 trait LineTransformationMethods extends MethodExtensions[Line] {
 
-  /** Transform according to a provided [[AffineTransformation]] instance
-    * @param trans  an AffineTransformation
+  /**
+    * Transform according to a provided AffineTransformation instance.
+    *
+    * @param  trans  An AffineTransformation
     */
   def transform(trans: AffineTransformation) = trans.transform(self)
 

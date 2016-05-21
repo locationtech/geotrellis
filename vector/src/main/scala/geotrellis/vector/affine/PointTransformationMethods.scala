@@ -6,8 +6,10 @@ import geotrellis.vector.Point
 /** Trait used to implicitly extend [[Point]] instances with transformation methods */
 trait PointTransformationMethods extends MethodExtensions[Point] {
 
-  /** Transform this point according to a provided [[AffineTransformation]] instance
-    * @param trans  an AffineTransformation
+  /**
+    * Transform this point according to a provided AffineTransformation instance.
+    *
+    * @param  trans  An AffineTransformation
     */
   def transform(trans: AffineTransformation) = trans.transform(self)
 

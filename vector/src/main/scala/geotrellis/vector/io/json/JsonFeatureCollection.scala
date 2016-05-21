@@ -26,20 +26,34 @@ import DefaultJsonProtocol._
 class JsonFeatureCollection(features: List[JsValue] = Nil) {
   private val buffer = mutable.ListBuffer(features:_*)
 
-  /** Add a [[JsValue]] to the buffer, pending an ultimate call of toJson */
+  /**
+    * Add a JsValue to the buffer, pending an ultimate call of toJson.
+    */
   def add[G <: Geometry, D: JsonWriter](feature: Feature[G, D]) =
+
     buffer += writeFeatureJson(feature)
-  /** Add a [[JsValue]] to the buffer, pending an ultimate call of toJson */
+
+  /**
+    * Add a JsValue to the buffer, pending an ultimate call of toJson.
+    */
   def +=[G <: Geometry, D: JsonWriter](feature: Feature[G, D]) = add(feature)
 
-  /** Add a Seq of [[JsValue]] to the buffer, pending an ultimate call of toJson */
+  /**
+    * Add a Seq of JsValue to the buffer, pending an ultimate call of
+    * toJson.
+    */
   def addAll[G <: Geometry, D: JsonWriter](features: Seq[Feature[G, D]]) =
     features.foreach{ f => buffer += writeFeatureJson(f) }
 
-  /** Add a Seq of [[JsValue]] to the buffer, pending an ultimate call of toJson */
+  /**
+    * Add a Seq of JsValue to the buffer, pending an ultimate call of
+    * toJson.
+    */
   def ++=[G <: Geometry, D: JsonWriter](features: Seq[Feature[G, D]]) = addAll(features)
 
-  /** Carry out serialization on all buffered [[JsValue]]s */
+  /**
+    * Carry out serialization on all buffered JsValue objects.
+    */
   def toJson: JsValue =
     JsObject(
       "type" -> JsString("FeatureCollection"),
