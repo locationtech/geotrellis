@@ -36,7 +36,10 @@ def fullname(typeObject):
     name = typeObject.__name__
     module = typeObject.__module__
     lastdot = module.rfind(".")
-    withoutLast = module[:lastdot]
+    if lastdot < 0:
+        withoutLast = module
+    else:
+        withoutLast = module[:lastdot]
     return withoutLast + "." + name
 
 def getOrElse(first, second):

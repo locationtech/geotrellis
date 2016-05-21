@@ -55,7 +55,7 @@ class BitArrayTile(MutableArrayTile):
     def updateDouble(self, i, z):
         BitArrayTile.updateDouble(self.array, i, z)
 
-    def map(self, f):
+    def _map(self, f):
         f0 = f(0) & 1
         f1 = f(1) & 1
 

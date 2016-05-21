@@ -1,5 +1,14 @@
 from __future__ import absolute_import
 from geotrellis.raster.Tile import Tile
+from geotrellis.raster.CellType import (
+        BitCells,
+        ByteCells,
+        UByteCells,
+        ShortCells,
+        UShortCells,
+        IntCells,
+        FloatCells,
+        DoubleCells)
 #from geotrellis.raster.ConstantTile import ConstantTile
 
 #from geotrellis.raster.CompositeTile import CompositeTile
@@ -50,31 +59,31 @@ class ArrayTile(Tile):
                     tile.setDouble(col, row, self.getDouble(col, row))
         return tile
 
-    def foreach(self, f):
+    def _foreach(self, f):
         length = self.size
         i = 0
         while i < length:
             f(self[i])
             i += 1
 
-    def foreachDouble(self, f):
+    def _foreachDouble(self, f):
         length = self.size
         i = 0
         while i < length:
             f(self.applyDouble(i))
             i += 1
 
-    def foreachIntVisitor(visitor):
+    def foreachIntVisitor(self, visitor):
         for row in xrange(0, self.rows):
             for col in xrange(0, self.cols):
                 visitor(col, row, self.get(col, row))
 
-    def foreachDoubleVisitor(visitor):
+    def foreachDoubleVisitor(self, visitor):
         for row in xrange(0, self.rows):
             for col in xrange(0, self.cols):
                 visitor(col, row, self.getDouble(col, row))
 
-    def map(self, f):
+    def _map(self, f):
         output = ArrayTile.alloc(self.cellType, self.cols, self.rows)
         i = 0
         length = self.size
@@ -234,28 +243,37 @@ class ArrayTile(Tile):
 
     @staticmethod
     def empty(t, cols, rows):
+        print("ArrayTile.empty t {t}".format(t=t))
         if isinstance(t, BitCells):
+            print("1")
             from geotrellis.raster.BitArrayTile import BitArrayTile
             return BitArrayTile.empty(cols, rows)
         elif isinstance(t, ByteCells):
+            print("2")
             from geotrellis.raster.ByteArrayTile import ByteArrayTile
             return ByteArrayTile.empty(cols, rows, t)
         elif isinstance(t, UByteCells):
+            print("3")
             from geotrellis.raster.UByteArrayTile import UByteArrayTile
             return UByteArrayTile.empty(cols, rows, t)
         elif isinstance(t, ShortCells):
+            print("4")
             from geotrellis.raster.ShortArrayTile import ShortArrayTile
             return ShortArrayTile.empty(cols, rows, t)
         elif isinstance(t, UShortCells):
+            print("5")
             from geotrellis.raster.UShortArrayTile import UShortArrayTile
             return UShortArrayTile.empty(cols, rows, t)
         elif isinstance(t, IntCells):
+            print("6")
             from geotrellis.raster.IntArrayTile import IntArrayTile
             return IntArrayTile.empty(cols, rows, t)
         elif isinstance(t, FloatCells):
+            print("7")
             from geotrellis.raster.FloatArrayTile import FloatArrayTile
             return FloatArrayTile.empty(cols, rows, t)
         elif isinstance(t, DoubleCells):
+            print("8")
             from geotrellis.raster.DoubleArrayTile import DoubleArrayTile
             return DoubleArrayTile.empty(cols, rows, t)
     

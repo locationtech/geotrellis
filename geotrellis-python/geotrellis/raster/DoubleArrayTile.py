@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from geotrellis.raster.UserDefinedNoDataConversions import UserDefinedDoubleNoDataConversions
 from geotrellis.raster.MutableArrayTile import MutableArrayTile
 from geotrellis.raster.CellType import DoubleCellType, DoubleConstantNoDataCellType, DoubleUserDefinedNoDataCellType 
-from geotrellis.raster.package_scala import f2i, i2f, f2d, d2f, doubleNODATA
+from geotrellis.raster.package_scala import d2i, i2d, doubleNODATA
 
 import array
 import struct

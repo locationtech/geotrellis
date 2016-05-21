@@ -73,7 +73,7 @@ class ArrayMultibandTile(MultibandTile):
             newBands.append(band)
         return ArrayMultibandTile(newBands)
 
-    def map(self, first, second = None):
+    def _map(self, first, second = None):
         if second is None:
             f = first
             newBands = [None] * self.bandCount
@@ -145,7 +145,7 @@ class ArrayMultibandTile(MultibandTile):
 
             return ArrayMultibandTile(newBands)
 
-    def foreach(self, first, second = None):
+    def _foreach(self, first, second = None):
         if second is None:
             f = first
             for i in xrange(0, self.bandCount):
@@ -156,7 +156,7 @@ class ArrayMultibandTile(MultibandTile):
             self._validateBand(b0)
             self.band(b0).foreach(f)
 
-    def foreachDouble(self, first, second = None):
+    def _foreachDouble(self, first, second = None):
         if second is None:
             f = first
             for i in xrange(0, self.bandCount):

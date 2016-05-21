@@ -165,6 +165,9 @@ def intToByte(n):
     else:
         return n
 
+def intToUByte(n):
+    return intToByte(n) + 128
+
 def intToShort(n):
     if n > SHORTMAX:
         m = n % SHORTRANGE

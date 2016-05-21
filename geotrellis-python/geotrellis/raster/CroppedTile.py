@@ -103,12 +103,12 @@ class CroppedTile(Tile):
     def toBytes(self):
         return self.toArrayTile().toBytes()
 
-    def foreach(self, f):
+    def _foreach(self, f):
         for row in xrange(0, self.rows):
             for col in xrange(0, self.cols):
                 f(self.get(col, row))
 
-    def foreachDouble(self, f):
+    def _foreachDouble(self, f):
         for row in xrange(0, self.rows):
             for col in xrange(0, self.cols):
                 f(self.getDouble(col, row))
@@ -123,7 +123,7 @@ class CroppedTile(Tile):
             for col in xrange(0, self.cols):
                 visitor(col, row, self.getDouble(col, row))
 
-    def map(self, f):
+    def _map(self, f):
         tile = ArrayTile.alloc(self.cellType, self.cols, self.rows)
         for row in xrange(0, self.rows):
             for col in xrange(0, self.cols):

@@ -142,7 +142,7 @@ class CompositeTile(Tile):
 
         return self._getTile(tcol, trow).getDouble(pcol, prow)
 
-    def foreach(self, f):
+    def _foreach(self, f):
         layoutCols = self.tileLayout.layoutCols
         layoutRows = self.tileLayout.layoutRows
         tileCols = self.tileLayout.tileCols
@@ -155,7 +155,7 @@ class CompositeTile(Tile):
                     for pcol in xrange(0, tileCols):
                         f(tile.get(pcol, prow))
 
-    def foreachDouble(self, f):
+    def _foreachDouble(self, f):
         layoutCols = self.tileLayout.layoutCols
         layoutRows = self.tileLayout.layoutRows
         tileCols = self.tileLayout.tileCols
@@ -198,7 +198,7 @@ class CompositeTile(Tile):
                         arow = (tileRows * trow) + prow
                         visitor(acol, arow, tile.getDouble(pcol, prow))
 
-    def map(self, f):
+    def _map(self, f):
         result = ArrayTile.alloc(self.cellType, self.cols, self.rows)
         layoutCols = self.tileLayout.layoutCols
         layoutRows = self.tileLayout.layoutRows

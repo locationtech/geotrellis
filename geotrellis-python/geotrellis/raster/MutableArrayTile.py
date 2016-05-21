@@ -34,4 +34,4 @@ class MutableArrayTile(ArrayTile):
         self.update(row * self.cols + col, value)
 
     def setDouble(self, col, row, value):
-        self.update(row * self.cols + col, value)
+        self.updateDouble(row * self.cols + col, value)

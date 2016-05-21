@@ -54,31 +54,31 @@ class ConstantTile(Tile):
         else:
             raise Exception("Unsupported ConstantTile CellType: {ct}".format(ct = newType))
 
-    def foreach(self, f):
+    def _foreach(self, f):
         i = 0
         length = self.size
         while i < length:
             f(self._ival)
             i += 1
 
-    def foreachDouble(self, f):
+    def _foreachDouble(self, f):
         i = 0
         length = self.size
         while i < length:
             f(self._dval)
             i += 1
 
-    def foreachIntVisitor(visitor):
+    def foreachIntVisitor(self, visitor):
         for row in xrange(0, self.rows):
             for col in xrange(0, self.cols):
                 visitor(col, row, self._ival)
 
-    def foreachDoubleVisitor(visitor):
+    def foreachDoubleVisitor(self, visitor):
         for row in xrange(0, self.rows):
             for col in xrange(0, self.cols):
                 visitor(col, row, self._dval)
 
-    def map(f):
+    def _map(f):
         return IntConstantTile(f(self._ival), self.cols, self.rows)
 
     def combine(other, f):

@@ -5,8 +5,41 @@ from geotrellis.raster.CellSet import CellSet
 from geotrellis.raster.package_scala import isData, isNoData, NODATA
 
 import math
+import inspect
 
 class Tile(CellGrid):
+
+    def _map(self, f):
+        argspec = inspect.getargspec(f)
+        paramsCount = len(argspec[0])
+        if paramsCount == 1:
+            return self._map(f)
+        else:
+            return self.mapIntMapper(f)
+
+    def mapDouble(self, f):
+        argspec = inspect.getargspec(f)
+        paramsCount = len(argspec[0])
+        if paramsCount == 1:
+            return self._mapDouble(f)
+        else:
+            return self.mapDoubleMapper(f)
+        
+    def _foreach(self, f):
+        argspec = inspect.getargspec(f)
+        paramsCount = len(argspec[0])
+        if paramsCount == 1:
+            return self._foreach(f)
+        else:
+            return self.foreachIntVisitor(f)
+
+    def foreachDouble(self, f):
+        argspec = inspect.getargspec(f)
+        paramsCount = len(argspec[0])
+        if paramsCount == 1:
+            return self._foreachDouble(f)
+        else:
+            return self.foreachDoubleVisitor(f)
 
     def dualForeach(self, f, g):
         if self.cellType.isFloatingPoint:

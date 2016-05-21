@@ -160,7 +160,14 @@ class IntArrayTileCodec(AvroRecordCodec):
                     "CellType {ct} was unexpected".format(ct = tile.cellType))
 
     def decode(self, dct):
-        arr = array.array('i', dct["cells"])
+        #arr = array.array('i', dct["cells"])
+        # <debug>
+        cells = dct["cells"]
+        print("dct.cells: {c}".format(c=cells))
+        arr = array.array('i', cells)
+        #print("array.array: {arr}".format(arr=arr))
+        #print("arr.arr.lst: {arr}".format(arr=arr.tolist()))
+        # </debug>
         nodata = dct["noDataValue"]
         if nodata is None:
             cellType = IntCellType
