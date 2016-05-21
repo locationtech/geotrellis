@@ -27,7 +27,7 @@ case class TileExtents(extent: Extent, tileLayout: TileLayout) {
   val cellSize = tileLayout.cellSize(extent)
 
   /**
-    * Take a column and a row and produce an [[Extent]].
+    * Take a column and a row and produce an Extent.
     */
   def apply(tileCol: Int, tileRow: Int): Extent = {
     Extent(
@@ -41,7 +41,7 @@ case class TileExtents(extent: Extent, tileLayout: TileLayout) {
   /**
     * Take a tile index, relative to the [[TileLayout]] that was used
     * to create the present [[TileExtents]] object, and use that to
-    * produce an [[Extent]].
+    * produce an Extent.
     */
   def apply(tileIndex: Int): Extent = {
     val row = tileIndex / tileLayout.layoutCols
