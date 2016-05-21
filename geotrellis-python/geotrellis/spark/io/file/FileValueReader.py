@@ -32,27 +32,11 @@ def file_value_reader(first, second = None):
             if not file_exists(path):
                 raise TileNotFoundError(key, layer_id)
             with open(path) as f:
-                print("flv reading from {path}".format(path=path))
                 recs = AvroEncoder.fromBinary(writer_schema, f.read(), codec = KeyValueRecordCodec(key_type, value_type))
-            #recs = to_pairs(from_file(writer_schema, path))
-            #found = find(recs, lambda pair: pair[0] == key)
-            # <debug>
-            counter = [0]
-            def func(pair):
-                counter[0] += 1
-                result = (pair[0] == key)
-                if result:
-                    print("found at index {ind}".format(ind=counter[0]))
-                return result
-            found = find(recs, func)
-            # </debug>
+            found = find(recs, lambda pair: pair[0] == key)
             if found is None:
                 raise TileNotFoundError(key, layer_id)
             else:
-                # <debug>
-                cellType = found[1].cellType
-                print("cellType {c}".format(c=cellType))
-                # </debug>
                 return found[1]
         return Reader(read_func)
     return ReaderGenerator(reader)

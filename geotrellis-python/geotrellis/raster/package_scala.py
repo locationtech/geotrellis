@@ -5,6 +5,8 @@ INTMIN = - (2 ** 31)
 INTMAX = - INTMIN - 1
 BYTEMIN = - 128
 BYTEMAX = 127
+UBYTEMIN = 0
+UBYTEMAX = 255
 SHORTMIN = - (2 ** 15)
 SHORTMAX = - SHORTMIN - 1
 SHORTRANGE = 2 ** 16
@@ -166,7 +168,14 @@ def intToByte(n):
         return n
 
 def intToUByte(n):
-    return intToByte(n) + 128
+    if n > UBYTEMAX:
+        m = n % 256
+        return m if m <= UBYTEMAX else m - 256
+    elif n < UBYTEMIN:
+        m = n % (-256)
+        return m if m >= UBYTEMIN else m + 256
+    else:
+        return n
 
 def intToShort(n):
     if n > SHORTMAX:

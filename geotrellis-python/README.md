@@ -9,6 +9,7 @@ Interoperability between GeoTrellis and rasterio will allow for complex, multi-s
 - [NumPy](http://www.numpy.org/)
 - [rasterio](https://github.com/mapbox/rasterio)
 - [pytz](https://github.com/newvem/pytz)
+- [pypng](https://github.com/drj11/pypng)
 - [Spec](https://github.com/bitprophet/spec) for testing
 
 #### Notes on compatibility
@@ -26,9 +27,17 @@ The testing framework depends on:
 - `SPARK_HOME` environment variable
 - the existence of `geotrellis-python/dist/Geotrellis-0.1-py2.7.egg` file. You can create it by running 
 
-`root@localhost:geotrellis-python$   python setup.py install`
+`python setup.py install`
+
+from inside `geotrellis-python` directory.
 
 In order to run the tests, issue the following comand:
 
-`root@localhost:geotrellis-python$   spec --with-inherited --with-tools-decorators-only` 
+`spec --with-inherited --with-tools-decorators-only` 
+
+from inside `geotrellis-python` directory.
+
+#### Sample server
+
+The landsat-django-server project (https://github.com/shiraeeshi/landsat-django-server) shows how to create a tile server with GeoTrellis ingested tiles.
 

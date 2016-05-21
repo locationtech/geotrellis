@@ -243,37 +243,28 @@ class ArrayTile(Tile):
 
     @staticmethod
     def empty(t, cols, rows):
-        print("ArrayTile.empty t {t}".format(t=t))
         if isinstance(t, BitCells):
-            print("1")
             from geotrellis.raster.BitArrayTile import BitArrayTile
             return BitArrayTile.empty(cols, rows)
         elif isinstance(t, ByteCells):
-            print("2")
             from geotrellis.raster.ByteArrayTile import ByteArrayTile
             return ByteArrayTile.empty(cols, rows, t)
         elif isinstance(t, UByteCells):
-            print("3")
             from geotrellis.raster.UByteArrayTile import UByteArrayTile
             return UByteArrayTile.empty(cols, rows, t)
         elif isinstance(t, ShortCells):
-            print("4")
             from geotrellis.raster.ShortArrayTile import ShortArrayTile
             return ShortArrayTile.empty(cols, rows, t)
         elif isinstance(t, UShortCells):
-            print("5")
             from geotrellis.raster.UShortArrayTile import UShortArrayTile
             return UShortArrayTile.empty(cols, rows, t)
         elif isinstance(t, IntCells):
-            print("6")
             from geotrellis.raster.IntArrayTile import IntArrayTile
             return IntArrayTile.empty(cols, rows, t)
         elif isinstance(t, FloatCells):
-            print("7")
             from geotrellis.raster.FloatArrayTile import FloatArrayTile
             return FloatArrayTile.empty(cols, rows, t)
         elif isinstance(t, DoubleCells):
-            print("8")
             from geotrellis.raster.DoubleArrayTile import DoubleArrayTile
             return DoubleArrayTile.empty(cols, rows, t)
     
