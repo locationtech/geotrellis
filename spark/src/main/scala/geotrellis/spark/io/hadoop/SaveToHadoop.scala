@@ -31,10 +31,10 @@ object SaveToHadoop {
 
   /** Saves records from an iterator and returns them unchanged.
     *
-    * @param recs      Key, Value records to be saved
-    * @params keyToUri A function from K (a key) to Hadoop URI
-    * @params toBytes  A function from record to array of bytes
-    * @params conf     Hadoop Configuration to used to get FileSystem
+    * @param  recs      Key, Value records to be saved
+    * @param  keyToUri  A function from K (a key) to Hadoop URI
+    * @param  toBytes   A function from record to array of bytes
+    * @param  conf      Hadoop Configuration to used to get FileSystem
     */
   def saveIterator[K, V](
     recs: Iterator[(K, V)],
@@ -56,7 +56,9 @@ object SaveToHadoop {
     }
   }
 
-  /** Sets up saving to Hadoop, but returns an RDD so that writes can be chained.
+  /**
+    * Sets up saving to Hadoop, but returns an RDD so that writes can
+    * be chained.
     *
     * @param keyToUri A function from K (a key) to a Hadoop URI
     */
@@ -69,10 +71,12 @@ object SaveToHadoop {
    }
   }
 
-  /** Sets up saving to Hadoop, but returns an RDD so that writes can be chained.
+  /**
+    * Sets up saving to Hadoop, but returns an RDD so that writes can
+    * be chained.
     *
-    * @param keyToUri A function from K (a key) to a Hadoop URI
-    * @params toBytes  A function from record to array of bytes
+    * @param  keyToUri  A function from K (a key) to a Hadoop URI
+    * @param  toBytes   A function from record to array of bytes
     */
   def setup[K, V](
     rdd: RDD[(K, V)],
@@ -85,7 +89,8 @@ object SaveToHadoop {
     }
   }
 
-  /** Saves to Hadoop FileSystem, returns an count of records saved.
+  /**
+    * Saves to Hadoop FileSystem, returns an count of records saved.
     *
     * @param keyToUri A function from K (a key) to a Hadoop URI
     */
@@ -95,10 +100,11 @@ object SaveToHadoop {
   ): Long =
     setup(rdd, keyToUri).count
 
-  /** Saves to Hadoop FileSystem, returns an count of records saved.
+  /**
+    * Saves to Hadoop FileSystem, returns an count of records saved.
     *
-    * @param keyToUri A function from K (a key) to a Hadoop URI
-    * @params toBytes  A function from record to array of bytes
+    * @param  keyToUri  A function from K (a key) to a Hadoop URI
+    * @param  toBytes   A function from record to array of bytes
     */
   def apply[K, V](
     rdd: RDD[(K, V)],
