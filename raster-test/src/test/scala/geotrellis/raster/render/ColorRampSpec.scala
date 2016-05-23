@@ -19,19 +19,33 @@ package geotrellis.raster.render
 import org.scalatest._
 
 class ColorRampSpec extends FunSpec with Matchers {
-  describe("spread") {
-    val colors: Vector[Int] = Vector(0xFF0000, 0x0000FF)
+  val colors: Vector[Int] = Vector(0xFF0000, 0x0000FF)
+  val ramp: ColorRamp = ColorRamp(colors)
 
-    it("should not bail when n = 0") {
-      ColorRamp.spread(colors, 0) should be (Vector.empty[Int])
+  describe("ColorRamp") {
+    describe("toColorMap") {
+      it("should yield an empty ColorMap when given an empty breaks Array - GH #1487") {
+        val m: ColorMap = ramp.toColorMap(
+          Array.empty[Double],
+          ColorMap.Options.DEFAULT
+        )
+
+        m.colors.length should be (0)
+      }
     }
 
-    it("should not bail when n < 0") {
-      ColorRamp.spread(colors, -1) should be (Vector.empty[Int])
-    }
+    describe("spread") {
+      it("should not bail when n = 0") {
+        ColorRamp.spread(colors, 0) should be (Vector.empty[Int])
+      }
 
-    it("should give non-empty results for n > 0") {
-      ColorRamp.spread(colors, 2) shouldNot be (Vector.empty[Int])
+      it("should not bail when n < 0") {
+        ColorRamp.spread(colors, -1) should be (Vector.empty[Int])
+      }
+
+      it("should give non-empty results for n > 0") {
+        ColorRamp.spread(colors, 2) shouldNot be (Vector.empty[Int])
+      }
     }
   }
 }
