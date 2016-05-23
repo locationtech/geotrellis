@@ -14,6 +14,8 @@ class AccumuloTestRegistrator extends TestRegistrator {
       kryo.register(classOf[org.apache.accumulo.core.client.Durability])
       kryo.register(classOf[org.apache.accumulo.core.data.Key])
       kryo.register(classOf[org.apache.accumulo.core.data.Value])
+
+      kryo.register(classOf[geotrellis.spark.io.avro.codecs.TileFeatureCodec$$anon$1])
     }
   }
 }

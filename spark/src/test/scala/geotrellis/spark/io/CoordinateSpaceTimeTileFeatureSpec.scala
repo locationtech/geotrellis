@@ -1,13 +1,14 @@
 package geotrellis.spark.io
 
 import com.github.nscala_time.time.Imports._
-import geotrellis.raster.{GridBounds, Tile}
+import geotrellis.raster.{GridBounds, Tile, TileFeature}
 import geotrellis.spark._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.json._
 import org.joda.time.DateTime
 
-trait CoordinateSpaceTimeTests { self: PersistenceSpec[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]] =>
+
+trait CoordinateSpaceTimeTileFeatureSpec { self: PersistenceSpec[SpaceTimeKey, TileFeature[Tile, Tile], TileLayerMetadata[SpaceTimeKey]] =>
   val dates = Vector( // all the dates in the layer
     new DateTime(2010,1,1,0,0,0, DateTimeZone.UTC),
     new DateTime(2011,1,1,0,0,0, DateTimeZone.UTC),
@@ -19,7 +20,7 @@ trait CoordinateSpaceTimeTests { self: PersistenceSpec[SpaceTimeKey, Tile, TileL
 
   for(PersistenceSpecDefinition(keyIndexMethodName, _, layerIds) <- specLayerIds) {
     val layerId = layerIds.layerId
-    val query = reader.query[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](layerId)
+    val query = reader.query[SpaceTimeKey, TileFeature[Tile, Tile], TileLayerMetadata[SpaceTimeKey]](layerId)
     describe(s"CoordinateSpaceTime query tests for $keyIndexMethodName") {
       it("query outside of layer bounds") {
         query.where(Intersects(GridBounds(10, 10, 15, 15))).result.collect() should be(empty)
