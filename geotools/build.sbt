@@ -9,7 +9,9 @@ libraryDependencies ++= Seq(
   "org.geotools" % "gt-main" % Version.geotools,
   "org.geotools" % "gt-referencing" % Version.geotools,
   "org.apache.spark" %% "spark-core" % Version.spark % "provided",
+  jts,
   spire,
+  "org.geotools" % "gt-shapefile" % Version.geotools % "test",
   scalatest % "test")
 
 resolvers ++= Seq(
@@ -25,6 +27,7 @@ initialCommands in console :=
   import geotrellis.geotools._
   import geotrellis.raster._
   import geotrellis.vector._
+  import com.vividsolutions.jts.{geom => jts}
   import org.geotools.coverage.grid._
   import org.geotools.coverage.grid.io._
   import org.geotools.gce.geotiff._
