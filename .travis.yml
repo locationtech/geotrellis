@@ -28,9 +28,6 @@ services:
   - cassandra
 
 before_script:
-  # shutdown servies on Travis, which may have a memory impact
-  # show memory usage before and after shutdown of services
-  - sudo service --status-all
   - sudo free -m -t
 
 script:
