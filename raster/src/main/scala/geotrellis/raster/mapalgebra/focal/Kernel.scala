@@ -22,7 +22,28 @@ case class Kernel(tile: Tile) extends Neighborhood {
 
 object Kernel {
   implicit def tile2Kernel(r: Tile): Kernel = Kernel(r)
-  
+
+  def apply(nbhd: Neighborhood): Kernel = {
+    require(nbhd.hasMask, "Neighborhood must have a mask method")
+
+    val w = 2 * nbhd.extent + 1
+    val size = w * w
+    val tile = IntArrayTile(new Array[Int](size), w, w)
+
+    var r = 0
+    while (r < w) {
+      var c = 0
+      while (c < w) {
+        tile.set(c, r, if (nbhd.mask(c, r)) 0 else 1)
+        c = c + 1
+      }
+      r = r + 1
+    }
+
+    new Kernel(tile)
+  }
+
+
   /**
    * Creates a Gaussian kernel. Can be used with the [[Convolve]] or [[KernelDensity]] operations.
    *
