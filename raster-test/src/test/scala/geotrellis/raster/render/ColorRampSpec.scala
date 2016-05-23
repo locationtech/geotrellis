@@ -34,6 +34,12 @@ class ColorRampSpec extends FunSpec with Matchers {
       }
     }
 
+    describe("stops") {
+      it("stops(0) should yield an empty ColorRamp") {
+        ramp.stops(0).colors.length should be (0)
+      }
+    }
+
     describe("spread") {
       it("should not bail when n = 0") {
         ColorRamp.spread(colors, 0) should be (Vector.empty[Int])
@@ -45,6 +51,32 @@ class ColorRampSpec extends FunSpec with Matchers {
 
       it("should give non-empty results for n > 0") {
         ColorRamp.spread(colors, 2) shouldNot be (Vector.empty[Int])
+      }
+    }
+
+    describe("chooseColors") {
+      it("should be empty when given an empty Vector") {
+        ColorRamp.chooseColors(Vector.empty[Int], 10) should be (Vector.empty[Int])
+      }
+
+      it("should be empty when given 0") {
+        ColorRamp.chooseColors(colors, 0) should be (Vector.empty[Int])
+      }
+    }
+
+    describe("(when empty)") {
+      val e: ColorRamp = ColorRamp(Vector.empty[Int])
+
+      it("setAlphaGradient should yield an empty ColorRamp") {
+        e.setAlphaGradient().colors.length should be (0)
+      }
+
+      it("setAlpha should yield an empty ColorRamp") {
+        e.setAlpha(0).colors.length should be (0)
+      }
+
+      it("stops should give an empty ColorRamp") {
+        e.stops(100).colors.length should be (0)
       }
     }
   }
