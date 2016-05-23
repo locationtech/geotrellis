@@ -79,6 +79,10 @@ class EtlConf(args: Seq[String]) extends ScallopConf(args){
                       descr = "pyramid layer on save (default: false)",
                       default = Some(false))
 
+  val maxZoom      = opt[Int]("maxZoom",
+                      descr = "max zoom level for layer tiles",
+                      default = Some(0))
+
   val outputProps  = props[String]('O',
                       descr = "parameters for output module")
 
