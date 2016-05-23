@@ -13,11 +13,12 @@ object KNearestRDD {
     kNearest(rdd, new Extent(p._1, p._2, p._1, p._2), k)(f)
 
   /**
-   * Determines the k-nearest neighbors of an RDD of objects which can be coerced into Extents.
+   * Determines the k-nearest neighbors of an RDD of objects which can be
+   * coerced into Extents.
    */
   def kNearest[T](rdd: RDD[T], ex: Extent, k: Int)(f: T => Extent): Seq[T] = {
-    implicit val ord = new Ordering[T] {
-      def compare(a: T, b: T) = implicitly[Ordering[Double]].compare (ex.distance(f(a)), ex.distance(f(b)))
+    implicit def orderByDist(a: T): Ordered[T] = new Ordered[T] {
+      def compare(b: T) = (ex distance (f(a))) compare (ex distance (f(b)))
     }
 
     rdd.takeOrdered(k)
