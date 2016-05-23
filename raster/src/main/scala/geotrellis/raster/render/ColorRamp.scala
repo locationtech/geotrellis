@@ -128,8 +128,7 @@ object ColorRamp {
     /* The requested spread matches the original */
     if (colors.length == n) return colors
 
-    /* 2016 May 20 @ 14:21
-     * In the case of a Layer comprised entirely of NODATA, a call to
+    /* In the case of a Layer comprised entirely of NODATA, a call to
      * `classBreaksDouble` will yield an empty `Array`. That propagates here,
      * where an attempt to index below results in a bounds exception.
      *
