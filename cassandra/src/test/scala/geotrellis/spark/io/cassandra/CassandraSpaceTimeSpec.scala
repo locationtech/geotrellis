@@ -11,8 +11,8 @@ class CassandraSpaceTimeSpec
     with TestEnvironment
     with CassandraTestEnvironment
     with TestFiles
-    with CoordinateSpaceTimeTests
-    with LayerUpdateSpaceTimeTileTests {
+    with CoordinateSpaceTimeSpec
+    with LayerUpdateSpaceTimeTileSpec {
 
   lazy val instance       = BaseCassandraInstance(Seq("127.0.0.1"), "geotrellis")
   lazy val attributeStore = CassandraAttributeStore(instance)

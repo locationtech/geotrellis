@@ -11,7 +11,7 @@ class CassandraSpatialSpec
     with TestEnvironment
     with CassandraTestEnvironment
     with TestFiles
-    with AllOnesTestTileTests {
+    with AllOnesTestTileSpec {
 
   lazy val instance       = BaseCassandraInstance(Seq("127.0.0.1"), "geotrellis")
   lazy val attributeStore = CassandraAttributeStore(instance)
