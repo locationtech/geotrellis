@@ -27,6 +27,12 @@ cache:
 services:
   - cassandra
 
+before_script:
+  # shutdown servies on Travis, which may have a memory impact
+  # show memory usage before and after shutdown of services
+  - sudo service --status-all
+  - sudo free -m -t
+
 script:
   - ./scripts/buildall.sh
 
@@ -62,3 +68,9 @@ deploy:
 
 after_deploy:
   - rm -f "${HOME}/.bintray/.credentials"
+
+after_failure:
+  # show memory usage again
+  - sudo free -m -t
+  # show actions of the OOM killer
+  - sudo dmesg
