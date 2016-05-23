@@ -35,7 +35,7 @@ object KernelDensityRDD {
     val kw = 2 * kern.extent.toDouble + 1.0
     val tl = ld.tileLayout
     
-    def ptfToExtent[D](ptf: PointFeature[D]) : Extent = {
+    def ptfToExtent[D](ptf: PointFeature[D]): Extent = {
       val p = ptf.geom
       Extent(p.x - kw * ld.cellwidth / 2,
              p.y - kw * ld.cellheight / 2,
@@ -43,10 +43,9 @@ object KernelDensityRDD {
              p.y + kw * ld.cellheight / 2)
     }
 
-    val trans = (_.toFloat.round.toInt) : Double => Int
+    val trans = (_.toFloat.round.toInt): Double => Int
 
-    def ptfToSpatialKey[D](ptf: PointFeature[D]):
-        Seq[(SpatialKey, PointFeature[D])] = {
+    def ptfToSpatialKey[D](ptf: PointFeature[D]): Seq[(SpatialKey, PointFeature[D])] = {
       val ptextent = ptfToExtent(ptf)
       val gridBounds = ld.mapTransform(ptextent)
       for ((c,r) <- gridBounds.coords;
@@ -54,14 +53,14 @@ object KernelDensityRDD {
            if c < tl.totalCols) yield (SpatialKey(c,r), ptf)
     }
 
-    val keyfeatures = rdd.flatMap(ptfToSpatialKey).groupByKey.mapValues(_.toList)//: RDD[(SpatialKey, List[PointFeature[Double]])]
+    val keyfeatures = rdd.flatMap(ptfToSpatialKey).groupByKey.mapValues(_.toList)
 
-    val keytiles = keyfeatures.map { 
+    val keytiles: RDD[(SpatialKey, Tile)] = keyfeatures.map { 
       case (sk,pfs) => (sk,KernelDensity.kernelDensity(pfs,trans,kern,
                                         RasterExtent(ld.mapTransform(sk),
                                                      tl.tileDimensions._1,
                                                      tl.tileDimensions._2)))
-    }: RDD[(SpatialKey, Tile)]
+    }
 
     val metadata = TileLayerMetadata(DoubleCellType,
                                      ld,
