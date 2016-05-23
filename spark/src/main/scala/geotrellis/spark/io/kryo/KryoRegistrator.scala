@@ -203,6 +203,7 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[geotrellis.spark.io.avro.codecs.KeyValueRecordCodec[Any,Any]])
     kryo.register(classOf[geotrellis.spark.io.avro.codecs.TupleCodec[Any,Any]])
     kryo.register(classOf[geotrellis.spark.KeyBounds[Any]])
+    //kryo.register(classOf[geotrellis.spark.knn.KNearestRDD.Ord[Any]])
     kryo.register(classOf[geotrellis.vector.Feature[Any,Any]])
     kryo.register(classOf[geotrellis.vector.Geometry])
     kryo.register(classOf[geotrellis.vector.GeometryCollection])
