@@ -13,7 +13,7 @@ import geotrellis.vector._
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.testkit._
-import geotrellis.raster.mapalgebra.focal.Kernel._
+import geotrellis.raster.mapalgebra.focal._
 import geotrellis.raster.mapalgebra.local._
 
 import geotrellis.raster.density._
@@ -47,7 +47,7 @@ class KernelDensityRDDSpec extends FunSpec
       // stamp kernels for points to local raster
       
       val krnwdth = 9.0
-      val kern = circle(krnwdth.toInt,0,4)
+      val kern = Kernel(Circle(krnwdth))
       val trans = (_.toFloat.round.toInt): Double => Int
       val full = KernelDensity.kernelDensity (pts,trans,kern,RasterExtent(extent,700,400))
 
@@ -56,9 +56,9 @@ class KernelDensityRDDSpec extends FunSpec
       val tl = TileLayout(7,4,100,100)
       val ld = LayoutDefinition(extent,tl)
 
-      val ptrdd = sc.parallelize(pts)
+      val ptrdd = sc.parallelize(pts, 10)
 
-      val tileRDD = KernelDensityRDD.kernelDensity(ptrdd, ld, kern, CRS.fromName("EPSG:4326"))
+      val tileRDD = KernelDensityRDD.kernelDensity(ptrdd, ld, kern, LatLng)
 
       val tileList = 
         for { r <- 0 until ld.layoutRows
