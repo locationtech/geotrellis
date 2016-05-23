@@ -28,7 +28,8 @@ services:
   - cassandra
 
 before_script:
-  - sudo free -m -t
+  - service --status-all
+  - free -m -t
 
 script:
   - ./scripts/buildall.sh
@@ -68,6 +69,6 @@ after_deploy:
 
 after_failure:
   # show memory usage again
-  - sudo free -m -t
+  - free -m -t
   # show actions of the OOM killer
-  - sudo dmesg
+  - dmesg
