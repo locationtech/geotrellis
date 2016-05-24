@@ -52,7 +52,8 @@ trait RasterToGridCoverage2DSpec[T <: CellGrid]
   def getBandCount: Int = sampleModel.getNumBands
 
   def getCrs: Option[CRS] =
-    GridCoverage2DToRaster.crs(gridCoverage)
+    //GridCoverage2DToRaster.crs(gridCoverage)
+    GridCoverage2DConverters.getCrs(gridCoverage)
 
   def getNodata: Option[Double] =
     GridCoverage2DTile.noData(gridCoverage, 0)
@@ -100,12 +101,18 @@ trait RasterToGridCoverage2DSpec[T <: CellGrid]
     }
 
     it("should produce the correct NODATA") {
-      assert(
-        getNodata match {
-          case Some(_nd) => (_nd.isNaN) || (Some(_nd) == nd)
-          case None => (nd == None)
-        }
-      )
+      nd match {
+        case Some(ndValue) =>
+          getNodata match {
+            case Some(actualNdValue) =>
+              if(ndValue.isNaN) actualNdValue.isNaN should be (true)
+              else actualNdValue should be (ndValue)
+            case None =>
+              getNodata should be (Some(ndValue))
+          }
+        case None =>
+          getNodata should be (None)
+      }
     }
   }
 }
@@ -117,16 +124,16 @@ class RasterToGridCoverage2D_IntTileSpec extends RasterToGridCoverage2DSpec[Tile
   val crs = Some(ConusAlbers)
   val nd = None
   tile.set(1, 1, 33)
-  val gridCoverage = TileRasterToGridCoverage2D(Raster(tile, extent), crs)
+  val gridCoverage = ProjectedRaster(tile, extent, crs.get).toGridCoverage2D//TileRasterToGridCoverage2D(Raster(tile, extent), crs)
 
   describe("Copying of Data") {
 
     it("should leave blank pixels blank") {
-      getPixel(1, 1)(0) should be (0)
+      getPixel(1, 2)(0) should be (0)
     }
 
     it("should preserve pixels that have been set") {
-      getPixel(1, 1)(3) should be (33)
+      getPixel(1, 1)(0) should be (33)
     }
   }
 }
@@ -136,7 +143,7 @@ class RasterToGridCoverage2D_ConstIntTileSpec extends RasterToGridCoverage2DSpec
   val tile = ArrayTile.empty(cellType, 10, 10)
   val extent = Extent(0.1, 0.2, 1.1, 1.2)
   val crs = Some(ConusAlbers)
-  val nd = Some[Double]((0xff & (NODATA >> 24)))
+  val nd = Some[Double](NODATA)
   val gridCoverage = TileRasterToGridCoverage2D(Raster(tile, extent), crs)
 }
 
@@ -145,7 +152,7 @@ class RasterToGridCoverage2D_UdIntTileSpec extends RasterToGridCoverage2DSpec[Ti
   val tile = ArrayTile.empty(cellType, 10, 10)
   val extent = Extent(0.1, 0.2, 1.1, 1.2)
   val crs = Some(ConusAlbers)
-  val nd = Some[Double](42)
+  val nd = Some[Double](42 << 24)
   val gridCoverage = TileRasterToGridCoverage2D(Raster(tile, extent), crs)
 }
 

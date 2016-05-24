@@ -400,16 +400,26 @@ object TileRasterToGridCoverage2D extends RasterToGridCoverage2D {
     val envelope = envelope2D(raster, crs)
     val factory = new GridCoverageFactory
 
+    val properties: java.util.HashMap[String,Double] =
+      noData(raster.tile.cellType) match {
+        case Some(nd) =>
+          val p = new java.util.HashMap[String,Double]()
+          p.put("GC_NODATA", nd)
+          p
+        case None =>
+          null
+      }
+
     factory.create(
       name,
       image,
       envelope,
       bands,
-      null, null // sources, properties
+      null, // sources
+      properties // sources, properties
     )
   }
 }
-
 
 /**
   * An object housing constructors for converting a Geotrellis
@@ -446,14 +456,24 @@ object MultibandTileRasterToGridCoverage2D extends RasterToGridCoverage2D {
   def apply(raster: Raster[MultibandTile], bands: Array[GridSampleDimension], crs: Option[CRS]): GridCoverage2D = {
     val name = raster.toString
     val writable = writableRaster(raster)
+    val model = bands(0).getColorModel(0, bands.length, writable.getDataBuffer.getDataType)
+    val image = new BufferedImage(model, writable, false, null)
     val envelope = envelope2D(raster, crs)
     val factory = new GridCoverageFactory
 
+    val properties = new java.util.HashMap[String,Double]()
+
+    noData(raster.tile.cellType).foreach { nd =>
+      properties.put("GC_NODATA", nd)
+    }
+
     factory.create(
       name,
-      writable,
+      image,
       envelope,
-      bands
+      bands,
+      null, // sources
+      properties // sources, properties
     )
   }
 }

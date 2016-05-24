@@ -386,14 +386,6 @@ trait ArrayTile extends Tile with Serializable {
     }
     arr
   }
-
-  /**
-    * Convert the present [[ArrayTile]] to an array of bytes and
-    * return that array.
-    *
-    * @return  An array of bytes
-    */
-  def toBytes: Array[Byte]
 }
 
 /**

@@ -21,8 +21,9 @@ import geotrellis.raster._
 import org.geotools.coverage.grid._
 import org.geotools.gce.geotiff._
 import org.geotools.coverage.grid.io._
+import org.geotools.resources.coverage.CoverageUtilities
 
-import java.awt.image.DataBuffer
+import java.awt.image._
 import scala.collection.JavaConverters._
 
 
@@ -51,15 +52,9 @@ object GridCoverage2DTile {
     * @param  bandIndex       The index in gridCoverage2D to expose as the sole band of this tile
     */
   def noData(gridCoverage: GridCoverage2D, bandIndex: Int): Option[Double] = {
-    val sd = gridCoverage.getSampleDimension(bandIndex)
-
-    sd.getNoDataValues match {
-      case null =>
-        if (sd.getCategories.asScala.exists(_.toString.contains("NaN"))) Some(Double.NaN)
-        else None
-      case Array(nd) => Some(nd)
-      case _ => throw new Exception("Only know how to handle one NODATA value")
-    }
+    val noDataContainer = CoverageUtilities.getNoDataProperty(gridCoverage)
+    if(noDataContainer == null) None
+    else Some(noDataContainer.getAsSingleValue)
   }
 
   /**
@@ -70,6 +65,7 @@ object GridCoverage2DTile {
     * @param  gridCoverage2D  The GeoTools GridCoverage2D object
     * @param  bandIndex       The index in gridCoverage2D to expose as the sole band of this tile
     */
+  // RETODO: How to handle cell type enum matching?
   def cellType(gridCoverage: GridCoverage2D, bandIndex: Int): CellType = {
     val noDataValue = noData(gridCoverage, bandIndex)
     val renderedImage = gridCoverage.getRenderedImage
@@ -107,7 +103,7 @@ object GridCoverage2DTile {
         val double = nd.toDouble
         if (double == doubleNODATA) DoubleConstantNoDataCellType
         else DoubleUserDefinedNoDataCellType(double)
-      case _ => throw new Exception("Unknown or Undefined Cell Type")
+      case _ => throw new Exception(s"Unknown or Undefined Cell Type: NoData value $noDataValue  TypeEnum: ${typeEnum}")
     }
   }
 }
@@ -340,8 +336,9 @@ class GridCoverage2DTile(gridCoverage: GridCoverage2D, bandIndex: Int) extends T
     * @param   row  The row
     * @return       The Double datum found at the given location
     */
-  def getDouble(col: Int,row: Int): Double =
+  def getDouble(col: Int,row: Int): Double = {
     sampleModel.getPixel(col, row, _arrayDouble.clone, buffer)(bandIndex)
+  }
 
   /**
     * Map each cell in the given tile to a new one, using the given
@@ -389,7 +386,55 @@ class GridCoverage2DTile(gridCoverage: GridCoverage2D, bandIndex: Int) extends T
     * Return an [[ArrayTile]] whose contents are taken from the
     * present [[GridCoverage2DTile]].  This is fairly expensive.
     */
-  def toArrayTile(): ArrayTile = convert(cellType)
+  //def toArrayTile(): ArrayTile = convert(cellType)
+  def toArrayTile(): ArrayTile = {
+    def default = {
+      val data = Array.ofDim[Double](cols * rows)
+      sampleModel.getSamples(0, 0, cols, rows, bandIndex, data, buffer)
+      DoubleArrayTile(data, cols, rows)
+
+    }
+
+    println(s"NUM BANKS: ${buffer.getNumBanks}")
+    println(s"SampleModel: ${sampleModel.getClass.getName}")
+    buffer match {
+      case byteBuffer: DataBufferByte =>
+        cellType match {
+          case ct: UByteCells =>
+            UByteArrayTile(byteBuffer.getData, cols, rows, ct)
+          case _ =>
+            UByteArrayTile(byteBuffer.getData, cols, rows, UByteCellType).convert(cellType).toArrayTile
+        }
+      case ushortBuffer: DataBufferUShort =>
+        println("ushort")
+        default
+      case shortBuffer: DataBufferShort =>
+        println("short")
+        default
+      case intBuffer: DataBufferInt =>
+        cellType match {
+          case ct: IntCells =>
+            println("YES")
+            println(s"LENGTH: ${intBuffer.getBankData.length}")
+            IntArrayTile(intBuffer.getData, cols, rows, ct)
+          case _ =>
+            IntArrayTile(intBuffer.getData, cols, rows, IntCellType).convert(cellType).toArrayTile
+        }
+      case floatBuffer: DataBufferFloat =>
+        println("float")
+        default
+      case doubleBuffer: DataBufferDouble =>
+        println("double")
+        default
+    }
+
+    // val data = Array.ofDim[Double](cols * rows)
+    // sampleModel.getSamples(0, 0, cols, rows, bandIndex, data, buffer)
+    // DoubleArrayTile(data, cols, rows)
+    // if(cellType.isFloatingPoint) {
+    // //convert(cellType)
+    // ???
+  }
 
   /**
     * Return a [[MutableArrayTile]] whose contents are taken from the

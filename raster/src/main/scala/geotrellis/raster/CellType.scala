@@ -20,9 +20,12 @@ import scala.util.matching.Regex
 import java.awt.image.DataBuffer
 import java.lang.IllegalArgumentException
 
+// Note: CellType defined in package object as
+// `type CellType = DataType with NoDataHandling`
+
+
 /**
-  * CellType defined in package object as type CellType = DataType
-  * with NoDataHandling.  The [[DataType]] type.
+  * The [[DataType]] type.
   */
 sealed abstract class DataType extends Serializable { self: CellType =>
   val bits: Int

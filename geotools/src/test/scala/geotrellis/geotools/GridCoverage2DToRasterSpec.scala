@@ -38,17 +38,18 @@ trait GridCoverage2DToRasterSpec
   def getImage(path: String): GridCoverage2D = {
     val gridSize = AbstractGridFormat.SUGGESTED_TILE_SIZE.createValue
     val file = new java.io.File(path)
-    val preImage = new GeoTiffReader(file).read(null).getRenderedImage
-    val height = preImage.getHeight
-    val width = preImage.getWidth
-    val reader = new GeoTiffReader(file)
+    // val preImage = new GeoTiffReader(file).read(null).getRenderedImage
+    // val height = preImage.getHeight
+    // val width = preImage.getWidth
+    // val reader = new GeoTiffReader(file)
 
-    gridSize.setValue(s"$width,$height")
+    // gridSize.setValue(s"$width,$height")
 
-    val image = reader.read(Array(gridSize))
-    val renderedImage = image.getRenderedImage
+    // val image = reader.read(Array(gridSize))
+    // val renderedImage = image.getRenderedImage
 
-    image
+    // image
+    new GeoTiffReader(file).read(null)
   }
 
   val path: String
@@ -63,7 +64,7 @@ trait GridCoverage2DToRasterSpec
   lazy val renderedImage = image.getRenderedImage
   lazy val buffer = renderedImage.getData.getDataBuffer
   lazy val sampleModel = renderedImage.getSampleModel
-  lazy val Raster(tile, extent) = GridCoverage2DToRaster(image).head
+  lazy val Raster(tile, extent) = image.toRaster(0)
 
   def sumOfAllSamples: Int = {
     val array = Array.ofDim[Int](sampleModel.getNumBands)
@@ -97,90 +98,111 @@ trait GridCoverage2DToRasterSpec
     result
   }
 
-  describe("The GridCoverage2DToRaster Object") {
+  // describe("The GridCoverage2DToRaster Object") {
 
-    it("should correctly extract width") {
-      tile.cols should be (width)
-    }
+  //   it("should correctly extract width") {
+  //     tile.cols should be (width)
+  //   }
 
-    it("should correctly extract height") {
-      tile.rows should be (height)
-    }
+  //   it("should correctly extract height") {
+  //     tile.rows should be (height)
+  //   }
 
-    it("should correctly extract cellType") {
-      tile.cellType.toString.take(typeStr.length) should be (typeStr)
-    }
+  //   it("should correctly extract cellType") {
+  //     tile.cellType.toString.take(typeStr.length) should be (typeStr)
+  //   }
 
-    it("should correctly extract the CRS") {
-      val actual = GridCoverage2DToRaster.crs(image)
-      if (actual.nonEmpty)
-        actual.get.epsgCode should be (epsg)
-      else {
-        actual should be (None)
-        epsg should be (None)
-      }
-    }
-  }
+  //   it("should correctly extract the CRS") {
+  //     val actual = GridCoverage2DToRaster.crs(image)
+  //     if (actual.nonEmpty)
+  //       actual.get.epsgCode should be (epsg)
+  //     else {
+  //       actual should be (None)
+  //       epsg should be (None)
+  //     }
+  //   }
+  // }
 
   describe("The GridCoverage2DTile Class") {
 
-    it("should have a working foreach method") {
-      var result: Int = 0
-      tile.foreach({ z => result += z })
+    // it("should have a working foreach method") {
+    //   var result: Int = 0
+    //   tile.foreach({ z => result += z })
 
-      result should be (sumOfAllSamples)
-    }
+    //   result should be (sumOfAllSamples)
+    // }
 
-    it("should have a working foreachDouble method") {
-      var result: Double = 0
-      tile.foreachDouble({ z => result += z })
+    // it("should have a working foreachDouble method") {
+    //   var result: Double = 0
+    //   tile.foreachDouble({ z => result += z })
 
-      result should be (sumOfAllSamplesDouble)
-    }
+    //   result should be (sumOfAllSamplesDouble)
+    // }
 
-    it("should have a working combine method") {
-      var a: Int = 0
-      var b: Int = 0
-      val array = Array.ofDim[Int](sampleModel.getNumBands)
-      val actual = tile.combine(tile)({ (x, y) => (x % 0x7f) + (y % 0x7f)}).get(10, 10)
-      sampleModel.getPixel(10, 10, array, buffer)
-      val expected = (array.head % 0x7f) + (array.head % 0x7f)
+    // it("should have a working combine method") {
+    //   var a: Int = 0
+    //   var b: Int = 0
+    //   val array = Array.ofDim[Int](sampleModel.getNumBands)
+    //   val actual = tile.combine(tile)({ (x, y) => (x % 0x7f) + (y % 0x7f)}).get(10, 10)
+    //   sampleModel.getPixel(10, 10, array, buffer)
+    //   val expected = (array.head % 0x7f) + (array.head % 0x7f)
 
-      println(s"${tile.cellType}")
-      actual should be (expected)
-    }
+    //   println(s"${tile.cellType}")
+    //   actual should be (expected)
+    // }
 
-    it("should have a working combineDouble method") {
-      val array = Array.ofDim[Double](sampleModel.getNumBands)
-      val actual = tile.combineDouble(tile)({ (x, y) => (x % 0x7f) + (y % 0x7f)}).getDouble(10, 10)
-      sampleModel.getPixel(10, 10, array, buffer)
-      val expected = (array.head % 0x7f).toDouble + (array.head % 0x7f).toDouble
+    // it("should have a working combineDouble method") {
+    //   val array = Array.ofDim[Double](sampleModel.getNumBands)
+    //   val actual = tile.combineDouble(tile)({ (x, y) => (x % 0x7f) + (y % 0x7f)}).getDouble(10, 10)
+    //   sampleModel.getPixel(10, 10, array, buffer)
+    //   val expected = (array.head % 0x7f).toDouble + (array.head % 0x7f).toDouble
 
-      actual should be (expected)
-    }
+    //   actual should be (expected)
+    // }
 
-    it("should have a working map method") {
-      val array = Array.ofDim[Int](sampleModel.getNumBands)
-      val mappedTile = tile.map({ z => (z % 0xff) + 1 })
-      val actual = mappedTile.get(10, 10)
+    // it("should have a working map method") {
+    //   val array = Array.ofDim[Int](sampleModel.getNumBands)
+    //   val mappedTile = tile.map({ z => (z % 0xff) + 1 })
+    //   val actual = mappedTile.get(10, 10)
 
-      sampleModel.getPixel(10, 10, array, buffer)
+    //   sampleModel.getPixel(10, 10, array, buffer)
 
-      val expected = ((array.head % 0xff) + 1)
+    //   val expected = ((array.head % 0xff) + 1)
 
-      actual should be (expected)
-    }
+    //   actual should be (expected)
+    // }
 
-    it("should have a working mapDouble method") {
-      val array = Array.ofDim[Double](sampleModel.getNumBands)
-      val mappedTile = tile.mapDouble({ z => (z % 0xff) + 1.0 })
-      val actual = mappedTile.getDouble(10, 10)
+    // it("should have a working mapDouble method") {
+    //   val array = Array.ofDim[Double](sampleModel.getNumBands)
+    //   val mappedTile = tile.mapDouble({ z => (z % 0xff) + 1.0 })
+    //   val actual = mappedTile.getDouble(10, 10)
 
-      sampleModel.getPixel(10, 10, array, buffer)
+    //   sampleModel.getPixel(10, 10, array, buffer)
 
-      val expected = ((array.head % 0xff) + 1.0)
+    //   val expected = ((array.head % 0xff) + 1.0)
 
-      actual should be (expected)
+    //   actual should be (expected)
+    // }
+
+    it("should match values with a GeoTrellis read geotiff") {
+      println(path)
+      val gt = geotrellis.raster.io.geotiff.SinglebandGeoTiff(path)
+//      geotrellis.raster.io.geotiff.GeoTiff(gt.tile.convert(ByteUserDefinedNoDataCellType(-128)), gt.extent, gt.crs).write("/Users/rob/proj/gt/geotrellis-benchmark/test.tif")
+      // val t = tile.toArrayTile
+      val t = image.toRaster(0).tile
+      // println(gt.tile.asciiDraw)
+      // println()
+      // println(t.asciiDraw)
+      t.cols should be (gt.tile.cols)
+      t.rows should be (gt.tile.rows)
+      println(s"THIS ONE $path ${gt.tile.cellType} ${tile.cellType}")
+      gt.tile.foreachDouble { (col, row, z) =>
+        val z2 = t.getDouble(col, row)
+        withClue(s"ACTUAL: ${z2}  EXPECTED: $z  COL $col ROW $row") {
+          if(isNoData(z)) { isNoData(z2) should be (true) }
+          else { z2 should be (z) }
+        }
+      }
     }
   }
 }
@@ -252,5 +274,19 @@ class GridCoverage2D_NlcdTileWebMercatorNearestNeighborSpec extends GridCoverage
   val bandCount = 1
   val typeStr = "uint16"
   val noData = None
+  val epsg = Some(3857)
+}
+
+class SBN_GridCoverage2DToRasterSpec extends GridCoverage2DToRasterSpec {
+  val path = "/Users/rob/proj/gt/geotrellis-benchmark/data/geotiff/SBN_inc_percap.tif"
+//  val path = "/Users/rob/proj/gt/geotrellis-benchmark/test.tif"
+//  val path = "/Users/rob/proj/gt/geotrellis-benchmark/test2.tif"
+//  val path = "/Users/rob/proj/gt/geotrellis/raster-test/data/geotiff-test-files/3bands/3bands-interleave-bands-deflate.tif"
+//  val path = "/Users/rob/proj/gt/geotrellis-benchmark/data/geotiff/r-nir-wm-clipped.tif"
+  val width = 2101
+  val height = 1723
+  val bandCount = 1
+  val typeStr = "uint8"
+  val noData = Some(Byte.MinValue)
   val epsg = Some(3857)
 }

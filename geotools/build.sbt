@@ -28,5 +28,4 @@ initialCommands in console :=
   import org.geotools.coverage.grid._
   import org.geotools.coverage.grid.io._
   import org.geotools.gce.geotiff._
-
   """
