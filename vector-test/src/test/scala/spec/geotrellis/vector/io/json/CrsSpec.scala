@@ -5,13 +5,6 @@ import geotrellis.vector.io._
 
 import org.scalatest._
 import spray.json._
-import spray.httpx.unmarshalling._
-import spray.httpx.marshalling._
-import spray.httpx.SprayJsonSupport._
-import spray.http._
-import HttpCharsets._
-import MediaTypes._
-
 import spray.json.DefaultJsonProtocol._
 
 class CrsSpec extends FlatSpec with Matchers with GeoJsonSupport {
@@ -19,13 +12,8 @@ class CrsSpec extends FlatSpec with Matchers with GeoJsonSupport {
   val line = Line(Point(1,2) :: Point(1,3) :: Nil)
   val crs = NamedCRS("napkin:map:sloppy")
 
-  def jsonBody(blob: String) =
-    HttpEntity(contentType = ContentType(`application/json`, `UTF-8`), string = blob)
-
-
   it should "should attach to a Geometry" in {
     val body =
-      jsonBody(
         """{
           |  "type": "LineString",
           |  "coordinates": [[1.0, 2.0], [1.0, 3.0]],
@@ -35,16 +23,15 @@ class CrsSpec extends FlatSpec with Matchers with GeoJsonSupport {
           |      "name": "napkin:map:sloppy"
           |    }
           |  }
-          |}""".stripMargin
-      )
-    marshal(WithCrs(line, crs)) should equal (Right(body))
-    marshal(line.withCrs(crs)) should equal (Right(body))
-    body.as[WithCrs[Line]] should equal (Right(WithCrs(line, crs)))
+          |}""".stripMargin.parseJson
+
+    WithCrs(line, crs).toJson should be (body)
+    line.withCrs(crs).toJson should be (body)
+    body.convertTo[WithCrs[Line]] should equal (WithCrs(line, crs))
   }
 
   it should "should attach to a GeometryCollection" in {
     val body =
-      jsonBody(
         """{
           |  "type": "GeometryCollection",
           |  "geometries": [{
@@ -60,17 +47,16 @@ class CrsSpec extends FlatSpec with Matchers with GeoJsonSupport {
           |      "name": "napkin:map:sloppy"
           |    }
           |  }
-          |}""".stripMargin
-      )
+          |}""".stripMargin.parseJson
+
     val gc = GeometryCollection(List(point, line))
-    marshal(WithCrs(gc, crs)) should equal (Right(body))
-    body.as[WithCrs[GeometryCollection]] should equal (Right(WithCrs(gc, crs)))
+    WithCrs(gc, crs).toJson should equal (body)
+    body.convertTo[WithCrs[GeometryCollection]] should equal (WithCrs(gc, crs))
   }
 
   it should "attach to a Feature" in {
     val f = PointFeature(Point(1, 44), "Secrets")
     val body =
-    jsonBody(
       """{
         |  "type": "Feature",
         |  "geometry": {
@@ -84,13 +70,9 @@ class CrsSpec extends FlatSpec with Matchers with GeoJsonSupport {
         |      "name": "napkin:map:sloppy"
         |    }
         |  }
-        |}""".stripMargin
-    )
+        |}""".stripMargin.parseJson
 
-//    implicitly[spray.httpx.unmarshalling.Unmarshaller[geotrellis.vector.PointFeature[String]]]
-//    implicitly[spray.httpx.unmarshalling.Unmarshaller[geotrellis.vector.io.json.WithCrs[geotrellis.vector.PointFeature[String]]]]
-
-    marshal(f.withCrs(crs)) should equal (Right(body))
-    body.as[WithCrs[PointFeature[String]]] should equal (Right(WithCrs(f, crs)))
+    f.withCrs(crs).toJson should equal (body)
+    body.convertTo[WithCrs[PointFeature[String]]] should equal (WithCrs(f, crs))
   }
 }

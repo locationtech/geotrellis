@@ -1,18 +1,19 @@
 package geotrellis.spark.io.accumulo
 
-import geotrellis.raster.Tile
+import geotrellis.raster.{Tile, TileFeature}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index._
-import geotrellis.spark.testfiles.TestFiles
+import geotrellis.spark.testfiles.TestTileFeatureFiles
 
-class AccumuloSpatialSpec
-  extends PersistenceSpec[SpatialKey, Tile, TileLayerMetadata[SpatialKey]]
+
+class AccumuloTileFeatureSpatialSpec
+  extends PersistenceSpec[SpatialKey, TileFeature[Tile, Tile], TileLayerMetadata[SpatialKey]]
     with SpatialKeyIndexMethods
     with TestEnvironment
     with AccumuloTestEnvironment
-    with TestFiles
-    with AllOnesTestTileSpec {
+    with TestTileFeatureFiles
+    with AllOnesTestTileFeatureSpec {
 
   implicit lazy val instance = MockAccumuloInstance()
 

@@ -206,7 +206,8 @@ object TiffTagsReader {
       tagMetadata: TiffTagMetadata): TiffTags = {
 
       // Read string, but don't read in trailing 0
-      val string = byteBuffer.getString(tagMetadata.length - 1, tagMetadata.offset)
+      val string =
+        byteBuffer.getString(tagMetadata.length, tagMetadata.offset).substring(0, tagMetadata.length - 1)
 
       tagMetadata.tag match {
         case DateTimeTag => tiffTags &|->
