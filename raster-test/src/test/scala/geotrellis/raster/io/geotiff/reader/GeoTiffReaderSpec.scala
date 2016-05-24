@@ -469,6 +469,10 @@ class GeoTiffReaderSpec extends FunSpec
       assertEqual(geoTiff.toArrayTile, geoTiff2)
     }
 
+    it("should read NODATA string with length = 4") {
+      val geoTiff = SinglebandGeoTiff.compressed(s"$baseDataPath/sbn/SBN_inc_percap-nodata-clip.tif")
+      geoTiff.tile.cellType should be (ByteConstantNoDataCellType)
+    }
   }
 
   describe("Reading and writing special metadata tags ") {
