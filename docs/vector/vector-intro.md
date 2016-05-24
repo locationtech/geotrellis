@@ -68,7 +68,7 @@ a `PointGeometryIntersectionResult.as[Polygon]` will *always* return
 
 An alternative approach uses pattern matching and ensures an exhaustive
 check of the results.
-[`Results.scala`](../../vector/src/main/scala/geotrellis/engine/Results.scala)
+[`Results.scala`](../../vector/src/main/scala/geotrellis/vector/Results.scala)
 contains a large
 [ADT](https://en.wikipedia.org/wiki/Algebraic_data_type) which encodes
 the possible outcomes for different types of outcomes. The result type of

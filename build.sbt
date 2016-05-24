@@ -102,14 +102,6 @@ lazy val rasterTest = Project("raster-test", file("raster-test")).
   dependsOn(raster, rasterTestkit, vectorTestkit).
   settings(commonSettings: _*)
 
-lazy val engine = Project("engine", file("engine")).
-  dependsOn(raster).
-  settings(commonSettings: _*)
-
-lazy val engineTest = Project("engine-test", file("engine-test")).
-  dependsOn(engine, rasterTestkit).
-  settings(commonSettings: _*)
-
 lazy val rasterTestkit = Project("raster-testkit", file("raster-testkit")).
   dependsOn(raster, vector).
   settings(commonSettings: _*)
@@ -147,9 +139,8 @@ lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).
   settings(commonSettings: _*)
 
 lazy val shapefile = Project("shapefile", file("shapefile")).
-  dependsOn(raster, engine, rasterTestkit % "test").
+  dependsOn(raster, rasterTestkit % "test").
   settings(commonSettings: _*)
 
 lazy val util = Project("util", file("util")).
   settings(commonSettings: _*)
-
