@@ -1,7 +1,8 @@
 package geotrellis.vector.io.json
 
-import spray.json._
 import geotrellis.vector._
+
+import spray.json._
 
 /** Abstract trait for various implementations of Coordinate Reference System values */
 sealed abstract trait CRS {
@@ -54,4 +55,3 @@ case class LinkedCRS(href: String, crsType: String = "") extends CRS {
 
 /** Used as a named tuple to extract and insert CRS field in GeoJSON objects */
 case class WithCrs[T](t: T, crs: CRS)
-

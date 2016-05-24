@@ -291,6 +291,7 @@ object CellType {
     case "int16" => ShortConstantNoDataCellType
     case "uint16" => UShortConstantNoDataCellType
     case "int32" => IntConstantNoDataCellType
+    case "int32raw" => IntCellType
     case "float32" => FloatConstantNoDataCellType
     case "float64" => DoubleConstantNoDataCellType
     case ct if ct.startsWith("int8ud") =>
