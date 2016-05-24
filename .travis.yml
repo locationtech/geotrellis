@@ -2,6 +2,8 @@ sudo: false
 
 env:
   global:
+    - MAX_HEAP_SIZE="500M"
+    - HEAP_NEWSIZE="100M"
     - JVM_OPTS="$env:JVM_OPTS -XX:+UseG1GC"
     - JVM_OPTS="$env:JVM_OPTS -XX:G1RSetUpdatingPauseTimePercent=5"
     - GEOTRELLIS_KRYO_REGREQ="YES"
