@@ -44,7 +44,7 @@ object Dependencies {
   val slf4jApi      = "org.slf4j"         % "slf4j-api" % "1.7.7"
   val asm           = "asm"               % "asm"       % "3.3.1"
 
-  val slick         = "com.typesafe.slick" %% "slick"      % "2.1.0"
+  val slick         = "com.typesafe.slick" %% "slick"      % "3.1.0"
   val postgresql    = "postgresql"         % "postgresql"  % "9.1-901.jdbc4"
 
   val caliper       = ("com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT"
@@ -60,4 +60,6 @@ object Dependencies {
   val hadoopClient  = "org.apache.hadoop" % "hadoop-client" % Version.hadoop
 
   val avro          = "org.apache.avro" % "avro" % "1.8.0"
+
+  val slickPG      = "com.github.tminglei" %% "slick-pg" % "0.14.0"
 }
