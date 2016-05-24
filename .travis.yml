@@ -2,10 +2,6 @@ sudo: false
 
 env:
   global:
-    - MAX_HEAP_SIZE="500M"
-    - HEAP_NEWSIZE="100M"
-    - JVM_OPTS="$env:JVM_OPTS -XX:+UseG1GC"
-    - JVM_OPTS="$env:JVM_OPTS -XX:G1RSetUpdatingPauseTimePercent=5"
     - GEOTRELLIS_KRYO_REGREQ="YES"
     - secure: "XAhJXuXqnGlZlU2pGcIQKJ2rF44gIReA0arHwapFII/gR1h+2e6hgqnMXwrZaQa/EvNBaXq7nF3XcTBjrbK+ABeKA/0lOh/7ryIotP0i1YVrca69pSK9BY+Kr1y7ncLMqvoyjBziobOeVZmxbK4RflgUTIO7MKzzb5pNb9SnOK8="
     - secure: "UwH3B4k5Nqt2THYYTY7uRxTPaJXZbK1hHrVsyJjZp/H2uFTYtQTxXpNb9aR7wuHuhLjXwKkq3gEXxEqhfy6V8+ZPbee6MUNvoYe/HhaPjsmTzcVihTBbO9e7g0bIQFc9bzwY15Y1ImshLcDAYvaXwXapy4Z/KadLiBheyqMk8Cs="
@@ -32,7 +28,7 @@ services:
    - docker
 
 before_install:
-  - docker run -d --net=host -m 1G --memory-swap -1 --env="MAX_HEAP_SIZE=500M" --env="HEAP_NEWSIZE=100M" --env="CASSANDRA_LISTEN_ADDRESS=127.0.0.1" --name dc-cassandra cassandra:latest
+  - docker run -d --restart=always --net=host -m 1G --memory-swap -1 --env="MAX_HEAP_SIZE=500M" --env="HEAP_NEWSIZE=100M" --env="CASSANDRA_LISTEN_ADDRESS=127.0.0.1" --name dc-cassandra cassandra:latest
 
 before_script:
   - service --status-all
