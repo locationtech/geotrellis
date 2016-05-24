@@ -2,6 +2,8 @@ sudo: false
 
 env:
   global:
+    - JVM_OPTS="$env:JVM_OPTS -XX:+UseG1GC"
+    - JVM_OPTS="$env:JVM_OPTS -XX:G1RSetUpdatingPauseTimePercent=5"
     - GEOTRELLIS_KRYO_REGREQ="YES"
     - secure: "XAhJXuXqnGlZlU2pGcIQKJ2rF44gIReA0arHwapFII/gR1h+2e6hgqnMXwrZaQa/EvNBaXq7nF3XcTBjrbK+ABeKA/0lOh/7ryIotP0i1YVrca69pSK9BY+Kr1y7ncLMqvoyjBziobOeVZmxbK4RflgUTIO7MKzzb5pNb9SnOK8="
     - secure: "UwH3B4k5Nqt2THYYTY7uRxTPaJXZbK1hHrVsyJjZp/H2uFTYtQTxXpNb9aR7wuHuhLjXwKkq3gEXxEqhfy6V8+ZPbee6MUNvoYe/HhaPjsmTzcVihTBbO9e7g0bIQFc9bzwY15Y1ImshLcDAYvaXwXapy4Z/KadLiBheyqMk8Cs="
@@ -24,8 +26,14 @@ cache:
   - "$HOME/.ivy2"
   - "$HOME/.sbt"
 
-services:
-  - cassandra
+# services:
+#   - cassandra
+
+# Manually install cassandra until https://github.com/travis-ci/travis-ci/issues/3952
+# See https://github.com/openzipkin/zipkin/issues/706
+before_install:
+  - curl -SL http://downloads.datastax.com/community/dsc-cassandra-2.2.3-bin.tar.gz | tar xz
+  - dsc-cassandra-*/bin/cassandra > /dev/null
 
 before_script:
   - service --status-all
