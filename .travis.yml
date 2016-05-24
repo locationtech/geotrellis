@@ -28,7 +28,11 @@ services:
    - docker
 
 before_install:
-  - docker run -d --restart=always --net=host -m 1G --memory-swap -1 --env="MAX_HEAP_SIZE=500M" --env="HEAP_NEWSIZE=100M" --env="CASSANDRA_LISTEN_ADDRESS=127.0.0.1" --name dc-cassandra cassandra:latest
+  - cat /etc/hosts # optionally check the content *before*
+  - hostname "$(hostname | cut -c1-63)"
+  - sed -e "s/^\\(127\\.0\\.0\\.1.*\\)/\\1 $(hostname | cut -c1-63)/" /etc/hosts | tee /etc/hosts
+  - cat /etc/hosts # optionally check the content *after*
+  - docker run -d --restart=always --net=host -m 700M --memory-swap -1 --env="MAX_HEAP_SIZE=500M" --env="HEAP_NEWSIZE=100M" --env="CASSANDRA_LISTEN_ADDRESS=127.0.0.1" --name dc-cassandra cassandra:latest
 
 before_script:
   - service --status-all
