@@ -161,10 +161,20 @@ object TileLayerMetadata {
     K: (? => TilerKeyMethods[K, K2]) ,
     V <: CellGrid,
     K2: SpatialComponent: Boundable
-  ](rdd: RDD[(K, V)], crs: CRS, scheme: LayoutScheme, maxZoom: Int = 0): (Int, TileLayerMetadata[K2]) = {
+  ](rdd: RDD[(K, V)], crs: CRS, scheme: LayoutScheme, maxZoom: Option[Int] = None): (Int, TileLayerMetadata[K2]) = {
     val (extent, cellType, cellSize, bounds) = collectMetadata(rdd)
-    val LayoutLevel(zoom, layout) = (if (maxZoom > 0) scheme.asInstanceOf[ZoomedLayoutScheme].levelForZoom(maxZoom)
-      else scheme.levelFor(extent, cellSize))
+    val LayoutLevel(zoom, layout) = {
+      maxZoom match {
+        case Some(zoom) =>
+          scheme match {
+            case zoomedLayoutScheme: ZoomedLayoutScheme =>
+              zoomedLayoutScheme.levelForZoom(maxZoom.get)
+            case _ => throw new RuntimeException("ZoomedLayoutScheme required when setting a max zoom level")
+          }
+        case None =>
+          scheme.levelFor(extent, cellSize)
+      }
+    }
     val kb = bounds.setSpatialBounds(KeyBounds(layout.mapTransform(extent)))
     (zoom, TileLayerMetadata(cellType, layout, extent, crs, kb))
   }
@@ -174,10 +184,20 @@ object TileLayerMetadata {
     K: GetComponent[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
     K2: SpatialComponent: Boundable
-  ](rdd: RDD[(K, V)], scheme: LayoutScheme, maxZoom: Int = 0): (Int, TileLayerMetadata[K2]) = {
+  ](rdd: RDD[(K, V)], scheme: LayoutScheme, maxZoom: Option[Int] = None): (Int, TileLayerMetadata[K2]) = {
     val (extent, cellType, cellSize, bounds, crs) = collectMetadataWithCRS(rdd)
-    val LayoutLevel(zoom, layout) = (if (maxZoom > 0) scheme.asInstanceOf[ZoomedLayoutScheme].levelForZoom(maxZoom)
-      else scheme.levelFor(extent, cellSize))
+    val LayoutLevel(zoom, layout) = {
+      maxZoom match {
+        case Some(zoom) =>
+          scheme match {
+            case zoomedLayoutScheme: ZoomedLayoutScheme =>
+              zoomedLayoutScheme.levelForZoom(maxZoom.get)
+            case _ => throw new RuntimeException("ZoomedLayoutScheme required when setting a max zoom level")
+          }
+        case None =>
+          scheme.levelFor(extent, cellSize)
+      }
+    }
     val GridBounds(colMin, rowMin, colMax, rowMax) = layout.mapTransform(extent)
     val kb = bounds.setSpatialBounds(KeyBounds(layout.mapTransform(extent)))
     (zoom, TileLayerMetadata(cellType, layout, extent, crs, kb))
