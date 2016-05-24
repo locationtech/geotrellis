@@ -28,8 +28,8 @@ cache:
   - "$HOME/.ivy2"
   - "$HOME/.sbt"
 
-# services:
-#   - cassandra
+services:
+   - cassandra
 
 # Manually install cassandra until https://github.com/travis-ci/travis-ci/issues/3952
 # See https://github.com/openzipkin/zipkin/issues/706
