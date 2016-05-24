@@ -32,7 +32,6 @@ class TestRegistrator extends NormalKryoRegistrator {
       kryo.register(classOf[scala.math.Ordering$$anon$11])
       kryo.register(classOf[scala.math.Ordering$$anon$9])
       kryo.register(classOf[scala.math.Ordering$$anon$4])
-      kryo.register(classOf[geotrellis.spark.knn.KNearestRDDSpec$$anonfun$1$$anonfun$apply$mcV$sp$1$$anonfun$3])
       kryo.register(classOf[scala.math.Ordering$$anonfun$by$1])
       kryo.register(classOf[scala.reflect.ClassTag$$anon$1])
       kryo.register(classOf[Array[Boolean]])
