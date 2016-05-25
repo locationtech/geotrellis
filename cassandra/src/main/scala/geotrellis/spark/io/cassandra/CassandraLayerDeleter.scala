@@ -20,12 +20,12 @@ class CassandraLayerDeleter(val attributeStore: AttributeStore, instance: Cassan
 
     instance.withSessionDo { session =>
       val squery = QueryBuilder.select("key")
-        .from(instance.keyspace, header.tileTable).allowFiltering()
+        .from(header.keyspace, header.tileTable).allowFiltering()
         .where(eqs("name", id.name))
         .and(eqs("zoom", id.zoom))
 
       val dquery = QueryBuilder.delete()
-        .from(instance.keyspace, header.tileTable)
+        .from(header.keyspace, header.tileTable)
         .where(eqs("key", QueryBuilder.bindMarker()))
         .and(eqs("name", id.name))
         .and(eqs("zoom", id.zoom))

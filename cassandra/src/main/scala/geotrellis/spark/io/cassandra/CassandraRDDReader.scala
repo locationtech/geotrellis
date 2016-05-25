@@ -18,6 +18,7 @@ import scala.reflect.ClassTag
 object CassandraRDDReader {
   def read[K: Boundable : AvroRecordCodec : ClassTag, V: AvroRecordCodec : ClassTag](
     instance: CassandraInstance,
+    keyspace: String,
     table: String,
     layerId: LayerId,
     queryKeyBounds: Seq[KeyBounds[K]],
@@ -40,7 +41,7 @@ object CassandraRDDReader {
     val bins = IndexRanges.bin(ranges, numPartitions.getOrElse(sc.defaultParallelism))
 
     val query = QueryBuilder.select("value")
-      .from(instance.keyspace, table)
+      .from(keyspace, table)
       .where(eqs("key", QueryBuilder.bindMarker()))
       .and(eqs("name", layerId.name))
       .and(eqs("zoom", layerId.zoom))

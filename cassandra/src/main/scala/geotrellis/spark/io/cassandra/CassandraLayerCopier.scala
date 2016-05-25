@@ -73,12 +73,13 @@ object CassandraLayerCopier {
 
   def apply(
     instance: CassandraInstance,
+    targetKeyspace: String,
     targetTable: String
   )(implicit sc: SparkContext): CassandraLayerCopier =
     apply(
       CassandraAttributeStore(instance),
       CassandraLayerReader(instance),
-      _ => CassandraLayerWriter(instance, targetTable)
+      _ => CassandraLayerWriter(instance, targetKeyspace, targetTable)
     )
 
   def apply(
@@ -90,7 +91,7 @@ object CassandraLayerCopier {
       CassandraLayerReader(instance),
       { layerId: LayerId =>
         val header = attributeStore.readHeader[CassandraLayerHeader](layerId)
-        CassandraLayerWriter(instance, header.tileTable)
+        CassandraLayerWriter(instance, header.keyspace, header.tileTable)
       }
     )
   }

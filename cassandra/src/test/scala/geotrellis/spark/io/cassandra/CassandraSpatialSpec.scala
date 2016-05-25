@@ -13,7 +13,7 @@ class CassandraSpatialSpec
     with TestFiles
     with AllOnesTestTileSpec {
 
-  lazy val instance       = BaseCassandraInstance(Seq("127.0.0.1"), "geotrellis")
+  lazy val instance       = BaseCassandraInstance(Seq("127.0.0.1"))
   lazy val attributeStore = try {
     CassandraAttributeStore(instance)
   } catch {
@@ -23,7 +23,7 @@ class CassandraSpatialSpec
   }
 
   lazy val reader    = CassandraLayerReader(attributeStore)
-  lazy val writer    = CassandraLayerWriter(attributeStore, "tiles")
+  lazy val writer    = CassandraLayerWriter(attributeStore, "geotrellis", "tiles")
   lazy val deleter   = CassandraLayerDeleter(attributeStore)
   lazy val updater   = CassandraLayerUpdater(attributeStore)
   lazy val tiles     = CassandraValueReader(attributeStore)

@@ -15,6 +15,7 @@ import scala.reflect._
 class CassandraLayerWriter(
   val attributeStore: AttributeStore,
   instance: CassandraInstance,
+  keyspace: String,
   table: String
 ) extends LayerWriter[LayerId] {
 
@@ -30,6 +31,7 @@ class CassandraLayerWriter(
       CassandraLayerHeader(
         keyClass = classTag[K].toString(),
         valueClass = classTag[V].toString(),
+        keyspace = keyspace,
         tileTable = table
       )
     val metadata = rdd.metadata
@@ -37,7 +39,7 @@ class CassandraLayerWriter(
 
     try {
       attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, schema)
-      CassandraRDDWriter.write(rdd, instance, id, encodeKey, table)
+      CassandraRDDWriter.write(rdd, instance, id, encodeKey, keyspace, table)
     } catch {
       case e: Exception => throw new LayerWriteError(id).initCause(e)
     }
@@ -47,21 +49,25 @@ class CassandraLayerWriter(
 object CassandraLayerWriter {
   def apply(
     instance: CassandraInstance,
+    keyspace: String,
     table: String
   ): CassandraLayerWriter =
     new CassandraLayerWriter(
       attributeStore = CassandraAttributeStore(instance),
       instance = instance,
+      keyspace = keyspace,
       table = table
     )
 
   def apply(
     attributeStore: CassandraAttributeStore,
+    keyspace: String,
     table: String
   ): CassandraLayerWriter =
     new CassandraLayerWriter(
       attributeStore = attributeStore,
       instance = attributeStore.instance,
+      keyspace = keyspace,
       table = table
     )
 }

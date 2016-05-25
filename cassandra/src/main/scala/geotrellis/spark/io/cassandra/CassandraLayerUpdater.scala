@@ -33,7 +33,7 @@ class CassandraLayerUpdater(
       case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
     }
 
-    val table = header.tileTable
+    val (keyspace, table) = header.keyspace -> header.tileTable
 
     if (!(keyIndex.keyBounds contains keyBounds))
       throw new LayerOutOfKeyBoundsError(id, keyIndex.keyBounds)
@@ -76,7 +76,7 @@ class CassandraLayerUpdater(
     // Write updated metadata, and the possibly updated schema
     // Only really need to write the metadata and schema
     attributeStore.writeLayerAttributes(id, header, updatedMetadata, keyIndex, schema)
-    CassandraRDDWriter.write(updatedRdd, instance, id, encodeKey, table)
+    CassandraRDDWriter.write(updatedRdd, instance, id, encodeKey, keyspace, table)
   }
 }
 

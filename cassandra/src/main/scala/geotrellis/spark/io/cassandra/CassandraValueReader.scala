@@ -26,7 +26,7 @@ class CassandraValueReader(
     def read(key: K): V = instance.withSession { session =>
       val statement = session.prepare(
         QueryBuilder.select("value")
-          .from(instance.keyspace, header.tileTable)
+          .from(header.keyspace, header.tileTable)
           .where(eqs("key", QueryBuilder.bindMarker()))
           .and(eqs("name", layerId.name))
           .and(eqs("zoom", layerId.zoom))

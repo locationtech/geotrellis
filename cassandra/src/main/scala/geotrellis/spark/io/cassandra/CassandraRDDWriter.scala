@@ -23,6 +23,7 @@ object CassandraRDDWriter {
     instance: CassandraInstance,
     layerId: LayerId,
     decomposeKey: K => Long,
+    keyspace: String,
     table: String
   ): Unit = {
     implicit val sc = raster.sparkContext
@@ -32,7 +33,7 @@ object CassandraRDDWriter {
 
     instance.withSessionDo {
       _.execute(
-        SchemaBuilder.createTable(instance.keyspace, table).ifNotExists()
+        SchemaBuilder.createTable(keyspace, table).ifNotExists()
           .addPartitionKey("key", bigint)
           .addClusteringColumn("name", text)
           .addClusteringColumn("zoom", cint)
@@ -42,7 +43,7 @@ object CassandraRDDWriter {
 
     val query =
       QueryBuilder
-        .insertInto(instance.keyspace, table)
+        .insertInto(keyspace, table)
         .value("name", layerId.name)
         .value("zoom", layerId.zoom)
         .value("key", QueryBuilder.bindMarker())

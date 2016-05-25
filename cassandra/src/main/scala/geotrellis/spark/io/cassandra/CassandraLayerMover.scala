@@ -24,19 +24,21 @@ object CassandraLayerMover {
 
   def apply(
     instance: CassandraInstance,
+    keyspace: String,
     table: String
   )(implicit sc: SparkContext): LayerMover[LayerId] =
     apply(
-      layerCopier = CassandraLayerCopier(instance, table),
+      layerCopier = CassandraLayerCopier(instance, keyspace, table),
       layerDeleter = CassandraLayerDeleter(instance)
     )
 
   def apply(
     attributeStore: CassandraAttributeStore,
+    keyspace: String,
     table: String
   )(implicit sc: SparkContext): LayerMover[LayerId] =
     apply(
-      layerCopier = CassandraLayerCopier(attributeStore.instance, table),
+      layerCopier = CassandraLayerCopier(attributeStore.instance, keyspace, table),
       layerDeleter = CassandraLayerDeleter(attributeStore.instance)
     )
 }

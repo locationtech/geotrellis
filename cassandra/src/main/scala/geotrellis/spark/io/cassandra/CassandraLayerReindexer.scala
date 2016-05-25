@@ -54,10 +54,10 @@ class CassandraLayerReindexer(
     val tmpId = getTmpId(id)
 
     val header = attributeStore.readHeader[CassandraLayerHeader](id)
-    val table = header.tileTable
+    val (keyspace, table) = header.keyspace -> header.tileTable
 
     val layerReader = CassandraLayerReader(instance)
-    val layerWriter = CassandraLayerWriter(instance, table)
+    val layerWriter = CassandraLayerWriter(instance, keyspace, table)
     val layerDeleter = CassandraLayerDeleter(instance)
     val layerCopier = CassandraLayerCopier(attributeStore, layerReader, layerWriter)
 
@@ -78,10 +78,10 @@ class CassandraLayerReindexer(
     val header = attributeStore.readHeader[CassandraLayerHeader](id)
     val existingKeyIndex = attributeStore.readKeyIndex[K](id)
 
-    val table = header.tileTable
+    val (keyspace, table) = header.keyspace -> header.tileTable
 
     val layerReader = CassandraLayerReader(instance)
-    val layerWriter = CassandraLayerWriter(instance, table)
+    val layerWriter = CassandraLayerWriter(instance, keyspace, table)
     val layerDeleter = CassandraLayerDeleter(instance)
     val layerCopier = CassandraLayerCopier(attributeStore, layerReader, layerWriter)
 
