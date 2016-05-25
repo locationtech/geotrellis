@@ -6,7 +6,7 @@ import geotrellis.spark.io.cassandra.CassandraAttributeStore
 
 trait CassandraOutput[K, V, M] extends OutputPlugin[K, V, M] with LazyLogging {
   val name = "cassandra"
-  val requiredKeys = Array("host", "keyspace", "user", "password", "table")
+  val requiredKeys = Array("host", "user", "password", "keyspace", "table")
   
   def attributes(props: Map[String, String]) = CassandraAttributeStore(getInstance(props))
 }
