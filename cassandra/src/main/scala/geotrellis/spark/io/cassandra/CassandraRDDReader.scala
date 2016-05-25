@@ -5,6 +5,7 @@ import geotrellis.spark.util.KryoWrapper
 import geotrellis.spark.{Boundable, KeyBounds, LayerId}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
+
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
 import org.apache.avro.Schema
@@ -57,22 +58,18 @@ object CassandraRDDReader {
                 range <- rangeList
                 index <- range._1 to range._2
               } yield {
-                // mb to use iterator there?
                 val row = session.execute(statement.bind(index.asInstanceOf[java.lang.Long]))
                 if (row.nonEmpty) {
                   val bytes = row.one().getBytes("value").array()
                   val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
-
-                  if (filterIndexOnly)
-                    recs
-                  else
-                    recs.filter { row => includeKey(row._1) }
+                  if (filterIndexOnly) recs
+                  else recs.filter { row => includeKey(row._1) }
                 } else {
                   Seq.empty
                 }
               }
 
-            /** Close partition session; is there a better way to do it? */
+            /** Close partition session */
             (tileSeq ++ Iterator({
               session.closeAsync(); session.getCluster.closeAsync(); Seq.empty[(K, V)]
             })).flatten
