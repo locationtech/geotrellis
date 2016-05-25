@@ -19,7 +19,7 @@ object CassandraAttributeStore {
     new CassandraAttributeStore(instance, attributeKeyspace, attributeTable)
 
   def apply(instance: CassandraInstance): CassandraAttributeStore =
-    apply(instance, Cassandra.cfg.getString("geotrellis.cassandra.keyspace"), Cassandra.cfg.getString("geotrellis.cassandra.catalog"))
+    apply(instance, Cassandra.cfg.getString("keyspace"), Cassandra.cfg.getString("catalog"))
 }
 
 class CassandraAttributeStore(val instance: CassandraInstance, val attributeKeyspace: String, val attributeTable: String) extends DiscreteLayerAttributeStore with Logging {

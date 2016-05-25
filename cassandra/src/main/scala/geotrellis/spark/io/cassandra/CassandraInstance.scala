@@ -45,11 +45,11 @@ case class BaseCassandraInstance(
   hosts: Seq[String],
   username: String = "",
   password: String = "",
-  replicationStrategy: String = Cassandra.cfg.getString("geotrellis.cassandra.replicationStrategy"),
-  replicationFactor: Int = Cassandra.cfg.getInt("geotrellis.cassandra.replicationFactor")) extends CassandraInstance
+  replicationStrategy: String = Cassandra.cfg.getString("replicationStrategy"),
+  replicationFactor: Int = Cassandra.cfg.getInt("replicationFactor")) extends CassandraInstance
 
 object Cassandra {
-  lazy val cfg = ConfigFactory.load()
+  lazy val cfg = ConfigFactory.load().getConfig("geotrellis.cassandra")
 
   implicit def instanceToSession[T <: CassandraInstance](instance: T): Session = instance.session
 
@@ -58,14 +58,14 @@ object Cassandra {
   def withBaseCassandraInstance[K](hosts: Seq[String],
                                    username: String = "",
                                    password: String = "",
-                                   replicationStrategy: String = cfg.getString("geotrellis.cassandra.replicationStrategy"),
-                                   replicationFactor: Int = cfg.getInt("geotrellis.cassandra.replicationFactor"))(block: BaseCassandraInstance => K): K =
+                                   replicationStrategy: String = cfg.getString("replicationStrategy"),
+                                   replicationFactor: Int = cfg.getInt("replicationFactor"))(block: BaseCassandraInstance => K): K =
     block(BaseCassandraInstance(hosts, username, password, replicationStrategy, replicationFactor))
   def withBaseCassandraInstanceDo[K](hosts: Seq[String],
                                      username: String = "",
                                      password: String = "",
-                                     replicationStrategy: String = cfg.getString("geotrellis.cassandra.replicationStrategy"),
-                                     replicationFactor: Int = cfg.getInt("geotrellis.cassandra.replicationFactor"))(block: BaseCassandraInstance => K): K = {
+                                     replicationStrategy: String = cfg.getString("replicationStrategy"),
+                                     replicationFactor: Int = cfg.getInt("replicationFactor"))(block: BaseCassandraInstance => K): K = {
     val instance = BaseCassandraInstance(hosts, username, password, replicationStrategy, replicationFactor)
     try block(instance) finally instance.closeAsync
   }
