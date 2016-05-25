@@ -30,8 +30,8 @@ trait SinglebandTileCropMethods extends TileCropMethods[Tile] {
   }
 
   /**
-    * Given a source [[Extent]], a destination Extent, and some
-    * cropping options, produce a cropped [[Raster]].
+    * Given a source Extent, a destination Extent, and some cropping
+    * options, produce a cropped [[Raster]].
     */
   def crop(srcExtent: Extent, extent: Extent, options: Options): Tile =
     Raster(self, srcExtent).crop(extent, options).tile

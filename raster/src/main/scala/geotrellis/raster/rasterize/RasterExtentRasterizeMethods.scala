@@ -32,8 +32,8 @@ trait RasterExtentRasterizeMethods[T <: RasterExtent] extends MethodExtensions[T
 
   /**
     * Call the function 'fn' on each cell of present [[RasterExtent]]
-    * that is covered by the [[Geometry]].  The precise definition of
-    * the word "covered" is determined by the options parameter.
+    * that is covered by the Geometry.  The precise definition of the
+    * word "covered" is determined by the options parameter.
     */
   def foreach(
     geom : Geometry,
@@ -43,8 +43,8 @@ trait RasterExtentRasterizeMethods[T <: RasterExtent] extends MethodExtensions[T
 
   /**
     * Call the function 'fn' on each cell of present [[RasterExtent]]
-    * that is covered by the [[Geometry]].  The precise definition of
-    * the word "covered" is determined by the options parameter.  The
+    * that is covered by the Geometry.  The precise definition of the
+    * word "covered" is determined by the options parameter.  The
     * result is a new [[Raster]].
     */
   def rasterize(
@@ -56,8 +56,8 @@ trait RasterExtentRasterizeMethods[T <: RasterExtent] extends MethodExtensions[T
 
   /**
     * Call the function 'fn' on each cell of present [[RasterExtent]]
-    * that is covered by the [[Geometry]].  The precise definition of
-    * the word "covered" is determined by the options parameter.  The
+    * that is covered by the Geometry.  The precise definition of the
+    * word "covered" is determined by the options parameter.  The
     * result is a new [[Raster]].
     */
   def rasterizeDouble(

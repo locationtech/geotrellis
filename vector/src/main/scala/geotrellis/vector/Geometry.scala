@@ -66,8 +66,10 @@ trait Geometry {
   def intersection(g: Geometry): TwoDimensionsTwoDimensionsIntersectionResult =
     jtsGeom.intersection(g.jtsGeom)
 
-  /** Computes a Result that represents a Geometry made up of the points shared
-    * by this Polygon and g. If it fails, it reduces the precision to avoid [[TopologyException]].
+  /**
+    * Computes a Result that represents a Geometry made up of the
+    * points shared by this Polygon and g. If it fails, it reduces the
+    * precision to avoid TopologyException.
     */
   def safeIntersection(g: Geometry): TwoDimensionsTwoDimensionsIntersectionResult =
     try intersection(g)
