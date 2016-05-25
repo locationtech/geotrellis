@@ -3,7 +3,6 @@
 docker pull cassandra:latest
 
 docker run \
-  -d \
   --rm \
   --net=host \
   -m 1G \
