@@ -11,6 +11,7 @@ env:
 language: scala
 
 services:
+  - docker
   - postgresql
 
 before_script:
@@ -31,9 +32,6 @@ cache:
   directories:
   - "$HOME/.ivy2"
   - "$HOME/.sbt"
-
-services:
-   - docker
 
 before_install:
   - cat /etc/hosts # optionally check the content *before*
