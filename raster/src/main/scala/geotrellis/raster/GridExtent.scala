@@ -14,7 +14,7 @@ case class GridExtent(extent: Extent, cellwidth: Double, cellheight: Double) ext
 object GridExtent {
 
   /**
-    * Given an [[Extent]] and a [[CellSize]], produce a new
+    * Given an Extent and a [[CellSize]], produce a new
     * [[GridExtent]].
     */
   def apply(extent: Extent, cellSize: CellSize): GridExtent =

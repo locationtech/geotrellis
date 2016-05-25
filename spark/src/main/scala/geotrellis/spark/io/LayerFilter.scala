@@ -25,8 +25,11 @@ trait LayerFilter[K, F, T, M] {
   def apply(metadata: M, kb: KeyBounds[K], param: T): Seq[KeyBounds[K]]
 
   import LayerFilter._
-  /** Applies all the filters contained in the expression tree to input KeyBounds.
-    * Resulting list may be equal to or less than the number of [[Value]]s in ast. */
+  /**
+    * Applies all the filters contained in the expression tree to
+    * input KeyBounds.  Resulting list may be equal to or less than
+    * the number of Value objects in the AST.
+    */
   def apply(metadata: M, kb: KeyBounds[K], ast: Expression[_, T])(implicit boundable: Boundable[K]): List[KeyBounds[K]] = {
     def flatten(metadata: M, kb: KeyBounds[K], ast: Expression[_, T]): Seq[KeyBounds[K]] =
       ast match {

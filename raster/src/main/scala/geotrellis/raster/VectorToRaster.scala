@@ -33,7 +33,7 @@ object VectorToRaster {
     *
     * @param      points           Sequence of point features who's values will be used to
     *                              compute the density.
-    * @param      kernel           [[Kernel]] to be used in the computation.
+    * @param      kernel           Kernel to be used in the computation.
     * @param      rasterExtent     Raster extent of the resulting raster.
     *
     * @note                        KernelDensity does not currently support Double raster data.
@@ -53,7 +53,7 @@ object VectorToRaster {
     *                              compute the density.
     * @param      transform        Function that transforms the point feature's data into
     *                              an Int value.
-    * @param      kernel           [[Kernel]] to be used in the computation.
+    * @param      kernel           Kernel to be used in the computation.
     * @param      rasterExtent     Raster extent of the resulting raster.
     *
     * @note                        KernelDensity does not currently support Double raster data.

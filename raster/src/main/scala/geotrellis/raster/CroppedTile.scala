@@ -30,7 +30,7 @@ object CroppedTile {
 
   /**
     * A function which produces a [[CroppedTile]] given a source
-    * [[Tile]], a source [[Extent]] and a target [[Extent]].
+    * [[Tile]], a source Extent and a target Extent.
     *
     * @param   sourceTile    The source tile
     * @param   sourceExtent  The extent of the source tile

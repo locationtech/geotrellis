@@ -138,7 +138,8 @@ object TileLayerMetadata {
   }
 
   /**
-    * Compose Extents from given raster tiles and fit it on given [[TileLayout]]
+    * Compose Extents from given raster tiles and fit it on given
+    * TileLayout.
     */
   def fromRdd[
     K: (? => TilerKeyMethods[K, K2]),
@@ -151,8 +152,9 @@ object TileLayerMetadata {
   }
 
   /**
-   * Compose Extents from given raster tiles and use [[LayoutScheme]] to create the [[LayoutDefinition]].
-   */
+    * Compose Extents from given raster tiles and use LayoutScheme to
+    * create the LayoutDefinition.
+    */
   def fromRdd[
     K: (? => TilerKeyMethods[K, K2]) ,
     V <: CellGrid,
