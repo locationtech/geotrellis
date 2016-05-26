@@ -53,13 +53,22 @@ trait HadoopSparkContextMethods {
   def hadoopTemporalGeoTiffRDD(path: Path, tiffExtension: String): RDD[(TemporalProjectedExtent, Tile)] =
     hadoopTemporalGeoTiffRDD(path, Seq(tiffExtension))
 
-  def hadoopTemporalGeoTiffRDD(path: Path, tiffExtensions: Seq[String]): RDD[(TemporalProjectedExtent, Tile)] =
+  def hadoopTemporalGeoTiffRDD(
+    path: Path,
+    tiffExtensions: Seq[String] = defaultTiffExtensions,
+    timeTag: String = TemporalGeoTiffInputFormat.GEOTIFF_TIME_TAG_DEFAULT,
+    timeFormat: String = TemporalGeoTiffInputFormat.GEOTIFF_TIME_FORMAT_DEFAULT
+  ): RDD[(TemporalProjectedExtent, Tile)] = {
+    val conf = sc.hadoopConfiguration.withInputDirectory(path, tiffExtensions)
+    TemporalGeoTiffInputFormat.setTimeTag(conf, timeTag)
+    TemporalGeoTiffInputFormat.setTimeFormat(conf, timeFormat)
     sc.newAPIHadoopRDD(
-      sc.hadoopConfiguration.withInputDirectory(path, tiffExtensions),
+      conf,
       classOf[TemporalGeoTiffInputFormat],
       classOf[TemporalProjectedExtent],
       classOf[Tile]
     )
+  }
 
   def hadoopMultibandGeoTiffRDD(path: String): RDD[(ProjectedExtent, MultibandTile)] =
     hadoopMultibandGeoTiffRDD(new Path(path), defaultTiffExtensions)
@@ -87,13 +96,22 @@ trait HadoopSparkContextMethods {
   def hadoopTemporalMultibandGeoTiffRDD(path: String, tiffExtensions: Seq[String]): RDD[(TemporalProjectedExtent, MultibandTile)] =
     hadoopTemporalMultibandGeoTiffRDD(new Path(path), tiffExtensions)
 
-  def hadoopTemporalMultibandGeoTiffRDD(path: Path, tiffExtensions: Seq[String] = defaultTiffExtensions): RDD[(TemporalProjectedExtent, MultibandTile)] =
+  def hadoopTemporalMultibandGeoTiffRDD(
+    path: Path,
+    tiffExtensions: Seq[String] = defaultTiffExtensions,
+    timeTag: String = TemporalGeoTiffInputFormat.GEOTIFF_TIME_TAG_DEFAULT,
+    timeFormat: String = TemporalGeoTiffInputFormat.GEOTIFF_TIME_FORMAT_DEFAULT
+  ): RDD[(TemporalProjectedExtent, MultibandTile)] = {
+    val conf = sc.hadoopConfiguration.withInputDirectory(path, tiffExtensions)
+    TemporalGeoTiffInputFormat.setTimeTag(conf, timeTag)
+    TemporalGeoTiffInputFormat.setTimeFormat(conf, timeFormat)
     sc.newAPIHadoopRDD(
-      sc.hadoopConfiguration.withInputDirectory(path, tiffExtensions),
+      conf,
       classOf[TemporalMultibandGeoTiffInputFormat],
       classOf[TemporalProjectedExtent],
       classOf[MultibandTile]
     )
+  }
 
   def newJob: Job =
     Job.getInstance(sc.hadoopConfiguration)
