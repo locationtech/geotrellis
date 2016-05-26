@@ -8,7 +8,6 @@ libraryDependencies ++= Seq(
   "org.geotools" % "gt-geotiff" % Version.geotools,
   "org.geotools" % "gt-main" % Version.geotools,
   "org.geotools" % "gt-referencing" % Version.geotools,
-  "org.apache.spark" %% "spark-core" % Version.spark % "provided",
   jts,
   spire,
   "org.geotools" % "gt-shapefile" % Version.geotools % "test",
