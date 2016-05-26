@@ -27,22 +27,36 @@ import scala.collection.JavaConverters._
 
 object SimpleFeatureToFeature {
 
+  private def jtsToGeotrellis(geometry: Object): Geometry = {
+    geometry match {
+      case lr: jts.LinearRing => Line(lr)
+      case ls: jts.LineString => Line(ls)
+      case pt: jts.Point => Point(pt)
+      case pg: jts.Polygon => Polygon(pg)
+      case mp: jts.MultiPoint => MultiPoint(mp)
+      case ml: jts.MultiLineString => MultiLine(ml)
+      case mp: jts.MultiPolygon => MultiPolygon(mp)
+      case gc: jts.GeometryCollection => GeometryCollection(gc)
+      case  g: jts.Geometry => throw new Exception(s"Unhandled JTS Geometry $g")
+      case _ => throw new Exception("Non-Geometry")
+    }
+  }
+
   def apply(simpleFeature: SimpleFeature): Feature[Geometry, Map[String, Object]] = {
     val properties = simpleFeature.getProperties.asScala
     val map = mutable.Map.empty[String, Object]
-    var geometry: Geometry = null
+    val defaultGeom = simpleFeature.getDefaultGeometry
+    var geometry: Geometry = if (defaultGeom != null) jtsToGeotrellis(defaultGeom); else null
 
     properties.foreach({ property =>
-      property.getValue match {
-        case lr: jts.LinearRing => geometry = Line(lr)
-        case ls: jts.LineString => geometry = Line(ls)
-        case pt: jts.Point => geometry = Point(pt)
-        case pg: jts.Polygon => geometry = Polygon(pg)
-        case mp: jts.MultiPoint => geometry = MultiPoint(mp)
-        case ml: jts.MultiLineString => geometry = MultiLine(ml)
-        case mp: jts.MultiPolygon => geometry = MultiPolygon(mp)
-        case gc: jts.GeometryCollection => geometry = GeometryCollection(gc)
-        case  g: jts.Geometry => throw new Exception(s"Unhandled JTS Geometry $g")
+      (defaultGeom, property.getValue) match {
+        case (null, g: jts.Geometry) => geometry = jtsToGeotrellis(g)
+        case (g1: jts.Geometry, g2: jts.Geometry) =>
+          val key = property.getName.toString
+          val value = jtsToGeotrellis(g2)
+          if (g1.toString != g2.toString) {
+            map += (key -> value)
+          }
         case _ =>
           val key = property.getName.toString
           val value = property.getValue
