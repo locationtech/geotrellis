@@ -9,7 +9,7 @@ import inspect
 
 class Tile(CellGrid):
 
-    def _map(self, f):
+    def map(self, f):
         argspec = inspect.getargspec(f)
         paramsCount = len(argspec[0])
         if paramsCount == 1:
@@ -25,7 +25,7 @@ class Tile(CellGrid):
         else:
             return self.mapDoubleMapper(f)
         
-    def _foreach(self, f):
+    def foreach(self, f):
         argspec = inspect.getargspec(f)
         paramsCount = len(argspec[0])
         if paramsCount == 1:
