@@ -15,7 +15,7 @@ class CassandraTileFeatureSpatialSpec
 
   lazy val instance       = BaseCassandraInstance(Seq("127.0.0.1"))
   lazy val attributeStore = try {
-    CassandraAttributeStore(instance)
+    CassandraAttributeStore(instance, "geotrellis-tf", "metadata")
   } catch {
     case e: Exception =>
       println("A script for setting up the Cassandra environment necessary to run these tests can be found at scripts/cassandraTestDB.sh - requires a working docker setup")
