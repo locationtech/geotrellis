@@ -23,6 +23,9 @@ trait CassandraInstance extends Serializable {
   def ensureKeyspaceExists(keyspace: String, session: Session): Unit =
     session.execute(s"create keyspace if not exists ${keyspace} with replication = {'class': '${replicationStrategy}', 'replication_factor': ${replicationFactor} }")
 
+  def dropKeyspace(keyspace: String, session: Session): Unit =
+    session.execute(s"drop keyspace if exists $keyspace;")
+
   /** Without session close, for a custom session close */
   def withSession[T](block: Session => T): T = block(session)
 

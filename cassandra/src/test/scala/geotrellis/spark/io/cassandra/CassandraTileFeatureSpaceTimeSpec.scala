@@ -24,7 +24,7 @@ class CassandraTileFeatureSpaceTimeSpec
   }
 
   lazy val reader    = CassandraLayerReader(attributeStore)
-  lazy val writer    = CassandraLayerWriter(attributeStore, "geotrellis", "tiles")
+  lazy val writer    = CassandraLayerWriter(attributeStore, "geotrellis-tf", "tiles")
   lazy val deleter   = CassandraLayerDeleter(attributeStore)
   lazy val updater   = CassandraLayerUpdater(attributeStore)
   lazy val tiles     = CassandraValueReader(attributeStore)
