@@ -68,5 +68,5 @@ object CassandraValueReader {
   def apply(attributeStore: CassandraAttributeStore): CassandraValueReader =
     new CassandraValueReader(
       instance = attributeStore.instance,
-      attributeStore = CassandraAttributeStore(attributeStore.instance))
+      attributeStore = attributeStore)
 }

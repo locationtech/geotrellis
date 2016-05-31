@@ -92,6 +92,6 @@ object CassandraLayerUpdater {
     new CassandraLayerUpdater(
       instance = attributeStore.instance,
       attributeStore = attributeStore,
-      layerReader = CassandraLayerReader(attributeStore.instance)
+      layerReader = CassandraLayerReader(attributeStore)
     )
 }
