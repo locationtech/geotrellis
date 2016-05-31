@@ -68,15 +68,14 @@ object Kernel {
 
     val rad2 = rad*rad
 
-    val w = size/2
-    var r = -w
-    var c = -w
-    while(r <= w) {
-      while(c <= w) {
-        output.set(c+w, r+w, if (r * r + c * c <= rad2) 1 else 0)
+    var r = 0
+    var c = 0
+    while(r < size) {
+      while(c < size) {
+        output.set(c, r, if (r * r + c * c < rad2) 1 else 0)
         c += 1
       }
-      c = -w
+      c = 0
       r += 1
     }
 
