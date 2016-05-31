@@ -10,15 +10,14 @@ env:
 
 language: scala
 
+addons:
+  # Fix OpenJDK builds
+  # https://github.com/travis-ci/travis-ci/issues/5227
+  hostname: short-hostname
+
 services:
   - docker
   - postgresql
-
-before_install:
-  - cat /etc/hosts # optionally check the content *before*
-  - sudo hostname "$(hostname | cut -c1-63)"
-  - sed -e "s/^\\(127\\.0\\.0\\.1.*\\)/\\1 $(hostname | cut -c1-63)/" /etc/hosts | sudo tee /etc/hosts
-  - cat /etc/hosts # optionally check the content *after*
 
 before_script:
   - psql -c 'create database slick_tests;' -U postgres
