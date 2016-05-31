@@ -75,7 +75,9 @@ trait TestEnvironment extends BeforeAndAfterAll
     if(Properties.envOrNone("GEOTRELLIS_USE_JAVA_SER") == None) {
       conf
         .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+        // .set("spark.serializer", "org.apache.spark.serializer.TestKryoSerializer")
         .set("spark.kryoserializer.buffer.max", "500m")
+        .set("spark.kryo.registrationRequired","false")
       setKryoRegistrator(conf)
     }
 

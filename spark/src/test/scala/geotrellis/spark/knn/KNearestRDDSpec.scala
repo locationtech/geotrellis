@@ -4,6 +4,7 @@ import geotrellis.spark._
 import geotrellis.vector._
 
 import org.apache.spark.rdd.RDD._
+import org.apache.spark._
 
 import org.scalatest._
 
