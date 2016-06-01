@@ -60,7 +60,7 @@ object AccumuloUtils {
     *
     * @param  tableName         The name of the table to be split
     * @param  accumuloInstnace  The Accumulo instance associated with the ingest
-    * @param  keyBounds         The [[KeyBounds]] of the RDD that is being stored in the table
+    * @param  keyBounds         The KeyBounds of the RDD that is being stored in the table
     * @param  keyIndexer        The indexing scheme used to turn keys K into Accumulo keys
     * @param  count             The number of tablets to split the table into
     */

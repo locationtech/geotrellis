@@ -103,10 +103,10 @@ abstract class CellwiseCalculation[T] (
  */
 
 /**
- * Defines a focal calculation as returning
- * a [[Tile]] with [[BitArrayTile]], and defines
- * the [[Initialization]].init function for setting up the tile.
- */
+  * Defines a focal calculation as returning a [[Tile]] with
+  * [[BitArrayTile]], and defines the Initialization.init function for
+  * setting up the tile.
+  */
 trait BitArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] =>
   /** [[BitArrayTile]] that will be returned by the focal calculation */
   val cols: Int = bounds.width
@@ -117,10 +117,10 @@ trait BitArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] 
 }
 
 /**
- * Defines a focal calculation as returning
- * a [[Tile]] with [[ByteArrayTile]], and defines
- * the [[Initialization]].init function for setting up the tile.
- */
+  * Defines a focal calculation as returning a [[Tile]] with
+  * [[ByteArrayTile]], and defines the Initialization.init function
+  * for setting up the tile.
+  */
 trait ByteArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] =>
   /** [[ByteArrayTile]] that will be returned by the focal calculation */
   val cols: Int = bounds.width
@@ -131,10 +131,10 @@ trait ByteArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile]
 }
 
 /**
- * Defines a focal calculation as returning
- * a [[Tile]] with [[ShortArrayTile]], and defines
- * the [[Initialization]].init function for setting up the tile.
- */
+  * Defines a focal calculation as returning a [[Tile]] with
+  * [[ShortArrayTile]], and defines the Initialization.init function
+  * for setting up the tile.
+  */
 trait ShortArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] =>
   /** [[ShortArrayTile]] that will be returned by the focal calculation */
   val cols: Int = bounds.width
@@ -145,10 +145,10 @@ trait ShortArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile
 }
 
 /**
- * Defines a focal calculation as returning
- * a [[Tile]] with [[IntArrayTile]], and defines
- * the [[Initialization]].init function for setting up the tile.
- */
+  * Defines a focal calculation as returning a [[Tile]] with
+  * [[IntArrayTile]], and defines the Initialization.init function for
+  * setting up the tile.
+  */
 trait IntArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] =>
   /** [[IntArrayTile]] that will be returned by the focal calculation */
   val cols: Int = bounds.width
@@ -159,10 +159,10 @@ trait IntArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] 
 }
 
 /**
- * Defines a focal calculation as returning
- * a [[Tile]] with [[FloatArrayTile]], and defines
- * the [[Initialization]].init function for setting up the tile.
- */
+  * Defines a focal calculation as returning a [[Tile]] with
+  * [[FloatArrayTile]], and defines the Initialization.init function
+  * for setting up the tile.
+  */
 trait FloatArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] =>
   /** [[FloatArrayTile]] that will be returned by the focal calculation */
   val cols: Int = bounds.width
@@ -173,10 +173,10 @@ trait FloatArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile
 }
 
 /**
- * Defines a focal calculation as returning
- * a [[Tile]] with [[DoubleArrayTile]], and defines
- * the [[Initialization]].init function for setting up the tile.
- */
+  * Defines a focal calculation as returning a [[Tile]] with
+  * [[DoubleArrayTile]], and defines the Initialization.init function
+  * for setting up the tile.
+  */
 trait DoubleArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] =>
   /** [[DoubleArrayTile]] that will be returned by the focal calculation */
   val cols: Int = bounds.width

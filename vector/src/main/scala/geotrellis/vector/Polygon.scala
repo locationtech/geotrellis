@@ -153,9 +153,10 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
     jtsGeom.intersection(p.jtsGeom)
 
   /**
-   * Computes a Result that represents a Geometry made up of the points shared
-   * by this Polygon and g. If it fails, it reduces the precision to avoid [[TopologyException]].
-   */
+    * Computes a Result that represents a Geometry made up of the
+    * points shared by this Polygon and g. If it fails, it reduces the
+    * precision to avoid TopologyException.
+    */
   def safeIntersection(p: Point): PointOrNoResult =
     try intersection(p)
     catch {
@@ -177,9 +178,10 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
     jtsGeom.intersection(mp.jtsGeom)
 
   /**
-   * Computes a Result that represents a Geometry made up of the points shared
-   * by this Polygon and g. If it fails, it reduces the precision to avoid [[TopologyException]].
-   */
+    * Computes a Result that represents a Geometry made up of the
+    * points shared by this Polygon and g. If it fails, it reduces the
+    * precision to avoid TopologyException.
+    */
   def safeIntersection(mp: MultiPoint): MultiPointAtLeastOneDimensionIntersectionResult =
     try intersection(mp)
     catch {
@@ -201,9 +203,10 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
     jtsGeom.intersection(g.jtsGeom)
 
   /**
-   * Computes a Result that represents a Geometry made up of the points shared
-   * by this Polygon and g. If it fails, it reduces the precision to avoid [[TopologyException]].
-   */
+    * Computes a Result that represents a Geometry made up of the
+    * points shared by this Polygon and g. If it fails, it reduces the
+    * precision to avoid TopologyException.
+    */
   def safeIntersection(g: OneDimension): OneDimensionAtLeastOneDimensionIntersectionResult =
     try intersection(g)
     catch {
@@ -225,9 +228,10 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
     jtsGeom.intersection(g.jtsGeom)
 
   /**
-   * Computes a Result that represents a Geometry made up of the points shared
-   * by this Polygon and g. If it fails, it reduces the precision to avoid [[TopologyException]].
-   */
+    * Computes a Result that represents a Geometry made up of the
+    * points shared by this Polygon and g. If it fails, it reduces the
+    * precision to avoid TopologyException.
+    */
   def safeIntersection(g: TwoDimensions): TwoDimensionsTwoDimensionsIntersectionResult =
     try intersection(g)
     catch {

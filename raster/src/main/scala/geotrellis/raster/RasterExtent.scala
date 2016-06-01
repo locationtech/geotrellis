@@ -26,14 +26,14 @@ import scala.math.{min, max, ceil}
 case class GeoAttrsError(msg: String) extends Exception(msg)
 
 /**
-  * RasterExtent objects represent the geographic extent (envelope) of
-  * a raster.
+  * [[RasterExtent]] objects represent the geographic extent
+  * (envelope) of a raster.
   *
   * The Raster extent has two coordinate concepts involved: map
   * coordinates and grid coordinates. Map coordinates are what the
-  * [[Extent]] class uses, and specifies points using an X coordinate
-  * and a Y coordinate. The X coordinate is oriented along west to
-  * east such that the larger the X coordinate, the more eastern the
+  * Extent class uses, and specifies points using an X coordinate and
+  * a Y coordinate. The X coordinate is oriented along west to east
+  * such that the larger the X coordinate, the more eastern the
   * point. The Y coordinate is along south to north such that the
   * larger the Y coordinate, the more Northern the point.
   *
@@ -193,8 +193,9 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
   }
 
   /**
-    * Combine two different RasterExtents (which must have the same
-    * cellsizes).  The result is a new extent at the same resolution.
+    * Combine two different [[RasterExtent]]s (which must have the
+    * same cellsizes).  The result is a new extent at the same
+    * resolution.
     */
   def combine (that: RasterExtent): RasterExtent = {
     if (cellwidth != that.cellwidth)
@@ -210,7 +211,7 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
   }
 
   /**
-    * Returns a RasterExtent with the same extent, but a modified
+    * Returns a [[RasterExtent]] with the same extent, but a modified
     * number of columns and rows based on the given cell height and
     * width.
     */
@@ -221,7 +222,7 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
   }
 
   /**
-    * Returns a RasterExtent with the same extent, but a modified
+    * Returns a [[RasterExtent]] with the same extent, but a modified
     * number of columns and rows based on the given cell height and
     * width.
     */
@@ -229,8 +230,8 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
     withResolution(cellSize.width, cellSize.height)
 
   /**
-   * Returns a RasterExtent with the same extent and the
-   * given number of columns and rows.
+   * Returns a [[RasterExtent]] with the same extent and the given
+   * number of columns and rows.
    */
   def withDimensions(targetCols: Int, targetRows: Int): RasterExtent =
     RasterExtent(extent, targetCols, targetRows)
@@ -251,8 +252,8 @@ case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, c
   }
 
   /**
-    * Returns a new RasterExtent which represents the GridBounds in relation to this
-    * RasterExtent.
+    * Returns a new [[RasterExtent]] which represents the GridBounds
+    * in relation to this RasterExtent.
     */
   def rasterExtentFor(gridBounds: GridBounds): RasterExtent = {
     val (xminCenter, ymaxCenter) = gridToMap(gridBounds.colMin, gridBounds.rowMin)
@@ -270,8 +271,8 @@ object RasterExtent {
   final val epsilon = 0.0000001
 
   /**
-    * Create a new [[RasterExtent]] from an [[Extent]], a column, and
-    * a row.
+    * Create a new [[RasterExtent]] from an Extent, a column, and a
+    * row.
     */
   def apply(extent: Extent, cols: Int, rows: Int): RasterExtent = {
     val cw = extent.width / cols
@@ -280,8 +281,7 @@ object RasterExtent {
   }
 
   /**
-    * Create a new [[RasterExtent]] from an [[Extent]] and a
-    * [[CellSize]].
+    * Create a new [[RasterExtent]] from an Extent and a [[CellSize]].
     */
   def apply(extent: Extent, cellSize: CellSize): RasterExtent = {
     val cols = (extent.width / cellSize.width).toInt
@@ -290,15 +290,13 @@ object RasterExtent {
   }
 
   /**
-    * Create a new [[RasterExtent]] from a [[CellGrid]] and an
-    * [[Extent]].
+    * Create a new [[RasterExtent]] from a [[CellGrid]] and an Extent.
     */
   def apply(tile: CellGrid, extent: Extent): RasterExtent =
     apply(extent, tile.cols, tile.rows)
 
   /**
-    * Create a new [[RasterExtent]] from an [[Extent]] and a
-    * [[CellGrid]].
+    * Create a new [[RasterExtent]] from an Extent and a [[CellGrid]].
     */
   def apply(extent: Extent, tile: CellGrid): RasterExtent =
     apply(extent, tile.cols, tile.rows)

@@ -10,7 +10,7 @@ import geotrellis.vector.{Extent, ProjectedExtent}
   */
 object ProjectedRaster {
   /**
-    * Implicit conversion from a [[Raster]], [[CRS]] pair to a
+    * Implicit conversion from a [[Raster]], CRS pair to a
     * [[ProjectedRaster]].
     */
   implicit def tupToRaster[T <: CellGrid](tup: (Raster[T], CRS)): ProjectedRaster[T] =
@@ -29,8 +29,8 @@ object ProjectedRaster {
     p.raster.tile
 
   /**
-    * Take a [[Tile]], and [[Extent]], and a [[CRS]] and use them to
-    * produce a [[ProjectedRaster]].
+    * Take a [[Tile]], and Extent, and a CRS and use them to produce a
+    * [[ProjectedRaster]].
     */
   def apply[T <: CellGrid](tile: T, extent: Extent, crs: CRS): ProjectedRaster[T] =
     ProjectedRaster(Raster(tile, extent), crs)

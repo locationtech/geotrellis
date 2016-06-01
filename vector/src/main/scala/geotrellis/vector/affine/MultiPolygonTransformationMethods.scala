@@ -6,8 +6,10 @@ import geotrellis.vector._
 /** Trait used to implicitly extend [[Polygon]] instances with transformation methods */
 trait MultiPolygonTransformationMethods extends MethodExtensions[MultiPolygon] {
 
-  /** Transform according to a provided [[AffineTransformation]] instance
-    * @param trans  an AffineTransformation
+  /**
+    * Transform according to a provided AffineTransformation instance.
+    *
+    * @param  trans  An AffineTransformation
     */
   def transform(trans: AffineTransformation) = trans.transform(self)
 

@@ -125,7 +125,19 @@ object ColorRamp {
     * @param n       Length of list to return
     */
   def spread(colors: Vector[Int], n: Int): Vector[Int] = {
+    /* The requested spread matches the original */
     if (colors.length == n) return colors
+
+    /* In the case of a Layer comprised entirely of NODATA, a call to
+     * `classBreaksDouble` will yield an empty `Array`. That propagates here,
+     * where an attempt to index below results in a bounds exception.
+     *
+     * Guarding on this condition and returning an empty `Vector` instead
+     * is still valid; a `ColorMap` that contains an empty `colors` field
+     * will still perform as expected and refuse to colour NODATA locations,
+     * thanks to the `noDataColor` field in `ColorMap.Options`.
+     */
+    if (n < 1) return Vector.empty[Int]
 
     val colors2 = new Array[Int](n)
     colors2(0) = colors(0)
@@ -142,51 +154,58 @@ object ColorRamp {
 
   /** RGBA interpolation logic */
 
-  def chooseColors(c: Vector[Int], numColors: Int): Vector[Int] =
-    getColorSequence(numColors) { (masker: Int => Int, count: Int) =>
-      val hues = c.map(masker)
-      val mult = c.length - 1
-      val denom = count - 1
+  def chooseColors(c: Vector[Int], numColors: Int): Vector[Int] = c match {
+    case c if c.isEmpty => c
+    case _ => {
+      getColorSequence(numColors) { (masker: Int => Int) =>
+        val hues = c.map(masker)
+        val mult = c.length - 1
+        val denom = numColors - 1
 
-      if (count < 2) {
-        Array(hues(0))
-      } else {
-        val ranges = new Array[Int](count)
-        var i = 0
-        while (i < count) {
-          val j = (i * mult) / denom
-          ranges(i) = if (j < mult) {
-            blend(hues(j), hues(j + 1), (i * mult) % denom, denom)
-          } else {
-            hues(j)
+        if (numColors < 2) {
+          Array(hues(0))
+        } else {
+          val ranges = new Array[Int](numColors)
+          var i = 0
+          while (i < numColors) {
+            val j = (i * mult) / denom
+            ranges(i) = if (j < mult) {
+              blend(hues(j), hues(j + 1), (i * mult) % denom, denom)
+            } else {
+              hues(j)
+            }
+            i += 1
           }
-          i += 1
+          ranges
         }
-        ranges
       }
     }
+  }
 
   private def blend(start: Int, end: Int, numerator: Int, denominator: Int): Int = {
     start + (((end - start) * numerator) / denominator)
   }
 
   /** Returns a sequence of RGBA integer values */
-  private def getColorSequence(n: Int)(getRanges: (Int => Int, Int) => Array[Int]): Vector[Int] = {
-    val unzipR = { color: Int => color.red }
-    val unzipG = { color: Int => color.green }
-    val unzipB = { color: Int => color.blue }
-    val unzipA = { color: Int => color.alpha }
-    val rs = getRanges(unzipR, n)
-    val gs = getRanges(unzipG, n)
-    val bs = getRanges(unzipB, n)
-    val as = getRanges(unzipA, n)
+  private def getColorSequence(n: Int)(getRanges: (Int => Int) => Array[Int]): Vector[Int] = n match {
+    case n if n < 1 => Vector.empty[Int]
+    case _ => {
+      val unzipR = { color: Int => color.red }
+      val unzipG = { color: Int => color.green }
+      val unzipB = { color: Int => color.blue }
+      val unzipA = { color: Int => color.alpha }
+      val rs = getRanges(unzipR)
+      val gs = getRanges(unzipG)
+      val bs = getRanges(unzipB)
+      val as = getRanges(unzipA)
 
-    val theColors = new Array[Int](n)
-    var i = 0
-    while (i < n) {
-      theColors(i) = RGBA(rs(i), gs(i), bs(i), as(i))
-      i += 1
+      val theColors = new Array[Int](n)
+      var i = 0
+      while (i < n) {
+        theColors(i) = RGBA(rs(i), gs(i), bs(i), as(i))
+        i += 1
+      }
+      theColors.toVector
     }
-    theColors.toVector
   }
 }

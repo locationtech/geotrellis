@@ -84,7 +84,7 @@ object CompositeTile {
   }
 
   /**
-    * Converts a [[Tile] into a [[CompositeTile]] with the given
+    * Converts a [[Tile]] into a [[CompositeTile]] with the given
     * [[TileLayout]].
     *
     * @param        tile           Tile to wrap.
