@@ -23,7 +23,7 @@ package geotrellis.vector
   * @param geom An instance of G
   * @param data An instance of D
   */
-case class Feature[+G <: Geometry, D](geom: G, data: D) {
+case class Feature[+G <: Geometry, +D](geom: G, data: D) {
 
   /** Method for manipulating this class' geom
     * @tparam T A subtype of Geometry
