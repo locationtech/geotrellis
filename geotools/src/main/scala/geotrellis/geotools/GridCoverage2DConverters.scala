@@ -2,6 +2,7 @@ package geotrellis.geotools
 
 import geotrellis.proj4.CRS
 import geotrellis.raster._
+import geotrellis.raster.io.geotiff.util._
 import geotrellis.vector.Extent
 
 import it.geosolutions.imageio.utilities.ImageIOUtilities
@@ -12,6 +13,7 @@ import org.geotools.geometry.Envelope2D
 import org.geotools.referencing.{CRS => GeoToolsCRS}
 import org.geotools.resources.coverage.CoverageUtilities
 import org.geotools.util.NumberRange
+import org.opengis.coverage.SampleDimensionType
 import org.opengis.referencing.crs.CoordinateReferenceSystem
 import spire.syntax.cfor._
 
@@ -49,40 +51,91 @@ object GridCoverage2DConverters {
     val noDataValue = getNoData(gridCoverage)
     val renderedImage = gridCoverage.getRenderedImage
     val buffer = renderedImage.getData.getDataBuffer
-    val typeEnum = buffer.getDataType
+    val dataType = buffer.getDataType
+    val sampleType = gridCoverage.getSampleDimension(0).getSampleDimensionType
 
-    (noDataValue, typeEnum) match {
-      case (None, DataBuffer.TYPE_BYTE) => UByteCellType
-      case (None, DataBuffer.TYPE_USHORT) => UShortCellType
-      case (None, DataBuffer.TYPE_SHORT) => ShortCellType
-      case (None, DataBuffer.TYPE_INT) => IntCellType
-      case (None, DataBuffer.TYPE_FLOAT) => FloatCellType
-      case (None, DataBuffer.TYPE_DOUBLE) => DoubleCellType
-      case (Some(nd), DataBuffer.TYPE_BYTE) =>
-        val byte = nd.toByte
-        if (byte == ubyteNODATA) UByteConstantNoDataCellType
-        else UByteUserDefinedNoDataCellType(byte)
-      case (Some(nd), DataBuffer.TYPE_USHORT) =>
-        val short = nd.toShort
-        if (short == ushortNODATA) UShortConstantNoDataCellType
-        else UShortUserDefinedNoDataCellType(short)
-      case (Some(nd), DataBuffer.TYPE_SHORT) =>
-        val short = nd.toShort
-        if (short == shortNODATA) ShortConstantNoDataCellType
-        else ShortUserDefinedNoDataCellType(short)
-      case (Some(nd), DataBuffer.TYPE_INT) =>
-        val int = nd.toInt
-        if (int == NODATA) IntConstantNoDataCellType
-        else IntUserDefinedNoDataCellType(int)
-      case (Some(nd), DataBuffer.TYPE_FLOAT) =>
-        val float = nd.toFloat
-        if (float == floatNODATA) FloatConstantNoDataCellType
-        else FloatUserDefinedNoDataCellType(float)
-      case (Some(nd), DataBuffer.TYPE_DOUBLE) =>
-        val double = nd.toDouble
-        if (double == doubleNODATA) DoubleConstantNoDataCellType
-        else DoubleUserDefinedNoDataCellType(double)
-      case _ => throw new Exception(s"Unable to convert GridCoverage2D: Unknown or Undefined CellType (NoData=$noDataValue  TypeEnum=${typeEnum}")
+    (noDataValue, dataType, sampleType) match {
+
+      // Bit
+
+      case (_, DataBuffer.TYPE_BYTE, SampleDimensionType.UNSIGNED_1BIT) =>
+        BitCellType
+
+      // Unsigned Byte
+
+      case (Some(nd), DataBuffer.TYPE_BYTE, SampleDimensionType.UNSIGNED_8BITS) if (nd.toInt > 0 && nd <= 255) =>
+        UByteUserDefinedNoDataCellType(nd.toByte)
+      case (Some(nd), DataBuffer.TYPE_BYTE, SampleDimensionType.UNSIGNED_8BITS) if nd.toByte == ubyteNODATA =>
+        UByteConstantNoDataCellType
+      case (_, DataBuffer.TYPE_BYTE, SampleDimensionType.UNSIGNED_8BITS) =>
+        UByteCellType
+
+      // Signed Byte
+
+      case (Some(nd), DataBuffer.TYPE_BYTE, _) if (nd.toInt > Byte.MinValue.toInt && nd <= Byte.MaxValue.toInt) =>
+        ByteUserDefinedNoDataCellType(nd.toByte)
+      case (Some(nd), DataBuffer.TYPE_BYTE, _) if (nd.toByte == byteNODATA) =>
+        ByteConstantNoDataCellType
+      case (_, DataBuffer.TYPE_BYTE, _) =>
+        ByteCellType
+
+      // Unsigned Short
+
+      case (Some(nd), DataBuffer.TYPE_USHORT, _) if (nd.toInt > 0 && nd <= 65535) =>
+        UShortUserDefinedNoDataCellType(nd.toShort)
+      case (Some(nd), DataBuffer.TYPE_USHORT, _) if (nd.toShort == ushortNODATA) =>
+        UShortConstantNoDataCellType
+      case (_, DataBuffer.TYPE_USHORT, _) =>
+        UShortCellType
+
+      // Signed Short
+
+      case (Some(nd), DataBuffer.TYPE_SHORT, _) if (nd > Short.MinValue.toDouble && nd <= Short.MaxValue.toDouble) =>
+        ShortUserDefinedNoDataCellType(nd.toShort)
+      case (Some(nd), DataBuffer.TYPE_SHORT, _) if (nd.toShort == shortNODATA) =>
+        ShortConstantNoDataCellType
+      case (_, DataBuffer.TYPE_SHORT, _) =>
+        ShortCellType
+
+
+      // Unsigned Int32
+
+      case (Some(nd), DataBuffer.TYPE_INT, SampleDimensionType.UNSIGNED_32BITS) if (nd.toLong > 0L && nd.toLong <= 4294967295L) =>
+        FloatUserDefinedNoDataCellType(nd.toFloat)
+      case (Some(nd), DataBuffer.TYPE_INT, SampleDimensionType.UNSIGNED_32BITS) if (nd.toLong == 0L) =>
+        FloatConstantNoDataCellType
+      case (None, DataBuffer.TYPE_INT, SampleDimensionType.UNSIGNED_32BITS) =>
+        FloatCellType
+
+      // Signed Int32
+
+      case (Some(nd), DataBuffer.TYPE_INT, _) if (nd.toInt > Int.MinValue && nd.toInt <= Int.MaxValue) =>
+        IntUserDefinedNoDataCellType(nd.toInt)
+      case (Some(nd), DataBuffer.TYPE_INT, _) if (nd.toInt == NODATA) =>
+        IntConstantNoDataCellType
+      case (_, DataBuffer.TYPE_INT, _) =>
+        IntCellType
+
+      // Float
+
+      case (Some(nd), DataBuffer.TYPE_FLOAT, _) if (isData(nd) & Float.MinValue.toDouble <= nd & Float.MaxValue.toDouble >= nd) =>
+        FloatUserDefinedNoDataCellType(nd.toFloat)
+      case (Some(nd), DataBuffer.TYPE_FLOAT, _) =>
+        FloatConstantNoDataCellType
+      case (None, DataBuffer.TYPE_FLOAT, _) =>
+        FloatCellType
+
+      // Double
+
+      case (Some(nd), DataBuffer.TYPE_DOUBLE, _) if isData(nd) =>
+        DoubleUserDefinedNoDataCellType(nd)
+      case (Some(nd), DataBuffer.TYPE_DOUBLE, _) =>
+        DoubleConstantNoDataCellType
+      case (None, DataBuffer.TYPE_DOUBLE, _) =>
+        DoubleCellType
+
+      case _ =>
+        throw new Exception(s"Unable to convert GridCoverage2D: Unsupported CellType (NoData=${noDataValue}  TypeEnum=${dataType}  SampleDimensionType=${sampleType}")
     }
   }
 
@@ -160,7 +213,26 @@ object GridCoverage2DConverters {
     new Envelope2D(geoToolsCRS, xmin, ymin, (xmax - xmin), (ymax - ymin))
   }
 
-  def convertToTile(buffer: DataBuffer, sampleModel: SampleModel, cellType: CellType, cols: Int, rows: Int, bandIndex: Int): Tile = {
+  def getValueRange(cellType: CellType): (Double, Double) =
+    cellType match {
+      case BitCellType => (0.0, 1.0)
+      case _: ByteCells => (Byte.MinValue.toDouble, Byte.MaxValue.toDouble)
+      case _: UByteCells => (0.0, (1 <<  8).toDouble)
+      case _: ShortCells => (Short.MinValue.toDouble, Short.MaxValue.toDouble)
+      case _: UShortCells => (0.0, (1 <<  16).toDouble)
+      case _: IntCells => (Int.MinValue.toDouble, Int.MaxValue.toDouble)
+      case _: FloatCells => (Float.MinValue.toDouble, Float.MaxValue.toDouble)
+      case _: DoubleCells => (Double.MinValue, Double.MaxValue)
+    }
+
+  def convertToTile(gridCoverage: GridCoverage2D, bandIndex: Int): Tile = {
+    val renderedImage = gridCoverage.getRenderedImage
+    val buffer = renderedImage.getData.getDataBuffer
+    val sampleModel = renderedImage.getSampleModel
+    val rows: Int = renderedImage.getHeight
+    val cols: Int = renderedImage.getWidth
+    val cellType: CellType = getCellType(gridCoverage)
+
     def default =
       cellType match {
         case ct: DoubleCells =>
@@ -185,6 +257,8 @@ object GridCoverage2DConverters {
             val numBands = sampleModel.getNumBands
             val innerCols = cols * numBands
             cellType match {
+              case ct: ByteCells =>
+                PixelInterleaveBandArrayTile(ByteArrayTile(data, innerCols, rows, ct), numBands, bandIndex)
               case ct: UByteCells =>
                 PixelInterleaveBandArrayTile(UByteArrayTile(data, innerCols, rows, ct), numBands, bandIndex)
               case _ =>
@@ -194,13 +268,25 @@ object GridCoverage2DConverters {
           case _: BandedSampleModel =>
             val data = byteBuffer.getData(bandIndex)
             cellType match {
+              case ct: ByteCells =>
+                ByteArrayTile(data, cols, rows, ct)
               case ct: UByteCells =>
                 UByteArrayTile(data, cols, rows, ct)
               case _ =>
                 UByteArrayTile(data, cols, rows, UByteCellType).convert(cellType).toArrayTile
             }
-
-          case _ =>
+          case mp: MultiPixelPackedSampleModel =>
+            // Tricky sample model, just do the slow direct thing.
+            val result = ArrayTile.alloc(cellType, cols, rows)
+            val values = Array.ofDim[Int](1)
+            cfor(0)(_ < cols, _ + 1) { col =>
+              cfor(0)(_ < rows, _ + 1) { row =>
+                gridCoverage.evaluate(new GridCoordinates2D(col, row), values)
+                result.set(col, row, values(0))
+              }
+            }
+            result
+          case x =>
             default
         }
       case ushortBuffer: DataBufferUShort =>
@@ -262,6 +348,10 @@ object GridCoverage2DConverters {
             cellType match {
               case ct: IntCells =>
                 PixelInterleaveBandArrayTile(IntArrayTile(data, innerCols, rows, ct), numBands, bandIndex)
+              case ct: FloatCells =>
+                // Deal with unsigned ints
+                val floatData = data.map { z => (z & 0xFFFFFFFFL).toFloat }
+                PixelInterleaveBandArrayTile(FloatArrayTile(floatData, innerCols, rows, ct), numBands, bandIndex)
               case _ =>
                 PixelInterleaveBandArrayTile(IntArrayTile(data, innerCols, rows, IntCellType).convert(cellType).toArrayTile, numBands, bandIndex)
             }
@@ -271,6 +361,10 @@ object GridCoverage2DConverters {
             cellType match {
               case ct: IntCells =>
                 IntArrayTile(data, cols, rows, ct)
+              case ct: FloatCells =>
+                // Deal with unsigned ints
+                val floatData = data.map { z => (z & 0xFFFFFFFFL).toFloat }
+                FloatArrayTile(floatData, cols, rows, ct)
               case _ =>
                 IntArrayTile(data, cols, rows, IntCellType).convert(cellType).toArrayTile
             }
@@ -351,42 +445,37 @@ object GridCoverage2DConverters {
 
   def convertToGridCoverage2D(tile: MultibandTile, extent: Extent, crs: Option[CRS]): GridCoverage2D = {
     val bandCount = tile.bandCount
+    val cellType = tile.cellType
 
     val (dataBuffer, dataType, noDataValue, sampleModel) =
-      tile.cellType match {
+      cellType match {
         case BitCellType =>
           // If it's only one band, we can represent this using a MultiPixelPackedSampleModel.
           // Otherwise, there is no way to correctly represent this in the GridCoverage2D model,
           // so just upcast to byte.
           if(tile.bandCount == 1) {
             val banks = Array.ofDim[Array[Byte]](1)
-            val bankSize = tile.cols * tile.rows
+            val bankSize = tile.cols * tile.rows / 8
 
             cfor(0)(_ < bandCount, _ + 1) { b =>
-              tile.band(b) match {
-                case arrayTile: BitArrayTile =>
-                  banks(b) = arrayTile.array
-                case band =>
-                  val bitArrayTile = BitArrayTile.empty(band.cols, band.rows)
-                  band.foreach { (col, row, z) =>
-                    bitArrayTile.set(col, row, z)
-                  }
-
-                  banks(b) = bitArrayTile.array
-              }
-
-              val bandValues = Array.ofDim[Byte](bankSize)
               val band = tile.band(b)
-              val cols = band.cols
+              val paddedCols = ((band.cols + 7) / 8) * 8
+              val bitArrayTile = BitArrayTile.empty(paddedCols, band.rows)
               band.foreach { (col, row, z) =>
-                bandValues(row * cols + col) = z.toByte
+                bitArrayTile.set(col, row, z)
               }
-
-              banks(b) = bandValues
+              val array = bitArrayTile.array
+              val invertedBytes = array.clone
+              // Need to invert the bytes, due to endian-ness
+              cfor(0)(_ < invertedBytes.length, _ + 1) { i => invertedBytes(i) = invertByte(array(i)) }
+              banks(b) = invertedBytes
             }
 
             val dataBuffer = new DataBufferByte(banks, bankSize)
             val dataType = DataBuffer.TYPE_BYTE
+            val scanlineStride = (tile.cols + 7) / 8
+            val lastbit = (tile.rows - 1) * scanlineStride * 8 + (tile.cols-1)
+
             val sampleModel =
               new MultiPixelPackedSampleModel(dataType, tile.cols, tile.rows, 1)
 
@@ -416,8 +505,7 @@ object GridCoverage2DConverters {
 
           }
         case byteCellType: ByteCells =>
-          // DataBuffer does not have a type for signed Bytes, so upcast to a short.
-          val banks = Array.ofDim[Array[Short]](bandCount)
+          val banks = Array.ofDim[Array[Byte]](bandCount)
           val bankSize = tile.cols * tile.rows
 
           val noDataByte =
@@ -428,29 +516,33 @@ object GridCoverage2DConverters {
             }
 
           cfor(0)(_ < bandCount, _ + 1) { b =>
-            val band = tile.band(b)
-            val cols = band.cols
-            val bandValues = Array.ofDim[Short](bankSize)
-            noDataByte match {
-              case Some(nd) if nd != byteNODATA =>
-                band.foreach { (col, row, z) =>
-                  if(isData(z)) {
-                    bandValues(row * cols + col) = z.toShort
-                  } else {
-                    bandValues(row * cols + col) = nd.toShort
-                  }
+            tile.band(b) match {
+              case arrayTile: ByteArrayTile =>
+                banks(b) = arrayTile.array
+              case band =>
+                val cols = band.cols
+                val bandValues = Array.ofDim[Byte](bankSize)
+                noDataByte match {
+                  case Some(nd) =>
+                    band.foreach { (col, row, z) =>
+                      if(isData(z)) {
+                        bandValues(row * cols + col) = z.toByte
+                      } else {
+                        bandValues(row * cols + col) = nd
+                      }
+                    }
+                  case None =>
+                    band.foreach { (col, row, z) =>
+                      bandValues(row * cols + col) = z.toByte
+                    }
                 }
-              case _ =>
-                band.foreach { (col, row, z) =>
-                  bandValues(row * cols + col) = z.toShort
-                }
-            }
 
-            banks(b) = bandValues
+                banks(b) = bandValues
+            }
           }
 
-          val dataBuffer = new DataBufferShort(banks, bankSize)
-          val dataType = DataBuffer.TYPE_SHORT
+          val dataBuffer = new DataBufferByte(banks, bankSize)
+          val dataType = DataBuffer.TYPE_BYTE
           val sampleModel =
             new BandedSampleModel(dataType, tile.cols, tile.rows, tile.bandCount)
           val noData =
@@ -477,7 +569,7 @@ object GridCoverage2DConverters {
                 val cols = band.cols
                 val bandValues = Array.ofDim[Byte](bankSize)
                 noDataByte match {
-                  case Some(nd) if nd != ubyteNODATA =>
+                  case Some(nd) =>
                     band.foreach { (col, row, z) =>
                       if(isData(z)) {
                         bandValues(row * cols + col) = z.toByte
@@ -485,7 +577,7 @@ object GridCoverage2DConverters {
                         bandValues(row * cols + col) = nd
                       }
                     }
-                  case _ =>
+                  case None =>
                     band.foreach { (col, row, z) =>
                       bandValues(row * cols + col) = z.toByte
                     }
@@ -523,7 +615,7 @@ object GridCoverage2DConverters {
                 val cols = band.cols
                 val bandValues = Array.ofDim[Short](bankSize)
                 noDataShort match {
-                  case Some(nd) if nd != shortNODATA =>
+                  case Some(nd) =>
                     band.foreach { (col, row, z) =>
                       if(isData(z)) {
                         bandValues(row * cols + col) = z.toShort
@@ -531,7 +623,7 @@ object GridCoverage2DConverters {
                         bandValues(row * cols + col) = nd
                       }
                     }
-                  case _ =>
+                  case None =>
                     band.foreach { (col, row, z) =>
                       bandValues(row * cols + col) = z.toShort
                     }
@@ -568,7 +660,7 @@ object GridCoverage2DConverters {
                 val cols = band.cols
                 val bandValues = Array.ofDim[Short](bankSize)
                 noDataUShort match {
-                  case Some(nd) if nd != ushortNODATA =>
+                  case Some(nd) =>
                     band.foreach { (col, row, z) =>
                       if(isData(z)) {
                         bandValues(row * cols + col) = z.toShort
@@ -576,7 +668,7 @@ object GridCoverage2DConverters {
                         bandValues(row * cols + col) = nd
                       }
                     }
-                  case _ =>
+                  case None =>
                     band.foreach { (col, row, z) =>
                       bandValues(row * cols + col) = z.toShort
                     }
@@ -659,7 +751,7 @@ object GridCoverage2DConverters {
                 val cols = band.cols
                 val bandValues = Array.ofDim[Float](bankSize)
                 noDataFloat match {
-                  case Some(nd) if java.lang.Float.isNaN(nd) =>
+                  case Some(nd) =>
                     band.foreach { (col, row, z) =>
                       if(isData(z)) {
                         bandValues(row * cols + col) = z.toFloat
@@ -667,7 +759,7 @@ object GridCoverage2DConverters {
                         bandValues(row * cols + col) = nd
                       }
                     }
-                  case _ =>
+                  case None =>
                     band.foreach { (col, row, z) =>
                       bandValues(row * cols + col) = z.toFloat
                     }
@@ -749,7 +841,23 @@ object GridCoverage2DConverters {
 
       val bands = Array.ofDim[GridSampleDimension](bandCount)
       cfor(0)(_ < bandCount, _ + 1) { b =>
-        bands(b) = new GridSampleDimension(s"Band $b", categories, null)
+        val (minValue, maxValue) = getValueRange(cellType)
+        val sampleDimension =
+          new GridSampleDimension(
+            s"Band $b", // title
+            null, // dimension type
+            null, // color interpretation
+            null, //color palette
+            null, // categories
+            noDataValue.map(nd => Array(nd)).getOrElse(null), // nodata values
+            minValue, // minimum value
+            maxValue, // maximum value
+            1, // scale
+            0, // offset
+            null // unit
+          )
+
+        bands(b) = sampleDimension
       }
 
       bands

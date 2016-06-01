@@ -18,7 +18,6 @@ package object geotools {
   implicit class withMultibandProjectedRasterToGridCoverage2DMethods[T <: MultibandTile](val self: ProjectedRaster[T]) extends MethodExtensions[ProjectedRaster[T]]
       with MultibandProjectedRasterToGridCoverage2DMethods[T]
 
-
   implicit class withGridCoverage2DConversionMethods(val self: GridCoverage2D) extends MethodExtensions[GridCoverage2D]
       with GridCoverage2DConversionMethods
 }

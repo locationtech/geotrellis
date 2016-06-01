@@ -80,10 +80,6 @@ lazy val root = Project("geotrellis", file(".")).
   )
   .settings(unidocSettings: _*)
 
-lazy val geotools = Project("geotools", file("geotools")).
-  dependsOn(raster, vector, proj4).
-  settings(commonSettings: _*)
-
 lazy val macros = Project("macros", file("macros")).
   settings(commonSettings: _*)
 
@@ -93,6 +89,10 @@ lazy val vector = Project("vector", file("vector")).
 
 lazy val vectorTest = Project("vector-test", file("vector-test")).
   dependsOn(vector, vectorTestkit)
+
+lazy val vectorTestkit = Project("vector-testkit", file("vector-testkit")).
+  dependsOn(raster, vector).
+  settings(commonSettings: _*)
 
 lazy val proj4 = Project("proj4", file("proj4")).
   settings(commonSettings: _*).
@@ -107,10 +107,6 @@ lazy val rasterTest = Project("raster-test", file("raster-test")).
   settings(commonSettings: _*)
 
 lazy val rasterTestkit = Project("raster-testkit", file("raster-testkit")).
-  dependsOn(raster, vector).
-  settings(commonSettings: _*)
-
-lazy val vectorTestkit = Project("vector-testkit", file("vector-testkit")).
   dependsOn(raster, vector).
   settings(commonSettings: _*)
 
@@ -136,6 +132,10 @@ lazy val accumulo = Project("accumulo", file("accumulo")).
 
 lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).
   dependsOn(spark, s3, accumulo).
+  settings(commonSettings: _*)
+
+lazy val geotools = Project("geotools", file("geotools")).
+  dependsOn(raster, vector, proj4, vectorTestkit % "test->test", rasterTest % "test->test").
   settings(commonSettings: _*)
 
 lazy val shapefile = Project("shapefile", file("shapefile")).
