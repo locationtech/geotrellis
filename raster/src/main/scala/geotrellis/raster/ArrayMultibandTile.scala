@@ -22,8 +22,8 @@ object ArrayMultibandTile {
     apply(bands.toArray)
 
   /**
-    * Create a new [[ArrayMultibandTile]] from a given [[Traversable]]
-    * of [[Tile]] objects.
+    * Create a new [[ArrayMultibandTile]] from a given Traversable of
+    * [[Tile]] objects.
     *
     * @param   bands  The Traversable collection of source Tile objects.
     * @return         An ArrayMultibandTile whose bands are given tiles.
@@ -427,5 +427,17 @@ class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMu
     })
 
     new ArrayMultibandTile(newBands)
+  }
+
+  override def equals(other: Any): Boolean = other match {
+    case that: ArrayMultibandTile =>
+      var result = (bandCount == that.bandCount)
+
+      cfor(0)(result && _ < bandCount, _ + 1) { i =>
+        if (band(i) != that.band(i)) result = false
+      }
+      result
+    case _ =>
+      false
   }
 }

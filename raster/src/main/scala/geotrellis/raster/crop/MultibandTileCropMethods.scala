@@ -25,7 +25,7 @@ trait MultibandTileCropMethods extends TileCropMethods[MultibandTile] {
   }
 
   /**
-    * Given a source [[Extent]] (the extent of the present
+    * Given a source Extent (the extent of the present
     * [[MultibandTile]]), a destination Extent, and a set of Options,
     * return a new MultibandTile.
     */

@@ -46,15 +46,16 @@ trait JpgRenderMethods extends MethodExtensions[Tile] {
   /**
     * Generate a JPG image from a raster.
     *
-    * Use this operation when you have a raster of data that you want to visualize
-    * with an image.
+    * Use this operation when you have a raster of data that you want
+    * to visualize with an image.
     *
-    * To render a data raster into an image, the operation needs to know which
-    * values should be painted with which colors.  To that end, you'll need to
-    * generate a ColorBreaks object which represents the value ranges and the
-    * assigned color.  One way to create these color breaks is to use the
-    * [[geotrellis.raster.stats.op.stat.GetClassBreaks]] operation to generate
-    * quantile class breaks.
+    * To render a data raster into an image, the operation needs to
+    * know which values should be painted with which colors.  To that
+    * end, you'll need to generate a ColorBreaks object which
+    * represents the value ranges and the assigned color.  One way to
+    * create these color breaks is to use the
+    * geotrellis.raster.stats.op.stat.GetClassBreaks operation to
+    * generate quantile class breaks.
     */
   def renderJpg(colorMap: ColorMap, settings: Settings): Jpg = {
     val encoder = new JpgEncoder(new Settings(1.0, false))

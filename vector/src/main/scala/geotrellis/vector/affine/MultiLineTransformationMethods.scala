@@ -8,8 +8,10 @@ import com.vividsolutions.jts.geom.util.AffineTransformation._
 /** Trait used to implicitly extend [[MultiLine]] instances with transformation methods */
 trait MultiLineTransformationMethods extends MethodExtensions[MultiLine] {
 
-  /** Transform according to a provided [[AffineTransformation]] instance
-    * @param trans  an AffineTransformation
+  /**
+    * Transform according to a provided AffineTransformation instance.
+    *
+    * @param  trans  An AffineTransformation
     */
   def transform(trans: AffineTransformation) = trans.transform(self)
 

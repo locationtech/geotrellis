@@ -11,16 +11,16 @@ import geotrellis.vector.summary.polygonal._
 trait TilePolygonalSummaryHandler[T] extends PolygonalSummaryHandler[Polygon, Tile, T] {
 
   /**
-    * Given a [[PolygonFeature]], "handle" the case of an
+    * Given a PolygonFeature, "handle" the case of an
     * entirly-contained tile.  This falls through to the
     * 'handleFullTile' handler.
     */
   def handleContains(feature: PolygonFeature[Tile]): T = handleFullTile(feature.data)
 
   /**
-    * Given a [[Polygon]] and a [[PolygonFeature]], "handle" the case
-    * of an intersection.  This falls through to the
-    * 'handlePartialTile' handler.
+    * Given a Polygon and a PolygonFeature, "handle" the case of an
+    * intersection.  This falls through to the 'handlePartialTile'
+    * handler.
     */
   def handleIntersection(polygon: Polygon, feature: PolygonFeature[Tile]) = handlePartialTile(feature, polygon)
 

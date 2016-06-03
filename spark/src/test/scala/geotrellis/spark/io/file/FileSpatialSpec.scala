@@ -6,12 +6,13 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestFiles
 
+
 class FileSpatialSpec
     extends PersistenceSpec[SpatialKey, Tile, TileLayerMetadata[SpatialKey]]
     with SpatialKeyIndexMethods
     with TestEnvironment
     with TestFiles
-    with AllOnesTestTileTests {
+    with AllOnesTestTileSpec {
   lazy val reader = FileLayerReader(outputLocalPath)
   lazy val writer = FileLayerWriter(outputLocalPath)
   lazy val deleter = FileLayerDeleter(outputLocalPath)
