@@ -160,7 +160,7 @@ trait FocalOpSpec extends TileBuilders with Matchers {
         calc.remove(r, i, 2)
         i += 1
       }
-      calc.setValue(0, 0, 0, 0)
+      calc.setValue(0, 0)
       calc.result.get(0, 0) should equal (setup.result)
     }
   }
@@ -195,7 +195,7 @@ trait FocalOpSpec extends TileBuilders with Matchers {
         calc.remove(r, i, 2)
         i += 1
       }
-      calc.setValue(0, 0, 0, 0)
+      calc.setValue(0, 0)
       calc.result.getDouble(0, 0) should equal (setup.result)
     }
   }
@@ -217,7 +217,7 @@ trait FocalOpSpec extends TileBuilders with Matchers {
       calc.remove(r, i, 2)
       i += 1
     }
-    calc.setValue(0, 0, 0, 0)
+    calc.setValue(0, 0)
     calc.result.get(0, 0)
   }
 
@@ -237,7 +237,7 @@ trait FocalOpSpec extends TileBuilders with Matchers {
       calc.remove(r, i, 2)
       i += 1
     }
-    calc.setValue(0, 0, 0, 0)
+    calc.setValue(0, 0)
     calc.result.getDouble(0, 0)
   }
 
