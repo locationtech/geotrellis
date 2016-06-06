@@ -14,13 +14,7 @@ class CassandraTileFeatureSpatialSpec
     with AllOnesTestTileFeatureSpec {
 
   lazy val instance       = BaseCassandraInstance(Seq("127.0.0.1"))
-  lazy val attributeStore = try {
-    CassandraAttributeStore(instance, "geotrellis_tf", "metadata")
-  } catch {
-    case e: Exception =>
-      println("A script for setting up the Cassandra environment necessary to run these tests can be found at scripts/cassandraTestDB.sh - requires a working docker setup")
-      throw e
-  }
+  lazy val attributeStore = CassandraAttributeStore(instance, "geotrellis_tf", "metadata")
 
   lazy val reader    = CassandraLayerReader(attributeStore)
   lazy val writer    = CassandraLayerWriter(attributeStore, "geotrellis_tf", "tiles")
