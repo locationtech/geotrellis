@@ -273,5 +273,15 @@ trait ByteBufferExtensions {
 
       arr
     }
+
+    def readr: Int = {
+      if (!byteBuffer.hasRemaining) -1
+      else math.min(byteBuffer.get, (1<<18))
+    }
+
+    def reader(bytes: Array[Byte], offset: Int, length: Int): Int = {
+      val len = math.min(length, byteBuffer.remaining)
+      byteBuffer.get(bytes, offset, len)
+    }
   }
 }

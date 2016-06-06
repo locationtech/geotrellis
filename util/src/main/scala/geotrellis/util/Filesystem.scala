@@ -52,6 +52,18 @@ object Filesystem {
     data
   }
 
+  def streamByteBuffer(path: String): ByteBuffer = {
+    val f = new File(path)
+    val fis = new FileInputStream(f)
+    val size = f.length.toInt
+    val channel = fis.getChannel
+    val buffer = channel.map(READ_ONLY, 0, size)
+    channel.close()
+    fis.close()
+    buffer
+  }
+
+
   /**
     * Make a contiguous chunk of a file available in the given array.
     *
