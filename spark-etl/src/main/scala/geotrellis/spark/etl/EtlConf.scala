@@ -53,7 +53,7 @@ class EtlConf(args: Seq[String]) extends ScallopConf(args){
                       descr = "cell type of the layout (format: bool, int8, float32, ...")(cellTypeConverter)
 
   conflicts(layoutScheme, List(layoutExtent, cellSize))
-  dependsOnAll(layoutExtent, List(cellSize, cellType))
+  dependsOnAll(layoutExtent, List(cellSize))
 
   val inputProps   = props[String]('I',
                       descr = "parameters for input module")
