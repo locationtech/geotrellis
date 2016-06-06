@@ -2,6 +2,7 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.compression._
+import geotrellis.raster.io.geotiff.util._
 import geotrellis.raster.resample.ResampleMethod
 import geotrellis.raster.split._
 import geotrellis.vector.Extent
@@ -136,8 +137,6 @@ abstract class GeoTiffMultibandTile(
         case BitBandType =>
           val compressedBandBytes = Array.ofDim[Array[Byte]](segmentCount)
           val compressor = compression.createCompressor(segmentCount)
-          val bytesPerSample = bandType.bytesPerSample
-          val bytesPerCell = bytesPerSample * bandCount
 
           cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
             val segmentSize = segmentLayout.getSegmentSize(segmentIndex)
@@ -164,6 +163,11 @@ abstract class GeoTiffMultibandTile(
               val i2 = (row * paddedCols) + col
 
               BitArrayTile.update(bandSegment, i2, segment.getInt(i))
+            }
+
+            // Inverse the byte, to account for endian mismatching.
+            cfor(0)(_ < bandSegment.size, _ + 1) { i =>
+              bandSegment(i) = invertByte(bandSegment(i))
             }
 
             compressedBandBytes(segmentIndex) = compressor.compress(bandSegment, segmentIndex)

@@ -23,7 +23,7 @@ object Version {
    */
   val scala       = "2.10.6"
   val crossScala  = Seq("2.11.8", scala)
-  val geotools    = "14.2"
+  val geotools    = "14.3"
   val akka        = "2.3.14"
   val spray       = "1.3.3"
   val sprayJson   = "1.3.2"

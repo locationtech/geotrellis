@@ -522,6 +522,12 @@ class PackBitsGeoTiffReaderSpec extends FunSpec
     with GeoTiffTestUtils {
 
   describe("Reading geotiffs with PACKBITS compression") {
+    it("must read a single band bit raster as a multiband") {
+      val singlebandGeoTiff = SinglebandGeoTiff(geoTiffPath("deflate/striped/bit.tif"))
+      val multibandGeoTiff = MultibandGeoTiff(geoTiffPath("deflate/striped/bit.tif"))
+      assertEqual(multibandGeoTiff.tile.band(0), singlebandGeoTiff.tile)
+    }
+
     it("must read econic_packbits.tif and match uncompressed file") {
       val actual = SinglebandGeoTiff.compressed(geoTiffPath("econic_packbits.tif")).tile
       val expected = SinglebandGeoTiff.compressed(s"$baseDataPath/econic.tif").tile

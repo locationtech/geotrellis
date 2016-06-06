@@ -4,6 +4,7 @@
       "project vector" publish \
       "project proj4" publish \
       "project raster" publish \
+      "project geotools" publish \
       "project spark" publish \
       "project s3" publish \
       "project accumulo" publish \

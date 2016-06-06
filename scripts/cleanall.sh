@@ -19,6 +19,7 @@ rm -r raster-test/target
 rm -r spark/target
 rm -r s3/target
 rm -r accumulo/target
+rm -r geotools/target
 rm -r slick/target
 rm -r shapefile/target
 rm -r util/target
