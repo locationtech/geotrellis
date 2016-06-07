@@ -91,7 +91,8 @@ lazy val vectorTest = Project("vector-test", file("vector-test")).
   dependsOn(vector, vectorTestkit)
 
 lazy val proj4 = Project("proj4", file("proj4")).
-  settings(commonSettings: _*)
+  settings(commonSettings: _*).
+  settings(javacOptions ++= Seq("-encoding", "UTF-8"))
 
 lazy val raster = Project("raster", file("raster")).
   dependsOn(util, macros, vector).
