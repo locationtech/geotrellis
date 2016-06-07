@@ -206,8 +206,6 @@ class IntColorMap(breaksToColors: Map[Int, Int], val options: Options = Options.
 
   private lazy val orderedColors: Vector[Int] = orderedBreaks.map(breaksToColors(_))
   lazy val colors = orderedColors
-  lazy val breaksMap = breaksToColors
-  lazy val breaksMapDouble = Map.empty[Double,Int]
 
   private val zCheck: (Int, Int) => Boolean =
     options.classBoundaryType match {
@@ -282,9 +280,6 @@ class IntCachedColorMap(val colors: Vector[Int], h: Histogram[Int], val options:
     extends ColorMap {
   val noDataColor = options.noDataColor
 
-  lazy val breaksMap = Map.empty[Int,Int]
-  lazy val breaksMapDouble = Map.empty[Double,Int]
-
   def map(z: Int): Int = { if(isNoData(z)) noDataColor else h.itemCount(z).toInt }
 
   def mapDouble(z: Double): Int = map(d2i(z))
@@ -334,8 +329,6 @@ class DoubleColorMap(breaksToColors: Map[Double, Int], val options: Options = Op
 
   private val orderedColors: Vector[Int] = orderedBreaks.map(breaksToColors(_))
   lazy val colors = orderedColors
-  lazy val breaksMap = Map.empty[Int,Int]
-  lazy val breaksMapDouble = breaksToColors
 
   private val zCheck: (Double, Int) => Boolean =
     options.classBoundaryType match {
