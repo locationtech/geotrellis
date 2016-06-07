@@ -142,16 +142,6 @@ object ColorMap {
       apply(limits, colors)
     }.toOption
   }
-
-  /** Retrieve a "breaks string" from [[ColorMap]] data.
-    * The opposite of the [[fromString]] methods.
-    */
-  def breaksString[T <: AnyVal](breaksToColors: Map[T, Int]): String = {
-    breaksToColors
-      .toStream
-      .map({ case (k,v) => s"${k}:${Integer.toHexString(v)}"})
-      .mkString(";")
-  }
 }
 
 import ColorMap.Options
@@ -197,9 +187,10 @@ trait ColorMap extends Serializable {
   def withFallbackColor(color: Int): ColorMap
   def withBoundaryType(classBoundaryType: ClassBoundaryType): ColorMap
 
-  // Temporary hack?
-  def breaksMap: Map[Int, Int]
-  def breaksMapDouble: Map[Double, Int]
+  /** Retrieve a "breaks string" from [[ColorMap]] data.
+    * The opposite of the [[fromString]] methods.
+    */
+  def breaksString: String
 }
 
 class IntColorMap(breaksToColors: Map[Int, Int], val options: Options = Options.DEFAULT) extends ColorMap {
@@ -274,6 +265,13 @@ class IntColorMap(breaksToColors: Map[Int, Int], val options: Options = Options.
     h.foreachValue(z => ch.setItem(z, map(z)))
     new IntCachedColorMap(orderedColors, ch, options)
   }
+
+  lazy val breaksString: String = {
+    breaksToColors
+      .toStream
+      .map({ case (k,v) => s"${k}:${Integer.toHexString(v)}"})
+      .mkString(";")
+  }
 }
 
 /** Caches a color ramp based on a histogram of values. This is an optimization, since
@@ -312,6 +310,14 @@ class IntCachedColorMap(val colors: Vector[Int], h: Histogram[Int], val options:
 
   def withBoundaryType(classBoundaryType: ClassBoundaryType): ColorMap =
     new IntCachedColorMap(colors, h, options.copy(classBoundaryType = classBoundaryType))
+
+  def breaksString: String = {
+    h.quantileBreaks(colors.length)
+      .toVector
+      .zip(colors)
+      .map({ case (k,v) => s"${k}:${Integer.toHexString(v)}"})
+      .mkString(";")
+  }
 }
 
 class DoubleColorMap(breaksToColors: Map[Double, Int], val options: Options = Options.DEFAULT) extends ColorMap {
@@ -381,4 +387,11 @@ class DoubleColorMap(breaksToColors: Map[Double, Int], val options: Options = Op
 
   def withBoundaryType(classBoundaryType: ClassBoundaryType): ColorMap =
     new DoubleColorMap(breaksToColors, options.copy(classBoundaryType = classBoundaryType))
+
+  lazy val breaksString: String = {
+    breaksToColors
+      .toStream
+      .map({ case (k,v) => s"${k}:${Integer.toHexString(v)}"})
+      .mkString(";")
+  }
 }
