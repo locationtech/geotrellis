@@ -316,15 +316,21 @@ object CellType {
       }
       IntUserDefinedNoDataCellType(ndVal.toInt)
     case ct if ct.startsWith("float32ud") =>
-      val ndVal = new Regex("\\d*.?\\d+$").findFirstIn(ct).getOrElse {
-        throw new IllegalArgumentException(s"Cell type $name is not supported")
+      try {
+        val ndVal = ct.stripPrefix("float32ud").toDouble.toFloat
+        if (ndVal.isNaN) FloatConstantNoDataCellType
+        else FloatUserDefinedNoDataCellType(ndVal)
+      } catch {
+        case e: NumberFormatException => throw new IllegalArgumentException(s"Cell type $name is not supported")
       }
-      FloatUserDefinedNoDataCellType(ndVal.toFloat)
     case ct if ct.startsWith("float64ud") =>
-      val ndVal = new Regex("\\d*.?\\d+$").findFirstIn(ct).getOrElse {
-        throw new IllegalArgumentException(s"Cell type $name is not supported")
+      try {
+        val ndVal = ct.stripPrefix("float64ud").toDouble
+        if (ndVal.isNaN) DoubleConstantNoDataCellType
+        else DoubleUserDefinedNoDataCellType(ndVal)
+      } catch {
+        case e: NumberFormatException => throw new IllegalArgumentException(s"Cell type $name is not supported")
       }
-      DoubleUserDefinedNoDataCellType(ndVal.toDouble)
     case str =>
       throw new IllegalArgumentException(s"Cell type $name is not supported")
   }
