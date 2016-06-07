@@ -143,6 +143,15 @@ object ColorMap {
     }.toOption
   }
 
+  /** Retrieve a "breaks string" from [[ColorMap]] data.
+    * The opposite of the [[fromString]] methods.
+    */
+  def breaksString[T <: AnyVal](breaksToColors: Map[T, Int]): String = {
+    breaksToColors
+      .toStream
+      .map({ case (k,v) => s"${k}:${Integer.toHexString(v)}"})
+      .mkString(";")
+  }
 }
 
 import ColorMap.Options
@@ -187,6 +196,10 @@ trait ColorMap extends Serializable {
   def withNoDataColor(color: Int): ColorMap
   def withFallbackColor(color: Int): ColorMap
   def withBoundaryType(classBoundaryType: ClassBoundaryType): ColorMap
+
+  // Temporary hack?
+  def breaksMap: Map[Int, Int]
+  def breaksMapDouble: Map[Double, Int]
 }
 
 class IntColorMap(breaksToColors: Map[Int, Int], val options: Options = Options.DEFAULT) extends ColorMap {
@@ -202,6 +215,8 @@ class IntColorMap(breaksToColors: Map[Int, Int], val options: Options = Options.
 
   private lazy val orderedColors: Vector[Int] = orderedBreaks.map(breaksToColors(_))
   lazy val colors = orderedColors
+  lazy val breaksMap = breaksToColors
+  lazy val breaksMapDouble = Map.empty[Double,Int]
 
   private val zCheck: (Int, Int) => Boolean =
     options.classBoundaryType match {
@@ -269,6 +284,9 @@ class IntCachedColorMap(val colors: Vector[Int], h: Histogram[Int], val options:
     extends ColorMap {
   val noDataColor = options.noDataColor
 
+  lazy val breaksMap = Map.empty[Int,Int]
+  lazy val breaksMapDouble = Map.empty[Double,Int]
+
   def map(z: Int): Int = { if(isNoData(z)) noDataColor else h.itemCount(z).toInt }
 
   def mapDouble(z: Double): Int = map(d2i(z))
@@ -310,6 +328,8 @@ class DoubleColorMap(breaksToColors: Map[Double, Int], val options: Options = Op
 
   private val orderedColors: Vector[Int] = orderedBreaks.map(breaksToColors(_))
   lazy val colors = orderedColors
+  lazy val breaksMap = Map.empty[Int,Int]
+  lazy val breaksMapDouble = breaksToColors
 
   private val zCheck: (Double, Int) => Boolean =
     options.classBoundaryType match {
