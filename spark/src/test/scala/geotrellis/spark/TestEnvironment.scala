@@ -57,6 +57,9 @@ trait TestEnvironment extends BeforeAndAfterAll
   def registerAfterAll(f: () => Unit): Unit =
     afterAlls += f
 
+  def setKryoRegistrator(conf: SparkConf): Unit =
+    conf.set("spark.kryo.registrator", "geotrellis.spark.io.kryo.KryoRegistrator")
+
   lazy val _sc: SparkContext = {
     System.setProperty("spark.driver.port", "0")
     System.setProperty("spark.hostPort", "0")
@@ -74,6 +77,7 @@ trait TestEnvironment extends BeforeAndAfterAll
         .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
         .set("spark.kryoserializer.buffer.max", "500m")
         .set("spark.kryo.registrationRequired","false")
+      setKryoRegistrator(conf)
     }
 
     val sparkContext = new SparkContext(conf)
