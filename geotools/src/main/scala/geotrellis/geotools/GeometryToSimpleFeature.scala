@@ -29,6 +29,14 @@ import scala.collection.JavaConverters._
 object GeometryToSimpleFeature {
   val geometryField = "geometry"
 
+  /**
+    * Given a Geotrellis geometry, a CRS, and a sequence of ancillary
+    * data, produce a GeoTools SimpleFeature.
+    *
+    * @param  geom  The Geotrellis geometry
+    * @param  crs   The CRS of the geometry
+    * @param  data  A sequence of (String, Any) pairs
+    */
   def apply(geom: Geometry, crs: Option[CRS], data: Seq[(String, Any)]): SimpleFeature = {
     val sftb = (new SimpleFeatureTypeBuilder).minOccurs(1).maxOccurs(1).nillable(false)
 
