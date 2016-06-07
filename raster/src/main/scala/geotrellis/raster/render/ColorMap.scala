@@ -188,7 +188,7 @@ trait ColorMap extends Serializable {
   def withBoundaryType(classBoundaryType: ClassBoundaryType): ColorMap
 
   /** Retrieve a "breaks string" from [[ColorMap]] data.
-    * The opposite of the [[fromString]] methods.
+    * The opposite of the [[ColorMap.fromString]] methods.
     */
   def breaksString: String
 }
