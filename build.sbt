@@ -2,7 +2,7 @@ import Dependencies._
 import UnidocKeys._
 
 lazy val commonSettings = Seq(
-  version := Version.geotrellis,
+  version := "10.1-SNAPSHOT",
   scalaVersion := Version.scala,
   crossScalaVersions := Version.crossScala,
   description := Info.description,
@@ -65,7 +65,9 @@ lazy val root = Project("geotrellis", file(".")).
     sparkEtl,
     s3,
     accumulo,
-    slick
+    slick,
+    util,
+    macros
   ).
   settings(commonSettings: _*).
   settings(
