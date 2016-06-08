@@ -8,40 +8,18 @@ libraryDependencies ++= Seq(
   "org.apache.accumulo" % "accumulo-core" % Version.accumulo
     exclude("org.jboss.netty", "netty")
     exclude("org.apache.hadoop", "hadoop-client"),
-  "mil.nga.giat" % "geowave-adapter-raster" % "0.9.2-SNAPSHOT"
-    excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
-      ExclusionRule(organization = "javax.servlet")),
-  "mil.nga.giat" % "geowave-adapter-vector" % "0.9.2-SNAPSHOT"
-    excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
-      ExclusionRule(organization = "javax.servlet")),
-  "mil.nga.giat" % "geowave-core-store" % "0.9.2-SNAPSHOT"
-    excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
-      ExclusionRule(organization = "javax.servlet")),
-  "mil.nga.giat" % "geowave-datastore-accumulo" % "0.9.2-SNAPSHOT"
-    excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
-      ExclusionRule(organization = "javax.servlet")),
-  "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided"
-    excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
-      ExclusionRule(organization = "javax.servlet")),
+  "mil.nga.giat" % "geowave-adapter-raster" % "0.9.3-SNAPSHOT",
+  "mil.nga.giat" % "geowave-adapter-vector" % "0.9.3-SNAPSHOT",
+  "mil.nga.giat" % "geowave-core-store" % "0.9.3-SNAPSHOT",
+  "mil.nga.giat" % "geowave-datastore-accumulo" % "0.9.3-SNAPSHOT",
+  "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided",
   "org.apache.spark" %% "spark-core" % Version.spark % "provided",
-  "org.geoserver" % "gs-wms" % "2.8.2"
-    excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
-      ExclusionRule(organization = "javax.servlet")),
-  "org.geotools" % "gt-coverage" % Version.geotools % "provided"
-    excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
-      ExclusionRule(organization = "javax.servlet")),
-  "org.geotools" % "gt-epsg-hsql" % Version.geotools % "provided"
-    excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
-      ExclusionRule(organization = "javax.servlet")),
-  "org.geotools" % "gt-geotiff" % Version.geotools % "provided"
-    excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
-      ExclusionRule(organization = "javax.servlet")),
-  "org.geotools" % "gt-main" % Version.geotools % "provided"
-    excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
-      ExclusionRule(organization = "javax.servlet")),
-  "org.geotools" % "gt-referencing" % Version.geotools % "provided"
-    excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
-      ExclusionRule(organization = "javax.servlet")),
+  "org.geoserver" % "gs-wms" % "2.8.2",
+  "org.geotools" % "gt-coverage" % Version.geotools % "provided",
+  "org.geotools" % "gt-epsg-hsql" % Version.geotools % "provided",
+  "org.geotools" % "gt-geotiff" % Version.geotools % "provided",
+  "org.geotools" % "gt-main" % Version.geotools % "provided",
+  "org.geotools" % "gt-referencing" % Version.geotools % "provided",
   spire,
   scalatest % "test")
 
@@ -58,17 +36,14 @@ assemblyMergeStrategy in assembly := {
   case PathList("META-INF", xs @ _*) =>
     xs match {
       case ("MANIFEST.MF" :: Nil) => MergeStrategy.discard
-      // Concatenate everything in the services directory to keep
-      // GeoTools happy.
+      // Concatenate everything in the services directory to keep GeoTools happy.
       case ("services" :: _ :: Nil) =>
         MergeStrategy.concat
       // Concatenate these to keep JAI happy.
       case ("javax.media.jai.registryFile.jai" :: Nil) | ("registryFile.jai" :: Nil) | ("registryFile.jaiext" :: Nil) =>
         MergeStrategy.concat
       case (name :: Nil) => {
-        // Must exclude META-INF/*.([RD]SA|SF) to avoid "Invalid
-        // signature file digest for Manifest main attributes"
-        // exception.
+        // Must exclude META-INF/*.([RD]SA|SF) to avoid "Invalid signature file digest for Manifest main attributes" exception.
         if (name.endsWith(".RSA") || name.endsWith(".DSA") || name.endsWith(".SF"))
           MergeStrategy.discard
         else
@@ -80,7 +55,6 @@ assemblyMergeStrategy in assembly := {
 }
 
 fork in Test := false
-
 parallelExecution in Test := false
 
 initialCommands in console :=
