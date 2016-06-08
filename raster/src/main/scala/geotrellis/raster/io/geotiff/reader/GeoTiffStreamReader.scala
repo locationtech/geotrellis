@@ -41,7 +41,7 @@ class GeoTiffReaderLimitationException(msg: String)
 // TODO: Streaming read (e.g. so that we can read GeoTiffs that cannot fit into memory. Perhaps support BigTIFF?)
 
 
-object GeoTiffReader {
+object GeoTiffStreamReader {
 
   /* Read a single band GeoTIFF file.
    * If there is more than one band in the GeoTiff, read the first band only.
@@ -53,18 +53,18 @@ object GeoTiffReader {
    * If there is more than one band in the GeoTiff, read the first band only.
    */
   def readSingleband(path: String, decompress: Boolean): SinglebandGeoTiff =
-    readSingleband(Filesystem.slurp(path), decompress)
+    readSingleband(Filesystem.streamByteBuffer(path), decompress)
 
   /* Read a single band GeoTIFF file.
    * If there is more than one band in the GeoTiff, read the first band only.
    */
-  def readSingleband(bytes: Array[Byte]): SinglebandGeoTiff =
+  def readSingleband(bytes: ByteBuffer): SinglebandGeoTiff =
     readSingleband(bytes, true)
 
   /* Read a single band GeoTIFF file.
    * If there is more than one band in the GeoTiff, read the first band only.
    */
-  def readSingleband(bytes: Array[Byte], decompress: Boolean): SinglebandGeoTiff = {
+  def readSingleband(bytes: ByteBuffer, decompress: Boolean): SinglebandGeoTiff = {
     val info = readGeoTiffInfo(bytes, decompress)
 
     val geoTiffTile =
@@ -202,11 +202,7 @@ object GeoTiffReader {
   }
 
 
-  private def readGeoTiffInfo(bytes: Array[Byte], decompress: Boolean): GeoTiffInfo = {
-    val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
-
-    // Set byteBuffer position
-    byteBuffer.position(0)
+  private def readGeoTiffInfo(bytes: ByteBuffer, decompress: Boolean): GeoTiffInfo = {
 
     // set byte ordering
     (byteBuffer.get.toChar, byteBuffer.get.toChar) match {

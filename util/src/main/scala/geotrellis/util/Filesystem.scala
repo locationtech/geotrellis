@@ -63,6 +63,16 @@ object Filesystem {
     buffer
   }
 
+  def streamByteBuffer(path: String, sections: List[(Int, Int)]) = {
+
+    sections.sortBy(_._1)
+
+    def sectionsChecker: Boolean = {
+      if (sections.isEmpty)
+        throw new Error("WindowedReader needs sections of file to read")
+      else if (sections.filter
+
+
 
   /**
     * Make a contiguous chunk of a file available in the given array.
