@@ -10,6 +10,7 @@
 ./sbt -J-Xmx2G ++2.11.8 "project hbase" test  || { exit 1; }
 ./sbt -J-Xmx2G ++2.11.8 "project spark-etl" compile  || { exit 1; }
 ./sbt -J-Xmx2G ++2.11.8 "project geotools" test || { exit 1; }
+./sbt -J-Xmx2G ++2.11.8 "project geowave" test || { exit 1; }
 ./sbt -J-Xmx2G ++2.11.8 "project slick" test:compile || { exit 1; }
 ./sbt -J-Xmx2G ++2.11.8 "project shapefile" compile || { exit 1; }
 ./sbt -J-Xmx2G ++2.11.8 "project util" compile || { exit 1; }

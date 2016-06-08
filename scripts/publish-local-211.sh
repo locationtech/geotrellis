@@ -10,6 +10,8 @@
 ./sbt -211 "project cassandra" publish-local && \
 ./sbt -211 "project hbase" publish-local && \
 ./sbt -211 "project spark-etl" publish-local && \
+./sbt -211 "project geotools" publish-local && \
+./sbt -211 "project geowave" publish-local && \
 ./sbt -211 "project shapefile" publish-local && \
 ./sbt -211 "project slick" publish-local && \
 ./sbt -211 "project util" publish-local && \
