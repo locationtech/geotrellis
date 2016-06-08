@@ -1,7 +1,11 @@
 package geotrellis.spark.io.geowave
 
+import geotrellis.geotools._
+import geotrellis.proj4.LatLng
+import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.vector.Extent
 
 import com.vividsolutions.jts.geom._
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
@@ -28,6 +32,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.geotools.coverage.grid._
 import org.geotools.gce.geotiff._
+import org.opengis.coverage.grid.GridCoverage
 import org.opengis.parameter.GeneralParameterValue
 
 import scala.collection.JavaConverters._
@@ -80,8 +85,7 @@ object GeowaveAttributeStore {
     list
   }
 
-  def primaryIndex = (new SpatialDimensionalityTypeProvider.SpatialIndexBuilder)
-    .createIndex()
+  def primaryIndex = (new SpatialDimensionalityTypeProvider.SpatialIndexBuilder).createIndex()
 
   def subStrategies(idx: PrimaryIndex) = idx
     .getIndexStrategy
@@ -130,6 +134,23 @@ class GeowaveAttributeStore(
   val ds = new AccumuloDataStore(bao)
   val dss = new AccumuloDataStatisticsStore(bao)
 
+  val placeHolder = "_________________________________"
+
+  // Prevent "org.apache.accumulo.core.client.TableNotFoundException:
+  // Table gwRaster_GEOWAVE_METADATA does not exist" when writing from
+  // multiple threads to an initially-empty GeoWave instance.
+  {
+    val extent = Extent(-180, -90, 180, 90)
+    val tile = IntArrayTile.empty(512, 512)
+    val image = ProjectedRaster(Raster(tile, extent), LatLng).toGridCoverage2D
+    val index = getPrimaryIndex
+    val gwMetadata = new java.util.HashMap[String, String](); gwMetadata.put(placeHolder, placeHolder)
+    val adapter = new RasterDataAdapter(placeHolder, gwMetadata, image, 256, true)
+    val indexWriter = getDataStore.createWriter(adapter, index).asInstanceOf[IndexWriter[GridCoverage]]
+
+    indexWriter.write(image); indexWriter.close
+  }
+
   def getBoundingBoxes(): Map[ByteArrayId, BoundingBoxDataStatistics[Any]] = {
     getAdapters.map({ adapter =>
       val adapterId = adapter.getAdapterId
@@ -172,7 +193,7 @@ class GeowaveAttributeStore(
   def getAccumuloRequiredOptions = aro
   def getBasicAccumuloOperations = bao
   def getPrimaryIndex = GeowaveAttributeStore.primaryIndex
-  def getAdapters = GeowaveAttributeStore.adapters(bao)
+  def getAdapters = GeowaveAttributeStore.adapters(bao).filter(_.getCoverageName != placeHolder)
   def getSubStrategies = GeowaveAttributeStore.subStrategies(getPrimaryIndex)
   def getDataStore = ds
   def getDataStatisticsStore = dss
