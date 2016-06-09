@@ -67,16 +67,10 @@ case class GeoAttrsError(msg: String) extends Exception(msg)
   * RasterExtent.
   */
 case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, cols: Int, rows: Int)
-    extends GridDefinition {
+    extends GridDefinition with Grid {
 
   if (cols <= 0) throw GeoAttrsError(s"invalid cols: $cols")
   if (rows <= 0) throw GeoAttrsError(s"invalid rows: $rows")
-
-  /**
-    * The size of the extent, e.g. cols * rows.
-    */
-  def size = cols * rows
-  def dimensions = (cols, rows)
 
   /**
     * Convert map coordinates (x, y) to grid coordinates (col, row).
