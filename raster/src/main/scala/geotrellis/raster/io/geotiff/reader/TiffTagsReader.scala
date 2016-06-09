@@ -15,15 +15,9 @@ import java.nio.{ ByteBuffer, ByteOrder }
 
 object TiffTagsReader {
 
-  //def read(path: String): TiffTags = read(Filesystem.slurp(path))
-  
   def read(path: String): TiffTags = read(Filesystem.streamByteBuffer(path))
-
-  def read(bytes: ByteBuffer): TiffTags = {
-    //val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
-
-    // Set byteBuffer position
-    //byteBuffer.position(0)
+  
+  def read(byteBuffer: ByteBuffer): TiffTags = {
 
     // set byte ordering
     (byteBuffer.reader.toChar, byteBuffer.reader.toChar) match {
