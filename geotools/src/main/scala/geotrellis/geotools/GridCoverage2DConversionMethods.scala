@@ -3,6 +3,7 @@ package geotrellis.geotools
 import geotrellis.proj4.LatLng
 import geotrellis.raster._
 import geotrellis.util._
+import geotrellis.vector.Extent
 
 import org.geotools.coverage.grid._
 import org.geotools.resources.coverage.CoverageUtilities
@@ -13,6 +14,9 @@ import java.awt.image.{Raster => AwtRaster, _}
 trait GridCoverage2DConversionMethods extends MethodExtensions[GridCoverage2D] {
   def toTile(bandIndex: Int): Tile =
     GridCoverage2DConverters.convertToTile(self, bandIndex)
+
+  def toMultibandTile(): MultibandTile =
+    GridCoverage2DConverters.convertToMultibandTile(self)
 
   def toRaster(bandIndex: Int): Raster[Tile] = {
     val tile = GridCoverage2DConverters.convertToTile(self, bandIndex)
@@ -38,7 +42,7 @@ trait GridCoverage2DConversionMethods extends MethodExtensions[GridCoverage2D] {
     Raster(tile, extent)
   }
 
-  def toProjectedRaster(bandIndex: Int): ProjectedRaster[Tile] =
+  def toProjectedRaster(bandIndex: Int): ProjectedRaster[Tile] = {
     GridCoverage2DConverters.getCrs(self) match {
       case Some(crs) =>
         ProjectedRaster(toRaster(bandIndex), crs)
@@ -46,8 +50,9 @@ trait GridCoverage2DConversionMethods extends MethodExtensions[GridCoverage2D] {
         // Default LatLng
         ProjectedRaster(toRaster(bandIndex), LatLng)
     }
+  }
 
-  def toProjectedRaster(): ProjectedRaster[MultibandTile] =
+  def toProjectedRaster(): ProjectedRaster[MultibandTile] = {
     GridCoverage2DConverters.getCrs(self) match {
       case Some(crs) =>
         ProjectedRaster(toRaster(), crs)
@@ -55,5 +60,6 @@ trait GridCoverage2DConversionMethods extends MethodExtensions[GridCoverage2D] {
         // Default LatLng
         ProjectedRaster(toRaster(), LatLng)
     }
+  }
 
 }
