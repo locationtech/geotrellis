@@ -64,16 +64,16 @@ class S3LayerUpdater(
       metadata.merge(rdd.metadata)
 
     val updatedRdd: RDD[(K, V)] =
-      existingTiles
-        .leftOuterJoin(rdd)
-        .mapValues { case (layerTile, updateTile) =>
-          updateTile match {
+      rdd
+        .leftOuterJoin(existingTiles)
+        .mapValues { case (updateTile, layerTile) =>
+          layerTile match {
             case Some(tile) =>
-              mergeFunc(layerTile, tile)
+              mergeFunc(updateTile, tile)
             case None =>
-              layerTile
+              updateTile
           }
-      }
+        }
 
     val codec  = KeyValueRecordCodec[K, V]
     val schema = codec.schema

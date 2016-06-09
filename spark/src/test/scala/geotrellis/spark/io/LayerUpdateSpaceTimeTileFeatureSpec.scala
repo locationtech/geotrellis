@@ -65,6 +65,30 @@ trait LayerUpdateSpaceTimeTileFeatureSpec
         }
       }
 
+      it("should update a layer with preset keybounds, new rdd not intersects already ingested") {
+        val (minKey, _) = sample.sortByKey().first()
+        val (maxKey, _) = sample.sortByKey(false).first()
+
+        val kb = KeyBounds(
+          minKey.setComponent(SpatialKey(minKey.col - 200, minKey.row - 200)),
+          maxKey.setComponent(SpatialKey(maxKey.col + 200, maxKey.row + 200))
+        )
+
+        val updatedLayerId = layerId.copy(name = s"updatedSample-${layerId.name.split("sample")(1)}")
+        val updatedKeyIndexMethod = keyIndexMethod.createIndex(kb)
+        val updatedSample = sample.withContext { _.map { case (key, value) =>
+          (key.setComponent(SpatialKey(minKey.col - 200, minKey.row - 200)), value)
+        } }
+
+        writer.write[SpaceTimeKey, TileFeature[Tile, Tile], TileLayerMetadata[SpaceTimeKey]](updatedLayerId, sample, updatedKeyIndexMethod)
+        updater.update[SpaceTimeKey, TileFeature[Tile, Tile], TileLayerMetadata[SpaceTimeKey]](updatedLayerId, updatedSample)
+
+        val uc = reader.read[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId).count()
+        val c = sample.count()
+
+        uc shouldBe c
+      }
+
       it("should update correctly inside the bounds of a metatile") {
         val id = layerId.createTemporaryId
 

@@ -4,12 +4,10 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro.AvroRecordCodec
 import geotrellis.spark.io.avro.codecs._
-import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.merge._
 import geotrellis.util._
 
 import com.typesafe.scalalogging.slf4j._
-import org.apache.avro.Schema
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json._
@@ -64,16 +62,16 @@ class AccumuloLayerUpdater(
       metadata.merge(rdd.metadata)
 
     val updatedRdd: RDD[(K, V)] =
-      existingTiles
-        .leftOuterJoin(rdd)
-        .mapValues { case (layerTile, updateTile) =>
-          updateTile match {
+      rdd
+        .leftOuterJoin(existingTiles)
+        .mapValues { case (updateTile, layerTile) =>
+          layerTile match {
             case Some(tile) =>
-              mergeFunc(layerTile, tile)
+              mergeFunc(updateTile, tile)
             case None =>
-              layerTile
+              updateTile
           }
-      }
+        }
 
     val codec  = KeyValueRecordCodec[K, V]
     val schema = codec.schema
