@@ -76,7 +76,6 @@ trait LayerUpdateSpaceTimeTileFeatureSpec
         val ukb = KeyBounds(usample.sortByKey().first()._1, usample.sortByKey(false).first()._1)
         val updatedSample = new ContextRDD(usample, sample.metadata.copy(bounds = ukb))
 
-
         writer.write[SpaceTimeKey, TileFeature[Tile, Tile], TileLayerMetadata[SpaceTimeKey]](updatedLayerId, sample, updatedKeyIndex)
         updater.update[SpaceTimeKey, TileFeature[Tile, Tile], TileLayerMetadata[SpaceTimeKey]](updatedLayerId, updatedSample)
         reader.read[SpaceTimeKey, TileFeature[Tile, Tile], TileLayerMetadata[SpaceTimeKey]](updatedLayerId).count() shouldBe sample.count() * 2
