@@ -50,15 +50,12 @@ class HadoopLayerUpdater(
 
     val updatedRdd: RDD[(K, V)] =
       entireLayer
-        .leftOuterJoin(rdd)
-        .mapValues { case (layerTile, updateTile) =>
-          updateTile match {
-            case Some(tile) =>
-              mergeFunc(layerTile, tile)
-            case None =>
-              layerTile
-          }
-      }
+        .fullOuterJoin(rdd)
+        .mapValues {
+          case (Some(layerTile), Some(updateTile)) => mergeFunc(layerTile, updateTile)
+          case (Some(layerTile), None) => layerTile
+          case (None, Some(updateTile)) => updateTile
+        }
 
     val updated = ContextRDD(updatedRdd, updatedMetadata)
 
