@@ -41,6 +41,10 @@ object SinglebandGeoTiff {
     */
   def apply(bytes: Array[Byte]): SinglebandGeoTiff =
     GeoTiffReader.readSingleband(bytes)
+
+  /**Read a single-band GeoTiff file from a ByteBuffer.
+   * The GeoTiff will be fully decompressed and held in memory.
+   */
   
   def apply(bytes: ByteBuffer): SinglebandGeoTiff =
     GeoTiffStreamReader.readSingleband(bytes)
@@ -51,26 +55,35 @@ object SinglebandGeoTiff {
   def apply(bytes: Array[Byte], decompress: Boolean): SinglebandGeoTiff =
     GeoTiffReader.readSingleband(bytes, decompress)
 
+  /** Read a single-band GeoTIFF file from a ByteBuffer.
+    * If decompress = true, the GeoTIFF will be fully decompressed and held in memory.
+    */
+
   def apply(bytes: ByteBuffer, decompress: Boolean): SinglebandGeoTiff =
     GeoTiffStreamReader.readSingleband(bytes, decompress)
 
   /** Read a single-band GeoTIFF file from the file at the given path.
-    * The GeoTIFF will be fully decompressed and held in memory.
+    * The GeoTIFF will be read in as a ByteBuffer, fully decompressed,
+    * and held in memory.
     */
   def apply(path: String): SinglebandGeoTiff =
     GeoTiffStreamReader.readSingleband(path)
 
-  /** Read a single-band GeoTIFF file from the file at the given path.
+  /** Read a single-band GeoTIFF file as a ByteBuffer from the file at the given path.
     * If decompress = true, the GeoTIFF will be fully decompressed and held in memory.
     */
   def apply(path: String, decompress: Boolean): SinglebandGeoTiff =
     GeoTiffStreamReader.readSingleband(path, decompress)
 
-  /** Read a single-band GeoTIFF file from the file at a given path.
+  /** Read a single-band GeoTIFF file as a byte array from the file at a given path.
     * The tile data will remain tiled/striped and compressed in the TIFF format.
     */
   def compressed(path: String): SinglebandGeoTiff =
     GeoTiffReader.readSingleband(path, false)
+
+  /** Read a single-band GeoTIFF file as a ByteBuffer from the file at a given path.
+    * The tile data will remain tiled/striped and compressed in the TIFF format.
+    */
 
   def streamCompressed(path: String): SinglebandGeoTiff =
     GeoTiffStreamReader.readSingleband(path, false)
@@ -81,6 +94,9 @@ object SinglebandGeoTiff {
   def compressed(bytes: Array[Byte]): SinglebandGeoTiff =
     GeoTiffReader.readSingleband(bytes, false)
 
+  /** Read a single-band GeoTIFF file from a ByteBuffer.
+    * The tile data will remain tiled/striped and compressed in the TIFF format.
+    */
   def streamCompressed(bytes: ByteBuffer): SinglebandGeoTiff =
     GeoTiffStreamReader.readSingleband(bytes, false)
 

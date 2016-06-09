@@ -515,21 +515,9 @@ class GeoTiffReaderSpec extends FunSpec
       tif.crs should be (WebMercator)
     }
   }
-
-  describe("reading a tiff file with GeoTiffStreamReader") {
-    it("can load the file") {
-      val tif = GeoTiffStreamReader.readSingleband("../data/test.TIF")
-      tif.extent should be (Extent(394800.0, 4346070.0, 627030.0, 4582500.0))
-    }
-  }
-  
-  describe("reading a singleband tif with streamCompressed") {
-    it("can load the file") {
-      val tif = SinglebandGeoTiff.streamCompressed("../data/test.TIF")
-      tif.extent should be (Extent(394800.0, 4346070.0, 627030.0, 4582500.0))
-    }
-  }
 }
+
+
 
 class PackBitsGeoTiffReaderSpec extends FunSpec
     with RasterMatchers
