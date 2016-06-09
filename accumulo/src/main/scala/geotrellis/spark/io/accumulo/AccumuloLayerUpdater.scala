@@ -68,6 +68,7 @@ class AccumuloLayerUpdater(
           case (Some(layerTile), Some(updateTile)) => mergeFunc(layerTile, updateTile)
           case (Some(layerTile), None) => layerTile
           case (None, Some(updateTile)) => updateTile
+          case _ => throw new LayerUpdateError(id, "No value(s) in your layer RDD[(Key, Value)](s)")
         }
 
     val codec  = KeyValueRecordCodec[K, V]

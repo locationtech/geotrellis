@@ -68,8 +68,9 @@ class S3LayerUpdater(
         .fullOuterJoin(rdd)
         .mapValues {
           case (Some(layerTile), Some(updateTile)) => mergeFunc(layerTile, updateTile)
-          case (Some(layerTile), None) => layerTile
-          case (None, Some(updateTile)) => updateTile
+          case (Some(layerTile), _) => layerTile
+          case (_, Some(updateTile)) => updateTile
+          case _ => throw new LayerUpdateError(id, "No value(s) in your layer RDD[(Key, Value)](s)")
         }
 
     val codec  = KeyValueRecordCodec[K, V]
