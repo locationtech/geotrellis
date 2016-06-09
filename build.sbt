@@ -2,7 +2,7 @@ import Dependencies._
 import UnidocKeys._
 
 lazy val commonSettings = Seq(
-  version := "10.1.1.1-SNAPSHOT",
+  version := Version.geotrellis,
   scalaVersion := Version.scala,
   crossScalaVersions := Version.crossScala,
   description := Info.description,
