@@ -64,15 +64,12 @@ class FileLayerUpdater(
       metadata.merge(rdd.metadata)
 
     val updatedRdd: RDD[(K, V)] =
-      rdd
-        .leftOuterJoin(existingTiles)
-        .mapValues { case (updateTile, layerTile) =>
-          layerTile match {
-            case Some(tile) =>
-              mergeFunc(updateTile, tile)
-            case None =>
-              updateTile
-          }
+      existingTiles
+        .fullOuterJoin(rdd)
+        .mapValues {
+          case (Some(layerTile), Some(updateTile)) => mergeFunc(layerTile, updateTile)
+          case (Some(layerTile), None) => layerTile
+          case (None, Some(updateTile)) => updateTile
         }
 
     val codec  = KeyValueRecordCodec[K, V]
