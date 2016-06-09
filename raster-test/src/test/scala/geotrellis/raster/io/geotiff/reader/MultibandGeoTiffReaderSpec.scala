@@ -6,7 +6,7 @@ import geotrellis.raster.testkit._
 
 import org.scalatest._
 
-class MultibandGeoTiffReaderSpec extends FunSpec
+class MultibandGeoTiffStreamReaderSpec extends FunSpec
     with RasterMatchers
     with GeoTiffTestUtils {
 
@@ -14,7 +14,7 @@ class MultibandGeoTiffReaderSpec extends FunSpec
     it("Uncompressed, Stripped") {
 
       val tile =
-        reader.GeoTiffReader.readMultiband(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile
+        reader.GeoTiffStreamReader.readMultiband(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile
 
       // println("         PIXEL UNCOMPRESSED STRIPPED")
       // println(tile.band(0).asciiDraw)
@@ -28,7 +28,7 @@ class MultibandGeoTiffReaderSpec extends FunSpec
 
     it("Uncompressed, Tiled") {
       val tile =
-        reader.GeoTiffReader.readMultiband(geoTiffPath("3bands/int32/3bands-tiled-pixel.tif")).tile
+        reader.GeoTiffStreamReader.readMultiband(geoTiffPath("3bands/int32/3bands-tiled-pixel.tif")).tile
 
       // println("         PIXEL UNCOMPRESSED TILED")
       // println(tile.band(0).asciiDraw)
@@ -42,7 +42,7 @@ class MultibandGeoTiffReaderSpec extends FunSpec
 
     it("COMPRESSION=DEFLATE, Stripped") {
       val tile =
-        reader.GeoTiffReader.readMultiband(geoTiffPath("3bands/3bands-deflate.tif")).tile
+        reader.GeoTiffStreamReader.readMultiband(geoTiffPath("3bands/3bands-deflate.tif")).tile
 
       // println("         PIXEL COMPRESSED STRIPPED")
       // println(tile.band(0).asciiDraw)
@@ -56,7 +56,7 @@ class MultibandGeoTiffReaderSpec extends FunSpec
 
     it("COMPRESSION=DEFLATE, Tiled") {
       val tile =
-        reader.GeoTiffReader.readMultiband(geoTiffPath("3bands/3bands-tiled-deflate.tif")).tile
+        reader.GeoTiffStreamReader.readMultiband(geoTiffPath("3bands/3bands-tiled-deflate.tif")).tile
 
       // println("         PIXEL COMPRESSED TILED")
       // println(tile.band(0).asciiDraw)
@@ -72,7 +72,7 @@ class MultibandGeoTiffReaderSpec extends FunSpec
   describe("Reading geotiffs with INTERLEAVE=BANDS") {
     it("Uncompressed, Stripped") {
       val tile =
-        reader.GeoTiffReader.readMultiband(geoTiffPath("3bands/int32/3bands-striped-band.tif")).tile
+        reader.GeoTiffStreamReader.readMultiband(geoTiffPath("3bands/int32/3bands-striped-band.tif")).tile
 
 
       // println("         PIXEL UNCOMPRESSED STRIPPED")
@@ -87,7 +87,7 @@ class MultibandGeoTiffReaderSpec extends FunSpec
 
     it("Uncompressed, Tiled") {
       val tile =
-        reader.GeoTiffReader.readMultiband(geoTiffPath("3bands/int32/3bands-tiled-band.tif")).tile
+        reader.GeoTiffStreamReader.readMultiband(geoTiffPath("3bands/int32/3bands-tiled-band.tif")).tile
 
       // println("         BANDS UNCOMPRESSED TILED")
       // println(tile.band(0).asciiDraw)
@@ -101,7 +101,7 @@ class MultibandGeoTiffReaderSpec extends FunSpec
 
     it("COMPRESSION=DEFLATE, Stripped") {
       val tile =
-        reader.GeoTiffReader.readMultiband(geoTiffPath("3bands/3bands-interleave-bands-deflate.tif")).tile
+        reader.GeoTiffStreamReader.readMultiband(geoTiffPath("3bands/3bands-interleave-bands-deflate.tif")).tile
 
       // println("         BANDS COMPRESSED STRIPPED")
       // println(tile.band(0).asciiDraw)
@@ -115,7 +115,7 @@ class MultibandGeoTiffReaderSpec extends FunSpec
 
     it("COMPRESSION=DEFLATE, Tiled") {
       val tile =
-        reader.GeoTiffReader.readMultiband(geoTiffPath("3bands/3bands-tiled-interleave-bands-deflate.tif")).tile
+        reader.GeoTiffStreamReader.readMultiband(geoTiffPath("3bands/3bands-tiled-interleave-bands-deflate.tif")).tile
 
       // println("         BANDS COMPRESSED TILED")
       // println(tile.band(0).asciiDraw)
