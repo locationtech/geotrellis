@@ -68,7 +68,7 @@ class SinglebandGeoTiffReaderSpec extends FunSpec
       assertEqual(actual, expected)
     }
 
-    it("should be able to collect points from a large sparse compressed geotiff that couldn't fit all into memory") {
+    it("should be able to collect points from a large sparse Compressed geotiff that couldn't fit all into memory") {
       import geotrellis.vector._
       import scala.collection.mutable
 
@@ -86,7 +86,7 @@ class SinglebandGeoTiffReaderSpec extends FunSpec
       }
     }
 
-    it("should find min and max of a large sparse raster, lzw compressed") {
+    it("should find min and max of a large sparse raster, lzw Compressed") {
       val n = "wm_depth.tif"
       val path = geoTiffPath(s"$n")
       val tile = SinglebandGeoTiff.compressed(path).tile

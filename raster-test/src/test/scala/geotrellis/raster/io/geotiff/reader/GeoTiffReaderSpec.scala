@@ -517,6 +517,8 @@ class GeoTiffReaderSpec extends FunSpec
   }
 }
 
+
+
 class PackBitsGeoTiffReaderSpec extends FunSpec
     with RasterMatchers
     with GeoTiffTestUtils {
