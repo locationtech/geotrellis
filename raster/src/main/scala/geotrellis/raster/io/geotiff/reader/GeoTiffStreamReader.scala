@@ -33,14 +33,6 @@ import java.nio.{ByteBuffer, ByteOrder}
 import spire.syntax.cfor._
 
 
-class MalformedGeoTiffException(msg: String) extends RuntimeException(msg)
-
-class GeoTiffReaderLimitationException(msg: String)
-    extends RuntimeException(msg)
-
-// TODO: Streaming read (e.g. so that we can read GeoTiffs that cannot fit into memory. Perhaps support BigTIFF?)
-
-
 object GeoTiffStreamReader {
 
   /* Read a single band GeoTIFF file.
@@ -101,14 +93,14 @@ object GeoTiffStreamReader {
   /* Read a multi band GeoTIFF file.
    */
   def readMultiband(path: String, decompress: Boolean): MultibandGeoTiff =
-    readMultiband(Filesystem.slurp(path), decompress)
+    readMultiband(Filesystem.streamByteBuffer(path), decompress)
 
   /* Read a multi band GeoTIFF file.
    */
-  def readMultiband(bytes: Array[Byte]): MultibandGeoTiff =
+  def readMultiband(bytes: ByteBuffer): MultibandGeoTiff =
     readMultiband(bytes, true)
 
-  def readMultiband(bytes: Array[Byte], decompress: Boolean): MultibandGeoTiff = {
+  def readMultiband(bytes: ByteBuffer, decompress: Boolean): MultibandGeoTiff = {
     val info = readGeoTiffInfo(bytes, decompress)
     val geoTiffTile =
       GeoTiffMultibandTile(
@@ -202,7 +194,7 @@ object GeoTiffStreamReader {
   }
 
 
-  private def readGeoTiffInfo(bytes: ByteBuffer, decompress: Boolean): GeoTiffInfo = {
+  private def readGeoTiffInfo(byteBuffer: ByteBuffer, decompress: Boolean): GeoTiffInfo = {
 
     // set byte ordering
     (byteBuffer.get.toChar, byteBuffer.get.toChar) match {
