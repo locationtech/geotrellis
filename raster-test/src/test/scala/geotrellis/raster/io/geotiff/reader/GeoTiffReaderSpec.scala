@@ -537,6 +537,7 @@ class PackBitsGeoTiffReaderSpec extends FunSpec
 
   describe("Reading geotiffs with PACKBITS compression") {
 <<<<<<< HEAD
+<<<<<<< HEAD
     it("must read a single band bit raster as a multiband") {
       val singlebandGeoTiff = SinglebandGeoTiff(geoTiffPath("deflate/striped/bit.tif"))
       val multibandGeoTiff = MultibandGeoTiff(geoTiffPath("deflate/striped/bit.tif"))
@@ -546,6 +547,11 @@ class PackBitsGeoTiffReaderSpec extends FunSpec
     it("must read econic_packbits.tif and match uncompressed file") {
       val actual = SinglebandGeoTiff.compressed(geoTiffPath("econic_packbits.tif")).tile
       val expected = SinglebandGeoTiff.compressed(s"$baseDataPath/econic.tif").tile
+=======
+    it("must read econic_packbits.tif and match unstreamCompressed file") {
+      val actual = SinglebandGeoTiff.streamCompressed(geoTiffPath("econic_packbits.tif")).tile
+      val expected = SinglebandGeoTiff.streamCompressed(s"$baseDataPath/econic.tif").tile
+>>>>>>> f58d504... Added the ability to read GeoTiff files in as a ByteBuffer
 =======
     it("must read econic_packbits.tif and match unstreamCompressed file") {
       val actual = SinglebandGeoTiff.streamCompressed(geoTiffPath("econic_packbits.tif")).tile
