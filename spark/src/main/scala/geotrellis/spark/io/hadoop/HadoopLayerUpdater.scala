@@ -55,7 +55,7 @@ class HadoopLayerUpdater(
           case (Some(layerTile), Some(updateTile)) => mergeFunc(layerTile, updateTile)
           case (Some(layerTile), _) => layerTile
           case (_, Some(updateTile)) => updateTile
-          case _ => throw new LayerUpdateError(id, "No value(s) in your layer RDD[(Key, Value)](s)")
+          case _ => throw new LayerUpdateError(id, "No value(s) in your existing and new layer RDDs")
         }
 
     val updated = ContextRDD(updatedRdd, updatedMetadata)
