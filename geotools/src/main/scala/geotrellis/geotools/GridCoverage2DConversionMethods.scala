@@ -14,6 +14,9 @@ trait GridCoverage2DConversionMethods extends MethodExtensions[GridCoverage2D] {
   def toTile(bandIndex: Int): Tile =
     GridCoverage2DConverters.convertToTile(self, bandIndex)
 
+  def toMultibandTile(): MultibandTile =
+    GridCoverage2DConverters.convertToMultibandTile(self)
+
   def toRaster(bandIndex: Int): Raster[Tile] = {
     val tile = GridCoverage2DConverters.convertToTile(self, bandIndex)
     val extent = GridCoverage2DConverters.getExtent(self)

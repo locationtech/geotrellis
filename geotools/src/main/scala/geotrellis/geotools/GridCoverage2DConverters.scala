@@ -225,6 +225,12 @@ object GridCoverage2DConverters {
       case _: DoubleCells => (Double.MinValue, Double.MaxValue)
     }
 
+  def convertToMultibandTile(gridCoverage: GridCoverage2D): MultibandTile = {
+    val numBands = gridCoverage.getRenderedImage.getSampleModel.getNumBands
+    val tiles = (0 until numBands).map({ i => convertToTile(gridCoverage, i) })
+    ArrayMultibandTile(tiles)
+  }
+
   def convertToTile(gridCoverage: GridCoverage2D, bandIndex: Int): Tile = {
     val renderedImage = gridCoverage.getRenderedImage
     val buffer = renderedImage.getData.getDataBuffer
