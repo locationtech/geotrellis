@@ -196,21 +196,7 @@ object GeoTiffStreamReader {
 
   private def readGeoTiffInfo(byteBuffer: ByteBuffer, decompress: Boolean): GeoTiffInfo = {
 
-    // set byte ordering
-    (byteBuffer.get.toChar, byteBuffer.get.toChar) match {
-      case ('I', 'I') => byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-      case ('M', 'M') => byteBuffer.order(ByteOrder.BIG_ENDIAN)
-      case _ => throw new MalformedGeoTiffException("incorrect byte order")
-    }
-
-    // Validate Tiff identification number
-    val tiffIdNumber = byteBuffer.getChar
-    if (tiffIdNumber != 42)
-      throw new MalformedGeoTiffException(s"bad identification number (must be 42, was $tiffIdNumber)")
-
-    val tagsStartPosition = byteBuffer.getInt
-
-    val tiffTags = TiffTagsReader.read(byteBuffer, tagsStartPosition)
+    val tiffTags = TiffTagsReader.read(byteBuffer)
 
     val hasPixelInterleave = tiffTags.hasPixelInterleave
 
