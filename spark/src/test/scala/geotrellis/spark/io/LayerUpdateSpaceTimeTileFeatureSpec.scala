@@ -79,7 +79,7 @@ trait LayerUpdateSpaceTimeTileFeatureSpec
 
         writer.write[SpaceTimeKey, TileFeature[Tile, Tile], TileLayerMetadata[SpaceTimeKey]](updatedLayerId, sample, updatedKeyIndex)
         updater.update[SpaceTimeKey, TileFeature[Tile, Tile], TileLayerMetadata[SpaceTimeKey]](updatedLayerId, updatedSample)
-        reader.read[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId).count() shouldBe sample.count() * 2
+        reader.read[SpaceTimeKey, TileFeature[Tile, Tile], TileLayerMetadata[SpaceTimeKey]](updatedLayerId).count() shouldBe sample.count() * 2
       }
 
       it("should update correctly inside the bounds of a metatile") {
