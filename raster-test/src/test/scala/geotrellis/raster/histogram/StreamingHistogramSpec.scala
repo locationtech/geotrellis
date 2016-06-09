@@ -270,4 +270,13 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
 
   }
 
+  it("should allow the bucket count to be parameterized") {
+    val tile = IntArrayTile(1 to 250*250 toArray, 250, 250)
+
+    val default = tile.histogramDouble()
+    val custom = tile.histogramDouble(200)
+
+    default.statistics should not be (custom.statistics)
+  }
+
 }
