@@ -496,9 +496,10 @@ class StreamingHistogram(
     } else {
       val bs = buckets
       val n = totalCount
-      val ds = bs.map(_.label)
+      // We have to prepend the minimum value here
+      val ds = minValue().getOrElse(Double.NegativeInfinity) +: bs.map(_.label)
       val pdf = bs.map(_.count.toDouble / n)
-      val cdf = pdf.scanLeft(0.0)(_ + _).drop(1)
+      val cdf = pdf.scanLeft(0.0)(_ + _)
       val data = ds.zip(cdf).sliding(2)
 
       data.map({ ab => (ab.head, ab.tail.head) })
@@ -525,11 +526,15 @@ class StreamingHistogram(
       }
     }
 
-  /**
-    * For each q in qs, all between 0 and 1, find a number
-    * (approximately) at the qth percentile.
+  /** For each q in qs, all between 0 and 1, find a number (approximately) at the qth percentile.
+    *
+    * @param qs   A list of quantiles (0.01 == 1th pctile, 0.2 == 20th pctile) to use in
+    *              generating breaks
+    *
+    * @note       Our aim here is to produce values corresponding to the qs which stretch
+    *              from minValue to maxValue, interpolating based on observed bins along the way
     */
-  def percentileBreaks(qs: Seq[Double]): Seq[Double] =
+  def percentileBreaks(qs: Seq[Double]): Seq[Double] = {
     if(buckets.size == 1) {
       qs.map(z => buckets.head.label)
     } else {
@@ -539,18 +544,32 @@ class StreamingHistogram(
       } else {
         val result = MutableListBuffer[Double]()
         var curr = data.next
+
         def getValue(q: Double): Double = {
           val (d1, pct1) = curr._1
           val (d2, pct2) = curr._2
-          if(q - pct1 < 0.0) {
-            minValue().getOrElse(Double.NegativeInfinity)
-          } else {
-            val x = (q - pct1) / (pct2 - pct1)
-            (1 - x) * d1 + x * d2
-          }
+          val proportionalDiff = (q - pct1) / (pct2 - pct1)
+          (1 - proportionalDiff) * d1 + proportionalDiff * d2
         }
 
-        for(q <- qs) {
+        val quantilesToCheck =
+          if (qs.head < curr._2._2) {
+            // The first case. Either the first bin IS the minimum value or it is VERY
+            //  close (because it is the result of combining the minValue bin with neighboring bins)
+            result += curr._1._1
+
+            // IF the minvalue is the same as the lowest bin, we need to clean house and
+            //  remove the lowest bin.
+            // Else, we have to treat the lowest bin as the 0th pctile for interpolation.
+            if (curr._1._1 == curr._2._1) { curr = (curr._1, data.next._2) }
+            else { curr = ((curr._1._1, 0.0), curr._2) }
+            qs.tail
+          } else {
+            qs
+          }
+
+        for(q <- quantilesToCheck) {
+          // Catch the edge case of 0th pctile, which usually won't matter
           if (q == 0.0) { result += minValue().getOrElse(Double.NegativeInfinity) }
           else if (q == 1.0) { result += maxValue().getOrElse(Double.PositiveInfinity) }
           else {
@@ -566,6 +585,7 @@ class StreamingHistogram(
         result.toSeq
       }
     }
+  }
 
   def percentile(q: Double): Double =
     percentileBreaks(List(q)).head
