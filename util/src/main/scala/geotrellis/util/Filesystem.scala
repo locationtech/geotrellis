@@ -52,6 +52,12 @@ object Filesystem {
     data
   }
 
+  /**
+    * Read the contents of a file into a ByteBuffer.
+    *
+    * @param   path The path to the file to be read
+    * @return       A ByteBuffer that contains the file
+    */
   def streamByteBuffer(path: String): ByteBuffer = {
     val f = new File(path)
     val fis = new FileInputStream(f)
