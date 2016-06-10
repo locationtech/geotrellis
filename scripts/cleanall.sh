@@ -6,6 +6,7 @@
 ./sbt -J-Xmx2G "project spark" clean  || { exit 1; }
 ./sbt -J-Xmx2G "project s3" clean  || { exit 1; }
 ./sbt -J-Xmx2G "project accumulo" clean  || { exit 1; }
+./sbt -J-Xmx2G "project cassandra" clean  || { exit 1; }
 ./sbt -J-Xmx2G "project slick" clean || { exit 1; }
 ./sbt -J-Xmx2G "project shapefile" clean || { exit 1; }
 ./sbt -J-Xmx2G "project util" clean || { exit 1; }

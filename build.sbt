@@ -130,8 +130,12 @@ lazy val accumulo = Project("accumulo", file("accumulo")).
   dependsOn(sparkTestkit % "test->test", spark % "provided;test->test").
   settings(commonSettings: _*)
 
+lazy val cassandra = Project("cassandra", file("cassandra")).
+  dependsOn(sparkTestkit % "test->test", spark % "provided;test->test").
+  settings(commonSettings: _*)
+
 lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).
-  dependsOn(spark, s3, accumulo).
+  dependsOn(spark, s3, accumulo, cassandra).
   settings(commonSettings: _*)
 
 lazy val geotools = Project("geotools", file("geotools")).

@@ -8,6 +8,7 @@
 ./sbt "project spark" +publish-local && \
 ./sbt "project s3" +publish-local && \
 ./sbt "project accumulo" +publish-local && \
+./sbt "project cassandra" +publish-local && \
 ./sbt "project spark-etl" +publish-local && \
 ./sbt "project shapefile" +publish-local && \
 ./sbt "project slick" +publish-local && \

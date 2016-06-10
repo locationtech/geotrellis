@@ -6,6 +6,7 @@
 ./sbt -J-Xmx2G ++2.11.8 "project spark" test  || { exit 1; }
 ./sbt -J-Xmx2G ++2.11.8 "project s3" test  || { exit 1; }
 ./sbt -J-Xmx2G ++2.11.8 "project accumulo" test  || { exit 1; }
+./sbt -J-Xmx2G ++2.11.8 "project cassandra" test  || { exit 1; }
 ./sbt -J-Xmx2G ++2.11.8 "project spark-etl" compile  || { exit 1; }
 ./sbt -J-Xmx2G ++2.11.8 "project geotools" test || { exit 1; }
 ./sbt -J-Xmx2G ++2.11.8 "project slick" test:compile || { exit 1; }
