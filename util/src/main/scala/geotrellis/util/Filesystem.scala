@@ -53,6 +53,24 @@ object Filesystem {
   }
 
   /**
+    * Read the contents of a file into a ByteBuffer.
+    *
+    * @param   path The path to the file to be read
+    * @return       A ByteBuffer that contains the file
+    */
+  def streamByteBuffer(path: String): ByteBuffer = {
+    val f = new File(path)
+    val fis = new FileInputStream(f)
+    val size = f.length.toInt
+    val channel = fis.getChannel
+    val buffer = channel.map(READ_ONLY, 0, size)
+    channel.close()
+    fis.close()
+    buffer
+  }
+
+
+  /**
     * Make a contiguous chunk of a file available in the given array.
     *
     * @param path       The path to the file which is to be (partially) mapped into memory

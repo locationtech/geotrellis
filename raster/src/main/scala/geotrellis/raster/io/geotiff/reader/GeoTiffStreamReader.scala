@@ -33,15 +33,7 @@ import java.nio.{ByteBuffer, ByteOrder}
 import spire.syntax.cfor._
 
 
-class MalformedGeoTiffException(msg: String) extends RuntimeException(msg)
-
-class GeoTiffReaderLimitationException(msg: String)
-    extends RuntimeException(msg)
-
-// TODO: Streaming read (e.g. so that we can read GeoTiffs that cannot fit into memory. Perhaps support BigTIFF?)
-
-
-object GeoTiffReader {
+object GeoTiffStreamReader {
 
   /* Read a single band GeoTIFF file.
    * If there is more than one band in the GeoTiff, read the first band only.
@@ -53,18 +45,18 @@ object GeoTiffReader {
    * If there is more than one band in the GeoTiff, read the first band only.
    */
   def readSingleband(path: String, decompress: Boolean): SinglebandGeoTiff =
-    readSingleband(Filesystem.slurp(path), decompress)
+    readSingleband(Filesystem.streamByteBuffer(path), decompress)
 
   /* Read a single band GeoTIFF file.
    * If there is more than one band in the GeoTiff, read the first band only.
    */
-  def readSingleband(bytes: Array[Byte]): SinglebandGeoTiff =
+  def readSingleband(bytes: ByteBuffer): SinglebandGeoTiff =
     readSingleband(bytes, true)
 
   /* Read a single band GeoTIFF file.
    * If there is more than one band in the GeoTiff, read the first band only.
    */
-  def readSingleband(bytes: Array[Byte], decompress: Boolean): SinglebandGeoTiff = {
+  def readSingleband(bytes: ByteBuffer, decompress: Boolean): SinglebandGeoTiff = {
     val info = readGeoTiffInfo(bytes, decompress)
 
     val geoTiffTile =
@@ -101,14 +93,14 @@ object GeoTiffReader {
   /* Read a multi band GeoTIFF file.
    */
   def readMultiband(path: String, decompress: Boolean): MultibandGeoTiff =
-    readMultiband(Filesystem.slurp(path), decompress)
+    readMultiband(Filesystem.streamByteBuffer(path), decompress)
 
   /* Read a multi band GeoTIFF file.
    */
-  def readMultiband(bytes: Array[Byte]): MultibandGeoTiff =
+  def readMultiband(bytes: ByteBuffer): MultibandGeoTiff =
     readMultiband(bytes, true)
 
-  def readMultiband(bytes: Array[Byte], decompress: Boolean): MultibandGeoTiff = {
+  def readMultiband(bytes: ByteBuffer, decompress: Boolean): MultibandGeoTiff = {
     val info = readGeoTiffInfo(bytes, decompress)
     val geoTiffTile =
       GeoTiffMultibandTile(
@@ -202,27 +194,9 @@ object GeoTiffReader {
   }
 
 
-  private def readGeoTiffInfo(bytes: Array[Byte], decompress: Boolean): GeoTiffInfo = {
-    val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
+  private def readGeoTiffInfo(byteBuffer: ByteBuffer, decompress: Boolean): GeoTiffInfo = {
 
-    // Set byteBuffer position
-    byteBuffer.position(0)
-
-    // set byte ordering
-    (byteBuffer.get.toChar, byteBuffer.get.toChar) match {
-      case ('I', 'I') => byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-      case ('M', 'M') => byteBuffer.order(ByteOrder.BIG_ENDIAN)
-      case _ => throw new MalformedGeoTiffException("incorrect byte order")
-    }
-
-    // Validate Tiff identification number
-    val tiffIdNumber = byteBuffer.getChar
-    if (tiffIdNumber != 42)
-      throw new MalformedGeoTiffException(s"bad identification number (must be 42, was $tiffIdNumber)")
-
-    val tagsStartPosition = byteBuffer.getInt
-
-    val tiffTags = TiffTagsReader.read(byteBuffer, tagsStartPosition)
+    val tiffTags = TiffTagsReader.read(byteBuffer)
 
     val hasPixelInterleave = tiffTags.hasPixelInterleave
 

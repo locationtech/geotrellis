@@ -14,16 +14,13 @@ import java.nio.{ ByteBuffer, ByteOrder }
 
 
 object TiffTagsReader {
-  def read(path: String): TiffTags = read(Filesystem.slurp(path))
 
-  def read(bytes: Array[Byte]): TiffTags = {
-    val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
-
-    // Set byteBuffer position
-    byteBuffer.position(0)
+  def read(path: String): TiffTags = read(Filesystem.streamByteBuffer(path))
+  
+  def read(byteBuffer: ByteBuffer): TiffTags = {
 
     // set byte ordering
-    (byteBuffer.get.toChar, byteBuffer.get.toChar) match {
+    (byteBuffer.reader.toChar, byteBuffer.reader.toChar) match {
       case ('I', 'I') => byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
       case ('M', 'M') => byteBuffer.order(ByteOrder.BIG_ENDIAN)
       case _ => throw new MalformedGeoTiffException("incorrect byte order")
