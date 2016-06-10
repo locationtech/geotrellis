@@ -66,8 +66,13 @@ case class GeoAttrsError(msg: String) extends Exception(msg)
   * of an Extent are not actually considered to be part of the
   * RasterExtent.
   */
-case class RasterExtent(extent: Extent, cellwidth: Double, cellheight: Double, cols: Int, rows: Int)
-    extends GridDefinition with Grid {
+case class RasterExtent(
+  override val extent: Extent,
+  override val cellwidth: Double,
+  override val cellheight: Double,
+  cols: Int,
+  rows: Int
+) extends GridExtent(extent, cellwidth, cellheight) with Grid {
 
   if (cols <= 0) throw GeoAttrsError(s"invalid cols: $cols")
   if (rows <= 0) throw GeoAttrsError(s"invalid rows: $rows")
