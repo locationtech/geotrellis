@@ -104,6 +104,19 @@ class GridExtent(val extent: Extent, val cellwidth: Double, val cellheight: Doub
       Extent(xmin, ymin, xmax, ymax)
     }
   }
+
+  override def equals(o: Any): Boolean = o match {
+    case other: GridExtent =>
+      other.extent == extent && other.cellheight == cellheight && other.cellwidth == cellwidth
+    case _ =>
+      false
+  }
+
+  override def hashCode(): Int =
+    (((31 + (if (extent == null) 0 else extent.hashCode)) * 31 + cellheight.toInt) * 31 + cellwidth.toInt)
+
+  override def toString(): String =
+    s"GridExtent($extent,$cellwidth,$cellheight)"
 }
 
 
@@ -114,7 +127,7 @@ object GridExtent {
   def apply(extent: Extent, cellwidth: Double, cellheight: Double): GridExtent =
     new GridExtent(extent, cellwidth, cellheight)
 
-  def unapply(ge: GridExtent): Option[(Extent, cellwidth, cellheight)] =
+  def unapply(ge: GridExtent): Option[(Extent, Double, Double)] =
     if (ge != null)
       Some((ge.extent, ge.cellwidth, ge.cellheight))
     else
