@@ -113,4 +113,10 @@ object GridExtent {
 
   def apply(extent: Extent, cellwidth: Double, cellheight: Double): GridExtent =
     new GridExtent(extent, cellwidth, cellheight)
+
+  def unapply(ge: GridExtent): Option[(Extent, cellwidth, cellheight)] =
+    if (ge != null)
+      Some((ge.extent, ge.cellwidth, ge.cellheight))
+    else
+      None
 }
