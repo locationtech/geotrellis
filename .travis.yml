@@ -40,7 +40,7 @@ cache:
   - "$HOME/.sbt"
 
 script:
-  - ./scripts/buildall.sh
+  - .travis/build-and-test.sh
 
 notifications:
   email:

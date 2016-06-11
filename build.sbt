@@ -65,6 +65,7 @@ lazy val root = Project("geotrellis", file(".")).
     sparkEtl,
     s3,
     accumulo,
+    cassandra,
     slick
   ).
   settings(commonSettings: _*).
