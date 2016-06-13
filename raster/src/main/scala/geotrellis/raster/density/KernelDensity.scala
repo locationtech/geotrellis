@@ -27,53 +27,76 @@ import spire.syntax.cfor._
  * Object containing functions pertaining to kernel density estimation.
  */
 object KernelDensity {
-
   /**
     * Computes a Density raster based on the Kernel and set of points provided.
+    * Defaults to IntConstantNoDataCellType.
+    */
+  def apply(points: Traversable[PointFeature[Int]],
+            kernel: Kernel,
+            rasterExtent: RasterExtent): Tile =
+    apply(points, kernel, rasterExtent, IntConstantNoDataCellType)
+
+  /**
+    * Computes a Density raster based on the Kernel and set of int point features provided.
     *
     * @param      points           Sequence of point features who's values will be used to
     *                              compute the density.
     * @param      kernel           [[Kernel]] to be used in the computation.
     * @param      rasterExtent     Raster extent of the resulting raster.
+    * @param      cellType         CellType of the resulting tile.
     *
-    * @note                        KernelDensity does not currently support Double raster data.
-    *                              If you use a Raster with a Double CellType (FloatConstantNoDataCellType, DoubleConstantNoDataCellType)
-    *                              the data values will be rounded to integers.
     */
-  def kernelDensity[D](points: Seq[PointFeature[D]],
-                       kernel: Kernel,
-                       rasterExtent: RasterExtent)
-                      (implicit transform:D => Int): Tile =
-    kernelDensity(points, transform, kernel, rasterExtent)
-
-  /**
-    * Computes a Density raster based on the Kernel and set of points provided.
-    *
-    * @param      points           Sequence of point features who's values will be used to
-    *                              compute the density.
-    * @param      transform        Function that transforms the point feature's data into
-    *                              an Int value.
-    * @param      kernel           [[Kernel]] to be used in the computation.
-    * @param      rasterExtent     Raster extent of the resulting raster.
-    *
-    * @note                        KernelDensity does not currently support Double raster data.
-    *                              If you use a Raster with a Double CellType (FloatConstantNoDataCellType, DoubleConstantNoDataCellType)
-    *                              the data values will be rounded to integers.
-    */
-  def kernelDensity[D](points: Seq[PointFeature[D]],
-                       transform: D => Int,
-                       kernel: Kernel,
-                       rasterExtent: RasterExtent): Tile = {
-    val stamper = KernelStamper(IntConstantNoDataCellType, rasterExtent.cols, rasterExtent.rows, kernel)
+  def apply(points: Traversable[PointFeature[Int]],
+               kernel: Kernel,
+               rasterExtent: RasterExtent,
+               cellType: CellType): Tile = {
+    val stamper = KernelStamper(cellType, rasterExtent.cols, rasterExtent.rows, kernel)
 
     for(point <- points) {
       val col = rasterExtent.mapXToGrid(point.geom.x)
       val row = rasterExtent.mapYToGrid(point.geom.y)
-      stamper.stampKernel(col, row, transform(point.data))
+      if(cellType.isFloatingPoint) {
+        stamper.stampKernelDouble(col, row, point.data.toDouble)
+      } else {
+        stamper.stampKernel(col, row, point.data)
+      }
     }
 
     stamper.result
   }
 
+  /**
+    * Computes a Density raster based on the Kernel and set of points provided.
+    * Defaults to DoubleConstantNoDataCellType.
+    */
+  def apply(points: Traversable[PointFeature[Double]],
+            kernel: Kernel,
+            rasterExtent: RasterExtent)(implicit d: DummyImplicit): Tile =
+    apply(points, kernel, rasterExtent, DoubleConstantNoDataCellType)
+
+  /**
+    * Computes a Density raster based on the Kernel and set of double point features provided.
+    *
+    * @param      points           Sequence of point features who's values will be used to
+    *                              compute the density.
+    * @param      kernel           [[Kernel]] to be used in the computation.
+    * @param      rasterExtent     Raster extent of the resulting raster.
+    * @param      cellType         CellType of the resulting tile.
+    *
+    */
+  def apply(points: Traversable[PointFeature[Double]],
+            kernel: Kernel,
+            rasterExtent: RasterExtent,
+            cellType: CellType)(implicit d: DummyImplicit): Tile = {
+    val stamper = KernelStamper(cellType, rasterExtent.cols, rasterExtent.rows, kernel)
+
+    for(point <- points) {
+      val col = rasterExtent.mapXToGrid(point.geom.x)
+      val row = rasterExtent.mapYToGrid(point.geom.y)
+      stamper.stampKernelDouble(col, row, point.data)
+    }
+
+    stamper.result
+  }
 
 }
