@@ -49,7 +49,7 @@ object Raster {
 /**
   * The [[Raster]] type.
   */
-case class Raster[+T <: CellGrid](tile: T, extent: Extent) extends Product2[T, Extent] {
+case class Raster[+T <: CellGrid](tile: T, extent: Extent) extends Product2[T, Extent] with CellGrid {
 
   /**
     * Return the [[RasterExtent]] that is correspondent to this
@@ -64,7 +64,7 @@ case class Raster[+T <: CellGrid](tile: T, extent: Extent) extends Product2[T, E
 
   def cols: Int = tile.cols
   def rows: Int = tile.rows
-  def dimensions: (Int, Int) = tile.dimensions
+  def cellType: CellType = tile.cellType
 
   /**
     * Return the PolygonFeature associated with the extent of this

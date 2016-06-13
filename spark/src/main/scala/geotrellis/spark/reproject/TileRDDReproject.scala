@@ -57,7 +57,7 @@ object TileRDDReproject {
           options.rasterReprojectOptions
         case None =>
           if(options.matchLayerExtent) {
-            val parentGridExtent = ReprojectRasterExtent(layout.toGridExtent, crs, destCrs, options.rasterReprojectOptions)
+            val parentGridExtent = ReprojectRasterExtent(layout: GridExtent, crs, destCrs, options.rasterReprojectOptions)
             options.rasterReprojectOptions.copy(parentGridExtent = Some(parentGridExtent))
           } else {
             options.rasterReprojectOptions
