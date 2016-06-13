@@ -16,17 +16,17 @@
 
 package geotrellis.raster.density
 
-import geotrellis.vector._
 import geotrellis.raster._
 import geotrellis.raster.density._
 import geotrellis.raster.testkit._
+import geotrellis.vector._
 
 import org.scalatest._
 
 class KernelDensitySpec extends FunSpec
                         with Matchers
                         with RasterMatchers with TestFiles
-                        with TileBuilders 
+                        with TileBuilders
 {
   describe("kernelDensity") {
     it("matches expected values") {
@@ -55,7 +55,7 @@ class KernelDensitySpec extends FunSpec
         PointFeature(Point(4,0.5),1)
       )
       val result =
-        KernelDensity.kernelDensity(points, kernel, rasterExtent)
+        points.kernelDensity(kernel, rasterExtent)
 
       assertEqual(result, tile)
     }
