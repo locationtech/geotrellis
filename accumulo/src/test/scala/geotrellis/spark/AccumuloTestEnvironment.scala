@@ -16,11 +16,12 @@
 
 package geotrellis.spark
 
-import org.apache.spark.SparkConf
+import org.apache.spark.{SparkConf, SparkContext}
 
 import org.scalatest._
 
 trait AccumuloTestEnvironment extends TestEnvironment { self: Suite =>
   override def setKryoRegistrator(conf: SparkConf) =
     conf.set("spark.kryo.registrator", "geotrellis.spark.io.kryo.KryoRegistrator")
+        .set("spark.kryo.registrationRequired","false")
 }
