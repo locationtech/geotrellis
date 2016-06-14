@@ -37,11 +37,15 @@ trait SeqMethods {
 
     val mp: MultiPolygon = MultiPolygon(polygons)
 
-    def unionGeometries(): TwoDimensionsTwoDimensionsUnionResult = {
-      val cascadedPolygonUnion =
-        new CascadedPolygonUnion(polygons.map(geom => geom.jtsGeom).toSeq)
-      cascadedPolygonUnion.union()
-    }
+    def unionGeometries(): TwoDimensionsTwoDimensionsSeqUnionResult =
+      if(polygons.isEmpty)
+        NoResult
+      else {
+        val cascadedPolygonUnion =
+          new CascadedPolygonUnion(polygons.map(geom => geom.jtsGeom).toSeq)
+        cascadedPolygonUnion.union()
+      }
+
     def intersectionGeometries() = mp.intersection
     def differenceGeometries() = mp.difference
     def symDifferenceGeometries() = mp.symDifference
