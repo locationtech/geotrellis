@@ -264,7 +264,7 @@ class IntColorMap(breaksToColors: Map[Int, Int], val options: Options = Options.
     new IntCachedColorMap(orderedColors, ch, options)
   }
 
-  lazy val breaksString: String = {
+  def breaksString: String = {
     breaksToColors
       .toStream
       .map({ case (k,v) => s"${k}:${Integer.toHexString(v)}"})
@@ -381,7 +381,7 @@ class DoubleColorMap(breaksToColors: Map[Double, Int], val options: Options = Op
   def withBoundaryType(classBoundaryType: ClassBoundaryType): ColorMap =
     new DoubleColorMap(breaksToColors, options.copy(classBoundaryType = classBoundaryType))
 
-  lazy val breaksString: String = {
+  def breaksString: String = {
     breaksToColors
       .toStream
       .map({ case (k,v) => s"${k}:${Integer.toHexString(v)}"})
