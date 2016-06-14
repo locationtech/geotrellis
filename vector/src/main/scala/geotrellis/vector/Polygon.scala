@@ -254,7 +254,7 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
    * Computes a Result that represents a Geometry made up of all the points in
    * this Polygon and g.
    */
-  def |(g: TwoDimensions): TwoDimensionsTwoDimensionsUnionResult =
+  def |(g: TwoDimensions): TwoDimensionsTwoDimensionsSeqUnionResult =
     union(g)
 
   /**
@@ -262,7 +262,7 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
    * this Polygon and g. Uses cascaded polygon union if g is a (multi)polygon
    * else falls back to default jts union method.
    */
-  def union(g: TwoDimensions): TwoDimensionsTwoDimensionsUnionResult = g match {
+  def union(g: TwoDimensions): TwoDimensionsTwoDimensionsSeqUnionResult = g match {
     case p:Polygon => Seq(this, p).unionGeometries
     case mp:MultiPolygon => (this +: mp.polygons).toSeq.unionGeometries
     case _ => jtsGeom.union(g.jtsGeom)
