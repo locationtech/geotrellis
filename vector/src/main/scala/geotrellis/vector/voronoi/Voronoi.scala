@@ -123,7 +123,7 @@ class Voronoi(verts: Array[Point], extent: Extent) {
     mkVoronoiCell(dt.faceIncidentToVertex(i))
   }
 
-  def voronoiCells(ex: Extent): Seq[Polygon] = {
+  def voronoiCells(): Seq[Polygon] = {
     dt.faceIncidentToVertex.valuesIterator.map(mkVoronoiCell(_)).toSeq
   }
 
