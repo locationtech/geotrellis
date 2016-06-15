@@ -10,16 +10,16 @@ object Predicates {
   def det3 (a11: Double, a12: Double, a13: Double,
             a21: Double, a22: Double, a23: Double,
             a31: Double, a32: Double, a33: Double): Double = {
-    val m = MatrixUtils.createRealMatrix(3, 3)
-    m.setEntry(0, 0, a11)
-    m.setEntry(0, 1, a12)
-    m.setEntry(0, 2, a13)
-    m.setEntry(1, 0, a21)
-    m.setEntry(1, 1, a22)
-    m.setEntry(1, 2, a23)
-    m.setEntry(2, 0, a31)
-    m.setEntry(2, 1, a32)
-    m.setEntry(2, 2, a33)
+    val m = MatrixUtils.createRealMatrix(Array(Array(a11,a12,a13),Array(a21,a22,a23),Array(a31,a32,a33)))
+    // m.setEntry(0, 0, a11)
+    // m.setEntry(0, 1, a12)
+    // m.setEntry(0, 2, a13)
+    // m.setEntry(1, 0, a21)
+    // m.setEntry(1, 1, a22)
+    // m.setEntry(1, 2, a23)
+    // m.setEntry(2, 0, a31)
+    // m.setEntry(2, 1, a32)
+    // m.setEntry(2, 2, a33)
     (new LUDecomposition(m)).getDeterminant
   }
     
@@ -103,38 +103,40 @@ object Predicates {
 }
 
 case class Delaunay(verts: Array[Point]) {
-  //val log = Logger.getLogger(classOf[Delaunay])
   val triangles = Map.empty[(Int,Int,Int),HalfEdge[Int,Point]]
+  val faceIncidentToVertex = Map.empty[Int,HalfEdge[Int,Point]]
 
-  def insertTriangle(vs: (Int,Int,Int), e: HalfEdge[Int,Point]): Map[(Int,Int,Int),HalfEdge[Int,Point]] = {
+  private def insertTriangle(vs: (Int,Int,Int), e: HalfEdge[Int,Point]): Map[(Int,Int,Int),HalfEdge[Int,Point]] = {
     val idx = vs match {
       case (a,b,c) if (a<b && a<c) => (a,b,c)
       case (a,b,c) if (b<a && b<c) => (b,c,a)
       case (a,b,c) => (c,a,b)
     }
-    println(s"Inserting $e as $vs [using $idx as key]")
+    //println(s"Inserting $e as $vs [using $idx as key]")
+    faceIncidentToVertex += (e.vert -> e, e.next.vert -> e.next, e.next.next.vert -> e.next.next)
+    //println(s"Adding to faceIncidentToVertex: ${e.vert -> e}, ${e.next.vert -> e.next}, ${e.next.next.vert -> e.next.next}")
     triangles += (idx -> e)
   }
 
-  def insertTriangle(e: HalfEdge[Int,Point]): Map[(Int,Int,Int),HalfEdge[Int,Point]] = {
+  private def insertTriangle(e: HalfEdge[Int,Point]): Map[(Int,Int,Int),HalfEdge[Int,Point]] = {
     insertTriangle((e.vert,e.next.vert,e.next.next.vert), e)
   }
 
-  def deleteTriangle(vs: (Int,Int,Int)): Map[(Int,Int,Int),HalfEdge[Int,Point]] = {
+  private def deleteTriangle(vs: (Int,Int,Int)): Map[(Int,Int,Int),HalfEdge[Int,Point]] = {
     val idx = vs match {
       case (a,b,c) if (a<b && a<c) => (a,b,c)
       case (a,b,c) if (b<a && b<c) => (b,c,a)
       case (a,b,c) => (c,a,b)
     }
-    println(s"Removing $vs [using $idx as key]")
+    //println(s"Removing $vs [using $idx as key]")
     triangles -= idx
   }
 
-  def deleteTriangle(e: HalfEdge[Int,Point]): Map[(Int,Int,Int),HalfEdge[Int,Point]] = {
+  private def deleteTriangle(e: HalfEdge[Int,Point]): Map[(Int,Int,Int),HalfEdge[Int,Point]] = {
     deleteTriangle((e.vert,e.next.vert,e.next.next.vert))
   }
 
-  def lookupTriangle(vs: (Int,Int,Int)) = {
+  private def lookupTriangle(vs: (Int,Int,Int)) = {
     val idx = vs match {
       case (a,b,c) if (a<b && a<c) => (a,b,c)
       case (a,b,c) if (b<a && b<c) => (b,c,a)
@@ -146,7 +148,7 @@ case class Delaunay(verts: Array[Point]) {
   def triangleIterator() = triangles.valuesIterator
 
   // TODO: Make sure to check for duplicate points!!
-  private val vIx = (0 until verts.length).toList.sortWith{
+  val vIx = (0 until verts.length).toList.sortWith{
     (i1,i2) => {
       val p1 = verts(i1)
       val p2 = verts(i2)
@@ -160,17 +162,18 @@ case class Delaunay(verts: Array[Point]) {
         }
       }
     }
-  }
+  }.toArray
 
   def showBoundingLoop[T](base: HalfEdge[Int,T]) = {
     var e = base
-    val s = scala.collection.mutable.Set.empty[HalfEdge[Int,T]]
+    var l: List[HalfEdge[Int,T]] = Nil
     //log.debug("Bounding loop: ")
-    while (!s.contains(e)) {
+    while (!l.contains(e)) {
       //log.debug(s"    $e ")
-      s add e
+      l = l :+ e
       e = e.next
     }
+    l
   }
 
 
@@ -183,7 +186,9 @@ case class Delaunay(verts: Array[Point]) {
     n match {
       case 2 => {
         //log.debug(s"Creating single edge: (${vIx(lo)},${vIx(hi)})")
-        HalfEdge[Int,Point](vIx(lo), vIx(hi))
+        val e = HalfEdge[Int,Point](vIx(lo), vIx(hi))
+        faceIncidentToVertex += (e.vert -> e, e.src -> e)
+        e
       }
       case 3 if (isCCW(vIx(lo), vIx(lo+1), vIx(lo+2))) => {
         //log.debug(s"Creating triangle: (${vIx(lo)},${vIx(lo+1)}, ${vIx(lo+2)})")
@@ -252,7 +257,7 @@ case class Delaunay(verts: Array[Point]) {
               lcand.rotCCWDest.next = lcand.next
               lcand.prev.next = lcand.flip.next
               lcand = e
-              showBoundingLoop(base.flip)
+              //showBoundingLoop(base.flip)
             }
           }
           //log.debug(s"Found: $lcand")
@@ -266,7 +271,7 @@ case class Delaunay(verts: Array[Point]) {
               base.flip.next = rcand.rotCWSrc
               rcand.rotCCWDest.next = rcand.next
               rcand = e
-              showBoundingLoop(base.flip)
+              //showBoundingLoop(base.flip)
             }
           }
           //log.debug(s"Found: $rcand")
@@ -302,13 +307,15 @@ case class Delaunay(verts: Array[Point]) {
             //log.debug(s"Created face (${base.vert}, ${base.next.vert}, ${base.next.next.vert})")
             //log.debug(s"Base advanced to $base")
           }
-          showBoundingLoop(base.flip)
+          //showBoundingLoop(base.flip)
         }
 
         base.flip.next
       }
     }
   }
+
+  val boundary = triangulate(0, vIx.length-1)
 
 }
 
