@@ -1,5 +1,6 @@
 package geotrellis.vector.voronoi
 
+import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
 import geotrellis.vector._
 import scala.math.pow
 import org.apache.commons.math3.linear._
@@ -11,15 +12,6 @@ object Predicates {
             a21: Double, a22: Double, a23: Double,
             a31: Double, a32: Double, a33: Double): Double = {
     val m = MatrixUtils.createRealMatrix(Array(Array(a11,a12,a13),Array(a21,a22,a23),Array(a31,a32,a33)))
-    // m.setEntry(0, 0, a11)
-    // m.setEntry(0, 1, a12)
-    // m.setEntry(0, 2, a13)
-    // m.setEntry(1, 0, a21)
-    // m.setEntry(1, 1, a22)
-    // m.setEntry(1, 2, a23)
-    // m.setEntry(2, 0, a31)
-    // m.setEntry(2, 1, a32)
-    // m.setEntry(2, 2, a33)
     (new LUDecomposition(m)).getDeterminant
   }
     
@@ -27,14 +19,14 @@ object Predicates {
   def isCCW(a: Point, b: Point, c: Point): Boolean = {
     // det [ a.x-c.x  a.y-c.y ]
     //     [ b.x-c.x  b.y-c.y ] > 0
-    (a.x - c.x) * (b.y - c.y) - (a.y - c.y) * (b.x - c.x) > 0
+    (a.x - c.x) * (b.y - c.y) - (a.y - c.y) * (b.x - c.x) > EPSILON
   }
 
   def isCCW(ai: Int, bi: Int, ci: Int)(implicit trans: Int => Point): Boolean = {
     val a = trans(ai)
     val b = trans(bi)
     val c = trans(ci)
-    (a.x - c.x) * (b.y - c.y) - (a.y - c.y) * (b.x - c.x) > 0
+    (a.x - c.x) * (b.y - c.y) - (a.y - c.y) * (b.x - c.x) > EPSILON
   }
 
   def isRightOf[T](e: HalfEdge[Int,T], p: Point)(implicit trans: Int => Point) = 
@@ -50,26 +42,21 @@ object Predicates {
     isCCW(trans(p), trans(e.src), trans(e.vert))
 
   def inCircle(abc: (Point, Point, Point), d: Point): Boolean = {
-    abc match {
-      case (a,b,c) =>
-        det3(a.x-d.x, a.y-d.y, pow(a.x-d.x,2) + pow(a.y-d.y,2),
-             b.x-d.x, b.y-d.y, pow(b.x-d.x,2) + pow(b.y-d.y,2),
-             c.x-d.x, c.y-d.y, pow(c.x-d.x,2) + pow(c.y-d.y,2)) > 0
-    }
+    val (a,b,c) = abc
+    det3(a.x-d.x, a.y-d.y, pow(a.x-d.x,2) + pow(a.y-d.y,2),
+         b.x-d.x, b.y-d.y, pow(b.x-d.x,2) + pow(b.y-d.y,2),
+         c.x-d.x, c.y-d.y, pow(c.x-d.x,2) + pow(c.y-d.y,2)) > EPSILON
   }
 
   def inCircle(abc: (Int, Int, Int), di: Int)(implicit trans: Int => Point): Boolean = {
-    abc match {
-      case (ai,bi,ci) => {
-        val a = trans(ai)
-        val b = trans(bi)
-        val c = trans(ci)
-        val d = trans(di)
-        det3(a.x-d.x, a.y-d.y, pow(a.x-d.x,2) + pow(a.y-d.y,2),
-             b.x-d.x, b.y-d.y, pow(b.x-d.x,2) + pow(b.y-d.y,2),
-             c.x-d.x, c.y-d.y, pow(c.x-d.x,2) + pow(c.y-d.y,2)) > 0
-      }
-    }
+    val (ai,bi,ci) = abc
+    val a = trans(ai)
+    val b = trans(bi)
+    val c = trans(ci)
+    val d = trans(di)
+    det3(a.x-d.x, a.y-d.y, pow(a.x-d.x,2) + pow(a.y-d.y,2),
+         b.x-d.x, b.y-d.y, pow(b.x-d.x,2) + pow(b.y-d.y,2),
+         c.x-d.x, c.y-d.y, pow(c.x-d.x,2) + pow(c.y-d.y,2)) > EPSILON
   }
 
   def circleCenter(a: Point, b: Point, c: Point): Point = {
@@ -102,8 +89,25 @@ object Predicates {
   }
 }
 
+/**
+ * A class to compute the Delaunay triangulation of a set of points.  Details can be found in
+ * <geotrellis_home>/docs/vector/voronoi.md
+ */
 case class Delaunay(verts: Array[Point]) {
+  /**
+   * A catalog of the triangles produced by the Delaunay triangulation as a Map from (Int,Int,Int)
+   * to HalfEdge[Int,Point].  All integers are indices of points in verts, while the Points describe
+   * the center of the circumscribing circle for the triangle.  The Int triples give the triangle
+   * vertices in counter-clockwise order, starting from the lowest-numbered vertex.
+   */
   val triangles = Map.empty[(Int,Int,Int),HalfEdge[Int,Point]]
+
+  /**
+   * A catalog of edges incident on the vertices of a Delaunay triangulation.  These half edges may
+   * be used to navigate the faces that have a given point as a vertex.  For example, all edges
+   * incident on vertex i may be visited by repeated application of the rotCCWDest() method of
+   * HalfEdge on faceIncidentToVertex(i).
+   */
   val faceIncidentToVertex = Map.empty[Int,HalfEdge[Int,Point]]
 
   private def insertTriangle(vs: (Int,Int,Int), e: HalfEdge[Int,Point]): Map[(Int,Int,Int),HalfEdge[Int,Point]] = {
@@ -145,39 +149,33 @@ case class Delaunay(verts: Array[Point]) {
     triangles(idx)
   }
 
-  def triangleIterator() = triangles.valuesIterator
-
-  // TODO: Make sure to check for duplicate points!!
-  val vIx = (0 until verts.length).toList.sortWith{
-    (i1,i2) => {
-      val p1 = verts(i1)
-      val p2 = verts(i2)
-      if (p1.x < p2.x) {
-        true
-      } else {
-        if (p1.x > p2.x) {
-          false
-        } else {
-          p1.y < p2.y
-        }
-      }
+  private def distinctBy[T](eq: (T,T) => Boolean)(l: List[T]): List[T] = {
+    l match {
+      case Nil => Nil
+      case x::Nil => x::Nil
+      case x::y::xs if eq(x,y) => distinctBy(eq)(x::xs)
+      case x::y::xs => x :: distinctBy(eq)(y::xs)
     }
-  }.toArray
-
-  def showBoundingLoop[T](base: HalfEdge[Int,T]) = {
-    var e = base
-    var l: List[HalfEdge[Int,T]] = Nil
-    //log.debug("Bounding loop: ")
-    while (!l.contains(e)) {
-      //log.debug(s"    $e ")
-      l = l :+ e
-      e = e.next
-    }
-    l
   }
 
+  private val vIx = distinctBy{ (i: Int, j: Int) => verts(i).distance(verts(j)) < 1e-10 }(
+    (0 until verts.length).toList.sortWith{
+      (i1,i2) => {
+        val p1 = verts(i1)
+        val p2 = verts(i2)
+        if (p1.x < p2.x) {
+          true
+        } else {
+          if (p1.x > p2.x) {
+            false
+          } else {
+            p1.y < p2.y
+          }
+        }
+      }
+    }).toArray
 
-  def triangulate(lo: Int, hi: Int): HalfEdge[Int,Point] = {
+  private def triangulate(lo: Int, hi: Int): HalfEdge[Int,Point] = {
     // Implementation follows Guibas and Stolfi, ACM Transations on Graphics, vol. 4(2), 1985, pp. 74--123
     val n = hi - lo + 1
     implicit val trans = { i: Int => verts(i) }
@@ -187,7 +185,7 @@ case class Delaunay(verts: Array[Point]) {
       case 2 => {
         //log.debug(s"Creating single edge: (${vIx(lo)},${vIx(hi)})")
         val e = HalfEdge[Int,Point](vIx(lo), vIx(hi))
-        faceIncidentToVertex += (e.vert -> e, e.src -> e)
+        faceIncidentToVertex += (e.vert -> e, e.src -> e.flip)
         e
       }
       case 3 if (isCCW(vIx(lo), vIx(lo+1), vIx(lo+2))) => {
@@ -257,7 +255,7 @@ case class Delaunay(verts: Array[Point]) {
               lcand.rotCCWDest.next = lcand.next
               lcand.prev.next = lcand.flip.next
               lcand = e
-              //showBoundingLoop(base.flip)
+              //HalfEdge.showBoundingLoop(base.flip)
             }
           }
           //log.debug(s"Found: $lcand")
@@ -271,7 +269,7 @@ case class Delaunay(verts: Array[Point]) {
               base.flip.next = rcand.rotCWSrc
               rcand.rotCCWDest.next = rcand.next
               rcand = e
-              //showBoundingLoop(base.flip)
+              //HalfEdge.showBoundingLoop(base.flip)
             }
           }
           //log.debug(s"Found: $rcand")
@@ -307,7 +305,7 @@ case class Delaunay(verts: Array[Point]) {
             //log.debug(s"Created face (${base.vert}, ${base.next.vert}, ${base.next.next.vert})")
             //log.debug(s"Base advanced to $base")
           }
-          //showBoundingLoop(base.flip)
+          //HalfEdge.showBoundingLoop(base.flip)
         }
 
         base.flip.next
@@ -315,6 +313,11 @@ case class Delaunay(verts: Array[Point]) {
     }
   }
 
+  /**
+   * Provides a handle on the bounding loop of a Delaunay triangulation.  All of the half-edges
+   * reachable by applying next to boundary have no bounding face information.  That is
+   * boundary(.next)*.face == None.
+   */
   val boundary = triangulate(0, vIx.length-1)
 
 }
