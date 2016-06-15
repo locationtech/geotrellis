@@ -5,6 +5,10 @@ import scala.collection.mutable.Map
 import org.apache.commons.math3.linear._
 import scala.math.{abs,sqrt}
 
+/**
+ * A class to compute the Voronoi diagram of a set of points.  See
+ * <geotrellis_home>/docs/vector/voronoi.md for more information.
+ */
 class Voronoi(verts: Array[Point], extent: Extent) {
   
   object V2 {
@@ -30,9 +34,12 @@ class Voronoi(verts: Array[Point], extent: Extent) {
     def toPoint() = Point(x, y)
   }
 
+  /**
+   * The dual Delaunay triangulation of the Voronoi diagram.
+   */
   val dt = new Delaunay(verts)
 
-  def rayLineIntersection(base: V2, normal: V2, a: V2, b: V2): Option[Point] = {
+  private def rayLineIntersection(base: V2, normal: V2, a: V2, b: V2): Option[Point] = {
     val num = normal dot (a-base)
     val den = normal dot (a-b)
     
@@ -66,7 +73,7 @@ class Voronoi(verts: Array[Point], extent: Extent) {
     }
   }
 
-  def rayExtentIntersection(base: V2, normal: V2): (Point,Int) = {
+  private def rayExtentIntersection(base: V2, normal: V2): (Point,Int) = {
     def rli(a: V2, b: V2) = { rayLineIntersection(base, normal, a, b) }
     val ur = V2(extent.xmax,extent.ymax)
     val ul = V2(extent.xmin,extent.ymax)
@@ -83,12 +90,17 @@ class Voronoi(verts: Array[Point], extent: Extent) {
     }
   }
 
-  def rayExtentIntersection(e: HalfEdge[Int,Point]): (Point,Int) = {
+  private def rayExtentIntersection(e: HalfEdge[Int,Point]): (Point,Int) = {
     val to = verts(e.vert)
     val from = verts(e.src)
     rayExtentIntersection((V2(to) + V2(from)) * 0.5, V2(to) - V2(from))
   }
 
+  /**
+   * A method to generate the Voronoi cell corresponding to the point in verts(incidentEdge.vert).
+   * If the incident edge is not an interior edge (incidentEdge.face == None) the results are
+   * undefined.
+   */
   def mkVoronoiCell(incidentEdge: HalfEdge[Int,Point]): Polygon = {
     var e = incidentEdge.flip
     var accum: List[Point] = Nil
@@ -119,12 +131,28 @@ class Voronoi(verts: Array[Point], extent: Extent) {
     Polygon(Line(accum.reverse).closed)
   }
 
+  /**
+   * A method to generate the Voronoi cell corresponding to the point in verts(i).  Note that if
+   * verts(i) is not distinct, this function may raise an exception.
+   */
   def mkVoronoiCell(i: Int): Polygon = {
     mkVoronoiCell(dt.faceIncidentToVertex(i))
   }
 
-  def voronoiCells(): Seq[Polygon] = {
-    dt.faceIncidentToVertex.valuesIterator.map(mkVoronoiCell(_)).toSeq
+  /**
+   * The polygonal regions of the Voronoi diagram.  There exists one such convex polygon for each
+   * distinct vector of verts.
+   */
+  def voronoiCells(): Iterator[Polygon] = {
+    dt.faceIncidentToVertex.keysIterator.map(mkVoronoiCell(_))
+  }
+
+  /**
+   * Provides an iterator over the Voronoi cells of the diagram and the points that defined the
+   * corresponding polygonal regions.
+   */
+  def voronoiCellsWithPoints(): Iterator[(Polygon,Point)] = {
+    dt.faceIncidentToVertex.keysIterator.map{ i:Int => (mkVoronoiCell(i),verts(i)) }
   }
 
 }

@@ -83,4 +83,15 @@ object HalfEdge {
     outer(0)
   }
 
+  def showBoundingLoop[T](base: HalfEdge[Int,T]): Unit = {
+    var e = base
+    var l: List[HalfEdge[Int,T]] = Nil
+
+    while (!l.contains(e)) {
+      l = l :+ e
+      print(s"$e ")
+      e = e.next
+    }
+    println("")
+  }
 }
