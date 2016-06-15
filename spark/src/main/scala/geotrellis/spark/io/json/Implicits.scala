@@ -22,7 +22,7 @@ trait Implicits extends KeyFormats with KeyIndexFormats {
 
   implicit object CRSFormat extends RootJsonFormat[CRS] {
     def write(crs: CRS) =
-      JsString(crs.toProj4String)
+      JsString(crs.toNativeString)
 
     def read(value: JsValue): CRS =
       value match {

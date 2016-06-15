@@ -6,10 +6,10 @@ import org.osgeo.proj4j._
 import scala.io.Source
 
 object CRS {
-  private lazy val proj4ToEPSGMap = new Memoize[String, Option[String]](readEPSGCodeFromFile)
-  private val crsFactory = new CRSFactory
-  private val filePrefix = "/geotrellis/proj4/nad/"
-
+  private[proj4] final case class WKT(wkt: String) extends CRS
+  private[proj4] final case class WellKnown(authority: String, id: String) extends CRS
+  private[proj4] final case class NativeText(params: String) extends CRS
+  
   /**
     * Creates a CoordinateReferenceSystem
     * from a PROJ.4 projection parameter string.
@@ -23,17 +23,13 @@ object CRS {
     * @return              The specified CoordinateReferenceSystem
     */
   def fromString(proj4Params: String): CRS =
-    new CRS {
-      val proj4jCrs = crsFactory.createFromParameters(null, proj4Params)
-
-      def epsgCode: Option[Int] = getEPSGCode(toProj4String + " <>")
-    }
+    NativeText(proj4Params)
 
   /**
     * Returns the numeric EPSG code of a proj4string.
     */
   def getEPSGCode(proj4String: String): Option[Int] =
-    proj4ToEPSGMap(proj4String).map(_.toInt)
+    NativeText(proj4String).epsgCode
 
   /**
     * Creates a CoordinateReferenceSystem
@@ -49,21 +45,14 @@ object CRS {
     * @return              The specified CoordinateReferenceSystem
     */
   def fromString(name: String, proj4Params: String): CRS =
-    new CRS {
-      val proj4jCrs = crsFactory.createFromParameters(name, proj4Params)
-
-      def epsgCode: Option[Int] = getEPSGCode(toProj4String + " <>")
-    }
+    NativeText(proj4Params)
 
   /**
     * Creates a CoordinateReferenceSystem (CRS) from a
     * well-known-text String.
     */
-  def fromWKT(wktString: String): CRS = {
-    val epsgCode: String = WKT.getEPSGCode(wktString)
-
-    fromName(epsgCode)
-  }
+  def fromWKT(wktString: String): CRS = 
+    WKT(wktString)
 
   /**
     * Creates a CoordinateReferenceSystem (CRS) from a well-known name.
@@ -90,18 +79,74 @@ object CRS {
     * @param   name  The name of a coordinate system, with optional authority prefix
     * @return        The CoordinateReferenceSystem corresponding to the given name
    */
-  def fromName(name: String): CRS =
-    new CRS {
-      val proj4jCrs = crsFactory.createFromName(name)
+  def fromName(name: String): CRS = {
+    val (authority, id) = name.span(':' !=)
+    if (id == "") 
+      WellKnown("EPSG", name)
+    else
+      WellKnown(authority, id)
+  }
 
-      def epsgCode: Option[Int] = getEPSGCode(toProj4String + " <>")
-    }
 
   /**
     * Creates a CoordinateReferenceSystem (CRS) from an EPSG code.
     */
   def fromEpsgCode(epsgCode: Int) =
-    fromName(s"EPSG:$epsgCode")
+    WellKnown("EPSG", epsgCode.toString)
+}
+
+sealed trait CRS extends Serializable {
+  def epsgCode: Option[Int] = Backend.lookupEpsgCode(this)
+  def isGeographic: Boolean = Backend.isGeographic(this)
+  def toNativeString: String = Backend.toNativeString(this)
+}
+
+trait Backend {
+  def lookupEpsgCode(crs: CRS): Option[Int]
+  def getTransform(src: CRS, dst: CRS): Transform
+  def isGeographic(crs: CRS): Boolean
+  def toNativeString(crs: CRS): String
+}
+
+object Proj4Backend extends Backend {
+  def lookupEpsgCode(crs: CRS): Option[Int] = 
+    crs match {
+      case CRS.WKT(wkt) => scala.util.Try(WKT.getEPSGCode(wkt).toInt).toOption
+      case CRS.WellKnown(auth, id) if auth equalsIgnoreCase "EPSG" => scala.util.Try(id.toInt).toOption
+      case CRS.WellKnown(_, _) => None
+      case CRS.NativeText(params) => getEPSGCode(params)
+    }
+
+  def getTransform(src: CRS, dst: CRS): Transform = {
+    val t = new BasicCoordinateTransform(parse(src), parse(dst))
+
+    (x: Double, y: Double) => {
+      val srcP = new ProjCoordinate(x, y)
+      val destP = new ProjCoordinate
+      t.transform(srcP, destP)
+      (destP.x, destP.y)
+    }
+  }
+
+  def isGeographic(crs: CRS): Boolean = parse(crs).isGeographic
+
+  def toNativeString(crs: CRS): String = parse(crs).getParameterString
+
+  private val crsFactory = new CRSFactory
+  private val filePrefix = "/geotrellis/proj4/nad/"
+  private lazy val proj4ToEPSGMap = new Memoize[String, Option[String]](readEPSGCodeFromFile)
+  private def parse(crs: CRS): CoordinateReferenceSystem = 
+    crs match {
+      case CRS.WKT(wkt) =>
+        crsFactory.createFromName(WKT.getEPSGCode(wkt))
+      case CRS.WellKnown(auth, id) =>
+        crsFactory.createFromName(s"$auth:$id")
+      case CRS.NativeText(params) =>
+        crsFactory.createFromParameters(null, params)
+    }
+
+  private def getEPSGCode(proj4String: String): Option[Int] =
+    proj4ToEPSGMap(proj4String).map(_.toInt)
 
   private def readEPSGCodeFromFile(proj4String: String): Option[String] = {
     val stream = getClass.getResourceAsStream(s"${filePrefix}epsg")
@@ -124,78 +169,33 @@ object CRS {
   }
 }
 
+object SISBackend extends Backend {
+  def lookupEpsgCode(crs: CRS): Option[Int] =
+    Option(org.apache.sis.referencing.IdentifiedObjects.lookupEPSG(parse(crs))).map(_.intValue)
 
-trait CRS extends Serializable {
-
-  val Epsilon = 1e-8
-
-  def epsgCode: Option[Int]
-
-  def proj4jCrs: CoordinateReferenceSystem
-
-  /**
-    * Override this function to handle reprojecting to another CRS in
-    * a more performant way.
-    */
-  def alternateTransform(dest: CRS): Option[(Double, Double) => (Double, Double)] =
-    None
-
-  /**
-   * Returns the WKT representation of the Coordinate Reference
-   * System.
-   */
-  def toWKT(): Option[String] = epsgCode.map(WKT.fromEPSGCode(_))
-
-
-  // TODO: Do these better once more things are ported
-  override
-  def hashCode = toProj4String.hashCode
-
-  def toProj4String: String = proj4jCrs.getParameterString
-
-  def isGeographic: Boolean = proj4jCrs.isGeographic
-
-  override
-  def equals(o: Any): Boolean =
-    o match {
-      case other: CRS => compareProj4Strings(other.toProj4String, toProj4String)
-      case _ => false
+  def getTransform(src: CRS, dst: CRS): Transform = {
+    val op = org.apache.sis.referencing.CRS.findOperation(parse(src), parse(dst), null)
+    val tx = op.getMathTransform
+    (x: Double, y: Double) => {
+      val pos = new org.apache.sis.geometry.DirectPosition2D(x, y)
+      tx.transform(pos, pos)
+      (pos.x, pos.y)
     }
-
-  private def compareProj4Strings(p1: String, p2: String) = {
-    def toProj4Map(s: String): Map[String, String] =
-      s.trim.split(" ").map(x =>
-        if (x.startsWith("+")) x.substring(1) else x).map(x => {
-        val index = x.indexOf('=')
-        if (index != -1) (x.substring(0, index) -> Some(x.substring(index + 1)))
-        else (x -> None)
-      }).groupBy(_._1).map { case (a, b) => (a, b.head._2) }
-        .filter { case (a, b) => !b.isEmpty }.map { case (a, b) => (a -> b.get) }
-        .map { case (a, b) => if (b == "latlong") (a -> "longlat") else (a, b) }
-        .filter { case (a, b) => (a != "to_meter" || b != "1.0") }
-
-    val m1 = toProj4Map(p1)
-    val m2 = toProj4Map(p2)
-
-    m1.map {
-      case (key, v1) => m2.get(key) match {
-        case Some(v2) => compareValues(v1, v2)
-        case None => false
-      }
-    }.forall(_ != false)
   }
 
-  private def compareValues(s1: String, s2: String) = {
-    def isNumber(s: String) = s.filter(c => !List('.', '-').contains(c)) forall Character.isDigit
+  def isGeographic(crs: CRS): Boolean =
+    parse(crs).isInstanceOf[org.opengis.referencing.crs.GeographicCRS]
 
-    val s2IsNumber = isNumber(s1)
-    val s1IsNumber = isNumber(s2)
-
-    if (s1IsNumber == s2IsNumber) {
-      if (s1IsNumber) math.abs(s1.toDouble - s2.toDouble) < Epsilon
-      else s1 == s2
-    } else false
+  def toNativeString(crs: CRS): String = {
+    val locale = java.util.Locale.ROOT
+    val timezone = java.util.TimeZone.getTimeZone("GMT+0")
+    (new org.apache.sis.io.wkt.WKTFormat(locale, timezone)).format(crs)
   }
 
-  protected def factory = CRS.crsFactory
+  private def parse(crs: CRS): org.opengis.referencing.crs.CoordinateReferenceSystem =
+    crs match {
+      case CRS.WKT(wkt) => org.apache.sis.referencing.CRS.fromWKT(wkt)
+      case CRS.WellKnown(auth, id) => org.apache.sis.referencing.CRS.forCode(s"$auth:$id")
+      case CRS.NativeText(text) => org.apache.sis.referencing.CRS.fromWKT(text)
+    }
 }

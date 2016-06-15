@@ -61,5 +61,8 @@ object Dependencies {
 
   val avro          = "org.apache.avro" % "avro" % "1.8.0"
 
-  val slickPG      = "com.github.tminglei" %% "slick-pg" % "0.14.0"
+  val slickPG       = "com.github.tminglei" %% "slick-pg" % "0.14.0"
+
+  val apacheSIS     = "org.apache.sis.core" % "sis-referencing" % "0.7"
+  val apacheSISEPSG = "org.apache.sis.non-free" % "sis-epsg" % "0.7"
 }
