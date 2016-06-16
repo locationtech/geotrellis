@@ -1,7 +1,7 @@
 Geotrellis Quickstart Guide
 ===========================
 
-Geotrellis is a vast and evolving package, which makes it difficult to maintain current documentation.  To make up for this deficiency, this quickstart guide will provide a set of documents describing case studies that accomplish some simple goals.  These examples are meant to highlight the fundamental Geotrellis classes as well as show some basic Scala techniques for those new to the language.
+Geotrellis is a large and evolving package, which makes it difficult to maintain current documentation.  To make up for this deficiency, this quickstart guide will provide a set of documents describing case studies that accomplish some simple goals.  These examples are meant to highlight the fundamental Geotrellis classes as well as show some basic Scala techniques for those new to the language.
 
 Basic Geotrellis Types
 ----------------------
@@ -44,8 +44,8 @@ The choice of extent is largely arbitrary in this example, but note that the coo
 Next, we will create a tile containing the kernel density estimate:
 ```scala
     import geotrellis.raster.mapalgebra.focal.Kernel
-
-    val kern = Kernel.gaussian(9,1.5,64)
+    
+    val kern = Kernel.gaussian(9,1.5,64) // Gaussian kernel of width 9, std. deviation 1.5, amplitude 64
     val trans = (_.toFloat.round.toInt) : Double => Int
     val kde = VectorToRaster.kernelDensity (pts,trans,kern,RasterExtent(extent,700,400))
 ```
@@ -70,12 +70,14 @@ We will still use an `Extent` object to set the bounds of our raster patch in sp
 ```scala
     val tl = TileLayout(7, 4, 100, 100)
 ```
-Here, we have specified a 7x4 grid of Tiles, each of which has 100x100 cells. This will eventually be used to divides the earlier monolithic 700x400 Tile (`kde`) into 28 uniformly-sized subtiles.  The TileLayout is then combined with the extent in a `LayoutDefinition` object:
+Here, we have specified a 7x4 grid of Tiles, each of which has 100x100 cells. This will eventually be used to divide the earlier monolithic 700x400 Tile (`kde`) into 28 uniformly-sized subtiles.  The TileLayout is then combined with the extent in a `LayoutDefinition` object:
 ```scala
     val ld = LayoutDefinition(extent,tl)
 ```
 
-To reimplement the previous kernel density estimation with this structure, it is necessary to realize that since each point lies at the center of a kernel, each point should be thought of as a small square extent centered at the point in question.  The following function will generate such an extent from a point:
+In preparation for reimplementing the previous kernel density estimation with this structure, we note that each point in `pts` lies at the center of a kernel, which covers some non-zero area around the points.  We can think of each point/kernel pair as a small square extent centered at the point in question with a side length of 9 pixels.  Each pixel, however, covers some non-zero area of the map, which we can also think of as an extent with side lengths given in map coordinates.  The dimensions of a pixel's extent are given by the `cellwidth` and `cellheight` members of a LayoutDefinition object.
+
+By incorporating all these ideas, we can create the following function to generate the extent of the kernel centered at a given point:
 ```scala
     import geotrellis.spark.tiling._
 
@@ -89,24 +91,23 @@ To reimplement the previous kernel density estimation with this structure, it is
     val ptfToExtent = { p: PointFeature[Double] => pointFeatureToExtent(9, ld, p ) }
 ```
 
-The reason for thinking about points as extents is that any point near enough to a tile boundary will need to have its kernel applied to each of the overlapped tiles.  To discover the tiles that a given point's kernel extents overlap, LayoutDefinition provides the `mapTransform` member.  Among the methods of mapTransform is the ability to determine the index of the tile which overlaps a given extent.  Note that the tiles in a given layout are indexed by `SpatialKey`s, which are effectively `(Int,Int)` pairs giving the (column,row) of each tile as follows:
+When we consider the kernel extent of a point in the context of a LayoutDefinition, it's clear that a kernel's extent may overlap more than one tile in the layout.  To discover the tiles that a given point's kernel extents overlap, LayoutDefinition provides the `mapTransform` member.  Among the methods of mapTransform is the ability to determine the indices of tiles in the TileLayout overlap a given extent.  Note that the tiles in a given layout are indexed by `SpatialKey`s, which are effectively `(Int,Int)` pairs giving the (column,row) of each tile as follows:
 ```
     +-------+-------+-------+       +-------+
-    | (0,0) | (1,0) | (2,0) | . . . | (7,0) |
+    | (0,0) | (1,0) | (2,0) | . . . | (6,0) |
     +-------+-------+-------+       +-------+
-    | (0,1) | (1,1) | (2,1) | . . . | (7,1) |
+    | (0,1) | (1,1) | (2,1) | . . . | (6,1) |
     +-------+-------+-------+       +-------+
         .       .       .     .         .
         .       .       .       .       .
         .       .       .         .     .
     +-------+-------+-------+       +-------+
-    | (0,3) | (1,3) | (2,3) | . . . | (7,3) |
+    | (0,3) | (1,3) | (2,3) | . . . | (6,3) |
     +-------+-------+-------+       +-------+
 ```
-Specifically, `ld.mapTransform(ptfToExtent(Feature(Point(-108,38),100.0)))` returns `GridBounds(0,2,1,3),` indicating that every cell with columns in the range [0,1] and rows in the range [2,3] are intersected by the kernel centered on the point (-108,38).
+Specifically, in our running example, `ld.mapTransform(ptfToExtent(Feature(Point(-108,38),100.0)))` returns `GridBounds(0,2,1,3),` indicating that every cell with columns in the range [0,1] and rows in the range [2,3] are intersected by the kernel centered on the point (-108,38)---that is, the 2x2 block of tiles at the lower left of the layout.
 
 In order to proceed with the kernel density estimation, it is necessary to then convert the list of points into a collection of `(SpatialKey,List[PointFeature[Double]])` that gathers all the points that have an effect on each subtile, as indexed by their SpatialKeys.  The following snippet accomplishes that.
-
 ```scala
       def ptfToSpatialKey[D](ptf: PointFeature[D]) :
           Seq[(SpatialKey,PointFeature[D])] = {
