@@ -29,12 +29,18 @@ import geotrellis.raster.mapalgebra.focal._
 import geotrellis.raster.mapalgebra.local._
 import geotrellis.raster.density._
 
-object KernelDensityRDD {
+object RDDKernelDensity {
 
-  def kernelDensity(rdd: RDD[PointFeature[Double]], ld: LayoutDefinition, kern: Kernel, crs: CRS): RDD[(SpatialKey,Tile)] with Metadata[TileLayerMetadata[SpatialKey]] = {
+  def apply(rdd: RDD[PointFeature[Int]], ld: LayoutDefinition, kern: Kernel, crs: CRS): RDD[(SpatialKey,Tile)] with Metadata[TileLayerMetadata[SpatialKey]] = {
+
+    // TODO: CellType
+    // TODO: aggregateByKey
+    // TODO: Make KernelStamper accept tile
+    // TODO: MethodExtensions on RDD[PointFeature[Int]] and RDD[PointFeature[Double]]
+  def apply(rdd: RDD[PointFeature[Double]], ld: LayoutDefinition, kern: Kernel, crs: CRS): RDD[(SpatialKey,Tile)] with Metadata[TileLayerMetadata[SpatialKey]] = {
     val kw = 2 * kern.extent.toDouble + 1.0
     val tl = ld.tileLayout
-    
+
     def ptfToExtent[D](ptf: PointFeature[D]): Extent = {
       val p = ptf.geom
       Extent(p.x - kw * ld.cellwidth / 2,
@@ -42,8 +48,6 @@ object KernelDensityRDD {
              p.x + kw * ld.cellwidth / 2,
              p.y + kw * ld.cellheight / 2)
     }
-
-    val trans = (_.toFloat.round.toInt): Double => Int
 
     def ptfToSpatialKey[D](ptf: PointFeature[D]): Seq[(SpatialKey, PointFeature[D])] = {
       val ptextent = ptfToExtent(ptf)
@@ -53,14 +57,34 @@ object KernelDensityRDD {
            if c < tl.totalCols) yield (SpatialKey(c,r), ptf)
     }
 
-    val keyfeatures = rdd.flatMap(ptfToSpatialKey).groupByKey.mapValues(_.toList)
+    def seqOp(tile: Tile, tup: (SpatialKey, PointFeature[Int])): Tile = {
+      val (spatialKey, pointFeature) = tup
 
-    val keytiles: RDD[(SpatialKey, Tile)] = keyfeatures.map { 
-      case (sk,pfs) => (sk,KernelDensity.kernelDensity(pfs,trans,kern,
-                                        RasterExtent(ld.mapTransform(sk),
-                                                     tl.tileDimensions._1,
-                                                     tl.tileDimensions._2)))
+      KernelStamper(tile, kernel).stamp(asf).result
     }
+
+    val tileRdd =
+      rdd
+        .flatMap(ptfToSpatialKey)
+        .mapPartitions({ partition =>
+          partition.map { case (spatialKey, pointFeature) =>
+            (spatialKey, (spatialKey, pointFeature))
+          }
+        }, preservesPartitioning = true)
+        .aggregateByKey(ArrayTile.empty(cellType, ld.tileCols, ld.tileRows))(seqOp, combineOp)
+    //     .mapValues(_.toList)
+
+    // val keytiles: RDD[(SpatialKey, Tile)] =
+    //   keyfeatures.mapPartitions({ partition =>
+    //     partition.map { case (sk, pfs) =>
+    //       val tile =
+    //         pfs.kernelDensity(
+    //           kern,
+    //           RasterExtent(ld.mapTransform(sk), tl.tileDimensions._1, tl.tileDimensions._2)
+    //         )
+    //       (sk, tile)
+    //     }
+    //   }, preservesPartitioning = true)
 
     val metadata = TileLayerMetadata(DoubleCellType,
                                      ld,
