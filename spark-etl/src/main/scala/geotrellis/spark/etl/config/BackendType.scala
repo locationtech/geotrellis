@@ -29,7 +29,7 @@ case object FileType extends BackendType {
 }
 
 object BackendType {
-  def fromName(str: String) = str match {
+  def fromString(str: String) = str match {
     case AccumuloType.name  => AccumuloType
     case CassandraType.name => CassandraType
     case S3Type.name        => S3Type
@@ -37,10 +37,13 @@ object BackendType {
     case FileType.name      => FileType
     case s                  => throw new Exception(s"unsupported backend type: $s")
   }
+}
 
-  def fromNameInput(str: String) = str match {
+object BackendInputType {
+  def fromString(str: String) = str match {
     case S3Type.name     => S3Type
     case HadoopType.name => HadoopType
     case s               => throw new Exception(s"unsupported input backend type: $s")
   }
 }
+

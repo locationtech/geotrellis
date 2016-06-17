@@ -1,6 +1,10 @@
 package geotrellis.spark.etl.config
 
-sealed trait ReprojectMethod
+sealed trait ReprojectMethod {
+  val name: String
+
+  override def toString = name
+}
 
 /**
   * BufferedReproject method will perform reproject still after the tiling step.
@@ -8,7 +12,9 @@ sealed trait ReprojectMethod
   * tile boundaries by performing a spatial neighborhood join. This method is the default and produces the best results.
   * Note that method of reprojection requires that all of the source tiles share the same CRS.
   */
-case object BufferedReproject extends ReprojectMethod
+case object BufferedReproject extends ReprojectMethod {
+  val name = "buffered"
+}
 
 /**
   * PerTileReproject method will perform reproject step before the tiling step.
@@ -17,12 +23,14 @@ case object BufferedReproject extends ReprojectMethod
   * However this restriction allows for source tiles to have projections that differ per tile.
   * The projections will be unified before the tiling step, which requires all extents to be in the same projection.
   */
-case object PerTileReproject extends ReprojectMethod
+case object PerTileReproject extends ReprojectMethod {
+  val name = "per-tile"
+}
 
 object ReprojectMethod {
   def fromString(s: String) = s match {
-    case "buffered" => BufferedReproject
-    case "per-tile" => PerTileReproject
+    case BufferedReproject.name => BufferedReproject
+    case PerTileReproject.name  => PerTileReproject
     case _ => throw new Exception(s"unsupported repreoject method: $s")
   }
 }

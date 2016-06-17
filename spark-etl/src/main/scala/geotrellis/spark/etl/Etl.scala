@@ -1,6 +1,6 @@
 package geotrellis.spark.etl
 
-import geotrellis.raster.{CellGrid, RasterExtent}
+import geotrellis.raster.CellGrid
 import geotrellis.raster.crop.CropMethods
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.prototype.TilePrototypeMethods
@@ -8,7 +8,6 @@ import geotrellis.raster.reproject._
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.stitch.Stitcher
 import geotrellis.spark._
-import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.tiling._
 import geotrellis.spark.pyramid._
 import geotrellis.spark.tiling._
@@ -32,7 +31,7 @@ object Etl {
     K: SpatialComponent: Boundable: TypeTag,
     V <: CellGrid: TypeTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
-    args: Seq[String], keyIndexMethod: KeyIndexMethod[K], modules: Seq[TypedModule] = Etl.defaultModules
+    args: Seq[String], modules: Seq[TypedModule] = Etl.defaultModules
   )(implicit sc: SparkContext) = {
     implicit def classTagK = ClassTag(typeTag[K].mirror.runtimeClass(typeTag[K].tpe)).asInstanceOf[ClassTag[K]]
     implicit def classTagV = ClassTag(typeTag[V].mirror.runtimeClass(typeTag[V].tpe)).asInstanceOf[ClassTag[V]]
@@ -45,7 +44,7 @@ object Etl {
       /* perform the reprojection and mosaicing step to fit tiles to LayoutScheme specified */
       val (zoom, tiled) = etl.tile(sourceTiles)
       /* save and optionally pyramid the mosaiced layer */
-      etl.save[K, V](LayerId(etl.conf.name, zoom), tiled, keyIndexMethod)
+      etl.save[K, V](LayerId(etl.conf.name, zoom), tiled)
     }
   }
 }
@@ -155,14 +154,13 @@ case class Etl(@transient etlJob: EtlJob, @transient modules: Seq[TypedModule] =
     *
     * @param id     Layout ID to b
     * @param rdd Tiled raster RDD with TileLayerMetadata
-    * @param method Index Method that maps an instance of K to a Long
     * @tparam K  Key type with SpatialComponent corresponding LayoutDefinition
     * @tparam V  Tile raster with cells from single tile in LayoutDefinition
     */
   def save[
     K: SpatialComponent: TypeTag,
     V <: CellGrid: TypeTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]], method: KeyIndexMethod[K]): Unit = {
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): Unit = {
     implicit def classTagK = ClassTag(typeTag[K].mirror.runtimeClass(typeTag[K].tpe)).asInstanceOf[ClassTag[K]]
     implicit def classTagV = ClassTag(typeTag[V].mirror.runtimeClass(typeTag[V].tpe)).asInstanceOf[ClassTag[V]]
 
@@ -174,7 +172,7 @@ case class Etl(@transient etlJob: EtlJob, @transient modules: Seq[TypedModule] =
 
     def savePyramid(zoom: Int, rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): Unit = {
       val currentId = id.copy(zoom = zoom)
-      outputPlugin(currentId, rdd, method, etlJob)
+      outputPlugin(currentId, rdd, conf.ingestOptions.getKeyIndexMethod[K], etlJob)
 
       scheme match {
         case Left(s) =>
