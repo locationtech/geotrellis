@@ -1,12 +1,7 @@
 package geotrellis.spark.etl
 
-import geotrellis.raster.resample.{NearestNeighbor, PointResampleMethod}
-import geotrellis.raster.{MultibandTile, Tile}
-import geotrellis.spark.etl.config.{BackendType, _}
-import geotrellis.spark.{SpaceTimeKey, SpatialKey, TemporalProjectedExtent}
-import geotrellis.spark.ingest._
-import geotrellis.vector.ProjectedExtent
-import org.apache.spark.storage.StorageLevel
+import geotrellis.raster.resample.NearestNeighbor
+import geotrellis.spark.etl.config._
 import org.scalatest._
 
 object EtlSpec {
@@ -15,14 +10,14 @@ object EtlSpec {
     name = "test",
     ingestType = IngestType(
       format = "geotiff",
-      input = HadoopType,
+      input  = HadoopType,
       output = HadoopType
     ),
     path = IngestPath(input = "input", output = "output"),
     ingestOptions = IngestOptions(
-      resampleMethod = NearestNeighbor,
+      resampleMethod  = NearestNeighbor,
       reprojectMethod = BufferedReproject,
-      keyIndexMethod = IngestKeyIndexMethod("zorder")
+      keyIndexMethod  = IngestKeyIndexMethod("zorder")
     )))
 
   Etl(etlJob)
