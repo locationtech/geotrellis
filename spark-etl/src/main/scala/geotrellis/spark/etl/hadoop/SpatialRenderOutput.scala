@@ -4,10 +4,10 @@ import java.math.BigInteger
 
 import geotrellis.raster.Tile
 import geotrellis.raster.render._
-import geotrellis.spark.etl.OutputPlugin
+import geotrellis.spark.etl.{EtlJob, OutputPlugin}
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark._
-import geotrellis.spark.etl.config.backend.Backend
+import geotrellis.spark.etl.config.Backend
 import geotrellis.spark.render._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.s3._
@@ -20,8 +20,7 @@ import scala.reflect._
 class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetadata[SpatialKey]] {
   def name = "render"
   def key = classTag[SpatialKey]
-  def requiredKeys = Array("path", "encoding")
-  def attributes(props: Map[String, String], credentials: Option[Backend]) = null
+  def attributes(job: EtlJob) = null
   /**
    * Parses to a ColorMap a string of limits and their colors in hex RGBA
    * Only used for rendering PNGs
@@ -47,39 +46,38 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetada
     id: LayerId,
     rdd: RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]],
     method: KeyIndexMethod[SpatialKey],
-    props: Parameters,
-    credentials: Option[Backend]
+    job: EtlJob
   ): Unit = {
-    val useS3 = (props("path").take(5) == "s3://")
+    val useS3 = job.outputProps("path").take(5) == "s3://"
     val images =
-      props("encoding").toLowerCase match {
-        case "png" =>
-          parseColorMaps(props.get("breaks")) match {
-            case Some(colorMap) =>
-              rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderPng(colorMap).mapValues(_.bytes)
-            case None =>
-              rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderPng().mapValues(_.bytes)
-          }
-        case "jpg" =>
-          parseColorMaps(props.get("breaks")) match {
-            case Some(colorMap) =>
-              rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderJpg(colorMap).mapValues(_.bytes)
-            case None =>
-              rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderJpg().mapValues(_.bytes)
-          }
-        case "geotiff" =>
-          rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderGeoTiff().mapValues(_.toByteArray)
-      }
+      job.config.ingestOptions.encoding.get.toLowerCase match {
+          case "png" =>
+            parseColorMaps(job.config.ingestOptions.breaks) match {
+              case Some(colorMap) =>
+                rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderPng(colorMap).mapValues(_.bytes)
+              case None =>
+                rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderPng().mapValues(_.bytes)
+            }
+          case "jpg" =>
+            parseColorMaps(job.config.ingestOptions.breaks) match {
+              case Some(colorMap) =>
+                rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderJpg(colorMap).mapValues(_.bytes)
+              case None =>
+                rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderJpg().mapValues(_.bytes)
+            }
+          case "geotiff" =>
+            rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderGeoTiff().mapValues(_.toByteArray)
+        }
 
     if (useS3) {
-      val keyToPath = SaveToS3.spatialKeyToPath(id, props("path"))
+      val keyToPath = SaveToS3.spatialKeyToPath(id, job.outputProps("path"))
       images.saveToS3(keyToPath)
     }
     else {
-      val keyToPath = SaveToHadoop.spatialKeyToPath(id, props("path"))
+      val keyToPath = SaveToHadoop.spatialKeyToPath(id, job.outputProps("path"))
       images.saveToHadoop(keyToPath)
     }
   }
 
-  def writer(method: KeyIndexMethod[SpatialKey], props: Parameters, credentials: Option[Backend])(implicit sc: SparkContext) = ???
+  def writer(method: KeyIndexMethod[SpatialKey], job: EtlJob)(implicit sc: SparkContext) = ???
 }

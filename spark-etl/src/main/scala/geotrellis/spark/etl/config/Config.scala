@@ -1,16 +1,15 @@
-package geotrellis.spark.etl.config.dataset
+package geotrellis.spark.etl.config
 
-import geotrellis.spark.etl.config.backend._
 import org.apache.spark.storage.StorageLevel
 
 import scala.util.matching.Regex
 
 case class Config(
   name: String,
-  cache: Option[StorageLevel],
   ingestType: IngestType,
   path: IngestPath,
-  ingestOptions: IngestOptions
+  ingestOptions: IngestOptions,
+  cache: Option[StorageLevel] = None
 ) {
   private def getParams(jbt: BackendType, p: String) = jbt match {
     case S3Type => {
@@ -25,8 +24,8 @@ case class Config(
     case HadoopType | FileType => Map("path" -> p)
   }
 
-  def getInputParams  = getParams(ingestType.input, path.input)
-  def getOutputParams = getParams(ingestType.output, path.output)
+  def inputParams  = getParams(ingestType.input, path.input)
+  def outputParams = getParams(ingestType.output, path.output)
 }
 
 object Config {

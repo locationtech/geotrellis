@@ -9,7 +9,6 @@ import org.apache.spark.SparkContext
 
 abstract class S3Input[I, V] extends InputPlugin[I, V] {
   val name = "s3"
-  val requiredKeys = Array("bucket", "key")
 
   def configuration(props: Map[String, String])(implicit sc: SparkContext): Configuration = {
     val job = Job.getInstance(sc.hadoopConfiguration, "S3 GeoTiff ETL")

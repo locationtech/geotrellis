@@ -1,20 +1,19 @@
-package geotrellis.spark.etl
+package geotrellis.spark.etl.config
 
-import geotrellis.spark.etl.config.backend.Credentials
-import geotrellis.spark.etl.config.dataset.Config
+import geotrellis.spark.etl.EtlJob
 import geotrellis.spark.etl.config.json._
 
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
+import spray.json.DefaultJsonProtocol._
+import spray.json._
 
-class NewEtlConf(val credentials: Credentials, val datasets: List[Config]) {
-  def getEtlJobs = datasets map { ds => EtlJob(credentials.getInput(ds), credentials.getOutput(ds), ds) }
+class EtlConf(val credentials: Credentials, val datasets: List[Config]) {
+  def getEtlJobs = datasets map { ds => EtlJob(ds, credentials.getInput(ds), credentials.getOutput(ds)) }
 }
 
-object NewEtlConf {
+object EtlConf {
   val help = """
                |geotrellis-etl
                |
@@ -59,6 +58,6 @@ object NewEtlConf {
 
   def apply(args: Seq[String])(implicit sc: SparkContext) = {
     val m = parse(args)
-    new NewEtlConf(m('credentials).parseJson.convertTo[Credentials], m('datasets).parseJson.convertTo[List[Config]])
+    new EtlConf(m('credentials).parseJson.convertTo[Credentials], m('datasets).parseJson.convertTo[List[Config]])
   }
 }

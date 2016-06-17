@@ -1,12 +1,12 @@
-package geotrellis.spark.etl.config.dataset
+package geotrellis.spark.etl.config
 
 import geotrellis.spark.io.index._
 
 case class IngestKeyIndexMethod(
   `type`: String,
-  timeTag: Option[String],
-  timeFormat: Option[String],
-  temporalResolution: Option[Int]
+  timeTag: Option[String] = None,
+  timeFormat: Option[String] = None,
+  temporalResolution: Option[Int] = None
 ) {
   private def _getKeyIndexMethod: KeyIndexMethod[_] = (`type`, temporalResolution) match {
     case ("rowmajor", None)    => RowMajorKeyIndexMethod

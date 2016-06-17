@@ -1,11 +1,11 @@
 package geotrellis.spark.etl
 
-import geotrellis.raster.{RasterExtent, CellGrid}
+import geotrellis.raster.{CellGrid, RasterExtent}
 import geotrellis.raster.crop.CropMethods
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.prototype.TilePrototypeMethods
 import geotrellis.raster.reproject._
-import geotrellis.raster.resample.{ ResampleMethod, NearestNeighbor }
+import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.stitch.Stitcher
 import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndexMethod
@@ -14,11 +14,12 @@ import geotrellis.spark.pyramid._
 import geotrellis.spark.tiling._
 import geotrellis.util._
 import geotrellis.vector._
+import geotrellis.spark.etl.config._
 
-import com.typesafe.scalalogging.slf4j.Logger
 import org.apache.spark._
 import org.apache.spark.rdd.RDD
 import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.slf4j.Logger
 
 import scala.reflect._
 import scala.reflect.runtime.universe._
@@ -36,7 +37,7 @@ object Etl {
     implicit def classTagK = ClassTag(typeTag[K].mirror.runtimeClass(typeTag[K].tpe)).asInstanceOf[ClassTag[K]]
     implicit def classTagV = ClassTag(typeTag[V].mirror.runtimeClass(typeTag[V].tpe)).asInstanceOf[ClassTag[V]]
 
-    NewEtlConf(args).getEtlJobs.map { job =>
+    EtlConf(args).getEtlJobs.map { job =>
       /* parse command line arguments */
       val etl = Etl(job, modules)
       /* load source tiles using input module specified */
@@ -84,7 +85,7 @@ case class Etl(@transient etlJob: EtlJob, @transient modules: Seq[TypedModule] =
         .find(_.suitableFor(conf.ingestType.input.name, conf.ingestType.format))
         .getOrElse(sys.error(s"Unable to find input module of type '${conf.ingestType.input}' for format `${conf.ingestType.format}"))
 
-    plugin(etlJob.getInputProps)
+    plugin(etlJob)
   }
 
   /**
@@ -173,7 +174,7 @@ case class Etl(@transient etlJob: EtlJob, @transient modules: Seq[TypedModule] =
 
     def savePyramid(zoom: Int, rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): Unit = {
       val currentId = id.copy(zoom = zoom)
-      outputPlugin(currentId, rdd, method, etlJob.getOutputProps, etlJob.outputCredentials)
+      outputPlugin(currentId, rdd, method, etlJob)
 
       scheme match {
         case Left(s) =>

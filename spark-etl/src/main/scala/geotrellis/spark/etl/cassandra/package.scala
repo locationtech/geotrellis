@@ -1,6 +1,6 @@
 package geotrellis.spark.etl
 
-import geotrellis.spark.etl.config.backend.{Backend, Cassandra}
+import geotrellis.spark.etl.config.{Backend, Cassandra}
 import geotrellis.spark.io.cassandra.{BaseCassandraInstance, CassandraInstance}
 
 package object cassandra {

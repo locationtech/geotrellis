@@ -1,4 +1,4 @@
-package geotrellis.spark.etl.config.backend
+package geotrellis.spark.etl.config
 
 sealed trait BackendType {
   val name: String

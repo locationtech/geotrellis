@@ -4,9 +4,7 @@ import geotrellis.spark.io._
 import geotrellis.vector.io._
 import geotrellis.raster.{CellSize, CellType}
 import geotrellis.raster.resample._
-import geotrellis.spark.etl.{BufferedReproject, PerTileReproject, ReprojectMethod}
-import geotrellis.spark.etl.config.backend.{BackendInputType, _}
-import geotrellis.spark.etl.config.dataset._
+import geotrellis.spark.etl.config._
 import org.apache.spark.storage.StorageLevel
 import spray.json._
 import spray.json.DefaultJsonProtocol._
@@ -84,12 +82,7 @@ trait ConfigFormats {
     def write(rm: ReprojectMethod): JsValue = ???
     def read(value: JsValue): ReprojectMethod =
       value match {
-        case JsString(backend) => backend match {
-          case "buffered" => BufferedReproject
-          case "per-tile" => PerTileReproject
-          case _ =>
-            throw new DeserializationException("ReprojectMethod must be a valid string.")
-        }
+        case JsString(backend) => ReprojectMethod.fromString(backend)
         case _ =>
           throw new DeserializationException("ReprojectMethod must be a valid string.")
       }
@@ -98,11 +91,11 @@ trait ConfigFormats {
   implicit val accumuloBackendFromat    = jsonFormat6(Accumulo)
   implicit val cassandraBackendFromat   = jsonFormat9(Cassandra)
   implicit val hadoopBackendFromat      = jsonFormat1(Hadoop)
-  implicit val s3BackendFromat          = jsonFormat1(S3)
+  implicit val s3BackendFromat          = jsonFormat2(S3)
   implicit val credentialsBackendFromat = jsonFormat4(Credentials)
   implicit val ingestPathFormat         = jsonFormat2(IngestPath)
-  implicit val ingestKeyIndexFromat = jsonFormat4(IngestKeyIndexMethod)
-  implicit val ingestTypeFromat = jsonFormat5(IngestType)
-  implicit val ingestOptions = jsonFormat11(IngestOptions)
-  implicit val configFromat = jsonFormat5(Config.apply)
+  implicit val ingestKeyIndexFromat     = jsonFormat4(IngestKeyIndexMethod)
+  implicit val ingestTypeFromat         = jsonFormat5(IngestType)
+  implicit val ingestOptions            = jsonFormat13(IngestOptions)
+  implicit val configFromat             = jsonFormat5(Config.apply)
 }

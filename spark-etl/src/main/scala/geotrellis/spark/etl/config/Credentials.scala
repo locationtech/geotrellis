@@ -1,6 +1,4 @@
-package geotrellis.spark.etl.config.backend
-
-import geotrellis.spark.etl.config.dataset.Config
+package geotrellis.spark.etl.config
 
 case class Credentials(accumulo: List[Accumulo], cassandra: List[Cassandra], s3: List[S3], hadoop: List[Hadoop]) {
   private def getCfgs[T <: Backend](b: List[T]) = b.map(e => e.name -> e).toMap

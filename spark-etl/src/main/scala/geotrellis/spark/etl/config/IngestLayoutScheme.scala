@@ -1,4 +1,4 @@
-package geotrellis.spark.etl.config.dataset
+package geotrellis.spark.etl.config
 
 import geotrellis.proj4.CRS
 import geotrellis.spark.tiling.{FloatingLayoutScheme, LayoutScheme, ZoomedLayoutScheme}
