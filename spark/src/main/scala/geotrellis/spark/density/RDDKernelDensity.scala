@@ -16,18 +16,16 @@
 
 package geotrellis.spark.density
 
-import geotrellis.spark._
-import geotrellis.spark.tiling._
-
-import org.apache.spark.rdd.RDD
-
-import geotrellis.vector._
 import geotrellis.proj4._
 import geotrellis.raster._
-//import geotrellis.raster.testkit._
+import geotrellis.raster.density._
 import geotrellis.raster.mapalgebra.focal._
 import geotrellis.raster.mapalgebra.local._
-import geotrellis.raster.density._
+import geotrellis.spark._
+import geotrellis.spark.tiling._
+import geotrellis.vector._
+
+import org.apache.spark.rdd.RDD
 
 object RDDKernelDensity {
 
@@ -42,10 +40,10 @@ object RDDKernelDensity {
            p.y + kernelWidth * ld.cellheight / 2)
   }
 
-  def pointFeatureToSpatialKey[D](kernelWidth: Double, 
-                                  tl: TileLayout, 
-                                  ld: LayoutDefinition,
-                                  dummy: D)(ptf: PointFeature[D]): Seq[(SpatialKey, PointFeature[D])] = {
+  private def pointFeatureToSpatialKey[D](kernelWidth: Double, 
+                                          tl: TileLayout, 
+                                          ld: LayoutDefinition,
+                                          dummy: D)(ptf: PointFeature[D]): Seq[(SpatialKey, PointFeature[D])] = {
       val ptextent = pointFeatureToExtent(kernelWidth, ld)(ptf)
       val gridBounds = ld.mapTransform(ptextent)
       for ((c,r) <- gridBounds.coords;

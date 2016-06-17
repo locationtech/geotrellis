@@ -56,7 +56,7 @@ class KernelDensityRDDSpec extends FunSpec
 
       val ptrdd = sc.parallelize(pts, 10)
 
-      val tileRDD = RDDKernelDensity(ptrdd, ld, kern, LatLng)
+      val tileRDD = ptrdd.kernelDensity(kern, ld, LatLng)
 
       val tileList = 
         for { r <- 0 until ld.layoutRows
