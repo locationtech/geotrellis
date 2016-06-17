@@ -14,6 +14,6 @@ trait RDDIntKernelDensityMethods extends MethodExtensions[RDD[PointFeature[Int]]
   def kernelDensity(kernel: Kernel, layoutDefinition: LayoutDefinition, crs: CRS): RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]] =
     RDDKernelDensity(self, layoutDefinition, kernel, crs)
 
-  // def kernelDensity(kernel: Kernel, layoutDefinition: LayoutDefinition, crs: CRS, cellType: CellType): RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]] =
-  //   RDDKernelDensity(self, layoutDefinition, kernel, crs, cellType)
+  def kernelDensity(kernel: Kernel, layoutDefinition: LayoutDefinition, crs: CRS, cellType: CellType): RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]] =
+    RDDKernelDensity(self, layoutDefinition, kernel, crs, cellType)
 }
