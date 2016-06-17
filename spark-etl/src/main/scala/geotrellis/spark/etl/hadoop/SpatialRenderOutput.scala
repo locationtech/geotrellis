@@ -7,10 +7,10 @@ import geotrellis.raster.render._
 import geotrellis.spark.etl.OutputPlugin
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark._
+import geotrellis.spark.etl.config.backend.Backend
 import geotrellis.spark.render._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.s3._
-
 import org.apache.hadoop.conf.ConfServlet.BadFormatException
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -21,7 +21,7 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetada
   def name = "render"
   def key = classTag[SpatialKey]
   def requiredKeys = Array("path", "encoding")
-  def attributes(props: Map[String, String]) = null
+  def attributes(props: Map[String, String], credentials: Option[Backend]) = null
   /**
    * Parses to a ColorMap a string of limits and their colors in hex RGBA
    * Only used for rendering PNGs
@@ -47,7 +47,8 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetada
     id: LayerId,
     rdd: RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]],
     method: KeyIndexMethod[SpatialKey],
-    props: Map[String, String]
+    props: Parameters,
+    credentials: Option[Backend]
   ): Unit = {
     val useS3 = (props("path").take(5) == "s3://")
     val images =
@@ -80,5 +81,5 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetada
     }
   }
 
-  def writer(method: KeyIndexMethod[SpatialKey], props: Parameters)(implicit sc: SparkContext) = ???
+  def writer(method: KeyIndexMethod[SpatialKey], props: Parameters, credentials: Option[Backend])(implicit sc: SparkContext) = ???
 }
