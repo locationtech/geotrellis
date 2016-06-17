@@ -47,14 +47,13 @@ object KernelDensity {
     *
     */
   def apply(points: Traversable[PointFeature[Int]],
-               kernel: Kernel,
-               rasterExtent: RasterExtent,
-               cellType: CellType): Tile = {
+            kernel: Kernel,
+            rasterExtent: RasterExtent,
+            cellType: CellType): Tile = {
     val stamper = KernelStamper(cellType, rasterExtent.cols, rasterExtent.rows, kernel)
 
     for(point <- points) {
-      val col = rasterExtent.mapXToGrid(point.geom.x)
-      val row = rasterExtent.mapYToGrid(point.geom.y)
+      val (col, row) = rasterExtent.mapToGrid(point.geom)
       if(cellType.isFloatingPoint) {
         stamper.stampKernelDouble(col, row, point.data.toDouble)
       } else {
@@ -91,8 +90,7 @@ object KernelDensity {
     val stamper = KernelStamper(cellType, rasterExtent.cols, rasterExtent.rows, kernel)
 
     for(point <- points) {
-      val col = rasterExtent.mapXToGrid(point.geom.x)
-      val row = rasterExtent.mapYToGrid(point.geom.y)
+      val (col, row) = rasterExtent.mapToGrid(point.geom)
       stamper.stampKernelDouble(col, row, point.data)
     }
 
