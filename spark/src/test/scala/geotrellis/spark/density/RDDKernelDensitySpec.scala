@@ -3,21 +3,20 @@ package geotrellis.spark.density
 import scala.util.Random
 import scala.math.{max,min}
 
-import geotrellis.spark._
-import geotrellis.spark.tiling._
-import geotrellis.spark.stitch._
-
 import org.apache.spark.rdd.RDD
 
-import geotrellis.vector._
 import geotrellis.proj4._
 import geotrellis.raster._
-import geotrellis.raster.testkit._
+import geotrellis.raster.density._
 import geotrellis.raster.mapalgebra.focal._
 import geotrellis.raster.mapalgebra.local._
+import geotrellis.raster.testkit._
+import geotrellis.spark._
+import geotrellis.spark.stitch._
+import geotrellis.spark.tiling._
+import geotrellis.vector._
 
-import geotrellis.raster.density._
-import geotrellis.spark.density._
+import geotrellis.raster.render._
 
 import org.scalatest._
 
@@ -34,9 +33,9 @@ class KernelDensityRDDSpec extends FunSpec
           val x = Random.nextDouble
           low * (1-x) + high * x
         }
-        PointFeature(Point(randInRange(extent.xmin,extent.xmax),
-			   randInRange(extent.ymin,extent.ymax)), 
-		     Random.nextInt % 50 + 50)
+        new PointFeature(Point(randInRange(extent.xmin,extent.xmax),
+                               randInRange(extent.ymin,extent.ymax)), 
+                         Random.nextInt % 50 + 50)
       }
 
       val extent = Extent.fromString("-109,37,-102,41") // Colorado (is rect!)
@@ -48,8 +47,7 @@ class KernelDensityRDDSpec extends FunSpec
       
       val krnwdth = 9.0
       val kern = Kernel(Circle(krnwdth))
-      val trans = (_.toFloat.round.toInt): Double => Int
-      val full = KernelDensity.kernelDensity (pts,trans,kern,RasterExtent(extent,700,400))
+      val full = pts.kernelDensity(kern, RasterExtent(extent,700,400))
 
       // partition points into tiles
 
@@ -58,7 +56,7 @@ class KernelDensityRDDSpec extends FunSpec
 
       val ptrdd = sc.parallelize(pts, 10)
 
-      val tileRDD = KernelDensityRDD.kernelDensity(ptrdd, ld, kern, LatLng)
+      val tileRDD = RDDKernelDensity(ptrdd, ld, kern, LatLng)
 
       val tileList = 
         for { r <- 0 until ld.layoutRows
@@ -70,10 +68,9 @@ class KernelDensityRDDSpec extends FunSpec
                 case x => (k, x(0))
               }
             }
+      val stitched = TileLayoutStitcher.stitch(tileList)
 
       // compare results
-
-      val stitched = TileLayoutStitcher.stitch(tileList)
       assertEqual(stitched._1, full)
     }
   }

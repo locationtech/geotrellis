@@ -31,10 +31,26 @@ trait KernelStamper {
   def stampKernel(col: Int, row: Int, z: Int): Unit
 
   /**
+   * Given a (column, row) pair and a value, apply the kernel at the given point.
+   */
+  def stampKernel(tup: (Int, Int), z: Int): Unit = { 
+    val (col, row) = tup
+    stampKernel(col, row, z)
+  }
+
+  /**
     * Given a column, row, and value, apply the kernel at the given
     * point.
     */
   def stampKernelDouble(col: Int, row: Int, z: Double): Unit
+
+  /**
+   * Given a (column, row) pair and a value, apply the kernel at the given point.
+   */
+  def stampKernelDouble(tup: (Int, Int), z: Double): Unit = { 
+    val (col, row) = tup
+    stampKernelDouble(col, row, z)
+  }
 
   def result: Tile
 }
