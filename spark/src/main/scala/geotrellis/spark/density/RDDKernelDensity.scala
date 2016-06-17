@@ -29,9 +29,6 @@ import org.apache.spark.rdd.RDD
 
 object RDDKernelDensity {
 
-  // TODO: CellType
-  // TODO: MethodExtensions on RDD[PointFeature[Int]] and RDD[PointFeature[Double]]
-
   private def pointFeatureToExtent[D](kernelWidth: Double, ld: LayoutDefinition)(ptf: PointFeature[D]): Extent = {
     val p = ptf.geom
     Extent(p.x - kernelWidth * ld.cellwidth / 2,
@@ -76,23 +73,31 @@ object RDDKernelDensity {
             ld: LayoutDefinition, 
             kern: Kernel, 
             crs: CRS)(implicit d: DummyImplicit): RDD[(SpatialKey,Tile)] with Metadata[TileLayerMetadata[SpatialKey]] = {
+    apply(rdd, ld, kern, crs, IntConstantNoDataCellType)
+  }
+
+  def apply(rdd: RDD[PointFeature[Int]], 
+            ld: LayoutDefinition, 
+            kern: Kernel, 
+            crs: CRS,
+            cellType: CellType)(implicit d: DummyImplicit): RDD[(SpatialKey,Tile)] with Metadata[TileLayerMetadata[SpatialKey]] = {
 
     val kw = 2 * kern.extent.toDouble + 1.0
     val tl = ld.tileLayout
 
     val ptfToSpatialKey: PointFeature[Int] => Seq[(SpatialKey,PointFeature[Int])] = pointFeatureToSpatialKey(kw, tl, ld, 0)_
 
-    def stampPointFeature(tile: IntArrayTile, tup: (SpatialKey, PointFeature[Int])): IntArrayTile = {
+    def stampPointFeature(tile: MutableArrayTile, tup: (SpatialKey, PointFeature[Int])): MutableArrayTile = {
       val (spatialKey, pointFeature) = tup
       val tileExtent = ld.mapTransform(spatialKey)
       val re = RasterExtent(tileExtent, tile)
-      val result = tile.copy.asInstanceOf[IntArrayTile]
+      val result = tile.copy.asInstanceOf[MutableArrayTile]
       KernelStamper(result, kern).stampKernel(re.mapToGrid(pointFeature.geom), pointFeature.data)
       result
     }
 
-    def sumTiles(t1: IntArrayTile, t2: IntArrayTile): IntArrayTile = {
-      Adder(t1.asInstanceOf[Tile], t2.asInstanceOf[Tile]).asInstanceOf[IntArrayTile]
+    def sumTiles(t1: MutableArrayTile, t2: MutableArrayTile): MutableArrayTile = {
+      Adder(t1, t2).asInstanceOf[MutableArrayTile]
     }
 
     val tileRdd: RDD[(SpatialKey, Tile)] =
@@ -103,7 +108,7 @@ object RDDKernelDensity {
             (spatialKey, (spatialKey, pointFeature))
           }
         }, preservesPartitioning = true)
-        .aggregateByKey(IntArrayTile.empty(ld.tileCols, ld.tileRows))(stampPointFeature, sumTiles)
+        .aggregateByKey(ArrayTile.empty(cellType, ld.tileCols, ld.tileRows))(stampPointFeature, sumTiles)
         .mapValues{ tile => tile.asInstanceOf[Tile] }
 
     val metadata = TileLayerMetadata(DoubleCellType,
@@ -120,21 +125,29 @@ object RDDKernelDensity {
             ld: LayoutDefinition, 
             kern: Kernel, 
             crs: CRS): RDD[(SpatialKey,Tile)] with Metadata[TileLayerMetadata[SpatialKey]] = {
+    apply(rdd, ld, kern, crs, DoubleConstantNoDataCellType)
+  }
+
+  def apply(rdd: RDD[PointFeature[Double]], 
+            ld: LayoutDefinition, 
+            kern: Kernel, 
+            crs: CRS,
+            cellType: CellType): RDD[(SpatialKey,Tile)] with Metadata[TileLayerMetadata[SpatialKey]] = {
 
     val kw = 2 * kern.extent.toDouble + 1.0
     val tl = ld.tileLayout
 
     val ptfToSpatialKey = pointFeatureToSpatialKey(kw, tl, ld, 0.0)_
 
-    def sumTiles(t1: DoubleArrayTile, t2: DoubleArrayTile): DoubleArrayTile = { 
-      Adder(t1, t2).asInstanceOf[DoubleArrayTile]
+    def sumTiles(t1: MutableArrayTile, t2: MutableArrayTile): MutableArrayTile = { 
+      Adder(t1, t2).asInstanceOf[MutableArrayTile]
     }
 
-    def stampPointFeature(tile: DoubleArrayTile, tup: (SpatialKey, PointFeature[Double])): DoubleArrayTile = {
+    def stampPointFeature(tile: MutableArrayTile, tup: (SpatialKey, PointFeature[Double])): MutableArrayTile = {
       val (spatialKey, pointFeature) = tup
       val tileExtent = ld.mapTransform(spatialKey)
       val re = RasterExtent(tileExtent, tile)
-      val result = tile.copy.asInstanceOf[DoubleArrayTile]
+      val result = tile.copy.asInstanceOf[MutableArrayTile]
       KernelStamper(result, kern).stampKernelDouble(re.mapToGrid(pointFeature.geom), pointFeature.data)
       result
     }
@@ -147,8 +160,8 @@ object RDDKernelDensity {
             (spatialKey, (spatialKey, pointFeature))
           }
         }, preservesPartitioning = true)
-        .aggregateByKey(DoubleArrayTile.empty(ld.tileCols, ld.tileRows))(stampPointFeature, sumTiles)
-        .mapValues{ tile: DoubleArrayTile => tile.asInstanceOf[Tile] }
+        .aggregateByKey(ArrayTile.empty(cellType, ld.tileCols, ld.tileRows))(stampPointFeature, sumTiles)
+        .mapValues{ tile: MutableArrayTile => tile.asInstanceOf[Tile] }
 
     val metadata = TileLayerMetadata(DoubleCellType,
                                      ld,

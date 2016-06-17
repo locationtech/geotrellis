@@ -21,8 +21,6 @@ import geotrellis.raster._
 import geotrellis.raster.rasterize._
 import geotrellis.raster.mapalgebra.focal.Kernel
 
-import spire.syntax.cfor._
-
 /**
  * Object containing functions pertaining to kernel density estimation.
  */
