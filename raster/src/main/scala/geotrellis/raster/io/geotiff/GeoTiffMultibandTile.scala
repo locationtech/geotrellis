@@ -502,6 +502,34 @@ abstract class GeoTiffMultibandTile(
     }
   }
 
+  def foreach(f: Array[Int] => Unit): Unit = {
+    var i = 0
+    cfor(0)(_ < cols, _ + 1) { col =>
+      cfor(0)(_ < rows, _ + 1) { row =>
+        val bandValues = Array.ofDim[Int](bandCount)
+        cfor(0)(_ < bandCount, _ + 1) { band =>
+          bandValues(band) = bands(band).get(col, row)
+        }
+        f(bandValues)
+        i += 1
+      }
+    }
+  }
+
+  def foreachDouble(f: Array[Double] => Unit): Unit = {
+    var i = 0
+    cfor(0)(_ < cols, _ + 1) { col =>
+      cfor(0)(_ < rows, _ + 1) { row =>
+        val bandValues = Array.ofDim[Double](bandCount)
+        cfor(0)(_ < bandCount, _ + 1) { band =>
+          bandValues(band) = bands(band).getDouble(col, row)
+        }
+        f(bandValues)
+        i += 1
+      }
+    }
+  }
+
   /**
     * Piggy-back on the other combine method to support combing a
     * subset of the bands.

@@ -165,6 +165,24 @@ trait MultibandTile extends CellGrid with MacroCombinableMultibandTile[Tile] wit
   def foreachDouble(b0: Int)(f: Double => Unit): Unit
 
   /**
+    * Multiband iterate over tile's int value using a function that
+    * takes in an array of values, and returns the foreached
+    * value for that cell value.
+    *
+    * @param  f          The function
+    */
+  def foreach(f: Array[Int] => Unit): Unit
+
+  /**
+    * Multiband iterate over tile's double value using a function that
+    * takes in an array of values, and returns the foreached
+    * value for that cell value.
+    *
+    * @param  f          The function
+    */
+  def foreachDouble(f: Array[Double] => Unit): Unit
+
+  /**
     * Combine a subset of the bands of a tile into a new
     * integer-valued multiband tile using the function f.
     *
