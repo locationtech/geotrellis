@@ -74,7 +74,7 @@ $JAR \
          "keyIndexMethod":{  
             "type":"zorder"
          },
-         "layoutScheme":"{tms | floating}",         
+         "layoutScheme":"{zoomed | floating}",         
          "crs":"EPSG:3857"
       }
    }
@@ -108,7 +108,7 @@ $JAR \
          "keyIndexMethod":{  
             "type":"zorder"
          },
-         "layoutScheme":"{tms | floating}",         
+         "layoutScheme":"{zoomed | floating}",         
          "crs":"EPSG:3857"
       }
    }
@@ -141,7 +141,7 @@ $JAR \
          "keyIndexMethod":{  
             "type":"zorder"
          },
-         "layoutScheme":"{tms | floating}",         
+         "layoutScheme":"{zoomed | floating}",         
          "crs":"EPSG:3857"
       }
    }
@@ -175,7 +175,7 @@ $JAR \
          "keyIndexMethod":{  
             "type":"zorder"
          },
-         "layoutScheme":"{tms | floating}",         
+         "layoutScheme":"{zoomed | floating}",         
          "crs":"EPSG:3857"
       }
    }
@@ -209,7 +209,7 @@ $JAR \
          "keyIndexMethod":{  
             "type":"zorder"
          },
-         "layoutScheme":"{tms | floating}",         
+         "layoutScheme":"{zoomed | floating}",         
          "crs":"EPSG:3857"
       }
    }

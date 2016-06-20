@@ -19,16 +19,19 @@ case class IngestOptions(
   partitions: Option[Int] = None,
   layoutScheme: Option[String] = None,
   layoutExtent: Option[Extent] = None,
-  crs: Option[CRS] = None,
+  crs: Option[String] = None,
   resolutionThreshold: Option[Double] = None,
   cellSize: Option[CellSize] = None,
   cellType: Option[CellType] = None,
   encoding: Option[String] = None,
   breaks: Option[String] = None
 ) {
-  def getLayoutScheme: LayoutScheme = (layoutScheme, crs, resolutionThreshold) match {
+  def getCrs = crs.map(CRS.fromName)
+
+  def getLayoutScheme: LayoutScheme = (layoutScheme, getCrs, resolutionThreshold) match {
     case (Some("floating"), _, _)            => FloatingLayoutScheme(tileSize)
     case (Some("zoomed"), Some(c), Some(rt)) => ZoomedLayoutScheme(c, tileSize, rt)
+    case (Some("zoomed"), Some(c), _)        => ZoomedLayoutScheme(c, tileSize)
     case _ => throw new Exception("unsupported layout scheme definition")
   }
 

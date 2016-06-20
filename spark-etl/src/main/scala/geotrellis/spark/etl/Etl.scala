@@ -115,7 +115,7 @@ case class Etl(@transient etlJob: EtlJob, @transient modules: Seq[TypedModule] =
     rdd: RDD[(I, V)], method: ResampleMethod = NearestNeighbor
   )(implicit sc: SparkContext): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
     val targetCellType = ingestOptions.cellType
-    val destCrs = ingestOptions.crs.get
+    val destCrs = ingestOptions.getCrs.get
 
     def adjustCellType(md: TileLayerMetadata[K]) =
       md.copy(cellType = targetCellType.getOrElse(md.cellType))

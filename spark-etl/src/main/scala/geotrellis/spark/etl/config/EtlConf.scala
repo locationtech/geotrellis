@@ -36,10 +36,10 @@ object EtlConf {
   }
 
   def nextOption(map: Map[Symbol, String], list: Seq[String]): Map[Symbol, String] =
-    list match {
+    list.toList match {
       case Nil => map
-      case "--dataset" :: value :: tail =>
-        nextOption(map ++ Map('dataset -> value), tail)
+      case "--datasets" :: value :: tail =>
+        nextOption(map ++ Map('datasets -> value), tail)
       case "--credentials" :: value :: tail =>
         nextOption(map ++ Map('credentials -> value), tail)
       case "--help" :: tail => {

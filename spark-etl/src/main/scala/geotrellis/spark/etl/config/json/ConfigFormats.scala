@@ -11,7 +11,7 @@ import spray.json._
 import spray.json.DefaultJsonProtocol._
 
 trait ConfigFormats {
-  implicit object CellTypeReader extends RootJsonFormat[CellType] {
+  implicit object CellTypeFormat extends RootJsonFormat[CellType] {
     def write(ct: CellType): JsValue = ct.name.toJson
     def read(value: JsValue): CellType =
       value match {
@@ -21,7 +21,7 @@ trait ConfigFormats {
       }
   }
 
-  implicit object StorageLevelReader extends RootJsonFormat[StorageLevel] {
+  implicit object StorageLevelFormat extends RootJsonFormat[StorageLevel] {
     def write(sl: StorageLevel): JsValue = sl match {
       case StorageLevel.NONE => "NONE".toJson
       case StorageLevel.DISK_ONLY => "DISK_ONLY".toJson
@@ -44,7 +44,7 @@ trait ConfigFormats {
       }
   }
 
-  implicit object BackendInputTypeReader extends RootJsonFormat[BackendInputType] {
+  implicit object BackendInputTypeFormat extends RootJsonFormat[BackendInputType] {
     def write(bit: BackendInputType): JsValue = bit.name.toJson
     def read(value: JsValue): BackendInputType =
       value match {
@@ -54,7 +54,7 @@ trait ConfigFormats {
       }
   }
 
-  implicit object BackendTypeReader extends RootJsonFormat[BackendType] {
+  implicit object BackendTypeFormat extends RootJsonFormat[BackendType] {
     def write(bt: BackendType): JsValue = bt.name.toJson
     def read(value: JsValue): BackendType =
       value match {
@@ -64,7 +64,7 @@ trait ConfigFormats {
       }
   }
 
-  implicit object PointResampleMethodTypeReader extends RootJsonFormat[PointResampleMethod] {
+  implicit object PointResampleMethodTypeFormat extends RootJsonFormat[PointResampleMethod] {
     def write(prm: PointResampleMethod): JsValue = prm match {
       case NearestNeighbor  => "nearest-neighbor".toJson
       case Bilinear         => "bilinear".toJson
@@ -86,7 +86,7 @@ trait ConfigFormats {
       }
   }
 
-  implicit object CellSizeReader extends RootJsonFormat[CellSize] {
+  implicit object CellSizeFormat extends RootJsonFormat[CellSize] {
     def write(cs: CellSize): JsValue = JsObject(
       "width"  -> cs.width.toJson,
       "height" -> cs.height.toJson
@@ -99,7 +99,7 @@ trait ConfigFormats {
       }
   }
 
-  implicit object ReprojectMethodReader extends RootJsonFormat[ReprojectMethod] {
+  implicit object ReprojectMethodFormat extends RootJsonFormat[ReprojectMethod] {
     def write(rm: ReprojectMethod): JsValue = rm.name.toJson
     def read(value: JsValue): ReprojectMethod =
       value match {
