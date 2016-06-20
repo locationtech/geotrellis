@@ -11,6 +11,6 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 
 class MultibandSpaceTimeHadoopOutput extends HadoopOutput[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]] {
-  def writer(method: KeyIndexMethod[SpaceTimeKey], job: EtlJob)(implicit sc: SparkContext) =
-    HadoopLayerWriter(job.outputProps("path")).writer[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]](method)
+  def writer(job: EtlJob)(implicit sc: SparkContext) =
+    HadoopLayerWriter(job.outputProps("path")).writer[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]](job.config.ingestOptions.getKeyIndexMethod[SpaceTimeKey])
 }

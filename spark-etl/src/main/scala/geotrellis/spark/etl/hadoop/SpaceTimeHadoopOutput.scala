@@ -11,6 +11,6 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 
 class SpaceTimeHadoopOutput extends HadoopOutput[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]] {
-  def writer(method: KeyIndexMethod[SpaceTimeKey], job: EtlJob)(implicit sc: SparkContext) =
-    HadoopLayerWriter(job.outputProps("path")).writer[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](method)
+  def writer(job: EtlJob)(implicit sc: SparkContext) =
+    HadoopLayerWriter(job.outputProps("path")).writer[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](job.config.ingestOptions.getKeyIndexMethod[SpaceTimeKey])
 }

@@ -11,6 +11,6 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 
 class SpatialHadoopOutput extends HadoopOutput[SpatialKey, Tile, TileLayerMetadata[SpatialKey]] {
-  def writer(method: KeyIndexMethod[SpatialKey], job: EtlJob)(implicit sc: SparkContext) =
-    HadoopLayerWriter(job.outputProps("path")).writer[SpatialKey, Tile, TileLayerMetadata[SpatialKey]](method)
+  def writer(job: EtlJob)(implicit sc: SparkContext) =
+    HadoopLayerWriter(job.outputProps("path")).writer[SpatialKey, Tile, TileLayerMetadata[SpatialKey]](job.config.ingestOptions.getKeyIndexMethod[SpatialKey])
 }

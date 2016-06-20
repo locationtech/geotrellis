@@ -4,8 +4,11 @@ import geotrellis.proj4.CRS
 import geotrellis.raster.resample.PointResampleMethod
 import geotrellis.raster.{CellSize, CellType, RasterExtent}
 import geotrellis.spark.io.index.{HilbertKeyIndexMethod, KeyIndexMethod, RowMajorKeyIndexMethod, ZCurveKeyIndexMethod}
+import geotrellis.spark.pyramid.Pyramid
 import geotrellis.spark.tiling._
 import geotrellis.vector.Extent
+
+import org.apache.spark.HashPartitioner
 
 case class IngestOptions(
   resampleMethod: PointResampleMethod,
@@ -13,6 +16,7 @@ case class IngestOptions(
   keyIndexMethod: IngestKeyIndexMethod,
   tileSize: Int = 256,
   pyramid: Boolean = true,
+  partitions: Option[Int] = None,
   layoutScheme: Option[String] = None,
   layoutExtent: Option[Extent] = None,
   crs: Option[CRS] = None,
@@ -43,4 +47,6 @@ case class IngestOptions(
   }
 
   def getKeyIndexMethod[K] = _getKeyIndexMethod.asInstanceOf[KeyIndexMethod[K]]
+
+  def getPyramidOptions = Pyramid.Options(resampleMethod, partitions.map(new HashPartitioner(_)))
 }

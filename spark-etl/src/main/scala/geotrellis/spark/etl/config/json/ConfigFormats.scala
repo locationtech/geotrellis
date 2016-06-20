@@ -10,8 +10,6 @@ import org.apache.spark.storage.StorageLevel
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
-object ConfigFormats extends ConfigFormats
-
 trait ConfigFormats {
   implicit object CellTypeReader extends RootJsonFormat[CellType] {
     def write(ct: CellType): JsValue = ct.name.toJson
@@ -119,6 +117,6 @@ trait ConfigFormats {
   implicit val ingestPathFormat         = jsonFormat2(IngestPath)
   implicit val ingestKeyIndexFromat     = jsonFormat4(IngestKeyIndexMethod)
   implicit val ingestTypeFromat         = jsonFormat5(IngestType)
-  implicit val ingestOptions            = jsonFormat13(IngestOptions)
+  implicit val ingestOptions            = jsonFormat14(IngestOptions)
   implicit val configFromat             = jsonFormat5(Config.apply)
 }

@@ -31,14 +31,16 @@ object GeoTrellisETL {
     implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL", new SparkConf(true))
 
     try {
-      /* parse command line arguments */
-      val etl = Etl(args)
-      /* load source tiles using input module specified */
-      val sourceTiles = etl.load[ProjectedExtent, Tile]
-      /* perform the reprojection and mosaicing step to fit tiles to LayoutScheme specified */
-      val (zoom, tiled) = etl.tile(sourceTiles)
-      /* save and optionally pyramid the mosaiced layer */
-      etl.save(LayerId(etl.conf.layerName(), zoom), tiled, ZCurveKeyIndexMethod)
+    /* parse command line arguments */
+     EtlConf(args).getEtlJobs.map { job =>           
+       val etl = Etl(job, modules)
+       /* load source tiles using input module specified */
+       val sourceTiles = etl.load[I, V]
+       /* perform the reprojection and mosaicing step to fit tiles to LayoutScheme specified */
+       val (zoom, tiled) = etl.tile(sourceTiles)
+       /* save and optionally pyramid the mosaiced layer */
+       etl.save[K, V](LayerId(etl.conf.name, zoom), tiled)
+     }
     } finally {
       sc.stop()
     }
@@ -86,16 +88,15 @@ inputs can be setup through command line arguments like so:
 
 ```bash
 #!/bin/sh
-export JAR="geotrellis-etl-assembly-0.10-SNAPSHOT.jar"
+export JAR="geotrellis-etl-assembly-1.0.0-SNAPSHOT.jar"
 
 spark-submit \
 --class geotrellis.spark.etl.SinglebandIngest \
 --master local[*] \
 --driver-memory 2G \
 $JAR \
---input hadoop --format geotiff --cache NONE -I path="file:///Data/nlcd/tiles" \
---output s3 -O bucket=com.azavea.datahub key=catalog \
---layer nlcd-tms --crs EPSG:3857 --pyramid --layoutScheme tms
+--credentials "file://credentials.json" \
+--datasets "file://datasets.json"
 ```
 
 Note that the arguments before the `$JAR` configure `SparkContext`
@@ -109,51 +110,169 @@ and arguments after configure GeoTrellis ETL inputs and outputs.
 
  Option       | Description
 ------------- | -------------
-input         | Name of input module to use (ex: s3, hadoop)
-format        | Format of the tile files to be read (ex: geotiff)
-inputProps    | List of `key=value` pairs that will be passed to the input module as configuration
+credentials   | Path to a json file (local fs / hdfs) with credentials for ingest datasets (required field)
+datasets      | Path to a json file (local fs / hdfs) with datasets to ingest, with optional credentials (required field)
+
+#### Credentials JSON description
+
+```json
+{
+  "accumulo": [{
+    "name": "name",
+    "zookeepers": "zookeepers",
+    "instance": "instance",
+    "user": "user",
+    "password": "password"
+  }],
+  "cassandra": [{
+    "name": "name",
+    "allowRemoteDCsForLocalConsistencyLevel": false,
+    "localDc": "datacenter1",
+    "usedHostsPerRemoteDc": 0,
+    "hosts": "hosts",
+    "replicationStrategy": "SimpleStrategy",
+    "replicationFactor": 1,
+    "user": "user",
+    "password": "password"
+  }],
+  "s3": [],
+  "hadoop": []
+}
+```
+
+Sets of *named* credentials for each backend.
+ 
+#### Datasets JSON description
+
+```json
+[  
+   {  
+      "name":"test",
+      "ingestType":{  
+         "format":"geotiff",
+         "inputCredentials":"inputCredentials name",
+         "output":"hadoop",
+         "outputCredentials":"outputCredentials name",
+         "input":"hadoop"
+      },
+      "path":{  
+         "input":"input",
+         "output":"output"
+      },
+      "cache":"NONE",
+      "ingestOptions":{  
+         "breaks":"0:ffffe5ff;0.1:f7fcb9ff;0.2:d9f0a3ff;0.3:addd8eff;0.4:78c679ff;0.5:41ab5dff;0.6:238443ff;0.7:006837ff;1:004529ff",
+         "reprojectMethod":"buffered",
+         "cellSize":{  
+            "width":256.0,
+            "height":256.0
+         },
+         "encoding":"geotiff",
+         "tileSize":256,
+         "layoutExtent":{  
+            "xmin":1.0,
+            "ymin":2.0,
+            "xmax":3.0,
+            "ymax":4.0
+         },
+         "resolutionThreshold":0.1,
+         "pyramid":true,
+         "resampleMethod":"nearest-neighbor",
+         "keyIndexMethod":{  
+            "type":"zorder"
+         },
+         "layoutScheme":"tms",
+         "cellType":"int8",
+         "crs":"+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs "
+      }
+   }
+]
+```
+
+A set of jobs to ingest, below you can find fields description.
+
+Key           | Value
+--------------|----------------
+name          | Dataset name
+ingestType    | Ingest io settings
 cache         | Spark RDD storage level to be used for caching (default: MEMORY_AND_DISK_SER)
-layerName     | Layer name to provide as result of the input
-crs           | Desired CRS for input layer. May trigger raster reprojection. (ex: EPSG:3857")
-tileSize      | Pixel height and width of each tile in the input layer
-layoutScheme  | Scheme to be used to determine raster resolution and extent (ex: tms, floating)
-layoutExtent  | Explicit alternative to use of `layoutScheme` (format: xmin,ymin,xmax,ymax)
-reproject     | Reproject method to use during tiling (ex: buffered or per-tile)
-cellSize      | Width and Height of each pixel (format: width,height)
-cellType      | Value of type of the target raster (ex: bool, int8, int32, int64, float32, float64)
-output        | Name of output module to use (ex: s3, hadoop, accumulo)
-outputProps   | List of `key=value` pairs that will be passed to the output module as configuration
-pyramid       | Pyramid the layer on save starting from current zoom level to zoom level 1
+ingestOptions | Ingest Options (find description below)
 
-#### Supported Inputs
+##### IngestType JSON description
 
-Input     | Options
-----------|----------------
-hadoop    | path (local path / hdfs)
-s3        | bucket, key, partitionCount, partitionBytes
+Key              | Value
+------------------|----------------
+format            | Format of the tile files to be read (ex: geotiff)
+inputCredentials  | Input Credentials name, from a named set of credentials for your input backend
+outputCredentials | Output Credentials name, from a named set of credentials for your output backend
+input             | Input backend type (hadoop / s3)
+output            | Output backend type (accumulo / cassandra / hadoop / s3)
 
-#### Supported Outputs
-
-Output    | Options
-----------|----------------
-hadoop    | path
-accumulo  | instance, zookeeper, user, password, table, strategy={hdfs|socket}, ingestPath
-s3        | bucket, key
-render    | path, encoding=(`geotiff` or `png`), breaks='{limit}:{RGBA};{limit}:{RGBA};...'
-
-#### Supported Formats
+###### Supported Formats
 
 Format           | Options
 -----------------|----------------
 geotiff          | spatial ingest
 temporal-geotiff | temporal ingest
 
-#### Supported Layout Schemes
+##### Path JSON description
+
+Key    | Value
+-------|----------------
+input  | input path (local path / hdfs), or s3:// url
+output | output path (local path / hdfs), s3:// url, accumulo table name or cassandra table name with keyspace (keyspace.tablename)
+
+###### Supported Inputs
+
+Input     | Options
+----------|----------------
+hadoop    | path (local path / hdfs)
+s3        | s3:// url
+
+###### Supported Outputs
+
+Output    | Options
+----------|----------------
+hadoop    | path
+accumulo  | table name
+cassandra | table name with keysapce (keyspace.tablename)
+s3        | s3:// url
+render    | path
+
+##### IngestOptions JSON description
+
+Key                 | Value
+--------------------|----------------
+breaks              | breaks string for `render` output (optional field)
+partitions          | partitions number during pyramid build
+reprojectMethod     | buffered | per-tile
+cellSize            | sell size 
+encoding            | png | geotiff for `render` output
+tileSize            | tile size (optional field)
+layoutExtent        | layout extent (optional field)
+resolutionThreshold | resolution for user defined Layout Scheme (optional field)
+pyramid             | true | false - ingest with / with out building pyramid 
+resampleMethod      | nearest-neighbor | bilinear | cubic-convolution | cubic-spline | lanczos
+keyIndexMethod      | key index method (zorder | row-major | hilbert)
+layoutScheme        | tms | floating (optional field) (optional field)
+cellType            | int8 | int16 | etc... (optional field)
+crs                 | destination crs name (example: EPSG:3857) (optional field)
+
+###### Supported Layout Schemes
 
 Layout Scheme    | Options
 -----------------|----------------
 tms              | zoomed layout scheme
 floating         | floating layout scheme in a native projection
+
+###### KeyIndexMethod JSON description
+
+Key                | Options
+-------------------|----------------
+type               | zorder | row-major | hilbert
+temporalResolution | temporal resolution for temporal indexing (optional field)
+timeTag            | time tag name for input geotiff tiles (optional field)
+timeFormat         | time format to parse time stored in time tag geotiff tag (optional field)
 
 ##### Accumulo Output
 
@@ -217,7 +336,14 @@ The `path` module argument is actually a path template, that allows the followin
   - `{name}` layer name
 
 A sample render output configuration template could be:
- `--output render -O encodering=png path=s3://tms-bucket/layers/{name}/{z}-{x}-{y}.png`.
+ ```json
+   "path": { output": "s3://tms-bucket/layers/{name}/{z}-{x}-{y}.png },
+   "ingestType":{  
+     "format":"geotiff",     
+     "output":"render",     
+     "input":"hadoop"
+   }
+ ```
 
 ## Extension
 

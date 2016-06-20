@@ -10,6 +10,6 @@ import geotrellis.spark.io.index.KeyIndexMethod
 import org.apache.spark.SparkContext
 
 class SpaceTimeCassandraOutput extends CassandraOutput[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]] {
-  def writer(method: KeyIndexMethod[SpaceTimeKey], job: EtlJob)(implicit sc: SparkContext) =
-    CassandraLayerWriter(getInstance(job.outputCredentials), job.outputProps("keyspace"), job.outputProps("table")).writer[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](method)
+  def writer(job: EtlJob)(implicit sc: SparkContext) =
+    CassandraLayerWriter(getInstance(job.outputCredentials), job.outputProps("keyspace"), job.outputProps("table")).writer[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](job.config.ingestOptions.getKeyIndexMethod[SpaceTimeKey])
 }

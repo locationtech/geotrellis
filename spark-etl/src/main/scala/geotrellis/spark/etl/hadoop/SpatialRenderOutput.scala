@@ -45,7 +45,6 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetada
   override def apply(
     id: LayerId,
     rdd: RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]],
-    method: KeyIndexMethod[SpatialKey],
     job: EtlJob
   ): Unit = {
     val useS3 = job.outputProps("path").take(5) == "s3://"
@@ -79,5 +78,5 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetada
     }
   }
 
-  def writer(method: KeyIndexMethod[SpatialKey], job: EtlJob)(implicit sc: SparkContext) = ???
+  def writer(job: EtlJob)(implicit sc: SparkContext) = ???
 }

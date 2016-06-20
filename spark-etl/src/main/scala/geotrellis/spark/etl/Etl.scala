@@ -154,6 +154,7 @@ case class Etl(@transient etlJob: EtlJob, @transient modules: Seq[TypedModule] =
     *
     * @param id     Layout ID to b
     * @param rdd Tiled raster RDD with TileLayerMetadata
+    * @param method Index Method that maps an instance of K to a Long
     * @tparam K  Key type with SpatialComponent corresponding LayoutDefinition
     * @tparam V  Tile raster with cells from single tile in LayoutDefinition
     */
@@ -172,12 +173,12 @@ case class Etl(@transient etlJob: EtlJob, @transient modules: Seq[TypedModule] =
 
     def savePyramid(zoom: Int, rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): Unit = {
       val currentId = id.copy(zoom = zoom)
-      outputPlugin(currentId, rdd, conf.ingestOptions.getKeyIndexMethod[K], etlJob)
+      outputPlugin(currentId, rdd, etlJob)
 
       scheme match {
         case Left(s) =>
           if (ingestOptions.pyramid && zoom >= 1) {
-            val (nextLevel, nextRdd) = Pyramid.up(rdd, s, zoom)
+            val (nextLevel, nextRdd) = Pyramid.up(rdd, s, zoom, etlJob.config.ingestOptions.getPyramidOptions)
             savePyramid(nextLevel, nextRdd)
           }
         case Right(_) =>

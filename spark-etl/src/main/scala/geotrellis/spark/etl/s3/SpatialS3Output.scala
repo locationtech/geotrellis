@@ -10,6 +10,6 @@ import geotrellis.spark.io.s3.S3LayerWriter
 import org.apache.spark.SparkContext
 
 class SpatialS3Output extends S3Output[SpatialKey, Tile, TileLayerMetadata[SpatialKey]] {
-  def writer(method: KeyIndexMethod[SpatialKey], job: EtlJob)(implicit sc: SparkContext) =
-    S3LayerWriter(job.outputProps("bucket"), job.outputProps("key")).writer[SpatialKey, Tile, TileLayerMetadata[SpatialKey]](method)
+  def writer(job: EtlJob)(implicit sc: SparkContext) =
+    S3LayerWriter(job.outputProps("bucket"), job.outputProps("key")).writer[SpatialKey, Tile, TileLayerMetadata[SpatialKey]](job.config.ingestOptions.getKeyIndexMethod[SpatialKey])
 }

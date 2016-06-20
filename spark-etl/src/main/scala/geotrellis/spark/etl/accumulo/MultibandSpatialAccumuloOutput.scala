@@ -10,6 +10,6 @@ import geotrellis.spark.io.index.KeyIndexMethod
 import org.apache.spark.SparkContext
 
 class MultibandSpatialAccumuloOutput extends AccumuloOutput[SpatialKey, MultibandTile, TileLayerMetadata[SpatialKey]] {
-  def writer(method: KeyIndexMethod[SpatialKey], job: EtlJob)(implicit sc: SparkContext) =
-    AccumuloLayerWriter(getInstance(job.outputCredentials), job.outputProps("table"), strategy(job.outputProps)).writer[SpatialKey, MultibandTile, TileLayerMetadata[SpatialKey]](method)
+  def writer(job: EtlJob)(implicit sc: SparkContext) =
+    AccumuloLayerWriter(getInstance(job.outputCredentials), job.outputProps("table"), strategy(job.outputProps)).writer[SpatialKey, MultibandTile, TileLayerMetadata[SpatialKey]](job.config.ingestOptions.getKeyIndexMethod[SpatialKey])
 }
