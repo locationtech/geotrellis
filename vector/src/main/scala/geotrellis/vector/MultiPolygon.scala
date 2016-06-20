@@ -47,7 +47,6 @@ object MultiPolygon {
 
 /** Class representing a geometry of multiple polygons */
 case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
-                                                   with Relatable
                                                    with TwoDimensions {
 
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */
