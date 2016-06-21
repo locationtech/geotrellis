@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package geotrellis.raster
+package geotrellis.raster.density
 
+import geotrellis.raster._
 import geotrellis.raster.mapalgebra.focal.Kernel
-
 
 /**
   * Supplies functionality to operations that do convolution.
@@ -31,10 +31,26 @@ trait KernelStamper {
   def stampKernel(col: Int, row: Int, z: Int): Unit
 
   /**
+   * Given a (column, row) pair and a value, apply the kernel at the given point.
+   */
+  def stampKernel(tup: (Int, Int), z: Int): Unit = { 
+    val (col, row) = tup
+    stampKernel(col, row, z)
+  }
+
+  /**
     * Given a column, row, and value, apply the kernel at the given
     * point.
     */
   def stampKernelDouble(col: Int, row: Int, z: Double): Unit
+
+  /**
+   * Given a (column, row) pair and a value, apply the kernel at the given point.
+   */
+  def stampKernelDouble(tup: (Int, Int), z: Double): Unit = { 
+    val (col, row) = tup
+    stampKernelDouble(col, row, z)
+  }
 
   def result: Tile
 }
@@ -44,20 +60,24 @@ trait KernelStamper {
   */
 object KernelStamper {
   def apply(cellType: CellType, cols: Int, rows: Int, k: Kernel): KernelStamper =
-    if(k.cellType.isFloatingPoint) DoubleKernelStamper(cellType, cols, rows, k)
-    else IntKernelStamper(cellType, cols, rows, k)
+    apply(ArrayTile.empty(cellType, cols, rows), k)
+
+  def apply(tile: MutableArrayTile, k: Kernel): KernelStamper =
+    if(k.cellType.isFloatingPoint) DoubleKernelStamper(tile, k)
+    else IntKernelStamper(tile, k)
 }
 
 /**
   * A [[KernelStamper]] for double-valued tiles.
   */
-case class DoubleKernelStamper(cellType: CellType, cols: Int, rows: Int, k: Kernel) extends KernelStamper {
+case class DoubleKernelStamper(tile: MutableArrayTile, k: Kernel) extends KernelStamper {
 
   val ktile = k.tile
   val kernelcols = ktile.cols
   val kernelrows = ktile.rows
 
-  val tile: MutableArrayTile = ArrayTile.empty(cellType, cols, rows)
+  val cellType = tile.cellType
+  val (cols, rows) = tile.dimensions
 
   /**
     * Given a column, row, and value, apply the kernel at the given
@@ -173,13 +193,14 @@ case class DoubleKernelStamper(cellType: CellType, cols: Int, rows: Int, k: Kern
 /**
   * A [[KernelStamper]] for integer-valued tiles.
   */
-case class IntKernelStamper(cellType: CellType, cols: Int, rows: Int, k: Kernel) extends KernelStamper {
+case class IntKernelStamper(tile: MutableArrayTile, k: Kernel) extends KernelStamper {
 
   val ktile = k.tile
   val kernelcols = ktile.cols
   val kernelrows = ktile.rows
 
-  val tile: MutableArrayTile = ArrayTile.empty(cellType, cols, rows)
+  val cellType = tile.cellType
+  val (cols, rows) = tile.dimensions
 
   /**
     * Given a column, row, and value, apply the kernel at the given

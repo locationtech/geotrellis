@@ -25,6 +25,7 @@ import geotrellis.util.MethodExtensions
 package object raster
     extends crop.Implicits
     with distance.Implicits
+    with density.Implicits
     with geotrellis.raster.mapalgebra.focal.hillshade.Implicits
     with mask.Implicits
     with merge.Implicits
