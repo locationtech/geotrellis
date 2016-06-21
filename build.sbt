@@ -65,6 +65,7 @@ lazy val root = Project("geotrellis", file(".")).
     sparkEtl,
     s3,
     accumulo,
+    cassandra,
     slick
   ).
   settings(commonSettings: _*).
@@ -90,8 +91,13 @@ lazy val vector = Project("vector", file("vector")).
 lazy val vectorTest = Project("vector-test", file("vector-test")).
   dependsOn(vector, vectorTestkit)
 
-lazy val proj4 = Project("proj4", file("proj4")).
+lazy val vectorTestkit = Project("vector-testkit", file("vector-testkit")).
+  dependsOn(raster, vector).
   settings(commonSettings: _*)
+
+lazy val proj4 = Project("proj4", file("proj4")).
+  settings(commonSettings: _*).
+  settings(javacOptions ++= Seq("-encoding", "UTF-8"))
 
 lazy val raster = Project("raster", file("raster")).
   dependsOn(util, macros, vector).
@@ -101,19 +107,7 @@ lazy val rasterTest = Project("raster-test", file("raster-test")).
   dependsOn(raster, rasterTestkit, vectorTestkit).
   settings(commonSettings: _*)
 
-lazy val engine = Project("engine", file("engine")).
-  dependsOn(raster).
-  settings(commonSettings: _*)
-
-lazy val engineTest = Project("engine-test", file("engine-test")).
-  dependsOn(engine, rasterTestkit).
-  settings(commonSettings: _*)
-
 lazy val rasterTestkit = Project("raster-testkit", file("raster-testkit")).
-  dependsOn(raster, vector).
-  settings(commonSettings: _*)
-
-lazy val vectorTestkit = Project("vector-testkit", file("vector-testkit")).
   dependsOn(raster, vector).
   settings(commonSettings: _*)
 
@@ -137,14 +131,21 @@ lazy val accumulo = Project("accumulo", file("accumulo")).
   dependsOn(sparkTestkit % "test->test", spark % "provided;test->test").
   settings(commonSettings: _*)
 
+lazy val cassandra = Project("cassandra", file("cassandra")).
+  dependsOn(sparkTestkit % "test->test", spark % "provided;test->test").
+  settings(commonSettings: _*)
+
 lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).
-  dependsOn(spark, s3, accumulo).
+  dependsOn(spark, s3, accumulo, cassandra).
+  settings(commonSettings: _*)
+
+lazy val geotools = Project("geotools", file("geotools")).
+  dependsOn(raster, vector, proj4, vectorTestkit % "test->test", rasterTest % "test->test").
   settings(commonSettings: _*)
 
 lazy val shapefile = Project("shapefile", file("shapefile")).
-  dependsOn(raster, engine, rasterTestkit % "test").
+  dependsOn(raster, rasterTestkit % "test").
   settings(commonSettings: _*)
 
 lazy val util = Project("util", file("util")).
   settings(commonSettings: _*)
-

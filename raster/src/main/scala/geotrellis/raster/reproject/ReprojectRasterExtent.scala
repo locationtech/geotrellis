@@ -21,14 +21,14 @@ object ReprojectRasterExtent {
    * the edges of the input file (approximately 20 sample points along each
    * edge) transforming into output coordinates in order to get an extents box.
    */
-  def reprojectExtent(gd: GridDefinition, transform: Transform): Extent = {
-    val extent = gd.extent
-    val (cols, rows) = (extent.width / gd.cellwidth, extent.height / gd.cellheight)
+  def reprojectExtent(ge: GridExtent, transform: Transform): Extent = {
+    val extent = ge.extent
+    val (cols, rows) = (extent.width / ge.cellwidth, extent.height / ge.cellheight)
     val PIXEL_STEP = math.min(50.0, math.min(cols, rows)).toInt
 
     // Find the threshold to densify the extent at.
-    val xThreshold = (cols / PIXEL_STEP) * gd.cellwidth
-    val yThreshold = (rows / PIXEL_STEP) * gd.cellheight
+    val xThreshold = (cols / PIXEL_STEP) * ge.cellwidth
+    val yThreshold = (rows / PIXEL_STEP) * ge.cellheight
     val threshold = math.min(xThreshold, yThreshold)
 
     // Densify the extent to get a more accurate reprojection
@@ -99,7 +99,7 @@ object ReprojectRasterExtent {
    * of the input data in the output file.
    */
   def apply(re: RasterExtent, transform: Transform, options: Reproject.Options): RasterExtent =
-    apply(re.toGridExtent, transform, options).toRasterExtent
+    apply(re: GridExtent, transform, options).toRasterExtent
 
   def apply(re: RasterExtent, transform: Transform): RasterExtent =
     apply(re, transform, Options.DEFAULT)

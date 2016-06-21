@@ -12,7 +12,7 @@ class S3SpatialSpec
   extends PersistenceSpec[SpatialKey, Tile, TileLayerMetadata[SpatialKey]]
     with SpatialKeyIndexMethods
     with TestEnvironment with TestFiles
-    with AllOnesTestTileTests {
+    with AllOnesTestTileSpec {
 
   lazy val bucket = "mock-bucket"
   lazy val prefix = "catalog"

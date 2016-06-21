@@ -108,10 +108,13 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[geotrellis.raster.DoubleRawArrayTile])
     kryo.register(classOf[geotrellis.raster.DoubleConstantNoDataArrayTile])
     kryo.register(classOf[geotrellis.raster.DoubleUserDefinedNoDataArrayTile])
+
+    kryo.register(classOf[Array[geotrellis.raster.Tile]])
+    kryo.register(classOf[Array[geotrellis.raster.TileFeature[_,_]]])
     kryo.register(classOf[geotrellis.raster.Tile])
+    kryo.register(classOf[geotrellis.raster.TileFeature[_,_]])
 
     kryo.register(classOf[geotrellis.raster.ArrayMultibandTile])
-    kryo.register(classOf[Array[geotrellis.raster.Tile]])
     kryo.register(classOf[geotrellis.raster.CompositeTile])
     kryo.register(classOf[geotrellis.raster.ConstantTile])
     kryo.register(classOf[geotrellis.raster.CroppedTile])

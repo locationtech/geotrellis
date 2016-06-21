@@ -16,8 +16,8 @@ class S3SpaceTimeSpec
     with SpaceTimeKeyIndexMethods
     with TestEnvironment
     with TestFiles
-    with CoordinateSpaceTimeTests
-    with LayerUpdateSpaceTimeTileTests
+    with CoordinateSpaceTimeSpec
+    with LayerUpdateSpaceTimeTileSpec
     with BeforeAndAfterAll {
 
   registerAfterAll { () =>

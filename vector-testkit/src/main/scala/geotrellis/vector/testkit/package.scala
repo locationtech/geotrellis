@@ -66,6 +66,16 @@ package object testkit {
       )
   }
 
+  case class ExtentMatcher(extent: Extent, tolerance: Double) extends Matcher[Extent] {
+    def doMatch(left: Extent): Boolean = GeometryMatcher.matchPolygon(left.toPolygon, extent.toPolygon, tolerance)
+
+    def apply(left: Extent) =
+      MatchResult(
+        doMatch(left),
+        s"""$left did not match $extent within tolerance $tolerance """,
+        s"""$left matched $extent within tolerance $tolerance"""
+      )
+  }
 
   def matchGeom(g: Point): GeometryMatcher[Point] = matchGeom(g, 0.0)
   def matchGeom(g: Point, tolerance: Double): GeometryMatcher[Point] = GeometryMatcher(g, tolerance, GeometryMatcher.matchPoint)
@@ -87,4 +97,8 @@ package object testkit {
 
   def matchGeom(g: GeometryCollection): GeometryMatcher[GeometryCollection] = matchGeom(g, 0.0)
   def matchGeom(g: GeometryCollection, tolerance: Double): GeometryMatcher[GeometryCollection] = GeometryMatcher(g, tolerance, GeometryMatcher.matchGeometryCollection)
+
+  def matchGeom(g: Extent): ExtentMatcher = matchGeom(g, 0.0)
+  def matchGeom(g: Extent, tolerance: Double): ExtentMatcher = ExtentMatcher(g, tolerance)
+
 }

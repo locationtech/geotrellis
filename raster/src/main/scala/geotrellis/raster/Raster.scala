@@ -14,14 +14,14 @@ object Raster {
     Raster(feature.data, feature.geom.envelope)
 
   /**
-    * Implicit conversion from a [[Tile]], [[Extent]] pair to a
+    * Implicit conversion from a [[Tile]], Extent pair to a
     * [[Raster]].
     */
   implicit def tupToRaster(tup: (Tile, Extent)): Raster[Tile] =
     Raster(tup._1, tup._2)
 
   /**
-    * Implicit conversion from an [[Extent]], [[Tile]] pair to a
+    * Implicit conversion from an Extent, [[Tile]] pair to a
     * [[Raster]].
     */
   implicit def tupSwapToRaster(tup: (Extent, Tile)): Raster[Tile] =
@@ -34,13 +34,13 @@ object Raster {
     r.tile
 
   /**
-    * Implicit conversion from a [[Raster]] to a [[PolygonFeature]].
+    * Implicit conversion from a [[Raster]] to a PolygonFeature.
     */
   implicit def rasterToFeature[T <: CellGrid](r: Raster[T]): PolygonFeature[T] =
     r.asFeature
 
   /**
-    * Implicit conversion from a [[PolygonFeature]] to a [[Raster]].
+    * Implicit conversion from a PolygonFeature to a [[Raster]].
     */
   implicit def featureToRaster[T <: CellGrid](feature: PolygonFeature[T]): Raster[T] =
      apply(feature)
@@ -49,7 +49,7 @@ object Raster {
 /**
   * The [[Raster]] type.
   */
-case class Raster[+T <: CellGrid](tile: T, extent: Extent) extends Product2[T, Extent] {
+case class Raster[+T <: CellGrid](tile: T, extent: Extent) extends Product2[T, Extent] with CellGrid {
 
   /**
     * Return the [[RasterExtent]] that is correspondent to this
@@ -64,10 +64,10 @@ case class Raster[+T <: CellGrid](tile: T, extent: Extent) extends Product2[T, E
 
   def cols: Int = tile.cols
   def rows: Int = tile.rows
-  def dimensions: (Int, Int) = tile.dimensions
+  def cellType: CellType = tile.cellType
 
   /**
-    * Return the [[PolygonFeature]] associated with the extent of this
+    * Return the PolygonFeature associated with the extent of this
     * [[Raster]].
     */
   def asFeature(): PolygonFeature[T] = PolygonFeature(extent.toPolygon, tile: T)
