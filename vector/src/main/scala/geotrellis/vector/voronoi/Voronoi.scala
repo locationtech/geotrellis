@@ -73,6 +73,11 @@ class Voronoi(verts: Array[Point], extent: Extent) {
     }
   }
 
+  val TOP_EDGE = 0
+  val LEFT_EDGE = 1
+  val BOTTOM_EDGE = 2
+  val RIGHT_EDGE = 3
+
   private def rayExtentIntersection(base: V2, normal: V2): (Point,Int) = {
     def rli(a: V2, b: V2) = { rayLineIntersection(base, normal, a, b) }
     val ur = V2(extent.xmax,extent.ymax)
@@ -83,10 +88,10 @@ class Voronoi(verts: Array[Point], extent: Extent) {
 
     intersection match {
       case (None,None,None,None) => throw new java.lang.IllegalArgumentException(s"Point $base is outside of $extent in rayExtentIntersection()")
-      case (Some(x),_,_,_) => (x,0)
-      case (_,Some(x),_,_) => (x,1)
-      case (_,_,Some(x),_) => (x,2)
-      case (_,_,_,Some(x)) => (x,3)
+      case (Some(x),_,_,_) => (x, TOP_EDGE)
+      case (_,Some(x),_,_) => (x, LEFT_EDGE)
+      case (_,_,Some(x),_) => (x, BOTTOM_EDGE)
+      case (_,_,_,Some(x)) => (x, RIGHT_EDGE)
     }
   }
 
@@ -114,10 +119,10 @@ class Voronoi(verts: Array[Point], extent: Extent) {
         var i = edgeNum1
         while (i != edgeNum2) {
           i match {
-            case 0 => accum = Point(extent.xmin,extent.ymax) :: accum
-            case 1 => accum = Point(extent.xmin,extent.ymin) :: accum
-            case 2 => accum = Point(extent.xmax,extent.ymin) :: accum
-            case 3 => accum = Point(extent.xmax,extent.ymax) :: accum
+            case TOP_EDGE    => accum = Point(extent.xmin,extent.ymax) :: accum
+            case LEFT_EDGE   => accum = Point(extent.xmin,extent.ymin) :: accum
+            case BOTTOM_EDGE => accum = Point(extent.xmax,extent.ymin) :: accum
+            case RIGHT_EDGE  => accum = Point(extent.xmax,extent.ymax) :: accum
           }
           i = (i+1)%4
         }
