@@ -73,10 +73,10 @@ class Voronoi(verts: Array[Point], extent: Extent) {
     }
   }
 
-  val TOP_EDGE = 0
-  val LEFT_EDGE = 1
-  val BOTTOM_EDGE = 2
-  val RIGHT_EDGE = 3
+  private val TOP_EDGE = 0
+  private val LEFT_EDGE = 1
+  private val BOTTOM_EDGE = 2
+  private val RIGHT_EDGE = 3
 
   private def rayExtentIntersection(base: V2, normal: V2): (Point,Int) = {
     def rli(a: V2, b: V2) = { rayLineIntersection(base, normal, a, b) }
