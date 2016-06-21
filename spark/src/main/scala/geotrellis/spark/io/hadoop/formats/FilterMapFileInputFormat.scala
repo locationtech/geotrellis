@@ -14,7 +14,6 @@ import scala.reflect._
 
 object FilterMapFileInputFormat {
   // Define some key names for Hadoop configuration
-  val SPLITS_FILE_PATH = "splits_file_path"
   val FILTER_INFO_KEY = "geotrellis.spark.io.hadoop.filterinfo"
 
   type FilterDefinition = Array[(Long, Long)]
