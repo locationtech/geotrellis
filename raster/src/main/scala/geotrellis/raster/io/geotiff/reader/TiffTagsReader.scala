@@ -14,9 +14,11 @@ import java.nio.{ ByteBuffer, ByteOrder }
 
 
 object TiffTagsReader {
-  def read(path: String): TiffTags = read(
-    Filesystem.toMappedByteBuffer(path)
-  )
+  def read(path: String): TiffTags =
+    read(Filesystem.toMappedByteBuffer(path))
+  
+  def read(bytes: Array[Byte]): TiffTags =
+    read(ByteBuffer.wrap(bytes, 0, bytes.size))
 
   def read(byteBuffer: ByteBuffer): TiffTags = {
     // set byte ordering
