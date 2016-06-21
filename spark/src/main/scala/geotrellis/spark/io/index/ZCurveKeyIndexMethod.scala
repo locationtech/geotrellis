@@ -44,14 +44,14 @@ object ZCurveKeyIndexMethod extends ZCurveKeyIndexMethod {
     byMilliseconds(1000L * 60 * 60 * 24 * days)
 
   def byMonth(): KeyIndexMethod[SpaceTimeKey] =
-    byMilliseconds(1000L * 60 * 60 * 30)
+    byMilliseconds(1000L * 60 * 60 * 24 * 30)
 
   def byMonths(months: Int): KeyIndexMethod[SpaceTimeKey] =
-    byMilliseconds(1000L * 60 * 60 * 30 * months)
+    byMilliseconds(1000L * 60 * 60 * 24 * 30 * months)
 
   def byYear(): KeyIndexMethod[SpaceTimeKey] =
-    byMilliseconds(1000L * 60 * 60 * 365)
+    byMilliseconds(1000L * 60 * 60 * 24 * 365)
 
   def byYears(years: Int): KeyIndexMethod[SpaceTimeKey] =
-    byMilliseconds(1000L * 60 * 60 * 365 * years)
+    byMilliseconds(1000L * 60 * 60 * 24 * 365 * years)
 }

@@ -31,6 +31,8 @@ GeoTrellis.
   - [spark layer values](spark/spark-values.md)
   - [spark layer metadata](spark/spark-metadata.md) // planned
   - [spark input/output](spark/spark-io.md) // planned
+- [geotrellis.cassandra](cassandra/)
+  - [geotrellis.cassandra.test](cassandra/cassandra-test.md)
 - [geotrellis.spark-etl](spark-etl/spark-etl-intro.md)
   - [geotrellis.spark-etl.run-examples](spark-etl/spark-etl-run-examples.md)
 - [geotrellis.util](util/util-intro.md)

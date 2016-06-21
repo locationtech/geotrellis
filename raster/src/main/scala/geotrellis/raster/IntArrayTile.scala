@@ -175,7 +175,7 @@ final case class IntUserDefinedNoDataArrayTile(arr: Array[Int], val cols: Int, v
 }
 
 /**
-  * The companion object for the [[IntArray]] type.
+  * The companion object for the IntArray type.
   */
 object IntArrayTile {
 

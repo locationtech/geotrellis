@@ -11,7 +11,7 @@ class RasterCropMethods[T <: CellGrid: (? => CropMethods[T])](val self: Raster[T
   import Crop.Options
 
   /**
-    * Given an [[Extent]] and some cropping options, produce a cropped
+    * Given an Extent and some cropping options, produce a cropped
     * [[Raster]].
     */
   def crop(extent: Extent, options: Options): Raster[T] = {
@@ -23,7 +23,7 @@ class RasterCropMethods[T <: CellGrid: (? => CropMethods[T])](val self: Raster[T
   }
 
   /**
-    * Given an [[Extent]], produce a cropped [[Raster]].
+    * Given an Extent, produce a cropped [[Raster]].
     */
   def crop(extent: Extent): Raster[T] =
     crop(extent, Options.DEFAULT)

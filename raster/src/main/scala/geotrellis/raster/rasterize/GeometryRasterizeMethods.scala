@@ -23,16 +23,14 @@ import geotrellis.vector.Geometry
 
 
 /**
-  * Extension methods for invoking the rasterizer on [[Geometry]]
-  * objects.
+  * Extension methods for invoking the rasterizer on Geometry objects.
   */
 trait GeometryRasterizeMethods extends MethodExtensions[Geometry] {
 
   /**
     * Call the function 'fn' on each cell of given [[RasterExtent]]
-    * that is covered by the present [[Geometry]].  The precise
-    * definition of the word "covered" is determined by the options
-    * parameter.
+    * that is covered by the present Geometry.  The precise definition
+    * of the word "covered" is determined by the options parameter.
     */
   def foreach(
     re : RasterExtent,
@@ -42,9 +40,9 @@ trait GeometryRasterizeMethods extends MethodExtensions[Geometry] {
 
   /**
     * Call the function 'fn' on each cell of given [[RasterExtent]]
-    * that is covered by the present [[Geometry]].  The precise
-    * definition of the word "covered" is determined by the options
-    * parameter.  The result is a [[Raster]].
+    * that is covered by the present Geometry.  The precise definition
+    * of the word "covered" is determined by the options parameter.
+    * The result is a [[Raster]].
     */
   def rasterize(
     re : RasterExtent,
@@ -59,8 +57,7 @@ trait GeometryRasterizeMethods extends MethodExtensions[Geometry] {
   }
   /**
     * Fill in 'value' at each cell of given [[RasterExtent]] that is
-    * covered by the present [[Geometry]].  The result is a
-    * [[Raster]].
+    * covered by the present Geometry.  The result is a [[Raster]].
     */
   def rasterizeWithValue(
     re: RasterExtent,
@@ -72,9 +69,9 @@ trait GeometryRasterizeMethods extends MethodExtensions[Geometry] {
 
   /**
     * Call the function 'fn' on each cell of given [[RasterExtent]]
-    * that is covered by the present [[Geometry]].  The precise
-    * definition of the word "covered" is determined by the options
-    * parameter.  The result is a [[Raster]].
+    * that is covered by the present Geometry.  The precise definition
+    * of the word "covered" is determined by the options parameter.
+    * The result is a [[Raster]].
     */
   def rasterizeDouble(
     re : RasterExtent,
@@ -90,8 +87,7 @@ trait GeometryRasterizeMethods extends MethodExtensions[Geometry] {
 
   /**
     * Fill in 'value' at each cell of given [[RasterExtent]] that is
-    * covered by the present [[Geometry]].  The result is a
-    * [[Raster]].
+    * covered by the present Geometry.  The result is a [[Raster]].
     */
   def rasterizeWithValueDouble(
     re: RasterExtent,

@@ -22,8 +22,8 @@ object ArrayMultibandTile {
     apply(bands.toArray)
 
   /**
-    * Create a new [[ArrayMultibandTile]] from a given [[Traversable]]
-    * of [[Tile]] objects.
+    * Create a new [[ArrayMultibandTile]] from a given Traversable of
+    * [[Tile]] objects.
     *
     * @param   bands  The Traversable collection of source Tile objects.
     * @return         An ArrayMultibandTile whose bands are given tiles.
@@ -353,7 +353,7 @@ class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMu
     val band1 = band(b0)
     val band2 = band(b1)
     val result = ArrayTile.empty(cellType, cols, rows)
-    val arr = Array.ofDim[Int](bandCount)
+
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
         result.set(col, row, f(band1.get(col, row), band2.get(col, row)))
@@ -409,7 +409,7 @@ class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMu
   /**
     * Produce a new [[ArrayMultibandTile]] whose bands are taken from
     * the source ArrayMultibandTile according to the bandSequence.
-    * For example, if the bandSequence is List(1,7), then the new
+    * For example, if the bandSequence is List(7,1), then the new
     * ArrayMultibandTile will have two bands, the eighth and second
     * from the source ArrayMultibandTile.
     *
@@ -427,5 +427,17 @@ class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMu
     })
 
     new ArrayMultibandTile(newBands)
+  }
+
+  override def equals(other: Any): Boolean = other match {
+    case that: ArrayMultibandTile =>
+      var result = (bandCount == that.bandCount)
+
+      cfor(0)(result && _ < bandCount, _ + 1) { i =>
+        if (band(i) != that.band(i)) result = false
+      }
+      result
+    case _ =>
+      false
   }
 }

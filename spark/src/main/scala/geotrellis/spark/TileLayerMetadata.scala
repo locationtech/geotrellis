@@ -32,14 +32,16 @@ case class TileLayerMetadata[K: SpatialComponent](
   /** GridBounds of data tiles in the layout */
   def gridBounds = mapTransform(extent)
 
-  def combine(other: TileLayerMetadata[K]): TileLayerMetadata[K] = {
+  def combine(other: TileLayerMetadata[K])(implicit b: Boundable[K]): TileLayerMetadata[K] = {
     val combinedExtent       = extent combine other.extent
     val combinedLayoutExtent = layout.extent combine other.layout.extent
     val combinedTileLayout   = layout.tileLayout combine other.layout.tileLayout
+    val combinedBounds       = bounds combine other.bounds
 
     this
       .copy(
         extent = combinedExtent,
+        bounds = combinedBounds,
         layout = this.layout
           .copy(
             extent     = combinedLayoutExtent,
@@ -79,7 +81,7 @@ object TileLayerMetadata {
   implicit def boundsComponent[K: SpatialComponent]: Component[TileLayerMetadata[K], Bounds[K]] =
     Component(_.bounds, (md, b) => md.updateBounds(b))
 
-  implicit def mergable[K]: merge.Mergable[TileLayerMetadata[K]] =
+  implicit def mergable[K: Boundable]: merge.Mergable[TileLayerMetadata[K]] =
     new merge.Mergable[TileLayerMetadata[K]] {
       def merge(t1: TileLayerMetadata[K], t2: TileLayerMetadata[K]): TileLayerMetadata[K] =
         t1.combine(t2)
@@ -138,7 +140,8 @@ object TileLayerMetadata {
   }
 
   /**
-    * Compose Extents from given raster tiles and fit it on given [[TileLayout]]
+    * Compose Extents from given raster tiles and fit it on given
+    * TileLayout.
     */
   def fromRdd[
     K: (? => TilerKeyMethods[K, K2]),
@@ -151,8 +154,9 @@ object TileLayerMetadata {
   }
 
   /**
-   * Compose Extents from given raster tiles and use [[LayoutScheme]] to create the [[LayoutDefinition]].
-   */
+    * Compose Extents from given raster tiles and use LayoutScheme to
+    * create the LayoutDefinition.
+    */
   def fromRdd[
     K: (? => TilerKeyMethods[K, K2]) ,
     V <: CellGrid,

@@ -13,8 +13,8 @@ class FileSpaceTimeSpec
     with SpaceTimeKeyIndexMethods
     with TestEnvironment
     with TestFiles
-//    with CoordinateSpaceTimeTests
-    with LayerUpdateSpaceTimeTileTests {
+    with CoordinateSpaceTimeSpec
+    with LayerUpdateSpaceTimeTileSpec {
   lazy val reader = FileLayerReader(outputLocalPath)
   lazy val writer = FileLayerWriter(outputLocalPath)
   lazy val deleter = FileLayerDeleter(outputLocalPath)

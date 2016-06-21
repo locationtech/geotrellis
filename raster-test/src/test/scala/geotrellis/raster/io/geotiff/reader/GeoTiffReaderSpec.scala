@@ -469,6 +469,10 @@ class GeoTiffReaderSpec extends FunSpec
       assertEqual(geoTiff.toArrayTile, geoTiff2)
     }
 
+    it("should read NODATA string with length = 4") {
+      val geoTiff = SinglebandGeoTiff.compressed(s"$baseDataPath/sbn/SBN_inc_percap-nodata-clip.tif")
+      geoTiff.tile.cellType should be (ByteConstantNoDataCellType)
+    }
   }
 
   describe("Reading and writing special metadata tags ") {
@@ -518,6 +522,12 @@ class PackBitsGeoTiffReaderSpec extends FunSpec
     with GeoTiffTestUtils {
 
   describe("Reading geotiffs with PACKBITS compression") {
+    it("must read a single band bit raster as a multiband") {
+      val singlebandGeoTiff = SinglebandGeoTiff(geoTiffPath("deflate/striped/bit.tif"))
+      val multibandGeoTiff = MultibandGeoTiff(geoTiffPath("deflate/striped/bit.tif"))
+      assertEqual(multibandGeoTiff.tile.band(0), singlebandGeoTiff.tile)
+    }
+
     it("must read econic_packbits.tif and match uncompressed file") {
       val actual = SinglebandGeoTiff.compressed(geoTiffPath("econic_packbits.tif")).tile
       val expected = SinglebandGeoTiff.compressed(s"$baseDataPath/econic.tif").tile

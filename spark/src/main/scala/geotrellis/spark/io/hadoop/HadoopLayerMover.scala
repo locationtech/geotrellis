@@ -36,7 +36,9 @@ class HadoopLayerMover(
     } catch {
       case e: AttributeNotFoundError => throw new LayerMoveError(from, to).initCause(e)
     }
-    val newPath = new Path(rootPath,  s"${to.name}/${to.zoom}")
+    val (newLayerRoot, newPath) = new Path(rootPath,  s"${to.name}") -> new Path(rootPath,  s"${to.name}/${to.zoom}")
+    // new layer name root has to be created before layerId renaming
+    HdfsUtils.ensurePathExists(newLayerRoot, sc.hadoopConfiguration)
     HdfsUtils.renamePath(header.path, newPath, sc.hadoopConfiguration)
     attributeStore.writeLayerAttributes(
       to, header.copy(path = newPath), metadata, keyIndex, writerSchema
