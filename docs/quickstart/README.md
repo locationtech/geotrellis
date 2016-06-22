@@ -17,37 +17,37 @@ In addition to Raster data, Geotrellis also allows the construction of geometric
 Kernel Density
 --------------
 
-This first example will demonstrate how to build a raster from point data using kernel density estimation.  In this process, at every point in a sample, the contents of a small Tile containing a predefined pattern (this is the kernel) are added to the grid cells surrounding the point in question (i.e., the kernel is centered on the tile cell containing the point and then added to the Tile).  If the kernel is Gaussian, this can develop a smooth approximation to the density function that the points were sampled from, assuming that the points were sampled according to a density function.  (Alternatively, each point can be given a weight, and the kernel values can be scaled by that weight before being applied to the tile, which we will do below.)
+This first example will demonstrate how to build a raster from point data using kernel density estimation.  In this process, at every point in a sample, the contents of what is effectively a small Tile (called a Kernel) containing a predefined pattern are added to the grid cells surrounding the point in question (i.e., the kernel is centered on the tile cell containing the point and then added to the Tile).  If the kernel is Gaussian, this can develop a smooth approximation to the density function that the points were sampled from, assuming that the points were sampled according to a density function.  (Alternatively, each point can be given a weight, and the kernel values can be scaled by that weight before being applied to the tile, which we will do below.)
 
 To begin, let's generate a random collection of points with weights in the range (0,100).
 
 ```scala
     import scala.util._
 
-    val extent = Extent.fromString("-109,37,-102,41") // Extent of Colorado
+    val extent = Extent.fromString("-109, 37, -102, 41") // Extent of Colorado
 
-    def randomPointFeature(extent: Extent) : PointFeature[Double] = {
-      def randInRange (low : Double, high : Double) : Double = {
+    def randomPointFeature(extent: Extent): PointFeature[Double] = {
+      def randInRange (low: Double, high: Double): Double = {
         val x = Random.nextDouble
         low * (1-x) + high * x
       }
-      PointFeature(Point(randInRange(extent.xmin,extent.xmax),
-                         randInRange(extent.ymin,extent.ymax)), 
+      PointFeature(Point(randInRange(extent.xmin, extent.xmax),
+                         randInRange(extent.ymin, extent.ymax)), 
                    Random.nextInt % 50 + 50)
     }
 
     val pts = (for (i <- 1 to 1000) yield randomPointFeature(extent)).toList
 ```
 
-The choice of extent is largely arbitrary in this example, but note that the coordinates here are taken with respect to the standard (longitude, latitude) that we normally consider.  Other coordinate representations are available, and it might be useful to investigate coordinate reference systems if you want more details.  Some operations in Geotrellis require that a CRS object be constructed to place your rasters in the proper context.  For long/lat coordinates, `CRS.fromName("EPSG:4326")` will generate the desired CRS.
+The choice of extent is largely arbitrary in this example, but note that the coordinates here are taken with respect to the standard (longitude, latitude) that we normally consider.  Other coordinate representations are available, and it might be useful to investigate coordinate reference systems if you want more details.  Some operations in Geotrellis require that a CRS object be constructed to place your rasters in the proper context.  For (longitude, latitude) coordinates, either `CRS.fromName("EPSG:4326")` or `LatLng` will generate the desired CRS.
 
 Next, we will create a tile containing the kernel density estimate:
 ```scala
     import geotrellis.raster.mapalgebra.focal.Kernel
-    
-    val kern = Kernel.gaussian(9,1.5,64) // Gaussian kernel of width 9, std. deviation 1.5, amplitude 64
-    val trans = (_.toFloat.round.toInt) : Double => Int
-    val kde = VectorToRaster.kernelDensity (pts,trans,kern,RasterExtent(extent,700,400))
+
+    val kernelWidth = 9
+    val kern = Kernel.gaussian(kernelWidth, 1.5, 64) // Gaussian kernel of width 9, std. deviation 1.5, amplitude 64
+    val kde = pts.kernelDensity (kern, RasterExtent(extent, 700, 400))
 ```
 
 This populates a 700x400 tile with the desired kernel density estimate.  In order to view the resulting file, a simple method is to write the tile out to PNG or TIFF.  The advantage of the latter is that it will be tagged with the extents and CRS, and the resulting image file can be overlayed on a map in a viewing program such as QGIS.
@@ -59,12 +59,12 @@ This populates a 700x400 tile with the desired kernel density estimate.  In orde
     kde.renderPng().write("test.png")
 
     // TIF output
-    GeoTiff(kde,extent,CRS.fromName("EPSG:4326")).write("test.tif")
+    GeoTiff(kde, extent, CRS.fromName("EPSG:4326")).write("test.tif")
 ```
 
 ### Subdividing Tiles ###
 
-The above example focuses on a toy problem that creates a small raster object. However, the purpose of Geotrellis is to enable the processing of large-scale datasets.  In order to work with large rasters, it will be necessary to subdivide a region into a grid of tiles so that the processing of each piece may be handled by a different processor, which may reside on a remote machine in a cluster, for example.  This section explains some of the concepts involved in subdividing a raster into a set of tiles.
+The above example focuses on a toy problem that creates a small raster object. However, the purpose of Geotrellis is to enable the processing of large-scale datasets.  In order to work with large rasters, it will be necessary to subdivide a region into a grid of tiles so that the processing of each piece may be handled by different processors which may, for example, reside on remote machines in a cluster.  This section explains some of the concepts involved in subdividing a raster into a set of tiles.
 
 We will still use an `Extent` object to set the bounds of our raster patch in space, but we must now specify how that extent is broken up into a grid of `Tile`s.  This requires a statement of the form
 ```scala
@@ -72,10 +72,10 @@ We will still use an `Extent` object to set the bounds of our raster patch in sp
 ```
 Here, we have specified a 7x4 grid of Tiles, each of which has 100x100 cells. This will eventually be used to divide the earlier monolithic 700x400 Tile (`kde`) into 28 uniformly-sized subtiles.  The TileLayout is then combined with the extent in a `LayoutDefinition` object:
 ```scala
-    val ld = LayoutDefinition(extent,tl)
+    val ld = LayoutDefinition(extent, tl)
 ```
 
-In preparation for reimplementing the previous kernel density estimation with this structure, we note that each point in `pts` lies at the center of a kernel, which covers some non-zero area around the points.  We can think of each point/kernel pair as a small square extent centered at the point in question with a side length of 9 pixels.  Each pixel, however, covers some non-zero area of the map, which we can also think of as an extent with side lengths given in map coordinates.  The dimensions of a pixel's extent are given by the `cellwidth` and `cellheight` members of a LayoutDefinition object.
+In preparation for reimplementing the previous kernel density estimation with this structure, we note that each point in `pts` lies at the center of a kernel, which covers some non-zero area around the points.  We can think of each point/kernel pair as a small square extent centered at the point in question with a side length of 9 pixels (the arbitrary width we chose for our kernel earlier).  Each pixel, however, covers some non-zero area of the map, which we can also think of as an extent with side lengths given in map coordinates.  The dimensions of a pixel's extent are given by the `cellwidth` and `cellheight` members of a LayoutDefinition object.
 
 By incorporating all these ideas, we can create the following function to generate the extent of the kernel centered at a given point:
 ```scala
@@ -83,12 +83,12 @@ By incorporating all these ideas, we can create the following function to genera
 
     def pointFeatureToExtent[D](krnwdth: Double, ld: LayoutDefinition, ptf: PointFeature[D]) : Extent = {
       val p = ptf.geom
-      Extent(p.x - krnwdth * ld.cellwidth / 2,
-             p.y - krnwdth * ld.cellheight / 2,
-             p.x + krnwdth * ld.cellwidth / 2,
-             p.y + krnwdth * ld.cellheight / 2)
+      Extent(p.x - kernelWidth * ld.cellwidth / 2,
+             p.y - kernelWidth * ld.cellheight / 2,
+             p.x + kernelWidth * ld.cellwidth / 2,
+             p.y + kernelWidth * ld.cellheight / 2)
     }
-    val ptfToExtent = { p: PointFeature[Double] => pointFeatureToExtent(9, ld, p ) }
+    val ptfToExtent = { p: PointFeature[Double] => pointFeatureToExtent(9, ld, p) }
 ```
 
 When we consider the kernel extent of a point in the context of a LayoutDefinition, it's clear that a kernel's extent may overlap more than one tile in the layout.  To discover the tiles that a given point's kernel extents overlap, LayoutDefinition provides the `mapTransform` member.  Among the methods of mapTransform is the ability to determine the indices of tiles in the TileLayout overlap a given extent.  Note that the tiles in a given layout are indexed by `SpatialKey`s, which are effectively `(Int,Int)` pairs giving the (column,row) of each tile as follows:
@@ -105,7 +105,7 @@ When we consider the kernel extent of a point in the context of a LayoutDefiniti
     | (0,3) | (1,3) | (2,3) | . . . | (6,3) |
     +-------+-------+-------+       +-------+
 ```
-Specifically, in our running example, `ld.mapTransform(ptfToExtent(Feature(Point(-108,38),100.0)))` returns `GridBounds(0,2,1,3),` indicating that every cell with columns in the range [0,1] and rows in the range [2,3] are intersected by the kernel centered on the point (-108,38)---that is, the 2x2 block of tiles at the lower left of the layout.
+Specifically, in our running example, `ld.mapTransform(ptfToExtent(Feature(Point(-108, 38), 100.0)))` returns `GridBounds(0, 2, 1, 3),` indicating that every cell with columns in the range [0,1] and rows in the range [2,3] are intersected by the kernel centered on the point (-108, 38)---that is, the 2x2 block of tiles at the lower left of the layout.
 
 In order to proceed with the kernel density estimation, it is necessary to then convert the list of points into a collection of `(SpatialKey,List[PointFeature[Double]])` that gathers all the points that have an effect on each subtile, as indexed by their SpatialKeys.  The following snippet accomplishes that.
 ```scala
@@ -149,6 +149,10 @@ Finally, it is necessary to combine the results.  Note that, in order to produce
 ```
 
 It is now the case that `stitched` is identical to `kde.`
+
+#### A note on implementation ####
+
+The procedures that we've been considering above have been implemented in GeoTrellis and are located in `raster/
 
 
 
