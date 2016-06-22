@@ -89,21 +89,28 @@ object GeowaveLayerWriter extends LazyLogging {
       val image = processor.doOperation(param, hints).asInstanceOf[GridCoverage2D]
 
       /* Objects for writing into GeoWave */
-      val basicOperations = new BasicAccumuloOperations(
-        zookeeper,
-        accumuloInstance,
-        accumuloUser,
-        accumuloPass,
-        geowaveNamespace
-      )
-      val dataStore = new AccumuloDataStore(basicOperations)
-      val index = (new SpatialDimensionalityTypeProvider.SpatialIndexBuilder).createIndex()
-      val adapter = new RasterDataAdapter(coverageName, gwMetadata, image, 256, true) // image only used for sample and color metadata, not data
-      val indexWriter = dataStore.createWriter(adapter, index).asInstanceOf[IndexWriter[GridCoverage]]
+      if (sources.size > 0) {
+        val basicOperations = new BasicAccumuloOperations(
+          zookeeper,
+          accumuloInstance,
+          accumuloUser,
+          accumuloPass,
+          geowaveNamespace
+        )
+        val dataStore = new AccumuloDataStore(basicOperations)
+        val index = (new SpatialDimensionalityTypeProvider.SpatialIndexBuilder).createIndex()
+        val adapter = new RasterDataAdapter(coverageName, gwMetadata, image, 256, true) // image only used for sample and color metadata, not data
+        val indexWriter = dataStore.createWriter(adapter, index).asInstanceOf[IndexWriter[GridCoverage]]
 
-      /* Write the mosaic into GeoWave */
-      indexWriter.write(image)
-      indexWriter.close
+        /* Write the mosaic into GeoWave */
+        indexWriter.write(image)
+        indexWriter.close
+
+        import org.geotools.gce.geotiff._
+        import org.opengis.parameter.GeneralParameterValue
+        val writer = new GeoTiffWriter(new java.io.File(s"/tmp/tif/writer-${System.currentTimeMillis}.tif"))
+        writer.write(image, Array.empty[GeneralParameterValue])
+      }
       retval
     }, preservesPartitioning = true).collect
   }
