@@ -19,7 +19,7 @@ class KNearestRDDSpec extends FunSpec
                      if i != j) yield PointFeature(Point(i.toFloat,j.toFloat),0)
 
       val ptrdd = sc.parallelize(pts,10)
-      val res = KNearestRDD.kNearest(ptrdd, (0.0,0.0), 18)(_.geom.envelope)
+      val res = ptrdd.kNearest((0.0,0.0), 18)(_.geom.envelope)
 
       val expected = List(        (-1, 2),(0, 2),(1, 2),
                           (-2, 1),(-1, 1),(0, 1),       (2, 1),
