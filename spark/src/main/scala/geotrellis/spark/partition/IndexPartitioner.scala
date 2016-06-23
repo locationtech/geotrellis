@@ -12,7 +12,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect._
 
 /**
-  * Uses [[KeyIndex]] to partition an RDD in memory, giving its records some spatial locality.
+  * Uses KeyIndex to partition an RDD in memory, giving its records some spatial locality.
   * When persisting an RDD partitioned by this partitioner we can safely assume that all records
   * contributing to the same SFC index will reside in one partition.
   */
