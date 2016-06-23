@@ -27,13 +27,15 @@ object HadoopRDDWriter extends LazyLogging {
     * chunks without foreknowledge of how bit it is.
     */
   class MultiMapWriter(layerPath: String, partition: Int, blockSize: Long) {
-    private var writer: MapFile.Writer = newWriter()
-    private var block = 0
-    private var blockBytesWritten = 0l
+    private var writer: MapFile.Writer = null // avoids creating a MapFile for empty partitions
+    private var block = -1
+    private var freshWriter = false
+    private var bytesRemaining = 0l
 
-    private def newWriter() = {
+    private def getWriter() = {
       val path = new Path(layerPath, f"part-r-${partition}%05d-${block}%05d")
-      blockBytesWritten = 0l
+      freshWriter = true
+      bytesRemaining = blockSize - 16*1024 // buffer by 16BK for SEQ file overhead
       val writer =
         new MapFile.Writer(
           new Configuration,
@@ -47,13 +49,16 @@ object HadoopRDDWriter extends LazyLogging {
 
     def write(key: LongWritable, value: BytesWritable): Unit = {
       val recordSize = 8 + value.getLength
-      if ((blockBytesWritten + recordSize) > blockSize && blockBytesWritten > 0l) {
+      if (writer == null) {
+        writer = getWriter()
+        block = 0
+      } else if (bytesRemaining - recordSize < 0 && !freshWriter) {
         writer.close()
         block += 1
-        writer = newWriter()
+        writer = getWriter()
       }
       writer.append(key, value)
-      blockBytesWritten += recordSize
+      bytesRemaining -= recordSize
     }
 
     def close(): Unit = writer.close()
