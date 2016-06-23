@@ -14,7 +14,7 @@ import org.apache.hadoop.io._
 import org.apache.hadoop.mapreduce.lib.output._
 import org.apache.hadoop.mapreduce.{Job, RecordWriter}
 import org.apache.hadoop.conf.Configuration
-import org.apache.spark.rdd.{RDD, ShuffledRDD}
+import org.apache.spark.rdd._
 import org.apache.spark.SparkContext
 
 import scala.reflect._
@@ -59,7 +59,7 @@ object HadoopRDDWriter extends LazyLogging {
     def close(): Unit = writer.close()
   }
 
-  def write[K: AvroRecordCodec, V: AvroRecordCodec](
+  def write[K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
     rdd: RDD[(K, V)],
     path: Path,
     keyIndex: KeyIndex[K]
@@ -72,10 +72,10 @@ object HadoopRDDWriter extends LazyLogging {
     val blockSize = fs.getDefaultBlockSize(path)
     val layerPath = path.toString
 
-    new ShuffledRDD(rdd, IndexPartitioner(keyIndex, rdd.partitions.length))
-      .setKeyOrdering(Ordering.by(keyIndex.toIndex))
-      .asInstanceOf[RDD[(K, V)]]
-      .mapPartitionsWithIndex { (pid, iter) =>
+    implicit val ord: Ordering[K] = Ordering.by(keyIndex.toIndex)
+    rdd
+      .repartitionAndSortWithinPartitions(IndexPartitioner(keyIndex, rdd.partitions.length))
+      .mapPartitionsWithIndex[Unit] { (pid, iter) =>
         var writer = new MultiMapWriter(layerPath, pid, blockSize)
 
         for ( (index, pairs) <- GroupConsecutiveIterator(iter)(r => keyIndex.toIndex(r._1))) {
