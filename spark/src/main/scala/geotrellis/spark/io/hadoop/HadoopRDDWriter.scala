@@ -61,7 +61,8 @@ object HadoopRDDWriter extends LazyLogging {
       bytesRemaining -= recordSize
     }
 
-    def close(): Unit = writer.close()
+    def close(): Unit =
+      if (null != writer) writer.close()
   }
 
   def write[K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
