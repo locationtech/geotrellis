@@ -39,49 +39,53 @@ class FilterMapFileInputFormat() extends FileInputFormat[LongWritable, BytesWrit
         compressedRanges
     }
 
+  /**
+    * Produce list of files that overlap our query region.
+    * This function will be called on the driver.
+    */
   override
   def listStatus(context: JobContext): java.util.List[FileStatus] = {
     val conf = context.getConfiguration
     val filterDefinition = getFilterDefinition(conf)
 
-    // Read the index, figure out if this file has any of the desired values.
-    def fileStatusFilter(fileStatus: FileStatus): Boolean = {
+    // finding the max index for each file would be very expensive.
+    // it may not be present in the index file and will require:
+    //   - reading the index file
+    //   - opening the map file
+    //   - seeking to data file to max stored index
+    //   - reading data file to the final records
+    // this is not the type of thing we can afford to do on the driver.
+    // instead we assume that each map file runs from its min index to min index of next file
+    def readStartingIndex(fileStatus: FileStatus): Long = {
       val indexPath = new Path(fileStatus.getPath.getParent, "index")
       val in = new SequenceFile.Reader(conf, SequenceFile.Reader.file(indexPath))
-
       val minKey = createKey
-      val maxKey = createKey
-
       try {
         in.next(minKey)
-        while(in.next(maxKey)) { }
       } finally {
         in.close()
       }
-
-      val iMin = minKey.get
-      val iMax = maxKey.get
-
-      var i = 0
-      val arr = filterDefinition
-      val len = arr.length
-
-
-      while(i < len) {
-        val (min, max) = arr(i)
-
-        // max index in this file is smaller than what we're looking for, abort (assert: ranges are sorted in asc)
-        if (iMax < min) return false
-
-        // check if this query ranges overlap at all with min/max index from the sequence file
-        if (iMin <= max && min <= iMax) return true
-        i += 1
-      }
-
-      false
+      minKey.get
     }
 
-    super.listStatus(context).filter(fileStatusFilter)
+    val arr = filterDefinition
+    val it = arr.iterator.buffered
+    super.listStatus(context)
+      .map { fileStatus => readStartingIndex(fileStatus) -> fileStatus }
+      .sortBy(_._1)
+      .foldRight(Vector.empty[(Long, Long, FileStatus)]) {
+        case ((minIndex, fs), vec @ Vector()) =>
+          (minIndex, Long.MaxValue, fs) +: vec
+        case ((minIndex, fs), vec) =>
+          (minIndex, vec.head._1 - 1, fs) +: vec
+      }
+      .filter { case (iMin, iMax, fileStatus) =>
+        // because both file ranges and query ranges are sorted we can intersect them with in-sync traversal
+        while (it.hasNext && it.head._2 < iMin) it.next
+        if (it.hasNext) iMin <= it.head._2 && it.head._1 <= iMax
+        else false
+      }
+      .map(_._3)
   }
 
   override

@@ -43,7 +43,7 @@ object HadoopRDDWriter extends LazyLogging {
           MapFile.Writer.keyClass(classOf[LongWritable]),
           MapFile.Writer.valueClass(classOf[BytesWritable]),
           MapFile.Writer.compression(SequenceFile.CompressionType.NONE))
-      writer.setIndexInterval(1)
+      writer.setIndexInterval(32)
       writer
     }
 
