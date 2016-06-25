@@ -24,7 +24,9 @@ class HadoopValueReader(val attributeStore: HadoopAttributeStore, maxOpenFiles: 
     (implicit sc: SparkContext) extends ValueReader[LayerId] {
 
   val conf = attributeStore.hadoopConfiguration
-  val readers = new LRUCache[(LayerId, Path), MapFile.Reader](maxOpenFiles.toLong, {x => 1l})
+  val readers = new LRUCache[(LayerId, Path), MapFile.Reader](maxOpenFiles.toLong, {x => 1l}) {
+    override def evicted(reader: MapFile.Reader) = reader.close()
+  }
 
   def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
     val header = attributeStore.readHeader[HadoopLayerHeader](layerId)
