@@ -37,15 +37,20 @@ object FilterMapFileInputFormat {
     // this is not the type of thing we can afford to do on the driver.
     // instead we assume that each map file runs from its min index to min index of next file
 
-    // TODO: Check if starting index is encoded in the file name
+    val fileNameRx = ".*part-r-([0-9]+)-([0-9]+)$".r
     def readStartingIndex(path: Path): Long = {
-      val indexPath = new Path(path, "index")
-      val in = new SequenceFile.Reader(conf, SequenceFile.Reader.file(indexPath))
-      val minKey = new LongWritable
-      try {
-        in.next(minKey)
-      } finally { in.close() }
-      minKey.get
+      path.toString match {
+        case fileNameRx(part, firstIndex) =>
+          firstIndex.toLong
+        case _ =>
+          val indexPath = new Path(path, "index")
+          val in = new SequenceFile.Reader(conf, SequenceFile.Reader.file(indexPath))
+          val minKey = new LongWritable
+          try {
+            in.next(minKey)
+          } finally { in.close() }
+          minKey.get
+      }
     }
 
     mapFiles

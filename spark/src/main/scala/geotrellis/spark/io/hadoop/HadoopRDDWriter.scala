@@ -31,7 +31,7 @@ object HadoopRDDWriter extends LazyLogging {
     private var bytesRemaining = 0l
 
     private def getWriter(firstIndex: Long) = {
-      val path = new Path(layerPath, f"part-r-${partition}%05d-${firstIndex}%05d")
+      val path = new Path(layerPath, f"part-r-${partition}%05d-${firstIndex}")
       bytesRemaining = blockSize - 16*1024 // buffer by 16BK for SEQ file overhead
       val writer =
         new MapFile.Writer(
