@@ -7,9 +7,10 @@ import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.hadoop.formats.FilterMapFileInputFormat
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.util.KryoWrapper
+import geotrellis.spark.util.cache._
 
 import org.apache.avro.Schema
-import org.apache.hadoop.fs.Path
+import org.apache.hadoop.fs._
 import org.apache.hadoop.io._
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
@@ -30,25 +31,25 @@ class HadoopValueReader(val attributeStore: HadoopAttributeStore)
     val writerSchema = attributeStore.readSchema(layerId)
     val codec = KeyValueRecordCodec[K, V]
     // Map from last key in each reader to that reader
-    val readers = {
-      val key = new LongWritable
-      (for (reader <- HadoopValueReader.partitionReaders(new Path(header.path,"part-*"), conf)) yield {
-        reader.finalKey(key)
-        key.get -> reader
-      })
-      .sortBy(_._1)
-      .toArray
-    }
+
+    val ranges: Vector[(Path, Long, Long)] =
+      FilterMapFileInputFormat.layerRanges(header.path, conf)
+    val readers = new LRUCache[Path, MapFile.Reader](16l, {x=>1l})
 
     def read(key: K): V = {
       val index: Long = keyIndex.toIndex(key)
       val valueWritable: BytesWritable =
-        readers
-          .find(_._1 >= index)
+        ranges
+          .find{ row =>
+          index >= row._2 && index <= row._3
+        }
+          .map { case (path, _, _) =>
+            readers.getOrInsert(path, new MapFile.Reader(path, conf))
+          }
           .getOrElse(throw new TileNotFoundError(key, layerId))
-          ._2
           .get(new LongWritable(index), new BytesWritable())
           .asInstanceOf[BytesWritable]
+
       if (valueWritable == null) throw new TileNotFoundError(key, layerId)
       AvroEncoder
         .fromBinary(writerSchema, valueWritable.getBytes)(codec)

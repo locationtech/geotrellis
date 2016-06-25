@@ -17,6 +17,47 @@ object FilterMapFileInputFormat {
   val FILTER_INFO_KEY = "geotrellis.spark.io.hadoop.filterinfo"
 
   type FilterDefinition = Array[(Long, Long)]
+
+  def layerRanges(layerPath: Path, conf: Configuration): Vector[(Path, Long, Long)] = {
+    val file = layerPath
+      .getFileSystem(conf)
+      .globStatus(new Path(layerPath, "*"))
+      .filter(_.isDirectory)
+      .map(_.getPath)
+    mapFileRanges(file, conf)
+  }
+
+  def mapFileRanges(mapFiles: Seq[Path], conf: Configuration): Vector[(Path, Long, Long)] = {
+    // finding the max index for each file would be very expensive.
+    // it may not be present in the index file and will require:
+    //   - reading the index file
+    //   - opening the map file
+    //   - seeking to data file to max stored index
+    //   - reading data file to the final records
+    // this is not the type of thing we can afford to do on the driver.
+    // instead we assume that each map file runs from its min index to min index of next file
+
+    // TODO: Check if starting index is encoded in the file name
+    def readStartingIndex(path: Path): Long = {
+      val indexPath = new Path(path, "index")
+      val in = new SequenceFile.Reader(conf, SequenceFile.Reader.file(indexPath))
+      val minKey = new LongWritable
+      try {
+        in.next(minKey)
+      } finally { in.close() }
+      minKey.get
+    }
+
+    mapFiles
+      .map { file => readStartingIndex(file) -> file }
+      .sortBy(_._1)
+      .foldRight(Vector.empty[(Path, Long, Long)]) {
+        case ((minIndex, fs), vec @ Vector()) =>
+          (fs, minIndex, Long.MaxValue) +: vec
+        case ((minIndex, fs), vec) =>
+          (fs, minIndex, vec.head._2 - 1) +: vec
+      }
+  }
 }
 
 class FilterMapFileInputFormat() extends FileInputFormat[LongWritable, BytesWritable] {
@@ -48,44 +89,24 @@ class FilterMapFileInputFormat() extends FileInputFormat[LongWritable, BytesWrit
     val conf = context.getConfiguration
     val filterDefinition = getFilterDefinition(conf)
 
-    // finding the max index for each file would be very expensive.
-    // it may not be present in the index file and will require:
-    //   - reading the index file
-    //   - opening the map file
-    //   - seeking to data file to max stored index
-    //   - reading data file to the final records
-    // this is not the type of thing we can afford to do on the driver.
-    // instead we assume that each map file runs from its min index to min index of next file
-    def readStartingIndex(fileStatus: FileStatus): Long = {
-      val indexPath = new Path(fileStatus.getPath.getParent, "index")
-      val in = new SequenceFile.Reader(conf, SequenceFile.Reader.file(indexPath))
-      val minKey = createKey
-      try {
-        in.next(minKey)
-      } finally {
-        in.close()
-      }
-      minKey.get
-    }
 
     val arr = filterDefinition
     val it = arr.iterator.buffered
-    super.listStatus(context)
-      .map { fileStatus => readStartingIndex(fileStatus) -> fileStatus }
-      .sortBy(_._1)
-      .foldRight(Vector.empty[(Long, Long, FileStatus)]) {
-        case ((minIndex, fs), vec @ Vector()) =>
-          (minIndex, Long.MaxValue, fs) +: vec
-        case ((minIndex, fs), vec) =>
-          (minIndex, vec.head._1 - 1, fs) +: vec
-      }
-      .filter { case (iMin, iMax, fileStatus) =>
-        // because both file ranges and query ranges are sorted we can intersect them with in-sync traversal
-        while (it.hasNext && it.head._2 < iMin) it.next
-        if (it.hasNext) iMin <= it.head._2 && it.head._1 <= iMax
-        else false
-      }
-      .map(_._3)
+    val dataFileStatus = super.listStatus(context)
+
+    val possibleMatches =
+      FilterMapFileInputFormat
+        .mapFileRanges(dataFileStatus.map(_.getPath.getParent), conf)
+        .filter { case (file, iMin, iMax) =>
+          // both file ranges and query ranges are sorted, use in-sync traversal
+          while (it.hasNext && it.head._2 < iMin) it.next
+          if (it.hasNext) iMin <= it.head._2 && it.head._1 <= iMax
+          else false
+        }
+        .map(_._1)
+        .toSet
+
+    dataFileStatus.filter(s => possibleMatches contains s.getPath.getParent)
   }
 
   override
