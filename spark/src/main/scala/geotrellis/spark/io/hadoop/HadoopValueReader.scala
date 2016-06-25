@@ -20,10 +20,11 @@ import spray.json.DefaultJsonProtocol._
 import scala.collection.immutable._
 import scala.reflect.ClassTag
 
-class HadoopValueReader(val attributeStore: HadoopAttributeStore)
+class HadoopValueReader(val attributeStore: HadoopAttributeStore, maxOpenFiles: Int = 16)
     (implicit sc: SparkContext) extends ValueReader[LayerId] {
 
   val conf = attributeStore.hadoopConfiguration
+  val readers = new LRUCache[(LayerId, Path), MapFile.Reader](maxOpenFiles.toLong, {x => 1l})
 
   def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
     val header = attributeStore.readHeader[HadoopLayerHeader](layerId)
@@ -34,17 +35,16 @@ class HadoopValueReader(val attributeStore: HadoopAttributeStore)
 
     val ranges: Vector[(Path, Long, Long)] =
       FilterMapFileInputFormat.layerRanges(header.path, conf)
-    val readers = new LRUCache[Path, MapFile.Reader](16l, {x=>1l})
 
     def read(key: K): V = {
       val index: Long = keyIndex.toIndex(key)
       val valueWritable: BytesWritable =
         ranges
           .find{ row =>
-          index >= row._2 && index <= row._3
-        }
+            index >= row._2 && index <= row._3
+          }
           .map { case (path, _, _) =>
-            readers.getOrInsert(path, new MapFile.Reader(path, conf))
+            readers.getOrInsert((layerId, path), new MapFile.Reader(path, conf))
           }
           .getOrElse(throw new TileNotFoundError(key, layerId))
           .get(new LongWritable(index), new BytesWritable())
