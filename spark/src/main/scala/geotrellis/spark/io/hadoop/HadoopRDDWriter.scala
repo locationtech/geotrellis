@@ -26,15 +26,12 @@ object HadoopRDDWriter extends LazyLogging {
     * opens a new file to continue writing. This allows to split partition into block-sized
     * chunks without foreknowledge of how bit it is.
     */
-  class MultiMapWriter(layerPath: String, partition: Int, blockSize: Long) {
+  class MultiMapWriter(layerPath: String, partition: Int, blockSize: Long, indexInterval: Int) {
     private var writer: MapFile.Writer = null // avoids creating a MapFile for empty partitions
-    private var block = -1
-    private var freshWriter = false
     private var bytesRemaining = 0l
 
-    private def getWriter() = {
-      val path = new Path(layerPath, f"part-r-${partition}%05d-${block}%05d")
-      freshWriter = true
+    private def getWriter(firstIndex: Long) = {
+      val path = new Path(layerPath, f"part-r-${partition}%05d-${firstIndex}%05d")
       bytesRemaining = blockSize - 16*1024 // buffer by 16BK for SEQ file overhead
       val writer =
         new MapFile.Writer(
@@ -43,19 +40,17 @@ object HadoopRDDWriter extends LazyLogging {
           MapFile.Writer.keyClass(classOf[LongWritable]),
           MapFile.Writer.valueClass(classOf[BytesWritable]),
           MapFile.Writer.compression(SequenceFile.CompressionType.NONE))
-      writer.setIndexInterval(16)
+      writer.setIndexInterval(indexInterval)
       writer
     }
 
     def write(key: LongWritable, value: BytesWritable): Unit = {
       val recordSize = 8 + value.getLength
       if (writer == null) {
-        writer = getWriter()
-        block = 0
-      } else if (bytesRemaining - recordSize < 0 && !freshWriter) {
+        writer = getWriter(key.get)
+      } else if (bytesRemaining - recordSize < 0) {
         writer.close()
-        block += 1
-        writer = getWriter()
+        writer = getWriter(key.get)
       }
       writer.append(key, value)
       bytesRemaining -= recordSize
@@ -68,7 +63,8 @@ object HadoopRDDWriter extends LazyLogging {
   def write[K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
     rdd: RDD[(K, V)],
     path: Path,
-    keyIndex: KeyIndex[K]
+    keyIndex: KeyIndex[K],
+    indexInterval: Int = 16
   ): Unit = {
     implicit val sc = rdd.sparkContext
     val fs = path.getFileSystem(sc.hadoopConfiguration)
@@ -82,8 +78,7 @@ object HadoopRDDWriter extends LazyLogging {
     rdd
       .repartitionAndSortWithinPartitions(IndexPartitioner(keyIndex, rdd.partitions.length))
       .mapPartitionsWithIndex[Unit] { (pid, iter) =>
-        var writer = new MultiMapWriter(layerPath, pid, blockSize)
-
+        var writer = new MultiMapWriter(layerPath, pid, blockSize, indexInterval)
         for ( (index, pairs) <- GroupConsecutiveIterator(iter)(r => keyIndex.toIndex(r._1))) {
           writer.write(
             new LongWritable(index),
