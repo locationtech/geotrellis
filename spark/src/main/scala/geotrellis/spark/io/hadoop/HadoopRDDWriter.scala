@@ -64,7 +64,7 @@ object HadoopRDDWriter extends LazyLogging {
     rdd: RDD[(K, V)],
     path: Path,
     keyIndex: KeyIndex[K],
-    indexInterval: Int = 16
+    indexInterval: Int = 4
   ): Unit = {
     implicit val sc = rdd.sparkContext
     val fs = path.getFileSystem(sc.hadoopConfiguration)
