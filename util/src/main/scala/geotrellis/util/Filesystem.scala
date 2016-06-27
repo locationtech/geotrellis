@@ -32,17 +32,11 @@ object Filesystem {
     * @return       An array of bytes containing the file contents
     */
   def slurp(path: String, bs: Int = (1<<18)): Array[Byte] = {
-    val f = new File(path)
-    val fis = new FileInputStream(f)
-    val size = f.length.toInt
-    val channel = fis.getChannel
-    val buffer = channel.map(READ_ONLY, 0, size)
-    channel.close()
-    fis.close()
+    val buffer = toMappedByteBuffer(path)
 
     // read 256KiB (2^18 bytes) at a time out of the buffer into our array
     var i = 0
-    val data = Array.ofDim[Byte](size)
+    val data = Array.ofDim[Byte](buffer.capacity)
     while(buffer.hasRemaining()) {
       val n = math.min(buffer.remaining(), bs)
       buffer.get(data, i, n)
