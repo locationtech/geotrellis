@@ -32,17 +32,11 @@ object Filesystem {
     * @return       An array of bytes containing the file contents
     */
   def slurp(path: String, bs: Int = (1<<18)): Array[Byte] = {
-    val f = new File(path)
-    val fis = new FileInputStream(f)
-    val size = f.length.toInt
-    val channel = fis.getChannel
-    val buffer = channel.map(READ_ONLY, 0, size)
-    channel.close()
-    fis.close()
+    val buffer = toMappedByteBuffer(path)
 
     // read 256KiB (2^18 bytes) at a time out of the buffer into our array
     var i = 0
-    val data = Array.ofDim[Byte](size)
+    val data = Array.ofDim[Byte](buffer.capacity)
     while(buffer.hasRemaining()) {
       val n = math.min(buffer.remaining(), bs)
       buffer.get(data, i, n)
@@ -50,6 +44,27 @@ object Filesystem {
     }
 
     data
+  }
+
+  /**
+    * Make a contiguous chunk of a file available in the given array.
+    *
+    * @param path       The path to the file which is to be (partially) mapped into memory
+    * @param data       An array to contain the portion of the file in question
+    * @param startIndex The offset into the file where the contiguous region begins
+    * @param size       The size of the contiguous region
+    */
+  def mapToByteArray(path: String, data: Array[Byte], startIndex: Int, size: Int): Unit = {
+    val f = new File(path)
+    val fis = new FileInputStream(f)
+    val buffer =
+      try {
+        val channel = fis.getChannel
+        channel.map(READ_ONLY, startIndex, size)
+      } finally {
+        fis.close
+      }
+    buffer.get(data, startIndex, size)
   }
 
   /**
