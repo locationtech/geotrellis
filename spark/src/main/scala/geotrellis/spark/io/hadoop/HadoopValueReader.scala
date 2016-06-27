@@ -81,12 +81,4 @@ object HadoopValueReader {
 
   def apply(rootPath: Path, conf: Configuration): HadoopValueReader =
     apply(HadoopAttributeStore(rootPath, conf))
-
-  /** Return index from last key index to map file reader for each partition in a layer */
-  def partitionReaders(layerPath: Path, conf: Configuration): Array[MapFile.Reader] =
-    layerPath
-      .getFileSystem(conf)
-      .globStatus(layerPath)
-      .filter(_.isDirectory)
-      .map( status => new MapFile.Reader(status.getPath, conf))
 }
