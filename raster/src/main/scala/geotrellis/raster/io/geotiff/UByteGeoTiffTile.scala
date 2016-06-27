@@ -5,7 +5,7 @@ import geotrellis.raster.io.geotiff.compression._
 import spire.syntax.cfor._
 
 class UByteGeoTiffTile(
-  val compressedBytes: Array[Array[Byte]],
+  val segmentBytes: SegmentBytes,
   val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
@@ -46,6 +46,47 @@ class UByteGeoTiffTile(
         }
       }
     }
+    UByteArrayTile.fromBytes(arr, cols, rows, cellType)
+  }
+
+  def mutable(windowedGeoTiff: WindowedGeoTiff): MutableArrayTile = {
+    val intersectingSegments = windowedGeoTiff.intersectingSegments
+    val sortedSegments = intersectingSegments.toArray.sorted
+    val arr = Array.ofDim[Byte](cols * rows)
+    var i = 0
+    for (segmentIndex <- sortedSegments) {
+      val segment = getSegment(segmentIndex)
+      val size = segment.bytes.size
+      System.arraycopy(segment.bytes, 0, arr, i, size)
+      i += size
+    }
+
+    /*
+    if (segmentLayout.isStriped) {
+      var i = 0
+      for (segmentIndex <- sortedSegments) {
+        val segment = getSegment(segmentIndex)
+        val size = segment.bytes.size
+        System.arraycopy(segment.bytes, 0, arr, i, size)
+        i += size
+      }
+    } else {
+      for (segmentIndex <- sortedSegments) {
+        val segment = getSegment(segmentIndex)
+
+        val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
+        val width = segmentTransform.segmentCols
+        val tileWidth = segmentLayout.tileLayout.tileCols
+
+        cfor(0)(_ < tileWidth * segmentTransform.segmentRows, _ + tileWidth) { i =>
+          val col = segmentTransform.indexToCol(i)
+          val row = segmentTransform.indexToRow(i)
+          val j = (row * cols) + col
+          System.arraycopy(segment.bytes, i, arr, j, width)
+        }
+      }
+    }
+    */
     UByteArrayTile.fromBytes(arr, cols, rows, cellType)
   }
 }

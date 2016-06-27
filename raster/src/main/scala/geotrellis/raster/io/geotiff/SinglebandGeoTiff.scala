@@ -42,8 +42,8 @@ object SinglebandGeoTiff {
   /** Read a single-band GeoTIFF file from a byte array.
     * If decompress = true, the GeoTIFF will be fully decompressed and held in memory.
     */
-  def apply(bytes: Array[Byte], decompress: Boolean): SinglebandGeoTiff =
-    GeoTiffReader.readSingleband(bytes, decompress)
+  def apply(bytes: Array[Byte], decompress: Boolean, extent: Option[Extent], streaming: Boolean): SinglebandGeoTiff =
+    GeoTiffReader.readSingleband(bytes, decompress, extent, streaming)
 
   /** Read a single-band GeoTIFF file from the file at the given path.
     * The GeoTIFF will be fully decompressed and held in memory.
@@ -54,20 +54,32 @@ object SinglebandGeoTiff {
   /** Read a single-band GeoTIFF file from the file at the given path.
     * If decompress = true, the GeoTIFF will be fully decompressed and held in memory.
     */
-  def apply(path: String, decompress: Boolean): SinglebandGeoTiff =
-    GeoTiffReader.readSingleband(path, decompress)
+  def apply(path: String, decompress: Boolean, extent: Option[Extent], streaming: Boolean): SinglebandGeoTiff =
+    GeoTiffReader.readSingleband(path, decompress, extent, streaming)
 
   /** Read a single-band GeoTIFF file from the file at a given path.
     * The tile data will remain tiled/striped and compressed in the TIFF format.
     */
   def compressed(path: String): SinglebandGeoTiff =
-    GeoTiffReader.readSingleband(path, false)
+    GeoTiffReader.readSingleband(path, false, None, false)
 
   /** Read a single-band GeoTIFF file from a byte array.
     * The tile data will remain tiled/striped and compressed in the TIFF format.
     */
   def compressed(bytes: Array[Byte]): SinglebandGeoTiff =
-    GeoTiffReader.readSingleband(bytes, false)
+    GeoTiffReader.readSingleband(bytes, false, None, false)
+
+  /** Read a windowed, singleband GeoTiff file from a given path.
+   *  The file will be decompressed and read from [[BufferSegmentBytes]]
+   */
+  def windowed(path: String, extent: Extent): SinglebandGeoTiff =
+    GeoTiffReader.readSingleband(path, true, Some(extent), true)
+  
+  /** Read a windowed, singleband GeoTiff file from an Array[Byte].
+   *  The file will be decompressed and read from [[BufferSegmentBytes]]
+   */
+  def windowed(bytes: Array[Byte], extent: Extent): SinglebandGeoTiff =
+    GeoTiffReader.readSingleband(bytes, true, Some(extent), true)
 
   implicit def singlebandGeoTiffToTile(sbg: SinglebandGeoTiff): Tile =
     sbg.tile

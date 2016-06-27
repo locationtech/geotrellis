@@ -5,7 +5,7 @@ import geotrellis.raster.io.geotiff.compression._
 import spire.syntax.cfor._
 
 class BitGeoTiffTile(
-  val compressedBytes: Array[Array[Byte]],
+  val segmentBytes: SegmentBytes,
   val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
@@ -37,7 +37,32 @@ class BitGeoTiffTile(
         }
       }
     }
+   result
+  }
 
+  def mutable(windowedGeoTiff: WindowedGeoTiff): MutableArrayTile = {
+    val intersectingSegments = windowedGeoTiff.intersectingSegments
+    val result = BitArrayTile.empty(cols, rows)
+
+    val layoutCols = segmentLayout.tileLayout.layoutCols
+    val tileCols = segmentLayout.tileLayout.tileCols
+
+    val layoutRows = segmentLayout.tileLayout.layoutRows
+    val tileRows = segmentLayout.tileLayout.tileRows
+
+    cfor(0)(_ < layoutCols, _ + 1) { layoutCol =>
+      val colStart = layoutCol * tileCols
+      val colEnd = (colStart + tileCols).min(cols)
+      cfor(0)(_ < layoutRows, _ + 1) { layoutRow =>
+        val rowStart = layoutRow * tileRows
+        val rowEnd = (rowStart + tileRows).min(rows)
+        cfor(colStart)(_ < colEnd, _ + 1) { col =>
+          cfor(rowStart)(_ < rowEnd, _ + 1) { row =>
+            result.set(col, row, get(col, row))
+          }
+        }
+      }
+    }
    result
   }
 }
