@@ -53,27 +53,6 @@ object Filesystem {
   }
 
   /**
-    * Make a contiguous chunk of a file available in the given array.
-    *
-    * @param path       The path to the file which is to be (partially) mapped into memory
-    * @param data       An array to contain the portion of the file in question
-    * @param startIndex The offset into the file where the contiguous region begins
-    * @param size       The size of the contiguous region
-    */
-  def mapToByteArray(path: String, data: Array[Byte], startIndex: Int, size: Int): Unit = {
-    val f = new File(path)
-    val fis = new FileInputStream(f)
-    val buffer =
-      try {
-        val channel = fis.getChannel
-        channel.map(READ_ONLY, startIndex, size)
-      } finally {
-        fis.close
-      }
-    buffer.get(data, startIndex, size)
-  }
-
-  /**
     * Return the path string with the final extension removed.
     *
     * @param   path The path whose extension is to be removed (if it has one)
