@@ -20,10 +20,12 @@ import spray.json.DefaultJsonProtocol._
 import scala.collection.immutable._
 import scala.reflect.ClassTag
 
-class HadoopValueReader(val attributeStore: HadoopAttributeStore, maxOpenFiles: Int = 16)
-    (implicit sc: SparkContext) extends ValueReader[LayerId] {
+class HadoopValueReader(
+  val attributeStore: AttributeStore,
+  conf: Configuration,
+  maxOpenFiles: Int = 16
+) extends ValueReader[LayerId] {
 
-  val conf = attributeStore.hadoopConfiguration
   val readers = new LRUCache[(LayerId, Path), MapFile.Reader](maxOpenFiles.toLong, {x => 1l}) {
     override def evicted(reader: MapFile.Reader) = reader.close()
   }
@@ -65,18 +67,20 @@ class HadoopValueReader(val attributeStore: HadoopAttributeStore, maxOpenFiles: 
 
 object HadoopValueReader {
   def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
-    attributeStore: HadoopAttributeStore,
+    attributeStore: AttributeStore,
     layerId: LayerId
   )(implicit sc: SparkContext): Reader[K, V] =
-    new HadoopValueReader(attributeStore).reader[K, V](layerId)
+    new HadoopValueReader(attributeStore, sc.hadoopConfiguration).reader[K, V](layerId)
 
-  def apply(attributeStore: HadoopAttributeStore)
-    (implicit sc: SparkContext): HadoopValueReader =
-    new HadoopValueReader(attributeStore)
+  def apply(attributeStore: HadoopAttributeStore): HadoopValueReader =
+    new HadoopValueReader(attributeStore, attributeStore.hadoopConfiguration)
 
   def apply(rootPath: Path)
     (implicit sc: SparkContext): HadoopValueReader =
     apply(HadoopAttributeStore(rootPath))
+
+  def apply(rootPath: Path, conf: Configuration): HadoopValueReader =
+    apply(HadoopAttributeStore(rootPath, conf))
 
   /** Return index from last key index to map file reader for each partition in a layer */
   def partitionReaders(layerPath: Path, conf: Configuration): Array[MapFile.Reader] =
