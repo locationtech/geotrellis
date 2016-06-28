@@ -1,8 +1,8 @@
 import Dependencies._
 
-name := "geotrellis-vector-tile"
+name := "geotrellis-vectortile"
 
 libraryDependencies ++= Seq(
   scalatest % "test",
-  "net.sandrogrzicic" %% "scalabuff-runtime" % "1.4.0"
-  )
+  "com.trueaccord.scalapb" %% "scalapb-runtime" % "0.5.32"
+)
