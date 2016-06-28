@@ -1,5 +1,6 @@
 #!/bin/bash
 
+./sbt -J-Xmx2G "project vectortile" clean || { exit 1; }
 ./sbt -J-Xmx2G "project proj4" clean || { exit 1; }
 ./sbt -J-Xmx2G "project vector-test" clean || { exit 1; }
 ./sbt -J-Xmx2G "project raster-test" clean || { exit 1; }
@@ -11,6 +12,7 @@
 ./sbt -J-Xmx2G "project shapefile" clean || { exit 1; }
 ./sbt -J-Xmx2G "project util" clean || { exit 1; }
 
+rm -r vectortile/target
 rm -r proj4/target
 rm -r macros/target
 rm -r vector/target

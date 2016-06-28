@@ -2,6 +2,7 @@
 
 ./sbt "project macros" publish \
       "project vector" publish \
+      "project vectortile" publish \
       "project proj4" publish \
       "project raster" publish \
       "project geotools" publish \
