@@ -35,16 +35,16 @@ object ZSpaceTimeKeyIndex {
     byMilliseconds(keyBounds, 1000L * 60 * 60 * 24 * days)
 
   def byMonth(keyBounds: KeyBounds[SpaceTimeKey]): ZSpaceTimeKeyIndex =
-    byMilliseconds(keyBounds, 1000L * 60 * 60 * 30)
+    byMilliseconds(keyBounds, 1000L * 60 * 60 * 24 * 30)
 
   def byMonths(keyBounds: KeyBounds[SpaceTimeKey], months: Int): ZSpaceTimeKeyIndex =
-    byMilliseconds(keyBounds, 1000L * 60 * 60 * 30 * months)
+    byMilliseconds(keyBounds, 1000L * 60 * 60 * 24 * 30 * months)
 
   def byYear(keyBounds: KeyBounds[SpaceTimeKey]): ZSpaceTimeKeyIndex =
-    byMilliseconds(keyBounds, 1000L * 60 * 60 * 365)
+    byMilliseconds(keyBounds, 1000L * 60 * 60 * 24 * 365)
 
   def byYears(keyBounds: KeyBounds[SpaceTimeKey], years: Int): ZSpaceTimeKeyIndex =
-    byMilliseconds(keyBounds, 1000L * 60 * 60 * 365 * years)
+    byMilliseconds(keyBounds, 1000L * 60 * 60 * 24 * 365 * years)
 }
 
 class ZSpaceTimeKeyIndex(val keyBounds: KeyBounds[SpaceTimeKey], val temporalResolution: Long) extends KeyIndex[SpaceTimeKey] {

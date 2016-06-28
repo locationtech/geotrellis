@@ -1,6 +1,5 @@
 package geotrellis.spark.io.accumulo
 
-import geotrellis.raster.{MultibandTile, Tile}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
@@ -8,7 +7,6 @@ import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
 import geotrellis.util._
 
-import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json._
 

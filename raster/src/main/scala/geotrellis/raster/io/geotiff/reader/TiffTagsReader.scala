@@ -14,14 +14,13 @@ import java.nio.{ ByteBuffer, ByteOrder }
 
 
 object TiffTagsReader {
-  def read(path: String): TiffTags = read(Filesystem.slurp(path))
+  def read(path: String): TiffTags =
+    read(Filesystem.toMappedByteBuffer(path))
+  
+  def read(bytes: Array[Byte]): TiffTags =
+    read(ByteBuffer.wrap(bytes, 0, bytes.size))
 
-  def read(bytes: Array[Byte]): TiffTags = {
-    val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
-
-    // Set byteBuffer position
-    byteBuffer.position(0)
-
+  def read(byteBuffer: ByteBuffer): TiffTags = {
     // set byte ordering
     (byteBuffer.get.toChar, byteBuffer.get.toChar) match {
       case ('I', 'I') => byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
@@ -206,7 +205,8 @@ object TiffTagsReader {
       tagMetadata: TiffTagMetadata): TiffTags = {
 
       // Read string, but don't read in trailing 0
-      val string = byteBuffer.getString(tagMetadata.length - 1, tagMetadata.offset)
+      val string =
+        byteBuffer.getString(tagMetadata.length, tagMetadata.offset).substring(0, tagMetadata.length - 1)
 
       tagMetadata.tag match {
         case DateTimeTag => tiffTags &|->

@@ -28,7 +28,7 @@ trait MultibandTileMergeMethods extends TileMergeMethods[MultibandTile] {
   }
 
   /**
-    * Merge this [[MultiBandTile]] with the other one.  All places in
+    * Merge this [[MultibandTile]] with the other one.  All places in
     * the present tile that contain NODATA and are in the intersection
     * of the two given extents are filled-in with data from the other
     * tile.  A new MutlibandTile is returned.

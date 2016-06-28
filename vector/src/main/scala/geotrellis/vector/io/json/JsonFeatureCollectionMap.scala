@@ -25,17 +25,30 @@ import DefaultJsonProtocol._
 class JsonFeatureCollectionMap(features: List[JsValue] = Nil) {
   private val buffer = mutable.ListBuffer(features:_*)
 
-  /** Add a (String, [[JsValue]]) to the buffer, pending an ultimate call of toJson */
+  /**
+    * Add a (String, JsValue) to the buffer, pending an ultimate call
+    * of toJson.
+    */
   def add[G <: Geometry, D: JsonWriter](featureMap: (String, Feature[G, D])) =
     buffer += writeFeatureJsonWithID(featureMap)
-  /** Add a (String, [[JsValue]]) to the buffer, pending an ultimate call of toJson */
+
+  /**
+    * Add a (String, JsValue) to the buffer, pending an ultimate call
+    * of toJson.
+    */
   def +=[G <: Geometry, D: JsonWriter](featureMap: (String, Feature[G, D])) = add(featureMap)
 
-  /** Add a Seq of (String, [[JsValue]]) to the buffer, pending an ultimate call of toJson */
+  /**
+    * Add a Seq of (String, JsValue) to the buffer, pending an
+    * ultimate call of toJson.
+    */
   def addAll[G <: Geometry, D: JsonWriter](featureMaps: Seq[(String, Feature[G, D])]) =
     featureMaps.foreach{ f => buffer += writeFeatureJsonWithID(f) }
 
-  /** Add a Seq of (String, [[JsValue]]) to the buffer, pending an ultimate call of toJson */
+  /**
+    * Add a Seq of (String, JsValue) to the buffer, pending an
+    * ultimate call of toJson.
+    */
   def ++=[G <: Geometry, D: JsonWriter](featureMaps: Seq[(String, Feature[G, D])]) = addAll(featureMaps)
 
   def toJson: JsValue =

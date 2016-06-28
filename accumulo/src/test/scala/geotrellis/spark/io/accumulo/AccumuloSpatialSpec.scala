@@ -12,7 +12,7 @@ class AccumuloSpatialSpec
     with TestEnvironment
     with AccumuloTestEnvironment
     with TestFiles
-    with AllOnesTestTileTests {
+    with AllOnesTestTileSpec {
 
   implicit lazy val instance = MockAccumuloInstance()
 

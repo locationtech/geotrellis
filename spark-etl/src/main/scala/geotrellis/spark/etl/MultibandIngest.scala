@@ -10,7 +10,7 @@ import org.apache.spark.SparkConf
 
 object MultibandIngest {
   def main(args: Array[String]): Unit = {
-    implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL SinglebandIngest", new SparkConf(true))
+    implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL MultibandIngest", new SparkConf(true))
     try {
       Etl.ingest[ProjectedExtent, SpatialKey, MultibandTile](args, ZCurveKeyIndexMethod)
     } finally {

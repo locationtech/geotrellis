@@ -18,7 +18,8 @@ package geotrellis
 
 import geotrellis.vector._
 
-/** Implicit conversion for [[geotrellis.vector.Geometry]] instances
+/**
+  * Implicit conversion for geotrellis.vector.Geometry instances.
   *
   * @example {{{
   * import geotrellis.vector._

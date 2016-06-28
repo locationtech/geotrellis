@@ -16,18 +16,21 @@
 
 package geotrellis.raster.rasterize.polygon
 
+import geotrellis.proj4.LatLng
 import geotrellis.raster._
+import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.rasterize._
 import geotrellis.raster.rasterize.Rasterizer.Options
-import geotrellis.vector._
 import geotrellis.raster.testkit._
+import geotrellis.vector._
 
 import math.{max,min,round}
 
-import scala.collection.mutable
-import org.scalatest.FunSuite
-import com.vividsolutions.jts.io.WKTReader
 import com.vividsolutions.jts.{geom => jts}
+import com.vividsolutions.jts.io.WKTReader
+import org.scalatest.FunSuite
+import scala.collection.mutable
+
 
 class PolygonRasterizerSpec extends FunSuite
     with RasterMatchers
@@ -199,7 +202,7 @@ class PolygonRasterizerSpec extends FunSuite
   }
 
   test("Diamond polygon w/ point pixels, scanline through corner") {
-    val extent = Extent(0.0, 0.0, 11, 11)
+    val extent = Extent(0, 0, 11, 11)
     val rasterExtent = RasterExtent(extent, 11, 11)
     val diamond = Polygon(List( Point(0,5.5), Point(5.5,11), Point(11,5.5), Point(0,5.5) ))
 
@@ -212,7 +215,7 @@ class PolygonRasterizerSpec extends FunSuite
   }
 
   test("Flipped-diamond polygon w/ point pixels, scanline through corner") {
-    val extent = Extent(0.0, 0.0, 11, 11)
+    val extent = Extent(0, 0, 11, 11)
     val rasterExtent = RasterExtent(extent, 11, 11)
     val diamond = Polygon(List( Point(5.5,0), Point(11,5.5), Point(5.5,11), Point(5.5,0) ))
 
@@ -225,7 +228,7 @@ class PolygonRasterizerSpec extends FunSuite
   }
 
   test("Polygon w/ non-point pixels, w/o partial cells, not contianing border center cells") {
-    val extent = Extent(0.0, 0.0, 10, 10)
+    val extent = Extent(0, 0, 10, 10)
     val rasterExtent = RasterExtent(extent, 10, 10)
     val extent2 = Extent(0.7, 0.7, 9.3, 9.3)
 
@@ -238,7 +241,7 @@ class PolygonRasterizerSpec extends FunSuite
   }
 
   test("Polygon w/ non-point pixels and partial cells, not contianing border center cells") {
-    val extent = Extent(0.0, 0.0, 10, 10)
+    val extent = Extent(0, 0, 10, 10)
     val rasterExtent = RasterExtent(extent, 10, 10)
     val extent2 = Extent(0.7, 0.7, 9.3, 9.3)
     val options = Options(includePartial = true, sampleType = PixelIsArea)
@@ -253,7 +256,7 @@ class PolygonRasterizerSpec extends FunSuite
 
   test("Polygon w/ non-point pixels and w/ partial cells") {
     val p = Polygon(Line((0.0,0.0), (0.0,1.0), (0.5,1.5), (0.0,2.0), (0.0,3.0), (3.0,3.0), (3.0,0.0), (0.0,0.0)))
-    val rasterExtent = RasterExtent(Extent(0.0, 0.0, 3, 3), 3, 3)
+    val rasterExtent = RasterExtent(Extent(0, 0, 3, 3), 3, 3)
     val options = Options(includePartial = true, sampleType = PixelIsArea)
     val s = mutable.Set.empty[(Int, Int)]
 
@@ -266,7 +269,7 @@ class PolygonRasterizerSpec extends FunSuite
 
   test("Polygon w/ non-point pixels and w/o partial cells") {
     val p = Polygon(Line((0.0,0.0), (0.0,1.0), (0.5,1.5), (0.0,2.0), (0.0,3.0), (3.0,3.0), (3.0,0.0), (0.0,0.0)))
-    val rasterExtent = RasterExtent(Extent(0.0, 0.0, 3, 3), 3, 3)
+    val rasterExtent = RasterExtent(Extent(0, 0, 3, 3), 3, 3)
     val options = Options(includePartial = false, sampleType = PixelIsArea)
     val s = mutable.Set[(Int, Int)]()
 
@@ -279,7 +282,7 @@ class PolygonRasterizerSpec extends FunSuite
 
   test("Smaller polygon w/ non-point pixels and w/o partial cells") {
     val p = Polygon(Line((0.01,0.01), (0.01,1.0), (0.5,1.5), (0.01,2.0), (0.01,2.99), (2.99,2.99), (2.99,0.01), (0.01,0.01)))
-    val rasterExtent = RasterExtent(Extent(0.0, 0.0, 3, 3), 3, 3)
+    val rasterExtent = RasterExtent(Extent(0, 0, 3, 3), 3, 3)
     val options = Options(includePartial = false, sampleType = PixelIsArea)
     val s = mutable.Set[(Int, Int)]()
 
@@ -308,5 +311,233 @@ class PolygonRasterizerSpec extends FunSuite
     // println(tile.asciiDraw)
 
     sum should be (12)
+  }
+
+  val triangle2 = Polygon(Point(0, 0), Point(0, 100), Point(100, 50), Point(0, 0))
+
+  test("Triangle w/ point pixels") {
+    /*
+     1    ND    ND    ND    ND    ND    ND    ND    ND    ND
+     1     1     1    ND    ND    ND    ND    ND    ND    ND
+     1     1     1     1     1    ND    ND    ND    ND    ND
+     1     1     1     1     1     1     1    ND    ND    ND
+     1     1     1     1     1     1     1     1     1    ND
+     1     1     1     1     1     1     1     1     1    ND
+     1     1     1     1     1     1     1    ND    ND    ND
+     1     1     1     1     1    ND    ND    ND    ND    ND
+     1     1     1    ND    ND    ND    ND    ND    ND    ND
+     1    ND    ND    ND    ND    ND    ND    ND    ND    ND
+     */
+    val e = Extent(0, 0, 100, 100)
+    val re = RasterExtent(e, 10, 10)
+    val ro = Options(includePartial = true, sampleType = PixelIsPoint)
+    val tile = IntArrayTile.empty(10, 10)
+    var count = 0
+
+    PolygonRasterizer.foreachCellByPolygon(triangle2, re, ro)({ (col, row) =>
+      tile.set(col, row, 1)
+      count += 1
+    })
+
+    count should be (50)
+    println(GeoTiff(tile, e, LatLng).asciiDraw)
+  }
+
+  test("Triangle w/ non-point pixels and w/o partial cells") {
+    /*
+     ND    ND    ND    ND    ND    ND    ND    ND    ND    ND
+      1     1    ND    ND    ND    ND    ND    ND    ND    ND
+      1     1     1     1    ND    ND    ND    ND    ND    ND
+      1     1     1     1     1     1    ND    ND    ND    ND
+      1     1     1     1     1     1     1     1    ND    ND
+      1     1     1     1     1     1     1     1    ND    ND
+      1     1     1     1     1     1    ND    ND    ND    ND
+      1     1     1     1    ND    ND    ND    ND    ND    ND
+      1     1    ND    ND    ND    ND    ND    ND    ND    ND
+     ND    ND    ND    ND    ND    ND    ND    ND    ND    ND
+     */
+    val e = Extent(0, 0, 100, 100)
+    val re = RasterExtent(e, 10, 10)
+    val ro = Options(includePartial = false, sampleType = PixelIsArea)
+    val tile = IntArrayTile.empty(10, 10)
+    var count = 0
+
+    PolygonRasterizer.foreachCellByPolygon(triangle2, re, ro)({ (col, row) =>
+      tile.set(col, row, 1)
+      count += 1
+    })
+
+    count should be (40)
+    println(GeoTiff(tile, e, LatLng).asciiDraw)
+  }
+
+  test("Triangle w/ non-point pixels and w/ partial cells") {
+    /*
+     1     1    ND    ND    ND    ND    ND    ND    ND    ND
+     1     1     1     1    ND    ND    ND    ND    ND    ND
+     1     1     1     1     1     1    ND    ND    ND    ND
+     1     1     1     1     1     1     1     1    ND    ND
+     1     1     1     1     1     1     1     1     1     1
+     1     1     1     1     1     1     1     1     1     1
+     1     1     1     1     1     1     1     1    ND    ND
+     1     1     1     1     1     1    ND    ND    ND    ND
+     1     1     1     1    ND    ND    ND    ND    ND    ND
+     1     1    ND    ND    ND    ND    ND    ND    ND    ND
+     */
+    val e = Extent(0, 0, 100, 100)
+    val re = RasterExtent(e, 10, 10)
+    val ro = Options(includePartial = true, sampleType = PixelIsArea)
+    val tile = IntArrayTile.empty(10, 10)
+    var count = 0
+
+    PolygonRasterizer.foreachCellByPolygon(triangle2, re, ro)({ (col, row) =>
+      tile.set(col, row, 1)
+      count += 1
+    })
+
+    count should be (60)
+    println(GeoTiff(tile, e, LatLng).asciiDraw)
+  }
+
+  val tiny = Polygon(Point(40, 40), Point(40, 59), Point(59, 50), Point(40, 40))
+
+  test("Sub-Pixel Geometry w/ point pixels") {
+    /*
+     ND    ND    ND
+     ND     1    ND
+     ND    ND    ND
+     */
+    val e = Extent(0, 0, 100, 100)
+    val re = RasterExtent(e, 3, 3)
+    val ro = Options(includePartial = true, sampleType = PixelIsPoint)
+    val tile = IntArrayTile.empty(3, 3)
+    var count = 0
+
+    PolygonRasterizer.foreachCellByPolygon(tiny, re, ro)({ (col, row) =>
+      tile.set(col, row, 1)
+      count += 1
+    })
+
+    count should be (1)
+    println(GeoTiff(tile, e, LatLng).asciiDraw)
+  }
+
+  test("Sub-Pixel Geometry w/ non-point pixels and w/ partial cells") {
+    /*
+     ND    ND    ND
+     ND     1    ND
+     ND    ND    ND
+     */
+    val e = Extent(0, 0, 100, 100)
+    val re = RasterExtent(e, 3, 3)
+    val ro = Options(includePartial = true, sampleType = PixelIsArea)
+    val tile = IntArrayTile.empty(3, 3)
+    var count = 0
+
+    PolygonRasterizer.foreachCellByPolygon(tiny, re, ro)({ (col, row) =>
+      tile.set(col, row, 1)
+      count += 1
+    })
+
+    count should be (1)
+    println(GeoTiff(tile, e, LatLng).asciiDraw)
+  }
+
+  test("Sub-Pixel Geometry w/ non-point pixels and w/o partial cells") {
+    /*
+     ND    ND    ND
+     ND    ND    ND
+     ND    ND    ND
+     */
+    val e = Extent(0, 0, 100, 100)
+    val re = RasterExtent(e, 3, 3)
+    val ro = Options(includePartial = false, sampleType = PixelIsArea)
+    val tile = IntArrayTile.empty(3, 3)
+    var count = 0
+
+    PolygonRasterizer.foreachCellByPolygon(tiny, re, ro)({ (col, row) =>
+      tile.set(col, row, 1)
+      count += 1
+    })
+
+    count should be (0)
+    println(GeoTiff(tile, e, LatLng).asciiDraw)
+  }
+
+  val tiny2 = Polygon(Point(40, 40), Point(40, 42), Point(42, 41), Point(40, 40))
+
+  test("More Sub-Pixel Geometry w/ point pixels") {
+    /*
+     ND    ND    ND    ND    ND    ND    ND
+     ND    ND    ND    ND    ND    ND    ND
+     ND    ND    ND    ND    ND    ND    ND
+     ND    ND    ND    ND    ND    ND    ND
+     ND    ND    ND    ND    ND    ND    ND
+     ND    ND    ND    ND    ND    ND    ND
+     ND    ND    ND    ND    ND    ND    ND
+     */
+    val e = Extent(0, 0, 100, 100)
+    val re = RasterExtent(e, 7, 7)
+    val ro = Options(includePartial = true, sampleType = PixelIsPoint)
+    val tile = IntArrayTile.empty(7, 7)
+    var count = 0
+
+    PolygonRasterizer.foreachCellByPolygon(tiny2, re, ro)({ (col, row) =>
+      tile.set(col, row, 1)
+      count += 1
+    })
+
+    count should be (0)
+    println(GeoTiff(tile, e, LatLng).asciiDraw)
+  }
+
+  test("More Sub-Pixel Geometry w/ non-point pixels and w/ partial cells") {
+    /*
+     ND    ND    ND    ND    ND    ND    ND
+     ND    ND    ND    ND    ND    ND    ND
+     ND    ND    ND    ND    ND    ND    ND
+     ND    ND    ND    ND    ND    ND    ND
+     ND    ND     1    ND    ND    ND    ND
+     ND    ND    ND    ND    ND    ND    ND
+     ND    ND    ND    ND    ND    ND    ND
+     */
+    val e = Extent(0, 0, 100, 100)
+    val re = RasterExtent(e, 7, 7)
+    val ro = Options(includePartial = true, sampleType = PixelIsArea)
+    val tile = IntArrayTile.empty(7, 7)
+    var count = 0
+
+    PolygonRasterizer.foreachCellByPolygon(tiny2, re, ro)({ (col, row) =>
+      tile.set(col, row, 1)
+      count += 1
+    })
+
+    count should be (1)
+    println(GeoTiff(tile, e, LatLng).asciiDraw)
+  }
+
+  test("More Sub-Pixel Geometry w/ non-point pixels and w/o partial cells") {
+    /*
+     ND    ND    ND    ND    ND    ND    ND
+     ND    ND    ND    ND    ND    ND    ND
+     ND    ND    ND    ND    ND    ND    ND
+     ND    ND    ND    ND    ND    ND    ND
+     ND    ND    ND    ND    ND    ND    ND
+     ND    ND    ND    ND    ND    ND    ND
+     ND    ND    ND    ND    ND    ND    ND
+     */
+    val e = Extent(0, 0, 100, 100)
+    val re = RasterExtent(e, 7, 7)
+    val ro = Options(includePartial = false, sampleType = PixelIsArea)
+    val tile = IntArrayTile.empty(7, 7)
+    var count = 0
+
+    PolygonRasterizer.foreachCellByPolygon(tiny2, re, ro)({ (col, row) =>
+      tile.set(col, row, 1)
+      count += 1
+    })
+
+    count should be (0)
+    println(GeoTiff(tile, e, LatLng).asciiDraw)
   }
 }
