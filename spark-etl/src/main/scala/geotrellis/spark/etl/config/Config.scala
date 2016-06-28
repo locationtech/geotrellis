@@ -22,6 +22,7 @@ case class Config(
       Map("keyspace" -> keyspace, "table" -> table)
     }
     case HadoopType | FileType => Map("path" -> p)
+    case UserDefinedBackendType(s) => Map("input" -> s)
   }
 
   def inputParams  = getParams(ingestType.input, path.input)

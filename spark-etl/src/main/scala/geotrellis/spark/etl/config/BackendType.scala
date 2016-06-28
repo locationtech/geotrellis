@@ -28,6 +28,10 @@ case object FileType extends BackendType {
   val name = "file"
 }
 
+case class UserDefinedBackendType(name: String) extends BackendType
+
+case class UserDefinedBackendInputType(name: String) extends BackendInputType
+
 object BackendType {
   def fromString(str: String) = str match {
     case AccumuloType.name  => AccumuloType
@@ -35,7 +39,7 @@ object BackendType {
     case S3Type.name        => S3Type
     case HadoopType.name    => HadoopType
     case FileType.name      => FileType
-    case s                  => throw new Exception(s"unsupported backend type: $s")
+    case s                  => UserDefinedBackendType(s)
   }
 }
 
@@ -43,7 +47,7 @@ object BackendInputType {
   def fromString(str: String) = str match {
     case S3Type.name     => S3Type
     case HadoopType.name => HadoopType
-    case s               => throw new Exception(s"unsupported input backend type: $s")
+    case s               => UserDefinedBackendInputType(s)
   }
 }
 

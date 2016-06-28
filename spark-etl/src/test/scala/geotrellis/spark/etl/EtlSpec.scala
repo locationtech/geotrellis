@@ -37,7 +37,7 @@ object EtlSpec {
       keyIndexMethod  = IngestKeyIndexMethod("zorder"),
       layoutScheme    = Some("tms"),
       layoutExtent    = Some(Extent(1, 2, 3, 4)),
-      crs             = Some(WebMercator),
+      crs             = Some("EPSG:3857"),
       resolutionThreshold = Some(0.1),
       cellSize = Some(CellSize(256, 256)),
       cellType = Some(CellType.fromString("int8")),
