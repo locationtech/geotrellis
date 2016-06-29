@@ -20,18 +20,7 @@ import org.scalatest._
 import geotrellis.vectortile.protobuf.Command._
 import geotrellis.vectortile.protobuf.{ MoveTo, LineTo, ClosePath }
 
-/*
-commandTest :: Assertion
-commandTest = assert $ R.commands [9,4,4,18,6,4,5,4,15] @?= Right
-  [ R.MoveTo $ U.singleton (2,2)
-  , R.LineTo $ U.fromList [(3,2),(-3,2)]
-  , R.ClosePath ]
-
-commandIso :: Assertion
-commandIso = assert $ (R.uncommands . fromRight $ R.commands cs) @?= cs
-  where cs = [9,4,4,18,6,4,5,4,15]
-
- */
+// --- //
 
 class CommandSpec extends FunSpec with Matchers {
   describe("Z-encoding") {

@@ -16,6 +16,9 @@
 
 package geotrellis.vectortile.protobuf
 
+import scala.collection.mutable.ListBuffer
+
+
 // --- //
 
 /** VectorTile geometries are stored as packed lists of "Command Integers".
@@ -56,38 +59,41 @@ case class InvalidCommand(id: Int, count: Int) extends Exception
 
 object Command {
   /** Attempt to parse a list of Command/Parameter Integers. */
-  // TODO (+:) is bad
-  def commands(cmds: Array[Int]): Array[Command] = cmds match {
-    case Array() => Array()
-    case ns => parseCmd(ns.head) match {
-      case (1,count) => {
-        val (ps,rest) = ns.tail.splitAt(count * 2)
-        val res = new Array[(Int,Int)](count)
-        var i = 0
+  def commands(cmds: Array[Int]): Array[Command] = {
+    def work(cmds: Array[Int]): ListBuffer[Command] = cmds match {
+      case Array() => new ListBuffer[Command]
+      case ns => parseCmd(ns.head) match {
+        case (1,count) => {
+          val (ps,rest) = ns.tail.splitAt(count * 2)
+          val res = new Array[(Int,Int)](count)
+          var i = 0
 
-        while(i < count) {
-          res.update(i, (unzig(ps(i*2)), unzig(ps(i*2+1))))
+          while(i < count) {
+            res.update(i, (unzig(ps(i*2)), unzig(ps(i*2+1))))
 
-          i += 1
+            i += 1
+          }
+
+          MoveTo(res) +=: work(rest)
         }
+        case (2,count) => {
+          val (ps,rest) = ns.tail.splitAt(count * 2)
+          val res = new Array[(Int,Int)](count)
+          var i = 0
 
-        MoveTo(res) +: commands(rest)
-      }
-      case (2,count) => {
-        val (ps,rest) = ns.tail.splitAt(count * 2)
-        val res = new Array[(Int,Int)](count)
-        var i = 0
+          while(i < count) {
+            res.update(i, (unzig(ps(i*2)), unzig(ps(i*2+1))))
 
-        while(i < count) {
-          res.update(i, (unzig(ps(i*2)), unzig(ps(i*2+1))))
+            i += 1
+          }
 
-          i += 1
+          LineTo(res) +=: work(rest)
         }
-
-        LineTo(res) +: commands(rest)
+        case (7,_) => ClosePath +=: work(ns.tail)
       }
-      case (7,_) => ClosePath +: commands(ns.tail)
     }
+
+    work(cmds).toArray
   }
 
   /** Convert a list of parsed Commands back into their original Command
@@ -95,8 +101,8 @@ object Command {
     */
   def uncommands(cmds: Array[Command]): Array[Int] = {
     cmds.flatMap({
-      case MoveTo(ds) => unparseCmd(1, ds.length) +: params(ds)  // (+:) is bad!
-      case LineTo(ds) => unparseCmd(2, ds.length) +: params(ds)  // (+:) is bad!
+      case MoveTo(ds) => unparseCmd(1, ds.length) +=: params(ds)
+      case LineTo(ds) => unparseCmd(2, ds.length) +=: params(ds)
       case ClosePath  => Array(unparseCmd(7, 1))
     })
   }
@@ -118,18 +124,10 @@ object Command {
   private def unparseCmd(cmd: Int, count: Int): Int = (cmd & 7) | (count << 3)
 
   /** Transform an array of point deltas into one of Z-encoded Parameter Ints. */
-  private def params(ns: Array[(Int,Int)]): Array[Int] = {
-    val res: Array[Int] = new Array[Int](ns.length * 2)
-    var i = 0
+  private def params(ns: Array[(Int,Int)]): ListBuffer[Int] = {
+    val res = new ListBuffer[Int]
 
-    while(i < ns.length) {
-      val curr: (Int, Int) = ns(i)
-
-      res.update(i*2, zig(curr._1))
-      res.update(i*2+1, zig(curr._2))
-
-      i += 1
-    }
+    ns.foreach { case (dx,dy) => res.append(zig(dx), zig(dy)) }
 
     res
   }
