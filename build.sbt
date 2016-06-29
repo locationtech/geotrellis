@@ -149,3 +149,7 @@ lazy val shapefile = Project("shapefile", file("shapefile")).
 
 lazy val util = Project("util", file("util")).
   settings(commonSettings: _*)
+
+lazy val docExamples = Project("doc-examples", file("doc-examples")).
+  dependsOn(spark, s3, accumulo, cassandra).
+  settings(commonSettings: _*)
