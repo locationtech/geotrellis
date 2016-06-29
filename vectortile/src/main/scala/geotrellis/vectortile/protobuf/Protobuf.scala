@@ -1,4 +1,4 @@
-package geotrellis.vectortile
+package geotrellis.vectortile.protobuf
 
 import java.nio.file.{ Files, Paths }
 import vector_tile.vector_tile.Tile

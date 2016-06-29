@@ -17,7 +17,8 @@
 package geotrellis.vectortile
 
 import org.scalatest._
-import geotrellis.vectortile.Command._
+import geotrellis.vectortile.protobuf.Command._
+import geotrellis.vectortile.protobuf.{ MoveTo, LineTo, ClosePath }
 
 /*
 commandTest :: Assertion

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.vectortile
+package geotrellis.vectortile.protobuf
 
 // --- //
 
@@ -37,6 +37,7 @@ package geotrellis.vectortile
   * The "cursor" is the location of the current vertex being considered,
   * and it starts at (0,0) for each Feature. As MoveTo and LineTo commands
   * are read, the cursor moves according the list of parsed delta pairs.
+  * ClosePath does not move the cursor, but may in future versions of the spec.
   *
   * Caveats:
   * - Point features, whether single or multi, will always consist of a single MoveTo.
