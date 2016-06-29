@@ -2,7 +2,8 @@ import Dependencies._
 
 name := "geotrellis-cassandra"
 libraryDependencies ++= Seq(
-  "com.datastax.cassandra" % "cassandra-driver-core" % "3.0.0"
+  // 2.1.10.2 version used to provide guava compatibility with hadoop stack
+  "com.datastax.cassandra" % "cassandra-driver-core" % "2.1.10.2"
     excludeAll (ExclusionRule("org.jboss.netty"), ExclusionRule("io.netty"), ExclusionRule("org.slf4j"), ExclusionRule("io.spray"), ExclusionRule("com.typesafe.akka"))
     exclude("org.apache.hadoop", "hadoop-client"),
   "org.apache.spark" %% "spark-core" % Version.spark % "provided",
