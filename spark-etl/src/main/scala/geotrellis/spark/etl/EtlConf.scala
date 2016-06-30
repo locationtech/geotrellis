@@ -84,6 +84,8 @@ class EtlConf(args: Seq[String]) extends ScallopConf(args){
 
   implicit def crsConverter: ValueConverter[CRS] = singleArgConverter[CRS](CRS.fromName)
   implicit def storageLevelConvert: ValueConverter[StorageLevel] = singleArgConverter[StorageLevel](StorageLevel.fromString)
+
+  verify()
 }
 object EtlConf {
   def layoutSchemeConverter = new ValueConverter[LayoutSchemeProvider] {
