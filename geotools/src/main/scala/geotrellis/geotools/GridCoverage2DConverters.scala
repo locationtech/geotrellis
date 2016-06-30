@@ -1,6 +1,6 @@
 package geotrellis.geotools
 
-import geotrellis.proj4.CRS
+import geotrellis.proj4.{CRS, LatLng}
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.util._
 import geotrellis.vector.Extent
@@ -26,6 +26,12 @@ import scala.collection.JavaConverters._
   * related GeoTools types, and GeoTrellis types.
   */
 object GridCoverage2DConverters {
+
+  /**
+    * Create an authority factory which generates CRSs with Longitude
+    * guranteed to the be first coordinate.
+    */
+  val authorityFactory = GeoToolsCRS.getAuthorityFactory(true)
 
   /**
     * Given a GridCoverage2D and an index, this function optionally
@@ -190,6 +196,15 @@ object GridCoverage2DConverters {
     new Envelope2D(null, xmin, ymin, (xmax - xmin), (ymax - ymin))
   }
 
+  def getGeotoolsCRS(crs: CRS): CoordinateReferenceSystem = {
+    crs.epsgCode match {
+      case Some(code) =>
+        authorityFactory.createCoordinateReferenceSystem(s"EPSG:${code}")
+      case _ =>
+        null
+    }
+  }
+
   /**
     * A function to produce a GeoTools Envelope2D from a Geotrellis
     * Extent and CRS. If the CRS cannot be converted, a null GeoTools
@@ -202,13 +217,7 @@ object GridCoverage2DConverters {
     */
   def getEnvelope2D(extent: Extent, crs: CRS): Envelope2D = {
     val Extent(xmin, ymin, xmax, ymax) = extent
-    val geoToolsCRS: CoordinateReferenceSystem =
-      crs.epsgCode match {
-        case Some(code) =>
-          GeoToolsCRS.decode(s"EPSG:${code}")
-        case _ =>
-          null
-      }
+    val geoToolsCRS = getGeotoolsCRS(crs)
 
     new Envelope2D(geoToolsCRS, xmin, ymin, (xmax - xmin), (ymax - ymin))
   }
@@ -888,7 +897,7 @@ object GridCoverage2DConverters {
     }
 
     factory.create(
-      null,
+      "",
       image,
       envelope,
       gridSampleDimensions,
