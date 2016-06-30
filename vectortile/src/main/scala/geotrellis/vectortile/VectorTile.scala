@@ -31,30 +31,19 @@ trait VectorTile {
 
 /** A layer, which could contain any number of Features of any Geometry type. */
 trait Layer {
+  type Data = Map[String, Value]
+
   val name: String
   val extent: Int
-  val points: Seq[Feature[Point]]
-  val multiPoints: Seq[Feature[MultiPoint]]
-  val lines: Seq[Feature[Line]]
-  val multiLines: Seq[Feature[MultiLine]]
-  val polygons: Seq[Feature[Polygon]]
-  val multiPolygons: Seq[Feature[MultiPolygon]]
 
-  def allGeometries: Seq[Feature[Geometry]]
-}
+  def points: Seq[Feature[Point, Data]]
+  def multiPoints: Seq[Feature[MultiPoint, Data]]
+  def lines: Seq[Feature[Line, Data]]
+  def multiLines: Seq[Feature[MultiLine, Data]]
+  def polygons: Seq[Feature[Polygon, Data]]
+  def multiPolygons: Seq[Feature[MultiPolygon, Data]]
 
-/** A geographic feature. Features are a set of geometries that share some common theme:
-  *
-  * - Points: schools, gas station locations, etc.
-  * - LineStrings: Roads, power lines, rivers, etc.
-  * - Polygons: Buildings, water bodies, etc.
-  *
-  * Where, for instance, all school locations may be stored as a single Feature,
-  * and no Point within that Feature would represent anything else.
-  */
-trait Feature[G <: Geometry] {
-  val metadata: Map[String, Value]
-  val geometries: GeomStore[G]
+  def allGeometries: Seq[Feature[Geometry, Data]]
 }
 
 /** Feature metadata key/value Maps are completely untyped. All keys
@@ -90,12 +79,3 @@ case class I64(v: Long) extends Value
 case class W64(v: Long) extends Value
 case class S64(v: Long) extends Value
 case class Bo(v: Boolean) extends Value
-
-/** A lazy Array-like store for Geometry types. This won't attempt to parse
-  * raw geometry source data until queried for.
-  */
-trait GeomStore[G <: Geometry] {
-  def map(f: G => G): GeomStore[G]
-
-  // TODO More operations.
-}
