@@ -35,22 +35,22 @@ class HadoopValueReader(
     val keyIndex = attributeStore.readKeyIndex[K](layerId)
     val writerSchema = attributeStore.readSchema(layerId)
     val codec = KeyValueRecordCodec[K, V]
-    // Map from last key in each reader to that reader
 
+    // Map from last key in each reader to that reader
     val ranges: Vector[(Path, Long, Long)] =
       FilterMapFileInputFormat.layerRanges(header.path, conf)
 
     def read(key: K): V = {
       val index: Long = keyIndex.toIndex(key)
       val valueWritable: BytesWritable =
-        ranges
+      ranges
           .find{ row =>
             index >= row._2 && index <= row._3
           }
-          .map { case (path, _, _) =>
+        .map { case (path, _, _) =>
             readers.getOrInsert((layerId, path), new MapFile.Reader(path, conf))
-          }
-          .getOrElse(throw new TileNotFoundError(key, layerId))
+        }
+        .getOrElse(throw new TileNotFoundError(key, layerId))
           .get(new LongWritable(index), new BytesWritable())
           .asInstanceOf[BytesWritable]
 
