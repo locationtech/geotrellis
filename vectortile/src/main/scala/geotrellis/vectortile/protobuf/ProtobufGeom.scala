@@ -24,8 +24,11 @@ import geotrellis.vector.Geometry
   * between a collection of Command Integers.
   *
   * Instances can be found in the package object.
+  *
+  * Usage:
+  * implicitly[ProtobufGeom[Point]].fromCommands(Command.commands(Seq(9,2,2)))
   */
 trait ProtobufGeom[G <: Geometry] {
   def fromCommands(cmds: Seq[Command]): G
-  def toCommands: Seq[Command]
+  def toCommands(g: G): Seq[Command]
 }

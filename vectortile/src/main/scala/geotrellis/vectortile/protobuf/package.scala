@@ -21,19 +21,84 @@ import geotrellis.vectortile.protobuf.ProtobufGeom
 
 // --- //
 
+case class IncompatibleCommandSequence(e: String) extends Exception
+
 package object protobuf {
-  implicit class ProtobufPoint(p: Point) extends ProtobufGeom[Point] {
-    def fromCommands(cmds: Seq[Command]): Point = ???
+  /**
+   * Expand a collection of diffs from some reference point into that
+   * of `Point` values. The initial reference point if (0,0).
+   */
+  def expand(diffs: Array[(Int, Int)]): Array[(Int, Int)] = {
+    var cursor: (Int, Int) = (0, 0)
+    val points = new Array[(Int, Int)](diffs.length)
+    var i = 0
 
-    def toCommands: Seq[Command] = ???
+    while (i < diffs.length) {
+      val curr = diffs(i)
+      val here = (curr._1 + cursor._1, curr._2 + cursor._2)
+
+      points.update(i, here)
+
+      cursor = here
+
+      i += 1
+    }
+
+    points
   }
 
-  implicit class ProtobufMultiPoint(mp: MultiPoint) extends ProtobufGeom[MultiPoint] {
-    def fromCommands(cmds: Seq[Command]): MultiPoint = ???
+  /**
+   * Collapse a collection of Points into that of diffs, relative to
+   * the previous point in the sequence.
+   */
+  def collapse(points: Array[(Int, Int)]): Array[(Int, Int)] = {
+    var cursor: (Int, Int) = (0, 0)
+    val diffs = new Array[(Int, Int)](points.length)
+    var i = 0
 
-    def toCommands: Seq[Command] = ???
+    while (i < points.length) {
+      val curr = points(i)
+      val here = (curr._1 - cursor._1, curr._2 - cursor._2)
+
+      diffs.update(i, here)
+
+      cursor = here
+
+      i += 1
+    }
+
+    diffs
   }
 
+  implicit val protoPoint = new ProtobufGeom[Point] {
+    def fromCommands(cmds: Seq[Command]): Point = cmds match {
+      case MoveTo(ps) +: Nil if ps.length == 1 => {
+        val (x, y): (Int, Int) = expand(ps).head
+
+        Point(x.toDouble, y.toDouble)
+      }
+      case _ => throw IncompatibleCommandSequence(
+        "A Point Feature must contain a single MoveTo command with a parameter count of 1."
+      )
+    }
+
+    def toCommands(p: Point): Seq[Command] = ???
+  }
+
+  implicit val protoMultiPoint = new ProtobufGeom[MultiPoint] {
+    def fromCommands(cmds: Seq[Command]): MultiPoint = cmds match {
+      case MoveTo(ps) +: Nil if ps.length > 0 => {
+        MultiPoint(expand(ps).map({ case (x,y) => (x.toDouble, y.toDouble) }))
+      }
+      case _ => throw IncompatibleCommandSequence(
+        "A MultiPoint Feature must contain a single MoveTo command with a parameter count > 0."
+      )
+    }
+
+    def toCommands(mp: MultiPoint): Seq[Command] = ???
+  }
+
+  /*
   implicit class ProtobufLine(l: Line) extends ProtobufGeom[Line] {
     def fromCommands(cmds: Seq[Command]): Line = ???
 
@@ -57,4 +122,5 @@ package object protobuf {
 
     def toCommands: Seq[Command] = ???
   }
+  */
 }
