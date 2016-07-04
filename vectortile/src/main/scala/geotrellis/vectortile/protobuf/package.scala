@@ -26,12 +26,16 @@ case class IncompatibleCommandSequence(e: String) extends Exception
 
 package object protobuf {
 
+  import com.vividsolutions.jts.geom.LineString
+
+
   /**
    * Expand a collection of diffs from some reference point into that
-   * of `Point` values. The initial reference point if (0,0).
+   * of `Point` values. The default initial reference point is (0,0).
    */
-  def expand(diffs: Array[(Int, Int)]): Array[(Int, Int)] = {
-    var cursor: (Int, Int) = (0, 0)
+  // TODO Use a State Monad to carry the cursor value.
+  def expand(diffs: Array[(Int, Int)], curs: (Int,Int) = (0,0)): Array[(Int, Int)] = {
+    var cursor: (Int, Int) = curs
     val points = new Array[(Int, Int)](diffs.length)
     var i = 0
 
@@ -110,17 +114,20 @@ package object protobuf {
 
   implicit val protoMultiLine = new ProtobufGeom[MultiLine] {
     def fromCommands(cmds: Seq[Command]): MultiLine = {
-      def work(cs: Seq[Command]): ListBuffer[Line] = cs match {
-        case MoveTo(_) +: LineTo(_) +: rest => {
-          val line: Line = implicitly[ProtobufGeom[Line]].fromCommands(cs.take(2))
+      def work(cs: Seq[Command], cursor: (Int,Int)): ListBuffer[Line] = cs match {
+        case MoveTo(p) +: LineTo(ps) +: rest => {
+          //          val line: Line = implicitly[ProtobufGeom[Line]].fromCommands(cs.take(2))
+          val line: Line = Line(expand(p ++ ps, cursor).map({ case (x,y) => (x.toDouble, y.toDouble) }))
+          val foo: Point = Point(line.jtsGeom.getEndPoint)
+          val nextCursor: (Int,Int) = (foo.x.toInt, foo.y.toInt)
 
-          line +=: work(rest)
+          line +=: work(rest, nextCursor)
         }
         case Nil => new ListBuffer[Line]
         case _ => throw IncompatibleCommandSequence("Expected: [ MoveTo(p +: Nil), LineTo(ps), ... ]")
       }
 
-      MultiLine(work(cmds))
+      MultiLine(work(cmds, (0,0)))
     }
 
     def toCommands(ml: MultiLine): Seq[Command] = ???
