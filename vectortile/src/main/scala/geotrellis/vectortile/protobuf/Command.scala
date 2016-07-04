@@ -59,9 +59,9 @@ case class InvalidCommand(id: Int, count: Int) extends Exception
 
 object Command {
   /** Attempt to parse a list of Command/Parameter Integers. */
-  def commands(cmds: Array[Int]): Array[Command] = {
-    def work(cmds: Array[Int]): ListBuffer[Command] = cmds match {
-      case Array() => new ListBuffer[Command]
+  def commands(cmds: Seq[Int]): ListBuffer[Command] = {
+    def work(cmds: Seq[Int]): ListBuffer[Command] = cmds match {
+      case Nil => new ListBuffer[Command]
       case ns => parseCmd(ns.head) match {
         case (1,count) => {
           val (ps,rest) = ns.tail.splitAt(count * 2)
@@ -93,17 +93,17 @@ object Command {
       }
     }
 
-    work(cmds).toArray
+    work(cmds)
   }
 
   /** Convert a list of parsed Commands back into their original Command
     * and Z-encoded Parameter Integer forms.
     */
-  def uncommands(cmds: Array[Command]): Array[Int] = {
+  def uncommands(cmds: ListBuffer[Command]): ListBuffer[Int] = {
     cmds.flatMap({
       case MoveTo(ds) => unparseCmd(1, ds.length) +=: params(ds)
       case LineTo(ds) => unparseCmd(2, ds.length) +=: params(ds)
-      case ClosePath  => Array(unparseCmd(7, 1))
+      case ClosePath  => ListBuffer(unparseCmd(7, 1))
     })
   }
 

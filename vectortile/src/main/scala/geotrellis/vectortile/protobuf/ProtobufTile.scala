@@ -40,6 +40,9 @@ object ProtobufTile {
   }
 }
 
+/** Wild, unbased assumption of VT Features: their `id` values can be ignored
+  * at read time, and rewritten as anything at write time.
+  */
 case class ProtobufLayer(
   name: String,
   extent: Int,
@@ -67,7 +70,9 @@ case class ProtobufLayer(
     Seq.empty[Feature[Geometry, Map[String, Value]]]
   }
 
-  /** Given a raw protobuf Layer, segregate its Features by their GeomType. */
+  /** Given a raw protobuf Layer, segregate its Features by their GeomType.
+    * `UNKNOWN` geometry types are ignored.
+    */
   private def segregate(
     features: Seq[vt.Tile.Feature]
   ): (ListBuffer[vt.Tile.Feature], ListBuffer[vt.Tile.Feature], ListBuffer[vt.Tile.Feature]) = {
