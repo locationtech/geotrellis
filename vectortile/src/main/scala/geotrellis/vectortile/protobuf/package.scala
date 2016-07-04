@@ -18,12 +18,14 @@ package geotrellis.vectortile
 
 import geotrellis.vector._
 import geotrellis.vectortile.protobuf.ProtobufGeom
+import scala.collection.mutable.ListBuffer
 
 // --- //
 
 case class IncompatibleCommandSequence(e: String) extends Exception
 
 package object protobuf {
+
   /**
    * Expand a collection of diffs from some reference point into that
    * of `Point` values. The initial reference point if (0,0).
@@ -77,9 +79,7 @@ package object protobuf {
 
         Point(x.toDouble, y.toDouble)
       }
-      case _ => throw IncompatibleCommandSequence(
-        "A Point Feature must contain a single MoveTo command with a parameter count of 1."
-      )
+      case _ => throw IncompatibleCommandSequence("Expected: [ MoveTo(p +: Nil) ]")
     }
 
     def toCommands(p: Point): Seq[Command] = ???
@@ -90,31 +90,47 @@ package object protobuf {
       case MoveTo(ps) +: Nil if ps.length > 0 => {
         MultiPoint(expand(ps).map({ case (x,y) => (x.toDouble, y.toDouble) }))
       }
-      case _ => throw IncompatibleCommandSequence(
-        "A MultiPoint Feature must contain a single MoveTo command with a parameter count > 0."
-      )
+      case _ => throw IncompatibleCommandSequence("Expected: [ MoveTo(ps) ]")
     }
 
     def toCommands(mp: MultiPoint): Seq[Command] = ???
   }
 
+  implicit val protoLine = new ProtobufGeom[Line] {
+    def fromCommands(cmds: Seq[Command]): Line = cmds match {
+      case MoveTo(p) +: LineTo(ps) +: Nil => {
+        // TODO (++) is bad.
+        Line(expand(p ++ ps).map({ case (x,y) => (x.toDouble, y.toDouble) }))
+      }
+      case _ => throw IncompatibleCommandSequence("Expected: [ MoveTo(p +: Nil), LineTo(ps) ]")
+    }
+
+    def toCommands(l: Line): Seq[Command] = ???
+  }
+
+  implicit val protoMultiLine = new ProtobufGeom[MultiLine] {
+    def fromCommands(cmds: Seq[Command]): MultiLine = {
+      def work(cs: Seq[Command]): ListBuffer[Line] = cs match {
+        case MoveTo(_) +: LineTo(_) +: rest => {
+          val line: Line = implicitly[ProtobufGeom[Line]].fromCommands(cs.take(2))
+
+          line +=: work(rest)
+        }
+        case Nil => new ListBuffer[Line]
+        case _ => throw IncompatibleCommandSequence("Expected: [ MoveTo(p +: Nil), LineTo(ps), ... ]")
+      }
+
+      MultiLine(work(cmds))
+    }
+
+    def toCommands(ml: MultiLine): Seq[Command] = ???
+  }
+
   /*
-  implicit class ProtobufLine(l: Line) extends ProtobufGeom[Line] {
-    def fromCommands(cmds: Seq[Command]): Line = ???
-
-    def toCommands: Seq[Command] = ???
-  }
-
-  implicit class ProtobufMultiLine(ml: MultiLine) extends ProtobufGeom[MultiLine] {
-    def fromCommands(cmds: Seq[Command]): MultiLine = ???
-
-    def toCommands: Seq[Command] = ???
-  }
-
-  implicit class ProtobufPolygon(p: Polygon) extends ProtobufGeom[Polygon] {
+  implicit val protoPolygon = new ProtobufGeom[Polygon] {
     def fromCommands(cmds: Seq[Command]): Polygon = ???
 
-    def toCommands: Seq[Command] = ???
+    def toCommands(p: Polygon): Seq[Command] = ???
   }
 
   implicit class ProtobufMultiPolygon(mp: MultiPolygon) extends ProtobufGeom[MultiPolygon] {
