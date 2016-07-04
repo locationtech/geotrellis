@@ -80,4 +80,35 @@ object SparkExamples {
 
     GeoTiff(raster, metadata.crs).write("/some/path/result.tif")
   }
+
+  def `Applying a threshold and then median filter on multiband imagery in an RDD layer`: Unit = {
+
+    import geotrellis.spark._
+    import geotrellis.raster._
+    import geotrellis.raster.mapalgebra.focal.Square
+
+    val imageLayer: MultibandTileLayerRDD[SpaceTimeKey] = ???
+    val neighborhood = Square(2)
+
+    val resultLayer: MultibandTileLayerRDD[SpaceTimeKey] =
+      imageLayer
+        .withContext { rdd =>
+          rdd.mapValues { tile =>
+            tile.map { (band, z) =>
+              if(z > 10000) NODATA
+              else z
+            }
+          }
+          .bufferTiles(neighborhood.extent)
+          .mapValues { bufferedTile =>
+            val bands =
+              bufferedTile.tile.bands
+                .map { band =>
+                  band.focalMedian(neighborhood, Some(bufferedTile.targetArea))
+                }
+
+            MultibandTile(bands)
+          }
+        }
+  }
 }

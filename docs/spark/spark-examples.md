@@ -96,3 +96,38 @@ val raster: Raster[Tile] =
 
 GeoTiff(raster, metadata.crs).write("/some/path/result.tif")
 ```
+
+#### Applying a threshold and then median filter on multiband imagery in an RDD layer
+
+This example shows how to take some multiband imagery that exists in a layer, filter it with some upper bound threshold,
+and then apply a 5x5 median filter.
+
+```scala
+import geotrellis.spark._
+import geotrellis.raster._
+import geotrellis.raster.mapalgebra.focal.Square
+
+val imageLayer: MultibandTileLayerRDD[SpaceTimeKey] = ???
+val neighborhood = Square(2)
+
+val resultLayer: MultibandTileLayerRDD[SpaceTimeKey] =
+  imageLayer
+    .withContext { rdd =>
+      rdd.mapValues { tile =>
+        tile.map { (band, z) =>
+          if(z > 10000) NODATA
+          else z
+        }
+      }
+      .bufferTiles(neighborhood.extent)
+      .mapValues { bufferedTile =>
+        val bands =
+          bufferedTile.tile.bands
+            .map { band =>
+              band.focalMedian(neighborhood, Some(bufferedTile.targetArea))
+            }
+
+        MultibandTile(bands)
+      }
+    }
+```

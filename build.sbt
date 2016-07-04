@@ -151,5 +151,5 @@ lazy val util = Project("util", file("util")).
   settings(commonSettings: _*)
 
 lazy val docExamples = Project("doc-examples", file("doc-examples")).
-  dependsOn(spark, s3, accumulo, cassandra).
+  dependsOn(spark, s3, accumulo, cassandra, spark % "test->test", sparkTestkit % "test->test").
   settings(commonSettings: _*)
