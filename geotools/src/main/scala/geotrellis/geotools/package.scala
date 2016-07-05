@@ -2,6 +2,7 @@ package geotrellis
 
 import geotrellis.raster._
 import geotrellis.util.MethodExtensions
+import geotrellis.vector._
 
 import org.geotools.coverage.grid.GridCoverage2D
 
@@ -20,4 +21,7 @@ package object geotools {
 
   implicit class withGridCoverage2DConversionMethods(val self: GridCoverage2D) extends MethodExtensions[GridCoverage2D]
       with GridCoverage2DConversionMethods
+
+  implicit class withGeometryToSimpleFeatureMethods[G <: Geometry](val self: G) extends MethodExtensions[G]
+      with GeometryToSimpleFeatureMethods[G]
 }
