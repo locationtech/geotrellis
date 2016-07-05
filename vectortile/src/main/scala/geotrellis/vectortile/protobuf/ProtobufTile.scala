@@ -149,12 +149,4 @@ case class ProtobufLayer(
 
     (points, lines, polys)
   }
-
-  /**
-   * Force all the internal raw Feature stores to fully parse their contents
-   * into Geotrellis Features.
-   */
-  def force: Unit = {
-    ???
-  }
 }
