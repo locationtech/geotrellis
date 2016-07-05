@@ -26,33 +26,33 @@ class ProtobufGeomSpec extends FunSpec with Matchers {
   describe("Geometry Decoding") {
     it("Point") {
       val ns = Seq(9,4,4)
-      val p = implicitly[ProtobufGeom[Point]].fromCommands(Command.commands(ns))
+      val p = implicitly[ProtobufGeom[Point, MultiPoint]].fromCommands(Command.commands(ns))
 
-      p shouldBe Point(2,2)
+      p shouldBe Left(Point(2,2))
     }
 
     it("MultiPoint") {
       val ns = Seq(17,4,4,6,6)
-      val p = implicitly[ProtobufGeom[MultiPoint]].fromCommands(Command.commands(ns))
+      val p = implicitly[ProtobufGeom[Point, MultiPoint]].fromCommands(Command.commands(ns))
 
-      p shouldBe MultiPoint(Point(2,2), Point(5,5))
+      p shouldBe Right(MultiPoint(Point(2,2), Point(5,5)))
     }
 
     it("Line") {
       val ns = Seq(9,4,4,18,6,4,5,4)
-      val l = implicitly[ProtobufGeom[Line]].fromCommands(Command.commands(ns))
+      val l = implicitly[ProtobufGeom[Line, MultiLine]].fromCommands(Command.commands(ns))
 
-      l shouldBe Line((2,2), (5,4), (2,6))
+      l shouldBe Left(Line((2,2), (5,4), (2,6)))
     }
 
     it("MultiLine") {
       val ns = Seq(9,4,4,18,6,4,5,4,9,4,4,18,6,4,5,4)
-      val l = implicitly[ProtobufGeom[MultiLine]].fromCommands(Command.commands(ns))
+      val l = implicitly[ProtobufGeom[Line, MultiLine]].fromCommands(Command.commands(ns))
 
-      l shouldBe MultiLine(
+      l shouldBe Right(MultiLine(
         Line((2,2), (5,4), (2,6)),
         Line((4,8), (7,10), (4,12))
-      )
+      ))
     }
   }
 }

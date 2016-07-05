@@ -28,13 +28,12 @@ package object protobuf {
 
   import com.vividsolutions.jts.geom.LineString
 
-
   /**
    * Expand a collection of diffs from some reference point into that
    * of `Point` values. The default initial reference point is (0,0).
    */
   // TODO Use a State Monad to carry the cursor value.
-  def expand(diffs: Array[(Int, Int)], curs: (Int,Int) = (0,0)): Array[(Int, Int)] = {
+  def expand(diffs: Array[(Int, Int)], curs: (Int, Int) = (0, 0)): Array[(Int, Int)] = {
     var cursor: (Int, Int) = curs
     val points = new Array[(Int, Int)](diffs.length)
     var i = 0
@@ -76,30 +75,21 @@ package object protobuf {
     diffs
   }
 
-  implicit val protoPoint = new ProtobufGeom[Point] {
-    def fromCommands(cmds: Seq[Command]): Point = cmds match {
-      case MoveTo(ps) +: Nil if ps.length == 1 => {
-        val (x, y): (Int, Int) = expand(ps).head
-
-        Point(x.toDouble, y.toDouble)
-      }
-      case _ => throw IncompatibleCommandSequence("Expected: [ MoveTo(p +: Nil) ]")
-    }
-
-    def toCommands(p: Point): Seq[Command] = ???
-  }
-
-  implicit val protoMultiPoint = new ProtobufGeom[MultiPoint] {
-    def fromCommands(cmds: Seq[Command]): MultiPoint = cmds match {
+  implicit val protoPoint = new ProtobufGeom[Point, MultiPoint] {
+    def fromCommands(cmds: Seq[Command]): Either[Point, MultiPoint] = cmds match {
+      // TODO Use (::) instead of (+:)? May be faster for pattern matching.
       case MoveTo(ps) +: Nil if ps.length > 0 => {
-        MultiPoint(expand(ps).map({ case (x,y) => (x.toDouble, y.toDouble) }))
+        val points = expand(ps).map({ case (x, y) => Point(x.toDouble, y.toDouble) })
+
+        if (points.length == 1) Left(points.head) else Right(MultiPoint(points))
       }
       case _ => throw IncompatibleCommandSequence("Expected: [ MoveTo(ps) ]")
     }
 
-    def toCommands(mp: MultiPoint): Seq[Command] = ???
+    def toCommands(p: Either[Point, MultiPoint]): Seq[Command] = ???
   }
 
+  /*
   implicit val protoLine = new ProtobufGeom[Line] {
     def fromCommands(cmds: Seq[Command]): Line = cmds match {
       case MoveTo(p) +: LineTo(ps) +: Nil => {
@@ -111,15 +101,15 @@ package object protobuf {
 
     def toCommands(l: Line): Seq[Command] = ???
   }
-
-  implicit val protoMultiLine = new ProtobufGeom[MultiLine] {
-    def fromCommands(cmds: Seq[Command]): MultiLine = {
-      def work(cs: Seq[Command], cursor: (Int,Int)): ListBuffer[Line] = cs match {
+   */
+  implicit val protoLine = new ProtobufGeom[Line, MultiLine] {
+    def fromCommands(cmds: Seq[Command]): Either[Line, MultiLine] = {
+      // TODO Make tail recursive?
+      def work(cs: Seq[Command], cursor: (Int, Int)): ListBuffer[Line] = cs match {
         case MoveTo(p) +: LineTo(ps) +: rest => {
-          //          val line: Line = implicitly[ProtobufGeom[Line]].fromCommands(cs.take(2))
-          val line: Line = Line(expand(p ++ ps, cursor).map({ case (x,y) => (x.toDouble, y.toDouble) }))
-          val foo: Point = Point(line.jtsGeom.getEndPoint)
-          val nextCursor: (Int,Int) = (foo.x.toInt, foo.y.toInt)
+          val line = Line(expand(p ++ ps, cursor).map({ case (x, y) => (x.toDouble, y.toDouble) }))
+          val endPoint: Point = Point(line.jtsGeom.getEndPoint)
+          val nextCursor: (Int, Int) = (endPoint.x.toInt, endPoint.y.toInt)
 
           line +=: work(rest, nextCursor)
         }
@@ -127,10 +117,12 @@ package object protobuf {
         case _ => throw IncompatibleCommandSequence("Expected: [ MoveTo(p +: Nil), LineTo(ps), ... ]")
       }
 
-      MultiLine(work(cmds, (0,0)))
+      val lines = work(cmds, (0, 0))
+
+      if (lines.length == 1) Left(lines.head) else Right(MultiLine(lines))
     }
 
-    def toCommands(ml: MultiLine): Seq[Command] = ???
+    def toCommands(ml: Either[Line, MultiLine]): Seq[Command] = ???
   }
 
   /*

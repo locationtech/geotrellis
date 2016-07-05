@@ -16,19 +16,22 @@
 
 package geotrellis.vectortile.protobuf
 
-import geotrellis.vector.Geometry
+import geotrellis.vector.{ Geometry, MultiGeometry }
 
 // --- //
 
 /** An isomorphism for any Geotrellis geometry type that can convert
-  * between a collection of Command Integers.
+  * between a collection of Command Integers. As of version 2.1 of
+  * the VectorTile spec, there is no explicit difference between single
+  * and multi geometries. When there eventually is, this trait will have to be
+  * split to provide separate instances for both the single and multi forms.
   *
   * Instances can be found in the package object.
   *
   * Usage:
-  * implicitly[ProtobufGeom[Point]].fromCommands(Command.commands(Seq(9,2,2)))
+  * implicitly[ProtobufGeom[Point, MultiPoint]].fromCommands(Command.commands(Seq(9,2,2)))
   */
-trait ProtobufGeom[G <: Geometry] {
-  def fromCommands(cmds: Seq[Command]): G
-  def toCommands(g: G): Seq[Command]
+trait ProtobufGeom[G1 <: Geometry, G2 <: MultiGeometry] {
+  def fromCommands(cmds: Seq[Command]): Either[G1, G2]
+  def toCommands(g: Either[G1, G2]): Seq[Command]
 }
