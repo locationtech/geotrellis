@@ -42,7 +42,7 @@ object SimpleFeatureToFeature {
     }
   }
 
-  def apply(simpleFeature: SimpleFeature): Feature[Geometry, Map[String, Object]] = {
+  def apply(simpleFeature: SimpleFeature): Feature[Geometry, immutable.Map[String, Object]] = {
     val properties = simpleFeature.getProperties.asScala
     val map = mutable.Map.empty[String, Object]
     val defaultGeom = simpleFeature.getDefaultGeometry

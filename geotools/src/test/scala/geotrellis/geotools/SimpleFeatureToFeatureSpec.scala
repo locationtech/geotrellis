@@ -25,7 +25,7 @@ import org.scalatest._
 import scala.collection.JavaConverters._
 
 
-class SimpleFeatureToVectorSpec
+class SimpleFeatureToFeatureSpec
     extends FunSpec
     with Matchers {
 

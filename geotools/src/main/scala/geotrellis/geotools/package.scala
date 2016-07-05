@@ -5,6 +5,8 @@ import geotrellis.util.MethodExtensions
 import geotrellis.vector._
 
 import org.geotools.coverage.grid.GridCoverage2D
+import org.opengis.feature.simple.SimpleFeature
+
 
 package object geotools {
   implicit class withSinglebandRasterToGridCoverage2DMethods(val self: Raster[Tile]) extends MethodExtensions[Raster[Tile]]
@@ -24,4 +26,7 @@ package object geotools {
 
   implicit class withGeometryToSimpleFeatureMethods[G <: Geometry](val self: G) extends MethodExtensions[G]
       with GeometryToSimpleFeatureMethods[G]
+
+  implicit class withSimpleFeatureToFeatureMethods(val self: SimpleFeature) extends MethodExtensions[SimpleFeature]
+      with SimpleFeatureToFeatureMethods
 }
