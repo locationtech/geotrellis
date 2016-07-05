@@ -19,6 +19,7 @@ package geotrellis.vectortile
 import geotrellis.vector._
 import geotrellis.vectortile.protobuf.ProtobufGeom
 import scala.collection.mutable.ListBuffer
+import vector_tile.{vector_tile => vt}
 
 // --- //
 
@@ -27,6 +28,7 @@ case class IncompatibleCommandSequence(e: String) extends Exception
 package object protobuf {
 
   import com.vividsolutions.jts.geom.LineString
+  import java.lang.IllegalArgumentException
 
   /**
    * Expand a collection of diffs from some reference point into that
@@ -185,5 +187,26 @@ package object protobuf {
     }
 
     sum
+  }
+
+  // TODO Consider scalaz (<+>) operator
+  implicit def protoVal(value: vt.Tile.Value): Value = {
+    if (value.stringValue.isDefined) {
+      St(value.stringValue.get)
+    } else if (value.floatValue.isDefined) {
+      Fl(value.floatValue.get)
+    } else if (value.doubleValue.isDefined) {
+      Do(value.doubleValue.get)
+    } else if (value.intValue.isDefined) {
+      I64(value.intValue.get)
+    } else if (value.uintValue.isDefined) {
+      W64(value.uintValue.get)
+    } else if (value.sintValue.isDefined) {
+      S64(value.sintValue.get)
+    } else if (value.boolValue.isDefined) {
+      Bo(value.boolValue.get)
+    } else {
+      throw new IllegalArgumentException("No legal Protobuf Value given.")
+    }
   }
 }

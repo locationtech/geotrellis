@@ -33,8 +33,8 @@ trait VectorTile {
 trait Layer {
   type Data = Map[String, Value]
 
-  val name: String
-  val extent: Int
+  def name: String
+  def extent: Int
 
   def points: Seq[Feature[Point, Data]]
   def multiPoints: Seq[Feature[MultiPoint, Data]]

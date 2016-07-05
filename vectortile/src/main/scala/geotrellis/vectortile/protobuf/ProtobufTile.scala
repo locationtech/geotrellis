@@ -45,12 +45,15 @@ object ProtobufTile {
  * at read time, and rewritten as anything at write time.
  */
 case class ProtobufLayer(
-  name: String,
-  extent: Int,
-  rawFeatures: Seq[vt.Tile.Feature]
+  rawLayer: vt.Tile.Layer
 ) extends Layer {
+  /* Expected fields */
+  def name: String = rawLayer.name
+  def extent: Int = rawLayer.extent.getOrElse(4096)
+  def version: Int = rawLayer.version
+
   /* Unconsumed raw Features */
-  private val (pointFs, lineFs, polyFs) = segregate(rawFeatures)
+  private val (pointFs, lineFs, polyFs) = segregate(rawLayer.features)
 
   /**
    * Polymorphically generate a [[Stream]] of parsed Geometries and
@@ -66,17 +69,37 @@ case class ProtobufLayer(
         val geoms = fs.head.geometry
         val g = protobufGeom.fromCommands(Command.commands(geoms))
 
-        (g, Map.empty[String, Value]) #:: loop(fs.tail)
+        (g, getMeta(rawLayer.keys, rawLayer.values, fs.head.tags)) #:: loop(fs.tail)
       }
     }
 
     loop(feats)
   }
 
+  /**
+   * Construct Feature-specific metadata from the key/value lists of
+   * the parent layer.
+   */
+  private def getMeta(keys: Seq[String], vals: Seq[vt.Tile.Value], tags: Seq[Int]): Map[String, Value] = {
+    val pairs = new ListBuffer[(String, Value)]
+    var i = 0
+
+    while (i < tags.length) {
+      val k: String = keys(tags(i))
+      val v: vt.Tile.Value = vals(tags(i + 1))
+
+      pairs.append(k -> v)
+
+      i += 2
+    }
+
+    pairs.toMap
+  }
+
   /* Geometry Streams */
-  lazy val pointStream = geomStream[Point, MultiPoint](pointFs)
-  lazy val lineStream = geomStream[Line, MultiLine](lineFs)
-  lazy val polyStream = geomStream[Polygon, MultiPolygon](polyFs)
+  private lazy val pointStream = geomStream[Point, MultiPoint](pointFs)
+  private lazy val lineStream = geomStream[Line, MultiLine](lineFs)
+  private lazy val polyStream = geomStream[Polygon, MultiPolygon](polyFs)
 
   // TODO Likely faster with manual recursion in a fold-like pattern,
   // and it will squash the pattern match warnings.
@@ -134,8 +157,4 @@ case class ProtobufLayer(
   def force: Unit = {
     ???
   }
-}
-
-object ProtobufLayer {
-  def apply(layer: vt.Tile.Layer): ProtobufLayer = ???
 }
