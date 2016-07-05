@@ -30,4 +30,8 @@ package object geotools {
   implicit class withSimpleFeatureMethods(val self: SimpleFeature) extends MethodExtensions[SimpleFeature]
       with SimpleFeatureToFeatureMethods
       with SimpleFeatureToGeometryMethods
+
+  implicit class withFeatureToSimpleFeatureMethods[G <: Geometry, T](val self: Feature[G, T])
+      extends MethodExtensions[Feature[G, T]]
+      with FeatureToSimpleFeatureMethods[G, T]
 }
