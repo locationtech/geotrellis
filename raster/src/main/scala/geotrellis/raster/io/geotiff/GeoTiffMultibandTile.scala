@@ -230,7 +230,7 @@ abstract class GeoTiffMultibandTile(
     }
   }
 
-  /** Converts all of the bands into a collection of Vecot[Tile] */
+  /** Converts all of the bands into a collection of Vector[Tile] */
   def bands: Vector[Tile] =
     (0 until bandCount).map(band(_)).toVector
 
@@ -340,9 +340,9 @@ abstract class GeoTiffMultibandTile(
   }
 
   /**
-   * Map over a MultibandTile starting at the given band.
+   * Map over a MultibandTile band.
    *
-   * @param b0: The starting band
+   * @param b0: The band
    * @param f: A function that takes an Int and returns an Int
    * @return Returns a MultibandGeoTiff that contains both the changed and unchanged bands
    */
@@ -370,9 +370,9 @@ abstract class GeoTiffMultibandTile(
     }
 
   /**
-   * Map over a MultibandTile starting at the given band.
+   * Map over a MultibandTile band.
    *
-   * @param b0: The starting band
+   * @param b0: The band
    * @param f: A function that takes a Double and returns a Double
    * @return Returns a MultibandGeoTiff that contains both the changed and unchanged bands
    */

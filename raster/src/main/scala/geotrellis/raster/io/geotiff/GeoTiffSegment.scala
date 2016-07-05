@@ -14,7 +14,7 @@ trait GeoTiffSegment {
   def getInt(i: Int): Int
   def getDouble(i: Int): Double
 
-  // represents all of the bytes in the segment
+  /** represents all of the bytes in the segment */
   def bytes: Array[Byte]
 
   def map(f: Int => Int): Array[Byte]
