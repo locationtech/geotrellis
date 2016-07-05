@@ -33,21 +33,17 @@ package object protobuf {
    * of `Point` values. The default initial reference point is (0,0).
    */
   // TODO Use a State Monad to carry the cursor value.
-  def expand(diffs: Array[(Int, Int)], curs: (Int, Int) = (0, 0)): Array[(Int, Int)] = {
+  private def expand(diffs: Array[(Int, Int)], curs: (Int, Int) = (0, 0)): ListBuffer[(Int, Int)] = {
     var cursor: (Int, Int) = curs
-    val points = new Array[(Int, Int)](diffs.length)
+    val points = new ListBuffer[(Int, Int)]
     var i = 0
 
-    while (i < diffs.length) {
-      val curr = diffs(i)
-      val here = (curr._1 + cursor._1, curr._2 + cursor._2)
+    diffs.foreach({ case (dx,dy) =>
+      val here = (dx + cursor._1, dy + cursor._2)
 
-      points.update(i, here)
-
+      points.append(here)
       cursor = here
-
-      i += 1
-    }
+    })
 
     points
   }
@@ -56,7 +52,7 @@ package object protobuf {
    * Collapse a collection of Points into that of diffs, relative to
    * the previous point in the sequence.
    */
-  def collapse(points: Array[(Int, Int)]): Array[(Int, Int)] = {
+  private def collapse(points: Array[(Int, Int)]): Array[(Int, Int)] = {
     var cursor: (Int, Int) = (0, 0)
     val diffs = new Array[(Int, Int)](points.length)
     var i = 0
@@ -125,17 +121,34 @@ package object protobuf {
     def toCommands(ml: Either[Line, MultiLine]): Seq[Command] = ???
   }
 
-  /*
-  implicit val protoPolygon = new ProtobufGeom[Polygon] {
-    def fromCommands(cmds: Seq[Command]): Polygon = ???
+  implicit val protoPolygon = new ProtobufGeom[Polygon, MultiPolygon] {
+    def fromCommands(cmds: Seq[Command]): Either[Polygon, MultiPolygon] = {
+      def work(cs: Seq[Command], cursor: (Int, Int)): ListBuffer[Line] = cs match {
+        case MoveTo(p) +: LineTo(ps) +: ClosePath +: rest => {
+          /* `ClosePath` does not move the cursor, so we have to be
+           * clever about how we manage the cursor and the closing point
+           * of the Polygon.
+           */
+          val here: (Int, Int) = (p.head._1 + cursor._1, p.head._2 + cursor._2)
+          val points = expand(p ++ ps, cursor)
+          val nextCursor: (Int, Int) = (points.last._1, points.last._2)
 
-    def toCommands(p: Polygon): Seq[Command] = ???
+          /* Add the starting point to close the Line into a Polygon */
+          points.append(here)
+
+          Line(points.map({ case (x,y) => (x.toDouble, y.toDouble) })) +=: work(rest, nextCursor)
+        }
+        case Nil => new ListBuffer[Line]
+        case _ => throw IncompatibleCommandSequence("Expected: [MoveTo(p +: Nil), LineTo(ps), ClosePath, ... ]")
+      }
+
+      val lines = work(cmds, (0, 0))
+
+      // TODO Fuse interior rings
+
+      if (lines.length == 1) Left(Polygon(lines.head)) else Right(MultiPolygon(lines.map(Polygon(_))))
+    }
+
+    def toCommands(p: Either[Polygon, MultiPolygon]): Seq[Command] = ???
   }
-
-  implicit class ProtobufMultiPolygon(mp: MultiPolygon) extends ProtobufGeom[MultiPolygon] {
-    def fromCommands(cmds: Seq[Command]): MultiPolygon = ???
-
-    def toCommands: Seq[Command] = ???
-  }
-  */
 }

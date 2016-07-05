@@ -54,5 +54,22 @@ class ProtobufGeomSpec extends FunSpec with Matchers {
         Line((4,8), (7,10), (4,12))
       ))
     }
+
+    it("Polygon - One External Ring") {
+      val ns = Seq(9,4,4,18,6,4,5,4,15)
+      val p = implicitly[ProtobufGeom[Polygon, MultiPolygon]].fromCommands(Command.commands(ns))
+
+      p shouldBe Left(Polygon((2,2), (5,4), (2,6), (2,2)))
+    }
+
+    it("MultiPolygon - Two External Rings") {
+      val ns = Seq(9,4,4,18,6,4,5,4,15,9,4,4,18,6,4,5,4,15)
+      val p = implicitly[ProtobufGeom[Polygon, MultiPolygon]].fromCommands(Command.commands(ns))
+
+      p shouldBe Right(MultiPolygon(
+        Polygon((2,2), (5,4), (2,6), (2,2)),
+        Polygon((4,8), (7,10), (4,12), (4,8))
+      ))
+    }
   }
 }
