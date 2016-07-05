@@ -31,7 +31,7 @@ trait SimpleFeatureToFeatureMethods extends MethodExtensions[SimpleFeature] {
     val ct = implicitly[ClassTag[G]]
 
     feature.geom match {
-      case ct(g) => Feature(feature.geom.asInstanceOf[G], feature.data)
+      case ct(g) => Feature(feature.geom, feature.data)
       case _ => throw new Exception(s"${feature.geom} is not a ${ct.toString}")
     }
   }
@@ -41,7 +41,7 @@ trait SimpleFeatureToFeatureMethods extends MethodExtensions[SimpleFeature] {
     val ct = implicitly[ClassTag[G]]
 
     feature.geom match {
-      case ct(g) => Feature(feature.geom.asInstanceOf[G], feature.data)
+      case ct(g) => Feature(feature.geom, feature.data)
       case _ => throw new Exception(s"${feature.geom} is not a ${ct.toString}")
     }
   }

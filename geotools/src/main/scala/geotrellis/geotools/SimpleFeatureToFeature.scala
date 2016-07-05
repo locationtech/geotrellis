@@ -20,33 +20,26 @@ import geotrellis.vector._
 
 import com.vividsolutions.jts.{geom => jts}
 import org.opengis.feature.simple.SimpleFeature
-import scala.collection._
 
+import scala.collection._
 import scala.collection.JavaConverters._
+import scala.reflect.ClassTag
 
 
 object SimpleFeatureToFeature {
 
-  private def jtsToGeotrellis(geometry: Object): Geometry = {
+  private def jtsToGeotrellis[G <: Geometry : ClassTag](geometry: Object): Option[G] = {
     geometry match {
-      case lr: jts.LinearRing => Line(lr)
-      case ls: jts.LineString => Line(ls)
-      case pt: jts.Point => Point(pt)
-      case pg: jts.Polygon => Polygon(pg)
-      case mp: jts.MultiPoint => MultiPoint(mp)
-      case ml: jts.MultiLineString => MultiLine(ml)
-      case mp: jts.MultiPolygon => MultiPolygon(mp)
-      case gc: jts.GeometryCollection => GeometryCollection(gc)
-      case  g: jts.Geometry => throw new Exception(s"Unhandled JTS Geometry $g")
-      case _ => throw new Exception("Non-Geometry")
+      case g: jts.Geometry => Some(Geometry(g).asInstanceOf[G])
+      case g => throw new Exception(s"Input $g is not a jts.Geometry")
     }
   }
 
-  def apply(simpleFeature: SimpleFeature): Feature[Geometry, immutable.Map[String, Object]] = {
+  def apply[G <: Geometry : ClassTag](simpleFeature: SimpleFeature): Feature[G, immutable.Map[String, Object]] = {
     val properties = simpleFeature.getProperties.asScala
     val map = mutable.Map.empty[String, Object]
     val defaultGeom = simpleFeature.getDefaultGeometry
-    var geometry: Geometry = if (defaultGeom != null) jtsToGeotrellis(defaultGeom); else null
+    var geometry = if (defaultGeom != null) jtsToGeotrellis(defaultGeom); else None
 
     properties.foreach({ property =>
       (defaultGeom, property.getValue) match {
@@ -65,6 +58,6 @@ object SimpleFeatureToFeature {
     })
 
     assert(geometry != null, s"$simpleFeature")
-    Feature(geometry, map.toMap)
+    Feature(geometry.get, map.toMap)
   }
 }
