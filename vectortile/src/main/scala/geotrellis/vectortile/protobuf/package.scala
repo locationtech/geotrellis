@@ -142,13 +142,59 @@ package object protobuf {
         case _ => throw IncompatibleCommandSequence("Expected: [MoveTo(p +: Nil), LineTo(ps), ClosePath, ... ]")
       }
 
-      val lines = work(cmds, (0, 0))
+      val lines: ListBuffer[Line] = work(cmds, (0, 0))
 
-      // TODO Fuse interior rings
+      /* Process interior rings */
+      var polys = new ListBuffer[Polygon]
+      var currL: Line = lines.head
+      var holes = new ListBuffer[Line]
 
-      if (lines.length == 1) Left(Polygon(lines.head)) else Right(MultiPolygon(lines.map(Polygon(_))))
+      lines.tail.foreach({ line =>
+        val area = surveyor(line)
+
+        if (area < 0) {  /* New Interior Rings */
+          holes.append(line)
+        } else {  /* New Exterior Ring */
+          /* Save the current state */
+          polys.append(Polygon(currL, holes))
+
+          /* Reset the state */
+          currL = line
+          holes = new ListBuffer[Line]
+        }
+      })
+
+      /* Save the final state */
+      polys.append(Polygon(currL, holes))
+
+      if (polys.length == 1) Left(polys.head) else Right(MultiPolygon(polys))
     }
 
     def toCommands(p: Either[Polygon, MultiPolygon]): Seq[Command] = ???
+  }
+
+  /** The surveyor's formula for calculating the area of a [[Polygon]].
+    * If the value reported here is negative, then the [[Polygon]] should be
+    * considered an Interior Ring.
+    */
+  // TODO Consider having this accept a `ListBuffer` instead.
+  // The Array operations are wasteful.
+  // Doing some swap/rotation operations would probably be faster.
+  private def surveyor(l: Line): Double = {
+    val ps: Array[Point] = l.points.init
+    val xs = ps.map(_.x)
+    val yns = (ps :+ ps.head).tail.map(_.y)
+    val yps = (ps.last +: ps).init.map(_.y)
+
+    var sum: Double = 0
+    var i: Int = 0
+
+    while(i < ps.length) {
+      sum += xs(i) * (yns(i) - yps(i))
+
+      i += 1
+    }
+
+    sum
   }
 }
