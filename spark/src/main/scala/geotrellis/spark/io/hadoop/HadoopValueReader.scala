@@ -36,7 +36,6 @@ class HadoopValueReader(
     val writerSchema = attributeStore.readSchema(layerId)
     val codec = KeyValueRecordCodec[K, V]
 
-    // Map from last key in each reader to that reader
     val ranges: Vector[(Path, Long, Long)] =
       FilterMapFileInputFormat.layerRanges(header.path, conf)
 
@@ -45,7 +44,7 @@ class HadoopValueReader(
       val valueWritable: BytesWritable =
       ranges
           .find{ row =>
-            index >= row._2 && index <= row._3
+            index >= row._2 && index < row._3
           }
         .map { case (path, _, _) =>
             readers.getOrInsert((layerId, path), new MapFile.Reader(path, conf))

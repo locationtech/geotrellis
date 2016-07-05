@@ -24,7 +24,7 @@ object HadoopRDDWriter extends LazyLogging {
   /**
     * When record being written would exceed the block size of the current MapFile
     * opens a new file to continue writing. This allows to split partition into block-sized
-    * chunks without foreknowledge of how bit it is.
+    * chunks without foreknowledge of how big it is.
     */
   class MultiMapWriter(layerPath: String, partition: Int, blockSize: Long, indexInterval: Int) {
     private var writer: MapFile.Writer = null // avoids creating a MapFile for empty partitions
