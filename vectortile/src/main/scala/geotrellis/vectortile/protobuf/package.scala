@@ -38,11 +38,12 @@ package object protobuf {
     val points = new ListBuffer[(Int, Int)]
     var i = 0
 
-    diffs.foreach({ case (dx,dy) =>
-      val here = (dx + cursor._1, dy + cursor._2)
+    diffs.foreach({
+      case (dx, dy) =>
+        val here = (dx + cursor._1, dy + cursor._2)
 
-      points.append(here)
-      cursor = here
+        points.append(here)
+        cursor = here
     })
 
     points
@@ -85,19 +86,6 @@ package object protobuf {
     def toCommands(p: Either[Point, MultiPoint]): Seq[Command] = ???
   }
 
-  /*
-  implicit val protoLine = new ProtobufGeom[Line] {
-    def fromCommands(cmds: Seq[Command]): Line = cmds match {
-      case MoveTo(p) +: LineTo(ps) +: Nil => {
-        // TODO (++) is bad.
-        Line(expand(p ++ ps).map({ case (x,y) => (x.toDouble, y.toDouble) }))
-      }
-      case _ => throw IncompatibleCommandSequence("Expected: [ MoveTo(p +: Nil), LineTo(ps) ]")
-    }
-
-    def toCommands(l: Line): Seq[Command] = ???
-  }
-   */
   implicit val protoLine = new ProtobufGeom[Line, MultiLine] {
     def fromCommands(cmds: Seq[Command]): Either[Line, MultiLine] = {
       // TODO Make tail recursive?
@@ -136,7 +124,7 @@ package object protobuf {
           /* Add the starting point to close the Line into a Polygon */
           points.append(here)
 
-          Line(points.map({ case (x,y) => (x.toDouble, y.toDouble) })) +=: work(rest, nextCursor)
+          Line(points.map({ case (x, y) => (x.toDouble, y.toDouble) })) +=: work(rest, nextCursor)
         }
         case Nil => new ListBuffer[Line]
         case _ => throw IncompatibleCommandSequence("Expected: [MoveTo(p +: Nil), LineTo(ps), ClosePath, ... ]")
@@ -152,9 +140,9 @@ package object protobuf {
       lines.tail.foreach({ line =>
         val area = surveyor(line)
 
-        if (area < 0) {  /* New Interior Rings */
+        if (area < 0) { /* New Interior Rings */
           holes.append(line)
-        } else {  /* New Exterior Ring */
+        } else { /* New Exterior Ring */
           /* Save the current state */
           polys.append(Polygon(currL, holes))
 
@@ -173,10 +161,11 @@ package object protobuf {
     def toCommands(p: Either[Polygon, MultiPolygon]): Seq[Command] = ???
   }
 
-  /** The surveyor's formula for calculating the area of a [[Polygon]].
-    * If the value reported here is negative, then the [[Polygon]] should be
-    * considered an Interior Ring.
-    */
+  /**
+   * The surveyor's formula for calculating the area of a [[Polygon]].
+   * If the value reported here is negative, then the [[Polygon]] should be
+   * considered an Interior Ring.
+   */
   // TODO Consider having this accept a `ListBuffer` instead.
   // The Array operations are wasteful.
   // Doing some swap/rotation operations would probably be faster.
@@ -189,7 +178,7 @@ package object protobuf {
     var sum: Double = 0
     var i: Int = 0
 
-    while(i < ps.length) {
+    while (i < ps.length) {
       sum += xs(i) * (yns(i) - yps(i))
 
       i += 1

@@ -43,7 +43,7 @@ trait Layer {
   def polygons: Seq[Feature[Polygon, Data]]
   def multiPolygons: Seq[Feature[MultiPolygon, Data]]
 
-  def allGeometries: Seq[Feature[Geometry, Data]]
+//  def allGeometries: Seq[Feature[Geometry, Data]]
 }
 
 /** Feature metadata key/value Maps are completely untyped. All keys

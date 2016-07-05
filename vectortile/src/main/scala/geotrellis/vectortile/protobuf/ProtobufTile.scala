@@ -17,9 +17,9 @@
 package geotrellis.vectortile.protobuf
 
 import geotrellis.vector._
-import geotrellis.vectortile.{ Layer, Value, VectorTile }
+import geotrellis.vectortile.{Layer, Value, VectorTile}
 import scala.collection.mutable.ListBuffer
-import vector_tile.{ vector_tile => vt }
+import vector_tile.{vector_tile => vt}
 
 // --- //
 
@@ -40,9 +40,10 @@ object ProtobufTile {
   }
 }
 
-/** Wild, unbased assumption of VT Features: their `id` values can be ignored
-  * at read time, and rewritten as anything at write time.
-  */
+/**
+ * Wild, unbased assumption of VT Features: their `id` values can be ignored
+ * at read time, and rewritten as anything at write time.
+ */
 case class ProtobufLayer(
   name: String,
   extent: Int,
@@ -51,28 +52,62 @@ case class ProtobufLayer(
   /* Unconsumed raw Features */
   private val (pointFs, lineFs, polyFs) = segregate(rawFeatures)
 
-  // TODO Use `trimStart` for shaving off elements
+  /**
+   * Polymorphically generate a [[Stream]] of parsed Geometries and
+   * their metadata.
+   */
+  private def geomStream[G1 <: Geometry, G2 <: MultiGeometry](
+    feats: ListBuffer[vt.Tile.Feature]
+  )(implicit protobufGeom: ProtobufGeom[G1, G2]): Stream[(Either[G1, G2], Map[String, Value])] = {
+    def loop(fs: ListBuffer[vt.Tile.Feature]): Stream[(Either[G1, G2], Map[String, Value])] = {
+      if (fs.isEmpty) {
+        Stream.empty[(Either[G1, G2], Map[String, Value])]
+      } else {
+        val geoms = fs.head.geometry
+        val g = protobufGeom.fromCommands(Command.commands(geoms))
 
-  lazy val (points, multiPoints): (Stream[Feature[Point, Map[String, Value]]], Stream[Feature[MultiPoint, Map[String, Value]]]) = ???
+        (g, Map.empty[String, Value]) #:: loop(fs.tail)
+      }
+    }
 
-  lazy val (lines, multiLines): (Stream[Feature[Line, Map[String, Value]]], Stream[Feature[MultiLine, Map[String, Value]]]) = ???
-
-  lazy val (polygons, multiPolygons): (Stream[Feature[Polygon, Map[String, Value]]], Stream[Feature[MultiPolygon, Map[String, Value]]]) = ???
-
-//  def points: Seq[Feature[Point, Map[String, Value]]]
-//  def multiPoints: Seq[Feature[MultiPoint, Map[String, Value]]]
-//  def lines: Seq[Feature[Line, Map[String, Value]]] = ???
-//  def multiLines: Seq[Feature[MultiLine, Map[String, Value]]] = ???
-//  def polygons: Seq[Feature[Polygon, Map[String, Value]]] = ???
-//  def multiPolygons: Seq[Feature[MultiPolygon, Map[String, Value]]] = ???
-
-  def allGeometries: Seq[Feature[Geometry, Map[String, Value]]] = {
-    Seq.empty[Feature[Geometry, Map[String, Value]]]
+    loop(feats)
   }
 
-  /** Given a raw protobuf Layer, segregate its Features by their GeomType.
-    * `UNKNOWN` geometry types are ignored.
-    */
+  /* Geometry Streams */
+  lazy val pointStream = geomStream[Point, MultiPoint](pointFs)
+  lazy val lineStream = geomStream[Line, MultiLine](lineFs)
+  lazy val polyStream = geomStream[Polygon, MultiPolygon](polyFs)
+
+  // TODO Likely faster with manual recursion in a fold-like pattern,
+  // and it will squash the pattern match warnings.
+  lazy val points: Stream[Feature[Point, Map[String, Value]]] = pointStream
+    .filter(_._1.isLeft)
+    .map({ case (Left(p), meta) => Feature(p, meta) })
+
+  lazy val multiPoints: Stream[Feature[MultiPoint, Map[String, Value]]] = pointStream
+    .filter(_._1.isRight)
+    .map({ case (Right(p), meta) => Feature(p, meta) })
+
+  lazy val lines: Stream[Feature[Line, Map[String, Value]]] = lineStream
+    .filter(_._1.isLeft)
+    .map({ case (Left(p), meta) => Feature(p, meta) })
+
+  lazy val multiLines: Stream[Feature[MultiLine, Map[String, Value]]] = lineStream
+    .filter(_._1.isRight)
+    .map({ case (Right(p), meta) => Feature(p, meta) })
+
+  lazy val polygons: Stream[Feature[Polygon, Map[String, Value]]] = polyStream
+    .filter(_._1.isLeft)
+    .map({ case (Left(p), meta) => Feature(p, meta) })
+
+  lazy val multiPolygons: Stream[Feature[MultiPolygon, Map[String, Value]]] = polyStream
+    .filter(_._1.isRight)
+    .map({ case (Right(p), meta) => Feature(p, meta) })
+
+  /**
+   * Given a raw protobuf Layer, segregate its Features by their GeomType.
+   * `UNKNOWN` geometry types are ignored.
+   */
   private def segregate(
     features: Seq[vt.Tile.Feature]
   ): (ListBuffer[vt.Tile.Feature], ListBuffer[vt.Tile.Feature], ListBuffer[vt.Tile.Feature]) = {
@@ -80,19 +115,22 @@ case class ProtobufLayer(
     val lines = new ListBuffer[vt.Tile.Feature]
     val polys = new ListBuffer[vt.Tile.Feature]
 
-    features.foreach { f => f.getType match {
-      case vt.Tile.GeomType.POINT => points.append(f)
-      case vt.Tile.GeomType.LINESTRING => lines.append(f)
-      case vt.Tile.GeomType.POLYGON => polys.append(f)
-      case _ => Unit  // `UNKNOWN` or `Unrecognized`.
-    }}
+    features.foreach { f =>
+      f.getType match {
+        case vt.Tile.GeomType.POINT => points.append(f)
+        case vt.Tile.GeomType.LINESTRING => lines.append(f)
+        case vt.Tile.GeomType.POLYGON => polys.append(f)
+        case _ => Unit // `UNKNOWN` or `Unrecognized`.
+      }
+    }
 
     (points, lines, polys)
   }
 
-  /** Force all the internal raw Feature stores to fully parse their contents
-    * into Geotrellis Features.
-    */
+  /**
+   * Force all the internal raw Feature stores to fully parse their contents
+   * into Geotrellis Features.
+   */
   def force: Unit = {
     ???
   }
