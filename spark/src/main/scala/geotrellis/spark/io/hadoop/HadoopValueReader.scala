@@ -44,7 +44,7 @@ class HadoopValueReader(
       val valueWritable: BytesWritable =
       ranges
           .find{ row =>
-            index >= row._2 && index < row._3
+            index >= row._2 && index <= row._3
           }
         .map { case (path, _, _) =>
             readers.getOrInsert((layerId, path), new MapFile.Reader(path, conf))
