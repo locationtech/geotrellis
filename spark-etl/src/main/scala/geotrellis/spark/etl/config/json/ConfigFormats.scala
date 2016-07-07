@@ -117,7 +117,7 @@ trait ConfigFormats {
   implicit val ingestKeyIndexFormat     = jsonFormat4(IngestKeyIndexMethod)
   implicit val ingestTypeFormat         = jsonFormat3(IngestType)
   implicit val ingestOutputTypeFormat   = jsonFormat2(IngestOutputType)
-  implicit val ingestOptionsFormat      = jsonFormat14(IngestOptions)
+  implicit val ingestOptionsFormat      = jsonFormat15(IngestOptions)
   implicit val outputFormat             = jsonFormat2(Output)
   implicit val inputFormat              = jsonFormat5(Input)
 }

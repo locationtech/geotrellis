@@ -22,6 +22,8 @@ object EtlConf {
                |
                |  --datasets <value>
                |        datasets is a non-empty String property
+               |  --output <value>
+               |        output is a non-empty String property
                |  --credentials <value>
                |        credentials is a non-empty String property
                |  --help

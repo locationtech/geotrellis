@@ -27,12 +27,12 @@ object Etl {
   val defaultModules = Array(s3.S3Module, hadoop.HadoopModule, file.FileModule, accumulo.AccumuloModule, cassandra.CassandraModule)
 
   def ingest[
-    I: Component[?, ProjectedExtent]: TypeTag: ? => TilerKeyMethods[I, K],
-    K: SpatialComponent: Boundable: TypeTag,
-    V <: CellGrid: TypeTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
+  I: Component[?, ProjectedExtent]: TypeTag: ? => TilerKeyMethods[I, K],
+  K: SpatialComponent: Boundable: TypeTag,
+  V <: CellGrid: TypeTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
-    args: Seq[String], modules: Seq[TypedModule] = Etl.defaultModules
-  )(implicit sc: SparkContext) = {
+     args: Seq[String], modules: Seq[TypedModule] = Etl.defaultModules
+   )(implicit sc: SparkContext) = {
     implicit def classTagK = ClassTag(typeTag[K].mirror.runtimeClass(typeTag[K].tpe)).asInstanceOf[ClassTag[K]]
     implicit def classTagV = ClassTag(typeTag[V].mirror.runtimeClass(typeTag[V].tpe)).asInstanceOf[ClassTag[V]]
 
@@ -112,9 +112,7 @@ case class Etl(@transient etlJob: EtlJob, @transient modules: Seq[TypedModule] =
     V <: CellGrid: Stitcher: ClassTag: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V]):
     (? => TileReprojectMethods[V]): (? => CropMethods[V]),
     K: SpatialComponent: Boundable: ClassTag
-  ](
-    rdd: RDD[(I, V)], method: ResampleMethod = NearestNeighbor
-  )(implicit sc: SparkContext): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
+  ](rdd: RDD[(I, V)], method: ResampleMethod = NearestNeighbor)(implicit sc: SparkContext): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
     val targetCellType = ingestOptions.cellType
     val destCrs = ingestOptions.getCrs.get
 
@@ -125,8 +123,10 @@ case class Etl(@transient etlJob: EtlJob, @transient modules: Seq[TypedModule] =
       case PerTileReproject =>
         val reprojected = rdd.reproject(destCrs)
         val (zoom: Int, md: TileLayerMetadata[K]) = scheme match {
-          case Left(layoutScheme) =>
-            TileLayerMetadata.fromRdd(reprojected, layoutScheme)
+          case Left(layoutScheme) => ingestOptions.maxZoom match {
+            case Some(zoom) =>  TileLayerMetadata.fromRdd(reprojected, ZoomedLayoutScheme(destCrs, ingestOptions.tileSize), zoom)
+            case _ => TileLayerMetadata.fromRdd(reprojected, layoutScheme)
+          }
           case Right(layoutDefinition) =>
             TileLayerMetadata.fromRdd(reprojected, layoutDefinition)
         }
@@ -135,7 +135,10 @@ case class Etl(@transient etlJob: EtlJob, @transient modules: Seq[TypedModule] =
         zoom -> ContextRDD(reprojected.tileToLayout[K](amd, tilerOptions), amd)
 
       case BufferedReproject =>
-        val (_, md) = TileLayerMetadata.fromRdd(rdd, FloatingLayoutScheme(ingestOptions.tileSize))
+        val (_, md) = ingestOptions.maxZoom match {
+          case Some(zoom) =>  TileLayerMetadata.fromRdd(rdd, ZoomedLayoutScheme(destCrs, ingestOptions.tileSize), zoom)
+          case _ => TileLayerMetadata.fromRdd(rdd, FloatingLayoutScheme(ingestOptions.tileSize))
+        }
         val amd = adjustCellType(md)
         // Keep the same number of partitions after tiling.
         val tilerOptions = Tiler.Options(resampleMethod = method, partitioner = new HashPartitioner(rdd.partitions.length))

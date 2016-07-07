@@ -24,7 +24,8 @@ case class IngestOptions(
   cellSize: Option[CellSize] = None,
   cellType: Option[CellType] = None,
   encoding: Option[String] = None,
-  breaks: Option[String] = None
+  breaks: Option[String] = None,
+  maxZoom: Option[Int] = None
 ) {
   def getCrs = crs.map(CRS.fromName)
 
