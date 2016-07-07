@@ -16,9 +16,9 @@ case class Credentials(accumulo: List[Accumulo], cassandra: List[Cassandra], s3:
       case HadoopType | FileType     => getHadoopCfgs
       // we are not able to define credentials for custom InputPlugins,
       // that logic should be incapsulated into InputPlugin definition
-      case UserDefinedBackendType(s) => Map[String, Backend with Product with Serializable]()
+      case UserDefinedBackendType(_) | UserDefinedBackendInputType(_) => Map[String, Backend with Product with Serializable]()
     })(_))
 
-  def getOutput(config: Config) = get(config.ingestType.output, config.ingestType.outputCredentials)
-  def getInput(config: Config)  = get(config.ingestType.input, config.ingestType.inputCredentials)
+  def getOutput(config: Output) = get(config.ingestOutputType.output, config.ingestOutputType.credentials)
+  def getInput(config: Input)   = get(config.ingestType.input, config.ingestType.credentials)
 }

@@ -96,7 +96,8 @@ spark-submit \
 --driver-memory 2G \
 $JAR \
 --credentials "file://credentials.json" \
---datasets "file://datasets.json"
+--datasets "file://datasets.json" \
+--output "file://output.json"
 ```
 
 Note that the arguments before the `$JAR` configure `SparkContext`
@@ -111,7 +112,8 @@ and arguments after configure GeoTrellis ETL inputs and outputs.
  Option       | Description
 ------------- | -------------
 credentials   | Path to a json file (local fs / hdfs) with credentials for ingest datasets (required field)
-datasets      | Path to a json file (local fs / hdfs) with datasets to ingest, with optional credentials (required field)
+datasets      | Path to a json file (local fs / hdfs) with datasets to ingest, with optional credentials
+output        | Path to a json file (local fs / hdfs) with output backend params to ingest, with optional credentials
 
 #### Credentials JSON description
 
@@ -141,6 +143,29 @@ datasets      | Path to a json file (local fs / hdfs) with datasets to ingest, w
 ```
 
 Sets of *named* credentials for each backend.
+
+#### Output JSON description
+
+```json
+{
+  "ingestOutputType": {
+    "output": "accumulo",
+    "credentials": "name"
+  },
+  "path": "output"
+}
+```
+Key           | Value
+--------------|----------------
+path          | Output path (local path / hdfs), s3:// url, accumulo table name or cassandra table name with keyspace (keyspace.tablename)
+
+
+##### IngestOutputType JSON description
+
+Key              | Value
+-----------------|----------------
+credentials      | Input Credentials name, from a named set of credentials for your input backend
+output           | Input backend type (file / hadoop / s3 / accumulo / cassandra)
  
 #### Datasets JSON description
 
@@ -150,15 +175,9 @@ Sets of *named* credentials for each backend.
       "name":"test",
       "ingestType":{  
          "format":"geotiff",
-         "inputCredentials":"inputCredentials name",
-         "output":"hadoop",
-         "outputCredentials":"outputCredentials name",
          "input":"hadoop"
       },
-      "path":{  
-         "input":"input",
-         "output":"output"
-      },
+      "path":"input",
       "cache":"NONE",
       "ingestOptions":{  
          "breaks":"0:ffffe5ff;0.1:f7fcb9ff;0.2:d9f0a3ff;0.3:addd8eff;0.4:78c679ff;0.5:41ab5dff;0.6:238443ff;0.7:006837ff;1:004529ff",
@@ -197,23 +216,22 @@ name          | Dataset name
 ingestType    | Ingest io settings
 cache         | Spark RDD storage level to be used for caching (default: MEMORY_AND_DISK_SER)
 ingestOptions | Ingest Options (find description below)
+path          | Input path (local path / hdfs), or s3:// url
 
 ##### IngestType JSON description
 
 Key              | Value
-------------------|----------------
-format            | Format of the tile files to be read (ex: geotiff)
-inputCredentials  | Input Credentials name, from a named set of credentials for your input backend
-outputCredentials | Output Credentials name, from a named set of credentials for your output backend
-input             | Input backend type (hadoop / s3)
-output            | Output backend type (accumulo / cassandra / hadoop / s3)
+-----------------|----------------
+format           | Format of the tile files to be read (ex: geotiff)
+credentials      | Input Credentials name, from a named set of credentials for your input backend
+input            | Input backend type (file / hadoop / s3)
 
 ###### Supported Formats
 
 Format           | Options
 -----------------|----------------
-geotiff          | spatial ingest
-temporal-geotiff | temporal ingest
+geotiff          | Spatial ingest
+temporal-geotiff | Temporal ingest
 
 ##### Path JSON description
 
@@ -337,11 +355,10 @@ The `path` module argument is actually a path template, that allows the followin
 
 A sample render output configuration template could be:
  ```json
-   "path": { output": "s3://tms-bucket/layers/{name}/{z}-{x}-{y}.png },
+   "path": "s3://tms-bucket/layers/{name}/{z}-{x}-{y}.png",
    "ingestType":{  
      "format":"geotiff",     
-     "output":"render",     
-     "input":"hadoop"
+     "output":"render"
    }
  ```
 

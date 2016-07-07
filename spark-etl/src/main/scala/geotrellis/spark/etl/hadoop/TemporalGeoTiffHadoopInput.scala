@@ -14,7 +14,7 @@ class TemporalGeoTiffHadoopInput extends HadoopInput[TemporalProjectedExtent, Ti
   def apply(job: EtlJob)(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, Tile)] =
     sc.hadoopTemporalGeoTiffRDD(
       path       = job.inputProps("path"),
-      timeTag    = job.config.ingestOptions.keyIndexMethod.timeTag.getOrElse(TemporalGeoTiffInputFormat.GEOTIFF_TIME_TAG_DEFAULT),
-      timeFormat = job.config.ingestOptions.keyIndexMethod.timeFormat.getOrElse(TemporalGeoTiffInputFormat.GEOTIFF_TIME_FORMAT_DEFAULT)
+      timeTag    = job.input.ingestOptions.keyIndexMethod.timeTag.getOrElse(TemporalGeoTiffInputFormat.GEOTIFF_TIME_TAG_DEFAULT),
+      timeFormat = job.input.ingestOptions.keyIndexMethod.timeFormat.getOrElse(TemporalGeoTiffInputFormat.GEOTIFF_TIME_FORMAT_DEFAULT)
     )
 }

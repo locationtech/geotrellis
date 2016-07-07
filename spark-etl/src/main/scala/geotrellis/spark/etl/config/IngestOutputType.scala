@@ -1,7 +1,6 @@
 package geotrellis.spark.etl.config
 
-case class IngestType(
-  format: String,
-  input: BackendInputType,
+case class IngestOutputType(
+  output: BackendType,
   credentials: Option[String] = None
 )

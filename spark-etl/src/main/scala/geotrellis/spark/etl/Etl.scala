@@ -44,7 +44,7 @@ object Etl {
       /* perform the reprojection and mosaicing step to fit tiles to LayoutScheme specified */
       val (zoom, tiled) = etl.tile(sourceTiles)
       /* save and optionally pyramid the mosaiced layer */
-      etl.save[K, V](LayerId(etl.conf.name, zoom), tiled)
+      etl.save[K, V](LayerId(etl.input.name, zoom), tiled)
     }
   }
 }
@@ -52,8 +52,9 @@ object Etl {
 case class Etl(@transient etlJob: EtlJob, @transient modules: Seq[TypedModule] = Etl.defaultModules) {
 
   @transient lazy val logger: Logger = Logger(LoggerFactory getLogger getClass.getName)
-  @transient val conf = etlJob.config
-  @transient val ingestOptions = conf.ingestOptions
+  @transient val input = etlJob.input
+  @transient val output = etlJob.output
+  @transient val ingestOptions = input.ingestOptions
 
   def scheme: Either[LayoutScheme, LayoutDefinition] = {
     if (ingestOptions.layoutScheme.nonEmpty) {
@@ -81,8 +82,8 @@ case class Etl(@transient etlJob: EtlJob, @transient modules: Seq[TypedModule] =
     val plugin =
       combinedModule
         .findSubclassOf[InputPlugin[I, V]]
-        .find(_.suitableFor(conf.ingestType.input.name, conf.ingestType.format))
-        .getOrElse(sys.error(s"Unable to find input module of type '${conf.ingestType.input}' for format `${conf.ingestType.format}"))
+        .find(_.suitableFor(input.ingestType.input.name, input.ingestType.format))
+        .getOrElse(sys.error(s"Unable to find input module of type '${input.ingestType.input}' for format `${input.ingestType.format}"))
 
     plugin(etlJob)
   }
@@ -154,7 +155,6 @@ case class Etl(@transient etlJob: EtlJob, @transient modules: Seq[TypedModule] =
     *
     * @param id     Layout ID to b
     * @param rdd Tiled raster RDD with TileLayerMetadata
-    * @param method Index Method that maps an instance of K to a Long
     * @tparam K  Key type with SpatialComponent corresponding LayoutDefinition
     * @tparam V  Tile raster with cells from single tile in LayoutDefinition
     */
@@ -168,8 +168,8 @@ case class Etl(@transient etlJob: EtlJob, @transient modules: Seq[TypedModule] =
     val outputPlugin =
       combinedModule
         .findSubclassOf[OutputPlugin[K, V, TileLayerMetadata[K]]]
-        .find { _.suitableFor(conf.ingestType.output.name) }
-        .getOrElse(sys.error(s"Unable to find output module of type '${conf.ingestType.output.name}'"))
+        .find { _.suitableFor(output.ingestOutputType.output.name) }
+        .getOrElse(sys.error(s"Unable to find output module of type '${output.ingestOutputType.output.name}'"))
 
     def savePyramid(zoom: Int, rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): Unit = {
       val currentId = id.copy(zoom = zoom)
@@ -178,7 +178,7 @@ case class Etl(@transient etlJob: EtlJob, @transient modules: Seq[TypedModule] =
       scheme match {
         case Left(s) =>
           if (ingestOptions.pyramid && zoom >= 1) {
-            val (nextLevel, nextRdd) = Pyramid.up(rdd, s, zoom, etlJob.config.ingestOptions.getPyramidOptions)
+            val (nextLevel, nextRdd) = Pyramid.up(rdd, s, zoom, ingestOptions.getPyramidOptions)
             savePyramid(nextLevel, nextRdd)
           }
         case Right(_) =>

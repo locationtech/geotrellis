@@ -9,8 +9,9 @@ import org.apache.spark.SparkContext
 import spray.json.DefaultJsonProtocol._
 import spray.json._
 
-class EtlConf(val credentials: Credentials, val datasets: List[Config]) {
-  def getEtlJobs = datasets map { ds => EtlJob(ds, credentials.getInput(ds), credentials.getOutput(ds)) }
+class EtlConf(val credentials: Credentials, val datasets: List[Input], val output: Output) {
+  private lazy val credentialsOutput = credentials.getOutput(output)
+  def getEtlJobs = datasets map { ds => EtlJob(ds, output, credentials.getInput(ds), credentialsOutput) }
 }
 
 object EtlConf {
@@ -42,6 +43,8 @@ object EtlConf {
         nextOption(map ++ Map('datasets -> value), tail)
       case "--credentials" :: value :: tail =>
         nextOption(map ++ Map('credentials -> value), tail)
+      case "--output" :: value :: tail =>
+        nextOption(map ++ Map('output -> value), tail)
       case "--help" :: tail => {
         println(help)
         sys.exit(1)
@@ -58,6 +61,6 @@ object EtlConf {
 
   def apply(args: Seq[String])(implicit sc: SparkContext) = {
     val m = parse(args)
-    new EtlConf(m('credentials).parseJson.convertTo[Credentials], m('datasets).parseJson.convertTo[List[Config]])
+    new EtlConf(m('credentials).parseJson.convertTo[Credentials], m('datasets).parseJson.convertTo[List[Input]], m('output).parseJson.convertTo[Output])
   }
 }

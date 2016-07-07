@@ -49,16 +49,16 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetada
   ): Unit = {
     val useS3 = job.outputProps("path").take(5) == "s3://"
     val images =
-      job.config.ingestOptions.encoding.get.toLowerCase match {
+      job.input.ingestOptions.encoding.get.toLowerCase match {
           case "png" =>
-            parseColorMaps(job.config.ingestOptions.breaks) match {
+            parseColorMaps(job.input.ingestOptions.breaks) match {
               case Some(colorMap) =>
                 rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderPng(colorMap).mapValues(_.bytes)
               case None =>
                 rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderPng().mapValues(_.bytes)
             }
           case "jpg" =>
-            parseColorMaps(job.config.ingestOptions.breaks) match {
+            parseColorMaps(job.input.ingestOptions.breaks) match {
               case Some(colorMap) =>
                 rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderJpg(colorMap).mapValues(_.bytes)
               case None =>

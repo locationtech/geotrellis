@@ -15,8 +15,8 @@ class TemporalMultibandGeoTiffHadoopInput extends HadoopInput[TemporalProjectedE
   def apply(job: EtlJob)(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, MultibandTile)] =
     sc.hadoopTemporalMultibandGeoTiffRDD(
       path       = job.inputProps("path"),
-      timeTag    = job.config.ingestOptions.keyIndexMethod.timeTag.getOrElse(TemporalGeoTiffInputFormat.GEOTIFF_TIME_TAG_DEFAULT),
-      timeFormat = job.config.ingestOptions.keyIndexMethod.timeFormat.getOrElse(TemporalGeoTiffInputFormat.GEOTIFF_TIME_FORMAT_DEFAULT)
+      timeTag    = job.input.ingestOptions.keyIndexMethod.timeTag.getOrElse(TemporalGeoTiffInputFormat.GEOTIFF_TIME_TAG_DEFAULT),
+      timeFormat = job.input.ingestOptions.keyIndexMethod.timeFormat.getOrElse(TemporalGeoTiffInputFormat.GEOTIFF_TIME_FORMAT_DEFAULT)
     )
 }
 

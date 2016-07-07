@@ -11,5 +11,5 @@ import org.apache.spark.SparkContext
 
 class SpatialS3Output extends S3Output[SpatialKey, Tile, TileLayerMetadata[SpatialKey]] {
   def writer(job: EtlJob)(implicit sc: SparkContext) =
-    S3LayerWriter(job.outputProps("bucket"), job.outputProps("key")).writer[SpatialKey, Tile, TileLayerMetadata[SpatialKey]](job.config.ingestOptions.getKeyIndexMethod[SpatialKey])
+    S3LayerWriter(job.outputProps("bucket"), job.outputProps("key")).writer[SpatialKey, Tile, TileLayerMetadata[SpatialKey]](job.input.ingestOptions.getKeyIndexMethod[SpatialKey])
 }

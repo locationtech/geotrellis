@@ -11,5 +11,5 @@ import org.apache.spark.SparkContext
 
 class SpaceTimeS3Output extends S3Output[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]] {
   def writer(job: EtlJob)(implicit sc: SparkContext) =
-    S3LayerWriter(job.outputProps("bucket"), job.outputProps("key")).writer[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](job.config.ingestOptions.getKeyIndexMethod[SpaceTimeKey])
+    S3LayerWriter(job.outputProps("bucket"), job.outputProps("key")).writer[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](job.input.ingestOptions.getKeyIndexMethod[SpaceTimeKey])
 }
