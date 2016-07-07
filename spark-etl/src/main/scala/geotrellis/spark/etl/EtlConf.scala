@@ -79,6 +79,9 @@ class EtlConf(args: Seq[String]) extends ScallopConf(args){
                       descr = "pyramid layer on save (default: false)",
                       default = Some(false))
 
+  val maxZoom      = opt[Int]("maxZoom",
+                      descr = "max zoom level for layer tiles")(maxZoomConverter)
+
   val outputProps  = props[String]('O',
                       descr = "parameters for output module")
 
@@ -183,4 +186,23 @@ object EtlConf {
     val tag = typeTag[ReprojectMethod]
     val argType = org.rogach.scallop.ArgType.SINGLE
   }
+
+  def maxZoomConverter = new ValueConverter[Int] {
+    val wrong = Left("Zoom should be an integer greater than 0")
+    def parse(s : List[(String, List[String])]) = s match {
+      case (_, str :: Nil) :: Nil  =>
+        Try {str.toInt } match {
+          case Success(cs) => {
+            if (str.toInt > 0) Right(Some(str.toInt)) else wrong
+          }
+          case Failure(_) => wrong
+        }
+      case Nil  =>
+        Right(None)
+      case _ => wrong
+    }
+    val tag = typeTag[Int]
+    val argType = org.rogach.scallop.ArgType.SINGLE
+  }
+
 }
