@@ -116,7 +116,7 @@ lazy val slick = Project("slick", file("slick")).
   settings(commonSettings: _*)
 
 lazy val spark = Project("spark", file("spark")).
-  dependsOn(util, raster).
+  dependsOn(util, raster, rasterTestkit % "provided;test->test").
   settings(commonSettings: _*)
 
 lazy val sparkTestkit: Project = Project("spark-testkit", file("spark-testkit")).
@@ -148,4 +148,8 @@ lazy val shapefile = Project("shapefile", file("shapefile")).
   settings(commonSettings: _*)
 
 lazy val util = Project("util", file("util")).
+  settings(commonSettings: _*)
+
+lazy val docExamples = Project("doc-examples", file("doc-examples")).
+  dependsOn(spark, s3, accumulo, cassandra).
   settings(commonSettings: _*)

@@ -192,7 +192,7 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[geotrellis.raster.histogram.StreamingHistogram.DeltaCompare])
     kryo.register(classOf[geotrellis.raster.histogram.StreamingHistogram.Delta])
     kryo.register(classOf[geotrellis.raster.histogram.StreamingHistogram.Bucket])
-    kryo.register(classOf[geotrellis.raster.KernelStamper])
+    kryo.register(classOf[geotrellis.raster.density.KernelStamper])
     kryo.register(classOf[geotrellis.raster.summary.polygonal.MeanResult])
     kryo.register(classOf[geotrellis.raster.ProjectedRaster[Any]])
     kryo.register(classOf[geotrellis.raster.TileLayout])

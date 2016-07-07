@@ -52,8 +52,14 @@ object AvroEncoder {
 
     val reader = new GenericDatumReader[GenericRecord](writerSchema, schema)
     val decoder = DecoderFactory.get().binaryDecoder(decompress(bytes), null)
-    val rec = reader.read(null.asInstanceOf[GenericRecord], decoder)
-    format.decode(rec)
+    try {
+      val rec = reader.read(null.asInstanceOf[GenericRecord], decoder)
+      format.decode(rec)
+    } catch {
+      case e: AvroTypeException =>
+        throw new AvroTypeException(e.getMessage + ". " +
+          "This can be caused by using a type parameter which doesn't match the object being deserialized.")
+    }
   }
 
   def toJson[T: AvroRecordCodec](thing: T): String = {
@@ -74,7 +80,13 @@ object AvroEncoder {
 
     val reader = new GenericDatumReader[GenericRecord](schema)
     val decoder = DecoderFactory.get().jsonDecoder(schema, json)
-    val rec = reader.read(null.asInstanceOf[GenericRecord], decoder)
-    format.decode(rec)
+    try {
+      val rec = reader.read(null.asInstanceOf[GenericRecord], decoder)
+      format.decode(rec)
+    } catch {
+      case e: AvroTypeException =>
+        throw new AvroTypeException(e.getMessage + ". " +
+          "This can be caused by using a type parameter which doesn't match the object being deserialized.")
+    }
   }
 }

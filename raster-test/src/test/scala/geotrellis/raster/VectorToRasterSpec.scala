@@ -83,37 +83,4 @@ class VectorToRasterSpec extends FunSpec
       assertEqual(result, tile)
     }
   }
-
-  describe("kernelDensity") {
-    it("matches expected values") {
-      val rasterExtent = RasterExtent(Extent(0,0,5,5),1,1,5,5)
-      val n = NODATA
-      val arr = Array(2,2,1,n,n,
-        2,3,2,1,n,
-        1,2,2,1,n,
-        n,1,1,2,1,
-        n,n,n,1,1)
-
-      val tile = ArrayTile(arr,5, 5)
-
-      val kernel =
-        ArrayTile(
-          Array(
-            1,1,1,
-            1,1,1,
-            1,1,1),
-          3,3)
-
-      val points = Seq(
-        PointFeature(Point(0,4.5),1),
-        PointFeature(Point(1,3.5),1),
-        PointFeature(Point(2,2.5),1),
-        PointFeature(Point(4,0.5),1)
-      )
-      val result =
-        VectorToRaster.kernelDensity(points, kernel, rasterExtent)
-
-      assertEqual(result, tile)
-    }
-  }
 }
