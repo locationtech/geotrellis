@@ -47,8 +47,7 @@ $JAR \
 }
 ```
 
-
-### Ingest tiles from local fs or hdfs into s3 storage command
+### Data sets JSON example (local fs)
 
 `datasets.json`:
 
@@ -57,14 +56,10 @@ $JAR \
    {  
       "name":"nlcd-tms",
       "ingestType":{  
-         "format":"{geotiff | temporal-geotiff}",         
-         "output":"s3",         
-         "input":"hadoop"
+         "format":"{geotiff | temporal-geotiff}",            
+         "input":"file"
       },
-      "path":{  
-         "input":"file:///Data/nlcd/tiles",
-         "output":"s3://com.azavea.datahub/catalog"
-      },
+      "path": "file:///Data/nlcd/tiles",
       "cache":"NONE",
       "ingestOptions":{           
          "reprojectMethod":"buffered",         
@@ -81,7 +76,7 @@ $JAR \
 ]
 ```
 
-### Ingest singleband tiles from local fs or hdfs into accumulo storage command
+### Data sets JSON example (hdfs)
 
 `datasets.json`:
 
@@ -90,15 +85,10 @@ $JAR \
    {  
       "name":"nlcd-tms",
       "ingestType":{  
-         "format":"{geotiff | temporal-geotiff}",         
-         "output":"accumulo",         
-         "input":"hadoop",
-         "outputCredentials":"accumulo-gis"
+         "format":"{geotiff | temporal-geotiff}",            
+         "input":"hadoop"
       },
-      "path":{  
-         "input":"file:///Data/nlcd/tiles",
-         "output":"nlcd-table"
-      },
+      "path": "hdfs://nlcd/tiles",
       "cache":"NONE",
       "ingestOptions":{           
          "reprojectMethod":"buffered",         
@@ -115,103 +105,68 @@ $JAR \
 ]
 ```
 
-### Ingest singleband tiles from local fs or hdfs into hadoop storage
+### Ingest tiles into s3 storage command
 
-`datasets.json`:
+`output.json`:
 
 ```json
-[
-   {  
-      "name":"nlcd-tms",
-      "ingestType":{  
-         "format":"{geotiff | temporal-geotiff}",         
-         "output":"hadoop",         
-         "input":"hadoop"
-      },
-      "path":{  
-         "input":"file:///Data/nlcd/tiles",
-         "output":"hdfs://geotrellis-ingest/nlcd/"
-      },
-      "cache":"NONE",
-      "ingestOptions":{           
-         "reprojectMethod":"buffered",         
-         "tileSize":256,         
-         "pyramid":true,
-         "resampleMethod":"nearest-neighbor",
-         "keyIndexMethod":{  
-            "type":"zorder"
-         },
-         "layoutScheme":"{zoomed | floating}",         
-         "crs":"EPSG:3857"
-      }
-   }
-]
+{
+  "ingestOutputType": {
+    "output": "s3"
+  },
+  "path": "s3://com.azavea.datahub/catalog"
+}
 ```
 
-### Ingest singleband tiles from local fs or hdfs into rendered set of PNGs in S3
+### Ingest tiles into accumulo storage command
 
-`datasets.json`:
+`output.json`:
 
 ```json
-[
-   {  
-      "name":"nlcd-tms",
-      "ingestType":{  
-         "format":"{geotiff | temporal-geotiff}",         
-         "output":"render",         
-         "input":"hadoop"
-      },
-      "path":{  
-         "input":"file:///Data/nlcd/tiles",
-         "output":"s3://tms-bucket/layers/{name}/{z}-{x}-{y}.png"
-      },
-      "cache":"NONE",
-      "ingestOptions":{   
-         "encoding":"geotiff",
-         "reprojectMethod":"buffered",         
-         "tileSize":256,         
-         "pyramid":true,
-         "resampleMethod":"nearest-neighbor",
-         "keyIndexMethod":{  
-            "type":"zorder"
-         },
-         "layoutScheme":"{zoomed | floating}",         
-         "crs":"EPSG:3857"
-      }
-   }
-]
+{
+  "ingestOutputType": {
+    "output": "accumulo",
+    "credentials": "accumulo-gis"
+  },
+  "path": "nlcdtable"
+}
 ```
 
-### Ingest singleband tiles from local fs or hdfs into rendered set of PNGs in hdfs or local fs
+### Ingest tiles into hadoop storage
 
-`datasets.json`:
+`output.json`:
 
 ```json
-[
-   {  
-      "name":"nlcd-tms",
-      "ingestType":{  
-         "format":"{geotiff | temporal-geotiff}",         
-         "output":"render",         
-         "input":"hadoop"
-      },
-      "path":{  
-         "input":"file:///Data/nlcd/tiles",
-         "output":"hdfs://path/layers/{name}/{z}-{x}-{y}.png"
-      },
-      "cache":"NONE",
-      "ingestOptions":{   
-         "encoding":"geotiff",
-         "reprojectMethod":"buffered",         
-         "tileSize":256,         
-         "pyramid":true,
-         "resampleMethod":"nearest-neighbor",
-         "keyIndexMethod":{  
-            "type":"zorder"
-         },
-         "layoutScheme":"{zoomed | floating}",         
-         "crs":"EPSG:3857"
-      }
-   }
-]
+{
+  "ingestOutputType": {
+    "output": "hadoop"    
+  },
+  "path": "hdfs://geotrellis-ingest/nlcd/"
+}
+```
+
+### Ingest tiles into rendered set of PNGs in S3
+
+`output.json`:
+
+```json
+{
+  "ingestOutputType": {
+    "output": "render"    
+  },
+  "path": "s3://tms-bucket/layers/{name}/{z}-{x}-{y}.png"
+}
+```
+
+### Ingest tiles into rendered set of PNGs in hdfs or local fs
+
+`output.json`:
+
+```json
+{
+  "ingestOutputType": {
+    "output": "render"    
+  },
+  "path": "hdfs://path/layers/{name}/{z}-{x}-{y}.png"
+}
 ```
