@@ -23,7 +23,7 @@ import GeomFactory._
 import geotrellis.vector._
 
 import spire.syntax.cfor._
-import scala.collection.JavaConverters._
+import scala.collection.JavaConversions._
 
 object Polygon {
   implicit def jtsToPolygon(jtsGeom: jts.Polygon): Polygon =
@@ -65,11 +65,6 @@ object Polygon {
       }).toArray
 
     Polygon(factory.createPolygon(extGeom, holeGeoms))
-  }
-
-  def cascadedPolygonUnion(polygons: Seq[Polygon]): TwoDimensionsTwoDimensionsUnionResult = {
-    require(polygons.nonEmpty, "Union of empty sequence disallowed")
-    new CascadedPolygonUnion(polygons.map(_.jtsGeom).asJava).union
   }
 }
 
@@ -270,9 +265,12 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
    * else falls back to default jts union method.
    */
   def union(g: TwoDimensions): TwoDimensionsTwoDimensionsUnionResult = g match {
-    case p:Polygon => Polygon.cascadedPolygonUnion(Array(this, p))
-    case mp:MultiPolygon => Polygon.cascadedPolygonUnion(this +: mp.polygons)
-    case _ => jtsGeom.union(g.jtsGeom)
+    case p:Polygon =>
+      new CascadedPolygonUnion(Seq(this, p).map(_.jtsGeom)).union
+    case mp:MultiPolygon =>
+      new CascadedPolygonUnion((this +: mp.polygons).map(_.jtsGeom).toSeq).union
+    case _ =>
+      jtsGeom.union(g.jtsGeom)
   }
 
 
