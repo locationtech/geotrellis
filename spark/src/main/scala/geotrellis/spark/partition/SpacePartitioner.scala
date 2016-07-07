@@ -11,7 +11,7 @@ import org.apache.spark.rdd.{ShuffledRDD, RDD}
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect._
 
-case class SpacePartitioner[K: Boundable](bounds: Bounds[K])
+case class SpacePartitioner[K: Boundable: ClassTag](bounds: Bounds[K])
   (implicit index: PartitionerIndex[K]) extends Partitioner {
 
   val regions: Array[Long] =
@@ -52,7 +52,7 @@ case class SpacePartitioner[K: Boundable](bounds: Bounds[K])
     * If it is in sync with Bounds in the Metadata we assume it to be valid .
     * Otherwise we assume it has degraded to be a hash partitioner and we must perform a shuffle.
     */
-  def apply[V, M: GetComponent[?, Bounds[K]]](rdd: RDD[(K, V)] with Metadata[M]): RDD[(K, V)] with Metadata[Bounds[K]] = {
+  def apply[V: ClassTag, M: GetComponent[?, Bounds[K]]](rdd: RDD[(K, V)] with Metadata[M]): RDD[(K, V)] with Metadata[Bounds[K]] = {
     val kb: Bounds[K] = rdd.metadata.getComponent[Bounds[K]]
     rdd.partitioner match {
       case Some(part: SpacePartitioner[K]) if part.bounds == kb =>
@@ -62,7 +62,7 @@ case class SpacePartitioner[K: Boundable](bounds: Bounds[K])
 
       case _ =>
         ContextRDD(
-          new ShuffledRDD(rdd.filter(r => containsKey(r._1)), this).asInstanceOf[RDD[(K, V)]],
+          new ShuffledRDD[K, V, V](rdd.filter(r => containsKey(r._1)), this).asInstanceOf[RDD[(K, V)]],
           bounds)
     }
   }
