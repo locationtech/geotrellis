@@ -17,26 +17,6 @@ class RDDLayoutMergeMethods[
   M: (? => LayoutDefinition)
 ](val self: RDD[(K, V)] with Metadata[M]) extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
 
- def merge(other: RDD[(K, V)] with Metadata[M]) = {
-   val thisLayout: LayoutDefinition = self.metadata
-   val thatLayout: LayoutDefinition = other.metadata
-
-   val cutRdd =
-       other
-         .flatMap { case (k: K, tile: V) =>
-           val extent = thatLayout.mapTransform(k)
-           thisLayout.mapTransform(extent)
-             .coords
-             .map { case (col, row) =>
-             val outKey = k.setComponent(SpatialKey(col, row))
-             val newTile = tile.prototype(thisLayout.tileCols, thisLayout.tileRows)
-             val merged = newTile.merge(thisLayout.mapTransform(outKey), extent, tile)
-             (outKey, merged)
-           }
-       }
-
-
-   self.withContext { rdd => rdd.merge(cutRdd) }
- }
-
+ def merge(other: RDD[(K, V)] with Metadata[M]) =
+   RDDLayoutMerge.merge(self, other)
 }
