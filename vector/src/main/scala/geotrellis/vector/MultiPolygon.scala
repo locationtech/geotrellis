@@ -160,10 +160,10 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
   def union(ls: MultiLine): LineMultiPolygonUnionResult =
     jtsGeom.union(ls.jtsGeom)
 
-  def |(ps: MultiPolygon): TwoDimensionsTwoDimensionsSeqUnionResult =
+  def |(ps: MultiPolygon): TwoDimensionsTwoDimensionsUnionResult =
     union(ps)
-  def union(ps: MultiPolygon): TwoDimensionsTwoDimensionsSeqUnionResult =
-    (this.polygons ++ ps.polygons).toSeq.unionGeometries
+  def union(ps: MultiPolygon): TwoDimensionsTwoDimensionsUnionResult =
+    Polygon.cascadedPolygonUnion(this.polygons ++ ps.polygons)
 
   def union: TwoDimensionsTwoDimensionsSeqUnionResult =
     polygons.toSeq.unionGeometries

@@ -18,10 +18,12 @@ package geotrellis.vector
 
 import com.vividsolutions.jts.geom.TopologyException
 import com.vividsolutions.jts.{geom => jts}
+import com.vividsolutions.jts.operation.union._
 import GeomFactory._
 import geotrellis.vector._
 
 import spire.syntax.cfor._
+import scala.collection.JavaConverters._
 
 object Polygon {
   implicit def jtsToPolygon(jtsGeom: jts.Polygon): Polygon =
@@ -63,6 +65,11 @@ object Polygon {
       }).toArray
 
     Polygon(factory.createPolygon(extGeom, holeGeoms))
+  }
+
+  def cascadedPolygonUnion(polygons: Seq[Polygon]): TwoDimensionsTwoDimensionsUnionResult = {
+    require(polygons.nonEmpty, "Union of empty sequence disallowed")
+    new CascadedPolygonUnion(polygons.map(_.jtsGeom).asJava).union
   }
 }
 
@@ -254,7 +261,7 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
    * Computes a Result that represents a Geometry made up of all the points in
    * this Polygon and g.
    */
-  def |(g: TwoDimensions): TwoDimensionsTwoDimensionsSeqUnionResult =
+  def |(g: TwoDimensions): TwoDimensionsTwoDimensionsUnionResult =
     union(g)
 
   /**
@@ -262,9 +269,9 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
    * this Polygon and g. Uses cascaded polygon union if g is a (multi)polygon
    * else falls back to default jts union method.
    */
-  def union(g: TwoDimensions): TwoDimensionsTwoDimensionsSeqUnionResult = g match {
-    case p:Polygon => Seq(this, p).unionGeometries
-    case mp:MultiPolygon => (this +: mp.polygons).toSeq.unionGeometries
+  def union(g: TwoDimensions): TwoDimensionsTwoDimensionsUnionResult = g match {
+    case p:Polygon => Polygon.cascadedPolygonUnion(Array(this, p))
+    case mp:MultiPolygon => Polygon.cascadedPolygonUnion(this +: mp.polygons)
     case _ => jtsGeom.union(g.jtsGeom)
   }
 
