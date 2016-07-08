@@ -368,3 +368,9 @@ In order to provide your own input or output modules you must extend
 [`InputPlugin`](src/main/scala/geotrellis/spark/etl/InputPlugin) and
 [`OutputPlugin`](src/main/scala/geotrellis/spark/etl/OutputPlugin)
 and register them in the `Etl` constructor via a `TypedModule`.
+
+## Input JSON validation schema
+
+* [--credentials](/spark-etl/src/main/resources/credentials-schema.json) 
+* [--datasets](/spark-etl/src/main/resources/input-schema.json)
+* [--output](/spark-etl/src/main/resources/output-schema.json)

@@ -11,5 +11,5 @@ case class Input(
   ingestOptions: IngestOptions,
   cache: Option[StorageLevel] = None
 ) {
-  def inputParams  = getParams(ingestType.input, path)
+  def inputParams = getParams(ingestType.input, path)
 }

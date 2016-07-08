@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "ingestOutputType": {
+      "type": "object",
+      "properties": {
+        "output": {
+          "type": "string"
+        },
+        "credentials": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "output"
+      ]
+    },
+    "path": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "ingestOutputType",
+    "path"
+  ]
+}
