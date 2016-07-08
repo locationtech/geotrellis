@@ -19,14 +19,19 @@ import mil.nga.giat.geowave.datastore.accumulo._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 import org.geotools.coverage.grid.GridCoverage2D
+import org.geotools.coverage.processing.CoverageProcessor
+import org.geotools.coverage.processing.operation.Mosaic
+import org.geotools.coverage.processing.operation.Mosaic.GridGeometryPolicy
+import org.geotools.factory.{GeoTools, Hints}
 import org.opengis.coverage.grid.GridCoverage
+import org.opengis.parameter.ParameterValueGroup
 
 import spray.json._
 
 import scala.reflect._
+import javax.media.jai.{ImageLayout, JAI}
 
-
-object GeowaveLayerWriter {
+object GeowaveLayerWriter extends LazyLogging {
 
   def write[
     K: ClassTag,
@@ -51,34 +56,37 @@ object GeowaveLayerWriter {
     val specimen = rdd.first
 
     rdd.mapPartitions({ partition =>
-      val gwMetadata = new java.util.HashMap[String, String]()
-      gwMetadata.put("cellType", cellType)
+      val gwMetadata = new java.util.HashMap[String, String](); gwMetadata.put("cellType", cellType)
 
       /* Construct (Multiband|)Tile to GridCoverage2D conversion function */
       val fn: (((K, V)) => GridCoverage2D) = {
         specimen match {
           case (_ : SpatialKey, _: Tile) => { case (k: K, v: V) =>
             val extent = mt(k.asInstanceOf[SpatialKey]).reproject(crs, LatLng)
-            val _tile = v.asInstanceOf[Tile]
-            val tile = _tile.resample(
-              _tile.cols + 13, _tile.rows + 33, // work around bug in GeoWave/GeoTools/JAI
-              NearestNeighbor)
-
+            val tile = v.asInstanceOf[Tile]
             ProjectedRaster(Raster(tile, extent), LatLng).toGridCoverage2D
           }
           case (_ : SpatialKey, _: MultibandTile) => { case (k: K, v: V) =>
             val extent = mt(k.asInstanceOf[SpatialKey]).reproject(crs, LatLng)
-            val _tile = v.asInstanceOf[MultibandTile]
-            val tile = _tile.resample(
-              _tile.cols + 13, _tile.rows + 33, // work around bug in GeoWave/GeoTools/JAI
-              NearestNeighbor)
-
+            val tile = v.asInstanceOf[MultibandTile]
             ProjectedRaster(Raster(tile, extent), LatLng).toGridCoverage2D
           }
         }
       }
 
-      val image = fn(specimen)
+      /* Produce mosaic from all of the tiles in this partition */
+      val sources = new java.util.ArrayList[GridCoverage2D]
+      val retval = partition.map({ case kv => sources.add(fn(kv)); Unit }); retval.toList
+      val processor = CoverageProcessor.getInstance(GeoTools.getDefaultHints())
+      val param = processor.getOperation("Mosaic").getParameters()
+      val hints = new Hints
+      val imageLayout = new ImageLayout
+      logger.info(s"partition size = ${sources.size}")
+      param.parameter("Sources").setValue(sources)
+      hints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout)
+      imageLayout.setTileHeight(256)
+      imageLayout.setTileWidth(256)
+      val image = processor.doOperation(param, hints).asInstanceOf[GridCoverage2D]
 
       /* Objects for writing into GeoWave */
       val basicOperations = new BasicAccumuloOperations(
@@ -91,13 +99,12 @@ object GeowaveLayerWriter {
       val dataStore = new AccumuloDataStore(basicOperations)
       val index = (new SpatialDimensionalityTypeProvider.SpatialIndexBuilder).setAllTiers(true).createIndex()
       val adapter = new RasterDataAdapter(coverageName, gwMetadata, image, 256, true) // image only used for sample and color metadata, not data
+      val indexWriter = dataStore.createWriter(adapter, index).asInstanceOf[IndexWriter[GridCoverage]]
 
-      partition.map({ case kv =>
-        val indexWriter = dataStore.createWriter(adapter, index).asInstanceOf[IndexWriter[GridCoverage]]
-
-        indexWriter.write(fn(kv))
-        indexWriter.close
-      })
+      /* Write the mosaic into GeoWave */
+      indexWriter.write(image)
+      indexWriter.close
+      retval
     }, preservesPartitioning = true).collect
   }
 }
