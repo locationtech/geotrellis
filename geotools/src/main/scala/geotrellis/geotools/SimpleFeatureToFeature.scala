@@ -35,9 +35,9 @@ object SimpleFeatureToFeature {
     }
   }
 
-  def apply[G <: Geometry : ClassTag](simpleFeature: SimpleFeature): Feature[G, immutable.Map[String, Object]] = {
+  def apply[G <: Geometry : ClassTag](simpleFeature: SimpleFeature): Feature[G, immutable.Map[String, AnyRef]] = {
     val properties = simpleFeature.getProperties.asScala
-    val map = mutable.Map.empty[String, Object]
+    val map = mutable.Map.empty[String, AnyRef]
     val defaultGeom = simpleFeature.getDefaultGeometry
     var geometry = if (defaultGeom != null) jtsToGeotrellis(defaultGeom); else None
 
