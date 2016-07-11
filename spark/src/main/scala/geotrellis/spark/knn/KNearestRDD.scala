@@ -17,12 +17,14 @@ object KNearestRDD {
   def kNearest[T](rdd: RDD[T], p: (Double, Double), k: Int)(f: T => Extent): Seq[T] =
     kNearest(rdd, new Extent(p._1, p._2, p._1, p._2), k)(f)
 
+  def kNearest[T](rdd: RDD[T], p: Point, k: Int)(f: T => Extent): Seq[T] =
+    kNearest(rdd, new Extent(p.x, p.y, p.x, p.y), k)(f)
+
   /**
    * Determines the k-nearest neighbors of an RDD of objects which can be
    * coerced into Extents.
    */
   def kNearest[T](rdd: RDD[T], ex: Extent, k: Int)(f: T => Extent): Seq[T] = {
-    // implicit val ord = new Ord[T](ex, f)
     implicit val ord = new Ord[T](ex, f)
 
     rdd.takeOrdered(k)

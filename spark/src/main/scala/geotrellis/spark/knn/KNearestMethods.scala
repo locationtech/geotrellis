@@ -10,5 +10,7 @@ trait KNearestMethods[T] extends MethodExtensions[RDD[T]] {
 
   def kNearest(p: (Double, Double), k: Int)(f: T => Extent): Seq[T] = { KNearestRDD.kNearest[T](self, p, k)(f) }
 
+  def kNearest(p: Point, k: Int)(f: T => Extent): Seq[T] = { KNearestRDD.kNearest[T](self, p, k)(f) }
+
   def kNearest(ex: Extent, k: Int)(f: T => Extent): Seq[T] = { KNearestRDD.kNearest[T](self, ex, k)(f) }
 }
