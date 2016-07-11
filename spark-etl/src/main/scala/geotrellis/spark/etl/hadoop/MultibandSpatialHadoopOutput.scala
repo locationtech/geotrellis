@@ -10,5 +10,5 @@ import org.apache.spark.SparkContext
 
 class MultibandSpatialHadoopOutput extends HadoopOutput[SpatialKey, MultibandTile, TileLayerMetadata[SpatialKey]] {
   def writer(job: EtlJob)(implicit sc: SparkContext) =
-    HadoopLayerWriter(job.outputProps("path")).writer[SpatialKey, MultibandTile, TileLayerMetadata[SpatialKey]](job.input.ingestOptions.getKeyIndexMethod[SpatialKey])
+    HadoopLayerWriter(job.outputProps("path")).writer[SpatialKey, MultibandTile, TileLayerMetadata[SpatialKey]](job.conf.output.getKeyIndexMethod[SpatialKey])
 }

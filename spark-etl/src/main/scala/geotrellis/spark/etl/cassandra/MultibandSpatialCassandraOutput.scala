@@ -10,5 +10,5 @@ import org.apache.spark.SparkContext
 
 class MultibandSpatialCassandraOutput extends CassandraOutput[SpatialKey, MultibandTile, TileLayerMetadata[SpatialKey]] {
   def writer(job: EtlJob)(implicit sc: SparkContext) =
-    CassandraLayerWriter(getInstance(job.outputCredentials), job.outputProps("keyspace"), job.outputProps("table")).writer[SpatialKey, MultibandTile, TileLayerMetadata[SpatialKey]](job.input.ingestOptions.getKeyIndexMethod[SpatialKey])
+    CassandraLayerWriter(getInstance(job.conf.outputProfile), job.outputProps("keyspace"), job.outputProps("table")).writer[SpatialKey, MultibandTile, TileLayerMetadata[SpatialKey]](job.conf.output.getKeyIndexMethod[SpatialKey])
 }

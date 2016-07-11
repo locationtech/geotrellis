@@ -9,5 +9,5 @@ import org.apache.spark.SparkContext
 
 class SpaceTimeFileOutput extends FileOutput[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]] {
   def writer(job: EtlJob)(implicit sc: SparkContext) =
-    FileLayerWriter(job.outputProps("path")).writer[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](job.input.ingestOptions.getKeyIndexMethod[SpaceTimeKey])
+    FileLayerWriter(job.outputProps("path")).writer[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](job.conf.output.getKeyIndexMethod[SpaceTimeKey])
 }

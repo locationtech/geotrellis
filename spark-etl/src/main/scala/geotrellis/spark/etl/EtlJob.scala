@@ -2,14 +2,14 @@ package geotrellis.spark.etl
 
 import geotrellis.spark.etl.config._
 
-case class EtlJob(input: Input, output: Output, inputCredentials: Option[Backend] = None, outputCredentials: Option[Backend] = None) {
-  private def props(params: Map[String, String], credentials: Option[Backend]) = {
-    params ++ credentials.collect {
-      case credentials: Accumulo => credentials.strategy.fold(Map.empty[String, String])(s => Map("strategy" -> s))
-      case credentials: S3       => credentials.partitionsCount.fold(Map.empty[String, String])(c => Map("partitionsCount" -> c.toString))
+case class EtlJob(conf: EtlConf) {
+  private def props(params: Map[String, String], profile: Option[BackendProfile]) = {
+    params ++ profile.collect {
+      case p: AccumuloProfile => p.strategy.fold(Map.empty[String, String])(s => Map("strategy" -> s))
+      case p: S3Profile       => p.partitionsCount.fold(Map.empty[String, String])(c => Map("partitionsCount" -> c.toString))
     }.getOrElse(Map())
   }
 
-  def inputProps: Map[String, String]  = props(input.inputParams, inputCredentials)
-  def outputProps: Map[String, String] = props(output.outputParams, outputCredentials)
+  def inputProps: Map[String, String]  = props(conf.input.params, conf.inputProfile)
+  def outputProps: Map[String, String] = props(conf.output.params, conf.outputProfile)
 }

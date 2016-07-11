@@ -1,8 +1,6 @@
 package geotrellis.spark.etl.config
 
-import geotrellis.spark.etl.EtlJob
 import geotrellis.spark.etl.config.json._
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
@@ -11,10 +9,7 @@ import com.github.fge.jsonschema.main.JsonSchemaFactory
 import spray.json.DefaultJsonProtocol._
 import spray.json._
 
-class EtlConf(val credentials: Credentials, val datasets: List[Input], val output: Output) {
-  private lazy val credentialsOutput = credentials.getOutput(output)
-  def getEtlJobs = datasets map { ds => EtlJob(ds, output, credentials.getInput(ds), credentialsOutput) }
-}
+class EtlConf(val input: Input, val output: Output, val inputProfile: Option[BackendProfile] = None, val outputProfile: Option[BackendProfile] = None) extends Serializable
 
 object EtlConf {
   val help = """
@@ -22,22 +17,22 @@ object EtlConf {
                |
                |Usage: geotrellis-etl [options]
                |
-               |  --datasets <value>
-               |        datasets is a non-empty String property
+               |  --input <value>
+               |        input is a non-empty String property
                |  --output <value>
                |        output is a non-empty String property
-               |  --credentials <value>
-               |        credentials is a non-empty String property
+               |  --backend-profiles <value>
+               |        backend-profiles is a non-empty String property
                |  --help
                |        prints this usage text
              """.stripMargin
 
-  val requiredFields = Set('datasets, 'output, 'credentials)
+  val requiredFields = Set('input, 'output, 'backendProfiles)
 
-  val schemaFactory     = JsonSchemaFactory.byDefault()
-  val credentialsSchema = schemaFactory.getJsonSchema(JsonLoader.fromResource("/credentials-schema.json"))
-  val inputSchema       = schemaFactory.getJsonSchema(JsonLoader.fromResource("/input-schema.json"))
-  val outputSchema      = schemaFactory.getJsonSchema(JsonLoader.fromResource("/output-schema.json"))
+  val schemaFactory         = JsonSchemaFactory.byDefault()
+  val backendProfilesSchema = schemaFactory.getJsonSchema(JsonLoader.fromResource("/backend-profiles-schema.json"))
+  val inputSchema           = schemaFactory.getJsonSchema(JsonLoader.fromResource("/input-schema.json"))
+  val outputSchema          = schemaFactory.getJsonSchema(JsonLoader.fromResource("/output-schema.json"))
 
   def getJson(filePath: String, conf: Configuration): String = {
     val path = new Path(filePath)
@@ -50,10 +45,10 @@ object EtlConf {
   def nextOption(map: Map[Symbol, String], list: Seq[String]): Map[Symbol, String] =
     list.toList match {
       case Nil => map
-      case "--datasets" :: value :: tail =>
-        nextOption(map ++ Map('datasets -> value), tail)
-      case "--credentials" :: value :: tail =>
-        nextOption(map ++ Map('credentials -> value), tail)
+      case "--input" :: value :: tail =>
+        nextOption(map ++ Map('input -> value), tail)
+      case "--backend-profiles" :: value :: tail =>
+        nextOption(map ++ Map('backendProfiles -> value), tail)
       case "--output" :: value :: tail =>
         nextOption(map ++ Map('output -> value), tail)
       case "--help" :: tail => {
@@ -78,20 +73,20 @@ object EtlConf {
       sys.exit(1)
     }
 
-    val(credentials, datasets, output) = (m('credentials), m('datasets), m('output))
+    val(backendProfiles, input, output) = (m('backendProfiles), m('input), m('output))
 
-    val inputValidation       = inputSchema.validate(JsonLoader.fromString(datasets), true)
-    val credentialsValidation = credentialsSchema.validate(JsonLoader.fromString(credentials), true)
-    val outputValidation      = outputSchema.validate(JsonLoader.fromString(output), true)
+    val inputValidation           = inputSchema.validate(JsonLoader.fromString(input), true)
+    val backendProfilesValidation = backendProfilesSchema.validate(JsonLoader.fromString(backendProfiles), true)
+    val outputValidation          = outputSchema.validate(JsonLoader.fromString(output), true)
 
-    if(!inputValidation.isSuccess || !credentialsValidation.isSuccess || !outputValidation.isSuccess) {
+    if(!inputValidation.isSuccess || !backendProfilesValidation.isSuccess || !outputValidation.isSuccess) {
       if(!inputValidation.isSuccess) {
-        println("datasets validation error:")
+        println("input validation error:")
         println(inputValidation)
       }
-      if(!credentialsValidation.isSuccess) {
-        println("credentials validation error:")
-        println(credentialsValidation)
+      if(!backendProfilesValidation.isSuccess) {
+        println("backendProfiles validation error:")
+        println(backendProfilesValidation)
       }
       if(!outputValidation.isSuccess) {
         println("output validation error:")
@@ -100,6 +95,40 @@ object EtlConf {
       sys.exit(1)
     }
 
-    new EtlConf(credentials.parseJson.convertTo[Credentials], datasets.parseJson.convertTo[List[Input]], output.parseJson.convertTo[Output])
+    val backendProfilesParsed =
+      backendProfiles.parseJson.asJsObject.getFields("backend-profiles") match { case Seq(bp: JsArray) =>
+        bp.elements.map { js: JsValue =>
+          js.asJsObject.getFields("name", "type") match {
+            case Seq(JsString(n), JsString(t)) => n -> (BackendType.fromString(t) match {
+              case HadoopType    => js.convertTo[HadoopProfile]
+              case S3Type        => js.convertTo[S3Profile]
+              case AccumuloType  => js.convertTo[AccumuloProfile]
+              case CassandraType => js.convertTo[CassandraProfile]
+            })
+          }
+        }.toMap
+      }
+
+    val inputsParsed = input.parseJson.convertTo[List[Input]]
+
+    val outputParsed = output.parseJson.convertTo[Output]
+
+    inputsParsed.map { inputParsed =>
+      val inputProfile = inputParsed.backend.profile match {
+        case Some(s) => backendProfilesParsed.get(s)
+        case _       => None
+      }
+      val outputProfile = outputParsed.backend.profile match {
+        case Some(s) => backendProfilesParsed.get(s)
+        case _       => None
+      }
+
+      new EtlConf(
+        input         = inputParsed,
+        output        = outputParsed,
+        inputProfile  = inputProfile,
+        outputProfile = outputProfile
+      )
+    }
   }
 }

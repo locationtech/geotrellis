@@ -8,5 +8,5 @@ import geotrellis.spark.io.cassandra.CassandraAttributeStore
 trait CassandraOutput[K, V, M] extends OutputPlugin[K, V, M] with LazyLogging {
   val name = "cassandra"
   
-  def attributes(job: EtlJob) = CassandraAttributeStore(getInstance(job.outputCredentials))
+  def attributes(job: EtlJob) = CassandraAttributeStore(getInstance(job.conf.outputProfile))
 }

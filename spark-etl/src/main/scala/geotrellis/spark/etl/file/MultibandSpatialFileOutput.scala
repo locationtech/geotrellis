@@ -9,5 +9,5 @@ import org.apache.spark.SparkContext
 
 class MultibandSpatialFileOutput extends FileOutput[SpatialKey, MultibandTile, TileLayerMetadata[SpatialKey]] {
   def writer(job: EtlJob)(implicit sc: SparkContext) =
-    FileLayerWriter(job.outputProps("path")).writer[SpatialKey, MultibandTile, TileLayerMetadata[SpatialKey]](job.input.ingestOptions.getKeyIndexMethod[SpatialKey])
+    FileLayerWriter(job.outputProps("path")).writer[SpatialKey, MultibandTile, TileLayerMetadata[SpatialKey]](job.conf.output.getKeyIndexMethod[SpatialKey])
 }

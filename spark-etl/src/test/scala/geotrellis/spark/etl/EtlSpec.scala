@@ -9,48 +9,54 @@ import org.scalatest._
 
 object EtlSpec {
   // Test that ETL module can be instantiated in convenient ways
-  val credentials = Credentials(
-    accumulo = List(Accumulo("name", "instance", "zookeepers", "user", "password")),
-    cassandra = List(Cassandra("name", "hosts", "user", "password")),
-    s3 = List(),
-    hadoop = List()
+  val profiles = BackendProfiles(
+    AccumuloProfile("accumulo-name", "instance", "zookeepers", "user", "password"),
+    CassandraProfile("name", "hosts", "user", "password")
   )
 
   val input = Input(
     name = "test",
+    format = "geotiff",
     cache = Some(StorageLevel.NONE),
-    ingestType = IngestType(
-      format = "geotiff",
-      input = HadoopType
-    ),
-    path = "input",
-    ingestOptions = IngestOptions(
-      resampleMethod = NearestNeighbor,
-      reprojectMethod = BufferedReproject,
-      keyIndexMethod = IngestKeyIndexMethod("zorder"),
-      layoutScheme = Some("zoomed"),
-      layoutExtent = Some(Extent(1, 2, 3, 4)),
-      crs = Some("EPSG:3857"),
-      resolutionThreshold = Some(0.1),
-      cellSize = Some(CellSize(256, 256)),
-      cellType = Some(CellType.fromString("int8")),
-      encoding = Some("geotiff"),
-      breaks = Some("0:ffffe5ff;0.1:f7fcb9ff;0.2:d9f0a3ff;0.3:addd8eff;0.4:78c679ff;0.5:41ab5dff;0.6:238443ff;0.7:006837ff;1:004529ff")
+    noData = Some(0d),
+    backend = Backend(
+      `type`  = HadoopType,
+      profile = None,
+      path    = "input"
     )
   )
 
-  val output = Output(
-    ingestOutputType = IngestOutputType(
-      output = AccumuloType,
-      credentials = Some("name")
-    ),
-    path = "output"
+  val output =
+    Output(
+      backend = Backend(
+        `type` = AccumuloType,
+        profile = Some("accumulo-name"),
+        path = "output"
+      ),
+      resampleMethod = NearestNeighbor,
+      reprojectMethod = BufferedReproject,
+      keyIndexMethod = IngestKeyIndexMethod("zorder"),
+      tileSize = 256,
+      pyramid = true,
+      partitions = Some(100),
+      layoutScheme = Some("zoomed"),
+      layoutExtent = Some(Extent(1.2, 2.3, 3.4, 4.5)),
+      crs = Some("EPSG:3857"),
+      resolutionThreshold = Some(0.1),
+      cellSize = Some(CellSize(256.2, 256.1)),
+      cellType = Some(CellType.fromString("int8")),
+      encoding = Some("geotiff"),
+      breaks = Some("0:ffffe5ff;0.1:f7fcb9ff;0.2:d9f0a3ff;0.3:addd8eff;0.4:78c679ff;0.5:41ab5dff;0.6:238443ff;0.7:006837ff;1:004529ff"),
+      maxZoom = Some(13)
+    )
+
+  val etlConf = new EtlConf(
+    input  = input,
+    output = output,
+    outputProfile = Some(profiles.backendProfiles.head)
   )
 
-  val etlConf = new EtlConf(credentials, input :: Nil, output)
-  val etlJobs = etlConf.getEtlJobs
-
-  val etlJob = EtlJob(input, output)
+  val etlJob = EtlJob(etlConf)
   Etl(etlJob)
   Etl(etlJob, List(s3.S3Module, hadoop.HadoopModule))
 }

@@ -18,155 +18,142 @@ $JAR \
 --datasets "file://datasets.json"
 ```
 
-### Credentials JSON example
+### Backend profiles JSON example
 
 `credentials.json`:
 
 ```json
-{
-  "accumulo": [{
-    "name": "accumulo-gis",
-    "zookeepers": "zookeepers",
-    "instance": "instance",
-    "user": "user",
-    "password": "password"
-  }],
-  "cassandra": [{
-    "name": "cassandra-gis",
-    "allowRemoteDCsForLocalConsistencyLevel": false,
-    "localDc": "datacenter1",
-    "usedHostsPerRemoteDc": 0,
-    "hosts": "hosts",
-    "replicationStrategy": "SimpleStrategy",
-    "replicationFactor": 1,
-    "user": "user",
-    "password": "password"
-  }],
-  "s3": [],
-  "hadoop": []
+{  
+   "backend-profiles":[  
+      {  
+         "name":"accumulo-name",
+         "type":"accumulo",
+         "zookeepers":"zookeepers",
+         "instance":"instance",
+         "user":"user",
+         "password":"password"
+      },
+      {  
+         "name":"cassandra-name",
+         "type":"cassandra",
+         "allowRemoteDCsForLocalConsistencyLevel":false,
+         "localDc":"datacenter1",
+         "usedHostsPerRemoteDc":0,
+         "hosts":"hosts",
+         "replicationStrategy":"SimpleStrategy",
+         "replicationFactor":1,
+         "user":"user",
+         "password":"password"
+      }
+   ]
 }
 ```
 
-### Data sets JSON example (local fs)
-
-`datasets.json`:
-
-```json
-[
-   {  
-      "name":"nlcd-tms",
-      "ingestType":{  
-         "format":"{geotiff | temporal-geotiff}",            
-         "input":"file"
-      },
-      "path": "file:///Data/nlcd/tiles",
-      "cache":"NONE",
-      "ingestOptions":{           
-         "reprojectMethod":"buffered",         
-         "tileSize":256,         
-         "pyramid":true,
-         "resampleMethod":"nearest-neighbor",
-         "keyIndexMethod":{  
-            "type":"zorder"
-         },
-         "layoutScheme":"{zoomed | floating}",         
-         "crs":"EPSG:3857"
-      }
-   }
-]
-```
-
-### Data sets JSON example (hdfs)
-
-`datasets.json`:
-
-```json
-[
-   {  
-      "name":"nlcd-tms",
-      "ingestType":{  
-         "format":"{geotiff | temporal-geotiff}",            
-         "input":"hadoop"
-      },
-      "path": "hdfs://nlcd/tiles",
-      "cache":"NONE",
-      "ingestOptions":{           
-         "reprojectMethod":"buffered",         
-         "tileSize":256,         
-         "pyramid":true,
-         "resampleMethod":"nearest-neighbor",
-         "keyIndexMethod":{  
-            "type":"zorder"
-         },
-         "layoutScheme":"{zoomed | floating}",         
-         "crs":"EPSG:3857"
-      }
-   }
-]
-```
-
-### Ingest tiles into s3 storage command
+### Output JSON example
 
 `output.json`:
 
 ```json
+{  
+   "backend":{  
+      "type":"accumulo",
+      "path":"output",
+      "profile":"accumulo-name"
+   },
+   "breaks":"0:ffffe5ff;0.1:f7fcb9ff;0.2:d9f0a3ff;0.3:addd8eff;0.4:78c679ff;0.5:41ab5dff;0.6:238443ff;0.7:006837ff;1:004529ff",
+   "reprojectMethod":"buffered",
+   "cellSize":{  
+      "width":256.0,
+      "height":256.0
+   },
+   "encoding":"geotiff",
+   "tileSize":256,
+   "layoutExtent":{  
+      "xmin":1.0,
+      "ymin":2.0,
+      "xmax":3.0,
+      "ymax":4.0
+   },
+   "resolutionThreshold":0.1,
+   "pyramid":true,
+   "resampleMethod":"nearest-neighbor",
+   "keyIndexMethod":{  
+      "type":"zorder"
+   },
+   "layoutScheme":"zoomed",
+   "cellType":"int8",
+   "crs":"EPSG:3857"
+}
+```
+
+### Input JSON example
+
+`input.json`:
+
+```json
 {
-  "ingestOutputType": {
-    "output": "s3"
-  },
+  "format": "geotiff",
+  "name": "test",
+  "cache": "NONE",
+  "noData": 0.0,
+  "backend": {
+    "type": "hadoop",
+    "path": "input"
+  }
+}
+```
+
+### Backend JSON examples (local fs)
+
+```json
+"backend": {
+  "type": "hadoop",
+  "path": "file:///Data/nlcd/tiles"
+}
+```
+
+### Backend JSON example (hdfs)
+
+```json
+"backend": {
+  "type": "hadoop",
+  "path": "hdfs://nlcd/tiles"
+}
+```
+
+### Backend JSON example (s3)
+
+```json
+"backend": {
+  "type": "s3",
   "path": "s3://com.azavea.datahub/catalog"
 }
 ```
 
-### Ingest tiles into accumulo storage command
-
-`output.json`:
+### Backend JSON example (accumulo)
 
 ```json
-{
-  "ingestOutputType": {
-    "output": "accumulo",
-    "credentials": "accumulo-gis"
-  },
+"backend": {
+  "type": "accumulo",
+  "profile": "accumulo-gis",
   "path": "nlcdtable"
 }
 ```
 
-### Ingest tiles into hadoop storage
-
-`output.json`:
+### Backend JSON example (set of PNGs into S3)
 
 ```json
-{
-  "ingestOutputType": {
-    "output": "hadoop"    
-  },
-  "path": "hdfs://geotrellis-ingest/nlcd/"
-}
-```
-
-### Ingest tiles into rendered set of PNGs in S3
-
-`output.json`:
-
-```json
-{
-  "ingestOutputType": {
-    "output": "render"    
-  },
+"backend": {
+  "type": "render",  
   "path": "s3://tms-bucket/layers/{name}/{z}-{x}-{y}.png"
 }
 ```
 
-### Ingest tiles into rendered set of PNGs in hdfs or local fs
-
-`output.json`:
+### Backend JSON example (set of PNGs into hdfs or local fs)
 
 ```json
-{
-  "ingestOutputType": {
-    "output": "render"    
-  },
+"backend": {
+  "type": "render",  
   "path": "hdfs://path/layers/{name}/{z}-{x}-{y}.png"
 }
 ```

@@ -26,5 +26,5 @@ trait AccumuloOutput[K, V, M] extends OutputPlugin[K, V, M] with LazyLogging {
     strategy
   }
   
-  def attributes(job: EtlJob) = AccumuloAttributeStore(getInstance(job.outputCredentials).connector, job.outputProps("table"))
+  def attributes(job: EtlJob) = AccumuloAttributeStore(getInstance(job.conf.outputProfile).connector, job.outputProps("table"))
 }

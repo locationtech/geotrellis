@@ -109,15 +109,14 @@ trait ConfigFormats {
       }
   }
 
-  implicit val accumuloBackendFormat    = jsonFormat6(Accumulo)
-  implicit val cassandraBackendFormat   = jsonFormat9(Cassandra)
-  implicit val hadoopBackendFormat      = jsonFormat1(Hadoop)
-  implicit val s3BackendFormat          = jsonFormat2(S3)
-  implicit val credentialsBackendFormat = jsonFormat4(Credentials)
-  implicit val ingestKeyIndexFormat     = jsonFormat4(IngestKeyIndexMethod)
-  implicit val ingestTypeFormat         = jsonFormat3(IngestType)
-  implicit val ingestOutputTypeFormat   = jsonFormat2(IngestOutputType)
-  implicit val ingestOptionsFormat      = jsonFormat15(IngestOptions)
-  implicit val outputFormat             = jsonFormat2(Output)
-  implicit val inputFormat              = jsonFormat5(Input)
+  implicit val accumuloProfileFormat  = jsonFormat6(AccumuloProfile)
+  implicit val cassandraProfileFormat = jsonFormat9(CassandraProfile)
+  implicit val hadoopProfileFormat    = jsonFormat1(HadoopProfile)
+  implicit val s3ProfileFormat        = jsonFormat2(S3Profile)
+  implicit val backendFormat          = jsonFormat3(Backend)
+  implicit val ingestKeyIndexFormat   = jsonFormat4(IngestKeyIndexMethod)
+  implicit val ingestTypeFormat       = jsonFormat3(IngestType)
+  implicit val ingestOutputTypeFormat = jsonFormat2(IngestOutputType)
+  implicit val outputFormat           = jsonFormat16(Output)
+  implicit val inputFormat            = jsonFormat5(Input)
 }
