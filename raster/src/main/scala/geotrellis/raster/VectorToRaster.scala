@@ -28,48 +28,113 @@ import spire.syntax.cfor._
 object VectorToRaster {
 
   /**
-    * Computes a Density raster based on the Kernel and set of points provided.
-    *
-    * @param      points           Sequence of point features who's values will be used to
-    *                              compute the density.
-    * @param      kernel           Kernel to be used in the computation.
-    * @param      rasterExtent     Raster extent of the resulting raster.
-    * @note                        KernelDensity does not currently support Double raster data.
-    *                              If you use a Raster with a Double CellType (FloatConstantNoDataCellType, DoubleConstantNoDataCellType)
-    *                              the data values will be rounded to integers.
+    * Compute an Inverse Distance Weighting raster over the given
+    * extent from the given set known-points.  Please see
+    * https://en.wikipedia.org/wiki/Inverse_distance_weighting for
+    * more details.
     */
-  def kernelDensity[D](points: Seq[PointFeature[D]],
-                       kernel: Kernel,
-                       rasterExtent: RasterExtent)
-                      (implicit transform:D => Int): Tile =
-    kernelDensity(points, transform, kernel, rasterExtent)
+  def idwInterpolate(points: Seq[PointFeature[Int]], re: RasterExtent): Tile =
+    idwInterpolate(points, re, None)
 
   /**
-    * Computes a Density raster based on the Kernel and set of points provided.
-    *
-    * @param      points           Sequence of point features who's values will be used to
-    *                              compute the density.
-    * @param      transform        Function that transforms the point feature's data into
-    *                              an Int value.
-    * @param      kernel           Kernel to be used in the computation.
-    * @param      rasterExtent     Raster extent of the resulting raster.
-    * @note                        KernelDensity does not currently support Double raster data.
-    *                              If you use a Raster with a Double CellType (FloatConstantNoDataCellType, DoubleConstantNoDataCellType)
-    *                              the data values will be rounded to integers.
+    * Compute an Inverse Distance Weighting raster over the given
+    * extent from the given set known-points.  Please see
+    * https://en.wikipedia.org/wiki/Inverse_distance_weighting for
+    * more details.
     */
-  def kernelDensity[D](points: Seq[PointFeature[D]],
-                       transform: D => Int,
-                       kernel: Kernel,
-                       rasterExtent: RasterExtent): Tile = {
-    val stamper = KernelStamper(IntConstantNoDataCellType, rasterExtent.cols, rasterExtent.rows, kernel)
+  def idwInterpolate(points: Seq[PointFeature[Int]], re: RasterExtent, radius: Int): Tile =
+    idwInterpolate(points, re, Some(radius))
 
-    for(point <- points) {
-      val col = rasterExtent.mapXToGrid(point.geom.x)
-      val row = rasterExtent.mapYToGrid(point.geom.y)
-      stamper.stampKernel(col, row, transform(point.data))
+  /**
+    * Compute an Inverse Distance Weighting raster over the given
+    * extent from the given set known-points.  Please see
+    * https://en.wikipedia.org/wiki/Inverse_distance_weighting for
+    * more details.
+    *
+    * @param   points  A collection of known-points
+    * @param   re      The study area
+    * @return          The data interpolated across the study area
+    */
+  def idwInterpolate(points: Seq[PointFeature[Int]], re: RasterExtent, radius: Option[Int]): Tile = {
+    val cols = re.cols
+    val rows = re.rows
+    val tile = ArrayTile.empty(IntConstantNoDataCellType, cols, rows)
+    if(points.isEmpty) {
+      tile
+    } else {
+      val r = radius match {
+        case Some(r: Int) =>
+          val rr = r*r
+          val index: SpatialIndex[PointFeature[Int]] = SpatialIndex(points)(p => (p.geom.x, p.geom.y))
+
+          cfor(0)(_ < rows, _ + 1) { row =>
+            cfor(0)(_ < cols, _ + 1) { col =>
+              val destX = re.gridColToMap(col)
+              val destY = re.gridRowToMap(row)
+              val pts = index.pointsInExtent(Extent(destX - r, destY - r, destX + r, destY + r))
+
+              if (pts.isEmpty) {
+                tile.set(col, row, NODATA)
+              } else {
+                var s = 0.0
+                var c = 0
+                var ws = 0.0
+                val length = pts.size
+
+                cfor(0)(_ < length, _ + 1) { i =>
+                  val point = pts(i)
+                  val dX = (destX - point.geom.x)
+                  val dY = (destY - point.geom.y)
+                  val d = dX * dX + dY * dY
+                  if (d < rr) {
+                    val w = 1 / d
+                    s += point.data * w
+                    ws += w
+                    c += 1
+                  }
+                }
+
+                if (c == 0) {
+                  tile.set(col, row, NODATA)
+                } else {
+                  val mean = s / ws
+                  tile.set(col, row, mean.toInt)
+                }
+              }
+            }
+          }
+        case None =>
+          val length = points.size
+          cfor(0)(_ < rows, _ + 1) { row =>
+            cfor(0)(_ < cols, _ + 1) { col =>
+              val destX = re.gridColToMap(col)
+              val destY = re.gridRowToMap(row)
+              var s = 0.0
+              var c = 0
+              var ws = 0.0
+
+              cfor(0)(_ < length, _ + 1) { i =>
+                val point = points(i)
+                val dX = (destX - point.geom.x)
+                val dY = (destY - point.geom.y)
+                val d = dX * dX + dY * dY
+                val w = 1 / d
+                s += point.data * w
+                ws += w
+                c += 1
+              }
+
+              if (c == 0) {
+                tile.set(col, row, NODATA)
+              } else {
+                val mean = s / ws
+                tile.set(col, row, mean.toInt)
+              }
+            }
+          }
+      }
+      tile
     }
-
-    stamper.result
   }
 
   /**

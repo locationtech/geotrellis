@@ -16,13 +16,15 @@
 
 package geotrellis.spark
 
+import com.esotericsoftware.kryo.Kryo
 import geotrellis.spark.io.cassandra.BaseCassandraInstance
 import org.apache.spark.SparkConf
 import org.scalatest._
 
 trait CassandraTestEnvironment extends TestEnvironment { self: Suite =>
   override def setKryoRegistrator(conf: SparkConf) =
-    conf.set("spark.kryo.registrator", "geotrellis.spark.CassandraTestRegistrator")
+    conf.set("spark.kryo.registrator", "geotrellis.spark.io.kryo.KryoRegistrator")
+        .set("spark.kryo.registrationRequired","false")
 
   override def beforeAll = {
     super.beforeAll

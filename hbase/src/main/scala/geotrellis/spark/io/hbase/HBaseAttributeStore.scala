@@ -1,34 +1,37 @@
 package geotrellis.spark.io.hbase
 
-import geotrellis.spark.LayerId
+import com.typesafe.config.ConfigFactory
+import geotrellis.spark._
 import geotrellis.spark.io._
 import org.apache.hadoop.hbase._
 import org.apache.hadoop.hbase.client._
 import org.apache.hadoop.hbase.util.Bytes
 import org.apache.spark.Logging
 import spray.json._
+import spray.json.DefaultJsonProtocol._
 
 import scala.collection.JavaConversions._
 
-abstract class HBaseAttributeStore(val admin: Admin, val attributeTable: String) extends DiscreteLayerAttributeStore with Logging {
+object HBaseAttributeStore {
+  def apply(instance: HBaseInstance): HBaseAttributeStore =
+    new HBaseAttributeStore(instance, ConfigFactory.load().getString("geotrellis.accumulo.catalog"))
+  def apply(instance: HBaseInstance, attributeTable: String): HBaseAttributeStore =
+    new HBaseAttributeStore(instance, attributeTable)
+}
+
+class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: String) extends DiscreteLayerAttributeStore with Logging {
 
   //create the attribute table if it does not exist
-  {
-    if (!admin.tableExists(attributeTable)) {
-      val tableDesc: HTableDescriptor = new HTableDescriptor(attributeTable: TableName)
-      val idsColumnFamilyDesc = new HColumnDescriptor("name")
-      tableDesc.addFamily(idsColumnFamilyDesc)
+  if (!instance.getAdmin.tableExists(attributeTable)) instance.getAdmin.createTable(new HTableDescriptor(attributeTable: TableName))
 
-      admin.createTable(tableDesc)
-    }
-  }
-
-  val table = admin.getConnection.getTable(attributeTable)
+  val table = instance.getAdmin.getConnection.getTable(attributeTable)
 
   val SEP = "__.__"
 
-  def layerIdString(layerId: LayerId): String =
-    s"${layerId.name}${SEP}${layerId.zoom}"
+  def layerIdString(layerId: LayerId): String = s"${layerId.name}${SEP}${layerId.zoom}"
+
+  def addColumn(cf: String) = if(!table.getTableDescriptor.hasFamily(cf))
+    instance.getAdmin.addColumn(attributeTable, new HColumnDescriptor(cf))
 
   private def fetch(layerId: Option[LayerId], attributeName: String): Iterator[Result] = {
     val scan = new Scan()
@@ -45,7 +48,7 @@ abstract class HBaseAttributeStore(val admin: Admin, val attributeTable: String)
 
     val delete = new Delete(layerIdString(layerId))
     attributeName.foreach(delete.addFamily(_))
-    table.delete(Delete)
+    table.delete(delete)
 
     attributeName match {
       case Some(attribute) => clearCache(layerId, attribute)
@@ -54,24 +57,25 @@ abstract class HBaseAttributeStore(val admin: Admin, val attributeTable: String)
   }
 
   def read[T: JsonFormat](layerId: LayerId, attributeName: String): T = {
-    val values = fetch(Some(layerId), attributeName).map(_.rawCells()).toVector.flatten
+    val values = fetch(Some(layerId), attributeName).toVector
 
     if(values.isEmpty) {
       throw new AttributeNotFoundError(attributeName, layerId)
     } else if(values.size > 1) {
       throw new LayerIOError(s"Multiple attributes found for $attributeName for layer $layerId")
     } else {
-      Bytes.toString(values.head.getValueArray).parseJson.convertTo[(LayerId, T)]._2
+      Bytes.toString(values.head.getValue(attributeName, "")).parseJson.convertTo[(LayerId, T)]._2
     }
   }
 
   def readAll[T: JsonFormat](attributeName: String): Map[LayerId, T] = {
-    fetch(None, attributeName).map(_.rawCells()).toVector.flatten
-      .map { row => Bytes.toString(row.getValueArray).parseJson.convertTo[(LayerId, T)] }
+    fetch(None, attributeName).toVector
+      .map { row => Bytes.toString(row.getValue(attributeName, "")).parseJson.convertTo[(LayerId, T)] }
       .toMap
   }
 
   def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
+    addColumn(attributeName)
     val put = new Put(layerIdString(layerId))
     put.addColumn(
       attributeName, "", System.currentTimeMillis(),
@@ -108,13 +112,6 @@ abstract class HBaseAttributeStore(val admin: Admin, val attributeTable: String)
       .distinct
   }
 
-  def availableAttributes(layerId: LayerId): Seq[String] = {
-    val id = layerIdString(layerId)
-    val scan = new Scan()
-    scan.setStartRow(id)
-    scan.setStopRow(id)
-    table.getScanner(scan).iterator().map(_.rawCells()).toVector.flatten.map { row =>
-      Bytes.toString(row.getFamilyArray)
-    }
-  }
+  def availableAttributes(layerId: LayerId): Seq[String] =
+    table.getTableDescriptor.getFamiliesKeys.map(Bytes.toString).toSeq
 }
