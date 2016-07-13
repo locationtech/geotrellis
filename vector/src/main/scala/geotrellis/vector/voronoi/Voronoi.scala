@@ -1,6 +1,7 @@
 package geotrellis.vector.voronoi
 
 import geotrellis.vector._
+import geotrellis.util.Constants.DOUBLE_EPSILON
 import scala.collection.mutable.Map
 import org.apache.commons.math3.linear._
 import scala.math.{abs,sqrt}
@@ -9,7 +10,7 @@ import scala.math.{abs,sqrt}
  * A class to compute the Voronoi diagram of a set of points.  See
  * <geotrellis_home>/docs/vector/voronoi.md for more information.
  */
-class Voronoi(verts: Array[Point], extent: Extent) {
+class Voronoi(val verts: Array[Point], val extent: Extent) {
   
   object V2 {
     def apply(x: Double, y: Double) = { new V2(MatrixUtils.createRealVector(Array(x,y))) }
@@ -18,6 +19,7 @@ class Voronoi(verts: Array[Point], extent: Extent) {
   case class V2 (v: RealVector) {
     def -(that: V2) = V2(v subtract that.v)
     def +(that: V2) = V2(v add that.v)
+    def +(that: Point) = Point(that.x + x, that.y + y)
     def *(s: Double) = V2(v mapMultiply s)
     def dot(that: V2): Double = v dotProduct that.v
     def length() = { sqrt(v dotProduct v) }
@@ -32,40 +34,47 @@ class Voronoi(verts: Array[Point], extent: Extent) {
     def y() = v.getEntry(1)
     override def toString() = { s"($x,$y)" }
     def toPoint() = Point(x, y)
+    def rot90CCW() = V2(-y, x)
+    def rot90CW() = V2(y, -x)
   }
 
   /**
    * The dual Delaunay triangulation of the Voronoi diagram.
    */
-  val dt = new Delaunay(verts)
+  lazy val dt = new Delaunay(verts)
 
-  private def rayLineIntersection(base: V2, normal: V2, a: V2, b: V2): Option[Point] = {
+  private def rayLineIntersection(base: V2, normal: V2, a: V2, b: V2): Option[(Double,Point)] = {
+    // (a,b) herein called the "edge"
+    // (base, normal) herein called the "ray"
+
     val num = normal dot (a-base)
     val den = normal dot (a-b)
     
     if (abs(den) < 1e-16) {
-      // normal is perpendicular to edge
-      if (abs(num) < 1e-16) {
-        // base lies on edge => base is intersection
+      // ray and edge are parallel (THIS SHOULD NEVER HAPPEN!! (otherwise extent is not a bounding box))
+      None
+      /*if (abs(num) < 1e-16) {
+        // edge lies on ray => base is intersection
         val x = b - a
         val y = base - a
         val r = (x dot y) / (x dot x)
         if (0 <= r && r < 1)
-          Some(base.toPoint)
+          Some((r, base.toPoint))
         else
           None
       } else {
         // base not on edge => no intersection
         None
-      }
+      }*/
     } else {
       val t = num / den
 
       if (0 <= t && t < 1) {
         val pt = a + (b - a) * t
-        val dir = V2(-normal.y,normal.x)
+        val dir = normal.rot90CW
+
         if ((pt - base).dot(dir) >= 0)
-          Some(pt.toPoint)
+          Some(((pt - base).length, pt.toPoint))
         else
           None
       } else
@@ -77,28 +86,129 @@ class Voronoi(verts: Array[Point], extent: Extent) {
   private val LEFT_EDGE = 1
   private val BOTTOM_EDGE = 2
   private val RIGHT_EDGE = 3
+  private val INTERIOR = 4
 
-  private def rayExtentIntersection(base: V2, normal: V2): (Point,Int) = {
+  sealed trait CellBound
+  case class BoundedRay(base: Point, dir: V2) extends CellBound
+  case class Ray(base: Point, dir: V2) extends CellBound
+  case class ReverseRay(base: Point, dir: V2) extends CellBound
+
+  private def rayExtentIntersection(base: V2, normal: V2): List[(Double, Point, Int)] = {
     def rli(a: V2, b: V2) = { rayLineIntersection(base, normal, a, b) }
-    val ur = V2(extent.xmax,extent.ymax)
-    val ul = V2(extent.xmin,extent.ymax)
-    val ll = V2(extent.xmin,extent.ymin)
-    val lr = V2(extent.xmax,extent.ymin)
-    val intersection = (rli(ur,ul), rli(ul,ll), rli(ll,lr), rli(lr,ur))
+    val tr = V2(extent.xmax, extent.ymax)
+    val tl = V2(extent.xmin, extent.ymax)
+    val bl = V2(extent.xmin, extent.ymin)
+    val br = V2(extent.xmax, extent.ymin)
 
-    intersection match {
-      case (None,None,None,None) => throw new java.lang.IllegalArgumentException(s"Point $base is outside of $extent in rayExtentIntersection()")
-      case (Some(x),_,_,_) => (x, TOP_EDGE)
-      case (_,Some(x),_,_) => (x, LEFT_EDGE)
-      case (_,_,Some(x),_) => (x, BOTTOM_EDGE)
-      case (_,_,_,Some(x)) => (x, RIGHT_EDGE)
+    List(rli(tr, tl), rli(tl, bl), rli(bl, br), rli(br, tr))
+      .zip(List(TOP_EDGE, LEFT_EDGE, BOTTOM_EDGE, RIGHT_EDGE))
+      .filter{ x => x._1 != None }
+      .map{ case ((Some((d, x)), e)) => (d, x, e) }
+  }
+
+  private def firstRayExtentIntersection(ray: CellBound): Option[(Point, Int)] = {
+    def ascending(x: (Double, Point, Int), y: (Double, Point, Int)): Boolean = x._1 < y._1
+    def descending(x: (Double, Point, Int), y: (Double, Point, Int)): Boolean = x._1 > y._1
+
+    val candidates = ray match {
+      case BoundedRay(base, dir) => {
+        val maxlen = dir.length
+        rayExtentIntersection(V2(base), dir.rot90CCW)
+          .filter{ case ((d, _, _)) => d < maxlen }
+          .sortWith(ascending)
+      }
+      case Ray(base, dir) => {
+        if (extent.contains(base))
+          List((0.0, base, INTERIOR))
+        else
+          Nil
+      }
+      case ReverseRay(base, dir) => rayExtentIntersection(V2(base), dir.rot90CCW).sortWith(descending)
+    }
+
+    candidates match {
+      case Nil => None: Option[(Point, Int)]
+      case ((_, x, e) :: _) => Some((x, e))
     }
   }
 
-  private def rayExtentIntersection(e: HalfEdge[Int,Point]): (Point,Int) = {
-    val to = verts(e.vert)
-    val from = verts(e.src)
-    rayExtentIntersection((V2(to) + V2(from)) * 0.5, V2(to) - V2(from))
+  private def lastRayExtentIntersection(ray: CellBound): Option[(Point, Int)] = {
+    def ascending(x: (Double, Point, Int), y: (Double, Point, Int)): Boolean = x._1 < y._1
+    def descending(x: (Double, Point, Int), y: (Double, Point, Int)): Boolean = x._1 > y._1
+
+    val candidates = ray match {
+      case BoundedRay(base, dir) => {
+        val maxlen = dir.length
+        if (extent.covers(dir + base)) {
+          List((maxlen, dir + base, INTERIOR))
+        } else {
+          rayExtentIntersection(V2(base), dir.rot90CCW)
+            .filter{ case ((d, _, _)) => d <= maxlen }
+            .sortWith(descending)
+        }
+      }
+      case Ray(base, dir) => rayExtentIntersection(V2(base), dir.rot90CCW).sortWith(descending)
+      case ReverseRay(base, dir) => {
+        if (extent.covers(base))
+          List((0.0, base, INTERIOR))
+        else Nil
+      }
+    }
+
+    candidates match {
+      case Nil => None
+      case ((_, x, e) :: _) => Some((x, e))
+    }
+  }    
+
+  /*
+   * Function to create the components of the boundary of a Voronoi cell.
+   * Finite edges are "BoundedRay" objects, infinite edges are represented as
+   * either Ray or ReverseRay objects.  The directions of the rays are
+   * consistent with a CCW winding of the Voronoi cells.  (ReverseRays are
+   * thought of as rays originating at some point at infinity and arriving at
+   * the endpoint, even though they have the same representation as a regular
+   * Ray.)
+   */
+  private def cellBounds(incidentEdge: HalfEdge[Int, Point]): List[CellBound] = {
+    var e = incidentEdge
+    var l = Nil: List[CellBound]
+    do {
+      (e.face, e.flip.face) match {
+        // Two points in "triangulation"
+        case (None, None) => {
+          val distal = V2(verts(e.src))
+          val proximal = V2(verts(e.vert))
+          val mid = ((distal + proximal) * 0.5).toPoint
+          val dir = distal - proximal
+          l = l ++ List(Ray(mid, dir.rot90CCW), ReverseRay(mid, dir.rot90CW))
+        }
+        // Boundary edge (ray to infinity)
+        case (Some(c), None) => l = l :+ Ray(c, (V2(verts(e.vert)) - V2(verts(e.src))).rot90CW)
+        // Boundary edge (reverse ray from infinity)
+        case (None, Some(c)) => l = l :+ ReverseRay(c, (V2(verts(e.vert)) - V2(verts(e.src))).rot90CCW)
+        // Normal edge
+        case (Some(c), Some(d)) if (c.distance(d) > DOUBLE_EPSILON) => l = l :+ BoundedRay(c, V2(d) - V2(c))
+      }
+      e = e.rotCCWDest
+    } while (e != incidentEdge)
+    l
+  }
+
+  private def infill(fst: (Point, Int), snd: (Point, Int)): List[Point] = {
+    var accum: List[Point] = Nil
+    var i = fst._2
+    
+    while (i != snd._2) {
+      i match {
+        case TOP_EDGE    => accum = accum :+ Point(extent.xmin,extent.ymax)
+        case LEFT_EDGE   => accum = accum :+ Point(extent.xmin,extent.ymin)
+        case BOTTOM_EDGE => accum = accum :+ Point(extent.xmax,extent.ymin)
+        case RIGHT_EDGE  => accum = accum :+ Point(extent.xmax,extent.ymax)
+      }
+      i = (i+1)%4
+    }
+    accum :+ snd._1
   }
 
   /**
@@ -106,42 +216,37 @@ class Voronoi(verts: Array[Point], extent: Extent) {
    * If the incident edge is not an interior edge (incidentEdge.face == None) the results are
    * undefined.
    */
-  def mkVoronoiCell(incidentEdge: HalfEdge[Int,Point]): Polygon = {
-    var e = incidentEdge.flip
+  def voronoiCell(incidentEdge: HalfEdge[Int, Point]): Polygon = {
+    val cell = cellBounds(incidentEdge)
+    var i = 0
     var accum: List[Point] = Nil
 
-    do {
-      if (e.face == None) {
-        val (bound1,edgeNum1) = rayExtentIntersection(e)
-        val (bound2,edgeNum2) = rayExtentIntersection(e.prev)
-
-        accum = bound1 :: accum
-        var i = edgeNum1
-        while (i != edgeNum2) {
-          i match {
-            case TOP_EDGE    => accum = Point(extent.xmin,extent.ymax) :: accum
-            case LEFT_EDGE   => accum = Point(extent.xmin,extent.ymin) :: accum
-            case BOTTOM_EDGE => accum = Point(extent.xmax,extent.ymin) :: accum
-            case RIGHT_EDGE  => accum = Point(extent.xmax,extent.ymax) :: accum
+    while (i < cell.length) {
+      val lrei = lastRayExtentIntersection(cell(i))
+      i = i + 1
+      if (lrei != None) {
+        val (cellVert, vertLoc) = lrei.get
+        accum = accum :+ cellVert
+        if (vertLoc != INTERIOR) {
+          var frei = firstRayExtentIntersection(cell(i % cell.length))
+          while(frei == None) {
+            i = i + 1
+            frei = firstRayExtentIntersection(cell(i % cell.length))
           }
-          i = (i+1)%4
+          accum = accum ++ infill(lrei.get, frei.get)
         }
-        accum = bound2 :: accum
-      } else {
-        accum = e.face.get :: accum        
       }
-      e = e.rotCCWSrc
-    } while (e != incidentEdge.flip)
+    }
 
-    Polygon(Line(accum.reverse).closed)
+    Polygon(Line(accum).closed)
   }
 
   /**
    * A method to generate the Voronoi cell corresponding to the point in verts(i).  Note that if
    * verts(i) is not distinct, this function may raise an exception.
    */
-  def mkVoronoiCell(i: Int): Polygon = {
-    mkVoronoiCell(dt.faceIncidentToVertex(i))
+  def voronoiCell(i: Int): Polygon = {
+    voronoiCell(dt.faceIncidentToVertex(i))
   }
 
   /**
@@ -149,15 +254,15 @@ class Voronoi(verts: Array[Point], extent: Extent) {
    * distinct vector of verts.
    */
   def voronoiCells(): Iterator[Polygon] = {
-    dt.faceIncidentToVertex.keysIterator.map(mkVoronoiCell(_))
+    dt.faceIncidentToVertex.keysIterator.map(voronoiCell(_))
   }
 
   /**
    * Provides an iterator over the Voronoi cells of the diagram and the points that defined the
    * corresponding polygonal regions.
    */
-  def voronoiCellsWithPoints(): Iterator[(Polygon,Point)] = {
-    dt.faceIncidentToVertex.keysIterator.map{ i:Int => (mkVoronoiCell(i),verts(i)) }
+  def voronoiCellsWithPoints(): Iterator[(Polygon, Point)] = {
+    dt.faceIncidentToVertex.keysIterator.map{ i:Int => (voronoiCell(i), verts(i)) }
   }
 
 }

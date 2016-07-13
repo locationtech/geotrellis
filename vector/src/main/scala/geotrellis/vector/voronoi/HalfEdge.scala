@@ -1,5 +1,7 @@
 package geotrellis.vector.voronoi
 
+import geotrellis.vector.{Line, Point, Polygon}
+
 class HalfEdge[V,F](val vert: V, var flip: HalfEdge[V,F], var next: HalfEdge[V,F], var face: Option[F]) {
 
   def join(that: HalfEdge[V,F]) = {
@@ -93,5 +95,17 @@ object HalfEdge {
       e = e.next
     }
     println("")
+  }
+
+  def toPolygon[V,T](base: HalfEdge[V,T])(implicit trans: V => Point): Polygon = {
+    var e = base
+    var pts: List[Point] = Nil
+
+    do {
+      pts = pts :+ trans(e.vert)
+      e = e.next
+    } while (e != base)
+
+    Polygon(Line(pts).closed)
   }
 }
