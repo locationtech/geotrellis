@@ -5,6 +5,7 @@ import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
+import geotrellis.spark.util.KryoWrapper
 import geotrellis.vector._
 import geotrellis.geotools._
 
@@ -39,6 +40,7 @@ object GeoWaveFeatureRDDWriter {
     simpleFeatureType: SimpleFeatureType
   )(implicit sc: SparkContext, transmute: D => Seq[(String, Any)]): Unit = {
     implicit val sc = features.sparkContext
+    val kryoFeatureType = KryoWrapper(simpleFeatureType)
     features.foreach({ feature =>
       // Secure the basic operations
       val accumuloOperations = new BasicAccumuloOperations(
@@ -64,11 +66,12 @@ object GeoWaveFeatureRDDWriter {
         accumuloOpts
       )
 
-      val gwDataAdapter = new FeatureDataAdapter(simpleFeatureType)
+      val gwDataAdapter = new FeatureDataAdapter(kryoFeatureType.value)
       val gw2dIndex = (new SpatialDimensionalityTypeProvider).createPrimaryIndex
 
-      val writer = gwDataStore.createWriter(gwDataAdapter, gw2dIndex)
+      val writer = gwDataStore.createWriter(gwDataAdapter, gw2dIndex).asInstanceOf[IndexWriter[SimpleFeature]]
       writer.write(feature.toSimpleFeature())
+      writer.close()
     })
 
   }

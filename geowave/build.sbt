@@ -8,18 +8,40 @@ libraryDependencies ++= Seq(
   "org.apache.accumulo" % "accumulo-core" % Version.accumulo
     exclude("org.jboss.netty", "netty")
     exclude("org.apache.hadoop", "hadoop-client"),
-  "mil.nga.giat" % "geowave-adapter-raster" % "0.9.2-SNAPSHOT",
-  "mil.nga.giat" % "geowave-adapter-vector" % "0.9.2-SNAPSHOT",
-  "mil.nga.giat" % "geowave-core-store" % "0.9.2-SNAPSHOT",
-  "mil.nga.giat" % "geowave-datastore-accumulo" % "0.9.2-SNAPSHOT",
-  "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided",
+  "mil.nga.giat" % "geowave-adapter-raster" % "0.9.2-SNAPSHOT"
+    excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
+      ExclusionRule(organization = "javax.servlet")),
+  "mil.nga.giat" % "geowave-adapter-vector" % "0.9.2-SNAPSHOT"
+    excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
+      ExclusionRule(organization = "javax.servlet")),
+  "mil.nga.giat" % "geowave-core-store" % "0.9.2-SNAPSHOT"
+    excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
+      ExclusionRule(organization = "javax.servlet")),
+  "mil.nga.giat" % "geowave-datastore-accumulo" % "0.9.2-SNAPSHOT"
+    excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
+      ExclusionRule(organization = "javax.servlet")),
+  "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided"
+    excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
+      ExclusionRule(organization = "javax.servlet")),
   "org.apache.spark" %% "spark-core" % Version.spark % "provided",
-  "org.geoserver" % "gs-wms" % "2.8.2",
-  "org.geotools" % "gt-coverage" % Version.geotools % "provided",
-  "org.geotools" % "gt-epsg-hsql" % Version.geotools % "provided",
-  "org.geotools" % "gt-geotiff" % Version.geotools % "provided",
-  "org.geotools" % "gt-main" % Version.geotools % "provided",
-  "org.geotools" % "gt-referencing" % Version.geotools % "provided",
+  "org.geoserver" % "gs-wms" % "2.8.2"
+    excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
+      ExclusionRule(organization = "javax.servlet")),
+  "org.geotools" % "gt-coverage" % Version.geotools % "provided"
+    excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
+      ExclusionRule(organization = "javax.servlet")),
+  "org.geotools" % "gt-epsg-hsql" % Version.geotools % "provided"
+    excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
+      ExclusionRule(organization = "javax.servlet")),
+  "org.geotools" % "gt-geotiff" % Version.geotools % "provided"
+    excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
+      ExclusionRule(organization = "javax.servlet")),
+  "org.geotools" % "gt-main" % Version.geotools % "provided"
+    excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
+      ExclusionRule(organization = "javax.servlet")),
+  "org.geotools" % "gt-referencing" % Version.geotools % "provided"
+    excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
+      ExclusionRule(organization = "javax.servlet")),
   spire,
   scalatest % "test")
 

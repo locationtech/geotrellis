@@ -97,7 +97,7 @@ object GeowaveLayerWriter extends LazyLogging {
         geowaveNamespace
       )
       val dataStore = new AccumuloDataStore(basicOperations)
-      val index = (new SpatialDimensionalityTypeProvider.SpatialIndexBuilder).setAllTiers(true).createIndex()
+      val index = (new SpatialDimensionalityTypeProvider.SpatialIndexBuilder).createIndex()
       val adapter = new RasterDataAdapter(coverageName, gwMetadata, image, 256, true) // image only used for sample and color metadata, not data
       val indexWriter = dataStore.createWriter(adapter, index).asInstanceOf[IndexWriter[GridCoverage]]
 
