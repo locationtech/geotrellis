@@ -25,13 +25,12 @@ import java.nio.file._
 
 object Filesystem {
   /**
-    * Read the contents of a file into an array.
+    * Read the contents of a file into a MappedByteBuffer.
     *
     * @param   path The path to the file to be read
-    * @param   bs   The block size; The file will be read in chunks of this size
-    * @return       An array of bytes containing the file contents
+    * @return       A MappedByteBuffer containing the mapped file contents
     */
-  def slurp(path: String, bs: Int = (1<<18)): Array[Byte] = {
+  def toMappedByteBuffer(path: String): ByteBuffer = {
     val f = new File(path)
     val fis = new FileInputStream(f)
     val size = f.length.toInt
@@ -40,9 +39,22 @@ object Filesystem {
     channel.close()
     fis.close()
 
+    buffer
+  }
+
+  /**
+    * Read the contents of a file into an array.
+    *
+    * @param   path The path to the file to be read
+    * @param   bs   The block size; The file will be read in chunks of this size
+    * @return       An array of bytes containing the file contents
+    */
+  def slurp(path: String, bs: Int = (1<<18)): Array[Byte] = {
+    val buffer = toMappedByteBuffer(path)
+
     // read 256KiB (2^18 bytes) at a time out of the buffer into our array
     var i = 0
-    val data = Array.ofDim[Byte](size)
+    val data = Array.ofDim[Byte](buffer.capacity)
     while(buffer.hasRemaining()) {
       val n = math.min(buffer.remaining(), bs)
       buffer.get(data, i, n)

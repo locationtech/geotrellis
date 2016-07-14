@@ -14,10 +14,55 @@ import scala.reflect._
 
 object FilterMapFileInputFormat {
   // Define some key names for Hadoop configuration
-  val SPLITS_FILE_PATH = "splits_file_path"
   val FILTER_INFO_KEY = "geotrellis.spark.io.hadoop.filterinfo"
 
   type FilterDefinition = Array[(Long, Long)]
+
+  def layerRanges(layerPath: Path, conf: Configuration): Vector[(Path, Long, Long)] = {
+    val file = layerPath
+      .getFileSystem(conf)
+      .globStatus(new Path(layerPath, "*"))
+      .filter(_.isDirectory)
+      .map(_.getPath)
+    mapFileRanges(file, conf)
+  }
+
+  def mapFileRanges(mapFiles: Seq[Path], conf: Configuration): Vector[(Path, Long, Long)] = {
+    // finding the max index for each file would be very expensive.
+    // it may not be present in the index file and will require:
+    //   - reading the index file
+    //   - opening the map file
+    //   - seeking to data file to max stored index
+    //   - reading data file to the final records
+    // this is not the type of thing we can afford to do on the driver.
+    // instead we assume that each map file runs from its min index to min index of next file
+
+    val fileNameRx = ".*part-r-([0-9]+)-([0-9]+)$".r
+    def readStartingIndex(path: Path): Long = {
+      path.toString match {
+        case fileNameRx(part, firstIndex) =>
+          firstIndex.toLong
+        case _ =>
+          val indexPath = new Path(path, "index")
+          val in = new SequenceFile.Reader(conf, SequenceFile.Reader.file(indexPath))
+          val minKey = new LongWritable
+          try {
+            in.next(minKey)
+          } finally { in.close() }
+          minKey.get
+      }
+    }
+
+    mapFiles
+      .map { file => readStartingIndex(file) -> file }
+      .sortBy(_._1)
+      .foldRight(Vector.empty[(Path, Long, Long)]) {
+        case ((minIndex, fs), vec @ Vector()) =>
+          (fs, minIndex, Long.MaxValue) +: vec
+        case ((minIndex, fs), vec) =>
+          (fs, minIndex, vec.head._2 - 1) +: vec
+      }
+  }
 }
 
 class FilterMapFileInputFormat() extends FileInputFormat[LongWritable, BytesWritable] {
@@ -40,49 +85,33 @@ class FilterMapFileInputFormat() extends FileInputFormat[LongWritable, BytesWrit
         compressedRanges
     }
 
+  /**
+    * Produce list of files that overlap our query region.
+    * This function will be called on the driver.
+    */
   override
   def listStatus(context: JobContext): java.util.List[FileStatus] = {
     val conf = context.getConfiguration
     val filterDefinition = getFilterDefinition(conf)
 
-    // Read the index, figure out if this file has any of the desired values.
-    def fileStatusFilter(fileStatus: FileStatus): Boolean = {
-      val indexPath = new Path(fileStatus.getPath.getParent, "index")
-      val in = new SequenceFile.Reader(conf, SequenceFile.Reader.file(indexPath))
 
-      val minKey = createKey
-      val maxKey = createKey
+    val arr = filterDefinition
+    val it = arr.iterator.buffered
+    val dataFileStatus = super.listStatus(context)
 
-      try {
-        in.next(minKey)
-        while(in.next(maxKey)) { }
-      } finally {
-        in.close()
-      }
+    val possibleMatches =
+      FilterMapFileInputFormat
+        .mapFileRanges(dataFileStatus.map(_.getPath.getParent), conf)
+        .filter { case (file, iMin, iMax) =>
+          // both file ranges and query ranges are sorted, use in-sync traversal
+          while (it.hasNext && it.head._2 < iMin) it.next
+          if (it.hasNext) iMin <= it.head._2 && it.head._1 <= iMax
+          else false
+        }
+        .map(_._1)
+        .toSet
 
-      val iMin = minKey.get
-      val iMax = maxKey.get
-
-      var i = 0
-      val arr = filterDefinition
-      val len = arr.length
-
-
-      while(i < len) {
-        val (min, max) = arr(i)
-
-        // max index in this file is smaller than what we're looking for, abort (assert: ranges are sorted in asc)
-        if (iMax < min) return false
-
-        // check if this query ranges overlap at all with min/max index from the sequence file
-        if (iMin <= max && min <= iMax) return true
-        i += 1
-      }
-
-      false
-    }
-
-    super.listStatus(context).filter(fileStatusFilter)
+    dataFileStatus.filter(s => possibleMatches contains s.getPath.getParent)
   }
 
   override

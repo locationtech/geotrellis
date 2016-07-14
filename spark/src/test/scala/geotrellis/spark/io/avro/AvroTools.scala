@@ -41,14 +41,14 @@ object AvroTools {
     }
     def extractNoData(json: String): Option[Any] = {
       JSON.parseFull(json) flatMap {
-        case m: Map[String,Any] => m.get("noDataValue")
+        case m: Map[_,_] => m.asInstanceOf[Map[String, Any]].get("noDataValue")
       }
     }
     def doCheck(noData: Option[Any]): Unit = ()
   }
   implicit class ShortNoDataValueCheckMethods(val self: ShortArrayTile) extends
     ShortNoDataChecker(self.cellType) with AvroNoDataCheckMethods[ShortArrayTile] {}
-  
+
   class ShortNoDataChecker(cellType: CellType) extends NoDataValueChecker[ShortArrayTile] {
     override def doCheck(nodata: Option[Any]): Unit = {
       cellType match {
@@ -159,24 +159,24 @@ object AvroTools {
   implicit class MultibandNoDataValueCheckMethods(val self: MultibandTile) extends AvroNoDataCheckMethods[MultibandTile] {
       override def checkNoData(json: String): Unit = {
         JSON.parseFull(json) foreach {
-            case m: Map[String, Seq[Map[String, Any]]] =>
-              m("bands") foreach { case bandWrapper : Map[String, Map[String, Any]] =>
-                bandWrapper(bandWrapper.keys.head) match { case band: Map[String,Any] =>
-                  val nodata = band.get("noDataValue")
-                  self.cellType match {
-                    case ct: ShortCells =>   new ShortNoDataChecker(ct).doCheck(nodata)
-                    case ct: UShortCells =>  new UShortNoDataChecker(ct).doCheck(nodata)
-                    case ct: IntCells =>     new IntNoDataChecker(ct).doCheck(nodata)
-                    case ct: FloatCells =>   new FloatNoDataChecker(ct).doCheck(nodata)
-                    case ct: DoubleCells =>  new DoubleNoDataChecker(ct).doCheck(nodata)
-                    case ct: ByteCells =>    new ByteNoDataChecker(ct).doCheck(nodata)
-                    case ct: UByteCells =>   new UByteNoDataChecker(ct).doCheck(nodata)
-                    case ct: BitCells =>     new BitNoDataChecker(ct).doCheck(nodata)
-                    case _ => sys.error(s"Cell type ${self.cellType} was unexpected")
-                  }
-                }
+          case m: Map[_,_] =>
+            m.asInstanceOf[Map[String, Seq[Map[String, Any]]]].apply("bands") foreach { bandWrapper =>
+              val band = bandWrapper(bandWrapper.keys.head).asInstanceOf[Map[String,Any]]
+
+              val nodata = band.get("noDataValue")
+              self.cellType match {
+                case ct: ShortCells =>   new ShortNoDataChecker(ct).doCheck(nodata)
+                case ct: UShortCells =>  new UShortNoDataChecker(ct).doCheck(nodata)
+                case ct: IntCells =>     new IntNoDataChecker(ct).doCheck(nodata)
+                case ct: FloatCells =>   new FloatNoDataChecker(ct).doCheck(nodata)
+                case ct: DoubleCells =>  new DoubleNoDataChecker(ct).doCheck(nodata)
+                case ct: ByteCells =>    new ByteNoDataChecker(ct).doCheck(nodata)
+                case ct: UByteCells =>   new UByteNoDataChecker(ct).doCheck(nodata)
+                case ct: BitCells =>     new BitNoDataChecker(ct).doCheck(nodata)
+                case _ => sys.error(s"Cell type ${self.cellType} was unexpected")
               }
-          }
+            }
+        }
       }
     }
 

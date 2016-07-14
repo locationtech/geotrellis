@@ -12,6 +12,19 @@ import java.util.BitSet
 import spire.syntax.cfor._
 
 object GeoTiffMultibandTile {
+  /**
+   * Creates a new instances of GeoTiffMultibandTile.
+   *
+   * @param compressedBytes: An Array[Array[Byte]] that represents the segments in the GeoTiff
+   * @param decompressor: A [[Decompressor]] of the GeoTiff
+   * @param segmentLayout: The [[GeoTiffSegmentLayout]] of the GeoTiff
+   * @param compression: The [[Compression]] type of the data
+   * @param bandCount: The number of bands in the GeoTiff
+   * @param hasPixelInterleave: Does the GeoTiff have pixel interleave
+   * @param cellType: The [[CellType]] of the segments
+   * @param bandType: The data storage format of the band. Defaults to None
+   * @return An implementation of GeoTiffMultibandTile based off of band or cell type
+   */
   def apply(
     compressedBytes: Array[Array[Byte]],
     decompressor: Decompressor,
@@ -130,6 +143,12 @@ abstract class GeoTiffMultibandTile(
   val segmentCount = compressedBytes.size
   private val isTiled = segmentLayout.isTiled
 
+  /**
+   * Returns the corresponding GeoTiffTile from the inputted band index.
+   *
+   * @param bandIndex: The band's index number
+   * @return The corresponding [[GeoTiffTile]]
+   */
   def band(bandIndex: Int): GeoTiffTile = {
     if(bandIndex >= bandCount) { throw new IllegalArgumentException(s"Band $bandIndex does not exist") }
     if(hasPixelInterleave) {
@@ -211,9 +230,16 @@ abstract class GeoTiffMultibandTile(
     }
   }
 
+  /** Converts all of the bands into a collection of Vector[Tile] */
   def bands: Vector[Tile] =
     (0 until bandCount).map(band(_)).toVector
 
+  /**
+   * Creates an ArrayMultibandTIle that contains a subset of bands from the GeoTiff.
+   *
+   * @param bandSequence: A sequence of band indexes that are a subset of bands of the GeoTiff
+   * @return Returns an [[ArrayMutlibandTile]] with the selected bands
+   */
   def subsetBands(bandSequence: Seq[Int]): ArrayMultibandTile = {
     val newBands = Array.ofDim[Tile](bandSequence.size)
     var i = 0
@@ -227,9 +253,16 @@ abstract class GeoTiffMultibandTile(
     new ArrayMultibandTile(newBands)
   }
 
+  /** Converts the GeoTiffMultibandTile to an [[ArrayMutlibandTile]] */
   def toArrayTile(): ArrayMultibandTile =
     ArrayMultibandTile((0 until bandCount map { band(_).toArrayTile }):_*)
 
+  /**
+   * Converts the CellTypes of a MultibandTile to the given CellType.
+   *
+   * @param newCellType: The desired [[CellType]]
+   * @return A MultibandTile that contains the the new CellType
+   */
   def convert(newCellType: CellType): MultibandTile = {
     val arr = Array.ofDim[Array[Byte]](segmentCount)
     val compressor = compression.createCompressor(segmentCount)
@@ -251,6 +284,13 @@ abstract class GeoTiffMultibandTile(
     )
   }
 
+  /**
+   * Takes a function that takes a GeoTiffSegment and an Int and returns the
+   * results as a new MultibandTile.
+   *
+   * @param f: A function that takes a [[GeoTiffSegment]] and an Int and returns an Array[Byte]
+   * @return A new MultibandTile that contains the results of the function
+   */
   def mapSegments(f: (GeoTiffSegment, Int) => Array[Byte]): MultibandTile = {
     val compressor = compression.createCompressor(segmentCount)
     val arr = Array.ofDim[Array[Byte]](segmentCount)
@@ -299,6 +339,13 @@ abstract class GeoTiffMultibandTile(
     mapDouble(fn)
   }
 
+  /**
+   * Map over a MultibandTile band.
+   *
+   * @param b0: The band
+   * @param f: A function that takes an Int and returns an Int
+   * @return Returns a MultibandGeoTiff that contains both the changed and unchanged bands
+   */
   def map(b0: Int)(f: Int => Int): MultibandTile =
     if(hasPixelInterleave) {
       mapSegments { (segment, _) =>
@@ -322,6 +369,13 @@ abstract class GeoTiffMultibandTile(
       }
     }
 
+  /**
+   * Map over a MultibandTile band.
+   *
+   * @param b0: The band
+   * @param f: A function that takes a Double and returns a Double
+   * @return Returns a MultibandGeoTiff that contains both the changed and unchanged bands
+   */
   def mapDouble(b0: Int)(f: Double => Double): MultibandTile =
     if(hasPixelInterleave) {
       mapSegments { (segment, _) =>
@@ -345,6 +399,13 @@ abstract class GeoTiffMultibandTile(
       }
     }
 
+  /**
+   * Map over a MultibandTile with a function that takes a (Int, Int) and
+   * returns an Int.
+   *
+   * @param f: A function that takes a (Int, Int) and returns an Int
+   * @return Returns a MultibandGeoTiff that contains the results of f
+   */
   def map(f: (Int, Int) => Int): MultibandTile = {
     if(hasPixelInterleave) {
       mapSegments { (segment, semgentIndex) =>
@@ -361,6 +422,13 @@ abstract class GeoTiffMultibandTile(
     }
   }
 
+  /**
+   * Map over a MultibandTile with a function that takes a (Int, Double) and
+   * returns a Double.
+   *
+   * @param f: A function that takes a (Int, Double) and returns a Double
+   * @return Returns a MultibandGeoTiff that contains the results of f
+   */
   def mapDouble(f: (Int, Double) => Double): MultibandTile = {
     if(hasPixelInterleave) {
       mapSegments { (segment, semgentIndex) =>
@@ -377,9 +445,25 @@ abstract class GeoTiffMultibandTile(
     }
   }
 
+  /**
+   * Apply a function that takes an Int and returns Unit over
+   * a MultibandTile starting at the given band.
+   *
+   * @param b0: The starting band
+   * @param f: A function that takes an Int and returns Unit
+   * @return Returns the Unit value for each Int in the selected bands
+   */
   def foreach(b0: Int)(f: Int => Unit): Unit =
     _foreach(b0) { (segment, i) => f(segment.getInt(i)) }
 
+  /**
+   * Apply a function that takes a Double and returns Unit over
+   * a MultibandTile starting at the given band.
+   *
+   * @param b0: The starting band
+   * @param f: A function that takes a Double and returns Unit
+   * @return Returns the Unit value for each Double in the selected bands
+   */
   def foreachDouble(b0: Int)(f: Double => Unit): Unit =
     _foreach(b0) { (segment, i) => f(segment.getDouble(i)) }
 
@@ -441,11 +525,25 @@ abstract class GeoTiffMultibandTile(
     }
   }
 
+  /**
+   * Apply a function that takes a (Int, Int) and returns Unit over
+   * a MultibandTile.
+   *
+   * @param f: A function that takes a (Int, Int) and returns Unit
+   * @return Returns the Unit value for each (Int, Int) in the MultibandTile
+   */
   def foreach(f: (Int, Int) => Unit): Unit =
     _foreach { (segmentIndex, segment, i) =>
       f(segmentIndex, segment.getInt(i))
     }
 
+  /**
+   * Apply a function that takes a (Double, Double) and returns Unit over
+   * a MultibandTile.
+   *
+   * @param f: A function that takes a (Double, Double) and returns Unit
+   * @return Returns the Unit value for each (Double, Double) in the MultibandTile
+   */
   def foreachDouble(f: (Int, Double) => Unit): Unit =
     _foreach { (segmentIndex, segment, i) =>
       f(segmentIndex, segment.getDouble(i))
@@ -609,6 +707,15 @@ abstract class GeoTiffMultibandTile(
     )
   }
 
+  /**
+   * Apply a function that takes a (Int, Int) and returns an Int over two
+   * selected bands in the MultibandTile.
+   *
+   * @param b0: The first band
+   * @param b1: The second band
+   * @param f: A function that takes a (Int, Int) and returns an Int
+   * @return Returns a new [[Tile]] that contains the results of f
+   */
   def combine(b0: Int, b1: Int)(f: (Int, Int) => Int): Tile =
     _combine(b0: Int, b1: Int) { segmentCombiner =>
       { (targetIndex: Int, s1: GeoTiffSegment, i1: Int, s2: GeoTiffSegment, i2: Int) =>
@@ -616,6 +723,15 @@ abstract class GeoTiffMultibandTile(
       }
     }
 
+  /**
+   * Apply a function that takes a (Double, Double) and returns a Double over two
+   * selected bands in the MultibandTile.
+   *
+   * @param b0: The first band
+   * @param b1: The second band
+   * @param f: A function that takes a (Double, Double) and returns a Double
+   * @return Returns a new [[Tile]] that contains the results of f
+   */
   def combineDouble(b0: Int, b1: Int)(f: (Double, Double) => Double): Tile =
     _combine(b0: Int, b1: Int) { segmentCombiner =>
       { (targetIndex: Int, s1: GeoTiffSegment, i1: Int, s2: GeoTiffSegment, i2: Int) =>
