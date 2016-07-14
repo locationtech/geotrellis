@@ -38,22 +38,25 @@ class Int16GeoTiffTile(
   }
 
   def mutable(windowedGeoTiff: WindowedGeoTiff): MutableArrayTile = {
+    val windowedGridBounds = windowedGeoTiff.windowedGridBounds
     val intersectingSegments = windowedGeoTiff.intersectingSegments
-    val sortedSegments = intersectingSegments.toArray.sorted
-    val arr = Array.ofDim[Short](cols * rows)
+    val arr = Array.ofDim[Short](windowedGridBounds.size)
 
-    for (segmentIndex <- sortedSegments) {
+    val colMin = windowedGridBounds.colMin
+    val rowMin = windowedGridBounds.rowMin
+    val width = windowedGridBounds.width
+
+    for (segmentIndex <- intersectingSegments) {
       val segment = getSegment(segmentIndex)
       val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
+
       cfor(0)(_ < segment.size, _ + 1) { i =>
         val col = segmentTransform.indexToCol(i)
         val row = segmentTransform.indexToRow(i)
-        if(col < cols && row < rows) {
-          val data = segment.get(i)
-          arr(row * cols + col) = data
-        }
+        if (windowedGridBounds.contains(col, row))
+          arr((row - rowMin) * width + (col - colMin)) = segment.get(i)
       }
     }
-    ShortArrayTile(arr, cols, rows, cellType)
+    ShortArrayTile(arr, windowedGridBounds.width, windowedGridBounds.height, cellType)
   }
 }

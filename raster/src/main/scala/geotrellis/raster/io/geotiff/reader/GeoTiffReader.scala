@@ -274,21 +274,12 @@ object GeoTiffReader {
     val windowedGeoTiff: Option[WindowedGeoTiff] =
       extent match {
         case None => None
-        case Some(x) => Some(WindowedGeoTiff(x, storageMethod, tiffTags))
+        case Some(x) => if (x == tiffTags.extent) None
+                        else Some(WindowedGeoTiff(x, storageMethod, tiffTags))
       }
 
-    val cols =
-      windowedGeoTiff match {
-        case None => tiffTags.cols
-        case Some(x) => x.cols
-      }
-
-    val rows =
-      windowedGeoTiff match {
-        case None => tiffTags.rows
-        case Some(x) => x.rows
-      }
-
+    val cols = tiffTags.cols
+    val rows = tiffTags.rows
     val bandType = tiffTags.bandType
     val bandCount = tiffTags.bandCount
 

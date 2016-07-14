@@ -33,49 +33,30 @@ case class WindowedGeoTiff(extent: Extent, storageMethod: StorageMethod, tiffTag
     rasterExtent.gridBoundsFor(extent)
   }
 
-  /** A set of the [[GeoTiffSegments]] that intersect the windowedGridBounds. */
-  val intersectingSegments: Set[Int] = {
-    val segments = Set[Int]()
-    val windowCoords = windowedGridBounds.coords
+  /** A list of the [[GeoTiffSegments]] that intersect the windowedGridBounds. */
+  val intersectingSegments: List[Int] = {
+    val segments = ListBuffer[Int]()
 
-    cfor(0)(_ < windowedGridBounds.size, _ + 1) { i =>
-      segments += segmentLayout.getSegmentIndex(windowCoords(i)._1, windowCoords(i)._2)
+    cfor(0)(_ < tiffTags.segmentCount, _ + 1) { i =>
+      val segmentTransform = segmentLayout.getSegmentTransform(i)
+
+      val colStart =
+        tiffTags.bandType match {
+          case BitBandType => segmentTransform.bitIndexToCol(0)
+          case _ => segmentTransform.indexToCol(0)
+        }
+      val rowStart =
+        tiffTags.bandType match {
+          case BitBandType => segmentTransform.bitIndexToRow(0)
+          case _ => segmentTransform.indexToRow(0)
+        }
+
+      val (cols, rows) = segmentLayout.getSegmentDimensions(i)
+      val segmentGridBounds = GridBounds(colStart, rowStart, colStart + cols, rowStart + rows)
+
+      if (windowedGridBounds.intersects(segmentGridBounds))
+        segments += i
     }
-    segments
+    segments.toList
   }
-
- val size = intersectingSegments.size
-
- private val tileLayout = segmentLayout.tileLayout
-
- val cols = {
-   if (tiffTags.hasStripStorage) {
-     tiffTags.cols
-   } else {
-     val layout = ListBuffer[Int]()
-     for (segment <- intersectingSegments) {
-       layout += segment % tileLayout.layoutCols
-     }
-     val largestCol = layout.groupBy(identity).maxBy(_._2.size)._1
-
-     if (largestCol == tileLayout.layoutCols)
-       tiffTags.cols
-     else if (largestCol != 0)
-       tileLayout.tileCols * largestCol
-     else
-       tileLayout.tileCols
-   }
- }
-
- val rows = {
-   if (tiffTags.bandCount == 1 || tiffTags.hasStripStorage) {
-     var i = 0
-     for (segment <- intersectingSegments) {
-       i += tiffTags.rowsInSegment(segment)
-     }
-     i
-   } else {
-     (tiffTags.tileTags.tileLength.get * size).toInt
-   }
- }
 }
