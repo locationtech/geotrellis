@@ -3,10 +3,10 @@ package geotrellis.spark.io.hbase
 import geotrellis.spark.LayerId
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
-
-import org.apache.hadoop.hbase.client.Put
-import org.apache.hadoop.hbase.{HTableDescriptor, TableName}
+import org.apache.hadoop.hbase.client.{Put, Table}
+import org.apache.hadoop.hbase.{HColumnDescriptor, HTableDescriptor, TableName}
 import org.apache.spark.rdd.RDD
+
 import scalaz.concurrent.Task
 import scalaz.stream.{Process, nondeterminism}
 import java.util.concurrent.Executors
@@ -22,12 +22,20 @@ object HBaseRDDWriter {
   ): Unit = {
     implicit val sc = raster.sparkContext
 
-    val admin = instance.getAdmin
     val codec = KeyValueRecordCodec[K, V]
     val schema = codec.schema
 
     //create the attribute table if it does not exist
-    if (!admin.tableExists(table)) admin.createTable(new HTableDescriptor(table: TableName))
+    if (!instance.getAdmin.tableExists(table)) {
+      val tableDesc = new HTableDescriptor(table: TableName)
+      val idsColumnFamilyDesc = new HColumnDescriptor(layerId.name)
+      tableDesc.addFamily(idsColumnFamilyDesc)
+      instance.getAdmin.createTable(tableDesc)
+    }
+
+    // create column name
+    if(!instance.getAdmin.getConnection.getTable(table).getTableDescriptor.hasFamily(layerId.name))
+      instance.getAdmin.addColumn(table, new HColumnDescriptor(layerId.name))
     // Call groupBy with numPartitions; if called without that argument or a partitioner,
     // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
     // on a key type that may no longer by valid for the key type of the resulting RDD.
@@ -43,7 +51,7 @@ object HBaseRDDWriter {
                 val pairs = recs._2.toVector
                 val bytes = AvroEncoder.toBinary(pairs)(codec)
                 val put = new Put(longToBytes(id))
-                put.addColumn(columnFamily(layerId), "", System.currentTimeMillis(), bytes)
+                put.addColumn(layerId.name, layerId.zoom, System.currentTimeMillis(), bytes)
                 Some(put, iter)
               } else {
                 None

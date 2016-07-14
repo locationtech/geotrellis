@@ -50,9 +50,9 @@ object HBaseRDDReader {
               val scan = new Scan()
               scan.setStartRow(rfrom)
               scan.setStopRow(rto)
-              scan.addFamily(columnFamily(layerId))
+              scan.addColumn(layerId.name, layerId.zoom)
               t.getScanner(scan).iterator().flatMap { row =>
-                val bytes = row.getValue(columnFamily(layerId), "")
+                val bytes = row.getValue(layerId.name, layerId.zoom)
                 val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
                 if (filterIndexOnly) recs
                 else recs.filter { row => includeKey(row._1) }

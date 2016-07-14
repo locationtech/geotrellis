@@ -14,7 +14,7 @@ import scala.collection.JavaConversions._
 
 object HBaseAttributeStore {
   def apply(instance: HBaseInstance): HBaseAttributeStore =
-    new HBaseAttributeStore(instance, ConfigFactory.load().getString("geotrellis.accumulo.catalog"))
+    new HBaseAttributeStore(instance, ConfigFactory.load().getString("geotrellis.hbase.catalog"))
   def apply(instance: HBaseInstance, attributeTable: String): HBaseAttributeStore =
     new HBaseAttributeStore(instance, attributeTable)
 }
@@ -22,7 +22,12 @@ object HBaseAttributeStore {
 class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: String) extends DiscreteLayerAttributeStore with Logging {
 
   //create the attribute table if it does not exist
-  if (!instance.getAdmin.tableExists(attributeTable)) instance.getAdmin.createTable(new HTableDescriptor(attributeTable: TableName))
+  if (!instance.getAdmin.tableExists(attributeTable)) {
+    val tableDesc = new HTableDescriptor(attributeTable: TableName)
+    val idsColumnFamilyDesc = new HColumnDescriptor("header")
+    tableDesc.addFamily(idsColumnFamilyDesc)
+    instance.getAdmin.createTable(tableDesc)
+  }
 
   val table = instance.getAdmin.getConnection.getTable(attributeTable)
 

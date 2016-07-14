@@ -4,7 +4,7 @@ name := "geotrellis-cassandra"
 libraryDependencies ++= Seq(
   "org.apache.hbase" % "hbase-common" % "1.2.1",
   "org.apache.hbase" % "hbase-client" % "1.2.1",
-  "org.apache.hbase" % "hbase-server" % "1.2.1",
+  "org.apache.hbase" % "hbase-server" % "1.2.1" excludeAll ExclusionRule(organization = "org.mortbay.jetty"),
   "org.apache.spark" %% "spark-core" % Version.spark % "provided",
   "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided",
   spire,

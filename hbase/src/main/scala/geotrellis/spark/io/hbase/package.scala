@@ -1,7 +1,8 @@
 package geotrellis.spark.io
 
 import geotrellis.spark.LayerId
-import org.apache.hadoop.hbase.TableName
+import org.apache.hadoop.hbase.{HColumnDescriptor, TableName}
+import org.apache.hadoop.hbase.client.Table
 import org.apache.hadoop.hbase.util.Bytes
 
 package object hbase {
