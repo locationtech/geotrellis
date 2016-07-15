@@ -33,6 +33,14 @@ class SeqMethodsSpec extends FunSpec with Matchers {
       union should be (expected)
     }
 
+    it("should handle empty sequences for polygon cascading union") {
+      val polygons: Seq[Polygon] = Seq()
+
+      val union = polygons.unionGeometries
+      val expected = NoResult
+      union should be (expected)
+    }
+
     it("should implicitly cast Seq[MultiPoint] to flattened MultiPoint for union") {
       val p1 = Point(0.0, 0.0)
       val p2 = Point(1.0, 1.0)

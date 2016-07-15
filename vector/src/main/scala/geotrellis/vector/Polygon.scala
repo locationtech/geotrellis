@@ -18,10 +18,12 @@ package geotrellis.vector
 
 import com.vividsolutions.jts.geom.TopologyException
 import com.vividsolutions.jts.{geom => jts}
+import com.vividsolutions.jts.operation.union._
 import GeomFactory._
 import geotrellis.vector._
 
 import spire.syntax.cfor._
+import scala.collection.JavaConversions._
 
 object Polygon {
   implicit def jtsToPolygon(jtsGeom: jts.Polygon): Polygon =
@@ -263,9 +265,12 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
    * else falls back to default jts union method.
    */
   def union(g: TwoDimensions): TwoDimensionsTwoDimensionsUnionResult = g match {
-    case p:Polygon => Seq(this, p).unionGeometries
-    case mp:MultiPolygon => (this +: mp.polygons).toSeq.unionGeometries
-    case _ => jtsGeom.union(g.jtsGeom)
+    case p:Polygon =>
+      new CascadedPolygonUnion(Seq(this, p).map(_.jtsGeom)).union
+    case mp:MultiPolygon =>
+      new CascadedPolygonUnion((this +: mp.polygons).map(_.jtsGeom).toSeq).union
+    case _ =>
+      jtsGeom.union(g.jtsGeom)
   }
 
 
