@@ -19,7 +19,8 @@ import scala.reflect._
 
 class HadoopLayerWriter(
   rootPath: Path,
-  val attributeStore: AttributeStore
+  val attributeStore: AttributeStore,
+  indexInterval: Int = 4
 ) extends LayerWriter[LayerId] {
 
   protected def _write[
@@ -45,7 +46,7 @@ class HadoopLayerWriter(
 
     try {
       attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, KeyValueRecordCodec[K, V].schema)
-      HadoopRDDWriter.write[K, V](rdd, layerPath, keyIndex)
+      HadoopRDDWriter.write[K, V](rdd, layerPath, keyIndex, indexInterval)
     } catch {
       case e: Exception => throw new LayerWriteError(id).initCause(e)
     }

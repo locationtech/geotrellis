@@ -12,6 +12,7 @@
 ./sbt -J-Xmx2G "project slick" test:compile || { exit 1; }
 ./sbt -J-Xmx2G "project shapefile" compile || { exit 1; }
 ./sbt -J-Xmx2G "project util" compile || { exit 1; }
+./sbt -J-Xmx2G "project doc-examples" compile || { exit 1; }
 ./sbt -J-Xmx2G "project raster-testkit" compile || { exit 1; }
 ./sbt -J-Xmx2G "project vector-testkit" compile || { exit 1; }
 ./sbt -J-Xmx2G "project spark-testkit" compile || { exit 1; }
