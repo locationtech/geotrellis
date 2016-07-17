@@ -72,6 +72,21 @@ trait MultibandTile extends CellGrid with MacroCombinableMultibandTile[Tile] wit
   def convert(newCellType: CellType): MultibandTile
 
   /**
+    * Map over each band, and return a new MultibandTile.
+    *
+    * @param f      A function to apply to each band, given it's band index.
+    *
+    * @return       An ArrayMultibandTile with the resulting tiles.
+    */
+  def mapBands(f: (Int, Tile) => Tile): MultibandTile = {
+    val resultBands = Array.ofDim[Tile](bandCount)
+    cfor(0)(_ < bandCount, _ + 1) { b =>
+      resultBands(b) = f(b, band(b))
+    }
+    ArrayMultibandTile(resultBands)
+  }
+
+  /**
     * Map over a subset of the bands of a multiband tile to create a
     * new integer-valued multiband tile.
     *
