@@ -40,6 +40,7 @@ import scalaz.Functor
 package object spark
     extends buffer.Implicits
     with crop.Implicits
+    with density.Implicits
     with filter.Implicits
     with join.Implicits
     with mapalgebra.Implicits

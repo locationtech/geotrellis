@@ -53,7 +53,7 @@ class EtlConf(args: Seq[String]) extends ScallopConf(args){
                       descr = "cell type of the layout (format: bool, int8, float32, ...")(cellTypeConverter)
 
   conflicts(layoutScheme, List(layoutExtent, cellSize))
-  dependsOnAll(layoutExtent, List(cellSize, cellType))
+  dependsOnAll(layoutExtent, List(cellSize))
 
   val inputProps   = props[String]('I',
                       descr = "parameters for input module")
@@ -79,11 +79,16 @@ class EtlConf(args: Seq[String]) extends ScallopConf(args){
                       descr = "pyramid layer on save (default: false)",
                       default = Some(false))
 
+  val maxZoom      = opt[Int]("maxZoom",
+                      descr = "max zoom level for layer tiles")(maxZoomConverter)
+
   val outputProps  = props[String]('O',
                       descr = "parameters for output module")
 
   implicit def crsConverter: ValueConverter[CRS] = singleArgConverter[CRS](CRS.fromName)
   implicit def storageLevelConvert: ValueConverter[StorageLevel] = singleArgConverter[StorageLevel](StorageLevel.fromString)
+
+  verify()
 }
 object EtlConf {
   def layoutSchemeConverter = new ValueConverter[LayoutSchemeProvider] {
@@ -181,4 +186,23 @@ object EtlConf {
     val tag = typeTag[ReprojectMethod]
     val argType = org.rogach.scallop.ArgType.SINGLE
   }
+
+  def maxZoomConverter = new ValueConverter[Int] {
+    val wrong = Left("Zoom should be an integer greater than 0")
+    def parse(s : List[(String, List[String])]) = s match {
+      case (_, str :: Nil) :: Nil  =>
+        Try {str.toInt } match {
+          case Success(cs) => {
+            if (str.toInt > 0) Right(Some(str.toInt)) else wrong
+          }
+          case Failure(_) => wrong
+        }
+      case Nil  =>
+        Right(None)
+      case _ => wrong
+    }
+    val tag = typeTag[Int]
+    val argType = org.rogach.scallop.ArgType.SINGLE
+  }
+
 }

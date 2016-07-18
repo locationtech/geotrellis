@@ -243,6 +243,7 @@ class PolygonSpec extends FunSpec with Matchers {
       val mpUnion = mp.union match {
         case PolygonResult(p) => p
         case MultiPolygonResult(mp) => mp
+        case NoResult => MultiPolygon.EMPTY
       }
       (mpUnion.isValid) should be (true)
       mpUnion should be (Polygon(Line(Point(0, 0), Point(0, 4), Point(0, 5), Point(0, 7),

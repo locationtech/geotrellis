@@ -6,6 +6,7 @@ import geotrellis.raster.io.geotiff.compression._
 trait GeoTiffSegmentCollection {
   type T >: Null <: GeoTiffSegment
 
+  /** represents all of the segments in the geotiff */
   val compressedBytes: Array[Array[Byte]]
   val decompressor: Decompressor
 

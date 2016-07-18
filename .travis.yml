@@ -2,7 +2,6 @@ sudo: false
 
 env:
   global:
-    - GEOTRELLIS_KRYO_REGREQ="YES"
     - secure: "XAhJXuXqnGlZlU2pGcIQKJ2rF44gIReA0arHwapFII/gR1h+2e6hgqnMXwrZaQa/EvNBaXq7nF3XcTBjrbK+ABeKA/0lOh/7ryIotP0i1YVrca69pSK9BY+Kr1y7ncLMqvoyjBziobOeVZmxbK4RflgUTIO7MKzzb5pNb9SnOK8="
     - secure: "UwH3B4k5Nqt2THYYTY7uRxTPaJXZbK1hHrVsyJjZp/H2uFTYtQTxXpNb9aR7wuHuhLjXwKkq3gEXxEqhfy6V8+ZPbee6MUNvoYe/HhaPjsmTzcVihTBbO9e7g0bIQFc9bzwY15Y1ImshLcDAYvaXwXapy4Z/KadLiBheyqMk8Cs="
     #Scaladocs
@@ -10,18 +9,25 @@ env:
 
 language: scala
 
+addons:
+  # Fix OpenJDK builds
+  # https://github.com/travis-ci/travis-ci/issues/5227
+  hostname: localhost
+
 services:
+  - docker
   - postgresql
 
 before_script:
   - psql -c 'create database slick_tests;' -U postgres
   - psql -c 'CREATE EXTENSION postgis;' -U postgres -d slick_tests
   - psql -c 'CREATE EXTENSION postgis_topology;' -U postgres -d slick_tests
+  - docker run -d --restart=always --net=host -m 1G --memory-swap -1 --env="MAX_HEAP_SIZE=500M" --env="HEAP_NEWSIZE=100M" --env="CASSANDRA_LISTEN_ADDRESS=127.0.0.1" cassandra:latest
 
 jdk:
-- openjdk7
-- oraclejdk7
-- oraclejdk8
+  - openjdk7
+  - oraclejdk7
+  - oraclejdk8
 
 scala:
 - "2.10.6"
@@ -33,7 +39,7 @@ cache:
   - "$HOME/.sbt"
 
 script:
-  - ./scripts/buildall.sh
+  - .travis/build-and-test.sh
 
 notifications:
   email:

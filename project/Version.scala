@@ -15,7 +15,7 @@
  */
 
 object Version {
-  val geotrellis  = "0.10.0" + Environment.versionSuffix
+  val geotrellis  = "1.0.0" + Environment.versionSuffix
   /* Even though we support cross-build to 2.11 the default target is scala 2.10 primarily because Cloudera
    * (and likely others) spark distributions target 2.10 in their default spark-assembly.jar.
    * One can envoke the cross-build to 2.11 by prefixing command with '+' (ex: + assembly)
@@ -23,13 +23,14 @@ object Version {
    */
   val scala       = "2.10.6"
   val crossScala  = Seq("2.11.8", scala)
-  val geotools    = "14.2"
+  val geotools    = "14.3"
   val akka        = "2.3.14"
   val spray       = "1.3.3"
   val sprayJson   = "1.3.2"
   val jackson     = "1.6.1"
   val monocle     = "1.2.1"
   val accumulo    = "1.7.1"
+  val cassandra   = "3.4"
   lazy val hadoop = Environment.hadoopVersion
   lazy val spark  = Environment.sparkVersion
 }

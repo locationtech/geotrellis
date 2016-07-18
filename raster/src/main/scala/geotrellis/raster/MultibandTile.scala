@@ -191,7 +191,7 @@ trait MultibandTile extends CellGrid with MacroCombinableMultibandTile[Tile] wit
   def combine(f: Array[Int] => Int): Tile
 
   /**
-    * Combine two int band value for each cell.
+    * Combine two integer bands value-by-value at each cell.
     */
   def combine(b0: Int, b1: Int)(f: (Int, Int) => Int): Tile
 

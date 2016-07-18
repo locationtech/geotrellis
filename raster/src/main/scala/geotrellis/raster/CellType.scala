@@ -20,9 +20,12 @@ import scala.util.matching.Regex
 import java.awt.image.DataBuffer
 import java.lang.IllegalArgumentException
 
+// Note: CellType defined in package object as
+// `type CellType = DataType with NoDataHandling`
+
+
 /**
-  * CellType defined in package object as type CellType = DataType
-  * with NoDataHandling.  The [[DataType]] type.
+  * The [[DataType]] type.
   */
 sealed abstract class DataType extends Serializable { self: CellType =>
   val bits: Int
@@ -261,7 +264,7 @@ object CellType {
     * @return           The CellType corresponding to awtType
     */
   def fromAwtType(awtType: Int): CellType = awtType match {
-    case DataBuffer.TYPE_BYTE => ByteConstantNoDataCellType
+    case DataBuffer.TYPE_BYTE => UByteConstantNoDataCellType
     case DataBuffer.TYPE_SHORT => ShortConstantNoDataCellType
     case DataBuffer.TYPE_INT => IntConstantNoDataCellType
     case DataBuffer.TYPE_FLOAT => FloatConstantNoDataCellType

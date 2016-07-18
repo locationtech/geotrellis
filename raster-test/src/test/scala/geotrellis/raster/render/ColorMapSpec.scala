@@ -70,6 +70,23 @@ class ColorMapSpec extends FunSpec with Matchers
     }
   }
 
+  describe("ColorMaps to-and-from Strings") {
+    val s = "23:cc00ccff;30:aa00aaff;120:ff0000ff"
+    val sD = "23.0:cc00ccff;30.0:aa00aaff;120.0:ff0000ff"
+
+    it("fromString should parse correctly") {
+      ColorMap.fromString(s) shouldBe defined
+    }
+
+    it("(int) fromString and breaksString should form an isomorphism") {
+      ColorMap.fromString(s).get.breaksString shouldBe s
+    }
+
+    it("(double) fromString and breaksString should form an isomorphism") {
+      ColorMap.fromStringDouble(sD).get.breaksString shouldBe sD
+    }
+  }
+
   describe("PNG Color Mapping") {
     it("should correctly map values to colors") {
       val limits = Array(25,50,80,100)

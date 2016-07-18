@@ -4,6 +4,12 @@ package object util {
   implicit def identityComponent[T]: Component[T, T] =
     Component(v => v, (_, v) => v)
 
+  implicit def getIdentityComponent[C, T <: C]: GetComponent[T, C] =
+    GetComponent(v => v)
+
+  implicit def setIdentityComponent[T, C <: T]: SetComponent[T, C] =
+    SetComponent((_, v) => v)
+
   /** A sugar method for getting a component of an object that has
     * an implicitly defined lens into a component of that object
     * with a specific type.
