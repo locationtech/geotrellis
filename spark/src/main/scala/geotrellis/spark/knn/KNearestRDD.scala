@@ -1,12 +1,60 @@
 package geotrellis.spark.knn
 
-import scala.collection.mutable.Map
+//import scala.collection.mutable.{PriorityQueue}
+import scala.collection.JavaConversions._
 
 import geotrellis.spark._
 import geotrellis.vector._
-import geotrellis.spark.util.KryoClosure
+
+import java.util.PriorityQueue
 
 import org.apache.spark.rdd.RDD
+
+class BoundedPriorityQueue[A: Ordering](val maxSize: Int) extends Serializable{
+  val pq = new PriorityQueue[A](maxSize, implicitly[Ordering[A]].reverse)
+
+  def +=(a: A): this.type = {
+    if (pq.size < maxSize) pq.add(a)
+    else maybeReplaceLowest(a)
+    this
+  }
+
+  def ++=(xs: TraversableOnce[A]): this.type = {
+    xs.foreach { this += _ }
+    this
+  }
+
+  def enqueue(elems: A*) = {
+    this ++= elems
+  }
+
+  def peek() = pq.peek
+
+  def iterator() = pq.iterator
+
+  private def maybeReplaceLowest(a: A) = {
+    if (pq.comparator.compare(a, peek) > 0) {
+      pq.poll
+      pq.add(a)
+    }
+  }
+
+}
+
+object BoundedPriorityQueue {
+  /**
+   * Creates a new BoundedPriorityQueue instance.
+   * @param maximum the max number of elements
+   * @return a new bounded priority queue instance
+   */
+  def apply[A: Ordering](maximum: Int): BoundedPriorityQueue[A] = {
+    //val ordering = implicitly[Ordering[A]].reverse
+    // new java.util.PriorityQueue[A](maximum, ordering.asInstanceOf[java.util.Comparator[A]]) with BoundedPriorityQueue[A] {
+    //   val maxSize = maximum
+    //}
+    new BoundedPriorityQueue(maximum)
+  }
+}
 
 object KNearestRDD {
   case class Ord[T] (ex: Extent, f: T => Extent) extends Ordering[T] with Serializable {
@@ -32,61 +80,39 @@ object KNearestRDD {
     rdd.takeOrdered(k)
   }
 
-  def kNearest[G, H](rdd: RDD[G], centers: Traversable[H], k: Int)(g: G => Extent, h: H => Extent): Map[H, Seq[G]] = {
-    var result: Map[H, Seq[G]] = Map.empty
+  // def kNearest[G, H](rdd: RDD[G], centers: Traversable[H], k: Int)(g: G => Extent, h: H => Extent): Map[H, Seq[G]] = {
+  //   var result: Map[H, Seq[G]] = Map.empty
 
-    centers.foreach { center =>
+  //   centers.foreach { center =>
+  //     implicit val ord = new Ord[G](h(center), g)
+
+  //     result(center) = rdd.takeOrdered(k)
+  //   }
+  //   result
+  // }
+
+  def kNearest[G, H](rdd: RDD[G], centers: Traversable[H], k: Int)(g: G => Extent, h: H => Extent): Seq[Seq[G]] = {
+    var zero: Traversable[BoundedPriorityQueue[G]] = centers.map { center =>
       implicit val ord = new Ord[G](h(center), g)
-
-      result(center) = rdd.takeOrdered(k)
+      BoundedPriorityQueue[G](k)
     }
-    result
+    def zipWith[A, T](l: Seq[A], r: Seq[A])(f: (A, A) => T): Seq[T] = {
+      (l, r) match {
+        case (Nil, _) => Nil
+        case (_, Nil) => Nil
+        case (ll :: lls, rr :: rrs) => f(ll, rr) +: zipWith(lls, rrs)(f)
+      }
+    }
+    def merge(a: BoundedPriorityQueue[G], b: BoundedPriorityQueue[G]) = {
+      implicit val ord: Ordering[G] = a.pq.comparator.asInstanceOf[Ordering[G]].reverse
+      val result = BoundedPriorityQueue[G](a.maxSize)
+      a.iterator.foreach { item => result += item }
+      b.iterator.foreach { item => result += item }
+      result
+    }
+
+    val result = rdd.aggregate(zero)({ (bpqs, toAdd) => bpqs.map { _ += toAdd } }, { (a, b) => zipWith(a.toSeq, b.toSeq)(merge).toTraversable })
+    result.map(_.iterator.toList).toList
   }
-
-/*  def kNearest[G <: Geometry, H <: Geometry](rdd: RDD[G], centers: Traversable[H], k: Int): Map[H, Seq[G]] = {
-    var result: Map[H, Seq[G]] = Map.empty
-
-    centers.foreach { center =>
-      implicit val ord = new Ord[G](center.envelope, _.envelope)
-
-      result(center) = rdd.takeOrdered(k)
-    }
-    result
-  }
-
-  def kNearest[G <: Geometry, H <: Geometry, F](rdd: RDD[G], centers: Traversable[Feature[H,F]], k: Int)
-      (implicit d: DummyImplicit): Map[Feature[H,F], Seq[G]] = {
-    var result: Map[Feature[H, F], Seq[G]] = Map.empty
-
-    centers.foreach { center =>
-      implicit val ord = new Ord[G](center.geom.envelope, _.envelope)
-
-      result(center) = rdd.takeOrdered(k)
-    }
-    result
-  }
-
-  def kNearest[G <: Geometry, D, H <: Geometry, F](rdd: RDD[Feature[G, D]], centers: Traversable[Feature[H, F]], k: Int)
-      (implicit d1: DummyImplicit, d2: DummyImplicit): Map[Feature[H, F], Seq[Feature[G, D]]] = {
-    var result: Map[Feature[H, F], Seq[Feature[G, D]]] = Map.empty
-
-    centers.foreach { center =>
-      implicit val ord = new Ord[Feature[G,D]](center.geom.envelope, _.geom.envelope)
-
-      result(center) = rdd.takeOrdered(k)
-    }
-    result
-  }
-
-  def kNearest[G <: Geometry, D, H <: Geometry](rdd: RDD[Feature[G, D]], centers: Traversable[H], k: Int)
-      (implicit d1: DummyImplicit, d2: DummyImplicit, d3: DummyImplicit): Map[H, Seq[Feature[G, D]]] = {
-    var result: Map[H, Seq[Feature[G, D]]] = Map.empty
-
-    centers.foreach { center =>
-      implicit val ord = new Ord[Feature[G, D]](center.envelope, _.geom.envelope)
-
-      result(center) = rdd.takeOrdered(k)
-    }
-    result
-  }*/
 }
+
