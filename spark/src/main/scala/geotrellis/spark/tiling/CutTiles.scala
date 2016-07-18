@@ -36,7 +36,7 @@ object CutTiles {
           .map  { spatialComponent =>
             val outKey = inKey.translate(spatialComponent)
             val newTile = tile.prototype(cellType, tileCols, tileRows)
-            (outKey, newTile.merge(mapTransform(outKey), extent, tile))
+            (outKey, newTile.merge(mapTransform(outKey), extent, tile, resampleMethod))
           }
       }
   }

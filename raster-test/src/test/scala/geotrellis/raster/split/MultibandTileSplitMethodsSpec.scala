@@ -115,5 +115,35 @@ class MultibandTileSplitMethodsSpec extends FunSpec with Matchers with TileBuild
         }
       }
     }
+
+    it("should split a raster without by cols/rows") {
+      val b1 =
+        createTile(
+          Array( 1,1,1, 2,2,2, 3,3,3,
+                 1,1,1, 2,2,2, 3,3,3,
+
+            4,4,4, 5,5,5, 6,6,6,
+                 4,4,4, 5,5,5, 6,6,6 ),
+          9, 4)
+
+      val b2 = b1 * 10
+      val b3 = b2 * 10
+
+      val tile = MultibandTile(b1, b2, b3)
+
+      val result = tile.split(3, 2)
+
+      result.length should be (6)
+      for(i <- 0 until 6) {
+        for(b <- 0 until 3) {
+          result(i).bandCount should be (3)
+          val band = result(i).band(b)
+          (band.cols, band.rows) should be ((3,2))
+          band.foreach { z =>
+            z should be ((i + 1) * math.pow(10, b))
+          }
+        }
+      }
+    }
   }
 }

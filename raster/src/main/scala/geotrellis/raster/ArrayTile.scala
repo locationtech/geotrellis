@@ -23,8 +23,8 @@ import spire.syntax.cfor._
 
 /**
   * [[ArrayTile]] provides access and update to the grid data of a
-  * raster.  Designed to be a near drop-in replacement for Array in
-  * many cases.
+  * tile.  Designed to be a near drop-in replacement for Array in many
+  * cases.
   */
 trait ArrayTile extends Tile with Serializable {
 
@@ -117,7 +117,7 @@ trait ArrayTile extends Tile with Serializable {
   }
 
   /**
-    * Map each cell in the given raster to a new one, using the given
+    * Map each cell in the given tile to a new one, using the given
     * function.
     *
     * @param   f  A function from Int to Int, executed at each point of the tile
@@ -135,7 +135,7 @@ trait ArrayTile extends Tile with Serializable {
   }
 
   /**
-    * Map each cell in the given raster to a new one, using the given
+    * Map each cell in the given tile to a new one, using the given
     * function.
     *
     * @param   f  A function from Double to Double, executed at each point of the tile
@@ -386,14 +386,6 @@ trait ArrayTile extends Tile with Serializable {
     }
     arr
   }
-
-  /**
-    * Convert the present [[ArrayTile]] to an array of bytes and
-    * return that array.
-    *
-    * @return  An array of bytes
-    */
-  def toBytes: Array[Byte]
 }
 
 /**

@@ -84,9 +84,9 @@ object Rasterizer {
   }
 
   /**
-    * Given a [[Geometry]] and a [[RasterExtent]], call the function
-    * 'f' at each pixel in the raster extent covered by the geometry.
-    * The two arguments to the function 'f' are the column and row.
+    * Given a Geometry and a [[RasterExtent]], call the function 'f'
+    * at each pixel in the raster extent covered by the geometry.  The
+    * two arguments to the function 'f' are the column and row.
     */
   def foreachCellByGeometry(geom: Geometry, re: RasterExtent)(f: (Int, Int) => Unit): Unit =
     foreachCellByGeometry(geom, re, Options.DEFAULT)(f)
@@ -133,9 +133,9 @@ object Rasterizer {
   }
 
   /**
-    * Given a [[MultiPoint]] and a [[RasterExtent]], call the function
-    * 'f' at each pixel in the raster extent covered by the geometry.
-    * The two arguments to the function 'f' are the column and row.
+    * Given a MultiPoint and a [[RasterExtent]], call the function 'f'
+    * at each pixel in the raster extent covered by the geometry.  The
+    * two arguments to the function 'f' are the column and row.
     */
   def foreachCellByMultiPoint(p: MultiPoint, re: RasterExtent)(f: (Int, Int) => Unit) {
     p.points.foreach(foreachCellByPoint(_, re)(f))
@@ -160,9 +160,9 @@ object Rasterizer {
   }
 
   /**
-    * Given a [[Polygon]] and a [[RasterExtent]], call the function
-    * 'f' at each pixel in the raster extent covered by the geometry.
-    * The two arguments to the function 'f' are the column and row.
+    * Given a Polygon and a [[RasterExtent]], call the function 'f' at
+    * each pixel in the raster extent covered by the geometry.  The
+    * two arguments to the function 'f' are the column and row.
     */
   def foreachCellByPolygon(p: Polygon, re: RasterExtent)(f: (Int, Int) => Unit): Unit =
     foreachCellByPolygon(p, re, Options.DEFAULT)(f)
@@ -181,10 +181,9 @@ object Rasterizer {
   }
 
   /**
-    * Given a [[MultiPolygon]] and a [[RasterExtent]], call the
-    * function 'f' at each pixel in the raster extent covered by the
-    * geometry.  The two arguments to the function 'f' are the column
-    * and row.
+    * Given a MultiPolygon and a [[RasterExtent]], call the function
+    * 'f' at each pixel in the raster extent covered by the geometry.
+    * The two arguments to the function 'f' are the column and row.
     */
   def foreachCellByMultiPolygon[D](p: MultiPolygon, re: RasterExtent)(f: (Int, Int) => Unit): Unit =
     foreachCellByMultiPolygon(p, re, Options.DEFAULT)(f)

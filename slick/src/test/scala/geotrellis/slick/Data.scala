@@ -64,7 +64,8 @@ object util {
       (x - d, y + d),
       (x + d, y + d),
       (x + d, y - d),
-      (x - d, y - d)))
+      (x - d, y - d)
+    ))
 
   def pt(x: Double, y: Double) = Point(x, y)
 }

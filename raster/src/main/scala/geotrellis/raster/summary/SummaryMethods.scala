@@ -30,7 +30,7 @@ trait SummaryMethods extends MethodExtensions[Tile] {
     * Create a histogram from double values in a raster.
     */
   def histogramDouble(numBuckets: Int): Histogram[Double] =
-    StreamingHistogram.fromTile(self)
+    StreamingHistogram.fromTile(self, numBuckets)
 
   /**
     * Generate quantile class breaks for a given raster.

@@ -4,10 +4,11 @@
       "project vector" publish \
       "project proj4" publish \
       "project raster" publish \
-      "project engine" publish \
+      "project geotools" publish \
       "project spark" publish \
       "project s3" publish \
       "project accumulo" publish \
+      "project cassandra" publish \
       "project shapefile" publish \
       "project util" publish \
       "project raster-testkit" publish \

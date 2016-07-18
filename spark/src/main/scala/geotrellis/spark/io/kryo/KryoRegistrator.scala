@@ -108,10 +108,13 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[geotrellis.raster.DoubleRawArrayTile])
     kryo.register(classOf[geotrellis.raster.DoubleConstantNoDataArrayTile])
     kryo.register(classOf[geotrellis.raster.DoubleUserDefinedNoDataArrayTile])
+
+    kryo.register(classOf[Array[geotrellis.raster.Tile]])
+    kryo.register(classOf[Array[geotrellis.raster.TileFeature[_,_]]])
     kryo.register(classOf[geotrellis.raster.Tile])
+    kryo.register(classOf[geotrellis.raster.TileFeature[_,_]])
 
     kryo.register(classOf[geotrellis.raster.ArrayMultibandTile])
-    kryo.register(classOf[Array[geotrellis.raster.Tile]])
     kryo.register(classOf[geotrellis.raster.CompositeTile])
     kryo.register(classOf[geotrellis.raster.ConstantTile])
     kryo.register(classOf[geotrellis.raster.CroppedTile])
@@ -189,7 +192,7 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[geotrellis.raster.histogram.StreamingHistogram.DeltaCompare])
     kryo.register(classOf[geotrellis.raster.histogram.StreamingHistogram.Delta])
     kryo.register(classOf[geotrellis.raster.histogram.StreamingHistogram.Bucket])
-    kryo.register(classOf[geotrellis.raster.KernelStamper])
+    kryo.register(classOf[geotrellis.raster.density.KernelStamper])
     kryo.register(classOf[geotrellis.raster.summary.polygonal.MeanResult])
     kryo.register(classOf[geotrellis.raster.ProjectedRaster[Any]])
     kryo.register(classOf[geotrellis.raster.TileLayout])

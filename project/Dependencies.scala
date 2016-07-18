@@ -35,11 +35,6 @@ object Dependencies {
 
   val spire         = "org.spire-math" %% "spire" % "0.11.0"
 
-  val sprayClient   = "io.spray"        %% "spray-client"  % Version.spray
-  val sprayRouting  = "io.spray"        %% "spray-routing" % Version.spray
-  val sprayTestkit  = "io.spray"        %% "spray-testkit" % Version.spray
-  val sprayCan      = "io.spray"        %% "spray-can"     % Version.spray
-  val sprayHttpx    = "io.spray"        %% "spray-httpx"   % Version.spray
   val sprayJson     = "io.spray"        %% "spray-json"    % Version.sprayJson
 
   val apacheMath    = "org.apache.commons" % "commons-math3" % "3.6"
@@ -49,13 +44,13 @@ object Dependencies {
   val slf4jApi      = "org.slf4j"         % "slf4j-api" % "1.7.7"
   val asm           = "asm"               % "asm"       % "3.3.1"
 
-  val slick         = "com.typesafe.slick" %% "slick"      % "2.1.0"
+  val slick         = "com.typesafe.slick" %% "slick"      % "3.1.0"
   val postgresql    = "postgresql"         % "postgresql"  % "9.1-901.jdbc4"
 
   val caliper       = ("com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT"
     from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar")
 
-  val nscalaTime    = "com.github.nscala-time" %% "nscala-time" % "2.10.0"
+  val nscalaTime    = "com.github.nscala-time" %% "nscala-time" % "2.12.0"
 
   val awsSdkS3      = "com.amazonaws" % "aws-java-sdk-s3" % "1.9.34"
 
@@ -65,4 +60,6 @@ object Dependencies {
   val hadoopClient  = "org.apache.hadoop" % "hadoop-client" % Version.hadoop
 
   val avro          = "org.apache.avro" % "avro" % "1.8.0"
+
+  val slickPG      = "com.github.tminglei" %% "slick-pg" % "0.14.0"
 }

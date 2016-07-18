@@ -5,7 +5,10 @@ import geotrellis.spark.io.avro.{AvroRecordCodec, AvroUnionCodec}
 
 object Implicits extends Implicits
 
-trait Implicits extends TileCodecs with KeyCodecs {
+trait Implicits
+    extends TileCodecs
+    with TileFeatureCodec
+    with KeyCodecs {
   implicit def tileUnionCodec = new AvroUnionCodec[Tile](
     byteArrayTileCodec,
     floatArrayTileCodec,

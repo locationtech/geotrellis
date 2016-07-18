@@ -13,7 +13,9 @@ import org.joda.time.format._
 
 object TemporalGeoTiffInputFormat {
   final val GEOTIFF_TIME_TAG = "GEOTIFF_TIME_TAG"
+  final val GEOTIFF_TIME_TAG_DEFAULT = "TIFFTAG_DATETIME"
   final val GEOTIFF_TIME_FORMAT = "GEOTIFF_TIME_FORMAT"
+  final val GEOTIFF_TIME_FORMAT_DEFAULT = "YYYY:MM:dd HH:mm:ss"
 
   def setTimeTag(job: JobContext, timeTag: String): Unit =
     setTimeTag(job.getConfiguration, timeTag)
@@ -28,11 +30,11 @@ object TemporalGeoTiffInputFormat {
     conf.set(GEOTIFF_TIME_FORMAT, timeFormat)
 
   def getTimeTag(job: JobContext) =
-    job.getConfiguration.get(GEOTIFF_TIME_TAG, "TIFFTAG_DATETIME")
+    job.getConfiguration.get(GEOTIFF_TIME_TAG, GEOTIFF_TIME_TAG_DEFAULT )
 
   def getTimeFormatter(job: JobContext): DateTimeFormatter = {
     val df = job.getConfiguration.get(GEOTIFF_TIME_FORMAT)
-    if(df == null) { DateTimeFormat.forPattern("YYYY:MM:dd HH:mm:ss") }
+    if(df == null) { DateTimeFormat.forPattern(GEOTIFF_TIME_FORMAT_DEFAULT) }
     else { DateTimeFormat.forPattern(df) }
   }
 }

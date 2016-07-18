@@ -24,13 +24,14 @@ import geotrellis.vector.{Geometry,Feature}
 
 /**
   * A trait providing extension methods for invoking the rasterizer on
-  * [[Feature]] objects.
+  * Feature objects.
   */
 trait FeatureIntRasterizeMethods[+G <: Geometry] extends MethodExtensions[Feature[G, Int]] {
 
   /**
-    * Fill in this feature's data value at each cell of given [[RasterExtent]] that is
-    * covered by the present [[Feature]].  The result is a [[Raster]].
+    * Fill in this feature's data value at each cell of given
+    * [[RasterExtent]] that is covered by the present Feature.  The
+    * result is a [[Raster]].
     */
   def rasterize(
     re: RasterExtent,
@@ -42,13 +43,14 @@ trait FeatureIntRasterizeMethods[+G <: Geometry] extends MethodExtensions[Featur
 
 /**
   * A trait providing extension methods for invoking the rasterizer on
-  * [[Feature]] objects.
+  * Feature objects.
   */
 trait FeatureDoubleRasterizeMethods[+G <: Geometry] extends MethodExtensions[Feature[G, Double]] {
 
   /**
-    * Fill in this feature's data value at each cell of given [[RasterExtent]] that is
-    * covered by the present [[Feature]].  The result is a [[Raster]].
+    * Fill in this feature's data value at each cell of given
+    * [[RasterExtent]] that is covered by the present Feature.  The
+    * result is a [[Raster]].
     */
   def rasterize(
     re: RasterExtent,

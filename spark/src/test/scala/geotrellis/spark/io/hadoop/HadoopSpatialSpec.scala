@@ -6,12 +6,13 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestFiles
 
+
 class HadoopSpatialSpec
   extends PersistenceSpec[SpatialKey, Tile, TileLayerMetadata[SpatialKey]]
     with SpatialKeyIndexMethods
     with TestEnvironment
     with TestFiles
-    with AllOnesTestTileTests {
+    with AllOnesTestTileSpec {
 
   lazy val reader = HadoopLayerReader(outputLocal)
   lazy val writer = HadoopLayerWriter(outputLocal)

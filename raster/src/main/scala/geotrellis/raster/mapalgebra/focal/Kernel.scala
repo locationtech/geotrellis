@@ -3,12 +3,11 @@ package geotrellis.raster.mapalgebra.focal
 import geotrellis.raster._
 import geotrellis.vector.Extent
 
-/** 
- * Kernel
- *
- * Represents a neighborhood that is represented by
- * a tile.
- */
+/**
+  * [[Kernel]]
+  *
+  * Represents a neighborhood that is represented by a tile.
+  */
 case class Kernel(tile: Tile) extends Neighborhood {
   require(tile.rows == tile.cols, "Kernel tile must be square")
   require(tile.rows % 2 == 1, "Kernel tile must have odd dimension")
@@ -22,17 +21,38 @@ case class Kernel(tile: Tile) extends Neighborhood {
 
 object Kernel {
   implicit def tile2Kernel(r: Tile): Kernel = Kernel(r)
-  
+
+  def apply(nbhd: Neighborhood): Kernel = {
+    require(nbhd.hasMask, "Neighborhood must have a mask method")
+
+    val w = 2 * nbhd.extent + 1
+    val size = w * w
+    val tile = IntArrayTile(new Array[Int](size), w, w)
+
+    var r = 0
+    while (r < w) {
+      var c = 0
+      while (c < w) {
+        tile.set(c, r, if (nbhd.mask(c, r)) 0 else 1)
+        c = c + 1
+      }
+      r = r + 1
+    }
+
+    new Kernel(tile)
+  }
+
   /**
-   * Creates a Gaussian kernel. Can be used with the [[Convolve]] or [[KernelDensity]] operations.
-   *
-   * @param    size           Number of rows of the resulting tile.
-   * @param    sigma          Sigma parameter for Gaussian
-   * @param    amp            Amplitude for Gaussian. Will be the value at the center of
-   *                          the resulting tile.
-   *
-   * @note                    Tile will be IntConstantNoDataCellType
-   */
+    * Creates a Gaussian kernel. Can be used with the [[Convolve]] or
+    * KernelDensity operations.
+    *
+    * @param    size           Number of rows of the resulting tile.
+    * @param    sigma          Sigma parameter for Gaussian
+    * @param    amp            Amplitude for Gaussian. Will be the value at the center of
+    *                          the resulting tile.
+    *
+    * @note                    Tile will be IntConstantNoDataCellType
+    */
   def gaussian(size: Int, sigma: Double, amp: Double): Kernel = {
     val output = IntArrayTile.empty(size, size)
 
@@ -55,14 +75,15 @@ object Kernel {
   }
 
   /**
-   * Creates a Circle kernel. Can be used with the [[Convolve]] or [[KernelDensity]] operations.
-   *
-   * @param       size           Number of rows in the resulting tile.
-   * @param       cellWidth      Cell width of the resutling tile.
-   * @param       rad            Radius of the circle.
-   *
-   * @note                       Tile will be IntConstantNoDataCellType 
-   */
+    * Creates a Circle kernel. Can be used with the [[Convolve]] or
+    * KernelDensity operations.
+    *
+    * @param       size           Number of rows in the resulting tile.
+    * @param       cellWidth      Cell width of the resutling tile.
+    * @param       rad            Radius of the circle.
+    *
+    * @note                       Tile will be IntConstantNoDataCellType
+    */
   def circle(size: Int, cellWidth: Double, rad: Int) = {
     val output = IntArrayTile.empty(size, size)
 

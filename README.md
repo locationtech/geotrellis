@@ -159,6 +159,10 @@ This is a list of features contained in the GeoTrellis library. It is broken up 
 
 - Save and load layers to and from Accumulo. Query large layers efficiently using the layer query API.
 
+#### geotrellis-cassandra
+
+Save and load layers to and from Casandra. Query large layers efficiently using the layer query API.
+
 #### geotrellis-s3
 
 - Save/load raster layers to/from the local filesystem or HDFS using Spark's IO API.
