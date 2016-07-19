@@ -22,6 +22,7 @@ This first example will demonstrate how to build a raster from point data using 
 To begin, let's generate a random collection of points with weights in the range (0,100).
 
 ```scala
+    import geotrellis.vector._
     import scala.util._
 
     val extent = Extent.fromString("-109, 37, -102, 41") // Extent of Colorado
@@ -39,7 +40,7 @@ To begin, let's generate a random collection of points with weights in the range
     val pts = (for (i <- 1 to 1000) yield randomPointFeature(extent)).toList
 ```
 
-The choice of extent is largely arbitrary in this example, but note that the coordinates here are taken with respect to the standard (longitude, latitude) that we normally consider.  Other coordinate representations are available, and it might be useful to investigate coordinate reference systems if you want more details.  Some operations in Geotrellis require that a CRS object be constructed to place your rasters in the proper context.  For (longitude, latitude) coordinates, either `CRS.fromName("EPSG:4326")` or `LatLng` will generate the desired CRS.
+The choice of extent is largely arbitrary in this example, but note that the coordinates here are taken with respect to the standard (longitude, latitude) that we normally consider.  Other coordinate representations are available, and it might be useful to investigate coordinate reference systems (CRSs) if you want more details.  Some operations in Geotrellis require that a CRS object be constructed to place your rasters in the proper context.  For (longitude, latitude) coordinates, either `CRS.fromName("EPSG:4326")` or `LatLng` will generate the desired CRS.
 
 Next, we will create a tile containing the kernel density estimate:
 ```scala
@@ -91,7 +92,7 @@ By incorporating all these ideas, we can create the following function to genera
     val ptfToExtent = { p: PointFeature[Double] => pointFeatureToExtent(9, ld, p) }
 ```
 
-When we consider the kernel extent of a point in the context of a LayoutDefinition, it's clear that a kernel's extent may overlap more than one tile in the layout.  To discover the tiles that a given point's kernel extents overlap, LayoutDefinition provides the `mapTransform` member.  Among the methods of mapTransform is the ability to determine the indices of tiles in the TileLayout overlap a given extent.  Note that the tiles in a given layout are indexed by `SpatialKey`s, which are effectively `(Int,Int)` pairs giving the (column,row) of each tile as follows:
+When we consider the kernel extent of a point in the context of a LayoutDefinition, it's clear that a kernel's extent may overlap more than one tile in the layout.  To discover the tiles that a given point's kernel extents overlap, LayoutDefinition provides a `mapTransform` object.  Among the methods of mapTransform is the ability to determine the indices of the subtiles in the TileLayout that overlap a given extent.  Note that the tiles in a given layout are indexed by `SpatialKey`s, which are effectively `(Int,Int)` pairs giving the (column,row) of each tile as follows:
 ```
     +-------+-------+-------+       +-------+
     | (0,0) | (1,0) | (2,0) | . . . | (6,0) |
@@ -107,13 +108,13 @@ When we consider the kernel extent of a point in the context of a LayoutDefiniti
 ```
 Specifically, in our running example, `ld.mapTransform(ptfToExtent(Feature(Point(-108, 38), 100.0)))` returns `GridBounds(0, 2, 1, 3),` indicating that every cell with columns in the range [0,1] and rows in the range [2,3] are intersected by the kernel centered on the point (-108, 38)---that is, the 2x2 block of tiles at the lower left of the layout.
 
-In order to proceed with the kernel density estimation, it is necessary to then convert the list of points into a collection of `(SpatialKey,List[PointFeature[Double]])` that gathers all the points that have an effect on each subtile, as indexed by their SpatialKeys.  The following snippet accomplishes that.
+In order to proceed with the kernel density estimation, it is necessary to then convert the list of points into a collection of `(SpatialKey, List[PointFeature[Double]])` that gathers all the points that have an effect on each subtile, as indexed by their SpatialKeys.  The following snippet accomplishes that.
 ```scala
       def ptfToSpatialKey[D](ptf: PointFeature[D]) :
           Seq[(SpatialKey,PointFeature[D])] = {
         val ptextent = ptfToExtent(ptf)
         val gridBounds = ld.mapTransform(ptextent)
-        for ((c,r) <- gridBounds.coords;
+        for ((c, r) <- gridBounds.coords;
              if r < tl.totalRows;
              if c < tl.totalCols) yield (SpatialKey(c,r), ptf)
       }
@@ -127,10 +128,10 @@ Now, all the subtiles may be generated in the same fashion as the monolithic til
 
 ```scala
       val keytiles = keyfeatures.map { 
-        case (sk,pfs) => (sk,kernelDensity (pfs,trans,kern,
-                                            RasterExtent(ld.mapTransform(sk),
-                                                         tl.tileDimensions._1,
-                                                         tl.tileDimensions._2))) 
+        case (sk, pfs) => (sk, kernelDensity (pfs, trans, kern,
+                                              RasterExtent(ld.mapTransform(sk),
+                                                           tl.tileDimensions._1,
+                                                           tl.tileDimensions._2))) 
       }
 ```
 
@@ -150,9 +151,15 @@ Finally, it is necessary to combine the results.  Note that, in order to produce
 
 It is now the case that `stitched` is identical to `kde.`
 
-#### A note on implementation ####
+### Distributing Computation via Apache Spark ###
 
-The procedures that we've been considering above have been implemented in GeoTrellis and are located in `raster/
+As mentioned, the reason for introducing this more complicated version of kernel density estimation was to enable distributed processing of the kernel stamping process.  Each subtile could potentially be handled by a different node in a cluster, which would make sense if the dataset in question were, say, individual trees, requiring a huge amount of working memory.  By breaking the domain into smaller pieces, we can leverage the distributed framework provided by Apache Spark to spread the task to a number of machines.  This will also provide fault tolerant, rapid data processing for real-time and/or web-based applications.
+
+
+
+### A Note on Implementation ###
+
+The procedures that we've been considering above have been implemented in GeoTrellis and are located in `raster/src/main/scala/geotrellis/raster/density/` and `spark/src/main/scala/geotrellis/spark/density`.  This final implementation is more complete than the simple version presented here, as it handles type conversion for different tile cell types and is augmented with convenience functions that are provided through the use of the `MethodExtensions` facility.  Briefly, method extensions allow for implicit conversion between `Traversable[PointFeature[Num]]` (where `Num` is either `Int` or `Double`) and a wrapper class which provides a method `kernelDensity: (Kernel, RasterExtent) => Tile`.  Thus, any traversable collection can be treated as if it possesses a `kernelDensity` method.  This pattern appears all throughout GeoTrellis, and provides some welcome syntactic sugar.
 
 
 
