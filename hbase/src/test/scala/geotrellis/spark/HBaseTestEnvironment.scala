@@ -16,24 +16,24 @@
 
 package geotrellis.spark
 
-import geotrellis.spark.io.cassandra.BaseCassandraInstance
+import geotrellis.spark.io.hbase.HBaseInstance
 import org.apache.spark.SparkConf
 import org.scalatest._
 
-trait CassandraTestEnvironment extends TestEnvironment { self: Suite =>
+trait HBaseTestEnvironment extends TestEnvironment { self: Suite =>
   override def setKryoRegistrator(conf: SparkConf) =
     conf.set("spark.kryo.registrator", "geotrellis.spark.io.kryo.KryoRegistrator")
-        .set("spark.kryo.registrationRequired","false")
+      .set("spark.kryo.registrationRequired","false")
 
   override def beforeAll = {
     super.beforeAll
     try {
-      val session = BaseCassandraInstance(Seq("127.0.0.1")).getSession
-      session.closeAsync()
-      session.getCluster.closeAsync()
+      val instance = HBaseInstance(Seq("localhost"), "localhost")
+      instance.getAdmin
+      println("lol")
     } catch {
       case e: Exception =>
-        println("\u001b[0;33mA script for setting up the Cassandra environment necessary to run these tests can be found at scripts/cassandraTestDB.sh - requires a working docker setup\u001b[m")
+        println("\u001b[0;33mA script for setting up the HBase environment necessary to run these tests can be found at scripts/hbaseTestDB.sh - requires a working docker setup\u001b[m")
         cancel
     }
   }
