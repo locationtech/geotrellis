@@ -5,10 +5,9 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 
-import org.apache.hadoop.hbase.client.Scan
+import org.apache.hadoop.hbase.client.Get
 import spray.json._
 
-import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
 class HBaseValueReader(
@@ -24,13 +23,13 @@ class HBaseValueReader(
     val table = instance.getAdmin.getConnection.getTable(header.tileTable)
 
     def read(key: K): V = {
-      val scan = new Scan()
-      scan.setStartRow(keyIndex.toIndex(key))
-      scan.setStopRow(keyIndex.toIndex(key))
-      scan.addColumn(layerId.name, layerId.zoom)
-      val tiles = table.getScanner(scan).iterator().map { row =>
-        AvroEncoder.fromBinary(writerSchema, row.getValue(layerId.name, layerId.zoom))(codec)
-      }.flatMap { pairs: Vector[(K, V)] => pairs.filter(pair => pair._1 == key) }.toVector
+      val get = new Get(keyIndex.toIndex(key))
+      get.addColumn(layerId.name, layerId.zoom)
+      val row = table.get(get)
+      val tiles: Vector[(K, V)] =
+        AvroEncoder
+          .fromBinary(writerSchema, row.getValue(layerId.name, layerId.zoom))(codec)
+          .filter(pair => pair._1 == key)
 
       if (tiles.isEmpty) {
         throw new TileNotFoundError(key, layerId)

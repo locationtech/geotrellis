@@ -1,6 +1,7 @@
 package geotrellis.spark.io.hbase
 
 import geotrellis.spark.io.LayerHeader
+
 import spray.json._
 
 case class HBaseLayerHeader(

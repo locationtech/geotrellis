@@ -18,12 +18,19 @@ class HBaseLayerDeleter(val attributeStore: AttributeStore, instance: HBaseInsta
 
     val table = instance.getAdmin.getConnection.getTable(header.tileTable)
 
+    // Deletion list should be mutable
+    val list = new java.util.ArrayList[Delete]()
     val scan = new Scan()
-    scan.addFamily(columnFamily(id))
+    scan.addColumn(id.name, id.zoom)
 
-    table.delete(table.getScanner(scan).iterator().map { kv =>
-      new Delete(kv.getRow)
-    }.toList)
+    table.getScanner(scan).iterator().foreach { kv =>
+      val delete = new Delete(kv.getRow)
+      delete.addColumn(id.name, id.zoom)
+      list.add(delete)
+    }
+
+    table.delete(list)
+    instance.getAdmin.deleteColumn(header.tileTable, id.name)
 
     attributeStore.delete(id)
   }

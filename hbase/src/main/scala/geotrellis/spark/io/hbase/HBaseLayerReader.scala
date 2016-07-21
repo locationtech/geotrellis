@@ -4,6 +4,7 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.util._
+
 import org.apache.spark.SparkContext
 import spray.json._
 

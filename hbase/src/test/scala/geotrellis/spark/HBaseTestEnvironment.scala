@@ -27,15 +27,15 @@ trait HBaseTestEnvironment extends TestEnvironment { self: Suite =>
 
   override def beforeAll = {
     super.beforeAll
-    try {
+    /*try {
       val instance = HBaseInstance(Seq("localhost"), "localhost")
       instance.getAdmin
-      println("lol")
+      instance.getAdmin.close()
     } catch {
       case e: Exception =>
         println("\u001b[0;33mA script for setting up the HBase environment necessary to run these tests can be found at scripts/hbaseTestDB.sh - requires a working docker setup\u001b[m")
         cancel
-    }
+    }*/
   }
 
   beforeAll()

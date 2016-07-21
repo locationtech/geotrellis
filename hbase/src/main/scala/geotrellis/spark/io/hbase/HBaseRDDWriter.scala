@@ -3,13 +3,10 @@ package geotrellis.spark.io.hbase
 import geotrellis.spark.LayerId
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
-import org.apache.hadoop.hbase.client.{Put, Table}
+
+import org.apache.hadoop.hbase.client.Put
 import org.apache.hadoop.hbase.{HColumnDescriptor, HTableDescriptor, TableName}
 import org.apache.spark.rdd.RDD
-
-import scalaz.concurrent.Task
-import scalaz.stream.{Process, nondeterminism}
-import java.util.concurrent.Executors
 
 object HBaseRDDWriter {
 
@@ -23,7 +20,6 @@ object HBaseRDDWriter {
     implicit val sc = raster.sparkContext
 
     val codec = KeyValueRecordCodec[K, V]
-    val schema = codec.schema
 
     //create the attribute table if it does not exist
     if (!instance.getAdmin.tableExists(table)) {
@@ -41,41 +37,20 @@ object HBaseRDDWriter {
     // on a key type that may no longer by valid for the key type of the resulting RDD.
 
     raster.groupBy({ row => decomposeKey(row._1) }, numPartitions = raster.partitions.length)
-        .foreachPartition { partition =>
-          val mutator = instance.getAdmin.getConnection.getBufferedMutator(table)
-          val queries: Process[Task, Put] =
-            Process.unfold(partition) { iter =>
-              if (iter.hasNext) {
-                val recs = iter.next()
-                val id = recs._1
-                val pairs = recs._2.toVector
-                val bytes = AvroEncoder.toBinary(pairs)(codec)
-                val put = new Put(longToBytes(id))
-                put.addColumn(layerId.name, layerId.zoom, System.currentTimeMillis(), bytes)
-                Some(put, iter)
-              } else {
-                None
-              }
-            }
+        .foreachPartition { partition: Iterator[(Long, Iterable[(K, V)])] =>
+          val mutator = instance.getConnection.getBufferedMutator(table)
 
-          /** magic number 32; for no reason; just because */
-          val pool = Executors.newFixedThreadPool(32)
-
-          val write: Put => Process[Task, Unit] = {
-            case put => Process eval Task { mutator.mutate(put) }(pool)
+          partition.foreach { recs =>
+            val id = recs._1
+            val pairs = recs._2.toVector
+            val bytes = AvroEncoder.toBinary(pairs)(codec)
+            val put = new Put(longToBytes(id))
+            put.addColumn(stringToBytes(layerId.name), intToBytes(layerId.zoom), System.currentTimeMillis(), bytes)
+            mutator.mutate(put)
           }
 
-          val results = nondeterminism.njoin(maxOpen = 32, maxQueued = 32) {
-            queries map write
-          } onComplete {
-            Process eval Task {
-              mutator.flush()
-              mutator.close()
-            }
-          }
-
-          results.run.unsafePerformSync
-          pool.shutdown()
+          mutator.flush()
+          mutator.close()
         }
   }
 }

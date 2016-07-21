@@ -3,6 +3,7 @@ package geotrellis.spark.io.hbase
 import com.typesafe.config.ConfigFactory
 import geotrellis.spark._
 import geotrellis.spark.io._
+
 import org.apache.hadoop.hbase._
 import org.apache.hadoop.hbase.client._
 import org.apache.hadoop.hbase.util.Bytes
@@ -24,8 +25,8 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
   //create the attribute table if it does not exist
   if (!instance.getAdmin.tableExists(attributeTable)) {
     val tableDesc = new HTableDescriptor(attributeTable: TableName)
-    val idsColumnFamilyDesc = new HColumnDescriptor("header")
-    tableDesc.addFamily(idsColumnFamilyDesc)
+    val headerColumnFamilyDesc = new HColumnDescriptor(AttributeStore.Fields.header)
+    tableDesc.addFamily(headerColumnFamilyDesc)
     instance.getAdmin.createTable(tableDesc)
   }
 
@@ -42,7 +43,7 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
     val scan = new Scan()
     layerId.foreach { id =>
       scan.setStartRow(layerIdString(id))
-      scan.setStopRow(layerIdString(id))
+      scan.setStopRow(stringToBytes(layerIdString(id)) :+ 0.toByte) // add trailing byte, to include stop row
     }
     scan.addFamily(attributeName)
     table.getScanner(scan).iterator()
@@ -54,6 +55,7 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
     val delete = new Delete(layerIdString(layerId))
     attributeName.foreach(delete.addFamily(_))
     table.delete(delete)
+    attributeName.foreach(table.getTableDescriptor.removeFamily(_))
 
     attributeName match {
       case Some(attribute) => clearCache(layerId, attribute)
@@ -90,17 +92,7 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
     table.put(put)
   }
 
-  def layerExists(layerId: LayerId): Boolean = {
-    val id = layerIdString(layerId)
-    val scan = new Scan()
-    scan.setStartRow(id)
-    scan.setStopRow(id)
-    table.getScanner(scan).iterator()
-      .exists { kv =>
-        val List(name, zoomStr) = Bytes.toString(kv.getRow).split(SEP).toList
-        layerId == LayerId(name, zoomStr.toInt)
-      }
-  }
+  def layerExists(layerId: LayerId): Boolean = !table.get(new Get(layerIdString(layerId))).isEmpty
 
   def delete(layerId: LayerId): Unit = delete(layerId, None)
 

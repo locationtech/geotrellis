@@ -2,15 +2,20 @@ package geotrellis.spark.io.hbase
 
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
+import geotrellis.spark.io.index.MergeQueue
 import geotrellis.spark.util.KryoWrapper
 import geotrellis.spark.{Boundable, KeyBounds, LayerId}
 
 import org.apache.avro.Schema
-import org.apache.hadoop.hbase.client.Scan
+import org.apache.hadoop.hbase.client.{Result, Scan}
+import org.apache.hadoop.hbase.filter.MultiRowRangeFilter
+import org.apache.hadoop.hbase.io.ImmutableBytesWritable
+import org.apache.hadoop.hbase.mapreduce.{IdentityTableMapper, TableInputFormat, TableMapReduceUtil}
+import org.apache.hadoop.mapred.JobConf
+import org.apache.hadoop.mapreduce.Job
 import org.apache.spark.SparkContext
+import org.apache.spark.deploy.SparkHadoopUtil
 import org.apache.spark.rdd.RDD
-import scala.collection.JavaConversions._
 
 import scala.reflect.ClassTag
 
@@ -31,36 +36,38 @@ object HBaseRDDReader {
     val _recordCodec = KeyValueRecordCodec[K, V]
     val kwWriterSchema = KryoWrapper(writerSchema) //Avro Schema is not Serializable
 
-    val ranges = if (queryKeyBounds.length > 1)
-        MergeQueue(queryKeyBounds.flatMap(decomposeBounds))
-      else
-        queryKeyBounds.flatMap(decomposeBounds)
+    val ranges: Seq[(Long, Long)] = if (queryKeyBounds.length > 1)
+      MergeQueue(queryKeyBounds.flatMap(decomposeBounds))
+    else
+      queryKeyBounds.flatMap(decomposeBounds)
 
-    val bins = IndexRanges.bin(ranges, numPartitions.getOrElse(sc.defaultParallelism))
+    val scan = new Scan()
+    scan.addColumn(layerId.name, layerId.zoom)
+    scan.setFilter(
+      new MultiRowRangeFilter(
+        java.util.Arrays.asList(ranges.map { case (start, end) =>
+          new MultiRowRangeFilter.RowRange(start, true, end, true)
+        }: _*)
+      )
+    )
 
-    val rdd: RDD[(K, V)] =
-      sc.parallelize(bins, bins.size)
-        .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
-           val res: Iterator[Seq[(K, V)]] = for {
-              rangeList <- partition // Unpack the one element of this partition, the rangeList.
-              (rfrom, rto) <- rangeList
-            } yield {
-              val t = instance.getAdmin.getConnection.getTable(table)
+    val job = Job.getInstance(sc.hadoopConfiguration)
+    TableMapReduceUtil.initCredentials(job)
+    TableMapReduceUtil.initTableMapperJob(table, scan, classOf[IdentityTableMapper], null, null, job)
 
-              val scan = new Scan()
-              scan.setStartRow(rfrom)
-              scan.setStopRow(rto)
-              scan.addColumn(layerId.name, layerId.zoom)
-              t.getScanner(scan).iterator().flatMap { row =>
-                val bytes = row.getValue(layerId.name, layerId.zoom)
-                val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
-                if (filterIndexOnly) recs
-                else recs.filter { row => includeKey(row._1) }
-              }.toSeq
-            }
+    val jconf = new JobConf(job.getConfiguration)
+    SparkHadoopUtil.get.addCredentials(jconf)
 
-          res.flatten
-        }
-    rdd
+    sc.newAPIHadoopRDD(
+      job.getConfiguration,
+      classOf[TableInputFormat],
+      classOf[ImmutableBytesWritable],
+      classOf[Result]
+    ).flatMap { case (_, row) =>
+      val bytes = row.getValue(layerId.name, layerId.zoom)
+      val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
+      if (filterIndexOnly) recs
+      else recs.filter { row => includeKey(row._1) }
+    }
   }
 }
