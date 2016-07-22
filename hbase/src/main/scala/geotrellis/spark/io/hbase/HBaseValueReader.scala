@@ -23,12 +23,12 @@ class HBaseValueReader(
     val table = instance.getAdmin.getConnection.getTable(header.tileTable)
 
     def read(key: K): V = {
-      val get = new Get(keyIndex.toIndex(key))
-      get.addColumn(layerId.name, layerId.zoom)
+      val get = new Get(HBaseKeyEncoder.encode(layerId, keyIndex.toIndex(key)))
+      get.addFamily(HBaseRDDWriter.tilesCF)
       val row = table.get(get)
       val tiles: Vector[(K, V)] =
         AvroEncoder
-          .fromBinary(writerSchema, row.getValue(layerId.name, layerId.zoom))(codec)
+          .fromBinary(writerSchema, row.getValue(HBaseRDDWriter.tilesCF, ""))(codec)
           .filter(pair => pair._1 == key)
 
       if (tiles.isEmpty) {

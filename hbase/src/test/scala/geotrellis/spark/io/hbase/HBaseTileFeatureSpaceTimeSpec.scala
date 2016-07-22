@@ -8,7 +8,7 @@ import geotrellis.spark.testfiles.TestTileFeatureFiles
 class HBaseTileFeatureSpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, TileFeature[Tile, Tile], TileLayerMetadata[SpaceTimeKey]]
     with SpaceTimeKeyIndexMethods
-    with TestEnvironment   
+    with HBaseTestEnvironment
     with TestTileFeatureFiles
     with CoordinateSpaceTimeTileFeatureSpec
     with LayerUpdateSpaceTimeTileFeatureSpec {

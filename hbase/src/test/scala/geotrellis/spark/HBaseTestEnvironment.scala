@@ -16,8 +16,10 @@
 
 package geotrellis.spark
 
-import geotrellis.spark.io.hbase.HBaseInstance
+import geotrellis.spark.io.hbase._
+
 import org.apache.spark.SparkConf
+import org.apache.zookeeper.client.FourLetterWordMain
 import org.scalatest._
 
 trait HBaseTestEnvironment extends TestEnvironment { self: Suite =>
@@ -27,15 +29,27 @@ trait HBaseTestEnvironment extends TestEnvironment { self: Suite =>
 
   override def beforeAll = {
     super.beforeAll
-    /*try {
-      val instance = HBaseInstance(Seq("localhost"), "localhost")
-      instance.getAdmin
-      instance.getAdmin.close()
+    try {
+      // check zookeeper availability
+      FourLetterWordMain.send4LetterWord("localhost", 2181, "srvr")
     } catch {
-      case e: Exception =>
+      case e: java.net.ConnectException => {
         println("\u001b[0;33mA script for setting up the HBase environment necessary to run these tests can be found at scripts/hbaseTestDB.sh - requires a working docker setup\u001b[m")
         cancel
-    }*/
+      }
+    }
+
+    try {
+      val instance = HBaseInstance(Seq("localhost"), "localhost")
+      instance.getAdmin.tableExists("tiles")
+      instance.getAdmin.close()
+      instance.getAdmin.getConnection.close()
+    } catch {
+      case e: Exception => {
+        println("\u001b[0;33mA script for setting up the HBase environment necessary to run these tests can be found at scripts/hbaseTestDB.sh - requires a working docker setup\u001b[m")
+        cancel
+      }
+    }
   }
 
   beforeAll()

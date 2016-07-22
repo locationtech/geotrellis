@@ -8,7 +8,7 @@ import geotrellis.spark.testfiles.TestFiles
 class HBaseSpatialSpec
   extends PersistenceSpec[SpatialKey, Tile, TileLayerMetadata[SpatialKey]]
     with SpatialKeyIndexMethods
-    with TestEnvironment   
+    with HBaseTestEnvironment
     with TestFiles
     with AllOnesTestTileSpec {
 

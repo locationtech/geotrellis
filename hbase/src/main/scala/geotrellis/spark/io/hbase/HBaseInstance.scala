@@ -1,7 +1,7 @@
 package geotrellis.spark.io.hbase
 
 import org.apache.hadoop.hbase.HBaseConfiguration
-import org.apache.hadoop.hbase.client.{Admin, Connection, ConnectionFactory, HBaseAdmin}
+import org.apache.hadoop.hbase.client._
 
 case class HBaseInstance(zookeepers: Seq[String], master: String, clientPort: String = "2181") extends Serializable {
   @transient lazy val conf = {

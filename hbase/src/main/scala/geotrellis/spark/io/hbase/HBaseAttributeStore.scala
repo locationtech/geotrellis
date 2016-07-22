@@ -32,7 +32,7 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
 
   val table = instance.getAdmin.getConnection.getTable(attributeTable)
 
-  val SEP = "__.__"
+  val SEP = HBaseRDDWriter.SEP
 
   def layerIdString(layerId: LayerId): String = s"${layerId.name}${SEP}${layerId.zoom}"
 

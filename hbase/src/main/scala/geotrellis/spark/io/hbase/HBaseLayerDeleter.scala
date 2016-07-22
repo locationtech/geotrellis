@@ -3,6 +3,7 @@ package geotrellis.spark.io.hbase
 import geotrellis.spark.LayerId
 import geotrellis.spark.io._
 import org.apache.hadoop.hbase.client._
+import org.apache.hadoop.hbase.filter.PrefixFilter
 
 import scala.collection.JavaConversions._
 
@@ -21,17 +22,16 @@ class HBaseLayerDeleter(val attributeStore: AttributeStore, instance: HBaseInsta
     // Deletion list should be mutable
     val list = new java.util.ArrayList[Delete]()
     val scan = new Scan()
-    scan.addColumn(id.name, id.zoom)
+    scan.addFamily(HBaseRDDWriter.tilesCF)
+    scan.setFilter(new PrefixFilter(HBaseRDDWriter.layerIdString(id)))
 
     table.getScanner(scan).iterator().foreach { kv =>
       val delete = new Delete(kv.getRow)
-      delete.addColumn(id.name, id.zoom)
+      delete.addFamily(HBaseRDDWriter.tilesCF)
       list.add(delete)
     }
 
     table.delete(list)
-    instance.getAdmin.deleteColumn(header.tileTable, id.name)
-
     attributeStore.delete(id)
   }
 }
