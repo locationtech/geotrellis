@@ -33,10 +33,10 @@ class ProtobufGeomSpec extends FunSpec with Matchers {
     }
 
     it("MultiPoint") {
-      val ns = Seq(17, 4, 4, 6, 6)
+      val ns = Seq(25, 4, 4, 6, 6, 3, 3)
       val p = implicitly[ProtobufGeom[Point, MultiPoint]].fromCommands(Command.commands(ns))
 
-      p shouldBe Right(MultiPoint(Point(2, 2), Point(5, 5)))
+      p shouldBe Right(MultiPoint(Point(2, 2), Point(5, 5), Point(3, 3)))
       Command.uncommands(implicitly[ProtobufGeom[Point, MultiPoint]].toCommands(p)) shouldBe ns
     }
 
@@ -45,6 +45,7 @@ class ProtobufGeomSpec extends FunSpec with Matchers {
       val l = implicitly[ProtobufGeom[Line, MultiLine]].fromCommands(Command.commands(ns))
 
       l shouldBe Left(Line((2, 2), (5, 4), (2, 6)))
+      Command.uncommands(implicitly[ProtobufGeom[Line, MultiLine]].toCommands(l)) shouldBe ns
     }
 
     it("MultiLine") {
@@ -55,6 +56,7 @@ class ProtobufGeomSpec extends FunSpec with Matchers {
         Line((2, 2), (5, 4), (2, 6)),
         Line((4, 8), (7, 10), (4, 12))
       ))
+      Command.uncommands(implicitly[ProtobufGeom[Line, MultiLine]].toCommands(l)) shouldBe ns
     }
 
     it("Polygon - One Solid Poly") {

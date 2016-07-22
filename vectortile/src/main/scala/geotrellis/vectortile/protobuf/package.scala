@@ -66,7 +66,7 @@ package object protobuf {
 
       diffs.update(i, here)
 
-      cursor = here
+      cursor = curr
 
       i += 1
     }
@@ -85,7 +85,7 @@ package object protobuf {
       case _ => throw IncompatibleCommandSequence("Expected: [ MoveTo(ps) ]")
     }
 
-    def toCommands(p: Either[Point, MultiPoint]): Seq[Command] = p match {
+    def toCommands(point: Either[Point, MultiPoint]): Seq[Command] = point match {
       case Left(p) => Seq(MoveTo(Array((p.x.toInt, p.y.toInt))))
       case Right(mp) => Seq(MoveTo(
         collapse(mp.points.map(p => (p.x.toInt, p.y.toInt)))
@@ -96,6 +96,7 @@ package object protobuf {
   implicit val protoLine = new ProtobufGeom[Line, MultiLine] {
     def fromCommands(cmds: Seq[Command]): Either[Line, MultiLine] = {
       // TODO Make tail recursive?
+      // TODO Use (::)?
       def work(cs: Seq[Command], cursor: (Int, Int)): ListBuffer[Line] = cs match {
         case MoveTo(p) +: LineTo(ps) +: rest => {
           val line = Line(expand(p ++ ps, cursor).map({ case (x, y) => (x.toDouble, y.toDouble) }))
@@ -113,7 +114,29 @@ package object protobuf {
       if (lines.length == 1) Left(lines.head) else Right(MultiLine(lines))
     }
 
-    def toCommands(ml: Either[Line, MultiLine]): Seq[Command] = ???
+    def toCommands(line: Either[Line, MultiLine]): Seq[Command] = {
+      def work(lines: Array[Line]): Seq[Command] = {
+        var curs: (Int, Int) = (0, 0)
+        var buff = new ListBuffer[Command]
+
+        lines.foreach({l =>
+          val diffs: Array[(Int, Int)] = collapse(l.points.map(p => (p.x.toInt, p.y.toInt)), curs)
+
+          /* Find new cursor positions */
+          val endPoint: Point = Point(l.jtsGeom.getEndPoint)
+          curs = (endPoint.x.toInt, endPoint.y.toInt)
+
+          buff.appendAll(Seq(MoveTo(Array(diffs.head)), LineTo(diffs.tail)))
+        })
+
+        buff.toSeq
+      }
+
+      line match {
+        case Left(l) => work(Array(l))
+        case Right(ml) => work(ml.lines)
+      }
+    }
   }
 
   implicit val protoPolygon = new ProtobufGeom[Polygon, MultiPolygon] {
