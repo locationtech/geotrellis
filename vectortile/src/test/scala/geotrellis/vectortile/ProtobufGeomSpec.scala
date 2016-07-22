@@ -64,6 +64,7 @@ class ProtobufGeomSpec extends FunSpec with Matchers {
       val p = implicitly[ProtobufGeom[Polygon, MultiPolygon]].fromCommands(Command.commands(ns))
 
       p shouldBe Left(Polygon((2, 2), (5, 4), (2, 6), (2, 2)))
+      Command.uncommands(implicitly[ProtobufGeom[Polygon, MultiPolygon]].toCommands(p)) shouldBe ns
     }
 
     it("Polygon - One Holed Poly") {
@@ -74,6 +75,7 @@ class ProtobufGeomSpec extends FunSpec with Matchers {
         exterior = Line((2, 2), (5, 2), (5, 5), (2, 5), (2, 2)),
         holes = Seq(Line((3, 3), (3, 4), (4, 4), (4, 3), (3, 3)))
       ))
+      Command.uncommands(implicitly[ProtobufGeom[Polygon, MultiPolygon]].toCommands(p)) shouldBe ns
     }
 
     it("MultiPolygon - Two Solid Polys") {
@@ -84,6 +86,7 @@ class ProtobufGeomSpec extends FunSpec with Matchers {
         Polygon((2, 2), (5, 4), (2, 6), (2, 2)),
         Polygon((4, 8), (7, 10), (4, 12), (4, 8))
       ))
+      Command.uncommands(implicitly[ProtobufGeom[Polygon, MultiPolygon]].toCommands(p)) shouldBe ns
     }
 
     it("MultiPolygon - One Holed, One Solid") {
@@ -102,6 +105,7 @@ class ProtobufGeomSpec extends FunSpec with Matchers {
           (6, 5), (9, 5), (9, 8), (6, 8), (6, 5)
         )
       ))
+      Command.uncommands(implicitly[ProtobufGeom[Polygon, MultiPolygon]].toCommands(p)) shouldBe ns
     }
   }
 }

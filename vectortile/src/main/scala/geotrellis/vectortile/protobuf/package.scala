@@ -122,7 +122,7 @@ package object protobuf {
         lines.foreach({l =>
           val diffs: Array[(Int, Int)] = collapse(l.points.map(p => (p.x.toInt, p.y.toInt)), curs)
 
-          /* Find new cursor positions */
+          /* Find new cursor position */
           val endPoint: Point = Point(l.jtsGeom.getEndPoint)
           curs = (endPoint.x.toInt, endPoint.y.toInt)
 
@@ -188,7 +188,31 @@ package object protobuf {
       if (polys.length == 1) Left(polys.head) else Right(MultiPolygon(polys))
     }
 
-    def toCommands(p: Either[Polygon, MultiPolygon]): Seq[Command] = ???
+    def toCommands(poly: Either[Polygon, MultiPolygon]): Seq[Command] = {
+      def work(polys: Array[Line]): Seq[Command] = {
+        var curs: (Int, Int) = (0, 0)
+        var buff = new ListBuffer[Command]
+
+        polys.foreach({ l =>
+          /* Exclude the final point via `init` */
+          val diffs = collapse(l.points.init.map(p => (p.x.toInt, p.y.toInt)), curs)
+
+          /* Find new cursor position */
+          val endPoint: Point = l.points.init.last
+          curs = (endPoint.x.toInt, endPoint.y.toInt)
+
+          buff.appendAll(Seq(MoveTo(Array(diffs.head)), LineTo(diffs.tail), ClosePath))
+        })
+
+        buff
+      }
+
+      // TODO (+:) here is bad!
+      poly match {
+        case Left(p) => work(p.exterior +: p.holes)
+        case Right(mp) => work(mp.polygons.flatMap(p => p.exterior +: p.holes))
+      }
+    }
   }
 
   /**
