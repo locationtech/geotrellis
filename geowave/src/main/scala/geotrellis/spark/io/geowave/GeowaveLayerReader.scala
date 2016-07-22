@@ -36,7 +36,7 @@ import spray.json._
 import scala.reflect._
 
 
-object GeoWaveLayerReader {
+object GeowaveLayerReader {
   val geometryFactory = new GeometryFactory
   val p = geometryFactory.createPoint(new Coordinate(31.137720, 29.975307))
   val emptySet = p.difference(p)
@@ -185,7 +185,7 @@ class GeowaveLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkC
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](id: LayerId, rasterQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
-    import GeoWaveLayerReader._
+    import GeowaveLayerReader._
 
     /* Perform checks */
     if (!attributeStore.layerExists(id))
