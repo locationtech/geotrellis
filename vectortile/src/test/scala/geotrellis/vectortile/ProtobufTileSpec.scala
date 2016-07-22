@@ -34,6 +34,12 @@ class ProtobufTileSpec extends FunSpec with Matchers {
     }
   }
 
+  describe("polygon.mvt") {
+    it("must decode") {
+      ProtobufTile(Protobuf.decodeIO("vectortile/data/polygon.mvt"))
+    }
+  }
+
   describe("roads.mvt") {
     it("must decode") {
       ProtobufTile(Protobuf.decodeIO("vectortile/data/roads.mvt"))
