@@ -55,8 +55,8 @@ package object protobuf {
    * Collapse a collection of Points into that of diffs, relative to
    * the previous point in the sequence.
    */
-  private def collapse(points: Array[(Int, Int)]): Array[(Int, Int)] = {
-    var cursor: (Int, Int) = (0, 0)
+  private def collapse(points: Array[(Int, Int)], curs: (Int, Int) = (0, 0)): Array[(Int, Int)] = {
+    var cursor: (Int, Int) = curs
     val diffs = new Array[(Int, Int)](points.length)
     var i = 0
 
@@ -85,7 +85,12 @@ package object protobuf {
       case _ => throw IncompatibleCommandSequence("Expected: [ MoveTo(ps) ]")
     }
 
-    def toCommands(p: Either[Point, MultiPoint]): Seq[Command] = ???
+    def toCommands(p: Either[Point, MultiPoint]): Seq[Command] = p match {
+      case Left(p) => Seq(MoveTo(Array((p.x.toInt, p.y.toInt))))
+      case Right(mp) => Seq(MoveTo(
+        collapse(mp.points.map(p => (p.x.toInt, p.y.toInt)))
+      ))
+    }
   }
 
   implicit val protoLine = new ProtobufGeom[Line, MultiLine] {

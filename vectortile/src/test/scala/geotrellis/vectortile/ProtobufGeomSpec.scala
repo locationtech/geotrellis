@@ -23,12 +23,13 @@ import org.scalatest._
 // --- //
 
 class ProtobufGeomSpec extends FunSpec with Matchers {
-  describe("Geometry Decoding") {
+  describe("Geometry Isomorphisms") {
     it("Point") {
       val ns = Seq(9, 4, 4)
       val p = implicitly[ProtobufGeom[Point, MultiPoint]].fromCommands(Command.commands(ns))
 
       p shouldBe Left(Point(2, 2))
+      Command.uncommands(implicitly[ProtobufGeom[Point, MultiPoint]].toCommands(p)) shouldBe ns
     }
 
     it("MultiPoint") {
@@ -36,6 +37,7 @@ class ProtobufGeomSpec extends FunSpec with Matchers {
       val p = implicitly[ProtobufGeom[Point, MultiPoint]].fromCommands(Command.commands(ns))
 
       p shouldBe Right(MultiPoint(Point(2, 2), Point(5, 5)))
+      Command.uncommands(implicitly[ProtobufGeom[Point, MultiPoint]].toCommands(p)) shouldBe ns
     }
 
     it("Line") {

@@ -99,12 +99,12 @@ object Command {
   /** Convert a list of parsed Commands back into their original Command
     * and Z-encoded Parameter Integer forms.
     */
-  def uncommands(cmds: ListBuffer[Command]): ListBuffer[Int] = {
+  def uncommands(cmds: Seq[Command]): Seq[Int] = {
     cmds.flatMap({
       case MoveTo(ds) => unparseCmd(1, ds.length) +=: params(ds)
       case LineTo(ds) => unparseCmd(2, ds.length) +=: params(ds)
       case ClosePath  => ListBuffer(unparseCmd(7, 1))
-    })
+    }).toSeq
   }
 
   /** Divide a Command Integer into its Command ID and parameter count. */
