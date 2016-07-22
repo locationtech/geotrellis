@@ -100,7 +100,7 @@ package object protobuf {
       def work(cs: Seq[Command], cursor: (Int, Int)): ListBuffer[Line] = cs match {
         case MoveTo(p) +: LineTo(ps) +: rest => {
           val line = Line(expand(p ++ ps, cursor).map({ case (x, y) => (x.toDouble, y.toDouble) }))
-          val endPoint: Point = Point(line.jtsGeom.getEndPoint)
+          val endPoint: Point = line.points.last
           val nextCursor: (Int, Int) = (endPoint.x.toInt, endPoint.y.toInt)
 
           line +=: work(rest, nextCursor)
@@ -123,7 +123,7 @@ package object protobuf {
           val diffs: Array[(Int, Int)] = collapse(l.points.map(p => (p.x.toInt, p.y.toInt)), curs)
 
           /* Find new cursor position */
-          val endPoint: Point = Point(l.jtsGeom.getEndPoint)
+          val endPoint: Point = l.points.last
           curs = (endPoint.x.toInt, endPoint.y.toInt)
 
           buff.appendAll(Seq(MoveTo(Array(diffs.head)), LineTo(diffs.tail)))
