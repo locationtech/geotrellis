@@ -99,7 +99,7 @@ object GeowaveLayerWriter extends LazyLogging {
         )
         val dataStore = new AccumuloDataStore(basicOperations)
         val index = (new SpatialDimensionalityTypeProvider.SpatialIndexBuilder).createIndex()
-        val adapter = new RasterDataAdapter(coverageName, gwMetadata, image, 256, true) // image only used for sample and color metadata, not data
+        val adapter = new RasterDataAdapter(new RasterDataAdapter(coverageName, gwMetadata, image, 256, true), coverageName, null) // image only used for sample and color metadata, not data, overriding default merge strategy because geotrellis data is already tiled (non-overlapping)
         val indexWriter = dataStore.createWriter(adapter, index).asInstanceOf[IndexWriter[GridCoverage]]
 
         /* Write the mosaic into GeoWave */
