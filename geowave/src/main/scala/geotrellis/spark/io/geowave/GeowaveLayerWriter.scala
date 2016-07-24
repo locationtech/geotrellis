@@ -55,7 +55,11 @@ object GeowaveLayerWriter extends LazyLogging {
     val cellType = metadata.cellType.toString
     val specimen = rdd.first
 
-    rdd.mapPartitions({ partition =>
+    rdd
+      .sortBy({ case (k, v) => SpatialKey.keyToTup(k.asInstanceOf[SpatialKey]) })
+      .groupBy({ case (k, _) => k.asInstanceOf[SpatialKey]._1 })
+      .map(_._2)
+      .foreach({ partition =>
       val gwMetadata = new java.util.HashMap[String, String](); gwMetadata.put("cellType", cellType)
 
       /* Construct (Multiband|)Tile to GridCoverage2D conversion function */
@@ -76,7 +80,7 @@ object GeowaveLayerWriter extends LazyLogging {
 
       /* Produce mosaic from all of the tiles in this partition */
       val sources = new java.util.ArrayList[GridCoverage2D]
-      val retval = partition.map({ case kv => sources.add(fn(kv)); Unit }); retval.toList
+      partition.map({ case kv => sources.add(fn(kv)); Unit }).toList
       val processor = CoverageProcessor.getInstance(GeoTools.getDefaultHints())
       val param = processor.getOperation("Mosaic").getParameters()
       val hints = new Hints
@@ -99,7 +103,7 @@ object GeowaveLayerWriter extends LazyLogging {
         )
         val dataStore = new AccumuloDataStore(basicOperations)
         val index = (new SpatialDimensionalityTypeProvider.SpatialIndexBuilder).createIndex()
-        val adapter = new RasterDataAdapter(new RasterDataAdapter(coverageName, gwMetadata, image, 256, true), coverageName, null) // image only used for sample and color metadata, not data, overriding default merge strategy because geotrellis data is already tiled (non-overlapping)
+        val adapter = new RasterDataAdapter(coverageName, gwMetadata, image, 256, true) // image only used for sample and color metadata, not data, overriding default merge strategy because geotrellis data is already tiled (non-overlapping)
         val indexWriter = dataStore.createWriter(adapter, index).asInstanceOf[IndexWriter[GridCoverage]]
 
         /* Write the mosaic into GeoWave */
@@ -111,8 +115,7 @@ object GeowaveLayerWriter extends LazyLogging {
         val writer = new GeoTiffWriter(new java.io.File(s"/tmp/tif/writer-${System.currentTimeMillis}.tif"))
         writer.write(image, Array.empty[GeneralParameterValue])
       }
-      retval
-    }, preservesPartitioning = true).collect
+    })
   }
 }
 
