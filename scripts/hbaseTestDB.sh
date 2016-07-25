@@ -19,6 +19,3 @@ if grep 'hbase-docker' /etc/hosts >/dev/null; then
 else
   sudo sh -c "echo '$docker_ip localhost hbase-docker $docker_hostname' >> /etc/hosts"
 fi
-
-echo "/etc/hosts:"
-cat /etc/hosts

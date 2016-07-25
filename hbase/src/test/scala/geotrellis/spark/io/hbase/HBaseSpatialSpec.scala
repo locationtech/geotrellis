@@ -12,6 +12,14 @@ class HBaseSpatialSpec
     with TestFiles
     with AllOnesTestTileSpec {
 
+  registerAfterAll { () =>
+    val instance = HBaseInstance(Seq("localhost"), "localhost")
+    instance.getAdmin.disableTable("metadata")
+    instance.getAdmin.disableTable("tiles")
+    instance.getAdmin.deleteTable("metadata")
+    instance.getAdmin.deleteTable("tiles")
+  }
+
   lazy val instance       = HBaseInstance(Seq("localhost"), "localhost")
   lazy val attributeStore = HBaseAttributeStore(instance)
 

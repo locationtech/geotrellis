@@ -140,7 +140,7 @@ lazy val hbase = Project("hbase", file("hbase")).
   settings(commonSettings: _*)
 
 lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).
-  dependsOn(spark, s3, accumulo, cassandra).
+  dependsOn(spark, s3, accumulo, cassandra, hbase).
   settings(commonSettings: _*)
 
 lazy val geotools = Project("geotools", file("geotools")).
@@ -155,5 +155,5 @@ lazy val util = Project("util", file("util")).
   settings(commonSettings: _*)
 
 lazy val docExamples = Project("doc-examples", file("doc-examples")).
-  dependsOn(spark, s3, accumulo, cassandra).
+  dependsOn(spark, s3, accumulo, cassandra, hbase).
   settings(commonSettings: _*)
