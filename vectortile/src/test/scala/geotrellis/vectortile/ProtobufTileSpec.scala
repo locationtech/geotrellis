@@ -16,7 +16,7 @@
 
 package geotrellis.vectortile
 
-import geotrellis.vectortile.protobuf.{ Protobuf, ProtobufTile }
+import geotrellis.vectortile.protobuf.{Protobuf, ProtobufTile}
 import org.scalatest._
 
 // --- //
@@ -26,11 +26,27 @@ class ProtobufTileSpec extends FunSpec with Matchers {
     it("must decode") {
       ProtobufTile(Protobuf.decodeIO("vectortile/data/onepoint.mvt"))
     }
+
+    it("decode, encode and decode again") {
+      val tile = ProtobufTile(Protobuf.decodeIO("vectortile/data/onepoint.mvt"))
+      val bytes = Protobuf.encode(tile.asInstanceOf[ProtobufTile].toProtobuf)
+      val tile2 = ProtobufTile(Protobuf.decode(bytes))
+
+      tile.layers.keys should equal(tile2.layers.keys)
+    }
   }
 
   describe("linestring.mvt") {
     it("must decode") {
       ProtobufTile(Protobuf.decodeIO("vectortile/data/linestring.mvt"))
+    }
+
+    it("decode, encode and decode again") {
+      val tile = ProtobufTile(Protobuf.decodeIO("vectortile/data/linestring.mvt"))
+      val bytes = Protobuf.encode(tile.asInstanceOf[ProtobufTile].toProtobuf)
+      val tile2 = ProtobufTile(Protobuf.decode(bytes))
+
+      tile.layers.keys should equal(tile2.layers.keys)
     }
   }
 
@@ -38,13 +54,27 @@ class ProtobufTileSpec extends FunSpec with Matchers {
     it("must decode") {
       ProtobufTile(Protobuf.decodeIO("vectortile/data/polygon.mvt"))
     }
+
+    it("decode, encode and decode again") {
+      val tile = ProtobufTile(Protobuf.decodeIO("vectortile/data/polygon.mvt"))
+      val bytes = Protobuf.encode(tile.asInstanceOf[ProtobufTile].toProtobuf)
+      val tile2 = ProtobufTile(Protobuf.decode(bytes))
+
+      tile.layers.keys should equal(tile2.layers.keys)
+    }
   }
 
   describe("roads.mvt") {
     it("must decode") {
       ProtobufTile(Protobuf.decodeIO("vectortile/data/roads.mvt"))
     }
+
+    it("decode, encode and decode again") {
+      val tile = ProtobufTile(Protobuf.decodeIO("vectortile/data/roads.mvt"))
+      val bytes = Protobuf.encode(tile.asInstanceOf[ProtobufTile].toProtobuf)
+      val tile2 = ProtobufTile(Protobuf.decode(bytes))
+
+      tile.layers.keys should equal(tile2.layers.keys)
+    }
   }
-
-
 }

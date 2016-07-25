@@ -44,5 +44,6 @@ trait Layer {
   def polygons: Seq[Feature[Polygon, Data]]
   def multiPolygons: Seq[Feature[MultiPolygon, Data]]
 
-//  def allGeometries: Seq[Feature[Geometry, Data]]
+  /** All Features of Single and Multi Geometries */
+  def features: Seq[Feature[Geometry, Data]]
 }

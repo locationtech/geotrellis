@@ -20,12 +20,16 @@ import geotrellis.vector._
 import geotrellis.vectortile.{Layer, VectorTile}
 import scala.collection.mutable.ListBuffer
 import vector_tile.{vector_tile => vt}
+import vector_tile.vector_tile.Tile.GeomType.{POINT, LINESTRING, POLYGON}
 
 // --- //
 
 case class ProtobufTile(
   layers: Map[String, ProtobufLayer]
-) extends VectorTile
+) extends VectorTile {
+  def toProtobuf: vt.Tile =
+    vt.Tile(layers = layers.values.map(_.toProtobuf).toSeq)
+}
 
 object ProtobufTile {
   /** Create a ProtobufTile masked as its parent trait. */
@@ -51,6 +55,14 @@ case class ProtobufLayer(
   def name: String = rawLayer.name
   def extent: Int = rawLayer.extent.getOrElse(4096)
   def version: Int = rawLayer.version
+
+  def features: Seq[Feature[Geometry, Map[String, Value]]] = {
+    points.append(multiPoints)
+     .append(lines)
+     .append(multiLines)
+     .append(polygons)
+     .append(multiPolygons)
+  }
 
   /* Unconsumed raw Features */
   private val (pointFs, lineFs, polyFs) = segregate(rawLayer.features)
@@ -140,13 +152,67 @@ case class ProtobufLayer(
 
     features.foreach { f =>
       f.getType match {
-        case vt.Tile.GeomType.POINT => points.append(f)
-        case vt.Tile.GeomType.LINESTRING => lines.append(f)
-        case vt.Tile.GeomType.POLYGON => polys.append(f)
+        case POINT => points.append(f)
+        case LINESTRING => lines.append(f)
+        case POLYGON => polys.append(f)
         case _ => Unit // `UNKNOWN` or `Unrecognized`.
       }
     }
 
     (points, lines, polys)
+  }
+
+  def toProtobuf: vt.Tile.Layer = {
+    // TODO Where should these be?
+    val pgp = implicitly[ProtobufGeom[Point, MultiPoint]]
+    val pgl = implicitly[ProtobufGeom[Line, MultiLine]]
+    val pgy = implicitly[ProtobufGeom[Polygon, MultiPolygon]]
+
+    val (keys, values) = totalMeta
+
+    /* In a future version of the VectorTile spec, when Single and Multi
+     * Geometries are separate, we will be able to restructre `ProtobufGeom`
+     * in such a way that makes `Geometry.toCommands` possible here.
+     *
+     * `unfeature` will become polymorphic, so calls to it will look like:
+     *
+     *   points.map(f => unfeature(keys, values, f))
+     */
+    val features = Seq(
+      points.map(f => unfeature(keys, values, POINT, pgp.toCommands(Left(f.geom)), f.data)),
+      multiPoints.map(f => unfeature(keys, values, POINT, pgp.toCommands(Right(f.geom)), f.data)),
+      lines.map(f => unfeature(keys, values, LINESTRING, pgl.toCommands(Left(f.geom)), f.data)),
+      multiLines.map(f => unfeature(keys, values, LINESTRING, pgl.toCommands(Right(f.geom)), f.data)),
+      polygons.map(f => unfeature(keys, values, POLYGON, pgy.toCommands(Left(f.geom)), f.data)),
+      multiPolygons.map(f => unfeature(keys, values, POLYGON, pgy.toCommands(Right(f.geom)), f.data))
+    ).flatten
+
+    vt.Tile.Layer(version, name, features, keys, values.map(_.unval), Some(extent))
+  }
+
+  private def totalMeta: (Seq[String], Seq[Value]) = {
+    /* Pull into memory once to avoid GC on the feature list */
+    val fs: Seq[Feature[Geometry, Map[String, Value]]] = features
+
+    /* Must be unique */
+    val keys: Seq[String] = fs.map(_.data.keys).flatten.distinct
+
+    val values: Seq[Value] = fs.map(_.data.values).flatten.distinct
+
+    (keys, values)
+  }
+
+  private def unfeature(
+    keys: Seq[String],
+    values: Seq[Value],
+    geomType: vt.Tile.GeomType,
+    cmds: Seq[Command],
+    data: Map[String, Value]
+  ): vt.Tile.Feature = {
+    val tags = data.toSeq.foldRight(List.empty[Int]) { case (pair, acc) =>
+      keys.indexOf(pair._1) :: values.indexOf(pair._2) :: acc
+    }
+
+    vt.Tile.Feature(None, tags, Some(geomType), Command.uncommands(cmds))
   }
 }
