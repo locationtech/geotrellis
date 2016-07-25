@@ -17,6 +17,7 @@
 package geotrellis.vectortile
 
 import geotrellis.vector._
+import geotrellis.vectortile.protobuf.Value
 
 // --- //
 
@@ -31,7 +32,7 @@ trait VectorTile {
 
 /** A layer, which could contain any number of Features of any Geometry type. */
 trait Layer {
-  type Data = Map[String, Value]
+  type Data = Map[String, Value]  // Temporary.
 
   def name: String
   def extent: Int
@@ -45,37 +46,3 @@ trait Layer {
 
 //  def allGeometries: Seq[Feature[Geometry, Data]]
 }
-
-/** Feature metadata key/value Maps are completely untyped. All keys
-  * and values used by Features across a common parent Layer are stored in that
-  * parent. Raw Features themselves only store indices into the parent's
-  * key/value lists. So, for an example MultiPoint Feature of fire hydrant locations,
-  * its metadata could look like:
-  *
-  * { name: "Hydrants",
-  *   colour: "red",
-  *   model: 5
-  * }
-  *
-  * That's fine if interpreted as JSON, but bad as Scala, as it doesn't give us
-  * a clean `Map[String, ConcreteTypeHere]`. Furthermore, Features within the
-  * same Layer don't have to agree on the Value type for the same key:
-  *
-  * { name: "Stop lights",
-  *   colour: 1,
-  *   model: "ABC-123"
-  * }
-  *
-  * The sealed trait `Value` here and its extensions aim to provide some
-  * type safety in light of the situation described above.
-  *
-  */
-sealed trait Value
-
-case class St(v: String) extends Value
-case class Fl(v: Float) extends Value
-case class Do(v: Double) extends Value
-case class I64(v: Long) extends Value
-case class W64(v: Long) extends Value
-case class S64(v: Long) extends Value
-case class Bo(v: Boolean) extends Value

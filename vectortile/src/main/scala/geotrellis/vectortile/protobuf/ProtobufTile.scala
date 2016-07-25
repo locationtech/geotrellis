@@ -17,7 +17,7 @@
 package geotrellis.vectortile.protobuf
 
 import geotrellis.vector._
-import geotrellis.vectortile.{Layer, Value, VectorTile}
+import geotrellis.vectortile.{Layer, VectorTile}
 import scala.collection.mutable.ListBuffer
 import vector_tile.{vector_tile => vt}
 
