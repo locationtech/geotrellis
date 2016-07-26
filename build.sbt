@@ -51,7 +51,12 @@ lazy val commonSettings = Seq(
         </developer>
       </developers>),
   shellPrompt := { s => Project.extract(s).currentProject.id + " > " },
-  dependencyUpdatesExclusions := moduleFilter(organization = "org.scala-lang")
+  dependencyUpdatesExclusions := moduleFilter(organization = "org.scala-lang"),
+
+  resolvers ++= Seq(
+    "geosolutions" at "http://maven.geo-solutions.it/",
+    "osgeo" at "http://download.osgeo.org/webdav/geotools/"
+  )
 )
 
 lazy val root = Project("geotrellis", file(".")).
@@ -66,6 +71,8 @@ lazy val root = Project("geotrellis", file(".")).
     s3,
     accumulo,
     cassandra,
+    hbase,
+    geotools,
     slick
   ).
   settings(commonSettings: _*).
@@ -155,5 +162,5 @@ lazy val util = Project("util", file("util")).
   settings(commonSettings: _*)
 
 lazy val docExamples = Project("doc-examples", file("doc-examples")).
-  dependsOn(spark, s3, accumulo, cassandra, hbase).
+  dependsOn(spark, s3, accumulo, cassandra, hbase, spark % "test->test", sparkTestkit % "test->test").
   settings(commonSettings: _*)

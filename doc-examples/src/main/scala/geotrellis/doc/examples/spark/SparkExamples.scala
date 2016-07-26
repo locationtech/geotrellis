@@ -80,4 +80,73 @@ object SparkExamples {
 
     GeoTiff(raster, metadata.crs).write("/some/path/result.tif")
   }
+
+  def `Applying a threshold and then median filter on multiband imagery in an RDD layer`: Unit = {
+
+    import geotrellis.spark._
+    import geotrellis.raster._
+    import geotrellis.raster.mapalgebra.focal.Square
+
+    val imageLayer: MultibandTileLayerRDD[SpaceTimeKey] = ???
+    val neighborhood = Square(2)
+
+    val resultLayer: MultibandTileLayerRDD[SpaceTimeKey] =
+      imageLayer
+        .withContext { rdd =>
+          rdd.mapValues { tile =>
+            tile.map { (band, z) =>
+              if(z > 10000) NODATA
+              else z
+            }
+          }
+          .bufferTiles(neighborhood.extent)
+          .mapValues { bufferedTile =>
+            val bands =
+              bufferedTile.tile.bands
+                .map { band =>
+                  band.focalMedian(neighborhood, Some(bufferedTile.targetArea))
+                }
+
+            MultibandTile(bands)
+          }
+        }
+  }
+
+  def `Query region, mask by that region, compute max NDVI and save as a GeoTiff`: Unit = {
+    import geotrellis.raster._
+    import geotrellis.raster.io.geotiff._
+    import geotrellis.spark._
+    import geotrellis.spark.io._
+    import geotrellis.util._
+    import geotrellis.vector._
+    import org.joda.time.DateTime
+
+    val region: MultiPolygon = ???
+    val layerReader: FilteringLayerReader[LayerId] = ???
+    val layerId: LayerId = LayerId("layerName", 18) // Querying zoom 18 data
+
+    val queryResult: MultibandTileLayerRDD[SpaceTimeKey] =
+      layerReader.query[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]](layerId)
+        .where(Intersects(region))
+        .where(Between(new DateTime(2016, 3, 1, 0, 0, 0), new DateTime(2016, 4, 1, 0, 0)))
+        .result
+
+    val raster: Raster[Tile] =
+      queryResult
+        .mask(region)
+        .withContext { rdd =>
+          rdd
+            .mapValues { tile =>
+              // Assume band band 4 is red and band 5 is NIR
+              tile.convert(DoubleConstantNoDataCellType).combine(4, 5) { (r, nir) =>
+                (nir - r) / (nir + r)
+              }
+            }
+            .map { case (key, tile) => (key.getComponent[SpatialKey], tile) }
+            .reduceByKey(_.localMax(_))
+        }
+        .stitch
+
+    GeoTiff(raster, queryResult.metadata.crs).write("/path/to/result.tif")
+  }
 }
