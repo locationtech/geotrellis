@@ -2,7 +2,7 @@ package geotrellis.spark.etl
 
 import geotrellis.spark.etl.config._
 
-case class EtlJob(conf: EtlConf) {
+case class EtlJob(conf: EtlConf) extends Serializable {
   private def props(params: Map[String, String], profile: Option[BackendProfile]) = {
     params ++ profile.collect {
       case p: AccumuloProfile => p.strategy.fold(Map.empty[String, String])(s => Map("strategy" -> s))

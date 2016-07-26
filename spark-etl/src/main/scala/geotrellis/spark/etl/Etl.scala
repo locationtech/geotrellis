@@ -50,7 +50,7 @@ object Etl {
   }
 }
 
-case class Etl(@transient etlJob: EtlJob, @transient modules: Seq[TypedModule] = Etl.defaultModules) {
+case class Etl(etlJob: EtlJob, @transient modules: Seq[TypedModule] = Etl.defaultModules) {
 
   @transient lazy val logger: Logger = Logger(LoggerFactory getLogger getClass.getName)
   @transient val conf = etlJob.conf
