@@ -80,6 +80,7 @@ assemblyMergeStrategy in assembly := {
 }
 
 fork in Test := false
+
 parallelExecution in Test := false
 
 initialCommands in console :=

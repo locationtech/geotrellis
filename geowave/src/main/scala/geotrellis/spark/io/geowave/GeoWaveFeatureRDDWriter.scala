@@ -30,6 +30,20 @@ import scala.reflect._
 
 object GeoWaveFeatureRDDWriter {
 
+  /**
+    * Read out an RDD of Vector features from an accumulo geowave store
+    *
+    * @param features              an RDD of [[geotrellis.vector.Feature]] objects to be written
+    * @param zookeepers            zookeeper master node location
+    * @param accumuloInstanceName  name of the accumulo instance to connect to
+    * @param accumuloInstanceUser  user under whose authority accumulo actions should be carried out
+    * @param accumuloInstancePass  password matching the provided user
+    * @param gwNamespace           the geowave namespace for this data
+    * @param simpleFeatureType     the GeoTools [[SimpleFeature]] specification which corresponds to
+    *                               all supplied features
+    *
+    * @tparam G                    the type of geometry to be retrieved through geowave (REQUIRED)
+    */
   def write[G <: Geometry, D](
     features: RDD[Feature[G, D]],
     zookeepers: String,
@@ -38,8 +52,9 @@ object GeoWaveFeatureRDDWriter {
     accumuloInstancePass: String,
     gwNamespace: String,
     simpleFeatureType: SimpleFeatureType
-  )(implicit sc: SparkContext, transmute: D => Seq[(String, Any)]): Unit = {
+  )(implicit transmute: D => Seq[(String, Any)]): Unit = {
     implicit val sc = features.sparkContext
+    val trans = KryoWrapper(transmute)
     val kryoFeatureType = KryoWrapper(simpleFeatureType)
     features.foreach({ feature =>
       // Secure the basic operations

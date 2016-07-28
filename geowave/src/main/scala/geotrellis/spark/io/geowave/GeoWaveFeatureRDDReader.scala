@@ -41,9 +41,11 @@ object GeoWaveFeatureRDDReader {
     * @param accumuloInstancePass  password matching the provided user
     * @param gwNamespace           the geowave namespace for this data
     * @param simpleFeatureType     the GeoTools [[SimpleFeature]] specification
-    * @param indexProvider         a service provider interface for creating geowave indexes
     * @param query                 the geowave query to use in reading from accumulo
-    * @param queryLimit            the maximum number of returned results
+    * @param queryLimit            the maximum number of returned results (0 is infinite)
+    *
+    * @tparam G                    the type of geometry to be retrieved through geowave (REQUIRED)
+    * @note                        If the above type parameter is not supplied, errors WILL be thrown
     */
   def read[G <: Geometry : ClassTag](
     zookeepers: String,

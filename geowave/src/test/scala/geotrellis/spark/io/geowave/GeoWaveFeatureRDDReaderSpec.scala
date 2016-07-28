@@ -5,6 +5,7 @@ import geotrellis.vector._
 
 import org.apache.accumulo.core.client.mock.MockInstance
 import org.scalatest._
+import org.scalatest.Matchers._
 import com.vividsolutions.jts.{geom => jts}
 import mil.nga.giat.geowave.core.geotime.ingest._
 import mil.nga.giat.geowave.core.store._
@@ -30,29 +31,19 @@ import org.apache.spark.rdd._
 
 import scala.util.Properties
 
-class GeoWaveFeatureRDDReaderSpec extends FunSpec { self: Suite =>
+object GeoWaveFeatureRDDReaderSpec {
   implicit def id(x: Map[String, Any]) : Seq[(String, Any)] = x.toSeq
-  //val accumuloInstance = MockAccumuloInstance()
-  val fakeInstance = new MockInstance("fake")
-  println("DIAGNOSTICS----------------------")
-  println(fakeInstance.getZooKeepers())
-  println(fakeInstance.getInstanceName())
-  val philly = Point(-75.5859375, 40.713955826286046)
+}
 
-  val builder = new SimpleFeatureTypeBuilder()
-  val ab = new AttributeTypeBuilder()
-  builder.setName("TestType")
-  builder.add(ab.binding(classOf[jts.Point]).nillable(false).buildDescriptor("geometry"))
-
-  val features = Array(Feature(philly, Map[String, Any]()))
-
-  val zookeeper = "localhost"
-  val instanceName = "fake"
-  val username = "root"
-  val password = ""
-  val featureType = builder.buildFeatureType()
-  val featureRDD = sc.parallelize(features)
-
+/**
+  * This set of tests depend on a running accumulo + zookeeper instance available on
+  *  port 20000. Obviously, this makes unit testing rather difficult. Compromises
+  *  become a necessity. In this case, we depend on an external process to set the
+  *  stage for testing. In particular (from the root of the GeoTrellis repository)
+  *  `/scripts/runTestDBs` ought to be run prior to this suite's being run.
+  */
+class GeoWaveFeatureRDDReaderSpec extends FunSpec { self: Suite =>
+  import GeoWaveFeatureRDDReaderSpec.id
   def setKryoRegistrator(conf: SparkConf): Unit =
     conf.set("spark.kryo.registrator", "geotrellis.spark.io.kryo.KryoRegistrator")
 
@@ -89,16 +80,24 @@ class GeoWaveFeatureRDDReaderSpec extends FunSpec { self: Suite =>
 
   implicit def sc: SparkContext = _sc
 
-  describe("???") {
-    it("Should...") {
-      val count1 = GeoWaveFeatureRDDReader.read(
-        zookeeper,
-        instanceName,
-        username,
-        password,
-        "testpoint",
-        featureType
-      ).count()
+  describe("GeoTrellis read/write with GeoWave") {
+    it("Should roundtrip geowave records in accumulo") {
+
+      // Build simple feature type
+      val builder = new SimpleFeatureTypeBuilder()
+      val ab = new AttributeTypeBuilder()
+      builder.setName("TestType")
+      builder.add(ab.binding(classOf[jts.Point]).nillable(false).buildDescriptor("geometry"))
+
+      val features = (1 to 100)
+        .map { x: Int => Feature(Point(x, 40), Map[String, Any]()) }
+        .toArray
+      val featureRDD = sc.parallelize(features)
+      val zookeeper = "localhost:20000"
+      val instanceName = "AccumuloInstance"
+      val username = "root"
+      val password = "password"
+      val featureType = builder.buildFeatureType()
 
       GeoWaveFeatureRDDWriter.write(
         featureRDD,
@@ -110,7 +109,7 @@ class GeoWaveFeatureRDDReaderSpec extends FunSpec { self: Suite =>
         featureType
       )
 
-      val count2 = GeoWaveFeatureRDDReader.read(
+      val count: Long = GeoWaveFeatureRDDReader.read[Point](
         zookeeper,
         instanceName,
         username,
@@ -119,8 +118,18 @@ class GeoWaveFeatureRDDReaderSpec extends FunSpec { self: Suite =>
         featureType
       ).count()
 
-      assert(count1 == 0)
-      assert(count2 == 1)
+      count should equal ((1 to 100).size)
+
+      val read = GeoWaveFeatureRDDReader.read[Point](
+        zookeeper,
+        instanceName,
+        username,
+        password,
+        "testpoint",
+        featureType
+      ).first()
+
+      read.geom should equal (Point(1, 40))
     }
   }
 }
