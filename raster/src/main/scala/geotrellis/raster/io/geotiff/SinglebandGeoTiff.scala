@@ -22,6 +22,13 @@ case class SinglebandGeoTiff(
       case gtt: GeoTiffTile => gtt
       case _ => tile.toGeoTiffTile(options)
     }
+
+  def crop(subExtent: Extent): SinglebandGeoTiff = {
+    val raster: Raster[Tile] =
+      this.crop(subExtent)
+
+    SinglebandGeoTiff(raster, subExtent, this.crs)
+  }
 }
 
 object SinglebandGeoTiff {
@@ -68,6 +75,12 @@ object SinglebandGeoTiff {
     */
   def compressed(bytes: Array[Byte]): SinglebandGeoTiff =
     GeoTiffReader.readSingleband(bytes, false, None, false)
+
+  def streaming(path: String): SinglebandGeoTiff =
+    GeoTiffReader.readSingleband(path, true, None, true)
+  
+  def streaming(bytes: Array[Byte]): SinglebandGeoTiff =
+    GeoTiffReader.readSingleband(bytes, true, None, true)
 
   /** Read a windowed, singleband GeoTiff file from a given path.
    *  The file will be decompressed and read from [[BufferSegmentBytes]]

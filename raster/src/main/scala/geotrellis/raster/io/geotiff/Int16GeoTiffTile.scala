@@ -10,7 +10,7 @@ class Int16GeoTiffTile(
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
   val cellType: ShortCells with NoDataHandling
-) extends GeoTiffTile(segmentLayout, compression) with Int16GeoTiffSegmentCollection {
+) extends GeoTiffTile(segmentLayout, compression) with CroppedGeoTiff with Int16GeoTiffSegmentCollection {
 
   val noDataValue: Option[Short] = cellType match {
     case ShortCellType => None
@@ -37,26 +37,25 @@ class Int16GeoTiffTile(
     ShortArrayTile(arr, cols, rows, cellType)
   }
 
-  def mutable(windowedGeoTiff: WindowedGeoTiff): MutableArrayTile = {
-    val windowedGridBounds = windowedGeoTiff.windowedGridBounds
-    val intersectingSegments = windowedGeoTiff.intersectingSegments
-    val arr = Array.ofDim[Short](windowedGridBounds.size)
+  def crop(gridBounds: GridBounds): MutableArrayTile = {
+    implicit val gb = gridBounds
+    implicit val segLayout = segmentLayout
+    val arr = Array.ofDim[Short](gridBounds.size)
 
-    val colMin = windowedGridBounds.colMin
-    val rowMin = windowedGridBounds.rowMin
-    val width = windowedGridBounds.width
+    cfor(0)(_ < segmentCount, _ + 1) {i =>
+      implicit val segmentid = i
+     
+      if (gridBounds.intersects(segmentGridBounds)) {
+        val segment = getSegment(i)
 
-    for (segmentIndex <- intersectingSegments) {
-      val segment = getSegment(segmentIndex)
-      val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
-
-      cfor(0)(_ < segment.size, _ + 1) { i =>
-        val col = segmentTransform.indexToCol(i)
-        val row = segmentTransform.indexToRow(i)
-        if (windowedGridBounds.contains(col, row))
-          arr((row - rowMin) * width + (col - colMin)) = segment.get(i)
+        cfor(0)(_ < segment.size, _ + 1) { i =>
+          val col = segmentTransform.indexToCol(i)
+          val row = segmentTransform.indexToRow(i)
+          if (gridBounds.contains(col, row))
+            arr((row - rowMin) * width + (col - colMin)) = segment.get(i)
+        }
       }
     }
-    ShortArrayTile(arr, windowedGridBounds.width, windowedGridBounds.height, cellType)
+    ShortArrayTile(arr, width, height, cellType)
   }
 }

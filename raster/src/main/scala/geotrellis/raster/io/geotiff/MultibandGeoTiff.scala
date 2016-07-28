@@ -22,6 +22,13 @@ case class MultibandGeoTiff(
       case gtt: GeoTiffMultibandTile => gtt
       case _ => GeoTiffMultibandTile(tile)
     }
+  
+  def crop(subExtent: Extent): MultibandGeoTiff = {
+    val raster: Raster[MultibandTile] =
+      (this.crop(subExtent)).raster
+
+    MultibandGeoTiff(raster, subExtent, this.crs, this.tags)
+  }
 }
 
 object MultibandGeoTiff {
@@ -60,6 +67,12 @@ object MultibandGeoTiff {
     */
   def compressed(bytes: Array[Byte]): MultibandGeoTiff =
     GeoTiffReader.readMultiband(bytes, false, None, false)
+  
+  def streaming(path: String): MultibandGeoTiff =
+    GeoTiffReader.readMultiband(path, true, None, true)
+  
+  def streaming(bytes: Array[Byte]): MultibandGeoTiff =
+    GeoTiffReader.readMultiband(bytes, true, None, true)
 
   /** Read a windowed, multiband GeoTiff file from a given path.
     * The file will be decompressed and read from [[BufferSegmentBytes]]

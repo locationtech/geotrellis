@@ -10,7 +10,7 @@ class UInt16GeoTiffTile(
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
   val cellType: UShortCells with NoDataHandling
-) extends GeoTiffTile(segmentLayout, compression) with UInt16GeoTiffSegmentCollection {
+) extends GeoTiffTile(segmentLayout, compression) with CroppedGeoTiff with UInt16GeoTiffSegmentCollection {
 
   val noDataValue: Option[Int] = cellType match {
     case UShortCellType => None
@@ -37,9 +37,10 @@ class UInt16GeoTiffTile(
     UShortArrayTile(arr, cols, rows, cellType)
   }
 
-  def mutable(windowedGeoTiff: WindowedGeoTiff): MutableArrayTile = {
-    val windowedGridBounds = windowedGeoTiff.windowedGridBounds
-    val intersectingSegments = windowedGeoTiff.intersectingSegments
+  /*
+  def crop(croppedGeoTiff: CroppedGeoTiff): MutableArrayTile = {
+    val windowedGridBounds = croppedGeoTiff.windowedGridBounds
+    val intersectingSegments = croppedGeoTiff.intersectingSegments
     val arr = Array.ofDim[Short](windowedGridBounds.size)
     var counter = 0
     
@@ -59,5 +60,26 @@ class UInt16GeoTiffTile(
       }
     }
     UShortArrayTile(arr, windowedGridBounds.width, windowedGridBounds.height, cellType)
+  }
+  */
+  def crop(gridBounds: GridBounds): MutableArrayTile = {
+    implicit val gb = gridBounds
+    implicit val segLayout = segmentLayout
+    val arr = Array.ofDim[Short](gridBounds.size)
+
+    cfor(0)(_ < segmentCount, _ + 1) {i =>
+      implicit val segmentId = i
+      if (gridBounds.intersects(segmentGridBounds)) {
+        val segment = getSegment(i)
+
+        cfor(0)(_ < segment.size, _ + 1) { i =>
+          val col = segmentTransform.indexToCol(i)
+          val row = segmentTransform.indexToRow(i)
+          if (gridBounds.contains(col, row))
+            arr((row - rowMin) * width + (col - colMin)) = segment.getRaw(i)
+        }
+      }
+    }
+    UShortArrayTile(arr, width, height, cellType)
   }
 }

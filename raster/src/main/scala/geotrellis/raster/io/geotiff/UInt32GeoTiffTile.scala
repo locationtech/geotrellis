@@ -10,7 +10,7 @@ class UInt32GeoTiffTile(
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
   val cellType: FloatCells with NoDataHandling
-) extends GeoTiffTile(segmentLayout, compression) with UInt32GeoTiffSegmentCollection {
+) extends GeoTiffTile(segmentLayout, compression) with CroppedGeoTiff with UInt32GeoTiffSegmentCollection {
 
   def mutable: MutableArrayTile = {
     val arr = Array.ofDim[Float](cols * rows)
@@ -28,27 +28,25 @@ class UInt32GeoTiffTile(
     }
     FloatArrayTile(arr, cols, rows, cellType)
   }
+  
+  def crop(gridBounds: GridBounds): MutableArrayTile = {
+    implicit val gb = gridBounds
+    implicit val segLayout = segmentLayout
+    val arr = Array.ofDim[Float](gridBounds.size)
 
-  def mutable(windowedGeoTiff: WindowedGeoTiff): MutableArrayTile = {
-    val windowedGridBounds = windowedGeoTiff.windowedGridBounds
-    val intersectingSegments = windowedGeoTiff.intersectingSegments
-    val arr = Array.ofDim[Float](windowedGridBounds.size)
-    
-    val colMin = windowedGridBounds.colMin
-    val rowMin = windowedGridBounds.rowMin
-    val width = windowedGridBounds.width
+    cfor(0)(_ < segmentCount, _ + 1) {i =>
+      implicit val segmentId = i
+      if (gridBounds.intersects(segmentGridBounds)) {
+        val segment = getSegment(i)
 
-    for (segmentIndex <- intersectingSegments) {
-      val segment = getSegment(segmentIndex)
-      val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
-
-      cfor(0)(_ < segment.size, _ + 1) { i =>
-        val col = segmentTransform.indexToCol(i)
-        val row = segmentTransform.indexToRow(i)
-        if (windowedGridBounds.contains(col, row))
-          arr((row - rowMin) * width + (col - colMin)) = segment.get(i)
+        cfor(0)(_ < segment.size, _ + 1) { i =>
+          val col = segmentTransform.indexToCol(i)
+          val row = segmentTransform.indexToRow(i)
+          if (gridBounds.contains(col, row))
+            arr((row - rowMin) * width + (col - colMin)) = segment.get(i)
+        }
       }
     }
-    FloatArrayTile(arr, windowedGridBounds.width, windowedGridBounds.height, cellType)
+    FloatArrayTile(arr, width, height, cellType)
   }
 }

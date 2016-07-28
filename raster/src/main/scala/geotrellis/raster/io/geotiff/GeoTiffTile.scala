@@ -483,9 +483,7 @@ abstract class GeoTiffTile(
    */
   def mutable: MutableArrayTile
 
-  def toArrayTile(windowedGeoTiff: WindowedGeoTiff): ArrayTile = mutable(windowedGeoTiff)
-
-  def mutable(windowedGeoTiff: WindowedGeoTiff): MutableArrayTile
+  def crop(gridBounds: GridBounds): MutableArrayTile
 
   /**
    * Converts the GeoTiffTile to an Array[Byte]

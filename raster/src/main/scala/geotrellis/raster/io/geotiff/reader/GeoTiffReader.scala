@@ -89,9 +89,9 @@ object GeoTiffReader {
 
     val arrayTile = {
       if (decompress)
-        info.windowedGeoTiff match {
+        extent match {
           case None => geoTiffTile.toArrayTile
-          case Some(x) => geoTiffTile.toArrayTile(x)
+          case Some(x) => geoTiffTile.tile.crop(info.extent, x)
         }
       else
         geoTiffTile
@@ -131,9 +131,9 @@ object GeoTiffReader {
 
     val arrayTile = {
       if (decompress)
-        info.windowedGeoTiff match {
+        extent match {
           case None => geoTiffTile.toArrayTile
-          case Some(x) => geoTiffTile.toArrayTile(x)
+          case Some(x) => geoTiffTile.crop(info.extent, x)
         }
       else
         geoTiffTile
@@ -149,7 +149,6 @@ object GeoTiffReader {
     options: GeoTiffOptions,
     bandType: BandType,
     segmentBytes: SegmentBytes,
-    windowedGeoTiff: Option[WindowedGeoTiff],
     decompressor: Decompressor,
     segmentLayout: GeoTiffSegmentLayout,
     compression: Compression,
@@ -271,13 +270,6 @@ object GeoTiffReader {
       else
         ArraySegmentBytes(byteBuffer, storageMethod, tiffTags)
 
-    val windowedGeoTiff: Option[WindowedGeoTiff] =
-      extent match {
-        case None => None
-        case Some(x) => if (x == tiffTags.extent) None
-                        else Some(WindowedGeoTiff(x, storageMethod, tiffTags))
-      }
-
     val cols = tiffTags.cols
     val rows = tiffTags.rows
     val bandType = tiffTags.bandType
@@ -304,7 +296,6 @@ object GeoTiffReader {
       GeoTiffOptions(storageMethod, compression),
       bandType,
       segmentBytes,
-      windowedGeoTiff,
       decompressor,
       segmentLayout,
       compression,

@@ -257,8 +257,8 @@ abstract class GeoTiffMultibandTile(
   def toArrayTile(): ArrayMultibandTile =
     ArrayMultibandTile((0 until bandCount map { band(_).toArrayTile }):_*)
 
-  def toArrayTile(windowedGeoTiff: WindowedGeoTiff): ArrayMultibandTile =
-    ArrayMultibandTile((0 until bandCount map { band(_).toArrayTile(windowedGeoTiff) }):_*)
+  def crop(gridBounds: GridBounds): ArrayMultibandTile =
+    ArrayMultibandTile((0 until bandCount map { band(_).crop(gridBounds) }):_*)
 
   /**
    * Converts the CellTypes of a MultibandTile to the given CellType.
