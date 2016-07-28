@@ -11,5 +11,5 @@ object ContextCollection {
 class ContextCollection[K, V, M](val sequence: Seq[(K, V)], val metadata: M) extends Seq[(K, V)] with Metadata[M] {
   def length: Int = sequence.length
   def apply(idx: Int): (K, V) = sequence(idx)
-  def iterator: Iterator[(K, V)] = seq.iterator
+  def iterator: Iterator[(K, V)] = sequence.iterator
 }

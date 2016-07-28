@@ -1,4 +1,4 @@
-package geotrellis.spark.io.file
+package geotrellis.spark.io.s3
 
 import com.typesafe.scalalogging.slf4j.LazyLogging
 import geotrellis.spark._
@@ -12,17 +12,16 @@ import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
 /**
- * Handles reading raster RDDs and their metadata from a filesystem.
+ * Handles reading raster RDDs and their metadata from S3.
  *
  * @param attributeStore  AttributeStore that contains metadata for corresponding LayerId
  * @tparam K              Type of RDD Key (ex: SpatialKey)
  * @tparam V              Type of RDD Value (ex: Tile or MultibandTile )
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  */
-class FileLayerCollectionReader(
-  val attributeStore: AttributeStore,
-  catalogPath: String
-) extends CollectionLayerReader[LayerId] with LazyLogging {
+class S3LayerCollectionReader(val attributeStore: AttributeStore) extends CollectionLayerReader[LayerId] with LazyLogging {
+
+  def collectionReader: S3CollectionReader = S3CollectionReader
 
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
@@ -32,32 +31,28 @@ class FileLayerCollectionReader(
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[FileLayerHeader, M, K](id)
+      attributeStore.readLayerAttributes[S3LayerHeader, M, K](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
 
-    val layerPath = header.path
+    val bucket = header.bucket
+    val prefix = header.key
 
     val queryKeyBounds = rasterQuery(metadata)
     val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
-    val keyPath = KeyPathGenerator(catalogPath, layerPath, maxWidth)
+    val keyPath = (index: Long) => makePath(prefix, Index.encode(index, maxWidth))
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
-    val seq = FileCollectionReader.read[K, V](keyPath, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema), Some(numPartitions))
+    val seq = collectionReader.read[K, V](bucket, keyPath, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema), Some(numPartitions))
 
     new ContextCollection(seq, metadata)
   }
 }
 
-object FileLayerCollectionReader {
-  def apply(attributeStore: AttributeStore, catalogPath: String): FileLayerCollectionReader =
-    new FileLayerCollectionReader(attributeStore, catalogPath)
+object S3LayerCollectionReader {
+  def apply(attributeStore: AttributeStore): S3LayerCollectionReader =
+    new S3LayerCollectionReader(attributeStore)
 
-  def apply(catalogPath: String): FileLayerCollectionReader =
-    apply(new FileAttributeStore(catalogPath), catalogPath)
-
-  def apply(attributeStore: FileAttributeStore): FileLayerCollectionReader =
-    apply(attributeStore, attributeStore.catalogPath)
+  def apply(bucket: String, prefix: String): S3LayerCollectionReader =
+    apply(new S3AttributeStore(bucket, prefix))
 }
-
-

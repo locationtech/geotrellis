@@ -14,6 +14,7 @@ class FileSpatialSpec
     with TestFiles
     with AllOnesTestTileSpec {
   lazy val reader = FileLayerReader(outputLocalPath)
+  lazy val creader = FileLayerCollectionReader(outputLocalPath)
   lazy val writer = FileLayerWriter(outputLocalPath)
   lazy val deleter = FileLayerDeleter(outputLocalPath)
   lazy val copier = FileLayerCopier(outputLocalPath)

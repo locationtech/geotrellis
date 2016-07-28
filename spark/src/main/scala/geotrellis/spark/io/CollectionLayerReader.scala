@@ -1,4 +1,5 @@
 package geotrellis.spark.io
+
 import geotrellis.spark._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.json._
@@ -8,7 +9,7 @@ import spray.json._
 
 import scala.reflect._
 
-abstract class CollectionLayerReader[ID] {
+abstract class CollectionLayerReader[ID] { self =>
   val defaultNumPartitions = 1
 
   def read[
@@ -16,6 +17,23 @@ abstract class CollectionLayerReader[ID] {
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](id: ID, rasterQuery: LayerQuery[K, M], numPartitions: Int, indexFilterOnly: Boolean): Seq[(K, V)] with Metadata[M]
+
+  def read[
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat: GetComponent[?, Bounds[K]]
+  ](id: ID): Seq[(K, V)] with Metadata[M] =
+    read[K, V, M](id, defaultNumPartitions)
+
+  def reader[
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat: GetComponent[?, Bounds[K]]
+  ]: Reader[ID, Seq[(K, V)] with Metadata[M]] =
+    new Reader[ID, Seq[(K, V)] with Metadata[M]] {
+      def read(id: ID): Seq[(K, V)] with Metadata[M] =
+        self.read[K, V, M](id)
+    }
 
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
