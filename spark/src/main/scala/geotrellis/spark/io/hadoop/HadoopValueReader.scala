@@ -5,17 +5,13 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.hadoop.formats.FilterMapFileInputFormat
-import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.util.KryoWrapper
 import geotrellis.spark.util.cache._
 
-import org.apache.avro.Schema
 import org.apache.hadoop.fs._
 import org.apache.hadoop.io._
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
 import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 import scala.collection.immutable._
 import scala.reflect.ClassTag
@@ -56,8 +52,7 @@ class HadoopValueReader(
       if (valueWritable == null) throw new TileNotFoundError(key, layerId)
       AvroEncoder
         .fromBinary(writerSchema, valueWritable.getBytes)(codec)
-        .filter { row => row._1 == key }
-        .headOption
+        .find { row => row._1 == key }
         .getOrElse(throw new TileNotFoundError(key, layerId))
         ._2
     }

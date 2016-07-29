@@ -17,9 +17,6 @@ import scala.reflect.ClassTag
   * Handles reading raster RDDs and their metadata from S3.
   *
   * @param attributeStore  AttributeStore that contains metadata for corresponding LayerId
-  * @tparam K              Type of RDD Key (ex: SpatialKey)
-  * @tparam V       Type of RDD Value (ex: Tile or MultibandTile )
-  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
   */
 class HadoopLayerCollectionReader(
   val attributeStore: AttributeStore,
@@ -46,7 +43,7 @@ class HadoopLayerCollectionReader(
 
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
 
-    val seq = HadoopCollectionReader.read[K, V](layerPath, conf, queryKeyBounds, decompose, indexFilterOnly, maxOpenFiles, Some(writerSchema))
+    val seq = HadoopCollectionReader(maxOpenFiles).read[K, V](layerPath, conf, queryKeyBounds, decompose, indexFilterOnly, Some(writerSchema))
 
     new ContextCollection[K, V, M](seq, metadata)
   }
