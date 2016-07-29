@@ -71,6 +71,7 @@ lazy val root = Project("geotrellis", file(".")).
     s3,
     accumulo,
     cassandra,
+    hbase,
     geotools,
     slick
   ).
@@ -141,8 +142,12 @@ lazy val cassandra = Project("cassandra", file("cassandra")).
   dependsOn(sparkTestkit % "test->test", spark % "provided;test->test").
   settings(commonSettings: _*)
 
+lazy val hbase = Project("hbase", file("hbase")).
+  dependsOn(sparkTestkit % "test->test", spark % "provided;test->test").
+  settings(commonSettings: _*)
+
 lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).
-  dependsOn(spark, s3, accumulo, cassandra).
+  dependsOn(spark, s3, accumulo, cassandra, hbase).
   settings(commonSettings: _*)
 
 lazy val geotools = Project("geotools", file("geotools")).
@@ -157,5 +162,5 @@ lazy val util = Project("util", file("util")).
   settings(commonSettings: _*)
 
 lazy val docExamples = Project("doc-examples", file("doc-examples")).
-  dependsOn(spark, s3, accumulo, cassandra, spark % "test->test", sparkTestkit % "test->test").
+  dependsOn(spark, s3, accumulo, cassandra, hbase, spark % "test->test", sparkTestkit % "test->test").
   settings(commonSettings: _*)
