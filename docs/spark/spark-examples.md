@@ -121,13 +121,9 @@ val resultLayer: MultibandTileLayerRDD[SpaceTimeKey] =
       }
       .bufferTiles(neighborhood.extent)
       .mapValues { bufferedTile =>
-        val bands =
-          bufferedTile.tile.bands
-            .map { band =>
-              band.focalMedian(neighborhood, Some(bufferedTile.targetArea))
-            }
-
-        MultibandTile(bands)
+        bufferedTile.tile.mapBands { case (_, band) =>
+          band.focalMedian(neighborhood, Some(bufferedTile.targetArea))
+        }
       }
     }
 ```
