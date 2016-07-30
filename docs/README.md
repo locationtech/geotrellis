@@ -33,6 +33,8 @@ GeoTrellis.
   - [spark input/output](spark/spark-io.md) // planned
 - [geotrellis.cassandra](cassandra/)
   - [geotrellis.cassandra.test](cassandra/cassandra-test.md)
+- [geotrellis.hbase](hbase/)
+  - [geotrellis.hbase.test](hbase/hbase-test.md)
 - [geotrellis.spark-etl](spark-etl/spark-etl-intro.md)
   - [geotrellis.spark-etl.run-examples](spark-etl/spark-etl-run-examples.md)
 - [geotrellis.util](util/util-intro.md)

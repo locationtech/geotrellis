@@ -9,6 +9,7 @@
       "project s3" +publish-m2 \
       "project accumulo" +publish-m2 \
       "project cassandra" +publish-m2 \
+      "project hbase" +publish-m2 \
       "project shapefile" +publish-m2 \
       "project slick" +publish-m2 \
       "project util" +publish-m2 \

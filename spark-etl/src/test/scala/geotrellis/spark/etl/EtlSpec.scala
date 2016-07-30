@@ -11,7 +11,8 @@ object EtlSpec {
   // Test that ETL module can be instantiated in convenient ways
   val profiles = BackendProfiles(
     AccumuloProfile("accumulo-name", "instance", "zookeepers", "user", "password"),
-    CassandraProfile("name", "hosts", "user", "password")
+    CassandraProfile("name", "hosts", "user", "password"),
+    HBaseProfile("hbase-name", "zookeepers", "master")
   )
 
   val input = Input(

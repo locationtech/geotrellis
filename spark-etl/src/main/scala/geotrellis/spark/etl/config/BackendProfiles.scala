@@ -1,7 +1,9 @@
 package geotrellis.spark.etl.config
 
 import geotrellis.spark.io.accumulo.AccumuloInstance
+import geotrellis.spark.io.hbase.HBaseInstance
 import geotrellis.spark.io.cassandra.{BaseCassandraInstance, Cassandra}
+
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
 
 sealed trait BackendProfile {
@@ -35,6 +37,11 @@ case class AccumuloProfile(name: String, instance: String, zookeepers: String, u
   def token = new PasswordToken(password)
 
   def getInstance = AccumuloInstance(instance, zookeepers, user, token)
+}
+case class HBaseProfile(name: String, master: String, zookeepers: String) extends BackendProfile {
+  def `type` = HBaseType.name
+
+  def getInstance = HBaseInstance(zookeepers.split(","), master)
 }
 
 case class BackendProfiles(backendProfiles: BackendProfile*)

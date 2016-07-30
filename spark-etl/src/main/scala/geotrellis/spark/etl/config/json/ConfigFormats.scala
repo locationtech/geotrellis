@@ -110,6 +110,7 @@ trait ConfigFormats {
   }
 
   implicit val accumuloProfileFormat  = jsonFormat6(AccumuloProfile)
+  implicit val hbaseProfileFormat     = jsonFormat3(HBaseProfile)
   implicit val cassandraProfileFormat = jsonFormat9(CassandraProfile)
   implicit val hadoopProfileFormat    = jsonFormat1(HadoopProfile)
   implicit val s3ProfileFormat        = jsonFormat2(S3Profile)

@@ -24,7 +24,7 @@ import scala.reflect._
 import scala.reflect.runtime.universe._
 
 object Etl {
-  val defaultModules = Array(s3.S3Module, hadoop.HadoopModule, file.FileModule, accumulo.AccumuloModule, cassandra.CassandraModule)
+  val defaultModules = Array(s3.S3Module, hadoop.HadoopModule, file.FileModule, accumulo.AccumuloModule, cassandra.CassandraModule, hbase.HBaseModule)
 
   def ingest[
     I: Component[?, ProjectedExtent]: TypeTag: ? => TilerKeyMethods[I, K],

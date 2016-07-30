@@ -13,8 +13,8 @@ package object config {
       val S3UrlRx(_, _, bucket, prefix) = p
       Map("bucket" -> bucket, "key" -> prefix)
     }
-    case AccumuloType          => Map("table" -> p)
-    case CassandraType         => {
+    case AccumuloType | HBaseType => Map("table" -> p)
+    case CassandraType            => {
       val List(keyspace, table) = p.split("\\.").toList
       Map("keyspace" -> keyspace, "table" -> table)
     }

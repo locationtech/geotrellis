@@ -161,7 +161,11 @@ This is a list of features contained in the GeoTrellis library. It is broken up 
 
 #### geotrellis-cassandra
 
-Save and load layers to and from Casandra. Query large layers efficiently using the layer query API.
+- Save and load layers to and from Casandra. Query large layers efficiently using the layer query API.
+
+#### geotrellis-hbase
+
+- Save and load layers to and from HBase. Query large layers efficiently using the layer query API.
 
 #### geotrellis-s3
 

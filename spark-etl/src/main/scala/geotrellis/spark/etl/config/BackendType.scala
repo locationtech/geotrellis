@@ -12,6 +12,10 @@ case object AccumuloType extends BackendType {
   val name = "accumulo"
 }
 
+case object HBaseType extends BackendType {
+  val name = "hbase"
+}
+
 case object CassandraType extends BackendType {
   val name = "cassandra"
 }
@@ -36,6 +40,7 @@ object BackendType {
   def fromString(str: String) = str match {
     case AccumuloType.name  => AccumuloType
     case CassandraType.name => CassandraType
+    case HBaseType.name     => HBaseType
     case S3Type.name        => S3Type
     case HadoopType.name    => HadoopType
     case FileType.name      => FileType

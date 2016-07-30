@@ -43,6 +43,7 @@ package object spark
     with density.Implicits
     with filter.Implicits
     with join.Implicits
+    with knn.Implicits
     with mapalgebra.Implicits
     with mapalgebra.local.Implicits
     with mapalgebra.local.temporal.Implicits

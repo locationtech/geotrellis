@@ -107,10 +107,11 @@ class PostgisSpec extends FlatSpec with ShouldMatchers with TestDatabase with Sc
     // Make sure things are clean
     // we probably shouldn't need this
     try { db.run(CityTable.schema.drop) } catch { case e: Throwable =>  }
-    val q1 = for { c <- CityTable } yield c
+
     createSchema()
     db.run(CityTable ++= data.map{ d => (0, d._1, d._2) }).futureValue
 
+    val q1 = for { c <- CityTable } yield c
     db.run(q1.result).futureValue.toList.length should equal (data.length)
 
     val q2 = for { c <- CityTable } yield c
