@@ -5,18 +5,15 @@ import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.util.Filesystem
+
 import org.apache.avro.Schema
 import spire.syntax.cfor._
+import scalaz.concurrent._
+import scalaz._
 
 import scala.collection.mutable
 import java.io.File
 import java.util.concurrent.Executors
-
-
-import scala.collection.mutable.ArrayBuffer
-import scalaz.concurrent._
-import scalaz.stream._
-import scalaz._
 
 object FileCollectionReader {
   def read[K: AvroRecordCodec : Boundable, V: AvroRecordCodec](
@@ -39,23 +36,15 @@ object FileCollectionReader {
     val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
     val _recordCodec = KeyValueRecordCodec[K, V]
 
-    bins flatMap { partition =>
-      val ranges: Process[Task, (Long, Long)] = Process.unfold(partition.toIterator) { iter =>
-        if (iter.hasNext) {
-          Some(iter.next(), iter)
-        } else {
-          None
-        }
-      }
+    val pool = Executors.newFixedThreadPool(64)
 
-      val pool = Executors.newFixedThreadPool(8)
-
-      val read: ((Long, Long)) => Process[Task, ArrayBuffer[(K, V)]] = { case (start, end) =>
-        Process eval Task {
+    val res = Nondeterminism[Task].gatherUnordered(bins map { partition =>
+      val tasks = partition map { case (start, end) => Task.fork {
+        Task {
           val resultPartition = new mutable.ArrayBuffer[Vector[(K, V)]]()
 
           cfor(start)(_ <= end, _ + 1) { index =>
-            val path   = keyPath(index)
+            val path = keyPath(index)
             val result = if (new File(path).exists) {
               val bytes: Array[Byte] = Filesystem.slurp(path)
               val recs = AvroEncoder.fromBinary(writerSchema.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
@@ -69,10 +58,13 @@ object FileCollectionReader {
           }
 
           resultPartition.flatten
-        }(pool)
-      }
+        }
+      }(pool) }
 
-      nondeterminism.njoin(maxOpen = 8, maxQueued = 8) { ranges map read }.runLog.unsafePerformSync.flatten
-    }
+      Nondeterminism[Task].gatherUnordered(tasks).map(_.flatten)
+    }).map(_.flatten).unsafePerformSync
+
+    pool.shutdown()
+    res
   }
 }
