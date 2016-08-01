@@ -41,13 +41,9 @@ class SparkExamplesTests extends FunSuite with Matchers with TestEnvironment wit
       }
       .bufferTiles(neighborhood.extent)
       .mapValues { bufferedTile =>
-        val bands =
-          bufferedTile.tile.bands
-            .map { band =>
-              band.focalMax(neighborhood, Some(bufferedTile.targetArea))
-            }
-
-        MultibandTile(bands)
+        bufferedTile.tile.mapBands { (_, band) =>
+          band.focalMax(neighborhood, Some(bufferedTile.targetArea))
+        }
       }
       .collect
       .toMap

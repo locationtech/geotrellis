@@ -16,7 +16,6 @@
 
 package geotrellis.spark
 
-import com.esotericsoftware.kryo.Kryo
 import geotrellis.spark.io.cassandra.BaseCassandraInstance
 import org.apache.spark.SparkConf
 import org.scalatest._
