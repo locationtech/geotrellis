@@ -42,6 +42,10 @@ object ProtobufTile {
 
     new ProtobufTile(layers)
   }
+
+  def apply(bytes: Array[Byte]): VectorTile = {
+    apply(Protobuf.decode(bytes))
+  }
 }
 
 /**
