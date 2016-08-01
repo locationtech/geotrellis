@@ -25,6 +25,8 @@ internalDependencyClasspath in Test <++=
 fork in Test := false
 parallelExecution in Test := false
 
+testOptions in Test += Tests.Argument("-oD")
+
 initialCommands in console :=
   """
   import geotrellis.raster._
