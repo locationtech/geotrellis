@@ -52,7 +52,7 @@ trait S3RDDReader {
           val s3client = _getS3Client()
           val pool = Executors.newFixedThreadPool(8)
 
-          val result = partition flatMap { range =>
+          val result = partition map { range =>
             val ranges = Process.unfold(range.toIterator) { iter: Iterator[(Long, Long)] =>
               if (iter.hasNext) Some(iter.next(), iter)
               else None
@@ -85,8 +85,10 @@ trait S3RDDReader {
             nondeterminism.njoin(maxOpen = 8, maxQueued = 8) { ranges map read }.runLog.map(_.flatten).unsafePerformSync
           }
 
-          pool.shutdown()
-          result
+          /** Close partition pool */
+          (result ++ Iterator({
+            pool.shutdown(); Seq.empty[(K, V)]
+          })).flatten
         }
 
     rdd
