@@ -209,7 +209,6 @@ package object protobuf {
         buff
       }
 
-      // TODO (+:) here is bad!
       poly match {
         case Left(p) => work(p.exterior +: p.holes)
         case Right(mp) => work(mp.polygons.flatMap(p => p.exterior +: p.holes))
@@ -222,9 +221,6 @@ package object protobuf {
    * If the value reported here is negative, then the [[Polygon]] should be
    * considered an Interior Ring.
    */
-  // TODO Consider having this accept a `ListBuffer` instead.
-  // The Array operations are wasteful.
-  // Doing some swap/rotation operations would probably be faster.
   private def surveyor(l: Line): Double = {
     val ps: Array[Point] = l.points.init
     val xs = ps.map(_.x)
@@ -243,7 +239,6 @@ package object protobuf {
     sum
   }
 
-  // TODO Consider scalaz (<+>) operator
   implicit def protoVal(value: vt.Tile.Value): Value = {
     if (value.stringValue.isDefined) {
       St(value.stringValue.get)
