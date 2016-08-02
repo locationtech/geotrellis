@@ -11,6 +11,7 @@ libraryDependencies ++= Seq(
   "mil.nga.giat" % "geowave-adapter-raster" % "0.9.3-SNAPSHOT",
   "mil.nga.giat" % "geowave-adapter-vector" % "0.9.3-SNAPSHOT",
   "mil.nga.giat" % "geowave-core-store" % "0.9.3-SNAPSHOT",
+  "mil.nga.giat" % "geowave-core-geotime" % "0.9.3-SNAPSHOT",
   "mil.nga.giat" % "geowave-datastore-accumulo" % "0.9.3-SNAPSHOT",
   "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided",
   "org.apache.spark" %% "spark-core" % Version.spark % "provided",
@@ -20,13 +21,15 @@ libraryDependencies ++= Seq(
   "org.geotools" % "gt-geotiff" % Version.geotools % "provided",
   "org.geotools" % "gt-main" % Version.geotools % "provided",
   "org.geotools" % "gt-referencing" % Version.geotools % "provided",
+  "com.jsuereth" %% "scala-arm" % "1.4",
   spire,
   scalatest % "test")
 
 resolvers ++= Seq(
   "boundless" at "https://repo.boundlessgeo.com/release",
   "geosolutions" at "http://maven.geo-solutions.it/",
-  "geowave" at "http://geowave-maven.s3-website-us-east-1.amazonaws.com/snapshot",
+  "geowave-release" at "http://geowave-maven.s3-website-us-east-1.amazonaws.com/release",
+  "geowave-snapshot" at "http://geowave-maven.s3-website-us-east-1.amazonaws.com/snapshot",
   "osgeo" at "http://download.osgeo.org/webdav/geotools/"
 )
 
