@@ -38,9 +38,9 @@ object CassandraRDDReader {
     val kwWriterSchema = KryoWrapper(writerSchema) //Avro Schema is not Serializable
 
     val ranges = if (queryKeyBounds.length > 1)
-        MergeQueue(queryKeyBounds.flatMap(decomposeBounds))
-      else
-        queryKeyBounds.flatMap(decomposeBounds)
+      MergeQueue(queryKeyBounds.flatMap(decomposeBounds))
+    else
+      queryKeyBounds.flatMap(decomposeBounds)
 
     val bins = IndexRanges.bin(ranges, numPartitions.getOrElse(sc.defaultParallelism))
 
@@ -51,51 +51,42 @@ object CassandraRDDReader {
       .and(eqs("zoom", layerId.zoom))
       .toString
 
-    val rdd: RDD[(K, V)] =
-      sc.parallelize(bins, bins.size)
-        .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
-          instance.withSession { session =>
-            val statement = session.prepare(query)
+    sc.parallelize(bins, bins.size)
+      .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
+        instance.withSession { session =>
+          val statement = session.prepare(query)
 
-            val result = partition map { range =>
-              val ranges: Process[Task, Iterator[Long]] = Process.unfold(range.toIterator) { iter =>
-                if (iter.hasNext) {
-                  val (start, end) = iter.next()
-                  Some((start to end).toIterator, iter)
-                }
-                else None
-              }
-
-              val read: Iterator[Long] => Process[Task, Vector[(K, V)]] = {
-                case iterator =>
-                  Process.unfold(iterator) { iter =>
-                    if(iter.hasNext) {
-                      val index = iter.next()
-                      val row = session.execute(statement.bind(index.asInstanceOf[java.lang.Long]))
-                      if (row.nonEmpty) {
-                        val bytes = row.one().getBytes("value").array()
-                        val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
-                        if (filterIndexOnly) Some(recs, iter)
-                        else Some(recs.filter { row => includeKey(row._1) }, iter)
-                      } else {
-                        Some(Vector.empty, iter)
-                      }
-                    } else {
-                      None
-                    }
-                  }
-              }
-
-              nondeterminism.njoin(maxOpen = 32, maxQueued = 32) { ranges map read }.runFoldMap(identity).unsafePerformSync
+          val result = partition map { seq =>
+            val range: Process[Task, Iterator[Long]] = Process.unfold(seq.toIterator) { iter =>
+              if (iter.hasNext) {
+                val (start, end) = iter.next()
+                Some((start to end).toIterator, iter)
+              } else None
             }
 
-            /** Close partition session */
-            (result ++ Iterator({
-              session.closeAsync(); session.getCluster.closeAsync(); Seq.empty[(K, V)]
-            })).flatten
-          }
-        }
+            val read: Iterator[Long] => Process[Task, Vector[(K, V)]] = { iterator =>
+              Process.unfold(iterator) { iter =>
+                if (iter.hasNext) {
+                  val index = iter.next()
+                  val row = session.execute(statement.bind(index.asInstanceOf[java.lang.Long]))
+                  if (row.nonEmpty) {
+                    val bytes = row.one().getBytes("value").array()
+                    val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
+                    if (filterIndexOnly) Some(recs, iter)
+                    else Some(recs.filter { row => includeKey(row._1) }, iter)
+                  } else Some(Vector.empty, iter)
+                } else None
+              }
+            }
 
-    rdd
+            nondeterminism.njoin(maxOpen = 32, maxQueued = 32) { range map read }.runFoldMap(identity).unsafePerformSync
+          }
+
+          /** Close partition session */
+          (result ++ Iterator({
+            session.closeAsync(); session.getCluster.closeAsync(); Seq.empty[(K, V)]
+          })).flatten
+        }
+      }
   }
 }

@@ -31,7 +31,7 @@ trait S3RDDReader {
     writerSchema: Option[Schema] = None,
     numPartitions: Option[Int] = None
   )(implicit sc: SparkContext): RDD[(K, V)] = {
-    if(queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
+    if (queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
 
     val ranges = if (queryKeyBounds.length > 1)
       MergeQueue(queryKeyBounds.flatMap(decomposeBounds))
@@ -45,47 +45,42 @@ trait S3RDDReader {
     val _getS3Client = getS3Client
     val kwWriterSchema = KryoWrapper(writerSchema) //Avro Schema is not Serializable
 
-    val rdd =
-      sc.parallelize(bins, bins.size)
-        .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
-          val s3client = _getS3Client()
+    sc.parallelize(bins, bins.size)
+      .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
+        val s3client = _getS3Client()
 
-          partition flatMap { range =>
-            val ranges: Process[Task, Iterator[Long]] = Process.unfold(range.toIterator) { iter =>
-              if (iter.hasNext) {
-                val (start, end) = iter.next()
-                Some((start to end).toIterator, iter)
-              }
-              else None
-            }
-
-            val read: Iterator[Long] => Process[Task, Vector[(K, V)]] = {
-              case iterator =>
-                Process.unfold(iterator) { iter =>
-                  if(iter.hasNext) {
-                    val index = iter.next()
-                    val path = keyPath(index)
-                    val getS3Bytes = () => IOUtils.toByteArray(s3client.getObject(bucket, path).getObjectContent)
-
-                    try {
-                      val bytes: Array[Byte] = getS3Bytes()
-                      val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
-                      if(filterIndexOnly) Some(recs, iter)
-                      else Some(recs.filter { row => includeKey(row._1) }, iter)
-                    } catch {
-                      case e: AmazonS3Exception if e.getStatusCode == 404 => Some(Vector.empty, iter)
-                    }
-                  } else {
-                    None
-                  }
-                }
-            }
-
-            nondeterminism.njoin(maxOpen = 8, maxQueued = 8) { ranges map read }.runFoldMap(identity).unsafePerformSync
+        partition flatMap { seq =>
+          val range: Process[Task, Iterator[Long]] = Process.unfold(seq.toIterator) { iter =>
+            if (iter.hasNext) {
+              val (start, end) = iter.next()
+              Some((start to end).toIterator, iter)
+            } else None
           }
-        }
 
-    rdd
+          val read: Iterator[Long] => Process[Task, Vector[(K, V)]] = { iterator =>
+            Process.unfold(iterator) { iter =>
+              if (iter.hasNext) {
+                val index = iter.next()
+                val path = keyPath(index)
+                val getS3Bytes = () => IOUtils.toByteArray(s3client.getObject(bucket, path).getObjectContent)
+
+                try {
+                  val bytes: Array[Byte] = getS3Bytes()
+                  val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
+                  if (filterIndexOnly) Some(recs, iter)
+                  else Some(recs.filter { row => includeKey(row._1) }, iter)
+                } catch {
+                  case e: AmazonS3Exception if e.getStatusCode == 404 => Some(Vector.empty, iter)
+                }
+              } else {
+                None
+              }
+            }
+          }
+
+          nondeterminism.njoin(maxOpen = 8, maxQueued = 8) { range map read }.runFoldMap(identity).unsafePerformSync
+        }
+      }
   }
 }
 
