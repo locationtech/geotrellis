@@ -9,7 +9,6 @@ import geotrellis.vector.Extent
 
 import com.vividsolutions.jts.geom._
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
-import mil.nga.giat.geowave.adapter.raster.query.IndexOnlySpatialQuery
 import mil.nga.giat.geowave.core.geotime.ingest._
 import mil.nga.giat.geowave.core.geotime.store.statistics.BoundingBoxDataStatistics
 import mil.nga.giat.geowave.core.index.ByteArrayId
@@ -24,6 +23,7 @@ import mil.nga.giat.geowave.datastore.accumulo.index.secondary.AccumuloSecondary
 import mil.nga.giat.geowave.datastore.accumulo.metadata._
 import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloRequiredOptions
 import mil.nga.giat.geowave.mapreduce.input.{GeoWaveInputKey, GeoWaveInputFormat}
+import org.apache.accumulo.core.client.TableNotFoundException
 import org.apache.hadoop.mapreduce.Job
 import org.apache.log4j.Logger
 import org.apache.spark.Logging
@@ -36,7 +36,9 @@ import org.opengis.coverage.grid.GridCoverage
 import org.opengis.parameter.GeneralParameterValue
 
 import scala.collection.JavaConverters._
+import scala.util.Try
 
+import resource._
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
@@ -75,14 +77,15 @@ object GeowaveAttributeStore {
   }
 
   def adapters(bao: BasicAccumuloOperations): Array[RasterDataAdapter] = {
-    val as = new AccumuloAdapterStore(bao).getAdapters
-    val list = Iterator.iterate(as)({ _ => as })
-      .takeWhile({ _ => as.hasNext })
-      .map(_.next.asInstanceOf[RasterDataAdapter])
-      .toArray
+    for (adapters <- managed(new AccumuloAdapterStore(bao).getAdapters)) {
+      val list = Iterator.iterate(adapters)({ _ => adapters })
+        .takeWhile({ _ => adapters.hasNext })
+        .map(_.next.asInstanceOf[RasterDataAdapter])
+        .toArray
 
-    as.close
-    list
+      return list
+    }
+    Array.empty[RasterDataAdapter]
   }
 
   def primaryIndex = (new SpatialDimensionalityTypeProvider.SpatialIndexBuilder).createIndex()
@@ -134,23 +137,6 @@ class GeowaveAttributeStore(
   val ds = new AccumuloDataStore(bao)
   val dss = new AccumuloDataStatisticsStore(bao)
 
-  val placeHolder = "_________________________________"
-
-  // Prevent "org.apache.accumulo.core.client.TableNotFoundException:
-  // Table gwRaster_GEOWAVE_METADATA does not exist" when writing from
-  // multiple threads to an initially-empty GeoWave instance.
-  {
-    val extent = Extent(-180, -90, 180, 90)
-    val tile = IntArrayTile.empty(512, 512)
-    val image = ProjectedRaster(Raster(tile, extent), LatLng).toGridCoverage2D
-    val index = getPrimaryIndex
-    val gwMetadata = new java.util.HashMap[String, String](); gwMetadata.put(placeHolder, placeHolder)
-    val adapter = new RasterDataAdapter(placeHolder, gwMetadata, image, 256, true)
-    val indexWriter = getDataStore.createWriter(adapter, index).asInstanceOf[IndexWriter[GridCoverage]]
-
-    indexWriter.write(image); indexWriter.close
-  }
-
   def getBoundingBoxes(): Map[ByteArrayId, BoundingBoxDataStatistics[Any]] = {
     getAdapters.map({ adapter =>
       val adapterId = adapter.getAdapterId
@@ -193,7 +179,7 @@ class GeowaveAttributeStore(
   def getAccumuloRequiredOptions = aro
   def getBasicAccumuloOperations = bao
   def getPrimaryIndex = GeowaveAttributeStore.primaryIndex
-  def getAdapters = GeowaveAttributeStore.adapters(bao).filter(_.getCoverageName != placeHolder)
+  def getAdapters = GeowaveAttributeStore.adapters(bao)
   def getSubStrategies = GeowaveAttributeStore.subStrategies(getPrimaryIndex)
   def getDataStore = ds
   def getDataStatisticsStore = dss
@@ -221,8 +207,7 @@ class GeowaveAttributeStore(
       val adapterId = candidateAdapters.head.getAdapterId
       val leastZoom = getLeastZooms.getOrElse(adapterId, throw new Exception(s"Unknown Adapter Id $adapterId"))
       ((leastZoom <= zoom) && (zoom < getSubStrategies.length))
-    }
-    else false
+    } else false
   }
 
   /**
@@ -235,7 +220,7 @@ class GeowaveAttributeStore(
         zoom <- {
           val adapterId = adapter.getAdapterId
           val leastZoom = getLeastZooms.getOrElse(adapter.getAdapterId, throw new Exception(s"Unknown Adapter Id $adapterId"))
-          (leastZoom  until getSubStrategies.length)
+          (leastZoom until getSubStrategies.length)
         }
       ) yield LayerId(adapter.getCoverageName, zoom)
 
