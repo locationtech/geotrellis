@@ -10,7 +10,7 @@ import spray.json._
 import scala.reflect._
 
 abstract class CollectionLayerReader[ID] { self =>
-  val defaultNumPartitions = 1
+  val defaultNumPartitions = CollectionLayerReader.defaultNumPartitions
 
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
@@ -69,4 +69,8 @@ abstract class CollectionLayerReader[ID] { self =>
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](layerId: ID, numPartitions: Int): BoundLayerQuery[K, M, Seq[(K, V)] with Metadata[M]] =
     new BoundLayerQuery(new LayerQuery, read[K, V, M](layerId, _, numPartitions))
+}
+
+object CollectionLayerReader {
+  val defaultNumPartitions = 1
 }

@@ -43,7 +43,7 @@ class HadoopLayerCollectionReader(
 
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
 
-    val seq = HadoopCollectionReader(maxOpenFiles).read[K, V](layerPath, conf, queryKeyBounds, decompose, indexFilterOnly, Some(writerSchema))
+    val seq = HadoopCollectionReader(maxOpenFiles).read[K, V](layerPath, conf, queryKeyBounds, decompose, indexFilterOnly, Some(writerSchema), Some(numPartitions))
 
     new ContextCollection[K, V, M](seq, metadata)
   }
