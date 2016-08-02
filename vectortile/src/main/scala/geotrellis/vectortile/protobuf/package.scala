@@ -78,7 +78,7 @@ package object protobuf {
 
   implicit val protoPoint = new ProtobufGeom[Point, MultiPoint] {
     def fromCommands(cmds: Seq[Command]): Either[Point, MultiPoint] = cmds match {
-      case MoveTo(ps) +: Nil if ps.length > 0 => {
+      case MoveTo(ps) +: Nil => {
         val points = expand(ps).map({ case (x, y) => Point(x.toDouble, y.toDouble) })
 
         if (points.length == 1) Left(points.head) else Right(MultiPoint(points))
