@@ -8,11 +8,11 @@ import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.util.Filesystem
 
 import org.apache.avro.Schema
+import scalaz.std.vector._
 import scalaz.concurrent.Task
 import scalaz.stream.{Process, nondeterminism}
 
 import java.io.File
-import java.util.concurrent.Executors
 
 object FileCollectionReader {
   def read[K: AvroRecordCodec : Boundable, V: AvroRecordCodec](
@@ -29,42 +29,37 @@ object FileCollectionReader {
     else
       queryKeyBounds.flatMap(decomposeBounds)
 
-    val bins = IndexRanges.bin(ranges, numPartitions.getOrElse(CollectionLayerReader.defaultNumPartitions)).toVector
+    val bins = IndexRanges.bin(ranges, numPartitions.getOrElse(CollectionLayerReader.defaultNumPartitions)).toVector.map(_.toIterator)
 
     val boundable = implicitly[Boundable[K]]
     val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
     val _recordCodec = KeyValueRecordCodec[K, V]
 
-    val pool = Executors.newFixedThreadPool(32)
-
-    val result = bins flatMap { partition =>
-      val ranges = Process.unfold(partition.toIterator) { iter: Iterator[(Long, Long)] =>
-        if (iter.hasNext) Some(iter.next(), iter)
+    bins flatMap { partition =>
+      val range: Process[Task, Iterator[Long]] = Process.unfold(partition) { iter =>
+        if (iter.hasNext) {
+          val (start, end) = iter.next()
+          Some((start to end).toIterator, iter)
+        }
         else None
       }
 
-      val read: ((Long, Long)) => Process[Task, List[(K, V)]] = { case (start, end) =>
-        Process eval {
-          Task.gatherUnordered(for {
-            index <- start to end
-          } yield Task {
-            val path = keyPath(index)
-            if (new File(path).exists) {
-              val bytes: Array[Byte] = Filesystem.slurp(path)
-              val recs = AvroEncoder.fromBinary(writerSchema.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
-              if (filterIndexOnly)
-                recs
-              else
-                recs.filter { row => includeKey(row._1) }
-            } else Vector()
-          }(pool)).map(_.flatten)
-        }
+      val read: Iterator[Long] => Process[Task, Vector[(K, V)]] = { iterator =>
+          Process.unfold(iterator) { iter =>
+            if (iter.hasNext) {
+              val index = iter.next()
+              val path = keyPath(index)
+              if (new File(path).exists) {
+                val bytes: Array[Byte] = Filesystem.slurp(path)
+                val recs = AvroEncoder.fromBinary(writerSchema.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
+                if (filterIndexOnly) Some(recs, iter)
+                else Some(recs.filter { row => includeKey(row._1) }, iter)
+              } else Some(Vector(), iter)
+            } else None
+          }
       }
 
-      nondeterminism.njoin(maxOpen = 32, maxQueued = 32) { ranges map read }.runLog.map(_.flatten).unsafePerformSync
+      nondeterminism.njoin(maxOpen = 32, maxQueued = 32) { range map read }.runFoldMap(identity).unsafePerformSync
     }
-
-    pool.shutdown()
-    result
   }
 }

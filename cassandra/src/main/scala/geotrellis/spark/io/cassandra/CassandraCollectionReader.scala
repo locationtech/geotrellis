@@ -10,10 +10,10 @@ import geotrellis.spark.util.KryoWrapper
 import org.apache.avro.Schema
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
+import scalaz.std.vector._
 import scalaz.concurrent.Task
 import scalaz.stream.{Process, nondeterminism}
 
-import java.util.concurrent.Executors
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
@@ -40,7 +40,7 @@ object CassandraCollectionReader {
     else
       queryKeyBounds.flatMap(decomposeBounds)
 
-    val bins = IndexRanges.bin(ranges, numPartitions.getOrElse(CollectionLayerReader.defaultNumPartitions))
+    val bins = IndexRanges.bin(ranges, numPartitions.getOrElse(CollectionLayerReader.defaultNumPartitions)).toVector.map(_.toIterator)
 
     val query = QueryBuilder.select("value")
       .from(keyspace, table)
@@ -49,41 +49,37 @@ object CassandraCollectionReader {
       .and(eqs("zoom", layerId.zoom))
       .toString
 
-    val pool = Executors.newFixedThreadPool(32)
-
-    val result = instance.withSessionDo { session =>
+    instance.withSessionDo { session =>
       val statement = session.prepare(query)
 
       bins flatMap { partition =>
-        val ranges = Process.unfold(partition.toIterator) { iter: Iterator[(Long, Long)] =>
-          if (iter.hasNext) Some(iter.next(), iter)
+        val range: Process[Task, Iterator[Long]] = Process.unfold(partition) { iter =>
+          if (iter.hasNext) {
+            val (start, end) = iter.next()
+            Some((start to end).toIterator, iter)
+          }
           else None
         }
 
-        val read: ((Long, Long)) => Process[Task, List[(K, V)]] = {
-          case (start, end) =>
-            Process eval {
-              Task.gatherUnordered(for {
-                index <- start to end
-              } yield Task {
-                val row = session.execute(statement.bind(index.asInstanceOf[java.lang.Long]))
-                if (row.nonEmpty) {
-                  val bytes = row.one().getBytes("value").array()
-                  val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
-                  if (filterIndexOnly) recs
-                  else recs.filter { row => includeKey(row._1) }
-                } else {
-                  Seq.empty
-                }
-              }(pool)).map(_.flatten)
+        val read: Iterator[Long] => Process[Task, Vector[(K, V)]] = { iterator =>
+          Process.unfold(iterator) { iter =>
+            if (iter.hasNext) {
+              val index = iter.next()
+              val row = session.execute(statement.bind(index.asInstanceOf[java.lang.Long]))
+              if (row.nonEmpty) {
+                val bytes = row.one().getBytes("value").array()
+                val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
+                if (filterIndexOnly) Some(recs, iter)
+                else Some(recs.filter { row => includeKey(row._1) }, iter)
+              } else Some(Vector.empty, iter)
+            } else {
+              None
             }
+          }
         }
 
-        nondeterminism.njoin(maxOpen = 32, maxQueued = 32) { ranges map read }.runLog.map(_.flatten).unsafePerformSync
+        nondeterminism.njoin(maxOpen = 32, maxQueued = 32) { range map read }.runFoldMap(identity).unsafePerformSync
       }
     }
-
-    pool.shutdown()
-    result
   }
 }
