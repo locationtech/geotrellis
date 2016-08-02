@@ -7,14 +7,13 @@ import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.util.KryoWrapper
 
 import scalaz.concurrent.Task
+import scalaz.std.vector._
 import scalaz.stream.{Process, nondeterminism}
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-
-import java.util.concurrent.Executors
 
 trait S3RDDReader {
 
@@ -50,45 +49,40 @@ trait S3RDDReader {
       sc.parallelize(bins, bins.size)
         .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
           val s3client = _getS3Client()
-          val pool = Executors.newFixedThreadPool(8)
 
-          val result = partition map { range =>
-            val ranges = Process.unfold(range.toIterator) { iter: Iterator[(Long, Long)] =>
-              if (iter.hasNext) Some(iter.next(), iter)
+          partition flatMap { range =>
+            val ranges: Process[Task, Iterator[Long]] = Process.unfold(range.toIterator) { iter =>
+              if (iter.hasNext) {
+                val (start, end) = iter.next()
+                Some((start to end).toIterator, iter)
+              }
               else None
             }
 
-            val read: ((Long, Long)) => Process[Task, List[(K, V)]] = {
-              case (start, end) =>
-                Process eval {
-                  Task.gatherUnordered(for {
-                    index <- start to end
-                  } yield Task {
+            val read: Iterator[Long] => Process[Task, Vector[(K, V)]] = {
+              case iterator =>
+                Process.unfold(iterator) { iter =>
+                  if(iter.hasNext) {
+                    val index = iter.next()
                     val path = keyPath(index)
                     val getS3Bytes = () => IOUtils.toByteArray(s3client.getObject(bucket, path).getObjectContent)
 
                     try {
-                      val bytes: Array[Byte] =
-                        getS3Bytes()
+                      val bytes: Array[Byte] = getS3Bytes()
                       val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
-                      if(filterIndexOnly)
-                        recs
-                      else
-                        recs.filter { row => includeKey(row._1) }
+                      if(filterIndexOnly) Some(recs, iter)
+                      else Some(recs.filter { row => includeKey(row._1) }, iter)
                     } catch {
-                      case e: AmazonS3Exception if e.getStatusCode == 404 => Seq.empty
+                      case e: AmazonS3Exception if e.getStatusCode == 404 => Some(Vector.empty, iter)
                     }
-                  }(pool)).map(_.flatten)
+                  } else {
+                    None
+                  }
                 }
             }
 
-            nondeterminism.njoin(maxOpen = 8, maxQueued = 8) { ranges map read }.runLog.map(_.flatten).unsafePerformSync
+            nondeterminism.njoin(maxOpen = 8, maxQueued = 8) { ranges map read }.runFoldMap(identity).unsafePerformSync
           }
-
-          /** Close partition pool */
-          (result ++ Iterator({
-            pool.shutdown(); Seq.empty[(K, V)]
-          })).flatten
         }
 
     rdd
