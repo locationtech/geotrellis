@@ -21,6 +21,8 @@ import geotrellis.vectortile.protobuf.ProtobufGeom
 import scala.collection.mutable.ListBuffer
 import vector_tile.{vector_tile => vt}
 
+import scala.annotation.tailrec
+
 // --- //
 
 case class IncompatibleCommandSequence(e: String) extends Exception
@@ -76,7 +78,6 @@ package object protobuf {
 
   implicit val protoPoint = new ProtobufGeom[Point, MultiPoint] {
     def fromCommands(cmds: Seq[Command]): Either[Point, MultiPoint] = cmds match {
-      // TODO Use (::) instead of (+:)? May be faster for pattern matching.
       case MoveTo(ps) +: Nil if ps.length > 0 => {
         val points = expand(ps).map({ case (x, y) => Point(x.toDouble, y.toDouble) })
 
@@ -95,21 +96,19 @@ package object protobuf {
 
   implicit val protoLine = new ProtobufGeom[Line, MultiLine] {
     def fromCommands(cmds: Seq[Command]): Either[Line, MultiLine] = {
-      // TODO Make tail recursive?
-      // TODO Use (::)?
-      def work(cs: Seq[Command], cursor: (Int, Int)): ListBuffer[Line] = cs match {
+      @tailrec def work(cs: Seq[Command], lines: ListBuffer[Line], cursor: (Int, Int)): ListBuffer[Line] = cs match {
         case MoveTo(p) +: LineTo(ps) +: rest => {
           val line = Line(expand(p ++ ps, cursor).map({ case (x, y) => (x.toDouble, y.toDouble) }))
           val endPoint: Point = line.points.last
           val nextCursor: (Int, Int) = (endPoint.x.toInt, endPoint.y.toInt)
 
-          line +=: work(rest, nextCursor)
+          work(rest, lines += line, nextCursor)
         }
-        case Nil => new ListBuffer[Line]
+        case Nil => lines
         case _ => throw IncompatibleCommandSequence("Expected: [ MoveTo(p +: Nil), LineTo(ps), ... ]")
       }
 
-      val lines = work(cmds, (0, 0))
+      val lines = work(cmds, new ListBuffer[Line], (0, 0))
 
       if (lines.length == 1) Left(lines.head) else Right(MultiLine(lines))
     }
@@ -141,7 +140,7 @@ package object protobuf {
 
   implicit val protoPolygon = new ProtobufGeom[Polygon, MultiPolygon] {
     def fromCommands(cmds: Seq[Command]): Either[Polygon, MultiPolygon] = {
-      def work(cs: Seq[Command], cursor: (Int, Int)): ListBuffer[Line] = cs match {
+      @tailrec def work(cs: Seq[Command], lines: ListBuffer[Line], cursor: (Int, Int)): ListBuffer[Line] = cs match {
         case MoveTo(p) +: LineTo(ps) +: ClosePath +: rest => {
           /* `ClosePath` does not move the cursor, so we have to be
            * clever about how we manage the cursor and the closing point
@@ -154,13 +153,16 @@ package object protobuf {
           /* Add the starting point to close the Line into a Polygon */
           points.append(here)
 
-          Line(points.map({ case (x, y) => (x.toDouble, y.toDouble) })) +=: work(rest, nextCursor)
+          val line = Line(points.map({ case (x, y) => (x.toDouble, y.toDouble) }))
+
+          work(rest, lines += line, nextCursor)
         }
-        case Nil => new ListBuffer[Line]
+        case Nil => lines
         case _ => throw IncompatibleCommandSequence("Expected: [MoveTo(p +: Nil), LineTo(ps), ClosePath, ... ]")
       }
 
-      val lines: ListBuffer[Line] = work(cmds, (0, 0))
+      /* Collect all rings, whether external or internal */
+      val lines: ListBuffer[Line] = work(cmds, new ListBuffer[Line], (0, 0))
 
       /* Process interior rings */
       var polys = new ListBuffer[Polygon]
