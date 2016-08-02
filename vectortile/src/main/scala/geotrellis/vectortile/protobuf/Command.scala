@@ -17,7 +17,7 @@
 package geotrellis.vectortile.protobuf
 
 import scala.collection.mutable.ListBuffer
-
+import scala.annotation.tailrec
 
 // --- //
 
@@ -60,8 +60,8 @@ case class InvalidCommand(id: Int, count: Int) extends Exception
 object Command {
   /** Attempt to parse a list of Command/Parameter Integers. */
   def commands(cmds: Seq[Int]): ListBuffer[Command] = {
-    def work(cmds: Seq[Int]): ListBuffer[Command] = cmds match {
-      case Nil => new ListBuffer[Command]
+    @tailrec def work(cmds: Seq[Int], curr: ListBuffer[Command]): ListBuffer[Command] = cmds match {
+      case Nil => curr
       case ns => parseCmd(ns.head) match {
         case (1,count) => {
           val (ps,rest) = ns.tail.splitAt(count * 2)
@@ -74,7 +74,7 @@ object Command {
             i += 1
           }
 
-          MoveTo(res) +=: work(rest)
+          work(rest, curr += MoveTo(res))
         }
         case (2,count) => {
           val (ps,rest) = ns.tail.splitAt(count * 2)
@@ -87,13 +87,13 @@ object Command {
             i += 1
           }
 
-          LineTo(res) +=: work(rest)
+          work(rest, curr += LineTo(res))
         }
-        case (7,_) => ClosePath +=: work(ns.tail)
+        case (7,_) => work(ns.tail, curr += ClosePath)
       }
     }
 
-    work(cmds)
+    work(cmds, new ListBuffer[Command])
   }
 
   /** Convert a list of parsed Commands back into their original Command
