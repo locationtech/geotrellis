@@ -3,10 +3,12 @@ package geotrellis.spark.io.cassandra
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.LayerId
+
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.schemabuilder.SchemaBuilder
 import com.datastax.driver.core.DataType._
 import com.datastax.driver.core.ResultSet
+import com.datastax.driver.core.ResultSetFuture
 import org.apache.spark.rdd.RDD
 
 import scalaz.concurrent.Task
@@ -57,6 +59,13 @@ object CassandraRDDWriter {
         .foreachPartition { partition =>
           instance.withSession { session =>
             val statement = session.prepare(query)
+
+            /*partition map { recs =>
+              val id: java.lang.Long = recs._1
+              val pairs = recs._2.toVector
+              val bytes = ByteBuffer.wrap(AvroEncoder.toBinary(pairs)(codec))
+              session.executeAsync(statement.bind(id, bytes))
+            } map { _.getUninterruptibly() }*/
 
             val queries: Process[Task, (java.lang.Long, ByteBuffer)] =
               Process.unfold(partition) { iter =>
