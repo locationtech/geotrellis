@@ -117,31 +117,41 @@ case class ProtobufLayer(
   private lazy val lineStream = geomStream[Line, MultiLine](lineFs)
   private lazy val polyStream = geomStream[Polygon, MultiPolygon](polyFs)
 
-  // TODO Likely faster with manual recursion in a fold-like pattern,
-  // and it will squash the pattern match warnings.
   lazy val points: Stream[Feature[Point, Map[String, Value]]] = pointStream
-    .filter(_._1.isLeft)
-    .map({ case (Left(p), meta) => Feature(p, meta) })
+    .foldLeft(Stream.empty[Feature[Point, Map[String, Value]]])({
+      case (acc, (Left(p), meta)) => Feature(p, meta) #:: acc
+      case (acc, _) => acc
+    })
 
   lazy val multiPoints: Stream[Feature[MultiPoint, Map[String, Value]]] = pointStream
-    .filter(_._1.isRight)
-    .map({ case (Right(p), meta) => Feature(p, meta) })
+    .foldLeft(Stream.empty[Feature[MultiPoint, Map[String, Value]]])({
+      case (acc, (Right(p), meta)) => Feature(p, meta) #:: acc
+      case (acc, _) => acc
+    })
 
   lazy val lines: Stream[Feature[Line, Map[String, Value]]] = lineStream
-    .filter(_._1.isLeft)
-    .map({ case (Left(p), meta) => Feature(p, meta) })
+    .foldLeft(Stream.empty[Feature[Line, Map[String, Value]]])({
+      case (acc, (Left(p), meta)) => Feature(p, meta) #:: acc
+      case (acc, _) => acc
+    })
 
   lazy val multiLines: Stream[Feature[MultiLine, Map[String, Value]]] = lineStream
-    .filter(_._1.isRight)
-    .map({ case (Right(p), meta) => Feature(p, meta) })
+    .foldLeft(Stream.empty[Feature[MultiLine, Map[String, Value]]])({
+      case (acc, (Right(p), meta)) => Feature(p, meta) #:: acc
+      case (acc, _) => acc
+    })
 
   lazy val polygons: Stream[Feature[Polygon, Map[String, Value]]] = polyStream
-    .filter(_._1.isLeft)
-    .map({ case (Left(p), meta) => Feature(p, meta) })
+    .foldLeft(Stream.empty[Feature[Polygon, Map[String, Value]]])({
+      case (acc, (Left(p), meta)) => Feature(p, meta) #:: acc
+      case (acc, _) => acc
+    })
 
   lazy val multiPolygons: Stream[Feature[MultiPolygon, Map[String, Value]]] = polyStream
-    .filter(_._1.isRight)
-    .map({ case (Right(p), meta) => Feature(p, meta) })
+    .foldLeft(Stream.empty[Feature[MultiPolygon, Map[String, Value]]])({
+      case (acc, (Right(p), meta)) => Feature(p, meta) #:: acc
+      case (acc, _) => acc
+    })
 
   /**
    * Given a raw protobuf Layer, segregate its Features by their GeomType.
