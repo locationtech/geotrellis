@@ -60,13 +60,6 @@ object CassandraRDDWriter {
           instance.withSession { session =>
             val statement = session.prepare(query)
 
-            /*partition map { recs =>
-              val id: java.lang.Long = recs._1
-              val pairs = recs._2.toVector
-              val bytes = ByteBuffer.wrap(AvroEncoder.toBinary(pairs)(codec))
-              session.executeAsync(statement.bind(id, bytes))
-            } map { _.getUninterruptibly() }*/
-
             val queries: Process[Task, (java.lang.Long, ByteBuffer)] =
               Process.unfold(partition) { iter =>
                 if (iter.hasNext) {
@@ -96,7 +89,7 @@ object CassandraRDDWriter {
               Process eval Task {
                 session.closeAsync()
                 session.getCluster.closeAsync()
-              }
+              }(pool)
             }
 
             results.run.unsafePerformSync
