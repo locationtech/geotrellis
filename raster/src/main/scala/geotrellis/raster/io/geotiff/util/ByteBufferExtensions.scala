@@ -16,6 +16,7 @@
 
 package geotrellis.raster.io.geotiff.util
 
+import java.io.InputStream
 import java.nio.ByteBuffer
 
 import spire.syntax.cfor._
@@ -272,6 +273,14 @@ trait ByteBufferExtensions {
       byteBuffer.position(oldPos)
 
       arr
+    }
+
+    final def fromInputStream(input: InputStream, length: Int): ByteBuffer = {
+      cfor(0)(_ < length, _ + 1) { i =>
+        byteBuffer.put(i, (input.read).toByte)
+      }
+      byteBuffer.position(0)
+      byteBuffer
     }
   }
 }

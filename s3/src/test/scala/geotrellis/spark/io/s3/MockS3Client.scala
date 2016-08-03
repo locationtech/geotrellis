@@ -1,6 +1,10 @@
 package geotrellis.spark.io.s3
 
-import java.io.ByteArrayInputStream
+import java.io.{ByteArrayInputStream, FileInputStream}
+import java.nio.ByteBuffer
+import java.nio.channels.FileChannel.MapMode._
+import java.nio.charset.StandardCharsets
+import java.nio.file._
 import com.amazonaws.services.s3.model._
 import java.util.concurrent.ConcurrentHashMap
 import com.amazonaws.services.s3.internal.AmazonS3ExceptionBuilder
@@ -98,6 +102,20 @@ class MockS3Client() extends S3Client with LazyLogging {
     val inStream = obj.getObjectContent
     try {
       IOUtils.toByteArray(inStream)
+    } finally {
+      inStream.close()
+    }
+  }
+  
+  def readBuffer(getObjectRequest: GetObjectRequest): ByteBuffer = {
+    val obj = getObject(getObjectRequest)
+    val inStream = obj.getObjectContent
+    try {
+      val length = obj.getObjectMetadata.getContentLength
+      val channel = inStream.asInstanceOf[FileInputStream].getChannel
+      val buffer = channel.map(READ_ONLY, 0, length)
+      channel.close()
+      buffer
     } finally {
       inStream.close()
     }

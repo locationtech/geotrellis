@@ -25,7 +25,7 @@ case class MultibandGeoTiff(
   
   def crop(subExtent: Extent): MultibandGeoTiff = {
     val raster: Raster[MultibandTile] =
-      (this.crop(subExtent)).raster
+      this.raster.crop(subExtent)
 
     MultibandGeoTiff(raster, subExtent, this.crs, this.tags)
   }
@@ -41,50 +41,41 @@ object MultibandGeoTiff {
   /** Read a multi-band GeoTIFF file from a byte array.
     * If decompress = true, the GeoTIFF will be fully uncompressed and held in memory.
     */
-  def apply(bytes: Array[Byte], decompress: Boolean, extent: Option[Extent], streaming: Boolean): MultibandGeoTiff =
-    GeoTiffReader.readMultiband(bytes, decompress, extent, streaming)
+  def apply(bytes: Array[Byte], decompress: Boolean, streaming: Boolean): MultibandGeoTiff =
+    GeoTiffReader.readMultiband(bytes, decompress, streaming)
 
   /** Read a multi-band GeoTIFF file from the file at the given path.
     * GeoTIFF will be fully decompressed and held in memory.
     */
   def apply(path: String): MultibandGeoTiff =
     GeoTiffReader.readMultiband(path)
-
+  
+  def apply(path: String, e: Extent): MultibandGeoTiff =
+    GeoTiffReader.readMultiband(path, e)
+  
+  def apply(path: String, e: Option[Extent]): MultibandGeoTiff =
+    GeoTiffReader.readMultiband(path, e)
+  
   /** Read a multi-band GeoTIFF file from the file at the given path.
     * If decompress = true, the GeoTIFF will be fully decompressed and held in memory.
     */
-  def apply(path: String, decompress: Boolean, extent: Option[Extent], streaming: Boolean): MultibandGeoTiff =
-    GeoTiffReader.readMultiband(path, decompress, extent, streaming)
+  def apply(path: String, decompress: Boolean, streaming: Boolean): MultibandGeoTiff =
+    GeoTiffReader.readMultiband(path, decompress, streaming)
 
   /** Read a multi-band GeoTIFF file from the file at a given path.
     * The tile data will remain tiled/striped and compressed in the TIFF format.
     */
   def compressed(path: String): MultibandGeoTiff =
-    GeoTiffReader.readMultiband(path, false, None, false)
+    GeoTiffReader.readMultiband(path, false, false)
 
   /** Read a multi-band GeoTIFF file from a byte array.
     * The tile data will remain tiled/striped and compressed in the TIFF format.
     */
   def compressed(bytes: Array[Byte]): MultibandGeoTiff =
-    GeoTiffReader.readMultiband(bytes, false, None, false)
+    GeoTiffReader.readMultiband(bytes, false, false)
   
   def streaming(path: String): MultibandGeoTiff =
-    GeoTiffReader.readMultiband(path, true, None, true)
-  
-  def streaming(bytes: Array[Byte]): MultibandGeoTiff =
-    GeoTiffReader.readMultiband(bytes, true, None, true)
-
-  /** Read a windowed, multiband GeoTiff file from a given path.
-    * The file will be decompressed and read from [[BufferSegmentBytes]]
-    */
-  def windowed(path: String, extent: Extent): MultibandGeoTiff =
-    GeoTiffReader.readMultiband(path, true, Some(extent), true)
-  
-  /** Read a windowed, multiband GeoTiff file from an Array[Byte].
-    * The file will be decompressed and read from [[BufferSegmentBytes]]
-    */
-  def windowed(bytes: Array[Byte], extent: Extent): MultibandGeoTiff =
-    GeoTiffReader.readMultiband(bytes, true, Some(extent), true)
+    GeoTiffReader.readMultiband(path, false, true)
 
   def apply(
     tile: MultibandTile,

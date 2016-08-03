@@ -10,7 +10,7 @@ class UInt32GeoTiffTile(
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
   val cellType: FloatCells with NoDataHandling
-) extends GeoTiffTile(segmentLayout, compression) with CroppedGeoTiff with UInt32GeoTiffSegmentCollection {
+) extends GeoTiffTile(segmentLayout, compression) with Intersection with UInt32GeoTiffSegmentCollection {
 
   def mutable: MutableArrayTile = {
     val arr = Array.ofDim[Float](cols * rows)
@@ -28,25 +28,33 @@ class UInt32GeoTiffTile(
     }
     FloatArrayTile(arr, cols, rows, cellType)
   }
-  
+
   def crop(gridBounds: GridBounds): MutableArrayTile = {
-    implicit val gb = gridBounds
-    implicit val segLayout = segmentLayout
     val arr = Array.ofDim[Float](gridBounds.size)
 
     cfor(0)(_ < segmentCount, _ + 1) {i =>
-      implicit val segmentId = i
+      val segmentGridBounds = segmentLayout.getGridBounds(i)
       if (gridBounds.intersects(segmentGridBounds)) {
         val segment = getSegment(i)
+        val segmentTransform = segmentLayout.getSegmentTransform(i)
 
-        cfor(0)(_ < segment.size, _ + 1) { i =>
-          val col = segmentTransform.indexToCol(i)
-          val row = segmentTransform.indexToRow(i)
-          if (gridBounds.contains(col, row))
-            arr((row - rowMin) * width + (col - colMin)) = segment.get(i)
+        val result = gridBounds.intersection(segmentGridBounds).get
+        val intersection = Intersection(segmentGridBounds, result, segmentLayout)
+        val iterator =
+          if (segmentLayout.isStriped)
+            intersection.cols
+          else
+            intersection.tileWidth
+
+        cfor(intersection.start)(_ < intersection.end, _ + iterator) { i =>
+          cfor(0)(_ < result.width, _ + 1) { j =>
+            val col = segmentTransform.indexToCol(i + j)
+            val row = segmentTransform.indexToRow(i + j)
+            arr((row - gridBounds.rowMin) * gridBounds.width + (col - gridBounds.colMin)) = segment.get(i + j)
+          }
         }
       }
     }
-    FloatArrayTile(arr, width, height, cellType)
+    FloatArrayTile(arr, gridBounds.width, gridBounds.height, cellType)
   }
 }

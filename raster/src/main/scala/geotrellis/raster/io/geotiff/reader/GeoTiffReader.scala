@@ -44,25 +44,34 @@ object GeoTiffReader {
    * If there is more than one band in the GeoTiff, read the first band only.
    */
   def readSingleband(path: String): SinglebandGeoTiff =
-    readSingleband(path, true, None, false)
+    readSingleband(path, true, false)
 
+  def readSingleband(path: String, e: Extent): SinglebandGeoTiff =
+    readSingleband(path, Some(e))
+
+  def readSingleband(path: String, e: Option[Extent]): SinglebandGeoTiff =
+    e match {
+      case Some(x) => readSingleband(path, false, true).crop(x)
+      case None => readSingleband(path)
+    }
+  
   /* Read a single band GeoTIFF file.
    * If there is more than one band in the GeoTiff, read the first band only.
    */
-  def readSingleband(path: String, decompress: Boolean, extent: Option[Extent], streaming: Boolean): SinglebandGeoTiff =
-    readSingleband(Filesystem.slurp(path), decompress, extent, streaming)
+  def readSingleband(path: String, decompress: Boolean, streaming: Boolean): SinglebandGeoTiff =
+    readSingleband(Filesystem.slurp(path), decompress, streaming)
 
   /* Read a single band GeoTIFF file.
    * If there is more than one band in the GeoTiff, read the first band only.
    */
   def readSingleband(bytes: Array[Byte]): SinglebandGeoTiff =
-    readSingleband(bytes, true, None, false)
+    readSingleband(bytes, true, false)
 
   /* Read a single band GeoTIFF file.
    * If there is more than one band in the GeoTiff, read the first band only.
    */
-  def readSingleband(bytes: Array[Byte], decompress: Boolean, extent: Option[Extent], streaming: Boolean): SinglebandGeoTiff = {
-    val info = readGeoTiffInfo(bytes, decompress, extent, streaming)
+  def readSingleband(bytes: Array[Byte], decompress: Boolean, streaming: Boolean): SinglebandGeoTiff = {
+    val info = readGeoTiffInfo(bytes, decompress, streaming)
 
     val geoTiffTile =
       if(info.bandCount == 1) {
@@ -87,36 +96,35 @@ object GeoTiffReader {
         ).band(0)
       }
 
-    val arrayTile = {
-      if (decompress)
-        extent match {
-          case None => geoTiffTile.toArrayTile
-          case Some(x) => geoTiffTile.tile.crop(info.extent, x)
-        }
-      else
-        geoTiffTile
-    }
-
-    SinglebandGeoTiff(arrayTile, info.extent, info.crs, info.tags, info.options)
+    SinglebandGeoTiff(if (decompress) geoTiffTile.toArrayTile else geoTiffTile, info.extent, info.crs, info.tags, info.options)
   }
 
   /* Read a multi band GeoTIFF file.
    */
   def readMultiband(path: String): MultibandGeoTiff =
-    readMultiband(path, true, None, false)
+    readMultiband(path, true, false)
+  
+  def readMultiband(path: String, e: Extent): MultibandGeoTiff =
+    readMultiband(path, Some(e))
 
+  def readMultiband(path: String, e: Option[Extent]): MultibandGeoTiff =
+    e match {
+      case Some(x) => readMultiband(path, false, true).crop(x)
+      case None => readMultiband(path)
+    }
+  
   /* Read a multi band GeoTIFF file.
    */
-  def readMultiband(path: String, decompress: Boolean, extent: Option[Extent], streaming: Boolean): MultibandGeoTiff =
-    readMultiband(Filesystem.slurp(path), decompress, extent, streaming)
+  def readMultiband(path: String, decompress: Boolean, streaming: Boolean): MultibandGeoTiff =
+    readMultiband(Filesystem.slurp(path), decompress, streaming)
 
   /* Read a multi band GeoTIFF file.
    */
   def readMultiband(bytes: Array[Byte]): MultibandGeoTiff =
-    readMultiband(bytes, true, None, false)
+    readMultiband(bytes, true, false)
 
-  def readMultiband(bytes: Array[Byte], decompress: Boolean, extent: Option[Extent], streaming: Boolean): MultibandGeoTiff = {
-    val info = readGeoTiffInfo(bytes, decompress, extent, streaming)
+  def readMultiband(bytes: Array[Byte], decompress: Boolean, streaming: Boolean): MultibandGeoTiff = {
+    val info = readGeoTiffInfo(bytes, decompress, streaming)
     val geoTiffTile =
       GeoTiffMultibandTile(
         info.segmentBytes,
@@ -129,17 +137,7 @@ object GeoTiffReader {
         Some(info.bandType)
       )
 
-    val arrayTile = {
-      if (decompress)
-        extent match {
-          case None => geoTiffTile.toArrayTile
-          case Some(x) => geoTiffTile.crop(info.extent, x)
-        }
-      else
-        geoTiffTile
-    }
-          
-    new MultibandGeoTiff(arrayTile, info.extent, info.crs, info.tags, info.options)
+    new MultibandGeoTiff(if (decompress) geoTiffTile.toArrayTile else geoTiffTile, info.extent, info.crs, info.tags, info.options)
   }
 
   case class GeoTiffInfo(
@@ -219,7 +217,7 @@ object GeoTiffReader {
   }
 
 
-  private def readGeoTiffInfo(bytes: Array[Byte], decompress: Boolean, extent: Option[Extent], streaming: Boolean): GeoTiffInfo = {
+  private def readGeoTiffInfo(bytes: Array[Byte], decompress: Boolean, streaming: Boolean): GeoTiffInfo = {
     val byteBuffer = ByteBuffer.wrap(bytes, 0, bytes.size)
 
     // set byte ordering

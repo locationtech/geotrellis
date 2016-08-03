@@ -10,7 +10,7 @@ class Float64GeoTiffTile(
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
   val cellType: DoubleCells with NoDataHandling
-) extends GeoTiffTile(segmentLayout, compression) with CroppedGeoTiff with Float64GeoTiffSegmentCollection {
+) extends GeoTiffTile(segmentLayout, compression) with Intersection with Float64GeoTiffSegmentCollection {
 
   val noDataValue: Option[Double] = cellType match {
     case DoubleCellType => None
@@ -51,23 +51,21 @@ class Float64GeoTiffTile(
   }
 
   def crop(gridBounds: GridBounds): MutableArrayTile = {
-    implicit val segLayout = segmentLayout
-    implicit val gb = gridBounds
-    
     val arr = Array.ofDim[Byte](gridBounds.size * DoubleConstantNoDataCellType.bytes)
-    val adjWidth = width * DoubleConstantNoDataCellType.bytes
-    
-    val adjCols = cols * DoubleConstantNoDataCellType.bytes
     var counter = 0
-
     if (segmentLayout.isStriped) {
       cfor(0)(_ < segmentCount, _ + 1) { i =>
-        implicit val segmentId = i
+        val segmentGridBounds = segmentLayout.getGridBounds(i)
         if (gridBounds.intersects(segmentGridBounds)) {
           val segment = getSegment(i)
 
-          val adjStart = start * DoubleConstantNoDataCellType.bytes
-          val adjEnd = end * DoubleConstantNoDataCellType.bytes
+          val result = gridBounds.intersection(segmentGridBounds).get
+          val intersection = Intersection(segmentGridBounds, result, segmentLayout)
+
+          val adjStart = intersection.start * DoubleConstantNoDataCellType.bytes
+          val adjEnd = intersection.end * DoubleConstantNoDataCellType.bytes
+          val adjCols = intersection.cols * DoubleConstantNoDataCellType.bytes
+          val adjWidth = result.width * DoubleConstantNoDataCellType.bytes
 
           cfor(adjStart)(_ < adjEnd, _ + adjCols) { i =>
             System.arraycopy(segment.bytes, i, arr, counter, adjWidth)
@@ -77,26 +75,28 @@ class Float64GeoTiffTile(
       }
     } else {
       cfor(0)(_ < segmentCount, _ + 1) { i =>
-        implicit val segmentId = i
+        val segmentGridBounds = segmentLayout.getGridBounds(i)
         if (gridBounds.intersects(segmentGridBounds)) {
           val segment = getSegment(i)
-          val adjTileWidth = tileWidth * DoubleConstantNoDataCellType.bytes
+          val segmentTransform = segmentLayout.getSegmentTransform(i)
 
-          val adjStart = start * DoubleConstantNoDataCellType.bytes
-          val adjEnd = end * DoubleConstantNoDataCellType.bytes
-          val adjDiff = diff * DoubleConstantNoDataCellType.bytes
+          val result = gridBounds.intersection(segmentGridBounds).get
+          val intersection = Intersection(segmentGridBounds, result, segmentLayout)
 
-          cfor(adjStart)(_ < adjTileWidth * segmentRows, _ + adjTileWidth) { i =>
+          val adjStart = intersection.start * DoubleConstantNoDataCellType.bytes
+          val adjEnd = intersection.end * DoubleConstantNoDataCellType.bytes
+          val adjTileWidth = intersection.tileWidth * DoubleConstantNoDataCellType.bytes
+          val adjWidth = result.width * DoubleConstantNoDataCellType.bytes
+
+          cfor(adjStart)(_ < adjEnd, _ + adjTileWidth) { i =>
             val col = segmentTransform.indexToCol(i / DoubleConstantNoDataCellType.bytes)
             val row = segmentTransform.indexToRow(i / DoubleConstantNoDataCellType.bytes)
-            if (gridBounds.contains(col, row)) {
-              val j = (row - rowMin) * width + (col - colMin)
-              System.arraycopy(segment.bytes, i, arr, j * DoubleConstantNoDataCellType.bytes, adjDiff)
-            }
+            val j = (row - gridBounds.rowMin) * gridBounds.width + (col - gridBounds.colMin)
+            System.arraycopy(segment.bytes, i, arr, j * DoubleConstantNoDataCellType.bytes, adjWidth)
           }
         }
       }
     }
-    DoubleArrayTile.fromBytes(arr, width, height, cellType)
+    DoubleArrayTile.fromBytes(arr, gridBounds.width, gridBounds.height, cellType)
   }
 }

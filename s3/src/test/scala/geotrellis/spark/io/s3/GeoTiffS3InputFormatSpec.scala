@@ -4,6 +4,7 @@ import java.nio.file.{ Paths, Files }
 
 import com.amazonaws.auth.AWSCredentials
 import geotrellis.raster._
+import geotrellis.util._
 import geotrellis.vector._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._

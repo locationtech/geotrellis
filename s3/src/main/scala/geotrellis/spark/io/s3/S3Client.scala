@@ -1,9 +1,12 @@
 package geotrellis.spark.io.s3
 
+import geotrellis.raster.io.geotiff.util._
+
 import com.amazonaws.auth.{DefaultAWSCredentialsProviderChain, AWSCredentials, AWSCredentialsProvider}
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion
 import com.amazonaws.services.s3.{AmazonS3Client => AWSAmazonS3Client}
 import java.io.{InputStream, ByteArrayInputStream}
+import java.nio.ByteBuffer
 import com.amazonaws.retry.PredefinedRetryPolicies
 import com.amazonaws.services.s3.model._
 import com.typesafe.scalalogging.slf4j._
@@ -14,6 +17,7 @@ import com.amazonaws.ClientConfiguration
 import org.apache.commons.io.IOUtils
 import scala.collection.JavaConversions._
 
+import spire.syntax.cfor._
 trait S3Client extends LazyLogging {
 
   def listObjects(listObjectsRequest: ListObjectsRequest): ObjectListing
@@ -75,6 +79,11 @@ trait S3Client extends LazyLogging {
     readBytes(new GetObjectRequest(bucketName, key))
 
   def readBytes(getObjectRequest: GetObjectRequest): Array[Byte]
+
+  def readBuffer(bucketName: String, key: String): ByteBuffer =
+    readBuffer(new GetObjectRequest(bucketName, key))
+
+  def readBuffer(getObjectRequest: GetObjectRequest): ByteBuffer
 
   def listObjectsIterator(bucketName: String, prefix: String, maxKeys: Int = 0): Iterator[S3ObjectSummary] =
       listObjectsIterator(new ListObjectsRequest(bucketName, prefix, null, null, if (maxKeys == 0) null else maxKeys))
@@ -168,6 +177,18 @@ class AmazonS3Client(s3client: AWSAmazonS3Client) extends S3Client {
     val inStream = obj.getObjectContent
     try {
       IOUtils.toByteArray(inStream)
+    } finally {
+      inStream.close()
+    }
+  }
+  
+  def readBuffer(getObjectRequest: GetObjectRequest): ByteBuffer = {
+    val obj = s3client.getObject(getObjectRequest)
+    val inStream = obj.getObjectContent
+    try {
+      val length = obj.getObjectMetadata.getContentLength
+      val buffer = ByteBuffer.allocateDirect(length.toInt)
+      buffer.fromInputStream(inStream, length.toInt)
     } finally {
       inStream.close()
     }

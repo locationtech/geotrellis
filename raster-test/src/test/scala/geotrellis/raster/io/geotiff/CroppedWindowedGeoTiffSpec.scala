@@ -12,19 +12,18 @@ import geotrellis.raster.testkit._
 import org.scalatest._
 import scala.collection.JavaConversions._
 import monocle.syntax.apply._
-import spire.syntax.cfor._
 import sys.process._
 
 object Reader {
   def singleBand(path: String, extent: Extent): (SinglebandGeoTiff, SinglebandGeoTiff) = {
-    val croppedGeoTiff = SinglebandGeoTiff.windowed(path, extent)
-    val whole = SinglebandGeoTiff(path)
-    (croppedGeoTiff, whole)
+    val expected = SinglebandGeoTiff(path, extent)
+    val actual = SinglebandGeoTiff(path).crop(extent)
+    (expected, actual)
   }
   def multiBand(path: String, extent: Extent): (MultibandGeoTiff, MultibandGeoTiff) = {
-    val croppedGeoTiff = MultibandGeoTiff.windowed(path, extent)
-    val whole = MultibandGeoTiff(path)
-    (croppedGeoTiff, whole)
+    val expected = MultibandGeoTiff(path, extent)
+    val actual = MultibandGeoTiff(path).crop(extent)
+    (expected, actual)
   }
 }
 
@@ -57,259 +56,197 @@ class CroppedGeoTiffSpec extends FunSpec
     describe("reading striped geotiffs around the edges") {
       val extent = Extent(0, -7.3, 27.55, -4)
       it("bit") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(bitStriped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(bitStriped, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
+
       it("byte") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(byteStriped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(byteStriped, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
+
       it("int16") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(int16Striped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(int16Striped, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
+
       it("int32") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(int32Striped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(int32Striped, extent)
         
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
       it("uint16") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(uint16Striped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(uint16Striped, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
       it("uint32") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(uint32Striped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(uint32Striped, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
 
       it("float32") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(float32Striped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(float32Striped, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
 
       it("float64") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(float64Striped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(float64Striped, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
     }
-    
-    describe("reading striped geoTiffs in the middle") {
-      val extent = Extent(40, -8.25, 45.86, -8)
-      it("bit") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(bitStriped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
 
-        assertEqual(actual, croppedGeoTiff)
+    describe("reading striped geoTiffs in the middle") {
+      val extent = Extent(16.55, -8.05, 33.44, -5.955)
+      it("bit") {
+        val (expected, actual) = Reader.singleBand(bitStriped, extent)
+
+        assertEqual(actual, expected)
       }
       it("byte") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(byteStriped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(byteStriped, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
       it("int16") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(int16Striped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(int16Striped, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
       it("int32") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(int32Striped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(int32Striped, extent)
         
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
 
       it("uint16") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(uint16Striped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(uint16Striped, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
       it("uint32") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(uint32Striped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(uint32Striped, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
 
       it("float32") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(float32Striped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(float32Striped, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
       it("float64") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(float64Striped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(float64Striped, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
     }
 
     describe("reading tiled geoTiffs around the edges") {
-      val extent = Extent(0, -7.3, 25.5, -4)
+      val extent = Extent(0, -7.2, 27.5, -4)
       it("bit") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(bitTiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(bitTiled, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
 
       it("byte") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(byteTiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(byteTiled, extent)
 
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
       it("int16") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(int16Tiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(int16Tiled, extent)
         
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
 
       it("int32") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(int32Tiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(int32Tiled, extent)
         
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
 
       it("uint16") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(uint16Tiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(uint16Tiled, extent)
         
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
 
       it("uint32") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(uint32Tiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(uint32Tiled, extent)
         
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
 
       it("float32") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(float32Tiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(float32Tiled, extent)
         
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
       
       it("float64") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(float64Tiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(float64Tiled, extent)
         
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
     }
 
     describe("reading tiled geoTiffs in the middle") {
-      val extent = Extent(10, -8.25, 15, -8)
+      val extent = Extent(21.35, -7.455, 28.65, -6.55)
       it("bit") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(bitTiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(bitTiled, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
       it("byte") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(byteTiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(byteTiled, extent)
 
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
       it("int16") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(int16Tiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(int16Tiled, extent)
         
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
 
       it("int32") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(int32Tiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(int32Tiled, extent)
         
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
 
       it("uint16") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(uint16Tiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(uint16Tiled, extent)
         
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
 
       it("uint32") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(uint32Tiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(uint32Tiled, extent)
         
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
 
       it("float32") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(float32Tiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(float32Tiled, extent)
         
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
 
       it("float64") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.singleBand(float64Tiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.singleBand(float64Tiled, extent)
         
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
     }
   }
-
   describe("multiband Geotiffs") {
     val bitStriped = geoTiffPath("3bands/bit/3bands-striped-band.tif")
     val byteStriped = geoTiffPath("3bands/byte/3bands-striped-band.tif")
@@ -332,131 +269,101 @@ class CroppedGeoTiffSpec extends FunSpec
     describe("reading striped geotiffs around the edges") {
       val extent = Extent(0, 1.5, 97.79, 88.82)
       it("bit") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(bitStriped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(bitStriped, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
 
       it("byte") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(byteStriped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(byteStriped, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
-      it("int16") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(int16Striped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
 
-        assertEqual(actual, croppedGeoTiff)
+      it("int16") {
+        val (expected, actual) = Reader.multiBand(int16Striped, extent)
+
+        assertEqual(actual, expected)
       }
 
       it("int32") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(int32Striped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(int32Striped, extent)
         
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
 
       it("uint16") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(uint16Striped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(uint16Striped, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
 
       it("uint32") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(uint32Striped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(uint32Striped, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
 
       it("float32") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(float32Striped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(float32Striped, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
 
       it("float64") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(float64Striped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(float64Striped, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
     }
 
     describe("reading striped geoTiffs in the middle") {
       val extent = Extent(7, 1.5, 15, 15)
       it("bit") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(bitStriped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(bitStriped, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
       it("byte") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(byteStriped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(byteStriped, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
-      it("int16") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(int16Striped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
 
-        assertEqual(actual, croppedGeoTiff)
+      it("int16") {
+        val (expected, actual) = Reader.multiBand(int16Striped, extent)
+
+        assertEqual(actual, expected)
       }
 
       it("int32") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(int32Striped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(int32Striped, extent)
         
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
 
       it("uint16") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(uint16Striped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(uint16Striped, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
 
       it("uint32") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(uint32Striped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(uint32Striped, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
 
       it("float32") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(float32Striped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(float32Striped, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
 
       it("float64") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(float64Striped, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(float64Striped, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
     }
 
@@ -464,133 +371,101 @@ class CroppedGeoTiffSpec extends FunSpec
       val extent = Extent(0, 1.5, 3, 8)
 
       it("bit") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(bitTiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(bitTiled, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
 
       it("byte") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(byteTiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(byteTiled, extent)
 
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
 
       it("int16") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(int16Tiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(int16Tiled, extent)
         
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
       
       it("int32") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(int32Tiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(int32Tiled, extent)
         
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
 
       it("uint16") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(uint16Tiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(uint16Tiled, extent)
         
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
 
       it("uint32") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(uint32Tiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(uint32Tiled, extent)
         
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
 
       it("float32") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(float32Tiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(float32Tiled, extent)
         
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
 
       it("float64") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(float64Tiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(float64Tiled, extent)
         
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
     }
 
     describe("reading tiled geoTiffs in the middle") {
       val extent = Extent(4, 5, 7, 15)
       it("bit") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(bitTiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(bitTiled, extent)
 
-        assertEqual(actual, croppedGeoTiff)
+        assertEqual(actual, expected)
       }
 
       it("byte") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(byteTiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(byteTiled, extent)
 
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
       it("int16") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(int16Tiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(int16Tiled, extent)
         
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
 
       it("int32") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(int32Tiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(int32Tiled, extent)
         
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
 
       it("uint16") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(uint16Tiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(uint16Tiled, extent)
         
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
 
       it("uint32") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(uint32Tiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(uint32Tiled, extent)
         
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
 
       it("float32") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(float32Tiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(float32Tiled, extent)
         
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
 
       it("float64") {
-        val (croppedGeoTiff, wholeGeoTiff) = Reader.multiBand(float64Tiled, extent)
-        val cropper = new RasterCropMethods(wholeGeoTiff.raster)
-        val actual = cropper.crop(extent)
+        val (expected, actual) = Reader.multiBand(float64Tiled, extent)
         
-        assertEqual(actual,croppedGeoTiff)
+        assertEqual(actual,expected)
       }
     }
   }
