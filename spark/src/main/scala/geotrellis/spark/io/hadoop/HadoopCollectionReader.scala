@@ -45,7 +45,9 @@ class HadoopCollectionReader(maxOpenFiles: Int) {
     val pathRanges: Vector[(Path, Long, Long)] =
       FilterMapFileInputFormat.layerRanges(path, conf)
 
-    bins flatMap { partition =>
+    val pool = Executors.newFixedThreadPool(maxOpenFiles)
+
+    val result = bins flatMap { partition =>
       val range: Process[Task, Iterator[Long]] = Process.unfold(partition) { iter =>
         if (iter.hasNext) {
           val (start, end) = iter.next()
@@ -79,6 +81,8 @@ class HadoopCollectionReader(maxOpenFiles: Int) {
 
       nondeterminism.njoin(maxOpen = maxOpenFiles, maxQueued = maxOpenFiles) { range map read }.runFoldMap(identity).unsafePerformSync
     }
+
+    pool.shutdown(); result
   }
 }
 

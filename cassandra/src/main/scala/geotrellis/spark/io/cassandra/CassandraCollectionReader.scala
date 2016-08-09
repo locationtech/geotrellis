@@ -11,8 +11,10 @@ import org.apache.avro.Schema
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
 import scalaz.std.vector._
-import scalaz.concurrent.Task
+import scalaz.concurrent.{Strategy, Task}
 import scalaz.stream.{Process, nondeterminism}
+
+import java.util.concurrent.Executors
 
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
@@ -49,7 +51,9 @@ object CassandraCollectionReader {
       .and(eqs("zoom", layerId.zoom))
       .toString
 
-    instance.withSessionDo { session =>
+    val pool = Executors.newFixedThreadPool(32)
+
+    val result = instance.withSessionDo { session =>
       val statement = session.prepare(query)
 
       bins flatMap { partition =>
@@ -78,8 +82,10 @@ object CassandraCollectionReader {
           }
         }
 
-        nondeterminism.njoin(maxOpen = 32, maxQueued = 32) { range map read }.runFoldMap(identity).unsafePerformSync
+        nondeterminism.njoin(maxOpen = 32, maxQueued = 32) { range map read }(Strategy.Executor(pool)).runFoldMap(identity).unsafePerformSync
       }
     }
+
+    pool.shutdown(); result
   }
 }

@@ -45,7 +45,9 @@ trait S3CollectionReader {
     val _getS3Client = getS3Client
     val s3client = _getS3Client()
 
-    bins flatMap { partition =>
+    val pool = Executors.newFixedThreadPool(8)
+
+    val result = bins flatMap { partition =>
       val range: Process[Task, Iterator[Long]] = Process.unfold(partition) { iter =>
         if (iter.hasNext) {
           val (start, end) = iter.next()
@@ -77,6 +79,8 @@ trait S3CollectionReader {
 
       nondeterminism.njoin(maxOpen = 8, maxQueued = 8) { range map read }.runFoldMap(identity).unsafePerformSync
     }
+
+    pool.shutdown(); result
   }
 }
 
