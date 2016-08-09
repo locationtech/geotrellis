@@ -64,6 +64,7 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
       case Some(attribute) => clearCache(layerId, attribute)
       case None => clearCache(layerId)
     }
+    deleter.close
   }
 
   def read[T: JsonFormat](layerId: LayerId, attributeName: String): T = {
@@ -96,11 +97,13 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
 
   def layerExists(layerId: LayerId): Boolean = {
     val scanner = connector.createScanner(attributeTable, new Authorizations())
-    scanner.iterator
+    val retval = scanner.iterator
       .exists { kv =>
         val List(name, zoomStr) = kv.getKey.getRow.toString.split(SEP).toList
         layerId == LayerId(name, zoomStr.toInt)
       }
+
+    scanner.close; retval
   }
 
   def delete(layerId: LayerId): Unit = delete(layerId, None)
@@ -109,18 +112,22 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
 
   def layerIds: Seq[LayerId] = {
     val scanner = connector.createScanner(attributeTable, new Authorizations())
-    scanner.iterator
+    val retval = scanner.iterator
       .map { kv =>
         val List(name, zoomStr) = kv.getKey.getRow.toString.split(SEP).toList
         LayerId(name, zoomStr.toInt)
       }
       .toList
       .distinct
+
+    scanner.close ; retval
   }
 
   def availableAttributes(id: LayerId): Seq[String] = {
     val scanner = connector.createScanner(attributeTable, new Authorizations())
     scanner.setRange(new Range(layerIdText(id)))
-    scanner.iterator.map(_.getKey.getColumnFamily.toString).toVector
+    val retval = scanner.iterator.map(_.getKey.getColumnFamily.toString).toVector
+
+    scanner.close ; retval
   }
 }
