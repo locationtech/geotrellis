@@ -5,13 +5,14 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.spark.io.index.{ZCurveKeyIndexMethod, KeyIndexMethod, KeyIndex}
+import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod, ZCurveKeyIndexMethod}
 import geotrellis.spark.util.KryoWrapper
 
-import com.amazonaws.services.s3.model.{AmazonS3Exception, PutObjectResult, ObjectMetadata, PutObjectRequest}
+import com.amazonaws.services.s3.model.{AmazonS3Exception, ObjectMetadata, PutObjectRequest, PutObjectResult}
 import com.typesafe.scalalogging.slf4j._
 import org.apache.spark.rdd.RDD
-import scalaz.concurrent.Task
+
+import scalaz.concurrent.{Strategy, Task}
 import scalaz.stream.{Process, nondeterminism}
 import spray.json._
 import spray.json.DefaultJsonProtocol._
@@ -78,7 +79,7 @@ trait S3RDDWriter {
         }
       }
 
-      val results = nondeterminism.njoin(maxOpen = 8, maxQueued = 8) { requests map write }
+      val results = nondeterminism.njoin(maxOpen = 8, maxQueued = 8) { requests map write } (Strategy.Executor(pool))
       results.run.unsafePerformSync
       pool.shutdown()
     }

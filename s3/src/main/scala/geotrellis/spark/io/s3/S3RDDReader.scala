@@ -6,7 +6,7 @@ import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.util.KryoWrapper
 
-import scalaz.concurrent.Task
+import scalaz.concurrent.{Strategy, Task}
 import scalaz.std.vector._
 import scalaz.stream.{Process, nondeterminism}
 import com.amazonaws.services.s3.model.AmazonS3Exception
@@ -14,6 +14,8 @@ import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+
+import java.util.concurrent.Executors
 
 trait S3RDDReader {
 
@@ -48,6 +50,7 @@ trait S3RDDReader {
     sc.parallelize(bins, bins.size)
       .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
         val s3client = _getS3Client()
+        val pool = Executors.newFixedThreadPool(8)
 
         partition flatMap { seq =>
           val range: Process[Task, Iterator[Long]] = Process.unfold(seq.toIterator) { iter =>
@@ -78,7 +81,10 @@ trait S3RDDReader {
             }
           }
 
-          nondeterminism.njoin(maxOpen = 8, maxQueued = 8) { range map read }.runFoldMap(identity).unsafePerformSync
+          val result = nondeterminism.njoin(maxOpen = 8, maxQueued = 8) { range map read }(Strategy.Executor(pool)).runFoldMap(identity).unsafePerformSync
+          pool.shutdown()
+
+          result
         }
       }
   }

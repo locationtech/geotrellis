@@ -1,29 +1,19 @@
 package geotrellis.spark.io.accumulo
 
-import java.util.UUID
-
-import geotrellis.spark._
-import geotrellis.spark.io._
-import geotrellis.spark.io.index._
 import geotrellis.spark.util._
 import geotrellis.spark.io.hadoop._
 
-import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.fs.Path
-
-import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-
 import org.apache.accumulo.core.data.{Key, Mutation, Value}
 import org.apache.accumulo.core.client.mapreduce.AccumuloFileOutputFormat
 import org.apache.accumulo.core.client.BatchWriterConfig
-
-import scala.collection.JavaConversions._
-
-import scalaz.concurrent.Task
+import scalaz.concurrent.{Strategy, Task}
 import scalaz.stream._
+
+import java.util.UUID
+import java.util.concurrent.Executors
 
 object AccumuloWriteStrategy {
   def DEFAULT = HdfsWriteStrategy("/geotrellis-ingest")
@@ -104,6 +94,7 @@ case class SocketWriteStrategy(
   def write(kvPairs: RDD[(Key, Value)], instance: AccumuloInstance, table: String): Unit = {
     val serializeWrapper = KryoWrapper(config) // BatchWriterConfig is not java serializable
     kvPairs.foreachPartition { partition =>
+      val pool = Executors.newFixedThreadPool(32)
       val (config) = serializeWrapper.value
       val writer = instance.connector.createBatchWriter(table, config)
 
@@ -121,7 +112,7 @@ case class SocketWriteStrategy(
 
       val writeChannel = channel.lift { (mutation: Mutation) => Task { writer.addMutation(mutation) } }
       val writes = mutations.tee(writeChannel)(tee.zipApply).map(Process.eval)
-      nondeterminism.njoin(maxOpen = 32, maxQueued = 32)(writes).run.unsafePerformSync
+      nondeterminism.njoin(maxOpen = 32, maxQueued = 32)(writes)(Strategy.Executor(pool)).run.unsafePerformSync
       writer.close()
     }
   }

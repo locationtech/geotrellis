@@ -6,7 +6,7 @@ import geotrellis.spark.{Boundable, KeyBounds, LayerId}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
 
-import scalaz.concurrent.Task
+import scalaz.concurrent.{Strategy, Task}
 import scalaz.std.vector._
 import scalaz.stream.{Process, nondeterminism}
 import com.datastax.driver.core.querybuilder.QueryBuilder
@@ -55,6 +55,7 @@ object CassandraRDDReader {
       .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
         instance.withSession { session =>
           val statement = session.prepare(query)
+          val pool = Executors.newFixedThreadPool(32)
 
           val result = partition map { seq =>
             val range: Process[Task, Iterator[Long]] = Process.unfold(seq.toIterator) { iter =>
@@ -79,12 +80,12 @@ object CassandraRDDReader {
               }
             }
 
-            nondeterminism.njoin(maxOpen = 32, maxQueued = 32) { range map read }.runFoldMap(identity).unsafePerformSync
+            nondeterminism.njoin(maxOpen = 32, maxQueued = 32) { range map read }(Strategy.Executor(pool)).runFoldMap(identity).unsafePerformSync
           }
 
           /** Close partition session */
           (result ++ Iterator({
-            session.closeAsync(); session.getCluster.closeAsync(); Seq.empty[(K, V)]
+            pool.shutdown(); session.closeAsync(); session.getCluster.closeAsync(); Seq.empty[(K, V)]
           })).flatten
         }
       }

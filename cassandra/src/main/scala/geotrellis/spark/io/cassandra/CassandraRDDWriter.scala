@@ -8,10 +8,9 @@ import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.schemabuilder.SchemaBuilder
 import com.datastax.driver.core.DataType._
 import com.datastax.driver.core.ResultSet
-import com.datastax.driver.core.ResultSetFuture
 import org.apache.spark.rdd.RDD
 
-import scalaz.concurrent.Task
+import scalaz.concurrent.{Strategy, Task}
 import scalaz.stream.{Process, nondeterminism}
 import java.nio.ByteBuffer
 import java.util.concurrent.Executors
@@ -85,7 +84,7 @@ object CassandraRDDWriter {
 
             val results = nondeterminism.njoin(maxOpen = 32, maxQueued = 32) {
               queries map write
-            } onComplete {
+            }(Strategy.Executor(pool)) onComplete {
               Process eval Task {
                 session.closeAsync()
                 session.getCluster.closeAsync()
