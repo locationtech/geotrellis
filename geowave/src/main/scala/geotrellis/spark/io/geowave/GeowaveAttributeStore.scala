@@ -6,6 +6,7 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.vector.Extent
+import geotrellis.spark.io.accumulo.AccumuloAttributeStore
 
 import com.vividsolutions.jts.geom._
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
@@ -23,12 +24,11 @@ import mil.nga.giat.geowave.datastore.accumulo.index.secondary.AccumuloSecondary
 import mil.nga.giat.geowave.datastore.accumulo.metadata._
 import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloRequiredOptions
 import mil.nga.giat.geowave.mapreduce.input.{GeoWaveInputKey, GeoWaveInputFormat}
-import org.apache.accumulo.core.client.TableNotFoundException
+import org.apache.accumulo.core.client.{TableNotFoundException, ZooKeeperInstance}
+import org.apache.accumulo.core.client.security.tokens.PasswordToken
 import org.apache.hadoop.mapreduce.Job
 import org.apache.log4j.Logger
-import org.apache.spark.Logging
-import org.apache.spark.SparkConf
-import org.apache.spark.SparkContext
+import org.apache.spark.{Logging, SparkConf, SparkContext}
 import org.apache.spark.SparkContext._
 import org.geotools.coverage.grid._
 import org.geotools.gce.geotiff._
@@ -46,14 +46,14 @@ import spray.json.DefaultJsonProtocol._
 object GeowaveAttributeStore {
 
   def accumuloRequiredOptions(
-    zookeeper: String,
+    zookeepers: String,
     accumuloInstance: String,
     accumuloUser: String,
     accumuloPass: String,
     geowaveNamespace: String
   ): AccumuloRequiredOptions = {
     val aro = new AccumuloRequiredOptions
-    aro.setZookeeper(zookeeper)
+    aro.setZookeeper(zookeepers)
     aro.setInstance(accumuloInstance)
     aro.setUser(accumuloUser)
     aro.setPassword(accumuloPass)
@@ -62,14 +62,14 @@ object GeowaveAttributeStore {
   }
 
   def basicOperations(
-    zookeeper: String,
+    zookeepers: String,
     accumuloInstance: String,
     accumuloUser: String,
     accumuloPass: String,
     geowaveNamespace: String
   ): BasicAccumuloOperations = {
     return new BasicAccumuloOperations(
-      zookeeper,
+      zookeepers,
       accumuloInstance,
       accumuloUser,
       accumuloPass,
@@ -95,47 +95,46 @@ object GeowaveAttributeStore {
     .asInstanceOf[HierarchicalNumericIndexStrategy]
     .getSubStrategies
 
-  def unapply(gas: GeowaveAttributeStore) = Some((
-    gas.getBasicAccumuloOperations,
-    gas.getAccumuloRequiredOptions,
-    gas.getAdapters,
-    gas.getPrimaryIndex,
-    gas.getSubStrategies,
-    gas.getBoundingBoxes
-  ))
 }
 
 class GeowaveAttributeStore(
-  zookeeper: String,
+  zookeepers: String,
   accumuloInstance: String,
   accumuloUser: String,
   accumuloPass: String,
   geowaveNamespace: String
 ) extends DiscreteLayerAttributeStore with Logging {
 
-  def zookeeper(): String = zookeeper
+  def zookeepers(): String = zookeepers
   def accumuloInstance(): String = accumuloInstance
   def accumuloUser(): String = accumuloUser
   def accumuloPass(): String = accumuloPass
   def geowaveNamespace(): String = geowaveNamespace
 
+  val zkInstance = (new ZooKeeperInstance(accumuloInstance, zookeepers))
+  val token = new PasswordToken(accumuloPass)
+  val connector = zkInstance.getConnector(accumuloUser, token)
+  val delegate = AccumuloAttributeStore(connector, s"${geowaveNamespace}_ATTR")
+
   val bao = GeowaveAttributeStore.basicOperations(
-    zookeeper: String,
+    zookeepers: String,
     accumuloInstance: String,
     accumuloUser: String,
     accumuloPass: String,
     geowaveNamespace: String
   )
   val aro = GeowaveAttributeStore.accumuloRequiredOptions(
-    zookeeper: String,
+    zookeepers: String,
     accumuloInstance: String,
     accumuloUser: String,
     accumuloPass: String,
     geowaveNamespace: String
   )
-
   val ds = new AccumuloDataStore(bao)
   val dss = new AccumuloDataStatisticsStore(bao)
+
+  def delete(tableName: String) =
+    connector.tableOperations.delete(tableName)
 
   def getBoundingBoxes(): Map[ByteArrayId, BoundingBoxDataStatistics[Any]] = {
     getAdapters.map({ adapter =>
@@ -184,46 +183,74 @@ class GeowaveAttributeStore(
   def getDataStore = ds
   def getDataStatisticsStore = dss
 
-  def delete(layerId: LayerId, attributeName: String): Unit = ???
-  def delete(layerId: LayerId): Unit = ???
-  def readAll[T: JsonFormat](attributeName: String): Map[LayerId, T] = ???
-  def read[T: JsonFormat](layerId: LayerId, attributeName: String): T = ???
-  def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = ???
+  def delete(layerId: LayerId, attributeName: String): Unit =
+    delegate.delete(layerId, attributeName)
+
+  def delete(layerId: LayerId): Unit = delegate.delete(layerId)
+
+  def readAll[T: JsonFormat](attributeName: String): Map[LayerId, T] =
+    delegate.readAll[T](attributeName)
+
+  def read[T: JsonFormat](layerId: LayerId, attributeName: String): T =
+    delegate.read[T](layerId, attributeName)
+
+  def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit =
+    delegate.write[T](layerId, attributeName, value)
+
+  def availableAttributes(layerId: LayerId) =
+    delegate.availableAttributes(layerId)
 
   /**
-    * Return a list of available attributes associated with this
-    * attribute store.
+    * Use GeoWave to see whether a layer really exists.
     */
-  def availableAttributes(id: LayerId) = List.empty[String]
-
-  /**
-    * Answer whether a layer exists or not.
-    */
-  def layerExists(layerId: LayerId): Boolean = {
+  private def gwLayerExists(layerId: LayerId): Boolean = {
     val LayerId(name, zoom) = layerId
     val candidateAdapters = getAdapters.filter(_.getCoverageName == name)
 
     if (candidateAdapters.nonEmpty) {
       val adapterId = candidateAdapters.head.getAdapterId
-      val leastZoom = getLeastZooms.getOrElse(adapterId, throw new Exception(s"Unknown Adapter Id $adapterId"))
+      val leastZoom = getLeastZooms.getOrElse(
+        adapterId,
+        throw new Exception(s"Unknown Adapter Id $adapterId")
+      )
+
       ((leastZoom <= zoom) && (zoom < getSubStrategies.length))
     } else false
   }
 
   /**
-    * Return a list of valid LayerIds.
+    * Answer whether a layer exists (either in GeoWave or only in the
+    * AttributeStore).
     */
-  def layerIds: Seq[LayerId] = {
+  def layerExists(layerId: LayerId): Boolean =
+    gwLayerExists(layerId) || delegate.layerExists(layerId)
+
+  /**
+    * Use GeoWave to get a list of actual LayerIds.
+    */
+  private def gwLayerIds: Seq[LayerId] = {
     val list =
       for (
         adapter <- getAdapters;
         zoom <- {
           val adapterId = adapter.getAdapterId
-          val leastZoom = getLeastZooms.getOrElse(adapter.getAdapterId, throw new Exception(s"Unknown Adapter Id $adapterId"))
+          val leastZoom = getLeastZooms.getOrElse(
+            adapter.getAdapterId,
+            throw new Exception(s"Unknown Adapter Id $adapterId")
+          )
+
           (leastZoom until getSubStrategies.length)
         }
       ) yield LayerId(adapter.getCoverageName, zoom)
 
     list.distinct
   }
+
+  /**
+    * Return a complete list of LayerIds (those associated with actual
+    * GeoWave layers, as well as those only recorded in the
+    * AttributeStore).
+    */
+  def layerIds: Seq[LayerId] =
+    (gwLayerIds ++ delegate.layerIds).distinct
 }
