@@ -15,7 +15,6 @@ import com.vividsolutions.jts.geom._
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
 import mil.nga.giat.geowave.core.geotime.store.query.IndexOnlySpatialQuery
 import mil.nga.giat.geowave.core.geotime.ingest._
-import mil.nga.giat.geowave.core.geotime.store.statistics.BoundingBoxDataStatistics
 import mil.nga.giat.geowave.core.index.ByteArrayId
 import mil.nga.giat.geowave.core.store._
 import mil.nga.giat.geowave.core.store.index.CustomIdIndex
@@ -23,7 +22,7 @@ import mil.nga.giat.geowave.core.store.operations.remote.options.DataStorePlugin
 import mil.nga.giat.geowave.core.store.query.QueryOptions
 import mil.nga.giat.geowave.datastore.accumulo._
 import mil.nga.giat.geowave.datastore.accumulo.metadata._
-import mil.nga.giat.geowave.mapreduce.input.{GeoWaveInputKey, GeoWaveInputFormat}
+import mil.nga.giat.geowave.mapreduce.input.{ GeoWaveInputKey, GeoWaveInputFormat }
 import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
@@ -75,14 +74,14 @@ class GeowaveLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkC
 
   val defaultNumPartitions = sc.defaultParallelism
 
-  val GeowaveAttributeStore(
-    basicOperations,
-    requiredOptions,
-    adapters,
-    index,
-    substrats,
-    bboxMap
-  ) = attributeStore
+  val gas = attributeStore.asInstanceOf[GeowaveAttributeStore]
+
+  private def adapters = gas.getAdapters
+  private def basicOperations = gas.getBasicAccumuloOperations
+  private def bboxMap = gas.getBoundingBoxes
+  private def index = gas.getPrimaryIndex
+  private def requiredOptions = gas.getAccumuloRequiredOptions
+  private def substrats = gas.getSubStrategies
 
   /**
     * Compute the common part of the
