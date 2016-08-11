@@ -37,9 +37,8 @@ object Etl {
     implicit def classTagV = ClassTag(typeTag[V].mirror.runtimeClass(typeTag[V].tpe)).asInstanceOf[ClassTag[V]]
 
     EtlConf(args) foreach { conf =>
-      val job = EtlJob(conf)
       /* parse command line arguments */
-      val etl = Etl(job, modules)
+      val etl = Etl(conf, modules)
       /* load source tiles using input module specified */
       val sourceTiles = etl.load[I, V]
       /* perform the reprojection and mosaicing step to fit tiles to LayoutScheme specified */
@@ -50,12 +49,11 @@ object Etl {
   }
 }
 
-case class Etl(etlJob: EtlJob, @transient modules: Seq[TypedModule] = Etl.defaultModules) {
+case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.defaultModules) {
 
   @transient lazy val logger: Logger = Logger(LoggerFactory getLogger getClass.getName)
-  @transient val conf = etlJob.conf
-  @transient val input = conf.input
-  @transient val output = conf.output
+  val input = conf.input
+  val output = conf.output
 
   def scheme: Either[LayoutScheme, LayoutDefinition] = {
     if (output.layoutScheme.nonEmpty) {
@@ -86,7 +84,7 @@ case class Etl(etlJob: EtlJob, @transient modules: Seq[TypedModule] = Etl.defaul
         .find(_.suitableFor(input.backend.`type`.name, input.format))
         .getOrElse(sys.error(s"Unable to find input module of type '${input.backend.`type`.name}' for format `${input.format}"))
 
-    plugin(etlJob)
+    plugin(conf)
   }
 
   /**
@@ -177,7 +175,7 @@ case class Etl(etlJob: EtlJob, @transient modules: Seq[TypedModule] = Etl.defaul
 
     def savePyramid(zoom: Int, rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): Unit = {
       val currentId = id.copy(zoom = zoom)
-      outputPlugin(currentId, rdd, etlJob)
+      outputPlugin(currentId, rdd, conf)
 
       scheme match {
         case Left(s) =>

@@ -6,7 +6,6 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce.Job
 import org.apache.spark.SparkContext
 
-
 abstract class S3Input[I, V] extends InputPlugin[I, V] {
   val name = "s3"
 

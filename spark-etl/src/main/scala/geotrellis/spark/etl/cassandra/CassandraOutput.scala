@@ -1,12 +1,13 @@
 package geotrellis.spark.etl.cassandra
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
-import geotrellis.spark.etl.{EtlJob, OutputPlugin}
-import geotrellis.spark.etl.config.Backend
+import geotrellis.spark.etl.OutputPlugin
+import geotrellis.spark.etl.config.EtlConf
 import geotrellis.spark.io.cassandra.CassandraAttributeStore
+
+import com.typesafe.scalalogging.slf4j.LazyLogging
 
 trait CassandraOutput[K, V, M] extends OutputPlugin[K, V, M] with LazyLogging {
   val name = "cassandra"
   
-  def attributes(job: EtlJob) = CassandraAttributeStore(getInstance(job.conf.outputProfile))
+  def attributes(conf: EtlConf) = CassandraAttributeStore(getInstance(conf.outputProfile))
 }

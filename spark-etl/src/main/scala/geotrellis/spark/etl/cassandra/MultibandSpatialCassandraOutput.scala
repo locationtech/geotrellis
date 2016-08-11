@@ -2,13 +2,13 @@ package geotrellis.spark.etl.cassandra
 
 import geotrellis.raster.MultibandTile
 import geotrellis.spark._
-import geotrellis.spark.etl.EtlJob
+import geotrellis.spark.etl.config.EtlConf
 import geotrellis.spark.io._
 import geotrellis.spark.io.cassandra.CassandraLayerWriter
 
 import org.apache.spark.SparkContext
 
 class MultibandSpatialCassandraOutput extends CassandraOutput[SpatialKey, MultibandTile, TileLayerMetadata[SpatialKey]] {
-  def writer(job: EtlJob)(implicit sc: SparkContext) =
-    CassandraLayerWriter(getInstance(job.conf.outputProfile), job.outputProps("keyspace"), job.outputProps("table")).writer[SpatialKey, MultibandTile, TileLayerMetadata[SpatialKey]](job.conf.output.getKeyIndexMethod[SpatialKey])
+  def writer(conf: EtlConf)(implicit sc: SparkContext) =
+    CassandraLayerWriter(getInstance(conf.outputProfile), conf.outputProps("keyspace"), conf.outputProps("table")).writer[SpatialKey, MultibandTile, TileLayerMetadata[SpatialKey]](conf.output.getKeyIndexMethod[SpatialKey])
 }

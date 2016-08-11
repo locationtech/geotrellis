@@ -27,7 +27,7 @@ case class Output(
   encoding: Option[String] = None,
   breaks: Option[String] = None,
   maxZoom: Option[Int] = None
-) {
+) extends Serializable {
   def params = getParams(backend.`type`, backend.path)
 
   def getCrs = crs.map(CRS.fromName)
@@ -44,16 +44,14 @@ case class Output(
     case _ => throw new Exception("unsupported layout definition")
   }
 
-  private def _getKeyIndexMethod: KeyIndexMethod[_] = (keyIndexMethod.`type`, keyIndexMethod.temporalResolution) match {
+  def getKeyIndexMethod[K] = ((keyIndexMethod.`type`, keyIndexMethod.temporalResolution) match {
     case ("rowmajor", None)    => RowMajorKeyIndexMethod
     case ("hilbert", None)     => HilbertKeyIndexMethod
     case ("hilbert", Some(tr)) => HilbertKeyIndexMethod(tr.toInt)
     case ("zorder", None)      => ZCurveKeyIndexMethod
     case ("zorder", Some(tr))  => ZCurveKeyIndexMethod.byMilliseconds(tr)
     case _                     => throw new Exception("unsupported keyIndexMethod definition")
-  }
-
-  def getKeyIndexMethod[K] = _getKeyIndexMethod.asInstanceOf[KeyIndexMethod[K]]
+  }).asInstanceOf[KeyIndexMethod[K]]
 
   def getPyramidOptions = Pyramid.Options(resampleMethod, partitions.map(new HashPartitioner(_)))
 }

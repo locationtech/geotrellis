@@ -2,13 +2,13 @@ package geotrellis.spark.etl.accumulo
 
 import geotrellis.raster.MultibandTile
 import geotrellis.spark._
-import geotrellis.spark.etl.EtlJob
+import geotrellis.spark.etl.config.EtlConf
 import geotrellis.spark.io._
 import geotrellis.spark.io.accumulo.AccumuloLayerWriter
 
 import org.apache.spark.SparkContext
 
 class MultibandSpaceTimeAccumuloOutput extends AccumuloOutput[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]] {
-  def writer(job: EtlJob)(implicit sc: SparkContext) =
-    AccumuloLayerWriter(getInstance(job.conf.outputProfile), job.outputProps("table"), strategy(job.outputProps)).writer[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]](job.conf.output.getKeyIndexMethod[SpaceTimeKey])
+  def writer(conf: EtlConf)(implicit sc: SparkContext) =
+    AccumuloLayerWriter(getInstance(conf.outputProfile), conf.outputProps("table"), strategy(conf.outputProps)).writer[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]](conf.output.getKeyIndexMethod[SpaceTimeKey])
 }

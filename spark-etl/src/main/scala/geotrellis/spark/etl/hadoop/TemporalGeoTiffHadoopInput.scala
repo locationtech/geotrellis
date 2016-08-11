@@ -4,17 +4,17 @@ import geotrellis.raster.Tile
 import geotrellis.spark.ingest._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark._
-import geotrellis.spark.etl.EtlJob
+import geotrellis.spark.etl.config.EtlConf
 import geotrellis.spark.io.hadoop.formats.TemporalGeoTiffInputFormat
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 class TemporalGeoTiffHadoopInput extends HadoopInput[TemporalProjectedExtent, Tile] {
   val format = "temporal-geotiff"
-  def apply(job: EtlJob)(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, Tile)] =
+  def apply(conf: EtlConf)(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, Tile)] =
     sc.hadoopTemporalGeoTiffRDD(
-      path       = job.inputProps("path"),
-      timeTag    = job.conf.output.keyIndexMethod.timeTag.getOrElse(TemporalGeoTiffInputFormat.GEOTIFF_TIME_TAG_DEFAULT),
-      timeFormat = job.conf.output.keyIndexMethod.timeFormat.getOrElse(TemporalGeoTiffInputFormat.GEOTIFF_TIME_FORMAT_DEFAULT)
+      path       = conf.inputProps("path"),
+      timeTag    = conf.output.keyIndexMethod.timeTag.getOrElse(TemporalGeoTiffInputFormat.GEOTIFF_TIME_TAG_DEFAULT),
+      timeFormat = conf.output.keyIndexMethod.timeFormat.getOrElse(TemporalGeoTiffInputFormat.GEOTIFF_TIME_FORMAT_DEFAULT)
     )
 }

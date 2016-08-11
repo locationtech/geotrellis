@@ -109,6 +109,25 @@ trait ConfigFormats {
       }
   }
 
+  implicit object BackendProfilesReader extends RootJsonReader[Map[String, BackendProfile]] {
+    def read(value: JsValue): Map[String, BackendProfile] =
+      value.asJsObject.getFields("backend-profiles") match {
+        case Seq(bp: JsArray) =>
+          bp.elements.map { js: JsValue =>
+            js.asJsObject.getFields("name", "type") match {
+              case Seq(JsString(n), JsString(t)) => n -> (BackendType.fromString(t) match {
+                case HadoopType => js.convertTo[HadoopProfile]
+                case S3Type => js.convertTo[S3Profile]
+                case AccumuloType => js.convertTo[AccumuloProfile]
+                case CassandraType => js.convertTo[CassandraProfile]
+              })
+              case _ =>
+                throw new DeserializationException("BackendProfiles must be a valid json object.")
+            }
+          }.toMap
+      }
+  }
+
   implicit val accumuloProfileFormat  = jsonFormat6(AccumuloProfile)
   implicit val hbaseProfileFormat     = jsonFormat3(HBaseProfile)
   implicit val cassandraProfileFormat = jsonFormat9(CassandraProfile)
@@ -116,8 +135,6 @@ trait ConfigFormats {
   implicit val s3ProfileFormat        = jsonFormat2(S3Profile)
   implicit val backendFormat          = jsonFormat3(Backend)
   implicit val ingestKeyIndexFormat   = jsonFormat4(IngestKeyIndexMethod)
-  implicit val ingestTypeFormat       = jsonFormat3(IngestType)
-  implicit val ingestOutputTypeFormat = jsonFormat2(IngestOutputType)
   implicit val outputFormat           = jsonFormat16(Output)
   implicit val inputFormat            = jsonFormat5(Input)
 }

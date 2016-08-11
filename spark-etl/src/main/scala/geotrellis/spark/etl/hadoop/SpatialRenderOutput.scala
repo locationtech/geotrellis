@@ -4,14 +4,15 @@ import java.math.BigInteger
 
 import geotrellis.raster.Tile
 import geotrellis.raster.render._
-import geotrellis.spark.etl.{EtlJob, OutputPlugin}
+import geotrellis.spark.etl.OutputPlugin
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark._
-import geotrellis.spark.etl.config.Backend
+import geotrellis.spark.etl.config.{Backend, EtlConf}
 import geotrellis.spark.render._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.s3._
 import org.apache.hadoop.conf.ConfServlet.BadFormatException
+
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
@@ -20,7 +21,7 @@ import scala.reflect._
 class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetadata[SpatialKey]] {
   def name = "render"
   def key = classTag[SpatialKey]
-  def attributes(job: EtlJob) = null
+  def attributes(conf: EtlConf) = null
   /**
    * Parses to a ColorMap a string of limits and their colors in hex RGBA
    * Only used for rendering PNGs
@@ -45,20 +46,20 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetada
   override def apply(
     id: LayerId,
     rdd: RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]],
-    job: EtlJob
+    conf: EtlConf
   ): Unit = {
-    val useS3 = job.outputProps("path").take(5) == "s3://"
+    val useS3 = conf.outputProps("path").take(5) == "s3://"
     val images =
-      job.conf.output.encoding.get.toLowerCase match {
+      conf.output.encoding.get.toLowerCase match {
           case "png" =>
-            parseColorMaps(job.conf.output.breaks) match {
+            parseColorMaps(conf.output.breaks) match {
               case Some(colorMap) =>
                 rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderPng(colorMap).mapValues(_.bytes)
               case None =>
                 rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderPng().mapValues(_.bytes)
             }
           case "jpg" =>
-            parseColorMaps(job.conf.output.breaks) match {
+            parseColorMaps(conf.output.breaks) match {
               case Some(colorMap) =>
                 rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderJpg(colorMap).mapValues(_.bytes)
               case None =>
@@ -69,14 +70,14 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetada
         }
 
     if (useS3) {
-      val keyToPath = SaveToS3.spatialKeyToPath(id, job.outputProps("path"))
+      val keyToPath = SaveToS3.spatialKeyToPath(id, conf.outputProps("path"))
       images.saveToS3(keyToPath)
     }
     else {
-      val keyToPath = SaveToHadoop.spatialKeyToPath(id, job.outputProps("path"))
+      val keyToPath = SaveToHadoop.spatialKeyToPath(id, conf.outputProps("path"))
       images.saveToHadoop(keyToPath)
     }
   }
 
-  def writer(job: EtlJob)(implicit sc: SparkContext) = ???
+  def writer(conf: EtlConf)(implicit sc: SparkContext) = ???
 }
