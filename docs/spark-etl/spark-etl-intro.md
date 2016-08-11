@@ -32,9 +32,8 @@ object GeoTrellisETL {
 
     try {
       EtlConf(args) foreach { conf =>
-        val job = EtlJob(conf)
         /* parse command line arguments */
-        val etl = Etl(job, modules)
+        val etl = Etl(conf, modules)
         /* load source tiles using input module specified */
         val sourceTiles = etl.load[I, V]
         /* perform the reprojection and mosaicing step to fit tiles to LayoutScheme specified */
@@ -49,7 +48,7 @@ object GeoTrellisETL {
 }
 ```
 
-### User defined ETL jobs
+### User defined ETL configs
 
 The above sample application can be placed in a new SBT project that
 has a dependency on `"com.azavea.geotrellis" %% "geotrellis-spark-etl" % s"$VERSION"`
@@ -59,9 +58,9 @@ with `sbt-assembly` plugin. You should be careful to include a
 [spark-etl build file](build.sbt).
 
 At this point you would create a seperate `App` object for each one
-of your ETL jobs.
+of your ETL configs.
 
-### Build-in ETL jobs
+### Build-in ETL configs
 
 For convinence and as an example the `spark-etl` project provides two
 `App` objects that perform vanilla ETL:
