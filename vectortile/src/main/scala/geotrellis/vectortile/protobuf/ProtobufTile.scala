@@ -24,16 +24,34 @@ import vector_tile.vector_tile.Tile.GeomType.{POINT, LINESTRING, POLYGON}
 
 // --- //
 
+/**
+  * A concrete representation of a VectorTile, as one decoded from Protobuf
+  * bytes. This is the original/default type of VectorTile.
+  *
+  * {{{
+  * import geotrellis.vectortile.protobuf._
+  *
+  * val bytes: Array[Byte] = ...
+  * val tile: VectorTile = ProtobufTile.fromBytes(bytes)
+  * }}}
+  *
+  * @constructor This is not meant to be called directly. See this class's
+  * companion object for the available helper methods.
+  */
 case class ProtobufTile(
   layers: Map[String, ProtobufLayer]
 ) extends VectorTile {
+  /** Encode this VectorTile back into a mid-level Protobuf object. */
   def toProtobuf: vt.Tile =
     vt.Tile(layers = layers.values.map(_.toProtobuf).toSeq)
+
+  /** Encode this VectorTile back into its original form of Protobuf bytes. */
+  def toBytes: Array[Byte] = toProtobuf.toByteArray
 }
 
 object ProtobufTile {
   /** Create a ProtobufTile masked as its parent trait. */
-  def apply(tile: vt.Tile): VectorTile = {
+  def fromPBTile(tile: vt.Tile): VectorTile = {
     val layers: Map[String, ProtobufLayer] = tile.layers.map({ l =>
       val pbl = ProtobufLayer(l)
 
@@ -43,8 +61,9 @@ object ProtobufTile {
     new ProtobufTile(layers)
   }
 
-  def apply(bytes: Array[Byte]): VectorTile = {
-    apply(Protobuf.decode(bytes))
+  /** Create a [[VectorTile]] from raw Protobuf bytes. */
+  def fromBytes(bytes: Array[Byte]): VectorTile = {
+    fromPBTile(vt.Tile.parseFrom(bytes))
   }
 }
 
