@@ -7,7 +7,7 @@ package object cassandra {
   private[cassandra] def getInstance(bp: Option[BackendProfile]): CassandraInstance =
     bp.collect { case bp: CassandraProfile => bp.getInstance }.get
 
-  private[cassandra] def getPath(b: Backend): CassandraPath =
+  def getPath(b: Backend): CassandraPath =
     b.path match {
       case p: CassandraPath => p
       case _ => throw new Exception("Path string not corresponds backend type")

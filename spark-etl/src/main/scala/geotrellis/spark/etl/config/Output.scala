@@ -42,14 +42,14 @@ case class Output(
     case _ => throw new Exception("unsupported layout definition")
   }
 
-  def getKeyIndexMethod[K] = ((keyIndexMethod.`type`, keyIndexMethod.temporalResolution) match {
+  def getKeyIndexMethod[K] = (((keyIndexMethod.`type`, keyIndexMethod.temporalResolution) match {
     case ("rowmajor", None)    => RowMajorKeyIndexMethod
     case ("hilbert", None)     => HilbertKeyIndexMethod
     case ("hilbert", Some(tr)) => HilbertKeyIndexMethod(tr.toInt)
     case ("zorder", None)      => ZCurveKeyIndexMethod
     case ("zorder", Some(tr))  => ZCurveKeyIndexMethod.byMilliseconds(tr)
     case _                     => throw new Exception("unsupported keyIndexMethod definition")
-  }).asInstanceOf[KeyIndexMethod[K]]
+  }): KeyIndexMethod[_]).asInstanceOf[KeyIndexMethod[K]]
 
   def getPyramidOptions = Pyramid.Options(resampleMethod, partitions.map(new HashPartitioner(_)))
 }
