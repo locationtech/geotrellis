@@ -26,52 +26,73 @@ import vector_tile.{vector_tile => vt}
   * key/value lists. So, for an example MultiPoint Feature of fire hydrant locations,
   * its metadata could look like:
   *
+  * {{{
   * { name: "Hydrants",
   *   colour: "red",
   *   model: 5
   * }
+  *}}}
   *
   * That's fine if interpreted as JSON, but bad as Scala, as it doesn't give us
   * a clean `Map[String, ConcreteTypeHere]`. Furthermore, Features within the
   * same Layer don't have to agree on the Value type for the same key:
   *
+  * {{{
   * { name: "Stop lights",
   *   colour: 1,
   *   model: "ABC-123"
   * }
+  * }}}
   *
+  * Nor, actually, do Layers have to agree on key sets for their Features.
   * The sealed trait `Value` here and its extensions aim to provide some
-  * type safety in light of the situation described above.
+  * type safety in light of the situation described here.
   *
   */
 sealed trait Value {
-  def unval: vt.Tile.Value
+  /** Encode this Value back into a mid-level Protobuf object. */
+  def toProtobuf: vt.Tile.Value
 }
 
-case class St(v: String) extends Value {
-  def unval: vt.Tile.Value = vt.Tile.Value().withStringValue(v)
+/** A wrapper for `String` to allow all `Value` subtypes to be stored in
+  * the same Map.
+  */
+case class St(value: String) extends Value {
+  def toProtobuf: vt.Tile.Value = vt.Tile.Value().withStringValue(value)
 }
-
-case class Fl(v: Float) extends Value {
-  def unval: vt.Tile.Value = vt.Tile.Value().withFloatValue(v)
+/** A wrapper for `Float` to allow all `Value` subtypes to be stored in
+  * the same Map.
+  */
+case class Fl(value: Float) extends Value {
+  def toProtobuf: vt.Tile.Value = vt.Tile.Value().withFloatValue(value)
 }
-
-case class Do(v: Double) extends Value {
-  def unval: vt.Tile.Value = vt.Tile.Value().withDoubleValue(v)
+/** A wrapper for `Double` to allow all `Value` subtypes to be stored in
+  * the same Map.
+  */
+case class Do(value: Double) extends Value {
+  def toProtobuf: vt.Tile.Value = vt.Tile.Value().withDoubleValue(value)
 }
-
-case class I64(v: Long) extends Value {
-  def unval: vt.Tile.Value = vt.Tile.Value().withIntValue(v)
+/** A wrapper for `Long` to allow all `Value` subtypes to be stored in
+  * the same Map.
+  */
+case class I64(value: Long) extends Value {
+  def toProtobuf: vt.Tile.Value = vt.Tile.Value().withIntValue(value)
 }
-
-case class W64(v: Long) extends Value {
-  def unval: vt.Tile.Value = vt.Tile.Value().withUintValue(v)
+/** A wrapper for unsigned, 64-bit ints to allow all `Value` subtypes to be
+  * stored in the same Map.
+  */
+case class W64(value: Long) extends Value {
+  def toProtobuf: vt.Tile.Value = vt.Tile.Value().withUintValue(value)
 }
-
-case class S64(v: Long) extends Value {
-  def unval: vt.Tile.Value = vt.Tile.Value().withSintValue(v)
+/** A wrapper for zig-zag encoded ints to allow all `Value` subtypes to be
+  * stored in the same Map.
+  */
+case class S64(value: Long) extends Value {
+  def toProtobuf: vt.Tile.Value = vt.Tile.Value().withSintValue(value)
 }
-
-case class Bo(v: Boolean) extends Value {
-  def unval: vt.Tile.Value = vt.Tile.Value().withBoolValue(v)
+/** A wrapper for `Boolean` to allow all `Value` subtypes to be stored in
+  * the same Map.
+  */
+case class Bo(value: Boolean) extends Value {
+  def toProtobuf: vt.Tile.Value = vt.Tile.Value().withBoolValue(value)
 }

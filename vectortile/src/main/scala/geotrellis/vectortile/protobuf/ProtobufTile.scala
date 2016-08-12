@@ -222,7 +222,7 @@ case class ProtobufLayer(
       multiPolygons.map(f => unfeature(keys, values, POLYGON, pgy.toCommands(Right(f.geom)), f.data))
     ).flatten
 
-    vt.Tile.Layer(version, name, features, keys, values.map(_.unval), Some(extent))
+    vt.Tile.Layer(version, name, features, keys, values.map(_.toProtobuf), Some(extent))
   }
 
   private def totalMeta: (Seq[String], Seq[Value]) = {

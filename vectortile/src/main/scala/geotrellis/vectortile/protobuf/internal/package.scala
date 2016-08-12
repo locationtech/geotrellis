@@ -18,19 +18,19 @@ package geotrellis.vectortile.protobuf
 
 import geotrellis.vector._
 import geotrellis.vectortile.protobuf.internal.ProtobufGeom
-import scala.collection.mutable.ListBuffer
+
 import vector_tile.{vector_tile => vt}
 
+import com.vividsolutions.jts.geom.LineString
+import java.lang.IllegalArgumentException
 import scala.annotation.tailrec
+import scala.collection.mutable.ListBuffer
 
 // --- //
 
-case class IncompatibleCommandSequence(e: String) extends Exception
-
 package object internal {
 
-  import com.vividsolutions.jts.geom.LineString
-  import java.lang.IllegalArgumentException
+  case class IncompatibleCommandSequence(e: String) extends Exception
 
   /**
    * Expand a collection of diffs from some reference point into that

@@ -45,16 +45,24 @@ import scala.annotation.tailrec
   * ClosePath does not move the cursor, but may in future versions of the spec.
   *
   * Caveats:
-  * - Point features, whether single or multi, will always consist of a single MoveTo.
-  * - Any Polygon in a Polygon feature must have a LineTo with a count of at least 2.
-  * - ClosePath must always have a parameter count of 1.
+  *  - Point features, whether single or multi, will always consist of a single MoveTo.
+  *  - Any Polygon in a Polygon feature must have a LineTo with a count of at least 2.
+  *  - ClosePath must always have a parameter count of 1.
   */
 sealed trait Command
 
+/** `MoveTo` signals a series of moves from the current cursor (default of `(0,0)`).
+  * The parameter pairs that follow don't represent a point to move to,
+  * but instead are deltas from the current cursor.
+  */
 case class MoveTo(deltas: Array[(Int,Int)]) extends Command
 
+/** `LineTo` indicates that a LineString should be continued from the current
+  * cursor.
+  */
 case class LineTo(deltas: Array[(Int,Int)]) extends Command
 
+/** Signals the end of a Polygon. Never has parameters, and doesn't move the cursor. */
 case object ClosePath extends Command
 
 case class InvalidCommand(id: Int, count: Int) extends Exception
