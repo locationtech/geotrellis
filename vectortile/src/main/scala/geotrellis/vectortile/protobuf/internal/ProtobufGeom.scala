@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.vectortile.protobuf
+package geotrellis.vectortile.protobuf.internal
 
 import geotrellis.vector.{ Geometry, MultiGeometry }
 
@@ -29,7 +29,9 @@ import geotrellis.vector.{ Geometry, MultiGeometry }
   * Instances can be found in the package object.
   *
   * Usage:
+  * {{{
   * implicitly[ProtobufGeom[Point, MultiPoint]].fromCommands(Command.commands(Seq(9,2,2)))
+  * }}}
   */
 trait ProtobufGeom[G1 <: Geometry, G2 <: MultiGeometry] {
   def fromCommands(cmds: Seq[Command]): Either[G1, G2]

@@ -18,6 +18,7 @@ package geotrellis.vectortile.protobuf
 
 import geotrellis.vector._
 import geotrellis.vectortile.{Layer, VectorTile}
+import geotrellis.vectortile.protobuf.internal._
 import scala.collection.mutable.ListBuffer
 import vector_tile.{vector_tile => vt}
 import vector_tile.vector_tile.Tile.GeomType.{POINT, LINESTRING, POLYGON}
@@ -68,15 +69,20 @@ object ProtobufTile {
 }
 
 /**
- * Wild, unbased assumption of VT Features: their `id` values can be ignored
- * at read time, and rewritten as anything at write time.
- */
+  * A [[Layer]] decoded from Protobuf data. All of its Features are decoded
+  * lazily, making for very fast extraction of single features/geometries.
+  *
+  */
+// Wild, unbased assumption of VT Features: their `id` values can be ignored
+// at read time, and rewritten as anything at write time.
 case class ProtobufLayer(
-  rawLayer: vt.Tile.Layer
+  private val rawLayer: vt.Tile.Layer
 ) extends Layer {
   /* Expected fields */
   def name: String = rawLayer.name
   def extent: Int = rawLayer.extent.getOrElse(4096)
+
+  /** The version of the specification that this Layer adheres to. */
   def version: Int = rawLayer.version
 
   def features: Seq[Feature[Geometry, Map[String, Value]]] = {
@@ -190,6 +196,7 @@ case class ProtobufLayer(
     (points, lines, polys)
   }
 
+  /** Encode this Layer back into a mid-level Protobuf object. */
   def toProtobuf: vt.Tile.Layer = {
     // TODO Where should these be?
     val pgp = implicitly[ProtobufGeom[Point, MultiPoint]]

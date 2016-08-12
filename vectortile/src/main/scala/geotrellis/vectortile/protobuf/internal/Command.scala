@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.vectortile.protobuf
+package geotrellis.vectortile.protobuf.internal
 
 import scala.collection.mutable.ListBuffer
 import scala.annotation.tailrec
@@ -25,6 +25,7 @@ import scala.annotation.tailrec
   * There are currently three legal Commands: MoveTo, LineTo, and ClosePath.
   * Each adhere to the following format:
   *
+  * {{{
   * [ ... 00000 | 000 ]
   * -------------------
   *       |        |
@@ -37,6 +38,7 @@ import scala.annotation.tailrec
   *           that follow that should be interpreted as Z-encoded
   *           deltas from the current "cursor".
   *
+  * }}}
   * The "cursor" is the location of the current vertex being considered,
   * and it starts at (0,0) for each Feature. As MoveTo and LineTo commands
   * are read, the cursor moves according the list of parsed delta pairs.

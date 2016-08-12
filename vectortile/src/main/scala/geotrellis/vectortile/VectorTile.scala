@@ -23,27 +23,56 @@ import geotrellis.vectortile.protobuf.Value
 
 /** A high-level representation of a Vector Tile. At its simplest, a Tile is
   * just a collection of Layers. We opt to expose each Layer name at the Tile
-  * level. This way, if the layer names are known by the user ahead of time,
-  * they can search through the Tile quickly.
+  * level, as the keys of a [[Map]]. This way, if the layer names are known by
+  * the user ahead of time, they can search through the Tile quickly.
+  *
+  * Vector Tiles are originally defined by Mapbox, and follow a public
+  * specification, found here:
+  * [[https://github.com/mapbox/vector-tile-spec/tree/master/2.1]]
+  *
+  * Traditionally, VectorTiles are encoded as Protobuf data, which this library
+  * provides a codec for. However, by making this top-level type a trait, we
+  * are able to define alternative backends (GeoJson, for instance).
+  *
+  * See [[geotrellis.vectortile.protobuf.ProtobufTile]] for more information.
+  *
+  * @author cwoodbury@azavea.com
+  * @version 2.1
   */
 trait VectorTile {
+  /** Every Layer in this Tile, with its name as a lookup key. */
   val layers: Map[String, Layer]
 }
 
-/** A layer, which could contain any number of Features of any Geometry type. */
+/** A layer, which could contain any number of Features of any Geometry type.
+  * Here, "Feature" and "Geometry" refer specifically to the Geotrellis classes
+  * of the same names.
+  */
 trait Layer {
-  type Data = Map[String, Value]  // Temporary.
-
+  /** The layer's name. */
   def name: String
+
+  /** The width/height of this Layer's coordinate grid. By default this is 4096,
+    * as per the VectorTile specification.
+    *
+    * Not to be confused with a [[geotrellis.vector.Extent]], which represents
+    * some projected area on a map.
+    */
   def extent: Int
 
-  def points: Seq[Feature[Point, Data]]
-  def multiPoints: Seq[Feature[MultiPoint, Data]]
-  def lines: Seq[Feature[Line, Data]]
-  def multiLines: Seq[Feature[MultiLine, Data]]
-  def polygons: Seq[Feature[Polygon, Data]]
-  def multiPolygons: Seq[Feature[MultiPolygon, Data]]
+  /** Every Point Feature in this Layer. */
+  def points: Seq[Feature[Point, Map[String, Value]]]
+  /** Every MultiPoint Feature in this Layer. */
+  def multiPoints: Seq[Feature[MultiPoint, Map[String, Value]]]
+  /** Every Line Feature in this Layer. */
+  def lines: Seq[Feature[Line, Map[String, Value]]]
+  /** Every MultiLine Feature in this Layer. */
+  def multiLines: Seq[Feature[MultiLine, Map[String, Value]]]
+  /** Every Polygon Feature in this Layer. */
+  def polygons: Seq[Feature[Polygon, Map[String, Value]]]
+  /** Every MultiPolygon Feature in this Layer. */
+  def multiPolygons: Seq[Feature[MultiPolygon, Map[String, Value]]]
 
-  /** All Features of Single and Multi Geometries */
-  def features: Seq[Feature[Geometry, Data]]
+  /** All Features of Single and Multi Geometries. */
+  def features: Seq[Feature[Geometry, Map[String, Value]]]
 }

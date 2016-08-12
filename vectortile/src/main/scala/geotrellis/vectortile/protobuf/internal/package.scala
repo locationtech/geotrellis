@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package geotrellis.vectortile
+package geotrellis.vectortile.protobuf
 
 import geotrellis.vector._
-import geotrellis.vectortile.protobuf.ProtobufGeom
+import geotrellis.vectortile.protobuf.internal.ProtobufGeom
 import scala.collection.mutable.ListBuffer
 import vector_tile.{vector_tile => vt}
 
@@ -27,7 +27,7 @@ import scala.annotation.tailrec
 
 case class IncompatibleCommandSequence(e: String) extends Exception
 
-package object protobuf {
+package object internal {
 
   import com.vividsolutions.jts.geom.LineString
   import java.lang.IllegalArgumentException
