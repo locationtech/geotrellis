@@ -9,7 +9,7 @@ import org.scalatest._
 
 object EtlSpec {
   // Test that ETL module can be instantiated in convenient ways
-  val profiles = BackendProfiles(
+  val profiles = List(
     AccumuloProfile("accumulo-name", "instance", "zookeepers", "user", "password"),
     CassandraProfile("name", "hosts", "user", "password"),
     HBaseProfile("hbase-name", "zookeepers", "master")
@@ -31,7 +31,7 @@ object EtlSpec {
     Output(
       backend = Backend(
         `type` = AccumuloType,
-        profile = Some("accumulo-name"),
+        profile = Some(profiles.head),
         path = "output"
       ),
       resampleMethod = NearestNeighbor,
@@ -54,10 +54,9 @@ object EtlSpec {
   val etlConf = new EtlConf(
     input  = input,
     output = output,
-    outputProfile = Some(profiles.backendProfiles.head)
+    outputProfile = Some(profiles.head)
   )
 
-  val etlJob = EtlJob(etlConf)
-  Etl(etlJob)
-  Etl(etlJob, List(s3.S3Module, hadoop.HadoopModule))
+  Etl(etlConf)
+  Etl(etlConf, List(s3.S3Module, hadoop.HadoopModule))
 }

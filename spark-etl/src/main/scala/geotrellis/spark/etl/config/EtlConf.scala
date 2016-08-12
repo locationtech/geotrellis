@@ -106,26 +106,15 @@ object EtlConf {
     }
 
     val backendProfilesParsed = backendProfiles.parseJson.convertTo[Map[String, BackendProfile]]
-
-    val inputsParsed = input.parseJson.convertTo[List[Input]]
-
-    val outputParsed = output.parseJson.convertTo[Output]
+    val inputsParsed = InputsFormat(backendProfilesParsed).read(input.parseJson)
+    val outputParsed = OutputFormat(backendProfilesParsed).read(output.parseJson)
 
     inputsParsed.map { inputParsed =>
-      val inputProfile = inputParsed.backend.profile match {
-        case Some(s) => backendProfilesParsed.get(s)
-        case _       => None
-      }
-      val outputProfile = outputParsed.backend.profile match {
-        case Some(s) => backendProfilesParsed.get(s)
-        case _       => None
-      }
-
       new EtlConf(
         input         = inputParsed,
         output        = outputParsed,
-        inputProfile  = inputProfile,
-        outputProfile = outputProfile
+        inputProfile  = inputParsed.backend.profile,
+        outputProfile = outputParsed.backend.profile
       )
     }
   }
