@@ -19,9 +19,12 @@ package geotrellis.vectortile.protobuf
 import geotrellis.vector._
 import geotrellis.vectortile.{Layer, VectorTile}
 import geotrellis.vectortile.protobuf.internal._
-import scala.collection.mutable.ListBuffer
+import geotrellis.spark.SpatialKey
+//import geotrellis.spark.tiling.LayoutDefinition
 import vector_tile.{vector_tile => vt}
 import vector_tile.vector_tile.Tile.GeomType.{POINT, LINESTRING, POLYGON}
+
+import scala.collection.mutable.ListBuffer
 
 // --- //
 
@@ -62,8 +65,13 @@ object ProtobufTile {
     new ProtobufTile(layers)
   }
 
-  /** Create a [[VectorTile]] from raw Protobuf bytes. */
-  def fromBytes(bytes: Array[Byte]): VectorTile = {
+  /** Create a [[VectorTile]] from raw Protobuf bytes.
+    *
+    * @param bytes  Raw Protobuf bytes from a `.mvt` file or otherwise.
+    * @param key    A key representing where in the Tile grid ''this'' Tile sits.
+    * @param layout A description of the parent Extent and Tile grid.
+    */
+  def fromBytes(bytes: Array[Byte]): VectorTile = {  //, key: SpatialKey, layout: LayoutDefinition): VectorTile = {
     fromPBTile(vt.Tile.parseFrom(bytes))
   }
 }

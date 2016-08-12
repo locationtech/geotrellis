@@ -34,7 +34,22 @@ import geotrellis.vectortile.protobuf.Value
   * provides a codec for. However, by making this top-level type a trait, we
   * are able to define alternative backends (GeoJson, for instance).
   *
-  * See [[geotrellis.vectortile.protobuf.ProtobufTile]] for more information.
+  * See [[geotrellis.vectortile.protobuf.ProtobufTile]] for more information
+  * on how to decode and encode VectorTiles.
+  *
+  * ===Assumptions===
+  * This particular implementation of the VectorTile spec makes the following
+  * assumptions:
+  *   - Geometries are implicitely encoded in ''some'' Coordinate Reference
+  *     system. That is, there is no such thing as a "projectionless" VectorTile.
+  *     When we decode, we provide a Geotrellis `Extent` in some CRS, and the
+  *     grid coordinates stored in each Tile's Geometry are shifted from their
+  *     original [0,4096] range to actual world coordinates in the Extent's CRS.
+  *   - The `id` field in VectorTile Features doesn't matter.
+  *   - If a VectorTile `geometry` list marked as `POINT` has only one pair
+  *     of coordinates, it will be decoded as a Geotrellis `Point`. If it has
+  *     more than one pair, it will be decoded as a `MultiPoint`. Likewise for
+  *     the `LINESTRING` and `POLYGON` types.
   *
   * @author cwoodbury@azavea.com
   * @version 2.1
