@@ -7,5 +7,8 @@ import geotrellis.spark.io.s3.S3AttributeStore
 trait S3Output[K, V, M] extends OutputPlugin[K, V, M] {
   val name = "s3"
 
-  def attributes(conf: EtlConf) = S3AttributeStore(conf.output.params("bucket"), conf.output.params("key"))
+  def attributes(conf: EtlConf) = {
+    val path = getPath(conf.output.backend)
+    S3AttributeStore(path.bucket, path.prefix)
+  }
 }

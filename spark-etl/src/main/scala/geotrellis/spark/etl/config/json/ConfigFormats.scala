@@ -5,10 +5,11 @@ import geotrellis.raster.{CellSize, CellType}
 import geotrellis.raster.resample._
 import geotrellis.spark.etl.config._
 import geotrellis.vector.Extent
-
 import org.apache.spark.storage.StorageLevel
 import spray.json._
 import spray.json.DefaultJsonProtocol._
+
+import scala.util.matching.Regex
 
 trait ConfigFormats {
   implicit object CellTypeFormat extends RootJsonFormat[CellType] {
@@ -135,18 +136,52 @@ trait ConfigFormats {
   implicit val s3ProfileFormat        = jsonFormat3(S3Profile)
   implicit val ingestKeyIndexFormat   = jsonFormat4(IngestKeyIndexMethod)
 
+  case class BackendPathFormat(bt: BackendType) extends RootJsonFormat[BackendPath] {
+    val idRx = "[A-Z0-9]{20}"
+    val keyRx = "[a-zA-Z0-9+/]+={0,2}"
+    val slug = "[a-zA-Z0-9-]+"
+    val S3UrlRx = new Regex(s"""s3://(?:($idRx):($keyRx)@)?($slug)/{0,1}(.*)""", "aws_id", "aws_key", "bucket", "prefix")
+
+    def write(bp: BackendPath): JsValue = bp.toString.toJson
+    def read(value: JsValue): BackendPath =
+      value match {
+        case p: JsString => {
+          val path = p.convertTo[String]
+          bt match {
+            case AccumuloType  => AccumuloPath(path)
+            case HBaseType     => HBasePath(path)
+            case CassandraType => {
+              val List(keyspace, table) = path.split("\\.").toList
+              CassandraPath(keyspace, table)
+            }
+            case S3Type => {
+              val S3UrlRx(_, _, bucket, prefix) = path
+              Map("bucket" -> bucket, "key" -> prefix)
+              S3Path(path, bucket, prefix)
+            }
+            case HadoopType | FileType          => HadoopPath(path)
+            case UserDefinedBackendType(s)      => UserDefinedPath(path)
+            case UserDefinedBackendInputType(s) => UserDefinedPath(path)
+          }
+        }
+        case _ =>
+          throw new DeserializationException("BackendPath must be a valid string.")
+      }
+  }
+
   case class BackendFormat(bp: Map[String, BackendProfile]) extends RootJsonFormat[Backend] {
     def write(b: Backend): JsValue = JsObject(
       "type"    -> b.`type`.name.toJson,
-      "path"    -> b.path.toJson,
+      "path"    -> BackendPathFormat(b.`type`).write(b.path),
       "profile" -> b.profile.map(_.name).toJson
     )
     def read(value: JsValue): Backend =
       value match {
         case JsObject(fields) =>
+          val bt = fields("type").convertTo[BackendType]
           Backend(
-            `type`  = fields("type").convertTo[BackendType],
-            path    = fields("path").convertTo[String],
+            `type`  = bt,
+            path    = BackendPathFormat(bt).read(fields("path")),
             profile = fields.get("profile").map(_.convertTo[String]).fold(Option.empty[BackendProfile])(bp.get)
           )
         case _ =>

@@ -28,8 +28,6 @@ case class Output(
   breaks: Option[String] = None,
   maxZoom: Option[Int] = None
 ) extends Serializable {
-  def params = getParams(backend.`type`, backend.path)
-
   def getCrs = crs.map(CRS.fromName)
 
   def getLayoutScheme: LayoutScheme = (layoutScheme, getCrs, resolutionThreshold) match {

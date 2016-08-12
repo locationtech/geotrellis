@@ -10,5 +10,5 @@ import org.apache.spark.SparkContext
 
 class MultibandSpaceTimeFileOutput extends FileOutput[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]] {
   def writer(conf: EtlConf)(implicit sc: SparkContext) =
-    FileLayerWriter(conf.output.params("path")).writer[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]](conf.output.getKeyIndexMethod[SpaceTimeKey])
+    FileLayerWriter(getPath(conf.output.backend).path).writer[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]](conf.output.getKeyIndexMethod[SpaceTimeKey])
 }

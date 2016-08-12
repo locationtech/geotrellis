@@ -9,6 +9,8 @@ import geotrellis.spark.io.cassandra.CassandraLayerWriter
 import org.apache.spark.SparkContext
 
 class SpaceTimeCassandraOutput extends CassandraOutput[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]] {
-  def writer(conf: EtlConf)(implicit sc: SparkContext) =
-    CassandraLayerWriter(getInstance(conf.outputProfile), conf.output.params("keyspace"), conf.output.params("table")).writer[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](conf.output.getKeyIndexMethod[SpaceTimeKey])
+  def writer(conf: EtlConf)(implicit sc: SparkContext) = {
+    val path = getPath(conf.output.backend)
+    CassandraLayerWriter(getInstance(conf.outputProfile), path.keyspace, path.table).writer[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](conf.output.getKeyIndexMethod[SpaceTimeKey])
+  }
 }

@@ -10,5 +10,5 @@ import org.apache.spark.SparkContext
 
 class SpaceTimeHBaseOutput extends HBaseOutput[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]] {
   def writer(conf: EtlConf)(implicit sc: SparkContext) =
-    HBaseLayerWriter(getInstance(conf.outputProfile), conf.output.params("table")).writer[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](conf.output.getKeyIndexMethod[SpaceTimeKey])
+    HBaseLayerWriter(getInstance(conf.outputProfile), getPath(conf.output.backend).table).writer[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](conf.output.getKeyIndexMethod[SpaceTimeKey])
 }

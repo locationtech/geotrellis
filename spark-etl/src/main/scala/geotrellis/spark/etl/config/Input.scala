@@ -8,6 +8,4 @@ case class Input(
   backend: Backend,
   cache: Option[StorageLevel] = None,
   noData: Option[Double] = None
-) extends Serializable {
-  def params = getParams(backend.`type`, backend.path)
-}
+) extends Serializable

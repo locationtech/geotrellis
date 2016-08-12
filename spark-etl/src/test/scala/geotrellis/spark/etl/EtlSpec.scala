@@ -23,7 +23,7 @@ object EtlSpec {
     backend = Backend(
       `type`  = HadoopType,
       profile = None,
-      path    = "input"
+      path    = HadoopPath("path")
     )
   )
 
@@ -32,7 +32,7 @@ object EtlSpec {
       backend = Backend(
         `type` = AccumuloType,
         profile = Some(profiles.head),
-        path = "output"
+        path = AccumuloPath("output")
       ),
       resampleMethod = NearestNeighbor,
       reprojectMethod = BufferedReproject,

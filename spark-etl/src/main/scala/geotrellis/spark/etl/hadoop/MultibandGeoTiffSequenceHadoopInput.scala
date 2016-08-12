@@ -12,7 +12,7 @@ class MultibandGeoTiffSequenceHadoopInput extends HadoopInput[ProjectedExtent, M
   val format = "multiband-geotiff-sequence"
   def apply(conf: EtlConf)(implicit sc: SparkContext): RDD[(ProjectedExtent, MultibandTile)] =
     sc
-      .sequenceFile[String, Array[Byte]](conf.input.params("path"))
+      .sequenceFile[String, Array[Byte]](getPath(conf.input.backend).path)
       .map { case (path, bytes) =>
         val geotiff = GeoTiffReader.readMultiband(bytes)
         (ProjectedExtent(geotiff.extent, geotiff.crs), geotiff.tile)

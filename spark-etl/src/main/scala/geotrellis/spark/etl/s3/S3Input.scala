@@ -16,9 +16,10 @@ abstract class S3Input[I, V] extends InputPlugin[I, V] {
       case Some(sp: S3Profile) => sp
       case _ => throw new Exception("Profile type not matches backend type")
     }
+    val path = getPath(input.backend)
     val job = Job.getInstance(sc.hadoopConfiguration, "S3 GeoTiff ETL")
-    S3InputFormat.setBucket(job, input.params("bucket"))
-    S3InputFormat.setPrefix(job, input.params("key"))
+    S3InputFormat.setBucket(job, path.bucket)
+    S3InputFormat.setPrefix(job, path.prefix)
     profile.partitionsCount.foreach(S3InputFormat.setPartitionCount(job, _))
     profile.partitionsBytes.foreach(S3InputFormat.setPartitionBytes(job, _))
     job.getConfiguration

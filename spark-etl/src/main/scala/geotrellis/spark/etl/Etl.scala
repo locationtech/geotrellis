@@ -52,7 +52,7 @@ object Etl {
 case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.defaultModules) {
 
   @transient lazy val logger: Logger = Logger(LoggerFactory getLogger getClass.getName)
-  val input = conf.input
+  val input  = conf.input
   val output = conf.output
 
   def scheme: Either[LayoutScheme, LayoutDefinition] = {

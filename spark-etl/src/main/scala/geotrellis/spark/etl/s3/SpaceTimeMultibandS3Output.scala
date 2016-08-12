@@ -9,6 +9,8 @@ import geotrellis.spark.io.s3._
 import org.apache.spark.SparkContext
 
 class SpaceTimeMultibandS3Output extends S3Output[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]] {
-  def writer(conf: EtlConf)(implicit sc: SparkContext) =
-    S3LayerWriter(conf.output.params("bucket"), conf.output.params("key")).writer[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]](conf.output.getKeyIndexMethod[SpaceTimeKey])
+  def writer(conf: EtlConf)(implicit sc: SparkContext) = {
+    val path = getPath(conf.output.backend)
+    S3LayerWriter(path.bucket, path.prefix).writer[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]](conf.output.getKeyIndexMethod[SpaceTimeKey])
+  }
 }

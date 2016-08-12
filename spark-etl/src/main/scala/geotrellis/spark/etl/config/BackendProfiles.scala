@@ -32,7 +32,7 @@ case class CassandraProfile(name: String, hosts: String, user: String, password:
     allowRemoteDCsForLocalConsistencyLevel
   )
 }
-case class AccumuloProfile(name: String, instance: String, zookeepers: String, user: String, password: String, strategy: Option[String] = None, ingestPath: Option[String]) extends BackendProfile {
+case class AccumuloProfile(name: String, instance: String, zookeepers: String, user: String, password: String, strategy: Option[String] = None, ingestPath: Option[String] = None) extends BackendProfile {
   def `type` = AccumuloType
   def token = new PasswordToken(password)
 

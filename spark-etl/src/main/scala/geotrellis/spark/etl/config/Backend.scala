@@ -1,3 +1,3 @@
 package geotrellis.spark.etl.config
 
-case class Backend(`type`: BackendType, path: String, profile: Option[BackendProfile] = None)
+case class Backend(`type`: BackendType, path: BackendPath, profile: Option[BackendProfile] = None)

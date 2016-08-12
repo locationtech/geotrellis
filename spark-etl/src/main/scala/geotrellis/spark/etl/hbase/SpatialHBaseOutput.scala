@@ -10,5 +10,5 @@ import org.apache.spark.SparkContext
 
 class SpatialHBaseOutput extends HBaseOutput[SpatialKey, Tile, TileLayerMetadata[SpatialKey]] {
   def writer(conf: EtlConf)(implicit sc: SparkContext) =
-    HBaseLayerWriter(getInstance(conf.outputProfile), conf.output.params("table")).writer[SpatialKey, Tile, TileLayerMetadata[SpatialKey]](conf.output.getKeyIndexMethod[SpatialKey])
+    HBaseLayerWriter(getInstance(conf.outputProfile), getPath(conf.output.backend).table).writer[SpatialKey, Tile, TileLayerMetadata[SpatialKey]](conf.output.getKeyIndexMethod[SpatialKey])
 }

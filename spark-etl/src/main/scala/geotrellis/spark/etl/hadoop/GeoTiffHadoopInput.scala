@@ -13,6 +13,6 @@ import org.apache.spark.rdd.RDD
 
 class GeoTiffHadoopInput extends HadoopInput[ProjectedExtent, Tile]() {
   val format = "geotiff"
-  def apply(conf: EtlConf)(implicit sc: SparkContext): RDD[(ProjectedExtent, Tile)] = sc.hadoopGeoTiffRDD(conf.input.params("path"))
+  def apply(conf: EtlConf)(implicit sc: SparkContext): RDD[(ProjectedExtent, Tile)] = sc.hadoopGeoTiffRDD(getPath(conf.input.backend).path)
 }
 

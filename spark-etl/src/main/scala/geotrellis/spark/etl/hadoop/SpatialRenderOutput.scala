@@ -48,7 +48,7 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetada
     rdd: RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]],
     conf: EtlConf
   ): Unit = {
-    val useS3 = conf.output.params("path").take(5) == "s3://"
+    val useS3 = getPath(conf.output.backend).path.take(5) == "s3://"
     val images =
       conf.output.encoding.get.toLowerCase match {
           case "png" =>
@@ -70,11 +70,11 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetada
         }
 
     if (useS3) {
-      val keyToPath = SaveToS3.spatialKeyToPath(id, conf.output.params("path"))
+      val keyToPath = SaveToS3.spatialKeyToPath(id, getPath(conf.output.backend).path)
       images.saveToS3(keyToPath)
     }
     else {
-      val keyToPath = SaveToHadoop.spatialKeyToPath(id, conf.output.params("path"))
+      val keyToPath = SaveToHadoop.spatialKeyToPath(id, getPath(conf.output.backend).path)
       images.saveToHadoop(keyToPath)
     }
   }
