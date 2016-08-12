@@ -10,5 +10,5 @@ import org.apache.spark.SparkContext
 
 class MultibandSpaceTimeAccumuloOutput extends AccumuloOutput[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]] {
   def writer(conf: EtlConf)(implicit sc: SparkContext) =
-    AccumuloLayerWriter(getInstance(conf.outputProfile), conf.outputProps("table"), strategy(conf.outputProps)).writer[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]](conf.output.getKeyIndexMethod[SpaceTimeKey])
+    AccumuloLayerWriter(getInstance(conf.outputProfile), conf.output.params("table"), strategy(conf.outputProfile)).writer[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]](conf.output.getKeyIndexMethod[SpaceTimeKey])
 }

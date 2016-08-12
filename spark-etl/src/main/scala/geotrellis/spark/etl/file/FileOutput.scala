@@ -8,5 +8,5 @@ trait FileOutput[K, V, M] extends OutputPlugin[K, V, M] {
   val name = "file"
 
   //This should be a safe way to get a hadoop configuration that includes all the environment changes from spark
-  def attributes(conf: EtlConf) = FileAttributeStore(conf.outputProps("path"))
+  def attributes(conf: EtlConf) = FileAttributeStore(conf.output.params("path"))
 }

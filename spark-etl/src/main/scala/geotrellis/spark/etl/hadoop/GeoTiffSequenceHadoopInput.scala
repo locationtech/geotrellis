@@ -14,7 +14,7 @@ class GeoTiffSequenceHadoopInput extends HadoopInput[ProjectedExtent, Tile] {
   val format = "geotiff-sequence"
   def apply(conf: EtlConf)(implicit sc: SparkContext): RDD[(ProjectedExtent, Tile)] =
     sc
-      .sequenceFile[String, Array[Byte]](conf.inputProps("path"))
+      .sequenceFile[String, Array[Byte]](conf.input.params("path"))
       .map { case (path, bytes) =>
         val geotiff = GeoTiffReader.readSingleband(bytes)
         (ProjectedExtent(geotiff.extent, geotiff.crs), geotiff.tile)

@@ -12,6 +12,6 @@ class MultibandGeoTiffS3Input extends S3Input[ProjectedExtent, MultibandTile] {
   val format = "multiband-geotiff"
   def apply(conf: EtlConf)(implicit sc: SparkContext): RDD[(ProjectedExtent, MultibandTile)] =
     sc.newAPIHadoopRDD(
-      configuration(conf.inputProps), classOf[MultibandGeoTiffS3InputFormat], classOf[ProjectedExtent], classOf[MultibandTile]
+      configuration(conf.input), classOf[MultibandGeoTiffS3InputFormat], classOf[ProjectedExtent], classOf[MultibandTile]
     )
 }

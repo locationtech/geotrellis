@@ -11,5 +11,5 @@ import org.apache.spark.rdd.RDD
 class MultibandGeoTiffHadoopInput extends HadoopInput[ProjectedExtent, MultibandTile] {
   val format = "multiband-geotiff"
   def apply(conf: EtlConf)(implicit sc: SparkContext): RDD[(ProjectedExtent, MultibandTile)] =
-    sc.hadoopMultibandGeoTiffRDD(conf.inputProps("path"))
+    sc.hadoopMultibandGeoTiffRDD(conf.input.params("path"))
 }

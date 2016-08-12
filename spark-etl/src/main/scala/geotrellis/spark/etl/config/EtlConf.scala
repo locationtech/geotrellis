@@ -9,17 +9,7 @@ import com.github.fge.jsonschema.main.JsonSchemaFactory
 import spray.json.DefaultJsonProtocol._
 import spray.json._
 
-class EtlConf(val input: Input, val output: Output, val inputProfile: Option[BackendProfile] = None, val outputProfile: Option[BackendProfile] = None) extends Serializable {
-  private def props(params: Map[String, String], profile: Option[BackendProfile]) = {
-    params ++ profile.collect {
-      case p: AccumuloProfile => p.strategy.fold(Map.empty[String, String])(s => Map("strategy" -> s))
-      case p: S3Profile       => p.partitionsCount.fold(Map.empty[String, String])(c => Map("partitionsCount" -> c.toString))
-    }.getOrElse(Map())
-  }
-
-  def inputProps: Map[String, String]  = props(input.params, inputProfile)
-  def outputProps: Map[String, String] = props(output.params, outputProfile)
-}
+class EtlConf(val input: Input, val output: Output, val inputProfile: Option[BackendProfile] = None, val outputProfile: Option[BackendProfile] = None) extends Serializable
 
 object EtlConf {
   val help = """
