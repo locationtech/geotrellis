@@ -14,10 +14,9 @@ import org.apache.spark.rdd._
 import scala.reflect.ClassTag
 
 abstract class PolygonalSummaryTileLayerRDDMethods[
-  K: SpatialComponent: ClassTag,
-  V <: CellGrid,
+  K: ClassTag,
   M: GetComponent[?, LayoutDefinition]
-] extends MethodExtensions[ContextRDD[K,V,M]] {
+] extends MethodExtensions[RDD[(K, Tile)] with Metadata[M]] {
   import Implicits._
   protected implicit val _sc: SpatialComponent[K]
 
