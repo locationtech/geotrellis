@@ -288,6 +288,18 @@ object TwoDimensionsTwoDimensionsUnionResult {
     }
 }
 
+abstract sealed trait TwoDimensionsTwoDimensionsSeqUnionResult extends GeometryResultMethods
+object TwoDimensionsTwoDimensionsSeqUnionResult {
+  implicit def jtsToResult(geom: jts.Geometry): TwoDimensionsTwoDimensionsSeqUnionResult =
+    geom match {
+      case g: jts.Geometry if g.isEmpty => NoResult
+      case p: jts.Polygon => PolygonResult(p)
+      case mp: jts.MultiPolygon => MultiPolygonResult(mp)
+      case _ =>
+        sys.error(s"Unexpected result for TwoDimensions-TwoDimensions union: ${geom.getGeometryType}")
+    }
+}
+
 abstract sealed trait PointMultiPolygonUnionResult extends GeometryResultMethods
 object PointMultiPolygonUnionResult {
   implicit def jtsToResult(geom: jts.Geometry): PointMultiPolygonUnionResult =
@@ -722,6 +734,7 @@ case object NoResult extends GeometryResult
     with OneDimensionOneDimensionSymDifferenceResult
     with TwoDimensionsTwoDimensionsSymDifferenceResult
     with ZeroDimensionsMultiPointSymDifferenceResult
+    with TwoDimensionsTwoDimensionsSeqUnionResult
     with MultiPointMultiPointIntersectionResult
     with MultiPointMultiPointUnionResult
     with MultiPointMultiLineUnionResult
@@ -811,6 +824,7 @@ case class PolygonResult(geom: Polygon) extends GeometryResult
     with TwoDimensionsTwoDimensionsIntersectionResult
     with AtMostOneDimensionPolygonUnionResult
     with TwoDimensionsTwoDimensionsUnionResult
+    with TwoDimensionsTwoDimensionsSeqUnionResult
     with LineMultiPolygonUnionResult
     with PolygonAtMostOneDimensionDifferenceResult
     with AtMostOneDimensionPolygonSymDifferenceResult
@@ -892,6 +906,7 @@ object MultiLineResult {
 case class MultiPolygonResult(geom: MultiPolygon) extends GeometryResult
     with TwoDimensionsTwoDimensionsIntersectionResult
     with TwoDimensionsTwoDimensionsUnionResult
+    with TwoDimensionsTwoDimensionsSeqUnionResult
     with LineMultiPolygonUnionResult
     with TwoDimensionsTwoDimensionsDifferenceResult
     with MultiPolygonXDifferenceResult

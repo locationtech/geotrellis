@@ -22,14 +22,14 @@ import java.awt.image.{Raster => AwtRaster, _}
 import scala.collection.JavaConverters._
 
 /**
-  * Houses methods that aide the translate
-  * between GridCoverage2D and related GeoTools types,
-  * and GeoTrellis types.
+  * Houses methods that aide the translate between GridCoverage2D and
+  * related GeoTools types, and GeoTrellis types.
   */
 object GridCoverage2DConverters {
+
   /**
-    * Given a [[GridCoverage2D]] and an index, this function
-    * optionally produces the unique NODATA value.
+    * Given a GridCoverage2D and an index, this function optionally
+    * produces the unique NODATA value.
     *
     * @param  gridCoverage2D  The GeoTools GridCoverage2D object
     */
@@ -40,9 +40,9 @@ object GridCoverage2DConverters {
   }
 
   /**
-    * Given a [[GridCoverage2D]] and an index, this function return
-    * the Geotrellis [[CellType]] that best approximates that of the
-    * given layer.
+    * Given a GridCoverage2D and an index, this function return the
+    * Geotrellis CellType that best approximates that of the given
+    * layer.
     *
     * @param  gridCoverage2D  The GeoTools GridCoverage2D object
     * @param  bandIndex       The index in gridCoverage2D to expose as the sole band of this tile
@@ -140,8 +140,8 @@ object GridCoverage2DConverters {
   }
 
   /**
-    * This function extracts a Geotrellis [[Extent]] from the extent
-    * information stored in the given [[GridCoverage2D]].
+    * This function extracts a Geotrellis Extent from the extent
+    * information stored in the given GridCoverage2D.
     *
     * @param  gridCoverage  The GeoTools GridCoverage2D object
     */
@@ -154,8 +154,8 @@ object GridCoverage2DConverters {
   }
 
   /**
-    * This function extracts a Geotrellis [[CRS]] from the CRS
-    * information stored in the given [[GridCoverage2D]].
+    * This function extracts a Geotrellis CRS from the CRS information
+    * stored in the given GridCoverage2D.
     *
     * @param  gridCoverage  The GeoTools GridCoverage2D object
     */
@@ -176,8 +176,8 @@ object GridCoverage2DConverters {
   }
 
   /**
-    * A function to produce a GeoTools [[Envelope2D]] from a
-    * Geotrellis Extent and CRS.
+    * A function to produce a GeoTools Envelope2D from a Geotrellis
+    * Extent and CRS.
     *
     * @param  extent  The Geotrellis Extent
     * @param  crs     The CRS of the raster
@@ -191,9 +191,9 @@ object GridCoverage2DConverters {
   }
 
   /**
-    * A function to produce a GeoTools [[Envelope2D]] from a
-    * Geotrellis Extent and CRS. If the CRS cannot be converted,
-    * a null GeoTools CRS is used.
+    * A function to produce a GeoTools Envelope2D from a Geotrellis
+    * Extent and CRS. If the CRS cannot be converted, a null GeoTools
+    * CRS is used.
     *
     * @param  extent  The Geotrellis Extent
     * @param  crs     The CRS of the raster

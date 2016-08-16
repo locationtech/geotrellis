@@ -33,5 +33,27 @@ class SpatialIndexSpec extends FunSpec with Matchers {
         actual should be (expected)
       }
     }
+
+    it("should find k-Nearest Neighbors correctly") {
+      val pts = for (i <- -100 to 100;
+                     j <- -100 to 100;
+                     if i != j
+                    ) yield (i,j)
+
+      val idx = geotrellis.vector.SpatialIndex(pts){ p => (p._1.toFloat, p._2.toFloat) }
+
+      val res = idx.kNearest ((0.0,0.0), 18)
+
+      val expected = List(        (-1, 2),(0, 2),(1, 2),
+                          (-2, 1),(-1, 1),(0, 1),       (2, 1),
+                          (-2, 0),(-1, 0),       (1, 0),(2, 0),
+                          (-2,-1),        (0,-1),(1,-1),(2,-1),
+                                  (-1,-2),(0,-2),(1,-2))
+
+      val resinex = res.forall { x => expected contains x }
+      val exinres = expected.forall { x => res contains x }
+
+      (resinex && exinres) should be (true)
+    }
   }
 }

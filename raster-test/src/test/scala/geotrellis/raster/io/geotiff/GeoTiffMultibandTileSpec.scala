@@ -453,6 +453,144 @@ class GeoTiffMultibandTileSpec extends FunSpec
     }
   }
 
+  describe("GeoTiffMultibandTile multiband foreach") {
+    it("should multiband foreach all values, striped, pixel interleave") {
+
+      val tile =
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile
+
+      val bandCount = tile.bandCount
+      val cellCount = tile.rows * tile.cols
+
+      var counts = 0
+      tile.foreach { value =>
+        value.length should be(bandCount)
+        counts += 1
+      }
+
+      counts should be(cellCount)
+    }
+
+    it("should multiband foreach all values, tiled, pixel interleave") {
+
+      val tile =
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-pixel.tif")).tile
+
+      val bandCount = tile.bandCount
+      val cellCount = tile.rows * tile.cols
+
+      var counts = 0
+      tile.foreach { value =>
+        value.length should be(bandCount)
+        counts += 1
+      }
+
+      counts should be(cellCount)
+    }
+
+    it("should multiband foreach all values, striped, band interleave") {
+
+      val tile =
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-band.tif")).tile
+
+      val bandCount = tile.bandCount
+      val cellCount = tile.rows * tile.cols
+
+      var counts = 0
+      tile.foreach { value =>
+        value.length should be(bandCount)
+        counts += 1
+      }
+
+      counts should be(cellCount)
+    }
+
+    it("should multiband foreach all values, tiled, band interleave") {
+
+      val tile =
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-band.tif")).tile
+
+      val bandCount = tile.bandCount
+      val cellCount = tile.rows * tile.cols
+
+      var counts = 0
+      tile.foreach { value =>
+        value.length should be(bandCount)
+        counts += 1
+      }
+
+      counts should be(cellCount)
+    }
+
+    it("should multiband foreachDouble all values, striped, pixel interleave") {
+
+      val tile =
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile
+
+      val bandCount = tile.bandCount
+      val cellCount = tile.rows * tile.cols
+
+      var counts = 0
+      tile.foreachDouble { value =>
+        value.length should be(bandCount)
+        counts += 1
+      }
+
+      counts should be(cellCount)
+    }
+
+    it("should multiband foreachDouble all values, tiled, pixel interleave") {
+
+      val tile =
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-pixel.tif")).tile
+
+      val bandCount = tile.bandCount
+      val cellCount = tile.rows * tile.cols
+
+      var counts = 0
+      tile.foreachDouble { value =>
+        value.length should be(bandCount)
+        counts += 1
+      }
+
+      counts should be(cellCount)
+    }
+
+    it("should multiband foreachDouble all values, striped, band interleave") {
+
+      val tile =
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-band.tif")).tile
+
+      val bandCount = tile.bandCount
+      val cellCount = tile.rows * tile.cols
+
+      var counts = 0
+      tile.foreachDouble { value =>
+        value.length should be(bandCount)
+        counts += 1
+      }
+
+      counts should be(cellCount)
+    }
+
+    it("should multiband foreachDouble all values, tiled, band interleave") {
+
+      val tile =
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-band.tif")).tile
+
+      val bandCount = tile.bandCount
+      val cellCount = tile.rows * tile.cols
+
+      var counts = 0
+      tile.foreachDouble { value =>
+        value.length should be(bandCount)
+        counts += 1
+      }
+
+      counts should be(cellCount)
+    }
+  }
+
   describe("GeoTiffMultibandTile combine") {
     val original = IntConstantTile(199, 4, 4)
 

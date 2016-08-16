@@ -2,6 +2,8 @@
 
 ./sbt -J-Xmx2G "project accumulo" clean  || { exit 1; }
 ./sbt -J-Xmx2G "project cassandra" clean  || { exit 1; }
+./sbt -J-Xmx2G "project geotools" clean || { exit 1; }
+./sbt -J-Xmx2G "project hbase" clean || { exit 1; }
 ./sbt -J-Xmx2G "project proj4" clean || { exit 1; }
 ./sbt -J-Xmx2G "project raster-test" clean || { exit 1; }
 ./sbt -J-Xmx2G "project s3" clean  || { exit 1; }
@@ -13,7 +15,9 @@
 ./sbt -J-Xmx2G "project vectortile" clean || { exit 1; }
 
 rm -r accumulo/target
+rm -r cassandra/target
 rm -r geotools/target
+rm -r hbase/target
 rm -r macros/target
 rm -r proj4/target
 rm -r raster-test/target

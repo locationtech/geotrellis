@@ -3,6 +3,7 @@
 ./sbt "project accumulo" +publish-local && \
 ./sbt "project cassandra" +publish-local && \
 ./sbt "project geotools" +publish-local && \
+./sbt "project hbase" +publish-local && \
 ./sbt "project macros" +publish-local && \
 ./sbt "project proj4" +publish-local && \
 ./sbt "project raster" +publish-local && \

@@ -1,6 +1,9 @@
 #!/bin/bash
 # Publish local for Scala 2.11
 ./sbt -211 "project accumulo" publish-local && \
+./sbt -211 "project cassandra" +publish-local && \
+./sbt -211 "project geotools" +publish-local && \
+./sbt -211 "project hbase" publish-local && \
 ./sbt -211 "project macros" publish-local && \
 ./sbt -211 "project proj4" publish-local && \
 ./sbt -211 "project raster" publish-local && \

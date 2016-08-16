@@ -3,6 +3,7 @@
 ./sbt "project accumulo" +publish-m2 \
       "project cassandra" +publish-m2 \
       "project geotools" +publish-m2 \
+      "project hbase" +publish-m2 \
       "project macros" +publish-m2 \
       "project proj4" +publish-m2 \
       "project raster" +publish-m2 \

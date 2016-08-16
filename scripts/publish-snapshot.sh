@@ -8,6 +8,12 @@
       "project raster" publish \
       "project raster-testkit" publish \
       "project s3" publish \
+<<<<<<< HEAD
+=======
+      "project accumulo" publish \
+      "project cassandra" publish \
+      "project hbase" publish \
+>>>>>>> master
       "project shapefile" publish \
       "project spark" publish \
       "project spark-testkit" publish \
