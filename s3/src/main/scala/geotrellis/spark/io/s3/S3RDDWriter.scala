@@ -1,24 +1,17 @@
 package geotrellis.spark.io.s3
 
-import geotrellis.raster.Tile
-import geotrellis.spark._
-import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.spark.io.index.{KeyIndex, KeyIndexMethod, ZCurveKeyIndexMethod}
-import geotrellis.spark.util.KryoWrapper
 
 import com.amazonaws.services.s3.model.{AmazonS3Exception, ObjectMetadata, PutObjectRequest, PutObjectResult}
-import com.typesafe.scalalogging.slf4j._
 import org.apache.spark.rdd.RDD
-
+import com.typesafe.config.ConfigFactory
 import scalaz.concurrent.{Strategy, Task}
 import scalaz.stream.{Process, nondeterminism}
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 import java.io.ByteArrayInputStream
 import java.util.concurrent.Executors
+
 import scala.reflect._
 
 trait S3RDDWriter {
@@ -29,7 +22,8 @@ trait S3RDDWriter {
     rdd: RDD[(K, V)],
     bucket: String,
     keyPath: K => String,
-    putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p }
+    putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p },
+    threads: Int = ConfigFactory.load().getInt("geotrellis.s3.threads.rdd.write")
   ): Unit = {
     val codec  = KeyValueRecordCodec[K, V]
     val schema = codec.schema
@@ -67,7 +61,7 @@ trait S3RDDWriter {
           }
         }
 
-      val pool = Executors.newFixedThreadPool(8)
+      val pool = Executors.newFixedThreadPool(threads)
 
       val write: PutObjectRequest => Process[Task, PutObjectResult] = { request =>
         Process eval Task {
@@ -79,7 +73,7 @@ trait S3RDDWriter {
         }
       }
 
-      val results = nondeterminism.njoin(maxOpen = 8, maxQueued = 8) { requests map write } (Strategy.Executor(pool))
+      val results = nondeterminism.njoin(maxOpen = threads, maxQueued = threads) { requests map write } (Strategy.Executor(pool))
       results.run.unsafePerformSync
       pool.shutdown()
     }
@@ -87,5 +81,5 @@ trait S3RDDWriter {
 }
 
 object S3RDDWriter extends S3RDDWriter {
-   def getS3Client: () => S3Client = () => S3Client.default
+  def getS3Client: () => S3Client = () => S3Client.default
 }

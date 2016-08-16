@@ -9,9 +9,10 @@ import com.datastax.driver.core.schemabuilder.SchemaBuilder
 import com.datastax.driver.core.DataType._
 import com.datastax.driver.core.ResultSet
 import org.apache.spark.rdd.RDD
-
+import com.typesafe.config.ConfigFactory
 import scalaz.concurrent.{Strategy, Task}
 import scalaz.stream.{Process, nondeterminism}
+
 import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 
@@ -25,7 +26,8 @@ object CassandraRDDWriter {
     layerId: LayerId,
     decomposeKey: K => Long,
     keyspace: String,
-    table: String
+    table: String,
+    threads: Int = ConfigFactory.load().getInt("geotrellis.cassandra.threads.rdd.write")
   ): Unit = {
     implicit val sc = raster.sparkContext
 
@@ -72,8 +74,7 @@ object CassandraRDDWriter {
                 }
               }
 
-            /** magic number 32; for no reason; just because */
-            val pool = Executors.newFixedThreadPool(32)
+            val pool = Executors.newFixedThreadPool(threads)
 
             val write: ((java.lang.Long, ByteBuffer)) => Process[Task, ResultSet] = {
               case (id, value) =>
@@ -82,7 +83,7 @@ object CassandraRDDWriter {
                 }(pool)
             }
 
-            val results = nondeterminism.njoin(maxOpen = 32, maxQueued = 32) {
+            val results = nondeterminism.njoin(maxOpen = threads, maxQueued = threads) {
               queries map write
             }(Strategy.Executor(pool)) onComplete {
               Process eval Task {

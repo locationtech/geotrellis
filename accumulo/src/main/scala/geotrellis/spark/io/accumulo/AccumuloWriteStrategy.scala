@@ -9,6 +9,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.accumulo.core.data.{Key, Mutation, Value}
 import org.apache.accumulo.core.client.mapreduce.AccumuloFileOutputFormat
 import org.apache.accumulo.core.client.BatchWriterConfig
+import com.typesafe.config.ConfigFactory
 import scalaz.concurrent.{Strategy, Task}
 import scalaz.stream._
 
@@ -16,6 +17,8 @@ import java.util.UUID
 import java.util.concurrent.Executors
 
 object AccumuloWriteStrategy {
+  val threads = ConfigFactory.load().getInt("geotrellis.accumulo.threads.rdd.write")
+
   def DEFAULT = HdfsWriteStrategy("/geotrellis-ingest")
 }
 
@@ -89,13 +92,16 @@ object HdfsWriteStrategy {
  * @param config Configuration for the BatchWriters
  */
 case class SocketWriteStrategy(
-  config: BatchWriterConfig = new BatchWriterConfig().setMaxMemory(128*1024*1024).setMaxWriteThreads(32)
+  config: BatchWriterConfig = new BatchWriterConfig().setMaxMemory(128*1024*1024).setMaxWriteThreads(AccumuloWriteStrategy.threads),
+  threads: Int = AccumuloWriteStrategy.threads
 ) extends AccumuloWriteStrategy {
   def write(kvPairs: RDD[(Key, Value)], instance: AccumuloInstance, table: String): Unit = {
     val serializeWrapper = KryoWrapper(config) // BatchWriterConfig is not java serializable
+    val kwThreads = KryoWrapper(threads)
     kvPairs.foreachPartition { partition =>
-      val pool = Executors.newFixedThreadPool(32)
-      val (config) = serializeWrapper.value
+      val poolSize = kwThreads.value
+      val pool = Executors.newFixedThreadPool(poolSize)
+      val config = serializeWrapper.value
       val writer = instance.connector.createBatchWriter(table, config)
 
       val mutations: Process[Task, Mutation] =
@@ -105,15 +111,15 @@ case class SocketWriteStrategy(
             val mutation = new Mutation(key.getRow)
             mutation.put(key.getColumnFamily, key.getColumnQualifier, System.currentTimeMillis(), value)
             Some(mutation, iter)
-          } else  {
+          } else {
             None
           }
         }
 
       val writeChannel = channel.lift { (mutation: Mutation) => Task { writer.addMutation(mutation) } }
       val writes = mutations.tee(writeChannel)(tee.zipApply).map(Process.eval)
-      nondeterminism.njoin(maxOpen = 32, maxQueued = 32)(writes)(Strategy.Executor(pool)).run.unsafePerformSync
-      writer.close()
+      nondeterminism.njoin(maxOpen = poolSize, maxQueued = poolSize)(writes)(Strategy.Executor(pool)).run.unsafePerformSync
+      writer.close(); pool.shutdown()
     }
   }
 }

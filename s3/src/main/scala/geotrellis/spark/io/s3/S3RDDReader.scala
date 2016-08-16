@@ -14,6 +14,7 @@ import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import com.typesafe.config.ConfigFactory
 
 import java.util.concurrent.Executors
 
@@ -31,7 +32,8 @@ trait S3RDDReader {
     decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
-    numPartitions: Option[Int] = None
+    numPartitions: Option[Int] = None,
+    threads: Int = ConfigFactory.load().getInt("geotrellis.s3.threads.rdd.read")
   )(implicit sc: SparkContext): RDD[(K, V)] = {
     if (queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
 
@@ -50,9 +52,9 @@ trait S3RDDReader {
     sc.parallelize(bins, bins.size)
       .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
         val s3client = _getS3Client()
-        val pool = Executors.newFixedThreadPool(8)
+        val pool = Executors.newFixedThreadPool(threads)
 
-        partition flatMap { seq =>
+        val result = partition map { seq =>
           val range: Process[Task, Iterator[Long]] = Process.unfold(seq.toIterator) { iter =>
             if (iter.hasNext) {
               val (start, end) = iter.next()
@@ -81,11 +83,11 @@ trait S3RDDReader {
             }
           }
 
-          val result = nondeterminism.njoin(maxOpen = 8, maxQueued = 8) { range map read }(Strategy.Executor(pool)).runFoldMap(identity).unsafePerformSync
-          pool.shutdown()
-
-          result
+          nondeterminism.njoin(maxOpen = threads, maxQueued = threads) { range map read }(Strategy.Executor(pool)).runFoldMap(identity).unsafePerformSync
         }
+
+        /** Close partition pool */
+        (result ++ Iterator({ pool.shutdown(); Vector.empty[(K, V)] })).flatten
       }
   }
 }

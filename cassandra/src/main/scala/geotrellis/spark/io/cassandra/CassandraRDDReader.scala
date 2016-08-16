@@ -16,6 +16,8 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import java.util.concurrent.Executors
 
+import com.typesafe.config.ConfigFactory
+
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
@@ -29,7 +31,8 @@ object CassandraRDDReader {
     decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
-    numPartitions: Option[Int] = None
+    numPartitions: Option[Int] = None,
+    threads: Int = ConfigFactory.load().getInt("geotrellis.cassandra.threads.rdd.read")
   )(implicit sc: SparkContext): RDD[(K, V)] = {
     if (queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
 
@@ -55,7 +58,7 @@ object CassandraRDDReader {
       .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
         instance.withSession { session =>
           val statement = session.prepare(query)
-          val pool = Executors.newFixedThreadPool(32)
+          val pool = Executors.newFixedThreadPool(threads)
 
           val result = partition map { seq =>
             val range: Process[Task, Iterator[Long]] = Process.unfold(seq.toIterator) { iter =>
@@ -80,7 +83,7 @@ object CassandraRDDReader {
               }
             }
 
-            nondeterminism.njoin(maxOpen = 32, maxQueued = 32) { range map read }(Strategy.Executor(pool)).runFoldMap(identity).unsafePerformSync
+            nondeterminism.njoin(maxOpen = threads, maxQueued = threads) { range map read }(Strategy.Executor(pool)).runFoldMap(identity).unsafePerformSync
           }
 
           /** Close partition session */
