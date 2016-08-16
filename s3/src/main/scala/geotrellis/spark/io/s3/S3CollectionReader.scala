@@ -5,15 +5,16 @@ import geotrellis.spark.io.CollectionLayerReader
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
-
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
+
 import scalaz.std.vector._
 import scalaz.concurrent.Task
 import scalaz.stream.{Process, nondeterminism}
-
 import java.util.concurrent.Executors
+
+import com.typesafe.config.ConfigFactory
 
 trait S3CollectionReader {
 
@@ -29,7 +30,8 @@ trait S3CollectionReader {
      decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
      filterIndexOnly: Boolean,
      writerSchema: Option[Schema] = None,
-     numPartitions: Option[Int] = None
+     numPartitions: Option[Int] = None,
+     threads: Int = ConfigFactory.load().getInt("geotrellis.s3.threads.collection.read")
    ): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
@@ -45,7 +47,7 @@ trait S3CollectionReader {
     val _getS3Client = getS3Client
     val s3client = _getS3Client()
 
-    val pool = Executors.newFixedThreadPool(8)
+    val pool = Executors.newFixedThreadPool(threads)
 
     val result = bins flatMap { partition =>
       val range: Process[Task, Iterator[Long]] = Process.unfold(partition) { iter =>
@@ -77,7 +79,7 @@ trait S3CollectionReader {
         }
       }
 
-      nondeterminism.njoin(maxOpen = 8, maxQueued = 8) { range map read }.runFoldMap(identity).unsafePerformSync
+      nondeterminism.njoin(maxOpen = threads, maxQueued = threads) { range map read }.runFoldMap(identity).unsafePerformSync
     }
 
     pool.shutdown(); result

@@ -6,11 +6,13 @@ import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.util.Filesystem
-import org.apache.avro.Schema
 
+import org.apache.avro.Schema
+import com.typesafe.config.ConfigFactory
 import scalaz.std.vector._
 import scalaz.concurrent.{Strategy, Task}
 import scalaz.stream.{Process, nondeterminism}
+
 import java.io.File
 import java.util.concurrent.Executors
 
@@ -21,7 +23,8 @@ object FileCollectionReader {
     decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
-    numPartitions: Option[Int] = None): Seq[(K, V)] = {
+    numPartitions: Option[Int] = None,
+    threads: Int = ConfigFactory.load().getInt("geotrellis.file.threads.collection.read")): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
     val ranges = if (queryKeyBounds.length > 1)
@@ -35,7 +38,7 @@ object FileCollectionReader {
     val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
     val _recordCodec = KeyValueRecordCodec[K, V]
 
-    val pool = Executors.newFixedThreadPool(32)
+    val pool = Executors.newFixedThreadPool(threads)
 
     val result = bins flatMap { partition =>
       val range: Process[Task, Iterator[Long]] = Process.unfold(partition) { iter =>
@@ -61,7 +64,7 @@ object FileCollectionReader {
           }
       }
 
-      nondeterminism.njoin(maxOpen = 32, maxQueued = 32) { range map read }(Strategy.Executor(pool)).runFoldMap(identity).unsafePerformSync
+      nondeterminism.njoin(maxOpen = threads, maxQueued = threads) { range map read }(Strategy.Executor(pool)).runFoldMap(identity).unsafePerformSync
     }
 
     pool.shutdown(); result

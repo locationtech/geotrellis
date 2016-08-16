@@ -35,10 +35,8 @@ object AccumuloCollectionReader {
       scanner.iterator.map { case entry =>
         AvroEncoder.fromBinary(writerSchema.getOrElse(codec.schema), entry.getValue.get)(codec)
       }.flatMap { pairs: Vector[(K, V)] =>
-        if(filterIndexOnly)
-          pairs
-        else
-          pairs.filter { pair => includeKey(pair._1) }
+        if(filterIndexOnly) pairs
+        else pairs.filter { pair => includeKey(pair._1) }
       }
     }
   }

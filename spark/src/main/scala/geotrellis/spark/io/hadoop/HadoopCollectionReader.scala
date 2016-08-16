@@ -15,6 +15,7 @@ import org.apache.hadoop.fs.Path
 import scalaz.std.vector._
 import scalaz.concurrent.Task
 import scalaz.stream.{Process, nondeterminism}
+import com.typesafe.config.ConfigFactory
 
 import java.util.concurrent.Executors
 
@@ -32,7 +33,8 @@ class HadoopCollectionReader(maxOpenFiles: Int) {
     decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
     indexFilterOnly: Boolean,
     writerSchema: Option[Schema] = None,
-    numPartitions: Option[Int] = None): Seq[(K, V)] = {
+    numPartitions: Option[Int] = None,
+    threads: Int = ConfigFactory.load().getInt("geotrellis.hadoop.threads.collection.read")): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
     val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)
@@ -45,7 +47,7 @@ class HadoopCollectionReader(maxOpenFiles: Int) {
     val pathRanges: Vector[(Path, Long, Long)] =
       FilterMapFileInputFormat.layerRanges(path, conf)
 
-    val pool = Executors.newFixedThreadPool(maxOpenFiles)
+    val pool = Executors.newFixedThreadPool(threads)
 
     val result = bins flatMap { partition =>
       val range: Process[Task, Iterator[Long]] = Process.unfold(partition) { iter =>
@@ -79,7 +81,7 @@ class HadoopCollectionReader(maxOpenFiles: Int) {
           }
       }
 
-      nondeterminism.njoin(maxOpen = maxOpenFiles, maxQueued = maxOpenFiles) { range map read }.runFoldMap(identity).unsafePerformSync
+      nondeterminism.njoin(maxOpen = threads, maxQueued = threads) { range map read }.runFoldMap(identity).unsafePerformSync
     }
 
     pool.shutdown(); result
