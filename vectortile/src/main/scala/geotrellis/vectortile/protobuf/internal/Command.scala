@@ -67,6 +67,7 @@ case object ClosePath extends Command
 
 case class InvalidCommand(id: Int, count: Int) extends Exception
 
+/** Contains convenience functions for handling [[Command]]s. */
 object Command {
   /** Attempt to parse a list of Command/Parameter Integers. */
   def commands(cmds: Seq[Int]): ListBuffer[Command] = {

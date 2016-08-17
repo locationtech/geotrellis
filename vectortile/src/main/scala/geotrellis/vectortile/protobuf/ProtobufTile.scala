@@ -89,8 +89,8 @@ object ProtobufTile {
   * lazily, making for very fast extraction of single features/geometries.
   *
   */
-// Wild, unbased assumption of VT Features: their `id` values can be ignored
-// at read time, and rewritten as anything at write time.
+// TODO The Layer storing `key` and `layout` is likely very wasteful
+// it terms of memory.
 case class ProtobufLayer(
   private val rawLayer: vt.Tile.Layer,
   private val key: SpatialKey,
@@ -245,12 +245,12 @@ case class ProtobufLayer(
      *   points.map(f => unfeature(keys, values, f))
      */
     val features = Seq(
-      points.map(f => unfeature(keys, values, POINT, pgp.toCommands(Left(f.geom)), f.data)),
-      multiPoints.map(f => unfeature(keys, values, POINT, pgp.toCommands(Right(f.geom)), f.data)),
-      lines.map(f => unfeature(keys, values, LINESTRING, pgl.toCommands(Left(f.geom)), f.data)),
-      multiLines.map(f => unfeature(keys, values, LINESTRING, pgl.toCommands(Right(f.geom)), f.data)),
-      polygons.map(f => unfeature(keys, values, POLYGON, pgy.toCommands(Left(f.geom)), f.data)),
-      multiPolygons.map(f => unfeature(keys, values, POLYGON, pgy.toCommands(Right(f.geom)), f.data))
+      points.map(f => unfeature(keys, values, POINT, pgp.toCommands(Left(f.geom), topLeft, resolution), f.data)),
+      multiPoints.map(f => unfeature(keys, values, POINT, pgp.toCommands(Right(f.geom), topLeft, resolution), f.data)),
+      lines.map(f => unfeature(keys, values, LINESTRING, pgl.toCommands(Left(f.geom), topLeft, resolution), f.data)),
+      multiLines.map(f => unfeature(keys, values, LINESTRING, pgl.toCommands(Right(f.geom), topLeft, resolution), f.data)),
+      polygons.map(f => unfeature(keys, values, POLYGON, pgy.toCommands(Left(f.geom), topLeft, resolution), f.data)),
+      multiPolygons.map(f => unfeature(keys, values, POLYGON, pgy.toCommands(Right(f.geom), topLeft, resolution), f.data))
     ).flatten
 
     vt.Tile.Layer(version, name, features, keys, values.map(_.toProtobuf), Some(extent))

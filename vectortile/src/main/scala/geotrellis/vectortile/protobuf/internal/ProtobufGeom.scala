@@ -43,5 +43,5 @@ import geotrellis.vector.{ Geometry, MultiGeometry, Point }
   */
 trait ProtobufGeom[G1 <: Geometry, G2 <: MultiGeometry] {
   def fromCommands(cmds: Seq[Command], topLeft: Point, resolution: Double): Either[G1, G2]
-  def toCommands(g: Either[G1, G2]): Seq[Command]
+  def toCommands(g: Either[G1, G2], topLeft: Point, resolution: Double): Seq[Command]
 }

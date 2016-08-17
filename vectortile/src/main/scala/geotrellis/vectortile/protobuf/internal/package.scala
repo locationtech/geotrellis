@@ -79,6 +79,8 @@ package object internal {
   }
 
   /**
+    * Translate coordinates in VectorTile grid space into real CRS coordinates.
+    *
     * @param point      A point in a VectorTile geometry, in grid coordinates.
     * @param topLeft    The location in the current CRS of the top-left corner of this Tile.
     * @param resolution How much of the CRS's units are covered by a single VT grid coordinate.
@@ -115,13 +117,30 @@ package object internal {
     * }}}
     *
     */
-  def translate(point: Point, topLeft: Point, resolution: Double): Point = {
+  def toProjection(point: Point, topLeft: Point, resolution: Double): Point = {
     Point(
       topLeft.x + (resolution * point.x),
       topLeft.y - (resolution * point.y)
     )
   }
 
+  /**
+    * Translate [[Point]] coordinates within a CRS to those of a fixed
+    * VectorTile grid. The reverse of [[toProjection]].
+    *
+    * @param point The [[Point]] in CRS space.
+    * @param topLeft The CRS coordinates of the top-left corner of this Tile.
+    * @param resolution How much of the CRS's units are covered by a single VT grid coordinate.
+    */
+  // TODO Is `toInt` good enough for rounding?
+  def fromProjection(point: Point, topLeft: Point, resolution: Double): (Int, Int) = {
+    (
+      ((point.x - topLeft.x) / resolution).toInt,
+      ((topLeft.y - point.y) / resolution).toInt
+    )
+  }
+
+  /** Instance definition of the ProtobufGeom typeclass for Points. */
   implicit val protoPoint = new ProtobufGeom[Point, MultiPoint] {
     def fromCommands(
       cmds: Seq[Command],
@@ -130,7 +149,7 @@ package object internal {
     ): Either[Point, MultiPoint] = cmds match {
       case MoveTo(ps) +: Nil => {
         val points = expand(ps).map({ case (x, y) =>
-          translate(Point(x.toDouble, y.toDouble), topLeft, resolution)
+          toProjection(Point(x.toDouble, y.toDouble), topLeft, resolution)
         })
 
         if (points.length == 1) Left(points.head) else Right(MultiPoint(points))
@@ -138,14 +157,19 @@ package object internal {
       case _ => throw IncompatibleCommandSequence("Expected: [ MoveTo(ps) ]")
     }
 
-    def toCommands(point: Either[Point, MultiPoint]): Seq[Command] = point match {
-      case Left(p) => Seq(MoveTo(Array((p.x.toInt, p.y.toInt))))
+    def toCommands(
+      point: Either[Point, MultiPoint],
+      topLeft: Point,
+      resolution: Double
+    ): Seq[Command] = point match {
+      case Left(p) => Seq(MoveTo(Array(fromProjection(p, topLeft, resolution))))
       case Right(mp) => Seq(MoveTo(
-        collapse(mp.points.map(p => (p.x.toInt, p.y.toInt)))
+        collapse(mp.points.map(p => fromProjection(p, topLeft, resolution)))
       ))
     }
   }
 
+  /** Instance definition of the ProtobufGeom typeclass for Lines. */
   implicit val protoLine = new ProtobufGeom[Line, MultiLine] {
     def fromCommands(
       cmds: Seq[Command],
@@ -156,7 +180,7 @@ package object internal {
         case MoveTo(p) +: LineTo(ps) +: rest => {
           val points = expand(p ++ ps, cursor)
           val nextCursor: (Int, Int) = points.last
-          val line = Line(points.map(p => translate(p, topLeft, resolution)))
+          val line = Line(points.map(p => toProjection(p, topLeft, resolution)))
 
           work(rest, lines += line, nextCursor)
         }
@@ -169,17 +193,23 @@ package object internal {
       if (lines.length == 1) Left(lines.head) else Right(MultiLine(lines))
     }
 
-    def toCommands(line: Either[Line, MultiLine]): Seq[Command] = {
+    def toCommands(
+      line: Either[Line, MultiLine],
+      topLeft: Point,
+      resolution: Double
+    ): Seq[Command] = {
       def work(lines: Array[Line]): Seq[Command] = {
         var curs: (Int, Int) = (0, 0)
         var buff = new ListBuffer[Command]
 
         lines.foreach({l =>
-          val diffs: Array[(Int, Int)] = collapse(l.points.map(p => (p.x.toInt, p.y.toInt)), curs)
+          val diffs: Array[(Int, Int)] = collapse(
+            l.points.map(p => fromProjection(p, topLeft, resolution)),
+            curs
+          )
 
           /* Find new cursor position */
-          val endPoint: Point = l.points.last
-          curs = (endPoint.x.toInt, endPoint.y.toInt)
+          curs = fromProjection(l.points.last, topLeft, resolution)
 
           buff.appendAll(Seq(MoveTo(Array(diffs.head)), LineTo(diffs.tail)))
         })
@@ -194,6 +224,7 @@ package object internal {
     }
   }
 
+  /** Instance definition of the ProtobufGeom typeclass for Polygons. */
   implicit val protoPolygon = new ProtobufGeom[Polygon, MultiPolygon] {
     def fromCommands(
       cmds: Seq[Command],
@@ -226,7 +257,7 @@ package object internal {
 
       /* Translate a [[Line]] to CRS coordinates */
       def tr(line: Line): Line =
-        Line(line.points.map(p => translate(p, topLeft, resolution)))
+        Line(line.points.map(p => toProjection(p, topLeft, resolution)))
 
       /* Process interior rings */
       var polys = new ListBuffer[Polygon]
@@ -254,18 +285,24 @@ package object internal {
       if (polys.length == 1) Left(polys.head) else Right(MultiPolygon(polys))
     }
 
-    def toCommands(poly: Either[Polygon, MultiPolygon]): Seq[Command] = {
+    def toCommands(
+      poly: Either[Polygon, MultiPolygon],
+      topLeft: Point,
+      resolution: Double
+    ): Seq[Command] = {
       def work(polys: Array[Line]): Seq[Command] = {
         var curs: (Int, Int) = (0, 0)
         var buff = new ListBuffer[Command]
 
         polys.foreach({ l =>
           /* Exclude the final point via `init` */
-          val diffs = collapse(l.points.init.map(p => (p.x.toInt, p.y.toInt)), curs)
+          val diffs = collapse(
+            l.points.init.map(p => fromProjection(p, topLeft, resolution)),
+            curs
+          )
 
           /* Find new cursor position */
-          val endPoint: Point = l.points.init.last
-          curs = (endPoint.x.toInt, endPoint.y.toInt)
+          curs = fromProjection(l.points.init.last, topLeft, resolution)
 
           buff.appendAll(Seq(MoveTo(Array(diffs.head)), LineTo(diffs.tail), ClosePath))
         })
@@ -303,6 +340,7 @@ package object internal {
     sum
   }
 
+  /** Automatically convert mid-level Protobuf Values into a high-level [[Value]]. */
   implicit def protoVal(value: vt.Tile.Value): Value = {
     if (value.stringValue.isDefined) {
       St(value.stringValue.get)
