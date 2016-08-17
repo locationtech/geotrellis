@@ -42,6 +42,27 @@ import geotrellis.vector.{ Geometry, MultiGeometry, Point }
   * }}}
   */
 trait ProtobufGeom[G1 <: Geometry, G2 <: MultiGeometry] {
+  /**
+    * Decode a sequence of VectorTile [[Command]]s into a Geotrellis
+    * Geometry. Due to the reasons stated above, this may be either
+    * the single or the ''Multi'' variety of the Geometry.
+    *
+    * This forms an isomorphism with [[toCommands]].
+    *
+    * @param cmds       The Commands.
+    * @param topLeft    The location in the current CRS of the top-left corner of this Tile.
+    * @param resolution How much of the CRS's units are covered by a single VT grid coordinate..
+    */
   def fromCommands(cmds: Seq[Command], topLeft: Point, resolution: Double): Either[G1, G2]
+
+  /**
+    * Encode a Geotrellis Geometry into a sequence of VectorTile [[Command]]s.
+    *
+    * This forms an isomorphism with [[fromCommands]].
+    *
+    * @param g          A Geotrellis Geometry, either a `Left(Single)` or a `Right(Multi)`.
+    * @param topLeft    The location in the current CRS of the top-left corner of this Tile.
+    * @param resolution How much of the CRS's units are covered by a single VT grid coordinate..
+    */
   def toCommands(g: Either[G1, G2], topLeft: Point, resolution: Double): Seq[Command]
 }
