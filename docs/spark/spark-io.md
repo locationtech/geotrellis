@@ -200,3 +200,35 @@ val tile: Tile = nlcdReader.read(SpatialKey(1,2))
 ```
 
 The idea is similar to the `LayerReader.reader` method except in this case we're producing a reader for single tiles. Additionally it must be noted that the layer metadata is accessed during the construction of the `Reader[SpatialKey, Tile]` and saved for all future calls to read a tile.
+
+## Readers threads
+
+Cassandra and S3 Layer RDDReaders / RDDWriters are configurable by threads amount. It's a programm setting, that can be different for a certain machine (depends on resources available). Configuration could be set in the `reference.conf` / `application.conf` file of your app, default settings available in a `reference.conf` file of each backend subproject (we use [TypeSafe Config](https://github.com/typesafehub/config)).
+For a File backend only RDDReader is configurable, For Accumulo - only RDDWriter (Socket Strategy). For all backends CollectionReaders are configurable as well.
+
+Default configuration example:
+
+```conf
+geotrellis.accumulo.threads {
+  rdd.write       = 32
+  collection.read = 32
+}
+geotrellis.file.threads {
+  rdd.read        = 32
+  collection.read = 32
+}
+geotrellis.cassandra.threads {
+  collection.read = 32
+  rdd {
+    write = 32
+    read  = 32
+  }
+}
+geotrellis.s3.threads {
+ collection.read = 8
+  rdd {
+    write = 8
+    read  = 8
+  }
+}
+```
