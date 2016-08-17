@@ -73,7 +73,8 @@ lazy val root = Project("geotrellis", file(".")).
     cassandra,
     hbase,
     geotools,
-    slick
+    slick,
+    vectortile
   ).
   settings(commonSettings: _*).
   settings(
@@ -91,8 +92,8 @@ lazy val root = Project("geotrellis", file(".")).
 lazy val macros = Project("macros", file("macros")).
   settings(commonSettings: _*)
 
-lazy val vectorTile = Project("vectortile", file("vectortile"))
-  .dependsOn(vector, spark)
+lazy val vectortile = Project("vectortile", file("vectortile"))
+  .dependsOn(vector, spark % "provided")
   .settings(commonSettings: _*)
 
 lazy val vector = Project("vector", file("vector")).

@@ -20,7 +20,7 @@ import geotrellis.vector._
 import geotrellis.vectortile.{Layer, VectorTile}
 import geotrellis.vectortile.protobuf.internal._
 import geotrellis.spark.SpatialKey
-//import geotrellis.spark.tiling.LayoutDefinition
+import geotrellis.spark.tiling.LayoutDefinition
 import vector_tile.{vector_tile => vt}
 import vector_tile.vector_tile.Tile.GeomType.{POINT, LINESTRING, POLYGON}
 
