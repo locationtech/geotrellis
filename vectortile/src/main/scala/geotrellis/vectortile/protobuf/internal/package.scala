@@ -18,6 +18,8 @@ package geotrellis.vectortile.protobuf
 
 import geotrellis.vector._
 import geotrellis.vectortile.protobuf.internal.ProtobufGeom
+import geotrellis.spark.SpatialKey
+import geotrellis.spark.tiling.LayoutDefinition
 
 import vector_tile.{vector_tile => vt}
 
@@ -76,10 +78,60 @@ package object internal {
     diffs
   }
 
+  /**
+    * @param point      A point in a VectorTile geometry, in grid coordinates.
+    * @param topLeft    The location in the current CRS of the top-left corner of this Tile.
+    * @param resolution How much of the CRS's units are covered by a single VT grid coordinate.
+    *
+    * ===Translation Logic===
+    * Extents always exist in ''some'' CRS. Below is information for
+    * determining values related to translating fixed VectorTile grid
+    * coordinates into map coordinates within the implied CRS.
+    *
+    * You can find resolution this way. Let:
+    * {{{
+    * G := Height of grid (# number of cell rows)
+    * T := Height of a Tile (default 4096)
+    * E := Height of the Extent
+    * }}}
+    *
+    * Then the resolution {{{ R = E / (G * T) }}}
+    *
+    * This actually allows same-Tile Layers with different integer `extent` values
+    * to make sense!
+    *
+    * '''Finding the top-left corner'''
+    * {{{
+    * X = xmin + (R * T * SpatialKeyX)
+    * Y = ymax - (R * T * SpatialKeyY)
+    * }}}
+    *
+    * Resolution and the top-left corner only need to be calculated once per Layer.
+    *
+    * '''Shifting the VT grid points'''
+    * {{{
+    * vtX = X + (R * tileX)
+    * vtY = Y - (R * tileY)
+    * }}}
+    *
+    */
+  def translate(point: Point, topLeft: Point, resolution: Double): Point = {
+    Point(
+      topLeft.x + (resolution * point.x),
+      topLeft.y - (resolution * point.y)
+    )
+  }
+
   implicit val protoPoint = new ProtobufGeom[Point, MultiPoint] {
-    def fromCommands(cmds: Seq[Command]): Either[Point, MultiPoint] = cmds match {
+    def fromCommands(
+      cmds: Seq[Command],
+      topLeft: Point,
+      resolution: Double
+    ): Either[Point, MultiPoint] = cmds match {
       case MoveTo(ps) +: Nil => {
-        val points = expand(ps).map({ case (x, y) => Point(x.toDouble, y.toDouble) })
+        val points = expand(ps).map({ case (x, y) =>
+          translate(Point(x.toDouble, y.toDouble), topLeft, resolution)
+        })
 
         if (points.length == 1) Left(points.head) else Right(MultiPoint(points))
       }
@@ -95,12 +147,16 @@ package object internal {
   }
 
   implicit val protoLine = new ProtobufGeom[Line, MultiLine] {
-    def fromCommands(cmds: Seq[Command]): Either[Line, MultiLine] = {
+    def fromCommands(
+      cmds: Seq[Command],
+      topLeft: Point,
+      resolution: Double
+    ): Either[Line, MultiLine] = {
       @tailrec def work(cs: Seq[Command], lines: ListBuffer[Line], cursor: (Int, Int)): ListBuffer[Line] = cs match {
         case MoveTo(p) +: LineTo(ps) +: rest => {
-          val line = Line(expand(p ++ ps, cursor).map({ case (x, y) => (x.toDouble, y.toDouble) }))
-          val endPoint: Point = line.points.last
-          val nextCursor: (Int, Int) = (endPoint.x.toInt, endPoint.y.toInt)
+          val points = expand(p ++ ps, cursor)
+          val nextCursor: (Int, Int) = points.last
+          val line = Line(points.map(p => translate(p, topLeft, resolution)))
 
           work(rest, lines += line, nextCursor)
         }
@@ -139,7 +195,11 @@ package object internal {
   }
 
   implicit val protoPolygon = new ProtobufGeom[Polygon, MultiPolygon] {
-    def fromCommands(cmds: Seq[Command]): Either[Polygon, MultiPolygon] = {
+    def fromCommands(
+      cmds: Seq[Command],
+      topLeft: Point,
+      resolution: Double
+    ): Either[Polygon, MultiPolygon] = {
       @tailrec def work(cs: Seq[Command], lines: ListBuffer[Line], cursor: (Int, Int)): ListBuffer[Line] = cs match {
         case MoveTo(p) +: LineTo(ps) +: ClosePath +: rest => {
           /* `ClosePath` does not move the cursor, so we have to be
@@ -148,7 +208,7 @@ package object internal {
            */
           val here: (Int, Int) = (p.head._1 + cursor._1, p.head._2 + cursor._2)
           val points = expand(p ++ ps, cursor)
-          val nextCursor: (Int, Int) = (points.last._1, points.last._2)
+          val nextCursor: (Int, Int) = points.last
 
           /* Add the starting point to close the Line into a Polygon */
           points.append(here)
@@ -164,6 +224,10 @@ package object internal {
       /* Collect all rings, whether external or internal */
       val lines: ListBuffer[Line] = work(cmds, new ListBuffer[Line], (0, 0))
 
+      /* Translate a [[Line]] to CRS coordinates */
+      def tr(line: Line): Line =
+        Line(line.points.map(p => translate(p, topLeft, resolution)))
+
       /* Process interior rings */
       var polys = new ListBuffer[Polygon]
       var currL: Line = lines.head
@@ -173,10 +237,10 @@ package object internal {
         val area = surveyor(line)
 
         if (area < 0) { /* New Interior Rings */
-          holes.append(line)
+          holes.append(tr(line))
         } else { /* New Exterior Ring */
           /* Save the current state */
-          polys.append(Polygon(currL, holes))
+          polys.append(Polygon(tr(currL), holes))
 
           /* Reset the state */
           currL = line
@@ -185,7 +249,7 @@ package object internal {
       })
 
       /* Save the final state */
-      polys.append(Polygon(currL, holes))
+      polys.append(Polygon(tr(currL), holes))
 
       if (polys.length == 1) Left(polys.head) else Right(MultiPolygon(polys))
     }

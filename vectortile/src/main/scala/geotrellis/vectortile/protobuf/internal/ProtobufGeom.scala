@@ -16,7 +16,7 @@
 
 package geotrellis.vectortile.protobuf.internal
 
-import geotrellis.vector.{ Geometry, MultiGeometry }
+import geotrellis.vector.{ Geometry, MultiGeometry, Point }
 
 // --- //
 
@@ -26,14 +26,22 @@ import geotrellis.vector.{ Geometry, MultiGeometry }
   * and multi geometries. When there eventually is, this trait will have to be
   * split to provide separate instances for both the single and multi forms.
   *
-  * Instances can be found in the package object.
+  * Since we assume that all VectorTiles implicitely exist in some CRS,
+  * we ask for a Geotrellis [[SpatialKey]] and [[LayoutDefinition]] here
+  * to immediately translate geometry grid coordinates into real CRS
+  * coordinates.
+  *
+  * Instances of this trait can be found in the package object.
   *
   * Usage:
   * {{{
-  * implicitly[ProtobufGeom[Point, MultiPoint]].fromCommands(Command.commands(Seq(9,2,2)))
+  * val topLeft: Point = ...
+  * val resolution: Double = ...
+  *
+  * implicitly[ProtobufGeom[Point, MultiPoint]].fromCommands(Command.commands(Seq(9,2,2)), topLeft, resolution)
   * }}}
   */
 trait ProtobufGeom[G1 <: Geometry, G2 <: MultiGeometry] {
-  def fromCommands(cmds: Seq[Command]): Either[G1, G2]
+  def fromCommands(cmds: Seq[Command], topLeft: Point, resolution: Double): Either[G1, G2]
   def toCommands(g: Either[G1, G2]): Seq[Command]
 }

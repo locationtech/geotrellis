@@ -55,14 +55,18 @@ case class ProtobufTile(
 
 object ProtobufTile {
   /** Create a ProtobufTile masked as its parent trait. */
-  def fromPBTile(tile: vt.Tile): VectorTile = {
+  def fromPBTile(
+    tile: vt.Tile,
+    key: SpatialKey,
+    layout: LayoutDefinition
+  ): (SpatialKey, VectorTile) = {
     val layers: Map[String, ProtobufLayer] = tile.layers.map({ l =>
-      val pbl = ProtobufLayer(l)
+      val pbl = ProtobufLayer(l, key, layout)
 
       pbl.name -> pbl
     }).toMap
 
-    new ProtobufTile(layers)
+    (key, new ProtobufTile(layers))
   }
 
   /** Create a [[VectorTile]] from raw Protobuf bytes.
@@ -71,8 +75,12 @@ object ProtobufTile {
     * @param key    A key representing where in the Tile grid ''this'' Tile sits.
     * @param layout A description of the parent Extent and Tile grid.
     */
-  def fromBytes(bytes: Array[Byte]): VectorTile = {  //, key: SpatialKey, layout: LayoutDefinition): VectorTile = {
-    fromPBTile(vt.Tile.parseFrom(bytes))
+  def fromBytes(
+    bytes: Array[Byte],
+    key: SpatialKey,
+    layout: LayoutDefinition
+  ): (SpatialKey, VectorTile) = {
+    fromPBTile(vt.Tile.parseFrom(bytes), key, layout)
   }
 }
 
@@ -84,7 +92,9 @@ object ProtobufTile {
 // Wild, unbased assumption of VT Features: their `id` values can be ignored
 // at read time, and rewritten as anything at write time.
 case class ProtobufLayer(
-  private val rawLayer: vt.Tile.Layer
+  private val rawLayer: vt.Tile.Layer,
+  private val key: SpatialKey,
+  private val layout: LayoutDefinition
 ) extends Layer {
   /* Expected fields */
   def name: String = rawLayer.name
@@ -104,6 +114,17 @@ case class ProtobufLayer(
   /* Unconsumed raw Features */
   private val (pointFs, lineFs, polyFs) = segregate(rawLayer.features)
 
+  /** How much of the [[Extent]] is covered by a single grid coordinate? */
+  private def resolution: Double =
+    layout.extent.height / (layout.layoutRows * extent)
+
+  /** Where in the CRS is the top-left corner of this Tile? */
+  private def topLeft: Point =
+    Point(
+      layout.extent.xmin + (resolution * extent * key.col),
+      layout.extent.ymax - (resolution * extent * key.row)
+    )
+
   /**
    * Polymorphically generate a [[Stream]] of parsed Geometries and
    * their metadata.
@@ -116,7 +137,7 @@ case class ProtobufLayer(
         Stream.empty[(Either[G1, G2], Map[String, Value])]
       } else {
         val geoms = fs.head.geometry
-        val g = protobufGeom.fromCommands(Command.commands(geoms))
+        val g = protobufGeom.fromCommands(Command.commands(geoms), topLeft, resolution)
 
         (g, getMeta(rawLayer.keys, rawLayer.values, fs.head.tags)) #:: loop(fs.tail)
       }
@@ -157,6 +178,8 @@ case class ProtobufLayer(
    * was later attempted. It turns out `foldLeft` is about 20% slower, so we've
    * kept the original implementation.
    */
+  // TODO Might be possible to use `flatMap` here, and return `Option`
+  // values. The Stream docs claim this will still be lazy.
   lazy val points: Stream[Feature[Point, Map[String, Value]]] = pointStream
     .filter(_._1.isLeft)
     .map({ case (Left(p), meta) => Feature(p, meta) })
