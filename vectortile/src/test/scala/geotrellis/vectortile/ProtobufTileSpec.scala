@@ -16,7 +16,12 @@
 
 package geotrellis.vectortile
 
+import geotrellis.raster.TileLayout
+import geotrellis.spark.SpatialKey
+import geotrellis.spark.tiling.LayoutDefinition
+import geotrellis.vector.Extent
 import geotrellis.vectortile.protobuf.ProtobufTile
+
 import org.scalatest._
 
 import java.nio.file.{ Files, Paths }
@@ -24,6 +29,12 @@ import java.nio.file.{ Files, Paths }
 // --- //
 
 class ProtobufTileSpec extends FunSpec with Matchers {
+  val spatialKey = SpatialKey(0, 0)
+  val layout = LayoutDefinition(
+    Extent(0, 0, 4096, 4096),
+    TileLayout(1, 1, 4096, 4096)
+  )
+
   def read(file: String): Array[Byte] = {
     Files.readAllBytes(Paths.get(file))
   }
@@ -34,13 +45,13 @@ class ProtobufTileSpec extends FunSpec with Matchers {
 
   describe("onepoint.mvt") {
     it("must decode") {
-      ProtobufTile.fromBytes(read("vectortile/data/onepoint.mvt"))
+      ProtobufTile.fromBytes(read("vectortile/data/onepoint.mvt"), spatialKey, layout)
     }
 
     it("decode, encode and decode again") {
-      val tile = ProtobufTile.fromBytes(read("vectortile/data/onepoint.mvt"))
+      val tile = ProtobufTile.fromBytes(read("vectortile/data/onepoint.mvt"), spatialKey, layout)._2
       val bytes = tile.asInstanceOf[ProtobufTile].toBytes
-      val tile2 = ProtobufTile.fromBytes(bytes)
+      val tile2 = ProtobufTile.fromBytes(bytes, spatialKey, layout)._2
 
       tile.layers.keys should equal(tile2.layers.keys)
     }
@@ -48,13 +59,13 @@ class ProtobufTileSpec extends FunSpec with Matchers {
 
   describe("linestring.mvt") {
     it("must decode") {
-      ProtobufTile.fromBytes(read("vectortile/data/linestring.mvt"))
+      ProtobufTile.fromBytes(read("vectortile/data/linestring.mvt"), spatialKey, layout)
     }
 
     it("decode, encode and decode again") {
-      val tile = ProtobufTile.fromBytes(read("vectortile/data/linestring.mvt"))
+      val tile = ProtobufTile.fromBytes(read("vectortile/data/linestring.mvt"), spatialKey, layout)._2
       val bytes = tile.asInstanceOf[ProtobufTile].toBytes
-      val tile2 = ProtobufTile.fromBytes(bytes)
+      val tile2 = ProtobufTile.fromBytes(bytes, spatialKey, layout)._2
 
       tile.layers.keys should equal(tile2.layers.keys)
     }
@@ -62,13 +73,13 @@ class ProtobufTileSpec extends FunSpec with Matchers {
 
   describe("polygon.mvt") {
     it("must decode") {
-      ProtobufTile.fromBytes(read("vectortile/data/polygon.mvt"))
+      ProtobufTile.fromBytes(read("vectortile/data/polygon.mvt"), spatialKey, layout)
     }
 
     it("decode, encode and decode again") {
-      val tile = ProtobufTile.fromBytes(read("vectortile/data/polygon.mvt"))
+      val tile = ProtobufTile.fromBytes(read("vectortile/data/polygon.mvt"), spatialKey, layout)._2
       val bytes = tile.asInstanceOf[ProtobufTile].toBytes
-      val tile2 = ProtobufTile.fromBytes(bytes)
+      val tile2 = ProtobufTile.fromBytes(bytes, spatialKey, layout)._2
 
       tile.layers.keys should equal(tile2.layers.keys)
     }
@@ -76,13 +87,13 @@ class ProtobufTileSpec extends FunSpec with Matchers {
 
   describe("roads.mvt") {
     it("must decode") {
-      ProtobufTile.fromBytes(read("vectortile/data/roads.mvt"))
+      ProtobufTile.fromBytes(read("vectortile/data/roads.mvt"), spatialKey, layout)
     }
 
     it("decode, encode and decode again") {
-      val tile = ProtobufTile.fromBytes(read("vectortile/data/roads.mvt"))
+      val tile = ProtobufTile.fromBytes(read("vectortile/data/roads.mvt"), spatialKey, layout)._2
       val bytes = tile.asInstanceOf[ProtobufTile].toBytes
-      val tile2 = ProtobufTile.fromBytes(bytes)
+      val tile2 = ProtobufTile.fromBytes(bytes, spatialKey, layout)._2
 
       tile.layers.keys should equal(tile2.layers.keys)
     }
