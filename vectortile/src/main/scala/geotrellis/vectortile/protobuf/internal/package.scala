@@ -84,6 +84,7 @@ package object internal {
     * @param point      A point in a VectorTile geometry, in grid coordinates.
     * @param topLeft    The location in the current CRS of the top-left corner of this Tile.
     * @param resolution How much of the CRS's units are covered by a single VT grid coordinate.
+    * @return The [[Point]] projected into the CRS.
     *
     * ===Translation Logic===
     * Extents always exist in ''some'' CRS. Below is information for
@@ -117,10 +118,10 @@ package object internal {
     * }}}
     *
     */
-  def toProjection(point: Point, topLeft: Point, resolution: Double): Point = {
+  def toProjection(point: (Int, Int), topLeft: Point, resolution: Double): Point = {
     Point(
-      topLeft.x + (resolution * point.x),
-      topLeft.y - (resolution * point.y)
+      topLeft.x + (resolution * point._1),
+      topLeft.y - (resolution * point._2)
     )
   }
 
@@ -131,6 +132,7 @@ package object internal {
     * @param point The [[Point]] in CRS space.
     * @param topLeft The CRS coordinates of the top-left corner of this Tile.
     * @param resolution How much of the CRS's units are covered by a single VT grid coordinate.
+    * @return Grid coordinates in VectorTile space.
     */
   // TODO Is `toInt` good enough for rounding?
   def fromProjection(point: Point, topLeft: Point, resolution: Double): (Int, Int) = {
@@ -148,9 +150,7 @@ package object internal {
       resolution: Double
     ): Either[Point, MultiPoint] = cmds match {
       case MoveTo(ps) +: Nil => {
-        val points = expand(ps).map({ case (x, y) =>
-          toProjection(Point(x.toDouble, y.toDouble), topLeft, resolution)
-        })
+        val points = expand(ps).map(p => toProjection(p, topLeft, resolution))
 
         if (points.length == 1) Left(points.head) else Right(MultiPoint(points))
       }
@@ -231,7 +231,12 @@ package object internal {
       topLeft: Point,
       resolution: Double
     ): Either[Polygon, MultiPolygon] = {
-      @tailrec def work(cs: Seq[Command], lines: ListBuffer[Line], cursor: (Int, Int)): ListBuffer[Line] = cs match {
+
+      @tailrec def work(
+        cs: Seq[Command],
+        lines: ListBuffer[ListBuffer[(Int,Int)]],
+        cursor: (Int, Int)
+      ): ListBuffer[ListBuffer[(Int,Int)]] = cs match {
         case MoveTo(p) +: LineTo(ps) +: ClosePath +: rest => {
           /* `ClosePath` does not move the cursor, so we have to be
            * clever about how we manage the cursor and the closing point
@@ -244,24 +249,26 @@ package object internal {
           /* Add the starting point to close the Line into a Polygon */
           points.append(here)
 
-          val line = Line(points.map({ case (x, y) => (x.toDouble, y.toDouble) }))
-
-          work(rest, lines += line, nextCursor)
+          work(rest, lines += points, nextCursor)
         }
         case Nil => lines
         case _ => throw IncompatibleCommandSequence("Expected: [MoveTo(p +: Nil), LineTo(ps), ClosePath, ... ]")
       }
 
       /* Collect all rings, whether external or internal */
-      val lines: ListBuffer[Line] = work(cmds, new ListBuffer[Line], (0, 0))
+      val lines: ListBuffer[ListBuffer[(Int, Int)]] = work(
+        cmds,
+        new ListBuffer[ListBuffer[(Int,Int)]],
+        (0, 0)
+      )
 
       /* Translate a [[Line]] to CRS coordinates */
-      def tr(line: Line): Line =
-        Line(line.points.map(p => toProjection(p, topLeft, resolution)))
+      def tr(line: ListBuffer[(Int, Int)]): Line =
+        Line(line.map(p => toProjection(p, topLeft, resolution)))
 
       /* Process interior rings */
       var polys = new ListBuffer[Polygon]
-      var currL: Line = lines.head
+      var currL: ListBuffer[(Int,Int)] = lines.head
       var holes = new ListBuffer[Line]
 
       lines.tail.foreach({ line =>
@@ -322,11 +329,11 @@ package object internal {
    * If the value reported here is negative, then the [[Polygon]] should be
    * considered an Interior Ring.
    */
-  private def surveyor(l: Line): Double = {
-    val ps: Array[Point] = l.points.init
-    val xs = ps.map(_.x)
-    val yns = (ps :+ ps.head).tail.map(_.y)
-    val yps = (ps.last +: ps).init.map(_.y)
+  private def surveyor(l: ListBuffer[(Int, Int)]): Double = {
+    val ps: ListBuffer[(Int, Int)] = l.init
+    val xs = ps.map(_._1)
+    val yns = (ps :+ ps.head).tail.map(_._2)
+    val yps = (ps.last +: ps).init.map(_._2)
 
     var sum: Double = 0
     var i: Int = 0
