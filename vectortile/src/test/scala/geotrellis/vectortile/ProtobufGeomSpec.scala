@@ -24,7 +24,7 @@ import org.scalatest._
 
 class ProtobufGeomSpec extends FunSpec with Matchers {
   /* Naive `LayoutDefinition` values */
-  val topLeft = Point(0, 0)
+  val topLeft = Point(0, 4096)
   val resolution: Double = 1
 
   describe("Geometry Isomorphisms") {
@@ -36,7 +36,7 @@ class ProtobufGeomSpec extends FunSpec with Matchers {
         resolution
       )
 
-      p shouldBe Left(Point(2, 2))
+      p shouldBe Left(Point(2, 4094))
       Command.uncommands(implicitly[ProtobufGeom[Point, MultiPoint]].toCommands(
         p,
         topLeft,
@@ -52,7 +52,7 @@ class ProtobufGeomSpec extends FunSpec with Matchers {
         resolution
       )
 
-      p shouldBe Right(MultiPoint(Point(2, 2), Point(5, 5), Point(3, 3)))
+      p shouldBe Right(MultiPoint(Point(2, 4094), Point(5, 4091), Point(3, 4093)))
       Command.uncommands(implicitly[ProtobufGeom[Point, MultiPoint]].toCommands(
         p,
         topLeft,
@@ -68,7 +68,7 @@ class ProtobufGeomSpec extends FunSpec with Matchers {
         resolution
       )
 
-      l shouldBe Left(Line((2, 2), (5, 4), (2, 6)))
+      l shouldBe Left(Line((2, 4094), (5, 4092), (2, 4090)))
       Command.uncommands(implicitly[ProtobufGeom[Line, MultiLine]].toCommands(
         l,
         topLeft,
@@ -85,8 +85,8 @@ class ProtobufGeomSpec extends FunSpec with Matchers {
       )
 
       l shouldBe Right(MultiLine(
-        Line((2, 2), (5, 4), (2, 6)),
-        Line((4, 8), (7, 10), (4, 12))
+        Line((2, 4094), (5, 4092), (2, 4090)),
+        Line((4, 4088), (7, 4086), (4, 4084))
       ))
       Command.uncommands(implicitly[ProtobufGeom[Line, MultiLine]].toCommands(
         l,
@@ -103,7 +103,7 @@ class ProtobufGeomSpec extends FunSpec with Matchers {
         resolution
       )
 
-      p shouldBe Left(Polygon((2, 2), (5, 4), (2, 6), (2, 2)))
+      p shouldBe Left(Polygon((2, 4094), (5, 4092), (2, 4090), (2, 4094)))
       Command.uncommands(implicitly[ProtobufGeom[Polygon, MultiPolygon]].toCommands(
         p,
         topLeft,
@@ -120,8 +120,8 @@ class ProtobufGeomSpec extends FunSpec with Matchers {
       )
 
       p shouldBe Left(Polygon(
-        exterior = Line((2, 2), (5, 2), (5, 5), (2, 5), (2, 2)),
-        holes = Seq(Line((3, 3), (3, 4), (4, 4), (4, 3), (3, 3)))
+        exterior = Line((2, 4094), (5, 4094), (5, 4091), (2, 4091), (2, 4094)),
+        holes = Seq(Line((3, 4093), (3, 4092), (4, 4092), (4, 4093), (3, 4093)))
       ))
       Command.uncommands(implicitly[ProtobufGeom[Polygon, MultiPolygon]].toCommands(
         p,
@@ -139,8 +139,8 @@ class ProtobufGeomSpec extends FunSpec with Matchers {
       )
 
       p shouldBe Right(MultiPolygon(
-        Polygon((2, 2), (5, 4), (2, 6), (2, 2)),
-        Polygon((4, 8), (7, 10), (4, 12), (4, 8))
+        Polygon((2, 4094), (5, 4092), (2, 4090), (2, 4094)),
+        Polygon((4, 4088), (7, 4086), (4, 4084), (4, 4088))
       ))
       Command.uncommands(implicitly[ProtobufGeom[Polygon, MultiPolygon]].toCommands(
         p,
@@ -162,11 +162,11 @@ class ProtobufGeomSpec extends FunSpec with Matchers {
 
       p shouldBe Right(MultiPolygon(
         Polygon(
-          exterior = Line((2, 2), (5, 2), (5, 5), (2, 5), (2, 2)),
-          holes = Seq(Line((3, 3), (3, 4), (4, 4), (4, 3), (3, 3)))
+          exterior = Line((2, 4094), (5, 4094), (5, 4091), (2, 4091), (2, 4094)),
+          holes = Seq(Line((3, 4093), (3, 4092), (4, 4092), (4, 4093), (3, 4093)))
         ),
         Polygon(
-          (6, 5), (9, 5), (9, 8), (6, 8), (6, 5)
+          (6, 4091), (9, 4091), (9, 4088), (6, 4088), (6, 4091)
         )
       ))
       Command.uncommands(implicitly[ProtobufGeom[Polygon, MultiPolygon]].toCommands(
