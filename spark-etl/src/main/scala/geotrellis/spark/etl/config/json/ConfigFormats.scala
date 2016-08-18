@@ -121,6 +121,7 @@ trait ConfigFormats {
                 case S3Type => js.convertTo[S3Profile]
                 case AccumuloType => js.convertTo[AccumuloProfile]
                 case CassandraType => js.convertTo[CassandraProfile]
+                case HBaseType => js.convertTo[HBaseProfile]
               })
               case _ =>
                 throw new DeserializationException("BackendProfiles must be a valid json object.")
