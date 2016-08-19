@@ -56,38 +56,45 @@ object GeoWaveFeatureRDDWriter {
     implicit val sc = features.sparkContext
     val trans = KryoWrapper(transmute)
     val kryoFeatureType = KryoWrapper(simpleFeatureType)
-    features.foreach({ feature =>
+    features.foreachPartition({ featureIterator =>
       // Secure the basic operations
-      val accumuloOperations = new BasicAccumuloOperations(
-        zookeepers,
-        accumuloInstanceName,
-        accumuloInstanceUser,
-        accumuloInstancePass,
-        gwNamespace
-      )
+      val accumuloOperations =
+        new BasicAccumuloOperations(
+          zookeepers,
+          accumuloInstanceName,
+          accumuloInstanceUser,
+          accumuloInstancePass,
+          gwNamespace
+        )
 
       // Generate accumulo options instance
       val accumuloOpts = new AccumuloOptions
       accumuloOpts.setPersistDataStatistics(true)
 
       // Initialize geowave datastore
-      val gwDataStore = new AccumuloDataStore(
-        new AccumuloIndexStore(accumuloOperations),
-        new AccumuloAdapterStore(accumuloOperations),
-        new AccumuloDataStatisticsStore(accumuloOperations),
-        new AccumuloSecondaryIndexDataStore(accumuloOperations),
-        new AccumuloAdapterIndexMappingStore(accumuloOperations),
-        accumuloOperations,
-        accumuloOpts
-      )
+      val gwDataStore =
+        new AccumuloDataStore(
+          new AccumuloIndexStore(accumuloOperations),
+          new AccumuloAdapterStore(accumuloOperations),
+          new AccumuloDataStatisticsStore(accumuloOperations),
+          new AccumuloSecondaryIndexDataStore(accumuloOperations),
+          new AccumuloAdapterIndexMappingStore(accumuloOperations),
+          accumuloOperations,
+          accumuloOpts
+        )
 
       val gwDataAdapter = new FeatureDataAdapter(kryoFeatureType.value)
       val gw2dIndex = (new SpatialDimensionalityTypeProvider).createPrimaryIndex
 
-      val writer = gwDataStore.createWriter(gwDataAdapter, gw2dIndex).asInstanceOf[IndexWriter[SimpleFeature]]
-      writer.write(feature.toSimpleFeature())
+      val writer =
+        gwDataStore
+          .createWriter(gwDataAdapter, gw2dIndex)
+          .asInstanceOf[IndexWriter[SimpleFeature]]
+
+      featureIterator.foreach({ feature =>
+        writer.write(feature.toSimpleFeature())
+      })
       writer.close()
     })
-
   }
 }
