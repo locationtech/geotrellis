@@ -2,6 +2,7 @@ package geotrellis.spark.io.cassandra
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+
 import com.datastax.driver.core.{ResultSet, Session}
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{set, eq => eqs}

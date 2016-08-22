@@ -1,12 +1,15 @@
 package geotrellis.spark.etl
 
+import geotrellis.spark.etl.config.{AccumuloPath, AccumuloProfile, Backend, BackendProfile}
 import geotrellis.spark.io.accumulo.AccumuloInstance
-import org.apache.accumulo.core.client.security.tokens.PasswordToken
-
 
 package object accumulo {
+  private[accumulo] def getInstance(bp: Option[BackendProfile]): AccumuloInstance =
+    bp.collect { case ap: AccumuloProfile => ap.getInstance }.get
 
-  private[accumulo] def getInstance(props: Map[String, String]): AccumuloInstance =
-    AccumuloInstance(props("instance"), props("zookeeper"), props("user"), new PasswordToken(props("password")))
-
+  def getPath(b: Backend): AccumuloPath =
+    b.path match {
+      case p: AccumuloPath => p
+      case _ => throw new Exception("Path string not corresponds backend type")
+    }
 }

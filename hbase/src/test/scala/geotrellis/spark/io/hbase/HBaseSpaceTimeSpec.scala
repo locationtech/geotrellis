@@ -19,6 +19,7 @@ class HBaseSpaceTimeSpec
     instance.getAdmin.disableTable("tiles")
     instance.getAdmin.deleteTable("metadata")
     instance.getAdmin.deleteTable("tiles")
+    instance.getAdmin.close()
   }
 
   lazy val instance       = HBaseInstance(Seq("localhost"), "localhost")

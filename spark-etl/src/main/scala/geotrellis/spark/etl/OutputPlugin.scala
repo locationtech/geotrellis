@@ -1,28 +1,23 @@
 package geotrellis.spark.etl
 
-import geotrellis.spark.{Metadata, LayerId, TileLayerRDD}
-import geotrellis.spark.io.{Writer, AttributeStore}
-import geotrellis.spark.io.index.KeyIndexMethod
+import geotrellis.spark.etl.config.EtlConf
+import geotrellis.spark.{LayerId, Metadata}
+import geotrellis.spark.io.{AttributeStore, Writer}
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-import spray.json.JsonFormat
-
 trait OutputPlugin[K, V, M] extends Plugin {
   def name: String
 
-  def attributes(props: Parameters): AttributeStore
+  def attributes(conf: EtlConf): AttributeStore
 
-  def writer(method: KeyIndexMethod[K], props: Parameters)(implicit sc: SparkContext): Writer[LayerId, RDD[(K, V)] with Metadata[M]]
+  def writer(conf: EtlConf)(implicit sc: SparkContext): Writer[LayerId, RDD[(K, V)] with Metadata[M]]
 
-  def apply(id: LayerId, rdd: RDD[(K, V)] with Metadata[M], method: KeyIndexMethod[K], props: Map[String, String]): Unit = {
+  def apply(id: LayerId, rdd: RDD[(K, V)] with Metadata[M], conf: EtlConf): Unit = {
     implicit val sc = rdd.sparkContext
-    writer(method, props).write(id, rdd)
+    writer(conf).write(id, rdd)
   }
-
-  def validate(props: Map[String, String]) =
-    requireKeys(name, props, requiredKeys)
 
   def suitableFor(name: String): Boolean =
     name.toLowerCase == this.name
