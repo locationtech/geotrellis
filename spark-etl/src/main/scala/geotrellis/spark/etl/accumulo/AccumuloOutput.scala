@@ -29,5 +29,5 @@ trait AccumuloOutput[K, V, M] extends OutputPlugin[K, V, M] with LazyLogging {
     case _ => throw new Exception("Backend profile not matches backend type")
   }
   
-  def attributes(conf: EtlConf) = AccumuloAttributeStore(getInstance(conf.outputProfile).connector, getPath(conf.output.backend).table)
+  def attributes(conf: EtlConf) = AccumuloAttributeStore(getInstance(conf.outputProfile).connector)
 }
