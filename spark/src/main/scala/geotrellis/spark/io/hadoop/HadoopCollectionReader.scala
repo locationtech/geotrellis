@@ -70,9 +70,7 @@ class HadoopCollectionReader(maxOpenFiles: Int) {
             if (indexFilterOnly) Some(items, iter)
             else Some(items.filter { row => includeKey(row._1) }, iter)
           }
-        } else {
-          None
-        }
+        } else None
       }
     }
 

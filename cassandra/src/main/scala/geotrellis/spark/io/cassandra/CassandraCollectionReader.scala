@@ -46,9 +46,7 @@ object CassandraCollectionReader {
       .and(eqs("zoom", layerId.zoom))
       .toString
 
-    val pool = Executors.newFixedThreadPool(threads)
-
-    val result = instance.withSessionDo { session =>
+    instance.withSessionDo { session =>
       val statement = session.prepare(query)
 
       CollectionLayerReader.njoin[K, V](ranges, { iter =>
@@ -62,9 +60,7 @@ object CassandraCollectionReader {
             else Some(recs.filter { row => includeKey(row._1) }, iter)
           } else Some(Vector.empty, iter)
         } else None
-      }, threads, pool)
+      }, threads)
     }
-
-    pool.shutdown(); result
   }
 }

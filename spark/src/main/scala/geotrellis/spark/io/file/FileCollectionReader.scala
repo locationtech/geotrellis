@@ -11,7 +11,6 @@ import org.apache.avro.Schema
 import com.typesafe.config.ConfigFactory
 
 import java.io.File
-import java.util.concurrent.Executors
 
 object FileCollectionReader {
   def read[K: AvroRecordCodec : Boundable, V: AvroRecordCodec](
@@ -32,9 +31,7 @@ object FileCollectionReader {
     val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
     val _recordCodec = KeyValueRecordCodec[K, V]
 
-    val pool = Executors.newFixedThreadPool(threads)
-
-    val result = CollectionLayerReader.njoin[K, V](ranges, { iter =>
+    CollectionLayerReader.njoin[K, V](ranges, { iter =>
       if (iter.hasNext) {
         val index = iter.next()
         val path = keyPath(index)
@@ -45,8 +42,6 @@ object FileCollectionReader {
           else Some(recs.filter { row => includeKey(row._1) }, iter)
         } else Some(Vector(), iter)
       } else None
-    }, threads, pool)
-
-    pool.shutdown(); result
+    }, threads)
   }
 }

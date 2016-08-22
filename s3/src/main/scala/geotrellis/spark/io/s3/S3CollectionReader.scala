@@ -41,9 +41,7 @@ trait S3CollectionReader {
     val _getS3Client = getS3Client
     val s3client = _getS3Client()
 
-    val pool = Executors.newFixedThreadPool(threads)
-
-    val result = CollectionLayerReader.njoin[K, V](ranges, { iter =>
+    CollectionLayerReader.njoin[K, V](ranges, { iter =>
       if (iter.hasNext) {
         val index = iter.next()
         val path = keyPath(index)
@@ -58,9 +56,7 @@ trait S3CollectionReader {
           case e: AmazonS3Exception if e.getStatusCode == 404 => Some(Vector.empty, iter)
         }
       } else None
-    }, threads, pool)
-
-    pool.shutdown(); result
+    }, threads)
   }
 }
 
