@@ -17,7 +17,7 @@ class AccumuloLayerCollectionReader(val attributeStore: AttributeStore)(implicit
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
-  ](id: LayerId, rasterQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
+  ](id: LayerId, rasterQuery: LayerQuery[K, M], filterIndexOnly: Boolean) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {

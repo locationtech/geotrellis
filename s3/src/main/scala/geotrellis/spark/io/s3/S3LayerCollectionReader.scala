@@ -27,7 +27,7 @@ class S3LayerCollectionReader(val attributeStore: AttributeStore) extends Collec
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
-  ](id: LayerId, rasterQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
+  ](id: LayerId, rasterQuery: LayerQuery[K, M], filterIndexOnly: Boolean) = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
@@ -43,7 +43,7 @@ class S3LayerCollectionReader(val attributeStore: AttributeStore) extends Collec
     val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
     val keyPath = (index: Long) => makePath(prefix, Index.encode(index, maxWidth))
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
-    val seq = collectionReader.read[K, V](bucket, keyPath, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema), Some(numPartitions))
+    val seq = collectionReader.read[K, V](bucket, keyPath, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema))
 
     new ContextCollection(seq, metadata)
   }
