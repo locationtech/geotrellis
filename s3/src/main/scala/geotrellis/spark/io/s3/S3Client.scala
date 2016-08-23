@@ -80,11 +80,6 @@ trait S3Client extends LazyLogging {
 
   def readBytes(getObjectRequest: GetObjectRequest): Array[Byte]
 
-  def readBuffer(bucketName: String, key: String): ByteBuffer =
-    readBuffer(new GetObjectRequest(bucketName, key))
-
-  def readBuffer(getObjectRequest: GetObjectRequest): ByteBuffer
-
   def listObjectsIterator(bucketName: String, prefix: String, maxKeys: Int = 0): Iterator[S3ObjectSummary] =
       listObjectsIterator(new ListObjectsRequest(bucketName, prefix, null, null, if (maxKeys == 0) null else maxKeys))
 
@@ -177,18 +172,6 @@ class AmazonS3Client(s3client: AWSAmazonS3Client) extends S3Client {
     val inStream = obj.getObjectContent
     try {
       IOUtils.toByteArray(inStream)
-    } finally {
-      inStream.close()
-    }
-  }
-  
-  def readBuffer(getObjectRequest: GetObjectRequest): ByteBuffer = {
-    val obj = s3client.getObject(getObjectRequest)
-    val inStream = obj.getObjectContent
-    try {
-      val length = obj.getObjectMetadata.getContentLength
-      val buffer = ByteBuffer.allocateDirect(length.toInt)
-      buffer.fromInputStream(inStream, length.toInt)
     } finally {
       inStream.close()
     }

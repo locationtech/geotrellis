@@ -274,13 +274,5 @@ trait ByteBufferExtensions {
 
       arr
     }
-
-    final def fromInputStream(input: InputStream, length: Int): ByteBuffer = {
-      cfor(0)(_ < length, _ + 1) { i =>
-        byteBuffer.put(i, (input.read).toByte)
-      }
-      byteBuffer.position(0)
-      byteBuffer
-    }
   }
 }
