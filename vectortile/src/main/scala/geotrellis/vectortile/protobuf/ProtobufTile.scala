@@ -171,40 +171,49 @@ case class ProtobufLayer(
   private lazy val lineStream = geomStream[Line, MultiLine](lineFs)
   private lazy val polyStream = geomStream[Polygon, MultiPolygon](polyFs)
 
+  /* OPTIMIZATION NOTES
+   * `Stream.flatMap` maintains laziness. A common pattern here to "fold away"
+   * results you don't want are to use [[Option]]. However, flatMap here
+   * expects an [[Iterable]], and employs an implicit conversion from [[Option]]
+   * to get it.
+   *
+   * By calling directly what that implicit eventually calls at the bottom of
+   * its call stack, we save some operations.
+   */
   lazy val points: Stream[Feature[Point, Map[String, Value]]] = pointStream
     .flatMap({
-      case (Left(p), meta) => Some(Feature(p, meta))
-      case _ => None
+      case (Left(p), meta) => new ::(Feature(p, meta), Nil)
+      case _ => Nil
     })
 
   lazy val multiPoints: Stream[Feature[MultiPoint, Map[String, Value]]] = pointStream
     .flatMap({
-      case (Right(p), meta) => Some(Feature(p, meta))
-      case _ => None
+      case (Right(p), meta) => new ::(Feature(p, meta), Nil)
+      case _ => Nil
     })
 
   lazy val lines: Stream[Feature[Line, Map[String, Value]]] = lineStream
     .flatMap({
-      case (Left(p), meta) => Some(Feature(p, meta))
-      case _ => None
+      case (Left(p), meta) => new ::(Feature(p, meta), Nil)
+      case _ => Nil
     })
 
   lazy val multiLines: Stream[Feature[MultiLine, Map[String, Value]]] = lineStream
     .flatMap({
-      case (Right(p), meta) => Some(Feature(p, meta))
-      case _ => None
+      case (Right(p), meta) => new ::(Feature(p, meta), Nil)
+      case _ => Nil
     })
 
   lazy val polygons: Stream[Feature[Polygon, Map[String, Value]]] = polyStream
     .flatMap({
-      case (Left(p), meta) => Some(Feature(p, meta))
-      case _ => None
+      case (Left(p), meta) => new ::(Feature(p, meta), Nil)
+      case _ => Nil
     })
 
   lazy val multiPolygons: Stream[Feature[MultiPolygon, Map[String, Value]]] = polyStream
     .flatMap({
-      case (Right(p), meta) => Some(Feature(p, meta))
-      case _ => None
+      case (Right(p), meta) => new ::(Feature(p, meta), Nil)
+      case _ => Nil
     })
 
   /**
