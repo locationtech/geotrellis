@@ -3,9 +3,7 @@
 //
 // Protofile syntax: PROTO2
 
-package vector_tile.vector_tile
-
-
+package geotrellis.vectortile.protobuf.internal.vector_tile
 
 object VectorTileProto {
   lazy val descriptor: com.google.protobuf.Descriptors.FileDescriptor = {

@@ -16,7 +16,7 @@
 
 package geotrellis.vectortile.protobuf
 
-import vector_tile.{vector_tile => vt}
+import geotrellis.vectortile.protobuf.internal.{vector_tile => vt}
 
 // --- //
 

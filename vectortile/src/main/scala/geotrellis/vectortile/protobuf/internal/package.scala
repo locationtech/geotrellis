@@ -20,8 +20,7 @@ import geotrellis.vector._
 import geotrellis.vectortile.protobuf.internal.ProtobufGeom
 import geotrellis.spark.SpatialKey
 import geotrellis.spark.tiling.LayoutDefinition
-
-import vector_tile.{vector_tile => vt}
+import geotrellis.vectortile.protobuf.internal.{vector_tile => vt}
 
 import com.vividsolutions.jts.geom.LineString
 import java.lang.IllegalArgumentException

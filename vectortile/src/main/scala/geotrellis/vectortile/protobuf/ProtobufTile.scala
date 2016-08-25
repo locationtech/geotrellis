@@ -21,8 +21,8 @@ import geotrellis.vectortile.{Layer, VectorTile}
 import geotrellis.vectortile.protobuf.internal._
 import geotrellis.spark.SpatialKey
 import geotrellis.spark.tiling.LayoutDefinition
-import vector_tile.{vector_tile => vt}
-import vector_tile.vector_tile.Tile.GeomType.{POINT, LINESTRING, POLYGON}
+import geotrellis.vectortile.protobuf.internal.{vector_tile => vt}
+import geotrellis.vectortile.protobuf.internal.vector_tile.Tile.GeomType.{POINT, LINESTRING, POLYGON}
 
 import scala.collection.mutable.ListBuffer
 
