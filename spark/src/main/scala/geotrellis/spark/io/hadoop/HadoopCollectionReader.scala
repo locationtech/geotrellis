@@ -1,7 +1,7 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
-import geotrellis.spark.io.LayerIOError
+import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.hadoop.formats.FilterMapFileInputFormat
@@ -32,7 +32,7 @@ class HadoopCollectionReader(maxOpenFiles: Int) {
     decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
     indexFilterOnly: Boolean,
     writerSchema: Option[Schema] = None,
-    threads: Int = ConfigFactory.load().getInt("geotrellis.hadoop.threads.collection.read")): Seq[(K, V)] = {
+    threads: Int = ConfigFactory.load().getThreads("geotrellis.hadoop.threads.collection.read")): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
     val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)
@@ -60,9 +60,8 @@ class HadoopCollectionReader(maxOpenFiles: Int) {
           val valueWritable = pathRanges
             .find { row => index >= row._2 && index <= row._3 }
             .map { case (p, _, _) => readers.getOrInsert(p, new MapFile.Reader(p, conf)) }
-            .getOrElse(throw new LayerIOError(s"Index ${index} not found."))
-            .get(new LongWritable(index), new BytesWritable())
-            .asInstanceOf[BytesWritable]
+            .map(_.get(new LongWritable(index), new BytesWritable()).asInstanceOf[BytesWritable])
+            .getOrElse { println(s"Index ${index} not found."); null }
 
           if (valueWritable == null) Some(Vector(), iter)
           else {

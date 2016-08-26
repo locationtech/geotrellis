@@ -1,5 +1,6 @@
 package geotrellis.spark.io.accumulo
 
+import geotrellis.spark.io._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.{Boundable, KeyBounds}
@@ -26,7 +27,7 @@ object AccumuloCollectionReader {
     decomposeBounds: KeyBounds[K] => Seq[AccumuloRange],
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
-    threads: Int = ConfigFactory.load().getInt("geotrellis.accumulo.threads.collection.read")
+    threads: Int = ConfigFactory.load().getThreads("geotrellis.accumulo.threads.collection.read")
   )(implicit instance: AccumuloInstance): Seq[(K, V)] = {
     if(queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
@@ -58,7 +59,7 @@ object AccumuloCollectionReader {
 
     val read = range.tee(readChannel)(tee.zipApply).map(Process.eval)
 
-    val result =
+    val result: Seq[(K, V)] =
       nondeterminism
         .njoin(maxOpen = threads, maxQueued = threads) { read }(Strategy.Executor(pool))
         .runFoldMap(identity).unsafePerformSync

@@ -1,10 +1,11 @@
 package geotrellis.spark.io.cassandra
 
-import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.spark.util.KryoWrapper
 import geotrellis.spark.{Boundable, KeyBounds, LayerId}
+import geotrellis.spark.io._
+import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
+import geotrellis.spark.util.KryoWrapper
 
 import scalaz.concurrent.{Strategy, Task}
 import scalaz.std.vector._
@@ -32,7 +33,7 @@ object CassandraRDDReader {
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
     numPartitions: Option[Int] = None,
-    threads: Int = ConfigFactory.load().getInt("geotrellis.cassandra.threads.rdd.read")
+    threads: Int = ConfigFactory.load().getThreads("geotrellis.cassandra.threads.rdd.read")
   )(implicit sc: SparkContext): RDD[(K, V)] = {
     if (queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
 

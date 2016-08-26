@@ -1,7 +1,7 @@
 package geotrellis.spark.io.cassandra
 
 import geotrellis.spark.{Boundable, KeyBounds, LayerId}
-import geotrellis.spark.io.CollectionLayerReader
+import geotrellis.spark.io._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.io.index.MergeQueue
@@ -12,7 +12,6 @@ import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
 import com.typesafe.config.ConfigFactory
 
-import java.util.concurrent.Executors
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
@@ -26,7 +25,7 @@ object CassandraCollectionReader {
     decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
-    threads: Int = ConfigFactory.load().getInt("geotrellis.cassandra.threads.collection.read")
+    threads: Int = ConfigFactory.load().getThreads("geotrellis.cassandra.threads.collection.read")
   ): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 

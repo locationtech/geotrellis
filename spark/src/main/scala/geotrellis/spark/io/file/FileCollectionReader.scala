@@ -1,7 +1,7 @@
 package geotrellis.spark.io.file
 
 import geotrellis.spark._
-import geotrellis.spark.io.CollectionLayerReader
+import geotrellis.spark.io._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index.MergeQueue
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
@@ -19,7 +19,7 @@ object FileCollectionReader {
     decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
-    threads: Int = ConfigFactory.load().getInt("geotrellis.file.threads.collection.read")): Seq[(K, V)] = {
+    threads: Int = ConfigFactory.load().getThreads("geotrellis.file.threads.collection.read")): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
     val ranges = if (queryKeyBounds.length > 1)

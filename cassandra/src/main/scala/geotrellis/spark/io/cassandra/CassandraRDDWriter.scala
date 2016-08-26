@@ -1,5 +1,6 @@
 package geotrellis.spark.io.cassandra
 
+import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.LayerId
@@ -27,7 +28,7 @@ object CassandraRDDWriter {
     decomposeKey: K => Long,
     keyspace: String,
     table: String,
-    threads: Int = ConfigFactory.load().getInt("geotrellis.cassandra.threads.rdd.write")
+    threads: Int = ConfigFactory.load().getThreads("geotrellis.cassandra.threads.rdd.write")
   ): Unit = {
     implicit val sc = raster.sparkContext
 

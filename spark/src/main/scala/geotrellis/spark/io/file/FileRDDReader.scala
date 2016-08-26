@@ -1,6 +1,7 @@
 package geotrellis.spark.io.file
 
 import geotrellis.spark._
+import geotrellis.spark.io._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
@@ -26,7 +27,7 @@ object FileRDDReader {
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
     numPartitions: Option[Int] = None,
-    threads: Int = ConfigFactory.load().getInt("geotrellis.file.threads.rdd.read")
+    threads: Int = ConfigFactory.load().getThreads("geotrellis.file.threads.rdd.read")
   )(implicit sc: SparkContext): RDD[(K, V)] = {
     if(queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
     
