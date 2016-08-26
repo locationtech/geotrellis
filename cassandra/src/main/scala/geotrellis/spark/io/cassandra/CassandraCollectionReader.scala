@@ -60,6 +60,6 @@ object CassandraCollectionReader {
           } else Some(Vector.empty, iter)
         } else None
       }, threads)
-    }
+    }: Seq[(K, V)]
   }
 }

@@ -55,7 +55,7 @@ trait S3CollectionReader {
           case e: AmazonS3Exception if e.getStatusCode == 404 => Some(Vector.empty, iter)
         }
       } else None
-    }, threads)
+    }, threads): Seq[(K, V)]
   }
 }
 
