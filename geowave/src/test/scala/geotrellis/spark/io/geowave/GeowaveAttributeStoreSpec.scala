@@ -12,7 +12,7 @@ class GeowaveAttributeStoreSpec
       .foreach(attributeStore.delete(_))
 
   lazy val attributeStore = new GeowaveAttributeStore(
-    "leader",
+    "leader:21810",
     "instance",
     "root",
     "password",

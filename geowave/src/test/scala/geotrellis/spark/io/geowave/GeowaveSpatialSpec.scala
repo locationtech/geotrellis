@@ -31,7 +31,7 @@ class GeowaveSpatialSpec
   val gwNamespace = "TEST"
 
   val attributeStore = new GeowaveAttributeStore(
-    "leader",
+    "leader:21810",
     "instance",
     "root",
     "password",
