@@ -1,6 +1,6 @@
 package geotrellis.spark.io.s3
 
-import java.io.{ByteArrayInputStream}
+import java.io.ByteArrayInputStream
 import com.amazonaws.services.s3.model._
 import java.util.concurrent.ConcurrentHashMap
 import com.amazonaws.services.s3.internal.AmazonS3ExceptionBuilder

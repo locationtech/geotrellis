@@ -483,6 +483,14 @@ abstract class GeoTiffTile(
    */
   def mutable: MutableArrayTile
 
+  /**
+   * Performs a crop on itself where the returned GeoTiffTile will jave the
+   * same dimensions as the GridBounds.
+   *
+   * @param gridBounds: A [[GridBounds]] that contains the area to be cropped.
+   *
+   * @return A [[MutableArrayTile]]
+   */
   def crop(gridBounds: GridBounds): MutableArrayTile
 
   /**

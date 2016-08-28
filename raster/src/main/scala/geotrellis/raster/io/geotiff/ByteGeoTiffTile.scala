@@ -10,7 +10,7 @@ class ByteGeoTiffTile(
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
   val cellType: ByteCells with NoDataHandling
-) extends GeoTiffTile(segmentLayout, compression) with Intersection with ByteGeoTiffSegmentCollection {
+) extends GeoTiffTile(segmentLayout, compression) with ByteGeoTiffSegmentCollection {
 
   val noDataValue: Option[Byte] = cellType match {
     case ByteCellType => None
@@ -60,8 +60,10 @@ class ByteGeoTiffTile(
         if (gridBounds.intersects(segmentGridBounds)) {
           val segment = getSegment(i)
 
-          val result = gridBounds.intersection(segmentGridBounds).get
-          val intersection = Intersection(segmentGridBounds,result, segmentLayout)
+          val result =
+            gridBounds.intersection(segmentGridBounds).get
+          val intersection =
+            Intersection(segmentGridBounds, result, segmentLayout)
 
           cfor(intersection.start)(_ < intersection.end, _ + cols) { i =>
             System.arraycopy(segment.bytes, i, arr, counter, result.width)

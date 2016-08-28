@@ -57,47 +57,34 @@ class CroppedGeoTiffSpec extends FunSpec
       val extent = Extent(0, -7.3, 27.55, -4)
       it("bit") {
         val (expected, actual) = Reader.singleBand(bitStriped, extent)
-
         assertEqual(actual, expected)
       }
-
       it("byte") {
         val (expected, actual) = Reader.singleBand(byteStriped, extent)
-
         assertEqual(actual, expected)
       }
-
       it("int16") {
         val (expected, actual) = Reader.singleBand(int16Striped, extent)
-
         assertEqual(actual, expected)
       }
-
       it("int32") {
         val (expected, actual) = Reader.singleBand(int32Striped, extent)
-        
         assertEqual(actual, expected)
       }
       it("uint16") {
         val (expected, actual) = Reader.singleBand(uint16Striped, extent)
-
         assertEqual(actual, expected)
       }
       it("uint32") {
         val (expected, actual) = Reader.singleBand(uint32Striped, extent)
-
         assertEqual(actual, expected)
       }
-
       it("float32") {
         val (expected, actual) = Reader.singleBand(float32Striped, extent)
-
         assertEqual(actual, expected)
       }
-
       it("float64") {
         val (expected, actual) = Reader.singleBand(float64Striped, extent)
-
         assertEqual(actual, expected)
       }
     }
@@ -106,44 +93,34 @@ class CroppedGeoTiffSpec extends FunSpec
       val extent = Extent(16.55, -8.05, 33.44, -5.955)
       it("bit") {
         val (expected, actual) = Reader.singleBand(bitStriped, extent)
-
         assertEqual(actual, expected)
       }
       it("byte") {
         val (expected, actual) = Reader.singleBand(byteStriped, extent)
-
         assertEqual(actual, expected)
       }
       it("int16") {
         val (expected, actual) = Reader.singleBand(int16Striped, extent)
-
         assertEqual(actual, expected)
       }
       it("int32") {
         val (expected, actual) = Reader.singleBand(int32Striped, extent)
-        
         assertEqual(actual, expected)
       }
-
       it("uint16") {
         val (expected, actual) = Reader.singleBand(uint16Striped, extent)
-
         assertEqual(actual, expected)
       }
       it("uint32") {
         val (expected, actual) = Reader.singleBand(uint32Striped, extent)
-
         assertEqual(actual, expected)
       }
-
       it("float32") {
         val (expected, actual) = Reader.singleBand(float32Striped, extent)
-
         assertEqual(actual, expected)
       }
       it("float64") {
         val (expected, actual) = Reader.singleBand(float64Striped, extent)
-
         assertEqual(actual, expected)
       }
     }
@@ -152,48 +129,34 @@ class CroppedGeoTiffSpec extends FunSpec
       val extent = Extent(0, -7.2, 27.5, -4)
       it("bit") {
         val (expected, actual) = Reader.singleBand(bitTiled, extent)
-
         assertEqual(actual, expected)
       }
-
       it("byte") {
         val (expected, actual) = Reader.singleBand(byteTiled, extent)
-
         assertEqual(actual,expected)
       }
       it("int16") {
         val (expected, actual) = Reader.singleBand(int16Tiled, extent)
-        
         assertEqual(actual,expected)
       }
-
       it("int32") {
         val (expected, actual) = Reader.singleBand(int32Tiled, extent)
-        
         assertEqual(actual,expected)
       }
-
       it("uint16") {
         val (expected, actual) = Reader.singleBand(uint16Tiled, extent)
-        
         assertEqual(actual,expected)
       }
-
       it("uint32") {
         val (expected, actual) = Reader.singleBand(uint32Tiled, extent)
-        
         assertEqual(actual,expected)
       }
-
       it("float32") {
         val (expected, actual) = Reader.singleBand(float32Tiled, extent)
-        
         assertEqual(actual,expected)
       }
-      
       it("float64") {
         val (expected, actual) = Reader.singleBand(float64Tiled, extent)
-        
         assertEqual(actual,expected)
       }
     }
@@ -202,51 +165,39 @@ class CroppedGeoTiffSpec extends FunSpec
       val extent = Extent(21.35, -7.455, 28.65, -6.55)
       it("bit") {
         val (expected, actual) = Reader.singleBand(bitTiled, extent)
-
         assertEqual(actual, expected)
       }
       it("byte") {
         val (expected, actual) = Reader.singleBand(byteTiled, extent)
-
         assertEqual(actual,expected)
       }
       it("int16") {
         val (expected, actual) = Reader.singleBand(int16Tiled, extent)
-        
         assertEqual(actual,expected)
       }
-
       it("int32") {
         val (expected, actual) = Reader.singleBand(int32Tiled, extent)
-        
         assertEqual(actual,expected)
       }
-
       it("uint16") {
         val (expected, actual) = Reader.singleBand(uint16Tiled, extent)
-        
         assertEqual(actual,expected)
       }
-
       it("uint32") {
         val (expected, actual) = Reader.singleBand(uint32Tiled, extent)
-        
         assertEqual(actual,expected)
       }
-
       it("float32") {
         val (expected, actual) = Reader.singleBand(float32Tiled, extent)
-        
         assertEqual(actual,expected)
       }
-
       it("float64") {
         val (expected, actual) = Reader.singleBand(float64Tiled, extent)
-        
         assertEqual(actual,expected)
       }
     }
   }
+
   describe("multiband Geotiffs") {
     val bitStriped = geoTiffPath("3bands/bit/3bands-striped-band.tif")
     val byteStriped = geoTiffPath("3bands/byte/3bands-striped-band.tif")
@@ -270,49 +221,34 @@ class CroppedGeoTiffSpec extends FunSpec
       val extent = Extent(0, 1.5, 97.79, 88.82)
       it("bit") {
         val (expected, actual) = Reader.multiBand(bitStriped, extent)
-
         assertEqual(actual, expected)
       }
-
       it("byte") {
         val (expected, actual) = Reader.multiBand(byteStriped, extent)
-
         assertEqual(actual, expected)
       }
-
       it("int16") {
         val (expected, actual) = Reader.multiBand(int16Striped, extent)
-
         assertEqual(actual, expected)
       }
-
       it("int32") {
         val (expected, actual) = Reader.multiBand(int32Striped, extent)
-        
         assertEqual(actual, expected)
       }
-
       it("uint16") {
         val (expected, actual) = Reader.multiBand(uint16Striped, extent)
-
         assertEqual(actual, expected)
       }
-
       it("uint32") {
         val (expected, actual) = Reader.multiBand(uint32Striped, extent)
-
         assertEqual(actual, expected)
       }
-
       it("float32") {
         val (expected, actual) = Reader.multiBand(float32Striped, extent)
-
         assertEqual(actual, expected)
       }
-
       it("float64") {
         val (expected, actual) = Reader.multiBand(float64Striped, extent)
-
         assertEqual(actual, expected)
       }
     }
@@ -321,100 +257,70 @@ class CroppedGeoTiffSpec extends FunSpec
       val extent = Extent(7, 1.5, 15, 15)
       it("bit") {
         val (expected, actual) = Reader.multiBand(bitStriped, extent)
-
         assertEqual(actual, expected)
       }
       it("byte") {
         val (expected, actual) = Reader.multiBand(byteStriped, extent)
-
         assertEqual(actual, expected)
       }
-
       it("int16") {
         val (expected, actual) = Reader.multiBand(int16Striped, extent)
-
         assertEqual(actual, expected)
       }
-
       it("int32") {
         val (expected, actual) = Reader.multiBand(int32Striped, extent)
-        
         assertEqual(actual, expected)
       }
-
       it("uint16") {
         val (expected, actual) = Reader.multiBand(uint16Striped, extent)
-
         assertEqual(actual, expected)
       }
-
       it("uint32") {
         val (expected, actual) = Reader.multiBand(uint32Striped, extent)
-
         assertEqual(actual, expected)
       }
-
       it("float32") {
         val (expected, actual) = Reader.multiBand(float32Striped, extent)
-
         assertEqual(actual, expected)
       }
-
       it("float64") {
         val (expected, actual) = Reader.multiBand(float64Striped, extent)
-
         assertEqual(actual, expected)
       }
     }
 
     describe("reading tiled geoTiffs around the edges") {
       val extent = Extent(0, 1.5, 3, 8)
-
       it("bit") {
         val (expected, actual) = Reader.multiBand(bitTiled, extent)
-
         assertEqual(actual, expected)
       }
-
       it("byte") {
         val (expected, actual) = Reader.multiBand(byteTiled, extent)
-
         assertEqual(actual,expected)
       }
-
       it("int16") {
         val (expected, actual) = Reader.multiBand(int16Tiled, extent)
-        
         assertEqual(actual,expected)
       }
-      
       it("int32") {
         val (expected, actual) = Reader.multiBand(int32Tiled, extent)
-        
         assertEqual(actual,expected)
       }
-
       it("uint16") {
         val (expected, actual) = Reader.multiBand(uint16Tiled, extent)
-        
         assertEqual(actual,expected)
       }
-
       it("uint32") {
         val (expected, actual) = Reader.multiBand(uint32Tiled, extent)
-        
         assertEqual(actual,expected)
       }
-
       it("float32") {
         val (expected, actual) = Reader.multiBand(float32Tiled, extent)
-        
         assertEqual(actual,expected)
       }
-
       it("float64") {
         val (expected, actual) = Reader.multiBand(float64Tiled, extent)
-        
         assertEqual(actual,expected)
       }
     }
@@ -423,48 +329,34 @@ class CroppedGeoTiffSpec extends FunSpec
       val extent = Extent(4, 5, 7, 15)
       it("bit") {
         val (expected, actual) = Reader.multiBand(bitTiled, extent)
-
         assertEqual(actual, expected)
       }
-
       it("byte") {
         val (expected, actual) = Reader.multiBand(byteTiled, extent)
-
         assertEqual(actual,expected)
       }
       it("int16") {
         val (expected, actual) = Reader.multiBand(int16Tiled, extent)
-        
         assertEqual(actual,expected)
       }
-
       it("int32") {
         val (expected, actual) = Reader.multiBand(int32Tiled, extent)
-        
         assertEqual(actual,expected)
       }
-
       it("uint16") {
         val (expected, actual) = Reader.multiBand(uint16Tiled, extent)
-        
         assertEqual(actual,expected)
       }
-
       it("uint32") {
         val (expected, actual) = Reader.multiBand(uint32Tiled, extent)
-        
         assertEqual(actual,expected)
       }
-
       it("float32") {
         val (expected, actual) = Reader.multiBand(float32Tiled, extent)
-        
         assertEqual(actual,expected)
       }
-
       it("float64") {
         val (expected, actual) = Reader.multiBand(float64Tiled, extent)
-        
         assertEqual(actual,expected)
       }
     }

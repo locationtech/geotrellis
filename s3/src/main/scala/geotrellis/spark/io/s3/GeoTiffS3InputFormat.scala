@@ -3,7 +3,6 @@ package geotrellis.spark.io.s3
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.vector._
-import java.nio.ByteBuffer
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
 
 /** Read single band GeoTiff from S3 */

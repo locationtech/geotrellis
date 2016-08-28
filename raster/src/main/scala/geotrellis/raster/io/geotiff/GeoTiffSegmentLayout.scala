@@ -148,7 +148,7 @@ case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: Tile
       }
     }
   }
-
+  
   def getGridBounds(segmentIndex: Int, isBit: Boolean = false): GridBounds = {
     val segmentTransform = getSegmentTransform(segmentIndex)
     val segmentCols = segmentTransform.segmentCols

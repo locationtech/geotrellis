@@ -28,10 +28,7 @@ import geotrellis.util.Filesystem
 import monocle.syntax.apply._
 
 import scala.io._
-import scala.collection.mutable
 import java.nio.{ByteBuffer, ByteOrder}
-import spire.syntax.cfor._
-
 
 class MalformedGeoTiffException(msg: String) extends RuntimeException(msg)
 
@@ -46,9 +43,15 @@ object GeoTiffReader {
   def readSingleband(path: String): SinglebandGeoTiff =
     readSingleband(path, true, false)
 
+  /* Read in only the extent of a single band GeoTIFF file.
+   * If there is more than one band in the GeoTiff, read the first band only.
+   */
   def readSingleband(path: String, e: Extent): SinglebandGeoTiff =
     readSingleband(path, Some(e))
 
+  /* Read in only the extent of a single band GeoTIFF file.
+   * If there is more than one band in the GeoTiff, read the first band only.
+   */
   def readSingleband(path: String, e: Option[Extent]): SinglebandGeoTiff =
     e match {
       case Some(x) => readSingleband(path, false, true).crop(x)
@@ -104,9 +107,13 @@ object GeoTiffReader {
   def readMultiband(path: String): MultibandGeoTiff =
     readMultiband(path, true, false)
   
+  /* Read in only the extent for each band in a multi ban GeoTIFF file.
+   */
   def readMultiband(path: String, e: Extent): MultibandGeoTiff =
     readMultiband(path, Some(e))
 
+  /* Read in only the extent for each band in a multi ban GeoTIFF file.
+   */
   def readMultiband(path: String, e: Option[Extent]): MultibandGeoTiff =
     e match {
       case Some(x) => readMultiband(path, false, true).crop(x)
@@ -264,9 +271,9 @@ object GeoTiffReader {
 
     val segmentBytes: SegmentBytes =
       if (streaming)
-        new BufferSegmentBytes(byteBuffer, storageMethod, tiffTags)
+        BufferSegmentBytes(byteBuffer, tiffTags)
       else
-        ArraySegmentBytes(byteBuffer, storageMethod, tiffTags)
+        ArraySegmentBytes(byteBuffer, tiffTags)
 
     val cols = tiffTags.cols
     val rows = tiffTags.rows

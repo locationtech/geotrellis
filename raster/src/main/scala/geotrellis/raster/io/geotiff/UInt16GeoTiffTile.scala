@@ -10,7 +10,7 @@ class UInt16GeoTiffTile(
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
   val cellType: UShortCells with NoDataHandling
-) extends GeoTiffTile(segmentLayout, compression) with Intersection with UInt16GeoTiffSegmentCollection {
+) extends GeoTiffTile(segmentLayout, compression) with UInt16GeoTiffSegmentCollection {
 
   val noDataValue: Option[Int] = cellType match {
     case UShortCellType => None

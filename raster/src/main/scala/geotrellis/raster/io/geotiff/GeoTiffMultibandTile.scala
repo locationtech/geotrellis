@@ -257,6 +257,14 @@ abstract class GeoTiffMultibandTile(
   def toArrayTile(): ArrayMultibandTile =
     ArrayMultibandTile((0 until bandCount map { band(_).toArrayTile }):_*)
 
+  /**
+   * Performs a crop on itself. The returned MultibandGeoTiffTile will contain
+   * bands that have the same area as the inputte GridBounds.
+   *
+   * @param gridBounds: A [[GridBounds]] that contains the area to be cropped.
+   *
+   * @return A [[ArrayMultibandTile]]
+   */
   def crop(gridBounds: GridBounds): ArrayMultibandTile =
     ArrayMultibandTile((0 until bandCount map { band(_).crop(gridBounds) }):_*)
 

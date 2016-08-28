@@ -10,7 +10,7 @@ class Int32GeoTiffTile(
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
   val cellType: IntCells with NoDataHandling
-) extends GeoTiffTile(segmentLayout, compression) with Intersection with Int32GeoTiffSegmentCollection {
+) extends GeoTiffTile(segmentLayout, compression) with Int32GeoTiffSegmentCollection {
 
   val noDataValue: Option[Int] = cellType match {
     case IntCellType => None

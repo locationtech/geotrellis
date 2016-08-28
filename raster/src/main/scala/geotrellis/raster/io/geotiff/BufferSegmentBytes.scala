@@ -19,30 +19,30 @@ import spire.syntax.cfor._
  * @param tifftags: The [[TiffTags]] of the GeoTiff
  * @return A new instance of BufferSegmentBytes
  */
-class BufferSegmentBytes(byteBuffer: ByteBuffer, storageMethod: StorageMethod, tiffTags: TiffTags) extends SegmentBytes {
+case class BufferSegmentBytes(byteBuffer: ByteBuffer, tiffTags: TiffTags) extends SegmentBytes {
+
   val (offsets, byteCounts) =
-    storageMethod match {
-      case _: Striped =>
-        val stripOffsets = (tiffTags &|->
-          TiffTags._basicTags ^|->
-          BasicTags._stripOffsets get)
+    if (tiffTags.hasStripStorage) {
+      val stripOffsets = (tiffTags &|->
+        TiffTags._basicTags ^|->
+        BasicTags._stripOffsets get)
 
-        val stripByteCounts = (tiffTags &|->
-          TiffTags._basicTags ^|->
-          BasicTags._stripByteCounts get)
+      val stripByteCounts = (tiffTags &|->
+        TiffTags._basicTags ^|->
+        BasicTags._stripByteCounts get)
 
-        (stripOffsets.get, stripByteCounts.get)
+      (stripOffsets.get, stripByteCounts.get)
       
-      case _: Tiled =>
-        val tileOffsets = (tiffTags &|->
-          TiffTags._tileTags ^|->
-          TileTags._tileOffsets get)
+    } else {
+      val tileOffsets = (tiffTags &|->
+        TiffTags._tileTags ^|->
+        TileTags._tileOffsets get)
 
-        val tileByteCounts = (tiffTags &|->
-          TiffTags._tileTags ^|->
-          TileTags._tileByteCounts get)
+      val tileByteCounts = (tiffTags &|->
+        TiffTags._tileTags ^|->
+        TileTags._tileByteCounts get)
 
-        (tileOffsets.get, tileByteCounts.get)
+      (tileOffsets.get, tileByteCounts.get)
     }
 
   override val size = offsets.size
@@ -60,43 +60,5 @@ class BufferSegmentBytes(byteBuffer: ByteBuffer, storageMethod: StorageMethod, t
     val result = byteBuffer.getSignedByteArray(byteCounts(i))
     byteBuffer.position(oldOffset)
     result
-  }
-}
-
-/** The companion object of BufferSegmentBytes */
-object BufferSegmentBytes {
-
-  /**
-   * Creates a new instance of BufferSegmentBytes.
-   *
-   * @param byteBuffer: A ByteBuffer that contains bytes of the GeoTiff
-   * @param tiffTags: [[TiffTags]] of the GeoTiff
-   * @return A new instance of BufferSegmentBytes
-   */
-  def apply(byteBuffer: ByteBuffer, tiffTags: TiffTags): BufferSegmentBytes = {
-    
-    val storageMethod: StorageMethod =
-      if(tiffTags.hasStripStorage) {
-        val rowsPerStrip: Int =
-          (tiffTags
-            &|-> TiffTags._basicTags
-            ^|-> BasicTags._rowsPerStrip get).toInt
-
-        Striped(rowsPerStrip)
-      } else {
-        val blockCols =
-          (tiffTags
-            &|-> TiffTags._tileTags
-            ^|-> TileTags._tileWidth get).get.toInt
-
-        val blockRows =
-          (tiffTags
-            &|-> TiffTags._tileTags
-            ^|-> TileTags._tileLength get).get.toInt
-
-        Tiled(blockCols, blockRows)
-      }
-
-      new BufferSegmentBytes(byteBuffer, storageMethod, tiffTags)
   }
 }

@@ -1,12 +1,9 @@
 package geotrellis.spark.io.s3
 
-import geotrellis.raster.io.geotiff.util._
-
 import com.amazonaws.auth.{DefaultAWSCredentialsProviderChain, AWSCredentials, AWSCredentialsProvider}
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion
 import com.amazonaws.services.s3.{AmazonS3Client => AWSAmazonS3Client}
 import java.io.{InputStream, ByteArrayInputStream}
-import java.nio.ByteBuffer
 import com.amazonaws.retry.PredefinedRetryPolicies
 import com.amazonaws.services.s3.model._
 import com.typesafe.scalalogging.slf4j._
@@ -17,7 +14,6 @@ import com.amazonaws.ClientConfiguration
 import org.apache.commons.io.IOUtils
 import scala.collection.JavaConversions._
 
-import spire.syntax.cfor._
 trait S3Client extends LazyLogging {
 
   def listObjects(listObjectsRequest: ListObjectsRequest): ObjectListing

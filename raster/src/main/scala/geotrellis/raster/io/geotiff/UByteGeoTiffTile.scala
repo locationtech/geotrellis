@@ -12,7 +12,7 @@ class UByteGeoTiffTile(
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
   val cellType: UByteCells with NoDataHandling
-) extends GeoTiffTile(segmentLayout, compression) with Intersection with UByteGeoTiffSegmentCollection {
+) extends GeoTiffTile(segmentLayout, compression) with UByteGeoTiffSegmentCollection {
 
   val noDataValue: Option[Int] = cellType match {
     case UByteCellType => None

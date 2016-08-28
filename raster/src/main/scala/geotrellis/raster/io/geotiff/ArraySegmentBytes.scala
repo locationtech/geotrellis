@@ -41,8 +41,8 @@ object ArraySegmentBytes {
    *  @tiffTags: The [[TiffTags]] of the GeoTiff
    *  @return A new instance of ArraySegmentBytes
    */
-  def apply(byteBuffer: ByteBuffer, storageMethod: StorageMethod,
-    tiffTags: TiffTags): ArraySegmentBytes = {
+  def apply(byteBuffer: ByteBuffer, tiffTags: TiffTags): ArraySegmentBytes = {
+
       val compressedBytes: Array[Array[Byte]] = {
         def readSections(offsets: Array[Int],
           byteCounts: Array[Int]): Array[Array[Byte]] = {
@@ -60,29 +60,28 @@ object ArraySegmentBytes {
             result
           }
 
-          storageMethod match {
-            case _: Striped =>
+          if (tiffTags.hasStripStorage) {
 
-              val stripOffsets = (tiffTags &|->
-                TiffTags._basicTags ^|->
-                BasicTags._stripOffsets get)
+            val stripOffsets = (tiffTags &|->
+              TiffTags._basicTags ^|->
+              BasicTags._stripOffsets get)
 
-              val stripByteCounts = (tiffTags &|->
-                TiffTags._basicTags ^|->
-                BasicTags._stripByteCounts get)
+            val stripByteCounts = (tiffTags &|->
+              TiffTags._basicTags ^|->
+              BasicTags._stripByteCounts get)
 
-              readSections(stripOffsets.get, stripByteCounts.get)
+            readSections(stripOffsets.get, stripByteCounts.get)
 
-            case _: Tiled =>
-              val tileOffsets = (tiffTags &|->
-                TiffTags._tileTags ^|->
-                TileTags._tileOffsets get)
+          } else {
+            val tileOffsets = (tiffTags &|->
+              TiffTags._tileTags ^|->
+              TileTags._tileOffsets get)
 
-              val tileByteCounts = (tiffTags &|->
-                TiffTags._tileTags ^|->
-                TileTags._tileByteCounts get)
+            val tileByteCounts = (tiffTags &|->
+              TiffTags._tileTags ^|->
+              TileTags._tileByteCounts get)
 
-              readSections(tileOffsets.get, tileByteCounts.get)
+            readSections(tileOffsets.get, tileByteCounts.get)
           }
       }
       new ArraySegmentBytes(compressedBytes)
