@@ -20,17 +20,13 @@ import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.proj4._
 import geotrellis.util._
-
 import geotrellis.spark.tiling._
 import geotrellis.spark.ingest._
 import geotrellis.spark.crop._
 import geotrellis.spark.filter._
-
-import org.apache.spark.Partitioner
+import org.apache.spark.{Partitioner, SparkContext}
 import org.apache.spark.rdd._
-
 import spire.syntax.cfor._
-
 import monocle._
 import monocle.syntax._
 
@@ -128,6 +124,14 @@ package object spark
           (key, Raster(value, key.getComponent[ProjectedExtent].extent))
         }
       }, preservesPartitioning = true)
+  }
+
+  implicit class withCollectionConversionMethods[K, V, M](val rdd: RDD[(K, V)] with Metadata[M]) {
+    def toCollection: Seq[(K, V)] with Metadata[M] = ContextCollection(rdd.collect(), rdd.metadata)
+  }
+
+  implicit class withRddConversionMethods[K, V, M](val seq: Seq[(K, V)] with Metadata[M])(implicit val sc: SparkContext) {
+    def toRDD: RDD[(K, V)] with Metadata[M] = ContextRDD(sc.parallelize(seq), seq.metadata)
   }
 
   implicit class withProjectedExtentTemporalTilerKeyMethods[K: Component[?, ProjectedExtent]: Component[?, TemporalKey]](val self: K) extends TilerKeyMethods[K, SpaceTimeKey] {
