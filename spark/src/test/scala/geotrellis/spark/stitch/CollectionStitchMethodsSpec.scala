@@ -9,13 +9,13 @@ import geotrellis.vector.Extent
 
 import org.scalatest.FunSpec
 
-class RDDStitchMethodsSpec extends FunSpec
+class CollectionStitchMethodsSpec extends FunSpec
     with TileBuilders
     with TileLayerRDDBuilders
     with TestEnvironment {
 
-  describe("Stitching spatial rdds") {
-    it("should correctly stitch back together single band tile rdd") {
+  describe("Stitching spatial collections") {
+    it("should correctly stitch back together single band tile collection") {
       val tile =
         createTile(
           Array(
@@ -35,12 +35,12 @@ class RDDStitchMethodsSpec extends FunSpec
         createTileLayerRDD(
           tile,
           TileLayout(2, 2, 4, 4)
-        )
+        ).toCollection
 
       assertEqual(tile, layer.stitch.tile)
     }
 
-    it("should correctly stitch back together multi band tile rdd") {
+    it("should correctly stitch back together multi band tile collection") {
       val tile1 =
         createTile(
           Array(
@@ -79,7 +79,7 @@ class RDDStitchMethodsSpec extends FunSpec
         createMultibandTileLayerRDD(
           tile,
           TileLayout(2, 2, 4, 4)
-        )
+        ).toCollection
 
       assertEqual(tile, layer.stitch.tile)
     }
