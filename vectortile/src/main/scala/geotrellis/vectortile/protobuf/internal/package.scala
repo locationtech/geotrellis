@@ -31,7 +31,13 @@ import scala.collection.mutable.ListBuffer
 
 package object internal {
 
-  case class IncompatibleCommandSequence(e: String) extends Exception
+  /** If an sequence of Commands is given that does not conform to what the
+    * Point, LineString, and Polygon decoders expect.
+    */
+  case class CommandSequenceError(message: String) extends Exception(message)
+
+  /** If some invalid combination of command id and parameter count are given. */
+  case class CommandError(id: Int, count: Int) extends Exception(s"ID: ${id}, COUNT: ${count}")
 
   /**
    * Expand a collection of diffs from some reference point into that
@@ -153,7 +159,7 @@ package object internal {
 
         if (points.length == 1) Left(points.head) else Right(MultiPoint(points))
       }
-      case _ => throw IncompatibleCommandSequence("Expected: [ MoveTo(ps) ]")
+      case _ => throw CommandSequenceError("Expected: [ MoveTo(ps) ]")
     }
 
     def toCommands(
@@ -184,7 +190,7 @@ package object internal {
           work(rest, lines += line, nextCursor)
         }
         case Nil => lines
-        case _ => throw IncompatibleCommandSequence("Expected: [ MoveTo(p +: Nil), LineTo(ps), ... ]")
+        case _ => throw CommandSequenceError("Expected: [ MoveTo(p +: Nil), LineTo(ps), ... ]")
       }
 
       val lines = work(cmds, new ListBuffer[Line], (0, 0))
@@ -251,7 +257,7 @@ package object internal {
           work(rest, lines += points, nextCursor)
         }
         case Nil => lines
-        case _ => throw IncompatibleCommandSequence("Expected: [MoveTo(p +: Nil), LineTo(ps), ClosePath, ... ]")
+        case _ => throw CommandSequenceError("Expected: [MoveTo(p +: Nil), LineTo(ps), ClosePath, ... ]")
       }
 
       /* Collect all rings, whether external or internal */

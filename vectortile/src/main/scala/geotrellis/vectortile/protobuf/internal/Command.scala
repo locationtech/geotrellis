@@ -65,8 +65,6 @@ case class LineTo(deltas: Array[(Int,Int)]) extends Command
 /** Signals the end of a Polygon. Never has parameters, and doesn't move the cursor. */
 case object ClosePath extends Command
 
-case class InvalidCommand(id: Int, count: Int) extends Exception
-
 /** Contains convenience functions for handling [[Command]]s. */
 object Command {
   /** Attempt to parse a list of Command/Parameter Integers. */
@@ -127,7 +125,7 @@ object Command {
       case 1 if count > 0 => (cmd,count)
       case 2 if count > 0 => (cmd,count)
       case 7 if count == 1 => (cmd,count)
-      case _ => throw InvalidCommand(cmd, count)
+      case _ => throw CommandError(cmd, count)
     }
   }
 
