@@ -17,21 +17,22 @@ class HBaseLayerDeleter(val attributeStore: AttributeStore, instance: HBaseInsta
       case e: AttributeNotFoundError => throw new LayerDeleteError(id).initCause(e)
     }
 
-    val table = instance.getAdmin.getConnection.getTable(header.tileTable)
-
     // Deletion list should be mutable
     val list = new java.util.ArrayList[Delete]()
     val scan = new Scan()
     scan.addFamily(HBaseRDDWriter.tilesCF)
     scan.setFilter(new PrefixFilter(HBaseRDDWriter.layerIdString(id)))
 
-    table.getScanner(scan).iterator().foreach { kv =>
-      val delete = new Delete(kv.getRow)
-      delete.addFamily(HBaseRDDWriter.tilesCF)
-      list.add(delete)
+    instance.withTableConnectionDo(header.tileTable) { table =>
+      table.getScanner(scan).iterator().foreach { kv =>
+        val delete = new Delete(kv.getRow)
+        delete.addFamily(HBaseRDDWriter.tilesCF)
+        list.add(delete)
+      }
+
+      table.delete(list)
     }
 
-    table.delete(list)
     attributeStore.delete(id)
   }
 }
