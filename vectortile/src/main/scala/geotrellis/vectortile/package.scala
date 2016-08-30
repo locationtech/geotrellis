@@ -12,7 +12,7 @@ package geotrellis
   * Raw VectorTile data is stored in the protobuf format. Any codec implementing
   * [[https://github.com/mapbox/vector-tile-spec/tree/master/2.1 the spec]] must
   * decode and encode data according to
-  * [[https://github.com/mapbox/vector-tile-spec/blob/master/2.1/vector_tile.proto this ''.proto'' schema]]
+  * [[https://github.com/mapbox/vector-tile-spec/blob/master/2.1/vector_tile.proto this ''.proto'' schema]].
   *
   * ==What is this package?==
   * ''geotrellis-vectortile'' is a high-performance implementation of
@@ -37,20 +37,31 @@ package geotrellis
   * be used to actually construct VectorTiles from raw byte data:
   *
   * {{{
+  * import geotrellis.spark.SpatialKey
+  * import geotrellis.spark.tiling.LayoutDefinition
+  * import geotrellis.vectortile.VectorTile
   * import geotrellis.vectortile.protobuf._
   *
   * val bytes: Array[Byte] = ...  // from some `.mvt` file
   * val key: SpatialKey = ...  // preknown
   * val layout: LayoutDefinition = ...  // preknown
   *
+  * /* Decode Protobuf bytes. */
   * val tile: VectorTile = ProtobufTile.fromBytes(bytes, key, layout)
+  *
+  * /* Encode a VectorTile back into bytes. */
+  * val encodedBytes: Array[Byte] = tile match {
+  *   case t: ProtobufTile => t.toBytes
+  *   case _ => ???  // Handle other backends or throw errors.
+  * }
+  *
   * }}}
   *
   * The ''V*'' types form a small [[https://en.wikipedia.org/wiki/Sum_type sum type]]
   * and are used to represent usually untyped Feature-level metadata. This metadata
   * is equivalent to a JSON Object, where String keys index values of any type.
-  * A Scala Map requires more rigidity (for the better), and so we use [[Value]]
-  * to guarantee type safety.
+  * A Scala Map requires more rigidity (for the better), and so we use
+  * [[geotrellis.vectortile.protobuf.Value]] to guarantee type safety.
   *
   * ==Implementation Assumptions==
   * This particular implementation of the VectorTile spec makes the following
