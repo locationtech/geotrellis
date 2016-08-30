@@ -17,7 +17,6 @@
 package geotrellis.spark
 
 import geotrellis.spark.io.hbase._
-
 import org.apache.spark.SparkConf
 import org.apache.zookeeper.client.FourLetterWordMain
 import org.scalatest._
