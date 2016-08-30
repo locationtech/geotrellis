@@ -42,15 +42,18 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
     if(!table.getTableDescriptor.hasFamily(cf))
       instance.getAdmin.addColumn(attributeTableName, new HColumnDescriptor(cf))
 
-  private def fetch(table: Table)(layerId: Option[LayerId], attributeName: String): Iterator[Result] = {
-    val scan = new Scan()
-    layerId.foreach { id =>
-      scan.setStartRow(layerIdString(id))
-      scan.setStopRow(stringToBytes(layerIdString(id)) :+ 0.toByte) // add trailing byte, to include stop row
+  private def fetch(layerId: Option[LayerId], attributeName: String): Vector[Result] =
+    instance.withTableConnectionDo(attributeTableName) { table =>
+      val scan = new Scan()
+      layerId.foreach { id =>
+        scan.setStartRow(layerIdString(id))
+        scan.setStopRow(stringToBytes(layerIdString(id)) :+ 0.toByte) // add trailing byte, to include stop row
+      }
+      scan.addFamily(attributeName)
+      val scanner = table.getScanner(scan)
+      val result = scanner.iterator().toVector
+      scanner.close(); result
     }
-    scan.addFamily(attributeName)
-    table.getScanner(scan).iterator()
-  }
 
 
   private def delete(layerId: LayerId, attributeName: Option[String]): Unit =
@@ -68,9 +71,8 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
       }
     }
 
-  def read[T: JsonFormat](layerId: LayerId, attributeName: String): T =
-    instance.withTableConnectionDo(attributeTableName) { table =>
-      val values = fetch(table)(Some(layerId), attributeName).toVector
+  def read[T: JsonFormat](layerId: LayerId, attributeName: String): T = {
+      val values = fetch(Some(layerId), attributeName)
 
       if (values.isEmpty) {
         throw new AttributeNotFoundError(attributeName, layerId)
@@ -81,9 +83,8 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
       }
     }
 
-  def readAll[T: JsonFormat](attributeName: String): Map[LayerId, T] =
-    instance.withTableConnectionDo(attributeTableName) { table =>
-      fetch(table)(None, attributeName).toVector
+  def readAll[T: JsonFormat](attributeName: String): Map[LayerId, T] = {
+      fetch(None, attributeName)
         .map { row => Bytes.toString(row.getValue(attributeName, "")).parseJson.convertTo[(LayerId, T)] }
         .toMap
     }
@@ -109,14 +110,16 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
 
   def delete(layerId: LayerId, attributeName: String): Unit = delete(layerId, Some(attributeName))
 
-  def layerIds: Seq[LayerId] = instance.withTableConnectionDo(attributeTableName) {
-    _.getScanner(new Scan()).iterator()
+  def layerIds: Seq[LayerId] = instance.withTableConnectionDo(attributeTableName) { table =>
+    val scanner = table.getScanner(new Scan())
+    val result = scanner.iterator()
       .map { kv: Result =>
         val List(name, zoomStr) = Bytes.toString(kv.getRow).split(SEP).toList
         LayerId(name, zoomStr.toInt)
       }
       .toList
       .distinct
+    scanner.close(); result
   }
 
   def availableAttributes(layerId: LayerId): Seq[String] = instance.withTableConnectionDo(attributeTableName) {

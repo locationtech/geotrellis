@@ -12,12 +12,11 @@ import org.apache.accumulo.core.data.{Range => AccumuloRange}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
+import com.typesafe.config.ConfigFactory
 
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 import java.util.concurrent.Executors
-
-import com.typesafe.config.ConfigFactory
 
 object AccumuloCollectionReader {
   def read[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](

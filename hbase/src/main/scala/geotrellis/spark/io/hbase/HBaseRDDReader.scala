@@ -7,10 +7,11 @@ import geotrellis.spark.util.KryoWrapper
 import geotrellis.spark.{Boundable, KeyBounds, LayerId}
 
 import org.apache.avro.Schema
-import org.apache.hadoop.hbase.client.{Result, Scan}
-import org.apache.hadoop.hbase.filter.{FilterList, MultiRowRangeFilter, PrefixFilter}
+import org.apache.hadoop.hbase.HBaseConfiguration
+import org.apache.hadoop.hbase.client.Result
+import org.apache.hadoop.hbase.filter.PrefixFilter
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable
-import org.apache.hadoop.hbase.mapreduce.{IdentityTableMapper, TableInputFormat, TableMapReduceUtil}
+import org.apache.hadoop.hbase.mapreduce.{IdentityTableMapper, MultiTableInputFormat, TableMapReduceUtil}
 import org.apache.hadoop.mapred.JobConf
 import org.apache.hadoop.mapreduce.Job
 import org.apache.spark.SparkContext
@@ -41,32 +42,28 @@ object HBaseRDDReader {
     else
       queryKeyBounds.flatMap(decomposeBounds)
 
-    val scan = new Scan()
-    scan.addFamily(HBaseRDDWriter.tilesCF)
-    scan.setFilter(
-      new FilterList(
-        new PrefixFilter(HBaseRDDWriter.layerIdString(layerId)),
-        new MultiRowRangeFilter(
-          java.util.Arrays.asList(ranges.map { case (start, end) =>
-            new MultiRowRangeFilter.RowRange(
-              HBaseKeyEncoder.encode(layerId, start), true,
-              HBaseKeyEncoder.encode(layerId, end), true
-            )
-          }: _*)
-        )
-      )
-    )
+    val filter = new PrefixFilter(HBaseRDDWriter.layerIdString(layerId))
+    val scans = java.util.Arrays.asList(ranges.map { case (start, stop) =>
+      HBaseUtils.buildScan(
+        table, HBaseRDDWriter.tilesCF,
+        HBaseKeyEncoder.encode(layerId, start),
+        HBaseKeyEncoder.encode(layerId, stop, trailingByte = true), // add trailing byte, to include stop row
+        filter)
+    }: _*)
 
-    val job = Job.getInstance(sc.hadoopConfiguration)
+    val conf = sc.hadoopConfiguration
+    HBaseConfiguration.merge(conf, instance.conf)
+
+    val job = Job.getInstance(conf)
     TableMapReduceUtil.initCredentials(job)
-    TableMapReduceUtil.initTableMapperJob(table, scan, classOf[IdentityTableMapper], null, null, job)
+    TableMapReduceUtil.initTableMapperJob(scans, classOf[IdentityTableMapper], null, null, job)
 
     val jconf = new JobConf(job.getConfiguration)
     SparkHadoopUtil.get.addCredentials(jconf)
 
     sc.newAPIHadoopRDD(
-      job.getConfiguration,
-      classOf[TableInputFormat],
+      jconf,
+      classOf[MultiTableInputFormat],
       classOf[ImmutableBytesWritable],
       classOf[Result]
     ).flatMap { case (_, row) =>
