@@ -75,6 +75,10 @@ trait S3Client extends LazyLogging {
     readBytes(new GetObjectRequest(bucketName, key))
 
   def readBytes(getObjectRequest: GetObjectRequest): Array[Byte]
+  
+  def readRange(end: Int, getObjectRequest: GetObjectRequest): S3Object
+
+  def readRange(start: Int, end: Int, getObjectRequest: GetObjectRequest): S3Object
 
   def listObjectsIterator(bucketName: String, prefix: String, maxKeys: Int = 0): Iterator[S3ObjectSummary] =
       listObjectsIterator(new ListObjectsRequest(bucketName, prefix, null, null, if (maxKeys == 0) null else maxKeys))
@@ -172,6 +176,12 @@ class AmazonS3Client(s3client: AWSAmazonS3Client) extends S3Client {
       inStream.close()
     }
   }
+
+  def readRange(end: Int, getObjectRequest: GetObjectRequest): S3Object =
+    readRange(0, end, getObjectRequest)
+
+  def readRange(start: Int, end: Int, getObjectRequest: GetObjectRequest): S3Object =
+    s3client.getObject(getObjectRequest.withRange(start, end))
 
   def setRegion(region: com.amazonaws.regions.Region): Unit = {
     s3client.setRegion(region)
