@@ -30,13 +30,16 @@ import scala.collection.mutable.ListBuffer
 
 /**
   * A concrete representation of a VectorTile, as one decoded from Protobuf
-  * bytes. This is the original/default type of VectorTile.
+  * bytes. This is the original/default type for VectorTiles.
   *
   * {{{
   * import geotrellis.vectortile.protobuf._
   *
-  * val bytes: Array[Byte] = ...
-  * val tile: VectorTile = ProtobufTile.fromBytes(bytes)
+  * val bytes: Array[Byte] = ...  // from some `.mvt` file
+  * val key: SpatialKey = ...  // preknown
+  * val layout: LayoutDefinition = ...  // preknown
+  *
+  * val tile: VectorTile = ProtobufTile.fromBytes(bytes, key, layout)
   * }}}
   *
   * @constructor This is not meant to be called directly. See this class's
