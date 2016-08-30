@@ -235,3 +235,19 @@ geotrellis.s3.threads {
   }
 }
 ```
+
+Cassandra has additional configuration settings: 
+
+And additional connections parameters for`Cassandra`:
+```conf
+geotrellis.cassandra {
+  keyspace             = "geotrellis"
+  replicationStrategy  = "SimpleStrategy"
+  replicationFactor    = 1
+  localDc              = "datacenter1"
+  usedHostsPerRemoteDc = 0
+  allowRemoteDCsForLocalConsistencyLevel = false
+}
+```
+
+Consider using `hbase.client.scanner.caching` parameter for `HBase` as it may increase scan performance.
