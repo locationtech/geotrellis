@@ -46,8 +46,13 @@ package geotrellis
   * val tile: VectorTile = ProtobufTile.fromBytes(bytes, key, layout)
   * }}}
   *
+  * The ''V*'' types form a small [[https://en.wikipedia.org/wiki/Sum_type sum type]]
+  * and are used to represent usually untyped Feature-level metadata. This metadata
+  * is equivalent to a JSON Object, where String keys index values of any type.
+  * A Scala Map requires more rigidity (for the better), and so we use [[Value]]
+  * to guarantee type safety.
   *
-  * ==Assumptions==
+  * ==Implementation Assumptions==
   * This particular implementation of the VectorTile spec makes the following
   * assumptions:
   *   - Geometries are implicitly encoded in ''some'' Coordinate Reference

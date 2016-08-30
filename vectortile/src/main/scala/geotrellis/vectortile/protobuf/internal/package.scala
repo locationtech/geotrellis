@@ -349,19 +349,19 @@ package object internal {
   /** Automatically convert mid-level Protobuf Values into a high-level [[Value]]. */
   implicit def protoVal(value: vt.Tile.Value): Value = {
     if (value.stringValue.isDefined) {
-      St(value.stringValue.get)
+      VString(value.stringValue.get)
     } else if (value.floatValue.isDefined) {
-      Fl(value.floatValue.get)
+      VFloat(value.floatValue.get)
     } else if (value.doubleValue.isDefined) {
-      Do(value.doubleValue.get)
+      VDouble(value.doubleValue.get)
     } else if (value.intValue.isDefined) {
-      I64(value.intValue.get)
+      VInt64(value.intValue.get)
     } else if (value.uintValue.isDefined) {
-      W64(value.uintValue.get)
+      VWord64(value.uintValue.get)
     } else if (value.sintValue.isDefined) {
-      S64(value.sintValue.get)
+      VSint64(value.sintValue.get)
     } else if (value.boolValue.isDefined) {
-      Bo(value.boolValue.get)
+      VBool(value.boolValue.get)
     } else {
       throw new IllegalArgumentException("No legal Protobuf Value given.")
     }

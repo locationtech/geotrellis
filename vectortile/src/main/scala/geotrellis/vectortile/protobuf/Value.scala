@@ -57,42 +57,42 @@ sealed trait Value {
 /** A wrapper for `String` to allow all `Value` subtypes to be stored in
   * the same Map.
   */
-case class St(value: String) extends Value {
+case class VString(value: String) extends Value {
   def toProtobuf: vt.Tile.Value = vt.Tile.Value().withStringValue(value)
 }
 /** A wrapper for `Float` to allow all `Value` subtypes to be stored in
   * the same Map.
   */
-case class Fl(value: Float) extends Value {
+case class VFloat(value: Float) extends Value {
   def toProtobuf: vt.Tile.Value = vt.Tile.Value().withFloatValue(value)
 }
 /** A wrapper for `Double` to allow all `Value` subtypes to be stored in
   * the same Map.
   */
-case class Do(value: Double) extends Value {
+case class VDouble(value: Double) extends Value {
   def toProtobuf: vt.Tile.Value = vt.Tile.Value().withDoubleValue(value)
 }
 /** A wrapper for `Long` to allow all `Value` subtypes to be stored in
   * the same Map.
   */
-case class I64(value: Long) extends Value {
+case class VInt64(value: Long) extends Value {
   def toProtobuf: vt.Tile.Value = vt.Tile.Value().withIntValue(value)
 }
 /** A wrapper for unsigned, 64-bit ints to allow all `Value` subtypes to be
   * stored in the same Map.
   */
-case class W64(value: Long) extends Value {
+case class VWord64(value: Long) extends Value {
   def toProtobuf: vt.Tile.Value = vt.Tile.Value().withUintValue(value)
 }
 /** A wrapper for zig-zag encoded ints to allow all `Value` subtypes to be
   * stored in the same Map.
   */
-case class S64(value: Long) extends Value {
+case class VSint64(value: Long) extends Value {
   def toProtobuf: vt.Tile.Value = vt.Tile.Value().withSintValue(value)
 }
 /** A wrapper for `Boolean` to allow all `Value` subtypes to be stored in
   * the same Map.
   */
-case class Bo(value: Boolean) extends Value {
+case class VBool(value: Boolean) extends Value {
   def toProtobuf: vt.Tile.Value = vt.Tile.Value().withBoolValue(value)
 }
