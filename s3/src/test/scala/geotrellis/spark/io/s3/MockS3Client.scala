@@ -103,11 +103,7 @@ class MockS3Client() extends S3Client with LazyLogging {
     }
   }
   
-  def readRange(end: Int, getObjectRequest: GetObjectRequest): S3Object =
-    readRange(0, end, getObjectRequest)
-  
-  def readRange(start: Int, end: Int, getObjectRequest: GetObjectRequest): S3Object =
-    readRange(start, end, getObjectRequest)
+  def readRange(start: Int, end: Int, getObjectRequest: GetObjectRequest): S3Object = ???
 
   def putObject(r: PutObjectRequest): PutObjectResult = this.synchronized {
     logger.debug(s"PUT ${r.getKey}")
@@ -193,6 +189,8 @@ class MockS3Client() extends S3Client with LazyLogging {
   }
 
   def setRegion(region: com.amazonaws.regions.Region): Unit = {}
+  
+  def getObjectMetadata(getObjectMetadataRequest: GetObjectMetadataRequest): ObjectMetadata = ???
 }
 
 object MockS3Client{

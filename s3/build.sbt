@@ -7,8 +7,10 @@ libraryDependencies ++= Seq(
   spire,
   scalatest % "test")
 
-fork in Test := false
+fork in Test := true
 parallelExecution in Test := false
+
+javaOptions += "-Xmx2G"
 
 initialCommands in console :=
   """

@@ -76,9 +76,15 @@ trait S3Client extends LazyLogging {
 
   def readBytes(getObjectRequest: GetObjectRequest): Array[Byte]
   
-  def readRange(end: Int, getObjectRequest: GetObjectRequest): S3Object
+  def readRange(end: Int, getObjectRequest: GetObjectRequest): S3Object =
+    readRange(0, end, getObjectRequest)
 
   def readRange(start: Int, end: Int, getObjectRequest: GetObjectRequest): S3Object
+
+  def getObjectMetadata(bucketName: String, key: String): ObjectMetadata =
+    getObjectMetadata(new GetObjectMetadataRequest(bucketName, key))
+
+  def getObjectMetadata(getObjectMetadataRequest: GetObjectMetadataRequest): ObjectMetadata
 
   def listObjectsIterator(bucketName: String, prefix: String, maxKeys: Int = 0): Iterator[S3ObjectSummary] =
       listObjectsIterator(new ListObjectsRequest(bucketName, prefix, null, null, if (maxKeys == 0) null else maxKeys))
@@ -163,9 +169,9 @@ class AmazonS3Client(s3client: AWSAmazonS3Client) extends S3Client {
 
   def listNextBatchOfObjects(listing: ObjectListing): ObjectListing =
     s3client.listNextBatchOfObjects(listing)
-
-   def deleteObjects(deleteObjectsRequest: DeleteObjectsRequest): Unit =
-     s3client.deleteObjects(deleteObjectsRequest)
+  
+  def deleteObjects(deleteObjectsRequest: DeleteObjectsRequest): Unit =
+    s3client.deleteObjects(deleteObjectsRequest)
 
   def readBytes(getObjectRequest: GetObjectRequest): Array[Byte] = {
     val obj = s3client.getObject(getObjectRequest)
@@ -177,11 +183,11 @@ class AmazonS3Client(s3client: AWSAmazonS3Client) extends S3Client {
     }
   }
 
-  def readRange(end: Int, getObjectRequest: GetObjectRequest): S3Object =
-    readRange(0, end, getObjectRequest)
-
   def readRange(start: Int, end: Int, getObjectRequest: GetObjectRequest): S3Object =
     s3client.getObject(getObjectRequest.withRange(start, end))
+  
+  def getObjectMetadata(getObjectMetadataRequest: GetObjectMetadataRequest): ObjectMetadata =
+    s3client.getObjectMetadata(getObjectMetadataRequest)
 
   def setRegion(region: com.amazonaws.regions.Region): Unit = {
     s3client.setRegion(region)
