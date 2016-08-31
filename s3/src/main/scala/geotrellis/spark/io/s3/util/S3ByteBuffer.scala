@@ -1,39 +1,52 @@
 package geotrellis.spark.io.s3.util
 
 import geotrellis.spark.io.s3._
-
-import java.nio.ByteBuffer
 import com.amazonaws.services.s3.model._
 
-class S3ByteBuffer(request: GetObjectRequest, client: AmazonS3Client) {
-  var position = 0
+class S3ByteBuffer(val request: GetObjectRequest, val client: AmazonS3Client)
+  extends S3InputStreamReader with S3Queue {
+  private var filePosition = 0
+  private var arrayPosition = 0
+  private var startingChunk = getMapArray
+  private var (offset, arr) = startingChunk.head
 
-  val metadata = client.getObjectMetadata(request.getBucketName, request.getKey)
-  val objectLength = metadata.getContentLength
+  def position = filePosition
 
-  def getStream(end: Int): S3ObjectInputStream = {
-    val obj = client.readRange(position, end, request)
-    obj.getObjectContent
+  def get: Byte = {
+    val value =
+      if (arrayPosition < arr.length - 1) {
+        arr(arrayPosition)
+      } else {
+        arrayPosition = 0
+
+        saveChunk(Map(offset -> arr))
+        offset = getMapArray.head._1
+        arr = getMapArray.head._2
+
+        arr(arrayPosition)
+      }
+    arrayPosition += 1
+    filePosition += 1
+    value
   }
 
-  def getArray(chunk: Int): Array[Byte] = {
-    val arr = Array.ofDim[Byte](chunk)
-    val stream = getStream(chunk + position)
-    stream.read(arr, 0, chunk)
-    position += chunk
-    arr
-  }
+  def get(array: Array[Byte], start: Int, end: Int): Array[Byte] = {
+    if (isContained(start, end, startingChunk)) {
+      System.arraycopy(arr, start, array, 0, end - start)
+      arrayPosition = start + end
+    } else {
+      val mappedArray = getMapArray(start, end)
+      val bytes = mappedArray.head._2
 
-  def extendArray(chunk: Int, arr: Array[Byte]): Array[Byte] = {
-    val temp = getArray(chunk)
-    val newArray = Array.ofDim[Byte](position)
-    System.arraycopy(arr, 0, newArray, 0, arr.length)
-    System.arraycopy(temp, 0, newArray, arr.length, temp.length)
-
-    newArray
+      System.arraycopy(bytes, 0, array, 0, end - start)
+      saveChunk(mappedArray)
+    }
+    filePosition = start + end
+    array
   }
 }
 
+  
 object S3ByteBuffer {
   def apply(request: GetObjectRequest, client: AmazonS3Client): S3ByteBuffer =
     new S3ByteBuffer(request, client)
