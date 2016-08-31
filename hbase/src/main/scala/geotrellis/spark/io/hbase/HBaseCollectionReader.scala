@@ -53,13 +53,14 @@ object HBaseCollectionReader {
 
     instance.withTableConnectionDo(table) { tableConnection =>
       val scanner = tableConnection.getScanner(scan)
-      val result = scanner.iterator().flatMap { row =>
-        val bytes = row.getValue(HBaseRDDWriter.tilesCF, "")
-        val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
-        if (filterIndexOnly) recs
-        else recs.filter { row => includeKey(row._1) }
-      } toVector: Seq[(K, V)]
-      scanner.close(); result
+      try {
+        scanner.iterator().flatMap { row =>
+          val bytes = row.getValue(HBaseRDDWriter.tilesCF, "")
+          val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
+          if (filterIndexOnly) recs
+          else recs.filter { row => includeKey(row._1) }
+        } toVector: Seq[(K, V)]
+      } finally scanner.close()
     }
   }
 }

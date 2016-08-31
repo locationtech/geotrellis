@@ -26,13 +26,15 @@ class HBaseLayerDeleter(val attributeStore: AttributeStore, instance: HBaseInsta
 
     instance.withTableConnectionDo(header.tileTable) { table =>
       val scanner = table.getScanner(scan)
-      scanner.iterator().foreach { kv =>
-        val delete = new Delete(kv.getRow)
-        delete.addFamily(HBaseRDDWriter.tilesCF)
-        list.add(delete)
-      }
+      try {
+        scanner.iterator().foreach { kv =>
+          val delete = new Delete(kv.getRow)
+          delete.addFamily(HBaseRDDWriter.tilesCF)
+          list.add(delete)
+        }
+      } finally scanner.close()
 
-      table.delete(list); scanner.close()
+      table.delete(list)
     }
 
     attributeStore.delete(id)

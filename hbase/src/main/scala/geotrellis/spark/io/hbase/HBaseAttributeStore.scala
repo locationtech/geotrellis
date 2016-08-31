@@ -51,8 +51,7 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
       }
       scan.addFamily(attributeName)
       val scanner = table.getScanner(scan)
-      val result = scanner.iterator().toVector
-      scanner.close(); result
+      try scanner.iterator().toVector finally scanner.close()
     }
 
 
@@ -112,14 +111,15 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
 
   def layerIds: Seq[LayerId] = instance.withTableConnectionDo(attributeTableName) { table =>
     val scanner = table.getScanner(new Scan())
-    val result = scanner.iterator()
-      .map { kv: Result =>
-        val List(name, zoomStr) = Bytes.toString(kv.getRow).split(SEP).toList
-        LayerId(name, zoomStr.toInt)
-      }
-      .toList
-      .distinct
-    scanner.close(); result
+    try {
+      scanner.iterator()
+        .map { kv: Result =>
+          val List(name, zoomStr) = Bytes.toString(kv.getRow).split(SEP).toList
+          LayerId(name, zoomStr.toInt)
+        }
+        .toList
+        .distinct
+    } finally scanner.close()
   }
 
   def availableAttributes(layerId: LayerId): Seq[String] = instance.withTableConnectionDo(attributeTableName) {
