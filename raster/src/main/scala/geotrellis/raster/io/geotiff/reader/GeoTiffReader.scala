@@ -62,10 +62,7 @@ object GeoTiffReader {
    * If there is more than one band in the GeoTiff, read the first band only.
    */
   def readSingleband(path: String, decompress: Boolean, streaming: Boolean): SinglebandGeoTiff =
-    if (streaming)
-      readSingleband(Filesystem.toMappedByteBuffer(path), decompress, streaming)
-    else
-      readSingleband(ByteBuffer.wrap(Filesystem.slurp(path)), decompress, streaming)
+    readSingleband(Filesystem.toMappedByteBuffer(path), decompress, streaming)
 
   /* Read a single band GeoTIFF file.
    * If there is more than one band in the GeoTiff, read the first band only.
@@ -133,10 +130,7 @@ object GeoTiffReader {
   /* Read a multi band GeoTIFF file.
    */
   def readMultiband(path: String, decompress: Boolean, streaming: Boolean): MultibandGeoTiff =
-    if (streaming)
-      readMultiband(Filesystem.toMappedByteBuffer(path), decompress, streaming)
-    else
-      readMultiband(ByteBuffer.wrap(Filesystem.slurp(path)), decompress, streaming)
+    readMultiband(Filesystem.toMappedByteBuffer(path), decompress, streaming)
 
   /* Read a multi band GeoTIFF file.
    */
@@ -151,6 +145,7 @@ object GeoTiffReader {
 
   def readMultiband(byteBuffer: ByteBuffer, decompress: Boolean, streaming: Boolean): MultibandGeoTiff = {
     val info = readGeoTiffInfo(byteBuffer, decompress, streaming)
+
     val geoTiffTile =
       GeoTiffMultibandTile(
         info.segmentBytes,
