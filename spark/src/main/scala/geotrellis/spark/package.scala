@@ -114,7 +114,7 @@ package object spark
   implicit class withCellGridLayoutRDDMethods[K: SpatialComponent: ClassTag, V <: CellGrid, M: GetComponent[?, LayoutDefinition]](val self: RDD[(K, V)] with Metadata[M])
       extends CellGridLayoutRDDMethods[K, V, M]
 
-  implicit class withCellGridLayoutCollectionMethods[K: SpatialComponent: ClassTag, V <: CellGrid, M: GetComponent[?, LayoutDefinition]](val self: Seq[(K, V)] with Metadata[M])
+  implicit class withCellGridLayoutCollectionMethods[K: SpatialComponent, V <: CellGrid, M: GetComponent[?, LayoutDefinition]](val self: Seq[(K, V)] with Metadata[M])
     extends CellGridLayoutCollectionMethods[K, V, M]
 
   implicit class withProjectedExtentRDDMethods[K: Component[?, ProjectedExtent], V <: CellGrid](val rdd: RDD[(K, V)]) {

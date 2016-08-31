@@ -13,7 +13,7 @@ import org.apache.spark.rdd._
 import scala.reflect.ClassTag
 
 abstract class PolygonalSummaryTileLayerCollectionMethods[
-  K: ClassTag,
+  K,
   M: GetComponent[?, LayoutDefinition]
 ] extends MethodExtensions[Seq[(K, Tile)] with Metadata[M]] {
   import Implicits._
