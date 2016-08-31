@@ -48,7 +48,7 @@ object CassandraCollectionReader {
     instance.withSessionDo { session =>
       val statement = session.prepare(query)
 
-      CollectionLayerReader.njoin[K, V](ranges, { iter =>
+      LayerReader.njoin[K, V](ranges.toIterator, { iter =>
         if (iter.hasNext) {
           val index = iter.next()
           val row = session.execute(statement.bind(index.asInstanceOf[java.lang.Long]))

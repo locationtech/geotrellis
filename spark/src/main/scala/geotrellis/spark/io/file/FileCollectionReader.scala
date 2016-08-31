@@ -31,7 +31,7 @@ object FileCollectionReader {
     val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
     val _recordCodec = KeyValueRecordCodec[K, V]
 
-    CollectionLayerReader.njoin[K, V](ranges, { iter =>
+    LayerReader.njoin[K, V](ranges.toIterator, { iter =>
       if (iter.hasNext) {
         val index = iter.next()
         val path = keyPath(index)
@@ -42,6 +42,6 @@ object FileCollectionReader {
           else Some(recs.filter { row => includeKey(row._1) }, iter)
         } else Some(Vector(), iter)
       } else None
-    }, threads)
+    }, threads): Seq[(K, V)]
   }
 }

@@ -58,11 +58,11 @@ object AccumuloCollectionReader {
 
     val read = range.tee(readChannel)(tee.zipApply).map(Process.eval)
 
-    val result: Seq[(K, V)] =
+
+    try {
       nondeterminism
         .njoin(maxOpen = threads, maxQueued = threads) { read }(Strategy.Executor(pool))
-        .runFoldMap(identity).unsafePerformSync
-
-    pool.shutdown(); result
+        .runFoldMap(identity).unsafePerformSync: Seq[(K, V)]
+    } finally pool.shutdown()
   }
 }
