@@ -2,7 +2,6 @@ package geotrellis.spark.io.s3
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.CollectionLayerReader
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index.MergeQueue
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
@@ -40,7 +39,7 @@ trait S3CollectionReader {
     val _getS3Client = getS3Client
     val s3client = _getS3Client()
 
-    CollectionLayerReader.njoin[K, V](ranges, { iter =>
+    LayerReader.njoin[K, V](ranges.toIterator, { iter =>
       if (iter.hasNext) {
         val index = iter.next()
         val path = keyPath(index)
