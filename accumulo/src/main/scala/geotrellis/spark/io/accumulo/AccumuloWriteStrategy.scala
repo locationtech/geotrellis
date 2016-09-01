@@ -117,7 +117,7 @@ case class SocketWriteStrategy(
           }
         }
 
-      val writeChannel = channel.lift { (mutation: Mutation) => Task { writer.addMutation(mutation) } }
+      val writeChannel = channel.lift { (mutation: Mutation) => Task { writer.addMutation(mutation) } (pool) }
       val writes = mutations.tee(writeChannel)(tee.zipApply).map(Process.eval)
       nondeterminism.njoin(maxOpen = poolSize, maxQueued = poolSize)(writes)(Strategy.Executor(pool)).run.unsafePerformSync
       writer.close(); pool.shutdown()

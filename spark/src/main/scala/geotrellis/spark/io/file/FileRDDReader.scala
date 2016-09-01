@@ -42,18 +42,15 @@ object FileRDDReader {
     sc.parallelize(bins, bins.size)
       .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
         partition flatMap { seq =>
-          LayerReader.njoin[K, V](seq.toIterator, { iter =>
-            if (iter.hasNext) {
-              val index = iter.next()
-              val path = keyPath(index)
-              if (new File(path).exists) {
-                val bytes: Array[Byte] = Filesystem.slurp(path)
-                val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
-                if (filterIndexOnly) Some(recs, iter)
-                else Some(recs.filter { row => includeKey(row._1) }, iter)
-              } else Some(Vector(), iter)
-            } else None
-          }, threads)
+          LayerReader.njoin[K, V](ranges.toIterator, threads) { index: Long =>
+            val path = keyPath(index)
+            if (new File(path).exists) {
+              val bytes: Array[Byte] = Filesystem.slurp(path)
+              val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
+              if (filterIndexOnly) recs
+              else recs.filter { row => includeKey(row._1) }
+            } else Vector.empty
+          }
         }
       }
   }

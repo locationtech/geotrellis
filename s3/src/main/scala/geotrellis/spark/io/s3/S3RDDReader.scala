@@ -53,24 +53,18 @@ trait S3RDDReader {
     sc.parallelize(bins, bins.size)
       .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
         val s3client = _getS3Client()
-
-        partition flatMap { seq =>
-          LayerReader.njoin[K, V](seq.toIterator, { iter =>
-            if (iter.hasNext) {
-              val index = iter.next()
-              val path = keyPath(index)
-              val getS3Bytes = () => IOUtils.toByteArray(s3client.getObject(bucket, path).getObjectContent)
-
-              try {
-                val bytes: Array[Byte] = getS3Bytes()
-                val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
-                if (filterIndexOnly) Some(recs, iter)
-                else Some(recs.filter { row => includeKey(row._1) }, iter)
-              } catch {
-                case e: AmazonS3Exception if e.getStatusCode == 404 => Some(Vector.empty, iter)
-              }
-            } else None
-          }, threads)
+        val writerSchema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
+        partition flatMap { ranges =>
+          LayerReader.njoin[K, V](ranges.toIterator, threads){ index: Long =>
+            try {
+              val bytes = IOUtils.toByteArray(s3client.getObject(bucket, keyPath(index)).getObjectContent)
+              val recs = AvroEncoder.fromBinary(writerSchema, bytes)(_recordCodec)
+              if (filterIndexOnly) recs
+              else recs.filter { row => includeKey(row._1) }
+            } catch {
+              case e: AmazonS3Exception if e.getStatusCode == 404 => Vector.empty
+            }
+          }
         }
       }
   }
