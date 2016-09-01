@@ -46,7 +46,8 @@ import scala.collection.mutable.ListBuffer
   * companion object for the available helper methods.
   */
 case class ProtobufTile(
-  layers: Map[String, ProtobufLayer]
+  layers: Map[String, ProtobufLayer],
+  tileExtent: Extent
 ) extends VectorTile {
   /** Encode this VectorTile back into a mid-level Protobuf object. */
   def toProtobuf: vt.Tile =
@@ -60,10 +61,8 @@ object ProtobufTile {
   /** Create a ProtobufTile masked as its parent trait. */
   def fromPBTile(
     tile: vt.Tile,
-    key: SpatialKey,
-    layout: LayoutDefinition
-  ): (SpatialKey, VectorTile) = {
-    val tileExtent = layout.mapTransform(key)
+    tileExtent: Extent
+  ): VectorTile = {
 
     val layers: Map[String, ProtobufLayer] = tile.layers.map({ l =>
       val pbl = ProtobufLayer(l, tileExtent)
@@ -71,21 +70,19 @@ object ProtobufTile {
       pbl.name -> pbl
     }).toMap
 
-    (key, new ProtobufTile(layers))
+    new ProtobufTile(layers, tileExtent)
   }
 
   /** Create a [[VectorTile]] from raw Protobuf bytes.
     *
     * @param bytes  Raw Protobuf bytes from a `.mvt` file or otherwise.
-    * @param key    A key representing where in the Tile grid ''this'' Tile sits.
-    * @param layout A description of the parent Extent and Tile grid.
+    * @param tileExtent The [[Extent]] of this tile, '''not''' the global extent.
     */
   def fromBytes(
     bytes: Array[Byte],
-    key: SpatialKey,
-    layout: LayoutDefinition
-  ): (SpatialKey, VectorTile) = {
-    fromPBTile(vt.Tile.parseFrom(bytes), key, layout)
+    tileExtent: Extent
+  ): VectorTile = {
+    fromPBTile(vt.Tile.parseFrom(bytes), tileExtent)
   }
 }
 

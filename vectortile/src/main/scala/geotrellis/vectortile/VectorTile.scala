@@ -37,6 +37,18 @@ import geotrellis.vectortile.protobuf.Value
 trait VectorTile {
   /** Every Layer in this Tile, with its name as a lookup key. */
   val layers: Map[String, Layer]
+
+  /** The [[Extent]] of '''this''' Tile in some CRS.
+    * A Tile's extent can be easily found from its Key and [[LayoutDefinition]]:
+    *
+    * {{{
+    * val key: SpatialKey = ...
+    * val layout: LayoutDefinition = ...
+    *
+    * val tileExtent: Extent = layout.mapTransform(key)
+    * }}}
+    */
+  val tileExtent: Extent
 }
 
 /** A layer, which could contain any number of Features of any Geometry type.
