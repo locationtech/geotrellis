@@ -1,14 +1,18 @@
 package geotrellis.spark.io.s3
 
+import com.amazonaws.services.s3.model.AmazonS3Exception
+import com.typesafe.config.ConfigFactory
 import geotrellis.raster.{MultibandTile, Tile}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
+import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index._
 import geotrellis.spark.util.cache._
 import geotrellis.util._
 
 import org.apache.avro.Schema
+import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat

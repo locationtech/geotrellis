@@ -13,12 +13,12 @@ class HBaseTileFeatureSpatialSpec
     with AllOnesTestTileFeatureSpec {
 
   registerAfterAll { () =>
-    val instance = HBaseInstance(Seq("localhost"), "localhost")
-    instance.getAdmin.disableTable("metadata")
-    instance.getAdmin.disableTable("tiles")
-    instance.getAdmin.deleteTable("metadata")
-    instance.getAdmin.deleteTable("tiles")
-    instance.getAdmin.close()
+    HBaseInstance(Seq("localhost"), "localhost").withAdminDo { admin =>
+      admin.disableTable("metadata")
+      admin.disableTable("tiles")
+      admin.deleteTable("metadata")
+      admin.deleteTable("tiles")
+    }
   }
 
   lazy val instance       = HBaseInstance(Seq("localhost"), "localhost")
