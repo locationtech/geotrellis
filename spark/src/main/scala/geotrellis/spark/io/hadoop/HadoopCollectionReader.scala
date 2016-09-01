@@ -43,42 +43,20 @@ class HadoopCollectionReader(maxOpenFiles: Int) {
     val pathRanges: Vector[(Path, Long, Long)] =
       FilterMapFileInputFormat.layerRanges(path, conf)
 
-    val pool = Executors.newFixedThreadPool(threads)
+    LayerReader.njoin[K, V](indexRanges, threads){ index: Long =>
+      val valueWritable = pathRanges
+        .find { row => index >= row._2 && index <= row._3 }
+        .map { case (p, _, _) => readers.getOrInsert(p, new MapFile.Reader(p, conf)) }
+        .map(_.get(new LongWritable(index), new BytesWritable()).asInstanceOf[BytesWritable])
+        .getOrElse { println(s"Index ${index} not found."); null }
 
-    val range: Process[Task, Iterator[Long]] = Process.unfold(indexRanges) { iter =>
-      if (iter.hasNext) {
-        val (start, end) = iter.next()
-        Some((start to end).toIterator, iter)
-      }
-      else None
-    }
-
-    val read: Iterator[Long] => Process[Task, Vector[(K, V)]] = { iterator =>
-      Process.unfold(iterator) { iter =>
-        if (iter.hasNext) {
-          val index = iter.next()
-          val valueWritable = pathRanges
-            .find { row => index >= row._2 && index <= row._3 }
-            .map { case (p, _, _) => readers.getOrInsert(p, new MapFile.Reader(p, conf)) }
-            .map(_.get(new LongWritable(index), new BytesWritable()).asInstanceOf[BytesWritable])
-            .getOrElse { println(s"Index ${index} not found."); null }
-
-          if (valueWritable == null) Some(Vector(), iter)
-          else {
-            val items = AvroEncoder.fromBinary(writerSchema.getOrElse(codec.schema), valueWritable.getBytes)(codec)
-            if (indexFilterOnly) Some(items, iter)
-            else Some(items.filter { row => includeKey(row._1) }, iter)
-          }
-        } else None
+      if (valueWritable == null) Vector.empty
+      else {
+        val items = AvroEncoder.fromBinary(writerSchema.getOrElse(codec.schema), valueWritable.getBytes)(codec)
+        if (indexFilterOnly) items
+        else items.filter { row => includeKey(row._1) }
       }
     }
-
-    val result =
-      nondeterminism
-        .njoin(maxOpen = threads, maxQueued = threads) { range map read }(Strategy.Executor(pool))
-        .runFoldMap(identity).unsafePerformSync
-
-    pool.shutdown(); result
   }
 }
 

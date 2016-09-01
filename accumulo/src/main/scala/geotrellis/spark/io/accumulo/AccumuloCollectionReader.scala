@@ -12,12 +12,11 @@ import org.apache.accumulo.core.data.{Range => AccumuloRange}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
+import com.typesafe.config.ConfigFactory
 
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 import java.util.concurrent.Executors
-
-import com.typesafe.config.ConfigFactory
 
 object AccumuloCollectionReader {
   def read[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
@@ -59,11 +58,11 @@ object AccumuloCollectionReader {
 
     val read = range.tee(readChannel)(tee.zipApply).map(Process.eval)
 
-    val result: Seq[(K, V)] =
+
+    try {
       nondeterminism
         .njoin(maxOpen = threads, maxQueued = threads) { read }(Strategy.Executor(pool))
-        .runFoldMap(identity).unsafePerformSync
-
-    pool.shutdown(); result
+        .runFoldMap(identity).unsafePerformSync: Seq[(K, V)]
+    } finally pool.shutdown()
   }
 }

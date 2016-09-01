@@ -1,6 +1,6 @@
 package geotrellis.spark.io.hbase
 
-import org.apache.hadoop.hbase.HBaseConfiguration
+import org.apache.hadoop.hbase.{HBaseConfiguration, TableName}
 import org.apache.hadoop.hbase.client._
 
 case class HBaseInstance(zookeepers: Seq[String], master: String, clientPort: String = "2181") extends Serializable {
@@ -13,5 +13,41 @@ case class HBaseInstance(zookeepers: Seq[String], master: String, clientPort: St
   }
 
   def getConnection: Connection = ConnectionFactory.createConnection(conf)
-  @transient lazy val getAdmin: Admin = getConnection.getAdmin
+  def getAdmin: Admin = getConnection.getAdmin
+
+  @transient lazy val connection: Connection = getConnection
+  @transient lazy val admin: Admin = getAdmin
+
+  /** Without connection close, for a custom connection close */
+  def withConnection[T](block: Connection => T): T = block(connection)
+  def withAdmin[T](block: Admin => T): T = block(admin)
+
+  /** With connection close */
+  def withConnectionDo[T](block: Connection => T): T = {
+    val connection = getConnection
+    try block(connection) finally connection.close()
+  }
+
+  def withTableConnectionDo[T](tableName: TableName)(block: Table => T): T = {
+    val connection = getConnection
+    val tableConnection = connection.getTable(tableName)
+    try block(tableConnection) finally {
+      tableConnection.close()
+      connection.close()
+    }
+  }
+
+  def withAdminDo[T](block: Admin => T): T = {
+    val connection = getConnection
+    val admin = connection.getAdmin
+    try block(admin) finally {
+      admin.close()
+      connection.close()
+    }
+  }
+
+  def close = {
+    admin.close()
+    connection.close()
+  }
 }

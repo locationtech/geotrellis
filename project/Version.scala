@@ -29,7 +29,7 @@ object Version {
   val sprayJson   = "1.3.2"
   val jackson     = "1.6.1"
   val monocle     = "1.2.1"
-  val accumulo    = "1.7.1"
+  val accumulo    = "1.7.2"
   val cassandra   = "3.1.0"
   val hbase       = "1.2.2"
   lazy val hadoop = Environment.hadoopVersion
