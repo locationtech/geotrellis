@@ -6,13 +6,9 @@ import geotrellis.spark.io.index.MergeQueue
 import geotrellis.spark.util.KryoWrapper
 import geotrellis.spark.{Boundable, KeyBounds, LayerId}
 
-import org.apache.avro.Schema
 import org.apache.hadoop.hbase.client.Scan
 import org.apache.hadoop.hbase.filter.{FilterList, MultiRowRangeFilter, PrefixFilter}
 import org.apache.avro.Schema
-import spire.syntax.cfor._
-import scalaz.concurrent._
-import scalaz._
 
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
@@ -45,26 +41,26 @@ object HBaseCollectionReader {
       new FilterList(
         new PrefixFilter(HBaseRDDWriter.layerIdString(layerId)),
         new MultiRowRangeFilter(
-          java.util.Arrays.asList(ranges.map { case (start, end) =>
+          java.util.Arrays.asList(ranges.map { case (start, stop) =>
             new MultiRowRangeFilter.RowRange(
               HBaseKeyEncoder.encode(layerId, start), true,
-              HBaseKeyEncoder.encode(layerId, end), true
+              HBaseKeyEncoder.encode(layerId, stop), true
             )
           }: _*)
         )
       )
     )
 
-    val connection = instance.getConnection.getTable(table)
-
-    val result: Seq[(K, V)] = connection.getScanner(scan).iterator().flatMap { row =>
-      val bytes = row.getValue(HBaseRDDWriter.tilesCF, "")
-      val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
-      if (filterIndexOnly) recs
-      else recs.filter { row => includeKey(row._1) }
-    } toVector
-
-    connection.close()
-    result
+    instance.withTableConnectionDo(table) { tableConnection =>
+      val scanner = tableConnection.getScanner(scan)
+      try {
+        scanner.iterator().flatMap { row =>
+          val bytes = row.getValue(HBaseRDDWriter.tilesCF, "")
+          val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
+          if (filterIndexOnly) recs
+          else recs.filter { row => includeKey(row._1) }
+        } toVector: Seq[(K, V)]
+      } finally scanner.close()
+    }
   }
 }

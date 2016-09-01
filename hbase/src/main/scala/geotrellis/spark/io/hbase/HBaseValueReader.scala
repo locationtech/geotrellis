@@ -20,9 +20,8 @@ class HBaseValueReader(
     val keyIndex = attributeStore.readKeyIndex[K](layerId)
     val writerSchema = attributeStore.readSchema(layerId)
     val codec = KeyValueRecordCodec[K, V]
-    val table = instance.getAdmin.getConnection.getTable(header.tileTable)
 
-    def read(key: K): V = {
+    def read(key: K): V = instance.withTableConnectionDo(header.tileTable) { table =>
       val get = new Get(HBaseKeyEncoder.encode(layerId, keyIndex.toIndex(key)))
       get.addFamily(HBaseRDDWriter.tilesCF)
       val row = table.get(get)

@@ -7,9 +7,7 @@ import geotrellis.spark.mapalgebra._
 trait StatsTileCollectionMethods[K] extends TileCollectionMethods[K] {
 
   def averageByKey(): Seq[(K, Tile)] =
-    self.groupBy(_._1).map { case (k, seq) =>
-      k -> seq.map(_._2).reduce(_ + _) / seq.size
-    } toSeq
+    self.groupBy(_._1).mapValues { seq => seq.map(_._2).reduce(_ + _) / seq.size } toSeq
 
   def histogram(): Histogram[Double] =
     histogram(StreamingHistogram.DEFAULT_NUM_BUCKETS)

@@ -25,12 +25,14 @@ object HBaseRDDWriter {
 
     val codec = KeyValueRecordCodec[K, V]
 
-    //create the attribute table if it does not exist
-    if (!instance.getAdmin.tableExists(table)) {
-      val tableDesc = new HTableDescriptor(table: TableName)
-      val idsColumnFamilyDesc = new HColumnDescriptor(tilesCF)
-      tableDesc.addFamily(idsColumnFamilyDesc)
-      instance.getAdmin.createTable(tableDesc)
+    // create tile table if it does not exist
+    instance.withAdminDo { admin =>
+      if (!admin.tableExists(table)) {
+        val tableDesc = new HTableDescriptor(table: TableName)
+        val idsColumnFamilyDesc = new HColumnDescriptor(tilesCF)
+        tableDesc.addFamily(idsColumnFamilyDesc)
+        admin.createTable(tableDesc)
+      }
     }
 
     // Call groupBy with numPartitions; if called without that argument or a partitioner,
@@ -39,19 +41,21 @@ object HBaseRDDWriter {
 
     raster.groupBy({ row => decomposeKey(row._1) }, numPartitions = raster.partitions.length)
       .foreachPartition { partition: Iterator[(Long, Iterable[(K, V)])] =>
-        val mutator = instance.getConnection.getBufferedMutator(table)
+        instance.withConnectionDo { connection =>
+          val mutator = connection.getBufferedMutator(table)
 
-        partition.foreach { recs =>
-          val id = recs._1
-          val pairs = recs._2.toVector
-          val bytes = AvroEncoder.toBinary(pairs)(codec)
-          val put = new Put(HBaseKeyEncoder.encode(layerId, id))
-          put.addColumn(tilesCF, "", System.currentTimeMillis(), bytes)
-          mutator.mutate(put)
+          partition.foreach { recs =>
+            val id = recs._1
+            val pairs = recs._2.toVector
+            val bytes = AvroEncoder.toBinary(pairs)(codec)
+            val put = new Put(HBaseKeyEncoder.encode(layerId, id))
+            put.addColumn(tilesCF, "", System.currentTimeMillis(), bytes)
+            mutator.mutate(put)
+          }
+
+          mutator.flush()
+          mutator.close()
         }
-
-        mutator.flush()
-        mutator.close()
       }
   }
 }

@@ -7,6 +7,7 @@ import geotrellis.spark.util.KryoWrapper
 import geotrellis.spark.{Boundable, KeyBounds, LayerId}
 
 import org.apache.avro.Schema
+import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.{Result, Scan}
 import org.apache.hadoop.hbase.filter.{FilterList, MultiRowRangeFilter, PrefixFilter}
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable
@@ -47,17 +48,20 @@ object HBaseRDDReader {
       new FilterList(
         new PrefixFilter(HBaseRDDWriter.layerIdString(layerId)),
         new MultiRowRangeFilter(
-          java.util.Arrays.asList(ranges.map { case (start, end) =>
+          java.util.Arrays.asList(ranges.map { case (start, stop) =>
             new MultiRowRangeFilter.RowRange(
               HBaseKeyEncoder.encode(layerId, start), true,
-              HBaseKeyEncoder.encode(layerId, end), true
+              HBaseKeyEncoder.encode(layerId, stop), true
             )
           }: _*)
         )
       )
     )
 
-    val job = Job.getInstance(sc.hadoopConfiguration)
+    val conf = sc.hadoopConfiguration
+    HBaseConfiguration.merge(conf, instance.conf)
+
+    val job = Job.getInstance(conf)
     TableMapReduceUtil.initCredentials(job)
     TableMapReduceUtil.initTableMapperJob(table, scan, classOf[IdentityTableMapper], null, null, job)
 
@@ -65,7 +69,7 @@ object HBaseRDDReader {
     SparkHadoopUtil.get.addCredentials(jconf)
 
     sc.newAPIHadoopRDD(
-      job.getConfiguration,
+      jconf,
       classOf[TableInputFormat],
       classOf[ImmutableBytesWritable],
       classOf[Result]

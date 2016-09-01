@@ -4,6 +4,7 @@ import geotrellis.spark.LayerId
 import geotrellis.spark.io._
 import org.apache.hadoop.hbase.client._
 import org.apache.hadoop.hbase.filter.PrefixFilter
+import com.typesafe.config.ConfigFactory
 
 import scala.collection.JavaConversions._
 
@@ -17,21 +18,25 @@ class HBaseLayerDeleter(val attributeStore: AttributeStore, instance: HBaseInsta
       case e: AttributeNotFoundError => throw new LayerDeleteError(id).initCause(e)
     }
 
-    val table = instance.getAdmin.getConnection.getTable(header.tileTable)
-
     // Deletion list should be mutable
     val list = new java.util.ArrayList[Delete]()
     val scan = new Scan()
     scan.addFamily(HBaseRDDWriter.tilesCF)
     scan.setFilter(new PrefixFilter(HBaseRDDWriter.layerIdString(id)))
 
-    table.getScanner(scan).iterator().foreach { kv =>
-      val delete = new Delete(kv.getRow)
-      delete.addFamily(HBaseRDDWriter.tilesCF)
-      list.add(delete)
+    instance.withTableConnectionDo(header.tileTable) { table =>
+      val scanner = table.getScanner(scan)
+      try {
+        scanner.iterator().foreach { kv =>
+          val delete = new Delete(kv.getRow)
+          delete.addFamily(HBaseRDDWriter.tilesCF)
+          list.add(delete)
+        }
+      } finally scanner.close()
+
+      table.delete(list)
     }
 
-    table.delete(list)
     attributeStore.delete(id)
   }
 }
