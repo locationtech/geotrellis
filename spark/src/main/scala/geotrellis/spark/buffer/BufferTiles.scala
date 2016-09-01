@@ -422,7 +422,7 @@ object BufferTiles {
       seq
         .flatMap { case (key, tile) =>
           collectWithNeighbors(key, tile, { key => layerBounds.contains(key.col, key.row) }, { key => bufferSizes })
-        }.groupBy(_._1).map { case (key, seq: Seq[(K, (Direction, V))]) => key -> seq.map(_._2)}.toSeq
+        }.groupBy(_._1).mapValues { _.map(_._2) }.toSeq
 
     bufferWithNeighbors(grouped)
   }
