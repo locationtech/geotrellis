@@ -19,7 +19,7 @@ class CassandraLayerReader(val attributeStore: AttributeStore, instance: Cassand
   K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
   V: AvroRecordCodec: ClassTag,
   M: JsonFormat: GetComponent[?, Bounds[K]]
-  ](id: LayerId, rasterQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
+  ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
@@ -28,7 +28,7 @@ class CassandraLayerReader(val attributeStore: AttributeStore, instance: Cassand
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
 
-    val queryKeyBounds = rasterQuery(metadata)
+    val queryKeyBounds = tileQuery(metadata)
 
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
 
@@ -44,4 +44,3 @@ object CassandraLayerReader {
   def apply(attributeStore: CassandraAttributeStore)(implicit sc: SparkContext): CassandraLayerReader =
     new CassandraLayerReader(attributeStore, attributeStore.instance)
 }
-
