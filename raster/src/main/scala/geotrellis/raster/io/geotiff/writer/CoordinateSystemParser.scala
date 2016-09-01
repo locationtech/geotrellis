@@ -33,6 +33,7 @@ import CommonPublicValues._
 import GeoKeys._
 import ModelTypes._
 import CoordinateTransformTypes._
+
 import ProjectedLinearUnits._
 
 case class GeoDirectoryTags(shortTags: Array[(Int, Int, Int, Int)], doubles: Array[Double])
@@ -59,7 +60,7 @@ class CoordinateSystemParser(val crs: CRS, val pixelSampleType: Option[PixelSamp
 
   import CoordinateSystemParser._
 
-  private val proj4String: String = crs.toProj4String
+  private val proj4String: String = crs.toNativeString
 
   private val proj4Map: Map[String, String] =
     proj4String.split('+').
