@@ -63,8 +63,10 @@ object ProtobufTile {
     key: SpatialKey,
     layout: LayoutDefinition
   ): (SpatialKey, VectorTile) = {
+    val tileExtent = layout.mapTransform(key)
+
     val layers: Map[String, ProtobufLayer] = tile.layers.map({ l =>
-      val pbl = ProtobufLayer(l, key, layout)
+      val pbl = ProtobufLayer(l, tileExtent)
 
       pbl.name -> pbl
     }).toMap
@@ -96,8 +98,7 @@ object ProtobufTile {
 // it terms of memory.
 case class ProtobufLayer(
   private val rawLayer: vt.Tile.Layer,
-  private val key: SpatialKey,
-  private val layout: LayoutDefinition
+  private val tileExtent: Extent
 ) extends Layer {
   /* Expected fields */
   def name: String = rawLayer.name
@@ -115,18 +116,11 @@ case class ProtobufLayer(
   }
 
   /* Unconsumed raw Features */
+  // TODO Should this be a def?
   private val (pointFs, lineFs, polyFs) = segregate(rawLayer.features)
 
   /** How much of the [[Extent]] is covered by a single grid coordinate? */
-  private def resolution: Double =
-    layout.extent.height / (layout.layoutRows * extent)
-
-  /** Where in the CRS is the top-left corner of this Tile? */
-  private def topLeft: Point =
-    Point(
-      layout.extent.xmin + (resolution * extent * key.col),
-      layout.extent.ymax - (resolution * extent * key.row)
-    )
+  private def resolution: Double = tileExtent.height / extent
 
   /**
    * Polymorphically generate a [[Stream]] of parsed Geometries and
@@ -140,7 +134,7 @@ case class ProtobufLayer(
         Stream.empty[(Either[G1, G2], Map[String, Value])]
       } else {
         val geoms = fs.head.geometry
-        val g = protobufGeom.fromCommands(Command.commands(geoms), topLeft, resolution)
+        val g = protobufGeom.fromCommands(Command.commands(geoms), tileExtent.northWest, resolution)
 
         (g, getMeta(rawLayer.keys, rawLayer.values, fs.head.tags)) #:: loop(fs.tail)
       }
@@ -260,12 +254,12 @@ case class ProtobufLayer(
      *   points.map(f => unfeature(keys, values, f))
      */
     val features = Seq(
-      points.map(f => unfeature(keys, values, POINT, pgp.toCommands(Left(f.geom), topLeft, resolution), f.data)),
-      multiPoints.map(f => unfeature(keys, values, POINT, pgp.toCommands(Right(f.geom), topLeft, resolution), f.data)),
-      lines.map(f => unfeature(keys, values, LINESTRING, pgl.toCommands(Left(f.geom), topLeft, resolution), f.data)),
-      multiLines.map(f => unfeature(keys, values, LINESTRING, pgl.toCommands(Right(f.geom), topLeft, resolution), f.data)),
-      polygons.map(f => unfeature(keys, values, POLYGON, pgy.toCommands(Left(f.geom), topLeft, resolution), f.data)),
-      multiPolygons.map(f => unfeature(keys, values, POLYGON, pgy.toCommands(Right(f.geom), topLeft, resolution), f.data))
+      points.map(f => unfeature(keys, values, POINT, pgp.toCommands(Left(f.geom), tileExtent.northWest, resolution), f.data)),
+      multiPoints.map(f => unfeature(keys, values, POINT, pgp.toCommands(Right(f.geom), tileExtent.northWest, resolution), f.data)),
+      lines.map(f => unfeature(keys, values, LINESTRING, pgl.toCommands(Left(f.geom), tileExtent.northWest, resolution), f.data)),
+      multiLines.map(f => unfeature(keys, values, LINESTRING, pgl.toCommands(Right(f.geom), tileExtent.northWest, resolution), f.data)),
+      polygons.map(f => unfeature(keys, values, POLYGON, pgy.toCommands(Left(f.geom), tileExtent.northWest, resolution), f.data)),
+      multiPolygons.map(f => unfeature(keys, values, POLYGON, pgy.toCommands(Right(f.geom), tileExtent.northWest, resolution), f.data))
     ).flatten
 
     vt.Tile.Layer(version, name, features, keys, values.map(_.toProtobuf), Some(extent))
