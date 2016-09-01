@@ -34,27 +34,19 @@ trait S3CollectionReader {
     else
       queryKeyBounds.flatMap(decomposeBounds)
 
-    val includeKey = (key: K) => queryKeyBounds.includeKey(key)
-    val _recordCodec = KeyValueRecordCodec[K, V]
-    val _getS3Client = getS3Client
-    val s3client = _getS3Client()
+    val recordCodec = KeyValueRecordCodec[K, V]
+    val s3client = getS3Client()
 
-    LayerReader.njoin[K, V](ranges.toIterator, { iter =>
-      if (iter.hasNext) {
-        val index = iter.next()
-        val path = keyPath(index)
-        val getS3Bytes = () => IOUtils.toByteArray(s3client.getObject(bucket, path).getObjectContent)
-
-        try {
-          val bytes: Array[Byte] = getS3Bytes()
-          val recs = AvroEncoder.fromBinary(writerSchema.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
-          if (filterIndexOnly) Some(recs, iter)
-          else Some(recs.filter { row => includeKey(row._1) }, iter)
-        } catch {
-          case e: AmazonS3Exception if e.getStatusCode == 404 => Some(Vector.empty, iter)
-        }
-      } else None
-    }, threads): Seq[(K, V)]
+    LayerReader.njoin[K, V](ranges.toIterator, threads){ index: Long =>
+      try {
+        val bytes = IOUtils.toByteArray(s3client.getObject(bucket, keyPath(index)).getObjectContent)
+        val recs = AvroEncoder.fromBinary(writerSchema.getOrElse(recordCodec.schema), bytes)(recordCodec)
+        if (filterIndexOnly) recs
+        else recs.filter { row => queryKeyBounds.includeKey(row._1) }
+      } catch {
+        case e: AmazonS3Exception if e.getStatusCode == 404 => Vector.empty
+      }
+    }: Seq[(K, V)]
   }
 }
 
