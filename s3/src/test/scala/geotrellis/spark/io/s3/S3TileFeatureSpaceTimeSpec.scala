@@ -42,6 +42,7 @@ class S3TileFeatureSpaceTimeSpec
   }
 
   lazy val reader = new MockS3LayerReader(attributeStore)
+  lazy val creader = new MockS3LayerCollectionReader(attributeStore)
   lazy val writer = new MockS3LayerWriter(attributeStore, bucket, prefix)
   lazy val updater = new S3LayerUpdater(attributeStore, reader) { override def rddWriter = S3TileFeatureSpaceTimeSpec.this.rddWriter }
   lazy val deleter = new S3LayerDeleter(attributeStore) { override val getS3Client = () => new MockS3Client }

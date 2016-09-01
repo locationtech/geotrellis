@@ -1,22 +1,13 @@
 package geotrellis.spark.io.s3
 
-import com.amazonaws.services.s3.model.AmazonS3Exception
-import com.typesafe.config.ConfigFactory
-import geotrellis.raster.{MultibandTile, Tile}
+import com.typesafe.scalalogging.slf4j.LazyLogging
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
-import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index._
-import geotrellis.spark.util.cache._
 import geotrellis.util._
-
-import org.apache.avro.Schema
-import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
-import com.typesafe.scalalogging.slf4j.LazyLogging
 
 import scala.reflect.ClassTag
 
@@ -28,18 +19,15 @@ import scala.reflect.ClassTag
  * @tparam V              Type of RDD Value (ex: Tile or MultibandTile )
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  */
-class S3LayerReader(val attributeStore: AttributeStore)(implicit sc: SparkContext)
-  extends FilteringLayerReader[LayerId] with LazyLogging {
+class S3LayerCollectionReader(val attributeStore: AttributeStore) extends CollectionLayerReader[LayerId] with LazyLogging {
 
-  val defaultNumPartitions = sc.defaultParallelism
-
-  def rddReader: S3RDDReader = S3RDDReader
+  def collectionReader: S3CollectionReader = S3CollectionReader
 
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
-  ](id: LayerId, rasterQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
+  ](id: LayerId, rasterQuery: LayerQuery[K, M], filterIndexOnly: Boolean) = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
@@ -55,16 +43,16 @@ class S3LayerReader(val attributeStore: AttributeStore)(implicit sc: SparkContex
     val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
     val keyPath = (index: Long) => makePath(prefix, Index.encode(index, maxWidth))
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
-    val rdd = rddReader.read[K, V](bucket, keyPath, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema), Some(numPartitions))
+    val seq = collectionReader.read[K, V](bucket, keyPath, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema))
 
-    new ContextRDD(rdd, metadata)
+    new ContextCollection(seq, metadata)
   }
 }
 
-object S3LayerReader {
-  def apply(attributeStore: AttributeStore)(implicit sc: SparkContext): S3LayerReader =
-    new S3LayerReader(attributeStore)
+object S3LayerCollectionReader {
+  def apply(attributeStore: AttributeStore): S3LayerCollectionReader =
+    new S3LayerCollectionReader(attributeStore)
 
-  def apply(bucket: String, prefix: String)(implicit sc: SparkContext): S3LayerReader =
+  def apply(bucket: String, prefix: String): S3LayerCollectionReader =
     apply(new S3AttributeStore(bucket, prefix))
 }

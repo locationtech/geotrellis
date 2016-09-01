@@ -1,5 +1,6 @@
 package geotrellis.spark.io.s3
 
+import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 
@@ -23,7 +24,7 @@ trait S3RDDWriter {
     bucket: String,
     keyPath: K => String,
     putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p },
-    threads: Int = ConfigFactory.load().getInt("geotrellis.s3.threads.rdd.write")
+    threads: Int = ConfigFactory.load().getThreads("geotrellis.s3.threads.rdd.write")
   ): Unit = {
     val codec  = KeyValueRecordCodec[K, V]
     val schema = codec.schema
