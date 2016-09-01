@@ -1,6 +1,7 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.spark._
+import geotrellis.spark.io._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
@@ -33,7 +34,7 @@ trait S3RDDReader {
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
     numPartitions: Option[Int] = None,
-    threads: Int = ConfigFactory.load().getInt("geotrellis.s3.threads.rdd.read")
+    threads: Int = ConfigFactory.load().getThreads("geotrellis.s3.threads.rdd.read")
   )(implicit sc: SparkContext): RDD[(K, V)] = {
     if (queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
 
@@ -52,42 +53,19 @@ trait S3RDDReader {
     sc.parallelize(bins, bins.size)
       .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
         val s3client = _getS3Client()
-        val pool = Executors.newFixedThreadPool(threads)
-
-        val result = partition map { seq =>
-          val range: Process[Task, Iterator[Long]] = Process.unfold(seq.toIterator) { iter =>
-            if (iter.hasNext) {
-              val (start, end) = iter.next()
-              Some((start to end).toIterator, iter)
-            } else None
-          }
-
-          val read: Iterator[Long] => Process[Task, Vector[(K, V)]] = { iterator =>
-            Process.unfold(iterator) { iter =>
-              if (iter.hasNext) {
-                val index = iter.next()
-                val path = keyPath(index)
-                val getS3Bytes = () => IOUtils.toByteArray(s3client.getObject(bucket, path).getObjectContent)
-
-                try {
-                  val bytes: Array[Byte] = getS3Bytes()
-                  val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
-                  if (filterIndexOnly) Some(recs, iter)
-                  else Some(recs.filter { row => includeKey(row._1) }, iter)
-                } catch {
-                  case e: AmazonS3Exception if e.getStatusCode == 404 => Some(Vector.empty, iter)
-                }
-              } else {
-                None
-              }
+        val writerSchema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
+        partition flatMap { ranges =>
+          LayerReader.njoin[K, V](ranges.toIterator, threads){ index: Long =>
+            try {
+              val bytes = IOUtils.toByteArray(s3client.getObject(bucket, keyPath(index)).getObjectContent)
+              val recs = AvroEncoder.fromBinary(writerSchema, bytes)(_recordCodec)
+              if (filterIndexOnly) recs
+              else recs.filter { row => includeKey(row._1) }
+            } catch {
+              case e: AmazonS3Exception if e.getStatusCode == 404 => Vector.empty
             }
           }
-
-          nondeterminism.njoin(maxOpen = threads, maxQueued = threads) { range map read }(Strategy.Executor(pool)).runFoldMap(identity).unsafePerformSync
         }
-
-        /** Close partition pool */
-        (result ++ Iterator({ pool.shutdown(); Vector.empty[(K, V)] })).flatten
       }
   }
 }

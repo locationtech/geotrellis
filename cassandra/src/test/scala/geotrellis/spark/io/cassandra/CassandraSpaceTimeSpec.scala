@@ -18,6 +18,7 @@ class CassandraSpaceTimeSpec
   lazy val attributeStore = CassandraAttributeStore(instance)
 
   lazy val reader    = CassandraLayerReader(attributeStore)
+  lazy val creader   = CassandraLayerCollectionReader(attributeStore)
   lazy val writer    = CassandraLayerWriter(attributeStore, "geotrellis", "tiles")
   lazy val deleter   = CassandraLayerDeleter(attributeStore)
   lazy val updater   = CassandraLayerUpdater(attributeStore)

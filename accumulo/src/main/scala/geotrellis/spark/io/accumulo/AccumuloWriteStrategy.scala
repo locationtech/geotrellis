@@ -1,6 +1,7 @@
 package geotrellis.spark.io.accumulo
 
 import geotrellis.spark.util._
+import geotrellis.spark.io._
 import geotrellis.spark.io.hadoop._
 
 import org.apache.hadoop.mapreduce.Job
@@ -17,7 +18,7 @@ import java.util.UUID
 import java.util.concurrent.Executors
 
 object AccumuloWriteStrategy {
-  val threads = ConfigFactory.load().getInt("geotrellis.accumulo.threads.rdd.write")
+  val threads = ConfigFactory.load().getThreads("geotrellis.accumulo.threads.rdd.write")
 
   def DEFAULT = HdfsWriteStrategy("/geotrellis-ingest")
 }
@@ -116,7 +117,7 @@ case class SocketWriteStrategy(
           }
         }
 
-      val writeChannel = channel.lift { (mutation: Mutation) => Task { writer.addMutation(mutation) } }
+      val writeChannel = channel.lift { (mutation: Mutation) => Task { writer.addMutation(mutation) } (pool) }
       val writes = mutations.tee(writeChannel)(tee.zipApply).map(Process.eval)
       nondeterminism.njoin(maxOpen = poolSize, maxQueued = poolSize)(writes)(Strategy.Executor(pool)).run.unsafePerformSync
       writer.close(); pool.shutdown()

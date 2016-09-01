@@ -17,6 +17,7 @@ class HadoopSpaceTimeSpec
     with CoordinateSpaceTimeSpec
     with LayerUpdateSpaceTimeTileSpec {
   lazy val reader = HadoopLayerReader(outputLocal)
+  lazy val creader = HadoopLayerCollectionReader(outputLocal)
   lazy val writer = HadoopLayerWriter(outputLocal)
   lazy val deleter = HadoopLayerDeleter(outputLocal)
   lazy val copier = HadoopLayerCopier(outputLocal)

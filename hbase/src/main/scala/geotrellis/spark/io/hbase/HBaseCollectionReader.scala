@@ -6,21 +6,14 @@ import geotrellis.spark.io.index.MergeQueue
 import geotrellis.spark.util.KryoWrapper
 import geotrellis.spark.{Boundable, KeyBounds, LayerId}
 
-import org.apache.avro.Schema
-import org.apache.hadoop.hbase.HBaseConfiguration
-import org.apache.hadoop.hbase.client.{Result, Scan}
+import org.apache.hadoop.hbase.client.Scan
 import org.apache.hadoop.hbase.filter.{FilterList, MultiRowRangeFilter, PrefixFilter}
-import org.apache.hadoop.hbase.io.ImmutableBytesWritable
-import org.apache.hadoop.hbase.mapreduce.{IdentityTableMapper, TableInputFormat, TableMapReduceUtil}
-import org.apache.hadoop.mapred.JobConf
-import org.apache.hadoop.mapreduce.Job
-import org.apache.spark.SparkContext
-import org.apache.spark.deploy.SparkHadoopUtil
-import org.apache.spark.rdd.RDD
+import org.apache.avro.Schema
 
+import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
-object HBaseRDDReader {
+object HBaseCollectionReader {
   def read[K: Boundable : AvroRecordCodec : ClassTag, V: AvroRecordCodec : ClassTag](
     instance: HBaseInstance,
     table: String,
@@ -30,8 +23,8 @@ object HBaseRDDReader {
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
     numPartitions: Option[Int] = None
-  )(implicit sc: SparkContext): RDD[(K, V)] = {
-    if (queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
+  ): Seq[(K, V)] = {
+    if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
     val includeKey = (key: K) => queryKeyBounds.includeKey(key)
     val _recordCodec = KeyValueRecordCodec[K, V]
@@ -58,26 +51,16 @@ object HBaseRDDReader {
       )
     )
 
-    val conf = sc.hadoopConfiguration
-    HBaseConfiguration.merge(conf, instance.conf)
-
-    val job = Job.getInstance(conf)
-    TableMapReduceUtil.initCredentials(job)
-    TableMapReduceUtil.initTableMapperJob(table, scan, classOf[IdentityTableMapper], null, null, job)
-
-    val jconf = new JobConf(job.getConfiguration)
-    SparkHadoopUtil.get.addCredentials(jconf)
-
-    sc.newAPIHadoopRDD(
-      jconf,
-      classOf[TableInputFormat],
-      classOf[ImmutableBytesWritable],
-      classOf[Result]
-    ).flatMap { case (_, row) =>
-      val bytes = row.getValue(HBaseRDDWriter.tilesCF, "")
-      val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
-      if (filterIndexOnly) recs
-      else recs.filter { row => includeKey(row._1) }
+    instance.withTableConnectionDo(table) { tableConnection =>
+      val scanner = tableConnection.getScanner(scan)
+      try {
+        scanner.iterator().flatMap { row =>
+          val bytes = row.getValue(HBaseRDDWriter.tilesCF, "")
+          val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
+          if (filterIndexOnly) recs
+          else recs.filter { row => includeKey(row._1) }
+        } toVector: Seq[(K, V)]
+      } finally scanner.close()
     }
   }
 }

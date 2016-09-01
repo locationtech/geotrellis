@@ -206,16 +206,41 @@ The idea is similar to the `LayerReader.reader` method except in this case we're
 Cassandra and S3 Layer RDDReaders / RDDWriters are configurable by threads amount. It's a programm setting, that can be different for a certain machine (depends on resources available). Configuration could be set in the `reference.conf` / `application.conf` file of your app, default settings available in a `reference.conf` file of each backend subproject (we use [TypeSafe Config](https://github.com/typesafehub/config)).
 For a File backend only RDDReader is configurable, For Accumulo - only RDDWriter (Socket Strategy). For all backends CollectionReaders are configurable as well.
 
-Default configuration example:
+Configuration example (defaut means to use all processors available to the Java virtual machine):
 
 ```conf
 geotrellis.accumulo.threads {
-  rdd.write       = 32
-  collection.read = 32
+  collection.read = default
+  rdd.write       = default
 }
 geotrellis.file.threads {
-  rdd.read        = 32
+  collection.read = default
+  rdd.read        = default
+}
+geotrellis.cassandra.threads {
+  collection.read = default
+  rdd {
+    write = default
+    read  = default
+  }
+}
+geotrellis.s3.threads {
+  collection.read = default
+  rdd {
+    write = default
+    read  = default
+  }
+}
+```
+
+```conf
+geotrellis.accumulo.threads {
   collection.read = 32
+  rdd.write       = 32
+}
+geotrellis.file.threads {
+  collection.read = 32
+  rdd.read        = 32
 }
 geotrellis.cassandra.threads {
   collection.read = 32
@@ -225,10 +250,10 @@ geotrellis.cassandra.threads {
   }
 }
 geotrellis.s3.threads {
- collection.read = 8
+  collection.read = 32
   rdd {
-    write = 8
-    read  = 8
+    write = 32
+    read  = 32
   }
 }
 ```

@@ -13,18 +13,19 @@ class HBaseTileFeatureSpatialSpec
     with AllOnesTestTileFeatureSpec {
 
   registerAfterAll { () =>
-    val instance = HBaseInstance(Seq("localhost"), "localhost")
-    instance.getAdmin.disableTable("metadata")
-    instance.getAdmin.disableTable("tiles")
-    instance.getAdmin.deleteTable("metadata")
-    instance.getAdmin.deleteTable("tiles")
-    instance.getAdmin.close()
+    HBaseInstance(Seq("localhost"), "localhost").withAdminDo { admin =>
+      admin.disableTable("metadata")
+      admin.disableTable("tiles")
+      admin.deleteTable("metadata")
+      admin.deleteTable("tiles")
+    }
   }
 
   lazy val instance       = HBaseInstance(Seq("localhost"), "localhost")
   lazy val attributeStore = HBaseAttributeStore(instance)
 
   lazy val reader    = HBaseLayerReader(attributeStore)
+  lazy val creader   = HBaseLayerCollectionReader(attributeStore)
   lazy val writer    = HBaseLayerWriter(attributeStore, "tiles")
   lazy val deleter   = HBaseLayerDeleter(attributeStore)
   lazy val updater   = HBaseLayerUpdater(attributeStore)

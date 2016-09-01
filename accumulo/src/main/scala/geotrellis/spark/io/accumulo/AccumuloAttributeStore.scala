@@ -12,7 +12,6 @@ import org.apache.accumulo.core.security.Authorizations
 import org.apache.accumulo.core.data._
 import org.apache.hadoop.io.Text
 
-
 import scala.collection.JavaConversions._
 
 object AccumuloAttributeStore {
