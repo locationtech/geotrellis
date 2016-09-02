@@ -75,7 +75,15 @@ class AvroSpec extends FunSpec with Matchers {
       val bytes = read("vectortile/data/roads.mvt")
       val tile = ProtobufTile.fromBytes(bytes, tileExtent)
 
-      vectorTileCodec.decode(vectorTileCodec.encode(tile)).layers.keys should equal(tile.layers.keys)
+      val decoded = vectorTileCodec.decode(vectorTileCodec.encode(tile))
+
+      decoded.layers.keys should equal(tile.layers.keys)
+      decoded.layers.values.map(_.points) should equal(tile.layers.values.map(_.points))
+      decoded.layers.values.map(_.multiPoints) should equal(tile.layers.values.map(_.multiPoints))
+      decoded.layers.values.map(_.lines) should equal(tile.layers.values.map(_.lines))
+      decoded.layers.values.map(_.multiLines) should equal(tile.layers.values.map(_.multiLines))
+      decoded.layers.values.map(_.polygons) should equal(tile.layers.values.map(_.polygons))
+//      decoded.layers.values.map(_.multiPolygons) should equal(tile.layers.values.map(_.multiPolygons))
     }
   }
 }
