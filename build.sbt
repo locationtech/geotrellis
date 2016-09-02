@@ -93,7 +93,7 @@ lazy val macros = Project("macros", file("macros")).
   settings(commonSettings: _*)
 
 lazy val vectortile = Project("vectortile", file("vectortile"))
-  .dependsOn(vector)
+  .dependsOn(vector, spark)
   .settings(commonSettings: _*)
 
 lazy val vector = Project("vector", file("vector")).
