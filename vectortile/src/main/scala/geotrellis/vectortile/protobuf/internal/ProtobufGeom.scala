@@ -27,9 +27,8 @@ import geotrellis.vector.{ Geometry, MultiGeometry, Point }
   * split to provide separate instances for both the single and multi forms.
   *
   * Since we assume that all VectorTiles implicitely exist in some CRS,
-  * we ask for a Geotrellis [[SpatialKey]] and [[LayoutDefinition]] here
-  * to immediately translate geometry grid coordinates into real CRS
-  * coordinates.
+  * we ask for the top-left corner of the current Tile's extent, as well
+  * as its resolution in order to perform the transformation into CRS space.
   *
   * Instances of this trait can be found in the package object.
   *

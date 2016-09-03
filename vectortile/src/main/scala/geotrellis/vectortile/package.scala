@@ -39,15 +39,17 @@ package geotrellis
   * {{{
   * import geotrellis.spark.SpatialKey
   * import geotrellis.spark.tiling.LayoutDefinition
+  * import geotrellis.vector.Extent
   * import geotrellis.vectortile.VectorTile
   * import geotrellis.vectortile.protobuf._
   *
   * val bytes: Array[Byte] = ...  // from some `.mvt` file
   * val key: SpatialKey = ...  // preknown
   * val layout: LayoutDefinition = ...  // preknown
+  * val tileExtent: Extent = layout.mapTransform(key)
   *
   * /* Decode Protobuf bytes. */
-  * val tile: VectorTile = ProtobufTile.fromBytes(bytes, key, layout)
+  * val tile: VectorTile = ProtobufTile.fromBytes(bytes, tileExtent)
   *
   * /* Encode a VectorTile back into bytes. */
   * val encodedBytes: Array[Byte] = tile match {
@@ -68,11 +70,9 @@ package geotrellis
   * assumptions:
   *   - Geometries are implicitly encoded in ''some'' Coordinate Reference
   *     system. That is, there is no such thing as a "projectionless" VectorTile.
-  *     When decoding a VectorTile, we must provide a Geotrellis [[LayoutDefinition]]
-  *     and a [[SpatialKey]]. The LayoutDefinition includes an Extent in some CRS,
-  *     which conceptually surrounds a grid of tiles on a map. The SpatialKey
-  *     represents the Tile's position in that grid.
-  *     With these, the grid coordinates stored in the VectorTile's Geometry are
+  *     When decoding a VectorTile, we must provide a Geotrellis [[Extent]] that
+  *     represents the Tile's area on a map.
+  *     With this, the grid coordinates stored in the VectorTile's Geometry are
   *     shifted from their
   *     original [0,4096] range to actual world coordinates in the Extent's CRS.
   *   - The `id` field in VectorTile Features doesn't matter.

@@ -19,8 +19,6 @@ package geotrellis.vectortile.protobuf
 import geotrellis.vector._
 import geotrellis.vectortile.{Layer, VectorTile}
 import geotrellis.vectortile.protobuf.internal._
-import geotrellis.spark.SpatialKey
-import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.vectortile.protobuf.internal.{vector_tile => vt}
 import geotrellis.vectortile.protobuf.internal.vector_tile.Tile.GeomType.{POINT, LINESTRING, POLYGON}
 
@@ -38,8 +36,9 @@ import scala.collection.mutable.ListBuffer
   * val bytes: Array[Byte] = ...  // from some `.mvt` file
   * val key: SpatialKey = ...  // preknown
   * val layout: LayoutDefinition = ...  // preknown
+  * val tileExtent: Extent = layout.mapTransform(key)
   *
-  * val tile: VectorTile = ProtobufTile.fromBytes(bytes, key, layout)
+  * val tile: VectorTile = ProtobufTile.fromBytes(bytes, tileExtent)
   * }}}
   *
   * @constructor This is not meant to be called directly. See this class's
