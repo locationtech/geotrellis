@@ -98,7 +98,7 @@ case class ProtobufLayer(
 ) extends Layer {
   /* Expected fields */
   def name: String = rawLayer.name
-  def extent: Int = rawLayer.extent.getOrElse(4096)
+  def tileWidth: Int = rawLayer.extent.getOrElse(4096)
 
   /** The version of the specification that this Layer adheres to. */
   def version: Int = rawLayer.version
@@ -116,7 +116,7 @@ case class ProtobufLayer(
   private val (pointFs, lineFs, polyFs) = segregate(rawLayer.features)
 
   /** How much of the [[Extent]] is covered by a single grid coordinate? */
-  private def resolution: Double = tileExtent.height / extent
+  private def resolution: Double = tileExtent.height / tileWidth
 
   /**
    * Polymorphically generate a [[Stream]] of parsed Geometries and
@@ -258,7 +258,7 @@ case class ProtobufLayer(
       multiPolygons.map(f => unfeature(keys, values, POLYGON, pgy.toCommands(Right(f.geom), tileExtent.northWest, resolution), f.data))
     ).flatten
 
-    vt.Tile.Layer(version, name, features, keys, values.map(_.toProtobuf), Some(extent))
+    vt.Tile.Layer(version, name, features, keys, values.map(_.toProtobuf), Some(tileWidth))
   }
 
   private def totalMeta: (Seq[String], Seq[Value]) = {

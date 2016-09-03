@@ -62,10 +62,10 @@ trait Layer {
   /** The width/height of this Layer's coordinate grid. By default this is 4096,
     * as per the VectorTile specification.
     *
-    * Not to be confused with a [[geotrellis.vector.Extent]], which represents
-    * some projected area on a map.
+    * Referred to as ''extent'' in the spec, but we opt for a different name
+    * to avoid confusion with a GeoTrellis [[Extent]].
     */
-  def extent: Int
+  def tileWidth: Int
 
   /** Every Point Feature in this Layer. */
   def points: Seq[Feature[Point, Map[String, Value]]]
