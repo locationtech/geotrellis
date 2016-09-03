@@ -16,8 +16,7 @@
 
 package geotrellis.vectortile
 
-import geotrellis.vector._
-import geotrellis.vectortile.protobuf.Value
+import geotrellis.vector.Extent
 
 // --- //
 
@@ -49,37 +48,4 @@ trait VectorTile {
     * }}}
     */
   val tileExtent: Extent
-}
-
-/** A layer, which could contain any number of Features of any Geometry type.
-  * Here, "Feature" and "Geometry" refer specifically to the Geotrellis classes
-  * of the same names.
-  */
-trait Layer {
-  /** The layer's name. */
-  def name: String
-
-  /** The width/height of this Layer's coordinate grid. By default this is 4096,
-    * as per the VectorTile specification.
-    *
-    * Referred to as ''extent'' in the spec, but we opt for a different name
-    * to avoid confusion with a GeoTrellis [[Extent]].
-    */
-  def tileWidth: Int
-
-  /** Every Point Feature in this Layer. */
-  def points: Seq[Feature[Point, Map[String, Value]]]
-  /** Every MultiPoint Feature in this Layer. */
-  def multiPoints: Seq[Feature[MultiPoint, Map[String, Value]]]
-  /** Every Line Feature in this Layer. */
-  def lines: Seq[Feature[Line, Map[String, Value]]]
-  /** Every MultiLine Feature in this Layer. */
-  def multiLines: Seq[Feature[MultiLine, Map[String, Value]]]
-  /** Every Polygon Feature in this Layer. */
-  def polygons: Seq[Feature[Polygon, Map[String, Value]]]
-  /** Every MultiPolygon Feature in this Layer. */
-  def multiPolygons: Seq[Feature[MultiPolygon, Map[String, Value]]]
-
-  /** All Features of Single and Multi Geometries. */
-  def features: Seq[Feature[Geometry, Map[String, Value]]]
 }
