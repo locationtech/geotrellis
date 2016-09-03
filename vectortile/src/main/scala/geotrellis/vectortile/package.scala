@@ -2,7 +2,8 @@ package geotrellis
 
 /** Invented by [[https://www.mapbox.com/ Mapbox]], VectorTiles are a combination of the
   * ideas of finite-sized tiles and vector geometries. Mapbox maintains the
-  * official implementation spec for VectorTile codecs.
+  * official implementation spec for VectorTile codecs. The specification is free
+  * and open source.
   *
   * VectorTiles are advantageous over raster tiles in that:
   *   - They are typically smaller to store
@@ -76,6 +77,7 @@ package geotrellis
   *     shifted from their
   *     original [0,4096] range to actual world coordinates in the Extent's CRS.
   *   - The `id` field in VectorTile Features doesn't matter.
+  *   - `UNKNOWN` geometries are safe to ignore.
   *   - If a VectorTile `geometry` list marked as `POINT` has only one pair
   *     of coordinates, it will be decoded as a Geotrellis `Point`. If it has
   *     more than one pair, it will be decoded as a `MultiPoint`. Likewise for

@@ -90,8 +90,6 @@ object ProtobufTile {
   * lazily, making for very fast extraction of single features/geometries.
   *
   */
-// TODO The Layer storing `key` and `layout` is likely very wasteful
-// it terms of memory.
 case class ProtobufLayer(
   private val rawLayer: vt.Tile.Layer,
   private val tileExtent: Extent
@@ -166,7 +164,7 @@ case class ProtobufLayer(
 
   /* OPTIMIZATION NOTES
    * `Stream.flatMap` maintains laziness. A common pattern here to "fold away"
-   * results you don't want are to use [[Option]]. However, flatMap here
+   * results you don't want is to use [[Option]]. However, flatMap here
    * expects an [[Iterable]], and employs an implicit conversion from [[Option]]
    * to get it.
    *
@@ -234,7 +232,6 @@ case class ProtobufLayer(
 
   /** Encode this Layer back into a mid-level Protobuf object. */
   def toProtobuf: vt.Tile.Layer = {
-    // TODO Where should these be?
     val pgp = implicitly[ProtobufGeom[Point, MultiPoint]]
     val pgl = implicitly[ProtobufGeom[Line, MultiLine]]
     val pgy = implicitly[ProtobufGeom[Polygon, MultiPolygon]]

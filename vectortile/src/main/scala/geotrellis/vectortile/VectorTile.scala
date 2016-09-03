@@ -28,7 +28,7 @@ import geotrellis.vectortile.protobuf.Value
   *
   * Traditionally, VectorTiles are encoded as Protobuf data, which this library
   * provides a codec for. However, by making this top-level type a trait, we
-  * are able to define alternative backends (GeoJson, for instance).
+  * are able to define alternative backends (GeoJson, for instance. Yet unimplemented.).
   *
   * See [[geotrellis.vectortile.protobuf.ProtobufTile]] for more information
   * on how to decode and encode VectorTiles.

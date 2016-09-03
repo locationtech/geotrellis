@@ -137,7 +137,6 @@ package object internal {
     * @param resolution How much of the CRS's units are covered by a single VT grid coordinate.
     * @return Grid coordinates in VectorTile space.
     */
-  // TODO Is `toInt` good enough for rounding?
   def fromProjection(point: Point, topLeft: Point, resolution: Double): (Int, Int) = {
     (
       ((point.x - topLeft.x) / resolution).toInt,

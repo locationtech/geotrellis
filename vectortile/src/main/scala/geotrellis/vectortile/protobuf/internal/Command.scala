@@ -119,7 +119,7 @@ object Command {
   /** Divide a Command Integer into its Command ID and parameter count. */
   private def parseCmd(n: Int): (Int,Int) = {
     val cmd = n & 7
-    val count = n >> 3  // or >> ?
+    val count = n >> 3
 
     cmd match {
       case 1 if count > 0 => (cmd,count)
