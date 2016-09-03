@@ -91,8 +91,6 @@ object ProtobufTile {
   * lazily, making for very fast extraction of single features/geometries.
   *
   */
-// TODO The Layer storing `key` and `layout` is likely very wasteful
-// it terms of memory.
 case class ProtobufLayer(
   private val rawLayer: vt.Tile.Layer,
   private val tileExtent: Extent
