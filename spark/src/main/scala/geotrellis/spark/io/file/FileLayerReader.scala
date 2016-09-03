@@ -34,7 +34,7 @@ class FileLayerReader(
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
-  ](id: LayerId, rasterQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
+  ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
@@ -45,7 +45,7 @@ class FileLayerReader(
 
     val layerPath = header.path
 
-    val queryKeyBounds = rasterQuery(metadata)
+    val queryKeyBounds = tileQuery(metadata)
     val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
     val keyPath = KeyPathGenerator(catalogPath, layerPath, maxWidth)
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)

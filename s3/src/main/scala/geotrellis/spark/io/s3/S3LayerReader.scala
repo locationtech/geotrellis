@@ -39,7 +39,7 @@ class S3LayerReader(val attributeStore: AttributeStore)(implicit sc: SparkContex
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
-  ](id: LayerId, rasterQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
+  ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
@@ -51,7 +51,7 @@ class S3LayerReader(val attributeStore: AttributeStore)(implicit sc: SparkContex
     val bucket = header.bucket
     val prefix = header.key
 
-    val queryKeyBounds = rasterQuery(metadata)
+    val queryKeyBounds = tileQuery(metadata)
     val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
     val keyPath = (index: Long) => makePath(prefix, Index.encode(index, maxWidth))
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
