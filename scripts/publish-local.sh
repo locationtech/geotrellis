@@ -11,6 +11,7 @@
 ./sbt "project cassandra" publish-local && \
 ./sbt "project hbase" publish-local && \
 ./sbt "project spark-etl" publish-local && \
+./sbt "project geomesa" publish-local && \
 ./sbt "project shapefile" publish-local && \
 ./sbt "project slick" publish-local && \
 ./sbt "project util" publish-local && \

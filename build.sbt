@@ -146,6 +146,11 @@ lazy val hbase = Project("hbase", file("hbase")).
   dependsOn(sparkTestkit % "test->test", spark % "provided;test->test").
   settings(commonSettings: _*)
 
+lazy val geomesa = Project("geomesa", file("geomesa")).
+  dependsOn(sparkTestkit % "test->test", spark % "provided;test->test", geotools, accumulo % "provided;test->test").
+  settings(commonSettings: _*).
+  settings(scalaVersion := Version.scala_2_11)
+
 lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).
   dependsOn(spark, s3, accumulo, cassandra, hbase).
   settings(commonSettings: _*)

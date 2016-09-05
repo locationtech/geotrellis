@@ -22,7 +22,8 @@ object Version {
    * Until the deployment of spark on 2.11 is fully addressed we are going to target 2.10 to minimize confusion.
    */
   val scala       = "2.10.6"
-  val crossScala  = Seq("2.11.8", scala)
+  val scala_2_11  = "2.11.8"
+  val crossScala  = Seq(scala_2_11, scala)
   val geotools    = "14.3"
   val akka        = "2.3.14"
   val spray       = "1.3.3"
@@ -32,6 +33,7 @@ object Version {
   val accumulo    = "1.7.2"
   val cassandra   = "3.1.0"
   val hbase       = "1.2.2"
+  val geomesa     = "1.2.5"
   lazy val hadoop = Environment.hadoopVersion
   lazy val spark  = Environment.sparkVersion
 }
