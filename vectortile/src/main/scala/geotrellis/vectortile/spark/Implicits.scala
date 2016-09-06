@@ -36,7 +36,7 @@ object Implicits {
 
       def decode(rec: GenericRecord): VectorTile = {
         val bytes = rec[Array[Byte]]("bytes")
-        val extent = rec[Extent]("extent")
+        val extent: Extent = extentCodec.decode(rec[GenericRecord]("extent"))
 
         ProtobufTile.fromBytes(bytes, extent)
       }
