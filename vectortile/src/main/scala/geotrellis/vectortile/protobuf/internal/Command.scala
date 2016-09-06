@@ -49,7 +49,7 @@ import scala.annotation.tailrec
   *  - Any Polygon in a Polygon feature must have a LineTo with a count of at least 2.
   *  - ClosePath must always have a parameter count of 1.
   */
-sealed trait Command
+sealed trait Command extends Serializable
 
 /** `MoveTo` signals a series of moves from the current cursor (default of `(0,0)`).
   * The parameter pairs that follow don't represent a point to move to,
