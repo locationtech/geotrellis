@@ -24,6 +24,7 @@ import geotrellis.vectortile.protobuf.internal.vector_tile.Tile.GeomType.{POINT,
 
 import scala.collection.mutable.ListBuffer
 
+// --- //
 
 /**
   * A [[Layer]] decoded from Protobuf data. All of its Features are decoded
@@ -50,8 +51,7 @@ case class ProtobufLayer(
   }
 
   /* Unconsumed raw Features */
-  // TODO Should this be a def?
-  private val (pointFs, lineFs, polyFs) = segregate(rawLayer.features)
+  private lazy val (pointFs, lineFs, polyFs) = segregate(rawLayer.features)
 
   /** How much of the [[Extent]] is covered by a single grid coordinate? */
   private def resolution: Double = tileExtent.height / tileWidth
