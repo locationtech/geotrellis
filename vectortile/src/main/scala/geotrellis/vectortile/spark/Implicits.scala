@@ -10,6 +10,8 @@ import geotrellis.vectortile.protobuf._
 import org.apache.avro._
 import org.apache.avro.generic._
 
+import java.nio.ByteBuffer
+
 // --- //
 
 object Implicits {
@@ -28,14 +30,14 @@ object Implicits {
       def encode(tile: VectorTile, rec: GenericRecord): Unit = {
         tile match {
           case t: ProtobufTile => {
-            rec.put("bytes", t.toBytes)
+            rec.put("bytes", ByteBuffer.wrap(t.toBytes))
             rec.put("extent", extentCodec.encode(t.tileExtent))
           }
         }
       }
 
       def decode(rec: GenericRecord): VectorTile = {
-        val bytes = rec[Array[Byte]]("bytes")
+        val bytes: Array[Byte] = rec[ByteBuffer]("bytes").array
         val extent: Extent = extentCodec.decode(rec[GenericRecord]("extent"))
 
         ProtobufTile.fromBytes(bytes, extent)
