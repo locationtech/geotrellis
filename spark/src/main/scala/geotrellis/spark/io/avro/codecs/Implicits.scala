@@ -8,7 +8,6 @@ object Implicits extends Implicits
 trait Implicits
     extends TileCodecs
     with TileFeatureCodec
-    with ByteArrayCodec
     with ExtentCodec
     with KeyCodecs {
   implicit def tileUnionCodec = new AvroUnionCodec[Tile](
