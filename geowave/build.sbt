@@ -50,6 +50,7 @@ libraryDependencies ++= Seq(
   scalatest % "test")
 
 resolvers ++= Seq(
+  // Resolver.mavenLocal,
   "boundless" at "https://repo.boundlessgeo.com/release",
   "geosolutions" at "http://maven.geo-solutions.it/",
   "geowave-release" at "http://geowave-maven.s3-website-us-east-1.amazonaws.com/release",

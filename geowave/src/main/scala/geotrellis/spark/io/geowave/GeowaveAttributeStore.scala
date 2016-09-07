@@ -76,17 +76,10 @@ object GeowaveAttributeStore {
       geowaveNamespace)
   }
 
-  def adapters(bao: BasicAccumuloOperations): Array[RasterDataAdapter] = {
-    for (adapters <- managed(new AccumuloAdapterStore(bao).getAdapters)) {
-      val list = Iterator.iterate(adapters)({ _ => adapters })
-        .takeWhile({ _ => adapters.hasNext })
-        .map(_.next.asInstanceOf[RasterDataAdapter])
-        .toArray
-
-      return list
-    }
-    Array.empty[RasterDataAdapter]
-  }
+  def adapters(bao: BasicAccumuloOperations): Array[RasterDataAdapter] =
+    managed(new AccumuloAdapterStore(bao).getAdapters)
+      .acquireAndGet { _.asScala.collect { case x: RasterDataAdapter => x } }
+      .toArray
 
   def primaryIndex = (new SpatialDimensionalityTypeProvider.SpatialIndexBuilder).createIndex()
 
@@ -98,40 +91,34 @@ object GeowaveAttributeStore {
 }
 
 class GeowaveAttributeStore(
-  zookeepers: String,
-  accumuloInstance: String,
-  accumuloUser: String,
-  accumuloPass: String,
-  geowaveNamespace: String
+  val zookeepers: String,
+  val accumuloInstance: String,
+  val accumuloUser: String,
+  val accumuloPass: String,
+  val geowaveNamespace: String
 ) extends DiscreteLayerAttributeStore with Logging {
-
-  def zookeepers(): String = zookeepers
-  def accumuloInstance(): String = accumuloInstance
-  def accumuloUser(): String = accumuloUser
-  def accumuloPass(): String = accumuloPass
-  def geowaveNamespace(): String = geowaveNamespace
 
   val zkInstance = (new ZooKeeperInstance(accumuloInstance, zookeepers))
   val token = new PasswordToken(accumuloPass)
   val connector = zkInstance.getConnector(accumuloUser, token)
   val delegate = AccumuloAttributeStore(connector, s"${geowaveNamespace}_ATTR")
 
-  val bao = GeowaveAttributeStore.basicOperations(
-    zookeepers: String,
-    accumuloInstance: String,
-    accumuloUser: String,
-    accumuloPass: String,
+  val basicAccumuloOperations = GeowaveAttributeStore.basicOperations(
+    zookeepers,
+    accumuloInstance,
+    accumuloUser,
+    accumuloPass,
     geowaveNamespace: String
   )
-  val aro = GeowaveAttributeStore.accumuloRequiredOptions(
-    zookeepers: String,
-    accumuloInstance: String,
-    accumuloUser: String,
-    accumuloPass: String,
-    geowaveNamespace: String
+  val accumuloRequiredOptions = GeowaveAttributeStore.accumuloRequiredOptions(
+    zookeepers,
+    accumuloInstance,
+    accumuloUser,
+    accumuloPass,
+    geowaveNamespace
   )
-  val ds = new AccumuloDataStore(bao)
-  val dss = new AccumuloDataStatisticsStore(bao)
+  val dataStore = new AccumuloDataStore(basicAccumuloOperations)
+  val dataStatisticsStore = new AccumuloDataStatisticsStore(basicAccumuloOperations)
 
   def delete(tableName: String) =
     connector.tableOperations.delete(tableName)
@@ -140,7 +127,7 @@ class GeowaveAttributeStore(
     getAdapters.map({ adapter =>
       val adapterId = adapter.getAdapterId
       val bboxId = BoundingBoxDataStatistics.STATS_ID
-      val bbox = dss
+      val bbox = dataStatisticsStore
         .getDataStatistics(adapterId, bboxId)
         .asInstanceOf[BoundingBoxDataStatistics[Any]]
 
@@ -175,13 +162,11 @@ class GeowaveAttributeStore(
     }).toMap
   }
 
-  def getAccumuloRequiredOptions = aro
-  def getBasicAccumuloOperations = bao
+  def getAccumuloRequiredOptions = accumuloRequiredOptions
+  def getBasicAccumuloOperations = basicAccumuloOperations
   def getPrimaryIndex = GeowaveAttributeStore.primaryIndex
-  def getAdapters = GeowaveAttributeStore.adapters(bao)
+  def getAdapters = GeowaveAttributeStore.adapters(basicAccumuloOperations)
   def getSubStrategies = GeowaveAttributeStore.subStrategies(getPrimaryIndex)
-  def getDataStore = ds
-  def getDataStatisticsStore = dss
 
   def delete(layerId: LayerId, attributeName: String): Unit =
     delegate.delete(layerId, attributeName)
