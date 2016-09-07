@@ -15,24 +15,27 @@ import java.util.TimeZone
 class GeoMesaPersistenceSpec extends FunSpec with Suite with BeforeAndAfterAll with Matchers with TestEnvironment {
 
   describe("GeoMesa Features Spec") {
-    val attributeStore = GeoMesaAttributeStore(instanceName = "fake", zookeepers = "localhost", user = "root", password = "", useMock = true)
+    val attributeStore = GeoMesaAttributeStore(
+      instanceName = "fake",
+      zookeepers   = "localhost",
+      user         = "root",
+      password     = "",
+      useMock      = true
+    )
+
     val layerWriter = new GeoMesaLayerWriter(attributeStore, "features")
     val layerReader = new GeoMesaLayerReader(attributeStore, "features")
     val layerWriterTemporal = new GeoMesaLayerWriter(attributeStore, "featuresTemporal")
     val layerReaderTemporal = new GeoMesaLayerReader(attributeStore, "featuresTemporal")
 
     val sdf = {
-      val df = new SimpleDateFormat("EEE MMM dd kk:mm:ss z yyyy")
-      df.setTimeZone(TimeZone.getTimeZone("UTC")); df
-    }
-    val sdfz = {
       val df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
       df.setTimeZone(TimeZone.getTimeZone("UTC")); df
     }
 
     val dates = (1 to 100).map { x =>
       val day = { val i = x / 10; if(i == 0) "01" else if (i < 10) s"0$i" else s"$i" }
-      day.toInt -> sdfz.parse(s"2010-05-${day}T00:00:00.000Z")
+      day.toInt -> sdf.parse(s"2010-05-${day}T00:00:00.000Z")
     }
 
     val features: Array[Feature[Point, Map[String, Any]]] = (1 to 100).map { x: Int => Feature(Point(x, 40), Map[String, Any]()) }.toArray
@@ -94,7 +97,7 @@ class GeoMesaPersistenceSpec extends FunSpec with Suite with BeforeAndAfterAll w
 
       val ds = dates.filter { case (k, _) => k > 3 && k < 6 }
       val expectedLength = ds.length
-      val filter = ECQL.toFilter(s"${GeometryToGeoMesaSimpleFeature.whenField} between '${sdfz.format(ds.head._2)}' and '${sdfz.format(ds.last._2)}'")
+      val filter = ECQL.toFilter(s"${GeometryToGeoMesaSimpleFeature.whenField} between '${sdf.format(ds.head._2)}' and '${sdf.format(ds.last._2)}'")
 
       val actual =
         layerReaderTemporal

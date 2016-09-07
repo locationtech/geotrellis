@@ -17,8 +17,6 @@ import org.opengis.feature.simple.{SimpleFeature, SimpleFeatureType}
 import scala.reflect.ClassTag
 
 class GeoMesaLayerReader(val attributeStore: GeoMesaAttributeStore, table: String)(implicit sc: SparkContext) extends Serializable {
-  lazy val dsConf = attributeStore.getConf(table, raw = true).asInstanceOf[Map[String, String]]
-
   def readSimpleFeatures(
     featureName: String,
     query: Query,
@@ -30,7 +28,7 @@ class GeoMesaLayerReader(val attributeStore: GeoMesaAttributeStore, table: Strin
     dataStore.dispose()
 
     val job = Job.getInstance(sc.hadoopConfiguration)
-    GeoMesaInputFormat.configure(job, dsConf, query)
+    GeoMesaInputFormat.configure(job, attributeStore.getConf(table), query)
 
     if (numPartitions.isDefined) {
       GeoMesaConfigurator.setDesiredSplits(job.getConfiguration, numPartitions.get * sc.getExecutorStorageStatus.length)
