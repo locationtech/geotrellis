@@ -19,8 +19,12 @@ import scala.reflect.ClassTag
 class GeoMesaLayerReader(val attributeStore: GeoMesaAttributeStore, table: String)(implicit sc: SparkContext) extends Serializable {
   lazy val dsConf = attributeStore.getConf(table, raw = true).asInstanceOf[Map[String, String]]
 
-  def readSimpleFeatures[G <: geotrellis.vector.Geometry: ClassTag]
-    (featureName: String, query: Query, simpleFeatureType: SimpleFeatureType, numPartitions: Option[Int] = None): RDD[SimpleFeature] = {
+  def readSimpleFeatures(
+    featureName: String,
+    query: Query,
+    simpleFeatureType: SimpleFeatureType,
+    numPartitions: Option[Int] = None
+  ): RDD[SimpleFeature] = {
     val dataStore = attributeStore.getAccumuloDataStore(table)
     dataStore.createSchema(simpleFeatureType)
     dataStore.dispose()
@@ -39,7 +43,7 @@ class GeoMesaLayerReader(val attributeStore: GeoMesaAttributeStore, table: Strin
   def read[G <: geotrellis.vector.Geometry: ClassTag, D]
     (layerId: LayerId, query: Query, simpleFeatureType: SimpleFeatureType, numPartitions: Option[Int] = None)
     (implicit transmute: Map[String, Any] => D): RDD[Feature[G, D]] =
-      readSimpleFeatures[G](
+      readSimpleFeatures(
         featureName       = layerId.name,
         query             = query,
         simpleFeatureType = simpleFeatureType,
