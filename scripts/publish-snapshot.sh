@@ -10,6 +10,8 @@
       "project accumulo" publish \
       "project cassandra" publish \
       "project hbase" publish \
+      "project spark-etl" publish \
+      "project geomesa" publish \
       "project shapefile" publish \
       "project util" publish \
       "project raster-testkit" publish \

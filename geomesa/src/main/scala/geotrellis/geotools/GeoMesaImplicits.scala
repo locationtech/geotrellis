@@ -3,7 +3,6 @@ package geotrellis.geotools
 import geotrellis.util.MethodExtensions
 import geotrellis.vector.{Feature, Geometry}
 
-
 object GeoMesaImplicits extends GeoMesaImplicits
 
 trait GeoMesaImplicits {

@@ -1,7 +1,6 @@
 package geotrellis.geotools
 
 import geotrellis.proj4.{CRS => GCRS}
-
 import com.vividsolutions.jts.{geom => jts}
 import geotrellis.vector.{Geometry, Line, MultiLine, MultiPoint, MultiPolygon, Point, Polygon}
 import org.geotools.feature.simple.{SimpleFeatureBuilder, SimpleFeatureTypeBuilder}
@@ -13,10 +12,10 @@ object GeometryToGeoMesaSimpleFeature {
   val whenField  = "when"
   val whereField = "where"
 
-  def apply(featureId: String, geom: Geometry, crs: Option[GCRS], data: Seq[(String, Any)]): SimpleFeature = {
+  def apply(featureId: String, featureName: String, geom: Geometry, crs: Option[GCRS], data: Seq[(String, Any)]): SimpleFeature = {
     val sftb = (new SimpleFeatureTypeBuilder).minOccurs(1).maxOccurs(1).nillable(false)
 
-    sftb.setName(s"Common${geom.getClass}SimpleFeatureType")
+    sftb.setName(featureName)
     crs match {
       case Some(crs) => sftb.setSRS(s"EPSG:${crs.epsgCode.get}")
       case None =>

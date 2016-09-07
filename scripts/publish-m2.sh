@@ -10,6 +10,8 @@
       "project accumulo" +publish-m2 \
       "project cassandra" +publish-m2 \
       "project hbase" +publish-m2 \
+      "project spark-etl" +publish-m2 \
+      "project geomesa" +publish-m2 \
       "project shapefile" +publish-m2 \
       "project slick" +publish-m2 \
       "project util" +publish-m2 \
