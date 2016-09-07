@@ -82,19 +82,13 @@ case class ProtobufLayer(
    * the parent layer.
    */
   private def getMeta(keys: Seq[String], vals: Seq[vt.Tile.Value], tags: Seq[Int]): Map[String, Value] = {
-    val pairs = new ListBuffer[(String, Value)]
-    var i = 0
-
-    while (i < tags.length) {
-      val k: String = keys(tags(i))
-      val v: vt.Tile.Value = vals(tags(i + 1))
-
-      pairs.append(k -> v)
-
-      i += 2
-    }
-
-    pairs.toMap
+    /* The Seqs passed in here are backed by [[Vector]] on the Protobuf
+     * end of things.
+     */
+    tags
+      .grouped(2)
+      .map({ case Vector(k, v) => keys(k) -> protoVal(vals(v)) })
+      .toMap
   }
 
   /* Geometry Streams */
