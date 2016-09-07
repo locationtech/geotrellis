@@ -89,7 +89,7 @@ object GeowaveLayerWriter extends LazyLogging {
     val image = geotrellisKvToGeotools(specimen)
 
     val pluginOptions = new DataStorePluginOptions
-    pluginOptions.setFactoryOptions(as.aro)
+    pluginOptions.setFactoryOptions(as.accumuloRequiredOptions)
 
     val configOptions = pluginOptions.getFactoryOptionsAsMap
 
