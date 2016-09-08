@@ -26,7 +26,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.io._
 import java.util.Scanner
 
-import org.apache.spark.Logging
+import com.typesafe.scalalogging.slf4j.LazyLogging
 
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
@@ -34,7 +34,7 @@ import scala.reflect._
 
 abstract class LineScanner extends Iterator[String] with java.io.Closeable
 
-object HdfsUtils extends Logging {
+object HdfsUtils extends LazyLogging {
 
   def renamePath(from: Path, to: Path, conf: Configuration): Unit = {
     val fs = from.getFileSystem(conf)

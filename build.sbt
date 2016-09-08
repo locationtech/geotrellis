@@ -29,7 +29,7 @@ lazy val commonSettings = Seq(
   bintrayVcsUrl := Some("https://github.com/geotrellis/geotrellis.git"),
   bintrayPackageLabels := Info.tags,
 
-  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.7.1" cross CrossVersion.binary),
+  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.8.2" cross CrossVersion.binary),
 
   addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.full),
 

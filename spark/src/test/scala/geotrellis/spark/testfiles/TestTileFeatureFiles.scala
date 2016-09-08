@@ -12,7 +12,7 @@ import org.apache.spark.rdd.RDD
 import org.joda.time.DateTime
 
 
-object TestTileFeatureFiles extends Logging {
+object TestTileFeatureFiles {
   val ZOOM_LEVEL = 8
   val partitionCount = 4
 

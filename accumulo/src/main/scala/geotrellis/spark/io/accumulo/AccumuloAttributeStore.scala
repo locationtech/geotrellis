@@ -6,7 +6,6 @@ import geotrellis.spark.io._
 import com.typesafe.config.ConfigFactory
 import spray.json._
 import spray.json.DefaultJsonProtocol._
-import org.apache.spark.Logging
 import org.apache.accumulo.core.client.{BatchWriterConfig, Connector}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.accumulo.core.data._
@@ -28,7 +27,7 @@ object AccumuloAttributeStore {
     apply(instance.connector)
 }
 
-class AccumuloAttributeStore(val connector: Connector, val attributeTable: String) extends DiscreteLayerAttributeStore with Logging {
+class AccumuloAttributeStore(val connector: Connector, val attributeTable: String) extends DiscreteLayerAttributeStore {
   //create the attribute table if it does not exist
   {
     val ops = connector.tableOperations()

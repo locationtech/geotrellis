@@ -10,8 +10,7 @@ import com.github.nscala_time.time.Imports._
 import org.apache.spark._
 import org.joda.time.DateTime
 
-
-object TestFiles extends Logging {
+object TestFiles {
   val ZOOM_LEVEL = 8
   val partitionCount = 4
 
