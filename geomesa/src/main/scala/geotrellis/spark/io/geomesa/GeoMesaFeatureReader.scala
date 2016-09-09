@@ -16,19 +16,19 @@ import org.opengis.feature.simple.{SimpleFeature, SimpleFeatureType}
 
 import scala.reflect.ClassTag
 
-class GeoMesaLayerReader(val attributeStore: GeoMesaAttributeStore, table: String)(implicit sc: SparkContext) extends Serializable {
+class GeoMesaFeatureReader(val instance: GeoMesaInstance)(implicit sc: SparkContext) extends Serializable {
   def readSimpleFeatures(
     featureName: String,
     query: Query,
     simpleFeatureType: SimpleFeatureType,
     numPartitions: Option[Int] = None
   ): RDD[SimpleFeature] = {
-    val dataStore = attributeStore.getAccumuloDataStore(table)
+    val dataStore = instance.accumuloDataStore
     dataStore.createSchema(simpleFeatureType)
     dataStore.dispose()
 
     val job = Job.getInstance(sc.hadoopConfiguration)
-    GeoMesaInputFormat.configure(job, attributeStore.getConf(table), query)
+    GeoMesaInputFormat.configure(job, instance.conf, query)
 
     if (numPartitions.isDefined) {
       GeoMesaConfigurator.setDesiredSplits(job.getConfiguration, numPartitions.get * sc.getExecutorStorageStatus.length)
@@ -49,3 +49,6 @@ class GeoMesaLayerReader(val attributeStore: GeoMesaAttributeStore, table: Strin
       ).map(_.toFeature[G, D]())
 }
 
+object GeoMesaFeatureReader {
+  def apply(instance: GeoMesaInstance)(implicit sc: SparkContext): GeoMesaFeatureReader = new GeoMesaFeatureReader(instance)
+}

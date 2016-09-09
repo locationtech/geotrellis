@@ -1,6 +1,6 @@
 package geotrellis.spark.io.geomesa
 
-import geotrellis.geotools.{GeoMesaSimpleFeatureType, GeometryToGeoMesaSimpleFeature}
+import geotrellis.geomesa.geotools.{GeoMesaSimpleFeatureType, GeometryToGeoMesaSimpleFeature}
 import geotrellis.spark.{LayerId, TestEnvironment}
 import geotrellis.vector._
 
@@ -15,7 +15,8 @@ import java.util.TimeZone
 class GeoMesaPersistenceSpec extends FunSpec with Suite with BeforeAndAfterAll with Matchers with TestEnvironment {
 
   describe("GeoMesa Features Spec") {
-    val attributeStore = GeoMesaAttributeStore(
+    val featuresInstance = GeoMesaInstance(
+      tableName    = "features",
       instanceName = "fake",
       zookeepers   = "localhost",
       user         = "root",
@@ -23,10 +24,19 @@ class GeoMesaPersistenceSpec extends FunSpec with Suite with BeforeAndAfterAll w
       useMock      = true
     )
 
-    val layerWriter = new GeoMesaLayerWriter(attributeStore, "features")
-    val layerReader = new GeoMesaLayerReader(attributeStore, "features")
-    val layerWriterTemporal = new GeoMesaLayerWriter(attributeStore, "featuresTemporal")
-    val layerReaderTemporal = new GeoMesaLayerReader(attributeStore, "featuresTemporal")
+    val featuresTemporalInstance = GeoMesaInstance(
+      tableName    = "featuresTemporal",
+      instanceName = "fake",
+      zookeepers   = "localhost",
+      user         = "root",
+      password     = "",
+      useMock      = true
+    )
+
+    val layerWriter = new GeoMesaFeatureWriter(featuresInstance)
+    val layerReader = new GeoMesaFeatureReader(featuresInstance)
+    val layerWriterTemporal = new GeoMesaFeatureWriter(featuresTemporalInstance)
+    val layerReaderTemporal = new GeoMesaFeatureReader(featuresTemporalInstance)
 
     val sdf = {
       val df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")

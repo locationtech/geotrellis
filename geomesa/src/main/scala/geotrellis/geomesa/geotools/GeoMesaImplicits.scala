@@ -1,4 +1,4 @@
-package geotrellis.geotools
+package geotrellis.geomesa.geotools
 
 import geotrellis.util.MethodExtensions
 import geotrellis.vector.{Feature, Geometry}
