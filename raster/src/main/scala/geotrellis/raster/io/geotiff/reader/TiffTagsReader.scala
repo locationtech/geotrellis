@@ -4,24 +4,24 @@ import geotrellis.raster.io.geotiff.tags._
 import geotrellis.raster.io.geotiff.tags.codes._
 import TagCodes._
 import TiffFieldType._
-import geotrellis.util.Filesystem
 
 import geotrellis.raster.io.geotiff.util._
+import geotrellis.util.{Filesystem, ByteReader}
 import spire.syntax.cfor._
 import monocle.syntax.apply._
+import scala.language.implicitConversions
 
 import java.nio.{ ByteBuffer, ByteOrder }
-
 
 object TiffTagsReader {
   def read(path: String): TiffTags =
     read(Filesystem.toMappedByteBuffer(path))
   
   def read(bytes: Array[Byte]): TiffTags =
-    read(ByteBuffer.wrap(bytes, 0, bytes.size))
+    read(ByteBuffer.wrap(bytes))
 
-  def read(byteBuffer: ByteBuffer): TiffTags = {
-    // set byte ordering
+  def read(byteBuffer: ByteReader): TiffTags = {
+
     (byteBuffer.get.toChar, byteBuffer.get.toChar) match {
       case ('I', 'I') => byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
       case ('M', 'M') => byteBuffer.order(ByteOrder.BIG_ENDIAN)
@@ -32,15 +32,15 @@ object TiffTagsReader {
     val geoTiffIdNumber = byteBuffer.getChar
     if ( geoTiffIdNumber != 42)
       throw new MalformedGeoTiffException(s"bad identification number (must be 42, was $geoTiffIdNumber)")
-
     val tagsStartPosition = byteBuffer.getInt
 
     read(byteBuffer, tagsStartPosition)
   }
 
-  def read(byteBuffer: ByteBuffer, tagsStartPosition: Int): TiffTags = {
-    byteBuffer.position(tagsStartPosition)
+  def read(byteBuffer: ByteReader, tagsStartPosition: Int): TiffTags = {
 
+    byteBuffer.position(tagsStartPosition)
+    
     val tagCount = byteBuffer.getShort
 
     // Read the tags.
@@ -58,11 +58,14 @@ object TiffTagsReader {
           byteBuffer.getInt            // Offset
         )
 
-      if (tagMetadata.tag == codes.TagCodes.GeoKeyDirectoryTag)
+      if (tagMetadata.tag == codes.TagCodes.GeoKeyDirectoryTag) {
         geoTags = Some(tagMetadata)
-      else
+      } else {
         tiffTags = readTag(byteBuffer, tiffTags, tagMetadata)
+      }
     }
+
+    println(s"the gotags is: $geoTags") //, and the tifftags are: $tiffTags")
 
     geoTags match {
       case Some(t) => tiffTags = readTag(byteBuffer, tiffTags, t)
@@ -72,7 +75,7 @@ object TiffTagsReader {
     tiffTags
   }
 
-  def readTag(byteBuffer: ByteBuffer, tiffTags: TiffTags, tagMetadata: TiffTagMetadata): TiffTags =
+  def readTag(byteBuffer: ByteReader, tiffTags: TiffTags, tagMetadata: TiffTagMetadata): TiffTags =
     (tagMetadata.tag, tagMetadata.fieldType) match {
       case (ModelPixelScaleTag, _) =>
         byteBuffer.readModelPixelScaleTag(tiffTags, tagMetadata)
@@ -106,7 +109,7 @@ object TiffTagsReader {
         byteBuffer.readDoublesTag(tiffTags, tagMetadata)
     }
 
-  implicit class ByteBufferTagReaderWrapper(val byteBuffer: ByteBuffer) extends AnyVal {
+  implicit class ByteBufferTagReaderWrapper(val byteBuffer: ByteReader) extends AnyVal {
     def readModelPixelScaleTag(tiffTags: TiffTags,
       tagMetadata: TiffTagMetadata) = {
 
@@ -117,7 +120,7 @@ object TiffTagsReader {
       val scaleX = byteBuffer.getDouble
       val scaleY = byteBuffer.getDouble
       val scaleZ = byteBuffer.getDouble
-
+      
       byteBuffer.position(oldPos)
 
       (tiffTags &|->
@@ -131,8 +134,6 @@ object TiffTagsReader {
       val oldPos = byteBuffer.position
 
       val numberOfPoints = tagMetadata.length / 6
-
-      byteBuffer.position(tagMetadata.offset)
 
       val points = Array.ofDim[(Pixel3D, Pixel3D)](numberOfPoints)
       cfor(0)(_ < numberOfPoints, _ + 1) { i =>
@@ -165,16 +166,30 @@ object TiffTagsReader {
 
       byteBuffer.position(tagMetadata.offset)
 
+      println("ByteBuffer position before reading in keydirectorymetadata is", byteBuffer.getByteBuffer.position)
+
+      val o = byteBuffer.getByteBuffer.position
+
+      cfor(0)(_ < 25, _ + 1) { i =>
+        println(byteBuffer.getByteBuffer.get)
+      }
+      byteBuffer.position(o)
       val version = byteBuffer.getShort
       val keyRevision = byteBuffer.getShort
       val minorRevision = byteBuffer.getShort
       val numberOfKeys = byteBuffer.getShort
+      //println(byteBuffer.getByteBuffer.position)
 
+      //println(version, keyRevision, minorRevision, numberOfKeys)
       val keyDirectoryMetadata = GeoKeyDirectoryMetadata(version, keyRevision,
         minorRevision, numberOfKeys)
+      
+      //println(byteBuffer.getByteBuffer.position)
+      //println(keyDirectoryMetadata)
 
       val geoKeyDirectory = GeoKeyReader.read(byteBuffer,
         tiffTags, GeoKeyDirectory(count = numberOfKeys))
+      //println(byteBuffer.getByteBuffer.position)
 
       byteBuffer.position(oldPos)
 

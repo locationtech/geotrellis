@@ -1,5 +1,6 @@
 package geotrellis.raster.io.geotiff
 
+import geotrellis.util.ByteReader
 import geotrellis.vector.Extent
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
@@ -41,7 +42,7 @@ object ArraySegmentBytes {
    *  @tiffTags: The [[TiffTags]] of the GeoTiff
    *  @return A new instance of ArraySegmentBytes
    */
-  def apply(byteBuffer: ByteBuffer, tiffTags: TiffTags): ArraySegmentBytes = {
+  def apply(byteBuffer: ByteReader, tiffTags: TiffTags): ArraySegmentBytes = {
 
       val compressedBytes: Array[Array[Byte]] = {
         def readSections(offsets: Array[Int],

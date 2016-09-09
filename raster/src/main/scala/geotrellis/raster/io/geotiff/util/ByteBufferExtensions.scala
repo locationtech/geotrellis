@@ -16,13 +16,15 @@
 
 package geotrellis.raster.io.geotiff.util
 
+import geotrellis.util.ByteReader
 import java.nio.ByteBuffer
+
+import scala.language.implicitConversions
 
 import spire.syntax.cfor._
 
 trait ByteBufferExtensions {
-
-  implicit class ByteBufferUtilities(byteBuffer: ByteBuffer) {
+  implicit class ByteBufferUtilities(byteBuffer: ByteReader) {
 
     @inline
     final private def ub2s(byte: Byte): Short =
