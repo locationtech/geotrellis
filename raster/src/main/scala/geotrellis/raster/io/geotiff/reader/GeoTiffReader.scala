@@ -23,7 +23,7 @@ import geotrellis.raster.io.geotiff.util._
 import geotrellis.raster.io.geotiff.tags._
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
-import geotrellis.util.Filesystem
+import geotrellis.util.{Filesystem, ByteReader}
 
 import monocle.syntax.apply._
 
@@ -83,7 +83,7 @@ object GeoTiffReader {
   /* Read a single band GeoTIFF file.
    * If there is more than one band in the GeoTiff, read the first band only.
    */
-  def readSingleband(byteBuffer: ByteBuffer, decompress: Boolean, streaming: Boolean): SinglebandGeoTiff = {
+  def readSingleband(byteBuffer: ByteReader, decompress: Boolean, streaming: Boolean): SinglebandGeoTiff = {
     val info = readGeoTiffInfo(byteBuffer, decompress, streaming)
 
     val geoTiffTile =
@@ -149,7 +149,7 @@ object GeoTiffReader {
     streaming: Boolean = false): MultibandGeoTiff =
       readMultiband(ByteBuffer.wrap(bytes), decompress, streaming)
 
-  def readMultiband(byteBuffer: ByteBuffer, decompress: Boolean, streaming: Boolean): MultibandGeoTiff = {
+  def readMultiband(byteBuffer: ByteReader, decompress: Boolean, streaming: Boolean): MultibandGeoTiff = {
     val info = readGeoTiffInfo(byteBuffer, decompress, streaming)
 
     val geoTiffTile =
@@ -243,7 +243,7 @@ object GeoTiffReader {
     }
   }
 
-  private def readGeoTiffInfo(byteBuffer: ByteBuffer, decompress: Boolean, streaming: Boolean): GeoTiffInfo = {
+  private def readGeoTiffInfo(byteBuffer: ByteReader, decompress: Boolean, streaming: Boolean): GeoTiffInfo = {
     // set byte ordering
     (byteBuffer.get.toChar, byteBuffer.get.toChar) match {
       case ('I', 'I') => byteBuffer.order(ByteOrder.LITTLE_ENDIAN)

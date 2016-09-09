@@ -21,14 +21,16 @@ import codes.TagCodes._
 
 import GeoKeys._
 
+import geotrellis.util.ByteReader
 import java.nio.ByteBuffer
 
 import monocle.syntax.apply._
 import monocle.macros.Lenses
+import scala.language.implicitConversions
 
 object GeoKeyReader {
 
-  def read(byteBuffer: ByteBuffer, imageDirectory: TiffTags,
+  def read(byteBuffer: ByteReader, imageDirectory: TiffTags,
     geoKeyDirectory: GeoKeyDirectory, index: Int = 0
   ): GeoKeyDirectory = {
 
