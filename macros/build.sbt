@@ -1,15 +1,8 @@
 import Dependencies._
 
 name := "geotrellis-macros"
-libraryDependencies <++= scalaVersion {
-  case v if v.startsWith("2.10") => Seq(
-    "org.scala-lang" %  "scala-reflect" % v,
-    "org.scalamacros" %% "quasiquotes" % "2.0.1" // matches spire version of quasiquotes (spire 0.11)
-  )
-  case v if v.startsWith("2.11") || v.startsWith("2.12") => Seq(
-    "org.scala-lang" %  "scala-reflect" % v
-  )
-}
+
+libraryDependencies <+= scalaVersion { v => "org.scala-lang" %  "scala-reflect" % v }
 
 sourceGenerators in Compile <+= (sourceManaged in Compile).map(Boilerplate.genMacro)
 

@@ -17,7 +17,7 @@
 object Version {
   val geotrellis  = "1.0.0" + Environment.versionSuffix
   val scala       = "2.11.8"
-  val geotools    = "14.5"
+  val geotools    = "14.4"
   val akka        = "2.4.10"
   val spray       = "1.3.3"
   val sprayJson   = "1.3.2"
