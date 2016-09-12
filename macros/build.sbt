@@ -6,7 +6,7 @@ libraryDependencies <++= scalaVersion {
     "org.scala-lang" %  "scala-reflect" % v,
     "org.scalamacros" %% "quasiquotes" % "2.0.1" // matches spire version of quasiquotes (spire 0.11)
   )
-  case v if v.startsWith("2.11") => Seq(
+  case v if v.startsWith("2.11") || v.startsWith("2.12") => Seq(
     "org.scala-lang" %  "scala-reflect" % v
   )
 }

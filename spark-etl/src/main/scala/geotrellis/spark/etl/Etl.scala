@@ -18,7 +18,7 @@ import geotrellis.spark.etl.config._
 import org.apache.spark._
 import org.apache.spark.rdd.RDD
 import org.slf4j.LoggerFactory
-import com.typesafe.scalalogging.slf4j.Logger
+import com.typesafe.scalalogging.Logger
 
 import scala.reflect._
 import scala.reflect.runtime.universe._

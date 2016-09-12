@@ -1,12 +1,11 @@
 package geotrellis.spark.io.s3
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
 import geotrellis.util._
-import org.apache.spark.SparkContext
+
 import spray.json.JsonFormat
 
 import scala.reflect.ClassTag
@@ -19,7 +18,7 @@ import scala.reflect.ClassTag
  * @tparam V              Type of RDD Value (ex: Tile or MultibandTile )
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  */
-class S3LayerCollectionReader(val attributeStore: AttributeStore) extends CollectionLayerReader[LayerId] with LazyLogging {
+class S3LayerCollectionReader(val attributeStore: AttributeStore) extends CollectionLayerReader[LayerId] {
 
   def collectionReader: S3CollectionReader = S3CollectionReader
 
