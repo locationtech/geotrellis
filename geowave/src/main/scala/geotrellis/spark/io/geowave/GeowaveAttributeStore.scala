@@ -38,7 +38,6 @@ import org.opengis.parameter.GeneralParameterValue
 import scala.collection.JavaConverters._
 import scala.util.Try
 
-import resource._
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
@@ -76,10 +75,14 @@ object GeowaveAttributeStore {
       geowaveNamespace)
   }
 
-  def adapters(bao: BasicAccumuloOperations): Array[RasterDataAdapter] =
-    managed(new AccumuloAdapterStore(bao).getAdapters)
-      .acquireAndGet { _.asScala.collect { case x: RasterDataAdapter => x } }
+  def adapters(bao: BasicAccumuloOperations): Array[RasterDataAdapter] = {
+    val adapters = new AccumuloAdapterStore(bao).getAdapters
+    val retval = adapters.asScala
+      .map(_.asInstanceOf[RasterDataAdapter])
       .toArray
+
+    adapters.close ; retval
+  }
 
   def primaryIndex = (new SpatialDimensionalityTypeProvider.SpatialIndexBuilder).createIndex()
 
