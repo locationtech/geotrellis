@@ -123,8 +123,8 @@ class GeowaveAttributeStore(
   def delete(tableName: String) =
     connector.tableOperations.delete(tableName)
 
-  def getBoundingBoxes(): Map[ByteArrayId, BoundingBoxDataStatistics[Any]] = {
-    getAdapters.map({ adapter =>
+  def boundingBoxes(): Map[ByteArrayId, BoundingBoxDataStatistics[Any]] = {
+    adapters.map({ adapter =>
       val adapterId = adapter.getAdapterId
       val bboxId = BoundingBoxDataStatistics.STATS_ID
       val bbox = dataStatisticsStore
@@ -135,20 +135,20 @@ class GeowaveAttributeStore(
     }).toMap
   }
 
-  def getLeastZooms(): Map[ByteArrayId, Int] = {
-    getAdapters.map({ adapter =>
+  def leastZooms(): Map[ByteArrayId, Int] = {
+    adapters.map({ adapter =>
       val adapterId = adapter.getAdapterId
-      val bbox = getBoundingBoxes.getOrElse(adapterId, throw new Exception(s"Unknown Adapter Id $adapterId"))
+      val bbox = boundingBoxes.getOrElse(adapterId, throw new Exception(s"Unknown Adapter Id $adapterId"))
       val zoom = bbox match {
         case null => {
           log.warn(s"$adapterId has a broken bounding box")
           0
         }
         case _ => {
-          val substrats = getSubStrategies
+          val substrats = subStrategies
           val width = bbox.getMaxX - bbox.getMinX
           val height = bbox.getMaxY - bbox.getMinY
-          val zoom = (0 to getSubStrategies.length).toIterator.filter({ i =>
+          val zoom = (0 to subStrategies.length).toIterator.filter({ i =>
             val substrat = substrats(i)
             val ranges = substrat.getIndexStrategy.getHighestPrecisionIdRangePerDimension
             ((ranges(0) <= width) && (ranges(1) <= height))
@@ -162,11 +162,9 @@ class GeowaveAttributeStore(
     }).toMap
   }
 
-  def getAccumuloRequiredOptions = accumuloRequiredOptions
-  def getBasicAccumuloOperations = basicAccumuloOperations
-  def getPrimaryIndex = GeowaveAttributeStore.primaryIndex
-  def getAdapters = GeowaveAttributeStore.adapters(basicAccumuloOperations)
-  def getSubStrategies = GeowaveAttributeStore.subStrategies(getPrimaryIndex)
+  def primaryIndex = GeowaveAttributeStore.primaryIndex
+  def adapters = GeowaveAttributeStore.adapters(basicAccumuloOperations)
+  def subStrategies = GeowaveAttributeStore.subStrategies(primaryIndex)
 
   def delete(layerId: LayerId, attributeName: String): Unit =
     delegate.delete(layerId, attributeName)
@@ -190,16 +188,16 @@ class GeowaveAttributeStore(
     */
   private def gwLayerExists(layerId: LayerId): Boolean = {
     val LayerId(name, zoom) = layerId
-    val candidateAdapters = getAdapters.filter(_.getCoverageName == name)
+    val candidateAdapters = adapters.filter(_.getCoverageName == name)
 
     if (candidateAdapters.nonEmpty) {
       val adapterId = candidateAdapters.head.getAdapterId
-      val leastZoom = getLeastZooms.getOrElse(
+      val leastZoom = leastZooms.getOrElse(
         adapterId,
         throw new Exception(s"Unknown Adapter Id $adapterId")
       )
 
-      ((leastZoom <= zoom) && (zoom < getSubStrategies.length))
+      ((leastZoom <= zoom) && (zoom < subStrategies.length))
     } else false
   }
 
@@ -216,15 +214,15 @@ class GeowaveAttributeStore(
   private def gwLayerIds: Seq[LayerId] = {
     val list =
       for (
-        adapter <- getAdapters;
+        adapter <- adapters;
         zoom <- {
           val adapterId = adapter.getAdapterId
-          val leastZoom = getLeastZooms.getOrElse(
+          val leastZoom = leastZooms.getOrElse(
             adapter.getAdapterId,
             throw new Exception(s"Unknown Adapter Id $adapterId")
           )
 
-          (leastZoom until getSubStrategies.length)
+          (leastZoom until subStrategies.length)
         }
       ) yield LayerId(adapter.getCoverageName, zoom)
 
