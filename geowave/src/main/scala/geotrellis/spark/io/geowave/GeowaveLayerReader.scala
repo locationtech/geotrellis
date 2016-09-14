@@ -76,12 +76,12 @@ class GeowaveLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkC
 
   val gas = attributeStore.asInstanceOf[GeowaveAttributeStore]
 
-  private def adapters = gas.getAdapters
-  private def basicOperations = gas.getBasicAccumuloOperations
-  private def bboxMap = gas.getBoundingBoxes
-  private def index = gas.getPrimaryIndex
-  private def requiredOptions = gas.getAccumuloRequiredOptions
-  private def substrats = gas.getSubStrategies
+  private def adapters = gas.adapters
+  private def basicOperations = gas.basicAccumuloOperations
+  private def bboxMap = gas.boundingBoxes
+  private def index = gas.primaryIndex
+  private def requiredOptions = gas.accumuloRequiredOptions
+  private def substrats = gas.subStrategies
 
   /**
     * Compute the common part of the

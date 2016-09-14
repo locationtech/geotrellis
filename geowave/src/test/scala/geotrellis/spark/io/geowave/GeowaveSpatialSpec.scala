@@ -75,7 +75,7 @@ class GeowaveSpatialSpec
 
   it("should read an existing layer") {
     val img = getGridCoverage2D("spark/src/test/resources/elevation.tif")
-    val bo = attributeStore.getBasicAccumuloOperations
+    val bo = attributeStore.basicAccumuloOperations
 
     poke(bo, img)
 
