@@ -70,7 +70,7 @@ object GeowaveLayerWriter extends LazyLogging {
     val specimen = rdd.first
 
     /* Construct (Multiband|)Tile to GridCoverage2D conversion function */
-    val geotrellisKvToGeotools: (((K, V)) => GridCoverage2D) = {
+    val geotrellisKvToGeotools: ((K, V)) => GridCoverage2D = {
       specimen match {
         case (_: SpatialKey, _: Tile) => {
           case (k: K, v: V) =>
@@ -101,8 +101,7 @@ object GeowaveLayerWriter extends LazyLogging {
           "accumulo")
 
         /* Produce mosaic from all of the tiles in this partition */
-        val sources = new java.util.ArrayList[GridCoverage2D]
-        pair.map({ case kv => sources.add(geotrellisKvToGeotools(kv)); Unit }).toList
+        val sources = new java.util.ArrayList(pair.map(geotrellisKvToGeotools))
         val accumuloKvs = ListBuffer[Iterable[(Key, Value)]]()
 
         /* Objects for writing into GeoWave */
