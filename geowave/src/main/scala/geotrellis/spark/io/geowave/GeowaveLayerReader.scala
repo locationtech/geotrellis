@@ -37,8 +37,6 @@ import scala.reflect._
 
 object GeowaveLayerReader {
   val geometryFactory = new GeometryFactory
-  val p = geometryFactory.createPoint(new Coordinate(31.137720, 29.975307))
-  val emptySet = p.difference(p)
 
   /**
     * Given a map transform and a keybounds, produce a corresponding
@@ -213,9 +211,13 @@ class GeowaveLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkC
 
       implicitly[ClassTag[K]].toString match {
         case "geotrellis.spark.SpatialKey" => { // Spatial Query
-          val geom = kbs
+          val geom = if (kbs.nonEmpty) { kbs
             .map({ kb => fn(kb.asInstanceOf[KeyBounds[SpatialKey]]) })
-            .foldLeft(emptySet)({ (l, r) => l.union(r) })
+            .reduce({ (l, r) => l.union(r) })
+          } else {
+            geometryFactory.createPoint(null.asInstanceOf[Coordinate])
+          }
+
           new IndexOnlySpatialQuery(geom)
         }
       }
