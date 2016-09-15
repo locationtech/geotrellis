@@ -38,6 +38,7 @@ cache:
   directories:
   - "$HOME/.ivy2"
   - "$HOME/.sbt"
+  - "$HOME/downloads"
 
 script:
   - .travis/build-and-test.sh
