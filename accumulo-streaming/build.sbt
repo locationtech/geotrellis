@@ -1,6 +1,6 @@
 import Dependencies._
 
-name := "geotrellis-streaming"
+name := "geotrellis-accumulo-streaming"
 libraryDependencies ++= Seq(
   sparkStreaming,
   sparkCore,

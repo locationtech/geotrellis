@@ -74,7 +74,8 @@ lazy val root = Project("geotrellis", file(".")).
     hbase,
     geotools,
     slick,
-    streaming
+    streaming,
+    accumuloStreaming
   ).
   settings(commonSettings: _*).
   settings(
@@ -132,7 +133,7 @@ lazy val sparkTestkit: Project = Project("spark-testkit", file("spark-testkit"))
   settings(commonSettings: _*)
 
 lazy val streaming = Project("streaming", file("streaming")).
-  dependsOn(sparkTestkit % "test->test", spark % "provided;test->test").
+  dependsOn(sparkTestkit % "test->test", spark, raster).
   settings(commonSettings: _*)
 
 lazy val s3 = Project("s3", file("s3")).
@@ -149,6 +150,10 @@ lazy val cassandra = Project("cassandra", file("cassandra")).
 
 lazy val hbase = Project("hbase", file("hbase")).
   dependsOn(sparkTestkit % "test->test", spark % "provided;test->test").
+  settings(commonSettings: _*)
+
+lazy val accumuloStreaming = Project("accumulo-streaming", file("accumulo-streaming")).
+  dependsOn(sparkTestkit % "test->test", streaming, accumulo).
   settings(commonSettings: _*)
 
 lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).
