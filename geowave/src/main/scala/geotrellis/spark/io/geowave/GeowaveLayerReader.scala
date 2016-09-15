@@ -37,6 +37,8 @@ import scala.reflect._
 
 object GeowaveLayerReader {
   val geometryFactory = new GeometryFactory
+  val tileClassTag = classTag[Tile]
+  val mbtClassTag = classTag[MultibandTile]
 
   /**
     * Given a map transform and a keybounds, produce a corresponding
@@ -67,8 +69,7 @@ object GeowaveLayerReader {
   }
 }
 
-class GeowaveLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkContext)
-    extends FilteringLayerReader[LayerId] {
+class GeowaveLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkContext) {
 
   val defaultNumPartitions = sc.defaultParallelism
 
@@ -169,8 +170,8 @@ class GeowaveLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkC
 
   /**
     * Read particular rasters out of the GeoWave database.  The
-    * particular rasters to read are given by the result running the
-    * provided LayerQuery.
+    * particular rasters to read are given by the result of running
+    * the provided LayerQuery.
     *
     * @param  id               The LayerId specifying the name and zoom level to query
     * @param  rasterQuery      Produces a list of rasters to read
@@ -178,19 +179,15 @@ class GeowaveLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkC
     * @param  filterIndexOnly  ?
     */
   def read[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
+    K <: SpatialKey,
+    V: TileOrMultibandTile: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
-  ](id: LayerId, rasterQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
+  ](id: LayerId, rasterQuery: LayerQuery[K, M]) = {
     import GeowaveLayerReader._
 
     /* Perform checks */
     if (!attributeStore.layerExists(id))
       throw new LayerNotFoundError(id)
-    implicitly[ClassTag[K]].toString match {
-      case "geotrellis.spark.SpatialKey" =>
-      case t: String => throw new Exception("Unsupported Key Type: $t")
-    }
 
     /* Boilerplate */
     val LayerId(name, zoom) = id
@@ -206,21 +203,17 @@ class GeowaveLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkC
     /* GeoWave Query and Query Options */
     val queryOptions = new QueryOptions(adapter, customIndex)
     val query = {
-      val fn = keyBoundsToGeometry(_md.mapTransform, _: KeyBounds[SpatialKey])
+      val fn = keyBoundsToGeometry(_md.mapTransform, _: KeyBounds[K])
       val kbs = rasterQuery(md)
 
-      implicitly[ClassTag[K]].toString match {
-        case "geotrellis.spark.SpatialKey" => { // Spatial Query
-          val geom = if (kbs.nonEmpty) { kbs
-            .map({ kb => fn(kb.asInstanceOf[KeyBounds[SpatialKey]]) })
-            .reduce({ (l, r) => l.union(r) })
-          } else {
-            geometryFactory.createPoint(null.asInstanceOf[Coordinate])
-          }
-
-          new IndexOnlySpatialQuery(geom)
-        }
+      val geom = if (kbs.nonEmpty) { kbs
+        .map({ kb: KeyBounds[K] => fn(kb) })
+        .reduce({ (l, r) => l.union(r) })
+      } else {
+        geometryFactory.createPoint(null.asInstanceOf[Coordinate])
       }
+
+      new IndexOnlySpatialQuery(geom)
     }
 
     /* Construct org.apache.hadoop.conf.Configuration */
@@ -230,29 +223,38 @@ class GeowaveLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkC
 
     /* Submit query */
     val rdd =
-      implicitly[ClassTag[K]].toString match {
-        case "geotrellis.spark.SpatialKey" => { // Spatial Query
-          sc.newAPIHadoopRDD(
-            config,
-            classOf[GeoWaveInputFormat[GridCoverage2D]],
-            classOf[GeoWaveInputKey],
-            classOf[GridCoverage2D])
-            .map({ case (_, gc) =>
-              val Extent(lng, lat, _, _) = GridCoverage2DConverters.getExtent(gc)
-              val key = SpatialKey(
-                (lng / ranges(0)).toInt - minCol,
-                maxRow - (lat / ranges(1)).toInt
-              ).asInstanceOf[K]
-              val value = implicitly[ClassTag[V]].toString match {
-                case "geotrellis.raster.Tile" => gc.toTile(0).asInstanceOf[V]
-                case "geotrellis.raster.MultibandTile" => gc.toMultibandTile.asInstanceOf[V]
-                case t: String => throw new Exception("Unsupported Value Type: $t")
-              }
-              (key, value)
-            })
-        }
-      }
+      sc.newAPIHadoopRDD(
+        config,
+        classOf[GeoWaveInputFormat[GridCoverage2D]],
+        classOf[GeoWaveInputKey],
+        classOf[GridCoverage2D])
+        .map({ case (_, gc) =>
+          val Extent(lng, lat, _, _) = GridCoverage2DConverters.getExtent(gc)
+          val key = SpatialKey(
+            (lng / ranges(0)).toInt - minCol,
+            maxRow - (lat / ranges(1)).toInt
+          ).asInstanceOf[K]
+          val value = implicitly[ClassTag[V]] match {
+            case `tileClassTag` => gc.toTile(0).asInstanceOf[V]
+            case `mbtClassTag` => gc.toMultibandTile.asInstanceOf[V]
+          }
+          (key, value)
+        })
 
     new ContextRDD(rdd, md)
   }
+
+  def read[
+    K <: SpatialKey: Boundable,
+    V: TileOrMultibandTile: ClassTag,
+    M: JsonFormat: GetComponent[?, Bounds[K]]
+  ](id: LayerId): RDD[(K, V)] with Metadata[M] =
+    read(id, new LayerQuery[K, M])
+
+  def query[
+    K <: SpatialKey: Boundable,
+    V: TileOrMultibandTile: ClassTag,
+    M: JsonFormat: GetComponent[?, Bounds[K]]
+  ](layerId: LayerId): BoundLayerQuery[K, M, RDD[(K, V)] with Metadata[M]] =
+    new BoundLayerQuery(new LayerQuery, read(layerId, _))
 }
