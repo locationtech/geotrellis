@@ -86,7 +86,8 @@ lazy val root = Project("geotrellis", file(".")).
     geotools,
     slick,
     vectortile,
-    streaming
+    streaming,
+    accumuloStreaming
   ).
   settings(commonSettings: _*).
   settings(
@@ -149,7 +150,7 @@ lazy val sparkTestkit: Project = Project("spark-testkit", file("spark-testkit"))
   settings(commonSettings: _*)
 
 lazy val streaming = Project("streaming", file("streaming")).
-  dependsOn(sparkTestkit % "test->test", spark % "provided;test->test").
+  dependsOn(sparkTestkit % "test->test", spark, raster).
   settings(commonSettings: _*)
 
 lazy val s3 = Project("s3", file("s3")).
@@ -176,6 +177,10 @@ lazy val hbase = Project("hbase", file("hbase")).
   dependsOn(sparkTestkit % "test->test", spark % "provided;test->test").
   settings(commonSettings: _*). // HBase depends on its own protobuf version
   settings(projectDependencies := { Seq((projectID in spark).value.exclude("com.google.protobuf", "protobuf-java")) })
+
+lazy val accumuloStreaming = Project("accumulo-streaming", file("accumulo-streaming")).
+  dependsOn(sparkTestkit % "test->test", streaming, accumulo).
+  settings(commonSettings: _*)
 
 lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).
   dependsOn(spark, s3, accumulo, cassandra, hbase).
