@@ -90,7 +90,7 @@ class GeowaveSpatialSpec
   it("should write a layer") {
     val layer = reader.read[SpatialKey, Tile, TileLayerMetadata[SpatialKey]](id1)
 
-    writer.write(id2, layer, ZCurveKeyIndexMethod)
+    writer.write(id2, layer)
   }
 
   it("should read a layer back") {

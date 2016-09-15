@@ -50,8 +50,8 @@ import spray.json._
 object GeowaveLayerWriter extends LazyLogging {
 
   def write[
-    K: ClassTag,
-    V: ClassTag,
+    K <: SpatialKey: ClassTag,
+    V: TileOrMultibandTile: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](
     coverageName: String,
@@ -59,10 +59,7 @@ object GeowaveLayerWriter extends LazyLogging {
     as: GeowaveAttributeStore,
     accumuloWriter: AccumuloWriteStrategy
   ): Unit = {
-    val metadata = implicitly[ClassTag[K]].toString match {
-      case "geotrellis.spark.SpatialKey" => rdd.metadata.asInstanceOf[TileLayerMetadata[SpatialKey]]
-      case t: String => throw new Exception(s"Unsupported Key Type: $t")
-    }
+    val metadata = rdd.metadata.asInstanceOf[TileLayerMetadata[SpatialKey]]
 
     val crs = metadata.crs
     val mt = metadata.mapTransform
@@ -71,20 +68,12 @@ object GeowaveLayerWriter extends LazyLogging {
 
     /* Construct (Multiband|)Tile to GridCoverage2D conversion function */
     val geotrellisKvToGeotools: ((K, V)) => GridCoverage2D = {
-      specimen match {
-        case (_: SpatialKey, _: Tile) => {
-          case (k: K, v: V) =>
-            val extent = mt(k.asInstanceOf[SpatialKey]).reproject(crs, LatLng)
-            val tile = v.asInstanceOf[Tile]
-            ProjectedRaster(Raster(tile, extent), LatLng).toGridCoverage2D
-        }
-        case (_: SpatialKey, _: MultibandTile) => {
-          case (k: K, v: V) =>
-            val extent = mt(k.asInstanceOf[SpatialKey]).reproject(crs, LatLng)
-            val tile = v.asInstanceOf[MultibandTile]
-            ProjectedRaster(Raster(tile, extent), LatLng).toGridCoverage2D
-        }
-      }
+      case (k: SpatialKey, tile: Tile) =>
+        val extent = mt(k.asInstanceOf[SpatialKey]).reproject(crs, LatLng)
+        ProjectedRaster(Raster(tile, extent), LatLng).toGridCoverage2D
+      case (k: SpatialKey, tile: MultibandTile) =>
+        val extent = mt(k.asInstanceOf[SpatialKey]).reproject(crs, LatLng)
+        ProjectedRaster(Raster(tile, extent), LatLng).toGridCoverage2D
     }
     val image = geotrellisKvToGeotools(specimen)
 
@@ -93,7 +82,7 @@ object GeowaveLayerWriter extends LazyLogging {
 
     val configOptions = pluginOptions.getFactoryOptionsAsMap
 
-    val geotrellisKvToGeoWaveKv: Iterable[(K, V)] => Iterable[(Key, Value)] = { pair =>
+    val geotrellisKvToGeoWaveKv: Iterable[(K, V)] => Iterable[(Key, Value)] = { pairs =>
       {
         val gwMetadata = new java.util.HashMap[String, String](); gwMetadata.put("cellType", cellType)
         configOptions.put(
@@ -101,7 +90,7 @@ object GeowaveLayerWriter extends LazyLogging {
           "accumulo")
 
         /* Produce mosaic from all of the tiles in this partition */
-        val sources = new java.util.ArrayList(pair.map(geotrellisKvToGeotools))
+        val sources = new java.util.ArrayList(pairs.map(geotrellisKvToGeotools))
         val accumuloKvs = ListBuffer[Iterable[(Key, Value)]]()
 
         /* Objects for writing into GeoWave */
@@ -122,9 +111,9 @@ object GeowaveLayerWriter extends LazyLogging {
           val adapter = new RasterDataAdapter(
             coverageName,
             gwMetadata,
-            image,
+            image,  // image only used for sample and color metadata, not data
             256, false, false,
-            Array.fill[Array[Double]](image.getNumSampleDimensions)(Array(0.0))) // image only used for sample and color metadata, not data, overriding default merge strategy because geotrellis data is already tiled (non-overlapping)
+            Array.fill[Array[Double]](image.getNumSampleDimensions)(Array(0.0))) // overriding default merge strategy because geotrellis data is already tiled (non-overlapping)
 
           for (
             statsAggregator <- managed(new StatsCompositionTool(new DataStoreStatisticsProvider(
@@ -139,7 +128,11 @@ object GeowaveLayerWriter extends LazyLogging {
               statsAggregator,
               DataStoreUtils.UNCONSTRAINED_VISIBILITY.asInstanceOf[VisibilityWriter[GridCoverage]])
 
-            adapter.convertToIndex(index, image).foreach { x => (accumuloKvs += (kvGen.constructKeyValuePairs(adapter.getAdapterId.getBytes, x).toList.map { kv => (kv.getKey, kv.getValue) })) }
+            adapter.convertToIndex(index, image).foreach({ i =>
+              val keyValues = kvGen.constructKeyValuePairs(adapter.getAdapterId.getBytes, i).toList
+              val keyValuePairs = keyValues.map({ kv => (kv.getKey, kv.getValue) })
+              accumuloKvs += keyValuePairs
+            })
           }
         }
         accumuloKvs.foldLeft(Iterable[(Key, Value)]())(_ ++ _)
@@ -165,7 +158,7 @@ object GeowaveLayerWriter extends LazyLogging {
       Array.fill[Array[Double]](image.getNumSampleDimensions)(Array(0.0))
     )
 
-    // make sure adapter get written
+    // make sure adapter gets written
     val adapterStore = new AccumuloAdapterStore(basicOperations)
     adapterStore.addAdapter(adapter)
 
@@ -224,26 +217,33 @@ class GeowaveLayerWriter(
   val attributeStore: GeowaveAttributeStore,
   val accumuloWriter: AccumuloWriteStrategy
 )(implicit sc: SparkContext)
-    extends LayerWriter[LayerId] with LazyLogging {
+    extends LazyLogging {
 
-  protected def _write[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec: ClassTag, M: JsonFormat: GetComponent[?, Bounds[K]]](
+  def write[
+    K <: SpatialKey: ClassTag,
+    V: TileOrMultibandTile: ClassTag,
+    M: JsonFormat: GetComponent[?, Bounds[K]]
+  ](id: LayerId, layer: RDD[(K, V)] with Metadata[M]): Unit =
+    layer.metadata.getComponent[Bounds[K]] match {
+      case keyBounds: KeyBounds[K] =>
+        _write[K, V, M](id, layer)
+      case EmptyBounds =>
+        throw new EmptyBoundsError("Cannot write layer with empty bounds.")
+    }
+
+  protected def _write[
+    K <: SpatialKey: ClassTag,
+    V: TileOrMultibandTile: ClassTag,
+    M: JsonFormat: GetComponent[?, Bounds[K]]
+  ](
     layerId: LayerId,
-    rdd: RDD[(K, V)] with Metadata[M],
-    keyIndex: KeyIndex[K]): Unit = {
-
+    rdd: RDD[(K, V)] with Metadata[M]
+  ): Unit = {
     val LayerId(coverageName, zoom) = layerId
     val specimen = rdd.first
 
-    // Perform checks
-    if (zoom > 0) logger.warn("The zoom level is mostly ignored because GeoWave does its own pyramiding")
-    specimen._1 match {
-      case _: SpatialKey =>
-      case _ => throw new Exception(s"Unsupported Key Type: ${implicitly[ClassTag[K]].toString}")
-    }
-    specimen._2 match {
-      case _: Tile =>
-      case _: MultibandTile =>
-      case _ => throw new Exception(s"Unsupported Value Type: ${implicitly[ClassTag[V]].toString}")
+    if (zoom > 0) {
+      logger.warn("The zoom level is mostly ignored because GeoWave has its own notion of zoom level.")
     }
 
     GeowaveLayerWriter.write(coverageName, rdd, attributeStore, accumuloWriter)
