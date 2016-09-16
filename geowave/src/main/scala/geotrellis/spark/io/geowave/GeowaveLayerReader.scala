@@ -104,7 +104,7 @@ class GeowaveLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkC
     * Compute the metadata associated with this layer.
     *
     * @param  adapter  The RasterDataAdapter associated with the chosen layer
-    * @param  ranges   The ranges in degree of longitude and latitude associated with the chosen zoom level
+    * @param  ranges   The ranges in degrees of longitude and latitude associated with the chosen tier
     */
   def computeSpatialMetadata(
     adapter: RasterDataAdapter,
@@ -173,7 +173,7 @@ class GeowaveLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkC
     * particular rasters to read are given by the result of running
     * the provided LayerQuery.
     *
-    * @param  id               The LayerId specifying the name and zoom level to query
+    * @param  id               The LayerId specifying the name and tier to query
     * @param  rasterQuery      Produces a list of rasters to read
     * @param  numPartitions    The number of Spark partitions to use
     * @param  filterIndexOnly  ?
@@ -190,9 +190,9 @@ class GeowaveLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkC
       throw new LayerNotFoundError(id)
 
     /* Boilerplate */
-    val LayerId(name, zoom) = id
+    val LayerId(name, tier) = id
     val adapter = adapters.filter(_.getCoverageName == name).head
-    val strategy = substrats(zoom)
+    val strategy = substrats(tier)
     val ranges = strategy.getIndexStrategy.getHighestPrecisionIdRangePerDimension
     val customIndex = new CustomIdIndex(strategy.getIndexStrategy, index.getIndexModel, index.getId)
 
