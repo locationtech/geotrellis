@@ -14,10 +14,15 @@ import geotrellis.vector.Extent
 import com.typesafe.scalalogging.slf4j._
 import mil.nga.giat.geowave.adapter.raster.adapter.merge.RasterTileRowTransform
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
+import mil.nga.giat.geowave.core.geotime.index.dimension._
 import mil.nga.giat.geowave.core.geotime.ingest._
+import mil.nga.giat.geowave.core.index.sfc.SFCDimensionDefinition
+import mil.nga.giat.geowave.core.index.sfc.SFCFactory.SFCType
+import mil.nga.giat.geowave.core.index.sfc.tiered.TieredSFCIndexFactory
 import mil.nga.giat.geowave.core.store._
 import mil.nga.giat.geowave.core.store.adapter.statistics.StatsCompositionTool
 import mil.nga.giat.geowave.core.store.data.VisibilityWriter
+import mil.nga.giat.geowave.core.store.index.PrimaryIndex
 import mil.nga.giat.geowave.core.store.operations.remote.options.DataStorePluginOptions
 import mil.nga.giat.geowave.core.store.util.DataStoreUtils
 import mil.nga.giat.geowave.datastore.accumulo._
@@ -41,6 +46,7 @@ import javax.imageio.ImageIO
 import javax.media.jai.{ ImageLayout, JAI }
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
+import scala.math.{ abs, pow, round }
 import scala.reflect._
 
 import resource._
@@ -49,12 +55,26 @@ import spray.json._
 
 object GeowaveLayerWriter extends LazyLogging {
 
+  /**
+    * If an edge or corner of an extent is very close to a split in
+    * the GeoWave index (for some given number of bits), then it
+    * should be snapped to the split to avoid pathological behavior).
+    */
+  private def _rectify(bits: Int)(_x: Double) = {
+    val division = if (bits > 0) pow(2, -bits + 1) ; else 1
+    val x = (_x / 180.0) / division
+    val xPrime = round(x)
+
+    180 * division * (if (abs(x - xPrime) < 0.000001) xPrime ; else x)
+  }
+
   def write[
     K <: SpatialKey: ClassTag,
     V: TileOrMultibandTile: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](
     coverageName: String,
+    bits: Int,
     rdd: RDD[(K, V)] with Metadata[M],
     as: GeowaveAttributeStore,
     accumuloWriter: AccumuloWriteStrategy
@@ -67,13 +87,18 @@ object GeowaveLayerWriter extends LazyLogging {
     val specimen = rdd.first
 
     /* Construct (Multiband|)Tile to GridCoverage2D conversion function */
+    val rectify = _rectify(bits)_
     val geotrellisKvToGeotools: ((K, V)) => GridCoverage2D = {
-      case (k: SpatialKey, tile: Tile) =>
-        val extent = mt(k.asInstanceOf[SpatialKey]).reproject(crs, LatLng)
-        ProjectedRaster(Raster(tile, extent), LatLng).toGridCoverage2D
-      case (k: SpatialKey, tile: MultibandTile) =>
-        val extent = mt(k.asInstanceOf[SpatialKey]).reproject(crs, LatLng)
-        ProjectedRaster(Raster(tile, extent), LatLng).toGridCoverage2D
+      case (k: SpatialKey, _tile: V) =>
+        val Extent(minX, minY, maxX, maxY) = mt(k.asInstanceOf[SpatialKey]).reproject(crs, LatLng)
+        val extent = Extent(rectify(minX), minY, rectify(maxX), maxY)
+
+        _tile match {
+          case tile: Tile =>
+            ProjectedRaster(Raster(tile, extent), LatLng).toGridCoverage2D
+          case tile: MultibandTile =>
+            ProjectedRaster(Raster(tile, extent), LatLng).toGridCoverage2D
+        }
     }
     val image = geotrellisKvToGeotools(specimen)
 
@@ -87,7 +112,8 @@ object GeowaveLayerWriter extends LazyLogging {
         val gwMetadata = new java.util.HashMap[String, String](); gwMetadata.put("cellType", cellType)
         configOptions.put(
           GeoWaveStoreFinder.STORE_HINT_OPTION.getName(),
-          "accumulo")
+          "accumulo"
+        )
 
         /* Produce mosaic from all of the tiles in this partition */
         val sources = new java.util.ArrayList(pairs.map(geotrellisKvToGeotools))
@@ -106,7 +132,19 @@ object GeowaveLayerWriter extends LazyLogging {
           param.parameter("Sources").setValue(sources)
           hints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout)
 
-          val index = (new SpatialDimensionalityTypeProvider.SpatialIndexBuilder).createIndex()
+          val index = {
+            val SPATIAL_DIMENSIONS = Array[SFCDimensionDefinition](
+              new SFCDimensionDefinition(new LongitudeDefinition, bits),
+              new SFCDimensionDefinition(new LatitudeDefinition(true), bits)
+            )
+            val model = (new SpatialDimensionalityTypeProvider).createPrimaryIndex.getIndexModel
+            val strategy = TieredSFCIndexFactory.createSingleTierStrategy(
+              SPATIAL_DIMENSIONS,
+              SFCType.HILBERT
+            )
+
+            new PrimaryIndex(strategy, model)
+          }
           val image = processor.doOperation(param, hints).asInstanceOf[GridCoverage2D]
           val adapter = new RasterDataAdapter(
             coverageName,
@@ -239,14 +277,13 @@ class GeowaveLayerWriter(
     layerId: LayerId,
     rdd: RDD[(K, V)] with Metadata[M]
   ): Unit = {
-    val LayerId(coverageName, zoom) = layerId
+    val LayerId(coverageName, bits) = layerId
     val specimen = rdd.first
 
-    if (zoom > 0) {
-      logger.warn("The zoom level is mostly ignored because GeoWave has its own notion of zoom level.")
-    }
+    if (bits == 0)
+      logger.warn("It is highly recommended that you specify a bit precision when writing into GeoWave")
 
-    GeowaveLayerWriter.write(coverageName, rdd, attributeStore, accumuloWriter)
+    GeowaveLayerWriter.write(coverageName, bits, rdd, attributeStore, accumuloWriter)
   }
 
 }
