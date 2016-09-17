@@ -132,19 +132,8 @@ object GeowaveLayerWriter extends LazyLogging {
           param.parameter("Sources").setValue(sources)
           hints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout)
 
-          val index = {
-            val SPATIAL_DIMENSIONS = Array[SFCDimensionDefinition](
-              new SFCDimensionDefinition(new LongitudeDefinition, bits),
-              new SFCDimensionDefinition(new LatitudeDefinition(true), bits)
-            )
-            val model = (new SpatialDimensionalityTypeProvider).createPrimaryIndex.getIndexModel
-            val strategy = TieredSFCIndexFactory.createSingleTierStrategy(
-              SPATIAL_DIMENSIONS,
-              SFCType.HILBERT
-            )
+          val index = (new SpatialDimensionalityTypeProvider.SpatialIndexBuilder).createIndex()
 
-            new PrimaryIndex(strategy, model)
-          }
           val image = processor.doOperation(param, hints).asInstanceOf[GridCoverage2D]
           val adapter = new RasterDataAdapter(
             coverageName,
