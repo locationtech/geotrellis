@@ -11,7 +11,7 @@ import geotrellis.spark.io.index.KeyIndex
 import geotrellis.util._
 import geotrellis.vector.Extent
 
-import com.typesafe.scalalogging.slf4j._
+import com.typesafe.scalalogging.LazyLogging
 import mil.nga.giat.geowave.adapter.raster.adapter.merge.RasterTileRowTransform
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
 import mil.nga.giat.geowave.core.geotime.index.dimension._

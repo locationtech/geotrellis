@@ -8,6 +8,7 @@ import geotrellis.spark.io._
 import geotrellis.vector.Extent
 import geotrellis.spark.io.accumulo.AccumuloAttributeStore
 
+import com.typesafe.scalalogging.LazyLogging
 import com.vividsolutions.jts.geom._
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
 import mil.nga.giat.geowave.core.geotime.ingest._
@@ -24,11 +25,10 @@ import mil.nga.giat.geowave.datastore.accumulo.index.secondary.AccumuloSecondary
 import mil.nga.giat.geowave.datastore.accumulo.metadata._
 import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloRequiredOptions
 import mil.nga.giat.geowave.mapreduce.input.{GeoWaveInputKey, GeoWaveInputFormat}
-import org.apache.accumulo.core.client.{TableNotFoundException, ZooKeeperInstance}
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
+import org.apache.accumulo.core.client.{TableNotFoundException, ZooKeeperInstance}
 import org.apache.hadoop.mapreduce.Job
-import org.apache.log4j.Logger
-import org.apache.spark.{Logging, SparkConf, SparkContext}
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.SparkContext._
 import org.geotools.coverage.grid._
 import org.geotools.gce.geotiff._
@@ -99,7 +99,7 @@ class GeowaveAttributeStore(
   val accumuloUser: String,
   val accumuloPass: String,
   val geowaveNamespace: String
-) extends DiscreteLayerAttributeStore with Logging {
+) extends DiscreteLayerAttributeStore with LazyLogging {
 
   val zkInstance = (new ZooKeeperInstance(accumuloInstance, zookeepers))
   val token = new PasswordToken(accumuloPass)
@@ -144,7 +144,7 @@ class GeowaveAttributeStore(
       val bbox = boundingBoxes.getOrElse(adapterId, throw new Exception(s"Unknown Adapter Id $adapterId"))
       val zoom = bbox match {
         case null => {
-          log.warn(s"$adapterId has a broken bounding box")
+          logger.warn(s"$adapterId has a broken bounding box")
           0
         }
         case _ => {
