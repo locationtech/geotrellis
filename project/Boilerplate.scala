@@ -150,7 +150,7 @@ object Boilerplate {
       block"""
          |package geotrellis.macros
          |import spire.macros.InlineUtil
-         |import scala.reflect.macros.Context
+         |import scala.reflect.macros.whitebox.Context
          |import scala.language.experimental.macros
          |object MultibandTileMacros {
         -  def intCombine${arity}_impl[T, MBT <: MacroCombinableMultibandTile[T]](c: Context)(${exprSeqInt})(f: ${exprFArgsInt}): c.Expr[T] = {
