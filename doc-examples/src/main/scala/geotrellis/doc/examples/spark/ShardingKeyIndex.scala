@@ -14,17 +14,29 @@ import geotrellis.spark.io.index.KeyIndex
   *
   * ==Assumptions==
   *   - The given shard count will be between 1 and 8.
-  *   - The ''inner'' index will produce a value less than 2^61 for any
+  *   - The ''inner'' index will produce a value less than 2^60 for any
   *     given key.
   */
 class ShardingKeyIndex[K](inner: KeyIndex[K], shardCount: Int) extends KeyIndex[K] {
 
+  /* Necessary for extending `KeyIndex` */
   def keyBounds: KeyBounds[K] =
     inner.keyBounds
 
-  def prefixWithShard(i: Long, shard: Long): Long =
-    (shard << 60) & i
+  /** Prefix the shard bits to the original index. Example:
+    *
+    * {{{
+    * val i: Long = 37  // ... 0010 0101
+    * val s: Long = 7   // ... 0000 0111
+    *
+    * // 0111 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0010 0101
+    * prefixWithShard(i, s) == 8070450532247928869
+    * }}}
+    */
+  private def prefixWithShard(i: Long, shard: Long): Long =
+    (shard << 60) | i
 
+  /* Necessary for extending `KeyIndex` */
   def toIndex(key: K): Long = {
     val i: Long = inner.toIndex(key)
     val shard: Long = i % shardCount  /* Shard prefix between 0 and 7 */
@@ -32,6 +44,7 @@ class ShardingKeyIndex[K](inner: KeyIndex[K], shardCount: Int) extends KeyIndex[
     prefixWithShard(inner.toIndex(key), shard)
   }
 
+  /* Necessary for extending `KeyIndex` */
   def indexRanges(keyRange: (K, K)): Seq[(Long, Long)] = {
     inner
       .indexRanges(keyRange)
