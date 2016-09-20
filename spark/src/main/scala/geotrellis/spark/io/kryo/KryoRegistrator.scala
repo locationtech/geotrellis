@@ -128,6 +128,7 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[geotrellis.spark.SpatialKey])
     kryo.register(classOf[geotrellis.spark.SpaceTimeKey])
     kryo.register(classOf[org.joda.time.DateTime], new jodatime.JodaDateTimeSerializer)
+    kryo.register(classOf[org.joda.time.LocalDate], new jodatime.JodaLocalDateSerializer)
     kryo.register(classOf[org.joda.time.Interval], new jodatime.JodaIntervalSerializer)
     kryo.register(classOf[geotrellis.spark.io.index.rowmajor.RowMajorSpatialKeyIndex])
     kryo.register(classOf[geotrellis.spark.io.index.zcurve.ZSpatialKeyIndex])
