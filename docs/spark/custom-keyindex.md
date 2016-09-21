@@ -135,6 +135,8 @@ Now for the final piece of the puzzle, the format Registrator. With the
 above in place, it's quite simple:
 
 ```scala
+import geotrellis.spark.io.json._
+
 /* This class must have no arguments! */
 class ShardingKeyIndexRegistrator extends KeyIndexRegistrator {
   def register(keyIndexRegistry: KeyIndexRegistry): Unit = {
