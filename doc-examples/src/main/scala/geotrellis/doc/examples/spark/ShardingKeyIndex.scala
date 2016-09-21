@@ -68,8 +68,12 @@ class ShardingKeyIndex[K](val inner: KeyIndex[K], val shardCount: Int) extends K
  * A standard JsonFormat for [[ShardingKeyIndex]], parameterized on the key type ''K''.
  */
 class ShardingKeyIndexFormat[K: JsonFormat: ClassTag] extends RootJsonFormat[ShardingKeyIndex[K]] {
+  /* This is the foundation of the reflection-based deserialization process */
   val TYPE_NAME = "sharding"
 
+  /* Your `write` function must follow this format, with two fields
+   * `type` and `properties`. The `properties` JsObject can contain anything.
+   */
   def write(index: ShardingKeyIndex[K]): JsValue = {
     JsObject(
       "type" -> JsString(TYPE_NAME),
@@ -80,6 +84,7 @@ class ShardingKeyIndexFormat[K: JsonFormat: ClassTag] extends RootJsonFormat[Sha
     )
   }
 
+  /* You should check the deserialized `typeName` matches the original */
   def read(value: JsValue): ShardingKeyIndex[K] = {
     value.asJsObject.getFields("type", "properties") match {
       case Seq(JsString(typeName), properties) if typeName == TYPE_NAME => {
