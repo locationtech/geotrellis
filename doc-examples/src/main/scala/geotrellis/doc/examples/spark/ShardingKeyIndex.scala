@@ -88,7 +88,7 @@ class ShardingKeyIndexFormat[K: JsonFormat: ClassTag] extends RootJsonFormat[Sha
   def read(value: JsValue): ShardingKeyIndex[K] = {
     value.asJsObject.getFields("type", "properties") match {
       case Seq(JsString(typeName), properties) if typeName == TYPE_NAME => {
-        properties.convertTo[JsObject].getFields("inner", "shardCount") match {
+        properties.asJsObject.getFields("inner", "shardCount") match {
           case Seq(inner, JsNumber(shardCount)) =>
             new ShardingKeyIndex(inner.convertTo[KeyIndex[K]], shardCount.toInt)
           case _ => throw new DeserializationException("Couldn't deserialize ShardingKeyIndex.")
