@@ -395,7 +395,7 @@ object GenMacroSegmentCombiner extends Template {
         -      (arr, compressor)
         -    }
         -    GeoTiffTile(
-        -      arr,
+        -      new ArraySegmentBytes(arr),
         -      compressor.createDecompressor(),
         -      segmentLayout,
         -      compression,

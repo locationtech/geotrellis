@@ -72,7 +72,7 @@ class GeoTiffWriter(geoTiff: GeoTiffData, dos: DataOutputStream) {
       LittleEndianToBytes
 
   val (fieldValues, offsetFieldValueBuilder) = TiffTagFieldValue.collect(geoTiff)
-  val segments = geoTiff.imageData.compressedBytes
+  val segments = geoTiff.imageData.segmentBytes
   val segmentCount = segments.size
 
   val tagFieldByteCount = (fieldValues.length + 1) * 12 // Tiff Tag Fields are 12 bytes long.
@@ -140,7 +140,7 @@ class GeoTiffWriter(geoTiff: GeoTiffData, dos: DataOutputStream) {
       var offset = imageDataStartOffset
       cfor(0)(_ < segmentCount, _ + 1) { i =>
         offsets(i) = offset
-        offset += segments(i).length
+        offset += segments.getSegment(i).length
       }
       offsetFieldValueBuilder(offsets)
     }
@@ -196,7 +196,7 @@ class GeoTiffWriter(geoTiff: GeoTiffData, dos: DataOutputStream) {
 
     // Write the image data.
     cfor(0)(_ < segmentCount, _ + 1) { i =>
-      writeBytes(segments(i))
+      writeBytes(segments.getSegment(i))
     }
 
     dos.flush()
