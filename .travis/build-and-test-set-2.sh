@@ -6,6 +6,6 @@
 ./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" "project s3" test  || { exit 1; }
 ./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" "project spark-etl" compile  || { exit 1; }
 ./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" "project slick" test || { exit 1; }
-if [ "$TRAVIS_SCALA_VERSION" == "2.11.8" && "$TRAVIS_JDK_VERSION" == "oraclejdk8" ]; then
+if [ "$TRAVIS_JDK_VERSION" == "oraclejdk8" ]; then
   ./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" "project geomesa" test  || { exit 1; }
 fi

@@ -204,9 +204,9 @@ The idea is similar to the `LayerReader.reader` method except in this case we're
 ## Readers threads
 
 Cassandra and S3 Layer RDDReaders / RDDWriters are configurable by threads amount. It's a programm setting, that can be different for a certain machine (depends on resources available). Configuration could be set in the `reference.conf` / `application.conf` file of your app, default settings available in a `reference.conf` file of each backend subproject (we use [TypeSafe Config](https://github.com/typesafehub/config)).
-For a File backend only RDDReader is configurable, For Accumulo - only RDDWriter (Socket Strategy). For all backends CollectionReaders are configurable as well.
+For a File backend only RDDReader is configurable, For Accumulo - only RDDWriter (Socket Strategy). For all backends CollectionReaders are configurable as well. By default thread pool size per each configurable reader / writer equals by virtual machine cpu cores available. Word `default` means thread per cpu core, it can be changed to any integer value.
 
-Configuration example (defaut means to use all processors available to the Java virtual machine):
+Default configuration example:
 
 ```conf
 geotrellis.accumulo.threads {
@@ -217,6 +217,9 @@ geotrellis.file.threads {
   collection.read = default
   rdd.read        = default
 }
+geotrellis.hadoop.threads {
+  collection.read = default
+}
 geotrellis.cassandra.threads {
   collection.read = default
   rdd {
@@ -233,27 +236,18 @@ geotrellis.s3.threads {
 }
 ```
 
+Cassandra has additional configuration settings: 
+
+And additional connections parameters for`Cassandra`:
 ```conf
-geotrellis.accumulo.threads {
-  collection.read = 32
-  rdd.write       = 32
-}
-geotrellis.file.threads {
-  collection.read = 32
-  rdd.read        = 32
-}
-geotrellis.cassandra.threads {
-  collection.read = 32
-  rdd {
-    write = 32
-    read  = 32
-  }
-}
-geotrellis.s3.threads {
-  collection.read = 32
-  rdd {
-    write = 32
-    read  = 32
-  }
+geotrellis.cassandra {
+  keyspace             = "geotrellis"
+  replicationStrategy  = "SimpleStrategy"
+  replicationFactor    = 1
+  localDc              = "datacenter1"
+  usedHostsPerRemoteDc = 0
+  allowRemoteDCsForLocalConsistencyLevel = false
 }
 ```
+
+Consider using `hbase.client.scanner.caching` parameter for `HBase` as it may increase scan performance.

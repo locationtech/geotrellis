@@ -11,7 +11,7 @@ trait GeoTiffImageData {
   def rows: Int
   def bandType: BandType
   def bandCount: Int
-  def compressedBytes: Array[Array[Byte]]
+  def segmentBytes: SegmentBytes
   def decompressor: Decompressor
   def segmentLayout: GeoTiffSegmentLayout
 }

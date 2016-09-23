@@ -2,7 +2,7 @@ package geotrellis.raster.crop
 
 import geotrellis.vector._
 import geotrellis.raster._
-
+import geotrellis.raster.io.geotiff._
 
 /**
   * A trait housing extension methods for cropping [[Tile]]s.
@@ -25,7 +25,14 @@ trait SinglebandTileCropMethods extends TileCropMethods[Tile] {
       else
         gb
 
-    val res = CroppedTile(self, cropBounds)
+    val res =
+      self match {
+        case gtTile: GeoTiffTile =>
+          gtTile.crop(gb)
+        case _ =>
+          CroppedTile(self, cropBounds)
+      }
+
     if(options.force) res.toArrayTile else res
   }
 
