@@ -13,12 +13,12 @@ import org.scalatest.FunSpec
 
 import collection._
 
-class StatsTileRDDMethodsSpec extends FunSpec with TestEnvironment with TestFiles {
+class StatsTileCollectionMethodsSpec extends FunSpec with TestEnvironment with TestFiles {
 
-  describe("RDD Stats Method Operations") {
+  describe("Collection Stats Method Operations") {
 
     it("gives correct class breaks for example raster histogram") {
-      val rdd = createTileLayerRDD(
+      val collection = createTileLayerRDD(
         sc,
         ArrayTile(Array(
           1, 1, 1,  1, 1, 1,  1, 1, 1,
@@ -33,15 +33,15 @@ class StatsTileRDDMethodsSpec extends FunSpec with TestEnvironment with TestFile
           4, 4, 4,  4, 4, 4,  4, 4, 4,
           4, 4, 4,  4, 4, 4,  4, 4, 4), 9, 8),
         TileLayout(3, 4, 3, 2)
-      )
+      ).toCollection
 
-      val classBreaks = rdd.classBreaksDouble(4)
+      val classBreaks = collection.classBreaksDouble(4)
 
       classBreaks should be (Array(1.0, 2.0, 3.0, 4.0))
     }
 
     it("should find integer min/max of AllOnesTestFile") {
-      val ones: TileLayerRDD[SpatialKey] = AllOnesTestFile
+      val ones: TileLayerCollection[SpatialKey] = AllOnesTestFile.toCollection
       val (min, max) = ones.minMax
 
       min should be (1)
@@ -59,9 +59,9 @@ class StatsTileRDDMethodsSpec extends FunSpec with TestEnvironment with TestFile
       val tile = ArrayTile(arr, 4, 4)
       val tileLayout = TileLayout(2, 2, 2, 2)
 
-      val rdd = createTileLayerRDD(sc, tile, tileLayout)
+      val collection = createTileLayerRDD(sc, tile, tileLayout).toCollection
 
-      val (min, max) = rdd.minMax
+      val (min, max) = collection.minMax
 
       min should be (-4)
       max should be (4)
@@ -78,9 +78,9 @@ class StatsTileRDDMethodsSpec extends FunSpec with TestEnvironment with TestFile
       val tile = ArrayTile(arr, 4, 4)
       val tileLayout = TileLayout(2, 2, 2, 2)
 
-      val rdd = createTileLayerRDD(sc, tile, tileLayout)
+      val collection = createTileLayerRDD(sc, tile, tileLayout).toCollection
 
-      val (min, max) = rdd.minMaxDouble
+      val (min, max) = collection.minMaxDouble
 
       min should be (-4.1)
       max should be (4.1)
@@ -91,9 +91,10 @@ class StatsTileRDDMethodsSpec extends FunSpec with TestEnvironment with TestFile
       val gt = SinglebandGeoTiff(path)
       val originalRaster = gt.raster.resample(500, 500)
       val (_, rdd) = createTileLayerRDD(originalRaster, 5, 5, gt.crs)
+      val collection = rdd.toCollection
 
-      val hist = rdd.histogram
-      val hist2 = rdd.histogram
+      val hist = collection.histogram
+      val hist2 = collection.histogram
 
       hist.merge(hist2).quantileBreaks(70) should be (hist.quantileBreaks(70))
     }
