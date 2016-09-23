@@ -29,7 +29,7 @@ import util._
 import java.util.Locale
 
 
-class PostgisSpec extends FlatSpec with ShouldMatchers with TestDatabase with ScalaFutures {
+class PostgisSpec extends FlatSpec with Matchers with TestDatabase with ScalaFutures {
 
   implicit override val patienceConfig = PatienceConfig(timeout = Span(5, Seconds))
 
