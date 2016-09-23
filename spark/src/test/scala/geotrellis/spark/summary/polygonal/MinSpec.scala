@@ -39,4 +39,33 @@ class MinSpec extends FunSpec with TestEnvironment with TestFiles {
       result should be (expected)
     }
   }
+
+  describe("Min Zonal Summary Operation (collections api)") {
+    val inc = IncreasingTestFile.toCollection
+
+    val tileLayout = inc.metadata.tileLayout
+    val count = inc.length * tileLayout.tileCols * tileLayout.tileRows
+    val totalExtent = inc.metadata.extent
+
+    it("should get correct min over whole raster extent") {
+      inc.polygonalMin(totalExtent.toPolygon) should be(0)
+    }
+
+    it("should get correct min over a quarter of the extent") {
+      val xd = totalExtent.xmax - totalExtent.xmin
+      val yd = totalExtent.ymax - totalExtent.ymin
+
+      val quarterExtent = Extent(
+        totalExtent.xmin,
+        totalExtent.ymin,
+        totalExtent.xmin + xd / 2,
+        totalExtent.ymin + yd / 2
+      )
+
+      val result = inc.polygonalMin(quarterExtent.toPolygon)
+      val expected = inc.stitch.tile.polygonalMin(totalExtent, quarterExtent.toPolygon)
+
+      result should be (expected)
+    }
+  }
 }

@@ -6,7 +6,7 @@ import geotrellis.raster.io.geotiff.compression._
 import java.nio.ByteBuffer
 
 class BitGeoTiffMultibandTile(
-  compressedBytes: Array[Array[Byte]],
+  compressedBytes: SegmentBytes,
   decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,

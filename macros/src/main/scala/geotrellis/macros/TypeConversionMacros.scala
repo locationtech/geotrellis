@@ -1,6 +1,6 @@
 package geotrellis.macros
 
-import scala.reflect.macros.Context
+import scala.reflect.macros.whitebox.Context
 
 object TypeConversionMacros {
 
