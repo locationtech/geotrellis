@@ -42,6 +42,7 @@ abstract class PersistenceSpec[
   type TestReindexer = LayerReindexer[LayerId]
   type TestTileReader = ValueReader[LayerId]
   type TestUpdater = LayerUpdater[LayerId]
+  type TestCollectionReader = CollectionLayerReader[LayerId]
 
   def sample: RDD[(K, V)] with Metadata[M]
   def reader: TestReader
@@ -52,6 +53,7 @@ abstract class PersistenceSpec[
   def reindexer: TestReindexer
   def updater: TestUpdater
   def tiles: TestTileReader
+  def creader: TestCollectionReader
 
   def keyIndexMethods: Map[String, KeyIndexMethod[K]]
 
@@ -80,6 +82,12 @@ abstract class PersistenceSpec[
         }
       }
 
+      it("should not find layer before write (collections api)") {
+        intercept[LayerNotFoundError] {
+          creader.read[K, V, M](layerId)
+        }
+      }
+
       it("should not delete layer before write") {
         intercept[LayerNotFoundError] {
           deleter.delete(layerId)
@@ -93,6 +101,18 @@ abstract class PersistenceSpec[
 
       it("should read a layer back") {
         val actual = reader.read[K, V, M](layerId).keys.collect()
+        val expected = sample.keys.collect()
+
+        if (expected.diff(actual).nonEmpty)
+          info(s"missing: ${(expected diff actual).toList}")
+        if (actual.diff(expected).nonEmpty)
+          info(s"unwanted: ${(actual diff expected).toList}")
+
+        actual should contain theSameElementsAs expected
+      }
+
+      it("should read a layer back (collections api)") {
+        val actual = creader.read[K, V, M](layerId).map(_._1)
         val expected = sample.keys.collect()
 
         if (expected.diff(actual).nonEmpty)

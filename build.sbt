@@ -4,7 +4,6 @@ import UnidocKeys._
 lazy val commonSettings = Seq(
   version := Version.geotrellis,
   scalaVersion := Version.scala,
-  crossScalaVersions := Version.crossScala,
   description := Info.description,
   organization := "com.azavea.geotrellis",
   licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
@@ -29,7 +28,7 @@ lazy val commonSettings = Seq(
   bintrayVcsUrl := Some("https://github.com/geotrellis/geotrellis.git"),
   bintrayPackageLabels := Info.tags,
 
-  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.7.1" cross CrossVersion.binary),
+  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.0" cross CrossVersion.binary),
 
   addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.full),
 
@@ -101,7 +100,8 @@ lazy val vector = Project("vector", file("vector")).
   settings(commonSettings: _*)
 
 lazy val vectorTest = Project("vector-test", file("vector-test")).
-  dependsOn(vector, vectorTestkit)
+  dependsOn(vector, vectorTestkit).
+  settings(commonSettings: _*)
 
 lazy val vectorTestkit = Project("vector-testkit", file("vector-testkit")).
   dependsOn(raster, vector).

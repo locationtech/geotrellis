@@ -1,8 +1,6 @@
 package geotrellis.spark.etl
 
 import geotrellis.spark._
-import geotrellis.spark.ingest._
-import geotrellis.spark.io.index.ZCurveKeyIndexMethod
 import geotrellis.raster.Tile
 import geotrellis.spark.util.SparkUtils
 import geotrellis.vector.ProjectedExtent
@@ -12,7 +10,7 @@ object SinglebandIngest {
   def main(args: Array[String]): Unit = {
     implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL SinglebandIngest", new SparkConf(true))
     try {
-      Etl.ingest[ProjectedExtent, SpatialKey, Tile](args, ZCurveKeyIndexMethod)
+      Etl.ingest[ProjectedExtent, SpatialKey, Tile](args)
     } finally {
       sc.stop()
     }

@@ -17,7 +17,6 @@
 package geotrellis.spark
 
 import geotrellis.spark.io.hbase._
-
 import org.apache.spark.SparkConf
 import org.apache.zookeeper.client.FourLetterWordMain
 import org.scalatest._
@@ -40,10 +39,9 @@ trait HBaseTestEnvironment extends TestEnvironment { self: Suite =>
     }
 
     try {
-      val instance = HBaseInstance(Seq("localhost"), "localhost")
-      instance.getAdmin.tableExists("tiles")
-      instance.getAdmin.close()
-      instance.getAdmin.getConnection.close()
+      HBaseInstance(Seq("localhost"), "localhost").withAdminDo {
+        _.tableExists("tiles")
+      }
     } catch {
       case e: Exception => {
         println("\u001b[0;33mA script for setting up the HBase environment necessary to run these tests can be found at scripts/hbaseTestDB.sh - requires a working docker setup\u001b[m")

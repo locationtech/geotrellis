@@ -24,7 +24,7 @@ import org.scalatest._
 import slick.driver.PostgresDriver
 import util._
 
-class ProjectedSpec extends FlatSpec with ShouldMatchers with TestDatabase with ScalaFutures {
+class ProjectedSpec extends FlatSpec with Matchers with TestDatabase with ScalaFutures {
   implicit override val patienceConfig = PatienceConfig(timeout = Span(5, Seconds))
 
   object driver extends PostgresDriver with PostGisProjectionSupport {

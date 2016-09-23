@@ -1,11 +1,11 @@
 package geotrellis.spark.io.s3
 
 import java.io.{DataOutput, DataInput}
-import com.amazonaws.services.s3.model.{ S3ObjectSummary, ObjectListing }
+import com.amazonaws.services.s3.model.{S3ObjectSummary, ObjectListing}
 import org.apache.hadoop.io.Writable
 import org.apache.hadoop.mapreduce.InputSplit
 import com.amazonaws.auth.{AWSCredentials, BasicAWSCredentials, AnonymousAWSCredentials, BasicSessionCredentials}
-import com.typesafe.scalalogging.slf4j._
+import com.typesafe.scalalogging.LazyLogging
 
 /**
  * Represents are batch of keys to be read from an S3 bucket.

@@ -5,7 +5,7 @@ import com.amazonaws.auth._
 import com.amazonaws.regions._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce.{InputFormat, Job, JobContext}
-import com.typesafe.scalalogging.slf4j._
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.util.matching.Regex
 

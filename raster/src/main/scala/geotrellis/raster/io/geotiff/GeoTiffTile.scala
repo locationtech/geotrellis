@@ -23,7 +23,7 @@ object GeoTiffTile {
    * @return A new instance of GeoTiffTile based on the given bandType or cellType
    */
   def apply(
-    compressedBytes: Array[Array[Byte]],
+    segmentBytes: SegmentBytes,
     decompressor: Decompressor,
     segmentLayout: GeoTiffSegmentLayout,
     compression: Compression,
@@ -34,32 +34,32 @@ object GeoTiffTile {
       case Some(UInt32BandType) =>
         cellType match {
           case ct: FloatCells =>
-            new UInt32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+            new UInt32GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, ct)
           case _ =>
             throw new IllegalArgumentException("UInt32BandType should always resolve to Float celltype")
         }
       case _ =>
         cellType match {
           case ct: BitCells =>
-            new BitGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+            new BitGeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, ct)
           // Bytes
           case ct: ByteCells =>
-            new ByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+            new ByteGeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, ct)
           // UBytes
           case ct: UByteCells =>
-            new UByteGeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+            new UByteGeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, ct)
           // Shorts
           case ct: ShortCells =>
-            new Int16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+            new Int16GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, ct)
           // UShorts
           case ct: UShortCells =>
-            new UInt16GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+            new UInt16GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, ct)
           case ct: IntCells =>
-            new Int32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+            new Int32GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, ct)
           case ct: FloatCells =>
-            new Float32GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+            new Float32GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, ct)
           case ct: DoubleCells =>
-            new Float64GeoTiffTile(compressedBytes, decompressor, segmentLayout, compression, ct)
+            new Float64GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, ct)
         }
       }
     }
@@ -76,7 +76,7 @@ object GeoTiffTile {
     val segmentCount = segmentLayout.tileLayout.layoutCols * segmentLayout.tileLayout.layoutRows
     val compressor = options.compression.createCompressor(segmentCount)
 
-    val compressedBytes = Array.ofDim[Array[Byte]](segmentCount)
+    val segmentBytes = Array.ofDim[Array[Byte]](segmentCount)
     val segmentTiles =
       options.storageMethod match {
         case _: Tiled => tile.split(segmentLayout.tileLayout)
@@ -85,10 +85,10 @@ object GeoTiffTile {
 
     cfor(0)(_ < segmentCount, _ + 1) { i =>
       val bytes = segmentTiles(i).toBytes
-      compressedBytes(i) = compressor.compress(bytes, i)
+      segmentBytes(i) = compressor.compress(bytes, i)
     }
 
-    apply(compressedBytes, compressor.createDecompressor, segmentLayout, options.compression, tile.cellType)
+    apply(new ArraySegmentBytes(segmentBytes), compressor.createDecompressor, segmentLayout, options.compression, tile.cellType)
   }
 }
 
@@ -122,7 +122,7 @@ abstract class GeoTiffTile(
     }
 
     GeoTiffTile(
-      arr,
+      new ArraySegmentBytes(arr),
       compressor.createDecompressor(),
       segmentLayout,
       compression,
@@ -130,7 +130,7 @@ abstract class GeoTiffTile(
     )
   }
 
-  val segmentCount = compressedBytes.size
+  val segmentCount = segmentBytes.size
 
   /**
    * Returns the GeoTiffSegment of the corresponding index
@@ -245,7 +245,7 @@ abstract class GeoTiffTile(
     }
 
     GeoTiffTile(
-      arr,
+      new ArraySegmentBytes(arr),
       compressor.createDecompressor(),
       segmentLayout,
       compression,
@@ -270,7 +270,7 @@ abstract class GeoTiffTile(
     }
 
     GeoTiffTile(
-      arr,
+      new ArraySegmentBytes(arr),
       compressor.createDecompressor(),
       segmentLayout,
       compression,
@@ -342,7 +342,7 @@ abstract class GeoTiffTile(
     }
 
     GeoTiffTile(
-      arr,
+      new ArraySegmentBytes(arr),
       compressor.createDecompressor(),
       segmentLayout,
       compression,
@@ -373,7 +373,7 @@ abstract class GeoTiffTile(
     }
 
     GeoTiffTile(
-      arr,
+      new ArraySegmentBytes(arr),
       compressor.createDecompressor(),
       segmentLayout,
       compression,
@@ -405,7 +405,7 @@ abstract class GeoTiffTile(
         }
 
         GeoTiffTile(
-          arr,
+          new ArraySegmentBytes(arr),
           compressor.createDecompressor(),
           segmentLayout,
           compression,
@@ -441,7 +441,7 @@ abstract class GeoTiffTile(
         }
 
         GeoTiffTile(
-          arr,
+          new ArraySegmentBytes(arr),
           compressor.createDecompressor(),
           segmentLayout,
           compression,
@@ -482,6 +482,16 @@ abstract class GeoTiffTile(
    * @return A [[MutableArrayTile]] of the GeoTiffTile
    */
   def mutable: MutableArrayTile
+
+  /**
+   * Performs a crop on itself where the returned GeoTiffTile will jave the
+   * same dimensions as the GridBounds.
+   *
+   * @param gridBounds: A [[GridBounds]] that contains the area to be cropped.
+   *
+   * @return A [[MutableArrayTile]]
+   */
+  def crop(gridBounds: GridBounds): MutableArrayTile
 
   /**
    * Converts the GeoTiffTile to an Array[Byte]
