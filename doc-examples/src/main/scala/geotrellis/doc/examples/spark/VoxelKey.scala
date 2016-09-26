@@ -10,7 +10,7 @@ import spray.json._
 
 // --- //
 
-/** A three-dimensional spatial key. */
+/** A three-dimensional spatial key. A ''voxel'' is the 3D equivalent of a pixel. */
 case class VoxelKey(x: Int, y: Int, z: Int)
 
 /** Typeclass instances. These (particularly [[Boundable]]) are necessary
@@ -51,6 +51,7 @@ object VoxelKey {
 
 /** A [[KeyIndex]] based on [[VoxelKey]]. */
 class ZVoxelKeyIndex(val keyBounds: KeyBounds[VoxelKey]) extends KeyIndex[VoxelKey] {
+  /* ''Z3'' here is a convenient shorthand for any 3-dimensional key. */
   private def toZ(k: VoxelKey): Z3 = Z3(k.x, k.y, k.z)
 
   def toIndex(k: VoxelKey): Long = toZ(k).z
@@ -83,7 +84,9 @@ class ZVoxelKeyIndexFormat extends RootJsonFormat[ZVoxelKeyIndex] {
   }
 }
 
-/** Register this JsonFormat with Geotrellis's central registrator. */
+/** Register this JsonFormat with Geotrellis's central registrator.
+  * For more information on why this is necessary, see ''ShardingKeyIndex.scala''.
+  */
 class ZVoxelKeyIndexRegistrator extends KeyIndexRegistrator {
   implicit val voxelFormat = new ZVoxelKeyIndexFormat()
 
