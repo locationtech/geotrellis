@@ -2,6 +2,7 @@ package geotrellis.geomesa.geotools
 
 import geotrellis.vector.Geometry
 import geotrellis.proj4.{WebMercator, CRS => GCRS}
+
 import com.vividsolutions.jts.{geom => jts}
 import org.geotools.factory.Hints
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder
@@ -34,8 +35,6 @@ object GeoMesaSimpleFeatureType {
     if(temporal) sftb.add(whenField, classOf[java.util.Date])
     val sft = sftb.buildFeatureType
     if(temporal) sft.getUserData.put(Constants.SF_PROPERTY_START_TIME, whenField) // when field is date
-    sft.getUserData.put(SimpleFeatureTypes.MIXED_GEOMETRIES, java.lang.Boolean.TRUE) // allow GeoMesa to index points and extents together
-    sft.getUserData.put(Hints.USE_PROVIDED_FID, java.lang.Boolean.FALSE) // generate feature ids
     sft
   }
 }

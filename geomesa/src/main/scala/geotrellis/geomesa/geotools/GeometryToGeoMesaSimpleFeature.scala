@@ -4,11 +4,9 @@ import geotrellis.proj4.{CRS => GCRS}
 import geotrellis.vector.{Geometry, Line, MultiLine, MultiPoint, MultiPolygon, Point, Polygon}
 
 import com.vividsolutions.jts.{geom => jts}
-import org.geotools.factory.Hints
 import org.geotools.feature.simple.{SimpleFeatureBuilder, SimpleFeatureTypeBuilder}
 import org.opengis.feature.simple.SimpleFeature
 import org.locationtech.geomesa.accumulo.index.Constants
-import org.locationtech.geomesa.utils.geotools.SimpleFeatureTypes
 
 object GeometryToGeoMesaSimpleFeature {
 
@@ -40,8 +38,6 @@ object GeometryToGeoMesaSimpleFeature {
 
     val sft = sftb.buildFeatureType
     if(data.map(_._1).contains(whenField)) sft.getUserData.put(Constants.SF_PROPERTY_START_TIME, whenField) // when field is date
-    sft.getUserData.put(SimpleFeatureTypes.MIXED_GEOMETRIES, java.lang.Boolean.TRUE) // allow GeoMesa to index points and extents together
-    sft.getUserData.put(Hints.USE_PROVIDED_FID, java.lang.Boolean.FALSE) // generate feature ids
     val sfb = new SimpleFeatureBuilder(sft)
 
     geom match {

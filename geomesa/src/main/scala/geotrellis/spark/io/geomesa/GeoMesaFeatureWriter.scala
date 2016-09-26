@@ -25,11 +25,10 @@ class GeoMesaFeatureWriter(val instance: GeoMesaInstance)(implicit sc: SparkCont
           // register feature types and write features
           dataStore.createSchema(sft)
           val featureWriter = dataStore.getFeatureWriterAppend(sft.getTypeName, Transaction.AUTO_COMMIT)
-          val attrNames = featureWriter.getFeatureType.getAttributeDescriptors.map(_.getLocalName)
           try {
             sf.foreach { rawFeature =>
               val newFeature = featureWriter.next()
-              attrNames.foreach(an => newFeature.setAttribute(an, rawFeature.getAttribute(an)))
+              (0 until sft.getAttributeCount).foreach(i => newFeature.setAttribute(i, rawFeature.getAttribute(i)))
               featureWriter.write()
             }
           } finally featureWriter.close()
