@@ -1,13 +1,19 @@
 Writing a Custom Key Type
 =========================
 
-*Want to jump straight to a code example? See
-`doc-examples/src/main/scala/geotrellis/doc/examples/spark/VoxelKey.scala`.*
+*Want to jump straight to a code example? See:*
+```
+doc-examples/src/main/scala/geotrellis/doc/examples/spark/VoxelKey.scala
+```
 
-Keys are used to index tiles in a tile layer. Typically these tiles are
-arranged in some conceptual grid, for instance in a two-dimensional matrix via a
-`SpatialKey`. There is also a `SpaceTimeKey`, which arranges tiles in a grid
-of two spatial dimensions and one time dimension.
+Intro
+-----
+
+Keys are used to index (or "give a position to") tiles in a tile layer.
+Typically these tiles are arranged in some conceptual grid, for instance in
+a two-dimensional matrix via a `SpatialKey`. There is also a `SpaceTimeKey`,
+which arranges tiles in a cube of two spatial dimensions and one time
+dimension.
 
 In this way, keys define how a tile layer is shaped. Here, we provide an example of how
 to define a new key type, should you want a custom one for your application.
@@ -24,11 +30,23 @@ case class VoxelKey(x: Int, y: Int, z: Int)
 ```
 
 Key usage in many GeoTrellis operations is done generically with a `K` type
-parameter, for instance in the `LayerReader` trait:
+parameter, for instance in the `S3LayerReader` class:
 
 ```scala
-// slightly simplified
-LayerReader.read[K: Boundable: JsonFormat, V, M]: LayerId => RDD[(K, V)] with Metadata[M]
+/* Read a tile layer from S3 via a given `LayerId`. Function signature slightly simplified. */
+S3LayerReader.read[K: Boundable: JsonFormat, V, M]: LayerId => RDD[(K, V)] with Metadata[M]
+```
+
+Where the pattern `[A: Trait1: Trait2: ...]` means that for whichever `A`
+you end up using, it must have an implicit instance of `Trait1` and `Trait2`
+(and any others) in scope. The `read` method above would be used in real life like:
+
+```scala
+val reader: S3LayerReader = ...
+
+// The type on `rdd` is often left off for brevity.
+val rdd: RDD[(SpatialKey, MultibandTile)] with Metadata[LayoutDefinition] =
+    reader.read[SpatialKey, MultibandTile, LayoutDefinition]("someLayer")
 ```
 
 `Boundable` and `JsonFormat` are frequent constraints on keys. Let's give those
@@ -62,6 +80,8 @@ object VoxelKey {
 }
 ```
 
+With these, `VoxelKey` is now (almost) usable as a key type in GeoTrellis.
+
 A Z-Curve SFC for `VoxelKey`
 ----------------------------
 
@@ -85,3 +105,8 @@ class ZVoxelKeyIndex(val keyBounds: KeyBounds[VoxelKey]) extends KeyIndex[VoxelK
 And with a `KeyIndex` written, it will of course need its own `JsonFormat`,
 which demands some additional glue to make fully functional. For more
 details, see `ShardingKeyIndex.scala`.
+
+We now have a new fully functional key type which defines a tile cube of three
+spatial dimensions. Of course, there is nothing stopping you from defining a
+key in any way you like: it could have three spatial and one time dimension (`EinsteinKey`?)
+or even ten spatial dimensions (`StringTheoryKey` :wink: ). Happy tiling.
