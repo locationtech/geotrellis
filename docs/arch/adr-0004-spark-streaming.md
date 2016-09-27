@@ -30,7 +30,7 @@ but by just with wrapping our core api.
 * `Window` - data between times
 * `receiver.maxRate` - maximum rate (number of records per second) at which each receiver will receive data
 * `backpressure.enabled` - in fact just dynamically sets `receiver.maxRate`, upper bounded `receiver.maxRate` that can be processed by cluster
-* `Events` - there are some events that can be set (exmpl. on microbatch complete)
+* `Streaming Events` - some events that can be set (exmpl. on microbatch complete), description would be provided below
 
 At first the idea was to ingest tiles as chunked batches and to process these batches sequentially. Instead of a common writer was used `WriterOrUpdater`.
 The problem was to control somehow the stream, and to have only one "batch" processed. But it turned out that it is not
