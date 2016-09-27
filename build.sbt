@@ -74,7 +74,8 @@ lazy val root = Project("geotrellis", file(".")).
     geotools,
     slick,
     streaming,
-    accumuloStreaming
+    accumuloStreaming,
+    vectortile
   ).
   settings(commonSettings: _*).
   settings(
@@ -91,6 +92,10 @@ lazy val root = Project("geotrellis", file(".")).
 
 lazy val macros = Project("macros", file("macros")).
   settings(commonSettings: _*)
+
+lazy val vectortile = Project("vectortile", file("vectortile"))
+  .dependsOn(vector)
+  .settings(commonSettings: _*)
 
 lazy val vector = Project("vector", file("vector")).
   dependsOn(proj4, util).
