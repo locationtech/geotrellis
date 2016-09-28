@@ -16,7 +16,7 @@ object TemporalGeoTiffInputFormat {
   final val GEOTIFF_TIME_TAG = "GEOTIFF_TIME_TAG"
   final val GEOTIFF_TIME_TAG_DEFAULT = "TIFFTAG_DATETIME"
   final val GEOTIFF_TIME_FORMAT = "GEOTIFF_TIME_FORMAT"
-  final val GEOTIFF_TIME_FORMAT_DEFAULT = "YYYY:MM:dd HH:mm:ss"
+  final val GEOTIFF_TIME_FORMAT_DEFAULT = "yyyy:MM:dd HH:mm:ss"
 
   def setTimeTag(job: JobContext, timeTag: String): Unit =
     setTimeTag(job.getConfiguration, timeTag)
@@ -44,7 +44,7 @@ object TemporalGeoTiffInputFormat {
   *
   * This can be configured with the hadoop configuration by providing:
   * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_TAG; default of "TIFFTAG_DATETIME"
-  * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT; default is ""YYYY:MM:DD HH:MM:SS""
+  * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT; default is ""yyyy:MM:DD HH:MM:SS""
   */
 class TemporalGeoTiffInputFormat extends BinaryFileInputFormat[TemporalProjectedExtent, Tile] {
   def read(bytes: Array[Byte], context: TaskAttemptContext): (TemporalProjectedExtent, Tile) = {

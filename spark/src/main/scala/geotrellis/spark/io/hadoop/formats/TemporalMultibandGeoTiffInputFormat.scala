@@ -14,7 +14,7 @@ import java.time.ZonedDateTime
   *
   * This can be configured with the hadoop configuration by providing:
   * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_TAG; default of "TIFFTAG_DATETIME"
-  * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT; default is ""YYYY:MM:DD HH:MM:SS""
+  * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT; default is ""yyyy:MM:DD HH:MM:SS""
   */
 class TemporalMultibandGeoTiffInputFormat extends BinaryFileInputFormat[TemporalProjectedExtent, MultibandTile] {
   def read(bytes: Array[Byte], context: TaskAttemptContext): (TemporalProjectedExtent, MultibandTile) = {

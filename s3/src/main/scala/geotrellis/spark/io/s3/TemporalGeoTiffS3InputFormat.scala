@@ -31,7 +31,7 @@ object TemporalGeoTiffS3InputFormat {
 
   def getTimeFormatter(job: JobContext): DateTimeFormatter = {
     val df = job.getConfiguration.get(GEOTIFF_TIME_FORMAT)
-    (if (df == null) { DateTimeFormatter.ofPattern("YYYY:MM:dd HH:mm:ss") }
+    (if (df == null) { DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss") }
     else { DateTimeFormatter.ofPattern(df) }).withZone(ZoneOffset.UTC)
   }
 }
@@ -40,7 +40,7 @@ object TemporalGeoTiffS3InputFormat {
   *
   * This can be configured with the hadoop configuration by providing:
   * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_TAG; default of "TIFFTAG_DATETIME"
-  * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT; default is ""YYYY:MM:dd HH:mm:ss""
+  * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT; default is ""yyyy:MM:dd HH:mm:ss""
   */
 class TemporalGeoTiffS3InputFormat extends S3InputFormat[TemporalProjectedExtent, Tile] {
   def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
