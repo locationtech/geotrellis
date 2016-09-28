@@ -6,11 +6,9 @@ import geotrellis.spark.ingest._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.vector._
-import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce._
 
 import java.time.ZonedDateTime
-
 
 /** Read multiband GeoTiff with a timestamp
   *
@@ -26,7 +24,7 @@ class TemporalMultibandGeoTiffInputFormat extends BinaryFileInputFormat[Temporal
     val dateFormatter = TemporalGeoTiffInputFormat.getTimeFormatter(context)
 
     val dateTimeString = geoTiff.tags.headTags.getOrElse(timeTag, sys.error(s"There is no tag $timeTag in the GeoTiff header"))
-    val dateTime = ZonedDateTime.parse(dateTimeString, dateFormatter)
+    val dateTime = ZonedDateTime.from(dateFormatter.parse(dateTimeString))
 
     val ProjectedRaster(Raster(tile, extent), crs) = geoTiff.projectedRaster
     (TemporalProjectedExtent(extent, crs, dateTime), tile)

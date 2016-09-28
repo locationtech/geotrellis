@@ -7,7 +7,7 @@ import geotrellis.spark._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce._
 
-import java.time.ZonedDateTime
+import java.time.{ZoneOffset, ZonedDateTime}
 import java.time.format.DateTimeFormatter
 
 object TemporalGeoTiffS3InputFormat {
@@ -31,8 +31,8 @@ object TemporalGeoTiffS3InputFormat {
 
   def getTimeFormatter(job: JobContext): DateTimeFormatter = {
     val df = job.getConfiguration.get(GEOTIFF_TIME_FORMAT)
-    if (df == null) { DateTimeFormatter.ofPattern("YYYY:MM:dd HH:mm:ss") }
-    else { DateTimeFormatter.ofPattern(df) }
+    (if (df == null) { DateTimeFormatter.ofPattern("YYYY:MM:dd HH:mm:ss") }
+    else { DateTimeFormatter.ofPattern(df) }).withZone(ZoneOffset.UTC)
   }
 }
 
@@ -40,7 +40,7 @@ object TemporalGeoTiffS3InputFormat {
   *
   * This can be configured with the hadoop configuration by providing:
   * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_TAG; default of "TIFFTAG_DATETIME"
-  * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT; default is ""YYYY:MM:DD HH:MM:SS""
+  * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT; default is ""YYYY:MM:dd HH:mm:ss""
   */
 class TemporalGeoTiffS3InputFormat extends S3InputFormat[TemporalProjectedExtent, Tile] {
   def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
@@ -55,7 +55,7 @@ class TemporalGeoTiffS3RecordReader(context: TaskAttemptContext) extends S3Recor
     val geoTiff = SinglebandGeoTiff(bytes)
 
     val dateTimeString = geoTiff.tags.headTags.getOrElse(timeTag, sys.error(s"There is no tag $timeTag in the GeoTiff header"))
-    val dateTime = ZonedDateTime.parse(dateTimeString, dateFormatter)
+    val dateTime = ZonedDateTime.from(dateFormatter.parse(dateTimeString))
 
     //WARNING: Assuming this is a single band GeoTiff
     val ProjectedRaster(Raster(tile, extent), crs) = geoTiff.projectedRaster
