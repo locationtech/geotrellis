@@ -7,12 +7,10 @@ import geotrellis.spark.io.index._
 import geotrellis.spark.io.json._
 import geotrellis.util._
 
-import org.apache.avro.Schema
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
-import org.joda.time.DateTime
 import spray.json.JsonFormat
 
+import java.time.ZonedDateTime
 import scala.reflect.ClassTag
 
 object AccumuloLayerReindexer {
@@ -42,7 +40,7 @@ class AccumuloLayerReindexer(
 )(implicit sc: SparkContext) extends LayerReindexer[LayerId] {
 
   def getTmpId(id: LayerId): LayerId =
-    id.copy(name = s"${id.name}-${DateTime.now.getMillis}")
+    id.copy(name = s"${id.name}-${ZonedDateTime.now.toInstant.toEpochMilli}")
 
   def reindex[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,

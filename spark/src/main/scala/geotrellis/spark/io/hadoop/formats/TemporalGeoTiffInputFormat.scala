@@ -1,5 +1,7 @@
 package geotrellis.spark.io.hadoop.formats
 
+import java.time.format.DateTimeFormatter
+
 import geotrellis.spark.TemporalProjectedExtent
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.ingest._
@@ -8,8 +10,8 @@ import geotrellis.raster.io.geotiff._
 import geotrellis.vector._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce._
-import org.joda.time._
-import org.joda.time.format._
+
+import java.time.ZonedDateTime
 
 object TemporalGeoTiffInputFormat {
   final val GEOTIFF_TIME_TAG = "GEOTIFF_TIME_TAG"
@@ -34,8 +36,8 @@ object TemporalGeoTiffInputFormat {
 
   def getTimeFormatter(job: JobContext): DateTimeFormatter = {
     val df = job.getConfiguration.get(GEOTIFF_TIME_FORMAT)
-    if(df == null) { DateTimeFormat.forPattern(GEOTIFF_TIME_FORMAT_DEFAULT) }
-    else { DateTimeFormat.forPattern(df) }
+    if(df == null) { DateTimeFormatter.ofPattern(GEOTIFF_TIME_FORMAT_DEFAULT) }
+    else { DateTimeFormatter.ofPattern(df) }
   }
 }
 
@@ -53,7 +55,7 @@ class TemporalGeoTiffInputFormat extends BinaryFileInputFormat[TemporalProjected
     val dateFormatter = TemporalGeoTiffInputFormat.getTimeFormatter(context)
 
     val dateTimeString = geoTiff.tags.headTags.getOrElse(timeTag, sys.error(s"There is no tag $timeTag in the GeoTiff header"))
-    val dateTime = DateTime.parse(dateTimeString, dateFormatter)
+    val dateTime = ZonedDateTime.parse(dateTimeString, dateFormatter)
 
     val ProjectedRaster(Raster(tile, extent), crs) = geoTiff.projectedRaster
     (TemporalProjectedExtent(extent, crs, dateTime), tile)

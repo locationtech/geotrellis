@@ -26,8 +26,7 @@ before_script:
   - .travis/hbase-install.sh
 
 jdk:
-  - openjdk7
-  - oraclejdk7
+  - openjdk8
   - oraclejdk8
 
 scala:
