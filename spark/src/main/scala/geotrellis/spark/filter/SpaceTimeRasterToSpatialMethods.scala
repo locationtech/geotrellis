@@ -28,7 +28,7 @@ abstract class SpaceTimeToSpatialMethods[
   M[_]
 ](
   implicit comp: Component[M[K], Bounds[K]],
-  mFunctor: Functor[M, K]
+       mFunctor: M[K] => Functor[M, K]
 ) extends MethodExtensions[RDD[(K, V)] with Metadata[M[K]]] {
   def toSpatial(instant: Long): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] =
     ToSpatial(self, instant)

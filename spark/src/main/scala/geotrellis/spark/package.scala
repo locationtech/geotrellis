@@ -61,13 +61,12 @@ package object spark
       new ContextRDD(rdd, metadata)
   }
 
-  implicit def TlmFunctor[A] = new Functor[TileLayerMetadata, A] {
-    def map[B](tlm: TileLayerMetadata[A])(f: A => B): TileLayerMetadata[B] = {
-      tlm.copy(bounds = KeyBounds(
-        f(tlm.bounds.get.minKey),
-        f(tlm.bounds.get.maxKey)
-      ))
-    }
+  implicit class TileLayerMetadataFunctor[A](val self: TileLayerMetadata[A]) extends Functor[TileLayerMetadata, A] {
+    def map[B](f: A => B): TileLayerMetadata[B] =
+      self.bounds match {
+        case KeyBounds(minKey, maxKey) => self.copy(bounds = KeyBounds(f(minKey), f(maxKey)))
+        case EmptyBounds => self.copy(bounds = EmptyBounds)
+      }
   }
 
   type TileLayerCollection[K] = Seq[(K, Tile)] with Metadata[TileLayerMetadata[K]]

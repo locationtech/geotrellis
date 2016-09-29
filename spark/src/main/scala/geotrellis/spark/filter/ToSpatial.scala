@@ -15,7 +15,7 @@ object ToSpatial {
     instant: Long
   )(
     implicit comp: Component[M[K], Bounds[K]],
-    mFunctor: Functor[M, K]
+         mFunctor: M[K] => Functor[M, K]
   ): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] = {
 
     rdd.metadata.getComponent[Bounds[K]] match {
@@ -25,8 +25,7 @@ object ToSpatial {
 
         if(instant < minInstant || maxInstant < instant) {
           val md = rdd.metadata.setComponent[Bounds[K]](EmptyBounds)
-
-          ContextRDD(rdd.sparkContext.parallelize(Seq()), mFunctor(md)(_.getComponent[SpatialKey]))
+          ContextRDD(rdd.sparkContext.parallelize(Seq()), md.map(_.getComponent[SpatialKey]))
         } else {
           val filteredRdd =
             rdd
@@ -45,12 +44,12 @@ object ToSpatial {
 
           val md = rdd.metadata.setComponent[Bounds[K]](newBounds)
 
-          ContextRDD(filteredRdd, mFunctor(md)(_.getComponent[SpatialKey]))
+          ContextRDD(filteredRdd, md.map(_.getComponent[SpatialKey]))
         }
       case EmptyBounds =>
         ContextRDD(
           rdd.sparkContext.parallelize(Seq()),
-          mFunctor(rdd.metadata)(_.getComponent[SpatialKey])
+          rdd.metadata.map(_.getComponent[SpatialKey])
         )
     }
   }
