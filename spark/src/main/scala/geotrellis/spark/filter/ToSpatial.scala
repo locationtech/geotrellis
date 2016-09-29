@@ -7,15 +7,12 @@ import org.apache.spark.rdd._
 
 object ToSpatial {
   def apply[
-    K: SpatialComponent: TemporalComponent,
+    K: SpatialComponent: TemporalComponent: λ[α => M[α] => Functor[M, α]]: λ[α => Component[M[α], Bounds[α]]],
     V,
     M[_]
   ](
     rdd: RDD[(K, V)] with Metadata[M[K]],
     instant: Long
-  )(
-    implicit comp: Component[M[K], Bounds[K]],
-         mFunctor: M[K] => Functor[M, K]
   ): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] = {
 
     rdd.metadata.getComponent[Bounds[K]] match {

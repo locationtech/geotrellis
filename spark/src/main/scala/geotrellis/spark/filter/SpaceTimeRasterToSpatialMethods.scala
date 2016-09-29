@@ -23,13 +23,10 @@ import org.apache.spark.rdd._
 import org.joda.time.DateTime
 
 abstract class SpaceTimeToSpatialMethods[
-  K: SpatialComponent: TemporalComponent,
+  K: SpatialComponent: TemporalComponent: λ[α => M[α] => Functor[M, α]]: λ[α => Component[M[α], Bounds[α]]],
   V,
   M[_]
-](
-  implicit comp: Component[M[K], Bounds[K]],
-       mFunctor: M[K] => Functor[M, K]
-) extends MethodExtensions[RDD[(K, V)] with Metadata[M[K]]] {
+] extends MethodExtensions[RDD[(K, V)] with Metadata[M[K]]] {
   def toSpatial(instant: Long): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] =
     ToSpatial(self, instant)
 
