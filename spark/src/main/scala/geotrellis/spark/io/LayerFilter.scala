@@ -5,14 +5,12 @@ import geotrellis.raster.{GridBounds, RasterExtent, PixelIsArea}
 import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.spark._
 import geotrellis.spark.tiling._
-import geotrellis.vector.{Extent, Point, MultiPolygon}
+import geotrellis.vector.{Extent, Point, MultiPolygon, Polygon}
 import geotrellis.util._
 
 import com.github.nscala_time.time.Imports._
 
 import scala.annotation.implicitNotFound
-import scala.collection.mutable
-
 
 @implicitNotFound("Unable to filter ${K} by ${F} given ${M}, Please provide LayerFilter[${K}, ${F}, ${T}, ${M}]")
 trait LayerFilter[K, F, T, M] {
@@ -119,8 +117,8 @@ object Intersects {
     }
   }
 
-  /** Define Intersects filter for Polygon */
-  implicit def forPolygon[K: SpatialComponent: Boundable, M: GetComponent[?, LayoutDefinition]] =
+  /** Define Intersects filter for MultiPolygon */
+  implicit def forMultiPolygon[K: SpatialComponent: Boundable, M: GetComponent[?, LayoutDefinition]] =
     new LayerFilter[K, Intersects.type, MultiPolygon, M] {
       def apply(metadata: M, kb: KeyBounds[K], polygon: MultiPolygon) = {
         val mapTransform = metadata.getComponent[LayoutDefinition].mapTransform
@@ -167,6 +165,13 @@ object Intersects {
           })
           .reduce({ (x,y) => x ++ y })
       }
+    }
+
+  /** Define Intersects filter for Polygon */
+  implicit def forPolygon[K: SpatialComponent: Boundable, M: GetComponent[?, LayoutDefinition]] =
+    new LayerFilter[K, Intersects.type, Polygon, M] {
+      def apply(metadata: M, kb: KeyBounds[K], polygon: Polygon) =
+        forMultiPolygon[K, M].apply(metadata, kb, MultiPolygon(polygon))
     }
 }
 
