@@ -1,6 +1,5 @@
 package geotrellis.spark.filter
 
-import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.util._
 
@@ -10,15 +9,24 @@ object ToSpatial {
   def apply[
     K: SpatialComponent: TemporalComponent,
     V,
-    M: Component[?, Bounds[K]]
-  ](rdd: RDD[(K, V)] with Metadata[M], instant: Long): RDD[(SpatialKey, V)] with Metadata[M] = {
+    M[_]
+  ](
+    rdd: RDD[(K, V)] with Metadata[M[K]],
+    instant: Long
+  )(
+    implicit comp: Component[M[K], Bounds[K]],
+    mFunctor: GeoFunctor[M, K, SpatialKey]
+  ): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] = {
+
     rdd.metadata.getComponent[Bounds[K]] match {
       case KeyBounds(minKey, maxKey) =>
         val minInstant = minKey.getComponent[TemporalKey].instant
         val maxInstant = maxKey.getComponent[TemporalKey].instant
+
         if(instant < minInstant || maxInstant < instant) {
           val md = rdd.metadata.setComponent[Bounds[K]](EmptyBounds)
-          ContextRDD(rdd.sparkContext.parallelize(Seq()), md)
+
+          ContextRDD(rdd.sparkContext.parallelize(Seq()), mFunctor(md)(_.getComponent[SpatialKey]))
         } else {
           val filteredRdd =
             rdd
@@ -37,10 +45,13 @@ object ToSpatial {
 
           val md = rdd.metadata.setComponent[Bounds[K]](newBounds)
 
-          ContextRDD(filteredRdd, md)
+          ContextRDD(filteredRdd, mFunctor(md)(_.getComponent[SpatialKey]))
         }
       case EmptyBounds =>
-        ContextRDD(rdd.sparkContext.parallelize(Seq()), rdd.metadata)
+        ContextRDD(
+          rdd.sparkContext.parallelize(Seq()),
+          mFunctor(rdd.metadata)(_.getComponent[SpatialKey])
+        )
     }
   }
 }

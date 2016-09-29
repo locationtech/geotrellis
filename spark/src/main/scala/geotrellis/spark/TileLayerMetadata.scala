@@ -16,7 +16,7 @@ import org.apache.spark.rdd._
  * @param extent      Extent covering the source data
  * @param crs         CRS of the raster projection
  */
-case class TileLayerMetadata[K: SpatialComponent](
+case class TileLayerMetadata[K](
   cellType: CellType,
   layout: LayoutDefinition,
   extent: Extent,
@@ -50,16 +50,22 @@ case class TileLayerMetadata[K: SpatialComponent](
       )
   }
 
-  def updateBounds(newBounds: Bounds[K]): TileLayerMetadata[K] =
+  def updateBounds(
+    newBounds: Bounds[K]
+  )(implicit thing: Component[K, SpatialKey]): TileLayerMetadata[K] =
     newBounds match {
-      case kb: KeyBounds[K] =>
-        val kbExtent = mapTransform(kb.toGridBounds)
+      case kb: KeyBounds[K] => {
+        val SpatialKey(minCol, minRow) = kb.minKey.getComponent[SpatialKey]
+        val SpatialKey(maxCol, maxRow) = kb.maxKey.getComponent[SpatialKey]
+        val kbExtent = mapTransform(GridBounds(minCol, minRow, maxCol, maxRow))
+
         kbExtent.intersection(extent) match {
           case Some(e) =>
             copy(bounds = newBounds, extent = e)
           case None =>
             copy(bounds = newBounds, extent = Extent(extent.xmin, extent.ymin, extent.xmin, extent.ymin))
         }
+      }
       case EmptyBounds =>
         copy(bounds = newBounds, extent = Extent(extent.xmin, extent.ymin, extent.xmin, extent.ymin))
     }

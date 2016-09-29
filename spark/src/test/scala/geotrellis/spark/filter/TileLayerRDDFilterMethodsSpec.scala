@@ -20,6 +20,7 @@ import geotrellis.proj4.LatLng
 import geotrellis.raster.{GridBounds, TileLayout, FloatConstantNoDataCellType}
 import geotrellis.raster.io.geotiff.SinglebandGeoTiff
 import geotrellis.spark._
+import geotrellis.spark.filter.Functors._
 import geotrellis.spark.io._
 import geotrellis.spark.tiling._
 import geotrellis.vector._

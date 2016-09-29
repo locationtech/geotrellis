@@ -18,7 +18,9 @@ trait Implicits {
   implicit class withSpaceTimeToSpatialMethods[
     K: SpatialComponent: TemporalComponent,
     V,
-    M: Component[?, Bounds[K]]
-  ](val self: RDD[(K, V)] with Metadata[M])
-      extends SpaceTimeToSpatialMethods[K, V, M]
+    M[_]
+  ](val self: RDD[(K, V)] with Metadata[M[K]])(
+    implicit comp: Component[M[K], Bounds[K]],
+    mFunctor: GeoFunctor[M, K, SpatialKey]
+  ) extends SpaceTimeToSpatialMethods[K, V, M]
 }
