@@ -15,7 +15,6 @@ libraryDependencies ++= Seq(
   "javax.media" % "jai_core" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar"
 )
 
-
 resolvers ++= Seq(
   "geosolutions" at "http://maven.geo-solutions.it/",
   "osgeo" at "http://download.osgeo.org/webdav/geotools/"

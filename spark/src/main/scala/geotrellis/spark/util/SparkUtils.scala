@@ -15,14 +15,14 @@
  */
 
 package geotrellis.spark.util
+
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.hadoop.conf.Configuration
-import org.apache.spark.Logging
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
-
 import java.io.File
 
-object SparkUtils extends Logging {
+object SparkUtils extends LazyLogging {
   def createSparkConf = new SparkConf()
 
   private val gtHomeLock = new Object()
@@ -103,13 +103,13 @@ object SparkUtils extends Logging {
     val matches = findJar(new File(gtHome)).flatten
     if (matches.length == 1) {
       val firstMatch = matches(0).getAbsolutePath
-      logInfo(s"Found unique match for geotrellis-spark jar: ${firstMatch}")
+      logger.info(s"Found unique match for geotrellis-spark jar: ${firstMatch}")
       Some(firstMatch)
     } else if (matches.length > 1) {
-      logInfo(s"Found ${matches.length} matches for geotrellis-spark jar: ")
-      logInfo("{" + matches.mkString(",") + "}")
+      logger.info(s"Found ${matches.length} matches for geotrellis-spark jar: ")
+      logger.info("{" + matches.mkString(",") + "}")
       val firstMatch = prefix(matches(0).getAbsolutePath)
-      logInfo("Using first match: " + firstMatch)
+      logger.info("Using first match: " + firstMatch)
       Some(firstMatch)
     } else {
       None

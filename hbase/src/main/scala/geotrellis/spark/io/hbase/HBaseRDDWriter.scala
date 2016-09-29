@@ -25,12 +25,14 @@ object HBaseRDDWriter {
 
     val codec = KeyValueRecordCodec[K, V]
 
-    //create the attribute table if it does not exist
-    if (!instance.getAdmin.tableExists(table)) {
-      val tableDesc = new HTableDescriptor(table: TableName)
-      val idsColumnFamilyDesc = new HColumnDescriptor(tilesCF)
-      tableDesc.addFamily(idsColumnFamilyDesc)
-      instance.getAdmin.createTable(tableDesc)
+    // create tile table if it does not exist
+    instance.withAdminDo { admin =>
+      if (!admin.tableExists(table)) {
+        val tableDesc = new HTableDescriptor(table: TableName)
+        val idsColumnFamilyDesc = new HColumnDescriptor(tilesCF)
+        tableDesc.addFamily(idsColumnFamilyDesc)
+        admin.createTable(tableDesc)
+      }
     }
 
     // Call groupBy with numPartitions; if called without that argument or a partitioner,
