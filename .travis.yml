@@ -59,7 +59,7 @@ deploy:
     on:
       repo: geotrellis/geotrellis
       branch: master
-      jdk: oraclejdk7
+      jdk: oraclejdk8
       scala: "2.11.8"
 
 after_deploy:
