@@ -16,7 +16,6 @@
 
 package geotrellis.spark.filter
 
-import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.util._
 
@@ -29,7 +28,7 @@ abstract class SpaceTimeToSpatialMethods[
   M[_]
 ](
   implicit comp: Component[M[K], Bounds[K]],
-  mFunctor: GeoFunctor[M, K, SpatialKey]
+  mFunctor: Functor[M, K]
 ) extends MethodExtensions[RDD[(K, V)] with Metadata[M[K]]] {
   def toSpatial(instant: Long): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] =
     ToSpatial(self, instant)

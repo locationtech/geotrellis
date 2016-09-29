@@ -31,7 +31,6 @@ import monocle._
 import monocle.syntax._
 
 import scala.reflect.ClassTag
-import scalaz.Functor
 
 package object spark
     extends buffer.Implicits
@@ -60,6 +59,15 @@ package object spark
   object TileLayerRDD {
     def apply[K](rdd: RDD[(K, Tile)], metadata: TileLayerMetadata[K]): TileLayerRDD[K] =
       new ContextRDD(rdd, metadata)
+  }
+
+  implicit def TlmFunctor[A] = new Functor[TileLayerMetadata, A] {
+    def map[B](tlm: TileLayerMetadata[A])(f: A => B): TileLayerMetadata[B] = {
+      tlm.copy(bounds = KeyBounds(
+        f(tlm.bounds.get.minKey),
+        f(tlm.bounds.get.maxKey)
+      ))
+    }
   }
 
   type TileLayerCollection[K] = Seq[(K, Tile)] with Metadata[TileLayerMetadata[K]]
@@ -164,5 +172,6 @@ package object spark
         (implicit ev: K1 => TilerKeyMethods[K1, K2], ev1: GetComponent[K1, ProjectedExtent]): TileLayerMetadata[K2] = {
       TileLayerMetadata.fromRdd[K1, V, K2](rdd, layout)
     }
- }
+  }
+
 }

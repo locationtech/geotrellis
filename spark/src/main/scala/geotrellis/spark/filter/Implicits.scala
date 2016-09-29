@@ -21,6 +21,6 @@ trait Implicits {
     M[_]
   ](val self: RDD[(K, V)] with Metadata[M[K]])(
     implicit comp: Component[M[K], Bounds[K]],
-    mFunctor: GeoFunctor[M, K, SpatialKey]
+    mFunctor: Functor[M, K]
   ) extends SpaceTimeToSpatialMethods[K, V, M]
 }

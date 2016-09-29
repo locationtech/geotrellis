@@ -15,7 +15,7 @@ object ToSpatial {
     instant: Long
   )(
     implicit comp: Component[M[K], Bounds[K]],
-    mFunctor: GeoFunctor[M, K, SpatialKey]
+    mFunctor: Functor[M, K]
   ): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] = {
 
     rdd.metadata.getComponent[Bounds[K]] match {
