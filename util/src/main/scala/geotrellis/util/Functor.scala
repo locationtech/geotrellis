@@ -7,10 +7,7 @@ package geotrellis.util
   * on it, for instance a `SpatialComponent` that might be
   * required on `A` within the [[map]] function.
   */
-trait Functor[F[_], A] {
-
+trait FunctorExtensions[F[_], A] extends MethodExtensions[F[A]]{
   /** Lift `f` into `F` and apply to `F[A]`. */
-  def map[B](fa: F[A])(f: A => B): F[B]
-
-  def apply[B](fa: F[A])(f: A => B): F[B] = map(fa)(f)
+  def map[B](f: A => B): F[B]
 }
