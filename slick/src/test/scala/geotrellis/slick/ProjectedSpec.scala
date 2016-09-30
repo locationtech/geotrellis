@@ -45,7 +45,7 @@ class ProjectedSpec extends FlatSpec with Matchers with TestDatabase with ScalaF
     try { db.run(CityTable.schema.drop).futureValue } catch { case e: Throwable =>  }
     db.run(CityTable.schema.create).futureValue
 
-    db.run(CityTable += (0, "Megacity 1", Projected(Point(1,1), 43211))).futureValue
+    db.run(CityTable.map(c => (c.name, c.geom)) += ("Megacity 1", Projected(Point(1,1), 43211))).futureValue
 
     db.run(CityTable.schema.drop).futureValue
   }
@@ -62,11 +62,11 @@ class ProjectedSpec extends FlatSpec with Matchers with TestDatabase with ScalaF
     try { db.run(LineTable.schema.drop).futureValue } catch { case e: Throwable =>  }
     db.run(LineTable.schema.create).futureValue
 
-    db.run(LineTable += (0, Projected(Line(Point(1,1), Point(1,3)), 3131))).futureValue
+    db.run(LineTable.map(_.geom) += Projected(Line(Point(1,1), Point(1,3)), 3131)).futureValue
 
     val q = for {
       line <- LineTable
-    } yield (line.geom.length)
+    } yield line.geom.length
 
     db.run(q.result).futureValue.toList.head should equal (2.0)
   }
@@ -82,7 +82,7 @@ class ProjectedSpec extends FlatSpec with Matchers with TestDatabase with ScalaF
     try { db.run(MPTable.schema.drop).futureValue } catch { case e: Throwable =>  }
     db.run(MPTable.schema.create).futureValue
 
-    db.run(MPTable += (0, Projected(MultiPoint(Point(1,1), Point(2,2)), 3131))).futureValue
+    db.run(MPTable.map(_.geom) += Projected(MultiPoint(Point(1,1), Point(2,2)), 3131)).futureValue
 
     val q = for {
       mp <- MPTable
