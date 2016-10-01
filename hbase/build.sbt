@@ -6,7 +6,7 @@ libraryDependencies ++= Seq(
   "org.apache.hbase" % "hbase-client" % Version.hbase exclude("javax.servlet", "servlet-api"),
   "org.apache.hbase" % "hbase-server" % Version.hbase exclude ("org.mortbay.jetty", "servlet-api-2.5"),
   "org.apache.hbase" % "hbase-hadoop-compat" % Version.hbase exclude("javax.servlet", "servlet-api"),
-  "org.codehaus.jackson"  % "jackson-core-asl" % "1.8.3",
+  "org.codehaus.jackson"  % "jackson-core-asl" % "1.9.13",
   "org.apache.spark" %% "spark-core" % Version.spark % "provided",
   spire,
   scalatest % "test")

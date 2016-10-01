@@ -7,7 +7,6 @@ import geotrellis.spark.io._
 import org.apache.hadoop.hbase._
 import org.apache.hadoop.hbase.client._
 import org.apache.hadoop.hbase.util.Bytes
-import org.apache.spark.Logging
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
@@ -20,7 +19,7 @@ object HBaseAttributeStore {
     new HBaseAttributeStore(instance, attributeTable)
 }
 
-class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: String) extends DiscreteLayerAttributeStore with Logging {
+class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: String) extends DiscreteLayerAttributeStore {
 
   private val attributeTableName: TableName = attributeTable
 

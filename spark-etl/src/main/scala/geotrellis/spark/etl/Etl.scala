@@ -17,8 +17,7 @@ import geotrellis.spark.etl.config._
 
 import org.apache.spark._
 import org.apache.spark.rdd.RDD
-import org.slf4j.LoggerFactory
-import com.typesafe.scalalogging.slf4j.Logger
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.reflect._
 import scala.reflect.runtime.universe._
@@ -49,9 +48,7 @@ object Etl {
   }
 }
 
-case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.defaultModules) {
-
-  @transient lazy val logger: Logger = Logger(LoggerFactory getLogger getClass.getName)
+case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.defaultModules) extends LazyLogging {
   val input  = conf.input
   val output = conf.output
 
