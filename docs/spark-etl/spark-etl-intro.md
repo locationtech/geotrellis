@@ -264,6 +264,12 @@ timeFormat         | time format to parse time stored in time tag geotiff tag (o
   "name": "test",
   "cache": "NONE",
   "noData": 0.0,
+  "clip": {
+    "xmin":1.0,
+    "ymin":2.0,
+    "xmax":3.0,
+    "ymax":4.0
+  },
   "backend": {
     "type": "hadoop",
     "path": "input"
@@ -277,6 +283,7 @@ format           | Format of the tile files to be read (ex: geotiff)
 name             | Input dataset name
 cache            | Spark RDD cache strategy
 noData           | NoData value
+clip             | Extent in target CRS to clip the input source
 
 ###### Supported Formats
 
