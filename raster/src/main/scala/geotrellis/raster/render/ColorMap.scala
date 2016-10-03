@@ -19,7 +19,7 @@ package geotrellis.raster.render
 import geotrellis.raster._
 import geotrellis.raster.histogram.Histogram
 
-import scala.collection.mutable
+import scala.collection.concurrent.TrieMap
 import scala.util.Try
 
 /** Root element in hierarchy for specifying the type of boundary when classifying colors*/
@@ -205,6 +205,7 @@ class IntColorMap(breaksToColors: Map[Int, Int], val options: Options = Options.
     }
 
   private lazy val orderedColors: Vector[Int] = orderedBreaks.map(breaksToColors(_))
+
   lazy val colors = orderedColors
 
   private val zCheck: (Int, Int) => Boolean =
@@ -223,24 +224,34 @@ class IntColorMap(breaksToColors: Map[Int, Int], val options: Options = Options.
 
   private val len = orderedBreaks.length
 
-  def map(z: Int) = {
-    if(isNoData(z)) { options.noDataColor }
-    else {
-      var i = 0
-      while(i < len && zCheck(z, i)) { i += 1 }
-      if(i == len){
-        if(options.strict) {
-          sys.error(s"Value $z did not have an associated color and break")
-        } else {
-          options.fallbackColor
-        }
+  /* Maps raster pixel values to their ramp colour */
+  private val colourCache = new TrieMap[Int, Int]
+
+  /* Memoize the proper ramp value if yet unknown */
+  def map(z: Int): Int = {
+    colourCache.getOrElseUpdate(z, {
+      // It's wasteful to repeat this `isNoData` check.
+      if(isNoData(z)) {
+        options.noDataColor
       } else {
-        orderedColors(i)
+        var i = 0
+
+        while(i < len && zCheck(z, i)) { i += 1 }
+
+        if(i == len) {
+          if(options.strict) {
+            sys.error(s"Value $z did not have an associated color and break")
+          } else {
+            options.fallbackColor
+          }
+        } else {
+          orderedColors(i)  /* Vector.apply is O(1) */
+        }
       }
-    }
+    })
   }
 
-  def mapDouble(z: Double) =
+  def mapDouble(z: Double): Int =
     map(d2i(z))
 
   def mapColors(f: Int => Int): ColorMap =
@@ -346,9 +357,9 @@ class DoubleColorMap(breaksToColors: Map[Double, Int], val options: Options = Op
 
   private val len = orderedBreaks.length
 
-  def map(z: Int) = { mapDouble(i2d(z)) }
+  def map(z: Int): Int = { mapDouble(i2d(z)) }
 
-  def mapDouble(z: Double) = {
+  def mapDouble(z: Double): Int = {
     if(isNoData(z)) { options.noDataColor }
     else {
       var i = 0
