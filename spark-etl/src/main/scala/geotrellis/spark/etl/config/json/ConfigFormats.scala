@@ -5,6 +5,7 @@ import geotrellis.raster.{CellSize, CellType}
 import geotrellis.raster.resample._
 import geotrellis.spark.etl.config._
 import geotrellis.vector.Extent
+
 import org.apache.spark.storage.StorageLevel
 import spray.json._
 import spray.json.DefaultJsonProtocol._
@@ -197,7 +198,8 @@ trait ConfigFormats {
       "format"  -> i.format.toJson,
       "backend" -> bf.write(i.backend),
       "cache"   -> i.cache.toJson,
-      "noData"  -> i.noData.toJson
+      "noData"  -> i.noData.toJson,
+      "clip"    -> i.clip.toJson
     )
     def read(value: JsValue): Input =
       value match {
@@ -207,7 +209,8 @@ trait ConfigFormats {
             format  = fields("format").convertTo[String],
             backend = bf.read(fields("backend")),
             cache   = fields.get("cache").map(_.convertTo[StorageLevel]),
-            noData  = fields.get("noData").map(_.convertTo[Double])
+            noData  = fields.get("noData").map(_.convertTo[Double]),
+            clip    = fields.get("clip").map(_.convertTo[Extent])
           )
         case _ =>
           throw new DeserializationException("Input must be a valid json object.")
