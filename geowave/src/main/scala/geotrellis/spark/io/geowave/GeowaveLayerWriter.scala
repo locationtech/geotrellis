@@ -46,7 +46,6 @@ import javax.imageio.ImageIO
 import javax.media.jai.{ ImageLayout, JAI }
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
-import scala.math.{ abs, pow, round }
 import scala.reflect._
 
 import resource._
@@ -54,19 +53,6 @@ import spray.json._
 
 
 object GeowaveLayerWriter extends LazyLogging {
-
-  /**
-    * If an edge or corner of an extent is very close to a split in
-    * the GeoWave index (for some given number of bits), then it
-    * should be snapped to the split to avoid pathological behavior).
-    */
-  private def _rectify(bits: Int)(_x: Double) = {
-    val division = if (bits > 0) pow(2, -bits + 1) ; else 1
-    val x = (_x / 180.0) / division
-    val xPrime = round(x)
-
-    180 * division * (if (abs(x - xPrime) < 0.000001) xPrime ; else x)
-  }
 
   def write[
     K <: SpatialKey: ClassTag,
@@ -87,11 +73,11 @@ object GeowaveLayerWriter extends LazyLogging {
     val specimen = rdd.first
 
     /* Construct (Multiband|)Tile to GridCoverage2D conversion function */
-    val rectify = _rectify(bits)_
+    val rectify = GeowaveUtil.rectify(bits)_
     val geotrellisKvToGeotools: ((K, V)) => GridCoverage2D = {
       case (k: SpatialKey, _tile: V) =>
         val Extent(minX, minY, maxX, maxY) = mt(k.asInstanceOf[SpatialKey]).reproject(crs, LatLng)
-        val extent = Extent(rectify(minX), minY, rectify(maxX), maxY)
+        val extent = Extent(rectify(minX), rectify(minY), rectify(maxX), rectify(maxY))
 
         _tile match {
           case tile: Tile =>
@@ -250,10 +236,10 @@ class GeowaveLayerWriter(
     K <: SpatialKey: ClassTag,
     V: TileOrMultibandTile: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
-  ](id: LayerId, layer: RDD[(K, V)] with Metadata[M]): Unit =
+  ](id: LayerId, layer: RDD[(K, V)] with Metadata[M], bits: Int = 0): Unit =
     layer.metadata.getComponent[Bounds[K]] match {
       case keyBounds: KeyBounds[K] =>
-        _write[K, V, M](id, layer)
+        _write[K, V, M](id, layer, bits)
       case EmptyBounds =>
         throw new EmptyBoundsError("Cannot write layer with empty bounds.")
     }
@@ -264,15 +250,25 @@ class GeowaveLayerWriter(
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](
     layerId: LayerId,
-    rdd: RDD[(K, V)] with Metadata[M]
+    rdd: RDD[(K, V)] with Metadata[M],
+    bits: Int
   ): Unit = {
-    val LayerId(coverageName, bits) = layerId
+    val LayerId(coverageName, tier) = layerId
     val specimen = rdd.first
 
-    if (bits == 0)
+    if (tier != 0)
+      logger.warn(s"GeoWave has its own notion of levels/tiering, so $tier in $layerId will be ignored")
+
+    if (bits <= 0)
       logger.warn("It is highly recommended that you specify a bit precision when writing into GeoWave")
 
-    GeowaveLayerWriter.write(coverageName, bits, rdd, attributeStore, accumuloWriter)
+    GeowaveLayerWriter.write(
+      coverageName,
+      (if (bits <= 0) 0; else bits),
+      rdd,
+      attributeStore,
+      accumuloWriter
+    )
   }
 
 }

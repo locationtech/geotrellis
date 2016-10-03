@@ -8,7 +8,6 @@ import geotrellis.spark.util.KryoWrapper
 import geotrellis.vector._
 import geotrellis.geotools._
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
 import org.apache.avro.Schema
 import org.apache.hadoop.io._
 import org.apache.hadoop.fs.Path
