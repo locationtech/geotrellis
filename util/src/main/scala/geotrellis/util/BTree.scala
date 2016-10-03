@@ -6,15 +6,17 @@ package geotrellis.util
 case class BTree[T](value: T, left: Option[BTree[T]], right: Option[BTree[T]]) {
 
   /** A generalized binary search with a custom "target test" predicate. */
-  def searchWith[S](
-    other: S,
-    pred: (S, T, Option[BTree[T]], Option[BTree[T]]) => Ord
-  ): Option[T] = {
-    pred(other, value, left, right) match {
-      case EQ => Some(value)
-      case LT => left.flatMap(_.searchWith(other, pred))
-      case _  => right.flatMap(_.searchWith(other, pred))
+  def searchWith(pred: BTree[T] => Either[Option[BTree[T]], T]): Option[T] = {
+    pred(this) match {
+      case Left(child) => child.flatMap(_.searchWith(pred))
+      case Right(res)  => Some(res)
     }
+  }
+
+  def foreach(f: T => Unit): Unit = {
+    f(value)
+    left.foreach(b => f(b.value))
+    right.foreach(b => f(b.value))
   }
 }
 
