@@ -2,10 +2,12 @@ package geotrellis.util
 
 import org.scalatest._
 
-class BTreeSpec extends FunSpec with Matchers {
-  describe("Instantiation") {
-    val v: Vector[Int] = (1 to 7).toVector
+// --- //
 
+class BTreeSpec extends FunSpec with Matchers {
+  private val v: Vector[Int] = (1 to 7).toVector
+
+  describe("Instantiation") {
     it("should succeed on empty input") {
       BTree.fromSortedSeq(Vector.empty[Int]) shouldBe None
     }
@@ -36,6 +38,19 @@ class BTreeSpec extends FunSpec with Matchers {
 
     it("should produce a balanced tree") {
       BTree.fromSortedSeq(v).get.value shouldBe 4
+    }
+  }
+
+  describe("Binary Search") {
+    val b: BTree[Int] = BTree.fromSortedSeq(v).get
+
+    it("searchWith should find every value in a normal BTree") {
+
+
+    }
+
+    it("searchWith should not find something not in a BTree") {
+
     }
   }
 }
