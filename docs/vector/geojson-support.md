@@ -37,7 +37,7 @@ Map(
 ```
 
 1. First, parse a string as a bit of json. For this (`parseGeoJson`)
-is an implicit method on String that is added when you `import geotrellis.vector._`. `parseGeoJson` takes
+is an implicit method on String that is added when you `import geotrellis.vector.io._`. `parseGeoJson` takes
 one type parameter. You'll use `geotrellis.vector.json.JsonFeatureCollectionMap`
 in this case, since your geojson has IDs which you'll want to keep. This
 class represents IDs as keys to corresponding features.
