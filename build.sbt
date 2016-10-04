@@ -71,6 +71,7 @@ lazy val root = Project("geotrellis", file(".")).
     accumulo,
     cassandra,
     hbase,
+    parquet,
     geotools,
     slick,
     vectortile
@@ -148,6 +149,10 @@ lazy val cassandra = Project("cassandra", file("cassandra")).
   settings(commonSettings: _*)
 
 lazy val hbase = Project("hbase", file("hbase")).
+  dependsOn(sparkTestkit % "test->test", spark % "provided;test->test").
+  settings(commonSettings: _*)
+
+lazy val parquet = Project("parquet", file("parquet")).
   dependsOn(sparkTestkit % "test->test", spark % "provided;test->test").
   settings(commonSettings: _*)
 
