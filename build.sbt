@@ -83,6 +83,7 @@ lazy val root = Project("geotrellis", file(".")).
     hbase,
     geowave,
     geomesa,
+    parquet,
     geotools,
     slick,
     vectortile
@@ -171,6 +172,10 @@ lazy val hbase = Project("hbase", file("hbase")).
   dependsOn(sparkTestkit % "test->test", spark % "provided;test->test").
   settings(commonSettings: _*). // HBase depends on its own protobuf version
   settings(projectDependencies := { Seq((projectID in spark).value.exclude("com.google.protobuf", "protobuf-java")) })
+
+lazy val parquet = Project("parquet", file("parquet")).
+  dependsOn(sparkTestkit % "test->test", spark % "provided;test->test").
+  settings(commonSettings: _*)
 
 lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).
   dependsOn(spark, s3, accumulo, cassandra, hbase).
