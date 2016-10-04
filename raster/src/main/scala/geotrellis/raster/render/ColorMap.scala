@@ -343,39 +343,37 @@ class DoubleColorMap(breaksToColors: Map[Double, Int], val options: Options = Op
   lazy val colors = orderedColors
 
   /** Yield a btree search predicate function based on boundary type options. */
-  private def zCheck(
-    z: Double
-  ): BTree[(Double, Int)] => Either[Option[BTree[(Double, Int)]], (Double, Int)] = {
+  private val branchPred: (Double, BTree[(Double, Int)]) => Either[Option[BTree[(Double, Int)]], (Double, Int)] = {
     options.classBoundaryType match {
-      case LessThan => {
+      case LessThan => { (z, tree) => tree match {
         case BTree(v, None, _)    if z < v._1                    => Right(v)
         case BTree(v, Some(l), _) if z < v._1 && z >= l.value._1 => Right(v)
         case BTree(v, l, _)       if z < v._1                    => Left(l)
         case BTree(_, _, r)                                      => Left(r)
-      }
-      case LessThanOrEqualTo => {
+      }}
+      case LessThanOrEqualTo => { (z, tree) => tree match {
         case BTree(v, None, _)    if z <= v._1                   => Right(v)
         case BTree(v, Some(l), _) if z <= v._1 && z > l.value._1 => Right(v)
         case BTree(v, l, _)       if z < v._1                    => Left(l)
         case BTree(_, _, r)                                      => Left(r)
-      }
-      case Exact => { /* Vanilla Binary Search */
+      }}
+      case Exact => { (z, tree) => tree match { /* Vanilla Binary Search */
         case BTree(v, _, _) if z == v._1 => Right(v)
         case BTree(v, l, _) if z < v._1  => Left(l)
         case BTree(_, _, r)              => Left(r)
-      }
-      case GreaterThanOrEqualTo => {
+      }}
+      case GreaterThanOrEqualTo => { (z, tree) => tree match {
         case BTree(v, _, None)    if z >= v._1                   => Right(v)
         case BTree(v, _, Some(r)) if z >= v._1 && z < r.value._1 => Right(v)
         case BTree(v, l, _)       if z < v._1                    => Left(l)
         case BTree(_, _, r)                                      => Left(r)
-      }
-      case GreaterThan => {
+      }}
+      case GreaterThan => { (z, tree) => tree match {
         case BTree(v, _, None)    if z > v._1                    => Right(v)
         case BTree(v, _, Some(r)) if z > v._1 && z <= r.value._1 => Right(v)
         case BTree(v, l, _)       if z < v._1                    => Left(l)
         case BTree(_, _, r)                                      => Left(r)
-      }
+      }}
     }
   }
 
@@ -389,9 +387,8 @@ class DoubleColorMap(breaksToColors: Map[Double, Int], val options: Options = Op
     if(isNoData(z)) {
       options.noDataColor
     } else {
-      val pred = zCheck(z)
-
-      colourTree.searchWith(pred) match {
+      // TODO: CAN THIS CALL BE CURRIED?
+      colourTree.searchWith(z, branchPred) match {
         case Some((_, colour)) => colour
         case None if options.strict => sys.error(s"Value $z did not have an associated color and break")
         case _ => options.fallbackColor

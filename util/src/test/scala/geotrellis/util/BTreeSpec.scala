@@ -46,7 +46,7 @@ class BTreeSpec extends FunSpec with Matchers {
 
     it("searchWith should find every value in a normal BTree") {
       b.foreach({ v =>
-        val res = b.searchWith({ tree =>
+        val res = b.searchWith[Int](v, { (v, tree) =>
           if (v == tree.value) {
             Right(tree.value)
           } else if (v < tree.value) {
@@ -61,9 +61,9 @@ class BTreeSpec extends FunSpec with Matchers {
     }
 
     it("searchWith should not find something not in a BTree") {
-      val v = 97
+      val v: Int = 97
 
-      val res = b.searchWith({ tree =>
+      val res = b.searchWith[Int](v, { (v, tree) =>
         if (v == tree.value) {
           Right(tree.value)
         } else if (v < tree.value) {
