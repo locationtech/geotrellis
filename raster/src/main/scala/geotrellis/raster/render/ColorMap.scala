@@ -346,16 +346,16 @@ class DoubleColorMap(breaksToColors: Map[Double, Int], val options: Options = Op
   private val branchPred: (Double, BTree[(Double, Int)]) => Either[Option[BTree[(Double, Int)]], (Double, Int)] = {
     options.classBoundaryType match {
       case LessThan => { (z, tree) => tree match {
-        case BTree(v, None, _)    if z < v._1                    => Right(v)
-        case BTree(v, Some(l), _) if z < v._1 && z >= l.value._1 => Right(v)
-        case BTree(v, l, _)       if z < v._1                    => Left(l)
-        case BTree(_, _, r)                                      => Left(r)
+        case BTree(v, None, _)    if z < v._1                       => Right(v)
+        case BTree(v, Some(l), _) if z < v._1 && z >= l.greatest._1 => Right(v)
+        case BTree(v, l, _)       if z < v._1                       => Left(l)
+        case BTree(_, _, r)                                         => Left(r)
       }}
       case LessThanOrEqualTo => { (z, tree) => tree match {
-        case BTree(v, None, _)    if z <= v._1                   => Right(v)
-        case BTree(v, Some(l), _) if z <= v._1 && z > l.value._1 => Right(v)
-        case BTree(v, l, _)       if z < v._1                    => Left(l)
-        case BTree(_, _, r)                                      => Left(r)
+        case BTree(v, None, _)    if z <= v._1                      => Right(v)
+        case BTree(v, Some(l), _) if z <= v._1 && z > l.greatest._1 => Right(v)
+        case BTree(v, l, _)       if z < v._1                       => Left(l)
+        case BTree(_, _, r)                                         => Left(r)
       }}
       case Exact => { (z, tree) => tree match { /* Vanilla Binary Search */
         case BTree(v, _, _) if z == v._1 => Right(v)
@@ -363,16 +363,16 @@ class DoubleColorMap(breaksToColors: Map[Double, Int], val options: Options = Op
         case BTree(_, _, r)              => Left(r)
       }}
       case GreaterThanOrEqualTo => { (z, tree) => tree match {
-        case BTree(v, _, None)    if z >= v._1                   => Right(v)
-        case BTree(v, _, Some(r)) if z >= v._1 && z < r.value._1 => Right(v)
-        case BTree(v, l, _)       if z < v._1                    => Left(l)
-        case BTree(_, _, r)                                      => Left(r)
+        case BTree(v, _, None)    if z >= v._1                    => Right(v)
+        case BTree(v, _, Some(r)) if z >= v._1 && z < r.lowest._1 => Right(v)
+        case BTree(v, l, _)       if z < v._1                     => Left(l)
+        case BTree(_, _, r)                                       => Left(r)
       }}
       case GreaterThan => { (z, tree) => tree match {
-        case BTree(v, _, None)    if z > v._1                    => Right(v)
-        case BTree(v, _, Some(r)) if z > v._1 && z <= r.value._1 => Right(v)
-        case BTree(v, l, _)       if z < v._1                    => Left(l)
-        case BTree(_, _, r)                                      => Left(r)
+        case BTree(v, _, None)    if z > v._1                     => Right(v)
+        case BTree(v, _, Some(r)) if z > v._1 && z <= r.lowest._1 => Right(v)
+        case BTree(v, l, _)       if z <= v._1                    => Left(l) /* (<=) is correct here! */
+        case BTree(_, _, r)                                       => Left(r)
       }}
     }
   }
