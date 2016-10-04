@@ -37,12 +37,12 @@ Map(
 ```
 
 1. First, parse a string as a bit of json. For this (`parseGeoJson`)
-is an implicit method on String that is added when you `import geotrellis.vector._`. `parseGeoJson` takes
-one type parameter. You'll use `geotrellis.vector.json.JsonFeatureCollectionMap`
+is an implicit method on String that is added when you `import geotrellis.vector.io._`. `parseGeoJson` takes
+one type parameter. You'll use `geotrellis.vector.io.json.JsonFeatureCollectionMap`
 in this case, since your geojson has IDs which you'll want to keep. This
 class represents IDs as keys to corresponding features.
 ```Scala
-val jsonFeatureMapping = jsonString.parseGeoJson[geotrellis.vector.json.JsonFeatureCollectionMap]
+val jsonFeatureMapping = jsonString.parseGeoJson[geotrellis.vector.io.json.JsonFeatureCollectionMap]
 ```
 
 2. Once the string (which must be valid geojson!) is parsed, it is
