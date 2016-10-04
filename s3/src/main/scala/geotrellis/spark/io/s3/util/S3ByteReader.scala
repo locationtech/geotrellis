@@ -4,20 +4,21 @@ import geotrellis.util._
 import geotrellis.spark.io.s3._
 import com.amazonaws.services.s3.model._
 
+import spire.syntax.cfor._
+
 import java.nio.{ByteOrder, ByteBuffer, Buffer}
-import scala.language.implicitConversions
 
 class S3BytesByteReader(
   val request: GetObjectRequest,
   val client: AmazonS3Client)
-  extends S3Bytes {
+  extends S3StreamBytes with ByteReader {
 
   private var chunk = getMappedArray
   private def offset = chunk.head._1
   private def array = chunk.head._2
-  private def length = array.length
+  def length = array.length
 
-  private var byteBuffer = getByteBuffer
+  var byteBuffer = getByteBuffer
 
   private val byteOrder: ByteOrder = {
     val order =
@@ -30,82 +31,101 @@ class S3BytesByteReader(
     order
   }
 
-  def position = (offset + byteBuffer.position).toInt
+  final def position = (offset + byteBuffer.position).toInt
 
-  def position(newPoint: Int): Buffer = {
+  final def position(newPoint: Int): Buffer = {
     if (isContained(newPoint)) {
       byteBuffer.position(newPoint)
     } else {
       chunk = getMappedArray(newPoint)
-      byteBuffer = getByteBuffer
+      byteBuffer = getByteBuffer(chunk.head._2)
       byteBuffer.position(0)
     }
   }
 
-  def get: Byte = {
+  final def get: Byte = {
     if (!(byteBuffer.position + 1 <= byteBuffer.capacity)) {
       chunk = getMappedArray(position + 1)
-      byteBuffer = getByteBuffer
+      byteBuffer = getByteBuffer(chunk.head._2)
     }
     byteBuffer.get
   }
+
+  private def fillArray: Array[Byte] = {
+    val arr = Array.ofDim[Byte](byteBuffer.remaining)
+    cfor(0)(_ < byteBuffer.remaining, _ + 1) { i =>
+      arr(i) = byteBuffer.get
+    }
+    arr
+  }
   
-  def getChar: Char = {
+  final def getChar: Char = {
     if (!(byteBuffer.position + 2 <= byteBuffer.capacity)) {
-      val remaining = byteBuffer.slice.array
-      chunk = getMappedArray(position + 2)
+      val remaining = fillArray
+      println("the remaining length is", remaining.length)
+      chunk = getMappedArray(position + remaining.length)
       val newArray = remaining ++ array
       byteBuffer = getByteBuffer(newArray)
     }
     byteBuffer.getChar
   }
 
-  def getShort: Short = {
+  final def getShort: Short = {
     if (!(byteBuffer.position + 2 <= byteBuffer.capacity)) {
       val remaining = byteBuffer.slice.array
-      chunk = getMappedArray(position + 2)
+      chunk = getMappedArray(position + remaining.length)
       val newArray = remaining ++ array
       byteBuffer = getByteBuffer(newArray)
     }
     byteBuffer.getShort
   }
   
-  def getInt: Int = {
+  final def getInt: Int = {
     if (!(byteBuffer.position + 4 <= byteBuffer.capacity)) {
       val remaining = byteBuffer.slice.array
-      chunk = getMappedArray(position + 4)
+      chunk = getMappedArray(position + remaining.length)
       val newArray = remaining ++ array
       byteBuffer = getByteBuffer(newArray)
     }
     byteBuffer.getInt
   }
   
-  def getFloat: Float = {
+  final def getFloat: Float = {
     if (!(byteBuffer.position + 4 <= byteBuffer.capacity)) {
       val remaining = byteBuffer.slice.array
-      chunk = getMappedArray(position + 4)
+      chunk = getMappedArray(position + remaining.length)
       val newArray = remaining ++ array
       byteBuffer = getByteBuffer(newArray)
     }
     byteBuffer.getFloat
   }
   
-  def getDouble: Double = {
+  final def getDouble: Double = {
     if (!(byteBuffer.position + 8 <= byteBuffer.capacity)) {
       val remaining = byteBuffer.slice.array
-      chunk = getMappedArray(position + 8)
+      chunk = getMappedArray(position + remaining.length)
       val newArray = remaining ++ array
       byteBuffer = getByteBuffer(newArray)
     }
     byteBuffer.getDouble
   }
   
-  def getByteBuffer: ByteBuffer = ByteBuffer.wrap(array).order(byteOrder)
+  def getLong: Long = {
+    if (byteBuffer.position + 8 > byteBuffer.capacity) {
+      val remaining = byteBuffer.slice.array
+      chunk = getMappedArray(position + remaining.length)
+      val newArray = remaining ++ array
+      byteBuffer = getByteBuffer(newArray)
+    }
+    byteBuffer.getLong
+  }
+  
+  final def getByteBuffer: ByteBuffer = ByteBuffer.wrap(array).order(byteOrder)
 
-  def getByteBuffer(arr: Array[Byte]) = ByteBuffer.wrap(arr).order(byteOrder) 
+  final def getByteBuffer(arr: Array[Byte]) = ByteBuffer.wrap(arr).order(byteOrder) 
 
-  def isContained(newPosition: Int): Boolean =
-    if (newPosition >= offset && newPosition <= offset + array.length) true else false
+  final def isContained(newPosition: Int): Boolean =
+    if (newPosition >= offset && newPosition < offset + length) true else false
 }
 
 object S3BytesByteReader {
@@ -114,18 +134,4 @@ object S3BytesByteReader {
 
   def apply(request: GetObjectRequest, client: AmazonS3Client): S3BytesByteReader =
     new S3BytesByteReader(request, client)
-  
-  @inline implicit def toByteReader(s3BBR: S3BytesByteReader): ByteReader = {
-    new ByteReader() {
-      override def get = s3BBR.get
-      override def getChar = s3BBR.getChar
-      override def getShort = s3BBR.getShort
-      override def getInt = s3BBR.getInt
-      override def getFloat = s3BBR.getFloat
-      override def getDouble = s3BBR.getDouble
-      override def position: Int = s3BBR.position
-      override def position(i: Int): Buffer = s3BBR.position(i)
-      override def getByteBuffer = s3BBR.byteBuffer
-    }
-  }
 }
