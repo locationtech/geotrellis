@@ -1,17 +1,14 @@
 package geotrellis.spark.io.file
 
-import geotrellis.raster.{MultibandTile, Tile}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
 import geotrellis.util._
 
-import org.apache.avro.Schema
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.reflect.ClassTag
 

@@ -2,7 +2,7 @@ package geotrellis.macros
 
 import spire.macros.InlineUtil
 
-import scala.reflect.macros.Context
+import scala.reflect.macros.whitebox.Context
 
 trait MacroIterableTile {
   def foreachIntVisitor(visitor: IntTileVisitor): Unit

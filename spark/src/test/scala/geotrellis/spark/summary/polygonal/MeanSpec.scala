@@ -38,4 +38,32 @@ class MeanSpec extends FunSpec with TestEnvironment with TestFiles {
       result should be (expected)
     }
   }
+
+  describe("Mean Zonal Summary Operation (collections api)") {
+    val inc = IncreasingTestFile.toCollection
+
+    val tileLayout = inc.metadata.tileLayout
+    val count = inc.length * tileLayout.tileCols * tileLayout.tileRows
+    val totalExtent = inc.metadata.extent
+
+    it("should get correct mean over whole raster extent") {
+      inc.polygonalMean(totalExtent.toPolygon) should be((count - 1) / 2.0)
+    }
+
+    it("should get correct mean over a quarter of the extent") {
+      val xd = totalExtent.width
+      val yd = totalExtent.height
+
+      val quarterExtent = Extent(
+        totalExtent.xmin,
+        totalExtent.ymin,
+        totalExtent.xmin + xd / 2,
+        totalExtent.ymin + yd / 2
+      )
+      val result = inc.polygonalMean(quarterExtent.toPolygon)
+      val expected = inc.stitch.tile.polygonalMean(totalExtent, quarterExtent.toPolygon)
+
+      result should be (expected)
+    }
+  }
 }

@@ -8,14 +8,12 @@ import geotrellis.spark.io.index._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io._
 import org.apache.hadoop.mapreduce.lib.output._
-import org.apache.hadoop.mapreduce.{Job, RecordWriter}
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.rdd._
-import org.apache.spark.SparkContext
 
 import scala.reflect._
 

@@ -1,5 +1,6 @@
 package geotrellis.raster.io.geotiff
 
+import geotrellis.raster.GridBounds
 import geotrellis.raster.TileLayout
 
 /** Specifically for single band segments. If dealing with multiband segments, you must do the math */
@@ -146,6 +147,36 @@ case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: Tile
         else { tileRow * segmentCols + tileCol }
       }
     }
+  }
+  
+  def getGridBounds(segmentIndex: Int, isBit: Boolean = false): GridBounds = {
+    val segmentTransform = getSegmentTransform(segmentIndex)
+    val segmentCols = segmentTransform.segmentCols
+    val segmentRows = segmentTransform.segmentRows
+    val startCol =
+      if (isBit)
+        segmentTransform.bitIndexToCol(0)
+      else
+        segmentTransform.indexToCol(0)
+    
+    val startRow =
+      if (isBit)
+        segmentTransform.bitIndexToRow(0)
+      else
+        segmentTransform.indexToRow(0)
+
+    val endCol =
+      if (isStriped)
+        getSegmentDimensions(segmentIndex)._1
+      else
+        (startCol + segmentCols) - 1
+    val endRow =
+      if (isStriped)
+        (segmentIndex * segmentRows) + segmentRows
+      else
+        (startRow + segmentRows) - 1
+
+    GridBounds(startCol, startRow, endCol, endRow)
   }
 }
 

@@ -1,5 +1,6 @@
 #!/bin/bash
-# Publish local for main scala version (2.10)
+
+# Publish local for main scala version (2.11)
 ./sbt "project accumulo" publish-local && \
 ./sbt "project cassandra" publish-local && \
 ./sbt "project geotools" publish-local && \

@@ -20,17 +20,13 @@ import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.proj4._
 import geotrellis.util._
-
 import geotrellis.spark.tiling._
 import geotrellis.spark.ingest._
 import geotrellis.spark.crop._
 import geotrellis.spark.filter._
-
-import org.apache.spark.Partitioner
+import org.apache.spark.{Partitioner, SparkContext}
 import org.apache.spark.rdd._
-
 import spire.syntax.cfor._
-
 import monocle._
 import monocle.syntax._
 
@@ -61,16 +57,27 @@ package object spark
     with summary.Implicits
     with tiling.Implicits {
   type TileLayerRDD[K] = RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]
-
   object TileLayerRDD {
     def apply[K](rdd: RDD[(K, Tile)], metadata: TileLayerMetadata[K]): TileLayerRDD[K] =
       new ContextRDD(rdd, metadata)
+  }
+
+  type TileLayerCollection[K] = Seq[(K, Tile)] with Metadata[TileLayerMetadata[K]]
+  object TileLayerCollection {
+    def apply[K](seq: Seq[(K, Tile)], metadata: TileLayerMetadata[K]): TileLayerCollection[K] =
+      new ContextCollection(seq, metadata)
   }
 
   type MultibandTileLayerRDD[K] = RDD[(K, MultibandTile)] with Metadata[TileLayerMetadata[K]]
   object MultibandTileLayerRDD {
     def apply[K](rdd: RDD[(K, MultibandTile)], metadata: TileLayerMetadata[K]): MultibandTileLayerRDD[K] =
       new ContextRDD(rdd, metadata)
+  }
+
+  type MultibandTileLayerCollection[K] = Seq[(K, MultibandTile)] with Metadata[TileLayerMetadata[K]]
+  object MultibandTileLayerCollection {
+    def apply[K](seq: Seq[(K, MultibandTile)], metadata: TileLayerMetadata[K]): MultibandTileLayerCollection[K] =
+      new ContextCollection(seq, metadata)
   }
 
   type TileBounds = GridBounds
@@ -107,6 +114,9 @@ package object spark
   implicit class withCellGridLayoutRDDMethods[K: SpatialComponent: ClassTag, V <: CellGrid, M: GetComponent[?, LayoutDefinition]](val self: RDD[(K, V)] with Metadata[M])
       extends CellGridLayoutRDDMethods[K, V, M]
 
+  implicit class withCellGridLayoutCollectionMethods[K: SpatialComponent, V <: CellGrid, M: GetComponent[?, LayoutDefinition]](val self: Seq[(K, V)] with Metadata[M])
+    extends CellGridLayoutCollectionMethods[K, V, M]
+
   implicit class withProjectedExtentRDDMethods[K: Component[?, ProjectedExtent], V <: CellGrid](val rdd: RDD[(K, V)]) {
     def toRasters: RDD[(K, Raster[V])] =
       rdd.mapPartitions({ partition =>
@@ -114,6 +124,14 @@ package object spark
           (key, Raster(value, key.getComponent[ProjectedExtent].extent))
         }
       }, preservesPartitioning = true)
+  }
+
+  implicit class withCollectionConversionMethods[K, V, M](val rdd: RDD[(K, V)] with Metadata[M]) {
+    def toCollection: Seq[(K, V)] with Metadata[M] = ContextCollection(rdd.collect(), rdd.metadata)
+  }
+
+  implicit class withRddConversionMethods[K, V, M](val seq: Seq[(K, V)] with Metadata[M]) {
+    def toRDD(implicit sc: SparkContext): RDD[(K, V)] with Metadata[M] = ContextRDD(sc.parallelize(seq), seq.metadata)
   }
 
   implicit class withProjectedExtentTemporalTilerKeyMethods[K: Component[?, ProjectedExtent]: Component[?, TemporalKey]](val self: K) extends TilerKeyMethods[K, SpaceTimeKey] {

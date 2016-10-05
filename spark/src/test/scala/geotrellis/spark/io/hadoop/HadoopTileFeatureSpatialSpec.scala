@@ -6,7 +6,6 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestTileFeatureFiles
 
-
 class HadoopTileFeatureSpatialSpec
   extends PersistenceSpec[SpatialKey, TileFeature[Tile, Tile], TileLayerMetadata[SpatialKey]]
     with SpatialKeyIndexMethods
@@ -15,6 +14,7 @@ class HadoopTileFeatureSpatialSpec
     with AllOnesTestTileFeatureSpec {
 
   lazy val reader = HadoopLayerReader(outputLocal)
+  lazy val creader = HadoopLayerCollectionReader(outputLocal)
   lazy val writer = HadoopLayerWriter(outputLocal)
   lazy val deleter = HadoopLayerDeleter(outputLocal)
   lazy val copier = HadoopLayerCopier(outputLocal)
