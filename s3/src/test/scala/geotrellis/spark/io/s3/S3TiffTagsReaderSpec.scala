@@ -4,21 +4,31 @@ import geotrellis.util.Filesystem
 import geotrellis.spark.io.s3._
 import geotrellis.raster.io.geotiff.tags._
 import geotrellis.raster.io.geotiff.reader._
+import geotrellis.raster.testkit._
 
 import org.scalatest._
 import com.amazonaws.services.s3.model._
 import spire.syntax.cfor._
 
-class S3TiffTagsReaderSpec extends FunSpec {
+class S3TiffTagsReaderSpec extends FunSpec with RasterMatchers with MockS3StreamBytes {
 
   describe("tifftags reader") {
+    /*
     val client = S3Client.default
     val bucket = "gt-rasters"
     val k = "nlcd/2011/tiles/nlcd_2011_01_01.tif"
-    val s3ByteBuffer = S3BytesByteReader(bucket, k, client)
-    val fromLocal = TiffTagsReader.read("../../nlcd_2011_01_01.tif")
-    val fromServer = TiffTagsReader.read(s3ByteBuffer)
+    val s3ByteBuffer = S3ByteReader(bucket, k, client)
+    */
+    //val mock = new MockS3ByteReader()
+    //println("reading locally")
+    val fromLocal = GeoTiffReader.readSingleband("../../nlcd_2011_01_01.tif", false, true)
+    //println("\n\nReading from the server")
+    //val fromServer = TiffTagsReader.read(s3ByteBuffer)
+    //val fromServer = GeoTiffReader.readSingleband(mock, false, true)
 
+    println(fromLocal.extent)
+    //println(fromServer.extent)
+    
     /*
     it("should read the same basic tags") {
       val expected = fromServer.basicTags
@@ -26,7 +36,7 @@ class S3TiffTagsReaderSpec extends FunSpec {
 
       assert(expected == actual)
     }
-    
+
     it("should read the same colimetry tags") {
       val expected = fromServer.colimetryTags
       val actual = fromLocal.colimetryTags

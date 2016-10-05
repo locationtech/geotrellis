@@ -6,7 +6,9 @@ import TagCodes._
 import TiffFieldType._
 
 import geotrellis.raster.io.geotiff.util._
-import geotrellis.util.{Filesystem, ByteReader}
+import geotrellis.util.Filesystem
+
+import java.nio.{ByteBuffer, ByteOrder}
 import spire.syntax.cfor._
 import monocle.syntax.apply._
 import scala.language.implicitConversions
@@ -20,7 +22,7 @@ object TiffTagsReader {
   def read(bytes: Array[Byte]): TiffTags =
     read(ByteBuffer.wrap(bytes))
 
-  def read(byteBuffer: ByteReader): TiffTags = {
+  def read(byteBuffer: ByteBuffer): TiffTags = {
 
     (byteBuffer.get.toChar, byteBuffer.get.toChar) match {
       case ('I', 'I') => byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
@@ -32,12 +34,13 @@ object TiffTagsReader {
     val geoTiffIdNumber = byteBuffer.getChar
     if ( geoTiffIdNumber != 42)
       throw new MalformedGeoTiffException(s"bad identification number (must be 42, was $geoTiffIdNumber)")
+
     val tagsStartPosition = byteBuffer.getInt
 
     read(byteBuffer, tagsStartPosition)
   }
 
-  def read(byteBuffer: ByteReader, tagsStartPosition: Int): TiffTags = {
+  def read(byteBuffer: ByteBuffer, tagsStartPosition: Int): TiffTags = {
 
     byteBuffer.position(tagsStartPosition)
     
@@ -58,14 +61,11 @@ object TiffTagsReader {
           byteBuffer.getInt            // Offset
         )
 
-      if (tagMetadata.tag == codes.TagCodes.GeoKeyDirectoryTag) {
+      if (tagMetadata.tag == codes.TagCodes.GeoKeyDirectoryTag)
         geoTags = Some(tagMetadata)
-      } else {
+      else
         tiffTags = readTag(byteBuffer, tiffTags, tagMetadata)
-      }
     }
-
-    println(s"the gotags is: $geoTags") //, and the tifftags are: $tiffTags")
 
     geoTags match {
       case Some(t) => tiffTags = readTag(byteBuffer, tiffTags, t)
@@ -75,7 +75,7 @@ object TiffTagsReader {
     tiffTags
   }
 
-  def readTag(byteBuffer: ByteReader, tiffTags: TiffTags, tagMetadata: TiffTagMetadata): TiffTags =
+  def readTag(byteBuffer: ByteBuffer, tiffTags: TiffTags, tagMetadata: TiffTagMetadata): TiffTags =
     (tagMetadata.tag, tagMetadata.fieldType) match {
       case (ModelPixelScaleTag, _) =>
         byteBuffer.readModelPixelScaleTag(tiffTags, tagMetadata)
@@ -109,7 +109,7 @@ object TiffTagsReader {
         byteBuffer.readDoublesTag(tiffTags, tagMetadata)
     }
 
-  implicit class ByteBufferTagReaderWrapper(val byteBuffer: ByteReader) extends AnyVal {
+  implicit class ByteBufferTagReaderWrapper(val byteBuffer: ByteBuffer) extends AnyVal {
     def readModelPixelScaleTag(tiffTags: TiffTags,
       tagMetadata: TiffTagMetadata) = {
 
@@ -120,7 +120,7 @@ object TiffTagsReader {
       val scaleX = byteBuffer.getDouble
       val scaleY = byteBuffer.getDouble
       val scaleZ = byteBuffer.getDouble
-      
+
       byteBuffer.position(oldPos)
 
       (tiffTags &|->
@@ -166,14 +166,16 @@ object TiffTagsReader {
 
       byteBuffer.position(tagMetadata.offset)
 
-      println("ByteBuffer position before reading in keydirectorymetadata is", byteBuffer.getByteBuffer.position)
+      //println("ByteBuffer position before reading in keydirectorymetadata is", byteBuffer.getByteBuffer.position)
 
+      /*
       val o = byteBuffer.getByteBuffer.position
 
       cfor(0)(_ < 25, _ + 1) { i =>
         println(byteBuffer.getByteBuffer.get)
       }
       byteBuffer.position(o)
+      */
       val version = byteBuffer.getShort
       val keyRevision = byteBuffer.getShort
       val minorRevision = byteBuffer.getShort

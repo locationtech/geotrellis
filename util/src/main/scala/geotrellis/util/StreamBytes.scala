@@ -4,8 +4,8 @@ import java.io.InputStream
 import java.nio.ByteBuffer
 
 trait StreamBytes {
-  private val chunkSize = 256000
-  var streamPosition = 0
+  val chunkSize = 256000
+  private var streamPosition = 0
 
   def objectLength: Long
   

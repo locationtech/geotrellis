@@ -24,7 +24,7 @@ import scala.language.implicitConversions
 import spire.syntax.cfor._
 
 trait ByteBufferExtensions {
-  implicit class ByteBufferUtilities(byteBuffer: ByteReader) {
+  implicit class ByteBufferUtilities(byteBuffer: ByteBuffer) {
 
     @inline
     final private def ub2s(byte: Byte): Short =
