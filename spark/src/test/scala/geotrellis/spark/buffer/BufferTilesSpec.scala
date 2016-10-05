@@ -31,6 +31,8 @@ class BufferTilesSpec extends FunSpec with TestEnvironment {
     val originalRaster = gt.raster.resample(500, 500)
     val (_, wholeRdd) = createTileLayerRDD(originalRaster, 5, 5, gt.crs)
     val metadata = wholeRdd.metadata
+    val wholeCollection = wholeRdd.toCollection
+    val cmetadata = wholeCollection.metadata
 
     it("should work when the RDD is a diagonal strip") {
       val partialRdd = ContextRDD(wholeRdd.filter({ case (k, _) => k.col == k.row }), metadata)
@@ -50,6 +52,26 @@ class BufferTilesSpec extends FunSpec with TestEnvironment {
     it("should work when the RDD is a square minus the other diagonal") {
       val partialRdd = ContextRDD(wholeRdd.filter({ case (k, _) => k.col != (4- k.row) }), metadata)
       BufferTiles(partialRdd, 1).count
+    }
+
+    it("should work when the Collection is a diagonal strip") {
+      val partialCollection = ContextCollection(wholeCollection.filter({ case (k, _) => k.col == k.row }), cmetadata)
+      BufferTiles(partialCollection, 1).length
+    }
+
+    it("should work when the Collection is a square minus the main diagonal") {
+      val partialCollection = ContextCollection(wholeCollection.filter({ case (k, _) => k.col != k.row }), cmetadata)
+      BufferTiles(partialCollection, 1).length
+    }
+
+    it("should work when the Collection is the other diagonal strip") {
+      val partialCollection = ContextCollection(wholeCollection.filter({ case (k, _) => k.col == (4- k.row) }), cmetadata)
+      BufferTiles(partialCollection, 1).length
+    }
+
+    it("should work when the Collection is a square minus the other diagonal") {
+      val partialCollection = ContextCollection(wholeCollection.filter({ case (k, _) => k.col != (4- k.row) }), cmetadata)
+      BufferTiles(partialCollection, 1).length
     }
   }
 }
