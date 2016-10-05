@@ -30,7 +30,6 @@ case class BTree[T](value: T, left: Option[BTree[T]], right: Option[BTree[T]]) {
     def work(tree: BTree[T], prefix: String, isTail: Boolean): String = {
       val (line, bar) = if (isTail) ("└── ", " ") else ("├── ", "│")
 
-      /* Print current node */
       val curr = s"${prefix}${line}${tree.value}"
 
       val rights = tree.right match {
