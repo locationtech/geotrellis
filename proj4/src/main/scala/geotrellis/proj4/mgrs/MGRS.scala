@@ -14,6 +14,9 @@ object MGRS {
    * while an accuracy of 1 indicates 10km resolution, with power of 10 steps in between.
    */
   def longLatToMGRS(long: Double, lat: Double, accuracy: Int = 5): String = {
+    if (accuracy < 1 || accuracy > 5)
+      throw new IllegalArgumentException("Accuracy for MGRS conversion must be in the range 1 to 5")
+
     encode(LLtoUTM(long, lat), accuracy)
   }
 
