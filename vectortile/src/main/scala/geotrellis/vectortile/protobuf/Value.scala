@@ -49,7 +49,7 @@ import geotrellis.vectortile.protobuf.internal.{vector_tile => vt}
   * type safety in light of the situation described here.
   *
   */
-sealed trait Value {
+sealed trait Value extends Serializable {
   /** Encode this Value back into a mid-level Protobuf object. */
   def toProtobuf: vt.Tile.Value
 }
