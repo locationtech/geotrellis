@@ -5,6 +5,8 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 
+import spire.syntax.cfor._
+
 case class SinglebandGeoTiff(
   val tile: Tile,
   val extent: Extent,
@@ -28,6 +30,75 @@ case class SinglebandGeoTiff(
       this.raster.crop(subExtent)
 
     SinglebandGeoTiff(raster, subExtent, this.crs)
+  }
+  
+  def cropIterator(subExtent: Extent): Iterator[(Extent, SinglebandGeoTiff)] =
+    cropIterator(subExtent, true)
+
+  def cropIterator(subExtent: Extent,
+    fill: Boolean): Iterator[(Extent, SinglebandGeoTiff)] = {
+
+    val unroundedColIterator =
+      if (fill)
+        extent.width.toFloat / subExtent.width
+      else
+        extent.width / subExtent.width
+
+    val unroundedRowIterator =
+      if (fill)
+        extent.height.toFloat / subExtent.height
+      else
+        extent.height / subExtent.height
+
+    val colIterator =
+      math.ceil(unroundedColIterator - (unroundedColIterator % 0.001)).toInt
+    
+    val rowIterator =
+        math.ceil(unroundedRowIterator - (unroundedRowIterator % 0.001)).toInt
+
+    val arr =
+      if (fill)
+        Array.ofDim[(Extent, SinglebandGeoTiff)](colIterator * rowIterator)
+      else
+        Array.ofDim[(Extent, SinglebandGeoTiff)](unroundedColIterator.toInt * unroundedRowIterator.toInt)
+    
+    var counter = 0
+
+    /*
+     * This is needed as sometimes extents will be off by very small
+     * margins (ie 1 * 10E-10). Therefore, this function will prevent
+     * values from not being seen as equal if they contain this small margin
+     * of difference.
+     */
+    def ~=(x: Double, y: Double, tolerance: Double): Boolean =
+      if ((x - y).abs < tolerance) true else false
+
+    cfor(0)(_ < rowIterator,  _ + 1){ row =>
+      cfor(0)(_ < colIterator, _ + 1) { col =>
+
+        val colMin =
+          if (subExtent.xmin >= 0)
+            col * subExtent.width
+          else
+            (col * subExtent.width) + subExtent.xmin
+
+        val rowMin =
+          if (subExtent.ymin >= 0)
+            row * subExtent.height
+          else
+            (row * subExtent.height) + subExtent.ymin
+
+        val colMax = math.min(colMin + subExtent.width, extent.xmax)
+        val rowMax = math.min(rowMin + subExtent.height, extent.ymax)
+        val e = Extent(colMin, rowMin, colMax, rowMax)
+        
+        if (fill || ~=(subExtent.area, e.area, 0.0001)) { 
+          arr(counter) = (e, crop(e))
+          counter += 1
+        }
+      }
+    }
+    arr.toIterator
   }
 }
 
