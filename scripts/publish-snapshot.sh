@@ -4,6 +4,7 @@
       "project cassandra" publish \
       "project geomesa" publish \
       "project geotools" publish \
+      "project geowave" publish \
       "project hbase" publish \
       "project macros" publish \
       "project proj4" publish \

@@ -5,6 +5,7 @@
 ./sbt "project cassandra" publish-local && \
 ./sbt "project geomesa" publish-local && \
 ./sbt "project geotools" publish-local && \
+./sbt "project geowave" publish-local && \
 ./sbt "project hbase" publish-local && \
 ./sbt "project macros" publish-local && \
 ./sbt "project proj4" publish-local && \

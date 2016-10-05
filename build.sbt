@@ -71,8 +71,9 @@ lazy val root = Project("geotrellis", file(".")).
     accumulo,
     cassandra,
     hbase,
-    geotools,
+    geowave,
     geomesa,
+    geotools,    
     slick,
     vectortile
   ).
@@ -161,6 +162,10 @@ lazy val geotools = Project("geotools", file("geotools")).
   settings(commonSettings: _*)
 
 lazy val geomesa = Project("geomesa", file("geomesa")).
+  dependsOn(sparkTestkit % "test->test", spark % "provided;test->test", geotools, accumulo % "provided;test->test").
+  settings(commonSettings: _*)
+
+lazy val geowave = Project("geowave", file("geowave")).
   dependsOn(sparkTestkit % "test->test", spark % "provided;test->test", geotools, accumulo % "provided;test->test").
   settings(commonSettings: _*)
 
