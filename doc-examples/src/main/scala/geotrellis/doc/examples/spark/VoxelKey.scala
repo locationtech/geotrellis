@@ -47,6 +47,19 @@ object VoxelKey {
       }
     }
   }
+
+  /** Since [[VoxelKey]] has x and y coordinates, it can take advantage of
+    * the [[SpatialComponent]] lens. Lenses are essentially "getters and setters"
+    * that can be used in highly generic code.
+    */
+  implicit val spatialComponent = {
+    Component[VoxelKey, SpatialKey](
+      /* "get" a SpatialKey from VoxelKey */
+      k => SpatialKey(k.x, k.y),
+      /* "set" (x,y) spatial elements of a VoxelKey */
+      (k, sk) => VoxelKey(sk.col, sk.row, k.z)
+    )
+  }
 }
 
 /** A [[KeyIndex]] based on [[VoxelKey]]. */
