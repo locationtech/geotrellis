@@ -77,6 +77,12 @@ trait Geometry {
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(g.jtsGeom))
     }
 
+  def intersects(other: Geometry): Boolean =
+    jtsGeom.intersects(other.jtsGeom)
+
+  def disjoint(other: Geometry): Boolean =
+    jtsGeom.disjoint(other.jtsGeom)
+
   /** Attempt to convert this Geometry to the provided type */
   def as[G <: Geometry : ClassTag]: Option[G] = {
     if (classTag[G].runtimeClass.isInstance(this))
@@ -112,14 +118,4 @@ object Geometry {
       case obj: jts.MultiPolygon => MultiPolygon(obj)
       case obj: jts.GeometryCollection => GeometryCollection(obj)
     }
-}
-
-trait Relatable { self: Geometry =>
-
-  def intersects(other: Geometry): Boolean =
-    jtsGeom.intersects(other.jtsGeom)
-
-  def disjoint(other: Geometry): Boolean =
-    jtsGeom.disjoint(other.jtsGeom)
-
 }
