@@ -37,6 +37,8 @@ class ReprojectSpec extends FunSpec
     import Reproject.Options
 
     it("should (approximately) match a GDAL nearest neighbor interpolation on nlcd tile") {
+      SinglebandGeoTiff("raster-test/data/reproject/nlcd_tile_wsg84.tif")
+
       val ProjectedRaster(raster, crs) = SinglebandGeoTiff("raster-test/data/reproject/nlcd_tile_wsg84.tif").projectedRaster
 
       val ree @ Raster(expected, expectedExtent) =

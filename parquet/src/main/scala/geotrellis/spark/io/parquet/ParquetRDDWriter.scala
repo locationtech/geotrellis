@@ -3,11 +3,10 @@ package geotrellis.spark.io.parquet
 import geotrellis.spark.LayerId
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
+
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SparkSession}
 import org.apache.spark.sql.types._
-
-import org.apache.parquet.hadoop.api.{InitContext, ReadSupport}
 
 object ParquetRDDWriter {
 
