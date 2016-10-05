@@ -26,4 +26,18 @@ trait Implicits {
     (implicit val keyClassTag: ClassTag[K])
       extends PolygonalSummaryKeyedFeatureRDDMethods[K, G, D]
 
+  implicit class withZonalSummaryTileLayerCollectionMethods[
+    K,
+    M: GetComponent[?, LayoutDefinition]
+  ](val self: Seq[(K, Tile)] with Metadata[M])
+   (implicit val keyClassTag: ClassTag[K], implicit val _sc: SpatialComponent[K])
+    extends PolygonalSummaryTileLayerCollectionMethods[K, M] with Serializable
+
+  implicit class withZonalSummaryFeatureCollectionMethods[G <: Geometry, D](val featureCollection: Seq[Feature[G, D]])
+    extends PolygonalSummaryFeatureCollectionMethods[G, D]
+
+  implicit class withZonalSummaryKeyedFeatureCollectionMethods[K, G <: Geometry, D](val featureCollection: Seq[(K, Feature[G, D])])
+    (implicit val keyClassTag: ClassTag[K])
+      extends PolygonalSummaryKeyedFeatureCollectionMethods[K, G, D]
+
 }

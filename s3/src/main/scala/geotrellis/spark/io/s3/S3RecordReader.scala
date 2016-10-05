@@ -2,8 +2,7 @@ package geotrellis.spark.io.s3
 
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.services.s3.model.GetObjectRequest
-import com.typesafe.scalalogging.slf4j._
-import java.io.{InputStream, ByteArrayOutputStream}
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext, RecordReader}
 import org.apache.commons.io.IOUtils
 

@@ -13,7 +13,7 @@ import org.scalatest.FunSpec
 
 import collection._
 
-class StatsTileLayerRDDMethodsSpec extends FunSpec with TestEnvironment with TestFiles {
+class StatsTileRDDMethodsSpec extends FunSpec with TestEnvironment with TestFiles {
 
   describe("RDD Stats Method Operations") {
 

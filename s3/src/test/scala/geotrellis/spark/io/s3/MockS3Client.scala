@@ -5,7 +5,7 @@ import com.amazonaws.services.s3.model._
 import java.util.concurrent.ConcurrentHashMap
 import com.amazonaws.services.s3.internal.AmazonS3ExceptionBuilder
 import scala.collection.immutable.TreeMap
-import com.typesafe.scalalogging.slf4j._
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.commons.io.IOUtils
 import scala.collection.JavaConverters._
 

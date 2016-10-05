@@ -3,13 +3,11 @@ package geotrellis.spark.io.cassandra
 import geotrellis.spark._
 import geotrellis.spark.io._
 
-import com.datastax.driver.core.{ResultSet, Session}
+import com.datastax.driver.core.ResultSet
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{set, eq => eqs}
 import com.datastax.driver.core.schemabuilder.SchemaBuilder
 import com.datastax.driver.core.DataType._
-import com.typesafe.config.ConfigFactory
-import org.apache.spark.Logging
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
@@ -23,7 +21,7 @@ object CassandraAttributeStore {
     apply(instance, Cassandra.cfg.getString("keyspace"), Cassandra.cfg.getString("catalog"))
 }
 
-class CassandraAttributeStore(val instance: CassandraInstance, val attributeKeyspace: String, val attributeTable: String) extends DiscreteLayerAttributeStore with Logging {
+class CassandraAttributeStore(val instance: CassandraInstance, val attributeKeyspace: String, val attributeTable: String) extends DiscreteLayerAttributeStore {
 
   //create the attribute table if it does not exist
   instance.withSessionDo { session =>

@@ -9,7 +9,6 @@ import geotrellis.vector.Extent
 
 import org.scalatest.FunSpec
 
-
 class RDDStitchMethodsSpec extends FunSpec
     with TileBuilders
     with TileLayerRDDBuilders

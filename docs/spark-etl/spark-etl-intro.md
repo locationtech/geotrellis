@@ -309,7 +309,7 @@ boundaries by performing a neighborhood join. This method is the default
 and produces the best results. However it requires that all of the
 source tiles share the same CRS.
 
-Per tile teproject method can not consider pixels past the individual
+Per tile reproject method can not consider pixels past the individual
 tile boundaries, even if they exist elsewhere in the dataset. Any pixels
 past the tile boundaries will be as `NODATA` when interpolating. This
 restriction allows for source tiles to have a different projections per tile.

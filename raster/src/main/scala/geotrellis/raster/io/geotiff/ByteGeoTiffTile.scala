@@ -5,7 +5,7 @@ import geotrellis.raster.io.geotiff.compression._
 import spire.syntax.cfor._
 
 class ByteGeoTiffTile(
-  val compressedBytes: Array[Array[Byte]],
+  val segmentBytes: SegmentBytes,
   val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
@@ -48,5 +48,48 @@ class ByteGeoTiffTile(
       }
     }
     ByteArrayTile.fromBytes(arr, cols, rows, cellType)
+  }
+  
+  def crop(gridBounds: GridBounds): MutableArrayTile = {
+    val arr = Array.ofDim[Byte](gridBounds.size)
+    var counter = 0
+    
+    if (segmentLayout.isStriped) {
+      cfor(0)(_ < segmentCount, _ + 1) { i =>
+        val segmentGridBounds = segmentLayout.getGridBounds(i)
+        if (gridBounds.intersects(segmentGridBounds)) {
+          val segment = getSegment(i)
+
+          val result =
+            gridBounds.intersection(segmentGridBounds).get
+          val intersection =
+            Intersection(segmentGridBounds, result, segmentLayout)
+
+          cfor(intersection.start)(_ < intersection.end, _ + cols) { i =>
+            System.arraycopy(segment.bytes, i, arr, counter, result.width)
+            counter += result.width
+          }
+        }
+      }
+    } else {
+      cfor(0)(_ < segmentCount, _ + 1) {i =>
+        val segmentGridBounds = segmentLayout.getGridBounds(i)
+        if (gridBounds.intersects(segmentGridBounds)) {
+          val segment = getSegment(i)
+          val segmentTransform = segmentLayout.getSegmentTransform(i)
+
+          val result = gridBounds.intersection(segmentGridBounds).get
+          val intersection = Intersection(segmentGridBounds, result, segmentLayout)
+
+          cfor(intersection.start)(_ < intersection.end, _ + intersection.tileWidth) { i =>
+            val col = segmentTransform.indexToCol(i)
+            val row = segmentTransform.indexToRow(i)
+            val j = (row - gridBounds.rowMin) * gridBounds.width + (col - gridBounds.colMin)
+            System.arraycopy(segment.bytes, i, arr, j, result.width)
+          }
+        }
+      }
+    }
+    ByteArrayTile.fromBytes(arr, gridBounds.width, gridBounds.height, cellType)
   }
 }
