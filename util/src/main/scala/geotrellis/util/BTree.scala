@@ -28,23 +28,19 @@ case class BTree[T](value: T, left: Option[BTree[T]], right: Option[BTree[T]]) {
   /* Adapted from: http://stackoverflow.com/a/8948691/643684 */
   def pretty: String = {
     def work(tree: BTree[T], prefix: String, isTail: Boolean): String = {
-      val line = if (isTail) "└── " else "├── "
+      val (line, bar) = if (isTail) ("└── ", " ") else ("├── ", "│")
 
       /* Print current node */
       val curr = s"${prefix}${line}${tree.value}"
 
       val rights = tree.right match {
-        case None    if isTail => s"${prefix}    ├── ∅"
-        case None              => s"${prefix}│   ├── ∅"
-        case Some(r) if isTail => work(r, prefix ++ "    ", false)
-        case Some(r)           => work(r, prefix ++ "│   ", false)
+        case None    => s"${prefix}${bar}   ├── ∅"
+        case Some(r) => work(r, s"${prefix}${bar}   ", false)
       }
 
       val lefts = tree.left match {
-        case None    if isTail => s"${prefix}    └── ∅"
-        case None              => s"${prefix}│   └── ∅"
-        case Some(l) if isTail => work(l, prefix ++ "    ", true)
-        case Some(l)           => work(l, prefix ++ "│   ", true)
+        case None    => s"${prefix}${bar}   └── ∅"
+        case Some(l) => work(l, s"${prefix}${bar}   ", true)
       }
 
       s"${curr}\n${rights}\n${lefts}"
