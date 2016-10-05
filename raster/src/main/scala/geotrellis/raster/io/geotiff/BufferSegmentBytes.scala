@@ -20,7 +20,7 @@ import spire.syntax.cfor._
  * @param tifftags: The [[TiffTags]] of the GeoTiff
  * @return A new instance of BufferSegmentBytes
  */
-case class BufferSegmentBytes(byteBuffer: ByteReader, tiffTags: TiffTags) extends SegmentBytes {
+case class BufferSegmentBytes(byteBuffer: ByteBuffer, tiffTags: TiffTags) extends SegmentBytes {
 
   val (offsets, byteCounts) =
     if (tiffTags.hasStripStorage) {
