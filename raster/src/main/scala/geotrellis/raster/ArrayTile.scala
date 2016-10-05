@@ -16,10 +16,7 @@
 
 package geotrellis.raster
 
-import geotrellis.vector.Extent
-
 import spire.syntax.cfor._
-
 
 /**
   * [[ArrayTile]] provides access and update to the grid data of a
@@ -39,11 +36,14 @@ trait ArrayTile extends Tile with Serializable {
     * Returns a [[Tile]] equivalent to this [[ArrayTile]], except with
     * cells of the given type.
     *
-    * @param   cellType  The type of cells that the result should have
+    * @param   targetCellType  The type of cells that the result should have
     * @return            The new Tile
     */
   def convert(targetCellType: CellType): Tile = {
     val tile = ArrayTile.alloc(targetCellType, cols, rows)
+
+    if(targetCellType.isFloatingPoint != cellType.isFloatingPoint)
+      logger.warn(s"Conversion from $cellType to $targetCellType may lead to data loss.")
 
     if(!cellType.isFloatingPoint) {
       cfor(0)(_ < rows, _ + 1) { row =>
