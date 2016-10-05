@@ -5,7 +5,7 @@ import org.scalatest._
 // --- //
 
 class BTreeSpec extends FunSpec with Matchers {
-  private val v: Vector[Int] = (1 to 7).toVector
+  private val v: Vector[Int] = (1 to 15).toVector
 
   describe("Instantiation") {
     it("should succeed on empty input") {
@@ -37,7 +37,7 @@ class BTreeSpec extends FunSpec with Matchers {
     }
 
     it("should produce a balanced tree") {
-      BTree.fromSortedSeq(v).get.value shouldBe 4
+      BTree.fromSortedSeq(v).get.value shouldBe 8
     }
   }
 
