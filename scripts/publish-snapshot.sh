@@ -3,6 +3,7 @@
 ./sbt "project accumulo" publish \
       "project cassandra" publish \
       "project geotools" publish \
+      "project geowave" publish \
       "project hbase" publish \
       "project macros" publish \
       "project proj4" publish \

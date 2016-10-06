@@ -7,10 +7,10 @@ import geotrellis.spark.io.index._
 import geotrellis.util._
 
 import org.apache.spark.SparkContext
-import org.joda.time.DateTime
 import spray.json.JsonFormat
 
 import scala.reflect.ClassTag
+import java.time.ZonedDateTime
 
 object HBaseLayerReindexer {
   def apply(attributeStore: AttributeStore,
@@ -43,7 +43,7 @@ class HBaseLayerReindexer(
 )(implicit sc: SparkContext) extends LayerReindexer[LayerId] {
 
   def getTmpId(id: LayerId): LayerId =
-    id.copy(name = s"${id.name}-${DateTime.now.getMillis}")
+    id.copy(name = s"${id.name}-${ZonedDateTime.now.toInstant.toEpochMilli}")
 
   def reindex[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,

@@ -6,7 +6,7 @@ and networking uses. Here are `geotrellis.raster.io`'s packages:
 
 - [`geotrellis.raster.io.arg`](../../raster/src/main/scala/geotrellis/raster/io/arg)
 defines methods for moving data into and out of the
-[Azavea Raster Grid format](http://geotrellis.io/documentation/0.9.0/geotrellis/io/arg/).
+[Azavea Raster Grid format](http://geotrellis.io/0.9docs/arg.html).
 - [`geotrellis.raster.io.ascii`](../../raster/src/main/scala/geotrellis/raster/io/ascii)
 defines methods for interacting with ascii-art representations of rasters.
 - [`geotrellis.raster.io.geotiff`](../../raster/src/main/scala/geotrellis/raster/io/geotiff)

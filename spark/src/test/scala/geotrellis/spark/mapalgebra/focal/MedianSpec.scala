@@ -39,6 +39,32 @@ class MedianSpec extends FunSpec with TestEnvironment {
       res should be (expected)
     }
 
+    it("should square median for raster collection") {
+      val rasterCollection = createTileLayerRDD(
+        sc,
+        ArrayTile(Array(
+          nd,7, 1,   1, 3, 5,   9, 8, 2,
+          9, 1, 1,   2, 2, 2,   4, 3, 5,
+
+          3, 8, 1,   3, 3, 3,   1, 2, 2,
+          2, 4, 7,   1,nd, 1,   8, 4, 3
+        ), 9, 4),
+        TileLayout(3, 2, 3, 2)
+      ).toCollection
+
+      val res = rasterCollection.focalMedian(Square(1)).stitch.toArray
+
+      val expected = Array(
+        7, 1, 1,    1, 2, 3,    4, 4, 4,
+        7, 2, 1,    2, 3, 3,    3, 3, 2,
+
+        3, 3, 2,    2, 2, 2,    3, 3, 3,
+        3, 3, 3,    3, 3, 3,    2, 2, 2
+      )
+
+      res should be (expected)
+    }
+
   }
 
 }

@@ -50,9 +50,7 @@ case class TileLayerMetadata[K](
       )
   }
 
-  def updateBounds(
-    newBounds: Bounds[K]
-  )(implicit thing: Component[K, SpatialKey]): TileLayerMetadata[K] =
+  def updateBounds(newBounds: Bounds[K])(implicit c: Component[K, SpatialKey]): TileLayerMetadata[K] =
     newBounds match {
       case kb: KeyBounds[K] => {
         val SpatialKey(minCol, minRow) = kb.minKey.getComponent[SpatialKey]

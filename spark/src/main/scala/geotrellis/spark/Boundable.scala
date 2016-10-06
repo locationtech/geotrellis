@@ -1,7 +1,5 @@
 package geotrellis.spark
 
-import org.apache.spark.rdd.RDD
-
 /** This type class marks K as point that can be bounded in space.
   * It is used to construct bounding hypercube for a set of Ks.
   *

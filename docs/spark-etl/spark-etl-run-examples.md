@@ -14,8 +14,9 @@ spark-submit \
 --master local[*] \
 --driver-memory 2G \
 $JAR \
---credentials "file://credentials.json" \
---datasets "file://datasets.json"
+--input "file://input.json" \
+--output "file://output.json" \
+--backend-profiles "file://backend-profiles.json"
 ```
 
 ### Backend profiles JSON example

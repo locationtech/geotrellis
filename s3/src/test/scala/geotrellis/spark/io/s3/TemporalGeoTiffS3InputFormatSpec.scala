@@ -1,7 +1,5 @@
 package geotrellis.spark.io.s3
 
-import java.nio.file.{ Paths, Path, Files }
-
 import com.amazonaws.auth.AWSCredentials
 import geotrellis.proj4.LatLng
 import geotrellis.raster._
@@ -10,11 +8,14 @@ import geotrellis.spark.tiling._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.ingest._
 import geotrellis.util.Filesystem
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.task._
-import org.joda.time.format._
+import geotrellis.spark.io.json._
+import java.time.{ZoneOffset, ZonedDateTime}
+import java.nio.file.{Files, Path, Paths}
+import java.time.format.DateTimeFormatter
+
 import org.scalatest._
 
 class MockTemporalGeoTiffS3RecordReader(context: TaskAttemptContext) extends TemporalGeoTiffS3RecordReader(context) {
@@ -38,12 +39,13 @@ class TemporalGeoTiffS3InputFormatSpec extends FunSpec with Matchers with TestEn
       val conf = new Configuration(false)
 
       TemporalGeoTiffS3InputFormat.setTimeTag(conf, "TIFFTAG_DATETIME")
-      TemporalGeoTiffS3InputFormat.setTimeFormat(conf, "2015:03:25 18:01:04")
+      TemporalGeoTiffS3InputFormat.setTimeFormat(conf, "yyyy:MM:dd HH:mm:ss")
 
       val context = new TaskAttemptContextImpl(conf, new TaskAttemptID())
       val rr = format.createRecordReader(null, context)
       val (key, tile) = rr.read("key", Filesystem.slurp(path))
-      DateTimeFormat.forPattern("2015:03:25 18:01:04").print(key.time) should be ("2015:03:25 18:01:04")
+
+      DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss").withZone(ZoneOffset.UTC).format(key.time) should be ("2015:03:25 18:01:04")
     }
 
     val mockClient = new MockS3Client
