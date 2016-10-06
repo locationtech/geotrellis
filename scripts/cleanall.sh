@@ -3,12 +3,7 @@
 ./sbt -J-Xmx2G "project accumulo" clean  || { exit 1; }
 ./sbt -J-Xmx2G "project cassandra" clean  || { exit 1; }
 ./sbt -J-Xmx2G "project geotools" clean || { exit 1; }
-<<<<<<< HEAD
 ./sbt -J-Xmx2G "project geowave" clean || { exit 1; }
-||||||| parent of ca0ecd4... Establish GeoWave Sub-Project
-=======
-./sbt -J-Xmx2G "project geowave" clean  || { exit 1; }
->>>>>>> ca0ecd4... Establish GeoWave Sub-Project
 ./sbt -J-Xmx2G "project hbase" clean || { exit 1; }
 ./sbt -J-Xmx2G "project proj4" clean || { exit 1; }
 ./sbt -J-Xmx2G "project raster-test" clean || { exit 1; }
