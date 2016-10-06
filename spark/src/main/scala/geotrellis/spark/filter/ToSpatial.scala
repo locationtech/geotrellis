@@ -7,16 +7,25 @@ import org.apache.spark.rdd._
 
 object ToSpatial {
   /**
-    * To project not only Tiles, but Metadata (M) information too and to get a consistent result type
-    * it is possible to define additional constraints on Metadata, it should depend on a K type (M[K]),
-    * and two type classes should be provided: [[geotrellis.util.Component]], to extract bounds from M[K] and [[geotrellis.util.Functor]]
-    * to reproject M[K] to M[SpatialKey]
+    * Restrict a tile layer and its metadata to two spatial dimensions.
     *
-    * K: λ[α => M[α] => Functor[M, α]]: λ[α => Component[M[α], Bounds[α]] is a kind projector syntax sugar for Scala type lambdas,
-    * it can be rewritten as K: ({type λ[α] = M[α] => Functor[M, α]})#λ: ({type λ[α] = Component[M[α], Bounds[α]]})#λ
-    * it expands into Scala implicit evidences set:
+    * To project not only Tiles, but also Metadata (M) information
+    * and to get a consistent result type, it is possible
+    * to define additional constraints on Metadata. M should
+    * depend on a K type (M[K]), and two type classes should
+    * be provided: [[geotrellis.util.Component]], to extract key bounds
+    * from M[K], and [[geotrellis.util.Functor]] to map
+    * M[K] to M[SpatialKey].
+    *
+    * For those reading the source code directly,
+    * {{{K: λ[α => M[α] => Functor[M, α]]: λ[α => Component[M[α], Bounds[α]]}}}
+    * is further syntax sugar on top of the usual {{{K: ...}}} pattern.
+    * It expands into the following Scala implicit evidences:
+    *
+    * {{{
     *   ev0: Component[M[K], Bounds[K]],
-    *   ev1: M[K] => FunctorExtensions[M, K]
+    *   ev1: M[K] => Functor[M, K]
+    * }}}
     *
     * @param rdd
     * @param instant

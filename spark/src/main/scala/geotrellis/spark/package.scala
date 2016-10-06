@@ -64,9 +64,10 @@ package object spark
   }
 
   /**
-    * Type class required by [[geotrellis.spark.filter.ToSpatial]] function,
-    * map applies function A => B on KeyBounds keys, that allows TileLayerMetadata
-    * transformation TileLayerMetadata[A] => TileLayerMetadata[B]
+    * This is a type class required by the [[geotrellis.spark.filter.ToSpatial]] function.
+    * `map` applies a function `A => B` on the keys from this Metadata's [[KeyBounds]],
+    * which allows for the transformation:
+    * {{{TileLayerMetadata[A] => TileLayerMetadata[B]}}}
     */
   implicit class TileLayerMetadataFunctor[A](val self: TileLayerMetadata[A]) extends Functor[TileLayerMetadata, A] {
     def map[B](f: A => B): TileLayerMetadata[B] = self.bounds match {
