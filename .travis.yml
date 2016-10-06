@@ -26,8 +26,7 @@ before_script:
   - .travis/hbase-install.sh
 
 jdk:
-  - openjdk7
-  - oraclejdk7
+  - openjdk8
   - oraclejdk8
 
 scala:
@@ -60,7 +59,7 @@ deploy:
     on:
       repo: geotrellis/geotrellis
       branch: master
-      jdk: oraclejdk7
+      jdk: oraclejdk8
       scala: "2.11.8"
 
 after_deploy:

@@ -31,6 +31,7 @@ import monocle._
 import monocle.syntax._
 
 import scala.reflect.ClassTag
+import java.time.Instant
 import scalaz.Functor
 
 package object spark
@@ -90,6 +91,11 @@ package object spark
     */
   implicit def partitionerToOption(partitioner: Partitioner): Option[Partitioner] =
     Some(partitioner)
+
+  implicit def longToInstant(millis: Long): Instant = Instant.ofEpochMilli(millis)
+
+  /** Necessary for Contains.forPoint query */
+  implicit def tileLayerMetadataToMapKeyTransform(tm: TileLayerMetadata[SpatialKey]): MapKeyTransform = tm.mapTransform
 
   implicit class WithContextWrapper[K, V, M](val rdd: RDD[(K, V)] with Metadata[M]) {
     def withContext[K2, V2](f: RDD[(K, V)] => RDD[(K2, V2)]) =

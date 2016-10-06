@@ -1,20 +1,19 @@
 package geotrellis.spark.io
 
-import com.github.nscala_time.time.Imports._
 import geotrellis.raster.{GridBounds, Tile, TileFeature}
 import geotrellis.spark._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.json._
-import org.joda.time.DateTime
 
+import java.time.{ZoneOffset, ZonedDateTime}
 
 trait CoordinateSpaceTimeTileFeatureSpec { self: PersistenceSpec[SpaceTimeKey, TileFeature[Tile, Tile], TileLayerMetadata[SpaceTimeKey]] =>
   val dates = Vector( // all the dates in the layer
-    new DateTime(2010,1,1,0,0,0, DateTimeZone.UTC),
-    new DateTime(2011,1,1,0,0,0, DateTimeZone.UTC),
-    new DateTime(2012,1,1,0,0,0, DateTimeZone.UTC),
-    new DateTime(2013,1,1,0,0,0, DateTimeZone.UTC),
-    new DateTime(2014,1,1,0,0,0, DateTimeZone.UTC))
+    ZonedDateTime.of(2010,1,1,0,0,0,0, ZoneOffset.UTC),
+    ZonedDateTime.of(2011,1,1,0,0,0,0, ZoneOffset.UTC),
+    ZonedDateTime.of(2012,1,1,0,0,0,0, ZoneOffset.UTC),
+    ZonedDateTime.of(2013,1,1,0,0,0,0, ZoneOffset.UTC),
+    ZonedDateTime.of(2014,1,1,0,0,0,0, ZoneOffset.UTC))
   val bounds1 = GridBounds(1,1,3,3)
   val bounds2 = GridBounds(4,5,6,6)
 

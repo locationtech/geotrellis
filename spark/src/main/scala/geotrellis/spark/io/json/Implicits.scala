@@ -1,7 +1,6 @@
 package geotrellis.spark.io.json
 
 import geotrellis.spark._
-import geotrellis.spark.io.index
 import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.spark.util._
 import geotrellis.proj4.CRS
@@ -10,11 +9,10 @@ import geotrellis.raster.io._
 import geotrellis.vector._
 import geotrellis.vector.io._
 
-import com.github.nscala_time.time.Imports._
 import org.apache.avro.Schema
 import spray.json._
 
-import scala.reflect.ClassTag
+import java.time.{ZoneOffset, ZonedDateTime}
 
 object Implicits extends Implicits
 
@@ -89,13 +87,13 @@ trait Implicits extends KeyFormats with KeyIndexFormats {
       }
   }
 
-  implicit object RootDateTimeFormat extends RootJsonFormat[DateTime] {
-    def write(dt: DateTime) = JsString(dt.withZone(DateTimeZone.UTC).toString)
+  implicit object RootDateTimeFormat extends RootJsonFormat[ZonedDateTime] {
+    def write(dt: ZonedDateTime) = JsString(dt.withZoneSameLocal(ZoneOffset.UTC).toString)
 
     def read(value: JsValue) =
       value match {
         case JsString(dateStr) =>
-          DateTime.parse(dateStr)
+          ZonedDateTime.parse(dateStr)
         case _ =>
           throw new DeserializationException("DateTime expected")
       }

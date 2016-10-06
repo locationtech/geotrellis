@@ -1,18 +1,15 @@
 package geotrellis.spark.mapalgebra.local.temporal
 
 import geotrellis.raster._
-import geotrellis.raster.mapalgebra.local._
 import geotrellis.spark._
-import geotrellis.spark.mapalgebra._
 import org.apache.spark.Partitioner
 import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
-import org.apache.spark.SparkContext._
-import org.joda.time._
-import com.github.nscala_time.time.Imports._
+import jp.ne.opt.chronoscala.Imports._
 
-import scala.annotation.tailrec
+import java.time._
+import java.time.temporal.ChronoUnit._
 import scala.reflect.ClassTag
 
 object LocalTemporalStatistics {
@@ -22,8 +19,8 @@ object LocalTemporalStatistics {
     rdd: RDD[(K, Tile)],
     windowSize: Int,
     unit: Int,
-    start: DateTime,
-    end: DateTime,
+    start: ZonedDateTime,
+    end: ZonedDateTime,
     partitioner: Option[Partitioner] = None): RDD[(K, Tile)] =
     aggregateWithTemporalWindow(rdd, windowSize, unit, start, end, partitioner)(minReduceOp)
 
@@ -31,8 +28,8 @@ object LocalTemporalStatistics {
     rdd: RDD[(K, Tile)],
     windowSize: Int,
     unit: Int,
-    start: DateTime,
-    end: DateTime,
+    start: ZonedDateTime,
+    end: ZonedDateTime,
     partitioner: Option[Partitioner] = None): RDD[(K, Tile)] =
     aggregateWithTemporalWindow(rdd, windowSize, unit, start, end, partitioner)(maxReduceOp)
 
@@ -40,8 +37,8 @@ object LocalTemporalStatistics {
     rdd: RDD[(K, Tile)],
     windowSize: Int,
     unit: Int,
-    start: DateTime,
-    end: DateTime,
+    start: ZonedDateTime,
+    end: ZonedDateTime,
     partitioner: Option[Partitioner] = None): RDD[(K, Tile)] =
     aggregateWithTemporalWindow(rdd, windowSize, unit, start, end, partitioner)(meanReduceOp)
 
@@ -49,8 +46,8 @@ object LocalTemporalStatistics {
     rdd: RDD[(K, Tile)],
     windowSize: Int,
     unit: Int,
-    start: DateTime,
-    end: DateTime,
+    start: ZonedDateTime,
+    end: ZonedDateTime,
     partitioner: Option[Partitioner] = None): RDD[(K, Tile)] =
     aggregateWithTemporalWindow(rdd, windowSize, unit, start, end, partitioner)(varianceReduceOp)
 
@@ -58,8 +55,8 @@ object LocalTemporalStatistics {
     sourceRdd: RDD[(K, Tile)],
     windowSize: Int,
     unit: Int,
-    start: DateTime,
-    end: DateTime,
+    start: ZonedDateTime,
+    end: ZonedDateTime,
     partitioner: Option[Partitioner] = None)(
     reduceOp: Traversable[Tile] => Tile
   ): RDD[(K, Tile)] = {
@@ -96,17 +93,17 @@ object LocalTemporalStatistics {
       }
   }
 
-  private def getDifferenceByUnit(unit: Int, base: DateTime, time: DateTime) =
-    unit match {
-      case UnitSeconds => Seconds.secondsBetween(base, time).getSeconds
-      case UnitMinutes => Minutes.minutesBetween(base, time).getMinutes
-      case UnitHours => Hours.hoursBetween(base, time).getHours
-      case UnitDays => Days.daysBetween(base, time).getDays
-      case UnitWeeks => Weeks.weeksBetween(base, time).getWeeks
-      case UnitMonths => Months.monthsBetween(base, time).getMonths
-      case UnitYears => Years.yearsBetween(base, time).getYears
+  private def getDifferenceByUnit(unit: Int, base: ZonedDateTime, time: ZonedDateTime): Int =
+    Math.toIntExact(unit match {
+      case UnitSeconds => SECONDS.between(base, time)
+      case UnitMinutes => MINUTES.between(base, time)
+      case UnitHours   => HOURS.between(base, time)
+      case UnitDays    => DAYS.between(base, time)
+      case UnitWeeks   => WEEKS.between(base, time)
+      case UnitMonths  => MONTHS.between(base, time)
+      case UnitYears   => YEARS.between(base, time)
       case _ => throw new IllegalStateException(s"Bad unit $unit.")
-    }
+    })
 
 
   // If the raster local operations doesn't have the operation you need as

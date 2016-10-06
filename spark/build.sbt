@@ -4,16 +4,15 @@ name := "geotrellis-spark"
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % Version.spark % "provided",
   "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided",
-  "de.javakaffee" % "kryo-serializers" % "0.38" exclude("com.esotericsoftware.kryo", "kryo") exclude("com.esotericsoftware", "kryo"),
-  "com.esotericsoftware" % "kryo-shaded" % "3.0.3",
   "com.google.uzaygezen" % "uzaygezen-core" % "0.2",
   logging,
   avro,
   spire,
   monocleCore, monocleMacro,
-  nscalaTime,
+  chronoscala,
   scalazStream,
-  scalatest % "test")
+  scalatest % "test"
+)
 
 // must use this method of import to avoid cyclic dependency errors
 internalDependencyClasspath in Test <++=
