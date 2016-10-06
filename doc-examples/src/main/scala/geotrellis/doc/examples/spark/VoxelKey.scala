@@ -5,6 +5,7 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.index.zcurve._
 import geotrellis.spark.io.json._
+import geotrellis.util._
 
 import spray.json._
 
