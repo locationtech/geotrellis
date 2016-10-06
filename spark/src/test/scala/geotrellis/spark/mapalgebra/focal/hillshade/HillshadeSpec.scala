@@ -23,5 +23,14 @@ class HillshadeSpec extends FunSpec with TestEnvironment {
 
       testGeoTiff(sc, path)(rasterOp, sparkOp)
     }
+
+    it("should get the same result on elevation for spark op as single raster op (collection api)") {
+      val rasterOp = (tile: Tile, re: RasterExtent) => tile.hillshade(re.cellSize)
+      val sparkOp = (collection: TileLayerCollection[SpatialKey]) => collection.hillshade()
+
+      val path = "aspect.tif"
+
+      testGeoTiffCollection(sc, path)(rasterOp, sparkOp)
+    }
   }
 }

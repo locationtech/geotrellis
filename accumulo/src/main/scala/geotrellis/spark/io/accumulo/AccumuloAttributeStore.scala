@@ -42,11 +42,15 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
 
   private def fetch(layerId: Option[LayerId], attributeName: String): Iterator[Value] = {
     val scanner = connector.createScanner(attributeTable, new Authorizations())
-    layerId.foreach { id =>
-      scanner.setRange(new Range(layerIdText(id)))
+    try {
+      layerId.foreach { id =>
+        scanner.setRange(new Range(layerIdText(id)))
+      }
+      scanner.fetchColumnFamily(new Text(attributeName))
+      scanner.iterator.map(_.getValue)
+    } finally {
+      scanner.close()
     }
-    scanner.fetchColumnFamily(new Text(attributeName))
-    scanner.iterator.map(_.getValue)
   }
 
   private def delete(layerId: LayerId, attributeName: Option[String]): Unit = {
@@ -55,14 +59,19 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
     val config = new BatchWriterConfig()
     config.setMaxWriteThreads(numThreads)
     val deleter = connector.createBatchDeleter(attributeTable, new Authorizations(), numThreads, config)
-    deleter.setRanges(List(new Range(layerIdText(layerId))))
-    attributeName.foreach { name =>
-      deleter.fetchColumnFamily(new Text(name))
-    }
-    deleter.delete()
-    attributeName match {
-      case Some(attribute) => clearCache(layerId, attribute)
-      case None => clearCache(layerId)
+
+    try {
+      deleter.setRanges(List(new Range(layerIdText(layerId))))
+      attributeName.foreach { name =>
+        deleter.fetchColumnFamily(new Text(name))
+      }
+      deleter.delete()
+      attributeName match {
+        case Some(attribute) => clearCache(layerId, attribute)
+        case None => clearCache(layerId)
+      }
+    } finally {
+      deleter.close()
     }
   }
 
@@ -96,11 +105,15 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
 
   def layerExists(layerId: LayerId): Boolean = {
     val scanner = connector.createScanner(attributeTable, new Authorizations())
-    scanner.iterator
-      .exists { kv =>
-        val List(name, zoomStr) = kv.getKey.getRow.toString.split(SEP).toList
+
+    try {
+      scanner.iterator.exists { kv =>
+        val Array(name, zoomStr) = kv.getKey.getRow.toString.split(SEP)
         layerId == LayerId(name, zoomStr.toInt)
       }
+    } finally {
+      scanner.close()
+    }
   }
 
   def delete(layerId: LayerId): Unit = delete(layerId, None)
@@ -109,18 +122,25 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
 
   def layerIds: Seq[LayerId] = {
     val scanner = connector.createScanner(attributeTable, new Authorizations())
-    scanner.iterator
-      .map { kv =>
-        val List(name, zoomStr) = kv.getKey.getRow.toString.split(SEP).toList
+    try {
+      scanner.iterator.map { kv =>
+        val Array(name, zoomStr) = kv.getKey.getRow.toString.split(SEP)
         LayerId(name, zoomStr.toInt)
       }
-      .toList
+      .toSeq
       .distinct
+    } finally {
+      scanner.close()
+    }
   }
 
   def availableAttributes(id: LayerId): Seq[String] = {
     val scanner = connector.createScanner(attributeTable, new Authorizations())
-    scanner.setRange(new Range(layerIdText(id)))
-    scanner.iterator.map(_.getKey.getColumnFamily.toString).toVector
+    try {
+      scanner.setRange(new Range(layerIdText(id)))
+      scanner.iterator.map(_.getKey.getColumnFamily.toString).toVector
+    } finally {
+      scanner.close
+    }
   }
 }

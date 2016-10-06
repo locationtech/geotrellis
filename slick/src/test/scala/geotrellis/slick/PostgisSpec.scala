@@ -73,7 +73,7 @@ class PostgisSpec extends FlatSpec with Matchers with TestDatabase with ScalaFut
     val cities = Seq("washington", "london", "paris")
 
     db.run(SimpleCityTable.schema.create).futureValue
-    db.run(SimpleCityTable ++= cities.map{ d => (0, d) }).futureValue
+    db.run(SimpleCityTable.map(c => c.name) ++= cities).futureValue
 
     val q = for { c <- SimpleCityTable } yield c.name
     db.run(q.result).futureValue.toList should equal (cities)
@@ -93,7 +93,7 @@ class PostgisSpec extends FlatSpec with Matchers with TestDatabase with ScalaFut
     try { db.run(CityTable.schema.drop).futureValue } catch { case e: Throwable =>  }
 
     createSchema()
-    db.run(CityTable ++= data.map{ d => (0, d._1, d._2) }).futureValue
+    db.run(CityTable.map(c => (c.name, c.geom)) ++= data.map { d => (d._1, d._2) }).futureValue
 
     val q = for { c <- CityTable } yield (c.name, c.geom)
 
@@ -106,10 +106,10 @@ class PostgisSpec extends FlatSpec with Matchers with TestDatabase with ScalaFut
 
     // Make sure things are clean
     // we probably shouldn't need this
-    try { db.run(CityTable.schema.drop) } catch { case e: Throwable =>  }
+    try { db.run(CityTable.schema.drop).futureValue } catch { case e: Throwable =>  }
 
     createSchema()
-    db.run(CityTable ++= data.map{ d => (0, d._1, d._2) }).futureValue
+    db.run(CityTable.map(c => (c.name, c.geom)) ++= data.map { d => (d._1, d._2) }).futureValue
 
     val q1 = for { c <- CityTable } yield c
     db.run(q1.result).futureValue.toList.length should equal (data.length)
@@ -129,7 +129,7 @@ class PostgisSpec extends FlatSpec with Matchers with TestDatabase with ScalaFut
     try { db.run(CityTable.schema.drop).futureValue } catch { case e: Throwable =>  }
 
     createSchema()
-    db.run(CityTable ++= data.map{ d => (0, d._1, d._2) }).futureValue
+    db.run(CityTable.map(c => (c.name, c.geom)) ++= data.map { d => (d._1, d._2) }).futureValue
 
     // 40.30, 78.32 -> Altoona,PA
     val bbox = bboxBuffer(78.32, 40.30, 0.01)
@@ -158,7 +158,7 @@ class PostgisSpec extends FlatSpec with Matchers with TestDatabase with ScalaFut
     try { db.run(CityTable.schema.drop).futureValue } catch { case e: Throwable =>  }
 
     createSchema()
-    db.run(CityTable ++= data.map{ d => (0, d._1, d._2) }).futureValue
+    db.run(CityTable.map(c => (c.name, c.geom)) ++= data.map { d => (d._1, d._2) }).futureValue
 
     // 40.30, 78.32 -> Altoona,PA
     val bbox = bboxBuffer(78.32, 40.30, 0.01)
@@ -194,7 +194,7 @@ class PostgisSpec extends FlatSpec with Matchers with TestDatabase with ScalaFut
       c <- CityTable if c.name === "Reading,PA"
     } yield c.geom.asGeoJSON()
 
-    println(db.run(q3.result).futureValue.head)  //todo checki if this is correct
+    println(db.run(q3.result).futureValue.head)  // todo checki if this is correct
     db.run(q3.result).futureValue.head should equal ("""{"type":"Point","coordinates":[75.97,40.38]}""")  // it should be first
 
     dropSchema()
@@ -215,23 +215,23 @@ class PostgisSpec extends FlatSpec with Matchers with TestDatabase with ScalaFut
     db.run(OptCity.schema.create).futureValue
 
     val cities = Seq(
-      (0, "washington",Some(pt(-77.02,38.53))),
-      (0, "london", None),
-      (0, "paris", Some(pt(2.3470,48.8742)))
+      ("washington",Some(pt(-77.02,38.53))),
+      ("london", None),
+      ("paris", Some(pt(2.3470,48.8742)))
     )
 
-    db.run(OptCity ++= cities).futureValue
+    db.run(OptCity.map(c => (c.name, c.geom)) ++= cities).futureValue
 
     val q1 = for {
       c <- OptCity if !(c.geom isDefined)
     } yield (c.name, c.geom)
-    db.run(q1.result).futureValue.toList should equal (List(("london",None)))
+    db.run(q1.result).futureValue.toList should equal (List(("london", None)))
 
     val q2 = for {
       c <- OptCity if c.geom isDefined
     } yield c.name
 
-    db.run(q2.result).futureValue.toList should equal (List("washington","paris"))
+    db.run(q2.result).futureValue.toList should equal (List("washington", "paris"))
 
     db.run(OptCity.schema.drop).futureValue
   }
@@ -241,12 +241,10 @@ class PostgisSpec extends FlatSpec with Matchers with TestDatabase with ScalaFut
     // we probably shouldn't need this
     try { db.run(OptCity.schema.drop).futureValue } catch { case e: Throwable =>  }
 
-    val data2 = data.map {
-      case (s,g) => (0, s, Some(g))
-    }
+    val data2 = data.map { case (s, g) => s -> Some(g)}
 
    db.run(OptCity.schema.create).futureValue
-   db.run(OptCity ++= data2).futureValue
+   db.run(OptCity.map(c => (c.name, c.geom)) ++= data2).futureValue
 
     // 40.30, 78.32 -> Altoona,PA
     val bbox = bboxBuffer(78.32, 40.30, 0.01)
@@ -292,11 +290,11 @@ class PostgisSpec extends FlatSpec with Matchers with TestDatabase with ScalaFut
     try { db.run(LineTable.schema.drop).futureValue } catch { case e: Throwable =>  }
     db.run(LineTable.schema.create).futureValue
 
-    db.run(LineTable += (0, Line(Point(1,1), Point(1,2)))).futureValue
+    db.run(LineTable.map(_.geom) += Line(Point(1,1), Point(1,2))).futureValue
 
     val q = for {
       line <- LineTable
-    } yield (line.geom.length)
+    } yield line.geom.length
 
     println(q.result.statements)
     println(db.run(q.result).futureValue.toList)

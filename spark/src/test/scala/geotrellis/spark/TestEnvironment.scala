@@ -76,7 +76,7 @@ trait TestEnvironment extends BeforeAndAfterAll
       conf
         .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
         .set("spark.kryoserializer.buffer.max", "500m")
-        .set("spark.kryo.registrationRequired","false")
+        .set("spark.kryo.registrationRequired", "false")
       setKryoRegistrator(conf)
     }
 

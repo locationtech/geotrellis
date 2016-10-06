@@ -33,7 +33,7 @@ class IncreasingSpatialTiles(tileLayout: TileLayout, gridBounds: GridBounds) ext
     val tc = tileCol - gridBounds.colMin
     val tr = tileRow - gridBounds.rowMin
 
-    val r = (tr * tileLayout.tileRows + row) * (tileLayout.tileCols * gridBounds.width) 
+    val r = (tr * tileLayout.tileRows + row) * (tileLayout.tileCols * gridBounds.width)
     val c = (tc * tileLayout.tileCols) + col
 
     r + c

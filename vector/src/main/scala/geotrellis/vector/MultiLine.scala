@@ -49,7 +49,6 @@ object MultiLine {
 
 /** Class representing a geometry of multiple lines */
 case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
-                                                      with Relatable
                                                       with OneDimension {
 
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */
