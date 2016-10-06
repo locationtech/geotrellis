@@ -24,6 +24,7 @@ import geotrellis.spark.tiling._
 import geotrellis.spark.ingest._
 import geotrellis.spark.crop._
 import geotrellis.spark.filter._
+
 import org.apache.spark.{Partitioner, SparkContext}
 import org.apache.spark.rdd._
 import spire.syntax.cfor._
@@ -32,7 +33,6 @@ import monocle.syntax._
 
 import scala.reflect.ClassTag
 import java.time.Instant
-import scalaz.Functor
 
 package object spark
     extends buffer.Implicits
@@ -61,6 +61,19 @@ package object spark
   object TileLayerRDD {
     def apply[K](rdd: RDD[(K, Tile)], metadata: TileLayerMetadata[K]): TileLayerRDD[K] =
       new ContextRDD(rdd, metadata)
+  }
+
+  /**
+    * This is a type class required by the [[geotrellis.spark.filter.ToSpatial]] function.
+    * `map` applies a function `A => B` on the keys from this Metadata's [[KeyBounds]],
+    * which allows for the transformation:
+    * {{{TileLayerMetadata[A] => TileLayerMetadata[B]}}}
+    */
+  implicit class TileLayerMetadataFunctor[A](val self: TileLayerMetadata[A]) extends Functor[TileLayerMetadata, A] {
+    def map[B](f: A => B): TileLayerMetadata[B] = self.bounds match {
+      case KeyBounds(minKey, maxKey) => self.copy(bounds = KeyBounds(f(minKey), f(maxKey)))
+      case EmptyBounds => self.copy(bounds = EmptyBounds)
+    }
   }
 
   type TileLayerCollection[K] = Seq[(K, Tile)] with Metadata[TileLayerMetadata[K]]
@@ -178,5 +191,6 @@ package object spark
         (implicit ev: K1 => TilerKeyMethods[K1, K2], ev1: GetComponent[K1, ProjectedExtent]): TileLayerMetadata[K2] = {
       TileLayerMetadata.fromRdd[K1, V, K2](rdd, layout)
     }
- }
+  }
+
 }
