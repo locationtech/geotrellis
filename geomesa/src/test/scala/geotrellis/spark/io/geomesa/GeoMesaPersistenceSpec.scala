@@ -3,7 +3,6 @@ package geotrellis.spark.io.geomesa
 import geotrellis.geomesa.geotools.{GeoMesaSimpleFeatureType, GeometryToGeoMesaSimpleFeature}
 import geotrellis.spark.{LayerId, TestEnvironment}
 import geotrellis.vector._
-
 import org.opengis.filter.Filter
 import org.apache.spark.rdd.RDD
 import org.geotools.data.Query
@@ -12,7 +11,9 @@ import org.scalatest.{BeforeAndAfterAll, FunSpec, Matchers, Suite}
 import java.text.SimpleDateFormat
 import java.util.TimeZone
 
-class GeoMesaPersistenceSpec extends FunSpec with Suite with BeforeAndAfterAll with Matchers with TestEnvironment {
+import geotrellis.GeoMesaTestEnvironment
+
+class GeoMesaPersistenceSpec extends FunSpec with Suite with BeforeAndAfterAll with Matchers with GeoMesaTestEnvironment {
 
   describe("GeoMesa Features Spec") {
     val featuresInstance = GeoMesaInstance(

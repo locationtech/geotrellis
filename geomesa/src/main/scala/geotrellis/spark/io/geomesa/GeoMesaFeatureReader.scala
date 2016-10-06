@@ -24,7 +24,7 @@ class GeoMesaFeatureReader(val instance: GeoMesaInstance)(implicit sc: SparkCont
     numPartitions: Option[Int] = None
   ): RDD[SimpleFeature] = {
     val dataStore = instance.accumuloDataStore
-    dataStore.createSchema(simpleFeatureType)
+    if(!dataStore.getTypeNames().contains(simpleFeatureType.getTypeName)) dataStore.createSchema(simpleFeatureType)
     dataStore.dispose()
 
     val job = Job.getInstance(sc.hadoopConfiguration)

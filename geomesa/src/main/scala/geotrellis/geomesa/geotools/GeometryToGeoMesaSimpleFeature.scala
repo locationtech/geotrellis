@@ -15,7 +15,7 @@ object GeometryToGeoMesaSimpleFeature {
   val whenField  = "when"
   val whereField = "where"
 
-  @transient lazy val featureTypeCache =
+  lazy val featureTypeCache =
     new LRUCache[String, SimpleFeatureType](
       maxSize = ConfigFactory.load().getInt("geotrellis.geomesa.featureTypeCacheSize"),
       sizeOf  = {x => 1l}
