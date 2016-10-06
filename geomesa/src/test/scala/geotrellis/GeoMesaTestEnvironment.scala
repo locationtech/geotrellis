@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Azavea.
+ * Copyright (c) 2014 DigitalGlobe.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,15 @@
  * limitations under the License.
  */
 
-object Version {
-  val geotrellis  = "1.0.0" + Environment.versionSuffix
-  val scala       = "2.11.8"
-  val geotools    = "14.4"
-  val akka        = "2.4.10"
-  val spray       = "1.3.3"
-  val sprayJson   = "1.3.2"
-  val monocle     = "1.2.2"
-  val accumulo    = "1.7.2"
-  val cassandra   = "3.1.0"
-  val hbase       = "1.2.3"
-  val geomesa     = "1.2.5"
-  lazy val hadoop = Environment.hadoopVersion
-  lazy val spark  = Environment.sparkVersion
+package geotrellis
+
+import geotrellis.spark.TestEnvironment
+
+import org.apache.spark.SparkConf
+import org.scalatest._
+
+trait GeoMesaTestEnvironment extends TestEnvironment { self: Suite =>
+  override def setKryoRegistrator(conf: SparkConf) =
+    conf.set("spark.kryo.registrator", classOf[geotrellis.spark.io.geomesa.kryo.KryoRegistrator].getName)
+        .set("spark.kryo.registrationRequired", "false")
 }

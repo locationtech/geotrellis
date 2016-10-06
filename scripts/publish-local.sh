@@ -3,6 +3,7 @@
 # Publish local for main scala version (2.11)
 ./sbt "project accumulo" publish-local && \
 ./sbt "project cassandra" publish-local && \
+./sbt "project geomesa" publish-local && \
 ./sbt "project geotools" publish-local && \
 ./sbt "project geowave" publish-local && \
 ./sbt "project hbase" publish-local && \
