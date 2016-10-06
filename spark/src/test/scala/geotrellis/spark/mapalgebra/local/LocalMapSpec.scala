@@ -6,7 +6,8 @@ import geotrellis.spark.io.hadoop._
 import geotrellis.spark.TileLayerRDD
 import geotrellis.spark.testfiles._
 
-import com.github.nscala_time.time.Imports.DateTime
+import java.time.ZonedDateTime
+
 import org.scalatest._
 
 class LocalMapSpec extends FunSpec with TestEnvironment with TestFiles {
@@ -41,7 +42,7 @@ class LocalMapSpec extends FunSpec with TestEnvironment with TestFiles {
       val tile = ArrayTile(arr, 4, 4)  // size should be 4
       val tileLayout = TileLayout(2, 2, 2, 2)
 
-      val rdd = createSpaceTimeTileLayerRDD(Array((tile, new DateTime())), tileLayout)
+      val rdd = createSpaceTimeTileLayerRDD(Array((tile, ZonedDateTime.now())), tileLayout)
 
       val result = rdd.localMap((z: Int) => if (isNoData(z)) 42 else 42)  // All values are 4
       rasterShouldBe(result, 42, 4)
@@ -77,7 +78,7 @@ class LocalMapSpec extends FunSpec with TestEnvironment with TestFiles {
       val tile = ArrayTile(arr, 4, 4)  // size should be 4
       val tileLayout = TileLayout(2, 2, 2, 2)
 
-      val rdd = createSpaceTimeTileLayerRDD(Array((tile, new DateTime())), tileLayout)
+      val rdd = createSpaceTimeTileLayerRDD(Array((tile, ZonedDateTime.now())), tileLayout)
 
       val result = rdd.localMap((z: Int) => if (isNoData(z)) 1000 else z * 10)  // All values are 4
       rasterShouldBe(result, minMax=(10, 1000))

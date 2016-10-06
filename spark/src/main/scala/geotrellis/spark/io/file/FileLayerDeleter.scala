@@ -34,6 +34,8 @@ object FileLayerDeleter {
         sourceLayerPath
           .listFiles()
           .foreach(_.delete())
+
+        sourceLayerPath.delete
       }
     }
 

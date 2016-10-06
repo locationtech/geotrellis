@@ -160,6 +160,9 @@ case class CompositeTile(tiles: Seq[Tile],
     if (cols.toLong * rows.toLong > Int.MaxValue.toLong) {
       sys.error("This tiled raster is too big to convert into an array.")
     } else {
+      if(targetCellType.isFloatingPoint != cellType.isFloatingPoint)
+        logger.warn(s"Conversion from $cellType to $targetCellType may lead to data loss.")
+
       val tile = ArrayTile.alloc(targetCellType, cols, rows)
       val len = cols * rows
       val layoutCols = tileLayout.layoutCols
