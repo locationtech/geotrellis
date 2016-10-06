@@ -4,9 +4,9 @@ import java.io.InputStream
 import java.nio.ByteBuffer
 
 trait StreamBytes {
-  val chunkSize = 256000
   private var streamPosition = 0
 
+  def chunkSize: Int
   def objectLength: Long
   
   def readStream(start: Int, end: Int): InputStream
@@ -28,10 +28,9 @@ trait StreamBytes {
         (objectLength - start).toInt
 
     val arr = Array.ofDim[Byte](chunk)
-    val stream = readStream(start, chunk)
-
+    val stream = readStream(start, chunk + start)
     stream.read(arr, 0, chunk)
-    streamPosition = start + length
+    streamPosition = chunk
 
     arr
   }

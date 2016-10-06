@@ -30,7 +30,7 @@ import scala.language.implicitConversions
 
 object GeoKeyReader {
 
-  def read(byteBuffer: ByteBuffer, imageDirectory: TiffTags,
+  def read(byteBuffer: ByteReader, imageDirectory: TiffTags,
     geoKeyDirectory: GeoKeyDirectory, index: Int = 0
   ): GeoKeyDirectory = {
 

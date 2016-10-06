@@ -4,10 +4,6 @@ import java.nio.{Buffer, ByteBuffer, ByteOrder}
 import scala.language.implicitConversions
 
 trait ByteReader {
-  def byteBuffer: ByteBuffer
-
-  /*
-  val array: Array[Byte]
   def position: Int
   def position(i: Int): Buffer
 
@@ -20,19 +16,11 @@ trait ByteReader {
   def getLong: Long
   
   def getByteBuffer: ByteBuffer
-  */
 }
 
-
 object ByteReader {
-  implicit def byteBuffer2ByteReader(buffer: ByteBuffer): ByteReader = {
+  implicit def byteBuffer2ByteReader(byteBuffer: ByteBuffer): ByteReader = {
     new ByteReader() {
-      def byteBuffer = buffer
-    }
-  }
-    /*
-    new ByteReader() {
-      override val array = byteBuffer.array
       def position: Int = byteBuffer.position
       def position(i: Int): Buffer = byteBuffer.position(i)
 
@@ -46,8 +34,8 @@ object ByteReader {
 
       def getByteBuffer = byteBuffer
     }
-    */
+  }
   
   implicit def toByteBuffer(br: ByteReader): ByteBuffer =
-    br.byteBuffer
+    br.getByteBuffer
 }

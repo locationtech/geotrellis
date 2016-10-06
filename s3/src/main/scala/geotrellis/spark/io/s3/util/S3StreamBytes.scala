@@ -3,7 +3,6 @@ package geotrellis.spark.io.s3.util
 import geotrellis.util.StreamBytes
 import geotrellis.spark.io.s3._
 
-import scala.collection.mutable.Queue
 import com.amazonaws.services.s3.model._
 
 trait S3StreamBytes extends StreamBytes {
@@ -16,21 +15,9 @@ trait S3StreamBytes extends StreamBytes {
   def objectLength = metadata.getContentLength
 
   def readStream(start: Int, end: Int): S3ObjectInputStream = {
-    val obj = client.readRange(start, end, request)
-    obj.getObjectContent
+    //println(s"reading the stream now. Start: $start, End: $end")
+    val obj = client.readRange(start.toLong, end.toLong, request)
+    val s = obj.getObjectContent
+    s
   }
-}
-
-
-object S3Queue {
-  private val mapQueue = Queue[Map[Long, Array[Byte]]]()
-  
-  def size: Int = mapQueue.length
-
-  def isEmpty: Boolean = mapQueue.isEmpty
-  
-  def saveChunk(chunk: Map[Long, Array[Byte]]): Unit =
-    mapQueue.enqueue(chunk)
-
-  def getChunk: Map[Long, Array[Byte]] = mapQueue.dequeue
 }

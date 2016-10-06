@@ -1,21 +1,23 @@
 package geotrellis.spark.io.s3.util
 
-import geotrellis.util.StreamBytes
-import geotrellis.spark.io.s3._
-
 import scala.collection.mutable._
-import java.nio.ByteBuffer
-
 import spire.syntax.cfor._
-import com.amazonaws.services.s3.model._
 
 import org.scalatest._
 
-class S3StreamBytesSpec extends FunSpec with Matchers with S3StreamBytes {
-  val client = S3Client.default
-  val bucket = "gt-rasters"
-  val k = "nlcd/2011/tiles/nlcd_2011_01_01.tif"
-  val request = new GetObjectRequest(bucket, k)
+class StreamTester(chunkSize: Int, testArray: Array[Byte])
+  extends MockS3StreamBytes(chunkSize, testArray)
+
+class S3StreamBytesSpec extends FunSpec {
+  val testArray = Array[Byte](
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+    10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+    20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+    30, 31, 32, 33, 34, 35, 36, 37, 38, 39)
+
+  val chunkSize = 10
+
+  val tester = new StreamTester(chunkSize, testArray)
 
   def arraysMatch[A <: Any](a1: Array[A], a2: Array[A]): Boolean = {
     val zipped = a1 zip a2
@@ -27,30 +29,36 @@ class S3StreamBytesSpec extends FunSpec with Matchers with S3StreamBytes {
   describe("Readig the Stream from S3") {
 
     it("should be able to create a default chunk from the begininng") {
-      val actual = getArray
-      val expected = getArray(0, 256000)
+      val actual = tester.getArray
+      val expected = Array[Byte](
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 
       assert(arraysMatch(expected, actual))
     }
 
-    it("should read ahead and then back") {
-      val actual = getArray(150, 250)
-      getArray(500, 750)
-      val expected = getArray(150, 250)
+    it("should not read past the total file length") {
+      val actual = tester.getArray(30, 50)
+      val expected = Array[Byte](
+        30, 31, 32, 33, 34, 35, 36, 37, 38, 39)
 
       assert(arraysMatch(expected, actual))
     }
 
-    it("should return the correct offset for each iteration") {
-      val actual = Array[Long](0, 256000, 512000, 768000, 1024000)
+    it("should have the correct offsets") {
       val listBuffer = ListBuffer[Long]()
+      var counter = 0
 
-      cfor(0)(_ < 1024001, _ + 256000) { i =>
-        val mapped = getMappedArray(i)
-        listBuffer += mapped.head._1
+      cfor(0)(_ < testArray.length, _ + chunkSize){i =>
+        listBuffer += tester.getMappedArray(counter).head._1
+        counter += chunkSize
       }
 
-      assert(arraysMatch(listBuffer.toArray, actual))
+      val actual = listBuffer.toArray
+      val expected = Array[Long](0, 10, 20, 30)
+
+      assert(arraysMatch(expected, actual))
     }
+
+    //it("should access the array the correct number of times")
   }
 }

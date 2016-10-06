@@ -13,14 +13,14 @@ import monocle.syntax.apply._
 import spire.syntax.cfor._
 
 /**
- * This class implements [[SegmentBytes]] via a ByteBuffer.
+ * This class implements [[SegmentBytes]] via a ByteReader.
  *
- * @param byteBuffer: A ByteBuffer that contains bytes of the GeoTiff
+ * @param byteBuffer: A ByteReader that contains bytes of the GeoTiff
  * @param storageMethod: The [[StorageMethod]] of the GeoTiff
  * @param tifftags: The [[TiffTags]] of the GeoTiff
  * @return A new instance of BufferSegmentBytes
  */
-case class BufferSegmentBytes(byteBuffer: ByteBuffer, tiffTags: TiffTags) extends SegmentBytes {
+case class BufferSegmentBytes(byteBuffer: ByteReader, tiffTags: TiffTags) extends SegmentBytes {
 
   val (offsets, byteCounts) =
     if (tiffTags.hasStripStorage) {
@@ -56,6 +56,8 @@ case class BufferSegmentBytes(byteBuffer: ByteBuffer, tiffTags: TiffTags) extend
    * @return An Array[Byte] that contains the bytes of the segment
    */
   def getSegment(i: Int) = {
+    if (i == 0)
+      println(offsets(i))
     val oldOffset = byteBuffer.position
     byteBuffer.position(offsets(i))
     val result = byteBuffer.getSignedByteArray(byteCounts(i))

@@ -37,12 +37,12 @@ object ArraySegmentBytes {
   /** 
    *  Creates a new instance of ArraySegmentBytes.
    *
-   *  @param byteBuffer: A ByteBuffer that contains the bytes of the GeoTiff
+   *  @param byteBuffer: A ByteReader that contains the bytes of the GeoTiff
    *  @storageMethod: The [[StorageMethod]] of the GeoTiff
    *  @tiffTags: The [[TiffTags]] of the GeoTiff
    *  @return A new instance of ArraySegmentBytes
    */
-  def apply(byteBuffer: ByteBuffer, tiffTags: TiffTags): ArraySegmentBytes = {
+  def apply(byteBuffer: ByteReader, tiffTags: TiffTags): ArraySegmentBytes = {
 
       val compressedBytes: Array[Array[Byte]] = {
         def readSections(offsets: Array[Int],

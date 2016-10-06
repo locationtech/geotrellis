@@ -103,7 +103,7 @@ class MockS3Client() extends S3Client with LazyLogging {
     }
   }
   
-  def readRange(start: Int, end: Int, getObjectRequest: GetObjectRequest): S3Object = ???
+  def readRange(start: Long, end: Long, getObjectRequest: GetObjectRequest): S3Object = ???
 
   def putObject(r: PutObjectRequest): PutObjectResult = this.synchronized {
     logger.debug(s"PUT ${r.getKey}")
