@@ -6,9 +6,6 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestTileFeatureFiles
 
-import com.github.nscala_time.time.Imports._
-import org.joda.time.DateTime
-
 class HadoopTileFeatureSpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, TileFeature[Tile, Tile], TileLayerMetadata[SpaceTimeKey]]
     with SpaceTimeKeyIndexMethods

@@ -33,7 +33,7 @@ import geotrellis.vector.Extent
   * on how to decode and encode VectorTiles.
   *
   */
-trait VectorTile {
+trait VectorTile extends Serializable {
   /** Every Layer in this Tile, with its name as a lookup key. */
   val layers: Map[String, Layer]
 

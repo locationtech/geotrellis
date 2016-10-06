@@ -2,11 +2,12 @@ import Dependencies._
 
 name := "geotrellis-macros"
 
-libraryDependencies <+= scalaVersion { v => "org.scala-lang" %  "scala-reflect" % v }
-
 sourceGenerators in Compile <+= (sourceManaged in Compile).map(Boilerplate.genMacro)
 
-libraryDependencies += "org.spire-math" %% "spire-macros" % "0.11.0"
+libraryDependencies ++= Seq(
+  "org.spire-math" %% "spire-macros" % "0.11.0",
+  "org.scala-lang" % "scala-reflect" % scalaVersion.value
+)
 
 resolvers += Resolver.sonatypeRepo("snapshots")
 

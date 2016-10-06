@@ -1,18 +1,15 @@
 package geotrellis.spark
 
-import geotrellis.spark.io.json.Implicits._
-
-import com.github.nscala_time.time.Imports._
-import spray.json._
+import java.time.{ZoneOffset, ZonedDateTime}
 
 object TemporalKey {
-  def apply(dateTime: DateTime): TemporalKey =
-    TemporalKey(dateTime.getMillis)
+  def apply(dateTime: ZonedDateTime): TemporalKey =
+    TemporalKey(dateTime.toInstant.toEpochMilli)
 
-  implicit def dateTimeToKey(time: DateTime): TemporalKey =
+  implicit def dateTimeToKey(time: ZonedDateTime): TemporalKey =
     TemporalKey(time)
 
-  implicit def keyToDateTime(key: TemporalKey): DateTime =
+  implicit def keyToDateTime(key: TemporalKey): ZonedDateTime =
     key.time
 
   implicit def ordering[A <: TemporalKey]: Ordering[A] =
@@ -22,5 +19,5 @@ object TemporalKey {
 
 /** A TemporalKey designates the temporal positioning of a layer's tile. */
 case class TemporalKey(instant: Long) {
-  def time: DateTime = new DateTime(instant, DateTimeZone.UTC)
+  def time: ZonedDateTime = ZonedDateTime.ofInstant(instant, ZoneOffset.UTC)
 }

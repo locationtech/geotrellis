@@ -106,7 +106,7 @@ class PostgisSpec extends FlatSpec with Matchers with TestDatabase with ScalaFut
 
     // Make sure things are clean
     // we probably shouldn't need this
-    try { db.run(CityTable.schema.drop) } catch { case e: Throwable =>  }
+    try { db.run(CityTable.schema.drop).futureValue } catch { case e: Throwable =>  }
 
     createSchema()
     db.run(CityTable.map(c => (c.name, c.geom)) ++= data.map { d => (d._1, d._2) }).futureValue

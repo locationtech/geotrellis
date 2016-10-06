@@ -38,6 +38,7 @@ class RenderMethodsSpec extends FunSpec with Matchers
       result.foreachDouble { (col, row, z) =>
         val i = tile.cols * row + col
         val expected = ((i.toDouble / 120) * 10).toInt
+
         z should be (expected)
       }
     }

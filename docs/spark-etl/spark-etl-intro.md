@@ -29,6 +29,9 @@ import org.apache.spark.SparkConf
 object GeoTrellisETL {
   def main(args: Array[String]): Unit = {
     implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL", new SparkConf(true))
+    type I = ProjectedExtent // or TemporalProjectedExtent for temporal ingest
+    type K = SpatialKey // or SpaceTimeKey for temporal ingest
+    type V = Tile // or MultibandTile to ingest multiband tile
 
     try {
       EtlConf(args) foreach { conf =>
@@ -47,6 +50,37 @@ object GeoTrellisETL {
   }
 }
 ```
+
+Above is just `Etl.ingest` function implementation, so it is possible to rewrite same functionality:
+
+```scala
+import geotrellis.spark._
+import geotrellis.raster.Tile
+import geotrellis.spark.util.SparkUtils
+import geotrellis.vector.ProjectedExtent
+import org.apache.spark.SparkConf
+
+object SinglebandIngest {
+  def main(args: Array[String]): Unit = {
+    implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL SinglebandIngest", new SparkConf(true))
+    try {
+      Etl.ingest[ProjectedExtent, SpatialKey, Tile](args)
+    } finally {
+      sc.stop()
+    }
+  }
+}
+```
+
+`Etl.ingest` function can be used with following types variations:
+
+* `Etl.ingest[ProjectedExtent, SpatialKey, Tile]`
+* `Etl.ingest[ProjectedExtent, SpatialKey, MultibandTile]`
+* `Etl.ingest[TemporalProjectedExtent, SpaceTimeKey, Tile]`
+* `Etl.ingest[TemporalProjectedExtent, SpaceTimeKey, MultibandTile]`
+
+For temporal ingest `TemporalProjectedExtent` and `SpaceTimeKey` should be used, for spatial ingest `ProjectedExtent`
+and `SpatialKey`.
 
 ### User defined ETL configs
 
@@ -230,6 +264,12 @@ timeFormat         | time format to parse time stored in time tag geotiff tag (o
   "name": "test",
   "cache": "NONE",
   "noData": 0.0,
+  "clip": {
+    "xmin":1.0,
+    "ymin":2.0,
+    "xmax":3.0,
+    "ymax":4.0
+  },
   "backend": {
     "type": "hadoop",
     "path": "input"
@@ -243,6 +283,7 @@ format           | Format of the tile files to be read (ex: geotiff)
 name             | Input dataset name
 cache            | Spark RDD cache strategy
 noData           | NoData value
+clip             | Extent in target CRS to clip the input source
 
 ###### Supported Formats
 

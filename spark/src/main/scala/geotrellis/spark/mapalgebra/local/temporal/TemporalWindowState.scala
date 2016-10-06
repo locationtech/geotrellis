@@ -2,11 +2,12 @@ package geotrellis.spark.mapalgebra.local.temporal
 
 import geotrellis.raster._
 import geotrellis.spark._
+
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
-import org.joda.time.{DateTimeZone, DateTime}
-import reflect.ClassTag
 
+import java.time.ZonedDateTime
+import reflect.ClassTag
 
 object TemporalWindowHelper {
 
@@ -43,7 +44,7 @@ case class TemporalWindowState[K](
   method: Int,
   windowSize: Option[Int] = None,
   unit: Option[Int] = None,
-  start: Option[DateTime] = None,
+  start: Option[ZonedDateTime] = None,
   partitioner: Option[Partitioner] = None
 )(
   implicit val keyClassTag: ClassTag[K],
@@ -64,11 +65,11 @@ case class TemporalWindowState[K](
       copy(windowSize = Some(p), unit = Some(u))
     }
 
-  def from(s: DateTime): TemporalWindowState[K] =
+  def from(s: ZonedDateTime): TemporalWindowState[K] =
     if (state != 1) badState
     else copy(start = Some(s))
 
-  def to(to: DateTime) =
+  def to(to: ZonedDateTime) =
     if (state != 2) badState
     else method match {
       case Average => rdd.temporalMean(windowSize.get, unit.get, start.get, to, partitioner)

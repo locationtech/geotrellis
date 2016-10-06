@@ -49,7 +49,6 @@ object MultiPoint {
 
 /** Class representing a geometry of multiple points */
 case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
-                                                  with Relatable
                                                   with ZeroDimensions {
 
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */

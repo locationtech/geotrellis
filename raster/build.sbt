@@ -7,6 +7,7 @@ libraryDependencies ++= Seq(
   typesafeConfig,
   jts,
   spire,
+  logging,
   monocleCore,
   monocleMacro,
   openCSV)

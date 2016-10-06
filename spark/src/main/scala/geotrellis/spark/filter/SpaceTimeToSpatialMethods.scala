@@ -21,13 +21,13 @@ import geotrellis.spark._
 import geotrellis.util._
 
 import org.apache.spark.rdd._
-import org.joda.time.DateTime
+import java.time.ZonedDateTime
 
 abstract class SpaceTimeToSpatialMethods[K: SpatialComponent: TemporalComponent, V, M: Component[?, Bounds[K]]]
     extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
   def toSpatial(instant: Long): RDD[(SpatialKey, V)] with Metadata[M] =
     ToSpatial(self, instant)
 
-  def toSpatial(dateTime: DateTime): RDD[(SpatialKey, V)] with Metadata[M] =
-    toSpatial(dateTime.getMillis)
+  def toSpatial(dateTime: ZonedDateTime): RDD[(SpatialKey, V)] with Metadata[M] =
+    toSpatial(dateTime.toInstant.toEpochMilli)
 }

@@ -113,6 +113,9 @@ abstract class GeoTiffTile(
    * @return A new [[Tile]] that contains the new CellTypes
    */
   def convert(newCellType: CellType): Tile = {
+    if(newCellType.isFloatingPoint != cellType.isFloatingPoint)
+      logger.warn(s"Conversion from $cellType to $newCellType may lead to data loss.")
+
     val arr = Array.ofDim[Array[Byte]](segmentCount)
     val compressor = compression.createCompressor(segmentCount)
     cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
