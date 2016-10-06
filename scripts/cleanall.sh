@@ -19,6 +19,7 @@ rm -r accumulo/target
 rm -r cassandra/target
 rm -r geomesa/target
 rm -r geotools/target
+rm -r geowave/target
 rm -r hbase/target
 rm -r macros/target
 rm -r proj4/target
