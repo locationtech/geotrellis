@@ -297,6 +297,8 @@ object GeoTiffReader {
     val bandType = tiffTags.bandType
     val bandCount = tiffTags.bandCount
 
+    println(s"cols: $cols, rows: $rows, bandType: $bandType, bandCount: $bandCount")
+
     val segmentLayout = GeoTiffSegmentLayout(cols, rows, storageMethod, bandType)
     val noDataValue =
       (tiffTags
