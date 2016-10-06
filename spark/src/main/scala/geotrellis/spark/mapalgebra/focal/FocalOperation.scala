@@ -4,18 +4,11 @@ import geotrellis.spark._
 import geotrellis.spark.buffer._
 import geotrellis.raster._
 import geotrellis.raster.mapalgebra.focal._
-import geotrellis.vector._
 import geotrellis.util.MethodExtensions
 
 import org.apache.spark.rdd.RDD
-import org.apache.spark.SparkContext._
 
-import spire.syntax.cfor._
-
-import annotation.tailrec
 import scala.reflect.ClassTag
-import scala.collection.mutable.ArrayBuffer
-
 
 object FocalOperation {
   private def mapOverBufferedTiles[K: SpatialComponent: ClassTag](bufferedTiles: RDD[(K, BufferedTile[Tile])], neighborhood: Neighborhood)

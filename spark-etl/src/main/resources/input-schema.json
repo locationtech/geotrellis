@@ -14,6 +14,29 @@
     "noData": {
       "type": "integer"
     },
+    "clip": {
+      "type": "object",
+      "properties": {
+        "xmin": {
+          "type": "number"
+        },
+        "ymin": {
+          "type": "number"
+        },
+        "xmax": {
+          "type": "number"
+        },
+        "ymax": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "xmin",
+        "ymin",
+        "xmax",
+        "ymax"
+      ]
+    },
     "backend": {
       "type": "object",
       "properties": {

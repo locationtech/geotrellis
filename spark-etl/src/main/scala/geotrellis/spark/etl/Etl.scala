@@ -74,14 +74,19 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
     * @tparam I Input key type
     * @tparam V Input raster value type
     */
-  def load[I: TypeTag, V <: CellGrid: TypeTag]()(implicit sc: SparkContext): RDD[(I, V)] = {
-    val plugin =
-      combinedModule
-        .findSubclassOf[InputPlugin[I, V]]
-        .find(_.suitableFor(input.backend.`type`.name, input.format))
-        .getOrElse(sys.error(s"Unable to find input module of type '${input.backend.`type`.name}' for format `${input.format}"))
+  def load[I: Component[?, ProjectedExtent]: TypeTag, V <: CellGrid: TypeTag]()(implicit sc: SparkContext): RDD[(I, V)] = {
+    val plugin = {
+      val plugins = combinedModule.findSubclassOf[InputPlugin[I, V]]
+      if(plugins.isEmpty) sys.error(s"Unable to find input module for input key type '${typeTag[I].tpe.toString}' and tile type '${typeTag[V].tpe.toString}'")
+      plugins.find(_.suitableFor(input.backend.`type`.name, input.format)).getOrElse(sys.error(s"Unable to find input module of type '${input.backend.`type`.name}' for format `${input.format} " +
+        s"for input key type '${typeTag[I].tpe.toString}' and tile type '${typeTag[V].tpe.toString}'"))
+    }
 
-    plugin(conf)
+    // clip in dest crs
+    input.clip.fold(plugin(conf))(extent => plugin(conf).filter { case (k, _) =>
+      val pe = k.getComponent[ProjectedExtent]
+      output.getCrs.fold(extent.contains(pe.extent))(crs => extent.contains(pe.extent.reproject(pe.crs, crs)))
+    })
   }
 
   /**
