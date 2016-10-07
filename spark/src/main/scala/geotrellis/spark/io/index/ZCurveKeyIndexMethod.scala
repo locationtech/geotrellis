@@ -3,8 +3,6 @@ package geotrellis.spark.io.index
 import geotrellis.spark._
 import geotrellis.spark.io.index.zcurve._
 
-import com.github.nscala_time.time.Imports._
-
 private[index] trait ZCurveKeyIndexMethod
 
 object ZCurveKeyIndexMethod extends ZCurveKeyIndexMethod {

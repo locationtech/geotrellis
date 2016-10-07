@@ -7,9 +7,9 @@ import geotrellis.spark.io.json._
 import geotrellis.util._
 
 import org.apache.avro._
-import org.joda.time.DateTime
 import spray.json._
 
+import java.time.ZonedDateTime
 import scala.reflect.ClassTag
 
 abstract class GenericLayerReindexer[Header:JsonFormat](
@@ -61,6 +61,6 @@ object GenericLayerReindexer {
     layerCopier: LayerCopier[LayerId]
   ): LayerReindexer[LayerId] =
     new GenericLayerReindexer[Header](attributeStore, layerReader, layerWriter, layerDeleter, layerCopier) {
-      def getTmpId(id: LayerId): LayerId = id.copy(name = s"${id.name}-${DateTime.now.getMillis}")
+      def getTmpId(id: LayerId): LayerId = id.copy(name = s"${id.name}-${ZonedDateTime.now.toInstant.toEpochMilli}")
     }
 }

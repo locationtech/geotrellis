@@ -6,9 +6,6 @@ import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestFiles
 import geotrellis.spark._
 
-import com.github.nscala_time.time.Imports._
-import org.joda.time.DateTime
-
 import org.scalatest._
 
 class S3SpaceTimeSpec

@@ -51,7 +51,6 @@ object Line {
 }
 
 case class Line(jtsGeom: jts.LineString) extends Geometry
-                                            with Relatable
                                             with OneDimension {
 
   assert(!jtsGeom.isEmpty, s"LineString Empty: $jtsGeom")

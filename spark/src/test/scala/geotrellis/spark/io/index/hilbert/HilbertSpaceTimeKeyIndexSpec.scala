@@ -1,24 +1,26 @@
 package geotrellis.spark.io.index.hilbert
 
 import org.scalatest._
-import org.joda.time.DateTime
-import scala.collection.immutable.TreeSet
 import geotrellis.spark.SpaceTimeKey
-import geotrellis.spark.KeyBounds
 
-class HilbertSpaceTimeKeyIndexSpec extends FunSpec with Matchers{
+import jp.ne.opt.chronoscala.Imports._
+
+import java.time.temporal.ChronoUnit.MILLIS
+import java.time.{ZoneOffset, ZonedDateTime}
+
+class HilbertSpaceTimeKeyIndexSpec extends FunSpec with Matchers {
 
   val upperBound: Int = 16 // corresponds to width of 4 2^4
-  val y2k = new DateTime(2000,1,1,0,0,0,0)
+  val y2k = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)
   describe("HilbertSpaceTimeKeyIndex tests"){
 
     it("indexes col, row, and time"){
-      val hst = HilbertSpaceTimeKeyIndex(SpaceTimeKey(0,0,y2k), SpaceTimeKey(0,0,y2k.plusMillis(upperBound)),4 , 4)
+      val hst = HilbertSpaceTimeKeyIndex(SpaceTimeKey(0, 0, y2k), SpaceTimeKey(0, 0, y2k.plus(upperBound, MILLIS)), 4, 4)
       val keys =
         for(col <- 0 until upperBound;
              row <- 0 until upperBound;
                 t <- 0 until upperBound) yield {
-          hst.toIndex(SpaceTimeKey(col,row,y2k.plusMillis(t)))
+          hst.toIndex(SpaceTimeKey(col, row, y2k.plus(t, MILLIS)))
         }
 
       keys.distinct.size should be (upperBound * upperBound * upperBound)
@@ -28,11 +30,11 @@ class HilbertSpaceTimeKeyIndexSpec extends FunSpec with Matchers{
 
 
     it("generates hand indexes you can hand check 3x3x2"){
-     val hilbert = HilbertSpaceTimeKeyIndex(SpaceTimeKey(0,0,y2k), SpaceTimeKey(2,2,y2k.plusMillis(1)),2,1)
-     val idx = List[SpaceTimeKey](SpaceTimeKey(0,0,y2k), SpaceTimeKey(0,1,y2k),
-                                  SpaceTimeKey(1,1,y2k), SpaceTimeKey(1,0,y2k),
-                                  SpaceTimeKey(1,0,y2k.plusMillis(1)), SpaceTimeKey(1,1,y2k.plusMillis(1)),
-                                  SpaceTimeKey(0,1,y2k.plusMillis(1)), SpaceTimeKey(0,0,y2k.plusMillis(1)))
+     val hilbert = HilbertSpaceTimeKeyIndex(SpaceTimeKey(0, 0, y2k), SpaceTimeKey(2, 2, y2k.plus(1, MILLIS)), 2, 1)
+     val idx = List[SpaceTimeKey](SpaceTimeKey(0, 0, y2k), SpaceTimeKey(0, 1, y2k),
+                                  SpaceTimeKey(1, 1, y2k), SpaceTimeKey(1, 0, y2k),
+                                  SpaceTimeKey(1, 0, y2k.plus(1, MILLIS)), SpaceTimeKey(1, 1, y2k.plus(1, MILLIS)),
+                                  SpaceTimeKey(0, 1, y2k.plus(1, MILLIS)), SpaceTimeKey(0, 0, y2k.plus(1, MILLIS)))
 
      for(i<-0 to 7 ){
        hilbert.toIndex(idx(i)) should be (i)
@@ -41,42 +43,42 @@ class HilbertSpaceTimeKeyIndexSpec extends FunSpec with Matchers{
 
     it("Generates a Seq[(Long,Long)] given a key range (SpatialKey,SpatialKey)"){
       // See http://mathworld.wolfram.com/HilbertCurve.html for reference
-      val t1 = y2k
-      val t2 = y2k.plusMillis(1)
+      val t1: ZonedDateTime = y2k
+      val t2: ZonedDateTime = y2k.plus(1, MILLIS)
 
       //hand checked examples for a 2x2x2
-      val hilbert = HilbertSpaceTimeKeyIndex(SpaceTimeKey(0,0,t1), SpaceTimeKey(1,1,t2), 1, 1)
+      val hilbert = HilbertSpaceTimeKeyIndex(SpaceTimeKey(0, 0, t1), SpaceTimeKey(1, 1, t2), 1, 1)
 
       // select origin point only
-      var idx = hilbert.indexRanges((SpaceTimeKey(0,0,t1), SpaceTimeKey(0,0,t1)))
+      var idx = hilbert.indexRanges((SpaceTimeKey(0, 0, t1), SpaceTimeKey(0, 0, t1)))
       idx.length should be (1)
-      idx.toSet should be (Set(0->0))
+      idx.toSet should be (Set(0 -> 0))
 
       // select the whole space
       // 2x2x2 space has 8 cells, we should cover it in one range: (0, 7)
-      idx = hilbert.indexRanges((SpaceTimeKey(0,0,t1), SpaceTimeKey(1,1,t2)))
+      idx = hilbert.indexRanges((SpaceTimeKey(0, 0, t1), SpaceTimeKey(1, 1, t2)))
       idx.length should be (1)
-      idx.toSet should be (Set(0->7))
+      idx.toSet should be (Set(0 -> 7))
 
       // first 4 sub cubes (along y), front face
-      idx = hilbert.indexRanges((SpaceTimeKey(0,0,t1), SpaceTimeKey(1,1,t1)))
+      idx = hilbert.indexRanges((SpaceTimeKey(0, 0, t1), SpaceTimeKey(1, 1, t1)))
       idx.length should be (3)
-      idx.toSet should be (Set(0->0, 3->4, 7->7))
+      idx.toSet should be (Set(0 -> 0, 3 -> 4, 7 -> 7))
 
       // second 4 sub cubes (along y), back face
-      idx = hilbert.indexRanges((SpaceTimeKey(0,0,t2), SpaceTimeKey(1,1,t2)))
+      idx = hilbert.indexRanges((SpaceTimeKey(0, 0, t2), SpaceTimeKey(1, 1, t2)))
       idx.length should be (2)
-      idx.toSet should be (Set(1->2, 5->6))
+      idx.toSet should be (Set(1 -> 2, 5 -> 6))
 
       //4 sub cubes (along x), bottom face
-      idx = hilbert.indexRanges((SpaceTimeKey(0,0,t1), SpaceTimeKey(1,0,t2)))
+      idx = hilbert.indexRanges((SpaceTimeKey(0, 0, t1), SpaceTimeKey(1, 0, t2)))
       idx.length should be (2)
-      idx.toSet should be (Set(0->1, 6->7))
+      idx.toSet should be (Set(0 -> 1, 6 -> 7))
 
       //next 4 sub cubes (along x), top face
-      idx = hilbert.indexRanges((SpaceTimeKey(0,1,t1), SpaceTimeKey(1,1,t2)))
+      idx = hilbert.indexRanges((SpaceTimeKey(0, 1, t1), SpaceTimeKey(1, 1, t2)))
       idx.length should be (1)
-      idx.toSet should be (Set(2->5))
+      idx.toSet should be (Set(2 -> 5))
     }
   }
 }

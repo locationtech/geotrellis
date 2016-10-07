@@ -6,9 +6,6 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestFiles
 
-import com.github.nscala_time.time.Imports._
-import org.joda.time.DateTime
-
 class AccumuloSpaceTimeSpec
   extends PersistenceSpec[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]]
     with SpaceTimeKeyIndexMethods

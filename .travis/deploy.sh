@@ -22,6 +22,9 @@ EOF
   && ./sbt "++$TRAVIS_SCALA_VERSION" "project cassandra" publish \
   && ./sbt "++$TRAVIS_SCALA_VERSION" "project hbase" publish \
   && ./sbt "++$TRAVIS_SCALA_VERSION" "project spark-etl" publish \
+  && ./sbt "++$TRAVIS_SCALA_VERSION" "project geomesa" publish \
+  && ./sbt "++$TRAVIS_SCALA_VERSION" "project geotools" publish \
+  && ./sbt "++$TRAVIS_SCALA_VERSION" "project geowave" publish \
   && ./sbt "++$TRAVIS_SCALA_VERSION" "project shapefile" publish \
   && ./sbt "++$TRAVIS_SCALA_VERSION" "project slick" publish \
   && ./sbt "++$TRAVIS_SCALA_VERSION" "project util" publish \

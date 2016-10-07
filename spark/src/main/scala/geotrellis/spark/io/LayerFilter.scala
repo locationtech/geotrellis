@@ -5,14 +5,11 @@ import geotrellis.raster.{GridBounds, RasterExtent, PixelIsArea}
 import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.spark._
 import geotrellis.spark.tiling._
-import geotrellis.vector.{Extent, Point, MultiPolygon}
+import geotrellis.vector.{Extent, Point, MultiPolygon, Polygon}
 import geotrellis.util._
 
-import com.github.nscala_time.time.Imports._
-
 import scala.annotation.implicitNotFound
-import scala.collection.mutable
-
+import java.time.ZonedDateTime
 
 @implicitNotFound("Unable to filter ${K} by ${F} given ${M}, Please provide LayerFilter[${K}, ${F}, ${T}, ${M}]")
 trait LayerFilter[K, F, T, M] {
@@ -119,8 +116,8 @@ object Intersects {
     }
   }
 
-  /** Define Intersects filter for Polygon */
-  implicit def forPolygon[K: SpatialComponent: Boundable, M: GetComponent[?, LayoutDefinition]] =
+  /** Define Intersects filter for MultiPolygon */
+  implicit def forMultiPolygon[K: SpatialComponent: Boundable, M: GetComponent[?, LayoutDefinition]] =
     new LayerFilter[K, Intersects.type, MultiPolygon, M] {
       def apply(metadata: M, kb: KeyBounds[K], polygon: MultiPolygon) = {
         val mapTransform = metadata.getComponent[LayoutDefinition].mapTransform
@@ -168,6 +165,13 @@ object Intersects {
           .reduce({ (x,y) => x ++ y })
       }
     }
+
+  /** Define Intersects filter for Polygon */
+  implicit def forPolygon[K: SpatialComponent: Boundable, M: GetComponent[?, LayoutDefinition]] =
+    new LayerFilter[K, Intersects.type, Polygon, M] {
+      def apply(metadata: M, kb: KeyBounds[K], polygon: Polygon) =
+        forMultiPolygon[K, M].apply(metadata, kb, MultiPolygon(polygon))
+    }
 }
 
 object At {
@@ -175,8 +179,8 @@ object At {
 
   /** Define At filter for a DateTime */
   implicit def forDateTime[K: TemporalComponent : Boundable, M] =
-    new LayerFilter[K, At.type, DateTime, M] {
-      def apply(metadata: M, kb: KeyBounds[K], at: DateTime) = {
+    new LayerFilter[K, At.type, ZonedDateTime, M] {
+      def apply(metadata: M, kb: KeyBounds[K], at: ZonedDateTime) = {
         val queryBounds = KeyBounds(
           kb.minKey setComponent TemporalKey(at),
           kb.maxKey setComponent TemporalKey(at))
@@ -193,8 +197,8 @@ object Between {
 
   /** Define Between filter for a tuple of DateTimes */
   implicit def forDateTimeTuple[K: TemporalComponent : Boundable, M] =
-    new LayerFilter[K, Between.type, (DateTime, DateTime), M] {
-      def apply(metadata: M, kb: KeyBounds[K], range: (DateTime, DateTime)) = {
+    new LayerFilter[K, Between.type, (ZonedDateTime, ZonedDateTime), M] {
+      def apply(metadata: M, kb: KeyBounds[K], range: (ZonedDateTime, ZonedDateTime)) = {
         val queryBounds = KeyBounds(
           kb.minKey setComponent TemporalKey(range._1),
           kb.maxKey setComponent TemporalKey(range._2))

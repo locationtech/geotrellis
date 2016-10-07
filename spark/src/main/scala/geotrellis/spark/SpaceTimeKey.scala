@@ -2,23 +2,21 @@ package geotrellis.spark
 
 import geotrellis.util._
 
-import com.github.nscala_time.time.Imports._
-import org.apache.spark.rdd.RDD
-import org.joda.time.DateTime
-import spray.json._
+import jp.ne.opt.chronoscala.Imports._
+import java.time.{ZoneOffset, ZonedDateTime}
 
 case class SpaceTimeKey(col: Int, row: Int, instant: Long) {
   def spatialKey: SpatialKey = SpatialKey(col, row)
   def temporalKey: TemporalKey = TemporalKey(time)
-  def time: DateTime = new DateTime(instant, DateTimeZone.UTC)
+  def time: ZonedDateTime = ZonedDateTime.ofInstant(instant, ZoneOffset.UTC)
 }
 
 object SpaceTimeKey {
   def apply(spatialKey: SpatialKey, temporalKey: TemporalKey): SpaceTimeKey =
     SpaceTimeKey(spatialKey.col, spatialKey.row, temporalKey.time)
 
-  def apply(col: Int, row: Int, dateTime: DateTime): SpaceTimeKey =
-    SpaceTimeKey(col, row, dateTime.getMillis)
+  def apply(col: Int, row: Int, dateTime: ZonedDateTime): SpaceTimeKey =
+    SpaceTimeKey(col, row, dateTime.toInstant.toEpochMilli)
 
   implicit val spatialComponent =
     Component[SpaceTimeKey, SpatialKey](k => k.spatialKey, (k, sk) => SpaceTimeKey(sk.col, sk.row, k.time))

@@ -24,6 +24,7 @@ import geotrellis.spark.tiling._
 import geotrellis.spark.ingest._
 import geotrellis.spark.crop._
 import geotrellis.spark.filter._
+
 import org.apache.spark.{Partitioner, SparkContext}
 import org.apache.spark.rdd._
 import spire.syntax.cfor._
@@ -31,7 +32,7 @@ import monocle._
 import monocle.syntax._
 
 import scala.reflect.ClassTag
-import scalaz.Functor
+import java.time.Instant
 
 package object spark
     extends buffer.Implicits
@@ -60,6 +61,19 @@ package object spark
   object TileLayerRDD {
     def apply[K](rdd: RDD[(K, Tile)], metadata: TileLayerMetadata[K]): TileLayerRDD[K] =
       new ContextRDD(rdd, metadata)
+  }
+
+  /**
+    * This is a type class required by the [[geotrellis.spark.filter.ToSpatial]] function.
+    * `map` applies a function `A => B` on the keys from this Metadata's [[KeyBounds]],
+    * which allows for the transformation:
+    * {{{TileLayerMetadata[A] => TileLayerMetadata[B]}}}
+    */
+  implicit class TileLayerMetadataFunctor[A](val self: TileLayerMetadata[A]) extends Functor[TileLayerMetadata, A] {
+    def map[B](f: A => B): TileLayerMetadata[B] = self.bounds match {
+      case KeyBounds(minKey, maxKey) => self.copy(bounds = KeyBounds(f(minKey), f(maxKey)))
+      case EmptyBounds => self.copy(bounds = EmptyBounds)
+    }
   }
 
   type TileLayerCollection[K] = Seq[(K, Tile)] with Metadata[TileLayerMetadata[K]]
@@ -91,12 +105,25 @@ package object spark
   implicit def partitionerToOption(partitioner: Partitioner): Option[Partitioner] =
     Some(partitioner)
 
+  implicit def longToInstant(millis: Long): Instant = Instant.ofEpochMilli(millis)
+
+  /** Necessary for Contains.forPoint query */
+  implicit def tileLayerMetadataToMapKeyTransform(tm: TileLayerMetadata[SpatialKey]): MapKeyTransform = tm.mapTransform
+
   implicit class WithContextWrapper[K, V, M](val rdd: RDD[(K, V)] with Metadata[M]) {
     def withContext[K2, V2](f: RDD[(K, V)] => RDD[(K2, V2)]) =
       new ContextRDD(f(rdd), rdd.metadata)
 
     def mapContext[M2](f: M => M2) =
       new ContextRDD(rdd, f(rdd.metadata))
+  }
+
+  implicit class WithContextCollectionWrapper[K, V, M](val seq: Seq[(K, V)] with Metadata[M]) {
+    def withContext[K2, V2](f: Seq[(K, V)] => Seq[(K2, V2)]) =
+      new ContextCollection(f(seq), seq.metadata)
+
+    def mapContext[M2](f: M => M2) =
+      new ContextCollection(seq, f(seq.metadata))
   }
 
   implicit def tupleToRDDWithMetadata[K, V, M](tup: (RDD[(K, V)], M)): RDD[(K, V)] with Metadata[M] =
@@ -164,5 +191,6 @@ package object spark
         (implicit ev: K1 => TilerKeyMethods[K1, K2], ev1: GetComponent[K1, ProjectedExtent]): TileLayerMetadata[K2] = {
       TileLayerMetadata.fromRdd[K1, V, K2](rdd, layout)
     }
- }
+  }
+
 }

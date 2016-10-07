@@ -13,7 +13,9 @@ import geotrellis.util._
 import geotrellis.vector._
 
 import org.apache.spark.rdd._
-import org.joda.time.DateTime
+import jp.ne.opt.chronoscala.Imports._
+
+import java.time.{ZoneOffset, ZonedDateTime}
 
 trait LayerUpdateSpaceTimeTileSpec
     extends TileLayerRDDBuilders
@@ -25,7 +27,7 @@ trait LayerUpdateSpaceTimeTileSpec
       LayoutDefinition(RasterExtent(Extent(0,0,1,1), 1, 1), 1),
       Extent(0,0,1,1),
       LatLng,
-      KeyBounds(SpaceTimeKey(0,0, new DateTime()), SpaceTimeKey(1,1, new DateTime()))
+      KeyBounds(SpaceTimeKey(0,0, ZonedDateTime.now), SpaceTimeKey(1,1, ZonedDateTime.now))
     )
 
   def emptyTileLayerMetadata =
@@ -86,10 +88,10 @@ trait LayerUpdateSpaceTimeTileSpec
 
         val tiles =
           Seq(
-            (createValueTile(6, 4, 1), new DateTime(2016, 1, 1, 12, 0, 0)),
-            (createValueTile(6, 4, 2), new DateTime(2016, 1, 2, 12, 0, 0)),
-            (createValueTile(6, 4, 3), new DateTime(2016, 1, 3, 12, 0, 0)),
-            (createValueTile(6, 4, 4), new DateTime(2016, 1, 4, 12, 0, 0))
+            (createValueTile(6, 4, 1), ZonedDateTime.of(2016, 1, 1, 12, 0, 0, 0, ZoneOffset.UTC)),
+            (createValueTile(6, 4, 2), ZonedDateTime.of(2016, 1, 2, 12, 0, 0, 0, ZoneOffset.UTC)),
+            (createValueTile(6, 4, 3), ZonedDateTime.of(2016, 1, 3, 12, 0, 0, 0, ZoneOffset.UTC)),
+            (createValueTile(6, 4, 4), ZonedDateTime.of(2016, 1, 4, 12, 0, 0, 0, ZoneOffset.UTC))
           )
 
         val rdd =
@@ -105,7 +107,7 @@ trait LayerUpdateSpaceTimeTileSpec
 
         val updateRdd =
           createSpaceTimeTileLayerRDD(
-            Seq((createValueTile(6, 4, 5), new DateTime(2016, 1, 4, 12, 0, 0))),
+            Seq((createValueTile(6, 4, 5), ZonedDateTime.of(2016, 1, 4, 12, 0, 0, 0, ZoneOffset.UTC))),
             TileLayout(1, 1, 6, 4)
           )
 
