@@ -22,12 +22,27 @@ case class Node(
 
 /** A string of [[Node]]s which could represent a road, or if connected back around
   * to itself, a building, water body, landmass, etc.
+  *
+  * Assumption: A Way has at least two nodes.
   */
 case class Way(
-  nodes: Seq[Long],
+  nodes: Vector[Long],
   meta: ElementMeta,
   tagMap: TagMap
-) extends Element
+) extends Element {
+  /** Is it a Polyline, but not an "Area" even if closed? */
+  def isLine: Boolean = !isClosed || (!isArea && isHighwayOrBarrier)
+
+  def isClosed: Boolean = if (nodes.isEmpty) false else nodes(0) == nodes.last
+
+  def isArea: Boolean = tagMap.get("area").map(_ == "yes").getOrElse(false)
+
+  def isHighwayOrBarrier: Boolean = {
+    val tags: Set[String] = tagMap.keySet
+
+    tags.contains("highway") || tags.contains("barrier")
+  }
+}
 
 /** All Element types have these attributes in common. */
 case class ElementMeta(
