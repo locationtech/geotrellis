@@ -1,5 +1,6 @@
-package geotrellis.vector.osm
+package geotrellis.osm
 
+import org.apache.spark.rdd._
 import java.time.ZonedDateTime
 
 // --- //
@@ -54,3 +55,7 @@ case class ElementMeta(
   timestamp: ZonedDateTime,
   visible: Boolean
 )
+
+class ElementToFeatureMethods(rdd: RDD[Element]) {
+
+}
