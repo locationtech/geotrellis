@@ -24,7 +24,6 @@ class GeowaveSpatialSpec
     with Matchers
     with BeforeAndAfterAll
     with GeowaveTestEnvironment
-    with TestFiles
 {
 
   val gwNamespace = "TEST"
