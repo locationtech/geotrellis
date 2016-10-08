@@ -26,7 +26,7 @@ import geotrellis.vectortile.protobuf.Value
   * Here, "Feature" and "Geometry" refer specifically to the Geotrellis classes
   * of the same names.
   */
-trait Layer {
+trait Layer extends Serializable {
   /** The layer's name. */
   def name: String
 

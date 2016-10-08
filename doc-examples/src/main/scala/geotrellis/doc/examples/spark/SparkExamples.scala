@@ -115,7 +115,7 @@ object SparkExamples {
     import geotrellis.spark.io._
     import geotrellis.util._
     import geotrellis.vector._
-    import org.joda.time.DateTime
+    import java.time.{ZonedDateTime, ZoneOffset}
 
     val region: MultiPolygon = ???
     val layerReader: FilteringLayerReader[LayerId] = ???
@@ -124,7 +124,7 @@ object SparkExamples {
     val queryResult: MultibandTileLayerRDD[SpaceTimeKey] =
       layerReader.query[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]](layerId)
         .where(Intersects(region))
-        .where(Between(new DateTime(2016, 3, 1, 0, 0, 0), new DateTime(2016, 4, 1, 0, 0)))
+        .where(Between(ZonedDateTime.of(2016, 3, 1, 0, 0, 0, 0, ZoneOffset.UTC), ZonedDateTime.of(2016, 4, 1, 0, 0, 0, 0, ZoneOffset.UTC)))
         .result
 
     val raster: Raster[Tile] =

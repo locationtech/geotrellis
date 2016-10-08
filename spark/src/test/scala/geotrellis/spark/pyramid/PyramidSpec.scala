@@ -6,9 +6,10 @@ import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.vector._
 
-import com.github.nscala_time.time.Imports._
-import org.scalatest._
+import jp.ne.opt.chronoscala.Imports._
 
+import java.time.{ZoneOffset, ZonedDateTime}
+import org.scalatest._
 
 class PyramidSpec extends FunSpec with Matchers with TestEnvironment {
 
@@ -16,8 +17,8 @@ class PyramidSpec extends FunSpec with Matchers with TestEnvironment {
     it("should work with SpaceTimeKey rasters") {
       val tileLayout = TileLayout(4, 4, 2, 2)
 
-      val dt1 = new DateTime(2014, 5, 17, 4, 0)
-      val dt2 = new DateTime(2014, 5, 18, 3, 0)
+      val dt1 = ZonedDateTime.of(2014, 5, 17, 4, 0, 0, 0, ZoneOffset.UTC)
+      val dt2 = ZonedDateTime.of(2014, 5, 18, 3, 0, 0, 0, ZoneOffset.UTC)
 
       val tile1 =
         ArrayTile(Array(
@@ -65,11 +66,11 @@ class PyramidSpec extends FunSpec with Matchers with TestEnvironment {
       levelOneRDD.metadata.layout.tileLayout should be (TileLayout(2, 2, 2, 2))
       val results: Array[(SpaceTimeKey, Tile)] = levelOneRDD.collect()
 
-      results.map(_._1.temporalKey.instant).distinct.sorted.toSeq should be (Seq(dt1.getMillis, dt2.getMillis))
+      results.map(_._1.temporalKey.instant).distinct.sorted.toSeq should be (Seq(dt1.toInstant.toEpochMilli, dt2.toInstant.toEpochMilli))
 
       for((key, tile) <- results) {
         val multi =
-          if(key.temporalKey.instant == dt1.getMillis) 1
+          if(key.temporalKey.instant == dt1.toInstant.toEpochMilli) 1
           else 10
         key.spatialKey match {
           case SpatialKey(0, 0) =>
@@ -104,8 +105,8 @@ class PyramidSpec extends FunSpec with Matchers with TestEnvironment {
 
       while (zoom > 0) {
         val (newZoom, newRDD) = Pyramid.up(rdd, scheme, zoom)
-        val previousExtent = rdd.metadata.mapTransform(rdd.metadata.bounds.get.toGridBounds)
-        val nextExtent = newRDD.metadata.mapTransform(newRDD.metadata.bounds.get.toGridBounds)
+        val previousExtent = rdd.metadata.mapTransform(rdd.metadata.bounds.get.toGridBounds())
+        val nextExtent = newRDD.metadata.mapTransform(newRDD.metadata.bounds.get.toGridBounds())
         nextExtent.contains(previousExtent) should be (true)
         zoom = newZoom
         rdd = newRDD

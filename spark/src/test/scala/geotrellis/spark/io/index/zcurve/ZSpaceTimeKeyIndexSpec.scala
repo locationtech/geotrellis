@@ -2,12 +2,16 @@ package geotrellis.spark.io.index.zcurve
 
 import geotrellis.spark._
 
-import org.joda.time.DateTime
 import org.scalatest._
 import scala.collection.immutable.TreeSet
 
+import jp.ne.opt.chronoscala.Imports._
+
+import java.time.temporal.ChronoUnit.MILLIS
+import java.time.{ZoneOffset, ZonedDateTime}
+
 class ZSpaceTimeKeySpec extends FunSpec with Matchers{
-  val y2k = new DateTime(2000, 1, 1, 0, 0)
+  val y2k = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)
   val upperBound = 8
   val keyBounds = KeyBounds(SpaceTimeKey(0, 0, 0L), SpaceTimeKey(100, 100, 100L))
 
@@ -36,10 +40,10 @@ class ZSpaceTimeKeySpec extends FunSpec with Matchers{
                                   SpaceTimeKey(0,1, y2k),
                                   SpaceTimeKey(1,1, y2k),
 
-                                  SpaceTimeKey(0,0, y2k.plusMillis(1)),
-                                  SpaceTimeKey(1,0, y2k.plusMillis(1)),
-                                  SpaceTimeKey(0,1, y2k.plusMillis(1)),
-                                  SpaceTimeKey(1,1, y2k.plusMillis(1))
+                                  SpaceTimeKey(0,0, y2k.plus(1, MILLIS)),
+                                  SpaceTimeKey(1,0, y2k.plus(1, MILLIS)),
+                                  SpaceTimeKey(0,1, y2k.plus(1, MILLIS)),
+                                  SpaceTimeKey(1,1, y2k.plus(1, MILLIS))
                                  )
      for(i <- 0 to 6){
 	zst.toIndex(idx(i)) should be (zst.toIndex(idx(i+1)) - 1)
@@ -51,24 +55,24 @@ class ZSpaceTimeKeySpec extends FunSpec with Matchers{
      val zst = ZSpaceTimeKeyIndex.byMilliseconds(keyBounds, 1)
 
       //all sub cubes in a 2x2x2
-      var idx = zst.indexRanges((SpaceTimeKey(0,0,y2k), SpaceTimeKey(1,1,y2k.plusMillis(1))))
+      var idx = zst.indexRanges((SpaceTimeKey(0,0,y2k), SpaceTimeKey(1,1,y2k.plus(1, MILLIS))))
       idx.length should be (1)
       (idx(0)._2 - idx(0)._1) should be (7)
 
       //sub cubes along x
-      idx = zst.indexRanges((SpaceTimeKey(0,0,y2k), SpaceTimeKey(1,0,y2k.plusMillis(1))))
+      idx = zst.indexRanges((SpaceTimeKey(0,0,y2k), SpaceTimeKey(1,0,y2k.plus(1, MILLIS))))
       idx.length should be (2)
       (idx(0)._2 - idx(0)._1) should be (1)
       (idx(1)._2 - idx(1)._1) should be (1)
 
       //next sub cubes along x
-      idx = zst.indexRanges((SpaceTimeKey(0,1,y2k), SpaceTimeKey(1,1,y2k.plusMillis(1))))
+      idx = zst.indexRanges((SpaceTimeKey(0,1,y2k), SpaceTimeKey(1,1,y2k.plus(1, MILLIS))))
       idx.length should be (2)
       (idx(0)._2 - idx(0)._1) should be (1)
       (idx(1)._2 - idx(1)._1) should be (1)
 
       //sub cubes along y
-      idx = zst.indexRanges((SpaceTimeKey(0,0,y2k), SpaceTimeKey(0,1,y2k.plusMillis(1))))
+      idx = zst.indexRanges((SpaceTimeKey(0,0,y2k), SpaceTimeKey(0,1,y2k.plus(1, MILLIS))))
       idx.length should be (4)
       (idx(0)._2 - idx(0)._1) should be (0)
       (idx(1)._2 - idx(1)._1) should be (0)
@@ -76,7 +80,7 @@ class ZSpaceTimeKeySpec extends FunSpec with Matchers{
       (idx(3)._2 - idx(3)._1) should be (0)
 
       //next sub cubes along y
-      idx = zst.indexRanges((SpaceTimeKey(1,0,y2k), SpaceTimeKey(1,1,y2k.plusMillis(1))))
+      idx = zst.indexRanges((SpaceTimeKey(1,0,y2k), SpaceTimeKey(1,1,y2k.plus(1, MILLIS))))
       idx.length should be (4)
       (idx(0)._2 - idx(0)._1) should be (0)
       (idx(1)._2 - idx(1)._1) should be (0)
@@ -84,7 +88,7 @@ class ZSpaceTimeKeySpec extends FunSpec with Matchers{
       (idx(3)._2 - idx(3)._1) should be (0)
 
       //sub cubes along z
-      idx = zst.indexRanges( (SpaceTimeKey(0,0,y2k.plusMillis(1)), SpaceTimeKey(1,1,y2k.plusMillis(1))))
+      idx = zst.indexRanges( (SpaceTimeKey(0,0,y2k.plus(1, MILLIS)), SpaceTimeKey(1,1,y2k.plus(1, MILLIS))))
       idx.length should be (1)
       (idx(0)._2 - idx(0)._1) should be (3)
 

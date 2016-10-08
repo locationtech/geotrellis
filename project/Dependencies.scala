@@ -17,8 +17,8 @@
 import sbt._
 
 object Dependencies {
-  val typesafeConfig = "com.typesafe"        % "config"           % "1.2.1"
-  val logging       = "com.typesafe.scala-logging" %% "scala-logging" % "3.4.0"
+  val typesafeConfig = "com.typesafe"        % "config"           % "1.3.1"
+  val logging       = "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0"
   val scalatest     = "org.scalatest"       %%  "scalatest"      % "3.0.0"
   val scalacheck    = "org.scalacheck"      %% "scalacheck"      % "1.13.2"
   val jts           = "com.vividsolutions"  %  "jts-core"        % "1.14.0"
@@ -50,9 +50,9 @@ object Dependencies {
   val caliper       = ("com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT"
     from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar")
 
-  val nscalaTime    = "com.github.nscala-time" %% "nscala-time" % "2.14.0"
+  val chronoscala   = "jp.ne.opt" %% "chronoscala" % "0.0.4"
 
-  val awsSdkS3      = "com.amazonaws" % "aws-java-sdk-s3" % "1.11.33"
+  val awsSdkS3      = "com.amazonaws" % "aws-java-sdk-s3" % "1.11.37"
 
   val scalazStream  = "org.scalaz.stream" %% "scalaz-stream" % "0.8.2a"
 

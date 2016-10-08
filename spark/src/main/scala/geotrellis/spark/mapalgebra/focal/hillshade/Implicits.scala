@@ -10,4 +10,7 @@ trait Implicits  {
   implicit class withElevationTileLayerRDDMethods[K](val self: TileLayerRDD[K])
     (implicit val keyClassTag: ClassTag[K], implicit val _sc: SpatialComponent[K])
       extends HillshadeTileLayerRDDMethods[K] with Serializable
+
+  implicit class withElevationTileLayerCollectionMethods[K](val self: TileLayerCollection[K])
+    (implicit val _sc: SpatialComponent[K]) extends HillshadeTileLayerCollectionMethods[K] with Serializable
 }
