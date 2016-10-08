@@ -1,3 +1,5 @@
+package geotrellis.spark.streaming.filter
+
 /*
  * Copyright (c) 2016 Azavea.
  *
@@ -14,19 +16,19 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.filter
-
 import geotrellis.spark._
 import geotrellis.util._
+import geotrellis.spark.streaming._
+import geotrellis.spark.filter.ToSpatial
 
-import org.apache.spark.rdd._
 import java.time.ZonedDateTime
+import org.apache.spark.streaming.dstream.DStream
 
 abstract class SpaceTimeToSpatialMethods[K: SpatialComponent: TemporalComponent, V, M: Component[?, Bounds[K]]]
-    extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
-  def toSpatial(instant: Long): RDD[(SpatialKey, V)] with Metadata[M] =
-    ToSpatial(self, instant)
+  extends MethodExtensions[DStream[(K, V)] with Metadata[M]] {
+  def toSpatial(instant: Long): DStream[(SpatialKey, V)] with Metadata[M] =
+    self.transformWithContext(ToSpatial(_, instant))
 
-  def toSpatial(dateTime: ZonedDateTime): RDD[(SpatialKey, V)] with Metadata[M] =
+  def toSpatial(dateTime: ZonedDateTime): DStream[(SpatialKey, V)] with Metadata[M] =
     toSpatial(dateTime.toInstant.toEpochMilli)
 }
