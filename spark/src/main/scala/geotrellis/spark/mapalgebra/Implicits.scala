@@ -8,7 +8,6 @@ import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
-
 object Implicits extends Implicits
 
 trait Implicits {

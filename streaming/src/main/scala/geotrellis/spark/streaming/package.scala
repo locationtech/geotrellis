@@ -1,11 +1,16 @@
 package geotrellis.spark
 
 import geotrellis.raster.{MultibandTile, Tile}
+
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.dstream.DStream
 
-package object streaming {
+package object streaming extends
+  streaming.buffer.Implicits with
+  streaming.crop.Implicits with
+  streaming.filter.Implicits {
+
   type TileLayerDStream[K] = DStream[(K, Tile)] with Metadata[TileLayerMetadata[K]]
   object TileLayerDStream {
     def apply[K](stream: DStream[(K, Tile)], metadata: TileLayerMetadata[K])(implicit ssc: StreamingContext): TileLayerDStream[K] =
@@ -28,9 +33,6 @@ package object streaming {
       new ContextDStream(stream, f(stream.metadata))
 
     def transformWithContext[K2, V2](f: RDD[(K, V)] with Metadata[M] => RDD[(K2, V2)] with Metadata[M]): ContextDStream[K2, V2, M] =
-      new ContextDStream[K2, V2, M](stream.transform[(K2, V2)]{ rdd: RDD[(K, V)] => f(new ContextRDD(rdd, stream.metadata)) }, stream.metadata)(stream.context)
-
-    def transformWithContext[K2, V2](other: DStream[RDD[(K2, V2)] with Metadata[M]] f: RDD[(K, V)] with Metadata[M] => RDD[(K2, V2)] with Metadata[M]): ContextDStream[K2, V2, M] =
       new ContextDStream[K2, V2, M](stream.transform[(K2, V2)]{ rdd: RDD[(K, V)] => f(new ContextRDD(rdd, stream.metadata)) }, stream.metadata)(stream.context)
   }
 }
