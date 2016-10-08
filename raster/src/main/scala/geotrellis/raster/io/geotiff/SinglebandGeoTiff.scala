@@ -6,11 +6,11 @@ import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 
 case class SinglebandGeoTiff(
-  val tile: Tile,
-  val extent: Extent,
-  val crs: CRS,
-  val tags: Tags,
-  val options: GeoTiffOptions
+  tile: Tile,
+  extent: Extent,
+  crs: CRS,
+  tags: Tags,
+  options: GeoTiffOptions
 ) extends GeoTiff[Tile] {
   val cellType = tile.cellType
 

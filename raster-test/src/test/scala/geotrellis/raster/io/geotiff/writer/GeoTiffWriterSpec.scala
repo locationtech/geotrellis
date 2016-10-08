@@ -88,7 +88,7 @@ class GeoTiffWriterSpec extends FunSpec
       actualCRS.epsgCode should be (geoTiff.crs.epsgCode)
     }
 
-    it ("should write floating point rasters correct") {
+    it ("should write floating point rasters correctly") {
       val e = Extent(100.0, 400.0, 120.0, 420.0)
       val t = DoubleArrayTile(Array(11.0, 22.0, 33.0, 44.0), 2, 2)
 
