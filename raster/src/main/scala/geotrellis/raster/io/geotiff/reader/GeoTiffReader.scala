@@ -305,11 +305,13 @@ object GeoTiffReader {
         case _ => DeflateCompression
       }
 
+    val colorSpace = tiffTags.basicTags.photometricInterp
+
     GeoTiffInfo(
       tiffTags.extent,
       tiffTags.crs,
       tiffTags.tags,
-      GeoTiffOptions(storageMethod, compression),
+      GeoTiffOptions(storageMethod, compression, colorSpace),
       bandType,
       segmentBytes,
       decompressor,
