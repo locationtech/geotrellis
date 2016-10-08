@@ -12,7 +12,7 @@ import scala.reflect.ClassTag
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withBufferTilesMethodsWrapper[
+  implicit class withBufferTilesDStreamMethodsWrapper[
     K: SpatialComponent: ClassTag,
     V <: CellGrid: Stitcher: ClassTag: (? => CropMethods[V])
   ](self: DStream[(K, V)]) extends BufferTilesMethods[K, V](self)
