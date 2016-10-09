@@ -222,4 +222,11 @@ package object raster
   implicit class DoubleArrayFiller(val arr: Array[Double]) extends AnyVal {
     def fill(v: Double) = { java.util.Arrays.fill(arr, v) ; arr }
   }
+
+  /* http://stackoverflow.com/questions/3508077/how-to-define-type-disjunction-union-types */
+  sealed class TileOrMultibandTile[T]
+  object TileOrMultibandTile {
+    implicit object TileWitness extends TileOrMultibandTile[Tile]
+    implicit object MultibandTileWitness extends TileOrMultibandTile[MultibandTile]
+  }
 }
