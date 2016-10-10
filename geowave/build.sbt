@@ -46,6 +46,8 @@ libraryDependencies ++= Seq(
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
   "com.jsuereth" %% "scala-arm" % "1.4",
+  "de.javakaffee" % "kryo-serializers" % "0.38" exclude("com.esotericsoftware", "kryo"),
+  "com.esotericsoftware" % "kryo-shaded" % "3.0.3",
   spire,
   scalatest % "test")
 
