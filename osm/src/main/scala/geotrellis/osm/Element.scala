@@ -45,23 +45,6 @@ case class Way(
 
     tags.contains("highway") || tags.contains("barrier")
   }
-
-  /** ASSUMPTION: This `Way` is not degenerate, therefore:
-    *   1. has at least two Nodes
-    *   2. only references Nodes which exist
-    */
-  def toGeometry(rdd: RDD[(Long, Node)]): Feature[Geometry, TagMap] = {
-    // TODO Potential for Ramer–Douglas–Peucker algorithm here
-    // for some data reduction.
-    val ns: Vector[Node] = nodes.map(n => rdd.lookup(n).head)
-
-    val line = Line(ns.map(node => (node.lat, node.lon)))  // TODO LatLon is correct?
-
-    // TODO Holed Polygons aren't handled yet.
-    val g: Geometry = if (isLine) line else Polygon(line)
-
-    Feature(g, tagMap)
-  }
 }
 
 /** All Element types have these attributes in common. */

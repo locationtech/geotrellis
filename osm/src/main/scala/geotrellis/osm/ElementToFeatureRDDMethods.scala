@@ -26,6 +26,25 @@ class ElementToFeatureRDDMethods(val self: RDD[Element]) extends MethodExtension
      * 1. Convert all Ways to Lines and Polygons.
      * 2. Determine which Nodes were never used in a Way, and convert to Points.
      */
-    ways.map(_.toGeometry(nodes))
+
+    /* You're a long way from finishing this operation. */
+    val links: RDD[(Long, Way)] = ways.flatMap(w => w.nodes.map(n => (n, w)))
+
+    nodes
+      .cogroup(links)
+      .flatMap({ case (_, (ns, ws)) =>
+        val n = ns.head
+
+        ws.map(w => (w, (n.lat, n.lon)))
+      })
+      .groupByKey
+      .map({ case (w, ns) =>
+        val line = Line(ns)
+
+        // TODO Holed Polygons aren't handled yet.
+        val g: Geometry = if (w.isLine) line else Polygon(line)
+
+        Feature(g, w.tagMap)
+      })
   }
 }
