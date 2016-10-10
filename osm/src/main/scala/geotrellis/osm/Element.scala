@@ -1,6 +1,5 @@
 package geotrellis.osm
 
-import geotrellis.util._
 import geotrellis.vector._
 
 import org.apache.spark.rdd._
@@ -47,9 +46,21 @@ case class Way(
     tags.contains("highway") || tags.contains("barrier")
   }
 
-  // TODO
-  def toGeometry(rdd: RDD[Node]): Feature[Geometry, TagMap] = {
-    ???
+  /** ASSUMPTION: This `Way` is not degenerate, therefore:
+    *   1. has at least two Nodes
+    *   2. only references Nodes which exist
+    */
+  def toGeometry(rdd: RDD[(Long, Node)]): Feature[Geometry, TagMap] = {
+    // TODO Potential for Ramer–Douglas–Peucker algorithm here
+    // for some data reduction.
+    val ns: Vector[Node] = nodes.map(n => rdd.lookup(n).head)
+
+    val line = Line(ns.map(node => (node.lat, node.lon)))  // TODO LatLon is correct?
+
+    // TODO Holed Polygons aren't handled yet.
+    val g: Geometry = if (isLine) line else Polygon(line)
+
+    Feature(g, tagMap)
   }
 }
 
@@ -63,26 +74,3 @@ case class ElementMeta(
   timestamp: ZonedDateTime,
   visible: Boolean
 )
-
-class ElementToFeatureRDDMethods(val self: RDD[Element]) extends MethodExtensions[RDD[Element]] {
-  def toFeatures: RDD[Feature[Geometry, TagMap]] = {
-
-    val nodes: RDD[Node] = self.flatMap({
-      case e: Node => Some(e)
-      case _ => None
-    })
-
-    // Inefficient to do the flatMap twice!
-    val ways: RDD[Way] = self.flatMap({
-      case e: Node => None
-      case e: Way  => Some(e)
-    })
-
-    /* TODO
-     * 1. Convert all Ways to Lines and Polygons.
-     * 2. Determine which Nodes were never used in a Way, and convert to Points.
-     */
-
-    ???
-  }
-}
