@@ -9,13 +9,9 @@ import spire.syntax.cfor._
 
 import java.nio.{ByteOrder, ByteBuffer, Buffer}
 
-class S3ByteReader(
-  val request: GetObjectRequest,
-  val client: AmazonS3Client,
-  val chunkSize: Int)
-  extends S3StreamBytes with ByteReader {
+class S3ByteReader(s3StreamBytes: S3StreamBytes) extends ByteReader {
   
-  private var chunk = getMappedArray
+  private var chunk = s3StreamBytes.getMappedArray(0)
   private def offset = chunk.head._1
   private def chunkArray = chunk.head._2
   def length = chunkArray.length
@@ -44,7 +40,7 @@ class S3ByteReader(
     adjustChunk(position)
 
   private def adjustChunk(newPoint: Int): Unit = {
-    chunk = getMappedArray(newPoint)
+    chunk = s3StreamBytes.getMappedArray(newPoint)
     chunkBuffer = newByteBuffer(chunkArray)
   }
   
@@ -101,9 +97,6 @@ class S3ByteReader(
 }
 
 object S3ByteReader {
-  def apply(bucket: String, key: String, client: AmazonS3Client, chunkSize: Int): S3ByteReader =
-    new S3ByteReader(new GetObjectRequest(bucket, key), client, chunkSize)
-
-  def apply(request: GetObjectRequest, client: AmazonS3Client, chunkSize: Int): S3ByteReader =
-    new S3ByteReader(request, client, chunkSize)
+  def apply(s3StreamBytes: S3StreamBytes): S3ByteReader =
+    new S3ByteReader(s3StreamBytes)
 }

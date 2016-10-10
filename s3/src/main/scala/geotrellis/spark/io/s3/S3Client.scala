@@ -76,7 +76,7 @@ trait S3Client extends LazyLogging {
 
   def readBytes(getObjectRequest: GetObjectRequest): Array[Byte]
   
-  def readRange(start: Long, end: Long, getObjectRequest: GetObjectRequest): S3Object
+  def readRange(start: Long, end: Long, getObjectRequest: GetObjectRequest): Array[Byte]
 
   def getObjectMetadata(bucketName: String, key: String): ObjectMetadata =
     getObjectMetadata(new GetObjectMetadataRequest(bucketName, key))
@@ -180,10 +180,19 @@ class AmazonS3Client(s3client: AWSAmazonS3Client) extends S3Client {
     }
   }
 
-  def readRange(start: Long, end: Long, getObjectRequest: GetObjectRequest): S3Object = {
-    //s3client.getObject(getObjectRequest.setRange(start, end))
+  def readRange(start: Long, end: Long, getObjectRequest: GetObjectRequest): Array[Byte] = {
     getObjectRequest.setRange(start, end)
-    s3client.getObject(getObjectRequest)
+    val obj = s3client.getObject(getObjectRequest)
+    val stream = obj.getObjectContent
+    try {
+      val diff = (end - start).toInt
+      val arr = Array.ofDim[Byte](diff)
+      stream.skip(start)
+      stream.read(arr, 0, arr.length)
+      arr
+    } finally {
+      stream.close()
+    }
   }
   
   def getObjectMetadata(getObjectMetadataRequest: GetObjectMetadataRequest): ObjectMetadata =

@@ -1,64 +1,132 @@
 package geotrellis.spark.io.s3.util
 
-import scala.collection.mutable._
+import java.nio.file.{ Paths, Files }
+import java.nio.ByteBuffer
+import geotrellis.util._
+import geotrellis.spark.io.s3._
 import spire.syntax.cfor._
+
+import com.amazonaws.services.s3.model._
+import org.apache.commons.io.IOUtils
 
 import org.scalatest._
 
-class StreamTester(chunkSize: Int, testArray: Array[Byte])
-  extends MockS3StreamBytes(chunkSize, testArray)
+class MockS3Stream(val chunkSize: Int, val testArray: Array[Byte], r: GetObjectRequest)
+  extends MockS3StreamBytes(chunkSize, testArray) {
+  val mockClient = new MockS3Client
 
-class S3StreamBytesSpec extends FunSpec {
-  val testArray = Array[Byte](
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-    10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-    20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
-    30, 31, 32, 33, 34, 35, 36, 37, 38, 39)
+  def getArray(start: Long): Array[Byte] =
+    getArray(start, chunkSize.toLong)
 
-  val chunkSize = 10
+  def getArray(start: Long, end: Long): Array[Byte] = {
+    val chunk =
+      if (end <= objectLength)
+        end
+      else
+        objectLength
 
-  val tester = new StreamTester(chunkSize, testArray)
+    val diff = math.abs((chunk - start)).toInt
 
-  def arraysMatch[A <: Any](a1: Array[A], a2: Array[A]): Boolean = {
-    val zipped = a1 zip a2
-    val result = zipped.filter(x => x._1 != x._2)
+    r.setRange(start, chunk + start)
 
-    if (result.length == 0) true else false
+    val obj = mockClient.getObject(r)
+    val stream = obj.getObjectContent
+    val arr = Array.ofDim[Byte](diff)
+
+    stream.skip(start)
+    stream.read(arr, 0, arr.length)
+    stream.close()
+    arr
   }
 
-  describe("Readig the Stream from S3") {
+  def getMappedArray(start: Long, length: Long): Map[Long, Array[Byte]] =
+    Map(start -> getArray(start, start + length))
+}
 
-    it("should be able to create a default chunk from the begininng") {
-      val actual = tester.getArray
-      val expected = Array[Byte](
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+class S3StreamBytesSpec extends FunSpec with Matchers {
 
-      assert(arraysMatch(expected, actual))
+  describe("Streaming bytes from S3") {
+    val mockClient = new MockS3Client
+    val testGeoTiffPath = "spark/src/test/resources/all-ones.tif"
+    val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
+
+    mockClient.putObject(this.getClass.getSimpleName,
+      "geotiff/all-ones.tif",
+      geoTiffBytes)
+
+    val chunkSize = 20000
+    val request = new GetObjectRequest(this.getClass.getSimpleName, "geotiff/all-ones.tif")
+    val s3Bytes = new MockS3Stream(chunkSize, geoTiffBytes, request)
+
+    val local = ByteBuffer.wrap(geoTiffBytes)
+
+    def testArrays[T](arr1: Array[T], arr2: Array[T]): Array[(T, T)] = {
+      val zipped = arr1.zip(arr2)
+      zipped.filter(x => x._1 != x._2)
     }
 
-    it("should not read past the total file length") {
-      val actual = tester.getArray(30, 50)
-      val expected = Array[Byte](
-        30, 31, 32, 33, 34, 35, 36, 37, 38, 39)
+    it("should return the correct bytes") {
+      val actual = s3Bytes.getArray(0.toLong)
+      val expected = Array.ofDim[Byte](chunkSize)
 
-      assert(arraysMatch(expected, actual))
+      cfor(0)(_ < chunkSize, _ + 1) { i=>
+        expected(i) = local.get
+      }
+      local.position(0)
+
+      val result = testArrays(actual, expected)
+
+      result.length should be (0)
+    }
+    
+    it("should return the correct bytes throught the file") {
+      cfor(0)(_ < s3Bytes.objectLength - chunkSize, _ + chunkSize){ i =>
+        val actual = s3Bytes.getArray(i.toLong, chunkSize.toLong)
+        val expected = Array.ofDim[Byte](chunkSize)
+        
+        cfor(0)(_ < chunkSize, _ + 1) { j =>
+          expected(j) = local.get
+        }
+
+        val result = testArrays(actual, expected)
+
+        result.length should be (0)
+      }
+      local.position(0)
     }
 
-    it("should have the correct offsets") {
-      val listBuffer = ListBuffer[Long]()
+    it("should return the correct offsets for each chunk") {
+      val actual = Array.range(0, 420000, chunkSize).map(_.toLong)
+      val expected = Array.ofDim[Long](400000 / chunkSize)
       var counter = 0
 
-      cfor(0)(_ < testArray.length, _ + chunkSize){i =>
-        listBuffer += tester.getMappedArray(counter).head._1
-        counter += chunkSize
+      cfor(0)(_ < 400000, _ + chunkSize){ i =>
+        expected(counter) = s3Bytes.getMappedArray(i.toLong, chunkSize.toLong).head._1
+        counter += 1
       }
 
-      val actual = listBuffer.toArray
-      val expected = Array[Long](0, 10, 20, 30)
+      val result = testArrays(actual, expected)
 
-      assert(arraysMatch(expected, actual))
+      result.length should be (0)
     }
 
-    //it("should access the array the correct number of times")
+    it("should not read past the end of the file") {
+      val start = s3Bytes.objectLength - 100
+      val actual = s3Bytes.getArray(start, start + + 300)
+      val arr = Array.ofDim[Byte](100)
+      local.position(start.toInt)
+
+      val expected = {
+        cfor(0)(_ < 100, _ + 1){ i =>
+          arr(i) = local.get
+        }
+        arr
+      }
+      local.position(0)
+
+      val result = testArrays(expected, actual)
+      
+      result.length should be (0)
+    }
   }
 }
