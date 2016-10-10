@@ -52,6 +52,7 @@ package object raster
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with costdistance.CostDistanceMethods
       with crop.SinglebandTileCropMethods
+      with equalization.SinglebandEqualizationMethods
       with hydrology.HydrologyMethods
       with mask.SinglebandTileMaskMethods
       with merge.SinglebandTileMergeMethods
@@ -74,6 +75,7 @@ package object raster
 
   implicit class withMultibandTileMethods(val self: MultibandTile) extends MethodExtensions[MultibandTile]
       with crop.MultibandTileCropMethods
+      with equalization.MultibandEqualizationMethods
       with mask.MultibandTileMaskMethods
       with merge.MultibandTileMergeMethods
       with prototype.MultibandTilePrototypeMethods
