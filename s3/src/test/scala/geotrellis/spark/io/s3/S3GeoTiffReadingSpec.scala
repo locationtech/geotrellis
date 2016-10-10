@@ -6,18 +6,15 @@ import geotrellis.spark.io.s3._
 import geotrellis.raster.testkit._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader._
-import geotrellis.raster.io.geotiff.tags._
 
 import java.nio.{ByteBuffer, ByteOrder}
-import org.scalatest._
 import com.amazonaws.services.s3.model._
+import org.scalatest._
 
 class S3GeoTiffReadingSepc extends FunSpec
   with Matchers
-  with RasterMatchers
-  with TileBuilders {
+  with RasterMatchers {
 
-  /*
   describe("Reading from a local geotiff") {
     val fromLocal =
       GeoTiffReader.readSingleband(
@@ -61,28 +58,40 @@ class S3GeoTiffReadingSepc extends FunSpec
       assertEqual(actual, expected)
     }
   }
-  */
 
   describe("Reading GeoTiff from server") {
     val client = S3Client.default
     val bucket = "gt-rasters"
     val k = "nlcd/2011/tiles/nlcd_2011_01_01.tif"
-    val s3ByteReader = S3ByteReader(bucket, k, client, 5000)
-    val fromLocal = GeoTiffReader.readSingleband("../nlcd_2011_01_01.tif", false, true)
-    val fromServer = GeoTiffReader.readSingleband(s3ByteReader, false, true)
-    fromServer.crop(fromLocal.extent)
+    val chunkSize = 500000
+    val s3Bytes = S3StreamBytes(bucket, k, client, chunkSize)
+    val s3ByteReader = S3ByteReader(s3Bytes)
 
-    //println(fromLocal)
-    //println(fromServer)
-
-    /*
-    println("\n\n") 
-    val s3ByteReader2 = S3ByteReader(bucket, k, client, 25000)
-    val fromServer2 = GeoTiffReader.readSingleband(s3ByteReader2, false, true)
+    val fromLocal =
+      GeoTiffReader.readSingleband("../nlcd_2011_01_01.tif", false, true)
+    val fromServer =
+      GeoTiffReader.readSingleband(s3ByteReader, false, true)
     
-    println(fromLocal)
-    println("\n")
-    println(fromServer2)
-    */
+    val extent = fromLocal.extent
+
+    it("should return the same geotiff") {
+      assertEqual(fromLocal, fromServer)
+    }
+    
+    it("should return the same cropped geotiff, edge") {
+      val e = Extent(extent.xmin, extent.ymin, extent.xmax - 2, extent.ymax - 3)
+      val actual = fromServer.crop(e)
+      val expected = fromLocal.crop(e)
+
+      assertEqual(actual, expected)
+    }
+    
+    it("should return the same cropped geotiff, center") {
+      val e = Extent(extent.xmin + 1, extent.ymin + 2, extent.xmax - 2, extent.ymax - 3)
+      val actual = fromServer.crop(e)
+      val expected = fromLocal.crop(e)
+
+      assertEqual(actual, expected)
+    }
   }
 }

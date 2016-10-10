@@ -2,22 +2,37 @@ package geotrellis.spark.io.s3.util
 
 import geotrellis.util.StreamBytes
 import geotrellis.spark.io.s3._
+import org.apache.commons.io.IOUtils
 
 import com.amazonaws.services.s3.model._
 
-trait S3StreamBytes extends StreamBytes {
-  def client: AmazonS3Client
-  def request: GetObjectRequest
+class S3StreamBytes(request: GetObjectRequest,
+  client: AmazonS3Client,
+  chunkSize: Int) extends StreamBytes(chunkSize) {
 
   def metadata =
     client.getObjectMetadata(request.getBucketName, request.getKey)
 
-  def objectLength = metadata.getContentLength
+  override val objectLength = metadata.getContentLength
+  
+  def getArray(start: Int, length: Int): Array[Byte] = ???
 
-  def readStream(start: Int, end: Int): S3ObjectInputStream = {
-    //println(s"reading the stream now. Start: $start, End: $end")
-    val obj = client.readRange(start.toLong, end.toLong, request)
-    val s = obj.getObjectContent
-    s
+  def getArray(start: Long, length: Long): Array[Byte] = {
+    val chunk =
+      if (!pastLength(length.toInt + start.toInt))
+        length
+      else
+        (objectLength - start).toInt
+
+    client.readRange(start, start + chunk, request)
+
   }
+}
+
+object S3StreamBytes {
+  def apply(bucket: String, key: String, client: AmazonS3Client, chunkSize: Int): S3StreamBytes =
+    new S3StreamBytes(new GetObjectRequest(bucket, key), client, chunkSize)
+
+  def apply(request: GetObjectRequest, client: AmazonS3Client, chunkSize: Int): S3StreamBytes =
+    new S3StreamBytes(request, client, chunkSize)
 }

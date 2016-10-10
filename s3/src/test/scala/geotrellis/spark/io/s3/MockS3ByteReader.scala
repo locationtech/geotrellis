@@ -32,7 +32,6 @@ class MockS3ByteReader(val chunkSize: Int, val testArray: Array[Byte], order: Op
     adjustChunk(position)
 
   private def adjustChunk(newPoint: Int): Unit = {
-    println(s"adjustingChunk now: $newPoint")
     chunk = getMappedArray(newPoint)
     chunkBuffer = newByteBuffer
   }
