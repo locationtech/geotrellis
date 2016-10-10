@@ -3,6 +3,7 @@ package geotrellis.spark.io.kryo
 import com.esotericsoftware.kryo.io.{ Input, Output }
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.Serializer
+import de.javakaffee.kryoserializers._
 import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
 import java.io.{ ObjectInputStream, ObjectOutputStream }
 import mil.nga.giat.geowave.core.index.{ Persistable, PersistenceUtils }
@@ -15,9 +16,9 @@ import org.opengis.feature.simple.SimpleFeatureType
 // GeoWave registrator
 class GeowaveKryoRegistrator extends KryoRegistrator {
   override def registerClasses(kryo: Kryo) = {
+    UnmodifiableCollectionsSerializer.registerSerializers(kryo)
     kryo.addDefaultSerializer(classOf[Persistable], new PersistableSerializer())
     kryo.addDefaultSerializer(classOf[GridCoverage2D], new DelegateSerializer[GridCoverage2D]())
-    kryo.addDefaultSerializer(classOf[SimpleFeatureType], new SimpleFeatureTypeSerializer())
     kryo.register(classOf[Key])
     super.registerClasses(kryo)
   }
@@ -36,36 +37,6 @@ class GeowaveKryoRegistrator extends KryoRegistrator {
       input.read(bytes)
 
       PersistenceUtils.fromBinary(bytes, classOf[Persistable])
-    }
-  }
-
-  /**
-    * SimpleFeatureType serializer.  This makes use of the
-    * encoding/decoding machinery provied by GeoTools.
-    */
-  private class SimpleFeatureTypeSerializer extends Serializer[SimpleFeatureType] {
-    override def write(kryo: Kryo, output: Output, sft: SimpleFeatureType): Unit = {
-      val name = sft.getTypeName.getBytes
-      val encoding = DataUtilities.encodeType(sft).getBytes
-      output.writeInt(name.length)
-      output.writeBytes(name)
-      output.writeInt(encoding.length)
-      output.writeBytes(encoding)
-    }
-
-    override def read(kryo: Kryo, input: Input, t: Class[SimpleFeatureType]): SimpleFeatureType = {
-      val name = {
-        val length = input.readInt
-        val buffer = new Array[Byte](length); input.read(buffer)
-        new String(buffer)
-      }
-      val encoding = {
-        val length = input.readInt
-        val buffer = new Array[Byte](length); input.read(buffer)
-        new String(buffer)
-      }
-
-      DataUtilities.createType(name, encoding)
     }
   }
 
