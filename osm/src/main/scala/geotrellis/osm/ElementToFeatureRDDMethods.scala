@@ -30,21 +30,36 @@ class ElementToFeatureRDDMethods(val self: RDD[Element]) extends MethodExtension
     /* You're a long way from finishing this operation. */
     val links: RDD[(Long, Way)] = ways.flatMap(w => w.nodes.map(n => (n, w)))
 
-    nodes
-      .cogroup(links)
-      .flatMap({ case (_, (ns, ws)) =>
+    val grouped: RDD[(Long, (Iterable[Node], Iterable[Way]))] = nodes.cogroup(links)
+
+    val linesPolys: RDD[Feature[Geometry, TagMap]] =
+      grouped
+        .flatMap({ case (_, (ns, ws)) =>
+          val n = ns.head
+
+          ws.map(w => (w, (n.lat, n.lon)))
+        })
+        .groupByKey
+        .map({ case (w, ns) =>
+          val line = Line(ns)
+
+          // TODO Holed Polygons aren't handled yet.
+          val g: Geometry = if (w.isLine) line else Polygon(line)
+
+          Feature(g, w.tagMap)
+        })
+
+    /* Single Nodes unused in any Way */
+    val points: RDD[Feature[Geometry, TagMap]] = grouped.flatMap({ case (_, (ns, ws)) =>
+      if (ws.isEmpty) {
         val n = ns.head
 
-        ws.map(w => (w, (n.lat, n.lon)))
-      })
-      .groupByKey
-      .map({ case (w, ns) =>
-        val line = Line(ns)
+        Some(Feature(Point(n.lat, n.lon), n.tagMap))
+      } else {
+        None
+      }
+    })
 
-        // TODO Holed Polygons aren't handled yet.
-        val g: Geometry = if (w.isLine) line else Polygon(line)
-
-        Feature(g, w.tagMap)
-      })
+    linesPolys ++ points
   }
 }
