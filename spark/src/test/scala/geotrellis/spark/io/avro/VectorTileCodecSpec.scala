@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package geotrellis.vectortile
+package geotrellis.spark.io.avro
 
+import geotrellis.spark.io.avro.codecs.Implicits._
 import geotrellis.raster.TileLayout
 import geotrellis.spark.SpatialKey
 import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.vector.Extent
+import geotrellis.vectortile._
 import geotrellis.vectortile.protobuf.ProtobufTile
-import geotrellis.vectortile.spark.Implicits._
 
 import org.scalatest._
 
@@ -29,7 +30,8 @@ import java.nio.file.{ Files, Paths }
 
 // --- //
 
-class AvroSpec extends FunSpec with Matchers {
+class VectorTileCodecSpec extends FunSpec with Matchers {
+
   val layout = LayoutDefinition(
     Extent(0, 0, 4096, 4096),
     TileLayout(1, 1, 4096, 4096)
@@ -39,7 +41,6 @@ class AvroSpec extends FunSpec with Matchers {
   def read(file: String): Array[Byte] = {
     Files.readAllBytes(Paths.get(file))
   }
-
 
   describe("Avro Codec Isomorphism") {
     it("onepoint.mvt") {
