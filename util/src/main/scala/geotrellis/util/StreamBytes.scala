@@ -1,22 +1,21 @@
 package geotrellis.util
 
-import java.io.InputStream
-import java.nio.ByteBuffer
+trait StreamBytes {
 
-abstract class StreamBytes(chunkSize: Int) {
-  val objectLength: Long
+  def chunkSize: Int
+  def objectLength: Long
   
-  def pastLength(size: Int): Boolean =
+  def passedLength(size: Long): Boolean =
     if (size > objectLength) true else false
 
-  def getArray(start: Int): Array[Byte] =
+  def getArray(start: Long): Array[Byte] =
     getArray(start, chunkSize)
 
-  def getArray(start: Int, length: Int): Array[Byte]
+  def getArray(start: Long, length: Long): Array[Byte]
 
-  def getMappedArray(start: Int): Map[Long, Array[Byte]] =
+  def getMappedArray(start: Long): Map[Long, Array[Byte]] =
     getMappedArray(start, chunkSize)
 
-  def getMappedArray(start: Int, length: Int): Map[Long, Array[Byte]] =
-    Map(start.toLong -> getArray(start, length))
+  def getMappedArray(start: Long, length: Long): Map[Long, Array[Byte]] =
+    Map(start -> getArray(start, length))
 }

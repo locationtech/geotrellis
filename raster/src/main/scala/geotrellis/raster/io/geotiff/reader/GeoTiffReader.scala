@@ -80,11 +80,23 @@ object GeoTiffReader {
     streaming: Boolean = false): SinglebandGeoTiff =
       readSingleband(ByteBuffer.wrap(bytes), decompress, streaming)
 
+  def readSingleband(byteReader: ByteReader): SinglebandGeoTiff =
+    readSingleband(byteReader, true, false)
+
+  def readSingleband(byteReader: ByteReader, e: Extent): SinglebandGeoTiff =
+    readSingleband(byteReader, Some(e))
+  
+  def readSingleband(byteReader: ByteReader, e: Option[Extent]): SinglebandGeoTiff =
+    e match {
+      case Some(x) => readSingleband(byteReader, false, true).crop(x)
+      case None => readSingleband(byteReader)
+    }
+
   /* Read a single band GeoTIFF file.
    * If there is more than one band in the GeoTiff, read the first band only.
    */
-  def readSingleband(byteBuffer: ByteReader, decompress: Boolean, streaming: Boolean): SinglebandGeoTiff = {
-    val info = readGeoTiffInfo(byteBuffer, decompress, streaming)
+  def readSingleband(byteReader: ByteReader, decompress: Boolean, streaming: Boolean): SinglebandGeoTiff = {
+    val info = readGeoTiffInfo(byteReader, decompress, streaming)
 
     val geoTiffTile =
       if(info.bandCount == 1) {
@@ -137,6 +149,18 @@ object GeoTiffReader {
       readMultiband(Filesystem.toMappedByteBuffer(path), decompress, streaming)
     else
       readMultiband(ByteBuffer.wrap(Filesystem.slurp(path)), decompress, streaming)
+  
+  def readMultiband(byteReader: ByteReader): MultibandGeoTiff =
+    readMultiband(byteReader, true, false)
+
+  def readMultiband(byteReader: ByteReader, e: Extent): MultibandGeoTiff =
+    readMultiband(byteReader, Some(e))
+  
+  def readMultiband(byteReader: ByteReader, e: Option[Extent]): MultibandGeoTiff =
+    e match {
+      case Some(x) => readMultiband(byteReader, false, true).crop(x)
+      case None => readMultiband(byteReader)
+    }
 
   /* Read a multi band GeoTIFF file.
    */
@@ -149,8 +173,8 @@ object GeoTiffReader {
     streaming: Boolean = false): MultibandGeoTiff =
       readMultiband(ByteBuffer.wrap(bytes), decompress, streaming)
 
-  def readMultiband(byteBuffer: ByteReader, decompress: Boolean, streaming: Boolean): MultibandGeoTiff = {
-    val info = readGeoTiffInfo(byteBuffer, decompress, streaming)
+  def readMultiband(byteReader: ByteReader, decompress: Boolean, streaming: Boolean): MultibandGeoTiff = {
+    val info = readGeoTiffInfo(byteReader, decompress, streaming)
 
     val geoTiffTile =
       GeoTiffMultibandTile(
@@ -243,26 +267,26 @@ object GeoTiffReader {
     }
   }
 
-  private def readGeoTiffInfo(byteBuffer: ByteReader, decompress: Boolean, streaming: Boolean): GeoTiffInfo = {
+  private def readGeoTiffInfo(byteReader: ByteReader, decompress: Boolean, streaming: Boolean): GeoTiffInfo = {
     // set byte ordering
-    (byteBuffer.get.toChar, byteBuffer.get.toChar) match {
-      case ('I', 'I') => byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-      case ('M', 'M') => byteBuffer.order(ByteOrder.BIG_ENDIAN)
+    (byteReader.get.toChar, byteReader.get.toChar) match {
+      case ('I', 'I') => byteReader.order(ByteOrder.LITTLE_ENDIAN)
+      case ('M', 'M') => byteReader.order(ByteOrder.BIG_ENDIAN)
       case _ => throw new MalformedGeoTiffException("incorrect byte order")
     }
 
     // Validate Tiff identification number
-    val tiffIdNumber = byteBuffer.getChar
+    val tiffIdNumber = byteReader.getChar
     if (tiffIdNumber != 42)
       throw new MalformedGeoTiffException(s"bad identification number (must be 42, was $tiffIdNumber)")
 
-    val tagsStartPosition = byteBuffer.getInt
+    val tagsStartPosition = byteReader.getInt
 
-    val tiffTags = TiffTagsReader.read(byteBuffer, tagsStartPosition)
+    val tiffTags = TiffTagsReader.read(byteReader, tagsStartPosition)
 
     val hasPixelInterleave = tiffTags.hasPixelInterleave
 
-    val decompressor = Decompressor(tiffTags, byteBuffer.order)
+    val decompressor = Decompressor(tiffTags, byteReader.order)
 
     val storageMethod: StorageMethod =
       if(tiffTags.hasStripStorage) {
@@ -288,16 +312,14 @@ object GeoTiffReader {
 
     val segmentBytes: SegmentBytes =
       if (streaming)
-        BufferSegmentBytes(byteBuffer, tiffTags)
+        BufferSegmentBytes(byteReader, tiffTags)
       else
-        ArraySegmentBytes(byteBuffer, tiffTags)
+        ArraySegmentBytes(byteReader, tiffTags)
 
     val cols = tiffTags.cols
     val rows = tiffTags.rows
     val bandType = tiffTags.bandType
     val bandCount = tiffTags.bandCount
-
-    println(s"cols: $cols, rows: $rows, bandType: $bandType, bandCount: $bandCount")
 
     val segmentLayout = GeoTiffSegmentLayout(cols, rows, storageMethod, bandType)
     val noDataValue =

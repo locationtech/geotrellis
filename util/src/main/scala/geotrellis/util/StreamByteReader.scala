@@ -1,17 +1,12 @@
-package geotrellis.spark.io.s3.util
-
-import geotrellis.util._
-import geotrellis.spark.io.s3._
-import com.amazonaws.services.s3.model._
-import scala.language.implicitConversions
-
-import spire.syntax.cfor._
+package geotrellis.util
 
 import java.nio.{ByteOrder, ByteBuffer, Buffer}
 
-class S3ByteReader(s3StreamBytes: S3StreamBytes) extends ByteReader {
+import scala.language.implicitConversions
+
+class StreamByteReader(streamBytes: StreamBytes) extends ByteReader {
   
-  private var chunk: Map[Long, Array[Byte]] = s3StreamBytes.getMappedArray(0)
+  private var chunk: Map[Long, Array[Byte]] = streamBytes.getMappedArray(0)
   private def offset: Long = chunk.head._1
   private def chunkArray: Array[Byte] = chunk.head._2
   def length: Int = chunkArray.length
@@ -40,7 +35,7 @@ class S3ByteReader(s3StreamBytes: S3StreamBytes) extends ByteReader {
     adjustChunk(position)
 
   private def adjustChunk(newPoint: Int): Unit = {
-    chunk = s3StreamBytes.getMappedArray(newPoint)
+    chunk = streamBytes.getMappedArray(newPoint)
     chunkBuffer = newByteBuffer(chunkArray)
   }
   
@@ -96,7 +91,7 @@ class S3ByteReader(s3StreamBytes: S3StreamBytes) extends ByteReader {
     if (newPosition >= offset && newPosition <= offset + length) true else false
 }
 
-object S3ByteReader {
-  def apply(s3StreamBytes: S3StreamBytes): S3ByteReader =
-    new S3ByteReader(s3StreamBytes)
+object StreamByteReader {
+  def apply(streamBytes: StreamBytes): StreamByteReader =
+    new StreamByteReader(streamBytes)
 }

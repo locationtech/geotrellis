@@ -8,11 +8,12 @@ import com.amazonaws.services.s3.model._
 
 import spire.syntax.cfor._
 
-class MockS3ByteReader(val chunkSize: Int, val testArray: Array[Byte], order: Option[ByteOrder])
-  extends MockS3StreamBytes(chunkSize, testArray) with ByteReader {
-  private var chunk = getMappedArray
+class MockS3ByteReader(mock: MockS3StreamBytes,
+  order: Option[ByteOrder]) extends ByteReader {
+  private var chunk = mock.getMappedArray(0)
   private def offset = chunk.head._1
   private def chunkArray = chunk.head._2
+  var accessCount = 0
   def length = chunkArray.length
 
   var chunkBuffer = newByteBuffer(chunkArray)
@@ -23,6 +24,7 @@ class MockS3ByteReader(val chunkSize: Int, val testArray: Array[Byte], order: Op
     if (isContained(newPoint)) {
       chunkBuffer.position(newPoint - offset.toInt)
     } else {
+      accessCount += 1
       adjustChunk(newPoint)
       chunkBuffer.position(0)
     }
@@ -32,7 +34,8 @@ class MockS3ByteReader(val chunkSize: Int, val testArray: Array[Byte], order: Op
     adjustChunk(position)
 
   private def adjustChunk(newPoint: Int): Unit = {
-    chunk = getMappedArray(newPoint)
+    accessCount += 1
+    chunk = mock.getMappedArray(newPoint)
     chunkBuffer = newByteBuffer
   }
   

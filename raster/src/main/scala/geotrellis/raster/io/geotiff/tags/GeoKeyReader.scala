@@ -26,11 +26,10 @@ import java.nio.ByteBuffer
 
 import monocle.syntax.apply._
 import monocle.macros.Lenses
-import scala.language.implicitConversions
 
 object GeoKeyReader {
 
-  def read(byteBuffer: ByteReader, imageDirectory: TiffTags,
+  def read(byteReader: ByteReader, imageDirectory: TiffTags,
     geoKeyDirectory: GeoKeyDirectory, index: Int = 0
   ): GeoKeyDirectory = {
 
@@ -241,15 +240,15 @@ object GeoKeyReader {
       case geoKeyDirectory.count => geoKeyDirectory
       case _ => {
         val keyEntryMetadata = GeoKeyMetadata(
-          byteBuffer.getUnsignedShort,
-          byteBuffer.getUnsignedShort,
-          byteBuffer.getUnsignedShort,
-          byteBuffer.getUnsignedShort
+          byteReader.getUnsignedShort,
+          byteReader.getUnsignedShort,
+          byteReader.getUnsignedShort,
+          byteReader.getUnsignedShort
         )
 
         val updatedDirectory = readGeoKeyEntry(keyEntryMetadata, geoKeyDirectory)
 
-        read(byteBuffer, imageDirectory, updatedDirectory, index + 1)
+        read(byteReader, imageDirectory, updatedDirectory, index + 1)
       }
     }
   }

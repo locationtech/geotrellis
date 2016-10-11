@@ -12,7 +12,7 @@ import org.scalatest._
 class Tester(mock: MockS3ByteReader, testBuffer: ByteBuffer) {
 
   def readNext[T](startPoint: Int, t: T): Int =
-    readNext(startPoint, mock.testArray.length, t)
+    readNext(startPoint, mock.length, t)
 
   def readNext[T](startPoint: Int, endPoint: Int, t: T): Int = {
     def matcher: Boolean =
@@ -70,7 +70,8 @@ class S3ByteReaderSpec extends FunSpec with Matchers {
         21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
         31)
 
-    val mock = new MockS3ByteReader(chunkSize, testArray, None)
+    val s3Stream = new MockS3ArrayBytes(chunkSize, testArray)
+    val mock = new MockS3ByteReader(s3Stream, None)
 
     def equalArrays(arr1: Array[Byte], arr2: Array[Byte]): Array[(Byte, Byte)] = {
       val zipped = arr1.zip(arr2)
@@ -82,7 +83,7 @@ class S3ByteReaderSpec extends FunSpec with Matchers {
       mock.position(15)
       mock.position(22)
 
-      assert(mock.position == 22)
+      mock.position should be (22)
     }
     
     it("should be able to determine whether a point is within the buffer") {
@@ -90,7 +91,7 @@ class S3ByteReaderSpec extends FunSpec with Matchers {
       val positions = Array(0, 1, 3, 5, 15, 27, 32, 52, 78)
       val result = positions.filter(x => mock.isContained(x))
 
-      assert(result.length == 4)
+      result.length should be (4)
     }
 
     it("should access the array a certain number of times") {
@@ -101,7 +102,7 @@ class S3ByteReaderSpec extends FunSpec with Matchers {
         mock.getInt
       }
 
-      assert(mock.accessCount == 2)
+      mock.accessCount should be (2)
     }
 
     it("should apped the correct bytes to the next chunk, byte") {
@@ -118,7 +119,8 @@ class S3ByteReaderSpec extends FunSpec with Matchers {
         Array(9, 10, 11, 12, 13, 14, 15, 16, 17))
 
       val result = equalArrays(expected.flatten, actual.flatten)
-      assert(result.length == 0)
+
+      result.length should be (0)
     }
     
     it("should apped the correct bytes to the next chunk, char") {
@@ -136,7 +138,8 @@ class S3ByteReaderSpec extends FunSpec with Matchers {
         Array(8, 9, 10, 11, 12, 13, 14, 15, 16))
 
       val result = equalArrays(expected.flatten, actual.flatten)
-      assert(result.length == 0)
+
+      result.length should be (0)
     }
   }
 
@@ -148,52 +151,52 @@ class S3ByteReaderSpec extends FunSpec with Matchers {
         21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
         31)
 
-    val mock = new MockS3ByteReader(chunkSize, testArray, None)
+    val s3Stream = new MockS3ArrayBytes(chunkSize, testArray)
+    val mock = new MockS3ByteReader(s3Stream, None)
     val testBuffer = ByteBuffer.wrap(testArray)
 
     val tester = new Tester(mock, testBuffer)
-    
 
     it("should continue to read to the next MappedArray, Byte") {
       val result = tester.readNext(0, Byte)
 
-      assert(result == 0)
+      result should be (0)
     }
 
     it("should continue to read to the next MappedArray, Char") {
       val result = tester.readNext(0, testArray.length, Char)
 
-      assert(result == 0)
+      result should be (0)
     }
 
     it("should continue to read to the next MappedArray, Short") {
       val result = tester.readNext(0, testArray.length, Short)
 
-      assert(result == 0)
+      result should be (0)
     }
 
     it("should continue to read to the next MappedArray, Int") {
       val result = tester.readNext(0, testArray.length, Int)
 
-      assert(result == 0)
+      result should be (0)
     }
     
     it("should continue to read to the next MappedArray, Float") {
       val result = tester.readNext(0, testArray.length, Float)
 
-      assert(result == 0)
+      result should be (0)
     }
     
     it("should continue to read to the next MappedArray, Double") {
-      val result = tester.readNext(0, mock.objectLength.toInt, Double)
+      val result = tester.readNext(0, testArray.length, Double)
 
-      assert(result == 0)
+      result should be (0)
     }
     
     it("should continue to read to the next MappedArray, Long") {
-      val result = tester.readNext(0, mock.objectLength.toInt, Long)
+      val result = tester.readNext(0, testArray.length, Long)
 
-      assert(result == 0)
+      result should be (0)
     }
   }
 
@@ -215,49 +218,50 @@ class S3ByteReaderSpec extends FunSpec with Matchers {
         case _ => throw new Exception("incorrect byte order")
       }
 
-    val mock = new MockS3ByteReader(chunkSize, testArray, Some(byteOrder))
+    val s3Stream = new MockS3ArrayBytes(chunkSize, testArray)
+    val mock = new MockS3ByteReader(s3Stream, Some(byteOrder))
     val tester = new Tester(mock, testBuffer.order(byteOrder))
 
     it("should continue to read to the next MappedArray, Byte") {
       val result = tester.readNext(0, Byte)
 
-      assert(result == 0)
+      result should be (0)
     }
 
     it("should continue to read to the next MappedArray, Char") {
       val result = tester.readNext(0, Char)
       
-      assert(result == 0)
+      result should be (0)
     }
     
     it("should continue to read to the next MappedArray, Short") {
       val result = tester.readNext(0, Short)
 
-      assert(result == 0)
+      result should be (0)
     }
     
     it("should continue to read to the next MappedArray, Int") {
       val result = tester.readNext(0, Int)
 
-      assert(result == 0)
+      result should be (0)
     }
 
     it("should continue to read to the next MappedArray, Float") {
       val result = tester.readNext(0, Float)
 
-      assert(result == 0)
+      result should be (0)
     }
 
     it("should continue to read to the next MappedArray, Double") {
       val result = tester.readNext(0, Double)
 
-      assert(result == 0)
+      result should be (0)
     }
     
     it("should continue to read to the next MappedArray, Long") {
       val result = tester.readNext(0, Long)
 
-      assert(result == 0)
+      result should be (0)
     }
   }
 }
