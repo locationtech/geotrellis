@@ -56,8 +56,6 @@ case class BufferSegmentBytes(byteBuffer: ByteReader, tiffTags: TiffTags) extend
    * @return An Array[Byte] that contains the bytes of the segment
    */
   def getSegment(i: Int) = {
-    if (i == 0)
-      println(offsets(i))
     val oldOffset = byteBuffer.position
     byteBuffer.position(offsets(i))
     val result = byteBuffer.getSignedByteArray(byteCounts(i))

@@ -4,44 +4,83 @@ import geotrellis.util._
 import geotrellis.spark.io.s3._
 
 import java.nio.ByteBuffer
+import com.amazonaws.services.s3.model._
 
-abstract class MockS3StreamBytes(chunkSize: Int, testArray: Array[Byte]) {
-  private var arrayPosition = 0
+class MockS3ArrayBytes(val chunkSize: Int, testArray: Array[Byte])
+  extends MockS3StreamBytes {
+
+  def objectLength: Long = testArray.length.toLong
+
+  def getArray(start: Long, length: Long): Array[Byte] = {
+    val chunk =
+      if (!pastLength(length + start))
+        length
+      else
+        objectLength - start
+
+    val newArray = Array.ofDim[Byte](chunk.toInt)
+    System.arraycopy(testArray, start.toInt, newArray, 0, chunk.toInt)
+    accessCount += 1
+
+    arrayPosition = (start + length).toInt
+    
+    newArray
+  }
+}
+  
+class MockS3Stream(val chunkSize: Int, length: Long,
+  r: GetObjectRequest) extends MockS3StreamBytes {
+  val mockClient = new MockS3Client
+
+  def objectLength = length
+
+  override def getArray(start: Long, length: Long): Array[Byte] = {
+    val chunk =
+      if (start + length <= objectLength)
+        start + length
+      else
+        objectLength
+
+    val diff = math.abs((chunk - start)).toInt
+
+    r.setRange(start, chunk)
+
+    val obj = mockClient.getObject(r)
+    val stream = obj.getObjectContent
+    val arr = Array.ofDim[Byte](diff)
+
+    stream.skip(start)
+    stream.read(arr, 0, arr.length)
+    stream.close()
+    arr
+  }
+}
+
+trait MockS3StreamBytes {
+
+  var arrayPosition = 0
   var accessCount = 0
 
-  def objectLength = (testArray.length).toLong
+  def chunkSize: Int
+  def objectLength: Long
 
-  def pastLength(chunkSize: Int): Boolean =
+  def pastLength(chunkSize: Long): Boolean =
     if (chunkSize > objectLength) true else false
   
   def getArray: Array[Byte] =
     getArray(arrayPosition)
 
-  def getArray(start: Int): Array[Byte] =
+  def getArray(start: Long): Array[Byte] =
     getArray(arrayPosition, chunkSize)
 
-  def getArray(start: Int, length: Int): Array[Byte] = {
-    val chunk =
-      if (!pastLength(length + start))
-        length
-      else
-        (objectLength - start).toInt
+  def getArray(start: Long, length: Long): Array[Byte]
 
-    val newArray = Array.ofDim[Byte](chunk)
-    System.arraycopy(testArray, start, newArray, 0, chunk)
-    accessCount += 1
-
-    arrayPosition = start + length
-    
-    newArray
-  }
-
-  def getMappedArray: Map[Long, Array[Byte]] =
+  def getMappedArray(): Map[Long, Array[Byte]] =
     getMappedArray(arrayPosition, chunkSize)
 
-  def getMappedArray(start: Int): Map[Long, Array[Byte]] =
+  def getMappedArray(start: Long): Map[Long, Array[Byte]] =
     getMappedArray(start, chunkSize)
 
-  def getMappedArray(start: Int, length: Int): Map[Long, Array[Byte]] =
+  def getMappedArray(start: Long, length: Int): Map[Long, Array[Byte]] =
     Map(start.toLong -> getArray(start, length))
 }

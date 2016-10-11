@@ -11,38 +11,6 @@ import org.apache.commons.io.IOUtils
 
 import org.scalatest._
 
-class MockS3Stream(val chunkSize: Int, val testArray: Array[Byte], r: GetObjectRequest)
-  extends MockS3StreamBytes(chunkSize, testArray) {
-  val mockClient = new MockS3Client
-
-  def getArray(start: Long): Array[Byte] =
-    getArray(start, chunkSize.toLong)
-
-  def getArray(start: Long, end: Long): Array[Byte] = {
-    val chunk =
-      if (end <= objectLength)
-        end
-      else
-        objectLength
-
-    val diff = math.abs((chunk - start)).toInt
-
-    r.setRange(start, chunk + start)
-
-    val obj = mockClient.getObject(r)
-    val stream = obj.getObjectContent
-    val arr = Array.ofDim[Byte](diff)
-
-    stream.skip(start)
-    stream.read(arr, 0, arr.length)
-    stream.close()
-    arr
-  }
-
-  def getMappedArray(start: Long, length: Long): Map[Long, Array[Byte]] =
-    Map(start -> getArray(start, start + length))
-}
-
 class S3StreamBytesSpec extends FunSpec with Matchers {
 
   describe("Streaming bytes from S3") {
@@ -56,7 +24,7 @@ class S3StreamBytesSpec extends FunSpec with Matchers {
 
     val chunkSize = 20000
     val request = new GetObjectRequest(this.getClass.getSimpleName, "geotiff/all-ones.tif")
-    val s3Bytes = new MockS3Stream(chunkSize, geoTiffBytes, request)
+    val s3Bytes = new MockS3Stream(chunkSize, geoTiffBytes.length.toLong, request)
 
     val local = ByteBuffer.wrap(geoTiffBytes)
 
@@ -78,7 +46,7 @@ class S3StreamBytesSpec extends FunSpec with Matchers {
 
       result.length should be (0)
     }
-    
+
     it("should return the correct bytes throught the file") {
       cfor(0)(_ < s3Bytes.objectLength - chunkSize, _ + chunkSize){ i =>
         val actual = s3Bytes.getArray(i.toLong, chunkSize.toLong)
@@ -101,7 +69,7 @@ class S3StreamBytesSpec extends FunSpec with Matchers {
       var counter = 0
 
       cfor(0)(_ < 400000, _ + chunkSize){ i =>
-        expected(counter) = s3Bytes.getMappedArray(i.toLong, chunkSize.toLong).head._1
+        expected(counter) = s3Bytes.getMappedArray(i.toLong, chunkSize).head._1
         counter += 1
       }
 
@@ -112,7 +80,7 @@ class S3StreamBytesSpec extends FunSpec with Matchers {
 
     it("should not read past the end of the file") {
       val start = s3Bytes.objectLength - 100
-      val actual = s3Bytes.getArray(start, start + + 300)
+      val actual = s3Bytes.getArray(start, start + 300)
       val arr = Array.ofDim[Byte](100)
       local.position(start.toInt)
 

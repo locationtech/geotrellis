@@ -1,6 +1,6 @@
 package geotrellis.util
 
-import java.nio.{Buffer, ByteBuffer, ByteOrder}
+import java.nio.{Buffer, ByteBuffer}
 import scala.language.implicitConversions
 
 trait ByteReader {

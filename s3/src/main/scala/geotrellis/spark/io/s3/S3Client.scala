@@ -181,15 +181,11 @@ class AmazonS3Client(s3client: AWSAmazonS3Client) extends S3Client {
   }
 
   def readRange(start: Long, end: Long, getObjectRequest: GetObjectRequest): Array[Byte] = {
-    getObjectRequest.setRange(start, end)
+    getObjectRequest.setRange(start, end - 1)
     val obj = s3client.getObject(getObjectRequest)
     val stream = obj.getObjectContent
     try {
-      val diff = (end - start).toInt
-      val arr = Array.ofDim[Byte](diff)
-      stream.skip(start)
-      stream.read(arr, 0, arr.length)
-      arr
+      IOUtils.toByteArray(stream)
     } finally {
       stream.close()
     }
