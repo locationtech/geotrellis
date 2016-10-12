@@ -8,31 +8,65 @@ import org.apache.spark.rdd._
 // --- //
 
 class ElementToFeatureRDDMethods(val self: RDD[Element]) extends MethodExtensions[RDD[Element]] {
-  def toFeatures: RDD[Feature[Geometry, TagMap]] = {
+  def toFeatures: RDD[OSMFeature] = {
 
-    /* All OSM nodes, indexed by their Element id */
-    val nodes: RDD[(Long, Node)] = self.flatMap({
+    /* All OSM Nodes */
+    val nodes: RDD[Node] = self.flatMap({
       case e: Node => Some(e)
       case _ => None
-    }).map(n => (n.meta.id, n))
-
-    // Inefficient to do the flatMap twice!
-    val ways: RDD[Way] = self.flatMap({
-      case e: Node => None
-      case e: Way  => Some(e)
     })
 
-    /* TODO
-     * 1. Convert all Ways to Lines and Polygons.
-     * 2. Determine which Nodes were never used in a Way, and convert to Points.
-     */
+    /* All OSM Ways */
+    val ways: RDD[Way] = self.flatMap({
+      case e: Way  => Some(e)
+      case _ => None
+    })
 
+    // Inefficient to do the flatMap thrice!
+    // A function `split: RDD[Element] => (RDD[Node], RDD[Way], RDD[Relation])
+    // would be nice.
+    /* All OSM Relations */
+    val relations: RDD[Relation] = self.flatMap({
+      case e: Relation => Some(e)
+      case _ => None
+    }).filter({ r => /* Baby steps. Limit to handling multipolys for now */
+      r.tagMap.get("type") match {
+        case Some("multipolygon") => true
+        case _ => false
+      }
+    })
+
+    val (points, lines, polys) = geometries(nodes, ways)
+
+    val finalPolys: RDD[OSMFeature] =
+      multipolygons(polys, relations).asInstanceOf[RDD[OSMFeature]]
+
+    points.asInstanceOf[RDD[OSMFeature]] ++ lines.asInstanceOf[RDD[OSMFeature]] ++ finalPolys
+  }
+
+  private def multipolygons(
+    polys: RDD[Feature[Polygon, TagMap]],
+    relations: RDD[Relation]
+  ): RDD[Feature[Polygon, TagMap]] = {
+    polys  // TODO: From here.
+  }
+
+  /** Every OSM Node and Way converted to GeoTrellis Geometries.
+    * This includes Points, Lines, and Polygons which have no holes.
+    * Holed polygons are handled by [[multipolygons]], as they are represented
+    * by OSM Relations.
+    */
+  private def geometries(
+    nodes: RDD[Node],
+    ways: RDD[Way]
+  ): (RDD[Feature[Point, TagMap]], RDD[Feature[Line, TagMap]], RDD[Feature[Polygon, TagMap]]) = {
     /* You're a long way from finishing this operation. */
     val links: RDD[(Long, Way)] = ways.flatMap(w => w.nodes.map(n => (n, w)))
 
-    val grouped: RDD[(Long, (Iterable[Node], Iterable[Way]))] = nodes.cogroup(links)
+    val grouped: RDD[(Long, (Iterable[Node], Iterable[Way]))] =
+      nodes.map(n => (n.meta.id, n)).cogroup(links)
 
-    val linesPolys: RDD[Feature[Geometry, TagMap]] =
+    val linesPolys: RDD[Either[Feature[Line, TagMap], Feature[Polygon, TagMap]]] =
       grouped
         .flatMap({ case (_, (ns, ws)) =>
           val n = ns.head
@@ -64,14 +98,27 @@ class ElementToFeatureRDDMethods(val self: RDD[Element]) extends MethodExtension
               .flatMap(n => tree.searchWith(n, pred))
               .map(n => (n.lat, n.lon))
 
-          // TODO Holed Polygons aren't handled yet.
-          val g: Geometry = if (w.isLine) Line(points) else Polygon(points)
 
-          Feature(g, w.tagMap)
+          if (w.isLine) {
+            Left(Feature(Line(points), w.tagMap))
+          } else {
+            Right(Feature(Polygon(points), w.tagMap))
+          }
         })
 
+    // TODO: More inefficient RDD splitting.
+    val lines: RDD[Feature[Line, TagMap]] = linesPolys.flatMap({
+      case Left(l) => Some(l)
+      case _ => None
+    })
+
+    val polys: RDD[Feature[Polygon, TagMap]] = linesPolys.flatMap({
+      case Right(p) => Some(p)
+      case _ => None
+    })
+
     /* Single Nodes unused in any Way */
-    val points: RDD[Feature[Geometry, TagMap]] = grouped.flatMap({ case (_, (ns, ws)) =>
+    val points: RDD[Feature[Point, TagMap]] = grouped.flatMap({ case (_, (ns, ws)) =>
       if (ws.isEmpty) {
         val n = ns.head
 
@@ -81,6 +128,6 @@ class ElementToFeatureRDDMethods(val self: RDD[Element]) extends MethodExtension
       }
     })
 
-    linesPolys ++ points
+    (points, lines, polys)
   }
 }

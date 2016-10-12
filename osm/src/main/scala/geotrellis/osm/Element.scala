@@ -26,7 +26,7 @@ case class Node(
   * Assumption: A Way has at least two nodes.
   */
 case class Way(
-  nodes: Vector[Long],
+  nodes: Vector[Long],  /* Vector for O(1) indexing */
   meta: ElementMeta,
   tagMap: TagMap
 ) extends Element {
@@ -43,6 +43,18 @@ case class Way(
     tags.contains("highway") || tags.contains("barrier")
   }
 }
+
+case class Relation(
+  members: Seq[Member],
+  meta: ElementMeta,
+  tagMap: TagMap
+) extends Element
+
+case class Member(
+  memType: String, // TODO Use a sum type?
+  id: Long,
+  role: String // TODO Use a sum type?
+)
 
 /** All Element types have these attributes in common. */
 case class ElementMeta(
