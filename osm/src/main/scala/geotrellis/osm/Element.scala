@@ -1,8 +1,5 @@
 package geotrellis.osm
 
-import geotrellis.vector._
-
-import org.apache.spark.rdd._
 import java.time.ZonedDateTime
 
 // --- //
