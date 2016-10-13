@@ -4,10 +4,9 @@ import geotrellis.raster.io.geotiff.tags._
 import geotrellis.raster.io.geotiff.tags.codes._
 import TagCodes._
 import TiffFieldType._
-
-import geotrellis.raster.io.geotiff.util._
 import geotrellis.util.{Filesystem, ByteReader}
 
+import geotrellis.raster.io.geotiff.util._
 import spire.syntax.cfor._
 import monocle.syntax.apply._
 
@@ -21,7 +20,7 @@ object TiffTagsReader {
     read(ByteBuffer.wrap(bytes))
 
   def read(byteReader: ByteReader): TiffTags = {
-
+    // set byte ordering
     (byteReader.get.toChar, byteReader.get.toChar) match {
       case ('I', 'I') => byteReader.order(ByteOrder.LITTLE_ENDIAN)
       case ('M', 'M') => byteReader.order(ByteOrder.BIG_ENDIAN)

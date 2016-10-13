@@ -2,8 +2,13 @@ package geotrellis.util
 
 import java.nio.{ByteOrder, ByteBuffer, Buffer}
 
-import scala.language.implicitConversions
-
+/**
+ * This class extends [[ByteReader]] who's source of bytes is from a
+ * StreamBytes instance.
+ *
+ * @param streamBytes: A [[StreamBytes]] instance
+ * @return A new instance of StreamByteReader
+ */
 class StreamByteReader(streamBytes: StreamBytes) extends ByteReader {
   
   private var chunk: Map[Long, Array[Byte]] = streamBytes.getMappedArray(0)
@@ -11,7 +16,7 @@ class StreamByteReader(streamBytes: StreamBytes) extends ByteReader {
   private def chunkArray: Array[Byte] = chunk.head._2
   def length: Int = chunkArray.length
 
-  var chunkBuffer: ByteBuffer = newByteBuffer(chunkArray)
+  private var chunkBuffer: ByteBuffer = newByteBuffer(chunkArray)
 
   private val byteOrder: ByteOrder =
     (chunkArray(0).toChar, chunkArray(1).toChar) match {
@@ -84,14 +89,22 @@ class StreamByteReader(streamBytes: StreamBytes) extends ByteReader {
   def getByteBuffer: ByteBuffer =
     chunkBuffer
 
-  def newByteBuffer(byteArray: Array[Byte]) =
+  private def newByteBuffer(byteArray: Array[Byte]) =
     ByteBuffer.wrap(byteArray).order(byteOrder)
 
-  def isContained(newPosition: Int): Boolean =
+  private def isContained(newPosition: Int): Boolean =
     if (newPosition >= offset && newPosition <= offset + length) true else false
 }
 
+/** The companion object of [[StreamByteReader]] */
 object StreamByteReader {
+
+  /**
+   * Creates a new instance of StreamByteReader.
+   *
+   * @param streamBytes: An instance of [[StreamBytes]]
+   * @return A new instance of StreamByteReader.
+   */
   def apply(streamBytes: StreamBytes): StreamByteReader =
     new StreamByteReader(streamBytes)
 }

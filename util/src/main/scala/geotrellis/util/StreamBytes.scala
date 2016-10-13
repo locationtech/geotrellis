@@ -1,5 +1,10 @@
 package geotrellis.util
 
+/**
+ * This trait defines methods for breaking up a source of bytes into
+ * Map[Long, Array[Byte]] called a, "chunk". Where the Long is where within
+ * the file the chunk begins and the Array[Byte] containing the actual bytes.
+ */
 trait StreamBytes {
 
   def chunkSize: Int
