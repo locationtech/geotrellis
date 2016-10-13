@@ -5,7 +5,7 @@ package geotrellis.util
  * Map[Long, Array[Byte]] called a, "chunk". Where the Long is where within
  * the file the chunk begins and the Array[Byte] containing the actual bytes.
  */
-trait StreamBytes {
+trait BytesStreamer {
 
   def chunkSize: Int
   def objectLength: Long

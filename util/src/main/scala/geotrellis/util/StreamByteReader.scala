@@ -4,14 +4,14 @@ import java.nio.{ByteOrder, ByteBuffer, Buffer}
 
 /**
  * This class extends [[ByteReader]] who's source of bytes is from a
- * StreamBytes instance.
+ * BytesStreamer instance.
  *
- * @param streamBytes: A [[StreamBytes]] instance
+ * @param bytesStreamer: A [[BytesStreamer]] instance
  * @return A new instance of StreamByteReader
  */
-class StreamByteReader(streamBytes: StreamBytes) extends ByteReader {
+class StreamByteReader(bytesStreamer: BytesStreamer) extends ByteReader {
   
-  private var chunk: Map[Long, Array[Byte]] = streamBytes.getMappedArray(0)
+  private var chunk: Map[Long, Array[Byte]] = bytesStreamer.getMappedArray(0)
   private def offset: Long = chunk.head._1
   private def chunkArray: Array[Byte] = chunk.head._2
   def length: Int = chunkArray.length
@@ -40,7 +40,7 @@ class StreamByteReader(streamBytes: StreamBytes) extends ByteReader {
     adjustChunk(position)
 
   private def adjustChunk(newPoint: Int): Unit = {
-    chunk = streamBytes.getMappedArray(newPoint)
+    chunk = bytesStreamer.getMappedArray(newPoint)
     chunkBuffer = newByteBuffer(chunkArray)
   }
   
@@ -102,9 +102,9 @@ object StreamByteReader {
   /**
    * Creates a new instance of StreamByteReader.
    *
-   * @param streamBytes: An instance of [[StreamBytes]]
+   * @param bytesStreamer: An instance of [[BytesStreamer]]
    * @return A new instance of StreamByteReader.
    */
-  def apply(streamBytes: StreamBytes): StreamByteReader =
-    new StreamByteReader(streamBytes)
+  def apply(bytesStreamer: BytesStreamer): StreamByteReader =
+    new StreamByteReader(bytesStreamer)
 }
