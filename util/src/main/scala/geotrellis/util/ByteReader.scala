@@ -3,6 +3,10 @@ package geotrellis.util
 import java.nio.{Buffer, ByteBuffer}
 import scala.language.implicitConversions
 
+/**
+ * This trait is a characteristic of instances that can retrieve bytes from some
+ * source.
+ */
 trait ByteReader {
   def position: Int
   def position(i: Int): Buffer
@@ -18,6 +22,10 @@ trait ByteReader {
   def getByteBuffer: ByteBuffer
 }
 
+/**
+ * The companion object of [[ByteReader]]. This object contains implicit conversion
+ * to and from ByteBuffers and ByteReaders.
+ */
 object ByteReader {
   implicit def byteBuffer2ByteReader(byteBuffer: ByteBuffer): ByteReader = {
     new ByteReader() {

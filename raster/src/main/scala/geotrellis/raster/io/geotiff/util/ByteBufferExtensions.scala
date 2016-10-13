@@ -19,12 +19,11 @@ package geotrellis.raster.io.geotiff.util
 import geotrellis.util.ByteReader
 import java.nio.ByteBuffer
 
-import scala.language.implicitConversions
-
 import spire.syntax.cfor._
 
 trait ByteBufferExtensions {
-  implicit class ByteBufferUtilities(byteBuffer: ByteReader) {
+
+  implicit class ByteBufferUtilities(byteReader: ByteReader) {
 
     @inline
     final private def ub2s(byte: Byte): Short =
@@ -40,13 +39,13 @@ trait ByteBufferExtensions {
 
     @inline
     final def getUnsignedShort: Int =
-      byteBuffer.getChar.toInt
+      byteReader.getChar.toInt
 
     final def getByteArray(length: Int): Array[Short] = {
       val arr = Array.ofDim[Short](length)
 
       cfor(0)( _ < length, _ + 1) { i =>
-        arr(i) = ub2s(byteBuffer.get)
+        arr(i) = ub2s(byteReader.get)
       }
 
       arr
@@ -56,19 +55,19 @@ trait ByteBufferExtensions {
       val arr = Array.ofDim[Short](length)
 
       if (length <= 4) {
-        val bb = ByteBuffer.allocate(4).order(byteBuffer.order).putInt(0, valueOffset)
+        val bb = ByteBuffer.allocate(4).order(byteReader.order).putInt(0, valueOffset)
         cfor(0)( _ < length, _ + 1) { i =>
           arr(i) = ub2s(bb.get)
         }
       } else {
-        val oldPos = byteBuffer.position
-        byteBuffer.position(valueOffset)
+        val oldPos = byteReader.position
+        byteReader.position(valueOffset)
 
         cfor(0)(_ < length, _ + 1) { i =>
-          arr(i) = ub2s(byteBuffer.get)
+          arr(i) = ub2s(byteReader.get)
         }
 
-        byteBuffer.position(oldPos)
+        byteReader.position(oldPos)
       }
 
       arr
@@ -79,19 +78,19 @@ trait ByteBufferExtensions {
       val arr = Array.ofDim[Int](length)
 
       if (length <= 2) {
-        val bb = ByteBuffer.allocate(4).order(byteBuffer.order).putInt(0, valueOffset)
+        val bb = ByteBuffer.allocate(4).order(byteReader.order).putInt(0, valueOffset)
         cfor(0)(_ < length, _ + 1) { i =>
           arr(i) = us2i(bb.getShort)
         }
       } else {
-        val oldPos = byteBuffer.position
-        byteBuffer.position(valueOffset)
+        val oldPos = byteReader.position
+        byteReader.position(valueOffset)
 
         cfor(0)(_ < length, _ + 1) { i =>
-          arr(i) = us2i(byteBuffer.getShort)
+          arr(i) = us2i(byteReader.getShort)
         }
 
-        byteBuffer.position(oldPos)
+        byteReader.position(oldPos)
       }
 
       arr
@@ -102,17 +101,17 @@ trait ByteBufferExtensions {
       val arr = Array.ofDim[Long](length)
 
       if (length == 1) {
-        val bb = ByteBuffer.allocate(4).order(byteBuffer.order).putInt(0, valueOffset)
+        val bb = ByteBuffer.allocate(4).order(byteReader.order).putInt(0, valueOffset)
         arr(0) = ui2l(bb.getInt)
       } else {
-        val oldPos = byteBuffer.position
+        val oldPos = byteReader.position
 
-        byteBuffer.position(valueOffset)
+        byteReader.position(valueOffset)
         cfor(0)(_ < length, _ + 1) { i =>
-          arr(i) = ui2l(byteBuffer.getInt)
+          arr(i) = ui2l(byteReader.getInt)
         }
 
-        byteBuffer.position(oldPos)
+        byteReader.position(oldPos)
       }
 
       arr
@@ -121,19 +120,19 @@ trait ByteBufferExtensions {
     final def getString(length: Int, offset: Int): String = {
       val sb = new StringBuilder
       if (length <= 4) {
-        val bb = ByteBuffer.allocate(4).order(byteBuffer.order).putInt(0, offset)
+        val bb = ByteBuffer.allocate(4).order(byteReader.order).putInt(0, offset)
         cfor(0)( _ < length, _ + 1) { i =>
           sb.append(bb.get.toChar)
         }
       } else {
-        val oldPos = byteBuffer.position
-        byteBuffer.position(offset)
+        val oldPos = byteReader.position
+        byteReader.position(offset)
 
         cfor(0)(_ < length, _ + 1) { i =>
-          sb.append(byteBuffer.get.toChar)
+          sb.append(byteReader.get.toChar)
         }
 
-        byteBuffer.position(oldPos)
+        byteReader.position(oldPos)
       }
 
       sb.toString
@@ -142,14 +141,14 @@ trait ByteBufferExtensions {
     final def getFractionalArray(length: Int, offset: Int): Array[(Long, Long)] = {
       val arr = Array.ofDim[(Long, Long)](length)
 
-      val oldPos = byteBuffer.position
-      byteBuffer.position(offset)
+      val oldPos = byteReader.position
+      byteReader.position(offset)
 
       cfor(0)(_ < length, _ + 1) { i =>
-        arr(i) = (ui2l(byteBuffer.getInt), ui2l(byteBuffer.getInt))
+        arr(i) = (ui2l(byteReader.getInt), ui2l(byteReader.getInt))
       }
 
-      byteBuffer.position(oldPos)
+      byteReader.position(oldPos)
 
       arr
     }
@@ -158,19 +157,19 @@ trait ByteBufferExtensions {
       val arr = Array.ofDim[Byte](length)
 
       if (length <= 4) {
-        val bb = ByteBuffer.allocate(4).order(byteBuffer.order).putInt(0, valueOffset)
+        val bb = ByteBuffer.allocate(4).order(byteReader.order).putInt(0, valueOffset)
         cfor(0)(_ < length, _ + 1) { i =>
           arr(i) = bb.get
         }
       } else {
-        val oldPos = byteBuffer.position
-        byteBuffer.position(valueOffset)
+        val oldPos = byteReader.position
+        byteReader.position(valueOffset)
 
         cfor(0)(_ < length, _ + 1) { i =>
-          arr(i) = byteBuffer.get
+          arr(i) = byteReader.get
         }
 
-        byteBuffer.position(oldPos)
+        byteReader.position(oldPos)
       }
 
       arr
@@ -179,7 +178,7 @@ trait ByteBufferExtensions {
     final def getSignedByteArray(length: Int): Array[Byte] = {
       val arr = Array.ofDim[Byte](length)
       cfor(0)(_ < length, _ + 1) { i =>
-        arr(i) = byteBuffer.get
+        arr(i) = byteReader.get
       }
       arr
     }
@@ -188,19 +187,19 @@ trait ByteBufferExtensions {
       val arr = Array.ofDim[Short](length)
 
       if (length <= 2) {
-        val bb = ByteBuffer.allocate(4).order(byteBuffer.order).putInt(0, valueOffset)
+        val bb = ByteBuffer.allocate(4).order(byteReader.order).putInt(0, valueOffset)
         cfor(0)(_ < length, _ + 1) { i =>
           arr(i) = bb.getShort
         }
       } else {
-        val oldPos = byteBuffer.position
-        byteBuffer.position(valueOffset)
+        val oldPos = byteReader.position
+        byteReader.position(valueOffset)
 
         cfor(0)(_ < length, _ + 1) { i =>
-          arr(i) = byteBuffer.getShort
+          arr(i) = byteReader.getShort
         }
 
-        byteBuffer.position(oldPos)
+        byteReader.position(oldPos)
       }
 
       arr
@@ -210,16 +209,16 @@ trait ByteBufferExtensions {
       val arr = Array.ofDim[Int](1)
 
       if (length == 1) {
-        arr(0) = ByteBuffer.allocate(4).order(byteBuffer.order).putInt(0, valueOffset).getInt
+        arr(0) = ByteBuffer.allocate(4).order(byteReader.order).putInt(0, valueOffset).getInt
       } else {
-        val oldPos = byteBuffer.position
-        byteBuffer.position(valueOffset)
+        val oldPos = byteReader.position
+        byteReader.position(valueOffset)
 
         cfor(0)(_ < length, _ + 1) { i =>
-          arr(i) = byteBuffer.getInt
+          arr(i) = byteReader.getInt
         }
 
-        byteBuffer.position(oldPos)
+        byteReader.position(oldPos)
       }
 
       arr
@@ -228,14 +227,14 @@ trait ByteBufferExtensions {
     final def getSignedFractionalArray(length: Int, offset: Int): Array[(Int, Int)] = {
       val arr = Array.ofDim[(Int, Int)](length)
 
-      val oldPos = byteBuffer.position
-      byteBuffer.position(offset)
+      val oldPos = byteReader.position
+      byteReader.position(offset)
 
       cfor(0)(_ < length, _ + 1) { i =>
-        arr(i) = (byteBuffer.getInt, byteBuffer.getInt)
+        arr(i) = (byteReader.getInt, byteReader.getInt)
       }
 
-      byteBuffer.position(oldPos)
+      byteReader.position(oldPos)
 
       arr
     }
@@ -244,19 +243,19 @@ trait ByteBufferExtensions {
       val arr = Array.ofDim[Float](length)
 
       if (length <= 1) {
-        val bb = ByteBuffer.allocate(4).order(byteBuffer.order).putInt(0, valueOffset)
+        val bb = ByteBuffer.allocate(4).order(byteReader.order).putInt(0, valueOffset)
         cfor(0)(_ < length, _ + 1) { i =>
           arr(i) = bb.getFloat
         }
       } else {
-        val oldPos = byteBuffer.position
-        byteBuffer.position(valueOffset)
+        val oldPos = byteReader.position
+        byteReader.position(valueOffset)
 
         cfor(0)(_ < length, _ + 1) { i =>
-          arr(i) = byteBuffer.getFloat
+          arr(i) = byteReader.getFloat
         }
 
-        byteBuffer.position(oldPos)
+        byteReader.position(oldPos)
       }
       arr
     }
@@ -264,14 +263,14 @@ trait ByteBufferExtensions {
     final def getDoubleArray(length: Int, offset: Int): Array[Double] = {
       val arr = Array.ofDim[Double](length)
 
-      val oldPos = byteBuffer.position
-      byteBuffer.position(offset)
+      val oldPos = byteReader.position
+      byteReader.position(offset)
 
       cfor(0)(_ < length, _ + 1) { i =>
-        arr(i) = byteBuffer.getDouble
+        arr(i) = byteReader.getDouble
       }
 
-      byteBuffer.position(oldPos)
+      byteReader.position(oldPos)
 
       arr
     }

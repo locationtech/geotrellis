@@ -3,7 +3,6 @@ package geotrellis.spark.io.s3.util
 import geotrellis.util._
 import geotrellis.spark.io.s3._
 
-import java.nio.ByteBuffer
 import com.amazonaws.services.s3.model._
 
 class MockS3ArrayBytes(val chunkSize: Int, testArray: Array[Byte])
@@ -41,18 +40,7 @@ class MockS3Stream(val chunkSize: Int, length: Long,
       else
         objectLength
 
-    val diff = math.abs((chunk - start)).toInt
-
-    r.setRange(start, chunk)
-
-    val obj = mockClient.getObject(r)
-    val stream = obj.getObjectContent
-    val arr = Array.ofDim[Byte](diff)
-
-    stream.skip(start)
-    stream.read(arr, 0, arr.length)
-    stream.close()
-    arr
+    mockClient.readRange(start, chunk, r)
   }
 }
 

@@ -13,7 +13,7 @@ import java.nio.{ByteBuffer, ByteOrder}
 import com.amazonaws.services.s3.model._
 import org.scalatest._
 
-class S3GeoTiffReadingSepc extends FunSpec
+class S3GeoTiffReadingSpec extends FunSpec
   with Matchers
   with RasterMatchers {
 

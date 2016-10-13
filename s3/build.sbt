@@ -10,8 +10,6 @@ libraryDependencies ++= Seq(
 fork in Test := false
 parallelExecution in Test := false
 
-javaOptions += "-Xmx2G"
-
 initialCommands in console :=
   """
   import geotrellis.raster._
