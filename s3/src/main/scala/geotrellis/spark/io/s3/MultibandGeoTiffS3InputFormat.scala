@@ -9,7 +9,7 @@ import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
 class MultibandGeoTiffS3InputFormat extends S3InputFormat[ProjectedExtent, MultibandTile] {
   def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
     new S3RecordReader[ProjectedExtent, MultibandTile] {
-      def read(key: String, bytes: Array[Byte]) = {
+      override def read(key: String, bytes: Array[Byte]) = {
         val geoTiff = MultibandGeoTiff(bytes)
         val projectedExtent = ProjectedExtent(geoTiff.extent, geoTiff.crs)
         (projectedExtent, geoTiff.tile)

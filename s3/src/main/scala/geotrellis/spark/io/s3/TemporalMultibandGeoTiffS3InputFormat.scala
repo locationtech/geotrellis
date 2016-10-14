@@ -16,7 +16,7 @@ import java.time.ZonedDateTime
 class TemporalMultibandGeoTiffS3InputFormat extends S3InputFormat[TemporalProjectedExtent, MultibandTile] {
   def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
     new S3RecordReader[TemporalProjectedExtent, MultibandTile] {
-      def read(key: String, bytes: Array[Byte]) = {
+      override def read(key: String, bytes: Array[Byte]) = {
         val geoTiff = MultibandGeoTiff(bytes)
 
         val timeTag = TemporalGeoTiffS3InputFormat.getTimeTag(context)

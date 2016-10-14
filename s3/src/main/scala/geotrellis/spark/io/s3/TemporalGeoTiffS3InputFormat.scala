@@ -13,6 +13,7 @@ import java.time.format.DateTimeFormatter
 object TemporalGeoTiffS3InputFormat {
   final val GEOTIFF_TIME_TAG = "GEOTIFF_TIME_TAG"
   final val GEOTIFF_TIME_FORMAT = "GEOTIFF_TIME_FORMAT"
+  final val STREAM_CHUNK_SIZE = "S3_STREAM_CHUNK_SIZE"
 
   def setTimeTag(job: JobContext, timeTag: String): Unit =
     setTimeTag(job.getConfiguration, timeTag)
@@ -34,6 +35,12 @@ object TemporalGeoTiffS3InputFormat {
     (if (df == null) { DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss") }
     else { DateTimeFormatter.ofPattern(df) }).withZone(ZoneOffset.UTC)
   }
+
+  def setChunkSize(job: JobContext, chunkSize: Int): Unit =
+    job.getConfiguration.set(STREAM_CHUNK_SIZE, chunkSize.toString)
+
+  def getChunkSize(job: JobContext): String =
+    job.getConfiguration.get(STREAM_CHUNK_SIZE)
 }
 
 /** Read single band GeoTiff from S3
@@ -50,8 +57,9 @@ class TemporalGeoTiffS3InputFormat extends S3InputFormat[TemporalProjectedExtent
 class TemporalGeoTiffS3RecordReader(context: TaskAttemptContext) extends S3RecordReader[TemporalProjectedExtent, Tile] {
   val timeTag = TemporalGeoTiffS3InputFormat.getTimeTag(context)
   val dateFormatter = TemporalGeoTiffS3InputFormat.getTimeFormatter(context)
+  override val chunkSize = TemporalGeoTiffS3InputFormat.getChunkSize(context).toInt
 
-  def read(key: String, bytes: Array[Byte]) = {
+  override def read(key: String, bytes: Array[Byte]) = {
     val geoTiff = SinglebandGeoTiff(bytes)
 
     val dateTimeString = geoTiff.tags.headTags.getOrElse(timeTag, sys.error(s"There is no tag $timeTag in the GeoTiff header"))

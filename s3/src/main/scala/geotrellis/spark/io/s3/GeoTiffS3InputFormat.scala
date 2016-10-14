@@ -2,6 +2,8 @@ package geotrellis.spark.io.s3
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
+import geotrellis.spark.io.s3.util.S3BytesStreamer
+import geotrellis.util.StreamByteReader
 import geotrellis.vector._
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
 
@@ -12,8 +14,9 @@ class GeoTiffS3InputFormat extends S3InputFormat[ProjectedExtent, Tile] {
 }
 
 class GeoTiffS3RecordReader extends S3RecordReader[ProjectedExtent, Tile] {
-  def read(key: String, bytes: Array[Byte]) = {
-    val geoTiff = SinglebandGeoTiff(bytes)
+  override def read(key: String, bytes: S3BytesStreamer) = {
+    val reader = StreamByteReader(bytes)
+    val geoTiff = SinglebandGeoTiff(reader)
     val ProjectedRaster(Raster(tile, extent), crs) = geoTiff.projectedRaster
     (ProjectedExtent(extent, crs), tile)
   }
