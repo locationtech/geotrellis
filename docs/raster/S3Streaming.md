@@ -29,8 +29,6 @@ There is only one way to construct an instance of `BytesStreamer` as of this wri
  import geotrellis.spark.io.s3._
  import geotrellis.spark.io.s3.util.S3BytesStreamer
  
- import com.amazonaws.services.s3.model._
- 
  val client: S3Client = S3Client.default
  val bucket: String = "my-bucket"
  val key: String = "path/to/my/geotiff.tif"
@@ -38,7 +36,7 @@ There is only one way to construct an instance of `BytesStreamer` as of this wri
  // how many bytes that should be streamed at a time
  val chunkSize: Int = 256000
  
- val s3bytes = S3BytesStreamer(bucket, key, client, chunkSize)
+ val s3Bytes = S3BytesStreamer(bucket, key, client, chunkSize)
 ```
 
 #### Creating a `ByteReader`
