@@ -38,7 +38,7 @@ object GeoTrellisETL {
         /* load source tiles using input module specified */
         val sourceTiles = etl.load[I, V]
         /* perform the reprojection and mosaicing step to fit tiles to LayoutScheme specified */
-        val (zoom, tiled) = etl.tile(sourceTiles)
+        val (zoom, tiled) = etl.tile[I, V, K](sourceTiles)
         /* save and optionally pyramid the mosaiced layer */
         etl.save[K, V](LayerId(etl.input.name, zoom), tiled)
       }
