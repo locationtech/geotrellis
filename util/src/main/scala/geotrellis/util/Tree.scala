@@ -11,6 +11,9 @@ case class Tree[T](root: T, children: Seq[Tree[T]]) {
 }
 
 object Tree {
+  /** Construct a Tree with a single node and no children. */
+  def singleton[T](t: T): Tree[T] = Tree(t, Seq.empty[Tree[T]])
+
   implicit class TreeFunctor[T](val self: Tree[T]) extends Functor[Tree, T] {
     def map[S](f: T => S): Tree[S] = Tree(
       f(self.root),
