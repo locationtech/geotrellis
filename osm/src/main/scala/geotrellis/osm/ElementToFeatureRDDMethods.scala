@@ -34,20 +34,25 @@ class ElementToFeatureRDDMethods(val self: RDD[Element]) extends MethodExtension
       case _ => None
     })
 
-    val (points, lines, polys) = geometries(nodes, ways)
+    val (points, rawLines, rawPolys) = geometries(nodes, ways)
 
-    val (finalPolys, finalLines) = multipolygons(lines, polys, relations)
+    val (multiPolys, lines, polys) = multipolygons(rawLines, rawPolys, relations)
 
     points.asInstanceOf[RDD[OSMFeature]] ++
-    finalLines.asInstanceOf[RDD[OSMFeature]] ++
-    finalPolys.asInstanceOf[RDD[OSMFeature]]
+    lines.asInstanceOf[RDD[OSMFeature]] ++
+    polys.asInstanceOf[RDD[OSMFeature]] ++
+    multiPolys.asInstanceOf[RDD[OSMFeature]]
   }
 
   private def multipolygons(
     lines: RDD[Feature[Line, Tree[ElementData]]],
     polys: RDD[Feature[Polygon, Tree[ElementData]]],
     relations: RDD[Relation]
-  ): (RDD[Feature[MultiPolygon, Tree[ElementData]]], RDD[Feature[Line, Tree[ElementData]]]) = {
+  ): (
+    RDD[Feature[MultiPolygon, Tree[ElementData]]],
+    RDD[Feature[Line, Tree[ElementData]]],
+    RDD[Feature[Polygon, Tree[ElementData]]]
+  ) = {
     // filter out polys that are used in relations
     // merge RDDs back together
 
@@ -113,7 +118,13 @@ class ElementToFeatureRDDMethods(val self: RDD[Element]) extends MethodExtension
       case _ => None
     })
 
-    (multipolys, openLines)
+    /* Polygons which were part of no Relation */
+    val plainPolys = grouped.flatMap({
+      case (_, (ps, ls, rs)) if ls.isEmpty && rs.isEmpty => Some(ps.head)
+      case _ => None
+    })
+
+    (multipolys, openLines, plainPolys)
   }
 
   /** Order a given Vector of Features such that each Geometry is as
