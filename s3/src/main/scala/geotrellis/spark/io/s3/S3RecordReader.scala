@@ -10,7 +10,7 @@ import org.apache.commons.io.IOUtils
 /** This reader will fetch bytes of each key one at a time using [AmazonS3Client.getObject].
   * Subclass must extend [read] method to map from S3 object bytes to (K,V) */
 abstract class S3RecordReader[K, V] extends RecordReader[K, V] with LazyLogging {
-  var s3client: AmazonS3Client = _
+  var s3client: S3Client = _
   var bucket: String = _
   var keys: Iterator[String] = null
   var curKey: K = _
@@ -23,7 +23,7 @@ abstract class S3RecordReader[K, V] extends RecordReader[K, V] with LazyLogging 
   // how many bytes that should be streamed at a time
   val chunkSize: Int = 256000 // SHOULD BE REMOVED OUT OF THERE
 
-  def getS3Client(credentials: AWSCredentials): AmazonS3Client =
+  def getS3Client(credentials: AWSCredentials): S3Client =
     new geotrellis.spark.io.s3.AmazonS3Client(credentials, S3Client.defaultConfiguration)
 
   def initialize(split: InputSplit, context: TaskAttemptContext): Unit = {
