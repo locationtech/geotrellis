@@ -4,6 +4,7 @@ import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.services.s3.model.GetObjectRequest
 import com.typesafe.scalalogging.LazyLogging
 import geotrellis.spark.io.s3.util.S3BytesStreamer
+import geotrellis.vector.Extent
 import org.apache.hadoop.mapreduce.{InputSplit, RecordReader, TaskAttemptContext}
 import org.apache.commons.io.IOUtils
 
@@ -17,11 +18,6 @@ abstract class S3RecordReader[K, V] extends RecordReader[K, V] with LazyLogging 
   var curValue: V = _
   var keyCount: Int = _
   var curCount: Int = 0
-
-  var streaming: Boolean = false
-
-  // how many bytes that should be streamed at a time
-  val chunkSize: Int = 256000 // SHOULD BE REMOVED OUT OF THERE
 
   def getS3Client(credentials: AWSCredentials): S3Client =
     new geotrellis.spark.io.s3.AmazonS3Client(credentials, S3Client.defaultConfiguration)
@@ -39,24 +35,37 @@ abstract class S3RecordReader[K, V] extends RecordReader[K, V] with LazyLogging 
 
   def read(key: String, obj: S3BytesStreamer): (K, V)
 
+  def read(key: String, e: Extent, obj: S3BytesStreamer): (K, V)
+
+  def read(key: String, e: Option[Extent], obj: S3BytesStreamer): (K, V)
+
   def read(key: String, obj: Array[Byte]): (K, V)
 
-  def nextKeyValue(): Boolean = {
+  def nextKeyValue(): Boolean =
+    nextKeyValue(None)
+
+  def nextKeyValue(chunkSize: Int): Boolean =
+    nextKeyValue(Some(chunkSize))
+
+  def nextKeyValue(chunkSize: Option[Int]): Boolean = {
     if (keys.hasNext){
       val key = keys.next()
       logger.debug(s"Reading: $key")
 
-      val (k, v) = if(streaming) {
-        val s3bytes: S3BytesStreamer = S3BytesStreamer(bucket, key, s3client, chunkSize)
-        read(key, s3bytes)
-      } else {
-        val obj = s3client.getObject(new GetObjectRequest(bucket, key))
-        val inStream = obj.getObjectContent
-        val objectData = IOUtils.toByteArray(inStream)
-        inStream.close()
-        read(key, objectData)
-      }
-
+      val (k, v) =
+        chunkSize match {
+          case Some(x) => {
+            val s3bytes: S3BytesStreamer = S3BytesStreamer(bucket, key, s3client, x)
+            read(key, s3bytes)
+          }
+          case None => {
+            val obj = s3client.getObject(new GetObjectRequest(bucket, key))
+            val inStream = obj.getObjectContent
+            val objectData = IOUtils.toByteArray(inStream)
+            inStream.close()
+            read(key, objectData)
+          }
+        }
       curKey = k
       curValue = v
       curCount += 1

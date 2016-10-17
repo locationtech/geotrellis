@@ -17,11 +17,17 @@ class MultibandGeoTiffS3InputFormat extends S3InputFormat[ProjectedExtent, Multi
         (projectedExtent, geoTiff.tile)
       }
 
-      def read(key: String, bytes: S3BytesStreamer) = {
+      def read(key: String, bytes: S3BytesStreamer) =
+        read(key, None, bytes)
+      
+      def read(key: String, e: Extent, bytes: S3BytesStreamer) =
+        read(key, Some(e), bytes)
+
+      def read(key: String, e: Option[Extent], bytes: S3BytesStreamer) = {
         val reader = StreamByteReader(bytes)
-        val geoTiff = MultibandGeoTiff(reader)
-        val projectedExtent = ProjectedExtent(geoTiff.extent, geoTiff.crs)
-        (projectedExtent, geoTiff.tile)
+        val geoTiff = MultibandGeoTiff(reader, e)
+        val ProjectedRaster(Raster(tile, extent), crs) = geoTiff.projectedRaster
+        (ProjectedExtent(extent, crs), tile)
       }
     }
 }

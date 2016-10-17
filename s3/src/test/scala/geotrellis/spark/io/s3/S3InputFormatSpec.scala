@@ -24,6 +24,8 @@ class MockS3InputFormat extends S3InputFormat[ProjectedExtent, Array[Byte]] {
         ProjectedExtent(Extent.fromString(key), LatLng) -> obj
 
       def read(key: String, obj: S3BytesStreamer) = ???
+      def read(key: String, e: Extent, obj: S3BytesStreamer) = ???
+      def read(key: String, e: Option[Extent], obj: S3BytesStreamer) = ???
     }
 }
 

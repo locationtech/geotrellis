@@ -5,6 +5,7 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.spark._
 import geotrellis.spark.io.s3.util.S3BytesStreamer
+import geotrellis.vector.Extent
 import org.apache.hadoop.mapreduce._
 
 import java.time.ZonedDateTime
@@ -23,9 +24,15 @@ class TemporalMultibandGeoTiffS3InputFormat extends S3InputFormat[TemporalProjec
         toProjectedRaster(geoTiff)
       }
       
-      def read(key: String, bytes: S3BytesStreamer) = {
+      def read(key: String, bytes: S3BytesStreamer) =
+        read(key, None, bytes)
+      
+      def read(key: String, e: Extent, bytes: S3BytesStreamer) =
+        read(key, Some(e), bytes)
+
+      def read(key: String, e: Option[Extent], bytes: S3BytesStreamer) = {
         val reader = StreamByteReader(bytes)
-        val geoTiff = MultibandGeoTiff(reader)
+        val geoTiff = MultibandGeoTiff(reader, e)
         toProjectedRaster(geoTiff)
       }
 

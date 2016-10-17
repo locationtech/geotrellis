@@ -20,9 +20,15 @@ class GeoTiffS3RecordReader extends S3RecordReader[ProjectedExtent, Tile] {
     (ProjectedExtent(extent, crs), tile)
   }
 
-  def read(key: String, bytes: S3BytesStreamer) = {
+  def read(key: String, bytes: S3BytesStreamer) =
+    read(key, None, bytes)
+
+  def read(key: String, e: Extent, bytes: S3BytesStreamer) =
+    read(key, Some(e), bytes)
+
+  def read(key: String, e: Option[Extent], bytes: S3BytesStreamer) = {
     val reader = StreamByteReader(bytes)
-    val geoTiff = SinglebandGeoTiff(reader)
+    val geoTiff = SinglebandGeoTiff(reader, e)
     val ProjectedRaster(Raster(tile, extent), crs) = geoTiff.projectedRaster
     (ProjectedExtent(extent, crs), tile)
   }
