@@ -40,7 +40,10 @@ object TemporalGeoTiffS3InputFormat {
   }
 
   def setChunkSize(job: JobContext, chunkSize: Int): Unit =
-    job.getConfiguration.set(STREAM_CHUNK_SIZE, chunkSize.toString)
+    setChunkSize(job.getConfiguration, chunkSize.toString)
+
+  def setChunkSize(conf: Configuration, chunkSize: String): Unit =
+    conf.set(STREAM_CHUNK_SIZE, chunkSize)
 
   def getChunkSize(job: JobContext): String =
     job.getConfiguration.get(STREAM_CHUNK_SIZE)
@@ -60,7 +63,7 @@ class TemporalGeoTiffS3InputFormat extends S3InputFormat[TemporalProjectedExtent
 class TemporalGeoTiffS3RecordReader(context: TaskAttemptContext) extends S3RecordReader[TemporalProjectedExtent, Tile] {
   val timeTag = TemporalGeoTiffS3InputFormat.getTimeTag(context)
   val dateFormatter = TemporalGeoTiffS3InputFormat.getTimeFormatter(context)
-  val chunkSize = TemporalGeoTiffS3InputFormat.getChunkSize(context).toInt
+  val chunk = TemporalGeoTiffS3InputFormat.getChunkSize(context)
 
   def read(key: String, bytes: Array[Byte]) = {
     val geoTiff = SinglebandGeoTiff(bytes)
