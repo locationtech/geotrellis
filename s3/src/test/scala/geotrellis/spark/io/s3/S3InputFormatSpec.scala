@@ -4,6 +4,7 @@ import com.amazonaws.auth.AWSCredentials
 import geotrellis.proj4.LatLng
 import geotrellis.raster.Tile
 import geotrellis.spark.TestEnvironment
+import geotrellis.spark.io.s3.util.S3BytesStreamer
 import geotrellis.vector.{ Extent, ProjectedExtent }
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce.{ Job, RecordReader, TaskAttemptContext, InputSplit }
@@ -21,6 +22,8 @@ class MockS3InputFormat extends S3InputFormat[ProjectedExtent, Array[Byte]] {
 
       def read(key: String, obj: Array[Byte]) =
         ProjectedExtent(Extent.fromString(key), LatLng) -> obj
+
+      def read(key: String, obj: S3BytesStreamer) = ???
     }
 }
 
