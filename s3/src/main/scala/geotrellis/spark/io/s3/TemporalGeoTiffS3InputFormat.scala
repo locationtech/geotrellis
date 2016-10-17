@@ -1,8 +1,10 @@
 package geotrellis.spark.io.s3
 
+import geotrellis.util.StreamByteReader
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.spark._
+import geotrellis.spark.io.s3.util.S3BytesStreamer
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce._
@@ -59,9 +61,18 @@ class TemporalGeoTiffS3RecordReader(context: TaskAttemptContext) extends S3Recor
   val dateFormatter = TemporalGeoTiffS3InputFormat.getTimeFormatter(context)
   override val chunkSize = TemporalGeoTiffS3InputFormat.getChunkSize(context).toInt
 
-  override def read(key: String, bytes: Array[Byte]) = {
+  def read(key: String, bytes: Array[Byte]) = {
     val geoTiff = SinglebandGeoTiff(bytes)
+    toProjectedRaster(geoTiff)
+  }
+  
+  def read(key: String, bytes: S3BytesStreamer) = {
+    val reader = StreamByteReader(bytes)
+    val geoTiff = SinglebandGeoTiff(reader)
+    toProjectedRaster(geoTiff)
+  }
 
+  private def toProjectedRaster(geoTiff: SinglebandGeoTiff) = {
     val dateTimeString = geoTiff.tags.headTags.getOrElse(timeTag, sys.error(s"There is no tag $timeTag in the GeoTiff header"))
     val dateTime = ZonedDateTime.from(dateFormatter.parse(dateTimeString))
 

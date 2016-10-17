@@ -37,9 +37,9 @@ abstract class S3RecordReader[K, V] extends RecordReader[K, V] with LazyLogging 
 
   def getProgress: Float = curCount / keyCount
 
-  def read(key: String, obj: S3BytesStreamer): (K, V) = ???
+  def read(key: String, obj: S3BytesStreamer): (K, V)
 
-  def read(key: String, obj: Array[Byte]): (K, V) = ???
+  def read(key: String, obj: Array[Byte]): (K, V)
 
   def nextKeyValue(): Boolean = {
     if (keys.hasNext){
