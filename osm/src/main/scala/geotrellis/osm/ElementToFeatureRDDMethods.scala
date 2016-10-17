@@ -36,17 +36,18 @@ class ElementToFeatureRDDMethods(val self: RDD[Element]) extends MethodExtension
 
     val (points, lines, polys) = geometries(nodes, ways)
 
-    val finalPolys: RDD[OSMFeature] =
-      multipolygons(lines, polys, relations).asInstanceOf[RDD[OSMFeature]]
+    val (finalPolys, finalLines) = multipolygons(lines, polys, relations)
 
-    points.asInstanceOf[RDD[OSMFeature]] ++ lines.asInstanceOf[RDD[OSMFeature]] ++ finalPolys
+    points.asInstanceOf[RDD[OSMFeature]] ++
+    finalLines.asInstanceOf[RDD[OSMFeature]] ++
+    finalPolys.asInstanceOf[RDD[OSMFeature]]
   }
 
   private def multipolygons(
     lines: RDD[Feature[Line, ElementData]],
     polys: RDD[Feature[Polygon, ElementData]],
     relations: RDD[Relation]
-  ): RDD[Feature[Polygon, ElementData]] = {
+  ): (RDD[Feature[MultiPolygon, ElementData]], RDD[Feature[Line, ElementData]]) = {
     // filter out polys that are used in relations
     // merge RDDs back together
 
@@ -59,58 +60,70 @@ class ElementToFeatureRDDMethods(val self: RDD[Element]) extends MethodExtension
     val grouped =
       polys.map(f => (f.data.meta.id, f)).cogroup(lineLinks, relLinks)
 
-    val multipolys =
-      grouped
-        /* Assumption: Polygons and Lines exist in at most one "multipolygon" Relation */
-        .flatMap({
-          case (_, (ps, _, rs)) if !rs.isEmpty && !ps.isEmpty => Some((rs.head, Left(ps.head)))
-          case (_, (_, ls, rs)) if !rs.isEmpty && !ls.isEmpty => Some((rs.head, Right(ls.head)))
+    val multipolys = grouped
+      /* Assumption: Polygons and Lines exist in at most one "multipolygon" Relation */
+      .flatMap({
+        case (_, (ps, _, rs)) if !rs.isEmpty && !ps.isEmpty => Some((rs.head, Left(ps.head)))
+        case (_, (_, ls, rs)) if !rs.isEmpty && !ls.isEmpty => Some((rs.head, Right(ls.head)))
+        case _ => None
+      })
+      .groupByKey
+      .map({ case (r, gs) =>
+
+        /* Fuse Lines into Polygons */
+        val ls: Vector[Feature[Line, ElementData]] = gs.flatMap({
+          case Right(l) => Some(l)
           case _ => None
-        })
-        .groupByKey
-        .map({ case (r, gs) =>
+        }).toVector
 
-          /* Fuse Lines into Polygons */
-          val ls: Vector[Feature[Line, ElementData]] = gs.flatMap({
-            case Right(l) => Some(l)
-            case _ => None
-          }).toVector
+        val ps: Vector[Feature[Polygon, ElementData]] = gs.flatMap({
+          case Left(p) => Some(p)
+          case _ => None
+        }).toVector ++ fuseLines(spatialSort(ls.map(f => (f.geom.centroid.as[Point].get, f))).map(_._2))
 
-          val ps: Vector[Feature[Polygon, ElementData]] = gs.flatMap({
-            case Left(p) => Some(p)
-            case _ => None
-          }).toVector ++ fuseLines(spatialSort(ls.map(f => (f.geom.centroid.as[Point].get, f))).map(_._2))
+        val outerIds: Set[Long] = r.members.partition(_.role == "outer")._1.map(_.ref).toSet
 
-//          val outerId: Long = r.members.filter(_.role == "outer").head.ref
+        val (outers, inners) = ps.partition(f => outerIds.contains(f.data.meta.id))
 
-//          val (Seq(outer), inners) = ps.partition(_.data.meta.id == outerId)
-
-          /* It is suggested by OSM that multipoly tag data should be stored in
-           * the Relation, not its constituent parts. Hence we take `r.data` here.
-           *
-           * However, "inner" Ways can have meaningful tags, such as a lake in
-           * the middle of a forest.
-           * TODO: We need a way to retain Hole tag data.
-           *
-           * Furthermore, winding order doesn't matter in OSM, but it does
-           * in VectorTiles.
-           * TODO: Make sure winding order is handled correctly.
-           */
-//          Feature(Polygon(outer.geom.exterior, inners.map(_.geom.exterior)), r.data)
+        /* Match outer and inner Polygons - O(n^2) */
+        val fused = outers.map({ o =>
+          Polygon(
+            o.geom.exterior,
+            inners.filter(i => o.geom.contains(i.geom)).map(_.geom.exterior)
+          )
         })
 
+        /* It is suggested by OSM that multipoly tag data should be stored in
+         * the Relation, not its constituent parts. Hence we take `r.data` here.
+         *
+         * However, "inner" Ways can have meaningful tags, such as a lake in
+         * the middle of a forest.
+         * TODO: We need a way to retain Hole tag data.
+         *
+         * Furthermore, winding order doesn't matter in OSM, but it does
+         * in VectorTiles.
+         * TODO: Make sure winding order is handled correctly.
+         */
+        Feature(MultiPolygon(fused), r.data)
+      })
 
-    polys
+    /* Lines which were part of no Relation */
+    val openLines = grouped.flatMap({
+      case (_, (_, ls, rs)) if rs.isEmpty => Some(ls.head)
+      case _ => None
+    })
+
+    (multipolys, openLines)
   }
 
   /** Order a given Vector of Features such that each Geometry is as
     * spatially close as possible to its neighbours in the result Vector.
+    * This is done by comparing the location of a centroid Point given for
+    * each Geometry.
     *
     * Time complexity: O(nlogn)
     */
-  private def spatialSort(
-    v: Vector[(Point, Feature[Line, ElementData])]
-  ): Vector[(Point, Feature[Line, ElementData])] = v match {
+  private def spatialSort[T](v: Vector[(Point, T)]): Vector[(Point, T)] = v match {
     case Vector() => v
     case v if v.length < 6 => v.sortBy(_._1.x)  // TODO Naive?
     case v => {
