@@ -79,7 +79,7 @@ class ElementToFeatureRDDMethods(val self: RDD[Element]) extends MethodExtension
           val ps: Vector[Feature[Polygon, ElementData]] = gs.flatMap({
             case Left(p) => Some(p)
             case _ => None
-          }).toVector ++ fuseLines(spatialSort(ls))
+          }).toVector ++ fuseLines(spatialSort(ls.map(f => (f.geom.centroid.as[Point].get, f))).map(_._2))
 
 //          val outerId: Long = r.members.filter(_.role == "outer").head.ref
 
@@ -109,21 +109,39 @@ class ElementToFeatureRDDMethods(val self: RDD[Element]) extends MethodExtension
     * Time complexity: O(nlogn)
     */
   private def spatialSort(
-    v: Vector[Feature[Line, ElementData]]
-  ): Vector[Feature[Line, ElementData]] = v match {
-    case v if v.length < 3 => v
+    v: Vector[(Point, Feature[Line, ElementData])]
+  ): Vector[(Point, Feature[Line, ElementData])] = v match {
+    case Vector() => v
+    case v if v.length < 6 => v.sortBy(_._1.x)  // TODO Naive?
     case v => {
       /* Kernels - Two points around which to group all others */
-      val (kl, kr) = (v.head.geom.centroid.as[Point].get, v.last.geom.centroid.as[Point].get)
+      val mid: Point = v(v.length / 2)._1
+      val avg: (Point, Point) => Point = (p1, p2) => Point((p1.x + p2.x) / 2, (p1.y + p2.y) / 2)
+      val (kl, kr) = (avg(v.head._1, mid), avg(v.last._1, mid))
 
       /* Group all points spatially around the two kernels */
-      val (l, r) = v.partition({ f =>
-        val centre = f.geom.centroid.as[Point].get
+      val (l, r) = v.partition({ f => f._1.distance(kl) < f._1.distance(kr) })
 
-        centre.distance(kl) < centre.distance(kr)
-      })
+      /* Recombine the sorted lines by whichever endpoints are closest */
+      (spatialSort(l), spatialSort(r)) match {
+        case (Vector(), v2) => v2
+        case (v1, Vector()) => v1
+        case (v1, v2) => {
+          val pairs = Seq(
+            0 -> v1.last._1.distance(v2.head._1),
+            1 -> v1.last._1.distance(v2.last._1),
+            2 -> v1.head._1.distance(v2.head._1),
+            3 -> v1.head._1.distance(v2.last._1)
+          )
 
-      spatialSort(l) ++ spatialSort(r)
+          pairs.sortBy(_._2).head._1 match {
+            case 0 => v1 ++ v2
+            case 1 => v1 ++ v2.reverse
+            case 2 => v1.reverse ++ v2
+            case 3 => v2 ++ v1
+          }
+        }
+      }
     }
   }
 
