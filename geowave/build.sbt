@@ -23,10 +23,10 @@ libraryDependencies ++= Seq(
   "mil.nga.giat" % "geowave-datastore-accumulo" % "0.9.3-SNAPSHOT"
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
-  "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided"
+  hadoopClient % "provided"
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
-  "org.apache.spark" %% "spark-core" % Version.spark % "provided",
+  sparkCore % "provided",
   "org.geoserver" % "gs-wms" % "2.8.2"
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),

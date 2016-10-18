@@ -20,19 +20,31 @@ import geotrellis.spark._
 import geotrellis.proj4._
 import geotrellis.spark.tiling._
 import geotrellis.spark.io.hadoop._
+import geotrellis.spark.mapalgebra.Implicits._
 import geotrellis.spark.testfiles._
-
+import org.apache.spark.sql.SparkSession
 import org.scalatest.FunSpec
 
-class AddSpec extends FunSpec with TestEnvironment with TestFiles {
+class AddSpec extends FunSpec with TestEnvironment with TestFiles with KryoEncoderImplicits {
   
   describe("Add Operation") {
-    val ones = AllOnesTestFile
+    import ssc.implicits._
 
+    val ones = AllOnesTestFile
     val onesST = AllOnesSpaceTime
+
+    val onesDS = AllOnesTestFile.toDS()
+    val onesSTDS = AllOnesSpaceTime.toDS()
 
     it("should add a constant to a raster") {
       val twos = ones + 1
+
+      rasterShouldBe(twos, (2, 2))
+      rastersShouldHaveSameIdsAndTileCount(ones, twos)
+    }
+
+    it("should add a constant to a raster (dataset)") {
+      val twos = (onesDS + 1).rdd
 
       rasterShouldBe(twos, (2, 2))
       rastersShouldHaveSameIdsAndTileCount(ones, twos)
@@ -45,6 +57,13 @@ class AddSpec extends FunSpec with TestEnvironment with TestFiles {
       rastersShouldHaveSameIdsAndTileCount(onesST, twos)
     }
 
+    it("should add a constant to a spacetime raster (dataset)") {
+      val twos = (onesSTDS + 1).rdd
+
+      rasterShouldBe(twos, (2, 2))
+      rastersShouldHaveSameIdsAndTileCount(onesST, twos)
+    }
+
     it("should add a raster to a constant") {
       val twos = 1 +: ones
 
@@ -52,8 +71,23 @@ class AddSpec extends FunSpec with TestEnvironment with TestFiles {
       rastersShouldHaveSameIdsAndTileCount(ones, twos)
     }
 
+    it("should add a raster to a constant (dataset)") {
+      val twos = (1 +: onesDS).rdd
+
+      rasterShouldBe(twos, (2, 2))
+      rastersShouldHaveSameIdsAndTileCount(ones, twos)
+    }
+
+
     it("should add a spacetime raster to a constant") {
       val twos = 1 +: onesST
+
+      rasterShouldBe(twos, (2, 2))
+      rastersShouldHaveSameIdsAndTileCount(onesST, twos)
+    }
+
+    it("should add a spacetime raster to a constant (dataset)") {
+      val twos = (1 +: onesSTDS).rdd
 
       rasterShouldBe(twos, (2, 2))
       rastersShouldHaveSameIdsAndTileCount(onesST, twos)
@@ -66,8 +100,22 @@ class AddSpec extends FunSpec with TestEnvironment with TestFiles {
       rastersShouldHaveSameIdsAndTileCount(ones, threes)
     }
 
+    it("should add multiple rasters (dataset)") {
+      val threes = (onesDS + onesDS + onesDS).rdd
+
+      rasterShouldBe(threes, (3, 3))
+      rastersShouldHaveSameIdsAndTileCount(ones, threes)
+    }
+
     it("should add multiple spacetime rasters") {
       val twos = onesST + onesST
+
+      rasterShouldBe(twos, (2, 2))
+      rastersShouldHaveSameIdsAndTileCount(onesST, twos)
+    }
+
+    it("should add multiple spacetime rasters (dataset)") {
+      val twos = (onesSTDS + onesSTDS).rdd
 
       rasterShouldBe(twos, (2, 2))
       rastersShouldHaveSameIdsAndTileCount(onesST, twos)
@@ -80,8 +128,22 @@ class AddSpec extends FunSpec with TestEnvironment with TestFiles {
       rastersShouldHaveSameIdsAndTileCount(ones, threes)
     }
 
+    it("should add multiple rasters as a seq (dataset)") {
+      val threes = (onesDS + Array(onesDS, onesDS)).rdd
+
+      rasterShouldBe(threes, (3, 3))
+      rastersShouldHaveSameIdsAndTileCount(ones, threes)
+    }
+
     it("should add multiple spacetime rasters as a seq") {
       val twos = onesST + Array(onesST)
+
+      rasterShouldBe(twos, (2, 2))
+      rastersShouldHaveSameIdsAndTileCount(onesST, twos)
+    }
+
+    it("should add multiple spacetime rasters as a seq (dataset)") {
+      val twos = (onesSTDS + Array(onesSTDS)).rdd
 
       rasterShouldBe(twos, (2, 2))
       rastersShouldHaveSameIdsAndTileCount(onesST, twos)

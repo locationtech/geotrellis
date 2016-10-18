@@ -19,17 +19,18 @@ package geotrellis.spark
 import geotrellis.spark.io.hadoop.HdfsUtils
 import geotrellis.spark.testkit._
 import geotrellis.spark.util.SparkUtils
-
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.FileUtil
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.serializer.{ KryoRegistrator => SparkKryoRegistrator }
+import org.apache.spark.serializer.{KryoRegistrator => SparkKryoRegistrator}
 import org.scalatest._
 import org.scalatest.BeforeAndAfterAll
-
 import java.io.File
+
+import org.apache.spark.sql.SparkSession
+
 import scala.collection.mutable
 import scala.util.Properties
 
@@ -87,6 +88,14 @@ trait TestEnvironment extends BeforeAndAfterAll
     System.clearProperty("spark.ui.enabled")
 
     sparkContext
+  }
+
+  lazy val ssc: SparkSession = {
+    SparkSession
+      .builder()
+      .master(_sc.master) // to be sure that spark context was initiated
+      .appName("Test SQL Context")
+      .getOrCreate()
   }
 
   implicit def sc: SparkContext = _sc
