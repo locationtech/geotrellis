@@ -18,6 +18,8 @@ abstract class S3RecordReader[K, V] extends RecordReader[K, V] with LazyLogging 
   var curValue: V = _
   var keyCount: Int = _
   var curCount: Int = 0
+  var chunkSize: Int = _
+  var streaming: Boolean = false
 
   def getS3Client(credentials: AWSCredentials): S3Client =
     new geotrellis.spark.io.s3.AmazonS3Client(credentials, S3Client.defaultConfiguration)
@@ -28,6 +30,16 @@ abstract class S3RecordReader[K, V] extends RecordReader[K, V] with LazyLogging 
     keys = sp.keys.iterator
     keyCount =  sp.keys.length
     bucket = sp.bucket
+
+    val conf = context.getConfiguration
+    chunkSize = {
+      val result = conf.get("CHUNK_SIZE")
+      if (result == null || result == "0")
+        0
+      else
+        result.toInt
+    }
+    streaming = if (chunkSize == 0) false else true
     logger.debug(s"Initialize split on bucket '$bucket' with $keyCount keys")
   }
 
@@ -46,13 +58,17 @@ abstract class S3RecordReader[K, V] extends RecordReader[K, V] with LazyLogging 
       val key = keys.next()
       logger.debug(s"Reading: $key")
 
-      val (k, v) = {
-        val obj = s3client.getObject(new GetObjectRequest(bucket, key))
-        val inStream = obj.getObjectContent
-        val objectData = IOUtils.toByteArray(inStream)
-        inStream.close()
-        read(key, objectData)
-      }
+      val (k, v) =
+        if (streaming) {
+          val s3BytesStreamer = S3BytesStreamer(bucket, key, s3client, chunkSize)
+          read(key, s3BytesStreamer)
+        } else {
+          val obj = s3client.getObject(new GetObjectRequest(bucket, key))
+          val inStream = obj.getObjectContent
+          val objectData = IOUtils.toByteArray(inStream)
+          inStream.close()
+          read(key, objectData)
+        }
 
       curKey = k
       curValue = v
