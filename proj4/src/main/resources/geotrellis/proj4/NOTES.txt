@@ -1,7 +1,0 @@
-All of the files listed in this directory except for the *nad* folder are
-under a non open source because they are derived from OGP.
-
-For more information these two links could be helpful.
-
-1. http://trac.osgeo.org/gdal/wiki/LicensingIssues
-2. http://www.epsg.org/TermsOfUse
