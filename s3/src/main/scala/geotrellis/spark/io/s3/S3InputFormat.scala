@@ -43,6 +43,8 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
     require(null == partitionCountConf || null == partitionSizeConf,
       "Either PARTITION_COUNT or PARTITION_SIZE option may be set")
 
+    val chunkSizeConf = conf.get(CHUNK_SIZE)
+
     val credentials =
       if (anon != null)
         new AnonymousAWSCredentials()
@@ -124,6 +126,7 @@ object S3InputFormat {
   final val REGION = "s3.region"
   final val PARTITION_COUNT = "s3.partitionCount"
   final val PARTITION_BYTES = "S3.partitionBytes"
+  final val CHUNK_SIZE = "0"
 
   private val idRx = "[A-Z0-9]{20}"
   private val keyRx = "[a-zA-Z0-9+/]+={0,2}"
@@ -186,4 +189,10 @@ object S3InputFormat {
   /** Set desired partition size in bytes, at least one item per partition will be assigned */
   def setPartitionBytes(conf: Configuration, bytes: Long): Unit =
     conf.set(PARTITION_BYTES, bytes.toString)
+
+  def setChunkSize(job: Job, size: Int): Unit =
+    setChunkSize(job.getConfiguration, size)
+
+  def setChunkSize(conf: Configuration, size: Int): Unit =
+    conf.set(CHUNK_SIZE, size.toString)
 }
