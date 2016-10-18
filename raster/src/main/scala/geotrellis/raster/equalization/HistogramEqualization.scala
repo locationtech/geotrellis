@@ -62,21 +62,51 @@ object HistogramEqualization {
     }
   }
 
+  /**
+    * Given a [[Tile]], return a Tile with an equalized histogram.
+    *
+    * @param  tile  A singleband tile
+    * @return       A singleband tile with improved contrast
+    */
   def apply(tile: Tile): Tile = {
     val histogram = StreamingHistogram.fromTile(tile, 1<<17)
     HistogramEqualization(tile, histogram)
   }
 
+  /**
+    * Given a [[Tile]] and a [[StreamingHistogram]], return a Tile
+    * with an equalized histogram.
+    *
+    * @param  tile       A singleband tile
+    * @param  histogram  The histogram of the tile
+    * @return            A singleband tile with improved contrast
+    */
   def apply(tile: Tile, histogram: StreamingHistogram): Tile = {
     val T = _T(tile.cellType, histogram.cdf)_
     tile.mapDouble(T)
   }
 
+  /**
+    * Given a [[MultibandTile]], return a MultibandTile whose bands
+    * all have equalized histograms.
+    *
+    * @param  tile  A multiband tile
+    * @return       A multiband tile with improved contrast
+    */
   def apply(tile: MultibandTile): MultibandTile = {
     val histograms = tile.bands.map({ tile => StreamingHistogram.fromTile(tile, 1<<17) })
     HistogramEqualization(tile, histograms)
   }
 
+  /**
+    * Given a [[MultibandTile]] and a [[StreamingHistogram]] for each
+    * of its bands, return a MultibandTile whose bands all have
+    * equalized histograms.
+    *
+    * @param  tile        A multiband tile
+    * @param  histograms  A sequence of histograms, one for each band
+    * @return             A multiband tile with improved contrast
+    */
   def apply(tile: MultibandTile, histograms: Seq[StreamingHistogram]): MultibandTile = {
     MultibandTile(
       tile.bands
