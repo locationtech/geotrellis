@@ -41,31 +41,19 @@ abstract class S3RecordReader[K, V] extends RecordReader[K, V] with LazyLogging 
 
   def read(key: String, obj: Array[Byte]): (K, V)
 
-  def nextKeyValue(): Boolean =
-    nextKeyValue(None)
-
-  def nextKeyValue(chunkSize: Int): Boolean =
-    nextKeyValue(Some(chunkSize))
-
-  def nextKeyValue(chunkSize: Option[Int]): Boolean = {
+  def nextKeyValue(): Boolean = {
     if (keys.hasNext){
       val key = keys.next()
       logger.debug(s"Reading: $key")
 
-      val (k, v) =
-        chunkSize match {
-          case Some(x) => {
-            val s3bytes: S3BytesStreamer = S3BytesStreamer(bucket, key, s3client, x)
-            read(key, s3bytes)
-          }
-          case None => {
-            val obj = s3client.getObject(new GetObjectRequest(bucket, key))
-            val inStream = obj.getObjectContent
-            val objectData = IOUtils.toByteArray(inStream)
-            inStream.close()
-            read(key, objectData)
-          }
-        }
+      val (k, v) = {
+        val obj = s3client.getObject(new GetObjectRequest(bucket, key))
+        val inStream = obj.getObjectContent
+        val objectData = IOUtils.toByteArray(inStream)
+        inStream.close()
+        read(key, objectData)
+      }
+
       curKey = k
       curValue = v
       curCount += 1
