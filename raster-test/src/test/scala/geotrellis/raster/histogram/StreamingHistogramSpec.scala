@@ -156,12 +156,15 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
       hist.quantileBreaks(5) should be (Seq(1.0, 1.0, 1.0, 1.0, 1.0))
     }
 
-    it("should get quantile breaks on tile with only 2 types of values") {
-      val arrTile = FloatArrayTile.fill(1.0f, 100, 200, FloatConstantNoDataCellType)
-      arrTile.setDouble(5, 4, 3.0)
-      arrTile.setDouble(5, 5, 4.0)
+    it("should get quantile breaks on tile with only 2 types of values, interpolating between") {
+      val arrTile = FloatArrayTile.empty(100, 200)
+      arrTile.setDouble(5, 3, 1.0)
+      arrTile.setDouble(5, 5, 2.0)
       val hist = arrTile.histogramDouble
-      hist.quantileBreaks(10).toSeq should be ((1 to 9).map { z => 1.0f } ++ Seq(4.0f))
+      val breaks = hist.quantileBreaks(100)
+      breaks.head should be (1.0)
+      breaks.last should be (2.0)
+      breaks.tail.init.map { _ should (be > 1.0 and be < 2.0) }
     }
 
     it("should not throw when there are more breaks than buckets") {
@@ -268,6 +271,15 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
       h1.maxBucketCount should equal (h2.maxBucketCount)
     }
 
+  }
+
+  it("should allow the bucket count to be parameterized") {
+    val tile = IntArrayTile(1 to 250*250 toArray, 250, 250)
+
+    val default = tile.histogramDouble()
+    val custom = tile.histogramDouble(200)
+
+    default.statistics should not be (custom.statistics)
   }
 
 }

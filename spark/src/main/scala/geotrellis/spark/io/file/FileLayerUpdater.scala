@@ -9,7 +9,7 @@ import geotrellis.spark.io.json._
 import geotrellis.spark.merge._
 import geotrellis.util._
 
-import com.typesafe.scalalogging.slf4j._
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -65,15 +65,13 @@ class FileLayerUpdater(
 
     val updatedRdd: RDD[(K, V)] =
       existingTiles
-        .leftOuterJoin(rdd)
-        .mapValues { case (layerTile, updateTile) =>
-          updateTile match {
-            case Some(tile) =>
-              mergeFunc(layerTile, tile)
-            case None =>
-              layerTile
-          }
-      }
+        .fullOuterJoin(rdd)
+        .flatMapValues {
+          case (Some(layerTile), Some(updateTile)) => Some(mergeFunc(layerTile, updateTile))
+          case (Some(layerTile), _) => Some(layerTile)
+          case (_, Some(updateTile)) => Some(updateTile)
+          case _ => None
+        }
 
     val codec  = KeyValueRecordCodec[K, V]
     val schema = codec.schema

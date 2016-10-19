@@ -16,9 +16,8 @@ trait Implicits {
       extends TileLayerRDDFilterMethods[K, V, M]
 
   implicit class withSpaceTimeToSpatialMethods[
-    K: SpatialComponent: TemporalComponent,
+    K: SpatialComponent: TemporalComponent: λ[α => M[α] => Functor[M, α]]: λ[α => Component[M[α], Bounds[α]]],
     V,
-    M: Component[?, Bounds[K]]
-  ](val self: RDD[(K, V)] with Metadata[M])
-      extends SpaceTimeToSpatialMethods[K, V, M]
+    M[_]
+  ](val self: RDD[(K, V)] with Metadata[M[K]]) extends SpaceTimeToSpatialMethods[K, V, M]
 }

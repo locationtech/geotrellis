@@ -51,33 +51,35 @@ trait FocalMethods extends MethodExtensions[Tile] {
     Convolve(self, kernel)
   }
 
-  /** Calculates spatial autocorrelation of cells based on the similarity to neighboring values.
-   * @see [[TileMoransICalculation]]
-   */
+  /**
+    * Calculates spatial autocorrelation of cells based on the
+    * similarity to neighboring values.
+    */
   def tileMoransI(n: Neighborhood, bounds: Option[GridBounds] = None): Tile = {
     TileMoransICalculation(self, n, bounds)
   }
 
-  /** Calculates global spatial autocorrelation of a raster based on the similarity to neighboring values.
-   * @see [[ScalarMoransICalculation]]
-   */
+  /**
+    * Calculates global spatial autocorrelation of a raster based on
+    * the similarity to neighboring values.
+    */
   def scalarMoransI(n: Neighborhood, bounds: Option[GridBounds] = None): Double = {
     ScalarMoransICalculation(self, n, bounds)
   }
 
   /**
     * Calculates the slope of each cell in a raster.
+    *
     * @param   cs         cellSize of the raster
     * @param   zFactor    Number of map units to one elevation unit.
-    * @see [[Slope]]
     */
   def slope(cs: CellSize, zFactor: Double = 1.0, bounds: Option[GridBounds] = None): Tile =
     Slope(self, Square(1), bounds, cs, zFactor)
 
   /**
     * Calculates the aspect of each cell in a raster.
+    *
     * @param   cs          cellSize of the raster
-    * @see [[Aspect]]
     */
   def aspect(cs: CellSize, bounds: Option[GridBounds] = None): Tile =
     Aspect(self, Square(1), bounds, cs)

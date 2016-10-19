@@ -1,6 +1,6 @@
 # GeoTrellis
 
-[![Build Status](https://api.travis-ci.org/geotrellis/geotrellis.svg)](http://travis-ci.org/geotrellis/geotrellis) [![Join the chat at https://gitter.im/geotrellis/geotrellis](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/geotrellis/geotrellis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://api.travis-ci.org/geotrellis/geotrellis.svg)](http://travis-ci.org/geotrellis/geotrellis) [![Join the chat at https://gitter.im/geotrellis/geotrellis](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/geotrellis/geotrellis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Bintray](https://img.shields.io/bintray/v/azavea/geotrellis/geotrellis-spark.svg?maxAge=2592000)](https://bintray.com/azavea/geotrellis)
 
 *GeoTrellis* is a Scala library and framework that uses
 Spark to work with raster data.  It is released under
@@ -158,6 +158,14 @@ This is a list of features contained in the GeoTrellis library. It is broken up 
 #### geotrellis-accumulo
 
 - Save and load layers to and from Accumulo. Query large layers efficiently using the layer query API.
+
+#### geotrellis-cassandra
+
+- Save and load layers to and from Casandra. Query large layers efficiently using the layer query API.
+
+#### geotrellis-hbase
+
+- Save and load layers to and from HBase. Query large layers efficiently using the layer query API.
 
 #### geotrellis-s3
 

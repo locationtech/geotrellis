@@ -3,7 +3,7 @@ package geotrellis.slick
 import com.typesafe.config.{ConfigFactory,Config}
 import org.scalatest._
 
-import scala.slick.driver.PostgresDriver.simple._
+import slick.driver.PostgresDriver.api._
 
 object TestDatabase {
   def newInstance = {
@@ -15,11 +15,13 @@ object TestDatabase {
 
     val s = s"jdbc:postgresql://$pghost/$pgdb"
     println(s"Connecting to $s")
-    Database.forURL("jdbc:postgresql://" + pghost + "/" + pgdb,
+
+    Database.forURL(
+      "jdbc:postgresql://" + pghost + "/" + pgdb,
       driver="org.postgresql.Driver",
       user=pguser,
-      password=pgpass)
-
+      password=pgpass
+    )
   }
 }
 
@@ -27,6 +29,7 @@ trait TestDatabase extends BeforeAndAfterAll { self: Suite =>
   protected var db: Database = null
 
   override def beforeAll() = {
+    val config = ConfigFactory.load
     db = TestDatabase.newInstance
   }
 }

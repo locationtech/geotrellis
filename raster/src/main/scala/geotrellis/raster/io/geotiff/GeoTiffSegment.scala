@@ -6,11 +6,15 @@ import geotrellis.raster._
 import java.util.BitSet
 import spire.syntax.cfor._
 
+/**
+ * Base trait of GeoTiffSegment
+ */
 trait GeoTiffSegment {
   def size: Int
   def getInt(i: Int): Int
   def getDouble(i: Int): Double
 
+  /** represents all of the bytes in the segment */
   def bytes: Array[Byte]
 
   def map(f: Int => Int): Array[Byte]
@@ -18,6 +22,12 @@ trait GeoTiffSegment {
   def mapWithIndex(f: (Int, Int) => Int): Array[Byte]
   def mapDoubleWithIndex(f: (Int, Double) => Double): Array[Byte]
 
+  /**
+   * Converts the segment to the given CellType
+   *
+   * @param cellType: The desired [[CellType]] to convert to
+   * @return An Array[Byte] that contains the new CellType values
+   */
   def convert(cellType: CellType): Array[Byte] =
     cellType match {
       case BitCellType =>

@@ -30,7 +30,7 @@ object CroppedTile {
 
   /**
     * A function which produces a [[CroppedTile]] given a source
-    * [[Tile]], a source [[Extent]] and a target [[Extent]].
+    * [[Tile]], a source Extent and a target Extent.
     *
     * @param   sourceTile    The source tile
     * @param   sourceExtent  The extent of the source tile
@@ -70,7 +70,7 @@ case class CroppedTile(sourceTile: Tile,
     * Returns a [[Tile]] equivalent to this tile, except with cells of
     * the given type.
     *
-    * @param   cellType  The type of cells that the result should have
+    * @param   targetCellType  The type of cells that the result should have
     * @return            The new Tile
     */
   def convert(targetCellType: CellType): Tile =
@@ -132,6 +132,9 @@ case class CroppedTile(sourceTile: Tile,
     * @return  An MutableArrayTile
     */
   def mutable(targetCellType: CellType): MutableArrayTile = {
+    if(targetCellType.isFloatingPoint != cellType.isFloatingPoint)
+      logger.warn(s"Conversion from $cellType to $targetCellType may lead to data loss.")
+
     val tile = ArrayTile.alloc(targetCellType, cols, rows)
 
     if(!cellType.isFloatingPoint) {

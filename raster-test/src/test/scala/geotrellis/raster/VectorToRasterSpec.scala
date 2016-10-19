@@ -16,46 +16,18 @@
 
 package geotrellis.raster
 
+import geotrellis.raster.mapalgebra.focal.Circle
 import geotrellis.vector._
 import geotrellis.vector.io._
 import geotrellis.vector.io.json.JsonFeatureCollection
 import geotrellis.raster.testkit._
 import spray.json.DefaultJsonProtocol._
-
-import spray.json.DefaultJsonProtocol._
-
 import org.scalatest._
 
 class VectorToRasterSpec extends FunSpec
                             with Matchers
                             with RasterMatchers with TestFiles
                             with TileBuilders {
-  describe("idwInterpolate") {
-    it("matches a QGIS generated IDW raster") {
-      val rs = loadTestArg("data/schoolidw")
-      val re = rs.rasterExtent
-      val r = rs.tile
-
-      val path = "raster-test/data/schoolgeo.json"
-
-      val f = scala.io.Source.fromFile(path)
-      val collection = f.mkString.parseGeoJson[JsonFeatureCollection]
-      f.close
-
-      val points = collection.getAllPointFeatures[Int]
-
-      val result = VectorToRaster.idwInterpolate(points, re)
-      var count = 0
-      for(col <- 0 until re.cols) {
-        for(row <- 0 until re.rows) {
-          val actual = result.get(col,row)
-          val expected = r.get(col,row)
-
-          actual should be (expected +- 1)
-        }
-      }
-    }
-  }
 
   describe("CountPoints") {
     it("returns a zero raster when empty points") {
@@ -107,39 +79,6 @@ class VectorToRasterSpec extends FunSpec
       for(i <- 0 to 8) {
         tile.set(i,10 - (i+2),1)
       }
-
-      assertEqual(result, tile)
-    }
-  }
-
-  describe("kernelDensity") {
-    it("matches expected values") {
-      val rasterExtent = RasterExtent(Extent(0,0,5,5),1,1,5,5)
-      val n = NODATA
-      val arr = Array(2,2,1,n,n,
-        2,3,2,1,n,
-        1,2,2,1,n,
-        n,1,1,2,1,
-        n,n,n,1,1)
-
-      val tile = ArrayTile(arr,5, 5)
-
-      val kernel =
-        ArrayTile(
-          Array(
-            1,1,1,
-            1,1,1,
-            1,1,1),
-          3,3)
-
-      val points = Seq(
-        PointFeature(Point(0,4.5),1),
-        PointFeature(Point(1,3.5),1),
-        PointFeature(Point(2,2.5),1),
-        PointFeature(Point(4,0.5),1)
-      )
-      val result =
-        VectorToRaster.kernelDensity(points, kernel, rasterExtent)
 
       assertEqual(result, tile)
     }

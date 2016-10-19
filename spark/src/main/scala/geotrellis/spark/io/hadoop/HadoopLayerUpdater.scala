@@ -3,14 +3,12 @@ package geotrellis.spark.io.hadoop
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro.AvroRecordCodec
-import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.json._
 import geotrellis.spark.merge._
 import geotrellis.spark.util._
 import geotrellis.util._
 
-import com.typesafe.scalalogging.slf4j._
-import org.apache.avro.Schema
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -50,15 +48,13 @@ class HadoopLayerUpdater(
 
     val updatedRdd: RDD[(K, V)] =
       entireLayer
-        .leftOuterJoin(rdd)
-        .mapValues { case (layerTile, updateTile) =>
-          updateTile match {
-            case Some(tile) =>
-              mergeFunc(layerTile, tile)
-            case None =>
-              layerTile
-          }
-      }
+        .fullOuterJoin(rdd)
+        .flatMapValues {
+          case (Some(layerTile), Some(updateTile)) => Some(mergeFunc(layerTile, updateTile))
+          case (Some(layerTile), _) => Some(layerTile)
+          case (_, Some(updateTile)) => Some(updateTile)
+          case _ => None
+        }
 
     val updated = ContextRDD(updatedRdd, updatedMetadata)
 

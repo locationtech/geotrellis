@@ -66,14 +66,22 @@ trait Geometry {
   def intersection(g: Geometry): TwoDimensionsTwoDimensionsIntersectionResult =
     jtsGeom.intersection(g.jtsGeom)
 
-  /** Computes a Result that represents a Geometry made up of the points shared
-    * by this Polygon and g. If it fails, it reduces the precision to avoid [[TopologyException]].
+  /**
+    * Computes a Result that represents a Geometry made up of the
+    * points shared by this Polygon and g. If it fails, it reduces the
+    * precision to avoid TopologyException.
     */
   def safeIntersection(g: Geometry): TwoDimensionsTwoDimensionsIntersectionResult =
     try intersection(g)
     catch {
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(g.jtsGeom))
     }
+
+  def intersects(other: Geometry): Boolean =
+    jtsGeom.intersects(other.jtsGeom)
+
+  def disjoint(other: Geometry): Boolean =
+    jtsGeom.disjoint(other.jtsGeom)
 
   /** Attempt to convert this Geometry to the provided type */
   def as[G <: Geometry : ClassTag]: Option[G] = {
@@ -110,14 +118,4 @@ object Geometry {
       case obj: jts.MultiPolygon => MultiPolygon(obj)
       case obj: jts.GeometryCollection => GeometryCollection(obj)
     }
-}
-
-trait Relatable { self: Geometry =>
-
-  def intersects(other: Geometry): Boolean =
-    jtsGeom.intersects(other.jtsGeom)
-
-  def disjoint(other: Geometry): Boolean =
-    jtsGeom.disjoint(other.jtsGeom)
-
 }

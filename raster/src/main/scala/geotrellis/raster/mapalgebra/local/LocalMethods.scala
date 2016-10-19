@@ -97,14 +97,14 @@ trait LocalMethods extends MethodExtensions[Tile]
 
   /**
     * Takes the arc cos of each raster cell value.
-    * @info               Always return a double valued raster.
+    * @note               Always return a double valued raster.
     */
   def localAcos(): Tile =
     Acos(self)
 
   /**
     * Takes the arc sine of each raster cell value.
-    * @info               Always return a double valued raster.
+    * @note               Always return a double valued raster.
     */
   def localAsin(): Tile =
     Asin(self)
@@ -112,52 +112,52 @@ trait LocalMethods extends MethodExtensions[Tile]
   /** Takes the Arc Tangent2
    *  This raster holds the y - values, and the parameter
    *  holds the x values. The arctan is calculated from y / x.
-   *  @info               A double raster is always returned.
+   *  @note               A double raster is always returned.
    */
    def localAtan2(r: Tile): Tile =
     Atan2(self, r)
 
   /**
     * Takes the arc tan of each raster cell value.
-    * @info               Always return a double valued raster.
+    * @note               Always return a double valued raster.
     */
   def localAtan(): Tile =
     Atan(self)
 
   /** Takes the Cosine of each raster cell value.
-    * @info               Always returns a double raster.
+    * @note               Always returns a double raster.
     */
   def localCos(): Tile =
     Cos(self)
 
   /** Takes the hyperboic cosine of each raster cell value.
-    * @info               Always returns a double raster.
+    * @note               Always returns a double raster.
     */
   def localCosh(): Tile =
     Cosh(self)
 
   /**
     * Takes the sine of each raster cell value.
-    * @info               Always returns a double raster.
+    * @note               Always returns a double raster.
     */
   def localSin(): Tile =
     Sin(self)
 
   /**
    * Takes the hyperbolic sine of each raster cell value.
-   * @info               Always returns a double raster.
+   * @note               Always returns a double raster.
    */
   def localSinh(): Tile =
     Sinh(self)
 
   /** Takes the Tangent of each raster cell value.
-   * @info               Always returns a double raster.
+   * @note               Always returns a double raster.
    */
   def localTan(): Tile =
     Tan(self)
 
   /** Takes the hyperboic cosine of each raster cell value.
-    * @info               Always returns a double raster.
+    * @note               Always returns a double raster.
     */
   def localTanh(): Tile =
     Tanh(self)

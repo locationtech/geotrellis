@@ -39,7 +39,7 @@ from a more holistic perspective - rasters encode relations between
 values in a uniform space and it is usually these relations which
 most interest us. The code found in the `mapalgebra` submodule —
 discussed [here](./map-algebra.md) — is all about exploiting these
-spatial relations
+spatial relations.
 
 
 ## Working with cell values

@@ -14,7 +14,7 @@ object SpatialJoin {
     K: Boundable: PartitionerIndex: ClassTag,
     V: ClassTag,
     M: GetComponent[?, Bounds[K]],
-    W,
+    W: ClassTag,
     M1: GetComponent[?, Bounds[K]]
   ](
     left: RDD[(K, V)] with Metadata[M],
@@ -40,7 +40,7 @@ object SpatialJoin {
     K: Boundable: PartitionerIndex: ClassTag,
     V: ClassTag,
     M: GetComponent[?, Bounds[K]],
-    W,
+    W: ClassTag,
     M1: GetComponent[?, Bounds[K]]
   ](
     left: RDD[(K, V)] with Metadata[M],

@@ -3,8 +3,7 @@ package geotrellis.spark.io.index
 import geotrellis.spark._
 import geotrellis.spark.io.index.hilbert._
 
-import com.github.nscala_time.time.Imports._
-
+import java.time.ZonedDateTime
 
 private[index] trait HilbertKeyIndexMethod
 
@@ -27,7 +26,7 @@ object HilbertKeyIndexMethod extends HilbertKeyIndexMethod {
       }
     }
 
-  def apply(minDate: DateTime, maxDate: DateTime, temporalResolution: Int): KeyIndexMethod[SpaceTimeKey] =
+  def apply(minDate: ZonedDateTime, maxDate: ZonedDateTime, temporalResolution: Int): KeyIndexMethod[SpaceTimeKey] =
     new KeyIndexMethod[SpaceTimeKey] {
       def createIndex(keyBounds: KeyBounds[SpaceTimeKey]): KeyIndex[SpaceTimeKey] = {
         val adjustedKeyBounds = {

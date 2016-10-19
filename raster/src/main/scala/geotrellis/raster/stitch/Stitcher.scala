@@ -9,8 +9,8 @@ import geotrellis.raster._
 trait Stitcher[T <: CellGrid] extends Serializable {
 
   /**
-    * Stitch an [[Iterable]] of tile, corner pairs into a new tile
-    * with the given number of columns and rows.
+    * Stitch an Iterable of tile, corner pairs into a new tile with
+    * the given number of columns and rows.
     *
     * The parameter 'pieces' is an iterable of (T, (Int, Int)) tuples,
     * were the first item in the tuple is a tile and the second one is
@@ -36,7 +36,7 @@ object Stitcher {
   implicit object TileStitcher extends Stitcher[Tile] {
 
   /**
-    * Stitch an [[Iterable]] of [[Tile]], corner pairs into a new Tile
+    * Stitch an Iterable of [[Tile]], corner pairs into a new Tile
     * with the given number of columns and rows.
     *
     * The parameter 'pieces' is an iterable of (T, (Int, Int)) tuples,
@@ -64,8 +64,8 @@ object Stitcher {
   implicit object MultibandTileStitcher extends Stitcher[MultibandTile] {
 
   /**
-    * Stitch an [[Iterable]] of [[MultibandTile]], corner pairs into a
-    * new MultibandTile with the given number of columns and rows.
+    * Stitch an Iterable of [[MultibandTile]], corner pairs into a new
+    * MultibandTile with the given number of columns and rows.
     *
     * The parameter 'pieces' is an iterable of (T, (Int, Int)) tuples,
     * were the first item in the tuple is a MultibandTile and the

@@ -2,6 +2,77 @@
 
 The underlying purpose of this package is to provide reading and writing capability for instances of `RDD[(K, V)] with Metadata[M]` into one of the distributed storage formats.
 
+# Writing Layers
+
+## Writing a Layer
+
+GeoTrellis provides an abstraction for writing layers, `LayerWriter`, that the various backends implement.
+There are a set of overloads that you can call when writing layers,
+but generally you need to have the target `LayerId` that you will be writing to, and the `RDD[(K, V)] with Metadata[M]` that you want to write.
+Note that the `K`, `V`, and `M` concrete types need to have all of the context bounds satisfied;
+see the method signature in code or look to the implicit argument list in the ScalaDocs to find what the context bounds are (although if you are not using custom types, on the required imports should be necessary to satisfy these conditions).
+The overloaded methods allow you to optionally specify how the key index will be created, or to supply your own `KeyIndex`.
+
+## Key Index
+
+A `KeyIndex` determines how your N-dimensional key (the `K` in `RDD[(K, V)] with Metadtaa[M]`) will be translated to a space filling curve index, represented by a `Long`.
+It also determines how N-dimensional queries (represented by `KeyBounds` with some minimum key and maximum key) will translate to a set of ranges of `Long` index values.
+
+There are two types of key indexes that GeoTrellis supports, which represent the two types of space filling curves supported: Z-order Curves and Hilbert Curves.
+The Z-order curves can be used for 2 and 3 dimensional spaces (e.g. those represented by `SpatialKey`s or `SpaceTimeKey`s).
+Hilbert curves can represent N-dimensions, although there is currently a limitation in place that requires the index to fit into a single `Long` value.
+
+In order to index the space of an `RDD[(K, V)] with Metadata[M]`, we need to know the bounds of the space, as well as the index method to use.
+
+The LayerWriter methods that do not take a `KeyIndex` will derive the bounds of the layer to be written by the layer itself.
+This is fine if the layer elements span the entire space that the layer will ever need to write to.
+If you have a larger space that represents the layer,
+for instance if you want to write elements to the layer that will be outside the bounds of the original layer RDD,
+you will need to create a `KeyIndex` manually that represents the entire area of the space.
+
+For example, say we have a spatio-temporal raster layer that only contains elements that partially inhabit the date range for which we will want the layer to encompass.
+We can use the `TileLayout` from the layer in combination with a date range that we know to be sufficient, and create a key index.
+
+```scala
+  import geotrellis.raster.Tile
+  import geotrellis.spark._
+  import geotrellis.spark.io._
+  import geotrellis.spark.io.index.ZCurveKeyIndexMethod
+  import geotrellis.util._
+  import org.apache.spark.rdd.RDD
+  import org.joda.time.DateTime
+
+  val layer: RDD[(SpaceTimeKey, Tile)] with Metadata[TileLayerMetadata[SpaceTimeKey]] = ???
+
+  // Create the key index with our date range
+  val minDate: DateTime = new DateTime(2010, 12, 1, 0, 0)
+  val maxDate: DateTime = new DateTime(2010, 12, 1, 0, 0)
+
+  val indexKeyBounds: KeyBounds[SpaceTimeKey] = {
+    val KeyBounds(minKey, maxKey) = layer.metadata.bounds.get // assuming non-empty layer
+    KeyBounds(
+      minKey.setComponent[TemporalKey](minDate),
+      maxKey.setComponent[TemporalKey](maxDate)
+    )
+  }
+
+  val keyIndex =
+    ZCurveKeyIndexMethod.byMonth
+      .createIndex(indexKeyBounds)
+
+  val writer: LayerWriter[LayerId] = ???
+  val layerId: LayerId = ???
+
+  writer.write(layerId, layer, keyIndex)
+```
+
+## Reindexing a layer
+
+If a layer was written with bounds on a key index that needs to be expanded, you can reindex that layer.
+The `LayerReindexer` implementation of the backend you are using can be passed in a `KeyIndex`, which can be constructed similarly to the example above.
+
+# Reading Layers
+
 ## Layer Readers
 
 Layer readers read either whole or a portion of the persisted layer back into `RDD[(K, V)] with Metadata[M]`. All layer readers extend the [`FilteringLayerReader`](../../spark/src/main/scala/geotrellis/spark/io/FilteringLayerReader.scala) trait which in turn extends [`LayerReader`](../../spark/src/main/scala/geotrellis/spark/io/LayerReader.scala). The former type should be used when abstracting over the specific back-end implementation of a reader with region query support while the latter when referring to a reader that may only read the layers fully.
@@ -129,3 +200,54 @@ val tile: Tile = nlcdReader.read(SpatialKey(1,2))
 ```
 
 The idea is similar to the `LayerReader.reader` method except in this case we're producing a reader for single tiles. Additionally it must be noted that the layer metadata is accessed during the construction of the `Reader[SpatialKey, Tile]` and saved for all future calls to read a tile.
+
+## Readers threads
+
+Cassandra and S3 Layer RDDReaders / RDDWriters are configurable by threads amount. It's a programm setting, that can be different for a certain machine (depends on resources available). Configuration could be set in the `reference.conf` / `application.conf` file of your app, default settings available in a `reference.conf` file of each backend subproject (we use [TypeSafe Config](https://github.com/typesafehub/config)).
+For a File backend only RDDReader is configurable, For Accumulo - only RDDWriter (Socket Strategy). For all backends CollectionReaders are configurable as well. By default thread pool size per each configurable reader / writer equals by virtual machine cpu cores available. Word `default` means thread per cpu core, it can be changed to any integer value.
+
+Default configuration example:
+
+```conf
+geotrellis.accumulo.threads {
+  collection.read = default
+  rdd.write       = default
+}
+geotrellis.file.threads {
+  collection.read = default
+  rdd.read        = default
+}
+geotrellis.hadoop.threads {
+  collection.read = default
+}
+geotrellis.cassandra.threads {
+  collection.read = default
+  rdd {
+    write = default
+    read  = default
+  }
+}
+geotrellis.s3.threads {
+  collection.read = default
+  rdd {
+    write = default
+    read  = default
+  }
+}
+```
+
+Cassandra has additional configuration settings: 
+
+And additional connections parameters for`Cassandra`:
+```conf
+geotrellis.cassandra {
+  keyspace             = "geotrellis"
+  replicationStrategy  = "SimpleStrategy"
+  replicationFactor    = 1
+  localDc              = "datacenter1"
+  usedHostsPerRemoteDc = 0
+  allowRemoteDCsForLocalConsistencyLevel = false
+}
+```
+
+Consider using `hbase.client.scanner.caching` parameter for `HBase` as it may increase scan performance.

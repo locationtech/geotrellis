@@ -6,6 +6,10 @@ import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 
+/**
+ * Holds information on how the data is represented, projected, and any user
+ * defined tags.
+ */
 trait GeoTiffData {
   val cellType: CellType
 
@@ -13,6 +17,7 @@ trait GeoTiffData {
   def extent: Extent
   def crs: CRS
   def tags: Tags
+  def options: GeoTiffOptions
 
   def pixelSampleType: Option[PixelSampleType] =
     tags.headTags.get(Tags.AREA_OR_POINT).flatMap { aop =>
@@ -24,6 +29,10 @@ trait GeoTiffData {
     }
 }
 
+/**
+ * Base trait of GeoTiff. Takes a tile that is of a type equal to or a subtype
+ * of CellGrid
+ */
 trait GeoTiff[T <: CellGrid] extends GeoTiffData {
   def tile: T
 
@@ -40,6 +49,9 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
     GeoTiffWriter.write(this)
 }
 
+/**
+ * Companion object to GeoTiff
+ */
 object GeoTiff {
   def apply(tile: Tile, extent: Extent, crs: CRS): SinglebandGeoTiff =
     SinglebandGeoTiff(tile, extent, crs)

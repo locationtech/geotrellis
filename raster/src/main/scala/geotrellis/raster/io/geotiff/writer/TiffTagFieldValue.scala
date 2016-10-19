@@ -15,7 +15,7 @@ case class TiffTagFieldValue(
   tag: Int,
   fieldType: Int,
   length: Int,
-  val value: Array[Byte]
+  value: Array[Byte]
 ) {
   assert(
     (fieldType match {
@@ -72,7 +72,7 @@ object TiffTagFieldValue {
     fieldValues += TiffTagFieldValue(ImageLengthTag, IntsFieldType, 1, imageData.rows)
     fieldValues += TiffTagFieldValue(BitsPerSampleTag, ShortsFieldType, 1, imageData.bandType.bitsPerSample)
     fieldValues += TiffTagFieldValue(CompressionTag, ShortsFieldType, 1, imageData.decompressor.code)
-    fieldValues += TiffTagFieldValue(PhotometricInterpTag, ShortsFieldType, 1, 1.toShort)
+    fieldValues += TiffTagFieldValue(PhotometricInterpTag, ShortsFieldType, 1, geoTiff.options.colorSpace)
     fieldValues += TiffTagFieldValue(SamplesPerPixelTag, ShortsFieldType, 1, imageData.bandCount)
     fieldValues += TiffTagFieldValue(PlanarConfigurationTag, ShortsFieldType, 1, PlanarConfigurations.PixelInterleave)
     fieldValues += TiffTagFieldValue(SampleFormatTag, ShortsFieldType, 1, imageData.bandType.sampleFormat)
@@ -142,7 +142,7 @@ object TiffTagFieldValue {
     // Tags that are different if it is striped or tiled storage, and a function
     // that sets up a tag to point to the offsets of the image data.
 
-    val segmentByteCounts = imageData.compressedBytes.map { _.length }.toArray
+    val segmentByteCounts = imageData.segmentBytes.map { _.length }.toArray
     val offsetsFieldValueBuilder: Array[Int] => TiffTagFieldValue =
       imageData.segmentLayout.storageMethod match {
         case Tiled(tileCols, tileRows) =>

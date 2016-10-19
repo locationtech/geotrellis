@@ -28,37 +28,40 @@
 
 package geotrellis.slick
 
-import scala.slick.driver.JdbcDriver
-import scala.slick.lifted.Column
-import scala.reflect.ClassTag
-import scala.slick.ast.ScalaBaseType
-import scala.slick.jdbc.{PositionedResult, PositionedParameters}
-import java.sql._
-
 import geotrellis.vector._
 import geotrellis.vector.io.wkb._
 import geotrellis.vector.io.wkt._
 
+import slick.ast.FieldSymbol
+import slick.driver.{JdbcDriver, PostgresDriver}
+import slick.jdbc.{PositionedParameters, PositionedResult, SetParameter}
+import com.github.tminglei.slickpg.geom.PgPostGISExtensions
+
+import java.sql._
+import scala.reflect.ClassTag
+
 /**
-  * This class provides column types and extension methods to work with Geometry columns associated with an SRID in PostGIS.
-  *
-  * @example {{{
-  * val PostGIS = new PostGisProjectionSupport(PostgresDriver)
-  * import PostGIS._
-  *
-  * class City(tag: Tag) extends Table[(Int,String,Projected[Point])](tag, "cities") {
-  *   def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
-  *   def name = column[String]("name")
-  *   def geom = column[Projected[Point]]("geom")
-  *   def * = (id, name, geom)
-  * }
-  * }}}
-  *
-  * @author Minglei Tu (modified by Azavea)
-  * @see [[package com.github.tminglei.slickpg.PgPostGISSupport]]
-  */
-class PostGisProjectionSupport(override val driver: JdbcDriver) extends PostGisExtensions { 
+ * This class provides column types and extension methods to work with Geometry columns
+ *  associated with an SRID in PostGIS.
+ *
+ * Sample Usage:
+ * <code>
+ * val PostGIS = new PostGisProjectionSupport(PostgresDriver)
+ * import PostGIS._
+ *
+ * class City(tag: Tag) extends Table[(Int,String,Projected[Point])](tag, "cities") {
+ *   def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+ *   def name = column[String]("name")
+ *   def geom = column[Projected[Point]]("geom")
+ *   def * = (id, name, geom)
+ * }
+ * </code>
+ *
+ * based on [[package com.github.tminglei.slickpg.PgPostGISSupport]]
+ */
+trait PostGisProjectionSupport extends PgPostGISExtensions { driver: PostgresDriver =>
   import PostGisProjectionSupportUtils._
+  import driver.api._
 
   type GEOMETRY           = Projected[Geometry]
   type POINT              = Projected[Point]
@@ -66,28 +69,30 @@ class PostGisProjectionSupport(override val driver: JdbcDriver) extends PostGisE
   type POLYGON            = Projected[Polygon]
   type GEOMETRYCOLLECTION = Projected[GeometryCollection]
 
-  implicit val geometryTypeMapper           = new ProjectedGeometryJdbcType[GEOMETRY]
-  implicit val pointTypeMapper              = new ProjectedGeometryJdbcType[POINT]
-  implicit val lineTypeMapper               = new ProjectedGeometryJdbcType[LINESTRING]
-  implicit val polygonTypeMapper            = new ProjectedGeometryJdbcType[POLYGON]
+  trait PostGISProjectionAssistants extends BasePostGISAssistants[GEOMETRY, POINT, LINESTRING, POLYGON, GEOMETRYCOLLECTION]
+trait PostGISProjectionImplicits {
+  implicit val geometryTypeMapper = new ProjectedGeometryJdbcType[GEOMETRY]
+  implicit val pointTypeMapper = new ProjectedGeometryJdbcType[POINT]
+  implicit val lineTypeMapper = new ProjectedGeometryJdbcType[LINESTRING]
+  implicit val polygonTypeMapper = new ProjectedGeometryJdbcType[POLYGON]
   implicit val geometryCollectionTypeMapper = new ProjectedGeometryJdbcType[GEOMETRYCOLLECTION]
-  implicit val multiPointTypeMapper         = new ProjectedGeometryJdbcType[Projected[MultiPoint]]
-  implicit val multiPolygonTypeMapper       = new ProjectedGeometryJdbcType[Projected[MultiPolygon]]
-  implicit val multiLineTypeMapper          = new ProjectedGeometryJdbcType[Projected[MultiLine]]
+  implicit val multiPointTypeMapper = new ProjectedGeometryJdbcType[Projected[MultiPoint]]
+  implicit val multiPolygonTypeMapper = new ProjectedGeometryJdbcType[Projected[MultiPolygon]]
+  implicit val multiLineTypeMapper = new ProjectedGeometryJdbcType[Projected[MultiLine]]
 
-  implicit def geometryColumnExtensionMethods[G1 <: GEOMETRY](c: Column[G1]) = 
-    new GeometryColumnExtensionMethods[G1, G1](c)
-  
-  implicit def geometryOptionColumnExtensionMethods[G1 <: GEOMETRY](c: Column[Option[G1]]) = 
-    new GeometryColumnExtensionMethods[G1, Option[G1]](c)
+  implicit def geometryColumnExtensionMethods[G1 <: GEOMETRY](c: Rep[G1]) =
+    new GeometryColumnExtensionMethods[GEOMETRY, POINT, LINESTRING, POLYGON, GEOMETRYCOLLECTION, G1, G1](c)
 
-  class ProjectedGeometryJdbcType[T <: Projected[Geometry] :ClassTag] extends driver.DriverJdbcType[T] {
-    override def scalaType = ScalaBaseType[T]
-    
-    override def sqlTypeName: String = "geometry"
-    
+  implicit def geometryOptionColumnExtensionMethods[G1 <: GEOMETRY](c: Rep[Option[G1]]) =
+    new GeometryColumnExtensionMethods[GEOMETRY, POINT, LINESTRING, POLYGON, GEOMETRYCOLLECTION, G1, Option[G1]](c)
+}
+
+  class ProjectedGeometryJdbcType[T <: Projected[Geometry] :ClassTag] extends DriverJdbcType[T] {
+
+    override def sqlTypeName(sym: Option[FieldSymbol]): String = "geometry"
+
     override def hasLiteralForm: Boolean = false
-    
+
     override def valueToSQLLiteral(v: T) = toLiteral(v)
 
     def zero: T = null.asInstanceOf[T]
@@ -107,35 +112,24 @@ class PostGisProjectionSupport(override val driver: JdbcDriver) extends PostGisE
   }
 }
 
-object PostGisProjectionSupportUtils {  
+object PostGisProjectionSupportUtils {
+  lazy val WITH_SRID = """^SRID=([\d]+);(.*)""".r
+
   def toLiteral(pg: Projected[Geometry]): String = s"SRID=${pg.srid};${WKT.write(pg.geom)}"
 
-  def fromLiteral[T <: Projected[_]](value: String): T = 
-    splitRSIDAndWKT(value) match {
-      case (srid, wkt) =>
-        val geom =
-          if (wkt.startsWith("00") || wkt.startsWith("01"))
-            WKB.read(wkt)
-          else
-            WKT.read(wkt)
-
-        if (srid != -1)
-          Projected(geom, srid).asInstanceOf[T]
-        else
-          Projected(geom, geom.jtsGeom.getSRID).asInstanceOf[T]
+  def fromLiteral[T <: Projected[_]](value: String): T =
+    value match {
+      case WITH_SRID(srid, wkt) =>
+        val geom = readWktOrWkb(wkt)
+        Projected(geom, srid.toInt).asInstanceOf[T]
+      case _ =>
+        val geom = readWktOrWkb(value)
+        Projected(geom, geom.jtsGeom.getSRID).asInstanceOf[T]
     }
 
-  /** copy from [[org.postgis.PGgeometry#splitSRID]] */
-  private def splitRSIDAndWKT(value: String): (Int, String) = {
-    if (value.startsWith("SRID=")) {
-      val index = value.indexOf(';', 5) // srid prefix length is 5
-      if (index == -1) {
-        throw new java.sql.SQLException("Error parsing Geometry - SRID not delimited with ';' ")
-      } else {
-        val srid = Integer.parseInt(value.substring(0, index))
-        val wkt = value.substring(index + 1)
-        (srid, wkt)
-      }
-    } else (-1, value)
-  }
+  def readWktOrWkb(s: String): Geometry =
+    if (s.startsWith("00") || s.startsWith("01"))
+      WKB.read(s)
+    else
+      WKT.read(s)
 }

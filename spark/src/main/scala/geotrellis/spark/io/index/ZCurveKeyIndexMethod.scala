@@ -3,8 +3,6 @@ package geotrellis.spark.io.index
 import geotrellis.spark._
 import geotrellis.spark.io.index.zcurve._
 
-import com.github.nscala_time.time.Imports._
-
 private[index] trait ZCurveKeyIndexMethod
 
 object ZCurveKeyIndexMethod extends ZCurveKeyIndexMethod {
@@ -44,14 +42,14 @@ object ZCurveKeyIndexMethod extends ZCurveKeyIndexMethod {
     byMilliseconds(1000L * 60 * 60 * 24 * days)
 
   def byMonth(): KeyIndexMethod[SpaceTimeKey] =
-    byMilliseconds(1000L * 60 * 60 * 30)
+    byMilliseconds(1000L * 60 * 60 * 24 * 30)
 
   def byMonths(months: Int): KeyIndexMethod[SpaceTimeKey] =
-    byMilliseconds(1000L * 60 * 60 * 30 * months)
+    byMilliseconds(1000L * 60 * 60 * 24 * 30 * months)
 
   def byYear(): KeyIndexMethod[SpaceTimeKey] =
-    byMilliseconds(1000L * 60 * 60 * 365)
+    byMilliseconds(1000L * 60 * 60 * 24 * 365)
 
   def byYears(years: Int): KeyIndexMethod[SpaceTimeKey] =
-    byMilliseconds(1000L * 60 * 60 * 365 * years)
+    byMilliseconds(1000L * 60 * 60 * 24 * 365 * years)
 }

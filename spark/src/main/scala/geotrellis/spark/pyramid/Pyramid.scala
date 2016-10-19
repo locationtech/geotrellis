@@ -7,14 +7,14 @@ import geotrellis.raster.merge._
 import geotrellis.raster.resample._
 import geotrellis.raster.prototype._
 import geotrellis.util._
-import geotrellis.vector.Extent
 
-import org.apache.spark.{Partitioner, Logging}
+import org.apache.spark.Partitioner
 import org.apache.spark.rdd._
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.reflect.ClassTag
 
-object Pyramid extends Logging {
+object Pyramid extends LazyLogging {
   case class Options(
     resampleMethod: ResampleMethod = NearestNeighbor,
     partitioner: Option[Partitioner] = None

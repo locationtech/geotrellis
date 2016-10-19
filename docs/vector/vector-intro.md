@@ -1,6 +1,6 @@
 # geotrellis.vector
 
->"Raster is faster but vector is correcter."
+> “Raster is faster but vector is correcter.”
 — Somebody
 
 ## Features and Geometries
@@ -68,7 +68,7 @@ a `PointGeometryIntersectionResult.as[Polygon]` will *always* return
 
 An alternative approach uses pattern matching and ensures an exhaustive
 check of the results.
-[`Results.scala`](../../vector/src/main/scala/geotrellis/engine/Results.scala)
+[`Results.scala`](../../vector/src/main/scala/geotrellis/vector/Results.scala)
 contains a large
 [ADT](https://en.wikipedia.org/wiki/Algebraic_data_type) which encodes
 the possible outcomes for different types of outcomes. The result type of
@@ -200,8 +200,7 @@ we only need to provide four unique values. Take a look at the
 more.
 
 Pay special attention to `ProjectedExtent` if you need your geometries
-to be projection-aware. Really, that's about all you need to know to get
-started with extents. They're a powerful tool for a tightly defined task.
+to be projection-aware.
 
 From Extent.scala:
 

@@ -72,6 +72,21 @@ trait MultibandTile extends CellGrid with MacroCombinableMultibandTile[Tile] wit
   def convert(newCellType: CellType): MultibandTile
 
   /**
+    * Map over each band, and return a new MultibandTile.
+    *
+    * @param f      A function to apply to each band, given it's band index.
+    *
+    * @return       An ArrayMultibandTile with the resulting tiles.
+    */
+  def mapBands(f: (Int, Tile) => Tile): MultibandTile = {
+    val resultBands = Array.ofDim[Tile](bandCount)
+    cfor(0)(_ < bandCount, _ + 1) { b =>
+      resultBands(b) = f(b, band(b))
+    }
+    ArrayMultibandTile(resultBands)
+  }
+
+  /**
     * Map over a subset of the bands of a multiband tile to create a
     * new integer-valued multiband tile.
     *
@@ -165,6 +180,24 @@ trait MultibandTile extends CellGrid with MacroCombinableMultibandTile[Tile] wit
   def foreachDouble(b0: Int)(f: Double => Unit): Unit
 
   /**
+    * Multiband iterate over tile's int value using a function that
+    * takes in an array of values, and returns the foreached
+    * value for that cell value.
+    *
+    * @param  f          The function
+    */
+  def foreach(f: Array[Int] => Unit): Unit
+
+  /**
+    * Multiband iterate over tile's double value using a function that
+    * takes in an array of values, and returns the foreached
+    * value for that cell value.
+    *
+    * @param  f          The function
+    */
+  def foreachDouble(f: Array[Double] => Unit): Unit
+
+  /**
     * Combine a subset of the bands of a tile into a new
     * integer-valued multiband tile using the function f.
     *
@@ -191,7 +224,7 @@ trait MultibandTile extends CellGrid with MacroCombinableMultibandTile[Tile] wit
   def combine(f: Array[Int] => Int): Tile
 
   /**
-    * Combine two int band value for each cell.
+    * Combine two integer bands value-by-value at each cell.
     */
   def combine(b0: Int, b1: Int)(f: (Int, Int) => Int): Tile
 

@@ -10,8 +10,9 @@ import geotrellis.spark.ingest._
 
 import org.apache.spark._
 import org.apache.spark.rdd.RDD
+import jp.ne.opt.chronoscala.Imports._
 
-import com.github.nscala_time.time.Imports._
+import java.time.{ZoneOffset, ZonedDateTime}
 import scala.collection.mutable
 
 object TileLayerRDDBuilders extends TileLayerRDDBuilders
@@ -199,7 +200,7 @@ trait TileLayerRDDBuilders {
   }
 
   def createSpaceTimeTileLayerRDD(
-    tiles: Traversable[(Tile, DateTime)],
+    tiles: Traversable[(Tile, ZonedDateTime)],
     tileLayout: TileLayout,
     cellType: CellType = IntConstantNoDataCellType)(implicit sc: SparkContext): TileLayerRDD[SpaceTimeKey] = {
 

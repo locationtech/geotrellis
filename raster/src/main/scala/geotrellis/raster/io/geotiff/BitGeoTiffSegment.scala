@@ -6,6 +6,10 @@ import geotrellis.raster.io.geotiff.util._
 import spire.syntax.cfor._
 
 class BitGeoTiffSegment(val bytes: Array[Byte], cols: Int, rows: Int) extends GeoTiffSegment {
+  // Notice the inversing of the byte; this is because the endian-ness
+  // of the byte is ignored in bit rasters, so is flipped when we read it in
+  // incorrectly.
+
   val size = cols * rows
 
   private val paddedCols = {
@@ -49,7 +53,7 @@ class BitGeoTiffSegment(val bytes: Array[Byte], cols: Int, rows: Int) extends Ge
     arr
   }
 
-  def mapDouble(f: Double => Double): Array[Byte] = 
+  def mapDouble(f: Double => Double): Array[Byte] =
     map(z => d2i(f(i2d(z))))
 
   def byteToBinaryString(b: Byte) = {

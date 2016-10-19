@@ -9,7 +9,7 @@ import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.json._
 import geotrellis.util._
 
-import com.typesafe.scalalogging.slf4j.LazyLogging
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.avro.Schema
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
@@ -37,7 +37,7 @@ class HadoopLayerReader(
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
-  ](id: LayerId, rasterQuery: LayerQuery[K, M], numPartitions: Int, indexFilterOnly: Boolean): RDD[(K, V)] with Metadata[M] = {
+  ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, indexFilterOnly: Boolean): RDD[(K, V)] with Metadata[M] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
       attributeStore.readLayerAttributes[HadoopLayerHeader, M, K](id)
@@ -47,7 +47,7 @@ class HadoopLayerReader(
 
     val layerPath = header.path
     val keyBounds = metadata.getComponent[Bounds[K]].getOrElse(throw new LayerEmptyBoundsError(id))
-    val queryKeyBounds = rasterQuery(metadata)
+    val queryKeyBounds = tileQuery(metadata)
 
     val rdd: RDD[(K, V)] =
       if (queryKeyBounds == Seq(keyBounds)) {

@@ -14,6 +14,9 @@ class TileRDDMergeMethods[K: ClassTag, V: ClassTag: ? => TileMergeMethods[V]](va
   def merge(other: RDD[(K, V)]): RDD[(K, V)] =
     TileRDDMerge(self, other)
 
-  def merge(partitioner: Option[Partitioner] = None): RDD[(K, V)] =
+  def merge(): RDD[(K, V)] =
+    TileRDDMerge(self, None)
+
+  def merge(partitioner: Option[Partitioner]): RDD[(K, V)] =
     TileRDDMerge(self, partitioner)
 }

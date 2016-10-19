@@ -16,15 +16,12 @@
 
 package geotrellis.raster
 
-import geotrellis.vector.Extent
-
 import spire.syntax.cfor._
-
 
 /**
   * [[ArrayTile]] provides access and update to the grid data of a
-  * raster.  Designed to be a near drop-in replacement for Array in
-  * many cases.
+  * tile.  Designed to be a near drop-in replacement for Array in many
+  * cases.
   */
 trait ArrayTile extends Tile with Serializable {
 
@@ -39,11 +36,14 @@ trait ArrayTile extends Tile with Serializable {
     * Returns a [[Tile]] equivalent to this [[ArrayTile]], except with
     * cells of the given type.
     *
-    * @param   cellType  The type of cells that the result should have
+    * @param   targetCellType  The type of cells that the result should have
     * @return            The new Tile
     */
   def convert(targetCellType: CellType): Tile = {
     val tile = ArrayTile.alloc(targetCellType, cols, rows)
+
+    if(targetCellType.isFloatingPoint != cellType.isFloatingPoint)
+      logger.warn(s"Conversion from $cellType to $targetCellType may lead to data loss.")
 
     if(!cellType.isFloatingPoint) {
       cfor(0)(_ < rows, _ + 1) { row =>
@@ -117,7 +117,7 @@ trait ArrayTile extends Tile with Serializable {
   }
 
   /**
-    * Map each cell in the given raster to a new one, using the given
+    * Map each cell in the given tile to a new one, using the given
     * function.
     *
     * @param   f  A function from Int to Int, executed at each point of the tile
@@ -135,7 +135,7 @@ trait ArrayTile extends Tile with Serializable {
   }
 
   /**
-    * Map each cell in the given raster to a new one, using the given
+    * Map each cell in the given tile to a new one, using the given
     * function.
     *
     * @param   f  A function from Double to Double, executed at each point of the tile
@@ -386,14 +386,6 @@ trait ArrayTile extends Tile with Serializable {
     }
     arr
   }
-
-  /**
-    * Convert the present [[ArrayTile]] to an array of bytes and
-    * return that array.
-    *
-    * @return  An array of bytes
-    */
-  def toBytes: Array[Byte]
 }
 
 /**

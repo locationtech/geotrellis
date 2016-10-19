@@ -68,12 +68,15 @@ trait ConstantTile extends Tile {
     * Returns a [[Tile]] equivalent to this tile, except with cells of
     * the given type.
     *
-    * @param   cellType  The type of cells that the result should have
+    * @param   newType  The type of cells that the result should have
     * @return            The new Tile
     */
-  def convert(newType: CellType): Tile =
+  def convert(newType: CellType): Tile = {
+    if(newType.isFloatingPoint != cellType.isFloatingPoint)
+      logger.warn(s"Conversion from $cellType to $newType may lead to data loss.")
+
     newType match {
-      case BitCellType => BitConstantTile(if(iVal == 0) false else true, cols, rows)
+      case BitCellType => BitConstantTile(if (iVal == 0) false else true, cols, rows)
       case ByteConstantNoDataCellType => ByteConstantTile(i2b(iVal), cols, rows)
       case UByteConstantNoDataCellType => UByteConstantTile(i2ub(iVal), cols, rows)
       case ShortConstantNoDataCellType => ShortConstantTile(i2s(iVal), cols, rows)
@@ -83,6 +86,7 @@ trait ConstantTile extends Tile {
       case DoubleConstantNoDataCellType => DoubleConstantTile(dVal, cols, rows)
       case _ => throw new IllegalArgumentException(s"Unsupported ConstantTile CellType: $newType")
     }
+  }
 
   /**
     * Execute a function on each cell of the tile.  The function

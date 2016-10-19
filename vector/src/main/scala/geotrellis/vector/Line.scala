@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -51,13 +51,12 @@ object Line {
 }
 
 case class Line(jtsGeom: jts.LineString) extends Geometry
-                                            with Relatable
                                             with OneDimension {
 
   assert(!jtsGeom.isEmpty, s"LineString Empty: $jtsGeom")
 
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */
-  def normalized(): Line = { 
+  def normalized(): Line = {
     val geom = jtsGeom.clone.asInstanceOf[jts.LineString]
     geom.normalize
     Line(geom)

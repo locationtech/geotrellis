@@ -23,8 +23,9 @@ private[vector] trait GeometryResultMethods {
   /** Returns this result as an option, unless this is NoResult, in which case it returns None */
   def toGeometry(): Option[Geometry]
 
-  /** A typesafe method for casting to a particular geometry type
-    * @note If this fails to cast or is [[NoResult], will result in None
+  /**
+    * A typesafe method for casting to a particular geometry type.  If
+    * this fails to cast or is [[NoResult]], will result in None.
     */
   def as[G <: Geometry : ClassTag]: Option[G] =
     toGeometry.flatMap { g =>
@@ -280,6 +281,18 @@ abstract sealed trait TwoDimensionsTwoDimensionsUnionResult extends GeometryResu
 object TwoDimensionsTwoDimensionsUnionResult {
   implicit def jtsToResult(geom: jts.Geometry): TwoDimensionsTwoDimensionsUnionResult =
     geom match {
+      case p: jts.Polygon => PolygonResult(p)
+      case mp: jts.MultiPolygon => MultiPolygonResult(mp)
+      case _ =>
+        sys.error(s"Unexpected result for TwoDimensions-TwoDimensions union: ${geom.getGeometryType}")
+    }
+}
+
+abstract sealed trait TwoDimensionsTwoDimensionsSeqUnionResult extends GeometryResultMethods
+object TwoDimensionsTwoDimensionsSeqUnionResult {
+  implicit def jtsToResult(geom: jts.Geometry): TwoDimensionsTwoDimensionsSeqUnionResult =
+    geom match {
+      case g: jts.Geometry if g.isEmpty => NoResult
       case p: jts.Polygon => PolygonResult(p)
       case mp: jts.MultiPolygon => MultiPolygonResult(mp)
       case _ =>
@@ -721,6 +734,7 @@ case object NoResult extends GeometryResult
     with OneDimensionOneDimensionSymDifferenceResult
     with TwoDimensionsTwoDimensionsSymDifferenceResult
     with ZeroDimensionsMultiPointSymDifferenceResult
+    with TwoDimensionsTwoDimensionsSeqUnionResult
     with MultiPointMultiPointIntersectionResult
     with MultiPointMultiPointUnionResult
     with MultiPointMultiLineUnionResult
@@ -810,6 +824,7 @@ case class PolygonResult(geom: Polygon) extends GeometryResult
     with TwoDimensionsTwoDimensionsIntersectionResult
     with AtMostOneDimensionPolygonUnionResult
     with TwoDimensionsTwoDimensionsUnionResult
+    with TwoDimensionsTwoDimensionsSeqUnionResult
     with LineMultiPolygonUnionResult
     with PolygonAtMostOneDimensionDifferenceResult
     with AtMostOneDimensionPolygonSymDifferenceResult
@@ -891,6 +906,7 @@ object MultiLineResult {
 case class MultiPolygonResult(geom: MultiPolygon) extends GeometryResult
     with TwoDimensionsTwoDimensionsIntersectionResult
     with TwoDimensionsTwoDimensionsUnionResult
+    with TwoDimensionsTwoDimensionsSeqUnionResult
     with LineMultiPolygonUnionResult
     with TwoDimensionsTwoDimensionsDifferenceResult
     with MultiPolygonXDifferenceResult
