@@ -12,7 +12,6 @@ import geotrellis.raster.testkit._
 import org.scalatest._
 import scala.collection.JavaConversions._
 import monocle.syntax.apply._
-import sys.process._
 
 object Reader {
   def singleBand(path: String, extent: Extent): (SinglebandGeoTiff, SinglebandGeoTiff) = {
