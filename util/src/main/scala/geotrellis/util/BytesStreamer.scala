@@ -9,7 +9,7 @@ trait BytesStreamer {
 
   def chunkSize: Int
   def objectLength: Long
-  
+
   def passedLength(size: Long): Boolean =
     if (size > objectLength) true else false
 
