@@ -1,6 +1,7 @@
 package geotrellis.raster.equalization
 
 import geotrellis.raster._
+import geotrellis.raster.histogram.Histogram
 import geotrellis.raster.histogram.StreamingHistogram
 
 
@@ -74,14 +75,14 @@ object HistogramEqualization {
   }
 
   /**
-    * Given a [[Tile]] and a [[StreamingHistogram]], return a Tile
-    * with an equalized histogram.
+    * Given a [[Tile]] and a [[Histogram]], return a Tile with an
+    * equalized histogram.
     *
     * @param  tile       A singleband tile
     * @param  histogram  The histogram of the tile
     * @return            A singleband tile with improved contrast
     */
-  def apply(tile: Tile, histogram: StreamingHistogram): Tile = {
+  def apply[T <: AnyVal](tile: Tile, histogram: Histogram[T]): Tile = {
     val T = _T(tile.cellType, histogram.cdf)_
     tile.mapDouble(T)
   }
@@ -99,15 +100,15 @@ object HistogramEqualization {
   }
 
   /**
-    * Given a [[MultibandTile]] and a [[StreamingHistogram]] for each
-    * of its bands, return a MultibandTile whose bands all have
-    * equalized histograms.
+    * Given a [[MultibandTile]] and a [[Histogram]] for each of its
+    * bands, return a MultibandTile whose bands all have equalized
+    * histograms.
     *
     * @param  tile        A multiband tile
     * @param  histograms  A sequence of histograms, one for each band
     * @return             A multiband tile with improved contrast
     */
-  def apply(tile: MultibandTile, histograms: Seq[StreamingHistogram]): MultibandTile = {
+  def apply[T <: AnyVal](tile: MultibandTile, histograms: Seq[Histogram[T]]): MultibandTile = {
     MultibandTile(
       tile.bands
         .zip(histograms)

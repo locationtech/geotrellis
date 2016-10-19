@@ -1,7 +1,7 @@
 package geotrellis.spark.equalization
 
 import geotrellis.raster._
-import geotrellis.raster.histogram.StreamingHistogram
+import geotrellis.raster.histogram.Histogram
 import geotrellis.spark._
 import geotrellis.util.MethodExtensions
 
@@ -24,6 +24,6 @@ trait RDDSinglebandEqualizationMethods[K, M] extends MethodExtensions[RDD[(K, Ti
     *
     * @param  histogram  A histogram
     */
-  def equalize(histogram: StreamingHistogram): RDD[(K, Tile)] with Metadata[M] =
+  def equalize[T <: AnyVal](histogram: Histogram[T]): RDD[(K, Tile)] with Metadata[M] =
     RDDHistogramEqualization.singleband(self, histogram)
 }

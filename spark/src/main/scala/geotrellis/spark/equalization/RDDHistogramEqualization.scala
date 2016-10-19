@@ -2,6 +2,7 @@ package geotrellis.spark.equalization
 
 import geotrellis.raster._
 import geotrellis.raster.equalization.HistogramEqualization
+import geotrellis.raster.histogram.Histogram
 import geotrellis.raster.histogram.StreamingHistogram
 import geotrellis.spark._
 
@@ -35,16 +36,16 @@ object RDDHistogramEqualization {
   }
 
   /**
-    * Given an RDD of [[Tile]] objects and a [[StreamingHistogram]]
-    * derived from all of the tiles, return another RDD of tiles where
-    * the respective tiles have had their histograms equalized.
+    * Given an RDD of [[Tile]] objects and a [[Histogram]] derived
+    * from all of the tiles, return another RDD of tiles where the
+    * respective tiles have had their histograms equalized.
     *
     * @param  rdd        An RDD of tile objects
     * @param  histogram  A histogram derived from the whole RDD of tiles
     */
-  def singleband[K, V: (? => Tile): ClassTag, M](
+  def singleband[K, V: (? => Tile): ClassTag, M, T <: AnyVal](
     rdd: RDD[(K, V)] with Metadata[M],
-    histogram: StreamingHistogram
+    histogram: Histogram[T]
   ): RDD[(K, Tile)] with Metadata[M] = {
     ContextRDD(
       rdd.map({ case (key, tile: Tile) =>
@@ -70,23 +71,24 @@ object RDDHistogramEqualization {
           .map({ band => StreamingHistogram.fromTile(band, 1<<17) })
           .toArray })
       .reduce(r)
+      .map(_.asInstanceOf[Histogram[Double]])
 
     multiband(rdd, histograms)
   }
 
   /**
     * Given an RDD of [[MultibandTile]] objects and a sequence of
-    * [[StreamingHistogram]] objects (on per band) derived from all of
-    * the tiles, return another RDD of multiband tiles where the
+    * [[Histogram]] objects (on per band) derived from all of the
+    * tiles, return another RDD of multiband tiles where the
     * respective bands of the respective tiles have had their
     * histograms equalized.
     *
     * @param  rdd         An RDD of tile objects
     * @param  histograms  A histogram derived from the whole RDD of tiles
     */
-  def multiband[K, V: (? => MultibandTile): ClassTag, M](
+  def multiband[K, V: (? => MultibandTile): ClassTag, M, T <: AnyVal](
     rdd: RDD[(K, V)] with Metadata[M],
-    histograms: Array[StreamingHistogram]
+    histograms: Array[Histogram[T]]
   ): RDD[(K, MultibandTile)] with Metadata[M] = {
     ContextRDD(
       rdd.map({ case (key, tile: MultibandTile) =>
