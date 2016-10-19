@@ -26,15 +26,106 @@ import scala.collection.mutable.ListBuffer
 
 // --- //
 
+/** The parent trait for a two-variety sum type for ProtobufLayers: Lazy and Strict. */
+trait ProtobufLayer extends Layer {
+  /** The VectorTile spec version that this Layer obeys. */
+  def version: Int
+
+  /** The GeoTrellis [[Extent]] of this Layer's parent [[VectorTile]]. */
+  def tileExtent: Extent
+
+  /** How much of the [[Extent]] is covered by a single grid coordinate? */
+  def resolution: Double = tileExtent.height / tileWidth
+
+  def features: Seq[Feature[Geometry, Map[String, Value]]] = {
+    Seq(
+      points,
+      multiPoints,
+      lines,
+      multiLines,
+      polygons,
+      multiPolygons
+    ).flatten
+  }
+
+  /** Encode this ProtobufLayer a mid-level Layer ready to be encoded as protobuf bytes. */
+  def toProtobuf: vt.Tile.Layer = {
+    val pgp = implicitly[ProtobufGeom[Point, MultiPoint]]
+    val pgl = implicitly[ProtobufGeom[Line, MultiLine]]
+    val pgy = implicitly[ProtobufGeom[Polygon, MultiPolygon]]
+
+    val (keys, values) = totalMeta
+
+    /* In a future version of the VectorTile spec, when Single and Multi
+     * Geometries are separate, we will be able to restructre `ProtobufGeom`
+     * in such a way that makes `Geometry.toCommands` possible here.
+     *
+     * `unfeature` will become polymorphic, so calls to it will look like:
+     *
+     *   points.map(f => unfeature(keys, values, f))
+     */
+    val features = Seq(
+      points.map(f => unfeature(keys, values, POINT, pgp.toCommands(Left(f.geom), tileExtent.northWest, resolution), f.data)),
+      multiPoints.map(f => unfeature(keys, values, POINT, pgp.toCommands(Right(f.geom), tileExtent.northWest, resolution), f.data)),
+      lines.map(f => unfeature(keys, values, LINESTRING, pgl.toCommands(Left(f.geom), tileExtent.northWest, resolution), f.data)),
+      multiLines.map(f => unfeature(keys, values, LINESTRING, pgl.toCommands(Right(f.geom), tileExtent.northWest, resolution), f.data)),
+      polygons.map(f => unfeature(keys, values, POLYGON, pgy.toCommands(Left(f.geom), tileExtent.northWest, resolution), f.data)),
+      multiPolygons.map(f => unfeature(keys, values, POLYGON, pgy.toCommands(Right(f.geom), tileExtent.northWest, resolution), f.data))
+    ).flatten
+
+    vt.Tile.Layer(version, name, features, keys, values.map(_.toProtobuf), Some(tileWidth))
+  }
+
+  private def totalMeta: (Seq[String], Seq[Value]) = {
+    /* Pull into memory once to avoid GC on the feature list */
+    val fs: Seq[Feature[Geometry, Map[String, Value]]] = features
+
+    /* Must be unique */
+    val keys: Seq[String] = fs.map(_.data.keys).flatten.distinct
+
+    val values: Seq[Value] = fs.map(_.data.values).flatten.distinct
+
+    (keys, values)
+  }
+
+  private def unfeature(
+    keys: Seq[String],
+    values: Seq[Value],
+    geomType: vt.Tile.GeomType,
+    cmds: Seq[Command],
+    data: Map[String, Value]
+  ): vt.Tile.Feature = {
+    val tags = data.toSeq.foldRight(List.empty[Int]) { case (pair, acc) =>
+      keys.indexOf(pair._1) :: values.indexOf(pair._2) :: acc
+    }
+
+    vt.Tile.Feature(None, tags, Some(geomType), Command.uncommands(cmds))
+  }
+}
+
+/** A [[Layer]] crafted through some strict ingest process. */
+case class StrictProtobufLayer(
+  name: String,
+  tileWidth: Int,
+  version: Int,
+  tileExtent: Extent,
+  points: Seq[Feature[Point, Map[String, Value]]],
+  multiPoints: Seq[Feature[MultiPoint, Map[String, Value]]],
+  lines: Seq[Feature[Line, Map[String, Value]]],
+  multiLines: Seq[Feature[MultiLine, Map[String, Value]]],
+  polygons: Seq[Feature[Polygon, Map[String, Value]]],
+  multiPolygons: Seq[Feature[MultiPolygon, Map[String, Value]]]
+) extends ProtobufLayer
+
 /**
   * A [[Layer]] decoded from Protobuf data. All of its Features are decoded
   * lazily, making for very fast extraction of single features/geometries.
   *
   */
-case class ProtobufLayer(
+case class LazyProtobufLayer(
   private val rawLayer: vt.Tile.Layer,
-  private val tileExtent: Extent
-) extends Layer {
+  tileExtent: Extent
+) extends ProtobufLayer {
   /* Expected fields */
   def name: String = rawLayer.name
   def tileWidth: Int = rawLayer.extent.getOrElse(4096)
@@ -42,19 +133,8 @@ case class ProtobufLayer(
   /** The version of the specification that this Layer adheres to. */
   def version: Int = rawLayer.version
 
-  def features: Seq[Feature[Geometry, Map[String, Value]]] = {
-    points.append(multiPoints)
-     .append(lines)
-     .append(multiLines)
-     .append(polygons)
-     .append(multiPolygons)
-  }
-
   /* Unconsumed raw Features */
   private lazy val (pointFs, lineFs, polyFs) = segregate(rawLayer.features)
-
-  /** How much of the [[Extent]] is covered by a single grid coordinate? */
-  private def resolution: Double = tileExtent.height / tileWidth
 
   /**
    * Polymorphically generate a [[Stream]] of parsed Geometries and
@@ -164,57 +244,19 @@ case class ProtobufLayer(
     (points, lines, polys)
   }
 
-  /** Encode this Layer back into a mid-level Protobuf object. */
-  def toProtobuf: vt.Tile.Layer = {
-    val pgp = implicitly[ProtobufGeom[Point, MultiPoint]]
-    val pgl = implicitly[ProtobufGeom[Line, MultiLine]]
-    val pgy = implicitly[ProtobufGeom[Polygon, MultiPolygon]]
-
-    val (keys, values) = totalMeta
-
-    /* In a future version of the VectorTile spec, when Single and Multi
-     * Geometries are separate, we will be able to restructre `ProtobufGeom`
-     * in such a way that makes `Geometry.toCommands` possible here.
-     *
-     * `unfeature` will become polymorphic, so calls to it will look like:
-     *
-     *   points.map(f => unfeature(keys, values, f))
-     */
-    val features = Seq(
-      points.map(f => unfeature(keys, values, POINT, pgp.toCommands(Left(f.geom), tileExtent.northWest, resolution), f.data)),
-      multiPoints.map(f => unfeature(keys, values, POINT, pgp.toCommands(Right(f.geom), tileExtent.northWest, resolution), f.data)),
-      lines.map(f => unfeature(keys, values, LINESTRING, pgl.toCommands(Left(f.geom), tileExtent.northWest, resolution), f.data)),
-      multiLines.map(f => unfeature(keys, values, LINESTRING, pgl.toCommands(Right(f.geom), tileExtent.northWest, resolution), f.data)),
-      polygons.map(f => unfeature(keys, values, POLYGON, pgy.toCommands(Left(f.geom), tileExtent.northWest, resolution), f.data)),
-      multiPolygons.map(f => unfeature(keys, values, POLYGON, pgy.toCommands(Right(f.geom), tileExtent.northWest, resolution), f.data))
-    ).flatten
-
-    vt.Tile.Layer(version, name, features, keys, values.map(_.toProtobuf), Some(tileWidth))
-  }
-
-  private def totalMeta: (Seq[String], Seq[Value]) = {
-    /* Pull into memory once to avoid GC on the feature list */
-    val fs: Seq[Feature[Geometry, Map[String, Value]]] = features
-
-    /* Must be unique */
-    val keys: Seq[String] = fs.map(_.data.keys).flatten.distinct
-
-    val values: Seq[Value] = fs.map(_.data.values).flatten.distinct
-
-    (keys, values)
-  }
-
-  private def unfeature(
-    keys: Seq[String],
-    values: Seq[Value],
-    geomType: vt.Tile.GeomType,
-    cmds: Seq[Command],
-    data: Map[String, Value]
-  ): vt.Tile.Feature = {
-    val tags = data.toSeq.foldRight(List.empty[Int]) { case (pair, acc) =>
-      keys.indexOf(pair._1) :: values.indexOf(pair._2) :: acc
-    }
-
-    vt.Tile.Feature(None, tags, Some(geomType), Command.uncommands(cmds))
+  /** Convert to a [[StrictProtobufLayer]]. */
+  def toStrict: StrictProtobufLayer = {
+    StrictProtobufLayer(
+      name,
+      tileWidth,
+      version,
+      tileExtent,
+      points,
+      multiPoints,
+      lines,
+      multiLines,
+      polygons,
+      multiPolygons
+    )
   }
 }
