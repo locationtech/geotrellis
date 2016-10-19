@@ -18,42 +18,18 @@ package geotrellis.raster.mapalgebra.focal
 
 import geotrellis.raster._
 
-/**
- * Declares that implementers have a result
- */
 trait Resulting[T] {
+  /** Copies original value to result, (focusCol: Int, focusRow: Int, resultCol: Int, rowRow: Int) => Unit */
+  val copyOriginalValue: (Int, Int, Int, Int) => Unit
   def result: T
 }
 
-sealed trait TargetCell extends Serializable {
-  def mask(tile: MutableArrayTile): MutableArrayTile
-}
-object TargetCell {
-  object NoData extends TargetCell {
-    override def mask(tile: MutableArrayTile): MutableArrayTile =
-      new MaskedMutableArrayTile(true, tile)
-  }
-  object Data extends TargetCell {
-    override def mask(tile: MutableArrayTile): MutableArrayTile =
-      new MaskedMutableArrayTile(false, tile)
-  }
-  object All extends TargetCell {
-    override def mask(tile: MutableArrayTile): MutableArrayTile = tile
-  }
-}
+sealed trait TargetCell extends Serializable
 
-private class MaskedMutableArrayTile(changeData: Boolean, val tile: MutableArrayTile) extends MutableArrayTile {
-  def update(i: Int, z: Int): Unit =
-    if (changeData ^ isData(tile.apply(i))) tile.update(i, z)
-  def updateDouble(i: Int, z: Double): Unit =
-    if (changeData ^ isData(tile.applyDouble(i))) tile.updateDouble(i, z)
-  def apply(i: Int): Int = tile.apply(i)
-  def applyDouble(i: Int): Double = tile.applyDouble(i)
-  def copy = new MaskedMutableArrayTile(changeData, tile.copy.mutable)
-  def toBytes = tile.toBytes
-  def cellType = tile.cellType
-  def cols = tile.cols
-  def rows = tile.rows
+object TargetCell {
+  object NoData extends TargetCell
+  object Data extends TargetCell
+  object All extends TargetCell
 }
 
 /**
@@ -79,7 +55,27 @@ abstract class CursorCalculation[T](tile: Tile, n: Neighborhood, val analysisAre
 
   def execute(): T = {
     val cursor = Cursor(tile, n, bounds)
-    CursorStrategy.execute(cursor, { () => calc(tile, cursor) }, bounds, traversalStrategy)
+    val calcFunc: () => Unit =
+      target match {
+        case TargetCell.All =>
+          { () => calc(tile, cursor) }
+        case TargetCell.Data =>
+          { () =>
+            calc(tile, cursor)
+            if(!isData(r.get(cursor.focusCol, cursor.focusRow))){
+              copyOriginalValue(cursor.focusCol, cursor.focusRow, cursor.col, cursor.row)
+            }
+          }
+        case TargetCell.NoData =>
+          { () =>
+            calc(tile, cursor)
+            if(!isNoData(r.get(cursor.focusCol, cursor.focusRow))) {
+              copyOriginalValue(cursor.focusCol, cursor.focusRow, cursor.col, cursor.row)
+            }
+          }
+      }
+
+    CursorStrategy.execute(cursor, calcFunc, bounds, traversalStrategy)
     result
   }
 
@@ -97,7 +93,27 @@ abstract class KernelCalculation[T](tile: Tile, kernel: Kernel, val analysisArea
 
   def execute(): T = {
     val cursor = new KernelCursor(tile, kernel, bounds)
-    CursorStrategy.execute(cursor, { () => calc(tile, cursor) }, bounds, traversalStrategy)
+    val calcFunc: () => Unit =
+      target match {
+        case TargetCell.All =>
+          { () => calc(tile, cursor) }
+        case TargetCell.Data =>
+          { () =>
+            calc(tile, cursor)
+            if(!isData(r.get(cursor.focusCol, cursor.focusRow))) {
+              copyOriginalValue(cursor.focusCol, cursor.focusRow, cursor.col, cursor.row)
+            }
+          }
+        case TargetCell.NoData =>
+          { () =>
+            calc(tile, cursor)
+            if(!isNoData(r.get(cursor.focusCol, cursor.focusRow))) {
+              copyOriginalValue(cursor.focusCol, cursor.focusRow, cursor.col, cursor.row)
+            }
+          }
+      }
+
+    CursorStrategy.execute(cursor, calcFunc, bounds, traversalStrategy)
     result
   }
 
@@ -115,7 +131,32 @@ abstract class CellwiseCalculation[T] (
 
   def execute(): T = n match {
     case s: Square =>
-      CellwiseStrategy.execute(r, s, this, bounds)
+      val calcSetValue: (Int, Int, Int, Int) => Unit =
+        target match {
+          case TargetCell.All =>
+            { (_, _, x, y) => setValue(x, y) }
+          case TargetCell.Data =>
+            { (fc, fr, x, y) =>
+              if(isData(r.get(fc, fr))) { setValue(x, y) }
+              else { copyOriginalValue(fc, fr, x, y) }
+            }
+          case TargetCell.NoData =>
+            { (fc, fr, x, y) =>
+              if(isNoData(r.get(fc, fr))) { setValue(x, y) }
+              else { copyOriginalValue(fc, fr, x, y) }
+            }
+        }
+
+      val strategyCalc =
+        new CellwiseStrategyCalculation {
+          def add(r: Tile, x: Int, y: Int): Unit = CellwiseCalculation.this.add(r, x, y)
+          def remove(r: Tile, x: Int, y: Int): Unit = CellwiseCalculation.this.remove(r, x, y)
+          def reset(): Unit = CellwiseCalculation.this.reset()
+          def setValue(focusCol: Int, focusRow: Int, x: Int, y: Int): Unit =
+            calcSetValue(focusCol, focusRow, x, y)
+        }
+
+      CellwiseStrategy.execute(r, s, strategyCalc, bounds)
       result
     case _ => sys.error("Cannot use cellwise calculation with this traversal strategy.")
   }
@@ -124,6 +165,13 @@ abstract class CellwiseCalculation[T] (
   def remove(r: Tile, x: Int, y: Int)
   def reset(): Unit
   def setValue(x: Int, y: Int)
+}
+
+trait CellwiseStrategyCalculation {
+  def add(r: Tile, x: Int, y: Int): Unit
+  def remove(r: Tile, x: Int, y: Int): Unit
+  def reset(): Unit
+  def setValue(focusCol: Int, focusRow: Int, x: Int, y: Int): Unit
 }
 
 /*
@@ -142,13 +190,13 @@ trait BitArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] 
   /** [[BitArrayTile]] that will be returned by the focal calculation */
   val cols: Int = bounds.width
   val rows: Int = bounds.height
-  val resultTile = target.mask(BitArrayTile.empty(rows, cols))
+  val resultTile = BitArrayTile.empty(rows, cols)
 
-  def result =
-    resultTile match {
-      case (t: MaskedMutableArrayTile) => t.tile
-      case _ => resultTile
-    }
+  val copyOriginalValue: (Int, Int, Int, Int) => Unit = { (focusCol: Int, focusRow: Int, col: Int, row: Int) =>
+    resultTile.set(col, row, r.get(focusCol, focusRow))
+  }
+
+  def result = resultTile
 }
 
 /**
@@ -160,13 +208,13 @@ trait ByteArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile]
   /** [[ByteArrayTile]] that will be returned by the focal calculation */
   val cols: Int = bounds.width
   val rows: Int = bounds.height
-  val resultTile = target.mask(ByteArrayTile.empty(cols, rows))
+  val resultTile = ByteArrayTile.empty(cols, rows)
 
-  def result =
-    resultTile match {
-      case (t: MaskedMutableArrayTile) => t.tile
-      case _ => resultTile
-    }
+  val copyOriginalValue: (Int, Int, Int, Int) => Unit = { (focusCol: Int, focusRow: Int, col: Int, row: Int) =>
+    resultTile.set(col, row, r.get(focusCol, focusRow))
+  }
+
+  def result = resultTile
 }
 
 /**
@@ -178,13 +226,13 @@ trait ShortArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile
   /** [[ShortArrayTile]] that will be returned by the focal calculation */
   val cols: Int = bounds.width
   val rows: Int = bounds.height
-  val resultTile = target.mask(ShortArrayTile(Array.ofDim[Short](cols * rows), cols, rows))
+  val resultTile = ShortArrayTile(Array.ofDim[Short](cols * rows), cols, rows)
 
-  def result =
-    resultTile match {
-      case (t: MaskedMutableArrayTile) => t.tile
-      case _ => resultTile
-    }
+  val copyOriginalValue: (Int, Int, Int, Int) => Unit = { (focusCol: Int, focusRow: Int, col: Int, row: Int) =>
+    resultTile.set(col, row, r.get(focusCol, focusRow))
+  }
+
+  def result = resultTile
 }
 
 /**
@@ -196,13 +244,13 @@ trait IntArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] 
   /** [[IntArrayTile]] that will be returned by the focal calculation */
   val cols: Int = bounds.width
   val rows: Int = bounds.height
-  val resultTile = target.mask(IntArrayTile.empty(cols, rows))
+  val resultTile = IntArrayTile.empty(cols, rows)
 
-  def result =
-    resultTile match {
-      case (t: MaskedMutableArrayTile) => t.tile
-      case _ => resultTile
-    }
+  val copyOriginalValue: (Int, Int, Int, Int) => Unit = { (focusCol: Int, focusRow: Int, col: Int, row: Int) =>
+    resultTile.set(col, row, r.get(focusCol, focusRow))
+  }
+
+  def result = resultTile
 }
 
 /**
@@ -214,13 +262,13 @@ trait FloatArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile
   /** [[FloatArrayTile]] that will be returned by the focal calculation */
   val cols: Int = bounds.width
   val rows: Int = bounds.height
-  val resultTile = target.mask(FloatArrayTile.empty(cols, rows))
+  val resultTile = FloatArrayTile.empty(cols, rows)
 
-  def result =
-    resultTile match {
-      case (t: MaskedMutableArrayTile) => t.tile
-      case _ => resultTile
-    }
+  val copyOriginalValue: (Int, Int, Int, Int) => Unit = { (focusCol: Int, focusRow: Int, col: Int, row: Int) =>
+    resultTile.setDouble(col, row, r.getDouble(focusCol, focusRow))
+  }
+
+  def result = resultTile
 }
 
 /**
@@ -232,24 +280,31 @@ trait DoubleArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Til
   /** [[DoubleArrayTile]] that will be returned by the focal calculation */
   val cols: Int = bounds.width
   val rows: Int = bounds.height
-  val resultTile = target.mask(DoubleArrayTile.empty(cols, rows))
+  val resultTile = DoubleArrayTile.empty(cols, rows)
 
-  def result =
-    resultTile match {
-      case (t: MaskedMutableArrayTile) => t.tile
-      case _ => resultTile
-    }
+  val copyOriginalValue: (Int, Int, Int, Int) => Unit = { (focusCol: Int, focusRow: Int, col: Int, row: Int) =>
+    resultTile.setDouble(col, row, r.getDouble(focusCol, focusRow))
+  }
+
+  def result = resultTile
 }
 
 trait ArrayTileResult extends Resulting[Tile] { self: FocalCalculation[Tile] =>
   def resultCellType: DataType with NoDataHandling = r.cellType
   val cols: Int = bounds.width
   val rows: Int = bounds.height
-  val resultTile: MutableArrayTile = target.mask(ArrayTile.empty(resultCellType, cols, rows))
+  val resultTile: MutableArrayTile = ArrayTile.empty(resultCellType, cols, rows)
 
-  def result =
-    resultTile match {
-      case (t: MaskedMutableArrayTile) => t.tile
-      case _ => resultTile
+  val copyOriginalValue: (Int, Int, Int, Int) => Unit =
+    if(!r.cellType.isFloatingPoint) {
+      { (focusCol: Int, focusRow: Int, col: Int, row: Int) =>
+        resultTile.set(col, row, r.get(focusCol, focusRow))
+      }
+    } else {
+      { (focusCol: Int, focusRow: Int, col: Int, row: Int) =>
+        resultTile.setDouble(col, row, r.getDouble(focusCol, focusRow))
+      }
     }
+
+  def result = resultTile
 }

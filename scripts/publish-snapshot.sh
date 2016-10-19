@@ -1,16 +1,24 @@
 #!/bin/bash
 
-./sbt "project macros" publish \
-      "project vector" publish \
+./sbt "project accumulo" publish \
+      "project cassandra" publish \
+      "project geomesa" publish \
+      "project geotools" publish \
+      "project geowave" publish \
+      "project hbase" publish \
+      "project macros" publish \
       "project proj4" publish \
       "project raster" publish \
-      "project geotools" publish \
-      "project spark" publish \
+      "project raster-testkit" publish \
       "project s3" publish \
+      "project geowave" publish \
       "project accumulo" publish \
       "project cassandra" publish \
+      "project hbase" publish \
       "project shapefile" publish \
+      "project spark" publish \
+      "project spark-testkit" publish \
       "project util" publish \
-      "project raster-testkit" publish \
+      "project vector" publish \
       "project vector-testkit" publish \
-      "project spark-testkit" publish
+      "project vectortile" publish

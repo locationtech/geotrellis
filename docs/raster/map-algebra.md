@@ -51,7 +51,7 @@ to each of those zone values.
 
 ## How to use Map Algebra operations
 
-Map Algebra operations are defined as implicits methods on `Tile` or `Traversable[Tile]`,
+Map Algebra operations are defined as implicit methods on `Tile` or `Traversable[Tile]`,
 which are imported with `import geotrellis.raster._`.
 
 ```scala
@@ -95,7 +95,7 @@ defines operations which act on a cell without regard to its spatial
 relations. Need to
 double every cell on a tile? This is the module you'll want to explore.
 - [`geotrellis.raster.focal`](../../raster/src/main/scala/geotrellis/raster/mapalgebra/focal)
-defines operations operations which focus on two-dimensional windows
+defines operations which focus on two-dimensional windows
 (internally referred to as neighborhoods) of a raster's values to
 determine their outputs.
 - [`geotrellis.raster.zonal`](../..raster/src/main/scala/geotrellis/raster/mapalgebra/zonal)

@@ -1,69 +1,64 @@
 package geotrellis.spark.etl
 
-import geotrellis.raster.{RasterExtent, CellGrid}
+import geotrellis.raster.CellGrid
 import geotrellis.raster.crop.CropMethods
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.prototype.TilePrototypeMethods
 import geotrellis.raster.reproject._
-import geotrellis.raster.resample.{ ResampleMethod, NearestNeighbor }
+import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.stitch.Stitcher
 import geotrellis.spark._
-import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.tiling._
 import geotrellis.spark.pyramid._
 import geotrellis.spark.tiling._
 import geotrellis.util._
 import geotrellis.vector._
+import geotrellis.spark.etl.config._
 
-import com.typesafe.scalalogging.slf4j.Logger
 import org.apache.spark._
 import org.apache.spark.rdd.RDD
-import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.reflect._
 import scala.reflect.runtime.universe._
 
 object Etl {
-  val defaultModules = Array(s3.S3Module, hadoop.HadoopModule, accumulo.AccumuloModule, cassandra.CassandraModule)
+  val defaultModules = Array(s3.S3Module, hadoop.HadoopModule, file.FileModule, accumulo.AccumuloModule, cassandra.CassandraModule, hbase.HBaseModule)
 
   def ingest[
     I: Component[?, ProjectedExtent]: TypeTag: ? => TilerKeyMethods[I, K],
     K: SpatialComponent: Boundable: TypeTag,
     V <: CellGrid: TypeTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
-    args: Seq[String], keyIndexMethod: KeyIndexMethod[K], modules: Seq[TypedModule] = Etl.defaultModules
-  )(implicit sc: SparkContext) = {
+     args: Seq[String], modules: Seq[TypedModule] = Etl.defaultModules
+   )(implicit sc: SparkContext) = {
     implicit def classTagK = ClassTag(typeTag[K].mirror.runtimeClass(typeTag[K].tpe)).asInstanceOf[ClassTag[K]]
     implicit def classTagV = ClassTag(typeTag[V].mirror.runtimeClass(typeTag[V].tpe)).asInstanceOf[ClassTag[V]]
 
-    /* parse command line arguments */
-    val etl = Etl(args)
-    /* load source tiles using input module specified */
-    val sourceTiles = etl.load[I, V]
-    /* perform the reprojection and mosaicing step to fit tiles to LayoutScheme specified */
-    val (zoom, tiled) = etl.tile(sourceTiles)
-    /* save and optionally pyramid the mosaiced layer */
-    etl.save[K, V](LayerId(etl.conf.layerName(), zoom), tiled, keyIndexMethod)
+    EtlConf(args) foreach { conf =>
+      /* parse command line arguments */
+      val etl = Etl(conf, modules)
+      /* load source tiles using input module specified */
+      val sourceTiles = etl.load[I, V]
+      /* perform the reprojection and mosaicing step to fit tiles to LayoutScheme specified */
+      val (zoom, tiled) = etl.tile(sourceTiles)
+      /* save and optionally pyramid the mosaiced layer */
+      etl.save[K, V](LayerId(etl.input.name, zoom), tiled)
+    }
   }
 }
 
-case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.defaultModules) {
-
-  @transient lazy val logger: Logger = Logger(LoggerFactory getLogger getClass.getName)
-  @transient val conf = new EtlConf(args)
+case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.defaultModules) extends LazyLogging {
+  val input  = conf.input
+  val output = conf.output
 
   def scheme: Either[LayoutScheme, LayoutDefinition] = {
-    if (conf.layoutScheme.isDefined) {
-      val scheme = conf.layoutScheme()(conf.crs(), conf.tileSize())
-      if (conf.maxZoom.isDefined) {
-        scheme match {
-          case  zoomedLayoutScheme: ZoomedLayoutScheme => logger.info("maxZoom and layout scheme compatible")
-          case _ => throw new RuntimeException("maxZoom option should only be used with tms layout scheme")
-        }
-      }
+    if (output.layoutScheme.nonEmpty) {
+      val scheme = output.getLayoutScheme
+      logger.info(scheme.toString)
       Left(scheme)
-    } else if (conf.layoutExtent.isDefined) {
-      val layout = LayoutDefinition(RasterExtent(conf.layoutExtent(), conf.cellSize()), conf.tileSize())
+    } else if (output.layoutExtent.nonEmpty) {
+      val layout = output.getLayoutDefinition
       logger.info(layout.toString)
       Right(layout)
     } else
@@ -79,14 +74,19 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
     * @tparam I Input key type
     * @tparam V Input raster value type
     */
-  def load[I: TypeTag, V <: CellGrid: TypeTag]()(implicit sc: SparkContext): RDD[(I, V)] = {
-    val plugin =
-      combinedModule
-        .findSubclassOf[InputPlugin[I, V]]
-        .find(_.suitableFor(conf.input(), conf.format()))
-        .getOrElse(sys.error(s"Unable to find input module of type '${conf.input()}' for format `${conf.format()}"))
+  def load[I: Component[?, ProjectedExtent]: TypeTag, V <: CellGrid: TypeTag]()(implicit sc: SparkContext): RDD[(I, V)] = {
+    val plugin = {
+      val plugins = combinedModule.findSubclassOf[InputPlugin[I, V]]
+      if(plugins.isEmpty) sys.error(s"Unable to find input module for input key type '${typeTag[I].tpe.toString}' and tile type '${typeTag[V].tpe.toString}'")
+      plugins.find(_.suitableFor(input.backend.`type`.name, input.format)).getOrElse(sys.error(s"Unable to find input module of type '${input.backend.`type`.name}' for format `${input.format} " +
+        s"for input key type '${typeTag[I].tpe.toString}' and tile type '${typeTag[V].tpe.toString}'"))
+    }
 
-    plugin(conf.inputProps)
+    // clip in dest crs
+    input.clip.fold(plugin(conf))(extent => plugin(conf).filter { case (k, _) =>
+      val pe = k.getComponent[ProjectedExtent]
+      output.getCrs.fold(extent.contains(pe.extent))(crs => extent.contains(pe.extent.reproject(pe.crs, crs)))
+    })
   }
 
   /**
@@ -113,24 +113,21 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
     V <: CellGrid: Stitcher: ClassTag: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V]):
     (? => TileReprojectMethods[V]): (? => CropMethods[V]),
     K: SpatialComponent: Boundable: ClassTag
-  ](
-    rdd: RDD[(I, V)], method: ResampleMethod = NearestNeighbor
-  )(implicit sc: SparkContext): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
-    val targetCellType = conf.cellType.get
-    val destCrs = conf.crs()
-    val maxZoom = conf.maxZoom.get
+  ](rdd: RDD[(I, V)], method: ResampleMethod = NearestNeighbor)(implicit sc: SparkContext): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
+    val targetCellType = output.cellType
+    val destCrs = output.getCrs.get
 
     def adjustCellType(md: TileLayerMetadata[K]) =
       md.copy(cellType = targetCellType.getOrElse(md.cellType))
 
-    conf.reproject() match {
+    output.reprojectMethod match {
       case PerTileReproject =>
         val reprojected = rdd.reproject(destCrs)
         val (zoom: Int, md: TileLayerMetadata[K]) = scheme match {
-          case Left(layoutScheme) => maxZoom match {
-              case Some(zoom) =>  TileLayerMetadata.fromRdd(reprojected, ZoomedLayoutScheme(destCrs, conf.tileSize()), zoom)
-              case _ => TileLayerMetadata.fromRdd(reprojected, layoutScheme)
-            }
+          case Left(layoutScheme) => output.maxZoom match {
+            case Some(zoom) =>  TileLayerMetadata.fromRdd(reprojected, ZoomedLayoutScheme(destCrs, output.tileSize), zoom)
+            case _ => TileLayerMetadata.fromRdd(reprojected, layoutScheme)
+          }
           case Right(layoutDefinition) =>
             TileLayerMetadata.fromRdd(reprojected, layoutDefinition)
         }
@@ -139,9 +136,9 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
         zoom -> ContextRDD(reprojected.tileToLayout[K](amd, tilerOptions), amd)
 
       case BufferedReproject =>
-        val (_, md) = maxZoom match {
-          case Some(zoom) =>  TileLayerMetadata.fromRdd(rdd, ZoomedLayoutScheme(destCrs, conf.tileSize()), zoom)
-          case _ => TileLayerMetadata.fromRdd(rdd, FloatingLayoutScheme(conf.tileSize()))
+        val (_, md) = output.maxZoom match {
+          case Some(zoom) =>  TileLayerMetadata.fromRdd(rdd, ZoomedLayoutScheme(destCrs, output.tileSize), zoom)
+          case _ => TileLayerMetadata.fromRdd(rdd, FloatingLayoutScheme(output.tileSize))
         }
         val amd = adjustCellType(md)
         // Keep the same number of partitions after tiling.
@@ -162,35 +159,34 @@ case class Etl(args: Seq[String], @transient modules: Seq[TypedModule] = Etl.def
     *
     * @param id     Layout ID to b
     * @param rdd Tiled raster RDD with TileLayerMetadata
-    * @param method Index Method that maps an instance of K to a Long
     * @tparam K  Key type with SpatialComponent corresponding LayoutDefinition
     * @tparam V  Tile raster with cells from single tile in LayoutDefinition
     */
   def save[
     K: SpatialComponent: TypeTag,
     V <: CellGrid: TypeTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]], method: KeyIndexMethod[K]): Unit = {
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): Unit = {
     implicit def classTagK = ClassTag(typeTag[K].mirror.runtimeClass(typeTag[K].tpe)).asInstanceOf[ClassTag[K]]
     implicit def classTagV = ClassTag(typeTag[V].mirror.runtimeClass(typeTag[V].tpe)).asInstanceOf[ClassTag[V]]
 
     val outputPlugin =
       combinedModule
         .findSubclassOf[OutputPlugin[K, V, TileLayerMetadata[K]]]
-        .find { _.suitableFor(conf.output()) }
-        .getOrElse(sys.error(s"Unable to find output module of type '${conf.output()}'"))
+        .find { _.suitableFor(output.backend.`type`.name) }
+        .getOrElse(sys.error(s"Unable to find output module of type '${output.backend.`type`.name}'"))
 
     def savePyramid(zoom: Int, rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): Unit = {
       val currentId = id.copy(zoom = zoom)
-      outputPlugin(currentId, rdd, method, conf.outputProps)
+      outputPlugin(currentId, rdd, conf)
 
       scheme match {
         case Left(s) =>
-          if (conf.pyramid() && zoom >= 1) {
-            val (nextLevel, nextRdd) = Pyramid.up(rdd, s, zoom)
+          if (output.pyramid && zoom >= 1) {
+            val (nextLevel, nextRdd) = Pyramid.up(rdd, s, zoom, output.getPyramidOptions)
             savePyramid(nextLevel, nextRdd)
           }
         case Right(_) =>
-          if (conf.pyramid())
+          if (output.pyramid)
             logger.error("Pyramiding only supported with layoutScheme, skipping pyramid step")
       }
     }

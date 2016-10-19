@@ -73,14 +73,14 @@ trait FocalMethods extends MethodExtensions[Tile] {
     * @param   cs         cellSize of the raster
     * @param   zFactor    Number of map units to one elevation unit.
     */
-  def slope(cs: CellSize, zFactor: Double = 1.0, bounds: Option[GridBounds] = None): Tile =
-    Slope(self, Square(1), bounds, cs, zFactor)
+  def slope(cs: CellSize, zFactor: Double = 1.0, bounds: Option[GridBounds] = None, target: TargetCell = TargetCell.All): Tile =
+    Slope(self, Square(1), bounds, cs, zFactor, target)
 
   /**
     * Calculates the aspect of each cell in a raster.
     *
     * @param   cs          cellSize of the raster
     */
-  def aspect(cs: CellSize, bounds: Option[GridBounds] = None): Tile =
-    Aspect(self, Square(1), bounds, cs)
+  def aspect(cs: CellSize, bounds: Option[GridBounds] = None, target: TargetCell = TargetCell.All): Tile =
+    Aspect(self, Square(1), bounds, cs, target)
 }

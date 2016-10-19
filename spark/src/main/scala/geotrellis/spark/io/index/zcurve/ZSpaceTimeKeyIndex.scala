@@ -4,8 +4,6 @@ import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.index.zcurve._
 
-import com.github.nscala_time.time.Imports._
-
 object ZSpaceTimeKeyIndex {
   def byMilliseconds(keyBounds: KeyBounds[SpaceTimeKey], millis: Long): ZSpaceTimeKeyIndex =
     new ZSpaceTimeKeyIndex(keyBounds, millis)

@@ -13,7 +13,7 @@ class ModeSpec extends FunSpec with TestEnvironment {
 
     val nd = NODATA
 
-    it("should square mode for all cells") {
+    it("should square mode for raster rdd") {
       val rasterRDD = createTileLayerRDD(
         sc,
         ArrayTile(Array(
@@ -27,6 +27,32 @@ class ModeSpec extends FunSpec with TestEnvironment {
       )
 
       val res = rasterRDD.focalMode(Square(1)).stitch.toArray
+
+      val expected = Array(
+        nd, 1, 1,    1, 2, 2,   nd,nd,nd,
+        nd, 1, 1,    1, 3, 3,   nd, 2, 2,
+
+        nd, 1, 1,    1,nd,nd,   nd,nd,nd,
+        nd,nd, 1,   nd, 3,nd,    1, 2, 2
+      )
+
+      res should be (expected)
+    }
+
+    it("should square mode for raster collection") {
+      val rasterCollection = createTileLayerRDD(
+        sc,
+        ArrayTile(Array(
+          nd,7, 1,   1, 3, 5,   9, 8, 2,
+          9, 1, 1,   2, 2, 2,   4, 3, 5,
+
+          3, 8, 1,   3, 3, 3,   1, 2, 2,
+          2, 4, 7,   1,nd, 1,   8, 4, 3
+        ), 9, 4),
+        TileLayout(3, 2, 3, 2)
+      ).toCollection
+
+      val res = rasterCollection.focalMode(Square(1)).stitch.toArray
 
       val expected = Array(
         nd, 1, 1,    1, 2, 2,   nd,nd,nd,

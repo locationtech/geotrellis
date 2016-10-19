@@ -16,12 +16,15 @@
 
 package geotrellis.vector
 
-import com.vividsolutions.jts.index.strtree.{STRtree, ItemDistance, ItemBoundable}
+import com.vividsolutions.jts.index.strtree.{STRtree, ItemDistance, ItemBoundable, AbstractNode}
 import com.vividsolutions.jts.index.strtree.ItemDistance
 import com.vividsolutions.jts.geom.Coordinate
+import com.vividsolutions.jts.geom.GeometryFactory
 import com.vividsolutions.jts.geom.Envelope
+import com.vividsolutions.jts.operation.distance.DistanceOp
 
 import scala.collection.mutable
+import scala.collection.JavaConversions._
 
 object SpatialIndex {
   def apply(points: Iterable[(Double, Double)]): SpatialIndex[(Double, Double)] = {
@@ -88,6 +91,61 @@ class SpatialIndex[T](val measure: Measure = Measure.Euclidean) extends Serializ
 
   def pointsInExtentAsJavaList(extent: Extent): java.util.List[T] =
     rtree.query(new Envelope(extent.xmin, extent.xmax, extent.ymin, extent.ymax)).asInstanceOf[java.util.List[T]]
+
+  def kNearest(x: Double, y: Double, k: Int): Seq[T] =
+    kNearest(new Envelope(new Coordinate(x, y)), k)
+
+  def kNearest(pt: (Double, Double), k: Int): Seq[T] =
+    kNearest(new Envelope(new Coordinate(pt._1, pt._2)), k)
+
+  def kNearest(ex: Extent, k: Int): Seq[T] = {
+    case class PQitem[A](val d: Double, val x: A) extends Ordered[PQitem[A]] {
+      def compare(that: PQitem[A]) = (this.d) compare (that.d)
+    }
+
+    val gf = new GeometryFactory()
+    val env = ex.jtsEnvelope
+    val pq = (new mutable.PriorityQueue[PQitem[AbstractNode]]()).reverse
+    val kNNqueue = new mutable.PriorityQueue[PQitem[T]]()
+
+    def addToClosest (elem: PQitem[T]) = {
+      if (kNNqueue.size < k)
+        kNNqueue.enqueue(elem)
+      else {
+        if (elem.d < kNNqueue.head.d) {
+          kNNqueue.enqueue(elem)
+          kNNqueue.dequeue()
+        }
+      }
+    }
+    def rtreeLeafAsPQitem (ib: ItemBoundable): PQitem[T] = {
+      PQitem(DistanceOp.distance(gf.toGeometry(env), gf.toGeometry(ib.getBounds.asInstanceOf[Envelope])), ib.getItem.asInstanceOf[T])
+    }
+    def rtreeNodeAsPQitem (nd: AbstractNode): PQitem[AbstractNode] = {
+      PQitem(DistanceOp.distance(gf.toGeometry(env), gf.toGeometry(nd.getBounds.asInstanceOf[Envelope])), nd)
+    }
+
+    pq.enqueue(rtreeNodeAsPQitem(rtree.getRoot))
+
+    do {
+      val item = pq.dequeue
+
+      if (kNNqueue.size < k || item.d < kNNqueue.head.d) {
+        if (item.x.getLevel == 0) {
+          // leaf node
+          item.x.getChildBoundables.map { 
+            leafNode => rtreeLeafAsPQitem(leafNode.asInstanceOf[ItemBoundable]) 
+          }.foreach(addToClosest)
+        } else {
+          item.x.getChildBoundables.map {
+            subtree => rtreeNodeAsPQitem(subtree.asInstanceOf[AbstractNode])
+          }.foreach(pq.enqueue(_))
+        }
+      }
+    } while (! pq.isEmpty )
+
+    kNNqueue.toSeq.map{ _.x }
+  }
 }
 
 object Measure {

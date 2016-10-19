@@ -4,10 +4,6 @@ import geotrellis.raster._
 
 /**
  * Computes the minimum value of a neighborhood for a given raster
- *
- * @note            Min does not currently support Double raster data.
- *                  If you use a Tile with a Double CellType (FloatConstantNoDataCellType, DoubleConstantNoDataCellType)
- *                  the data values will be rounded to integers.
  */
 object Min {
   def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None, target: TargetCell = TargetCell.All): FocalCalculation[Tile] = {
@@ -45,5 +41,5 @@ object Min {
   }
 
   def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None, target: TargetCell = TargetCell.All): Tile =
-    calculation(tile, n, bounds).execute()
+    calculation(tile, n, bounds, target).execute()
 }

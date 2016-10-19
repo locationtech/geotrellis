@@ -200,3 +200,54 @@ val tile: Tile = nlcdReader.read(SpatialKey(1,2))
 ```
 
 The idea is similar to the `LayerReader.reader` method except in this case we're producing a reader for single tiles. Additionally it must be noted that the layer metadata is accessed during the construction of the `Reader[SpatialKey, Tile]` and saved for all future calls to read a tile.
+
+## Readers threads
+
+Cassandra and S3 Layer RDDReaders / RDDWriters are configurable by threads amount. It's a programm setting, that can be different for a certain machine (depends on resources available). Configuration could be set in the `reference.conf` / `application.conf` file of your app, default settings available in a `reference.conf` file of each backend subproject (we use [TypeSafe Config](https://github.com/typesafehub/config)).
+For a File backend only RDDReader is configurable, For Accumulo - only RDDWriter (Socket Strategy). For all backends CollectionReaders are configurable as well. By default thread pool size per each configurable reader / writer equals by virtual machine cpu cores available. Word `default` means thread per cpu core, it can be changed to any integer value.
+
+Default configuration example:
+
+```conf
+geotrellis.accumulo.threads {
+  collection.read = default
+  rdd.write       = default
+}
+geotrellis.file.threads {
+  collection.read = default
+  rdd.read        = default
+}
+geotrellis.hadoop.threads {
+  collection.read = default
+}
+geotrellis.cassandra.threads {
+  collection.read = default
+  rdd {
+    write = default
+    read  = default
+  }
+}
+geotrellis.s3.threads {
+  collection.read = default
+  rdd {
+    write = default
+    read  = default
+  }
+}
+```
+
+Cassandra has additional configuration settings: 
+
+And additional connections parameters for`Cassandra`:
+```conf
+geotrellis.cassandra {
+  keyspace             = "geotrellis"
+  replicationStrategy  = "SimpleStrategy"
+  replicationFactor    = 1
+  localDc              = "datacenter1"
+  usedHostsPerRemoteDc = 0
+  allowRemoteDCsForLocalConsistencyLevel = false
+}
+```
+
+Consider using `hbase.client.scanner.caching` parameter for `HBase` as it may increase scan performance.

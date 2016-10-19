@@ -6,8 +6,6 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestFiles
 
-import com.github.nscala_time.time.Imports._
-
 class FileSpaceTimeSpec
     extends PersistenceSpec[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]]
     with SpaceTimeKeyIndexMethods
@@ -16,6 +14,7 @@ class FileSpaceTimeSpec
     with CoordinateSpaceTimeSpec
     with LayerUpdateSpaceTimeTileSpec {
   lazy val reader = FileLayerReader(outputLocalPath)
+  lazy val creader = FileLayerCollectionReader(outputLocalPath)
   lazy val writer = FileLayerWriter(outputLocalPath)
   lazy val deleter = FileLayerDeleter(outputLocalPath)
   lazy val copier = FileLayerCopier(outputLocalPath)

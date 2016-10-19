@@ -37,8 +37,8 @@ class HilbertSpaceTimeKeyIndex(
   val yResolution: Int,
   val temporalResolution: Int
 ) extends KeyIndex[SpaceTimeKey] {
-  val startMillis = keyBounds.minKey.temporalKey.time.getMillis
-  val timeWidth = keyBounds.maxKey.temporalKey.time.getMillis - startMillis
+  val startMillis = keyBounds.minKey.temporalKey.time.toInstant.toEpochMilli
+  val timeWidth = keyBounds.maxKey.temporalKey.time.toInstant.toEpochMilli - startMillis
   val temporalBinCount = math.pow(2, temporalResolution)
   val minKey = keyBounds.minKey.spatialKey
 
@@ -57,7 +57,7 @@ class HilbertSpaceTimeKeyIndex(
 
   def binTime(key: SpaceTimeKey): Long = {
     // index requires right bound to be exclusive but KeyBounds do not, fake that.
-    val bin = (((key.temporalKey.time.getMillis - startMillis) * temporalBinCount) / timeWidth)
+    val bin = (((key.temporalKey.time.toInstant.toEpochMilli - startMillis) * temporalBinCount) / timeWidth)
     (if (bin == temporalBinCount) bin - 1  else bin).toLong
   }
 

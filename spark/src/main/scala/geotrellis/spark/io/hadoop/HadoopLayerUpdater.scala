@@ -3,14 +3,12 @@ package geotrellis.spark.io.hadoop
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro.AvroRecordCodec
-import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.json._
 import geotrellis.spark.merge._
 import geotrellis.spark.util._
 import geotrellis.util._
 
-import com.typesafe.scalalogging.slf4j._
-import org.apache.avro.Schema
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD

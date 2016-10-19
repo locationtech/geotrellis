@@ -65,4 +65,59 @@ class MaxDoubleSpec extends FunSpec with TestEnvironment with TestFiles {
       result should be (expected)
     }
   }
+
+  describe("Max Double Zonal Summary Operation (collections api)") {
+    val inc = IncreasingTestFile.toCollection
+
+    val tileLayout = inc.metadata.tileLayout
+    val count = inc.length * tileLayout.tileCols * tileLayout.tileRows
+    val totalExtent = inc.metadata.extent
+
+    it("should get correct double max over whole raster extent") {
+      inc.polygonalMaxDouble(totalExtent.toPolygon) should be(count - 1)
+    }
+
+    it("should get correct double max over a quarter of the extent") {
+      val xd = totalExtent.xmax - totalExtent.xmin
+      val yd = totalExtent.ymax - totalExtent.ymin
+
+      val quarterExtent = Extent(
+        totalExtent.xmin,
+        totalExtent.ymin,
+        totalExtent.xmin + xd / 2,
+        totalExtent.ymin + yd / 2
+      )
+
+      val result = inc.polygonalMaxDouble(quarterExtent.toPolygon)
+      val expected = inc.stitch.tile.polygonalMaxDouble(totalExtent, quarterExtent.toPolygon)
+
+      result should be (expected)
+    }
+
+    it("should get correct double max over a two triangle multipolygon") {
+      val xd = totalExtent.xmax - totalExtent.xmin / 4
+      val yd = totalExtent.ymax - totalExtent.ymin / 4
+
+      val tri1 = Polygon(
+        (totalExtent.xmin + (xd / 2), totalExtent.ymax - (yd / 2)),
+        (totalExtent.xmin + (xd / 2) + xd, totalExtent.ymax - (yd / 2)),
+        (totalExtent.xmin + (xd / 2) + xd, totalExtent.ymax - (yd)),
+        (totalExtent.xmin + (xd / 2), totalExtent.ymax - (yd / 2))
+      )
+
+      val tri2 = Polygon(
+        (totalExtent.xmax - (xd / 2), totalExtent.ymin + (yd / 2)),
+        (totalExtent.xmax - (xd / 2) - xd, totalExtent.ymin + (yd / 2)),
+        (totalExtent.xmax - (xd / 2) - xd, totalExtent.ymin + (yd)),
+        (totalExtent.xmax - (xd / 2), totalExtent.ymin + (yd / 2))
+      )
+
+      val mp = MultiPolygon(tri1, tri2)
+
+      val result = inc.polygonalMaxDouble(mp)
+      val expected = inc.stitch.tile.polygonalMaxDouble(totalExtent, mp)
+
+      result should be (expected)
+    }
+  }
 }

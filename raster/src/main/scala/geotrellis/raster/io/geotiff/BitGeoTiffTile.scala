@@ -4,8 +4,10 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.compression._
 import spire.syntax.cfor._
 
+import scala.collection.mutable._
+
 class BitGeoTiffTile(
-  val compressedBytes: Array[Array[Byte]],
+  val segmentBytes: SegmentBytes,
   val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
@@ -37,7 +39,33 @@ class BitGeoTiffTile(
         }
       }
     }
-
    result
+  }
+
+  def crop(gridBounds: GridBounds): MutableArrayTile = {
+    val result = BitArrayTile.empty(gridBounds.width, gridBounds.height)
+
+    val colMin = gridBounds.colMin
+    val rowMin = gridBounds.rowMin
+    val tileCols = segmentLayout.tileLayout.tileCols
+    val tileRows = segmentLayout.tileLayout.tileRows
+
+    cfor(0)(_ < segmentCount, _ + 1) { i =>
+      val segmentTransform = segmentLayout.getSegmentTransform(i)
+      val colStart = segmentTransform.bitIndexToCol(0)
+      val rowStart = segmentTransform.bitIndexToRow(0)
+      val colEnd = (colStart + tileCols).min(cols)
+      val rowEnd = (rowStart + tileRows).min(rows)
+
+      if (gridBounds.intersects(GridBounds(colStart, rowStart, colEnd, rowEnd))) {
+        cfor(colStart)(_ < colEnd, _ + 1) { col =>
+          cfor(rowStart)(_ < rowEnd, _ + 1) { row =>
+            if (gridBounds.contains(col, row))
+              result.set(col - colMin, row - rowMin, get(col, row))
+          }
+        }
+      }
+    }
+    result
   }
 }

@@ -103,7 +103,7 @@ class Voronoi(val verts: Array[Point], val extent: Extent) {
     List(rli(tr, tl), rli(tl, bl), rli(bl, br), rli(br, tr))
       .zip(List(TOP_EDGE, LEFT_EDGE, BOTTOM_EDGE, RIGHT_EDGE))
       .filter{ x => x._1 != None }
-      .map{ case ((Some((d, x)), e)) => (d, x, e) }
+      .map{ case ((Some((d, x)), e)) => (d, x, e) ; case _ => throw new IllegalArgumentException("Unexpeceted None encountered") }
   }
 
   private def firstRayExtentIntersection(ray: CellBound): Option[(Point, Int)] = {

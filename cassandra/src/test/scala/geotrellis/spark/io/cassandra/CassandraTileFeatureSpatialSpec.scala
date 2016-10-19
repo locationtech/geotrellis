@@ -17,6 +17,7 @@ class CassandraTileFeatureSpatialSpec
   lazy val attributeStore = CassandraAttributeStore(instance, "geotrellis_tf", "metadata")
 
   lazy val reader    = CassandraLayerReader(attributeStore)
+  lazy val creader   = CassandraLayerCollectionReader(attributeStore)
   lazy val writer    = CassandraLayerWriter(attributeStore, "geotrellis_tf", "tiles")
   lazy val deleter   = CassandraLayerDeleter(attributeStore)
   lazy val updater   = CassandraLayerUpdater(attributeStore)

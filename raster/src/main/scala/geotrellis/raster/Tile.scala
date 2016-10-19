@@ -16,10 +16,8 @@
 
 package geotrellis.raster
 
-import geotrellis.vector.Extent
-import geotrellis.raster.summary._
-
 import spire.syntax.cfor._
+import com.typesafe.scalalogging._
 
 import java.util.Locale
 
@@ -31,7 +29,7 @@ import collection.mutable.ArrayBuffer
 /**
   * Base trait for a Tile.
   */
-trait Tile extends CellGrid with IterableTile with MappableTile[Tile] {
+trait Tile extends CellGrid with IterableTile with MappableTile[Tile] with LazyLogging {
 
   /**
     * Execute a function at each pixel of a [[Tile]].  Two functions

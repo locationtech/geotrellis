@@ -4,7 +4,6 @@ import UnidocKeys._
 lazy val commonSettings = Seq(
   version := Version.geotrellis,
   scalaVersion := Version.scala,
-  crossScalaVersions := Version.crossScala,
   description := Info.description,
   organization := "com.azavea.geotrellis",
   licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
@@ -29,7 +28,7 @@ lazy val commonSettings = Seq(
   bintrayVcsUrl := Some("https://github.com/geotrellis/geotrellis.git"),
   bintrayPackageLabels := Info.tags,
 
-  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.7.1" cross CrossVersion.binary),
+  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.0" cross CrossVersion.binary),
 
   addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.full),
 
@@ -71,8 +70,12 @@ lazy val root = Project("geotrellis", file(".")).
     s3,
     accumulo,
     cassandra,
-    geotools,
-    slick
+    hbase,
+    geowave,
+    geomesa,
+    geotools,    
+    slick,
+    vectortile
   ).
   settings(commonSettings: _*).
   settings(
@@ -90,12 +93,17 @@ lazy val root = Project("geotrellis", file(".")).
 lazy val macros = Project("macros", file("macros")).
   settings(commonSettings: _*)
 
+lazy val vectortile = Project("vectortile", file("vectortile"))
+  .dependsOn(vector, spark)
+  .settings(commonSettings: _*)
+
 lazy val vector = Project("vector", file("vector")).
   dependsOn(proj4, util).
   settings(commonSettings: _*)
 
 lazy val vectorTest = Project("vector-test", file("vector-test")).
-  dependsOn(vector, vectorTestkit)
+  dependsOn(vector, vectorTestkit).
+  settings(commonSettings: _*)
 
 lazy val vectorTestkit = Project("vector-testkit", file("vector-testkit")).
   dependsOn(raster, vector).
@@ -141,12 +149,24 @@ lazy val cassandra = Project("cassandra", file("cassandra")).
   dependsOn(sparkTestkit % "test->test", spark % "provided;test->test").
   settings(commonSettings: _*)
 
+lazy val hbase = Project("hbase", file("hbase")).
+  dependsOn(sparkTestkit % "test->test", spark % "provided;test->test").
+  settings(commonSettings: _*)
+
 lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).
-  dependsOn(spark, s3, accumulo, cassandra).
+  dependsOn(spark, s3, accumulo, cassandra, hbase).
   settings(commonSettings: _*)
 
 lazy val geotools = Project("geotools", file("geotools")).
   dependsOn(raster, vector, proj4, vectorTestkit % "test->test", rasterTest % "test->test").
+  settings(commonSettings: _*)
+
+lazy val geomesa = Project("geomesa", file("geomesa")).
+  dependsOn(sparkTestkit % "test->test", spark % "provided;test->test", geotools, accumulo % "provided;test->test").
+  settings(commonSettings: _*)
+
+lazy val geowave = Project("geowave", file("geowave")).
+  dependsOn(sparkTestkit % "test->test", spark % "provided;test->test", geotools, accumulo % "provided;test->test").
   settings(commonSettings: _*)
 
 lazy val shapefile = Project("shapefile", file("shapefile")).
@@ -157,5 +177,5 @@ lazy val util = Project("util", file("util")).
   settings(commonSettings: _*)
 
 lazy val docExamples = Project("doc-examples", file("doc-examples")).
-  dependsOn(spark, s3, accumulo, cassandra, spark % "test->test", sparkTestkit % "test->test").
+  dependsOn(spark, s3, accumulo, cassandra, hbase, spark % "test->test", sparkTestkit % "test->test").
   settings(commonSettings: _*)

@@ -6,13 +6,13 @@ import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.spark.tiling.{LayoutDefinition, MapKeyTransform}
 
-import com.github.nscala_time.time.Imports._
 import org.apache.spark._
 import org.apache.spark.rdd.RDD
-import org.joda.time.DateTime
 
+import jp.ne.opt.chronoscala.Imports._
+import java.time.{ZoneOffset, ZonedDateTime}
 
-object TestTileFeatureFiles extends Logging {
+object TestTileFeatureFiles {
   val ZOOM_LEVEL = 8
   val partitionCount = 4
 
@@ -58,7 +58,7 @@ object TestTileFeatureFiles extends Logging {
 
   def generateSpaceTime(layerName: String)(implicit sc: SparkContext): RDD[(SpaceTimeKey, TileFeature[Tile, Tile])]  with Metadata[TileLayerMetadata[SpaceTimeKey]] = {
     val times =
-      (0 to 4).map(i => new DateTime(2010 + i, 1, 1, 0, 0, 0, DateTimeZone.UTC)).toArray
+      (0 to 4).map(i => ZonedDateTime.of(2010 + i, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)).toArray
 
 
     val md = {

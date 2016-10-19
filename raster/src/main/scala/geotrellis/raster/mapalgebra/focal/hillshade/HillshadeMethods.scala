@@ -9,6 +9,6 @@ trait HillshadeMethods extends MethodExtensions[Tile] {
   /**
     * Computes Hillshade (shaded relief) from a raster.
     */
-  def hillshade(cs: CellSize, azimuth: Double = 315, altitude: Double = 45, zFactor: Double = 1.0, bounds: Option[GridBounds] = None): Tile =
-    Hillshade(self, Square(1), bounds, cs, azimuth, altitude, zFactor)
+  def hillshade(cs: CellSize, azimuth: Double = 315, altitude: Double = 45, zFactor: Double = 1.0, bounds: Option[GridBounds] = None, target: TargetCell = TargetCell.All): Tile =
+    Hillshade(self, Square(1), bounds, cs, azimuth, altitude, zFactor, target)
 }

@@ -16,15 +16,14 @@
 
 package geotrellis.spark.io.kryo
 
-import org.apache.spark.serializer.{ KryoRegistrator => SparkKryoRegistrator }
+import org.apache.spark.serializer.{KryoRegistrator => SparkKryoRegistrator}
 
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.serializers._
-import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
-import de.javakaffee.kryoserializers._
 
-import java.util.{Arrays, Collections, Comparator, TreeMap}
+import java.util.{Comparator, TreeMap}
 
 /** Account for a bug in Kryo < 2.22 for serializing TreeMaps */
 class XTreeMapSerializer extends MapSerializer {
@@ -131,8 +130,6 @@ class KryoRegistrator extends SparkKryoRegistrator {
 
     kryo.register(classOf[geotrellis.spark.SpatialKey])
     kryo.register(classOf[geotrellis.spark.SpaceTimeKey])
-    kryo.register(classOf[org.joda.time.DateTime], new jodatime.JodaDateTimeSerializer)
-    kryo.register(classOf[org.joda.time.Interval], new jodatime.JodaIntervalSerializer)
     kryo.register(classOf[geotrellis.spark.io.index.rowmajor.RowMajorSpatialKeyIndex])
     kryo.register(classOf[geotrellis.spark.io.index.zcurve.ZSpatialKeyIndex])
     kryo.register(classOf[geotrellis.spark.io.index.zcurve.ZSpaceTimeKeyIndex])
@@ -143,13 +140,6 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[geotrellis.proj4.CRS])
 
     // UnmodifiableCollectionsSerializer.registerSerializers(kryo)
-    kryo.register( Arrays.asList( "" ).getClass, new ArraysAsListSerializer )
-    kryo.register( Collections.EMPTY_LIST.getClass, new CollectionsEmptyListSerializer() )
-    kryo.register( Collections.EMPTY_MAP.getClass, new CollectionsEmptyMapSerializer() )
-    kryo.register( Collections.EMPTY_SET.getClass, new CollectionsEmptySetSerializer() )
-    kryo.register( Collections.singletonList( "" ).getClass, new CollectionsSingletonListSerializer )
-    kryo.register( Collections.singleton( "" ).getClass, new CollectionsSingletonSetSerializer )
-    kryo.register( Collections.singletonMap( "", "" ).getClass, new CollectionsSingletonMapSerializer )
     kryo.register(geotrellis.spark.buffer.BufferTiles.Center.getClass)
     kryo.register(geotrellis.spark.buffer.BufferTiles.Top.getClass)
     kryo.register(geotrellis.spark.buffer.BufferTiles.Bottom.getClass)
@@ -207,6 +197,7 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[geotrellis.spark.io.avro.codecs.KeyValueRecordCodec[Any,Any]])
     kryo.register(classOf[geotrellis.spark.io.avro.codecs.TupleCodec[Any,Any]])
     kryo.register(classOf[geotrellis.spark.KeyBounds[Any]])
+    kryo.register(classOf[geotrellis.spark.knn.KNearestRDD.Ord[Any]])
     kryo.register(classOf[geotrellis.vector.Feature[Any,Any]])
     kryo.register(classOf[geotrellis.vector.Geometry])
     kryo.register(classOf[geotrellis.vector.GeometryCollection])
@@ -259,8 +250,5 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(scala.math.Ordering.Int.getClass)
     kryo.register(scala.math.Ordering.Long.getClass)
     kryo.register(scala.None.getClass)
-
-    UnmodifiableCollectionsSerializer.registerSerializers( kryo )
-    SynchronizedCollectionsSerializer.registerSerializers( kryo )
   }
 }

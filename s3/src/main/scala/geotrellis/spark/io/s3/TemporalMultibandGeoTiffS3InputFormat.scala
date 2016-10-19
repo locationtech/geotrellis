@@ -4,14 +4,14 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.spark._
 import org.apache.hadoop.mapreduce._
-import org.joda.time._
 
+import java.time.ZonedDateTime
 
 /** Read single band GeoTiff from S3
   *
   * This can be configured with the hadoop configuration by providing:
   * TemporalMultibandGeoTiffS3InputFormat.GEOTIFF_TIME_TAG; default of "TIFFTAG_DATETIME"
-  * TemporalMultibandGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT; default is ""YYYY:MM:DD HH:MM:SS""
+  * TemporalMultibandGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT; default is ""yyyy:MM:DD HH:MM:SS""
   */
 class TemporalMultibandGeoTiffS3InputFormat extends S3InputFormat[TemporalProjectedExtent, MultibandTile] {
   def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
@@ -23,7 +23,7 @@ class TemporalMultibandGeoTiffS3InputFormat extends S3InputFormat[TemporalProjec
         val dateFormatter = TemporalGeoTiffS3InputFormat.getTimeFormatter(context)
 
         val dateTimeString = geoTiff.tags.headTags.getOrElse(timeTag, sys.error(s"There is no tag $timeTag in the GeoTiff header"))
-        val dateTime = DateTime.parse(dateTimeString, dateFormatter)
+        val dateTime = ZonedDateTime.parse(dateTimeString, dateFormatter)
 
         val ProjectedRaster(Raster(tile, extent), crs) = geoTiff.projectedRaster
         (TemporalProjectedExtent(extent, crs, dateTime), tile)
