@@ -45,6 +45,11 @@ abstract trait Histogram[@specialized (Int, Double) T <: AnyVal] extends Seriali
   def maxValue(): Option[T]
 
   /**
+    * CDF of the distribution.
+    */
+  def cdf(): Array[(Double, Double)]
+
+  /**
    * Return the smallest and largest items seen as a tuple.
    */
   def minMaxValues(): Option[(T, T)] = {

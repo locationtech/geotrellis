@@ -22,12 +22,13 @@ import geotrellis.raster.rasterize._
 import geotrellis.raster.mapalgebra.focal.Kernel
 
 /**
- * Object containing functions pertaining to kernel density estimation.
- */
+  * Object containing functions pertaining to kernel density
+  * estimation.
+  */
 object KernelDensity {
   /**
-    * Computes a Density raster based on the Kernel and set of points provided.
-    * Defaults to IntConstantNoDataCellType.
+    * Computes a Density raster based on the Kernel and set of points
+    * provided.  Defaults to IntConstantNoDataCellType.
     */
   def apply(points: Traversable[PointFeature[Int]],
             kernel: Kernel,
@@ -35,11 +36,12 @@ object KernelDensity {
     apply(points, kernel, rasterExtent, IntConstantNoDataCellType)
 
   /**
-    * Computes a Density raster based on the Kernel and set of int point features provided.
+    * Computes a Density raster based on the Kernel and set of int
+    * point features provided.
     *
     * @param      points           Sequence of point features who's values will be used to
     *                              compute the density.
-    * @param      kernel           [[Kernel]] to be used in the computation.
+    * @param      kernel           [[geotrellis.raster.mapalgebra.focal.Kernel]] to be used in the computation.
     * @param      rasterExtent     Raster extent of the resulting raster.
     * @param      cellType         CellType of the resulting tile.
     *
@@ -72,11 +74,12 @@ object KernelDensity {
     apply(points, kernel, rasterExtent, DoubleConstantNoDataCellType)
 
   /**
-    * Computes a Density raster based on the Kernel and set of double point features provided.
+    * Computes a Density raster based on the Kernel and set of double
+    * point features provided.
     *
     * @param      points           Sequence of point features who's values will be used to
     *                              compute the density.
-    * @param      kernel           [[Kernel]] to be used in the computation.
+    * @param      kernel           [[geotrellis.raster.mapalgebra.focal.Kernel]] to be used in the computation.
     * @param      rasterExtent     Raster extent of the resulting raster.
     * @param      cellType         CellType of the resulting tile.
     *
