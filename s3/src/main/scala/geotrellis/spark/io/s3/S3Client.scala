@@ -75,6 +75,13 @@ trait S3Client extends LazyLogging {
     readBytes(new GetObjectRequest(bucketName, key))
 
   def readBytes(getObjectRequest: GetObjectRequest): Array[Byte]
+  
+  def readRange(start: Long, end: Long, getObjectRequest: GetObjectRequest): Array[Byte]
+
+  def getObjectMetadata(bucketName: String, key: String): ObjectMetadata =
+    getObjectMetadata(new GetObjectMetadataRequest(bucketName, key))
+
+  def getObjectMetadata(getObjectMetadataRequest: GetObjectMetadataRequest): ObjectMetadata
 
   def listObjectsIterator(bucketName: String, prefix: String, maxKeys: Int = 0): Iterator[S3ObjectSummary] =
       listObjectsIterator(new ListObjectsRequest(bucketName, prefix, null, null, if (maxKeys == 0) null else maxKeys))
@@ -159,9 +166,9 @@ class AmazonS3Client(s3client: AWSAmazonS3Client) extends S3Client {
 
   def listNextBatchOfObjects(listing: ObjectListing): ObjectListing =
     s3client.listNextBatchOfObjects(listing)
-
-   def deleteObjects(deleteObjectsRequest: DeleteObjectsRequest): Unit =
-     s3client.deleteObjects(deleteObjectsRequest)
+  
+  def deleteObjects(deleteObjectsRequest: DeleteObjectsRequest): Unit =
+    s3client.deleteObjects(deleteObjectsRequest)
 
   def readBytes(getObjectRequest: GetObjectRequest): Array[Byte] = {
     val obj = s3client.getObject(getObjectRequest)
@@ -172,6 +179,20 @@ class AmazonS3Client(s3client: AWSAmazonS3Client) extends S3Client {
       inStream.close()
     }
   }
+
+  def readRange(start: Long, end: Long, getObjectRequest: GetObjectRequest): Array[Byte] = {
+    getObjectRequest.setRange(start, end - 1)
+    val obj = s3client.getObject(getObjectRequest)
+    val stream = obj.getObjectContent
+    try {
+      IOUtils.toByteArray(stream)
+    } finally {
+      stream.close()
+    }
+  }
+  
+  def getObjectMetadata(getObjectMetadataRequest: GetObjectMetadataRequest): ObjectMetadata =
+    s3client.getObjectMetadata(getObjectMetadataRequest)
 
   def setRegion(region: com.amazonaws.regions.Region): Unit = {
     s3client.setRegion(region)
