@@ -51,7 +51,7 @@ object HistogramEqualization {
         val t = (x - cdf0) / (cdf1 - cdf0)
         (1.0-t)*cdf0 + t*cdf1
       }
-    val normalizedCdf = (rawCdf - smallestCdf) / (1.0 - smallestCdf)
+    val normalizedCdf = math.max(0.0, math.min(1.0, (rawCdf - smallestCdf) / (1.0 - smallestCdf)))
 
     cellType match {
       case _: FloatCells => (Float.MaxValue * (2*normalizedCdf - 1.0))
