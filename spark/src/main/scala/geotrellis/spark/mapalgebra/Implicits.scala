@@ -8,6 +8,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Dataset
 
 import scala.reflect.ClassTag
+import scala.reflect.runtime.universe.TypeTag
 
 object Implicits extends Implicits
 
@@ -15,7 +16,7 @@ trait Implicits {
   implicit class withCombineMethods[K: ClassTag, V: ClassTag](val self: RDD[(K, V)])
     extends CombineMethods[K, V]
 
-  implicit class withDatasetCombineMethods[K: ClassTag, V: ClassTag](val self: Dataset[(K, V)])
+  implicit class withDatasetCombineMethods[K <: Product: TypeTag: ClassTag, V: ClassTag](val self: Dataset[(K, V)])
     extends DatasetCombineMethods[K, V]
 
   implicit class withCombineTraversableMethods[K: ClassTag, V: ClassTag](rs: Traversable[RDD[(K, V)]]) {
@@ -28,7 +29,7 @@ trait Implicits {
       self.mapValues { case (v1, v2) => f(v1, v2) }
   }
 
-  implicit class withDatasetMapValuesTupleMethods[K: ClassTag, V: ClassTag](val self: Dataset[(K, (V, V))]) extends MethodExtensions[Dataset[(K, (V, V))]] with KryoEncoderImplicits {
+  implicit class withDatasetMapValuesTupleMethods[K <: Product: TypeTag: ClassTag, V: ClassTag](val self: Dataset[(K, (V, V))]) extends MethodExtensions[Dataset[(K, (V, V))]] with KryoEncoderImplicits {
     def combineValues[R: ClassTag](f: (V, V) => R): Dataset[(K, R)] =
       self.mapValues { case (v1, v2) => f(v1, v2) }
   }
@@ -43,7 +44,7 @@ trait Implicits {
     }
   }
 
-  implicit class withDatasetMapValuesOptionMethods[K: ClassTag, V: ClassTag](val self: Dataset[(K, (V, Option[V]))]) extends MethodExtensions[Dataset[(K, (V, Option[V]))]] with KryoEncoderImplicits {
+  implicit class withDatasetMapValuesOptionMethods[K <: Product: TypeTag: ClassTag, V: ClassTag](val self: Dataset[(K, (V, Option[V]))]) extends MethodExtensions[Dataset[(K, (V, Option[V]))]] with KryoEncoderImplicits {
     def updateValues(f: (V, V) => V): Dataset[(K, V)] =
       self.mapValues { case (v1, ov2) =>
         ov2 match {

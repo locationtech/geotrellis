@@ -1,3 +1,3 @@
 package geotrellis.spark.mapalgebra.local
 
-trait LocalTileDatasetMethods[K] extends AddTileDatasetMethods[K]
+trait LocalTileDatasetMethods[K <: Product] extends AddTileDatasetMethods[K]

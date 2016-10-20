@@ -8,9 +8,10 @@ import geotrellis.util.MethodExtensions
 
 import org.apache.spark.sql.Dataset
 
-import scala.reflect._
+import scala.reflect.ClassTag
+import scala.reflect.runtime.universe.TypeTag
 
-abstract class LocalTileDatasetSeqMethods[K: ClassTag] extends MethodExtensions[Traversable[Dataset[(K, Tile)]]] {
+abstract class LocalTileDatasetSeqMethods[K <: Product: TypeTag: ClassTag] extends MethodExtensions[Traversable[Dataset[(K, Tile)]]] {
 
   private def r(f: Traversable[Tile] => (Tile)): Dataset[(K, Tile)] =
     self match {

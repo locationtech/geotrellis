@@ -1,13 +1,12 @@
 package geotrellis.spark.mapalgebra.local
 
+import geotrellis.spark._
 import geotrellis.spark.mapalgebra._
-import geotrellis.raster.mapalgebra.local._
-import geotrellis.spark.mapalgebra.Implicits._
 import geotrellis.raster._
-
+import geotrellis.raster.mapalgebra.local.Add
 import org.apache.spark.sql.Dataset
 
-trait AddTileDatasetMethods[K] extends TileDatasetMethods[K] {
+trait AddTileDatasetMethods[K <: Product] extends TileDatasetMethods[K] {
   /** Add a constant Int value to each cell. */
   def localAdd(i: Int) = self.mapValues { r => Add(r, i) }
 
