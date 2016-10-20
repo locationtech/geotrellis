@@ -1,8 +1,11 @@
 package geotrellis.spark.io.s3
 
+import geotrellis.util.StreamByteReader
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.spark._
+import geotrellis.spark.io.s3.util.S3BytesStreamer
+import geotrellis.vector.Extent
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce._
@@ -13,6 +16,7 @@ import java.time.format.DateTimeFormatter
 object TemporalGeoTiffS3InputFormat {
   final val GEOTIFF_TIME_TAG = "GEOTIFF_TIME_TAG"
   final val GEOTIFF_TIME_FORMAT = "GEOTIFF_TIME_FORMAT"
+  final val STREAM_CHUNK_SIZE = "S3_STREAM_CHUNK_SIZE"
 
   def setTimeTag(job: JobContext, timeTag: String): Unit =
     setTimeTag(job.getConfiguration, timeTag)
@@ -34,6 +38,15 @@ object TemporalGeoTiffS3InputFormat {
     (if (df == null) { DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss") }
     else { DateTimeFormatter.ofPattern(df) }).withZone(ZoneOffset.UTC)
   }
+
+  def setChunkSize(job: JobContext, chunkSize: Int): Unit =
+    setChunkSize(job.getConfiguration, chunkSize.toString)
+
+  def setChunkSize(conf: Configuration, chunkSize: String): Unit =
+    conf.set(STREAM_CHUNK_SIZE, chunkSize)
+
+  def getChunkSize(job: JobContext): String =
+    job.getConfiguration.get(STREAM_CHUNK_SIZE)
 }
 
 /** Read single band GeoTiff from S3
@@ -50,10 +63,26 @@ class TemporalGeoTiffS3InputFormat extends S3InputFormat[TemporalProjectedExtent
 class TemporalGeoTiffS3RecordReader(context: TaskAttemptContext) extends S3RecordReader[TemporalProjectedExtent, Tile] {
   val timeTag = TemporalGeoTiffS3InputFormat.getTimeTag(context)
   val dateFormatter = TemporalGeoTiffS3InputFormat.getTimeFormatter(context)
+  val chunk = TemporalGeoTiffS3InputFormat.getChunkSize(context)
 
   def read(key: String, bytes: Array[Byte]) = {
     val geoTiff = SinglebandGeoTiff(bytes)
+    toProjectedRaster(geoTiff)
+  }
+  
+  def read(key: String, bytes: S3BytesStreamer) =
+    read(key, None, bytes)
+  
+  def read(key: String, e: Extent, bytes: S3BytesStreamer) =
+    read(key, Some(e), bytes)
 
+  def read(key: String, e: Option[Extent], bytes: S3BytesStreamer) = {
+    val reader = StreamByteReader(bytes)
+    val geoTiff = SinglebandGeoTiff(reader, e)
+    toProjectedRaster(geoTiff)
+  }
+
+  private def toProjectedRaster(geoTiff: SinglebandGeoTiff) = {
     val dateTimeString = geoTiff.tags.headTags.getOrElse(timeTag, sys.error(s"There is no tag $timeTag in the GeoTiff header"))
     val dateTime = ZonedDateTime.from(dateFormatter.parse(dateTimeString))
 
