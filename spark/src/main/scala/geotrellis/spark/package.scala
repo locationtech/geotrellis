@@ -42,21 +42,22 @@ package object spark
     with filter.Implicits
     with join.Implicits
     with knn.Implicits
+    with mapalgebra.focal.hillshade.Implicits
+    with mapalgebra.focal.Implicits
     with mapalgebra.Implicits
     with mapalgebra.local.Implicits
     with mapalgebra.local.temporal.Implicits
-    with mapalgebra.focal.Implicits
-    with mapalgebra.focal.hillshade.Implicits
     with mapalgebra.zonal.Implicits
     with mask.Implicits
     with merge.Implicits
     with partition.Implicits
-    with resample.Implicits
     with reproject.Implicits
+    with resample.Implicits
+    with sigmoidal.Implicits
     with split.Implicits
     with stitch.Implicits
-    with summary.polygonal.Implicits
     with summary.Implicits
+    with summary.polygonal.Implicits
     with tiling.Implicits {
   type TileLayerRDD[K] = RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]
   object TileLayerRDD {
