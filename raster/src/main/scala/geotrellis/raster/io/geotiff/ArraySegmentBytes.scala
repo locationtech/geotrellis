@@ -44,7 +44,7 @@ object ArraySegmentBytes {
   def apply(byteReader: ByteReader, tiffTags: TiffTags): ArraySegmentBytes = {
 
       val compressedBytes: Array[Array[Byte]] = {
-        def readSections(offsets: Array[Int],
+        def readSections(offsets: Array[Long],
           byteCounts: Array[Int]): Array[Array[Byte]] = {
             val oldOffset = byteReader.position
 
