@@ -9,6 +9,7 @@ import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.tiling.{LayoutDefinition, MapKeyTransform}
 import geotrellis.util._
+import geotrellis.util.annotations.experimental
 import geotrellis.vector.Extent
 
 import com.vividsolutions.jts.geom._
@@ -35,19 +36,22 @@ import spray.json._
 import scala.reflect._
 
 
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
 object GeowaveLayerReader {
   private val geometryFactory = new GeometryFactory
   private val tileClassTag = classTag[Tile]
   private val mbtClassTag = classTag[MultibandTile]
 
   /**
-    * Given a map transform and a keybounds, produce a corresponding
-    * jts.Geometry.
+    * $experimental Given a map transform and a keybounds, produce a
+    * corresponding jts.Geometry.
     *
     * @param  mt  The map transform
     * @param  kb  The KeyBounds
     */
-  def keyBoundsToGeometry(mt: MapKeyTransform, kb: KeyBounds[SpatialKey]) = {
+  @experimental def keyBoundsToGeometry(mt: MapKeyTransform, kb: KeyBounds[SpatialKey]) = {
     val KeyBounds(minKey, maxKey) = kb
     val Extent(lng1, lat1, lng2, lat2) = mt(minKey)
     val Extent(lng3, lat3, lng4, lat4) = mt(maxKey)
@@ -69,26 +73,29 @@ object GeowaveLayerReader {
   }
 }
 
-class GeowaveLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkContext) {
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental class GeowaveLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkContext) {
 
   val defaultNumPartitions = sc.defaultParallelism
 
   val gas = attributeStore.asInstanceOf[GeowaveAttributeStore]
 
-  private def adapters = gas.adapters
-  private def basicOperations = gas.basicAccumuloOperations
-  private def bboxMap = gas.boundingBoxes
-  private def index = gas.primaryIndex
-  private def requiredOptions = gas.accumuloRequiredOptions
-  private def substrats = gas.subStrategies
+  @experimental private def adapters = gas.adapters
+  @experimental private def basicOperations = gas.basicAccumuloOperations
+  @experimental private def bboxMap = gas.boundingBoxes
+  @experimental private def index = gas.primaryIndex
+  @experimental private def requiredOptions = gas.accumuloRequiredOptions
+  @experimental private def substrats = gas.subStrategies
 
   /**
-    * Compute the common part of the
+    * $experimental Compute the common part of the
     * org.apache.hadoop.conf.Configuration associated with this layer.
     * This result can be reused by changing the Query and QueryOptions
     * as desired.
     */
-  def computeConfiguration()(implicit sc: SparkContext) = {
+  @experimental def computeConfiguration()(implicit sc: SparkContext) = {
     val pluginOptions = new DataStorePluginOptions
     pluginOptions.setFactoryOptions(requiredOptions)
     val configOptions = pluginOptions.getFactoryOptionsAsMap
@@ -101,12 +108,12 @@ class GeowaveLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkC
   }
 
   /**
-    * Compute the metadata associated with this layer.
+    * $experimental Compute the metadata associated with this layer.
     *
     * @param  adapter  The RasterDataAdapter associated with the chosen layer
     * @param  ranges   The ranges in degrees of longitude and latitude associated with the chosen tier
     */
-  def computeSpatialMetadata(
+  @experimental def computeSpatialMetadata(
     adapter: RasterDataAdapter,
     ranges: Array[Double]
   ): (TileLayerMetadata[SpatialKey], Int, Int) = {
@@ -169,16 +176,16 @@ class GeowaveLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkC
   }
 
   /**
-    * Read particular rasters out of the GeoWave database.  The
-    * particular rasters to read are given by the result of running
-    * the provided LayerQuery.
+    * $experimental Read particular rasters out of the GeoWave
+    * database.  The particular rasters to read are given by the
+    * result of running the provided LayerQuery.
     *
     * @param  id               The LayerId specifying the name and tier to query
     * @param  rasterQuery      Produces a list of rasters to read
     * @param  numPartitions    The number of Spark partitions to use
     * @param  filterIndexOnly  ?
     */
-  def read[
+  @experimental def read[
     K <: SpatialKey,
     V: TileOrMultibandTile: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
@@ -244,14 +251,16 @@ class GeowaveLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkC
     new ContextRDD(rdd, md)
   }
 
-  def read[
+  /** $experimental */
+  @experimental def read[
     K <: SpatialKey: Boundable,
     V: TileOrMultibandTile: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](id: LayerId): RDD[(K, V)] with Metadata[M] =
     read(id, new LayerQuery[K, M])
 
-  def query[
+  /** $experimental */
+  @experimental def query[
     K <: SpatialKey: Boundable,
     V: TileOrMultibandTile: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
