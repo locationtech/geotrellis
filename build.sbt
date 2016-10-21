@@ -1,5 +1,6 @@
 import Dependencies._
 import UnidocKeys._
+import sbt.Keys._
 
 lazy val commonSettings = Seq(
   version := Version.geotrellis,
@@ -151,8 +152,8 @@ lazy val cassandra = Project("cassandra", file("cassandra")).
 
 lazy val hbase = Project("hbase", file("hbase")).
   dependsOn(sparkTestkit % "test->test", spark % "provided;test->test").
-  settings(commonSettings: _*).
-  settings(excludeDependencies += "com.google.protobuf" % "protobuf-java") // HBase depends on its own protobuf version
+  settings(commonSettings: _*). // HBase depends on its own protobuf version
+  settings(projectDependencies := { Seq((projectID in spark).value.exclude("com.google.protobuf", "protobuf-java")) })
 
 lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).
   dependsOn(spark, s3, accumulo, cassandra, hbase).
