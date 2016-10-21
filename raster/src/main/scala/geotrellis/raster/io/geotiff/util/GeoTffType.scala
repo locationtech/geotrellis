@@ -25,5 +25,18 @@ object GeoTiffType {
           byteReader.getInt
         )
     }
+    
+    implicit object OffsetTypeLong extends OffsetType[Long] {
+      def position(byteReader: ByteReader, newPoint: Long): Buffer =
+        byteReader.position(newPoint)
+
+      def getTiffTagMetadata(byteReader: ByteReader): TiffTagMetadata =
+        TiffTagMetadata(
+          byteReader.getUnsignedShort,
+          byteReader.getUnsignedShort,
+          byteReader.getLong,
+          byteReader.getLong
+        )
+    }
   }
 }
