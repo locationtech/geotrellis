@@ -95,45 +95,87 @@ abstract class PolygonalSummaryTileLayerRDDMethods[
     polygonalSummary(multiPolygon, StreamingHistogram(), DoubleHistogramSummary)
 
   def polygonalMax(polygon: Polygon): Int =
-    polygonalSummary(polygon, Int.MinValue, MaxSummary)
+    if (self.isEmpty)
+      NoData.int
+    else
+      polygonalSummary(polygon, Int.MinValue, MaxSummary)
 
   def polygonalMax(multiPolygon: MultiPolygon): Int =
-    polygonalSummary(multiPolygon, Int.MinValue, MaxSummary)
+    if (self.isEmpty)
+      NoData.int
+    else
+      polygonalSummary(multiPolygon, Int.MinValue, MaxSummary)
 
   def polygonalMaxDouble(polygon: Polygon): Double =
-    polygonalSummary(polygon, Double.MinValue, MaxDoubleSummary)
+    if (self.isEmpty)
+      NoData.double
+    else
+      polygonalSummary(polygon, Double.MinValue, MaxDoubleSummary)
 
   def polygonalMaxDouble(multiPolygon: MultiPolygon): Double =
-    polygonalSummary(multiPolygon, Double.MinValue, MaxDoubleSummary)
+    if (self.isEmpty)
+      NoData.double
+    else
+      polygonalSummary(multiPolygon, Double.MinValue, MaxDoubleSummary)
 
   def polygonalMin(polygon: Polygon): Int =
-    polygonalSummary(polygon, Int.MaxValue, MinSummary)
+    if (self.isEmpty)
+      NoData.int
+    else
+      polygonalSummary(polygon, Int.MaxValue, MinSummary)
 
   def polygonalMin(multiPolygon: MultiPolygon): Int =
-    polygonalSummary(multiPolygon, Int.MaxValue, MinSummary)
+    if (self.isEmpty)
+      NoData.int
+    else
+      polygonalSummary(multiPolygon, Int.MaxValue, MinSummary)
 
   def polygonalMinDouble(polygon: Polygon): Double =
-    polygonalSummary(polygon, Double.MaxValue, MinDoubleSummary)
+    if (self.isEmpty)
+      NoData.double
+    else
+      polygonalSummary(polygon, Double.MaxValue, MinDoubleSummary)
 
   def polygonalMinDouble(multiPolygon: MultiPolygon): Double =
-    polygonalSummary(multiPolygon, Double.MaxValue, MinDoubleSummary)
+    if (self.isEmpty)
+      NoData.double
+    else
+      polygonalSummary(multiPolygon, Double.MaxValue, MinDoubleSummary)
 
   def polygonalMean(polygon: Polygon): Double =
-    polygonalSummary(polygon, MeanResult(0.0, 0L), MeanSummary).mean
+    if (self.isEmpty)
+      NoData.double
+    else
+      polygonalSummary(polygon, MeanResult(0.0, 0L), MeanSummary).mean
 
   def polygonalMean(multiPolygon: MultiPolygon): Double =
-    polygonalSummary(multiPolygon, MeanResult(0.0, 0L), MeanSummary).mean
+    if (self.isEmpty)
+      NoData.double
+    else
+      polygonalSummary(multiPolygon, MeanResult(0.0, 0L), MeanSummary).mean
 
   def polygonalSum(polygon: Polygon): Long =
-    polygonalSummary(polygon, 0L, SumSummary)
+    if (self.isEmpty)
+      0L
+    else
+      polygonalSummary(polygon, 0L, SumSummary)
 
   def polygonalSum(multiPolygon: MultiPolygon): Long =
-    polygonalSummary(multiPolygon, 0L, SumSummary)
+    if (self.isEmpty)
+      0L
+    else
+      polygonalSummary(multiPolygon, 0L, SumSummary)
 
   def polygonalSumDouble(polygon: Polygon): Double =
-    polygonalSummary(polygon, 0.0, SumDoubleSummary)
+    if (self.isEmpty)
+      0.0
+    else
+      polygonalSummary(polygon, 0.0, SumDoubleSummary)
 
   def polygonalSumDouble(multiPolygon: MultiPolygon): Double =
-    polygonalSummary(multiPolygon, 0.0, SumDoubleSummary)
+    if (self.isEmpty)
+      0.0
+    else
+      polygonalSummary(multiPolygon, 0.0, SumDoubleSummary)
 
 }
