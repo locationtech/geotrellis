@@ -31,12 +31,17 @@ object TiffTagsReader {
 
     // Validate GeoTiff identification number
     val geoTiffIdNumber = byteReader.getChar
-    if ( geoTiffIdNumber != 42)
-      throw new MalformedGeoTiffException(s"bad identification number (must be 42, was $geoTiffIdNumber)")
+    if ( geoTiffIdNumber != 42 && geoTiffIdNumber != 43)
+      throw new MalformedGeoTiffException(s"bad identification number (must be 42 or 43, was $geoTiffIdNumber)")
 
-    val tagsStartPosition = byteReader.getInt
-
-    read(byteReader, tagsStartPosition)
+    if (geoTiffIdNumber == 42) {
+      val tagsStartPosition = byteReader.getInt
+      read(byteReader, tagsStartPosition)
+    } else {
+      byteReader.position(8)
+      val bigTagStart = byteReader.getLong
+      read(byteReader, bigTagStart)
+    }
   }
 
   def read[T](byteReader: ByteReader, tagsStartPosition: T)(implicit offsetType: OffsetType[T]): TiffTags = {
@@ -44,7 +49,11 @@ object TiffTagsReader {
     //byteReader.position(tagsStartPosition)
     offsetType.position(byteReader, tagsStartPosition)
 
-    val tagCount = byteReader.getShort
+    val tagCount =
+      tagsStartPosition match {
+        case a: Int => byteReader.getShort
+        case b: Long => byteReader.getLong
+      }
 
     // Read the tags.
     var tiffTags = TiffTags()
@@ -54,6 +63,8 @@ object TiffTagsReader {
 
     cfor(0)(_ < tagCount, _ + 1) { i =>
       val tagMetadata = offsetType.getTiffTagMetadata(byteReader)
+      println(tagMetadata)
+      println(byteReader.getByteBuffer)
       /*
       val tagMetadata =
         TiffTagMetadata(
@@ -110,6 +121,8 @@ object TiffTagsReader {
         byteReader.readFloatsTag(tiffTags, tagMetadata)
       case (_, DoublesFieldType) =>
         byteReader.readDoublesTag(tiffTags, tagMetadata)
+      case (_, LongsFieldType) =>
+        byteReader.readIntsTag(tiffTags, tagMetadata)
     }
 
   implicit class ByteReaderTagReaderWrapper(val byteReader: ByteReader) extends AnyVal {
