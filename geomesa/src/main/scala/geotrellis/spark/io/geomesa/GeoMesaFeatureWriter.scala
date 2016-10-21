@@ -1,16 +1,23 @@
 package geotrellis.spark.io.geomesa
 
-import geotrellis.spark._
-import geotrellis.vector._
 import geotrellis.geomesa.geotools._
+import geotrellis.spark._
+import geotrellis.util.annotations.experimental
+import geotrellis.vector._
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.geotools.data.Transaction
 import org.opengis.feature.simple.{SimpleFeature, SimpleFeatureType}
 
-class GeoMesaFeatureWriter(val instance: GeoMesaInstance)(implicit sc: SparkContext) extends Serializable {
-  def write[G <: Geometry, D: ? => Seq[(String, Any)]]
+
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental class GeoMesaFeatureWriter(val instance: GeoMesaInstance)(implicit sc: SparkContext) extends Serializable {
+
+  /** $experimental */
+  @experimental def write[G <: Geometry, D: ? => Seq[(String, Any)]]
     (layerId: LayerId, rdd: RDD[Feature[G, D]])
     (implicit ev: Feature[G, D] => FeatureToGeoMesaSimpleFeatureMethods[G, D]): Unit = {
 
@@ -37,7 +44,12 @@ class GeoMesaFeatureWriter(val instance: GeoMesaInstance)(implicit sc: SparkCont
   }
 }
 
-object GeoMesaFeatureWriter {
-  def apply(instance: GeoMesaInstance)(implicit sc: SparkContext): GeoMesaFeatureWriter =
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental object GeoMesaFeatureWriter {
+
+  /** $experimental */
+  @experimental def apply(instance: GeoMesaInstance)(implicit sc: SparkContext): GeoMesaFeatureWriter =
     new GeoMesaFeatureWriter(instance)
 }

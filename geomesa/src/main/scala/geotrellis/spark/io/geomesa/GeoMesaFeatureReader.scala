@@ -2,6 +2,7 @@ package geotrellis.spark.io.geomesa
 
 import geotrellis.geotools._
 import geotrellis.spark._
+import geotrellis.util.annotations.experimental
 import geotrellis.vector._
 
 import org.apache.accumulo.core.client.mapreduce.InputFormatBase
@@ -16,8 +17,14 @@ import org.opengis.feature.simple.{SimpleFeature, SimpleFeatureType}
 
 import scala.reflect.ClassTag
 
-class GeoMesaFeatureReader(val instance: GeoMesaInstance)(implicit sc: SparkContext) extends Serializable {
-  def readSimpleFeatures(
+
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental class GeoMesaFeatureReader(val instance: GeoMesaInstance)(implicit sc: SparkContext) extends Serializable {
+
+  /** $experimental */
+  @experimental def readSimpleFeatures(
     featureName: String,
     query: Query,
     simpleFeatureType: SimpleFeatureType,
@@ -38,7 +45,8 @@ class GeoMesaFeatureReader(val instance: GeoMesaInstance)(implicit sc: SparkCont
     sc.newAPIHadoopRDD(job.getConfiguration, classOf[GeoMesaInputFormat], classOf[Text], classOf[SimpleFeature]).map(U => U._2)
   }
 
-  def read[G <: geotrellis.vector.Geometry: ClassTag, D]
+  /** $experimental */
+  @experimental def read[G <: geotrellis.vector.Geometry: ClassTag, D]
     (layerId: LayerId, query: Query, simpleFeatureType: SimpleFeatureType, numPartitions: Option[Int] = None)
     (implicit transmute: Map[String, Any] => D): RDD[Feature[G, D]] =
       readSimpleFeatures(
@@ -49,6 +57,11 @@ class GeoMesaFeatureReader(val instance: GeoMesaInstance)(implicit sc: SparkCont
       ).map(_.toFeature[G, D]())
 }
 
-object GeoMesaFeatureReader {
-  def apply(instance: GeoMesaInstance)(implicit sc: SparkContext): GeoMesaFeatureReader = new GeoMesaFeatureReader(instance)
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental object GeoMesaFeatureReader {
+
+  /** $experimental */
+  @experimental def apply(instance: GeoMesaInstance)(implicit sc: SparkContext): GeoMesaFeatureReader = new GeoMesaFeatureReader(instance)
 }
