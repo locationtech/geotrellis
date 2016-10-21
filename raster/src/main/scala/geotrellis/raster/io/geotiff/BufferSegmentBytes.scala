@@ -56,7 +56,7 @@ case class BufferSegmentBytes(byteReader: ByteReader, tiffTags: TiffTags) extend
    */
   def getSegment(i: Int) = {
     val oldOffset = byteReader.position
-    byteReader.position(offsets(i))
+    byteReader.position(offsets(i).toInt)
     val result = byteReader.getSignedByteArray(byteCounts(i))
     byteReader.position(oldOffset)
     result

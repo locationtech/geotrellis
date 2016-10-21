@@ -51,7 +51,7 @@ object ArraySegmentBytes {
             val result = Array.ofDim[Array[Byte]](offsets.size)
 
             cfor(0)(_ < offsets.size, _ + 1) { i =>
-              byteReader.position(offsets(i))
+              byteReader.position(offsets(i).toInt)
               result(i) = byteReader.getSignedByteArray(byteCounts(i))
             }
 
