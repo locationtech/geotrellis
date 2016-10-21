@@ -78,7 +78,7 @@ object TiffTagsReader {
     tiffTags
   }
 
-  def readTag[T](byteReader: ByteReader, tiffTags: TiffTags, tagMetadata: TiffTagMetadata)(implicit offsetType: OffsetType[T]): TiffTags =
+  def readTag(byteReader: ByteReader, tiffTags: TiffTags, tagMetadata: TiffTagMetadata): TiffTags =
     (tagMetadata.tag, tagMetadata.fieldType) match {
       case (ModelPixelScaleTag, _) =>
         byteReader.readModelPixelScaleTag(tiffTags, tagMetadata)
@@ -112,14 +112,13 @@ object TiffTagsReader {
         byteReader.readDoublesTag(tiffTags, tagMetadata)
     }
 
-  implicit class ByteReaderTagReaderWrapper[T](val byteReader: ByteReader) extends AnyVal {
+  implicit class ByteReaderTagReaderWrapper(val byteReader: ByteReader) extends AnyVal {
     def readModelPixelScaleTag(tiffTags: TiffTags,
-      tagMetadata: TiffTagMetadata)(implicit offsetType: OffsetType[T]) = {
+      tagMetadata: TiffTagMetadata) = {
 
       val oldPos = byteReader.position
 
-      //byteReader.position(tagMetadata.offset.toInt)
-      offsetType.position(byteReader, tagMetadata.offset)
+      byteReader.position(tagMetadata.offset.toInt)
 
       val scaleX = byteReader.getDouble
       val scaleY = byteReader.getDouble
@@ -132,15 +131,14 @@ object TiffTagsReader {
         GeoTiffTags._modelPixelScale set(Some(scaleX, scaleY, scaleZ)))
     }
 
-    def readModelTiePointsTag[T](tiffTags: TiffTags,
-      tagMetadata: TiffTagMetadata)(implicit offsetType: OffsetType[T]) = {
+    def readModelTiePointsTag(tiffTags: TiffTags,
+      tagMetadata: TiffTagMetadata) = {
 
       val oldPos = byteReader.position
 
       val numberOfPoints = tagMetadata.length.toInt / 6
 
-      //byteReader.position(tagMetadata.offset.toInt)
-      offsetType.position(byteReader, tagMetadata.offset.toInt)
+      byteReader.position(tagMetadata.offset.toInt)
 
       val points = Array.ofDim[(Pixel3D, Pixel3D)](numberOfPoints)
       cfor(0)(_ < numberOfPoints, _ + 1) { i =>
@@ -172,7 +170,6 @@ object TiffTagsReader {
       val oldPos = byteReader.position
 
       byteReader.position(tagMetadata.offset.toInt)
-      offsetType.position(byteReader, tagMetadata.offset.toInt)
 
       val version = byteReader.getShort
       val keyRevision = byteReader.getShort
