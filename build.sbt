@@ -73,7 +73,7 @@ lazy val root = Project("geotrellis", file(".")).
     hbase,
     geowave,
     geomesa,
-    geotools,    
+    geotools,
     slick,
     vectortile
   ).
@@ -94,7 +94,7 @@ lazy val macros = Project("macros", file("macros")).
   settings(commonSettings: _*)
 
 lazy val vectortile = Project("vectortile", file("vectortile"))
-  .dependsOn(vector, spark)
+  .dependsOn(vector)
   .settings(commonSettings: _*)
 
 lazy val vector = Project("vector", file("vector")).
@@ -130,7 +130,7 @@ lazy val slick = Project("slick", file("slick")).
   settings(commonSettings: _*)
 
 lazy val spark = Project("spark", file("spark")).
-  dependsOn(util, raster, rasterTestkit % "provided;test->test").
+  dependsOn(util, vectortile, raster, rasterTestkit % "provided;test->test").
   settings(commonSettings: _*)
 
 lazy val sparkTestkit: Project = Project("spark-testkit", file("spark-testkit")).

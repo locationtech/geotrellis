@@ -36,9 +36,9 @@ import scala.reflect._
 
 
 object GeowaveLayerReader {
-  val geometryFactory = new GeometryFactory
-  val tileClassTag = classTag[Tile]
-  val mbtClassTag = classTag[MultibandTile]
+  private val geometryFactory = new GeometryFactory
+  private val tileClassTag = classTag[Tile]
+  private val mbtClassTag = classTag[MultibandTile]
 
   /**
     * Given a map transform and a keybounds, produce a corresponding

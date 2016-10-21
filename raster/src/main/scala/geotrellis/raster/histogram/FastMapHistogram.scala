@@ -311,6 +311,18 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _counts: Array[Long], _
   }
 
   /**
+    * CDF of the distribution.
+    */
+  def cdf(): Array[(Double, Double)] = {
+    val pdf = counts.map({ n => (n / total.toDouble) })
+
+    buckets
+      .map({ label => label.toDouble })
+      .zip(pdf.scanLeft(0.0)(_ + _).drop(1))
+      .toArray
+  }
+
+  /**
     * Return the smallest and largest values seen by the histogram, if
     * it has seen any values.
     */

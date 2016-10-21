@@ -173,7 +173,9 @@ object TileLayerMetadata {
   }
 
   /**
-    * Compose Extents from given raster tiles and use [[ZoomedLayoutScheme]] to create the [[LayoutDefinition]].
+    * Compose Extents from given raster tiles and use
+    * [[geotrellis.spark.tiling.ZoomedLayoutScheme]] to create the
+    * [[geotrellis.spark.tiling.LayoutDefinition]].
     */
   def fromRdd[
     K: (? => TilerKeyMethods[K, K2]) ,
@@ -184,7 +186,9 @@ object TileLayerMetadata {
       _fromRdd[K, V, K2](rdd, crs, scheme, None)
 
   /**
-    * Compose Extents from given raster tiles using [[ZoomedLayoutScheme]] and a maximum zoom value.
+    * Compose Extents from given raster tiles using
+    * [[geotrellis.spark.tiling.ZoomedLayoutScheme]] and a maximum
+    * zoom value.
     */
   def fromRdd[
     K: (? => TilerKeyMethods[K, K2]) ,

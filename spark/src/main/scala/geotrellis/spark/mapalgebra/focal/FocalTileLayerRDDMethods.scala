@@ -1,5 +1,6 @@
 package geotrellis.spark.mapalgebra.focal
 
+import geotrellis.raster._
 import geotrellis.raster.mapalgebra.focal._
 
 trait FocalTileLayerRDDMethods[K] extends FocalOperation[K] {
@@ -33,17 +34,25 @@ trait FocalTileLayerRDDMethods[K] extends FocalOperation[K] {
   def focalConvolve(k: Kernel, target: TargetCell = TargetCell.All) =
    focal(k) { (tile, bounds) => Convolve(tile, k, bounds, target) }
 
+  /** Calculates the aspect of each cell in a raster.
+   *
+   * @see [[geotrellis.raster.mapalgebra.focal.Aspect]]
+   */
   def aspect(target: TargetCell = TargetCell.All) = {
     val n = Square(1)
     focalWithCellSize(n) { (tile, bounds, cellSize) =>
       Aspect(tile, n, bounds, cellSize, target)
     }
-  }
+  }.mapContext(_.copy(cellType = DoubleConstantNoDataCellType))
 
+  /** Calculates the slope of each cell in a raster.
+   *
+   * @see [[geotrellis.raster.mapalgebra.focal.Slope]]
+   */
   def slope(zFactor: Double = 1.0, target: TargetCell = TargetCell.All) = {
     val n = Square(1)
     focalWithCellSize(n) { (tile, bounds, cellSize) =>
       Slope(tile, n, bounds, cellSize, zFactor, target)
-    }
+    }.mapContext(_.copy(cellType = DoubleConstantNoDataCellType))
   }
 }
