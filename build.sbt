@@ -75,7 +75,8 @@ lazy val root = Project("geotrellis", file(".")).
     geomesa,
     geotools,
     slick,
-    vectortile
+    vectortile,
+    osm
   ).
   settings(commonSettings: _*).
   settings(
@@ -90,8 +91,12 @@ lazy val root = Project("geotrellis", file(".")).
   )
   .settings(unidocSettings: _*)
 
-lazy val macros = Project("macros", file("macros")).
-  settings(commonSettings: _*)
+lazy val macros = Project("macros", file("macros"))
+  .settings(commonSettings: _*)
+
+lazy val osm = Project("osm", file("osm"))
+  .dependsOn(util, vector, sparkTestkit % "test->test", spark % "provided;test->test")
+  .settings(commonSettings: _*)
 
 lazy val vectortile = Project("vectortile", file("vectortile"))
   .dependsOn(vector)
