@@ -19,13 +19,14 @@ import scala.reflect.ClassTag
 class GeoMesaFeatureReader(val instance: GeoMesaInstance)(implicit sc: SparkContext) extends Serializable {
   def readSimpleFeatures(
     featureName: String,
-    query: Query,
     simpleFeatureType: SimpleFeatureType,
+    query: Query,
     numPartitions: Option[Int] = None
   ): RDD[SimpleFeature] = {
     val dataStore = instance.accumuloDataStore
-    if(!dataStore.getTypeNames().contains(simpleFeatureType.getTypeName)) dataStore.createSchema(simpleFeatureType)
-    dataStore.dispose()
+    try {
+      if (!dataStore.getTypeNames().contains(simpleFeatureType.getTypeName)) dataStore.createSchema(simpleFeatureType)
+    } finally dataStore.dispose()
 
     val job = Job.getInstance(sc.hadoopConfiguration)
     GeoMesaInputFormat.configure(job, instance.conf, query)
@@ -39,12 +40,12 @@ class GeoMesaFeatureReader(val instance: GeoMesaInstance)(implicit sc: SparkCont
   }
 
   def read[G <: geotrellis.vector.Geometry: ClassTag, D]
-    (layerId: LayerId, query: Query, simpleFeatureType: SimpleFeatureType, numPartitions: Option[Int] = None)
+    (layerId: LayerId, simpleFeatureType: SimpleFeatureType, query: Query, numPartitions: Option[Int] = None)
     (implicit transmute: Map[String, Any] => D): RDD[Feature[G, D]] =
       readSimpleFeatures(
         featureName       = layerId.name,
-        query             = query,
         simpleFeatureType = simpleFeatureType,
+        query             = query,
         numPartitions     = numPartitions
       ).map(_.toFeature[G, D]())
 }
