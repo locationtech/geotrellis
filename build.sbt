@@ -151,7 +151,8 @@ lazy val cassandra = Project("cassandra", file("cassandra")).
 
 lazy val hbase = Project("hbase", file("hbase")).
   dependsOn(sparkTestkit % "test->test", spark % "provided;test->test").
-  settings(commonSettings: _*)
+  settings(commonSettings: _*).
+  settings(excludeDependencies += "com.google.protobuf" % "protobuf-java") // HBase depends on its own protobuf version
 
 lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).
   dependsOn(spark, s3, accumulo, cassandra, hbase).
