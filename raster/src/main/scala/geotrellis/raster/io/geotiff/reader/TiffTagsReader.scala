@@ -13,6 +13,8 @@ import monocle.syntax.apply._
 import java.nio.{ ByteBuffer, ByteOrder }
 
 object TiffTagsReader {
+  import GeoTiffType.OffsetType
+
   def read(path: String): TiffTags =
     read(Filesystem.toMappedByteBuffer(path))
   
@@ -37,9 +39,10 @@ object TiffTagsReader {
     read(byteReader, tagsStartPosition)
   }
 
-  def read(byteReader: ByteReader, tagsStartPosition: Int): TiffTags = {
+  def read[T](byteReader: ByteReader, tagsStartPosition: T)(implicit offsetType: OffsetType[T]): TiffTags = {
 
-    byteReader.position(tagsStartPosition)
+    //byteReader.position(tagsStartPosition)
+    offsetType.position(byteReader, tagsStartPosition)
 
     val tagCount = byteReader.getShort
 
@@ -50,6 +53,8 @@ object TiffTagsReader {
     var geoTags: Option[TiffTagMetadata] = None
 
     cfor(0)(_ < tagCount, _ + 1) { i =>
+      val tagMetadata = offsetType.getTiffTagMetadata(byteReader)
+      /*
       val tagMetadata =
         TiffTagMetadata(
           byteReader.getUnsignedShort, // Tag
@@ -57,6 +62,7 @@ object TiffTagsReader {
           byteReader.getInt,           // Count
           byteReader.getInt            // Offset
         )
+      */
 
       if (tagMetadata.tag == codes.TagCodes.GeoKeyDirectoryTag)
         geoTags = Some(tagMetadata)
@@ -72,7 +78,7 @@ object TiffTagsReader {
     tiffTags
   }
 
-  def readTag(byteReader: ByteReader, tiffTags: TiffTags, tagMetadata: TiffTagMetadata): TiffTags =
+  def readTag[T](byteReader: ByteReader, tiffTags: TiffTags, tagMetadata: TiffTagMetadata)(implicit offsetType: OffsetType[T]): TiffTags =
     (tagMetadata.tag, tagMetadata.fieldType) match {
       case (ModelPixelScaleTag, _) =>
         byteReader.readModelPixelScaleTag(tiffTags, tagMetadata)
@@ -106,13 +112,14 @@ object TiffTagsReader {
         byteReader.readDoublesTag(tiffTags, tagMetadata)
     }
 
-  implicit class ByteReaderTagReaderWrapper(val byteReader: ByteReader) extends AnyVal {
+  implicit class ByteReaderTagReaderWrapper[T](val byteReader: ByteReader) extends AnyVal {
     def readModelPixelScaleTag(tiffTags: TiffTags,
-      tagMetadata: TiffTagMetadata) = {
+      tagMetadata: TiffTagMetadata)(implicit offsetType: OffsetType[T]) = {
 
       val oldPos = byteReader.position
 
-      byteReader.position(tagMetadata.offset.toInt)
+      //byteReader.position(tagMetadata.offset.toInt)
+      offsetType.position(byteReader, tagMetadata.offset)
 
       val scaleX = byteReader.getDouble
       val scaleY = byteReader.getDouble
@@ -125,14 +132,15 @@ object TiffTagsReader {
         GeoTiffTags._modelPixelScale set(Some(scaleX, scaleY, scaleZ)))
     }
 
-    def readModelTiePointsTag(tiffTags: TiffTags,
-      tagMetadata: TiffTagMetadata) = {
+    def readModelTiePointsTag[T](tiffTags: TiffTags,
+      tagMetadata: TiffTagMetadata)(implicit offsetType: OffsetType[T]) = {
 
       val oldPos = byteReader.position
 
       val numberOfPoints = tagMetadata.length.toInt / 6
 
-      byteReader.position(tagMetadata.offset.toInt)
+      //byteReader.position(tagMetadata.offset.toInt)
+      offsetType.position(byteReader, tagMetadata.offset.toInt)
 
       val points = Array.ofDim[(Pixel3D, Pixel3D)](numberOfPoints)
       cfor(0)(_ < numberOfPoints, _ + 1) { i =>
@@ -164,6 +172,7 @@ object TiffTagsReader {
       val oldPos = byteReader.position
 
       byteReader.position(tagMetadata.offset.toInt)
+      offsetType.position(byteReader, tagMetadata.offset.toInt)
 
       val version = byteReader.getShort
       val keyRevision = byteReader.getShort
