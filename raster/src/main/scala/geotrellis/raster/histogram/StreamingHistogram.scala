@@ -29,6 +29,7 @@ import java.util.TreeMap
 import scala.collection.JavaConverters._
 import scala.collection.mutable.{ListBuffer => MutableListBuffer}
 
+
 object StreamingHistogram {
 
   case class Bucket(label: Double, count: Long) {
@@ -487,6 +488,17 @@ class StreamingHistogram(
     }
 
   /**
+    * Return an array of x, cdf(x) pairs
+    */
+  def cdf(): Array[(Double, Double)] = {
+    val bs = buckets
+    val labels = bs.map(_.label)
+    val pdf = bs.map(_.count.toDouble / totalCount)
+
+    labels.zip(pdf.scanLeft(0.0)(_ + _).drop(1)).toArray
+  }
+
+  /**
     * This returns a tuple of tuples, where the inner tuples contain a
     * bucket label and its percentile.
     */
@@ -554,13 +566,15 @@ class StreamingHistogram(
 
         val quantilesToCheck =
           if (qs.head < curr._2._2) {
-            // The first case. Either the first bin IS the minimum value or it is VERY
-            //  close (because it is the result of combining the minValue bin with neighboring bins)
+            // The first case. Either the first bin IS the minimum
+            // value or it is VERY close (because it is the result of
+            // combining the minValue bin with neighboring bins)
             result += curr._1._1
 
-            // IF the minvalue is the same as the lowest bin, we need to clean house and
-            //  remove the lowest bin.
-            // Else, we have to treat the lowest bin as the 0th pctile for interpolation.
+            // IF the minvalue is the same as the lowest bin, we need
+            // to clean house and remove the lowest bin.  Else, we
+            // have to treat the lowest bin as the 0th pctile for
+            // interpolation.
             if (curr._1._1 == curr._2._1) { curr = (curr._1, data.next._2) }
             else { curr = ((curr._1._1, 0.0), curr._2) }
             qs.tail
@@ -596,7 +610,7 @@ class StreamingHistogram(
     * is guaranteed that no value in the returned array will be
     * outside the range minimum-maximum range of values seen.
     *
-    * @param num The number of breaks desired
+    * @param  num  The number of breaks desired
     */
   def quantileBreaks(num: Int): Array[Double] =
     percentileBreaks((1 to num).map(_ / num.toDouble)).toArray

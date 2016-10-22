@@ -5,7 +5,7 @@ libraryDependencies ++= Seq(
   "org.locationtech.geomesa" % "geomesa-jobs" % Version.geomesa,
   "org.locationtech.geomesa" % "geomesa-accumulo-datastore" % Version.geomesa,
   "org.locationtech.geomesa" % "geomesa-utils" % Version.geomesa,
-  "org.apache.spark" %% "spark-core" % Version.spark % "provided",
+  sparkCore % "provided",
   spire,
   scalatest % "test")
 
