@@ -16,6 +16,7 @@ EOF
   && ./sbt "++$TRAVIS_SCALA_VERSION" "project vector" publish \
   && ./sbt "++$TRAVIS_SCALA_VERSION" "project proj4" publish \
   && ./sbt "++$TRAVIS_SCALA_VERSION" "project raster" publish \
+  && ./sbt "++$TRAVIS_SCALA_VERSION" "project vectortile" publish \
   && ./sbt "++$TRAVIS_SCALA_VERSION" "project spark" publish \
   && ./sbt "++$TRAVIS_SCALA_VERSION" "project s3" publish \
   && ./sbt "++$TRAVIS_SCALA_VERSION" "project accumulo" publish \
