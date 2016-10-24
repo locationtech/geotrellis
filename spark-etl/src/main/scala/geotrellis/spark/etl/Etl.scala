@@ -125,7 +125,7 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
         val reprojected = rdd.reproject(destCrs)
         val (zoom: Int, md: TileLayerMetadata[K]) = scheme match {
           case Left(layoutScheme) => output.maxZoom match {
-            case Some(zoom) =>  TileLayerMetadata.fromRdd(reprojected, ZoomedLayoutScheme(destCrs, output.tileSize), zoom)
+            case Some(zoom) =>  reprojected.collectMetadata(destCrs, output.tileSize, zoom)
             case _ => reprojected.collectMetadata(layoutScheme)
           }
           case Right(layoutDefinition) => reprojected.collectMetadata(layoutDefinition)
@@ -136,7 +136,7 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
 
       case BufferedReproject =>
         val (_, md) = output.maxZoom match {
-          case Some(zoom) =>  TileLayerMetadata.fromRdd(rdd, ZoomedLayoutScheme(destCrs, output.tileSize), zoom)
+          case Some(zoom) => rdd.collectMetadata(destCrs, output.tileSize, zoom)
           case _ => rdd.collectMetadata(FloatingLayoutScheme(output.tileSize))
         }
         val amd = adjustCellType(md)
