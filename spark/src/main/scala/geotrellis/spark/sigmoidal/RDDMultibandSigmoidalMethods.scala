@@ -23,7 +23,7 @@ import geotrellis.util.MethodExtensions
 import org.apache.spark.rdd.RDD
 
 
-trait RDDMultibandSigmoidalMethods[K, M] extends MethodExtensions[RDD[(K, MultibandTile)] with Metadata[M]] {
-  def sigmoidal(alpha: Double, beta: Double): RDD[(K, MultibandTile)] with Metadata[M] =
+trait RDDMultibandSigmoidalMethods[K, M] extends MethodExtensions[RDD[(K, MultibandTile)]] {
+  def sigmoidal(alpha: Double, beta: Double): RDD[(K, MultibandTile)] =
     RDDSigmoidalContrast.multiband(self, alpha, beta)
 }

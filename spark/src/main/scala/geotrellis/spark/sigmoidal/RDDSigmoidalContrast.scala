@@ -41,15 +41,10 @@ object RDDSigmoidalContrast {
     * @return        An RDD of output tiles
     */
   def singleband[K, V: (? => Tile): ClassTag, M](
-    rdd: RDD[(K, V)] with Metadata[M],
+    rdd: RDD[(K, V)],
     alpha: Double, beta: Double
-  ): RDD[(K, Tile)] with Metadata[M] = {
-    ContextRDD(
-      rdd.map({ case (key, tile: Tile) =>
-        (key, SigmoidalContrast(tile, alpha, beta)) }),
-      rdd.metadata
-    )
-  }
+  ): RDD[(K, Tile)] =
+    rdd.map({ case (key, tile: Tile) => (key, SigmoidalContrast(tile, alpha, beta)) })
 
   /**
     * Given an RDD of [[MultibandTile]] objects and parameters alpha
@@ -65,14 +60,9 @@ object RDDSigmoidalContrast {
     * @return        An RDD of output tiles
     */
   def multiband[K, V: (? => MultibandTile): ClassTag, M](
-    rdd: RDD[(K, V)] with Metadata[M],
+    rdd: RDD[(K, V)],
     alpha: Double, beta: Double
-  ): RDD[(K, MultibandTile)] with Metadata[M] = {
-    ContextRDD(
-      rdd.map({ case (key, tile: MultibandTile) =>
-        (key, SigmoidalContrast(tile, alpha, beta)) }),
-      rdd.metadata
-    )
-  }
+  ): RDD[(K, MultibandTile)] =
+      rdd.map({ case (key, tile: MultibandTile) => (key, SigmoidalContrast(tile, alpha, beta)) })
 
 }

@@ -22,20 +22,27 @@ import geotrellis.raster.histogram._
 
 object SigmoidalContrast {
 
-  private def _T(
+  /**
+    * @param  cellType   The cell type on which the transform is to act
+    * @param  alpha      The center around-which the stretch is performed (given as a fraction)
+    * @param  beta       The standard deviation in the computation, used to avoid saturating the upper and lower parts of the gamut
+    * @param  intensity  The raw intensity value to be mapped-from
+    * @return            The intensity value produced by the sigmoidal contrast transformation
+    */
+  private def transform(
     cellType: CellType, alpha: Double, beta: Double
-  )(_u: Double): Double = {
+  )(intensity: Double): Double = {
     val bits = cellType.bits
 
     val u = cellType match {
       case _: FloatCells =>
-        (_u - Float.MinValue)/(Float.MaxValue - Float.MinValue)
+        (intensity - Float.MinValue)/(Float.MaxValue - Float.MinValue)
       case _: DoubleCells =>
-        (_u/2 - Double.MinValue/2)/(Double.MaxValue/2 - Double.MinValue/2)
+        (intensity/2 - Double.MinValue/2)/(Double.MaxValue/2 - Double.MinValue/2)
       case _: BitCells | _: UByteCells | _: UShortCells =>
-        (_u / ((1<<bits)-1))
+        (intensity / ((1<<bits)-1))
       case _: ByteCells | _: ShortCells | _: IntCells =>
-        (_u + (1<<(bits-1))) / ((1<<bits)-1)
+        (intensity + (1<<(bits-1))) / ((1<<bits)-1)
     }
 
     val numer = 1/(1+math.exp(beta*(alpha-u))) - 1/(1+math.exp(beta))
@@ -68,8 +75,8 @@ object SigmoidalContrast {
     * @return        The output tile
     */
   def apply(tile: Tile, alpha: Double, beta: Double): Tile = {
-    val T = _T(tile.cellType, alpha, beta)_
-    tile.mapDouble(T)
+    val localTransform = transform(tile.cellType, alpha, beta)_
+    tile.mapDouble(localTransform)
   }
 
   /**
@@ -86,8 +93,8 @@ object SigmoidalContrast {
     * @return        The output tile
     */
   def apply(tile: MultibandTile, alpha: Double, beta: Double): MultibandTile = {
-    val T = _T(tile.cellType, alpha, beta)_
-    MultibandTile(tile.bands.map(_.mapDouble(T)))
+    val localTransform = transform(tile.cellType, alpha, beta)_
+    MultibandTile(tile.bands.map(_.mapDouble(localTransform)))
   }
 
 }

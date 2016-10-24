@@ -28,7 +28,7 @@ class RDDSigmoidalContrastSpec extends FunSpec
 
   describe("RDD Histogram Equalization") {
 
-    it("should work with float-point rasters") {
+    it("should work with floating-point rasters") {
       val x = Double.MaxValue / 2.0
       val a = Double.MinValue
       val b = 0
