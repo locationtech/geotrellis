@@ -2,10 +2,11 @@ package geotrellis.geomesa.geotools
 
 import geotrellis.util.MethodExtensions
 import geotrellis.vector.{Feature, Geometry}
+import geotrellis.util.annotations.experimental
 
-object GeoMesaImplicits extends GeoMesaImplicits
+@experimental object GeoMesaImplicits extends GeoMesaImplicits
 
-trait GeoMesaImplicits {
+@experimental trait GeoMesaImplicits {
   implicit class withFeatureToGeoMesaSimpleFeatureMethods[G <: Geometry, T](val self: Feature[G, T])
     extends MethodExtensions[Feature[G, T]]
       with FeatureToGeoMesaSimpleFeatureMethods[G, T]

@@ -1,8 +1,9 @@
 package geotrellis.geomesa.geotools
 
 import geotrellis.proj4.{CRS => GCRS}
-import geotrellis.vector.{Geometry, Line, MultiLine, MultiPoint, MultiPolygon, Point, Polygon}
 import geotrellis.spark.util.cache.LRUCache
+import geotrellis.util.annotations.experimental
+import geotrellis.vector.{Geometry, Line, MultiLine, MultiPoint, MultiPolygon, Point, Polygon}
 
 import com.vividsolutions.jts.{geom => jts}
 import org.geotools.feature.simple.{SimpleFeatureBuilder, SimpleFeatureTypeBuilder}
@@ -10,7 +11,10 @@ import org.opengis.feature.simple.{SimpleFeature, SimpleFeatureType}
 import org.locationtech.geomesa.accumulo.index.Constants
 import com.typesafe.config.ConfigFactory
 
-object GeometryToGeoMesaSimpleFeature {
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental object GeometryToGeoMesaSimpleFeature {
 
   val whenField  = "when"
   val whereField = "where"
@@ -21,7 +25,8 @@ object GeometryToGeoMesaSimpleFeature {
       sizeOf  = {x => 1l}
     )
 
-  def apply(featureName: String, geom: Geometry, featureId: Option[String], crs: Option[GCRS], data: Seq[(String, Any)]): SimpleFeature = {
+  /** $experimental */
+  @experimental def apply(featureName: String, geom: Geometry, featureId: Option[String], crs: Option[GCRS], data: Seq[(String, Any)]): SimpleFeature = {
     val sft = featureTypeCache.getOrInsert(featureName, {
       val sftb = (new SimpleFeatureTypeBuilder).minOccurs(1).maxOccurs(1).nillable(false)
 
