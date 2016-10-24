@@ -113,6 +113,8 @@ import spray.json.DefaultJsonProtocol._
   val geowaveNamespace: String
 ) extends DiscreteLayerAttributeStore with LazyLogging {
 
+  logger.error("GeoWave support is experimental")
+
   val zkInstance = (new ZooKeeperInstance(accumuloInstance, zookeepers))
   val token = new PasswordToken(accumuloPass)
   val connector = zkInstance.getConnector(accumuloUser, token)

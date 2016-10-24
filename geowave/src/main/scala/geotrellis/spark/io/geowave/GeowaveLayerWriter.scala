@@ -240,6 +240,8 @@ import spray.json._
 )(implicit sc: SparkContext)
     extends LazyLogging {
 
+  logger.error("GeoWave support is experimental")
+
   /** $experimental */
   @experimental def write[
     K <: SpatialKey: ClassTag,

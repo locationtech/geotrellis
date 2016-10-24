@@ -12,10 +12,11 @@ import geotrellis.util._
 import geotrellis.util.annotations.experimental
 import geotrellis.vector.Extent
 
+import com.typesafe.scalalogging.LazyLogging
 import com.vividsolutions.jts.geom._
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
-import mil.nga.giat.geowave.core.geotime.store.query.IndexOnlySpatialQuery
 import mil.nga.giat.geowave.core.geotime.ingest._
+import mil.nga.giat.geowave.core.geotime.store.query.IndexOnlySpatialQuery
 import mil.nga.giat.geowave.core.index.ByteArrayId
 import mil.nga.giat.geowave.core.store._
 import mil.nga.giat.geowave.core.store.index.CustomIdIndex
@@ -76,7 +77,10 @@ object GeowaveLayerReader {
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
-@experimental class GeowaveLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkContext) {
+@experimental class GeowaveLayerReader(val attributeStore: AttributeStore)
+  (implicit sc: SparkContext) extends LazyLogging {
+
+  logger.error("GeoWave support is experimental")
 
   val defaultNumPartitions = sc.defaultParallelism
 
