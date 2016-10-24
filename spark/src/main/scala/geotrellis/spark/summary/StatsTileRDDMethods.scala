@@ -30,11 +30,24 @@ trait StatsTileRDDMethods[K] extends TileRDDMethods[K] {
       .mapValues { case (tile, count) => tile / count}
   }
 
+  /**
+    * Compute the histogram of an RDD of [[Tile]] objects.
+    *
+    * @return  A [[Histogram[Double]]]
+    */
   def histogram(): Histogram[Double] =
     histogram(StreamingHistogram.DEFAULT_NUM_BUCKETS)
 
-  def histogram(numBuckets: Int): Histogram[Double] =
-    self
+  /**
+    * Compute the histogram of an RDD of [[Tile]] objects.
+    *
+    * @param  numBuckets  The number of buckets that the histogram should have
+    * @param  fraction    The fraction of [[Tile]] objects to sample (the default is 100%)
+    * @param  seed        The seed of the RNG which determines which tiles to take the histograms of
+    * @return             A [[Histogram[Double]]]
+    */
+  def histogram(numBuckets: Int, fraction: Double = 1.0, seed: Long = 33): Histogram[Double] =
+    (if (fraction >= 1.0) self; else self.sample(false, fraction, seed))
       .map { case (key, tile) => tile.histogramDouble(numBuckets) }
       .reduce { _ merge _ }
 

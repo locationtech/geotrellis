@@ -97,5 +97,18 @@ class StatsTileRDDMethodsSpec extends FunSpec with TestEnvironment with TestFile
 
       hist.merge(hist2).quantileBreaks(70) should be (hist.quantileBreaks(70))
     }
+
+    it ("should be able to sample a fraction of an RDD to compute a histogram") {
+      val path = "raster-test/data/aspect.tif"
+      val gt = SinglebandGeoTiff(path)
+      val originalRaster = gt.raster.resample(500, 500)
+      val (_, rdd) = createTileLayerRDD(originalRaster, 5, 5, gt.crs)
+
+      val hist1 = rdd.histogram(72)
+      val hist2 = rdd.histogram(72, 1.0/25)
+
+      hist2.totalCount.toDouble should be >= (hist1.totalCount / 25.0)
+      hist2.totalCount.toDouble should be <= (hist1.totalCount / 12.5)
+    }
   }
 }
