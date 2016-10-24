@@ -9,6 +9,7 @@ import geotrellis.spark.io.accumulo._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.util._
+import geotrellis.util.annotations.experimental
 import geotrellis.vector.Extent
 
 import com.typesafe.scalalogging.LazyLogging
@@ -52,9 +53,13 @@ import resource._
 import spray.json._
 
 
-object GeowaveLayerWriter extends LazyLogging {
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental object GeowaveLayerWriter extends LazyLogging {
 
-  def write[
+  /** $experimental */
+  @experimental def write[
     K <: SpatialKey: ClassTag,
     V: TileOrMultibandTile: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
@@ -226,13 +231,19 @@ object GeowaveLayerWriter extends LazyLogging {
   }
 }
 
-class GeowaveLayerWriter(
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental class GeowaveLayerWriter(
   val attributeStore: GeowaveAttributeStore,
   val accumuloWriter: AccumuloWriteStrategy
 )(implicit sc: SparkContext)
     extends LazyLogging {
 
-  def write[
+  logger.error("GeoWave support is experimental")
+
+  /** $experimental */
+  @experimental def write[
     K <: SpatialKey: ClassTag,
     V: TileOrMultibandTile: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
@@ -244,7 +255,8 @@ class GeowaveLayerWriter(
         throw new EmptyBoundsError("Cannot write layer with empty bounds.")
     }
 
-  protected def _write[
+  /** $experimental */
+  @experimental protected def _write[
     K <: SpatialKey: ClassTag,
     V: TileOrMultibandTile: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
