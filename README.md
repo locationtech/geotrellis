@@ -200,18 +200,25 @@ This is a list of features contained in the GeoTrellis library. It is broken up 
 
 ## Contributors
 
- - Josh Marcus
- - Erik Osheim
- - Rob Emanuele
- - Adam Hinz
- - Michael Tedeschi
- - Robert Cheetham
- - Justin Walgran
- - Eric J. Christeson
- - Ameet Kini
- - Mark Landry
- - Walt Chen
- - Eugene Cheipesh
+- Josh Marcus
+- Erik Osheim
+- Rob Emanuele
+- Adam Hinz
+- Michael Tedeschi
+- Robert Cheetham
+- Justin Walgran
+- Eric J. Christeson
+- Ameet Kini
+- Mark Landry
+- Walt Chen
+- Eugene Cheipesh
+- Johan Stenberg
+- Nathan Zimmerman
+- Grigory Pomadchin
+- James McClain
+- Justin Polchlopek
+- Colin Woodbury
+- Jacob Bouffard
 
 ## Contributing
 
