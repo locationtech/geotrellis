@@ -54,11 +54,37 @@ object SigmoidalContrast {
     }
   }
 
+  /**
+    * Given a singleband [[Tile]] object and the parameters alpha and
+    * beta, perform the sigmoidal contrast computation and return the
+    * result as a tile.
+    *
+    * The approach used is described here:
+    * https://www.imagemagick.org/Usage/color_mods/#sigmoidal
+    *
+    * @param  tile   The input tile
+    * @param  alpha  The center around-which the stretch is performed (given as a fraction)
+    * @param  beta   The standard deviation in the computation, used to avoid saturating the upper and lower parts of the gamut
+    * @return        The output tile
+    */
   def apply(tile: Tile, alpha: Double, beta: Double): Tile = {
     val T = _T(tile.cellType, alpha, beta)_
     tile.mapDouble(T)
   }
 
+  /**
+    * Given a [[MultibandTile]] object and the parameters alpha and
+    * beta, perform the sigmoidal contrast computation on each band
+    * and return the result as a multiband tile.
+    *
+    * The approach used is described here:
+    * https://www.imagemagick.org/Usage/color_mods/#sigmoidal
+    *
+    * @param  tile   The input multibandtile
+    * @param  alpha  The center around-which the stretch is performed (given as a fraction)
+    * @param  beta   The standard deviation in the computation, used to avoid saturating the upper and lower parts of the gamut
+    * @return        The output tile
+    */
   def apply(tile: MultibandTile, alpha: Double, beta: Double): MultibandTile = {
     val T = _T(tile.cellType, alpha, beta)_
     MultibandTile(tile.bands.map(_.mapDouble(T)))
