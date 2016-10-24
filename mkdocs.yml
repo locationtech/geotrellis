@@ -8,7 +8,7 @@ theme: readthedocs
 
 pages:
   - Home: index.md
-  - Changelog: []
+  - Changelog: CHANGELOG.md
   - Tutorials: []
   - User Guide: []
   - Architecture: []
