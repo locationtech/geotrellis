@@ -5,8 +5,9 @@ import geotrellis.spark._
 import geotrellis.util.annotations.experimental
 import geotrellis.vector._
 
-import org.apache.spark.SparkContext
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.rdd.RDD
+import org.apache.spark.SparkContext
 import org.geotools.data.Transaction
 import org.opengis.feature.simple.{SimpleFeature, SimpleFeatureType}
 
@@ -14,7 +15,10 @@ import org.opengis.feature.simple.{SimpleFeature, SimpleFeatureType}
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
-@experimental class GeoMesaFeatureWriter(val instance: GeoMesaInstance)(implicit sc: SparkContext) extends Serializable {
+@experimental class GeoMesaFeatureWriter(val instance: GeoMesaInstance)
+  (implicit sc: SparkContext) extends Serializable with LazyLogging {
+
+  logger.error("GeoMesa support is experimental")
 
   /** $experimental */
   @experimental def write[G <: Geometry, D: ? => Seq[(String, Any)]]
