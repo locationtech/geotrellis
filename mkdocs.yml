@@ -9,7 +9,8 @@ theme: readthedocs
 pages:
   - Home: index.md
   - Changelog: CHANGELOG.md
-  - Tutorials: []
+  - Tutorials:
+      - Setup: tutorials/setup.md
   - User Guide: []
   - Architecture: []
 
