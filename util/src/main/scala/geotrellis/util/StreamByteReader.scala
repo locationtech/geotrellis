@@ -25,7 +25,7 @@ class StreamByteReader(bytesStreamer: BytesStreamer) extends ByteReader {
       case _ => throw new Exception("incorrect byte order")
     }
 
-  def position: Int = (offset + chunkBuffer.position).toInt
+  def position: Long = offset + chunkBuffer.position.toInt
 
   def position(newPoint: Int): Buffer = {
     if (isContained(newPoint)) {
@@ -35,11 +35,20 @@ class StreamByteReader(bytesStreamer: BytesStreamer) extends ByteReader {
       chunkBuffer.position(0)
     }
   }
+  
+  def position(newPoint: Long): Buffer = {
+    if (isContained(newPoint)) {
+      chunkBuffer.position((newPoint - offset).toInt)
+    } else {
+      adjustChunk(newPoint)
+      chunkBuffer.position(0)
+    }
+  }
 
   private def adjustChunk: Unit =
     adjustChunk(position)
 
-  private def adjustChunk(newPoint: Int): Unit = {
+  private def adjustChunk(newPoint: Long): Unit = {
     chunk = bytesStreamer.getMappedArray(newPoint)
     chunkBuffer = newByteBuffer(chunkArray)
   }
@@ -92,7 +101,7 @@ class StreamByteReader(bytesStreamer: BytesStreamer) extends ByteReader {
   private def newByteBuffer(byteArray: Array[Byte]) =
     ByteBuffer.wrap(byteArray).order(byteOrder)
 
-  private def isContained(newPosition: Int): Boolean =
+  private def isContained(newPosition: Long): Boolean =
     if (newPosition >= offset && newPosition <= offset + length) true else false
 }
 
