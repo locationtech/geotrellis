@@ -26,14 +26,15 @@ abstract class UByteArrayTile(val array: Array[Byte], cols: Int, rows: Int)
     */
   def copy = UByteArrayTile(array.clone, cols, rows, cellType)
 
-  def asRawTile: UByteArrayTile = UByteArrayTile(array, cols, rows, cellType.withNoNoData)
+  def withNoData(noDataValue: Option[Double]): UByteArrayTile =
+    UByteArrayTile(array, cols, rows, cellType.withNoData(noDataValue))
 
   def interpretAs(newCellType: CellType): ArrayTile = {
     newCellType match {
       case dt: UByteCells with NoDataHandling =>
         UByteArrayTile(array, cols, rows, dt)
       case _ =>
-        asRawTile.convert(newCellType)
+        withNoData(None).convert(newCellType)
     }
   }
 }
@@ -168,6 +169,33 @@ object UByteArrayTile {
       case udct: UByteUserDefinedNoDataCellType =>
         new UByteUserDefinedNoDataArrayTile(arr, cols, rows, udct)
     }
+
+  /**
+    * Create a new [[UByteArrayTile]] from an array of integers, a
+    * number of columns, and a number of rows.
+    *
+    * @param   arr          An array of bytes
+    * @param   cols         The number of columns
+    * @param   rows         The number of rows
+    * @param   noDataValue  Optional NODATA value
+    * @return               A new UByteArrayTile
+    */
+  def apply(arr: Array[Byte], cols: Int, rows: Int, noDataValue: Option[Byte]): UByteArrayTile =
+    apply(arr, cols, rows, UByteCells.withNoData(noDataValue))
+
+  /**
+    * Create a new [[UByteArrayTile]] from an array of bytes, a
+    * number of columns, and a number of rows.
+    *
+    * @param   arr          An array of bytes
+    * @param   cols         The number of columns
+    * @param   rows         The number of rows
+    * @param   noDataValue  NODATA value
+    * @return               A new UByteArrayTile
+    */
+  def apply(arr: Array[Byte], cols: Int, rows: Int, noDataValue: Byte): UByteArrayTile =
+    apply(arr, cols, rows, Some(noDataValue))
+
 
   /**
     * Produce a [[UByteArrayTile]] of the specified dimensions.

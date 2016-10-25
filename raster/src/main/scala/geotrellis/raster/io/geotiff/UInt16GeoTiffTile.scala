@@ -88,15 +88,15 @@ class UInt16GeoTiffTile(
     UShortArrayTile.fromBytes(arr, gridBounds.width, gridBounds.height, cellType)
   }
 
-  def asRawTile: UInt16GeoTiffTile =
-    new UInt16GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoNoData)
+  def withNoData(noDataValue: Option[Double]): UInt16GeoTiffTile =
+    new UInt16GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoData(noDataValue))
 
-  def interpretAs(newCellType: CellType): Tile = {
+  def interpretAs(newCellType: CellType): GeoTiffTile = {
     newCellType match {
       case dt: UShortCells with NoDataHandling =>
         new UInt16GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, dt)
       case _ =>
-        asRawTile.convert(newCellType)
+        withNoData(None).convert(newCellType)
     }
   }
 }

@@ -101,15 +101,15 @@ class Int32GeoTiffTile(
     IntArrayTile.fromBytes(arr, gridBounds.width, gridBounds.height, cellType)
   }
 
-  def asRawTile: Int32GeoTiffTile =
-    new Int32GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoNoData)
+  def withNoData(noDataValue: Option[Double]): Int32GeoTiffTile =
+    new Int32GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoData(noDataValue))
 
-  def interpretAs(newCellType: CellType): Tile = {
+  def interpretAs(newCellType: CellType): GeoTiffTile = {
     newCellType match {
       case dt: IntCells with NoDataHandling =>
         new Int32GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, dt)
       case _ =>
-        asRawTile.convert(newCellType)
+        withNoData(None).convert(newCellType)
     }
   }
 }

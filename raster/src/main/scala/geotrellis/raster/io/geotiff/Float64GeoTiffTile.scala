@@ -100,15 +100,15 @@ class Float64GeoTiffTile(
     DoubleArrayTile.fromBytes(arr, gridBounds.width, gridBounds.height, cellType)
   }
 
-  def asRawTile: Float64GeoTiffTile =
-    new Float64GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoNoData)
+  def withNoData(noDataValue: Option[Double]): Float64GeoTiffTile =
+    new Float64GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoData(noDataValue))
 
-  def interpretAs(newCellType: CellType): Tile = {
+  def interpretAs(newCellType: CellType): GeoTiffTile = {
     newCellType match {
       case dt: DoubleCells with NoDataHandling =>
         new Float64GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, dt)
       case _ =>
-        asRawTile.convert(newCellType)
+        withNoData(None).convert(newCellType)
     }
   }
 }

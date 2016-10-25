@@ -116,15 +116,15 @@ class Float32GeoTiffTile(
   }
 
 
-  def asRawTile: Float32GeoTiffTile =
-    new Float32GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoNoData)
+  def withNoData(noDataValue: Option[Double]): Float32GeoTiffTile =
+    new Float32GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoData(noDataValue))
 
   def interpretAs(newCellType: CellType): Tile = {
     newCellType match {
       case dt: FloatCells with NoDataHandling =>
         new Float32GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, dt)
       case _ =>
-        asRawTile.convert(newCellType)
+        withNoData(None).convert(newCellType)
     }
   }  
 }

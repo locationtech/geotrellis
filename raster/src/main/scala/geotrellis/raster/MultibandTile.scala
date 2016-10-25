@@ -73,7 +73,7 @@ trait MultibandTile extends CellGrid with MacroCombinableMultibandTile[Tile] wit
 
 
   /** Return tile tile as raw cell [[MultibandTile]] with No NoData handling */
-  def asRawTile: MultibandTile
+  def withNoData(noDataValue: Option[Double]): MultibandTile
 
   /** Changes the interpretation of the tile cells through changing NoData handling and optionally cell data type.
     * If [[DataType]] portion of the [[CellType]] is unchanged the tile data is not duplicated through conversion.

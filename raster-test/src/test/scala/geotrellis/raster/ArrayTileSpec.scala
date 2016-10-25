@@ -98,7 +98,7 @@ class ArrayTileSpec extends FunSpec
         val v = tile.get(c, r)
         val udTile = tile.interpretAs(udCt(v))
         val constTile = udTile.interpretAs(constCt)
-        val res = constTile.asRawTile
+        val res = constTile.withNoData(None)
         withClue(s"ND=$v") { assert(res equals tile) }
         val cell = udTile.getDouble(c,r)
         withClue(s"udTile($c, $r), ND=$v") { assert(isNoData(cell)) }
@@ -113,7 +113,7 @@ class ArrayTileSpec extends FunSpec
         val v = tile.get(c, r)
         val udTile = tile.interpretAs(udCt(v))
         val constTile = udTile.interpretAs(constCt)
-        val res = constTile.asRawTile
+        val res = constTile.withNoData(None)
         withClue(s"ND=$v") { assert(res equals tile) }
         val cell = udTile.get(c,r)
         withClue(s"udTile($c, $r), ND=$v") { assert(isNoData(cell)) }

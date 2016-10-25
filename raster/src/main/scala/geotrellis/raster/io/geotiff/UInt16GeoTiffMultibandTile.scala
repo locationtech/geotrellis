@@ -42,15 +42,15 @@ class UInt16GeoTiffMultibandTile(
       }
     }
 
-  def asRawTile =
-    new UInt16GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType.withNoNoData)
+  def withNoData(noDataValue: Option[Double]): UInt16GeoTiffMultibandTile =
+    new UInt16GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType.withNoData(noDataValue))
 
-  def interpretAs(newCellType: CellType)  = {
+  def interpretAs(newCellType: CellType): GeoTiffMultibandTile = {
     newCellType match {
       case dt: UShortCells with NoDataHandling =>
         new UInt16GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, dt)
       case _ =>
-        asRawTile.convert(newCellType)
+        withNoData(None).convert(newCellType)
     }
   }
 }

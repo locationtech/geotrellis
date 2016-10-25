@@ -278,7 +278,7 @@ abstract class GeoTiffMultibandTile(
    * @param  newCellType  The desired [[CellType]]
    * @return              A MultibandTile that contains the the new CellType
    */
-  def convert(newCellType: CellType): MultibandTile = {
+  def convert(newCellType: CellType): GeoTiffMultibandTile = {
     val arr = Array.ofDim[Array[Byte]](segmentCount)
     val compressor = compression.createCompressor(segmentCount)
     cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>

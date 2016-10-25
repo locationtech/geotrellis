@@ -92,7 +92,7 @@ trait ConstantTile extends Tile {
   }
 
   def interpretAs(newCellType: CellType): Tile =
-    asRawTile.convert(newCellType)
+    withNoData(None).convert(newCellType)
 
   /**
     * Execute a function on each cell of the tile.  The function
@@ -266,7 +266,7 @@ case class BitConstantTile(v: Boolean, cols: Int, rows: Int) extends ConstantTil
     */
   def toBytes(): Array[Byte] = Array(iVal.toByte)
 
-  def asRawTile = this
+  def withNoData(noDataValue: Option[Double]): ConstantTile  =  this
 }
 
 /**
@@ -305,7 +305,8 @@ case class ByteConstantTile(v: Byte, cols: Int, rows: Int,
     */
   def toBytes(): Array[Byte] = Array(v)
 
-  def asRawTile = ByteConstantTile(v, cols, rows, ByteCellType)
+  def withNoData(noDataValue: Option[Double]) =
+    ByteConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 }
 
 /**
@@ -356,7 +357,8 @@ case class UByteConstantTile(v: Byte, cols: Int, rows: Int,
   def resample(current: Extent, target: RasterExtent, method: ResampleMethod): Tile =
     ByteConstantTile(v, target.cols, target.rows)
 
-  def asRawTile = UByteConstantTile(v, cols, rows, UByteCellType)
+  def withNoData(noDataValue: Option[Double]) =
+    UByteConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 }
 
 /**
@@ -400,7 +402,8 @@ case class ShortConstantTile(v: Short, cols: Int, rows: Int,
     arr
   }
 
-  def asRawTile = ShortConstantTile(v, cols, rows, ShortCellType)
+  def withNoData(noDataValue: Option[Double]) =
+    ShortConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 }
 
 /**
@@ -455,7 +458,8 @@ case class UShortConstantTile(v: Short, cols: Int, rows: Int,
   def resample(current: Extent, target: RasterExtent, method: ResampleMethod): Tile =
     ShortConstantTile(v, target.cols, target.rows)
 
-  def asRawTile = UShortConstantTile(v, cols, rows, UShortCellType)
+  def withNoData(noDataValue: Option[Double]) =
+    UShortConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 }
 
 /**
@@ -499,7 +503,8 @@ case class IntConstantTile(v: Int, cols: Int, rows: Int,
     arr
   }
 
-  def asRawTile = IntConstantTile(v, cols, rows, IntCellType)
+  def withNoData(noDataValue: Option[Double]) =
+    IntConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 }
 
 /**
@@ -543,7 +548,8 @@ case class FloatConstantTile(v: Float, cols: Int, rows: Int,
     arr
   }
 
-  def asRawTile = FloatConstantTile(v, cols, rows, FloatCellType)
+  def withNoData(noDataValue: Option[Double]) =
+    FloatConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 }
 
 /**
@@ -587,5 +593,6 @@ case class DoubleConstantTile(v: Double, cols: Int, rows: Int,
     arr
   }
 
-  def asRawTile = DoubleConstantTile(v, cols, rows, DoubleCellType)
+  def withNoData(noDataValue: Option[Double]): ConstantTile =
+    DoubleConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 }

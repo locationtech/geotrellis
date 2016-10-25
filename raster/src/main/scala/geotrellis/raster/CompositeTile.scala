@@ -138,8 +138,8 @@ case class CompositeTile(tiles: Seq[Tile],
   def convert(targetCellType: CellType): Tile =
     mutable(targetCellType)
 
-  def asRawTile: CompositeTile =
-    CompositeTile(tiles.map(_.asRawTile), tileLayout)
+  def withNoData(noDataValue: Option[Double]): CompositeTile =
+    CompositeTile(tiles.map(_.withNoData(noDataValue)), tileLayout)
 
   def interpretAs(targetCellType: CellType): CompositeTile =
     CompositeTile(tiles.map(_.interpretAs(targetCellType)), tileLayout)

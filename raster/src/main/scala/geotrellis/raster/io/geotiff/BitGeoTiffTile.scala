@@ -70,15 +70,15 @@ class BitGeoTiffTile(
   }
 
 
-  def asRawTile: BitGeoTiffTile =
-    new BitGeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoNoData)
+  def withNoData(noDataValue: Option[Double]): BitGeoTiffTile =
+    new BitGeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoData(noDataValue))
 
   def interpretAs(newCellType: CellType): Tile = {
     newCellType match {
       case dt: BitCells with NoDataHandling =>
         new BitGeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, dt)
       case _ =>
-        asRawTile.convert(newCellType)
+        withNoData(None).convert(newCellType)
     }
   }
 }

@@ -27,14 +27,15 @@ abstract class UShortArrayTile(val array: Array[Short], cols: Int, rows: Int)
     */
   def copy = UShortArrayTile(array.clone, cols, rows)
 
-  def asRawTile: UShortArrayTile = UShortArrayTile(array, cols, rows, cellType.withNoNoData)
+  def withNoData(noDataValue: Option[Double]): UShortArrayTile =
+    UShortArrayTile(array, cols, rows, cellType.withNoData(noDataValue))
 
   def interpretAs(newCellType: CellType): ArrayTile = {
     newCellType match {
       case dt: UShortCells with NoDataHandling =>
         UShortArrayTile(array, cols, rows, dt)
       case _ =>
-        asRawTile.convert(newCellType)
+        withNoData(None).convert(newCellType)
     }
   }
 }
@@ -196,6 +197,32 @@ object UShortArrayTile {
     case udct: UShortUserDefinedNoDataCellType =>
       new UShortUserDefinedNoDataArrayTile(arr, cols, rows, udct)
   }
+
+  /**
+    * Create a new [[UShortArrayTile]] from an array of integers, a
+    * number of columns, and a number of rows.
+    *
+    * @param   arr          An array of integers
+    * @param   cols         The number of columns
+    * @param   rows         The number of rows
+    * @param   noDataValue  Optional NODATA value
+    * @return               A new UShortArrayTile
+    */
+  def apply(arr: Array[Short], cols: Int, rows: Int, noDataValue: Option[Short]): UShortArrayTile =
+    apply(arr, cols, rows, UShortCells.withNoData(noDataValue))
+
+  /**
+    * Create a new [[UShortArrayTile]] from an array of integers, a
+    * number of columns, and a number of rows.
+    *
+    * @param   arr          An array of integers
+    * @param   cols         The number of columns
+    * @param   rows         The number of rows
+    * @param   noDataValue  NODATA value
+    * @return               A new UShortArrayTile
+    */
+  def apply(arr: Array[Short], cols: Int, rows: Int, noDataValue: Short): UShortArrayTile =
+    apply(arr, cols, rows, Some(noDataValue))
 
   /**
     * Produce a [[UShortArrayTile]] of the specified dimensions.

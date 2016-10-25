@@ -45,14 +45,15 @@ abstract class FloatArrayTile(val array: Array[Float], cols: Int, rows: Int)
     */
   def copy: ArrayTile = ArrayTile(array.clone, cols, rows)
 
-  def asRawTile: FloatArrayTile = FloatArrayTile(array, cols, rows, cellType.withNoNoData)
+  def withNoData(noDataValue: Option[Double]): FloatArrayTile =
+    FloatArrayTile(array, cols, rows, cellType.withNoData(noDataValue))
 
   def interpretAs(newCellType: CellType) = {
     newCellType match {
       case dt: FloatCells with NoDataHandling =>
         FloatArrayTile(array, cols, rows, dt)
       case _ =>
-        asRawTile.convert(newCellType)
+        withNoData(None).convert(newCellType)
     }
   }
 }
@@ -215,6 +216,32 @@ object FloatArrayTile {
       case udct: FloatUserDefinedNoDataCellType =>
         new FloatUserDefinedNoDataArrayTile(arr, cols, rows, udct)
     }
+
+  /**
+    * Create a new [[DoubleArrayTile]] from an array of floats, a
+    * number of columns, and a number of rows.
+    *
+    * @param   arr          An array of floats
+    * @param   cols         The number of columns
+    * @param   rows         The number of rows
+    * @param   noDataValue  Optional NODATA value
+    * @return               A new DoubleArrayTile
+    */
+  def apply(arr: Array[Float], cols: Int, rows: Int, noDataValue: Option[Float]): FloatArrayTile =
+    apply(arr, cols, rows, FloatCells.withNoData(noDataValue))
+
+  /**
+    * Create a new [[DoubleArrayTile]]  an array of floats, a
+    * number of columns, and a number of rows.
+    *
+    * @param   arr          An array of floats
+    * @param   cols         The number of columns
+    * @param   rows         The number of rows
+    * @param   noDataValue  NODATA value
+    * @return               A new DoubleArrayTile
+    */
+  def apply(arr: Array[Float], cols: Int, rows: Int, noDataValue: Float): FloatArrayTile =
+    apply(arr, cols, rows, Some(noDataValue))
 
   /**
     * Produce a [[FloatArrayTile]] of the specified dimensions.

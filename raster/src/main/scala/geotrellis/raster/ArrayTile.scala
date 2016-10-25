@@ -62,7 +62,7 @@ trait ArrayTile extends Tile with Serializable {
     tile
   }
 
-  def asRawTile: ArrayTile
+  def withNoData(noDataValue: Option[Double]): ArrayTile
 
   def interpretAs(newCellType: CellType): ArrayTile
 
