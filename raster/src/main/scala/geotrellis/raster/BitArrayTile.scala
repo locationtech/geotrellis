@@ -132,12 +132,12 @@ final case class BitArrayTile(val array: Array[Byte], cols: Int, rows: Int)
 
   def asRawTile: BitArrayTile = BitArrayTile(array, cols, rows)
 
-  def interpretAs(targetCellType: CellType): ArrayTile = {
-    targetCellType match {
+  def interpretAs(newCellType: CellType): ArrayTile = {
+    newCellType match {
       case dt: ByteCells with NoDataHandling =>
         ByteArrayTile(array, cols, rows, dt)
       case _ =>
-        asRawTile.convert(targetCellType)
+        asRawTile.convert(newCellType)
     }
   }
 }

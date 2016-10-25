@@ -61,12 +61,12 @@ class UInt32GeoTiffTile(
   def asRawTile: UInt32GeoTiffTile =
     new UInt32GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoNoData)
 
-  def interpretAs(targetCellType: CellType): Tile = {
-    targetCellType match {
+  def interpretAs(newCellType: CellType): Tile = {
+    newCellType match {
       case dt: FloatCells with NoDataHandling =>
         new UInt32GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, dt)
       case _ =>
-        asRawTile.convert(targetCellType)
+        asRawTile.convert(newCellType)
     }
   }
 }

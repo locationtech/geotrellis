@@ -49,12 +49,12 @@ abstract class DoubleArrayTile(val array: Array[Double], cols: Int, rows: Int)
 
   def asRawTile: DoubleArrayTile = DoubleArrayTile(array, cols, rows, cellType.withNoNoData)
 
-  def interpretAs(targetCellType: CellType): ArrayTile = {
-    targetCellType match {
+  def interpretAs(newCellType: CellType): ArrayTile = {
+    newCellType match {
       case dt: DoubleCells with NoDataHandling =>
         DoubleArrayTile(array, cols, rows, dt)
       case _ =>
-        asRawTile.convert(targetCellType)
+        asRawTile.convert(newCellType)
     }
   }
 }

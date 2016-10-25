@@ -95,12 +95,12 @@ class Int16GeoTiffTile(
   def asRawTile: Int16GeoTiffTile =
     new Int16GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoNoData)
 
-  def interpretAs(targetCellType: CellType): Tile = {
-    targetCellType match {
+  def interpretAs(newCellType: CellType): Tile = {
+    newCellType match {
       case dt: ShortCells with NoDataHandling =>
         new Int16GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, dt)
       case _ =>
-        asRawTile.convert(targetCellType)
+        asRawTile.convert(newCellType)
     }
   }
 }

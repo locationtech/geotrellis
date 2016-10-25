@@ -97,12 +97,12 @@ class ByteGeoTiffTile(
   def asRawTile: ByteGeoTiffTile =
     new ByteGeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoNoData)
 
-  def interpretAs(targetCellType: CellType): Tile = {
-    targetCellType match {
+  def interpretAs(newCellType: CellType): Tile = {
+    newCellType match {
       case dt: ByteCells with NoDataHandling =>
         new ByteGeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, dt)
       case _ =>
-        asRawTile.convert(targetCellType)
+        asRawTile.convert(newCellType)
     }
   }
 }

@@ -28,12 +28,12 @@ abstract class UByteArrayTile(val array: Array[Byte], cols: Int, rows: Int)
 
   def asRawTile: UByteArrayTile = UByteArrayTile(array, cols, rows, cellType.withNoNoData)
 
-  def interpretAs(targetCellType: CellType): ArrayTile = {
-    targetCellType match {
+  def interpretAs(newCellType: CellType): ArrayTile = {
+    newCellType match {
       case dt: UByteCells with NoDataHandling =>
         UByteArrayTile(array, cols, rows, dt)
       case _ =>
-        asRawTile.convert(targetCellType)
+        asRawTile.convert(newCellType)
     }
   }
 }

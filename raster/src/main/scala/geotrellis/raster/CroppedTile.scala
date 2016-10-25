@@ -79,8 +79,8 @@ case class CroppedTile(sourceTile: Tile,
   def asRawTile =
     CroppedTile(sourceTile.asRawTile, gridBounds)
 
-  def interpretAs(targetCellType: CellType) =
-    CroppedTile(sourceTile.interpretAs(targetCellType), gridBounds)
+  def interpretAs(newCellType: CellType) =
+    CroppedTile(sourceTile.interpretAs(newCellType), gridBounds)
 
   /**
     * Fetch the datum at the given column and row of the tile.

@@ -64,7 +64,7 @@ trait ArrayTile extends Tile with Serializable {
 
   def asRawTile: ArrayTile
 
-  def interpretAs(targetCellType: CellType): ArrayTile
+  def interpretAs(newCellType: CellType): ArrayTile
 
   /**
     * Execute a function on each cell of the [[ArrayTile]].

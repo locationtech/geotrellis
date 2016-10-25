@@ -47,12 +47,12 @@ abstract class FloatArrayTile(val array: Array[Float], cols: Int, rows: Int)
 
   def asRawTile: FloatArrayTile = FloatArrayTile(array, cols, rows, cellType.withNoNoData)
 
-  def interpretAs(targetCellType: CellType) = {
-    targetCellType match {
+  def interpretAs(newCellType: CellType) = {
+    newCellType match {
       case dt: FloatCells with NoDataHandling =>
         FloatArrayTile(array, cols, rows, dt)
       case _ =>
-        asRawTile.convert(targetCellType)
+        asRawTile.convert(newCellType)
     }
   }
 }
