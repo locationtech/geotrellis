@@ -4,7 +4,6 @@ import geotrellis.util.MethodExtensions
 import geotrellis.vector.{Feature, Geometry}
 import geotrellis.util.annotations.experimental
 
-
 @experimental object GeoMesaImplicits extends GeoMesaImplicits
 
 @experimental trait GeoMesaImplicits {

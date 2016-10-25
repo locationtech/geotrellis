@@ -40,7 +40,6 @@ import scala.collection.mutable.ArrayBuffer
 import org.locationtech.geomesa.features.SerializationOption.SerializationOptions
 import org.locationtech.geomesa.accumulo.data.tables.GeoMesaTable
 
-
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
