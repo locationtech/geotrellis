@@ -18,7 +18,7 @@ trait ByteReader {
   def getFloat: Float
   def getDouble: Double
   def getLong: Long
-  
+
   def getByteBuffer: ByteBuffer
 }
 
@@ -43,7 +43,7 @@ object ByteReader {
       def getByteBuffer = byteBuffer
     }
   }
-  
+
   implicit def toByteBuffer(br: ByteReader): ByteBuffer =
     br.getByteBuffer
 }
