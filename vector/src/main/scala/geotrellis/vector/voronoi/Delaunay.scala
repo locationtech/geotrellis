@@ -1,10 +1,15 @@
 package geotrellis.vector.voronoi
 
-import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
-import geotrellis.vector._
+import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, MultiPoint}
+import com.vividsolutions.jts.triangulate.DelaunayTriangulationBuilder
+import com.vividsolutions.jts.triangulate.quadedge.{QuadEdge}
+import geotrellis.util.Constants.{FLOAT_EPSILON => EPSILON}
+import geotrellis.vector.Point
 import scala.math.pow
 import org.apache.commons.math3.linear._
-import scala.collection.mutable.Map
+import scala.annotation.tailrec
+import scala.collection.JavaConversions._
+import scala.collection.mutable.{Map, Set}
 
 object Predicates {
   def det3 (a11: Double, a12: Double, a13: Double,
@@ -102,6 +107,136 @@ object Predicates {
   }
 }
 
+case class Delaunay(verts: Array[Point]) {
+  private def distinctPoints(lst: List[Int]): List[Int] = {
+    @tailrec def dpInternal(l: List[Int], acc: List[Int]): List[Int] = {
+      l match {
+        case Nil => acc
+        case i :: Nil => i :: acc
+        case i :: rest => {
+          val chunk = rest.takeWhile{j => verts(j).x <= verts(i).x + 1e-8}
+          if (chunk.exists{j => verts(j).distance(verts(i)) < 1e-10})
+            dpInternal(rest, acc)
+          else
+            dpInternal(rest, i :: acc)
+        }
+      }
+    }
+    dpInternal(lst, Nil).reverse
+  }
+
+  /*private*/ val vIx = distinctPoints((0 until verts.length).toList.sortWith{
+      (i1,i2) => {
+        val p1 = verts(i1)
+        val p2 = verts(i2)
+        if (p1.x < p2.x) {
+          true
+        } else {
+          if (p1.x > p2.x) {
+            false
+          } else {
+            p1.y < p2.y
+          }
+        }
+      }
+    }).toArray
+
+  def findVertex(target: Point): Int = {
+    @tailrec def binsearch(lo: Int, hi: Int): Int = {
+      val mid = (lo + hi) / 2
+      val p = verts(vIx(mid))
+
+      if (hi < lo)
+        -1
+      else if (target == p)
+        vIx(mid)
+      else if (target.x - p.x < -EPSILON)
+        binsearch(lo, mid - 1)
+      else if (target.x - p.x > EPSILON)
+        binsearch(mid + 1, hi)
+      else if (target.y - p.y < -EPSILON)
+        binsearch(lo, mid - 1)
+      else // if (target.y - p.y > EPSILON)
+        binsearch(mid + 1, hi)
+    }
+    binsearch(0, vIx.size - 1)
+  }
+
+  private def regularizeTriangleIndex (index: (Int, Int, Int)): (Int, Int, Int) = {
+    index match {
+      case (a, b, c) if (a < b && a < c) => (a, b, c)
+      case (a, b, c) if (b < a && b < c) => (b, c, a)
+      case (a, b, c) => (c, a, b)
+    }
+  }
+
+
+  private val _triangles = Map.empty[(Int, Int, Int), HalfEdge[Int, Point]]
+  private val _faceIncidentToVertex = Map.empty[Int, HalfEdge[Int, Point]]
+  
+  private def coord2pt(coord: Coordinate) = Point(coord.x, coord.y)
+
+  private def buildTriangulation(): HalfEdge[Int, Point] = {
+    val gf = new GeometryFactory
+    val sites = new MultiPoint((0 until vIx.size).map{ i => verts(vIx(i)).jtsGeom }.toArray, gf)
+    val builder = new DelaunayTriangulationBuilder
+    builder.setSites(sites)
+
+    val halfedges = Map.empty[(Int, Int), HalfEdge[Int, Point]]
+    val subd = builder.getSubdivision
+    val tris = subd.getTriangleEdges(false).toArray.map(_.asInstanceOf[Array[QuadEdge]])
+    implicit val trans = { i: Int => verts(i) }
+
+    tris.foreach { tri => {
+      val triverts = tri.map { qe => findVertex(coord2pt(qe.dest.getCoordinate)) }
+      val center = Predicates.circleCenter(triverts(0), triverts(1), triverts(2))
+      val es = for (i <- 0 to 2) yield { new HalfEdge(triverts(i), null, null, Some(center)) }
+      for (i <- 0 to 2) {
+        es(i).next = es((i + 1) % 3)
+        halfedges += (es(i).vert, es((i + 1) % 3).vert) -> es((i+1)%3)
+        if (halfedges.contains( (es((i + 1) % 3).vert, es(i).vert) )) {
+          es((i+1)%3).flip = halfedges( (es((i + 1) % 3).vert, es(i).vert) )
+          halfedges( (es((i + 1) % 3).vert, es(i).vert) ).flip = es((i + 1) % 3)
+        }
+        _faceIncidentToVertex += triverts(i) -> es(i)
+      }
+      _triangles += regularizeTriangleIndex((triverts(0), triverts(1), triverts(2))) -> es(0)
+    }}
+
+    val unmatched = halfedges.filter { case (_, he) => he.flip == null }
+    val border = Map.empty[Int, HalfEdge[Int, Point]]
+    unmatched.foreach{ case (key, he) => {
+      val (src, dest) = key
+      val opp = new HalfEdge(src, he, null, None)
+      he.flip = opp
+      halfedges += (dest, src) -> opp
+      border += dest -> opp
+    }}
+    border.foreach { case (_, edge) => edge.next = border(edge.vert) }
+
+    // val borders = halfedges.filter { case (key, he) => {
+    //   if (he.flip == null) {
+    //     val (src, dest) = key
+    //     val opp = new HalfEdge(src, he, null, None)
+    //     he.flip = opp
+    //     halfedges += (dest, src) -> opp
+    //     true
+    //   } else
+    //     false
+    // }}.map { case (k, v) => (k._2, v.flip) }
+    // borders.foreach { case (src, edge) => {
+    //   edge.next = borders(edge.vert)
+    // }}
+
+    border.head._2
+  }
+
+  val boundary = buildTriangulation
+  lazy val triangles = _triangles.toMap
+  lazy val faceIncidentToVertex = _faceIncidentToVertex.toMap
+}
+
+/*
 /**
  * A class to compute the Delaunay triangulation of a set of points.  Details can be found in
  * <geotrellis_home>/docs/vector/voronoi.md
@@ -117,7 +252,7 @@ case class Delaunay(verts: Array[Point]) {
    */
   lazy val triangles = _triangles.toMap
 
-  val _faceIncidentToVertex = Map.empty[Int, HalfEdge[Int, Point]]
+  private val _faceIncidentToVertex = Map.empty[Int, HalfEdge[Int, Point]]
 
   /**
    * A catalog of edges incident on the vertices of a Delaunay triangulation.  These half edges may
@@ -159,17 +294,45 @@ case class Delaunay(verts: Array[Point]) {
     _triangles(idx)
   }
 
+/*
   private def distinctBy[T](eq: (T,T) => Boolean)(l: List[T]): List[T] = {
-    l match {
-      case Nil => Nil
-      case x::Nil => x::Nil
-      case x::y::xs if eq(x,y) => distinctBy(eq)(x::xs)
-      case x::y::xs => x :: distinctBy(eq)(y::xs)
-    }
+    // l match {
+    //   case Nil => Nil
+    //   case x::Nil => x::Nil
+    //   case x::y::xs if eq(x,y) => distinctBy(eq)(x::xs)
+    //   case x::y::xs => x :: distinctBy(eq)(y::xs)
+    // }
+    distinctByInternal(eq)(l, Nil).reverse
   }
 
-  private val vIx = distinctBy{ (i: Int, j: Int) => verts(i).distance(verts(j)) < 1e-10 }(
-    (0 until verts.length).toList.sortWith{
+  @tailrec private def distinctByInternal[T](eq: (T,T) => Boolean)(l: List[T], acc: List[T]): List[T] = {
+    l match {
+      case Nil => acc
+      case x::Nil => x :: acc
+      case x::y::xs if eq(x,y) => distinctByInternal(eq)(x :: xs, acc)
+      case x::y::xs => distinctByInternal(eq)(y :: xs, x :: acc)
+    }
+  }
+*/
+
+  private def distinctPoints(lst: List[Int]): List[Int] = {
+    @tailrec def dpInternal(l: List[Int], acc: List[Int]): List[Int] = {
+      l match {
+        case Nil => acc
+        case i :: Nil => i :: acc
+        case i :: rest => {
+          val chunk = rest.takeWhile{j => verts(j).x <= verts(i).x + 1e-8}
+          if (chunk.exists{j => verts(j).distance(verts(i)) < 1e-10})
+            dpInternal(rest, acc)
+          else
+            dpInternal(rest, i :: acc)
+        }
+      }
+    }
+    dpInternal(lst, Nil).reverse
+  }
+
+  /*private*/ val vIx = distinctPoints((0 until verts.length).toList.sortWith{
       (i1,i2) => {
         val p1 = verts(i1)
         val p2 = verts(i2)
@@ -184,6 +347,62 @@ case class Delaunay(verts: Array[Point]) {
         }
       }
     }).toArray
+
+  // val vIx = distinctBy{ (i: Int, j: Int) => verts(i).distance(verts(j)) < 1e-10 }(
+  //   (0 until verts.length).toList.sortWith{
+  //     (i1,i2) => {
+  //       val p1 = verts(i1)
+  //       val p2 = verts(i2)
+  //       if (p1.x < p2.x) {
+  //         true
+  //       } else {
+  //         if (p1.x > p2.x) {
+  //           false
+  //         } else {
+  //           p1.y < p2.y
+  //         }
+  //       }
+  //     }
+  //   }).toArray
+
+  def validIndices() = faceIncidentToVertex.keys.toArray
+
+  def isConvexBound(e: HalfEdge[Int, Point])(implicit trans: Int => Point): Boolean = {
+    @tailrec def bendsRight(curr: HalfEdge[Int, Point]): Boolean = {
+      if (curr == e)
+        true
+      else
+        if (!Predicates.isLeftOf(curr, curr.next.vert))
+          bendsRight(curr.next)
+        else
+          false
+    }
+
+    bendsRight(e.next)
+  }
+
+  def findAllTris(base: HalfEdge[Int, Point]) = {
+    val tris = Set.empty[(Int,Int,Int)]
+    def idxOf(e: HalfEdge[Int, Point]) = regularizeTriangleIndex((e.vert, e.next.vert, e.next.next.vert))
+    def recur(e: HalfEdge[Int, Point]): Unit = {
+      if (e.face != None) {
+        val idx = idxOf(e)
+        if (!tris(idx)) {
+          tris += idx
+          recur(e.flip)
+          recur(e.next.flip)
+          recur(e.next.next.flip)
+        }
+      }
+    }
+    recur(base)
+    tris
+  }
+
+  //var errorState: (Set[(Int,Int,Int)],Set[(Int,Int,Int)]) = null
+  var errorState: (HalfEdge[Int,Point],HalfEdge[Int,Point]) = null
+  var errored: Boolean = false
+  var errorRanges: (Int,Int,Int) = null
 
   private def triangulate(lo: Int, hi: Int): HalfEdge[Int,Point] = {
     // Implementation follows Guibas and Stolfi, ACM Transations on Graphics, vol. 4(2), 1985, pp. 74--123
@@ -212,20 +431,28 @@ case class Delaunay(verts: Array[Point]) {
         insertTriangle((vIx(lo), vIx(lo+2), vIx(lo+1)), t)
         t
       }
-      case 3 => {
+      case 3 => { // points in a straight line
         val a = HalfEdge[Int,Point](vIx(lo), vIx(lo+1))
         val b = HalfEdge[Int,Point](vIx(lo+1), vIx(lo+2))
         a.next = b
         b.flip.next = a.flip
+        _faceIncidentToVertex += (a.src -> a.flip, a.vert -> a, b.vert -> b)
         b.flip
       }
-      case _ => {
+      case _ => { 
         val med = (hi + lo) / 2
         var left = triangulate(lo,med)
         var right = triangulate(med+1,hi)
 
-        // compute the lower common tangent of left and right
-        //  NOTE: failures in the Delaunay triangulator are likely due to a failure in this step
+        if(!errored) {
+          // errorState = (findAllTris(left.flip), findAllTris(right.flip))
+          errorState = (left, right)
+          errorRanges = (lo,med,hi)
+        }
+
+        // Find the "lowest" chord between the boundaries of left and right that does not split either 
+        // left or right's point set
+        // *** NOTE: failures in the Delaunay triangulator are likely due to a failure in this step ***
         var continue = true
         var base: HalfEdge[Int, Point] = null
         while (continue) {
@@ -248,7 +475,15 @@ case class Delaunay(verts: Array[Point]) {
           } else if (isLeftOf(base, right.prev.src)) {
             right = right.prev
           } else {
-            continue = false
+            // Do the right thing with straight lines
+            if (!isRightOf(right, left.src) && !isLeftOf(right, left.src) && 
+                verts(right.vert).distance(verts(left.src)) < verts(right.src).distance(verts(left.src)))
+              right = right.next
+            else if (!isRightOf(left.prev, right.src) && !isLeftOf(left.prev, right.src) &&
+                     verts(left.prev.src).distance(verts(right.src)) < verts(left.src).distance(verts(right.src)))
+              left = left.prev
+            else
+              continue = false
           }
         }
 
@@ -257,6 +492,7 @@ case class Delaunay(verts: Array[Point]) {
         base.flip.next = right
         left.prev.next = base.flip
         right.prev.next = base
+        _faceIncidentToVertex += (base.vert -> base, base.src -> base.flip)
 
         continue = true
         while (continue) {
@@ -319,6 +555,8 @@ case class Delaunay(verts: Array[Point]) {
           }
         }
 
+        errored = errored || !isConvexBound(base.flip.next)
+
         base.flip.next
       }
     }
@@ -333,3 +571,96 @@ case class Delaunay(verts: Array[Point]) {
 
 }
 
+/*
+import com.azavea.generation.paths._
+import org.apache.commons.math3.linear._
+import geotrellis.vector.{Point,Polygon,Extent,Line}
+import geotrellis.vector.voronoi.{HalfEdge,Delaunay}
+import geotrellis.raster.{IntArrayTile,MutableArrayTile,RasterExtent}
+import geotrellis.raster.render.ColorMap
+import geotrellis.raster.rasterize.Rasterizer
+import scala.math.{Pi,sin,cos,pow,sqrt}
+import scala.annotation.tailrec
+
+val pts = Main.loadPoints(new java.io.File("locations.txt"))
+val dt = Delaunay(pts)
+implicit val trans = { i: Int => pts(i) }
+
+def det3 (a11: Double, a12: Double, a13: Double,
+          a21: Double, a22: Double, a23: Double,
+          a31: Double, a32: Double, a33: Double): Double = {
+  val m = MatrixUtils.createRealMatrix(Array(Array(a11, a12, a13),
+                                             Array(a21, a22, a23),
+                                             Array(a31, a32, a33)))
+  (new LUDecomposition(m)).getDeterminant
+}
+
+def polyFromHE(e: HalfEdge[Int,Point])(implicit trans: Int => Point) = {
+  @tailrec def go(edge: HalfEdge[Int,Point], acc: List[Int]): List[Int] = {
+    if (edge.next == e) { e.vert :: edge.vert :: acc } else { go(edge.next, edge.vert :: acc) }
+  }
+  Polygon(go(e, Nil).reverse.map(trans(_)))
+}
+
+def rasterizeDT(dt: Delaunay)(implicit trans: Int => Point): Unit = {
+  val tile = IntArrayTile.fill(255, 1920, 960)
+  val re = RasterExtent(Extent(-180,-90,180,90),1920,960)
+  Rasterizer.foreachCellByPolygon(polyFromHE(dt.errorState._1), re){ (c,r) => tile.set(c,r,1) }
+  Rasterizer.foreachCellByPolygon(polyFromHE(dt.errorState._2), re){ (c,r) => tile.set(c,r,2) }
+  val cm = ColorMap(scala.collection.immutable.Map(1 -> 0xff0000ff, 2 -> 0x0000ffff, 255 -> 0xffffffff))
+  tile.renderPng(cm).write("delaunay.png")
+}
+
+def rasterizeDT(dt: Delaunay)(implicit trans: Int => Point): Unit = {
+  val tile = IntArrayTile.fill(255, 1920, 960)
+  val re = RasterExtent(Extent(-180,-90,180,90),1920,960)
+  dt.errorState._1.foreach{ case (ai,bi,ci) => {
+    val poly = Polygon(Seq(trans(ai),trans(bi),trans(ci),trans(ai)))
+    Rasterizer.foreachCellByPolygon(poly, re){ (c,r) => tile.set(c,r,1) }
+  }}
+  dt.errorState._2.foreach{ case (ai,bi,ci) => {
+    val poly = Polygon(Seq(trans(ai),trans(bi),trans(ci),trans(ai)))
+    Rasterizer.foreachCellByPolygon(poly, re){ (c,r) => tile.set(c,r,2) }
+  }}
+  val cm = ColorMap(scala.collection.immutable.Map(1 -> 0xff0000ff, 2 -> 0x0000ffff, 255 -> 0xffffffff))
+  tile.renderPng(cm).write("delaunay.png")
+}
+def rasterizeDT(dt: Delaunay)(implicit trans: Int => Point): Unit = {
+  val tile = IntArrayTile.fill(255, 1920, 960)
+  val re = RasterExtent(Extent(-180,-90,180,90),1920,960)
+  dt.triangles.keys.foreach{ case (ai,bi,ci) => {
+    val poly = Polygon(Seq(trans(ai),trans(bi),trans(ci),trans(ai)))
+    Rasterizer.foreachCellByLineString(poly.exterior, re){ (c,r) => tile.set(c,r,1) }
+  }}
+  val cm = ColorMap(scala.collection.immutable.Map(1 -> 0x000000ff, 255 -> 0xffffffff))
+  tile.renderPng(cm).write("delaunay.png")
+}
+
+def collectFan(e: HalfEdge[Int, Point]): Seq[HalfEdge[Int,Point]] = {
+  def go(edge: HalfEdge[Int,Point]): Seq[HalfEdge[Int,Point]] =
+    if (edge == e) Seq(edge) else edge +: go(edge.rotCWDest)
+  go(e.rotCWDest)
+}
+
+def forallInFan(f: HalfEdge[Int,Point] => Boolean)(e: HalfEdge[Int,Point]): Boolean = 
+  collectFan(e).forall(f)
+
+def rasterizeDTEdges(dt: Delaunay)(implicit trans: Int => Point): Unit = {
+  val tile = IntArrayTile.fill(255, 1920, 960)
+  val re = RasterExtent(Extent(-180,-90,180,90),1920,960)
+  dt.faceIncidentToVertex.values.foreach{ case e => {
+    val fan = collectFan(e)
+    fan.foreach{ e => {
+      val a = e.src
+      val b = e.vert
+      if (a < b) {
+        val line = Line(a,b)
+        Rasterizer.foreachCellByLineString(line, re){ (c,r) => tile.set(c,r,1) }
+      }
+    }}
+  }}
+  val cm = ColorMap(scala.collection.immutable.Map(1 -> 0x000000ff, 255 -> 0xffffffff))
+  tile.renderPng(cm).write("delaunay.png")
+}
+*/
+*/
