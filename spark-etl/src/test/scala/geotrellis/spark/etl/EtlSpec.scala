@@ -53,8 +53,7 @@ object EtlSpec {
 
   val etlConf = new EtlConf(
     input  = input,
-    output = output,
-    outputProfile = Some(profiles.head)
+    output = output
   )
 
   Etl(etlConf)
