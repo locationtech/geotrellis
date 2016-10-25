@@ -12,7 +12,8 @@ pages:
   - Tutorials:
       - Setup: tutorials/setup.md
   - User Guide: []
-  - Architecture: []
+  - Architecture:
+      - Architecture Decision Records: architecture/adr.md
 
 markdown_extensions:
 - toc:

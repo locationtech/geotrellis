@@ -6,17 +6,16 @@ help you get up and running with a basic GeoTrellis development environment.
 Requirements
 ------------
 
-- [Java 8](http://www.oracle.com/technetwork/java/javase/overview/index.html).
-GeoTrellis code won't function with Java 7 or below. You can test if Java is
-installed on a Linux or Mac system by entering the following in a
-terminal:
+[Java 8](http://www.oracle.com/technetwork/java/javase/overview/index.html).
+GeoTrellis code won't function with Java 7 or below. You can test your Java
+version by entering the following in a Linux or Mac terminal:
 
 ```console
-> which java
-/bin/java
+> javac -version
+javac 1.8.0_102
 ```
 
-If something like `/bin/java` appeared, then you have Java installed.
+You want to see `1.8` like above.
 
 Using Scala
 -----------
