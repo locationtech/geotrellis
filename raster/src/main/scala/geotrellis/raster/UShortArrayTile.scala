@@ -29,12 +29,12 @@ abstract class UShortArrayTile(val array: Array[Short], cols: Int, rows: Int)
 
   def asRawTile: UShortArrayTile = UShortArrayTile(array, cols, rows, cellType.withNoNoData)
 
-  def interpretAs(targetCellType: CellType): ArrayTile = {
-    targetCellType match {
+  def interpretAs(newCellType: CellType): ArrayTile = {
+    newCellType match {
       case dt: UShortCells with NoDataHandling =>
         UShortArrayTile(array, cols, rows, dt)
       case _ =>
-        asRawTile.convert(targetCellType)
+        asRawTile.convert(newCellType)
     }
   }
 }

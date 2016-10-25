@@ -107,7 +107,7 @@ class Int32GeoTiffTile(
   def interpretAs(targetCellType: CellType): Tile = {
     targetCellType match {
       case dt: IntCells with NoDataHandling =>
-        new Int32GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, dt.withNoNoData)
+        new Int32GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, dt)
       case _ =>
         asRawTile.convert(targetCellType)
     }

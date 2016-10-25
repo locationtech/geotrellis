@@ -106,7 +106,7 @@ class Float64GeoTiffTile(
   def interpretAs(targetCellType: CellType): Tile = {
     targetCellType match {
       case dt: DoubleCells with NoDataHandling =>
-        new Float64GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, dt.withNoNoData)
+        new Float64GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, dt)
       case _ =>
         asRawTile.convert(targetCellType)
     }

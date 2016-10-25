@@ -100,7 +100,7 @@ class ByteGeoTiffTile(
   def interpretAs(targetCellType: CellType): Tile = {
     targetCellType match {
       case dt: ByteCells with NoDataHandling =>
-        new ByteGeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, dt.withNoNoData)
+        new ByteGeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, dt)
       case _ =>
         asRawTile.convert(targetCellType)
     }
