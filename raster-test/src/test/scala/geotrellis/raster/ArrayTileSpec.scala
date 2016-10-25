@@ -91,18 +91,32 @@ class ArrayTileSpec extends FunSpec
      */
 
     def checkFloatInterpretAs(tile: Tile, udCt: Double => CellType, constCt: CellType) = {
-      tile.foreachDouble { v =>
-        withClue(s"ND=$v") {
-          assert(tile.interpretAs(udCt(v)).interpretAs(constCt).asRawTile equals tile)
-        }
+      for {
+        r <- 0 until tile.rows
+        c <- 0 until tile.cols
+      } {
+        val v = tile.get(c, r)
+        val udTile = tile.interpretAs(udCt(v))
+        val constTile = udTile.interpretAs(constCt)
+        val res = constTile.asRawTile
+        withClue(s"ND=$v") { assert(res equals tile) }
+        val cell = udTile.getDouble(c,r)
+        withClue(s"udTile($c, $r), ND=$v") { assert(isNoData(cell)) }
       }
     }
 
     def checkIntInterpretAs(tile: Tile, udCt: Int => CellType, constCt: CellType) = {
-      tile.foreach { v =>
-        withClue(s"ND=$v") {
-          assert(tile.interpretAs(udCt(v)).interpretAs(constCt).asRawTile equals tile)
-        }
+      for {
+        r <- 0 until tile.rows
+        c <- 0 until tile.cols
+      } {
+        val v = tile.get(c, r)
+        val udTile = tile.interpretAs(udCt(v))
+        val constTile = udTile.interpretAs(constCt)
+        val res = constTile.asRawTile
+        withClue(s"ND=$v") { assert(res equals tile) }
+        val cell = udTile.get(c,r)
+        withClue(s"udTile($c, $r), ND=$v") { assert(isNoData(cell)) }
       }
     }
 
