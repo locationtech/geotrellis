@@ -12,7 +12,10 @@ pages:
   - Tutorials:
       - Setup: tutorials/setup.md
   - User Guide:
+    - Core Concepts: guide/core-concepts.md
     - GeoTrellis Module Hierarchy: guide/module-hierarchy.md
+    - Tile Layer Backends: guide/tile-backends.md
+    - Vector Data Backends: guide/vector-backends.md
   - Architecture:
       - Architecture Decision Records: architecture/adr.md
 
