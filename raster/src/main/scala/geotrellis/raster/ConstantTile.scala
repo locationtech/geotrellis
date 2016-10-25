@@ -91,7 +91,7 @@ trait ConstantTile extends Tile {
     }
   }
 
-  def interpret(targetCellType: CellType): Tile =
+  def interpretAs(targetCellType: CellType): Tile =
     asRawTile.convert(targetCellType)
 
   /**

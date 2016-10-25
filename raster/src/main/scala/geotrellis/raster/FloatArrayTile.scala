@@ -47,7 +47,7 @@ abstract class FloatArrayTile(val array: Array[Float], cols: Int, rows: Int)
 
   def asRawTile: FloatArrayTile = FloatArrayTile(array, cols, rows, cellType.withNoNoData)
 
-  def interpret(targetCellType: CellType) = {
+  def interpretAs(targetCellType: CellType) = {
     targetCellType match {
       case dt: FloatCells with NoDataHandling =>
         FloatArrayTile(array, cols, rows, dt)

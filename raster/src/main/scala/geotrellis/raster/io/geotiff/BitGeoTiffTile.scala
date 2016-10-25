@@ -73,7 +73,7 @@ class BitGeoTiffTile(
   def asRawTile: BitGeoTiffTile =
     new BitGeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoNoData)
 
-  def interpret(targetCellType: CellType): Tile = {
+  def interpretAs(targetCellType: CellType): Tile = {
     targetCellType match {
       case dt: BitCells with NoDataHandling =>
         new BitGeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, dt.withNoNoData)

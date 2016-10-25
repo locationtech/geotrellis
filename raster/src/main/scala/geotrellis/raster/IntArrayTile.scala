@@ -50,7 +50,7 @@ abstract class IntArrayTile(val array: Array[Int], cols: Int, rows: Int)
 
   def asRawTile: IntArrayTile = IntArrayTile(array, cols, rows, IntCellType)
 
-  def interpret(targetCellType: CellType): ArrayTile = {
+  def interpretAs(targetCellType: CellType): ArrayTile = {
     targetCellType match {
       case dt: IntCells with NoDataHandling =>
         IntArrayTile(array, cols, rows, dt)

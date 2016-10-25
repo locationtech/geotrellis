@@ -50,6 +50,6 @@ class PixelInterleaveBandArrayTile(inner: ArrayTile, bandCount: Int, bandIndex: 
   def asRawTile =
     PixelInterleaveBandArrayTile(inner.asRawTile, bandCount, bandIndex)
 
-  def interpret(targetCellType: CellType) =
-    PixelInterleaveBandArrayTile(inner.interpret(targetCellType), bandCount, bandIndex)
+  def interpretAs(targetCellType: CellType) =
+    PixelInterleaveBandArrayTile(inner.interpretAs(targetCellType), bandCount, bandIndex)
 }

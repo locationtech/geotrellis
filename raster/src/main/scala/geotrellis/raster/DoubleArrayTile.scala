@@ -49,7 +49,7 @@ abstract class DoubleArrayTile(val array: Array[Double], cols: Int, rows: Int)
 
   def asRawTile: DoubleArrayTile = DoubleArrayTile(array, cols, rows, cellType.withNoNoData)
 
-  def interpret(targetCellType: CellType): ArrayTile = {
+  def interpretAs(targetCellType: CellType): ArrayTile = {
     targetCellType match {
       case dt: DoubleCells with NoDataHandling =>
         DoubleArrayTile(array, cols, rows, dt)

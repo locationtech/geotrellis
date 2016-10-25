@@ -122,11 +122,10 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] with LazyL
   /** Changes the interpretation of the tile cells through changing NoData handling and optionally cell data type.
     * If [[DataType]] portion of the [[CellType]] is unchanged the tile data is not duplicated through conversion.
     * If cell [[DataType]] conversion is required it is done in a naive way, without considering NoData handling.
-    * 
-    * @param targetCellType
-    * @return
+    *
+    * @param targetCellType CellType to be used in interpreting existing cells
     */
-  def interpret(targetCellType: CellType): Tile
+  def interpretAs(targetCellType: CellType): Tile
 
   /**
     * Get value at given coordinates.

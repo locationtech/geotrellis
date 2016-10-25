@@ -141,8 +141,8 @@ case class CompositeTile(tiles: Seq[Tile],
   def asRawTile: CompositeTile =
     CompositeTile(tiles.map(_.asRawTile), tileLayout)
 
-  def interpret(targetCellType: CellType): CompositeTile =
-    CompositeTile(tiles.map(_.interpret(targetCellType)), tileLayout)
+  def interpretAs(targetCellType: CellType): CompositeTile =
+    CompositeTile(tiles.map(_.interpretAs(targetCellType)), tileLayout)
 
   /**
     * Another name for the 'mutable' method on this class.

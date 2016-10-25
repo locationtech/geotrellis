@@ -25,7 +25,7 @@ abstract class ByteArrayTile(val array: Array[Byte], cols: Int, rows: Int)
 
   def asRawTile: ByteArrayTile = ByteArrayTile(array, cols, rows, cellType.withNoNoData)
 
-  def interpret(targetCellType: CellType): ArrayTile = {
+  def interpretAs(targetCellType: CellType): ArrayTile = {
     targetCellType match {
       case dt: ByteCells with NoDataHandling =>
         ByteArrayTile(array, cols, rows, dt)

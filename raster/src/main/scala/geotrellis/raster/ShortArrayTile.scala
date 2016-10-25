@@ -30,7 +30,7 @@ abstract class ShortArrayTile(val array: Array[Short], cols: Int, rows: Int)
 
   def asRawTile: ShortArrayTile = ShortArrayTile(array, cols, rows, cellType.withNoNoData)
 
-  def interpret(targetCellType: CellType): ArrayTile = {
+  def interpretAs(targetCellType: CellType): ArrayTile = {
     targetCellType match {
       case dt: ShortCells with NoDataHandling =>
         ShortArrayTile(array, cols, rows, dt)
