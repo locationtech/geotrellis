@@ -201,7 +201,7 @@ trait ConfigFormats {
       "cache"   -> i.cache.toJson,
       "noData"  -> i.noData.toJson,
       "clip"    -> i.clip.toJson,
-      "input"   -> i.crs.toJson
+      "crs"   -> i.crs.toJson
     )
     def read(value: JsValue): Input =
       value match {
