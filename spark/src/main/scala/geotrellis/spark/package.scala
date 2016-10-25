@@ -189,6 +189,11 @@ package object spark
       TileLayerMetadata.fromRdd[K1, V, K2](rdd, layoutScheme)
     }
 
+    def collectMetadata[K2: Boundable: SpatialComponent](crs: CRS, size: Int, zoom: Int)
+        (implicit ev: K1 => TilerKeyMethods[K1, K2], ev1: GetComponent[K1, ProjectedExtent]): (Int, TileLayerMetadata[K2]) = {
+      TileLayerMetadata.fromRdd[K1, V, K2](rdd, ZoomedLayoutScheme(crs, size), zoom)
+    }
+
     def collectMetadata[K2: Boundable: SpatialComponent](layout: LayoutDefinition)
         (implicit ev: K1 => TilerKeyMethods[K1, K2], ev1: GetComponent[K1, ProjectedExtent]): TileLayerMetadata[K2] = {
       TileLayerMetadata.fromRdd[K1, V, K2](rdd, layout)
