@@ -51,14 +51,14 @@ abstract class IntArrayTile(val array: Array[Int], cols: Int, rows: Int)
   def asRawTile: IntArrayTile = IntArrayTile(array, cols, rows, IntCellType)
 
   // This would be pushed to [[Tile]]
-  def withNoData[T: Numeric](v: Option[T]): Tile =  
-   v match { 
-    case Some(nd) => withNoData(nd) 
-    case None => asRawTile 
+  def withNoData[T: Numeric](v: Option[T]): Tile =
+   v match {
+    case Some(nd) => withNoData(nd)
+    case None => asRawTile
    }
-   
-  def withNoData[T: Numeric](v: T): Tile = 
-   IntArrayTile(array, cols, rows, implicitly[Numeric[T]].toInt(v).toShort) 
+
+  def withNoData[T: Numeric](v: T): Tile =
+   IntArrayTile(array, cols, rows, implicitly[Numeric[T]].toInt(v).toShort)
 
   def interpretAs(targetCellType: CellType): ArrayTile = {
     targetCellType match {
@@ -229,18 +229,18 @@ object IntArrayTile {
         new IntUserDefinedNoDataArrayTile(arr, cols, rows, udct)
     }
 
-  def apply(arr: Array[Int], cols: Int, rows: Int, noData: Option[Int]): IntArrayTile = 
+  def apply(arr: Array[Int], cols: Int, rows: Int, noData: Option[Int]): IntArrayTile =
    noData match {
     case Some(nd) if isNoData(nd) =>
-      new IntConstantNoDataArrayTile(arr, cols, rows) 
-    case Some(nd) =>  
-     new IntUserDefinedNoDataArrayTile(arr, cols, rows, IntUserDefinedNoDataCellType(nd)) 
+      new IntConstantNoDataArrayTile(arr, cols, rows)
+    case Some(nd) =>
+     new IntUserDefinedNoDataArrayTile(arr, cols, rows, IntUserDefinedNoDataCellType(nd))
     case None =>
-      new IntRawArrayTile(arr, cols, rows) 
-  }  
+      new IntRawArrayTile(arr, cols, rows)
+  }
 
-  def apply(arr: Array[Int], cols: Int, rows: Int, noData: Int): IntArrayTile = 
-   apply(arr, cols, rows, Some(noData)) 
+  def apply(arr: Array[Int], cols: Int, rows: Int, noData: Int): IntArrayTile =
+   apply(arr, cols, rows, Some(noData))
 
   /**
     * Produce a [[IntArrayTile]] of the specified dimensions.
