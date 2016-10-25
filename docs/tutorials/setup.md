@@ -105,7 +105,7 @@ libraryDependencies ++= Seq(
 )
 ```
 
-[Click here for a full list and explanation of each GeoTrellis module](#).
+[Click here for a full list and explanation of each GeoTrellis module](../guide/module-hierarchy.md).
 
 Now that you've gotten a simple GeoTrellis environment set up, it's time to
 get your feet wet with some of its capabilities.

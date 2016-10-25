@@ -11,7 +11,8 @@ pages:
   - Changelog: CHANGELOG.md
   - Tutorials:
       - Setup: tutorials/setup.md
-  - User Guide: []
+  - User Guide:
+    - GeoTrellis Module Hierarchy: guide/module-hierarchy.md
   - Architecture:
       - Architecture Decision Records: architecture/adr.md
 
