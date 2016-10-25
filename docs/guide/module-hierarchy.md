@@ -21,7 +21,7 @@ layer backend.
 
 *Provides:* `geotrellis.spark.io.cassandra.*`
 
-- Save and load layers to and from Casandra. Query large layers efficiently
+- Save and load layers to and from Cassandra. Query large layers efficiently
 using the layer query API.
 
 geotrellis-etl
@@ -38,6 +38,16 @@ A command-line tool for streamlining the ingest process.
 - Transform input rasters into layers based on a ZXY layout scheme
 - Save layers into Accumulo, S3, HDFS or the local file system.
 
+geotrellis-geomesa
+------------------
+
+*Experimental.* GeoTrellis compatibility for the distributed feature store
+[GeoMesa](http://www.geomesa.org/).
+
+*Provides:* `geotrellis.spark.io.geomesa.*`
+
+- Save and load `RDD`s of features to and from GeoMesa.
+
 geotrellis-hbase
 ----------------
 
@@ -52,7 +62,7 @@ using the layer query API.
 geotrellis-proj4
 ----------------
 
-*Provides:* `geotrellis.proj4.*`, `org.osgeo.proj4.*`
+*Provides:* `geotrellis.proj4.*`, `org.osgeo.proj4.*` (Java)
 
 - Represent a Coordinate Reference System (CRS) based on Ellipsoid, Datum, and Projection.
 - Translate CRSs to and from proj4 string representations.
@@ -206,3 +216,13 @@ Plumbing for other GeoTrellis modules.
 - Data structures missing from Scala
 - Lenses
 - Constants
+
+geotrellis-geowave
+------------------
+
+*Experimental.* GeoTrellis compatibility for the distributed feature store
+[GeoWave](https://github.com/ngageoint/geowave).
+
+*Provides:* `geotrellis.spark.io.geowave.*`
+
+- Save and load `RDD`s of features to and from GeoWave.
