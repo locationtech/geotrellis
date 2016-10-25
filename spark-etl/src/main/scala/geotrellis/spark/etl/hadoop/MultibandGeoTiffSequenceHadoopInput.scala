@@ -16,7 +16,7 @@ class MultibandGeoTiffSequenceHadoopInput extends HadoopInput[ProjectedExtent, M
       .sequenceFile[String, Array[Byte]](getPath(conf.input.backend).path)
       .map { case (path, bytes) =>
         val geotiff = GeoTiffReader.readMultiband(bytes)
-        (ProjectedExtent(geotiff.extent, inputCrs.fold(geotiff.crs)(identity)), geotiff.tile)
+        (ProjectedExtent(geotiff.extent, inputCrs.getOrElse(geotiff.crs)), geotiff.tile)
       }
   }
 }

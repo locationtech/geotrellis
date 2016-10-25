@@ -28,6 +28,6 @@ class GeotiffInputFormat extends BinaryFileInputFormat[ProjectedExtent, Tile] {
     val inputCrs = TemporalGeoTiffInputFormat.getCrs(context)
 
     val ProjectedRaster(Raster(tile, extent), crs) = SinglebandGeoTiff(bytes).projectedRaster
-    (ProjectedExtent(extent, inputCrs.fold(crs)(identity)), tile)
+    (ProjectedExtent(extent, inputCrs.getOrElse(crs)), tile)
   }
 }

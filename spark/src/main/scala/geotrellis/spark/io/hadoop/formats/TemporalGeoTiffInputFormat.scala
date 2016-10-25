@@ -68,6 +68,6 @@ class TemporalGeoTiffInputFormat extends BinaryFileInputFormat[TemporalProjected
     val dateTime = ZonedDateTime.from(dateFormatter.parse(dateTimeString))
 
     val ProjectedRaster(Raster(tile, extent), crs) = geoTiff.projectedRaster
-    (TemporalProjectedExtent(extent, inputCrs.fold(crs)(identity), dateTime), tile)
+    (TemporalProjectedExtent(extent, inputCrs.getOrElse(crs), dateTime), tile)
   }
 }

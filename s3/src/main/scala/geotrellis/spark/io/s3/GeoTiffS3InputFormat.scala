@@ -16,6 +16,6 @@ class GeoTiffS3RecordReader(context: TaskAttemptContext) extends S3RecordReader[
     val geoTiff = SinglebandGeoTiff(bytes)
     val inputCrs = TemporalGeoTiffS3InputFormat.getCrs(context)
     val ProjectedRaster(Raster(tile, extent), crs) = geoTiff.projectedRaster
-    (ProjectedExtent(extent, inputCrs.fold(crs)(identity)), tile)
+    (ProjectedExtent(extent, inputCrs.getOrElse(crs)), tile)
   }
 }

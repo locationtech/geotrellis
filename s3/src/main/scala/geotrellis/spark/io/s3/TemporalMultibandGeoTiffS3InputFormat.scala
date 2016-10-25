@@ -27,7 +27,7 @@ class TemporalMultibandGeoTiffS3InputFormat extends S3InputFormat[TemporalProjec
         val dateTime = ZonedDateTime.parse(dateTimeString, dateFormatter)
 
         val ProjectedRaster(Raster(tile, extent), crs) = geoTiff.projectedRaster
-        (TemporalProjectedExtent(extent, inputCrs.fold(crs)(identity), dateTime), tile)
+        (TemporalProjectedExtent(extent, inputCrs.getOrElse(crs), dateTime), tile)
       }
     }
 }

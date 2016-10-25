@@ -11,6 +11,6 @@ class MultibandGeoTiffInputFormat extends BinaryFileInputFormat[ProjectedExtent,
   def read(bytes: Array[Byte], context: TaskAttemptContext): (ProjectedExtent, MultibandTile) = {
     val inputCrs = TemporalGeoTiffInputFormat.getCrs(context)
     val gt = MultibandGeoTiff(bytes)
-    (ProjectedExtent(gt.extent, inputCrs.fold(gt.crs)(identity)), gt.tile)
+    (ProjectedExtent(gt.extent, inputCrs.getOrElse(gt.crs)), gt.tile)
   }
 }

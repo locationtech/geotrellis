@@ -69,6 +69,6 @@ class TemporalGeoTiffS3RecordReader(context: TaskAttemptContext) extends S3Recor
 
     //WARNING: Assuming this is a single band GeoTiff
     val ProjectedRaster(Raster(tile, extent), crs) = geoTiff.projectedRaster
-    (TemporalProjectedExtent(extent, inputCrs.fold(crs)(identity), dateTime), tile)
+    (TemporalProjectedExtent(extent, inputCrs.getOrElse(crs), dateTime), tile)
   }
 }
