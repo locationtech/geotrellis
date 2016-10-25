@@ -41,4 +41,16 @@ class Int32GeoTiffMultibandTile(
         result
       }
     }
+
+  def asRawTile =
+    new Int32GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType.withNoNoData)
+
+  def interpretAs(newCellType: CellType)  = {
+    newCellType match {
+      case dt: IntCells with NoDataHandling =>
+        new Int32GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, dt)
+      case _ =>
+        asRawTile.convert(newCellType)
+    }
+  }
 }

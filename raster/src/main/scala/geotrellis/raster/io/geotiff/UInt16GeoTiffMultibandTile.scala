@@ -12,7 +12,7 @@ class UInt16GeoTiffMultibandTile(
   compression: Compression,
   bandCount: Int,
   hasPixelInterleave: Boolean,
-  val cellType: CellType
+  val cellType: UShortCells with NoDataHandling
 ) extends GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
     with UInt16GeoTiffSegmentCollection {
 
@@ -41,4 +41,16 @@ class UInt16GeoTiffMultibandTile(
         result
       }
     }
+
+  def asRawTile =
+    new UInt16GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType.withNoNoData)
+
+  def interpretAs(newCellType: CellType)  = {
+    newCellType match {
+      case dt: UShortCells with NoDataHandling =>
+        new UInt16GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, dt)
+      case _ =>
+        asRawTile.convert(newCellType)
+    }
+  }
 }

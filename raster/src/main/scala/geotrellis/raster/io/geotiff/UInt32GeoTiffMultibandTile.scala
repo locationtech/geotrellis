@@ -35,5 +35,18 @@ class UInt32GeoTiffMultibandTile(
         result
       }
     }
+
+  def asRawTile =
+    new UInt32GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, FloatCellType)
+
+
+  def interpretAs(newCellType: CellType)  = {
+    newCellType match {
+      case dt: FloatCells with NoDataHandling =>
+        new UInt32GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, dt)
+      case _ =>
+        asRawTile.convert(newCellType)
+    }
+  }
 }
 
