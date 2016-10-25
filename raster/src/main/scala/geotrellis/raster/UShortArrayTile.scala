@@ -1,8 +1,5 @@
 package geotrellis.raster
 
-import geotrellis.vector.Extent
-
-import spire.syntax.cfor._
 import java.nio.ByteBuffer
 
 /**
@@ -29,6 +26,17 @@ abstract class UShortArrayTile(val array: Array[Short], cols: Int, rows: Int)
     * @return  The copy
     */
   def copy = UShortArrayTile(array.clone, cols, rows)
+
+  def asRawTile: UShortArrayTile = UShortArrayTile(array, cols, rows, cellType.withNoNoData)
+
+  def interpret(targetCellType: CellType): ArrayTile = {
+    targetCellType match {
+      case dt: UShortCells with NoDataHandling =>
+        UShortArrayTile(array, cols, rows, dt)
+      case _ =>
+        asRawTile.convert(targetCellType)
+    }
+  }
 }
 
 /**

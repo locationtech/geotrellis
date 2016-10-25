@@ -16,9 +16,6 @@
 
 package geotrellis.raster
 
-import geotrellis.vector.Extent
-
-import spire.syntax.cfor._
 import java.nio.ByteBuffer
 
 /**
@@ -50,6 +47,17 @@ abstract class IntArrayTile(val array: Array[Int], cols: Int, rows: Int)
     * @return  The copy
     */
   def copy: ArrayTile = ArrayTile(array.clone, cols, rows)
+
+  def asRawTile: IntArrayTile = IntArrayTile(array, cols, rows, IntCellType)
+
+  def interpret(targetCellType: CellType): ArrayTile = {
+    targetCellType match {
+      case dt: IntCells with NoDataHandling =>
+        IntArrayTile(array, cols, rows, dt)
+      case _ =>
+        asRawTile.convert(targetCellType)
+    }
+  }
 }
 
 /**

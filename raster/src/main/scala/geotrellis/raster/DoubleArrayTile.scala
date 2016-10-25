@@ -16,11 +16,7 @@
 
 package geotrellis.raster
 
-import geotrellis.vector.Extent
-
 import java.nio.ByteBuffer
-import spire.syntax.cfor._
-
 
 /**
  * [[ArrayTile]] based on Array[Double] (each cell as a Double).
@@ -50,6 +46,17 @@ abstract class DoubleArrayTile(val array: Array[Double], cols: Int, rows: Int)
     * @return  The copy
     */
   def copy: ArrayTile = ArrayTile(array.clone, cols, rows)
+
+  def asRawTile: DoubleArrayTile = DoubleArrayTile(array, cols, rows, cellType.withNoNoData)
+
+  def interpret(targetCellType: CellType): ArrayTile = {
+    targetCellType match {
+      case dt: DoubleCells with NoDataHandling =>
+        DoubleArrayTile(array, cols, rows, dt)
+      case _ =>
+        asRawTile.convert(targetCellType)
+    }
+  }
 }
 
 /**

@@ -1,11 +1,5 @@
 package geotrellis.raster
 
-import geotrellis.vector.Extent
-import geotrellis.raster.resample._
-
-import spire.syntax.cfor._
-import java.nio.ByteBuffer
-
 
 /**
  * [[ArrayTile]] based on Array[Byte] (each cell as a Byte).
@@ -28,6 +22,17 @@ abstract class ByteArrayTile(val array: Array[Byte], cols: Int, rows: Int)
     * @return  The copy
     */
   def copy: ByteArrayTile = ArrayTile(array.clone, cols, rows)
+
+  def asRawTile: ByteArrayTile = ByteArrayTile(array, cols, rows, cellType.withNoNoData)
+
+  def interpret(targetCellType: CellType): ArrayTile = {
+    targetCellType match {
+      case dt: ByteCells with NoDataHandling =>
+        ByteArrayTile(array, cols, rows, dt)
+      case _ =>
+        asRawTile.convert(targetCellType)
+    }
+  }
 }
 
 /**

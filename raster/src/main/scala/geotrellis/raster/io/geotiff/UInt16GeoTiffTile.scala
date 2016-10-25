@@ -87,4 +87,16 @@ class UInt16GeoTiffTile(
     }
     UShortArrayTile.fromBytes(arr, gridBounds.width, gridBounds.height, cellType)
   }
+
+  def asRawTile: UInt16GeoTiffTile =
+    new UInt16GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoNoData)
+
+  def interpret(targetCellType: CellType): Tile = {
+    targetCellType match {
+      case dt: UShortCells with NoDataHandling =>
+        new UInt16GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, dt.withNoNoData)
+      case _ =>
+        asRawTile.convert(targetCellType)
+    }
+  }
 }

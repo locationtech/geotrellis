@@ -25,6 +25,17 @@ abstract class UByteArrayTile(val array: Array[Byte], cols: Int, rows: Int)
     * @return  The copy
     */
   def copy = UByteArrayTile(array.clone, cols, rows, cellType)
+
+  def asRawTile: UByteArrayTile = UByteArrayTile(array, cols, rows, cellType.withNoNoData)
+
+  def interpret(targetCellType: CellType): ArrayTile = {
+    targetCellType match {
+      case dt: UByteCells with NoDataHandling =>
+        UByteArrayTile(array, cols, rows, dt)
+      case _ =>
+        asRawTile.convert(targetCellType)
+    }
+  }
 }
 
 /**
