@@ -1,26 +1,19 @@
 site_name: GeoTrellis
 site_author: GeoTrellis contributers
-repo_url: https://github.com/rossbernet/geotrellis/tree/master/docs
-copyright: Copyright (c) 2015-2016, GT contributors
+repo_url: https://github.com/rossbernet/geotrellis
+copyright: Copyright (c) 2012-2016, Azavea
 docs_dir: docs
 theme: readthedocs
 
 pages:
-- Home: 
-  - Welcome to GeoTrellis: index.md
-  - User Guide: user_guide.md
-  - High Performance Scala: HighPerformanceScala.md
+- Home: index.md
+- Changelog: []
 - Tutorials:
-  - Quick Start: quickstart.md
   - Setup: setup.md
+  - Quick Start: quickstart.md
+- User Guide: []
 - Architecture:
   - ADR docs: []
-- Changelog: []
-
-
-
-
-
 
 markdown_extensions:
 - toc:
