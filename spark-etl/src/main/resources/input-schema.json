@@ -11,6 +11,9 @@
     "cache": {
       "type": "string"
     },
+    "crs": {
+      "type": "string"
+    },
     "noData": {
       "type": "integer"
     },

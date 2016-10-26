@@ -10,7 +10,6 @@ import geotrellis.spark.testfiles.TestFiles
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
 import mil.nga.giat.geowave.core.geotime.ingest._
 import mil.nga.giat.geowave.core.store._
-import mil.nga.giat.geowave.core.store.index.writer.IndexWriter
 import mil.nga.giat.geowave.datastore.accumulo._
 import org.geotools.coverage.grid._
 import org.geotools.gce.geotiff._
@@ -25,7 +24,6 @@ class GeowaveSpatialSpec
     with Matchers
     with BeforeAndAfterAll
     with GeowaveTestEnvironment
-    with TestFiles
 {
 
   val gwNamespace = "TEST"

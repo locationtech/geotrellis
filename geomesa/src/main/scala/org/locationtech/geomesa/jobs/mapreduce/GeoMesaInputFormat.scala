@@ -8,9 +8,7 @@
 
 package org.locationtech.geomesa.jobs.mapreduce
 
-import java.io._
-import java.lang.Float._
-import java.net.{URL, URLClassLoader}
+import geotrellis.util.annotations.experimental
 
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.accumulo.core.client.mapreduce.{AbstractInputFormat, AccumuloInputFormat, InputFormatBase, RangeInputSplit}
@@ -32,17 +30,24 @@ import org.locationtech.geomesa.jobs.{GeoMesaConfigurator, JobUtils}
 import org.opengis.feature.simple.{SimpleFeature, SimpleFeatureType}
 import org.opengis.filter.Filter
 
+import java.io._
+import java.lang.Float._
+import java.net.{URL, URLClassLoader}
+
 import scala.annotation.tailrec
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer
 import org.locationtech.geomesa.features.SerializationOption.SerializationOptions
 import org.locationtech.geomesa.accumulo.data.tables.GeoMesaTable
 
-object GeoMesaInputFormat extends LazyLogging {
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental object GeoMesaInputFormat extends LazyLogging {
 
   val SYS_PROP_SPARK_LOAD_CP = "org.locationtech.geomesa.spark.load-classpath"
 
-  def configure(job: Job,
+  @experimental def configure(job: Job,
                 dsParams: Map[String, String],
                 featureTypeName: String,
                 filter: Option[String] = None,
@@ -54,12 +59,12 @@ object GeoMesaInputFormat extends LazyLogging {
   }
 
   /**
-    * Configure the input format.
+    * $experimental Configure the input format.
     *
     * This is a single method, as we have to calculate several things to pass to the underlying
     * AccumuloInputFormat, and there is not a good hook to indicate when the config is finished.
     */
-  def configure(job: Job, dsParams: Map[String, String], query: Query): Unit = {
+  @experimental def configure(job: Job, dsParams: Map[String, String], query: Query): Unit = {
 
     val ds = DataStoreFinder.getDataStore(dsParams).asInstanceOf[AccumuloDataStore]
     assert(ds != null, "Invalid data store parameters")
@@ -114,11 +119,12 @@ object GeoMesaInputFormat extends LazyLogging {
   }
 
   /**
-    * This takes any jars that have been loaded by spark in the context classloader and makes them
-    * available to the general classloader. This is required as not all classes (even spark ones) check
-    * the context classloader.
+    * $experimental This takes any jars that have been loaded by spark
+    * in the context classloader and makes them available to the
+    * general classloader. This is required as not all classes (even
+    * spark ones) check the context classloader.
     */
-  def ensureSparkClasspath(): Unit = {
+  @experimental def ensureSparkClasspath(): Unit = {
     val sysLoader = ClassLoader.getSystemClassLoader
     val ccl = Thread.currentThread().getContextClassLoader
     if (ccl == null || !ccl.getClass.getCanonicalName.startsWith("org.apache.spark.")) {
@@ -143,8 +149,10 @@ object GeoMesaInputFormat extends LazyLogging {
 
 /**
   * Input format that allows processing of simple features from GeoMesa based on a CQL query
+  *
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
-class GeoMesaInputFormat extends InputFormat[Text, SimpleFeature] with LazyLogging {
+@experimental class GeoMesaInputFormat extends InputFormat[Text, SimpleFeature] with LazyLogging {
 
   val delegate = new AccumuloInputFormat
 
@@ -153,7 +161,7 @@ class GeoMesaInputFormat extends InputFormat[Text, SimpleFeature] with LazyLoggi
   var desiredSplitCount: Int = -1
   var table: GeoMesaTable = null
 
-  private def init(conf: Configuration) = if (sft == null) {
+  @experimental private def init(conf: Configuration) = if (sft == null) {
     val params = GeoMesaConfigurator.getDataStoreInParams(conf)
     val ds = DataStoreFinder.getDataStore(params).asInstanceOf[AccumuloDataStore]
     sft = ds.getSchema(GeoMesaConfigurator.getFeatureType(conf))
@@ -173,7 +181,7 @@ class GeoMesaInputFormat extends InputFormat[Text, SimpleFeature] with LazyLoggi
     * geomesa, that creates too many mappers. Instead, we try to group the ranges by tservers. We use the
     * number of shards in the schema as a proxy for number of tservers.
     */
-  override def getSplits(context: JobContext): java.util.List[InputSplit] = {
+  @experimental override def getSplits(context: JobContext): java.util.List[InputSplit] = {
     init(context.getConfiguration)
     val accumuloSplits = delegate.getSplits(context)
     // fallback on creating 2 mappers per node if desiredSplits is unset.
@@ -198,7 +206,7 @@ class GeoMesaInputFormat extends InputFormat[Text, SimpleFeature] with LazyLoggi
     splitsSet.toList
   }
 
-  override def createRecordReader(split: InputSplit, context: TaskAttemptContext) = {
+  @experimental override def createRecordReader(split: InputSplit, context: TaskAttemptContext) = {
     import org.locationtech.geomesa.utils.geotools.RichSimpleFeatureType.RichSimpleFeatureType
 
     init(context.getConfiguration)
@@ -216,12 +224,14 @@ class GeoMesaInputFormat extends InputFormat[Text, SimpleFeature] with LazyLoggi
 }
 
 /**
-  * Record reader that delegates to accumulo record readers and transforms the key/values coming back into
-  * simple features.
+  * Record reader that delegates to accumulo record readers and
+  * transforms the key/values coming back into simple features.
   *
   * @param readers
+  *
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
-class GeoMesaRecordReader(sft: SimpleFeatureType,
+@experimental class GeoMesaRecordReader(sft: SimpleFeatureType,
                           table: GeoMesaTable,
                           readers: Array[RecordReader[Key, Value]],
                           hasId: Boolean,
@@ -234,7 +244,7 @@ class GeoMesaRecordReader(sft: SimpleFeatureType,
 
   val getId = table.getIdFromRow(sft)
 
-  override def initialize(split: InputSplit, context: TaskAttemptContext) = {
+  @experimental override def initialize(split: InputSplit, context: TaskAttemptContext) = {
     val splits = split.asInstanceOf[GroupedSplit].splits
     var i = 0
     while (i < splits.length) {
@@ -249,7 +259,7 @@ class GeoMesaRecordReader(sft: SimpleFeatureType,
   /**
     * Advances to the next delegate reader
     */
-  private[this] def nextReader() = {
+  @experimental private[this] def nextReader() = {
     readerIndex = readerIndex + 1
     if (readerIndex < readers.length) {
       currentReader = Some(readers(readerIndex))
@@ -258,19 +268,18 @@ class GeoMesaRecordReader(sft: SimpleFeatureType,
     }
   }
 
-  override def getProgress = if (readers.length == 0) 1f else if (readerIndex < 0) 0f else {
+  @experimental override def getProgress = if (readers.length == 0) 1f else if (readerIndex < 0) 0f else {
     val readersProgress = readerIndex * 1f / readers.length
     val readerProgress = currentReader.map(_.getProgress / readers.length).filterNot(isNaN).getOrElse(0f)
     readersProgress + readerProgress
   }
 
-  override def nextKeyValue() = nextKeyValueInternal()
+  @experimental override def nextKeyValue() = nextKeyValueInternal()
 
   /**
     * Get the next key value from the underlying reader, incrementing the reader when required
     */
-  @tailrec
-  private def nextKeyValueInternal(): Boolean =
+  @tailrec @experimental private def nextKeyValueInternal(): Boolean =
   currentReader match {
     case None => false
     case Some(reader) =>
@@ -286,18 +295,20 @@ class GeoMesaRecordReader(sft: SimpleFeatureType,
       }
   }
 
-  override def getCurrentValue = currentFeature
+  @experimental override def getCurrentValue = currentFeature
 
-  override def getCurrentKey = new Text(currentFeature.getID)
+  @experimental override def getCurrentKey = new Text(currentFeature.getID)
 
-  override def close() = {} // delegate Accumulo readers have a no-op close
+  @experimental override def close() = {} // delegate Accumulo readers have a no-op close
 }
 
 /**
-  * Input split that groups a series of RangeInputSplits. Has to implement Hadoop Writable, thus the vars and
-  * mutable state.
+  * Input split that groups a series of RangeInputSplits. Has to
+  * implement Hadoop Writable, thus the vars and mutable state.
+  *
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
-class GroupedSplit extends InputSplit with Writable {
+@experimental class GroupedSplit extends InputSplit with Writable {
 
   // if we're running in spark, we need to load the context classpath before anything else,
   // otherwise we get classloading and serialization issues
@@ -308,17 +319,17 @@ class GroupedSplit extends InputSplit with Writable {
   var location: String = null
   var splits: ArrayBuffer[RangeInputSplit] = ArrayBuffer.empty
 
-  override def getLength =  splits.foldLeft(0L)((l: Long, r: RangeInputSplit) => l + r.getLength)
+  @experimental override def getLength =  splits.foldLeft(0L)((l: Long, r: RangeInputSplit) => l + r.getLength)
 
-  override def getLocations = if (location == null) Array.empty else Array(location)
+  @experimental override def getLocations = if (location == null) Array.empty else Array(location)
 
-  override def write(out: DataOutput) = {
+  @experimental override def write(out: DataOutput) = {
     out.writeUTF(location)
     out.writeInt(splits.length)
     splits.foreach(_.write(out))
   }
 
-  override def readFields(in: DataInput) = {
+  @experimental override def readFields(in: DataInput) = {
     location = in.readUTF()
     splits.clear()
     var i = 0
@@ -331,5 +342,5 @@ class GroupedSplit extends InputSplit with Writable {
     }
   }
 
-  override def toString = s"mapreduce.GroupedSplit[$location](${splits.length})"
+  @experimental override def toString = s"mapreduce.GroupedSplit[$location](${splits.length})"
 }

@@ -6,4 +6,4 @@ docker network create --driver bridge geowave
 docker run -td --restart=always --net=geowave \
        -p 50095:5009 -p 21810:2181 -p 9997:9997 -p 9999:9999 \
        --hostname leader --name leader \
-       jamesmcclain/geowave:8760ce2
+       jamesmcclain/geowave:c127c16

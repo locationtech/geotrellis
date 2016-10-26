@@ -22,11 +22,15 @@ import geotrellis.util._
 import org.apache.spark.rdd._
 import java.time.ZonedDateTime
 
-abstract class SpaceTimeToSpatialMethods[K: SpatialComponent: TemporalComponent, V, M: Component[?, Bounds[K]]]
-    extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
-  def toSpatial(instant: Long): RDD[(SpatialKey, V)] with Metadata[M] =
+/** See [[geotrellis.spark.filter.ToSpatial]] to get explanations about Metadata (M[K]) constrains */
+abstract class SpaceTimeToSpatialMethods[
+  K: SpatialComponent: TemporalComponent: λ[α => M[α] => Functor[M, α]]: λ[α => Component[M[α], Bounds[α]]],
+  V,
+  M[_]
+] extends MethodExtensions[RDD[(K, V)] with Metadata[M[K]]] {
+  def toSpatial(instant: Long): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] =
     ToSpatial(self, instant)
 
-  def toSpatial(dateTime: ZonedDateTime): RDD[(SpatialKey, V)] with Metadata[M] =
+  def toSpatial(dateTime: ZonedDateTime): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] =
     toSpatial(dateTime.toInstant.toEpochMilli)
 }

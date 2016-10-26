@@ -17,6 +17,7 @@ trait GeoTiffData {
   def extent: Extent
   def crs: CRS
   def tags: Tags
+  def options: GeoTiffOptions
 
   def pixelSampleType: Option[PixelSampleType] =
     tags.headTags.get(Tags.AREA_OR_POINT).flatMap { aop =>

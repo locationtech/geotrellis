@@ -13,10 +13,10 @@ import org.scalatest._
 class MockGeoTiffS3InputFormat extends GeoTiffS3InputFormat {
   override def getS3Client(credentials: AWSCredentials): S3Client = new MockS3Client
   override def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
-    new MockGeoTiffS3RecordReader
+    new MockGeoTiffS3RecordReader(context)
 }
 
-class MockGeoTiffS3RecordReader extends GeoTiffS3RecordReader {
+class MockGeoTiffS3RecordReader(context: TaskAttemptContext) extends GeoTiffS3RecordReader(context) {
   override def getS3Client(credentials: AWSCredentials): S3Client = new MockS3Client
 }
 

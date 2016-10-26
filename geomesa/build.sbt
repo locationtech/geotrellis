@@ -5,9 +5,7 @@ libraryDependencies ++= Seq(
   "org.locationtech.geomesa" % "geomesa-jobs" % Version.geomesa,
   "org.locationtech.geomesa" % "geomesa-accumulo-datastore" % Version.geomesa,
   "org.locationtech.geomesa" % "geomesa-utils" % Version.geomesa,
-  "de.javakaffee" % "kryo-serializers" % "0.38" exclude("com.esotericsoftware", "kryo"),
-  "com.esotericsoftware" % "kryo-shaded" % "3.0.3",
-  "org.apache.spark" %% "spark-core" % Version.spark % "provided",
+  sparkCore % "provided",
   spire,
   scalatest % "test")
 

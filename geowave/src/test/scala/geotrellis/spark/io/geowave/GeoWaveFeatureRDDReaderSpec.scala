@@ -42,43 +42,12 @@ object GeoWaveFeatureRDDReaderSpec {
   *  stage for testing. In particular (from the root of the GeoTrellis repository)
   *  `/scripts/runTestDBs` ought to be run prior to this suite's being run.
   */
-class GeoWaveFeatureRDDReaderSpec extends FunSpec { self: Suite =>
+class GeoWaveFeatureRDDReaderSpec
+    extends FunSpec
+    with GeowaveTestEnvironment
+{
+
   import GeoWaveFeatureRDDReaderSpec.id
-  def setKryoRegistrator(conf: SparkConf): Unit =
-    conf.set("spark.kryo.registrator", "geotrellis.spark.io.kryo.KryoRegistrator")
-
-  lazy val _sc: SparkContext = {
-    System.setProperty("spark.driver.port", "0")
-    System.setProperty("spark.hostPort", "0")
-    System.setProperty("spark.ui.enabled", "false")
-
-    val conf = new SparkConf()
-    conf
-      .setMaster("local")
-      .setAppName("Test Context")
-
-    // Shortcut out of using Kryo serialization if we want to test against
-    // java serialization.
-    if(Properties.envOrNone("GEOTRELLIS_USE_JAVA_SER") == None) {
-      conf
-        .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-        .set("spark.kryoserializer.buffer.max", "500m")
-        .set("spark.kryo.registrationRequired","false")
-      setKryoRegistrator(conf)
-    }
-    conf
-      .set("*.sink.servlet.class","")
-
-    val sparkContext = new SparkContext(conf)
-
-    System.clearProperty("spark.driver.port")
-    System.clearProperty("spark.hostPort")
-    System.clearProperty("spark.ui.enabled")
-
-    sparkContext
-  }
-
-  implicit def sc: SparkContext = _sc
 
   describe("GeoTrellis read/write with GeoWave") {
     it("Should roundtrip geowave records in accumulo") {
@@ -93,8 +62,8 @@ class GeoWaveFeatureRDDReaderSpec extends FunSpec { self: Suite =>
         .map { x: Int => Feature(Point(x, 40), Map[String, Any]()) }
         .toArray
       val featureRDD = sc.parallelize(features)
-      val zookeeper = "localhost:20000"
-      val instanceName = "AccumuloInstance"
+      val zookeeper = "localhost:21810"
+      val instanceName = "instance"
       val username = "root"
       val password = "password"
       val featureType = builder.buildFeatureType()

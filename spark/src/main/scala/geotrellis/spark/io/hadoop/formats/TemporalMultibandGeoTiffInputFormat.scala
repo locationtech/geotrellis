@@ -22,11 +22,12 @@ class TemporalMultibandGeoTiffInputFormat extends BinaryFileInputFormat[Temporal
 
     val timeTag = TemporalGeoTiffInputFormat.getTimeTag(context)
     val dateFormatter = TemporalGeoTiffInputFormat.getTimeFormatter(context)
+    val inputCrs = TemporalGeoTiffInputFormat.getCrs(context)
 
     val dateTimeString = geoTiff.tags.headTags.getOrElse(timeTag, sys.error(s"There is no tag $timeTag in the GeoTiff header"))
     val dateTime = ZonedDateTime.from(dateFormatter.parse(dateTimeString))
 
     val ProjectedRaster(Raster(tile, extent), crs) = geoTiff.projectedRaster
-    (TemporalProjectedExtent(extent, crs, dateTime), tile)
+    (TemporalProjectedExtent(extent, inputCrs.getOrElse(crs), dateTime), tile)
   }
 }

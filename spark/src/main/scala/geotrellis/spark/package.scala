@@ -24,6 +24,7 @@ import geotrellis.spark.tiling._
 import geotrellis.spark.ingest._
 import geotrellis.spark.crop._
 import geotrellis.spark.filter._
+
 import org.apache.spark.{Partitioner, SparkContext}
 import org.apache.spark.rdd._
 import spire.syntax.cfor._
@@ -32,35 +33,49 @@ import monocle.syntax._
 
 import scala.reflect.ClassTag
 import java.time.Instant
-import scalaz.Functor
 
 package object spark
     extends buffer.Implicits
     with crop.Implicits
     with density.Implicits
+    with equalization.Implicits
     with filter.Implicits
     with join.Implicits
     with knn.Implicits
+    with mapalgebra.focal.hillshade.Implicits
+    with mapalgebra.focal.Implicits
     with mapalgebra.Implicits
     with mapalgebra.local.Implicits
     with mapalgebra.local.temporal.Implicits
-    with mapalgebra.focal.Implicits
-    with mapalgebra.focal.hillshade.Implicits
     with mapalgebra.zonal.Implicits
     with mask.Implicits
     with merge.Implicits
     with partition.Implicits
-    with resample.Implicits
     with reproject.Implicits
+    with resample.Implicits
+    with sigmoidal.Implicits
     with split.Implicits
     with stitch.Implicits
-    with summary.polygonal.Implicits
     with summary.Implicits
+    with summary.polygonal.Implicits
     with tiling.Implicits {
   type TileLayerRDD[K] = RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]
   object TileLayerRDD {
     def apply[K](rdd: RDD[(K, Tile)], metadata: TileLayerMetadata[K]): TileLayerRDD[K] =
       new ContextRDD(rdd, metadata)
+  }
+
+  /**
+    * This is a type class required by the [[geotrellis.spark.filter.ToSpatial]] function.
+    * `map` applies a function `A => B` on the keys from this Metadata's [[KeyBounds]],
+    * which allows for the transformation:
+    * {{{TileLayerMetadata[A] => TileLayerMetadata[B]}}}
+    */
+  implicit class TileLayerMetadataFunctor[A](val self: TileLayerMetadata[A]) extends Functor[TileLayerMetadata, A] {
+    def map[B](f: A => B): TileLayerMetadata[B] = self.bounds match {
+      case KeyBounds(minKey, maxKey) => self.copy(bounds = KeyBounds(f(minKey), f(maxKey)))
+      case EmptyBounds => self.copy(bounds = EmptyBounds)
+    }
   }
 
   type TileLayerCollection[K] = Seq[(K, Tile)] with Metadata[TileLayerMetadata[K]]
@@ -174,9 +189,15 @@ package object spark
       TileLayerMetadata.fromRdd[K1, V, K2](rdd, layoutScheme)
     }
 
+    def collectMetadata[K2: Boundable: SpatialComponent](crs: CRS, size: Int, zoom: Int)
+        (implicit ev: K1 => TilerKeyMethods[K1, K2], ev1: GetComponent[K1, ProjectedExtent]): (Int, TileLayerMetadata[K2]) = {
+      TileLayerMetadata.fromRdd[K1, V, K2](rdd, ZoomedLayoutScheme(crs, size), zoom)
+    }
+
     def collectMetadata[K2: Boundable: SpatialComponent](layout: LayoutDefinition)
         (implicit ev: K1 => TilerKeyMethods[K1, K2], ev1: GetComponent[K1, ProjectedExtent]): TileLayerMetadata[K2] = {
       TileLayerMetadata.fromRdd[K1, V, K2](rdd, layout)
     }
- }
+  }
+
 }

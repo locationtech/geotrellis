@@ -128,7 +128,7 @@ object S3InputFormat {
   private val idRx = "[A-Z0-9]{20}"
   private val keyRx = "[a-zA-Z0-9+/]+={0,2}"
   private val slug = "[a-zA-Z0-9-]+"
-  val S3UrlRx = new Regex(s"""s3n://(?:($idRx):($keyRx)@)?($slug)/{0,1}(.*)""", "aws_id", "aws_key", "bucket", "prefix")
+  val S3UrlRx = new Regex(s"""s3[an]?://(?:($idRx):($keyRx)@)?($slug)/{0,1}(.*)""", "aws_id", "aws_key", "bucket", "prefix")
 
   /** Set S3N url to use, may include AWS Id and Key */
   def setUrl(job: Job, url: String): Unit =

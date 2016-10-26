@@ -1,5 +1,6 @@
 import Dependencies._
 import UnidocKeys._
+import sbt.Keys._
 
 lazy val commonSettings = Seq(
   version := Version.geotrellis,
@@ -73,7 +74,7 @@ lazy val root = Project("geotrellis", file(".")).
     hbase,
     geowave,
     geomesa,
-    geotools,    
+    geotools,
     slick,
     streaming,
     accumuloStreaming,
@@ -96,7 +97,7 @@ lazy val macros = Project("macros", file("macros")).
   settings(commonSettings: _*)
 
 lazy val vectortile = Project("vectortile", file("vectortile"))
-  .dependsOn(vector, spark)
+  .dependsOn(vector)
   .settings(commonSettings: _*)
 
 lazy val vector = Project("vector", file("vector")).
@@ -132,7 +133,7 @@ lazy val slick = Project("slick", file("slick")).
   settings(commonSettings: _*)
 
 lazy val spark = Project("spark", file("spark")).
-  dependsOn(util, raster, rasterTestkit % "provided;test->test").
+  dependsOn(util, vectortile, raster, rasterTestkit % "provided;test->test").
   settings(commonSettings: _*)
 
 lazy val sparkTestkit: Project = Project("spark-testkit", file("spark-testkit")).
@@ -157,7 +158,8 @@ lazy val cassandra = Project("cassandra", file("cassandra")).
 
 lazy val hbase = Project("hbase", file("hbase")).
   dependsOn(sparkTestkit % "test->test", spark % "provided;test->test").
-  settings(commonSettings: _*)
+  settings(commonSettings: _*). // HBase depends on its own protobuf version
+  settings(projectDependencies := { Seq((projectID in spark).value.exclude("com.google.protobuf", "protobuf-java")) })
 
 lazy val accumuloStreaming = Project("accumulo-streaming", file("accumulo-streaming")).
   dependsOn(sparkTestkit % "test->test", streaming, accumulo).

@@ -113,34 +113,23 @@ trait PostGISProjectionImplicits {
 }
 
 object PostGisProjectionSupportUtils {
+  lazy val WITH_SRID = """^SRID=([\d]+);(.*)""".r
+
   def toLiteral(pg: Projected[Geometry]): String = s"SRID=${pg.srid};${WKT.write(pg.geom)}"
 
   def fromLiteral[T <: Projected[_]](value: String): T =
-    splitRSIDAndWKT(value) match {
-      case (srid, wkt) =>
-        val geom =
-          if (wkt.startsWith("00") || wkt.startsWith("01"))
-            WKB.read(wkt)
-          else
-            WKT.read(wkt)
-
-        if (srid != -1)
-          Projected(geom, srid).asInstanceOf[T]
-        else
-          Projected(geom, geom.jtsGeom.getSRID).asInstanceOf[T]
+    value match {
+      case WITH_SRID(srid, wkt) =>
+        val geom = readWktOrWkb(wkt)
+        Projected(geom, srid.toInt).asInstanceOf[T]
+      case _ =>
+        val geom = readWktOrWkb(value)
+        Projected(geom, geom.jtsGeom.getSRID).asInstanceOf[T]
     }
 
-  /** copy from [[org.postgis.PGgeometry#splitSRID]] */
-  private def splitRSIDAndWKT(value: String): (Int, String) = {
-    if (value.startsWith("SRID=")) {
-      val index = value.indexOf(';', 5) // srid prefix length is 5
-      if (index == -1) {
-        throw new java.sql.SQLException("Error parsing Geometry - SRID not delimited with ';' ")
-      } else {
-        val srid = Integer.parseInt(value.substring(0, index))
-        val wkt = value.substring(index + 1)
-        (srid, wkt)
-      }
-    } else (-1, value)
-  }
+  def readWktOrWkb(s: String): Geometry =
+    if (s.startsWith("00") || s.startsWith("01"))
+      WKB.read(s)
+    else
+      WKT.read(s)
 }

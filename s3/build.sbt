@@ -2,7 +2,7 @@ import Dependencies._
 
 name := "geotrellis-s3"
 libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-core" % Version.spark % "provided",
+  sparkCore % "provided",
   awsSdkS3,
   spire,
   scalatest % "test")

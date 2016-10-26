@@ -1,5 +1,6 @@
 package geotrellis.raster.io.geotiff
 
+import geotrellis.util.ByteReader
 import geotrellis.vector.Extent
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
@@ -7,19 +8,18 @@ import geotrellis.raster.io.geotiff.tags._
 import geotrellis.raster.io.geotiff.util._
 
 import scala.collection.mutable._
-import java.nio.ByteBuffer
 import monocle.syntax.apply._
 import spire.syntax.cfor._
 
 /**
- * This class implements [[SegmentBytes]] via a ByteBuffer.
+ * This class implements [[SegmentBytes]] via a ByteReader.
  *
- * @param byteBuffer: A ByteBuffer that contains bytes of the GeoTiff
+ * @param byteReader: A ByteReader that contains bytes of the GeoTiff
  * @param storageMethod: The [[StorageMethod]] of the GeoTiff
  * @param tifftags: The [[TiffTags]] of the GeoTiff
  * @return A new instance of BufferSegmentBytes
  */
-case class BufferSegmentBytes(byteBuffer: ByteBuffer, tiffTags: TiffTags) extends SegmentBytes {
+case class BufferSegmentBytes(byteReader: ByteReader, tiffTags: TiffTags) extends SegmentBytes {
 
   val (offsets, byteCounts) =
     if (tiffTags.hasStripStorage) {
@@ -55,10 +55,10 @@ case class BufferSegmentBytes(byteBuffer: ByteBuffer, tiffTags: TiffTags) extend
    * @return An Array[Byte] that contains the bytes of the segment
    */
   def getSegment(i: Int) = {
-    val oldOffset = byteBuffer.position
-    byteBuffer.position(offsets(i))
-    val result = byteBuffer.getSignedByteArray(byteCounts(i))
-    byteBuffer.position(oldOffset)
+    val oldOffset = byteReader.position
+    byteReader.position(offsets(i))
+    val result = byteReader.getSignedByteArray(byteCounts(i))
+    byteReader.position(oldOffset)
     result
   }
 }

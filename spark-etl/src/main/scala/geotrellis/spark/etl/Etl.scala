@@ -125,11 +125,10 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
         val reprojected = rdd.reproject(destCrs)
         val (zoom: Int, md: TileLayerMetadata[K]) = scheme match {
           case Left(layoutScheme) => output.maxZoom match {
-            case Some(zoom) =>  TileLayerMetadata.fromRdd(reprojected, ZoomedLayoutScheme(destCrs, output.tileSize), zoom)
-            case _ => TileLayerMetadata.fromRdd(reprojected, layoutScheme)
+            case Some(zoom) =>  reprojected.collectMetadata(destCrs, output.tileSize, zoom)
+            case _ => reprojected.collectMetadata(layoutScheme)
           }
-          case Right(layoutDefinition) =>
-            TileLayerMetadata.fromRdd(reprojected, layoutDefinition)
+          case Right(layoutDefinition) => reprojected.collectMetadata(layoutDefinition)
         }
         val amd = adjustCellType(md)
         val tilerOptions = Tiler.Options(resampleMethod = method, partitioner = new HashPartitioner(rdd.partitions.length))
@@ -137,8 +136,8 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
 
       case BufferedReproject =>
         val (_, md) = output.maxZoom match {
-          case Some(zoom) =>  TileLayerMetadata.fromRdd(rdd, ZoomedLayoutScheme(destCrs, output.tileSize), zoom)
-          case _ => TileLayerMetadata.fromRdd(rdd, FloatingLayoutScheme(output.tileSize))
+          case Some(zoom) => rdd.collectMetadata(destCrs, output.tileSize, zoom)
+          case _ => rdd.collectMetadata(FloatingLayoutScheme(output.tileSize))
         }
         val amd = adjustCellType(md)
         // Keep the same number of partitions after tiling.

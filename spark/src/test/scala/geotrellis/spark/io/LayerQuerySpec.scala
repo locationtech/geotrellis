@@ -52,6 +52,8 @@ class LayerQuerySpec extends FunSpec
   describe("LayerFilter Polygon Intersection") {
     import geotrellis.vector.{Point, Polygon, MultiPolygon}
 
+    implicit def polygonToMultiPolygon(polygon: Polygon): MultiPolygon = MultiPolygon(polygon)
+
     val md = AllOnesTestFile.metadata
     val mt = md.mapTransform
     val kb = KeyBounds[SpatialKey](SpatialKey(0, 0), SpatialKey(6, 7))
@@ -75,14 +77,14 @@ class LayerQuerySpec extends FunSpec
       Point(-10.0, 35.0),
       Point(-125.0, 60.0)))
 
-    def naiveKeys(polygon : MultiPolygon) = {
+    def naiveKeys(polygon: MultiPolygon): List[SpatialKey] = {
       (for ((x, y) <- bounds.coords
-        if (polygon.intersects(md.mapTransform(SpatialKey(x, y))))) yield SpatialKey(x, y))
+        if polygon.intersects(md.mapTransform(SpatialKey(x, y)))) yield SpatialKey(x, y))
         .toList
     }
 
     it("should find all keys that intersect appreciably with a horizontal rectangle") {
-      val polygon = MultiPolygon(horizontal)
+      val polygon = horizontal
       val query = new LayerQuery[SpatialKey, TileLayerMetadata[SpatialKey]].where(Intersects(polygon))
       val actual = query(md).flatMap(spatialKeyBoundsKeys)
       val expected = naiveKeys(polygon)
@@ -90,7 +92,7 @@ class LayerQuerySpec extends FunSpec
     }
 
     it("should find all keys that intersect appreciably with a vertical rectangle") {
-      val polygon = MultiPolygon(vertical)
+      val polygon = vertical
       val query = new LayerQuery[SpatialKey, TileLayerMetadata[SpatialKey]].where(Intersects(polygon))
       val actual = query(md).flatMap(spatialKeyBoundsKeys)
       val expected = naiveKeys(polygon)
@@ -106,7 +108,7 @@ class LayerQuerySpec extends FunSpec
     }
 
     it("should find all keys that intersect appreciably with a diagonal rectangle") {
-      val polygon = MultiPolygon(diagonal)
+      val polygon = diagonal
       val query = new LayerQuery[SpatialKey, TileLayerMetadata[SpatialKey]].where(Intersects(polygon))
       val actual = query(md).flatMap(spatialKeyBoundsKeys)
       val expected = naiveKeys(polygon)
