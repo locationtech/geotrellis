@@ -5,7 +5,7 @@ libraryDependencies ++= Seq(
   "org.apache.accumulo" % "accumulo-core" % Version.accumulo
     exclude("org.jboss.netty", "netty")
     exclude("org.apache.hadoop", "hadoop-client"),
-  "org.apache.spark" %% "spark-core" % Version.spark % "provided",
+  sparkCore % "provided",
   spire,
   scalatest % "test")
 

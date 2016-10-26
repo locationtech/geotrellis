@@ -197,22 +197,6 @@ This is a list of features contained in the GeoTrellis library. It is broken up 
 
 [http://geotrellis.github.com/scaladocs/latest/#geotrellis.package](http://geotrellis.github.com/scaladocs/latest/#geotrellis.package)
 
-
-## Contributors
-
- - Josh Marcus
- - Erik Osheim
- - Rob Emanuele
- - Adam Hinz
- - Michael Tedeschi
- - Robert Cheetham
- - Justin Walgran
- - Eric J. Christeson
- - Ameet Kini
- - Mark Landry
- - Walt Chen
- - Eugene Cheipesh
-
 ## Contributing
 
 Feedback and contributions to the project, no matter what kind,

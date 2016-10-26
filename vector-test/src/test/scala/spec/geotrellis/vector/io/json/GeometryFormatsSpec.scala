@@ -36,6 +36,27 @@ class GeometryFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
     body.convertTo[MultiPoint] should equal (mp)
   }
 
+  it should "handle 3d points by discarding the z-coordinate" in {
+    val mp =
+      MultiPoint(List(Point(0,0), Point(0,1)))
+    val mpGJ =
+      """{
+        |  "type": "MultiPoint",
+        |  "coordinates": [[0.0, 0.0, 3.0], [0.0, 1.0, 4.0]]
+        |}""".stripMargin.parseJson
+
+    val ml =
+      MultiLine(Line(Point(0,0), Point(0,1)) :: Line(Point(1,0), Point(1,1)) :: Nil)
+    val mlGJ =
+      """{
+        |  "type": "MultiLineString",
+        |  "coordinates": [[[0.0, 0.0, 1.0], [0.0, 1.0, 0.0]], [[1.0, 0.0, 2.0], [1.0, 1.0, -1.0]]]
+        |}""".stripMargin.parseJson
+
+    mlGJ.convertTo[MultiLine] should equal (ml)
+    mpGJ.convertTo[MultiPoint] should equal (mp)
+  }
+
   it should "know about Lines" in {
     val body =
       """{

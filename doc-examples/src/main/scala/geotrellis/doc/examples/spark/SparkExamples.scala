@@ -43,7 +43,7 @@ object SparkExamples {
     // We gather the metadata that we will be targeting with the tiling here.
     // The return also gives us a zoom level, which we ignore.
     val (_: Int, metadata: TileLayerMetadata[SpatialKey]) =
-      TileLayerMetadata.fromRdd(rdd, layoutScheme)
+      rdd.collectMetadata[SpatialKey](layoutScheme)
 
     // Here we set some options for our tiling.
     // For this example, we will set the target partitioner to one

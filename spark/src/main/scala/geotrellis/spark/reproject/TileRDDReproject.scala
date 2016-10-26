@@ -107,16 +107,16 @@ object TileRDDReproject {
       targetLayout match {
         case Left(layoutScheme) =>
           // If it's a floating layout scheme, the cell grid will line up and we always want to use nearest neighbor resampling
-          val (z, m) = TileLayerMetadata.fromRdd(reprojectedTiles, destCrs, layoutScheme)
+          val (z, m) = reprojectedTiles.collectMetadata(destCrs, layoutScheme)
           layoutScheme match {
             case _: FloatingLayoutScheme =>
-              val (z, m) = TileLayerMetadata.fromRdd(reprojectedTiles, destCrs, layoutScheme)
+              val (z, m) = reprojectedTiles.collectMetadata(destCrs, layoutScheme)
               (z, m, NearestNeighbor)
             case _ =>
               (z, m, options.rasterReprojectOptions.method)
           }
         case Right(layoutDefinition) =>
-          val m = TileLayerMetadata.fromRdd(reprojectedTiles, destCrs, layoutDefinition)
+          val m = reprojectedTiles.collectMetadata(destCrs, layoutDefinition)
           (0, m, options.rasterReprojectOptions.method)
       }
 

@@ -144,8 +144,7 @@ trait TileLayerRDDBuilders {
     val layoutScheme = FloatingLayoutScheme(tileLayout.tileCols, tileLayout.tileRows)
     val inputRdd = sc.parallelize(Seq((ProjectedExtent(raster.extent, crs), raster.tile)))
 
-    val (_, metadata) =
-      TileLayerMetadata.fromRdd(inputRdd, crs, layoutScheme)
+    val (_, metadata) = inputRdd.collectMetadata[SpatialKey](crs, layoutScheme)
 
     val tiled: RDD[(SpatialKey, Tile)] = inputRdd.cutTiles(metadata)
 
@@ -191,8 +190,7 @@ trait TileLayerRDDBuilders {
     val layoutScheme = FloatingLayoutScheme(tileLayout.tileCols, tileLayout.tileRows)
     val inputRdd = sc.parallelize(Seq((ProjectedExtent(raster.extent, crs), raster.tile)))
 
-    val (_, metadata) =
-      TileLayerMetadata.fromRdd(inputRdd, crs, layoutScheme)
+    val (_, metadata) = inputRdd.collectMetadata[SpatialKey](crs, layoutScheme)
 
     val tiled: RDD[(SpatialKey, MultibandTile)] = inputRdd.cutTiles(metadata)
 

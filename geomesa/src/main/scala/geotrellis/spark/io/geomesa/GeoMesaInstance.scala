@@ -1,13 +1,21 @@
 package geotrellis.spark.io.geomesa
 
 import geotrellis.spark.LayerId
+import geotrellis.util.annotations.experimental
 
+import com.typesafe.scalalogging.LazyLogging
 import org.geotools.data.DataStoreFinder
 import org.locationtech.geomesa.accumulo.data.AccumuloDataStore
 
 import scala.collection.JavaConverters._
 
-class GeoMesaInstance(val conf: Map[String, String]) extends Serializable {
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental class GeoMesaInstance(val conf: Map[String, String])
+    extends Serializable with LazyLogging {
+  logger.error("GeoMesa support is experimental")
+
   val SEP = "__.__"
 
   def layerIdString(layerId: LayerId): String = s"${layerId.name}${SEP}${layerId.zoom}"
@@ -16,8 +24,13 @@ class GeoMesaInstance(val conf: Map[String, String]) extends Serializable {
   def accumuloDataStore = dataStore.asInstanceOf[AccumuloDataStore]
 }
 
-object GeoMesaInstance {
-  def apply(tableName: String, instanceName: String, zookeepers: String, user: String, password: String, useMock: Boolean = false): GeoMesaInstance = {
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental object GeoMesaInstance {
+
+  /** $experimental */
+  @experimental def apply(tableName: String, instanceName: String, zookeepers: String, user: String, password: String, useMock: Boolean = false): GeoMesaInstance = {
     new GeoMesaInstance(Map(
       "instanceId" -> instanceName,
       "zookeepers" -> zookeepers,

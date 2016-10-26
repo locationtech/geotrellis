@@ -10,7 +10,7 @@ import java.nio.{ByteOrder, ByteBuffer, Buffer}
  * @return A new instance of StreamByteReader
  */
 class StreamByteReader(bytesStreamer: BytesStreamer) extends ByteReader {
-  
+
   private var chunk: Map[Long, Array[Byte]] = bytesStreamer.getMappedArray(0)
   private def offset: Long = chunk.head._1
   private def chunkArray: Array[Byte] = chunk.head._2
@@ -43,13 +43,13 @@ class StreamByteReader(bytesStreamer: BytesStreamer) extends ByteReader {
     chunk = bytesStreamer.getMappedArray(newPoint)
     chunkBuffer = newByteBuffer(chunkArray)
   }
-  
+
   def get: Byte = {
     if (chunkBuffer.position + 1 > chunkBuffer.capacity)
       adjustChunk
     chunkBuffer.get
   }
-  
+
   def getChar: Char = {
     if (chunkBuffer.position + 2 > chunkBuffer.capacity)
       adjustChunk
@@ -61,7 +61,7 @@ class StreamByteReader(bytesStreamer: BytesStreamer) extends ByteReader {
       adjustChunk
     chunkBuffer.getShort
   }
-  
+
   def getInt: Int = {
     if (chunkBuffer.position + 4 > chunkBuffer.capacity)
       adjustChunk
@@ -73,19 +73,19 @@ class StreamByteReader(bytesStreamer: BytesStreamer) extends ByteReader {
       adjustChunk
     chunkBuffer.getFloat
   }
-  
+
   def getDouble: Double = {
     if (chunkBuffer.position + 8 > chunkBuffer.capacity)
       adjustChunk
     chunkBuffer.getDouble
   }
-  
+
   def getLong: Long = {
     if (chunkBuffer.position + 8 > chunkBuffer.capacity)
       adjustChunk
     chunkBuffer.getLong
   }
-  
+
   def getByteBuffer: ByteBuffer =
     chunkBuffer
 

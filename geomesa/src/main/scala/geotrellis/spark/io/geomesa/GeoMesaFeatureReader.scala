@@ -2,8 +2,10 @@ package geotrellis.spark.io.geomesa
 
 import geotrellis.geotools._
 import geotrellis.spark._
+import geotrellis.util.annotations.experimental
 import geotrellis.vector._
 
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.accumulo.core.client.mapreduce.InputFormatBase
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
@@ -16,16 +18,25 @@ import org.opengis.feature.simple.{SimpleFeature, SimpleFeatureType}
 
 import scala.reflect.ClassTag
 
-class GeoMesaFeatureReader(val instance: GeoMesaInstance)(implicit sc: SparkContext) extends Serializable {
-  def readSimpleFeatures(
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental class GeoMesaFeatureReader(val instance: GeoMesaInstance)
+                                        (implicit sc: SparkContext) extends Serializable with LazyLogging {
+
+  logger.error("GeoMesa support is experimental")
+
+  /** $experimental */
+  @experimental def readSimpleFeatures(
     featureName: String,
-    query: Query,
     simpleFeatureType: SimpleFeatureType,
+    query: Query,
     numPartitions: Option[Int] = None
   ): RDD[SimpleFeature] = {
     val dataStore = instance.accumuloDataStore
-    if(!dataStore.getTypeNames().contains(simpleFeatureType.getTypeName)) dataStore.createSchema(simpleFeatureType)
-    dataStore.dispose()
+    try {
+      if (!dataStore.getTypeNames().contains(simpleFeatureType.getTypeName)) dataStore.createSchema(simpleFeatureType)
+    } finally dataStore.dispose()
 
     val job = Job.getInstance(sc.hadoopConfiguration)
     GeoMesaInputFormat.configure(job, instance.conf, query)
@@ -38,17 +49,23 @@ class GeoMesaFeatureReader(val instance: GeoMesaInstance)(implicit sc: SparkCont
     sc.newAPIHadoopRDD(job.getConfiguration, classOf[GeoMesaInputFormat], classOf[Text], classOf[SimpleFeature]).map(U => U._2)
   }
 
-  def read[G <: geotrellis.vector.Geometry: ClassTag, D]
-    (layerId: LayerId, query: Query, simpleFeatureType: SimpleFeatureType, numPartitions: Option[Int] = None)
+  /** $experimental */
+  @experimental def read[G <: geotrellis.vector.Geometry: ClassTag, D]
+    (layerId: LayerId, simpleFeatureType: SimpleFeatureType, query: Query, numPartitions: Option[Int] = None)
     (implicit transmute: Map[String, Any] => D): RDD[Feature[G, D]] =
       readSimpleFeatures(
         featureName       = layerId.name,
-        query             = query,
         simpleFeatureType = simpleFeatureType,
+        query             = query,
         numPartitions     = numPartitions
       ).map(_.toFeature[G, D]())
 }
 
-object GeoMesaFeatureReader {
-  def apply(instance: GeoMesaInstance)(implicit sc: SparkContext): GeoMesaFeatureReader = new GeoMesaFeatureReader(instance)
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental object GeoMesaFeatureReader {
+
+  /** $experimental */
+  @experimental def apply(instance: GeoMesaInstance)(implicit sc: SparkContext): GeoMesaFeatureReader = new GeoMesaFeatureReader(instance)
 }
