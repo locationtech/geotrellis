@@ -15,7 +15,7 @@ object HistogramEqualization {
     * Comparison class for sorting an array of (label, cdf(label))
     * pairs by their label.
     */
-  private class _cmp extends java.util.Comparator[(Double, Double)] {
+  class BucketComparator extends java.util.Comparator[(Double, Double)] {
     // Compare the (label, cdf(label)) pairs by their labels
     def compare(left: (Double, Double), right: (Double, Double)): Int = {
       if (left._1 < right._1) -1
@@ -24,13 +24,13 @@ object HistogramEqualization {
     }
   }
 
-  private val cmp = new _cmp()
+  private val cmp = new BucketComparator()
 
   /**
     * An implementation of the transformation T referred to in the
     * citation given above.
     */
-  private def _T(cellType: CellType, cdf: Array[(Double, Double)])(x: Double): Double = {
+  private def transform(cellType: CellType, cdf: Array[(Double, Double)])(x: Double): Double = {
     val i = java.util.Arrays.binarySearch(cdf, (x, 0.0), cmp)
     val bits = cellType.bits
     val smallestCdf = cdf(0)._2
@@ -83,8 +83,8 @@ object HistogramEqualization {
     * @return            A singleband tile with improved contrast
     */
   def apply[T <: AnyVal](tile: Tile, histogram: Histogram[T]): Tile = {
-    val T = _T(tile.cellType, histogram.cdf)_
-    tile.mapDouble(T)
+    val localTransform = transform(tile.cellType, histogram.cdf)_
+    tile.mapDouble(localTransform)
   }
 
   /**
