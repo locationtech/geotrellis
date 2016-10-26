@@ -91,4 +91,16 @@ class Int16GeoTiffTile(
     }
     ShortArrayTile.fromBytes(arr, gridBounds.width, gridBounds.height, cellType)
   }
+
+  def asRawTile: Int16GeoTiffTile =
+    new Int16GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoNoData)
+
+  def interpretAs(targetCellType: CellType): Tile = {
+    targetCellType match {
+      case dt: ShortCells with NoDataHandling =>
+        new Int16GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, dt.withNoNoData)
+      case _ =>
+        asRawTile.convert(targetCellType)
+    }
+  }
 }

@@ -16,11 +16,7 @@
 
 package geotrellis.raster
 
-import geotrellis.vector.Extent
-
-import spire.syntax.cfor._
 import java.nio.ByteBuffer
-
 
 /**
   * [[ArrayTile]] based on Array[Float] (each cell as a Float).
@@ -48,6 +44,17 @@ abstract class FloatArrayTile(val array: Array[Float], cols: Int, rows: Int)
     * @return  The copy
     */
   def copy: ArrayTile = ArrayTile(array.clone, cols, rows)
+
+  def asRawTile: FloatArrayTile = FloatArrayTile(array, cols, rows, cellType.withNoNoData)
+
+  def interpretAs(targetCellType: CellType) = {
+    targetCellType match {
+      case dt: FloatCells with NoDataHandling =>
+        FloatArrayTile(array, cols, rows, dt)
+      case _ =>
+        asRawTile.convert(targetCellType)
+    }
+  }
 }
 
 /**

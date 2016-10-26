@@ -39,7 +39,7 @@ trait ArrayTile extends Tile with Serializable {
     * @param   targetCellType  The type of cells that the result should have
     * @return            The new Tile
     */
-  def convert(targetCellType: CellType): Tile = {
+  def convert(targetCellType: CellType): ArrayTile = {
     val tile = ArrayTile.alloc(targetCellType, cols, rows)
 
     if(targetCellType.isFloatingPoint != cellType.isFloatingPoint)
@@ -61,6 +61,10 @@ trait ArrayTile extends Tile with Serializable {
 
     tile
   }
+
+  def asRawTile: ArrayTile
+
+  def interpretAs(targetCellType: CellType): ArrayTile
 
   /**
     * Execute a function on each cell of the [[ArrayTile]].

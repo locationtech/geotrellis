@@ -34,6 +34,10 @@ sealed abstract class DataType extends Serializable { self: CellType =>
 
   def bytes = bits / 8
 
+  def withNoNoData: DataType with NoNoData
+
+  def equalDataType(other: DataType): Boolean
+
   /**
     * Union only checks to see that the correct bitsize and int vs
     * floating point values are set.  We can be sure that its
@@ -108,6 +112,8 @@ sealed trait BitCells extends DataType { self: CellType =>
   val bits: Int = 1
   val isFloatingPoint: Boolean = false
   val name = "bool"
+  def withNoNoData = BitCellType
+  def equalDataType(other: DataType) = other.isInstanceOf[BitCells]
 }
 
 /**
@@ -117,6 +123,8 @@ sealed trait ByteCells extends DataType { self: CellType =>
   val bits: Int = 8
   val isFloatingPoint: Boolean = false
   val name = "int8"
+  def withNoNoData = ByteCellType
+  def equalDataType(other: DataType) = other.isInstanceOf[ByteCells]
 }
 
 /**
@@ -126,6 +134,8 @@ sealed trait UByteCells extends DataType { self: CellType =>
   val bits: Int = 8
   val isFloatingPoint: Boolean = false
   val name = "uint8"
+  def withNoNoData = UByteCellType
+  def equalDataType(other: DataType) = other.isInstanceOf[UByteCells]
 }
 
 /**
@@ -135,6 +145,8 @@ sealed trait ShortCells extends DataType { self: CellType =>
   val bits: Int = 16
   val isFloatingPoint: Boolean = false
   val name = "int16"
+  def withNoNoData = ShortCellType
+  def equalDataType(other: DataType) = other.isInstanceOf[ShortCells]
 }
 
 /**
@@ -144,6 +156,8 @@ sealed trait UShortCells extends DataType { self: CellType =>
   val bits: Int = 16
   val isFloatingPoint: Boolean = false
   val name = "uint16"
+  def withNoNoData = UShortCellType
+  def equalDataType(other: DataType) = other.isInstanceOf[UShortCells]
 }
 
 /**
@@ -153,12 +167,17 @@ sealed trait IntCells extends DataType { self: CellType =>
   val bits: Int = 32
   val isFloatingPoint: Boolean = false
   val name = "int32"
+  def withNoNoData = IntCellType
+  def equalDataType(other: DataType) = other.isInstanceOf[IntCells]
+
 }
 
 sealed trait FloatCells extends DataType { self: CellType =>
   val bits: Int = 32
   val isFloatingPoint: Boolean = true
   val name = "float32"
+  def withNoNoData = FloatCellType
+  def equalDataType(other: DataType) = other.isInstanceOf[FloatCells]
 }
 
 /**
@@ -168,6 +187,8 @@ sealed trait DoubleCells extends DataType { self: CellType =>
   val bits: Int = 64
   val isFloatingPoint: Boolean = true
   val name = "float64"
+  def withNoNoData = DoubleCellType
+  def equalDataType(other: DataType) = other.isInstanceOf[DoubleCells]
 }
 
 /**
