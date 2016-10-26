@@ -18,8 +18,9 @@ class HdfsUtilsSpec extends FunSpec
       zipped.filter(x => x._1 != x._2)
     }
 
-    val hdfsFile = new Path("raster-test/data/geotiff-test-files/ls8_int32.tif")
-    val array = Filesystem.slurp("raster-test/data/geotiff-test-files/ls8_int32.tif")
+    val path = "spark/src/test/resources/all-ones.tif"
+    val hdfsFile = new Path(path)
+    val array = Filesystem.slurp(path)
 
     it("should not crash with unuseful error messages when no files match listFiles") {
       val path = new Path("/this/does/not/exist") // Would be really weird if this did.
