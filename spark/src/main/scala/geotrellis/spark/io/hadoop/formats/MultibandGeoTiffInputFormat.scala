@@ -9,7 +9,8 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext
 
 class MultibandGeoTiffInputFormat extends BinaryFileInputFormat[ProjectedExtent, MultibandTile] {
   def read(bytes: Array[Byte], context: TaskAttemptContext): (ProjectedExtent, MultibandTile) = {
+    val inputCrs = TemporalGeoTiffInputFormat.getCrs(context)
     val gt = MultibandGeoTiff(bytes)
-    (ProjectedExtent(gt.extent, gt.crs), gt.tile)
+    (ProjectedExtent(gt.extent, inputCrs.getOrElse(gt.crs)), gt.tile)
   }
 }

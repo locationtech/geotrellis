@@ -18,25 +18,25 @@ import org.opengis.feature.simple.{SimpleFeature, SimpleFeatureType}
 
 import scala.reflect.ClassTag
 
-
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
 @experimental class GeoMesaFeatureReader(val instance: GeoMesaInstance)
-  (implicit sc: SparkContext) extends Serializable with LazyLogging {
+                                        (implicit sc: SparkContext) extends Serializable with LazyLogging {
 
   logger.error("GeoMesa support is experimental")
 
   /** $experimental */
   @experimental def readSimpleFeatures(
     featureName: String,
-    query: Query,
     simpleFeatureType: SimpleFeatureType,
+    query: Query,
     numPartitions: Option[Int] = None
   ): RDD[SimpleFeature] = {
     val dataStore = instance.accumuloDataStore
-    if(!dataStore.getTypeNames().contains(simpleFeatureType.getTypeName)) dataStore.createSchema(simpleFeatureType)
-    dataStore.dispose()
+    try {
+      if (!dataStore.getTypeNames().contains(simpleFeatureType.getTypeName)) dataStore.createSchema(simpleFeatureType)
+    } finally dataStore.dispose()
 
     val job = Job.getInstance(sc.hadoopConfiguration)
     GeoMesaInputFormat.configure(job, instance.conf, query)
@@ -51,12 +51,12 @@ import scala.reflect.ClassTag
 
   /** $experimental */
   @experimental def read[G <: geotrellis.vector.Geometry: ClassTag, D]
-    (layerId: LayerId, query: Query, simpleFeatureType: SimpleFeatureType, numPartitions: Option[Int] = None)
+    (layerId: LayerId, simpleFeatureType: SimpleFeatureType, query: Query, numPartitions: Option[Int] = None)
     (implicit transmute: Map[String, Any] => D): RDD[Feature[G, D]] =
       readSimpleFeatures(
         featureName       = layerId.name,
-        query             = query,
         simpleFeatureType = simpleFeatureType,
+        query             = query,
         numPartitions     = numPartitions
       ).map(_.toFeature[G, D]())
 }

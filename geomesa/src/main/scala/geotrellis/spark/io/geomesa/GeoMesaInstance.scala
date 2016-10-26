@@ -9,7 +9,6 @@ import org.locationtech.geomesa.accumulo.data.AccumuloDataStore
 
 import scala.collection.JavaConverters._
 
-
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */

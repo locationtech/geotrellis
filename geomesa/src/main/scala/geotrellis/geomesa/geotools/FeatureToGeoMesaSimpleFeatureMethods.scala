@@ -7,7 +7,6 @@ import geotrellis.vector.{Feature, Geometry}
 
 import org.opengis.feature.simple.SimpleFeature
 
-
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */

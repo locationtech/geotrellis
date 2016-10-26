@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Azavea.
+ * Copyright (c) 2016 Azavea.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-import scala.util.Properties
+package geotrellis.raster.sigmoidal
 
-object Environment {
-  def either(environmentVariable: String, default: String): String =
-    Properties.envOrElse(environmentVariable, default)
+import geotrellis.raster.Tile
+import geotrellis.util.MethodExtensions
 
-  lazy val hadoopVersion  = either("SPARK_HADOOP_VERSION", "2.7.3")
-  lazy val sparkVersion   = either("SPARK_VERSION", "2.0.1")
-  lazy val versionSuffix  = either("GEOTRELLIS_VERSION_SUFFIX", "-SNAPSHOT")
+
+trait SinglebandSigmoidalMethods extends MethodExtensions[Tile] {
+  def sigmoidal(alpha: Double, beta: Double): Tile = SigmoidalContrast(self, alpha, beta)
 }

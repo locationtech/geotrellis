@@ -70,7 +70,7 @@ object Ingest {
     )
     (sink: (TileLayerRDD[K], Int) => Unit): Unit =
   {
-    val (_, tileLayerMetadata) = TileLayerMetadata.fromRdd(sourceTiles, FloatingLayoutScheme(512))
+    val (_, tileLayerMetadata) = sourceTiles.collectMetadata(FloatingLayoutScheme(512))
     val tiledRdd = sourceTiles.tileToLayout(tileLayerMetadata, resampleMethod).cache()
 
     val contextRdd = new ContextRDD(tiledRdd, tileLayerMetadata)

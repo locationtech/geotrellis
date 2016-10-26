@@ -42,21 +42,22 @@ package object spark
     with filter.Implicits
     with join.Implicits
     with knn.Implicits
+    with mapalgebra.focal.hillshade.Implicits
+    with mapalgebra.focal.Implicits
     with mapalgebra.Implicits
     with mapalgebra.local.Implicits
     with mapalgebra.local.temporal.Implicits
-    with mapalgebra.focal.Implicits
-    with mapalgebra.focal.hillshade.Implicits
     with mapalgebra.zonal.Implicits
     with mask.Implicits
     with merge.Implicits
     with partition.Implicits
-    with resample.Implicits
     with reproject.Implicits
+    with resample.Implicits
+    with sigmoidal.Implicits
     with split.Implicits
     with stitch.Implicits
-    with summary.polygonal.Implicits
     with summary.Implicits
+    with summary.polygonal.Implicits
     with tiling.Implicits {
   type TileLayerRDD[K] = RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]
   object TileLayerRDD {
@@ -186,6 +187,11 @@ package object spark
     def collectMetadata[K2: Boundable: SpatialComponent](layoutScheme: LayoutScheme)
         (implicit ev: K1 => TilerKeyMethods[K1, K2], ev1: GetComponent[K1, ProjectedExtent]): (Int, TileLayerMetadata[K2]) = {
       TileLayerMetadata.fromRdd[K1, V, K2](rdd, layoutScheme)
+    }
+
+    def collectMetadata[K2: Boundable: SpatialComponent](crs: CRS, size: Int, zoom: Int)
+        (implicit ev: K1 => TilerKeyMethods[K1, K2], ev1: GetComponent[K1, ProjectedExtent]): (Int, TileLayerMetadata[K2]) = {
+      TileLayerMetadata.fromRdd[K1, V, K2](rdd, ZoomedLayoutScheme(crs, size), zoom)
     }
 
     def collectMetadata[K2: Boundable: SpatialComponent](layout: LayoutDefinition)
