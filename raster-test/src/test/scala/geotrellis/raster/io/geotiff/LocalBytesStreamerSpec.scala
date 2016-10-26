@@ -1,3 +1,4 @@
+import geotrellis.util.LocalBytesStreamer
 import geotrellis.raster._
 import geotrellis.raster.testkit._
 import geotrellis.raster.io.geotiff._
@@ -17,7 +18,7 @@ class LocalBytesStreamerSpec extends FunSpec
     val geoTiffBytes = Files.readAllBytes(Paths.get(path))
     val buffer = ByteBuffer.wrap(geoTiffBytes)
     val chunkSize = 2000
-    val local = new MockLocalArrayBytes(chunkSize, geoTiffBytes) 
+    val local = LocalBytesStreamer(path, chunkSize)
 
     def testArrays[T](arr1: Array[T], arr2: Array[T]): Array[(T, T)] = {
       val zipped = arr1.zip(arr2)

@@ -15,12 +15,12 @@ import java.nio.channels.FileChannel.MapMode._
  */
 class LocalBytesStreamer(path: String, val chunkSize: Int) extends BytesStreamer {
   private val f: File = new File(path)
-  private val inputStream: FileInputStream = new FileInputStream(f)
-  private val channel: FileChannel =  inputStream.getChannel
 
-  def objectLength: Long = channel.size
+  def objectLength: Long = f.length
 
   def getArray(start: Long, length: Long): Array[Byte] = {
+    val inputStream: FileInputStream = new FileInputStream(f)
+    val channel: FileChannel =  inputStream.getChannel
     val chunk: Long =
       if (!passedLength(length + start))
         length
