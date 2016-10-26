@@ -3,26 +3,26 @@ package geotrellis.raster.mapalgebra.focal
 import geotrellis.raster._
 
 object Mean {
-  def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): FocalCalculation[Tile] = {
+  def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None, target: TargetCell = TargetCell.All): FocalCalculation[Tile] = {
     if(tile.cellType.isFloatingPoint) {
       n match {
-        case Square(ext) => new CellwiseMeanCalcDouble(tile, n, bounds)
-        case _ => new CursorMeanCalcDouble(tile, n, bounds)
+        case Square(ext) => new CellwiseMeanCalcDouble(tile, n, bounds, target)
+        case _ => new CursorMeanCalcDouble(tile, n, bounds, target)
       }
     } else {
       n match {
-        case Square(ext) => new CellwiseMeanCalc(tile, n, bounds)
-        case _ => new CursorMeanCalc(tile, n, bounds)
+        case Square(ext) => new CellwiseMeanCalc(tile, n, bounds, target)
+        case _ => new CursorMeanCalc(tile, n, bounds, target)
       }
     }
   }
 
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): Tile =
-    calculation(tile, n, bounds).execute()
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None, target: TargetCell = TargetCell.All): Tile =
+    calculation(tile, n, bounds, target).execute()
 }
 
-class CellwiseMeanCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
-  extends CellwiseCalculation[Tile](r, n, bounds)
+class CellwiseMeanCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], target: TargetCell)
+  extends CellwiseCalculation[Tile](r, n, bounds, target)
   with DoubleArrayTileResult
 {
   var count: Int = 0
@@ -48,8 +48,8 @@ class CellwiseMeanCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
   def reset() = { count = 0 ; sum = 0 }
 }
 
-class CursorMeanCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
-  extends CursorCalculation[Tile](r, n, bounds)
+class CursorMeanCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], target: TargetCell)
+  extends CursorCalculation[Tile](r, n, bounds, target)
   with DoubleArrayTileResult
 {
   var count: Int = 0
@@ -68,8 +68,8 @@ class CursorMeanCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
   }
 }
 
-class CursorMeanCalcDouble(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
-  extends CursorCalculation[Tile](r, n, bounds)
+class CursorMeanCalcDouble(r: Tile, n: Neighborhood, bounds: Option[GridBounds], target: TargetCell)
+  extends CursorCalculation[Tile](r, n, bounds, target)
   with DoubleArrayTileResult
 {
   var count: Int = 0
@@ -91,8 +91,8 @@ class CursorMeanCalcDouble(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
   }
 }
 
-class CellwiseMeanCalcDouble(r: Tile, n: Neighborhood, bounds: Option[GridBounds])
-  extends CellwiseCalculation[Tile](r, n, bounds)
+class CellwiseMeanCalcDouble(r: Tile, n: Neighborhood, bounds: Option[GridBounds], target: TargetCell)
+  extends CellwiseCalculation[Tile](r, n, bounds, target)
   with DoubleArrayTileResult
 {
   var count: Int = 0
