@@ -17,12 +17,24 @@ of traits, meaning they agree on behaviour:
 - `LayerMover`
 - `LayerManager`
 
-The top three are used most often.
+The top three are used most often, with the `AttributeStore` being a key
+piece to every other class.
+
+![](images/tile-layer-backends.png)
 
 File System
 -----------
 
-**Choose your file system if:** you want to perform local data ingests or processing.
+**Choose your file system if:** you want to perform tests, data ingests, or
+data processing locally on your computer.
+
+This is the simplest backend, only requiring a path to read and write tiles to:
+
+```scala
+FileAttributeStore(catalogPath: String)
+
+FileLayerWriter(attributeStore: AttributeStore, catalogPath: String)
+```
 
 HDFS
 ----
