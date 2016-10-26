@@ -26,7 +26,6 @@ libraryDependencies ++= Seq(
   hadoopClient % "provided"
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
-  sparkCore % "provided",
   "org.geoserver" % "gs-wms" % "2.8.2"
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
@@ -48,6 +47,7 @@ libraryDependencies ++= Seq(
   "com.jsuereth" %% "scala-arm" % "1.4",
   "de.javakaffee" % "kryo-serializers" % "0.38" exclude("com.esotericsoftware", "kryo"),
   "com.esotericsoftware" % "kryo-shaded" % "3.0.3",
+  sparkCore % "provided",
   spire,
   scalatest % "test")
 

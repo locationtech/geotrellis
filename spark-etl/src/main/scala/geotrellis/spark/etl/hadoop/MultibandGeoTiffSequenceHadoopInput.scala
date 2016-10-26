@@ -10,11 +10,13 @@ import org.apache.spark.rdd.RDD
 
 class MultibandGeoTiffSequenceHadoopInput extends HadoopInput[ProjectedExtent, MultibandTile] {
   val format = "multiband-geotiff-sequence"
-  def apply(conf: EtlConf)(implicit sc: SparkContext): RDD[(ProjectedExtent, MultibandTile)] =
+  def apply(conf: EtlConf)(implicit sc: SparkContext): RDD[(ProjectedExtent, MultibandTile)] = {
+    val inputCrs = conf.input.getCrs
     sc
       .sequenceFile[String, Array[Byte]](getPath(conf.input.backend).path)
       .map { case (path, bytes) =>
         val geotiff = GeoTiffReader.readMultiband(bytes)
-        (ProjectedExtent(geotiff.extent, geotiff.crs), geotiff.tile)
+        (ProjectedExtent(geotiff.extent, inputCrs.getOrElse(geotiff.crs)), geotiff.tile)
       }
+  }
 }

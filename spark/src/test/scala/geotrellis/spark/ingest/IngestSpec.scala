@@ -13,6 +13,11 @@ class IngestSpec extends FunSpec
   with Matchers
   with TestEnvironment {
   describe("Ingest") {
+    it("should read GeoTiff with overrided input CRS") {
+      val source = sc.hadoopGeoTiffRDD(new Path(inputHome, "all-ones.tif"), sc.defaultTiffExtensions, crs = "EPSG:3857")
+      source.take(1).toList.map { case (k, _) => k.crs.proj4jCrs.getName }.head shouldEqual "EPSG:3857"
+    }
+
     it("should ingest GeoTiff") {
       val source = sc.hadoopGeoTiffRDD(new Path(inputHome, "all-ones.tif"))
       Ingest[ProjectedExtent, SpatialKey](source, LatLng, ZoomedLayoutScheme(LatLng, 512)) { (rdd, zoom) =>

@@ -19,11 +19,11 @@ class Float32GeoTiffTile(
   }
 
   /**
-   * Reads the data out of a [[GeoTiffTile]] and create a FloatArrayTile.
+   * Reads the data out of a [[GeoTiffTile]] and create a
+   * FloatArrayTile.
    *
-   * @param: CroppedGeoTiff The [[WindowedGeoTiff]] of the file
-   *
-   * @return A [[FloatArrayTile]]
+   * @param  CroppedGeoTiff  The [[WindowedGeoTiff]] of the file
+   * @return                 A [[FloatArrayTile]]
    */
   def mutable: MutableArrayTile = {
     val arr = Array.ofDim[Byte](cols * rows * FloatConstantNoDataCellType.bytes)
@@ -58,11 +58,11 @@ class Float32GeoTiffTile(
   }
 
   /**
-   * Reads a windowed area out of a [[GeoTiffTile]] and create a FloatArrayTile.
+   * Reads a windowed area out of a [[GeoTiffTile]] and create a
+   * FloatArrayTile.
    *
-   * @param: CroppedGeoTiff The [[WindowedGeoTiff]] of the file
-   *
-   * @return A [[FloatArrayTile]] that conatins data from the windowed area
+   * @param  CroppedGeoTiff  The [[WindowedGeoTiff]] of the file
+   * @return                 A [[FloatArrayTile]] that conatins data from the windowed area
    */
   def crop(gridBounds: GridBounds): MutableArrayTile = {
     val arr = Array.ofDim[Byte](gridBounds.size * FloatConstantNoDataCellType.bytes)

@@ -52,13 +52,14 @@ package object raster
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with costdistance.CostDistanceMethods
       with crop.SinglebandTileCropMethods
+      with equalization.SinglebandEqualizationMethods
       with hydrology.HydrologyMethods
+      with mapalgebra.focal.FocalMethods
+      with mapalgebra.focal.hillshade.HillshadeMethods
+      with mapalgebra.local.LocalMethods
+      with mapalgebra.zonal.ZonalMethods
       with mask.SinglebandTileMaskMethods
       with merge.SinglebandTileMergeMethods
-      with mapalgebra.local.LocalMethods
-      with mapalgebra.focal.FocalMethods
-      with mapalgebra.zonal.ZonalMethods
-      with mapalgebra.focal.hillshade.HillshadeMethods
       with prototype.SinglebandTilePrototypeMethods
       with regiongroup.RegionGroupMethods
       with render.ColorMethods
@@ -66,22 +67,25 @@ package object raster
       with render.PngRenderMethods
       with reproject.SinglebandTileReprojectMethods
       with resample.SinglebandTileResampleMethods
+      with sigmoidal.SinglebandSigmoidalMethods
       with split.SinglebandTileSplitMethods
-      with summary.SummaryMethods
       with summary.polygonal.PolygonalSummaryMethods
-      with viewshed.ViewshedMethods
+      with summary.SummaryMethods
       with vectorize.VectorizeMethods
+      with viewshed.ViewshedMethods
 
   implicit class withMultibandTileMethods(val self: MultibandTile) extends MethodExtensions[MultibandTile]
       with crop.MultibandTileCropMethods
+      with equalization.MultibandEqualizationMethods
       with mask.MultibandTileMaskMethods
       with merge.MultibandTileMergeMethods
       with prototype.MultibandTilePrototypeMethods
-      with reproject.MultibandTileReprojectMethods
-      with render.MultibandJpgRenderMethods
       with render.MultibandColorMethods
+      with render.MultibandJpgRenderMethods
       with render.MultibandPngRenderMethods
+      with reproject.MultibandTileReprojectMethods
       with resample.MultibandTileResampleMethods
+      with sigmoidal.MultibandSigmoidalMethods
       with split.MultibandTileSplitMethods
 
   implicit class withSinglebandRasterMethods(val self: SinglebandRaster) extends MethodExtensions[SinglebandRaster]
@@ -221,5 +225,12 @@ package object raster
   }
   implicit class DoubleArrayFiller(val arr: Array[Double]) extends AnyVal {
     def fill(v: Double) = { java.util.Arrays.fill(arr, v) ; arr }
+  }
+
+  /* http://stackoverflow.com/questions/3508077/how-to-define-type-disjunction-union-types */
+  sealed class TileOrMultibandTile[T]
+  object TileOrMultibandTile {
+    implicit object TileWitness extends TileOrMultibandTile[Tile]
+    implicit object MultibandTileWitness extends TileOrMultibandTile[MultibandTile]
   }
 }

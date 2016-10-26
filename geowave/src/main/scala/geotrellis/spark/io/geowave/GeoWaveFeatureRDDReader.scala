@@ -1,12 +1,13 @@
 package geotrellis.spark.io.geowave
 
+import geotrellis.geotools._
 import geotrellis.spark._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.util.KryoWrapper
+import geotrellis.util.annotations.experimental
 import geotrellis.vector._
-import geotrellis.geotools._
 
 import org.apache.avro.Schema
 import org.apache.hadoop.io._
@@ -29,10 +30,15 @@ import mil.nga.giat.geowave.core.store.operations.remote.options._
 
 import scala.reflect._
 
-object GeoWaveFeatureRDDReader {
+
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental object GeoWaveFeatureRDDReader {
 
   /**
-    * Read out an RDD of Vector features from an accumulo geowave store
+    * $experimental Read out an RDD of Vector features from an
+    * accumulo geowave store
     *
     * @param zookeepers            zookeeper master node location
     * @param accumuloInstanceName  name of the accumulo instance to connect to
@@ -46,7 +52,7 @@ object GeoWaveFeatureRDDReader {
     * @tparam G                    the type of geometry to be retrieved through geowave (REQUIRED)
     * @note                        If the above type parameter is not supplied, errors WILL be thrown
     */
-  def read[G <: Geometry : ClassTag](
+  @experimental def read[G <: Geometry : ClassTag](
     zookeepers: String,
     accumuloInstanceName: String,
     accumuloInstanceUser: String,

@@ -12,35 +12,35 @@ import monocle.syntax.apply._
 import spire.syntax.cfor._
 
 /**
- * This class implements [[SegmentBytes]] via an Array[Array[Byte]]
- *
- * @param compressedBytes: An Array[Array[Byte]]
- * @return A new instance of ArraySegmentBytes
- */
+  * This class implements [[SegmentBytes]] via an Array[Array[Byte]]
+  *
+  * @param  compressedBytes  An Array[Array[Byte]]
+  * @return                  A new instance of ArraySegmentBytes
+  */
 class ArraySegmentBytes(compressedBytes: Array[Array[Byte]]) extends SegmentBytes {
 
   override val size = compressedBytes.size
 
   /**
-   * Returns an Array[Byte] that represents a [[GeoTiffSegment]]
-   * via its index number.
-   *
-   * @param i: The index number of the segment.
-   * @return An Array[Byte] that contains the bytes of the segment
-   */
+    * Returns an Array[Byte] that represents a [[GeoTiffSegment]] via
+    * its index number.
+    *
+    * @param  i  The index number of the segment.
+    * @return    An Array[Byte] that contains the bytes of the segment
+    */
   def getSegment(i: Int) = compressedBytes(i)
 }
 
 object ArraySegmentBytes {
 
-  /** 
-   *  Creates a new instance of ArraySegmentBytes.
-   *
-   *  @param byteReader: A ByteReader that contains the bytes of the GeoTiff
-   *  @storageMethod: The [[StorageMethod]] of the GeoTiff
-   *  @tiffTags: The [[TiffTags]] of the GeoTiff
-   *  @return A new instance of ArraySegmentBytes
-   */
+  /**
+    *  Creates a new instance of ArraySegmentBytes.
+    *
+    *  @param  byteReader  A ByteReader that contains the bytes of the GeoTiff
+    *  @param  byteBuffer  A ByteBuffer that contains the bytes of the GeoTiff
+    *  @param  tiffTags    The [[geotrellis.raster.io.geotiff.tags.TiffTags]] of the GeoTiff
+    *  @return             A new instance of ArraySegmentBytes
+    */
   def apply(byteReader: ByteReader, tiffTags: TiffTags): ArraySegmentBytes = {
 
       val compressedBytes: Array[Array[Byte]] = {
