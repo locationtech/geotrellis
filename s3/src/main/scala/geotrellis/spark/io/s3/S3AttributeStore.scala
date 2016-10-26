@@ -17,7 +17,7 @@ import scala.util.matching.Regex
  * @param bucket    S3 bucket to use for attribute store
  * @param prefix  path in the bucket for given LayerId, not ending in "/"
  */
-class S3AttributeStore(val bucket: String, val prefix: String) extends AttributeStore with BlobLayerAttributeStore {
+class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayerAttributeStore {
   val s3Client: S3Client = S3Client.default
   import S3AttributeStore._
 
