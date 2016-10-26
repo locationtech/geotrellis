@@ -5,4 +5,4 @@ class EtlConf(val input: Input, val output: Output) extends Serializable {
   def inputProfile  = input.backend.profile
 }
 
-object EtlConf extends DefaultEtlConf
+object EtlConf extends BaseEtlConf

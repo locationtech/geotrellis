@@ -6,7 +6,7 @@ import org.apache.spark.SparkContext
 import com.github.fge.jackson.JsonLoader
 import spray.json._
 
-trait DefaultEtlConf extends ConfigParse {
+trait BaseEtlConf extends ConfigParse {
   val help = """
                |geotrellis-etl
                |
