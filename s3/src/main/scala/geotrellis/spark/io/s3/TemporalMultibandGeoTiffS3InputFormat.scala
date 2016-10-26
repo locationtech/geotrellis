@@ -21,12 +21,13 @@ class TemporalMultibandGeoTiffS3InputFormat extends S3InputFormat[TemporalProjec
 
         val timeTag = TemporalGeoTiffS3InputFormat.getTimeTag(context)
         val dateFormatter = TemporalGeoTiffS3InputFormat.getTimeFormatter(context)
+        val inputCrs = TemporalGeoTiffS3InputFormat.getCrs(context)
 
         val dateTimeString = geoTiff.tags.headTags.getOrElse(timeTag, sys.error(s"There is no tag $timeTag in the GeoTiff header"))
         val dateTime = ZonedDateTime.parse(dateTimeString, dateFormatter)
 
         val ProjectedRaster(Raster(tile, extent), crs) = geoTiff.projectedRaster
-        (TemporalProjectedExtent(extent, crs, dateTime), tile)
+        (TemporalProjectedExtent(extent, inputCrs.getOrElse(crs), dateTime), tile)
       }
     }
 }

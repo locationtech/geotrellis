@@ -1,6 +1,8 @@
 package geotrellis.spark.etl.config
 
+import geotrellis.proj4.CRS
 import geotrellis.vector.Extent
+
 import org.apache.spark.storage.StorageLevel
 
 case class Input(
@@ -9,5 +11,8 @@ case class Input(
   backend: Backend,
   cache: Option[StorageLevel] = None,
   noData: Option[Double] = None,
-  clip: Option[Extent] = None
-) extends Serializable
+  clip: Option[Extent] = None,
+  crs: Option[String] = None
+) extends Serializable {
+  def getCrs = crs.map(CRS.fromName)
+}
