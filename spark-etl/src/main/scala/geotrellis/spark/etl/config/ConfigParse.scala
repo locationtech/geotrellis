@@ -1,11 +1,15 @@
 package geotrellis.spark.etl.config
 
+import com.github.fge.jsonschema.main.JsonSchemaFactory
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 
 trait ConfigParse {
   val help: String
+  val requiredFields: Set[Symbol]
+
+  val schemaFactory = JsonSchemaFactory.byDefault()
 
   def getJson(filePath: String, conf: Configuration): String = {
     val path = new Path(filePath)
