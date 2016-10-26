@@ -4,7 +4,7 @@ import geotrellis.raster._
 
 object Conway {
   def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): FocalCalculation[Tile] = {
-    new CellwiseCalculation[Tile](tile, n, bounds)
+    new CellwiseCalculation[Tile](tile, n, bounds, TargetCell.All)
       with ByteArrayTileResult
     {
       var count = 0
