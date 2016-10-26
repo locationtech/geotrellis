@@ -76,7 +76,7 @@ object HadoopRDDWriter extends LazyLogging {
     rdd
       .repartitionAndSortWithinPartitions(IndexPartitioner(keyIndex, rdd.partitions.length))
       .mapPartitionsWithIndex[Unit] { (pid, iter) =>
-        var writer = new MultiMapWriter(layerPath, pid, blockSize, indexInterval)
+        val writer = new MultiMapWriter(layerPath, pid, blockSize, indexInterval)
         for ( (index, pairs) <- GroupConsecutiveIterator(iter)(r => keyIndex.toIndex(r._1))) {
           writer.write(
             new LongWritable(index),

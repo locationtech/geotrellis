@@ -41,42 +41,44 @@ trait S3RDDWriter {
       rdd.groupBy({ row => keyPath(row._1) }, numPartitions = rdd.partitions.length)
 
     pathsToTiles.foreachPartition { partition =>
-      import geotrellis.spark.util.TaskUtils._
-      val getS3Client = _getS3Client
-      val s3client: S3Client = getS3Client()
+      if(partition.nonEmpty) {
+        import geotrellis.spark.util.TaskUtils._
+        val getS3Client = _getS3Client
+        val s3client: S3Client = getS3Client()
 
-      val requests: Process[Task, PutObjectRequest] =
-        Process.unfold(partition){ iter =>
-          if (iter.hasNext) {
-            val recs = iter.next()
-            val key = recs._1
-            val pairs = recs._2.toVector
-            val bytes = AvroEncoder.toBinary(pairs)(_codec)
-            val metadata = new ObjectMetadata()
-            metadata.setContentLength(bytes.length)
-            val is = new ByteArrayInputStream(bytes)
-            val request = putObjectModifier(new PutObjectRequest(bucket, key, is, metadata))
-            Some(request, iter)
-          } else  {
-            None
+        val requests: Process[Task, PutObjectRequest] =
+          Process.unfold(partition) { iter =>
+            if (iter.hasNext) {
+              val recs = iter.next()
+              val key = recs._1
+              val pairs = recs._2.toVector
+              val bytes = AvroEncoder.toBinary(pairs)(_codec)
+              val metadata = new ObjectMetadata()
+              metadata.setContentLength(bytes.length)
+              val is = new ByteArrayInputStream(bytes)
+              val request = putObjectModifier(new PutObjectRequest(bucket, key, is, metadata))
+              Some(request, iter)
+            } else {
+              None
+            }
+          }
+
+        val pool = Executors.newFixedThreadPool(threads)
+
+        val write: PutObjectRequest => Process[Task, PutObjectResult] = { request =>
+          Process eval Task {
+            request.getInputStream.reset() // reset in case of retransmission to avoid 400 error
+            s3client.putObject(request)
+          }(pool).retryEBO {
+            case e: AmazonS3Exception if e.getStatusCode == 503 => true
+            case _ => false
           }
         }
 
-      val pool = Executors.newFixedThreadPool(threads)
-
-      val write: PutObjectRequest => Process[Task, PutObjectResult] = { request =>
-        Process eval Task {
-          request.getInputStream.reset() // reset in case of retransmission to avoid 400 error
-          s3client.putObject(request)
-        }(pool).retryEBO {
-          case e: AmazonS3Exception if e.getStatusCode == 503 => true
-          case _ => false
-        }
+        val results = nondeterminism.njoin(maxOpen = threads, maxQueued = threads) { requests map write }(Strategy.Executor(pool))
+        results.run.unsafePerformSync
+        pool.shutdown()
       }
-
-      val results = nondeterminism.njoin(maxOpen = threads, maxQueued = threads) { requests map write } (Strategy.Executor(pool))
-      results.run.unsafePerformSync
-      pool.shutdown()
     }
   }
 }

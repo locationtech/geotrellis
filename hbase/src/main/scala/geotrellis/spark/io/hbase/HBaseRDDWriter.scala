@@ -41,20 +41,22 @@ object HBaseRDDWriter {
 
     raster.groupBy({ row => decomposeKey(row._1) }, numPartitions = raster.partitions.length)
       .foreachPartition { partition: Iterator[(Long, Iterable[(K, V)])] =>
-        instance.withConnectionDo { connection =>
-          val mutator = connection.getBufferedMutator(table)
+        if(partition.nonEmpty) {
+          instance.withConnectionDo { connection =>
+            val mutator = connection.getBufferedMutator(table)
 
-          partition.foreach { recs =>
-            val id = recs._1
-            val pairs = recs._2.toVector
-            val bytes = AvroEncoder.toBinary(pairs)(codec)
-            val put = new Put(HBaseKeyEncoder.encode(layerId, id))
-            put.addColumn(tilesCF, "", System.currentTimeMillis(), bytes)
-            mutator.mutate(put)
+            partition.foreach { recs =>
+              val id = recs._1
+              val pairs = recs._2.toVector
+              val bytes = AvroEncoder.toBinary(pairs)(codec)
+              val put = new Put(HBaseKeyEncoder.encode(layerId, id))
+              put.addColumn(tilesCF, "", System.currentTimeMillis(), bytes)
+              mutator.mutate(put)
+            }
+
+            mutator.flush()
+            mutator.close()
           }
-
-          mutator.flush()
-          mutator.close()
         }
       }
   }
