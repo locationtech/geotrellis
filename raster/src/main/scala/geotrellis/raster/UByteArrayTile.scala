@@ -31,6 +31,8 @@ abstract class UByteArrayTile(val array: Array[Byte], cols: Int, rows: Int)
 
   def interpretAs(newCellType: CellType): ArrayTile = {
     newCellType match {
+      case dt: ByteCells with NoDataHandling =>
+        ByteArrayTile(array, cols, rows, dt)
       case dt: UByteCells with NoDataHandling =>
         UByteArrayTile(array, cols, rows, dt)
       case _ =>

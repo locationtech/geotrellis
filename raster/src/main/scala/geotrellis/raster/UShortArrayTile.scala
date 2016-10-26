@@ -32,6 +32,8 @@ abstract class UShortArrayTile(val array: Array[Short], cols: Int, rows: Int)
 
   def interpretAs(newCellType: CellType): ArrayTile = {
     newCellType match {
+      case dt: ShortCells with NoDataHandling =>
+        ShortArrayTile(array, cols, rows, dt)
       case dt: UShortCells with NoDataHandling =>
         UShortArrayTile(array, cols, rows, dt)
       case _ =>

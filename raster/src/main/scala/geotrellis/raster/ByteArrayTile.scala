@@ -30,6 +30,8 @@ abstract class ByteArrayTile(val array: Array[Byte], cols: Int, rows: Int)
     newCellType match {
       case dt: ByteCells with NoDataHandling =>
         ByteArrayTile(array, cols, rows, dt)
+      case dt: UByteCells with NoDataHandling =>
+        UByteArrayTile(array, cols, rows, dt)
       case _ =>
         withNoData(None).convert(newCellType)
     }

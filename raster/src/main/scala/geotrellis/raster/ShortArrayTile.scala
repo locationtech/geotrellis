@@ -35,6 +35,8 @@ abstract class ShortArrayTile(val array: Array[Short], cols: Int, rows: Int)
     newCellType match {
       case dt: ShortCells with NoDataHandling =>
         ShortArrayTile(array, cols, rows, dt)
+      case dt: UShortCells with NoDataHandling =>
+        UShortArrayTile(array, cols, rows, dt)
       case _ =>
         withNoData(None).convert(newCellType)
     }
