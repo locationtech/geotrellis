@@ -1,5 +1,3 @@
-# Local ETL Tutorial #
-
 This brief tutorial describes how to use GeoTrellis' ETL functionality to create a GeoTrellis catalog.
 We will accomplish this in three steps:
 1) We will build the ETL assembly from code in the GeoTrellis source tree
@@ -9,6 +7,8 @@ and 3) We will exercise the ingested data using a simple project.
 It is assumed throughout this tutorial that Spark 2.0.0 or greater is installed,
 that the GDAL command line tools are installed,
 and that the GeoTrellis source tree has been locally cloned.
+
+# Local ETL #
 
 ## Build the Assembly ##
 
@@ -141,3 +141,100 @@ $SPARK_HOME/bin/spark-submit \
 
 In the block above, `/tmp/catalog` is an HDFS URI pointing to the location of the catalog, `example` is the layer name, and `12` is the layer zoom level.
 After running the code, you should find a number of images in `/tmp/tif` which are GeoTiff renderings of the tiles of the raw layer, as well as the layer with various transformations applied to it.
+
+# GeoDocker ETL #
+
+The foregoing discussion showed how to ingest data to the local filesystem, albeit via Hadoop.
+In this section, we will give a basic example of how to use the ETL machinery on GeoDocker by ingesting data into HDFS.
+Throughout this section we will assume that the files that were previously created in the local `/tmp` directory
+(namely `/tmp/geotrellis-spark-etl-assembly-1.0.0.jar`, `/tmp/input.json`, `/tmp/output.json`, `/tmp/backend-profiles.json`, and `/tmp/rasters/*.tif`)
+still exist.
+
+In addition to the dependencies needed to complete the steps given above,
+this step assumes that user has a recent version of `docker-compose` installed and working.
+
+## Edit `output.json` ##
+
+Because we are planning to ingest into HDFS and not to the filesystem, we must modify the `output.json` file that we used previously.
+Edit `/tmp/json/output.json` so that it looks like this:
+
+```json
+{
+    "backend": {
+        "type": "hadoop",
+        "path": "hdfs://hdfs-name/catalog/"
+    },
+    "reprojectMethod": "buffered",
+    "pyramid": true,
+    "tileSize": 256,
+    "keyIndexMethod": {
+        "type": "zorder"
+    },
+    "resampleMethod": "cubic-spline",
+    "layoutScheme": "zoomed",
+    "crs": "EPSG:3857"
+}
+```
+
+The only change is the value associated with the `path` key; it now points into HDFS instead of at the local filesystem.
+
+## Download `docker-compose.yml` File ##
+
+We must now obtain a `docker-compose.yml` file.
+Download [this file](https://raw.githubusercontent.com/geodocker/geodocker-hdfs/2542b92075fbc750a1b1fb1b9dc47190fc7beb35/docker-compose.yml)
+and move it to the `/tmp` directory.
+The directory location is important, because `docker-compose` will use that to name the network and containers that it creates.
+
+## Bring Up GeoDocker ##
+
+With the `docker-compose.yml` file in place, we are now ready to start our GeoDocker instance:
+
+```console
+cd /tmp
+docker-compose up
+```
+
+After a period of time, the various Hadoop containers should be up and working.
+
+## Perform the Ingest ##
+
+In a different terminal, we will now start another container:
+
+```console
+docker run -it --rm --net=tmp_default -v $SPARK_HOME:/spark:ro -v /tmp:/tmp openjdk:8-jdk bash
+```
+
+Notice that the network name was derived from the name of the directory in which the `docker-compose up` command was run.
+The `--net=tmp_default` switch connects the just-started container to the bridge network that the GeoDocker cluster is running on.
+The `-v $SPARK_HOME:/spark:ro` mounts our local Spark installation at `/spark` within the container so that we can use it.
+The `-v /tmp:/tmp` switch mounts our host `/tmp` directory into the container so that we can use the data and jar files that are there.
+
+Within the just-started container, we can now perform the ingest:
+
+```console
+/spark/bin/spark-submit \
+   --class geotrellis.spark.etl.MultibandIngest \
+   --master 'local[*]' \
+   --driver-memory 16G \
+   /tmp/geotrellis-spark-etl-assembly-1.0.0.jar \
+   --input "file:///tmp/json/input.json" \
+   --output "file:///tmp/json/output.json" \
+   --backend-profiles "file:///tmp/json/backend-profiles.json"
+```
+
+The only change versus what we did earlier is the location of the `spark-submit` binary.
+
+## Exercise the Catalog ##
+
+Now, we can exercise the catalog:
+
+```console
+rm -f /tmp/tif/*.tif
+/spark/bin/spark-submit \
+   --class com.azavea.geotrellis.scratch.Scratch \
+   --master 'local[*]' \
+   --driver-memory 16G \
+   /tmp/scratch-assembly-0.jar 'hdfs://hdfs-name/catalog' example 12
+```
+
+The only differences form what we did earlier are the location of the `spark-submit` binary and URI specifying the location of the catalog.
