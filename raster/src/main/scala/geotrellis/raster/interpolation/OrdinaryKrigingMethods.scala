@@ -19,22 +19,21 @@ package geotrellis.raster.interpolation
 import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.vector.interpolation.{Semivariogram, OrdinaryKriging}
+import geotrellis.util.MethodExtensions
 
 /** Methods implicitly added to tile via the package import.
   * Contains a method for each overloaded way to create a OrdinaryKriging
   */
-trait OrdinaryKrigingMethods {
-  val points: Array[PointFeature[Double]]
-
+trait OrdinaryKrigingMethods extends MethodExtensions[Traversable[PointFeature[Double]]] {
   def ordinaryKriging(rasterExtent: RasterExtent) =
-    Interpolation.kriging(rasterExtent)(OrdinaryKriging(points))
+    Interpolation.kriging(rasterExtent)(OrdinaryKriging(self.toArray))
 
   def ordinaryKriging(rasterExtent: RasterExtent, bandwidth: Double) =
-    Interpolation.kriging(rasterExtent)(OrdinaryKriging(points, bandwidth))
+    Interpolation.kriging(rasterExtent)(OrdinaryKriging(self.toArray, bandwidth))
 
   def ordinaryKriging(rasterExtent: RasterExtent, sv: Semivariogram) =
-    Interpolation.kriging(rasterExtent)(OrdinaryKriging(points, sv))
+    Interpolation.kriging(rasterExtent)(OrdinaryKriging(self.toArray, sv))
 
   def ordinaryKriging(rasterExtent: RasterExtent, bandwidth: Double, sv: Semivariogram) =
-    Interpolation.kriging(rasterExtent)(OrdinaryKriging(points, bandwidth, sv))
+    Interpolation.kriging(rasterExtent)(OrdinaryKriging(self.toArray, bandwidth, sv))
 }
