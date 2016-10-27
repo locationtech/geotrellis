@@ -39,12 +39,12 @@ val fc: String = """{
                    |    {
                    |      "type": "Feature",
                    |      "geometry": { "type": "Point", "coordinates": [1.0, 2.0] },
-                   |      "properties": { "SomeProp": 14 },
+                   |      "properties": { "someProp": 14 },
                    |      "id": "target_12a53e"
                    |    }, {
                    |      "type": "Feature",
                    |      "geometry": { "type": "Point", "coordinates": [2.0, 7.0] },
-                   |      "properties": { "SomeProp": 5 },
+                   |      "properties": { "someProp": 5 },
                    |      "id": "target_32a63e"
                    |    }
                    |  ]
@@ -56,9 +56,9 @@ val collection = fc.parseGeoJson[JsonFeatureCollectionMap]
 ```
 it will be necessary to extract the desired features from `collection`.  In order to maintain type safety, these results are pulled using accessors such as `.getAllPoints`, `.getAllMultiLineFeatures`, and so on.  Each geometry and feature type requires the use of a different method call.
 
-As in the case of serialization, to extract the feature data from this example string, we must create a case class with an integer member named `SomeProp` and register it using `jsonFormat1`.
+As in the case of serialization, to extract the feature data from this example string, we must create a case class with an integer member named `someProp` and register it using `jsonFormat1`.
 ```scala
-case class SomeProp(SomeProp: Int)
+case class SomeProp(someProp: Int)
 implicit val boxedToRead = jsonFormat1(SomeProp)
 
 collection.getAllPointFeatures[SomeProp]
