@@ -27,6 +27,9 @@ Keys and Key Indexes
 Tiles
 =====
 
+[Cell Types](./celltype)
+----------
+
 Projections
 ===========
 
