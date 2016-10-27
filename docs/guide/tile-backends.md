@@ -3,7 +3,7 @@ the various tile layer backends we support, how to use them, and why you
 might choose one over the other.
 
 To Be or not to Be a Backend
-----------------------------
+============================
 The Scala classes that underpin each backend all inherit from the same group
 of traits, meaning they agree on behaviour:
 
@@ -34,7 +34,7 @@ By default, the stored attributes are:
 (say, a column in the case of databases).
 
 File System
------------
+===========
 
 **Choose your file system if:** you want to perform tests, data ingests, or
 data processing locally on your computer.
@@ -64,7 +64,7 @@ val writer = FileLayerWriter(store)
 - Not suitable for use in Production.
 
 HDFS
-----
+====
 
 **Choose HDFS if:** you want a simple setup and fast write speed.
 
@@ -101,7 +101,7 @@ val writer = HadoopLayerWriter(rootPath, store)
 - Inefficient `LayerUpdater` functionality
 
 S3
---
+==
 
 **Choose S3 if:** you have large amounts of data to store, can pay for
 external storage, and want to access the data from anywhere.
@@ -135,14 +135,14 @@ val writer = S3LayerWriter(store)
 
 - Your application can access your data from anywhere in the world
 - Simple production environment; no external processes
-- "Fast enough" to back a real-time tile server
+- Fast enough to back a real-time tile server
 
 **CONs:**
 
 - May be cost-prohibitive, depending on your usage
 
 Accumulo
---------
+========
 
 **Choose Accumulo if:** you want fast reads and are willing to put in the setup effort.
 
@@ -196,7 +196,7 @@ val writer = AccumuloLayerWriter(instance, dataTable, opts)
 - Requires external processes
 
 Cassandra
----------
+=========
 
 **Choose Cassandra if:** you want a simple(r) production environment, or
 already have a Cassandra cluster.
@@ -237,7 +237,7 @@ val writer = CassandraLayerWriter(store, instance, keyspace, dataTable)
 - Requires external processes
 
 HBase
------
+=====
 
 **Choose HBase if:** you have a pre-existing HBase cluster.
 

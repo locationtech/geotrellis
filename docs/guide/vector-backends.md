@@ -27,7 +27,7 @@ Keep in mind that as of 2016 October 25, both of these GeoTrellis modules
 are still experimental.
 
 GeoMesa
--------
+=======
 
 ```scala
 import geotrellis.spark._
@@ -60,7 +60,7 @@ val res: RDD[SimpleFeature] = reader.read[Point, D](
 ```
 
 GeoWave
--------
+=======
 
 ```scala
 import geotrellis.spark._
