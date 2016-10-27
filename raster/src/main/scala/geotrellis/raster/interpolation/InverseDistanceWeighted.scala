@@ -4,12 +4,27 @@ import geotrellis.raster._
 import geotrellis.vector._
 import spire.syntax.cfor._
 
-object InverseDistanceWeighting {
+object InverseDistanceWeighted {
+  case class Options(
+    radiusX: Double = Double.PositiveInfinity,
+    radiusY: Double = Double.PositiveInfinity,
+    rotation: Double = 0.0,
+    weightingPower: Double = 2.0,
+    smoothingFactor: Double = 0.0,
+    equalWeightRadius: Double = 0.0000000000001,
+    cellType: CellType = IntConstantNoDataCellType,
+    onSet: Double => Double = x => x
+  )
+
+  object Options {
+    def DEFAULT = Options()
+  }
+
   /**
     * Compute an Inverse Distance Weighting raster over the given
     * extent from the given set known-points.  Please see
     * https://en.wikipedia.org/wiki/Inverse_distance_weighting for
-    * more details.
+    * more details. Implementation taken partially from GDAL GDALGridInverseDistanceToAPower
     *
     * @param   points            A collection of known-points
     * @param   rasterExtent      The study area
@@ -18,44 +33,57 @@ object InverseDistanceWeighting {
     *                            be the mean of those points
     * @param   cellType          Interpolation radius in coordinate unit
     * @param   onSet             Function to be applied before storing interpolation values
+    *
     * @return The data interpolated across the study area
     */
   def apply[D](
-                points: Seq[PointFeature[D]],
-                rasterExtent: RasterExtent,
-                radius: Double = Double.PositiveInfinity,
-                equalWeightRadius: Double = 0,
-                cellType: CellType = IntConstantNoDataCellType,
-                onSet: Double => Double = x => x
-              )(implicit ev: D => Double): Tile = {
+    points: Traversable[PointFeature[D]],
+    rasterExtent: RasterExtent,
+    options: Options = Options.DEFAULT
+  )(implicit ev: D => Double): Raster[Tile] = {
+    val Options(radiusX, radiusY, rotation, weightingPower, smoothingFactor, equalWeightRadius, cellType, onSet) = options
+
     val cols = rasterExtent.cols
     val rows = rasterExtent.rows
     val tile = ArrayTile.empty(cellType, cols, rows)
 
-    if (points.isEmpty) {
-      tile
-    } else {
+    if (!points.isEmpty) {
       val ewr2 = equalWeightRadius * equalWeightRadius
 
-      def idw(points: Seq[PointFeature[D]], x: Double, y: Double)(filter: Double => Boolean) = {
+      def idw(points: Traversable[PointFeature[D]], x: Double, y: Double, hasRadius: Boolean) = {
         var sum = 0.0
         var count = 0
         var weightSum = 0.0
         var sampleSum = 0.0
         var sampleCount = 0
+        val halfPow = weightingPower / 2.0
 
         for (point <- points) {
           val dX = x - point.geom.x
           val dY = y - point.geom.y
-          val d2 = dX * dX + dY * dY
+          val d2 = dX * dX + dY * dY + smoothingFactor * smoothingFactor
 
-          if (filter(d2)) {
+          val (dX2, dY2) =
+            if(rotation != 0.0) {
+              val rotRads = math.toRadians(rotation)
+              val coeff1 = math.cos(rotRads)
+              val coeff2 = math.sin(rotRads)
+              val dXRotated = dX * coeff1 + dY * coeff2;
+              val dYRotated = dY * coeff1 - dX * coeff2;
+              (dXRotated, dYRotated)
+            } else {
+              (dX, dY)
+            }
+
+          if (!hasRadius || radiusY * dX2 * dX2 + radiusX * dY * dY <= d2 ) {
+            val data = point.data: Double
             if (d2 <= ewr2) {
-              sampleSum += point.data
+              sampleSum += data
               sampleCount += 1
             } else {
-              val w = 1 / d2
-              sum += point.data * w
+              val powerWeight = math.pow(d2, halfPow)
+              val w = 1 / powerWeight
+              sum += data * w
               weightSum += w
               count += 1
             }
@@ -64,7 +92,7 @@ object InverseDistanceWeighting {
 
         if (sampleCount == 0) {
           if (count == 0) {
-            doubleNODATA
+            Double.NaN
           } else {
             onSet(sum / weightSum)
           }
@@ -73,37 +101,37 @@ object InverseDistanceWeighting {
         }
       }
 
-      radius match {
-        case Double.PositiveInfinity =>
+      (radiusX * radiusY) match {
+        case x if x.isInfinite =>
           cfor(0)(_ < rows, _ + 1) { row =>
             cfor(0)(_ < cols, _ + 1) { col =>
               val x = rasterExtent.gridColToMap(col)
               val y = rasterExtent.gridRowToMap(row)
-              val value = idw(points, x, y)(d2 => true)
+              val value = idw(points, x, y, false)
 
               tile.setDouble(col, row, value)
             }
           }
-        case _ =>
-          val r2 = radius * radius
+        case r2 =>
           val index: SpatialIndex[PointFeature[D]] = SpatialIndex(points)(p => (p.geom.x, p.geom.y))
 
           cfor(0)(_ < rows, _ + 1) { row =>
             cfor(0)(_ < cols, _ + 1) { col =>
               val x = rasterExtent.gridColToMap(col)
               val y = rasterExtent.gridRowToMap(row)
-              val rPoints = index.pointsInExtent(Extent(x - radius, y - radius, x + radius, y + radius))
+              val rPoints = index.pointsInExtent(Extent(x - radiusX, y - radiusY, x + radiusX, y + radiusY))
               val value = if (rPoints.isEmpty) {
                 doubleNODATA
               } else {
-                idw(rPoints, x, y)(d2 => d2 <= r2)
+                idw(rPoints, x, y, true)
               }
 
               tile.setDouble(col, row, value)
             }
           }
       }
-      tile
     }
+
+    Raster(tile, rasterExtent.extent)
   }
 }
