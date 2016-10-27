@@ -12,6 +12,7 @@
 ./sbt "project raster" publish-local && \
 ./sbt "project raster-testkit" publish-local && \
 ./sbt "project s3" publish-local && \
+./sbt "project s3-testkit" publish-local && \
 ./sbt "project geowave" publish-local && \
 ./sbt "project shapefile" publish-local && \
 ./sbt "project slick" publish-local && \
