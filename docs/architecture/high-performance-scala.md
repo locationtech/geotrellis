@@ -1,4 +1,7 @@
-# geotrellis.macros
+# JVM Primitives
+------
+# Mutable Data
+------
 
 > NOTE: Because scala macros require a separate stage of compilation, they've
 > been broken out into their own package in GeoTrellis. Otherwise, the
@@ -87,3 +90,9 @@ readability. They've been introduced merely to overcome shortcomings in
 certain boxing-behaviors in the scala compiler and understanding their
 behavior isn't necessary to read/understand the GeoTrellis codebase.
 
+
+
+# Macros
+-----
+# Spark
+------
