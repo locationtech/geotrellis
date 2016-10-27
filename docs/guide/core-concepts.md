@@ -9,28 +9,28 @@ This document aims to be informative to new and experienced GIS users alike.
 If GIS is brand, brand new to you, [this document](https://www.gislounge.com/what-is-gis/) is
  a useful high level overview.
 
-# Raster Data
------------
+Raster Data
+===========
 
-# Vector Data
------------
+Vector Data
+===========
 
-# Vector Tiles
-------------
+Vector Tiles
+===========
 
-# Tile Layers
------------
+Tile Layers
+===========
 
 `RDD[(K, V)] with Metadata[M]`
 
-# Keys and Key Indexes
---------------------
+Keys and Key Indexes
+====================
 
-# Tiles
------------
+Tiles
+=====
 
-# Projections
------------
+Projections
+===========
 
 **What is a projection?**
 
@@ -80,8 +80,8 @@ val ll: Line = wm.reproject(WebMercator, LatLng)  // The Line reprojected into L
 ```
 
 
-# Extents
--------
+Extents
+=======
 
 
 **Data structures:** `Extent`, `ProjectedExtent`, `TemporalProjectedExtent`,
@@ -158,8 +158,8 @@ Extent.jts2Extent(jts.geom.Envelope)  // implicitly. This is the final `Extent`.
 `Extent => ReprojectExtent => Polygon => Line => (projected) Line => Polygon => jts.geom.Envelope => Extent`
 
 
-# Layout Definitions
-------------------
+Layout Definitions
+====================
 
 **Data structures:** `LayoutDefinition`, `TileLayout`, `CellSize`
 
