@@ -35,3 +35,11 @@ class SinglebandCropIterator(val geoTiff: SinglebandGeoTiff,
     SinglebandGeoTiff(result, result._2, geoTiff.crs)
   }
 }
+
+object SinglebandCropIterator {
+  def apply(geoTiff: SinglebandGeoTiff, dimensions: (Int, Int)): SinglebandCropIterator =
+    apply(geoTiff: SinglebandGeoTiff, dimensions._1, dimensions._2)
+
+  def apply(geoTiff: SinglebandGeoTiff, colMax: Int, rowMax: Int): SinglebandCropIterator =
+    new SinglebandCropIterator(geoTiff: SinglebandGeoTiff, colMax, rowMax)
+}
