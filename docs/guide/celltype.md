@@ -23,6 +23,7 @@
 The above table lists `CellType` `DataType`s in the leftmost column
 and `NoData` policies along the top row. A couple of points are worth
 making here:
+
 1. Bits are incapable of representing on, off, *and* some `NoData`
    value. As a consequence, there is no such thing as a Bit-backed tile
    which recognizes `NoData`.
@@ -44,7 +45,7 @@ val normalTile = IntArrayTile(myData, 2, 2, defaultCT)
 /** A custom, 'user defined' NoData CellType for comparison; we will
 treat 42 as `NoData` for this one */
 val customCellType = IntUserDefinedNoDataValue(42)
-val customTile = IntArrayTile(myData, 2, 2, myNormalCellType)
+val customTile = IntArrayTile(myData, 2, 2, customCellType)
 
 /** We should expect that the first tile has the value 42 at (0, 0)
 because Int.MinValue is the GeoTrellis-default `NoData` value for
@@ -56,7 +57,11 @@ assert(normalTile.getDouble(0, 0) == 42.0)
 inspecting the value to be returned at (0, 0) to see if it matches our
 custom `NoData` policy and, if it matches (it does), return Int.MinValue
 (no matter your underlying type, `get` on a tile will return an `Int`
-and `getDouble` will return a `Double` */
+and `getDouble` will return a `Double`.
+
+The use of Int.MinValue and Double.NaN is a result of those being the
+GeoTrellis-blessed values for NoData - [below](#cell-type-performance),
+these values appear in the rightmost column */
 assert(customTile.get(0, 0) == Int.MinValue)
 assert(customTile.getDouble(0, 0) == Double.NaN)
 ```
