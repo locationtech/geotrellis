@@ -1,21 +1,34 @@
-Projections, Extents, and Layout Definitions
-============================================
-
-Geographical Information Systems, like any specialized field, has a wealth
+Geographical Information Systems (GIS), like any specialized field, has a wealth
 of jargon and unique concepts. When represented in software, these concepts
-can sometimes be skewed or expanded from their original forms. Three of
-these critical to effective use of Geotrellis are *Projections*, *Extents*,
-and *Layout Definitions*. We give a thorough definition of each here, while
-referencing the Geotrellis objects and source files backing them.
+can sometimes be skewed or expanded from their original forms. We give a thorough definition of many of the core concepts
+here, while referencing the Geotrellis objects and source files backing them.
 
 This document aims to be informative to new and experienced GIS users alike.
+If GIS is brand, brand new to you, [this document](https://www.gislounge.com/what-is-gis/) is
+ a useful high level overview.
+
+Raster Data
+===========
+
+Vector Data
+===========
+
+Vector Tiles
+===========
+
+Tile Layers
+===========
+
+`RDD[(K, V)] with Metadata[M]`
+
+Keys and Key Indexes
+====================
+
+Tiles
+=====
 
 Projections
------------
-
-**Data structures:** `CRS`, `LatLng`, `WebMercator`, `ConusAlbers`
-
-**Sources:** `geotrellis.proj4.{CRS, LatLng, WebMercator, ConusAlbers}`
+===========
 
 **What is a projection?**
 
@@ -34,6 +47,11 @@ knows how to convert between its coordinates and a sphere's, so a
 transformation `CRS.A -> CRS.B -> CRS.A` is actually `CRS.A -> Sphere ->
 CRS.B -> Sphere -> CRS.A`. Naturally some floating point error does
 accumulate during this process.
+
+
+**Data structures:** `CRS`, `LatLng`, `WebMercator`, `ConusAlbers`
+
+**Sources:** `geotrellis.proj4.{CRS, LatLng, WebMercator, ConusAlbers}`
 
 Within the context of Geotrellis, the main projection-related object is the
 `CRS` trait. It stores related `CRS` objects from underlying libraries, and
@@ -59,8 +77,10 @@ val ll: Line = wm.reproject(WebMercator, LatLng)  // The Line reprojected into L
 
 ```
 
+
 Extents
--------
+=======
+
 
 **Data structures:** `Extent`, `ProjectedExtent`, `TemporalProjectedExtent`,
 `GridExtent`, `RasterExtent`
@@ -135,8 +155,9 @@ Extent.jts2Extent(jts.geom.Envelope)  // implicitly. This is the final `Extent`.
 
 `Extent => ReprojectExtent => Polygon => Line => (projected) Line => Polygon => jts.geom.Envelope => Extent`
 
+
 Layout Definitions
-------------------
+====================
 
 **Data structures:** `LayoutDefinition`, `TileLayout`, `CellSize`
 
@@ -160,3 +181,6 @@ describe some tiled map area in Geotrellis.
 **How are Layout Definitions used throughout Geotrellis?**
 
 They are used heavily when reading, writing, and reprojecting Rasters.
+
+
+
