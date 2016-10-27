@@ -60,8 +60,8 @@ custom `NoData` policy and, if it matches (it does), return Int.MinValue
 and `getDouble` will return a `Double`.
 
 The use of Int.MinValue and Double.NaN is a result of those being the
-GeoTrellis-blessed values for NoData - [below](#cell-type-performance),
-these values appear in the rightmost column */
+GeoTrellis-blessed values for NoData - below, you'll find a chart that
+lists all such values in the rightmost column */
 assert(customTile.get(0, 0) == Int.MinValue)
 assert(customTile.getDouble(0, 0) == Double.NaN)
 ```
@@ -100,9 +100,12 @@ interpreted (i.e. whether the data for a byte includes its
 sign - positive or negative - or whether it counts up from 0 - and
 is therefore said to be 'unsigned').  
 
-In addition to keeping track of the memory used by each cell in a tile,
+In addition to keeping track of the memory used by each cell in a `Tile`,
 the cell type is where decisions about which values count as data (and
-which, if any, are treated
+which, if any, are treated as `NoData`). A value recognized as `NoData`
+will be ignored while mapping over tiles, carrying out focal operations
+on them, interpolating for values in their region, and just about all of
+the operations provided by GeoTrellis for working with `Tile`s.  
 
 
 ## Cell Type Performance
@@ -212,19 +215,21 @@ val myData = Array(42, 2, 3, 4)
 val tileBefore = IntArrayTile(myData, 2, 2, IntUserDefinedNoDataValue(42))
 
 /** While the value in (0, 0) is NoData, it is now 1 instead of 42
-(which matches our new CellType's expectations) */
+  *  (which matches our new CellType's expectations)
+  */
 val converted = tileBefore.convert(IntUserDefinedNoData(1))
-assert(converted.getRaw.get(0, 0) !== converted.get(0, 0))
+assert(converted.getRaw.get(0, 0) != converted.get(0, 0))
 
 /** Here, the first value is still 42. But because the NoData value is
-now 1, the first value is no longer treated as NoData */
+  *  now 1, the first value is no longer treated as NoData
+  */
 (which matches our new CellType's expectations) */
 val interpreted = tileBefore.interpretAs(IntUserDefinedNoData(1))
 assert(interpreted.getRaw.get(0, 0) == interpreted.get(0, 0))
-
 ```
 
 TL;DR: If your `CellType` is just wrong, reinterpret the meaning of your
 underlying cells with a call to `interpretAs`. If you trust your
 `CellType` and wish for its semantics to be preserved through
-transformation, use `convert`.
+transformation, use `convert`.  
+
