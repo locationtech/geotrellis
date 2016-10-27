@@ -136,7 +136,7 @@ $SPARK_HOME/bin/spark-submit \
    --class com.azavea.geotrellis.scratch.Scratch \
    --master 'local[*]' \
    --driver-memory 16G \
-   scratch/target/scala-2.11/scratch-assembly-0.jar /tmp/catalog example 12
+   /tmp/scratch-assembly-0.jar /tmp/catalog example 12
 ```
 
 In the block above, `/tmp/catalog` is an HDFS URI pointing to the location of the catalog, `example` is the layer name, and `12` is the layer zoom level.
