@@ -21,9 +21,9 @@ import java.nio.ByteBuffer
 
 import spire.syntax.cfor._
 
-trait ByteBufferExtensions {
+trait ByteReaderExtensions {
 
-  implicit class ByteBufferUtilities(byteReader: ByteReader) {
+  implicit class ByteReaderUtilities(byteReader: ByteReader) {
 
     @inline
     final private def ub2s(byte: Byte): Short =

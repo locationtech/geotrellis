@@ -4,7 +4,7 @@ import geotrellis.raster._
 import java.nio.ByteBuffer
 
 package object util extends ArrayExtensions
-  with ByteBufferExtensions
+  with ByteReaderExtensions
   with ByteInverter
   with GDALNoDataParser {
 
