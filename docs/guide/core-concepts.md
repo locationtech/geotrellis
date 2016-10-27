@@ -1,8 +1,6 @@
 Geographical Information Systems (GIS), like any specialized field, has a wealth
 of jargon and unique concepts. When represented in software, these concepts
-can sometimes be skewed or expanded from their original forms. Three of
-these critical to effective use of Geotrellis are *Projections*, *Extents*,
-and *Layout Definitions*. We give a thorough definition of many of the core concepts
+can sometimes be skewed or expanded from their original forms. We give a thorough definition of many of the core concepts
 here, while referencing the Geotrellis objects and source files backing them.
 
 This document aims to be informative to new and experienced GIS users alike.
