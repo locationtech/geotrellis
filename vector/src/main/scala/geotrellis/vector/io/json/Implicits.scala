@@ -32,13 +32,13 @@ trait Implicits extends GeoJsonSupport {
   implicit class RichGeometry(val geom: Geometry) {
     def toGeoJson(): String = geom.toJson.compactPrint
 
-    def withCrs(crs: CRS) = WithCrs(geom, crs)
+    def withCrs(crs: JsonCRS) = WithCrs(geom, crs)
   }
 
   implicit class RichFeature[G <: Geometry, D: JsonWriter](feature: Feature[G, D]) {
     def toGeoJson(): String = writeFeatureJson(feature).compactPrint
 
-    def withCrs(crs: CRS) = WithCrs(feature, crs)
+    def withCrs(crs: JsonCRS) = WithCrs(feature, crs)
   }
 
   implicit class RichString(val s: String) {
