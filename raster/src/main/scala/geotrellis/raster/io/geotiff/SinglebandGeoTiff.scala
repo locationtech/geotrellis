@@ -40,6 +40,9 @@ case class SinglebandGeoTiff(
 
     SinglebandGeoTiff(raster, raster._2, this.crs)
   }
+
+  def cropIterate(colMax: Int, rowMax: Int): SinglebandCropIterator =
+    SinglebandCropIterator(this, colMax, rowMax)
 }
 
 object SinglebandGeoTiff {
