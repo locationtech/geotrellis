@@ -58,7 +58,7 @@ trait CrsFormats {
         case Seq(JsString("name"), props: JsObject) =>
           json.convertTo[NamedCRS]
         case Seq(JsString("link"), props: JsObject) =>
-          json.convertTo[NamedCRS]
+          json.convertTo[LinkedCRS]
         case Seq(JsString(crsType), _) =>
           throw new DeserializationException(s"Unable to read CRS of type $crsType")
       }
