@@ -2,9 +2,9 @@ package geotrellis.spark.summary
 
 import geotrellis.raster._
 import geotrellis.raster.histogram._
-import geotrellis.spark.mapalgebra._
+import geotrellis.util.MethodExtensions
 
-trait StatsTileCollectionMethods[K] extends TileCollectionMethods[K] {
+trait StatsTileCollectionMethods[K] extends MethodExtensions[Seq[(K, Tile)]] {
 
   def averageByKey(): Seq[(K, Tile)] =
     self.groupBy(_._1).mapValues { seq => seq.map(_._2).reduce(_ + _) / seq.size } toSeq
