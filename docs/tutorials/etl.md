@@ -1,5 +1,5 @@
 This brief tutorial describes how to use GeoTrellis' [Extract-Transform-Load](https://en.wikipedia.org/wiki/Extract,_transform,_load) ("ETL") functionality to create a GeoTrellis catalog.
-We will accomplish this in three steps:
+We will accomplish this in four steps:
    1. we will build the ETL assembly from code in the GeoTrellis source tree,
    2. we will compose JSON configuration files describing the input and output data,
    3. we will perform the ingest, creating a GeoTrellis catalog, and
@@ -33,7 +33,7 @@ Three JSON files are required: one describing the input data, one describing the
 Please see [the ETL documentation](../spark-etl/spark-etl-intro.md) and the [ETL examples](../spark-etl/spark-etl-run-examples.md) for more information about the configuration files.
 
 We will now create three files in the `/tmp/json` directory: `input.json`, `output.json`, and `backend-profiles.json`.
-(The respective schemas that those files must obeyf can be found
+(The respective schemas that those files must obey can be found
 [here](https://github.com/geotrellis/geotrellis/blob/master/spark-etl/src/main/resources/input-schema.json),
 [here](https://github.com/geotrellis/geotrellis/blob/master/spark-etl/src/main/resources/output-schema.json),
 and [here](https://github.com/geotrellis/geotrellis/blob/master/spark-etl/src/main/resources/backend-profiles-schema.json).)
