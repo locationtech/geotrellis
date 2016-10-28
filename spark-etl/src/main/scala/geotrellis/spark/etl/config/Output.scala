@@ -26,7 +26,8 @@ case class Output(
   cellType: Option[CellType] = None,
   encoding: Option[String] = None,
   breaks: Option[String] = None,
-  maxZoom: Option[Int] = None
+  maxZoom: Option[Int] = None,
+  targetZoom: Option[Int] = None
 ) extends Serializable {
   def getCrs = crs.map(CRS.fromName)
 
