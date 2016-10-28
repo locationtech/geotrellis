@@ -1,19 +1,19 @@
 ## How can I convert a `Tile`'s `CellType`?
 
-Q: Let's say I have a tile with incorrect `CellType` information or
+**Question**: Let's say I have a tile with incorrect `CellType` information or
 that, for whatever reason, I need to change it. How can I convert a
 `Tile`'s `CellType`? Which methods can I use?
 
-A: There are two distinct flavors of 'conversion' which GeoTrellis supports
+**Answer**: There are two distinct flavors of 'conversion' which GeoTrellis supports
 for moving between `CellType`s: `convert` and `interpretAs`. In what
 follows we will try to limit any confusion about just what differentiates
 these two methods and describe which should be used under what circumstances.  
 
-In previous sections, we've said that the `CellType` is just a piece of
-metadata carried around alongside a `Tile` which helps GeoTrellis to
-keep track of how that `Tile`'s array should be interacted with. The
-distinction between `interpretAs` and `convert` relates to how smart
-GeoTrellis should be while swapping out one `CellType` for another.  
+[Elsewhere](core-concepts.md#cell-types), we've said that the `CellType` is just
+a piece of metadata carried around alongside a `Tile` which helps GeoTrellis
+to keep track of how that `Tile`'s array should be interacted with. The
+distinction between `interpretAs` and `convert` relates to how smart GeoTrellis
+should be while swapping out one `CellType` for another.  
 
 Broadly, `convert` assumes that your `Tile`'s `CellType` is accurate and
 that you'd like the semantics of your `Tile` to remain invariant under
@@ -77,16 +77,17 @@ transformation, use `convert`.
 
 ## How do I import GeoTrellis methods?
 
-Q: In some of the GeoTrellis sample code and certainly in example
+**Question**: In some of the GeoTrellis sample code and certainly in example
 projects, it looks like some GeoTrellis types have more methods than
 they really do. If I create an `IntArrayTile`, it doesn't have most of
 the methods that it should - I can't reproject, resample, or carry out
 map algebra operations - why is that and how can I fix it?  
 
-A: Scala is a weird language. It is at once object oriented (obviously
-there's an inheritance tree which binds together the various types of
-`Tile`) and functional. The phenomenon of apparently missing methods is
-an upshot of the fact that many of the behaviors bestowed upon
+**Answer**: Scala is a weird language. It is both object oriented
+(there's an inheritance tree which binds together the various types of
+`Tile`) and functional (harder to define, exactly, but there's plenty of
+sugar for dealing with functions). The phenomenon of apparently missing
+methods is an upshot of the fact that many of the behaviors bestowed upon
 GeoTrellis types come from the more functional structure of typeclasses
 rather than the stricter, more brittle, and more familiar standard
 inheritance structure.  
@@ -123,7 +124,7 @@ This does not compile.
 import geotrellis.vector._
 
 val feature = Feature[Point, Int](Point(1, 2), 42)
-feature.toGeoJson  // throws an exception
+feature.toGeoJson  // not allowed, method extension not in scope
 ```
 
 This does.
@@ -132,8 +133,8 @@ import geotrellis.vector._
 import geotrellis.vector.io._
 
 val feature = Feature[Point, Int](Point(1, 2), 42)
-feature.toGeoJson  // returns geojson
+feature.toGeoJson  // returns geojson, as expected
 ```
 
 TL;DR: Make sure you're importing the appropriate implicits. They define
-methods that extend GeoTrellis types.
+methods that extend GeoTrellis types.  
