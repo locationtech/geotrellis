@@ -5,8 +5,8 @@ We will accomplish this in three steps:
    3. we will perform the ingest, creating a GeoTrellis catalog, and
    4. we will exercise the ingested data using a simple project.
 
-It is assumed throughout this tutorial that Spark 2.0.0 or greater is installed,
-that the GDAL command line tools are installed,
+It is assumed throughout this tutorial that [Spark 2.0.0 or greater](http://spark.apache.org/downloads.html) is installed,
+that the [GDAL command line tools](http://www.gdal.org/) are installed,
 and that the GeoTrellis source tree has been locally cloned.
 
 # Local ETL #
@@ -22,8 +22,9 @@ cp spark-etl/target/scala-2.11/geotrellis-spark-etl-assembly-1.0.0.jar /tmp
 ```
 
 Although in this tutorial we have chosen to build this assembly directly from the GeoTrellis source tree,
-in some applications it may be desirable to create a class in one's own code base that uses or derives from `geotrellis.spark.etl.SinglebandIngest` or `geotrellis.spark.etl.MultibandIngest` and generate an assembly therefrom.
-See the [Chatta Demo](https://github.com/geotrellis/geotrellis-chatta-demo/blob/94ae99269236610e66841893990860b7760e3663/geotrellis/src/main/scala/geotrellis/chatta/ChattaIngest.scala) for an example of how to do that.
+in some applications it may be desirable to create a class in one's own code base that uses or derives from `geotrellis.spark.etl.SinglebandIngest` or `geotrellis.spark.etl.MultibandIngest`,
+and use that custom class as the entry-point.
+Please see the [Chatta Demo](https://github.com/geotrellis/geotrellis-chatta-demo/blob/94ae99269236610e66841893990860b7760e3663/geotrellis/src/main/scala/geotrellis/chatta/ChattaIngest.scala) for an example of how to do that.
 
 ## Compose JSON Configuration Files ##
 
@@ -32,6 +33,10 @@ Three JSON files are required: one describing the input data, one describing the
 Please see [the ETL documentation](../spark-etl/spark-etl-intro.md) and the [ETL examples](../spark-etl/spark-etl-run-examples.md) for more information about the configuration files.
 
 We will now create three files in the `/tmp/json` directory: `input.json`, `output.json`, and `backend-profiles.json`.
+(The respective schemas that those files must obeyf can be found
+[here](https://github.com/geotrellis/geotrellis/blob/master/spark-etl/src/main/resources/input-schema.json),
+[here](https://github.com/geotrellis/geotrellis/blob/master/spark-etl/src/main/resources/output-schema.json),
+and [here](https://github.com/geotrellis/geotrellis/blob/master/spark-etl/src/main/resources/backend-profiles-schema.json).)
 
 Here is `input.json`:
 ```json
@@ -87,7 +92,7 @@ Here is the `backend-profiles.json` file:
 
 In this case, we did not need to specify anything since we are using Hadoop for both input and output.
 It happens that Hadoop only needs to know the path to which it should read or write, and we provided that information in the `input.json` and `output.json` files.
-Other backends such as Cassandra and Accumulo information to be provided in the `backend-profiles.json` file.
+Other backends such as Cassandra and Accumulo require information to be provided in the `backend-profiles.json` file.
 
 ## Create the Catalog ##
 
@@ -96,6 +101,7 @@ This is not strictly required if the source image is small enough (probably less
 but is still good practice even if it is not required.
 
 ```console
+mkdir -p /tmp/rasters
 gdal_retile.py source.tif -of GTiff -co compress=deflate -ps 256 256 -targetDir /tmp/rasters
 ```
 
@@ -118,20 +124,20 @@ $SPARK_HOME/bin/spark-submit \
    --backend-profiles "file:///tmp/json/backend-profiles.json"
 ```
 
-After the `spark-submit` command completes, there should now be an directory called `/tmp/catalog` which contains the catalog.
+After the `spark-submit` command completes, there should be a directory called `/tmp/catalog` which contains the catalog.
 
-## Optonal: Exercise the Catalog ##
+## Optional: Exercise the Catalog ##
 
-Clone or download [this example code](https://github.com/jamesmcclain/GeoWaveIngest/tree/90098dd80e8cfe8f8321c54e9832db2522996812)
-(a zipped version of which can be downloaded from [here](https://github.com/jamesmcclain/GeoWaveIngest/archive/90098dd80e8cfe8f8321c54e9832db2522996812.zip)).
+Clone or download [this example code](https://github.com/geotrellis/geotrellis-examples/tree/be8707499bdf0d481396049d42d44492db7ec982)
+(a zipped version of which can be downloaded from [here](https://github.com/geotrellis/geotrellis-examples/archive/be8707499bdf0d481396049d42d44492db7ec982.zip)).
 The example code is a very simple project that shows how to read layers from an HDFS catalog, perform various computations on them, then dump them to disk so that they can be inspected.
 
 Once obtained, the code can be built like this:
 
 ```console
-cd GeoWaveIngest
-./sbt "project scratch" assembly
-cp scratch/target/scala-2.11/scratch-assembly-0.jar /tmp
+cd EtlTutorial
+./sbt "project tutorial" assembly
+cp tutorial/target/scala-2.11/tutorial-assembly-0.jar /tmp
 ```
 
 The code can be run by typing:
@@ -139,10 +145,10 @@ The code can be run by typing:
 ```console
 mkdir -p /tmp/tif
 $SPARK_HOME/bin/spark-submit \
-   --class com.azavea.geotrellis.scratch.Scratch \
+   --class com.azavea.geotrellis.tutorial.EtlExercise \
    --master 'local[*]' \
    --driver-memory 16G \
-   /tmp/scratch-assembly-0.jar /tmp/catalog example 12
+   /tmp/tutorial-assembly-0.jar /tmp/catalog example 12
 ```
 
 In the block above, `/tmp/catalog` is an HDFS URI pointing to the location of the catalog, `example` is the layer name, and `12` is the layer zoom level.
@@ -151,7 +157,7 @@ After running the code, you should find a number of images in `/tmp/tif` which a
 # GeoDocker ETL #
 
 The foregoing discussion showed how to ingest data to the local filesystem, albeit via Hadoop.
-In this section, we will give a basic example of how to use the ETL machinery on GeoDocker by ingesting data into HDFS.
+In this section, we will give a basic example of how to use the ETL machinery to ingest into HDFS on GeoDocker.
 Throughout this section we will assume that the files that were previously created in the local `/tmp` directory
 (namely `/tmp/geotrellis-spark-etl-assembly-1.0.0.jar`, `/tmp/input.json`, `/tmp/output.json`, `/tmp/backend-profiles.json`, and `/tmp/rasters/*.tif`)
 still exist.
@@ -237,10 +243,10 @@ Now, we can exercise the catalog:
 ```console
 rm -f /tmp/tif/*.tif
 /spark/bin/spark-submit \
-   --class com.azavea.geotrellis.scratch.Scratch \
+   --class com.azavea.geotrellis.tutorial.EtlExercise \
    --master 'local[*]' \
    --driver-memory 16G \
-   /tmp/scratch-assembly-0.jar 'hdfs://hdfs-name/catalog' example 12
+   /tmp/tutorial-assembly-0.jar /tmp/catalog example 12
 ```
 
 The only differences form what we did earlier are the location of the `spark-submit` binary and URI specifying the location of the catalog.
