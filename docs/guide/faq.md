@@ -1,15 +1,19 @@
-## I need to convert a `Tile`'s `CellType`, which methods should I use?
+## How can I convert a `Tile`'s `CellType`?
 
-There are two distinct flavors of 'conversion' which GeoTrellis supports
+**Question**: Let's say I have a tile with incorrect `CellType` information or
+that, for whatever reason, I need to change it. How can I convert a
+`Tile`'s `CellType`? Which methods can I use?
+
+**Answer**: There are two distinct flavors of 'conversion' which GeoTrellis supports
 for moving between `CellType`s: `convert` and `interpretAs`. In what
 follows we will try to limit any confusion about just what differentiates
 these two methods and describe which should be used under what circumstances.  
 
-In previous sections, we've said that the `CellType` is just a piece of
-metadata carried around alongside a `Tile` which helps GeoTrellis to
-keep track of how that `Tile`'s array should be interacted with. The
-distinction between `interpretAs` and `convert` relates to how smart
-GeoTrellis should be while swapping out one `CellType` for another.  
+[Elsewhere](core-concepts.md#cell-types), we've said that the `CellType` is just
+a piece of metadata carried around alongside a `Tile` which helps GeoTrellis
+to keep track of how that `Tile`'s array should be interacted with. The
+distinction between `interpretAs` and `convert` relates to how smart GeoTrellis
+should be while swapping out one `CellType` for another.  
 
 Broadly, `convert` assumes that your `Tile`'s `CellType` is accurate and
 that you'd like the semantics of your `Tile` to remain invariant under
@@ -70,3 +74,67 @@ underlying cells with a call to `interpretAs`. If you trust your
 `CellType` and wish for its semantics to be preserved through
 transformation, use `convert`.  
 
+
+## How do I import GeoTrellis methods?
+
+**Question**: In some of the GeoTrellis sample code and certainly in example
+projects, it looks like some GeoTrellis types have more methods than
+they really do. If I create an `IntArrayTile`, it doesn't have most of
+the methods that it should - I can't reproject, resample, or carry out
+map algebra operations - why is that and how can I fix it?  
+
+**Answer**: Scala is a weird language. It is both object oriented
+(there's an inheritance tree which binds together the various types of
+`Tile`) and functional (harder to define, exactly, but there's plenty of
+sugar for dealing with functions). The phenomenon of apparently missing
+methods is an upshot of the fact that many of the behaviors bestowed upon
+GeoTrellis types come from the more functional structure of typeclasses
+rather than the stricter, more brittle, and more familiar standard
+inheritance structure.  
+
+Roughly, if OO structures of inheritance define what can be done in virtue
+of *what a thing is*, typeclasses allow us to define an object's
+behavior in virtue of *what it can do*. Within Scala's type system, this
+differing expectation can be found between a function which takes a `T`
+where `T <: Duck` (the `T` that is expected must be a duck or one of its
+subtypes) and a function which takes `T` where `T: Quacks` (the `T` that is
+expected must be able to quack, regardless of what it is).  
+
+If this sounds a lot like duck-typing, that's because it is. But,
+whereas method extension through duck-typing in other languages is a
+somewhat risky affair (runtime errors abound), Scala's type system
+allows us to be every bit as certain of the behavior in our typeclasses
+as we would be were the methods defined within the body of some class,
+itself.  
+
+Unlike the rather straightforward means for defining typeclasses which
+exist in some languages (e.g. Haskell), Scala's typeclasses depend upon
+implicitly applying pieces of code which happen to be in scope. The details
+can get confusing and are unnecessary for most work with GeoTrellis. If you're
+interested in understanding the problem at a deeper level, check out [this excellent
+article](http://danielwestheide.com/blog/2013/02/06/the-neophytes-guide-to-scala-part-12-type-classes.html).  
+
+Because the entire typeclass infrastructure depends upon implicits, all
+you need to worry about is importing the proper set of classes which
+define the behavior in question. Let's look to a concrete example. Note
+the difference in import statements:  
+
+This does not compile.
+```scala
+import geotrellis.vector._
+
+val feature = Feature[Point, Int](Point(1, 2), 42)
+feature.toGeoJson  // not allowed, method extension not in scope
+```
+
+This does.
+```scala
+import geotrellis.vector._
+import geotrellis.vector.io._
+
+val feature = Feature[Point, Int](Point(1, 2), 42)
+feature.toGeoJson  // returns geojson, as expected
+```
+
+TL;DR: Make sure you're importing the appropriate implicits. They define
+methods that extend GeoTrellis types.  
