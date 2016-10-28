@@ -20,6 +20,7 @@ pages:
     - Frequently Asked Questions: guide/faq.md
   - Architecture:
     - Architecture Decision Records: architecture/adr.md
+  - Contributing: contributing.md
 
 markdown_extensions:
 - toc:
