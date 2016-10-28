@@ -25,7 +25,7 @@ import org.scalatest._
 trait GeowaveTestEnvironment extends TestEnvironment { self: Suite =>
   override def setKryoRegistrator(conf: SparkConf) = {
     conf
-      .set("spark.kryo.registrator", "geotrellis.spark.io.kryo.GeowaveKryoRegistrator")
+      .set("spark.kryo.registrator", classOf[GeowaveKryoRegistrator].getName)
       .set("spark.kryo.registrationRequired", "false")
   }
 }

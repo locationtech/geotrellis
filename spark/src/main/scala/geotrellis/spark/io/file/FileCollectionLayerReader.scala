@@ -19,7 +19,7 @@ import scala.reflect.ClassTag
  * @tparam V              Type of RDD Value (ex: Tile or MultibandTile )
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  */
-class FileLayerCollectionReader(
+class FileCollectionLayerReader(
   val attributeStore: AttributeStore,
   catalogPath: String
 ) extends CollectionLayerReader[LayerId] with LazyLogging {
@@ -49,14 +49,14 @@ class FileLayerCollectionReader(
   }
 }
 
-object FileLayerCollectionReader {
-  def apply(attributeStore: AttributeStore, catalogPath: String): FileLayerCollectionReader =
-    new FileLayerCollectionReader(attributeStore, catalogPath)
+object FileCollectionLayerReader {
+  def apply(attributeStore: AttributeStore, catalogPath: String): FileCollectionLayerReader =
+    new FileCollectionLayerReader(attributeStore, catalogPath)
 
-  def apply(catalogPath: String): FileLayerCollectionReader =
+  def apply(catalogPath: String): FileCollectionLayerReader =
     apply(new FileAttributeStore(catalogPath), catalogPath)
 
-  def apply(attributeStore: FileAttributeStore): FileLayerCollectionReader =
+  def apply(attributeStore: FileAttributeStore): FileCollectionLayerReader =
     apply(attributeStore, attributeStore.catalogPath)
 }
 

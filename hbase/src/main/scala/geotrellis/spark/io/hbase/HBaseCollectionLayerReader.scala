@@ -1,15 +1,16 @@
-package geotrellis.spark.io.cassandra
+package geotrellis.spark.io.hbase
 
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.util._
-
+import org.apache.spark.SparkContext
 import spray.json._
 
 import scala.reflect._
 
-class CassandraLayerCollectionReader(val attributeStore: AttributeStore, instance: CassandraInstance) extends CollectionLayerReader[LayerId] {
+class HBaseCollectionLayerReader(val attributeStore: AttributeStore, instance: HBaseInstance)
+  extends CollectionLayerReader[LayerId] {
 
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
@@ -19,7 +20,7 @@ class CassandraLayerCollectionReader(val attributeStore: AttributeStore, instanc
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[CassandraLayerHeader, M, K](id)
+      attributeStore.readLayerAttributes[HBaseLayerHeader, M, K](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
@@ -28,15 +29,15 @@ class CassandraLayerCollectionReader(val attributeStore: AttributeStore, instanc
 
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
 
-    val seq = CassandraCollectionReader.read[K, V](instance, header.keyspace, header.tileTable, id, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema))
+    val seq = HBaseCollectionReader.read[K, V](instance, header.tileTable, id, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema))
     new ContextCollection(seq, metadata)
   }
 }
 
-object CassandraLayerCollectionReader {
-  def apply(instance: CassandraInstance): CassandraLayerCollectionReader =
-    new CassandraLayerCollectionReader(CassandraAttributeStore(instance), instance)
+object HBaseCollectionLayerReader {
+  def apply(instance: HBaseInstance): HBaseCollectionLayerReader =
+    new HBaseCollectionLayerReader(HBaseAttributeStore(instance), instance)
 
-  def apply(attributeStore: CassandraAttributeStore): CassandraLayerCollectionReader =
-    new CassandraLayerCollectionReader(attributeStore, attributeStore.instance)
+  def apply(attributeStore: HBaseAttributeStore): HBaseCollectionLayerReader =
+    new HBaseCollectionLayerReader(attributeStore, attributeStore.instance)
 }

@@ -11,7 +11,7 @@ import spray.json._
 
 import scala.reflect._
 
-class AccumuloLayerCollectionReader(val attributeStore: AttributeStore)(implicit instance: AccumuloInstance) extends CollectionLayerReader[LayerId] {
+class AccumuloCollectionLayerReader(val attributeStore: AttributeStore)(implicit instance: AccumuloInstance) extends CollectionLayerReader[LayerId] {
 
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
@@ -38,10 +38,10 @@ class AccumuloLayerCollectionReader(val attributeStore: AttributeStore)(implicit
   }
 }
 
-object AccumuloLayerCollectionReader {
-  def apply(attributeStore: AccumuloAttributeStore)(implicit instance: AccumuloInstance): AccumuloLayerCollectionReader =
-    new AccumuloLayerCollectionReader(attributeStore)
+object AccumuloCollectionLayerReader {
+  def apply(attributeStore: AccumuloAttributeStore)(implicit instance: AccumuloInstance): AccumuloCollectionLayerReader =
+    new AccumuloCollectionLayerReader(attributeStore)
 
-  def apply(implicit instance: AccumuloInstance): AccumuloLayerCollectionReader =
-    new AccumuloLayerCollectionReader(AccumuloAttributeStore(instance.connector))
+  def apply(implicit instance: AccumuloInstance): AccumuloCollectionLayerReader =
+    new AccumuloCollectionLayerReader(AccumuloAttributeStore(instance.connector))
 }

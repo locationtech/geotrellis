@@ -18,7 +18,7 @@ import scala.reflect.ClassTag
  * @tparam V              Type of RDD Value (ex: Tile or MultibandTile )
  * @tparam M              Type of Metadata associated with the RDD[(K,V)]
  */
-class S3LayerCollectionReader(val attributeStore: AttributeStore) extends CollectionLayerReader[LayerId] {
+class S3CollectionLayerReader(val attributeStore: AttributeStore) extends CollectionLayerReader[LayerId] {
 
   def collectionReader: S3CollectionReader = S3CollectionReader
 
@@ -48,10 +48,10 @@ class S3LayerCollectionReader(val attributeStore: AttributeStore) extends Collec
   }
 }
 
-object S3LayerCollectionReader {
-  def apply(attributeStore: AttributeStore): S3LayerCollectionReader =
-    new S3LayerCollectionReader(attributeStore)
+object S3CollectionLayerReader {
+  def apply(attributeStore: AttributeStore): S3CollectionLayerReader =
+    new S3CollectionLayerReader(attributeStore)
 
-  def apply(bucket: String, prefix: String): S3LayerCollectionReader =
+  def apply(bucket: String, prefix: String): S3CollectionLayerReader =
     apply(new S3AttributeStore(bucket, prefix))
 }

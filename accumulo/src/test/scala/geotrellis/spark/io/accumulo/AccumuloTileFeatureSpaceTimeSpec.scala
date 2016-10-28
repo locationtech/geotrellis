@@ -17,7 +17,7 @@ class AccumuloTileFeatureSpaceTimeSpec
   implicit lazy val instance = MockAccumuloInstance()
 
   lazy val reader    = AccumuloLayerReader(instance)
-  lazy val creader   = AccumuloLayerCollectionReader(instance)
+  lazy val creader   = AccumuloCollectionLayerReader(instance)
   lazy val writer    = AccumuloLayerWriter(instance, "tiles", SocketWriteStrategy())
   lazy val deleter   = AccumuloLayerDeleter(instance)
   lazy val reindexer = AccumuloLayerReindexer(instance, SocketWriteStrategy())

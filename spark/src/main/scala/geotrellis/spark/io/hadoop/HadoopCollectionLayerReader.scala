@@ -18,7 +18,7 @@ import scala.reflect.ClassTag
   *
   * @param attributeStore  AttributeStore that contains metadata for corresponding LayerId
   */
-class HadoopLayerCollectionReader(
+class HadoopCollectionLayerReader(
   val attributeStore: AttributeStore,
   conf: Configuration,
   maxOpenFiles: Int = 16
@@ -49,13 +49,13 @@ class HadoopLayerCollectionReader(
   }
 }
 
-object HadoopLayerCollectionReader {
-  def apply(attributeStore: HadoopAttributeStore): HadoopLayerCollectionReader =
-    new HadoopLayerCollectionReader(attributeStore, attributeStore.hadoopConfiguration)
+object HadoopCollectionLayerReader {
+  def apply(attributeStore: HadoopAttributeStore): HadoopCollectionLayerReader =
+    new HadoopCollectionLayerReader(attributeStore, attributeStore.hadoopConfiguration)
 
-  def apply(rootPath: Path)(implicit sc: SparkContext): HadoopLayerCollectionReader =
+  def apply(rootPath: Path)(implicit sc: SparkContext): HadoopCollectionLayerReader =
     apply(HadoopAttributeStore(rootPath))
 
-  def apply(rootPath: Path, conf: Configuration): HadoopLayerCollectionReader =
+  def apply(rootPath: Path, conf: Configuration): HadoopCollectionLayerReader =
     apply(HadoopAttributeStore(rootPath, conf))
 }
