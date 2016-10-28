@@ -333,10 +333,10 @@ object TiffTagsReader {
           BasicTags._bitsPerSample set(shorts(0))
         case StripOffsetsTag => tiffTags &|->
           TiffTags._basicTags ^|->
-          BasicTags._stripOffsets set(Some(shorts))
+          BasicTags._stripOffsets set(Some(shorts.map(_.toLong)))
         case StripByteCountsTag => tiffTags &|->
           TiffTags._basicTags ^|->
-          BasicTags._stripByteCounts set(Some(shorts))
+          BasicTags._stripByteCounts set(Some(shorts.map(_.toLong)))
         case MinSampleValueTag => tiffTags &|->
           TiffTags._dataSampleFormatTags ^|->
           DataSampleFormatTags._minSampleValue set(Some(shorts.map(_.toLong)))
@@ -358,7 +358,7 @@ object TiffTagsReader {
           NonBasicTags._halftoneHints set(Some(shorts))
         case TileByteCountsTag => tiffTags &|->
           TiffTags._tileTags ^|->
-          TileTags._tileByteCounts set(Some(shorts))
+          TileTags._tileByteCounts set(Some(shorts.map(_.toLong)))
         case DotRangeTag => tiffTags &|->
           TiffTags._cmykTags ^|->
           CmykTags._dotRange set(Some(shorts))
@@ -439,10 +439,10 @@ object TiffTagsReader {
           BasicTags._rowsPerStrip set(ints(0))
         case StripOffsetsTag => tiffTags &|->
           TiffTags._basicTags ^|->
-          BasicTags._stripOffsets set(Some(ints.map(_.toInt)))
+          BasicTags._stripOffsets set(Some(ints/*.map(_.toInt)*/))
         case StripByteCountsTag => tiffTags &|->
           TiffTags._basicTags ^|->
-          BasicTags._stripByteCounts set(Some(ints.map(_.toInt)))
+          BasicTags._stripByteCounts set(Some(ints/*.map(_.toInt)*/))
         case FreeOffsetsTag => tiffTags &|->
           TiffTags._nonBasicTags ^|->
           NonBasicTags._freeOffsets set(Some(ints))
@@ -451,10 +451,10 @@ object TiffTagsReader {
           NonBasicTags._freeByteCounts set(Some(ints))
         case TileOffsetsTag => tiffTags &|->
           TiffTags._tileTags ^|->
-          TileTags._tileOffsets set(Some(ints.map(_.toInt)))
+          TileTags._tileOffsets set(Some(ints/*.map(_.toInt)*/))
         case TileByteCountsTag => tiffTags &|->
           TiffTags._tileTags ^|->
-          TileTags._tileByteCounts set(Some(ints.map(_.toInt)))
+          TileTags._tileByteCounts set(Some(ints/*.map(_.toInt)*/))
         case JpegQTablesTag => tiffTags &|->
           TiffTags._jpegTags ^|->
           JpegTags._jpegQTables set(Some(ints))
