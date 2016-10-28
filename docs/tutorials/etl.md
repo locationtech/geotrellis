@@ -1,8 +1,9 @@
-This brief tutorial describes how to use GeoTrellis' ETL functionality to create a GeoTrellis catalog.
+This brief tutorial describes how to use GeoTrellis' [Extract-Transform-Load](https://en.wikipedia.org/wiki/Extract,_transform,_load) ("ETL") functionality to create a GeoTrellis catalog.
 We will accomplish this in three steps:
-1) We will build the ETL assembly from code in the GeoTrellis source tree
-2) We will compose JSON configuration files describing the input and output data
-and 3) We will exercise the ingested data using a simple project.
+   1. we will build the ETL assembly from code in the GeoTrellis source tree,
+   2. we will compose JSON configuration files describing the input and output data,
+   3. we will perform the ingest, creating a GeoTrellis catalog, and
+   4. we will exercise the ingested data using a simple project.
 
 It is assumed throughout this tutorial that Spark 2.0.0 or greater is installed,
 that the GDAL command line tools are installed,
@@ -10,9 +11,9 @@ and that the GeoTrellis source tree has been locally cloned.
 
 # Local ETL #
 
-## Build the Assembly ##
+## Build the ETL Assembly ##
 
-Navigate into the GeoTrellis source tree, build the assembly, and copy it to some convenient location:
+Navigate into the GeoTrellis source tree, build the assembly, and copy it to the `/tmp` directory:
 
 ```console
 cd geotrellis
@@ -21,24 +22,14 @@ cp spark-etl/target/scala-2.11/geotrellis-spark-etl-assembly-1.0.0.jar /tmp
 ```
 
 Although in this tutorial we have chosen to build this assembly directly from the GeoTrellis source tree,
-in some applications it may be desirable to create a class in one's own code base that uses `geotrellis.spark.etl.SinglebandIngest` or `geotrellis.spark.etl.MultibandIngest` and generate an assembly of that.
-See the [Chatta Demo](https://github.com/geotrellis/geotrellis-chatta-demo/blob/94ae99269236610e66841893990860b7760e3663/geotrellis/src/main/scala/geotrellis/chatta/ChattaIngest.scala) for an example.
+in some applications it may be desirable to create a class in one's own code base that uses or derives from `geotrellis.spark.etl.SinglebandIngest` or `geotrellis.spark.etl.MultibandIngest` and generate an assembly therefrom.
+See the [Chatta Demo](https://github.com/geotrellis/geotrellis-chatta-demo/blob/94ae99269236610e66841893990860b7760e3663/geotrellis/src/main/scala/geotrellis/chatta/ChattaIngest.scala) for an example of how to do that.
 
 ## Compose JSON Configuration Files ##
 
 The configuration files that we create in this section are intended for use with a single multiband GeoTiff image.
 Three JSON files are required: one describing the input data, one describing the output data, and one describing the backend(s) in which the catalog should be stored.
-Please see [the ETL documentation](../spark-etl/spark-etl-run-examples.md) for more information on this topic.
-
-First, retile the source raster.
-This is not strictly required if the source image is small enough (probably less than 2GB),
-but is still good practice even if it is not required.
-
-```console
-gdal_retile.py source.tif -of GTiff -co compress=deflate -ps 256 256 -targetDir /tmp/rasters
-```
-
-The result of this command is a collection of smaller GeoTiff tiles in the directory `/tmp/rasters`.
+Please see [the ETL documentation](../spark-etl/spark-etl-intro.md) and the [ETL examples](../spark-etl/spark-etl-run-examples.md) for more information about the configuration files.
 
 We will now create three files in the `/tmp/json` directory: `input.json`, `output.json`, and `backend-profiles.json`.
 
@@ -56,8 +47,8 @@ Here is `input.json`:
 ```
 
 The value `multiband-geotiff` is associated with the `format` key.
-That is required if you want to access the data as an RDD of key, `MultibandTile` pairs.
-Making that value `geotiff` instead of `multiband-geotiff` will result in `Tile` data.
+That is required if you want to access the data as an RDD of `SpatialKey`-`MultibandTile` pairs.
+Making that value `geotiff` instead of `multiband-geotiff` would result in `SpatialKey`-`Tile` pairs.
 The value `example` associated with the key `name` gives the name of the layer(s) that will be created.
 The `cache` key gives the Spark caching strategy that will be used during the ETL process.
 Finally, the value associated with the `backend` key specifies where the data should be read from.
@@ -85,7 +76,7 @@ Here is the `output.json` file:
 That file says that the catalog should be created on the local filesystem in the directory `/tmp/catalog` using Hadoop.
 The source data is pyramided so that layers of zoom level 0 through 12 are created in the catalog.
 The tiles are 256-by-256 pixels in size and are indexed in according to Z-order.
-Bicubic resampling (spline rather than convolutional) is used in the reprojection process, and the CRS associated with the layers is EPSG 3857 (Web Mercator).
+Bicubic resampling (spline rather than convolutional) is used in the reprojection process, and the CRS associated with the layers is EPSG 3857 (a.k.a. Web Mercator).
 
 Here is the `backend-profiles.json` file:
 ```json
@@ -98,12 +89,25 @@ In this case, we did not need to specify anything since we are using Hadoop for 
 It happens that Hadoop only needs to know the path to which it should read or write, and we provided that information in the `input.json` and `output.json` files.
 Other backends such as Cassandra and Accumulo information to be provided in the `backend-profiles.json` file.
 
+## Create the Catalog ##
+
+Before performing the ingest, we will first retile the source raster.
+This is not strictly required if the source image is small enough (probably less than 2GB),
+but is still good practice even if it is not required.
+
+```console
+gdal_retile.py source.tif -of GTiff -co compress=deflate -ps 256 256 -targetDir /tmp/rasters
+```
+
+The result of this command is a collection of smaller GeoTiff tiles in the directory `/tmp/rasters`.
+
 Now with all of the files that we need in place
 (`/tmp/geotrellis-spark-etl-assembly-1.0.0.jar`, `/tmp/input.json`, `/tmp/output.json`, `/tmp/backend-profiles.json`, and `/tmp/rasters/*.tif`)
 we are ready to perform the ingest.
 That can be done by typing:
 
 ```console
+rm -rf /tmp/catalog
 $SPARK_HOME/bin/spark-submit \
    --class geotrellis.spark.etl.MultibandIngest \
    --master 'local[*]' \
@@ -114,12 +118,14 @@ $SPARK_HOME/bin/spark-submit \
    --backend-profiles "file:///tmp/json/backend-profiles.json"
 ```
 
-There should now be an directory called `/tmp/catalog` that did not exist before.
+After the `spark-submit` command completes, there should now be an directory called `/tmp/catalog` which contains the catalog.
 
-## Exercise the Catalog ##
+## Optonal: Exercise the Catalog ##
 
-Clone or download [this example code](https://github.com/jamesmcclain/GeoWaveIngest/tree/scratch-work)
-(a zipped version of which can be downloaded from [here](https://github.com/jamesmcclain/GeoWaveIngest/archive/scratch-work.zip)).
+Clone or download [this example code](https://github.com/jamesmcclain/GeoWaveIngest/tree/90098dd80e8cfe8f8321c54e9832db2522996812)
+(a zipped version of which can be downloaded from [here](https://github.com/jamesmcclain/GeoWaveIngest/archive/90098dd80e8cfe8f8321c54e9832db2522996812.zip)).
+The example code is a very simple project that shows how to read layers from an HDFS catalog, perform various computations on them, then dump them to disk so that they can be inspected.
+
 Once obtained, the code can be built like this:
 
 ```console
@@ -151,7 +157,7 @@ Throughout this section we will assume that the files that were previously creat
 still exist.
 
 In addition to the dependencies needed to complete the steps given above,
-this step assumes that user has a recent version of `docker-compose` installed and working.
+this section assumes that user has a recent version of `docker-compose` installed and working.
 
 ## Edit `output.json` ##
 
@@ -206,7 +212,7 @@ docker run -it --rm --net=tmp_default -v $SPARK_HOME:/spark:ro -v /tmp:/tmp open
 
 Notice that the network name was derived from the name of the directory in which the `docker-compose up` command was run.
 The `--net=tmp_default` switch connects the just-started container to the bridge network that the GeoDocker cluster is running on.
-The `-v $SPARK_HOME:/spark:ro` mounts our local Spark installation at `/spark` within the container so that we can use it.
+The `-v $SPARK_HOME:/spark:ro` switch mounts our local Spark installation at `/spark` within the container so that we can use it.
 The `-v /tmp:/tmp` switch mounts our host `/tmp` directory into the container so that we can use the data and jar files that are there.
 
 Within the just-started container, we can now perform the ingest:
@@ -224,7 +230,7 @@ Within the just-started container, we can now perform the ingest:
 
 The only change versus what we did earlier is the location of the `spark-submit` binary.
 
-## Exercise the Catalog ##
+## Optional: Exercise the Catalog ##
 
 Now, we can exercise the catalog:
 
