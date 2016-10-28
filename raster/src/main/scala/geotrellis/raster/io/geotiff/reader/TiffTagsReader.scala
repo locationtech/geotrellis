@@ -29,17 +29,28 @@ object TiffTagsReader {
 
     // Validate GeoTiff identification number
     val geoTiffIdNumber = byteReader.getChar
-    if ( geoTiffIdNumber != 42)
-      throw new MalformedGeoTiffException(s"bad identification number (must be 42, was $geoTiffIdNumber)")
+    if ( geoTiffIdNumber != 42 || geoTiffIdNumber != 43)
+      throw new MalformedGeoTiffException(s"bad identification number (must be 42 or 43, was $geoTiffIdNumber)")
 
-    val tagsStartPosition = byteReader.getInt
+    //val tagsStartPosition =
+    if (geoTiffIdNumber == 42) {
+      val smallOffset = byteReader.getInt
+      read(byteReader, smallOffset)
+    } else {
+      byteReader.position(8)
+      val bigOffset = byteReader.getLong
+      read(byteReader, bigOffset)
+    }
 
-    read(byteReader, tagsStartPosition)
+    //read(byteReader, tagsStartPosition)
   }
 
-  def read(byteReader: ByteReader, tagsStartPosition: Int): TiffTags = {
+  def read[T](byteReader: ByteReader, tagsStartPosition: T): TiffTags = {
 
-    byteReader.position(tagsStartPosition)
+    tagsStartPosition match {
+      case a: Int => byteReader.position(a)
+      case b: Long => byteReader.position(b)
+    }
 
     val tagCount = byteReader.getShort
 
