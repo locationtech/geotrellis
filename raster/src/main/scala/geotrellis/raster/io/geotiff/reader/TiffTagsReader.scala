@@ -104,6 +104,12 @@ object TiffTagsReader {
         byteReader.readFloatsTag(tiffTags, tagMetadata)
       case (_, DoublesFieldType) =>
         byteReader.readDoublesTag(tiffTags, tagMetadata)
+      case (_, LongsFieldType) =>
+        byteReader.readIntsTag(tiffTags, tagMetadata)
+      case (_, SignedLongsFieldType) =>
+        byteReader.readIntsTag(tiffTags, tagMetadata)
+      case (_, IFDOffset) =>
+        byteReader.readIntsTag(tiffTags, tagMetadata)
     }
 
   implicit class ByteReaderTagReaderWrapper(val byteReader: ByteReader) extends AnyVal {
@@ -470,6 +476,26 @@ object TiffTagsReader {
         case tag => tiffTags &|->
           TiffTags._nonStandardizedTags ^|->
           NonStandardizedTags._longsMap modify(_ + (tag -> ints.map(_.toLong)))
+      }
+    }
+    
+    def readLongsTag(tiffTags: TiffTags,
+      tagMetadata: TiffTagMetadata) = {
+      val longs = byteReader.getLongArray(tagMetadata.length, tagMetadata.offset)
+
+      tagMetadata.tag match {
+        case StripOffsetsTag => tiffTags &|->
+          TiffTags._basicTags ^|->
+          BasicTags._stripOffsets set(Some(longs))
+        case StripByteCountsTag => tiffTags &|->
+          TiffTags._basicTags ^|->
+          BasicTags._stripByteCounts set(Some(longs))
+        case TileOffsetsTag => tiffTags &|->
+          TiffTags._tileTags ^|->
+          TileTags._tileOffsets set(Some(longs))
+        case TileByteCountsTag => tiffTags &|->
+          TiffTags._tileTags ^|->
+          TileTags._tileByteCounts set(Some(longs))
       }
     }
 
