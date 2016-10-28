@@ -1,7 +1,17 @@
 # JVM Primitives
 ------
+
+
 # Mutable Data
 ------
+
+
+# Spark
+------
+
+
+# Macros
+-----
 
 > NOTE: Because scala macros require a separate stage of compilation, they've
 > been broken out into their own package in GeoTrellis. Otherwise, the
@@ -90,9 +100,29 @@ readability. They've been introduced merely to overcome shortcomings in
 certain boxing-behaviors in the scala compiler and understanding their
 behavior isn't necessary to read/understand the GeoTrellis codebase.
 
-
-
-# Macros
------
-# Spark
+# Micro-Optimizations
 ------
+
+## Loops ##
+
+A commonly-seen feature throughout the codebase is the use of `cfor`- or `while`-loops where it would seem that an ordinary `for`-loop would be sufficient.
+We avoid using "`for`-loops" in most cases because they are more than just loops in Scala.
+Scala's `for` construct is much more flexible and powerful than in more quotidian languages like Java, but that power can come at a cost.
+
+For example, the following simple `for`-loop
+
+```scala
+for(i <- 0 to 100; j <- 0 to 100) { println(i+j) }
+```
+
+does not just just put the value 0 into a couple of variables, execute some code, increment the variables and as appropriate, and either branch or fall-through as appropriate.
+Instead, the Scala compiler generates objects representing the ranges of the outer- and inner-loops, as well as closures representing the interior of each loop.
+That results in something like this:
+
+```scala
+(0 to 100).foreach({ x => (0 to 100).foreach({ y => println(x+y) }) })
+```
+
+which can lead to unnecessary allocation and garbage collection.
+In the case of more complicated `for`-loops, the translation rules can even result in boxing of primitive loop variables.
+
