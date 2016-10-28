@@ -10,15 +10,15 @@ pages:
   - Home: index.md
   - Changelog: CHANGELOG.md
   - Tutorials:
-      - Setup: tutorials/setup.md
+    - Setup: tutorials/setup.md
   - User Guide:
     - Core Concepts: guide/core-concepts.md
-    - Cell Types: guide/celltype.md
     - GeoTrellis Module Hierarchy: guide/module-hierarchy.md
     - Tile Layer Backends: guide/tile-backends.md
     - Vector Data Backends: guide/vector-backends.md
+    - Frequently Asked Questions: guide/faq.md
   - Architecture:
-      - Architecture Decision Records: architecture/adr.md
+    - Architecture Decision Records: architecture/adr.md
 
 markdown_extensions:
 - toc:
