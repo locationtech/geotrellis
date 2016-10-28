@@ -17,14 +17,16 @@
 package geotrellis.spark
 
 import geotrellis.spark.io.hbase._
+import geotrellis.spark.io.kryo.KryoRegistrator
+
 import org.apache.spark.SparkConf
 import org.apache.zookeeper.client.FourLetterWordMain
 import org.scalatest._
 
 trait HBaseTestEnvironment extends TestEnvironment { self: Suite =>
   override def setKryoRegistrator(conf: SparkConf) =
-    conf.set("spark.kryo.registrator", "geotrellis.spark.io.kryo.KryoRegistrator")
-      .set("spark.kryo.registrationRequired","false")
+    conf.set("spark.kryo.registrator", classOf[KryoRegistrator].getName)
+      .set("spark.kryo.registrationRequired", "false")
 
   override def beforeAll = {
     super.beforeAll
