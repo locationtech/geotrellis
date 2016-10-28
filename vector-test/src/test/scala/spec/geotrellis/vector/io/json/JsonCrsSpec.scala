@@ -7,7 +7,7 @@ import org.scalatest._
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
-class CrsSpec extends FlatSpec with Matchers with GeoJsonSupport {
+class JsonCrsSpec extends FlatSpec with Matchers with GeoJsonSupport {
   val point = Point(6.0,1.2)
   val line = Line(Point(1,2) :: Point(1,3) :: Nil)
   val crs = NamedCRS("napkin:map:sloppy")
@@ -74,5 +74,27 @@ class CrsSpec extends FlatSpec with Matchers with GeoJsonSupport {
 
     f.withCrs(crs).toJson should equal (body)
     body.convertTo[WithCrs[PointFeature[String]]] should equal (WithCrs(f, crs))
+  }
+
+
+  it should "decode NamedCRS with EPSG code" in {
+    val body =
+      """{
+        |  "type": "Feature",
+        |  "geometry": {
+        |    "type": "Point",
+        |    "coordinates": [1.0, 44.0]
+        |  },
+        |  "properties": "Secrets",
+        |  "crs": {
+        |    "type": "name",
+        |    "properties": {
+        |      "name": "epsg:3857"
+        |    }
+        |  }
+        |}""".stripMargin
+
+    val withCrs = body.parseJson.convertTo[WithCrs[PointFeature[String]]]
+    withCrs.crs.toCRS.get.epsgCode should be (Some(3857))
   }
 }
