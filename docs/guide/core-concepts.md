@@ -19,7 +19,12 @@ Vector Tiles
 Tile Layers
 ===========
 
-`RDD[(K, V)] with Metadata[M]`
+Tile layers (Rasters or otherwise) are represented in GeoTrellis with the
+type `RDD[(K, V)] with Metadata[M]`. This type is used extensively across
+the code base, and its contents form the deepest compositional hierarchy we
+have:
+
+![](images/type-composition.png)
 
 Keys and Key Indexes
 ====================
@@ -181,6 +186,3 @@ describe some tiled map area in Geotrellis.
 **How are Layout Definitions used throughout Geotrellis?**
 
 They are used heavily when reading, writing, and reprojecting Rasters.
-
-
-
