@@ -102,6 +102,16 @@ object Pyramid extends LazyLogging {
     nextZoom -> new ContextRDD(nextRdd, nextMetadata)
   }
 
+  def up[
+    K: SpatialComponent: ClassTag,
+    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
+    M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
+  ](rdd: RDD[(K, V)] with Metadata[M],
+    layoutScheme: LayoutScheme,
+    zoom: Int
+  ): (Int, RDD[(K, V)] with Metadata[M]) =
+    up(rdd, layoutScheme, zoom, Options.DEFAULT)
+
   def down[
     K: SpatialComponent: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
@@ -154,7 +164,7 @@ object Pyramid extends LazyLogging {
     def mergeTiles2(tiles1: Seq[(K, V)], tiles2: Seq[(K, V)]): Seq[(K, V)] = tiles1 ++ tiles2
 
     // Building a pyramid down
-    // As it is a quad tree each key convert into 4 keys on the next zoom level
+    // As it is a quad tree each key converts into 4 keys on the next zoom level
     val nextRdd = {
       val transformedRdd = rdd
         .flatMap { case (key, tile) =>
@@ -185,15 +195,15 @@ object Pyramid extends LazyLogging {
     nextZoom -> new ContextRDD(nextRdd, nextMetadata)
   }
 
-  def up[
+  def down[
     K: SpatialComponent: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
   ](rdd: RDD[(K, V)] with Metadata[M],
     layoutScheme: LayoutScheme,
     zoom: Int
-  ): (Int, RDD[(K, V)] with Metadata[M]) =
-    up(rdd, layoutScheme, zoom, Options.DEFAULT)
+   ): (Int, RDD[(K, V)] with Metadata[M]) =
+    down(rdd, layoutScheme, zoom, Options.DEFAULT)
 
   def levelStream[
     K: SpatialComponent: ClassTag,
@@ -256,8 +266,6 @@ object Pyramid extends LazyLogging {
     endZoom: Int,
     options: Options
   )(f: (RDD[(K, V)] with Metadata[M], Int) => Unit): RDD[(K, V)] with Metadata[M] = {
-    val Options(resampleMethod, partitioner) = options
-
     def runLevel(thisRdd: RDD[(K, V)] with Metadata[M], thisZoom: Int): (RDD[(K, V)] with Metadata[M], Int) =
       if (thisZoom > endZoom) {
         f(thisRdd, thisZoom)
@@ -302,4 +310,59 @@ object Pyramid extends LazyLogging {
     startZoom: Int
   )(f: (RDD[(K, V)] with Metadata[M], Int) => Unit): RDD[(K, V)] with Metadata[M] =
     upLevels(rdd, layoutScheme, startZoom, Options.DEFAULT)(f)
+
+  def downLevels[
+    K: SpatialComponent: ClassTag,
+    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
+    M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
+  ](rdd: RDD[(K, V)] with Metadata[M],
+    layoutScheme: LayoutScheme,
+    startZoom: Int,
+    endZoom: Int,
+    options: Options
+   )(f: (RDD[(K, V)] with Metadata[M], Int) => Unit): RDD[(K, V)] with Metadata[M] = {
+    def runLevel(thisRdd: RDD[(K, V)] with Metadata[M], thisZoom: Int): (RDD[(K, V)] with Metadata[M], Int) =
+      if (thisZoom < endZoom) {
+        f(thisRdd, thisZoom)
+        val (nextZoom, nextRdd) = Pyramid.down(thisRdd, layoutScheme, thisZoom, options)
+        runLevel(nextRdd, nextZoom)
+      } else {
+        f(thisRdd, thisZoom)
+        (thisRdd, thisZoom)
+      }
+
+    runLevel(rdd, startZoom)._1
+  }
+
+  def downLevels[
+    K: SpatialComponent: ClassTag,
+    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
+    M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
+  ](rdd: RDD[(K, V)] with Metadata[M],
+    layoutScheme: LayoutScheme,
+    startZoom: Int,
+    endZoom: Int
+   )(f: (RDD[(K, V)] with Metadata[M], Int) => Unit): RDD[(K, V)] with Metadata[M] =
+    downLevels(rdd, layoutScheme, startZoom, endZoom, Options.DEFAULT)(f)
+
+  def downLevels[
+    K: SpatialComponent: ClassTag,
+    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
+    M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
+  ](rdd: RDD[(K, V)] with Metadata[M],
+    layoutScheme: LayoutScheme,
+    startZoom: Int,
+    options: Options
+   )(f: (RDD[(K, V)] with Metadata[M], Int) => Unit): RDD[(K, V)] with Metadata[M] =
+    downLevels(rdd, layoutScheme, startZoom, 0, options)(f)
+
+  def downLevels[
+    K: SpatialComponent: ClassTag,
+    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
+    M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
+  ](rdd: RDD[(K, V)] with Metadata[M],
+    layoutScheme: LayoutScheme,
+    startZoom: Int
+   )(f: (RDD[(K, V)] with Metadata[M], Int) => Unit): RDD[(K, V)] with Metadata[M] =
+    downLevels(rdd, layoutScheme, startZoom, Options.DEFAULT)(f)
 }

@@ -171,9 +171,7 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
     val outputPlugin =
       combinedModule
         .findSubclassOf[OutputPlugin[K, V, TileLayerMetadata[K]]]
-        .find {
-          _.suitableFor(output.backend.`type`.name)
-        }
+        .find { _.suitableFor(output.backend.`type`.name) }
         .getOrElse(sys.error(s"Unable to find output module of type '${output.backend.`type`.name}'"))
 
     def savePyramidUp(zoom: Int, rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): Unit = {
