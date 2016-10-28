@@ -116,6 +116,26 @@ trait ByteReaderExtensions {
 
       arr
     }
+    
+    final def getLongArray(length: Int, valueOffset: Int): Array[Long] = {
+      val arr = Array.ofDim[Long](length)
+
+      if (length <= 8) {
+        val bb = ByteBuffer.allocate(4).order(byteReader.order).putInt(0, valueOffset)
+        arr(0) = bb.getLong
+      } else {
+        val oldPos = byteReader.position
+
+        byteReader.position(valueOffset)
+        cfor(0)(_ < length, _ + 1) { i =>
+          arr(i) = byteReader.getLong
+        }
+
+        byteReader.position(oldPos)
+      }
+
+      arr
+    }
 
     final def getString(length: Int, offset: Int): String = {
       val sb = new StringBuilder
