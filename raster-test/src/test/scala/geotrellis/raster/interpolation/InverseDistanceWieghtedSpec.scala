@@ -9,10 +9,10 @@ import geotrellis.raster.testkit._
 import spray.json.DefaultJsonProtocol._
 import org.scalatest._
 
-class InverseDistanceWeightingSpec extends FunSpec
-                            with Matchers
-                            with RasterMatchers with TestFiles
-                            with TileBuilders {
+class InverseDistanceWeightedSpec extends FunSpec
+    with Matchers
+    with RasterMatchers with TestFiles
+    with TileBuilders {
   describe("interpolates integer values") {
     it("matches a QGIS generated IDW raster") {
       val rs = loadTestArg("data/schoolidw")
@@ -27,7 +27,7 @@ class InverseDistanceWeightingSpec extends FunSpec
 
       val points = collection.getAllPointFeatures[Int]
 
-      val result = InverseDistanceWeighting(points, re)
+      val result = points.inverseDistanceWeighted(re)
 
       for(col <- 0 until re.cols) {
         for(row <- 0 until re.rows) {
@@ -47,7 +47,7 @@ class InverseDistanceWeightingSpec extends FunSpec
         PointFeature(Point(3,92), 13),
         PointFeature(Point(0,90), 10)
       )
-      val result = InverseDistanceWeighting(points,re)
+      val result = points.inverseDistanceWeighted(re)
 
       assert(result.get(0, 0) === value)
     }
@@ -61,7 +61,7 @@ class InverseDistanceWeightingSpec extends FunSpec
         PointFeature(Point(5,92), sampleValue2),
         PointFeature(Point(0,90), 10)
       )
-      val result = InverseDistanceWeighting(points,re, equalWeightRadius = 3, onSet = x => Math.round(x))
+      val result = points.inverseDistanceWeighted(re, InverseDistanceWeighted.Options(equalWeightRadius = 3, onSet = x => Math.round(x)))
 
       assert(result.get(0, 0) === Math.round((sampleValue1+sampleValue2)/2.0))
     }
@@ -75,7 +75,7 @@ class InverseDistanceWeightingSpec extends FunSpec
         PointFeature(Point(0.175,0.475), 500)
       )
 
-      val result = InverseDistanceWeighting(points,re, 0.05)
+      val result = points.inverseDistanceWeighted(re, InverseDistanceWeighted.Options(radiusX = 0.05, radiusY = 0.05))
 
       assert(result.get(0, 0) === 15)
       assert(result.get(3, 0) === 500)
@@ -90,7 +90,7 @@ class InverseDistanceWeightingSpec extends FunSpec
         PointFeature[Double](Point(5,95), value),
         PointFeature[Double](Point(0,90), 10)
       )
-      val result = InverseDistanceWeighting(points,re, cellType = DoubleConstantNoDataCellType)
+      val result = points.inverseDistanceWeighted(re, InverseDistanceWeighted.Options(cellType = DoubleConstantNoDataCellType))
 
       value should be (result.getDouble(0, 0) +- 0.001)
     }
@@ -104,7 +104,7 @@ class InverseDistanceWeightingSpec extends FunSpec
         PointFeature(Point(5,92), sampleValue2),
         PointFeature(Point(0,90), 10)
       )
-      val result = InverseDistanceWeighting(points,re, equalWeightRadius = 3, cellType = DoubleConstantNoDataCellType)
+      val result = points.inverseDistanceWeighted(re, InverseDistanceWeighted.Options(equalWeightRadius = 3, cellType = DoubleConstantNoDataCellType))
 
       assert(result.getDouble(0, 0) === (sampleValue1+sampleValue2)/2.0)
     }
@@ -123,7 +123,7 @@ class InverseDistanceWeightingSpec extends FunSpec
         PointFeature[Double](Point(0.175,0.475), c)
       )
 
-      val result = InverseDistanceWeighting(points,re, 0.05, cellType = DoubleConstantNoDataCellType)
+      val result = points.inverseDistanceWeighted(re, InverseDistanceWeighted.Options(radiusX = 0.05, radiusY = 0.05, cellType = DoubleConstantNoDataCellType))
 
       expected should be (result.getDouble(0, 0) +- 0.001)
       c should be (result.getDouble(3, 0) +- 0.001)
