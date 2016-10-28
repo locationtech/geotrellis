@@ -30,6 +30,16 @@ case class MultibandGeoTiff(
 
     MultibandGeoTiff(raster, subExtent, this.crs, this.tags)
   }
+  
+  def crop(colMax: Int, rowMax: Int): MultibandGeoTiff =
+    crop(0, 0, colMax, rowMax)
+
+  def crop(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int): MultibandGeoTiff = {
+    val raster: Raster[MultibandTile] =
+      this.raster.crop(colMin, rowMin, colMax, rowMax)
+
+    MultibandGeoTiff(raster, raster._2, this.crs, this.tags)
+  }
 }
 
 object MultibandGeoTiff {
