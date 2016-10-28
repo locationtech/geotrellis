@@ -16,6 +16,82 @@ Vector Data
 Vector Tiles
 ===========
 
+Invented by [Mapbox](https://www.mapbox.com/), VectorTiles are a combination
+of the ideas of finite-sized tiles and vector geometries. Mapbox maintains
+the official implementation spec for VectorTile codecs. The specification is
+free and open source.
+
+VectorTiles are advantageous over raster tiles in that:
+
+  - They are typically smaller to store
+  - They can be easily transformed (rotated, etc.) in real time
+  - They allow for continuous (as opposed to step-wise) zoom in Slippy Maps.
+
+Raw VectorTile data is stored in the protobuf format. Any codec implementing
+[the spec](https://github.com/mapbox/vector-tile-spec/tree/master/2.1) must
+decode and encode data according to [this `.proto`
+schema](https://github.com/mapbox/vector-tile-spec/blob/master/2.1/vector_tile.proto).
+
+GeoTrellis provides the `geotrellis-vectortile` module, a high-performance
+implementation of **Version 2.1** of the VectorTile spec. It features:
+
+- Decoding of **Version 2** VectorTiles from Protobuf byte data into useful Geotrellis types.
+- Lazy decoding of Geometries. Only parse what you need!
+- Read/write VectorTile layers to/from any of our backends.
+
+As of 2016 October 28, ingests of raw vector data into VectorTile sets is
+still pending.
+
+**Small Example**
+
+```
+import geotrellis.spark.SpatialKey
+import geotrellis.spark.tiling.LayoutDefinition
+import geotrellis.vector.Extent
+import geotrellis.vectortile.VectorTile
+import geotrellis.vectortile.protobuf._
+
+val bytes: Array[Byte] = ...  // from some `.mvt` file
+val key: SpatialKey = ...  // preknown
+val layout: LayoutDefinition = ...  // preknown
+val tileExtent: Extent = layout.mapTransform(key)
+
+/* Decode Protobuf bytes. */
+val tile: VectorTile = ProtobufTile.fromBytes(bytes, tileExtent)
+
+/* Encode a VectorTile back into bytes. */
+val encodedBytes: Array[Byte] = tile match {
+  case t: ProtobufTile => t.toBytes
+  case _ => ???  // Handle other backends or throw errors.
+}
+```
+
+See [our VectorTile
+Scaladocs](https://geotrellis.github.io/scaladocs/latest/#geotrellis.vectortile.package)
+for detailed usage information.
+
+**Implementation Assumptions**
+
+This particular implementation of the VectorTile spec makes the following
+assumptions:
+
+- Geometries are implicitly encoded in ''some'' Coordinate Reference
+  system. That is, there is no such thing as a "projectionless" VectorTile.
+  When decoding a VectorTile, we must provide a Geotrellis [[Extent]] that
+  represents the Tile's area on a map.
+  With this, the grid coordinates stored in the VectorTile's Geometry are
+  shifted from their
+  original [0,4096] range to actual world coordinates in the Extent's CRS.
+- The `id` field in VectorTile Features doesn't matter.
+- `UNKNOWN` geometries are safe to ignore.
+- If a VectorTile `geometry` list marked as `POINT` has only one pair
+  of coordinates, it will be decoded as a Geotrellis `Point`. If it has
+  more than one pair, it will be decoded as a `MultiPoint`. Likewise for
+  the `LINESTRING` and `POLYGON` types. A complaint has been made about
+  the spec regarding this, and future versions may include a difference
+  between single and multi geometries.
+
+
 Tile Layers
 ===========
 
@@ -349,6 +425,3 @@ describe some tiled map area in Geotrellis.
 **How are Layout Definitions used throughout Geotrellis?**
 
 They are used heavily when reading, writing, and reprojecting Rasters.
-
-
-
