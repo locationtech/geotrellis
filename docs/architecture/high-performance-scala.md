@@ -126,3 +126,19 @@ That results in something like this:
 which can lead to unnecessary allocation and garbage collection.
 In the case of more complicated `for`-loops, the translation rules can even result in boxing of primitive loop variables.
 
+## Decorators ##
+
+Another strategy that we imply to avoid unnecessary boxing is use of the `@specialized` decorator.
+
+An example is the `Histogram[T]` type, which is used to compute either integer- or double-valued histograms.
+The declaration of that type look something like this:
+
+```scala
+abstract trait Histogram[@specialized (Int, Double) T <: AnyVal] { ... }
+```
+
+Where the `@specialized` decorator and its two arguments tell the compiler that it should generate three versions of this trait instead of just one:
+`Histogram[Int]`, `Histogram[Double]` and the customary generic version `Histogram[T]`.
+Although this multiplies the amount of code associated with this type by roughly a factor of three,
+it provides the great advantage of preventing boxing of (most) arguments and variables of type `T`.
+In addition, specialization also opens up additional opportunities for optimization in circumstances where the compiler knows that it is dealing with a particular primitive type instead of a object.
