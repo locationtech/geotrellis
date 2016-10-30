@@ -30,6 +30,19 @@ case class SinglebandGeoTiff(
 
     SinglebandGeoTiff(raster, subExtent, this.crs)
   }
+
+  def crop(colMax: Int, rowMax: Int): SinglebandGeoTiff =
+    crop(0, 0, colMax, rowMax)
+
+  def crop(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int): SinglebandGeoTiff = {
+    val raster: Raster[Tile] =
+      this.raster.crop(colMin, rowMin, colMax, rowMax)
+
+    SinglebandGeoTiff(raster, raster._2, this.crs)
+  }
+
+  def cropIterate(colMax: Int, rowMax: Int): SinglebandCropIterator =
+    SinglebandCropIterator(this, colMax, rowMax)
 }
 
 object SinglebandGeoTiff {
