@@ -117,6 +117,19 @@ class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMu
     ArrayMultibandTile(newBands)
   }
 
+  /** Return tile with cellType that reflects new NoData value */
+  def withNoData(noDataValue: Option[Double]): MultibandTile =
+    new ArrayMultibandTile(_bands.map(_.withNoData(noDataValue)))
+
+  /** Changes the interpretation of the tile cells through changing NoData handling and optionally cell data type.
+    * If [[DataType]] portion of the [[CellType]] is unchanged the tile data is not duplicated through conversion.
+    * If cell [[DataType]] conversion is required it is done in a naive way, without considering NoData handling.
+    *
+    * @param newCellType CellType to be used in interpreting existing cells
+    */
+  def interpretAs(newCellType: CellType): MultibandTile =
+    new ArrayMultibandTile(_bands.map(_.interpretAs(newCellType)))
+
   /**
     * Map over a subset of the bands of an [[ArrayMultibandTile]] to
     * create a new integer-valued [[MultibandTile]].

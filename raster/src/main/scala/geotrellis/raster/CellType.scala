@@ -32,6 +32,18 @@ sealed abstract class DataType extends Serializable { self: CellType =>
   val isFloatingPoint: Boolean
   val name: String
 
+  /** Determine if two [[CellType]] instances have equal [[DataType]] component */
+  def equalDataType(other: DataType): Boolean
+
+  /** Creates CellType with requested NoData semantics.
+    * In case where [[DataType]] is not Double noDataValue will be coerced to that type.
+    * This may lead to loss of precision but will leave NoData consistent with tile cells.
+    *
+    * @param noDataValue Optional NoData Value
+    * @return [[DataType]] unchanged but with [[NoDataHandling]] implied by the value of the parameter
+    */
+  def withNoData(noDataValue: Option[Double]): CellType
+
   def bytes = bits / 8
 
   /**
@@ -108,6 +120,9 @@ sealed trait BitCells extends DataType { self: CellType =>
   val bits: Int = 1
   val isFloatingPoint: Boolean = false
   val name = "bool"
+  def equalDataType(other: DataType) = other.isInstanceOf[BitCells]
+  def withNoData(noDataValue: Option[Double]): BitCells with NoDataHandling =
+    BitCellType // No other options is possible
 }
 
 /**
@@ -117,6 +132,21 @@ sealed trait ByteCells extends DataType { self: CellType =>
   val bits: Int = 8
   val isFloatingPoint: Boolean = false
   val name = "int8"
+  def equalDataType(other: DataType) = other.isInstanceOf[ByteCells]
+  def withNoData(noDataValue: Option[Double]): ByteCells with NoDataHandling =
+    ByteCells.withNoData(noDataValue.map(_.toByte))
+}
+
+object ByteCells {
+  def withNoData(noDataValue: Option[Byte]): ByteCells with NoDataHandling =
+    noDataValue match {
+      case Some(nd) if nd == Byte.MinValue =>
+        ByteConstantNoDataCellType
+      case Some(nd) =>
+        ByteUserDefinedNoDataCellType(nd)
+      case None =>
+        ByteCellType
+    }
 }
 
 /**
@@ -126,6 +156,21 @@ sealed trait UByteCells extends DataType { self: CellType =>
   val bits: Int = 8
   val isFloatingPoint: Boolean = false
   val name = "uint8"
+  def equalDataType(other: DataType) = other.isInstanceOf[UByteCells]
+  def withNoData(noDataValue: Option[Double]): UByteCells with NoDataHandling =
+    UByteCells.withNoData(noDataValue.map(_.toByte))
+}
+
+object UByteCells {
+  def withNoData(noDataValue: Option[Byte]): UByteCells with NoDataHandling =
+    noDataValue match {
+      case Some(nd) if nd == 0 =>
+        UByteConstantNoDataCellType
+      case Some(nd) =>
+        UByteUserDefinedNoDataCellType(nd)
+      case None =>
+        UByteCellType
+    }
 }
 
 /**
@@ -135,6 +180,21 @@ sealed trait ShortCells extends DataType { self: CellType =>
   val bits: Int = 16
   val isFloatingPoint: Boolean = false
   val name = "int16"
+  def equalDataType(other: DataType) = other.isInstanceOf[ShortCells]
+  def withNoData(noDataValue: Option[Double]): ShortCells with NoDataHandling =
+    ShortCells.withNoData(noDataValue.map(_.toShort))
+}
+
+object ShortCells {
+  def withNoData(noDataValue: Option[Short]): ShortCells with NoDataHandling =
+    noDataValue match {
+      case Some(nd) if nd == Short.MinValue =>
+        ShortConstantNoDataCellType
+      case Some(nd) =>
+        ShortUserDefinedNoDataCellType(nd)
+      case None =>
+        ShortCellType
+    }
 }
 
 /**
@@ -144,6 +204,21 @@ sealed trait UShortCells extends DataType { self: CellType =>
   val bits: Int = 16
   val isFloatingPoint: Boolean = false
   val name = "uint16"
+  def equalDataType(other: DataType) = other.isInstanceOf[UShortCells]
+  def withNoData(noDataValue: Option[Double]): UShortCells with NoDataHandling =
+    UShortCells.withNoData(noDataValue.map(_.toShort))
+}
+
+object UShortCells {
+  def withNoData(noDataValue: Option[Short]): UShortCells with NoDataHandling =
+    noDataValue match {
+      case Some(nd) if nd == 0 =>
+        UShortConstantNoDataCellType
+      case Some(nd) =>
+        UShortUserDefinedNoDataCellType(nd)
+      case None =>
+        UShortCellType
+    }
 }
 
 /**
@@ -153,12 +228,42 @@ sealed trait IntCells extends DataType { self: CellType =>
   val bits: Int = 32
   val isFloatingPoint: Boolean = false
   val name = "int32"
+  def equalDataType(other: DataType) = other.isInstanceOf[IntCells]
+  def withNoData(noDataValue: Option[Double]): IntCells with NoDataHandling =
+    IntCells.withNoData(noDataValue.map(_.toInt))
+}
+
+object IntCells {
+  def withNoData(noDataValue: Option[Int]): IntCells with NoDataHandling =
+    noDataValue match {
+      case Some(nd) if nd == Int.MinValue =>
+        IntConstantNoDataCellType
+      case Some(nd) =>
+        IntUserDefinedNoDataCellType(nd)
+      case None =>
+        IntCellType
+    }
 }
 
 sealed trait FloatCells extends DataType { self: CellType =>
   val bits: Int = 32
   val isFloatingPoint: Boolean = true
   val name = "float32"
+  def equalDataType(other: DataType) = other.isInstanceOf[FloatCells]
+  def withNoData(noDataValue: Option[Double]): FloatCells with NoDataHandling =
+    FloatCells.withNoData(noDataValue.map(_.toFloat))
+}
+
+object FloatCells {
+  def withNoData(noDataValue: Option[Float]): FloatCells with NoDataHandling =
+    noDataValue match {
+      case Some(nd) if nd.isNaN =>
+        FloatConstantNoDataCellType
+      case Some(nd) =>
+        FloatUserDefinedNoDataCellType(nd)
+      case None =>
+        FloatCellType
+    }
 }
 
 /**
@@ -168,6 +273,21 @@ sealed trait DoubleCells extends DataType { self: CellType =>
   val bits: Int = 64
   val isFloatingPoint: Boolean = true
   val name = "float64"
+  def equalDataType(other: DataType) = other.isInstanceOf[DoubleCells]
+  def withNoData(noDataValue: Option[Double]): DoubleCells with NoDataHandling =
+    DoubleCells.withNoData(noDataValue)
+}
+
+object DoubleCells {
+  def withNoData(noDataValue: Option[Double]): DoubleCells with NoDataHandling =
+    noDataValue match {
+      case Some(nd) if nd.isNaN =>
+        DoubleConstantNoDataCellType
+      case Some(nd) =>
+        DoubleUserDefinedNoDataCellType(nd)
+      case None =>
+        DoubleCellType
+    }
 }
 
 /**
