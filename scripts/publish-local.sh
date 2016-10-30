@@ -23,3 +23,4 @@
 ./sbt "project geowave" publish-local && \
 ./sbt "project hbase" publish-local && \
 ./sbt "project s3" publish-local
+./sbt "project s3-testkit" publish-local && 
