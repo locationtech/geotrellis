@@ -55,7 +55,7 @@ class GeoTiffWriterSpec extends FunSpec
       actual should be (expected)
     }
 
-    it("should write GeoTiff with custom tags") {
+    it("should write GeoTiff with oversized custom tags") {
       val geoTiff = MultibandGeoTiff(geoTiffPath("multi-tag.tif"))
 
       val newTag1 = ("SOME_CUSTOM_TAG1" -> "1234567890123456789012345678901")
