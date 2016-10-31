@@ -11,6 +11,7 @@ import java.nio.{ByteOrder, ByteBuffer, Buffer}
  */
 class StreamByteReader(bytesStreamer: BytesStreamer) extends ByteReader {
 
+  // TODO: Revamp chunk logic so that Maps aren't in bytesStreamer
   private var chunk: Map[Long, Array[Byte]] = bytesStreamer.getMappedArray(0)
   private def offset: Long = chunk.head._1
   private def chunkArray: Array[Byte] = chunk.head._2

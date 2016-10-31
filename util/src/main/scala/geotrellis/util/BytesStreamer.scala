@@ -10,17 +10,26 @@ trait BytesStreamer {
   def chunkSize: Int
   def objectLength: Long
 
-  def passedLength(size: Long): Boolean =
-    if (size > objectLength) true else false
+  def clipToSize(start: Long, length: Int): Int =
+    if (start + length <= objectLength)
+      length
+    else
+      (objectLength - start).toInt
 
   def getArray(start: Long): Array[Byte] =
     getArray(start, chunkSize)
 
-  def getArray(start: Long, length: Long): Array[Byte]
+  def getArray(start: Long, length: Int): Array[Byte]
 
   def getMappedArray(start: Long): Map[Long, Array[Byte]] =
     getMappedArray(start, chunkSize)
 
-  def getMappedArray(start: Long, length: Long): Map[Long, Array[Byte]] =
+  def getMappedArray(start: Long, length: Int): Map[Long, Array[Byte]] =
     Map(start -> getArray(start, length))
+
+  /** Gets the entire object as an Array.
+    * This will fail if objectLength > Int.MaxValue
+    */
+  def getAll(): Array[Byte] =
+    getArray(0, objectLength.toInt)
 }

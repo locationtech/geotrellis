@@ -4,7 +4,9 @@ import com.typesafe.config.Config
 
 import scala.util.{Failure, Success, Try}
 
-package object io extends json.Implicits with avro.codecs.Implicits {
+package object io
+    extends avro.codecs.Implicits
+    with json.Implicits {
   implicit class ThreadConfig(config: Config) {
     def getThreads(path: String): Int =
       config.getString(path) match {
