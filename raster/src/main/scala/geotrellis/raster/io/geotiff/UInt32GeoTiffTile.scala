@@ -57,4 +57,16 @@ class UInt32GeoTiffTile(
     }
     FloatArrayTile(arr, gridBounds.width, gridBounds.height, cellType)
   }
+
+  def withNoData(noDataValue: Option[Double]): UInt32GeoTiffTile =
+    new UInt32GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoData(noDataValue))
+
+  def interpretAs(newCellType: CellType): GeoTiffTile = {
+    newCellType match {
+      case dt: FloatCells with NoDataHandling =>
+        new UInt32GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, dt)
+      case _ =>
+        withNoData(None).convert(newCellType)
+    }
+  }
 }

@@ -41,4 +41,16 @@ class Int16GeoTiffMultibandTile(
         result
       }
     }
+
+  def withNoData(noDataValue: Option[Double]) =
+    new Int16GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType.withNoData(noDataValue))
+
+  def interpretAs(newCellType: CellType)  = {
+    newCellType match {
+      case dt: ShortCells with NoDataHandling =>
+        new Int16GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, dt)
+      case _ =>
+        withNoData(None).convert(newCellType)
+    }
+  }
 }

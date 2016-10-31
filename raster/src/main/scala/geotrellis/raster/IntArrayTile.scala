@@ -16,9 +16,6 @@
 
 package geotrellis.raster
 
-import geotrellis.vector.Extent
-
-import spire.syntax.cfor._
 import java.nio.ByteBuffer
 
 /**
@@ -50,6 +47,18 @@ abstract class IntArrayTile(val array: Array[Int], cols: Int, rows: Int)
     * @return  The copy
     */
   def copy: ArrayTile = ArrayTile(array.clone, cols, rows)
+
+  def withNoData(noDataValue: Option[Double]): IntArrayTile =
+    IntArrayTile(array, cols, rows, cellType.withNoData(noDataValue))
+
+  def interpretAs(newCellType: CellType): ArrayTile = {
+    newCellType match {
+      case dt: IntCells with NoDataHandling =>
+        IntArrayTile(array, cols, rows, dt)
+      case _ =>
+        withNoData(None).convert(newCellType)
+    }
+  }
 }
 
 /**
@@ -210,6 +219,32 @@ object IntArrayTile {
       case udct: IntUserDefinedNoDataCellType =>
         new IntUserDefinedNoDataArrayTile(arr, cols, rows, udct)
     }
+
+  /**
+    * Create a new [[IntArrayTile]] from an array of integers, a
+    * number of columns, and a number of rows.
+    *
+    * @param   arr          An array of integers
+    * @param   cols         The number of columns
+    * @param   rows         The number of rows
+    * @param   noDataValue  Optional NODATA value
+    * @return               A new IntArrayTile
+    */
+  def apply(arr: Array[Int], cols: Int, rows: Int, noDataValue: Option[Int]): IntArrayTile =
+    apply(arr, cols, rows, IntCells.withNoData(noDataValue))
+
+  /**
+    * Create a new [[IntArrayTile]] from an array of integers, a
+    * number of columns, and a number of rows.
+    *
+    * @param   arr          An array of integers
+    * @param   cols         The number of columns
+    * @param   rows         The number of rows
+    * @param   noDataValue  NODATA value
+    * @return               A new IntArrayTile
+    */
+  def apply(arr: Array[Int], cols: Int, rows: Int, noDataValue: Int): IntArrayTile =
+   apply(arr, cols, rows, Some(noDataValue))
 
   /**
     * Produce a [[IntArrayTile]] of the specified dimensions.

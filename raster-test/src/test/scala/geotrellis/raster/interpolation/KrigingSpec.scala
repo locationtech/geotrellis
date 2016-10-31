@@ -16,7 +16,7 @@
 
 package geotrellis.raster.interpolation
 
-import geotrellis.raster.{RasterExtent, DoubleArrayTile, Tile}
+import geotrellis.raster._
 import geotrellis.vector.interpolation._
 import geotrellis.vector._
 import geotrellis.vector.io._
@@ -28,20 +28,17 @@ import spray.json.DefaultJsonProtocol._
 import org.scalatest._
 
 class KrigingSpec extends FunSpec with Matchers {
-  def generateLogPoints(pointsData: Array[PointFeature[Double]]): Array[PointFeature[Double]] = {
+  def generateLogPoints(pointsData: Seq[PointFeature[Double]]): Seq[PointFeature[Double]] =
     (1 to pointsData.length)
       .map { i => PointFeature(pointsData(i - 1).geom, math.log(pointsData(i - 1).data)) }
-      .toArray
-  }
 
   describe("Kriging Simple Interpolation : Nickel") {
     val path = "raster-test/data/nickel.json"
     val f = scala.io.Source.fromFile(path)
     val collection = f.mkString.parseGeoJson[JsonFeatureCollection]
     f.close()
-    val points: Array[PointFeature[Double]] =
-      generateLogPoints(collection.getAllPointFeatures[Double]().toArray)
-    val sv: Semivariogram = NonLinearSemivariogram(points, 30000, 0, Spherical)
+    val points = generateLogPoints(collection.getAllPointFeatures[Double]())
+    val sv: Semivariogram = NonLinearSemivariogram(points.toArray, 30000, 0, Spherical)
 
     it("should return correct interpolated Tile") {
       val extent: Extent = Extent(620000.0, 550000.0, 670000.0, 590000.0)
@@ -65,9 +62,9 @@ class KrigingSpec extends FunSpec with Matchers {
     val f = scala.io.Source.fromFile(path)
     val collection = f.mkString.parseGeoJson[JsonFeatureCollection]
     f.close()
-    val points: Array[PointFeature[Double]] =
-      generateLogPoints(collection.getAllPointFeatures[Double]().toArray)
-    val sv: Semivariogram = NonLinearSemivariogram(points, 30000, 0, Spherical)
+    val points =
+      generateLogPoints(collection.getAllPointFeatures[Double]())
+    val sv: Semivariogram = NonLinearSemivariogram(points.toArray, 30000, 0, Spherical)
 
     it("should return correct interpolated Tile") {
       val extent: Extent = Extent(620000.0, 550000.0, 670000.0, 590000.0)
@@ -87,7 +84,7 @@ class KrigingSpec extends FunSpec with Matchers {
   }
 
   describe("Kriging Universal Interpolation : Venice") {
-    val points: Array[PointFeature[Double]] = Array(
+    val points = Seq(
       PointFeature(Point(720, 436), -0.99), PointFeature(Point(538, 397), -2.50), PointFeature(Point(518, 395), -1.18),
       PointFeature(Point(612, 365), 0.43), PointFeature(Point(562, 287), -1.66), PointFeature(Point(544, 248), -1.18),
       PointFeature(Point(626, 565), -0.43), PointFeature(Point(630, 551), -0.61), PointFeature(Point(568, 560), -0.83),
@@ -117,7 +114,7 @@ class KrigingSpec extends FunSpec with Matchers {
     val f = scala.io.Source.fromFile(path)
     val collection = f.mkString.parseGeoJson[JsonFeatureCollection]
     f.close()
-    val veniceData = collection.getAllPointFeatures[Double]().toArray
+    val veniceData = collection.getAllPointFeatures[Double]()
 
     it("should return correct interpolated Tile") {
       val extent: Extent = Extent(137.5, 187.5, 912.5, 662.5)
@@ -135,7 +132,7 @@ class KrigingSpec extends FunSpec with Matchers {
   }
 
   describe("Kriging Geo Interpolation : Venice") {
-    val points: Array[PointFeature[Double]] = Array(
+    val points: Seq[PointFeature[Double]] = Array(
       PointFeature(Point(720, 436), -0.99), PointFeature(Point(538, 397), -2.50), PointFeature(Point(518, 395), -1.18),
       PointFeature(Point(612, 365), 0.43), PointFeature(Point(562, 287), -1.66), PointFeature(Point(544, 248), -1.18),
       PointFeature(Point(626, 565), -0.43), PointFeature(Point(630, 551), -0.61), PointFeature(Point(568, 560), -0.83),
