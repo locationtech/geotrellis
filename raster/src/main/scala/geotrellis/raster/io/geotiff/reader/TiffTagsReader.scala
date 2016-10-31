@@ -29,7 +29,7 @@ object TiffTagsReader {
 
     // Validate GeoTiff identification number
     val geoTiffIdNumber = byteReader.getChar
-    if ( geoTiffIdNumber != 42 && geoTiffIdNumber != 43)
+    if (geoTiffIdNumber != 42 && geoTiffIdNumber != 43)
       throw new MalformedGeoTiffException(s"bad identification number (must be 42 or 43, was $geoTiffIdNumber)")
 
     if (geoTiffIdNumber == 42) {
