@@ -18,11 +18,12 @@ package geotrellis.spark.mapalgebra.local
 
 import geotrellis.spark._
 import geotrellis.proj4._
+import geotrellis.raster.Tile
 import geotrellis.spark.tiling._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.mapalgebra.Implicits._
 import geotrellis.spark.testfiles._
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{Dataset, SparkSession}
 import org.scalatest.FunSpec
 
 class AddSpec extends FunSpec with TestEnvironment with TestFiles with KryoEncoderImplicits {
@@ -101,7 +102,7 @@ class AddSpec extends FunSpec with TestEnvironment with TestFiles with KryoEncod
     }
 
     it("should add multiple rasters (dataset)") {
-      val threes = (onesDS + onesDS + onesDS).rdd
+      val threes = ((onesDS + onesDS).rdd.toDS() + onesDS).rdd // Datasets serialization issues(?)
 
       rasterShouldBe(threes, (3, 3))
       rastersShouldHaveSameIdsAndTileCount(ones, threes)

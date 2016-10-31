@@ -14,11 +14,8 @@ abstract class DatasetCombineMethods[K <: Product: TypeTag: ClassTag, V: ClassTa
   import ss.implicits._
 
   // Tried to use this join, but that's impossible due to wrong compared binary blobs of type K
-  def combineValues[R: ClassTag](other: Dataset[(K, V)])(f: (V, V) => R): Dataset[(K, R)] = {
-    self.toDF("key", "value").join(other.toDF("key", "value"), "key").as[(K, V, V)](ptuple3[K, V, V]).map {
-      case (key, tile1, tile2) => key -> f(tile1, tile2)
-    }
-  }
+  def combineValues[R: ClassTag](other: Dataset[(K, V)])(f: (V, V) => R): Dataset[(K, R)] =
+    self.join(other, "_1").as[(K, V, V)](ptuple3[K, V, V]).map { case (key, tile1, tile2) => key -> f(tile1, tile2) }
 
   /**
     * Instead of the function above can be used this, that may allow us to remove constrain on K
