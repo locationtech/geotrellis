@@ -15,6 +15,7 @@ class TemporalGeoTiffHadoopInput extends HadoopInput[TemporalProjectedExtent, Ti
     sc.hadoopTemporalGeoTiffRDD(
       path       = getPath(conf.input.backend).path,
       timeTag    = conf.output.keyIndexMethod.timeTag.getOrElse(TemporalGeoTiffInputFormat.GEOTIFF_TIME_TAG_DEFAULT),
-      timeFormat = conf.output.keyIndexMethod.timeFormat.getOrElse(TemporalGeoTiffInputFormat.GEOTIFF_TIME_FORMAT_DEFAULT)
+      timeFormat = conf.output.keyIndexMethod.timeFormat.getOrElse(TemporalGeoTiffInputFormat.GEOTIFF_TIME_FORMAT_DEFAULT),
+      crs        = conf.input.crs.getOrElse("")
     )
 }

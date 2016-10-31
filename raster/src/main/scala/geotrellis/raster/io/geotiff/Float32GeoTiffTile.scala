@@ -19,11 +19,11 @@ class Float32GeoTiffTile(
   }
 
   /**
-   * Reads the data out of a [[GeoTiffTile]] and create a FloatArrayTile.
+   * Reads the data out of a [[GeoTiffTile]] and create a
+   * FloatArrayTile.
    *
-   * @param: CroppedGeoTiff The [[WindowedGeoTiff]] of the file
-   *
-   * @return A [[FloatArrayTile]]
+   * @param  CroppedGeoTiff  The [[WindowedGeoTiff]] of the file
+   * @return                 A [[FloatArrayTile]]
    */
   def mutable: MutableArrayTile = {
     val arr = Array.ofDim[Byte](cols * rows * FloatConstantNoDataCellType.bytes)
@@ -58,11 +58,11 @@ class Float32GeoTiffTile(
   }
 
   /**
-   * Reads a windowed area out of a [[GeoTiffTile]] and create a FloatArrayTile.
+   * Reads a windowed area out of a [[GeoTiffTile]] and create a
+   * FloatArrayTile.
    *
-   * @param: CroppedGeoTiff The [[WindowedGeoTiff]] of the file
-   *
-   * @return A [[FloatArrayTile]] that conatins data from the windowed area
+   * @param  CroppedGeoTiff  The [[WindowedGeoTiff]] of the file
+   * @return                 A [[FloatArrayTile]] that conatins data from the windowed area
    */
   def crop(gridBounds: GridBounds): MutableArrayTile = {
     val arr = Array.ofDim[Byte](gridBounds.size * FloatConstantNoDataCellType.bytes)
@@ -114,4 +114,17 @@ class Float32GeoTiffTile(
     }
     FloatArrayTile.fromBytes(arr, gridBounds.width, gridBounds.height, cellType)
   }
+
+
+  def withNoData(noDataValue: Option[Double]): Float32GeoTiffTile =
+    new Float32GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoData(noDataValue))
+
+  def interpretAs(newCellType: CellType): Tile = {
+    newCellType match {
+      case dt: FloatCells with NoDataHandling =>
+        new Float32GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, dt)
+      case _ =>
+        withNoData(None).convert(newCellType)
+    }
+  }  
 }

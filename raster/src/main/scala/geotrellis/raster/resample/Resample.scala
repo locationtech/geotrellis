@@ -61,7 +61,7 @@ abstract class Resample(tile: Tile, extent: Extent) {
 
 object Resample {
   /** Create a resampler.
-    * 
+    *
     * @param      method         The method [[ResampleMethod]] to use.
     * @param      tile           The tile that is the source of the resample
     * @param      extent         The extent of source tile.
@@ -76,7 +76,7 @@ object Resample {
     }
 
   /** Create a resampler.
-    * 
+    *
     * @param      method         The method [[ResampleMethod]] to use.
     * @param      tile           The tile that is the source of the resample
     * @param      extent         The extent of source tile.

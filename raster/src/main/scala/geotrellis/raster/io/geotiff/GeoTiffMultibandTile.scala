@@ -230,15 +230,18 @@ abstract class GeoTiffMultibandTile(
     }
   }
 
-  /** Converts all of the bands into a collection of Vector[Tile] */
+  /**
+    * Converts all of the bands into a collection of Vector[Tile]
+    */
   def bands: Vector[Tile] =
     (0 until bandCount).map(band(_)).toVector
 
   /**
-   * Creates an ArrayMultibandTIle that contains a subset of bands from the GeoTiff.
+   * Creates an ArrayMultibandTIle that contains a subset of bands
+   * from the GeoTiff.
    *
-   * @param bandSequence: A sequence of band indexes that are a subset of bands of the GeoTiff
-   * @return Returns an [[ArrayMutlibandTile]] with the selected bands
+   * @param  bandSequence  A sequence of band indexes that are a subset of bands of the GeoTiff
+   * @return               Returns an [[ArrayMultibandTile]] with the selected bands
    */
   def subsetBands(bandSequence: Seq[Int]): ArrayMultibandTile = {
     val newBands = Array.ofDim[Tile](bandSequence.size)
@@ -253,17 +256,18 @@ abstract class GeoTiffMultibandTile(
     new ArrayMultibandTile(newBands)
   }
 
-  /** Converts the GeoTiffMultibandTile to an [[ArrayMutlibandTile]] */
+  /**
+    * Converts the GeoTiffMultibandTile to an
+    * [[ArrayMultibandTile]] */
   def toArrayTile(): ArrayMultibandTile =
     ArrayMultibandTile((0 until bandCount map { band(_).toArrayTile }):_*)
 
   /**
-   * Performs a crop on itself. The returned MultibandGeoTiffTile will contain
-   * bands that have the same area as the inputte GridBounds.
+   * Performs a crop on itself. The returned MultibandGeoTiffTile will
+   * contain bands that have the same area as the inputte GridBounds.
    *
-   * @param gridBounds: A [[GridBounds]] that contains the area to be cropped.
-   *
-   * @return A [[ArrayMultibandTile]]
+   * @param  gridBounds  A [[GridBounds]] that contains the area to be cropped.
+   * @return             A [[ArrayMultibandTile]]
    */
   def crop(gridBounds: GridBounds): ArrayMultibandTile =
     ArrayMultibandTile((0 until bandCount map { band(_).crop(gridBounds) }):_*)
@@ -271,10 +275,10 @@ abstract class GeoTiffMultibandTile(
   /**
    * Converts the CellTypes of a MultibandTile to the given CellType.
    *
-   * @param newCellType: The desired [[CellType]]
-   * @return A MultibandTile that contains the the new CellType
+   * @param  newCellType  The desired [[CellType]]
+   * @return              A MultibandTile that contains the the new CellType
    */
-  def convert(newCellType: CellType): MultibandTile = {
+  def convert(newCellType: CellType): GeoTiffMultibandTile = {
     val arr = Array.ofDim[Array[Byte]](segmentCount)
     val compressor = compression.createCompressor(segmentCount)
     cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
@@ -296,11 +300,11 @@ abstract class GeoTiffMultibandTile(
   }
 
   /**
-   * Takes a function that takes a GeoTiffSegment and an Int and returns the
-   * results as a new MultibandTile.
+   * Takes a function that takes a GeoTiffSegment and an Int and
+   * returns the results as a new MultibandTile.
    *
-   * @param f: A function that takes a [[GeoTiffSegment]] and an Int and returns an Array[Byte]
-   * @return A new MultibandTile that contains the results of the function
+   * @param  f  A function that takes a [[GeoTiffSegment]] and an Int and returns an Array[Byte]
+   * @return    A new MultibandTile that contains the results of the function
    */
   def mapSegments(f: (GeoTiffSegment, Int) => Array[Byte]): MultibandTile = {
     val compressor = compression.createCompressor(segmentCount)
@@ -323,8 +327,8 @@ abstract class GeoTiffMultibandTile(
   }
 
   /**
-    * Piggy-back on the other map method to support mapping a subset
-    * of the bands.
+    * This function piggy-backs on the other map method to support
+    * mapping a subset of the bands.
     */
   def map(subset: Seq[Int])(f: (Int, Int) => Int): MultibandTile = {
     val set = subset.toSet
@@ -337,8 +341,8 @@ abstract class GeoTiffMultibandTile(
   }
 
   /**
-    * Piggy-back on the other map method to support mapping a subset
-    * of the bands.
+    * This function piggy-backs on the other mapDouble method to
+    * support mapping a subset of the bands.
     */
   def mapDouble(subset: Seq[Int])(f: (Int, Double) => Double): MultibandTile = {
     val set = subset.toSet
@@ -353,9 +357,9 @@ abstract class GeoTiffMultibandTile(
   /**
    * Map over a MultibandTile band.
    *
-   * @param b0: The band
-   * @param f: A function that takes an Int and returns an Int
-   * @return Returns a MultibandGeoTiff that contains both the changed and unchanged bands
+   * @param  b0  The band
+   * @param  f   A function that takes an Int and returns an Int
+   * @return     Returns a MultibandGeoTiff that contains both the changed and unchanged bands
    */
   def map(b0: Int)(f: Int => Int): MultibandTile =
     if(hasPixelInterleave) {
@@ -383,9 +387,9 @@ abstract class GeoTiffMultibandTile(
   /**
    * Map over a MultibandTile band.
    *
-   * @param b0: The band
-   * @param f: A function that takes a Double and returns a Double
-   * @return Returns a MultibandGeoTiff that contains both the changed and unchanged bands
+   * @param  b0  The band
+   * @param  f   A function that takes a Double and returns a Double
+   * @return     Returns a MultibandGeoTiff that contains both the changed and unchanged bands
    */
   def mapDouble(b0: Int)(f: Double => Double): MultibandTile =
     if(hasPixelInterleave) {
@@ -411,11 +415,11 @@ abstract class GeoTiffMultibandTile(
     }
 
   /**
-   * Map over a MultibandTile with a function that takes a (Int, Int) and
-   * returns an Int.
+   * Map over a MultibandTile with a function that takes a (Int, Int)
+   * and returns an Int.
    *
-   * @param f: A function that takes a (Int, Int) and returns an Int
-   * @return Returns a MultibandGeoTiff that contains the results of f
+   * @param  f  A function that takes a (Int, Int) and returns an Int
+   * @return    Returns a MultibandGeoTiff that contains the results of f
    */
   def map(f: (Int, Int) => Int): MultibandTile = {
     if(hasPixelInterleave) {
@@ -434,11 +438,11 @@ abstract class GeoTiffMultibandTile(
   }
 
   /**
-   * Map over a MultibandTile with a function that takes a (Int, Double) and
-   * returns a Double.
+   * Map over a MultibandTile with a function that takes a (Int,
+   * Double) and returns a Double.
    *
-   * @param f: A function that takes a (Int, Double) and returns a Double
-   * @return Returns a MultibandGeoTiff that contains the results of f
+   * @param  f  A function that takes a (Int, Double) and returns a Double
+   * @return    Returns a MultibandGeoTiff that contains the results of f
    */
   def mapDouble(f: (Int, Double) => Double): MultibandTile = {
     if(hasPixelInterleave) {
@@ -457,23 +461,23 @@ abstract class GeoTiffMultibandTile(
   }
 
   /**
-   * Apply a function that takes an Int and returns Unit over
-   * a MultibandTile starting at the given band.
+   * Apply a function that takes an Int and returns Unit over a
+   * MultibandTile starting at the given band.
    *
-   * @param b0: The starting band
-   * @param f: A function that takes an Int and returns Unit
-   * @return Returns the Unit value for each Int in the selected bands
+   * @param  b0  The starting band
+   * @param  f   A function that takes an Int and returns Unit
+   * @return     Returns the Unit value for each Int in the selected bands
    */
   def foreach(b0: Int)(f: Int => Unit): Unit =
     _foreach(b0) { (segment, i) => f(segment.getInt(i)) }
 
   /**
-   * Apply a function that takes a Double and returns Unit over
-   * a MultibandTile starting at the given band.
+   * Apply a function that takes a Double and returns Unit over a
+   * MultibandTile starting at the given band.
    *
-   * @param b0: The starting band
-   * @param f: A function that takes a Double and returns Unit
-   * @return Returns the Unit value for each Double in the selected bands
+   * @param  b0  The starting band
+   * @param  f   A function that takes a Double and returns Unit
+   * @return     Returns the Unit value for each Double in the selected bands
    */
   def foreachDouble(b0: Int)(f: Double => Unit): Unit =
     _foreach(b0) { (segment, i) => f(segment.getDouble(i)) }
@@ -537,11 +541,11 @@ abstract class GeoTiffMultibandTile(
   }
 
   /**
-   * Apply a function that takes a (Int, Int) and returns Unit over
-   * a MultibandTile.
+   * Apply a function that takes a (Int, Int) and returns Unit over a
+   * MultibandTile.
    *
-   * @param f: A function that takes a (Int, Int) and returns Unit
-   * @return Returns the Unit value for each (Int, Int) in the MultibandTile
+   * @param  f  A function that takes a (Int, Int) and returns Unit
+   * @return    Returns the Unit value for each (Int, Int) in the MultibandTile
    */
   def foreach(f: (Int, Int) => Unit): Unit =
     _foreach { (segmentIndex, segment, i) =>
@@ -549,11 +553,11 @@ abstract class GeoTiffMultibandTile(
     }
 
   /**
-   * Apply a function that takes a (Double, Double) and returns Unit over
-   * a MultibandTile.
+   * Apply a function that takes a (Double, Double) and returns Unit
+   * over a MultibandTile.
    *
-   * @param f: A function that takes a (Double, Double) and returns Unit
-   * @return Returns the Unit value for each (Double, Double) in the MultibandTile
+   * @param  f  A function that takes a (Double, Double) and returns Unit
+   * @return    Returns the Unit value for each (Double, Double) in the MultibandTile
    */
   def foreachDouble(f: (Int, Double) => Unit): Unit =
     _foreach { (segmentIndex, segment, i) =>
@@ -644,8 +648,8 @@ abstract class GeoTiffMultibandTile(
   }
 
   /**
-    * Piggy-back on the other combine method to support combing a
-    * subset of the bands.
+    * This function piggy-backs on the other combine method to support
+    * combing a subset of the bands.
     */
   def combine(subset: Seq[Int])(f: Seq[Int] => Int): Tile = {
     subset.foreach({ b => require(0 <= b && b < bandCount, "All elements of subset must be present") })
@@ -659,8 +663,8 @@ abstract class GeoTiffMultibandTile(
   }
 
   /**
-    * Piggy-back on the other combineDouble method to support
-    * combining a subset of the bands.
+    * This function piggy-backs on the other combineDouble method to
+    * support combining a subset of the bands.
     */
   def combineDouble(subset: Seq[Int])(f: Seq[Double] => Double): Tile = {
     subset.foreach({ b => require(0 <= b && b < bandCount, "All elements of subset must be present") })
@@ -747,13 +751,13 @@ abstract class GeoTiffMultibandTile(
   }
 
   /**
-   * Apply a function that takes a (Int, Int) and returns an Int over two
-   * selected bands in the MultibandTile.
+   * Apply a function that takes a (Int, Int) and returns an Int over
+   * two selected bands in the MultibandTile.
    *
-   * @param b0: The first band
-   * @param b1: The second band
-   * @param f: A function that takes a (Int, Int) and returns an Int
-   * @return Returns a new [[Tile]] that contains the results of f
+   * @param  b0  The first band
+   * @param  b1  The second band
+   * @param  f   A function that takes a (Int, Int) and returns an Int
+   * @return     Returns a new [[Tile]] that contains the results of f
    */
   def combine(b0: Int, b1: Int)(f: (Int, Int) => Int): Tile =
     _combine(b0: Int, b1: Int) { segmentCombiner =>
@@ -763,13 +767,13 @@ abstract class GeoTiffMultibandTile(
     }
 
   /**
-   * Apply a function that takes a (Double, Double) and returns a Double over two
-   * selected bands in the MultibandTile.
+   * Apply a function that takes a (Double, Double) and returns a
+   * Double over two selected bands in the MultibandTile.
    *
-   * @param b0: The first band
-   * @param b1: The second band
-   * @param f: A function that takes a (Double, Double) and returns a Double
-   * @return Returns a new [[Tile]] that contains the results of f
+   * @param  b0  The first band
+   * @param  b1  The second band
+   * @param  f   A function that takes a (Double, Double) and returns a Double
+   * @return     Returns a new [[Tile]] that contains the results of f
    */
   def combineDouble(b0: Int, b1: Int)(f: (Double, Double) => Double): Tile =
     _combine(b0: Int, b1: Int) { segmentCombiner =>

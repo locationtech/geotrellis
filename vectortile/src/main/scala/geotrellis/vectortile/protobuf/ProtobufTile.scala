@@ -61,7 +61,7 @@ object ProtobufTile {
   ): VectorTile = {
 
     val layers: Map[String, ProtobufLayer] = tile.layers.map({ l =>
-      val pbl = ProtobufLayer(l, tileExtent)
+      val pbl = LazyProtobufLayer(l, tileExtent)
 
       pbl.name -> pbl
     }).toMap

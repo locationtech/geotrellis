@@ -124,7 +124,7 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
       val cellSize = CellSize(0.083328250000000, 0.083328250000000)
       val re = RasterExtent(extent, cellSize)
 
-      val (_, md) = TileLayerMetadata.fromRdd(rdd, scheme)
+      val (_, md) = rdd.collectMetadata[SpatialKey](scheme)
       val tiled = ContextRDD(rdd.tileToLayout[SpatialKey](md, NearestNeighbor), md)
       val beforeMetadata = tiled.metadata
 

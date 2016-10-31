@@ -23,8 +23,8 @@ import scala.math._
  * @see [[http://goo.gl/DtVDQ Esri Desktop's description of Hillshade.]]
  */
 object Hillshade {
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds], cs: CellSize, az: Double, al: Double, z: Double): Tile = {
-    new SurfacePointCalculation[Tile](tile, n, bounds, cs) with
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds], cs: CellSize, az: Double, al: Double, z: Double, target: TargetCell = TargetCell.All): Tile = {
+    new SurfacePointCalculation[Tile](tile, n, bounds, cs, target) with
       ShortArrayTileResult
     {
       val azimuth = radians(90.0 - az)

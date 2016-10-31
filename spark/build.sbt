@@ -2,8 +2,9 @@ import Dependencies._
 
 name := "geotrellis-spark"
 libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-core" % Version.spark % "provided",
-  "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided",
+  sparkCore % "provided",
+  hadoopClient % "provided",
+  sparkSql,
   "com.google.uzaygezen" % "uzaygezen-core" % "0.2",
   logging,
   avro,

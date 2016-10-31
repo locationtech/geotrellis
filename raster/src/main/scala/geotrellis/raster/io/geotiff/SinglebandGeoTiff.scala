@@ -1,16 +1,17 @@
 package geotrellis.raster.io.geotiff
 
+import geotrellis.util.ByteReader
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 
 case class SinglebandGeoTiff(
-  val tile: Tile,
-  val extent: Extent,
-  val crs: CRS,
-  val tags: Tags,
-  val options: GeoTiffOptions
+  tile: Tile,
+  extent: Extent,
+  crs: CRS,
+  tags: Tags,
+  options: GeoTiffOptions
 ) extends GeoTiff[Tile] {
   val cellType = tile.cellType
 
@@ -28,6 +29,16 @@ case class SinglebandGeoTiff(
       this.raster.crop(subExtent)
 
     SinglebandGeoTiff(raster, subExtent, this.crs)
+  }
+  
+  def crop(colMax: Int, rowMax: Int): SinglebandGeoTiff =
+    crop(0, 0, colMax, rowMax)
+
+  def crop(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int): SinglebandGeoTiff = {
+    val raster: Raster[Tile] =
+      this.raster.crop(colMin, rowMin, colMax, rowMax)
+
+    SinglebandGeoTiff(raster, raster._2, this.crs)
   }
 }
 
@@ -70,7 +81,16 @@ object SinglebandGeoTiff {
   def apply(path: String, decompress: Boolean, streaming: Boolean): SinglebandGeoTiff =
     GeoTiffReader.readSingleband(path, decompress, streaming)
 
-  /** Read a single-band GeoTIFF file from the file at a given path.
+  def apply(byteReader: ByteReader): SinglebandGeoTiff =
+    GeoTiffReader.readSingleband(byteReader)
+
+  def apply(byteReader: ByteReader, e: Extent): SinglebandGeoTiff =
+    GeoTiffReader.readSingleband(byteReader, e)
+  
+  def apply(byteReader: ByteReader, e: Option[Extent]): SinglebandGeoTiff =
+    GeoTiffReader.readSingleband(byteReader, e)
+
+  /** Read a single-band GeoTIFF file from the file at the given path.
     * The tile data will remain tiled/striped and compressed in the TIFF format.
     */
   def compressed(path: String): SinglebandGeoTiff =
@@ -81,9 +101,12 @@ object SinglebandGeoTiff {
     */
   def compressed(bytes: Array[Byte]): SinglebandGeoTiff =
     GeoTiffReader.readSingleband(bytes, false, false)
-
+  
   def streaming(path: String): SinglebandGeoTiff =
     GeoTiffReader.readSingleband(path, false, true)
+  
+  def streaming(byteReader: ByteReader): SinglebandGeoTiff =
+    GeoTiffReader.readSingleband(byteReader, false, true)
 
   implicit def singlebandGeoTiffToTile(sbg: SinglebandGeoTiff): Tile =
     sbg.tile

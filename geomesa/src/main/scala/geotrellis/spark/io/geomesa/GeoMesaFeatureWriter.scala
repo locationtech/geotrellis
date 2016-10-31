@@ -1,43 +1,63 @@
 package geotrellis.spark.io.geomesa
 
-import geotrellis.spark._
-import geotrellis.vector._
 import geotrellis.geomesa.geotools._
+import geotrellis.spark._
+import geotrellis.util.annotations.experimental
+import geotrellis.vector._
 
-import org.apache.spark.SparkContext
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.rdd.RDD
+import org.apache.spark.SparkContext
 import org.geotools.data.Transaction
-import org.opengis.feature.simple.{SimpleFeature, SimpleFeatureType}
+import org.opengis.feature.simple.SimpleFeatureType
 
-class GeoMesaFeatureWriter(val instance: GeoMesaInstance)(implicit sc: SparkContext) extends Serializable {
-  def write[G <: Geometry, D: ? => Seq[(String, Any)]]
-    (layerId: LayerId, rdd: RDD[Feature[G, D]])
-    (implicit ev: Feature[G, D] => FeatureToGeoMesaSimpleFeatureMethods[G, D]): Unit = {
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental class GeoMesaFeatureWriter(val instance: GeoMesaInstance)
+                                        (implicit sc: SparkContext) extends Serializable with LazyLogging {
 
-    // SimpleFeatureType requires valid UnmodifiableCollection kryo serializer
+  logger.error("GeoMesa support is experimental")
+
+  /** $experimental */
+  @experimental def write[G <: Geometry, D: ? => Seq[(String, Any)]: λ[α => Feature[G, α] => FeatureToGeoMesaSimpleFeatureMethods[G, α]]]
+    (layerId: LayerId, simpleFeatureType: SimpleFeatureType, rdd: RDD[Feature[G, D]]): Unit = {
+
+    val (sftTypeName, sftAttributeCount) = simpleFeatureType.getTypeName -> simpleFeatureType.getAttributeCount
+    // data store on a driver
+    val dataStore = instance.accumuloDataStore
+    try {
+      // register feature type and write features
+      if (!dataStore.getTypeNames().contains(sftTypeName)) dataStore.createSchema(simpleFeatureType)
+    } finally dataStore.dispose()
+
     rdd
-      .map { f => val sf = f.toSimpleFeature(layerId.name); sf.getFeatureType -> sf }.groupByKey
-      .foreachPartition { (partition: Iterator[(SimpleFeatureType, Iterable[SimpleFeature])]) =>
+      .map(_.toSimpleFeature(layerId.name))
+      .foreachPartition { partition =>
         // data store per partition
         val dataStore = instance.accumuloDataStore
-        partition.foreach { case (sft, sf) =>
-          // register feature types and write features
-          dataStore.createSchema(sft)
-          val featureWriter = dataStore.getFeatureWriterAppend(sft.getTypeName, Transaction.AUTO_COMMIT)
-          try {
-            sf.foreach { rawFeature =>
-              val newFeature = featureWriter.next()
-              (0 until sft.getAttributeCount).foreach(i => newFeature.setAttribute(i, rawFeature.getAttribute(i)))
-              featureWriter.write()
-            }
-          } finally featureWriter.close()
+
+        // writer per partition
+        val featureWriter = dataStore.getFeatureWriterAppend(sftTypeName, Transaction.AUTO_COMMIT)
+        try {
+          partition.foreach { sf =>
+            val newFeature = featureWriter.next()
+            (0 until sftAttributeCount).foreach(i => newFeature.setAttribute(i, sf.getAttribute(i)))
+            featureWriter.write()
+          }
+        } finally {
+          featureWriter.close(); dataStore.dispose()
         }
-        dataStore.dispose()
       }
   }
 }
 
-object GeoMesaFeatureWriter {
-  def apply(instance: GeoMesaInstance)(implicit sc: SparkContext): GeoMesaFeatureWriter =
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental object GeoMesaFeatureWriter {
+
+  /** $experimental */
+  @experimental def apply(instance: GeoMesaInstance)(implicit sc: SparkContext): GeoMesaFeatureWriter =
     new GeoMesaFeatureWriter(instance)
 }

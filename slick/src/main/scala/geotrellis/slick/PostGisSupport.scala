@@ -112,30 +112,17 @@ trait PostGisSupport extends PgPostGISExtensions { driver: PostgresDriver =>
 }
 
 object PostGisSupportUtils {
+  import PostGisProjectionSupportUtils._
+
   def toLiteral(geom: Geometry): String = WKT.write(geom)
 
-  def fromLiteral[T <: Geometry : ClassTag](value: String): T = {
-    splitRSIDAndWKT(value) match {
-      case (srid, wkt) => { //TODO - SRID is ignored
-        if (wkt.startsWith("00") || wkt.startsWith("01"))
-          WKB.read(wkt).as[T].get
-        else
-          WKT.read(wkt).as[T].get
+  def fromLiteral[T <: Geometry](value: String): T = {
+    val wkt =
+      value match {
+        case WITH_SRID(srid, wkt) => wkt
+        case _ => value
       }
-    }
-  }
 
-  /** copy from [[org.postgis.PGgeometry#splitSRID]] */
-  private def splitRSIDAndWKT(value: String): (Int, String) = {
-    if (value.startsWith("SRID=")) {
-      val index = value.indexOf(';', 5) // srid prefix length is 5
-      if (index == -1) {
-        throw new java.sql.SQLException("Error parsing Geometry - SRID not delimited with ';' ")
-      } else {
-        val srid = Integer.parseInt(value.substring(0, index))
-        val wkt = value.substring(index + 1)
-        (srid, wkt)
-      }
-    } else (-1, value)
+    readWktOrWkb(wkt).asInstanceOf[T]
   }
 }

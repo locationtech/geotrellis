@@ -27,7 +27,7 @@ import scala.collection.mutable
 import scala.collection.JavaConversions._
 
 object SpatialIndex {
-  def apply(points: Iterable[(Double, Double)]): SpatialIndex[(Double, Double)] = {
+  def apply(points: Traversable[(Double, Double)]): SpatialIndex[(Double, Double)] = {
     val si = new SpatialIndex[(Double, Double)](Measure.Euclidean)
     for(point <- points) {
       si.insert(point, point._1, point._2)
@@ -35,7 +35,7 @@ object SpatialIndex {
     si
   }
 
-  def apply[T](points: Iterable[T])(f: T=>(Double, Double)): SpatialIndex[T] = {
+  def apply[T](points: Traversable[T])(f: T=>(Double, Double)): SpatialIndex[T] = {
     val si = new SpatialIndex[T](Measure.Euclidean)
     for(point <- points) {
       val (x, y) = f(point)
@@ -44,7 +44,7 @@ object SpatialIndex {
     si
   }
 
-  def fromExtents[T](items: Iterable[T])(f: T => Extent): SpatialIndex[T] = {
+  def fromExtents[T](items: Traversable[T])(f: T => Extent): SpatialIndex[T] = {
     val idx = new SpatialIndex[T]
     items.foreach { i => idx.insert(i, f(i)) }
     idx
@@ -133,8 +133,8 @@ class SpatialIndex[T](val measure: Measure = Measure.Euclidean) extends Serializ
       if (kNNqueue.size < k || item.d < kNNqueue.head.d) {
         if (item.x.getLevel == 0) {
           // leaf node
-          item.x.getChildBoundables.map { 
-            leafNode => rtreeLeafAsPQitem(leafNode.asInstanceOf[ItemBoundable]) 
+          item.x.getChildBoundables.map {
+            leafNode => rtreeLeafAsPQitem(leafNode.asInstanceOf[ItemBoundable])
           }.foreach(addToClosest)
         } else {
           item.x.getChildBoundables.map {

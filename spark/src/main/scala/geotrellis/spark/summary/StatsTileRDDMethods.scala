@@ -5,14 +5,15 @@ import geotrellis.raster.histogram._
 import geotrellis.raster.mapalgebra.local._
 import geotrellis.raster.summary._
 import geotrellis.spark._
-import geotrellis.spark.mapalgebra._
+import geotrellis.util.MethodExtensions
 
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
 
+import scala.reflect.ClassTag
 
-trait StatsTileRDDMethods[K] extends TileRDDMethods[K] {
+abstract class StatsTileRDDMethods[K: ClassTag] extends MethodExtensions[RDD[(K, Tile)]] {
 
   def averageByKey(partitioner: Option[Partitioner] = None): RDD[(K, Tile)] = {
     val createCombiner = (tile: Tile) => tile -> 1
@@ -30,11 +31,24 @@ trait StatsTileRDDMethods[K] extends TileRDDMethods[K] {
       .mapValues { case (tile, count) => tile / count}
   }
 
+  /**
+    * Compute the histogram of an RDD of [[Tile]] objects.
+    *
+    * @return  A [[Histogram[Double]]]
+    */
   def histogram(): Histogram[Double] =
     histogram(StreamingHistogram.DEFAULT_NUM_BUCKETS)
 
-  def histogram(numBuckets: Int): Histogram[Double] =
-    self
+  /**
+    * Compute the histogram of an RDD of [[Tile]] objects.
+    *
+    * @param  numBuckets  The number of buckets that the histogram should have
+    * @param  fraction    The fraction of [[Tile]] objects to sample (the default is 100%)
+    * @param  seed        The seed of the RNG which determines which tiles to take the histograms of
+    * @return             A [[Histogram[Double]]]
+    */
+  def histogram(numBuckets: Int, fraction: Double = 1.0, seed: Long = 33): Histogram[Double] =
+    (if (fraction >= 1.0) self; else self.sample(false, fraction, seed))
       .map { case (key, tile) => tile.histogramDouble(numBuckets) }
       .reduce { _ merge _ }
 

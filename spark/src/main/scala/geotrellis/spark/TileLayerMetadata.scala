@@ -16,7 +16,7 @@ import org.apache.spark.rdd._
  * @param extent      Extent covering the source data
  * @param crs         CRS of the raster projection
  */
-case class TileLayerMetadata[K: SpatialComponent](
+case class TileLayerMetadata[K](
   cellType: CellType,
   layout: LayoutDefinition,
   extent: Extent,
@@ -50,16 +50,20 @@ case class TileLayerMetadata[K: SpatialComponent](
       )
   }
 
-  def updateBounds(newBounds: Bounds[K]): TileLayerMetadata[K] =
+  def updateBounds(newBounds: Bounds[K])(implicit c: Component[K, SpatialKey]): TileLayerMetadata[K] =
     newBounds match {
-      case kb: KeyBounds[K] =>
-        val kbExtent = mapTransform(kb.toGridBounds)
+      case kb: KeyBounds[K] => {
+        val SpatialKey(minCol, minRow) = kb.minKey.getComponent[SpatialKey]
+        val SpatialKey(maxCol, maxRow) = kb.maxKey.getComponent[SpatialKey]
+        val kbExtent = mapTransform(GridBounds(minCol, minRow, maxCol, maxRow))
+
         kbExtent.intersection(extent) match {
           case Some(e) =>
             copy(bounds = newBounds, extent = e)
           case None =>
             copy(bounds = newBounds, extent = Extent(extent.xmin, extent.ymin, extent.xmin, extent.ymin))
         }
+      }
       case EmptyBounds =>
         copy(bounds = newBounds, extent = Extent(extent.xmin, extent.ymin, extent.xmin, extent.ymin))
     }
@@ -169,7 +173,9 @@ object TileLayerMetadata {
   }
 
   /**
-    * Compose Extents from given raster tiles and use [[ZoomedLayoutScheme]] to create the [[LayoutDefinition]].
+    * Compose Extents from given raster tiles and use
+    * [[geotrellis.spark.tiling.ZoomedLayoutScheme]] to create the
+    * [[geotrellis.spark.tiling.LayoutDefinition]].
     */
   def fromRdd[
     K: (? => TilerKeyMethods[K, K2]) ,
@@ -180,7 +186,9 @@ object TileLayerMetadata {
       _fromRdd[K, V, K2](rdd, crs, scheme, None)
 
   /**
-    * Compose Extents from given raster tiles using [[ZoomedLayoutScheme]] and a maximum zoom value.
+    * Compose Extents from given raster tiles using
+    * [[geotrellis.spark.tiling.ZoomedLayoutScheme]] and a maximum
+    * zoom value.
     */
   def fromRdd[
     K: (? => TilerKeyMethods[K, K2]) ,

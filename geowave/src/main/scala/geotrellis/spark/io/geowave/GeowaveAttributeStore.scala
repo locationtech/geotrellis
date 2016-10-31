@@ -5,8 +5,9 @@ import geotrellis.proj4.LatLng
 import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.vector.Extent
 import geotrellis.spark.io.accumulo.AccumuloAttributeStore
+import geotrellis.util.annotations.experimental
+import geotrellis.vector.Extent
 
 import com.typesafe.scalalogging.LazyLogging
 import com.vividsolutions.jts.geom._
@@ -42,9 +43,13 @@ import spray.json._
 import spray.json.DefaultJsonProtocol._
 
 
-object GeowaveAttributeStore {
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental object GeowaveAttributeStore {
 
-  def accumuloRequiredOptions(
+  /** $experimental */
+  @experimental def accumuloRequiredOptions(
     zookeepers: String,
     accumuloInstance: String,
     accumuloUser: String,
@@ -60,7 +65,8 @@ object GeowaveAttributeStore {
     aro
   }
 
-  def basicOperations(
+  /** $experimental */
+  @experimental def basicOperations(
     zookeepers: String,
     accumuloInstance: String,
     accumuloUser: String,
@@ -75,7 +81,8 @@ object GeowaveAttributeStore {
       geowaveNamespace)
   }
 
-  def adapters(bao: BasicAccumuloOperations): Array[RasterDataAdapter] = {
+  /** $experimental */
+  @experimental def adapters(bao: BasicAccumuloOperations): Array[RasterDataAdapter] = {
     val adapters = new AccumuloAdapterStore(bao).getAdapters
     val retval = adapters.asScala
       .map(_.asInstanceOf[RasterDataAdapter])
@@ -84,22 +91,29 @@ object GeowaveAttributeStore {
     adapters.close ; retval
   }
 
-  def primaryIndex = (new SpatialDimensionalityTypeProvider.SpatialIndexBuilder).createIndex()
+  /** $experimental */
+  @experimental def primaryIndex = (new SpatialDimensionalityTypeProvider.SpatialIndexBuilder).createIndex()
 
-  def subStrategies(idx: PrimaryIndex) = idx
+  /** $experimental */
+  @experimental def subStrategies(idx: PrimaryIndex) = idx
     .getIndexStrategy
     .asInstanceOf[HierarchicalNumericIndexStrategy]
     .getSubStrategies
 
 }
 
-class GeowaveAttributeStore(
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental class GeowaveAttributeStore(
   val zookeepers: String,
   val accumuloInstance: String,
   val accumuloUser: String,
   val accumuloPass: String,
   val geowaveNamespace: String
 ) extends DiscreteLayerAttributeStore with LazyLogging {
+
+  logger.error("GeoWave support is experimental")
 
   val zkInstance = (new ZooKeeperInstance(accumuloInstance, zookeepers))
   val token = new PasswordToken(accumuloPass)
@@ -123,10 +137,12 @@ class GeowaveAttributeStore(
   val dataStore = new AccumuloDataStore(basicAccumuloOperations)
   val dataStatisticsStore = new AccumuloDataStatisticsStore(basicAccumuloOperations)
 
-  def delete(tableName: String) =
+  /** $experimental */
+  @experimental def delete(tableName: String) =
     connector.tableOperations.delete(tableName)
 
-  def boundingBoxes(): Map[ByteArrayId, BoundingBoxDataStatistics[Any]] = {
+  /** $experimental */
+  @experimental def boundingBoxes(): Map[ByteArrayId, BoundingBoxDataStatistics[Any]] = {
     adapters.map({ adapter =>
       val adapterId = adapter.getAdapterId
       val bboxId = BoundingBoxDataStatistics.STATS_ID
@@ -138,7 +154,8 @@ class GeowaveAttributeStore(
     }).toMap
   }
 
-  def leastZooms(): Map[ByteArrayId, Int] = {
+  /** $experimental */
+  @experimental def leastZooms(): Map[ByteArrayId, Int] = {
     adapters.map({ adapter =>
       val adapterId = adapter.getAdapterId
       val bbox = boundingBoxes.getOrElse(adapterId, throw new Exception(s"Unknown Adapter Id $adapterId"))
@@ -165,31 +182,42 @@ class GeowaveAttributeStore(
     }).toMap
   }
 
-  def primaryIndex = GeowaveAttributeStore.primaryIndex
-  def adapters = GeowaveAttributeStore.adapters(basicAccumuloOperations)
-  def subStrategies = GeowaveAttributeStore.subStrategies(primaryIndex)
+  /** $experimental */
+  @experimental def primaryIndex = GeowaveAttributeStore.primaryIndex
 
-  def delete(layerId: LayerId, attributeName: String): Unit =
+  /** $experimental */
+  @experimental def adapters = GeowaveAttributeStore.adapters(basicAccumuloOperations)
+
+  /** $experimental */
+  @experimental def subStrategies = GeowaveAttributeStore.subStrategies(primaryIndex)
+
+  /** $experimental */
+  @experimental def delete(layerId: LayerId, attributeName: String): Unit =
     delegate.delete(layerId, attributeName)
 
-  def delete(layerId: LayerId): Unit = delegate.delete(layerId)
+  /** $experimental */
+  @experimental def delete(layerId: LayerId): Unit = delegate.delete(layerId)
 
-  def readAll[T: JsonFormat](attributeName: String): Map[LayerId, T] =
+  /** $experimental */
+  @experimental def readAll[T: JsonFormat](attributeName: String): Map[LayerId, T] =
     delegate.readAll[T](attributeName)
 
-  def read[T: JsonFormat](layerId: LayerId, attributeName: String): T =
+  /** $experimental */
+  @experimental def read[T: JsonFormat](layerId: LayerId, attributeName: String): T =
     delegate.read[T](layerId, attributeName)
 
-  def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit =
+  /** $experimental */
+  @experimental def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit =
     delegate.write[T](layerId, attributeName, value)
 
-  def availableAttributes(layerId: LayerId) =
+  /** $experimental */
+  @experimental def availableAttributes(layerId: LayerId) =
     delegate.availableAttributes(layerId)
 
   /**
     * Use GeoWave to see whether a layer really exists.
     */
-  private def gwLayerExists(layerId: LayerId): Boolean = {
+  @experimental private def gwLayerExists(layerId: LayerId): Boolean = {
     val LayerId(name, zoom) = layerId
     val candidateAdapters = adapters.filter(_.getCoverageName == name)
 
@@ -205,16 +233,16 @@ class GeowaveAttributeStore(
   }
 
   /**
-    * Answer whether a layer exists (either in GeoWave or only in the
-    * AttributeStore).
+    * $experimental Answer whether a layer exists (either in GeoWave
+    * or only in the AttributeStore).
     */
-  def layerExists(layerId: LayerId): Boolean =
+  @experimental def layerExists(layerId: LayerId): Boolean =
     gwLayerExists(layerId) || delegate.layerExists(layerId)
 
   /**
     * Use GeoWave to get a list of actual LayerIds.
     */
-  private def gwLayerIds: Seq[LayerId] = {
+  @experimental private def gwLayerIds: Seq[LayerId] = {
     val list =
       for (
         adapter <- adapters;
@@ -233,10 +261,10 @@ class GeowaveAttributeStore(
   }
 
   /**
-    * Return a complete list of LayerIds (those associated with actual
-    * GeoWave layers, as well as those only recorded in the
-    * AttributeStore).
+    * $experimental Return a complete list of LayerIds (those
+    * associated with actual GeoWave layers, as well as those only
+    * recorded in the AttributeStore).
     */
-  def layerIds: Seq[LayerId] =
+  @experimental def layerIds: Seq[LayerId] =
     (gwLayerIds ++ delegate.layerIds).distinct
 }

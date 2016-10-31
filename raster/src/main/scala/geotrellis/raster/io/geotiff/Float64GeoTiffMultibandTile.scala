@@ -41,5 +41,18 @@ class Float64GeoTiffMultibandTile(
         result
       }
     }
+
+  def withNoData(noDataValue: Option[Double]): Float64GeoTiffMultibandTile =
+    new Float64GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType.withNoData(noDataValue))
+
+  def interpretAs(newCellType: CellType): GeoTiffMultibandTile  = {
+    newCellType match {
+      case dt: DoubleCells with NoDataHandling =>
+        new Float64GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, dt)
+      case _ =>
+        withNoData(None).convert(newCellType)
+    }
+  }
+
 }
 

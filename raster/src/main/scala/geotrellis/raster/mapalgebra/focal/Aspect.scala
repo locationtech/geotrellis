@@ -26,10 +26,10 @@ import geotrellis.raster.mapalgebra.focal.Angles._
   */
 object Aspect {
 
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds], cs: CellSize): Tile = {
-    new SurfacePointCalculation[Tile](tile, n, bounds, cs)
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds], cs: CellSize, target: TargetCell = TargetCell.All): Tile = {
+    new SurfacePointCalculation[Tile](tile, n, bounds, cs, target)
       with DoubleArrayTileResult
-    {      
+    {
       def setValue(x: Int, y: Int, s: SurfacePoint) {
         resultTile.setDouble(x, y, degrees(s.aspect))
       }

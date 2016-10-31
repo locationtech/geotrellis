@@ -1,13 +1,14 @@
 package geotrellis.spark.io.geowave
 
+import geotrellis.geotools._
 import geotrellis.spark._
-import geotrellis.spark.io.hadoop.formats._
-import geotrellis.spark.io.index._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
+import geotrellis.spark.io.hadoop.formats._
+import geotrellis.spark.io.index._
 import geotrellis.spark.util.KryoWrapper
+import geotrellis.util.annotations.experimental
 import geotrellis.vector._
-import geotrellis.geotools._
 
 import org.apache.hadoop.io._
 import org.apache.hadoop.mapreduce.Job
@@ -27,10 +28,15 @@ import mil.nga.giat.geowave.adapter.vector._
 
 import scala.reflect._
 
-object GeoWaveFeatureRDDWriter {
+
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental object GeoWaveFeatureRDDWriter {
 
   /**
-    * Read out an RDD of Vector features from an accumulo geowave store
+    * $experimental Read out an RDD of Vector features from an
+    * accumulo geowave store
     *
     * @param features              an RDD of [[geotrellis.vector.Feature]] objects to be written
     * @param zookeepers            zookeeper master node location
@@ -43,7 +49,7 @@ object GeoWaveFeatureRDDWriter {
     *
     * @tparam G                    the type of geometry to be retrieved through geowave (REQUIRED)
     */
-  def write[G <: Geometry, D](
+  @experimental def write[G <: Geometry, D](
     features: RDD[Feature[G, D]],
     zookeepers: String,
     accumuloInstanceName: String,

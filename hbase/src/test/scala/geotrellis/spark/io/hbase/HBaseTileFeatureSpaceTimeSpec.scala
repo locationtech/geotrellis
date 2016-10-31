@@ -26,7 +26,7 @@ class HBaseTileFeatureSpaceTimeSpec
   lazy val attributeStore = HBaseAttributeStore(instance)
 
   lazy val reader    = HBaseLayerReader(attributeStore)
-  lazy val creader   = HBaseLayerCollectionReader(attributeStore)
+  lazy val creader   = HBaseCollectionLayerReader(attributeStore)
   lazy val writer    = HBaseLayerWriter(attributeStore, "tiles")
   lazy val deleter   = HBaseLayerDeleter(attributeStore)
   lazy val updater   = HBaseLayerUpdater(attributeStore)

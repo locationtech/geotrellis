@@ -23,10 +23,9 @@ libraryDependencies ++= Seq(
   "mil.nga.giat" % "geowave-datastore-accumulo" % "0.9.3-SNAPSHOT"
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
-  "org.apache.hadoop" % "hadoop-client" % Version.hadoop % "provided"
+  hadoopClient % "provided"
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
-  "org.apache.spark" %% "spark-core" % Version.spark % "provided",
   "org.geoserver" % "gs-wms" % "2.8.2"
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
@@ -46,6 +45,9 @@ libraryDependencies ++= Seq(
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
   "com.jsuereth" %% "scala-arm" % "1.4",
+  "de.javakaffee" % "kryo-serializers" % "0.38" exclude("com.esotericsoftware", "kryo"),
+  "com.esotericsoftware" % "kryo-shaded" % "3.0.3",
+  sparkCore % "provided",
   spire,
   scalatest % "test")
 

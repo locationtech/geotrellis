@@ -7,7 +7,7 @@ libraryDependencies ++= Seq(
       ExclusionRule("org.jboss.netty"), ExclusionRule("io.netty"),
       ExclusionRule("org.slf4j"), ExclusionRule("io.spray"), ExclusionRule("com.typesafe.akka")
     ) exclude("org.apache.hadoop", "hadoop-client"),
-  "org.apache.spark" %% "spark-core" % Version.spark % "provided",
+  sparkCore % "provided",
   spire,
   scalatest % "test")
 
