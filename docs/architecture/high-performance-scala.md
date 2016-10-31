@@ -1,5 +1,3 @@
-# Spark #
-
 # Macros #
 
 > NOTE: Because scala macros require a separate stage of compilation, they've
@@ -156,3 +154,18 @@ This is possible even though those two types are backed by very different data s
 Although use of immutable data structures is preferred in Scala, there are places in the codebase where mutable data structures have been used for performance reasons.
 This pattern frequently manifests as use of `foreach` on a collection rather than `filter` and/or `map`.
 This is helpful because less allocation of intermediate objects reduces garbage collection pressure.
+
+# Spark #
+
+The two principal Spark-related performance optimizations used throughout the GeoTrellis codebase concern improved serialization performance and avoiding shuffles.
+
+In order to improve serialization performance, we do two things:
+we use Kryo serialization instead of standard Java serialization and
+we preregister classes with Kryo.
+
+Kryo serialization is faster and more compact than standard Java serialization.
+Preregistration of classes with Kryo provides a good performance boost because it reduces the amount of network traffic.
+When a class is not preregistered with Kryo, that class' entire name must be transmitted along with the a serialized representation of that type.
+However when a class is preregistered, an index into the list of preregistered classes can be sent instead of the full name.
+
+In order to reduces shuffles, we prefer `aggregateByKey` or `reduceByKey` over `groupByKey` as recommended by the [Spark documentations](http://spark.apache.org/docs/latest/programming-guide.html#transformations).
