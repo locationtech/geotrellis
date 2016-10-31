@@ -133,3 +133,21 @@ The `@specialized` decorator and its two arguments tell the compiler that it sho
 Although this multiplies the amount of bytecode associated with this type by roughly a factor of three,
 it provides the great advantage of preventing boxing of (most) arguments and variables of type `T`.
 In addition, specialization also opens up additional opportunities for optimization in circumstances where the compiler knows that it is dealing with a particular primitive type instead of a object.
+
+# The Tile Hierarchy #
+
+One of the most broadly-visible performance-related architectural features present in GeoTrellis is the tile hierarchy.
+Prompted by concerns similar to those which motivated the use of the `@specialized` decorator, this hierarchy is designed to prevent unnecessary boxing.
+The hierarchy provides a structure of relationships between tiles of conceptually similar types, for example `IntArrayTile`s and `DoubleArrayTile`,
+but they are connected via type-neutral traits rather than traits or base classes with a type parameter.
+
+![tile-hierarchy](https://cloud.githubusercontent.com/assets/229679/19823499/b370d568-9d1d-11e6-8112-4f30f98f0763.png)
+
+As brief example of the advantage that is provided, the types `IntArrayTile` and `DoubleArrayTile` both share a common ancestor, `ArrayTile`, which guarantees that they provide an `apply` method.
+That method is used to index the underlying array.
+In the case of `IntArrayTile` it directly indexes the array and in the case of `DoubleArrayTile` the array is indexed and then the retrieved value is converted form a `double` to an `Int` and returned.
+A reliable interface is provided, but without the risk of boxing that use of a type parameter would have.
+
+Along similar lines, the fact that `IntArrayTile` and `UByteGeoTiffTile` share a common ancestor `Tile` gurantees that they both provide the method `foreach`, which allows a function to be applied to each pixel of a tile.
+This is possible even though those two types are backed by very different data structures: an array for the first one and complex TIFF structure for the second.
+
