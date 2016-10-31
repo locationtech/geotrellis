@@ -1,5 +1,6 @@
 package geotrellis.raster.render
 
+import geotrellis.raster._
 import geotrellis.util._
 
 import spire.algebra._
@@ -16,18 +17,20 @@ import scala.specialized
   * with breaks and a break strategy.
   *
   * {{{
-  * val vm: ValueMap = ...
+  * val bm: BreakMap = ...
   * val t: Tile = ...
   *
   * // Map all the cells of `t` to a target bin value in O(klogn).
   * val newT: Tile = t.mapWith(vm)
   * }}}
+  *
+  * '''Note:''' `A` and `B` are specialized on `Int` and `Double`.
   */
-abstract class ValueMap[
+abstract class BreakMap[
   @specialized(Int, Double) A: Order,
   @specialized(Int, Double) B: Order
 ](
-  valMap: Map[A, B],
+  breakMap: Map[A, B],
   boundary: ClassBoundaryType,
   noDataValue: B,
   fallbackValue: B,
@@ -39,7 +42,7 @@ abstract class ValueMap[
 
   /* A Binary Tree of the mappable values */
   private lazy val vmTree: BTree[(A, B)] = {
-    val a: Array[(A, B)] = valMap.toArray
+    val a: Array[(A, B)] = breakMap.toArray
 
     Sorting.quickSort(a)
 
@@ -92,4 +95,40 @@ abstract class ValueMap[
       }
     }
   }
+}
+
+// TODO Clean up inheritance mechanism.
+class I2IBreakMap(breakMap: Map[Int, Int]) extends BreakMap[Int, Int](
+  breakMap, LessThanOrEqualTo, 0x00000000, 0x00000000, false
+) {
+  def noDataCheck(a: Int): Boolean = isNoData(a)
+}
+
+class I2DBreakMap(breakMap: Map[Int, Double]) extends BreakMap[Int, Double](
+  breakMap, LessThanOrEqualTo, Double.NaN, Double.NaN, false
+) {
+  def noDataCheck(a: Int): Boolean = isNoData(a)
+}
+
+class D2DBreakMap(breakMap: Map[Double, Double]) extends BreakMap[Double, Double](
+  breakMap, LessThanOrEqualTo, Double.NaN, Double.NaN, false
+) {
+  def noDataCheck(a: Double): Boolean = isNoData(a)
+}
+
+class D2IBreakMap(breakMap: Map[Double, Int]) extends BreakMap[Double, Int](
+  breakMap, LessThanOrEqualTo, 0x00000000, 0x00000000, false
+) {
+  def noDataCheck(a: Double): Boolean = isNoData(a)
+}
+
+/** Helper methods for constructing BreakMaps. */
+object BreakMap {
+  def i2i(m: Map[Int, Int]): BreakMap[Int, Int] = new I2IBreakMap(m)
+
+  def i2d(m: Map[Int, Double]): BreakMap[Int, Double] = new I2DBreakMap(m)
+
+  def d2d(m: Map[Double, Double]): BreakMap[Double, Double] = new D2DBreakMap(m)
+
+  def d2i(m: Map[Double, Int]): BreakMap[Double, Int] = new D2IBreakMap(m)
 }
