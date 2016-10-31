@@ -151,3 +151,8 @@ A reliable interface is provided, but without the risk of boxing that use of a t
 Along similar lines, the fact that `IntArrayTile` and `UByteGeoTiffTile` share a common ancestor `Tile` gurantees that they both provide the method `foreach`, which allows a function to be applied to each pixel of a tile.
 This is possible even though those two types are backed by very different data structures: an array for the first one and complex TIFF structure for the second.
 
+# Mutable Types #
+
+Although use of immutable data structures is preferred in Scala, there are places in the codebase where mutable data structures have been used for performance reasons.
+This pattern frequently manifests as use of `foreach` on a collection rather than `filter` and/or `map`.
+This is helpful because less allocation of intermediate objects reduces garbage collection pressure.
