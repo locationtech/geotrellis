@@ -1,9 +1,10 @@
 package geotrellis.spark.io.hadoop
 
+import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.spark.TemporalProjectedExtent
-import geotrellis.vector._
 import geotrellis.spark.io.hadoop.formats._
+import geotrellis.vector._
 
 import org.apache.spark._
 import org.apache.spark.rdd._
@@ -13,10 +14,9 @@ import org.apache.hadoop.conf.Configuration
 
 trait HadoopSparkContextMethods {
   val sc: SparkContext
-  val defaultTiffExtensions: Seq[String] = Seq(".tif", ".TIF", ".tiff", ".TIFF")
 
   def hadoopGeoTiffRDD(path: String): RDD[(ProjectedExtent, Tile)] =
-    hadoopGeoTiffRDD(new Path(path), defaultTiffExtensions)
+    hadoopGeoTiffRDD(new Path(path), HadoopGeoTiffRDD.Options.DEFAULT.tiffExtensions)
 
   def hadoopGeoTiffRDD(path: String, tiffExtension: String): RDD[(ProjectedExtent, Tile)] =
     hadoopGeoTiffRDD(new Path(path), Seq(tiffExtension))
@@ -25,24 +25,24 @@ trait HadoopSparkContextMethods {
     hadoopGeoTiffRDD(new Path(path), tiffExtensions)
 
   def hadoopGeoTiffRDD(path: Path): RDD[(ProjectedExtent, Tile)] =
-    hadoopGeoTiffRDD(path, defaultTiffExtensions)
+    hadoopGeoTiffRDD(path, HadoopGeoTiffRDD.Options.DEFAULT.tiffExtensions)
 
   def hadoopGeoTiffRDD(path: Path, tiffExtension: String): RDD[(ProjectedExtent, Tile)] =
     hadoopGeoTiffRDD(path, Seq(tiffExtension))
 
-  def hadoopGeoTiffRDD(path: Path, tiffExtensions: Seq[String], crs: String = ""): RDD[(ProjectedExtent, Tile)] = {
+  def hadoopGeoTiffRDD(path: Path, tiffExtensions: Seq[String], crs: Option[CRS] = None): RDD[(ProjectedExtent, Tile)] = {
     val conf = sc.hadoopConfiguration.withInputDirectory(path, tiffExtensions)
-    TemporalGeoTiffInputFormat.setCrs(conf, crs)
+    crs.foreach(GeoTiffInputFormat.setCrs(conf, _))
     sc.newAPIHadoopRDD(
       conf,
-      classOf[GeotiffInputFormat],
+      classOf[GeoTiffInputFormat],
       classOf[ProjectedExtent],
       classOf[Tile]
     )
   }
 
   def hadoopTemporalGeoTiffRDD(path: String): RDD[(TemporalProjectedExtent, Tile)] =
-    hadoopTemporalGeoTiffRDD(new Path(path), defaultTiffExtensions)
+    hadoopTemporalGeoTiffRDD(new Path(path), HadoopGeoTiffRDD.Options.DEFAULT.tiffExtensions)
 
   def hadoopTemporalGeoTiffRDD(path: String, tiffExtension: String): RDD[(TemporalProjectedExtent, Tile)] =
     hadoopTemporalGeoTiffRDD(new Path(path), Seq(tiffExtension))
@@ -51,22 +51,22 @@ trait HadoopSparkContextMethods {
     hadoopTemporalGeoTiffRDD(new Path(path), tiffExtensions)
 
   def hadoopTemporalGeoTiffRDD(path: Path): RDD[(TemporalProjectedExtent, Tile)] =
-    hadoopTemporalGeoTiffRDD(path, defaultTiffExtensions)
+    hadoopTemporalGeoTiffRDD(path, HadoopGeoTiffRDD.Options.DEFAULT.tiffExtensions)
 
   def hadoopTemporalGeoTiffRDD(path: Path, tiffExtension: String): RDD[(TemporalProjectedExtent, Tile)] =
     hadoopTemporalGeoTiffRDD(path, Seq(tiffExtension))
 
   def hadoopTemporalGeoTiffRDD(
     path: Path,
-    tiffExtensions: Seq[String] = defaultTiffExtensions,
+    tiffExtensions: Seq[String] = HadoopGeoTiffRDD.Options.DEFAULT.tiffExtensions,
     timeTag: String = TemporalGeoTiffInputFormat.GEOTIFF_TIME_TAG_DEFAULT,
     timeFormat: String = TemporalGeoTiffInputFormat.GEOTIFF_TIME_FORMAT_DEFAULT,
-    crs: String = ""
+    crs: Option[CRS] = None
   ): RDD[(TemporalProjectedExtent, Tile)] = {
     val conf = sc.hadoopConfiguration.withInputDirectory(path, tiffExtensions)
     TemporalGeoTiffInputFormat.setTimeTag(conf, timeTag)
     TemporalGeoTiffInputFormat.setTimeFormat(conf, timeFormat)
-    TemporalGeoTiffInputFormat.setCrs(conf, crs)
+    crs.foreach(GeoTiffInputFormat.setCrs(conf, _))
     sc.newAPIHadoopRDD(
       conf,
       classOf[TemporalGeoTiffInputFormat],
@@ -76,7 +76,7 @@ trait HadoopSparkContextMethods {
   }
 
   def hadoopMultibandGeoTiffRDD(path: String): RDD[(ProjectedExtent, MultibandTile)] =
-    hadoopMultibandGeoTiffRDD(new Path(path), defaultTiffExtensions)
+    hadoopMultibandGeoTiffRDD(new Path(path), HadoopGeoTiffRDD.Options.DEFAULT.tiffExtensions)
 
   def hadoopMultibandGeoTiffRDD(path: String, tiffExtension: String): RDD[(ProjectedExtent, MultibandTile)] =
     hadoopMultibandGeoTiffRDD(new Path(path), Seq(tiffExtension))
@@ -84,9 +84,9 @@ trait HadoopSparkContextMethods {
   def hadoopMultibandGeoTiffRDD(path: String, tiffExtensions: Seq[String]): RDD[(ProjectedExtent, MultibandTile)] =
     hadoopMultibandGeoTiffRDD(new Path(path), tiffExtensions)
 
-  def hadoopMultibandGeoTiffRDD(path: Path, tiffExtensions: Seq[String] = defaultTiffExtensions, crs: String = ""): RDD[(ProjectedExtent, MultibandTile)] = {
+  def hadoopMultibandGeoTiffRDD(path: Path, tiffExtensions: Seq[String] = HadoopGeoTiffRDD.Options.DEFAULT.tiffExtensions, crs: Option[CRS] = None): RDD[(ProjectedExtent, MultibandTile)] = {
     val conf = sc.hadoopConfiguration.withInputDirectory(path, tiffExtensions)
-    TemporalGeoTiffInputFormat.setCrs(conf, crs)
+    crs.foreach(GeoTiffInputFormat.setCrs(conf, _))
     sc.newAPIHadoopRDD(
       conf,
       classOf[MultibandGeoTiffInputFormat],
@@ -96,7 +96,7 @@ trait HadoopSparkContextMethods {
   }
 
   def hadoopTemporalMultibandGeoTiffRDD(path: String): RDD[(TemporalProjectedExtent, MultibandTile)] =
-    hadoopTemporalMultibandGeoTiffRDD(new Path(path), defaultTiffExtensions)
+    hadoopTemporalMultibandGeoTiffRDD(new Path(path), HadoopGeoTiffRDD.Options.DEFAULT.tiffExtensions)
 
   def hadoopTemporalMultibandGeoTiffRDD(path: String, tiffExtension: String): RDD[(TemporalProjectedExtent, MultibandTile)] =
     hadoopTemporalMultibandGeoTiffRDD(new Path(path), Seq(tiffExtension))
@@ -106,15 +106,15 @@ trait HadoopSparkContextMethods {
 
   def hadoopTemporalMultibandGeoTiffRDD(
     path: Path,
-    tiffExtensions: Seq[String] = defaultTiffExtensions,
+    tiffExtensions: Seq[String] = HadoopGeoTiffRDD.Options.DEFAULT.tiffExtensions,
     timeTag: String = TemporalGeoTiffInputFormat.GEOTIFF_TIME_TAG_DEFAULT,
     timeFormat: String = TemporalGeoTiffInputFormat.GEOTIFF_TIME_FORMAT_DEFAULT,
-    crs: String = ""
+    crs: Option[CRS] = None
   ): RDD[(TemporalProjectedExtent, MultibandTile)] = {
     val conf = sc.hadoopConfiguration.withInputDirectory(path, tiffExtensions)
     TemporalGeoTiffInputFormat.setTimeTag(conf, timeTag)
     TemporalGeoTiffInputFormat.setTimeFormat(conf, timeFormat)
-    TemporalGeoTiffInputFormat.setCrs(conf, crs)
+    crs.foreach(GeoTiffInputFormat.setCrs(conf, _))
     sc.newAPIHadoopRDD(
       conf,
       classOf[TemporalMultibandGeoTiffInputFormat],
