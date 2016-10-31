@@ -32,6 +32,7 @@ class VoronoiSpec extends FunSpec with Matchers {
     tile.renderPng(cm).write("voronoi.png")
   }
 
+/*
   describe("Voronoi diagram") {
     it("should have valid polygons entirely covered by the extent") {
       val extent = Extent(-2.25, -3, 1, 3)
@@ -47,4 +48,5 @@ class VoronoiSpec extends FunSpec with Matchers {
       //rasterizeVoronoi(voronoi)
     }
   }
+*/
 }
