@@ -1,31 +1,20 @@
-# JVM Primitives
-------
+# Spark #
 
-
-# Mutable Data
-------
-
-
-# Spark
-------
-
-
-# Macros
------
+# Macros #
 
 > NOTE: Because scala macros require a separate stage of compilation, they've
 > been broken out into their own package in GeoTrellis. Otherwise, the
 > functionality to be found there fits most neatly into
 > `geotrellis.raster`.
 
-## Why macros?
+## Why macros? ##
 
 Macros are complex and harder to read than most code. As such, it is
 reasonable to demand justification when they are employed and to be
 suspicious of their necessity. Here are some reasons you'll find macros
 in GeoTrellis:
 
-#### Boxing and Unboxing
+### Boxing and Unboxing ###
 
 The main purpose for all of the macros employed throughout GeoTrellis
 (though mostly in `geotrellis.raster`) is to avoid the JVM's so-called
@@ -36,7 +25,7 @@ with) inside objects that are far heavier (a JVM double is 8 bytes while
 the boxed variant requires 24 bytes!) and which require processing time
 to unwrap.  
 
-#### Readability and consistency of performant code
+### Readability and consistency of performant code ###
 
 Above, it was pointed out that macros are harder to read. This is true,
 but there are some special circumstances in which their use can improve
@@ -48,9 +37,9 @@ by exploding the shere amount of text which must be read to make sense
 of a given portion of code.  
 
 
-## Macros
+## How Macros Are Used ##
 
-#### NoData checks
+### NoData checks ###
 
 Throughout `geotrellis.raster`, there are lots of checks about whether
 or not a given value is data or whether its value represents `NoData`.  
@@ -69,7 +58,7 @@ the GeoTrellis-internal notion of `NoData`. `Int.MinValue` and
 `isNoData` check against.  
 
 
-#### Type conversion
+### Type conversion ###
 
 Similar to the `NoData` checks mentioned above, type conversion macros
 inline functionality which converts `NoData` values for different
@@ -93,21 +82,20 @@ val someValue: Int = ???
 val asFloat = i2f(someValue)
 ```
 
-#### Tile Macros
+### Tile Macros ###
 
 Unlike the above macros, tile macros don't appreciably improve
 readability. They've been introduced merely to overcome shortcomings in
 certain boxing-behaviors in the scala compiler and understanding their
 behavior isn't necessary to read/understand the GeoTrellis codebase.
 
-# Micro-Optimizations
-------
+# Micro-Optimizations #
 
 ## Loops ##
 
-A commonly-seen feature throughout the codebase is the use of `cfor`- or `while`-loops where it would seem that an ordinary `for`-loop would be sufficient.
-We avoid using "`for`-loops" in most cases because they are more than just loops in Scala.
-Scala's `for` construct is much more flexible and powerful than in more quotidian languages like Java, but that power can come at a cost.
+In Scala ["`for`-loops" are more than just loops](http://docs.scala-lang.org/tutorials/FAQ/yield.html).
+A commonly-seen feature throughout the codebase is the use of `cfor`- or `while`-loops where it would seem that an ordinary "`for`-loop" would be sufficient;
+we avoid using them in most cases because the flexibility of Scala's `for` construct can come at a cost.
 
 For example, the following simple `for`-loop
 
@@ -115,7 +103,7 @@ For example, the following simple `for`-loop
 for(i <- 0 to 100; j <- 0 to 100) { println(i+j) }
 ```
 
-does not just just put the value 0 into a couple of variables, execute some code, increment the variables and as appropriate, and either branch or fall-through as appropriate.
+does not just just put the value 0 into a couple of variables, execute the loop body, increment the variables and as appropriate, and either branch or fall-through as appropriate.
 Instead, the Scala compiler generates objects representing the ranges of the outer- and inner-loops, as well as closures representing the interior of each loop.
 That results in something like this:
 
@@ -126,19 +114,22 @@ That results in something like this:
 which can lead to unnecessary allocation and garbage collection.
 In the case of more complicated `for`-loops, the translation rules can even result in boxing of primitive loop variables.
 
-## Decorators ##
+The `cfor` construct from the Spire library avoids this problem because it is translated into the `while` construct,
+which does not incur the same potential performance penalties as the `for` construct.
+
+## Specialization ##
 
 Another strategy that we imply to avoid unnecessary boxing is use of the `@specialized` decorator.
 
 An example is the `Histogram[T]` type, which is used to compute either integer- or double-valued histograms.
-The declaration of that type look something like this:
+The declaration of that type looks something like this:
 
 ```scala
 abstract trait Histogram[@specialized (Int, Double) T <: AnyVal] { ... }
 ```
 
-Where the `@specialized` decorator and its two arguments tell the compiler that it should generate three versions of this trait instead of just one:
+The `@specialized` decorator and its two arguments tell the compiler that it should generate three versions of this trait instead of just one:
 `Histogram[Int]`, `Histogram[Double]` and the customary generic version `Histogram[T]`.
-Although this multiplies the amount of code associated with this type by roughly a factor of three,
+Although this multiplies the amount of bytecode associated with this type by roughly a factor of three,
 it provides the great advantage of preventing boxing of (most) arguments and variables of type `T`.
 In addition, specialization also opens up additional opportunities for optimization in circumstances where the compiler knows that it is dealing with a particular primitive type instead of a object.
