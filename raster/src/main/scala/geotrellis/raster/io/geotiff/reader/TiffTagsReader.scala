@@ -73,10 +73,10 @@ object TiffTagsReader {
             )
           case _: Long =>
             TiffTagMetadata(
-              byteReader.getUnsignedShort, // Tag
-              byteReader.getUnsignedShort, // Type
-              byteReader.getLong,           // Count
-              byteReader.getLong            // Offset
+              byteReader.getUnsignedShort,
+              byteReader.getUnsignedShort,
+              byteReader.getLong,
+              byteReader.getLong
             )
         }
 
@@ -467,10 +467,10 @@ object TiffTagsReader {
           BasicTags._rowsPerStrip set(ints(0))
         case StripOffsetsTag => tiffTags &|->
           TiffTags._basicTags ^|->
-          BasicTags._stripOffsets set(Some(ints/*.map(_.toInt)*/))
+          BasicTags._stripOffsets set(Some(ints))
         case StripByteCountsTag => tiffTags &|->
           TiffTags._basicTags ^|->
-          BasicTags._stripByteCounts set(Some(ints/*.map(_.toInt)*/))
+          BasicTags._stripByteCounts set(Some(ints))
         case FreeOffsetsTag => tiffTags &|->
           TiffTags._nonBasicTags ^|->
           NonBasicTags._freeOffsets set(Some(ints))
@@ -479,10 +479,10 @@ object TiffTagsReader {
           NonBasicTags._freeByteCounts set(Some(ints))
         case TileOffsetsTag => tiffTags &|->
           TiffTags._tileTags ^|->
-          TileTags._tileOffsets set(Some(ints/*.map(_.toInt)*/))
+          TileTags._tileOffsets set(Some(ints))
         case TileByteCountsTag => tiffTags &|->
           TiffTags._tileTags ^|->
-          TileTags._tileByteCounts set(Some(ints/*.map(_.toInt)*/))
+          TileTags._tileByteCounts set(Some(ints))
         case JpegQTablesTag => tiffTags &|->
           TiffTags._jpegTags ^|->
           JpegTags._jpegQTables set(Some(ints))

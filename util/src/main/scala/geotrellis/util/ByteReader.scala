@@ -9,7 +9,6 @@ import scala.language.implicitConversions
  */
 trait ByteReader {
   def position: Long
-  //def position(i: Int): Buffer
   def position(i: Long): Buffer
 
   def get: Byte
@@ -31,7 +30,6 @@ object ByteReader {
   implicit def byteBuffer2ByteReader(byteBuffer: ByteBuffer): ByteReader = {
     new ByteReader() {
       def position: Long = byteBuffer.position.toLong
-      //def position(i: Int): Buffer = byteBuffer.position(i)
       def position(i: Long): Buffer = byteBuffer.position(i.toInt)
 
       def get = byteBuffer.get
