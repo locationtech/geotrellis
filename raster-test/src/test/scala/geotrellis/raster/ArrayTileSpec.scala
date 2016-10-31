@@ -83,5 +83,90 @@ class ArrayTileSpec extends FunSpec
     it("should convert to a DoubleCellType") { checkDouble(DoubleCellType, Array(0, 1, -1, Double.NaN)) }
     it("should convert to a DoubleConstantNoDataCellType") { checkDouble(DoubleConstantNoDataCellType, Array(0, 1, -1, Double.NaN)) }
     it("should convert to a DoubleUserDefinedNoDataCellType") { checkDouble(DoubleUserDefinedNoDataCellType(1), Array(0, Double.NaN, -1, Double.NaN)) }
+
+
+    /*
+    The critical aspect of Tile.interpretAs is that as long as type conversion does not truncate value
+    the interpretations of NoData value will not alter the underlying cell values as happens with Tile.convert
+     */
+
+    def checkFloatInterpretAs(tile: Tile, udCt: Double => CellType, constCt: CellType) = {
+      for {
+        r <- 0 until tile.rows
+        c <- 0 until tile.cols
+      } {
+        val v = tile.get(c, r)
+        val udTile = tile.interpretAs(udCt(v))
+        val constTile = udTile.interpretAs(constCt)
+        val res = constTile.withNoData(None)
+        withClue(s"ND=$v") { assert(res equals tile) }
+        val cell = udTile.getDouble(c,r)
+        withClue(s"udTile($c, $r), ND=$v") { assert(isNoData(cell)) }
+      }
+    }
+
+    def checkIntInterpretAs(tile: Tile, udCt: Int => CellType, constCt: CellType) = {
+      for {
+        r <- 0 until tile.rows
+        c <- 0 until tile.cols
+      } {
+        val v = tile.get(c, r)
+        val udTile = tile.interpretAs(udCt(v))
+        val constTile = udTile.interpretAs(constCt)
+        val res = constTile.withNoData(None)
+        withClue(s"ND=$v") { assert(res equals tile) }
+        val cell = udTile.get(c,r)
+        withClue(s"udTile($c, $r), ND=$v") { assert(isNoData(cell)) }
+      }
+    }
+
+    it("should interpretAs for DoubleCells") {
+      checkFloatInterpretAs(
+        sourceTile,
+        DoubleUserDefinedNoDataCellType,
+        DoubleConstantNoDataCellType)
+    }
+
+    it("should interpretAs for FloatCells") {
+      checkFloatInterpretAs(
+        sourceTile.convert(FloatCellType),
+        x => FloatUserDefinedNoDataCellType(x.toFloat),
+        FloatConstantNoDataCellType)
+    }
+
+    it("should interpretAs for IntCells") {
+      checkIntInterpretAs(
+        sourceTile.convert(IntCellType),
+        IntUserDefinedNoDataCellType,
+        IntConstantNoDataCellType)
+    }
+
+    it("should interpretAs for ShortCells") {
+      checkIntInterpretAs(
+        sourceTile.convert(ShortCellType),
+        x => ShortUserDefinedNoDataCellType(x.toShort),
+        ShortConstantNoDataCellType)
+    }
+
+    it("should interpretAs for UShortCells") {
+      checkIntInterpretAs(
+        sourceTile.convert(UShortCellType),
+        x => UShortUserDefinedNoDataCellType(x.toShort),
+        UShortConstantNoDataCellType)
+    }
+
+    it("should interpretAs for ByteCells") {
+      checkIntInterpretAs(
+        sourceTile.convert(ByteCellType),
+        x => ByteUserDefinedNoDataCellType(x.toByte),
+        ByteConstantNoDataCellType)
+    }
+
+    it("should interpretAs for UByteCells") {
+      checkIntInterpretAs(
+        sourceTile.convert(UByteCellType),
+        x => UByteUserDefinedNoDataCellType(x.toByte),
+        UByteConstantNoDataCellType)
+    }
   }
 }

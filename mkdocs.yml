@@ -1,0 +1,20 @@
+site_name: GeoTrellis
+site_author: GeoTrellis contributers
+repo_url: https://github.com/rossbernet/geotrellis
+copyright: Copyright (c) 2012-2016, Azavea
+docs_dir: docs
+theme: readthedocs
+
+pages:
+- Home: index.md
+- Changelog: []
+- Tutorials:
+  - Setup: setup.md
+  - Quick Start: quickstart.md
+- User Guide: []
+- Architecture:
+  - ADR docs: []
+
+markdown_extensions:
+- toc:
+    permalink: true

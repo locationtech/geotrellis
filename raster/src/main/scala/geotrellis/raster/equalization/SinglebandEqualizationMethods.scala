@@ -11,7 +11,7 @@ trait SinglebandEqualizationMethods extends MethodExtensions[Tile] {
     * Given a [[StreamingHistogram]] derived from this [[Tile]],
     * equalize the histogram of this tile.
     *
-    * @params  histogram  The histogram of this tile
+    * @param  histogram  The histogram of this tile
     */
   def equalize(histogram: StreamingHistogram): Tile = HistogramEqualization(self, histogram)
 

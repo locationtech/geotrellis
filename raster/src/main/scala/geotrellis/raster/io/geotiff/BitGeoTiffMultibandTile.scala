@@ -31,5 +31,17 @@ class BitGeoTiffMultibandTile(
       def getBytes(): Array[Byte] =
         arr
     }
+
+  def withNoData(noDataValue: Option[Double]) =
+    new BitGeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType.withNoData(noDataValue))
+
+  def interpretAs(newCellType: CellType)  = {
+    newCellType match {
+      case dt: BitCells with NoDataHandling =>
+        new BitGeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, dt)
+      case _ =>
+        withNoData(None).convert(newCellType)
+    }
+  }
 }
 
