@@ -16,7 +16,7 @@
 
 package geotrellis.raster
 
-import geotrellis.raster.render.{ BreakMap, I2IBreakMap, I2DBreakMap, D2DBreakMap, D2IBreakMap }
+import geotrellis.raster.render.{ BreakMap }
 
 import spire.syntax.cfor._
 import com.typesafe.scalalogging._

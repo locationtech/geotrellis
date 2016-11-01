@@ -12,7 +12,37 @@ import scala.specialized
 
 // --- //
 
-// TODO Experiment with this being a `trait` (for performance)
+/** A strategy for mapping values via a [[BreakMap]].
+  *
+  * '''Note:''' Specialized for `Int` and `Double`.
+  */
+class MapStrategy[@specialized(Int, Double) A, @specialized(Int, Double) B](
+  val boundary: ClassBoundaryType,
+  val noDataValue: B,
+  val fallbackValue: B,
+  val strict: Boolean,
+  val noDataCheck: A => Boolean
+)
+
+/** Helper methods for constructing a [[MapStrategy]]. */
+object MapStrategy {
+  def i2i: MapStrategy[Int, Int] = new MapStrategy(
+    LessThanOrEqualTo, 0x00000000, 0x00000000, false, { i => isNoData(i) }
+  )
+
+  def i2d: MapStrategy[Int, Double] = new MapStrategy(
+    LessThanOrEqualTo, Double.NaN, Double.NaN, false, { i => isNoData(i) }
+  )
+
+  def d2d: MapStrategy[Double, Double] = new MapStrategy(
+    LessThanOrEqualTo, Double.NaN, Double.NaN, false, { d => isNoData(d) }
+  )
+
+  def d2i: MapStrategy[Double, Int] = new MapStrategy(
+    LessThanOrEqualTo, 0x00000000, 0x00000000, false, { d => isNoData(d) }
+  )
+}
+
 /** A `Map` which provides specific Binary Search-based ''map'' behaviour
   * with breaks and a break strategy.
   *
@@ -26,19 +56,10 @@ import scala.specialized
   *
   * '''Note:''' `A` and `B` are specialized on `Int` and `Double`.
   */
-abstract class BreakMap[
+class BreakMap[
   @specialized(Int, Double) A: Order,
   @specialized(Int, Double) B: Order
-](
-  breakMap: Map[A, B],
-  boundary: ClassBoundaryType,
-  noDataValue: B,
-  fallbackValue: B,
-  strict: Boolean
-) {
-
-  /** A local `isNoData`, to get around macro issues. */
-  def noDataCheck(a: A): Boolean
+](breakMap: Map[A, B], strategy: MapStrategy[A, B]) {
 
   /* A Binary Tree of the mappable values */
   private lazy val vmTree: BTree[(A, B)] = {
@@ -51,7 +72,7 @@ abstract class BreakMap[
 
   /* Yield a btree search predicate function based on boundary type options. */
   private val branchPred: (A, BTree[(A, B)]) => Either[Option[BTree[(A, B)]], (A, B)] = {
-    boundary match {
+    strategy.boundary match {
       case LessThan => { (z, tree) => tree match {
         case BTree(v, None, _)    if z < v._1                       => Right(v)
         case BTree(v, Some(l), _) if z < v._1 && z >= l.greatest._1 => Right(v)
@@ -85,50 +106,25 @@ abstract class BreakMap[
   }
 
   def map(z: A): B = {
-    if (noDataCheck(z)) {
-      noDataValue
+    if (strategy.noDataCheck(z)) {
+      strategy.noDataValue
     } else {
       vmTree.searchWith(z, branchPred) match {
         case Some((_, v)) => v
-        case None if strict => sys.error(s"Value ${z} did not have an associated value.")
-        case _ => fallbackValue
+        case None if strategy.strict => sys.error(s"Value ${z} did not have an associated value.")
+        case _ => strategy.fallbackValue
       }
     }
   }
 }
 
-// TODO Clean up inheritance mechanism.
-class I2IBreakMap(breakMap: Map[Int, Int]) extends BreakMap[Int, Int](
-  breakMap, LessThanOrEqualTo, 0x00000000, 0x00000000, false
-) {
-  def noDataCheck(a: Int): Boolean = isNoData(a)
-}
-
-class I2DBreakMap(breakMap: Map[Int, Double]) extends BreakMap[Int, Double](
-  breakMap, LessThanOrEqualTo, Double.NaN, Double.NaN, false
-) {
-  def noDataCheck(a: Int): Boolean = isNoData(a)
-}
-
-class D2DBreakMap(breakMap: Map[Double, Double]) extends BreakMap[Double, Double](
-  breakMap, LessThanOrEqualTo, Double.NaN, Double.NaN, false
-) {
-  def noDataCheck(a: Double): Boolean = isNoData(a)
-}
-
-class D2IBreakMap(breakMap: Map[Double, Int]) extends BreakMap[Double, Int](
-  breakMap, LessThanOrEqualTo, 0x00000000, 0x00000000, false
-) {
-  def noDataCheck(a: Double): Boolean = isNoData(a)
-}
-
 /** Helper methods for constructing BreakMaps. */
 object BreakMap {
-  def i2i(m: Map[Int, Int]): BreakMap[Int, Int] = new I2IBreakMap(m)
+  def i2i(m: Map[Int, Int]): BreakMap[Int, Int] = new BreakMap(m, MapStrategy.i2i)
 
-  def i2d(m: Map[Int, Double]): BreakMap[Int, Double] = new I2DBreakMap(m)
+  def i2d(m: Map[Int, Double]): BreakMap[Int, Double] = new BreakMap(m, MapStrategy.i2d)
 
-  def d2d(m: Map[Double, Double]): BreakMap[Double, Double] = new D2DBreakMap(m)
+  def d2d(m: Map[Double, Double]): BreakMap[Double, Double] = new BreakMap(m, MapStrategy.d2d)
 
-  def d2i(m: Map[Double, Int]): BreakMap[Double, Int] = new D2IBreakMap(m)
+  def d2i(m: Map[Double, Int]): BreakMap[Double, Int] = new BreakMap(m, MapStrategy.d2i)
 }
