@@ -26,11 +26,12 @@ import scala.reflect.runtime.universe._
 object Etl {
   val defaultModules = Array(s3.S3Module, hadoop.HadoopModule, file.FileModule, accumulo.AccumuloModule, cassandra.CassandraModule, hbase.HBaseModule)
 
-  type PostSaveHook[K, V, M] = (AttributeStore, Writer[LayerId, RDD[(K, V)] with Metadata[M]], LayerId, RDD[(K, V)] with Metadata[M]) => Unit
+  type SaveAction[K, V, M] = (AttributeStore, Writer[LayerId, RDD[(K, V)] with Metadata[M]], LayerId, RDD[(K, V)] with Metadata[M]) => Unit
 
-  object PostSaveHook {
-    def EMPTY[K, V, M] = {
-      (_: AttributeStore, _: Writer[LayerId, RDD[(K, V)] with Metadata[M]], _: LayerId, _: RDD[(K, V)] with Metadata[M]) => ()
+  object SaveAction {
+    def DEFAULT[K, V, M] = {
+      (_: AttributeStore, writer: Writer[LayerId, RDD[(K, V)] with Metadata[M]], layerId: LayerId, rdd: RDD[(K, V)] with Metadata[M]) =>
+        writer.write(layerId, rdd)
     }
   }
 
@@ -58,7 +59,7 @@ object Etl {
 }
 
 case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.defaultModules) extends LazyLogging {
-  import Etl.PostSaveHook
+  import Etl.SaveAction
 
   val input  = conf.input
   val output = conf.output
@@ -180,7 +181,7 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
-    postSave: PostSaveHook[K, V, TileLayerMetadata[K]] = PostSaveHook.EMPTY[K, V, TileLayerMetadata[K]]
+    saveAction: SaveAction[K, V, TileLayerMetadata[K]] = SaveAction.DEFAULT[K, V, TileLayerMetadata[K]]
   ): Unit = {
     implicit def classTagK = ClassTag(typeTag[K].mirror.runtimeClass(typeTag[K].tpe)).asInstanceOf[ClassTag[K]]
     implicit def classTagV = ClassTag(typeTag[V].mirror.runtimeClass(typeTag[V].tpe)).asInstanceOf[ClassTag[V]]
@@ -193,7 +194,7 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
 
     def savePyramid(zoom: Int, rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): Unit = {
       val currentId = id.copy(zoom = zoom)
-      outputPlugin(currentId, rdd, conf, postSave)
+      outputPlugin(currentId, rdd, conf, saveAction)
 
       scheme match {
         case Left(s) =>

@@ -8,7 +8,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 trait OutputPlugin[K, V, M] extends Plugin {
-  import Etl.PostSaveHook
+  import Etl.SaveAction
 
   def name: String
 
@@ -20,12 +20,10 @@ trait OutputPlugin[K, V, M] extends Plugin {
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
     conf: EtlConf,
-    postSave: PostSaveHook[K, V, M] = PostSaveHook.EMPTY[K, V, M]
+    saveAction: SaveAction[K, V, M] = SaveAction.DEFAULT[K, V, M]
   ): Unit = {
     implicit val sc = rdd.sparkContext
-    val w = writer(conf)
-    w.write(id, rdd)
-    postSave(attributes(conf), w, id, rdd)
+    saveAction(attributes(conf), writer(conf), id, rdd)
   }
 
   def suitableFor(name: String): Boolean =

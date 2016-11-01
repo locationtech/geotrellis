@@ -20,7 +20,7 @@ import org.apache.spark.rdd.RDD
 import scala.reflect._
 
 class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetadata[SpatialKey]] {
-  import Etl.PostSaveHook
+  import Etl.SaveAction
 
   def name = "render"
   def key = classTag[SpatialKey]
@@ -50,7 +50,7 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetada
     id: LayerId,
     rdd: TileLayerRDD[SpatialKey],
     conf: EtlConf,
-    postSave: PostSaveHook[SpatialKey, Tile, TileLayerMetadata[SpatialKey]] = PostSaveHook.EMPTY[SpatialKey, Tile, TileLayerMetadata[SpatialKey]]
+    saveAction: SaveAction[SpatialKey, Tile, TileLayerMetadata[SpatialKey]] = SaveAction.DEFAULT[SpatialKey, Tile, TileLayerMetadata[SpatialKey]]
   ): Unit = {
     val useS3 = getPath(conf.output.backend).path.take(5) == "s3://"
     val images =
