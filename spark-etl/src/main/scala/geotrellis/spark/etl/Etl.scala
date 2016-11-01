@@ -8,6 +8,7 @@ import geotrellis.raster.reproject._
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.stitch.Stitcher
 import geotrellis.spark._
+import geotrellis.spark.io._
 import geotrellis.spark.tiling._
 import geotrellis.spark.pyramid._
 import geotrellis.spark.tiling._
@@ -24,6 +25,14 @@ import scala.reflect.runtime.universe._
 
 object Etl {
   val defaultModules = Array(s3.S3Module, hadoop.HadoopModule, file.FileModule, accumulo.AccumuloModule, cassandra.CassandraModule, hbase.HBaseModule)
+
+  type PostSaveHook[K, V, M] = (AttributeStore, Writer[LayerId, RDD[(K, V)] with Metadata[M]], LayerId, RDD[(K, V)] with Metadata[M]) => Unit
+
+  object PostSaveHook {
+    def EMPTY[K, V, M] = {
+      (_: AttributeStore, _: Writer[LayerId, RDD[(K, V)] with Metadata[M]], _: LayerId, _: RDD[(K, V)] with Metadata[M]) => ()
+    }
+  }
 
   def ingest[
     I: Component[?, ProjectedExtent]: TypeTag: ? => TilerKeyMethods[I, K],
@@ -49,6 +58,8 @@ object Etl {
 }
 
 case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.defaultModules) extends LazyLogging {
+  import Etl.PostSaveHook
+
   val input  = conf.input
   val output = conf.output
 
@@ -156,15 +167,21 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
     * Saves provided RDD to an output module specified by the ETL arguments.
     * This step may perform two to one pyramiding until zoom level 1 is reached.
     *
-    * @param id     Layout ID to b
-    * @param rdd Tiled raster RDD with TileLayerMetadata
+    * @param id        Layout ID to b
+    * @param rdd       Tiled raster RDD with TileLayerMetadata
+    * @param postSave  Function to allow saving additional attributes or layers per layer saved.
+    *
     * @tparam K  Key type with SpatialComponent corresponding LayoutDefinition
     * @tparam V  Tile raster with cells from single tile in LayoutDefinition
     */
   def save[
     K: SpatialComponent: TypeTag,
     V <: CellGrid: TypeTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): Unit = {
+  ](
+    id: LayerId,
+    rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
+    postSave: PostSaveHook[K, V, TileLayerMetadata[K]] = PostSaveHook.EMPTY[K, V, TileLayerMetadata[K]]
+  ): Unit = {
     implicit def classTagK = ClassTag(typeTag[K].mirror.runtimeClass(typeTag[K].tpe)).asInstanceOf[ClassTag[K]]
     implicit def classTagV = ClassTag(typeTag[V].mirror.runtimeClass(typeTag[V].tpe)).asInstanceOf[ClassTag[V]]
 
@@ -176,7 +193,7 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
 
     def savePyramid(zoom: Int, rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): Unit = {
       val currentId = id.copy(zoom = zoom)
-      outputPlugin(currentId, rdd, conf)
+      outputPlugin(currentId, rdd, conf, postSave)
 
       scheme match {
         case Left(s) =>
