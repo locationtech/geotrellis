@@ -12,6 +12,14 @@ import scala.specialized
 
 // --- //
 
+/** Root element in hierarchy for specifying the type of boundary when classifying colors*/
+sealed trait ClassBoundaryType
+case object GreaterThan extends ClassBoundaryType
+case object GreaterThanOrEqualTo extends ClassBoundaryType
+case object LessThan extends ClassBoundaryType
+case object LessThanOrEqualTo extends ClassBoundaryType
+case object Exact extends ClassBoundaryType
+
 /** A strategy for mapping values via a [[BreakMap]].
   *
   * '''Note:''' Specialized for `Int` and `Double`.
