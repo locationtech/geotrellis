@@ -17,8 +17,8 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.spark.io.hadoop.formats._
+
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs._
 import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat

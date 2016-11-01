@@ -1,7 +1,7 @@
 package geotrellis.spark.io.s3.util
 
-import geotrellis.util.BytesStreamer
 import geotrellis.spark.io.s3._
+import geotrellis.util.BytesStreamer
 
 import com.amazonaws.services.s3.model._
 
@@ -22,14 +22,11 @@ class S3BytesStreamer(
   val metadata: ObjectMetadata =
     client.getObjectMetadata(request.getBucketName, request.getKey)
 
-  def objectLength: Long = metadata.getContentLength
-  
-  def getArray(start: Long, length: Long): Array[Byte] = {
+  val objectLength: Long = metadata.getContentLength
+
+  def getArray(start: Long, length: Int): Array[Byte] = {
     val chunk: Long =
-      if (!passedLength(length + start))
-        length
-      else
-        objectLength - start
+      clipToSize(start, length)
 
     client.readRange(start, start + chunk, request)
   }
@@ -51,7 +48,7 @@ object S3BytesStreamer {
     new S3BytesStreamer(new GetObjectRequest(bucket, key), client, chunkSize)
 
   /**
-   * Returns a new isntance of S3BytesStreamer.
+   * Returns a new instance of S3BytesStreamer.
    *
    * @param request: A [[GetObjectRequest]] of the desired GeoTiff.
    * @param client: The [[S3Client]] that retrieves the data.

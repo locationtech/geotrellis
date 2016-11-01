@@ -18,14 +18,11 @@ class LocalBytesStreamer(path: String, val chunkSize: Int) extends BytesStreamer
 
   def objectLength: Long = f.length
 
-  def getArray(start: Long, length: Long): Array[Byte] = {
+  def getArray(start: Long, length: Int): Array[Byte] = {
     val inputStream: FileInputStream = new FileInputStream(f)
     val channel: FileChannel =  inputStream.getChannel
-    val chunk: Long =
-      if (!passedLength(length + start))
-        length
-      else
-        objectLength - start
+    val chunk: Int =
+      clipToSize(start, length)
 
     val buffer = channel.map(READ_ONLY, start, chunk)
 

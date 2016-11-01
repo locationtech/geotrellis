@@ -1,5 +1,6 @@
 package geotrellis.spark.etl.hadoop
 
+import geotrellis.proj4.CRS
 import geotrellis.raster.MultibandTile
 import geotrellis.spark.etl.config.EtlConf
 import geotrellis.vector.ProjectedExtent
@@ -11,5 +12,5 @@ import org.apache.spark.rdd.RDD
 class MultibandGeoTiffHadoopInput extends HadoopInput[ProjectedExtent, MultibandTile] {
   val format = "multiband-geotiff"
   def apply(conf: EtlConf)(implicit sc: SparkContext): RDD[(ProjectedExtent, MultibandTile)] =
-    sc.hadoopMultibandGeoTiffRDD(getPath(conf.input.backend).path, sc.defaultTiffExtensions, conf.input.crs.getOrElse(""))
+    HadoopGeoTiffRDD.spatialMultiband(getPath(conf.input.backend).path, HadoopGeoTiffRDD.Options(crs = conf.input.getCrs))
 }
