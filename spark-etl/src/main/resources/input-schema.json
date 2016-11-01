@@ -17,6 +17,9 @@
     "noData": {
       "type": "integer"
     },
+    "maxTileSize": {
+      "type": "integer"
+    },
     "clip": {
       "type": "object",
       "properties": {
