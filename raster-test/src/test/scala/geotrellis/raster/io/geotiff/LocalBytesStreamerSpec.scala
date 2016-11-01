@@ -62,7 +62,7 @@ class LocalBytesStreamerSpec extends FunSpec
 
     it("should not read past the end of the file") {
       val start = local.objectLength - 100
-      val actual = local.getArray(start, start + 300)
+      val actual = local.getArray(start, start.toInt + 300)
       val arr = Array.ofDim[Byte](100)
       buffer.position(start.toInt)
 
