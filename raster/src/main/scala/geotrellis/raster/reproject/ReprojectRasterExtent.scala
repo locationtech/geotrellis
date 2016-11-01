@@ -32,7 +32,7 @@ object ReprojectRasterExtent {
     val threshold = math.min(xThreshold, yThreshold)
 
     // Densify the extent to get a more accurate reprojection
-    val denseGeom = Polygon(Densifier.densify(extent.toPolygon.jtsGeom, threshold).asInstanceOf[com.vividsolutions.jts.geom.Polygon])
+    val denseGeom = Polygon(Densifier.densify(extent.toPolygon().jtsGeom, threshold).asInstanceOf[com.vividsolutions.jts.geom.Polygon])
     denseGeom.reproject(transform).envelope
   }
 
@@ -99,7 +99,7 @@ object ReprojectRasterExtent {
    * of the input data in the output file.
    */
   def apply(re: RasterExtent, transform: Transform, options: Reproject.Options): RasterExtent =
-    apply(re: GridExtent, transform, options).toRasterExtent
+    apply(re: GridExtent, transform, options).toRasterExtent()
 
   def apply(re: RasterExtent, transform: Transform): RasterExtent =
     apply(re, transform, Options.DEFAULT)

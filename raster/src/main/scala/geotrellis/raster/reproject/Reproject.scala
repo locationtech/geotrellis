@@ -13,12 +13,14 @@ object Reproject {
     *                                  parent window, which reprojected extents will snap to. Use with caution.
     * @param      targetCellSize       An optional cell size that if set will be used for for the projected raster.
     *                                  Use with caution.
+    * @param      targetRasterExtent   Target RasterExtent of the reprojected raster
     */
   case class Options(
     method: ResampleMethod = NearestNeighbor,
     errorThreshold: Double = 0.125,
     parentGridExtent: Option[GridExtent] = None,
-    targetCellSize: Option[CellSize] = None
+    targetCellSize: Option[CellSize] = None,
+    targetRasterExtent: Option[RasterExtent] = None
   )
 
   object Options {
