@@ -211,7 +211,7 @@ class IntColorMap(breaksToColors: Map[Int, Int], val options: Options = Options.
   private val breakMap: BreakMap[Int, Int] =
     new BreakMap(breaksToColors, options.strategy, { i => isNoData(i) })
 
-  def map(z: Int): Int = breakMap.map(z)
+  def map(z: Int): Int = breakMap(z)
 
   def mapDouble(z: Double): Int = map(d2i(z))
 
@@ -363,7 +363,7 @@ class DoubleColorMap(breaksToColors: Map[Double, Int], val options: Options = Op
 
   def map(z: Int): Int = mapDouble(i2d(z))
 
-  def mapDouble(z: Double): Int = breakMap.map(z)
+  def mapDouble(z: Double): Int = breakMap(z)
 
   def mapColors(f: Int => Int): ColorMap =
     new DoubleColorMap(breaksToColors.map { case (key, color) => (key, f(color)) }, options)

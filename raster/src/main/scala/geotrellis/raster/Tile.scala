@@ -32,24 +32,6 @@ import scala.specialized
   */
 trait Tile extends CellGrid with IterableTile with MappableTile[Tile] with LazyLogging {
 
-  /** Map cell values according to buckets they fall into from a given
-    * [[ValueMap]].
-    *
-    * This is akin to `Tile.color(ColorMap)`, except generalized
-    * across more types.
-    */
-  /*
-  def mapWith[
-    @specialized(Int, Double) A,
-    @specialized(Int, Double) B
-  ](bm: BreakMap[A, B]): Tile = bm match {
-    case b: I2IBreakMap => map(z => b.map(z))
-    case b: D2DBreakMap => mapDouble(z => b.map(z))
-  }
-   */
-
-  def mapWith(bm: BreakMap[Int, Int]): Tile = map(z => bm.map(z))
-
   /**
     * Execute a function at each pixel of a [[Tile]].  Two functions
     * are given: an integer version which is used if the tile is an

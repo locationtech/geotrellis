@@ -54,7 +54,11 @@ object MapStrategy {
 class BreakMap[
   @specialized(Int, Double) A: Order,
   @specialized(Int, Double) B: Order
-](breakMap: Map[A, B], strategy: MapStrategy[B], noDataCheck: A => Boolean) {
+](
+  breakMap: Map[A, B],
+  strategy: MapStrategy[B],
+  noDataCheck: A => Boolean
+) extends (A => B) {
 
   /* A Binary Tree of the mappable values */
   private lazy val vmTree: BTree[(A, B)] = {
@@ -100,7 +104,7 @@ class BreakMap[
     }
   }
 
-  def map(z: A): B = {
+  def apply(z: A): B = {
     if (noDataCheck(z)) {
       strategy.noDataValue
     } else {
