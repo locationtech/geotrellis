@@ -1,15 +1,18 @@
 package geotrellis.vector.voronoi
 
+import geotrellis.util.Constants.{FLOAT_EPSILON => EPSILON}
+import geotrellis.vector.{Point, Polygon}
+
 import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, MultiPoint, Polygon => JTSPolygon}
 import com.vividsolutions.jts.triangulate.DelaunayTriangulationBuilder
 import com.vividsolutions.jts.triangulate.quadedge.{QuadEdge}
-import geotrellis.util.Constants.{FLOAT_EPSILON => EPSILON}
-import geotrellis.vector.{Point, Polygon}
-import scala.math.pow
 import org.apache.commons.math3.linear._
+
 import scala.annotation.tailrec
 import scala.collection.JavaConversions._
 import scala.collection.mutable.{Map, Set}
+import scala.math.pow
+import spire.syntax.cfor._
 
 object Predicates {
   def det3 (a11: Double, a12: Double, a13: Double,
@@ -107,6 +110,11 @@ object Predicates {
   }
 }
 
+/**
+ * A class for triangulating a set of points to satisfy the delaunay property.
+ * Each resulting triangle's circumscribing circle will contain no other points
+ * of the input set.
+ */
 case class Delaunay(verts: Array[Point]) {
 
   private[voronoi] val gf = new GeometryFactory
@@ -115,11 +123,12 @@ case class Delaunay(verts: Array[Point]) {
   builder.setSites(sites)
   private[voronoi] val subd = builder.getSubdivision
 
-  private val _triangles = {
+  val triangles: Seq[Polygon] = {
     val tris = subd.getTriangles(gf)
-    for ( i <- 0 until tris.getNumGeometries ) yield tris.getGeometryN(i)
-  }
-
-  val triangles = _triangles.map{ poly => Polygon.jtsToPolygon(poly.asInstanceOf[JTSPolygon]) }
+    val len = tris.getNumGeometries
+    val arr = Array.ofDim[Polygon](len)
+    cfor(0)(_ < len, _ + 1) { i => arr(i) = Polygon(tris.getGeometryN(i).asInstanceOf[JTSPolygon]) }
+    arr
+}
 
 }
