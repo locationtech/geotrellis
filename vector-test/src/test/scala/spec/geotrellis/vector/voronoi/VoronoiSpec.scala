@@ -37,11 +37,15 @@ class VoronoiSpec extends FunSpec with Matchers {
       val pts = Array(Point(0,-2), Point(0,0), Point(0,1), Point(-0.5,2), Point(0.5,2))
       val voronoi = pts.voronoiDiagram()
 
-      def validCoveredPolygon(poly: Polygon) = {
-        poly.isValid
+      def validCoveredPolygon(polypt: (Polygon, Point)) = {
+        val (poly, pt) = polypt
+        val verts = poly.vertices
+        verts.forall{ 
+          v => pts.map(_ distance v).min >= v.distance(pt )
+        }
       }
 
-      voronoi.voronoiCells.forall (validCoveredPolygon(_)) should be (true)
+      voronoi.voronoiCellsWithPoints.forall (validCoveredPolygon(_)) should be (true)
       //rasterizeVoronoi(voronoi)
     }
   }
