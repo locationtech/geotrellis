@@ -24,10 +24,14 @@ object MultibandIngest {
     cacheLevel: StorageLevel = StorageLevel.NONE,
     resampleMethod: ResampleMethod = NearestNeighbor,
     partitioner: Option[Partitioner] = None,
-    bufferSize: Option[Int] = None)
-    (sink: (MultibandTileLayerRDD[K], Int) => Unit): Unit =
-  {
-    val (_, tileLayerMetadata) = sourceTiles.collectMetadata(layoutScheme)
+    bufferSize: Option[Int] = None,
+    maxZoom: Option[Int] = None,
+    tileSize: Option[Int] = Some(256))
+    (sink: (MultibandTileLayerRDD[K], Int) => Unit): Unit = {
+    val (_, tileLayerMetadata) = (maxZoom, tileSize) match {
+      case (Some(zoom), Some(tileSize)) => sourceTiles.collectMetadata(destCRS, tileSize, zoom)
+      case _                            => sourceTiles.collectMetadata(FloatingLayoutScheme(512))
+    }
     val tiledRdd = sourceTiles.tileToLayout(tileLayerMetadata, resampleMethod).cache()
     val contextRdd = new ContextRDD(tiledRdd, tileLayerMetadata)
     val (zoom, tileLayerRdd) = bufferSize.fold(contextRdd.reproject(destCRS, layoutScheme))(contextRdd.reproject(destCRS, layoutScheme, _))
@@ -39,15 +43,13 @@ object MultibandIngest {
         sink(rdd, zoom)
         val pyramidLevel @ (nextZoom, nextRdd) = Pyramid.up(rdd, layoutScheme, zoom, partitioner)
         pyramidLevel :: buildPyramid(nextZoom, nextRdd)
-      } else
+      } else {
+        sink(rdd, zoom)
         List((zoom, rdd))
+      }
     }
 
-    if (pyramid)
-      buildPyramid(zoom, tileLayerRdd)
-        .foreach { case (z, rdd) => rdd.unpersist(true) }
-    else
-      sink(tileLayerRdd, zoom)
-
+    if (pyramid) buildPyramid(zoom, tileLayerRdd).foreach { case (z, rdd) => rdd.unpersist(true) }
+    else sink(tileLayerRdd, zoom)
   }
 }
