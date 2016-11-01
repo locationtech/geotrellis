@@ -24,31 +24,18 @@ case object Exact extends ClassBoundaryType
   *
   * '''Note:''' Specialized for `Int` and `Double`.
   */
-class MapStrategy[@specialized(Int, Double) A, @specialized(Int, Double) B](
+class MapStrategy[@specialized(Int, Double) A](
   val boundary: ClassBoundaryType,
-  val noDataValue: B,
-  val fallbackValue: B,
-  val strict: Boolean,
-  val noDataCheck: A => Boolean
+  val noDataValue: A,
+  val fallbackValue: A,
+  val strict: Boolean
 )
 
 /** Helper methods for constructing a [[MapStrategy]]. */
 object MapStrategy {
-  def i2i: MapStrategy[Int, Int] = new MapStrategy(
-    LessThanOrEqualTo, 0x00000000, 0x00000000, false, { i => isNoData(i) }
-  )
+  def int: MapStrategy[Int] = new MapStrategy(LessThanOrEqualTo, 0x00000000, 0x00000000, false)
 
-  def i2d: MapStrategy[Int, Double] = new MapStrategy(
-    LessThanOrEqualTo, Double.NaN, Double.NaN, false, { i => isNoData(i) }
-  )
-
-  def d2d: MapStrategy[Double, Double] = new MapStrategy(
-    LessThanOrEqualTo, Double.NaN, Double.NaN, false, { d => isNoData(d) }
-  )
-
-  def d2i: MapStrategy[Double, Int] = new MapStrategy(
-    LessThanOrEqualTo, 0x00000000, 0x00000000, false, { d => isNoData(d) }
-  )
+  def double: MapStrategy[Double] = new MapStrategy(LessThanOrEqualTo, Double.NaN, Double.NaN, false)
 }
 
 /** A `Map` which provides specific Binary Search-based ''map'' behaviour
@@ -67,7 +54,7 @@ object MapStrategy {
 class BreakMap[
   @specialized(Int, Double) A: Order,
   @specialized(Int, Double) B: Order
-](breakMap: Map[A, B], strategy: MapStrategy[A, B]) {
+](breakMap: Map[A, B], strategy: MapStrategy[B], noDataCheck: A => Boolean) {
 
   /* A Binary Tree of the mappable values */
   private lazy val vmTree: BTree[(A, B)] = {
@@ -114,7 +101,7 @@ class BreakMap[
   }
 
   def map(z: A): B = {
-    if (strategy.noDataCheck(z)) {
+    if (noDataCheck(z)) {
       strategy.noDataValue
     } else {
       vmTree.searchWith(z, branchPred) match {
@@ -128,11 +115,15 @@ class BreakMap[
 
 /** Helper methods for constructing BreakMaps. */
 object BreakMap {
-  def i2i(m: Map[Int, Int]): BreakMap[Int, Int] = new BreakMap(m, MapStrategy.i2i)
+  def i2i(m: Map[Int, Int]): BreakMap[Int, Int] =
+    new BreakMap(m, MapStrategy.int, { i => isNoData(i) })
 
-  def i2d(m: Map[Int, Double]): BreakMap[Int, Double] = new BreakMap(m, MapStrategy.i2d)
+  def i2d(m: Map[Int, Double]): BreakMap[Int, Double] =
+    new BreakMap(m, MapStrategy.double, { i => isNoData(i) })
 
-  def d2d(m: Map[Double, Double]): BreakMap[Double, Double] = new BreakMap(m, MapStrategy.d2d)
+  def d2d(m: Map[Double, Double]): BreakMap[Double, Double] =
+    new BreakMap(m, MapStrategy.double, { d => isNoData(d) })
 
-  def d2i(m: Map[Double, Int]): BreakMap[Double, Int] = new BreakMap(m, MapStrategy.d2i)
+  def d2i(m: Map[Double, Int]): BreakMap[Double, Int] =
+    new BreakMap(m, MapStrategy.int, { d => isNoData(d) })
 }
