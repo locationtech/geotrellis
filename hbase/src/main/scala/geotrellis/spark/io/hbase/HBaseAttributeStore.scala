@@ -100,9 +100,8 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
       table.put(put)
     }
 
-  def layerExists(layerId: LayerId): Boolean = instance.withTableConnectionDo(attributeTableName) {
-    !_.get(new Get(layerIdString(layerId))).isEmpty
-  }
+  def layerExists(layerId: LayerId): Boolean =
+    !fetch(Some(layerId), AttributeStore.Fields.metadata).isEmpty
 
   def delete(layerId: LayerId): Unit = delete(layerId, None)
 

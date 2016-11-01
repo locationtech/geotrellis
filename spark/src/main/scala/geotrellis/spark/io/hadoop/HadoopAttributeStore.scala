@@ -99,10 +99,7 @@ class HadoopAttributeStore(val rootPath: Path, val hadoopConfiguration: Configur
   def layerExists(layerId: LayerId): Boolean =
     HdfsUtils
       .listFiles(new Path(attributePath, s"*.json"), hadoopConfiguration)
-      .exists { path: Path =>
-        val List(name, zoomStr) = path.getName.split(SEP).take(2).toList
-        layerId == LayerId(name, zoomStr.toInt)
-      }
+      .exists { _ == attributePath(layerId, AttributeStore.Fields.metadata) }
 
   def delete(layerId: LayerId): Unit = {
     delete(layerId, new Path(s"${layerId.name}${SEP}${layerId.zoom}${SEP}*.json"))

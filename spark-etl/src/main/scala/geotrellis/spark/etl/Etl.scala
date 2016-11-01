@@ -168,9 +168,11 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
     * Saves provided RDD to an output module specified by the ETL arguments.
     * This step may perform two to one pyramiding until zoom level 1 is reached.
     *
-    * @param id        Layout ID to b
-    * @param rdd       Tiled raster RDD with TileLayerMetadata
-    * @param postSave  Function to allow saving additional attributes or layers per layer saved.
+    * @param id          Layout ID to b
+    * @param rdd         Tiled raster RDD with TileLayerMetadata
+    * @param saveAction  Function to be called for saving. Defaults to writing the layer.
+    *                    This gives the caller an oppurtunity to modify the layer before writing,
+    *                    or to save additional attributes in the attributes store.
     *
     * @tparam K  Key type with SpatialComponent corresponding LayoutDefinition
     * @tparam V  Tile raster with cells from single tile in LayoutDefinition
