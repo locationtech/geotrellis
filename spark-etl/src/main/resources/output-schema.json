@@ -55,6 +55,9 @@
     "maxZoom": {
       "type": "integer"
     },
+    "targetZoom": {
+      "type": "integer"
+    },
     "resolutionThreshold": {
       "type": "number"
     },

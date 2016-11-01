@@ -174,7 +174,7 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
         .find { _.suitableFor(output.backend.`type`.name) }
         .getOrElse(sys.error(s"Unable to find output module of type '${output.backend.`type`.name}'"))
 
-    def savePyramid(zoom: Int, rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): Unit = {
+    def savePyramidUp(zoom: Int, rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): Unit = {
       val currentId = id.copy(zoom = zoom)
       outputPlugin(currentId, rdd, conf)
 
@@ -182,7 +182,7 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
         case Left(s) =>
           if (output.pyramid && zoom >= 1) {
             val (nextLevel, nextRdd) = Pyramid.up(rdd, s, zoom, output.getPyramidOptions)
-            savePyramid(nextLevel, nextRdd)
+            savePyramidUp(nextLevel, nextRdd)
           }
         case Right(_) =>
           if (output.pyramid)
@@ -190,7 +190,24 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
       }
     }
 
-    savePyramid(id.zoom, rdd)
+    def savePyramidDown(currentZoom: Int, stopZoom: Int, rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): Unit = {
+      val currentId = id.copy(zoom = currentZoom)
+      outputPlugin(currentId, rdd, conf)
+
+      scheme match {
+        case Left(s) =>
+          if (output.pyramid && currentZoom >= 0 && currentZoom < stopZoom) {
+            val (nextLevel, nextRdd) = Pyramid.down(rdd, s, currentZoom, output.getPyramidOptions)
+            savePyramidDown(nextLevel, stopZoom, nextRdd)
+          }
+        case Right(_) =>
+          if (output.pyramid)
+            logger.error("Pyramiding only supported with layoutScheme, skipping pyramid step")
+      }
+    }
+
+    savePyramidUp(id.zoom, rdd)
+    output.targetZoom.foreach { stopZoom => if (stopZoom > id.zoom) savePyramidDown(id.zoom, stopZoom, rdd) }
     logger.info("Done")
   }
 }

@@ -66,8 +66,8 @@ object Ingest {
       cacheLevel: StorageLevel = StorageLevel.NONE,
       resampleMethod: ResampleMethod = NearestNeighbor,
       partitioner: Option[Partitioner] = None,
-      bufferSize: Option[Int] = None
-    )
+      bufferSize: Option[Int] = None,
+      targetZoom: Option[Int] = None)
     (sink: (TileLayerRDD[K], Int) => Unit): Unit =
   {
     val (_, tileLayerMetadata) = sourceTiles.collectMetadata(FloatingLayoutScheme(512))
@@ -82,22 +82,36 @@ object Ingest {
 
     tileLayerRdd.persist(cacheLevel)
 
-    def buildPyramid(zoom: Int, rdd: TileLayerRDD[K]): List[(Int, TileLayerRDD[K])] = {
+    def buildPyramidUp(zoom: Int, rdd: TileLayerRDD[K]): List[(Int, TileLayerRDD[K])] = {
       if (zoom >= 1) {
         rdd.persist(cacheLevel)
         sink(rdd, zoom)
         val pyramidLevel @ (nextZoom, nextRdd) = Pyramid.up(rdd, layoutScheme, zoom, partitioner)
-        pyramidLevel :: buildPyramid(nextZoom, nextRdd)
+        pyramidLevel :: buildPyramidUp(nextZoom, nextRdd)
       } else {
         sink(rdd, zoom)
         List((zoom, rdd))
       }
     }
 
-    if (pyramid)
-      buildPyramid(zoom, tileLayerRdd)
-        .foreach { case (z, rdd) => rdd.unpersist(true) }
-    else
-      sink(tileLayerRdd, zoom)
+    def buildPyramidDown(currentZoom: Int, stopZoom: Int, rdd: TileLayerRDD[K]): List[(Int, TileLayerRDD[K])] = {
+      if (currentZoom >= 0 && currentZoom < stopZoom) {
+        rdd.persist(cacheLevel)
+        if(currentZoom != zoom) sink(rdd, currentZoom)
+        val pyramidLevel @ (nextZoom, nextRdd) = Pyramid.down(rdd, layoutScheme, currentZoom, partitioner)
+        pyramidLevel :: buildPyramidDown(nextZoom, stopZoom, nextRdd)
+      } else {
+        sink(rdd, currentZoom)
+        List((currentZoom, rdd))
+      }
+    }
+
+    if (pyramid) {
+      buildPyramidUp(zoom, tileLayerRdd).foreach { case (z, rdd) => rdd.unpersist(true) }
+      targetZoom.foreach { stopZoom =>
+        if(stopZoom > zoom)
+          buildPyramidDown(zoom, stopZoom, tileLayerRdd).foreach { case (z, rdd) => rdd.unpersist(true) }
+      }
+    } else sink(tileLayerRdd, zoom)
   }
 }
