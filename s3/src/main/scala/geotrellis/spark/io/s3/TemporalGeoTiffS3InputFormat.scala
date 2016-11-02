@@ -12,29 +12,29 @@ import java.time.format.DateTimeFormatter
 
 
 object TemporalGeoTiffS3InputFormat {
-  final val GEOTIFF_TIME_TAG = "GEOTIFF_TIME_TAG"
-  final val GEOTIFF_TIME_FORMAT = "GEOTIFF_TIME_FORMAT"
+  final val GEOTIFF_TIME_TAG_DEFAULT = "GEOTIFF_TIME_TAG"
+  final val GEOTIFF_TIME_FORMAT_DEFAULT = "GEOTIFF_TIME_FORMAT"
   final val GEOTIFF_CRS = "GEOTIFF_CRS"
 
   def setTimeTag(job: JobContext, timeTag: String): Unit =
     setTimeTag(job.getConfiguration, timeTag)
 
   def setTimeTag(conf: Configuration, timeTag: String): Unit =
-    conf.set(GEOTIFF_TIME_TAG, timeTag)
+    conf.set(GEOTIFF_TIME_TAG_DEFAULT, timeTag)
 
   def setTimeFormat(job: JobContext, timeFormat: String): Unit =
     setTimeFormat(job.getConfiguration, timeFormat)
 
   def setTimeFormat(conf: Configuration, timeFormat: String): Unit =
-    conf.set(GEOTIFF_TIME_FORMAT, timeFormat)
+    conf.set(GEOTIFF_TIME_FORMAT_DEFAULT, timeFormat)
 
   def setCrs(conf: Configuration, name: String): Unit = conf.set(GEOTIFF_CRS, name)
 
   def getTimeTag(job: JobContext) =
-    job.getConfiguration.get(GEOTIFF_TIME_TAG, "TIFFTAG_DATETIME")
+    job.getConfiguration.get(GEOTIFF_TIME_TAG_DEFAULT, "TIFFTAG_DATETIME")
 
   def getTimeFormatter(job: JobContext): DateTimeFormatter = {
-    val df = job.getConfiguration.get(GEOTIFF_TIME_FORMAT)
+    val df = job.getConfiguration.get(GEOTIFF_TIME_FORMAT_DEFAULT)
     (if (df == null) { DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss") }
     else { DateTimeFormatter.ofPattern(df) }).withZone(ZoneOffset.UTC)
   }
