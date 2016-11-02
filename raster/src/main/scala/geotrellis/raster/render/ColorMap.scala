@@ -25,8 +25,6 @@ import spire.std.any._
 import scala.util.Try
 
 object ColorMap {
-  /** A wrapper around [[MapStrategy]] for backward compatible semantics. */
-
   case class Options(
     classBoundaryType: ClassBoundaryType = LessThanOrEqualTo,
     /** Rgba value for NODATA */
@@ -36,6 +34,7 @@ object ColorMap {
     /** Set to true to throw exception on unmappable variables */
     strict: Boolean = false
   ) {
+    /** Conversion to a [[MapStrategy]] to be used by a [[BreakMap]]. */
     def strategy: MapStrategy[Int] =
       new MapStrategy(classBoundaryType, noDataColor, fallbackColor, strict)
   }
@@ -218,17 +217,14 @@ class IntColorMap(breaksToColors: Map[Int, Int], val options: Options = Options.
   def mapColorsToIndex(): ColorMap =
     new IntColorMap(orderedBreaks.zipWithIndex.toMap, options)
 
-  def withNoDataColor(color: Int): ColorMap = {
+  def withNoDataColor(color: Int): ColorMap =
     new IntColorMap(breaksToColors, options.copy(noDataColor = color))
-  }
 
-  def withFallbackColor(color: Int): ColorMap = {
+  def withFallbackColor(color: Int): ColorMap =
     new IntColorMap(breaksToColors, options.copy(fallbackColor =  color))
-  }
 
-  def withBoundaryType(classBoundaryType: ClassBoundaryType): ColorMap = {
+  def withBoundaryType(classBoundaryType: ClassBoundaryType): ColorMap =
     new IntColorMap(breaksToColors, options.copy(classBoundaryType = classBoundaryType))
-  }
 
   def cache(h: Histogram[Int]): ColorMap = {
     val ch = h.mutable
@@ -269,29 +265,14 @@ class IntCachedColorMap(val colors: Vector[Int], h: Histogram[Int], val options:
     new IntCachedColorMap((0 to colors.length).toVector, ch, options)
   }
 
-  def withNoDataColor(color: Int): ColorMap = {
-    new IntCachedColorMap(
-      colors,
-      h,
-      options.copy(noDataColor = color)
-    )
-  }
+  def withNoDataColor(color: Int): ColorMap =
+    new IntCachedColorMap(colors, h, options.copy(noDataColor = color))
 
-  def withFallbackColor(color: Int): ColorMap = {
-    new IntCachedColorMap(
-      colors,
-      h,
-      options.copy(fallbackColor = color)
-    )
-  }
+  def withFallbackColor(color: Int): ColorMap =
+    new IntCachedColorMap(colors, h, options.copy(fallbackColor = color))
 
-  def withBoundaryType(classBoundaryType: ClassBoundaryType): ColorMap = {
-    new IntCachedColorMap(
-      colors,
-      h,
-      options.copy(classBoundaryType = classBoundaryType)
-    )
-  }
+  def withBoundaryType(classBoundaryType: ClassBoundaryType): ColorMap =
+    new IntCachedColorMap(colors, h, options.copy(classBoundaryType = classBoundaryType))
 
   def breaksString: String = {
     h.quantileBreaks(colors.length)
@@ -328,26 +309,14 @@ class DoubleColorMap(breaksToColors: Map[Double, Int], val options: Options = Op
   def mapColorsToIndex(): ColorMap =
     new DoubleColorMap(orderedBreaks.zipWithIndex.toMap, options)
 
-  def withNoDataColor(color: Int): ColorMap = {
-    new DoubleColorMap(
-      breaksToColors,
-      options.copy(noDataColor = color)
-    )
-  }
+  def withNoDataColor(color: Int): ColorMap =
+    new DoubleColorMap(breaksToColors, options.copy(noDataColor = color))
 
-  def withFallbackColor(color: Int): ColorMap = {
-    new DoubleColorMap(
-      breaksToColors,
-      options.copy(fallbackColor = color)
-    )
-  }
+  def withFallbackColor(color: Int): ColorMap =
+    new DoubleColorMap(breaksToColors, options.copy(fallbackColor = color))
 
-  def withBoundaryType(classBoundaryType: ClassBoundaryType): ColorMap = {
-    new DoubleColorMap(
-      breaksToColors,
-      options.copy(classBoundaryType = classBoundaryType)
-    )
-  }
+  def withBoundaryType(classBoundaryType: ClassBoundaryType): ColorMap =
+    new DoubleColorMap(breaksToColors, options.copy(classBoundaryType = classBoundaryType))
 
   def breaksString: String = {
     breaksToColors

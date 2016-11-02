@@ -33,9 +33,9 @@ class MapStrategy[@specialized(Int, Double) A](
 
 /** Helper methods for constructing a [[MapStrategy]]. */
 object MapStrategy {
-  def int: MapStrategy[Int] = new MapStrategy(LessThanOrEqualTo, 0x00000000, 0x00000000, false)
+  def int: MapStrategy[Int] = new MapStrategy(LessThanOrEqualTo, NODATA, NODATA, false)
 
-  def double: MapStrategy[Double] = new MapStrategy(LessThanOrEqualTo, Double.NaN, Double.NaN, false)
+  def double: MapStrategy[Double] = new MapStrategy(LessThanOrEqualTo, doubleNODATA, doubleNODATA, false)
 }
 
 /** A `Map` which provides specific Binary Search-based ''map'' behaviour
