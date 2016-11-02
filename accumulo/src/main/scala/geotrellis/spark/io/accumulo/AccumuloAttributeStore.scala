@@ -104,7 +104,7 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
   }
 
   def layerExists(layerId: LayerId): Boolean =
-    !fetch(Some(layerId), AttributeStore.Fields.metadata).isEmpty
+    fetch(Some(layerId), AttributeStore.Fields.metadata).nonEmpty
 
   def delete(layerId: LayerId): Unit = delete(layerId, None)
 
