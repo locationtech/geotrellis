@@ -34,6 +34,28 @@ class S3BytesStreamer(
 
 /** The companion object of [[S3BytesStreamer]] */
 object S3BytesStreamer {
+  def DEFAULT_CHUNK_SIZE = 512 * 512 * 8
+  
+  /**
+   * Returns a new instance of S3BytesStreamer.
+   *
+   * @param bucket: A string that is the name of the bucket.
+   * @param key: A string that is the path to the GeoTiff.
+   * @param client: The [[S3Client]] that retrieves the data.
+   * @return A new instance of S3BytesStreamer.
+   */
+  def apply(bucket: String, key: String, client: S3Client): S3BytesStreamer =
+    apply(new GetObjectRequest(bucket, key), client)
+  
+  /**
+   * Returns a new instance of S3BytesStreamer.
+   *
+   * @param request: A [[GetObjectRequest]] of the desired GeoTiff.
+   * @param client: The [[S3Client]] that retrieves the data.
+   * @return A new instance of S3BytesStreamer.
+   */
+  def apply(request: GetObjectRequest, client: S3Client): S3BytesStreamer =
+    new S3BytesStreamer(request, client, DEFAULT_CHUNK_SIZE)
 
   /**
    * Returns a new instance of S3BytesStreamer.
@@ -45,7 +67,7 @@ object S3BytesStreamer {
    * @return A new instance of S3BytesStreamer.
    */
   def apply(bucket: String, key: String, client: S3Client, chunkSize: Int): S3BytesStreamer =
-    new S3BytesStreamer(new GetObjectRequest(bucket, key), client, chunkSize)
+    apply(new GetObjectRequest(bucket, key), client, chunkSize)
 
   /**
    * Returns a new instance of S3BytesStreamer.
