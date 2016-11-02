@@ -16,12 +16,8 @@
 
 package geotrellis.raster
 
-import geotrellis.raster.resample._
 import geotrellis.vector.Extent
-
 import spire.syntax.cfor._
-import scala.collection.mutable
-
 
 /**
   * The companion object for the [[CroppedTile]] type.
@@ -268,8 +264,8 @@ case class CroppedTile(sourceTile: Tile,
     * @param   f  A function from Int to Int, executed at each point of the tile
     * @return     The result, a [[Tile]]
     */
-  def map(f: Int => Int): Tile = {
-    val tile = ArrayTile.alloc(cellType, cols, rows)
+  def map(target: CellType)(f: Int => Int): Tile = {
+    val tile = ArrayTile.alloc(target, cols, rows)
 
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
@@ -287,8 +283,8 @@ case class CroppedTile(sourceTile: Tile,
     * @param   f  A function from Double to Double, executed at each point of the tile
     * @return     The result, a [[Tile]]
     */
-  def mapDouble(f: Double => Double): Tile = {
-    val tile = ArrayTile.alloc(cellType, cols, rows)
+  def mapDouble(ct: CellType)(f: Double => Double): Tile = {
+    val tile = ArrayTile.alloc(ct, cols, rows)
 
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
@@ -341,10 +337,10 @@ case class CroppedTile(sourceTile: Tile,
     * @param   f      A function from (Int, Int) to Int
     * @return         The result, an Tile
     */
-  def combine(other: Tile)(f: (Int, Int) => Int): Tile = {
+  def combine(other: Tile, ct: CellType)(f: (Int, Int) => Int): Tile = {
     (this, other).assertEqualDimensions
 
-    val tile = ArrayTile.alloc(cellType, cols, rows)
+    val tile = ArrayTile.alloc(ct, cols, rows)
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
         tile.set(col, row, f(get(col, row), other.get(col, row)))
@@ -364,10 +360,10 @@ case class CroppedTile(sourceTile: Tile,
     * @param   f      A function from (Int, Int) to Int
     * @return         The result, an Tile
     */
-  def combineDouble(other: Tile)(f: (Double, Double) => Double): Tile = {
+  def combineDouble(other: Tile, ct: CellType)(f: (Double, Double) => Double): Tile = {
     (this, other).assertEqualDimensions
 
-    val tile = ArrayTile.alloc(cellType, cols, rows)
+    val tile = ArrayTile.alloc(ct, cols, rows)
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
         tile.setDouble(col, row, f(getDouble(col, row), other.getDouble(col, row)))

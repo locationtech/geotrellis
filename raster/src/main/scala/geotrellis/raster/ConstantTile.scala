@@ -151,7 +151,7 @@ trait ConstantTile extends Tile {
     * @param   f  A function from Int to Int, executed at each point of the tile
     * @return     The result, a [[Tile]]
     */
-  def map(f: Int => Int): Tile = IntConstantTile(f(iVal), cols, rows)
+  def map(ct: CellType)(f: Int => Int): Tile = IntConstantTile(f(iVal), cols, rows)
 
   /**
     * Combine two tiles' cells into new cells using the given integer
@@ -163,7 +163,7 @@ trait ConstantTile extends Tile {
     * @param   f      A function from (Int, Int) to Int
     * @return         The result, an Tile
     */
-  def combine(other: Tile)(f: (Int, Int) => Int): Tile = other.map(z => f(iVal, z))
+  def combine(other: Tile, ct: CellType)(f: (Int, Int) => Int): Tile = other.map(z => f(iVal, z))
 
   /**
     * Map each cell in the given tile to a new one, using the given
@@ -172,7 +172,7 @@ trait ConstantTile extends Tile {
     * @param   f  A function from Double to Double, executed at each point of the tile
     * @return     The result, a [[Tile]]
     */
-  def mapDouble(f: Double => Double): Tile = DoubleConstantTile(f(dVal), cols, rows)
+  def mapDouble(ct: CellType)(f: Double => Double): Tile = DoubleConstantTile(f(dVal), cols, rows)
 
   /**
     * Combine two tiles' cells into new cells using the given double
@@ -184,7 +184,8 @@ trait ConstantTile extends Tile {
     * @param   f      A function from (Int, Int) to Int
     * @return         The result, an Tile
     */
-  def combineDouble(other: Tile)(f: (Double, Double) => Double): Tile = other.mapDouble(z => f(dVal, z))
+  def combineDouble(other: Tile, ct: CellType)(f: (Double, Double) => Double): Tile =
+    other.mapDouble(z => f(dVal, z))
 
   /**
     * Map an [[IntTileMapper]] over the present tile.

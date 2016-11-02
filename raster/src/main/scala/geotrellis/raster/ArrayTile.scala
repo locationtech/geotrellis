@@ -127,8 +127,8 @@ trait ArrayTile extends Tile with Serializable {
     * @param   f  A function from Int to Int, executed at each point of the tile
     * @return     The result, a [[Tile]]
     */
-  def map(f: Int=>Int): Tile = {
-    val output = ArrayTile.alloc(cellType, cols, rows)
+  def map(ct: CellType)(f: Int=>Int): Tile = {
+    val output = ArrayTile.alloc(ct, cols, rows)
     var i = 0
     val len = size
     while (i < len) {
@@ -145,9 +145,9 @@ trait ArrayTile extends Tile with Serializable {
     * @param   f  A function from Double to Double, executed at each point of the tile
     * @return     The result, a [[Tile]]
     */
-  def mapDouble(f: Double => Double): Tile = {
+  def mapDouble(ct: CellType)(f: Double => Double): Tile = {
     val len = size
-    val tile = ArrayTile.alloc(cellType, cols, rows)
+    val tile = ArrayTile.alloc(ct, cols, rows)
     var i = 0
     while (i < len) {
       tile.updateDouble(i, f(applyDouble(i)))
@@ -218,19 +218,20 @@ trait ArrayTile extends Tile with Serializable {
     * and assign it to the output's (x, y) cell.
     *
     * @param   other  The other Tile
+    * @param   ct   Desired CellType of result tile
     * @param   f      A function from (Int, Int) to Int
     * @return         The result, an Tile
     */
-  def combine(other: Tile)(f: (Int, Int) => Int): Tile = {
+  def combine(other: Tile, ct: CellType)(f: (Int, Int) => Int): Tile = {
     other match {
-      case ar: ArrayTile =>
-        combine(ar)(f)
-      case ct: ConstantTile =>
-        ct.combine(this)(f)
-      case ct: CompositeTile =>
-        ct.combine(this)((z1, z2) => f(z2, z1))
-      case ct: CroppedTile =>
-        ct.combine(this)((z1, z2) => f(z2, z1))
+      case other: ArrayTile =>
+        combine(other, ct)(f)
+      case other: ConstantTile =>
+        other.combine(this, ct)(f)
+      case other: CompositeTile =>
+        other.combine(this, ct)((z1, z2) => f(z2, z1))
+      case other: CroppedTile =>
+        other.combine(this, ct)((z1, z2) => f(z2, z1))
     }
   }
 
@@ -244,10 +245,10 @@ trait ArrayTile extends Tile with Serializable {
     * @param   f      A function from (Double, Double) to Double
     * @return         The result, an ArrayTile
     */
-  def combineDouble(other: ArrayTile)(f: (Double, Double) => Double): ArrayTile = {
+  def combineDouble(other: ArrayTile, ct: CellType)(f: (Double, Double) => Double): ArrayTile = {
     (this, other).assertEqualDimensions
 
-    val output = ArrayTile.alloc(cellType.union(other.cellType), cols, rows)
+    val output = ArrayTile.alloc(ct, cols, rows)
     var i = 0
     val len = size
     while (i < len) {
@@ -267,14 +268,14 @@ trait ArrayTile extends Tile with Serializable {
     * @param   f      A function from (Double, Double) to Double
     * @return         The result, an Tile
     */
-  def combineDouble(other: Tile)(f: (Double, Double) => Double): Tile = {
+  def combineDouble(other: Tile, ct: CellType)(f: (Double, Double) => Double): Tile = {
     other match {
-      case ar: ArrayTile =>
-        combineDouble(ar)(f)
-      case ct: ConstantTile =>
-        ct.combineDouble(this)(f)
-      case ct: CompositeTile =>
-        ct.combineDouble(this)((z1, z2) => f(z2, z1))
+      case other: ArrayTile =>
+        combineDouble(other, ct)(f)
+      case other: ConstantTile =>
+        other.combineDouble(this, ct)(f)
+      case other: CompositeTile =>
+        other.combineDouble(this, ct)((z1, z2) => f(z2, z1))
     }
   }
 
