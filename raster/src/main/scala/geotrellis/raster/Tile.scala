@@ -16,15 +16,12 @@
 
 package geotrellis.raster
 
-import geotrellis.raster.render.{ BreakMap }
-
 import spire.syntax.cfor._
 import com.typesafe.scalalogging._
 
 import java.util.Locale
 import scala.collection.mutable.ArrayBuffer
 import scala.math.BigDecimal
-import scala.specialized
 
 
 /**

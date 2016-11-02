@@ -42,11 +42,11 @@ object MapStrategy {
   * with breaks and a break strategy.
   *
   * {{{
-  * val bm: BreakMap = ...
+  * val bm: BreakMap[Int, Int] = ...
   * val t: Tile = ...
   *
   * // Map all the cells of `t` to a target bin value in O(klogn).
-  * val newT: Tile = t.mapWith(vm)
+  * val newT: Tile = t.map(vm)
   * }}}
   *
   * '''Note:''' `A` and `B` are specialized on `Int` and `Double`.
@@ -119,15 +119,15 @@ class BreakMap[
 
 /** Helper methods for constructing BreakMaps. */
 object BreakMap {
-  def i2i(m: Map[Int, Int]): BreakMap[Int, Int] =
-    new BreakMap(m, MapStrategy.int, { i => isNoData(i) })
+  def i2i(m: Map[Int, Int], s: MapStrategy[Int] = MapStrategy.int): BreakMap[Int, Int] =
+    new BreakMap(m, s, { i => isNoData(i) })
 
-  def i2d(m: Map[Int, Double]): BreakMap[Int, Double] =
-    new BreakMap(m, MapStrategy.double, { i => isNoData(i) })
+  def i2d(m: Map[Int, Double], s: MapStrategy[Double] = MapStrategy.double): BreakMap[Int, Double] =
+    new BreakMap(m, s, { i => isNoData(i) })
 
-  def d2d(m: Map[Double, Double]): BreakMap[Double, Double] =
-    new BreakMap(m, MapStrategy.double, { d => isNoData(d) })
+  def d2d(m: Map[Double, Double], s: MapStrategy[Double]=MapStrategy.double): BreakMap[Double, Double] =
+    new BreakMap(m, s, { d => isNoData(d) })
 
-  def d2i(m: Map[Double, Int]): BreakMap[Double, Int] =
-    new BreakMap(m, MapStrategy.int, { d => isNoData(d) })
+  def d2i(m: Map[Double, Int], s: MapStrategy[Int] = MapStrategy.int): BreakMap[Double, Int] =
+    new BreakMap(m, s, { d => isNoData(d) })
 }
