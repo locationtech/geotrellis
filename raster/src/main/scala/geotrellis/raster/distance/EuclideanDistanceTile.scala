@@ -9,7 +9,7 @@ import scala.math.sqrt
 object EuclideanDistanceTile {
 
   def apply(pts: Array[Point], rasterExtent: RasterExtent): Tile = {
-    val vor = pts.toList.voronoiDiagram(rasterExtent.extent)
+    val vor = pts.toList.voronoiDiagram()
     val tile = DoubleArrayTile.empty(rasterExtent.cols, rasterExtent.rows)
     
     def fillFn(base: Point)(col: Int, row: Int): Unit = {
