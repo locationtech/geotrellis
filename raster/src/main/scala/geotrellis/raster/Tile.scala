@@ -172,6 +172,20 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] with LazyL
   /**
     * Map the given function across the present [[Tile]].  The result
     * is another Tile.
+    *
+    * Values can also be mapped with "class-break logic":
+    * {{{
+    * import geotrellis.raster.render.BreakMap
+    *
+    * // Maps break values to result values
+    * val m: Map[Int, Int] = ...
+    * val t: Tile = ...
+    *
+    * // BreakMap extends `Function1`
+    * t.map(BreakMap.i2i(m))
+    * }}}
+    * If `Tile` above had an underlying floating [[CellType]],
+    * then the transformation would effectively be from `Double => Int`.
     */
   def map(f: Int => Int): Tile
 
@@ -184,6 +198,20 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] with LazyL
   /**
     * Map the given function across the present [[Tile]].  The result
     * is another Tile.
+    *
+    * Values can also be mapped with "class-break logic":
+    * {{{
+    * import geotrellis.raster.render.BreakMap
+    *
+    * // Maps break values to result values
+    * val m: Map[Double, Double] = ...
+    * val t: Tile = ...
+    *
+    * // BreakMap extends `Function1`
+    * t.mapDouble(BreakMap.i2i(m))
+    * }}}
+    * If `Tile` above had an underlying integer [[CellType]],
+    * then the transformation would effectively be from `Int => Double`.
     */
   def mapDouble(f: Double => Double): Tile
 
