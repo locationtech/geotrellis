@@ -124,6 +124,7 @@ object S3InputFormat {
   final val REGION = "s3.region"
   final val PARTITION_COUNT = "s3.partitionCount"
   final val PARTITION_BYTES = "S3.partitionBytes"
+  final val CHUNK_SIZE = "s3.chunkSize"
 
   private val idRx = "[A-Z0-9]{20}"
   private val keyRx = "[a-zA-Z0-9+/]+={0,2}"
@@ -186,4 +187,10 @@ object S3InputFormat {
   /** Set desired partition size in bytes, at least one item per partition will be assigned */
   def setPartitionBytes(conf: Configuration, bytes: Long): Unit =
     conf.set(PARTITION_BYTES, bytes.toString)
+
+  def setChunkSize(job: Job, chunkSize: Int): Unit =
+    setChunkSize(job.getConfiguration, chunkSize)
+  
+  def setChunkSize(conf: Configuration, chunkSize: Int): Unit =
+    conf.set(CHUNK_SIZE, chunkSize.toString)
 }
