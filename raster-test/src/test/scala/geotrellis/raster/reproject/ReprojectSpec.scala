@@ -189,4 +189,40 @@ class ReprojectSpec extends FunSpec
       windowedReproject.extent should be (regularReproject.extent)
     }
   }
+
+  describe("Reprojecting with a specified target raster extent") {
+    it("should do a resample if it's the same CRS") {
+      val tile = createConsecutiveTile(5)
+
+
+    }
+
+    it("should do a resample if it's the same CRS") {
+      val srcCRS = LatLng
+      val destCRS = WebMercator
+
+      val srcExtent = Extent(-10.0, -20.0, 10, 20)
+      val destExtent = srcExtent.reproject(srcCRS, destCRS)
+
+      val rasterExtent = RasterExtent(Extent(-10.0, -20.0, 10, 20), 30.0, 30.0, 512, 512)
+
+      val expandedGridBounds = GridBounds(-10, -10, rasterExtent.cols + 10 - 1, rasterExtent.rows + 10 - 1)
+      val expandedExtent = rasterExtent.extentFor(expandedGridBounds, clamp = false)
+      val expandedRasterExtent = RasterExtent(expandedExtent, rasterExtent.cols + 20, rasterExtent.rows + 20)
+
+      val expandedTile =
+        IntArrayTile(Array.ofDim[Int](expandedRasterExtent.size).fill(1), expandedRasterExtent.cols, expandedRasterExtent.rows)
+      val expandedRaster = Raster(expandedTile, expandedExtent)
+
+      val tile = IntArrayTile(Array.ofDim[Int](rasterExtent.size).fill(1), rasterExtent.cols, rasterExtent.rows)
+      val raster = Raster(tile, rasterExtent.extent)
+
+      val windowBounds = GridBounds(10, 10, 10 + rasterExtent.cols - 1, 10 + rasterExtent.rows - 1)
+
+      val regularReproject = raster.reproject(srcCRS, destCRS)
+      val windowedReproject = expandedRaster.reproject(windowBounds, srcCRS, destCRS)
+
+      windowedReproject.extent should be (regularReproject.extent)
+    }
+  }
 }
