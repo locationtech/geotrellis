@@ -26,28 +26,26 @@ import scala.util.Try
 
 object ColorMap {
   /** A wrapper around [[MapStrategy]] for backward compatible semantics. */
-  class Options(val strategy: MapStrategy[Int]) {
-    def classBoundaryType: ClassBoundaryType = strategy.boundary
 
+  case class Options(
+    classBoundaryType: ClassBoundaryType = LessThanOrEqualTo,
     /** Rgba value for NODATA */
-    def noDataColor: Int = strategy.noDataValue
-
+    noDataColor: Int = 0x00000000,
     /** Rgba value for data that doesn't fit the map */
-    def fallbackColor: Int = strategy.fallbackValue
-
+    fallbackColor: Int = 0x00000000,
     /** Set to true to throw exception on unmappable variables */
-    def strict: Boolean = strategy.strict
+    strict: Boolean = false
+  ) {
+    def strategy: MapStrategy[Int] =
+      new MapStrategy(classBoundaryType, noDataColor, fallbackColor, strict)
   }
 
   object Options {
-    def DEFAULT: Options = new Options(MapStrategy.int)
+    def DEFAULT: Options = new Options(LessThanOrEqualTo, 0x00000000, 0x00000000, false)
 
     implicit def classBoundaryTypeToOptions(cbt: ClassBoundaryType): Options = {
-      val s: MapStrategy[Int] = MapStrategy.int
-
-      new Options(new MapStrategy(cbt, s.noDataValue, s.fallbackValue, s.strict))
+      new Options(cbt, 0x00000000, 0x00000000, false)
     }
-
   }
 
   def apply(breaksToColors: (Int, Int)*): ColorMap =
@@ -221,39 +219,15 @@ class IntColorMap(breaksToColors: Map[Int, Int], val options: Options = Options.
     new IntColorMap(orderedBreaks.zipWithIndex.toMap, options)
 
   def withNoDataColor(color: Int): ColorMap = {
-    new IntColorMap(
-      breaksToColors,
-      new Options(new MapStrategy(
-        options.strategy.boundary,
-        color,
-        options.strategy.fallbackValue,
-        options.strategy.strict
-      ))
-    )
+    new IntColorMap(breaksToColors, options.copy(noDataColor = color))
   }
 
   def withFallbackColor(color: Int): ColorMap = {
-    new IntColorMap(
-      breaksToColors,
-      new Options(new MapStrategy(
-        options.strategy.boundary,
-        options.strategy.noDataValue,
-        color,
-        options.strategy.strict
-      ))
-    )
+    new IntColorMap(breaksToColors, options.copy(fallbackColor =  color))
   }
 
   def withBoundaryType(classBoundaryType: ClassBoundaryType): ColorMap = {
-    new IntColorMap(
-      breaksToColors,
-      new Options(new MapStrategy(
-        classBoundaryType,
-        options.strategy.noDataValue,
-        options.strategy.fallbackValue,
-        options.strategy.strict
-      ))
-    )
+    new IntColorMap(breaksToColors, options.copy(classBoundaryType = classBoundaryType))
   }
 
   def cache(h: Histogram[Int]): ColorMap = {
@@ -299,12 +273,7 @@ class IntCachedColorMap(val colors: Vector[Int], h: Histogram[Int], val options:
     new IntCachedColorMap(
       colors,
       h,
-      new Options(new MapStrategy(
-        options.strategy.boundary,
-        color,
-        options.strategy.fallbackValue,
-        options.strategy.strict
-      ))
+      options.copy(noDataColor = color)
     )
   }
 
@@ -312,12 +281,7 @@ class IntCachedColorMap(val colors: Vector[Int], h: Histogram[Int], val options:
     new IntCachedColorMap(
       colors,
       h,
-      new Options(new MapStrategy(
-        options.strategy.boundary,
-        options.strategy.noDataValue,
-        color,
-        options.strategy.strict
-      ))
+      options.copy(fallbackColor = color)
     )
   }
 
@@ -325,12 +289,7 @@ class IntCachedColorMap(val colors: Vector[Int], h: Histogram[Int], val options:
     new IntCachedColorMap(
       colors,
       h,
-      new Options(new MapStrategy(
-        classBoundaryType,
-        options.strategy.noDataValue,
-        options.strategy.fallbackValue,
-        options.strategy.strict
-      ))
+      options.copy(classBoundaryType = classBoundaryType)
     )
   }
 
@@ -372,36 +331,21 @@ class DoubleColorMap(breaksToColors: Map[Double, Int], val options: Options = Op
   def withNoDataColor(color: Int): ColorMap = {
     new DoubleColorMap(
       breaksToColors,
-      new Options(new MapStrategy(
-        options.strategy.boundary,
-        color,
-        options.strategy.fallbackValue,
-        options.strategy.strict
-      ))
+      options.copy(noDataColor = color)
     )
   }
 
   def withFallbackColor(color: Int): ColorMap = {
     new DoubleColorMap(
       breaksToColors,
-      new Options(new MapStrategy(
-        options.strategy.boundary,
-        options.strategy.noDataValue,
-        color,
-        options.strategy.strict
-      ))
+      options.copy(fallbackColor = color)
     )
   }
 
   def withBoundaryType(classBoundaryType: ClassBoundaryType): ColorMap = {
     new DoubleColorMap(
       breaksToColors,
-      new Options(new MapStrategy(
-        classBoundaryType,
-        options.strategy.noDataValue,
-        options.strategy.fallbackValue,
-        options.strategy.strict
-      ))
+      options.copy(classBoundaryType = classBoundaryType)
     )
   }
 
