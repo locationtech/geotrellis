@@ -17,11 +17,8 @@
 package geotrellis.raster
 
 import geotrellis.raster.split.Split
-import geotrellis.vector.Extent
-
 import spire.syntax.cfor._
 
-import scala.collection.mutable
 
 /**
   * The companion object for the [[CompositeTile]] type.
@@ -416,11 +413,12 @@ case class CompositeTile(tiles: Seq[Tile],
     * Map each cell in the given raster to a new one, using the given
     * function.
     *
-    * @param   f  A function from Int to Int, executed at each point of the tile
+    * @param   f      A function from Int to Int, executed at each point of the tile
+    * @param   ct Desired CellType of result tile
     * @return     The result, a [[Tile]]
     */
-  def map(f: Int => Int): Tile = {
-    val result = ArrayTile.alloc(cellType, cols, rows)
+  def map(ct: CellType)(f: Int => Int): Tile = {
+    val result = ArrayTile.alloc(ct, cols, rows)
     val layoutCols = tileLayout.layoutCols
     val layoutRows = tileLayout.layoutRows
     val tileCols = tileLayout.tileCols
@@ -449,8 +447,8 @@ case class CompositeTile(tiles: Seq[Tile],
     * @param   f  A function from Double to Double, executed at each point of the tile
     * @return     The result, a [[Tile]]
     */
-  def mapDouble(f: Double =>Double): Tile = {
-    val result = ArrayTile.alloc(cellType, cols, rows)
+  def mapDouble(ct: CellType)(f: Double =>Double): Tile = {
+    val result = ArrayTile.alloc(ct, cols, rows)
     val layoutCols = tileLayout.layoutCols
     val layoutRows = tileLayout.layoutRows
     val tileCols = tileLayout.tileCols
@@ -537,13 +535,14 @@ case class CompositeTile(tiles: Seq[Tile],
     * assign it to the output's (x, y) cell.
     *
     * @param   other  The other [[Tile]]
+    * @param   ct Desired CellType of result tile
     * @param   f      A function from (Int, Int) to Int, the respective arguments are from the respective Tiles
     * @return         The result, an Tile
     */
-  def combine(other: Tile)(f: (Int, Int) => Int): Tile = {
+  def combine(other: Tile, ct: CellType)(f: (Int, Int) => Int): Tile = {
     (this, other).assertEqualDimensions
 
-    val result = ArrayTile.alloc(cellType, cols, rows)
+    val result = ArrayTile.alloc(ct, cols, rows)
     val layoutCols = tileLayout.layoutCols
     val layoutRows = tileLayout.layoutRows
     val tileCols = tileLayout.tileCols
@@ -575,10 +574,10 @@ case class CompositeTile(tiles: Seq[Tile],
     * @param   f      A function from (Int, Int) to Int, the respective arguments are from the respective Tiles
     * @return         The result, an Tile
     */
-  def combineDouble(other: Tile)(f: (Double, Double) => Double): Tile = {
+  def combineDouble(other: Tile, ct: CellType)(f: (Double, Double) => Double): Tile = {
     (this, other).assertEqualDimensions
 
-    val result = ArrayTile.alloc(cellType, cols, rows)
+    val result = ArrayTile.alloc(ct, cols, rows)
     val layoutCols = tileLayout.layoutCols
     val layoutRows = tileLayout.layoutRows
     val tileCols = tileLayout.tileCols

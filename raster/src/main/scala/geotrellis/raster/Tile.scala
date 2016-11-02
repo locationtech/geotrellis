@@ -25,7 +25,6 @@ import math.BigDecimal
 
 import collection.mutable.ArrayBuffer
 
-
 /**
   * Base trait for a Tile.
   */
@@ -47,35 +46,40 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] with LazyL
     * pixel of a [[Tile]], depending on whether that pixel is NODATA or
     * not.  The result of the mapping is returned as a tile.
     *
+    * @param  ct CellType of result [[Tile]]
     * @param  f  A function from Int to Int
     */
+  def mapIfSet(ct: CellType)(f: Int => Int): Tile =
+    map(ct) { i => if(isNoData(i)) i else f(i) }
+
   def mapIfSet(f: Int => Int): Tile =
-    map { i =>
-      if(isNoData(i)) i
-      else f(i)
-    }
+    map(cellType) { i => if(isNoData(i)) i else f(i) }
 
   /**
     * Conditionally execute (or don't) the given function at each
     * pixel of a [[Tile]], depending on whether that pixel is NODATA or
     * not.  The result of the mapping is returned as a tile.
     *
+    * @param  ct CellType of result [[Tile]]
     * @param  f  A function from Double to Double
     */
+  def mapIfSetDouble(ct: CellType)(f: Double => Double): Tile =
+    mapDouble(ct) { d => if(isNoData(d)) d else f(d) }
+
   def mapIfSetDouble(f: Double => Double): Tile =
-    mapDouble { d =>
-      if(isNoData(d)) d
-      else f(d)
-    }
+    mapDouble(cellType) { d => if(isNoData(d)) d else f(d) }
 
   /**
     * Map one of the two given functions across the [[Tile]] to
     * produce a new one.  One of the functions is from Int to Int, and
     * the other from Double to Double.
-    *
+    * @param  ct CellType of result [[Tile]]
     * @param  f  A function from Int to Int
     * @param  g  A function from Double to Double
     */
+  def dualMap(ct: CellType)(f: Int => Int)(g: Double => Double): Tile =
+    if (cellType.isFloatingPoint) mapDouble(ct)(g) else map(ct)(f)
+
   def dualMap(f: Int => Int)(g: Double => Double): Tile =
     if (cellType.isFloatingPoint) mapDouble(g) else map(f)
 
@@ -84,9 +88,13 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] with LazyL
     * depending on whether the tile is an integer- or a floating-tile.
     * A pixel is mapped only if it is set.
     *
+    * @param  ct CellType of result [[Tile]]
     * @param  f  A function from Int to Int
     * @param  g  A function from Double to Double
     */
+  def dualMapIfSet(ct: CellType)(f: Int => Int)(g: Double => Double): Tile =
+    if (cellType.isFloatingPoint) mapIfSetDouble(ct)(g) else mapIfSet(ct)(f)
+
   def dualMapIfSet(f: Int => Int)(g: Double => Double): Tile =
     if (cellType.isFloatingPoint) mapIfSetDouble(g) else mapIfSet(f)
 
@@ -97,11 +105,15 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] with LazyL
     * function is used.
     *
     * @param  r2  The tile to combine with the present one
+    * @param  ct  CellType of result [[Tile]]
     * @param  f   The integer function
     * @param  g   The double function
     */
+  def dualCombine(r2: Tile, ct: CellType)(f: (Int, Int) => Int)(g: (Double, Double) => Double): Tile =
+    if (cellType.isFloatingPoint) combineDouble(r2, ct)(g) else combine(r2, ct)(f)
+
   def dualCombine(r2: Tile)(f: (Int, Int) => Int)(g: (Double, Double) => Double): Tile =
-    if (cellType.union(r2.cellType).isFloatingPoint) combineDouble(r2)(g) else combine(r2)(f)
+    if (cellType.isFloatingPoint) combineDouble(r2)(g) else combine(r2)(f)
 
   /**
     * Create a mutable copy of this tile
@@ -115,7 +127,10 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] with LazyL
     */
   def convert(cellType: CellType): Tile
 
-
+  /** Return [[Tile]] with same cell values and [[DataType]] but altered NODATA value.
+    * noDataValue may be coerced to match precision specified by [[cellType]]
+    * @param noDataValue Optional NODATA value as Double
+    */
   def withNoData(noDataValue: Option[Double]): Tile
 
   /** Changes the interpretation of the tile cells through changing NoData handling and optionally cell data type.
@@ -172,28 +187,32 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] with LazyL
   def foreachDouble(f: Double=>Unit): Unit
 
   /**
-    * Map the given function across the present [[Tile]].  The result
-    * is another Tile.
-    */
-  def map(f: Int => Int): Tile
+   * Map the given function across the present [[Tile]].  The result is another Tile.
+   */
+  def map(ct: CellType)(f: Int => Int): Tile
+  def map(f: Int => Int): Tile = map(cellType)(f)
 
   /**
-    * Combine the given [[Tile]] with the present one using the given
-    * function.
+    * Combine the given [[Tile]] with the present one using the given function.
     */
-  def combine(r2: Tile)(f: (Int, Int) => Int): Tile
+  def combine(r2: Tile, ct: CellType)(f: (Int, Int) => Int): Tile
+  def combine(r2: Tile)(f: (Int, Int) => Int): Tile =
+    combine(r2, this.cellType union r2.cellType)(f)
+
 
   /**
-    * Map the given function across the present [[Tile]].  The result
-    * is another Tile.
+    * Map the given function across the present [[Tile]].  The result is another Tile.
     */
-  def mapDouble(f: Double => Double): Tile
+  def mapDouble(ct: CellType)(f: Double => Double): Tile
+  def mapDouble(f: Double => Double): Tile =
+    mapDouble(cellType)(f)
 
   /**
-    * Combine the given [[Tile]] with the present one using the given
-    * function.
+    * Combine the given [[Tile]] with the present one using the given function.
     */
-  def combineDouble(r2: Tile)(f: (Double, Double) => Double): Tile
+  def combineDouble(r2: Tile, resultCellType: CellType)(f: (Double, Double) => Double): Tile
+  def combineDouble(r2: Tile)(f: (Double, Double) => Double): Tile =
+    combineDouble(r2, this.cellType union r2.cellType)(f)
 
   def isNoDataTile: Boolean = {
     var (c, r) = (0, 0)

@@ -2,11 +2,7 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.compression._
-import geotrellis.raster.resample.ResampleMethod
 import geotrellis.raster.split._
-import geotrellis.vector.Extent
-
-import java.util.BitSet
 
 import spire.syntax.cfor._
 
@@ -238,7 +234,7 @@ abstract class GeoTiffTile(
    * @param f: A function that takes an Int and returns an Int
    * @return A [[GeoTiffTile]] that contains the newly mapped values
    */
-  def map(f: Int => Int): GeoTiffTile = {
+  def map(ct: CellType)(f: Int => Int): GeoTiffTile = {
     val arr = Array.ofDim[Array[Byte]](segmentCount)
     val compressor = compression.createCompressor(segmentCount)
     cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
@@ -252,7 +248,7 @@ abstract class GeoTiffTile(
       compressor.createDecompressor(),
       segmentLayout,
       compression,
-      cellType
+      ct
     )
   }
 
@@ -263,7 +259,7 @@ abstract class GeoTiffTile(
    * @param f: A function that takes a Double and returns a Double
    * @return A [[GeoTiffTile]] that contains the newly mapped values
    */
-  def mapDouble(f: Double => Double): GeoTiffTile = {
+  def mapDouble(ct: CellType)(f: Double => Double): GeoTiffTile = {
     val arr = Array.ofDim[Array[Byte]](segmentCount)
     val compressor = compression.createCompressor(segmentCount)
     cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
@@ -277,7 +273,7 @@ abstract class GeoTiffTile(
       compressor.createDecompressor(),
       segmentLayout,
       compression,
-      cellType
+      ct
     )
   }
 
@@ -392,7 +388,7 @@ abstract class GeoTiffTile(
    * @param f: A function that takes (Int, Int) and returns an Int
    * @return A [[Tile]] that contains the results of the given function
    */
-  def combine(other: Tile)(f: (Int, Int) => Int): Tile =
+  def combine(other: Tile, ct: CellType)(f: (Int, Int) => Int): Tile =
     other match {
       case otherGeoTiff: GeoTiffTile if segmentLayout.tileLayout == otherGeoTiff.segmentLayout.tileLayout =>
         // GeoTiffs with the same segment sizes, can map over segments.
@@ -412,7 +408,7 @@ abstract class GeoTiffTile(
           compressor.createDecompressor(),
           segmentLayout,
           compression,
-          cellType
+          ct
         )
       case _ =>
         this.map { (col, row, z) =>
@@ -428,7 +424,7 @@ abstract class GeoTiffTile(
    * @param f: A function that takes (Double, Double) and returns a Double
    * @return A [[Tile]] that contains the results of the given function
    */
-  def combineDouble(other: Tile)(f: (Double, Double) => Double): Tile =
+  def combineDouble(other: Tile, ct: CellType)(f: (Double, Double) => Double): Tile =
     other match {
       case otherGeoTiff: GeoTiffTile if segmentLayout.tileLayout == otherGeoTiff.segmentLayout.tileLayout =>
         // GeoTiffs with the same segment sizes, can map over segments.
@@ -448,7 +444,7 @@ abstract class GeoTiffTile(
           compressor.createDecompressor(),
           segmentLayout,
           compression,
-          cellType
+          ct
         )
       case _ =>
         this.mapDouble { (col, row, z) =>
