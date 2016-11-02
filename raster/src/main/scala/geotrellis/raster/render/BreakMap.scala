@@ -29,7 +29,7 @@ class MapStrategy[@specialized(Int, Double) A](
   val noDataValue: A,
   val fallbackValue: A,
   val strict: Boolean
-)
+) extends Serializable
 
 /** Helper methods for constructing a [[MapStrategy]]. */
 object MapStrategy {
@@ -58,7 +58,7 @@ class BreakMap[
   breakMap: Map[A, B],
   strategy: MapStrategy[B],
   noDataCheck: A => Boolean
-) extends (A => B) {
+) extends (A => B) with Serializable {
 
   /* A Binary Tree of the mappable values */
   private lazy val vmTree: BTree[(A, B)] = {
