@@ -1,10 +1,18 @@
 package geotrellis.vector.voronoi
 
-import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
-import geotrellis.vector._
-import scala.math.pow
+import geotrellis.util.Constants.{FLOAT_EPSILON => EPSILON}
+import geotrellis.vector.{Point, Polygon}
+
+import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, MultiPoint, Polygon => JTSPolygon}
+import com.vividsolutions.jts.triangulate.DelaunayTriangulationBuilder
+import com.vividsolutions.jts.triangulate.quadedge.{QuadEdge}
 import org.apache.commons.math3.linear._
-import scala.collection.mutable.Map
+
+import scala.annotation.tailrec
+import scala.collection.JavaConversions._
+import scala.collection.mutable.{Map, Set}
+import scala.math.pow
+import spire.syntax.cfor._
 
 object Predicates {
   def det3 (a11: Double, a12: Double, a13: Double,
@@ -103,233 +111,24 @@ object Predicates {
 }
 
 /**
- * A class to compute the Delaunay triangulation of a set of points.  Details can be found in
- * <geotrellis_home>/docs/vector/voronoi.md
+ * A class for triangulating a set of points to satisfy the delaunay property.
+ * Each resulting triangle's circumscribing circle will contain no other points
+ * of the input set.
  */
 case class Delaunay(verts: Array[Point]) {
-  private val _triangles = Map.empty[(Int, Int, Int), HalfEdge[Int, Point]]
 
-  /**
-   * A catalog of the triangles produced by the Delaunay triangulation as a Map from (Int,Int,Int)
-   * to HalfEdge[Int,Point].  All integers are indices of points in verts, while the Points describe
-   * the center of the circumscribing circle for the triangle.  The Int triples give the triangle
-   * vertices in counter-clockwise order, starting from the lowest-numbered vertex.
-   */
-  lazy val triangles = _triangles.toMap
+  private[voronoi] val gf = new GeometryFactory
+  private val sites = new MultiPoint(verts.map(_.jtsGeom), gf)
+  private val builder = new DelaunayTriangulationBuilder
+  builder.setSites(sites)
+  private[voronoi] val subd = builder.getSubdivision
 
-  val _faceIncidentToVertex = Map.empty[Int, HalfEdge[Int, Point]]
-
-  /**
-   * A catalog of edges incident on the vertices of a Delaunay triangulation.  These half edges may
-   * be used to navigate the faces that have a given point as a vertex.  For example, all edges
-   * incident on vertex i may be visited by repeated application of the rotCCWDest() method of
-   * HalfEdge on faceIncidentToVertex(i).
-   */
-  lazy val faceIncidentToVertex = _faceIncidentToVertex.toMap
-
-  private def regularizeTriangleIndex (index: (Int, Int, Int)): (Int, Int, Int) = {
-    index match {
-      case (a, b, c) if (a < b && a < c) => (a, b, c)
-      case (a, b, c) if (b < a && b < c) => (b, c, a)
-      case (a, b, c) => (c, a, b)
-    }
-  }
-
-  private def insertTriangle(vs: (Int, Int, Int), e: HalfEdge[Int, Point]): Map[(Int, Int, Int), HalfEdge[Int, Point]] = {
-    val idx = regularizeTriangleIndex(vs)
-    _faceIncidentToVertex += (e.vert -> e, e.next.vert -> e.next, e.next.next.vert -> e.next.next)
-    _triangles += (idx -> e)
-  }
-
-  private def insertTriangle(e: HalfEdge[Int,Point]): Map[(Int,Int,Int),HalfEdge[Int,Point]] = {
-    insertTriangle((e.vert, e.next.vert, e.next.next.vert), e)
-  }
-
-  private def deleteTriangle(vs: (Int,Int,Int)): Map[(Int,Int,Int),HalfEdge[Int,Point]] = {
-    val idx = regularizeTriangleIndex(vs)
-    _triangles -= idx
-  }
-
-  private def deleteTriangle(e: HalfEdge[Int,Point]): Map[(Int,Int,Int),HalfEdge[Int,Point]] = {
-    deleteTriangle((e.vert, e.next.vert, e.next.next.vert))
-  }
-
-  private def lookupTriangle(vs: (Int,Int,Int)) = {
-    val idx = regularizeTriangleIndex(vs)
-    _triangles(idx)
-  }
-
-  private def distinctBy[T](eq: (T,T) => Boolean)(l: List[T]): List[T] = {
-    l match {
-      case Nil => Nil
-      case x::Nil => x::Nil
-      case x::y::xs if eq(x,y) => distinctBy(eq)(x::xs)
-      case x::y::xs => x :: distinctBy(eq)(y::xs)
-    }
-  }
-
-  private val vIx = distinctBy{ (i: Int, j: Int) => verts(i).distance(verts(j)) < 1e-10 }(
-    (0 until verts.length).toList.sortWith{
-      (i1,i2) => {
-        val p1 = verts(i1)
-        val p2 = verts(i2)
-        if (p1.x < p2.x) {
-          true
-        } else {
-          if (p1.x > p2.x) {
-            false
-          } else {
-            p1.y < p2.y
-          }
-        }
-      }
-    }).toArray
-
-  private def triangulate(lo: Int, hi: Int): HalfEdge[Int,Point] = {
-    // Implementation follows Guibas and Stolfi, ACM Transations on Graphics, vol. 4(2), 1985, pp. 74--123
-    val n = hi - lo + 1
-    implicit val trans = { i: Int => verts(i) }
-    import Predicates._
-    
-    n match {
-      case 1 => {
-        throw new IllegalArgumentException("Cannot triangulate a point set of size less than 2")
-      }
-      case 2 => {
-        val e = HalfEdge[Int,Point](vIx(lo), vIx(hi))
-        _faceIncidentToVertex += (e.vert -> e, e.src -> e.flip)
-        e
-      }
-      case 3 if (isCCW(vIx(lo), vIx(lo+1), vIx(lo+2))) => {
-        val t = HalfEdge[Int,Point](List(vIx(lo), vIx(lo+1), vIx(lo+2)), 
-                                    circleCenter(vIx(lo), vIx(lo+1), vIx(lo+2))).prev
-        insertTriangle((vIx(lo), vIx(lo+1), vIx(lo+2)), t)
-        t
-      }
-      case 3 if (isCCW(vIx(lo), vIx(lo+2), vIx(lo+1))) => {
-        val t = HalfEdge[Int,Point](List(vIx(lo), vIx(lo+2), vIx(lo+1)), 
-                                    circleCenter(vIx(lo), vIx(lo+2), vIx(lo+1)))
-        insertTriangle((vIx(lo), vIx(lo+2), vIx(lo+1)), t)
-        t
-      }
-      case 3 => {
-        val a = HalfEdge[Int,Point](vIx(lo), vIx(lo+1))
-        val b = HalfEdge[Int,Point](vIx(lo+1), vIx(lo+2))
-        a.next = b
-        b.flip.next = a.flip
-        b.flip
-      }
-      case _ => {
-        val med = (hi + lo) / 2
-        var left = triangulate(lo,med)
-        var right = triangulate(med+1,hi)
-
-        // compute the lower common tangent of left and right
-        //  NOTE: failures in the Delaunay triangulator are likely due to a failure in this step
-        var continue = true
-        var base: HalfEdge[Int, Point] = null
-        while (continue) {
-          // if (isLeftOf(left, right.src)) {
-          //   left = left.next
-          // } else {
-          //   if (isRightOf(right, left.src)) {
-          //     right = right.next
-          //   } else {
-          //     continue = false
-          //   }
-          // }
-          base = HalfEdge[Int,Point](right.src, left.src)
-          if (isLeftOf(base, left.vert)) {
-            left = left.next
-          } else if (isLeftOf(base, right.vert)) {
-            right = right.next
-          } else if (isLeftOf(base, left.prev.src)) {
-            left = left.prev
-          } else if (isLeftOf(base, right.prev.src)) {
-            right = right.prev
-          } else {
-            continue = false
-          }
-        }
-
-        //var base = HalfEdge[Int,Point](right.src, left.src)
-        base.next = left
-        base.flip.next = right
-        left.prev.next = base.flip
-        right.prev.next = base
-
-        continue = true
-        while (continue) {
-          var lcand = base.flip.rotCCWSrc
-          var rcand = base.rotCWSrc
-
-          // Find left side candidate edge for extending the fill triangulation
-          if (isCCW(lcand.vert, base.vert, base.src)) {
-            while (inCircle((base.vert, base.src, lcand.vert), lcand.rotCCWSrc.vert)) {
-              val e = lcand.rotCCWSrc
-              deleteTriangle(lcand)
-              lcand.rotCCWDest.next = lcand.next
-              lcand.prev.next = lcand.flip.next
-              lcand = e
-            }
-          }
-
-          // Find right side candidate edge for extending the fill triangulation
-          if (isCCW(rcand.vert, base.vert, base.src)) {
-            while (inCircle((base.vert, base.src, rcand.vert), rcand.rotCWSrc.vert)) {
-              val e = rcand.rotCWSrc
-              deleteTriangle(rcand.flip)
-              base.flip.next = rcand.rotCWSrc
-              rcand.rotCCWDest.next = rcand.next
-              rcand = e
-            }
-          }
-
-          
-          if (!isCCW(lcand.vert, base.vert, base.src) && !isCCW(rcand.vert, base.vert, base.src)) {
-            // no further Delaunay triangles to add
-            continue = false
-          } else {
-            if (!isCCW(lcand.vert, base.vert, base.src) ||
-                (isCCW(rcand.vert, base.vert, base.src) && 
-                 inCircle((lcand.vert, lcand.src, rcand.src), rcand.vert))) 
-            {
-              // form new triangle from rcand and base
-              val e = HalfEdge[Int,Point](rcand.vert, base.vert)
-              e.flip.next = rcand.next
-              e.next = base.flip
-              rcand.next = e
-              lcand.flip.next = e.flip
-              base = e
-            } else {
-              // form new triangle from lcand and base
-              val e = HalfEdge[Int,Point](base.src, lcand.vert)
-              lcand.rotCCWDest.next = e.flip
-              e.next = lcand.flip
-              e.flip.next = rcand
-              base.flip.next = e
-              base = e
-            }
-            // Tag edges with the center of the new triangle's circumscribing circle
-            val c = circleCenter(base.vert, base.next.vert, base.next.next.vert)
-            base.face = Some(c)
-            base.next.face = Some(c)
-            base.next.next.face = Some(c)
-            insertTriangle(base)
-          }
-        }
-
-        base.flip.next
-      }
-    }
-  }
-
-  /**
-   * Provides a handle on the bounding loop of a Delaunay triangulation.  All of the half-edges
-   * reachable by applying next to boundary have no bounding face information.  That is
-   * boundary(.next)*.face == None.
-   */
-  val boundary = triangulate(0, vIx.length-1)
-
+  val triangles: Seq[Polygon] = {
+    val tris = subd.getTriangles(gf)
+    val len = tris.getNumGeometries
+    val arr = Array.ofDim[Polygon](len)
+    cfor(0)(_ < len, _ + 1) { i => arr(i) = Polygon(tris.getGeometryN(i).asInstanceOf[JTSPolygon]) }
+    arr
 }
 
+}

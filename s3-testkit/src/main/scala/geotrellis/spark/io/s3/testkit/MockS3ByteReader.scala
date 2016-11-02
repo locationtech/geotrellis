@@ -18,11 +18,11 @@ class MockS3ByteReader(mock: MockS3StreamBytes,
 
   var chunkBuffer = newByteBuffer(chunkArray)
 
-  def position = (offset + chunkBuffer.position).toInt
+  def position = offset + chunkBuffer.position
 
-  def position(newPoint: Int): Buffer = {
+  def position(newPoint: Long): Buffer = {
     if (isContained(newPoint)) {
-      chunkBuffer.position(newPoint - offset.toInt)
+      chunkBuffer.position((newPoint - offset).toInt)
     } else {
       accessCount += 1
       adjustChunk(newPoint)
@@ -33,7 +33,7 @@ class MockS3ByteReader(mock: MockS3StreamBytes,
   private def adjustChunk: Unit =
     adjustChunk(position)
 
-  private def adjustChunk(newPoint: Int): Unit = {
+  private def adjustChunk(newPoint: Long): Unit = {
     accessCount += 1
     chunk = mock.getMappedArray(newPoint)
     chunkBuffer = newByteBuffer
@@ -93,6 +93,6 @@ class MockS3ByteReader(mock: MockS3StreamBytes,
       case None => ByteBuffer.wrap(byteArray)
     }
 
-  def isContained(newPosition: Int): Boolean =
+  def isContained(newPosition: Long): Boolean =
     if (newPosition >= offset && newPosition <= offset + length) true else false
 }
