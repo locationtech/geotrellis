@@ -70,6 +70,19 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
  * Companion object to GeoTiff
  */
 object GeoTiff {
+  def readMultiBand(path: String): MultibandGeoTiff =
+    MultibandGeoTiff(path)
+
+  def readSingleBand(path: String): SinglebandGeoTiff =
+    SinglebandGeoTiff(path)
+
+  def apply(path: String): Either[SinglebandGeoTiff, MultibandGeoTiff] =
+    if (MultibandGeoTiff(path).tile.bandCount == 1) {
+      Left(SinglebandGeoTiff(path))
+    } else {
+      Right(MultibandGeoTiff(path))
+    }
+
   def apply(tile: Tile, extent: Extent, crs: CRS): SinglebandGeoTiff =
     SinglebandGeoTiff(tile, extent, crs)
 
