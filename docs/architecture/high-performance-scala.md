@@ -149,6 +149,9 @@ A reliable interface is provided, but without the risk of boxing that use of a t
 Along similar lines, the fact that `IntArrayTile` and `UByteGeoTiffTile` share a common ancestor `Tile` gurantees that they both provide the method `foreach`, which allows a function to be applied to each pixel of a tile.
 This is possible even though those two types are backed by very different data structures: an array for the first one and complex TIFF structure for the second.
 
+Some of the tile-related code is partially-auto generated using Miles Sabin's [Boilerplate](https://github.com/geotrellis/geotrellis/blob/master/project/Boilerplate.scala) mechanism.
+In particular, this mechanism is used to generate the code related to `TileCombiner`s.
+
 # Mutable Types #
 
 Although use of immutable data structures is preferred in Scala, there are places in the codebase where mutable data structures have been used for performance reasons.
