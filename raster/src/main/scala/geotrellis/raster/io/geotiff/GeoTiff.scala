@@ -61,7 +61,8 @@ object GeoTiff {
   def apply(path: String): Either[SinglebandGeoTiff, MultibandGeoTiff] = {
     val multiband = MultibandGeoTiff(path)
     if (multiband.tile.bandCount == 1) {
-      Left(SinglebandGeoTiff(path))
+      Left(new SinglebandGeoTiff(tile = multiband.tile.band(0),
+        multiband.extent, multiband.crs, multiband.tags, multiband.options))
     } else {
       Right(multiband)
     }
