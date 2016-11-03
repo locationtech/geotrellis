@@ -40,11 +40,10 @@ object ColorMap {
   }
 
   object Options {
-    def DEFAULT: Options = new Options(LessThanOrEqualTo, 0x00000000, 0x00000000, false)
+    def DEFAULT: Options = Options()
 
-    implicit def classBoundaryTypeToOptions(cbt: ClassBoundaryType): Options = {
-      new Options(cbt, 0x00000000, 0x00000000, false)
-    }
+    implicit def classBoundaryTypeToOptions(cbt: ClassBoundaryType): Options =
+      Options(cbt)
   }
 
   def apply(breaksToColors: (Int, Int)*): ColorMap =
