@@ -26,6 +26,91 @@ have:
 
 ![](images/type-composition.png)
 
+In this diagram:
+
+- `CustomTile`, `CustomMetadata`, and `CustomKey` don't exist, they
+represent types that you could write yourself for your application.
+- The `K` seen in several places is the same `K`.
+- The type `RDD[(K, V)] with Metadata[M]` is a Scala *Anonymous Type*. In
+this case, it means `RDD` from Apache Spark with extra methods injected from
+the `Metadata` trait. This type is sometimes aliased in GeoTrellis as
+`ContextRDD`.
+- `RDD[(K, V)]` resembles a Scala `Map[K, V]`, and in fact has further
+`Map`-like methods injected by Spark when it takes this shape. See the
+[PairRDDFunctions](http://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.rdd.PairRDDFunctions)
+Scaladocs for those methods. **Note:** Unlike `Map`, the `K`s here are
+**not** guaranteed to be unique.
+
+**TileLayerRDD**
+
+The canonical realization of `RDD[(K, V)] with Metadata[M]` in GeoTrellis is as follows:
+
+```scala
+type TileLayerRDD[K] = RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]
+```
+
+This type represents a grid (or cube!) of `Tile`s on the earth, arranged
+according to some `K`. Features of this grid are:
+
+- Grid location `(0, 0)` is the top-leftmost `Tile`.
+- The `Tile`s exist in *some* CRS. In `TileLayerMetadata`, this is kept
+track of with an actual `CRS` field.
+- In applications, `K` is mostly `SpatialKey` or `SpaceTimeKey`.
+
+**Tile Layer IO**
+
+Layer IO requires a [Tile Layer Backend](./tile-backends.md). Each backend
+has an `AttributeStore`, a `LayerReader`, and a `LayerWriter`.
+
+Example setup (with our `File` system backend):
+
+```scala
+import geotrellis.spark._
+import geotrellis.spark.io._
+import geotrellis.spark.io.file._
+
+val catalogPath: String = ...  /* Some location on your computer */
+
+val store: AttributeStore = FileAttributeStore(catalogPath)
+
+val reader = FileLayerReader(store)
+val writer = FileLayerWriter(store)
+```
+
+Writing an entire layer:
+
+```scala
+/* Zoom level 13 */
+val layerId = LayerId("myLayer", 13)
+
+/* Produced from an ingest, etc. */
+val rdd: TileLayerRDD[SpatialKey] = ...
+
+/* Order your Tiles according to the Z-Curve Space Filling Curve */
+val index: KeyIndex[SpatialKey] = ZCurveKeyIndexMethod.createIndex(rdd.metadata.bounds)
+
+/* Returns `Unit` */
+writer.write(layerId, rdd, index)
+```
+
+Reading an entire layer:
+
+```scala
+/* `.read` has many overloads, but this is the simplest */
+val sameLayer: TileLayerRDD[SpatialKey] = reader.read(layerId)
+```
+
+Querying a layer (a "filtered" read):
+
+```scala
+/* Some area on the earth to constrain your query to */
+val extent: Extent = ...
+
+/* There are more types that can go into `where` */
+val filteredLayer: TileLayerRDD[SpatialKey] =
+  reader.query(layerId).where(Intersects(extent)).result
+```
+
 Keys and Key Indexes
 ====================
 
