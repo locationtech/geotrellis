@@ -15,6 +15,8 @@ pages:
     - Extract-Transform-Load (ETL): tutorials/etl-tutorial.md
   - User Guide:
     - Core Concepts: guide/core-concepts.md
+    - Using Rasters: guide/rasters.md
+    - Using Vectors: guide/vectors.md
     - GeoTrellis Module Hierarchy: guide/module-hierarchy.md
     - Tile Layer Backends: guide/tile-backends.md
     - Vector Data Backends: guide/vector-backends.md
