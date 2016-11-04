@@ -24,6 +24,20 @@ import org.apache.spark.rdd.RDD
 
 
 abstract class RDDMultibandSigmoidalMethods[K, V: (? => MultibandTile)] extends MethodExtensions[RDD[(K, V)]] {
+
+  /**
+    * Given parameters alpha and beta, return an RDD of tiles where
+    * the sigmoidal contrast operation has been performed on each band
+    * of each tile.
+    *
+    * The approach used is described here:
+    * https://www.imagemagick.org/Usage/color_mods/#sigmoidal
+    *
+    * @param  alpha  The center around-which the stretch is performed (given as a fraction)
+    * @param  beta   The standard deviation in the computation, used to avoid saturating the upper and lower parts of the gamut
+    * @return        An RDD of output tiles
+    */
   def sigmoidal(alpha: Double, beta: Double): RDD[(K, MultibandTile)] =
     RDDSigmoidalContrast.multiband(self, alpha, beta)
+
 }
