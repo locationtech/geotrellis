@@ -43,6 +43,12 @@ trait RasterReprojectMethods[+T <: Raster[_]] extends MethodExtensions[T] {
     val rasterExtent = self.rasterExtent
     val windowExtent = rasterExtent.extentFor(gridBounds)
     val windowRasterExtent = RasterExtent(windowExtent, gridBounds.width, gridBounds.height)
+
+    /**
+      * map { re =>
+      *  re.copy(extent = re.extent.intersection(windowExtent).getOrElse(windowExtent)) // not to get out of window
+      * }
+      */
     val targetRasterExtent = options.targetRasterExtent.getOrElse(ReprojectRasterExtent(windowRasterExtent, transform, options = options))
 
     reproject(targetRasterExtent, transform, inverseTransform, options)
