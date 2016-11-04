@@ -41,6 +41,17 @@ object RDDHistogramMatching {
         .reduce(_ + _)
     })
 
+  /**
+    * Given an RDD of key-tile pairs, a source histogram (ostensibly
+    * that of the tiles in the RDD), and a target histogram, this
+    * function produces an RDD of key-tile pairs where the histograms
+    * of the result tiles have been matched to the target histogram.
+    *
+    * @param  rdd              The key-tile pairs
+    * @param  sourceHistogram  The ostensible histogram of the tiles of the RDD
+    * @param  targetHistogram  The histogram that the tiles should be matched to
+    * @return                  An RDD key-tile pairs where the histograms have been matched
+    */
   def singleband[T1 <: AnyVal, T2 <: AnyVal, K, V: (? => Tile)](
     rdd: RDD[(K, V)],
     sourceHistogram: Histogram[T1],
@@ -49,6 +60,15 @@ object RDDHistogramMatching {
     rdd.map({ case (key, tile) =>
       (key, HistogramMatching(tile, sourceHistogram, targetHistogram)) })
 
+  /**
+    * Given an RDD of key-tile pairs and a target histogram, this
+    * function produces an RDD of key-tile pairs where the histograms
+    * of the result tiles have been matched to the target histogram.
+    *
+    * @param  rdd              The key-tile pairs
+    * @param  targetHistogram  The histogram that the tiles should be matched to
+    * @return                  An RDD key-tile pairs where the histograms have been matched
+    */
   def singleband[T <: AnyVal, K, V: (? => Tile)](
     rdd: RDD[(K, V)],
     targetHistogram: Histogram[T]
@@ -57,6 +77,19 @@ object RDDHistogramMatching {
     singleband(rdd, sourceHistogram, targetHistogram)
   }
 
+  /**
+    * Given an RDD of key-MultibandTile pairs, a sequence of source
+    * histograms (ostensibly those of the bands of the tiles in the
+    * RDD), and a sequence of target histograms (of the bands of the
+    * tiles), this function produces an RDD of key-MultibandTile pairs
+    * where the histograms of the bands of the result tiles have been
+    * matched to the respective target histograms.
+    *
+    * @param  rdd               The key-MultibandTile pairs
+    * @param  sourceHistograms  The ostensible histograms of the bands of the tiles of the RDD
+    * @param  targetHistograms  The histograms that the bands of the the tiles should be matched to
+    * @return                   An RDD key-MultibandTile pairs where the bands of the histograms have been matched
+    */
   def multiband[T1 <: AnyVal, T2 <: AnyVal, K, V: (? => MultibandTile)](
     rdd: RDD[(K, V)],
     sourceHistograms: Seq[Histogram[T1]],
@@ -65,6 +98,17 @@ object RDDHistogramMatching {
     rdd.map({ case (key, tile: MultibandTile) =>
       (key, HistogramMatching(tile, sourceHistograms, targetHistograms)) })
 
+  /**
+    * Given an RDD of key-MultibandTile pairs and a sequence of target
+    * histograms (of the bands of the tiles), this function produces
+    * an RDD of key-MultibandTile pairs where the histograms of the
+    * bands of the result tiles have been matched to the respective
+    * target histograms.
+    *
+    * @param  rdd               The key-MultibandTile pairs
+    * @param  targetHistograms  The histograms that the bands of the the tiles should be matched to
+    * @return                   An RDD key-MultibandTile pairs where the bands of the histograms have been matched
+    */
   def multiband[T <: AnyVal, K, V: (? => MultibandTile)](
     rdd: RDD[(K, V)],
     targetHistograms: Seq[Histogram[T]]

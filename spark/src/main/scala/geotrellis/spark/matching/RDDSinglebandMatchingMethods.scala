@@ -28,9 +28,27 @@ import scala.reflect.ClassTag
 
 abstract class RDDSinglebandMatchingMethods[K, V: (? => Tile)] extends MethodExtensions[RDD[(K, V)]] {
 
+  /**
+    * Given a target histogram, this function produces an RDD of
+    * key-tile pairs where the histograms of the result tiles have
+    * been matched to the target histogram.
+    *
+    * @param  targetHistogram  The histogram that the tiles should be matched to
+    * @return                  An RDD key-tile pairs where the histograms have been matched
+    */
   def matchHistogram[T <: AnyVal](targetHistogram: Histogram[T]): RDD[(K, Tile)] =
     RDDHistogramMatching.singleband(self, targetHistogram)
 
+  /**
+    * Given a source histogram (ostensibly that of the tiles in the
+    * RDD), and a target histogram, this function produces an RDD of
+    * key-tile pairs where the histograms of the result tiles have
+    * been matched to the target histogram.
+    *
+    * @param  sourceHistogram  The ostensible histogram of the tiles of the RDD
+    * @param  targetHistogram  The histogram that the tiles should be matched to
+    * @return                  An RDD key-tile pairs where the histograms have been matched
+    */
   def matchHistogram[T1 <: AnyVal, T2 <: AnyVal](
     sourceHistogram: Histogram[T1],
     targetHistogram: Histogram[T2]

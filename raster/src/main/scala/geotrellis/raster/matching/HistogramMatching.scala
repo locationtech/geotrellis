@@ -44,6 +44,17 @@ object HistogramMatching {
     else targetCdf(i)._1
   }
 
+  /**
+    * Given a [[Tile]], a source
+    * [[geotrellis.raster.histogram.Histogram]] (ostensibly that of
+    * the tile), and a target histogram, this function produces a tile
+    * whose histogram has been matched to the target histogram.
+    *
+    * @param  tile             The source tile
+    * @param  sourceHistogram  The ostensible histogram of the tile
+    * @param  targetHistogram  The target histogram of the output tile
+    * @return                  The histogram-matched tile
+    */
   def apply[T1 <: AnyVal, T2 <: AnyVal](
     tile: Tile,
     sourceHistogram: Histogram[T1],
@@ -56,6 +67,16 @@ object HistogramMatching {
     tile.mapDouble(localTransform)
   }
 
+  /**
+    * Given a [[Tile]] and a target
+    * [[geotrellis.raster.histogram.Histogram]], this function
+    * produces a tile whose histogram has been matched to the target
+    * histogram.
+    *
+    * @param  tile             The source tile
+    * @param  targetHistogram  The target histogram of the output tile
+    * @return                  The histogram-matched tile
+    */
   def apply[T <: AnyVal](tile: Tile, targetHistogram: Histogram[T]): Tile =
     HistogramMatching(
       tile,
@@ -63,6 +84,18 @@ object HistogramMatching {
       targetHistogram
     )
 
+  /**
+    * Given a [[MultibandTile]], a sequence of source
+    * [[geotrellis.raster.histogram.Histogram]] objects (ostensibly
+    * those of the bands of the tile), and a sequence of target
+    * histograms, this function produces a tile whose bands have been
+    * respectively matched to the target histograms.
+    *
+    * @param  tile              The source tile
+    * @param  sourceHistograms  The ostensible histograms of the bands of the tile
+    * @param  targetHistograms  The target histograms for the bands of the output tile
+    * @return                   The histogram-matched tile
+    */
   def apply[T1 <: AnyVal, T2 <: AnyVal](
     tile: MultibandTile,
     sourceHistograms: Seq[Histogram[T1]],
@@ -76,6 +109,16 @@ object HistogramMatching {
         })
     )
 
+  /**
+    * Given a [[MultibandTile]], and a sequence of target
+    * [[geotrellis.raster.histogram.Histogram]] objects, this function
+    * produces a tile whose bands have been respectively matched to
+    * the target histograms.
+    *
+    * @param  tile              The source tile
+    * @param  targetHistograms  The target histograms for the bands of the output tile
+    * @return                   The histogram-matched tile
+    */
   def apply[T <: AnyVal](
     tile: MultibandTile,
     targetHistograms: Seq[Histogram[T]]

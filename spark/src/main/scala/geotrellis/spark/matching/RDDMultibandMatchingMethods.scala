@@ -28,9 +28,30 @@ import scala.reflect.ClassTag
 
 abstract class RDDMultibandMatchingMethods[K, V: (? => MultibandTile)] extends MethodExtensions[RDD[(K, V)]] {
 
+  /**
+    * Given a sequence of target histograms (of the bands of the
+    * tiles), this function produces an RDD of key-MultibandTile pairs
+    * where the histograms of the bands of the result tiles have been
+    * matched to the respective target histograms.
+    *
+    * @param  targetHistograms  The histograms that the bands of the the tiles should be matched to
+    * @return                   An RDD key-MultibandTile pairs where the bands of the histograms have been matched
+    */
   def matchHistogram[T <: AnyVal](targetHistograms: Seq[Histogram[T]]): RDD[(K, MultibandTile)] =
     RDDHistogramMatching.multiband(self, targetHistograms)
 
+  /**
+    * Given a sequence of source histograms (ostensibly those of the
+    * bands of the tiles in the RDD), and a sequence of target
+    * histograms (of the bands of the tiles), this function produces
+    * an RDD of key-MultibandTile pairs where the histograms of the
+    * bands of the result tiles have been matched to the respective
+    * target histograms.
+    *
+    * @param  sourceHistograms  The ostensible histograms of the bands of the tiles of the RDD
+    * @param  targetHistograms  The histograms that the bands of the the tiles should be matched to
+    * @return                   An RDD key-MultibandTile pairs where the bands of the histograms have been matched
+    */
   def matchHistogram[T1 <: AnyVal, T2 <: AnyVal](
     sourceHistograms: Seq[Histogram[T1]],
     targetHistograms: Seq[Histogram[T2]]
