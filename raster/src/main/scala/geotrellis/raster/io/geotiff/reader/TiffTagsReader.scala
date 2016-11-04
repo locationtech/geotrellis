@@ -29,19 +29,31 @@ object TiffTagsReader {
 
     // Validate GeoTiff identification number
     val geoTiffIdNumber = byteReader.getChar
-    if ( geoTiffIdNumber != 42)
-      throw new MalformedGeoTiffException(s"bad identification number (must be 42, was $geoTiffIdNumber)")
+    if (geoTiffIdNumber != 42 && geoTiffIdNumber != 43)
+      throw new MalformedGeoTiffException(s"bad identification number (must be 42 or 43, was $geoTiffIdNumber)")
 
-    val tagsStartPosition = byteReader.getInt
-
-    read(byteReader, tagsStartPosition)
+    if (geoTiffIdNumber == 42) {
+      val smallOffset = byteReader.getInt
+      read(byteReader, smallOffset)
+    } else {
+      byteReader.position(8)
+      val bigOffset = byteReader.getLong
+      read(byteReader, bigOffset)
+    }
   }
 
-  def read(byteReader: ByteReader, tagsStartPosition: Int): TiffTags = {
+  def read[T](byteReader: ByteReader, tagsStartPosition: T): TiffTags = {
 
-    byteReader.position(tagsStartPosition)
+    tagsStartPosition match {
+      case a: Int => byteReader.position(a)
+      case b: Long => byteReader.position(b)
+    }
 
-    val tagCount = byteReader.getShort
+    val tagCount = 
+      tagsStartPosition match {
+        case _: Int => byteReader.getShort
+        case _: Long => byteReader.getLong
+      }
 
     // Read the tags.
     var tiffTags = TiffTags()
@@ -51,12 +63,22 @@ object TiffTagsReader {
 
     cfor(0)(_ < tagCount, _ + 1) { i =>
       val tagMetadata =
-        TiffTagMetadata(
-          byteReader.getUnsignedShort, // Tag
-          byteReader.getUnsignedShort, // Type
-          byteReader.getInt,           // Count
-          byteReader.getInt            // Offset
-        )
+        tagsStartPosition match {
+          case _: Int =>
+            TiffTagMetadata(
+              byteReader.getUnsignedShort, // Tag
+              byteReader.getUnsignedShort, // Type
+              byteReader.getInt,           // Count
+              byteReader.getInt            // Offset
+            )
+          case _: Long =>
+            TiffTagMetadata(
+              byteReader.getUnsignedShort,
+              byteReader.getUnsignedShort,
+              byteReader.getLong,
+              byteReader.getLong
+            )
+        }
 
       if (tagMetadata.tag == codes.TagCodes.GeoKeyDirectoryTag)
         geoTags = Some(tagMetadata)
@@ -104,6 +126,12 @@ object TiffTagsReader {
         byteReader.readFloatsTag(tiffTags, tagMetadata)
       case (_, DoublesFieldType) =>
         byteReader.readDoublesTag(tiffTags, tagMetadata)
+      case (_, LongsFieldType) =>
+        byteReader.readLongsTag(tiffTags, tagMetadata)
+      case (_, SignedLongsFieldType) =>
+        byteReader.readLongsTag(tiffTags, tagMetadata)
+      case (_, IFDOffset) =>
+        byteReader.readLongsTag(tiffTags, tagMetadata)
     }
 
   implicit class ByteReaderTagReaderWrapper(val byteReader: ByteReader) extends AnyVal {
@@ -134,7 +162,7 @@ object TiffTagsReader {
 
       byteReader.position(tagMetadata.offset)
 
-      val points = Array.ofDim[(Pixel3D, Pixel3D)](numberOfPoints)
+      val points = Array.ofDim[(Pixel3D, Pixel3D)](numberOfPoints.toInt)
       cfor(0)(_ < numberOfPoints, _ + 1) { i =>
         points(i) =
           (
@@ -206,7 +234,7 @@ object TiffTagsReader {
 
       // Read string, but don't read in trailing 0
       val string =
-        byteReader.getString(tagMetadata.length, tagMetadata.offset).substring(0, tagMetadata.length - 1)
+        byteReader.getString(tagMetadata.length, tagMetadata.offset).substring(0, (tagMetadata.length - 1).toInt)
 
       tagMetadata.tag match {
         case DateTimeTag => tiffTags &|->
@@ -333,10 +361,10 @@ object TiffTagsReader {
           BasicTags._bitsPerSample set(shorts(0))
         case StripOffsetsTag => tiffTags &|->
           TiffTags._basicTags ^|->
-          BasicTags._stripOffsets set(Some(shorts))
+          BasicTags._stripOffsets set(Some(shorts.map(_.toLong)))
         case StripByteCountsTag => tiffTags &|->
           TiffTags._basicTags ^|->
-          BasicTags._stripByteCounts set(Some(shorts))
+          BasicTags._stripByteCounts set(Some(shorts.map(_.toLong)))
         case MinSampleValueTag => tiffTags &|->
           TiffTags._dataSampleFormatTags ^|->
           DataSampleFormatTags._minSampleValue set(Some(shorts.map(_.toLong)))
@@ -358,7 +386,7 @@ object TiffTagsReader {
           NonBasicTags._halftoneHints set(Some(shorts))
         case TileByteCountsTag => tiffTags &|->
           TiffTags._tileTags ^|->
-          TileTags._tileByteCounts set(Some(shorts))
+          TileTags._tileByteCounts set(Some(shorts.map(_.toLong)))
         case DotRangeTag => tiffTags &|->
           TiffTags._cmykTags ^|->
           CmykTags._dotRange set(Some(shorts))
@@ -439,10 +467,10 @@ object TiffTagsReader {
           BasicTags._rowsPerStrip set(ints(0))
         case StripOffsetsTag => tiffTags &|->
           TiffTags._basicTags ^|->
-          BasicTags._stripOffsets set(Some(ints.map(_.toInt)))
+          BasicTags._stripOffsets set(Some(ints))
         case StripByteCountsTag => tiffTags &|->
           TiffTags._basicTags ^|->
-          BasicTags._stripByteCounts set(Some(ints.map(_.toInt)))
+          BasicTags._stripByteCounts set(Some(ints))
         case FreeOffsetsTag => tiffTags &|->
           TiffTags._nonBasicTags ^|->
           NonBasicTags._freeOffsets set(Some(ints))
@@ -451,10 +479,10 @@ object TiffTagsReader {
           NonBasicTags._freeByteCounts set(Some(ints))
         case TileOffsetsTag => tiffTags &|->
           TiffTags._tileTags ^|->
-          TileTags._tileOffsets set(Some(ints.map(_.toInt)))
+          TileTags._tileOffsets set(Some(ints))
         case TileByteCountsTag => tiffTags &|->
           TiffTags._tileTags ^|->
-          TileTags._tileByteCounts set(Some(ints.map(_.toInt)))
+          TileTags._tileByteCounts set(Some(ints))
         case JpegQTablesTag => tiffTags &|->
           TiffTags._jpegTags ^|->
           JpegTags._jpegQTables set(Some(ints))
@@ -470,6 +498,26 @@ object TiffTagsReader {
         case tag => tiffTags &|->
           TiffTags._nonStandardizedTags ^|->
           NonStandardizedTags._longsMap modify(_ + (tag -> ints.map(_.toLong)))
+      }
+    }
+    
+    def readLongsTag(tiffTags: TiffTags,
+      tagMetadata: TiffTagMetadata) = {
+      val longs = byteReader.getLongArray(tagMetadata.length, tagMetadata.offset)
+
+      tagMetadata.tag match {
+        case StripOffsetsTag => tiffTags &|->
+          TiffTags._basicTags ^|->
+          BasicTags._stripOffsets set(Some(longs))
+        case StripByteCountsTag => tiffTags &|->
+          TiffTags._basicTags ^|->
+          BasicTags._stripByteCounts set(Some(longs))
+        case TileOffsetsTag => tiffTags &|->
+          TiffTags._tileTags ^|->
+          TileTags._tileOffsets set(Some(longs))
+        case TileByteCountsTag => tiffTags &|->
+          TiffTags._tileTags ^|->
+          TileTags._tileByteCounts set(Some(longs))
       }
     }
 

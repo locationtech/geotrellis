@@ -26,5 +26,13 @@ class IngestSpec extends FunSpec
         rdd.filter(!_._2.isNoDataTile).count should be (8)
       }
     }
+
+    it("should ingest GeoTiff with preset max zoom level") {
+      val source = sc.hadoopGeoTiffRDD(new Path(inputHome, "all-ones.tif"))
+      Ingest[ProjectedExtent, SpatialKey](source, LatLng, ZoomedLayoutScheme(LatLng, 512), maxZoom = Some(11)) { (rdd, zoom) =>
+        zoom should be (11)
+        rdd.filter(!_._2.isNoDataTile).count should be (18)
+      }
+    }
   }
 }

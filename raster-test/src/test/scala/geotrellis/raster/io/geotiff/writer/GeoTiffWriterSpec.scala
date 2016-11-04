@@ -55,6 +55,26 @@ class GeoTiffWriterSpec extends FunSpec
       actual should be (expected)
     }
 
+    it("should write GeoTiff with oversized custom tags") {
+      val geoTiff = MultibandGeoTiff(geoTiffPath("multi-tag.tif"))
+
+      val newTag1 = ("SOME_CUSTOM_TAG1" -> "1234567890123456789012345678901")
+      val newTag2 = ("SOME_CUSTOM_TAG2" -> "12345678901234567890123456789012")
+      val headTags = geoTiff.tags.headTags + newTag1 + newTag2
+      val bandTags = geoTiff.tags.bandTags.map(_ + newTag1 + newTag2)
+
+      val taggedTiff = geoTiff.copy(tags = Tags(headTags, bandTags))
+
+      GeoTiffWriter.write(taggedTiff, path)
+
+      addToPurge(path)
+
+      val actual = MultibandGeoTiff(path).tags
+      val expected = taggedTiff.tags
+
+      actual should be (expected)
+    }
+
     it("should write web mercator correctly") {
       val geoTiff = SinglebandGeoTiff(geoTiffPath("ndvi-web-mercator.tif"))
 

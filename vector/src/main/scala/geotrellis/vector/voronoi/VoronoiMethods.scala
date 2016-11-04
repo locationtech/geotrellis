@@ -4,9 +4,9 @@ import geotrellis.vector.{Extent, Point}
 import geotrellis.util.MethodExtensions
 
 trait VoronoiDiagramMethods extends MethodExtensions[Traversable[Point]] {
-  def voronoiDiagram(extent: Extent): Voronoi = { new Voronoi(self.toArray, extent) }
+  def voronoiDiagram(): Voronoi = { new Voronoi(self.toArray) }
 }
 
 trait VoronoiDiagramArrayMethods extends MethodExtensions[Array[Point]] {
-  def voronoiDiagram(extent: Extent): Voronoi = { new Voronoi(self, extent) }
+  def voronoiDiagram(): Voronoi = { new Voronoi(self) }
 }

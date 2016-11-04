@@ -1,5 +1,7 @@
 package geotrellis.spark.io.s3
 
+import geotrellis.proj4.CRS
+
 import com.amazonaws.services.s3.model.{ListObjectsRequest, ObjectListing}
 import com.amazonaws.auth._
 import com.amazonaws.regions._
@@ -32,10 +34,19 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
     val key = conf.get(AWS_KEY)
     val bucket = conf.get(BUCKET)
     val prefix = conf.get(PREFIX)
+    val crs = conf.get(CRS_VALUE)
     val region: Option[Region] = {
       val r = conf.get(REGION, null)
       if(r != null) Some(Region.getRegion(Regions.fromName(r)))
       else None
+    }
+
+    val chunkSize = {
+      val chunkSizeConf = conf.get(CHUNK_SIZE)
+      if (chunkSizeConf == null)
+        S3InputFormat.DEFAULT_CHUNK_SIZE
+      else
+        chunkSizeConf
     }
 
     val partitionCountConf = conf.get(PARTITION_COUNT)
@@ -116,6 +127,7 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
 
 object S3InputFormat {
   final val DEFAULT_PARTITION_BYTES =  256 * 1024 * 1024
+  final val DEFAULT_CHUNK_SIZE =  8 * 256 * 256
   final val ANONYMOUS = "s3.anonymous"
   final val AWS_ID = "s3.awsId"
   final val AWS_KEY = "s3.awsKey"
@@ -124,6 +136,8 @@ object S3InputFormat {
   final val REGION = "s3.region"
   final val PARTITION_COUNT = "s3.partitionCount"
   final val PARTITION_BYTES = "S3.partitionBytes"
+  final val CHUNK_SIZE = "s3.chunkSize"
+  final val CRS_VALUE = "s3.crs"
 
   private val idRx = "[A-Z0-9]{20}"
   private val keyRx = "[a-zA-Z0-9+/]+={0,2}"
@@ -186,4 +200,16 @@ object S3InputFormat {
   /** Set desired partition size in bytes, at least one item per partition will be assigned */
   def setPartitionBytes(conf: Configuration, bytes: Long): Unit =
     conf.set(PARTITION_BYTES, bytes.toString)
+
+  def setChunkSize(job: Job, chunkSize: Int): Unit =
+    setChunkSize(job.getConfiguration, chunkSize)
+  
+  def setChunkSize(conf: Configuration, chunkSize: Int): Unit =
+    conf.set(CHUNK_SIZE, chunkSize.toString)
+  
+  def setCRS(job: Job, crs: CRS): Unit =
+    setCRS(job.getConfiguration, crs)
+  
+  def setCRS(conf: Configuration, crs: CRS): Unit =
+    conf.set(CHUNK_SIZE, crs.toString)
 }

@@ -44,7 +44,7 @@ class HalfEdge[V,F](val vert: V, var flip: HalfEdge[V,F], var next: HalfEdge[V,F
 
   def rotCCWDest() = flip.prev
 
-  override def toString() = { s"[${src} -> ${vert}]" }
+  override def toString() = { if (flip == null) { s"[?? -> ${vert}]" } else { s"[${src} -> ${vert}]" } }
 }
 
 object HalfEdge {
