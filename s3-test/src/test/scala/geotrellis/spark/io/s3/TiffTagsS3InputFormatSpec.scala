@@ -12,6 +12,7 @@ import org.scalatest._
 
 import java.nio.file.{ Paths, Files }
 
+/*
 class MockTiffTagsS3InputFormat extends TiffTagsS3InputFormat {
   override def getS3Client(credentials: AWSCredentials): S3Client = new MockS3Client
   override def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
@@ -46,3 +47,4 @@ class TiffTagsS3InputFormatSpec extends FunSpec with TestEnvironment with Matche
     }
   }
 }
+*/
