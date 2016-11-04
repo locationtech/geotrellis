@@ -210,7 +210,7 @@ class ReprojectSpec extends FunSpec
       val resultRegular = srcRaster.reproject(destCRS)
       val resultOptions = srcRaster.reproject(destCRS, options)
 
-      resultRegular.extent should be (resultOptions.extent)
+      resultRegular.rasterExtent should be (resultOptions.rasterExtent)
     }
 
     it("should do a resample into a different CRS") {
@@ -233,7 +233,7 @@ class ReprojectSpec extends FunSpec
       val resultRegular = srcRaster.reproject(destCRS).raster.resample(destExtent2)
       val resultOptions = srcRaster.reproject(destCRS, options)
 
-      resultRegular.extent should be (resultOptions.extent)
+      resultRegular.rasterExtent should be (resultOptions.rasterExtent)
     }
 
     it("should do a windowed resample into a different CRS") {
@@ -265,7 +265,7 @@ class ReprojectSpec extends FunSpec
       val regularReproject = raster.reproject(srcCRS, destCRS).resample(destExtent2)
       val windowedReproject = expandedRaster.reproject(windowBounds, srcCRS, destCRS, options)
 
-      windowedReproject.extent should be (regularReproject.extent)
+      windowedReproject.rasterExtent should be (regularReproject.rasterExtent)
     }
   }
 }
