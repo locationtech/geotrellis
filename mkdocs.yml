@@ -12,6 +12,7 @@ pages:
   - Tutorials:
     - Setup: tutorials/setup.md
     - Extract-Transform-Load (ETL): tutorials/etl-tutorial.md
+    - Proj4: tutorials/proj4-intro.md
   - User Guide:
     - Core Concepts: guide/core-concepts.md
     - GeoTrellis Module Hierarchy: guide/module-hierarchy.md
@@ -20,6 +21,7 @@ pages:
     - Frequently Asked Questions: guide/faq.md
   - Architecture:
     - Architecture Decision Records: architecture/adr.md
+    - Proj4 Implementation: architecture/proj4-implementation.md
     - High Performance Scala: architecture/high-performance-scala.md
   - Contributing: contributing.md
 
