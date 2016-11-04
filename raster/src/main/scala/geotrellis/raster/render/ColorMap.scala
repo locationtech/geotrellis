@@ -204,7 +204,8 @@ class IntColorMap(breaksToColors: Map[Int, Int], val options: Options = Options.
 
   lazy val colors: Vector[Int] = orderedBreaks.map(breaksToColors(_))
 
-  private val breakMap: BreakMap[Int, Int] = BreakMap.i2i(breaksToColors, options.strategy)
+  private val breakMap: BreakMap[Int, Int] =
+    new BreakMap(breaksToColors, options.strategy, { i => isNoData(i) })
 
   def map(z: Int): Int = breakMap(z)
 
@@ -296,7 +297,8 @@ class DoubleColorMap(breaksToColors: Map[Double, Int], val options: Options = Op
 
   lazy val colors = orderedBreaks.map(breaksToColors(_))
 
-  private val breakMap: BreakMap[Double, Int] = BreakMap.d2i(breaksToColors, options.strategy)
+  private val breakMap: BreakMap[Double, Int] =
+    new BreakMap(breaksToColors, options.strategy, { d => isNoData(d) })
 
   def map(z: Int): Int = mapDouble(i2d(z))
 

@@ -119,15 +119,15 @@ class BreakMap[
 
 /** Helper methods for constructing BreakMaps. */
 object BreakMap {
-  def i2i(m: Map[Int, Int], s: MapStrategy[Int] = MapStrategy.int): BreakMap[Int, Int] =
-    new BreakMap(m, s, { i => isNoData(i) })
+  def apply(m: Map[Int, Int]): BreakMap[Int, Int] =
+    new BreakMap(m, MapStrategy.int, { i => isNoData(i) })
 
-  def i2d(m: Map[Int, Double], s: MapStrategy[Double] = MapStrategy.double): BreakMap[Int, Double] =
-    new BreakMap(m, s, { i => isNoData(i) })
+  def apply(m: Map[Int, Double])(implicit a: DI): BreakMap[Int, Double] =
+    new BreakMap(m, MapStrategy.double, { i => isNoData(i) })
 
-  def d2d(m: Map[Double, Double], s: MapStrategy[Double]=MapStrategy.double): BreakMap[Double, Double] =
-    new BreakMap(m, s, { d => isNoData(d) })
+  def apply(m: Map[Double, Double])(implicit a: DI, b: DI): BreakMap[Double, Double] =
+    new BreakMap(m, MapStrategy.double, { d => isNoData(d) })
 
-  def d2i(m: Map[Double, Int], s: MapStrategy[Int] = MapStrategy.int): BreakMap[Double, Int] =
-    new BreakMap(m, s, { d => isNoData(d) })
+  def apply(m: Map[Double, Int])(implicit a: DI, b: DI, c: DI): BreakMap[Double, Int] =
+    new BreakMap(m, MapStrategy.int, { d => isNoData(d) })
 }
