@@ -1,11 +1,12 @@
-Geographical Information Systems (GIS), like any specialized field, has a wealth
-of jargon and unique concepts. When represented in software, these concepts
-can sometimes be skewed or expanded from their original forms. We give a thorough definition of many of the core concepts
-here, while referencing the Geotrellis objects and source files backing them.
+Geographical Information Systems (GIS), like any specialized field, has a
+wealth of jargon and unique concepts. When represented in software, these
+concepts can sometimes be skewed or expanded from their original forms. We
+give a thorough definition of many of the core concepts here, while
+referencing the Geotrellis objects and source files backing them.
 
 This document aims to be informative to new and experienced GIS users alike.
-If GIS is brand, brand new to you, [this document](https://www.gislounge.com/what-is-gis/) is
- a useful high level overview.
+If GIS is brand, brand new to you, [this document](https://www.gislounge.com/what-is-gis/)
+is a useful high level overview.
 
 Raster Data
 ===========
@@ -15,11 +16,12 @@ Raster Data
 
 **Raster vs Tile**
 
-The entire purpose of `geotrellis.raster` is to provide primitive datatypes which implement,
-modify, and utilize rasters. In GeoTrellis, a raster is just a tile with an associated extent
-(read about extents below). A tile is just a two-dimensional,
-collection of evenly spaced data. Tiles are a lot like certain
-sequences of sequences (this array of arrays is like a 3x3 tile):
+The entire purpose of `geotrellis.raster` is to provide primitive datatypes
+which implement, modify, and utilize rasters. In GeoTrellis, a raster is
+just a tile with an associated extent (read about extents below). A tile is
+just a two-dimensional, collection of evenly spaced data. Tiles are a lot
+like certain sequences of sequences (this array of arrays is like a 3x3
+tile):
 
 ```scala
 val myFirstTile = [[1,1,1],[1,2,2],[1,2,3]]
@@ -30,49 +32,48 @@ val myFirstTile = [[1,1,1],[1,2,2],[1,2,3]]
   */
 ```
 
-In the raster module of GeoTrellis, the base type of tile is just `Tile`. All GeoTrellis
-compatible tiles will have inherited from that base class, so if you find yourself wondering
-what a given type of tile's powers are, that's a decent place to start your search. Here's an
-incomplete list of the types of things on offer (Seriously, check out
-[the source code](../../raster/src/main/scala/geotrellis/raster/Tile.scala)! It *will* clarify the
-semantics of tiles in GeoTrellis.):
+In the raster module of GeoTrellis, the base type of tile is just `Tile`.
+All GeoTrellis compatible tiles will have inherited from that base class, so
+if you find yourself wondering what a given type of tile's powers are,
+that's a decent place to start your search. Here's an incomplete list of the
+types of things on offer (Seriously, check out
+[the source code](../../raster/src/main/scala/geotrellis/raster/Tile.scala)!
+It *will* clarify the semantics of tiles in GeoTrellis.):
+
 - Mapping transformations of arbitrary complexity over the constituent cells
 - Carrying out operations (side-effects) for each cell
 - Querying a specific tile value
 - Rescaling, resampling, cropping
 
-As we've already discussed, tiles are made up of squares which
-contain values. We'll sometimes refer to these
-value-boxes as 'cells'. And, just like cells in the body, though
-they are discrete units, they're most interesting when looked at
-from a more holistic perspective - rasters encode relations between
-values in a uniform space and it is usually these relations which
-most interest us. The code found in the `mapalgebra` submodule —
-discussed later in this document — is all about exploiting these
+As we've already discussed, tiles are made up of squares which contain
+values. We'll sometimes refer to these value-boxes as 'cells'. And, just
+like cells in the body, though they are discrete units, they're most
+interesting when looked at from a more holistic perspective - rasters encode
+relations between values in a uniform space and it is usually these
+relations which most interest us. The code found in the `mapalgebra`
+submodule — discussed later in this document — is all about exploiting these
 spatial relations.
 
+**Working with cell values**
 
-**Working with cell values**  
-
-One of the first questions you'll ask yourself when working with GeoTrellis is what kinds
-of representation best model the domain you're dealing with. What types of value do you need
-your raster to hold? This question is the province of GeoTrellis
-`CellType`s.
-See below for a description of `Cell Types`
+One of the first questions you'll ask yourself when working with GeoTrellis
+is what kinds of representation best model the domain you're dealing with.
+What types of value do you need your raster to hold? This question is the
+province of GeoTrellis `CellType`s. See below for a description of `Cell
+Types`
 
 **Building Your Own Tiles**
 
-With a grasp of tiles and `CellType`s, we've got all the
-conceptual tools necessary to construct our own tiles. Now, since
-a tile is a combination of a `CellType` with which its cells are
-encoded and their spatial arrangement, we will have to somehow combine
-`Tile` (which encodes our expectations about how cells sit with
-respect to one another) and the datatype of our choosing. Luckily,
-GeoTrellis has done this for us. To keep its users sane,
-the wise maintainers of GeoTrellis have organized `geotrellis.raster`
-such that fully reified tiles sit at the bottom of an pretty simple
-inheritance chain. Let's explore that inheritance so that you will
-know where to look when your intuitions lead you astray:  
+With a grasp of tiles and `CellType`s, we've got all the conceptual tools
+necessary to construct our own tiles. Now, since a tile is a combination of
+a `CellType` with which its cells are encoded and their spatial arrangement,
+we will have to somehow combine `Tile` (which encodes our expectations about
+how cells sit with respect to one another) and the datatype of our choosing.
+Luckily, GeoTrellis has done this for us. To keep its users sane, the wise
+maintainers of GeoTrellis have organized `geotrellis.raster` such that fully
+reified tiles sit at the bottom of an pretty simple inheritance chain. Let's
+explore that inheritance so that you will know where to look when your
+intuitions lead you astray:
 
 From IntArrayTile.scala:
 ```scala
@@ -84,42 +85,46 @@ From DoubleArrayTile.scala:
 ```scala
 final case class DoubleArrayTile(array: Array[Double], cols: Int, rows: Int)
   extends MutableArrayTile with DoubleBasedArrayTile
-```  
+```
 
 **Tile inheritance structure**
 
-It looks like there are two different chains of inheritance here (`IntBasedArrayTile` and
-`DoubleBasedArrayTile`). Let's first look at what they share:
+It looks like there are two different chains of inheritance here
+(`IntBasedArrayTile` and `DoubleBasedArrayTile`). Let's first look at what
+they share:
 
-   1. `MutableArrayTile` adds some nifty methods for in-place manipulation of cells (GeoTrellis is
-about performance, so this minor affront to the gods of immutability can be forgiven).
-From MutableArrayTile.scala:
+- `MutableArrayTile` adds some nifty methods for in-place manipulation of
+cells (GeoTrellis is about performance, so this minor affront to the gods of
+immutability can be forgiven). From MutableArrayTile.scala:
+
 ```scala
 trait MutableArrayTile extends ArrayTile
-``` 
+```
 
-   2. One level up is `ArrayTile`. It's handy because it implements the behavior which largely allows
-us to treat our tiles like big, long arrays of (arrays of) data. They also have the trait
-`Serializable`, which is neat any time you can't completely conduct your business within the
-neatly defined space-time of the JVM processes which are running on a single machine (this is the
-point of GeoTrellis' Spark integration).
-From ArrayTile.scala: 
+- One level up is `ArrayTile`. It's handy because it implements the
+behavior which largely allows us to treat our tiles like big, long arrays of
+(arrays of) data. They also have the trait `Serializable`, which is neat any
+time you can't completely conduct your business within the neatly defined
+space-time of the JVM processes which are running on a single machine (this
+is the point of GeoTrellis' Spark integration). From ArrayTile.scala:
+
 ```scala
 trait ArrayTile extends Tile with Serializable
-``` 
+```
 
-   3. At the top rung in our abstraction ladder we have `Tile`. You might be surprised how much we
-can say about tile behavior from the base of its inheritance tree, so (at risk of sounding
-redundant) the source is worth spending some time on.
-From Tile.scala:
+- At the top rung in our abstraction ladder we have `Tile`. You might be
+surprised how much we can say about tile behavior from the base of its
+inheritance tree, so (at risk of sounding redundant) the source is worth
+spending some time on. From Tile.scala:
+
 ```scala
 trait Tile
-```  
+```
 
-Cool. That wraps up one half of the inheritance. But how about that the features they don't share?
-As it turns out, each reified tile's second piece of inheritance merely implements methods for
-dealing with their constitutent `CellType`s.
-From IntBasedArrayTile.scala:
+Cool. That wraps up one half of the inheritance. But how about that the
+features they don't share? As it turns out, each reified tile's second piece
+of inheritance merely implements methods for dealing with their constitutent
+`CellType`s. From IntBasedArrayTile.scala:
 
 ```scala
 trait IntBasedArrayTile {
@@ -143,24 +148,27 @@ trait DoubleBasedArray {
 }
 ```
 
-Mostly we've been looking to tiny snippets of source, but the two above are the entire files.
-All they do is:
-1. Tell the things that inherit from them that they'd better define methods for application
-and updating of values that look like their cells if they want the compiler to be happy.
-2. Tell the things that inherit from them exactly how to take values which don't look like
-their cells (int-like things for `DoubleBasedArray` and double-like things for
-`IntBasedArray`) and turn them into types they find more palatable.
+Mostly we've been looking to tiny snippets of source, but the two above are
+the entire files. All they do is:
+
+1. Tell the things that inherit from them that they'd better define methods
+for application and updating of values that look like their cells if they
+want the compiler to be happy.
+2. Tell the things that inherit from them exactly how to take values which
+don't look like their cells (int-like things for `DoubleBasedArray` and
+double-like things for `IntBasedArray`) and turn them into types they find
+more palatable.
 
 As it turns out, `CellType` is one of those things that we can *mostly* ignore
 once we've settled on which one is proper for our domain. After all, it appears
 as though there's very little difference between tiles that prefer int-like
 things and tiles that prefer double-like things.
 
->**CAUTION**: While it is true, in general, that operations are `CellType` agnostic,
-both `get` and `getDouble` are methods implemented on `Tile`. In effect, this
-means that you'll want to be careful when querying values. If you're working with
-int-like `CellType`s, probably use `get`. If you're working with float-like
-`CellType`s, usually you'll want `getDouble`.
+> **CAUTION**: While it is true, in general, that operations are `CellType`
+agnostic, both `get` and `getDouble` are methods implemented on `Tile`. In
+effect, this means that you'll want to be careful when querying values. If
+you're working with int-like `CellType`s, probably use `get`. If you're
+working with float-like `CellType`s, usually you'll want `getDouble`.
 
 **Taking our tiles out for a spin**
 
@@ -208,9 +216,9 @@ res4: String =
 "
 ```
 
-That's probably enough to get started. `geotrellis.raster` is a pretty big place, so you'll
-benefit from spending a few hours playing with the tools it provides.
-
+That's probably enough to get started. `geotrellis.raster` is a pretty big
+place, so you'll benefit from spending a few hours playing with the tools it
+provides.
 
 Vector Data
 ===========
@@ -296,7 +304,225 @@ assumptions:
 Tile Layers
 ===========
 
-`RDD[(K, V)] with Metadata[M]`
+Tile layers (Rasters or otherwise) are represented in GeoTrellis with the
+type `RDD[(K, V)] with Metadata[M]`. This type is used extensively across
+the code base, and its contents form the deepest compositional hierarchy we
+have:
+
+![](images/type-composition.png)
+
+In this diagram:
+
+- `CustomTile`, `CustomMetadata`, and `CustomKey` don't exist, they
+represent types that you could write yourself for your application.
+- The `K` seen in several places is the same `K`.
+- The type `RDD[(K, V)] with Metadata[M]` is a Scala *Anonymous Type*. In
+this case, it means `RDD` from Apache Spark with extra methods injected from
+the `Metadata` trait. This type is sometimes aliased in GeoTrellis as
+`ContextRDD`.
+- `RDD[(K, V)]` resembles a Scala `Map[K, V]`, and in fact has further
+`Map`-like methods injected by Spark when it takes this shape. See Spark's
+[PairRDDFunctions](http://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.rdd.PairRDDFunctions)
+Scaladocs for those methods. **Note:** Unlike `Map`, the `K`s here are
+**not** guaranteed to be unique.
+
+**TileLayerRDD**
+
+A common specification of `RDD[(K, V)] with Metadata[M]` in GeoTrellis is as follows:
+
+```scala
+type TileLayerRDD[K] = RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]
+```
+
+This type represents a grid (or cube!) of `Tile`s on the earth, arranged
+according to some `K`. Features of this grid are:
+
+- Grid location `(0, 0)` is the top-leftmost `Tile`.
+- The `Tile`s exist in *some* CRS. In `TileLayerMetadata`, this is kept
+track of with an actual `CRS` field.
+- In applications, `K` is mostly `SpatialKey` or `SpaceTimeKey`.
+
+**Tile Layer IO**
+
+Layer IO requires a [Tile Layer Backend](./tile-backends.md). Each backend
+has an `AttributeStore`, a `LayerReader`, and a `LayerWriter`.
+
+Example setup (with our `File` system backend):
+
+```scala
+import geotrellis.spark._
+import geotrellis.spark.io._
+import geotrellis.spark.io.file._
+
+val catalogPath: String = ...  /* Some location on your computer */
+
+val store: AttributeStore = FileAttributeStore(catalogPath)
+
+val reader = FileLayerReader(store)
+val writer = FileLayerWriter(store)
+```
+
+Writing an entire layer:
+
+```scala
+/* Zoom level 13 */
+val layerId = LayerId("myLayer", 13)
+
+/* Produced from an ingest, etc. */
+val rdd: TileLayerRDD[SpatialKey] = ...
+
+/* Order your Tiles according to the Z-Curve Space Filling Curve */
+val index: KeyIndex[SpatialKey] = ZCurveKeyIndexMethod.createIndex(rdd.metadata.bounds)
+
+/* Returns `Unit` */
+writer.write(layerId, rdd, index)
+```
+
+Reading an entire layer:
+
+```scala
+/* `.read` has many overloads, but this is the simplest */
+val sameLayer: TileLayerRDD[SpatialKey] = reader.read(layerId)
+```
+
+Querying a layer (a "filtered" read):
+
+```scala
+/* Some area on the earth to constrain your query to */
+val extent: Extent = ...
+
+/* There are more types that can go into `where` */
+val filteredLayer: TileLayerRDD[SpatialKey] =
+  reader.query(layerId).where(Intersects(extent)).result
+```
+
+Typeclasses
+===========
+
+Typeclasses are a common feature of Functional Programming. As stated in
+[Cell Types](#cell-types), typeclasses group data types by what they can
+*do*, as opposed to by what they *are*. If traditional OO inheritance
+arranges classes in a tree hierarchy, typeclasses arrange them in a graph.
+
+Typeclasses are realized in Scala through a combination of `trait`s and
+`implicit` class wrappings. A typeclass constraint is visible in a
+class/method signature like this:
+
+```scala
+class Foo[A: Order](a: A) { ... }
+```
+
+Meaning that `Foo` can accept any `A`, so long as it is "orderable". In reality,
+this in syntactic sugar for the following:
+
+```scala
+class Foo[A](a: A)(implicit ev: Order[A]) { ... }
+```
+
+Here's a real-world example from GeoTrellis code:
+
+```scala
+protected def _write[
+  K: AvroRecordCodec: JsonFormat: ClassTag,
+  V: AvroRecordCodec: ClassTag,
+  M: JsonFormat: GetComponent[?, Bounds[K]]
+](layerId: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit = { ... }
+```
+
+A few things to notice:
+
+- Multiple constraints can be given to a single type variable: `K: Foo: Bar: Baz`
+- `?` refers to `M`, helping the compiler with type inference. Unfortunately `M: GetComponent[M, Bounds[K]]` is not syntactically possible
+
+Below is a description of the most-used typeclasses used in GeoTrellis. All
+are written by us, unless otherwise stated.
+
+**ClassTag**
+
+Built-in from `scala.reflect`. This allows classes to maintain some type
+information at runtime, which in GeoTrellis is important for serialization.
+You will never need to use this directly, but may have to annotate your
+methods with it (the compiler will let you know).
+
+**JsonFormat**
+
+From the `spray` library. This constraint says that its type can be
+converted to and from JSON, like this:
+
+```scala
+def toJsonAndBack[A: JsonFormat](a: A): A = {
+  val json: Value = a.toJson
+
+  json.convertTo[A]
+}
+```
+
+**AvroRecordCodec**
+
+Any type that can be serialized by [Apache Avro](https://avro.apache.org/).
+While references to `AvroRecordCodec` appear frequently through GeoTrellis
+code, you will never need to use its methods. They are used internally by
+our Tile Layer Backends and Spark.
+
+**Boundable**
+
+Always used on `K`, `Boundable` means your key type has a finite bound.
+
+```scala
+trait Boundable[K] extends Serializable {
+  def minBound(p1: K, p2: K): K
+
+  def maxBound(p1: K, p2: K): K
+...  // etc
+}
+```
+
+**Component**
+
+`Component` is a bare-bones `Lens`. A `Lens` is a pair of functions that
+allow one to generically get and set values in a data structure. They are
+particularly useful for nested data structures. `Component` looks like this:
+
+```scala
+trait Component[T, C] extends GetComponent[T, C] with SetComponent[T, C]
+```
+
+Which reads as "if I have a `T`, I can read a `C` out of it" and "if I have
+a `T`, I can write some `C` back into it". The lenses we provide are as follows:
+
+- `SpatialComponent[T]` - read a `SpatialKey` out of a some `T` (usually
+`SpatialKey` or `SpaceTimeKey`)
+- `TemporalComponent[T]` - read a `TemporalKey` of some `T` (usually
+`SpaceTimeKey`)
+
+**Functor**
+
+A *Functor* is anything that maintains its shape and semantics when `map`'d
+over. Things like `List`, `Map`, `Option` and even `Future` are Functors.
+`Set` and binary trees are not, since `map` could change the size of a `Set`
+and the semantics of `BTree`.
+
+Vanilla Scala does not have a `Functor` typeclass, but implements its
+functionality anyway. Libraries like [Cats](http://typelevel.org/cats/) and
+[ScalaZ](https://github.com/scalaz/scalaz) provide a proper `Functor`, but
+their definitions don't allow further constraints on your inner type. We
+have:
+
+```scala
+trait Functor[F[_], A] extends MethodExtensions[F[A]]{
+  /** Lift `f` into `F` and apply to `F[A]`. */
+  def map[B](f: A => B): F[B]
+}
+```
+
+which allows us to do:
+
+```scala
+def foo[M[_], K: SpatialComponent: λ[α => M[α] => Functor[M, α]]](mk: M[K]) { ... }
+```
+
+which says "`M` can be mapped into, and the `K` you find is guaranteed to
+have a `SpatialComponent` as well".
 
 Keys and Key Indexes
 ====================
@@ -388,7 +614,7 @@ doesn't benefit from carefully considering whether the allocation of
 those extra few bits is *really* worth it. The costs for any lack of
 efficiency are more than offset by the savings in development time and
 effort. This insight - that computers have become fast enough for us to
-be forgiven for many of our programming sins - is, by now, truism.  
+be forgiven for many of our programming sins - is, by now, truism.
 
 An exception to this freedom from thinking too hard about
 implementation details is any software that tries, in earnest, to
@@ -400,7 +626,7 @@ an underlying data type. These points - that rasters are made up
 of a great many cells and that they all share a backing
 data type - jointly suggest that a decision regarding the underlying
 data type could have profound consequences. More on these consequences
-[below](#cell-type-performance).  
+[below](#cell-type-performance).
 
 Compliance with the GeoTIFF standard is another reason that management
 of cell types is important for GeoTrellis. The most common format for
@@ -410,21 +636,21 @@ A GeoTIFF  is simply an array of data along with some useful tags
 tags specifies the size of each cell and how those bytes should be
 interpreted (i.e. whether the data for a byte includes its
 sign - positive or negative - or whether it counts up from 0 - and
-is therefore said to be 'unsigned').  
+is therefore said to be 'unsigned').
 
 In addition to keeping track of the memory used by each cell in a `Tile`,
 the cell type is where decisions about which values count as data (and
 which, if any, are treated as `NoData`). A value recognized as `NoData`
 will be ignored while mapping over tiles, carrying out focal operations
 on them, interpolating for values in their region, and just about all of
-the operations provided by GeoTrellis for working with `Tile`s.  
+the operations provided by GeoTrellis for working with `Tile`s.
 
 
 **Cell Type Performance**
 
 There are at least two major reasons for giving some thought to the
 types of data you'll be working with in a raster: persistence and
-performance.  
+performance.
 
 Persistence is simple enough: smaller datatypes end up taking less space
 on disk. If you're going to represent a region with only `true`/`false`
@@ -433,7 +659,7 @@ Naively, this means somewhere around 63 times less data than if the most
 compact form possible had been chosen (the use of `BitCells` would
 be maximally efficient for representing the bivalent nature of boolean
 values). See the chart below for a sense of the relative sizes of these
-cell types.  
+cell types.
 
 The performance impacts of cell type selection matter in both a local
 and a distributed (spark) context. Locally, the memory footprint will mean
@@ -444,14 +670,14 @@ more time spent shuffling data from the memory to the processor (which
 is often a performance bottleneck). When running programs that
 leverage spark for compute distribution, larger data types mean more
 data to serialize and more data send over the (very slow, relatively
-speaking) network.  
+speaking) network.
 
 In the chart below, `DataType`s are listed in the leftmost column and
 important characteristics for deciding between them can be found to the
 right. As you can see, the difference in size can be quite stark depending on
 the cell type that a tile is backed by. That extra space is the price
 paid for representing a larger range of values. Note that bit cells
-lack the sufficient representational resources to have a `NoData` value.  
+lack the sufficient representational resources to have a `NoData` value.
 
 |             | Bits / Cell | 512x512 Raster (mb) |     Range (inclusive)     | GeoTrellis NoData Value |
 |-------------|:-----------:|---------------------|:-------------------------:|-------------------------|
@@ -470,7 +696,7 @@ inline comparisons and conversions. This minor difference can certainly
 be felt while iterating through millions and millions of cells. If possible, Constant
 `NoData` values are to be preferred. For convenience' sake, we've
 attempted to make the GeoTrellis-blessed `NoData` values as unobtrusive
-as possible a priori.  
+as possible a priori.
 
 Projections
 ===========
@@ -627,66 +853,66 @@ describe some tiled map area in Geotrellis.
 
 They are used heavily when reading, writing, and reprojecting Rasters.
 
-
 Map Algebra
 ===========
 
-Map Algebra is a name given by Dr. Dana Tomlin in the 1980's to a way of manipulating
-and transforming raster data. There is a lot of literature out there, not least
+Map Algebra is a name given by Dr. Dana Tomlin in the 1980's to a way of
+manipulating and transforming raster data. There is a lot of literature out
+there, not least
 [the book by the guy who "wrote the book" on map algebra](http://esripress.esri.com/display/index.cfm?fuseaction=display&websiteID=228&moduleID=0),
-so we will only give a brief introduction here.
-GeoTrellis follows Dana's vision of map algebra operations,
-although there are many operations that fall outside of the realm of Map Algebra that it also supports.
-
-**Categories of Map Algebra operations**
+so we will only give a brief introduction here. GeoTrellis follows Dana's
+vision of map algebra operations, although there are many operations that
+fall outside of the realm of Map Algebra that it also supports.
 
 Map Algebra operations fall into 3 general categories:
 
-**Local**
-
-
+**Local Operations**
 
 ![Local Operations](./images/local-animations-optimized.gif localops)
 
-Local operations are ones that only take into account the information of on cell at a time.
-In the animation above, we can see that the blue and the yellow cell are combined, as
-they are corresponding cells in the two tiles. It wouldn't matter if the tiles were bigger
-or smaller - the only information necessary for that step in the local operation is
-the cell values that correspond to each other. A local operation happens for each
-cell value, so if the whole bottom tile was blue and the upper tile were yellow, then
-the resulting tile of the local operation would be green.
+Local operations are ones that only take into account the information of on
+cell at a time. In the animation above, we can see that the blue and the
+yellow cell are combined, as they are corresponding cells in the two tiles.
+It wouldn't matter if the tiles were bigger or smaller - the only
+information necessary for that step in the local operation is the cell
+values that correspond to each other. A local operation happens for each
+cell value, so if the whole bottom tile was blue and the upper tile were
+yellow, then the resulting tile of the local operation would be green.
 
-**Focal**
+**Focal Operations**
 
 ![Focal Operations](./images/focal-animations.gif focalops)
 
+Focal operations take into account a cell, and a neighborhood around that
+cell. A neighborhood can be defined as a square of a specific size, or
+include masks so that you can have things like circular or wedge-shaped
+neighborhoods. In the above animation, the neighborhood is a 5x5 square
+around the focal cell. The focal operation in the animation is a `focalSum`.
+The focal value is 0, and all of the other cells in the focal neighborhood;
+therefore the cell value of the result tile would be 8 at the cell
+corresponding to the focal cell of the input tile. This focal operation
+scans through each cell of the raster. You can imagine that along the
+border, the focal neighborhood goes outside of the bounds of the tile; in
+this case the neighborhood only considers the values that are covered by the
+neighborhood. GeoTrellis also supports the idea of an analysis area, which
+is the GridBounds that the focal operation carries over, in order to support
+composing tiles with border tiles in order to support distributed focal
+operation processing.
 
-Focal operations take into account a cell, and a neighborhood around that cell.
-A neighborhood can be defined as a square of a specific size, or include masks so that
-you can have things like circular or wedge-shaped neighborhoods. In the above animation,
-the neighborhood is a 5x5 square around the focal cell. The focal operation in the animation
-is a `focalSum`. The focal value is 0, and all of the other cells in the focal neighborhood;
-therefore the cell value of the result tile would be 8 at the cell corresponding to the
-focal cell of the input tile. This focal operation scans through each cell of the raster.
-You can imagine that along the border, the focal neighborhood goes outside of the bounds
-of the tile; in this case the neighborhood only considers the values that are covered
-by the neighborhood. GeoTrellis also supports the idea of an analysis area, which is the
-GridBounds that the focal operation carries over, in order to support composing tiles with
-border tiles in order to support distributed focal operation processing.
+**Zonal Operations**
 
-**Zonal**
-
-Zonal operations are ones that operate on two tiles: an input tile, and a zone tile. The
-values of the zone tile determine what zone each of the corresponding cells in the
-input tile belong to. For example, if you are doing a `zonalStatistics` operation,
-and the zonal tile has a distribution of zone 1, zone 2, and zone 3 values, we will get
-back the statistics such as mean, median and mode for all cells in the input tile that correspond
-to each of those zone values.
+Zonal operations are ones that operate on two tiles: an input tile, and a
+zone tile. The values of the zone tile determine what zone each of the
+corresponding cells in the input tile belong to. For example, if you are
+doing a `zonalStatistics` operation, and the zonal tile has a distribution
+of zone 1, zone 2, and zone 3 values, we will get back the statistics such
+as mean, median and mode for all cells in the input tile that correspond to
+each of those zone values.
 
 **How to use Map Algebra operations**
 
-Map Algebra operations are defined as implicit methods on `Tile` or `Traversable[Tile]`,
-which are imported with `import geotrellis.raster._`.
+Map Algebra operations are defined as implicit methods on `Tile` or
+`Traversable[Tile]`, which are imported with `import geotrellis.raster._`.
 
 ```scala
 import geotrellis.raster._
@@ -722,26 +948,26 @@ tile1.combine(tile2) { (z1, z2) => z1 + z2 }
 ```
 
 
-The following packages are where Map Algebra operations are defined in GeoTrellis:
+The following packages are where Map Algebra operations are defined in
+GeoTrellis:
 
 - [`geotrellis.raster.local`](../../raster/src/main/scala/geotrellis/raster/mapalgebra/local)
 defines operations which act on a cell without regard to its spatial
-relations. Need to
-double every cell on a tile? This is the module you'll want to explore.
+relations. Need to double every cell on a tile? This is the module you'll
+want to explore.
 - [`geotrellis.raster.focal`](../../raster/src/main/scala/geotrellis/raster/mapalgebra/focal)
-defines operations which focus on two-dimensional windows
-(internally referred to as neighborhoods) of a raster's values to
-determine their outputs.
+defines operations which focus on two-dimensional windows (internally
+referred to as neighborhoods) of a raster's values to determine their
+outputs.
 - [`geotrellis.raster.zonal`](../..raster/src/main/scala/geotrellis/raster/mapalgebra/zonal)
-defines operations which apply over a zones as defined by corresponding
-cell values in the zones raster.
+defines operations which apply over a zones as defined by corresponding cell
+values in the zones raster.
 
 [Conway's Game of Life](http://en.wikipedia.org/wiki/Conway%27s_Game_of_Life)
 can be seen as a focal operation in that each cell's value depends on
-neighboring cell values. Though focal operations will tend to look at
-a local region of this or that cell, they should not be confused with
-the operations which live in `geotrellis.raster.local` - those
-operations describe transformations over tiles which, for any step of
-the calculation, need only know the input value of the specific cell
-for which it is calculating an output (e.g. incrementing each cell's
-value by 1).
+neighboring cell values. Though focal operations will tend to look at a
+local region of this or that cell, they should not be confused with the
+operations which live in `geotrellis.raster.local` - those operations
+describe transformations over tiles which, for any step of the calculation,
+need only know the input value of the specific cell for which it is
+calculating an output (e.g. incrementing each cell's value by 1).
