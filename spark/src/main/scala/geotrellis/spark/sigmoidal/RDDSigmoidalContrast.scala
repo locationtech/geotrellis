@@ -26,7 +26,7 @@ import org.apache.spark.rdd.RDD
 object RDDSigmoidalContrast {
 
   /**
-    * Given an RDD of [[Tile]] objects and parameters alpha and beta,
+    * Given an RDD of Tile objects and parameters alpha and beta,
     * return an RDD of tiles upon-which the sigmoidal contrast
     * operation has been performed.
     *
@@ -45,8 +45,8 @@ object RDDSigmoidalContrast {
     rdd.map({ case (key, tile: Tile) => (key, SigmoidalContrast(tile, alpha, beta)) })
 
   /**
-    * Given an RDD of [[MultibandTile]] objects and parameters alpha
-    * and beta, return an RDD of tiles where the sigmoidal contrast
+    * Given an RDD of MultibandTile objects and parameters alpha and
+    * beta, return an RDD of tiles where the sigmoidal contrast
     * operation has been performed on each band of each tile.
     *
     * The approach used is described here:

@@ -8,8 +8,8 @@ import geotrellis.util.MethodExtensions
 trait SinglebandEqualizationMethods extends MethodExtensions[Tile] {
 
   /**
-    * Given a [[StreamingHistogram]] derived from this [[Tile]],
-    * equalize the histogram of this tile.
+    * Given a [[geotrellis.raster.histogram.Histogram]] which
+    * summarizes this [[Tile]], equalize the histogram of this tile.
     *
     * @param  histogram  The histogram of this tile
     */

@@ -103,7 +103,8 @@ object HistogramEqualization {
   }
 
   /**
-    * Given a [[Tile]] and a [[Histogram[T]]], return a Tile with an
+    * Given a [[Tile]] and a
+    * [[geotrellis.raster.histogram.Histogram]], return a Tile with an
     * equalized histogram.
     *
     * @param  tile       A singleband tile
@@ -129,8 +130,9 @@ object HistogramEqualization {
   }
 
   /**
-    * Given a [[MultibandTile]] and a [[Histogram[T]]] for each of its
-    * bands, return a MultibandTile whose bands all have equalized
+    * Given a [[MultibandTile]] and a
+    * [[geotrellis.raster.histogram.Histogram]] for each of its bands,
+    * return a MultibandTile whose bands all have equalized
     * histograms.
     *
     * @param  tile        A multiband tile
