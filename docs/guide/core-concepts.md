@@ -90,30 +90,28 @@ final case class DoubleArrayTile(array: Array[Double], cols: Int, rows: Int)
 
 It looks like there are two different chains of inheritance here (`IntBasedArrayTile` and
 `DoubleBasedArrayTile`). Let's first look at what they share:
-1. `MutableArrayTile` adds some nifty methods for in-place manipulation of cells (GeoTrellis is
+
+   1. `MutableArrayTile` adds some nifty methods for in-place manipulation of cells (GeoTrellis is
 about performance, so this minor affront to the gods of immutability can be forgiven).
 From MutableArrayTile.scala:
-
 ```scala
 trait MutableArrayTile extends ArrayTile
-```  
+``` 
 
-2. One level up is `ArrayTile`. It's handy because it implements the behavior which largely allows
+   2. One level up is `ArrayTile`. It's handy because it implements the behavior which largely allows
 us to treat our tiles like big, long arrays of (arrays of) data. They also have the trait
 `Serializable`, which is neat any time you can't completely conduct your business within the
 neatly defined space-time of the JVM processes which are running on a single machine (this is the
 point of GeoTrellis' Spark integration).
-From ArrayTile.scala:
-
+From ArrayTile.scala: 
 ```scala
 trait ArrayTile extends Tile with Serializable
-```  
+``` 
 
-3. At the top rung in our abstraction ladder we have `Tile`. You might be surprised how much we
+   3. At the top rung in our abstraction ladder we have `Tile`. You might be surprised how much we
 can say about tile behavior from the base of its inheritance tree, so (at risk of sounding
 redundant) the source is worth spending some time on.
-From Tile.scala
-
+From Tile.scala:
 ```scala
 trait Tile
 ```  
