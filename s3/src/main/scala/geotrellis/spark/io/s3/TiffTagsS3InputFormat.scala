@@ -8,18 +8,20 @@ import geotrellis.spark.io.s3.util.S3BytesStreamer
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
 import com.amazonaws.services.s3.model._
 
-class TiffTagsS3InputFormat extends S3InputFormat[String, TiffTags] {
+class TiffTagsS3InputFormat extends S3InputFormat[GetObjectRequest, TiffTags] {
   def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
     new TiffTagsS3RecordReader(context)
 }
 
-class TiffTagsS3RecordReader(context: TaskAttemptContext) extends S3RecordReader[String, TiffTags] {
-  def read(key: String, bytes: Array[Byte]) = {
+class TiffTagsS3RecordReader(context: TaskAttemptContext) extends S3RecordReader[GetObjectRequest, TiffTags] {
+  def read(key: String, bytes: Array[Byte]) = ???
+
+  def read(bucket: String, key: String, bytes: Array[Byte]) = {
     val tiffTags = TiffTagsReader.read(bytes)
-    (key, tiffTags)
+    (new GetObjectRequest(bucket, key), tiffTags)
   }
-  def read(key: String, reader: StreamByteReader) = {
+  def read(bucket: String, key: String, reader: StreamByteReader) = {
     val tiffTags = TiffTagsReader.read(reader)
-    (key, tiffTags)
+    (new GetObjectRequest(bucket, key), tiffTags)
   }
 }
