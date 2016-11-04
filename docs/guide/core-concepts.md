@@ -36,14 +36,14 @@ this case, it means `RDD` from Apache Spark with extra methods injected from
 the `Metadata` trait. This type is sometimes aliased in GeoTrellis as
 `ContextRDD`.
 - `RDD[(K, V)]` resembles a Scala `Map[K, V]`, and in fact has further
-`Map`-like methods injected by Spark when it takes this shape. See the
+`Map`-like methods injected by Spark when it takes this shape. See Spark's
 [PairRDDFunctions](http://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.rdd.PairRDDFunctions)
 Scaladocs for those methods. **Note:** Unlike `Map`, the `K`s here are
 **not** guaranteed to be unique.
 
 **TileLayerRDD**
 
-The canonical realization of `RDD[(K, V)] with Metadata[M]` in GeoTrellis is as follows:
+A common specification of `RDD[(K, V)] with Metadata[M]` in GeoTrellis is as follows:
 
 ```scala
 type TileLayerRDD[K] = RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]
@@ -110,6 +110,134 @@ val extent: Extent = ...
 val filteredLayer: TileLayerRDD[SpatialKey] =
   reader.query(layerId).where(Intersects(extent)).result
 ```
+
+Typeclasses
+===========
+
+Typeclasses are a common feature of Functional Programming. As stated in
+[Cell Types](#cell-types), typeclasses group data types by what they can
+*do*, as opposed to by what they *are*. If traditional OO inheritance
+arranges classes in a tree hierarchy, typeclasses arrange them in a graph.
+
+Typeclasses are realized in Scala through a combination of `trait`s and
+`implicit` class wrappings. A typeclass constraint is visible in a
+class/method signature like this:
+
+```scala
+class Foo[A: Order](a: A) { ... }
+```
+
+Meaning that `Foo` can accept any `A`, so long as it is "orderable". In reality,
+this in syntactic sugar for the following:
+
+```scala
+class Foo[A](a: A)(implicit ev: Order[A]) { ... }
+```
+
+Here's a real-world example from GeoTrellis code:
+
+```scala
+protected def _write[
+  K: AvroRecordCodec: JsonFormat: ClassTag,
+  V: AvroRecordCodec: ClassTag,
+  M: JsonFormat: GetComponent[?, Bounds[K]]
+](layerId: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit = { ... }
+```
+
+A few things to notice:
+
+- Multiple constraints can be given to a single type variable: `K: Foo: Bar: Baz`
+- `?` refers to `M`, helping the compiler with type inference. Unfortunately `M: GetComponent[M, Bounds[K]]` is not syntactically possible
+
+Below is a description of the most-used typeclasses used in GeoTrellis. All
+are written by us, unless otherwise stated.
+
+**ClassTag**
+
+Built-in from `scala.reflect`. This allows classes to maintain some type
+information at runtime, which in GeoTrellis is important for serialization.
+You will never need to use this directly, but may have to annotate your
+methods with it (the compiler will let you know).
+
+**JsonFormat**
+
+From the `spray` library. This constraint says that its type can be
+converted to and from JSON, like this:
+
+```scala
+def toJsonAndBack[A: JsonFormat](a: A): A = {
+  val json: Value = a.toJson
+
+  json.convertTo[A]
+}
+```
+
+**AvroRecordCodec**
+
+Any type that can be serialized by [Apache Avro](https://avro.apache.org/).
+While references to `AvroRecordCodec` appear frequently through GeoTrellis
+code, you will never need to use its methods. They are used internally by
+our Tile Layer Backends and Spark.
+
+**Boundable**
+
+Always used on `K`, `Boundable` means your key type has a finite bound.
+
+```scala
+trait Boundable[K] extends Serializable {
+  def minBound(p1: K, p2: K): K
+
+  def maxBound(p1: K, p2: K): K
+...  // etc
+}
+```
+
+**Component**
+
+`Component` is a bare-bones `Lens`. A `Lens` is a pair of functions that
+allow one to generically get and set values in a data structure. They are
+particularly useful for nested data structures. `Component` looks like this:
+
+```scala
+trait Component[T, C] extends GetComponent[T, C] with SetComponent[T, C]
+```
+
+Which reads as "if I have a `T`, I can read a `C` out of it" and "if I have
+a `T`, I can write some `C` back into it". The lenses we provide are as follows:
+
+- `SpatialComponent[T]` - read a `SpatialKey` out of a some `T` (usually
+`SpatialKey` or `SpaceTimeKey`)
+- `TemporalComponent[T]` - read a `TemporalKey` of some `T` (usually
+`SpaceTimeKey`)
+
+**Functor**
+
+A *Functor* is anything that maintains its shape and semantics when `map`'d
+over. Things like `List`, `Map`, `Option` and even `Future` are Functors.
+`Set` and binary trees are not, since `map` could change the size of a `Set`
+and the semantics of `BTree`.
+
+Vanilla Scala does not have a `Functor` typeclass, but implements its
+functionality anyway. Libraries like [Cats](http://typelevel.org/cats/) and
+[ScalaZ](https://github.com/scalaz/scalaz) provide a proper `Functor`, but
+their definitions don't allow further constraints on your inner type. We
+have:
+
+```scala
+trait Functor[F[_], A] extends MethodExtensions[F[A]]{
+  /** Lift `f` into `F` and apply to `F[A]`. */
+  def map[B](f: A => B): F[B]
+}
+```
+
+which allows us to do:
+
+```scala
+def foo[M[_], K: SpatialComponent: λ[α => M[α] => Functor[M, α]]](mk: M[K]) { ... }
+```
+
+which says "`M` can be mapped into, and the `K` you find is guaranteed to
+have a `SpatialComponent` as well".
 
 Keys and Key Indexes
 ====================
