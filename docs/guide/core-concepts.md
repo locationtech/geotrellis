@@ -249,7 +249,8 @@ implementation of **Version 2.1** of the VectorTile spec. It features:
 - Lazy decoding of Geometries. Only parse what you need!
 - Read/write VectorTile layers to/from any of our backends.
 
-Ingests of raw vector data into VectorTile sets is still pending (***as of 2016 October 28***)
+As of 2016 November, ingests of raw vector data into VectorTile sets aren't
+yet possible.
 
 **Small Example**
 
@@ -399,10 +400,11 @@ val filteredLayer: TileLayerRDD[SpatialKey] =
 Typeclasses
 ===========
 
-Typeclasses are a common feature of Functional Programming. As stated in
-[Cell Types](#cell-types), typeclasses group data types by what they can
-*do*, as opposed to by what they *are*. If traditional OO inheritance
-arranges classes in a tree hierarchy, typeclasses arrange them in a graph.
+Typeclasses are a common feature of Functional Programming. As stated in the
+[FAQ](./faq.md#how-do-i-import-geotrellis-methods), typeclasses group data
+types by what they can *do*, as opposed to by what they *are*. If
+traditional OO inheritance arranges classes in a tree hierarchy, typeclasses
+arrange them in a graph.
 
 Typeclasses are realized in Scala through a combination of `trait`s and
 `implicit` class wrappings. A typeclass constraint is visible in a

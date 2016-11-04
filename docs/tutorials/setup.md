@@ -32,9 +32,9 @@ in Functional Programming
 `sbt` - The Simple Build Tool
 -----------------------------
 
-Did you know you don't even need to install Scala yourself to develop with
-it? `sbt` allows us to manage Scala projects, their dependencies, and even
-Scala compiler versions.
+[SBT](http://www.scala-sbt.org/) is the recommended build tool for writing
+GeoTrellis applications. `sbt` allows us to manage Scala projects, their
+dependencies, and even Scala compiler versions.
 
 To install on a Mac with [Homebrew](http://brew.sh/):
 
