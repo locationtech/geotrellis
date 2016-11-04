@@ -20,6 +20,7 @@ pages:
     - Frequently Asked Questions: guide/faq.md
   - Architecture:
     - Architecture Decision Records: architecture/adr.md
+    - High Performance Scala: architecture/high-performance-scala.md
   - Contributing: contributing.md
 
 markdown_extensions:
