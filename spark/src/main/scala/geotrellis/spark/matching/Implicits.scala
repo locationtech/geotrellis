@@ -14,23 +14,26 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.sigmoidal
+package geotrellis.spark.matching
 
 import geotrellis.raster._
 import geotrellis.spark._
 
 import org.apache.spark.rdd.RDD
 
+import scala.reflect.ClassTag
+
 
 object Implicits extends Implicits
 
 trait Implicits {
 
-  implicit class withRDDSinglebandSigmoidalMethods[K, V: (? => Tile)](
+  implicit class withRDDSinglebandMatchingMethods[K, V: (? => Tile)](
     val self: RDD[(K, V)]
-  ) extends RDDSinglebandSigmoidalMethods[K, V]
+  ) extends RDDSinglebandMatchingMethods[K, V]
 
-  implicit class withRDDMultibandSigmoidalMethods[K, V: (? => MultibandTile)](
+  implicit class withRDDMultibandMatchingMethods[K, V: (? => MultibandTile)](
     val self: RDD[(K, V)]
-  ) extends RDDMultibandSigmoidalMethods[K, V]
+  ) extends RDDMultibandMatchingMethods[K, V]
+
 }
