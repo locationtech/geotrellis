@@ -2,8 +2,6 @@ package geotrellis.raster.reproject
 
 import geotrellis.proj4._
 import geotrellis.raster._
-import geotrellis.raster.resample.ResampleMethod
-import geotrellis.vector.Extent
 import geotrellis.util.MethodExtensions
 
 trait RasterReprojectMethods[+T <: Raster[_]] extends MethodExtensions[T] {
@@ -21,7 +19,7 @@ trait RasterReprojectMethods[+T <: Raster[_]] extends MethodExtensions[T] {
       val transform = Transform(src, dest)
       val inverseTransform = Transform(dest, src)
 
-      val targetRasterExtent = ReprojectRasterExtent(self.rasterExtent, transform, options = options)
+      val targetRasterExtent = options.targetRasterExtent.getOrElse(ReprojectRasterExtent(self.rasterExtent, transform, options = options))
 
       reproject(targetRasterExtent, transform, inverseTransform, options)
     }
@@ -45,7 +43,8 @@ trait RasterReprojectMethods[+T <: Raster[_]] extends MethodExtensions[T] {
     val rasterExtent = self.rasterExtent
     val windowExtent = rasterExtent.extentFor(gridBounds)
     val windowRasterExtent = RasterExtent(windowExtent, gridBounds.width, gridBounds.height)
-    val targetRasterExtent = ReprojectRasterExtent(windowRasterExtent, transform, options = options)
+
+    val targetRasterExtent = options.targetRasterExtent.getOrElse(ReprojectRasterExtent(windowRasterExtent, transform, options = options))
 
     reproject(targetRasterExtent, transform, inverseTransform, options)
   }
