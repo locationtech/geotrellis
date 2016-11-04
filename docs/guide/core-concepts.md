@@ -254,7 +254,7 @@ yet possible.
 
 **Small Example**
 
-```
+```scala
 import geotrellis.spark.SpatialKey
 import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.vector.Extent
@@ -531,6 +531,48 @@ Keys and Key Indexes
 
 Tiles
 =====
+
+`Tile` is a core GeoTrellis primitive. As mentioned in [Tile
+Layers](#tile-layers), a common specification of `RDD[(K, V)] with
+Metadata[M]` is:
+
+```scala
+type TileLayerRDD[K] = RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]
+```
+
+What is a `Tile` exactly? Below is a diagram of our `Tile` type hierarchy.
+As you can see, any `Tile` (via `CellGrid`) is effectively a grid of data
+cells:
+
+![](./images/tile-hierarchy.png)
+
+The `Tile` trait has operations you'd expect for traversing and transforming
+this grid, like:
+
+- `map: (Int => Int) => Tile`
+- `foreach: (Int => Unit) => Unit`
+- `combine: Tile => ((Int, Int) => Int) => Tile`
+- `color: ColorMap => Tile`
+
+Critically, a `Tile` must know how big it is, and what its underlying
+[Cell Type](#cell-types) is:
+
+- `cols: Int`
+- `rows: Int`
+- `cellType: CellType`
+
+Fundamentally, the union of a `Tile` and `Extent` is how GeoTrellis defines
+a `Raster`:
+
+```scala
+case class Raster[+T <: CellGrid](tile: T, extent: Extent) extends CellGrid
+```
+
+For performance reasons, we have opted for `Tile` to hold its `CellType` as
+opposed to making `Tile` polymorphic on its underlying numeric type, for
+example like `trait Tile[T]`. The large type hierarchy above is what results
+from this decision. For more information, see
+[our notes on Tile performance](../architecture/high-performance-scala.md#the-tile-hierarchy).
 
 Cell Types
 ==========
