@@ -87,6 +87,7 @@ final case class DoubleArrayTile(array: Array[Double], cols: Int, rows: Int)
 ```  
 
 **Tile inheritance structure**
+
 It looks like there are two different chains of inheritance here (`IntBasedArrayTile` and
 `DoubleBasedArrayTile`). Let's first look at what they share:
 1. `MutableArrayTile` adds some nifty methods for in-place manipulation of cells (GeoTrellis is
