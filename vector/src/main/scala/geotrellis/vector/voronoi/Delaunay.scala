@@ -114,7 +114,7 @@ object Predicates {
  * Each resulting triangle's circumscribing circle will contain no other points
  * of the input set.
  */
-case class Delaunay(verts: Array[Point]) {
+case class Delaunay[T <: Point](verts: Array[T]) {
 
   private[voronoi] val gf = new GeometryFactory
   private val sites = new MultiPoint(verts.map(_.jtsGeom), gf)

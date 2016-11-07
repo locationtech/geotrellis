@@ -82,7 +82,7 @@ class DelaunaySpec extends FunSpec with Matchers {
     }
   }
 
-  def rasterizeDT(dt: Delaunay): Unit = {
+  def rasterizeDT(dt: Delaunay[Point]): Unit = {
     val tile = IntArrayTile.fill(255, 960, 960)
     val re = RasterExtent(Extent(0,0,1,1),960,960)
     dt.subd.getTriangleEdges(false).map(_.asInstanceOf[Array[QuadEdge]]).foreach{ case edges => {
@@ -93,7 +93,7 @@ class DelaunaySpec extends FunSpec with Matchers {
     tile.renderPng(cm).write("delaunay.png")
   }
 
-  def preservesDelaunay(dt: Delaunay): Boolean = {
+  def preservesDelaunay(dt: Delaunay[Point]): Boolean = {
     dt.triangles.zip(dt.subd.getTriangleEdges(false).map(_.asInstanceOf[Array[QuadEdge]])).forall{ case (tri, edges) => {
       val otherPts = neighborsOfTri(edges)
       val tripts = tri.vertices
