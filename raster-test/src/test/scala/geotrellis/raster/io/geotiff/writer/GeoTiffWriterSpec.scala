@@ -152,8 +152,8 @@ class GeoTiffWriterSpec extends FunSpec
       gt.crs should equal (geoTiff.crs)
       gt.tile.bandCount should equal (geoTiff.tile.bandCount)
       for(i <- 0 until gt.tile.bandCount) {
-        val actualBand = gt.band(i)
-        val expectedBand = geoTiff.band(i)
+        val actualBand = gt.tile.band(i)
+        val expectedBand = geoTiff.tile.band(i)
 
         assertEqual(actualBand, expectedBand)
       }
@@ -173,7 +173,7 @@ class GeoTiffWriterSpec extends FunSpec
 
       addToPurge(path)
 
-      val gt = MultibandGeoTiff(path)
+      val gt = MultibandGeoTiff(path).projectedRaster
 
       gt.extent should equal (geoTiff.extent)
       gt.crs should equal (geoTiff.crs)
@@ -204,7 +204,7 @@ class GeoTiffWriterSpec extends FunSpec
       gt.crs should equal (geoTiff.crs)
       gt.tile.bandCount should equal (tile.bandCount)
       for(i <- 0 until gt.tile.bandCount) {
-        val actualBand = gt.band(i)
+        val actualBand = gt.tile.band(i)
         val expectedBand = tile.band(i)
 
         assertEqual(actualBand, expectedBand)

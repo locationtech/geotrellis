@@ -49,7 +49,7 @@ class GeoTiffReaderSpec extends FunSpec
 
   describe("reading an ESRI generated Float32 geotiff with 0 NoData value") {
     it("matches an arg produced from geotrellis.gdal reader of that tif") {
-      val tile = SinglebandGeoTiff.compressed(geoTiffPath("us_ext_clip_esri.tif")).convert(FloatConstantNoDataCellType)
+      val tile = SinglebandGeoTiff.compressed(geoTiffPath("us_ext_clip_esri.tif")).tile.convert(FloatConstantNoDataCellType)
 
       val expectedTile =
         ArgReader.read(geoTiffPath("us_ext_clip_esri.json")).tile
@@ -65,7 +65,7 @@ class GeoTiffReaderSpec extends FunSpec
       val path = "slope.tif"
       val argPath = s"$baseDataPath/data/slope.json"
 
-      val tile = SinglebandGeoTiff.compressed(s"$baseDataPath/$path").convert(FloatConstantNoDataCellType)
+      val tile = SinglebandGeoTiff.compressed(s"$baseDataPath/$path").tile.convert(FloatConstantNoDataCellType)
 
       val expectedTile =
         ArgReader.read(argPath).tile
@@ -161,7 +161,7 @@ class GeoTiffReaderSpec extends FunSpec
 
     it("should match bit and byte-converted rasters") {
       val actual = SinglebandGeoTiff.compressed(geoTiffPath("bilevel.tif")).tile
-      val expected = SinglebandGeoTiff(geoTiffPath("bilevel.tif")).tile.convert(BitCellType)
+      val expected = SinglebandGeoTiff(geoTiffPath("bilevel.tif")).tile.tile.convert(BitCellType)
 
       assertEqual(actual, expected)
     }
@@ -464,8 +464,8 @@ class GeoTiffReaderSpec extends FunSpec
 
     it("should read clipped GeoTiff with byte NODATA value") {
       // Conversions carried out for both of these; first for byte -> float, second for user defined no data to constant
-      val geoTiff = SinglebandGeoTiff.compressed(geoTiffPath("nodata-tag-byte.tif")).convert(FloatConstantNoDataCellType)
-      val geoTiff2 = SinglebandGeoTiff.compressed(geoTiffPath("nodata-tag-float.tif")).convert(FloatConstantNoDataCellType)
+      val geoTiff = SinglebandGeoTiff.compressed(geoTiffPath("nodata-tag-byte.tif")).tile.convert(FloatConstantNoDataCellType)
+      val geoTiff2 = SinglebandGeoTiff.compressed(geoTiffPath("nodata-tag-float.tif")).tile.convert(FloatConstantNoDataCellType)
       assertEqual(geoTiff.toArrayTile, geoTiff2)
     }
 

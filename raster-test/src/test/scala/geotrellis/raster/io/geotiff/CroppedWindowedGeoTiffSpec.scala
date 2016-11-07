@@ -14,19 +14,19 @@ import scala.collection.JavaConversions._
 import monocle.syntax.apply._
 
 object Reader {
-  def singleBand(path: String, extent: Extent): (SinglebandGeoTiff, SinglebandGeoTiff) = {
-    val expected = SinglebandGeoTiff(path, extent)
-    val actual = SinglebandGeoTiff(path).crop(extent)
+  def singleBand(path: String, extent: Extent): (Raster[Tile], Raster[Tile]) = {
+    val expected = SinglebandGeoTiff(path, extent).raster
+    val actual = SinglebandGeoTiff(path).raster.crop(extent)
     (expected, actual)
   }
-  def multiBand(path: String, extent: Extent): (MultibandGeoTiff, MultibandGeoTiff) = {
-    val expected = MultibandGeoTiff(path, extent)
-    val actual = MultibandGeoTiff(path).crop(extent)
+  def multiBand(path: String, extent: Extent): (Raster[MultibandTile], Raster[MultibandTile]) = {
+    val expected = MultibandGeoTiff(path, extent).raster
+    val actual = MultibandGeoTiff(path).raster.crop(extent)
     (expected, actual)
   }
 }
 
-class CroppedGeoTiffSpec extends FunSpec 
+class CroppedGeoTiffSpec extends FunSpec
   with Matchers
   with BeforeAndAfterAll
   with RasterMatchers
@@ -42,7 +42,7 @@ class CroppedGeoTiffSpec extends FunSpec
     val uint32Striped = geoTiffPath("uncompressed/striped/uint32.tif")
     val float32Striped = geoTiffPath("uncompressed/striped/float32.tif")
     val float64Striped = geoTiffPath("uncompressed/striped/float64.tif")
-    
+
     val bitTiled = geoTiffPath("uncompressed/tiled/bit.tif")
     val byteTiled = geoTiffPath("uncompressed/tiled/byte.tif")
     val int16Tiled = geoTiffPath("uncompressed/tiled/int16.tif")
@@ -206,7 +206,7 @@ class CroppedGeoTiffSpec extends FunSpec
     val uint32Striped = geoTiffPath("3bands/uint32/3bands-striped-band.tif")
     val float32Striped = geoTiffPath("3bands/float32/3bands-striped-band.tif")
     val float64Striped = geoTiffPath("3bands/float64/3bands-striped-band.tif")
-    
+
     val bitTiled = geoTiffPath("3bands/bit/3bands-tiled-band.tif")
     val byteTiled = geoTiffPath("3bands/byte/3bands-tiled-band.tif")
     val int16Tiled = geoTiffPath("3bands/int16/3bands-tiled-band.tif")

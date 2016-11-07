@@ -12,10 +12,10 @@ with GeoTiffTestUtils
 with TileBuilders {
   describe("UInt16GeoTiffTile") {
    it("should read landsat 8 data correctly") {
-     val actualImage = SinglebandGeoTiff(geoTiffPath(s"ls8_uint16.tif")).convert(IntCellType)
-     val expectedImage = SinglebandGeoTiff(geoTiffPath(s"ls8_int32.tif"))
+     val actualImage = SinglebandGeoTiff(geoTiffPath(s"ls8_uint16.tif")).tile.convert(IntCellType)
+     val expectedImage = SinglebandGeoTiff(geoTiffPath(s"ls8_int32.tif")).tile
 
-     assertEqual(actualImage.tile, expectedImage.tile)
+     assertEqual(actualImage, expectedImage)
    }
   }
 }

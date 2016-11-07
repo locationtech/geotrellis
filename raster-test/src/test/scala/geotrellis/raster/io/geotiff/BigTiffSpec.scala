@@ -13,8 +13,8 @@ class BigTiffSpec extends FunSpec with RasterMatchers with GeoTiffTestUtils {
     val smallPath = "raster-test/data/geotiff-test-files/ls8_int32.tif"
     val bigPath = "raster-test/data/geotiff-test-files/bigtiffs/ls8_int32-big.tif"
 
-    val smallPathMulti = "raster-test/data/geotiff-test-files/multi.tif" 
-    val bigPathMulti = "raster-test/data/geotiff-test-files/bigtiffs/multi-big.tif" 
+    val smallPathMulti = "raster-test/data/geotiff-test-files/multi.tif"
+    val bigPathMulti = "raster-test/data/geotiff-test-files/bigtiffs/multi-big.tif"
 
     val chunkSize = 500
 
@@ -24,9 +24,9 @@ class BigTiffSpec extends FunSpec with RasterMatchers with GeoTiffTestUtils {
       val actual = SinglebandGeoTiff(reader)
       val expected = SinglebandGeoTiff(smallPath)
 
-      assertEqual(actual, expected)
+      assertEqual(actual.tile, expected.tile)
     }
-    
+
     it("should read in a cropped SinlebandGeoTiff from the edge") {
       val local = LocalBytesStreamer(bigPath, chunkSize)
       val reader = StreamByteReader(local)
@@ -37,9 +37,9 @@ class BigTiffSpec extends FunSpec with RasterMatchers with GeoTiffTestUtils {
       val actual = SinglebandGeoTiff(reader, e)
       val expected = SinglebandGeoTiff(smallPath, e)
 
-      assertEqual(actual, expected)
+      assertEqual(actual.tile, expected.tile)
     }
-    
+
     it("should read in a cropped SinglebandGeoTiff in the middle") {
       val local = LocalBytesStreamer(bigPath, chunkSize)
       val reader = StreamByteReader(local)
@@ -50,16 +50,16 @@ class BigTiffSpec extends FunSpec with RasterMatchers with GeoTiffTestUtils {
       val actual = SinglebandGeoTiff(reader, e)
       val expected = SinglebandGeoTiff(smallPath, e)
 
-      assertEqual(actual, expected)
+      assertEqual(actual.tile, expected.tile)
     }
-    
+
     it("should read in the entire MultibandGeoTiff") {
       val local = LocalBytesStreamer(bigPathMulti, chunkSize)
       val reader = StreamByteReader(local)
       val actual = MultibandGeoTiff(reader)
       val expected = MultibandGeoTiff(smallPathMulti)
 
-      assertEqual(actual, expected)
+      assertEqual(actual.tile, expected.tile)
     }
 
     it("should read in a cropped MultibandGeoTiff from the edge") {
@@ -72,9 +72,9 @@ class BigTiffSpec extends FunSpec with RasterMatchers with GeoTiffTestUtils {
       val actual = MultibandGeoTiff(reader, e)
       val expected = MultibandGeoTiff(smallPathMulti, e)
 
-      assertEqual(actual, expected)
+      assertEqual(actual.tile, expected.tile)
     }
-    
+
     it("should read in a cropped MultibandGeoTiff in the middle") {
       val local = LocalBytesStreamer(bigPathMulti, chunkSize)
       val reader = StreamByteReader(local)
@@ -85,7 +85,7 @@ class BigTiffSpec extends FunSpec with RasterMatchers with GeoTiffTestUtils {
       val actual = MultibandGeoTiff(reader, e)
       val expected = MultibandGeoTiff(smallPathMulti, e)
 
-      assertEqual(actual, expected)
+      assertEqual(actual.tile, expected.tile)
     }
   }
 }
