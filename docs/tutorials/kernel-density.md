@@ -5,22 +5,22 @@ This document provides a detailed example on how to build a raster from point da
 
 Kernel density is one way to convert a set of points (an instance of vector data) into a raster.  In this process, at every point in the point set, the contents of what is effectively a small Tile (called a Kernel) containing a predefined pattern are added to the grid cells surrounding the point in question (i.e., the kernel is centered on the tile cell containing the point and then added to the Tile).  This is an example of a local map algebra operation.  Assuming that the points were sampled according to a probability density function, and if the kernel is derived from a Gaussian function, this can develop a smooth approximation to the density function that the points were sampled from.  (Alternatively, each point can be given a weight, and the kernel values can be scaled by that weight before being applied to the tile, which we will do below.)
 
-To begin, let's generate a random collection of points with weights in the range (0, 32).
+To begin, let's generate a random collection of points with weights in the range (0, 32).  To capture the idea of "a point with weight", we create a `PointFeature[Double]` (which is an alias of `Feature[Point, Double]`).  Features, in general, combine a geometry with an attribute value in a type-safe way.
 
 ```scala
   import geotrellis.vector._
   import scala.util._
 
-  val extent = Extent.fromString("-109, 37, -102, 41") // Extent of Colorado
+  val extent = Extent(-109, 37, -102, 41) // Extent of Colorado
 
   def randomPointFeature(extent: Extent): PointFeature[Double] = {
     def randInRange (low: Double, high: Double): Double = {
       val x = Random.nextDouble
       low * (1-x) + high * x
     }
-    Feature(Point(randInRange(extent.xmin, extent.xmax),
+    Feature(Point(randInRange(extent.xmin, extent.xmax),      // the geometry
                   randInRange(extent.ymin, extent.ymax)), 
-            Random.nextInt % 16 + 16)
+            Random.nextInt % 16 + 16)                         // the weight (attribute)
   }
 
   val pts = (for (i <- 1 to 1000) yield randomPointFeature(extent)).toList
@@ -32,12 +32,12 @@ Next, we will create a tile containing the kernel density estimate:
 ```scala
   import geotrellis.raster.mapalgebra.focal.Kernel
 
-  val kernelWidth = 9
-  val kern = Kernel.gaussian(kernelWidth, 1.5, 25) // Gaussian kernel with std. deviation 1.5, amplitude 25
-  val kde = pts.kernelDensity (kern, RasterExtent(extent, 700, 400))
+  val kernelWidth: Int = 9
+  val kern: Kernel = Kernel.gaussian(kernelWidth, 1.5, 25) // Gaussian kernel with std. deviation 1.5, amplitude 25
+  val kde: Tile = pts.kernelDensity (kern, RasterExtent(extent, 700, 400))
 ```
 
-This populates a 700x400 tile with the desired kernel density estimate.  In order to view the resulting file, a simple method is to write the tile out to PNG or TIFF.  In the following snippet, a PNG is created where the values of the tile are mapped to colors that smoothly interpolate from blue to yellow to red.
+This populates a 700x400 tile with the desired kernel density estimate.  In order to view the resulting file, a simple method is to write the tile out to PNG or TIFF.  In the following snippet, a PNG is created in the directory `sbt` was launched in (the working directory), where the values of the tile are mapped to colors that smoothly interpolate from blue to yellow to red.
 ```scala
   import geotrellis.raster.render._
 
@@ -160,8 +160,8 @@ In our case, we have a collection of PointFeatures that we wish to parallelize, 
 ```
 Here, the 10 indicates that we want to distribute the data, as 10 partitions, to the available workers.  A partition is a subset of the data in an RDD that will be processed by one of the workers, enabling parallel, distributed computation, assuming the existence of a pool of workers on a set of machines.  If we exclude this value, the default parallelism will be used, which is typically the number of processors, though in this local example, it defaults to one.
 
-In order to perform the same task as in the previous section, but in parallel, we will approach the problem in much the same way: points will be assigned an extent corresponding to the extent of the associated kernel, those points will be assigned SpatialKeys based on which subtiles their kernels overlap, and each kernel will be applied to the tile corresponding to its assigned SpatialKey.  Earlier, this process was effected by a flatMap followed by a groupBy and then a map.  This very same procedure could be used here, save for the fact that groupBy, when applied to an RDD, triggers an expensive, slow, network-intensive shuffling operation which collects items with the same key on a single node in the cluster.  Instead, a fold-like operation will be used: `aggregateByKey`, which has a signature of <center style="padding-bottom: 1em">`RDD[(K, U)] => T => ((U, T) => T, (T, T) => T) => RDD[(K, T)]`.</center>
-That is, we begin with an RDD of key/value pairs, provide a “zero value” of type `T`, the type of the final result, and two functions: (1) a *sequential operator*, which uses a single value of type `U` to update an accumulated value of type `T`, and (2) a *combining operator*, which merges two accumulated states of type `T`.  In our case, `U = PointFeature[Double]` and `T = Tile`; this implies that the insertion function is a kernel stamper and the merging function is a tile adder.
+In order to perform the same task as in the previous section, but in parallel, we will approach the problem in much the same way: points will be assigned an extent corresponding to the extent of the associated kernel, those points will be assigned SpatialKeys based on which subtiles their kernels overlap, and each kernel will be applied to the tile corresponding to its assigned SpatialKey.  Earlier, this process was effected by a flatMap followed by a groupBy and then a map.  This very same procedure could be used here, save for the fact that groupBy, when applied to an RDD, triggers an expensive, slow, network-intensive shuffling operation which collects items with the same key on a single node in the cluster.  Instead, a fold-like operation will be used: `aggregateByKey`, which has a signature of
+```RDD[(K, U)] => T => ((U, T) => T, (T, T) => T) => RDD[(K, T)].```  That is, we begin with an RDD of key/value pairs, provide a “zero value” of type `T`, the type of the final result, and two functions: (1) a *sequential operator*, which uses a single value of type `U` to update an accumulated value of type `T`, and (2) a *combining operator*, which merges two accumulated states of type `T`.  In our case, `U = PointFeature[Double]` and `T = Tile`; this implies that the insertion function is a kernel stamper and the merging function is a tile adder.
 
 ```scala
   import geotrellis.raster.density.KernelStamper
@@ -245,7 +245,7 @@ In either event, it will be necessary to install Spark in your local environment
 ```
 This packages the required class files into a JAR file.  Now, again from the GeoTrellis source tree root directory, issue the command
 ```bash
-  spark-shell --jars spark-etl/target/scala-2.10/geotrellis-spark-etl-assembly-[version].jar
+  spark-shell --jars spark-etl/target/scala-2.11/geotrellis-spark-etl-assembly-[version].jar
 ```
 From the resulting interpreter prompt, perform the following imports:
 ```scala
