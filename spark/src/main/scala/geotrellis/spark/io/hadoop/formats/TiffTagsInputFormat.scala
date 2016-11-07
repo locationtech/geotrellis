@@ -3,7 +3,7 @@ package geotrellis.spark.io.hadoop.formats
 import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.raster.io.geotiff.reader.TiffTagsReader
 import geotrellis.spark.io.hadoop._
-import geotrellis.util.StreamByteReader
+import geotrellis.util.StreamingByteReader
 
 import org.apache.hadoop.fs._
 import org.apache.hadoop.mapreduce._
@@ -20,7 +20,7 @@ class TiffTagsInputFormat extends FileInputFormat[Path, TiffTags] {
       def initialize(split: InputSplit, context: TaskAttemptContext) = {
         val path = split.asInstanceOf[FileSplit].getPath()
         val conf = context.getConfiguration()
-        val byteReader = StreamByteReader(HdfsBytesStreamer(path, conf))
+        val byteReader = StreamingByteReader(HdfsRangeReader(path, conf))
 
         tup = (path, TiffTagsReader.read(byteReader))
       }

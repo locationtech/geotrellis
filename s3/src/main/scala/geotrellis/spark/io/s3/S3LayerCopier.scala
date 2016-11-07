@@ -22,7 +22,7 @@ class S3LayerCopier(
   destKeyPrefix: String
 ) extends LayerCopier[LayerId] {
 
-  def getS3Client: () => S3Client = () => S3Client.default
+  def getS3Client: () => S3Client = () => S3Client.DEFAULT
 
   @tailrec
   final def copyListing(s3Client: S3Client, bucket: String, listing: ObjectListing, from: LayerId, to: LayerId): Unit = {

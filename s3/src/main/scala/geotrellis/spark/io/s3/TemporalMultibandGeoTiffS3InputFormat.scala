@@ -15,13 +15,13 @@ import java.time.ZonedDateTime
   */
 class TemporalMultibandGeoTiffS3InputFormat extends S3InputFormat[TemporalProjectedExtent, MultibandTile] {
   def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
-    new S3RecordReader[TemporalProjectedExtent, MultibandTile] {
+    new S3RecordReader[TemporalProjectedExtent, MultibandTile](getS3Client(context)) {
       def read(key: String, bytes: Array[Byte]) = {
         val geoTiff = MultibandGeoTiff(bytes)
 
         val timeTag = TemporalGeoTiffS3InputFormat.getTimeTag(context)
         val dateFormatter = TemporalGeoTiffS3InputFormat.getTimeFormatter(context)
-        val inputCrs = TemporalGeoTiffS3InputFormat.getCrs(context)
+        val inputCrs = GeoTiffS3InputFormat.getCrs(context)
 
         val dateTimeString = geoTiff.tags.headTags.getOrElse(timeTag, sys.error(s"There is no tag $timeTag in the GeoTiff header"))
         val dateTime = ZonedDateTime.parse(dateTimeString, dateFormatter)

@@ -4,8 +4,8 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.io.s3.util.S3BytesStreamer
-import geotrellis.util.StreamByteReader
+import geotrellis.spark.io.s3.util.S3RangeReader
+import geotrellis.util.StreamingByteReader
 import geotrellis.vector.ProjectedExtent
 
 import org.apache.hadoop.conf.Configuration
@@ -28,22 +28,25 @@ trait GeoTiffS3InputFormattable[K, V] {
   def valueClass: Class[V]
 
   def configuration(bucket: String, prefix: String, options: S3GeoTiffRDD.Options)(implicit sc: SparkContext): Configuration = {
-    val job = Job.getInstance(sc.hadoopConfiguration)
-    S3InputFormat.setBucket(job, bucket)
-    S3InputFormat.setPrefix(job, prefix)
+    val conf =sc.hadoopConfiguration
 
-    options.crs.foreach { crs => S3InputFormat.setCRS(job, crs) }
+    S3InputFormat.setBucket(conf, bucket)
+    S3InputFormat.setPrefix(conf, prefix)
+
+    options.crs.foreach { crs => GeoTiffS3InputFormat.setCrs(conf, crs) }
 
     options.numPartitions match {
-      case Some(x) => S3InputFormat.setPartitionCount(job, x)
+      case Some(x) => S3InputFormat.setPartitionCount(conf, x)
       case None =>
     }
 
-    job.getConfiguration
+    conf
   }
 
   def load(bucket: String, prefix: String, options: S3GeoTiffRDD.Options)(implicit sc: SparkContext): RDD[(K, V)] = {
     val conf = configuration(bucket, prefix, options)
+    S3InputFormat.setCreateS3Client(conf, options.getS3Client)
+
     sc.newAPIHadoopRDD(
       conf,
       formatClass,
@@ -52,7 +55,7 @@ trait GeoTiffS3InputFormattable[K, V] {
     )
   }
 
-  def load(windows: RDD[(GetObjectRequest, GridBounds)], options: S3GeoTiffRDD.Options)(implicit client: S3Client): RDD[(K, V)]
+  def load(windows: RDD[(GetObjectRequest, GridBounds)], options: S3GeoTiffRDD.Options): RDD[(K, V)]
 }
 
 object SpatialSinglebandGeoTiffS3InputFormattable extends GeoTiffS3InputFormattable[ProjectedExtent, Tile] {
@@ -62,11 +65,11 @@ object SpatialSinglebandGeoTiffS3InputFormattable extends GeoTiffS3InputFormatta
   def keyClass = classOf[ProjectedExtent]
   def valueClass = classOf[Tile]
 
-  def load(windows: RDD[(GetObjectRequest, GridBounds)], options: S3GeoTiffRDD.Options)(implicit client: S3Client): RDD[(ProjectedExtent, Tile)] = {
+  def load(windows: RDD[(GetObjectRequest, GridBounds)], options: S3GeoTiffRDD.Options): RDD[(ProjectedExtent, Tile)] = {
     val conf = new SerializableConfiguration(windows.sparkContext.hadoopConfiguration)
     windows
       .map { case (objectRequest, window) =>
-        val reader = StreamByteReader(S3BytesStreamer(objectRequest, client))
+        val reader = StreamingByteReader(S3RangeReader(objectRequest, options.getS3Client()))
         val gt = SinglebandGeoTiff.streaming(reader)
         val raster: Raster[Tile] =
           gt.raster.crop(window)
@@ -83,11 +86,11 @@ object SpatialMultibandGeoTiffS3InputFormattable extends GeoTiffS3InputFormattab
   def keyClass = classOf[ProjectedExtent]
   def valueClass = classOf[MultibandTile]
 
-  def load(windows: RDD[(GetObjectRequest, GridBounds)], options: S3GeoTiffRDD.Options)(implicit client: S3Client): RDD[(ProjectedExtent, MultibandTile)] = {
+  def load(windows: RDD[(GetObjectRequest, GridBounds)], options: S3GeoTiffRDD.Options): RDD[(ProjectedExtent, MultibandTile)] = {
     val conf = new SerializableConfiguration(windows.sparkContext.hadoopConfiguration)
     windows
       .map { case (objectRequest, window) =>
-        val reader = StreamByteReader(S3BytesStreamer(objectRequest, client))
+        val reader = StreamingByteReader(S3RangeReader(objectRequest, options.getS3Client()))
         val gt = MultibandGeoTiff.streaming(reader)
         val raster: Raster[MultibandTile] =
           gt.raster.crop(window)
@@ -121,11 +124,11 @@ object TemporalSinglebandGeoTiffS3InputFormattable extends TemporalGeoTiffS3Inpu
   def keyClass = classOf[TemporalProjectedExtent]
   def valueClass = classOf[Tile]
 
-  def load(windows: RDD[(GetObjectRequest, GridBounds)], options: S3GeoTiffRDD.Options)(implicit client: S3Client): RDD[(TemporalProjectedExtent, Tile)] = {
+  def load(windows: RDD[(GetObjectRequest, GridBounds)], options: S3GeoTiffRDD.Options): RDD[(TemporalProjectedExtent, Tile)] = {
     val conf = new SerializableConfiguration(windows.sparkContext.hadoopConfiguration)
     windows
       .map { case (objectRequest, window) =>
-        val reader = StreamByteReader(S3BytesStreamer(objectRequest, client))
+        val reader = StreamingByteReader(S3RangeReader(objectRequest, options.getS3Client()))
         val gt = SinglebandGeoTiff.streaming(reader)
         val raster: Raster[Tile] =
           gt.raster.crop(window)
@@ -144,11 +147,11 @@ object TemporalMultibandGeoTiffS3InputFormattable extends TemporalGeoTiffS3Input
   def keyClass = classOf[TemporalProjectedExtent]
   def valueClass = classOf[MultibandTile]
 
-  def load(windows: RDD[(GetObjectRequest, GridBounds)], options: S3GeoTiffRDD.Options)(implicit client: S3Client): RDD[(TemporalProjectedExtent, MultibandTile)] = {
+  def load(windows: RDD[(GetObjectRequest, GridBounds)], options: S3GeoTiffRDD.Options): RDD[(TemporalProjectedExtent, MultibandTile)] = {
     val conf = new SerializableConfiguration(windows.sparkContext.hadoopConfiguration)
     windows
       .map { case (objectRequest, window) =>
-        val reader = StreamByteReader(S3BytesStreamer(objectRequest, client))
+        val reader = StreamingByteReader(S3RangeReader(objectRequest, options.getS3Client()))
         val gt = MultibandGeoTiff.streaming(reader)
         val raster: Raster[MultibandTile] =
           gt.raster.crop(window)

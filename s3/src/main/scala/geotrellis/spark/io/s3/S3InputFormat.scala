@@ -1,6 +1,7 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.proj4.CRS
+import geotrellis.spark.io.hadoop._
 
 import com.amazonaws.services.s3.model.{ListObjectsRequest, ObjectListing}
 import com.amazonaws.auth._
@@ -22,8 +23,8 @@ import scala.util.matching.Regex
 abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
   import S3InputFormat._
 
-  def getS3Client(credentials: AWSCredentials): S3Client =
-    new geotrellis.spark.io.s3.AmazonS3Client(credentials, S3Client.defaultConfiguration)
+  def getS3Client(context: JobContext): S3Client =
+    S3InputFormat.getS3Client(context)
 
   override def getSplits(context: JobContext) = {
     import scala.collection.JavaConversions._
@@ -54,19 +55,10 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
     require(null == partitionCountConf || null == partitionSizeConf,
       "Either PARTITION_COUNT or PARTITION_SIZE option may be set")
 
-    val credentials =
-      if (anon != null)
-        new AnonymousAWSCredentials()
-      else if (id != null && key != null)
-        new BasicAWSCredentials(id, key)
-      else
-        new DefaultAWSCredentialsProviderChain().getCredentials
-
-    val s3client: S3Client = getS3Client(credentials)
+    val s3client: S3Client = getS3Client(context)
     for (r <- region) s3client.setRegion(r)
 
     logger.info(s"Listing Splits: bucket=$bucket prefix=$prefix")
-    logger.debug(s"Authenticating with ID=${credentials.getAWSAccessKeyId}")
 
     val request = new ListObjectsRequest()
       .withBucketName(bucket)
@@ -74,7 +66,6 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
 
     def makeNewSplit =  {
       val split = new S3InputSplit
-      split.setCredentials(credentials)
       split.bucket = bucket
       split
     }
@@ -138,11 +129,24 @@ object S3InputFormat {
   final val PARTITION_BYTES = "S3.partitionBytes"
   final val CHUNK_SIZE = "s3.chunkSize"
   final val CRS_VALUE = "s3.crs"
+  final val CREATE_S3CLIENT = "s3.client"
 
   private val idRx = "[A-Z0-9]{20}"
   private val keyRx = "[a-zA-Z0-9+/]+={0,2}"
   private val slug = "[a-zA-Z0-9-]+"
   val S3UrlRx = new Regex(s"""s3[an]?://(?:($idRx):($keyRx)@)?($slug)/{0,1}(.*)""", "aws_id", "aws_key", "bucket", "prefix")
+
+  def setCreateS3Client(job: Job, createClient: () => S3Client): Unit =
+    setCreateS3Client(job.getConfiguration, createClient)
+
+  def setCreateS3Client(conf: Configuration, createClient: () => S3Client): Unit =
+    conf.setSerialized(CREATE_S3CLIENT, createClient)
+
+  def getS3Client(job: JobContext): S3Client =
+    job.getConfiguration.getSerializedOption[() => S3Client](CREATE_S3CLIENT) match {
+      case Some(createS3Client) => createS3Client()
+      case None => S3Client.DEFAULT
+    }
 
   /** Set S3N url to use, may include AWS Id and Key */
   def setUrl(job: Job, url: String): Unit =
@@ -203,13 +207,7 @@ object S3InputFormat {
 
   def setChunkSize(job: Job, chunkSize: Int): Unit =
     setChunkSize(job.getConfiguration, chunkSize)
-  
+
   def setChunkSize(conf: Configuration, chunkSize: Int): Unit =
     conf.set(CHUNK_SIZE, chunkSize.toString)
-  
-  def setCRS(job: Job, crs: CRS): Unit =
-    setCRS(job.getConfiguration, crs)
-  
-  def setCRS(conf: Configuration, crs: CRS): Unit =
-    conf.set(CHUNK_SIZE, crs.toString)
 }

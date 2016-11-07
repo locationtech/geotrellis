@@ -4,6 +4,7 @@ import geotrellis.raster._
 import geotrellis.raster.testkit.RasterMatchers
 import geotrellis.vector._
 import geotrellis.spark._
+import geotrellis.spark.tiling._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.s3.testkit._
 
@@ -30,17 +31,14 @@ class S3GeoTiffRDDSpec
     val k = "geoTiff/all-ones.tif"
 
     it("should read the same rasters when reading small windows or with no windows, Spatial, SinglebandGeoTiff") {
-      val source1 = S3GeoTiffRDD.spatial(bucket, k)
-      val source2 = S3GeoTiffRDD.spatial(bucket, k, S3GeoTiffRDD.Options(maxTileSize = Some(128)))
-      /*
-      
+      val source1 = S3GeoTiffRDD.spatial(bucket, k, S3GeoTiffRDD.Options(getS3Client = () => new MockS3Client()))
+      val source2 = S3GeoTiffRDD.spatial(bucket, k, S3GeoTiffRDD.Options(maxTileSize = Some(128), getS3Client = () => new MockS3Client()))
       val (_, md) = source1.collectMetadata[SpatialKey](FloatingLayoutScheme(256))
 
       val stitched1 = source1.tileToLayout(md).stitch
       val stitched2 = source2.tileToLayout(md).stitch
 
       assertEqual(stitched1, stitched2)
-      */
     }
   }
 }

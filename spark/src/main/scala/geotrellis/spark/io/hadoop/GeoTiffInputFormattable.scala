@@ -5,7 +5,7 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop.formats._
-import geotrellis.util.StreamByteReader
+import geotrellis.util.StreamingByteReader
 import geotrellis.vector.ProjectedExtent
 
 import org.apache.hadoop.conf.Configuration
@@ -55,7 +55,7 @@ object SpatialSinglebandGeoTiffInputFormattable extends GeoTiffInputFormattable[
     val conf = new SerializableConfiguration(windows.sparkContext.hadoopConfiguration)
     windows
       .map { case (path, window) =>
-        val reader = StreamByteReader(HdfsBytesStreamer(path, conf.value))
+        val reader = StreamingByteReader(HdfsRangeReader(path, conf.value))
         val gt = SinglebandGeoTiff.streaming(reader)
         val raster: Raster[Tile] =
           gt.raster.crop(window)
@@ -76,7 +76,7 @@ object SpatialMultibandGeoTiffInputFormattable extends GeoTiffInputFormattable[P
     val conf = new SerializableConfiguration(windows.sparkContext.hadoopConfiguration)
     windows
       .map { case (path, window) =>
-        val reader = StreamByteReader(HdfsBytesStreamer(path, conf.value))
+        val reader = StreamingByteReader(HdfsRangeReader(path, conf.value))
         val gt = MultibandGeoTiff.streaming(reader)
         val raster: Raster[MultibandTile] =
           gt.raster.crop(window)
@@ -114,7 +114,7 @@ object TemporalSinglebandGeoTiffInputFormattable extends TemporalGeoTiffInputFor
     val conf = new SerializableConfiguration(windows.sparkContext.hadoopConfiguration)
     windows
       .map { case (path, window) =>
-        val reader = StreamByteReader(HdfsBytesStreamer(path, conf.value))
+        val reader = StreamingByteReader(HdfsRangeReader(path, conf.value))
         val gt = SinglebandGeoTiff.streaming(reader)
         val raster: Raster[Tile] =
           gt.raster.crop(window)
@@ -137,7 +137,7 @@ object TemporalMultibandGeoTiffInputFormattable extends TemporalGeoTiffInputForm
     val conf = new SerializableConfiguration(windows.sparkContext.hadoopConfiguration)
     windows
       .map { case (path, window) =>
-        val reader = StreamByteReader(HdfsBytesStreamer(path, conf.value))
+        val reader = StreamingByteReader(HdfsRangeReader(path, conf.value))
         val gt = MultibandGeoTiff.streaming(reader)
         val raster: Raster[MultibandTile] =
           gt.raster.crop(window)

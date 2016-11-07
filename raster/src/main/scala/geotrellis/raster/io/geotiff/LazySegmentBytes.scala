@@ -17,9 +17,9 @@ import spire.syntax.cfor._
  * @param byteReader: A ByteReader that contains bytes of the GeoTiff
  * @param storageMethod: The [[StorageMethod]] of the GeoTiff
  * @param tifftags: The [[TiffTags]] of the GeoTiff
- * @return A new instance of BufferSegmentBytes
+ * @return A new instance of LazySegmentBytes
  */
-case class BufferSegmentBytes(byteReader: ByteReader, tiffTags: TiffTags) extends SegmentBytes {
+case class LazySegmentBytes(byteReader: ByteReader, tiffTags: TiffTags) extends SegmentBytes {
 
   val (offsets, byteCounts) =
     if (tiffTags.hasStripStorage) {
@@ -32,7 +32,7 @@ case class BufferSegmentBytes(byteReader: ByteReader, tiffTags: TiffTags) extend
         BasicTags._stripByteCounts get)
 
       (stripOffsets.get, stripByteCounts.get)
-      
+
     } else {
       val tileOffsets = (tiffTags &|->
         TiffTags._tileTags ^|->
@@ -54,11 +54,6 @@ case class BufferSegmentBytes(byteReader: ByteReader, tiffTags: TiffTags) extend
    * @param i: The index number of the segment.
    * @return An Array[Byte] that contains the bytes of the segment
    */
-  def getSegment(i: Int) = {
-    val oldOffset = byteReader.position
-    byteReader.position(offsets(i).toInt)
-    val result = byteReader.getSignedByteArray(byteCounts(i).toInt)
-    byteReader.position(oldOffset)
-    result
-  }
+  def getSegment(i: Int) =
+    byteReader.getSignedByteArray(byteCounts(i), offsets(i))
 }

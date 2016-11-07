@@ -14,7 +14,6 @@ import java.time.format.DateTimeFormatter
 object TemporalGeoTiffS3InputFormat {
   final val GEOTIFF_TIME_TAG_DEFAULT = "GEOTIFF_TIME_TAG"
   final val GEOTIFF_TIME_FORMAT_DEFAULT = "GEOTIFF_TIME_FORMAT"
-  final val GEOTIFF_CRS = "GEOTIFF_CRS"
 
   def setTimeTag(job: JobContext, timeTag: String): Unit =
     setTimeTag(job.getConfiguration, timeTag)
@@ -28,8 +27,6 @@ object TemporalGeoTiffS3InputFormat {
   def setTimeFormat(conf: Configuration, timeFormat: String): Unit =
     conf.set(GEOTIFF_TIME_FORMAT_DEFAULT, timeFormat)
 
-  def setCrs(conf: Configuration, name: String): Unit = conf.set(GEOTIFF_CRS, name)
-
   def getTimeTag(job: JobContext) =
     job.getConfiguration.get(GEOTIFF_TIME_TAG_DEFAULT, "TIFFTAG_DATETIME")
 
@@ -37,11 +34,6 @@ object TemporalGeoTiffS3InputFormat {
     val df = job.getConfiguration.get(GEOTIFF_TIME_FORMAT_DEFAULT)
     (if (df == null) { DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss") }
     else { DateTimeFormatter.ofPattern(df) }).withZone(ZoneOffset.UTC)
-  }
-
-  def getCrs(job: JobContext): Option[CRS] = {
-    val name = job.getConfiguration.get(GEOTIFF_CRS, "")
-    if(name == "") None else Some(CRS.fromName(name))
   }
 }
 
@@ -53,10 +45,10 @@ object TemporalGeoTiffS3InputFormat {
   */
 class TemporalGeoTiffS3InputFormat extends S3InputFormat[TemporalProjectedExtent, Tile] {
   def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
-    new TemporalGeoTiffS3RecordReader(context)
+    new TemporalGeoTiffS3RecordReader(getS3Client(context), context)
 }
 
-class TemporalGeoTiffS3RecordReader(context: TaskAttemptContext) extends S3RecordReader[TemporalProjectedExtent, Tile] {
+class TemporalGeoTiffS3RecordReader(s3Client: S3Client, context: TaskAttemptContext) extends S3RecordReader[TemporalProjectedExtent, Tile](s3Client) {
   val timeTag = TemporalGeoTiffS3InputFormat.getTimeTag(context)
   val dateFormatter = TemporalGeoTiffS3InputFormat.getTimeFormatter(context)
 
@@ -65,7 +57,7 @@ class TemporalGeoTiffS3RecordReader(context: TaskAttemptContext) extends S3Recor
 
     val dateTimeString = geoTiff.tags.headTags.getOrElse(timeTag, sys.error(s"There is no tag $timeTag in the GeoTiff header"))
     val dateTime = ZonedDateTime.from(dateFormatter.parse(dateTimeString))
-    val inputCrs = TemporalGeoTiffS3InputFormat.getCrs(context)
+    val inputCrs = GeoTiffS3InputFormat.getCrs(context)
 
     //WARNING: Assuming this is a single band GeoTiff
     val ProjectedRaster(Raster(tile, extent), crs) = geoTiff.projectedRaster

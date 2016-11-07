@@ -1,5 +1,6 @@
 package geotrellis.spark.io.s3
 
+import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.spark._
@@ -13,15 +14,15 @@ import org.scalatest._
 
 import java.nio.file.{ Paths, Files }
 
-class MockGeoTiffS3InputFormat extends GeoTiffS3InputFormat {
-  override def getS3Client(credentials: AWSCredentials): S3Client = new MockS3Client
-  override def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
-    new MockGeoTiffS3RecordReader(context)
-}
+// class MockGeoTiffS3InputFormat extends GeoTiffS3InputFormat {
+//   override def getS3Client(credentials: AWSCredentials): S3Client = new MockS3Client
+//   override def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
+//     new MockGeoTiffS3RecordReader(context)
+// }
 
-class MockGeoTiffS3RecordReader(context: TaskAttemptContext) extends GeoTiffS3RecordReader(context) {
-  override def getS3Client(credentials: AWSCredentials): S3Client = new MockS3Client
-}
+// class MockGeoTiffS3RecordReader(context: TaskAttemptContext) extends GeoTiffS3RecordReader(context) {
+//   override def getS3Client(credentials: AWSCredentials): S3Client = new MockS3Client
+// }
 
 class GeoTiffS3InputFormatSpec extends FunSpec with TestEnvironment with Matchers {
 
@@ -36,25 +37,33 @@ class GeoTiffS3InputFormatSpec extends FunSpec with TestEnvironment with Matcher
     it("should read GeoTiffs from S3") {
       val job = sc.newJob("geotiff-ingest")
       S3InputFormat.setUrl(job, url)
-      S3InputFormat.setAnonymous(job)
+
+      S3InputFormat.setCreateS3Client(job, { () => new MockS3Client })
 
       val source = sc.newAPIHadoopRDD(job.getConfiguration,
-        classOf[MockGeoTiffS3InputFormat],
+        classOf[GeoTiffS3InputFormat],
         classOf[ProjectedExtent],
         classOf[Tile])
       source.map(x=>x).cache
       val sourceCount = source.count
       sourceCount should not be (0)
       info(s"Source RDD count: ${sourceCount}")
+    }
 
-      /**
-        * Actually failes due to LatLon issue: https://github.com/geotrellis/geotrellis/issues/1341
-        */
-      /*Ingest[ProjectedExtent, SpatialKey](source, LatLng, ZoomedLayoutScheme(LatLng)){ (rdd, level) =>
-        val rddCount = rdd.count
-        rddCount should not be (0)
-        info(s"Tiled RDD count: ${rddCount}")
-      }*/
+    it("should set the CRS") {
+      val job = sc.newJob("geotiff-ingest")
+      S3InputFormat.setUrl(job, url)
+      S3InputFormat.setCreateS3Client(job, { () => new MockS3Client })
+      GeoTiffS3InputFormat.setCrs(job, WebMercator)
+
+      val source = sc.newAPIHadoopRDD(job.getConfiguration,
+        classOf[GeoTiffS3InputFormat],
+        classOf[ProjectedExtent],
+        classOf[Tile])
+      source.map(x=>x).cache
+      val sourceCount = source.count
+      sourceCount should not be (0)
+      info(s"Source RDD count: ${sourceCount}")
     }
   }
 }

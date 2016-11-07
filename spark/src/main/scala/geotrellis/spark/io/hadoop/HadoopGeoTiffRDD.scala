@@ -37,44 +37,53 @@ object HadoopGeoTiffRDD {
     options.maxTileSize match {
       case Some(tileSize) =>
         val conf = sc.hadoopConfiguration.withInputDirectory(path, options.tiffExtensions)
-        val tiffTags: RDD[(Path, TiffTags)] =
+        val pathsAndDimensions: RDD[(Path, (Int, Int))] =
           sc.newAPIHadoopRDD(
             conf,
             classOf[TiffTagsInputFormat],
             classOf[Path],
             classOf[TiffTags]
-          )
+          ).mapValues { tiffTags => (tiffTags.cols, tiffTags.rows) }
 
-        val windows: RDD[(Path, GridBounds)] =
-          tiffTags
-            .flatMap { case (path, tiffTags) =>
-              val (cols, rows) = (tiffTags.cols, tiffTags.rows)
-
-              val result = scala.collection.mutable.ListBuffer[GridBounds]()
-              cfor(0)(_ < cols, _ + tileSize) { col =>
-                cfor(0)(_ < rows, _ + tileSize) { row =>
-                  result +=
-                    GridBounds(
-                      col,
-                      row,
-                      math.min(col + tileSize - 1, cols - 1),
-                      math.min(row + tileSize - 1, rows - 1)
-                    )
-                }
-              }
-              result.map((path, _))
-            }
-
-        val repartitioned =
-          options.numPartitions match {
-            case Some(p) => windows.repartition(p)
-            case None => windows
-          }
-
-        gif.load(repartitioned, options)
+        apply[K, V](pathsAndDimensions, options)
       case None =>
         gif.load(path, options)
     }
+
+  def apply[K, V](pathsToDimensions: RDD[(Path, (Int, Int))], options: Options)(implicit sc: SparkContext, gif: GeoTiffInputFormattable[K, V]): RDD[(K, V)] = {
+    val windows: RDD[(Path, GridBounds)] =
+      pathsToDimensions
+        .flatMap { case (path, (cols, rows)) =>
+          val result = scala.collection.mutable.ListBuffer[GridBounds]()
+          options.maxTileSize match {
+            case Some(tileSize) =>
+              cfor(0)(_ < cols, _ + tileSize) { col =>
+                cfor(0)(_ < rows, _ + tileSize) { row =>
+                  result +=
+                  GridBounds(
+                    col,
+                    row,
+                    math.min(col + tileSize - 1, cols - 1),
+                    math.min(row + tileSize - 1, rows - 1)
+                  )
+                }
+              }
+            case None =>
+              result += GridBounds(0, 0, cols -1, rows - 1)
+          }
+
+          result.map((path, _))
+      }
+
+    val repartitioned =
+      options.numPartitions match {
+        case Some(p) => windows.repartition(p)
+        case None => windows
+      }
+
+    gif.load(repartitioned, options)
+  }
+
 
   def spatial(path: Path)(implicit sc: SparkContext): RDD[(ProjectedExtent, Tile)] =
     spatial(path, Options.DEFAULT)

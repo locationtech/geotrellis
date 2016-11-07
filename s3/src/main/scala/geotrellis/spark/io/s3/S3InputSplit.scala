@@ -13,40 +13,11 @@ import com.typesafe.scalalogging.LazyLogging
  */
 class S3InputSplit extends InputSplit with Writable with LazyLogging
 {
-  var accessKeyId: String = null
-  var secretKey: String = null
   var sessionToken: String = null
   var bucket: String = _
   var keys: Seq[String] = Vector.empty
   /** Combined size of objects in bytes */
   var size: Long = _
-
-  def credentials: AWSCredentials = {
-    logger.debug(s"AWS Credentials: $accessKeyId:$secretKey")
-    if (accessKeyId != null && secretKey != null && sessionToken != null)
-      new BasicSessionCredentials(accessKeyId, secretKey, sessionToken)
-    else if (accessKeyId != null && secretKey != null)
-      new BasicAWSCredentials(accessKeyId, secretKey)
-    else
-      new AnonymousAWSCredentials()
-  }
-
-  def setCredentials(cred: AWSCredentials) = cred match {
-    case c: AnonymousAWSCredentials =>
-      accessKeyId = null
-      secretKey = null
-      sessionToken = null
-    case c: BasicAWSCredentials =>
-      accessKeyId = c.getAWSAccessKeyId
-      secretKey = c.getAWSSecretKey
-      sessionToken = null
-    case c: BasicSessionCredentials =>
-      accessKeyId = c.getAWSAccessKeyId
-      secretKey = c.getAWSSecretKey
-      sessionToken = c.getSessionToken
-    case _ =>
-      throw new IllegalArgumentException("Can not handle $c")
-  }
 
   def addKey(obj: S3ObjectSummary): Long = {
     val objSize = obj.getSize
@@ -60,12 +31,6 @@ class S3InputSplit extends InputSplit with Writable with LazyLogging
   override def getLocations: Array[String] = Array.empty
 
   override def write(out: DataOutput): Unit = {
-    val haveAuth = accessKeyId != null && secretKey != null
-    out.writeBoolean(haveAuth)
-    if (haveAuth){
-      out.writeUTF(accessKeyId)
-      out.writeUTF(secretKey)
-    }
     out.writeBoolean(null != sessionToken)
     if (null != sessionToken)
       out.writeUTF(sessionToken)
@@ -75,13 +40,6 @@ class S3InputSplit extends InputSplit with Writable with LazyLogging
   }
 
   override def readFields(in: DataInput): Unit = {
-    if (in.readBoolean){
-      accessKeyId = in.readUTF
-      secretKey = in.readUTF
-    }else{
-      accessKeyId = null
-      secretKey = null
-    }
     if(in.readBoolean)
       sessionToken = in.readUTF
     else
