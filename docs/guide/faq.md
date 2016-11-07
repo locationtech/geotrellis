@@ -3,9 +3,9 @@ How do I install GeoTrellis?
 
 Sadly, you can't. GeoTrellis is a developer toolkit/library/framework used
 to develop applications in Scala against geospatial data large and small. To
-use it, you need it listed as a dependency in your application config, like
-any other library. See our [Setup Tutorial](../tutorials/setup.md) on how to
-do this.
+use it, you need it listed as a dependency in your project config, like any
+other library. See our [Setup Tutorial](../tutorials/setup.md) on how to do
+this.
 
 How do I convert a `Tile`'s `CellType`?
 =======================================

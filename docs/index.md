@@ -2,19 +2,16 @@ What is GeoTrellis?
 -------------------
 
 *GeoTrellis* is a Scala library and framework that uses
-Spark to work with raster data.  It is released under
-the Apache 2 License.
+[Apache Spark](http://spark.apache.org/) to work with raster data.  It is
+released under the Apache 2 License.
 
-GeoTrellis reads, writes, and operates on raster data
-as fast as possible. It implements many
-[Map Algebra](http://en.wikipedia.org/wiki/Map_algebra)
-operations as well as vector to raster or raster to
-vector operations.
+GeoTrellis reads, writes, and operates on raster data as fast as possible.
+It implements many [Map Algebra](http://en.wikipedia.org/wiki/Map_algebra)
+operations as well as vector to raster or raster to vector operations.
 
-GeoTrellis also provides tools to render rasters into
-PNGs or to store metadata about raster files as JSON.
-It aims to provide raster processing at web speeds (sub-second
-or less) with RESTful endpoints as well as provide
+GeoTrellis also provides tools to render rasters into PNGs or to store
+metadata about raster files as JSON. It aims to provide raster processing at
+web speeds (sub-second or less) with RESTful endpoints as well as provide
 fast batch processing of large raster data sets.
 
 Please visit the **[project site](http://geotrellis.io)**
