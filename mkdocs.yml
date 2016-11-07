@@ -17,6 +17,7 @@ pages:
     - Core Concepts: guide/core-concepts.md
     - Using Rasters: guide/rasters.md
     - Using Vectors: guide/vectors.md
+    - Extending GeoTrellis Types: guide/extending-geotrellis.md
     - GeoTrellis Module Hierarchy: guide/module-hierarchy.md
     - Tile Layer Backends: guide/tile-backends.md
     - Vector Data Backends: guide/vector-backends.md
