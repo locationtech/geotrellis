@@ -129,6 +129,7 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeKeys
       QueryBuilder.select.column("layerId")
         .from(attributeKeyspace, attributeTable)
         .where(eqs("layerId", layerIdString(layerId)))
+        .and(eqs("name", AttributeStore.Fields.metadata))
 
     session.execute(query).exists { key =>
       val List(name, zoomStr) = key.getString("layerId").split(SEP).toList

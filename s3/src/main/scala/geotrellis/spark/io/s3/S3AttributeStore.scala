@@ -79,7 +79,7 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayer
   def layerExists(layerId: LayerId): Boolean =
     s3Client
       .listObjectsIterator(bucket, path(prefix, "_attributes"))
-      .exists(_.getKey.endsWith(s"${SEP}${layerId.name}${SEP}${layerId.zoom}.json"))
+      .exists(_.getKey.endsWith(s"${AttributeStore.Fields.metadata}${SEP}${layerId.name}${SEP}${layerId.zoom}.json"))
 
   def delete(layerId: LayerId, attributeName: String): Unit = {
     if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)

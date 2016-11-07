@@ -65,7 +65,7 @@ class FileAttributeStore(val catalogPath: String) extends BlobLayerAttributeStor
       .listFiles(new WildcardFileFilter(s"${layerId.name}${SEP}${layerId.zoom}${SEP}*.json"): FileFilter)
 
   def layerExists(layerId: LayerId): Boolean =
-    layerAttributeFiles(layerId).nonEmpty
+    attributeFile(layerId, AttributeStore.Fields.metadata).exists
 
   def delete(layerId: LayerId, attributeName: String): Unit = {
     val layerFiles =
