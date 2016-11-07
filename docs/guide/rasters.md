@@ -370,6 +370,8 @@ from 0 to 1.0) and whether or not Huffman tables are to be computed on
 each run - often referred to as 'optimized' rendering. By default, a
 compressionQuality of 0.7 is used and Huffman table optimization is not used.
 
+<hr>
+
 Resampling
 ==========
 Often, when working with raster data, it is useful to change the resolution,
@@ -428,6 +430,8 @@ if you're dealing primarily with categorical data. In this instance, your
 best bet is to choose an aggregate method (and keep in mind that the values
 generated don't necessarily mean the same thing as the data being operated
 on) or a forgiving (though unsophisticated) method like `NearestNeighbor`.
+
+<hr>
 
 Histograms
 ==========
@@ -500,6 +504,8 @@ val colorMap = ColorMap.fromQuantileBreaks(histogram, colorRamp)
 
 val coloredTile: Tile = tile.color(colorMap)
 ```
+
+<hr>
 
 [Kriging Interpolation](https://en.wikipedia.org/wiki/Kriging)
 ==============================================================

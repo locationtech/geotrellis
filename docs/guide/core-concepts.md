@@ -752,6 +752,83 @@ have a `SpatialComponent` as well".
 Keys and Key Indexes
 ====================
 
+As mentioned in the [Tile Layers](#tile-layers) section, grids (or cubes) of
+`Tile`s on the earth are organized by keys. This key, often refered to
+generically as `K`, is typically a `SpatialKey` or a `SpaceTimeKey`:
+
+```scala
+case class SpatialKey(col: Int, row: Int)
+
+case class SpaceTimeKey(col: Int, row: Int, instant: Long)
+```
+
+although there is nothing stopping you from [defining your own key type](#).
+
+Assuming some tile layer `Extent` on the earth, `SpatialKey(0, 0)` would
+index the top-leftmost `Tile` in the Tile grid.
+
+When doing Layer IO, certain optimizations can be performed if we know that
+`Tile`s stored near each other in a filesystem or database (like Accumulo or
+HBase) are also spatially-close in the grid they're from. To make such a
+guarantee, we use a `KeyIndex`.
+
+<h2>Key Indexes</h2>
+
+A `KeyIndex` is a GeoTrellis `trait` that represents [**Space Filling
+Curves**](https://en.wikipedia.org/wiki/Space-filling_curve). They are a
+means by which to translate multi-dimensional indices into a
+single-dimensional one, while maintaining spatial locality. In GeoTrellis,
+we use these chiefly when writing Tile Layers to one of our [Tile Layer
+Backends](./tile-backends.md).
+
+Although `KeyIndex` is often used in its generic `trait` form, we supply
+three underlying implementations.
+
+<h3>Z-Curve</h3>
+
+![](https://upload.wikimedia.org/wikipedia/commons/c/cd/Four-level_Z.svg)
+
+The Z-Curve is the simplest `KeyIndex` to use (and implement). It can be
+used with both `SpatialKey` and `SpaceTimeKey`.
+
+```scala
+val b0: KeyBounds[SpatialKey] = ... /* from `TileLayerRDD.metadata.bounds` */
+val b1: KeyBounds[SpaceTimeKey] = ...
+
+val i0: KeyIndex[SpatialKey] = ZCurveKeyIndexMethod.createIndex(b0)
+val i1: KeyIndex[SpaceTimeKey] = ZCurveKeyIndexMethod.byDay().createIndex(b1)
+
+val k: SpatialKey = ...
+val oneD: Long = i0.toIndex(k) /* A SpatialKey's 2D coords mapped to 1D */
+```
+
+<h3>Hilbert</h3>
+
+![](https://upload.wikimedia.org/wikipedia/commons/a/a5/Hilbert_curve.svg)
+
+Another well-known curve, available for both `SpatialKey` and `SpaceTimeKey`.
+
+```scala
+val b: KeyBounds[SpatialKey] = ...
+
+val index: KeyIndex[SpatialKey] = HilbertKeyIndexMethod.createIndex(b)
+```
+
+<h3>Row Major</h3>
+
+![](./images/row-major.png)
+
+Row Major is only available for `SpatialKey`, but provides the fastest
+`toIndex` lookup of the three curves. It doesn't however, give good locality
+guarantees, so should only be used when locality isn't as important to your
+application.
+
+```scala
+val b: KeyBounds[SpatialKey] = ...
+
+val index: KeyIndex[SpatialKey] = RowMajorKeyIndexMethod.createIndex(b)
+```
+
 Tiles
 =====
 
