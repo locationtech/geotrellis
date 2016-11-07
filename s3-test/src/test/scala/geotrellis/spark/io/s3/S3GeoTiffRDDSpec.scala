@@ -22,17 +22,19 @@ class S3GeoTiffRDDSpec
     with TestEnvironment {
 
   describe("S3GeoTiffRDD") {
+    val bucket = this.getClass.getSimpleName
+    val key = "geoTiff/all-ones.tif"
+
     implicit val mockClient = new MockS3Client()
     val testGeoTiffPath = "spark/src/test/resources/all-ones.tif"
     val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
-    mockClient.putObject(this.getClass.getSimpleName, "geotiff/all-ones.tif", geoTiffBytes)
-
-    val bucket = this.getClass.getSimpleName
-    val k = "geoTiff/all-ones.tif"
+    mockClient.putObject(bucket, key, geoTiffBytes)
 
     it("should read the same rasters when reading small windows or with no windows, Spatial, SinglebandGeoTiff") {
-      val source1 = S3GeoTiffRDD.spatial(bucket, k, S3GeoTiffRDD.Options(getS3Client = () => new MockS3Client()))
-      val source2 = S3GeoTiffRDD.spatial(bucket, k, S3GeoTiffRDD.Options(maxTileSize = Some(128), getS3Client = () => new MockS3Client()))
+      val source1 = S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(getS3Client = () => new MockS3Client))
+      val source2 = S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(maxTileSize = Some(128), getS3Client = () => new MockS3Client))
+
+      source1.count should be < (source2.count)
       val (_, md) = source1.collectMetadata[SpatialKey](FloatingLayoutScheme(256))
 
       val stitched1 = source1.tileToLayout(md).stitch
