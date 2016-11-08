@@ -1,6 +1,8 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.raster._
+import geotrellis.raster.io.geotiff._
+import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.testkit.RasterMatchers
 import geotrellis.vector._
 import geotrellis.spark._
@@ -13,6 +15,7 @@ import com.amazonaws.auth.AWSCredentials
 import org.apache.hadoop.mapreduce.{ TaskAttemptContext, InputSplit }
 
 import java.nio.file.{ Paths, Files }
+import spire.syntax.cfor._
 import org.scalatest._
 
 class S3GeoTiffRDDSpec
@@ -24,7 +27,7 @@ class S3GeoTiffRDDSpec
   describe("S3GeoTiffRDD Spatial") {
     implicit val mockClient = new MockS3Client()
     val bucket = this.getClass.getSimpleName
-    
+
     it("should read the same rasters when reading small windows or with no windows, Spatial, SinglebandGeoTiff") {
 
       val key = "geoTiff/all-ones.tif"
@@ -50,9 +53,9 @@ class S3GeoTiffRDDSpec
       mockClient.putObject(bucket, key, geoTiffBytes)
 
       val source1 =
-        S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(getS3Client = () => new MockS3Client))
+        S3GeoTiffRDD.spatialMultiband(bucket, key, S3GeoTiffRDD.Options(getS3Client = () => new MockS3Client))
       val source2 =
-        S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(maxTileSize = Some(20), getS3Client = () => new MockS3Client))
+        S3GeoTiffRDD.spatialMultiband(bucket, key, S3GeoTiffRDD.Options(maxTileSize = Some(20), getS3Client = () => new MockS3Client))
 
       source1.count should be < (source2.count)
       val (_, md) = source1.collectMetadata[SpatialKey](FloatingLayoutScheme(20, 40))
@@ -68,12 +71,13 @@ class S3GeoTiffRDDSpec
       val testGeoTiffPath = "raster-test/data/one-month-tiles/test-200506000000_0_0.tif"
       val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
       mockClient.putObject(bucket, key, geoTiffBytes)
-      val source1 = S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(
+
+      val source1 = S3GeoTiffRDD.temporal(bucket, key, S3GeoTiffRDD.Options(
         timeTag = "ISO_TIME",
         timeFormat = "yyyy-MM-dd'T'HH:mm:ss",
         getS3Client = () => new MockS3Client))
 
-      val source2 = S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(
+      val source2 = S3GeoTiffRDD.temporal(bucket, key, S3GeoTiffRDD.Options(
         maxTileSize = Some(128),
         timeTag = "ISO_TIME",
         timeFormat = "yyyy-MM-dd'T'HH:mm:ss",
@@ -88,29 +92,48 @@ class S3GeoTiffRDDSpec
       assertEqual(stitched1, stitched2)
     }
 
+    /*
     it("should read the same rasters when reading small windows or with no windows, TemporalSpatial, MultibandGeoTiff") {
       val key = "geoTiff/multi-time"
-      val testGeoTiffPath = "raster-test/data/one-month-tiles/multiband/result.tif"
-      val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
+      val path = ""
+
+      val singleband = GeoTiffReader.readSingleband(path)
+
+      val multiTile = MultibandTile(singleband.tile, singleband.tile)
+      val multiband = MultibandGeoTiff(multiTile, singleband.extent, singleband.crs, singleband.tags)
+
+      val geoTiffBytes = multiband.toByteArray
       mockClient.putObject(bucket, key, geoTiffBytes)
-      val source1 = S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(
+      val source1 = S3GeoTiffRDD.temporalMultiband(bucket, key, S3GeoTiffRDD.Options(
         timeTag = "ISO_TIME",
         timeFormat = "yyyy-MM-dd'T'HH:mm:ss",
         getS3Client = () => new MockS3Client))
 
-      val source2 = S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(
-        maxTileSize = Some(128),
+      val source2 = S3GeoTiffRDD.temporalMultiband(bucket, key, S3GeoTiffRDD.Options(
+        maxTileSize = Some(512),
         timeTag = "ISO_TIME",
         timeFormat = "yyyy-MM-dd'T'HH:mm:ss",
         getS3Client = () => new MockS3Client))
 
       source1.count should be < (source2.count)
-      val (_, md) = source1.collectMetadata[SpatialKey](FloatingLayoutScheme(256))
 
-      val stitched1 = source1.tileToLayout(md).stitch
-      val stitched2 = source2.tileToLayout(md).stitch
+      val (wholeInfo, wholeTile) = source1.first()
+      val wholeGeoTiff = MultibandGeoTiff(wholeTile, wholeInfo.extent, wholeInfo.crs)
 
-      assertEqual(stitched1, stitched2)
+      val collect = source2.collect()
+
+      cfor(0)(_ < source2.count, _ + 1){ i =>
+        println("One thing got passed")
+        val (info, actual) = collect(i)
+        val expected = wholeGeoTiff.crop(info.extent)
+
+        assertEqual(expected, actual)
+      }
+
+      val (_, md) = source2.collectMetadata[SpatialKey](FloatingLayoutScheme(512))
+
+      source2.foreach(println)
     }
+    */
   }
 }
