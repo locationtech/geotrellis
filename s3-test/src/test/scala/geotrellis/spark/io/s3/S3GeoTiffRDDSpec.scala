@@ -99,7 +99,7 @@ class S3GeoTiffRDDSpec
 
     it("should read the same rasters when reading small windows or with no windows, TemporalSpatial, MultibandGeoTiff") {
       val key = "geoTiff/multi-time"
-      val path = "raster-test/data/one-month-tiles/multiband/result.tif"
+      val path = "raster-test/data/one-month-tiles-multiband/result.tif"
 
       val singleband = GeoTiffReader.readSingleband(path)
 

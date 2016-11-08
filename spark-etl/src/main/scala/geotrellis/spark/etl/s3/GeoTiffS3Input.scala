@@ -1,5 +1,6 @@
 package geotrellis.spark.etl.s3
 
+import geotrellis.proj4.CRS
 import geotrellis.raster.Tile
 import geotrellis.spark.etl.config.EtlConf
 import geotrellis.spark.ingest._
@@ -13,7 +14,7 @@ class GeoTiffS3Input extends S3Input[ProjectedExtent, Tile] {
   val format = "geotiff"
   def apply(conf: EtlConf)(implicit sc: SparkContext): RDD[(ProjectedExtent, Tile)] = {
     val hadoopConfig = configuration(conf.input)
-    conf.input.crs.foreach(TemporalGeoTiffS3InputFormat.setCrs(hadoopConfig, _))
+    conf.input.crs.foreach(x => GeoTiffS3InputFormat.setCrs(hadoopConfig, CRS.fromName(x)))
     sc.newAPIHadoopRDD(hadoopConfig, classOf[GeoTiffS3InputFormat], classOf[ProjectedExtent], classOf[Tile])
   }
 }

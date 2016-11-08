@@ -1,5 +1,6 @@
 package geotrellis.spark.etl.s3
 
+import geotrellis.proj4.CRS
 import geotrellis.raster.Tile
 import geotrellis.spark.ingest._
 import geotrellis.spark.io.s3._
@@ -15,7 +16,7 @@ class TemporalGeoTiffS3Input extends S3Input[TemporalProjectedExtent, Tile] {
     val hadoopConfig = configuration(conf.input)
     conf.output.keyIndexMethod.timeTag.foreach(TemporalGeoTiffS3InputFormat.setTimeTag(hadoopConfig, _))
     conf.output.keyIndexMethod.timeFormat.foreach(TemporalGeoTiffS3InputFormat.setTimeFormat(hadoopConfig, _))
-    conf.input.crs.foreach(TemporalGeoTiffS3InputFormat.setCrs(hadoopConfig, _))
+    conf.input.crs.foreach(x => GeoTiffS3InputFormat.setCrs(hadoopConfig, CRS.fromName(x)))
     sc.newAPIHadoopRDD(hadoopConfig, classOf[TemporalGeoTiffS3InputFormat], classOf[TemporalProjectedExtent], classOf[Tile])
   }
 }
