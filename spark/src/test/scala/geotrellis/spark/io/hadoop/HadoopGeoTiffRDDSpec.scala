@@ -34,7 +34,8 @@ class HadoopGeoTiffRDDSpec
     }
     
     it("should read the same rasters when reading small windows or with no windows, Spatial, MultibandGeoTiff") {
-      val tilesDir = new Path(localFS.getWorkingDirectory, "raster-test/data/geotiff-test-files/3bands/byte/")
+      val path = "raster-test/data/one-month-tiles"
+      val tilesDir = new Path(localFS.getWorkingDirectory, path)
       val source1 = HadoopGeoTiffRDD.spatialMultiband(tilesDir)
       val source2 = HadoopGeoTiffRDD.spatialMultiband(tilesDir, HadoopGeoTiffRDD.Options(maxTileSize = Some(128)))
 
@@ -47,7 +48,8 @@ class HadoopGeoTiffRDDSpec
     }
 
     it("should read the same rasters when reading small windows or with no windows, Temporal, SinglebandGeoTiff") {
-      val tilesDir = new Path(localFS.getWorkingDirectory, "raster-test/data/one-month-tiles/")
+      val path = "raster-test/data/one-month-tiles/"
+      val tilesDir = new Path(localFS.getWorkingDirectory, path)
 
       val source1 = HadoopGeoTiffRDD.temporal(tilesDir, HadoopGeoTiffRDD.Options(
         timeTag = "ISO_TIME",
@@ -71,7 +73,8 @@ class HadoopGeoTiffRDDSpec
     }
 
     it("should read the same rasters when reading small windows or with no windows, Temporal, MultibandGeoTiff") {
-      val tilesDir = new Path(localFS.getWorkingDirectory, "raster-test/data/one-month-tiles-multiband")
+      val path = "raster-test/data/one-month-tiles-multiband"
+      val tilesDir = new Path(localFS.getWorkingDirectory, path)
 
       val source1 = HadoopGeoTiffRDD.temporalMultiband(tilesDir, HadoopGeoTiffRDD.Options(
         timeTag = "ISO_TIME",
