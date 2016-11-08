@@ -8,6 +8,8 @@ import geotrellis.spark.testfiles._
 import geotrellis.spark.io.hadoop.formats._
 
 import org.apache.hadoop.fs.Path
+
+import spire.syntax.cfor._
 import org.scalatest._
 
 class HadoopGeoTiffRDDSpec
@@ -55,18 +57,21 @@ class HadoopGeoTiffRDDSpec
         timeTag = "ISO_TIME",
         timeFormat = "yyyy-MM-dd'T'HH:mm:ss",
         maxTileSize = Some(128)))
+      
+      val (wholeInfo, _) = source1.first()
+      val dateTime = wholeInfo.time
 
-      val (_, md) = source1.collectMetadata[SpatialKey](FloatingLayoutScheme(256))
+      val collection = source2.collect
+      
+      cfor(0)(_ < source2.count, _ + 1){ i =>
+        val (info, _) = collection(i)
 
-      val stitched1 = source1.tileToLayout(md).stitch
-      val stitched2 = source2.tileToLayout(md).stitch
-
-      assertEqual(stitched1, stitched2)
+        info.time should be (dateTime)
+      }
     }
 
-    /*
     it("should read the same rasters when reading small windows or with no windows, Temporal, MultibandGeoTiff") {
-      val tilesDir = new Path(localFS.getWorkingDirectory, "raster-test/data/one-month-tiles/multiband")
+      val tilesDir = new Path(localFS.getWorkingDirectory, "raster-test/data/one-month-tiles-multiband")
 
       val source1 = HadoopGeoTiffRDD.temporalMultiband(tilesDir, HadoopGeoTiffRDD.Options(
         timeTag = "ISO_TIME",
@@ -76,14 +81,18 @@ class HadoopGeoTiffRDDSpec
         timeTag = "ISO_TIME",
         timeFormat = "yyyy-MM-dd'T'HH:mm:ss",
         maxTileSize = Some(128)))
+      
+      val (wholeInfo, _) = source1.first()
+      val dateTime = wholeInfo.time
 
-      val (_, md) = source1.collectMetadata[SpatialKey](FloatingLayoutScheme(256))
+      val collection = source2.collect
+      
+      cfor(0)(_ < source2.count, _ + 1){ i =>
+        val (info, _) = collection(i)
 
-      val stitched1 = source1.tileToLayout(md).stitch
-      val stitched2 = source2.tileToLayout(md).stitch
+        info.time should be (dateTime)
+      }
 
-      assertEqual(stitched1, stitched2)
     }
-    */
   }
 }
