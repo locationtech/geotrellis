@@ -10,7 +10,9 @@ pages:
   - Home: index.md
   - Changelog: CHANGELOG.md
   - Tutorials:
+    - Quickstart: tutorials/quickstart.md
     - Setup: tutorials/setup.md
+    - Kernel Density: tutorials/kernel-density.md
     - Extract-Transform-Load (ETL): tutorials/etl-tutorial.md
   - User Guide:
     - Core Concepts: guide/core-concepts.md
