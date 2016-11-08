@@ -8,7 +8,7 @@ Wetting Your Feet
 
 By far, the quickest route to being able to play with GeoTrellis is to follow these steps:
 
-1. Use `git` to clone the template repository at `github.com/geotrellis/geotrellis-sbt-template repository`:
+1. Use `git` to clone the template repository at `github.com/geotrellis/geotrellis-sbt-template`:
 ```bash
   git clone git@github.com:geotrellis/geotrellis-sbt-template
 ```
@@ -62,7 +62,7 @@ res0: String =
 "
 ```
 
-Note that not every cell location in a tile needs to be specified; this is the function of `NODATA`.  Also be aware that `NODATA`'s value varies by [CellType](../guide/core-cencepts.md#cell-types).  In this case, the use of `IntArrayTile` implies an `IntCellType` which defines `NODATA` as seen above.
+Note that not every cell location in a tile needs to be specified; this is the function of `NODATA`.  Also be aware that `NODATA`'s value varies by [CellType](../guide/core-concepts.md#cell-types).  In this case, the use of `IntArrayTile` implies an `IntCellType` which defines `NODATA` as seen above.
 
 As a GIS package, GeoTrellis provides a number of [map algebra](../guide/core-concepts.md#map-algebra) operations.  In the following example, a neighborhood is defined as the region of interest for a focal operation, the focal mean operation is performed, and a value is queried:
 ```scala
