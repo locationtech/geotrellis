@@ -43,9 +43,9 @@ class HadoopGeoTiffRDDSpec
 
       assertEqual(stitched1, stitched2)
     }
-    
+
     it("should read the same rasters when reading small windows or with no windows, Temporal, SinglebandGeoTiff") {
-      val tilesDir = new Path(localFS.getWorkingDirectory, "spark/src/test/resources/nex-geotiff")
+      val tilesDir = new Path(localFS.getWorkingDirectory, "raster-test/data/one-month-tiles/")
 
       val source1 = HadoopGeoTiffRDD.temporal(tilesDir, HadoopGeoTiffRDD.Options(
         timeTag = "ISO_TIME",
@@ -60,6 +60,28 @@ class HadoopGeoTiffRDDSpec
 
       val stitched1 = source1.tileToLayout(md).stitch
       val stitched2 = source2.tileToLayout(md).stitch
+
+      assertEqual(stitched1, stitched2)
+    }
+    
+    it("should read the same rasters when reading small windows or with no windows, Temporal, MultibandGeoTiff") {
+      val tilesDir = new Path(localFS.getWorkingDirectory, "raster-test/data/one-month-tiles/multiband")
+
+      val source1 = HadoopGeoTiffRDD.temporal(tilesDir, HadoopGeoTiffRDD.Options(
+        timeTag = "ISO_TIME",
+        timeFormat = "yyyy-MM-dd'T'HH:mm:ss"))
+
+      val source2 = HadoopGeoTiffRDD.temporal(tilesDir, HadoopGeoTiffRDD.Options(
+        timeTag = "ISO_TIME",
+        timeFormat = "yyyy-MM-dd'T'HH:mm:ss",
+        maxTileSize = Some(128)))
+
+      val (_, md) = source1.collectMetadata[SpatialKey](FloatingLayoutScheme(256))
+
+      val stitched1 = source1.tileToLayout(md).stitch
+      val stitched2 = source2.tileToLayout(md).stitch
+      println(stitched1)
+      println(stitched2)
 
       assertEqual(stitched1, stitched2)
     }
