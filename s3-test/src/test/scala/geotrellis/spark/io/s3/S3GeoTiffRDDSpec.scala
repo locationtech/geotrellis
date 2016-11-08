@@ -45,17 +45,17 @@ class S3GeoTiffRDDSpec
     
     it("should read the same rasters when reading small windows or with no windows, Spatial, MultibandGeoTiff") {
       val key = "geoTiff/multi"
-      val testGeoTiffPath = "spark/src/test/resources/multi.tif"
+      val testGeoTiffPath = "raster-test/data/geotiff-test-files/3bands/byte/3bands-striped-band.tif"
       val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
       mockClient.putObject(bucket, key, geoTiffBytes)
 
       val source1 =
         S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(getS3Client = () => new MockS3Client))
       val source2 =
-        S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(maxTileSize = Some(128), getS3Client = () => new MockS3Client))
+        S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(maxTileSize = Some(20), getS3Client = () => new MockS3Client))
 
       source1.count should be < (source2.count)
-      val (_, md) = source1.collectMetadata[SpatialKey](FloatingLayoutScheme(256))
+      val (_, md) = source1.collectMetadata[SpatialKey](FloatingLayoutScheme(20, 40))
 
       val stitched1 = source1.tileToLayout(md).stitch
       val stitched2 = source2.tileToLayout(md).stitch
