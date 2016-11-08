@@ -9,9 +9,21 @@ import org.apache.hadoop.fs._
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.lib.input._
 
+/**
+ * This class extends [[FileInputFormat]] and is used to create RDDs of TiffTags.
+ * from files on Hdfs.
+ */
 class TiffTagsInputFormat extends FileInputFormat[Path, TiffTags] {
   override def isSplitable(context: JobContext, fileName: Path) = false
 
+  /**
+   * Creates a RecordReader that can be used to read [[TiffTags]] from Hdfs.
+   *
+   * @param split: The [[InputSplit]] that contains the data to make the RDD.
+   * @param context: The [[TaskAttemptContext]] of the InputSplit.
+   *
+   * @return A [[RecordReader]] that can read [[TiffTags]] of GeoTiffs from Hdfs.
+   */
   override def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
     new RecordReader[Path, TiffTags] {
       private var tup: (Path, TiffTags) = null
