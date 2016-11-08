@@ -37,5 +37,4 @@ class TiffTagsS3InputFormat extends S3InputFormat[GetObjectRequest, TiffTags] {
         (new GetObjectRequest(bucket, key), tiffTags)
       }
     }
-
 }
