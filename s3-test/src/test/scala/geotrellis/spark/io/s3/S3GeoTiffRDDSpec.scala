@@ -84,18 +84,22 @@ class S3GeoTiffRDDSpec
         getS3Client = () => new MockS3Client))
 
       source1.count should be < (source2.count)
-      val (_, md) = source1.collectMetadata[SpatialKey](FloatingLayoutScheme(256))
 
-      val stitched1 = source1.tileToLayout(md).stitch
-      val stitched2 = source2.tileToLayout(md).stitch
+      val (wholeInfo, _) = source1.first
+      val dateTime = wholeInfo.time
 
-      assertEqual(stitched1, stitched2)
+      val collection = source2.collect
+      
+      cfor(0)(_ < source2.count, _ + 1){ i =>
+        val (info, _) = collection(i)
+
+        info.time should be (dateTime)
+      }
     }
 
-    /*
     it("should read the same rasters when reading small windows or with no windows, TemporalSpatial, MultibandGeoTiff") {
       val key = "geoTiff/multi-time"
-      val path = ""
+      val path = "raster-test/data/one-month-tiles/multiband/result.tif"
 
       val singleband = GeoTiffReader.readSingleband(path)
 
@@ -110,30 +114,23 @@ class S3GeoTiffRDDSpec
         getS3Client = () => new MockS3Client))
 
       val source2 = S3GeoTiffRDD.temporalMultiband(bucket, key, S3GeoTiffRDD.Options(
-        maxTileSize = Some(512),
+        maxTileSize = Some(256),
         timeTag = "ISO_TIME",
         timeFormat = "yyyy-MM-dd'T'HH:mm:ss",
         getS3Client = () => new MockS3Client))
 
       source1.count should be < (source2.count)
 
-      val (wholeInfo, wholeTile) = source1.first()
-      val wholeGeoTiff = MultibandGeoTiff(wholeTile, wholeInfo.extent, wholeInfo.crs)
+      val (wholeInfo, _) = source1.first()
+      val dateTime = wholeInfo.time
 
-      val collect = source2.collect()
-
+      val collection = source2.collect
+      
       cfor(0)(_ < source2.count, _ + 1){ i =>
-        println("One thing got passed")
-        val (info, actual) = collect(i)
-        val expected = wholeGeoTiff.crop(info.extent)
+        val (info, _) = collection(i)
 
-        assertEqual(expected, actual)
+        info.time should be (dateTime)
       }
-
-      val (_, md) = source2.collectMetadata[SpatialKey](FloatingLayoutScheme(512))
-
-      source2.foreach(println)
     }
-    */
   }
 }
