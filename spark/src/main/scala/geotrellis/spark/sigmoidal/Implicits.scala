@@ -26,11 +26,11 @@ object Implicits extends Implicits
 
 trait Implicits {
 
-  implicit class withRDDSinglebandSigmoidalMethods[K, M](
-    val self: RDD[(K, Tile)] with Metadata[M]
-  ) extends RDDSinglebandSigmoidalMethods[K, M]
+  implicit class withRDDSinglebandSigmoidalMethods[K, V: (? => Tile)](
+    val self: RDD[(K, V)]
+  ) extends RDDSinglebandSigmoidalMethods[K, V]
 
-  implicit class withRDDMultibandSigmoidalMethods[K, M](
-    val self: RDD[(K, MultibandTile)] with Metadata[M]
-  ) extends RDDMultibandSigmoidalMethods[K, M]
+  implicit class withRDDMultibandSigmoidalMethods[K, V: (? => MultibandTile)](
+    val self: RDD[(K, V)]
+  ) extends RDDMultibandSigmoidalMethods[K, V]
 }

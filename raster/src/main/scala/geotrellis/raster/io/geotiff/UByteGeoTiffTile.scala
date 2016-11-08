@@ -94,4 +94,16 @@ class UByteGeoTiffTile(
     }
     UByteArrayTile.fromBytes(arr, gridBounds.width, gridBounds.height, cellType)
   }
+
+  def withNoData(noDataValue: Option[Double]): UByteGeoTiffTile =
+    new UByteGeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoData(noDataValue))
+
+  def interpretAs(newCellType: CellType): GeoTiffTile = {
+    newCellType match {
+      case dt: UByteCells with NoDataHandling =>
+        new UByteGeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, dt)
+      case _ =>
+        withNoData(None).convert(newCellType)
+    }
+  }
 }

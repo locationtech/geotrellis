@@ -24,26 +24,28 @@ class VoronoiSpec extends FunSpec with Matchers {
 
   def rasterizeVoronoi(voronoi: Voronoi)(implicit trans: Int => Point): Unit = {
     val tile = IntArrayTile.fill(255, 325, 600)
-    val re = RasterExtent(voronoi.extent,325,600)
+    val re = RasterExtent(Extent(-2.25, -3, 1, 3),325,600)
     voronoi.voronoiCells.foreach{ poly =>
-      rasterizePoly(poly, tile, re, !(poly.isValid && voronoi.extent.covers(poly)))
+      rasterizePoly(poly, tile, re, !poly.isValid)
     }
     val cm = ColorMap(scala.collection.immutable.Map(1 -> 0x000000ff, 2 -> 0xff0000ff, 255 -> 0xffffffff))
     tile.renderPng(cm).write("voronoi.png")
   }
 
   describe("Voronoi diagram") {
-    it("should have valid polygons entirely covered by the extent") {
-      val extent = Extent(-2.25, -3, 1, 3)
+    it("should have valid polygons") {
       val pts = Array(Point(0,-2), Point(0,0), Point(0,1), Point(-0.5,2), Point(0.5,2))
-      implicit val trans = { i: Int => pts(i) }
-      val voronoi = pts.voronoiDiagram(extent)
+      val voronoi = pts.voronoiDiagram()
 
-      def validCoveredPolygon(poly: Polygon) = {
-        poly.isValid && extent.covers(poly)
+      def validCoveredPolygon(polypt: (Polygon, Point)) = {
+        val (poly, pt) = polypt
+        val verts = poly.vertices
+        verts.forall{ 
+          v => pts.map(_ distance v).min >= v.distance(pt )
+        }
       }
 
-      voronoi.voronoiCells.forall (validCoveredPolygon(_)) should be (true)
+      voronoi.voronoiCellsWithPoints.forall (validCoveredPolygon(_)) should be (true)
       //rasterizeVoronoi(voronoi)
     }
   }

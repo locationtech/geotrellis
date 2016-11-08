@@ -11,13 +11,16 @@ object Reproject {
     *                                  This default comes from GDAL 1.11 code.
     * @param      parentGridExtent     An optional GridExtent that if set represents the target grid extent for some
     *                                  parent window, which reprojected extents will snap to. Use with caution.
+    * @param      targetRasterExtent   The target raster extent to reproject to.
     * @param      targetCellSize       An optional cell size that if set will be used for for the projected raster.
     *                                  Use with caution.
+    *
     */
   case class Options(
     method: ResampleMethod = NearestNeighbor,
     errorThreshold: Double = 0.125,
     parentGridExtent: Option[GridExtent] = None,
+    targetRasterExtent: Option[RasterExtent] = None,
     targetCellSize: Option[CellSize] = None
   )
 

@@ -21,8 +21,8 @@ import geotrellis.raster.histogram.FastMapHistogram
  *                        of a double typed Tile (FloatConstantNoDataCellType, DoubleConstantNoDataCellType).
  */
 object TileMoransICalculation {
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds]): Tile = {
-    new CursorCalculation[Tile](tile, n, bounds)
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds], target: TargetCell = TargetCell.All): Tile = {
+    new CursorCalculation[Tile](tile, n, bounds, target)
       with DoubleArrayTileResult
     {
 
@@ -73,8 +73,7 @@ object TileMoransICalculation {
  */
 object ScalarMoransICalculation {
   def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds]): Double = {
-    new CursorCalculation[Double](tile, n, bounds)
-    {
+    new CursorCalculation[Double](tile, n, bounds, TargetCell.All) {
       var mean: Double = 0
       var `stddev^2`: Double = 0
 
@@ -99,6 +98,11 @@ object ScalarMoransICalculation {
       }
 
       def result = count / ws
+
+      // Hack to make it work with the focal architecture, in which it clearly does not quite fit.
+      val copyOriginalValue: (Int, Int, Int, Int) => Unit = { (focusCol: Int, focusRow: Int, col: Int, row: Int) =>
+        ???
+      }
     }
   }.execute()
 }

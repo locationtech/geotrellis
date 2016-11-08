@@ -22,13 +22,11 @@ import geotrellis.spark._
 
 import org.apache.spark.rdd.RDD
 
-import scala.reflect._
-
 
 object RDDSigmoidalContrast {
 
   /**
-    * Given an RDD of [[Tile]] objects and parameters alpha and beta,
+    * Given an RDD of Tile objects and parameters alpha and beta,
     * return an RDD of tiles upon-which the sigmoidal contrast
     * operation has been performed.
     *
@@ -40,15 +38,15 @@ object RDDSigmoidalContrast {
     * @param  beta   The standard deviation in the computation, used to avoid saturating the upper and lower parts of the gamut
     * @return        An RDD of output tiles
     */
-  def singleband[K, V: (? => Tile): ClassTag, M](
+  def singleband[K, V: (? => Tile)](
     rdd: RDD[(K, V)],
     alpha: Double, beta: Double
   ): RDD[(K, Tile)] =
     rdd.map({ case (key, tile: Tile) => (key, SigmoidalContrast(tile, alpha, beta)) })
 
   /**
-    * Given an RDD of [[MultibandTile]] objects and parameters alpha
-    * and beta, return an RDD of tiles where the sigmoidal contrast
+    * Given an RDD of MultibandTile objects and parameters alpha and
+    * beta, return an RDD of tiles where the sigmoidal contrast
     * operation has been performed on each band of each tile.
     *
     * The approach used is described here:
@@ -59,7 +57,7 @@ object RDDSigmoidalContrast {
     * @param  beta   The standard deviation in the computation, used to avoid saturating the upper and lower parts of the gamut
     * @return        An RDD of output tiles
     */
-  def multiband[K, V: (? => MultibandTile): ClassTag, M](
+  def multiband[K, V: (? => MultibandTile)](
     rdd: RDD[(K, V)],
     alpha: Double, beta: Double
   ): RDD[(K, MultibandTile)] =

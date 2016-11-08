@@ -6,6 +6,6 @@ import monocle.macros.Lenses
 case class TileTags(
   tileWidth: Option[Long] = None,
   tileLength: Option[Long] = None,
-  tileOffsets: Option[Array[Int]] = None,
-  tileByteCounts: Option[Array[Int]] = None
+  tileOffsets: Option[Array[Long]] = None,
+  tileByteCounts: Option[Array[Long]] = None
 )

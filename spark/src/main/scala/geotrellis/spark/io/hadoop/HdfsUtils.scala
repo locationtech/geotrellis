@@ -178,6 +178,21 @@ object HdfsUtils extends LazyLogging {
     bytes
   }
 
+  def readRange(path: Path, start: Long, length: Int, conf: Configuration): Array[Byte] = {
+    val fs: FileSystem = path.getFileSystem(conf)
+    val end: Long = start + length
+    val bytes: Array[Byte] = Array.ofDim[Byte]((end - start).toInt)
+    val stream: FSDataInputStream = fs.open(path)
+
+    try {
+      stream.readFully(start, bytes, 0, length)
+    } finally {
+      stream.close()
+    }
+
+    bytes
+  }
+
   def getLineScanner(path: Path, conf: Configuration): Option[LineScanner] = {
     path.getFileSystem(conf) match {
       case localFS: LocalFileSystem =>

@@ -14,5 +14,7 @@ object TiffFieldType {
   val SignedFractionalsFieldType = 10
   val FloatsFieldType = 11
   val DoublesFieldType = 12
-
+  val LongsFieldType = 16 // This is 64-bits
+  val SignedLongsFieldType = 17
+  val IFDOffset = 18
 }

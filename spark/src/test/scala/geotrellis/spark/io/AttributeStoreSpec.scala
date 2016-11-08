@@ -18,10 +18,10 @@ abstract class AttributeStoreSpec
   def attributeStore: AttributeStore
 
   it("should write to an attribute store") {
-    attributeStore.write(LayerId("test1", 1), "test-att1", "test")
-    attributeStore.write(LayerId("test2", 2), "test-att1", "test")
-    attributeStore.write(LayerId("test2", 2), "test-att2", "test")
-    attributeStore.write(LayerId("test3", 3), "test-att1", "test")
+    attributeStore.write(LayerId("test1", 1), "metadata", "test")
+    attributeStore.write(LayerId("test2", 2), "metadata", "test")
+    attributeStore.write(LayerId("test2", 2), "metadata", "test")
+    attributeStore.write(LayerId("test3", 3), "metadata", "test")
   }
 
   it("should know that these new IDs exist") {

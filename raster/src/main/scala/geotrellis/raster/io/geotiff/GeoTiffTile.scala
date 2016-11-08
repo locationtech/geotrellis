@@ -112,7 +112,7 @@ abstract class GeoTiffTile(
    * @param newCellType: The [[CellType]] to be converted to
    * @return A new [[Tile]] that contains the new CellTypes
    */
-  def convert(newCellType: CellType): Tile = {
+  def convert(newCellType: CellType): GeoTiffTile = {
     if(newCellType.isFloatingPoint != cellType.isFloatingPoint)
       logger.warn(s"Conversion from $cellType to $newCellType may lead to data loss.")
 

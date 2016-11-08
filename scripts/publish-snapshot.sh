@@ -11,6 +11,7 @@
       "project raster" publish \
       "project raster-testkit" publish \
       "project s3" publish \
+      "project s3-testkit" publish \
       "project geowave" publish \
       "project accumulo" publish \
       "project cassandra" publish \
