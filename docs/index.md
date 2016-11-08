@@ -21,7 +21,13 @@ for more information as well as some interactive demos.
 Why GeoTrellis?
 ---------------
 
-Make rasters great again! And vectors too, I guess.
+Raster processing has traditionally been a slow task, which has prompted
+advances in vector data processing as an alternative. Raster data isn't
+going anywhere, however, with more and more satellite data made public every
+year. GeoTrellis is an answer to the growing need for **raster processing at
+scale.** We personally have handled terabyte-level data sets, but really we
+are only bound by the theoretical limits of Apache Spark. By *scale* then,
+we mean *arbitrarily large*.
 
 Contact and Support
 -------------------
@@ -49,11 +55,10 @@ scala> val nd = NODATA
 nd: Int = -2147483648
 
 scala> val input = Array[Int](
-     |         nd, 7, 1, 1, 3, 5, 9, 8, 2,
-     |         9, 1, 1, 2, 2, 2, 4, 3, 5,
-     |
-     |         3, 8, 1, 3, 3, 3, 1, 2, 2,
-     |         2, 4, 7, 1, nd, 1, 8, 4, 3)
+     |         nd, 7, 1, 1,  3, 5, 9, 8, 2,
+     |          9, 1, 1, 2,  2, 2, 4, 3, 5,
+     |          3, 8, 1, 3,  3, 3, 1, 2, 2,
+     |          2, 4, 7, 1, nd, 1, 8, 4, 3)
 input: Array[Int] = Array(-2147483648, 7, 1, 1, 3, 5, 9, 8, 2, 9, 1, 1, 2,
 2, 2, 4, 3, 5, 3, 8, 1, 3, 3, 3, 1, 2, 2, 2, 4, 7, 1, -2147483648, 1, 8, 4, 3)
 
@@ -65,9 +70,9 @@ iat: geotrellis.raster.IntArrayTile = IntArrayTile([I@278434d0,9,4)
 scala> iat.asciiDraw()
 res0: String =
 "    ND     7     1     1     3     5     9     8     2
-     9     1     1     2     2     2     4     3     5
-     3     8     1     3     3     3     1     2     2
-     2     4     7     1    ND     1     8     4     3
+      9     1     1     2     2     2     4     3     5
+      3     8     1     3     3     3     1     2     2
+      2     4     7     1    ND     1     8     4     3
 "
 
 scala> val focalNeighborhood = Square(1)  // a 3x3 square neighborhood
