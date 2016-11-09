@@ -7,11 +7,11 @@
       - [Dealing With Compressed GeoTiffs](#dealing-with-compressed-geotiffs)
       - [Streaming GeoTiffs](#streaming-in-geotiffs)
         - [Tips for Using This Feature](#tips-for-using-this-feature)
-           - [Reading in Small Files](#reading-in-small-files)
+           - [Reading in Small Files >= 4GB](#reading-in-small-files->=-4GB)
            - [Reading in Large Files](#reading-in-large-files)
         - [How to Use This Feature](#how-to-use-this-feature)
-           - [Method 1](#method-1)
-           - [Method 2](#method-2)
+           - [Using Apply Methods](#using-apply-methods)
+           - [Using Object Methods](#using-object-methods)
 - [Conclusion](#conclusion)
 
 ### Introduction
@@ -52,7 +52,7 @@ The last part of our four line coding escapade is:
 ```scala
   val geoTiff: SinglebandGeoTiff = GeoTiffReader.readSingleband(path)
 ```
-This line assigns the variable, `geoTiff` to our read in GeoTiff file. Notice the `geoTiff`'s type, though. It is `SinglebandGeoTiff`. Why does `geoTiff` have this type? It's because in GeoTrellis, `SinglebandGeoTiff`s and `MutlibandGeoTiff`s are two seperate subtypes of `GeoTiff`. In case you were wondering about the second `import` statement earlier, this is where is comes into play; as these two types are defined within `geotrellis.raster.io.geotiff`.
+This line assigns the variable, `geoTiff`, to the file that is being read in. Notice the `geoTiff`'s type, though. It is `SinglebandGeoTiff`. Why does `geoTiff` have this type? It's because in GeoTrellis, `SinglebandGeoTiff`s and `MutlibandGeoTiff`s are two seperate subtypes of `GeoTiff`. In case you were wondering about the second `import` statement earlier, this is where is comes into play; as these two types are defined within `geotrellis.raster.io.geotiff`.
 
 Great! We have a `SinglebandGeoTiff`. Let's say that we have a `MultibandGeoTiff`, though; let's use the code from above to read it.
 ```scala
@@ -118,7 +118,7 @@ Our overview of basic GeoTiff reading is now done! But keep reading! For you hav
 - - -
 
 ### Reading Locally Part 2: Expanding Our Vocab
-We can read GeoTiffs, now what? Well, there's actually more that we can do when reading in a file. Sometimes you have a compressed GeoTiff, or other times you might not want to read in only a section of GeoTiff. In either case, GeoTrellis can handle these issues with ease.
+We can read GeoTiffs, now what? Well, there's actually more that we can do when reading in a file. Sometimes you have a compressed GeoTiff, or other times you might not want to read in only a sub-section of GeoTiff and not the whole thing. In either case, GeoTrellis can handle these issues with ease.
 
 #### Dealing With Compressed GeoTiffs
 Compression is a method in which data is stored with fewer bits and can then be uncompressed so that all data becomes available. This applies to GeoTiffs as well. When reading in a GeoTiff, you can state whether or not you want a compressed file to be uncompressed or not.
@@ -138,7 +138,7 @@ Why would you want to leave a file compressed or have uncompressed when reading 
 
 By default, decompression occurs on all read GeoTiffs. Thus, these two lines of code are the same.
 ```scala
-  // these will both return the samething!
+  // these will both return the same thing!
   GeoTiffReader.readSingleband("path/to/compressed/geotiff.tif")
   GeoTiffReader.readSingleband("path/to/compressed/geotiff.tif", true, false)
 ```
@@ -150,7 +150,7 @@ In addition, both `SinglebandGeoTiff` and `MultibandGeoTiff` have a method, `com
 ```
 
 #### Streaming GeoTiffs
-Remember that mysterious other `Boolean` parameter from earlier? It is used to determine if a GeoTiff should be read in via streaming or not. What is streaming? Streaming is process of not reading in all of the data of a file at once, but rather getting the data as you need it. It's like a "lazy read". Why would you want this? The benefit of streaming is that it allows you to work with huge or just parts of files. In turn, this makes it possible to read in sub sections of GeoTiffs and/or not having to worry about memory usage when working with large files.
+Remember that mysterious second parameter from earlier? It determines if a GeoTiff should be read in via streaming or not. What is streaming? Streaming is process of not reading in all of the data of a file at once, but rather getting the data as you need it. It's like a "lazy read". Why would you want this? The benefit of streaming is that it allows you to work with huge or just parts of files. In turn, this makes it possible to read in sub-sections of GeoTiffs and/or not having to worry about memory usage when working with large files.
 
 ##### Tips For Using This Feature
 It is important to go over the strengths and weaknesses of this feature before use. If implemented well, the WindowedGeoTiff Reader can save you a large amount of time. However, it can also lead to further problems if it is not used how it was intended.
@@ -159,15 +159,14 @@ It should first be stated that this reader was made to read in ***sections*** of
 cropping it. In addition, crashes may occur depending on the size of the file.
 
 ##### Reading in Small Files
-Smaller files are GeoTiffs that can be read in full with the normal reader without crashing the process. The way to best
-utilize the reader for these kinds of files differs from larger ones.
+Smaller files are GeoTiffs that are less than or equal to 4GB in isze. The way to best utilize the reader for these kinds of files differs from larger ones.
 
 To gain optimum performance, the principle to follow is: **the smaller the area selected, the faster the reading will
 be**. What the exact performance increase will be depends on the bandtype of the file. The general pattern is that the larger the datatype is, quicker it will be at reading. Thus, a Float64 GeoTiff will be loaded at a faster rate than a UByte
 GeoTiff. There is one caveat to this rule, though. Bit bandtype is the smallest of all the bandtypes, yet it can be read in
 at speed that is similar to Float32.
 
-For these files, 90% is the cut off for all band and storage types. Anything more may cause performance declines.
+For these files, 90% of the file is the cut off for all band and storage types. Anything more may cause performance declines.
 
 ##### Reading in Large Files
 Whereas small files could be read in full using the reader, larger files cannot as they will crash whatever process you're
@@ -192,7 +191,7 @@ In large files, the pattern of performance increase is the reverse of the smalle
 ##### How to Use This Feature
 Using this feature is straight forward and easy. There are two ways to implement the WindowedReader: Supplying the desired extent with the path to the file, and cropping an already existing file that is read in through a stream.
 
-###### Method 1
+###### Using Apply Methods
 Supplying an extent with the file's path and having it being read in windowed can be done in the following ways:
 
 ```scala
@@ -224,7 +223,7 @@ MultibandGeoTiff(path, Some(e))
 GeoTiffReader.readMultiband(path, Some(e))
 ```
 
-###### Method 2
+###### Using Object Methods
 Cropping an already loaded GeoTiff that was read in through Streaming. By using this method, the actual file isn't loaded into memory, but its data can still be accessed. Here's how to do the cropping:
 ```scala
 val path: String = "path/to/my/geotiff.tif"
