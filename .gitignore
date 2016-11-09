@@ -18,7 +18,6 @@ target
 *.crc
 _SUCCESS
 
-*.pyc
 .project
 .classpath
 .cache
@@ -31,6 +30,12 @@ _SUCCESS
 *.swo
 *.sublime-*
 .vagrant
+
+*.pyc
+__pychace__/
+*.py[cod]
+*$py.class
+.Python
 
 lib
 index.html
