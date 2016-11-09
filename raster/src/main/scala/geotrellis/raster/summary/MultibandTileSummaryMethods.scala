@@ -24,7 +24,7 @@ trait MultibandTileSummaryMethods extends MethodExtensions[MultibandTile] {
     * Create a histogram from double values in a raster.
     */
   def histogramDouble(): Array[Histogram[Double]] =
-    self.bands.map(_.histogramDouble(StreamingHistogram.DEFAULT_NUM_BUCKETS)).toArray
+    histogramDouble(StreamingHistogram.DEFAULT_NUM_BUCKETS)
 
   /**
     * Create a histogram from double values in a raster.
