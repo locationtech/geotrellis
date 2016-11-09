@@ -35,7 +35,7 @@ The concept of `ByteReader` is this:  given an input stream, read in sections of
 #### Going Right to the Source
 A `InputStream` of some kind is needed in order to get the `chunk`s. Thus, there exists an object called a `RangeReader`. What this object does is actually get a `chunk` from the stream for the `ByteReader` to read. There currently exists three different instances depending on where the file is being read from as can be seen in the image below.
 
-![Alt text](https://geotrellis/geotrellis/docs/img/read-range-tree.jpg)
+![ByteReader](../img/read-range-tree.jpg)
 
 #### Reading the Chunks
 Now that we have a `RangeReader`, it is time to create our `ByteReader`. Currently, there is only one instance of `ByteReader`, and that's `StreamingByteReader`. As the name suggests, this will perform stream readings of the `chunk`s. `ByteReader` requires a `RangeReader` and an optional `chunkSize` as its paramters. What is a `chunkSize`? A `chunkSize` is how many bytes should be read in at a time. Once created, the `ByteReader` will behave very much like a `ByteBuffer`, and it can be used throughout the GeoTrellis library.
