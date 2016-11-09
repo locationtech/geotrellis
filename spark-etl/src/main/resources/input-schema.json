@@ -20,6 +20,9 @@
     "maxTileSize": {
       "type": "integer"
     },
+    "numPartitions": {
+      "type": "integer"
+    },
     "clip": {
       "type": "object",
       "properties": {
