@@ -97,4 +97,10 @@ object GeoTiff {
 
   def apply(raster: MultibandRaster, crs: CRS): MultibandGeoTiff =
     apply(raster.tile, raster.extent, crs)
+
+  def apply(projectedRaster: ProjectedRaster[Tile]): SinglebandGeoTiff =
+    apply(projectedRaster.raster, projectedRaster.crs)
+
+  def apply(projectedRaster: ProjectedRaster[MultibandTile])(implicit d: DummyImplicit): MultibandGeoTiff =
+    apply(projectedRaster.raster, projectedRaster.crs)
 }
