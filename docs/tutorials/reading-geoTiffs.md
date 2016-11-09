@@ -4,15 +4,15 @@
 - [Reading GeoTiffs With GeoTrellis](#reading-geotiffs-with-geotrellis)
   - [Reading Locally Part 1: Reading For the First Time](#reading-locally-part-1-reading-for-the-first-time)
   - [Reading Locally Part 2: Expanding Our Vocab](reading-locally-part-2-expanding-our-vocab)
-      - [Decompressing Files]
-      - [Using the Stream]
+      - [Dealing With Compressed GeoTiffs](#dealing-with-compressed-geotiffs)
+      - [Streaming GeoTiffs](#streaming-in-geotiffs)
         - [Tips for Using This Feature](#tips-for-using-this-feature)
            - [Reading in Small Files](#reading-in-small-files)
            - [Reading in Large Files](#reading-in-large-files)
         - [How to Use This Feature](#how-to-use-this-feature)
            - [Method 1](#method-1)
            - [Method 2](#method-2)
-- [Conclusion]
+- [Conclusion](#conclusion)
 
 ### Introduction
 This tutorial will go over how to read GeoTiff files using GeoTrellis on your local filesystem. It assumes that you already have the environment needed to run these examples. If not, please follow this [link](setup.md) to get GeoTrellis working on your system.
@@ -149,7 +149,7 @@ In addition, both `SinglebandGeoTiff` and `MultibandGeoTiff` have a method, `com
    MultibandGeoTiff.compressed("path/to/compressed/geotiff.tif")
 ```
 
-#### Streaming in a GeoTiff
+#### Streaming GeoTiffs
 Remember that mysterious other `Boolean` parameter from earlier? It is used to determine if a GeoTiff should be read in via streaming or not. What is streaming? Streaming is process of not reading in all of the data of a file at once, but rather getting the data as you need it. It's like a "lazy read". Why would you want this? The benefit of streaming is that it allows you to work with huge or just parts of files. In turn, this makes it possible to read in sub sections of GeoTiffs and/or not having to worry about memory usage when working with large files.
 
 ##### Tips For Using This Feature
