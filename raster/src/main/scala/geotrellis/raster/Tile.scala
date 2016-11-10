@@ -113,6 +113,16 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] with LazyL
     */
   def convert(cellType: CellType): Tile
 
+  /** Delays the conversion of this tile's cell type until
+    * it produces another Tile.
+    *
+    * @param      cellType       The target cell type of a future map or combine operation.
+    *
+    * @note This only has an affect for the result tiles of a combine or map operation.
+    *       This will always produce a ArrayTile.
+    */
+  def delayedConversion(cellType: CellType): DelayedConversionTile =
+    new DelayedConversionTile(this, cellType)
 
   def withNoData(noDataValue: Option[Double]): Tile
 

@@ -310,8 +310,10 @@ sealed trait NoNoData extends NoDataHandling { cellType: CellType =>
 /**
   * The [[UserDefinedNoData]] type, derived from [[NoDataHandling]].
   */
-sealed trait UserDefinedNoData[@specialized(Byte, Short, Int) T] extends NoDataHandling { cellType: CellType =>
+sealed trait UserDefinedNoData[@specialized(Byte, Short, Int, Float, Double) T] extends NoDataHandling { cellType: CellType =>
   val noDataValue: T
+  def intNoDataValue: Int
+  def doubleNoDataValue: Double
   abstract override def toString: String = cellType.name + "ud" + noDataValue.toString
 }
 
@@ -328,49 +330,70 @@ case object ByteCellType
 case object ByteConstantNoDataCellType
     extends ByteCells with ConstantNoData
 case class ByteUserDefinedNoDataCellType(noDataValue: Byte)
-    extends ByteCells with UserDefinedNoData[Byte]
+    extends ByteCells with UserDefinedNoData[Byte] {
+  def intNoDataValue: Int = noDataValue.toInt
+  def doubleNoDataValue: Double = noDataValue.toDouble
+}
 
 case object UByteCellType
     extends UByteCells with NoNoData
 case object UByteConstantNoDataCellType
     extends UByteCells with ConstantNoData
 case class UByteUserDefinedNoDataCellType(noDataValue: Byte)
-    extends UByteCells with UserDefinedNoData[Byte]
+    extends UByteCells with UserDefinedNoData[Byte] {
+  def intNoDataValue: Int = noDataValue & 0xFF
+  def doubleNoDataValue: Double = (noDataValue & 0xFF).toDouble
+}
 
 case object ShortCellType
     extends ShortCells with NoNoData
 case object ShortConstantNoDataCellType
     extends ShortCells with ConstantNoData
 case class ShortUserDefinedNoDataCellType(noDataValue: Short)
-    extends ShortCells with UserDefinedNoData[Short]
+    extends ShortCells with UserDefinedNoData[Short] {
+  def intNoDataValue: Int = noDataValue.toInt
+  def doubleNoDataValue: Double = noDataValue.toDouble
+}
 
 case object UShortCellType
     extends UShortCells with NoNoData
 case object UShortConstantNoDataCellType
     extends UShortCells with ConstantNoData
 case class UShortUserDefinedNoDataCellType(noDataValue: Short)
-    extends UShortCells with UserDefinedNoData[Short]
+    extends UShortCells with UserDefinedNoData[Short] {
+  def intNoDataValue: Int = noDataValue.toInt & 0xFFFF
+  def doubleNoDataValue: Double = (noDataValue & 0xFFFF).toDouble
+}
 
 case object IntCellType
     extends IntCells with NoNoData
 case object IntConstantNoDataCellType
     extends IntCells with ConstantNoData
 case class IntUserDefinedNoDataCellType(noDataValue: Int)
-    extends IntCells with UserDefinedNoData[Int]
+    extends IntCells with UserDefinedNoData[Int] {
+  def intNoDataValue: Int = noDataValue.toInt
+  def doubleNoDataValue: Double = noDataValue.toDouble
+}
 
 case object FloatCellType
     extends FloatCells with NoNoData
 case object FloatConstantNoDataCellType
     extends FloatCells with ConstantNoData
 case class FloatUserDefinedNoDataCellType(noDataValue: Float)
-    extends FloatCells with UserDefinedNoData[Float]
+    extends FloatCells with UserDefinedNoData[Float] {
+  def intNoDataValue: Int = noDataValue.toInt
+  def doubleNoDataValue: Double = noDataValue.toDouble
+}
 
 case object DoubleCellType
     extends DoubleCells with NoNoData
 case object DoubleConstantNoDataCellType
     extends DoubleCells with ConstantNoData
 case class DoubleUserDefinedNoDataCellType(noDataValue: Double)
-    extends DoubleCells with UserDefinedNoData[Double]
+    extends DoubleCells with UserDefinedNoData[Double] {
+  def intNoDataValue: Int = noDataValue.toInt
+  def doubleNoDataValue: Double = noDataValue.toDouble
+}
 
 
 // No NoData

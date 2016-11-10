@@ -49,6 +49,10 @@ trait MultibandTile extends CellGrid with MacroCombinableMultibandTile[Tile] wit
     */
   def bands: Vector[Tile]
 
+  /** Target cell type for generation of new Tile and MultibandTiles.
+    */
+  protected def targetCellType: CellType = cellType
+
   /**
     * Retrieve a subset of the bands of the present [[MultibandTile]]
     * as a new [[MultibandTile]].
