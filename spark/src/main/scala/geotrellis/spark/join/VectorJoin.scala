@@ -36,7 +36,6 @@ object VectorJoin {
 
       Iterator(rtree)
     }, preservesPartitioning = true)
-      .cache
 
     shorter.cartesian(rtrees).map({ case (left, tree) =>
       val Extent(xmin, ymin, xmax, ymax) = left.envelope
