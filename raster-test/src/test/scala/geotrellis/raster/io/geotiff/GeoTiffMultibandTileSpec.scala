@@ -111,9 +111,21 @@ class GeoTiffMultibandTileSpec extends FunSpec
   }
 
   describe("Multiband subset combine methods") {
+    it("should work the same on integer-valued GeoTiff tiles as Array tiles") {
+      val actual = {
+        val tiles = MultibandGeoTiff.compressed(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile
+        tiles.combine(List(0,2))({ seq: Seq[Int] => seq.sum })
+      }
+      val expected = {
+        val tiles = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile
+        tiles.combine(List(0,2))({ seq: Seq[Int] => seq.sum })
+      }
+
+      assertEqual(actual, expected)
+    }
 
     it("should work correctly on integer-valued tiles") {
-      val tiles = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile
+      val tiles = MultibandGeoTiff.compressed(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile
       val band0 = tiles.band(0)
       val band2 = tiles.band(2)
       val actual = tiles.combine(List(0,2))({ seq: Seq[Int] => seq.sum })

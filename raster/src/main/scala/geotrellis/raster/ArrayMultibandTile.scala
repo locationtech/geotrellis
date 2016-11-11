@@ -325,13 +325,14 @@ class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMu
   def combine(subset: Seq[Int])(f: Seq[Int] => Int): Tile = {
     subset.foreach({ b => require(0 <= b && b < bandCount, "All elements of subset must be present") })
     val subsetSize = subset.size
+    val subsetArray = subset.toArray
 
     val result = ArrayTile.empty(cellType, cols, rows)
     val values: Array[Int] = Array.ofDim(subsetSize)
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
-        cfor(0)(_ < subsetSize, _ + 1) { b =>
-          values(b) = _bands(b).get(col, row)
+        cfor(0)(_ < subsetSize, _ + 1) { i =>
+          values(i) = _bands(subsetArray(i)).get(col, row)
         }
         result.set(col, row, f(values))
       }
@@ -351,13 +352,14 @@ class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMu
   def combineDouble(subset: Seq[Int])(f: Seq[Double] => Double): Tile = {
     subset.foreach({ b => require(0 <= b && b < bandCount, "All elements of subset must be present") })
     val subsetSize = subset.size
+    val subsetArray = subset.toArray
 
     val result = ArrayTile.empty(cellType, cols, rows)
     val values: Array[Double] = Array.ofDim(subsetSize)
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
-        cfor(0)(_ < subsetSize, _ + 1) { b =>
-          values(b) = _bands(b).getDouble(col, row)
+        cfor(0)(_ < subsetSize, _ + 1) { i =>
+          values(i) = _bands(subsetArray(i)).getDouble(col, row)
         }
         result.setDouble(col, row, f(values))
       }
