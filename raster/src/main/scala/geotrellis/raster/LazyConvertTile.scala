@@ -4,6 +4,8 @@ import geotrellis.raster.op.ConvertOp
 import spire.syntax.cfor._
 
 class LazyConvertTile(base: Tile, op: ConvertOp) extends Tile with TileLike {
+  def this(base: Tile, ct: CellType) = this(base, ConvertOp(base, ct))
+
   def convert(ct: CellType): Tile =
     new LazyConvertTile(base, ConvertOp(op, cellType))
 
@@ -116,4 +118,9 @@ class LazyConvertTile(base: Tile, op: ConvertOp) extends Tile with TileLike {
     }
     output
   }
+}
+
+object LazyConvertTile {
+  def apply(base: Tile, ct: CellType): LazyConvertTile =
+    new LazyConvertTile(base, ConvertOp(base, ct))
 }
