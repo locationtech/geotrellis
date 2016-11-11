@@ -51,6 +51,7 @@ package object raster
       with rasterize.FeatureDoubleRasterizeMethods[Geometry]
 
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
+      with DelayedConversionTileMethods
       with costdistance.CostDistanceMethods
       with crop.SinglebandTileCropMethods
       with equalization.SinglebandEqualizationMethods
@@ -77,6 +78,7 @@ package object raster
       with viewshed.ViewshedMethods
 
   implicit class withMultibandTileMethods(val self: MultibandTile) extends MethodExtensions[MultibandTile]
+      with DelayedConversionMultibandTileMethods
       with crop.MultibandTileCropMethods
       with equalization.MultibandEqualizationMethods
       with mask.MultibandTileMaskMethods
