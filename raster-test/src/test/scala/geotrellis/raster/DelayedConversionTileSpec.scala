@@ -33,7 +33,20 @@ class DelayedConversionTileSpec extends FunSpec
   describe("DelayedConversionMultibandTile") {
     it("should create the correctly typed tile for map") {
       val tile =
-          createTile(Array(1, 2, 3, 4), 2, 2)
+          createTile(Array(1, 2, 3, 4, 6, 10), 2, 3).convert(ByteConstantNoDataCellType)
+
+      val expected =
+        tile.convert(IntConstantNoDataCellType).map { z => z * 1000 }
+
+      val actual =
+        tile.delayedConversion(IntConstantNoDataCellType).map { z => z * 1000}
+
+      assertEqual(actual, expected)
+    }
+
+    it("should create the correctly typed tile for mapDouble") {
+      val tile =
+          createTile(Array(1, 2, 3, 4, 6, 10), 2, 3)
 
       val expected =
         tile.convert(DoubleConstantNoDataCellType).mapDouble { z => 1 / z }
@@ -44,12 +57,68 @@ class DelayedConversionTileSpec extends FunSpec
       assertEqual(actual, expected)
     }
 
+    it("should create the correctly typed tile for map with col,row") {
+      val tile =
+          createTile(Array(1, 2, 3, 4, 6, 10), 2, 3).convert(ByteConstantNoDataCellType)
+
+      val expected =
+        tile
+          .convert(IntConstantNoDataCellType)
+          .map { (col, row, z) => col + row + z * 1000 }
+
+      val actual =
+        tile
+          .delayedConversion(IntConstantNoDataCellType)
+          .map { (col, row, z) => col + row + z * 1000 }
+
+      assertEqual(actual, expected)
+    }
+
+    it("should create the correctly typed tile for mapDouble for (col, row)") {
+      val tile =
+          createTile(Array(1, 2, 3, 4, 6, 10), 2, 3)
+
+      val expected =
+        tile
+          .convert(DoubleConstantNoDataCellType)
+          .mapDouble { (col, row, z) => 1 / z }
+
+      val actual =
+        tile
+          .delayedConversion(DoubleConstantNoDataCellType)
+          .mapDouble { (col, row, z) => 1 / z }
+
+      assertEqual(actual, expected)
+    }
+
     it("should create the correctly typed tile for combine") {
       val tile1 =
-          createTile(Array(1, 2, 3, 4), 2, 2)
+          createTile(Array(1, 2, 3, 4, 6, 10), 2, 3).convert(ByteConstantNoDataCellType)
 
       val tile2 =
-          createTile(Array(4, 5, 6, 7), 2, 2)
+          createTile(Array(4, 5, 6, 7, 20, -8), 2, 3).convert(ByteConstantNoDataCellType)
+
+      val expected =
+        tile1.convert(IntConstantNoDataCellType).combine(tile2) { (z1, z2) =>
+          z1 + z2 * 1000
+        }
+
+      val actual =
+        tile1
+          .delayedConversion(IntConstantNoDataCellType)
+          .combine(tile2) { (z1, z2) =>
+            z1 + z2 * 1000
+          }
+
+      assertEqual(actual, expected)
+    }
+
+    it("should create the correctly typed tile for combineDouble") {
+      val tile1 =
+          createTile(Array(1, 2, 3, 4, 6, 10), 2, 3)
+
+      val tile2 =
+          createTile(Array(4, 5, 6, 7, 20, -8), 2, 3)
 
       val expected =
         tile1.convert(DoubleConstantNoDataCellType).combineDouble(tile2) { (z1, z2) =>
