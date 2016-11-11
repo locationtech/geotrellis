@@ -51,7 +51,7 @@ class PolygonRasterizerSpec extends FunSuite
     val square2 = Polygon( Line( (1.0,9.0), (1.0,8.5), (1.0,6.0), (4.0, 6.0), (4.0, 8.5), (4.0, 9.0), (1.0, 9.0) ))
 
     val r1 = Rasterizer.rasterizeWithValue(square, re, 0x11)
-    // println(r1.asciiDraw)
+    // println(r1.tile.asciiDraw)
 
     // values match gdal
     for ( i <- 1 to 3; j <- 1 to 3) {
@@ -63,7 +63,7 @@ class PolygonRasterizerSpec extends FunSuite
     assert(sum === 9)
 
     val r2 = Rasterizer.rasterizeWithValue(diamond, re, 0x22)
-    // println(r2.asciiDraw())
+    // println(r2.tile.asciiDraw())
     assert(r2.get(3,3) === 0x22)
     for (i <- 2 to 4) { assert(r2.get(i,4) === 0x22) }
     for (i <- 1 to 5) { assert(r2.get(i,5) === 0x22) }
@@ -76,7 +76,7 @@ class PolygonRasterizerSpec extends FunSuite
     assert(sum === 18)
 
     val r3 = Rasterizer.rasterizeWithValue(triangle, re, 0x33)
-    // println(r3.asciiDraw())
+    // println(r3.tile.asciiDraw())
 
     assert(r3.get(3,2) === 0x33)
     assert(r3.get(4,3) === 0x33)
@@ -86,13 +86,13 @@ class PolygonRasterizerSpec extends FunSuite
     assert(sum === 3)
 
     val r4 = Rasterizer.rasterizeWithValue(square2, re, 0x44)
-    // println(r4.asciiDraw())
+    // println(r4.tile.asciiDraw())
 
     val r5 = Rasterizer.rasterizeWithValue(outsideSquare, re, 0x55)
-    // println(r5.asciiDraw())
+    // println(r5.tile.asciiDraw())
 
     val r6 = Rasterizer.rasterizeWithValue(envelopingSquare, re, 0x66)
-    // println(r6.asciiDraw())
+    // println(r6.tile.asciiDraw())
 
     val emptyGeom = outsideSquare.intersection(envelopingSquare)
     // LoadWKT()
@@ -308,7 +308,7 @@ class PolygonRasterizerSpec extends FunSuite
       tile.set(col, row, 1)
       sum = sum + 1
     }
-    // println(tile.asciiDraw)
+    // println(tile.tile.asciiDraw)
 
     sum should be (12)
   }
@@ -340,7 +340,7 @@ class PolygonRasterizerSpec extends FunSuite
     })
 
     count should be (50)
-    println(GeoTiff(tile, e, LatLng).asciiDraw)
+//    println(GeoTiff(tile, e, LatLng).tile.asciiDraw)
   }
 
   test("Triangle w/ non-point pixels and w/o partial cells") {
@@ -368,7 +368,7 @@ class PolygonRasterizerSpec extends FunSuite
     })
 
     count should be (40)
-    println(GeoTiff(tile, e, LatLng).asciiDraw)
+    // println(GeoTiff(tile, e, LatLng).tile.asciiDraw)
   }
 
   test("Triangle w/ non-point pixels and w/ partial cells") {
@@ -396,7 +396,7 @@ class PolygonRasterizerSpec extends FunSuite
     })
 
     count should be (60)
-    println(GeoTiff(tile, e, LatLng).asciiDraw)
+    // println(GeoTiff(tile, e, LatLng).tile.asciiDraw)
   }
 
   val tiny = Polygon(Point(40, 40), Point(40, 59), Point(59, 50), Point(40, 40))
@@ -419,7 +419,7 @@ class PolygonRasterizerSpec extends FunSuite
     })
 
     count should be (1)
-    println(GeoTiff(tile, e, LatLng).asciiDraw)
+    // println(GeoTiff(tile, e, LatLng).tile.asciiDraw)
   }
 
   test("Sub-Pixel Geometry w/ non-point pixels and w/ partial cells") {
@@ -440,7 +440,7 @@ class PolygonRasterizerSpec extends FunSuite
     })
 
     count should be (1)
-    println(GeoTiff(tile, e, LatLng).asciiDraw)
+    // println(GeoTiff(tile, e, LatLng).tile.asciiDraw)
   }
 
   test("Sub-Pixel Geometry w/ non-point pixels and w/o partial cells") {
@@ -461,7 +461,7 @@ class PolygonRasterizerSpec extends FunSuite
     })
 
     count should be (0)
-    println(GeoTiff(tile, e, LatLng).asciiDraw)
+    // println(GeoTiff(tile, e, LatLng).tile.asciiDraw)
   }
 
   val tiny2 = Polygon(Point(40, 40), Point(40, 42), Point(42, 41), Point(40, 40))
@@ -488,7 +488,7 @@ class PolygonRasterizerSpec extends FunSuite
     })
 
     count should be (0)
-    println(GeoTiff(tile, e, LatLng).asciiDraw)
+    // println(GeoTiff(tile, e, LatLng).tile.asciiDraw)
   }
 
   test("More Sub-Pixel Geometry w/ non-point pixels and w/ partial cells") {
@@ -513,7 +513,7 @@ class PolygonRasterizerSpec extends FunSuite
     })
 
     count should be (1)
-    println(GeoTiff(tile, e, LatLng).asciiDraw)
+    // println(GeoTiff(tile, e, LatLng).tile.asciiDraw)
   }
 
   test("More Sub-Pixel Geometry w/ non-point pixels and w/o partial cells") {
@@ -538,6 +538,6 @@ class PolygonRasterizerSpec extends FunSuite
     })
 
     count should be (0)
-    println(GeoTiff(tile, e, LatLng).asciiDraw)
+    // println(GeoTiff(tile, e, LatLng).tile.asciiDraw)
   }
 }

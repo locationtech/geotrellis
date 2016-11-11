@@ -113,7 +113,7 @@ class GeoTiffMultibandTileSpec extends FunSpec
   describe("Multiband subset combine methods") {
 
     it("should work correctly on integer-valued tiles") {
-      val tiles = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
+      val tiles = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile
       val band0 = tiles.band(0)
       val band2 = tiles.band(2)
       val actual = tiles.combine(List(0,2))({ seq: Seq[Int] => seq.sum })
@@ -143,7 +143,7 @@ class GeoTiffMultibandTileSpec extends FunSpec
   describe("Multiband subset map methods") {
 
     it("should work correctly on integer-valued tiles") {
-      val tiles = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
+      val tiles = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile
       val actual = tiles.map(List(0,2))({ (band,z) => z + band + 3 })
       val expectedBand0 = tiles.band(0).map({ z => z + 0 + 3 }).toArray
       val expectedBand1 = tiles.band(1).toArray
@@ -191,7 +191,7 @@ class GeoTiffMultibandTileSpec extends FunSpec
   describe("Multiband bands (reorder) method") {
 
     it("should be inexpensive") {
-      val tile0 = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
+      val tile0 = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile
       val tile1 = tile0.subsetBands(List(1, 2, 0))
 
       tile0.band(0) should be theSameInstanceAs tile1.band(2)
@@ -200,7 +200,7 @@ class GeoTiffMultibandTileSpec extends FunSpec
     }
 
     it("result should have correct bandCount") {
-      val tile0 = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
+      val tile0 = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile
       val tile1 = tile0.subsetBands(List(1, 2, 0))
       val tile2 = tile0.subsetBands(List(1, 2))
 
@@ -209,7 +209,7 @@ class GeoTiffMultibandTileSpec extends FunSpec
     }
 
     it("result should work properly with foreach") {
-      val tile0 = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
+      val tile0 = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile
       val tile1 = tile0.subsetBands(List(1, 2, 0))
       val tile2 = tile1.subsetBands(List(1, 2, 0))
 
@@ -225,7 +225,7 @@ class GeoTiffMultibandTileSpec extends FunSpec
     }
 
     it("should disallow \"invalid\" bandSequences") {
-      val tile0 = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
+      val tile0 = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile
       an [IllegalArgumentException] should be thrownBy {
         tile0.subsetBands(0,1,2,3) // There are only 3 bands
       }

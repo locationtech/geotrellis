@@ -8,7 +8,7 @@ import geotrellis.util.MethodExtensions
 /**
   * Trait containing [[Tile]] extension methods for summaries.
   */
-trait SummaryMethods extends MethodExtensions[Tile] {
+trait SinglebandTileSummaryMethods extends MethodExtensions[Tile] {
 
   /**
     * Contains several different operations for building a histograms
