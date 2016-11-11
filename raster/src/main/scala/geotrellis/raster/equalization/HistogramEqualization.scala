@@ -37,7 +37,6 @@ object HistogramEqualization {
     */
   @inline def intensityToCdf(cellType: CellType, cdf: Array[(Double, Double)])(x: Double): Double = {
     val i = java.util.Arrays.binarySearch(cdf, (x, 0.0), cmp)
-    val bits = cellType.bits
     val smallestCdf = cdf(0)._2
     val rawCdf =
       if (x < cdf(0)._1) { // x is smaller than any label in the array
@@ -50,10 +49,12 @@ object HistogramEqualization {
         cdf(i)._2
       }
       else { // x is between two labels in the array
-        val j = (-1 * i - 2)
+        val j = -1 * i - 2
+        val label0 = cdf(j+0)._1
+        val label1 = cdf(j+1)._1
+        val t = (x - label0) / (label1 - label0)
         val cdf0 = cdf(j+0)._2
         val cdf1 = cdf(j+1)._2
-        val t = (x - cdf0) / (cdf1 - cdf0)
         (1.0-t)*cdf0 + t*cdf1
       }
 
