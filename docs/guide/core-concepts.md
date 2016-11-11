@@ -544,7 +544,7 @@ Cell Types
   tile is a `Byte`, the `NoData` value of that tile will exist within the range
   [`Byte.MinValue` (-128), `Byte.MaxValue` (127)].
 - If attempting to convert between `CellTypes`, see
-  [this note](./faq/#aq/#i-need-to-convert-a-tiles-celltype-which-methods-should-i-use') on `CellType` conversions.
+  [this note](./faq/#how-can-i-convert-a-tiles-celltype) on `CellType` conversions.
 
 |             |     No NoData    |         Constant NoData        |        User Defined NoData        |
 |-------------|:----------------:|:------------------------------:|:---------------------------------:|
@@ -576,33 +576,46 @@ Let's look to how this information can be used:
 /** Here's an array we'll use to construct tiles */
 val myData = Array(42, 1, 2, 3)
 
-/** The GeoTrellis-default integer CellType */
+/** The GeoTrellis-default integer CellType
+ *   Note that it represents `NoData` values with the smallest signed
+ *   integer possible with 32 bits (Int.MinValue or -2147483648).
+ */
 val defaultCT = IntConstantNoDataCellType
 val normalTile = IntArrayTile(myData, 2, 2, defaultCT)
 
 /** A custom, 'user defined' NoData CellType for comparison; we will
-treat 42 as `NoData` for this one */
+ *   treat 42 as NoData for this one rather than Int.MinValue
+ */
 val customCellType = IntUserDefinedNoDataValue(42)
 val customTile = IntArrayTile(myData, 2, 2, customCellType)
 
-/** We should expect that the first tile has the value 42 at (0, 0)
-because Int.MinValue is the GeoTrellis-default `NoData` value for
-integers */
+/** We should expect that the first (default celltype) tile has the value 42 at (0, 0)
+ *   This is because 42 is just a regular value (as opposed to NoData)
+ *   which means that the first value will be delivered without surprise
+ */
 assert(normalTile.get(0, 0) == 42)
 assert(normalTile.getDouble(0, 0) == 42.0)
 
 /** Here, the result is less obvious. Under the hood, GeoTrellis is
-inspecting the value to be returned at (0, 0) to see if it matches our
-custom `NoData` policy and, if it matches (it does), return Int.MinValue
-(no matter your underlying type, `get` on a tile will return an `Int`
-and `getDouble` will return a `Double`.
-
-The use of Int.MinValue and Double.NaN is a result of those being the
-GeoTrellis-blessed values for NoData - below, you'll find a chart that
-lists all such values in the rightmost column */
+ *   inspecting the value to be returned at (0, 0) to see if it matches our
+ *   `NoData` policy and, if it matches (it does, we defined NoData as
+ *   42 above), return Int.MinValue (no matter your underlying type, `get`
+ *   on a tile will return an `Int` and `getDouble` will return a `Double`).
+ *
+ *   The use of Int.MinValue and Double.NaN is a result of those being the
+ *   GeoTrellis-blessed values for NoData - below, you'll find a chart that
+ *   lists all such values in the rightmost column
+ */
 assert(customTile.get(0, 0) == Int.MinValue)
 assert(customTile.getDouble(0, 0) == Double.NaN)
 ```
+
+A  point which is perhaps not intuitive is that `get` will *always*
+return an `Int` and `getDouble` will *always* return a `Double`.
+Representing NoData demands, therefore, that we map other celltypes'
+`NoData` values to the native, default `Int` and `Double` `NoData`
+values. `NoData` will be represented as `Int.MinValue` or `Double.Nan`.  
+
 
 **Why you should care**
 
@@ -679,16 +692,16 @@ the cell type that a tile is backed by. That extra space is the price
 paid for representing a larger range of values. Note that bit cells
 lack the sufficient representational resources to have a `NoData` value.
 
-|             | Bits / Cell | 512x512 Raster (mb) |     Range (inclusive)     | GeoTrellis NoData Value |
-|-------------|:-----------:|---------------------|:-------------------------:|-------------------------|
-| BitCells    | 1           | 0.032768            | [0, 1]                    |                     N/A |
-| ByteCells   | 8           | 0.262144            | [-128, 128]               |                    -128 |
-| UbyteCells  | 8           | 0.262144            | [0, 255]                  |                       0 |
-| ShortCells  | 16          | 0.524288            | [-32768, 32767]           |                  -32768 |
-| UShortCells | 16          | 0.524288            | [0, 65535]                |                       0 |
-| IntCells    | 32          | 1.048576            | [-2147483648, 2147483647] |             -2147483648 |
-| FloatCells  | 32          | 1.048576            | [-3.40E38, 3.40E38]       |               Float.NaN |
-| DoubleCells | 64          | 2.097152            | [-1.79E308, 1.79E308]     |              Double.NaN |
+|             | Bits / Cell | 512x512 Raster (mb) |     Range (inclusive)     |   GeoTrellis NoData Value    |
+|-------------|:-----------:|---------------------|:-------------------------:|------------------------------|
+| BitCells    | 1           | 0.032768            | [0, 1]                    |                         N/A  |
+| ByteCells   | 8           | 0.262144            | [-128, 128]               |       -128 (`Byte.MinValue`) |
+| UbyteCells  | 8           | 0.262144            | [0, 255]                  |                           0  |
+| ShortCells  | 16          | 0.524288            | [-32768, 32767]           |    -32768 (`Short.MinValue`) |
+| UShortCells | 16          | 0.524288            | [0, 65535]                |                           0  |
+| IntCells    | 32          | 1.048576            | [-2147483648, 2147483647] | -2147483648 (`Int.MinValue`) |
+| FloatCells  | 32          | 1.048576            | [-3.40E38, 3.40E38]       |                   Float.NaN  |
+| DoubleCells | 64          | 2.097152            | [-1.79E308, 1.79E308]     |                  Double.NaN  |
 
 One final point is worth making in the context of `CellType`
 performance: the `Constant` types are able to depend upon macros which
@@ -697,6 +710,12 @@ be felt while iterating through millions and millions of cells. If possible, Con
 `NoData` values are to be preferred. For convenience' sake, we've
 attempted to make the GeoTrellis-blessed `NoData` values as unobtrusive
 as possible a priori.
+
+The limits of expected return types (discussed in the previous section) is used by
+macros to squeeze as much speed out of the JVM as possible. Check out
+[our macros docs](http://botanic.internal.azavea.com:8000/architecture/high-performance-scala/#macros)
+for more on our use of macros like `isData` and `isNoData`.
+
 
 Projections
 ===========
