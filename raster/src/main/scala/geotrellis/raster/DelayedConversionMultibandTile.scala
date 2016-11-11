@@ -113,7 +113,7 @@ class DelayedConversionMultibandTile(inner: MultibandTile, override val targetCe
   def map(f: (Int, Int) => Int): MultibandTile = {
     val newBands = Array.ofDim[Tile](bandCount)
     cfor(0)(_ < bandCount, _ + 1) { i =>
-      newBands(i) = band(i).map { z => f(i, z) }
+      newBands(i) = band(i).delayedConversion(targetCellType).map { z => f(i, z) }
     }
 
     ArrayMultibandTile(newBands)
@@ -128,7 +128,7 @@ class DelayedConversionMultibandTile(inner: MultibandTile, override val targetCe
   def mapDouble(f: (Int, Double) => Double): MultibandTile = {
     val newBands = Array.ofDim[Tile](bandCount)
     cfor(0)(_ < bandCount, _ + 1) { i =>
-      newBands(i) = band(i).mapDouble { z => f(i, z) }
+      newBands(i) = band(i).delayedConversion(targetCellType).mapDouble { z => f(i, z) }
     }
 
     ArrayMultibandTile(newBands)
@@ -145,8 +145,8 @@ class DelayedConversionMultibandTile(inner: MultibandTile, override val targetCe
     validateBand(b0)
     val newBands = Array.ofDim[Tile](bandCount)
     cfor(0)(_ < bandCount, _ + 1) { i =>
-      if(i == b0) { newBands(i) = band(b0) map f }
-      else { newBands(i) = band(b0) }
+      if(i == b0) { newBands(i) = band(i).delayedConversion(targetCellType).map(f) }
+      else { newBands(i) = band(i).convert(targetCellType) }
     }
 
     ArrayMultibandTile(newBands)
@@ -162,8 +162,8 @@ class DelayedConversionMultibandTile(inner: MultibandTile, override val targetCe
     validateBand(b0)
     val newBands = Array.ofDim[Tile](bandCount)
     cfor(0)(_ < bandCount, _ + 1) { i =>
-      if(i == b0) { newBands(i) = band(b0) mapDouble f }
-      else { newBands(i) = band(b0) }
+      if(i == b0) { newBands(i) = band(i).delayedConversion(targetCellType).mapDouble(f) }
+      else { newBands(i) = band(i).convert(targetCellType) }
     }
 
     ArrayMultibandTile(newBands)
@@ -180,13 +180,14 @@ class DelayedConversionMultibandTile(inner: MultibandTile, override val targetCe
   def combine(subset: Seq[Int])(f: Seq[Int] => Int): Tile = {
     subset.foreach({ b => require(0 <= b && b < bandCount, "All elements of subset must be present") })
     val subsetSize = subset.size
+    val subsetArray = subset.toArray
 
     val result = ArrayTile.empty(targetCellType, cols, rows)
     val values: Array[Int] = Array.ofDim(subsetSize)
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
         cfor(0)(_ < subsetSize, _ + 1) { b =>
-          values(b) = inner.bands(b).get(col, row)
+          values(b) = inner.bands(subsetArray(b)).get(col, row)
         }
         result.set(col, row, f(values))
       }
@@ -205,12 +206,18 @@ class DelayedConversionMultibandTile(inner: MultibandTile, override val targetCe
     */
   def combineDouble(subset: Seq[Int])(f: Seq[Double] => Double): Tile = {
     subset.foreach({ b => require(0 <= b && b < bandCount, "All elements of subset must be present") })
+    val subsetSize = subset.size
+    val subsetArray = subset.toArray
 
-    val result = ArrayTile.empty(cellType, cols, rows)
+    val result = ArrayTile.empty(targetCellType, cols, rows)
+    val values: Array[Double] = Array.ofDim(subsetSize)
+
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
-        val data = subset.map({ b => band(b).getDouble(col, row) })
-        result.setDouble(col, row, f(data))
+        cfor(0)(_ < subsetSize, _ + 1) { b =>
+          values(b) = inner.bands(subsetArray(b)).getDouble(col, row)
+        }
+        result.setDouble(col, row, f(values))
       }
     }
     result

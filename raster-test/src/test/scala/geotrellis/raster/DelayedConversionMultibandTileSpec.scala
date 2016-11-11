@@ -31,7 +31,237 @@ class DelayedConversionMultibandTileSpec extends FunSpec
                   with RasterMatchers
                   with TileBuilders {
   describe("DelayedConversionMultibandTile") {
-    it("should create the correctly typed tile on a NDVI operation") {
+    it("should map over subset of bands") {
+      val tile =
+        MultibandTile(
+          createTile(Array(1, 2, 3, 4, 4, 5), 2, 3).convert(ByteConstantNoDataCellType),
+          createTile(Array(4, 5, 6, 700, 32, 43), 2, 3).convert(ByteConstantNoDataCellType),
+          createTile(Array(400, 51, 63, 70, 43, 33), 2, 3).convert(ByteConstantNoDataCellType)
+        )
+
+      val expected =
+        tile
+          .convert(IntConstantNoDataCellType)
+          .map(Seq(0, 2)) { (b, z) => z + b * 100 }
+
+      val actual =
+        tile
+          .delayedConversion(IntConstantNoDataCellType)
+          .map(Seq(0, 2)) { (b, z) => z + b * 100 }
+
+      assertEqual(actual, expected)
+    }
+
+    it("should mapDouble over subset of bands") {
+      val tile =
+        MultibandTile(
+          createTile(Array(1, 2, 3, 4, 4, 5), 2, 3),
+          createTile(Array(4, 5, 6, 700, 32, 43), 2, 3),
+          createTile(Array(400, 51, 63, 70, 43, 33), 2, 3)
+        )
+
+      val expected =
+        tile
+          .convert(DoubleConstantNoDataCellType)
+          .mapDouble(Seq(0, 2)) { (b, z) => b / z }
+
+      val actual =
+        tile
+          .delayedConversion(DoubleConstantNoDataCellType)
+          .mapDouble(Seq(0, 2)) { (b, z) => b / z }
+
+      assertEqual(actual, expected)
+    }
+
+    it("should map over bands and indexes") {
+      val tile =
+        MultibandTile(
+          createTile(Array(1, 2, 3, 4, 4, 5), 2, 3).convert(ByteConstantNoDataCellType),
+          createTile(Array(4, 5, 6, 700, 32, 43), 2, 3).convert(ByteConstantNoDataCellType),
+          createTile(Array(400, 51, 63, 70, 43, 33), 2, 3).convert(ByteConstantNoDataCellType)
+        )
+
+      val expected =
+        tile
+          .convert(IntConstantNoDataCellType)
+          .map { (b, z) => z + b * 100 }
+
+      val actual =
+        tile
+          .delayedConversion(IntConstantNoDataCellType)
+          .map { (b, z) => z + b * 100 }
+
+      assertEqual(actual, expected)
+    }
+
+    it("should mapDouble over bands and indexes") {
+      val tile =
+        MultibandTile(
+          createTile(Array(1, 2, 3, 4, 4, 5), 2, 3),
+          createTile(Array(4, 5, 6, 700, 32, 43), 2, 3),
+          createTile(Array(400, 51, 63, 70, 43, 33), 2, 3)
+        )
+
+      val expected =
+        tile
+          .convert(DoubleConstantNoDataCellType)
+          .mapDouble { (b, z) => b / z }
+
+      val actual =
+        tile
+          .delayedConversion(DoubleConstantNoDataCellType)
+          .mapDouble { (b, z) => b / z }
+
+      assertEqual(actual, expected)
+    }
+
+    it("should map over a single band") {
+      val tile =
+        MultibandTile(
+          createTile(Array(1, 2, 3, 4, 4, 5), 2, 3).convert(ByteConstantNoDataCellType),
+          createTile(Array(4, 5, 6, 700, 32, 43), 2, 3).convert(ByteConstantNoDataCellType),
+          createTile(Array(400, 51, 63, 70, 43, 33), 2, 3).convert(ByteConstantNoDataCellType)
+        )
+
+      val expected =
+        tile
+          .convert(IntConstantNoDataCellType)
+          .map(1) { z => z * 100 }
+
+      val actual =
+        tile
+          .delayedConversion(IntConstantNoDataCellType)
+          .map(1) { z => z * 100 }
+
+      assertEqual(actual, expected)
+    }
+
+    it("should mapDouble over a single band") {
+      val tile =
+        MultibandTile(
+          createTile(Array(1, 2, 3, 4, 4, 5), 2, 3),
+          createTile(Array(4, 5, 6, 700, 32, 43), 2, 3),
+          createTile(Array(400, 51, 63, 70, 43, 33), 2, 3)
+        )
+
+      val expected =
+        tile
+          .convert(DoubleConstantNoDataCellType)
+          .mapDouble(1) { z => 1 / z }
+
+      val actual =
+        tile
+          .delayedConversion(DoubleConstantNoDataCellType)
+          .mapDouble(1) { z => 1 / z }
+
+      assertEqual(actual, expected)
+    }
+
+    it("should combine a subset of bands") {
+      val tile =
+        MultibandTile(
+          createTile(Array(1, 2, 3, 4, 4, 5), 2, 3).convert(ByteConstantNoDataCellType),
+          createTile(Array(4, 5, 6, 700, 32, 43), 2, 3).convert(ByteConstantNoDataCellType),
+          createTile(Array(400, 51, 63, 70, 43, 33), 2, 3).convert(ByteConstantNoDataCellType)
+        )
+
+      val expected =
+        tile
+          .convert(IntConstantNoDataCellType)
+          .combine(Seq(1, 2)) { seq => seq.sum }
+
+      val actual =
+        tile
+          .delayedConversion(IntConstantNoDataCellType)
+          .combine(Seq(1, 2)) { seq => seq.sum }
+
+      assertEqual(actual, expected)
+    }
+
+    it("should combineDouble a subset of bands") {
+      val tile =
+        MultibandTile(
+          createTile(Array(1, 2, 3, 4, 4, 5), 2, 3),
+          createTile(Array(4, 5, 6, 700, 32, 43), 2, 3),
+          createTile(Array(400, 51, 63, 70, 43, 33), 2, 3)
+        )
+
+      val expected =
+        tile
+          .convert(DoubleConstantNoDataCellType)
+          .combineDouble(Seq(1, 2)) { seq => seq.map(1 / _).sum }
+
+      val actual =
+        tile
+          .delayedConversion(DoubleConstantNoDataCellType)
+          .combineDouble(Seq(1, 2)) { seq => seq.map(1 / _).sum }
+
+      assertEqual(actual, expected)
+    }
+
+    it("should combine all bands") {
+      val tile =
+        MultibandTile(
+          createTile(Array(1, 2, 3, 4, 4, 5), 2, 3).convert(ByteConstantNoDataCellType),
+          createTile(Array(4, 5, 6, 700, 32, 43), 2, 3).convert(ByteConstantNoDataCellType),
+          createTile(Array(400, 51, 63, 70, 43, 33), 2, 3).convert(ByteConstantNoDataCellType)
+        )
+
+      val expected =
+        tile
+          .convert(IntConstantNoDataCellType)
+          .combine { seq => seq.sum }
+
+      val actual =
+        tile
+          .delayedConversion(IntConstantNoDataCellType)
+          .combine { seq => seq.sum }
+
+      assertEqual(actual, expected)
+    }
+
+    it("should combineDouble all bands") {
+      val tile =
+        MultibandTile(
+          createTile(Array(1, 2, 3, 4, 4, 5), 2, 3),
+          createTile(Array(4, 5, 6, 700, 32, 43), 2, 3),
+          createTile(Array(400, 51, 63, 70, 43, 33), 2, 3)
+        )
+
+      val expected =
+        tile
+          .convert(DoubleConstantNoDataCellType)
+          .combineDouble { seq => seq.map(1 / _).sum }
+
+      val actual =
+        tile
+          .delayedConversion(DoubleConstantNoDataCellType)
+          .combineDouble { seq => seq.map(1 / _).sum }
+
+      assertEqual(actual, expected)
+    }
+
+    it("should create the correctly typed tile for 2 band combine") {
+      val tile =
+        MultibandTile(
+          createTile(Array(1, 2, 3, 4), 2, 2).convert(ByteConstantNoDataCellType),
+          createTile(Array(4, 5, 6, 700), 2, 2).convert(ByteConstantNoDataCellType)
+        )
+
+      val expected =
+        tile.convert(IntConstantNoDataCellType).combine(0, 1) { (v1, v2) =>
+          v1 + v2
+        }
+
+      val actual =
+        tile.delayedConversion(IntConstantNoDataCellType).combine(0, 1) { (v1, v2) =>
+          v1 + v2
+        }
+
+      assertEqual(actual, expected)
+    }
+
+    it("should create the correctly typed tile on a NDVI operation (2 band combineDouble)") {
       val tile =
         MultibandTile(
           createTile(Array(1, 2, 3, 4), 2, 2),
