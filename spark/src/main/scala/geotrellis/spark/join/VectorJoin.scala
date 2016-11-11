@@ -17,14 +17,14 @@ import scala.reflect._
 
 object VectorJoin {
 
-  def apply[
+  def unflattened[
     L: ClassTag : ? => Geometry,
     R: ClassTag : ? => Geometry
   ](
     shorter: RDD[L],
     longer: RDD[R],
     pred: (Geometry, Geometry) => Boolean
-  )(implicit sc: SparkContext): RDD[(L, R)] = {
+  )(implicit sc: SparkContext): RDD[(L, Seq[R])] = {
     val rtrees = longer.mapPartitions({ partition =>
       val rtree = new STRtree
 
@@ -38,15 +38,27 @@ object VectorJoin {
     }, preservesPartitioning = true)
       .cache
 
-    shorter.cartesian(rtrees).flatMap({ case (left, tree) =>
+    shorter.cartesian(rtrees).map({ case (left, tree) =>
       val Extent(xmin, ymin, xmax, ymax) = left.envelope
       val envelope = new JtsEnvelope(xmin, xmax, ymin, ymax)
-
-      tree.query(envelope)
+      val rights = tree.query(envelope)
         .asScala
-        // .map({ right: Any => right.asInstanceOf[R] })
-        .filter({ right: Any => pred(left, right.asInstanceOf[R]) })
-        .map({ right: Any => (left, right.asInstanceOf[R]) })
+        .map({ right: Any => right.asInstanceOf[R] })
+        .filter({ right => pred(left, right) })
+
+      (left, rights)
     })
   }
+
+  def apply[
+    L: ClassTag : ? => Geometry,
+    R: ClassTag : ? => Geometry
+  ](
+    shorter: RDD[L],
+    longer: RDD[R],
+    pred: (Geometry, Geometry) => Boolean
+  )(implicit sc: SparkContext): RDD[(L, R)] =
+    unflattened(shorter, longer, pred)
+      .flatMap({ case (left, rights) => rights.map({ right => (left, right) }) })
+
 }
