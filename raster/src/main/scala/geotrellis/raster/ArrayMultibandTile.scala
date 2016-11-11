@@ -149,8 +149,6 @@ class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMu
     (0 until bandCount).foreach({ b =>
       if (set.contains(b))
         newBands(b) = band(b).map({ z => f(b, z) })
-      else if (cellType.isFloatingPoint)
-        newBands(b) = band(b).map({ z => z })
       else
         newBands(b) = band(b)
     })
@@ -177,10 +175,8 @@ class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMu
     (0 until bandCount).foreach({ b =>
       if (set.contains(b))
         newBands(b) = band(b).mapDouble({ z => f(b, z) })
-      else if (cellType.isFloatingPoint)
-        newBands(b) = band(b)
       else
-        newBands(b) = band(b).mapDouble({ z => z })
+        newBands(b) = band(b)
     })
 
     ArrayMultibandTile(newBands)

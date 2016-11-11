@@ -8,7 +8,9 @@ import spire.syntax.cfor._
 /**
   * [DelayedConversionTile]] represents a tile that wraps an inner tile,
   * and for any operation that returns a Tile, returns an ArrayTile with
-  * a cell type of the target cell type
+  * a cell type of the target cell type.
+  *
+  * @note          get and getDouble don't do what you think you do.
   */
 class DelayedConversionTile(inner: Tile, targetCellType: CellType)
   extends Tile {

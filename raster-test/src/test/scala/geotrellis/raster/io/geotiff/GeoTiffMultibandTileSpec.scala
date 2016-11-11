@@ -114,14 +114,12 @@ class GeoTiffMultibandTileSpec extends FunSpec
 
     it("should work correctly on integer-valued tiles") {
       val tiles = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
-      val band0 = tiles.band(0).toArray
-      val band2 = tiles.band(2).toArray
-      val actual = tiles.combine(List(0,2))({ seq: Seq[Int] => seq.sum }).toArray
-      val expected = band0.zip(band2).map({ pair => pair._1 + pair._2 })
+      val band0 = tiles.band(0)
+      val band2 = tiles.band(2)
+      val actual = tiles.combine(List(0,2))({ seq: Seq[Int] => seq.sum })
+      val expected = band0 + band2
 
-      (actual.zip(expected)).foreach({ pair =>
-        assert(pair._1 == pair._2, "actual should equal expected")
-      })
+      assertEqual(actual, expected)
     }
 
     it("should work correctly on double-valued tiles") {
