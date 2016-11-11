@@ -16,6 +16,7 @@
 
 package geotrellis.raster
 
+import geotrellis.raster.op.{BoundOp, Op}
 import spire.syntax.cfor._
 import com.typesafe.scalalogging._
 
@@ -112,6 +113,8 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] with LazyL
     *          copy of data; this should be a performance consideration.
     */
   def convert(cellType: CellType): Tile
+
+  def pipeline: Op = BoundOp(this)
 
   def withNoData(noDataValue: Option[Double]): Tile
 
