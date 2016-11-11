@@ -540,4 +540,24 @@ class PolygonRasterizerSpec extends FunSuite
     count should be (0)
     // println(GeoTiff(tile, e, LatLng).tile.asciiDraw)
   }
+  test("More triangle w/ non-point pixels") {
+    /*
+      ND ND  1
+      ND  1  1
+      ND ND  1
+      */
+    val tiny3 = Polygon(Point(50, 48), Point(99, 32), Point(99, 68), Point(50,48))
+    val e = Extent(0,0,100,100)
+    val re = RasterExtent(e, 3, 3)
+    val ro = Options(includePartial = true, sampleType=PixelIsArea)
+    val tile = IntArrayTile.empty(3,3)
+    var count = 0
+
+    PolygonRasterizer.foreachCellByPolygon(tiny3, re, ro)({ (col, row) =>
+      tile.set(col, row, 1)
+      count += 1
+    })
+
+    count should be (4)
+  }
 }
