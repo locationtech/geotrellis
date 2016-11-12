@@ -22,20 +22,19 @@ import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.util._
 import geotrellis.raster.io.geotiff.tags._
 import geotrellis.raster.summary.polygonal._
-
-import geotrellis.vector.{Point, Extent}
+import geotrellis.vector.{Extent, Point}
 import geotrellis.raster.testkit._
 import geotrellis.proj4._
-
 import monocle.syntax.apply._
 import org.scalactic.Tolerance
 
-import scala.io.{Source, Codec}
+import scala.io.{Codec, Source}
 import scala.collection.immutable.HashMap
-
 import java.util.BitSet
 import java.nio.ByteBuffer
 
+import geotrellis.raster.io.geotiff.writer.TiffTagFieldValue
+import geotrellis.raster.render.{RGB, RGBA}
 import spire.syntax.cfor._
 import org.scalatest._
 
@@ -472,6 +471,17 @@ class GeoTiffReaderSpec extends FunSpec
     it("should read NODATA string with length = 4") {
       val geoTiff = SinglebandGeoTiff.compressed(s"$baseDataPath/sbn/SBN_inc_percap-nodata-clip.tif")
       geoTiff.tile.cellType should be (ByteConstantNoDataCellType)
+    }
+
+    it("should read and convert color table") {
+      val geoTiff = SinglebandGeoTiff.compressed(geoTiffPath("colormap.tif"))
+
+      geoTiff.options.colorMap should be ('defined)
+
+      val cmap = geoTiff.options.colorMap.get
+      cmap.colors.size should be (256)
+      // This was determined by inspecting the color table
+      cmap.map(12) should be (RGB(209, 221, 249))
     }
   }
 

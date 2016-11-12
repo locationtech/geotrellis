@@ -77,6 +77,10 @@ object TiffTagFieldValue {
     fieldValues += TiffTagFieldValue(PlanarConfigurationTag, ShortsFieldType, 1, PlanarConfigurations.PixelInterleave)
     fieldValues += TiffTagFieldValue(SampleFormatTag, ShortsFieldType, 1, imageData.bandType.sampleFormat)
 
+    if(geoTiff.options.colorSpace == ColorSpace.Palette && geoTiff.options.colorMap.isDefined) {
+      fieldValues += TiffTagFieldValue(ColorMapTag, ShortsFieldType, 1, -1) //geoTiff.options.colorMap.get)
+    }
+
     createNoDataString(geoTiff.cellType) match {
       case Some(noDataString) =>
         val bs = toBytes(noDataString)

@@ -408,27 +408,42 @@ object TiffTagsReader {
       }
     }
 
-    def setColorMap(tiffTags: TiffTags, shorts: Array[Int]): TiffTags =
+    def setColorMap(tiffTags: TiffTags, shorts: Array[Int]): TiffTags = {
+      val bitsPerSample = tiffTags &|->
+        TiffTags._basicTags ^|->
+        BasicTags._bitsPerSample get
+
+      // As with GDAL, we need to pack each 16 bit color channel into 8 bits.
+      // GDAL just shifts and masks, effectively converting a 0-65535 range
+      // to a 0-255 one.
+      def conv(c: Int) = if(bitsPerSample >= 8)
+        (c >> 8 & 0xFF).toShort
+      else c.toShort
+
       if ((tiffTags &|->
         TiffTags._basicTags ^|->
         BasicTags._photometricInterp get) == 3) {
-        val divider = shorts.size / 3
+        // In GDAL world, `divider` ends up being the same as `bitsPerSample`
+        // but theoretically it's valid to have color tables that are smaller
+        val divider = shorts.length / 3
 
         val arr = Array.ofDim[(Short, Short, Short)](divider)
         cfor(0)(_ < divider, _ + 1) { i =>
           arr(i) = (
-            shorts(i).toShort,
-            shorts(i + divider).toShort,
-            shorts(i + 2 * divider).toShort
-          )
+            conv(shorts(i)),
+            conv(shorts(i + divider)),
+            conv(shorts(i + 2 * divider))
+            )
         }
 
         (tiffTags &|->
           TiffTags._basicTags ^|->
           BasicTags._colorMap set arr.toSeq)
-      } else throw new MalformedGeoTiffException(
+      }
+      else throw new MalformedGeoTiffException(
         "Colormap without Photometric Interpetation = 3."
       )
+    }
 
     def readIntsTag(tiffTags: TiffTags,
       tagMetadata: TiffTagMetadata) = {
