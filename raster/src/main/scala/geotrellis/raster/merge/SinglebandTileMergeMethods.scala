@@ -107,7 +107,10 @@ trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
               cfor(0)(_ < self.cols, _ + 1) { col =>
                 if (self.get(col, row) == 0) {
                   val (x, y) = re.gridToMap(col, row)
-                  mutableTile.set(col, row, interpolate(x, y))
+                  val v = interpolate(x, y)
+                  if(isData(v)) {
+                    mutableTile.set(col, row, v)
+                  }
                 }
               }
             }
@@ -118,7 +121,10 @@ trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
               cfor(0)(_ < self.cols, _ + 1) { col =>
                 if (self.getDouble(col, row) == 0.0) {
                   val (x, y) = re.gridToMap(col, row)
-                  mutableTile.setDouble(col, row, interpolate(x, y))
+                  val v = interpolate(x, y)
+                  if(isData(v)) {
+                    mutableTile.setDouble(col, row, v)
+                  }
                 }
               }
             }
