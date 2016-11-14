@@ -18,15 +18,15 @@ import scala.reflect._
 @experimental
 object VectorJoin {
   @experimental
-  def apply[
+  def unflattened[
     L: ClassTag : ? => Geometry,
     R: ClassTag : ? => Geometry
   ](
-    longer: RDD[L],
-    shorter: RDD[R],
+    shorter: RDD[L],
+    longer: RDD[R],
     pred: (Geometry, Geometry) => Boolean
-  )(implicit sc: SparkContext): RDD[(L, R)] = {
-    val rtrees = shorter.mapPartitions({ partition =>
+  )(implicit sc: SparkContext): RDD[(L, Seq[R])] = {
+    val rtrees = longer.mapPartitions({ partition =>
       val rtree = new STRtree
 
       partition.foreach({ r =>
@@ -37,31 +37,28 @@ object VectorJoin {
 
       Iterator(rtree)
     }, preservesPartitioning = true)
-      .zipWithIndex
-      .map({ case (v, k) => (k, v) })
-      .cache
 
-    val count = rtrees.count.toInt
+    shorter.cartesian(rtrees).map({ case (left, tree) =>
+      val Extent(xmin, ymin, xmax, ymax) = left.envelope
+      val envelope = new JtsEnvelope(xmin, xmax, ymin, ymax)
+      val rights = tree.query(envelope)
+        .asScala
+        .map({ right: Any => right.asInstanceOf[R] })
+        .filter({ right => pred(left, right) })
 
-    // For every partition of the right-hand (smaller) collection of
-    // items, find an RDD of items from the longer collection that
-    // intersects with some member of that partition partition.
-    val rdds = (0 until count).map({ i =>
-      val tree = sc.broadcast(rtrees.lookup(i).head)
-
-      longer.flatMap({ l =>
-        val Extent(xmin, ymin, xmax, ymax) = l.envelope
-        val envelope = new JtsEnvelope(xmin, xmax, ymin, ymax)
-
-        tree.value.query(envelope)
-          .asScala
-          .map({ r: Any => r.asInstanceOf[R] })
-          .filter({ r => pred(l, r) })
-          .map({ r => (l, r) })
-      })
+      (left, rights)
     })
-
-    // Return the results as a single RDD
-    sc.union(rdds)
   }
+
+  def apply[
+    L: ClassTag : ? => Geometry,
+    R: ClassTag : ? => Geometry
+  ](
+    shorter: RDD[L],
+    longer: RDD[R],
+    pred: (Geometry, Geometry) => Boolean
+  )(implicit sc: SparkContext): RDD[(L, R)] =
+    unflattened(shorter, longer, pred)
+      .flatMap({ case (left, rights) => rights.map({ right => (left, right) }) })
+
 }
