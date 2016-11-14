@@ -20,15 +20,9 @@ import geotrellis.raster._
 import geotrellis.raster.histogram.Histogram
 import geotrellis.util._
 
-import scala.util.Try
+import spire.std.any._
 
-/** Root element in hierarchy for specifying the type of boundary when classifying colors*/
-sealed trait ClassBoundaryType
-case object GreaterThan extends ClassBoundaryType
-case object GreaterThanOrEqualTo extends ClassBoundaryType
-case object LessThan extends ClassBoundaryType
-case object LessThanOrEqualTo extends ClassBoundaryType
-case object Exact extends ClassBoundaryType
+import scala.util.Try
 
 object ColorMap {
   case class Options(
@@ -39,13 +33,17 @@ object ColorMap {
     fallbackColor: Int = 0x00000000,
     /** Set to true to throw exception on unmappable variables */
     strict: Boolean = false
-  )
+  ) {
+    /** Conversion to a [[MapStrategy]] to be used by a [[BreakMap]]. */
+    def strategy: MapStrategy[Int] =
+      new MapStrategy(classBoundaryType, noDataColor, fallbackColor, strict)
+  }
 
   object Options {
-    def DEFAULT = Options()
+    def DEFAULT: Options = Options()
 
-    implicit def classBoundaryTypeToOptions(classBoundaryType: ClassBoundaryType): Options =
-      Options(classBoundaryType)
+    implicit def classBoundaryTypeToOptions(cbt: ClassBoundaryType): Options =
+      Options(cbt)
   }
 
   def apply(breaksToColors: (Int, Int)*): ColorMap =
@@ -204,65 +202,14 @@ class IntColorMap(breaksToColors: Map[Int, Int], val options: Options = Options.
         breaksToColors.keys.toVector
     }
 
-  private lazy val orderedColors: Vector[Int] = orderedBreaks.map(breaksToColors(_))
+  lazy val colors: Vector[Int] = orderedBreaks.map(breaksToColors(_))
 
-  lazy val colors = orderedColors
+  private val breakMap: BreakMap[Int, Int] =
+    new BreakMap(breaksToColors, options.strategy, { i => isNoData(i) })
 
-  private val len = orderedBreaks.length
+  def map(z: Int): Int = breakMap(z)
 
-  /** Yield a btree search predicate function based on boundary type options. */
-  private val branchPred: (Int, BTree[(Int, Int)]) => Either[Option[BTree[(Int, Int)]], (Int, Int)] = {
-    options.classBoundaryType match {
-      case LessThan => { (z, tree) => tree match {
-        case BTree(v, None, _)    if z < v._1                       => Right(v)
-        case BTree(v, Some(l), _) if z < v._1 && z >= l.greatest._1 => Right(v)
-        case BTree(v, l, _)       if z < v._1                       => Left(l)
-        case BTree(_, _, r)                                         => Left(r)
-      }}
-      case LessThanOrEqualTo => { (z, tree) => tree match {
-        case BTree(v, None, _)    if z <= v._1                      => Right(v)
-        case BTree(v, Some(l), _) if z <= v._1 && z > l.greatest._1 => Right(v)
-        case BTree(v, l, _)       if z < v._1                       => Left(l)
-        case BTree(_, _, r)                                         => Left(r)
-      }}
-      case Exact => { (z, tree) => tree match { /* Vanilla Binary Search */
-        case BTree(v, _, _) if z == v._1 => Right(v)
-        case BTree(v, l, _) if z < v._1  => Left(l)
-        case BTree(_, _, r)              => Left(r)
-      }}
-      case GreaterThanOrEqualTo => { (z, tree) => tree match {
-        case BTree(v, _, None)    if z >= v._1                    => Right(v)
-        case BTree(v, _, Some(r)) if z >= v._1 && z < r.lowest._1 => Right(v)
-        case BTree(v, l, _)       if z < v._1                     => Left(l)
-        case BTree(_, _, r)                                       => Left(r)
-      }}
-      case GreaterThan => { (z, tree) => tree match {
-        case BTree(v, _, None)    if z > v._1                     => Right(v)
-        case BTree(v, _, Some(r)) if z > v._1 && z <= r.lowest._1 => Right(v)
-        case BTree(v, l, _)       if z <= v._1                    => Left(l) /* (<=) is correct here! */
-        case BTree(_, _, r)                                       => Left(r)
-      }}
-    }
-  }
-
-  /* Horrible assumption: `breaksToColors` isn't empty */
-  private lazy val colourTree: BTree[(Int, Int)] =
-    BTree.fromSortedSeq(breaksToColors.toIndexedSeq.sorted).get
-
-  def map(z: Int): Int = {
-    if(isNoData(z)) {
-      options.noDataColor
-    } else {
-      colourTree.searchWith(z, branchPred) match {
-        case Some((_, colour)) => colour
-        case None if options.strict => sys.error(s"Value $z did not have an associated color and break")
-        case _ => options.fallbackColor
-      }
-    }
-  }
-
-  def mapDouble(z: Double): Int =
-    map(d2i(z))
+  def mapDouble(z: Double): Int = map(d2i(z))
 
   def mapColors(f: Int => Int): ColorMap =
     new IntColorMap(breaksToColors.map { case (key, color) => (key, f(color)) }, options)
@@ -274,7 +221,7 @@ class IntColorMap(breaksToColors: Map[Int, Int], val options: Options = Options.
     new IntColorMap(breaksToColors, options.copy(noDataColor = color))
 
   def withFallbackColor(color: Int): ColorMap =
-    new IntColorMap(breaksToColors, options.copy(fallbackColor = color))
+    new IntColorMap(breaksToColors, options.copy(fallbackColor =  color))
 
   def withBoundaryType(classBoundaryType: ClassBoundaryType): ColorMap =
     new IntColorMap(breaksToColors, options.copy(classBoundaryType = classBoundaryType))
@@ -282,7 +229,7 @@ class IntColorMap(breaksToColors: Map[Int, Int], val options: Options = Options.
   def cache(h: Histogram[Int]): ColorMap = {
     val ch = h.mutable
     h.foreachValue(z => ch.setItem(z, map(z)))
-    new IntCachedColorMap(orderedColors, ch, options)
+    new IntCachedColorMap(colors, ch, options)
   }
 
   def breaksString: String = {
@@ -348,61 +295,14 @@ class DoubleColorMap(breaksToColors: Map[Double, Int], val options: Options = Op
         breaksToColors.keys.toVector
     }
 
-  private val orderedColors: Vector[Int] = orderedBreaks.map(breaksToColors(_))
-  lazy val colors = orderedColors
+  lazy val colors = orderedBreaks.map(breaksToColors(_))
 
-  /** Yield a btree search predicate function based on boundary type options. */
-  private val branchPred: (Double, BTree[(Double, Int)]) => Either[Option[BTree[(Double, Int)]], (Double, Int)] = {
-    options.classBoundaryType match {
-      case LessThan => { (z, tree) => tree match {
-        case BTree(v, None, _)    if z < v._1                       => Right(v)
-        case BTree(v, Some(l), _) if z < v._1 && z >= l.greatest._1 => Right(v)
-        case BTree(v, l, _)       if z < v._1                       => Left(l)
-        case BTree(_, _, r)                                         => Left(r)
-      }}
-      case LessThanOrEqualTo => { (z, tree) => tree match {
-        case BTree(v, None, _)    if z <= v._1                      => Right(v)
-        case BTree(v, Some(l), _) if z <= v._1 && z > l.greatest._1 => Right(v)
-        case BTree(v, l, _)       if z < v._1                       => Left(l)
-        case BTree(_, _, r)                                         => Left(r)
-      }}
-      case Exact => { (z, tree) => tree match { /* Vanilla Binary Search */
-        case BTree(v, _, _) if z == v._1 => Right(v)
-        case BTree(v, l, _) if z < v._1  => Left(l)
-        case BTree(_, _, r)              => Left(r)
-      }}
-      case GreaterThanOrEqualTo => { (z, tree) => tree match {
-        case BTree(v, _, None)    if z >= v._1                    => Right(v)
-        case BTree(v, _, Some(r)) if z >= v._1 && z < r.lowest._1 => Right(v)
-        case BTree(v, l, _)       if z < v._1                     => Left(l)
-        case BTree(_, _, r)                                       => Left(r)
-      }}
-      case GreaterThan => { (z, tree) => tree match {
-        case BTree(v, _, None)    if z > v._1                     => Right(v)
-        case BTree(v, _, Some(r)) if z > v._1 && z <= r.lowest._1 => Right(v)
-        case BTree(v, l, _)       if z <= v._1                    => Left(l) /* (<=) is correct here! */
-        case BTree(_, _, r)                                       => Left(r)
-      }}
-    }
-  }
+  private val breakMap: BreakMap[Double, Int] =
+    new BreakMap(breaksToColors, options.strategy, { d => isNoData(d) })
 
-  /* Horrible assumption: `breaksToColors` isn't empty */
-  private lazy val colourTree: BTree[(Double, Int)] =
-    BTree.fromSortedSeq(breaksToColors.toIndexedSeq.sorted).get
+  def map(z: Int): Int = mapDouble(i2d(z))
 
-  def map(z: Int): Int = { mapDouble(i2d(z)) }
-
-  def mapDouble(z: Double): Int = {
-    if(isNoData(z)) {
-      options.noDataColor
-    } else {
-      colourTree.searchWith(z, branchPred) match {
-        case Some((_, colour)) => colour
-        case None if options.strict => sys.error(s"Value $z did not have an associated color and break")
-        case _ => options.fallbackColor
-      }
-    }
-  }
+  def mapDouble(z: Double): Int = breakMap(z)
 
   def mapColors(f: Int => Int): ColorMap =
     new DoubleColorMap(breaksToColors.map { case (key, color) => (key, f(color)) }, options)

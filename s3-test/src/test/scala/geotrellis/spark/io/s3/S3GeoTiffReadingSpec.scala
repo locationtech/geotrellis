@@ -42,7 +42,7 @@ class S3GeoTiffReadingSpec extends FunSpec
     val fromServer = GeoTiffReader.readSingleband(reader, false, true)
 
     it("should return the same geoTiff") {
-      assertEqual(fromLocal, fromServer)
+      assertEqual(fromLocal.tile, fromServer.tile)
     }
 
     it("should return the same cropped geotiff, edge") {
@@ -50,7 +50,7 @@ class S3GeoTiffReadingSpec extends FunSpec
       val actual = fromServer.crop(e)
       val expected = fromLocal.crop(e)
 
-      assertEqual(actual, expected)
+      assertEqual(actual.tile, expected.tile)
     }
 
     it("should return the same cropped geotiff, center") {
@@ -58,7 +58,7 @@ class S3GeoTiffReadingSpec extends FunSpec
       val actual = fromServer.crop(e)
       val expected = fromLocal.crop(e)
 
-      assertEqual(actual, expected)
+      assertEqual(actual.tile, expected.tile)
     }
   }
 
@@ -86,7 +86,7 @@ class S3GeoTiffReadingSpec extends FunSpec
     val extent = fromLocal.extent
 
     it("should return the same geotiff") {
-      assertEqual(fromLocal, fromServer)
+      assertEqual(fromLocal.tile, fromServer.tile)
     }
 
     it("should return the same cropped geotiff, edge") {
@@ -94,7 +94,7 @@ class S3GeoTiffReadingSpec extends FunSpec
       val actual = fromServer.crop(e)
       val expected = fromLocal.crop(e)
 
-      assertEqual(actual, expected)
+      assertEqual(actual.tile, expected.tile)
     }
 
     it("should return the same cropped geotiff, center") {
@@ -102,7 +102,7 @@ class S3GeoTiffReadingSpec extends FunSpec
       val actual = fromServer.crop(e)
       val expected = fromLocal.crop(e)
 
-      assertEqual(actual, expected)
+      assertEqual(actual.tile, expected.tile)
     }
   }
 }

@@ -60,6 +60,7 @@ package object raster
       with mapalgebra.local.LocalMethods
       with mapalgebra.zonal.ZonalMethods
       with mask.SinglebandTileMaskMethods
+      with matching.SinglebandMatchingMethods
       with merge.SinglebandTileMergeMethods
       with prototype.SinglebandTilePrototypeMethods
       with regiongroup.RegionGroupMethods
@@ -71,7 +72,7 @@ package object raster
       with sigmoidal.SinglebandSigmoidalMethods
       with split.SinglebandTileSplitMethods
       with summary.polygonal.PolygonalSummaryMethods
-      with summary.SummaryMethods
+      with summary.SinglebandTileSummaryMethods
       with vectorize.VectorizeMethods
       with viewshed.ViewshedMethods
 
@@ -79,6 +80,7 @@ package object raster
       with crop.MultibandTileCropMethods
       with equalization.MultibandEqualizationMethods
       with mask.MultibandTileMaskMethods
+      with matching.MultibandMatchingMethods
       with merge.MultibandTileMergeMethods
       with prototype.MultibandTilePrototypeMethods
       with render.MultibandColorMethods
@@ -88,6 +90,7 @@ package object raster
       with resample.MultibandTileResampleMethods
       with sigmoidal.MultibandSigmoidalMethods
       with split.MultibandTileSplitMethods
+      with summary.MultibandTileSummaryMethods
 
   implicit class withSinglebandRasterMethods(val self: SinglebandRaster) extends MethodExtensions[SinglebandRaster]
       with reproject.SinglebandRasterReprojectMethods

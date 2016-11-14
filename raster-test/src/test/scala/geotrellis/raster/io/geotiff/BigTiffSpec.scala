@@ -24,7 +24,7 @@ class BigTiffSpec extends FunSpec with RasterMatchers with GeoTiffTestUtils {
       val actual = SinglebandGeoTiff(reader)
       val expected = SinglebandGeoTiff(smallPath)
 
-      assertEqual(actual, expected)
+      assertEqual(actual.tile, expected.tile)
     }
 
     it("should read in a cropped SinlebandGeoTiff from the edge") {
@@ -37,7 +37,7 @@ class BigTiffSpec extends FunSpec with RasterMatchers with GeoTiffTestUtils {
       val actual = SinglebandGeoTiff(reader, e)
       val expected = SinglebandGeoTiff(smallPath, e)
 
-      assertEqual(actual, expected)
+      assertEqual(actual.tile, expected.tile)
     }
 
     it("should read in a cropped SinglebandGeoTiff in the middle") {
@@ -50,7 +50,7 @@ class BigTiffSpec extends FunSpec with RasterMatchers with GeoTiffTestUtils {
       val actual = SinglebandGeoTiff(reader, e)
       val expected = SinglebandGeoTiff(smallPath, e)
 
-      assertEqual(actual, expected)
+      assertEqual(actual.tile, expected.tile)
     }
 
     it("should read in the entire MultibandGeoTiff") {
@@ -59,7 +59,7 @@ class BigTiffSpec extends FunSpec with RasterMatchers with GeoTiffTestUtils {
       val actual = MultibandGeoTiff(reader)
       val expected = MultibandGeoTiff(smallPathMulti)
 
-      assertEqual(actual, expected)
+      assertEqual(actual.tile, expected.tile)
     }
 
     it("should read in a cropped MultibandGeoTiff from the edge") {
@@ -72,7 +72,7 @@ class BigTiffSpec extends FunSpec with RasterMatchers with GeoTiffTestUtils {
       val actual = MultibandGeoTiff(reader, e)
       val expected = MultibandGeoTiff(smallPathMulti, e)
 
-      assertEqual(actual, expected)
+      assertEqual(actual.tile, expected.tile)
     }
 
     it("should read in a cropped MultibandGeoTiff in the middle") {
@@ -85,7 +85,7 @@ class BigTiffSpec extends FunSpec with RasterMatchers with GeoTiffTestUtils {
       val actual = MultibandGeoTiff(reader, e)
       val expected = MultibandGeoTiff(smallPathMulti, e)
 
-      assertEqual(actual, expected)
+      assertEqual(actual.tile, expected.tile)
     }
   }
 }

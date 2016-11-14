@@ -17,7 +17,7 @@ class SinglebandCropIteratorSpec extends FunSpec
     val geoTiff = SinglebandGeoTiff(path)
     val cols = geoTiff.imageData.cols
     val rows = geoTiff.imageData.rows
-    
+
     it("should return the correct col and row iteration numbers for divisble subsections") {
       val windowedCols = 32
       val windowedRows = 32
@@ -45,22 +45,22 @@ class SinglebandCropIteratorSpec extends FunSpec
         new SinglebandCropIterator(geoTiff, windowedCols, windowedRows)
 
       val expected: Array[Tile] =
-        Array(geoTiff.crop(0, 0, 256, 256),
-          geoTiff.crop(256, 0, 512, 256),
-          geoTiff.crop(0, 256, 256, 512),
-          geoTiff.crop(256, 256, 512, 512))
+        Array(geoTiff.raster.crop(0, 0, 256, 256),
+          geoTiff.raster.crop(256, 0, 512, 256),
+          geoTiff.raster.crop(0, 256, 256, 512),
+          geoTiff.raster.crop(256, 256, 512, 512))
 
       val actual: Array[Tile] =
-        Array(singlebandIterator.next,
-          singlebandIterator.next, 
-          singlebandIterator.next, 
-          singlebandIterator.next)
+        Array(singlebandIterator.next.tile,
+          singlebandIterator.next.tile,
+          singlebandIterator.next.tile,
+          singlebandIterator.next.tile)
 
       cfor(0)(_ < actual.length, _ + 1) { i =>
         assertEqual(expected(i), actual(i))
       }
     }
-    
+
     it("should return the whole thing if the inputted dimensions are larger than the cols and rows") {
       val windowedCols = 950
       val windowedRows = 1300
@@ -68,11 +68,11 @@ class SinglebandCropIteratorSpec extends FunSpec
         new SinglebandCropIterator(geoTiff, windowedCols, windowedRows)
 
       val expected = geoTiff.tile
-      val actual = singlebandIterator.next
+      val actual = singlebandIterator.next.tile
 
       assertEqual(expected, actual)
     }
-    
+
     it("should return the correct windowedGeoTiffs with different dimensions") {
       val windowedCols = 250
       val windowedRows = 450
@@ -80,26 +80,26 @@ class SinglebandCropIteratorSpec extends FunSpec
         new SinglebandCropIterator(geoTiff, windowedCols, windowedRows)
 
       val expected: Array[Tile] =
-        Array(geoTiff.crop(0, 0, 250, 450),
-          geoTiff.crop(250, 0, 500, 450),
-          geoTiff.crop(500, 0, 512, 450),
-          geoTiff.crop(0, 450, 250, 512),
-          geoTiff.crop(250, 450, 500, 512),
-          geoTiff.crop(500, 450, 512, 512))
+        Array(geoTiff.raster.crop(0, 0, 250, 450),
+          geoTiff.raster.crop(250, 0, 500, 450),
+          geoTiff.raster.crop(500, 0, 512, 450),
+          geoTiff.raster.crop(0, 450, 250, 512),
+          geoTiff.raster.crop(250, 450, 500, 512),
+          geoTiff.raster.crop(500, 450, 512, 512))
 
       val actual: Array[Tile] =
-        Array(singlebandIterator.next,
-          singlebandIterator.next, 
-          singlebandIterator.next, 
-          singlebandIterator.next, 
-          singlebandIterator.next, 
-          singlebandIterator.next)
+        Array(singlebandIterator.next.tile,
+          singlebandIterator.next.tile,
+          singlebandIterator.next.tile,
+          singlebandIterator.next.tile,
+          singlebandIterator.next.tile,
+          singlebandIterator.next.tile)
 
       cfor(0)(_ < actual.length, _ + 1) { i =>
         assertEqual(expected(i), actual(i))
       }
     }
-    
+
     it("should say that there is another value when one actually exists") {
       val windowedCols = 256
       val windowedRows = 256
@@ -107,10 +107,10 @@ class SinglebandCropIteratorSpec extends FunSpec
         new SinglebandCropIterator(geoTiff, windowedCols, windowedRows)
 
       cfor(0)(_ < 3, _ + 1) { i =>
-        singlebandIterator.next
+        singlebandIterator.next.tile
         singlebandIterator.hasNext should be (true)
       }
-      singlebandIterator.next
+      singlebandIterator.next.tile
       singlebandIterator.hasNext should be (false)
     }
   }
