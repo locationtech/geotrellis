@@ -331,13 +331,26 @@ class DoubleColorMap(breaksToColors: Map[Double, Int], val options: Options = Op
  * Primarily used for capturing and persisting indexed color maps in GeoTIFFs. */
 class IndexedColorMap(indexedColors: Seq[Int]) extends IntColorMap(
   indexedColors.zipWithIndex.map(p ⇒ p._2 -> p._1).toMap
-)
+) {
+  override def toString = getClass.getSimpleName + "(" +
+    colors.map(c ⇒ f"0x$c%02x").mkString(", ") + ")"
+}
 
 object IndexedColorMap {
+  // As with GDAL, we need to pack each 16 bit color channel into 8 bits.
+  // GDAL just shifts and masks, effectively converting a 0-65535 range
+  // to a 0-255 one. These conversion approaches are similar to those used
+  // in the GDAL TIFF driver.
+  private def downsample(c: Int) = (c >> 8 & 0xFF).toShort
+  private def upsample(c: Int) = (c * 257).toShort
+
   /** Creates an IndexColorMap from sequence of RGB short values. */
-  def fromTiffPalette(tiffPalette: Seq[(Short, Short, Short)]) = new IndexedColorMap(
-    tiffPalette.map { case (red, green, blue) ⇒ RGB(red, green, blue)}
+  private[raster] def fromTiffPalette(tiffPalette: Seq[(Short, Short, Short)]) = new IndexedColorMap(
+    tiffPalette.map { case (red, green, blue) ⇒ RGB(downsample(red), downsample(green), downsample(blue))}
   )
+  private[raster] def toTiffPalette(cm: ColorMap): Seq[(Short, Short, Short)] =
+    cm.colors.map(c ⇒ (upsample(c.red), upsample(c.green), upsample(c.blue)))
+
   /** Flattens the given colormap into an indexed variant, throwing away any defined boundaries. */
   def fromColorMap(cm: ColorMap) = new IndexedColorMap(cm.colors)
 }

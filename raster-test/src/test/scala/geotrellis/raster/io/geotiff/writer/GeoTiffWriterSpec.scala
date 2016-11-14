@@ -16,16 +16,15 @@
 
 package geotrellis.raster.io.geotiff.writer
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
-import geotrellis.raster.io.geotiff.reader._
-import geotrellis.vector.Extent
-import geotrellis.proj4.CRS
-import geotrellis.proj4.LatLng
-import geotrellis.raster.testkit._
 import java.io._
 
+import geotrellis.proj4.{CRS, LatLng}
+import geotrellis.raster._
+import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.tags.codes.ColorSpace
+import geotrellis.raster.render.{ColorRamp, ColorRamps, IndexedColorMap}
+import geotrellis.raster.testkit._
+import geotrellis.vector.Extent
 import org.scalatest._
 
 class GeoTiffWriterSpec extends FunSpec
@@ -38,10 +37,11 @@ class GeoTiffWriterSpec extends FunSpec
   override def afterAll = purge
 
   private val testCRS = CRS.fromName("EPSG:3857")
+  private val testExtent = Extent(100.0, 400.0, 120.0, 420.0)
 
   describe ("writing GeoTiffs without errors and with correct tiles, crs and extent") {
     val temp = File.createTempFile("geotiff-writer", ".tif")
-    val path = temp.getPath()
+    val path = temp.getPath
 
     it("should write GeoTiff with tags") {
       val geoTiff = MultibandGeoTiff(geoTiffPath("multi-tag.tif"))
@@ -105,11 +105,10 @@ class GeoTiffWriterSpec extends FunSpec
       actualCRS.epsgCode should be (geoTiff.crs.epsgCode)
     }
 
-    it ("should write floating point rasters correctly") {
-      val e = Extent(100.0, 400.0, 120.0, 420.0)
+    it("should write floating point rasters correctly") {
       val t = DoubleArrayTile(Array(11.0, 22.0, 33.0, 44.0), 2, 2)
 
-      val geoTiff = SinglebandGeoTiff(t, e, testCRS, Tags.empty, GeoTiffOptions.DEFAULT)
+      val geoTiff = SinglebandGeoTiff(t, testExtent, testCRS, Tags.empty, GeoTiffOptions.DEFAULT)
 
       GeoTiffWriter.write(geoTiff, path)
 
@@ -210,20 +209,12 @@ class GeoTiffWriterSpec extends FunSpec
         assertEqual(actualBand, expectedBand)
       }
     }
+  }
+  describe ("writing GeoTiffs with correct color handling") {
+    val temp = File.createTempFile("geotiff-writer", ".tif")
+    val path = temp.getPath
 
-    it("should read photometric interpretation code") {
-      val expected = Map(
-        "colormap.tif" -> ColorSpace.Palette,
-        "multi-tag.tif" -> ColorSpace.RGB,
-        "alaska-polar-3572.tif" -> ColorSpace.BlackIsZero,
-        "3bands/bit/3bands-striped-band.tif" -> ColorSpace.RGB
-      )
 
-      Inspectors.forEvery(expected) {
-        case (file, space) ⇒
-          MultibandGeoTiff(geoTiffPath(file)).options.colorSpace should be (space)
-      }
-    }
 
     it("should write photometric interpretation code") {
       // Read in a 4-band file interpreted as RGB(A)
@@ -239,7 +230,47 @@ class GeoTiffWriterSpec extends FunSpec
 
       val reread = MultibandGeoTiff(path)
 
+      addToPurge(path)
+
       reread.options.colorSpace should be (ColorSpace.CMYK)
+    }
+
+    it("should write color map when photometric interpretation is 'Palette'") {
+      val hundreds = createConsecutiveTile(10).map(_ - 1).convert(ByteCellType)
+
+      val colorMap = ColorRamps.HeatmapBlueToYellowToRedSpectrum //ClassificationBoldLandUse
+        .stops(100)
+        .toColorMap(Array.tabulate[Int](100)(identity))
+      val indexedColorMap = IndexedColorMap.fromColorMap(colorMap)
+
+      val indexed = SinglebandGeoTiff(hundreds, testExtent, testCRS, Tags.empty, GeoTiffOptions(indexedColorMap))
+
+      GeoTiffWriter.write(indexed, path)
+
+      val reread = MultibandGeoTiff(path)
+
+      addToPurge(path)
+
+      reread.options.colorSpace should be (ColorSpace.Palette)
+      reread.options.colorMap should be('defined)
+
+      val p1 = reread.options.colorMap.get.colors
+      val p2 = indexed.options.colorMap.get.colors
+
+      Inspectors.forEvery(p1.zip(p2)) { case (c1, c2) ⇒
+        c1 should equal (c2)
+      }
+    }
+
+    it("should write preserve color map in existing file") {
+      val base = MultibandGeoTiff(geoTiffPath("colormap.tif"))
+      GeoTiffWriter.write(base, path)
+
+      val reread = MultibandGeoTiff(path)
+
+      addToPurge(path)
+
+      reread.options.colorMap should equal (base.options.colorMap)
     }
   }
 }

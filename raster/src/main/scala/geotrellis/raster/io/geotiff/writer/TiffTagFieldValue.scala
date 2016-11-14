@@ -6,8 +6,10 @@ import geotrellis.raster.io.geotiff.tags.codes._
 import geotrellis.raster.io.geotiff.tags.codes.TagCodes._
 import geotrellis.raster.io.geotiff.tags.codes.TiffFieldType._
 import geotrellis.vector.Extent
-
 import java.nio.ByteOrder
+
+import geotrellis.raster.render.IndexedColorMap
+
 import scala.collection.mutable
 import spire.syntax.cfor._
 
@@ -77,8 +79,28 @@ object TiffTagFieldValue {
     fieldValues += TiffTagFieldValue(PlanarConfigurationTag, ShortsFieldType, 1, PlanarConfigurations.PixelInterleave)
     fieldValues += TiffTagFieldValue(SampleFormatTag, ShortsFieldType, 1, imageData.bandType.sampleFormat)
 
-    if(geoTiff.options.colorSpace == ColorSpace.Palette && geoTiff.options.colorMap.isDefined) {
-      fieldValues += TiffTagFieldValue(ColorMapTag, ShortsFieldType, 1, -1) //geoTiff.options.colorMap.get)
+    if(geoTiff.options.colorSpace == ColorSpace.Palette) {
+
+      val bitsPerSample = imageData.bandType.bitsPerSample
+      val divider = 1 << bitsPerSample
+
+      for {
+        cmap ← geoTiff.options.colorMap
+        palette = IndexedColorMap.toTiffPalette(cmap)
+        size = math.min(palette.size, divider)
+      } {
+        // Indexed color palette is stored as three consecutive arrays containing
+        // red, green, and blue values, in that order
+        val flattenedPalette = Array.ofDim[Short](divider * 3)
+        cfor(0)(_ < size, _ + 1) { i =>
+          val c = palette(i)
+          flattenedPalette(i) = c._1
+          flattenedPalette(i + divider) = c._2
+          flattenedPalette(i + divider * 2) = c._3
+        }
+
+        fieldValues += TiffTagFieldValue(ColorMapTag, ShortsFieldType, flattenedPalette.length, toBytes(flattenedPalette))
+      }
     }
 
     createNoDataString(geoTiff.cellType) match {

@@ -409,17 +409,6 @@ object TiffTagsReader {
     }
 
     def setColorMap(tiffTags: TiffTags, shorts: Array[Int]): TiffTags = {
-      val bitsPerSample = tiffTags &|->
-        TiffTags._basicTags ^|->
-        BasicTags._bitsPerSample get
-
-      // As with GDAL, we need to pack each 16 bit color channel into 8 bits.
-      // GDAL just shifts and masks, effectively converting a 0-65535 range
-      // to a 0-255 one.
-      def conv(c: Int) = if(bitsPerSample >= 8)
-        (c >> 8 & 0xFF).toShort
-      else c.toShort
-
       if ((tiffTags &|->
         TiffTags._basicTags ^|->
         BasicTags._photometricInterp get) == 3) {
@@ -430,9 +419,9 @@ object TiffTagsReader {
         val arr = Array.ofDim[(Short, Short, Short)](divider)
         cfor(0)(_ < divider, _ + 1) { i =>
           arr(i) = (
-            conv(shorts(i)),
-            conv(shorts(i + divider)),
-            conv(shorts(i + 2 * divider))
+            shorts(i).toShort,
+            shorts(i + divider).toShort,
+            shorts(i + 2 * divider).toShort
             )
         }
 

@@ -16,27 +16,18 @@
 
 package geotrellis.raster.io.geotiff.reader
 
+import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.io.arg._
 import geotrellis.raster.io.geotiff._
-import geotrellis.raster.io.geotiff.util._
 import geotrellis.raster.io.geotiff.tags._
-import geotrellis.raster.summary.polygonal._
-import geotrellis.vector.{Extent, Point}
+import geotrellis.raster.io.geotiff.tags.codes.ColorSpace
+import geotrellis.raster.render.RGB
 import geotrellis.raster.testkit._
-import geotrellis.proj4._
+import geotrellis.vector.{Extent, Point}
 import monocle.syntax.apply._
-import org.scalactic.Tolerance
-
-import scala.io.{Codec, Source}
-import scala.collection.immutable.HashMap
-import java.util.BitSet
-import java.nio.ByteBuffer
-
-import geotrellis.raster.io.geotiff.writer.TiffTagFieldValue
-import geotrellis.raster.render.{RGB, RGBA}
-import spire.syntax.cfor._
 import org.scalatest._
+import spire.syntax.cfor._
 
 class GeoTiffReaderSpec extends FunSpec
     with Matchers
@@ -80,8 +71,6 @@ class GeoTiffReaderSpec extends FunSpec
     val tile = compressed.tile
     val bounds = tile.gridBounds
     bounds.width should be (1121)
-
-    import Tolerance._
     compressed.crs should be (CRS.fromName("EPSG:4326"))
     if(compressed.extent.min.distance(Point(59.9955397,  30.0044603))>0.0001) {
       compressed.extent.min should be (Point(59.9955397,  30.0044603))
@@ -473,6 +462,21 @@ class GeoTiffReaderSpec extends FunSpec
       geoTiff.tile.cellType should be (ByteConstantNoDataCellType)
     }
 
+    it("should read photometric interpretation code") {
+      val expected = Map(
+        "colormap.tif" -> ColorSpace.Palette,
+        "multi-tag.tif" -> ColorSpace.RGB,
+        "alaska-polar-3572.tif" -> ColorSpace.BlackIsZero,
+        "3bands/bit/3bands-striped-band.tif" -> ColorSpace.RGB
+      )
+
+      Inspectors.forEvery(expected) {
+        case (file, space) ⇒
+          MultibandGeoTiff(geoTiffPath(file)).options.colorSpace should be (space)
+      }
+    }
+
+
     it("should read and convert color table") {
       val geoTiff = SinglebandGeoTiff.compressed(geoTiffPath("colormap.tif"))
 
@@ -480,8 +484,12 @@ class GeoTiffReaderSpec extends FunSpec
 
       val cmap = geoTiff.options.colorMap.get
       cmap.colors.size should be (256)
-      // This was determined by inspecting the color table
+      // These was determined by inspecting the color table
+      cmap.map(0) should be (RGB(0, 0, 0))
+      cmap.map(1) should be (RGB(0, 249, 0))
       cmap.map(12) should be (RGB(209, 221, 249))
+      cmap.map(95) should be (RGB(112, 163, 186))
+      cmap.map(255) should be (RGB(0, 0, 0))
     }
   }
 
