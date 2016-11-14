@@ -85,7 +85,8 @@ lazy val root = Project("geotrellis", file(".")).
     geomesa,
     geotools,
     slick,
-    vectortile
+    vectortile,
+		python
   ).
   settings(commonSettings: _*).
   settings(
@@ -190,6 +191,10 @@ lazy val geowave = Project("geowave", file("geowave")).
 
 lazy val shapefile = Project("shapefile", file("shapefile")).
   dependsOn(raster, rasterTestkit % "test").
+  settings(commonSettings: _*)
+
+lazy val python = Project("python", file("python")).
+  dependsOn(util, raster).
   settings(commonSettings: _*)
 
 lazy val util = Project("util", file("util")).
