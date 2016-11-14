@@ -171,9 +171,9 @@ trait ByteReaderExtensions {
 
       arr
     }
-
+		
+		/** NOTE: We don't support lengths greater than Int.MaxValue yet (or ever). */
     final def getSignedByteArray(length: Long, valueOffset: Long): Array[Byte] = {
-      // NOTE: We don't support lengths greater than Int.MaxValue yet (or ever).
       val len = length.toInt
       if (length <= 4) {
         val arr = Array.ofDim[Byte](len)

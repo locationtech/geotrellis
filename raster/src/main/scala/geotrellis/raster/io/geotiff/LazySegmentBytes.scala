@@ -15,7 +15,6 @@ import spire.syntax.cfor._
  * This class implements [[SegmentBytes]] via a ByteReader.
  *
  * @param byteReader: A ByteReader that contains bytes of the GeoTiff
- * @param storageMethod: The [[StorageMethod]] of the GeoTiff
  * @param tifftags: The [[TiffTags]] of the GeoTiff
  * @return A new instance of LazySegmentBytes
  */

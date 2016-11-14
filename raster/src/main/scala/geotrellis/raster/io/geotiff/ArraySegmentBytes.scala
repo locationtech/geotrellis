@@ -37,7 +37,6 @@ object ArraySegmentBytes {
     *  Creates a new instance of ArraySegmentBytes.
     *
     *  @param  byteReader  A ByteReader that contains the bytes of the GeoTiff
-    *  @param  byteBuffer  A ByteBuffer that contains the bytes of the GeoTiff
     *  @param  tiffTags    The [[geotrellis.raster.io.geotiff.tags.TiffTags]] of the GeoTiff
     *  @return             A new instance of ArraySegmentBytes
     */
@@ -46,8 +45,6 @@ object ArraySegmentBytes {
       val compressedBytes: Array[Array[Byte]] = {
         def readSections(offsets: Array[Long],
           byteCounts: Array[Long]): Array[Array[Byte]] = {
-            val oldOffset = byteReader.position
-
             val result = Array.ofDim[Array[Byte]](offsets.size)
 
             cfor(0)(_ < offsets.size, _ + 1) { i =>
