@@ -262,7 +262,7 @@ class GeoTiffWriterSpec extends FunSpec
       }
     }
 
-    it("should write preserve color map in existing file") {
+    it("should preserve color map in existing file") {
       val base = MultibandGeoTiff(geoTiffPath("colormap.tif"))
       GeoTiffWriter.write(base, path)
 
@@ -270,7 +270,12 @@ class GeoTiffWriterSpec extends FunSpec
 
       addToPurge(path)
 
-      reread.options.colorMap should equal (base.options.colorMap)
+      val p1 = reread.options.colorMap.get.colors
+      val p2 = base.options.colorMap.get.colors
+
+      Inspectors.forEvery(p1.zip(p2)) { case (c1, c2) ⇒
+        c1 should equal (c2)
+      }
     }
   }
 }
