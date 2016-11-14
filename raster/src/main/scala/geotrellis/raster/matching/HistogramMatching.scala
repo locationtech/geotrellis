@@ -28,11 +28,12 @@ object HistogramMatching {
   private val cmp = new BucketComparator
 
   /**
-    * An implementation of the compound transformation referred to in
-    * the citation given above.  The idea is to transform from the
-    * source histogram to an equalized one, then transform from the
-    * equalized one to the target one via the inverse of the
-    * transformation that would equalize the target one.
+    * An implementation of the second part of the compound
+    * transformation referred to in the citation given above.  The
+    * idea is to transform from the source histogram to an equalized
+    * one, then transform from the equalized one to the target one via
+    * the inverse of the transformation that would equalize the target
+    * one.
     */
   @inline private def transform(
     targetCdf: Array[(Double, Double)], fn: (Double => Double)
