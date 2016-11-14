@@ -116,7 +116,7 @@ class GeoTiffWriterSpec extends FunSpec
 
       val SinglebandGeoTiff(tile, extent, crs, _, _) = SinglebandGeoTiff(path)
 
-      extent should equal (e)
+      extent should equal (testExtent)
       crs should equal (testCRS)
       assertEqual(tile, t)
     }
