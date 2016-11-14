@@ -16,12 +16,12 @@ object PytonGatewayServer {
 			println(s"Started the PythonGatewayServer on port $boundPort")
 
 		val pythonHost = sys.env("_PYTHON_HOST")
-		val pythoPort = sys.env("_PYTHON_PORT").toInt
+		val pythonPort = sys.env("_PYTHON_PORT").toInt
 
 		println(s"The python host and port is $pythonHost:$pythonPort")
 
 		val pythonSocket = new Socket(pythonHost, pythonPort)
-		val dos = new DataOuptStream(pythonSocket.getOutputStream)
+		val dos = new DataOutputStream(pythonSocket.getOutputStream)
 
 		dos.writeInt(boundPort)
 		dos.close()
