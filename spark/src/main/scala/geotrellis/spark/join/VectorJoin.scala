@@ -1,8 +1,9 @@
 package geotrellis.spark.join
 
-import geotrellis.vector._
 import geotrellis.spark._
 import geotrellis.spark.tiling._
+import geotrellis.util.annotations.experimental
+import geotrellis.vector._
 
 import com.vividsolutions.jts.geom.{ Envelope => JtsEnvelope }
 import com.vividsolutions.jts.index.strtree.STRtree
@@ -14,9 +15,9 @@ import org.apache.spark.SparkContext._
 import scala.collection.JavaConverters._
 import scala.reflect._
 
-
+@experimental
 object VectorJoin {
-
+  @experimental
   def unflattened[
     L: ClassTag : ? => Geometry,
     R: ClassTag : ? => Geometry
