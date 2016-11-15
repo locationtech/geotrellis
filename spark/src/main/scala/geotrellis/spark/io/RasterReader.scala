@@ -1,34 +1,32 @@
-package geotrellis.spark.io.geotiff
+package geotrellis.spark.io
+
+import java.time.format.DateTimeFormatter
+import java.time.{ZoneOffset, ZonedDateTime}
 
 import geotrellis.proj4._
-import geotrellis.vector.ProjectedExtent
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.spark._
 import geotrellis.util.{ByteReader, StreamingByteReader}
-
-import java.time.{ZoneOffset, ZonedDateTime}
-import java.time.format.DateTimeFormatter
-
+import geotrellis.vector.ProjectedExtent
 import spire.syntax.cfor._
 
 
 /**
-  * Type class to read a GeoTiff either fully or partially from a ByteReader.
+  * Type class to read a raster either fully or partially from a ByteReader.
   * This abstracts over the different ways to represent a GeoTiff values and different ways to key it.
   *
   * Option object is a type parameter such that novel ways of GeoTiff parsing can be provided by the user.
   *
-  * @tparam O Options type that is used to configure the GeoTiff reading
-  * @tparam K Key type to be constructed from GeoTiff tags
-  * @tparam V Value type to hold the GeoTiff data
+  * @tparam O Options type that is used to configure the raster reading
+  * @tparam R Result of reading the raster bytes either fully or as a pixel window
   */
-trait GeoTiffReader[-O, K, V] extends Serializable {
-  def readFully(byteReader: ByteReader, options: O): (K, V)
-  def readWindow(byteReader: StreamingByteReader, pixelWindow: GridBounds, options: O): (K, V)
+trait RasterReader[-O, R] extends Serializable {
+  def readFully(byteReader: ByteReader, options: O): R
+  def readWindow(byteReader: StreamingByteReader, pixelWindow: GridBounds, options: O): R
 }
 
-object GeoTiffReader {
+object RasterReader {
   trait Options {
     def crs: Option[CRS]
     def timeTag: String
@@ -64,7 +62,7 @@ object GeoTiffReader {
     result.toArray
   }
 
-  implicit def singlebandGeoTiffReader = new GeoTiffReader[Options, ProjectedExtent, Tile]  {
+  implicit def singlebandGeoTiffReader = new RasterReader[Options, (ProjectedExtent, Tile)]  {
     def readFully(byteReader: ByteReader, options: Options) = {
       val geotiff = SinglebandGeoTiff(byteReader)
       val raster: Raster[Tile] = geotiff.raster
@@ -78,7 +76,7 @@ object GeoTiffReader {
     }
   }
 
-  implicit def multibandGeoTiffReader = new GeoTiffReader[Options, ProjectedExtent, MultibandTile]  {
+  implicit def multibandGeoTiffReader = new RasterReader[Options, (ProjectedExtent, MultibandTile)]  {
     def readFully(byteReader: ByteReader, options: Options) = {
       val geotiff = MultibandGeoTiff(byteReader)
       val raster: Raster[MultibandTile] = geotiff.raster
@@ -92,7 +90,7 @@ object GeoTiffReader {
     }
   }
 
-  implicit def temporalSinglebandGeoTiffReader = new GeoTiffReader[Options, TemporalProjectedExtent, Tile]  {
+  implicit def temporalSinglebandGeoTiffReader = new RasterReader[Options, (TemporalProjectedExtent, Tile)]  {
     def readFully(byteReader: ByteReader, options: Options) = {
       val geotiff = SinglebandGeoTiff(byteReader)
       val raster: Raster[Tile] = geotiff.raster
@@ -111,7 +109,7 @@ object GeoTiffReader {
   }
 
 
-  implicit def temporalMultibandGeoTiffReader = new GeoTiffReader[Options, TemporalProjectedExtent, MultibandTile]  {
+  implicit def temporalMultibandGeoTiffReader = new RasterReader[Options, (TemporalProjectedExtent, MultibandTile)]  {
     def readFully(byteReader: ByteReader, options: Options) = {
       val geotiff = MultibandGeoTiff(byteReader)
       val raster: Raster[MultibandTile] = geotiff.raster

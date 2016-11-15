@@ -6,7 +6,7 @@ import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.spark._
-import geotrellis.spark.io.geotiff.GeoTiffReader
+import geotrellis.spark.io.RasterReader
 import geotrellis.spark.io.s3.util.S3RangeReader
 import geotrellis.util.StreamingByteReader
 import geotrellis.vector._
@@ -46,7 +46,7 @@ object S3GeoTiffRDD {
     partitionBytes: Option[Long] = None,
     chunkSize: Option[Int] = None,
     getS3Client: () => S3Client = () => S3Client.DEFAULT
-  ) extends GeoTiffReader.Options
+  ) extends RasterReader.Options
 
   object Options {
     def DEFAULT = Options()
@@ -78,7 +78,7 @@ object S3GeoTiffRDD {
     * @param options  An instance of [[Options]] that contains any user defined or default settings.
     */
   def apply[K, V](bucket: String, prefix: String, options: Options = Options.DEFAULT)
-    (implicit sc: SparkContext, gtr: GeoTiffReader[Options, K, V]): RDD[(K, V)] = {
+    (implicit sc: SparkContext, rr: RasterReader[Options, (K, V)]): RDD[(K, V)] = {
 
     val conf = configuration(bucket, prefix, options)
 
@@ -100,7 +100,7 @@ object S3GeoTiffRDD {
           classOf[String],
           classOf[Array[Byte]]
         ).mapPartitions(
-          _.map { case (_, bytes) => gtr.readFully(ByteBuffer.wrap(bytes), options) },
+          _.map { case (_, bytes) => rr.readFully(ByteBuffer.wrap(bytes), options) },
           preservesPartitioning = true
         )
 
@@ -114,12 +114,12 @@ object S3GeoTiffRDD {
     * @param options An instance of [[Options]] that contains any user defined or default settings.
     */
   def apply[K, V](objectRequestsToDimensions: RDD[(GetObjectRequest, (Int, Int))], options: Options)
-    (implicit gtr: GeoTiffReader[Options, K, V]): RDD[(K, V)] = {
+    (implicit rr: RasterReader[Options, (K, V)]): RDD[(K, V)] = {
 
     val windows =
       objectRequestsToDimensions
         .flatMap { case (objectRequest, (cols, rows)) =>
-          GeoTiffReader.listWindows(cols, rows, options.maxTileSize).map((objectRequest, _))
+          RasterReader.listWindows(cols, rows, options.maxTileSize).map((objectRequest, _))
         }
 
     // Windowed reading may have produced unbalanced partitions due to files of differing size
@@ -137,7 +137,7 @@ object S3GeoTiffRDD {
           StreamingByteReader(S3RangeReader(objectRequest, options.getS3Client()))
       }
 
-      gtr.readWindow(reader, pixelWindow, options)
+      rr.readWindow(reader, pixelWindow, options)
     }
   }
 

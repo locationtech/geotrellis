@@ -7,7 +7,7 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.spark._
-import geotrellis.spark.io.geotiff.GeoTiffReader
+import geotrellis.spark.io.RasterReader
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.util.StreamingByteReader
 import geotrellis.vector.ProjectedExtent
@@ -25,7 +25,7 @@ object HadoopGeoTiffRDD {
   /**
     * This case class contains the various parameters one can set when reading RDDs from Hadoop using Spark.
     *
-    * @param extensions    Read all file with an extension contained in the given list.
+    * @param tiffExtensions Read all file with an extension contained in the given list.
     * @param crs           Override CRS of the input files. If [[None]], the reader will use the file's original CRS.
     * @param timeTag       Name of tiff tag containing the timestamp for the tile.
     * @param timeFormat    Pattern for [[java.time.format.DateTimeFormatter]] to parse timeTag.
@@ -44,7 +44,7 @@ object HadoopGeoTiffRDD {
     maxTileSize: Option[Int] = None,
     numPartitions: Option[Int] = None,
     chunkSize: Option[Int] = None
-  ) extends GeoTiffReader.Options
+  ) extends RasterReader.Options
 
   object Options {
     def DEFAULT = Options()
@@ -68,7 +68,7 @@ object HadoopGeoTiffRDD {
     * @param path     Hdfs GeoTiff path.
     * @param options  An instance of [[Options]] that contains any user defined or default settings.
     */
-  def apply[K, V](path: Path, options: Options = Options.DEFAULT)(implicit sc: SparkContext, gtr: GeoTiffReader[Options, K, V]): RDD[(K, V)] = {
+  def apply[K, V](path: Path, options: Options = Options.DEFAULT)(implicit sc: SparkContext, rr: RasterReader[Options, (K, V)]): RDD[(K, V)] = {
     val conf = configuration(path, options)
     options.maxTileSize match {
       case Some(tileSize) =>
@@ -88,7 +88,7 @@ object HadoopGeoTiffRDD {
           classOf[Path],
           classOf[Array[Byte]]
         ).mapPartitions(
-          _.map { case (_, bytes) => gtr.readFully(ByteBuffer.wrap(bytes), options) },
+          _.map { case (_, bytes) => rr.readFully(ByteBuffer.wrap(bytes), options) },
           preservesPartitioning = true
         )
     }
@@ -101,14 +101,14 @@ object HadoopGeoTiffRDD {
     * @param options            An instance of [[Options]] that contains any user defined or default settings.
    */
   def apply[K, V](pathsToDimensions: RDD[(Path, (Int, Int))], options: Options)
-    (implicit gtr: GeoTiffReader[Options, K, V]): RDD[(K, V)] = {
+    (implicit rr: RasterReader[Options, (K, V)]): RDD[(K, V)] = {
 
     val conf = new SerializableConfiguration(pathsToDimensions.sparkContext.hadoopConfiguration)
 
     val windows: RDD[(Path, GridBounds)] =
       pathsToDimensions
         .flatMap { case (objectRequest, (cols, rows)) =>
-          GeoTiffReader.listWindows(cols, rows, options.maxTileSize).map((objectRequest, _))
+          RasterReader.listWindows(cols, rows, options.maxTileSize).map((objectRequest, _))
         }
 
     // Windowed reading may have produced unbalanced partitions due to files of differing size
@@ -126,7 +126,7 @@ object HadoopGeoTiffRDD {
           StreamingByteReader(HdfsRangeReader(path, conf.value))
       }
 
-      gtr.readWindow(reader, pixelWindow, options)
+      rr.readWindow(reader, pixelWindow, options)
     }
   }
 
