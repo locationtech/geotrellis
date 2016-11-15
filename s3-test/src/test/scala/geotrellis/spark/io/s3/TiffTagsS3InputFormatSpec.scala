@@ -22,7 +22,7 @@ class TiffTagsS3InputFormatSpec extends FunSpec with Matchers with TestEnvironme
       val job = sc.newJob("tifftags-ingest")
       S3InputFormat.setUrl(job, url)
       S3InputFormat.setAnonymous(job)
-      S3InputFormat.setCreateS3Client(conf, () => new MockS3Client)
+      S3InputFormat.setCreateS3Client(job, () => new MockS3Client)
       val source = sc.newAPIHadoopRDD(
         job.getConfiguration,
         classOf[TiffTagsS3InputFormat],
