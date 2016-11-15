@@ -227,7 +227,7 @@ class PolygonRasterizerSpec extends FunSuite
     s.size should be (25)
   }
 
-  test("Polygon w/ non-point pixels, w/o partial cells, not contianing border center cells") {
+  test("Polygon w/ non-point pixels, w/o partial cells, not containing border center cells") {
     val extent = Extent(0, 0, 10, 10)
     val rasterExtent = RasterExtent(extent, 10, 10)
     val extent2 = Extent(0.7, 0.7, 9.3, 9.3)
@@ -240,7 +240,7 @@ class PolygonRasterizerSpec extends FunSuite
     assert(s.size < 100)
   }
 
-  test("Polygon w/ non-point pixels and partial cells, not contianing border center cells") {
+  test("Polygon w/ non-point pixels and partial cells, not containing border center cells") {
     val extent = Extent(0, 0, 10, 10)
     val rasterExtent = RasterExtent(extent, 10, 10)
     val extent2 = Extent(0.7, 0.7, 9.3, 9.3)
@@ -539,5 +539,89 @@ class PolygonRasterizerSpec extends FunSuite
 
     count should be (0)
     // println(GeoTiff(tile, e, LatLng).tile.asciiDraw)
+  }
+
+  test("Small triangle w/ non-point pixels (1/4)") {
+    /*
+      ND ND  1
+      ND  1  1
+      ND ND  1
+     */
+    val tiny3 = Polygon(Point(50, 48), Point(99, 32), Point(99, 68), Point(50,48))
+    val e = Extent(0,0,100,100)
+    val re = RasterExtent(e, 3, 3)
+    val ro = Options(includePartial = true, sampleType=PixelIsArea)
+    val tile = IntArrayTile.empty(3,3)
+    var count = 0
+
+    PolygonRasterizer.foreachCellByPolygon(tiny3, re, ro)({ (col, row) =>
+      tile.set(col, row, 1)
+      count += 1
+    })
+
+    count should be (4)
+  }
+
+  test("Small triangle w/ non-point pixels (2/4)") {
+    /*
+      1  ND  ND
+      1   1  ND
+      1  ND  ND
+     */
+    val tiny3 = Polygon(Point(50, 48), Point(1, 32), Point(1, 68), Point(50, 48))
+    val e = Extent(0,0,100,100)
+    val re = RasterExtent(e, 3, 3)
+    val ro = Options(includePartial = true, sampleType=PixelIsArea)
+    val tile = IntArrayTile.empty(3,3)
+    var count = 0
+
+    PolygonRasterizer.foreachCellByPolygon(tiny3, re, ro)({ (col, row) =>
+      tile.set(col, row, 1)
+      count += 1
+    })
+
+    count should be (4)
+  }
+
+  test("Small triangle w/ non-point pixels (3/4)") {
+    /*
+       1  1  1
+      ND  1 ND
+      ND ND ND
+     */
+    val tiny3 = Polygon(Point(48, 50), Point(32, 99), Point(68, 99), Point(48, 50))
+    val e = Extent(0,0,100,100)
+    val re = RasterExtent(e, 3, 3)
+    val ro = Options(includePartial = true, sampleType=PixelIsArea)
+    val tile = IntArrayTile.empty(3,3)
+    var count = 0
+
+    PolygonRasterizer.foreachCellByPolygon(tiny3, re, ro)({ (col, row) =>
+      tile.set(col, row, 1)
+      count += 1
+    })
+
+    count should be (4)
+  }
+
+  test("Small triangle w/ non-point pixels (4/4)") {
+    /*
+      ND  ND  ND
+      ND  1   ND
+      1   1   1
+     */
+    val tiny3 = Polygon(Point(48, 50), Point(32, 1), Point(68, 1), Point(48, 50))
+    val e = Extent(0,0,100,100)
+    val re = RasterExtent(e, 3, 3)
+    val ro = Options(includePartial = true, sampleType=PixelIsArea)
+    val tile = IntArrayTile.empty(3,3)
+    var count = 0
+
+    PolygonRasterizer.foreachCellByPolygon(tiny3, re, ro)({ (col, row) =>
+      tile.set(col, row, 1)
+      count += 1
+    })
+
+    count should be (4)
   }
 }
