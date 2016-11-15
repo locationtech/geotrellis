@@ -22,7 +22,7 @@ import geotrellis.proj4.{CRS, LatLng}
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.tags.codes.ColorSpace
-import geotrellis.raster.render.{ColorRamp, ColorRamps, IndexedColorMap}
+import geotrellis.raster.render.{ColorRamps, IndexedColorMap}
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
 import org.scalatest._
@@ -238,7 +238,7 @@ class GeoTiffWriterSpec extends FunSpec
     it("should write color map when photometric interpretation is 'Palette'") {
       val hundreds = createConsecutiveTile(10).map(_ - 1).convert(ByteCellType)
 
-      val colorMap = ColorRamps.HeatmapBlueToYellowToRedSpectrum //ClassificationBoldLandUse
+      val colorMap = ColorRamps.HeatmapBlueToYellowToRedSpectrum
         .stops(100)
         .toColorMap(Array.tabulate[Int](100)(identity))
       val indexedColorMap = IndexedColorMap.fromColorMap(colorMap)
@@ -263,7 +263,7 @@ class GeoTiffWriterSpec extends FunSpec
     }
 
     it("should preserve color map in existing file") {
-      val base = MultibandGeoTiff(geoTiffPath("colormap.tif"))
+      val base = SinglebandGeoTiff(geoTiffPath("colormap.tif"))
       GeoTiffWriter.write(base, path)
 
       val reread = MultibandGeoTiff(path)
@@ -275,6 +275,18 @@ class GeoTiffWriterSpec extends FunSpec
 
       Inspectors.forEvery(p1.zip(p2)) { case (c1, c2) ⇒
         c1 should equal (c2)
+      }
+    }
+
+    it("should inhibit writing unsupported 'Palette' color map configuration") {
+      val base = SinglebandGeoTiff(geoTiffPath("colormap.tif"))
+      val illegal = Seq(FloatCellType, DoubleCellType, IntCellType)
+
+      Inspectors.forEvery(illegal) { cellType ⇒
+        val naughty = base.copy(tile = base.tile.convert(cellType))
+        intercept[IncompatibleGeoTiffOptionsException] {
+          GeoTiffWriter.write(naughty, path)
+        }
       }
     }
   }

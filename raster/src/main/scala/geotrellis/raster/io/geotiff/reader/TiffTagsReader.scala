@@ -408,7 +408,7 @@ object TiffTagsReader {
       }
     }
 
-    def setColorMap(tiffTags: TiffTags, shorts: Array[Int]): TiffTags = {
+    def setColorMap(tiffTags: TiffTags, shorts: Array[Int]): TiffTags =
       if ((tiffTags &|->
         TiffTags._basicTags ^|->
         BasicTags._photometricInterp get) == 3) {
@@ -422,17 +422,15 @@ object TiffTagsReader {
             shorts(i).toShort,
             shorts(i + divider).toShort,
             shorts(i + 2 * divider).toShort
-            )
+          )
         }
 
         (tiffTags &|->
           TiffTags._basicTags ^|->
           BasicTags._colorMap set arr.toSeq)
-      }
-      else throw new MalformedGeoTiffException(
+      } else throw new MalformedGeoTiffException(
         "Colormap without Photometric Interpetation = 3."
       )
-    }
 
     def readIntsTag(tiffTags: TiffTags,
       tagMetadata: TiffTagMetadata) = {

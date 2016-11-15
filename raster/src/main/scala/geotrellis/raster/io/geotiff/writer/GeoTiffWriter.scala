@@ -16,22 +16,15 @@
 
 package geotrellis.raster.io.geotiff.writer
 
-import geotrellis.raster._
-import geotrellis.raster.io._
 import geotrellis.raster.io.geotiff._
-import geotrellis.vector.Extent
-import geotrellis.proj4.CRS
 
-import geotrellis.raster.io.geotiff.tags.codes._
-import scala.collection.mutable
+import spire.syntax.cfor._
 
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.ByteOrder
-
-import spire.syntax.cfor._
 
 object GeoTiffWriter {
   def write(geoTiff: GeoTiffData, path: String): Unit = {
@@ -201,4 +194,15 @@ class GeoTiffWriter(geoTiff: GeoTiffData, dos: DataOutputStream) {
 
     dos.flush()
   }
+}
+
+/**
+ * This exception may be thrown by [[GeoTiffWriter]] in the case where a combination of color space,
+ * color map, and sample depth are not supported by the GeoTiff specification. A specific case is
+ * when [[GeoTiffOptions.colorSpace]] is set to [[geotrellis.raster.io.geotiff.tags.codes.ColorSpace.Palette]]
+ * and [[GeoTiffOptions.colorMap]] is `None` and/or the raster's [[geotrellis.raster.CellType]] is not an 8-bit
+ * or 16-bit integral value.
+ */
+class IncompatibleGeoTiffOptionsException(msg: String, cause: Throwable) extends RuntimeException(msg, cause) {
+  def this(msg: String) = this(msg, null)
 }
