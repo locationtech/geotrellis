@@ -199,7 +199,7 @@ lazy val python = Project("python", file("python")).
   settings(commonSettings: _*)
 
 lazy val api = Project("api", file("api")).
-  dependsOn(util, raster).
+  dependsOn(util, raster, proj4, vector, spark, s3).
   settings(commonSettings: _*)
 
 lazy val util = Project("util", file("util")).
