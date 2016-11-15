@@ -100,5 +100,5 @@ trait S3RDDWriter {
 }
 
 object S3RDDWriter extends S3RDDWriter {
-  def getS3Client: () => S3Client = () => S3Client.default
+  def getS3Client: () => S3Client = () => S3Client.DEFAULT
 }

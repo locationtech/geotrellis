@@ -67,5 +67,5 @@ trait S3CollectionReader {
 }
 
 object S3CollectionReader extends S3CollectionReader {
-  def getS3Client: () => S3Client = () => S3Client.default
+  def getS3Client: () => S3Client = () => S3Client.DEFAULT
 }

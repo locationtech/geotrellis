@@ -46,7 +46,7 @@ case class SinglebandGeoTiff(
 
     SinglebandGeoTiff(raster, subExtent, this.crs)
   }
-  
+
   def crop(colMax: Int, rowMax: Int): SinglebandGeoTiff =
     crop(0, 0, colMax, rowMax)
 
@@ -87,10 +87,10 @@ object SinglebandGeoTiff {
 
   def apply(path: String, e: Extent): SinglebandGeoTiff =
     GeoTiffReader.readSingleband(path, e)
-  
+
   def apply(path: String, e: Option[Extent]): SinglebandGeoTiff =
     GeoTiffReader.readSingleband(path, e)
-  
+
   /** Read a single-band GeoTIFF file from the file at the given path.
     * If decompress = true, the GeoTIFF will be fully decompressed and held in memory.
     */
@@ -102,7 +102,7 @@ object SinglebandGeoTiff {
 
   def apply(byteReader: ByteReader, e: Extent): SinglebandGeoTiff =
     GeoTiffReader.readSingleband(byteReader, e)
-  
+
   def apply(byteReader: ByteReader, e: Option[Extent]): SinglebandGeoTiff =
     GeoTiffReader.readSingleband(byteReader, e)
 
@@ -117,19 +117,10 @@ object SinglebandGeoTiff {
     */
   def compressed(bytes: Array[Byte]): SinglebandGeoTiff =
     GeoTiffReader.readSingleband(bytes, false, false)
-  
+
   def streaming(path: String): SinglebandGeoTiff =
     GeoTiffReader.readSingleband(path, false, true)
-  
+
   def streaming(byteReader: ByteReader): SinglebandGeoTiff =
     GeoTiffReader.readSingleband(byteReader, false, true)
-
-  implicit def singlebandGeoTiffToTile(sbg: SinglebandGeoTiff): Tile =
-    sbg.tile
-
-  implicit def singlebandGeoTiffToRaster(sbg: SinglebandGeoTiff): SinglebandRaster =
-    sbg.raster
-
-  implicit def singlebandGeoTiffToProjectedRaster(sbg: SinglebandGeoTiff): ProjectedRaster[Tile] =
-    sbg.projectedRaster
 }

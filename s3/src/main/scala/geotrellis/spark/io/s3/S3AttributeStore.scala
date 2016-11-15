@@ -34,7 +34,7 @@ import scala.util.matching.Regex
  * @param prefix  path in the bucket for given LayerId, not ending in "/"
  */
 class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayerAttributeStore {
-  val s3Client: S3Client = S3Client.default
+  val s3Client: S3Client = S3Client.DEFAULT
   import S3AttributeStore._
 
   /** NOTE:
@@ -95,7 +95,7 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayer
   def layerExists(layerId: LayerId): Boolean =
     s3Client
       .listObjectsIterator(bucket, path(prefix, "_attributes"))
-      .exists(_.getKey.endsWith(s"${SEP}${layerId.name}${SEP}${layerId.zoom}.json"))
+      .exists(_.getKey.endsWith(s"${AttributeStore.Fields.metadata}${SEP}${layerId.name}${SEP}${layerId.zoom}.json"))
 
   def delete(layerId: LayerId, attributeName: String): Unit = {
     if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)

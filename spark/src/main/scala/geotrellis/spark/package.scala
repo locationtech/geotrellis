@@ -49,6 +49,7 @@ package object spark
     with mapalgebra.local.temporal.Implicits
     with mapalgebra.zonal.Implicits
     with mask.Implicits
+    with matching.Implicits
     with merge.Implicits
     with partition.Implicits
     with reproject.Implicits

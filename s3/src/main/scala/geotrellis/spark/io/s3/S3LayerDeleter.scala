@@ -23,7 +23,7 @@ import spray.json.DefaultJsonProtocol._
 
 class S3LayerDeleter(val attributeStore: AttributeStore) extends LayerDeleter[LayerId] {
 
-  def getS3Client: () => S3Client = () => S3Client.default
+  def getS3Client: () => S3Client = () => S3Client.DEFAULT
 
   def delete(id: LayerId): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)

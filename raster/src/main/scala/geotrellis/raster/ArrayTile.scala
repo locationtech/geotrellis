@@ -62,9 +62,9 @@ trait ArrayTile extends Tile with Serializable {
     tile
   }
 
-  def withNoData(noDataValue: Option[Double]): ArrayTile
+  def withNoData(noDataValue: Option[Double]): Tile
 
-  def interpretAs(newCellType: CellType): ArrayTile
+  def interpretAs(newCellType: CellType): Tile
 
   /**
     * Execute a function on each cell of the [[ArrayTile]].

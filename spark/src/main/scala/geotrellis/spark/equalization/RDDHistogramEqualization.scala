@@ -35,9 +35,9 @@ object RDDHistogramEqualization {
   }
 
   /**
-    * Given an RDD of [[Tile]] objects, return another RDD of tiles
-    * where the respective tiles have had their histograms equalized
-    * the joint histogram of all of the tiles.
+    * Given an RDD of Tile objects, return another RDD of tiles where
+    * the respective tiles have had their histograms equalized the
+    * joint histogram of all of the tiles.
     *
     * @param  rdd  An RDD of tile objects
     */
@@ -52,8 +52,8 @@ object RDDHistogramEqualization {
   }
 
   /**
-    * Given an RDD of [[Tile]] objects and a [[Histogram]] derived
-    * from all of the tiles, return another RDD of tiles where the
+    * Given an RDD of Tile objects and a Histogram which summarizes
+    * all of the tiles, return another RDD of tiles where the
     * respective tiles have had their histograms equalized.
     *
     * @param  rdd        An RDD of tile objects
@@ -71,7 +71,7 @@ object RDDHistogramEqualization {
   }
 
   /**
-    * Given an RDD of [[MultibandTile]] objects, return another RDD of
+    * Given an RDD of MultibandTile objects, return another RDD of
     * multiband tiles where the respective bands of the respective
     * tiles have been equalized according to a joint histogram of the
     * bands of the input RDD.
@@ -93,11 +93,10 @@ object RDDHistogramEqualization {
   }
 
   /**
-    * Given an RDD of [[MultibandTile]] objects and a sequence of
-    * [[Histogram]] objects (on per band) derived from all of the
-    * tiles, return another RDD of multiband tiles where the
-    * respective bands of the respective tiles have had their
-    * histograms equalized.
+    * Given an RDD of MultibandTile objects and a sequence of
+    * Histogram objects (on per band) derived from all of the tiles,
+    * return another RDD of multiband tiles where the respective bands
+    * of the respective tiles have had their histograms equalized.
     *
     * @param  rdd         An RDD of tile objects
     * @param  histograms  A histogram derived from the whole RDD of tiles

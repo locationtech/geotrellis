@@ -21,5 +21,19 @@ import geotrellis.util.MethodExtensions
 
 
 trait MultibandSigmoidalMethods extends MethodExtensions[MultibandTile] {
+
+  /**
+    * Given the parameters alpha and beta, perform the sigmoidal
+    * contrast computation on each band and return the result as a
+    * multiband tile.
+    *
+    * The approach used is described here:
+    * https://www.imagemagick.org/Usage/color_mods/#sigmoidal
+    *
+    * @param  alpha  The center around-which the stretch is performed (given as a fraction)
+    * @param  beta   The standard deviation in the computation, used to avoid saturating the upper and lower parts of the gamut
+    * @return        The output tile
+    */
   def sigmoidal(alpha: Double, beta: Double): MultibandTile = SigmoidalContrast(self, alpha, beta)
+
 }

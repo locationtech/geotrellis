@@ -39,14 +39,14 @@ case class MultibandGeoTiff(
       case gtt: GeoTiffMultibandTile => gtt
       case _ => GeoTiffMultibandTile(tile)
     }
-  
+
   def crop(subExtent: Extent): MultibandGeoTiff = {
     val raster: Raster[MultibandTile] =
       this.raster.crop(subExtent)
 
     MultibandGeoTiff(raster, subExtent, this.crs, this.tags)
   }
-  
+
   def crop(colMax: Int, rowMax: Int): MultibandGeoTiff =
     crop(0, 0, colMax, rowMax)
 
@@ -76,28 +76,28 @@ object MultibandGeoTiff {
     */
   def apply(path: String): MultibandGeoTiff =
     GeoTiffReader.readMultiband(path)
-  
+
   def apply(path: String, e: Extent): MultibandGeoTiff =
     GeoTiffReader.readMultiband(path, e)
-  
+
   def apply(path: String, e: Option[Extent]): MultibandGeoTiff =
     GeoTiffReader.readMultiband(path, e)
-  
+
   /** Read a multi-band GeoTIFF file from the file at the given path.
     * If decompress = true, the GeoTIFF will be fully decompressed and held in memory.
     */
   def apply(path: String, decompress: Boolean, streaming: Boolean): MultibandGeoTiff =
     GeoTiffReader.readMultiband(path, decompress, streaming)
-  
+
   def apply(byteReader: ByteReader): MultibandGeoTiff =
     GeoTiffReader.readMultiband(byteReader)
-  
+
   def apply(byteReader: ByteReader, e: Extent): MultibandGeoTiff =
     GeoTiffReader.readMultiband(byteReader, e)
-  
+
   def apply(byteReader: ByteReader, e: Option[Extent]): MultibandGeoTiff =
     GeoTiffReader.readMultiband(byteReader, e)
-  
+
   def apply(byteReader: ByteReader, decompress: Boolean, streaming: Boolean): MultibandGeoTiff =
     GeoTiffReader.readMultiband(byteReader, decompress, streaming)
 
@@ -112,10 +112,10 @@ object MultibandGeoTiff {
     */
   def compressed(bytes: Array[Byte]): MultibandGeoTiff =
     GeoTiffReader.readMultiband(bytes, false, false)
-  
+
   def streaming(path: String): MultibandGeoTiff =
     GeoTiffReader.readMultiband(path, false, true)
-  
+
   def streaming(byteReader: ByteReader): MultibandGeoTiff =
     GeoTiffReader.readMultiband(byteReader, false, true)
 
@@ -133,7 +133,4 @@ object MultibandGeoTiff {
     tags: Tags
   ): MultibandGeoTiff =
     apply(tile, extent, crs, tags, GeoTiffOptions.DEFAULT)
-
-  implicit def multibandGeoTiffToTile(mbg: MultibandGeoTiff): MultibandTile =
-    mbg.tile
 }

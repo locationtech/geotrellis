@@ -19,7 +19,7 @@ package geotrellis.raster.io.geotiff
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
-import geotrellis.vector.Extent
+import geotrellis.vector.{Extent, ProjectedExtent}
 import geotrellis.proj4.CRS
 
 /**
@@ -52,6 +52,7 @@ trait GeoTiffData {
 trait GeoTiff[T <: CellGrid] extends GeoTiffData {
   def tile: T
 
+  def projectedExtent: ProjectedExtent = ProjectedExtent(extent, crs)
   def projectedRaster: ProjectedRaster[T] = ProjectedRaster(tile, extent, crs)
   def raster: Raster[T] = Raster(tile, extent)
   def rasterExtent: RasterExtent = RasterExtent(extent, tile.cols, tile.rows)

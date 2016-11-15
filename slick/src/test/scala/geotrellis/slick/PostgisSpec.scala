@@ -59,7 +59,7 @@ class PostgisSpec extends FlatSpec with Matchers with TestDatabase with ScalaFut
     try {
       db.run(CityTable.schema.create).futureValue
     } catch {
-      case _ =>
+      case _: Throwable =>
         println("A script for setting up the PSQL environment necessary to run these tests can be found at scripts/slickTestDB.sh - requires a working docker setup")
     }
 

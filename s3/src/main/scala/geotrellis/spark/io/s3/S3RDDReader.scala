@@ -87,5 +87,5 @@ trait S3RDDReader {
 }
 
 object S3RDDReader extends S3RDDReader {
-  def getS3Client: () => S3Client = () => S3Client.default
+  def getS3Client: () => S3Client = () => S3Client.DEFAULT
 }

@@ -44,10 +44,10 @@ abstract class ShortArrayTile(val array: Array[Short], cols: Int, rows: Int)
     */
   def copy: ArrayTile = ArrayTile(array.clone, cols, rows)
 
-  def withNoData(noDataValue: Option[Double]): ShortArrayTile =
+  def withNoData(noDataValue: Option[Double]): Tile =
     ShortArrayTile(array, cols, rows, cellType.withNoData(noDataValue))
 
-  def interpretAs(newCellType: CellType): ArrayTile = {
+  def interpretAs(newCellType: CellType): Tile = {
     newCellType match {
       case dt: ShortCells with NoDataHandling =>
         ShortArrayTile(array, cols, rows, dt)

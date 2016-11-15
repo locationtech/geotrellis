@@ -28,7 +28,7 @@ class TileMergeMethodsSpec extends FunSpec
     with RasterMatchers {
   describe("SinglebandTileMergeMethods") {
 
-    it("should merge prototype for each cell type") {
+    it("should merge smaller prototype tile for each cell type") {
       val cellTypes: Seq[CellType] =
         Seq(
           BitCellType,
@@ -118,6 +118,59 @@ class TileMergeMethodsSpec extends FunSpec
         val merged = proto.merge(smallerExtent, largerExtent, tile)
         withClue(s"Failing on cell type $ct: ") {
           assertEqual(merged, expected)
+        }
+      }
+    }
+
+    it("should merge 2 tiles into a larger tile for NoNoData cell types") {
+
+      val cellTypes: Seq[CellType] =
+        Seq(
+          BitCellType,
+          ByteCellType,
+          UByteCellType,
+          ShortCellType,
+          UShortCellType,
+          IntCellType,
+          FloatCellType,
+          DoubleCellType
+        )
+
+      for(ct <- cellTypes) {
+        val tile1 =
+          createTile(
+            Array(0.0, 2.0,
+                  3.0, 4.0), 2, 2).convert(ct)
+
+        val tile2 =
+          createTile(
+            Array(5.0, 6.0,
+                  7.0, 0.0), 2, 2).convert(ct)
+
+        val largerTile =
+          createTile(
+            Array.ofDim[Double](16), 4, 4
+          ).convert(ct)
+
+        val e1 = Extent(0, 2, 2, 4)
+        val e2 = Extent(2, 2, 4, 4)
+        val largeE = Extent(0, 0, 4, 4)
+
+        val expected =
+          createTile(
+            Array(0.0, 2.0, 5.0, 6.0,
+                  3.0, 4.0, 7.0, 0.0,
+                  0.0, 0.0, 0.0, 0.0,
+                  0.0, 0.0, 0.0, 0.0), 4, 4).convert(ct)
+
+        val actual =
+          largerTile
+            .mapDouble { x => x }
+            .merge(largeE, e1, tile1)
+            .merge(largeE, e2, tile2)
+
+        withClue(s"Failing on cell type $ct: ") {
+          assertEqual(actual, expected)
         }
       }
     }

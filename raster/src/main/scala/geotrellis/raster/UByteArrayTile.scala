@@ -42,10 +42,10 @@ abstract class UByteArrayTile(val array: Array[Byte], cols: Int, rows: Int)
     */
   def copy = UByteArrayTile(array.clone, cols, rows, cellType)
 
-  def withNoData(noDataValue: Option[Double]): UByteArrayTile =
+  def withNoData(noDataValue: Option[Double]): Tile =
     UByteArrayTile(array, cols, rows, cellType.withNoData(noDataValue))
 
-  def interpretAs(newCellType: CellType): ArrayTile = {
+  def interpretAs(newCellType: CellType): Tile = {
     newCellType match {
       case dt: ByteCells with NoDataHandling =>
         ByteArrayTile(array, cols, rows, dt)

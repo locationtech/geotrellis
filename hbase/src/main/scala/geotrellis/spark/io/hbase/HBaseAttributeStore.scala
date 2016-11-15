@@ -59,16 +59,17 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
 
   private def fetch(layerId: Option[LayerId], attributeName: String): Vector[Result] =
     instance.withTableConnectionDo(attributeTableName) { table =>
-      val scan = new Scan()
-      layerId.foreach { id =>
-        scan.setStartRow(layerIdString(id))
-        scan.setStopRow(stringToBytes(layerIdString(id)) :+ 0.toByte) // add trailing byte, to include stop row
-      }
-      scan.addFamily(attributeName)
-      val scanner = table.getScanner(scan)
-      try scanner.iterator().toVector finally scanner.close()
+      if (table.getTableDescriptor.hasFamily(attributeName)) {
+        val scan = new Scan()
+        layerId.foreach { id =>
+          scan.setStartRow(layerIdString(id))
+          scan.setStopRow(stringToBytes(layerIdString(id)) :+ 0.toByte) // add trailing byte, to include stop row
+        }
+        scan.addFamily(attributeName)
+        val scanner = table.getScanner(scan)
+        try scanner.iterator().toVector finally scanner.close()
+      } else Vector()
     }
-
 
   private def delete(layerId: LayerId, attributeName: Option[String]): Unit =
     instance.withTableConnectionDo(attributeTableName) { table =>
@@ -116,9 +117,8 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
       table.put(put)
     }
 
-  def layerExists(layerId: LayerId): Boolean = instance.withTableConnectionDo(attributeTableName) {
-    !_.get(new Get(layerIdString(layerId))).isEmpty
-  }
+  def layerExists(layerId: LayerId): Boolean =
+    fetch(Some(layerId), AttributeStore.Fields.metadata).nonEmpty
 
   def delete(layerId: LayerId): Unit = delete(layerId, None)
 

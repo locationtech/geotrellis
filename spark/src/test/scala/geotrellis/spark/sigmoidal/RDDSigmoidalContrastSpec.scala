@@ -26,7 +26,7 @@ class RDDSigmoidalContrastSpec extends FunSpec
     with Matchers
     with TestEnvironment {
 
-  describe("RDD Histogram Equalization") {
+  describe("RDD Sigmoidal Contrast") {
 
     it("should work with floating-point rasters") {
       val x = Double.MaxValue / 2.0
