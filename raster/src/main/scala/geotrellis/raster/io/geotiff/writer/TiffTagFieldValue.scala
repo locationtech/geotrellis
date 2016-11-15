@@ -1,15 +1,16 @@
 package geotrellis.raster.io.geotiff.writer
 
 import geotrellis.raster._
+import geotrellis.raster.render.IndexedColorMap
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.tags.codes._
 import geotrellis.raster.io.geotiff.tags.codes.TagCodes._
 import geotrellis.raster.io.geotiff.tags.codes.TiffFieldType._
-import geotrellis.vector.Extent
-
-import java.nio.ByteOrder
-import scala.collection.mutable
 import spire.syntax.cfor._
+
+import scala.collection.mutable
+import java.nio.ByteOrder
+import java.util.IllegalFormatException
 
 case class TiffTagFieldValue(
   tag: Int,
@@ -76,6 +77,34 @@ object TiffTagFieldValue {
     fieldValues += TiffTagFieldValue(SamplesPerPixelTag, ShortsFieldType, 1, imageData.bandCount)
     fieldValues += TiffTagFieldValue(PlanarConfigurationTag, ShortsFieldType, 1, PlanarConfigurations.PixelInterleave)
     fieldValues += TiffTagFieldValue(SampleFormatTag, ShortsFieldType, 1, imageData.bandType.sampleFormat)
+
+    if(geoTiff.options.colorSpace == ColorSpace.Palette) {
+
+      val bitsPerSample = imageData.bandType.bitsPerSample
+
+      if(bitsPerSample > 16 || geoTiff.cellType.isFloatingPoint) {
+        throw new IncompatibleGeoTiffOptionsException(
+          "'Palette' color space only supported for 8 or 16 bit integral cell types.")
+      }
+
+      val divider = 1 << bitsPerSample
+
+      for(cmap ← geoTiff.options.colorMap) {
+        val palette = IndexedColorMap.toTiffPalette(cmap)
+        val size = math.min(palette.size, divider)
+        // Indexed color palette is stored as three consecutive arrays containing
+        // red, green, and blue values, in that order
+        val flattenedPalette = Array.ofDim[Short](divider * 3)
+        cfor(0)(_ < size, _ + 1) { i =>
+          val c = palette(i)
+          flattenedPalette(i) = c._1
+          flattenedPalette(i + divider) = c._2
+          flattenedPalette(i + divider * 2) = c._3
+        }
+
+        fieldValues += TiffTagFieldValue(ColorMapTag, ShortsFieldType, flattenedPalette.length, toBytes(flattenedPalette))
+      }
+    }
 
     createNoDataString(geoTiff.cellType) match {
       case Some(noDataString) =>

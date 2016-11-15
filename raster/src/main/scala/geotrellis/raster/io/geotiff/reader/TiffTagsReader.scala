@@ -412,7 +412,9 @@ object TiffTagsReader {
       if ((tiffTags &|->
         TiffTags._basicTags ^|->
         BasicTags._photometricInterp get) == 3) {
-        val divider = shorts.size / 3
+        // In GDAL world, `divider` ends up being the same as `bitsPerSample`
+        // but theoretically it's valid to have color tables that are smaller
+        val divider = shorts.length / 3
 
         val arr = Array.ofDim[(Short, Short, Short)](divider)
         cfor(0)(_ < divider, _ + 1) { i =>

@@ -19,16 +19,15 @@ package geotrellis.raster.io.geotiff.reader
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.compression._
-import geotrellis.raster.io.geotiff.util._
 import geotrellis.raster.io.geotiff.tags._
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
-import geotrellis.util.{Filesystem, ByteReader}
-
+import geotrellis.util.{ByteReader, Filesystem}
 import monocle.syntax.apply._
-
-import scala.io._
 import java.nio.{ByteBuffer, ByteOrder}
+
+import geotrellis.raster.io.geotiff.tags.codes.ColorSpace
+import geotrellis.raster.render.{ColorMap, IndexedColorMap, RGB}
 
 class MalformedGeoTiffException(msg: String) extends RuntimeException(msg)
 
@@ -343,11 +342,15 @@ object GeoTiffReader {
 
     val colorSpace = tiffTags.basicTags.photometricInterp
 
+    val colorMap = if (colorSpace == ColorSpace.Palette && tiffTags.basicTags.colorMap.nonEmpty) {
+      Option(IndexedColorMap.fromTiffPalette(tiffTags.basicTags.colorMap))
+    } else None
+
     GeoTiffInfo(
       tiffTags.extent,
       tiffTags.crs,
       tiffTags.tags,
-      GeoTiffOptions(storageMethod, compression, colorSpace),
+      GeoTiffOptions(storageMethod, compression, colorSpace, colorMap),
       bandType,
       segmentBytes,
       decompressor,
@@ -358,4 +361,6 @@ object GeoTiffReader {
       noDataValue
     )
   }
+
+
 }
