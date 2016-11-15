@@ -42,6 +42,14 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
       else None
     }
 
+    val extensions: Array[String] = {
+      val extensionsConf = conf.get(EXTENSIONS)
+      if (extensionsConf == null)
+        Array()
+      else
+        extensionsConf.split(",").map(_.trim)
+    }
+
     val chunkSize = {
       val chunkSizeConf = conf.get(CHUNK_SIZE)
       if (chunkSizeConf == null)
@@ -79,6 +87,14 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
       s3client
         .listObjectsIterator(request)
         .filter(!_.getKey.endsWith("/"))
+        .filter { obj =>
+          if (extensions.isEmpty)
+            true
+          else {
+            val key = obj.getKey
+            extensions.map(key.endsWith).reduce(_ || _)
+          }
+        }
         .foreach { obj =>
           val curSplit = splits.last
           val objSize = obj.getSize
@@ -124,6 +140,7 @@ object S3InputFormat {
   final val AWS_KEY = "s3.awsKey"
   final val BUCKET = "s3.bucket"
   final val PREFIX = "s3.prefix"
+  final val EXTENSIONS = "s3.extensions"
   final val REGION = "s3.region"
   final val PARTITION_COUNT = "s3.partitionCount"
   final val PARTITION_BYTES = "S3.partitionBytes"
@@ -210,4 +227,8 @@ object S3InputFormat {
 
   def setChunkSize(conf: Configuration, chunkSize: Int): Unit =
     conf.set(CHUNK_SIZE, chunkSize.toString)
+
+  /** Set valid key extensions filter */
+  def setExtensions(conf: Configuration, extensions: Seq[String]): Unit =
+    conf.set(EXTENSIONS, extensions.mkString(","))
 }

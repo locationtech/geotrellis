@@ -47,7 +47,7 @@ class S3GeoTiffRDDSpec
     }
     
     it("should read the same rasters when reading small windows or with no windows, Spatial, MultibandGeoTiff") {
-      val key = "geoTiff/multi"
+      val key = "geoTiff/multi.tif"
       val testGeoTiffPath = "raster-test/data/geotiff-test-files/3bands/byte/3bands-striped-band.tif"
       val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
       mockClient.putObject(bucket, key, geoTiffBytes)
@@ -67,7 +67,7 @@ class S3GeoTiffRDDSpec
     }
     
     it("should read the same rasters when reading small windows or with no windows, TemporalSpatial, SinglebandGeoTiff") {
-      val key = "geoTiff/time"
+      val key = "geoTiff/time.tif"
       val testGeoTiffPath = "raster-test/data/one-month-tiles/test-200506000000_0_0.tif"
       val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
       mockClient.putObject(bucket, key, geoTiffBytes)
@@ -98,7 +98,7 @@ class S3GeoTiffRDDSpec
     }
 
     it("should read the same rasters when reading small windows or with no windows, TemporalSpatial, MultibandGeoTiff") {
-      val key = "geoTiff/multi-time"
+      val key = "geoTiff/multi-time.tif"
       val path = "raster-test/data/one-month-tiles-multiband/result.tif"
 
       val singleband = GeoTiffReader.readSingleband(path)
