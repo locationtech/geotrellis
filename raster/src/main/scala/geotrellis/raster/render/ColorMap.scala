@@ -345,11 +345,12 @@ object IndexedColorMap {
   private def upsample(c: Int) = (c * 257).toShort
 
   /** Creates an IndexColorMap from sequence of RGB short values. */
-  private[raster] def fromTiffPalette(tiffPalette: Seq[(Short, Short, Short)]) = new IndexedColorMap(
+  def fromTiffPalette(tiffPalette: Seq[(Short, Short, Short)]) = new IndexedColorMap(
     tiffPalette.map { case (red, green, blue) ⇒ RGB(downsample(red), downsample(green), downsample(blue))}
   )
-  private[raster] def toTiffPalette(cm: ColorMap): Seq[(Short, Short, Short)] =
-    cm.colors.map(c ⇒ (upsample(c.red), upsample(c.green), upsample(c.blue)))
+  /** Converts a ColorMap to sequence of short triplets in encoding expected by GeoTiff 'Palette' color space.*/
+  def toTiffPalette(cm: ColorMap): Seq[(Short, Short, Short)] =
+    fromColorMap(cm).colors.map(c ⇒ (upsample(c.red), upsample(c.green), upsample(c.blue)))
 
   /** Flattens the given colormap into an indexed variant, throwing away any defined boundaries. */
   def fromColorMap(cm: ColorMap) = new IndexedColorMap(cm.colors)
