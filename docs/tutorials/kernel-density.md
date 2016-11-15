@@ -55,6 +55,7 @@ will generate the desired CRS.
 Next, we will create a tile containing the kernel density estimate:
 
 ```scala
+import geotrellis.raster._
 import geotrellis.raster.mapalgebra.focal.Kernel
 
 val kernelWidth: Int = 9
@@ -109,6 +110,8 @@ in space, but we must now specify how that extent is broken up into a grid
 of `Tile`s.  This requires a statement of the form:
 
 ```scala
+import geotrellis.spark.tiling._
+
 val tl = TileLayout(7, 4, 100, 100)
 ```
 
@@ -135,8 +138,6 @@ By incorporating all these ideas, we can create the following function to
 generate the extent of the kernel centered at a given point:
 
 ```scala
-import geotrellis.spark.tiling._
-
 def pointFeatureToExtent[D](kwidth: Double, ld: LayoutDefinition, ptf: PointFeature[D]): Extent = {
   val p = ptf.geom
 
@@ -186,6 +187,8 @@ on each subtile, as indexed by their SpatialKeys.  The following snippet
 accomplishes that.
 
 ```scala
+import geotrellis.spark._
+
 def ptfToSpatialKey[D](ptf: PointFeature[D]): Seq[(SpatialKey,PointFeature[D])] = {
   val ptextent = ptfToExtent(ptf)
   val gridBounds = ld.mapTransform(ptextent)
@@ -383,6 +386,8 @@ to carry along a Metadata object that describes the context of the RDD.
 This is created like so:
 
 ```scala
+import geotrellis.proj4.LatLng
+
 val metadata = TileLayerMetadata(DoubleCellType,
                                  ld,
                                  ld.extent,
