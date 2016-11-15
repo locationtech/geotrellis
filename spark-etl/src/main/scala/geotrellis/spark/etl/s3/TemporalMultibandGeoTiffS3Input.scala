@@ -12,10 +12,11 @@ import org.apache.spark.rdd.RDD
 class TemporalMultibandGeoTiffS3Input extends S3Input[TemporalProjectedExtent, MultibandTile] {
   val format = "temporal-geotiff"
   def apply(conf: EtlConf)(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, MultibandTile)] = {
-    val hadoopConfig = configuration(conf.input)
-    conf.output.keyIndexMethod.timeTag.foreach(TemporalGeoTiffS3InputFormat.setTimeTag(hadoopConfig, _))
-    conf.output.keyIndexMethod.timeFormat.foreach(TemporalGeoTiffS3InputFormat.setTimeFormat(hadoopConfig, _))
-    conf.input.crs.foreach(x => GeoTiffS3InputFormat.setCrs(hadoopConfig, CRS.fromName(x)))
-    sc.newAPIHadoopRDD(hadoopConfig, classOf[TemporalMultibandGeoTiffS3InputFormat], classOf[TemporalProjectedExtent], classOf[MultibandTile])
+    val path = getPath(conf.input.backend)
+    S3GeoTiffRDD.temporalMultiband(path.bucket, path.prefix, S3GeoTiffRDD.Options(
+      timeTag = conf.output.keyIndexMethod.timeTag.getOrElse(S3GeoTiffRDD.GEOTIFF_TIME_TAG_DEFAULT),
+      timeFormat = conf.output.keyIndexMethod.timeTag.getOrElse(S3GeoTiffRDD.GEOTIFF_TIME_FORMAT_DEFAULT),
+      crs = conf.input.crs.map(CRS.fromName)
+    ))
   }
 }

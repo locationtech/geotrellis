@@ -13,10 +13,11 @@ import org.apache.spark.rdd.RDD
 class TemporalGeoTiffS3Input extends S3Input[TemporalProjectedExtent, Tile] {
   val format = "temporal-geotiff"
   def apply(conf: EtlConf)(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, Tile)] = {
-    val hadoopConfig = configuration(conf.input)
-    conf.output.keyIndexMethod.timeTag.foreach(TemporalGeoTiffS3InputFormat.setTimeTag(hadoopConfig, _))
-    conf.output.keyIndexMethod.timeFormat.foreach(TemporalGeoTiffS3InputFormat.setTimeFormat(hadoopConfig, _))
-    conf.input.crs.foreach(x => GeoTiffS3InputFormat.setCrs(hadoopConfig, CRS.fromName(x)))
-    sc.newAPIHadoopRDD(hadoopConfig, classOf[TemporalGeoTiffS3InputFormat], classOf[TemporalProjectedExtent], classOf[Tile])
+    val path = getPath(conf.input.backend)
+    S3GeoTiffRDD.temporal(path.bucket, path.prefix, S3GeoTiffRDD.Options(
+      timeTag = conf.output.keyIndexMethod.timeTag.getOrElse(S3GeoTiffRDD.GEOTIFF_TIME_TAG_DEFAULT),
+      timeFormat = conf.output.keyIndexMethod.timeTag.getOrElse(S3GeoTiffRDD.GEOTIFF_TIME_FORMAT_DEFAULT),
+      crs = conf.input.crs.map(CRS.fromName)
+    ))
   }
 }

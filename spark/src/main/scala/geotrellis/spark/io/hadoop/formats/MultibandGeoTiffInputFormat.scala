@@ -1,7 +1,5 @@
 package geotrellis.spark.io.hadoop.formats
 
-import geotrellis.spark.io.hadoop._
-import geotrellis.spark.ingest._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.vector._

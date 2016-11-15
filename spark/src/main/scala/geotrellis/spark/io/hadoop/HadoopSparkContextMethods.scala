@@ -13,7 +13,7 @@ import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.conf.Configuration
 
 trait HadoopSparkContextMethods {
-  val sc: SparkContext
+  implicit val sc: SparkContext
 
   def hadoopGeoTiffRDD(path: String): RDD[(ProjectedExtent, Tile)] =
     hadoopGeoTiffRDD(new Path(path), HadoopGeoTiffRDD.Options.DEFAULT.tiffExtensions)
