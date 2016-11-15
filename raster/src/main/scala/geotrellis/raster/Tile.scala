@@ -113,7 +113,6 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] with LazyL
     */
   def convert(cellType: CellType): Tile
 
-
   def withNoData(noDataValue: Option[Double]): Tile
 
   /** Changes the interpretation of the tile cells through changing NoData handling and optionally cell data type.

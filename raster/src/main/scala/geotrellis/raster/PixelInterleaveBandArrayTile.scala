@@ -48,8 +48,8 @@ class PixelInterleaveBandArrayTile(inner: ArrayTile, bandCount: Int, bandIndex: 
   }
 
   def withNoData(noDataValue: Option[Double]) =
-    PixelInterleaveBandArrayTile(inner.withNoData(noDataValue), bandCount, bandIndex)
+    PixelInterleaveBandArrayTile(inner.withNoData(noDataValue).toArrayTile, bandCount, bandIndex)
 
   def interpretAs(newCellType: CellType) =
-    PixelInterleaveBandArrayTile(inner.interpretAs(newCellType), bandCount, bandIndex)
+    PixelInterleaveBandArrayTile(inner.interpretAs(newCellType).toArrayTile, bandCount, bandIndex)
 }

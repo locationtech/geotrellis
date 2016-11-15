@@ -48,10 +48,10 @@ abstract class IntArrayTile(val array: Array[Int], cols: Int, rows: Int)
     */
   def copy: ArrayTile = ArrayTile(array.clone, cols, rows)
 
-  def withNoData(noDataValue: Option[Double]): IntArrayTile =
+  def withNoData(noDataValue: Option[Double]): Tile =
     IntArrayTile(array, cols, rows, cellType.withNoData(noDataValue))
 
-  def interpretAs(newCellType: CellType): ArrayTile = {
+  def interpretAs(newCellType: CellType): Tile = {
     newCellType match {
       case dt: IntCells with NoDataHandling =>
         IntArrayTile(array, cols, rows, dt)

@@ -310,7 +310,7 @@ sealed trait NoNoData extends NoDataHandling { cellType: CellType =>
 /**
   * The [[UserDefinedNoData]] type, derived from [[NoDataHandling]].
   */
-sealed trait UserDefinedNoData[@specialized(Byte, Short, Int) T] extends NoDataHandling { cellType: CellType =>
+sealed trait UserDefinedNoData[@specialized(Byte, Short, Int, Float, Double) T] extends NoDataHandling { cellType: CellType =>
   val noDataValue: T
   abstract override def toString: String = cellType.name + "ud" + noDataValue.toString
 }
