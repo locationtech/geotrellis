@@ -26,7 +26,7 @@ import geotrellis.vector._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce._
 
-@deprecated("GeoTiffInputFormat is deprecated, use  HadoopGeoTiffRDD instead", "1.0.0")
+@deprecated("GeoTiffInputFormat is deprecated, use HadoopGeoTiffRDD instead", "1.0.0")
 object GeoTiffInputFormat {
   final val GEOTIFF_CRS = "GEOTIFF_CRS"
 
@@ -37,7 +37,7 @@ object GeoTiffInputFormat {
     job.getConfiguration.getSerializedOption[CRS](GEOTIFF_CRS)
 }
 
-@deprecated("GeoTiffInputFormat is deprecated, use  HadoopGeoTiffRDD instead", "1.0.0")
+@deprecated("GeoTiffInputFormat is deprecated, use HadoopGeoTiffRDD instead", "1.0.0")
 class GeoTiffInputFormat extends BinaryFileInputFormat[ProjectedExtent, Tile] {
   def read(bytes: Array[Byte], context: TaskAttemptContext): (ProjectedExtent, Tile) = {
     val inputCrs = GeoTiffInputFormat.getCrs(context)

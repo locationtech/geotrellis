@@ -12,7 +12,7 @@ import org.apache.hadoop.mapreduce._
 import java.time.{ZoneOffset, ZonedDateTime}
 import java.time.format.DateTimeFormatter
 
-@deprecated("TemporalGeoTiffInputFormat is deprecated, use  HadoopGeoTiffRDD instead", "1.0.0")
+@deprecated("TemporalGeoTiffInputFormat is deprecated, use HadoopGeoTiffRDD instead", "1.0.0")
 object TemporalGeoTiffInputFormat {
   final val GEOTIFF_TIME_TAG = "GEOTIFF_TIME_TAG"
   final val GEOTIFF_TIME_TAG_DEFAULT = "TIFFTAG_DATETIME"
@@ -47,7 +47,7 @@ object TemporalGeoTiffInputFormat {
   * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_TAG; default of "TIFFTAG_DATETIME"
   * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT; default is ""yyyy:MM:DD HH:MM:SS""
   */
-@deprecated("TemporalGeoTiffInputFormat is deprecated, use  HadoopGeoTiffRDD instead", "1.0.0")
+@deprecated("TemporalGeoTiffInputFormat is deprecated, use HadoopGeoTiffRDD instead", "1.0.0")
 class TemporalGeoTiffInputFormat extends BinaryFileInputFormat[TemporalProjectedExtent, Tile] {
   def read(bytes: Array[Byte], context: TaskAttemptContext): (TemporalProjectedExtent, Tile) = {
     val geoTiff = SinglebandGeoTiff(bytes)
