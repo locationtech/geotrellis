@@ -57,6 +57,7 @@ def launch_java_gateway(address=None, port=None):
     gateway = JavaGateway(GatewayClient(port=gateway_port), auto_convert=True)
 
     java_import(gateway.jvm, "geotrellis.raster.*")
+    java_import(gateway.jvm, "geotrellis.proj4.*")
     java_import(gateway.jvm, "geotrellis.raster.io.geotiff.*")
     java_import(gateway.jvm, "geotrellis.raster.io.geotiff.reader.*")
 
