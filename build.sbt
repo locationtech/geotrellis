@@ -24,13 +24,17 @@ lazy val commonSettings = Seq(
   publishArtifact in Test := false,
   pomIncludeRepository := { _ => false },
 
-  bintrayOrganization := Some("azavea"),
-  bintrayRepository := "geotrellis",
-  bintrayVcsUrl := Some("https://github.com/geotrellis/geotrellis.git"),
-  bintrayPackageLabels := Info.tags,
+  publishTo <<= version { (v: String) =>
+     val nexus = "https://repo.locationtech.org/content/repositories"
+     if (v.trim.endsWith("SNAPSHOT"))
+       Some("LocationTech Nexus Repository" at s"$nexus/geotrellis-snapshots")
+     else
+       Some("LocationTech Nexus Repository" at s"$nexus/geotrellis-releases")
+   },
+
+  credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
 
   addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.0" cross CrossVersion.binary),
-
   addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.full),
 
   pomExtra := (
