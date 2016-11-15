@@ -201,7 +201,8 @@ trait ConfigFormats {
       "cache"   -> i.cache.toJson,
       "noData"  -> i.noData.toJson,
       "clip"    -> i.clip.toJson,
-      "crs"   -> i.crs.toJson
+      "crs"   -> i.crs.toJson,
+      "maxTileSize"   -> i.crs.toJson
     )
     def read(value: JsValue): Input =
       value match {
@@ -213,7 +214,8 @@ trait ConfigFormats {
             cache   = fields.get("cache").map(_.convertTo[StorageLevel]),
             noData  = fields.get("noData").map(_.convertTo[Double]),
             clip    = fields.get("clip").map(_.convertTo[Extent]),
-            crs     = fields.get("crs").map(_.convertTo[String])
+            crs     = fields.get("crs").map(_.convertTo[String]),
+            maxTileSize = fields.get("maxTileSize").map(_.convertTo[Int])
           )
         case _ =>
           throw new DeserializationException("Input must be a valid json object.")

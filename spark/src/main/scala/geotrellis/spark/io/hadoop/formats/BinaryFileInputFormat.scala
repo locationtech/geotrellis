@@ -30,6 +30,6 @@ trait BinaryFileInputFormat[K, V] extends FileInputFormat[K, V] {
 
   override def isSplitable(context: JobContext, fileName: Path) = false
 
-  override def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[K, V] = 
+  override def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[K, V] =
     new BinaryFileRecordReader({ bytes => read(bytes, context) })
 }

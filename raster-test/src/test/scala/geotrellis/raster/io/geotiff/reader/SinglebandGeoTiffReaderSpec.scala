@@ -33,7 +33,7 @@ class SinglebandGeoTiffReaderSpec extends FunSpec
     expected
   }
 
-  def writeExpectedTile(t: Tile, n: String): Unit = 
+  def writeExpectedTile(t: Tile, n: String): Unit =
     geotrellis.raster.io.geotiff.writer.GeoTiffWriter.write(
       GeoTiff(
         t,
@@ -319,8 +319,6 @@ class SinglebandGeoTiffReaderSpec extends FunSpec
         withClue(s"Failed for Storage $s, type $t") {
           val gtiff = geoTiff(s, t)
           val tile = gtiff.tile
-          println("tiles", gtiff, gtiff.cellType, tile, tile.cellType, tile.toArrayTile, tile.toArrayTile.cellType)
-          println(tile.get(0, 0), tile.toArrayTile.get(0, 0))
           assertEqual(tile, tile.toArrayTile)
         }
       }

@@ -21,16 +21,6 @@ import java.time.format.DateTimeFormatter
 
 import org.scalatest._
 
-class MockTemporalGeoTiffS3RecordReader(context: TaskAttemptContext) extends TemporalGeoTiffS3RecordReader(context) {
-  override def getS3Client(credentials: AWSCredentials): S3Client = new MockS3Client
-}
-
-class MockTemporalGeoTiffS3InputFormat extends TemporalGeoTiffS3InputFormat {
-  override def getS3Client(credentials: AWSCredentials): S3Client = new MockS3Client
-  override def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
-    new MockTemporalGeoTiffS3RecordReader(context)
-}
-
 class TemporalGeoTiffS3InputFormatSpec extends FunSpec with Matchers with TestEnvironment {
   val layoutScheme = ZoomedLayoutScheme(LatLng)
 
@@ -59,13 +49,14 @@ class TemporalGeoTiffS3InputFormatSpec extends FunSpec with Matchers with TestEn
     it("should read GeoTiffs with ISO_TIME tag from S3") {
       val url = s"s3n://${this.getClass.getSimpleName}/nex-geotiff/"
       val job = sc.newJob("temporal-geotiff-ingest")
+      S3InputFormat.setCreateS3Client(job, () => new MockS3Client)
       S3InputFormat.setUrl(job, url)
       S3InputFormat.setAnonymous(job)
       TemporalGeoTiffS3InputFormat.setTimeTag(job, "ISO_TIME")
       TemporalGeoTiffS3InputFormat.setTimeFormat(job, "yyyy-MM-dd'T'HH:mm:ss")
 
       val source = sc.newAPIHadoopRDD(job.getConfiguration,
-        classOf[MockTemporalGeoTiffS3InputFormat],
+        classOf[TemporalGeoTiffS3InputFormat],
         classOf[TemporalProjectedExtent],
         classOf[Tile])
 

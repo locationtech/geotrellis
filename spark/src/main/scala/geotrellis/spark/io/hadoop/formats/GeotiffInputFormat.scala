@@ -16,16 +16,31 @@
 
 package geotrellis.spark.io.hadoop.formats
 
-import geotrellis.spark.io.hadoop._
-import geotrellis.spark.ingest._
+import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
+import geotrellis.spark.io.hadoop._
+import geotrellis.spark.ingest._
 import geotrellis.vector._
-import org.apache.hadoop.mapreduce.TaskAttemptContext
 
-class GeotiffInputFormat extends BinaryFileInputFormat[ProjectedExtent, Tile] {
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.mapreduce._
+
+@deprecated("GeoTiffInputFormat is deprecated, use HadoopGeoTiffRDD instead", "1.0.0")
+object GeoTiffInputFormat {
+  final val GEOTIFF_CRS = "GEOTIFF_CRS"
+
+  def setCrs(conf: Configuration, crs: CRS): Unit =
+    conf.setSerialized(GEOTIFF_CRS, crs)
+
+  def getCrs(job: JobContext): Option[CRS] =
+    job.getConfiguration.getSerializedOption[CRS](GEOTIFF_CRS)
+}
+
+@deprecated("GeoTiffInputFormat is deprecated, use HadoopGeoTiffRDD instead", "1.0.0")
+class GeoTiffInputFormat extends BinaryFileInputFormat[ProjectedExtent, Tile] {
   def read(bytes: Array[Byte], context: TaskAttemptContext): (ProjectedExtent, Tile) = {
-    val inputCrs = TemporalGeoTiffInputFormat.getCrs(context)
+    val inputCrs = GeoTiffInputFormat.getCrs(context)
 
     val ProjectedRaster(Raster(tile, extent), crs) = SinglebandGeoTiff(bytes).projectedRaster
     (ProjectedExtent(extent, inputCrs.getOrElse(crs)), tile)

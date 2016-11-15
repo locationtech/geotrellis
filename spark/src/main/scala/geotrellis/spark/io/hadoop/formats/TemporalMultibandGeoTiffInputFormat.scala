@@ -6,6 +6,7 @@ import geotrellis.spark.ingest._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.vector._
+
 import org.apache.hadoop.mapreduce._
 
 import java.time.ZonedDateTime
@@ -16,13 +17,14 @@ import java.time.ZonedDateTime
   * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_TAG; default of "TIFFTAG_DATETIME"
   * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT; default is ""yyyy:MM:DD HH:MM:SS""
   */
+@deprecated("TemporalMultibandGeoTiffInputFormat is deprecated, use HadoopGeoTiffRDD instead", "1.0.0")
 class TemporalMultibandGeoTiffInputFormat extends BinaryFileInputFormat[TemporalProjectedExtent, MultibandTile] {
   def read(bytes: Array[Byte], context: TaskAttemptContext): (TemporalProjectedExtent, MultibandTile) = {
     val geoTiff = MultibandGeoTiff(bytes)
 
     val timeTag = TemporalGeoTiffInputFormat.getTimeTag(context)
     val dateFormatter = TemporalGeoTiffInputFormat.getTimeFormatter(context)
-    val inputCrs = TemporalGeoTiffInputFormat.getCrs(context)
+    val inputCrs = GeoTiffInputFormat.getCrs(context)
 
     val dateTimeString = geoTiff.tags.headTags.getOrElse(timeTag, sys.error(s"There is no tag $timeTag in the GeoTiff header"))
     val dateTime = ZonedDateTime.from(dateFormatter.parse(dateTimeString))
