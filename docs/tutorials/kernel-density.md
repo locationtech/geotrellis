@@ -30,6 +30,7 @@ The choice of extent is largely arbitrary in this example, but note that the coo
 
 Next, we will create a tile containing the kernel density estimate:
 ```scala
+  import geotrellis.raster._
   import geotrellis.raster.mapalgebra.focal.Kernel
 
   val kernelWidth: Int = 9
@@ -58,6 +59,8 @@ The above example focuses on a toy problem that creates a small raster object. H
 
 We will still use an `Extent` object to set the bounds of our raster patch in space, but we must now specify how that extent is broken up into a grid of `Tile`s.  This requires a statement of the form
 ```scala
+  import geotrellis.spark.tiling._
+
   val tl = TileLayout(7, 4, 100, 100)
 ```
 Here, we have specified a 7x4 grid of Tiles, each of which has 100x100 cells. This will eventually be used to divide the earlier monolithic 700x400 Tile (`kde`) into 28 uniformly-sized subtiles.  The TileLayout is then combined with the extent in a `LayoutDefinition` object:
@@ -69,8 +72,6 @@ In preparation for reimplementing the previous kernel density estimation with th
 
 By incorporating all these ideas, we can create the following function to generate the extent of the kernel centered at a given point:
 ```scala
-  import geotrellis.spark.tiling._
-
   def pointFeatureToExtent[D](krnwdth: Double, ld: LayoutDefinition, ptf: PointFeature[D]) : Extent = {
     val p = ptf.geom
     Extent(p.x - kernelWidth * ld.cellwidth / 2,
@@ -99,6 +100,8 @@ Specifically, in our running example, `ld.mapTransform(ptfToExtent(Feature(Point
 
 In order to proceed with the kernel density estimation, it is necessary to then convert the list of points into a collection of `(SpatialKey, List[PointFeature[Double]])` that gathers all the points that have an effect on each subtile, as indexed by their SpatialKeys.  The following snippet accomplishes that.
 ```scala
+    import geotrellis.spark._
+
     def ptfToSpatialKey[D](ptf: PointFeature[D]) :
         Seq[(SpatialKey,PointFeature[D])] = {
      val ptextent = ptfToExtent(ptf)
@@ -222,6 +225,7 @@ The `mapPartitions` operation simply applies a transformation to an RDD without 
 
 We would be finished here, except that RDDs inside GeoTrellis are required to carry along a Metadata object that describes the context of the RDD.  This is created like so:
 ```scala
+  import geotrellis.proj4.LatLng
   val metadata = TileLayerMetadata(DoubleCellType,
                                    ld,
                                    ld.extent,
