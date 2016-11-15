@@ -17,6 +17,7 @@ import java.time.ZonedDateTime
   * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_TAG; default of "TIFFTAG_DATETIME"
   * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT; default is ""yyyy:MM:DD HH:MM:SS""
   */
+@deprecated("TemporalMultibandGeoTiffInputFormat is deprecated, use  HadoopGeoTiffRDD instead", "1.0.0")
 class TemporalMultibandGeoTiffInputFormat extends BinaryFileInputFormat[TemporalProjectedExtent, MultibandTile] {
   def read(bytes: Array[Byte], context: TaskAttemptContext): (TemporalProjectedExtent, MultibandTile) = {
     val geoTiff = MultibandGeoTiff(bytes)

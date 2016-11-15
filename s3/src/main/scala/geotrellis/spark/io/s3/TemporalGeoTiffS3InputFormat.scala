@@ -11,6 +11,7 @@ import java.time.{ZoneOffset, ZonedDateTime}
 import java.time.format.DateTimeFormatter
 
 
+@deprecated("TemporalGeoTiffS3InputFormat is deprecated, use S3GeoTiffRDD instead", "1.0.0")
 object TemporalGeoTiffS3InputFormat {
   final val GEOTIFF_TIME_TAG_DEFAULT = "GEOTIFF_TIME_TAG"
   final val GEOTIFF_TIME_FORMAT_DEFAULT = "GEOTIFF_TIME_FORMAT"
@@ -43,11 +44,13 @@ object TemporalGeoTiffS3InputFormat {
   * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_TAG; default of "TIFFTAG_DATETIME"
   * TemporalGeoTiffS3InputFormat.GEOTIFF_TIME_FORMAT; default is ""yyyy:MM:dd HH:mm:ss""
   */
+@deprecated("TemporalGeoTiffS3InputFormat is deprecated, use S3GeoTiffRDD instead", "1.0.0")
 class TemporalGeoTiffS3InputFormat extends S3InputFormat[TemporalProjectedExtent, Tile] {
   def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
     new TemporalGeoTiffS3RecordReader(getS3Client(context), context)
 }
 
+@deprecated("TemporalGeoTiffS3RecordReader is deprecated, use S3GeoTiffRDD instead", "1.0.0")
 class TemporalGeoTiffS3RecordReader(s3Client: S3Client, context: TaskAttemptContext) extends S3RecordReader[TemporalProjectedExtent, Tile](s3Client) {
   val timeTag = TemporalGeoTiffS3InputFormat.getTimeTag(context)
   val dateFormatter = TemporalGeoTiffS3InputFormat.getTimeFormatter(context)

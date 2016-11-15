@@ -8,6 +8,7 @@ import geotrellis.vector._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce._
 
+@deprecated("GeoTiffS3InputFormat is deprecated, use S3GeoTiffRDD instead", "1.0.0")
 object GeoTiffS3InputFormat {
   final val GEOTIFF_CRS = "GEOTIFF_CRS"
 
@@ -22,11 +23,13 @@ object GeoTiffS3InputFormat {
 }
 
 /** Read single band GeoTiff from S3 */
+@deprecated("GeoTiffS3InputFormat is deprecated, use S3GeoTiffRDD instead", "1.0.0")
 class GeoTiffS3InputFormat extends S3InputFormat[ProjectedExtent, Tile] {
   def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
     new GeoTiffS3RecordReader(getS3Client(context), context)
 }
 
+@deprecated("GeoTiffS3RecordReader is deprecated, use S3GeoTiffRDD instead", "1.0.0")
 class GeoTiffS3RecordReader(s3Client: S3Client, context: TaskAttemptContext) extends S3RecordReader[ProjectedExtent, Tile](s3Client) {
   def read(key: String, bytes: Array[Byte]) = {
     val geoTiff = SinglebandGeoTiff(bytes)

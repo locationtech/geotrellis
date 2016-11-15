@@ -6,6 +6,7 @@ import geotrellis.vector._
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
 
 /** Read multi band GeoTiff from S3 */
+@deprecated("MultibandGeoTiffS3InputFormat is deprecated, use S3GeoTiffRDD instead", "1.0.0")
 class MultibandGeoTiffS3InputFormat extends S3InputFormat[ProjectedExtent, MultibandTile] {
   def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
     new S3RecordReader[ProjectedExtent, MultibandTile](getS3Client(context)) {
