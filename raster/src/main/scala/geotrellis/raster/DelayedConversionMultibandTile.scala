@@ -61,14 +61,14 @@ class DelayedConversionMultibandTile(inner: MultibandTile, override val targetCe
     })
 
     (0 until bandCount).foreach({ b =>
-      val bandTile = band(b).delayedConversion(targetCellType)
+      val bandTile = band(b)
 
       if (set.contains(b))
-        newBands(b) = bandTile.map({ z => f(b, z) })
+        newBands(b) = bandTile.delayedConversion(targetCellType).map({ z => f(b, z) })
       else if (targetCellType.isFloatingPoint)
-        newBands(b) = bandTile.mapDouble({ z => z })
+        newBands(b) = bandTile.convert(targetCellType)
       else
-        newBands(b) = bandTile.map({ z => z })
+        newBands(b) = bandTile.convert(targetCellType)
     })
 
     ArrayMultibandTile(newBands)
@@ -91,14 +91,14 @@ class DelayedConversionMultibandTile(inner: MultibandTile, override val targetCe
     })
 
     (0 until bandCount).foreach({ b =>
-      val bandTile = band(b).delayedConversion(targetCellType)
+      val bandTile = band(b)
 
       if (set.contains(b))
-        newBands(b) = bandTile.mapDouble({ z => f(b, z) })
+        newBands(b) = bandTile.delayedConversion(targetCellType).mapDouble({ z => f(b, z) })
       else if (targetCellType.isFloatingPoint)
-        newBands(b) = bandTile.mapDouble({ z => z})
+        newBands(b) = bandTile.convert(targetCellType)
       else
-        newBands(b) = bandTile.map({ z => z })
+        newBands(b) = bandTile.convert(targetCellType)
     })
 
     ArrayMultibandTile(newBands)
