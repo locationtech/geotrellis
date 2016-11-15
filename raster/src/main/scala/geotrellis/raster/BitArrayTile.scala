@@ -16,10 +16,6 @@
 
 package geotrellis.raster
 
-import geotrellis.vector.Extent
-
-import spire.syntax.cfor._
-
 
 /**
   * [[ArrayTile]] based on an Array[Byte] as a bitmask; values are 0
@@ -133,6 +129,18 @@ final case class BitArrayTile(val array: Array[Byte], cols: Int, rows: Int)
     * @return  An array of bytes
     */
   def toBytes: Array[Byte] = array.clone
+
+  def withNoData(noDataValue: Option[Double]): BitArrayTile =
+    BitArrayTile(array, cols, rows)
+
+  def interpretAs(newCellType: CellType): ArrayTile = {
+    newCellType match {
+      case dt: ByteCells with NoDataHandling =>
+        ByteArrayTile(array, cols, rows, dt)
+      case _ =>
+        withNoData(None).convert(newCellType)
+    }
+  }
 }
 
 /**

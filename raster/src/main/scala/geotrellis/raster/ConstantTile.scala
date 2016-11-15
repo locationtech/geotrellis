@@ -29,7 +29,11 @@ import spire.syntax.cfor._
   * The trait underlying constant tile types.
   */
 trait ConstantTile extends Tile {
+
+  /** Precomputed view of tile cells as seen by [[get]] method */
   protected val iVal: Int
+
+  /** Precomputed view of tile cells as seen by [[getDouble]] method */
   protected val dVal: Double
 
   /**
@@ -76,17 +80,19 @@ trait ConstantTile extends Tile {
       logger.warn(s"Conversion from $cellType to $newType may lead to data loss.")
 
     newType match {
-      case BitCellType => BitConstantTile(if (iVal == 0) false else true, cols, rows)
-      case ByteConstantNoDataCellType => ByteConstantTile(i2b(iVal), cols, rows)
-      case UByteConstantNoDataCellType => UByteConstantTile(i2ub(iVal), cols, rows)
-      case ShortConstantNoDataCellType => ShortConstantTile(i2s(iVal), cols, rows)
-      case UShortConstantNoDataCellType => UShortConstantTile(i2us(iVal), cols, rows)
-      case IntConstantNoDataCellType => IntConstantTile(iVal, cols, rows)
-      case FloatConstantNoDataCellType => FloatConstantTile(d2f(dVal), cols, rows)
-      case DoubleConstantNoDataCellType => DoubleConstantTile(dVal, cols, rows)
-      case _ => throw new IllegalArgumentException(s"Unsupported ConstantTile CellType: $newType")
+      case BitCellType => new BitConstantTile(if (iVal == 0) false else true, cols, rows)
+      case ct: ByteCells => ByteConstantTile(iVal.toByte, cols, rows, ct)
+      case ct: UByteCells => UByteConstantTile(iVal.toByte, cols, rows, ct)
+      case ct: ShortCells => ShortConstantTile(iVal.toShort , cols, rows, ct)
+      case ct: UShortCells =>  UShortConstantTile(iVal.toShort , cols, rows, ct)
+      case ct: IntCells =>  IntConstantTile(iVal , cols, rows, ct)
+      case ct: FloatCells => FloatConstantTile(dVal.toFloat , cols, rows, ct)
+      case ct: DoubleCells => DoubleConstantTile(dVal, cols, rows, ct)
     }
   }
+
+  def interpretAs(newCellType: CellType): Tile =
+    withNoData(None).convert(newCellType)
 
   /**
     * Execute a function on each cell of the tile.  The function
@@ -259,16 +265,26 @@ case class BitConstantTile(v: Boolean, cols: Int, rows: Int) extends ConstantTil
     * @return  An array of bytes
     */
   def toBytes(): Array[Byte] = Array(iVal.toByte)
+
+  def withNoData(noDataValue: Option[Double]): ConstantTile  =  this
 }
 
 /**
   * The [[ByteConstantTile]] type.
   */
-case class ByteConstantTile(v: Byte, cols: Int, rows: Int) extends ConstantTile {
-  protected val iVal = b2i(v)
-  protected val dVal = b2d(v)
-
-  val cellType = ByteConstantNoDataCellType
+case class ByteConstantTile(v: Byte, cols: Int, rows: Int,
+  val cellType: ByteCells with NoDataHandling = ByteConstantNoDataCellType
+) extends ConstantTile {
+  protected val (iVal: Int, dVal: Double) =
+    cellType match {
+      case _: ConstantNoData =>
+        (b2i(v), b2d(v))
+      case _: NoNoData =>
+        (v.toInt, v.toDouble)
+      case ct: ByteUserDefinedNoDataCellType =>
+        if (ct.noDataValue == v) (Int.MinValue, Double.NaN)
+        else (v.toInt, v.toDouble)
+    }
 
   /**
     * Another name for the 'mutable' method on this class.
@@ -288,16 +304,28 @@ case class ByteConstantTile(v: Byte, cols: Int, rows: Int) extends ConstantTile 
     * @return  An array of bytes
     */
   def toBytes(): Array[Byte] = Array(v)
+
+  def withNoData(noDataValue: Option[Double]) =
+    ByteConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 }
 
 /**
   * The [[UByteConstantTile]] type.
   */
-case class UByteConstantTile(v: Byte, cols: Int, rows: Int) extends ConstantTile {
-  protected val iVal = ub2i(v)
-  protected val dVal = ub2d(v)
+case class UByteConstantTile(v: Byte, cols: Int, rows: Int,
+  val cellType: UByteCells with NoDataHandling = UByteConstantNoDataCellType
+) extends ConstantTile {
 
-  val cellType = ByteConstantNoDataCellType
+  protected val (iVal: Int, dVal: Double) =
+    cellType match {
+      case _: ConstantNoData =>
+        (ub2i(v), ub2d(v))
+      case _: NoNoData =>
+        (v.toInt, v.toDouble)
+      case ct: UByteUserDefinedNoDataCellType =>
+        if (ct.noDataValue == v) (Int.MinValue, Double.NaN)
+        else (v.toInt, v.toDouble)
+    }
 
   /**
     * Another name for the 'mutable' method on this class.
@@ -328,16 +356,28 @@ case class UByteConstantTile(v: Byte, cols: Int, rows: Int) extends ConstantTile
     */
   def resample(current: Extent, target: RasterExtent, method: ResampleMethod): Tile =
     ByteConstantTile(v, target.cols, target.rows)
+
+  def withNoData(noDataValue: Option[Double]) =
+    UByteConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 }
 
 /**
   * The [[ShortConstantTile]] type.
   */
-case class ShortConstantTile(v: Short, cols: Int, rows: Int) extends ConstantTile {
-  protected val iVal = s2i(v)
-  protected val dVal = s2d(v)
+case class ShortConstantTile(v: Short, cols: Int, rows: Int,
+  val cellType: ShortCells with NoDataHandling = ShortConstantNoDataCellType
+) extends ConstantTile {
 
-  val cellType = ShortConstantNoDataCellType
+  protected val (iVal: Int, dVal: Double) =
+    cellType match {
+      case _: ConstantNoData =>
+        (s2i(v), s2d(v))
+      case _: NoNoData =>
+        (v.toInt, v.toDouble)
+      case ct: ShortUserDefinedNoDataCellType =>
+        if (ct.noDataValue == v) (Int.MinValue, Double.NaN)
+        else (v.toInt, v.toDouble)
+    }
 
   /**
     * Another name for the 'mutable' method on this class.
@@ -361,16 +401,28 @@ case class ShortConstantTile(v: Short, cols: Int, rows: Int) extends ConstantTil
     ByteBuffer.wrap(arr).asShortBuffer.put(v)
     arr
   }
+
+  def withNoData(noDataValue: Option[Double]) =
+    ShortConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 }
 
 /**
   * The [[UShortConstantTile]] type.
   */
-case class UShortConstantTile(v: Short, cols: Int, rows: Int) extends ConstantTile {
-  protected val iVal = us2i(v)
-  protected val dVal = us2d(v)
+case class UShortConstantTile(v: Short, cols: Int, rows: Int,
+  val cellType: UShortCells with NoDataHandling = UShortConstantNoDataCellType
+) extends ConstantTile {
 
-  val cellType = ShortConstantNoDataCellType
+  protected val (iVal: Int, dVal: Double) =
+    cellType match {
+      case _: ConstantNoData =>
+        (us2i(v), us2d(v))
+      case _: NoNoData =>
+        (v.toInt, v.toDouble)
+      case ct: UShortUserDefinedNoDataCellType =>
+        if (ct.noDataValue == v) (Int.MinValue, Double.NaN)
+        else (v.toInt, v.toDouble)
+    }
 
   /**
     * Another name for the 'mutable' method on this class.
@@ -405,16 +457,28 @@ case class UShortConstantTile(v: Short, cols: Int, rows: Int) extends ConstantTi
     */
   def resample(current: Extent, target: RasterExtent, method: ResampleMethod): Tile =
     ShortConstantTile(v, target.cols, target.rows)
+
+  def withNoData(noDataValue: Option[Double]) =
+    UShortConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 }
 
 /**
   * The [[IntConstantTile]] type.
   */
-case class IntConstantTile(v: Int, cols: Int, rows: Int) extends ConstantTile {
-  protected val iVal = v
-  protected val dVal = i2d(v)
+case class IntConstantTile(v: Int, cols: Int, rows: Int,
+  val cellType: IntCells with NoDataHandling = IntConstantNoDataCellType
+) extends ConstantTile {
 
-  val cellType = IntConstantNoDataCellType
+  protected val (iVal: Int, dVal: Double) =
+    cellType match {
+      case _: ConstantNoData =>
+        (v, i2d(v))
+      case _: NoNoData =>
+        (v, v.toDouble)
+      case ct: IntUserDefinedNoDataCellType =>
+        if (ct.noDataValue == v) (Int.MinValue, Double.NaN)
+        else (v.toInt, v.toDouble)
+    }
 
   /**
     * Another name for the 'mutable' method on this class.
@@ -438,16 +502,28 @@ case class IntConstantTile(v: Int, cols: Int, rows: Int) extends ConstantTile {
     ByteBuffer.wrap(arr).asIntBuffer.put(v)
     arr
   }
+
+  def withNoData(noDataValue: Option[Double]) =
+    IntConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 }
 
 /**
   * The [[FloatConstantTile]] type.
   */
-case class FloatConstantTile(v: Float, cols: Int, rows: Int) extends ConstantTile {
-  protected val iVal = f2i(v)
-  protected val dVal = f2d(v)
+case class FloatConstantTile(v: Float, cols: Int, rows: Int,
+  val cellType: FloatCells with NoDataHandling = FloatConstantNoDataCellType
+) extends ConstantTile {
 
-  val cellType = FloatConstantNoDataCellType
+  protected val (iVal: Int, dVal: Double) =
+    cellType match {
+      case _: ConstantNoData =>
+        (f2i(v), f2d(v))
+      case _: NoNoData =>
+        (v.toInt, v.toDouble)
+      case ct: FloatUserDefinedNoDataCellType =>
+        if (ct.noDataValue == v) (Int.MinValue, Double.NaN)
+        else (v.toInt, v.toDouble)
+    }
 
   /**
     * Another name for the 'mutable' method on this class.
@@ -471,16 +547,28 @@ case class FloatConstantTile(v: Float, cols: Int, rows: Int) extends ConstantTil
     ByteBuffer.wrap(arr).asFloatBuffer.put(v)
     arr
   }
+
+  def withNoData(noDataValue: Option[Double]) =
+    FloatConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 }
 
 /**
   * The [[DoubleConstantTile]] type.
   */
-case class DoubleConstantTile(v: Double, cols: Int, rows: Int) extends ConstantTile {
-  protected val iVal = d2i(v)
-  protected val dVal = v
+case class DoubleConstantTile(v: Double, cols: Int, rows: Int,
+  val cellType: DoubleCells with NoDataHandling = DoubleConstantNoDataCellType
+) extends ConstantTile {
 
-  val cellType = DoubleConstantNoDataCellType
+  protected val (iVal: Int, dVal: Double) =
+    cellType match {
+      case _: ConstantNoData =>
+        (d2i(v), v)
+      case _: NoNoData =>
+        (v.toInt, v)
+      case ct: DoubleUserDefinedNoDataCellType =>
+        if (ct.noDataValue == v) (Int.MinValue, Double.NaN)
+        else (v.toInt, v)
+    }
 
   /**
     * Another name for the 'mutable' method on this class.
@@ -492,7 +580,7 @@ case class DoubleConstantTile(v: Double, cols: Int, rows: Int) extends ConstantT
     *
     * @return  The MutableArrayTile
     */
-  def mutable(): MutableArrayTile = DoubleArrayTile.fill(dVal, cols, rows)
+  def mutable(): MutableArrayTile = DoubleArrayTile.fill(dVal, cols, rows, cellType)
 
   /**
     * Return the underlying data behind this tile as an array.
@@ -501,7 +589,10 @@ case class DoubleConstantTile(v: Double, cols: Int, rows: Int) extends ConstantT
     */
   def toBytes(): Array[Byte] = {
     val arr = Array.ofDim[Byte](cellType.bytes)
-    ByteBuffer.wrap(arr).asDoubleBuffer.put(dVal)
+    ByteBuffer.wrap(arr).asDoubleBuffer.put(v)
     arr
   }
+
+  def withNoData(noDataValue: Option[Double]): ConstantTile =
+    DoubleConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 }

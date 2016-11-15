@@ -200,7 +200,8 @@ trait ConfigFormats {
       "backend" -> bf.write(i.backend),
       "cache"   -> i.cache.toJson,
       "noData"  -> i.noData.toJson,
-      "clip"    -> i.clip.toJson
+      "clip"    -> i.clip.toJson,
+      "crs"   -> i.crs.toJson
     )
     def read(value: JsValue): Input =
       value match {
@@ -211,7 +212,8 @@ trait ConfigFormats {
             backend = bf.read(fields("backend")),
             cache   = fields.get("cache").map(_.convertTo[StorageLevel]),
             noData  = fields.get("noData").map(_.convertTo[Double]),
-            clip    = fields.get("clip").map(_.convertTo[Extent])
+            clip    = fields.get("clip").map(_.convertTo[Extent]),
+            crs     = fields.get("crs").map(_.convertTo[String])
           )
         case _ =>
           throw new DeserializationException("Input must be a valid json object.")

@@ -11,12 +11,10 @@ import spire.syntax.cfor._
  * @param      bounds       Optionla bounds of the analysis area that we are convolving.
  */
 object Convolve {
-  def calculation(tile: Tile, kernel: Kernel, bounds: Option[GridBounds] = None): KernelCalculation[Tile] = {
-    val resultTile = ArrayTile.empty(tile.cellType, tile.cols, tile.rows)
-
+  def calculation(tile: Tile, kernel: Kernel, bounds: Option[GridBounds] = None, target: TargetCell = TargetCell.All): KernelCalculation[Tile] = {
     if (tile.cellType.isFloatingPoint) {
       if(kernel.cellType.isFloatingPoint) {
-        new KernelCalculation[Tile](tile, kernel, bounds) {
+        new KernelCalculation[Tile](tile, kernel, bounds, target) with ArrayTileResult {
           def calc(t: Tile, cursor: KernelCursor) = {
             var s = Double.NaN
             cursor.foreachWithWeightDouble { (x, y, w) =>
@@ -28,11 +26,9 @@ object Convolve {
             }
             resultTile.setDouble(cursor.col, cursor.row, s)
           }
-
-          def result = resultTile
         }
       } else {
-        new KernelCalculation[Tile](tile, kernel, bounds) {
+        new KernelCalculation[Tile](tile, kernel, bounds, target) with ArrayTileResult {
           def calc(t: Tile, cursor: KernelCursor) = {
             var s = Double.NaN
             cursor.foreachWithWeight { (x, y, w) =>
@@ -44,13 +40,11 @@ object Convolve {
             }
             resultTile.setDouble(cursor.col, cursor.row, s)
           }
-
-          def result = resultTile
         }
       }
     } else {
       if(kernel.cellType.isFloatingPoint) {
-        new KernelCalculation[Tile](tile, kernel, bounds) {
+        new KernelCalculation[Tile](tile, kernel, bounds, target) with ArrayTileResult {
           def calc(t: Tile, cursor: KernelCursor) = {
             var s = NODATA
             cursor.foreachWithWeightDouble { (x, y, w) =>
@@ -62,11 +56,9 @@ object Convolve {
             }
             resultTile.set(cursor.col, cursor.row, s)
           }
-
-          def result = resultTile
         }
       } else {
-        new KernelCalculation[Tile](tile, kernel, bounds) {
+        new KernelCalculation[Tile](tile, kernel, bounds, target) with ArrayTileResult {
           def calc(t: Tile, cursor: KernelCursor) = {
             var s = NODATA
             cursor.foreachWithWeight { (x, y, w) =>
@@ -78,13 +70,11 @@ object Convolve {
             }
             resultTile.set(cursor.col, cursor.row, s)
           }
-
-          def result = resultTile
         }
       }
     }
   }
 
-  def apply(tile: Tile, kernel: Kernel, bounds: Option[GridBounds] = None): Tile =
-    calculation(tile, kernel, bounds).execute()
+  def apply(tile: Tile, kernel: Kernel, bounds: Option[GridBounds] = None, target: TargetCell = TargetCell.All): Tile =
+    calculation(tile, kernel, bounds, target).execute()
 }

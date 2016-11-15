@@ -19,13 +19,14 @@ package geotrellis.spark
 import geotrellis.spark.io.hadoop.HdfsUtils
 import geotrellis.spark.testkit._
 import geotrellis.spark.util.SparkUtils
+import geotrellis.spark.io.kryo.KryoRegistrator
 
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.FileUtil
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.serializer.{ KryoRegistrator => SparkKryoRegistrator }
+import org.apache.spark.serializer.KryoSerializer
 import org.scalatest._
 import org.scalatest.BeforeAndAfterAll
 
@@ -58,7 +59,7 @@ trait TestEnvironment extends BeforeAndAfterAll
     afterAlls += f
 
   def setKryoRegistrator(conf: SparkConf): Unit =
-    conf.set("spark.kryo.registrator", "geotrellis.spark.io.kryo.KryoRegistrator")
+    conf.set("spark.kryo.registrator", classOf[KryoRegistrator].getName)
 
   lazy val _sc: SparkContext = {
     System.setProperty("spark.driver.port", "0")
@@ -72,9 +73,9 @@ trait TestEnvironment extends BeforeAndAfterAll
 
     // Shortcut out of using Kryo serialization if we want to test against
     // java serialization.
-    if(Properties.envOrNone("GEOTRELLIS_USE_JAVA_SER") == None) {
+    if(Properties.envOrNone("GEOTRELLIS_USE_JAVA_SER").isEmpty) {
       conf
-        .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+        .set("spark.serializer", classOf[KryoSerializer].getName)
         .set("spark.kryoserializer.buffer.max", "500m")
         .set("spark.kryo.registrationRequired", "false")
       setKryoRegistrator(conf)
@@ -120,10 +121,10 @@ trait TestEnvironment extends BeforeAndAfterAll
     val hadoopTmpDir = HdfsUtils.getTempDir(conf)
 
     // file handle to the test directory on local file system
-    val outputLocalHandle = new File(outputHomeLocalHandle.toString(), name)
+    val outputLocalHandle = new File(outputHomeLocalHandle.toString, name)
     if (!outputLocalHandle.exists)
       outputLocalHandle.mkdirs()
-    (new Path(outputHomeLocalHandle.toURI()), new Path(hadoopTmpDir), new Path(outputLocalHandle.toURI()), outputLocalHandle.getAbsolutePath)
+    (new Path(outputHomeLocalHandle.toURI), new Path(hadoopTmpDir), new Path(outputLocalHandle.toURI), outputLocalHandle.getAbsolutePath)
   }
 
 
@@ -133,17 +134,17 @@ trait TestEnvironment extends BeforeAndAfterAll
    * The parent directory is assumed to exist
    */
   def mkdir(dir: Path): Unit = {
-   val handle = new File(dir.toUri())
+   val handle = new File(dir.toUri)
     if (!handle.exists)
       handle.mkdirs()
   }
 
-  def clearTestDirectory() = FileUtil.fullyDelete(new File(outputLocal.toUri()))
+  def clearTestDirectory() = FileUtil.fullyDelete(new File(outputLocal.toUri))
 
   // clean up the test directory after the test
   // note that this afterAll is not inherited from BeforeAndAfterAll, its callers are
   override def afterAll() = {
-    FileUtil.fullyDelete(new File(outputLocal.toUri()))
+    FileUtil.fullyDelete(new File(outputLocal.toUri))
     sc.stop()
     if(afterAlls != null) {
       for(f <- afterAlls) { f() }

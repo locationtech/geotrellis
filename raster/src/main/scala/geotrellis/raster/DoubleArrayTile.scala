@@ -16,11 +16,7 @@
 
 package geotrellis.raster
 
-import geotrellis.vector.Extent
-
 import java.nio.ByteBuffer
-import spire.syntax.cfor._
-
 
 /**
  * [[ArrayTile]] based on Array[Double] (each cell as a Double).
@@ -50,6 +46,18 @@ abstract class DoubleArrayTile(val array: Array[Double], cols: Int, rows: Int)
     * @return  The copy
     */
   def copy: ArrayTile = ArrayTile(array.clone, cols, rows)
+
+  def withNoData(noDataValue: Option[Double]): DoubleArrayTile =
+    DoubleArrayTile(array, cols, rows, cellType.withNoData(noDataValue))
+
+  def interpretAs(newCellType: CellType): ArrayTile = {
+    newCellType match {
+      case dt: DoubleCells with NoDataHandling =>
+        DoubleArrayTile(array, cols, rows, dt)
+      case _ =>
+        withNoData(None).convert(newCellType)
+    }
+  }
 }
 
 /**
@@ -211,6 +219,33 @@ object DoubleArrayTile {
       case udct: DoubleUserDefinedNoDataCellType =>
         new DoubleUserDefinedNoDataArrayTile(arr, cols, rows, udct)
     }
+
+  /**
+    * Create a new [[DoubleArrayTile]] from an array of doubles, a
+    * number of columns, and a number of rows.
+    *
+    * @param   arr          An array of doubles
+    * @param   cols         The number of columns
+    * @param   rows         The number of rows
+    * @param   noDataValue  Optional NODATA value
+    * @return               A new DoubleArrayTile
+    */
+  def apply(arr: Array[Double], cols: Int, rows: Int, noDataValue: Option[Double]): DoubleArrayTile =
+    apply(arr, cols, rows, DoubleCells.withNoData(noDataValue))
+
+  /**
+    * Create a new [[DoubleArrayTile]]  an array of doubles, a
+    * number of columns, and a number of rows.
+    *
+    * @param   arr          An array of integers
+    * @param   cols         The number of columns
+    * @param   rows         The number of rows
+    * @param   noDataValue  NODATA value
+    * @return               A new DoubleArrayTile
+    */
+  def apply(arr: Array[Double], cols: Int, rows: Int, noDataValue: Double): DoubleArrayTile =
+    apply(arr, cols, rows, Some(noDataValue))
+
 
   /**
     * Produce a [[DoubleArrayTile]] of the specified dimensions.

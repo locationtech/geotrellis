@@ -75,61 +75,61 @@ abstract class PolygonalSummaryTileLayerCollectionMethods[
 
   def polygonalMax(polygon: Polygon): Int =
     if (self.isEmpty)
-      NoData.int
+      NODATA
     else
       polygonalSummary(polygon, Int.MinValue, MaxSummary)
 
   def polygonalMax(multiPolygon: MultiPolygon): Int =
     if (self.isEmpty)
-      NoData.int
+      NODATA
     else
       polygonalSummary(multiPolygon, Int.MinValue, MaxSummary)
 
   def polygonalMaxDouble(polygon: Polygon): Double =
     if (self.isEmpty)
-      NoData.double
+      doubleNODATA
     else
       polygonalSummary(polygon, Double.MinValue, MaxDoubleSummary)
 
   def polygonalMaxDouble(multiPolygon: MultiPolygon): Double =
     if (self.isEmpty)
-      NoData.double
+      doubleNODATA
     else
       polygonalSummary(multiPolygon, Double.MinValue, MaxDoubleSummary)
 
   def polygonalMin(polygon: Polygon): Int =
     if (self.isEmpty)
-      NoData.int
+      NODATA
     else
       polygonalSummary(polygon, Int.MaxValue, MinSummary)
 
   def polygonalMin(multiPolygon: MultiPolygon): Int =
     if (self.isEmpty)
-      NoData.int
+      NODATA
     else
       polygonalSummary(multiPolygon, Int.MaxValue, MinSummary)
 
   def polygonalMinDouble(polygon: Polygon): Double =
     if (self.isEmpty)
-      NoData.double
+      doubleNODATA
     else
       polygonalSummary(polygon, Double.MaxValue, MinDoubleSummary)
 
   def polygonalMinDouble(multiPolygon: MultiPolygon): Double =
     if (self.isEmpty)
-      NoData.double
+      doubleNODATA
     else
       polygonalSummary(multiPolygon, Double.MaxValue, MinDoubleSummary)
 
   def polygonalMean(polygon: Polygon): Double =
     if (self.isEmpty)
-      NoData.double
+      doubleNODATA
     else
       polygonalSummary(polygon, MeanResult(0.0, 0L), MeanSummary).mean
 
   def polygonalMean(multiPolygon: MultiPolygon): Double =
     if (self.isEmpty)
-      NoData.double
+      doubleNODATA
     else
       polygonalSummary(multiPolygon, MeanResult(0.0, 0L), MeanSummary).mean
 

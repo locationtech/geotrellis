@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2014 Azavea.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -58,7 +58,7 @@ object CursorStrategy {
       case SpiralZagTraversalStrategy => handleSpiralZag(analysisArea, cursor, calc)
     }
   }
-  
+
   private def handleSpiralZag(analysisArea: GridBounds, cursor: Cursor, calc: () => Unit) = {
     var colMax = analysisArea.colMax
     var rowMax = analysisArea.rowMax
@@ -74,7 +74,7 @@ object CursorStrategy {
     var zagTime = false
 
     cursor.centerOn(col, row)
-    
+
     // Spiral around the raster.
     // Once we get down with dealing with borders,
     // zig zag over inner portion.
@@ -109,8 +109,8 @@ object CursorStrategy {
       colMin += 1
       colMax -= 1
 
-      if(rowMin == rowMax || colMin == colMax) { 
-        done = true 
+      if(rowMin == rowMax || colMin == colMax) {
+        done = true
       } else {
         cursor.move(Movement.Right)
         col += 1
@@ -195,12 +195,12 @@ object CursorStrategy {
  * Focal strategy that implements a more strict mechanism that informs the user
  * what cells have been added or removed. This strategy is more performant,
  * but can only be used for Square or Circle neighborhoods.
- */ 
+ */
 object CellwiseStrategy {
-  def execute(r: Tile, n: Square, calc: CellwiseCalculation[_], analysisArea: GridBounds): Unit =
+  def execute(r: Tile, n: Square, calc: CellwiseStrategyCalculation, analysisArea: GridBounds): Unit =
     handleScanLine(r, n.extent, calc, analysisArea)
 
-  private def handleScanLine(r: Tile, n: Int, calc: CellwiseCalculation[_], analysisArea: GridBounds) = {
+  private def handleScanLine(r: Tile, n: Int, calc: CellwiseStrategyCalculation, analysisArea: GridBounds) = {
     val rowMin = analysisArea.rowMin
     val colMin = analysisArea.colMin
     val rowMax = analysisArea.rowMax
@@ -230,7 +230,7 @@ object CellwiseStrategy {
       }
 
       // offset output col & row to analysis area coordinates
-      calc.setValue(0, focusRow - rowMin) 
+      calc.setValue(colMin, focusRow, 0, focusRow - rowMin)
 
       var focusCol = colMin + 1
       while (focusCol <= colMax) {
@@ -255,7 +255,7 @@ object CellwiseStrategy {
           }
 
         // offset output col & row to analysis area coordinates
-        calc.setValue(focusCol - colMin, focusRow - rowMin)
+        calc.setValue(focusCol, focusRow, focusCol - colMin, focusRow - rowMin)
         focusCol += 1
       }
       focusRow += 1

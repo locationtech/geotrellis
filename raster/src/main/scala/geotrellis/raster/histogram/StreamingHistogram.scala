@@ -605,10 +605,10 @@ class StreamingHistogram(
     percentileBreaks(List(q)).head
 
   /**
-    * This method return the (approximate) quantile breaks of the
+    * This method returns the (approximate) quantile breaks of the
     * distribution of points that the histogram has seen so far.  It
     * is guaranteed that no value in the returned array will be
-    * outside the range minimum-maximum range of values seen.
+    * outside the minimum-maximum range of values seen.
     *
     * @param  num  The number of breaks desired
     */

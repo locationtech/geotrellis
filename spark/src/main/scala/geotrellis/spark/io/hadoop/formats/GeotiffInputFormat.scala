@@ -25,7 +25,9 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext
 
 class GeotiffInputFormat extends BinaryFileInputFormat[ProjectedExtent, Tile] {
   def read(bytes: Array[Byte], context: TaskAttemptContext): (ProjectedExtent, Tile) = {
+    val inputCrs = TemporalGeoTiffInputFormat.getCrs(context)
+
     val ProjectedRaster(Raster(tile, extent), crs) = SinglebandGeoTiff(bytes).projectedRaster
-    (ProjectedExtent(extent, crs), tile)
+    (ProjectedExtent(extent, inputCrs.getOrElse(crs)), tile)
   }
 }

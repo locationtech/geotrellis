@@ -26,7 +26,9 @@ trait GeometryFormats {
       arr.elements match {
         case Seq(JsNumber(x), JsNumber(y)) =>
           Point(x.toDouble, y.toDouble)
-        case _ => throw new DeserializationException("Point [x,y] coordinates expected")
+        case Seq(JsNumber(x), JsNumber(y), _) =>
+          Point(x.toDouble, y.toDouble)
+        case _ => throw new DeserializationException("Point [x,y] or [x,y,_] coordinates expected")
       }
     case _ => throw new DeserializationException("Point [x,y] coordinates expected")
   }

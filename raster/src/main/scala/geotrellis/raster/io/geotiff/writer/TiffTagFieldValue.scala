@@ -136,7 +136,7 @@ object TiffTagFieldValue {
       case None =>
     }
 
-    val metadata = toBytes(new scala.xml.PrettyPrinter(80, 2).format(Tags(modifiedHeaderTags, geoTiff.tags.bandTags).toXml))
+    val metadata = toBytes(new scala.xml.PrettyPrinter(Int.MaxValue, 2).format(Tags(modifiedHeaderTags, geoTiff.tags.bandTags).toXml))
     fieldValues += TiffTagFieldValue(MetadataTag, AsciisFieldType, metadata.length, metadata)
 
     // Tags that are different if it is striped or tiled storage, and a function

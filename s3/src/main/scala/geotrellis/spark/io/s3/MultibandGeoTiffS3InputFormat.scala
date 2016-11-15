@@ -11,7 +11,8 @@ class MultibandGeoTiffS3InputFormat extends S3InputFormat[ProjectedExtent, Multi
     new S3RecordReader[ProjectedExtent, MultibandTile] {
       def read(key: String, bytes: Array[Byte]) = {
         val geoTiff = MultibandGeoTiff(bytes)
-        val projectedExtent = ProjectedExtent(geoTiff.extent, geoTiff.crs)
+        val inputCrs = TemporalGeoTiffS3InputFormat.getCrs(context)
+        val projectedExtent = ProjectedExtent(geoTiff.extent, inputCrs.getOrElse(geoTiff.crs))
         (projectedExtent, geoTiff.tile)
       }
     }
