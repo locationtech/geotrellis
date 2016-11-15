@@ -14,16 +14,6 @@ import org.scalatest._
 
 import java.nio.file.{ Paths, Files }
 
-// class MockGeoTiffS3InputFormat extends GeoTiffS3InputFormat {
-//   override def getS3Client(credentials: AWSCredentials): S3Client = new MockS3Client
-//   override def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
-//     new MockGeoTiffS3RecordReader(context)
-// }
-
-// class MockGeoTiffS3RecordReader(context: TaskAttemptContext) extends GeoTiffS3RecordReader(context) {
-//   override def getS3Client(credentials: AWSCredentials): S3Client = new MockS3Client
-// }
-
 class GeoTiffS3InputFormatSpec extends FunSpec with TestEnvironment with Matchers {
 
   val mockClient = new MockS3Client

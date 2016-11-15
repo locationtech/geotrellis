@@ -126,6 +126,4 @@ object S3Client {
 
   def ANONYMOUS =
     AmazonS3Client(new AnonymousAWSCredentials(), defaultConfiguration)
-
-//  def apply(
 }

@@ -21,16 +21,6 @@ import java.time.format.DateTimeFormatter
 
 import org.scalatest._
 
-// class MockTemporalGeoTiffS3RecordReader(context: TaskAttemptContext) extends TemporalGeoTiffS3RecordReader(context) {
-//   override def getS3Client(credentials: AWSCredentials): S3Client = new MockS3Client
-// }
-
-// class MockTemporalGeoTiffS3InputFormat extends TemporalGeoTiffS3InputFormat {
-//   override def getS3Client(credentials: AWSCredentials): S3Client = new MockS3Client
-//   override def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
-//     new MockTemporalGeoTiffS3RecordReader(context)
-// }
-
 class TemporalGeoTiffS3InputFormatSpec extends FunSpec with Matchers with TestEnvironment {
   val layoutScheme = ZoomedLayoutScheme(LatLng)
 
