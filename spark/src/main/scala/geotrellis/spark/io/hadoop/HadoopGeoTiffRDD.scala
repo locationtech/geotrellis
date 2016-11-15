@@ -21,6 +21,8 @@ import org.apache.spark.rdd.RDD
   * Allows for reading of whole or windowed GeoTiff as RDD[(K, V)]s through Hadoop FileSystem API.
   */
 object HadoopGeoTiffRDD {
+  final val GEOTIFF_TIME_TAG_DEFAULT = "TIFFTAG_DATETIME"
+  final val GEOTIFF_TIME_FORMAT_DEFAULT = "yyyy:MM:dd HH:mm:ss"
 
   /**
     * This case class contains the various parameters one can set when reading RDDs from Hadoop using Spark.
@@ -39,8 +41,8 @@ object HadoopGeoTiffRDD {
   case class Options(
     tiffExtensions: Seq[String] = Seq(".tif", ".TIF", ".tiff", ".TIFF"),
     crs: Option[CRS] = None,
-    timeTag: String = TemporalGeoTiffInputFormat.GEOTIFF_TIME_TAG_DEFAULT,
-    timeFormat: String = TemporalGeoTiffInputFormat.GEOTIFF_TIME_FORMAT_DEFAULT,
+    timeTag: String = GEOTIFF_TIME_TAG_DEFAULT,
+    timeFormat: String = GEOTIFF_TIME_FORMAT_DEFAULT,
     maxTileSize: Option[Int] = None,
     numPartitions: Option[Int] = None,
     chunkSize: Option[Int] = None
@@ -58,7 +60,6 @@ object HadoopGeoTiffRDD {
     */
   private def configuration(path: Path, options: HadoopGeoTiffRDD.Options)(implicit sc: SparkContext): Configuration = {
     val conf = sc.hadoopConfiguration.withInputDirectory(path, options.tiffExtensions)
-    options.crs.foreach { crs => GeoTiffInputFormat.setCrs(conf, crs)}
     conf
   }
 
