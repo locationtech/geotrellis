@@ -1,6 +1,5 @@
 package geotrellis.spark.etl.hadoop
 
-import geotrellis.proj4.CRS
 import geotrellis.raster.MultibandTile
 import geotrellis.spark.etl.config.EtlConf
 import geotrellis.vector.ProjectedExtent

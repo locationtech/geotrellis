@@ -1,10 +1,8 @@
 package geotrellis.spark.etl.s3
 
-import geotrellis.proj4.CRS
 import geotrellis.raster.Tile
 import geotrellis.spark.etl.config.EtlConf
-import geotrellis.spark.ingest._
-import geotrellis.spark.io.s3.{S3GeoTiffRDD, GeoTiffS3InputFormat, TemporalGeoTiffS3InputFormat}
+import geotrellis.spark.io.s3.S3GeoTiffRDD
 import geotrellis.vector.ProjectedExtent
 
 import org.apache.spark.SparkContext
@@ -15,7 +13,7 @@ class GeoTiffS3Input extends S3Input[ProjectedExtent, Tile] {
   def apply(conf: EtlConf)(implicit sc: SparkContext): RDD[(ProjectedExtent, Tile)] = {
     val path = getPath(conf.input.backend)
     S3GeoTiffRDD.spatial(path.bucket, path.prefix, S3GeoTiffRDD.Options(
-      crs = conf.input.crs.map(CRS.fromName)
+      crs = conf.input.getCrs
     ))
   }
 }
