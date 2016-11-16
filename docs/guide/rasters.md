@@ -520,17 +520,17 @@ The Kriging methods are largely classified into different types in the way
 the mean(mu) and the covariance values of the object are dealt with.
 
 ``` scala
-    // Array of sample points with given data
-    val points: Array[PointFeature[Double]] = ...
-    /** Supported is also present for
-      * val points: Traversable[PointFeature[D]] = ... //where D <% Double
-      */
+// Array of sample points with given data
+val points: Array[PointFeature[Double]] = ...
+/** Supported is also present for
+  * val points: Traversable[PointFeature[D]] = ... //where D <% Double
+  */
 
-    // The raster extent to be kriged
-    val extent = Extent(xMin, yMin, xMax, yMax)
-    val cols: Int = ...
-    val rows: Int = ...
-    val rasterExtent = RasterExtent(extent, cols, rows)
+// The raster extent to be kriged
+val extent = Extent(xMin, yMin, xMax, yMax)
+val cols: Int = ...
+val rows: Int = ...
+val rasterExtent = RasterExtent(extent, cols, rows)
 ```
 
 There exist four major kinds of Kriging interpolation techniques, namely:
@@ -538,19 +538,18 @@ There exist four major kinds of Kriging interpolation techniques, namely:
 <h4>Simple Kriging</h4>
 
 ``` scala
-    // Simple kriging, a tile  set with the Kriging prediction per cell is returned
-    val sv: Semivariogram = NonLinearSemivariogram(points, 30000, 0, Spherical)
+// Simple kriging, a tile  set with the Kriging prediction per cell is returned
+val sv: Semivariogram = NonLinearSemivariogram(points, 30000, 0, Spherical)
 
-    val krigingVal: Tile =
-        points.simpleKriging(rasterExtent, 5000, sv)
+val krigingVal: Tile = points.simpleKriging(rasterExtent, 5000, sv)
 
-    /**
-      * The user can also do Simple Kriging using :
-      * points.simpleKriging(rasterExtent)
-      * points.simpleKriging(rasterExtent, bandwidth)
-      * points.simpleKriging(rasterExtent, Semivariogram)
-      * points.simpleKriging(rasterExtent, bandwidth, Semivariogram)
-      */
+/**
+  * The user can also do Simple Kriging using :
+  * points.simpleKriging(rasterExtent)
+  * points.simpleKriging(rasterExtent, bandwidth)
+  * points.simpleKriging(rasterExtent, Semivariogram)
+  * points.simpleKriging(rasterExtent, bandwidth, Semivariogram)
+  */
 ```
 
 It belong to the class of Simple Spatial Prediction Models.
@@ -566,19 +565,18 @@ solely the sample points)
 <h4>Ordinary Kriging</h4>
 
 ``` scala
-    // Ordinary kriging, a tile  set with the Kriging prediction per cell is returned
-    val sv: Semivariogram = NonLinearSemivariogram(points, 30000, 0, Spherical)
+// Ordinary kriging, a tile  set with the Kriging prediction per cell is returned
+val sv: Semivariogram = NonLinearSemivariogram(points, 30000, 0, Spherical)
 
-    val krigingVal: Tile =
-        points.ordinaryKriging(rasterExtent, 5000, sv)
+val krigingVal: Tile = points.ordinaryKriging(rasterExtent, 5000, sv)
 
-    /**
-      * The user can also do Ordinary Kriging using :
-      * points.ordinaryKriging(rasterExtent)
-      * points.ordinaryKriging(rasterExtent, bandwidth)
-      * points.ordinaryKriging(rasterExtent, Semivariogram)
-      * points.ordinaryKriging(rasterExtent, bandwidth, Semivariogram)
-      */
+/**
+  * The user can also do Ordinary Kriging using :
+  * points.ordinaryKriging(rasterExtent)
+  * points.ordinaryKriging(rasterExtent, bandwidth)
+  * points.ordinaryKriging(rasterExtent, Semivariogram)
+  * points.ordinaryKriging(rasterExtent, bandwidth, Semivariogram)
+  */
 ```
 
 It belong to the class of Simple Spatial Prediction Models.
@@ -592,25 +590,24 @@ mean is assumed to be unknown and is estimated within the model.
 <h4>Universal Kriging</h4>
 
 ``` scala
-    // Universal kriging, a tile  set with the Kriging prediction per cell is returned
-    val attrFunc: (Double, Double) => Array[Double] = {
-      (x, y) => Array(x, y, x * x, x * y, y * y)
-    }
+// Universal kriging, a tile  set with the Kriging prediction per cell is returned
+val attrFunc: (Double, Double) => Array[Double] = {
+  (x, y) => Array(x, y, x * x, x * y, y * y)
+}
 
-    val krigingVal: Tile =
-        points.universalKriging(rasterExtent, attrFunc, 50, Spherical)
+val krigingVal: Tile = points.universalKriging(rasterExtent, attrFunc, 50, Spherical)
 
-    /**
-      * The user can also do Universal Kriging using :
-      * points.universalKriging(rasterExtent)
-      * points.universalKriging(rasterExtent, bandwidth)
-      * points.universalKriging(rasterExtent, model)
-      * points.universalKriging(rasterExtent, bandwidth, model)
-      * points.universalKriging(rasterExtent, attrFunc)
-      * points.universalKriging(rasterExtent, attrFunc, bandwidth)
-      * points.universalKriging(rasterExtent, attrFunc, model)
-      * points.universalKriging(rasterExtent, attrFunc, bandwidth, model)
-      */
+/**
+  * The user can also do Universal Kriging using :
+  * points.universalKriging(rasterExtent)
+  * points.universalKriging(rasterExtent, bandwidth)
+  * points.universalKriging(rasterExtent, model)
+  * points.universalKriging(rasterExtent, bandwidth, model)
+  * points.universalKriging(rasterExtent, attrFunc)
+  * points.universalKriging(rasterExtent, attrFunc, bandwidth)
+  * points.universalKriging(rasterExtent, attrFunc, model)
+  * points.universalKriging(rasterExtent, attrFunc, bandwidth, model)
+  */
 ```
 
 It belongs to the class of General Spatial Prediction Models.
@@ -633,25 +630,24 @@ Here, the "linear" refers to the linearity in parameters (beta).
 <h4>Geostatistical Kriging</h4>
 
 ``` scala
-    // Geostatistical kriging, a tile  set with the Kriging prediction per cell is returned
-    val attrFunc: (Double, Double) => Array[Double] = {
-      (x, y) => Array(x, y, x * x, x * y, y * y)
-    }
+// Geostatistical kriging, a tile  set with the Kriging prediction per cell is returned
+val attrFunc: (Double, Double) => Array[Double] = {
+  (x, y) => Array(x, y, x * x, x * y, y * y)
+}
 
-    val krigingVal: Tile =
-        points.geoKriging(rasterExtent, attrFunc, 50, Spherical)
+val krigingVal: Tile = points.geoKriging(rasterExtent, attrFunc, 50, Spherical)
 
-    /**
-      * The user can also do Universal Kriging using :
-      * points.geoKriging(rasterExtent)
-      * points.geoKriging(rasterExtent, bandwidth)
-      * points.geoKriging(rasterExtent, model)
-      * points.geoKriging(rasterExtent, bandwidth, model)
-      * points.geoKriging(rasterExtent, attrFunc)
-      * points.geoKriging(rasterExtent, attrFunc, bandwidth)
-      * points.geoKriging(rasterExtent, attrFunc, model)
-      * points.geoKriging(rasterExtent, attrFunc, bandwidth, model)
-      */
+/**
+  * The user can also do Universal Kriging using :
+  * points.geoKriging(rasterExtent)
+  * points.geoKriging(rasterExtent, bandwidth)
+  * points.geoKriging(rasterExtent, model)
+  * points.geoKriging(rasterExtent, bandwidth, model)
+  * points.geoKriging(rasterExtent, attrFunc)
+  * points.geoKriging(rasterExtent, attrFunc, bandwidth)
+  * points.geoKriging(rasterExtent, attrFunc, model)
+  * points.geoKriging(rasterExtent, attrFunc, bandwidth, model)
+  */
 ```
 
 It belong to the class of General Spatial Prediction Models.
@@ -694,8 +690,8 @@ any method for generating the set of attribute functions; in this case we
 have used coordinate transformation before the actual calculation).
 
 ``` scala
-    val c1: Double = 0.01 * (0.873 * (x - 418) - 0.488 * (y - 458))
-    val c2: Double = 0.01 * (0.488 * (x - 418) + 0.873 * (y - 458))
+val c1: Double = 0.01 * (0.873 * (x - 418) - 0.488 * (y - 458))
+val c2: Double = 0.01 * (0.488 * (x - 418) + 0.873 * (y - 458))
 ```
 
 ![Coordinate Mapping](./images/coordinateMapping.png)
@@ -706,10 +702,10 @@ Image taken from `Smith, T.E., (2014) Notebook on Spatial Data Analysis
 <h4> Elevation</h4>
 
 ``` scala
-    /** Estimate of the elevation's contribution to groundwater level
-      * [10 * exp(-c1)]
-      */
-    val elevation: Double = math.exp(-1 * c1)
+/** Estimate of the elevation's contribution to groundwater level
+  * [10 * exp(-c1)]
+  */
+val elevation: Double = math.exp(-1 * c1)
 ```
 
 <h4> Industry draw down (water usage of industry)</h4>
@@ -720,10 +716,10 @@ Image taken from `Smith, T.E., (2014) Notebook on Spatial Data Analysis
 [online]  http://www.seas.upenn.edu/~ese502/#notebook`
 
 ``` scala
-    /** Estimate of the industries' contribution to groundwater level
-      * exp{ -1.0 * [(1.5)*c1^2 - c2^2]}
-      */
-    val industryDrawDown: Double = math.exp(-1.5 * c1 * c1 - c2 * c2)
+/** Estimate of the industries' contribution to groundwater level
+  * exp{ -1.0 * [(1.5)*c1^2 - c2^2]}
+  */
+val industryDrawDown: Double = math.exp(-1.5 * c1 * c1 - c2 * c2)
 ```
 
 <h4> Island draw down (water usage of Venice)</h4>
@@ -734,11 +730,11 @@ Image taken from `Smith, T.E., (2014) Notebook on Spatial Data Analysis
 [online]  http://www.seas.upenn.edu/~ese502/#notebook`
 
 ``` scala
-    /** Estimate of the island's contribution to groundwater level
-      * //exp{-1.0 * (sqrt((s1-560)^2 + (s2-390)^2) / 35)^8 }
-      */
-    val islandDrawDown: Double =
-        math.exp(-1 * math.pow(math.sqrt(math.pow(x - 560, 2) + math.pow(y - 390, 2)) / 35, 8))
+/** Estimate of the island's contribution to groundwater level
+  * //exp{-1.0 * (sqrt((s1-560)^2 + (s2-390)^2) / 35)^8 }
+  */
+val islandDrawDown: Double =
+    math.exp(-1 * math.pow(math.sqrt(math.pow(x - 560, 2) + math.pow(y - 390, 2)) / 35, 8))
 ```
 
 <h4> The final attribute Function</h4>
@@ -752,8 +748,8 @@ not supply an `attrFunc`, by default the following attribute Function is
 used :
 
 ``` scala
-    // For a Point(x, y), the set of default attributes is :
-    Array(x, y, x * x, x * y, y * y)
+// For a Point(x, y), the set of default attributes is :
+Array(x, y, x * x, x * y, y * y)
 ```
 
 The default function would use the data values of the given sample points

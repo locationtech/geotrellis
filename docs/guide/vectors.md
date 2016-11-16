@@ -13,6 +13,7 @@ extension providing a `toGeoJson` method.  This means that:
 
 ```scala
 import geotrellis.vector.io._
+
 Polygon((10.0, 10.0), (10.0, 20.0), (30.0, 30.0), (10.0, 10.0)).toGeoJson
 ```
 
@@ -364,19 +365,19 @@ There exist four major kinds of Kriging interpolation techniques, namely :
 <h4>Simple Kriging</h4>
 
 ```scala
-    //Simple kriging, tuples of (prediction, variance) per prediction point
-    val sv: Semivariogram = NonLinearSemivariogram(points, 30000, 0, Spherical)
+//Simple kriging, tuples of (prediction, variance) per prediction point
+val sv: Semivariogram = NonLinearSemivariogram(points, 30000, 0, Spherical)
 
-    val krigingVal: Array[(Double, Double)] =
-        new SimpleKriging(points, 5000, sv)
-          .predict(location)
-    /**
-      * The user can also do Simple Kriging using :
-      * new SimpleKriging(points).predict(location)
-      * new SimpleKriging(points, bandwidth).predict(location)
-      * new SimpleKriging(points, sv).predict(location)
-      * new SimpleKriging(points, bandwidth, sv).predict(location)
-      */
+val krigingVal: Array[(Double, Double)] =
+    new SimpleKriging(points, 5000, sv)
+      .predict(location)
+/**
+  * The user can also do Simple Kriging using :
+  * new SimpleKriging(points).predict(location)
+  * new SimpleKriging(points, bandwidth).predict(location)
+  * new SimpleKriging(points, sv).predict(location)
+  * new SimpleKriging(points, bandwidth, sv).predict(location)
+  */
 ```
 
 It belongs to the class of Simple Spatial Prediction Models.
@@ -392,19 +393,19 @@ solely the sample points)
 <h4>Ordinary Kriging</h4>
 
 ```scala
-    //Ordinary kriging, tuples of (prediction, variance) per prediction point
-    val sv: Semivariogram = NonLinearSemivariogram(points, 30000, 0, Spherical)
+//Ordinary kriging, tuples of (prediction, variance) per prediction point
+val sv: Semivariogram = NonLinearSemivariogram(points, 30000, 0, Spherical)
 
-    val krigingVal: Array[(Double, Double)] =
-        new OrdinaryKriging(points, 5000, sv)
-          .predict(location)
-    /**
-      * The user can also do Ordinary Kriging using :
-      * new OrdinaryKriging(points).predict(location)
-      * new OrdinaryKriging(points, bandwidth).predict(location)
-      * new OrdinaryKriging(points, sv).predict(location)
-      * new OrdinaryKriging(points, bandwidth, sv).predict(location)
-      */
+val krigingVal: Array[(Double, Double)] =
+    new OrdinaryKriging(points, 5000, sv)
+      .predict(location)
+/**
+  * The user can also do Ordinary Kriging using :
+  * new OrdinaryKriging(points).predict(location)
+  * new OrdinaryKriging(points, bandwidth).predict(location)
+  * new OrdinaryKriging(points, sv).predict(location)
+  * new OrdinaryKriging(points, bandwidth, sv).predict(location)
+  */
 ```
 
 It belongs to the class of Simple Spatial Prediction Models.
@@ -418,26 +419,26 @@ mean is assumed to be unknown and is estimated within the model.
 <h4>Universal Kriging</h4>
 
 ```scala
-    //Universal kriging, tuples of (prediction, variance) per prediction point
+//Universal kriging, tuples of (prediction, variance) per prediction point
 
-    val attrFunc: (Double, Double) => Array[Double] = {
-      (x, y) => Array(x, y, x * x, x * y, y * y)
-    }
+val attrFunc: (Double, Double) => Array[Double] = {
+  (x, y) => Array(x, y, x * x, x * y, y * y)
+}
 
-    val krigingVal: Array[(Double, Double)] =
-        new UniversalKriging(points, attrFunc, 50, Spherical)
-          .predict(location)
-    /**
-      * The user can also do Universal Kriging using :
-      * new UniversalKriging(points).predict(location)
-      * new UniversalKriging(points, bandwidth).predict(location)
-      * new UniversalKriging(points, model).predict(location)
-      * new UniversalKriging(points, bandwidth, model).predict(location)
-      * new UniversalKriging(points, attrFunc).predict(location)
-      * new UniversalKriging(points, attrFunc, bandwidth).predict(location)
-      * new UniversalKriging(points, attrFunc, model).predict(location)
-      * new UniversalKriging(points, attrFunc, bandwidth, model).predict(location)
-      */
+val krigingVal: Array[(Double, Double)] =
+    new UniversalKriging(points, attrFunc, 50, Spherical)
+      .predict(location)
+/**
+  * The user can also do Universal Kriging using :
+  * new UniversalKriging(points).predict(location)
+  * new UniversalKriging(points, bandwidth).predict(location)
+  * new UniversalKriging(points, model).predict(location)
+  * new UniversalKriging(points, bandwidth, model).predict(location)
+  * new UniversalKriging(points, attrFunc).predict(location)
+  * new UniversalKriging(points, attrFunc, bandwidth).predict(location)
+  * new UniversalKriging(points, attrFunc, model).predict(location)
+  * new UniversalKriging(points, attrFunc, bandwidth, model).predict(location)
+  */
 ```
 
 It belongs to the class of General Spatial Prediction Models.
@@ -450,6 +451,7 @@ For example if :
 
     x(s) = [1, s1, s2, s1 * s1, s2 * s2, s1 * s2]'
     mu(s) = beta0 + beta1*s1 + beta2*s2 + beta3*s1*s1 + beta4*s2*s2 + beta5*s1*s2
+
 Here, the "linear" refers to the linearity in parameters (beta).
 
     mu(s) = x(s)' * beta,   beta unknown; s belongs to R
@@ -478,25 +480,25 @@ illustrations.
 <h4>Geostatistical Kriging</h4>
 
 ```scala
-    //Geostatistical kriging, tuples of (prediction, variance) per prediction point
-    val attrFunc: (Double, Double) => Array[Double] = {
-      (x, y) => Array(x, y, x * x, x * y, y * y)
-    }
+//Geostatistical kriging, tuples of (prediction, variance) per prediction point
+val attrFunc: (Double, Double) => Array[Double] = {
+  (x, y) => Array(x, y, x * x, x * y, y * y)
+}
 
-    val krigingVal: Array[(Double, Double)] =
-        new GeoKriging(points, attrFunc, 50, Spherical)
-          .predict(location)
-    /**
-      * Geostatistical Kriging can also be done using:
-      * new GeoKriging(points).predict(location)
-      * new GeoKriging(points, bandwidth).predict(location)
-      * new GeoKriging(points, model).predict(location)
-      * new GeoKriging(points, bandwidth, model).predict(location)
-      * new GeoKriging(points, attrFunc).predict(location)
-      * new GeoKriging(points, attrFunc, bandwidth).predict(location)
-      * new GeoKriging(points, attrFunc, model).predict(location)
-      * new GeoKriging(points, attrFunc, bandwidth, model).predict(location)
-      */
+val krigingVal: Array[(Double, Double)] =
+    new GeoKriging(points, attrFunc, 50, Spherical)
+      .predict(location)
+/**
+  * Geostatistical Kriging can also be done using:
+  * new GeoKriging(points).predict(location)
+  * new GeoKriging(points, bandwidth).predict(location)
+  * new GeoKriging(points, model).predict(location)
+  * new GeoKriging(points, bandwidth, model).predict(location)
+  * new GeoKriging(points, attrFunc).predict(location)
+  * new GeoKriging(points, attrFunc, bandwidth).predict(location)
+  * new GeoKriging(points, attrFunc, model).predict(location)
+  * new GeoKriging(points, attrFunc, bandwidth, model).predict(location)
+  */
 ```
 
 It belongs to the class of General Spatial Prediction Models.
