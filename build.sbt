@@ -86,7 +86,7 @@ lazy val root = Project("geotrellis", file(".")).
     geotools,
     slick,
     vectortile,
-		python,
+		python
   ).
   settings(commonSettings: _*).
   settings(
