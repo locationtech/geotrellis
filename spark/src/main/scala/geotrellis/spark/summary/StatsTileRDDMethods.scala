@@ -5,14 +5,15 @@ import geotrellis.raster.histogram._
 import geotrellis.raster.mapalgebra.local._
 import geotrellis.raster.summary._
 import geotrellis.spark._
-import geotrellis.spark.mapalgebra._
+import geotrellis.util.MethodExtensions
 
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
 
+import scala.reflect.ClassTag
 
-trait StatsTileRDDMethods[K] extends TileRDDMethods[K] {
+abstract class StatsTileRDDMethods[K: ClassTag] extends MethodExtensions[RDD[(K, Tile)]] {
 
   def averageByKey(partitioner: Option[Partitioner] = None): RDD[(K, Tile)] = {
     val createCombiner = (tile: Tile) => tile -> 1

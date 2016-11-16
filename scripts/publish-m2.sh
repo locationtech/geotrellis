@@ -11,6 +11,7 @@
       "project raster" +publish-m2 \
       "project raster-testkit" +publish-m2 \
       "project s3" +publish-m2 \
+      "project s3-testkit" +publish-m2 \
       "project shapefile" +publish-m2 \
       "project slick" +publish-m2 \
       "project spark" +publish-m2 \

@@ -189,4 +189,83 @@ class ReprojectSpec extends FunSpec
       windowedReproject.extent should be (regularReproject.extent)
     }
   }
+
+  describe("Reprojecting with a specified target raster extent") {
+    it("should do a reproject into a different CRS") {
+      val srcCRS = CRS.fromEpsgCode(32618)
+      val destCRS = WebMercator
+      val transform = Transform(srcCRS, destCRS)
+
+      val tile = createConsecutiveTile(5)
+
+      val srcExtent = RasterExtent(Extent(-10.0, -20.0, 10.0, 20.0), 5, 5)
+      val destExtent = ReprojectRasterExtent(srcExtent, transform)
+
+      val srcRaster = ProjectedRaster(Raster(tile, srcExtent.extent), srcCRS)
+
+      val options = Reproject.Options(
+        targetRasterExtent = Some(destExtent)
+      )
+
+      val resultRegular = srcRaster.reproject(destCRS)
+      val resultOptions = srcRaster.reproject(destCRS, options)
+
+      resultRegular.rasterExtent should be (resultOptions.rasterExtent)
+    }
+
+    it("should do a resample into a different CRS") {
+      val srcCRS = CRS.fromEpsgCode(32618)
+      val destCRS = WebMercator
+      val transform = Transform(srcCRS, destCRS)
+
+      val tile = createConsecutiveTile(5)
+
+      val srcExtent = RasterExtent(Extent(-10.0, -20.0, 10.0, 20.0), 5, 5)
+      val srcExtent2 = RasterExtent(Extent(-15.0, -25.0, 5.0, 15.0), 5, 5)
+      val destExtent2 = ReprojectRasterExtent(srcExtent2, transform)
+
+      val srcRaster = ProjectedRaster(Raster(tile, srcExtent.extent), srcCRS)
+
+      val options = Reproject.Options(
+        targetRasterExtent = Some(destExtent2)
+      )
+
+      val resultRegular = srcRaster.reproject(destCRS).raster.resample(destExtent2)
+      val resultOptions = srcRaster.reproject(destCRS, options)
+
+      resultRegular.rasterExtent should be (resultOptions.rasterExtent)
+    }
+
+    it("should do a windowed resample into a different CRS") {
+      val srcCRS = CRS.fromEpsgCode(32618)
+      val destCRS = WebMercator
+      val transform = Transform(srcCRS, destCRS)
+
+      val rasterExtent = RasterExtent(Extent(563760.000, 4428900.000, 579120.000, 4444260.000), 30.0, 30.0, 512, 512)
+      val rasterExtent2 = RasterExtent(Extent(563750.000, 4428890.000, 579110.000, 4444250.000), 30.0, 30.0, 512, 512)
+      val destExtent2 = ReprojectRasterExtent(rasterExtent2, transform)
+
+      val expandedGridBounds = GridBounds(-10, -10, rasterExtent.cols + 10 - 1, rasterExtent.rows + 10 - 1)
+      val expandedExtent = rasterExtent.extentFor(expandedGridBounds, clamp = false)
+      val expandedRasterExtent = RasterExtent(expandedExtent, rasterExtent.cols + 20, rasterExtent.rows + 20)
+
+      val expandedTile =
+        IntArrayTile(Array.ofDim[Int](expandedRasterExtent.size).fill(1), expandedRasterExtent.cols, expandedRasterExtent.rows)
+      val expandedRaster = Raster(expandedTile, expandedExtent)
+
+      val tile = IntArrayTile(Array.ofDim[Int](rasterExtent.size).fill(1), rasterExtent.cols, rasterExtent.rows)
+      val raster = Raster(tile, rasterExtent.extent)
+
+      val windowBounds = GridBounds(10, 10, 10 + rasterExtent.cols - 1, 10 + rasterExtent.rows - 1)
+
+      val options = Reproject.Options(
+        targetRasterExtent = Some(destExtent2)
+      )
+
+      val regularReproject = raster.reproject(srcCRS, destCRS).resample(destExtent2)
+      val windowedReproject = expandedRaster.reproject(windowBounds, srcCRS, destCRS, options)
+
+      windowedReproject.rasterExtent should be (regularReproject.rasterExtent)
+    }
+  }
 }

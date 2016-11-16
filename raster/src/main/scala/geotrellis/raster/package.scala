@@ -27,6 +27,7 @@ package object raster
     with distance.Implicits
     with density.Implicits
     with geotrellis.raster.mapalgebra.focal.hillshade.Implicits
+    with interpolation.Implicits
     with mask.Implicits
     with merge.Implicits
     with reproject.Implicits
@@ -59,6 +60,7 @@ package object raster
       with mapalgebra.local.LocalMethods
       with mapalgebra.zonal.ZonalMethods
       with mask.SinglebandTileMaskMethods
+      with matching.SinglebandMatchingMethods
       with merge.SinglebandTileMergeMethods
       with prototype.SinglebandTilePrototypeMethods
       with regiongroup.RegionGroupMethods
@@ -78,6 +80,7 @@ package object raster
       with crop.MultibandTileCropMethods
       with equalization.MultibandEqualizationMethods
       with mask.MultibandTileMaskMethods
+      with matching.MultibandMatchingMethods
       with merge.MultibandTileMergeMethods
       with prototype.MultibandTilePrototypeMethods
       with render.MultibandColorMethods

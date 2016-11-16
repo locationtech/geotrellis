@@ -67,5 +67,27 @@ class ModeSpec extends FunSpec with Matchers with FocalOpSpec with RasterMatcher
 
       assertEqual(actualTile, expectedTile, threshold = 0.001)
     }
+
+    it("square mode for nd cells") {
+      val input = Array[Int](
+        nd,7,1,     1, 3,5,      9,8,2,
+         9,1,1,     2, 2,2,      4,3,5,
+         3,8,1,     3, 3,3,      1,2,2,
+         2,4,7,     1,nd,1,      8,4,3)
+
+      val expected = Array(
+        nd,7, 1,   1, 3, 5,   9, 8, 2,
+        9, 1, 1,   2, 2, 2,   4, 3, 5,
+
+        3, 8, 1,   3, 3, 3,   1, 2, 2,
+        2, 4, 7,   1,3, 1,   8, 4, 3
+      )
+
+      val inputTile = createTile(input, 9, 4)
+      val expectedTile = createTile(expected, 9, 4)
+      val actualTile = inputTile.focalMode(Square(1), target = TargetCell.NoData)
+
+      assertEqual(actualTile, expectedTile, threshold = 0.001)
+    }
   }
 }

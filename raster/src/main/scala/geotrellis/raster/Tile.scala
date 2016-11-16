@@ -20,10 +20,8 @@ import spire.syntax.cfor._
 import com.typesafe.scalalogging._
 
 import java.util.Locale
-
-import math.BigDecimal
-
-import collection.mutable.ArrayBuffer
+import scala.collection.mutable.ArrayBuffer
+import scala.math.BigDecimal
 
 
 /**
@@ -115,6 +113,17 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] with LazyL
     */
   def convert(cellType: CellType): Tile
 
+
+  def withNoData(noDataValue: Option[Double]): Tile
+
+  /** Changes the interpretation of the tile cells through changing NoData handling and optionally cell data type.
+    * If [[DataType]] portion of the [[CellType]] is unchanged the tile data is not duplicated through conversion.
+    * If cell [[DataType]] conversion is required it is done in a naive way, without considering NoData handling.
+    *
+    * @param newCellType CellType to be used in interpreting existing cells
+    */
+  def interpretAs(newCellType: CellType): Tile
+
   /**
     * Get value at given coordinates.
     */
@@ -163,6 +172,20 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] with LazyL
   /**
     * Map the given function across the present [[Tile]].  The result
     * is another Tile.
+    *
+    * Values can also be mapped with "class-break logic":
+    * {{{
+    * import geotrellis.raster.render.BreakMap
+    *
+    * // Maps break values to result values
+    * val m: Map[Int, Int] = ...
+    * val t: Tile = ...
+    *
+    * // BreakMap extends `Function1`
+    * t.map(BreakMap.i2i(m))
+    * }}}
+    * If `Tile` above had an underlying floating [[CellType]],
+    * then the transformation would effectively be from `Double => Int`.
     */
   def map(f: Int => Int): Tile
 
@@ -175,6 +198,20 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] with LazyL
   /**
     * Map the given function across the present [[Tile]].  The result
     * is another Tile.
+    *
+    * Values can also be mapped with "class-break logic":
+    * {{{
+    * import geotrellis.raster.render.BreakMap
+    *
+    * // Maps break values to result values
+    * val m: Map[Double, Double] = ...
+    * val t: Tile = ...
+    *
+    * // BreakMap extends `Function1`
+    * t.mapDouble(BreakMap.i2i(m))
+    * }}}
+    * If `Tile` above had an underlying integer [[CellType]],
+    * then the transformation would effectively be from `Int => Double`.
     */
   def mapDouble(f: Double => Double): Tile
 

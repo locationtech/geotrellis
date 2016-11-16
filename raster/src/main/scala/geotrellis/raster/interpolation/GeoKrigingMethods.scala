@@ -19,34 +19,33 @@ package geotrellis.raster.interpolation
 import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.vector.interpolation.{GeoKriging, ModelType}
+import geotrellis.util.MethodExtensions
 
 /** Methods implicitly added to tile via the package import.
   * Contains a method for each overloaded way to create a GeoKriging
   */
-trait GeoKrigingMethods {
-  val points: Array[PointFeature[Double]]
-
+trait GeoKrigingMethods extends MethodExtensions[Traversable[PointFeature[Double]]] {
   def geoKriging(rasterExtent: RasterExtent) =
-    Interpolation.kriging(rasterExtent)(GeoKriging(points))
+    Interpolation.kriging(rasterExtent)(GeoKriging(self.toArray))
 
   def geoKriging(rasterExtent: RasterExtent, bandwidth: Double) =
-    Interpolation.kriging(rasterExtent)(GeoKriging(points, bandwidth))
+    Interpolation.kriging(rasterExtent)(GeoKriging(self.toArray, bandwidth))
 
   def geoKriging(rasterExtent: RasterExtent, model: ModelType) =
-    Interpolation.kriging(rasterExtent)(GeoKriging(points, model))
+    Interpolation.kriging(rasterExtent)(GeoKriging(self.toArray, model))
 
   def geoKriging(rasterExtent: RasterExtent, bandwidth: Double, model: ModelType) =
-    Interpolation.kriging(rasterExtent)(GeoKriging(points, bandwidth, model))
+    Interpolation.kriging(rasterExtent)(GeoKriging(self.toArray, bandwidth, model))
 
   def geoKriging(rasterExtent: RasterExtent, attrFunc: (Double, Double) => Array[Double]) =
-    Interpolation.kriging(rasterExtent)(GeoKriging(points, attrFunc))
+    Interpolation.kriging(rasterExtent)(GeoKriging(self.toArray, attrFunc))
 
   def geoKriging(rasterExtent: RasterExtent, attrFunc: (Double, Double) => Array[Double], bandwidth: Double) =
-    Interpolation.kriging(rasterExtent)(GeoKriging(points, attrFunc, bandwidth))
+    Interpolation.kriging(rasterExtent)(GeoKriging(self.toArray, attrFunc, bandwidth))
 
   def geoKriging(rasterExtent: RasterExtent, attrFunc: (Double, Double) => Array[Double], model: ModelType) =
-    Interpolation.kriging(rasterExtent)(GeoKriging(points, attrFunc, model))
+    Interpolation.kriging(rasterExtent)(GeoKriging(self.toArray, attrFunc, model))
 
   def geoKriging(rasterExtent: RasterExtent, attrFunc: (Double, Double) => Array[Double], bandwidth: Double, model: ModelType) =
-    Interpolation.kriging(rasterExtent)(GeoKriging(points, attrFunc, bandwidth, model))
+    Interpolation.kriging(rasterExtent)(GeoKriging(self.toArray, attrFunc, bandwidth, model))
 }

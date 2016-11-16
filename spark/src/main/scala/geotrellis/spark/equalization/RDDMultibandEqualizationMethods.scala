@@ -12,16 +12,16 @@ trait RDDMultibandEqualizationMethods[K, M] extends MethodExtensions[RDD[(K, Mul
 
   /**
     * Equalize the histograms of the respective bands of the RDD of
-    * [[MultibandTile]] objects using one joint histogram derived from
+    * MultibandTile objects using one joint histogram derived from
     * each band of the input RDD.
     */
   def equalize(): RDD[(K, MultibandTile)] with Metadata[M] =
     RDDHistogramEqualization.multiband(self)
 
   /**
-    * Given a sequence of [[StreamingHistogram]] objects (one per
-    * band), equalize the histograms of the respective bands of the
-    * RDD of [[MultibandTile]] objects.
+    * Given a sequence of Histogram objects (one per band), equalize
+    * the histograms of the respective bands of the RDD of
+    * MultibandTile objects.
     *
     * @param  histograms  A sequence of histograms
     */

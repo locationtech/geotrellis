@@ -277,12 +277,18 @@ object GeoTiffReader {
 
     // Validate Tiff identification number
     val tiffIdNumber = byteReader.getChar
-    if (tiffIdNumber != 42)
-      throw new MalformedGeoTiffException(s"bad identification number (must be 42, was $tiffIdNumber)")
+    if (tiffIdNumber != 42 && tiffIdNumber != 43)
+      throw new MalformedGeoTiffException(s"bad identification number (must be 42 or 43, was $tiffIdNumber)")
 
-    val tagsStartPosition = byteReader.getInt
-
-    val tiffTags = TiffTagsReader.read(byteReader, tagsStartPosition)
+    val tiffTags = 
+      if (tiffIdNumber == 42) {
+        val smallStart = byteReader.getInt
+        TiffTagsReader.read(byteReader, smallStart)
+      } else {
+        byteReader.position(8)
+        val bigStart = byteReader.getLong
+        TiffTagsReader.read(byteReader, bigStart)
+      }
 
     val hasPixelInterleave = tiffTags.hasPixelInterleave
 

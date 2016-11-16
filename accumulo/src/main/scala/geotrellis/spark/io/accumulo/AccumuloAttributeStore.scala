@@ -103,18 +103,8 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
     connector.write(attributeTable, mutation)
   }
 
-  def layerExists(layerId: LayerId): Boolean = {
-    val scanner = connector.createScanner(attributeTable, new Authorizations())
-
-    try {
-      scanner.iterator.exists { kv =>
-        val Array(name, zoomStr) = kv.getKey.getRow.toString.split(SEP)
-        layerId == LayerId(name, zoomStr.toInt)
-      }
-    } finally {
-      scanner.close()
-    }
-  }
+  def layerExists(layerId: LayerId): Boolean =
+    fetch(Some(layerId), AttributeStore.Fields.metadata).nonEmpty
 
   def delete(layerId: LayerId): Unit = delete(layerId, None)
 
