@@ -9,6 +9,13 @@ import geotrellis.vector.voronoi.Delaunay
 import scala.collection.JavaConverters._
 
 
+object PointCloud {
+  def apply(points: Array[Point], zs: Array[Int]) = {
+    val records = Map[LasRecordType, LasRecord](Z -> IntegralLasRecord(zs))
+    new PointCloud(points, records)
+  }
+}
+
 case class PointCloud(points: Array[Point], records: Map[LasRecordType, LasRecord]) {
 
   val size = points.length
@@ -24,9 +31,13 @@ case class PointCloud(points: Array[Point], records: Map[LasRecordType, LasRecor
   /**
     * Compute the union of this PointCloud and the other one.
     */
-  def +(other: PointCloud): PointCloud = {
-    val points = (this.points ++ other.points)
-    val records = (this.records.toList ++ other.records.toList)
+  def union(other: Any): PointCloud = {
+    val otherCloud = other match {
+      case other: PointCloud => other
+      case _ => throw new Exception
+    }
+    val points = (this.points ++ otherCloud.points)
+    val records = (this.records.toList ++ otherCloud.records.toList)
       .groupBy(_._1)
       .map({ pair =>
         val recordType = pair._1
@@ -73,7 +84,19 @@ case class PointCloud(points: Array[Point], records: Map[LasRecordType, LasRecor
     rtree
   }
 
-  def toTileSparseData(re: RasterExtent, recordType: NumericalLasRecordType): ArrayTile = {
+  /**
+    * Compute a tile by triangulating the source data and assigning
+    * each pixel a value corresponding to the Barycentric
+    * interpolation of the vertices of a Delaunay triangles that
+    * contains it.  If more than one triangle contains a pixel, one of
+    * the triangles is chosen arbitrarily (it should not matter since
+    * the pixel should be the edge between the two triangles).  If no
+    * triangle contains a pixel, then it is assigned NaN.
+    *
+    * @param  re  The raster extent which controls the rasterization.
+    * @param  recordType  The record type (e.g. "z value") which should be used to produce the tile.
+    */
+  def toTile(re: RasterExtent, recordType: NumericalLasRecordType): ArrayTile = {
     val Extent(xmin, ymin, xmax, ymax) = re.extent
     val record = records.getOrElse(recordType, throw new Exception)
     val sourceArray = record match {
@@ -96,7 +119,7 @@ case class PointCloud(points: Array[Point], records: Map[LasRecordType, LasRecor
           * 1. https://en.wikipedia.org/wiki/Barycentric_coordinate_system#Interpolation_on_a_triangular_unstructured_grid
           */
         val envelope = new JtsEnvelope(x, x, y, y)
-        val triangles = triangleTree.query(envelope).asScala.map(_.asInstanceOf[Polygon]).filter(_.contains(Point(x,y)))
+        val triangles = triangleTree.query(envelope).asScala.map(_.asInstanceOf[Polygon]).filter(_.covers(Point(x,y)))
         val result =
           if (triangles.length > 0) {
             val triangle = triangles.head
@@ -147,6 +170,12 @@ case class PointCloud(points: Array[Point], records: Map[LasRecordType, LasRecor
     rtree
   }
 
+  /**
+    * Compute a tile by averaging all of the values that occur in a
+    * partcular pixel's area to compute that pixel's value.
+    *
+    * @note Use of this method is not recommended.
+    */
   def toTileDenseData(re: RasterExtent, recordType: NumericalLasRecordType): ArrayTile = {
     val Extent(xmin, ymin, xmax, ymax) = re.extent
     val record = records.getOrElse(recordType, throw new Exception)
