@@ -41,6 +41,28 @@ resolvers += "LocationTech GeoTrellis Releases" at "https://repo.locationtech.or
 
 libraryDependencies += "org.locationtech.geotrellis" %% "geotrellis-raster" % "1.0.0-RC1"
 ```
+`geotrellis-raster` is just one submodule that you can depend on. Here are a list of our published submodules:
+
+- `geotrellis-proj4`: Coordinate Reference systems and reproject (Scala wrapper around Proj4j)
+- `geotrellis-vector`: Vector data types and operations (Scala wrapper around JTS)
+- `geotrellis-raster`: Raster data types and operations
+- `geotrellis-spark`: Geospatially enables Spark; save to and from HDFS
+- `geotrellis-s3`: S3 backend for geotrellis-spark
+- `geotrellis-accumulo`: Accumulo backend for geotrellis-spark
+- `geotrellis-cassandra`: Cassandra backend for geotrellis-spark
+- `geotrellis-hbase`: HBase backend for geotrellis-spark
+- `geotrellis-spark-etl`: Utilities for writing ETL (Extract-Transform-Load), or "ingest" applications for geotrellis-spark
+- `geotrellis-geotools`: Conversions to and from GeoTools Vector and Raster data
+- `geotrellis-geomesa`: Experimental GeoMesa integration
+- `geotrellis-geowave`: Experimental GeoWave integration
+- `geotrellis-shapefile`: Read shapefiles into GeoTrellis data types via GeoTools
+- `geotrellis-slick`: Read vector data out of PostGIS via [LightBend Slick](http://slick.lightbend.com/)
+- `geotrellis-vectortile`: Experimental vector tile support, including reading and writing
+- `geotrellis-raster-testkit`: Testkit for testing geotrellis-raster types
+- `geotrellis-vector-testkit`: Testkit for testing geotrellis-vector types
+- `geotrellis-spark-testkit`: Testkit for testing geotrellis-spark code
+
+A more complete feature list can be found below.
 
 Notice we no longer publish to Maven Central, so you need to add our LocationTech repository to your build.
 
