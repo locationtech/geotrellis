@@ -8,6 +8,29 @@ This document aims to be informative to new and experienced GIS users alike.
 If GIS is brand, brand new to you, [this document](https://www.gislounge.com/what-is-gis/)
 is a useful high level overview.
 
+Basic Terms
+===========
+
+- **Tile:** A grid of numeric *cells* that represent some data on the Earth.
+- **Cell:** A single unit of data in some grid, also called a *Location* in GIS.
+- **Layer:** or "Tile Layer", this is a grid (or cube) of *Tiles*.
+- **Zoom Layer:** a *Tile Layer* at some zoom level.
+- **Key:** Used to index a *Tile* in a grid (or cube) of them.
+- **Key Index:** Used to transform higher-dimensional *Keys* into one dimension.
+- **Metadata:** or "Layer Metadata", stores information critical to Tile Layer IO.
+- **Layout Definition:** A description of a Tile grid (its dimensions, etc).
+- **Extent:** or "Bounding Box", represents some area on the Earth.
+- **Raster:** A *Tile* with an *Extent*.
+- **Vector:** or "Geometry", these are Point, Line, and Polygon data.
+- **Feature:** A *Geometry* with some associated metadata.
+- **RDD:** "Resilient Distributed Datasets" from [Apache
+Spark](http://spark.apache.org/). Can be thought of as a highly distributed
+Scala `Seq`.
+
+These definitions are expanded upon in other sections of this document.
+
+<hr>
+
 Tile Layers
 ===========
 
