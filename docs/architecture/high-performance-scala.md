@@ -58,7 +58,7 @@ the two `NoData` values Geotrellis `isData` and `isNoData` check against.
 
 Similar to the `NoData` checks mentioned above, type conversion macros
 inline functionality which converts `NoData` values for different
-`CellType`s (see [the documentation about celltypes](../raster/celltype.md)
+`CellType`s (see [the documentation about celltypes](../guide/core-concepts.md#cell-types)
 for more on the different `NoData` values). This is a boon to performance
 and it reduces the lines of code fairly significantly.
 

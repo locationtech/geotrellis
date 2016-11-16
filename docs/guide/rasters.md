@@ -512,7 +512,7 @@ val coloredTile: Tile = tile.color(colorMap)
 These docs are about **Raster** Kriging interpolation.
 
 The process of Kriging interpolation for point interpolation is explained in
-the [geotrellis.vector.interpolation](../vector/kriging-interpolation.md)
+the [geotrellis.vector.interpolation](./vectors.md#kriging-interpolation)
 package documnetation.
 
 <h2>Kriging Methods</h2>

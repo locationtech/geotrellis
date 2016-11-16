@@ -938,7 +938,7 @@ Cell Types
   tile is a `Byte`, the `NoData` value of that tile will exist within the range
   [`Byte.MinValue` (-128), `Byte.MaxValue` (127)].
 - If attempting to convert between `CellTypes`, see
-  [this note](./faq/#how-can-i-convert-a-tiles-celltype) on `CellType` conversions.
+  [this note](./faq/#how-do-i-convert-a-tiles-celltype) on `CellType` conversions.
 
 |             |     No NoData    |         Constant NoData        |        User Defined NoData        |
 |-------------|:----------------:|:------------------------------:|:---------------------------------:|

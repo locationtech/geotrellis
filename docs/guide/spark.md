@@ -20,7 +20,7 @@ quickly become more complex: what if one `Tile`'s data covers a larger
 extent than the other? In general, how do we determine what
 'corresponding values' means in such a context? (Some specifics related
 to this question are covered in the `geotrellis.spark` [documentation on
-joins](./spark-joins.md))
+joins](#rdd-joins))
 
 What we need, then, is to pass around tiles as well as some kind of
 associated data. In addition, the `Tile` abstraction makes sense only in a
