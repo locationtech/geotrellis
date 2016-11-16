@@ -19,11 +19,37 @@ package geotrellis.spark.buffer
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.raster.io.geotiff.SinglebandGeoTiff
+import geotrellis.vector._
+import geotrellis.raster.dem._
 
 import org.scalatest.FunSpec
 
 
 class BufferTilesSpec extends FunSpec with TestEnvironment {
+
+  describe("General BufferTiles functionality") {
+    it("should union neighbors, not union non-neighbors") {
+      val key1 = SpatialKey(0,0)
+      val key2 = SpatialKey(1,1)
+      val key3 = SpatialKey(13, 33)
+      val cloud1 = PointCloud(Array(Point(0.5,0.5)), Array(0))
+      val cloud2 = PointCloud(Array(Point(1.5,1.5)), Array(1))
+      val cloud3 = PointCloud(Array[Point](), Array[Int]())
+
+      val rdd = sc.parallelize(List((key1, cloud1), (key2, cloud2), (key3, cloud3)))
+      val results = BufferTiles(rdd).map({ case (_, cloud) =>
+        cloud
+          .records
+          .getOrElse(Z, throw new Exception)
+          .asInstanceOf[IntegralLasRecord]
+          .data.length })
+        .collect
+
+      results(0) should be (2)
+      results(1) should be (2)
+      results(2) should be (0)
+    }
+  }
 
   describe("The BufferTiles functionality") {
     val path = "raster-test/data/aspect.tif"
