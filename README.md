@@ -21,7 +21,6 @@ fast batch processing of large raster data sets.
 Please visit the **[project site](http://geotrellis.io)**
 for more information as well as some interactive demos.
 
-
 ## Contact and Support
 
 You can find more information and talk to developers
@@ -29,6 +28,33 @@ You can find more information and talk to developers
 
   - [Gitter](https://gitter.im/geotrellis/geotrellis)
   - [GeoTrellis mailing list](https://groups.google.com/group/geotrellis-user)
+
+
+## Getting Started
+
+GeoTrellis is currently available for Scala 2.11 and Spark 2.0+.
+
+To get started with SBT, simply add the following to your build.sbt file:
+
+```
+resolvers += "LocationTech GeoTrellis Releases" at "https://repo.locationtech.org/content/repositories/geotrellis-releases"
+
+libraryDependencies += "org.locationtech.geotrellis" %% "geotrellis-raster" % "1.0.0-RC1"
+```
+
+Notice we no longer publish to Maven Central, so you need to add our LocationTech repository to your build.
+
+For releases, add the releases repository:
+
+```
+resolvers += "LocationTech GeoTrellis Releases" at "https://repo.locationtech.org/content/repositories/geotrellis-releases"
+```
+
+To grab the latest snapshot build, add our snapshot repository:
+
+```
+resolvers += "LocationTech GeoTrellis Snapshots" at "https://repo.locationtech.org/content/repositories/geotrellis-snapshots"
+```
 
 ## Hello Raster
 

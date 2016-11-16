@@ -83,7 +83,7 @@ and `SpatialKey`.
 ### User defined ETL configs
 
 The above sample application can be placed in a new SBT project that
-has a dependency on `"com.azavea.geotrellis" %% "geotrellis-spark-etl" % s"$VERSION"`
+has a dependency on `"org.locationtech.geotrellis" %% "geotrellis-spark-etl" % s"$VERSION"`
 in addition to dependency on `spark-core`.  and built into an assembly
 with `sbt-assembly` plugin. You should be careful to include a
 `assemblyMergeStrategy` for sbt assembly plugin as it is provided in
@@ -179,21 +179,21 @@ Sets of *named* profiles for each backend.
 #### Output JSON description
 
 ```json
-{  
-   "backend":{  
+{
+   "backend":{
       "type":"accumulo",
       "path":"output",
       "profile":"accumulo-name"
    },
    "breaks":"0:ffffe5ff;0.1:f7fcb9ff;0.2:d9f0a3ff;0.3:addd8eff;0.4:78c679ff;0.5:41ab5dff;0.6:238443ff;0.7:006837ff;1:004529ff",
    "reprojectMethod":"buffered",
-   "cellSize":{  
+   "cellSize":{
       "width":256.0,
       "height":256.0
    },
    "encoding":"geotiff",
    "tileSize":256,
-   "layoutExtent":{  
+   "layoutExtent":{
       "xmin":1.0,
       "ymin":2.0,
       "xmax":3.0,
@@ -202,13 +202,13 @@ Sets of *named* profiles for each backend.
    "resolutionThreshold":0.1,
    "pyramid":true,
    "resampleMethod":"nearest-neighbor",
-   "keyIndexMethod":{  
+   "keyIndexMethod":{
       "type":"zorder"
    },
    "layoutScheme":"zoomed",
    "cellType":"int8",
    "crs":"EPSG:3857"
-}  
+}
 ```
 
 Key                 | Value
@@ -217,12 +217,12 @@ backend             | backend description is presented below
 breaks              | breaks string for `render` output (optional field)
 partitions          | partitions number during pyramid build
 reprojectMethod     | buffered | per-tile
-cellSize            | sell size 
+cellSize            | sell size
 encoding            | png | geotiff for `render` output
 tileSize            | tile size (optional field)
 layoutExtent        | layout extent (optional field)
 resolutionThreshold | resolution for user defined Layout Scheme (optional field)
-pyramid             | true | false - ingest with / with out building pyramid 
+pyramid             | true | false - ingest with / with out building pyramid
 resampleMethod      | nearest-neighbor | bilinear | cubic-convolution | cubic-spline | lanczos
 keyIndexMethod      | key index method (zorder | row-major | hilbert)
 layoutScheme        | tms | floating (optional field) (optional field)
@@ -253,7 +253,7 @@ type               | zorder | row-major | hilbert
 temporalResolution | temporal resolution for temporal indexing (optional field)
 timeTag            | time tag name for input geotiff tiles (optional field)
 timeFormat         | time format to parse time stored in time tag geotiff tag (optional field)
- 
+
 #### Input JSON description
 
 ```json
@@ -371,8 +371,8 @@ The `path` module argument is actually a path template, that allows the followin
 A sample render output configuration template could be:
  ```json
    "path": "s3://tms-bucket/layers/{name}/{z}-{x}-{y}.png",
-   "ingestType":{  
-     "format":"geotiff",     
+   "ingestType":{
+     "format":"geotiff",
      "output":"render"
    }
  ```
@@ -386,6 +386,6 @@ and register them in the `Etl` constructor via a `TypedModule`.
 
 ## Input JSON validation schema
 
-* [--backend-profiles](/spark-etl/src/main/resources/backend-profiles-schema.json) 
+* [--backend-profiles](/spark-etl/src/main/resources/backend-profiles-schema.json)
 * [--input](/spark-etl/src/main/resources/input-schema.json)
 * [--output](/spark-etl/src/main/resources/output-schema.json)
