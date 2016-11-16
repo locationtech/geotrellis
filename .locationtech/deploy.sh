@@ -19,6 +19,7 @@
    && ./sbt "project shapefile" publish \
    && ./sbt "project slick" publish \
    && ./sbt "project util" publish \
+   && ./sbt "project vectortile" publish \
    && ./sbt "project raster-testkit" publish \
    && ./sbt "project vector-testkit" publish \
    && ./sbt "project spark-testkit" publish
