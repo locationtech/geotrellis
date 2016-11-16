@@ -19,6 +19,7 @@ pages:
     - Using Rasters: guide/rasters.md
     - Using Vectors: guide/vectors.md
     - Spark and GeoTrellis: guide/spark.md
+    - The ETL Tool: guide/etl.md
     - Extending GeoTrellis Types: guide/extending-geotrellis.md
     - GeoTrellis Module Hierarchy: guide/module-hierarchy.md
     - Tile Layer Backends: guide/tile-backends.md
