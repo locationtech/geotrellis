@@ -87,7 +87,6 @@ lazy val root = Project("geotrellis", file(".")).
     slick,
     vectortile,
 		python,
-		api
   ).
   settings(commonSettings: _*).
   settings(
@@ -196,10 +195,6 @@ lazy val shapefile = Project("shapefile", file("shapefile")).
 
 lazy val python = Project("python", file("python")).
   dependsOn(util, raster).
-  settings(commonSettings: _*)
-
-lazy val api = Project("api", file("api")).
-  dependsOn(util, raster, proj4, vector, spark, s3).
   settings(commonSettings: _*)
 
 lazy val util = Project("util", file("util")).
