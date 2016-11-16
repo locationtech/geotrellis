@@ -1,6 +1,7 @@
 import Dependencies._
 import UnidocKeys._
 import sbt.Keys._
+import de.heikoseeberger.sbtheader.license.Apache2_0
 
 lazy val commonSettings = Seq(
   version := Version.geotrellis,
@@ -56,6 +57,10 @@ lazy val commonSettings = Seq(
   resolvers ++= Seq(
     "geosolutions" at "http://maven.geo-solutions.it/",
     "osgeo" at "http://download.osgeo.org/webdav/geotools/"
+  ),
+  headers := Map(
+    "scala" -> Apache2_0("2016", "Azavea"),
+    "conf" -> Apache2_0("2016", "Azavea", "#")
   )
 )
 
