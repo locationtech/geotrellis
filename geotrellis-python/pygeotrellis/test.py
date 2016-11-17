@@ -1,20 +1,21 @@
 import java_gateway
+from pyspark import SparkConf, SparkContext
 
 def main():
     gateway = java_gateway.launch_java_gateway()
     jvm = gateway.jvm
+
     path = "../econic.tif"
 
-    print "\nReading a Proj4String from a SinglebandGeoTiff"
-    singleband_geotiff = jvm.GeoTiffReader.readSingleband(path)
-    print "Here is the result of my read"
-    crs = singleband_geotiff.crs
+    conf = SparkConf()
+    conf.setMaster("local")
+    conf.setAppName("py-test")
+    sc = SparkContext(conf = conf)
 
-    # this won't work
-    # print crs.toProj4String
+    singleband_geotiff = jvm.HadoopSpatialSinglebandRDD(path, sc)
+    splits = singleband.split(25, 25)
 
-    # this will work
-    print jvm.crs.toProj4String
+    print len(splits)
 
 if __name__ == "__main__":
     main()

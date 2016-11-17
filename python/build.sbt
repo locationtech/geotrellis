@@ -5,6 +5,8 @@ name := "python"
 
 libraryDependencies ++= Seq(
   typesafeConfig,
+  sparkCore % "provided",
+  hadoopClient % "provided",
   jts,
   spire,
   monocleCore,

@@ -60,5 +60,6 @@ def launch_java_gateway(address=None, port=None):
     java_import(gateway.jvm, "geotrellis.proj4.*")
     java_import(gateway.jvm, "geotrellis.raster.io.geotiff.*")
     java_import(gateway.jvm, "geotrellis.raster.io.geotiff.reader.*")
+    java_import(gateway.jvm, "geotrellis.spark.io.hadoop.HadoopSpatialSinglebandGeoTiffRDD")
 
     return gateway

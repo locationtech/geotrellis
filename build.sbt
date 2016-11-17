@@ -194,7 +194,7 @@ lazy val shapefile = Project("shapefile", file("shapefile")).
   settings(commonSettings: _*)
 
 lazy val python = Project("python", file("python")).
-  dependsOn(util, raster).
+  dependsOn(util, raster, vector, proj4, spark).
   settings(commonSettings: _*)
 
 lazy val util = Project("util", file("util")).
