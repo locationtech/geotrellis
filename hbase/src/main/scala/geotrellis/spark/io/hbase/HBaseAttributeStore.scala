@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.spark.io.hbase
 
 import com.typesafe.config.ConfigFactory
@@ -43,16 +59,17 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
 
   private def fetch(layerId: Option[LayerId], attributeName: String): Vector[Result] =
     instance.withTableConnectionDo(attributeTableName) { table =>
-      val scan = new Scan()
-      layerId.foreach { id =>
-        scan.setStartRow(layerIdString(id))
-        scan.setStopRow(stringToBytes(layerIdString(id)) :+ 0.toByte) // add trailing byte, to include stop row
-      }
-      scan.addFamily(attributeName)
-      val scanner = table.getScanner(scan)
-      try scanner.iterator().toVector finally scanner.close()
+      if (table.getTableDescriptor.hasFamily(attributeName)) {
+        val scan = new Scan()
+        layerId.foreach { id =>
+          scan.setStartRow(layerIdString(id))
+          scan.setStopRow(stringToBytes(layerIdString(id)) :+ 0.toByte) // add trailing byte, to include stop row
+        }
+        scan.addFamily(attributeName)
+        val scanner = table.getScanner(scan)
+        try scanner.iterator().toVector finally scanner.close()
+      } else Vector()
     }
-
 
   private def delete(layerId: LayerId, attributeName: Option[String]): Unit =
     instance.withTableConnectionDo(attributeTableName) { table =>
@@ -100,9 +117,8 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
       table.put(put)
     }
 
-  def layerExists(layerId: LayerId): Boolean = instance.withTableConnectionDo(attributeTableName) {
-    !_.get(new Get(layerIdString(layerId))).isEmpty
-  }
+  def layerExists(layerId: LayerId): Boolean =
+    fetch(Some(layerId), AttributeStore.Fields.metadata).nonEmpty
 
   def delete(layerId: LayerId): Unit = delete(layerId, None)
 

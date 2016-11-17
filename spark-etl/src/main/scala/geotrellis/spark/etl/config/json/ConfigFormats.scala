@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.spark.etl.config.json
 
 import geotrellis.vector.io._
@@ -201,7 +217,8 @@ trait ConfigFormats {
       "cache"   -> i.cache.toJson,
       "noData"  -> i.noData.toJson,
       "clip"    -> i.clip.toJson,
-      "crs"   -> i.crs.toJson
+      "crs"   -> i.crs.toJson,
+      "maxTileSize"   -> i.crs.toJson
     )
     def read(value: JsValue): Input =
       value match {
@@ -213,7 +230,8 @@ trait ConfigFormats {
             cache   = fields.get("cache").map(_.convertTo[StorageLevel]),
             noData  = fields.get("noData").map(_.convertTo[Double]),
             clip    = fields.get("clip").map(_.convertTo[Extent]),
-            crs     = fields.get("crs").map(_.convertTo[String])
+            crs     = fields.get("crs").map(_.convertTo[String]),
+            maxTileSize = fields.get("maxTileSize").map(_.convertTo[Int])
           )
         case _ =>
           throw new DeserializationException("Input must be a valid json object.")

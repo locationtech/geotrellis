@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.raster.io.geotiff.reader
 
 import geotrellis.raster._
@@ -33,7 +49,7 @@ class SinglebandGeoTiffReaderSpec extends FunSpec
     expected
   }
 
-  def writeExpectedTile(t: Tile, n: String): Unit = 
+  def writeExpectedTile(t: Tile, n: String): Unit =
     geotrellis.raster.io.geotiff.writer.GeoTiffWriter.write(
       GeoTiff(
         t,
@@ -319,8 +335,6 @@ class SinglebandGeoTiffReaderSpec extends FunSpec
         withClue(s"Failed for Storage $s, type $t") {
           val gtiff = geoTiff(s, t)
           val tile = gtiff.tile
-          println("tiles", gtiff, gtiff.cellType, tile, tile.cellType, tile.toArrayTile, tile.toArrayTile.cellType)
-          println(tile.get(0, 0), tile.toArrayTile.get(0, 0))
           assertEqual(tile, tile.toArrayTile)
         }
       }

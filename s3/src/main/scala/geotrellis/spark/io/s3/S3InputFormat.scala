@@ -1,4 +1,23 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.spark.io.s3
+
+import geotrellis.proj4.CRS
+import geotrellis.spark.io.hadoop._
 
 import com.amazonaws.services.s3.model.{ListObjectsRequest, ObjectListing}
 import com.amazonaws.auth._
@@ -20,8 +39,8 @@ import scala.util.matching.Regex
 abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
   import S3InputFormat._
 
-  def getS3Client(credentials: AWSCredentials): S3Client =
-    new geotrellis.spark.io.s3.AmazonS3Client(credentials, S3Client.defaultConfiguration)
+  def getS3Client(context: JobContext): S3Client =
+    S3InputFormat.getS3Client(context)
 
   override def getSplits(context: JobContext) = {
     import scala.collection.JavaConversions._
@@ -32,10 +51,27 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
     val key = conf.get(AWS_KEY)
     val bucket = conf.get(BUCKET)
     val prefix = conf.get(PREFIX)
+    val crs = conf.get(CRS_VALUE)
     val region: Option[Region] = {
       val r = conf.get(REGION, null)
       if(r != null) Some(Region.getRegion(Regions.fromName(r)))
       else None
+    }
+
+    val extensions: Array[String] = {
+      val extensionsConf = conf.get(EXTENSIONS)
+      if (extensionsConf == null)
+        Array()
+      else
+        extensionsConf.split(",").map(_.trim)
+    }
+
+    val chunkSize = {
+      val chunkSizeConf = conf.get(CHUNK_SIZE)
+      if (chunkSizeConf == null)
+        S3InputFormat.DEFAULT_CHUNK_SIZE
+      else
+        chunkSizeConf
     }
 
     val partitionCountConf = conf.get(PARTITION_COUNT)
@@ -43,19 +79,10 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
     require(null == partitionCountConf || null == partitionSizeConf,
       "Either PARTITION_COUNT or PARTITION_SIZE option may be set")
 
-    val credentials =
-      if (anon != null)
-        new AnonymousAWSCredentials()
-      else if (id != null && key != null)
-        new BasicAWSCredentials(id, key)
-      else
-        new DefaultAWSCredentialsProviderChain().getCredentials
-
-    val s3client: S3Client = getS3Client(credentials)
+    val s3client: S3Client = getS3Client(context)
     for (r <- region) s3client.setRegion(r)
 
     logger.info(s"Listing Splits: bucket=$bucket prefix=$prefix")
-    logger.debug(s"Authenticating with ID=${credentials.getAWSAccessKeyId}")
 
     val request = new ListObjectsRequest()
       .withBucketName(bucket)
@@ -63,7 +90,6 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
 
     def makeNewSplit =  {
       val split = new S3InputSplit
-      split.setCredentials(credentials)
       split.bucket = bucket
       split
     }
@@ -77,6 +103,14 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
       s3client
         .listObjectsIterator(request)
         .filter(!_.getKey.endsWith("/"))
+        .filter { obj =>
+          if (extensions.isEmpty)
+            true
+          else {
+            val key = obj.getKey
+            extensions.map(key.endsWith).reduce(_ || _)
+          }
+        }
         .foreach { obj =>
           val curSplit = splits.last
           val objSize = obj.getSize
@@ -116,19 +150,36 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
 
 object S3InputFormat {
   final val DEFAULT_PARTITION_BYTES =  256 * 1024 * 1024
+  final val DEFAULT_CHUNK_SIZE =  8 * 256 * 256
   final val ANONYMOUS = "s3.anonymous"
   final val AWS_ID = "s3.awsId"
   final val AWS_KEY = "s3.awsKey"
   final val BUCKET = "s3.bucket"
   final val PREFIX = "s3.prefix"
+  final val EXTENSIONS = "s3.extensions"
   final val REGION = "s3.region"
   final val PARTITION_COUNT = "s3.partitionCount"
   final val PARTITION_BYTES = "S3.partitionBytes"
+  final val CHUNK_SIZE = "s3.chunkSize"
+  final val CRS_VALUE = "s3.crs"
+  final val CREATE_S3CLIENT = "s3.client"
 
   private val idRx = "[A-Z0-9]{20}"
   private val keyRx = "[a-zA-Z0-9+/]+={0,2}"
   private val slug = "[a-zA-Z0-9-]+"
   val S3UrlRx = new Regex(s"""s3[an]?://(?:($idRx):($keyRx)@)?($slug)/{0,1}(.*)""", "aws_id", "aws_key", "bucket", "prefix")
+
+  def setCreateS3Client(job: Job, createClient: () => S3Client): Unit =
+    setCreateS3Client(job.getConfiguration, createClient)
+
+  def setCreateS3Client(conf: Configuration, createClient: () => S3Client): Unit =
+    conf.setSerialized(CREATE_S3CLIENT, createClient)
+
+  def getS3Client(job: JobContext): S3Client =
+    job.getConfiguration.getSerializedOption[() => S3Client](CREATE_S3CLIENT) match {
+      case Some(createS3Client) => createS3Client()
+      case None => S3Client.DEFAULT
+    }
 
   /** Set S3N url to use, may include AWS Id and Key */
   def setUrl(job: Job, url: String): Unit =
@@ -186,4 +237,14 @@ object S3InputFormat {
   /** Set desired partition size in bytes, at least one item per partition will be assigned */
   def setPartitionBytes(conf: Configuration, bytes: Long): Unit =
     conf.set(PARTITION_BYTES, bytes.toString)
+
+  def setChunkSize(job: Job, chunkSize: Int): Unit =
+    setChunkSize(job.getConfiguration, chunkSize)
+
+  def setChunkSize(conf: Configuration, chunkSize: Int): Unit =
+    conf.set(CHUNK_SIZE, chunkSize.toString)
+
+  /** Set valid key extensions filter */
+  def setExtensions(conf: Configuration, extensions: Seq[String]): Unit =
+    conf.set(EXTENSIONS, extensions.mkString(","))
 }

@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2014 Azavea.
+ * Copyright 2016 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -48,10 +48,10 @@ abstract class IntArrayTile(val array: Array[Int], cols: Int, rows: Int)
     */
   def copy: ArrayTile = ArrayTile(array.clone, cols, rows)
 
-  def withNoData(noDataValue: Option[Double]): IntArrayTile =
+  def withNoData(noDataValue: Option[Double]): Tile =
     IntArrayTile(array, cols, rows, cellType.withNoData(noDataValue))
 
-  def interpretAs(newCellType: CellType): ArrayTile = {
+  def interpretAs(newCellType: CellType): Tile = {
     newCellType match {
       case dt: IntCells with NoDataHandling =>
         IntArrayTile(array, cols, rows, dt)

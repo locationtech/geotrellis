@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2016 Azavea.
+ * Copyright 2016 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,6 +17,7 @@
 package geotrellis.raster.equalization
 
 import geotrellis.raster._
+import geotrellis.raster.histogram._
 
 import org.scalatest._
 
@@ -58,6 +59,27 @@ class HistogramEqualizationSpec extends FunSpec with Matchers
 
       array.head should be (-(1<<15))
       array.last should be ((1<<15)-1)
+    }
+
+    it("should work when values do not map exactly to buckets") {
+      val histogram = {
+        val h = StreamingHistogram(4)
+        h.countItems(
+          List(StreamingHistogram.Bucket(1,1),
+          StreamingHistogram.Bucket(2,2),
+          StreamingHistogram.Bucket(4,4),
+          StreamingHistogram.Bucket(8,8))
+        )
+        h
+      }
+      val lowerTileArray = DoubleArrayTile(Array(1.0,2.0,4.0), 1, 3, DoubleCellType).equalize(histogram).toArrayDouble
+      val targetTileArray = DoubleArrayTile(Array(1.5,3.0,6.0), 1, 3, DoubleCellType).equalize(histogram).toArrayDouble
+      val higherTileArray = DoubleArrayTile(Array(2.0,4.0,8.0), 1, 3, DoubleCellType).equalize(histogram).toArrayDouble
+
+      (0 until 3).foreach({ i =>
+        lowerTileArray(i) should be < (targetTileArray(i))
+        targetTileArray(i) should be < (higherTileArray(i))
+      })
     }
 
     it("should work on multiband tiles") {

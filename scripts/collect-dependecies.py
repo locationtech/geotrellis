@@ -12,7 +12,7 @@ org_flags = { "org.apache.accumulo": "accumulo",
               "org.geotools": "geotools",
               "com.typesafe.akka": "akka" }
 
-ignore = [ ("com.azavea.geotrellis", None, None) ]
+ignore = [ ("org.locationtech.geotrellis", None, None) ]
 
 if __name__ == "__main__":
 

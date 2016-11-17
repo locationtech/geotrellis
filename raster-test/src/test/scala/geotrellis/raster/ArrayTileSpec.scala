@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2014 Azavea.
+ * Copyright 2016 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -90,6 +90,9 @@ class ArrayTileSpec extends FunSpec
     the interpretations of NoData value will not alter the underlying cell values as happens with Tile.convert
      */
 
+    // val arr = Array(0.0, 1.0, -1.0, Double.NaN)
+    // val sourceTile = DoubleArrayTile(arr, 2, 2, DoubleCellType)
+
     def checkFloatInterpretAs(tile: Tile, udCt: Double => CellType, constCt: CellType) = {
       for {
         r <- 0 until tile.rows
@@ -99,7 +102,7 @@ class ArrayTileSpec extends FunSpec
         val udTile = tile.interpretAs(udCt(v))
         val constTile = udTile.interpretAs(constCt)
         val res = constTile.withNoData(None)
-        withClue(s"ND=$v") { assert(res equals tile) }
+        withClue(s"Failed at ${(c, r)}, ND=$v") { assertEqual(res, tile) }
         val cell = udTile.getDouble(c,r)
         withClue(s"udTile($c, $r), ND=$v") { assert(isNoData(cell)) }
       }
@@ -114,7 +117,7 @@ class ArrayTileSpec extends FunSpec
         val udTile = tile.interpretAs(udCt(v))
         val constTile = udTile.interpretAs(constCt)
         val res = constTile.withNoData(None)
-        withClue(s"ND=$v") { assert(res equals tile) }
+        withClue(s"ND=$v") { assertEqual(res, tile) }
         val cell = udTile.get(c,r)
         withClue(s"udTile($c, $r), ND=$v") { assert(isNoData(cell)) }
       }

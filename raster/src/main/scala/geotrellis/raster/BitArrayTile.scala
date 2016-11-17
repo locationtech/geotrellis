@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2014 Azavea.
+ * Copyright 2016 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -130,10 +130,10 @@ final case class BitArrayTile(val array: Array[Byte], cols: Int, rows: Int)
     */
   def toBytes: Array[Byte] = array.clone
 
-  def withNoData(noDataValue: Option[Double]): BitArrayTile =
+  def withNoData(noDataValue: Option[Double]): Tile =
     BitArrayTile(array, cols, rows)
 
-  def interpretAs(newCellType: CellType): ArrayTile = {
+  def interpretAs(newCellType: CellType): Tile = {
     newCellType match {
       case dt: ByteCells with NoDataHandling =>
         ByteArrayTile(array, cols, rows, dt)

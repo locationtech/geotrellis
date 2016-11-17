@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2016 Azavea.
+ * Copyright 2016 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,7 +26,7 @@ class RDDSigmoidalContrastSpec extends FunSpec
     with Matchers
     with TestEnvironment {
 
-  describe("RDD Histogram Equalization") {
+  describe("RDD Sigmoidal Contrast") {
 
     it("should work with floating-point rasters") {
       val x = Double.MaxValue / 2.0

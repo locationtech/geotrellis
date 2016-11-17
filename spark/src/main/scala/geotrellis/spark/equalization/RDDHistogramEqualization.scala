@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.spark.equalization
 
 import geotrellis.raster._
@@ -19,9 +35,9 @@ object RDDHistogramEqualization {
   }
 
   /**
-    * Given an RDD of [[Tile]] objects, return another RDD of tiles
-    * where the respective tiles have had their histograms equalized
-    * the joint histogram of all of the tiles.
+    * Given an RDD of Tile objects, return another RDD of tiles where
+    * the respective tiles have had their histograms equalized the
+    * joint histogram of all of the tiles.
     *
     * @param  rdd  An RDD of tile objects
     */
@@ -36,8 +52,8 @@ object RDDHistogramEqualization {
   }
 
   /**
-    * Given an RDD of [[Tile]] objects and a [[Histogram]] derived
-    * from all of the tiles, return another RDD of tiles where the
+    * Given an RDD of Tile objects and a Histogram which summarizes
+    * all of the tiles, return another RDD of tiles where the
     * respective tiles have had their histograms equalized.
     *
     * @param  rdd        An RDD of tile objects
@@ -55,7 +71,7 @@ object RDDHistogramEqualization {
   }
 
   /**
-    * Given an RDD of [[MultibandTile]] objects, return another RDD of
+    * Given an RDD of MultibandTile objects, return another RDD of
     * multiband tiles where the respective bands of the respective
     * tiles have been equalized according to a joint histogram of the
     * bands of the input RDD.
@@ -77,11 +93,10 @@ object RDDHistogramEqualization {
   }
 
   /**
-    * Given an RDD of [[MultibandTile]] objects and a sequence of
-    * [[Histogram]] objects (on per band) derived from all of the
-    * tiles, return another RDD of multiband tiles where the
-    * respective bands of the respective tiles have had their
-    * histograms equalized.
+    * Given an RDD of MultibandTile objects and a sequence of
+    * Histogram objects (on per band) derived from all of the tiles,
+    * return another RDD of multiband tiles where the respective bands
+    * of the respective tiles have had their histograms equalized.
     *
     * @param  rdd         An RDD of tile objects
     * @param  histograms  A histogram derived from the whole RDD of tiles

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.spark.etl.hadoop
 
 import java.math.BigInteger
@@ -7,6 +23,7 @@ import geotrellis.raster.render._
 import geotrellis.spark.etl.OutputPlugin
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark._
+import geotrellis.spark.etl.Etl
 import geotrellis.spark.etl.config.{Backend, EtlConf}
 import geotrellis.spark.render._
 import geotrellis.spark.io.hadoop._
@@ -19,6 +36,8 @@ import org.apache.spark.rdd.RDD
 import scala.reflect._
 
 class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetadata[SpatialKey]] {
+  import Etl.SaveAction
+
   def name = "render"
   def key = classTag[SpatialKey]
   def attributes(conf: EtlConf) = null
@@ -45,8 +64,9 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetada
 
   override def apply(
     id: LayerId,
-    rdd: RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]],
-    conf: EtlConf
+    rdd: TileLayerRDD[SpatialKey],
+    conf: EtlConf,
+    saveAction: SaveAction[SpatialKey, Tile, TileLayerMetadata[SpatialKey]] = SaveAction.DEFAULT[SpatialKey, Tile, TileLayerMetadata[SpatialKey]]
   ): Unit = {
     val useS3 = getPath(conf.output.backend).path.take(5) == "s3://"
     val images =
@@ -54,16 +74,16 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetada
           case "png" =>
             parseColorMaps(conf.output.breaks) match {
               case Some(colorMap) =>
-                rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderPng(colorMap).mapValues(_.bytes)
+                rdd.renderPng(colorMap).mapValues(_.bytes)
               case None =>
-                rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderPng().mapValues(_.bytes)
+                rdd.renderPng().mapValues(_.bytes)
             }
           case "jpg" =>
             parseColorMaps(conf.output.breaks) match {
               case Some(colorMap) =>
-                rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderJpg(colorMap).mapValues(_.bytes)
+                rdd.renderJpg(colorMap).mapValues(_.bytes)
               case None =>
-                rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderJpg().mapValues(_.bytes)
+                rdd.renderJpg().mapValues(_.bytes)
             }
           case "geotiff" =>
             rdd.asInstanceOf[RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]]].renderGeoTiff().mapValues(_.toByteArray)
@@ -79,5 +99,6 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetada
     }
   }
 
+  // TODO: ??? means that the hierarchy is broke. Pipelining improvements should fix this.
   def writer(conf: EtlConf)(implicit sc: SparkContext) = ???
 }

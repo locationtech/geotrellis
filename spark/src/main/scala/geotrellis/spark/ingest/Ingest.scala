@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2014 DigitalGlobe.
+ * Copyright 2016 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -66,11 +66,14 @@ object Ingest {
       cacheLevel: StorageLevel = StorageLevel.NONE,
       resampleMethod: ResampleMethod = NearestNeighbor,
       partitioner: Option[Partitioner] = None,
-      bufferSize: Option[Int] = None
-    )
-    (sink: (TileLayerRDD[K], Int) => Unit): Unit =
-  {
-    val (_, tileLayerMetadata) = sourceTiles.collectMetadata(FloatingLayoutScheme(512))
+      bufferSize: Option[Int] = None,
+      maxZoom: Option[Int] = None,
+      tileSize: Option[Int] = Some(256))
+    (sink: (TileLayerRDD[K], Int) => Unit): Unit = {
+    val (_, tileLayerMetadata) = (maxZoom, tileSize) match {
+      case (Some(zoom), Some(tileSize)) => sourceTiles.collectMetadata(destCRS, tileSize, zoom)
+      case _                            => sourceTiles.collectMetadata(FloatingLayoutScheme(512))
+    }
     val tiledRdd = sourceTiles.tileToLayout(tileLayerMetadata, resampleMethod).cache()
 
     val contextRdd = new ContextRDD(tiledRdd, tileLayerMetadata)
@@ -94,10 +97,7 @@ object Ingest {
       }
     }
 
-    if (pyramid)
-      buildPyramid(zoom, tileLayerRdd)
-        .foreach { case (z, rdd) => rdd.unpersist(true) }
-    else
-      sink(tileLayerRdd, zoom)
+    if (pyramid) buildPyramid(zoom, tileLayerRdd).foreach { case (z, rdd) => rdd.unpersist(true) }
+    else sink(tileLayerRdd, zoom)
   }
 }
