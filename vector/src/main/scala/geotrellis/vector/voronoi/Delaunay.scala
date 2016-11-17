@@ -39,7 +39,6 @@ object Predicates {
                                                Array(a31, a32, a33)))
     (new LUDecomposition(m)).getDeterminant
   }
-    
 
   def isCCW(a: Point, b: Point, c: Point): Boolean = {
     // det [ a.x-c.x  a.y-c.y ]
@@ -54,16 +53,16 @@ object Predicates {
     (a.x - c.x) * (b.y - c.y) - (a.y - c.y) * (b.x - c.x) > EPSILON
   }
 
-  def isRightOf[T](e: HalfEdge[Int,T], p: Point)(implicit trans: Int => Point) = 
+  def isRightOf[T](e: HalfEdge[Int,T], p: Point)(implicit trans: Int => Point) =
     isCCW(p, trans(e.vert), trans(e.src))
 
-  def isRightOf[T](e: HalfEdge[Int,T], p: Int)(implicit trans: Int => Point) = 
+  def isRightOf[T](e: HalfEdge[Int,T], p: Int)(implicit trans: Int => Point) =
     isCCW(trans(p), trans(e.vert), trans(e.src))
 
-  def isLeftOf[T](e: HalfEdge[Int,T], p: Point)(implicit trans: Int => Point) = 
+  def isLeftOf[T](e: HalfEdge[Int,T], p: Point)(implicit trans: Int => Point) =
     isCCW(p, trans(e.src), trans(e.vert))
 
-  def isLeftOf[T](e: HalfEdge[Int,T], p: Int)(implicit trans: Int => Point) = 
+  def isLeftOf[T](e: HalfEdge[Int,T], p: Int)(implicit trans: Int => Point) =
     isCCW(trans(p), trans(e.src), trans(e.vert))
 
   def inCircle(abc: (Point, Point, Point), d: Point): Boolean = {
@@ -85,14 +84,14 @@ object Predicates {
   }
 
   def circleCenter(a: Point, b: Point, c: Point): Point = {
-    val d = 2.0 * det3(a.x, a.y, 1.0, 
-                       b.x, b.y, 1.0, 
+    val d = 2.0 * det3(a.x, a.y, 1.0,
+                       b.x, b.y, 1.0,
                        c.x, c.y, 1.0)
-    val h = det3(a.x * a.x + a.y * a.y, a.y, 1.0, 
-                 b.x * b.x + b.y * b.y, b.y, 1.0, 
+    val h = det3(a.x * a.x + a.y * a.y, a.y, 1.0,
+                 b.x * b.x + b.y * b.y, b.y, 1.0,
                  c.x * c.x + c.y * c.y, c.y, 1.0) / d
-    val k = det3(a.x, a.x * a.x + a.y * a.y, 1.0, 
-                 b.x, b.x * b.x + b.y * b.y, 1.0, 
+    val k = det3(a.x, a.x * a.x + a.y * a.y, 1.0,
+                 b.x, b.x * b.x + b.y * b.y, 1.0,
                  c.x, c.x * c.x + c.y * c.y, 1.0) / d
     Point(h,k)
   }
@@ -101,14 +100,14 @@ object Predicates {
     val a = trans(ai)
     val b = trans(bi)
     val c = trans(ci)
-    val d = 2.0 * det3(a.x, a.y, 1.0, 
-                       b.x, b.y, 1.0, 
+    val d = 2.0 * det3(a.x, a.y, 1.0,
+                       b.x, b.y, 1.0,
                        c.x, c.y, 1.0)
-    val h = det3(a.x * a.x + a.y * a.y, a.y, 1.0, 
-                 b.x * b.x + b.y * b.y, b.y, 1.0, 
+    val h = det3(a.x * a.x + a.y * a.y, a.y, 1.0,
+                 b.x * b.x + b.y * b.y, b.y, 1.0,
                  c.x * c.x + c.y * c.y, c.y, 1.0) / d
-    val k = det3(a.x, a.x * a.x + a.y * a.y, 1.0, 
-                 b.x, b.x * b.x + b.y * b.y, 1.0, 
+    val k = det3(a.x, a.x * a.x + a.y * a.y, 1.0,
+                 b.x, b.x * b.x + b.y * b.y, 1.0,
                  c.x, c.x * c.x + c.y * c.y, 1.0) / d
     Point(h,k)
   }
@@ -145,6 +144,6 @@ case class Delaunay(verts: Array[Point]) {
     val arr = Array.ofDim[Polygon](len)
     cfor(0)(_ < len, _ + 1) { i => arr(i) = Polygon(tris.getGeometryN(i).asInstanceOf[JTSPolygon]) }
     arr
-}
+  }
 
 }

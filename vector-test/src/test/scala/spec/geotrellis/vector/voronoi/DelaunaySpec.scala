@@ -120,26 +120,31 @@ class DelaunaySpec extends FunSpec with Matchers {
   describe("Delaunay Triangulation") {
 
     ignore ("should have a convex boundary") {
-      /* A test to ensure that the boundary of the triangulation was convex
-       * was once included here, but JTS, for reasons relating to numerical 
-       * robustness, does not produce a triangulation with a guaranteed convex
-       * boundary.  This note is here as a suggestion to future developers to 
-       * include such a test.
-       */
+      /**
+        * A test to ensure that the boundary of the triangulation was
+        * convex was once included here, but JTS, for reasons relating
+        * to numerical robustness, does not produce a triangulation
+        * with a guaranteed convex boundary.  This note is here as a
+        * suggestion to future developers to include such a test.
+        */
     }
 
     it("should preserve Delaunay property") {
-      // Delaunay property: no element of the triangulation should have a 
-      // circumscribing circle that contains another point of the triangulation
+      /**
+        * Delaunay property: no element of the triangulation should
+        * have a circumscribing circle that contains another point of
+        * the triangulation
+        */
       val range = 0 until numpts
       val pts = (for (i <- range) yield randomPoint(Extent(0, 0, 1, 1))).toArray
       val dt = pts.delaunayTriangulation()
 
-      // NOTE: In the event of failure, the following line will draw the triangulation
-      // to delaunay.png in the working directory, indicating which triangle did not
-      // exhibit the Delaunay property
-      // rasterizeDT(dt)
-
+      /**
+        * NOTE: In the event of failure, the following line will draw
+        * the triangulation to delaunay.png in the working directory,
+        * indicating which triangle did not exhibit the Delaunay
+        * property rasterizeDT(dt)
+        */
       preservesDelaunay(dt) should be (true)
     }
 
@@ -152,6 +157,6 @@ class DelaunaySpec extends FunSpec with Matchers {
 
       preservesDelaunay(dt) should be (true)
     }
-    
+
   }
 }
