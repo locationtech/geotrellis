@@ -24,6 +24,19 @@ import com.vividsolutions.jts.triangulate.DelaunayTriangulationBuilder
 import spire.syntax.cfor._
 
 
+object Delaunay {
+
+  def apply(xs: Array[Double], ys: Array[Double]) =
+    new Delaunay(xs.zip(ys).map({ case (x, y) => Point(x,y) }))
+
+  def apply(coords: Array[Coordinate]) =
+    new Delaunay(coords.map({ coord => Point(coord.x, coord.y) }))
+
+  def apply(coords: Array[(Double, Double)]) =
+    new Delaunay(coords.map({ case (x, y) => Point(x, y) }))
+
+}
+
 /**
   * A class for triangulating a set of points to satisfy the delaunay
   * property.  Each resulting triangle's circumscribing circle will
