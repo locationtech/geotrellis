@@ -12,14 +12,18 @@ import scala.collection.JavaConverters._
 object PointCloud {
   def apply(points: Array[Point], zs: Array[Int]) = {
     val records = Map[LasRecordType, LasRecord](Z -> IntegralLasRecord(zs))
-    new PointCloud(points, records)
+    val xs = points.map({ point => point.x })
+    val ys = points.map({ point => point.y })
+
+    new PointCloud(xs, ys, records)
   }
 }
 
-case class PointCloud(points: Array[Point], records: Map[LasRecordType, LasRecord]) {
+case class PointCloud(xs: Array[Double], ys: Array[Double], records: Map[LasRecordType, LasRecord]) {
 
-  val size = points.length
+  val size = xs.length
 
+  require(ys.length == size)
   records.foreach({ pair =>
     pair._2 match {
       case record: CategoricalLasRecord => require(record.data.length == size)
@@ -36,7 +40,8 @@ case class PointCloud(points: Array[Point], records: Map[LasRecordType, LasRecor
       case other: PointCloud => other
       case _ => throw new Exception
     }
-    val points = (this.points ++ otherCloud.points)
+    val xs = (this.xs ++ otherCloud.xs)
+    val ys = (this.ys ++ otherCloud.ys)
     val records = (this.records.toList ++ otherCloud.records.toList)
       .groupBy(_._1)
       .map({ pair =>
@@ -63,10 +68,10 @@ case class PointCloud(points: Array[Point], records: Map[LasRecordType, LasRecor
         (recordType, record) })
       .toMap
 
-    PointCloud(points, records)
+    PointCloud(xs, ys, records)
   }
 
-  val indexMap = points.zipWithIndex.toMap
+  val indexMap = xs.zip(ys).zipWithIndex.toMap
 
   /**
     * Compute a range tree over the Delaunay Triangulation of the
@@ -74,7 +79,7 @@ case class PointCloud(points: Array[Point], records: Map[LasRecordType, LasRecor
     * point set is sparse in the extent of the output tile.
     */
   lazy val triangleTree = {
-    val triangles = Delaunay(points).triangles
+    val triangles = Delaunay(xs, ys).triangles
     val rtree = new STRtree
 
     triangles.foreach({ triangle =>
@@ -131,9 +136,9 @@ case class PointCloud(points: Array[Point], records: Map[LasRecordType, LasRecor
             val y2 = verts(1).y
             val x3 = verts(2).x
             val y3 = verts(2).y
-            val index1 = indexMap.getOrElse(verts(0), throw new Exception)
-            val index2 = indexMap.getOrElse(verts(1), throw new Exception)
-            val index3 = indexMap.getOrElse(verts(2), throw new Exception)
+            val index1 = indexMap.getOrElse((verts(0).x, verts(0).y), throw new Exception)
+            val index2 = indexMap.getOrElse((verts(1).x, verts(1).y), throw new Exception)
+            val index3 = indexMap.getOrElse((verts(2).x, verts(2).y), throw new Exception)
 
             val determinant = (y2-y3)*(x1-x3)+(x3-x2)*(y1-y3)
             val lambda1 = ((y2-y3)*(x-x3)+(x3-x2)*(y-y3)) / determinant
@@ -163,9 +168,8 @@ case class PointCloud(points: Array[Point], records: Map[LasRecordType, LasRecor
   lazy val pointTree = {
     val rtree = new STRtree
 
-    points.foreach({ point =>
-      val Extent(xmin, ymin, xmax, ymax) = point.envelope
-      rtree.insert(new JtsEnvelope(xmin, xmax, ymin, ymax), point)
+    xs.zip(ys).foreach({ case (x, y) =>
+      rtree.insert(new JtsEnvelope(x, x, y, y), Point(x, y))
     })
     rtree
   }
@@ -197,13 +201,13 @@ case class PointCloud(points: Array[Point], records: Map[LasRecordType, LasRecor
           * their value.  If there are no such points, use NODATA.
           */
         val envelope = new JtsEnvelope(x, x + re.cellwidth, y, y + re.cellheight)
-        val points = pointTree.query(envelope).asScala.map(_.asInstanceOf[Point])
+        val pointsInPixel = pointTree.query(envelope).asScala.map(_.asInstanceOf[Point])
         val result =
-          if (points.length > 0) {
-            val numerator = points
+          if (pointsInPixel.length > 0) {
+            val numerator = xs.zip(ys)
               .map({ point => sourceArray(indexMap.getOrElse(point, throw new Exception)) })
               .sum
-            val denominator = points.length
+            val denominator = pointsInPixel.length
             numerator / denominator
           } else {
             Double.NaN
