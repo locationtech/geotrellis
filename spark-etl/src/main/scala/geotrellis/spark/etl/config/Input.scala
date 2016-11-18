@@ -29,7 +29,8 @@ case class Input(
   noData: Option[Double] = None,
   clip: Option[Extent] = None,
   crs: Option[String] = None,
-  maxTileSize: Option[Int] = None
+  maxTileSize: Option[Int] = None,
+  numPartitions: Option[Int] = None
 ) extends Serializable {
   def getCrs = crs.map(CRS.fromName)
 }
