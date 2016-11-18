@@ -54,13 +54,10 @@ before_deploy:
 
 deploy:
   - provider: script
-    script: .travis/deploy-with-scaladocs.sh
+    script: .travis/scaladocs.sh
     skip_cleanup: true
     on:
       repo: geotrellis/geotrellis
       branch: master
       jdk: oraclejdk8
       scala: "2.11.8"
-
-after_deploy:
-  - rm -f "${HOME}/.bintray/.credentials"

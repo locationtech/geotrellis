@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.raster.io.geotiff
 
 import geotrellis.util.ByteReader
@@ -15,11 +31,10 @@ import spire.syntax.cfor._
  * This class implements [[SegmentBytes]] via a ByteReader.
  *
  * @param byteReader: A ByteReader that contains bytes of the GeoTiff
- * @param storageMethod: The [[StorageMethod]] of the GeoTiff
  * @param tifftags: The [[TiffTags]] of the GeoTiff
- * @return A new instance of BufferSegmentBytes
+ * @return A new instance of LazySegmentBytes
  */
-case class BufferSegmentBytes(byteReader: ByteReader, tiffTags: TiffTags) extends SegmentBytes {
+case class LazySegmentBytes(byteReader: ByteReader, tiffTags: TiffTags) extends SegmentBytes {
 
   val (offsets, byteCounts) =
     if (tiffTags.hasStripStorage) {
@@ -32,7 +47,7 @@ case class BufferSegmentBytes(byteReader: ByteReader, tiffTags: TiffTags) extend
         BasicTags._stripByteCounts get)
 
       (stripOffsets.get, stripByteCounts.get)
-      
+
     } else {
       val tileOffsets = (tiffTags &|->
         TiffTags._tileTags ^|->
@@ -54,11 +69,6 @@ case class BufferSegmentBytes(byteReader: ByteReader, tiffTags: TiffTags) extend
    * @param i: The index number of the segment.
    * @return An Array[Byte] that contains the bytes of the segment
    */
-  def getSegment(i: Int) = {
-    val oldOffset = byteReader.position
-    byteReader.position(offsets(i).toInt)
-    val result = byteReader.getSignedByteArray(byteCounts(i).toInt)
-    byteReader.position(oldOffset)
-    result
-  }
+  def getSegment(i: Int) =
+    byteReader.getSignedByteArray(byteCounts(i), offsets(i))
 }

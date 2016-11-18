@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
@@ -337,7 +353,7 @@ abstract class GeoTiffMultibandTile(
       else z
     }
 
-    map(fn)
+    _map(fn)(b => set.contains(b))
   }
 
   /**
@@ -351,7 +367,7 @@ abstract class GeoTiffMultibandTile(
       else z
     }
 
-    mapDouble(fn)
+    _mapDouble(fn)(b => set.contains(b))
   }
 
   /**
@@ -421,7 +437,12 @@ abstract class GeoTiffMultibandTile(
    * @param  f  A function that takes a (Int, Int) and returns an Int
    * @return    Returns a MultibandGeoTiff that contains the results of f
    */
-  def map(f: (Int, Int) => Int): MultibandTile = {
+  def map(f: (Int, Int) => Int): MultibandTile =
+    _map(f)(_ => true)
+  /** Internal version of mapDouble that potentially iterating
+    * over specific bands for band interleave rasters.
+    */
+  private def _map(f: (Int, Int) => Int)(bandFilter: Int => Boolean): MultibandTile = {
     if(hasPixelInterleave) {
       mapSegments { (segment, semgentIndex) =>
         segment.mapWithIndex { (i, z) =>
@@ -432,7 +453,11 @@ abstract class GeoTiffMultibandTile(
       val bandSegmentCount = segmentCount / bandCount
       mapSegments { (segment, segmentIndex) =>
         val bandIndex = segmentIndex / bandSegmentCount
+        if(bandFilter(bandIndex)) {
         segment.map { z => f(bandIndex, z) }
+        } else {
+          segment.bytes
+        }
       }
     }
   }
@@ -444,7 +469,13 @@ abstract class GeoTiffMultibandTile(
    * @param  f  A function that takes a (Int, Double) and returns a Double
    * @return    Returns a MultibandGeoTiff that contains the results of f
    */
-  def mapDouble(f: (Int, Double) => Double): MultibandTile = {
+  def mapDouble(f: (Int, Double) => Double): MultibandTile =
+    _mapDouble(f)(_ => true)
+
+  /** Internal version of mapDouble that potentially iterating
+    * over specific bands for band interleave rasters.
+    */
+  private def _mapDouble(f: (Int, Double) => Double)(bandFilter: Int => Boolean): MultibandTile = {
     if(hasPixelInterleave) {
       mapSegments { (segment, semgentIndex) =>
         segment.mapDoubleWithIndex { (i, z) =>
@@ -455,7 +486,11 @@ abstract class GeoTiffMultibandTile(
       val bandSegmentCount = segmentCount / bandCount
       mapSegments { (segment, segmentIndex) =>
         val bandIndex = segmentIndex / bandSegmentCount
-        segment.mapDouble { z => f(bandIndex, z) }
+        if(bandFilter(bandIndex)) {
+          segment.mapDouble { z => f(bandIndex, z) }
+        } else {
+          segment.bytes
+        }
       }
     }
   }

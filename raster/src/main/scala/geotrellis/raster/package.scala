@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2014 Azavea.
+ * Copyright 2016 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -51,6 +51,7 @@ package object raster
       with rasterize.FeatureDoubleRasterizeMethods[Geometry]
 
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
+      with DelayedConversionTileMethods
       with costdistance.CostDistanceMethods
       with crop.SinglebandTileCropMethods
       with equalization.SinglebandEqualizationMethods
@@ -72,11 +73,12 @@ package object raster
       with sigmoidal.SinglebandSigmoidalMethods
       with split.SinglebandTileSplitMethods
       with summary.polygonal.PolygonalSummaryMethods
-      with summary.SummaryMethods
+      with summary.SinglebandTileSummaryMethods
       with vectorize.VectorizeMethods
       with viewshed.ViewshedMethods
 
   implicit class withMultibandTileMethods(val self: MultibandTile) extends MethodExtensions[MultibandTile]
+      with DelayedConversionMultibandTileMethods
       with crop.MultibandTileCropMethods
       with equalization.MultibandEqualizationMethods
       with mask.MultibandTileMaskMethods
@@ -90,6 +92,7 @@ package object raster
       with resample.MultibandTileResampleMethods
       with sigmoidal.MultibandSigmoidalMethods
       with split.MultibandTileSplitMethods
+      with summary.MultibandTileSummaryMethods
 
   implicit class withSinglebandRasterMethods(val self: SinglebandRaster) extends MethodExtensions[SinglebandRaster]
       with reproject.SinglebandRasterReprojectMethods

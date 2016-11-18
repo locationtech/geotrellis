@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2014 Azavea.
+ * Copyright 2016 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -115,7 +115,7 @@ trait ByteReaderExtensions {
 
       arr
     }
-    
+
     final def getLongArray(length: Long, valueOffset: Long): Array[Long] = {
       val arr = Array.ofDim[Long](length.toInt)
 
@@ -171,35 +171,24 @@ trait ByteReaderExtensions {
 
       arr
     }
-
+		
+		/** NOTE: We don't support lengths greater than Int.MaxValue yet (or ever). */
     final def getSignedByteArray(length: Long, valueOffset: Long): Array[Byte] = {
-      val arr = Array.ofDim[Byte](length.toInt)
-
+      val len = length.toInt
       if (length <= 4) {
+        val arr = Array.ofDim[Byte](len)
         val bb = ByteBuffer.allocate(4).order(byteReader.order).putInt(0, valueOffset.toInt)
-        cfor(0)(_ < length, _ + 1) { i =>
+        cfor(0)(_ < len, _ + 1) { i =>
           arr(i) = bb.get
         }
+        arr
       } else {
         val oldPos = byteReader.position
         byteReader.position(valueOffset)
-
-        cfor(0)(_ < length, _ + 1) { i =>
-          arr(i) = byteReader.get
-        }
-
+        val arr = byteReader.getBytes(len)
         byteReader.position(oldPos)
+        arr
       }
-
-      arr
-    }
-
-    final def getSignedByteArray(length: Long): Array[Byte] = {
-      val arr = Array.ofDim[Byte](length.toInt)
-      cfor(0)(_ < length, _ + 1) { i =>
-        arr(i) = byteReader.get
-      }
-      arr
     }
 
     final def getSignedShortArray(length: Long, valueOffset: Long): Array[Short] = {

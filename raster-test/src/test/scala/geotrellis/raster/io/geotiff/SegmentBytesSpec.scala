@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.raster.io.geotiff
 
 import geotrellis.util._
@@ -15,9 +31,9 @@ trait Tester {
     val byteBuffer= Filesystem.toMappedByteBuffer(path)
     val arraySegmentBytes: ArraySegmentBytes =
       ArraySegmentBytes(byteBuffer, tiffTags)
-    
-    val bufferSegmentBytes: BufferSegmentBytes =
-      BufferSegmentBytes(byteBuffer, tiffTags)
+
+    val bufferSegmentBytes: LazySegmentBytes =
+      LazySegmentBytes(byteBuffer, tiffTags)
 
     val geoTiff =
       if (tiffTags.bandCount == 1)
@@ -65,7 +81,7 @@ class SegmentBytesSpec extends FunSpec
     }
   }
 
-  describe("Reading into BufferSegmentBytes") {
+  describe("Reading into LazySegmentBytes") {
     it("striped, singleband GeoTiff") {
       val tester = new Tester(paths(0))
       assert(tester.bufferSegmentBytes.size == tester.actual.size)
@@ -85,7 +101,7 @@ class SegmentBytesSpec extends FunSpec
     it("should read in a large file") {
       val tiffTags = TiffTagsReader.read(largeFile)
       val byteBuffer = Filesystem.toMappedByteBuffer(largeFile)
-      BufferSegmentBytes(byteBuffer, tiffTags)
+      LazySegmentBytes(byteBuffer, tiffTags)
     }
   }
 }

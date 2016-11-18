@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.spark.io.s3
 
 import geotrellis.spark.io.s3.testkit._
@@ -13,14 +29,8 @@ import org.scalatest._
 import scala.collection.JavaConverters._
 
 class MockS3InputFormat extends S3InputFormat[ProjectedExtent, Array[Byte]] {
-  val client = new MockS3Client()
-
-  override def getS3Client(credentials: AWSCredentials): S3Client = client
-
   override def createRecordReader(split: InputSplit, context: TaskAttemptContext) =
-    new S3RecordReader[ProjectedExtent, Array[Byte]] {
-      override def getS3Client(credentials: AWSCredentials): S3Client = client
-
+    new S3RecordReader[ProjectedExtent, Array[Byte]](getS3Client(context)) {
       def read(key: String, obj: Array[Byte]) =
         ProjectedExtent(Extent.fromString(key), LatLng) -> obj
     }
@@ -34,21 +44,21 @@ class S3InputFormatSpec extends FunSpec with Matchers
       // don't get too excited, not real keys
       val url = "s3n://AAIKJLIB4YGGVMAATT4A:ZcjWmdXN+75555bptjE4444TqxDY3ESZgeJxGsj8@nex-bcsd-tiled-geotiff/prefix/subfolder"
       val S3InputFormat.S3UrlRx(id,key,bucket,prefix) = url
-      
+
       id should be ("AAIKJLIB4YGGVMAATT4A")
       key should be ("ZcjWmdXN+75555bptjE4444TqxDY3ESZgeJxGsj8")
       bucket should be ("nex-bcsd-tiled-geotiff")
-      prefix should be ("prefix/subfolder")      
+      prefix should be ("prefix/subfolder")
     }
 
     it("should parse s3 url without keys"){
-      val url = "s3n://nex-bcsd-tiled-geotiff/prefix/subfolder"      
+      val url = "s3n://nex-bcsd-tiled-geotiff/prefix/subfolder"
       val  S3InputFormat.S3UrlRx(id,key,bucket,prefix) = url
-      
+
       id should be (null)
       key should be (null)
       bucket should be ("nex-bcsd-tiled-geotiff")
-      prefix should be ("prefix/subfolder")  
+      prefix should be ("prefix/subfolder")
     }
 
     val mockClient = new MockS3Client
@@ -59,6 +69,7 @@ class S3InputFormatSpec extends FunSpec with Matchers
 
     it("should divide keys evenly between partitions"){
       val job = Job.getInstance(new Configuration())
+      S3InputFormat.setCreateS3Client(job, () => new MockS3Client)
       S3InputFormat.setUrl(job, "s3n://s3-input-format/keys")
       S3InputFormat.setAnonymous(job)
       S3InputFormat.setPartitionCount(job, 5)
@@ -72,6 +83,7 @@ class S3InputFormatSpec extends FunSpec with Matchers
 
     it("should divide keys evenly by size"){
       val job = Job.getInstance(new Configuration())
+      S3InputFormat.setCreateS3Client(job, () => new MockS3Client)
       S3InputFormat.setUrl(job, "s3n://s3-input-format/keys")
       S3InputFormat.setAnonymous(job)
       S3InputFormat.setPartitionBytes(job, 21)

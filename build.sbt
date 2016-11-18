@@ -1,12 +1,13 @@
 import Dependencies._
 import UnidocKeys._
 import sbt.Keys._
+import de.heikoseeberger.sbtheader.license.Apache2_0
 
 lazy val commonSettings = Seq(
   version := Version.geotrellis,
   scalaVersion := Version.scala,
   description := Info.description,
-  organization := "com.azavea.geotrellis",
+  organization := "org.locationtech.geotrellis",
   licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url(Info.url)),
   scalacOptions ++= Seq(
@@ -24,13 +25,17 @@ lazy val commonSettings = Seq(
   publishArtifact in Test := false,
   pomIncludeRepository := { _ => false },
 
-  bintrayOrganization := Some("azavea"),
-  bintrayRepository := "geotrellis",
-  bintrayVcsUrl := Some("https://github.com/geotrellis/geotrellis.git"),
-  bintrayPackageLabels := Info.tags,
+  publishTo <<= version { (v: String) =>
+     val nexus = "https://repo.locationtech.org/content/repositories"
+     if (v.trim.endsWith("SNAPSHOT"))
+       Some("LocationTech Nexus Repository" at s"$nexus/geotrellis-snapshots")
+     else
+       Some("LocationTech Nexus Repository" at s"$nexus/geotrellis-releases")
+   },
+
+  credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
 
   addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.0" cross CrossVersion.binary),
-
   addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.full),
 
   pomExtra := (
@@ -56,6 +61,10 @@ lazy val commonSettings = Seq(
   resolvers ++= Seq(
     "geosolutions" at "http://maven.geo-solutions.it/",
     "osgeo" at "http://download.osgeo.org/webdav/geotools/"
+  ),
+  headers := Map(
+    "scala" -> Apache2_0("2016", "Azavea"),
+    "conf" -> Apache2_0("2016", "Azavea", "#")
   )
 )
 

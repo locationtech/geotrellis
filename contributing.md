@@ -34,9 +34,10 @@ We follow the 'imperative present tense' style for commit messages. (e.g.
 
 ## Issue Tracking
 
-If you find a bug and would like to report it please go there and create an
-issue. As always, if you need some help join us on
-[Gitter](https://gitter.im/geotrellis/geotrellis) to chat with a developer.
+If you find a bug and would like to report it please go there and create
+an issue. As always, if you need some help join us on
+[Gitter](https://gitter.im/locationtech/geotrellis) to chat with a
+developer.
 
 ## Pull Requests
 
@@ -69,23 +70,7 @@ repositories for Linux and Mac users.
 
 ## Contributor License Agreements (CLA)
 
-Contributions to the project, no matter what kind, are always very welcome.
-Everyone who contributes code to GeoTrellis will be asked to sign the
-GeoTrellis and Eclipse Contributor License Agreements. We currently require
-both CLAs to be signed. The Eclipse CLA requires an Eclipse account and is
-signed electronically. The GeoTrellis CLA will be kept as a hard copy by
-Azavea, Inc.
-
-1. Electronically sign the [Eclipse Contributor License
-   Agreement](http://www.eclipse.org/legal/CLA.php).
-
-2. Download a copy of the [GeoTrellis Inidividual CLA](http://geotrellis.github.com/files/2014_05_20-GeoTrellis-Open-Source-Contributor-Agreement-Individual.pdf?raw=true),
-   or the [GeoTrellis Corporate CLA](http://geotrellis.github.com/files/2012_04_04-GeoTrellis-Open-Source-Contributor-Agreement-Corporate.pdf?raw=true).
-
-3. Sign the GeoTrellis CLA, either with PDF signing software or by printing out the CLA and hand signing.
-
-4. Send the GeoTrellis CLA to Azavea by one of:
-    - Scanning and emailing the document to cla -at- azavea -dot- com
-    - Faxing a copy to +1-215-925-2600.
-    - Mailing a hardcopy to:
-      Azavea, 990 Spring Garden Street, 5th Floor, Philadelphia, PA 19107 USA
+Contributions to the project, no matter what kind, are always very
+welcome.
+Everyone who contributes code to GeoTrellis will be asked to sign the Eclipse Contributor Agreement.
+You can electronically sign the [Eclipse Contributor Agreement here.](https://www.eclipse.org/legal/ECA.php).

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.spark.io.s3.util
 
 import java.nio.file.{ Paths, Files }
@@ -12,9 +28,9 @@ import org.apache.commons.io.IOUtils
 
 import org.scalatest._
 
-class S3StreamBytesSpec extends FunSpec with Matchers {
+class S3RangeReaderSpec extends FunSpec with Matchers {
 
-  describe("Streaming bytes from S3") {
+  describe("S3RangeReader") {
     val mockClient = new MockS3Client
     val testGeoTiffPath = "spark/src/test/resources/all-ones.tif"
     val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
@@ -25,7 +41,7 @@ class S3StreamBytesSpec extends FunSpec with Matchers {
 
     val chunkSize = 20000
     val request = new GetObjectRequest(this.getClass.getSimpleName, "geotiff/all-ones.tif")
-    val s3Bytes = new MockS3Stream(chunkSize, geoTiffBytes.length.toLong, request)
+    val rangeReader = S3RangeReader(request, mockClient)
 
     val local = ByteBuffer.wrap(geoTiffBytes)
 
@@ -35,7 +51,7 @@ class S3StreamBytesSpec extends FunSpec with Matchers {
     }
 
     it("should return the correct bytes") {
-      val actual = s3Bytes.getArray(0.toLong)
+      val actual = rangeReader.readRange(0, chunkSize)
       val expected = Array.ofDim[Byte](chunkSize)
 
       cfor(0)(_ < chunkSize, _ + 1) { i=>
@@ -49,10 +65,10 @@ class S3StreamBytesSpec extends FunSpec with Matchers {
     }
 
     it("should return the correct bytes throught the file") {
-      cfor(0)(_ < s3Bytes.objectLength - chunkSize, _ + chunkSize){ i =>
-        val actual = s3Bytes.getArray(i.toLong, chunkSize.toLong)
+      cfor(0)(_ < rangeReader.totalLength - chunkSize, _ + chunkSize){ i =>
+        val actual = rangeReader.readRange(i, chunkSize)
         val expected = Array.ofDim[Byte](chunkSize)
-        
+
         cfor(0)(_ < chunkSize, _ + 1) { j =>
           expected(j) = local.get
         }
@@ -64,24 +80,9 @@ class S3StreamBytesSpec extends FunSpec with Matchers {
       local.position(0)
     }
 
-    it("should return the correct offsets for each chunk") {
-      val actual = Array.range(0, 420000, chunkSize).map(_.toLong)
-      val expected = Array.ofDim[Long](400000 / chunkSize)
-      var counter = 0
-
-      cfor(0)(_ < 400000, _ + chunkSize){ i =>
-        expected(counter) = s3Bytes.getMappedArray(i.toLong, chunkSize).head._1
-        counter += 1
-      }
-
-      val result = testArrays(actual, expected)
-
-      result.length should be (0)
-    }
-
     it("should not read past the end of the file") {
-      val start = s3Bytes.objectLength - 100
-      val actual = s3Bytes.getArray(start, start + 300)
+      val start = rangeReader.totalLength - 100
+      val actual = rangeReader.readRange(start, (start + 300).toInt)
       val arr = Array.ofDim[Byte](100)
       local.position(start.toInt)
 
@@ -94,7 +95,7 @@ class S3StreamBytesSpec extends FunSpec with Matchers {
       local.position(0)
 
       val result = testArrays(expected, actual)
-      
+
       result.length should be (0)
     }
   }
