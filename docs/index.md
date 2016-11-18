@@ -1,6 +1,5 @@
-# GeoTrellis Documention
-
-## What is GeoTrellis?
+What is GeoTrellis?
+-------------------
 
 *GeoTrellis* is a Scala library and framework that uses
 Spark to work with raster data.  It is released under
@@ -22,20 +21,25 @@ Please visit the **[project site](http://geotrellis.io)**
 for more information as well as some interactive demos.
 
 
-## Why GeoTrellis?
-	
-## Contact and Support
+Why GeoTrellis?
+---------------
+
+Make rasters great again! And vectors too, I guess.
+
+Contact and Support
+-------------------
 
 You can find more information and talk to developers
 (let us know what you're working on!) at:
 
-  - [Gitter](https://gitter.im/geotrellis/geotrellis)
-  - [GeoTrellis mailing list](https://groups.google.com/group/geotrellis-user)
+- [Gitter](https://gitter.im/geotrellis/geotrellis)
+- [GeoTrellis mailing list](https://groups.google.com/group/geotrellis-user)
 
+Hello Raster!
+-------------
 
-
-
-## Hello Raster!
+Here's a small example showing a routine focal operation over a single
+`Tile`:
 
 ```scala
 scala> import geotrellis.raster._
@@ -82,3 +86,4 @@ scala> meanTile.getDouble(0, 0)  // Should equal (1 + 7 + 9) / 3
 res1: Double = 5.666666666666667
 ```
 
+Ready? [Setup a GeoTrellis development environment.](tutorials/setup.md)

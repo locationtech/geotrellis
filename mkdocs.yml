@@ -1,19 +1,29 @@
 site_name: GeoTrellis
-site_author: GeoTrellis contributers
-repo_url: https://github.com/rossbernet/geotrellis
+site_description: A Scala library for high-performance geographic data processing.
+site_author: GeoTrellis Team
+repo_url: https://github.com/geotrellis/geotrellis
 copyright: Copyright (c) 2012-2016, Azavea
 docs_dir: docs
 theme: readthedocs
 
 pages:
-- Home: index.md
-- Changelog: []
-- Tutorials:
-  - Setup: setup.md
-  - Quick Start: quickstart.md
-- User Guide: []
-- Architecture:
-  - ADR docs: []
+  - Home: index.md
+  - Changelog: CHANGELOG.md
+  - Tutorials:
+    - Setup: tutorials/setup.md
+    - Quickstart: tutorials/quickstart.md
+    - Kernel Density: tutorials/kernel-density.md
+    - Extract-Transform-Load (ETL): tutorials/etl-tutorial.md
+  - User Guide:
+    - Core Concepts: guide/core-concepts.md
+    - GeoTrellis Module Hierarchy: guide/module-hierarchy.md
+    - Tile Layer Backends: guide/tile-backends.md
+    - Vector Data Backends: guide/vector-backends.md
+    - Frequently Asked Questions: guide/faq.md
+  - Architecture:
+    - Architecture Decision Records: architecture/adr.md
+    - High Performance Scala: architecture/high-performance-scala.md
+  - Contributing: contributing.md
 
 markdown_extensions:
 - toc:
