@@ -26,10 +26,18 @@ import org.apache.spark.rdd.RDD
 
 class MultibandGeoTiffS3Input extends S3Input[ProjectedExtent, MultibandTile] {
   val format = "multiband-geotiff"
+
   def apply(conf: EtlConf)(implicit sc: SparkContext): RDD[(ProjectedExtent, MultibandTile)] = {
     val path = getPath(conf.input.backend)
-    S3GeoTiffRDD.spatialMultiband(path.bucket, path.prefix, S3GeoTiffRDD.Options(
-      crs = conf.input.getCrs
-    ))
+
+    S3GeoTiffRDD.spatialMultiband(
+      path.bucket,
+      path.prefix,
+      S3GeoTiffRDD.Options(
+        crs = conf.input.getCrs,
+        maxTileSize = conf.input.maxTileSize,
+        numPartitions = conf.input.numPartitions
+      )
+    )
   }
 }
