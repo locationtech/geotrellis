@@ -54,7 +54,6 @@ class PackedPointsInputFormat extends FileInputFormat[Path, PackedPoints] {
 
       val result = split.asInstanceOf[FileSplit].getPath -> packedPoint
 
-      // free mem
       pointView.dispose()
       pointViewIterator.dispose()
       pipeline.dispose()
