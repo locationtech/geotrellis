@@ -16,19 +16,16 @@
 
 package geotrellis.spark.io.hadoop.formats
 
-import geotrellis.spark.pdal.{PackedPoints, SizedDimType}
+import io.pdal._
 
-import io.pdal.Pipeline
 import org.apache.hadoop.fs._
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.lib.input._
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 import java.io.{BufferedOutputStream, File, FileOutputStream}
 
 /** Process files from the path through PDAL, and reads all files point data as an Array[Byte] **/
-class PackedPointsInputFormat extends FileInputFormat[Path, Array[Byte]] {
+class PackedPointsInputFormat extends FileInputFormat[Path, PackedPoints] {
   override def isSplitable(context: JobContext, fileName: Path) = false
 
   override def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[Path, PackedPoints] = {
@@ -43,31 +40,34 @@ class PackedPointsInputFormat extends FileInputFormat[Path, Array[Byte]] {
       Stream.continually(bos.write(bytes))
       bos.close()
 
-      // "spatialreference":"EPSG:$code" ? // parametered
-      val pipeline = Pipeline(JsObject(
-        "filename" -> localPath.getCanonicalPath.toJson
-      ).toString)
+      val pipeline = Pipeline(PackedPointsInputFormat.toPipelineJson(localPath).toString)
 
-      // Bad json exception handling
-      if(pipeline.validate()) pipeline.execute else throw Exception
+      pipeline.execute
 
-      // right now we read a single file, that means we have a single point view ? // double check that information
       val pointViewIterator = pipeline.pointViews()
-      if(!pointViewIterator.hasNext) throw Exception
       val pointView = pointViewIterator.next()
 
-      // ok we have packed points, what's next, how to unpack them? we need to save all dims and thier shifts
-      val layout = pointView.layout
-      val packedPoint = PackedPoints(pointView.getPackedPoints, SizedDimType.asMap(layout))
+      val packedPoint = pointView.getPackedPointsWithMetadata(
+        metadata = pipeline.getMetadata(),
+        schema   = pipeline.getSchema()
+      )
 
       val result = split.asInstanceOf[FileSplit].getPath -> packedPoint
 
-      // free c memory
-      layout.dispose()
+      // free mem
       pointView.dispose()
       pointViewIterator.dispose()
       pipeline.dispose()
       result
     })
   }
+}
+
+object PackedPointsInputFormat {
+  import spray.json._
+  import spray.json.DefaultJsonProtocol._
+
+  def toPipelineJson(localPath: File): JsObject = JsObject(
+    "filename" -> localPath.getAbsolutePath.toJson
+  )
 }
