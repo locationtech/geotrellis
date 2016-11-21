@@ -85,7 +85,8 @@ lazy val root = Project("geotrellis", file(".")).
     geomesa,
     geotools,
     slick,
-    vectortile
+    vectortile,
+    pdal
   ).
   settings(commonSettings: _*).
   settings(
@@ -191,6 +192,11 @@ lazy val geowave = Project("geowave", file("geowave")).
 lazy val shapefile = Project("shapefile", file("shapefile")).
   dependsOn(raster, rasterTestkit % "test").
   settings(commonSettings: _*)
+
+lazy val pdal = Project("pdal", file("pdal")).
+  dependsOn(raster, spark, s3).
+  settings(commonSettings: _*).
+  settings(javaOptions += "-Djava.library.path=/usr/local/lib")
 
 lazy val util = Project("util", file("util")).
   settings(commonSettings: _*)
