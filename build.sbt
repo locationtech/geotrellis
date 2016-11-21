@@ -195,8 +195,7 @@ lazy val shapefile = Project("shapefile", file("shapefile")).
 
 lazy val pdal = Project("pdal", file("pdal")).
   dependsOn(raster, spark, s3).
-  settings(commonSettings: _*).
-  settings(javaOptions += "-Djava.library.path=/usr/local/lib")
+  settings(commonSettings: _*)
 
 lazy val util = Project("util", file("util")).
   settings(commonSettings: _*)
