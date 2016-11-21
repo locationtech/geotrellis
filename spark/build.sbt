@@ -11,8 +11,13 @@ libraryDependencies ++= Seq(
   monocleCore, monocleMacro,
   chronoscala,
   scalazStream,
+  pdal,
   scalatest % "test"
 )
+
+javaOptions += "-Djava.library.path=/usr/local/lib"
+
+resolvers += Resolver.bintrayRepo("daunnc", "maven")
 
 // must use this method of import to avoid cyclic dependency errors
 internalDependencyClasspath in Test <++=

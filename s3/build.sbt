@@ -3,9 +3,14 @@ import Dependencies._
 name := "geotrellis-s3"
 libraryDependencies ++= Seq(
   sparkCore % "provided",
+  pdal,
   awsSdkS3,
   spire,
   scalatest % "test")
+
+javaOptions += "-Djava.library.path=/usr/local/lib"
+
+resolvers += Resolver.bintrayRepo("daunnc", "maven")
 
 fork in Test := false
 parallelExecution in Test := false
