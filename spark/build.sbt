@@ -5,6 +5,7 @@ libraryDependencies ++= Seq(
   sparkCore % "provided",
   hadoopClient % "provided",
   "com.google.uzaygezen" % "uzaygezen-core" % "0.2",
+  pdal,
   logging,
   avro,
   spire,
@@ -13,6 +14,8 @@ libraryDependencies ++= Seq(
   scalazStream,
   scalatest % "test"
 )
+
+resolvers += Resolver.bintrayRepo("daunnc", "maven")
 
 // must use this method of import to avoid cyclic dependency errors
 internalDependencyClasspath in Test <++=
