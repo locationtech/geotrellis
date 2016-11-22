@@ -17,8 +17,9 @@
 package geotrellis.spark.io.s3
 
 import io.pdal._
-
 import geotrellis.spark.io.pdal.json._
+import geotrellis.util.Filesystem
+
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
 
 import java.io.{BufferedOutputStream, File, FileOutputStream}
@@ -26,12 +27,12 @@ import java.io.{BufferedOutputStream, File, FileOutputStream}
 /** Process files from the path through PDAL, and reads all files point data as an Array[Byte] **/
 class PackedPointsS3InputFormat extends S3InputFormat[String, PackedPoints] {
   def createRecordReader(split: InputSplit, context: TaskAttemptContext) = {
-    val tmpDir = new File(System.getProperty("java.io.tmpdir"), context.getTaskAttemptID.toString)
+    val tmpDir = Filesystem.createDirectory()
     val s3Client = getS3Client(context)
+
     new S3RecordReader[String, PackedPoints](s3Client) {
       def read(key: String, bytes: Array[Byte]) = {
         // copy remote file into local tmp dir
-        tmpDir.mkdirs()
         val localPath = new File(tmpDir, key)
         val bos = new BufferedOutputStream(new FileOutputStream(localPath))
         Stream.continually(bos.write(bytes))
@@ -55,6 +56,8 @@ class PackedPointsS3InputFormat extends S3InputFormat[String, PackedPoints] {
         pointViewIterator.dispose()
         pipeline.dispose()
         localPath.delete()
+        tmpDir.delete()
+
         result
       }
     }
