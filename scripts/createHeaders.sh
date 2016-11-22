@@ -7,6 +7,7 @@
       "project geotools" createHeaders test:createHeaders \
       "project geowave" createHeaders test:createHeaders \
       "project hbase" createHeaders  test:createHeaders  \
+      "project pdal" createHeaders test:createHeaders \
       "project proj4" createHeaders test:createHeaders \
       "project raster" createHeaders test:createHeaders \
       "project raster-test" createHeaders test:createHeaders \
