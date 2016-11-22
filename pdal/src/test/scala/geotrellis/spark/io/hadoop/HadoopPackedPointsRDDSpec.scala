@@ -25,7 +25,7 @@ import java.io.File
 class HadoopPackedPointsRDDSpec extends FunSpec
   with Matchers
   with TestEnvironment {
-  describe("PDAL") {
+  describe("PDAL RDD reads") {
     val testResources = new File("src/test/resources")
 
     it("should read LAS file as RDD using hadoop input format") {
