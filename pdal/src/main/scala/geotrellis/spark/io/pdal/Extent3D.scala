@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.pdal
 
-import geotrellis.proj4.CRS
+import geotrellis.vector.Extent
 
-case class ProjectedPackedPointsBounds(bounds: PackedPointsBounds, crs: CRS)
+case class Extent3D(xmin: Double, ymin: Double, zmin: Double, xmax: Double, ymax: Double, zmax: Double) {
+  def toExtent = Extent(xmin, ymin, xmax, ymax)
+}

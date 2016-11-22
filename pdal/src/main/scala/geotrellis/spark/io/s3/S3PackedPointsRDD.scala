@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io.s3
 
-import geotrellis.spark.io.pdal.ProjectedPackedPointsBounds
+import geotrellis.spark.io.pdal.ProjectedExtent3D
 import geotrellis.spark.io.pdal.json._
 
 import io.pdal._
@@ -72,14 +72,14 @@ object S3PackedPointsRDD {
     * @param prefix   Prefix of all of the keys on S3 that are to be read in.
     * @param options  An instance of [[Options]] that contains any user defined or default settings.
     */
-  def apply(bucket: String, prefix: String, options: Options = Options.DEFAULT)(implicit sc: SparkContext): RDD[(ProjectedPackedPointsBounds, PackedPoints)] =
+  def apply(bucket: String, prefix: String, options: Options = Options.DEFAULT)(implicit sc: SparkContext): RDD[(ProjectedExtent3D, PackedPoints)] =
     sc.newAPIHadoopRDD(
       configuration(bucket, prefix, options),
       classOf[S3PackedPointsInputFormat],
       classOf[String],
       classOf[PackedPoints]
     ).mapPartitions(
-      _.map { case (_, packedPoints) => packedPoints.metadata.parseJson.convertTo[ProjectedPackedPointsBounds] -> packedPoints },
+      _.map { case (_, packedPoints) => packedPoints.metadata.parseJson.convertTo[ProjectedExtent3D] -> packedPoints },
       preservesPartitioning = true
     )
 }
