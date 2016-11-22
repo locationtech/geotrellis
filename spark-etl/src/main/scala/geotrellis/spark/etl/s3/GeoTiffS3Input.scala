@@ -26,11 +26,18 @@ import org.apache.spark.rdd.RDD
 
 class GeoTiffS3Input extends S3Input[ProjectedExtent, Tile] {
   val format = "geotiff"
+
   def apply(conf: EtlConf)(implicit sc: SparkContext): RDD[(ProjectedExtent, Tile)] = {
     val path = getPath(conf.input.backend)
-    S3GeoTiffRDD.spatial(path.bucket, path.prefix, S3GeoTiffRDD.Options(
-      crs = conf.input.getCrs
-    ))
+
+    S3GeoTiffRDD.spatial(
+      path.bucket,
+      path.prefix,
+      S3GeoTiffRDD.Options(
+        crs = conf.input.getCrs,
+        maxTileSize = conf.input.maxTileSize,
+        numPartitions = conf.input.numPartitions
+      )
+    )
   }
 }
-

@@ -30,6 +30,14 @@ import org.apache.spark.rdd.RDD
 
 class GeoTiffHadoopInput extends HadoopInput[ProjectedExtent, Tile]() {
   val format = "geotiff"
+
   def apply(conf: EtlConf)(implicit sc: SparkContext): RDD[(ProjectedExtent, Tile)] =
-    HadoopGeoTiffRDD.spatial(getPath(conf.input.backend).path, HadoopGeoTiffRDD.Options(crs = conf.input.getCrs))
+    HadoopGeoTiffRDD.spatial(
+      getPath(conf.input.backend).path,
+      HadoopGeoTiffRDD.Options(
+        crs = conf.input.getCrs,
+        maxTileSize = conf.input.maxTileSize,
+        numPartitions = conf.input.numPartitions
+      )
+    )
 }
