@@ -16,12 +16,11 @@
 
 package geotrellis.spark.io.hadoop
 
-import java.io.File
-import java.nio.file.Paths
-
 import geotrellis.spark._
 import org.apache.hadoop.fs.Path
 import org.scalatest._
+
+import java.io.File
 
 class HadoopPackedPointsRDDSpec extends FunSpec
   with Matchers
