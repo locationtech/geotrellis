@@ -17,6 +17,7 @@
 package geotrellis.spark.io.hadoop.formats
 
 import geotrellis.spark.io.pdal.json._
+import geotrellis.util.Filesystem
 
 import io.pdal._
 import org.apache.hadoop.fs._
@@ -30,13 +31,13 @@ class PackedPointsInputFormat extends FileInputFormat[Path, PackedPoints] {
   override def isSplitable(context: JobContext, fileName: Path) = false
 
   override def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[Path, PackedPoints] = {
-    val tmpDir = new File(System.getProperty("java.io.tmpdir"), context.getTaskAttemptID.toString)
+    val tmpDir = Filesystem.createDirectory()
 
     new BinaryFileRecordReader({ bytes =>
       val remotePath = split.asInstanceOf[FileSplit].getPath
+      println(tmpDir.getAbsolutePath)
 
       // copy remote file into local tmp dir
-      tmpDir.mkdirs()
       val localPath = new File(tmpDir, remotePath.getName)
       val bos = new BufferedOutputStream(new FileOutputStream(localPath))
       Stream.continually(bos.write(bytes))
@@ -60,6 +61,8 @@ class PackedPointsInputFormat extends FileInputFormat[Path, PackedPoints] {
       pointViewIterator.dispose()
       pipeline.dispose()
       localPath.delete()
+      tmpDir.delete()
+
       result
     })
   }
