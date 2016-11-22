@@ -2,6 +2,7 @@ index.html
 index.js
 package.html
 lib
+site/
 
 project/boot
 project/plugins/project
@@ -38,3 +39,5 @@ index.js
 .ensime*
 
 nohup.out
+
+site/
