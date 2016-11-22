@@ -16,8 +16,8 @@
 
 package geotrellis.spark.io.s3
 
-import geotrellis.spark.io.pdal.ProjectedExtent3D
 import geotrellis.spark.io.pdal.json._
+import geotrellis.spark.pdal.ProjectedExtent3D
 
 import io.pdal._
 import org.apache.hadoop.conf.Configuration

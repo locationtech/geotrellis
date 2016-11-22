@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.pdal
+package geotrellis.spark.pdal
 
 import geotrellis.vector.Extent
 
