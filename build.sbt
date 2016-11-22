@@ -194,7 +194,7 @@ lazy val shapefile = Project("shapefile", file("shapefile")).
   settings(commonSettings: _*)
 
 lazy val pdal = Project("pdal", file("pdal")).
-  dependsOn(raster, spark, s3).
+  dependsOn(sparkTestkit % "test->test", spark % "provided;test->test", raster % "provided;test->test", s3 % "provided;test->test").
   settings(commonSettings: _*)
 
 lazy val util = Project("util", file("util")).
