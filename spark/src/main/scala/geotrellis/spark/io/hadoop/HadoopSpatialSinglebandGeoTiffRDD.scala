@@ -10,7 +10,6 @@ import geotrellis.vector.ProjectedExtent
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._
 import org.apache.spark.api.java._
-//SparkContext
 import org.apache.spark.rdd.RDD
 
 class HadoopSpatialSinglebandGeoTiffRDD(path: String, jsc: JavaSparkContext) {
@@ -22,6 +21,12 @@ class HadoopSpatialSinglebandGeoTiffRDD(path: String, jsc: JavaSparkContext) {
 	def getKey: ProjectedExtent = rdd.first._1
 	def getValue: Tile = rdd.first._2
 
-	def split(totalCols: Int, totalRows: Int): RDD[(ProjectedExtent, Tile)] =
-		rdd.split(totalCols, totalRows)
+	def split(totalCols: java.lang.Integer, totalRows: java.lang.Integer): RDD[(ProjectedExtent, Tile)] =
+		rdd.split(totalCols.intValue, totalRows.intValue)
+
+	def fromEpsgCode(code: Int): CRS =
+		CRS.fromEpsgCode(code)
+
+	def reproject(target: RDD[(ProjectedExtent, Tile)], dest: CRS): RDD[(ProjectedExtent, Tile)] =
+		target.map(x => (ProjectedExtent(x._1.reproject(dest), dest), x._2))
 }
