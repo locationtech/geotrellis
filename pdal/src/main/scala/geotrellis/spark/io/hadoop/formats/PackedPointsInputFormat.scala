@@ -35,7 +35,6 @@ class PackedPointsInputFormat extends FileInputFormat[Path, PackedPoints] {
 
     new BinaryFileRecordReader({ bytes =>
       val remotePath = split.asInstanceOf[FileSplit].getPath
-      println(tmpDir.getAbsolutePath)
 
       // copy remote file into local tmp dir
       val localPath = new File(tmpDir, remotePath.getName)
