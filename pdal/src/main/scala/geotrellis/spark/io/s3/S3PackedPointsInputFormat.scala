@@ -25,7 +25,7 @@ import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
 import java.io.{BufferedOutputStream, File, FileOutputStream}
 
 /** Process files from the path through PDAL, and reads all files point data as an Array[Byte] **/
-class PackedPointsS3InputFormat extends S3InputFormat[String, PackedPoints] {
+class S3PackedPointsInputFormat extends S3InputFormat[String, PackedPoints] {
   def createRecordReader(split: InputSplit, context: TaskAttemptContext) = {
     val tmpDir = Filesystem.createDirectory()
     val s3Client = getS3Client(context)
