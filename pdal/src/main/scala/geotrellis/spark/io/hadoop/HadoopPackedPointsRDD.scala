@@ -19,7 +19,7 @@ package geotrellis.spark.io.hadoop
 import io.pdal._
 import geotrellis.spark.io.pdal.json._
 import geotrellis.spark.io.hadoop.formats._
-import geotrellis.spark.io.pdal.ProjectedPackedPointsBounds
+import geotrellis.spark.io.pdal.ProjectedExtent3D
 
 import spray.json._
 import org.apache.hadoop.conf.Configuration
@@ -62,14 +62,14 @@ object HadoopPackedPointsRDD {
     * @param path     Hdfs point data files path.
     * @param options  An instance of [[Options]] that contains any user defined or default settings.
     */
-  def apply(path: Path, options: Options = Options.DEFAULT)(implicit sc: SparkContext): RDD[(ProjectedPackedPointsBounds, PackedPoints)] = {
+  def apply(path: Path, options: Options = Options.DEFAULT)(implicit sc: SparkContext): RDD[(ProjectedExtent3D, PackedPoints)] = {
     sc.newAPIHadoopRDD(
       configuration(path, options),
       classOf[PackedPointsInputFormat],
       classOf[Path],
       classOf[PackedPoints]
     ).mapPartitions(
-      _.map { case (_, packedPoints) => packedPoints.metadata.parseJson.convertTo[ProjectedPackedPointsBounds] -> packedPoints },
+      _.map { case (_, packedPoints) => packedPoints.metadata.parseJson.convertTo[ProjectedExtent3D] -> packedPoints },
       preservesPartitioning = true
     )
   }
