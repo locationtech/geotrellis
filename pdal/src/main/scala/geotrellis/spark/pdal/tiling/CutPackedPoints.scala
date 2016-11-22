@@ -18,7 +18,6 @@ package geotrellis.spark.pdal.tiling
 
 import io.pdal._
 
-import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 import org.apache.spark.rdd._
@@ -33,7 +32,6 @@ object CutPackedPoints {
     K2: SpatialComponent: ClassTag
   ] (
       rdd: RDD[(K1, PackedPoints)],
-      cellType: CellType,
       layoutDefinition: LayoutDefinition
     ): RDD[(K2, PackedPoints)] = {
     val mapTransform = layoutDefinition.mapTransform
