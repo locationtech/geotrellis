@@ -17,7 +17,7 @@
 package geotrellis.spark.io.pdal.json
 
 import geotrellis.proj4.CRS
-import geotrellis.spark.io.pdal.{Extent3D, ProjectedExtent3D}
+import geotrellis.spark.pdal.{Extent3D, ProjectedExtent3D}
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 

@@ -19,8 +19,7 @@ package geotrellis.spark.io.hadoop
 import io.pdal._
 import geotrellis.spark.io.pdal.json._
 import geotrellis.spark.io.hadoop.formats._
-import geotrellis.spark.io.pdal.ProjectedExtent3D
-
+import geotrellis.spark.pdal.ProjectedExtent3D
 import spray.json._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
