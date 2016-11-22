@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.pdal
+package geotrellis.spark.pdal
 
 import geotrellis.proj4.CRS
 
-case class ProjectedExtent3D(bounds: Extent3D, crs: CRS)
+case class ProjectedExtent3D(extent3d: Extent3D, crs: CRS)
