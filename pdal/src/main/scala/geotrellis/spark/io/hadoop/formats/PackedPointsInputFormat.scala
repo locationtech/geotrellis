@@ -16,8 +16,9 @@
 
 package geotrellis.spark.io.hadoop.formats
 
-import io.pdal._
+import geotrellis.spark.io.pdal.json._
 
+import io.pdal._
 import org.apache.hadoop.fs._
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.lib.input._
@@ -35,12 +36,13 @@ class PackedPointsInputFormat extends FileInputFormat[Path, PackedPoints] {
       val remotePath = split.asInstanceOf[FileSplit].getPath
 
       // copy remote file into local tmp dir
+      tmpDir.mkdirs()
       val localPath = new File(tmpDir, remotePath.getName)
       val bos = new BufferedOutputStream(new FileOutputStream(localPath))
       Stream.continually(bos.write(bytes))
       bos.close()
 
-      val pipeline = Pipeline(PackedPointsInputFormat.toPipelineJson(localPath).toString)
+      val pipeline = Pipeline(fileToPipelineJson(localPath).toString)
 
       pipeline.execute
 
@@ -57,16 +59,8 @@ class PackedPointsInputFormat extends FileInputFormat[Path, PackedPoints] {
       pointView.dispose()
       pointViewIterator.dispose()
       pipeline.dispose()
+      localPath.delete()
       result
     })
   }
-}
-
-object PackedPointsInputFormat {
-  import spray.json._
-  import spray.json.DefaultJsonProtocol._
-
-  def toPipelineJson(localPath: File): JsObject = JsObject(
-    "filename" -> localPath.getAbsolutePath.toJson
-  )
 }
