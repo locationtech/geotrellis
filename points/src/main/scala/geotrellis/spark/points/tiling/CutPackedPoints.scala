@@ -33,6 +33,8 @@ object CutPackedPoints {
     K2: SpatialComponent: ClassTag
   ](rdd: RDD[(K1, PackedPoints)], layoutDefinition: LayoutDefinition): RDD[(K2, PackedPoints)] = {
     val mapTransform = layoutDefinition.mapTransform
+    val (tileCols, tileRows) = layoutDefinition.tileLayout.tileDimensions
+    val tilePoints = tileCols * tileRows
 
     rdd
       .flatMap { case (inKey, packedPoints) =>
@@ -46,7 +48,7 @@ object CutPackedPoints {
             val newBytes  = mutable.ArrayBuffer[Array[Byte]]()
 
             cfor(0)(_ < packedPoints.length, _ + 1) { i =>
-              if(outExtent.contains(packedPoints.getX(i), packedPoints.getY(i)))
+              if(outExtent.contains(packedPoints.getX(i), packedPoints.getY(i)) && newBytes.length < tilePoints)
                 newBytes += packedPoints.get(i)
             }
 
