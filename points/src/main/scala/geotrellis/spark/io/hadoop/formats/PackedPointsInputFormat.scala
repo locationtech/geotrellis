@@ -27,10 +27,10 @@ import org.apache.hadoop.mapreduce.lib.input._
 import java.io.{BufferedOutputStream, File, FileOutputStream}
 
 /** Process files from the path through PDAL, and reads all files point data as an Array[Byte] **/
-class PackedPointsInputFormat extends FileInputFormat[Path, PackedPoints] {
+class PackedPointsInputFormat extends FileInputFormat[Path, Iterator[PackedPoints]] {
   override def isSplitable(context: JobContext, fileName: Path) = false
 
-  override def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[Path, PackedPoints] = {
+  override def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[Path, Iterator[PackedPoints]] = {
     val tmpDir = Filesystem.createDirectory()
 
     new BinaryFileRecordReader({ bytes =>
@@ -43,20 +43,21 @@ class PackedPointsInputFormat extends FileInputFormat[Path, PackedPoints] {
       bos.close()
 
       val pipeline = Pipeline(fileToPipelineJson(localPath).toString)
-
       pipeline.execute
 
       val pointViewIterator = pipeline.pointViews()
-      val pointView = pointViewIterator.next()
+      // conversion to list to load everything into JVM memory
+      val packedPoints = pointViewIterator.toList.map { pointView =>
+        val packedPoint = pointView.getPackedPointsWithMetadata(
+          metadata = pipeline.getMetadata(),
+          schema   = pipeline.getSchema()
+        )
+        pointView.dispose()
+        packedPoint
+      }.toIterator
 
-      val packedPoint = pointView.getPackedPointsWithMetadata(
-        metadata = pipeline.getMetadata(),
-        schema   = pipeline.getSchema()
-      )
+      val result = split.asInstanceOf[FileSplit].getPath -> packedPoints
 
-      val result = split.asInstanceOf[FileSplit].getPath -> packedPoint
-
-      pointView.dispose()
       pointViewIterator.dispose()
       pipeline.dispose()
       localPath.delete()

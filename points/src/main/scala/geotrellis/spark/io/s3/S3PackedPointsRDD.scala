@@ -77,9 +77,11 @@ object S3PackedPointsRDD {
       configuration(bucket, prefix, options),
       classOf[S3PackedPointsInputFormat],
       classOf[String],
-      classOf[PackedPoints]
+      classOf[Iterator[PackedPoints]]
     ).mapPartitions(
-      _.map { case (_, packedPoints) => packedPoints.metadata.parseJson.convertTo[ProjectedExtent3D] -> packedPoints },
+      _.flatMap { case (_, packedPointsIter) => packedPointsIter.map { packedPoints =>
+        packedPoints.metadata.parseJson.convertTo[ProjectedExtent3D] -> packedPoints
+      } },
       preservesPartitioning = true
     )
 }
