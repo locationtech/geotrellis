@@ -25,12 +25,12 @@ import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
 import java.io.{BufferedOutputStream, File, FileOutputStream}
 
 /** Process files from the path through PDAL, and reads all files point data as an Array[Byte] **/
-class S3PackedPointsInputFormat extends S3InputFormat[String, PackedPoints] {
+class S3PackedPointsInputFormat extends S3InputFormat[String, Iterator[PackedPoints]] {
   def createRecordReader(split: InputSplit, context: TaskAttemptContext) = {
     val tmpDir = Filesystem.createDirectory()
     val s3Client = getS3Client(context)
 
-    new S3RecordReader[String, PackedPoints](s3Client) {
+    new S3RecordReader[String, Iterator[PackedPoints]](s3Client) {
       def read(key: String, bytes: Array[Byte]) = {
         // copy remote file into local tmp dir
         val localPath = new File(tmpDir, key)
@@ -39,20 +39,21 @@ class S3PackedPointsInputFormat extends S3InputFormat[String, PackedPoints] {
         bos.close()
 
         val pipeline = Pipeline(fileToPipelineJson(localPath).toString)
-
         pipeline.execute
 
         val pointViewIterator = pipeline.pointViews()
-        val pointView = pointViewIterator.next()
+        // conversion to list to load everything into JVM memory
+        val packedPoints = pointViewIterator.toList.map { pointView =>
+          val packedPoint = pointView.getPackedPointsWithMetadata(
+            metadata = pipeline.getMetadata(),
+            schema   = pipeline.getSchema()
+          )
+          pointView.dispose()
+          packedPoint
+        }.toIterator
 
-        val packedPoint = pointView.getPackedPointsWithMetadata(
-          metadata = pipeline.getMetadata(),
-          schema   = pipeline.getSchema()
-        )
+        val result = key -> packedPoints
 
-        val result = key -> packedPoint
-
-        pointView.dispose()
         pointViewIterator.dispose()
         pipeline.dispose()
         localPath.delete()

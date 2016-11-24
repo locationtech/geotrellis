@@ -18,11 +18,12 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.points.ProjectedExtent3D
-
+import geotrellis.spark.points.json._
 import io.pdal._
 import spray.json._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
+import org.apache.hadoop.mapreduce.InputFormat
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
@@ -66,9 +67,11 @@ object HadoopPackedPointsRDD {
       configuration(path, options),
       classOf[PackedPointsInputFormat],
       classOf[Path],
-      classOf[PackedPoints]
+      classOf[Iterator[PackedPoints]]
     ).mapPartitions(
-      _.map { case (_, packedPoints) => packedPoints.metadata.parseJson.convertTo[ProjectedExtent3D] -> packedPoints },
+      _.flatMap { case (_, packedPointsIter) => packedPointsIter.map { packedPoints =>
+        packedPoints.metadata.parseJson.convertTo[ProjectedExtent3D] -> packedPoints
+      } },
       preservesPartitioning = true
     )
   }
