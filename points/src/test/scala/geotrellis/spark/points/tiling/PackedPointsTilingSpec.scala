@@ -14,26 +14,33 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.hadoop
+package geotrellis.spark.points.tiling
 
+import geotrellis.raster.TileLayout
 import geotrellis.spark.TestEnvironment
+import geotrellis.spark.points.tiling.Implicits._
+import geotrellis.spark.tiling.LayoutDefinition
+import geotrellis.spark.io.hadoop.HadoopPackedPointsRDD
+import geotrellis.vector.Extent
 
 import org.apache.hadoop.fs.Path
 import org.scalatest._
 
 import java.io.File
 
-class HadoopPackedPointsRDDSpec extends FunSpec
+class PackedPointsTilingSpec extends FunSpec
   with Matchers
   with TestEnvironment {
-  describe("PackedPoints RDD reads") {
+  describe("Points RDD tiling") {
     val testResources = new File("src/test/resources")
 
-    it("should read LAS file as RDD using hadoop input format") {
+    it("should tile RDD of packed points") {
       val source = HadoopPackedPointsRDD(new Path(s"file://${testResources.getAbsolutePath}/las"))
-      val sourceList = source.take(1).toList
-      sourceList.map { case (k, _) => k.crs.proj4jCrs.getName }.head should be ("lcc-CS")
-      sourceList.map { case (_, v) => v.length }.head should be (1065)
+      val original = source.take(1).map(_._2).toList.head
+      val ld = LayoutDefinition(Extent(635609.85, 848889.7, 638992.55, 853545.43), TileLayout(5,5,5,5))
+      val tiled = withTilerMethods(source).tileToLayout(ld)
+      tiled.map(_._2.length).reduce(_ + _) should be (original.length)
+      tiled.count() should be (25)
     }
   }
 }

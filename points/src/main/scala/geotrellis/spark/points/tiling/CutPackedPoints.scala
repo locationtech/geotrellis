@@ -20,6 +20,7 @@ import io.pdal._
 
 import geotrellis.spark._
 import geotrellis.spark.tiling._
+
 import org.apache.spark.rdd._
 import spire.syntax.cfor._
 
@@ -30,10 +31,7 @@ object CutPackedPoints {
   def apply[
     K1: (? => TilerKeyMethods[K1, K2]),
     K2: SpatialComponent: ClassTag
-  ] (
-      rdd: RDD[(K1, PackedPoints)],
-      layoutDefinition: LayoutDefinition
-    ): RDD[(K2, PackedPoints)] = {
+  ](rdd: RDD[(K1, PackedPoints)], layoutDefinition: LayoutDefinition): RDD[(K2, PackedPoints)] = {
     val mapTransform = layoutDefinition.mapTransform
 
     rdd
