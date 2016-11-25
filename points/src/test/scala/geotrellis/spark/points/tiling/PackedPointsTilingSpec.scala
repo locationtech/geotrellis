@@ -30,6 +30,7 @@ class PackedPointsTilingSpec extends FunSpec
   with PointsTestEnvironment {
   describe("Points RDD tiling") {
     it("should tile RDD of packed points") {
+      //Pipeline.loadNativeLibrary()
       val source = HadoopPackedPointsRDD(lasPath)
       val original = source.take(1).map(_._2).toList.head
       // that means there can be no more points per "tile" than tileCols * tileRows

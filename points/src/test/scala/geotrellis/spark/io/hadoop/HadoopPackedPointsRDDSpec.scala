@@ -17,7 +17,9 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.spark.PointsTestEnvironment
+
 import org.scalatest._
+import spire.syntax.cfor._
 
 class HadoopPackedPointsRDDSpec extends FunSpec
   with Matchers
@@ -25,9 +27,18 @@ class HadoopPackedPointsRDDSpec extends FunSpec
   describe("PackedPoints RDD reads") {
     it("should read LAS file as RDD using hadoop input format") {
       val source = HadoopPackedPointsRDD(lasPath)
+      val pointsCount = source.mapPartitions { _.map { case (_, packedPoints) =>
+        var acc = 0l
+        cfor(0)(_ < packedPoints.length, _ + 1) { i =>
+          packedPoints.get(i)
+          acc += 1
+        }
+        acc
+      } }.reduce(_ + _)
       val sourceList = source.take(1).toList
       sourceList.map { case (k, _) => k.crs.proj4jCrs.getName }.head should be ("lcc-CS")
       sourceList.map { case (_, v) => v.length }.head should be (1065)
+      pointsCount should be (1065)
     }
   }
 }
