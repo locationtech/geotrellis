@@ -1,0 +1,37 @@
+{
+ "catalog": "Catalog of Test Data",
+ "stores": [
+  {
+   "store": "test:fs",
+   "params": {
+     "type": "fs",
+     "path": "data",
+     "cacheAll": "no"
+    }
+  },
+  {
+   "store": "test:fs2",
+   "params": {
+     "type": "fs",
+     "path": "data2",
+     "cacheAll": "no"
+    }
+  },
+  {
+   "store": "sbn:fs",
+   "params": {
+     "type": "fs",
+     "path": "sbn",
+     "cacheAll": "no"
+    }
+  },
+  {
+   "store": "reproject:fs",
+   "params": {
+     "type": "fs",
+     "path": "reproject",
+     "cacheAll": "no"
+    }
+  }
+ ]
+}

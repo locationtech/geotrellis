@@ -1,0 +1,16 @@
+{
+    "cellheight": 75.0,
+    "cellwidth": 75.0,
+    "cols": 256,
+    "datatype": "int8",
+    "epsg": 3785,
+    "layer": "SBN_inc_percap_tiled_0_6",
+    "rows": 256,
+    "type": "arg",
+    "xmax": -8456297.88485957,
+    "xmin": -8475497.88485957,
+    "xskew": 0,
+    "ymax": 4839565.69147447,
+    "ymin": 4820365.69147447,
+    "yskew": 0
+}

@@ -1,0 +1,16 @@
+{
+  "layer": "vectorbugger2",
+  "datatype": "int32", 
+  "type": "arg",
+  "xmin": -75.241691,
+  "xmax": -75.156915,
+  "ymin": 39.931965,
+  "ymax": 39.963404,
+  "cols": 500,
+  "rows": 500,
+  "cellwidth": 0.000170,
+  "cellheight": 0.000063,
+  "epsg": 3785,
+  "yskew": 0.0,
+  "xskew": 0.0
+}

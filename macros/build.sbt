@@ -1,0 +1,14 @@
+import Dependencies._
+
+name := "geotrellis-macros"
+
+sourceGenerators in Compile <+= (sourceManaged in Compile).map(Boilerplate.genMacro)
+
+libraryDependencies ++= Seq(
+  "org.spire-math" %% "spire-macros" % "0.11.0",
+  "org.scala-lang" % "scala-reflect" % scalaVersion.value
+)
+
+resolvers += Resolver.sonatypeRepo("snapshots")
+
+addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)

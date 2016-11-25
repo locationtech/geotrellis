@@ -1,0 +1,2 @@
+-Djava.awt.headless=true
+-Dsun.io.serialization.extendedDebugInfo=true

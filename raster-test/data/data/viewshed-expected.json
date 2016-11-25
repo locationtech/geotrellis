@@ -1,0 +1,16 @@
+{
+    "cellheight": 0.003910590277795001,
+    "cellwidth": 0.003910590277795001,
+    "cols": 256,
+    "datatype": "int8",
+    "epsg": 0,
+    "layer": "viewshed-expected",
+    "rows": 256,
+    "type": "arg",
+    "xmax": -92.99944444444449,
+    "xmin": -94.00055555556001,
+    "xskew": 0,
+    "ymax": 31.00055555555553,
+    "ymin": 29.99944444444001,
+    "yskew": 0
+}

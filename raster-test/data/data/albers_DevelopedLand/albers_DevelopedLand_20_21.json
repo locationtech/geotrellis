@@ -1,0 +1,16 @@
+{
+  "layer": "albers_DevelopedLand_20_21",
+  "datatype": "bool", 
+  "type": "arg",
+  "xmin": 1016067.855530,
+  "xmax": 1023747.855530,
+  "ymin": 1313733.186111,
+  "ymax": 1321413.186111,
+  "cols": 256,
+  "rows": 256,
+  "cellwidth": 30.000000,
+  "cellheight": 30.000000,
+  "epsg": 3785,
+  "yskew": 0.0,
+  "xskew": 0.0
+}

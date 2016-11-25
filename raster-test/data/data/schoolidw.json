@@ -1,0 +1,16 @@
+{
+  "layer": "schoolidw",
+  "datatype": "int32", 
+  "type": "arg",
+  "xmin": 2664030.000000,
+  "xmax": 2745930.000000,
+  "ymin": 214979.000000,
+  "ymax": 301938.000000,
+  "cols": 300,
+  "rows": 400,
+  "cellwidth": 273.000000,
+  "cellheight": 217.397500,
+  "epsg": 3785,
+  "yskew": 0.0,
+  "xskew": 0.0
+}

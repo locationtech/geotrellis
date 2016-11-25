@@ -1,0 +1,16 @@
+{
+    "cellheight": 0.003910590277794987,
+    "cellwidth": 0.003910590277795001,
+    "cols": 256,
+    "datatype": "float32",
+    "epsg": 4269,
+    "layer": "viewshed-elevation",
+    "rows": 256,
+    "type": "arg",
+    "xmax": -92.99944444444449,
+    "xmin": -94.00055555556001,
+    "xskew": 0,
+    "ymax": 31.000555555555525,
+    "ymin": 29.99944444444001,
+    "yskew": 0
+}

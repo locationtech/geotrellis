@@ -1,0 +1,8 @@
+package geotrellis.raster.io.geotiff.tags.codes
+
+object InterleaveType {
+
+  val Pixel = 1
+  val Band = 2
+
+}

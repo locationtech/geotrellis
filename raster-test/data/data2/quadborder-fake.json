@@ -1,0 +1,17 @@
+{
+  "layer": "quadborder",
+  "path": "quadborder-fake.arg",
+  "type": "arg",
+  "datatype": "int32",
+  "xmin": 1000.0,
+  "ymin": 1000.0,
+  "xmax": 1600.0,
+  "ymax": 1600.0,
+  "cellwidth": 100.0,
+  "cellheight": 100.0,
+  "rows": 6,
+  "cols": 6,
+  "epsg": 3785,
+  "yskew": 0.0,
+  "xskew": 0.0
+}
