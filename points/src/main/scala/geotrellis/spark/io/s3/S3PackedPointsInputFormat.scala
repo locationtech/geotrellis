@@ -39,23 +39,28 @@ class S3PackedPointsInputFormat extends S3InputFormat[String, Iterator[PackedPoi
         bos.close()
 
         val pipeline = Pipeline(fileToPipelineJson(localPath).toString)
-        pipeline.execute
 
-        val pointViewIterator = pipeline.pointViews()
+        AnyRef.synchronized { pipeline.initialise() }
+        AnyRef.synchronized { pipeline.execute }
+
+        val pointViewIterator = AnyRef.synchronized { pipeline.pointViews() }
         // conversion to list to load everything into JVM memory
         val packedPoints = pointViewIterator.toList.map { pointView =>
-          val packedPoint = pointView.getPackedPointsWithMetadata(
-            metadata = pipeline.getMetadata(),
-            schema   = pipeline.getSchema()
-          )
-          pointView.dispose()
+          val packedPoint = AnyRef.synchronized {
+            pointView.getPackedPointsWithMetadata(
+              metadata = AnyRef.synchronized { pipeline.getMetadata() },
+              schema = AnyRef.synchronized { pipeline.getSchema() }
+            )
+          }
+
+          AnyRef.synchronized { pointView.dispose() }
           packedPoint
         }.toIterator
 
         val result = key -> packedPoints
 
-        pointViewIterator.dispose()
-        pipeline.dispose()
+        AnyRef.synchronized { pointViewIterator.dispose() }
+        AnyRef.synchronized { pipeline.dispose() }
         localPath.delete()
         tmpDir.delete()
 
