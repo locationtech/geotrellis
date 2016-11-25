@@ -42,24 +42,29 @@ class PackedPointsInputFormat extends FileInputFormat[Path, Iterator[PackedPoint
       Stream.continually(bos.write(bytes))
       bos.close()
 
-      val pipeline = Pipeline(fileToPipelineJson(localPath).toString)
-      pipeline.execute
+      val pipeline = new Pipeline(fileToPipelineJson(localPath).toString)
 
-      val pointViewIterator = pipeline.pointViews()
+      AnyRef.synchronized { pipeline.initialise() }
+      AnyRef.synchronized { pipeline.execute }
+
+      val pointViewIterator = AnyRef.synchronized { pipeline.pointViews() }
       // conversion to list to load everything into JVM memory
       val packedPoints = pointViewIterator.toList.map { pointView =>
-        val packedPoint = pointView.getPackedPointsWithMetadata(
-          metadata = pipeline.getMetadata(),
-          schema   = pipeline.getSchema()
-        )
-        pointView.dispose()
+        val packedPoint = AnyRef.synchronized {
+          pointView.getPackedPointsWithMetadata(
+            metadata = AnyRef.synchronized { pipeline.getMetadata() },
+            schema = AnyRef.synchronized { pipeline.getSchema() }
+          )
+        }
+
+        AnyRef.synchronized { pointView.dispose() }
         packedPoint
       }.toIterator
 
       val result = split.asInstanceOf[FileSplit].getPath -> packedPoints
 
-      pointViewIterator.dispose()
-      pipeline.dispose()
+      AnyRef.synchronized { pointViewIterator.dispose() }
+      AnyRef.synchronized { pipeline.dispose() }
       localPath.delete()
       tmpDir.delete()
 
