@@ -219,7 +219,7 @@ partitions          | partitions number during pyramid build
 reprojectMethod     | buffered | per-tile
 cellSize            | sell size
 encoding            | png | geotiff for `render` output
-tileSize            | tile size (optional field)
+tileSize            | tile size (optional field).<br>If not set, the default size of output tiles is 256x256
 layoutExtent        | layout extent (optional field)
 resolutionThreshold | resolution for user defined Layout Scheme (optional field)
 pyramid             | true | false - ingest with / with out building pyramid
@@ -282,6 +282,9 @@ name             | Input dataset name
 cache            | Spark RDD cache strategy
 noData           | NoData value
 clip             | Extent in target CRS to clip the input source
+crs              | Optional. This parameter will override the input's CRS.<br>The original CRS will be used by defalt.
+maxTleSize       | Optional. Inputs will be broken up into smaller tiles of the given size.<br>The tiles will be kept whole by default.
+numPartitions    | Optional. How many partitions Spark should make when repartioning.<br>No repartioning will occur by default.
 
 ###### Supported Formats
 
