@@ -57,6 +57,7 @@ object Dependencies {
   val scalazStream  = "org.scalaz.stream" %% "scalaz-stream" % "0.8.2a"
 
   val sparkCore     = "org.apache.spark" %% "spark-core" % Version.spark
+  val sparkSql      = "org.apache.spark" %% "spark-sql" % Version.spark
   val hadoopClient  = "org.apache.hadoop" % "hadoop-client" % Version.hadoop
 
   val avro          = "org.apache.avro" % "avro" % "1.8.1"
