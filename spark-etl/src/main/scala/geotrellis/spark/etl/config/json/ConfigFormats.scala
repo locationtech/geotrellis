@@ -211,28 +211,28 @@ trait ConfigFormats {
   case class InputFormat(bp: Map[String, BackendProfile]) extends RootJsonFormat[Input] {
     val bf = BackendFormat(bp)
     def write(i: Input): JsValue = JsObject(
-      "name"    -> i.name.toJson,
-      "format"  -> i.format.toJson,
-      "backend" -> bf.write(i.backend),
-      "cache"   -> i.cache.toJson,
-      "noData"  -> i.noData.toJson,
-      "clip"    -> i.clip.toJson,
-      "crs"   -> i.crs.toJson,
-      "maxTileSize"   -> i.crs.toJson,
+      "name"          -> i.name.toJson,
+      "format"        -> i.format.toJson,
+      "backend"       -> bf.write(i.backend),
+      "cache"         -> i.cache.toJson,
+      "noData"        -> i.noData.toJson,
+      "clip"          -> i.clip.toJson,
+      "crs"           -> i.crs.toJson,
+      "maxTileSize"   -> i.maxTileSize.toJson,
       "numPartitions" -> i.numPartitions.toJson
     )
     def read(value: JsValue): Input =
       value match {
         case JsObject(fields) =>
           Input(
-            name    = fields("name").convertTo[String],
-            format  = fields("format").convertTo[String],
-            backend = bf.read(fields("backend")),
-            cache   = fields.get("cache").map(_.convertTo[StorageLevel]),
-            noData  = fields.get("noData").map(_.convertTo[Double]),
-            clip    = fields.get("clip").map(_.convertTo[Extent]),
-            crs     = fields.get("crs").map(_.convertTo[String]),
-            maxTileSize = fields.get("maxTileSize").map(_.convertTo[Int]),
+            name          = fields("name").convertTo[String],
+            format        = fields("format").convertTo[String],
+            backend       = bf.read(fields("backend")),
+            cache         = fields.get("cache").map(_.convertTo[StorageLevel]),
+            noData        = fields.get("noData").map(_.convertTo[Double]),
+            clip          = fields.get("clip").map(_.convertTo[Extent]),
+            crs           = fields.get("crs").map(_.convertTo[String]),
+            maxTileSize   = fields.get("maxTileSize").map(_.convertTo[Int]),
             numPartitions = fields.get("numPartitions").map(_.convertTo[Int])
           )
         case _ =>
