@@ -7,6 +7,7 @@
       "project geowave" +publish-m2 \
       "project hbase" +publish-m2 \
       "project macros" +publish-m2 \
+      "project points" +publish-m2 \
       "project proj4" +publish-m2 \
       "project raster" +publish-m2 \
       "project raster-testkit" +publish-m2 \
