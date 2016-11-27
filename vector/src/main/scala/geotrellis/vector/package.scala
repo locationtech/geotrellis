@@ -24,7 +24,7 @@ import scala.collection.mutable
 import scala.collection.JavaConversions._
 
 package object vector extends SeqMethods
-    with reproject.Implicits 
+    with reproject.Implicits
     with voronoi.Implicits {
 
   type PointFeature[D] = Feature[Point, D]
