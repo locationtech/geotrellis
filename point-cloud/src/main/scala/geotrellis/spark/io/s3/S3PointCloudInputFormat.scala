@@ -40,27 +40,26 @@ class S3PointCloudInputFormat extends S3InputFormat[String, Iterator[PointCloud]
 
         val pipeline = Pipeline(fileToPipelineJson(localPath).toString)
 
-        AnyRef.synchronized { pipeline.initialise() }
+        // PDAL itself is not threadsafe
         AnyRef.synchronized { pipeline.execute }
 
-        val pointViewIterator = AnyRef.synchronized { pipeline.pointViews() }
+        val pointViewIterator = pipeline.pointViews()
         // conversion to list to load everything into JVM memory
         val packedPoints = pointViewIterator.toList.map { pointView =>
-          val packedPoint = AnyRef.synchronized {
+          val packedPoint =
             pointView.getPointCloud(
-              metadata = AnyRef.synchronized { pipeline.getMetadata() },
-              schema = AnyRef.synchronized { pipeline.getSchema() }
+              metadata = pipeline.getMetadata(),
+              schema   = pipeline.getSchema()
             )
-          }
 
-          AnyRef.synchronized { pointView.dispose() }
+          pointView.dispose()
           packedPoint
         }.toIterator
 
         val result = key -> packedPoints
 
-        AnyRef.synchronized { pointViewIterator.dispose() }
-        AnyRef.synchronized { pipeline.dispose() }
+        pointViewIterator.dispose()
+        pipeline.dispose()
         localPath.delete()
         tmpDir.delete()
 
