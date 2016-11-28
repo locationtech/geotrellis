@@ -11,4 +11,4 @@ resolvers += Resolver.bintrayRepo("daunnc", "maven")
 fork in Test := true
 parallelExecution in Test := false
 
-javaOptions += s"-Djava.library.path=${Environment.javaPdalDir}"
+javaOptions += s"-Djava.library.path=${Environment.ldLibraryPath}"
