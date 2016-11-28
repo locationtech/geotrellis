@@ -15,7 +15,6 @@
    && ./sbt "project spark-etl" publish \
    && ./sbt "project geomesa" publish \
    && ./sbt "project geotools" publish \
-   && ./sbt "project geowave" publish \
    && ./sbt "project shapefile" publish \
    && ./sbt "project slick" publish \
    && ./sbt "project util" publish \
