@@ -86,7 +86,7 @@ lazy val root = Project("geotrellis", file(".")).
     geotools,
     slick,
     vectortile,
-    pointCloud
+    pointcloud
   ).
   settings(commonSettings: _*).
   settings(
@@ -193,7 +193,7 @@ lazy val shapefile = Project("shapefile", file("shapefile")).
   dependsOn(raster, rasterTestkit % "test").
   settings(commonSettings: _*)
 
-lazy val pointCloud = Project("point-cloud", file("point-cloud")).
+lazy val pointcloud = Project("pointcloud", file("pointcloud")).
   dependsOn(sparkTestkit % "test->test", spark % "provided;test->test", raster % "provided;test->test", s3 % "provided;test->test").
   settings(commonSettings: _*)
 
