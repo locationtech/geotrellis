@@ -16,14 +16,14 @@
 
 package geotrellis.spark.io.hadoop
 
-import geotrellis.spark.PointsTestEnvironment
+import geotrellis.spark.PointCloudTestEnvironment
 
 import org.scalatest._
 import spire.syntax.cfor._
 
 class HadoopPackedPointsRDDSpec extends FunSpec
   with Matchers
-  with PointsTestEnvironment {
+  with PointCloudTestEnvironment {
   describe("PackedPoints RDD reads") {
     it("should read LAS file as RDD using hadoop input format") {
       val source = HadoopPointCloudRDD(lasPath)
