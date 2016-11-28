@@ -1,6 +1,6 @@
 import Dependencies._
 
-name := "geotrellis-points"
+name := "geotrellis-pointcloud"
 libraryDependencies ++= Seq(
   sparkCore % "provided",
   pdal,
