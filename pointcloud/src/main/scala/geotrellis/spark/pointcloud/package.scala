@@ -21,7 +21,8 @@ import geotrellis.util._
 
 
 package object pointcloud
-    extends dem.Implicits {
+    extends dem.Implicits
+    with tiling.Implicits {
 
   implicit class withProjectedExtent3DTilerKeyMethods[K: Component[?, ProjectedExtent3D]](val self: K) extends TilerKeyMethods[K, SpatialKey] {
     def extent = self.getComponent[ProjectedExtent3D].extent3d.toExtent

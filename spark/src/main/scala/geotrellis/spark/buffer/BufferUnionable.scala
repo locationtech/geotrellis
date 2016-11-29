@@ -21,7 +21,8 @@ object BufferUnionable {
     */
   def apply[
     K: SpatialComponent,
-    V <: { def union(other: Any): V } : ClassTag
+    X <: { def union(other: Any): V },
+    V: (? => X) : ClassTag
   ](rdd: RDD[(K, V)]): RDD[(K, V)] = {
     rdd
       .flatMap({ case (key, data) =>
