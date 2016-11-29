@@ -16,12 +16,13 @@
 
 package geotrellis.spark.pointcloud.dem
 
-import geotrellis.raster.TileLayout
-import geotrellis.spark.PointCloudTestEnvironment
-import Implicits._
-import geotrellis.spark.tiling.LayoutDefinition
+import geotrellis.raster.RasterExtent
 import geotrellis.spark.io.hadoop.HadoopPointCloudRDD
+import geotrellis.spark.pointcloud._
+import geotrellis.spark.PointCloudTestEnvironment
 import geotrellis.vector.Extent
+
+import scala.math
 
 import org.scalatest._
 
@@ -32,11 +33,32 @@ class PointCloudDemSpec extends FunSpec
 
   describe("PointCloud DEM support") {
 
+    val min = { (a: Double, b: Double) => math.min(a, b) }
+    val max = { (a: Double, b: Double) => math.max(a, b) }
+    val cloud = HadoopPointCloudRDD(lasPath).first._2
+
     it("should be able to union two clouds") {
-      val cloud = HadoopPointCloudRDD(lasPath).first._2
       val clouds = cloud.union(cloud)
 
       clouds.length should be (cloud.length * 2)
     }
+
+    it("should be able to produce a tile") {
+      val length = cloud.length
+      val xs = (0 until length).map({ i => cloud.getDouble(i, "X") })
+      val ys = (0 until length).map({ i => cloud.getDouble(i, "Y") })
+      val xmin = xs.reduce(min)
+      val xmax = xs.reduce(max)
+      val ymin = ys.reduce(min)
+      val ymax = ys.reduce(max)
+
+      val re = RasterExtent(Extent(xmin, ymin, xmax, ymax), 10, 10)
+
+      val tile = cloud.toTile(re, "Z")
+
+      tile.getDouble(0, 0) should be < (435.50)
+      tile.getDouble(0, 0) should be > (435.49)
+    }
+
   }
 }
