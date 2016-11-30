@@ -64,7 +64,7 @@ class TrianglesRasterizerSpec extends FunSpec
     it("should work when pixel falls in the interior of one triangle") {
       val tile =
         TrianglesRasterizer(
-          RasterExtent(Extent(.1, 0, 2, 2), 2, 2),
+          RasterExtent(Extent(0.1, 0, 2, 2), 2, 2),
           (0 to 8).map({ i => i.toDouble }).toArray,
           triangles,
           indexMap)
