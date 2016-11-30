@@ -91,7 +91,7 @@ object InverseDistanceWeighted {
               (dX, dY)
             }
 
-          if (!hasRadius || radiusY * dX2 * dX2 + radiusX * dY * dY <= d2 ) {
+          if (!hasRadius || radiusY * dX2 * dX2 + radiusX * dY2 * dY2 <= d2 ) {
             val data = point.data: Double
             if (d2 <= ewr2) {
               sampleSum += data
