@@ -8,9 +8,6 @@ import geotrellis.util.MethodExtensions
 import geotrellis.vector._
 import geotrellis.vector.voronoi.Delaunay
 
-import com.vividsolutions.jts.geom.{ Envelope => JtsEnvelope }
-import com.vividsolutions.jts.index.strtree.STRtree
-
 
 trait PointCloudDemMethods extends MethodExtensions[PointCloud] {
 
@@ -33,26 +30,11 @@ trait PointCloudDemMethods extends MethodExtensions[PointCloud] {
   lazy val xs = (0 until self.length).map({ i => self.getDouble(i, "X") }).toArray
   lazy val ys = (0 until self.length).map({ i => self.getDouble(i, "Y") }).toArray
   lazy val indexMap: Map[(Double, Double), Int] = xs.zip(ys).zipWithIndex.toMap
-
-  /**
-    * Compute a range tree over the Delaunay Triangulation of the
-    * input points.
-    */
-  lazy val triangleTree = {
-
-    val triangles = Delaunay(xs, ys).triangles
-    val rtree = new STRtree
-
-    triangles.foreach({ triangle =>
-      val Extent(xmin, ymin, xmax, ymax) = triangle.envelope
-      rtree.insert(new JtsEnvelope(xmin, xmax, ymin, ymax), triangle)
-    })
-    rtree
-  }
+  lazy val triangles = Delaunay(xs, ys).triangles
 
   def toTile(re: RasterExtent, dimension: String): ArrayTile = {
     val sourceArray = (0 until self.length).map({ i => self.getDouble(i, dimension) }).toArray
-    TrianglesRasterizer(re, sourceArray, triangleTree, indexMap)
+    TrianglesRasterizer(re, sourceArray, triangles, indexMap)
   }
 
 }

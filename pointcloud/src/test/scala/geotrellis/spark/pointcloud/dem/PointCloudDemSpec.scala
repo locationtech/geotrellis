@@ -30,17 +30,6 @@ import scala.math
 import org.scalatest._
 
 
-object Stuff {
-  case class UnionableThing(n: Int) {
-    def union(other: Any): UnionableThing = {
-      other match {
-        case that: UnionableThing => UnionableThing(this.n * that.n)
-        case _ => throw new Exception
-      }
-    }
-  }
-}
-
 class PointCloudDemSpec extends FunSpec
   with Matchers
   with PointCloudTestEnvironment {
