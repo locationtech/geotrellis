@@ -24,7 +24,7 @@ import org.scalatest._
 import slick.driver.PostgresDriver
 import util._
 
-class ProjectedSpec extends FlatSpec with Matchers with TestDatabase with ScalaFutures {
+class PostGisProjectionSupportSpec extends FlatSpec with Matchers with TestDatabase with ScalaFutures {
   implicit override val patienceConfig = PatienceConfig(timeout = Span(5, Seconds))
 
   object driver extends PostgresDriver with PostGisProjectionSupport {
@@ -89,6 +89,22 @@ class ProjectedSpec extends FlatSpec with Matchers with TestDatabase with ScalaF
     } yield {mp.geom.centroid}
 
     db.run(q.result).futureValue.toList.head should equal ( Projected(Point(1.5, 1.5), 3131) )
+  }
+
+  it should "handle hex strings starting with \\x" in {
+    val wkb ="\\x002000000300000f110000000100000005c170b8793ccc8e80415ca9f4683a18dcc170b8793ccc8e8041631bf8457c1091c16ca9f4683a18dc41631bf8457c1091c16ca9f4683a18dc415ca9f4683a18dcc170b8793ccc8e80415ca9f4683a18dc"
+    val interpreted = PostGisProjectionSupportUtils.readWktOrWkb(wkb)
+    val poly = Polygon(Point(-17532819.799940586, 7514065.628545966), Point(-17532819.799940586, 10018754.171394618), Point(-15028131.257091932, 10018754.171394618), Point(-15028131.257091932, 7514065.628545966), Point(-17532819.799940586, 7514065.628545966))
+
+    interpreted should be (poly)
+  }
+
+  it should "handle hex strings starting with 00" in {
+    val wkb ="002000000300000f110000000100000005c170b8793ccc8e80415ca9f4683a18dcc170b8793ccc8e8041631bf8457c1091c16ca9f4683a18dc41631bf8457c1091c16ca9f4683a18dc415ca9f4683a18dcc170b8793ccc8e80415ca9f4683a18dc"
+    val interpreted = PostGisProjectionSupportUtils.readWktOrWkb(wkb)
+    val poly = Polygon(Point(-17532819.799940586, 7514065.628545966), Point(-17532819.799940586, 10018754.171394618), Point(-15028131.257091932, 10018754.171394618), Point(-15028131.257091932, 7514065.628545966), Point(-17532819.799940586, 7514065.628545966))
+
+    interpreted should be (poly)
   }
 
 }
