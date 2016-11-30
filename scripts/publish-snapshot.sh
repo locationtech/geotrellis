@@ -4,15 +4,16 @@
       "project cassandra" publish \
       "project geomesa" publish \
       "project geotools" publish \
-      "project geowave" publish \
+      # "project geowave" publish \
       "project hbase" publish \
       "project macros" publish \
+      "project pointcloud" publish \
       "project proj4" publish \
       "project raster" publish \
       "project raster-testkit" publish \
       "project s3" publish \
       "project s3-testkit" publish \
-      "project geowave" publish \
+      # "project geowave" publish \
       "project accumulo" publish \
       "project cassandra" publish \
       "project hbase" publish \

@@ -4,9 +4,10 @@
       "project cassandra" +publish-m2 \
       "project geomesa" +publish-m2 \
       "project geotools" +publish-m2 \
-      "project geowave" +publish-m2 \
+      # "project geowave" +publish-m2 \
       "project hbase" +publish-m2 \
       "project macros" +publish-m2 \
+      "project pointcloud" +publish-m2 \
       "project proj4" +publish-m2 \
       "project raster" +publish-m2 \
       "project raster-testkit" +publish-m2 \

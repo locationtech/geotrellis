@@ -5,8 +5,9 @@
 ./sbt -J-Xmx2G "project doc-examples" compile || { exit 1; }
 ./sbt -J-Xmx2G "project geomesa" test || { exit 1; }
 ./sbt -J-Xmx2G "project geotools" test || { exit 1; }
-HOSTALIASES=/tmp/hostaliases ./sbt -J-Xmx2G "project geowave" test || { exit 1; }
+# HOSTALIASES=/tmp/hostaliases ./sbt -J-Xmx2G "project geowave" test || { exit 1; }
 ./sbt -J-Xmx2G "project hbase" test  || { exit 1; }
+./sbt -J-Xmx2G "project pointcloud" test || { exit 1; }
 ./sbt -J-Xmx2G "project proj4" test || { exit 1; }
 ./sbt -J-Xmx2G "project raster-test" test || { exit 1; }
 ./sbt -J-Xmx2G "project raster-testkit" compile || { exit 1; }
