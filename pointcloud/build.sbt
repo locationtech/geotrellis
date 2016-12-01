@@ -6,7 +6,7 @@ libraryDependencies ++= Seq(
   pdal,
   scalatest % "test")
 
-resolvers += Resolver.bintrayRepo("daunnc", "maven")
+resolvers += Resolver.bintrayRepo("pdal", "maven")
 
 fork in Test := true
 parallelExecution in Test := false
