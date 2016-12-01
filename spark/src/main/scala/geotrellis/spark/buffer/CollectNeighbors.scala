@@ -30,8 +30,8 @@ import scala.collection.mutable.ArrayBuffer
 
 object CollectNeighbors {
 
-  /** Collects tile neighbors by slicing the neighboring tiles to the given
-    * buffer size
+  /** Collects the neighbors of each value (including itself) into a Map
+    * giving the direction of the neighbor.
     */
   def apply[K: SpatialComponent: ClassTag, V](rdd: RDD[(K, V)]): RDD[(K, Map[Direction, (K, V)])] = {
     val neighbored: RDD[(K, (Direction, (K, V)))] =
