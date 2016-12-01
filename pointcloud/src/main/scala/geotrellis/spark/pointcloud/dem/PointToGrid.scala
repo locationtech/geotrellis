@@ -17,35 +17,39 @@ object PointToGrid {
     weightingPower: Double = 2.0,
     performFill: Boolean = true,
     fillSize: Int = 1,
-    filter: Option[Filter] = None
+    filter: Option[Filter] = None,
+    checkBounds: Boolean = true,
+    cellType: CellType = DoubleConstantNoDataCellType
   )
 
   object Options {
     def DEFAULT = Options()
   }
 
-  def createRaster(pointCloud: PointCloud, re: RasterExtent, options: Options = Options.DEFAULT): Raster[Tile] = {
+  def createRaster(pointCloud: PointCloud, re: RasterExtent): Raster[Tile] =
+    createRaster(pointCloud, re, Options.DEFAULT)
+
+  def createRaster(pointCloud: PointCloud, re: RasterExtent, options: Options): Raster[Tile] = {
+    val interp = new InCoreInterp(re, options.cellType)
+    interpolatePoints(interp, pointCloud, options)
+    val result =
+      if(options.performFill) {
+        interp.result.focalMean(Square(options.fillSize), target = TargetCell.NoData)
+      } else {
+        interp.result
+      }
+
+    Raster(result, re.extent)
+  }
+
+  def createRaster(pointClouds: Iterable[PointCloud], re: RasterExtent): Raster[Tile] =
+    createRaster(pointClouds, re, Options.DEFAULT)
+
+  def createRaster(pointClouds: Iterable[PointCloud], re: RasterExtent, options: Options): Raster[Tile] = {
     val interp = new InCoreInterp(re)
 
-    options.filter match {
-      case Some(filter) =>
-        cfor(0)(_ < pointCloud.length, _ + 1) { i =>
-          val x = pointCloud.getX(i)
-          val y = pointCloud.getY(i)
-          val z = pointCloud.getZ(i)
-
-          if(filter(x, y, z)) {
-            interp.update(x, y, z)
-          }
-        }
-      case None =>
-        cfor(0)(_ < pointCloud.length, _ + 1) { i =>
-          val x = pointCloud.getX(i)
-          val y = pointCloud.getY(i)
-          val z = pointCloud.getZ(i)
-
-          interp.update(x, y, z)
-        }
+    for(pointCloud <- pointClouds) {
+      interpolatePoints(interp, pointCloud, options)
     }
 
     val result =
@@ -57,6 +61,61 @@ object PointToGrid {
 
     Raster(result, re.extent)
   }
+
+  private def interpolatePoints(
+    interp: InCoreInterp,
+    pointCloud: PointCloud,
+    options: Options = Options.DEFAULT
+  ): Unit = {
+    options.filter match {
+      case Some(filter) =>
+        if(options.checkBounds) {
+          cfor(0)(_ < pointCloud.length, _ + 1) { i =>
+            val x = pointCloud.getX(i)
+            val y = pointCloud.getY(i)
+
+            if(interp.inBounds(x, y)) {
+              val z = pointCloud.getZ(i)
+
+              if(filter(x, y, z)) {
+                interp.update(x, y, z)
+              }
+            }
+          }
+        } else {
+          cfor(0)(_ < pointCloud.length, _ + 1) { i =>
+            val x = pointCloud.getX(i)
+            val y = pointCloud.getY(i)
+            val z = pointCloud.getZ(i)
+
+            if(filter(x, y, z)) {
+              interp.update(x, y, z)
+            }
+          }
+        }
+      case None =>
+        if(options.checkBounds) {
+          cfor(0)(_ < pointCloud.length, _ + 1) { i =>
+            val x = pointCloud.getX(i)
+            val y = pointCloud.getY(i)
+
+            if(interp.inBounds(x, y)) {
+              val z = pointCloud.getZ(i)
+
+              interp.update(x, y, z)
+            }
+          }
+        } else {
+          cfor(0)(_ < pointCloud.length, _ + 1) { i =>
+            val x = pointCloud.getX(i)
+            val y = pointCloud.getY(i)
+            val z = pointCloud.getZ(i)
+
+            interp.update(x, y, z)
+          }
+        }
+    }
+  }
 }
 
 /**
@@ -65,6 +124,7 @@ object PointToGrid {
   */
 class InCoreInterp(
   rasterExtent: RasterExtent,
+  cellType: CellType = DoubleConstantNoDataCellType,
   radius: Double = 8.4852813742385713,
   smoothingFactor: Double = 0.0,
   weightingPower: Double = 2.0
@@ -83,10 +143,14 @@ class InCoreInterp(
   val windowRows =
     math.ceil(radius / ch).toInt
 
-  val valueSumTile = ArrayTile(Array.ofDim[Double](cols * rows), cols, rows)
-  val weightSumTile = ArrayTile(Array.ofDim[Double](cols * rows), cols, rows)
+  val valueSumTile = ArrayTile.empty(cellType, cols, rows)
+  val weightSumTile = ArrayTile.empty(cellType, cols, rows)
 
   val r2 = radius * radius
+
+  val bounds = Extent(xmin - radius, ymin - radius, xmax + radius, ymax + radius)
+  def inBounds(x: Double, y: Double): Boolean =
+    bounds.contains(x, y)
 
   def update(x: Double, y: Double, z: Double): Unit = {
     val col = rasterExtent.mapXToGrid(x)

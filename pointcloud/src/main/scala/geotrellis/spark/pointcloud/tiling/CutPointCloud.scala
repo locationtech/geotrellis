@@ -28,47 +28,49 @@ import scala.collection.mutable
 import scala.reflect.ClassTag
 
 object CutPointCloud {
-  def apply(rdd: RDD[PointCloud], layoutDefinition: LayoutDefinition): RDD[(SpatialKey, PointCloud)] = {
+  def apply(rdd: RDD[PointCloud], layoutDefinition: LayoutDefinition): RDD[(SpatialKey, PointCloud)] with Metadata[LayoutDefinition] = {
     val mapTransform = layoutDefinition.mapTransform
     val (tileCols, tileRows) = layoutDefinition.tileLayout.tileDimensions
     val tilePoints = tileCols * tileRows
 
-    rdd
-      .flatMap { case pointCloud =>
-        var lastKey: SpatialKey = null
-        val keysToBytes = mutable.Map[SpatialKey, mutable.ArrayBuffer[Array[Byte]]]()
-        val pointSize = pointCloud.pointSize
+    val cut =
+      rdd
+        .flatMap { case pointCloud =>
+          var lastKey: SpatialKey = null
+          val keysToBytes = mutable.Map[SpatialKey, mutable.ArrayBuffer[Array[Byte]]]()
+          val pointSize = pointCloud.pointSize
 
-        val len = pointCloud.length
-        cfor(0)(_ < len, _ + 1) { i =>
-          val x = pointCloud.getX(i)
-          val y = pointCloud.getY(i)
-          val key = mapTransform(x, y)
-          if(key == lastKey) {
-            keysToBytes(lastKey) += pointCloud.get(i)
-          } else if(keysToBytes.contains(key)) {
-            keysToBytes(key) += pointCloud.get(i)
-            lastKey = key
-          } else {
-            keysToBytes(key) = mutable.ArrayBuffer(pointCloud.get(i))
-            lastKey = key
-          }
-        }
-
-        keysToBytes.map { case (key, pointBytes) =>
-          val arr = Array.ofDim[Byte](pointBytes.size * pointSize.toInt)
-          var i = 0
-          pointBytes.foreach { bytes =>
-            var p = 0
-            while(p < pointSize) {
-              arr(i) = bytes(p)
-              i += 1
-              p += 1
+          val len = pointCloud.length
+          cfor(0)(_ < len, _ + 1) { i =>
+            val x = pointCloud.getX(i)
+            val y = pointCloud.getY(i)
+            val key = mapTransform(x, y)
+            if(key == lastKey) {
+              keysToBytes(lastKey) += pointCloud.get(i)
+            } else if(keysToBytes.contains(key)) {
+              keysToBytes(key) += pointCloud.get(i)
+              lastKey = key
+            } else {
+              keysToBytes(key) = mutable.ArrayBuffer(pointCloud.get(i))
+              lastKey = key
             }
           }
 
-          (key, PointCloud(arr, pointCloud.dimTypes))
+          keysToBytes.map { case (key, pointBytes) =>
+            val arr = Array.ofDim[Byte](pointBytes.size * pointSize.toInt)
+            var i = 0
+            pointBytes.foreach { bytes =>
+              var p = 0
+              while(p < pointSize) {
+                arr(i) = bytes(p)
+                i += 1
+                p += 1
+              }
+            }
+
+            (key, PointCloud(arr, pointCloud.dimTypes))
+          }
         }
-      }
+    ContextRDD(cut, layoutDefinition)
   }
 }
