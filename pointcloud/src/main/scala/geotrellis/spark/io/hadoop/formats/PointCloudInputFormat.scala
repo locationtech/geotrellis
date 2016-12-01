@@ -64,12 +64,11 @@ class PointCloudInputFormat extends FileInputFormat[PointCloudHeader, Iterator[P
       // PDAL itself is not threadsafe
       AnyRef.synchronized { pipeline.execute }
 
-      val pointViewIterator = pipeline.pointViews()
+      val pointViewIterator = pipeline.getPointViews()
       // conversion to list to load everything into JVM memory
       val pointClouds =
         pointViewIterator.toList.map { pointView =>
-          val pointCloud =
-            pointView.getPointCloud
+          val pointCloud = pointView.getPointCloud
 
           pointView.dispose()
           pointCloud

@@ -37,7 +37,7 @@ object HadoopPointCloudRDD {
     */
 
   case class Options(
-    filesExtensions: Seq[String] = Seq(".las", "laz"),
+    filesExtensions: Seq[String] = Seq(".las", ".laz"),
     tmpDir: Option[String] = None
   )
 
