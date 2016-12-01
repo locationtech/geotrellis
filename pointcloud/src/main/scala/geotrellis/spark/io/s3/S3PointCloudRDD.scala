@@ -71,16 +71,11 @@ object S3PointCloudRDD {
     * @param prefix   Prefix of all of the keys on S3 that are to be read in.
     * @param options  An instance of [[Options]] that contains any user defined or default settings.
     */
-  def apply(bucket: String, prefix: String, options: Options = Options.DEFAULT)(implicit sc: SparkContext): RDD[(ProjectedExtent3D, PointCloud)] =
+  def apply(bucket: String, prefix: String, options: Options = Options.DEFAULT)(implicit sc: SparkContext): RDD[(String, Iterator[PointCloud])] =
     sc.newAPIHadoopRDD(
       configuration(bucket, prefix, options),
       classOf[S3PointCloudInputFormat],
       classOf[String],
       classOf[Iterator[PointCloud]]
-    ).mapPartitions(
-      _.flatMap { case (_, pointCloudIter) => pointCloudIter.map { pointCloud =>
-        pointCloud.metadata.parseJson.convertTo[ProjectedExtent3D] -> pointCloud
-      } },
-      preservesPartitioning = true
     )
 }

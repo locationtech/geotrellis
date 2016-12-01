@@ -1,0 +1,77 @@
+package geotrellis.raster.rasterize.triangles
+
+import geotrellis.raster._
+import geotrellis.vector._
+
+import com.vividsolutions.jts.geom.{ Envelope => JtsEnvelope }
+
+import scala.collection.JavaConverters._
+
+
+object TrianglesRasterizer {
+
+  def apply(
+    re: RasterExtent,
+    sourceArray: Array[Double],
+    triangles: Seq[Polygon],
+    indexMap: Map[(Double, Double), Int]
+  ): ArrayTile = {
+    val targetArray = Array.fill[Double](re.cols * re.rows)(Double.NaN)
+    triangles.par.foreach({ triangle => renderTriangle(triangle, re, sourceArray, targetArray, indexMap) })
+    DoubleArrayTile(targetArray, re.cols, re.rows)
+  }
+
+  def renderTriangle(
+    triangle: Polygon,
+    re: RasterExtent,
+    sourceArray: Array[Double],
+    targetArray: Array[Double],
+    indexMap: Map[(Double, Double), Int]
+  ): Unit = {
+
+    val Extent(xmin, ymin, xmax, ymax) = triangle.envelope
+    val xn = ((xmin - re.extent.xmin) / re.cellwidth).toInt
+    val yn = ((ymin - re.extent.ymin) / re.cellheight).toInt
+    val xStart = re.extent.xmin + (xn + 0.5) * re.cellwidth
+    val yStart = re.extent.ymin + (yn + 0.5) * re.cellheight
+    val cols = math.ceil((xmax - xmin) / re.cellwidth).toInt
+    val rows = math.ceil((ymax - ymin) / re.cellheight).toInt
+
+    var row = 0; while (row < rows) {
+      var col = 0; while (col < cols) {
+        val x = xStart + col * re.cellwidth
+        val y = yStart + row * re.cellheight
+        val screenCol = ((x - re.extent.xmin) / re.cellwidth).toInt
+        val screenRow = ((y - re.extent.ymin) / re.cellheight).toInt
+        if (triangle.covers(Point(x,y))) {
+          val result = {
+            val verts = triangle.vertices; require(verts.length == 4)
+            val x1 = verts(0).x
+            val y1 = verts(0).y
+            val x2 = verts(1).x
+            val y2 = verts(1).y
+            val x3 = verts(2).x
+            val y3 = verts(2).y
+            val index1 = indexMap.getOrElse((verts(0).x, verts(0).y), throw new Exception)
+            val index2 = indexMap.getOrElse((verts(1).x, verts(1).y), throw new Exception)
+            val index3 = indexMap.getOrElse((verts(2).x, verts(2).y), throw new Exception)
+
+            val determinant = (y2-y3)*(x1-x3)+(x3-x2)*(y1-y3)
+            val lambda1 = ((y2-y3)*(x-x3)+(x3-x2)*(y-y3)) / determinant
+            val lambda2 = ((y3-y1)*(x-x3)+(x1-x3)*(y-y3)) / determinant
+            val lambda3 = 1.0 - lambda1 - lambda2
+
+            lambda1*sourceArray(index1) + lambda2*sourceArray(index2) + lambda3*sourceArray(index3)
+          }
+
+          val index = screenRow * re.cols + screenCol
+
+          targetArray(index) = result
+        }
+        col += 1
+      }
+      row += 1
+    }
+  }
+
+}

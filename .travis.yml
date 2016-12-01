@@ -57,7 +57,7 @@ deploy:
     script: .travis/scaladocs.sh
     skip_cleanup: true
     on:
-      repo: geotrellis/geotrellis
+      repo: locationtech/geotrellis
       branch: master
       jdk: oraclejdk8
       scala: "2.11.8"

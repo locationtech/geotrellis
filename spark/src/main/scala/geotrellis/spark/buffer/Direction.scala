@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.pointcloud.tiling
+package geotrellis.spark.buffer
 
-import io.pdal._
-import geotrellis.spark._
-import geotrellis.spark.tiling.{LayoutDefinition, TilerKeyMethods}
-import geotrellis.util.MethodExtensions
+sealed trait Direction
 
-import org.apache.spark.rdd._
-
-import scala.reflect.ClassTag
-
-class TilerMethods(val self: RDD[(PointCloud)]) extends MethodExtensions[RDD[(PointCloud)]] {
-  def tileToLayout(layoutDefinition: LayoutDefinition): RDD[(SpatialKey, PointCloud)] =
-    CutPointCloud(self, layoutDefinition)
-}
+case object CenterDirection extends Direction
+case object TopDirection extends Direction
+case object TopRightDirection extends Direction
+case object RightDirection extends Direction
+case object BottomRightDirection extends Direction
+case object BottomDirection extends Direction
+case object BottomLeftDirection extends Direction
+case object LeftDirection extends Direction
+case object TopLeftDirection extends Direction

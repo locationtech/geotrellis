@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.pointcloud.tiling
+package geotrellis.spark.buffer
 
-import io.pdal._
 import geotrellis.spark._
-import geotrellis.spark.tiling.{LayoutDefinition, TilerKeyMethods}
 import geotrellis.util.MethodExtensions
 
-import org.apache.spark.rdd._
+import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
-class TilerMethods(val self: RDD[(PointCloud)]) extends MethodExtensions[RDD[(PointCloud)]] {
-  def tileToLayout(layoutDefinition: LayoutDefinition): RDD[(SpatialKey, PointCloud)] =
-    CutPointCloud(self, layoutDefinition)
+abstract class CollectNeighborsMethods[K: SpatialComponent: ClassTag, V](val self: RDD[(K, V)])
+    extends MethodExtensions[RDD[(K, V)]] {
+  def collectNeighbors(): RDD[(K, Map[Direction, (K, V)])] =
+    CollectNeighbors(self)
 }
