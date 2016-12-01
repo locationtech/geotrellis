@@ -20,18 +20,35 @@ import geotrellis.spark.pointcloud.json._
 import geotrellis.util.Filesystem
 
 import io.pdal._
+import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.lib.input._
 
 import java.io.{BufferedOutputStream, File, FileOutputStream}
 
+case class PointCloudHeader(fileName: Path, metadata: String, schema: String)
+
+object PointCloudInputFormat {
+  final val POINTCLOUD_TMP_DIR = "POINTCLOUD_TMP_DIR"
+
+  def setTmpDir(conf: Configuration, dir: String): Unit =
+    conf.set(POINTCLOUD_TMP_DIR, dir)
+
+  def getTmpDir(job: JobContext): String =
+    job.getConfiguration.get(POINTCLOUD_TMP_DIR)
+}
+
 /** Process files from the path through PDAL, and reads all files point data as an Array[Byte] **/
-class PointCloudInputFormat extends FileInputFormat[Path, Iterator[PointCloud]] {
+class PointCloudInputFormat extends FileInputFormat[PointCloudHeader, Iterator[PointCloud]] {
   override def isSplitable(context: JobContext, fileName: Path) = false
 
-  override def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[Path, Iterator[PointCloud]] = {
-    val tmpDir = Filesystem.createDirectory()
+  override def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[PointCloudHeader, Iterator[PointCloud]] = {
+    val tmpDir = {
+      val dir = PointCloudInputFormat.getTmpDir(context)
+      if(dir == null) Filesystem.createDirectory()
+      else Filesystem.createDirectory(dir)
+    }
 
     new BinaryFileRecordReader({ bytes =>
       val remotePath = split.asInstanceOf[FileSplit].getPath
@@ -47,20 +64,25 @@ class PointCloudInputFormat extends FileInputFormat[Path, Iterator[PointCloud]] 
       // PDAL itself is not threadsafe
       AnyRef.synchronized { pipeline.execute }
 
-      val pointViewIterator = pipeline.pointViews()
+      val pointViewIterator = pipeline.getPointViews()
       // conversion to list to load everything into JVM memory
-      val packedPoints = pointViewIterator.toList.map { pointView =>
-        val packedPoint =
-          pointView.getPointCloud(
-            metadata = pipeline.getMetadata(),
-            schema   = pipeline.getSchema()
-          )
+      val pointClouds =
+        pointViewIterator.toList.map { pointView =>
+          val pointCloud =
+            pointView.getPointCloud
 
-        pointView.dispose()
-        packedPoint
-      }.toIterator
+          pointView.dispose()
+          pointCloud
+        }.iterator
 
-      val result = split.asInstanceOf[FileSplit].getPath -> packedPoints
+      val header =
+        PointCloudHeader(
+          split.asInstanceOf[FileSplit].getPath,
+          pipeline.getMetadata(),
+          pipeline.getSchema()
+        )
+
+      val result =  (header, pointClouds)
 
       pointViewIterator.dispose()
       pipeline.dispose()
