@@ -85,7 +85,8 @@ lazy val root = Project("geotrellis", file(".")).
     geomesa,
     geotools,
     slick,
-    vectortile
+    vectortile,
+		python
   ).
   settings(commonSettings: _*).
   settings(
@@ -173,7 +174,7 @@ lazy val hbase = Project("hbase", file("hbase")).
   settings(projectDependencies := { Seq((projectID in spark).value.exclude("com.google.protobuf", "protobuf-java")) })
 
 lazy val sparkEtl = Project(id = "spark-etl", base = file("spark-etl")).
-  dependsOn(spark, s3, accumulo, cassandra, hbase).
+  dependsOn(spark, s3, accumulo, cassandra, hbase, raster, vector, macros, util, proj4).
   settings(commonSettings: _*)
 
 lazy val geotools = Project("geotools", file("geotools")).
@@ -190,6 +191,10 @@ lazy val geowave = Project("geowave", file("geowave")).
 
 lazy val shapefile = Project("shapefile", file("shapefile")).
   dependsOn(raster, rasterTestkit % "test").
+  settings(commonSettings: _*)
+
+lazy val python = Project("python", file("python")).
+  dependsOn(util, raster, vector, spark).
   settings(commonSettings: _*)
 
 lazy val util = Project("util", file("util")).
