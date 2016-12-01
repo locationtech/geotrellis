@@ -75,11 +75,11 @@ object S3PointCloudRDD {
     sc.newAPIHadoopRDD(
       configuration(bucket, prefix, options),
       classOf[S3PointCloudInputFormat],
-      classOf[String],
+      classOf[S3PointCloudHeader],
       classOf[Iterator[PointCloud]]
     ).mapPartitions(
-      _.flatMap { case (_, pointCloudIter) => pointCloudIter.map { pointCloud =>
-        pointCloud.metadata.parseJson.convertTo[ProjectedExtent3D] -> pointCloud
+      _.flatMap { case (header, pointCloudIter) => pointCloudIter.map { pointCloud =>
+        header.metadata.parseJson.convertTo[ProjectedExtent3D] -> pointCloud
       } },
       preservesPartitioning = true
     )
