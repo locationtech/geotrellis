@@ -17,15 +17,12 @@
 package geotrellis.spark.pointcloud.dem
 
 import geotrellis.raster._
-import geotrellis.spark._
 import geotrellis.spark.buffer._
 import geotrellis.spark.io.hadoop.HadoopPointCloudRDD
 import geotrellis.spark.pointcloud._
 import geotrellis.spark.PointCloudTestEnvironment
 import geotrellis.spark.tiling._
 import geotrellis.vector.Extent
-
-import scala.math
 
 import org.scalatest._
 
@@ -39,7 +36,7 @@ class PointCloudDemSpec extends FunSpec
     val min = { (a: Double, b: Double) => math.min(a, b) }
     val max = { (a: Double, b: Double) => math.max(a, b) }
     val rdd = HadoopPointCloudRDD(lasPath)
-    val cloud = rdd.first._2
+    val cloud = rdd.first._2.next()
 
     it("should be able to union two clouds") {
       val clouds = cloud.union(cloud)
@@ -68,7 +65,7 @@ class PointCloudDemSpec extends FunSpec
       val layoutDefinition = LayoutDefinition(
         Extent(635609.85, 848889.7, 638992.55, 853545.43),
         TileLayout(layoutCols = 5, layoutRows = 5, tileCols = 10, tileRows = 10))
-      val tiled = rdd.tileToLayout(layoutDefinition)
+      val tiled = rdd.flatMap(_._2).tileToLayout(layoutDefinition)
       val buffered = BufferUnionable(tiled)
 
       tiled.count should be (buffered.count)

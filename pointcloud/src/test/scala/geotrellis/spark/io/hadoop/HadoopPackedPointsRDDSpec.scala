@@ -27,7 +27,8 @@ class HadoopPackedPointsRDDSpec extends FunSpec
   describe("PackedPoints RDD reads") {
     it("should read LAS file as RDD using hadoop input format") {
       val source = HadoopPointCloudRDD(lasPath)
-      val pointsCount = source.mapPartitions { _.map { case (_, packedPoints) =>
+      val pointsCount = source.mapPartitions { _.map { case (_, packedPointsIter) =>
+        val packedPoints = packedPointsIter.next()
         var acc = 0l
         cfor(0)(_ < packedPoints.length, _ + 1) { i =>
           packedPoints.get(i)
@@ -36,8 +37,8 @@ class HadoopPackedPointsRDDSpec extends FunSpec
         acc
       } }.reduce(_ + _)
       val sourceList = source.take(1).toList
-      sourceList.map { case (k, _) => k.crs.proj4jCrs.getName }.head should be ("lcc-CS")
-      sourceList.map { case (_, v) => v.length }.head should be (1065)
+      //sourceList.map { case (k, _) => k.crs.proj4jCrs.getName }.head should be ("lcc-CS")
+      sourceList.map { case (_, v) => v.next().length }.head should be (1065)
       pointsCount should be (1065)
     }
   }

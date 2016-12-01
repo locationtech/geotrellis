@@ -32,15 +32,15 @@ class PointCloudTilingSpec extends FunSpec
     it("should tile RDD of packed points") {
       //Pipeline.loadNativeLibrary()
       val source = HadoopPointCloudRDD(lasPath)
-      val original = source.take(1).map(_._2).toList.head
+      val original = source.take(1).map(_._2).toList.head.next()
       // that means there can be no more points per "tile" than tileCols * tileRows
       val ld = LayoutDefinition(
         Extent(635609.85, 848889.7, 638992.55, 853545.43),
         TileLayout(layoutCols = 5, layoutRows = 5, tileCols = 10, tileRows = 10)
       )
-      val tiled = withTilerMethods(source).tileToLayout(ld)
+      val tiled = source.flatMap(_._2).tileToLayout(ld)
       tiled.map(_._2.length).reduce(_ + _) should be (original.length)
-      tiled.count() should be (25)
+      tiled.count() should be (1)
     }
   }
 }

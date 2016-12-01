@@ -25,12 +25,7 @@ import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
 
-class TilerMethods[K](val self: RDD[(K, PointCloud)]) extends MethodExtensions[RDD[(K, PointCloud)]] {
-  def tileToLayout[K2: SpatialComponent: ClassTag](layoutDefinition: LayoutDefinition)
-                                                  (implicit ev: K => TilerKeyMethods[K, K2]): RDD[(K2, PointCloud)] =
-    CutPointCloud[K, K2](self, layoutDefinition)
-
-  def tileToLayout[K2: SpatialComponent: ClassTag](tileLayerMetadata: TileLayerMetadata[K2])
-                                                  (implicit ev: K => TilerKeyMethods[K, K2]): RDD[(K2, PointCloud)] =
-    tileToLayout(tileLayerMetadata.layout)
+class TilerMethods(val self: RDD[(PointCloud)]) extends MethodExtensions[RDD[(PointCloud)]] {
+  def tileToLayout(layoutDefinition: LayoutDefinition): RDD[(SpatialKey, PointCloud)] =
+    CutPointCloud(self, layoutDefinition)
 }

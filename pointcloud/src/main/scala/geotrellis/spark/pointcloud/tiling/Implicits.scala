@@ -27,10 +27,5 @@ import org.apache.spark.rdd._
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withTilerMethods[K](self: RDD[(K, PointCloud)]) extends TilerMethods[K](self)
-
-  implicit class withTupleTilerKeyMethods[K: SpatialComponent](val self: (K, Extent)) extends TilerKeyMethods[(K, Extent), K] {
-    def extent = self._2
-    def translate(spatialKey: SpatialKey): K = self._1.setComponent(spatialKey)
-  }
+  implicit class withTilerMethods(self: RDD[PointCloud]) extends TilerMethods(self)
 }
