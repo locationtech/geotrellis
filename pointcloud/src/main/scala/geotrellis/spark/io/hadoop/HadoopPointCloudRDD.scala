@@ -37,7 +37,8 @@ object HadoopPointCloudRDD {
     */
 
   case class Options(
-    filesExtensions: Seq[String] = Seq(".las", "laz")
+    filesExtensions: Seq[String] = Seq(".las", "laz"),
+    tmpDir: Option[String] = None
   )
 
   object Options {
@@ -62,17 +63,18 @@ object HadoopPointCloudRDD {
     * @param path     Hdfs point data files path.
     * @param options  An instance of [[Options]] that contains any user defined or default settings.
     */
-  def apply(path: Path, options: Options = Options.DEFAULT)(implicit sc: SparkContext): RDD[(ProjectedExtent3D, PointCloud)] = {
+  def apply(path: Path, options: Options = Options.DEFAULT)(implicit sc: SparkContext): RDD[(PointCloudHeader, Iterator[PointCloud])] = {
+    val conf = configuration(path, options)
+
+    options.tmpDir.foreach { dir =>
+      PointCloudInputFormat.setTmpDir(conf, dir)
+    }
+
     sc.newAPIHadoopRDD(
-      configuration(path, options),
+      conf,
       classOf[PointCloudInputFormat],
-      classOf[Path],
+      classOf[PointCloudHeader],
       classOf[Iterator[PointCloud]]
-    ).mapPartitions(
-      _.flatMap { case (_, pointCloudIter) => pointCloudIter.map { pointCloud =>
-        pointCloud.metadata.parseJson.convertTo[ProjectedExtent3D] -> pointCloud
-      } },
-      preservesPartitioning = true
     )
   }
 }
