@@ -73,24 +73,4 @@ object VectorJoin {
     new FilteredCartesianRDD(sc, _pred, metapred, left, metaleft, right, metaright)
   }
 
-  /**
-    * Perform the vector join operation over an RDD[L] and and RDD[R],
-    * where both L and R are viewble as Geometry.
-    *
-    * @param  left   An RDD[L], where L is viewable as a Geometry
-    * @param  right  An RDD[R], where R is viewable as a Geometry
-    * @param  pred   A predicate which answers whether an L and an R should be joined
-    * @return        An RDD of L-R pairs
-    */
-  def naive[
-    L: ClassTag : ? => Geometry,
-    R: ClassTag : ? => Geometry
-  ](
-    left: RDD[L],
-    right: RDD[R],
-    pred: (Geometry, Geometry) => Boolean
-  )(implicit sc: SparkContext): RDD[(L, R)] =
-    left.cartesian(right)
-      .filter({ case (left: L, right: R) => pred(left, right) })
-
 }
