@@ -26,12 +26,12 @@ import org.apache.spark.util.Utils
 
 
 sealed class FilteredCartesianRDD[T: ClassTag, U: ClassTag, V: ClassTag](
-    sc: SparkContext,
-    pred: (V, V) => Boolean,
-    var rdd1 : RDD[T], rdd1m : RDD[V],
-    var rdd2 : RDD[U], rdd2m : RDD[V])
-  extends RDD[(T, U)](sc, Nil)
-  with Serializable {
+  sc: SparkContext,
+  pred: (T, U) => Boolean,
+  metapred: (V, V) => Boolean,
+  var rdd1 : RDD[T], metardd1 : RDD[V],
+  var rdd2 : RDD[U], metardd2 : RDD[V]
+) extends RDD[(T, U)](sc, Nil) with Serializable {
 
   val numPartitionsInRdd2 = rdd2.partitions.length
 
@@ -52,14 +52,15 @@ sealed class FilteredCartesianRDD[T: ClassTag, U: ClassTag, V: ClassTag](
 
   override def compute(split: Partition, context: TaskContext): Iterator[(T, U)] = {
     val currSplit = split.asInstanceOf[CartesianPartition]
-    val part1 = currSplit.s1 // partition for rdd1 and rdd1m
-    val part2 = currSplit.s2 // partition for rdd2 and rdd2m
-    val meta1 = rdd1m.iterator(part1, context).next
-    val meta2 = rdd2m.iterator(part2, context).next
+    val part1 = currSplit.s1 // partition for (|meta)rdd1
+    val part2 = currSplit.s2 // partition for (|meta)rdd2
+    val meta1 = metardd1.iterator(part1, context).next
+    val meta2 = metardd2.iterator(part2, context).next
 
-    if (pred(meta1, meta2)) {
+    if (metapred(meta1, meta2)) {
       for (x <- rdd1.iterator(part1, context);
-           y <- rdd2.iterator(part2, context)) yield (x, y)
+           y <- rdd2.iterator(part2, context);
+           if (pred(x,y))) yield (x, y)
     }
     else Iterator.empty
   }
