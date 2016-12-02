@@ -15,6 +15,11 @@
  * limitations under the License.
  */
 
+/**
+  * Adapted from [1] by Azavea, Inc.
+  *
+  * 1. https://github.com/apache/spark/blob/2f8776ccad532fbed17381ff97d302007918b8d8/core/src/main/scala/org/apache/spark/rdd/CartesianRDD.scala
+  */
 package org.apache.spark.rdd
 
 import java.io.{IOException, ObjectOutputStream}
