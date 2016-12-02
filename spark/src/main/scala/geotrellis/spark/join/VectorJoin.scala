@@ -32,14 +32,10 @@ object VectorJoin {
   /**
     * A function which calculates the envelope of a partition.
     *
-    * @param  i   The index of the partition
     * @param  gs  An iterator containing the contents of the RDD
-    * @return     An Iterator containing one index-envelope pair
+    * @return     An Iterator containing one envelope
     */
-  def calculateEnvelope[T : ? => Geometry](
-    i: Int,
-    gs: Iterator[T]
-  ): Iterator[(Int, Envelope)] = {
+  def calculateEnvelope[T : ? => Geometry](gs: Iterator[T]): Iterator[Envelope] = {
     val env = gs.foldLeft(new Envelope)({ (env: Envelope, g: T) =>
       val Extent(xmin, ymin, xmax, ymax) = g.envelope
       val env2 = new Envelope(xmin, xmax, ymin, ymax)
@@ -47,7 +43,7 @@ object VectorJoin {
       env
     })
 
-    Iterator((i, env))
+    Iterator(env)
   }
 
   /**
@@ -69,17 +65,12 @@ object VectorJoin {
     right: RDD[R],
     pred: (Geometry, Geometry) => Boolean
   )(implicit sc: SparkContext): RDD[(L, R)] = {
+    val leftm  =  left.mapPartitions(calculateEnvelope[L], preservesPartitioning = true)
+    val rightm = right.mapPartitions(calculateEnvelope[R], preservesPartitioning = true)
+    val prePred: (Envelope, Envelope) => Boolean = { (l, r) => l.intersects(r) }
 
-    val leftEnvs = left.mapPartitionsWithIndex(calculateEnvelope[L], true).collect.toMap
-    val rightEnvs = right.mapPartitionsWithIndex(calculateEnvelope[R], true).collect.toMap
-    val prePred: (Int, Int) => Boolean = { (i, j) =>
-      val env1 = leftEnvs.getOrElse(i, new Envelope)
-      val env2 = rightEnvs.getOrElse(j, new Envelope)
-      env1.intersects(env2)
-    }
-
-    (new FilteredCartesianRDD(sc, prePred, left, right))
-      .filter({ case (left: L, right: R) => pred(left, right) })
+    (new FilteredCartesianRDD(sc, prePred, left, leftm, right, rightm))
+      .filter({ case (l: L, r: R) => pred(l, r) })
   }
 
   /**
