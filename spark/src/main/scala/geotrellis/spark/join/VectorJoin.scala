@@ -65,12 +65,12 @@ object VectorJoin {
     right: RDD[R],
     pred: (Geometry, Geometry) => Boolean
   )(implicit sc: SparkContext): RDD[(L, R)] = {
-    val leftm  =  left.mapPartitions(calculateEnvelope[L], preservesPartitioning = true)
-    val rightm = right.mapPartitions(calculateEnvelope[R], preservesPartitioning = true)
-    val prePred: (Envelope, Envelope) => Boolean = { (l, r) => l.intersects(r) }
+    val metaleft  =  left.mapPartitions(calculateEnvelope[L], preservesPartitioning = true)
+    val metaright = right.mapPartitions(calculateEnvelope[R], preservesPartitioning = true)
+    val metapred: (Envelope, Envelope) => Boolean = { (l, r) => l.intersects(r) }
+    val _pred: (L, R) => Boolean = { (l, r) => pred(l, r) }
 
-    (new FilteredCartesianRDD(sc, prePred, left, leftm, right, rightm))
-      .filter({ case (l: L, r: R) => pred(l, r) })
+    new FilteredCartesianRDD(sc, _pred, metapred, left, metaleft, right, metaright)
   }
 
   /**
