@@ -21,4 +21,10 @@ package object rasterize {
   /** Callback for given row and column (compatible with previous definition). */
   type Callback = (Int, Int) => Unit
 
+  /**
+    * A call back which accepts a col-row-fraction triple.  The
+    * fraction is the fraction of the pixel which is covered by the
+    * query object.
+    */
+  type FractionCallback = (Int, Int, Double) => Unit
 }

@@ -123,7 +123,7 @@ object PolygonRasterizer {
 
     val rtree = new STRtree
 
-    /* Find the outer ring's segments */
+    /** Find the outer ring's segments */
     val coords = poly.jtsGeom.getExteriorRing.getCoordinates
     cfor(1)(_ < coords.length, _ + 1) { ci =>
       val coord1 = coords(ci - 1)
@@ -364,7 +364,11 @@ object PolygonRasterizer {
    * @param re       A raster extent to rasterize the polygon into
    * @param options  The options parameter controls whether to treat pixels as points or areas and whether to report partially-intersected areas.
    */
-  def foreachCellByPolygon(poly: Polygon, re: RasterExtent, options: Options = Options.DEFAULT)(f: Callback): Unit = {
+  def foreachCellByPolygon(
+    poly: Polygon,
+    re: RasterExtent,
+    options: Options = Options.DEFAULT
+  )(f: Callback): Unit = {
     val sampleType = options.sampleType
     val partial = options.includePartial
 
