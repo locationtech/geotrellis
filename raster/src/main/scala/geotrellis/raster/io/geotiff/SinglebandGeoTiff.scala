@@ -94,8 +94,8 @@ object SinglebandGeoTiff {
   /** Read a single-band GeoTIFF file from the file at the given path.
     * If decompress = true, the GeoTIFF will be fully decompressed and held in memory.
     */
-  def apply(path: String, decompress: Boolean, streaming: Boolean): SinglebandGeoTiff =
-    GeoTiffReader.readSingleband(path, decompress, streaming)
+  def apply(path: String, decompress: Boolean, streaming: Boolean, extent: Option[Extent]): SinglebandGeoTiff =
+    GeoTiffReader.readSingleband(path, decompress, streaming, extent)
 
   def apply(byteReader: ByteReader): SinglebandGeoTiff =
     GeoTiffReader.readSingleband(byteReader)
@@ -110,17 +110,17 @@ object SinglebandGeoTiff {
     * The tile data will remain tiled/striped and compressed in the TIFF format.
     */
   def compressed(path: String): SinglebandGeoTiff =
-    GeoTiffReader.readSingleband(path, false, false)
+    GeoTiffReader.readSingleband(path, false, false, None)
 
   /** Read a single-band GeoTIFF file from a byte array.
     * The tile data will remain tiled/striped and compressed in the TIFF format.
     */
   def compressed(bytes: Array[Byte]): SinglebandGeoTiff =
-    GeoTiffReader.readSingleband(bytes, false, false)
+    GeoTiffReader.readSingleband(bytes, false, false, None)
 
   def streaming(path: String): SinglebandGeoTiff =
-    GeoTiffReader.readSingleband(path, false, true)
+    GeoTiffReader.readSingleband(path, false, true, None)
 
   def streaming(byteReader: ByteReader): SinglebandGeoTiff =
-    GeoTiffReader.readSingleband(byteReader, false, true)
+    GeoTiffReader.readSingleband(byteReader, false, true, None)
 }
