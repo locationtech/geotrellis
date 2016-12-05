@@ -41,9 +41,8 @@ The configuration files that we create in this section are intended for use
 with a single multiband GeoTiff image. Three JSON files are required: one
 describing the input data, one describing the output data, and one
 describing the backend(s) in which the catalog should be stored. Please see
-[the ETL documentation](../spark-etl/spark-etl-intro.md) and the [ETL
-examples](../spark-etl/spark-etl-run-examples.md) for more information about
-the configuration files.
+our [more detailed ETL documentation](../guide/etl.md) for more information
+about the configuration files.
 
 We will now create three files in the `/tmp/json` directory: `input.json`,
 `output.json`, and `backend-profiles.json`. (The respective schemas that

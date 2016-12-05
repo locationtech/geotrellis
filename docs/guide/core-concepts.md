@@ -490,7 +490,7 @@ as possible a priori.
 
 The limits of expected return types (discussed in the previous section) is used by
 macros to squeeze as much speed out of the JVM as possible. Check out
-[our macros docs](http://botanic.internal.azavea.com:8000/architecture/high-performance-scala/#macros)
+[our macros docs](../architecture/high-performance-scala/#macros)
 for more on our use of macros like `isData` and `isNoData`.
 
 <hr>
