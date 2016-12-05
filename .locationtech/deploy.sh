@@ -3,23 +3,22 @@
  set -e
  set -x
 
- ./sbt "project macros" publish \
-   && ./sbt "project vector" publish \
-   && ./sbt "project proj4" publish \
-   && ./sbt "project raster" publish \
-   && ./sbt "project spark" publish \
-   && ./sbt "project s3" publish \
-   && ./sbt "project accumulo" publish \
-   && ./sbt "project cassandra" publish \
-   && ./sbt "project hbase" publish \
-   && ./sbt "project spark-etl" publish \
-   && ./sbt "project geomesa" publish \
-   && ./sbt "project geotools" publish \
-   && ./sbt "project geowave" publish \
-   && ./sbt "project shapefile" publish \
-   && ./sbt "project slick" publish \
-   && ./sbt "project util" publish \
-   && ./sbt "project vectortile" publish \
-   && ./sbt "project raster-testkit" publish \
-   && ./sbt "project vector-testkit" publish \
-   && ./sbt "project spark-testkit" publish
+ ./sbt "project macros" publish -no-colors \
+   && ./sbt "project vector" publish -no-colors \
+   && ./sbt "project proj4" publish -no-colors \
+   && ./sbt "project raster" publish -no-colors \
+   && ./sbt "project spark" publish -no-colors \
+   && ./sbt "project s3" publish -no-colors \
+   && ./sbt "project accumulo" publish -no-colors \
+   && ./sbt "project cassandra" publish -no-colors \
+   && ./sbt "project hbase" publish -no-colors \
+   && ./sbt "project spark-etl" publish -no-colors \
+   && ./sbt "project geomesa" publish -no-colors \
+   && ./sbt "project geotools" publish -no-colors \
+   && ./sbt "project shapefile" publish -no-colors \
+   && ./sbt "project slick" publish -no-colors \
+   && ./sbt "project util" publish -no-colors \
+   && ./sbt "project vectortile" publish -no-colors \
+   && ./sbt "project raster-testkit" publish -no-colors \
+   && ./sbt "project vector-testkit" publish -no-colors \
+   && ./sbt "project spark-testkit" publish -no-colors

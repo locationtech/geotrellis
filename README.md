@@ -1,6 +1,6 @@
 # GeoTrellis
 
-[![Build Status](https://api.travis-ci.org/geotrellis/geotrellis.svg)](http://travis-ci.org/geotrellis/geotrellis) [![Join the chat at https://gitter.im/geotrellis/geotrellis](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/geotrellis/geotrellis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Bintray](https://img.shields.io/bintray/v/azavea/geotrellis/geotrellis-spark.svg?maxAge=2592000)](https://bintray.com/azavea/geotrellis)
+[![Build Status](https://api.travis-ci.org/locationtech/geotrellis.svg)](http://travis-ci.org/locationtech/geotrellis) [![Join the chat at https://gitter.im/geotrellis/geotrellis](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/geotrellis/geotrellis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Bintray](https://img.shields.io/bintray/v/azavea/geotrellis/geotrellis-spark.svg?maxAge=2592000)](https://bintray.com/azavea/geotrellis)
 
 *GeoTrellis* is a Scala library and framework that uses
 Spark to work with raster data.  It is released under
@@ -77,6 +77,40 @@ To grab the latest snapshot build, add our snapshot repository:
 ```
 resolvers += "LocationTech GeoTrellis Snapshots" at "https://repo.locationtech.org/content/repositories/geotrellis-snapshots"
 ```
+
+## Where is our commit history and contributor list?
+
+In November 2016, GeoTrellis moved it's repository from the
+[GeoTrellis GitHub Organization](https://github.com/geotrellis) to it's current
+home in the LocationTech GitHub organization.
+In the process of moving our repository, we went through an IP review process.
+Because the Eclipse foundation only reviews a snapshot of the repository, and
+not all of history, we had to start from a clean `master` branch. The entire
+old history is available in the `_old/master` branch. You can also tie
+your local clone's master history to the old history by running
+
+```console
+> git fetch origin refs/replace/*:refs/replace/*
+```
+
+if `origin` points to https://github.com/locationtech/geotrellis.
+This will allow you to see the old history for commands like `git log`.
+
+Unfortunately, we lost our commit and contributor count in the move.
+These are significant statistics for a repository,
+and our current counts make us look younger than we are.
+GeoTrellis has been an open source project since 2011.
+This is what our contributor and commit count looked like
+before the move to LocationTech:
+
+![Commit and contributor count before LocationTech move](docs/img/contributor-and-commit-count-pre-locationtech.png)
+
+Along with counts, we want to make sure that all the awesome people
+who contributed to GeoTrellis before the LocationTech move can
+still be credited on a contributors page. For posterity, I will
+leave the following contributors page to what it was before the move:
+
+https://github.com/lossyrob/geotrellis-before-locationtech/graphs/contributors
 
 ## Hello Raster
 
