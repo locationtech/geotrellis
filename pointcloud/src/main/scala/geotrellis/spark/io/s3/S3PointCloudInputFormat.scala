@@ -57,9 +57,14 @@ class S3PointCloudInputFormat extends S3InputFormat[S3PointCloudHeader, Iterator
           packedPoint
         }.toIterator
 
-        val header = S3PointCloudHeader(key, pipeline.getMetadata(), pipeline.getSchema())
+      val header =
+        S3PointCloudHeader(
+          key,
+          pipeline.getMetadata(),
+          pipeline.getSchema()
+        )
 
-        val result = header -> packedPoints
+        val result =  (header, packedPoints)
 
         pointViewIterator.dispose()
         pipeline.dispose()

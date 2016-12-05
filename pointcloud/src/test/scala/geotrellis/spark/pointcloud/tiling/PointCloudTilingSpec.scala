@@ -40,7 +40,7 @@ class PointCloudTilingSpec extends FunSpec
       )
       val tiled = source.tileToLayout(ld)
       tiled.map(_._2.length).reduce(_ + _) should be (original.length)
-      tiled.count() should be (1)
+      tiled.count() should be (25)
     }
   }
 }
