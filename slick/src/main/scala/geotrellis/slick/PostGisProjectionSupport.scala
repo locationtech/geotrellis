@@ -115,9 +115,12 @@ object PostGisProjectionSupportUtils {
         Projected(geom, geom.jtsGeom.getSRID).asInstanceOf[T]
     }
 
-  def readWktOrWkb(s: String): Geometry =
-    if (s.startsWith("00") || s.startsWith("01"))
+  def readWktOrWkb(s: String): Geometry = {
+    if (s.startsWith("\\x"))
+      WKB.read(s.drop(2))
+    else if (s.startsWith("00") || s.startsWith("01"))
       WKB.read(s)
     else
       WKT.read(s)
+  }
 }

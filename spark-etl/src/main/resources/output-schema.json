@@ -109,8 +109,6 @@
   "required": [
     "backend",
     "reprojectMethod",
-    "tileSize",
-    "pyramid",
     "resampleMethod",
     "keyIndexMethod"
   ],
