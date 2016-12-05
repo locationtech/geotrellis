@@ -86,8 +86,8 @@ object MultibandGeoTiff {
   /** Read a multi-band GeoTIFF file from the file at the given path.
     * If decompress = true, the GeoTIFF will be fully decompressed and held in memory.
     */
-  def apply(path: String, decompress: Boolean, streaming: Boolean): MultibandGeoTiff =
-    GeoTiffReader.readMultiband(path, decompress, streaming)
+  def apply(path: String, decompress: Boolean, streaming: Boolean, extent: Option[Extent]): MultibandGeoTiff =
+    GeoTiffReader.readMultiband(path, decompress, streaming, extent)
 
   def apply(byteReader: ByteReader): MultibandGeoTiff =
     GeoTiffReader.readMultiband(byteReader)
@@ -98,26 +98,26 @@ object MultibandGeoTiff {
   def apply(byteReader: ByteReader, e: Option[Extent]): MultibandGeoTiff =
     GeoTiffReader.readMultiband(byteReader, e)
 
-  def apply(byteReader: ByteReader, decompress: Boolean, streaming: Boolean): MultibandGeoTiff =
-    GeoTiffReader.readMultiband(byteReader, decompress, streaming)
+  def apply(byteReader: ByteReader, decompress: Boolean, streaming: Boolean, extent: Option[Extent]): MultibandGeoTiff =
+    GeoTiffReader.readMultiband(byteReader, decompress, streaming, extent)
 
   /** Read a multi-band GeoTIFF file from the file at a given path.
     * The tile data will remain tiled/striped and compressed in the TIFF format.
     */
   def compressed(path: String): MultibandGeoTiff =
-    GeoTiffReader.readMultiband(path, false, false)
+    GeoTiffReader.readMultiband(path, false, false, None)
 
   /** Read a multi-band GeoTIFF file from a byte array.
     * The tile data will remain tiled/striped and compressed in the TIFF format.
     */
   def compressed(bytes: Array[Byte]): MultibandGeoTiff =
-    GeoTiffReader.readMultiband(bytes, false, false)
+    GeoTiffReader.readMultiband(bytes, false, false, None)
 
   def streaming(path: String): MultibandGeoTiff =
-    GeoTiffReader.readMultiband(path, false, true)
+    GeoTiffReader.readMultiband(path, false, true, None)
 
   def streaming(byteReader: ByteReader): MultibandGeoTiff =
-    GeoTiffReader.readMultiband(byteReader, false, true)
+    GeoTiffReader.readMultiband(byteReader, false, true, None)
 
   def apply(
     tile: MultibandTile,
