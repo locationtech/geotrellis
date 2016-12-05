@@ -1,17 +1,15 @@
-# geotrellis.proj4
-
-GeoTrellis relies on ``geotrellis.proj4`` for projecting coordinates - that is,
-finding 2D arrangements of positions from the real, 3D world.  It provides
-implementations of [many projection formulae](https://xkcd.com/977/), and
-supports further customization such as selecting different units of measure or
-models of the earth's curvature.  A database of well-known coordinate systems
-provides commonly used settings, so typically users do not need to be familiar
-with all of the possible parameters.
+GeoTrellis relies on `geotrellis.proj4` for projecting coordinates - that
+is, finding 2D arrangements of positions from the real, 3D world.  It
+provides implementations of [many projection formulae](https://xkcd.com/977/),
+and supports further customization such as selecting different units of
+measure or models of the earth's curvature.  A database of well-known
+coordinate systems provides commonly used settings, so typically users do
+not need to be familiar with all of the possible parameters.
 
 Ultimately, there are two types that are important to users of the
-``geotrellis.proj4`` module: ``CRS`` represents a Coordinate Reference System,
-and ``Transform`` represents a function for transforming coordinates from one
-CRS to another.  
+`geotrellis.proj4` module: `CRS` represents a Coordinate Reference System,
+and ``Transform`` represents a function for transforming coordinates from
+one CRS to another.
 
 To create a CRS instance, there are a few options:
 
@@ -36,10 +34,9 @@ CRS.fromString("+proj=utm +zone=18 +datum=WGS84 +units=m +no_defs")
 
 Individual CRS values do not offer many operations, but two CRSs can be used
 together to create a Transform capable of transforming coordinate pairs from
-the source CRS to the target CRS.  For example, to transform coordinates from 
-the latitude/longitude coordinate system to the web mercator coordinate system
-in a Scala REPL the session might look like this:
-
+the source CRS to the target CRS.  For example, to transform coordinates
+from the latitude/longitude coordinate system to the web mercator coordinate
+system in a Scala REPL the session might look like this:
 
 ```scala
 scala> import geotrellis.proj4._
@@ -53,12 +50,9 @@ res0: (Double, Double) = (4448470.008964373,-1.2998915115941694E7)
 
 ```
 
-This is all you really need to know to use ``geotrellis.proj4``, and generally
-you won't even need to use ``Transform`` objects directly - for the most part,
+This is all you really need to know to use `geotrellis.proj4`, and generally
+you won't even need to use `Transform` objects directly - for the most part,
 GeoTrellis APIs expect source and target `CRS`'s and manage the `Transform`
-instances internally.  If you do find yourself working with `Transform`s, you
-should keep in mind that creating them takes some computation, so it is a good
-idea to reuse them where possible.
-
-If you want to know more about the way that ``geotrellis.proj4`` works, you can 
-read on to the [implementation section](./proj4-implementation.md).
+instances internally.  If you do find yourself working with `Transform`s,
+you should keep in mind that creating them takes some computation, so it is
+a good idea to reuse them where possible.
