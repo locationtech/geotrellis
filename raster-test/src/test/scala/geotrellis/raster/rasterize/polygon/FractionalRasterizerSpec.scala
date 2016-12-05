@@ -91,5 +91,57 @@ class FractionalRasterizerSpec extends FunSpec with Matchers {
       round(actual * 1000000) should be (round(expected * 1000000))
     }
 
+    it("should efficiently handle a long diagonal line (1/4)") {
+      val re = RasterExtent(e, 30, 30)
+      val poly = Polygon(Point(0,0), Point(3,0), Point(3,3), Point(0,0))
+      var actual = 0.0
+      val expected = (30*30)/2.0
+
+      FractionalRasterizer.foreachCellByPolygon(poly, re) { (col: Int, row: Int, p: Double) =>
+        actual += p
+      }
+
+      round(actual * 1000000) should be (round(expected * 1000000))
+    }
+
+    it("should efficiently handle a long diagonal line (2/4)") {
+      val re = RasterExtent(e, 30, 30)
+      val poly = Polygon(Point(0,0), Point(3,0), Point(0,3), Point(0,0))
+      var actual = 0.0
+      val expected = (30*30)/2.0
+
+      FractionalRasterizer.foreachCellByPolygon(poly, re) { (col: Int, row: Int, p: Double) =>
+        actual += p
+      }
+
+      round(actual * 1000000) should be (round(expected * 1000000))
+    }
+
+    it("should efficiently handle a long diagonal line (3/4)") {
+      val re = RasterExtent(Extent(0, 0, 3, 3.1), 30, 30)
+      val poly = Polygon(Point(0,0), Point(3,0), Point(0,3), Point(0,0))
+      var actual = 0.0
+      val expected = 435.483871
+
+      FractionalRasterizer.foreachCellByPolygon(poly, re) { (col: Int, row: Int, p: Double) =>
+        actual += p
+      }
+
+      round(actual * 1000000) should be (round(expected * 1000000))
+    }
+
+    it("should efficiently handle a long diagonal line (4/4)") {
+      val re = RasterExtent(Extent(0, 0, 3.1, 3), 30, 30)
+      val poly = Polygon(Point(0,0), Point(3,0), Point(0,3), Point(0,0))
+      var actual = 0.0
+      val expected = 435.483871
+
+      FractionalRasterizer.foreachCellByPolygon(poly, re) { (col: Int, row: Int, p: Double) =>
+        actual += p
+      }
+
+      round(actual * 1000000) should be (round(expected * 1000000))
+    }
+
   }
 }
