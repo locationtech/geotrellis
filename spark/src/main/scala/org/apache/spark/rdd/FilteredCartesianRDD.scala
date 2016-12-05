@@ -34,11 +34,13 @@ sealed class FilteredCartesianRDD[T: ClassTag, U: ClassTag, V: ClassTag](
   sc: SparkContext,
   pred: (T, U) => Boolean,
   metapred: (V, V) => Boolean,
-  var rdd1 : RDD[T], metardd1 : RDD[V],
-  var rdd2 : RDD[U], metardd2 : RDD[V]
+  var rdd1 : RDD[T], summaryFn1: Iterator[T] => Iterator[V],
+  var rdd2 : RDD[U], summaryFn2: Iterator[U] => Iterator[V]
 ) extends RDD[(T, U)](sc, Nil) with Serializable {
 
   val numPartitionsInRdd2 = rdd2.partitions.length
+  val metardd1 = rdd1.mapPartitions(summaryFn1, preservesPartitioning = true)
+  val metardd2 = rdd2.mapPartitions(summaryFn2, preservesPartitioning = true)
 
   override def getPartitions: Array[Partition] = {
     // create the cross product split
@@ -59,6 +61,8 @@ sealed class FilteredCartesianRDD[T: ClassTag, U: ClassTag, V: ClassTag](
     val currSplit = split.asInstanceOf[CartesianPartition]
     val part1 = currSplit.s1 // partition for (|meta)rdd1
     val part2 = currSplit.s2 // partition for (|meta)rdd2
+    require(metardd1.iterator(part1, context).hasNext, "Meta-RDD Failure")
+    require(metardd2.iterator(part2, context).hasNext, "Meta-RDD Failure")
     val meta1 = metardd1.iterator(part1, context).next
     val meta2 = metardd2.iterator(part2, context).next
 
