@@ -55,7 +55,7 @@ class CollectNeighborsSpec extends FunSpec with TestEnvironment {
         )
       )
 
-    val neighbors: Map[SpatialKey, Map[Direction, (SpatialKey, String)]] =
+    val neighbors: Map[SpatialKey, Iterable[(Direction, (SpatialKey, String))]] =
       rdd
         .collectNeighbors
         .collect
@@ -83,8 +83,9 @@ class CollectNeighborsSpec extends FunSpec with TestEnvironment {
 
     def check(key: SpatialKey, expected: Direction*): Unit = {
       neighbors.get(key) should not be (None)
-      val n = neighbors(key)
-      n.keys.toSet should be (expected.toSet)
+      val nn = neighbors(key)
+      nn.map(_._1).toSet should be (expected.toSet)
+      val n = nn.toMap
       for(d <- expected) {
         n(d)._1 should be (mod(d, key))
       }
@@ -92,8 +93,9 @@ class CollectNeighborsSpec extends FunSpec with TestEnvironment {
 
     it("should work on 1, 1") {
       neighbors.get(SpatialKey(1, 1)) should not be (None)
-      val n = neighbors(SpatialKey(1, 1))
-      n.keys.toSet should be (Set(Center, Right, Bottom, BottomRight, TopRight))
+      val nn = neighbors(SpatialKey(1, 1))
+      nn.map(_._1).toSet should be (Set(Center, Right, Bottom, BottomRight, TopRight))
+      val n = nn.toMap
       n(Center) should be ((SpatialKey(1, 1), "a"))
       n(Right) should be ((SpatialKey(2, 1), "b"))
       n(Bottom) should be ((SpatialKey(1, 2), "d"))
@@ -103,8 +105,9 @@ class CollectNeighborsSpec extends FunSpec with TestEnvironment {
 
     it("should work on 2, 1") {
       neighbors.get(SpatialKey(2, 1)) should not be (None)
-      val n = neighbors(SpatialKey(2, 1))
-      n.keys.toSet should be (Set(Left, Center, Right, Top, BottomLeft, Bottom, BottomRight))
+      val nn = neighbors(SpatialKey(2, 1))
+      nn.map(_._1).toSet should be (Set(Left, Center, Right, Top, BottomLeft, Bottom, BottomRight))
+      val n = nn.toMap
       n(Center)._1 should be (SpatialKey(2, 1))
       n(Left)._1 should be (SpatialKey(1, 1))
       n(Right)._1 should be (SpatialKey(3, 1))

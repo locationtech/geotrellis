@@ -35,7 +35,7 @@ object CollectNeighbors {
   /** Collects the neighbors of each value (including itself) into a Map
     * giving the direction of the neighbor.
     */
-  def apply[K: SpatialComponent: ClassTag, V](rdd: RDD[(K, V)]): RDD[(K, Map[Direction, (K, V)])] = {
+  def apply[K: SpatialComponent: ClassTag, V](rdd: RDD[(K, V)]): RDD[(K, Iterable[(Direction, (K, V))])] = {
     val neighbored: RDD[(K, (Direction, (K, V)))] =
       rdd
         .flatMap { case (key, value) =>
@@ -69,6 +69,5 @@ object CollectNeighbors {
           case _ => false
         }.isDefined
       }
-      .mapValues(_.toMap)
   }
 }
