@@ -20,52 +20,41 @@ class StreamingSegmentBytes(byteReader: ByteReader,
 			case None => tiffTags.extent
 		}
 
-	private val gridBounds: GridBounds = {
+	private lazy val gridBounds: GridBounds = {
 		val rasterExtent: RasterExtent =
 			RasterExtent(tiffTags.extent, tiffTags.cols, tiffTags.rows)
 		rasterExtent.gridBoundsFor(extent)
 	}
 	
-	private val colMin: Int = gridBounds.colMin
-	private val rowMin: Int = gridBounds.rowMin
-	private val colMax: Int = gridBounds.colMax
-	private val rowMax: Int = gridBounds.rowMax
-
-	val segments: Array[Int] = (0 until tiffTags.segmentCount).toArray
+	private lazy val colMin: Int = gridBounds.colMin
+	private lazy val rowMin: Int = gridBounds.rowMin
+	private lazy val colMax: Int = gridBounds.colMax
+	private lazy val rowMax: Int = gridBounds.rowMax
 
 	lazy val intersectingSegments: Array[Int] = {
-		val array = scala.collection.mutable.ArrayBuffer[Int]()
-		//if (extent != tiffTags.extent) {
-		//cfor(0)(_ < tiffTags.segmentCount / tiffTags.bandCount, _ + 1){ i =>
-		for (i <- (0 until tiffTags.segmentCount)) {
-			val segmentTransform = segmentLayout.getSegmentTransform(i)
+		if (extent != tiffTags.extent) {
+			val array = scala.collection.mutable.ArrayBuffer[Int]()
 
-			val startCol: Int = segmentTransform.indexToCol(0)
-			val startRow: Int = segmentTransform.indexToRow(0)
-			val endCol: Int = startCol + segmentTransform.segmentCols
-			val endRow: Int = startRow + segmentTransform.segmentRows
+			for (i <- (0 until tiffTags.segmentCount)) {
+				val segmentTransform = segmentLayout.getSegmentTransform(i)
 
-			val start = (!(startCol > colMax) && !(startRow > rowMax))
-			val end = (!(endCol < colMin) && !(endRow < rowMin))
-			//val within = (colMin >= startCol && rowMin >= startRow && colMax <= endCol && rowMax <= endRow)
+				val startCol: Int = segmentTransform.indexToCol(0)
+				val startRow: Int = segmentTransform.indexToRow(0)
+				val endCol: Int = startCol + segmentTransform.segmentCols
+				val endRow: Int = startRow + segmentTransform.segmentRows
 
-			println(i, start, end)
+				val start = (!(startCol > colMax) && !(startRow > rowMax))
+				val end = (!(endCol <= colMin) && !(endRow <= rowMin))
 
-			if (start && end) {
-				println(i)
-				array += i
+				if (start && end)
+					array += i
 			}
-		}
-		array.toArray
-		/*
+			
+			array.toArray
 		} else {
-			segments
+			Array.range(0, tiffTags.segmentCount)
 		}
-		*/
 	}
-
-	lazy val remainingSegments: Array[Int] =
-		segments.filter(x => !intersectingSegments.contains(x))
 
 	val (offsets, byteCounts) =
 		if (tiffTags.hasStripStorage) {
@@ -91,8 +80,8 @@ class StreamingSegmentBytes(byteReader: ByteReader,
 			(tileOffsets.get, tileByteCounts.get)
 		}
 	
-	private val compressedBytes: Array[Array[Byte]] = {
-		val result = Array.ofDim[Array[Byte]](segments.size)
+	private lazy val compressedBytes: Array[Array[Byte]] = {
+		val result = Array.ofDim[Array[Byte]](offsets.length)
 				
 		cfor(0)(_ < intersectingSegments.size, _ + 1) { i =>
 			val value = intersectingSegments(i)
