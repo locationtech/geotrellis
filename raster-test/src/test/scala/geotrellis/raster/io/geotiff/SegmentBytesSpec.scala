@@ -32,9 +32,6 @@ trait Tester {
     val arraySegmentBytes: ArraySegmentBytes =
       ArraySegmentBytes(byteBuffer, tiffTags)
 
-    val bufferSegmentBytes: LazySegmentBytes =
-      LazySegmentBytes(byteBuffer, tiffTags)
-
     val geoTiff =
       if (tiffTags.bandCount == 1)
         SinglebandGeoTiff(path)
@@ -78,30 +75,6 @@ class SegmentBytesSpec extends FunSpec
     it("tiled, multiband GeoTiff") {
       val tester = new Tester(paths(3))
       assert(tester.arraySegmentBytes.size == tester.tiffTags.segmentCount)
-    }
-  }
-
-  describe("Reading into LazySegmentBytes") {
-    it("striped, singleband GeoTiff") {
-      val tester = new Tester(paths(0))
-      assert(tester.bufferSegmentBytes.size == tester.actual.size)
-    }
-    it("tiled, singleband GeoTiff") {
-      val tester = new Tester(paths(1))
-      assert(tester.bufferSegmentBytes.size == tester.actual.size)
-    }
-    it("striped, multiband GeoTiff") {
-      val tester = new Tester(paths(2))
-      assert(tester.bufferSegmentBytes.size == tester.tiffTags.segmentCount)
-    }
-    it("tiled, multiband GeoTiff") {
-      val tester = new Tester(paths(3))
-      assert(tester.bufferSegmentBytes.size == tester.tiffTags.segmentCount)
-    }
-    it("should read in a large file") {
-      val tiffTags = TiffTagsReader.read(largeFile)
-      val byteBuffer = Filesystem.toMappedByteBuffer(largeFile)
-      LazySegmentBytes(byteBuffer, tiffTags)
     }
   }
 }
