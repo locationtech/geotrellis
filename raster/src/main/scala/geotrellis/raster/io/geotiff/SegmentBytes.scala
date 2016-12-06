@@ -29,4 +29,6 @@ trait SegmentBytes extends Traversable[Array[Byte]] {
     cfor(0)(_ < size, _ + 1) { i =>
       f(getSegment(i))
     }
+
+	val intersectingSegments: Array[Int]
 }
