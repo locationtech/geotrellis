@@ -26,5 +26,7 @@ package object rasterize {
     * fraction is the fraction of the pixel which is covered by the
     * query object.
     */
-  type FractionCallback = (Int, Int, Double) => Unit
+  trait FractionCallback {
+    def callback(col: Int, row: Int, fraction: Double): Unit
+  }
 }

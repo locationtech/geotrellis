@@ -65,97 +65,88 @@ object FractionalRasterizer {
     re: RasterExtent,
     poly: Polygon,
     set: mutable.Set[(Int, Int)],
-    fn: FractionCallback
+    cb: FractionCallback
   ): Unit = {
-    // Screen coordinates
     val (x0, y0, x1, y1) = edge
-    val xmin = min(x0, x1)
-    val ymin = min(y0, y1)
-    val xmax = max(x0, x1)
-    val ymax = max(y0, y1)
     val m = (y1 - y0) / (x1 - x0)
 
-    // Integral screen coordinates
-    val xminint = floor(xmin).toInt
-    val yminint = floor(ymin).toInt
-    val xmaxint =  ceil(xmax).toInt
-    val ymaxint =  ceil(ymax).toInt
+    // Grid coordinates
+    val colMin = floor(min(x0, x1)).toInt
+    val rowMin = floor(min(y0, y1)).toInt
+    val colMax =  ceil(max(x0, x1)).toInt
+    val rowMax =  ceil(max(y0, y1)).toInt
 
     // Map coordinates
-    val xminmap = re.gridColToMap(xminint) - re.cellwidth/2
-    val yminmap = re.gridRowToMap(ymaxint) + re.cellheight/2
-    val xmaxmap = re.gridColToMap(xmaxint) - re.cellwidth/2
-    val ymaxmap = re.gridRowToMap(yminint) + re.cellheight/2
+    val xmin = re.gridColToMap(colMin) - re.cellwidth/2
+    val ymin = re.gridRowToMap(rowMax) + re.cellheight/2
+    val xmax = re.gridColToMap(colMax) - re.cellwidth/2
+    val ymax = re.gridRowToMap(rowMin) + re.cellheight/2
 
     // Envelope around the edge (in map space)
     val envelope = Polygon(
-      Point(xminmap, yminmap),
-      Point(xminmap, ymaxmap),
-      Point(xmaxmap, ymaxmap),
-      Point(xmaxmap, yminmap),
-      Point(xminmap, yminmap)
+      Point(xmin, ymin),
+      Point(xmin, ymax),
+      Point(xmax, ymax),
+      Point(xmax, ymin),
+      Point(xmin, ymin)
     ).jtsGeom
 
     // Intersection of envelope and polygon (in map space)
     val localPoly = poly.jtsGeom.intersection(envelope)
 
-    if (abs(m) <= 1) { // Mostly horizontal
-      var x = xminint; while (x <= xmaxint) {
+    if (abs(m) <= 1) { // The edge is mostly horizontal
+      var x = colMin; while (x <= colMax) {
         val _y = floor(m * (x + 0.5 - x0) + y0).toInt
         var i = -1; while (i <= 1) {
           val y = _y + i
           val pair = (x, y)
-          val xmap0 = re.gridColToMap(x+0) - re.cellwidth/2
-          val xmap1 = re.gridColToMap(x+1) - re.cellwidth/2
-          val ymap0 = re.gridRowToMap(y+0) + re.cellheight/2
-          val ymap1 = re.gridRowToMap(y+1) + re.cellheight/2
+          val pixelMinX = re.gridColToMap(x+0) - re.cellwidth/2
+          val pixelMaxX = re.gridColToMap(x+1) - re.cellwidth/2
+          val pixelMinY = re.gridRowToMap(y+0) + re.cellheight/2
+          val pixelMaxY = re.gridRowToMap(y+1) + re.cellheight/2
           val pixel = Polygon(
-            Point(xmap0, ymap0),
-            Point(xmap0, ymap1),
-            Point(xmap1, ymap1),
-            Point(xmap1, ymap0),
-            Point(xmap0, ymap0)
+            Point(pixelMinX, pixelMinY),
+            Point(pixelMinX, pixelMaxY),
+            Point(pixelMaxX, pixelMaxY),
+            Point(pixelMaxX, pixelMinY),
+            Point(pixelMinX, pixelMinY)
           ).jtsGeom
           val fraction = (pixel.intersection(localPoly)).getArea / pixel.getArea
 
           if (fraction > 0.0) {
-            synchronized {
-              if (!set.contains(pair)) {
-                fn(x, y, fraction)
-                set += ((x, y))
-              }
+            if (!set.contains(pair)) {
+              set += ((x, y))
+              cb.callback(x, y, fraction)
             }
           }
           i += 1
         }
         x += 1
       }
-    } else { // Mostly vertical
+    } else { // The edge is mostly vertical
       val m = (x1 - x0) / (y1 - y0)
-      var y = yminint; while (y <= ymaxint) {
+      var y = rowMin; while (y <= rowMax) {
         val _x = floor(m * (y + 0.5 - y0) + x0).toInt
         var i = -1; while (i <= 1) {
           val x = _x + i
           val pair = (x, y)
-          val xmap0 = re.gridColToMap(x+0) - re.cellwidth/2
-          val xmap1 = re.gridColToMap(x+1) - re.cellwidth/2
-          val ymap0 = re.gridRowToMap(y+0) + re.cellheight/2
-          val ymap1 = re.gridRowToMap(y+1) + re.cellheight/2
+          val pixelMinX = re.gridColToMap(x+0) - re.cellwidth/2
+          val pixelMaxX = re.gridColToMap(x+1) - re.cellwidth/2
+          val pixelMinY = re.gridRowToMap(y+0) + re.cellheight/2
+          val pixelMaxY = re.gridRowToMap(y+1) + re.cellheight/2
           val pixel = Polygon(
-            Point(xmap0, ymap0),
-            Point(xmap0, ymap1),
-            Point(xmap1, ymap1),
-            Point(xmap1, ymap0),
-            Point(xmap0, ymap0)
+            Point(pixelMinX, pixelMinY),
+            Point(pixelMinX, pixelMaxY),
+            Point(pixelMaxX, pixelMaxY),
+            Point(pixelMaxX, pixelMinY),
+            Point(pixelMinX, pixelMinY)
           ).jtsGeom
           val fraction = (pixel.intersection(localPoly)).getArea / pixel.getArea
 
           if (fraction > 0.0) {
-            synchronized {
-              if (!set.contains(pair)) {
-                fn(x, y, fraction)
-                set += ((x, y))
-              }
+            if (!set.contains(pair)) {
+              set += ((x, y))
+              cb.callback(x, y, fraction)
             }
           }
           i += 1
@@ -168,17 +159,16 @@ object FractionalRasterizer {
   def foreachCellByPolygon(
     poly: Polygon,
     re: RasterExtent
-  )(fn: FractionCallback): Unit = {
+  )(cb: FractionCallback): Unit = {
     val seen = mutable.Set.empty[(Int, Int)]
     val option = Rasterizer.Options(includePartial = false, sampleType = PixelIsArea)
 
     polygonToEdges(poly, re)
-      .par
-      .foreach({ edge => renderEdge(edge, re, poly, seen, fn) })
+      .foreach({ edge => renderEdge(edge, re, poly, seen, cb) })
 
     PolygonRasterizer.foreachCellByPolygon(poly, re) {(col: Int, row: Int) =>
       val pair = (col, row)
-      if (!seen.contains(pair)) fn(col, row, 1.0)
+      if (!seen.contains(pair)) cb.callback(col, row, 1.0)
     }
   }
 
