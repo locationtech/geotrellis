@@ -19,9 +19,10 @@ package geotrellis.spark.io.s3
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
+import geotrellis.spark.io.index.IndexRanges
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.util.KryoWrapper
+import geotrellis.util.MergeQueue
 
 import scalaz.concurrent.{Strategy, Task}
 import scalaz.std.vector._
