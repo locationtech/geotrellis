@@ -28,6 +28,8 @@ import org.apache.spark.storage.StorageLevel
 import scala.reflect.ClassTag
 import scala.collection.mutable.ArrayBuffer
 
+import Direction._
+
 object BufferTiles {
 
   /** Collects tile neighbors by slicing the neighboring tiles to the given
@@ -52,15 +54,15 @@ object BufferTiles {
 
         val part: V =
           direction match {
-            case CenterDirection => tile
-            case RightDirection => tile.crop(0, 0, bufferSizes.right - 1, rows - 1, Crop.Options(force = true))
-            case LeftDirection => tile.crop(cols - bufferSizes.left, 0, cols - 1, rows - 1, Crop.Options(force = true))
-            case TopDirection => tile.crop(0, rows - bufferSizes.top, cols - 1, rows - 1, Crop.Options(force = true))
-            case BottomDirection => tile.crop(0, 0, cols - 1, bufferSizes.bottom - 1, Crop.Options(force = true))
-            case TopLeftDirection => tile.crop(cols - bufferSizes.left, rows - bufferSizes.top, cols - 1, rows - 1, Crop.Options(force = true))
-            case TopRightDirection => tile.crop(0, rows - bufferSizes.top, bufferSizes.right - 1, rows - 1, Crop.Options(force = true))
-            case BottomLeftDirection => tile.crop(cols - bufferSizes.left, 0, cols - 1, bufferSizes.bottom - 1, Crop.Options(force = true))
-            case BottomRightDirection => tile.crop(0, 0, bufferSizes.right - 1, bufferSizes.bottom - 1, Crop.Options(force = true))
+            case Center => tile
+            case Right => tile.crop(0, 0, bufferSizes.right - 1, rows - 1, Crop.Options(force = true))
+            case Left => tile.crop(cols - bufferSizes.left, 0, cols - 1, rows - 1, Crop.Options(force = true))
+            case Top => tile.crop(0, rows - bufferSizes.top, cols - 1, rows - 1, Crop.Options(force = true))
+            case Bottom => tile.crop(0, 0, cols - 1, bufferSizes.bottom - 1, Crop.Options(force = true))
+            case TopLeft => tile.crop(cols - bufferSizes.left, rows - bufferSizes.top, cols - 1, rows - 1, Crop.Options(force = true))
+            case TopRight => tile.crop(0, rows - bufferSizes.top, bufferSizes.right - 1, rows - 1, Crop.Options(force = true))
+            case BottomLeft => tile.crop(cols - bufferSizes.left, 0, cols - 1, bufferSizes.bottom - 1, Crop.Options(force = true))
+            case BottomRight => tile.crop(0, 0, bufferSizes.right - 1, bufferSizes.bottom - 1, Crop.Options(force = true))
           }
 
         parts += ( (key.setComponent(spatialKey), (direction, part)) )
@@ -68,17 +70,17 @@ object BufferTiles {
     }
 
     // ex: A tile that contributes to the top (tile above it) will give up it's top slice, which will be placed at the bottom of the target focal window
-    addSlice(SpatialKey(col,row), CenterDirection)
+    addSlice(SpatialKey(col,row), Center)
 
-    addSlice(SpatialKey(col-1, row), RightDirection)
-    addSlice(SpatialKey(col+1, row), LeftDirection)
-    addSlice(SpatialKey(col, row-1), BottomDirection)
-    addSlice(SpatialKey(col, row+1), TopDirection)
+    addSlice(SpatialKey(col-1, row), Right)
+    addSlice(SpatialKey(col+1, row), Left)
+    addSlice(SpatialKey(col, row-1), Bottom)
+    addSlice(SpatialKey(col, row+1), Top)
 
-    addSlice(SpatialKey(col-1, row-1), BottomRightDirection)
-    addSlice(SpatialKey(col+1, row-1), BottomLeftDirection)
-    addSlice(SpatialKey(col+1, row+1), TopLeftDirection)
-    addSlice(SpatialKey(col-1, row+1), TopRightDirection)
+    addSlice(SpatialKey(col-1, row-1), BottomRight)
+    addSlice(SpatialKey(col+1, row-1), BottomLeft)
+    addSlice(SpatialKey(col+1, row+1), TopLeft)
+    addSlice(SpatialKey(col-1, row+1), TopRight)
 
     parts
   }
@@ -89,20 +91,20 @@ object BufferTiles {
   ](rdd: RDD[(K, Iterable[(Direction, V)])]): RDD[(K, BufferedTile[V])] = {
     val r = rdd
       .flatMapValues { neighbors =>
-        neighbors.find( _._1 == CenterDirection) map { case (_, centerTile) =>
+        neighbors.find( _._1 == Center) map { case (_, centerTile) =>
 
             val bufferSizes =
               neighbors.foldLeft(BufferSizes(0, 0, 0, 0)) { (acc, tup) =>
                 val (direction, slice) = tup
                 direction match {
-                  case LeftDirection        => acc.copy(left = slice.cols)
-                  case RightDirection       => acc.copy(right = slice.cols)
-                  case TopDirection         => acc.copy(top = slice.rows)
-                  case BottomDirection      => acc.copy(bottom = slice.rows)
-                  case BottomRightDirection => acc.copy(bottom = slice.rows, right = slice.cols)
-                  case BottomLeftDirection  => acc.copy(bottom = slice.rows, left = slice.cols)
-                  case TopRightDirection    => acc.copy(top = slice.rows, right = slice.cols)
-                  case TopLeftDirection     => acc.copy(top = slice.rows, left = slice.cols)
+                  case Left        => acc.copy(left = slice.cols)
+                  case Right       => acc.copy(right = slice.cols)
+                  case Top         => acc.copy(top = slice.rows)
+                  case Bottom      => acc.copy(bottom = slice.rows)
+                  case BottomRight => acc.copy(bottom = slice.rows, right = slice.cols)
+                  case BottomLeft  => acc.copy(bottom = slice.rows, left = slice.cols)
+                  case TopRight    => acc.copy(top = slice.rows, right = slice.cols)
+                  case TopLeft     => acc.copy(top = slice.rows, left = slice.cols)
                   case _           => acc
                 }
               }
@@ -111,15 +113,15 @@ object BufferTiles {
             neighbors.map { case (direction, slice) =>
               val (updateColMin, updateRowMin) =
                 direction match {
-                  case CenterDirection      => (bufferSizes.left, bufferSizes.top)
-                  case LeftDirection        => (0, bufferSizes.top)
-                  case RightDirection       => (bufferSizes.left + centerTile.cols, bufferSizes.top)
-                  case TopDirection         => (bufferSizes.left, 0)
-                  case BottomDirection      => (bufferSizes.left, bufferSizes.top + centerTile.rows)
-                  case TopLeftDirection     => (0, 0)
-                  case TopRightDirection    => (bufferSizes.left + centerTile.cols, 0)
-                  case BottomLeftDirection  => (0, bufferSizes.top + centerTile.rows)
-                  case BottomRightDirection => (bufferSizes.left + centerTile.cols, bufferSizes.top + centerTile.rows)
+                  case Center      => (bufferSizes.left, bufferSizes.top)
+                  case Left        => (0, bufferSizes.top)
+                  case Right       => (bufferSizes.left + centerTile.cols, bufferSizes.top)
+                  case Top         => (bufferSizes.left, 0)
+                  case Bottom      => (bufferSizes.left, bufferSizes.top + centerTile.rows)
+                  case TopLeft     => (0, 0)
+                  case TopRight    => (bufferSizes.left + centerTile.cols, 0)
+                  case BottomLeft  => (0, bufferSizes.top + centerTile.rows)
+                  case BottomRight => (bufferSizes.left + centerTile.cols, bufferSizes.top + centerTile.rows)
                 }
 
               (slice, (updateColMin, updateRowMin))
@@ -142,20 +144,20 @@ object BufferTiles {
   ](seq: Seq[(K, Seq[(Direction, V)])]): Seq[(K, BufferedTile[V])] = {
     seq
       .flatMap { case (key, neighbors) =>
-        val opt = neighbors.find(_._1 == CenterDirection).map { case (_, centerTile) =>
+        val opt = neighbors.find(_._1 == Center).map { case (_, centerTile) =>
 
           val bufferSizes =
             neighbors.foldLeft(BufferSizes(0, 0, 0, 0)) { (acc, tup) =>
               val (direction, slice) = tup
               direction match {
-                case LeftDirection        => acc.copy(left = slice.cols)
-                case RightDirection       => acc.copy(right = slice.cols)
-                case TopDirection        => acc.copy(top = slice.rows)
-                case BottomDirection      => acc.copy(bottom = slice.rows)
-                case BottomRightDirection => acc.copy(bottom = slice.rows, right = slice.cols)
-                case BottomLeftDirection  => acc.copy(bottom = slice.rows, left = slice.cols)
-                case TopRightDirection    => acc.copy(top = slice.rows, right = slice.cols)
-                case TopLeftDirection     => acc.copy(top = slice.rows, left = slice.cols)
+                case Left        => acc.copy(left = slice.cols)
+                case Right       => acc.copy(right = slice.cols)
+                case Top        => acc.copy(top = slice.rows)
+                case Bottom      => acc.copy(bottom = slice.rows)
+                case BottomRight => acc.copy(bottom = slice.rows, right = slice.cols)
+                case BottomLeft  => acc.copy(bottom = slice.rows, left = slice.cols)
+                case TopRight    => acc.copy(top = slice.rows, right = slice.cols)
+                case TopLeft     => acc.copy(top = slice.rows, left = slice.cols)
                 case _           => acc
               }
             }
@@ -164,15 +166,15 @@ object BufferTiles {
             neighbors.map { case (direction, slice) =>
               val (updateColMin, updateRowMin) =
                 direction match {
-                  case CenterDirection      => (bufferSizes.left, bufferSizes.top)
-                  case LeftDirection        => (0, bufferSizes.top)
-                  case RightDirection       => (bufferSizes.left + centerTile.cols, bufferSizes.top)
-                  case TopDirection         => (bufferSizes.left, 0)
-                  case BottomDirection      => (bufferSizes.left, bufferSizes.top + centerTile.rows)
-                  case TopLeftDirection     => (0, 0)
-                  case TopRightDirection    => (bufferSizes.left + centerTile.cols, 0)
-                  case BottomLeftDirection  => (0, bufferSizes.top + centerTile.rows)
-                  case BottomRightDirection => (bufferSizes.left + centerTile.cols, bufferSizes.top + centerTile.rows)
+                  case Center      => (bufferSizes.left, bufferSizes.top)
+                  case Left        => (0, bufferSizes.top)
+                  case Right       => (bufferSizes.left + centerTile.cols, bufferSizes.top)
+                  case Top         => (bufferSizes.left, 0)
+                  case Bottom      => (bufferSizes.left, bufferSizes.top + centerTile.rows)
+                  case TopLeft     => (0, 0)
+                  case TopRight    => (bufferSizes.left + centerTile.cols, 0)
+                  case BottomLeft  => (0, bufferSizes.top + centerTile.rows)
+                  case BottomRight => (bufferSizes.left + centerTile.cols, bufferSizes.top + centerTile.rows)
                 }
 
               (slice, (updateColMin, updateRowMin))

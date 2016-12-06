@@ -24,6 +24,7 @@ import org.apache.spark.rdd.RDD
 
 import org.scalatest.FunSpec
 
+import Direction._
 
 class CollectNeighborsSpec extends FunSpec with TestEnvironment {
 
@@ -67,15 +68,15 @@ class CollectNeighborsSpec extends FunSpec with TestEnvironment {
     def mod(d: Direction, k: SpatialKey): SpatialKey = {
       val SpatialKey(col, row) = k
       d match {
-        case CenterDirection => k
-        case LeftDirection => SpatialKey(col - 1, row)
-        case RightDirection => SpatialKey(col + 1, row)
-        case TopDirection => SpatialKey(col, row - 1)
-        case BottomDirection => SpatialKey(col, row + 1)
-        case BottomLeftDirection => SpatialKey(col - 1, row + 1)
-        case BottomRightDirection => SpatialKey(col + 1, row + 1)
-        case TopLeftDirection => SpatialKey(col - 1, row - 1)
-        case TopRightDirection => SpatialKey(col + 1, row - 1)
+        case Center => k
+        case Left => SpatialKey(col - 1, row)
+        case Right => SpatialKey(col + 1, row)
+        case Top => SpatialKey(col, row - 1)
+        case Bottom => SpatialKey(col, row + 1)
+        case BottomLeft => SpatialKey(col - 1, row + 1)
+        case BottomRight => SpatialKey(col + 1, row + 1)
+        case TopLeft => SpatialKey(col - 1, row - 1)
+        case TopRight => SpatialKey(col + 1, row - 1)
       }
     }
 
@@ -92,69 +93,69 @@ class CollectNeighborsSpec extends FunSpec with TestEnvironment {
     it("should work on 1, 1") {
       neighbors.get(SpatialKey(1, 1)) should not be (None)
       val n = neighbors(SpatialKey(1, 1))
-      n.keys.toSet should be (Set(CenterDirection, RightDirection, BottomDirection, BottomRightDirection, TopRightDirection))
-      n(CenterDirection) should be ((SpatialKey(1, 1), "a"))
-      n(RightDirection) should be ((SpatialKey(2, 1), "b"))
-      n(BottomDirection) should be ((SpatialKey(1, 2), "d"))
-      n(BottomRightDirection) should be ((SpatialKey(2, 2), "e"))
-      n(TopRightDirection) should be ((SpatialKey(2, 0), "u"))
+      n.keys.toSet should be (Set(Center, Right, Bottom, BottomRight, TopRight))
+      n(Center) should be ((SpatialKey(1, 1), "a"))
+      n(Right) should be ((SpatialKey(2, 1), "b"))
+      n(Bottom) should be ((SpatialKey(1, 2), "d"))
+      n(BottomRight) should be ((SpatialKey(2, 2), "e"))
+      n(TopRight) should be ((SpatialKey(2, 0), "u"))
     }
 
     it("should work on 2, 1") {
       neighbors.get(SpatialKey(2, 1)) should not be (None)
       val n = neighbors(SpatialKey(2, 1))
-      n.keys.toSet should be (Set(LeftDirection, CenterDirection, RightDirection, TopDirection, BottomLeftDirection, BottomDirection, BottomRightDirection))
-      n(CenterDirection)._1 should be (SpatialKey(2, 1))
-      n(LeftDirection)._1 should be (SpatialKey(1, 1))
-      n(RightDirection)._1 should be (SpatialKey(3, 1))
-      n(TopDirection)._1 should be (SpatialKey(2, 0))
-      n(BottomLeftDirection)._1 should be (SpatialKey(1, 2))
-      n(BottomDirection)._1 should be (SpatialKey(2, 2))
-      n(BottomRightDirection)._1 should be (SpatialKey(3, 2))
+      n.keys.toSet should be (Set(Left, Center, Right, Top, BottomLeft, Bottom, BottomRight))
+      n(Center)._1 should be (SpatialKey(2, 1))
+      n(Left)._1 should be (SpatialKey(1, 1))
+      n(Right)._1 should be (SpatialKey(3, 1))
+      n(Top)._1 should be (SpatialKey(2, 0))
+      n(BottomLeft)._1 should be (SpatialKey(1, 2))
+      n(Bottom)._1 should be (SpatialKey(2, 2))
+      n(BottomRight)._1 should be (SpatialKey(3, 2))
     }
 
     it("should work on 3, 1") {
-      check(SpatialKey(3, 1), TopLeftDirection, LeftDirection, CenterDirection, BottomLeftDirection, BottomDirection)
+      check(SpatialKey(3, 1), TopLeft, Left, Center, BottomLeft, Bottom)
     }
 
     it("should work on 1, 2") {
-      check(SpatialKey(1, 2), CenterDirection, TopDirection, TopRightDirection, RightDirection, BottomRightDirection, BottomDirection, BottomLeftDirection)
+      check(SpatialKey(1, 2), Center, Top, TopRight, Right, BottomRight, Bottom, BottomLeft)
     }
 
     it("should work on 2, 2") {
-      check(SpatialKey(2, 2), TopLeftDirection, TopDirection, TopRightDirection, LeftDirection, CenterDirection, RightDirection, BottomLeftDirection, BottomDirection, BottomRightDirection)
+      check(SpatialKey(2, 2), TopLeft, Top, TopRight, Left, Center, Right, BottomLeft, Bottom, BottomRight)
     }
 
     it("should work on 3, 2") {
-      check(SpatialKey(3, 2), TopLeftDirection, TopDirection, LeftDirection, CenterDirection, BottomLeftDirection, BottomDirection)
+      check(SpatialKey(3, 2), TopLeft, Top, Left, Center, BottomLeft, Bottom)
     }
 
     it("should work on 1, 3") {
-      check(SpatialKey(1, 3), TopDirection, TopRightDirection, RightDirection, LeftDirection, CenterDirection)
+      check(SpatialKey(1, 3), Top, TopRight, Right, Left, Center)
     }
 
     it("should work on 2, 3") {
-      check(SpatialKey(2, 3), LeftDirection, TopLeftDirection, TopDirection, TopRightDirection, RightDirection, CenterDirection)
+      check(SpatialKey(2, 3), Left, TopLeft, Top, TopRight, Right, Center)
     }
 
     it("should work on 3, 3") {
-      check(SpatialKey(3, 3), LeftDirection, TopLeftDirection, TopDirection, BottomRightDirection, CenterDirection)
+      check(SpatialKey(3, 3), Left, TopLeft, Top, BottomRight, Center)
     }
 
     it("should work on 0, 3") {
-      check(SpatialKey(0, 3), TopRightDirection, RightDirection, CenterDirection)
+      check(SpatialKey(0, 3), TopRight, Right, Center)
     }
 
     it("should work on 2, 0") {
-      check(SpatialKey(2, 0), BottomLeftDirection, BottomDirection, BottomRightDirection, CenterDirection)
+      check(SpatialKey(2, 0), BottomLeft, Bottom, BottomRight, Center)
     }
 
     it("should work on 4, 4") {
-      check(SpatialKey(4, 4), CenterDirection, TopLeftDirection)
+      check(SpatialKey(4, 4), Center, TopLeft)
     }
 
     it("should work on 10, 2") {
-      check(SpatialKey(10, 2), CenterDirection)
+      check(SpatialKey(10, 2), Center)
     }
   }
 }

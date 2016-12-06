@@ -18,12 +18,14 @@ package geotrellis.spark.buffer
 
 sealed trait Direction
 
-case object CenterDirection extends Direction
-case object TopDirection extends Direction
-case object TopRightDirection extends Direction
-case object RightDirection extends Direction
-case object BottomRightDirection extends Direction
-case object BottomDirection extends Direction
-case object BottomLeftDirection extends Direction
-case object LeftDirection extends Direction
-case object TopLeftDirection extends Direction
+object Direction {
+  case object Center extends Direction
+  case object Top extends Direction
+  case object TopRight extends Direction
+  case object Right extends Direction
+  case object BottomRight extends Direction
+  case object Bottom extends Direction
+  case object BottomLeft extends Direction
+  case object Left extends Direction
+  case object TopLeft extends Direction
+}
