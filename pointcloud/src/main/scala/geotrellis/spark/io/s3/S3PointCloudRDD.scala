@@ -16,13 +16,11 @@
 
 package geotrellis.spark.io.s3
 
-import geotrellis.spark.pointcloud.ProjectedExtent3D
-import geotrellis.spark.pointcloud.json._
+import geotrellis.spark.io.hadoop.formats.PointCloudInputFormat
 import io.pdal._
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import spray.json._
 
 /**
   * Allows for reading point data files using PDAL as RDD[(ProjectedPackedPointsBounds, PointCloud)]s through S3 API.
@@ -36,10 +34,11 @@ object S3PointCloudRDD {
     * @param getS3Client     A function to instantiate an S3Client. Must be serializable.
     */
   case class Options(
-    filesExtensions: Seq[String] = Seq(".las", "laz"),
+    filesExtensions: Seq[String] = Seq(".las", ".laz"),
     numPartitions: Option[Int] = None,
     partitionBytes: Option[Long] = None,
-    getS3Client: () => S3Client = () => S3Client.DEFAULT
+    getS3Client: () => S3Client = () => S3Client.DEFAULT,
+    tmpDir: Option[String] = None
   )
 
   object Options {
@@ -71,16 +70,18 @@ object S3PointCloudRDD {
     * @param prefix   Prefix of all of the keys on S3 that are to be read in.
     * @param options  An instance of [[Options]] that contains any user defined or default settings.
     */
-  def apply(bucket: String, prefix: String, options: Options = Options.DEFAULT)(implicit sc: SparkContext): RDD[(ProjectedExtent3D, PointCloud)] =
+  def apply(bucket: String, prefix: String, options: Options = Options.DEFAULT)(implicit sc: SparkContext): RDD[(S3PointCloudHeader, Iterator[PointCloud])] = {
+    val conf = configuration(bucket, prefix, options)
+
+    options.tmpDir.foreach { dir =>
+      PointCloudInputFormat.setTmpDir(conf, dir)
+    }
+
     sc.newAPIHadoopRDD(
       configuration(bucket, prefix, options),
       classOf[S3PointCloudInputFormat],
       classOf[S3PointCloudHeader],
       classOf[Iterator[PointCloud]]
-    ).mapPartitions(
-      _.flatMap { case (header, pointCloudIter) => pointCloudIter.map { pointCloud =>
-        header.metadata.parseJson.convertTo[ProjectedExtent3D] -> pointCloud
-      } },
-      preservesPartitioning = true
     )
+  }
 }

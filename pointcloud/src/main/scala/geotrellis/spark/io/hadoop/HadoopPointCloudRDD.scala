@@ -17,11 +17,8 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.spark.io.hadoop.formats._
-import geotrellis.spark.pointcloud.ProjectedExtent3D
-import geotrellis.spark.pointcloud.json._
 
 import io.pdal._
-import spray.json._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
@@ -37,7 +34,7 @@ object HadoopPointCloudRDD {
     */
 
   case class Options(
-    filesExtensions: Seq[String] = Seq(".las", "laz"),
+    filesExtensions: Seq[String] = Seq(".las", ".laz"),
     tmpDir: Option[String] = None
   )
 
@@ -63,7 +60,7 @@ object HadoopPointCloudRDD {
     * @param path     Hdfs point data files path.
     * @param options  An instance of [[Options]] that contains any user defined or default settings.
     */
-  def apply(path: Path, options: Options = Options.DEFAULT)(implicit sc: SparkContext): RDD[(PointCloudHeader, Iterator[PointCloud])] = {
+  def apply(path: Path, options: Options = Options.DEFAULT)(implicit sc: SparkContext): RDD[(HadoopPointCloudHeader, Iterator[PointCloud])] = {
     val conf = configuration(path, options)
 
     options.tmpDir.foreach { dir =>
@@ -73,7 +70,7 @@ object HadoopPointCloudRDD {
     sc.newAPIHadoopRDD(
       conf,
       classOf[PointCloudInputFormat],
-      classOf[PointCloudHeader],
+      classOf[HadoopPointCloudHeader],
       classOf[Iterator[PointCloud]]
     )
   }

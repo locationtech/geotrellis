@@ -17,7 +17,6 @@
 package geotrellis.spark.pointcloud.dem
 
 import geotrellis.raster._
-import geotrellis.spark._
 import geotrellis.spark.buffer._
 import geotrellis.spark.io.hadoop.HadoopPointCloudRDD
 import geotrellis.spark.pointcloud._
@@ -25,10 +24,7 @@ import geotrellis.spark.PointCloudTestEnvironment
 import geotrellis.spark.tiling._
 import geotrellis.vector.Extent
 
-import scala.math
-
 import org.scalatest._
-
 
 class PointCloudDemSpec extends FunSpec
   with Matchers
@@ -38,8 +34,8 @@ class PointCloudDemSpec extends FunSpec
 
     val min = { (a: Double, b: Double) => math.min(a, b) }
     val max = { (a: Double, b: Double) => math.max(a, b) }
-    val rdd = HadoopPointCloudRDD(lasPath)
-    val cloud = rdd.first._2
+    val rdd = HadoopPointCloudRDD(lasPath).flatMap(_._2)
+    val cloud = rdd.first
 
     it("should be able to union two clouds") {
       val clouds = cloud.union(cloud)
@@ -60,8 +56,8 @@ class PointCloudDemSpec extends FunSpec
 
       val tile = cloud.toTile(re, "Z")
 
-      tile.getDouble(0, 0) should be < (435.50)
-      tile.getDouble(0, 0) should be > (435.49)
+      tile.getDouble(0, 0) should be < 435.50
+      tile.getDouble(0, 0) should be > 435.49
     }
 
     it("should work with BufferUnionable") {

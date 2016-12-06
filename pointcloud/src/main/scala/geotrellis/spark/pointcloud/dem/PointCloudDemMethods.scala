@@ -22,7 +22,7 @@ trait PointCloudDemMethods extends MethodExtensions[PointCloud] {
 
     require(self.dimTypes == otherCloud.dimTypes)
 
-    new PointCloud(self.bytes ++ otherCloud.bytes, self.dimTypes)
+    PointCloud(self.bytes ++ otherCloud.bytes, self.dimTypes)
   }
 
   lazy val xs = (0 until self.length).map({ i => self.getDouble(i, "X") }).toArray

@@ -35,7 +35,7 @@ trait ConfigFormats {
       value match {
         case JsString(ctype) => CellType.fromString(ctype)
         case _ =>
-          throw new DeserializationException("CellType must be a valid string.")
+          throw DeserializationException("CellType must be a valid string.")
       }
   }
 
@@ -58,7 +58,7 @@ trait ConfigFormats {
       value match {
         case JsString(storageLevel) => StorageLevel.fromString(storageLevel)
         case _ =>
-          throw new DeserializationException("StorageLevel must be a valid string.")
+          throw DeserializationException("StorageLevel must be a valid string.")
       }
   }
 
@@ -68,7 +68,7 @@ trait ConfigFormats {
       value match {
         case JsString(backend) => BackendInputType.fromString(backend)
         case _ =>
-          throw new DeserializationException("BackendInputType must be a valid string.")
+          throw DeserializationException("BackendInputType must be a valid string.")
       }
   }
 
@@ -78,7 +78,7 @@ trait ConfigFormats {
       value match {
         case JsString(backend) => BackendType.fromString(backend)
         case _ =>
-          throw new DeserializationException("BackendType must be a valid string.")
+          throw DeserializationException("BackendType must be a valid string.")
       }
   }
 
@@ -100,7 +100,7 @@ trait ConfigFormats {
           case "lanczos"           => Lanczos
         }
         case _ =>
-          throw new DeserializationException("PointResampleMethod must be a valid string.")
+          throw DeserializationException("PointResampleMethod must be a valid string.")
       }
   }
 
@@ -113,7 +113,7 @@ trait ConfigFormats {
       value.asJsObject.getFields("width", "height") match {
         case Seq(JsNumber(width), JsNumber(height)) => CellSize(width.toInt, height.toInt)
         case _ =>
-          throw new DeserializationException("BackendType must be a valid object.")
+          throw DeserializationException("BackendType must be a valid object.")
       }
   }
 
@@ -123,7 +123,7 @@ trait ConfigFormats {
       value match {
         case JsString(backend) => ReprojectMethod.fromString(backend)
         case _ =>
-          throw new DeserializationException("ReprojectMethod must be a valid string.")
+          throw DeserializationException("ReprojectMethod must be a valid string.")
       }
   }
 
@@ -139,10 +139,10 @@ trait ConfigFormats {
                 case AccumuloType => js.convertTo[AccumuloProfile]
                 case CassandraType => js.convertTo[CassandraProfile]
                 case HBaseType => js.convertTo[HBaseProfile]
-                case _ => throw new DeserializationException(s"Not supported backend profile type $t.")
+                case _ => throw DeserializationException(s"Not supported backend profile type $t.")
               })
               case _ =>
-                throw new DeserializationException("BackendProfiles must be a valid json object.")
+                throw DeserializationException("BackendProfiles must be a valid json object.")
             }
           }.toMap
       }
@@ -184,7 +184,7 @@ trait ConfigFormats {
           }
         }
         case _ =>
-          throw new DeserializationException("BackendPath must be a valid string.")
+          throw DeserializationException("BackendPath must be a valid string.")
       }
   }
 
@@ -204,7 +204,7 @@ trait ConfigFormats {
             profile = fields.get("profile").map(_.convertTo[String]).fold(Option.empty[BackendProfile])(bp.get)
           )
         case _ =>
-          throw new DeserializationException("Backend must be a valid json object.")
+          throw DeserializationException("Backend must be a valid json object.")
       }
   }
 
@@ -236,7 +236,7 @@ trait ConfigFormats {
             numPartitions = fields.get("numPartitions").map(_.convertTo[Int])
           )
         case _ =>
-          throw new DeserializationException("Input must be a valid json object.")
+          throw DeserializationException("Input must be a valid json object.")
       }
   }
 
@@ -247,7 +247,7 @@ trait ConfigFormats {
       value match {
         case JsArray(fields) => fields.toList.map(iformat.read)
         case _ =>
-          throw new DeserializationException("Input must be a valid json object.")
+          throw DeserializationException("Input must be a valid json object.")
       }
   }
 
@@ -295,7 +295,7 @@ trait ConfigFormats {
 
           )
         case _ =>
-          throw new DeserializationException("Output must be a valid json object.")
+          throw DeserializationException("Output must be a valid json object.")
       }
   }
 }
