@@ -73,12 +73,14 @@ class UByteGeoTiffTile(
 		var c = 0
 
 		val segments = segmentBytes.intersectingSegments
+		println(segments.mkString(" "))
 
 		if (segmentLayout.isStriped) {
       cfor(0)(_ < segments.length, _ + 1) { i =>
 				val segmentId = segments(i)
         val segmentGridBounds = segmentLayout.getGridBounds(segmentId)
 				val segment = getSegment(segmentId)
+				println(s"segmentId = $segmentId, gridBounds = $gridBounds, segmentGridBounds = $segmentGridBounds")
 				
 				val result =
 					gridBounds.intersection(segmentGridBounds).get
@@ -92,11 +94,11 @@ class UByteGeoTiffTile(
       }
     } else {
       cfor(0)(_ < segments.length, _ + 1) { i =>
-				println(gridBounds)
-				println(segments.mkString(" "))
+				//println(segments.mkString(" "))
 				val segmentId = segments(i)
-				println(s"segmentId = $segmentId")
+				//println(s"segmentId = $segmentId")
         val segmentGridBounds = segmentLayout.getGridBounds(segmentId)
+				println(s"segmentId = $segmentId, gridBounds = $gridBounds, segmentGridBounds = $segmentGridBounds")
 				val segment = getSegment(segmentId)
 
 				val segmentTransform = segmentLayout.getSegmentTransform(segmentId)
@@ -120,110 +122,6 @@ class UByteGeoTiffTile(
     }
     UByteArrayTile.fromBytes(arr, gridBounds.width, gridBounds.height, cellType)
   }
-
-	// TODO clean up this code and move it elsewhere
-
-	def bounds(segmentIndex: Int, gridBounds: GridBounds): Int = {
-		val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
-		val segmentRows = segmentTransform.segmentRows
-		val segmentCols = segmentTransform.segmentCols
-		val tileWidth = segmentLayout.tileLayout.tileCols
-
-		val startCol = segmentTransform.indexToCol(0)
-		val startRow = segmentTransform.indexToRow(0)
-
-		val endCol =
-			if (segmentLayout.isStriped)
-				segmentLayout.getSegmentDimensions(segmentIndex)._1
-			else
-				(startCol + segmentCols) - 1
-		
-		val endRow =
-			if (segmentLayout.isStriped)
-				(segmentIndex * segmentRows) + segmentRows
-			else
-				(startRow + segmentRows) - 1
-
-		val leftCol = math.max(startCol, gridBounds.colMin)
-		val rightCol = math.min(endCol, gridBounds.colMax)
-
-		rightCol - leftCol
-	}
-
-
-	def start(segmentIndex: Int, gridBounds: GridBounds): Int = {
-		val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
-		val segmentRows = segmentTransform.segmentRows
-		val segmentCols = segmentTransform.segmentCols
-		val tileWidth = segmentLayout.tileLayout.tileCols
-
-		val startCol = segmentTransform.indexToCol(0)
-		val startRow = segmentTransform.indexToRow(0)
-
-		val endCol =
-			if (segmentLayout.isStriped)
-				segmentLayout.getSegmentDimensions(segmentIndex)._1
-			else
-				(startCol + segmentCols) - 1
-		
-		val endRow =
-			if (segmentLayout.isStriped)
-				(segmentIndex * segmentRows) + segmentRows
-			else
-				(startRow + segmentRows) - 1
-
-		val beginningCol = if (startCol >= gridBounds.colMin) 0 else gridBounds.colMin
-		val beginningRow = math.max(startRow, gridBounds.rowMin)
-
-		if (segmentLayout.isStriped)
-			((beginningRow - startRow) * cols) + beginningCol
-		else
-			((beginningRow - startRow) * tileWidth) + beginningCol
-	}
-	
-	def end(segmentIndex: Int, gridBounds: GridBounds): Int = {
-		val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
-		val segmentRows = segmentTransform.segmentRows
-		val segmentCols = segmentTransform.segmentCols
-		val tileWidth = segmentLayout.tileLayout.tileCols
-
-		val startCol = segmentTransform.indexToCol(0)
-		val startRow = segmentTransform.indexToRow(0)
-
-		val endCol =
-			if (segmentLayout.isStriped)
-				segmentLayout.getSegmentDimensions(segmentIndex)._1
-			else
-				(startCol + segmentCols) - 1
-		
-		val endRow =
-			if (segmentLayout.isStriped)
-				(segmentIndex * segmentRows) + segmentRows
-			else
-				(startRow + segmentRows) - 1
-
-		val endingCol =
-				if (endCol > gridBounds.colMax)
-					gridBounds.colMax - startCol
-				else
-					endCol - startCol
-		
-		val endingRow =
-			if (endRow > gridBounds.rowMax)
-				gridBounds.rowMax - startRow
-			else
-				endRow - startRow
-
-		val starting = start(segmentIndex, gridBounds)
-
-		if (segmentLayout.isStriped)
-			if (math.min(endCol, gridBounds.colMax) != endCol && math.min(endRow, gridBounds.rowMax) != endRow)
-				(cols * endingRow) + endingCol
-			else
-				starting + (cols * endingRow)
-		else
-			(tileWidth * endingRow) + endingCol
-	}
 
   def withNoData(noDataValue: Option[Double]): UByteGeoTiffTile =
     new UByteGeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoData(noDataValue))

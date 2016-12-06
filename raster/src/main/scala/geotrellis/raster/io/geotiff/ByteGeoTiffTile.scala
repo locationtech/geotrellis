@@ -75,6 +75,7 @@ class ByteGeoTiffTile(
       cfor(0)(_ < segments.length, _ + 1) { i =>
 				val segmentId = segments(i)
         val segmentGridBounds = segmentLayout.getGridBounds(segmentId)
+				println(s"segmentId = $segmentId, gridBounds = $gridBounds, segmentGridBounds = $segmentGridBounds")
 				val segment = getSegment(segmentId)
 
 				val result =

@@ -40,16 +40,19 @@ class StreamingSegmentBytes(byteReader: ByteReader,
 
 				val startCol: Int = segmentTransform.indexToCol(0)
 				val startRow: Int = segmentTransform.indexToRow(0)
-				val endCol: Int = startCol + segmentTransform.segmentCols
-				val endRow: Int = startRow + segmentTransform.segmentRows
+				val endCol: Int = startCol + segmentTransform.segmentCols - 1
+				val endRow: Int = startRow + segmentTransform.segmentRows - 1
 
-				val start = (!(startCol > colMax) && !(startRow > rowMax))
+				assert(startCol == 0 && endCol == tiffTags.cols - 1, s"startCol = $startCol, endCol = $endCol")
+
+				val start = (!(startCol >= colMax) && !(startRow >= rowMax))
 				val end = (!(endCol <= colMin) && !(endRow <= rowMin))
 
 				if (start && end)
 					array += i
 			}
-			
+
+			println(array.mkString(" "))
 			array.toArray.sorted
 		} else {
 			Array.range(0, tiffTags.segmentCount)
@@ -94,8 +97,8 @@ class StreamingSegmentBytes(byteReader: ByteReader,
 		val result = Array.ofDim[Array[Byte]](intervals.size)
 				
 		cfor(0)(_ < intervals.size, _ + 1) { i =>
-			val (offset, length) = intervals(i)
-			result(i) = byteReader.getSignedByteArray(offset, length)
+			val (startOffset, endOffset) = intervals(i)
+			result(i) = byteReader.getSignedByteArray(endOffset - startOffset + 1, startOffset)
 		}
 		result
 	}
@@ -103,22 +106,26 @@ class StreamingSegmentBytes(byteReader: ByteReader,
 	override val size = offsets.size
 
 	def getSegment(i: Int): Array[Byte] =
-		if (intersectingSegments.contains(i)) {
+		if (i == 0)
+			throw new Error("i was 0")
+		else if (intersectingSegments.contains(i)) {
 			val offset = offsets(i)
 			var arrayIndex: Option[Int] = None
 
 			cfor(0)(_ < intervals.length, _ + 1){ index =>
 				val range = intervals(index)
+				println(s"i = $i, offset = $offset, range = $range")
 				if (offset >= range._1 && offset <= range._2)
 					arrayIndex = Some(index)
 			}
 
 			arrayIndex match {
 				case Some(x) => compressedBytes(x)
-				case None => throw new Error("Could not locate bytes")
+				case None => throw new Error(s"Could not locate bytes for segment: $i")
 			}
 		} else {
-			byteReader.getSignedByteArray(byteCounts(i), offsets(i))
+			throw new IndexOutOfBoundsException(s"Segment $i does not intersect: $extent")
+			//byteReader.getSignedByteArray(byteCounts(i), offsets(i))
 		}
 }
 
