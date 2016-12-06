@@ -62,7 +62,7 @@ class Int16GeoTiffTile(
 		val segments = segmentBytes.intersectingSegments
 
     if (segmentLayout.isStriped) {
-      cfor(0)(_ < segments.size, _ + 1) { i =>
+      cfor(0)(_ < segments.length, _ + 1) { i =>
 				val segmentId = segments(i)
         val segmentGridBounds = segmentLayout.getGridBounds(segmentId)
 				val segment = getSegment(segmentId)
@@ -81,7 +81,7 @@ class Int16GeoTiffTile(
 				}
       }
     } else {
-      cfor(0)(_ < segments.size, _ + 1) {i =>
+      cfor(0)(_ < segments.length, _ + 1) {i =>
 				val segmentId = segments(i)
         val segmentGridBounds = segmentLayout.getGridBounds(segmentId)
 				val segment = getSegment(i)

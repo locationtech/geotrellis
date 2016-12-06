@@ -92,12 +92,17 @@ class UByteGeoTiffTile(
       }
     } else {
       cfor(0)(_ < segments.length, _ + 1) { i =>
+				println(gridBounds)
+				println(segments.mkString(" "))
 				val segmentId = segments(i)
+				println(s"segmentId = $segmentId")
         val segmentGridBounds = segmentLayout.getGridBounds(segmentId)
 				val segment = getSegment(segmentId)
 
 				val segmentTransform = segmentLayout.getSegmentTransform(segmentId)
 				val tileWidth = segmentLayout.tileLayout.tileCols
+
+				println(segmentGridBounds)
 
 				val result =
 					gridBounds.intersection(segmentGridBounds).get
