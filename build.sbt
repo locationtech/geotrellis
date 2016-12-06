@@ -81,7 +81,7 @@ lazy val root = Project("geotrellis", file(".")).
     accumulo,
     cassandra,
     hbase,
-    geowave,
+    // geowave, Removed so that unidoc can publish. TODO: Update to GeoWave API when release happens.
     geomesa,
     geotools,
     slick,

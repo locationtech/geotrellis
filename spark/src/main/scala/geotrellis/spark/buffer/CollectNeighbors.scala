@@ -28,29 +28,31 @@ import org.apache.spark.storage.StorageLevel
 import scala.reflect.ClassTag
 import scala.collection.mutable.ArrayBuffer
 
+import Direction._
+
 object CollectNeighbors {
 
   /** Collects the neighbors of each value (including itself) into a Map
     * giving the direction of the neighbor.
     */
-  def apply[K: SpatialComponent: ClassTag, V](rdd: RDD[(K, V)]): RDD[(K, Map[Direction, (K, V)])] = {
+  def apply[K: SpatialComponent: ClassTag, V](rdd: RDD[(K, V)]): RDD[(K, Iterable[(Direction, (K, V))])] = {
     val neighbored: RDD[(K, (Direction, (K, V)))] =
       rdd
         .flatMap { case (key, value) =>
           val SpatialKey(col, row) = key
 
           Seq(
-            (key, (CenterDirection, (key, value))),
+            (key, (Center, (key, value))),
 
-            (key.setComponent(SpatialKey(col-1, row)), (RightDirection, (key, value))),
-            (key.setComponent(SpatialKey(col+1, row)), (LeftDirection, (key, value))),
-            (key.setComponent(SpatialKey(col, row-1)), (BottomDirection, (key, value))),
-            (key.setComponent(SpatialKey(col, row+1)), (TopDirection, (key, value))),
+            (key.setComponent(SpatialKey(col-1, row)), (Right, (key, value))),
+            (key.setComponent(SpatialKey(col+1, row)), (Left, (key, value))),
+            (key.setComponent(SpatialKey(col, row-1)), (Bottom, (key, value))),
+            (key.setComponent(SpatialKey(col, row+1)), (Top, (key, value))),
 
-            (key.setComponent(SpatialKey(col-1, row-1)), (BottomRightDirection, (key, value))),
-            (key.setComponent(SpatialKey(col+1, row-1)), (BottomLeftDirection, (key, value))),
-            (key.setComponent(SpatialKey(col-1, row+1)), (TopRightDirection, (key, value))),
-            (key.setComponent(SpatialKey(col+1, row+1)), (TopLeftDirection, (key, value)))
+            (key.setComponent(SpatialKey(col-1, row-1)), (BottomRight, (key, value))),
+            (key.setComponent(SpatialKey(col+1, row-1)), (BottomLeft, (key, value))),
+            (key.setComponent(SpatialKey(col-1, row+1)), (TopRight, (key, value))),
+            (key.setComponent(SpatialKey(col+1, row+1)), (TopLeft, (key, value)))
           )
         }
 
@@ -63,10 +65,9 @@ object CollectNeighbors {
     grouped
       .filter { case (_, values) =>
         values.find {
-          case (CenterDirection, _) => true
+          case (Center, _) => true
           case _ => false
         }.isDefined
       }
-      .mapValues(_.toMap)
   }
 }
