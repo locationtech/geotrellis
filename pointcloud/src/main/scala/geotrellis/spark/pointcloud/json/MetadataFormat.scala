@@ -23,11 +23,39 @@ import spray.json._
 import spray.json.DefaultJsonProtocol._
 
 trait MetadataFormat {
+  val drivers: List[String] =
+    List(
+      "readers.las",
+      "readers.text",
+      "readers.bpf",
+      "readers.terrasolid",
+      "readers.optech",
+      "readers.greyhound",
+      "readers.icebridge",
+      "readers.nitf",
+      "readers.pcd",
+      "readers.ply",
+      "readers.pts",
+      "readers.qfit",
+      "readers.rxp",
+      "readers.sbet",
+      "readers.sqlite",
+      "readers.mrsid",
+      "readers.tindex",
+      "readers.icebridge"
+    )
+
   implicit object Extent3DReader extends RootJsonReader[Extent3D] {
     def read(value: JsValue): Extent3D =
       value match {
         case JsObject(fields) => {
-          val obj = fields("metadata").asJsObject.fields("readers.las").asJsObject.fields
+          val md = fields("metadata").asJsObject
+          val driver = drivers
+            .flatMap(md.fields.get)
+            .headOption
+            .getOrElse(throw DeserializationException(s"Not supported reader driver: ${md.fields.keys}"))
+
+          val obj = driver.asJsObject.fields
           Extent3D(
             xmin = obj("minx").convertTo[Double],
             ymin = obj("miny").convertTo[Double],
@@ -38,7 +66,7 @@ trait MetadataFormat {
           )
         }
         case _ =>
-          throw new DeserializationException("Metadata must be a valid string.")
+          throw DeserializationException("Metadata must be a valid string.")
       }
   }
 
@@ -46,13 +74,19 @@ trait MetadataFormat {
     def read(value: JsValue): ProjectedExtent3D =
       value match {
         case jsobject @ JsObject(fields) => {
-          val obj = fields("metadata").asJsObject.fields("readers.las").asJsObject
+          val md = fields("metadata").asJsObject
+          val driver = drivers
+            .flatMap(md.fields.get)
+            .headOption
+            .getOrElse(throw DeserializationException(s"Not supported reader driver: ${md.fields.keys}"))
+
+          val obj = driver.asJsObject
           val crs = CRS.fromString(obj.fields("srs").asJsObject.fields("proj4").convertTo[String])
 
           ProjectedExtent3D(jsobject.convertTo[Extent3D], crs)
         }
         case _ =>
-          throw new DeserializationException("Metadata must be a valid string.")
+          throw DeserializationException("Metadata must be a valid string.")
       }
   }
 }

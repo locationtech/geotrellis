@@ -39,5 +39,10 @@ class HadoopPackedPointsRDDSpec extends FunSpec
       sourceList.map(_.length).head should be (1065)
       pointsCount should be (1065)
     }
+
+    it("should read correct crs") {
+      val sourceHeader = HadoopPointCloudRDD(lasPath).take(1).head._1
+      sourceHeader.crs.proj4jCrs.getName should be ("lcc-CS")
+    }
   }
 }
