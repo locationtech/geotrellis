@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.hadoop.formats
 
+import geotrellis.spark.io.hadoop.HadoopPointCloudHeader
 import geotrellis.spark.pointcloud.json._
 import geotrellis.util.Filesystem
 
@@ -26,8 +27,6 @@ import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.lib.input._
 
 import java.io.{BufferedOutputStream, File, FileOutputStream}
-
-case class PointCloudHeader(fileName: Path, metadata: String, schema: String)
 
 object PointCloudInputFormat {
   final val POINTCLOUD_TMP_DIR = "POINTCLOUD_TMP_DIR"
@@ -40,10 +39,10 @@ object PointCloudInputFormat {
 }
 
 /** Process files from the path through PDAL, and reads all files point data as an Array[Byte] **/
-class PointCloudInputFormat extends FileInputFormat[PointCloudHeader, Iterator[PointCloud]] {
+class PointCloudInputFormat extends FileInputFormat[HadoopPointCloudHeader, Iterator[PointCloud]] {
   override def isSplitable(context: JobContext, fileName: Path) = false
 
-  override def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[PointCloudHeader, Iterator[PointCloud]] = {
+  override def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[HadoopPointCloudHeader, Iterator[PointCloud]] = {
     val tmpDir = {
       val dir = PointCloudInputFormat.getTmpDir(context)
       if(dir == null) Filesystem.createDirectory()
@@ -66,22 +65,21 @@ class PointCloudInputFormat extends FileInputFormat[PointCloudHeader, Iterator[P
 
       val pointViewIterator = pipeline.getPointViews()
       // conversion to list to load everything into JVM memory
-      val pointClouds =
-        pointViewIterator.toList.map { pointView =>
-          val pointCloud = pointView.getPointCloud
+      val pointClouds = pointViewIterator.toList.map { pointView =>
+        val pointCloud = pointView.getPointCloud
 
-          pointView.dispose()
-          pointCloud
-        }.iterator
+        pointView.dispose()
+        pointCloud
+      }.iterator
 
       val header =
-        PointCloudHeader(
+        HadoopPointCloudHeader(
           split.asInstanceOf[FileSplit].getPath,
           pipeline.getMetadata(),
           pipeline.getSchema()
         )
 
-      val result =  (header, pointClouds)
+      val result = (header, pointClouds)
 
       pointViewIterator.dispose()
       pipeline.dispose()

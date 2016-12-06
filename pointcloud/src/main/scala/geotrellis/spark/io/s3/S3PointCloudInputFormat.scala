@@ -19,11 +19,11 @@ package geotrellis.spark.io.s3
 import geotrellis.spark.io.hadoop.formats.PointCloudInputFormat
 import geotrellis.spark.pointcloud.json._
 import geotrellis.util.Filesystem
+
 import io.pdal._
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
-import java.io.{BufferedOutputStream, File, FileOutputStream}
 
-case class S3PointCloudHeader(key: String, metadata: String, schema: String)
+import java.io.{BufferedOutputStream, File, FileOutputStream}
 
 /** Process files from the path through PDAL, and reads all files point data as an Array[Byte] **/
 class S3PointCloudInputFormat extends S3InputFormat[S3PointCloudHeader, Iterator[PointCloud]] {
@@ -64,7 +64,7 @@ class S3PointCloudInputFormat extends S3InputFormat[S3PointCloudHeader, Iterator
           pipeline.getSchema()
         )
 
-        val result =  (header, packedPoints)
+        val result = (header, packedPoints)
 
         pointViewIterator.dispose()
         pipeline.dispose()
