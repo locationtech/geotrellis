@@ -45,6 +45,8 @@ class ArraySegmentBytes(compressedBytes: Array[Array[Byte]]) extends SegmentByte
     * @return    An Array[Byte] that contains the bytes of the segment
     */
   def getSegment(i: Int) = compressedBytes(i)
+
+	val intersectingSegments: Array[Int] = Array.range(0, size)
 }
 
 object ArraySegmentBytes {
