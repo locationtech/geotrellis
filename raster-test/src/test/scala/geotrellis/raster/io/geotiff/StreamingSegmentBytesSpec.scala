@@ -52,7 +52,6 @@ class StreamingSegmentBytesSpec extends FunSpec
 					new StreamingSegmentBytes(reader, segmentLayout, None, tiffTags)
 
 				streaming.intersectingSegments.length should be (tiffTags.segmentCount)
-				streaming.remainingSegments.length should be (0)
 			}
 
 			it("Should return segments that intersect the gridbounds, beginning") {
@@ -157,7 +156,6 @@ class StreamingSegmentBytesSpec extends FunSpec
 					new StreamingSegmentBytes(reader, segmentLayout, None, tiffTags)
 
 				streaming.intersectingSegments.length should be (tiffTags.segmentCount)
-				streaming.remainingSegments.length should be (0)
 			}
 			
 			it("Should return segments that intersect the gridbounds, beginning") {
@@ -191,7 +189,6 @@ class StreamingSegmentBytesSpec extends FunSpec
 				val expected = streaming.intersectingSegments
 
 				expected should be (actual.sortWith(_ < _))
-				streaming.remainingSegments.length should be (streaming.size - expected.length)
 			}
 			
 			it("Should return segments that intersect the gridbounds, middle") {
