@@ -31,11 +31,11 @@ class StreamingSegmentBytes(byteReader: ByteReader,
 	private lazy val colMax: Int = gridBounds.colMax
 	private lazy val rowMax: Int = gridBounds.rowMax
 
-	lazy val intersectingSegments: Array[Int] = {
+	val intersectingSegments: Array[Int] = {
 		if (extent != tiffTags.extent) {
 			val array = scala.collection.mutable.ArrayBuffer[Int]()
 
-			for (i <- (0 until tiffTags.segmentCount)) {
+			cfor(0)(_ < tiffTags.segmentCount, _ + 1) {i =>
 				val segmentTransform = segmentLayout.getSegmentTransform(i)
 
 				val startCol: Int = segmentTransform.indexToCol(0)
@@ -50,13 +50,13 @@ class StreamingSegmentBytes(byteReader: ByteReader,
 					array += i
 			}
 			
-			array.toArray
+			array.toArray.sorted
 		} else {
 			Array.range(0, tiffTags.segmentCount)
 		}
 	}
 
-	val (offsets, byteCounts) =
+	private val (offsets, byteCounts) =
 		if (tiffTags.hasStripStorage) {
 			val stripOffsets = (tiffTags &|->
 				TiffTags._basicTags ^|->
@@ -79,14 +79,23 @@ class StreamingSegmentBytes(byteReader: ByteReader,
 
 			(tileOffsets.get, tileByteCounts.get)
 		}
-	
+
+	private lazy val intervals: Seq[(Long, Long)] = {
+		val mergeQueue = new MergeQueue(intersectingSegments.length)
+
+			cfor(0)(_ < intersectingSegments.length, _ + 1){ i =>
+			val segment = intersectingSegments(i)
+			mergeQueue += (byteCounts(segment), offsets(segment))
+		}
+		mergeQueue.toSeq
+	}
+
 	private lazy val compressedBytes: Array[Array[Byte]] = {
-		val result = Array.ofDim[Array[Byte]](offsets.length)
+		val result = Array.ofDim[Array[Byte]](intervals.size)
 				
-		cfor(0)(_ < intersectingSegments.size, _ + 1) { i =>
-			val value = intersectingSegments(i)
-			println(s"value = $value")
-			result(value) = byteReader.getSignedByteArray(byteCounts(value), offsets(value))
+		cfor(0)(_ < intervals.size, _ + 1) { i =>
+			val (offset, length) = intervals(i)
+			result(i) = byteReader.getSignedByteArray(offset, length)
 		}
 		result
 	}
@@ -94,10 +103,21 @@ class StreamingSegmentBytes(byteReader: ByteReader,
 	override val size = offsets.size
 
 	def getSegment(i: Int): Array[Byte] =
-		if (intersectingSegments.contains(i))
-			compressedBytes(i)
-		else {
-			println(s"$i WASN'T IN THE COMPRESSED BYTES")
+		if (intersectingSegments.contains(i)) {
+			val offset = offsets(i)
+			var arrayIndex: Option[Int] = None
+
+			cfor(0)(_ < intervals.length, _ + 1){ index =>
+				val range = intervals(index)
+				if (offset >= range._1 && offset <= range._2)
+					arrayIndex = Some(index)
+			}
+
+			arrayIndex match {
+				case Some(x) => compressedBytes(x)
+				case None => throw new Error("Could not locate bytes")
+			}
+		} else {
 			byteReader.getSignedByteArray(byteCounts(i), offsets(i))
 		}
 }
