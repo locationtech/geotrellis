@@ -33,29 +33,38 @@ class StreamingSegmentBytes(byteReader: ByteReader,
 
 	val segments: Array[Int] = (0 until tiffTags.segmentCount).toArray
 
-	val intersectingSegments: Array[Int] =
-		if (extent != tiffTags.extent)
-			segments.filter(x => {
-				val segmentTransform = segmentLayout.getSegmentTransform(x)
+	lazy val intersectingSegments: Array[Int] = {
+		val array = scala.collection.mutable.ArrayBuffer[Int]()
+		//if (extent != tiffTags.extent) {
+		//cfor(0)(_ < tiffTags.segmentCount / tiffTags.bandCount, _ + 1){ i =>
+		for (i <- (0 until tiffTags.segmentCount)) {
+			val segmentTransform = segmentLayout.getSegmentTransform(i)
 
-				val startCol: Int = segmentTransform.indexToCol(0)
-				val startRow: Int = segmentTransform.indexToRow(0)
-				val endCol: Int = startCol + segmentTransform.segmentCols
-				val endRow: Int = startRow + segmentTransform.segmentRows
+			val startCol: Int = segmentTransform.indexToCol(0)
+			val startRow: Int = segmentTransform.indexToRow(0)
+			val endCol: Int = startCol + segmentTransform.segmentCols
+			val endRow: Int = startRow + segmentTransform.segmentRows
 
-				val start = (!(startCol > colMax) && !(startRow > rowMax))
-				val end = (!(endCol < colMin) && !(endRow < rowMin))
+			val start = (!(startCol > colMax) && !(startRow > rowMax))
+			val end = (!(endCol < colMin) && !(endRow < rowMin))
+			//val within = (colMin >= startCol && rowMin >= startRow && colMax <= endCol && rowMax <= endRow)
 
-				if (start && end)
-					println(endCol, endRow, colMax, rowMax)
+			println(i, start, end)
 
-				(start && end)
-
-			}).toArray.sorted
-		else
+			if (start && end) {
+				println(i)
+				array += i
+			}
+		}
+		array.toArray
+		/*
+		} else {
 			segments
+		}
+		*/
+	}
 
-	val remainingSegments: Array[Int] =
+	lazy val remainingSegments: Array[Int] =
 		segments.filter(x => !intersectingSegments.contains(x))
 
 	val (offsets, byteCounts) =
@@ -82,11 +91,12 @@ class StreamingSegmentBytes(byteReader: ByteReader,
 			(tileOffsets.get, tileByteCounts.get)
 		}
 	
-	private lazy val compressedBytes: Array[Array[Byte]] = {
+	private val compressedBytes: Array[Array[Byte]] = {
 		val result = Array.ofDim[Array[Byte]](segments.size)
 				
 		cfor(0)(_ < intersectingSegments.size, _ + 1) { i =>
 			val value = intersectingSegments(i)
+			println(s"value = $value")
 			result(value) = byteReader.getSignedByteArray(byteCounts(value), offsets(value))
 		}
 		result
@@ -97,9 +107,11 @@ class StreamingSegmentBytes(byteReader: ByteReader,
 	def getSegment(i: Int): Array[Byte] =
 		if (intersectingSegments.contains(i))
 			compressedBytes(i)
-		else
+		else {
+			println(s"$i WASN'T IN THE COMPRESSED BYTES")
 			byteReader.getSignedByteArray(byteCounts(i), offsets(i))
-	}
+		}
+}
 
 object StreamingSegmentBytes {
 
