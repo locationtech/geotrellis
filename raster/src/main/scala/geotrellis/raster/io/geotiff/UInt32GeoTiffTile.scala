@@ -47,29 +47,30 @@ class UInt32GeoTiffTile(
 
   def crop(gridBounds: GridBounds): MutableArrayTile = {
     val arr = Array.ofDim[Float](gridBounds.size)
+		val segments = segmentBytes.intersectingSegments
 
-    cfor(0)(_ < segmentCount, _ + 1) {i =>
-      val segmentGridBounds = segmentLayout.getGridBounds(i)
-      if (gridBounds.intersects(segmentGridBounds)) {
-        val segment = getSegment(i)
-        val segmentTransform = segmentLayout.getSegmentTransform(i)
+    cfor(0)(_ < segments.length, _ + 1) {i =>
+			val segmentId = segments(i)
+			val segmentGridBounds = segmentLayout.getGridBounds(segmentId)
+			val segment = getSegment(segmentId)
+			val segmentTransform = segmentLayout.getSegmentTransform(segmentId)
 
-        val result = gridBounds.intersection(segmentGridBounds).get
-        val intersection = Intersection(segmentGridBounds, result, segmentLayout)
-        val iterator =
-          if (segmentLayout.isStriped)
-            intersection.cols
-          else
-            intersection.tileWidth
+			val result = gridBounds.intersection(segmentGridBounds).get
+			val intersection = Intersection(segmentGridBounds, result, segmentLayout)
 
-        cfor(intersection.start)(_ < intersection.end, _ + iterator) { i =>
-          cfor(0)(_ < result.width, _ + 1) { j =>
-            val col = segmentTransform.indexToCol(i + j)
-            val row = segmentTransform.indexToRow(i + j)
-            arr((row - gridBounds.rowMin) * gridBounds.width + (col - gridBounds.colMin)) = segment.get(i + j)
-          }
-        }
-      }
+			val iterator =
+				if (segmentLayout.isStriped)
+					intersection.cols
+				else
+					intersection.tileWidth
+
+			cfor(intersection.start)(_ < intersection.end, _ + iterator) { i =>
+				cfor(0)(_ < result.width, _ + 1) { j =>
+					val col = segmentTransform.indexToCol(i + j)
+					val row = segmentTransform.indexToRow(i + j)
+					arr((row - gridBounds.rowMin) * gridBounds.width + (col - gridBounds.colMin)) = segment.get(i + j)
+				}
+			}
     }
     FloatArrayTile(arr, gridBounds.width, gridBounds.height, cellType)
   }
