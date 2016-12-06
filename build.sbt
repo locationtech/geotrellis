@@ -81,7 +81,6 @@ lazy val root = Project("geotrellis", file(".")).
     accumulo,
     cassandra,
     hbase,
-    geowave,
     geomesa,
     geotools,
     slick,
