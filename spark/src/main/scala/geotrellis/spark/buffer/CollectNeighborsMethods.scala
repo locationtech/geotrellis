@@ -25,6 +25,6 @@ import scala.reflect.ClassTag
 
 abstract class CollectNeighborsMethods[K: SpatialComponent: ClassTag, V](val self: RDD[(K, V)])
     extends MethodExtensions[RDD[(K, V)]] {
-  def collectNeighbors(): RDD[(K, Map[Direction, (K, V)])] =
+  def collectNeighbors(): RDD[(K, Iterable[(Direction, (K, V))])] =
     CollectNeighbors(self)
 }
