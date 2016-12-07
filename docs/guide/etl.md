@@ -222,21 +222,21 @@ Output JSON
 
 Key                 | Value
 --------------------|----------------
-backend             | backend description is presented below
-breaks              | breaks string for `render` output (optional field)
-partitions          | partitions number during pyramid build
+backend             | Backend description is presented below
+breaks              | Breaks string for `render` output (optional field)
+partitions          | Partitions number during pyramid build
 reprojectMethod     | `buffered`, `per-tile`
-cellSize            | sell size
+cellSize            | Cell size
 encoding            | `png`, `geotiff` for `render` output
-tileSize            | tile size (optional field)<br>If not set, the default size of output tiles is 256x256
-layoutExtent        | layout extent (optional field)
-resolutionThreshold | resolution for user defined Layout Scheme (optional field)
+tileSize            | Tile size (optional field)<br>If not set, the default size of output tiles is 256x256
+layoutExtent        | Layout extent (optional field)
+resolutionThreshold | Resolution for user defined Layout Scheme (optional field)
 pyramid             | `true`, `false` - ingest with or without building a pyramid
 resampleMethod      | `nearest-neighbor`, `bilinear`, `cubic-convolution`, `cubic-spline`, `lanczos`
 keyIndexMethod      | `zorder`, `row-major`, `hilbert`
 layoutScheme        | `tms`, `floating` (optional field)
 cellType            | `int8`, `int16`, etc... (optional field)
-crs                 | destination crs name (example: EPSG:3857) (optional field)
+crs                 | Destination crs name (example: EPSG:3857) (optional field)
 
 <h4>Backend Keyword</h4>
 
@@ -250,17 +250,17 @@ profile          | Profile name to use for input
 
 Layout Scheme    | Options
 -----------------|----------------
-zoomed           | zoomed layout scheme
-floating         | floating layout scheme in a native projection
+zoomed           | Zoomed layout scheme
+floating         | Floating layout scheme in a native projection
 
 <h4>KeyIndex Methods</h4>
 
 Key                | Options
 -------------------|----------------
 type               | `zorder`, `row-major`, `hilbert`
-temporalResolution | temporal resolution for temporal indexing (optional field)
-timeTag            | time tag name for input geotiff tiles (optional field)
-timeFormat         | time format to parse time stored in time tag geotiff tag (optional field)
+temporalResolution | Temporal resolution for temporal indexing (optional field)
+timeTag            | Time tag name for input geotiff tiles (optional field)
+timeFormat         | Time format to parse time stored in time tag geotiff tag (optional field)
 
 Input JSON
 ----------
@@ -314,11 +314,11 @@ s3        | s3:// url
 
 Output    | Options
 ----------|----------------
-hadoop    | path
-accumulo  | table name
-cassandra | table name with keysapce (keyspace.tablename)
+hadoop    | Path
+accumulo  | Table name
+cassandra | Table name with keysapce (keyspace.tablename)
 s3        | s3:// url
-render    | path
+render    | Path
 
 <h4>Accumulo Output</h4>
 
