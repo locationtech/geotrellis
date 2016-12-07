@@ -228,7 +228,7 @@ partitions          | partitions number during pyramid build
 reprojectMethod     | `buffered`, `per-tile`
 cellSize            | sell size
 encoding            | `png`, `geotiff` for `render` output
-tileSize            | tile size (optional field)
+tileSize            | tile size (optional field)<br>If not set, the default size of output tiles is 256x256
 layoutExtent        | layout extent (optional field)
 resolutionThreshold | resolution for user defined Layout Scheme (optional field)
 pyramid             | `true`, `false` - ingest with or without building a pyramid
@@ -237,7 +237,6 @@ keyIndexMethod      | `zorder`, `row-major`, `hilbert`
 layoutScheme        | `tms`, `floating` (optional field)
 cellType            | `int8`, `int16`, etc... (optional field)
 crs                 | destination crs name (example: EPSG:3857) (optional field)
-
 
 <h4>Backend Keyword</h4>
 
@@ -292,6 +291,10 @@ name             | Input dataset name
 cache            | Spark RDD cache strategy
 noData           | NoData value
 clip             | Extent in target CRS to clip the input source
+crs              | Destination crs name (example: EPSG:3857) (optional field)
+maxTleSize       | Inputs will be broken up into smaller tiles of the given size (optional field)<br>(example: 256 returns 256x256 tiles)
+numPartitions    | How many partitions Spark should make when repartioning (optional field)
+
 
 <h4>Supported Formats</h4>
 
