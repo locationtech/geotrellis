@@ -1,6 +1,6 @@
 # GeoTrellis
 
-[![Build Status](https://api.travis-ci.org/locationtech/geotrellis.svg)](http://travis-ci.org/locationtech/geotrellis) [![Join the chat at https://gitter.im/geotrellis/geotrellis](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/geotrellis/geotrellis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.locationtech.geotrellis/geotrellis-spark_2.11/badge.svg?style=plastic)](https://maven-badges.herokuapp.com/maven-central/org.locationtech.geotrellis/geotrellis-spark_2.11)
+[![Build Status](https://api.travis-ci.org/locationtech/geotrellis.svg)](http://travis-ci.org/locationtech/geotrellis) [![Join the chat at https://gitter.im/geotrellis/geotrellis](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/geotrellis/geotrellis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.locationtech.geotrellis/geotrellis-spark_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.locationtech.geotrellis/geotrellis-spark_2.11)
 [![ReadTheDocs](https://readthedocs.org/projects/geotrellis/badge/?version=latest)](http://geotrellis.readthedocs.io/en/latest/)
 
 *GeoTrellis* is a Scala library and framework that uses
