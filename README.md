@@ -1,6 +1,6 @@
 # GeoTrellis
 
-[![Build Status](https://api.travis-ci.org/locationtech/geotrellis.svg)](http://travis-ci.org/locationtech/geotrellis) [![Join the chat at https://gitter.im/geotrellis/geotrellis](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/geotrellis/geotrellis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Bintray](https://img.shields.io/bintray/v/azavea/geotrellis/geotrellis-spark.svg?maxAge=2592000)](https://bintray.com/azavea/geotrellis)
+[![Build Status](https://api.travis-ci.org/locationtech/geotrellis.svg)](http://travis-ci.org/locationtech/geotrellis) [![Join the chat at https://gitter.im/geotrellis/geotrellis](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/geotrellis/geotrellis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.locationtech.geotrellis/geotrellis-spark_2.11/badge.svg?style=plastic)](https://maven-badges.herokuapp.com/maven-central/org.locationtech.geotrellis/geotrellis-spark_2.11)
 [![ReadTheDocs](https://readthedocs.org/projects/geotrellis/badge/?version=latest)](http://geotrellis.readthedocs.io/en/latest/)
 
 *GeoTrellis* is a Scala library and framework that uses
@@ -38,10 +38,9 @@ GeoTrellis is currently available for Scala 2.11 and Spark 2.0+.
 To get started with SBT, simply add the following to your build.sbt file:
 
 ```
-resolvers += "LocationTech GeoTrellis Releases" at "https://repo.locationtech.org/content/repositories/geotrellis-releases"
-
-libraryDependencies += "org.locationtech.geotrellis" %% "geotrellis-raster" % "1.0.0-RC1"
+libraryDependencies += "org.locationtech.geotrellis" %% "geotrellis-raster" % "1.0.0-RC3"
 ```
+
 `geotrellis-raster` is just one submodule that you can depend on. Here are a list of our published submodules:
 
 - `geotrellis-proj4`: Coordinate Reference systems and reproject (Scala wrapper around Proj4j)
@@ -64,14 +63,6 @@ libraryDependencies += "org.locationtech.geotrellis" %% "geotrellis-raster" % "1
 - `geotrellis-spark-testkit`: Testkit for testing geotrellis-spark code
 
 A more complete feature list can be found below.
-
-Notice we no longer publish to Maven Central, so you need to add our LocationTech repository to your build.
-
-For releases, add the releases repository:
-
-```
-resolvers += "LocationTech GeoTrellis Releases" at "https://repo.locationtech.org/content/repositories/geotrellis-releases"
-```
 
 To grab the latest snapshot build, add our snapshot repository:
 
