@@ -38,10 +38,9 @@ GeoTrellis is currently available for Scala 2.11 and Spark 2.0+.
 To get started with SBT, simply add the following to your build.sbt file:
 
 ```
-resolvers += "LocationTech GeoTrellis Releases" at "https://repo.locationtech.org/content/repositories/geotrellis-releases"
-
-libraryDependencies += "org.locationtech.geotrellis" %% "geotrellis-raster" % "1.0.0-RC1"
+libraryDependencies += "org.locationtech.geotrellis" %% "geotrellis-raster" % "1.0.0-RC3"
 ```
+
 `geotrellis-raster` is just one submodule that you can depend on. Here are a list of our published submodules:
 
 - `geotrellis-proj4`: Coordinate Reference systems and reproject (Scala wrapper around Proj4j)
@@ -64,14 +63,6 @@ libraryDependencies += "org.locationtech.geotrellis" %% "geotrellis-raster" % "1
 - `geotrellis-spark-testkit`: Testkit for testing geotrellis-spark code
 
 A more complete feature list can be found below.
-
-Notice we no longer publish to Maven Central, so you need to add our LocationTech repository to your build.
-
-For releases, add the releases repository:
-
-```
-resolvers += "LocationTech GeoTrellis Releases" at "https://repo.locationtech.org/content/repositories/geotrellis-releases"
-```
 
 To grab the latest snapshot build, add our snapshot repository:
 
