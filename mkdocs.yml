@@ -13,6 +13,7 @@ pages:
     - Setup: tutorials/setup.md
     - Quick Start: tutorials/quickstart.md
     - Kernel Density: tutorials/kernel-density.md
+    - Reading GeoTiffs: tutorials/reading-geoTiffs.md
     - Extract-Transform-Load (ETL): tutorials/etl-tutorial.md
   - User Guide:
     - Core Concepts: guide/core-concepts.md
