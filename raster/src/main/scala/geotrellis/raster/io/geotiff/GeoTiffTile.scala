@@ -496,6 +496,122 @@ abstract class GeoTiffTile(
   def toArrayTile(): ArrayTile = mutable
 
   /**
+   * Reads in the bytes of the segments of this [[GeoTiffTile]] and returns
+   * them as an Array[Byte]. This method is for tiles who's segments are stripped.
+   * Both cropped and full readings can use this method to retrieve the desired bytes.
+   *
+   * @param segmentBytes: The [[SegmentBytes]] of the tile.
+   * @param segmentLayout: The [[SegmentLayout]] of the tile.
+   * @param bytesPerPixel: The ConstantNoDataCellType byte size of the tile.
+   * @param windowBounds: The gridBounds of the area that is to be read in.
+   *
+   * @returns An Array[Byte] that contains the data from the selected region.
+   */
+  def readStrippedSegmentBytes(
+    segmentBytes: SegmentBytes,
+    segmentLayout: GeoTiffSegmentLayout,
+    bytesPerPixel: Int,
+    windowBounds: GridBounds
+  ): Array[Byte] = {
+    val arr = Array.ofDim[Byte](windowBounds.size * bytesPerPixel)
+    var counter: Int = 0
+
+    if (windowBounds == gridBounds) {
+      cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+        val segment = getSegment(segmentIndex)
+        val segmentLength = segment.bytes.length
+        System.arraycopy(segment.bytes, 0, arr, counter, segmentLength)
+        counter += segmentLength
+      }
+    } else {
+      val segmentIds = segmentBytes.intersectingSegments
+      cfor(0)(_ < segmentIds.length, _ + 1) { i =>
+        val segmentId = segmentIds(i)
+        val segmentGridBounds = segmentLayout.getGridBounds(segmentId)
+        val segment: GeoTiffSegment = getSegment(segmentId)
+
+        val result = windowBounds.intersection(segmentGridBounds).get
+        val intersection = Intersection(segmentGridBounds, result, segmentLayout)
+
+        val adjStart = intersection.start * bytesPerPixel
+        val adjEnd = intersection.end * bytesPerPixel
+        val adjCols = cols * bytesPerPixel
+        val adjWidth = result.width * bytesPerPixel
+
+        cfor(adjStart)(_ < adjEnd, _ + adjCols) { i =>
+          System.arraycopy(segment.bytes, i - adjStart, arr, counter, adjWidth)
+          counter += adjWidth
+        }
+      }
+    }
+    arr
+  }
+
+  /**
+   * Reads in the bytes of the segments of this [[GeoTiffTile]] and returns
+   * them as an Array[Byte]. This method is for tiles who's segments are tiled.
+   * Both cropped and full readings can use this method to retrieve the desired bytes.
+   *
+   * @param segmentBytes: The [[SegmentBytes]] of the tile.
+   * @param segmentLayout: The [[SegmentLayout]] of the tile.
+   * @param bytesPerPixel: The ConstantNoDataCellType byte size of the tile.
+   * @param windowBounds: The gridBounds of the area that is to be read in.
+   *
+   * @returns An Array[Byte] that contains the data from the selected region.
+   */
+  def readTiledSegmentBytes(
+    segmentBytes: SegmentBytes,
+    segmentLayout: GeoTiffSegmentLayout,
+    bytesPerPixel: Int,
+    windowBounds: GridBounds
+  ): Array[Byte] = {
+    val arr = Array.ofDim[Byte](windowBounds.size * bytesPerPixel)
+
+    if (windowBounds == gridBounds) {
+      cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
+        val segment = getSegment(segmentIndex)
+
+        val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
+        val width = segmentTransform.segmentCols * bytesPerPixel
+        val tileWidth = segmentLayout.tileLayout.tileCols * bytesPerPixel
+
+        cfor(0)(_ < tileWidth * segmentTransform.segmentRows, _ + tileWidth) { i =>
+          val col = segmentTransform.indexToCol(i / bytesPerPixel)
+          val row = segmentTransform.indexToRow(i / bytesPerPixel)
+          val j = ((row * cols) + col) * bytesPerPixel
+          System.arraycopy(segment.bytes, i, arr, j, width)
+        }
+      }
+    } else {
+      val segmentIds = segmentBytes.intersectingSegments
+      cfor(0)(_ < segmentIds.length, _ + 1) { i =>
+        val segmentId = segmentIds(i)
+        val segmentGridBounds = segmentLayout.getGridBounds(segmentId)
+        val segment: GeoTiffSegment = getSegment(segmentId)
+        val segmentTransform = segmentLayout.getSegmentTransform(segmentId)
+
+        val result = windowBounds.intersection(segmentGridBounds).get
+        val intersection = Intersection(segmentGridBounds, result, segmentLayout)
+
+        val adjStart = intersection.start * bytesPerPixel
+        val adjEnd = intersection.end * bytesPerPixel
+        val adjWidth = result.width * bytesPerPixel
+        val adjTileWidth = intersection.tileWidth * bytesPerPixel
+
+        cfor(adjStart)(_ < adjEnd, _ + adjTileWidth) { i =>
+          val col = segmentTransform.indexToCol(i / bytesPerPixel)
+          val row = segmentTransform.indexToRow(i / bytesPerPixel)
+          if (gridBounds.contains(col, row)) {
+            val j = (row - windowBounds.rowMin) * windowBounds.width + (col - windowBounds.colMin)
+            System.arraycopy(segment.bytes, i, arr, j * bytesPerPixel, adjWidth)
+          }
+        }
+      }
+    }
+    arr
+  }
+
+  /**
    * Converts GeoTiffTile to a MutableArrayTile
    *
    * @return A [[MutableArrayTile]] of the GeoTiffTile
