@@ -17,6 +17,7 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.spark.io.hadoop.formats.PointCloudInputFormat
+import geotrellis.vector.Extent
 import io.pdal._
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
@@ -38,29 +39,13 @@ object S3PointCloudRDD {
     numPartitions: Option[Int] = None,
     partitionBytes: Option[Long] = None,
     getS3Client: () => S3Client = () => S3Client.DEFAULT,
-    tmpDir: Option[String] = None
+    tmpDir: Option[String] = None,
+    filterExtent: Option[Extent] = None,
+    dimTypes: Option[Iterable[String]] = None
   )
 
   object Options {
     def DEFAULT = Options()
-  }
-
-  /**
-    * Create Configuration for [[S3PointCloudInputFormat]] based on parameters and options.
-    *
-    * @param bucket   Name of the bucket on S3 where the files are kept.
-    * @param prefix   Prefix of all of the keys on S3 that are to be read in.
-    * @param options  An instance of [[Options]] that contains any user defined or default settings.
-    */
-  private def configuration(bucket: String, prefix: String, options: S3PointCloudRDD.Options)(implicit sc: SparkContext): Configuration = {
-    val conf = sc.hadoopConfiguration
-    S3InputFormat.setBucket(conf, bucket)
-    S3InputFormat.setPrefix(conf, prefix)
-    S3InputFormat.setExtensions(conf, options.filesExtensions)
-    S3InputFormat.setCreateS3Client(conf, options.getS3Client)
-    options.numPartitions.foreach(S3InputFormat.setPartitionCount(conf, _))
-    options.partitionBytes.foreach(S3InputFormat.setPartitionBytes(conf, _))
-    conf
   }
 
   /**
@@ -71,17 +56,42 @@ object S3PointCloudRDD {
     * @param options  An instance of [[Options]] that contains any user defined or default settings.
     */
   def apply(bucket: String, prefix: String, options: Options = Options.DEFAULT)(implicit sc: SparkContext): RDD[(S3PointCloudHeader, Iterator[PointCloud])] = {
-    val conf = configuration(bucket, prefix, options)
+    val conf = sc.hadoopConfiguration
+
+    S3InputFormat.setBucket(conf, bucket)
+    S3InputFormat.setPrefix(conf, prefix)
+    S3InputFormat.setExtensions(conf, options.filesExtensions)
+    S3InputFormat.setCreateS3Client(conf, options.getS3Client)
+    options.numPartitions.foreach(S3InputFormat.setPartitionCount(conf, _))
+    options.partitionBytes.foreach(S3InputFormat.setPartitionBytes(conf, _))
 
     options.tmpDir.foreach { dir =>
       PointCloudInputFormat.setTmpDir(conf, dir)
     }
 
-    sc.newAPIHadoopRDD(
-      configuration(bucket, prefix, options),
-      classOf[S3PointCloudInputFormat],
-      classOf[S3PointCloudHeader],
-      classOf[Iterator[PointCloud]]
-    )
+    options.dimTypes.foreach { dt =>
+      PointCloudInputFormat.setDimTypes(conf, dt)
+    }
+
+    options.filterExtent match {
+      case Some(filterExtent) =>
+        PointCloudInputFormat.setFilterExtent(conf, filterExtent)
+
+        sc.newAPIHadoopRDD(
+          conf,
+          classOf[S3PointCloudInputFormat],
+          classOf[S3PointCloudHeader],
+          classOf[Iterator[PointCloud]]
+        ).filter { case (header, _) =>
+          header.extent3D.toExtent.intersects(filterExtent)
+        }
+      case None =>
+        sc.newAPIHadoopRDD(
+          conf,
+          classOf[S3PointCloudInputFormat],
+          classOf[S3PointCloudHeader],
+          classOf[Iterator[PointCloud]]
+        )
+    }
   }
 }

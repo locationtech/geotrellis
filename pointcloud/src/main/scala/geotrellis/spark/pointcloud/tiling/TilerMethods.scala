@@ -23,7 +23,7 @@ import geotrellis.util.MethodExtensions
 
 import org.apache.spark.rdd._
 
-class TilerMethods(val self: RDD[(PointCloud)]) extends MethodExtensions[RDD[(PointCloud)]] {
+class TilerMethods(val self: RDD[PointCloud]) extends MethodExtensions[RDD[PointCloud]] {
   def tileToLayout(layoutDefinition: LayoutDefinition): RDD[(SpatialKey, PointCloud)] with Metadata[LayoutDefinition] =
     CutPointCloud(self, layoutDefinition)
 }
