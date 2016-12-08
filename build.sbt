@@ -100,6 +100,7 @@ lazy val root = Project("geotrellis", file(".")).
       """
   )
   .settings(unidocSettings: _*)
+  .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(geowave))
 
 lazy val macros = Project("macros", file("macros")).
   settings(commonSettings: _*)

@@ -70,6 +70,22 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
  * Companion object to GeoTiff
  */
 object GeoTiff {
+  def readMultiband(path: String): MultibandGeoTiff =
+    MultibandGeoTiff(path)
+
+  def readSingleband(path: String): SinglebandGeoTiff =
+    SinglebandGeoTiff(path)
+
+  def apply(path: String): Either[SinglebandGeoTiff, MultibandGeoTiff] = {
+    val multiband = MultibandGeoTiff(path)
+    if (multiband.tile.bandCount == 1) {
+      Left(new SinglebandGeoTiff(tile = multiband.tile.band(0),
+        multiband.extent, multiband.crs, multiband.tags, multiband.options))
+    } else {
+      Right(multiband)
+    }
+  }
+
   def apply(tile: Tile, extent: Extent, crs: CRS): SinglebandGeoTiff =
     SinglebandGeoTiff(tile, extent, crs)
 
@@ -81,4 +97,10 @@ object GeoTiff {
 
   def apply(raster: MultibandRaster, crs: CRS): MultibandGeoTiff =
     apply(raster.tile, raster.extent, crs)
+
+  def apply(projectedRaster: ProjectedRaster[Tile]): SinglebandGeoTiff =
+    apply(projectedRaster.raster, projectedRaster.crs)
+
+  def apply(projectedRaster: ProjectedRaster[MultibandTile])(implicit d: DummyImplicit): MultibandGeoTiff =
+    apply(projectedRaster.raster, projectedRaster.crs)
 }

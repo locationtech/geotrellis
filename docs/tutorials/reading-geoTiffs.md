@@ -1,26 +1,10 @@
-## Reading GeoTiffs
 
-- [Introduction](#introduction)
-- [Reading GeoTiffs With GeoTrellis](#reading-geotiffs-with-geotrellis)
-  - [Reading Locally Part 1: Reading For the First Time](#reading-locally-part-1-reading-for-the-first-time)
-  - [Reading Locally Part 2: Expanding Our Vocab](reading-locally-part-2-expanding-our-vocab)
-      - [Dealing With Compressed GeoTiffs](#dealing-with-compressed-geotiffs)
-      - [Streaming GeoTiffs](#streaming-in-geotiffs)
-        - [Tips for Using This Feature](#tips-for-using-this-feature)
-           - [Reading in Small Files >= 4GB](#reading-in-small-files->=-4GB)
-           - [Reading in Large Files](#reading-in-large-files)
-        - [How to Use This Feature](#how-to-use-this-feature)
-           - [Using Apply Methods](#using-apply-methods)
-           - [Using Object Methods](#using-object-methods)
-- [Conclusion](#conclusion)
-
-### Introduction
 This tutorial will go over how to read GeoTiff files using GeoTrellis on your
 local filesystem. It assumes that you already have the environment needed to
-run these examples. If not, please follow this [link](setup.md) to get
+run these examples. If not, please see our [Setup Guide](setup.md) to get
 GeoTrellis working on your system. Also, this tutorial uses GeoTiffs from the
 `raster-test` project from GeoTrellis. If you have not already done so, please
-clone GeoTrellis [here](https://github.com/geotrellis/geotrellis) so that you
+clone GeoTrellis [here](https://github.com/locationtech/geotrellis) so that you
 can access the needed files.
 - - -
 
@@ -36,49 +20,58 @@ Before we start, open a Scala REPL in the Geotrellis directory.
 
 #### Reading Locally Part 1: Reading For the First Time
 Reading a local GeoTiff is actually pretty easy. You can see how to do it below.
-```scala
-  import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-  import geotrellis.raster.io.geotiff._
 
-  val path: String = "path/to/geotrellis/raster-test/data/geotiff-test-files/lzw_int32.tif"
-  val geoTiff: SinglebandGeoTiff = GeoTiffReader.readSingleband(path)
+```scala
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader
+import geotrellis.raster.io.geotiff._
+
+val path: String = "path/to/geotrellis/raster-test/data/geotiff-test-files/lzw_int32.tif"
+val geoTiff: SinglebandGeoTiff = GeoTiffReader.readSingleband(path)
 ```
+
 And that's it! Not too bad at all really, just four lines of code. Even still,
 though, let's break this down line-by-line so we can see what exactly is going
 on.
+
 ```scala
-  import geotrellis.raster.io.geotiff.reader.GeoTiffReader
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 ```
+
 This import statement brings in `GeoTiffReader` from
 `geotrellis.raster.io.geotiff.reader` so that we can use it in the REPL. As the
 name implys, `GeoTiffReader` is the object that actually reads the GeoTiff. If
 you ever wonder about how we analyze and process GeoTiffs, then
 `geotrellis.raster.io.geotiff` would be the place to look. Here's a
-[link](https://github.com/geotrellis/geotrellis/tree/master/raster/src/main/scala/geotrellis/raster/io/geotiff).
+[link](https://github.com/locationtech/geotrellis/tree/master/raster/src/main/scala/geotrellis/raster/io/geotiff).
+
 ```scala
-  import geotrellis.raster.io.geotiff._
+import geotrellis.raster.io.geotiff._
 ```
+
 The next import statement loads in various data types that we need so that we
 can assign them to our `val`s.
 
 Okay, so we brought in the object that will give us our GeoTiff, now we just
 need to supply it what to read. This is where the next line of code comes into
 play.
+
 ```scala
-  val path: String = "path/to/geotrellis/raster-test/data/geotiff-test-files/lzw_int32.tif"
+val path: String = "path/to/geotrellis/raster-test/data/geotiff-test-files/lzw_int32.tif"
 ```
+
 Our `path` variable is a `String` that contains the file path to a GeoTiff in
 `geotrellis.raster-test`. `GeoTiffReader` will use this value then to read in
 our GeoTiff. There are more types of paramters `GeoTiffReader` can accept,
 however. These are `Array[Byte]`s and `ByteReader`s. We will stick with
 `String`s for this lesson, but `Array[Byte]` is not that much different. It's
-just all of the bytes within your file held in an Array. To learn more about
-`ByteReader`, follow this [link](../util/byte-reader.md).
+just all of the bytes within your file held in an Array.
 
 The last part of our four line coding escapade is:
+
 ```scala
-  val geoTiff: SinglebandGeoTiff = GeoTiffReader.readSingleband(path)
+val geoTiff: SinglebandGeoTiff = GeoTiffReader.readSingleband(path)
 ```
+
 This line assigns the variable, `geoTiff`, to the file that is being read in.
 Notice the `geoTiff`'s type, though. It is `SinglebandGeoTiff`. Why does
 `geoTiff` have this type? It's because in GeoTrellis, `SinglebandGeoTiff`s and
@@ -89,14 +82,16 @@ into play; as these two types are defined within
 
 Great! We have a `SinglebandGeoTiff`. Let's say that we have a
 `MultibandGeoTiff`, though; let's use the code from above to read it.
-```scala
-  import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-  import geotrellis.raster.io.geotiff._
 
-  // now a MultibandGeoTiff!!!
-  val path: String = "path/to/raster-test/data/geotiff-test-files/3bands/3bands-striped-band.tif"
-  val geoTiff = GeoTiffReader.readSingleband(path)
+```scala
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader
+import geotrellis.raster.io.geotiff._
+
+// now a MultibandGeoTiff!
+val path: String = "path/to/raster-test/data/geotiff-test-files/3bands/3bands-striped-band.tif"
+val geoTiff = GeoTiffReader.readSingleband(path)
 ```
+
 If we run this code, what do you think will happen? The result may surprise
 you, we get back a `SinglebandGeoTiff`! **When told to read a
 `SinglebandGeoTiff` from a `MultibandGeoTiff` without a return type, the
@@ -106,29 +101,29 @@ with, or else you could get back an incorrect result.
 
 To remedy this issue, we just have to change the method call and return type so
 that `GeoTiffReader` will read in all of the bands of our GeoTiff.
+
 ```scala
-  val geoTiff: MultibandGeoTiff = GeoTiffReader.readMultiband(path)
+val geoTiff: MultibandGeoTiff = GeoTiffReader.readMultiband(path)
 ```
 And that's it! We now have our `MutlibandGeoTiff`.
 
-> ##### Beginner Tip
-> A good way to ensure that your codes works properly is to give the return
-> data type for each of your `val`s and `def`s. If by chance your return type
-> and is different from what is actually returned, the compiler will throw an
-> error. In addition, this will also make your code easier to read and
-> understand for both you and others as well.
->
-> Example:
->
-> ```scala
->   val multiPath = "path/to/a/multiband/geotiff.tif
->   
->   // This will give you the wrong result!!!
->   val geoTiff = GeoTiffReader.readSingleband(multiPath)
->
->   // This will cause your compiler to throw an error
->   val geoTiff: MultibandGeoTiff = GeoTiffReader.readSingleband(multiPath)
->```
+<h4>Beginner Tip</h4>
+
+A good way to ensure that your codes works properly is to give the return
+data type for each of your `val`s and `def`s. If by chance your return type
+and is different from what is actually returned, the compiler will throw an
+error. In addition, this will also make your code easier to read and
+understand for both you and others as well. Example:
+
+```scala
+val multiPath = "path/to/a/multiband/geotiff.tif"
+
+// This will give you the wrong result!
+val geoTiff = GeoTiffReader.readSingleband(multiPath)
+
+// This will cause your compiler to throw an error
+val geoTiff: MultibandGeoTiff = GeoTiffReader.readSingleband(multiPath)
+```
 
 Before we move on to the next section, I'd like to take moment and talk about
 an alternative way in which you can read in GeoTiffs. Both `SinglebandGeoTiff`s
@@ -137,16 +132,19 @@ give your parameter(s) directly to their companion objects and you'll get back
 a new instance of the class.
 
 For `SinglebandGeoTiff`s:
-```scala
-  import geotrellis.raster.io.geotiff.SinglebandGeoTiff
 
-  val path: String = "path/to/raster-test/data/geotiff-test-files/lzw_int32.tif"
-  val geoTiff: SinglebandGeoTiff = SinglebandGeoTiff(path)
+```scala
+import geotrellis.raster.io.geotiff.SinglebandGeoTiff
+
+val path: String = "path/to/raster-test/data/geotiff-test-files/lzw_int32.tif"
+val geoTiff: SinglebandGeoTiff = SinglebandGeoTiff(path)
 ```
 There are two differences found within this code from the previous example. The first is this:
+
 ```scala
-  import geotrellis.raster.io.geotiff.SinglebandGeoTiff
+import geotrellis.raster.io.geotiff.SinglebandGeoTiff
 ```
+
 As stated earlier, `SinglebandGeoTiff` and `MultibandGeoTiff` are found within
 a different folder of `geotrellis.raster.io.geotiff`. This is important to keep
 in mind when importing, as it can cause your code not to compile if you refer
@@ -154,18 +152,19 @@ to the wrong sub-folder.
 
 The second line that was changed is:
 ```scala
-  val geoTiff: SinglebandGeoTiff = SinglebandGeoTiff(path)
+val geoTiff: SinglebandGeoTiff = SinglebandGeoTiff(path)
 ```
 Here, we see `SinglebandGeoTiff`'s `apply` method being used on `path`. Which
 returns the same thing as `GeoTiffReader.readSingleband(path)`, but with less
 verbosity.
 
 `MultibandGeoTiff`s are the exact same as their singleband counterparts.
-```Scala
-  import geotrellis.raster.io.geotiff.MultibandGeoTiff
 
-  val path: String = "raster-test/data/geotiff-test-files/3bands/3bands-striped-band.tif"
-  val geoTiff: MultibandGeoTiff = MultibandGeoTiff(path)
+```scala
+import geotrellis.raster.io.geotiff.MultibandGeoTiff
+
+val path: String = "raster-test/data/geotiff-test-files/3bands/3bands-striped-band.tif"
+val geoTiff: MultibandGeoTiff = MultibandGeoTiff(path)
 ```
 Our overview of basic GeoTiff reading is now done! But keep reading! For you
 have greater say over how your GeoTiff will be read than what has been shown.
@@ -182,16 +181,18 @@ Compression is a method in which data is stored with fewer bits and can then be
 uncompressed so that all data becomes available. This applies to GeoTiffs as
 well. When reading in a GeoTiff, you can state whether or not you want a
 compressed file to be uncompressed or not.
-```scala
-  import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-  import geotrellis.raster.io.geotiff._
 
-  // reading in a compressed GeoTiff and keeping it compressed
-  val compressedGeoTiff: SinglebandGeoTiff = GeoTiffReader.readSingleband("path/to/compressed/geotiff.tif", false, false)
-  
-  // reading in a compressed GeoTiff and uncompressing it
-  val compressedGeoTiff: SinglebandGeoTiff = GeoTiffReader.readSingleband("path/to/compressed/geotiff.tif", true, false)
+```scala
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader
+import geotrellis.raster.io.geotiff._
+
+// reading in a compressed GeoTiff and keeping it compressed
+val compressedGeoTiff: SinglebandGeoTiff = GeoTiffReader.readSingleband("path/to/compressed/geotiff.tif", false, false)
+
+// reading in a compressed GeoTiff and uncompressing it
+val compressedGeoTiff: SinglebandGeoTiff = GeoTiffReader.readSingleband("path/to/compressed/geotiff.tif", true, false)
 ```
+
 As you can see from the above code sample, the first `Boolean` value is what
 determines whether or not the file should be decompressed or not. What does the
 other `Boolean` value for? We'll get to that soon! For right now, though, we'll
@@ -207,17 +208,19 @@ trying read in anything bigger will cause your process to crash.
 
 By default, decompression occurs on all read GeoTiffs. Thus, these two lines of
 code are the same.
+
 ```scala
-  // these will both return the same thing!
-  GeoTiffReader.readSingleband("path/to/compressed/geotiff.tif")
-  GeoTiffReader.readSingleband("path/to/compressed/geotiff.tif", true, false)
+// these will both return the same thing!
+GeoTiffReader.readSingleband("path/to/compressed/geotiff.tif")
+GeoTiffReader.readSingleband("path/to/compressed/geotiff.tif", true, false)
 ```
 
 In addition, both `SinglebandGeoTiff` and `MultibandGeoTiff` have a method,
 `compressed`, that uncompresses a GeoTiff when it is read in.
+
 ```scala
-   SinglebandGeoTiff.compressed("path/to/compressed/geotiff.tif")
-   MultibandGeoTiff.compressed("path/to/compressed/geotiff.tif")
+SinglebandGeoTiff.compressed("path/to/compressed/geotiff.tif")
+MultibandGeoTiff.compressed("path/to/compressed/geotiff.tif")
 ```
 
 #### Streaming GeoTiffs
@@ -286,7 +289,9 @@ what size to select.
 |  UInt32  |                [1.44 * 10<sup>9</sup>,  1.96 * 10<sup>9</sup>)                |
 |  Float32 |                [1.44 * 10<sup>9</sup>,  1.96 * 10<sup>9</sup>)                |
 |  Float64 |                 [3.6 * 10<sup>8</sup>,  6.4 * 10<sup>8</sup>)                 |
+
 - - -
+
 ##### How to Use This Feature
 Using this feature is straight forward and easy. There are two ways to
 implement the WindowedReader: Supplying the desired extent with the path to the
