@@ -96,7 +96,7 @@ class Float32GeoTiffTile(
 
 				val adjStart = intersection.start * FloatConstantNoDataCellType.bytes
 				val adjEnd = intersection.end * FloatConstantNoDataCellType.bytes
-				val adjCols = intersection.cols * FloatConstantNoDataCellType.bytes
+				val adjCols = segmentGridBounds.width * FloatConstantNoDataCellType.bytes
 				val adjWidth = result.width * FloatConstantNoDataCellType.bytes
 
 				cfor(adjStart)(_ < adjEnd, _ + adjCols) { i =>

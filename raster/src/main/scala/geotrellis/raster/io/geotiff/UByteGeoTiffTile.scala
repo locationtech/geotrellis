@@ -20,8 +20,6 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.compression._
 import spire.syntax.cfor._
 
-import scala.collection.mutable._
-
 class UByteGeoTiffTile(
   val segmentBytes: SegmentBytes,
   val decompressor: Decompressor,
@@ -42,8 +40,7 @@ class UByteGeoTiffTile(
     if(segmentLayout.isStriped) {
       var i = 0
       cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-        val segment =
-          getSegment(segmentIndex)
+        val segment = getSegment(segmentIndex)
         val size = segment.bytes.size
         System.arraycopy(segment.bytes, 0, arr, i, size)
         i += size
@@ -66,58 +63,46 @@ class UByteGeoTiffTile(
     }
     UByteArrayTile.fromBytes(arr, cols, rows, cellType)
   }
-  
+
   def crop(gridBounds: GridBounds): MutableArrayTile = {
     val arr = Array.ofDim[Byte](gridBounds.size)
     var counter = 0
-		var c = 0
 
-		val segments = segmentBytes.intersectingSegments
-		println(segments.mkString(" "))
+    val segments = segmentBytes.intersectingSegments
 
-		if (segmentLayout.isStriped) {
+    if (segmentLayout.isStriped) {
       cfor(0)(_ < segments.length, _ + 1) { i =>
-				val segmentId = segments(i)
+        val segmentId = segments(i)
         val segmentGridBounds = segmentLayout.getGridBounds(segmentId)
-				val segment = getSegment(segmentId)
-				println(s"segmentId = $segmentId, gridBounds = $gridBounds, segmentGridBounds = $segmentGridBounds")
-				
-				val result =
-					gridBounds.intersection(segmentGridBounds).get
-				val intersection =
-					Intersection(segmentGridBounds, result, segmentLayout)
+        val segment = getSegment(segmentId)
 
-				cfor(intersection.start)(_ < intersection.end, _ + cols) { i =>
-					System.arraycopy(segment.bytes, i, arr, counter, result.width)
-					counter += result.width
-				}
+        val result = gridBounds.intersection(segmentGridBounds).get
+        val intersection = Intersection(segmentGridBounds, result, segmentLayout)
+        cfor(intersection.startOffset)(_ < intersection.endOffset, _ + cols) { inRowColMin =>
+          System.arraycopy(segment.bytes, inRowColMin - intersection.startOffset, arr, counter, result.width)
+          counter += result.width
+        }
       }
     } else {
       cfor(0)(_ < segments.length, _ + 1) { i =>
-				//println(segments.mkString(" "))
-				val segmentId = segments(i)
-				//println(s"segmentId = $segmentId")
+        val segmentId = segments(i)
         val segmentGridBounds = segmentLayout.getGridBounds(segmentId)
-				println(s"segmentId = $segmentId, gridBounds = $gridBounds, segmentGridBounds = $segmentGridBounds")
-				val segment = getSegment(segmentId)
+        val segment = getSegment(segmentId)
+        val segmentTransform = segmentLayout.getSegmentTransform(segmentId)
+        val tileWidth = segmentLayout.tileLayout.tileCols
 
-				val segmentTransform = segmentLayout.getSegmentTransform(segmentId)
-				val tileWidth = segmentLayout.tileLayout.tileCols
+        val result =
+          gridBounds.intersection(segmentGridBounds).get
 
-				println(segmentGridBounds)
+        val intersection =
+          Intersection(segmentGridBounds, result, segmentLayout)
 
-				val result =
-					gridBounds.intersection(segmentGridBounds).get
-
-				val intersection =
-					Intersection(segmentGridBounds, result, segmentLayout)
-
-				cfor(intersection.start)(_ < intersection.end, _ + tileWidth) { i =>
-					val col = segmentTransform.indexToCol(i)
-					val row = segmentTransform.indexToRow(i)
-					val j = (row - gridBounds.rowMin) * gridBounds.width + (col - gridBounds.colMin)
-					System.arraycopy(segment.bytes, i, arr, j, result.width)
-				}
+        cfor(intersection.startOffset)(_ < intersection.endOffset, _ + tileWidth) { i =>
+          val col = segmentTransform.indexToCol(i)
+          val row = segmentTransform.indexToRow(i)
+          val j = (row - gridBounds.rowMin) * gridBounds.width + (col - gridBounds.colMin)
+          System.arraycopy(segment.bytes, i, arr, j, result.width)
+        }
       }
     }
     UByteArrayTile.fromBytes(arr, gridBounds.width, gridBounds.height, cellType)

@@ -17,10 +17,6 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.util.ByteReader
-import geotrellis.vector.Extent
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
-import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.io.geotiff.tags._
 import geotrellis.raster.io.geotiff.util._
 
@@ -46,7 +42,7 @@ class ArraySegmentBytes(compressedBytes: Array[Array[Byte]]) extends SegmentByte
     */
   def getSegment(i: Int) = compressedBytes(i)
 
-	val intersectingSegments: Array[Int] = Array.range(0, size)
+  val intersectingSegments: Array[Int] = Array.range(0, size)
 }
 
 object ArraySegmentBytes {
@@ -60,42 +56,40 @@ object ArraySegmentBytes {
     */
   def apply(byteReader: ByteReader, tiffTags: TiffTags): ArraySegmentBytes = {
 
-      val compressedBytes: Array[Array[Byte]] = {
-        def readSections(offsets: Array[Long],
-          byteCounts: Array[Long]): Array[Array[Byte]] = {
-            val result = Array.ofDim[Array[Byte]](offsets.size)
-
-            cfor(0)(_ < offsets.size, _ + 1) { i =>
-              result(i) = byteReader.getSignedByteArray(byteCounts(i), offsets(i))
-            }
-
-            result
-          }
-
-          if (tiffTags.hasStripStorage) {
-
-            val stripOffsets = (tiffTags &|->
-              TiffTags._basicTags ^|->
-              BasicTags._stripOffsets get)
-
-            val stripByteCounts = (tiffTags &|->
-              TiffTags._basicTags ^|->
-              BasicTags._stripByteCounts get)
-
-            readSections(stripOffsets.get, stripByteCounts.get)
-
-          } else {
-            val tileOffsets = (tiffTags &|->
-              TiffTags._tileTags ^|->
-              TileTags._tileOffsets get)
-
-            val tileByteCounts = (tiffTags &|->
-              TiffTags._tileTags ^|->
-              TileTags._tileByteCounts get)
-
-            readSections(tileOffsets.get, tileByteCounts.get)
-          }
+    val compressedBytes: Array[Array[Byte]] = {
+      def readSections(offsets: Array[Long],
+        byteCounts: Array[Long]): Array[Array[Byte]] = {
+        val result = Array.ofDim[Array[Byte]](offsets.size)
+        // TODO: Read all segments at once, re-use streaming logic
+        cfor(0)(_ < offsets.size, _ + 1) { i =>
+          result(i) = byteReader.getSignedByteArray(offsets(i), byteCounts(i))
+        }
+        result
       }
-      new ArraySegmentBytes(compressedBytes)
+
+      if (tiffTags.hasStripStorage) {
+        val stripOffsets = (tiffTags &|->
+          TiffTags._basicTags ^|->
+          BasicTags._stripOffsets get)
+
+        val stripByteCounts = (tiffTags &|->
+          TiffTags._basicTags ^|->
+          BasicTags._stripByteCounts get)
+
+        readSections(stripOffsets.get, stripByteCounts.get)
+
+      } else {
+        val tileOffsets = (tiffTags &|->
+          TiffTags._tileTags ^|->
+          TileTags._tileOffsets get)
+
+        val tileByteCounts = (tiffTags &|->
+          TiffTags._tileTags ^|->
+          TileTags._tileByteCounts get)
+
+        readSections(tileOffsets.get, tileByteCounts.get)
+      }
     }
+    new ArraySegmentBytes(compressedBytes)
+  }
 }

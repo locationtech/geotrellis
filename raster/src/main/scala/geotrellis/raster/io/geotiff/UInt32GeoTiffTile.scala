@@ -60,7 +60,7 @@ class UInt32GeoTiffTile(
 
 			val iterator =
 				if (segmentLayout.isStriped)
-					intersection.cols
+          segmentGridBounds.width
 				else
 					intersection.tileWidth
 

@@ -71,7 +71,7 @@ case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: Tile
     val layoutCol = segmentIndex % tileLayout.layoutCols
     val layoutRow = segmentIndex / tileLayout.layoutCols
 
-    val cols = 
+    val cols =
       if(layoutCol == tileLayout.layoutCols - 1) {
         totalCols - ( (tileLayout.layoutCols - 1) * tileLayout.tileCols)
       } else {
@@ -164,33 +164,25 @@ case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: Tile
       }
     }
   }
-  
+
   def getGridBounds(segmentIndex: Int, isBit: Boolean = false): GridBounds = {
     val segmentTransform = getSegmentTransform(segmentIndex)
     val segmentCols = segmentTransform.segmentCols
     val segmentRows = segmentTransform.segmentRows
+
     val startCol =
       if (isBit)
         segmentTransform.bitIndexToCol(0)
       else
         segmentTransform.indexToCol(0)
-    
     val startRow =
       if (isBit)
         segmentTransform.bitIndexToRow(0)
       else
         segmentTransform.indexToRow(0)
 
-    val endCol =
-      if (isStriped)
-        getSegmentDimensions(segmentIndex)._1
-      else
-        (startCol + segmentCols) - 1
-    val endRow =
-      if (isStriped)
-        (segmentIndex * segmentRows) + segmentRows
-      else
-        (startRow + segmentRows) - 1
+    val endCol = (startCol + segmentCols) - 1
+    val endRow = (startRow + segmentRows) - 1
 
     GridBounds(startCol, startRow, endCol, endRow)
   }

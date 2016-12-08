@@ -3,135 +3,133 @@ package geotrellis.raster.io.geotiff
 import geotrellis.util._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.tags._
-import geotrellis.raster.io.geotiff.util._
 import geotrellis.vector.Extent
 
 import spire.syntax.cfor._
 import monocle.syntax.apply._
 
 class StreamingSegmentBytes(byteReader: ByteReader,
-	segmentLayout: GeoTiffSegmentLayout,
-	croppedExtent: Option[Extent],
-	tiffTags: TiffTags) extends SegmentBytes {
+  segmentLayout: GeoTiffSegmentLayout,
+  croppedExtent: Option[Extent],
+  tiffTags: TiffTags) extends SegmentBytes {
 
-	private val extent: Extent =
-		croppedExtent match {
-			case Some(e) => e
-			case None => tiffTags.extent
-		}
 
-	private lazy val gridBounds: GridBounds = {
-		val rasterExtent: RasterExtent =
-			RasterExtent(tiffTags.extent, tiffTags.cols, tiffTags.rows)
-		rasterExtent.gridBoundsFor(extent)
-	}
-	
-	private lazy val colMin: Int = gridBounds.colMin
-	private lazy val rowMin: Int = gridBounds.rowMin
-	private lazy val colMax: Int = gridBounds.colMax
-	private lazy val rowMax: Int = gridBounds.rowMax
+  /** Extent of the window we will be reading, could be full file */
+  val extent: Extent =
+    croppedExtent match {
+      case Some(e) => e
+      case None => tiffTags.extent
+    }
 
-	val intersectingSegments: Array[Int] = {
-		if (extent != tiffTags.extent) {
-			val array = scala.collection.mutable.ArrayBuffer[Int]()
+  /** Pixel grid bounds of the extent we're reading */
+  lazy val gridBounds: GridBounds = {
+    val rasterExtent: RasterExtent =
+      RasterExtent(tiffTags.extent, tiffTags.cols, tiffTags.rows)
+    rasterExtent.gridBoundsFor(extent)
+  }
 
-			cfor(0)(_ < tiffTags.segmentCount, _ + 1) {i =>
-				val segmentTransform = segmentLayout.getSegmentTransform(i)
+  def intersectingSegment(i: Int): Boolean =
+    (gridBounds intersects segmentLayout.getGridBounds(i, isBit = tiffTags.bitsPerSample == 1)) || croppedExtent.isEmpty
 
-				val startCol: Int = segmentTransform.indexToCol(0)
-				val startRow: Int = segmentTransform.indexToRow(0)
-				val endCol: Int = startCol + segmentTransform.segmentCols - 1
-				val endRow: Int = startRow + segmentTransform.segmentRows - 1
+  val maxChunkSize: Int = 32 * 1024 * 1024 // 32MB
 
-				assert(startCol == 0 && endCol == tiffTags.cols - 1, s"startCol = $startCol, endCol = $endCol")
+  val intersectingSegments: Array[Int] = {
+    if (croppedExtent.isDefined) {
+      val segmentIds = scala.collection.mutable.ArrayBuffer[Int]()
+      cfor(0)(_ < tiffTags.segmentCount, _ + 1) { i =>
+        if (intersectingSegment(i)) segmentIds += i
+      }
+      segmentIds.toArray
+    } else {
+      Array.range(0, tiffTags.segmentCount)
+    }
+  }
 
-				val start = (!(startCol >= colMax) && !(startRow >= rowMax))
-				val end = (!(endCol <= colMin) && !(endRow <= rowMin))
+  override def size = intersectingSegments.size
 
-				if (start && end)
-					array += i
-			}
+  val (segmentOffsets, segmentByteCounts) =
+    if (tiffTags.hasStripStorage) {
+      val stripOffsets = tiffTags &|->
+      TiffTags._basicTags ^|->
+      BasicTags._stripOffsets get
 
-			println(array.mkString(" "))
-			array.toArray.sorted
-		} else {
-			Array.range(0, tiffTags.segmentCount)
-		}
-	}
+      val stripByteCounts = tiffTags &|->
+      TiffTags._basicTags ^|->
+      BasicTags._stripByteCounts get
 
-	private val (offsets, byteCounts) =
-		if (tiffTags.hasStripStorage) {
-			val stripOffsets = (tiffTags &|->
-				TiffTags._basicTags ^|->
-				BasicTags._stripOffsets get)
-			
-			val stripByteCounts = (tiffTags &|->
-				TiffTags._basicTags ^|->
-				BasicTags._stripByteCounts get)
+      (stripOffsets.get, stripByteCounts.get)
+    } else {
+      val tileOffsets = tiffTags &|->
+      TiffTags._tileTags ^|->
+      TileTags._tileOffsets get
 
-			(stripOffsets.get, stripByteCounts.get)
+      val tileByteCounts = tiffTags &|->
+      TiffTags._tileTags ^|->
+      TileTags._tileByteCounts get
 
-		} else {
-			val tileOffsets = (tiffTags &|->
-				TiffTags._tileTags ^|->
-				TileTags._tileOffsets get)
+      (tileOffsets.get, tileByteCounts.get)
+    }
 
-			val tileByteCounts = (tiffTags &|->
-				TiffTags._tileTags ^|->
-				TileTags._tileByteCounts get)
 
-			(tileOffsets.get, tileByteCounts.get)
-		}
+  case class Segment(id: Int, startOffset: Long, endOffset: Long) {
+    def size: Long = endOffset + startOffset + 1
+  }
 
-	private lazy val intervals: Seq[(Long, Long)] = {
-		val mergeQueue = new MergeQueue(intersectingSegments.length)
+  /** These are segments in the order they appear in Image Data */
+  val chunks: List[List[Segment]]  = {
+    val segments =
+      for { id <- intersectingSegments } yield {
+        val offset = segmentOffsets(id)
+        val length = segmentByteCounts(id)
+        Segment(id, offset, offset + length - 1)
+      }
 
-			cfor(0)(_ < intersectingSegments.length, _ + 1){ i =>
-			val segment = intersectingSegments(i)
-			mergeQueue += (byteCounts(segment), offsets(segment))
-		}
-		mergeQueue.toSeq
-	}
+    segments
+      .sortBy(_.startOffset) // sort segments such that we inspect them in disk order
+      .foldLeft((0l, List(List.empty[Segment]))) { case ((chunkSize, currentChunk :: commitedChunks), seg) =>
+        if (chunkSize + seg.size <= maxChunkSize)
+          (chunkSize + seg.size) -> ((seg :: currentChunk) :: commitedChunks)
+        else
+          (seg.size) -> ((seg :: Nil) :: currentChunk :: commitedChunks)
+    }
+  }._2
 
-	private lazy val compressedBytes: Array[Array[Byte]] = {
-		val result = Array.ofDim[Array[Byte]](intervals.size)
-				
-		cfor(0)(_ < intervals.size, _ + 1) { i =>
-			val (startOffset, endOffset) = intervals(i)
-			result(i) = byteReader.getSignedByteArray(endOffset - startOffset + 1, startOffset)
-		}
-		result
-	}
+  private def readChunk(segments: List[Segment]): Map[Int, Array[Byte]] = {
+    val chunkStartOffset = segments.minBy(_.startOffset).startOffset
+    val chunkEndOffset = segments.maxBy(_.endOffset).endOffset
+    byteReader.position(chunkStartOffset)
+    val chunkBytes = byteReader.getBytes((chunkEndOffset - chunkStartOffset + 1).toInt)
+    for { segment <- segments } yield {
+      val segmentStart = (segment.startOffset - chunkStartOffset).toInt
+      val segmentEnd = (segment.endOffset - chunkStartOffset).toInt
+      segment.id -> java.util.Arrays.copyOfRange(chunkBytes, segmentStart, segmentEnd + 1)
+    }
+  }.toMap
 
-	override val size = offsets.size
+  private var segmentCache: Map[Int, Array[Byte]] = Map.empty
 
-	def getSegment(i: Int): Array[Byte] =
-		if (i == 0)
-			throw new Error("i was 0")
-		else if (intersectingSegments.contains(i)) {
-			val offset = offsets(i)
-			var arrayIndex: Option[Int] = None
+  def getSegment(i: Int): Array[Byte] = {
+    if (! intersectingSegments.contains(i))
+      throw new IndexOutOfBoundsException(s"Segment $i does not intersect $extent, $gridBounds")
 
-			cfor(0)(_ < intervals.length, _ + 1){ index =>
-				val range = intervals(index)
-				println(s"i = $i, offset = $offset, range = $range")
-				if (offset >= range._1 && offset <= range._2)
-					arrayIndex = Some(index)
-			}
-
-			arrayIndex match {
-				case Some(x) => compressedBytes(x)
-				case None => throw new Error(s"Could not locate bytes for segment: $i")
-			}
-		} else {
-			throw new IndexOutOfBoundsException(s"Segment $i does not intersect: $extent")
-			//byteReader.getSignedByteArray(byteCounts(i), offsets(i))
-		}
+    segmentCache.get(i) match {
+      case Some(bytes) =>
+        segmentCache = segmentCache.drop(i)
+        bytes
+      case None =>
+        // todo: optimize?
+        val chunk = chunks.find(chunk => chunk.find(segment => segment.id == i).isDefined).get
+        val chunkSegments = readChunk(chunk)
+        val bytes = chunkSegments(i)
+        segmentCache ++= (chunkSegments.drop(i))
+        bytes
+    }
+ }
 }
 
 object StreamingSegmentBytes {
 
-	def apply(byteReader: ByteReader, segmentLayout: GeoTiffSegmentLayout,
-		extent: Option[Extent], tiffTags: TiffTags): StreamingSegmentBytes =
-			new StreamingSegmentBytes(byteReader, segmentLayout, extent, tiffTags)
+  def apply(byteReader: ByteReader, segmentLayout: GeoTiffSegmentLayout,
+    extent: Option[Extent], tiffTags: TiffTags): StreamingSegmentBytes =
+    new StreamingSegmentBytes(byteReader, segmentLayout, extent, tiffTags)
 }
