@@ -19,6 +19,7 @@ package geotrellis.spark.io.s3
 import geotrellis.spark.io.hadoop.formats.PointCloudInputFormat
 import geotrellis.spark.pointcloud.json._
 import geotrellis.util.Filesystem
+import geotrellis.vector.Extent
 
 import io.pdal._
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
@@ -34,6 +35,7 @@ class S3PointCloudInputFormat extends S3InputFormat[S3PointCloudHeader, Iterator
       else Filesystem.createDirectory(dir)
     }
     val s3Client = getS3Client(context)
+    val dimTypeStrings = PointCloudInputFormat.getDimTypes(context)
 
     new S3RecordReader[S3PointCloudHeader, Iterator[PointCloud]](s3Client) {
       def read(key: String, bytes: Array[Byte]) = {
@@ -43,35 +45,61 @@ class S3PointCloudInputFormat extends S3InputFormat[S3PointCloudHeader, Iterator
         Stream.continually(bos.write(bytes))
         bos.close()
 
-        val pipeline = Pipeline(fileToPipelineJson(localPath).toString)
+        try {
 
-        // PDAL itself is not threadsafe
-        AnyRef.synchronized { pipeline.execute }
+          val pipeline = Pipeline(fileToPipelineJson(localPath).toString)
 
-        val pointViewIterator = pipeline.getPointViews()
-        // conversion to list to load everything into JVM memory
-        val packedPoints = pointViewIterator.toList.map { pointView =>
-          val packedPoint = pointView.getPointCloud
+          // PDAL itself is not threadsafe
+          AnyRef.synchronized { pipeline.execute }
 
-          pointView.dispose()
-          packedPoint
-        }.toIterator
+          val header =
+            S3PointCloudHeader(
+              key,
+              pipeline.getMetadata(),
+              pipeline.getSchema()
+            )
 
-      val header =
-        S3PointCloudHeader(
-          key,
-          pipeline.getMetadata(),
-          pipeline.getSchema()
-        )
+          // If a filter extent is set, don't actually load points.
+          val (pointViewIterator, disposeIterator): (Iterator[PointView], () => Unit) =
+            PointCloudInputFormat.getFilterExtent(context) match {
+              case Some(filterExtent) =>
+                if(header.extent3D.toExtent.intersects(filterExtent)) {
+                  val pvi = pipeline.getPointViews()
+                  (pvi, pvi.dispose _)
+                } else {
+                  (Iterator.empty, () => ())
+                }
+              case None =>
+                val pvi = pipeline.getPointViews()
+                (pvi, pvi.dispose _)
+            }
 
-        val result = (header, packedPoints)
 
-        pointViewIterator.dispose()
-        pipeline.dispose()
-        localPath.delete()
-        tmpDir.delete()
+          // conversion to list to load everything into JVM memory
+          val pointClouds = pointViewIterator.toList.map { pointView =>
+            val pointCloud =
+              dimTypeStrings match {
+                case Some(ss) =>
+                  pointView.getPointCloud(dims = ss.map(pointView.findDimType))
+                case None =>
+                  pointView.getPointCloud()
+              }
 
-        result
+            pointView.dispose()
+            pointCloud
+          }.toIterator
+
+
+          val result = (header, pointClouds)
+
+          disposeIterator()
+          pipeline.dispose()
+
+          result
+        } finally {
+          localPath.delete()
+          tmpDir.delete()
+        }
       }
     }
   }

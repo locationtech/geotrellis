@@ -53,7 +53,7 @@ trait MetadataFormat {
           val driver = drivers
             .flatMap(md.fields.get)
             .headOption
-            .getOrElse(throw DeserializationException(s"Not supported reader driver: ${md.fields.keys}"))
+            .getOrElse(throw DeserializationException(s"Unsupported reader driver: ${md.fields.keys}"))
 
           val obj = driver.asJsObject.fields
           Extent3D(
@@ -65,8 +65,8 @@ trait MetadataFormat {
             zmax = obj("maxz").convertTo[Double]
           )
         }
-        case _ =>
-          throw DeserializationException("Metadata must be a valid string.")
+        case v =>
+          throw DeserializationException("Metadata invalid: ${v}")
       }
   }
 
@@ -78,15 +78,15 @@ trait MetadataFormat {
           val driver = drivers
             .flatMap(md.fields.get)
             .headOption
-            .getOrElse(throw DeserializationException(s"Not supported reader driver: ${md.fields.keys}"))
+            .getOrElse(throw DeserializationException(s"Unsupported reader driver: ${md.fields.keys}"))
 
           val obj = driver.asJsObject
           val crs = CRS.fromString(obj.fields("srs").asJsObject.fields("proj4").convertTo[String])
 
           ProjectedExtent3D(jsobject.convertTo[Extent3D], crs)
         }
-        case _ =>
-          throw DeserializationException("Metadata must be a valid string.")
+        case v =>
+          throw DeserializationException("Metadata invalid: ${v}")
       }
   }
 }

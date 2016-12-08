@@ -17,6 +17,7 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.spark.io.hadoop.formats._
+import geotrellis.vector.Extent
 
 import io.pdal._
 import org.apache.hadoop.conf.Configuration
@@ -35,24 +36,14 @@ object HadoopPointCloudRDD {
 
   case class Options(
     filesExtensions: Seq[String] = Seq(".las", ".laz"),
-    tmpDir: Option[String] = None
+    tmpDir: Option[String] = None,
+    filterExtent: Option[Extent] = None,
+    dimTypes: Option[Iterable[String]] = None
   )
 
   object Options {
     def DEFAULT = Options()
   }
-
-  /**
-    * Create Configuration for [[PointCloudInputFormat]] based on parameters and options.
-    *
-    * @param path     Hdfs point data files path.
-    * @param options  An instance of [[Options]] that contains any user defined or default settings.
-    */
-  private def configuration(path: Path, options: HadoopPointCloudRDD.Options)(implicit sc: SparkContext): Configuration = {
-    val conf = sc.hadoopConfiguration.withInputDirectory(path, options.filesExtensions)
-    conf
-  }
-
 
   /**
     * Creates a RDD[(ProjectedPackedPointsBounds, PointCloud)] whose K depends on the type of the point data file that is going to be read in.
@@ -61,17 +52,35 @@ object HadoopPointCloudRDD {
     * @param options  An instance of [[Options]] that contains any user defined or default settings.
     */
   def apply(path: Path, options: Options = Options.DEFAULT)(implicit sc: SparkContext): RDD[(HadoopPointCloudHeader, Iterator[PointCloud])] = {
-    val conf = configuration(path, options)
+    val conf = sc.hadoopConfiguration.withInputDirectory(path, options.filesExtensions)
 
     options.tmpDir.foreach { dir =>
       PointCloudInputFormat.setTmpDir(conf, dir)
     }
 
-    sc.newAPIHadoopRDD(
-      conf,
-      classOf[PointCloudInputFormat],
-      classOf[HadoopPointCloudHeader],
-      classOf[Iterator[PointCloud]]
-    )
+    options.dimTypes.foreach { dt =>
+      PointCloudInputFormat.setDimTypes(conf, dt)
+    }
+
+    options.filterExtent match {
+      case Some(filterExtent) =>
+        PointCloudInputFormat.setFilterExtent(conf, filterExtent)
+
+        sc.newAPIHadoopRDD(
+          conf,
+          classOf[PointCloudInputFormat],
+          classOf[HadoopPointCloudHeader],
+          classOf[Iterator[PointCloud]]
+        ).filter { case (header, _) =>
+          header.extent3D.toExtent.intersects(filterExtent)
+        }
+      case None =>
+        sc.newAPIHadoopRDD(
+          conf,
+          classOf[PointCloudInputFormat],
+          classOf[HadoopPointCloudHeader],
+          classOf[Iterator[PointCloud]]
+        )
+    }
   }
 }
