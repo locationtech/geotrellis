@@ -63,8 +63,8 @@ object FractionalRasterizer {
   private def renderEdge(
     edge: Segment,
     re: RasterExtent,
-    poly: Polygon,
-    set: mutable.Set[(Int, Int)],
+    poly: MultiPolygon,
+    seen: mutable.Set[(Int, Int)],
     cb: FractionCallback
   ): Unit = {
     val (x0, y0, x1, y1) = edge
@@ -114,8 +114,8 @@ object FractionalRasterizer {
           val fraction = (pixel.intersection(localPoly)).getArea / pixel.getArea
 
           if (fraction > 0.0) {
-            if (!set.contains(pair)) {
-              set += ((x, y))
+            if (!seen.contains(pair)) {
+              seen += ((x, y))
               cb.callback(x, y, fraction)
             }
           }
@@ -144,8 +144,8 @@ object FractionalRasterizer {
           val fraction = (pixel.intersection(localPoly)).getArea / pixel.getArea
 
           if (fraction > 0.0) {
-            if (!set.contains(pair)) {
-              set += ((x, y))
+            if (!seen.contains(pair)) {
+              seen += ((x, y))
               cb.callback(x, y, fraction)
             }
           }
@@ -164,12 +164,45 @@ object FractionalRasterizer {
     val option = Rasterizer.Options(includePartial = false, sampleType = PixelIsArea)
 
     polygonToEdges(poly, re)
-      .foreach({ edge => renderEdge(edge, re, poly, seen, cb) })
+      .foreach({ edge => renderEdge(edge, re, MultiPolygon(poly), seen, cb) })
 
     PolygonRasterizer.foreachCellByPolygon(poly, re) {(col: Int, row: Int) =>
       val pair = (col, row)
       if (!seen.contains(pair)) cb.callback(col, row, 1.0)
     }
+  }
+
+  def foreachCellByMultiPolygon(
+    multipoly: MultiPolygon,
+    re: RasterExtent
+  )(cb: FractionCallback): Unit = {
+    val seen = mutable.Set.empty[(Int, Int)]
+    val option = Rasterizer.Options(includePartial = false, sampleType = PixelIsArea)
+
+    /** Render the boundaries of each of the components */
+    multipoly.polygons.foreach({ poly =>
+      polygonToEdges(poly, re)
+        .foreach({ edge => renderEdge(edge, re, multipoly, seen, cb) })
+    })
+
+    /**
+      * Render the interiors of each of the components.  You might be
+      * concerned about whether it is possible for a pixel to be
+      * multiply-reported purely as a consequence of rendering the
+      * component interiors (where components are disjoint): barring
+      * bugs in the PolygonRasterizer, the answer is "no".  However,
+      * if components overlap, the interior points can be multiply
+      * reported: if that behavior is undesirable, please consider
+      * calling FractionalRasterizer.foreachCellByPolygon on the
+      * individual components.
+      */
+    multipoly.polygons.foreach({ poly =>
+      PolygonRasterizer.foreachCellByPolygon(poly, re) {(col: Int, row: Int) =>
+        val pair = (col, row)
+        if (!seen.contains(pair)) cb.callback(col, row, 1.0)
+      }
+    })
+
   }
 
 }
