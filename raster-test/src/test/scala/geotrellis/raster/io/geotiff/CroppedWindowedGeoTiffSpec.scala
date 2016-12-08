@@ -213,7 +213,7 @@ class CroppedGeoTiffSpec extends FunSpec
     }
   }
 
-  ignore("multiband Geotiffs") {
+  describe("multiband Geotiffs") {
     val bitStriped = geoTiffPath("3bands/bit/3bands-striped-band.tif")
     val byteStriped = geoTiffPath("3bands/byte/3bands-striped-band.tif")
     val int16Striped = geoTiffPath("3bands/int16/3bands-striped-band.tif")
