@@ -871,88 +871,64 @@ the entities that call `geotrellis.vector` home:
 - `geotrellis.vector.op` defines common operations on geometries
 - `geotrellis.vector.reproject` defines methods for translating between projections
 
-More Core Types
-===============
-
-<h3>CRS</h3>
-
-**Data Structures:** `CRS`, `LatLng`, `WebMercator`, `ConusAlbers`
-
-In GIS, a *projection* is a mathematical transformation of
-Latitude/Longitude coordinates on a sphere onto some other flat plane. Such
-a plane is naturally useful for representing a map of the earth in 2D. A
-projection is defined by a *Coordinate Reference System* (CRS), which holds
-some extra information useful for reprojection. CRSs themselves have static
-definitions, have agreed-upon string representations, and are usually made
-public by standards bodies or companies. They can be looked up at
-[SpatialReference.org](http://spatialreference.org/).
-
-A *reprojection* is the transformation of coorindates in one CRS to another.
-To do so, coordinates are first converted to those of a sphere. Every CRS
-knows how to convert between its coordinates and a sphere's, so a
-transformation `CRS.A -> CRS.B -> CRS.A` is actually `CRS.A -> Sphere ->
-CRS.B -> Sphere -> CRS.A`. Naturally some floating point error does
-accumulate during this process.
-
-Within the context of GeoTrellis, the main projection-related object is the
-`CRS` trait. It stores related `CRS` objects from underlying libraries, and
-also provides the means for defining custom reprojection methods, should the
-need arise.
-
-Here is an example of using a `CRS` to reproject a `Line`:
-
-```scala
-val wm = Line(...)  // A `LineString` vector object in WebMercator.
-val ll: Line = wm.reproject(WebMercator, LatLng)  // The Line reprojected into LatLng.
-
-```
-
-<h3>Extents</h3>
-
-**Data structures:** `Extent`, `ProjectedExtent`, `TemporalProjectedExtent`,
-`GridExtent`, `RasterExtent`
-
-An `Extent` is a rectangular section of a 2D projection of the Earth. It is
-represented by two coordinate pairs that are its "min" and "max" corners in
-some Coorindate Reference System. "min" and "max" here are CRS specific, as
-the location of the point `(0,0)` varies between different CRS. An Extent
-can also be referred to as a *Bounding Box*.
-
-Within the context of GeoTrellis, the points within an `Extent` always
-implicitely belong to some `CRS`, while a `ProjectedExtent` holds both the
-original `Extent` and its current `CRS`.
-
-Here are some useful `Extent` operations, among many more:
-
-- `Extent.translate: (Double, Double) => Extent`
-- `Extent.distance: Extent => Double`
-- `Extent.contains: Extent => Boolean`
-- `Extent.intersection: Extent => Option[Extent]`
-- `ProjectedExtent.reproject: CRS => Extent`
-
-`Extent`s are most often used to represent the area of an entire Tile layer,
-and also the individual `Tile`s themselves (especially in the case of
-`Raster`s).
-
-<h3>Layout Definitions</h3>
+Layout Definitions and Layout Schemes
+====================
 
 **Data structures:** `LayoutDefinition`, `TileLayout`, `CellSize`
 
 A Layout Definition describes the location, dimensions of, and organization
 of a tiled area of a map. Conceptually, the tiled area forms a grid, and the
 Layout Definitions describes that grid's area and cell width/height.
+These definitions can be used to chop a bundle of imagery into tiles
+suitable for being served out on a web map.  
 
 Within the context of GeoTrellis, the `LayoutDefinition` class extends
 `GridExtent`, and exposes methods for querying the sizes of the grid and
 grid cells. Those values are stored in the `TileLayout` (the grid
 description) and `CellSize` classes respectively. `LayoutDefinition`s are
 used heavily during the raster reprojection process.
+Within the context of Geotrellis, the `LayoutDefinition` class extends
+`GridExtent`, and exposes methods for querying the sizes of the grid and
+grid cells. Those values are stored in the `TileLayout` (the grid
+description) and `CellSize` classes respectively. `LayoutDefinition`s are
+used heavily during the raster reprojection process.
+
+**What is a Layout Scheme?**  
+
+The language here can be vexing, but a `LayoutScheme` can be thought of
+as a factory which produces `LayoutDefinition`s. It is the scheme
+according to which some layout definition must be defined - a layout
+definition definition, if you will. The most commonly used
+`LayoutScheme` is the `ZoomedLayoutScheme`, which provides the ability
+to generate `LayoutDefinitions` for the different zoom levels of a
+web-based map (e.g. [Leaflet](http://leafletjs.com)).  
+
+
+**How are Layout Definitions used throughout Geotrellis?**  
+Suppose that we've got a distributed collection of `ProjectedExtent`s
+and `Tile`s which cover some contiguous area but which were derived from
+GeoTIFFs of varying sizes. We will sometimes describe operations like this as
+'tiling'. The method which tiles a collection of imagery provided a
+`LayoutDefinition`, the underlying `CellType` of the produced tiles, and
+the `ResampleMethod` to use for generating data at new resolutions is
+`tileToLayout`. Let's take a look at its use:  
+
+```scala
+val sourceTiles: RDD[(ProjectedExtent, Tile)] = ??? // Tiles from GeoTIFF
+val cellType: CellType = IntCellType
+val layout: LayoutDefinition = ???
+val resamp: ResampleMethod = NearestNeighbor
+
+val tiled: RDD[(SpatialKey, Tile)] =
+  tiles.tileToLayout[SpatialKey](cellType, layout, resamp)
+```
 
 In essence, a `LayoutDefinition` is the minimum information required to
-describe some tiled map area in GeoTrellis, and is used heavily when
-reading, writing, and reprojecting Rasters.
-
-<hr>
+describe the tiling of some map's area in Geotrellis. The `LayoutDefinition`
+class extends `GridExtent`, and exposes methods for querying the sizes of the
+grid and grid cells. Those values are stored in the `TileLayout` (the grid
+description) and `CellSize` classes respectively. `LayoutDefinition`s are
+most often encountered in raster reprojection processes.  
 
 Map Algebra
 ===========
@@ -963,7 +939,7 @@ there, not least
 [the book by the guy who "wrote the book" on map algebra](http://esripress.esri.com/display/index.cfm?fuseaction=display&websiteID=228&moduleID=0),
 so we will only give a brief introduction here. GeoTrellis follows Dana's
 vision of map algebra operations, although there are many operations that
-fall outside of the realm of Map Algebra that it also supports.
+fall outside of the realm of Map Algebra that it also supports.  
 
 Map Algebra operations fall into 3 general categories:
 
@@ -978,7 +954,7 @@ It wouldn't matter if the tiles were bigger or smaller - the only
 information necessary for that step in the local operation is the cell
 values that correspond to each other. A local operation happens for each
 cell value, so if the whole bottom tile was blue and the upper tile were
-yellow, then the resulting tile of the local operation would be green.
+yellow, then the resulting tile of the local operation would be green.  
 
 **Focal Operations**
 
@@ -998,7 +974,7 @@ this case the neighborhood only considers the values that are covered by the
 neighborhood. GeoTrellis also supports the idea of an analysis area, which
 is the GridBounds that the focal operation carries over, in order to support
 composing tiles with border tiles in order to support distributed focal
-operation processing.
+operation processing.  
 
 **Zonal Operations**
 
@@ -1008,7 +984,7 @@ corresponding cells in the input tile belong to. For example, if you are
 doing a `zonalStatistics` operation, and the zonal tile has a distribution
 of zone 1, zone 2, and zone 3 values, we will get back the statistics such
 as mean, median and mode for all cells in the input tile that correspond to
-each of those zone values.
+each of those zone values.  
 
 **How to use Map Algebra operations**
 
@@ -1404,3 +1380,67 @@ def foo[M[_], K: SpatialComponent: λ[α => M[α] => Functor[M, α]]](mk: M[K]) 
 
 which says "`M` can be mapped into, and the `K` you find is guaranteed to
 have a `SpatialComponent` as well".
+
+More Core Concepts...
+===============
+
+<h3>CRS</h3>
+
+**Data Structures:** `CRS`, `LatLng`, `WebMercator`, `ConusAlbers`
+
+In GIS, a *projection* is a mathematical transformation of
+Latitude/Longitude coordinates on a sphere onto some other flat plane. Such
+a plane is naturally useful for representing a map of the earth in 2D. A
+projection is defined by a *Coordinate Reference System* (CRS), which holds
+some extra information useful for reprojection. CRSs themselves have static
+definitions, have agreed-upon string representations, and are usually made
+public by standards bodies or companies. They can be looked up at
+[SpatialReference.org](http://spatialreference.org/).
+
+A *reprojection* is the transformation of coorindates in one CRS to another.
+To do so, coordinates are first converted to those of a sphere. Every CRS
+knows how to convert between its coordinates and a sphere's, so a
+transformation `CRS.A -> CRS.B -> CRS.A` is actually `CRS.A -> Sphere ->
+CRS.B -> Sphere -> CRS.A`. Naturally some floating point error does
+accumulate during this process.
+
+Within the context of GeoTrellis, the main projection-related object is the
+`CRS` trait. It stores related `CRS` objects from underlying libraries, and
+also provides the means for defining custom reprojection methods, should the
+need arise.
+
+Here is an example of using a `CRS` to reproject a `Line`:
+
+```scala
+val wm = Line(...)  // A `LineString` vector object in WebMercator.
+val ll: Line = wm.reproject(WebMercator, LatLng)  // The Line reprojected into LatLng.
+
+```
+
+<h3>Extents</h3>
+
+**Data structures:** `Extent`, `ProjectedExtent`, `TemporalProjectedExtent`,
+`GridExtent`, `RasterExtent`
+
+An `Extent` is a rectangular section of a 2D projection of the Earth. It is
+represented by two coordinate pairs that are its "min" and "max" corners in
+some Coorindate Reference System. "min" and "max" here are CRS specific, as
+the location of the point `(0,0)` varies between different CRS. An Extent
+can also be referred to as a *Bounding Box*.
+
+Within the context of GeoTrellis, the points within an `Extent` always
+implicitely belong to some `CRS`, while a `ProjectedExtent` holds both the
+original `Extent` and its current `CRS`.
+
+Here are some useful `Extent` operations, among many more:
+
+- `Extent.translate: (Double, Double) => Extent`
+- `Extent.distance: Extent => Double`
+- `Extent.contains: Extent => Boolean`
+- `Extent.intersection: Extent => Option[Extent]`
+- `ProjectedExtent.reproject: CRS => Extent`
+
+`Extent`s are most often used to represent the area of an entire Tile layer,
+and also the individual `Tile`s themselves (especially in the case of
+`Raster`s).
+
