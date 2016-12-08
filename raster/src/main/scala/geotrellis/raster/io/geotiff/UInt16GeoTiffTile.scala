@@ -55,12 +55,12 @@ class UInt16GeoTiffTile(
 
   def crop(gridBounds: GridBounds): MutableArrayTile = {
     val arr = Array.ofDim[Byte](gridBounds.size * UShortConstantNoDataCellType.bytes)
-		val segments = segmentBytes.intersectingSegments
+		val segmentIds = segmentBytes.intersectingSegments
     var counter = 0
 
     if (segmentLayout.isStriped) {
-      cfor(0)(_ < segments.length, _ + 1) { i =>
-				val segmentId = segments(i)
+      cfor(0)(_ < segmentIds.length, _ + 1) { i =>
+				val segmentId = segmentIds(i)
         val segmentGridBounds = segmentLayout.getGridBounds(segmentId)
 				val segment = getSegment(segmentId)
 
@@ -73,13 +73,13 @@ class UInt16GeoTiffTile(
 				val adjWidth = result.width * UShortConstantNoDataCellType.bytes
 				
 				cfor(adjStart)(_ < adjEnd, _ + adjCols) { i =>
-					System.arraycopy(segment.bytes, i, arr, counter, adjWidth)
+					System.arraycopy(segment.bytes, i - adjStart, arr, counter, adjWidth)
 					counter += adjWidth
 				}
       }
     } else {
-      cfor(0)(_ < segments.length, _ + 1) {i =>
-				val segmentId = segments(i)
+      cfor(0)(_ < segmentIds.length, _ + 1) {i =>
+				val segmentId = segmentIds(i)
         val segmentGridBounds = segmentLayout.getGridBounds(segmentId)
 				val segment = getSegment(segmentId)
 				val segmentTransform = segmentLayout.getSegmentTransform(segmentId)

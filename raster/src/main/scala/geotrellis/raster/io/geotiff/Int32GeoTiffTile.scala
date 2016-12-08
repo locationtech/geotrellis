@@ -47,8 +47,7 @@ class Int32GeoTiffTile(
       }
     } else {
       cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-        val segment =
-          getSegment(segmentIndex)
+        val segment = getSegment(segmentIndex)
 
         val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
         val width = segmentTransform.segmentCols * IntConstantNoDataCellType.bytes
@@ -82,11 +81,11 @@ class Int32GeoTiffTile(
 
 				val adjStart = intersection.start * IntConstantNoDataCellType.bytes
 				val adjEnd = intersection.end * IntConstantNoDataCellType.bytes
-				val adjCols = segmentGridBounds.width * IntConstantNoDataCellType.bytes
+				val adjCols = cols * IntConstantNoDataCellType.bytes
 				val adjWidth = result.width * IntConstantNoDataCellType.bytes
 
 				cfor(adjStart)(_ < adjEnd, _ + adjCols) { i =>
-					System.arraycopy(segment.bytes, i, arr, counter, adjWidth)
+					System.arraycopy(segment.bytes, i - adjStart, arr, counter, adjWidth)
 					counter += adjWidth
 				}
       }

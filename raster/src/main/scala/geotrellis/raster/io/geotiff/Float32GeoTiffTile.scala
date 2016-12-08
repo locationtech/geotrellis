@@ -100,7 +100,7 @@ class Float32GeoTiffTile(
 				val adjWidth = result.width * FloatConstantNoDataCellType.bytes
 
 				cfor(adjStart)(_ < adjEnd, _ + adjCols) { i =>
-					System.arraycopy(segment.bytes, i, arr, counter, adjWidth)
+					System.arraycopy(segment.bytes, i - adjStart, arr, counter, adjWidth)
 					counter += adjWidth
 				}
       }

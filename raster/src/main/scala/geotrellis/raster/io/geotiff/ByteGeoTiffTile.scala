@@ -75,16 +75,13 @@ class ByteGeoTiffTile(
       cfor(0)(_ < segments.length, _ + 1) { i =>
 				val segmentId = segments(i)
         val segmentGridBounds = segmentLayout.getGridBounds(segmentId)
-				println(s"segmentId = $segmentId, gridBounds = $gridBounds, segmentGridBounds = $segmentGridBounds")
 				val segment = getSegment(segmentId)
 
-				val result =
-					gridBounds.intersection(segmentGridBounds).get
-				val intersection =
-					Intersection(segmentGridBounds, result, segmentLayout)
+				val result = gridBounds.intersection(segmentGridBounds).get
+				val intersection = Intersection(segmentGridBounds, result, segmentLayout)
 
-				cfor(intersection.start)(_ < intersection.end, _ + cols) { i =>
-					System.arraycopy(segment.bytes, i, arr, counter, result.width)
+				cfor(intersection.startOffset)(_ < intersection.endOffset, _ + cols) { i =>
+					System.arraycopy(segment.bytes, i - intersection.startOffset, arr, counter, result.width)
 					counter += result.width
 				}
       }
@@ -98,7 +95,7 @@ class ByteGeoTiffTile(
 				val result = gridBounds.intersection(segmentGridBounds).get
 				val intersection = Intersection(segmentGridBounds, result, segmentLayout)
 
-				cfor(intersection.start)(_ < intersection.end, _ + intersection.tileWidth) { i =>
+				cfor(intersection.startOffset)(_ < intersection.endOffset, _ + intersection.tileWidth) { i =>
 					val col = segmentTransform.indexToCol(i)
 					val row = segmentTransform.indexToRow(i)
 					val j = (row - gridBounds.rowMin) * gridBounds.width + (col - gridBounds.colMin)

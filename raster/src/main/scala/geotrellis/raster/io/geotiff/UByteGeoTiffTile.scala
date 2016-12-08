@@ -78,6 +78,7 @@ class UByteGeoTiffTile(
 
         val result = gridBounds.intersection(segmentGridBounds).get
         val intersection = Intersection(segmentGridBounds, result, segmentLayout)
+
         cfor(intersection.startOffset)(_ < intersection.endOffset, _ + cols) { inRowColMin =>
           System.arraycopy(segment.bytes, inRowColMin - intersection.startOffset, arr, counter, result.width)
           counter += result.width
@@ -91,11 +92,8 @@ class UByteGeoTiffTile(
         val segmentTransform = segmentLayout.getSegmentTransform(segmentId)
         val tileWidth = segmentLayout.tileLayout.tileCols
 
-        val result =
-          gridBounds.intersection(segmentGridBounds).get
-
-        val intersection =
-          Intersection(segmentGridBounds, result, segmentLayout)
+        val result = gridBounds.intersection(segmentGridBounds).get
+        val intersection = Intersection(segmentGridBounds, result, segmentLayout)
 
         cfor(intersection.startOffset)(_ < intersection.endOffset, _ + tileWidth) { i =>
           val col = segmentTransform.indexToCol(i)
