@@ -40,10 +40,10 @@ trait GridIndexTransform {
 /**
  * This case class represents how the segments in a given [[GeoTiff]] are arranged.
  *
- * @param totalCols: The total amount of cols in the GeoTiff
- * @param totalRows: The total amount of rows in the GeoTiff
- * @param tileLayout: The [[TileLayout]] of the GeoTiff
- * @param isTiled: A Boolean that represents if the given GeoTiff is Tiled or not
+ * @param totalCols  The total amount of cols in the GeoTiff
+ * @param totalRows  The total amount of rows in the GeoTiff
+ * @param tileLayout The [[TileLayout]] of the GeoTiff
+ * @param isTiled    A Boolean that represents if the given GeoTiff is Tiled or not
  * @return A new instance of the GeoTiffSegmentLayout case class
  */
 case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: TileLayout, isTiled: Boolean) {
@@ -62,10 +62,11 @@ case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: Tile
   def isStriped: Boolean = !isTiled
 
   /**
-   * Finds the max number of cols and rows of a given [[GeoTiffSegment]]
+   * Calculates pixel dimensions of a given segment in this layout.
+   * Segments are indexed in row-major order relative to the GeoTiff they comprise.
    *
    * @param segmentIndex: An Int that represents the given segment in the index
-   * @return The max cols and rows represented as (Int, Int)
+   * @return Tuple representing segment (cols, rows)
    */
   def getSegmentDimensions(segmentIndex: Int): (Int, Int) = {
     val layoutCol = segmentIndex % tileLayout.layoutCols
@@ -88,10 +89,10 @@ case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: Tile
   }
 
   /**
-   * Returns the area of the given segment in terms of cells
+   * Calculates the total pixel count for given segment in this layout.
    *
    * @param segmentIndex: An Int that represents the given segment in the index
-   * @return The area of the segment in terms of cells
+   * @return Pixel size of the segment
    */
   def getSegmentSize(segmentIndex: Int): Int = {
     val (cols, rows) = getSegmentDimensions(segmentIndex)
@@ -99,11 +100,11 @@ case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: Tile
   }
 
   /**
-   * Finds the corresponding segment index given the col and row
+   * Finds the corresponding segment index given GeoTiff col and row
    *
-   * @param col: The specified col
-   * @param row: The specified row
-   * @return The index of the segment that the given position falls in
+   * @param col  Pixel column in overall layout
+   * @param row  Pixel row in overall layout
+   * @return     The index of the segment in this layout
    */
   def getSegmentIndex(col: Int, row: Int): Int = {
     val layoutCol = col / tileLayout.tileCols
@@ -112,8 +113,6 @@ case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: Tile
   }
 
   /**
-   * Given a segment Index, return a [[GridIndexTransform]] object.
-   *
    * @param segmentIndex: An Int that represents the index of the segment
    * @return A GridIndexTransform Object
    */
@@ -227,7 +226,6 @@ object GeoTiffSegmentLayout {
    * @param totalRows: The total amount of rows in the GeoTiff
    * @param storageMethod: The [[StorageMethod]] of the GeoTiff
    * @param bandType: The [[BandType]] of the GeoTiff
-   * @return a new instance of the [[GeoTiffSegmentLayout]] case class
    */
   def apply(totalCols: Int, totalRows: Int, storageMethod: StorageMethod, bandType: BandType): GeoTiffSegmentLayout = {
     storageMethod match {
