@@ -95,12 +95,14 @@ case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: Tile
     (layoutRow * tileLayout.layoutCols) + layoutCol
   }
 
-  def getGridBounds(segmentIndex: Int, isBit: Boolean = false): GridBounds = {
-    val segmentTransform =
-      if (isStriped)
-        StripedSegmentTransform(segmentIndex, GeoTiffSegmentLayout(totalCols, totalRows, tileLayout, isTiled))
+  def getSegmentTransform(segmentIndex: Int): GridIndexTransform =
+    if (isStriped)
+      StripedSegmentTransform(segmentIndex, GeoTiffSegmentLayout(totalCols, totalRows, tileLayout, isTiled))
       else
         TiledSegmentTransform(segmentIndex, GeoTiffSegmentLayout(totalCols, totalRows, tileLayout, isTiled))
+
+  def getGridBounds(segmentIndex: Int, isBit: Boolean = false): GridBounds = {
+    val segmentTransform = getSegmentTransform(segmentIndex)
 
     val segmentCols = segmentTransform.segmentCols
     val segmentRows = segmentTransform.segmentRows
