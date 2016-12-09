@@ -33,7 +33,13 @@ class UInt32GeoTiffTile(
     cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
       val segment =
         getSegment(segmentIndex)
-      val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
+
+      val segmentTransform =
+        if (segmentLayout.isStriped)
+          StripedSegmentTransform(segmentIndex, segmentLayout)
+        else
+          TiledSegmentTransform(segmentIndex, segmentLayout)
+
       cfor(0)(_ < segment.size, _ + 1) { i =>
         val col = segmentTransform.indexToCol(i)
         val row = segmentTransform.indexToRow(i)
