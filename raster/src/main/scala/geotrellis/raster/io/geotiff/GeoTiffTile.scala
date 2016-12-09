@@ -676,7 +676,13 @@ abstract class GeoTiffTile(
     for (segmentId <- segmentBytes.intersectingSegments) {
       val segment = getSegment(segmentId)
       val segmentBounds = segmentLayout.getGridBounds(segmentId)
-      val segmentTransform = segmentLayout.getSegmentTransform(segmentId)
+
+      val segmentTransform =
+        if (segmentLayout.isStriped)
+          StripedSegmentTransform(segmentId, segmentLayout)
+        else
+          TiledSegmentTransform(segmentId, segmentLayout)
+
       val overlap = bounds.intersection(segmentBounds).get
 
       if (tile.cellType.isFloatingPoint) {
