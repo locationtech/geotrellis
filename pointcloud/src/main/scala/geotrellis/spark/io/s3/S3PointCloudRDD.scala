@@ -41,7 +41,8 @@ object S3PointCloudRDD {
     getS3Client: () => S3Client = () => S3Client.DEFAULT,
     tmpDir: Option[String] = None,
     filterExtent: Option[Extent] = None,
-    dimTypes: Option[Iterable[String]] = None
+    dimTypes: Option[Iterable[String]] = None,
+    targetCrs: Option[String] = None
   )
 
   object Options {
@@ -71,6 +72,10 @@ object S3PointCloudRDD {
 
     options.dimTypes.foreach { dt =>
       PointCloudInputFormat.setDimTypes(conf, dt)
+    }
+
+    options.targetCrs.foreach { crs =>
+      PointCloudInputFormat.setTargetCrs(conf, crs)
     }
 
     options.filterExtent match {
