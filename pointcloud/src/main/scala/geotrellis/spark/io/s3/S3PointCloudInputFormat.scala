@@ -19,7 +19,6 @@ package geotrellis.spark.io.s3
 import geotrellis.spark.io.hadoop.formats.PointCloudInputFormat
 import geotrellis.spark.pointcloud.json._
 import geotrellis.util.Filesystem
-import geotrellis.vector.Extent
 
 import io.pdal._
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
@@ -47,7 +46,7 @@ class S3PointCloudInputFormat extends S3InputFormat[S3PointCloudHeader, Iterator
 
         try {
 
-          val pipeline = Pipeline(fileToPipelineJson(localPath).toString)
+          val pipeline = Pipeline(getPipelineJson(localPath, PointCloudInputFormat.getTargetCrs(context)).toString)
 
           // PDAL itself is not threadsafe
           AnyRef.synchronized { pipeline.execute }

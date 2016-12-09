@@ -16,12 +16,34 @@
 
 package geotrellis.spark.pointcloud
 
-import java.io.File
-
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
+import java.io.File
+
 package object json extends MetadataFormat {
-  def fileToPipelineJson(localPath: File): JsObject =
-    JsObject("pipeline" -> JsArray(JsObject("filename" -> localPath.getAbsolutePath.toJson)))
+  def getPipelineJson(localPath: File, targetCrs: Option[String] = None): JsObject = {
+    targetCrs match {
+      case Some(crs) =>
+        JsObject(
+          "pipeline" -> JsArray(
+            JsObject(
+              "filename" -> localPath.getAbsolutePath.toJson
+            ),
+            JsObject(
+              "type" -> "filters.reprojection".toJson,
+              "out_srs" -> crs.toJson
+            )
+          )
+        )
+
+      case _ => JsObject(
+        "pipeline" -> JsArray(
+          JsObject(
+            "filename" -> localPath.getAbsolutePath.toJson
+          )
+        )
+      )
+    }
+  }
 }
