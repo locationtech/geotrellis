@@ -106,6 +106,24 @@ object GeoTiffTile {
 
     apply(new ArraySegmentBytes(segmentBytes), compressor.createDecompressor, segmentLayout, options.compression, tile.cellType)
   }
+
+  // TODO: iterate one segment at a time
+  type SegmentSource = Seq[Int] => Seq[Array[Byte]]
+
+  def cropSegments(
+    segmentLayout: GeoTiffSegmentLayout,
+    segmentSource: SegmentSource,
+    compression: Compression,
+    bounds: GridBounds
+  ): (GeoTiffSegmentLayout, Array[Array[Byte]]) = { // Maybe return GeoTiffTile?
+    val targetLayout = segmentLayout.crop(bounds)
+    val overlap: Array[Int] = segmentLayout.intersectingSegments(bounds)
+
+    // TODO: Figure out how to iterate over the overlapping segments efficiently
+    // use the grid bounds of each target relative to source layout to find all intersecting segments.// iterate over the pixels in the overlap
+
+    ???
+  }
 }
 
 abstract class GeoTiffTile(
@@ -619,14 +637,42 @@ abstract class GeoTiffTile(
   def mutable: MutableArrayTile
 
   /**
-   * Performs a crop on itself where the returned GeoTiffTile will have the
-   * same dimensions as the GridBounds.
+   * Crop this tile to given pixel region.
    *
-   * @param gridBounds: A [[GridBounds]] that contains the area to be cropped.
-   *
-   * @return A [[MutableArrayTile]]
+   * @param bounds: Pixel bounds specifying the crop area.
+   * @return A [[MutableArrayTile]] of the cropped region
    */
-  def crop(gridBounds: GridBounds): MutableArrayTile
+  def crop(bounds: GridBounds): MutableArrayTile = {
+    val tile = ArrayTile.empty(cellType, bounds.width, bounds.height)
+
+    // TODO: iterate in offset order, not in TiffTags order
+    for (segmentId <- segmentBytes.intersectingSegments) {
+      val segment = getSegment(segmentId)
+      val segmentBounds = segmentLayout.getGridBounds(segmentId)
+      val segmentTransform = segmentLayout.getSegmentTransform(segmentId)
+      val overlap = bounds.intersection(segmentBounds).get
+
+      if (tile.cellType.isFloatingPoint) {
+        cfor(overlap.colMin)(_ <= overlap.colMax, _ + 1) { col =>
+          cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
+            val i = segmentTransform.gridToIndex(col, row)
+            val v = segment.getInt(i)
+            tile.set(col - bounds.colMin, row - bounds.rowMin, v)
+          }
+        }
+      } else {
+        cfor(overlap.colMin)(_ <= overlap.colMax, _ + 1) { col =>
+          cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
+            val i = segmentTransform.gridToIndex(col, row)
+            val v = segment.getDouble(i)
+            tile.setDouble(col - bounds.colMin, row - bounds.rowMin, v)
+          }
+        }
+      }
+    }
+
+    tile
+  }
 
   /**
    * Converts the GeoTiffTile to an Array[Byte]

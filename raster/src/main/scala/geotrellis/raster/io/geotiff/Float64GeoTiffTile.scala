@@ -18,7 +18,6 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.compression._
-import spire.syntax.cfor._
 
 class Float64GeoTiffTile(
   val segmentBytes: SegmentBytes,
@@ -35,23 +34,6 @@ class Float64GeoTiffTile(
   }
 
   def mutable: MutableArrayTile = crop(gridBounds)
-
-  def crop(gridBounds: GridBounds): MutableArrayTile = {
-    val bytesPerPixel: Int = DoubleConstantNoDataCellType.bytes
-    val arr: Array[Byte] =
-      if (segmentLayout.isStriped)
-        readStrippedSegmentBytes(segmentBytes,
-          segmentLayout,
-          bytesPerPixel,
-          gridBounds)
-      else
-        readTiledSegmentBytes(segmentBytes,
-          segmentLayout,
-          bytesPerPixel,
-          gridBounds)
-
-    DoubleArrayTile.fromBytes(arr, gridBounds.width, gridBounds.height, cellType)
-  }
 
   def withNoData(noDataValue: Option[Double]): Float64GeoTiffTile =
     new Float64GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoData(noDataValue))

@@ -43,31 +43,6 @@ class Float32GeoTiffTile(
    */
   def mutable: MutableArrayTile = crop(gridBounds)
 
-  /**
-   * Reads a windowed area out of a [[GeoTiffTile]] and create a
-   * FloatArrayTile.
-   *
-   * @param  CroppedGeoTiff  The [[WindowedGeoTiff]] of the file
-   * @return                 A [[FloatArrayTile]] that conatins data from the windowed area
-   */
-  def crop(gridBounds: GridBounds): MutableArrayTile = {
-    val bytesPerPixel: Int = FloatConstantNoDataCellType.bytes
-    val arr: Array[Byte] =
-      if (segmentLayout.isStriped)
-        readStrippedSegmentBytes(segmentBytes,
-          segmentLayout,
-          bytesPerPixel,
-          gridBounds)
-      else
-        readTiledSegmentBytes(segmentBytes,
-          segmentLayout,
-          bytesPerPixel,
-          gridBounds)
-
-    FloatArrayTile.fromBytes(arr, gridBounds.width, gridBounds.height, cellType)
-  }
-
-
   def withNoData(noDataValue: Option[Double]): Float32GeoTiffTile =
     new Float32GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoData(noDataValue))
 

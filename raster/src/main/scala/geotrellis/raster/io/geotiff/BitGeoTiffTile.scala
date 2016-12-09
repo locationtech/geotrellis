@@ -58,7 +58,7 @@ class BitGeoTiffTile(
    result
   }
 
-  def crop(gridBounds: GridBounds): MutableArrayTile = {
+  override def crop(gridBounds: GridBounds): MutableArrayTile = {
     val result = BitArrayTile.empty(gridBounds.width, gridBounds.height)
 
     val colMin = gridBounds.colMin

@@ -18,6 +18,7 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.raster.GridBounds
 import geotrellis.raster.TileLayout
+import scala.collection.mutable.ArrayBuffer
 
 /** Specifically for single band segments. If dealing with multiband segments, you must do the math */
 trait GridIndexTransform {

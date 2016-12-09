@@ -53,23 +53,6 @@ class Int16GeoTiffTile(
     ShortArrayTile(arr, cols, rows, cellType)
   }
 
-  def crop(gridBounds: GridBounds): MutableArrayTile = {
-    val bytesPerPixel: Int = ShortConstantNoDataCellType.bytes
-    val arr: Array[Byte] =
-      if (segmentLayout.isStriped)
-        readStrippedSegmentBytes(segmentBytes,
-          segmentLayout,
-          bytesPerPixel,
-          gridBounds)
-      else
-        readTiledSegmentBytes(segmentBytes,
-          segmentLayout,
-          bytesPerPixel,
-          gridBounds)
-
-    ShortArrayTile.fromBytes(arr, gridBounds.width, gridBounds.height, cellType)
-  }
-
   def withNoData(noDataValue: Option[Double]): Int16GeoTiffTile =
     new Int16GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoData(noDataValue))
 
