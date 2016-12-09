@@ -38,7 +38,8 @@ object HadoopPointCloudRDD {
     filesExtensions: Seq[String] = Seq(".las", ".laz"),
     tmpDir: Option[String] = None,
     filterExtent: Option[Extent] = None,
-    dimTypes: Option[Iterable[String]] = None
+    dimTypes: Option[Iterable[String]] = None,
+    targetCrs: Option[String] = None
   )
 
   object Options {
@@ -60,6 +61,10 @@ object HadoopPointCloudRDD {
 
     options.dimTypes.foreach { dt =>
       PointCloudInputFormat.setDimTypes(conf, dt)
+    }
+
+    options.targetCrs.foreach { crs =>
+      PointCloudInputFormat.setTargetCrs(conf, crs)
     }
 
     options.filterExtent match {

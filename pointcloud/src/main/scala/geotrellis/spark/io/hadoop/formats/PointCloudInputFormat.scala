@@ -33,6 +33,7 @@ object PointCloudInputFormat {
   final val POINTCLOUD_TMP_DIR = "POINTCLOUD_TMP_DIR"
   final val POINTCLOUD_FILTER_EXTENT = "POINTCLOUD_FILTER_EXTENT"
   final val POINTCLOUD_DIM_TYPES = "POINTCLOUD_DIM_TYPES"
+  final val POINTCLOUD_TARGET_CRS = "POINTCLOUD_TARGET_CRS"
 
   def setTmpDir(conf: Configuration, dir: String): Unit =
     conf.set(POINTCLOUD_TMP_DIR, dir)
@@ -51,9 +52,16 @@ object PointCloudInputFormat {
 
   def getDimTypes(job: JobContext): Option[Array[String]] = {
     val s = job.getConfiguration.get(POINTCLOUD_DIM_TYPES)
-    if(s != null) { Some(s.split(";").toArray) }
+    if(s != null) { Some(s.split(";")) }
     else { None }
   }
+
+  // Be careful, metadata contained in PointCloudHeader won't be reprojected
+  def setTargetCrs(conf: Configuration, targetCrs: String): Unit =
+    conf.set(POINTCLOUD_TARGET_CRS, targetCrs)
+
+  def getTargetCrs(job: JobContext): Option[String] =
+    Option(job.getConfiguration.get(POINTCLOUD_TARGET_CRS))
 }
 
 /** Process files from the path through PDAL, and reads all files point data as an Array[Byte] **/
@@ -80,8 +88,7 @@ class PointCloudInputFormat extends FileInputFormat[HadoopPointCloudHeader, Iter
       bos.close()
 
       try {
-
-        val pipeline = Pipeline(fileToPipelineJson(localPath).toString)
+        val pipeline = Pipeline(getPipelineJson(localPath, PointCloudInputFormat.getTargetCrs(context)).toString)
 
         // PDAL itself is not threadsafe
         AnyRef.synchronized { pipeline.execute }
