@@ -186,11 +186,7 @@ abstract class GeoTiffTile(
    */
   def get(col: Int, row: Int): Int = {
     val segmentIndex = segmentLayout.getSegmentIndex(col, row)
-    val i =
-      if (segmentLayout.isStriped)
-        StripedSegmentTransform(segmentIndex, segmentLayout).gridToIndex(col, row)
-      else
-        TiledSegmentTransform(segmentIndex, segmentLayout).gridToIndex(col, row)
+    val i = segmentLayout.getSegmentTransform(segmentIndex).gridToIndex(col, row)
 
     getSegment(segmentIndex).getInt(i)
   }
@@ -204,11 +200,7 @@ abstract class GeoTiffTile(
    */
   def getDouble(col: Int, row: Int): Double = {
     val segmentIndex = segmentLayout.getSegmentIndex(col, row)
-    val i =
-      if (segmentLayout.isStriped)
-        StripedSegmentTransform(segmentIndex, segmentLayout).gridToIndex(col, row)
-      else
-        TiledSegmentTransform(segmentIndex, segmentLayout).gridToIndex(col, row)
+    val i = segmentLayout.getSegmentTransform(segmentIndex).gridToIndex(col, row)
 
     getSegment(segmentIndex).getDouble(i)
   }
@@ -227,7 +219,7 @@ abstract class GeoTiffTile(
 
       if(isTiled) {
         // Need to check for bounds
-        val segmentTransform = TiledSegmentTransform(segmentIndex, segmentLayout)
+        val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
         cfor(0)(_ < segmentSize, _ + 1) { i =>
           val col = segmentTransform.indexToCol(i)
           val row = segmentTransform.indexToRow(i)
@@ -257,7 +249,7 @@ abstract class GeoTiffTile(
 
       if(isTiled) {
         // Need to check for bounds
-        val segmentTransform = TiledSegmentTransform(segmentIndex, segmentLayout)
+        val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
         cfor(0)(_ < segmentSize, _ + 1) { i =>
           val col = segmentTransform.indexToCol(i)
           val row = segmentTransform.indexToRow(i)
@@ -333,11 +325,7 @@ abstract class GeoTiffTile(
       val segment = getSegment(segmentIndex)
       val segmentSize = segment.size
 
-      val segmentTransform =
-        if (segmentLayout.isStriped)
-          StripedSegmentTransform(segmentIndex, segmentLayout)
-        else
-          TiledSegmentTransform(segmentIndex, segmentLayout)
+      val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
 
       cfor(0)(_ < segmentSize, _ + 1) { i =>
         val col = segmentTransform.indexToCol(i)
@@ -358,11 +346,7 @@ abstract class GeoTiffTile(
     cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
       val segment = getSegment(segmentIndex)
       val segmentSize = segment.size
-      val segmentTransform =
-        if (segmentLayout.isStriped)
-          StripedSegmentTransform(segmentIndex, segmentLayout)
-        else
-          TiledSegmentTransform(segmentIndex, segmentLayout)
+      val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
       cfor(0)(_ < segmentSize, _ + 1) { i =>
         val col = segmentTransform.indexToCol(i)
         val row = segmentTransform.indexToRow(i)
@@ -384,11 +368,7 @@ abstract class GeoTiffTile(
     val compressor = compression.createCompressor(segmentCount)
     cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
       val segment = getSegment(segmentIndex)
-      val segmentTransform =
-        if (segmentLayout.isStriped)
-          StripedSegmentTransform(segmentIndex, segmentLayout)
-        else
-          TiledSegmentTransform(segmentIndex, segmentLayout)
+      val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
 
       val newBytes = segment.mapWithIndex { (i, z) =>
         val col = segmentTransform.indexToCol(i)
@@ -421,11 +401,7 @@ abstract class GeoTiffTile(
     val compressor = compression.createCompressor(segmentCount)
     cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
       val segment = getSegment(segmentIndex)
-      val segmentTransform =
-        if (segmentLayout.isStriped)
-          StripedSegmentTransform(segmentIndex, segmentLayout)
-        else
-          TiledSegmentTransform(segmentIndex, segmentLayout)
+      val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
       val newBytes = segment.mapDoubleWithIndex { (i, z) =>
         val col = segmentTransform.indexToCol(i)
         val row = segmentTransform.indexToRow(i)
@@ -616,7 +592,7 @@ abstract class GeoTiffTile(
       cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
         val segment = getSegment(segmentIndex)
 
-        val segmentTransform = TiledSegmentTransform(segmentIndex, segmentLayout)
+        val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
         val width = segmentTransform.segmentCols * bytesPerPixel
         val tileWidth = segmentLayout.tileLayout.tileCols * bytesPerPixel
 
@@ -633,7 +609,7 @@ abstract class GeoTiffTile(
         val segmentId = segmentIds(i)
         val segmentGridBounds = segmentLayout.getGridBounds(segmentId)
         val segment: GeoTiffSegment = getSegment(segmentId)
-        val segmentTransform = TiledSegmentTransform(segmentId, segmentLayout)
+        val segmentTransform = segmentLayout.getSegmentTransform(segmentId)
 
         val result = windowBounds.intersection(segmentGridBounds).get
         val intersection = Intersection(segmentGridBounds, result, segmentLayout)
@@ -677,11 +653,7 @@ abstract class GeoTiffTile(
       val segment = getSegment(segmentId)
       val segmentBounds = segmentLayout.getGridBounds(segmentId)
 
-      val segmentTransform =
-        if (segmentLayout.isStriped)
-          StripedSegmentTransform(segmentId, segmentLayout)
-        else
-          TiledSegmentTransform(segmentId, segmentLayout)
+      val segmentTransform = segmentLayout.getSegmentTransform(segmentId)
 
       val overlap = bounds.intersection(segmentBounds).get
 

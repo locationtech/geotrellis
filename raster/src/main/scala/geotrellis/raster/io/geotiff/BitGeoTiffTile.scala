@@ -67,11 +67,7 @@ class BitGeoTiffTile(
     val tileRows = segmentLayout.tileLayout.tileRows
 
     cfor(0)(_ < segmentCount, _ + 1) { i =>
-      val segmentTransform =
-        if (segmentLayout.isStriped)
-          StripedSegmentTransform(i, segmentLayout)
-        else
-          TiledSegmentTransform(i, segmentLayout)
+      val segmentTransform = segmentLayout.getSegmentTransform(i)
 
       val colStart = segmentTransform.bitIndexToCol(0)
       val rowStart = segmentTransform.bitIndexToRow(0)
