@@ -523,7 +523,11 @@ abstract class GeoTiffMultibandTile(
         cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
           val segment = getSegment(segmentIndex)
           val segmentSize = segment.size
-          val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
+          val segmentTransform =
+            if (segmentLayout.isStriped)
+              StripedSegmentTransform(segmentIndex, segmentLayout)
+            else
+              TiledSegmentTransform(segmentIndex, segmentLayout)
           cfor(0)(_ < segmentSize, _ + 1) { i =>
             if(i % bandCount == b0) {
               val col = segmentTransform.indexToCol(i / bandCount)
@@ -553,7 +557,7 @@ abstract class GeoTiffMultibandTile(
         cfor(start)(_ < start + bandSegmentCount, _ + 1) { segmentIndex =>
           val segment = getSegment(segmentIndex)
           val segmentSize = segment.size
-          val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex % bandSegmentCount)
+          val segmentTransform = TiledSegmentTransform(segmentIndex % bandSegmentCount, segmentLayout)
 
           cfor(0)(_ < segmentSize, _ + 1) { i =>
             val col = segmentTransform.indexToCol(i)
@@ -605,7 +609,7 @@ abstract class GeoTiffMultibandTile(
         cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
           val segment = getSegment(segmentIndex)
           val segmentSize = segment.size
-          val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
+          val segmentTransform = TiledSegmentTransform(segmentIndex, segmentLayout)
           cfor(0)(_ < segmentSize, _ + 1) { i =>
             val col = segmentTransform.indexToCol(i / bandCount)
             val row = segmentTransform.indexToRow(i / bandCount)
@@ -629,7 +633,7 @@ abstract class GeoTiffMultibandTile(
         cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
           val segment = getSegment(segmentIndex)
           val segmentSize = segment.size
-          val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex % bandSegmentCount)
+          val segmentTransform = TiledSegmentTransform(segmentIndex % bandSegmentCount, segmentLayout)
           val bandIndex = segmentIndex / bandSegmentCount
 
           cfor(0)(_ < segmentSize, _ + 1) { i =>
