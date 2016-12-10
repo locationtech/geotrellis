@@ -131,6 +131,12 @@ class HalfEdgeTable(_size: Int) {
   def getVert(e: Int): Int =
     table(e * 3)
 
+  /** Returns the vertex index for this half edge
+    * (the one in which it points to)
+    */
+  def setVert(e: Int, v: Int): Unit =
+    table(e * 3) = v
+
   /** Returns the source vertex index for this half edge
     * (the one in which it points from)
     */
@@ -138,6 +144,9 @@ class HalfEdgeTable(_size: Int) {
     val f = getFlip(e)
     table(f * 3)
   }
+
+  def setSrc(e: Int, v: Int): Unit = 
+    table(getFlip(e) * 3) = v
 
   /** Returns the halfedge index of the halfedge you get
     * from rotating this halfedge clockwise from it's source
