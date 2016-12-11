@@ -213,7 +213,24 @@ object PointCloudTriangulation {
       dpInternal(lst, Nil).reverse
     }
 
-
+    def advance(e0: Int): Int = {
+      var e = getNext(e0)
+      while (!isCorner(e))
+        e = getNext(e)
+      e
+    }
+    def reverse(e0: Int): Int = {
+      var e = getPrev(e0)
+      while (!isCorner(e))
+        e = getPrev(e)
+      e
+    }
+    def advanceIfNotCorner(e0: Int): Int = {
+      var e = e0
+      while (!isCorner(e))
+        e = getNext(e)
+      e
+    }
 
     val sortedVs = {
       val s =
@@ -287,8 +304,10 @@ object PointCloudTriangulation {
 
         case _ => {
           val med = (hi + lo) / 2
-          var TriangulationResult(left, isLeftLinear) = triangulate(lo, med)
-          var TriangulationResult(right, isRightLinear) = triangulate(med + 1, hi)
+          val TriangulationResult(left0, isLeftLinear) = triangulate(lo, med)
+          val TriangulationResult(right0, isRightLinear) = triangulate(med + 1, hi)
+          var left = advance(left0)
+          var right = advance(right0)
 
 //          println(s"DELAUNAY1 -- LEFT: triangulate($lo, $med) = ${left} RIGHT: triangulate($med, $hi) = ${right}")
 
@@ -301,7 +320,7 @@ object PointCloudTriangulation {
                 abs(getX(getSrc(left)) - getX(getVert(left))) < EPSILON &&
                 getY(getSrc(left)) - getY(getVert(left)) < -EPSILON
               )
-            ) { left = getNext(left) }
+            ) { left = advance(left) }
           }
 
 //          println("ONE")
@@ -313,56 +332,61 @@ object PointCloudTriangulation {
                 abs(getX(getSrc(right)) - getX(getVert(getNext(getFlip(right))))) < EPSILON &&
                 getY(getSrc(right)) - getY(getVert(getNext(getFlip(right)))) > EPSILON
               )
-            ) { right = getFlip(getNext(getFlip(right))) }
+            ) { right = advance(right)}
           }
 
 //          println("TWO")
 
           // compute the lower common tangent of left and right
           var continue = true
-          var base: Int = -1
-          var baseCount: Int = 0
-//          time("CALCULATING BASE") {
-          while(continue) {
-            base = createHalfEdges(getSrc(right), getSrc(left))
+          var stop = false
+          var base: Int = createHalfEdges(getSrc(right), getSrc(left))
 
-//            saveBase(base, baseCount)
+          var baseCount: Int = 0
+          //          time("CALCULATING BASE") {
+          while(continue) {
+            //            saveBase(base, baseCount)
             baseCount += 1
-//            println(s"DELAUNAY2: BASE LOOP B = ${base} R = ${right} L = ${left}")
-//            println(s"BASE $base")
+            //            println(s"DELAUNAY2: BASE LOOP B = ${base} R = ${right} L = ${left}")
+            //            println(s"BASE $base")
             if(isLeftOf(base, getVert(left))) {
               // left points to a vertex that is to the left of
               // base, so move base to left.next
-//              println(s"1")
-              left = getNext(left)
-            } else if(isLeftOf(base, getVert(right))) {
+              //              println(s"1")
+              left = advance(left)
+              setVert(base, getSrc(left))
+            } else if(!isRightLinear && !isRightOf(base, getVert(right))) {
               // right points to a point that is left of base,
               // so keep walking right
-//              println(s"2")
-              right = getNext(right)
-            } else if(isLeftOf(base, getSrc(getPrev(left)))) {
+              //              println(s"2")
+              right = advance(right)
+              setSrc(base, getSrc(right))
+            } else if(!isLeftLinear && !isRightOf(base, getSrc(getPrev(left)))) {
               // Left's previous source is left of base,
               // so this base would break convexity. Move
               // back to previous left.
-//              println(s"3")
-              left = getPrev(left)
+              //              println(s"3")
+              left = reverse(left)
+              setVert(base, getSrc(left))
             } else if(isLeftOf(base, getSrc(getPrev(right)))) {
               // Right's previous source is left ofbase,
               // so this base would break convexity. Move
               // back to previous right.
-//              println(s"4")
-              right = getPrev(right)
-            } else if(isCollinear(base, getVert(right)) &&
-                      !isRightLinear) {
-//              println(s"5")
-              // Right is colinear with base, move right forward.
-              right = getNext(right)
+              //              println(s"4")
+              right = reverse(right)
+              setSrc(base, getSrc(right))
+              /*              } else if(isCollinear(base, getVert(right)) &&
+               !isRightLinear) {
+               //              println(s"5")
+               // Right is colinear with base, move right forward.
+               right = advance(right)
+               setSrc(base, getSrc(right)) */
             } else {
-//              println(s"6")
+              //              println(s"6")
               continue = false
             }
           }
-//          }
+          //          }
 
 //          println("THREE")
 
@@ -380,6 +404,7 @@ object PointCloudTriangulation {
             val l = getVert(getNext(base))
             val r = getVert(getNext(getFlip(base)))
             if (isCollinear(b0, b1, l)  && isCollinear(b0, b1, r)) {
+              stop = true
               return TriangulationResult(getFlip(base), true)
             }
           }
@@ -495,7 +520,7 @@ object PointCloudTriangulation {
 }
 
 class PointSetPredicates(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdgeTable) {
-  import geotrellis.vector.voronoi.ShewchuksDeterminant
+  import geotrellis.vector.triangulation.ShewchuksDeterminant
 
   import pointSet.{getX, getY}
   import halfEdgeTable._
@@ -513,6 +538,9 @@ class PointSetPredicates(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdgeTabl
   def isLeftOf(e: Int, v: Int): Boolean =
     isCCW(v, getSrc(e), getVert(e))
 
+  def isRightOf(e: Int, v: Int): Boolean =
+    isCCW(v, getVert(e), getSrc(e))
+
   def isCollinear(e: Int, v: Int): Boolean = {
     val src = getSrc(e)
     val vert = getVert(e)
@@ -528,6 +556,17 @@ class PointSetPredicates(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdgeTabl
         getX(c), getY(c)
       )
     ) < EPSILON
+
+  def isCorner(edge: Int): Boolean = {
+    !isCollinear(edge, getSrc(getPrev(edge))) || {
+      val (cx, cy) = (getX(getSrc(edge)), getY(getSrc(edge)))
+      val (nx, ny) = (getX(getVert(edge)), getY(getVert(edge)))
+      val (px, py) = (getX(getSrc(getPrev(edge))), getY(getSrc(getPrev(edge))))
+      val (xn, yn) = (nx - cx, ny - cy)
+      val (xp, yp) = (px - cx, py - cy)
+      xn * xp + yn * yp > 0
+    }
+  }
 
   def inCircle(a: Int, b: Int, c: Int, d: Int): Boolean =
     ShewchuksDeterminant.incircle(
