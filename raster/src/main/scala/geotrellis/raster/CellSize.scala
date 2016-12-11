@@ -26,7 +26,8 @@ import geotrellis.vector.Extent
   * @param  height  The height of a cell
   */
 case class CellSize(width: Double, height: Double) {
-  def resolution: Double = math.sqrt(width*height)
+  def resolution: Double = math.sqrt(width * height)
+  def area: Double = width * height
 }
 
 /**
