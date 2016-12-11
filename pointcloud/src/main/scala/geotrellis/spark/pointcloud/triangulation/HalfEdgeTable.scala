@@ -1,5 +1,15 @@
 package geotrellis.spark.pointcloud.triangulation
 
+/** Mutable, non-thread safe class to keep track of half edges
+  * during Delaunay triangulation.
+  *
+  * Edge table contains an Array[Int] of triples:
+  *       [i,e1,e2] where i is the vertex of the halfedge (where the half edge 'points' to)
+  *                       e1 is the halfedge index of the flip of the halfedge
+  *                          (the halfedge that points to the source)
+  *                       e2 is the halfedge index of the next half edge
+  *                          (counter-clockwise of the triangle)
+  */
 class HalfEdgeTable(_size: Int) {
   private var size: Int = _size
   private var idx = 0
@@ -131,11 +141,11 @@ class HalfEdgeTable(_size: Int) {
   def getVert(e: Int): Int =
     table(e * 3)
 
-  /** Returns the vertex index for this half edge
-    * (the one in which it points to)
-    */
-  def setVert(e: Int, v: Int): Unit =
-    table(e * 3) = v
+  /** Sets the vertex index for this half edge
+      * (the one in which it points to)
+      */
+    def setVert(e: Int, v: Int): Unit =
+      table(e * 3) = v
 
   /** Returns the source vertex index for this half edge
     * (the one in which it points from)
@@ -145,7 +155,10 @@ class HalfEdgeTable(_size: Int) {
     table(f * 3)
   }
 
-  def setSrc(e: Int, v: Int): Unit = 
+  /** Sets the source vertex index for this half edge
+    * (the one in which it points from)
+    */
+  def setSrc(e: Int, v: Int): Unit =
     table(getFlip(e) * 3) = v
 
   /** Returns the halfedge index of the halfedge you get

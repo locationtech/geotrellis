@@ -1,6 +1,7 @@
 package geotrellis.spark.pointcloud.triangulation
 
 import io.pdal._
+import geotrellis.spark.pointcloud._
 import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.tiling._
@@ -12,68 +13,133 @@ import spire.syntax.cfor._
 import scala.collection.mutable
 
 object TinToDem {
-  def apply(rdd: RDD[PointCloud], layoutDefinition: LayoutDefinition, extent: Extent, numPartitions: Int): RDD[(SpatialKey, Tile)] =
+  case class Options(
+    cellType: CellType = DoubleConstantNoDataCellType,
+    boundsBuffer: Option[Double] = None
+  )
+
+  object Options {
+    def DEFAULT = Options()
+  }
+
+  def apply(rdd: RDD[(SpatialKey, Array[Point3D])], layoutDefinition: LayoutDefinition, extent: Extent, options: Options = Options.DEFAULT): RDD[(SpatialKey, Tile)] =
     rdd
-      .flatMap { case pointCloud =>
-        var lastKey: SpatialKey = null
-        val keysToPoints = mutable.Map[SpatialKey, mutable.ArrayBuffer[LightPoint]]()
-        val pointSize = pointCloud.pointSize
-
-        cfor(0)(_ < pointSize, _ + 1) { i =>
-          val x = pointCloud.getX(i)
-          val y = pointCloud.getY(i)
-          val z = pointCloud.getZ(i)
-          val p = LightPoint(x, y, z)
-          val key = layoutDefinition.mapTransform(x, y)
-          if(key == lastKey) {
-            keysToPoints(lastKey) += p
-          } else if(keysToPoints.contains(key)) {
-            keysToPoints(key) += p
-            lastKey = key
-          } else {
-            keysToPoints(key) = mutable.ArrayBuffer(p)
-            lastKey = key
-          }
-        }
-
-        keysToPoints.map { case (k, v) => (k, v.toArray) }
-      }
-      .reduceByKey({ (p1, p2) => p1 union p2 }, numPartitions)
       .collectNeighbors
       .mapPartitions({ partition =>
-        partition.map { case (key, neighbors) =>
-          val extent = layoutDefinition.mapTransform(key)
-
+        partition.flatMap { case (key, neighbors) =>
+          val extent @ Extent(xmin, ymin, xmax, ymax) =
+            layoutDefinition.mapTransform(key)
 
           var len = 0
           neighbors.foreach { case (_, (_, arr)) =>
             len += arr.length
           }
-          val points = Array.ofDim[LightPoint](len)
+          val points = Array.ofDim[Point3D](len)
           var j = 0
-          neighbors.foreach { case (_, (_, tilePoints)) =>
-            cfor(0)(_ < tilePoints.length, _ + 1) { i =>
-              points(j) = tilePoints(i)
-              j += 1
-            }
+          options.boundsBuffer match {
+            case Some(b) =>
+              val bufferedExtent =
+                Extent(
+                  xmin - b,
+                  ymin - b,
+                  xmax + b,
+                  ymax + b
+                )
+
+              neighbors.foreach { case (_, (_, tilePoints)) =>
+                cfor(0)(_ < tilePoints.length, _ + 1) { i =>
+                  val p = tilePoints(i)
+                  // Only consider points within `boundsBuffer` of the extent
+                  if(bufferedExtent.contains(p.x, p.y)) {
+                    points(j) = p
+                    j += 1
+                  }
+                }
+              }
+            case None =>
+              neighbors.foreach { case (_, (_, tilePoints)) =>
+                cfor(0)(_ < tilePoints.length, _ + 1) { i =>
+                  points(j) = tilePoints(i)
+                  j += 1
+                }
+              }
           }
 
-          val delaunay =
-            PointCloudTriangulation(points)
+          if(j > 2) {
+            val pointSet =
+              new DelaunayPointSet {
+                def length: Int = j
+                def getX(i: Int): Double = points(i).x
+                def getY(i: Int): Double = points(i).y
+                def getZ(i: Int): Double = points(i).z
+              }
 
-          val re =
-            RasterExtent(
-              extent,
-              layoutDefinition.tileCols,
-              layoutDefinition.tileRows
-            )
+            val delaunay =
+              PointCloudTriangulation(pointSet)
 
-          val tile =
-            ArrayTile.empty(DoubleConstantNoDataCellType, re.cols, re.rows)
+            val re =
+              RasterExtent(
+                extent,
+                layoutDefinition.tileCols,
+                layoutDefinition.tileRows
+              )
 
-          delaunay.rasterize(tile, re)
+            val tile =
+              ArrayTile.empty(options.cellType, re.cols, re.rows)
 
-          (key, tile)
+            delaunay.rasterize(tile, re)
+
+            Some((key, tile))
+          } else {
+            None
+          }
         }
       }, preservesPartitioning = true)
+
+  // def withStitch(rdd: RDD[(SpatialKey, Array[Point3D])], layoutDefinition: LayoutDefinition, extent: Extent, options: Options = Options.DEFAULT): RDD[(SpatialKey, Tile)] = {
+
+  //   // Assumes that a partitioner has already been set
+
+  //   val trianglations: RDD[(SpatialKey, PointCloudTriangulation)] =
+  //     rdd
+  //       .mapValues { points =>
+  //         PointCloudTriangulation(points)
+  //       }
+
+  //   val borders: RDD[(SpatialKey, BorderTriangulation)] =
+  //     triangluations
+  //       .mapValues(_.convertToBorder)
+
+  //   borders
+  //     .collectNeighbors
+  //     .mapPartitions({ paritions =>
+  //       partitions.map { case (key, neighbors) =>
+  //         val newNeighbors =
+  //           neighbors.map { case (direction, (key2, border))
+  //             val extent = layoutDefinition.mapTransform(key2)
+  //             (key, (direction, (extent, border)))
+  //           }
+  //         (key, newNeighbors)
+  //       }
+  //     }, preservesPartitioning = true)
+  //     .join(triangulations)
+  //     .mapValues { case (borders: Seq[(Direction, (Extent, BorderTriangulation))], triangulation) =>
+  //       val stitched = triangulation.stitch(borders)
+
+  //       val extent = layoutDefinition.mapTransform(key)
+  //       val re =
+  //         RasterExtent(
+  //           extent,
+  //           layoutDefinition.tileCols,
+  //           layoutDefinition.tileRows
+  //         )
+
+  //         val tile =
+  //           ArrayTile.empty(options.cellType, re.cols, re.rows)
+
+  //         stitched.rasterize(tile, re)
+
+  //         (key, tile)
+  //     }
+  // }
 }
