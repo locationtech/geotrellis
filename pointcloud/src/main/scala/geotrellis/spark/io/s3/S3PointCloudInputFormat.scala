@@ -24,6 +24,7 @@ import io.pdal._
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
 
 import java.io.{BufferedOutputStream, File, FileOutputStream}
+import scala.collection.JavaConversions._
 
 /** Process files from the path through PDAL, and reads all files point data as an Array[Byte] **/
 class S3PointCloudInputFormat extends S3InputFormat[S3PointCloudHeader, Iterator[PointCloud]] {
