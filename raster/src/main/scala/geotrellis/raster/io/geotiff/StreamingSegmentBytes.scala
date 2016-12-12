@@ -1,5 +1,6 @@
 package geotrellis.raster.io.geotiff
 
+import com.typesafe.scalalogging.LazyLogging
 import geotrellis.util._
 import geotrellis.raster.io.geotiff.tags._
 import monocle.syntax.apply._
@@ -9,7 +10,7 @@ class StreamingSegmentBytes(
   byteReader: ByteReader,
   tiffTags: TiffTags,
   maxChunkSize: Int = 32 * 1024 * 1024
-) extends SegmentBytes {
+) extends SegmentBytes with LazyLogging {
   import StreamingSegmentBytes.Segment
 
   // TODO: verify this is correct
@@ -59,6 +60,7 @@ class StreamingSegmentBytes(
     val chunkStartOffset = segments.minBy(_.startOffset).startOffset
     val chunkEndOffset = segments.maxBy(_.endOffset).endOffset
     byteReader.position(chunkStartOffset)
+    logger.debug(s"Fetching segments ${segments.map(_.id).mkString(", ")} at [$chunkStartOffset, $chunkEndOffset]")
     val chunkBytes = byteReader.getSignedByteArray(chunkStartOffset, chunkEndOffset - chunkStartOffset + 1)
     for { segment <- segments } yield {
       val segmentStart = (segment.startOffset - chunkStartOffset).toInt
@@ -68,7 +70,10 @@ class StreamingSegmentBytes(
   }.toMap
 
   def getSegment(i: Int): Array[Byte] = {
-    byteReader.getSignedByteArray(segmentOffsets(i), segmentByteCounts(i))
+    val startOffset = segmentOffsets(i)
+    val endOffset = segmentOffsets(i) + segmentByteCounts(i) - 1
+    logger.debug(s"Fetching segment $i at [$startOffset, $endOffset]")
+    byteReader.getSignedByteArray(startOffset, segmentByteCounts(i))
   }
 
   def getSegments(indices: Traversable[Int]): Iterator[(Int, Array[Byte])] = {
