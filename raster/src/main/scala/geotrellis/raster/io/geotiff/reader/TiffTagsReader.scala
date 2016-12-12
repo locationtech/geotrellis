@@ -617,7 +617,7 @@ object TiffTagsReader {
 
     def readSignedFractionalsTag(tiffTags: TiffTags,
       tagMetadata: TiffTagMetadata) = {
-      val fractionals = byteReader.getSignedFractionalArray(tagMetadata.length, length = tagMetadata.length)
+      val fractionals = byteReader.getSignedFractionalArray(tagMetadata.offset, length = tagMetadata.length)
 
       (tiffTags &|->
         TiffTags._nonStandardizedTags ^|->
