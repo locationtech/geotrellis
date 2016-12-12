@@ -22,6 +22,9 @@ import spray.json._
   * @note parameter for writing json and will attempt to attach it to
   *       Feature/Geometry json representations.
   */
-trait GeoJsonSupport extends GeometryFormats with FeatureFormats with CrsFormats
+trait GeoJsonSupport extends GeometryFormats
+    with JtsGeometryFormats
+    with FeatureFormats
+    with CrsFormats
 
 object GeoJsonSupport extends GeoJsonSupport
