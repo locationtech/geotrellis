@@ -57,38 +57,11 @@ object ArraySegmentBytes {
     *  @return             A new instance of ArraySegmentBytes
     */
   def apply(byteReader: ByteReader, tiffTags: TiffTags): ArraySegmentBytes = {
-    val compressedBytes: Array[Array[Byte]] = {
-      def readSections(offsets: Array[Long], byteCounts: Array[Long]): Array[Array[Byte]] = {
-        val result = Array.ofDim[Array[Byte]](offsets.length)
-        // TODO: use chunking read here to improve performance
-        cfor(0)(_ < offsets.length, _ + 1) { i =>
-          result(i) = byteReader.getSignedByteArray(offsets(i), byteCounts(i))
-        }
-        result
-      }
-
-      if (tiffTags.hasStripStorage()) {
-        val stripOffsets = tiffTags &|->
-          TiffTags._basicTags ^|->
-          BasicTags._stripOffsets get
-
-        val stripByteCounts = tiffTags &|->
-          TiffTags._basicTags ^|->
-          BasicTags._stripByteCounts get
-
-        readSections(stripOffsets.get, stripByteCounts.get)
-
-      } else {
-        val tileOffsets = tiffTags &|->
-          TiffTags._tileTags ^|->
-          TileTags._tileOffsets get
-
-        val tileByteCounts = tiffTags &|->
-          TiffTags._tileTags ^|->
-          TileTags._tileByteCounts get
-
-        readSections(tileOffsets.get, tileByteCounts.get)
-      }
+   // TODO: use streaming read here to improve performance via chunking
+    val streaming = StreamingSegmentBytes(byteReader, tiffTags)
+    val compressedBytes = Array.ofDim[Array[Byte]](streaming.length)
+    streaming.getSegments(0 until compressedBytes.length).foreach {
+      case (i, bytes) => compressedBytes(i) = bytes
     }
     new ArraySegmentBytes(compressedBytes)
   }

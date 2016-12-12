@@ -51,7 +51,7 @@ class StreamingSegmentBytes(
       if (chunkSize + seg.size <= maxChunkSize)
         (chunkSize + seg.size) -> ((seg :: headChunk) :: commitedChunks)
       else
-        (seg.size) -> ((seg :: Nil) :: headChunk :: commitedChunks)
+        seg.size -> ((seg :: Nil) :: headChunk :: commitedChunks)
     }
   }._2.reverse // get segments back in offset order
 
