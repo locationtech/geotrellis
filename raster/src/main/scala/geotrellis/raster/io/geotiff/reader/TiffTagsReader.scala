@@ -230,7 +230,8 @@ object TiffTagsReader {
     def readBytesTag(tiffTags: TiffTags,
       tagMetadata: TiffTagMetadata) = {
 
-      val bytes = byteReader.getByteArray(tagMetadata.length, tagMetadata.offset)
+      val bytes = byteReader.getByteArray(offset = tagMetadata.offset,
+        length = tagMetadata.length)
 
       tagMetadata.tag match {
         case DotRangeTag => tiffTags &|->
@@ -250,7 +251,8 @@ object TiffTagsReader {
 
       // Read string, but don't read in trailing 0
       val string =
-        byteReader.getString(tagMetadata.length, tagMetadata.offset).substring(0, (tagMetadata.length - 1).toInt)
+        byteReader.getString(offset = tagMetadata.offset,
+          length = tagMetadata.length).substring(0, (tagMetadata.length - 1).toInt)
 
       tagMetadata.tag match {
         case DateTimeTag => tiffTags &|->
@@ -293,8 +295,8 @@ object TiffTagsReader {
 
     def readShortsTag(tiffTags: TiffTags,
       tagMetadata: TiffTagMetadata) = {
-      val shorts = byteReader.getShortArray(tagMetadata.length,
-        tagMetadata.offset)
+      val shorts = byteReader.getShortArray(offset = tagMetadata.offset,
+        length = tagMetadata.length)
 
       tagMetadata.tag match {
         case SubfileTypeTag => tiffTags &|->
@@ -450,7 +452,8 @@ object TiffTagsReader {
 
     def readIntsTag(tiffTags: TiffTags,
       tagMetadata: TiffTagMetadata) = {
-      val ints = byteReader.getIntArray(tagMetadata.length, tagMetadata.offset)
+      val ints = byteReader.getIntArray(offset = tagMetadata.offset,
+        length = tagMetadata.length)
 
       tagMetadata.tag match {
         case NewSubfileTypeTag => tiffTags &|->
@@ -518,10 +521,11 @@ object TiffTagsReader {
           NonStandardizedTags._longsMap modify(_ + (tag -> ints.map(_.toLong)))
       }
     }
-    
+
     def readLongsTag(tiffTags: TiffTags,
       tagMetadata: TiffTagMetadata) = {
-      val longs = byteReader.getLongArray(tagMetadata.length, tagMetadata.offset)
+      val longs = byteReader.getLongArray(offset = tagMetadata.offset,
+        length = tagMetadata.length)
 
       tagMetadata.tag match {
         case StripOffsetsTag => tiffTags &|->
@@ -541,8 +545,8 @@ object TiffTagsReader {
 
     def readFractionalsTag(tiffTags: TiffTags,
       tagMetadata: TiffTagMetadata) = {
-      val fractionals = byteReader.getFractionalArray(tagMetadata.length,
-        tagMetadata.offset)
+      val fractionals = byteReader.getFractionalArray(offset = tagMetadata.offset,
+        length = tagMetadata.length)
 
       tagMetadata.tag match {
         case XResolutionTag => tiffTags &|->
@@ -576,8 +580,8 @@ object TiffTagsReader {
 
     def readSignedBytesTag(tiffTags: TiffTags,
       tagMetadata: TiffTagMetadata) = {
-      val bytes = byteReader.getSignedByteArray(tagMetadata.length,
-        tagMetadata.offset)
+      val bytes = byteReader.getSignedByteArray(offset = tagMetadata.offset,
+        length = tagMetadata.length)
 
       (tiffTags &|->
         TiffTags._nonStandardizedTags ^|->
@@ -586,7 +590,8 @@ object TiffTagsReader {
 
     def readUndefinedTag(tiffTags: TiffTags,
       tagMetadata: TiffTagMetadata) = {
-      val bytes = byteReader.getSignedByteArray(tagMetadata.length, tagMetadata.offset)
+      val bytes = byteReader.getSignedByteArray(offset = tagMetadata.offset,
+        length = tagMetadata.length)
 
       tagMetadata.tag match {
         case JpegTablesTag => tiffTags &|->
@@ -601,8 +606,8 @@ object TiffTagsReader {
 
     def readSignedShortsTag(tiffTags: TiffTags,
       tagMetadata: TiffTagMetadata) = {
-      val shorts = byteReader.getSignedShortArray(tagMetadata.length,
-        tagMetadata.offset)
+      val shorts = byteReader.getSignedShortArray(offset = tagMetadata.offset,
+        length = tagMetadata.length)
 
       (tiffTags &|->
         TiffTags._nonStandardizedTags ^|->
@@ -611,8 +616,8 @@ object TiffTagsReader {
 
     def readSignedIntsTag(tiffTags: TiffTags,
       tagMetadata: TiffTagMetadata) = {
-      val ints = byteReader.getSignedIntArray(tagMetadata.length,
-        tagMetadata.offset)
+      val ints = byteReader.getSignedIntArray(offset = tagMetadata.offset,
+        length = tagMetadata.length)
 
       (tiffTags &|->
         TiffTags._nonStandardizedTags ^|->
@@ -621,8 +626,8 @@ object TiffTagsReader {
 
     def readSignedFractionalsTag(tiffTags: TiffTags,
       tagMetadata: TiffTagMetadata) = {
-      val fractionals = byteReader.getSignedFractionalArray(tagMetadata.length,
-        tagMetadata.offset)
+      val fractionals = byteReader.getSignedFractionalArray(offset = tagMetadata.offset,
+        length = tagMetadata.length)
 
       (tiffTags &|->
         TiffTags._nonStandardizedTags ^|->
@@ -633,8 +638,8 @@ object TiffTagsReader {
 
     def readFloatsTag(tiffTags: TiffTags,
       tagMetadata: TiffTagMetadata) = {
-      val floats = byteReader.getFloatArray(tagMetadata.length,
-        tagMetadata.offset)
+      val floats = byteReader.getFloatArray(offset = tagMetadata.offset,
+        length = tagMetadata.length)
 
       (tiffTags &|->
         TiffTags._nonStandardizedTags ^|->
@@ -645,7 +650,8 @@ object TiffTagsReader {
 
     def readDoublesTag(tiffTags: TiffTags,
       tagMetadata: TiffTagMetadata) = {
-      val doubles = byteReader.getDoubleArray(tagMetadata.length, tagMetadata.offset)
+      val doubles = byteReader.getDoubleArray(offset = tagMetadata.offset,
+        length = tagMetadata.length)
 
       tagMetadata.tag match {
         case ModelTransformationTag =>
