@@ -51,3 +51,22 @@ trait GridIndexTransform {
 
   def gridToIndex(col: Int, row: Int): Int
 }
+
+
+case class StripedSegmentTransform(segmentIndex: Int, segmentLayout: GeoTiffSegmentLayout) extends GridIndexTransform {
+  def gridToIndex(col: Int, row: Int): Int = {
+    val tileCol = col - (layoutCol * tileCols)
+    val tileRow = row - (layoutRow * tileRows)
+    tileRow * segmentCols + tileCol
+  }
+}
+
+case class TiledSegmentTransform(segmentIndex: Int, segmentLayout: GeoTiffSegmentLayout) extends GridIndexTransform {
+  def gridToIndex(col: Int, row: Int): Int = {
+    val tileCol = col - (layoutCol * tileCols)
+    val tileRow = row - (layoutRow * tileRows)
+    tileRow * tileCols + tileCol
+  }
+}
+
+
