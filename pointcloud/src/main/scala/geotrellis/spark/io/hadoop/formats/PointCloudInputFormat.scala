@@ -28,6 +28,7 @@ import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.lib.input._
 
 import java.io.{BufferedOutputStream, File, FileOutputStream}
+import scala.collection.JavaConversions._
 
 object PointCloudInputFormat {
   final val POINTCLOUD_TMP_DIR = "POINTCLOUD_TMP_DIR"
