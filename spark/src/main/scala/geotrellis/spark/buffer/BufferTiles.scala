@@ -192,7 +192,8 @@ object BufferTiles {
       }
   }
 
-  /** Buffer the tiles of type V by a constant buffer size.
+  /**
+    * Buffer the tiles of type V by a constant buffer size.
     *
     * This function will return each of the tiles with a buffer added to them by the contributions of adjacent, abutting tiles.
     *
@@ -209,7 +210,8 @@ object BufferTiles {
   ](rdd: RDD[(K, V)], bufferSize: Int): RDD[(K, BufferedTile[V])] =
     apply(rdd, bufferSize, GridBounds(Int.MinValue, Int.MinValue, Int.MaxValue, Int.MaxValue))
 
-  /** Buffer the tiles of type V by a constant buffer size.
+  /**
+    * Buffer the tiles of type V by a constant buffer size.
     *
     * This function will return each of the tiles with a buffer added to them by the contributions of adjacent, abutting tiles.
     *
@@ -226,7 +228,8 @@ object BufferTiles {
   ](rdd: Seq[(K, V)], bufferSize: Int): Seq[(K, BufferedTile[V])] =
   apply(rdd, bufferSize, GridBounds(Int.MinValue, Int.MinValue, Int.MaxValue, Int.MaxValue))
 
-  /** Buffer the tiles of type V by a constant buffer size.
+  /**
+    * Buffer the tiles of type V by a constant buffer size.
     *
     * This function will return each of the tiles with a buffer added to them by the contributions of adjacent, abutting tiles.
     *
@@ -260,7 +263,8 @@ object BufferTiles {
     bufferWithNeighbors(grouped)
   }
 
-  /** Buffer the tiles of type V by a dynamic buffer size.
+  /**
+    * Buffer the tiles of type V by a dynamic buffer size.
     *
     * This function will return each of the tiles with a buffer added to them by the contributions of adjacent, abutting tiles.
     *
@@ -286,7 +290,8 @@ object BufferTiles {
     result
   }
 
-  /** Buffer the tiles of type V by a dynamic buffer size.
+  /**
+    * Buffer the tiles of type V by a dynamic buffer size.
     *
     * This function will return each of the tiles with a buffer added to them by the contributions of adjacent, abutting tiles.
     *
@@ -302,7 +307,8 @@ object BufferTiles {
   ](seq: Seq[(K, V)], getBufferSizes: K => BufferSizes): Seq[(K, BufferedTile[V])] =
     apply(seq, seq.map { case (key, _) =>  key -> getBufferSizes(key) })
 
-  /** Buffer the tiles of type V by a dynamic buffer size.
+  /**
+    * Buffer the tiles of type V by a dynamic buffer size.
     *
     * This function will return each of the tiles with a buffer added to them by the contributions of adjacent, abutting tiles.
     *
@@ -363,7 +369,8 @@ object BufferTiles {
     bufferWithNeighbors(grouped)
   }
 
-  /** Buffer the tiles of type V by a dynamic buffer size.
+  /**
+    * Buffer the tiles of type V by a dynamic buffer size.
     *
     * This function will return each of the tiles with a buffer added to them by the contributions of adjacent, abutting tiles.
     *
@@ -409,7 +416,8 @@ object BufferTiles {
     bufferWithNeighbors(grouped)
   }
 
-  /** Buffer the tiles of type V by a constant buffer size.
+  /**
+    * Buffer the tiles of type V by a constant buffer size.
     *
     * This function will return each of the tiles with a buffer added to them by the contributions of adjacent, abutting tiles.
     *

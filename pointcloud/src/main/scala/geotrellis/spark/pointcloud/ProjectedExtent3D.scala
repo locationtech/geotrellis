@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2014 Azavea.
+ * Copyright 2016 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,18 +14,8 @@
  * limitations under the License.
  */
 
-object Version {
-  val geotrellis  = "1.1.0-PC-SNAPSHOT"
-  val scala       = "2.11.8"
-  val geotools    = "14.4"
-  val akka        = "2.4.10"
-  val spray       = "1.3.3"
-  val sprayJson   = "1.3.2"
-  val monocle     = "1.2.2"
-  val accumulo    = "1.7.2"
-  val cassandra   = "3.1.0"
-  val hbase       = "1.2.4"
-  val geomesa     = "1.2.5"
-  lazy val hadoop = Environment.hadoopVersion
-  lazy val spark  = Environment.sparkVersion
-}
+package geotrellis.spark.pointcloud
+
+import geotrellis.proj4.CRS
+
+case class ProjectedExtent3D(extent3d: Extent3D, crs: CRS)
