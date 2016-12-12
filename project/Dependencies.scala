@@ -62,4 +62,6 @@ object Dependencies {
   val avro          = "org.apache.avro" % "avro" % "1.8.1"
 
   val slickPG      = "com.github.tminglei" %% "slick-pg" % "0.14.3"
+
+  val pdal         = "io.pdal" %% "pdal" % "1.4.0-M2"
 }

@@ -5,6 +5,7 @@
 
 ./sbt "project util" publish-local && \
 ./sbt "project macros" publish-local && \
+./sbt "project points" publish-local && \
 ./sbt "project proj4" publish-local && \
 ./sbt "project vector" publish-local && \
 ./sbt "project vector-testkit" publish-local && \
