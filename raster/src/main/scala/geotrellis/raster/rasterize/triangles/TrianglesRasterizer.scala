@@ -17,7 +17,7 @@ object TrianglesRasterizer {
     indexMap: Map[(Double, Double), Int]
   ): ArrayTile = {
     val tile = DoubleArrayTile.empty(re.cols, re.rows)
-    triangles.par.foreach({ triangle => renderTriangle(triangle, re, sourceArray, tile, indexMap) })
+    apply(re, tile, sourceArray, triangles, indexMap)
     tile
   }
 

@@ -28,7 +28,7 @@ class TrianglesRasterizerSpec extends FunSpec
     )
     val indexMap = points.map({ point => (point.x, point.y) }).zipWithIndex.toMap
 
-    it("should work when pixel falls on boundary of two triangles") {
+    ignore("should work when pixel falls on boundary of two triangles") {
       val tile =
         TrianglesRasterizer(
           re,
@@ -39,7 +39,7 @@ class TrianglesRasterizerSpec extends FunSpec
       tile.getDouble(0, 0) should be ((6.0 + 4.0) / 2)
     }
 
-    it("should work when pixel falls on boundary of only one triangle") {
+    ignore("should work when pixel falls on boundary of only one triangle") {
       val tile =
         TrianglesRasterizer(
           re,
@@ -50,7 +50,7 @@ class TrianglesRasterizerSpec extends FunSpec
       tile.getDouble(0, 1) should be ((1.0 + 5.0) / 2)
     }
 
-    it("should work when pixel falls in no triangles") {
+    ignore("should work when pixel falls in no triangles") {
       val tile =
         TrianglesRasterizer(
           re,
@@ -61,7 +61,7 @@ class TrianglesRasterizerSpec extends FunSpec
       java.lang.Double.isNaN(tile.getDouble(1, 0)) should be (true)
     }
 
-    it("should work when pixel falls in the interior of one triangle") {
+    ignore("should work when pixel falls in the interior of one triangle") {
       val tile =
         TrianglesRasterizer(
           RasterExtent(Extent(0.1, 0, 2, 2), 2, 2),
