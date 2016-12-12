@@ -361,6 +361,4 @@ object GeoTiffReader {
       noDataValue
     )
   }
-
-
 }
