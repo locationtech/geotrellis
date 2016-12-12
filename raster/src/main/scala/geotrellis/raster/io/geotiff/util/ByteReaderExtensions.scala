@@ -60,14 +60,11 @@ trait ByteReaderExtensions {
           arr(i) = ub2s(bb.get)
         }
       } else {
-        val oldPos = byteReader.position
         byteReader.position(valueOffset)
 
         cfor(0)(_ < length, _ + 1) { i =>
           arr(i) = ub2s(byteReader.get)
         }
-
-        byteReader.position(oldPos)
       }
 
       arr
