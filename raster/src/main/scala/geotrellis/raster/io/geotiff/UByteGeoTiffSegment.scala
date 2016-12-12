@@ -25,7 +25,7 @@ import java.util.BitSet
 import spire.syntax.cfor._
 
 abstract class UByteGeoTiffSegment(val bytes: Array[Byte]) extends GeoTiffSegment {
-  val size: Int = bytes.length
+  val size: Int = bytes.size
 
   def get(i: Int): Int = bytes(i) & 0xFF
   def getRaw(i: Int): Byte = bytes(i)

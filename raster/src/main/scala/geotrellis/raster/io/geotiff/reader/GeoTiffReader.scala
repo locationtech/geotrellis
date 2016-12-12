@@ -324,7 +324,7 @@ object GeoTiffReader {
 
     val segmentBytes: SegmentBytes =
       if (streaming)
-        StreamingSegmentBytes(byteReader, segmentLayout, tiffTags)
+        StreamingSegmentBytes(byteReader, tiffTags)
       else
         ArraySegmentBytes(byteReader, tiffTags)
 

@@ -5,11 +5,8 @@ import geotrellis.raster.io.geotiff.tags._
 import monocle.syntax.apply._
 import geotrellis.raster.io.geotiff.util._
 
-
-
 class StreamingSegmentBytes(
   byteReader: ByteReader,
-  segmentLayout: GeoTiffSegmentLayout,
   tiffTags: TiffTags,
   maxChunkSize: Int = 32 * 1024 * 1024
 ) extends SegmentBytes {
@@ -62,7 +59,7 @@ class StreamingSegmentBytes(
     val chunkStartOffset = segments.minBy(_.startOffset).startOffset
     val chunkEndOffset = segments.maxBy(_.endOffset).endOffset
     byteReader.position(chunkStartOffset)
-    val chunkBytes = byteReader.getBytes((chunkEndOffset - chunkStartOffset + 1).toInt)
+    val chunkBytes = byteReader.getSignedByteArray(chunkStartOffset, chunkEndOffset - chunkStartOffset + 1)
     for { segment <- segments } yield {
       val segmentStart = (segment.startOffset - chunkStartOffset).toInt
       val segmentEnd = (segment.endOffset - chunkStartOffset).toInt
@@ -82,10 +79,10 @@ class StreamingSegmentBytes(
 }
 
 object StreamingSegmentBytes {
-  def apply(byteReader: ByteReader, segmentLayout: GeoTiffSegmentLayout, tiffTags: TiffTags): StreamingSegmentBytes =
-    new StreamingSegmentBytes(byteReader, segmentLayout, tiffTags)
+  def apply(byteReader: ByteReader, tiffTags: TiffTags): StreamingSegmentBytes =
+    new StreamingSegmentBytes(byteReader, tiffTags)
 
   case class Segment(id: Int, startOffset: Long, endOffset: Long) {
-    def size: Long = endOffset + startOffset + 1
+    def size: Long = endOffset - startOffset + 1
   }
 }
