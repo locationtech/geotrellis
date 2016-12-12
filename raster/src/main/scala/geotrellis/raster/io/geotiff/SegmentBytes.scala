@@ -22,13 +22,12 @@ package geotrellis.raster.io.geotiff
   * The base trait of SegmentBytes. It can be implemented either as
   * an Array[Array[Byte]] or as a ByteBuffer that is lazily read in.
   */
-trait SegmentBytes extends Traversable[Array[Byte]] {
+trait SegmentBytes extends Seq[Array[Byte]] {
   def getSegment(i: Int): Array[Byte]
 
-  def foreach[U](f: Array[Byte] => U): Unit =
-    intersectingSegments.foreach { i =>
-      f(getSegment(i))
-    }
+  def getSegments(indices: Traversable[Int]): Iterator[(Int, Array[Byte])]
 
-  val intersectingSegments: Array[Int]
+  def apply(idx: Int): Array[Byte] = getSegment(idx)
+
+  def iterator: Iterator[Array[Byte]] = getSegments(0 until length).map(_._2)
 }

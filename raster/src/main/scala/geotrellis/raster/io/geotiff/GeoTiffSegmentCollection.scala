@@ -16,7 +16,6 @@
 
 package geotrellis.raster.io.geotiff
 
-import geotrellis.raster._
 import geotrellis.raster.io.geotiff.compression._
 
 trait GeoTiffSegmentCollection {
@@ -31,18 +30,22 @@ trait GeoTiffSegmentCollection {
   def getDecompressedBytes(i: Int): Array[Byte] =
     decompressor.decompress(segmentBytes.getSegment(i), i)
 
+  val decompressGeoTiffSegment: (Int, Array[Byte]) => T
+
   // Cached last segment
   private var _lastSegment: T = null
   private var _lastSegmentIndex: Int = -1
 
-  val createSegment: Int => T
-
   def getSegment(i: Int): T = {
     if(i != _lastSegmentIndex) {
-      _lastSegment = createSegment(i)
+      _lastSegment = decompressGeoTiffSegment(i, getDecompressedBytes(i))
       _lastSegmentIndex = i
     }
     _lastSegment
   }
 
+  def getSegments(ids: Traversable[Int]): Iterator[(Int, T)] = {
+    for { (id, bytes) <- segmentBytes.getSegments(ids) }
+      yield id -> decompressGeoTiffSegment(id, bytes)
+  }
 }

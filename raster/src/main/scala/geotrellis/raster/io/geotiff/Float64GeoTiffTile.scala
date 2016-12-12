@@ -33,8 +33,6 @@ class Float64GeoTiffTile(
     case DoubleUserDefinedNoDataCellType(nd) => Some(nd)
   }
 
-  def mutable: MutableArrayTile = crop(gridBounds)
-
   def withNoData(noDataValue: Option[Double]): Float64GeoTiffTile =
     new Float64GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoData(noDataValue))
 

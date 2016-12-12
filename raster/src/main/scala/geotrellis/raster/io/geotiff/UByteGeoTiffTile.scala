@@ -33,8 +33,6 @@ class UByteGeoTiffTile(
     case UByteUserDefinedNoDataCellType(nd) => Some(nd)
   }
 
-  def mutable: MutableArrayTile = crop(gridBounds)
-
   def withNoData(noDataValue: Option[Double]): UByteGeoTiffTile =
     new UByteGeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoData(noDataValue))
 

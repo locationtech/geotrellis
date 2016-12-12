@@ -33,16 +33,7 @@ class Float32GeoTiffTile(
     case FloatConstantNoDataCellType => Some(Float.NaN)
     case FloatUserDefinedNoDataCellType(nd) => Some(nd)
   }
-
-  /**
-   * Reads the data out of a [[GeoTiffTile]] and create a
-   * FloatArrayTile.
-   *
-   * @param  CroppedGeoTiff  The [[WindowedGeoTiff]] of the file
-   * @return                 A [[FloatArrayTile]]
-   */
-  def mutable: MutableArrayTile = crop(gridBounds)
-
+  
   def withNoData(noDataValue: Option[Double]): Float32GeoTiffTile =
     new Float32GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoData(noDataValue))
 

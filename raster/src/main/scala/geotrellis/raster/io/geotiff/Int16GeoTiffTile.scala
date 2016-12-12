@@ -35,26 +35,6 @@ class Int16GeoTiffTile(
     case ShortUserDefinedNoDataCellType(nd) => Some(nd)
   }
 
-  def mutable: MutableArrayTile = {
-    val arr = Array.ofDim[Short](cols * rows)
-    cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-      val segment =
-        getSegment(segmentIndex)
-
-      val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
-
-      cfor(0)(_ < segment.size, _ + 1) { i =>
-        val col = segmentTransform.indexToCol(i)
-        val row = segmentTransform.indexToRow(i)
-        if(col < cols && row < rows) {
-          val data = segment.get(i)
-          arr(row * cols + col) = data
-        }
-      }
-    }
-    ShortArrayTile(arr, cols, rows, cellType)
-  }
-
   def withNoData(noDataValue: Option[Double]): Int16GeoTiffTile =
     new Int16GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoData(noDataValue))
 

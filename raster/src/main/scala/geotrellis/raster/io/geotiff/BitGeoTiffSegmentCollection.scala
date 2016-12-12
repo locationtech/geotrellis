@@ -16,8 +16,6 @@
 
 package geotrellis.raster.io.geotiff
 
-import geotrellis.raster._
-
 trait BitGeoTiffSegmentCollection extends GeoTiffSegmentCollection {
   type T = BitGeoTiffSegment
 
@@ -28,9 +26,9 @@ trait BitGeoTiffSegmentCollection extends GeoTiffSegmentCollection {
   val bandCount: Int
   val hasPixelInterleave: Boolean
 
-  val createSegment: Int => BitGeoTiffSegment = { i =>
-    val (segmentCols, segmentRows) = segmentLayout.getSegmentDimensions(i)
-    // val size = segmentCols * segmentRows
+  val decompressGeoTiffSegment = { (i: Int, bytes: Array[Byte]) =>
+    val (_, segmentRows) = segmentLayout.getSegmentDimensions(i)
+
     val cols = {
       val c = segmentLayout.tileLayout.tileCols
       if(hasPixelInterleave) c * bandCount
@@ -39,7 +37,6 @@ trait BitGeoTiffSegmentCollection extends GeoTiffSegmentCollection {
 
     val rows = if(segmentLayout.isStriped) { segmentRows } else { segmentLayout.tileLayout.tileRows }
 
-    new BitGeoTiffSegment(getDecompressedBytes(i), cols, rows)
+    new BitGeoTiffSegment(decompressor.decompress(bytes, i), cols, rows)
   }
-
 }
