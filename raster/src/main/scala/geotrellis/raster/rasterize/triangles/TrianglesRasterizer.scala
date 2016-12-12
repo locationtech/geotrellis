@@ -16,16 +16,29 @@ object TrianglesRasterizer {
     triangles: Seq[Polygon],
     indexMap: Map[(Double, Double), Int]
   ): ArrayTile = {
-    val targetArray = Array.fill[Double](re.cols * re.rows)(Double.NaN)
-    triangles.par.foreach({ triangle => renderTriangle(triangle, re, sourceArray, targetArray, indexMap) })
-    DoubleArrayTile(targetArray, re.cols, re.rows)
+    val tile = DoubleArrayTile.empty(re.cols, re.rows)
+    apply(re, tile, sourceArray, triangles, indexMap)
+    tile
+  }
+
+  def apply(
+    re: RasterExtent,
+    tile: MutableArrayTile,
+    sourceArray: Array[Double],
+    triangles: Seq[Polygon],
+    indexMap: Map[(Double, Double), Int]
+  ): Unit = {
+    triangles
+      .foreach({ triangle =>
+        renderTriangle(triangle, re, sourceArray, tile, indexMap)
+      })
   }
 
   def renderTriangle(
     triangle: Polygon,
     re: RasterExtent,
     sourceArray: Array[Double],
-    targetArray: Array[Double],
+    tile: MutableArrayTile,
     indexMap: Map[(Double, Double), Int]
   ): Unit = {
 
@@ -42,7 +55,7 @@ object TrianglesRasterizer {
         val x = xStart + col * re.cellwidth
         val y = yStart + row * re.cellheight
         val screenCol = ((x - re.extent.xmin) / re.cellwidth).toInt
-        val screenRow = ((y - re.extent.ymin) / re.cellheight).toInt
+        val screenRow = ((re.extent.ymax -y) / re.cellheight).toInt
         if (triangle.covers(Point(x,y))) {
           val result = {
             val verts = triangle.vertices; require(verts.length == 4)
@@ -64,9 +77,7 @@ object TrianglesRasterizer {
             lambda1*sourceArray(index1) + lambda2*sourceArray(index2) + lambda3*sourceArray(index3)
           }
 
-          val index = screenRow * re.cols + screenCol
-
-          targetArray(index) = result
+          tile.setDouble(screenCol, screenRow, result)
         }
         col += 1
       }

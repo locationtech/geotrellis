@@ -1,4 +1,3 @@
-
 package geotrellis.spark.pointcloud.triangulation
 
 import io.pdal.PointCloud
@@ -12,41 +11,16 @@ import scala.math.{abs, pow}
 import scala.annotation.tailrec
 import scala.collection.mutable
 
-trait DelaunayPointSet {
-  def length: Int
-  def getX(i: Int): Double
-  def getY(i: Int): Double
-  def getZ(i: Int): Double
-}
-
-object DelaunayPointSet {
-
-  implicit def pointCloudToDelaunayPointSet(pointCloud: PointCloud): DelaunayPointSet =
-    new DelaunayPointSet {
-      def length = pointCloud.length
-      def getX(i: Int) = pointCloud.getX(i)
-      def getY(i: Int) = pointCloud.getY(i)
-      def getZ(i: Int) = pointCloud.getZ(i)
-    }
-
-  implicit def lightPointArrayToDelaunayPointSet(lightPoints: Array[LightPoint]) =
-    new DelaunayPointSet {
-      def length = lightPoints.length
-      def getX(i: Int) = lightPoints(i).x
-      def getY(i: Int) = lightPoints(i).y
-      def getZ(i: Int) = lightPoints(i).z
-    }
-}
-
 /**
   * A catalog of the triangles produced by the Delaunay triangulation as a Map from (Int,Int,Int)
-  * to HalfEdge[Int,LightPoint].  All integers are indices of points in verts, while the LightPoints describe
-  * the center of the circumscribing circle for the triangle.  The Int triples give the triangle
-  * vertices in counter-clockwise order, starting from the lowest-numbered vertex.
+  * to an integer index of an edge in a HalfEdgeTable. This class is optimized for
+  * rasterization of Z values. Each key in the triangle map is a triplet of indices of
+  * points in the pointSet (a, b, c), a<b<c, and the values are the halfedge index
+  * of an inner halfedge of the triangle.
   */
 class PointCloudTriangulation(
   pointSet: DelaunayPointSet,
-  triangleMap: TriangleMap,
+  val triangleMap: TriangleMap,
   halfEdgeTable: HalfEdgeTable,
   boundary: Int,
   isLinear: Boolean
@@ -73,58 +47,99 @@ class PointCloudTriangulation(
     val h = re.cellheight
     val cols = re.cols
     val rows = re.rows
-
-    def xAtYForEdge(yval: Double)(e: Int): Double = {
-      val src = getSrc(e)
-      val dest = getVert(e)
-      val t = (yval - getY(dest)) / (getY(src) - getY(dest))
-      getX(dest) + t * (getX(src) - getX(dest))
-    }
+    val Extent(exmin, eymin, exmax, eymax) = re.extent
 
     def rasterizeTriangle(tri: Int): Unit = {
-      if (!isCCW(getVert(tri), getVert(getNext(tri)), getVert(getNext(getNext(tri))))) {
-        println(s"Triangle ${(getVert(tri), getVert(getNext(tri)), getVert(getNext(getNext(tri))))} does not have a CCW winding!")
-        return ()
-      }
 
-      val v1 = getVert(tri)
+      val e1 = tri
+      val v1 = getVert(e1)
       val v1x = getX(v1)
       val v1y = getY(v1)
       val v1z = getZ(v1)
-      val v2 = getVert(getNext(tri))
+      val s1x = getX(getSrc(e1))
+      val s1y = getY(getSrc(e1))
+
+      val e2 = getNext(tri)
+      val v2 = getVert(e2)
       val v2x = getX(v2)
       val v2y = getY(v2)
       val v2z = getZ(v2)
-      val v3 = getVert(getNext(getNext(tri)))
+      val s2x = getX(getSrc(e2))
+      val s2y = getY(getSrc(e2))
+
+      val e3 = getNext(getNext(tri))
+      val v3 = getVert(e3)
       val v3x = getX(v3)
       val v3y = getY(v3)
       val v3z = getZ(v3)
+      val s3x = getX(getSrc(e3))
+      val s3y = getY(getSrc(e3))
 
       val determinant =
         (v2y - v3y) * (v1x - v3x) + (v3x - v2x) * (v1y - v3y)
 
-      val es = List(tri, getNext(tri), getNext(getNext(tri)))
-      val leftes  = es.filter { e => getY(getVert(e)) < getY(getSrc(e)) }
-      val rightes = es.filter { e => getY(getVert(e)) > getY(getSrc(e)) }
-//      println(s"LEFTIES $leftes RIGHTES $rightes")
-      val ys = es.map { e => getY(getVert(e)) }
-      val (ymin, ymax) = (ys.min, ys.max)
+      val ymin =
+        math.min(v1y, math.min(v2y, v3y))
+      val ymax =
+        math.max(v1y, math.max(v2y, v3y))
 
-      // println (s"Lefts:  ${leftes}")
-      // println (s"Rights: ${rightes}")
-      // println (s"Y range: ${(ymin, ymax)}")
+      val scanrow0 = math.max(math.ceil((ymin - eymin) / h - 0.5), 0)
+      var scany = eymin + scanrow0 * h + h / 2
+      while (scany < eymax && scany < ymax) {
+        // get x at y for edge
+        var xmin = Double.MinValue
+        var xmax = Double.MaxValue
 
-      val scanrow0 = math.max(math.ceil((ymin - re.extent.ymin) / h - 0.5), 0)
-      var scany = re.extent.ymin + scanrow0 * h + h / 2
-      while (scany < re.extent.ymax && scany < ymax) {
-        val xmin = leftes.map(xAtYForEdge(scany)(_)).max
-        val xmax = rightes.map(xAtYForEdge(scany)(_)).min
+        if(s1y != v1y) {
+          val src = getSrc(e1)
+          val dest = getVert(e1)
+          val t = (scany - v1y) / (s1y - v1y)
+          val xAtY1 = v1x + t * (s1x - v1x)
 
-        val scancol0 = math.max(math.ceil((xmin - re.extent.xmin) / w - 0.5), 0)
-        var scanx = re.extent.xmin + scancol0 * w + w / 2
-        while (scanx < re.extent.xmax && scanx < xmax) {
-          val col = ((scanx - re.extent.xmin) / re.cellwidth).toInt
-          val row = ((re.extent.ymax - scany) / re.cellheight).toInt
+          if(v1y < s1y) {
+            // Lefty
+            if(xmin < xAtY1) { xmin = xAtY1 }
+          } else {
+            // Rigty
+            if(xAtY1 < xmax) { xmax = xAtY1 }
+          }
+        }
+
+        if(s2y != v2y) {
+          val src = getSrc(e1)
+          val dest = getVert(e1)
+          val t = (scany - v2y) / (s2y - v2y)
+          val xAtY2 = v2x + t * (s2x - v2x)
+
+          if(v2y < s2y) {
+            // Lefty
+            if(xmin < xAtY2) { xmin = xAtY2 }
+          } else {
+            // Rigty
+            if(xAtY2 < xmax) { xmax = xAtY2 }
+          }
+        }
+
+        if(s3y != v3y) {
+          val src = getSrc(e3)
+          val dest = getVert(e3)
+          val t = (scany - v3y) / (s3y - v3y)
+          val xAtY3 = v3x + t * (s3x - v3x)
+
+          if(v3y < s3y) {
+            // Lefty
+            if(xmin < xAtY3) { xmin = xAtY3 }
+          } else {
+            // Rigty
+            if(xAtY3 < xmax) { xmax = xAtY3 }
+          }
+        }
+
+        val scancol0 = math.max(math.ceil((xmin - exmin) / w - 0.5), 0)
+        var scanx = exmin + scancol0 * w + w / 2
+        while (scanx < exmax && scanx < xmax) {
+          val col = ((scanx - exmin) / w).toInt
+          val row = ((eymax - scany) / h).toInt
           if(0 <= col && col < cols &&
              0 <= row && row < rows) {
 
@@ -185,7 +200,7 @@ object PointCloudTriangulation {
     val pcp = new PointSetPredicates(pointSet, halfEdgeTable)
     import pcp._
 
-    val triangleMap: TriangleMap = new TriangleMap(halfEdgeTable, pointSet)
+    val triangleMap: TriangleMap = new TriangleMap(halfEdgeTable)
     import triangleMap._
 
     def distinctPoints(lst: List[Int]): List[Int] = {
@@ -255,7 +270,6 @@ object PointCloudTriangulation {
         .toArray
     }
 
-    var printBase = false
     /** Recursive triangulation function.
       *
       * @param  lo    The index into sortedVs that represents the left triangulation.
@@ -263,7 +277,6 @@ object PointCloudTriangulation {
       */
     def triangulate(lo: Int, hi: Int): TriangulationResult = {
       // Implementation follows Guibas and Stolfi, ACM Transations on Graphics, vol. 4(2), 1985, pp. 74--123
-//      println(s" -- triangulate($lo, $hi)")
       val n = hi - lo + 1
 
       n match {
@@ -283,12 +296,10 @@ object PointCloudTriangulation {
             val e = createHalfEdges(v1, v2, v3)
             val p = getPrev(e)
             insertTriangle(v1, v2, v3, p)
-            //println(s"DELAUNAY2 = CASE 1 = $p = ($v1, $v2, $v3)")
             TriangulationResult(p, false)
           } else if(isCCW(v1, v3, v2)) {
             val e = createHalfEdges(v1, v3, v2)
             insertTriangle(v1, v3, v2, e)
-            //println(s"DELAUNAY2 = CASE 2 = $e = ($v1, $v3, $v2)")
             TriangulationResult(e, false)
           } else {
             // Linear case
@@ -298,7 +309,6 @@ object PointCloudTriangulation {
 
             setNext(e1, e2)
             setNext(e2Flip, getFlip(e1))
-            //println(s"DELAUNAY2 = CASE 3 = $e2Flip = ($v1, $v2, $v3)")
             TriangulationResult(e2Flip, true)
           }
 
@@ -306,12 +316,16 @@ object PointCloudTriangulation {
           val med = (hi + lo) / 2
           val TriangulationResult(left0, isLeftLinear) = triangulate(lo, med)
           val TriangulationResult(right0, isRightLinear) = triangulate(med + 1, hi)
-          var left = advance(left0)
+
           var right = advance(right0)
-
-//          println(s"DELAUNAY1 -- LEFT: triangulate($lo, $med) = ${left} RIGHT: triangulate($med, $hi) = ${right}")
-
-//       saveBorder(left, right)
+          var left =
+            if(isRightLinear && abs(getX(getSrc(left0)) - getX(getSrc(right))) < EPSILON ) {
+              // In the case where right is linear, left is not, and the right
+              // line is on the same vertical as the border edge of left, we do not
+              // want to advance the left border to the bottom, and instead
+              // want the top corner of the left border.
+              reverse(left0)
+            } else { advance(left0) }
 
           if (isLeftLinear) {
             while(
@@ -323,8 +337,6 @@ object PointCloudTriangulation {
             ) { left = advance(left) }
           }
 
-//          println("ONE")
-
           if (isRightLinear) {
             while(
               getX(getSrc(right)) - getX(getVert(getNext(getFlip(right)))) > EPSILON ||
@@ -335,62 +347,38 @@ object PointCloudTriangulation {
             ) { right = advance(right)}
           }
 
-//          println("TWO")
-
           // compute the lower common tangent of left and right
           var continue = true
-          var stop = false
           var base: Int = createHalfEdges(getSrc(right), getSrc(left))
 
-          var baseCount: Int = 0
-          //          time("CALCULATING BASE") {
           while(continue) {
-            //            saveBase(base, baseCount)
-            baseCount += 1
-            //            println(s"DELAUNAY2: BASE LOOP B = ${base} R = ${right} L = ${left}")
-            //            println(s"BASE $base")
             if(isLeftOf(base, getVert(left))) {
               // left points to a vertex that is to the left of
               // base, so move base to left.next
-              //              println(s"1")
               left = advance(left)
               setVert(base, getSrc(left))
             } else if(!isRightLinear && !isRightOf(base, getVert(right))) {
               // right points to a point that is left of base,
               // so keep walking right
-              //              println(s"2")
               right = advance(right)
               setSrc(base, getSrc(right))
             } else if(!isLeftLinear && !isRightOf(base, getSrc(getPrev(left)))) {
               // Left's previous source is left of base,
               // so this base would break convexity. Move
               // back to previous left.
-              //              println(s"3")
               left = reverse(left)
               setVert(base, getSrc(left))
             } else if(isLeftOf(base, getSrc(getPrev(right)))) {
               // Right's previous source is left ofbase,
               // so this base would break convexity. Move
               // back to previous right.
-              //              println(s"4")
               right = reverse(right)
               setSrc(base, getSrc(right))
-              /*              } else if(isCollinear(base, getVert(right)) &&
-               !isRightLinear) {
-               //              println(s"5")
-               // Right is colinear with base, move right forward.
-               right = advance(right)
-               setSrc(base, getSrc(right)) */
             } else {
-              //              println(s"6")
               continue = false
             }
           }
-          //          }
 
-//          println("THREE")
-
-          //println(s"DELAUNAY2   - Out of base loop. ${base}")
           setNext(base, left)
           setNext(getFlip(base), right)
           setNext(getPrev(left), getFlip(base))
@@ -404,22 +392,17 @@ object PointCloudTriangulation {
             val l = getVert(getNext(base))
             val r = getVert(getNext(getFlip(base)))
             if (isCollinear(b0, b1, l)  && isCollinear(b0, b1, r)) {
-              stop = true
               return TriangulationResult(getFlip(base), true)
             }
           }
-
-//          println("FOUR")
 
           continue = true
           while(continue) {
             var lcand = rotCCWSrc(getFlip(base))
             var rcand = rotCWSrc(base)
 
-            //println(s"DELAUNAY2:   ~~ STARTWHILE ~~ $lcand $rcand $base ${getVert(lcand)}, ${getVert(base)}, ${getSrc(base)}")
             // Find left side candidate edge for extending the fill triangulation
             if(isCCW(getVert(lcand), getVert(base), getSrc(base))) {
-              //println(s"DELAUNAY2:  WHILE 1")
               while(
                 inCircle(
                   getVert(base),
@@ -428,7 +411,6 @@ object PointCloudTriangulation {
                   getVert(rotCCWSrc(lcand))
                 )
               ) {
-//                println("DELETED TRIANGLE")
                 val e = rotCCWSrc(lcand)
                 deleteTriangle(lcand)
                 setNext(rotCCWDest(lcand), getNext(lcand))
@@ -439,7 +421,6 @@ object PointCloudTriangulation {
 
             // Find right side candidate edge for extending the fill triangulation
             if(isCCW(getVert(rcand), getVert(base), getSrc(base))) {
-              //println(s"DELAUNAY2:  WHILE 2")
               while(
                 inCircle(
                   getVert(base),
@@ -456,7 +437,6 @@ object PointCloudTriangulation {
               }
             }
 
-
             if(
               !isCCW(getVert(lcand), getVert(base), getSrc(base)) &&
               !isCCW(getVert(rcand), getVert(base), getSrc(base))
@@ -464,7 +444,6 @@ object PointCloudTriangulation {
               // no further Delaunay triangles to add
               continue = false
             } else {
-              //println(s"DELAUNAY2:  CONT 3")
               if (!isCCW(getVert(lcand), getVert(base), getSrc(base)) ||
                   (
                     isCCW(getVert(rcand), getVert(base), getSrc(base)) &&
@@ -472,34 +451,24 @@ object PointCloudTriangulation {
                   )
               ) {
                 // form new triangle from rcand and base
-                //println(s"DELAUNAY2:  ==RCAND BASE $rcand $base")
                 val e = createHalfEdges(getVert(rcand), getVert(base))
                 setNext(getFlip(e), getNext(rcand))
                 setNext(e, getFlip(base))
                 setNext(rcand, e)
                 setNext(getFlip(lcand), getFlip(e))
                 base = e
-
-//                saveBase(base, baseCount, true, "rh")
-                baseCount += 1
               } else {
                 // form new triangle from lcand and base
-                //println(s"DELAUNAY2:  ==LCAND BASE $lcand $base")
                 val e = createHalfEdges(getSrc(base), getVert(lcand))
                 setNext(rotCCWDest(lcand), getFlip(e))
                 setNext(e, getFlip(lcand))
                 setNext(getFlip(e), rcand)
                 setNext(getFlip(base), e)
                 base = e
-
-//                saveBase(base, baseCount, true, "lh")
-                baseCount += 1
               }
 
-//              println(s"INSERTING $base")
               insertTriangle(base)
             }
-//            println(s" LOOOP $base $lcand $rcand")
           }
 
 
@@ -508,109 +477,8 @@ object PointCloudTriangulation {
       }
     }
 
-    /**
-     * Provides a handle on the bounding loop of a Delaunay triangulation.  All of the half-edges
-     * reachable by applying next to boundary have no bounding face information.  That is
-     * boundary(.next)*.face == None.
-     */
     val TriangulationResult(boundary, isLinear) = triangulate(0, sortedVs.length - 1)
 
     new PointCloudTriangulation(pointSet, triangleMap, halfEdgeTable, boundary, isLinear)
   }
-}
-
-class PointSetPredicates(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdgeTable) {
-  import geotrellis.vector.triangulation.ShewchuksDeterminant
-
-  import pointSet.{getX, getY}
-  import halfEdgeTable._
-
-  def isCCW(v1: Int, v2: Int, v3: Int): Boolean =
-    ShewchuksDeterminant.orient2d(
-      getX(v1),
-      getY(v1),
-      getX(v2),
-      getY(v2),
-      getX(v3),
-      getY(v3)
-    ) > EPSILON
-
-  def isLeftOf(e: Int, v: Int): Boolean =
-    isCCW(v, getSrc(e), getVert(e))
-
-  def isRightOf(e: Int, v: Int): Boolean =
-    isCCW(v, getVert(e), getSrc(e))
-
-  def isCollinear(e: Int, v: Int): Boolean = {
-    val src = getSrc(e)
-    val vert = getVert(e)
-
-    isCollinear(src, vert, v)
-  }
-
-  def isCollinear(a: Int, b: Int, c: Int): Boolean =
-    math.abs(
-      ShewchuksDeterminant.orient2d(
-        getX(a), getY(a),
-        getX(b), getY(b),
-        getX(c), getY(c)
-      )
-    ) < EPSILON
-
-  def isCorner(edge: Int): Boolean = {
-    !isCollinear(edge, getSrc(getPrev(edge))) || {
-      val (cx, cy) = (getX(getSrc(edge)), getY(getSrc(edge)))
-      val (nx, ny) = (getX(getVert(edge)), getY(getVert(edge)))
-      val (px, py) = (getX(getSrc(getPrev(edge))), getY(getSrc(getPrev(edge))))
-      val (xn, yn) = (nx - cx, ny - cy)
-      val (xp, yp) = (px - cx, py - cy)
-      xn * xp + yn * yp > 0
-    }
-  }
-
-  def inCircle(a: Int, b: Int, c: Int, d: Int): Boolean =
-    ShewchuksDeterminant.incircle(
-      getX(a), getY(a),
-      getX(b), getY(b),
-      getX(c), getY(c),
-      getX(d), getY(d)
-    ) > EPSILON
-}
-
-class TriangleMap(halfEdgeTable: HalfEdgeTable, ps: DelaunayPointSet) {
-  import halfEdgeTable._
-  import ps._ // TODO
-
-  private val _triangles =
-    mutable.Map.empty[(Int, Int, Int), Int]
-
-  def triangleVertices =
-    _triangles.keys
-
-  def triangles =
-    _triangles.values
-
-  private def regularizeTriangleIndex (index: (Int, Int, Int)): (Int, Int, Int) = {
-    index match {
-      case (a, b, c) if (a < b && a < c) => (a, b, c)
-      case (a, b, c) if (b < a && b < c) => (b, c, a)
-      case (a, b, c) => (c, a, b)
-    }
-  }
-
-  def insertTriangle(v1: Int, v2: Int, v3: Int, e: Int): Unit =
-    if(v1 < v2 && v1 < v3) { _triangles += (((v1, v2, v3), e)) }
-    else if(v2 < v1 && v2 < v3) { _triangles += (((v2, v3, v1), e)) }
-    else { _triangles += (((v3, v1, v2), e)) }
-
-  def insertTriangle(e: Int): Unit =
-    insertTriangle(getVert(e), getVert(getNext(e)), getVert(getNext(getNext(e))), e)
-
-  def deleteTriangle(v1: Int, v2: Int, v3: Int): Unit =
-    if(v1 < v2 && v1 < v3) { _triangles -= ((v1, v2, v3)) }
-    else if(v2 < v1 && v2 < v3) { _triangles -= ((v2, v3, v1)) }
-    else { _triangles -= ((v3, v1, v2)) }
-
-  def deleteTriangle(e: Int): Unit =
-    deleteTriangle(getVert(e), getVert(getNext(e)), getVert(getNext(getNext(e))))
 }

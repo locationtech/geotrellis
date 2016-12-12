@@ -19,16 +19,73 @@ package geotrellis.spark.pointcloud.tiling
 import io.pdal._
 
 import geotrellis.spark._
+import geotrellis.spark.pointcloud._
 import geotrellis.spark.tiling._
 
 import org.apache.spark.rdd._
+import org.apache.spark.Partitioner
 import spire.syntax.cfor._
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
 
 object CutPointCloud {
-  def apply(rdd: RDD[PointCloud], layoutDefinition: LayoutDefinition): RDD[(SpatialKey, PointCloud)] with Metadata[LayoutDefinition] = {
+  case class Options(
+    partitioner: Option[Partitioner] = None
+  )
+
+  object Options {
+    def DEFAULT = Options()
+  }
+
+  def apply(rdd: RDD[Array[Point3D]], layoutDefinition: LayoutDefinition): RDD[(SpatialKey, Array[Point3D])] with Metadata[LayoutDefinition] =
+    apply(rdd, layoutDefinition, Options.DEFAULT)
+
+  def apply(rdd: RDD[Array[Point3D]], layoutDefinition: LayoutDefinition, options: Options): RDD[(SpatialKey, Array[Point3D])] with Metadata[LayoutDefinition] = {
+    val mapTransform = layoutDefinition.mapTransform
+    val (tileCols, tileRows) = layoutDefinition.tileLayout.tileDimensions
+    val tilePoints = tileCols * tileRows
+
+    val cut =
+      rdd
+        .flatMap { case pointCloud =>
+          var lastKey: SpatialKey = null
+          val keysToPoints = mutable.Map[SpatialKey, mutable.ArrayBuffer[Point3D]]()
+          val pointSize = pointCloud.length
+
+          cfor(0)(_ < pointSize, _ + 1) { i =>
+            val p = pointCloud(i)
+            val key = mapTransform(p.x, p.y)
+            if(key == lastKey) {
+              keysToPoints(lastKey) += p
+            } else if(keysToPoints.contains(key)) {
+              keysToPoints(key) += p
+              lastKey = key
+            } else {
+              keysToPoints(key) = mutable.ArrayBuffer(p)
+              lastKey = key
+            }
+          }
+
+          keysToPoints.map { case (k, v) => (k, v.toArray) }
+        }
+
+    val merged =
+      options.partitioner match {
+        case Some(partitioner) =>
+          cut.reduceByKey(partitioner, { (p1, p2) => p1 union p2 })
+        case None =>
+          cut.reduceByKey { (p1, p2) => p1 union p2 }
+      }
+
+    ContextRDD(cut, layoutDefinition)
+  }
+
+
+  def apply(rdd: RDD[PointCloud], layoutDefinition: LayoutDefinition)(implicit d: DummyImplicit): RDD[(SpatialKey, PointCloud)] with Metadata[LayoutDefinition] =
+    apply(rdd, layoutDefinition, Options.DEFAULT)
+
+  def apply(rdd: RDD[PointCloud], layoutDefinition: LayoutDefinition, options: Options)(implicit d: DummyImplicit): RDD[(SpatialKey, PointCloud)] with Metadata[LayoutDefinition] = {
     val mapTransform = layoutDefinition.mapTransform
     val (tileCols, tileRows) = layoutDefinition.tileLayout.tileDimensions
     val tilePoints = tileCols * tileRows
@@ -71,6 +128,15 @@ object CutPointCloud {
             (key, PointCloud(arr, pointCloud.dimTypes))
           }
         }
-    ContextRDD(cut, layoutDefinition)
+
+    val merged =
+      options.partitioner match {
+        case Some(partitioner) =>
+          cut.reduceByKey(partitioner, { (p1, p2) => p1 union p2 })
+        case None =>
+          cut.reduceByKey { (p1, p2) => p1 union p2 }
+      }
+
+    ContextRDD(merged, layoutDefinition)
   }
 }

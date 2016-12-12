@@ -1,4 +1,4 @@
-package geotrellis.vector.voronoi
+package geotrellis.vector.triangulation
 
 import geotrellis.vector._
 import scala.util.Random
