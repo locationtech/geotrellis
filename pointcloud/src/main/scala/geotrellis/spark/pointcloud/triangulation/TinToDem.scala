@@ -1,9 +1,10 @@
 package geotrellis.spark.pointcloud.triangulation
 
 import io.pdal._
-import geotrellis.spark.pointcloud._
 import geotrellis.raster._
 import geotrellis.spark._
+import geotrellis.spark.buffer.Direction
+import geotrellis.spark.pointcloud._
 import geotrellis.spark.tiling._
 import geotrellis.vector._
 
@@ -96,50 +97,48 @@ object TinToDem {
         }
       }, preservesPartitioning = true)
 
-  // def withStitch(rdd: RDD[(SpatialKey, Array[Point3D])], layoutDefinition: LayoutDefinition, extent: Extent, options: Options = Options.DEFAULT): RDD[(SpatialKey, Tile)] = {
+  def withStitch(rdd: RDD[(SpatialKey, Array[Point3D])], layoutDefinition: LayoutDefinition, extent: Extent, options: Options = Options.DEFAULT): RDD[(SpatialKey, Tile)] = {
 
-  //   // Assumes that a partitioner has already been set
+    // Assumes that a partitioner has already been set
 
-  //   val trianglations: RDD[(SpatialKey, PointCloudTriangulation)] =
-  //     rdd
-  //       .mapValues { points =>
-  //         PointCloudTriangulation(points)
-  //       }
+    val triangulations: RDD[(SpatialKey, PointCloudTriangulation)] =
+      rdd
+        .mapValues { points =>
+          PointCloudTriangulation(points)
+        }
 
-  //   val borders: RDD[(SpatialKey, BorderTriangulation)] =
-  //     triangluations
-  //       .mapValues(_.convertToBorder)
+    val boundingMeshes: RDD[(SpatialKey, BoundingMesh)] =
+      triangulations
+        .mapPartitions({ partitions =>
+          partitions.map { case (key, triangulation) =>
+            val extent = layoutDefinition.mapTransform(key)
+            (key, triangulation.boundingMesh(extent))
+          }
+        }, preservesPartitioning = true)
 
-  //   borders
-  //     .collectNeighbors
-  //     .mapPartitions({ paritions =>
-  //       partitions.map { case (key, neighbors) =>
-  //         val newNeighbors =
-  //           neighbors.map { case (direction, (key2, border))
-  //             val extent = layoutDefinition.mapTransform(key2)
-  //             (key, (direction, (extent, border)))
-  //           }
-  //         (key, newNeighbors)
-  //       }
-  //     }, preservesPartitioning = true)
-  //     .join(triangulations)
-  //     .mapValues { case (borders: Seq[(Direction, (Extent, BorderTriangulation))], triangulation) =>
-  //       val stitched = triangulation.stitch(borders)
+    boundingMeshes
+      .collectNeighbors
+      .join(triangulations)
+      .mapPartitions({ partition =>
+        partition.map { case (key, (borders: Seq[(Direction, BoundingMesh)], triangulation: PointCloudTriangulation)) =>
+        val extent = layoutDefinition.mapTransform(key)
+        val re =
+          RasterExtent(
+            extent,
+            layoutDefinition.tileCols,
+            layoutDefinition.tileRows
+          )
 
-  //       val extent = layoutDefinition.mapTransform(key)
-  //       val re =
-  //         RasterExtent(
-  //           extent,
-  //           layoutDefinition.tileCols,
-  //           layoutDefinition.tileRows
-  //         )
+          val tile =
+            ArrayTile.empty(options.cellType, re.cols, re.rows)
 
-  //         val tile =
-  //           ArrayTile.empty(options.cellType, re.cols, re.rows)
+          triangulation.rasterize(tile, re)
 
-  //         stitched.rasterize(tile, re)
+          val stitched = triangulation.stitch(borders.toMap)
+          stitched.rasterize(tile, re)
 
-  //         (key, tile)
-  //     }
-  // }
+          (key, tile)
+        }
+      }, preservesPartitioning = true)
+  }
 }

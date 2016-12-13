@@ -9,8 +9,13 @@ class HalfEdge[V,F](val vert: V, var flip: HalfEdge[V,F], var next: HalfEdge[V,F
       throw new IllegalArgumentException(s"Cannot join facets by edges (${flip.vert},${vert}) and (${that.vert},${that.flip.vert})")
     }
 
-    next.flip.next = that.flip.next
-    that.next.flip.next = flip.next
+    // next.flip.next = that.flip.next
+    // that.next.flip.next = flip.next
+    // flip = that
+    // that.flip = this
+
+    flip.prev.next = that.flip.next
+    that.flip.prev.next = flip.next
     flip = that
     that.flip = this
   }

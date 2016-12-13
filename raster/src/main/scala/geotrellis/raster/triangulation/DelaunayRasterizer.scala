@@ -80,11 +80,11 @@ object DelaunayRasterizer {
     rasterizeTriangles(re, cellType)(dt.triangles)
   }
 
-  def rasterizeStitchedDelaunay(re: RasterExtent, cellType: CellType = DoubleConstantNoDataCellType)(dt: StitchedDelaunay) = {
-    implicit val trans = { key: dt.VKey => dt.vertMap(key.dir)(key.idx) }
-    rasterizeTriangles(re, cellType)(dt.triangles.filter{ case (idx, _) => {
-      val (a, b, c) = idx
-      a.dir != b.dir || b.dir != c.dir
-    }})
-  }
+  // def rasterizeStitchedDelaunay(re: RasterExtent, cellType: CellType = DoubleConstantNoDataCellType)(dt: StitchedDelaunay) = {
+  //   implicit val trans = { key: dt.VKey => dt.vertMap(key.dir)(key.idx) }
+  //   rasterizeTriangles(re, cellType)(dt.triangles.filter{ case (idx, _) => {
+  //     val (a, b, c) = idx
+  //     a.dir != b.dir || b.dir != c.dir
+  //   }})
+  // }
 }
