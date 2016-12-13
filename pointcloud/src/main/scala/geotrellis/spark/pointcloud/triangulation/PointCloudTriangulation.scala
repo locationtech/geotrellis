@@ -191,50 +191,50 @@ case class BoundingMesh(
   isLinear: Boolean,
   points: mutable.Map[Int, Point3D]
 ) {
-  def showTriangles(prefix: String = ""): Unit = {
-    import halfEdgeTable._
-//    val Extent(xmin, ymin, xmax, ymax) = Extent(596641.16, 7591125.83, 596641.51, 7591366.46)
-//    val Extent(xmin, ymin, xmax, ymax) = Extent(596641.49, 7591125.83, 596641.51, 7591354.24)
-    // var (xmin, ymin, xmax, ymax) =
-    //   (Double.MaxValue, Double.MaxValue, Double.MinValue, Double.MinValue)
+//   def showTriangles(prefix: String = ""): Unit = {
+//     import halfEdgeTable._
+// //    val Extent(xmin, ymin, xmax, ymax) = Extent(596641.16, 7591125.83, 596641.51, 7591366.46)
+// //    val Extent(xmin, ymin, xmax, ymax) = Extent(596641.49, 7591125.83, 596641.51, 7591354.24)
+//     // var (xmin, ymin, xmax, ymax) =
+//     //   (Double.MaxValue, Double.MaxValue, Double.MinValue, Double.MinValue)
 
-    // triangles.keys.foreach { case (i1, i2, i3) =>
-    //   val p1 = verts(i1)
-    //   val p2 = verts(i2)
-    //   val p3 = verts(i3)
+//     // triangles.keys.foreach { case (i1, i2, i3) =>
+//     //   val p1 = verts(i1)
+//     //   val p2 = verts(i2)
+//     //   val p3 = verts(i3)
 
-    //   xmin = math.min(xmin, math.min(p1.x, math.min(p2.x, p3.x)))
-    //   ymin = math.min(ymin, math.min(p1.y, math.min(p2.y, p3.y)))
-    //   xmax = math.max(xmax, math.max(p1.x, math.max(p2.x, p3.x)))
-    //   ymax = math.max(ymax, math.max(p1.y, math.max(p2.y, p3.y)))
-    // }
-    // println(s"${Extent(xmin, ymin, xmax, ymax)}")
+//     //   xmin = math.min(xmin, math.min(p1.x, math.min(p2.x, p3.x)))
+//     //   ymin = math.min(ymin, math.min(p1.y, math.min(p2.y, p3.y)))
+//     //   xmax = math.max(xmax, math.max(p1.x, math.max(p2.x, p3.x)))
+//     //   ymax = math.max(ymax, math.max(p1.y, math.max(p2.y, p3.y)))
+//     // }
+//     // println(s"${Extent(xmin, ymin, xmax, ymax)}")
 
-    // def norm(p: LightPoint): LightPoint = {
-    //   LightPoint(
-    //     p.x,
-    //     (((p.y - ymin) / (ymax - ymin)) * (xmax - xmin)) + ymin
-    //   )
-    // }
+//     // def norm(p: LightPoint): LightPoint = {
+//     //   LightPoint(
+//     //     p.x,
+//     //     (((p.y - ymin) / (ymax - ymin)) * (xmax - xmin)) + ymin
+//     //   )
+//     // }
 
-    val gc =
-      GeometryCollection(polygons =
-        triangles.keys.map { case (i1, i2, i3) =>
-          val p1 = Point3D(points(i1).x, points(i1).y)
-          val p2 = Point3D(points(i2).x, points(i2).y)
-          val p3 = Point3D(points(i3).x, points(i3).y)
+//     val gc =
+//       GeometryCollection(polygons =
+//         triangles.keys.map { case (i1, i2, i3) =>
+//           val p1 = Point3D(points(i1).x, points(i1).y)
+//           val p2 = Point3D(points(i2).x, points(i2).y)
+//           val p3 = Point3D(points(i3).x, points(i3).y)
 
-          val (z1, z2, z3) = (p1.z, p2.z, p3.z)
-          Polygon(Line(p1.toPoint, p2.toPoint, p3.toPoint, p1.toPoint))
-        }.toSeq)
+//           val (z1, z2, z3) = (p1.z, p2.z, p3.z)
+//           Polygon(Line(p1.toPoint, p2.toPoint, p3.toPoint, p1.toPoint))
+//         }.toSeq)
 
-    // println(gc.toWKT)
-    // write(
-    //   s"/Users/rob/proj/jets/delaunay-98/STITCH-${prefix}.wkt",
-    //   gc.toWKT
-    // )
+//     // println(gc.toWKT)
+//     // write(
+//     //   s"/Users/rob/proj/jets/delaunay-98/STITCH-${prefix}.wkt",
+//     //   gc.toWKT
+//     // )
 
-  }
+//   }
 }
 
 /**
@@ -252,12 +252,12 @@ class PointCloudTriangulation(
   isLinear: Boolean
 ) {
   //TODO
-  def write(path: String, txt: String): Unit = {
-    import java.nio.file.{Paths, Files}
-    import java.nio.charset.StandardCharsets
+  // def write(path: String, txt: String): Unit = {
+  //   import java.nio.file.{Paths, Files}
+  //   import java.nio.charset.StandardCharsets
 
-    Files.write(Paths.get(path), txt.getBytes(StandardCharsets.UTF_8))
-  }
+  //   Files.write(Paths.get(path), txt.getBytes(StandardCharsets.UTF_8))
+  // }
 
 
   import pointSet.{getX, getY, getZ}
@@ -383,16 +383,16 @@ class PointCloudTriangulation(
             r.getVert(r.getNext(r.getNext(copy)))
           )
 
-        if(idx == TriangleMap.regularizeTriangleIndex(2683,2690,2684)) {
-          println("ORIGINAL HIT")
-            val (px1, px2, px3) =
-              (
-                points(r.getVert(copy)),
-                points(r.getVert(r.getNext(copy))),
-                points(r.getVert(r.getNext(r.getNext(copy))))
-              )
-            println(Polygon(px1.toPoint, px2.toPoint, px3.toPoint, px1.toPoint).toWKT)
-        }
+        // if(idx == TriangleMap.regularizeTriangleIndex(2683,2690,2684)) {
+        //   // println("ORIGINAL HIT")
+        //     val (px1, px2, px3) =
+        //       (
+        //         points(r.getVert(copy)),
+        //         points(r.getVert(r.getNext(copy))),
+        //         points(r.getVert(r.getNext(r.getNext(copy))))
+        //       )
+        //     println(Polygon(px1.toPoint, px2.toPoint, px3.toPoint, px1.toPoint).toWKT)
+        // }
 
         _triangles += idx -> copy
         // println(s"COPY CONV END")
@@ -418,59 +418,59 @@ class PointCloudTriangulation(
       }
 
       def join(tri1: Int, tri2: Int): Unit = {
-        val v11 = r.getSrc(tri1)
-        val v12 = r.getVert(r.getNext(tri1))
-        val v13 = r.getVert(r.getNext(r.getNext(tri1)))
+        // val v11 = r.getSrc(tri1)
+        // val v12 = r.getVert(r.getNext(tri1))
+        // val v13 = r.getVert(r.getNext(r.getNext(tri1)))
 
-        val v21 = r.getSrc(tri2)
-        val v22 = r.getVert(r.getNext(tri2))
-        val v23 = r.getVert(r.getNext(r.getNext(tri2)))
+        // val v21 = r.getSrc(tri2)
+        // val v22 = r.getVert(r.getNext(tri2))
+        // val v23 = r.getVert(r.getNext(r.getNext(tri2)))
 
         r.joinTriangles(tri1, tri2)
 
-        val v31 = r.getSrc(tri1)
-        val v32 = r.getVert(r.getNext(tri1))
-        val v33 = r.getVert(r.getNext(r.getNext(tri1)))
+        // val v31 = r.getSrc(tri1)
+        // val v32 = r.getVert(r.getNext(tri1))
+        // val v33 = r.getVert(r.getNext(r.getNext(tri1)))
 
-        val v41 = r.getSrc(tri2)
-        val v42 = r.getVert(r.getNext(tri2))
-        val v43 = r.getVert(r.getNext(r.getNext(tri2)))
+        // val v41 = r.getSrc(tri2)
+        // val v42 = r.getVert(r.getNext(tri2))
+        // val v43 = r.getVert(r.getNext(r.getNext(tri2)))
 
-        if(
-          TriangleMap.regularizeTriangleIndex(v11, v12, v13)._1 == (2683,2690,2684)._1 ||
-          TriangleMap.regularizeTriangleIndex(v11, v12, v13)._1 == (2683,2690,2684)._2 ||
-          TriangleMap.regularizeTriangleIndex(v11, v12, v13)._1 == (2683,2690,2684)._3 ||
-          TriangleMap.regularizeTriangleIndex(v21, v22, v23)._1 == (2683,2690,2684)._1 ||
-          TriangleMap.regularizeTriangleIndex(v21, v22, v23)._1 == (2683,2690,2684)._2 ||
-          TriangleMap.regularizeTriangleIndex(v21, v22, v23)._1 == (2683,2690,2684)._3
-        ) {
-            val (px1, px2, px3) =
-              (
-                points(v31),
-                points(v32),
-                points(v33)
-              )
-        println(s"JOIN ${(v11, v12, v13)}")
-            println(Polygon(px1.toPoint, px2.toPoint, px3.toPoint, px1.toPoint).toWKT)
-        println(s"JOINTO ${(v21, v22, v23)}")
-            val (ox1, ox2, ox3) =
-              (
-                points(v41),
-                points(v42),
-                points(v43)
-              )
-            println(Polygon(ox1.toPoint, ox2.toPoint, ox3.toPoint, ox1.toPoint).toWKT)
-        }
+        // if(
+        //   TriangleMap.regularizeTriangleIndex(v11, v12, v13)._1 == (2683,2690,2684)._1 ||
+        //   TriangleMap.regularizeTriangleIndex(v11, v12, v13)._1 == (2683,2690,2684)._2 ||
+        //   TriangleMap.regularizeTriangleIndex(v11, v12, v13)._1 == (2683,2690,2684)._3 ||
+        //   TriangleMap.regularizeTriangleIndex(v21, v22, v23)._1 == (2683,2690,2684)._1 ||
+        //   TriangleMap.regularizeTriangleIndex(v21, v22, v23)._1 == (2683,2690,2684)._2 ||
+        //   TriangleMap.regularizeTriangleIndex(v21, v22, v23)._1 == (2683,2690,2684)._3
+        // ) {
+        //     val (px1, px2, px3) =
+        //       (
+        //         points(v31),
+        //         points(v32),
+        //         points(v33)
+        //       )
+        // println(s"JOIN ${(v11, v12, v13)}")
+        //     println(Polygon(px1.toPoint, px2.toPoint, px3.toPoint, px1.toPoint).toWKT)
+        // println(s"JOINTO ${(v21, v22, v23)}")
+        //     val (ox1, ox2, ox3) =
+        //       (
+        //         points(v41),
+        //         points(v42),
+        //         points(v43)
+        //       )
+        //     println(Polygon(ox1.toPoint, ox2.toPoint, ox3.toPoint, ox1.toPoint).toWKT)
+        // }
 
-        if(TriangleMap.regularizeTriangleIndex(v11, v12, v13) !=
-          TriangleMap.regularizeTriangleIndex(v31, v32, v33)) {
-          sys.error(s"JOIN CHANGED (IN) ${(v11, v12, v13)} to ${(v31, v32, v33)}")
-        }
+        // if(TriangleMap.regularizeTriangleIndex(v11, v12, v13) !=
+        //   TriangleMap.regularizeTriangleIndex(v31, v32, v33)) {
+        //   sys.error(s"JOIN CHANGED (IN) ${(v11, v12, v13)} to ${(v31, v32, v33)}")
+        // }
 
-        if(TriangleMap.regularizeTriangleIndex(v21, v22, v23) !=
-          TriangleMap.regularizeTriangleIndex(v41, v42, v43)) {
-          sys.error(s"JOIN CHANGED (OUT) ${(v21, v22, v23)} to ${(v41, v42, v43)}")
-        }
+        // if(TriangleMap.regularizeTriangleIndex(v21, v22, v23) !=
+        //   TriangleMap.regularizeTriangleIndex(v41, v42, v43)) {
+        //   sys.error(s"JOIN CHANGED (OUT) ${(v21, v22, v23)} to ${(v41, v42, v43)}")
+        // }
       }
 
       def recursiveAddTris(e0: Int, opp0: ResultEdge): Unit = {
@@ -557,10 +557,10 @@ class PointCloudTriangulation(
           } while(rot != e)
 
 
-          if(rotNe != ne) {
-            println(s"NOT THE SAME ${r.getSrc(rotNe)} -> ${r.getVert(rotNe)} and ${r.getSrc(ne)} -> ${r.getVert(ne)}")
-            println(s"  N: ${r.getNext(rotNe)} F: ${r.getFlip(rotNe)} and N: ${r.getNext(ne)} F: ${r.getFlip(ne)}")
-          }
+          // if(rotNe != ne) {
+          //   println(s"NOT THE SAME ${r.getSrc(rotNe)} -> ${r.getVert(rotNe)} and ${r.getSrc(ne)} -> ${r.getVert(ne)}")
+          //   println(s"  N: ${r.getNext(rotNe)} F: ${r.getFlip(rotNe)} and N: ${r.getNext(ne)} F: ${r.getFlip(ne)}")
+          // }
 
           e = getNext(e)
           ne = r.getNext(ne)
@@ -616,28 +616,28 @@ class PointCloudTriangulation(
     }
 
     // TODO - Remove
-    for((idx @ (v1, v2, v3), e) <- _triangles) {
-      if(idx != TriangleMap.regularizeTriangleIndex(r.getVert(e), r.getVert(r.getNext(e)), r.getVert(r.getNext(r.getNext(e))))) {
-        print(s"$idx !=");  r.showBoundingLoop(e)
-            val (px1, px2, px3) =
-              (
-                points(v1),
-                points(v2),
-                points(v3)
-              )
-        println(s"KEY ${(v1, v2, v3)}")
-            println(Polygon(px1.toPoint, px2.toPoint, px3.toPoint, px1.toPoint).toWKT)
-        println(s"VALUE ${(r.getVert(e), r.getVert(r.getNext(e)), r.getVert(r.getNext(r.getNext(e))))}")
-            val (ox1, ox2, ox3) =
-              (
-                points(r.getVert(e)),
-                points(r.getVert(r.getNext(e))),
-                points(r.getVert(r.getNext(r.getNext(e))))
-              )
-            println(Polygon(ox1.toPoint, ox2.toPoint, ox3.toPoint, ox1.toPoint).toWKT)
-            sys.error("Weird different triangles - BMESH")
-      }
-    }
+    // for((idx @ (v1, v2, v3), e) <- _triangles) {
+    //   if(idx != TriangleMap.regularizeTriangleIndex(r.getVert(e), r.getVert(r.getNext(e)), r.getVert(r.getNext(r.getNext(e))))) {
+    //     print(s"$idx !=");  r.showBoundingLoop(e)
+    //         val (px1, px2, px3) =
+    //           (
+    //             points(v1),
+    //             points(v2),
+    //             points(v3)
+    //           )
+    //     println(s"KEY ${(v1, v2, v3)}")
+    //         println(Polygon(px1.toPoint, px2.toPoint, px3.toPoint, px1.toPoint).toWKT)
+    //     println(s"VALUE ${(r.getVert(e), r.getVert(r.getNext(e)), r.getVert(r.getNext(r.getNext(e))))}")
+    //         val (ox1, ox2, ox3) =
+    //           (
+    //             points(r.getVert(e)),
+    //             points(r.getVert(r.getNext(e))),
+    //             points(r.getVert(r.getNext(r.getNext(e))))
+    //           )
+    //         println(Polygon(ox1.toPoint, ox2.toPoint, ox3.toPoint, ox1.toPoint).toWKT)
+    //         sys.error("Weird different triangles - BMESH")
+    //   }
+    // }
 
     BoundingMesh(boundingExtent, r, boundingEdge, _triangles.toMap, isLinear, points)
   }
@@ -665,86 +665,86 @@ class PointCloudTriangulation(
           mutable.Map[(StitchKey, StitchKey, StitchKey), HalfEdge[StitchKey, Unit]]()
 
         def insertTriangle(tri: HalfEdge[StitchKey, Unit]): Unit = {
-          val points = mesh.points
+//          val points = mesh.points
           val idx = regularizeTriIndex((tri.vert, tri.next.vert, tri.next.next.vert))
 
-          val (p1, p2, p3) =
-            (
-              points(tri.vert.idx),
-              points(tri.next.vert.idx),
-              points(tri.next.next.vert.idx)
-            )
-          val poly = Polygon(p1.toPoint, p2.toPoint, p3.toPoint, p1.toPoint)
-          for(((k1, k2, k3), he) <- _triangles) {
-            val (o1, o2, o3) =
-              (
-                points(k1.idx),
-                points(k2.idx),
-                points(k3.idx)
-              )
+          // val (p1, p2, p3) =
+          //   (
+          //     points(tri.vert.idx),
+          //     points(tri.next.vert.idx),
+          //     points(tri.next.next.vert.idx)
+          //   )
+          // val poly = Polygon(p1.toPoint, p2.toPoint, p3.toPoint, p1.toPoint)
+          // for(((k1, k2, k3), he) <- _triangles) {
+          //   val (o1, o2, o3) =
+          //     (
+          //       points(k1.idx),
+          //       points(k2.idx),
+          //       points(k3.idx)
+          //     )
 
-            val poly2 = Polygon(o1.toPoint, o2.toPoint, o3.toPoint, o1.toPoint)
+          //   val poly2 = Polygon(o1.toPoint, o2.toPoint, o3.toPoint, o1.toPoint)
 
-            if(poly.intersects(poly2) && !poly.touches(poly2)) {
-              _triangles += idx -> tri
+          //   if(poly.intersects(poly2) && !poly.touches(poly2)) {
+          //     _triangles += idx -> tri
 
-              println(poly.toWKT)
-              println(poly2.toWKT)
-              val (px1, px2, px3) =
-                (
-                  points(idx._1.idx),
-                  points(idx._2.idx),
-                  points(idx._3.idx)
-                )
-              println(Polygon(px1.toPoint, px2.toPoint, px3.toPoint, px1.toPoint).toWKT)
-              val (ox1, ox2, ox3) =
-                (
-                  points(he.vert.idx),
-                  points(he.next.vert.idx),
-                  points(he.next.next.vert.idx)
-                )
-              println(Polygon(ox1.toPoint, ox2.toPoint, ox3.toPoint, ox1.toPoint).toWKT)
-              val pgs: Seq[Polygon] =
-                _triangles.keys.map { case (i1, i2, i3) =>
-                  val p1 = points(i1.idx)
-                  val p2 = points(i2.idx)
-                  val p3 = points(i3.idx)
+          //     println(poly.toWKT)
+          //     println(poly2.toWKT)
+          //     val (px1, px2, px3) =
+          //       (
+          //         points(idx._1.idx),
+          //         points(idx._2.idx),
+          //         points(idx._3.idx)
+          //       )
+          //     println(Polygon(px1.toPoint, px2.toPoint, px3.toPoint, px1.toPoint).toWKT)
+          //     val (ox1, ox2, ox3) =
+          //       (
+          //         points(he.vert.idx),
+          //         points(he.next.vert.idx),
+          //         points(he.next.next.vert.idx)
+          //       )
+          //     println(Polygon(ox1.toPoint, ox2.toPoint, ox3.toPoint, ox1.toPoint).toWKT)
+          //     val pgs: Seq[Polygon] =
+          //       _triangles.keys.map { case (i1, i2, i3) =>
+          //         val p1 = points(i1.idx)
+          //         val p2 = points(i2.idx)
+          //         val p3 = points(i3.idx)
 
-                  Polygon(Line(p1.toPoint, p2.toPoint, p3.toPoint, p1.toPoint))
-                }.toSeq
+          //         Polygon(Line(p1.toPoint, p2.toPoint, p3.toPoint, p1.toPoint))
+          //       }.toSeq
 
-              val mp =
-                MultiPoint(pgs.flatMap(_.vertices)).union.as[MultiPoint].get
+          //     val mp =
+          //       MultiPoint(pgs.flatMap(_.vertices)).union.as[MultiPoint].get
 
-              val gc =
-                GeometryCollection(polygons =
-                  _triangles.keys.map { case (i1, i2, i3) =>
-                    val p1 = points(i1.idx)
-                    val p2 = points(i2.idx)
-                    val p3 = points(i3.idx)
+          //     val gc =
+          //       GeometryCollection(polygons =
+          //         _triangles.keys.map { case (i1, i2, i3) =>
+          //           val p1 = points(i1.idx)
+          //           val p2 = points(i2.idx)
+          //           val p3 = points(i3.idx)
 
-                    val (z1, z2, z3) = (p1.z, p2.z, p3.z)
-                    Polygon(Line(p1.toPoint, p2.toPoint, p3.toPoint, p1.toPoint))
-                  }.toSeq)
+          //           val (z1, z2, z3) = (p1.z, p2.z, p3.z)
+          //           Polygon(Line(p1.toPoint, p2.toPoint, p3.toPoint, p1.toPoint))
+          //         }.toSeq)
 
-              val tp = s"/Users/rob/proj/jets/STITCH-DELAUNAY-ERROR.wkt"
-              write(
-                tp,
-                gc.toWKT
-              )
+          //     val tp = s"/Users/rob/proj/jets/STITCH-DELAUNAY-ERROR.wkt"
+          //     write(
+          //       tp,
+          //       gc.toWKT
+          //     )
 
-              write(
-                s"/Users/rob/proj/jets/STITCH-DELAUNAY-ERROR.geojson",
-                gc.toGeoJson
-              )
+          //     write(
+          //       s"/Users/rob/proj/jets/STITCH-DELAUNAY-ERROR.geojson",
+          //       gc.toGeoJson
+          //     )
 
-              write(
-                s"/Users/rob/proj/jets/STITCH-DELAUNAY-ERROR-POINTS.geojson",
-                mp.toGeoJson
-              )
-              sys.error(s"DUMPED TREE AT $tp")
-            }
-          }
+          //     write(
+          //       s"/Users/rob/proj/jets/STITCH-DELAUNAY-ERROR-POINTS.geojson",
+          //       mp.toGeoJson
+          //     )
+          //     sys.error(s"DUMPED TREE AT $tp")
+          //   }
+          //}
           _triangles += idx -> tri
         }
 
@@ -805,24 +805,24 @@ class PointCloudTriangulation(
               StitchKey(direction, getVert(e2))
             )
 
-          if(TriangleMap.regularizeTriangleIndex(v1, v2, v3) !=
-            TriangleMap.regularizeTriangleIndex(getVert(e0), getVert(e1), getVert(e2))) {
-            val (px1, px2, px3) =
-              (
-                mesh.points(v1),
-                mesh.points(v2),
-                mesh.points(v3)
-              )
-            println(Polygon(px1.toPoint, px2.toPoint, px3.toPoint, px1.toPoint).toWKT)
-            val (ox1, ox2, ox3) =
-              (
-                mesh.points(getVert(e0)),
-                mesh.points(getVert(e1)),
-                mesh.points(getVert(e2))
-              )
-            println(Polygon(ox1.toPoint, ox2.toPoint, ox3.toPoint, ox1.toPoint).toWKT)
-            sys.error("Weird different triangles")
-          }
+          // if(TriangleMap.regularizeTriangleIndex(v1, v2, v3) !=
+          //   TriangleMap.regularizeTriangleIndex(getVert(e0), getVert(e1), getVert(e2))) {
+          //   val (px1, px2, px3) =
+          //     (
+          //       mesh.points(v1),
+          //       mesh.points(v2),
+          //       mesh.points(v3)
+          //     )
+          //   println(Polygon(px1.toPoint, px2.toPoint, px3.toPoint, px1.toPoint).toWKT)
+          //   val (ox1, ox2, ox3) =
+          //     (
+          //       mesh.points(getVert(e0)),
+          //       mesh.points(getVert(e1)),
+          //       mesh.points(getVert(e2))
+          //     )
+          //   println(Polygon(ox1.toPoint, ox2.toPoint, ox3.toPoint, ox1.toPoint).toWKT)
+          //   sys.error("Weird different triangles")
+          // }
 
           val tri =
             HalfEdge[StitchKey, Unit](Seq[StitchKey](idx._1, idx._2, idx._3), ()).flip
@@ -848,38 +848,38 @@ class PointCloudTriangulation(
         val points =
           mesh.points.map { case (key, value) => (StitchKey(direction, key), value) }
 
-        // TODO: Remove
-        _triangles.foreach { case ((v1, v2, v3), inner) =>
-          val e0 = inner
-          val e1 = e0.next
-          val e2 = e1.next
+        // // TODO: Remove
+        // _triangles.foreach { case ((v1, v2, v3), inner) =>
+        //   val e0 = inner
+        //   val e1 = e0.next
+        //   val e2 = e1.next
 
-          val idx: (StitchKey, StitchKey, StitchKey) =
-            (
-              e0.vert,
-              e1.vert,
-              e2.vert
-            )
+        //   val idx: (StitchKey, StitchKey, StitchKey) =
+        //     (
+        //       e0.vert,
+        //       e1.vert,
+        //       e2.vert
+        //     )
 
-          if(regularizeTriIndex((v1, v2, v3)) !=
-            regularizeTriIndex(idx)) {
-            val (px1, px2, px3) =
-              (
-                points(v1),
-                points(v2),
-                points(v3)
-              )
-            println(Polygon(px1.toPoint, px2.toPoint, px3.toPoint, px1.toPoint).toWKT)
-            val (ox1, ox2, ox3) =
-              (
-                points(e0.vert),
-                points(e1.vert),
-                points(e2.vert)
-              )
-            println(Polygon(ox1.toPoint, ox2.toPoint, ox3.toPoint, ox1.toPoint).toWKT)
-            sys.error("Weird different triangles")
-          }
-        }
+        //   if(regularizeTriIndex((v1, v2, v3)) !=
+        //     regularizeTriIndex(idx)) {
+        //     val (px1, px2, px3) =
+        //       (
+        //         points(v1),
+        //         points(v2),
+        //         points(v3)
+        //       )
+        //     println(Polygon(px1.toPoint, px2.toPoint, px3.toPoint, px1.toPoint).toWKT)
+        //     val (ox1, ox2, ox3) =
+        //       (
+        //         points(e0.vert),
+        //         points(e1.vert),
+        //         points(e2.vert)
+        //       )
+        //     println(Polygon(ox1.toPoint, ox2.toPoint, ox3.toPoint, ox1.toPoint).toWKT)
+        //     sys.error("Weird different triangles")
+        //   }
+        // }
 
         (
           direction,
@@ -906,26 +906,26 @@ class PointCloudTriangulation(
 
 //    sys.error("asdf")
 
-    val gcb = GeometryCollection(polygons =
-      halfEdgeMeshes.flatMap { case (k, m) =>
-        m.triangles.keys.map { case (i1, i2, i3) =>
-          val p1 = Point3D(m.points(i1).x, m.points(i1).y)
-          val p2 = Point3D(m.points(i2).x, m.points(i2).y)
-          val p3 = Point3D(m.points(i3).x, m.points(i3).y)
+    // val gcb = GeometryCollection(polygons =
+    //   halfEdgeMeshes.flatMap { case (k, m) =>
+    //     m.triangles.keys.map { case (i1, i2, i3) =>
+    //       val p1 = Point3D(m.points(i1).x, m.points(i1).y)
+    //       val p2 = Point3D(m.points(i2).x, m.points(i2).y)
+    //       val p3 = Point3D(m.points(i3).x, m.points(i3).y)
 
-          val (z1, z2, z3) = (p1.z, p2.z, p3.z)
-          Polygon(Line(p1.toPoint, p2.toPoint, p3.toPoint, p1.toPoint))
-        }.toSeq
-      }.toSeq)
+    //       val (z1, z2, z3) = (p1.z, p2.z, p3.z)
+    //       Polygon(Line(p1.toPoint, p2.toPoint, p3.toPoint, p1.toPoint))
+    //     }.toSeq
+    //   }.toSeq)
 
 
 
-    import geotrellis.vector.io._
-    //println(gc.toWKT)
-    write(
-      s"/Users/rob/proj/jets/STITCHED-INITIAL-HE-BOUNDS.wkt",
-      gcb.toWKT
-    )
+    // import geotrellis.vector.io._
+    // //println(gc.toWKT)
+    // write(
+    //   s"/Users/rob/proj/jets/STITCHED-INITIAL-HE-BOUNDS.wkt",
+    //   gcb.toWKT
+    // )
 
 
     // Stitch time.
@@ -950,18 +950,18 @@ class PointCloudTriangulation(
 
     // TODO: UnDebug
     var deleteCount = 0
-    def deleteTriangle2(tri: HalfEdge[StitchKey, Unit], baseCount: Int = 0): Unit = {
+    def deleteTriangle2(tri: HalfEdge[StitchKey, Unit]): Unit = {
       val idx = (tri.vert, tri.next.vert, tri.next.next.vert)
 
-      val p1 = Point3D(points(idx._1).x, points(idx._1).y)
-      val p2 = Point3D(points(idx._2).x, points(idx._2).y)
-      val p3 = Point3D(points(idx._3).x, points(idx._3).y)
+      // val p1 = Point3D(points(idx._1).x, points(idx._1).y)
+      // val p2 = Point3D(points(idx._2).x, points(idx._2).y)
+      // val p3 = Point3D(points(idx._3).x, points(idx._3).y)
 
-      val p = Polygon(Line(p1.toPoint, p2.toPoint, p3.toPoint, p1.toPoint))
-      val pa = s"/Users/rob/proj/jets/base-stitch/deleted/"
-      if(!new java.io.File(pa).exists) { new java.io.File(pa).mkdir }
-      write(s"/Users/rob/proj/jets/base-stitch/deleted/${baseCount}-${deleteCount}.wkt", p.toWKT)
-      deleteCount += 1
+      // val p = Polygon(Line(p1.toPoint, p2.toPoint, p3.toPoint, p1.toPoint))
+      // val pa = s"/Users/rob/proj/jets/base-stitch/deleted/"
+      // if(!new java.io.File(pa).exists) { new java.io.File(pa).mkdir }
+      // write(s"/Users/rob/proj/jets/base-stitch/deleted/${baseCount}-${deleteCount}.wkt", p.toWKT)
+      // deleteCount += 1
       deleteTriangle(idx)
     }
 
@@ -1018,15 +1018,15 @@ class PointCloudTriangulation(
           right = other
       }
 
-      var baseCount = 0
-      def saveBase(b: HalfEdge[StitchKey, Unit], name: String = ""): Unit = {
-        val p1 = points(b.src)
-        val p2 = points(b.vert)
-        val l = Line(p1.toPoint, p2.toPoint)
-        val p = s"/Users/rob/proj/jets/base-stitch/${baseCount}"
-        if(!new java.io.File(p).exists) { new java.io.File(p).mkdir }
-        write(s"/Users/rob/proj/jets/base-stitch/${baseCount}/${name}.wkt", l.toWKT)
-      }
+      // var baseCount = 0
+      // def saveBase(b: HalfEdge[StitchKey, Unit], name: String = ""): Unit = {
+      //   val p1 = points(b.src)
+      //   val p2 = points(b.vert)
+      //   val l = Line(p1.toPoint, p2.toPoint)
+      //   val p = s"/Users/rob/proj/jets/base-stitch/${baseCount}"
+      //   if(!new java.io.File(p).exists) { new java.io.File(p).mkdir }
+      //   write(s"/Users/rob/proj/jets/base-stitch/${baseCount}/${name}.wkt", l.toWKT)
+      // }
 
       // compute the lower common tangent of left and right
       var continue = true
@@ -1073,8 +1073,8 @@ class PointCloudTriangulation(
       left.prev.next = base.flip
       right.prev.next = base
 
-      saveBase(base, "initial")
-      baseCount += 1
+      // saveBase(base, "initial")
+      // baseCount += 1
 
       // If linear joins to linear, check that the current state isn't already done (linear result)
       if (isLeftLinear && isRightLinear) {
@@ -1088,26 +1088,26 @@ class PointCloudTriangulation(
       }
 
       continue = true
-      var lCanCount = 0
-      var rCanCount = 0
+      // var lCanCount = 0
+      // var rCanCount = 0
       while (continue) {
         var lcand = base.flip.rotCCWSrc
         var rcand = base.rotCWSrc
-        saveBase(lcand, s"lcand-${lCanCount}")
-        saveBase(rcand, s"rcand-${rCanCount}")
-        lCanCount += 1
-        rCanCount += 1
+        // saveBase(lcand, s"lcand-${lCanCount}")
+        // saveBase(rcand, s"rcand-${rCanCount}")
+        // lCanCount += 1
+        // rCanCount += 1
 
         // Find left side candidate edge for extending the fill triangulation
         if (isCCW(lcand.vert, base.vert, base.src)) {
           while (inCircle((base.vert, base.src, lcand.vert), lcand.rotCCWSrc.vert)) {
             val e = lcand.rotCCWSrc
-            deleteTriangle2(lcand, baseCount)
+            deleteTriangle2(lcand)
             lcand.rotCCWDest.next = lcand.next
             lcand.prev.next = lcand.flip.next
             lcand = e
-            saveBase(lcand, s"lcand-${lCanCount}")
-            lCanCount += 1
+            // saveBase(lcand, s"lcand-${lCanCount}")
+            // lCanCount += 1
           }
         }
 
@@ -1115,12 +1115,12 @@ class PointCloudTriangulation(
         if (isCCW(rcand.vert, base.vert, base.src)) {
           while (inCircle((base.vert, base.src, rcand.vert), rcand.rotCWSrc.vert)) {
             val e = rcand.rotCWSrc
-            deleteTriangle2(rcand.flip, baseCount)
+            deleteTriangle2(rcand.flip)
             base.flip.next = rcand.rotCWSrc
             rcand.rotCCWDest.next = rcand.next
             rcand = e
-            saveBase(rcand, s"rcand-${rCanCount}")
-            rCanCount += 1
+            // saveBase(rcand, s"rcand-${rCanCount}")
+            // rCanCount += 1
           }
         }
 
@@ -1139,10 +1139,10 @@ class PointCloudTriangulation(
             rcand.next = e
             lcand.flip.next = e.flip
             base = e
-            saveBase(base, s"base-lcand-${baseCount}")
-            baseCount += 1
-            lCanCount = 0
-            rCanCount = 0
+            // saveBase(base, s"base-lcand-${baseCount}")
+            // baseCount += 1
+            // lCanCount = 0
+            // rCanCount = 0
 
           } else {
             // form new triangle from lcand and base
@@ -1152,14 +1152,14 @@ class PointCloudTriangulation(
             e.flip.next = rcand
             base.flip.next = e
             base = e
-            saveBase(base, s"base-lcand-${baseCount}")
-            baseCount += 1
-            lCanCount = 0
-            rCanCount = 0
+            // saveBase(base, s"base-lcand-${baseCount}")
+            // baseCount += 1
+            // lCanCount = 0
+            // rCanCount = 0
           }
 
           // Tag edges with the center of the new triangle's circumscribing circle
-          val c = circleCenter(base.vert, base.next.vert, base.next.next.vert)
+          // val c = circleCenter(base.vert, base.next.vert, base.next.next.vert)
           base.face = Some(())
           base.next.face = Some(())
           base.next.next.face = Some(())
