@@ -111,6 +111,21 @@ class HalfEdgeTable(_size: Int) {
     outer1
   }
 
+  // TODO: Make this match the implementation of join() in HalfEdge.scala
+  def joinTriangles(e1: Int, e2: Int): Unit = {
+    // flip.prev.next = that.flip.next
+    setNext(getPrev(getFlip(e1)), getNext(getFlip(e2)))
+
+    // that.flip.prev.next = flip.next
+    setNext(getPrev(getFlip(e2)), getNext(getFlip(e1)))
+
+    //flip = that
+    setFlip(e1, e2)
+
+    //that.flip = this
+    setFlip(e2, e1)
+  }
+
   /** Sets a half edge's flip half edge
     */
   def setFlip(e: Int, flip: Int): Unit =
@@ -213,5 +228,19 @@ class HalfEdgeTable(_size: Int) {
     size = nextSize
     table = nextTable
     limit = (size * FACTOR).toInt
+  }
+
+  // Debug methods
+
+  def showBoundingLoop(base: Int): Unit = {
+    var e = base
+    var l: List[Int] = Nil
+
+    while (!l.contains(e)) {
+      l = l :+ e
+      print(s"|${getSrc(e)} -> ${getVert(e)}| ")
+      e = getNext(e)
+    }
+    println("")
   }
 }
