@@ -25,14 +25,15 @@ lazy val commonSettings = Seq(
   publishArtifact in Test := false,
   pomIncludeRepository := { _ => false },
 
+  // Publish to sonatype
+  licenses := Seq("Apache 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
   publishTo <<= version { (v: String) =>
-     val nexus = "https://repo.locationtech.org/content/repositories"
-     if (v.trim.endsWith("SNAPSHOT"))
-       Some("LocationTech Nexus Repository" at s"$nexus/geotrellis-snapshots")
-     else
-       Some("LocationTech Nexus Repository" at s"$nexus/geotrellis-releases")
-   },
-
+    val nexus = "https://oss.sonatype.org/"
+    if (v.trim.endsWith("SNAPSHOT"))
+      Some("snapshots" at nexus + "content/repositories/snapshots")
+    else
+      Some("releases" at nexus + "service/local/staging/deploy/maven2")
+  },
   credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
 
   addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.0" cross CrossVersion.binary),
