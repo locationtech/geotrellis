@@ -6,7 +6,10 @@ libraryDependencies ++= Seq(
   pdal,
   scalatest % "test")
 
-resolvers += Resolver.bintrayRepo("pdal", "maven")
+resolvers ++= Seq(
+  Resolver.sonatypeRepo("releases"),
+  Resolver.sonatypeRepo("snapshots")
+)
 
 fork in Test := true
 parallelExecution in Test := false
