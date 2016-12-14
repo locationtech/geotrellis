@@ -103,9 +103,14 @@ object TinToDem {
 
     val triangulations: RDD[(SpatialKey, PointCloudTriangulation)] =
       rdd
-        .mapValues { points =>
-          PointCloudTriangulation(points)
-        }
+        .mapPartitions({ partitions =>
+          partitions.flatMap { case (key, points) =>
+            if(points.length > 2)
+              Some((key, PointCloudTriangulation(points)))
+            else
+              None
+          }
+        }, preservesPartitioning = true)
 
     val boundingMeshes: RDD[(SpatialKey, BoundingMesh)] =
       triangulations
@@ -120,7 +125,7 @@ object TinToDem {
       .collectNeighbors
       .join(triangulations)
       .mapPartitions({ partition =>
-        partition.map { case (key, (borders: Seq[(Direction, BoundingMesh)], triangulation: PointCloudTriangulation)) =>
+        partition.map { case (key, (borders: Iterable[(Direction, (SpatialKey, BoundingMesh))], triangulation: PointCloudTriangulation)) =>
         val extent = layoutDefinition.mapTransform(key)
         val re =
           RasterExtent(
@@ -134,7 +139,10 @@ object TinToDem {
 
           triangulation.rasterize(tile, re)
 
-          val stitched = triangulation.stitch(borders.toMap)
+          val neighbors =
+            borders.map { case (d, (k, bm)) => (d, bm) }.toMap
+
+          val stitched = triangulation.stitch(neighbors)
           stitched.rasterize(tile, re)
 
           (key, tile)
