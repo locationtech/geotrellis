@@ -63,5 +63,5 @@ object Dependencies {
 
   val slickPG      = "com.github.tminglei" %% "slick-pg" % "0.14.3"
 
-  val pdal         = "io.pdal" %% "pdal" % "1.4.0-SNAPSHOT"
+  val pdal         = "io.pdal" %% "pdal" % "1.4.0"
 }

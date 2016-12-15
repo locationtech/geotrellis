@@ -19,6 +19,8 @@ package geotrellis.vector.reproject
 import geotrellis.proj4._
 import geotrellis.vector._
 
+import com.vividsolutions.jts.{geom => jts}
+
 object Implicits extends Implicits
 
 trait Implicits {
@@ -112,4 +114,47 @@ trait Implicits {
     def reproject(src: CRS, dest: CRS): Feature[Geometry, D] = Reproject.geometryFeature(f, src, dest)
     def reproject(transform: Transform): Feature[Geometry, D] = Reproject.geometryFeature(f, transform)
   }
+
+  // JTS
+
+  implicit class JtsReprojectPoint(p: jts.Point) {
+    def reproject(src: CRS, dest: CRS): jts.Point = JtsReproject(p, src, dest)
+    def reproject(transform: Transform): jts.Point = JtsReproject(p, transform)
+  }
+
+  implicit class JtsReprojectLineString(l: jts.LineString) {
+    def reproject(src: CRS, dest: CRS): jts.LineString = JtsReproject(l, src, dest)
+    def reproject(transform: Transform): jts.LineString = JtsReproject(l, transform)
+  }
+
+  implicit class JtsReprojectPolygon(p: jts.Polygon) {
+    def reproject(src: CRS, dest: CRS): jts.Polygon = JtsReproject(p, src, dest)
+    def reproject(transform: Transform): jts.Polygon = JtsReproject(p, transform)
+  }
+
+  implicit class JtsReprojectMultiPoint(mp: jts.MultiPoint) {
+    def reproject(src: CRS, dest: CRS): jts.MultiPoint = JtsReproject(mp, src, dest)
+    def reproject(transform: Transform): jts.MultiPoint = JtsReproject(mp, transform)
+  }
+
+  implicit class JtsReprojectMutliLineString(ml: jts.MultiLineString) {
+    def reproject(src: CRS, dest: CRS): jts.MultiLineString = JtsReproject(ml, src, dest)
+    def reproject(transform: Transform): jts.MultiLineString = JtsReproject(ml, transform)
+  }
+
+  implicit class JtsReprojectMutliPolygon(mp: jts.MultiPolygon) {
+    def reproject(src: CRS, dest: CRS): jts.MultiPolygon = JtsReproject(mp, src, dest)
+    def reproject(transform: Transform): jts.MultiPolygon = JtsReproject(mp, transform)
+  }
+
+  implicit class JtsReprojectGeometryCollection(gc: jts.GeometryCollection) {
+    def reproject(src: CRS, dest: CRS): jts.GeometryCollection = JtsReproject(gc, src, dest)
+    def reproject(transform: Transform): jts.GeometryCollection = JtsReproject(gc, transform)
+  }
+
+  implicit class JtsReprojectGeometry(g: jts.Geometry) {
+    def reproject(src: CRS, dest: CRS): jts.Geometry = JtsReproject(g, src, dest)
+    def reproject(transform: Transform): jts.Geometry = JtsReproject(g, transform)
+  }
+
 }
