@@ -20,30 +20,20 @@ import spray.json._
 import spray.json.DefaultJsonProtocol._
 
 import java.io.File
+import scala.collection.mutable
 
 package object json extends MetadataFormat {
-  def getPipelineJson(localPath: File, targetCrs: Option[String] = None): JsObject = {
-    targetCrs match {
-      case Some(crs) =>
-        JsObject(
-          "pipeline" -> JsArray(
-            JsObject(
-              "filename" -> localPath.getAbsolutePath.toJson
-            ),
-            JsObject(
-              "type" -> "filters.reprojection".toJson,
-              "out_srs" -> crs.toJson
-            )
-          )
-        )
-
-      case _ => JsObject(
-        "pipeline" -> JsArray(
-          JsObject(
-            "filename" -> localPath.getAbsolutePath.toJson
-          )
-        )
+  def getPipelineJson(localPath: File, targetCrs: Option[String] = None, additionalSteps: Seq[JsObject] = Seq()): JsObject = {
+    val pipeline = mutable.ListBuffer[JsObject]()
+    pipeline += JsObject( "filename" -> localPath.getAbsolutePath.toJson )
+    targetCrs.foreach { crs =>
+      JsObject(
+        "type" -> "filters.reprojection".toJson,
+        "out_srs" -> crs.toJson
       )
     }
+    pipeline ++= additionalSteps
+
+    JsObject( "pipeline" -> JsArray(pipeline.toVector) )
   }
 }

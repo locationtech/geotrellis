@@ -22,6 +22,7 @@ import io.pdal._
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import spray.json.JsObject
 
 /**
   * Allows for reading point data files using PDAL as RDD[(ProjectedPackedPointsBounds, PointCloud)]s through S3 API.
@@ -42,7 +43,8 @@ object S3PointCloudRDD {
     tmpDir: Option[String] = None,
     filterExtent: Option[Extent] = None,
     dimTypes: Option[Iterable[String]] = None,
-    targetCrs: Option[String] = None
+    targetCrs: Option[String] = None,
+    additionalPipelineSteps: Seq[JsObject] = Seq()
   )
 
   object Options {
@@ -77,6 +79,8 @@ object S3PointCloudRDD {
     options.targetCrs.foreach { crs =>
       PointCloudInputFormat.setTargetCrs(conf, crs)
     }
+
+    PointCloudInputFormat.setAdditionalPipelineSteps(conf, options.additionalPipelineSteps)
 
     options.filterExtent match {
       case Some(filterExtent) =>

@@ -16,7 +16,7 @@
 
 package geotrellis.spark.pointcloud.json
 
-import geotrellis.proj4.CRS
+import geotrellis.proj4._
 import geotrellis.spark.pointcloud.{Extent3D, ProjectedExtent3D}
 
 import spray.json._
@@ -81,7 +81,14 @@ trait MetadataFormat {
             .getOrElse(throw DeserializationException(s"Unsupported reader driver: ${md.fields.keys}"))
 
           val obj = driver.asJsObject
-          val crs = CRS.fromString(obj.fields("srs").asJsObject.fields("proj4").convertTo[String])
+          val crs =
+            try {
+              CRS.fromString(obj.fields("srs").asJsObject.fields("proj4").convertTo[String])
+            } catch {
+              case e: Throwable =>
+                // TODO: Fix.
+                LatLng
+            }
 
           ProjectedExtent3D(jsobject.convertTo[Extent3D], crs)
         }

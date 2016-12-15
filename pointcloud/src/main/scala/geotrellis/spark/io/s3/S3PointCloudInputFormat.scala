@@ -47,7 +47,14 @@ class S3PointCloudInputFormat extends S3InputFormat[S3PointCloudHeader, Iterator
 
         try {
 
-          val pipeline = Pipeline(getPipelineJson(localPath, PointCloudInputFormat.getTargetCrs(context)).toString)
+        val pipeline =
+          Pipeline(
+            getPipelineJson(
+              localPath,
+              PointCloudInputFormat.getTargetCrs(context),
+              PointCloudInputFormat.getAdditionalPipelineSteps(context)
+            ).compactPrint
+          )
 
           // PDAL itself is not threadsafe
           AnyRef.synchronized { pipeline.execute }
