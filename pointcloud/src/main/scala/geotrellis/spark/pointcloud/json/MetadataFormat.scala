@@ -16,7 +16,7 @@
 
 package geotrellis.spark.pointcloud.json
 
-import geotrellis.proj4.CRS
+import geotrellis.proj4._
 import geotrellis.spark.pointcloud.{Extent3D, ProjectedExtent3D}
 
 import spray.json._
