@@ -40,6 +40,7 @@ object HadoopPointCloudRDD {
     tmpDir: Option[String] = None,
     filterExtent: Option[Extent] = None,
     dimTypes: Option[Iterable[String]] = None,
+    inputCrs: Option[String] = None,
     targetCrs: Option[String] = None,
     additionalPipelineSteps: Seq[JsObject] = Seq()
   )
@@ -67,6 +68,10 @@ object HadoopPointCloudRDD {
 
     options.targetCrs.foreach { crs =>
       PointCloudInputFormat.setTargetCrs(conf, crs)
+    }
+
+    options.inputCrs.foreach { crs =>
+      PointCloudInputFormat.setInputCrs(conf, crs)
     }
 
     PointCloudInputFormat.setAdditionalPipelineSteps(conf, options.additionalPipelineSteps)

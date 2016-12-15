@@ -51,6 +51,7 @@ class S3PointCloudInputFormat extends S3InputFormat[S3PointCloudHeader, Iterator
           Pipeline(
             getPipelineJson(
               localPath,
+              PointCloudInputFormat.getInputCrs(context),
               PointCloudInputFormat.getTargetCrs(context),
               PointCloudInputFormat.getAdditionalPipelineSteps(context)
             ).compactPrint

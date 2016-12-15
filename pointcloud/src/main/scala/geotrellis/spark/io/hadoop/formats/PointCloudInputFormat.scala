@@ -36,6 +36,7 @@ object PointCloudInputFormat {
   final val POINTCLOUD_FILTER_EXTENT = "POINTCLOUD_FILTER_EXTENT"
   final val POINTCLOUD_DIM_TYPES = "POINTCLOUD_DIM_TYPES"
   final val POINTCLOUD_TARGET_CRS = "POINTCLOUD_TARGET_CRS"
+  final val POINTCLOUD_INPUT_CRS = "POINTCLOUD_INPUT_CRS"
   final val POINTCLOUD_ADDITIONAL_STEPS ="POINTCLOUD_ADDITIONAL_STEPS"
 
   def setTmpDir(conf: Configuration, dir: String): Unit =
@@ -56,6 +57,15 @@ object PointCloudInputFormat {
   def getDimTypes(job: JobContext): Option[Array[String]] = {
     val s = job.getConfiguration.get(POINTCLOUD_DIM_TYPES)
     if(s != null) { Some(s.split(";")) }
+    else { None }
+  }
+
+  def setInputCrs(conf: Configuration, inputCrs: String): Unit =
+    conf.set(POINTCLOUD_INPUT_CRS, inputCrs)
+
+  def getInputCrs(job: JobContext): Option[String] = {
+    val s = job.getConfiguration.get(POINTCLOUD_INPUT_CRS)
+    if(s != null) { Some(s) }
     else { None }
   }
 
@@ -107,6 +117,7 @@ class PointCloudInputFormat extends FileInputFormat[HadoopPointCloudHeader, Iter
           Pipeline(
             getPipelineJson(
               localPath,
+              PointCloudInputFormat.getInputCrs(context),
               PointCloudInputFormat.getTargetCrs(context),
               PointCloudInputFormat.getAdditionalPipelineSteps(context)
             ).compactPrint
