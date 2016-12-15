@@ -33,7 +33,7 @@ object JtsReproject {
   def apply(p: jts.Coordinate, src: CRS, dest: CRS): jts.Coordinate =
     apply(p, Transform(src, dest))
 
-  def apply(p: jts.Point, src: CRS, dest: CRS): Point =
+  def apply(p: jts.Point, src: CRS, dest: CRS): jts.Point =
     apply(p, Transform(src, dest))
 
  def apply(p: jts.Point, transform: Transform): jts.Point =
