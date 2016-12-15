@@ -70,10 +70,13 @@ object PointCloudInputFormat {
   }
 
   def setAdditionalPipelineSteps(conf: Configuration, steps: Seq[JsObject]): Unit =
-    conf.setSerialized(POINTCLOUD_ADDITIONAL_STEPS, steps)
+    conf.set(POINTCLOUD_ADDITIONAL_STEPS, JsArray(steps.toVector).compactPrint)
 
-  def getAdditionalPipelineSteps(job: JobContext): Seq[JsObject] =
-    job.getConfiguration.getSerializedOption[Seq[JsObject]](POINTCLOUD_TARGET_CRS).toSeq.flatten
+  def getAdditionalPipelineSteps(job: JobContext): Seq[JsObject] = {
+    val s = job.getConfiguration.get(POINTCLOUD_ADDITIONAL_STEPS)
+    if(s == null) Seq()
+    else { s.parseJson match { case JsArray(objs) => objs.map(_.asJsObject) } }
+  }
 }
 
 /** Process files from the path through PDAL, and reads all files point data as an Array[Byte] **/

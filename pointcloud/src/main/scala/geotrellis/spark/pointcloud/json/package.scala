@@ -27,7 +27,7 @@ package object json extends MetadataFormat {
     val pipeline = mutable.ListBuffer[JsObject]()
     pipeline += JsObject( "filename" -> localPath.getAbsolutePath.toJson )
     targetCrs.foreach { crs =>
-      JsObject(
+      pipeline += JsObject(
         "type" -> "filters.reprojection".toJson,
         "out_srs" -> crs.toJson
       )
