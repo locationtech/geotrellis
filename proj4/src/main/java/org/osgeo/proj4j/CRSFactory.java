@@ -69,7 +69,7 @@ public class CRSFactory
    * <tt>EPSG</tt>, 
    * <tt>ESRI</tt>, 
    * <tt>WORLD</tt>, 
-   * <tt>NA83</tt>, 
+   * <tt>NAD83</tt>,
    * <tt>NAD27</tt>.
    * If no authority is provided, the <tt>EPSG</tt> namespace is assumed.
    * <li><b><tt>code</tt></b> is the id of a coordinate system in the authority namespace.
