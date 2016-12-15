@@ -26,6 +26,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.lib.input._
+import spray.json._
 
 import java.io.{BufferedOutputStream, File, FileOutputStream}
 import scala.collection.JavaConversions._
@@ -35,6 +36,7 @@ object PointCloudInputFormat {
   final val POINTCLOUD_FILTER_EXTENT = "POINTCLOUD_FILTER_EXTENT"
   final val POINTCLOUD_DIM_TYPES = "POINTCLOUD_DIM_TYPES"
   final val POINTCLOUD_TARGET_CRS = "POINTCLOUD_TARGET_CRS"
+  final val POINTCLOUD_ADDITIONAL_STEPS ="POINTCLOUD_ADDITIONAL_STEPS"
 
   def setTmpDir(conf: Configuration, dir: String): Unit =
     conf.set(POINTCLOUD_TMP_DIR, dir)
@@ -61,8 +63,17 @@ object PointCloudInputFormat {
   def setTargetCrs(conf: Configuration, targetCrs: String): Unit =
     conf.set(POINTCLOUD_TARGET_CRS, targetCrs)
 
-  def getTargetCrs(job: JobContext): Option[String] =
-    Option(job.getConfiguration.get(POINTCLOUD_TARGET_CRS))
+  def getTargetCrs(job: JobContext): Option[String] = {
+    val s = job.getConfiguration.get(POINTCLOUD_TARGET_CRS)
+    if(s != null) { Some(s) }
+    else { None }
+  }
+
+  def setAdditionalPipelineSteps(conf: Configuration, steps: Seq[JsObject]): Unit =
+    conf.setSerialized(POINTCLOUD_ADDITIONAL_STEPS, steps)
+
+  def getAdditionalPipelineSteps(job: JobContext): Seq[JsObject] =
+    job.getConfiguration.getSerializedOption[Seq[JsObject]](POINTCLOUD_TARGET_CRS).toSeq.flatten
 }
 
 /** Process files from the path through PDAL, and reads all files point data as an Array[Byte] **/
@@ -89,7 +100,14 @@ class PointCloudInputFormat extends FileInputFormat[HadoopPointCloudHeader, Iter
       bos.close()
 
       try {
-        val pipeline = Pipeline(getPipelineJson(localPath, PointCloudInputFormat.getTargetCrs(context)).toString)
+        val pipeline =
+          Pipeline(
+            getPipelineJson(
+              localPath,
+              PointCloudInputFormat.getTargetCrs(context),
+              PointCloudInputFormat.getAdditionalPipelineSteps(context)
+            ).compactPrint
+          )
 
         // PDAL itself is not threadsafe
         AnyRef.synchronized { pipeline.execute }

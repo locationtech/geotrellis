@@ -56,7 +56,11 @@ object TrianglesRasterizer {
         val y = yStart + row * re.cellheight
         val screenCol = ((x - re.extent.xmin) / re.cellwidth).toInt
         val screenRow = ((re.extent.ymax -y) / re.cellheight).toInt
-        if (triangle.covers(Point(x,y))) {
+        if (
+          triangle.covers(Point(x,y)) &&
+          screenCol < re.cols && screenRow < re.rows &&
+          0 <= screenCol && 0 <= screenRow
+        ) {
           val result = {
             val verts = triangle.vertices; require(verts.length == 4)
             val x1 = verts(0).x
