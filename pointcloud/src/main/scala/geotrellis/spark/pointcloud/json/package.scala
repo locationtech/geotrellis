@@ -23,9 +23,17 @@ import java.io.File
 import scala.collection.mutable
 
 package object json extends MetadataFormat {
-  def getPipelineJson(localPath: File, targetCrs: Option[String] = None, additionalSteps: Seq[JsObject] = Seq()): JsObject = {
+  def getPipelineJson(localPath: File, inputCrs: Option[String] = None, targetCrs: Option[String] = None, additionalSteps: Seq[JsObject] = Seq()): JsObject = {
     val pipeline = mutable.ListBuffer[JsObject]()
-    pipeline += JsObject( "filename" -> localPath.getAbsolutePath.toJson )
+    pipeline += (inputCrs match {
+      case Some(crs) => JsObject(
+        "filename" -> localPath.getAbsolutePath.toJson,
+        "spatialreference" -> crs.toJson
+      )
+      case _ => JsObject(
+        "filename" -> localPath.getAbsolutePath.toJson
+      )
+    })
     targetCrs.foreach { crs =>
       pipeline += JsObject(
         "type" -> "filters.reprojection".toJson,

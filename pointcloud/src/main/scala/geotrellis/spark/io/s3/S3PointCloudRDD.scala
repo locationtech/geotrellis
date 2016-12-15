@@ -44,6 +44,7 @@ object S3PointCloudRDD {
     filterExtent: Option[Extent] = None,
     dimTypes: Option[Iterable[String]] = None,
     targetCrs: Option[String] = None,
+    inputCrs: Option[String] = None,
     additionalPipelineSteps: Seq[JsObject] = Seq()
   )
 
@@ -74,6 +75,10 @@ object S3PointCloudRDD {
 
     options.dimTypes.foreach { dt =>
       PointCloudInputFormat.setDimTypes(conf, dt)
+    }
+
+    options.inputCrs.foreach { crs =>
+      PointCloudInputFormat.setInputCrs(conf, crs)
     }
 
     options.targetCrs.foreach { crs =>
