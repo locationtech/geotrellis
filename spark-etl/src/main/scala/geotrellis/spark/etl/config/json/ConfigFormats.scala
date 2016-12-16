@@ -18,6 +18,7 @@ package geotrellis.spark.etl.config.json
 
 import geotrellis.vector.io._
 import geotrellis.raster.{CellSize, CellType}
+import geotrellis.raster.io._
 import geotrellis.raster.resample._
 import geotrellis.spark.etl.config._
 import geotrellis.vector.Extent
@@ -29,15 +30,6 @@ import spray.json.DefaultJsonProtocol._
 import scala.util.matching.Regex
 
 trait ConfigFormats {
-  implicit object CellTypeFormat extends RootJsonFormat[CellType] {
-    def write(ct: CellType): JsValue = ct.name.toJson
-    def read(value: JsValue): CellType =
-      value match {
-        case JsString(ctype) => CellType.fromString(ctype)
-        case _ =>
-          throw new DeserializationException("CellType must be a valid string.")
-      }
-  }
 
   implicit object StorageLevelFormat extends RootJsonFormat[StorageLevel] {
     def write(sl: StorageLevel): JsValue = sl match {
@@ -101,19 +93,6 @@ trait ConfigFormats {
         }
         case _ =>
           throw new DeserializationException("PointResampleMethod must be a valid string.")
-      }
-  }
-
-  implicit object CellSizeFormat extends RootJsonFormat[CellSize] {
-    def write(cs: CellSize): JsValue = JsObject(
-      "width"  -> cs.width.toJson,
-      "height" -> cs.height.toJson
-    )
-    def read(value: JsValue): CellSize =
-      value.asJsObject.getFields("width", "height") match {
-        case Seq(JsNumber(width), JsNumber(height)) => CellSize(width.toInt, height.toInt)
-        case _ =>
-          throw new DeserializationException("BackendType must be a valid object.")
       }
   }
 
