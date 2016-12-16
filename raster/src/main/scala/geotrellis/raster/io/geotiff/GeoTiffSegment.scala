@@ -20,6 +20,7 @@ import geotrellis.raster.io.geotiff.util._
 import geotrellis.raster._
 
 import java.util.BitSet
+import java.nio.ByteBuffer
 import spire.syntax.cfor._
 
 /**
@@ -148,4 +149,31 @@ trait GeoTiffSegment {
         }
         arr.toArrayByte()
     }
+}
+
+object GeoTiffSegment {
+  /**
+   * Splits interleave pixel segment into component band bytes
+   *
+   * @param bytes Pixel interleaved segment bytes
+   * @param bandCount Number of samples interleaved in each pixel
+   * @param bytesPerSample Number of bytes in each sample
+   */
+  def deinterleave(bytes: Array[Byte], bandCount: Int, bytesPerSample: Int): Array[Array[Byte]] = {
+    val bands: Array[Array[Byte]] = Array.empty
+    val segmentSize = bytes.length / bandCount
+    cfor(0)(_ < bandCount, _ + 1) { i =>
+      bands(i) = new Array[Byte](segmentSize)
+    }
+
+    val bb = ByteBuffer.wrap(bytes)
+    cfor(0)(_ < segmentSize, _ + bytesPerSample) { offset =>
+      cfor(0)(_ < bandCount, _ + 1) { band =>
+        bb.get(bands(band), offset, bytesPerSample)
+      }
+    }
+
+    bands
+  }
+
 }
