@@ -66,7 +66,7 @@ trait MetadataFormat {
           )
         }
         case v =>
-          throw DeserializationException("Metadata invalid: ${v}")
+          throw DeserializationException(s"Metadata invalid: ${v}")
       }
   }
 
@@ -86,14 +86,13 @@ trait MetadataFormat {
               CRS.fromString(obj.fields("srs").asJsObject.fields("proj4").convertTo[String])
             } catch {
               case e: Throwable =>
-                // TODO: Fix.
-                LatLng
+                throw DeserializationException(s"Incorrect CRS metadata information, try to provide the input CRS", e)
             }
 
           ProjectedExtent3D(jsobject.convertTo[Extent3D], crs)
         }
         case v =>
-          throw DeserializationException("Metadata invalid: ${v}")
+          throw DeserializationException(s"Metadata invalid: ${v}")
       }
   }
 }
