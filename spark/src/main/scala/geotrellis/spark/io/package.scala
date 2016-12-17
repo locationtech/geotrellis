@@ -75,8 +75,8 @@ package object io
   class AttributeNotFoundError(attributeName: String, layerId: LayerId)
     extends LayerIOError(s"Attribute $attributeName not found for layer $layerId")
 
-  class TileNotFoundError(key: Any, layerId: LayerId)
-    extends LayerIOError(s"Tile with key $key not found for layer $layerId")
+  class ValueNotFoundError(key: Any, layerId: LayerId)
+    extends LayerIOError(s"Value with key $key not found for layer $layerId")
 
   class HeaderMatchError[T <: Product](layerId: LayerId, headerl: T, headerr: T)
     extends LayerIOError(s"Layer $layerId Header data ($headerl) not matches ($headerr)")

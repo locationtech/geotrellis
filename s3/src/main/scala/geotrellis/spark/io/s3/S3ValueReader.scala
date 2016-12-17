@@ -51,7 +51,7 @@ class S3ValueReader(
           s3Client.getObject(header.bucket, path).getObjectContent
         } catch {
           case e: AmazonS3Exception if e.getStatusCode == 404 =>
-            throw new TileNotFoundError(key, layerId)
+            throw new ValueNotFoundError(key, layerId)
         }
 
       val bytes = IOUtils.toByteArray(is)
@@ -60,7 +60,7 @@ class S3ValueReader(
       recs
         .find { row => row._1 == key }
         .map { row => row._2 }
-        .getOrElse(throw new TileNotFoundError(key, layerId))
+        .getOrElse(throw new ValueNotFoundError(key, layerId))
     }
   }
 }
