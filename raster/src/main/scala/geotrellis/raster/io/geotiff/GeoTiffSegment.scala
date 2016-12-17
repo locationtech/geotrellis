@@ -160,7 +160,7 @@ object GeoTiffSegment {
    * @param bytesPerSample Number of bytes in each sample
    */
   def deinterleave(bytes: Array[Byte], bandCount: Int, bytesPerSample: Int): Array[Array[Byte]] = {
-    val bands: Array[Array[Byte]] = Array.empty
+    val bands: Array[Array[Byte]] = new Array[Array[Byte]](bandCount)
     val segmentSize = bytes.length / bandCount
     cfor(0)(_ < bandCount, _ + 1) { i =>
       bands(i) = new Array[Byte](segmentSize)
@@ -174,6 +174,31 @@ object GeoTiffSegment {
     }
 
     bands
+  }
+
+  /**
+   * Splits interleaved bit pixels into component bands
+   *
+   * @param bytes Pixel interleaved segment as bytes
+   * @param bandCount Number of bit interleaved into each pixel
+   * @param nbits Number of bits in each band
+   */
+  def deinterleaveBits(bytes: Array[Byte], bandCount: Int, nbits: Int): Array[Array[Byte]] = {
+    val source = BitSet.valueOf(bytes)
+    val bands: Array[BitSet] = new Array[BitSet](bandCount)
+    cfor(0)(_ < bandCount, _ + 1) { i =>
+      bands(i) = new BitSet(nbits)
+    }
+
+    cfor(0)(_ < nbits * bandCount, _ + 1) { si =>
+      val ti = si / bandCount
+      val bi = si % bandCount
+
+      if (source.get(si)) bands(bi).set(ti)
+      else bands(bi).clear(ti)
+    }
+
+    bands.map(_.toByteArray)
   }
 
 }
