@@ -61,15 +61,15 @@ class HadoopValueReader(
         .map { case (path, _, _) =>
             readers.getOrInsert((layerId, path), new MapFile.Reader(path, conf))
         }
-        .getOrElse(throw new TileNotFoundError(key, layerId))
+        .getOrElse(throw new ValueNotFoundError(key, layerId))
           .get(new LongWritable(index), new BytesWritable())
           .asInstanceOf[BytesWritable]
 
-      if (valueWritable == null) throw new TileNotFoundError(key, layerId)
+      if (valueWritable == null) throw new ValueNotFoundError(key, layerId)
       AvroEncoder
         .fromBinary(writerSchema, valueWritable.getBytes)(codec)
         .find { row => row._1 == key }
-        .getOrElse(throw new TileNotFoundError(key, layerId))
+        .getOrElse(throw new ValueNotFoundError(key, layerId))
         ._2
     }
   }
