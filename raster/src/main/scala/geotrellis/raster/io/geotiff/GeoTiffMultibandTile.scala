@@ -177,35 +177,10 @@ abstract class GeoTiffMultibandTile(
 
           getSegments(0 until segmentCount).foreach { case (segmentIndex, segment) =>
             val (cols, rows) =
-              if(segmentLayout.isTiled) { (segmentLayout.tileLayout.tileCols, segmentLayout.tileLayout.tileRows) }
-              else { segmentLayout.getSegmentDimensions(segmentIndex) }
-
-            val paddedCols = {
-              val bytesWidth = (cols + 7) / 8
-              bytesWidth * 8
-            }
-
-            val resultByteCount =
-              (paddedCols / 8) * rows
-
-            val bandSegment = Array.ofDim[Byte](resultByteCount)
-
-            cfor(bandIndex)(_ < segment.size, _ + bandCount) { i =>
-              val j = i / bandCount
-
-              val col = (j % cols)
-              val row = (j / cols)
-              val i2 = (row * paddedCols) + col
-
-              BitArrayTile.update(bandSegment, i2, segment.getInt(i))
-            }
-
-            // Inverse the byte, to account for endian mismatching.
-            cfor(0)(_ < bandSegment.size, _ + 1) { i =>
-              bandSegment(i) = invertByte(bandSegment(i))
-            }
-
-            compressedBandBytes(segmentIndex) = compressor.compress(bandSegment, segmentIndex)
+              if (segmentLayout.isTiled) (segmentLayout.tileLayout.tileCols, segmentLayout.tileLayout.tileRows)
+              else segmentLayout.getSegmentDimensions(segmentIndex)
+            val bytes = GeoTiffSegment.deinterleaveBits(segment.bytes, bandCount, cols * rows)(bandIndex)
+            compressedBandBytes(segmentIndex) = compressor.compress(bytes, segmentIndex)
           }
 
           GeoTiffTile(new ArraySegmentBytes(compressedBandBytes), compressor.createDecompressor(), segmentLayout, compression, cellType, Some(bandType))
@@ -213,22 +188,10 @@ abstract class GeoTiffMultibandTile(
           val compressedBandBytes = Array.ofDim[Array[Byte]](segmentCount)
           val compressor = compression.createCompressor(segmentCount)
           val bytesPerSample = bandType.bytesPerSample
-          val bytesPerCell = bytesPerSample * bandCount
 
           getSegments(0 until segmentCount).foreach { case (segmentIndex, geoTiffSegment) =>
-            val segment = geoTiffSegment.bytes
-            val segmentSize = segment.size
-            val bandSegmentCount = segmentSize / bandCount
-            val bandSegment = Array.ofDim[Byte](bandSegmentCount)
-
-            var j = 0
-            cfor(bandIndex * bytesPerSample)(_ < segmentSize, _ + bytesPerCell) { i =>
-              var b = 0
-              while(b < bytesPerSample) { bandSegment(j + b) = segment(i + b) ; b += 1 }
-              j += bytesPerSample
-            }
-
-            compressedBandBytes(segmentIndex) = compressor.compress(bandSegment, segmentIndex)
+            val bytes = GeoTiffSegment.deinterleave(geoTiffSegment.bytes, bandCount, bytesPerSample)(bandIndex)
+            compressedBandBytes(segmentIndex) = compressor.compress(bytes, segmentIndex)
           }
 
           GeoTiffTile(new ArraySegmentBytes(compressedBandBytes), compressor.createDecompressor(), segmentLayout, compression, cellType, Some(bandType))
