@@ -47,9 +47,9 @@ class HBaseValueReader(
           .filter(pair => pair._1 == key)
 
       if (tiles.isEmpty) {
-        throw new TileNotFoundError(key, layerId)
+        throw new ValueNotFoundError(key, layerId)
       } else if (tiles.size > 1) {
-        throw new LayerIOError(s"Multiple tiles(${tiles.size}) found for $key for layer $layerId")
+        throw new LayerIOError(s"Multiple values (${tiles.size}) found for $key for layer $layerId")
       } else {
         tiles.head._2
       }
