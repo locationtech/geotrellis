@@ -29,7 +29,7 @@ trait Float32GeoTiffSegmentCollection extends GeoTiffSegmentCollection {
   lazy val createSegment: Int => Float32GeoTiffSegment = noDataValue match {
     case None =>
       { i: Int => new Float32RawGeoTiffSegment(getDecompressedBytes(i)) }
-    case Some(nd) if (nd == Float.NaN) =>
+    case Some(nd) if java.lang.Float.isNaN(nd) =>
       { i: Int => new Float32ConstantNoDataGeoTiffSegment(getDecompressedBytes(i)) }
     case Some(nd) =>
       { i: Int => new Float32UserDefinedNoDataGeoTiffSegment(getDecompressedBytes(i), nd) }
