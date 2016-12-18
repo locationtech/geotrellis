@@ -6,6 +6,7 @@
 ./sbt -J-Xmx2G "project geotools" clean || { exit 1; }
 ./sbt -J-Xmx2G "project geowave" clean || { exit 1; }
 ./sbt -J-Xmx2G "project hbase" clean || { exit 1; }
+./sbt -J-Xmx2G "project points" clean || { exit 1; }
 ./sbt -J-Xmx2G "project proj4" clean || { exit 1; }
 ./sbt -J-Xmx2G "project s3" clean || { exit 1; }
 ./sbt -J-Xmx2G "project s3-test" clean || { exit 1; }
@@ -24,6 +25,7 @@ rm -r geotools/target
 rm -r geowave/target
 rm -r hbase/target
 rm -r macros/target
+rm -r points/target
 rm -r proj4/target
 rm -r raster-test/target
 rm -r raster-testkit/target
