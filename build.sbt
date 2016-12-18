@@ -25,13 +25,19 @@ lazy val commonSettings = Seq(
   publishArtifact in Test := false,
   pomIncludeRepository := { _ => false },
 
+  licenses := Seq("Apache 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
+
   publishTo <<= version { (v: String) =>
-     val nexus = "https://repo.locationtech.org/content/repositories"
-     if (v.trim.endsWith("SNAPSHOT"))
-       Some("LocationTech Nexus Repository" at s"$nexus/geotrellis-snapshots")
-     else
-       Some("LocationTech Nexus Repository" at s"$nexus/geotrellis-releases")
-   },
+    val sonatype = "https://oss.sonatype.org/"
+    val locationtech = "https://repo.locationtech.org/content/repositories"
+    if (v.trim.endsWith("SNAPSHOT")) {
+      // Publish snapshots to LocationTech
+      Some("LocationTech Snapshot Repository" at s"${locationtech}/geotrellis-snapshots")
+    } else {
+      // Publish releases to Sonatype
+      Some("Sonatype Release Repository" at s"${sonatype}service/local/staging/deploy/maven2")
+    }
+  },
 
   credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
 
