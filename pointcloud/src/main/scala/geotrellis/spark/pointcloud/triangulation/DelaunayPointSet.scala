@@ -22,7 +22,7 @@ object DelaunayPointSet {
       def getZ(i: Int) = pointCloud.getZ(i)
     }
 
-  implicit def lightPointArrayToDelaunayPointSet(points: Array[Point3D]) =
+  implicit def lightPointArrayToDelaunayPointSet(points: Array[Point3D]): DelaunayPointSet =
     new DelaunayPointSet {
       def length = points.length
       def getX(i: Int) = points(i).x

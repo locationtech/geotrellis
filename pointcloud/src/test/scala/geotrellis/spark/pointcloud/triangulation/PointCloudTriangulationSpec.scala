@@ -43,7 +43,6 @@ class PointCloudTriangulationSpec extends FunSpec
 
       val d = PointCloudTriangulation(points)
       val bm = d.boundingMesh(extent)
-      bm.showTriangles()
 
       for((key, value) <- bm.triangles) {
         print(s"$key:")
@@ -98,7 +97,7 @@ class PointCloudTriangulationSpec extends FunSpec
 
       def showTriangles(prefix: String = ""): Unit = {
         val gc =
-          GeometryCollection(polygons =
+          GeometryCollection(geoms =
             hebm.triangles.keys.map { case (i1, i2, i3) =>
               import hebm.points
               val p1 = Point3D(points(i1).x, points(i1).y)

@@ -48,7 +48,7 @@ object CutPointCloud {
 
     val cut =
       rdd
-        .flatMap { case pointCloud =>
+        .flatMap { pointCloud =>
           var lastKey: SpatialKey = null
           val keysToPoints = mutable.Map[SpatialKey, mutable.ArrayBuffer[Point3D]]()
           val pointSize = pointCloud.length
@@ -92,7 +92,7 @@ object CutPointCloud {
 
     val cut =
       rdd
-        .flatMap { case pointCloud =>
+        .flatMap { pointCloud =>
           var lastKey: SpatialKey = null
           val keysToBytes = mutable.Map[SpatialKey, mutable.ArrayBuffer[Array[Byte]]]()
           val pointSize = pointCloud.pointSize
