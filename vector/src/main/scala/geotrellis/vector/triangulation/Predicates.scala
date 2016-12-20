@@ -1,7 +1,9 @@
 package geotrellis.vector.triangulation
 
-import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
+import com.vividsolutions.jts.geom.Coordinate
 import org.apache.commons.math3.linear._
+
+import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
 
 object Predicates {
   def det3 (a11: Double, a12: Double, a13: Double,
@@ -13,20 +15,20 @@ object Predicates {
     (new LUDecomposition(m)).getDeterminant
   }
 
-  def isCollinear(a: LightPoint, b: LightPoint, c: LightPoint): Boolean =
+  def isCollinear(a: Coordinate, b: Coordinate, c: Coordinate): Boolean =
     math.abs(ShewchuksDeterminant.orient2d(a.x, a.y, b.x, b.y, c.x, c.y)) < EPSILON
 
-  def isCollinear[V,T](e: HalfEdge[V, T], v: V)(implicit trans: V => LightPoint): Boolean = {
-    val a = trans(e.src)
-    val b = trans(e.vert)
+  def isCollinear(e: Int, v: Int)(implicit trans: Int => Coordinate, het: HalfEdgeTable): Boolean = {
+    val a = trans(het.getSrc(e))
+    val b = trans(het.getDest(e))
     val c = trans(v)
 
     isCollinear(a, b, c)
   }
 
-  def doesExtend[V,T](e: HalfEdge[V, T], v: V)(implicit trans: V => LightPoint): Boolean = {
-    val a = trans(e.src)
-    val b = trans(e.vert)
+  def doesExtend(e: Int, v: Int)(implicit trans: Int => Coordinate, het: HalfEdgeTable): Boolean = {
+    val a = trans(het.getSrc(e))
+    val b = trans(het.getDest(e))
     val c = trans(v)
 
     val d1 = math.pow(a.x - b.x, 2) + math.pow(a.y - b.y, 2)
@@ -35,45 +37,43 @@ object Predicates {
     d1 < d2
   }
 
-  def isCorner[V,T](edge: HalfEdge[V,T])(implicit trans: V => LightPoint): Boolean = {
-    !isCollinear(edge, edge.prev.src) || {
-      val c = trans(edge.src)
-      val n = trans(edge.vert)
-      val p = trans(edge.prev.src)
+  def isCorner(edge: Int)(implicit trans: Int => Coordinate, het: HalfEdgeTable): Boolean = {
+    !isCollinear(edge, het.getSrc(het.getPrev(edge))) || {
+      val c = trans(het.getSrc(edge))
+      val n = trans(het.getDest(edge))
+      val p = trans(het.getSrc(het.getPrev(edge)))
       val (xn, yn) = (n.x - c.x, n.y - c.y)
       val (xp, yp) = (p.x - c.x, p.y - c.y)
       xn * xp + yn * yp > 0
     }
   }
 
-  def isCCW(a: LightPoint, b: LightPoint, c: LightPoint): Boolean = {
+  def isCCW(a: Coordinate, b: Coordinate, c: Coordinate): Boolean = {
     // det [ a.x-c.x  a.y-c.y ]
     //     [ b.x-c.x  b.y-c.y ] > 0
     ShewchuksDeterminant.orient2d(a.x, a.y, b.x, b.y, c.x, c.y) > EPSILON
   }
 
-  def isRightOf[V,T](e: HalfEdge[V,T], p: LightPoint)(implicit trans: V => LightPoint) =
-    isCCW(p, trans(e.vert), trans(e.src))
+  def isRightOf(e: Int, p: Coordinate)(implicit trans: Int => Coordinate, het: HalfEdgeTable) =
+    isCCW(p, trans(het.getDest(e)), trans(het.getSrc(e)))
 
-  def isRightOf[V,T](e: HalfEdge[V,T], p: V)(implicit trans: V => LightPoint) =
-    isCCW(trans(p), trans(e.vert), trans(e.src))
+  def isRightOf(e: Int, p: Int)(implicit trans: Int => Coordinate, het: HalfEdgeTable) =
+    isCCW(trans(p), trans(het.getDest(e)), trans(het.getSrc(e)))
 
-  def isLeftOf[V,T](e: HalfEdge[V,T], p: LightPoint)(implicit trans: V => LightPoint) =
-    isCCW(p, trans(e.src), trans(e.vert))
+  def isLeftOf(e: Int, p: Coordinate)(implicit trans: Int => Coordinate, het: HalfEdgeTable) =
+    isCCW(p, trans(het.getSrc(e)), trans(het.getDest(e)))
 
-  def isLeftOf[V,T](e: HalfEdge[V,T], p: V)(implicit trans: V => LightPoint) =
-    isCCW(trans(p), trans(e.src), trans(e.vert))
+  def isLeftOf(e: Int, p: Int)(implicit trans: Int => Coordinate, het: HalfEdgeTable) =
+    isCCW(trans(p), trans(het.getSrc(e)), trans(het.getDest(e)))
 
-  def inCircle(abc: (LightPoint, LightPoint, LightPoint), d: LightPoint): Boolean = {
-    val (a,b,c) = abc
+  def inCircle(a: Coordinate, b: Coordinate, c: Coordinate, d: Coordinate): Boolean = {
     // det3(a.x - d.x, a.y - d.y, pow(a.x - d.x, 2) + pow(a.y - d.y, 2),
     //      b.x - d.x, b.y - d.y, pow(b.x - d.x, 2) + pow(b.y - d.y, 2),
     //      c.x - d.x, c.y - d.y, pow(c.x - d.x, 2) + pow(c.y - d.y, 2)) > EPSILON
     ShewchuksDeterminant.incircle(a.x, a.y, b.x, b.y, c.x, c.y, d.x, d.y) > EPSILON
   }
 
-  def inCircle[V](abc: (V, V, V), di: V)(implicit trans: V => LightPoint): Boolean = {
-    val (ai,bi,ci) = abc
+  def inCircle(ai: Int, bi: Int, ci: Int, di: Int)(implicit trans: Int => Coordinate): Boolean = {
     val a = trans(ai)
     val b = trans(bi)
     val c = trans(ci)
@@ -81,7 +81,7 @@ object Predicates {
     ShewchuksDeterminant.incircle(a.x, a.y, b.x, b.y, c.x, c.y, d.x, d.y) > EPSILON
   }
 
-  def circleCenter(a: LightPoint, b: LightPoint, c: LightPoint): LightPoint = {
+  def circleCenter(a: Coordinate, b: Coordinate, c: Coordinate): Coordinate = {
     val d = 2.0 * det3(a.x, a.y, 1.0,
                        b.x, b.y, 1.0,
                        c.x, c.y, 1.0)
@@ -91,10 +91,10 @@ object Predicates {
     val k = det3(a.x, a.x * a.x + a.y * a.y, 1.0,
                  b.x, b.x * b.x + b.y * b.y, 1.0,
                  c.x, c.x * c.x + c.y * c.y, 1.0) / d
-    LightPoint(h,k)
+    new Coordinate(h,k)
   }
 
-  def circleCenter[V](ai: V, bi: V, ci: V)(implicit trans: V => LightPoint): LightPoint = {
+  def circleCenter(ai: Int, bi: Int, ci: Int)(implicit trans: Int => Coordinate): Coordinate = {
     val a = trans(ai)
     val b = trans(bi)
     val c = trans(ci)
@@ -107,19 +107,20 @@ object Predicates {
     val k = det3(a.x, a.x * a.x + a.y * a.y, 1.0,
                  b.x, b.x * b.x + b.y * b.y, 1.0,
                  c.x, c.x * c.x + c.y * c.y, 1.0) / d
-    LightPoint(h,k)
+    new Coordinate(h,k)
   }
 
-  def isDelaunayEdge[V,T](e: HalfEdge[V,T])(implicit trans: V => LightPoint): Boolean = {
+  def isDelaunayEdge(e: Int)(implicit trans: Int => Coordinate, het: HalfEdgeTable): Boolean = {
     // Predicated on the fact that if an edge is Delaunay, then for a
     // point, A, to the left of edge (X,Y), and a point, B, to the
     // right of (X,Y), A may not be in the circle defined by points X,
     // Y, and B.
-    val a = trans(e.next.vert)
-    val b = trans(e.flip.next.vert)
-    val x = trans(e.flip.vert)
-    val y = trans(e.vert)
-    !inCircle((a, x, y), b)
+    import het._
+    val a = trans(getDest(getNext(e)))
+    val b = trans(getDest(getNext(getFlip(e))))
+    val x = trans(getDest(getFlip(e)))
+    val y = trans(getDest(e))
+    !inCircle(a, x, y, b)
   }
 }
 
