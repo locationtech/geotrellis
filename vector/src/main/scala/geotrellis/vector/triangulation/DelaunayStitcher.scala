@@ -127,7 +127,7 @@ object DelaunayStitcher {
       val b1 = getDest(base)
       val l = getDest(getNext(base))
       val r = getDest(getNext(getFlip(base)))
-      if (isCollinear(b0, b1, l)  && isCollinear(b0, b1, r)) {
+      if (isCollinear(b0, b1, l) && isCollinear(b0, b1, r)) {
         return (advance(getFlip(base))(trans, nav), true)
       }
     }
