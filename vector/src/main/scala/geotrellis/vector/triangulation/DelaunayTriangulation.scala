@@ -2,7 +2,7 @@ package geotrellis.vector.triangulation
 
 import scala.annotation.tailrec
 
-class DelaunayTriangulation(verts: DelaunayPointSet, navigator: HalfEdgeTable)
+case class DelaunayTriangulation(verts: DelaunayPointSet, navigator: HalfEdgeTable)
 {
   implicit val nav = navigator
   implicit val trans = verts.getCoordinate(_)
