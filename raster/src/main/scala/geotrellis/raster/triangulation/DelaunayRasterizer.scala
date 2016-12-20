@@ -1,5 +1,7 @@
 package geotrellis.raster.triangulation
 
+import com.vividsolutions.jts.geom.Coordinate
+
 import geotrellis.raster._
 import geotrellis.vector.triangulation._
 
@@ -8,33 +10,35 @@ object DelaunayRasterizer {
    * Produces a Tile with shape given by a RasterExtent where pixels are linearly interpolated
    * values of the z-coordinates of each triangle vertex.
    */
-  def rasterizeTriangles[V,F](re: RasterExtent, cellType: CellType = DoubleConstantNoDataCellType)(triangles: Traversable[((V,V,V), HalfEdge[V,F])])(implicit verts: V => LightPoint): MutableArrayTile = {
+  def rasterizeTriangles(re: RasterExtent, cellType: CellType = DoubleConstantNoDataCellType)(triangles: Traversable[((Int, Int, Int), Int)])(implicit verts: Int => Coordinate, het: HalfEdgeTable): MutableArrayTile = {
+    import het._
+
     val w = re.cellwidth
     val h = re.cellheight
     val cols = re.cols
     val rows = re.rows
     val result = ArrayTile.empty(cellType, cols, rows)
 
-    def xAtYForEdge(yval: Double)(e: HalfEdge[V, F]): Double = {
-      val src = verts(e.src)
-      val dest = verts(e.vert)
+    def xAtYForEdge(yval: Double)(e: Int): Double = {
+      val src = verts(getSrc(e))
+      val dest = verts(getDest(e))
       val t = (yval - dest.y) / (src.y - dest.y)
       dest.x + t * (src.x - dest.x)
     }
 
-    def rasterizeTriangle(tri: HalfEdge[V, F]): Unit = {
+    def rasterizeTriangle(tri: Int): Unit = {
       import Predicates._
 
-      if (!isCCW(tri.vert, tri.next.vert, tri.next.next.vert)) {
-        println(s"Triangle ${(tri.vert, tri.next.vert, tri.next.next.vert)} does not have a CCW winding!")
+      if (!isCCW(getDest(tri), getDest(getNext(tri)), getDest(getNext(getNext(tri))))) {
+        println(s"Triangle ${(getDest(tri), getDest(getNext(tri)), getDest(getNext(getNext(tri))))} does not have a CCW winding!")
         return ()
       }
 
-      val es = List(tri, tri.next, tri.next.next)
-      val v1 :: v2 :: v3 :: _ = es.map{ e => verts(e.vert) }
-      val leftes  = es.filter { e => verts(e.vert).y < verts(e.src).y }
-      val rightes = es.filter { e => verts(e.vert).y > verts(e.src).y }
-      val ys = es.map { e => verts(e.vert).y }
+      val es = List(tri, getNext(tri), getNext(getNext(tri)))
+      val v1 :: v2 :: v3 :: _ = es.map{ e => verts(getDest(e)) }
+      val leftes  = es.filter { e => verts(getDest(e)).y < verts(getSrc(e)).y }
+      val rightes = es.filter { e => verts(getDest(e)).y > verts(getSrc(e)).y }
+      val ys = es.map { e => verts(getDest(e)).y }
       val (ymin, ymax) = (ys.min, ys.max)
 
       val scanrow0 = math.max(math.ceil((ymin - re.extent.ymin) / h - 0.5), 0)
@@ -75,16 +79,17 @@ object DelaunayRasterizer {
     result
   }
 
-  def rasterizeFastDelaunay(re: RasterExtent, cellType: CellType = DoubleConstantNoDataCellType)(dt: FastDelaunay) = {
-    implicit val trans = dt.verts(_)
-    rasterizeTriangles(re, cellType)(dt.triangles)
+  def rasterizeDelaunayTriangulation(re: RasterExtent, cellType: CellType = DoubleConstantNoDataCellType)(dt: DelaunayTriangulation) = {
+    implicit val trans = dt.verts.getCoordinate(_)
+    implicit val nav = dt.navigator
+    rasterizeTriangles(re, cellType)(dt.triangles.getTriangles)
   }
 
-  def rasterizeStitchedDelaunay(re: RasterExtent, cellType: CellType = DoubleConstantNoDataCellType)(dt: StitchedDelaunay) = {
-    implicit val trans = { key: dt.VKey => dt.vertMap(key.dir)(key.idx) }
-    rasterizeTriangles(re, cellType)(dt.triangles.filter{ case (idx, _) => {
-      val (a, b, c) = idx
-      a.dir != b.dir || b.dir != c.dir
-    }})
-  }
+  // def rasterizeStitchedDelaunay(re: RasterExtent, cellType: CellType = DoubleConstantNoDataCellType)(dt: StitchedDelaunay) = {
+  //   implicit val trans = { key: dt.VKey => dt.vertMap(key.dir)(key.idx) }
+  //   rasterizeTriangles(re, cellType)(dt.triangles.filter{ case (idx, _) => {
+  //     val (a, b, c) = idx
+  //     a.dir != b.dir || b.dir != c.dir
+  //   }})
+  // }
 }
