@@ -1,5 +1,9 @@
 #!/bin/bash
 
+echo $JAVA_HOME
+
+export JAVA_HOME=/usr/lib/jvm/java-8-oracle
+
 COMMIT_HASH_NUMBER=`printf %i "'${TRAVIS_COMMIT: -1}"`
 SCALA_MINOR_VERSION_NUMBER=`echo $TRAVIS_SCALA_VERSION | cut -d . -f2`
 JAVA_VERSION_NUMBER=`echo ${TRAVIS_JDK_VERSION: -1}`
