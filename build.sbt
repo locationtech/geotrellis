@@ -25,9 +25,9 @@ lazy val commonSettings = Seq(
   publishArtifact in Test := false,
   pomIncludeRepository := { _ => false },
 
-  publishTo <<= version { (v: String) =>
+  publishTo := {
      val nexus = "https://repo.locationtech.org/content/repositories"
-     if (v.trim.endsWith("SNAPSHOT"))
+     if (isSnapshot.value)
        Some("LocationTech Nexus Repository" at s"$nexus/geotrellis-snapshots")
      else
        Some("LocationTech Nexus Repository" at s"$nexus/geotrellis-releases")
