@@ -34,7 +34,7 @@ class GeometryToSimpleFeatureMethodsSpec
     val multiPoint = MultiPoint(Point(0, 0), Point(4, 0), Point(0, 3), Point(0, 0))
     val multiLine = MultiLine(Line(Point(0, 0), Point(4, 0)), Line(Point(0, 3), Point(0, 0)))
     val multiPolygon = MultiPolygon(
-      Polygon(Point(0, 0), Point(4, 0), Point(0, 3), Point(0, 0)),
+      Polygon(Point(0, 0), Point(-4, 0), Point(0, -3), Point(0, 0)),
       Polygon(Point(0, 0), Point(5, 0), Point(0, 12), Point(0, 0))
     )
 
