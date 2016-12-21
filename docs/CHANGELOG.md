@@ -1,7 +1,7 @@
 1.0.0
 ------
 
-### Major Features
+<h3>Major Features</h3>
 
 - GeoTools support
   - Add Support for GeoTools SimpleFeature [#1495](https://github.com/locationtech/geotrellis/pull/1495)
@@ -42,7 +42,7 @@
 - CollectNeighbors feature, allowing users to group arbitrary values by the neighbor keys according to their SpatialComponent [#1860](https://github.com/locationtech/geotrellis/pull/1860)
 - Documentation: We moved to ReadTheDocs, and put a lot of work into making our docs significantly better. See them at http://geotrellis.readthedocs.io/en/v1.0.0/
 
-### Minor Additions
+<h3>Minor Additions</h3>
 
 - Doc improvements
  - Quickstart
@@ -80,7 +80,7 @@
 - DelayedConvert feature, allowing users to delay conversions on tiles until a map or combine operation, so that tiles are not iterated over unnecessarily [#1797](https://github.com/locationtech/geotrellis/pull/1797)
 - Add convenience overloads to GeoTiff companion object [#1840](https://github.com/locationtech/geotrellis/pull/1840)
 
-### Fixes / Optimizations
+<h3>Fixes / Optimizations</h3>
 
 - Fixed GeoTiff bug in reading NoData value if len = 4 [#1490](https://github.com/locationtech/geotrellis/pull/1490)
 - Add detail to avro exception message [#1505](https://github.com/locationtech/geotrellis/pull/1505)
@@ -96,7 +96,7 @@
 - Fixed NoData bug in tile merging logic [#1793](https://github.com/locationtech/geotrellis/pull/1793)
 - Fixed Non-Point Pixel + Partial Cell Rasterizer Bug [#1804](https://github.com/locationtech/geotrellis/pull/1804)
 
-### New committers
+<h3>New committers</h3>
 
 - metasim
 - lokifacio
