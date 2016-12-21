@@ -31,6 +31,20 @@ class HalfEdgeTable(_size: Int) {
 
   private var limit = (size * FACTOR).toInt
 
+  def join(e: Int, opp: Int): Unit = {
+    assert(getSrc(e) == getDest(opp) && getDest(e) == getSrc(opp))
+
+    // e.flip.prev.next = opp.flip.next
+    // opp.flip.prev.next = e.flip.next
+    // e.flip = opp
+    // opp.flip = e
+
+    setNext(getPrev(getFlip(e)), getNext(getFlip(opp)))
+    setNext(getPrev(getFlip(opp)), getNext(getFlip(e)))
+    setFlip(e, opp)
+    setFlip(opp, e)
+  }
+
   /** Create an edge pointing to single vertex.
     * This edge will have no flip or next set.
     */
@@ -213,5 +227,14 @@ class HalfEdgeTable(_size: Int) {
     size = nextSize
     table = nextTable
     limit = (size * FACTOR).toInt
+  }
+
+  def showLoop(e0: Int): Unit = {
+    var e = e0
+    do {
+      print(s"[${getSrc(e)} -> ${getDest(e)}] ")
+      e = getNext(e)
+    } while (e != e0)
+    println
   }
 }

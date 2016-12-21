@@ -112,3 +112,9 @@ case class DelaunayTriangulation(verts: DelaunayPointSet, navigator: HalfEdgeTab
 
   val (boundary, isLinear) = triangulate(0, sortedVs.length - 1)
 }
+
+object DelaunayTriangulation {
+  def apply(verts: DelaunayPointSet) = {
+    new DelaunayTriangulation(verts, new HalfEdgeTable(2*(3*verts.length - 6)))
+  }
+}
