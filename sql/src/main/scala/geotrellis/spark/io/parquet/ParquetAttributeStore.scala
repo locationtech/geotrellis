@@ -1,4 +1,4 @@
-package geotrellis.spark.io.parquet
+/* package geotrellis.spark.io.parquet
 
 import java.io.PrintWriter
 
@@ -139,4 +139,4 @@ object ParquetAttributeStore {
 
   def apply(rootPath: Path)(implicit sc: SparkContext): HadoopAttributeStore =
     apply(rootPath, sc.hadoopConfiguration)*/
-}
+} */

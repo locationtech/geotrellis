@@ -1,6 +1,6 @@
 import Dependencies._
 
-name := "geotrellis-parquet"
+name := "geotrellis-sql"
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-sql" % Version.spark  % "provided",
   "org.apache.spark" %% "spark-core" % Version.spark % "provided",

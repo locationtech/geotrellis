@@ -83,7 +83,7 @@ lazy val root = Project("geotrellis", file(".")).
     hbase,
     // geowave, Removed so that unidoc can publish. TODO: Update to GeoWave API when release happens.
     geomesa,
-    parquet,
+    sql,
     geotools,
     slick,
     vectortile
@@ -174,7 +174,7 @@ lazy val hbase = Project("hbase", file("hbase")).
   settings(commonSettings: _*). // HBase depends on its own protobuf version
   settings(projectDependencies := { Seq((projectID in spark).value.exclude("com.google.protobuf", "protobuf-java")) })
 
-lazy val parquet = Project("parquet", file("parquet")).
+lazy val sql = Project("sql", file("sql")).
   dependsOn(sparkTestkit % "test->test", spark % "provided;test->test").
   settings(commonSettings: _*)
 
