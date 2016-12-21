@@ -3,11 +3,10 @@
 We value all kinds of contributions from the community, not just actual
 code. Perhaps the easiest and yet one of the most valuable ways of helping
 us improve GeoTrellis is to ask questions, voice concerns or propose
-improvements on the [Mailing List](https://groups.google.com/group/geotrellis-user).
+improvements on the [Mailing List](https://locationtech.org/mailman/listinfo/geotrellis-user).
 
 If you do like to contribute actual code in the form of bug fixes, new
 features or other patches this page gives you more info on how to do it.
-
 
 ## Building GeoTrellis
 
@@ -46,16 +45,20 @@ us pull request against the `master` branch. Like any other open source
 project, we might ask you to go through some iterations of discussion and
 refinement before merging.
 
-> NOTE: Code contributions cannot be accepted until we've received
-> your signed CLAs (contributor license agreement). See the bottom of
-> this document for more information.
+As part of the Eclipse IP Due Diligence process, you'll need to do some
+extra work to contribute. This is part of the requirement for Eclipse Foundation
+projects ([see this page in the Eclipse wiki](https://wiki.eclipse.org/Development_Resources/Handling_Git_Contributions#Git) You'll need to sign
+up for an Eclipse account __with the same email you commit to github with__.
+See the `Eclipse Contributor Agreement` text below.
+Also, you'll need to signoff on your commits, using the `git commit -s` flag.
+See https://help.github.com/articles/signing-tags-using-gpg/ for more info.
 
 ## Contributing documentation
 
 GeoTrellis documentation comes in two flavors: markdown and scaladoc. The
 [latest scaladocs](https://geotrellis.github.io/scaladocs/latest/#geotrellis.package)
 are generated upon Travis' successful compilation of the master branch.
-[GeoTrellis markdown documentation](http://geotrellis.readthedocs.io/en/latest/)
+[GeoTrellis markdown documentation/ReadTheDocs](http://geotrellis.readthedocs.io/en/latest/)
 is version controlled with the rest of the source.
 
 When adding or editing documentation, keep in mind the following file structure:
@@ -68,7 +71,7 @@ To visually debug your changes in real time, consider using the [mkdocs
 tool](http://www.mkdocs.org/). It should be available in your package
 repositories for Linux and Mac users.
 
-## Contributor License Agreements (CLA)
+## Eclipse Contributor Agreement (ECA)
 
 Contributions to the project, no matter what kind, are always very
 welcome.

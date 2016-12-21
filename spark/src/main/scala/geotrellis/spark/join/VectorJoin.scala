@@ -18,63 +18,57 @@ package geotrellis.spark.join
 
 import geotrellis.spark._
 import geotrellis.spark.tiling._
-import geotrellis.util.annotations.experimental
 import geotrellis.vector._
 
-import com.vividsolutions.jts.geom.{ Envelope => JtsEnvelope }
-import com.vividsolutions.jts.index.strtree.STRtree
 import org.apache.spark._
 import org.apache.spark.rdd._
-import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
+import com.vividsolutions.jts.geom.Envelope
 
-import scala.collection.JavaConverters._
 import scala.reflect._
 
-@experimental
+
 object VectorJoin {
-  @experimental
-  def unflattened[
-    L: ClassTag : ? => Geometry,
-    R: ClassTag : ? => Geometry
-  ](
-    shorter: RDD[L],
-    longer: RDD[R],
-    pred: (Geometry, Geometry) => Boolean
-  )(implicit sc: SparkContext): RDD[(L, Seq[R])] = {
-    val rtrees = longer.mapPartitions({ partition =>
-      val rtree = new STRtree
 
-      partition.foreach({ r =>
-        val Extent(xmin, ymin, xmax, ymax) = r.envelope
-        val envelope = new JtsEnvelope(xmin, xmax, ymin, ymax)
-        rtree.insert(envelope, r)
-      })
-
-      Iterator(rtree)
-    }, preservesPartitioning = true)
-
-    shorter.cartesian(rtrees).map({ case (left, tree) =>
-      val Extent(xmin, ymin, xmax, ymax) = left.envelope
-      val envelope = new JtsEnvelope(xmin, xmax, ymin, ymax)
-      val rights = tree.query(envelope)
-        .asScala
-        .map({ right: Any => right.asInstanceOf[R] })
-        .filter({ right => pred(left, right) })
-
-      (left, rights)
+  /**
+    * A function which calculates the envelope of a partition.
+    *
+    * @param  gs  An iterator containing the contents of the RDD
+    * @return     An Iterator containing one envelope
+    */
+  def calculateEnvelope[T : ? => Geometry](gs: Iterator[T]): Iterator[Envelope] = {
+    val env = gs.foldLeft(new Envelope)({ (env: Envelope, g: T) =>
+      val Extent(xmin, ymin, xmax, ymax) = g.envelope
+      val env2 = new Envelope(xmin, xmax, ymin, ymax)
+      env.expandToInclude(env2)
+      env
     })
+
+    Iterator(env)
   }
 
+  /**
+    * Perform the vector join operation over an RDD[L] and and RDD[R],
+    * where both L and R are viewble as Geometry.  This makes use of
+    * the FilteredCartesianRDD type to accelerate the process
+    * (relative to plain-old CartesianRDD).
+    *
+    * @param  left   An RDD[L], where L is viewable as a Geometry
+    * @param  right  An RDD[R], where R is viewable as a Geometry
+    * @param  pred   A predicate which answers whether an L and an R should be joined
+    * @return        An RDD of L-R pairs
+    */
   def apply[
     L: ClassTag : ? => Geometry,
     R: ClassTag : ? => Geometry
   ](
-    shorter: RDD[L],
-    longer: RDD[R],
+    left: RDD[L],
+    right: RDD[R],
     pred: (Geometry, Geometry) => Boolean
-  )(implicit sc: SparkContext): RDD[(L, R)] =
-    unflattened(shorter, longer, pred)
-      .flatMap({ case (left, rights) => rights.map({ right => (left, right) }) })
+  )(implicit sc: SparkContext): RDD[(L, R)] = {
+    val metapred: (Envelope, Envelope) => Boolean = { (l, r) => l.intersects(r) }
+    val _pred: (L, R) => Boolean = { (l, r) => pred(l, r) }
+
+    new FilteredCartesianRDD(sc, _pred, metapred, left, calculateEnvelope[L], right, calculateEnvelope[R])
+  }
 
 }

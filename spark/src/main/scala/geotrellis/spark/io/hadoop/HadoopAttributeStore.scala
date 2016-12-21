@@ -112,10 +112,15 @@ class HadoopAttributeStore(val rootPath: Path, val hadoopConfiguration: Configur
     }
   }
 
-  def layerExists(layerId: LayerId): Boolean =
+  def layerExists(layerId: LayerId): Boolean = {
+    // Use a relative path, since
+    // the listFiles could return a different host name.
+    val metadataRelativePath =
+      attributePath(layerId, AttributeStore.Fields.metadata).toUri.getPath
     HdfsUtils
       .listFiles(new Path(attributePath, s"*.json"), hadoopConfiguration)
-      .exists { _ == attributePath(layerId, AttributeStore.Fields.metadata) }
+      .exists { _.toUri.getPath ==  metadataRelativePath }
+  }
 
   def delete(layerId: LayerId): Unit = {
     delete(layerId, new Path(s"${layerId.name}${SEP}${layerId.zoom}${SEP}*.json"))

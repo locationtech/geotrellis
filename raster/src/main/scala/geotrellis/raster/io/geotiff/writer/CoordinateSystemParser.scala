@@ -162,7 +162,7 @@ class CoordinateSystemParser(val crs: CRS, val pixelSampleType: Option[PixelSamp
     case Some("lcc") => lccProps
     case Some("longlat") | Some("latlong") => longLatProps
     case Some(p) => throw new GeoTiffWriterLimitationException(
-      s"This GeoTiff writer does not currently support the projection $proj4String. Please reproject before writing to GeoTIFF."
+      s"This GeoTiff writer does not currently support the projection $proj4String without an EPSG code associated with the CRS. You'll need to use a CRS that has an EPSG code, or reproject before writing to GeoTIFF."
     )
     case None => throw new MalformedProj4Exception(
       "No +proj flag specified."

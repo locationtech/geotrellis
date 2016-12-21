@@ -19,13 +19,15 @@ package geotrellis.vector.io.wkt
 import com.vividsolutions.jts.io.{WKTReader, WKTWriter}
 import com.vividsolutions.jts.{geom => jts}
 import geotrellis.vector._
+import com.typesafe.scalalogging.LazyLogging
 
 /** A thread-safe wrapper for the WKT Writer and Reader */
-object WKT {
+object WKT extends LazyLogging {
   private val readerBox = new ThreadLocal[WKTReader]
   private val writerBox = new ThreadLocal[WKTWriter]
 
   def read(value: String): Geometry = {
+    logger.debug(s"Reading WKT from string: ${value}")
     if (readerBox.get == null) readerBox.set(new WKTReader(GeomFactory.factory))
     Geometry(readerBox.get.read(value))
   }

@@ -22,7 +22,7 @@ import org.osgeo.proj4j._
 import scala.io.Source
 
 object CRS {
-  private lazy val proj4ToEPSGMap = new Memoize[String, Option[String]](readEPSGCodeFromFile)
+  private lazy val proj4ToEpsgMap = new Memoize[String, Option[String]](readEpsgCodeFromFile)
   private val crsFactory = new CRSFactory
   private val filePrefix = "/geotrellis/proj4/nad/"
 
@@ -42,14 +42,14 @@ object CRS {
     new CRS {
       val proj4jCrs = crsFactory.createFromParameters(null, proj4Params)
 
-      def epsgCode: Option[Int] = getEPSGCode(toProj4String + " <>")
+      def epsgCode: Option[Int] = getEpsgCode(toProj4String + " <>")
     }
 
   /**
     * Returns the numeric EPSG code of a proj4string.
     */
-  def getEPSGCode(proj4String: String): Option[Int] =
-    proj4ToEPSGMap(proj4String).map(_.toInt)
+  def getEpsgCode(proj4String: String): Option[Int] =
+    proj4ToEpsgMap(proj4String).map(_.toInt)
 
   /**
     * Creates a CoordinateReferenceSystem
@@ -68,7 +68,7 @@ object CRS {
     new CRS {
       val proj4jCrs = crsFactory.createFromParameters(name, proj4Params)
 
-      def epsgCode: Option[Int] = getEPSGCode(toProj4String + " <>")
+      def epsgCode: Option[Int] = getEpsgCode(toProj4String + " <>")
     }
 
   /**
@@ -76,7 +76,7 @@ object CRS {
     * well-known-text String.
     */
   def fromWKT(wktString: String): CRS = {
-    val epsgCode: String = WKT.getEPSGCode(wktString)
+    val epsgCode: String = WKT.getEpsgCode(wktString)
 
     fromName(epsgCode)
   }
@@ -92,7 +92,7 @@ object CRS {
     * <tt>EPSG</tt>,
     * <tt>ESRI</tt>,
     * <tt>WORLD</tt>,
-    * <tt>NA83</tt>,
+    * <tt>NAD83</tt>,
     * <tt>NAD27</tt>.
     * If no authority is provided, the <tt>EPSG</tt> namespace is assumed.
     * <li><b><tt>code</tt></b> is the id of a coordinate system in the authority namespace.
@@ -110,7 +110,7 @@ object CRS {
     new CRS {
       val proj4jCrs = crsFactory.createFromName(name)
 
-      def epsgCode: Option[Int] = getEPSGCode(toProj4String + " <>")
+      def epsgCode: Option[Int] = getEpsgCode(toProj4String + " <>")
     }
 
   /**
@@ -119,7 +119,7 @@ object CRS {
   def fromEpsgCode(epsgCode: Int) =
     fromName(s"EPSG:$epsgCode")
 
-  private def readEPSGCodeFromFile(proj4String: String): Option[String] = {
+  private def readEpsgCodeFromFile(proj4String: String): Option[String] = {
     val stream = getClass.getResourceAsStream(s"${filePrefix}epsg")
     try {
       Source.fromInputStream(stream)
@@ -160,7 +160,7 @@ trait CRS extends Serializable {
    * Returns the WKT representation of the Coordinate Reference
    * System.
    */
-  def toWKT(): Option[String] = epsgCode.map(WKT.fromEPSGCode(_))
+  def toWKT(): Option[String] = epsgCode.map(WKT.fromEpsgCode(_))
 
 
   // TODO: Do these better once more things are ported

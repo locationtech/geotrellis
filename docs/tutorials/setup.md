@@ -6,7 +6,7 @@ help you get up and running with a basic GeoTrellis development environment.
 Requirements
 ------------
 
-[Java 8](http://www.oracle.com/technetwork/java/javase/overview/index.html).
+- [Java 8](http://www.oracle.com/technetwork/java/javase/overview/index.html).
 GeoTrellis code won't function with Java 7 or below. You can test your Java
 version by entering the following in a Linux or Mac terminal:
 
@@ -16,6 +16,20 @@ javac 1.8.0_102
 ```
 
 You want to see `1.8` like above.
+
+- [Apache Spark 2](http://spark.apache.org/downloads.html). This is if you
+plan to run ingests (as shown in our [ETL tutorial](./etl-tutorial.md)) or
+write a serious application. Otherwise, fetching Spark dependencies for
+playing with GeoTrellis is handled automatically, as shown in our
+[Quick-Start Guide](#).
+
+When running more involved applications, `spark-submit` should be on your
+`PATH`:
+
+```console
+> which spark-submit
+/bin/spark-submit
+```
 
 Using Scala
 -----------
@@ -29,61 +43,26 @@ a handy language reference
 - [99 Problems in Scala](http://aperiodic.net/phil/scala/s-99/) to develop basic skills
 in Functional Programming
 
-`sbt` - The Simple Build Tool
------------------------------
+GeoTrellis Project Template
+---------------------------
 
-Did you know you don't even need to install Scala yourself to develop with
-it? `sbt` allows us to manage Scala projects, their dependencies, and even
-Scala compiler versions.
-
-To install on a Mac with [Homebrew](http://brew.sh/):
+The
+[geotrellis-sbt-template](https://github.com/geotrellis/geotrellis-sbt-template)
+repo provides a simple GeoTrellis project template. It can be used to
+experiment with GeoTrellis, or to write full applications. Get it with:
 
 ```console
-> brew install sbt
+git clone https://github.com/geotrellis/geotrellis-sbt-template.git
 ```
 
-For Linux users, `sbt` should be available in your repositories.
+You don't need `sbt` installed to write a GeoTrellis app, since this
+template includes an `sbt` bootstrap script. It is used like regular SBT,
+and comes with a few extra commands:
 
-As of 2016 October 24, the latest version of `sbt` is `0.13.12`. The rest of
-the guide assumes you're using this version.
-
-Simple Project Template
------------------------
-
-The simplest sbt-based GeoTrellis project needs only two things:
-
-In `your-projecet/project/build.properies`:
-
-```bash
-sbt.version=0.13.12
-```
-
-and in `your-project/build.sbt`:
-
-```scala
-name := """your-project"""
-
-version := "1.0.0"
-
-scalaVersion := "2.11.8"
-
-/* Comment out whichever geotrellis-* modules you don't need */
-libraryDependencies ++= Seq(
-    "com.azavea.geotrellis" %% "geotrellis-spark"  % "0.10.3",
-    "com.azavea.geotrellis" %% "geotrellis-raster" % "0.10.3",
-    "com.azavea.geotrellis" %% "geotrellis-vector" % "0.10.3",
-    "com.azavea.geotrellis" %% "geotrellis-util"   % "0.10.3",
-    "org.apache.spark"      %% "spark-core"        % "2.0.1" % "provided",
-    "org.scalatest"         %% "scalatest"         % "3.0.0" % "test"
-)
-```
-
-With these in place, even with no Scala source files, a `sbt compile` will
-succeed. When you do add source files, put them under `src/main/scala/` as
-that's where `sbt` expects them.
-
-It might take a long to complete the first time you do `sbt compile`,
-because of all the dependencies it has to fetch.
+- Enter the SBT shell: `./sbt`
+- Run tests: `./sbt test`
+- Force Scala 2.11 (default): `./sbt -211`
+- Force Scala 2.10: `./sbt -210`
 
 À la Carte GeoTrellis Modules
 -----------------------------
@@ -95,11 +74,8 @@ list in your `build.sbt`:
 
 ```scala
 libraryDependencies ++= Seq(
-    "com.azavea.geotrellis" %% "geotrellis-spark"  % "0.10.3",
-    "com.azavea.geotrellis" %% "geotrellis-raster" % "0.10.3",
-    "com.azavea.geotrellis" %% "geotrellis-vector" % "0.10.3",
-    "com.azavea.geotrellis" %% "geotrellis-util"   % "0.10.3",
-    "com.azavea.geotrellis" %% "geotrellis-s3"     % "0.10.3", // now we can use Amazon S3!
+    "com.azavea.geotrellis" %% "geotrellis-spark"  % "1.0.0",
+    "com.azavea.geotrellis" %% "geotrellis-s3"     % "1.0.0", // now we can use Amazon S3!
     "org.apache.spark"      %% "spark-core"        % "2.0.1" % "provided",
     "org.scalatest"         %% "scalatest"         % "3.0.0" % "test"
 )
