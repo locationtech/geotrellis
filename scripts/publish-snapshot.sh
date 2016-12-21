@@ -18,6 +18,7 @@
       "project shapefile" publish \
       "project spark" publish \
       "project spark-testkit" publish \
+      "project streaming" publish \
       "project util" publish \
       "project vector" publish \
       "project vector-testkit" publish \

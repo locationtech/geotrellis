@@ -14,23 +14,20 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.streaming.mask
+package geotrellis.spark.streaming
 
-import geotrellis.raster.mask.TileMaskMethods
+import geotrellis.proj4.CRS
+import geotrellis.raster.Tile
 import geotrellis.spark._
-import geotrellis.spark.tiling._
+import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.util._
 
 import org.apache.spark.streaming.dstream.DStream
 
-import scala.reflect.ClassTag
+package object render {
+  implicit class withSpatialTileRDDRenderMethods(val self: DStream[(SpatialKey, Tile)])
+      extends SpatialTileDStreamRenderMethods
 
-object Implicits extends Implicits
-
-trait Implicits {
-  implicit class withTileRDDMaskMethods[
-    K: SpatialComponent: ClassTag,
-    V: (? => TileMaskMethods[V]),
-    M: GetComponent[?, LayoutDefinition]
-  ](val self: DStream[(K, V)] with Metadata[M]) extends TileDStreamMaskMethods[K, V, M]
+  implicit class withSpatialTileLayerRDDRenderMethods[M: GetComponent[?, CRS]: GetComponent[?, LayoutDefinition]](val self: DStream[(SpatialKey, Tile)] with Metadata[M])
+      extends SpatialTileLayerDStreamRenderMethods[M]
 }
