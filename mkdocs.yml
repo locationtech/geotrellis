@@ -11,17 +11,24 @@ pages:
   - Changelog: CHANGELOG.md
   - Tutorials:
     - Setup: tutorials/setup.md
-    - Quickstart: tutorials/quickstart.md
+    - Quick Start: tutorials/quickstart.md
     - Kernel Density: tutorials/kernel-density.md
+    - Reading GeoTiffs: tutorials/reading-geoTiffs.md
     - Extract-Transform-Load (ETL): tutorials/etl-tutorial.md
   - User Guide:
     - Core Concepts: guide/core-concepts.md
+    - Using Rasters: guide/rasters.md
+    - Using Vectors: guide/vectors.md
+    - Spark and GeoTrellis: guide/spark.md
+    - The ETL Tool: guide/etl.md
+    - Extending GeoTrellis Types: guide/extending-geotrellis.md
     - GeoTrellis Module Hierarchy: guide/module-hierarchy.md
     - Tile Layer Backends: guide/tile-backends.md
     - Vector Data Backends: guide/vector-backends.md
     - Frequently Asked Questions: guide/faq.md
   - Architecture:
     - Architecture Decision Records: architecture/adr.md
+    - Proj4 Implementation: architecture/proj4-implementation.md
     - High Performance Scala: architecture/high-performance-scala.md
   - Contributing: contributing.md
 

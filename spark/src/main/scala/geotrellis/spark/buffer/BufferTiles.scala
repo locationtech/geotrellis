@@ -28,20 +28,14 @@ import org.apache.spark.storage.StorageLevel
 import scala.reflect.ClassTag
 import scala.collection.mutable.ArrayBuffer
 
+import Direction._
+
 object BufferTiles {
-  sealed trait Direction
 
-  case object Center extends Direction
-  case object Top extends Direction
-  case object TopRight extends Direction
-  case object Right extends Direction
-  case object BottomRight extends Direction
-  case object Bottom extends Direction
-  case object BottomLeft extends Direction
-  case object Left extends Direction
-  case object TopLeft extends Direction
-
-  def collectWithNeighbors[K: SpatialComponent, V <: CellGrid: (? => CropMethods[V])](
+  /** Collects tile neighbors by slicing the neighboring tiles to the given
+    * buffer size
+    */
+  def collectWithTileNeighbors[K: SpatialComponent, V <: CellGrid: (? => CropMethods[V])](
     key: K,
     tile: V,
     includeKey: SpatialKey => Boolean,
@@ -158,7 +152,7 @@ object BufferTiles {
               direction match {
                 case Left        => acc.copy(left = slice.cols)
                 case Right       => acc.copy(right = slice.cols)
-                case Top         => acc.copy(top = slice.rows)
+                case Top        => acc.copy(top = slice.rows)
                 case Bottom      => acc.copy(bottom = slice.rows)
                 case BottomRight => acc.copy(bottom = slice.rows, right = slice.cols)
                 case BottomLeft  => acc.copy(bottom = slice.rows, left = slice.cols)
@@ -254,7 +248,7 @@ object BufferTiles {
     val tilesAndSlivers =
       rdd
         .flatMap { case (key, tile) =>
-          collectWithNeighbors(key, tile, { key => layerBounds.contains(key.col, key.row) }, { key => bufferSizes })
+          collectWithTileNeighbors(key, tile, { key => layerBounds.contains(key.col, key.row) }, { key => bufferSizes })
         }
 
     val grouped =
@@ -357,7 +351,7 @@ object BufferTiles {
       rdd
         .join(surroundingBufferSizes)
         .flatMap { case (key, (tile, bufferSizesMap)) =>
-          collectWithNeighbors(key, tile, bufferSizesMap.contains _, bufferSizesMap)
+          collectWithTileNeighbors(key, tile, bufferSizesMap.contains _, bufferSizesMap)
         }
 
     val grouped =
@@ -409,7 +403,7 @@ object BufferTiles {
 
     val grouped: Seq[(K, Seq[(Direction, V)])] =
       seq.zip(surroundingBufferSizes).flatMap { case ((key, tile), (k2, bufferSizesMap)) =>
-        collectWithNeighbors(key, tile, bufferSizesMap.contains _, bufferSizesMap)
+        collectWithTileNeighbors(key, tile, bufferSizesMap.contains _, bufferSizesMap)
       }.groupBy(_._1).mapValues(_.map(_._2)).toSeq
 
     bufferWithNeighbors(grouped)
@@ -437,7 +431,7 @@ object BufferTiles {
     val grouped: Seq[(K, Seq[(Direction, V)])] =
       seq
         .flatMap { case (key, tile) =>
-          collectWithNeighbors(key, tile, { key => layerBounds.contains(key.col, key.row) }, { key => bufferSizes })
+          collectWithTileNeighbors(key, tile, { key => layerBounds.contains(key.col, key.row) }, { key => bufferSizes })
         }.groupBy(_._1).mapValues { _.map(_._2) }.toSeq
 
     bufferWithNeighbors(grouped)

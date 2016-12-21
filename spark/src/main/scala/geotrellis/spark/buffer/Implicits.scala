@@ -28,6 +28,11 @@ import scala.reflect.ClassTag
 object Implicits extends Implicits
 
 trait Implicits {
+  implicit class withCollectNeighborsMethodsWrapper[
+    K: SpatialComponent: ClassTag,
+    V
+  ](self: RDD[(K, V)]) extends CollectNeighborsMethods[K, V](self)
+
   implicit class withBufferTilesMethodsWrapper[
     K: SpatialComponent: ClassTag,
     V <: CellGrid: Stitcher: ClassTag: (? => CropMethods[V])
