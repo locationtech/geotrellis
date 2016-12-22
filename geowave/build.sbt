@@ -26,7 +26,7 @@ libraryDependencies ++= Seq(
   hadoopClient % "provided"
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
-  "org.geoserver" % "gs-wms" % "2.10.0"
+  "org.geoserver" % "gs-wms" % "2.10.1"
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
   "org.geotools" % "gt-coverage" % Version.geotools % "provided"
@@ -44,7 +44,7 @@ libraryDependencies ++= Seq(
   "org.geotools" % "gt-referencing" % Version.geotools % "provided"
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
-  "com.jsuereth" %% "scala-arm" % "1.4",
+  "com.jsuereth" %% "scala-arm" % "2.0",
   "de.javakaffee" % "kryo-serializers" % "0.38" exclude("com.esotericsoftware", "kryo"),
   "com.esotericsoftware" % "kryo-shaded" % "3.0.3",
   sparkCore % "provided",
