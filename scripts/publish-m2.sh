@@ -4,7 +4,7 @@
       "project cassandra" +publish-m2 \
       "project geomesa" +publish-m2 \
       "project geotools" +publish-m2 \
-      # "project geowave" +publish-m2 \
+      "project geowave" +publish-m2 \
       "project hbase" +publish-m2 \
       "project macros" +publish-m2 \
       "project pointcloud" +publish-m2 \

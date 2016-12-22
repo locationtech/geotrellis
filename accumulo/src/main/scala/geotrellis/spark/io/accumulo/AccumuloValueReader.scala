@@ -60,9 +60,9 @@ class AccumuloValueReader(
         .toVector
 
       if (tiles.isEmpty) {
-        throw new TileNotFoundError(key, layerId)
+        throw new ValueNotFoundError(key, layerId)
       } else if (tiles.size > 1) {
-        throw new LayerIOError(s"Multiple tiles found for $key for layer $layerId")
+        throw new LayerIOError(s"Multiple values found for $key for layer $layerId")
       } else {
         tiles.head._2
       }
