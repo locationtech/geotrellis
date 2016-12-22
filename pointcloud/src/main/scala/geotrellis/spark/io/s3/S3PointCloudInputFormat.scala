@@ -40,7 +40,7 @@ class S3PointCloudInputFormat extends S3InputFormat[S3PointCloudHeader, Iterator
     new S3RecordReader[S3PointCloudHeader, Iterator[PointCloud]](s3Client) {
       def read(key: String, bytes: Array[Byte]) = {
         // copy remote file into local tmp dir
-        val localPath = new File(tmpDir, key)
+        val localPath = new File(tmpDir, key.replace("/", "_"))
         val bos = new BufferedOutputStream(new FileOutputStream(localPath))
         Stream.continually(bos.write(bytes))
         bos.close()

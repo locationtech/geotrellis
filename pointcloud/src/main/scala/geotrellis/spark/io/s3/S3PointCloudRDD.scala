@@ -18,8 +18,8 @@ package geotrellis.spark.io.s3
 
 import geotrellis.spark.io.hadoop.formats.PointCloudInputFormat
 import geotrellis.vector.Extent
+
 import io.pdal._
-import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json.JsObject
@@ -36,7 +36,7 @@ object S3PointCloudRDD {
     * @param getS3Client     A function to instantiate an S3Client. Must be serializable.
     */
   case class Options(
-    filesExtensions: Seq[String] = Seq(".las", ".laz"),
+    filesExtensions: Seq[String] = PointCloudInputFormat.filesExtensions,
     numPartitions: Option[Int] = None,
     partitionBytes: Option[Long] = None,
     getS3Client: () => S3Client = () => S3Client.DEFAULT,

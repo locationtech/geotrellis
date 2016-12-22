@@ -42,6 +42,6 @@ package object json extends MetadataFormat {
     }
     pipeline ++= additionalSteps
 
-    JsObject( "pipeline" -> JsArray(pipeline.toVector) )
+    JsObject("pipeline" -> JsArray(pipeline.toVector))
   }
 }
