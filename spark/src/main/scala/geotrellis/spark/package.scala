@@ -138,6 +138,9 @@ package object spark
   implicit class withTileLayerRDDMethods[K: SpatialComponent: ClassTag](val self: TileLayerRDD[K])
       extends TileLayerRDDMethods[K]
 
+  implicit class withTileLayerCollectionMethods[K: SpatialComponent](val self: TileLayerCollection[K])
+    extends TileLayerCollectionMethods[K]
+
   implicit class withMultibandTileLayerRDDMethods[K: SpatialComponent: ClassTag](val self: MultibandTileLayerRDD[K])
       extends MultibandTileLayerRDDMethods[K]
 
