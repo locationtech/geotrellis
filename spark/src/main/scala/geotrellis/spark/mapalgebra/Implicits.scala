@@ -24,7 +24,6 @@ import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
-
 object Implicits extends Implicits
 
 trait Implicits {
@@ -51,7 +50,7 @@ trait Implicits {
 
   implicit class withCollectionMapValuesTupleMethods[K, V](val self: Seq[(K, (V, V))]) extends MethodExtensions[Seq[(K, (V, V))]] {
     def combineValues[R](f: (V, V) => R): Seq[(K, R)] =
-      self.map { case (k, (v1, v2)) => (k, f(v1, v2)) }
+      self.mapValues { case (v1, v2) => f(v1, v2) }
   }
 
   implicit class withMapValuesOptionMethods[K: ClassTag, V: ClassTag](val self: RDD[(K, (V, Option[V]))]) extends MethodExtensions[RDD[(K, (V, Option[V]))]] {
@@ -66,10 +65,10 @@ trait Implicits {
 
   implicit class withCollectionMapValuesOptionMethods[K, V](val self: Seq[(K, (V, Option[V]))]) extends MethodExtensions[Seq[(K, (V, Option[V]))]] {
     def updateValues(f: (V, V) => V): Seq[(K, V)] =
-      self.map { case (k, (v1, ov2)) =>
+      self.mapValues { case (v1, ov2) =>
         ov2 match {
-          case Some(v2) => (k, f(v1, v2))
-          case None => (k, v1)
+          case Some(v2) => f(v1, v2)
+          case None => v1
         }
       }
   }
