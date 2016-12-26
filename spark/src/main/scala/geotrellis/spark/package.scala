@@ -27,6 +27,7 @@ import geotrellis.spark.filter._
 
 import org.apache.spark.{Partitioner, SparkContext}
 import org.apache.spark.rdd._
+import scalaz.Functor
 import spire.syntax.cfor._
 import monocle._
 import monocle.syntax._
@@ -72,10 +73,10 @@ package object spark
     * which allows for the transformation:
     * {{{TileLayerMetadata[A] => TileLayerMetadata[B]}}}
     */
-  implicit class TileLayerMetadataFunctor[A](val self: TileLayerMetadata[A]) extends Functor[TileLayerMetadata, A] {
-    def map[B](f: A => B): TileLayerMetadata[B] = self.bounds match {
-      case KeyBounds(minKey, maxKey) => self.copy(bounds = KeyBounds(f(minKey), f(maxKey)))
-      case EmptyBounds => self.copy(bounds = EmptyBounds)
+  implicit def tileLayerMetadataFunctor = new Functor[TileLayerMetadata] {
+    def map[A, B](fa: TileLayerMetadata[A])(f: A => B): TileLayerMetadata[B] = fa.bounds match {
+      case KeyBounds(minKey, maxKey) => fa.copy(bounds = KeyBounds(f(minKey), f(maxKey)))
+      case EmptyBounds => fa.copy(bounds = EmptyBounds)
     }
   }
 

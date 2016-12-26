@@ -19,6 +19,8 @@ package geotrellis.spark.filter
 import geotrellis.spark._
 import geotrellis.util._
 
+import scalaz.Functor
+import scalaz.Scalaz._
 import org.apache.spark.rdd._
 
 object ToSpatial {
@@ -30,17 +32,16 @@ object ToSpatial {
     * to define additional constraints on Metadata. M should
     * depend on a K type (M[K]), and two type classes should
     * be provided: [[geotrellis.util.Component]], to extract key bounds
-    * from M[K], and [[geotrellis.util.Functor]] to map
+    * from M[K], and [[scalaz.Functor]] to map
     * M[K] to M[SpatialKey].
     *
     * For those reading the source code directly,
-    * {{{K: λ[α => M[α] => Functor[M, α]]: λ[α => Component[M[α], Bounds[α]]}}}
+    * {{{K: λ[α => Component[M[α], Bounds[α]]}}}
     * is further syntax sugar on top of the usual {{{K: ...}}} pattern.
     * It expands into the following Scala implicit evidences:
     *
     * {{{
-    *   ev0: Component[M[K], Bounds[K]],
-    *   ev1: M[K] => Functor[M, K]
+    *   ev0: Component[M[K], Bounds[K]]
     * }}}
     *
     * @param rdd
@@ -51,9 +52,9 @@ object ToSpatial {
     * @return
     */
   def apply[
-    K: SpatialComponent: TemporalComponent: λ[α => M[α] => Functor[M, α]]: λ[α => Component[M[α], Bounds[α]]],
+    K: SpatialComponent: TemporalComponent: λ[α => Component[M[α], Bounds[α]]],
     V,
-    M[_]
+    M[_]: Functor
   ](rdd: RDD[(K, V)] with Metadata[M[K]], instant: Long): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] = {
     rdd.metadata.getComponent[Bounds[K]] match {
       case KeyBounds(minKey, maxKey) =>
