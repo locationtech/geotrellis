@@ -28,6 +28,10 @@ class TriangleMap {
 
   def apply(idx: TriIdx): Int = triangles(idx)
 
+  def isTriangle(i1: Int, i2: Int, i3: Int): Boolean = triangles.contains(TriangleMap.regularizeIndex(i1, i2, i3))
+
+  def isTriangle(idx: (Int, Int, Int)): Boolean = triangles.contains(TriangleMap.regularizeIndex(idx))
+
   def get(idx: TriIdx): Option[Int] = triangles.get(idx)
 
   def get(i1: Int, i2: Int, i3: Int): Option[Int] = triangles.get((i1, i2, i3))
