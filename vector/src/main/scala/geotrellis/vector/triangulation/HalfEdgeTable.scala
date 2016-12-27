@@ -237,4 +237,54 @@ class HalfEdgeTable(_size: Int) {
     } while (e != e0)
     println
   }
+
+  /**
+   * Adds the content of another HalfEdgeTable to the current table and adjusts
+   * the vertex indices of the merged table (not the base object's table), if
+   * desired.  The edge indices in the added table will be incremented to
+   * maintain correctness.  The offset added to the edge indices will be
+   * returned so that any external references may be adjusted to match.
+   */
+  def appendTable(that: HalfEdgeTable, reindex: Int => Int = {x => x}): Int = {
+    val offset = edgeCount
+    val nextCount = edgeCount + that.edgeCount
+    edgeCount = nextCount
+    val factor = if (nextCount < 10000) 4 else 2
+    val nextSize = nextCount * factor
+
+    if (nextSize > MAXSIZE) sys.error("edge table has exceeded max capacity")
+
+    val nextTable = Array.ofDim[Int](nextSize * 3)
+
+    var i = 0
+    while (i < idx) {
+      nextTable(i) = table(i)
+      i += 1
+    }
+
+    var j = 0
+    while (j < that.idx) {
+      nextTable(i) = reindex(that.table(j))
+      nextTable(i + 1) = that.table(j + 1) + offset
+      nextTable(i + 2) = that.table(j + 2) + offset
+      i += 3
+      j += 3
+    }
+
+    idx += that.idx
+    size = nextSize
+    table = nextTable
+    limit = (size * FACTOR).toInt
+
+    offset
+  }
+
+  def reindexVertices(reindex: Int => Int) = {
+    var i = 0
+    while (i < idx) {
+      table(i) = reindex(table(i))
+      i += 3
+    }
+  }
+
 }
