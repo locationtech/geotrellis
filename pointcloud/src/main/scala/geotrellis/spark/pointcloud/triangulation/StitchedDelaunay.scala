@@ -1,6 +1,7 @@
 package geotrellis.spark.pointcloud.triangulation
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 import geotrellis.raster._
 import geotrellis.raster.triangulation.DelaunayRasterizer
 import geotrellis.spark.buffer.Direction
@@ -432,6 +433,8 @@ case class StitchedDelaunay(
   }
 }
 =======
+=======
+>>>>>>> e98f6d3... Finished base functionality; testing still required
 import com.vividsolutions.jts.geom.Coordinate
 
 // import geotrellis.raster._
@@ -522,4 +525,7 @@ object StitchedDelaunay {
 //     }})
 //   }
 // }
+<<<<<<< HEAD
+>>>>>>> e98f6d3... Finished base functionality; testing still required
+=======
 >>>>>>> e98f6d3... Finished base functionality; testing still required
