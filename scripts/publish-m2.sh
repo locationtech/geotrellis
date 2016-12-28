@@ -15,6 +15,7 @@
       "project shapefile" +publish-m2 \
       "project slick" +publish-m2 \
       "project spark" +publish-m2 \
+      "project spark-sql" +publish-m2 \
       "project spark-etl" +publish-m2 \
       "project spark-testkit" +publish-m2 \
       "project util" +publish-m2 \
