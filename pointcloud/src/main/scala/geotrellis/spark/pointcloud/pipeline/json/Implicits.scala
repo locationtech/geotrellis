@@ -14,6 +14,7 @@ trait Implicits {
     Configuration.default.withSnakeCaseKeys.withDiscriminator("class_type")
 
   implicit val readerTypeEncoder: Encoder[ReaderType] = Encoder.instance { _.toString.asJson }
+  implicit val filterTypeEncoder: Encoder[FilterType] = Encoder.instance { _.toString.asJson }
 
   /*implicit val reprojectEncoder = {
     val encoder = deriveEncoder[Reproject]

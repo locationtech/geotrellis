@@ -14,7 +14,7 @@ case class Read(
   `type`: Option[ReaderType] = None // usually auto derived by pdal
 ) extends PipelineExpr
 
-case class ReadFaux(
+case class FauxRead(
   numPoints: Int,
   mode: String, // constant | random | ramp | uniform | normal
   stdevX: Option[Int] = None, // [default: 1]
@@ -34,7 +34,7 @@ object ReadGdal {
     Read(filename, spatialreference, tag, Some(gdal))
 }
 
-case class ReadGeoWave(
+case class GeoWaveRead(
   zookeeperUrl: String,
   instanceName: String,
   username: String,
@@ -49,7 +49,7 @@ case class ReadGeoWave(
   `type`: ReaderType = geowave
 ) extends PipelineExpr
 
-case class ReadGreyhound(
+case class GreyhoundRead(
   url: String,
   bounds: Option[String] = None, // [default: the entire resource]
   depthBegin: Option[Int] = None, // [default: 0]
@@ -62,7 +62,7 @@ case class ReadGreyhound(
   `type`: ReaderType = greyhound
 ) extends PipelineExpr
 
-case class ReadIlvis2(
+case class Ilvis2Read(
   filename: String,
   mapping: Option[String] = None,
   metadata: Option[String] = None,
@@ -71,7 +71,7 @@ case class ReadIlvis2(
   `type`: ReaderType = ilvis2
 ) extends PipelineExpr
 
-case class ReadLas(
+case class LasRead(
   filename: String,
   extraDims: Option[String] = None,
   compression: Option[String] = None,
@@ -90,7 +90,7 @@ object ReadNitf {
     Read(filename, spatialreference, tag, Some(nitf))
 }
 
-case class ReadOci(
+case class OciRead(
   connection: String,
   query: String,
   xmlSchemaDump: Option[String] = None,
@@ -110,7 +110,7 @@ object ReadPcd {
     Read(filename, spatialreference, tag, Some(pcd))
 }
 
-case class ReadPgpointcloud(
+case class PgpointcloudRead(
   connection: String,
   table: String,
   schema: Option[String] = None, // [default: public]
@@ -130,7 +130,7 @@ object ReadPts {
     Read(filename, spatialreference, tag, Some(pts))
 }
 
-case class ReadQfit(
+case class QfitRead(
   filename: String,
   flipCoordinates: Option[Boolean] = None,
   scaleZ: Option[Double] = None,
@@ -139,7 +139,7 @@ case class ReadQfit(
   `type`: ReaderType = qfit
 ) extends PipelineExpr
 
-case class ReadRxp(
+case class RxpRead(
   filename: String,
   rdtp: Option[Boolean] = None,
   syncToPps: Option[Boolean] = None,
@@ -157,12 +157,12 @@ object ReadSbet {
     Read(filename, spatialreference, tag, Some(sbet))
 }
 
-case class ReadSqlite(
+case class SqliteRead(
   connection: String,
   query: String,
   spatialreference: Option[String] = None,
   tag: Option[String] = None,
-  `type`: String = "readers.sqlite"
+  `type`: ReaderType = sqlite
 ) extends PipelineExpr
 
 object ReadTxt {
@@ -170,7 +170,7 @@ object ReadTxt {
     Read(filename, spatialreference, tag, Some(txt))
 }
 
-case class ReadTindex(
+case class TindexRead(
   filename: String,
   layerName: Option[String] = None,
   srsColumn: Option[String] = None,
@@ -187,40 +187,283 @@ case class ReadTindex(
   `type`: ReaderType = tindex
 ) extends PipelineExpr
 
-case class Reproject(
-  outSrs: String,
-  inSrs: Option[String] = None,
-  tag: Option[String] = None,
-  `type`: String = "filters.reprojection"
-) extends PipelineExpr
-
-case class Merge(
-  inputs: List[String],
-  tag: Option[String] = None,
-  `type`: String = "filters.merge"
-) extends PipelineExpr
-
+// in future we can implement all writers
 case class Write(
   filename: String,
   spatialreference: Option[String] = None,
   `type`: Option[String] = None // usually auto derived by pdal
 ) extends PipelineExpr
 
-case class ApproximateCoplanar(
+case class ApproximateCoplanarFilter(
   knn: Int, // [default: 8]
   thresh1: Int, // [default: 25]
   thresh2: Int, // [default: 6]
-  `type`: String = "filters.approximatecoplanar"
+  `type`: FilterType = approximatecoplanar
 ) extends PipelineExpr
 
-case class Attribute(
+case class AttributeFilter(
   dimension: Option[String] = None, // [default: none]
   value: Option[Double] = None, // [default: none]
   datasource: Option[String] = None, // [default: none]
   column: Option[String] = None, // [default: none]
   query: Option[String] = None, // [default: first column]
   layer: Option[String] = None, // [default: first layer]
-  `type`: String = "filters.attribtue"
+  `type`: FilterType = attribute
+) extends PipelineExpr
+
+case class ChipperFilter(
+  capacity: Option[Int] = None, // [default: 5000]
+  `type`: FilterType = chipper
+) extends PipelineExpr
+
+case class ColorinterpFilter(
+  ramp: Option[String] = None, // [default: pestel_shades]
+  dimension: Option[String] = None, // [default: Z]
+  minimum: Option[String] = None,
+  maximum: Option[String] = None,
+  invert: Option[Boolean] = None, // [default: false]
+  k: Option[Double] = None,
+  mad: Option[Boolean] = None,
+  madMultiplier: Option[Double] = None,
+  `type`: FilterType = colorinterp
+) extends PipelineExpr
+
+case class ColorizationFilter(
+  raster: String,
+  dimensions: Option[String] = None,
+  `type`: FilterType = colorization
+) extends PipelineExpr
+
+case class ComputerangeFilter(
+  `type`: FilterType = computerange
+) extends PipelineExpr
+
+case class CropFilter(
+  bounds: Option[String] = None,
+  polygon: Option[String] = None,
+  outside: Option[String] = None,
+  point: Option[String] = None,
+  radius: Option[String] = None,
+  `type`: FilterType = crop
+) extends PipelineExpr
+
+case class DecimationFilter(
+  step: Option[Int] = None,
+  offset: Option[Int] = None,
+  limit: Option[Int] = None,
+  `type`: FilterType = decimation
+) extends PipelineExpr
+
+case class DividerFilter(
+   mode: Option[String] = None,
+   count: Option[Int] = None,
+   capacity: Option[Int] = None,
+  `type`: FilterType = divider
+) extends PipelineExpr
+
+case class EigenValuesFilter(
+  knn: Option[Int] = None,
+  `type`: FilterType = eigenvalues
+) extends PipelineExpr
+
+case class EstimateRankFilter(
+  knn: Option[Int] = None,
+  thresh: Option[Double] = None,
+  `type`: FilterType = estimaterank
+) extends PipelineExpr
+
+case class FerryFilter(
+  dimensions: String,
+  `type`: FilterType = ferry
+) extends PipelineExpr
+
+case class GreedyProjectionFilter(
+  `type`: FilterType = greedyprojection
+) extends PipelineExpr
+
+case class GridProjectionFilter(
+  `type`: FilterType = gridprojection
+) extends PipelineExpr
+
+case class HagFilter(
+  `type`: FilterType = hag
+) extends PipelineExpr
+
+case class HexbinFilter(
+  edgeSize: Option[Int] = None,
+  sampleSize: Option[Int] = None,
+  threshold: Option[Int] = None,
+  precision: Option[Int] = None,
+  `type`: FilterType = hexbin
+) extends PipelineExpr
+
+case class IqrFilter(
+  dimension: String,
+  k: Option[Double] = None,
+  `type`: FilterType = iqr
+) extends PipelineExpr
+
+case class KDistanceFilter(
+  k: Option[Int] = None,
+  `type`: FilterType = kdistance
+) extends PipelineExpr
+
+case class LofFilter(
+  minpts: Option[Int] = None,
+  `type`: FilterType = lof
+) extends PipelineExpr
+
+case class MadFilter(
+  dimension: String,
+  k: Option[Double] = None,
+  `type`: FilterType = mad
+) extends PipelineExpr
+
+case class MergeFilter(
+  inputs: List[String],
+  tag: Option[String] = None,
+  `type`: FilterType = merge
+) extends PipelineExpr
+
+case class MongusFilter(
+  cell: Option[Double] = None,
+  classify: Option[Boolean] = None,
+  extract: Option[Boolean] = None,
+  k: Option[Double] = None,
+  l: Option[Int] = None,
+  `type`: FilterType = mongus
+) extends PipelineExpr
+
+case class MortnOrderFilter(
+  `type`: FilterType = mortonorder
+) extends PipelineExpr
+
+case class MovingLeastSquaresFilter(
+  `type`: FilterType = movingleastsquares
+) extends PipelineExpr
+
+case class NormalFilter(
+  knn: Option[Int] = None,
+  `type`: FilterType = normal
+) extends PipelineExpr
+
+case class OutlierFilter(
+  method: Option[String] = None,
+  minK: Option[Int] = None,
+  radius: Option[Double] = None,
+  meanK: Option[Int] = None,
+  multiplier: Option[Double] = None,
+  classify: Option[Boolean] = None,
+  extract: Option[Boolean] = None,
+  `type`: FilterType = outlier
+) extends PipelineExpr
+
+case class PclBlockFilter(
+  filename: String,
+  methods: Option[List[String]] = None,
+  `type`: FilterType = pclblock
+) extends PipelineExpr
+
+case class PmfFilter(
+  maxWindowSize: Option[Int] = None,
+  slope: Option[Double] = None,
+  maxDistance: Option[Double] = None,
+  initialDistance: Option[Double] = None,
+  cellSize: Option[Int] = None,
+  classify: Option[Boolean] = None,
+  extract: Option[Boolean] = None,
+  approximate: Option[Boolean] = None,
+  `type`: FilterType = pmf
+) extends PipelineExpr
+
+case class PoissonFilter(
+  depth: Option[Int] = None,
+  pointWeight: Option[Double] = None,
+  `type`: FilterType = poisson
+) extends PipelineExpr
+
+case class PredicateFilter(
+  script: String,
+  module: String,
+  function: String,
+  `type`: FilterType = predicate
+) extends PipelineExpr
+
+case class ProgrammableFilter(
+  script: String,
+  module: String,
+  function: String,
+  source: String,
+  addDimenstion: Option[String] = None,
+  `type`: FilterType = programmable
+) extends PipelineExpr
+
+case class RadialDensityFilter(
+  radius: Option[Double] = None,
+  `type`: FilterType = radialdensity
+) extends PipelineExpr
+
+case class RandomizeFilter(
+  `type`: FilterType = randomize
+) extends PipelineExpr
+
+case class RangeFilter(
+  limits: Option[String] = None,
+  `type`: FilterType = range
+) extends PipelineExpr
+
+case class ReprojectionFilter(
+  outSrs: String,
+  inSrs: Option[String] = None,
+  tag: Option[String] = None,
+  `type`: FilterType = reprojection
+) extends PipelineExpr
+
+case class SampleFilter(
+  radius: Option[Double] = None,
+  `type`: FilterType = sample
+) extends PipelineExpr
+
+case class SmrfFilter(
+  cell: Option[Double] = None,
+  classify: Option[Boolean] = None,
+  cut: Option[Double] = None,
+  extract: Option[Boolean] = None,
+  slope: Option[Double] = None,
+  threshold: Option[Double] = None,
+  window: Option[Double] = None,
+  `type`: FilterType = smrf
+) extends PipelineExpr
+
+case class SortFilter(
+  dimension: String,
+  `type`: FilterType = sort
+) extends PipelineExpr
+
+case class SplitterFilter(
+  length: Option[Int] = None,
+  originX: Option[Double] = None,
+  originY: Option[Double] = None,
+  `type`: FilterType = splitter
+) extends PipelineExpr
+
+case class StatsFilter(
+  dimenstions: Option[String] = None,
+  enumerate: Option[String] = None,
+  count: Option[Int] = None,
+  `type`: FilterType = stats
+) extends PipelineExpr
+
+case class TransformationFilter(
+  matrix: String,
+  `type`: FilterType = transformation
+) extends PipelineExpr
+
+case class VoxelGridFilter(
+  leafX: Option[Double] = None,
+  leafY: Option[Double] = None,
+  leafZ: Option[Double] = None,
+  `type`: FilterType = voxelgrid
 ) extends PipelineExpr
 
 case class PipelineConstructor(list: List[PipelineExpr]) {
