@@ -1,11 +1,14 @@
-package geotrellis.spark.pointcloud.pipeline
+package geotrellis.pointcloud.pipeline
 
 import json._
 import io.circe._
 import io.circe.generic.extras.auto._
 import io.circe.syntax._
 
-sealed trait PipelineExpr
+sealed trait PipelineExpr {
+  def ~(other: PipelineExpr): PipelineConstructor =
+    PipelineConstructor(this :: other :: Nil)
+}
 
 case class Read(
   filename: String,

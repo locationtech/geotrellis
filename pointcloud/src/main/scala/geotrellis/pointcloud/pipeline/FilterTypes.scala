@@ -1,4 +1,4 @@
-package geotrellis.spark.pointcloud.pipeline
+package geotrellis.pointcloud.pipeline
 
 sealed trait FilterType {
   val name: String

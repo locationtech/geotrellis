@@ -1,6 +1,6 @@
-package geotrellis.spark.pointcloud.pipeline.json
+package geotrellis.pointcloud.pipeline.json
 
-import geotrellis.spark.pointcloud.pipeline._
+import geotrellis.pointcloud.pipeline._
 
 import io.circe.{Encoder, Json}
 import io.circe.generic.extras._
@@ -25,14 +25,4 @@ trait Implicits {
         ).asJson
     )
   }
-
-  /*implicit val reprojectEncoder = {
-    val encoder = deriveEncoder[Reproject]
-    encoder.mapJson { json => val res = json.deepMerge(Json.obj("type" -> "filters.reproject".asJson)); println(json); json }
-  }
-
-  implicit val mergeEncoder = {
-    val encoder: ObjectEncoder[Merge] = deriveEncoder[Merge]
-    encoder.mapJson(_.deepMerge(Json.obj("type" -> "filters.merge".asJson)))
-  }*/
 }

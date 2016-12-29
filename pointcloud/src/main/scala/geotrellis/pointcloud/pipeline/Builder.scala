@@ -1,8 +1,6 @@
-package geotrellis.spark.pointcloud.pipeline
+package geotrellis.pointcloud.pipeline
 
-import geotrellis.spark.pointcloud.pipeline._
-import geotrellis.spark.pointcloud.pipeline.json._
-
+import geotrellis.pointcloud.pipeline.json._
 import io.circe.syntax._
 
 class Builder {
