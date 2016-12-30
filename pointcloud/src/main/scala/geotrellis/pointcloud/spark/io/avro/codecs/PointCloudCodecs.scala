@@ -5,10 +5,12 @@ import geotrellis.spark.io.avro._
 import io.pdal._
 import org.apache.avro._
 import org.apache.avro.generic._
+import org.apache.avro.util.Utf8
 
 import java.util
 import java.nio.ByteBuffer
 import scala.collection.JavaConverters._
+import scala.collection.JavaConversions._
 
 trait PointCloudCodecs {
 
@@ -31,8 +33,8 @@ trait PointCloudCodecs {
 
     def decode(rec: GenericRecord): DimType =
       DimType(
-        rec[String]("id"),
-        rec[String]("type"),
+        rec[Utf8]("id").toString,
+        rec[Utf8]("type").toString,
         rec[Double]("scale"),
         rec[Double]("offset")
       )
@@ -71,17 +73,23 @@ trait PointCloudCodecs {
 
     def encode(pc: PointCloud, rec: GenericRecord): Unit = {
       rec.put("bytes", ByteBuffer.wrap(pc.bytes))
-      rec.put("dimTypes", pc.dimTypes.asScala.map { case (k, v) => k -> sizedDimTypeCodec.encode(v) }.asJava)
+      val dimTypes = new util.HashMap[String, GenericRecord]()
+      pc.dimTypes.foreach { case (k, v) => dimTypes += k -> sizedDimTypeCodec.encode(v) }
+
+      rec.put("dimTypes", dimTypes)
     }
 
-    def decode(rec: GenericRecord): PointCloud =
+    def decode(rec: GenericRecord): PointCloud = {
+      val dimTypes = new util.HashMap[String, SizedDimType]()
+      rec[util.Map[Utf8, GenericRecord]]("dimTypes")
+        .asScala
+        .foreach { case (k, v) => dimTypes += k.toString -> sizedDimTypeCodec.decode(v) }
+
       PointCloud(
         rec[ByteBuffer]("bytes").array,
-        rec[util.Map[String, GenericRecord]]("dimTypes")
-          .asScala
-          .map { case (k, v) => k -> sizedDimTypeCodec.decode(v) }
-          .asJava
+        dimTypes
       )
+    }
   }
 
 }
