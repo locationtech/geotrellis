@@ -31,7 +31,7 @@ case class FauxRead(
   `type`: ReaderType = ReaderTypes.faux
 ) extends PipelineExpr
 
-object ReadGdal {
+object GdalRead {
   def apply(filename: String, spatialreference: Option[String] = None, tag: Option[String] = None): Read =
     Read(filename, spatialreference, tag, Some(ReaderTypes.gdal))
 }
@@ -82,12 +82,12 @@ case class LasRead(
   `type`: ReaderType = ReaderTypes.las
 ) extends PipelineExpr
 
-object ReadMrsid {
+object MrsidRead {
   def apply(filename: String, spatialreference: Option[String] = None, tag: Option[String] = None): Read =
     Read(filename, spatialreference, tag, Some(ReaderTypes.mrsid))
 }
 
-object ReadNitf {
+object NitfRead {
   def apply(filename: String, spatialreference: Option[String] = None, tag: Option[String] = None): Read =
     Read(filename, spatialreference, tag, Some(ReaderTypes.nitf))
 }
@@ -102,12 +102,12 @@ case class OciRead(
   `type`: ReaderType = ReaderTypes.oci
 ) extends PipelineExpr
 
-object ReadOptech {
+object OptechRead {
   def apply(filename: String, spatialreference: Option[String] = None, tag: Option[String] = None): Read =
     Read(filename, spatialreference, tag, Some(ReaderTypes.optech))
 }
 
-object ReadPcd {
+object PcdRead {
   def apply(filename: String, spatialreference: Option[String] = None, tag: Option[String] = None): Read =
     Read(filename, spatialreference, tag, Some(ReaderTypes.pcd))
 }
@@ -122,12 +122,12 @@ case class PgpointcloudRead(
   `type`: ReaderType = ReaderTypes.pgpointcloud
 ) extends PipelineExpr
 
-object ReadPly {
+object PlyRead {
   def apply(filename: String, spatialreference: Option[String] = None, tag: Option[String] = None): Read =
     Read(filename, spatialreference, tag, Some(ReaderTypes.ply))
 }
 
-object ReadPts {
+object PtsRead {
   def apply(filename: String, spatialreference: Option[String] = None, tag: Option[String] = None): Read =
     Read(filename, spatialreference, tag, Some(ReaderTypes.pts))
 }
@@ -154,7 +154,7 @@ case class RxpRead(
   `type`: ReaderType = ReaderTypes.rxp
 ) extends PipelineExpr
 
-object ReadSbet {
+object SbetRead {
   def apply(filename: String, spatialreference: Option[String] = None, tag: Option[String] = None): Read =
     Read(filename, spatialreference, tag, Some(ReaderTypes.sbet))
 }
@@ -167,7 +167,7 @@ case class SqliteRead(
   `type`: ReaderType = ReaderTypes.sqlite
 ) extends PipelineExpr
 
-object ReadTxt {
+object TextRead {
   def apply(filename: String, spatialreference: Option[String] = None, tag: Option[String] = None): Read =
     Read(filename, spatialreference, tag, Some(ReaderTypes.text))
 }
@@ -189,12 +189,12 @@ case class TindexRead(
   `type`: ReaderType = ReaderTypes.tindex
 ) extends PipelineExpr
 
-object ReadTerrasolid {
+object TerrasolidRead {
   def apply(filename: String, spatialreference: Option[String] = None, tag: Option[String] = None): Read =
     Read(filename, spatialreference, tag, Some(ReaderTypes.terrasolid))
 }
 
-object ReadIceBridge {
+object IceBridgeRead {
   def apply(filename: String, spatialreference: Option[String] = None, tag: Option[String] = None): Read =
     Read(filename, spatialreference, tag, Some(ReaderTypes.icebridge))
 }
