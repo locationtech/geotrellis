@@ -15,6 +15,7 @@ trait Implicits {
 
   implicit val readerTypeEncoder: Encoder[ReaderType] = Encoder.instance { _.toString.asJson }
   implicit val filterTypeEncoder: Encoder[FilterType] = Encoder.instance { _.toString.asJson }
+  implicit val rawExprEncoder: Encoder[RawExpr] = Encoder.instance { _.json }
   implicit val pipelineConstructorEncoder: Encoder[PipelineConstructor] = Encoder.instance { constructor =>
     Json.obj(
       "pipeline" -> constructor.list

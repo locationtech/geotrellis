@@ -12,4 +12,13 @@ class Builder {
   }
 
   val json = obj.asJson
+  val jsonString: String = obj
+
+  object m {
+    trait CC {
+      val name = this.getClass.getName.split("\\$").last
+    }
+  }
+
+  // new Pipeline(obj)
 }
