@@ -21,6 +21,7 @@ import geotrellis.spark.buffer.Direction
 import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.vector.triangulation._
+import com.vividsolutions.jts.geom.Coordinate
 
 import org.scalatest._
 
@@ -31,19 +32,18 @@ class PointCloudTriangulationSpec extends FunSpec
     ignore("should work in a simple case") {
       val points =
         Array(
-          Point3D(0, 0, 0),
-          Point3D(1, 0, 0),
-          Point3D(0, 1, 0),
-          Point3D(1, 1, 0),
-          Point3D(0, 3, 0),
-          Point3D(2, 0.5, 0)
+          new Coordinate(0, 0, 0),
+          new Coordinate(1, 0, 0),
+          new Coordinate(0, 1, 0),
+          new Coordinate(1, 1, 0),
+          new Coordinate(0, 3, 0),
+          new Coordinate(2, 0.5, 0)
         )
 
       val extent = Extent(-1/8.0, -0.5, 3.0, 4.0)
 
       val d = PointCloudTriangulation(points)
       val bm = d.boundingMesh(extent)
-      bm.showTriangles()
 
       for((key, value) <- bm.triangles) {
         print(s"$key:")
@@ -59,17 +59,18 @@ class PointCloudTriangulationSpec extends FunSpec
     it("should work in a simple case") {
       val points1 =
         Array(
-          Point3D(0, 0, 0),
-          Point3D(1, 0, 0),
-          Point3D(0, 1, 0),
-          Point3D(1, 1, 0),
-          Point3D(0, 3, 0),
-          Point3D(2, 0.5, 0)
+          new Coordinate(0, 0, 0),
+          new Coordinate(1, 0, 0),
+          new Coordinate(0, 1, 0),
+          new Coordinate(1, 1, 0),
+          new Coordinate(0, 3, 0),
+          new Coordinate(2, 0.5, 0)
         )
 
       val points2 =
-        points1.map { case Point3D(x, y, z) =>
-          Point3D(x, y + 3.5, z)
+        points1.map { coordinate =>
+          val (x, y, z) = (coordinate.x, coordinate.y, coordinate.z)
+          new Coordinate(x, y + 3.5, z)
         }
 
       val extent1 = Extent(-1/8.0, -0.5, 3.0, 4.0)
@@ -98,15 +99,15 @@ class PointCloudTriangulationSpec extends FunSpec
 
       def showTriangles(prefix: String = ""): Unit = {
         val gc =
-          GeometryCollection(polygons =
+          GeometryCollection(geoms =
             hebm.triangles.keys.map { case (i1, i2, i3) =>
               import hebm.points
-              val p1 = Point3D(points(i1).x, points(i1).y)
-              val p2 = Point3D(points(i2).x, points(i2).y)
-              val p3 = Point3D(points(i3).x, points(i3).y)
+              val p1 = new Coordinate(points(i1).x, points(i1).y)
+              val p2 = new Coordinate(points(i2).x, points(i2).y)
+              val p3 = new Coordinate(points(i3).x, points(i3).y)
 
               val (z1, z2, z3) = (p1.z, p2.z, p3.z)
-              Polygon(Line(p1.toPoint, p2.toPoint, p3.toPoint, p1.toPoint))
+              Polygon(Line(p1, p2, p3, p1))
             }.toSeq)
 
         import geotrellis.vector.io._
