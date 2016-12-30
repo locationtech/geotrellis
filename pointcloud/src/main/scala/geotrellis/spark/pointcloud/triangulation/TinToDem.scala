@@ -8,10 +8,9 @@ import geotrellis.spark.pointcloud._
 import geotrellis.spark.tiling._
 import geotrellis.vector._
 
+import com.vividsolutions.jts.geom.Coordinate
 import org.apache.spark.rdd.RDD
 import spire.syntax.cfor._
-
-import scala.collection.mutable
 
 object TinToDem {
   case class Options(
@@ -23,7 +22,7 @@ object TinToDem {
     def DEFAULT = Options()
   }
 
-  def apply(rdd: RDD[(SpatialKey, Array[Point3D])], layoutDefinition: LayoutDefinition, extent: Extent, options: Options = Options.DEFAULT): RDD[(SpatialKey, Tile)] =
+  def apply(rdd: RDD[(SpatialKey, Array[Coordinate])], layoutDefinition: LayoutDefinition, extent: Extent, options: Options = Options.DEFAULT): RDD[(SpatialKey, Tile)] =
     rdd
       .collectNeighbors
       .mapPartitions({ partition =>
@@ -35,7 +34,7 @@ object TinToDem {
           neighbors.foreach { case (_, (_, arr)) =>
             len += arr.length
           }
-          val points = Array.ofDim[Point3D](len)
+          val points = Array.ofDim[Coordinate](len)
           var j = 0
           options.boundsBuffer match {
             case Some(b) =>
@@ -97,7 +96,7 @@ object TinToDem {
         }
       }, preservesPartitioning = true)
 
-  def withStitch(rdd: RDD[(SpatialKey, Array[Point3D])], layoutDefinition: LayoutDefinition, extent: Extent, options: Options = Options.DEFAULT): RDD[(SpatialKey, Tile)] = {
+  def withStitch(rdd: RDD[(SpatialKey, Array[Coordinate])], layoutDefinition: LayoutDefinition, extent: Extent, options: Options = Options.DEFAULT): RDD[(SpatialKey, Tile)] = {
 
     // Assumes that a partitioner has already been set
 

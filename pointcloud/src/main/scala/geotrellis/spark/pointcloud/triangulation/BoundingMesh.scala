@@ -7,6 +7,7 @@
 // import geotrellis.vector.io._
 
 // import com.vividsolutions.jts.algorithm.distance.{DistanceToPoint, PointPairDistance}
+// import com.vividsolutions.jts.geom.Coordinate
 
 // import scala.collection.mutable
 
@@ -104,7 +105,7 @@
 //       def circumcircleLeavesExtent(extent: Extent)(tri: Int): Boolean = {
 //         val center =
 //           circleCenter(getVert(tri), getVert(getNext(tri)), getVert(getNext(getNext(tri))))
-//         val radius = center.distance2D(Point3D(getX(getVert(tri)), getY(getVert(tri))))
+//         val radius = center.distance2D(Coordinate(getX(getVert(tri)), getY(getVert(tri))))
 //         val ppd = new PointPairDistance
 //         val closest =
 //           DistanceToPoint.computeDistance(extent.toPolygon.jtsGeom, center.toPoint.jtsGeom.getCoordinate, ppd)

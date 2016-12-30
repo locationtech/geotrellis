@@ -1,9 +1,9 @@
 package geotrellis.spark.pointcloud.triangulation
 
 import io.pdal._
-import geotrellis.spark.pointcloud.Point3D
 import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
 import org.apache.commons.math3.linear._
+import com.vividsolutions.jts.geom.Coordinate
 
 trait DelaunayPointSet {
   def length: Int
@@ -22,7 +22,7 @@ object DelaunayPointSet {
       def getZ(i: Int) = pointCloud.getZ(i)
     }
 
-  implicit def lightPointArrayToDelaunayPointSet(points: Array[Point3D]) =
+  implicit def lightPointArrayToDelaunayPointSet(points: Array[Coordinate]): DelaunayPointSet =
     new DelaunayPointSet {
       def length = points.length
       def getX(i: Int) = points(i).x
@@ -88,7 +88,7 @@ class PointSetPredicates(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdgeTabl
       getX(d), getY(d)
     ) > EPSILON
 
-  def circleCenter(a: Int, b: Int, c: Int): Point3D = {
+  def circleCenter(a: Int, b: Int, c: Int): Coordinate = {
     val ax = getX(a)
     val ay = getY(a)
     val bx = getX(b)
@@ -105,7 +105,7 @@ class PointSetPredicates(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdgeTabl
     val k = det3(ax, ax * ax + ay * ay, 1.0,
                  bx, bx * bx + by * by, 1.0,
                  cx, cx * cx + cy * cy, 1.0) / d
-    Point3D(h, k)
+    new Coordinate(h, k)
   }
 
   def det3 (a11: Double, a12: Double, a13: Double,
@@ -114,6 +114,6 @@ class PointSetPredicates(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdgeTabl
     val m = MatrixUtils.createRealMatrix(Array(Array(a11, a12, a13),
                                                Array(a21, a22, a23),
                                                Array(a31, a32, a33)))
-    (new LUDecomposition(m)).getDeterminant
+    new LUDecomposition(m).getDeterminant
   }
 }

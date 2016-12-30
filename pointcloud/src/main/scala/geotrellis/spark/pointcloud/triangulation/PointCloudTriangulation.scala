@@ -11,6 +11,7 @@ import geotrellis.vector.triangulation._
 import geotrellis.vector.io._
 
 import com.vividsolutions.jts.algorithm.distance.{DistanceToPoint, PointPairDistance}
+import com.vividsolutions.jts.geom.Coordinate
 
 import scala.math.{abs, pow}
 import scala.annotation.tailrec
@@ -53,7 +54,7 @@ case class HalfEdgeBoundingMesh[V](
   boundary: HalfEdge[V, Unit],
   triangles: Map[(V, V, V), HalfEdge[V, Unit]],
   isLinear: Boolean,
-  points: mutable.Map[V, Point3D]
+  points: mutable.Map[V, Coordinate]
 ) {
   def rasterize(tile: MutableArrayTile, re: RasterExtent): Unit = {
     val w = re.cellwidth
@@ -189,7 +190,7 @@ case class BoundingMesh(
   boundary: Int,
   triangles: Map[(Int, Int, Int), Int],
   isLinear: Boolean,
-  points: mutable.Map[Int, Point3D]
+  points: mutable.Map[Int, Coordinate]
 )
 
 /**
@@ -231,10 +232,10 @@ class PointCloudTriangulation(
     val _triangles =
       collection.mutable.Map.empty[(Int, Int, Int), ResultEdge]
 
-    val points = mutable.Map[Int, Point3D]()
+    val points = mutable.Map[Int, Coordinate]()
 
     def addPoint(v: Int): Unit =
-      points.getOrElseUpdate(v, Point3D(getX(v), getY(v), getZ(v)))
+      points.getOrElseUpdate(v, new Coordinate(getX(v), getY(v), getZ(v)))
 
     val outerEdges = collection.mutable.Set[(Int, Int)]()
 
@@ -354,10 +355,10 @@ class PointCloudTriangulation(
         //println(s"CIRCUMVAVA")
         val center =
           circleCenter(getVert(tri), getVert(getNext(tri)), getVert(getNext(getNext(tri))))
-        val radius = center.distance2D(Point3D(getX(getVert(tri)), getY(getVert(tri))))
+        val radius = center.distance(new Coordinate(getX(getVert(tri)), getY(getVert(tri))))
         val ppd = new PointPairDistance
         val closest =
-          DistanceToPoint.computeDistance(extent.toPolygon.jtsGeom, center.toPoint.jtsGeom.getCoordinate, ppd)
+          DistanceToPoint.computeDistance(extent.toPolygon.jtsGeom, center.jtsGeom.getCoordinate, ppd)
 
         //println(s"CIRCUMVAVA BAAA")
         ppd.getDistance < radius
@@ -858,9 +859,9 @@ class PointCloudTriangulation(
     // val gcb = GeometryCollection(polygons =
     //   halfEdgeMeshes.flatMap { case (k, m) =>
     //     m.triangles.keys.map { case (i1, i2, i3) =>
-    //       val p1 = Point3D(m.points(i1).x, m.points(i1).y)
-    //       val p2 = Point3D(m.points(i2).x, m.points(i2).y)
-    //       val p3 = Point3D(m.points(i3).x, m.points(i3).y)
+    //       val p1 = Coordinate(m.points(i1).x, m.points(i1).y)
+    //       val p2 = Coordinate(m.points(i2).x, m.points(i2).y)
+    //       val p3 = Coordinate(m.points(i3).x, m.points(i3).y)
 
     //       val (z1, z2, z3) = (p1.z, p2.z, p3.z)
     //       Polygon(Line(p1.toPoint, p2.toPoint, p3.toPoint, p1.toPoint))
@@ -878,7 +879,7 @@ class PointCloudTriangulation(
 
 
     // Stitch time.
-    val points: mutable.Map[StitchKey, Point3D] =
+    val points: mutable.Map[StitchKey, Coordinate] =
       halfEdgeMeshes.map(_._2.points).reduce(_ ++ _)
 
     val triangles: mutable.Map[(StitchKey, StitchKey, StitchKey), HalfEdge[StitchKey, Unit]] =
@@ -902,9 +903,9 @@ class PointCloudTriangulation(
     def deleteTriangle2(tri: HalfEdge[StitchKey, Unit]): Unit = {
       val idx = (tri.vert, tri.next.vert, tri.next.next.vert)
 
-      // val p1 = Point3D(points(idx._1).x, points(idx._1).y)
-      // val p2 = Point3D(points(idx._2).x, points(idx._2).y)
-      // val p3 = Point3D(points(idx._3).x, points(idx._3).y)
+      // val p1 = Coordinate(points(idx._1).x, points(idx._1).y)
+      // val p2 = Coordinate(points(idx._2).x, points(idx._2).y)
+      // val p3 = Coordinate(points(idx._3).x, points(idx._3).y)
 
       // val p = Polygon(Line(p1.toPoint, p2.toPoint, p3.toPoint, p1.toPoint))
       // val pa = s"/Users/rob/proj/jets/base-stitch/deleted/"
@@ -914,9 +915,9 @@ class PointCloudTriangulation(
       deleteTriangle(idx)
     }
 
-    def distanceToExtent(lp: Point3D, ex: Extent): Double = {
+    def distanceToExtent(lp: Coordinate, ex: Extent): Double = {
       val ppd = new PointPairDistance
-      DistanceToPoint.computeDistance(ex.toPolygon.jtsGeom, lp.toPoint.jtsGeom.getCoordinate, ppd)
+      DistanceToPoint.computeDistance(ex.toPolygon.jtsGeom, lp.jtsGeom.getCoordinate, ppd)
       ppd.getDistance
     }
 
@@ -928,10 +929,10 @@ class PointCloudTriangulation(
       isRightLinear: Boolean,
       rExtent: Extent
     ): (HalfEdge[StitchKey, Unit], Boolean) = {
-      implicit def verts(key: StitchKey): Point3D = {
+      implicit def verts(key: StitchKey): Coordinate = {
         points(key)
       }
-      import Point3DPredicates._
+      import CoordinatePredicates._
 
       def advance(e0: HalfEdge[StitchKey, Unit]): HalfEdge[StitchKey, Unit] = {
         var e = e0.next
@@ -1133,9 +1134,9 @@ class PointCloudTriangulation(
       //     GeometryCollection(polygons =
       //       triangles.keys.map { case (i1, i2, i3) =>
       //         import stitched.points
-      //         val p1 = Point3D(points(i1).x, points(i1).y)
-      //         val p2 = Point3D(points(i2).x, points(i2).y)
-      //         val p3 = Point3D(points(i3).x, points(i3).y)
+      //         val p1 = Coordinate(points(i1).x, points(i1).y)
+      //         val p2 = Coordinate(points(i2).x, points(i2).y)
+      //         val p3 = Coordinate(points(i3).x, points(i3).y)
 
       //         val (z1, z2, z3) = (p1.z, p2.z, p3.z)
       //         Polygon(Line(p1.toPoint, p2.toPoint, p3.toPoint, p1.toPoint))

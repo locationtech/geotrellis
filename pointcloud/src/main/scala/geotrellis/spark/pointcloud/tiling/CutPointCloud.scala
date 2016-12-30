@@ -25,9 +25,9 @@ import geotrellis.spark.tiling._
 import org.apache.spark.rdd._
 import org.apache.spark.Partitioner
 import spire.syntax.cfor._
+import com.vividsolutions.jts.{geom => jts}
 
 import scala.collection.mutable
-import scala.reflect.ClassTag
 
 object CutPointCloud {
   case class Options(
@@ -38,19 +38,19 @@ object CutPointCloud {
     def DEFAULT = Options()
   }
 
-  def apply(rdd: RDD[Array[Point3D]], layoutDefinition: LayoutDefinition): RDD[(SpatialKey, Array[Point3D])] with Metadata[LayoutDefinition] =
+  def apply(rdd: RDD[Array[jts.Coordinate]], layoutDefinition: LayoutDefinition): RDD[(SpatialKey, Array[jts.Coordinate])] with Metadata[LayoutDefinition] =
     apply(rdd, layoutDefinition, Options.DEFAULT)
 
-  def apply(rdd: RDD[Array[Point3D]], layoutDefinition: LayoutDefinition, options: Options): RDD[(SpatialKey, Array[Point3D])] with Metadata[LayoutDefinition] = {
+  def apply(rdd: RDD[Array[jts.Coordinate]], layoutDefinition: LayoutDefinition, options: Options): RDD[(SpatialKey, Array[jts.Coordinate])] with Metadata[LayoutDefinition] = {
     val mapTransform = layoutDefinition.mapTransform
     val (tileCols, tileRows) = layoutDefinition.tileLayout.tileDimensions
     val tilePoints = tileCols * tileRows
 
     val cut =
       rdd
-        .flatMap { case pointCloud =>
+        .flatMap { pointCloud =>
           var lastKey: SpatialKey = null
-          val keysToPoints = mutable.Map[SpatialKey, mutable.ArrayBuffer[Point3D]]()
+          val keysToPoints = mutable.Map[SpatialKey, mutable.ArrayBuffer[jts.Coordinate]]()
           val pointSize = pointCloud.length
 
           cfor(0)(_ < pointSize, _ + 1) { i =>
@@ -92,7 +92,7 @@ object CutPointCloud {
 
     val cut =
       rdd
-        .flatMap { case pointCloud =>
+        .flatMap { pointCloud =>
           var lastKey: SpatialKey = null
           val keysToBytes = mutable.Map[SpatialKey, mutable.ArrayBuffer[Array[Byte]]]()
           val pointSize = pointCloud.pointSize

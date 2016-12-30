@@ -8,7 +8,6 @@ import geotrellis.util.MethodExtensions
 import geotrellis.vector._
 import geotrellis.vector.voronoi.Delaunay
 
-
 trait PointCloudDemMethods extends MethodExtensions[PointCloud] {
 
   /**
