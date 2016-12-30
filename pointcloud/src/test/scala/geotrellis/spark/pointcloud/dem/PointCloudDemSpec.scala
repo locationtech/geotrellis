@@ -56,8 +56,8 @@ class PointCloudDemSpec extends FunSpec
 
       val tile = cloud.toTile(re, "Z")
 
-      tile.getDouble(0, 0) should be < 435.50
-      tile.getDouble(0, 0) should be > 435.49
+      tile.getDouble(0, 0) should be < 420.51 // 435.50
+      tile.getDouble(0, 0) should be > 420.50 // 435.49
     }
 
     it("should work with BufferUnionable") {

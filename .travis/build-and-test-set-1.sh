@@ -8,3 +8,4 @@
 ./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" "project geotools" test || { exit 1; }
 ./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" "project shapefile" test || { exit 1; }
 ./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" "project geomesa" test  || { exit 1; }
+./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" "project pointcloud" test  || { exit 1; }

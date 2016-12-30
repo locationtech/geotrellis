@@ -36,7 +36,33 @@ object PointCloudInputFormat {
   final val POINTCLOUD_FILTER_EXTENT = "POINTCLOUD_FILTER_EXTENT"
   final val POINTCLOUD_DIM_TYPES = "POINTCLOUD_DIM_TYPES"
   final val POINTCLOUD_TARGET_CRS = "POINTCLOUD_TARGET_CRS"
-  final val POINTCLOUD_ADDITIONAL_STEPS ="POINTCLOUD_ADDITIONAL_STEPS"
+  final val POINTCLOUD_INPUT_CRS = "POINTCLOUD_INPUT_CRS"
+  final val POINTCLOUD_ADDITIONAL_STEPS = "POINTCLOUD_ADDITIONAL_STEPS"
+
+  final val filesExtensions =
+    Seq(
+      ".bin",
+      ".bpf",
+      ".csd",
+      ".greyhound",
+      ".icebridge",
+      ".las",
+      ".laz",
+      ".nitf",
+      ".nsf",
+      ".ntf",
+      ".pcd",
+      ".ply",
+      ".pts",
+      ".qi",
+      ".rxp",
+      ".sbet",
+      ".sqlite",
+      ".sid",
+      ".tindex",
+      ".txt",
+      ".h5"
+    )
 
   def setTmpDir(conf: Configuration, dir: String): Unit =
     conf.set(POINTCLOUD_TMP_DIR, dir)
@@ -53,27 +79,34 @@ object PointCloudInputFormat {
   def setDimTypes(conf: Configuration, dimTypes: Iterable[String]): Unit =
     conf.set(POINTCLOUD_DIM_TYPES, dimTypes.mkString(";"))
 
-  def getDimTypes(job: JobContext): Option[Array[String]] = {
-    val s = job.getConfiguration.get(POINTCLOUD_DIM_TYPES)
-    if(s != null) { Some(s.split(";")) }
-    else { None }
-  }
+  def getDimTypes(job: JobContext): Option[Array[String]] =
+    Option(job.getConfiguration.get(POINTCLOUD_DIM_TYPES)).map(_.split(";"))
+
+  def setInputCrs(conf: Configuration, inputCrs: String): Unit =
+    conf.set(POINTCLOUD_INPUT_CRS, inputCrs)
+
+  def getInputCrs(job: JobContext): Option[String] =
+    Option(job.getConfiguration.get(POINTCLOUD_INPUT_CRS))
 
   // Be careful, metadata contained in PointCloudHeader won't be reprojected
   def setTargetCrs(conf: Configuration, targetCrs: String): Unit =
     conf.set(POINTCLOUD_TARGET_CRS, targetCrs)
 
-  def getTargetCrs(job: JobContext): Option[String] = {
-    val s = job.getConfiguration.get(POINTCLOUD_TARGET_CRS)
-    if(s != null) { Some(s) }
-    else { None }
-  }
+  def getTargetCrs(job: JobContext): Option[String] =
+    Option(job.getConfiguration.get(POINTCLOUD_TARGET_CRS))
 
   def setAdditionalPipelineSteps(conf: Configuration, steps: Seq[JsObject]): Unit =
-    conf.setSerialized(POINTCLOUD_ADDITIONAL_STEPS, steps)
+    conf.set(POINTCLOUD_ADDITIONAL_STEPS, JsArray(steps.toVector).compactPrint)
 
-  def getAdditionalPipelineSteps(job: JobContext): Seq[JsObject] =
-    job.getConfiguration.getSerializedOption[Seq[JsObject]](POINTCLOUD_TARGET_CRS).toSeq.flatten
+  def getAdditionalPipelineSteps(job: JobContext): Seq[JsObject] = {
+    val s = job.getConfiguration.get(POINTCLOUD_ADDITIONAL_STEPS)
+    if(s == null) Seq()
+    else { s.parseJson match {
+      case JsArray(objs) => objs.map(_.asJsObject)
+      case obj =>
+        throw new Exception(s"${obj} is not a JsArray")
+    } }
+  }
 }
 
 /** Process files from the path through PDAL, and reads all files point data as an Array[Byte] **/
@@ -104,6 +137,7 @@ class PointCloudInputFormat extends FileInputFormat[HadoopPointCloudHeader, Iter
           Pipeline(
             getPipelineJson(
               localPath,
+              PointCloudInputFormat.getInputCrs(context),
               PointCloudInputFormat.getTargetCrs(context),
               PointCloudInputFormat.getAdditionalPipelineSteps(context)
             ).compactPrint

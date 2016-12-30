@@ -20,7 +20,6 @@ import geotrellis.spark.io.hadoop.formats._
 import geotrellis.vector.Extent
 
 import io.pdal._
-import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -36,10 +35,11 @@ object HadoopPointCloudRDD {
     */
 
   case class Options(
-    filesExtensions: Seq[String] = Seq(".las", ".laz"),
+    filesExtensions: Seq[String] = PointCloudInputFormat.filesExtensions,
     tmpDir: Option[String] = None,
     filterExtent: Option[Extent] = None,
     dimTypes: Option[Iterable[String]] = None,
+    inputCrs: Option[String] = None,
     targetCrs: Option[String] = None,
     additionalPipelineSteps: Seq[JsObject] = Seq()
   )
@@ -67,6 +67,10 @@ object HadoopPointCloudRDD {
 
     options.targetCrs.foreach { crs =>
       PointCloudInputFormat.setTargetCrs(conf, crs)
+    }
+
+    options.inputCrs.foreach { crs =>
+      PointCloudInputFormat.setInputCrs(conf, crs)
     }
 
     PointCloudInputFormat.setAdditionalPipelineSteps(conf, options.additionalPipelineSteps)

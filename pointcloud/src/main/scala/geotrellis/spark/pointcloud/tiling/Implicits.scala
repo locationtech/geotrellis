@@ -17,11 +17,6 @@
 package geotrellis.spark.pointcloud.tiling
 
 import io.pdal._
-import geotrellis.spark._
-import geotrellis.vector._
-import geotrellis.spark.tiling.TilerKeyMethods
-import geotrellis.util._
-
 import org.apache.spark.rdd._
 
 object Implicits extends Implicits
