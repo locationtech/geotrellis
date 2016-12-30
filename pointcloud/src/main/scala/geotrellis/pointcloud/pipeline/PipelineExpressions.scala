@@ -1,9 +1,6 @@
 package geotrellis.pointcloud.pipeline
 
-import json._
-import io.circe._
-import io.circe.generic.extras.auto._
-import io.circe.syntax._
+import io.circe.Json
 
 sealed trait PipelineExpr {
   def ~(other: PipelineExpr): PipelineConstructor =
@@ -468,20 +465,3 @@ case class VoxelGridFilter(
   leafZ: Option[Double] = None,
   `type`: FilterType = voxelgrid
 ) extends PipelineExpr
-
-case class PipelineConstructor(list: List[PipelineExpr]) {
-  def ~(e: PipelineExpr): PipelineConstructor = PipelineConstructor(list :+ e)
-  def map[B](f: PipelineExpr => B): List[B] = list.map(f)
-  def mapExpr(f: PipelineExpr => PipelineExpr): PipelineConstructor = PipelineConstructor(list.map(f))
-  def tail: List[PipelineExpr] = list.tail
-  def head: PipelineExpr = list.head
-  def json: Json =
-    Json.obj(
-      "pipeline" -> list
-        .map(
-          _.asJsonObject
-            .remove("class_type") // remove type
-            .filter { case (key, value) => !value.isNull } // cleanup options
-        ).asJson
-    )
-}
