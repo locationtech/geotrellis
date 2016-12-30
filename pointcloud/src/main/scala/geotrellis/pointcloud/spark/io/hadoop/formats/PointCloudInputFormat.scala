@@ -23,6 +23,7 @@ import geotrellis.pointcloud.spark.json._
 import geotrellis.util.Filesystem
 import geotrellis.vector.Extent
 import io.pdal._
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._
 import org.apache.hadoop.mapreduce._
