@@ -25,7 +25,7 @@ import org.apache.avro.util.Utf8
 
 import java.util
 import java.nio.ByteBuffer
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 trait PointCloudCodecs {
   implicit def dimTypeCodec = new AvroRecordCodec[DimType] {
@@ -87,8 +87,9 @@ trait PointCloudCodecs {
 
     def encode(pc: PointCloud, rec: GenericRecord): Unit = {
       rec.put("bytes", ByteBuffer.wrap(pc.bytes))
+
       val dimTypes = new util.HashMap[String, GenericRecord]()
-      pc.dimTypes.foreach { case (k, v) => dimTypes += k -> sizedDimTypeCodec.encode(v) }
+      pc.dimTypes.asScala.foreach { case (k, v) => dimTypes.put(k, sizedDimTypeCodec.encode(v)) }
 
       rec.put("dimTypes", dimTypes)
     }
@@ -96,7 +97,8 @@ trait PointCloudCodecs {
     def decode(rec: GenericRecord): PointCloud = {
       val dimTypes = new util.HashMap[String, SizedDimType]()
       rec[util.Map[Utf8, GenericRecord]]("dimTypes")
-        .foreach { case (k, v) => dimTypes += k.toString -> sizedDimTypeCodec.decode(v) }
+        .asScala
+        .foreach { case (k, v) => dimTypes.put(k.toString, sizedDimTypeCodec.decode(v)) }
 
       PointCloud(
         rec[ByteBuffer]("bytes").array,
