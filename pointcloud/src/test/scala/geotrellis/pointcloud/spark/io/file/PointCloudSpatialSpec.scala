@@ -1,12 +1,15 @@
 package geotrellis.pointcloud.spark.io.file
 
+import io.pdal._
+
 import geotrellis.raster._
+import geotrellis.pointcloud.spark._
 import geotrellis.pointcloud.spark.io._
 import geotrellis.pointcloud.spark.io.hadoop.HadoopPointCloudRDD
-import geotrellis.pointcloud.spark.{PointCloudTestEnvironment, _}
 import geotrellis.proj4.CRS
 import geotrellis.spark.{ContextRDD, KeyBounds, LayerId, SpatialKey, TileLayerMetadata}
 import geotrellis.spark.io._
+import geotrellis.spark.io.file._
 import geotrellis.spark.io.index._
 import geotrellis.spark.tiling._
 import geotrellis.vector.Extent
@@ -43,16 +46,16 @@ class PointCloudSpatialSpec extends FunSpec
 
     it("should not find layer before write") {
       intercept[LayerNotFoundError] {
-        reader.read[SpatialKey, TileLayerMetadata[SpatialKey]](layerId)
+        reader.read[SpatialKey, PointCloud, TileLayerMetadata[SpatialKey]](layerId)
       }
     }
 
     it("should write layer") {
-      writer.write[SpatialKey, TileLayerMetadata[SpatialKey]](layerId, tiled, ZCurveKeyIndexMethod)
+      writer.write[SpatialKey, PointCloud, TileLayerMetadata[SpatialKey]](layerId, tiled, ZCurveKeyIndexMethod)
     }
 
     it("should read layer") {
-      val actual = reader.read[SpatialKey, TileLayerMetadata[SpatialKey]](layerId).map(_._1).collect()
+      val actual = reader.read[SpatialKey, PointCloud, TileLayerMetadata[SpatialKey]](layerId).map(_._1).collect()
       val expected = tiled.map(_._1).collect()
 
       if (expected.diff(actual).nonEmpty)
