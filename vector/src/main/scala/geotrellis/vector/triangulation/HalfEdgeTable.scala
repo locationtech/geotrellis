@@ -212,7 +212,7 @@ class HalfEdgeTable(_size: Int) {
     val nextSize = size * factor
     val nextTable = Array.ofDim[Int](nextSize * 3)
 
-    println(s"RESIZE $size TO $nextSize")
+    //println(s"RESIZE $size TO $nextSize")
 
     // Given the underlying array implementation we can only store so
     // many unique values. given that 1<<30
