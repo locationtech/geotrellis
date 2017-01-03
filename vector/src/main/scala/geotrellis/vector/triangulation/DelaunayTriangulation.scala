@@ -55,7 +55,7 @@ case class DelaunayTriangulation(verts: DelaunayPointSet, navigator: HalfEdgeTab
           }
         }
       }
-    println("Finding distinct points")
+    //println("Finding distinct points")
     distinctPoints(s)
     .toArray
   }
@@ -101,6 +101,8 @@ case class DelaunayTriangulation(verts: DelaunayPointSet, navigator: HalfEdgeTab
         }
 
       case _ => {
+        //println(s"Triangulating [$lo..$hi]")
+
         val med = (hi + lo) / 2
         var (left, isLeftLinear) = triangulate(lo,med)
         var (right, isRightLinear) = triangulate(med+1,hi)

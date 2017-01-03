@@ -6,6 +6,11 @@ import org.apache.commons.math3.linear._
 import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
 
 object Predicates {
+  sealed trait Relation
+  object LEFTOF extends Relation
+  object RIGHTOF extends Relation
+  object ON extends Relation
+
   def det3 (a11: Double, a12: Double, a13: Double,
             a21: Double, a22: Double, a23: Double,
             a31: Double, a32: Double, a33: Double): Double = {
@@ -46,6 +51,21 @@ object Predicates {
       val (xp, yp) = (p.x - c.x, p.y - c.y)
       xn * xp + yn * yp > 0
     }
+  }
+
+  def relativeTo(e: Int, p: Int)(implicit trans: Int => Coordinate, het: HalfEdgeTable): Relation = {
+    import het._
+    val e0 = trans(getSrc(e))
+    val e1 = trans(getDest(e))
+    val pt = trans(p)
+    val det = ShewchuksDeterminant.orient2d(e0.x, e0.y, e1.x, e1.y, pt.x, pt.y)
+
+    if(det > EPSILON)
+      LEFTOF
+    else if(det < -EPSILON)
+      RIGHTOF
+    else
+      ON
   }
 
   def isCCW(a: Coordinate, b: Coordinate, c: Coordinate): Boolean = {

@@ -14,7 +14,7 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
   type Vertex = Int
 
   val verts = collection.mutable.Map[Vertex, Coordinate]()
-  val navigator = new HalfEdgeTable(2 * (3 * dt.verts.length - 6))
+  val navigator = new HalfEdgeTable(3 * dt.verts.length - 6)  // Allocate for half as many edges as would be expected
 
   val isLinear = dt.isLinear
 
