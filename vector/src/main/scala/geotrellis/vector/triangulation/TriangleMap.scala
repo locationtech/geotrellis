@@ -11,6 +11,7 @@ class TriangleMap {
 
   def +=(keyValue: (TriIdx, Int)): Unit = {
     val ((a, b, c), edge) = keyValue
+    //println(s"Adding triangle ($a, $b, $c)")
     triangles += TriangleMap.regularizeIndex(a, b, c) -> edge
   }
     
@@ -18,10 +19,13 @@ class TriangleMap {
     this += TriangleMap.regularizeIndex(het.getDest(edge), het.getDest(het.getNext(edge)), het.getDest(het.getNext(het.getNext(edge)))) -> edge
   }
 
-  def -=(idx: TriIdx): Unit = triangles -= TriangleMap.regularizeIndex(idx)
+  def -=(idx: TriIdx): Unit = {
+    //println(s"Removing triangle $idx")
+    triangles -= TriangleMap.regularizeIndex(idx)
+  }
 
   def -=(edge: Int)(implicit het: HalfEdgeTable): Unit = {
-    triangles -= TriangleMap.regularizeIndex(het.getDest(edge), het.getDest(het.getNext(edge)), het.getDest(het.getNext(het.getNext(edge))))
+    this -= TriangleMap.regularizeIndex(het.getDest(edge), het.getDest(het.getNext(edge)), het.getDest(het.getNext(het.getNext(edge))))
   }
 
   def apply(i1: Int, i2: Int, i3: Int): Int = triangles((i1, i2, i3))
