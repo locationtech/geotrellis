@@ -113,8 +113,8 @@ object AvroEncoder {
       val rec = reader.read(null.asInstanceOf[GenericRecord], decoder)
       format.decode(rec)
     } catch {
-        throw new AvroTypeException(e.getMessage + ". " +
       case e: AvroTypeException =>
+        throw new AvroTypeException(e.getMessage + ". " +
           "This can be caused by using a type parameter which doesn't match the object being deserialized.")
     }
   }
