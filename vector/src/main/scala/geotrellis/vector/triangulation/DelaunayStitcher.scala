@@ -270,7 +270,7 @@ object DelaunayStitcher {
     }
 
 
-    (getNext(getFlip(base)), false)
+    (advance(getFlip(base)), false)
   }
 
 }

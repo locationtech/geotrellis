@@ -184,15 +184,15 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
   def recursiveAddTris(e0: HalfEdge, opp0: ResultEdge): Unit = {
     import dt.navigator._
 
-    println("recursiveAddTris")
+    //println("recursiveAddTris")
     val workQueue = collection.mutable.Queue( (e0, opp0) )
 
     while (!workQueue.isEmpty) {
       val (e, opp) = workQueue.dequeue
-      println(s"     WORKING ON:")
-      showLoop(e)
-      navigator.showLoop(opp)
-      println(s"=======")
+      //println(s"     WORKING ON:")
+      //showLoop(e)
+      //navigator.showLoop(opp)
+      //println(s"=======")
       val isOuterEdge = outerEdges.contains((getSrc(e), getDest(e)))
       val isFlipOuterEdge = {
         val flip = navigator.getFlip(opp)
@@ -202,20 +202,20 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
         //  opp.flip must be boundary edge (isn't interior to triangle)
         lookupTriangle(e) match {
           case Some(tri) =>
-            println(s"    --- FOUND TRIANGLE:")
-            navigator.showLoop(tri)
+            //println(s"    --- FOUND TRIANGLE:")
+            //navigator.showLoop(tri)
             navigator.join(opp, tri)
             // r.joinTriangles(opp, tri)
             // println(s"    JOIN FOUND TRIANGLE")
             // r.showBoundingLoop(r.getFlip(r.getNext(tri)))
             // r.showBoundingLoop(r.getFlip(r.getNext(opp)))
           case None =>
-            println("     --- DID NOT FIND TRIANGLE")
+            //println("     --- DID NOT FIND TRIANGLE")
             if (circumcircleLeavesExtent(boundingExtent)(e)) {
-              println("         Triangle circle leaves extent")
+              //println("         Triangle circle leaves extent")
               val tri = copyConvertTriangle(e)
-              print("         ")
-              navigator.showLoop(tri)
+              //print("         ")
+              //navigator.showLoop(tri)
               navigator.join(opp, tri)
 
               workQueue.enqueue( (getFlip(getNext(e)), navigator.getNext(tri)) )
