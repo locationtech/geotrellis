@@ -437,8 +437,8 @@ case class StitchedDelaunay(
 >>>>>>> e98f6d3... Finished base functionality; testing still required
 import com.vividsolutions.jts.geom.Coordinate
 
-// import geotrellis.raster._
-// import geotrellis.raster.triangulation.DelaunayRasterizer
+import geotrellis.raster._
+import geotrellis.raster.triangulation.DelaunayRasterizer
 import geotrellis.spark.buffer.Direction
 import geotrellis.spark.buffer.Direction._
 import geotrellis.vector._
@@ -484,7 +484,7 @@ object StitchedDelaunay {
    * extents, each pair associated with a cardinal direction, this function
    * creates a merged representation
    */
-  def apply(neighbors: Map[Direction, (BoundaryDelaunay, Extent)]): (TriangleMap, Int => Coordinate) = {
+  def apply(neighbors: Map[Direction, (BoundaryDelaunay, Extent)]): StitchedDelaunay = {
     val vertCount = neighbors.map{ case (_, (bdt, _)) => bdt.verts.size }.reduce(_ + _)
     implicit val allEdges = new HalfEdgeTable(2 * (3 * vertCount - 6))
     val boundaries = neighbors.map{ case (dir, (bdt, _)) => {
@@ -506,11 +506,17 @@ object StitchedDelaunay {
         val (right, isRightLinear) = r
         DelaunayStitcher.merge(left, isLeftLinear, right, isRightLinear, overlayTris)
       }}}
+      .reduce{ (l, r) => {
+        val (left, isLeftLinear) = l
+        val (right, isRightLinear) = r
+        DelaunayStitcher.merge(left, isLeftLinear, right, isRightLinear, overlayTris)
+      }}
 
-    (overlayTris, trans)
+    new StitchedDelaunay(trans, allEdges, overlayTris)
   }
 }
 
+<<<<<<< HEAD
 // case class StitchedDelaunay(
 //   vertMap: Map[Direction, Array[Coordinate]],
 //   edges: HalfEdgeTable,
@@ -529,3 +535,17 @@ object StitchedDelaunay {
 >>>>>>> e98f6d3... Finished base functionality; testing still required
 =======
 >>>>>>> e98f6d3... Finished base functionality; testing still required
+=======
+case class StitchedDelaunay(
+  indexToCoord: Int => Coordinate,
+  private val edges: HalfEdgeTable,
+  private val fillTriangles: TriangleMap
+) {
+  def triangles(): Seq[(Int, Int, Int)] = fillTriangles.getTriangles.keys.toSeq
+
+  def rasterize(re: RasterExtent, cellType: CellType = DoubleConstantNoDataCellType)(center: DelaunayTriangulation, tile: MutableArrayTile = ArrayTile.empty(cellType, re.cols, re.rows)) = {
+    DelaunayRasterizer.rasterizeDelaunayTriangulation(re, cellType)(center, tile)
+    DelaunayRasterizer.rasterizeTriangles(re, cellType)(fillTriangles.getTriangles, tile)(indexToCoord, edges)
+  }
+}
+>>>>>>> bdeea96... More tests and further progress on stitching
