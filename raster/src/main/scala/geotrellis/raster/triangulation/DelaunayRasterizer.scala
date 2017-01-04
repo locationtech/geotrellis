@@ -10,15 +10,13 @@ object DelaunayRasterizer {
    * Produces a Tile with shape given by a RasterExtent where pixels are linearly interpolated
    * values of the z-coordinates of each triangle vertex.
    */
-  def rasterizeTriangles(re: RasterExtent, cellType: CellType = DoubleConstantNoDataCellType)(triangles: Traversable[((Int, Int, Int), Int)])(implicit verts: Int => Coordinate, het: HalfEdgeTable): MutableArrayTile = {
+  def rasterizeTriangles(re: RasterExtent, cellType: CellType = DoubleConstantNoDataCellType)(triangles: Traversable[((Int, Int, Int), Int)], tile: MutableArrayTile = ArrayTile.empty(cellType, re.cols, re.rows))(implicit verts: Int => Coordinate, het: HalfEdgeTable): MutableArrayTile = {
     import het._
 
     val w = re.cellwidth
     val h = re.cellheight
     val cols = re.cols
     val rows = re.rows
-    val result = ArrayTile.empty(cellType, cols, rows)
-
     def xAtYForEdge(yval: Double)(e: Int): Double = {
       val src = verts(getSrc(e))
       val dest = verts(getDest(e))
@@ -62,7 +60,7 @@ object DelaunayRasterizer {
           val row = ((re.extent.ymax - scany) / re.cellheight).toInt
           if(0 <= col && col < cols &&
              0 <= row && row < rows) {
-            result.setDouble(col, row, z)
+            tile.setDouble(col, row, z)
           }
 
           scanx += w
@@ -76,10 +74,10 @@ object DelaunayRasterizer {
       rasterizeTriangle(tri)
     }
 
-    result
+    tile
   }
 
-  def rasterizeDelaunayTriangulation(re: RasterExtent, cellType: CellType = DoubleConstantNoDataCellType)(dt: DelaunayTriangulation) = {
+  def rasterizeDelaunayTriangulation(re: RasterExtent, cellType: CellType = DoubleConstantNoDataCellType)(dt: DelaunayTriangulation, tile: MutableArrayTile = ArrayTile.empty(cellType, re.rows, re.cols)) = {
     implicit val trans = dt.verts.getCoordinate(_)
     implicit val nav = dt.navigator
     rasterizeTriangles(re, cellType)(dt.triangles.getTriangles)

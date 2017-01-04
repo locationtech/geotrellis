@@ -1,11 +1,16 @@
 package geotrellis.spark.pointcloud.triangulation
 
+import com.vividsolutions.jts.geom.Coordinate
 import io.pdal._
+
 import geotrellis.spark.pointcloud._
 import geotrellis.raster._
+import geotrellis.raster.triangulation.DelaunayRasterizer
 import geotrellis.spark._
+import geotrellis.spark.buffer.Direction
 import geotrellis.spark.tiling._
 import geotrellis.vector._
+import geotrellis.vector.triangulation._
 
 import org.apache.spark.rdd.RDD
 import spire.syntax.cfor._
@@ -22,7 +27,7 @@ object TinToDem {
     def DEFAULT = Options()
   }
 
-  def apply(rdd: RDD[(SpatialKey, Array[Point3D])], layoutDefinition: LayoutDefinition, extent: Extent, options: Options = Options.DEFAULT): RDD[(SpatialKey, Tile)] =
+  def apply(rdd: RDD[(SpatialKey, Array[Coordinate])], layoutDefinition: LayoutDefinition, extent: Extent, options: Options = Options.DEFAULT): RDD[(SpatialKey, Tile)] =
     rdd
       .collectNeighbors
       .mapPartitions({ partition =>
@@ -34,7 +39,7 @@ object TinToDem {
           neighbors.foreach { case (_, (_, arr)) =>
             len += arr.length
           }
-          val points = Array.ofDim[Point3D](len)
+          val points = Array.ofDim[Coordinate](len)
           var j = 0
           options.boundsBuffer match {
             case Some(b) =>
@@ -74,8 +79,8 @@ object TinToDem {
                 def getZ(i: Int): Double = points(i).z
               }
 
-            val delaunay =
-              PointCloudTriangulation(pointSet)
+            //val delaunay = PointCloudTriangulation(pointSet)
+            val delaunay = DelaunayTriangulation(pointSet)
 
             val re =
               RasterExtent(
@@ -87,7 +92,7 @@ object TinToDem {
             val tile =
               ArrayTile.empty(options.cellType, re.cols, re.rows)
 
-            delaunay.rasterize(tile, re)
+            DelaunayRasterizer.rasterizeDelaunayTriangulation(re, options.cellType)(delaunay, tile)
 
             Some((key, tile))
           } else {
@@ -96,50 +101,53 @@ object TinToDem {
         }
       }, preservesPartitioning = true)
 
-  // def withStitch(rdd: RDD[(SpatialKey, Array[Point3D])], layoutDefinition: LayoutDefinition, extent: Extent, options: Options = Options.DEFAULT): RDD[(SpatialKey, Tile)] = {
+  def withStitch(rdd: RDD[(SpatialKey, Array[Coordinate])], layoutDefinition: LayoutDefinition, extent: Extent, options: Options = Options.DEFAULT): RDD[(SpatialKey, Tile)] = {
 
-  //   // Assumes that a partitioner has already been set
+    // Assumes that a partitioner has already been set
 
-  //   val trianglations: RDD[(SpatialKey, PointCloudTriangulation)] =
-  //     rdd
-  //       .mapValues { points =>
-  //         PointCloudTriangulation(points)
-  //       }
+    val triangulations: RDD[(SpatialKey, DelaunayTriangulation)] =
+      rdd
+        .mapValues { points =>
+          DelaunayTriangulation(points)
+        }
 
-  //   val borders: RDD[(SpatialKey, BorderTriangulation)] =
-  //     triangluations
-  //       .mapValues(_.convertToBorder)
+    val borders: RDD[(SpatialKey, BoundaryDelaunay)] =
+      triangulations
+        .mapPartitions{ iter =>
+          iter.map{ case (sk, dt) => {
+            val ex: Extent = layoutDefinition.mapTransform(sk)
+            (sk, new BoundaryDelaunay(dt, ex))
+          }
+        }}
 
-  //   borders
-  //     .collectNeighbors
-  //     .mapPartitions({ paritions =>
-  //       partitions.map { case (key, neighbors) =>
-  //         val newNeighbors =
-  //           neighbors.map { case (direction, (key2, border))
-  //             val extent = layoutDefinition.mapTransform(key2)
-  //             (key, (direction, (extent, border)))
-  //           }
-  //         (key, newNeighbors)
-  //       }
-  //     }, preservesPartitioning = true)
-  //     .join(triangulations)
-  //     .mapValues { case (borders: Seq[(Direction, (Extent, BorderTriangulation))], triangulation) =>
-  //       val stitched = triangulation.stitch(borders)
+    borders
+      .collectNeighbors
+      .mapPartitions({ partition =>
+        partition.map { case (key, neighbors) =>
+          val newNeighbors =
+            neighbors.map { case (direction, (key2, border)) =>
+              val ex = layoutDefinition.mapTransform(key2)
+              (direction, (border, ex))
+            }
+          (key, newNeighbors.toMap)
+        }
+      }, preservesPartitioning = true)
+      .join(triangulations)
+      .mapPartitions({ partition => 
+        partition.map { case (key, (borders, triangulation)) => // : (Map[Direction, (BoundaryDelaunay, Extent)], DelaunayTriangulation)
+          val stitched = StitchedDelaunay(borders)
 
-  //       val extent = layoutDefinition.mapTransform(key)
-  //       val re =
-  //         RasterExtent(
-  //           extent,
-  //           layoutDefinition.tileCols,
-  //           layoutDefinition.tileRows
-  //         )
+          val extent = layoutDefinition.mapTransform(key)
+          val re =
+            RasterExtent(
+              extent,
+              layoutDefinition.tileCols,
+              layoutDefinition.tileRows
+            )
+          val tile = stitched.rasterize(re, options.cellType)(triangulation)
 
-  //         val tile =
-  //           ArrayTile.empty(options.cellType, re.cols, re.rows)
-
-  //         stitched.rasterize(tile, re)
-
-  //         (key, tile)
-  //     }
-  // }
+          (key, tile)
+        }
+      }, preservesPartitioning = true)
+  }
 }

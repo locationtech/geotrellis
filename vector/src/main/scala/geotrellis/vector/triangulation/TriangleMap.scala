@@ -3,7 +3,7 @@ package geotrellis.vector.triangulation
 class TriangleMap {
   type TriIdx = TriangleMap.TriIdx
 
-  val triangles = collection.mutable.Map.empty[TriIdx, Int]
+  private val triangles = collection.mutable.Map.empty[TriIdx, Int]
 
   def +=(i1: Int, i2: Int, i3: Int, edge: Int): Unit = {
     triangles += TriangleMap.regularizeIndex(i1, i2, i3) -> edge

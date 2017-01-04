@@ -1,8 +1,12 @@
 package geotrellis.vector.triangulation
 
+// for debugging
+import geotrellis.vector._
+import java.io._
+
 import scala.annotation.tailrec
 
-case class DelaunayTriangulation(verts: DelaunayPointSet, navigator: HalfEdgeTable)
+case class DelaunayTriangulation(verts: DelaunayPointSet, navigator: HalfEdgeTable, debug: Boolean)
 {
   implicit val nav = navigator
   implicit val trans = verts.getCoordinate(_)
@@ -67,6 +71,9 @@ case class DelaunayTriangulation(verts: DelaunayPointSet, navigator: HalfEdgeTab
 
     val n = hi - lo + 1
 
+    //println(s"Triangulating [$lo..$hi]")
+
+    val result =
     n match {
       case 1 =>
         throw new IllegalArgumentException("Cannot triangulate a point set of size less than 2")
@@ -101,8 +108,6 @@ case class DelaunayTriangulation(verts: DelaunayPointSet, navigator: HalfEdgeTab
         }
 
       case _ => {
-        //println(s"Triangulating [$lo..$hi]")
-
         val med = (hi + lo) / 2
         var (left, isLeftLinear) = triangulate(lo,med)
         var (right, isRightLinear) = triangulate(med+1,hi)
@@ -110,13 +115,22 @@ case class DelaunayTriangulation(verts: DelaunayPointSet, navigator: HalfEdgeTab
         DelaunayStitcher.merge(left, isLeftLinear, right, isRightLinear, triangles)
       }
     }
+    
+    if (debug) {
+      val dtPolys = MultiPolygon(triangles.getTriangles.keys.flatMap { 
+        case (ai, bi, ci) => if (List(ai,bi,ci).forall{i => lo <= i && i <= hi}) Some(Polygon(Seq(ai,bi,ci,ai).map{ i => Point.jtsCoord2Point(verts.getCoordinate(i)) })) else None
+      })
+      new java.io.PrintWriter(s"/data/delaunay${lo}_${hi}.wkt") { write(dtPolys.toString); close }
+    }
+
+    result
   }
 
   val (boundary, isLinear) = triangulate(0, sortedVs.length - 1)
 }
 
 object DelaunayTriangulation {
-  def apply(verts: DelaunayPointSet) = {
-    new DelaunayTriangulation(verts, new HalfEdgeTable(2*(3*verts.length - 6)))
+  def apply(verts: DelaunayPointSet, debug: Boolean = false) = {
+    new DelaunayTriangulation(verts, new HalfEdgeTable(2*(3*verts.length - 6)), debug)
   }
 }

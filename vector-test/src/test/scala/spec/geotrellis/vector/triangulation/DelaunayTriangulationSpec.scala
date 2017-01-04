@@ -144,8 +144,8 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
     }
 
     it("should have no overlapping triangles") {
-      val pts = randomizedGrid(5, Extent(0,0,1,1)).toArray
-      val dt = DelaunayTriangulation(pts)
+      val pts = randomizedGrid(13, Extent(0,0,1,1)).toArray
+      val dt = DelaunayTriangulation(pts, true)
       implicit val trans = { i: Int => pts(i) }
       implicit val nav = dt.navigator
       val tris = dt.triangles.getTriangles.keys.toArray
@@ -162,6 +162,11 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
           overlapping = overlapping || (basetri.intersects(testtri) && !basetri.touches(testtri))
         }}
       }}
+
+      // val dtPolys = MultiPolygon(dt.triangles.getTriangles.keys.map { 
+      //   case (ai, bi, ci) => Polygon(Seq(ai,bi,ci,ai).map{ i => Point.jtsCoord2Point(dt.verts.getCoordinate(i)) })
+      // })
+      // new java.io.PrintWriter("/data/overlap.wkt") { write(dtPolys.toString); close }
 
       overlapping should be (false)
     }

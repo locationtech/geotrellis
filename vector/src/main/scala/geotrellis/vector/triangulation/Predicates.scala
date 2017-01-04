@@ -142,5 +142,16 @@ object Predicates {
     val y = trans(getDest(e))
     !inCircle(a, x, y, b)
   }
+
+  def isConvexBoundary(e0: Int)(implicit trans: Int => Coordinate, het: HalfEdgeTable): Boolean = {
+    import het._
+    var e = e0
+    var valid = true
+    do {
+      valid = valid && !isLeftOf(e, getDest(getNext(e)))
+      e = getNext(e)
+    } while (valid && e != e0)
+    valid
+  }
 }
 
