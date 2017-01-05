@@ -2,19 +2,11 @@ package geotrellis.spark.pointcloud.triangulation
 
 import com.vividsolutions.jts.geom.Coordinate
 import io.pdal._
-<<<<<<< HEAD:pointcloud/src/main/scala/geotrellis/spark/pointcloud/triangulation/TinToDem.scala.old
-=======
-
-import geotrellis.spark.pointcloud._
->>>>>>> bdeea96... More tests and further progress on stitching:pointcloud/src/main/scala/geotrellis/spark/pointcloud/triangulation/TinToDem.scala
 import geotrellis.raster._
 import geotrellis.raster.triangulation.DelaunayRasterizer
 import geotrellis.spark._
 import geotrellis.spark.buffer.Direction
-<<<<<<< HEAD:pointcloud/src/main/scala/geotrellis/spark/pointcloud/triangulation/TinToDem.scala.old
 import geotrellis.spark.pointcloud._
-=======
->>>>>>> bdeea96... More tests and further progress on stitching:pointcloud/src/main/scala/geotrellis/spark/pointcloud/triangulation/TinToDem.scala
 import geotrellis.spark.tiling._
 import geotrellis.vector._
 import geotrellis.vector.triangulation._
@@ -108,55 +100,6 @@ object TinToDem {
         }
       }, preservesPartitioning = true)
 
-<<<<<<< HEAD:pointcloud/src/main/scala/geotrellis/spark/pointcloud/triangulation/TinToDem.scala.old
-  def withStitch(rdd: RDD[(SpatialKey, Array[Point3D])], layoutDefinition: LayoutDefinition, extent: Extent, options: Options = Options.DEFAULT): RDD[(SpatialKey, Tile)] = {
-
-    // Assumes that a partitioner has already been set
-
-    val triangulations: RDD[(SpatialKey, PointCloudTriangulation)] =
-      rdd
-        .mapPartitions({ partitions =>
-          partitions.flatMap { case (key, points) =>
-            if(points.length > 2)
-              Some((key, PointCloudTriangulation(points)))
-            else
-              None
-          }
-        }, preservesPartitioning = true)
-
-    val boundingMeshes: RDD[(SpatialKey, BoundingMesh)] =
-      triangulations
-        .mapPartitions({ partitions =>
-          partitions.map { case (key, triangulation) =>
-            val extent = layoutDefinition.mapTransform(key)
-            (key, triangulation.boundingMesh(extent))
-          }
-        }, preservesPartitioning = true)
-
-    boundingMeshes
-      .collectNeighbors
-      .join(triangulations)
-      .mapPartitions({ partition =>
-        partition.map { case (key, (borders: Iterable[(Direction, (SpatialKey, BoundingMesh))], triangulation: PointCloudTriangulation)) =>
-        val extent = layoutDefinition.mapTransform(key)
-        val re =
-          RasterExtent(
-            extent,
-            layoutDefinition.tileCols,
-            layoutDefinition.tileRows
-          )
-
-          val tile =
-            ArrayTile.empty(options.cellType, re.cols, re.rows)
-
-          triangulation.rasterize(tile, re)
-
-          val neighbors =
-            borders.map { case (d, (k, bm)) => (d, bm) }.toMap
-
-          val stitched = triangulation.stitch(neighbors)
-          stitched.rasterize(tile, re)
-=======
   def withStitch(rdd: RDD[(SpatialKey, Array[Coordinate])], layoutDefinition: LayoutDefinition, extent: Extent, options: Options = Options.DEFAULT): RDD[(SpatialKey, Tile)] = {
 
     // Assumes that a partitioner has already been set
@@ -201,7 +144,6 @@ object TinToDem {
               layoutDefinition.tileRows
             )
           val tile = stitched.rasterize(re, options.cellType)(triangulation)
->>>>>>> bdeea96... More tests and further progress on stitching:pointcloud/src/main/scala/geotrellis/spark/pointcloud/triangulation/TinToDem.scala
 
           (key, tile)
         }
