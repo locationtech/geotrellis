@@ -25,7 +25,7 @@ import org.apache.commons.io.IOUtils
 import org.apache.commons.io.output.ByteArrayOutputStream
 
 object AvroEncoder {
-  val deflater =new Deflater(Deflater.BEST_SPEED)
+  val deflater = new Deflater(Deflater.BEST_SPEED)
 
   def compress(bytes: Array[Byte]): Array[Byte] = {
     val deflater = new java.util.zip.Deflater
