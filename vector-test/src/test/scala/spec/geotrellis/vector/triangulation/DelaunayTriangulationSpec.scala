@@ -145,7 +145,7 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
 
     it("should have no overlapping triangles") {
       val pts = randomizedGrid(13, Extent(0,0,1,1)).toArray
-      val dt = DelaunayTriangulation(pts, true)
+      val dt = DelaunayTriangulation(pts, false)
       implicit val trans = { i: Int => pts(i) }
       implicit val nav = dt.navigator
       val tris = dt.triangles.getTriangles.keys.toArray
