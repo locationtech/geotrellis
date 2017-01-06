@@ -18,7 +18,7 @@ package geotrellis.pointcloud.pipeline.json
 
 import geotrellis.pointcloud.pipeline._
 
-import io.circe.{Encoder, Json}
+import io.circe.{Decoder, Encoder, Json}
 import io.circe.generic.extras._
 import io.circe.generic.extras.auto._
 import io.circe.syntax._
@@ -37,8 +37,13 @@ trait Implicits {
         .map(
           _.asJsonObject
             .remove("class_type") // remove type
-            .filter { case (key, value) => !value.isNull } // cleanup options
+            .filter { case (_, value) => !value.isNull } // cleanup options
         ).asJson
     )
+  }
+
+  implicit val rawExprDecoder: Decoder[RawExpr] = Decoder.instance { _.as[Json].right.map(RawExpr) }
+  implicit val pipelineConstructorDecoder: Decoder[PipelineConstructor] = Decoder.instance {
+    _.downField("pipeline").as[List[PipelineExpr]].right.map(PipelineConstructor)
   }
 }

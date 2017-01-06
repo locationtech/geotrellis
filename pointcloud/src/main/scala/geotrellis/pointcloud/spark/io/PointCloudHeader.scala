@@ -18,13 +18,21 @@ package geotrellis.pointcloud.spark.io
 
 import geotrellis.pointcloud.spark.ProjectedExtent3D
 import geotrellis.pointcloud.spark.json._
-import spray.json._
+import io.circe.parser._
 
 trait PointCloudHeader {
   val metadata: String
   val schema: String
 
-  def projectedExtent3D = metadata.parseJson.convertTo[ProjectedExtent3D]
+  def projectedExtent3D: ProjectedExtent3D =
+    (parse(metadata) match {
+      case Right(r) => r.as[ProjectedExtent3D]
+      case Left(e) => throw e
+    }) match {
+      case Right(r) => r
+      case Left(e) => throw e
+    }
+
   def extent3D = projectedExtent3D.extent3d
   def extent = projectedExtent3D.extent3d.toExtent
   def crs = projectedExtent3D.crs

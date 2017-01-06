@@ -22,13 +22,16 @@ import geotrellis.pointcloud.spark.io.hadoop._
 import geotrellis.pointcloud.spark.json._
 import geotrellis.util.Filesystem
 import geotrellis.vector.Extent
-import io.pdal._
 
+import io.pdal._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.lib.input._
-import spray.json._
+import io.circe.Json
+import io.circe.syntax._
+import io.circe.parser._
+
 import java.io.{BufferedOutputStream, File, FileOutputStream}
 
 import scala.collection.JavaConversions._
@@ -37,9 +40,7 @@ object PointCloudInputFormat {
   final val POINTCLOUD_TMP_DIR = "POINTCLOUD_TMP_DIR"
   final val POINTCLOUD_FILTER_EXTENT = "POINTCLOUD_FILTER_EXTENT"
   final val POINTCLOUD_DIM_TYPES = "POINTCLOUD_DIM_TYPES"
-  final val POINTCLOUD_TARGET_CRS = "POINTCLOUD_TARGET_CRS"
-  final val POINTCLOUD_INPUT_CRS = "POINTCLOUD_INPUT_CRS"
-  final val POINTCLOUD_ADDITIONAL_STEPS = "POINTCLOUD_ADDITIONAL_STEPS"
+  final val POINTCLOUD_PIPELINE = "POINTCLOUD_PIPELINE"
 
   final val filesExtensions =
     Seq(
@@ -84,31 +85,14 @@ object PointCloudInputFormat {
   def getDimTypes(job: JobContext): Option[Array[String]] =
     Option(job.getConfiguration.get(POINTCLOUD_DIM_TYPES)).map(_.split(";"))
 
-  def setInputCrs(conf: Configuration, inputCrs: String): Unit =
-    conf.set(POINTCLOUD_INPUT_CRS, inputCrs)
+  def setPipeline(conf: Configuration, pipe: Json): Unit =
+    conf.set(POINTCLOUD_PIPELINE, pipe.noSpaces)
 
-  def getInputCrs(job: JobContext): Option[String] =
-    Option(job.getConfiguration.get(POINTCLOUD_INPUT_CRS))
-
-  // Be careful, metadata contained in PointCloudHeader won't be reprojected
-  def setTargetCrs(conf: Configuration, targetCrs: String): Unit =
-    conf.set(POINTCLOUD_TARGET_CRS, targetCrs)
-
-  def getTargetCrs(job: JobContext): Option[String] =
-    Option(job.getConfiguration.get(POINTCLOUD_TARGET_CRS))
-
-  def setAdditionalPipelineSteps(conf: Configuration, steps: Seq[JsObject]): Unit =
-    conf.set(POINTCLOUD_ADDITIONAL_STEPS, JsArray(steps.toVector).compactPrint)
-
-  def getAdditionalPipelineSteps(job: JobContext): Seq[JsObject] = {
-    val s = job.getConfiguration.get(POINTCLOUD_ADDITIONAL_STEPS)
-    if(s == null) Seq()
-    else { s.parseJson match {
-      case JsArray(objs) => objs.map(_.asJsObject)
-      case obj =>
-        throw new Exception(s"${obj} is not a JsArray")
-    } }
-  }
+  def getPipeline(job: JobContext): Json =
+    parse(job.getConfiguration.get(POINTCLOUD_PIPELINE)) match {
+      case Right(s) => s
+      case Left(e)  => throw new Exception("Can't process with not setuped PDAL Pipeline.").initCause(e)
+    }
 }
 
 /** Process files from the path through PDAL, and reads all files point data as an Array[Byte] **/
@@ -123,6 +107,7 @@ class PointCloudInputFormat extends FileInputFormat[HadoopPointCloudHeader, Iter
       else Filesystem.createDirectory(dir)
     }
 
+    val pipeline = PointCloudInputFormat.getPipeline(context)
     val dimTypeStrings = PointCloudInputFormat.getDimTypes(context)
 
     new BinaryFileRecordReader({ bytes =>
@@ -134,16 +119,16 @@ class PointCloudInputFormat extends FileInputFormat[HadoopPointCloudHeader, Iter
       Stream.continually(bos.write(bytes))
       bos.close()
 
+      // use local filename path if it's present in json
+      val localPipeline =
+        pipeline
+          .hcursor
+          .downField("pipeline").downArray
+          .downField("filename").withFocus(_ => localPath.getAbsolutePath.asJson)
+          .top.fold(pipeline)(identity)
+
       try {
-        val pipeline =
-          Pipeline(
-            getPipelineJson(
-              localPath,
-              PointCloudInputFormat.getInputCrs(context),
-              PointCloudInputFormat.getTargetCrs(context),
-              PointCloudInputFormat.getAdditionalPipelineSteps(context)
-            ).compactPrint
-          )
+        val pipeline = Pipeline(localPipeline.noSpaces)
 
         // PDAL itself is not threadsafe
         AnyRef.synchronized { pipeline.execute }

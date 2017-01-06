@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package geotrellis.pointcloud.pipeline
+package geotrellis.util
 
-case class PipelineConstructor(list: List[PipelineExpr] = Nil) {
-  def ~(e: PipelineExpr): PipelineConstructor = PipelineConstructor(list :+ e)
-  def map[B](f: PipelineExpr => B): List[B] = list.map(f)
-  def mapExpr(f: PipelineExpr => PipelineExpr): PipelineConstructor = PipelineConstructor(list.map(f))
-  def tail: List[PipelineExpr] = list.tail
-  def head: PipelineExpr = list.head
+object EitherMethods {
+  def sequence[A, B](s: Seq[Either[A, B]]): Either[A, Seq[B]] =
+    s.foldRight(Right(Nil): Either[A, List[B]]) {
+      (e, acc) => for (xs <- acc.right; x <- e.right) yield x :: xs
+    }
 }

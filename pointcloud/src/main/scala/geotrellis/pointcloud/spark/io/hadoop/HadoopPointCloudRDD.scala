@@ -16,16 +16,15 @@
 
 package geotrellis.pointcloud.spark.io.hadoop
 
+import geotrellis.pointcloud.pipeline._
 import geotrellis.pointcloud.spark.io.hadoop.formats._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.io.hadoop.formats._
 import geotrellis.vector.Extent
 
 import io.pdal._
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import spray.json._
 
 /**
   * Allows for reading point data files using PDAL as RDD[(ProjectedPackedPointsBounds, PointCloud)]s through Hadoop FileSystem API.
@@ -38,12 +37,10 @@ object HadoopPointCloudRDD {
 
   case class Options(
     filesExtensions: Seq[String] = PointCloudInputFormat.filesExtensions,
+    pipeline: PipelineConstructor = Read("local"),
     tmpDir: Option[String] = None,
     filterExtent: Option[Extent] = None,
-    dimTypes: Option[Iterable[String]] = None,
-    inputCrs: Option[String] = None,
-    targetCrs: Option[String] = None,
-    additionalPipelineSteps: Seq[JsObject] = Seq()
+    dimTypes: Option[Iterable[String]] = None
   )
 
   object Options {
@@ -59,23 +56,9 @@ object HadoopPointCloudRDD {
   def apply(path: Path, options: Options = Options.DEFAULT)(implicit sc: SparkContext): RDD[(HadoopPointCloudHeader, Iterator[PointCloud])] = {
     val conf = sc.hadoopConfiguration.withInputDirectory(path, options.filesExtensions)
 
-    options.tmpDir.foreach { dir =>
-      PointCloudInputFormat.setTmpDir(conf, dir)
-    }
-
-    options.dimTypes.foreach { dt =>
-      PointCloudInputFormat.setDimTypes(conf, dt)
-    }
-
-    options.targetCrs.foreach { crs =>
-      PointCloudInputFormat.setTargetCrs(conf, crs)
-    }
-
-    options.inputCrs.foreach { crs =>
-      PointCloudInputFormat.setInputCrs(conf, crs)
-    }
-
-    PointCloudInputFormat.setAdditionalPipelineSteps(conf, options.additionalPipelineSteps)
+    options.tmpDir.foreach(PointCloudInputFormat.setTmpDir(conf, _))
+    options.dimTypes.foreach(PointCloudInputFormat.setDimTypes(conf, _))
+    PointCloudInputFormat.setPipeline(conf, options.pipeline)
 
     options.filterExtent match {
       case Some(filterExtent) =>

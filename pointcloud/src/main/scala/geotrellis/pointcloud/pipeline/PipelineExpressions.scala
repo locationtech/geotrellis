@@ -713,3 +713,9 @@ case class TextWrite(
   delimiter: Option[String] = None,
   `type`: WriterType = WriterTypes.text
 ) extends PipelineExpr
+
+case class PipelineConstructor(list: List[PipelineExpr] = Nil) extends PipelineExpr {
+  override def ~(e: PipelineExpr): PipelineConstructor = PipelineConstructor(list :+ e)
+  def map[B](f: PipelineExpr => B): List[B] = list.map(f)
+  def mapExpr(f: PipelineExpr => PipelineExpr): PipelineConstructor = PipelineConstructor(list.map(f))
+}

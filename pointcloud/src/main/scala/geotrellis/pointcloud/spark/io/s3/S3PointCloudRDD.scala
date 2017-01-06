@@ -16,7 +16,7 @@
 
 package geotrellis.pointcloud.spark.io.s3
 
-import geotrellis.spark.io._
+import geotrellis.pointcloud.pipeline._
 import geotrellis.spark.io.s3._
 import geotrellis.pointcloud.spark.io.hadoop.formats.PointCloudInputFormat
 import geotrellis.vector.Extent
@@ -24,7 +24,6 @@ import geotrellis.vector.Extent
 import io.pdal._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import spray.json.JsObject
 
 /**
   * Allows for reading point data files using PDAL as RDD[(ProjectedPackedPointsBounds, PointCloud)]s through S3 API.
@@ -39,15 +38,13 @@ object S3PointCloudRDD {
     */
   case class Options(
     filesExtensions: Seq[String] = PointCloudInputFormat.filesExtensions,
+    pipeline: PipelineConstructor = Read("local"),
     numPartitions: Option[Int] = None,
     partitionBytes: Option[Long] = None,
     getS3Client: () => S3Client = () => S3Client.DEFAULT,
     tmpDir: Option[String] = None,
     filterExtent: Option[Extent] = None,
-    dimTypes: Option[Iterable[String]] = None,
-    targetCrs: Option[String] = None,
-    inputCrs: Option[String] = None,
-    additionalPipelineSteps: Seq[JsObject] = Seq()
+    dimTypes: Option[Iterable[String]] = None
   )
 
   object Options {
@@ -71,23 +68,9 @@ object S3PointCloudRDD {
     options.numPartitions.foreach(S3InputFormat.setPartitionCount(conf, _))
     options.partitionBytes.foreach(S3InputFormat.setPartitionBytes(conf, _))
 
-    options.tmpDir.foreach { dir =>
-      PointCloudInputFormat.setTmpDir(conf, dir)
-    }
-
-    options.dimTypes.foreach { dt =>
-      PointCloudInputFormat.setDimTypes(conf, dt)
-    }
-
-    options.inputCrs.foreach { crs =>
-      PointCloudInputFormat.setInputCrs(conf, crs)
-    }
-
-    options.targetCrs.foreach { crs =>
-      PointCloudInputFormat.setTargetCrs(conf, crs)
-    }
-
-    PointCloudInputFormat.setAdditionalPipelineSteps(conf, options.additionalPipelineSteps)
+    options.tmpDir.foreach(PointCloudInputFormat.setTmpDir(conf, _))
+    options.dimTypes.foreach(PointCloudInputFormat.setDimTypes(conf, _))
+    PointCloudInputFormat.setPipeline(conf, options.pipeline)
 
     options.filterExtent match {
       case Some(filterExtent) =>

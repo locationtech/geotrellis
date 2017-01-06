@@ -16,32 +16,4 @@
 
 package geotrellis.pointcloud.spark
 
-import spray.json._
-import spray.json.DefaultJsonProtocol._
-
-import java.io.File
-import scala.collection.mutable
-
-package object json extends MetadataFormat {
-  def getPipelineJson(localPath: File, inputCrs: Option[String] = None, targetCrs: Option[String] = None, additionalSteps: Seq[JsObject] = Seq()): JsObject = {
-    val pipeline = mutable.ListBuffer[JsObject]()
-    pipeline += (inputCrs match {
-      case Some(crs) => JsObject(
-        "filename" -> localPath.getAbsolutePath.toJson,
-        "spatialreference" -> crs.toJson
-      )
-      case _ => JsObject(
-        "filename" -> localPath.getAbsolutePath.toJson
-      )
-    })
-    targetCrs.foreach { crs =>
-      pipeline += JsObject(
-        "type" -> "filters.reprojection".toJson,
-        "out_srs" -> crs.toJson
-      )
-    }
-    pipeline ++= additionalSteps
-
-    JsObject("pipeline" -> JsArray(pipeline.toVector))
-  }
-}
+package object json extends Implicits

@@ -19,11 +19,11 @@ package geotrellis.pointcloud.spark.io.s3
 import geotrellis.spark.io._
 import geotrellis.spark.io.s3._
 import geotrellis.pointcloud.spark.io.hadoop.formats._
-import geotrellis.pointcloud.spark.json._
 import geotrellis.util.Filesystem
 
 import io.pdal._
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
+import io.circe.syntax._
 
 import java.io.{BufferedOutputStream, File, FileOutputStream}
 import scala.collection.JavaConversions._
@@ -37,6 +37,7 @@ class S3PointCloudInputFormat extends S3InputFormat[S3PointCloudHeader, Iterator
       else Filesystem.createDirectory(dir)
     }
     val s3Client = getS3Client(context)
+    val pipeline = PointCloudInputFormat.getPipeline(context)
     val dimTypeStrings = PointCloudInputFormat.getDimTypes(context)
 
     new S3RecordReader[S3PointCloudHeader, Iterator[PointCloud]](s3Client) {
@@ -47,20 +48,21 @@ class S3PointCloudInputFormat extends S3InputFormat[S3PointCloudHeader, Iterator
         Stream.continually(bos.write(bytes))
         bos.close()
 
-        try {
+        // use local filename path if it's present in json
+        val localPipeline =
+          pipeline
+            .hcursor
+            .downField("pipeline").downArray
+            .downField("filename").withFocus(_ => localPath.getAbsolutePath.asJson)
+            .top.fold(pipeline)(identity)
 
-        val pipeline =
-          Pipeline(
-            getPipelineJson(
-              localPath,
-              PointCloudInputFormat.getInputCrs(context),
-              PointCloudInputFormat.getTargetCrs(context),
-              PointCloudInputFormat.getAdditionalPipelineSteps(context)
-            ).compactPrint
-          )
+        try {
+          val pipeline = Pipeline(localPipeline.noSpaces)
 
           // PDAL itself is not threadsafe
-          AnyRef.synchronized { pipeline.execute }
+          AnyRef.synchronized {
+            pipeline.execute
+          }
 
           val header =
             S3PointCloudHeader(
@@ -73,7 +75,7 @@ class S3PointCloudInputFormat extends S3InputFormat[S3PointCloudHeader, Iterator
           val (pointViewIterator, disposeIterator): (Iterator[PointView], () => Unit) =
             PointCloudInputFormat.getFilterExtent(context) match {
               case Some(filterExtent) =>
-                if(header.extent3D.toExtent.intersects(filterExtent)) {
+                if (header.extent3D.toExtent.intersects(filterExtent)) {
                   val pvi = pipeline.getPointViews()
                   (pvi, pvi.dispose _)
                 } else {
@@ -98,7 +100,6 @@ class S3PointCloudInputFormat extends S3InputFormat[S3PointCloudHeader, Iterator
             pointView.dispose()
             pointCloud
           }.toIterator
-
 
           val result = (header, pointClouds)
 
