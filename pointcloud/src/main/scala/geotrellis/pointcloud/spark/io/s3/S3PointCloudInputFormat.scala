@@ -60,9 +60,7 @@ class S3PointCloudInputFormat extends S3InputFormat[S3PointCloudHeader, Iterator
           val pipeline = Pipeline(localPipeline.noSpaces)
 
           // PDAL itself is not threadsafe
-          AnyRef.synchronized {
-            pipeline.execute
-          }
+          AnyRef.synchronized { pipeline.execute }
 
           val header =
             S3PointCloudHeader(

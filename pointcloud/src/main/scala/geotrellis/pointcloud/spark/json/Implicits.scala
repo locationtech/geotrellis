@@ -33,16 +33,16 @@ trait Implicits {
         .all.flatMap(s => md.downField(s.toString).focus)
         .headOption
         .map(_.hcursor)
-        .getOrElse(throw new Exception(s"Unsupported reader driver: ${md.fields.getOrElse(List())}"))
+        .getOrElse(throw new Exception(s"Unsupported reader driver: ${md.fields.getOrElse(Nil)}"))
 
-    EitherMethods.sequence(List(
-      driver.downField("minx").as[Double],
-      driver.downField("miny").as[Double],
-      driver.downField("minz").as[Double],
-      driver.downField("maxx").as[Double],
-      driver.downField("maxy").as[Double],
-      driver.downField("maxz").as[Double]
-    )).right.map { case List(xmin, ymin, zmin, xmax, ymax, zmax) =>
+    EitherMethods.sequence(
+      driver.downField("minx").as[Double] ::
+      driver.downField("miny").as[Double] ::
+      driver.downField("minz").as[Double] ::
+      driver.downField("maxx").as[Double] ::
+      driver.downField("maxy").as[Double] ::
+      driver.downField("maxz").as[Double] :: Nil
+    ).right.map { case List(xmin, ymin, zmin, xmax, ymax, zmax) =>
       Extent3D(xmin, ymin, zmin, xmax, ymax, zmax)
     }
   }
@@ -54,7 +54,7 @@ trait Implicits {
         .all.flatMap(s => md.downField(s.toString).focus)
         .headOption
         .map(_.hcursor)
-        .getOrElse(throw new Exception(s"Unsupported reader driver: ${md.fields.getOrElse(List())}"))
+        .getOrElse(throw new Exception(s"Unsupported reader driver: ${md.fields.getOrElse(Nil)}"))
 
     val crs =
       CRS.fromString(driver.downField("srs").downField("proj4").as[String] match {
