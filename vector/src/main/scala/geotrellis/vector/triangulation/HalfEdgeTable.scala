@@ -1,20 +1,4 @@
-/*
- * Copyright 2016 Azavea
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-package geotrellis.pointcloud.spark.triangulation
+package geotrellis.vector.triangulation
 
 /** Mutable, non-thread safe class to keep track of half edges
   * during Delaunay triangulation.
@@ -46,6 +30,20 @@ class HalfEdgeTable(_size: Int) {
   private final val FACTOR: Double = 0.8
 
   private var limit = (size * FACTOR).toInt
+
+  def join(e: Int, opp: Int): Unit = {
+    assert(getSrc(e) == getDest(opp) && getDest(e) == getSrc(opp))
+
+    // e.flip.prev.next = opp.flip.next
+    // opp.flip.prev.next = e.flip.next
+    // e.flip = opp
+    // opp.flip = e
+
+    setNext(getPrev(getFlip(e)), getNext(getFlip(opp)))
+    setNext(getPrev(getFlip(opp)), getNext(getFlip(e)))
+    setFlip(e, opp)
+    setFlip(opp, e)
+  }
 
   /** Create an edge pointing to single vertex.
     * This edge will have no flip or next set.
@@ -127,21 +125,6 @@ class HalfEdgeTable(_size: Int) {
     outer1
   }
 
-  // TODO: Make this match the implementation of join() in HalfEdge.scala
-  def joinTriangles(e1: Int, e2: Int): Unit = {
-    // flip.prev.next = that.flip.next
-    setNext(getPrev(getFlip(e1)), getNext(getFlip(e2)))
-
-    // that.flip.prev.next = flip.next
-    setNext(getPrev(getFlip(e2)), getNext(getFlip(e1)))
-
-    //flip = that
-    setFlip(e1, e2)
-
-    //that.flip = this
-    setFlip(e2, e1)
-  }
-
   /** Sets a half edge's flip half edge
     */
   def setFlip(e: Int, flip: Int): Unit =
@@ -169,14 +152,14 @@ class HalfEdgeTable(_size: Int) {
   /** Returns the vertex index for this half edge
     * (the one in which it points to)
     */
-  def getVert(e: Int): Int =
+  def getDest(e: Int): Int =
     table(e * 3)
 
   /** Sets the vertex index for this half edge
-      * (the one in which it points to)
-      */
-    def setVert(e: Int, v: Int): Unit =
-      table(e * 3) = v
+    * (the one in which it points to)
+    */
+  def setDest(e: Int, v: Int): Unit =
+    table(e * 3) = v
 
   /** Returns the source vertex index for this half edge
     * (the one in which it points from)
@@ -229,7 +212,7 @@ class HalfEdgeTable(_size: Int) {
     val nextSize = size * factor
     val nextTable = Array.ofDim[Int](nextSize * 3)
 
-    println(s"RESIZE $size TO $nextSize")
+    //println(s"RESIZE $size TO $nextSize")
 
     // Given the underlying array implementation we can only store so
     // many unique values. given that 1<<30
@@ -246,17 +229,62 @@ class HalfEdgeTable(_size: Int) {
     limit = (size * FACTOR).toInt
   }
 
-  // Debug methods
-
-  def showBoundingLoop(base: Int): Unit = {
-    var e = base
-    var l: List[Int] = Nil
-
-    while (!l.contains(e)) {
-      l = l :+ e
-      print(s"|${getSrc(e)} -> ${getVert(e)}| ")
+  def showLoop(e0: Int): Unit = {
+    var e = e0
+    do {
+      print(s"[${getSrc(e)} -> ${getDest(e)}] ")
       e = getNext(e)
-    }
-    println("")
+    } while (e != e0)
+    println
   }
+
+  /**
+    * Adds the content of another HalfEdgeTable to the current table and adjusts
+    * the vertex indices of the merged table (not the base object's table), if
+    * desired.  The edge indices in the added table will be incremented to
+    * maintain correctness.  The offset added to the edge indices will be
+    * returned so that any external references may be adjusted to match.
+    */
+  def appendTable(that: HalfEdgeTable, reindex: Int => Int = {x => x}): Int = {
+    val offset = edgeCount
+    val nextCount = edgeCount + that.edgeCount
+    edgeCount = nextCount
+    val factor = if (nextCount < 10000) 4 else 2
+    val nextSize = nextCount * factor
+
+    if (nextSize > MAXSIZE) sys.error("edge table has exceeded max capacity")
+
+    val nextTable = Array.ofDim[Int](nextSize * 3)
+
+    var i = 0
+    while (i < idx) {
+      nextTable(i) = table(i)
+      i += 1
+    }
+
+    var j = 0
+    while (j < that.idx) {
+      nextTable(i) = reindex(that.table(j))
+      nextTable(i + 1) = that.table(j + 1) + offset
+      nextTable(i + 2) = that.table(j + 2) + offset
+      i += 3
+      j += 3
+    }
+
+    idx += that.idx
+    size = nextSize
+    table = nextTable
+    limit = (size * FACTOR).toInt
+
+    offset
+  }
+
+  def reindexVertices(reindex: Int => Int) = {
+    var i = 0
+    while (i < idx) {
+      table(i) = reindex(table(i))
+      i += 3
+    }
+  }
+
 }

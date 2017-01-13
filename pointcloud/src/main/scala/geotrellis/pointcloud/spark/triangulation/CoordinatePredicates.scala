@@ -17,8 +17,8 @@
 package geotrellis.pointcloud.spark.triangulation
 
 import geotrellis.vector.triangulation._
-import geotrellis.pointcloud.spark._
 import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
+
 import org.apache.commons.math3.linear._
 import com.vividsolutions.jts.geom.Coordinate
 
