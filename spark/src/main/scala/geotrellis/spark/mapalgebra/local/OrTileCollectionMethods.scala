@@ -20,10 +20,9 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.mapalgebra._
 import geotrellis.raster.mapalgebra.local.Or
-import org.apache.spark.Partitioner
-import org.apache.spark.rdd.RDD
+import geotrellis.util.MethodExtensions
 
-trait OrTileRDDMethods[K] extends TileRDDMethods[K] {
+trait OrTileCollectionMethods[K] extends MethodExtensions[Seq[(K, Tile)]] {
   /** Or a constant Int value to each cell. */
   def localOr(i: Int) =
     self.mapValues { r => Or(r, i) }
@@ -35,18 +34,16 @@ trait OrTileRDDMethods[K] extends TileRDDMethods[K] {
   def |:(i: Int) = localOr(i)
 
   /** Or the values of each cell in each raster.  */
-  def localOr(other: RDD[(K, Tile)]): RDD[(K, Tile)] = localOr(other, None)
-  def localOr(other: RDD[(K, Tile)], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
-    self.combineValues(other, partitioner)(Or.apply)
+  def localOr(other: Seq[(K, Tile)]): Seq[(K, Tile)] =
+    self.combineValues(other)(Or.apply)
 
   /** Or the values of each cell in each raster. */
-  def |(r: RDD[(K, Tile)]): RDD[(K, Tile)] = localOr(r, None)
+  def |(r: Seq[(K, Tile)]): Seq[(K, Tile)] = localOr(r)
 
   /** Or the values of each cell in each raster.  */
-  def localOr(others: Traversable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localOr(others, None)
-  def localOr(others: Traversable[RDD[(K, Tile)]], partitioner: Option[Partitioner]): RDD[(K, Tile)] =
-    self.combineValues(others, partitioner)(Or.apply)
+  def localOr(others: Traversable[Seq[(K, Tile)]]): Seq[(K, Tile)] =
+    self.combineValues(others)(Or.apply)
 
   /** Or the values of each cell in each raster. */
-  def |(others: Traversable[RDD[(K, Tile)]]): RDD[(K, Tile)] = localOr(others, None)
+  def |(others: Traversable[Seq[(K, Tile)]]): Seq[(K, Tile)] = localOr(others)
 }

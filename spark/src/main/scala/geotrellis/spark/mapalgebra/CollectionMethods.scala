@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package geotrellis.spark
+package geotrellis.spark.mapalgebra
 
-import geotrellis.raster._
 import geotrellis.util.MethodExtensions
-import org.apache.spark.rdd._
-import scala.reflect.ClassTag
 
-abstract class TileLayerRDDMethods[K: SpatialComponent: ClassTag] extends MethodExtensions[TileLayerRDD[K]] {
-  def convert(cellType: CellType) =
-    ContextRDD(
-      self.mapValues(_.convert(cellType)),
-      self.metadata.copy(cellType = cellType))
+abstract class CollectionCombineMethods[K, V] extends MethodExtensions[Seq[(K, V)]] {
+  def combineValues[R](other: Seq[(K, V)])(f: (V, V) => R): Seq[(K, R)] =
+    (self ++ other).groupBy(_._1).mapValues { case Seq((_, v1), (_, v2)) => f(v1, v2) }.toSeq
+
+  def combineValues[R](others: Traversable[Seq[(K, V)]])(f: Iterable[V] => R): Seq[(K, R)] =
+    (self ++ others.flatten).groupBy(_._1).mapValues(tiles => f(tiles.map(_._2))).toSeq
+
+  def mapValues[R](f: V => R): Seq[(K, R)] = self.map { case (k, v) => (k, f(v)) }
 }
