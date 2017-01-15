@@ -108,7 +108,7 @@ object PolygonRasterizer {
     else if ((min(y1,y2) <= y) && (y <= max(y1,y2))) { // Between endpoints
       (((x1-x2)*y-(x1*y2-y1*x2))/(y1-y2),0)
     }
-    else (Double.NegativeInfinity, 8) // No intersection
+    else (Double.NegativeInfinity, Int.MaxValue) // No intersection
   }
 
   /**
@@ -199,7 +199,8 @@ object PolygonRasterizer {
         * run of  turned-on pixels  if and only  if the  sum associated
         * with that intersection is -1, 0, or 1.
         */
-      if (valence == -1 || valence == 0 || valence == 1) xcoordsList += (xcoord + 0.5)
+      if (valence == -1 || valence == 0 || valence == 1)
+        xcoordsList += (xcoord + 0.5)
     })
 
     val xcoords = xcoordsList.toArray

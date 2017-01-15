@@ -23,6 +23,7 @@ import geotrellis.raster.rasterize._
 import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.raster.testkit._
 import geotrellis.vector._
+import geotrellis.vector.io.wkt.WKT
 
 import math.{max,min,round}
 
@@ -623,5 +624,15 @@ class PolygonRasterizerSpec extends FunSuite
     })
 
     count should be (4)
+  }
+
+  test("Should correctly handle horizontal segments") {
+    val polygonStr = "POLYGON ((0.7754 -0.6775, 0.774 -0.6779, 0.7773 -0.6783, 0.7768 -0.678, 0.7761 -0.678, 0.7754 -0.6775))"
+    val polygon = WKT.read(polygonStr)
+    val extent = Extent(0.0, -0.904, 0.9188, 0.0)
+    val rasterExtent = RasterExtent(extent, 10, 10)
+    val tile = Rasterizer.rasterizeWithValue(polygon, rasterExtent, 1)
+
+    println(tile.asciiDraw)
   }
 }
