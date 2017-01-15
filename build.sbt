@@ -35,7 +35,7 @@ lazy val commonSettings = Seq(
 
   credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
 
-  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.0" cross CrossVersion.binary),
+  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.3" cross CrossVersion.binary),
   addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.full),
 
   pomExtra := (
