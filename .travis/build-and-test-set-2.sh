@@ -10,3 +10,4 @@
 ./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" "project spark-etl" compile  || { exit 1; }
 ./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" "project slick" test || { exit 1; }
 ./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" "project vectortile" test || { exit 1; }
+./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" "project streaming" compile || { exit 1; }

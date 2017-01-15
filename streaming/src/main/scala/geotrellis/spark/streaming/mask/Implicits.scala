@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.merge
+package geotrellis.spark.streaming.mask
 
-import geotrellis.raster.merge._
-import geotrellis.util.MethodExtensions
+import geotrellis.raster.mask.TileMaskMethods
+import geotrellis.spark._
+import geotrellis.spark.tiling._
+import geotrellis.util._
 
-import org.apache.spark._
-import org.apache.spark.rdd._
+import org.apache.spark.streaming.dstream.DStream
 
 import scala.reflect.ClassTag
 
-class TileRDDMergeMethods[K: ClassTag, V: ClassTag: ? => TileMergeMethods[V]](val self: RDD[(K, V)]) extends MethodExtensions[RDD[(K, V)]] {
-  def merge(other: RDD[(K, V)]): RDD[(K, V)] =
-    TileRDDMerge(self, other)
+object Implicits extends Implicits
 
-  def merge(): RDD[(K, V)] =
-    TileRDDMerge(self, None)
-
-  def merge(partitioner: Option[Partitioner]): RDD[(K, V)] =
-    TileRDDMerge(self, partitioner)
+trait Implicits {
+  implicit class withTileRDDMaskMethods[
+    K: SpatialComponent: ClassTag,
+    V: (? => TileMaskMethods[V]),
+    M: GetComponent[?, LayoutDefinition]
+  ](val self: DStream[(K, V)] with Metadata[M]) extends TileDStreamMaskMethods[K, V, M]
 }

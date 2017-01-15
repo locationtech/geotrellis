@@ -17,6 +17,7 @@
       "project spark" +publish-m2 \
       "project spark-etl" +publish-m2 \
       "project spark-testkit" +publish-m2 \
+      "project streaming" +publish-m2 \
       "project util" +publish-m2 \
       "project vector" +publish-m2 \
       "project vector-testkit" +publish-m2 \
