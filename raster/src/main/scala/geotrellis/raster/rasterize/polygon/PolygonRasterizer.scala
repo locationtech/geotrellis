@@ -137,8 +137,9 @@ object PolygonRasterizer {
       val segment =
         if (row1 < row2) (col1, row1, col2, row2)
         else (col2, row2, col1, row1)
+      val envelope = new Envelope(min(col1, col2), max(col1, col2), segment._2, segment._4)
 
-      rtree.insert(new Envelope(min(col1, col2), max(col1, col2), segment._2, segment._4), segment)
+      rtree.insert(envelope, segment)
     }
 
     /** Find the segments for the holes */
@@ -156,8 +157,9 @@ object PolygonRasterizer {
         val segment =
           if (row1 < row2) (col1, row1, col2, row2)
           else (col2, row2, col1, row1)
+        val envelope = new Envelope(min(col1, col2), max(col1, col2), segment._2, segment._4)
 
-        rtree.insert(new Envelope(min(col1, col2), max(col1, col2), segment._2, segment._4), segment)
+        rtree.insert(envelope, segment)
       }
     }
     rtree
@@ -180,32 +182,51 @@ object PolygonRasterizer {
     */
   private def runsPoint(rtree: STRtree, y: Int, maxX: Int) = {
     val row = y + 0.5
-    val xcoordsMap = mutable.Map[Double, Int]()
+    val xcoordsMap = mutable.Map[Double, (Int, Boolean)]() // Map from x-coordinate to (valence,meetsHorizontal) pairs
     val xcoordsList = mutable.ListBuffer[Double]()
 
-    rtree.query(new Envelope(Double.MinValue, Double.MaxValue, row, row)).asScala.foreach({ edgeObj =>
-      val edge = edgeObj.asInstanceOf[Segment]
-      if (edge._2 != edge._4) { // If edge is not horizontal, process it ...
-        val (xcoord, valence) = lineAxisIntersection(edge,row)
-        if (xcoordsMap.contains(xcoord)) xcoordsMap(xcoord) += valence
-        else xcoordsMap(xcoord) = valence
-      }
-    })
+    rtree
+      .query(new Envelope(Double.MinValue, Double.MaxValue, row, row))
+      .asScala
+      .foreach({ edgeObj =>
+        val edge = edgeObj.asInstanceOf[Segment]
+        if (edge._2 != edge._4) { // If edge is not horizontal ...
+          val (xcoord, valence) = lineAxisIntersection(edge,row)
+          if (xcoordsMap.contains(xcoord)) {
+            val (valence1, meetsHorizontal) = xcoordsMap(xcoord)
+            xcoordsMap(xcoord) = (valence + valence1, meetsHorizontal)
+          }
+          else xcoordsMap(xcoord) = (valence, false)
+        }
+        else { // If the edge is horizontal ...
+          val xcoord = min(edge._1, edge._3)
+          if (xcoordsMap contains xcoord) {
+            val (valence, meetsHorizontal) = xcoordsMap(xcoord)
+            xcoordsMap(xcoord) =  (valence, true)
+          }
+          else xcoordsMap(xcoord) = (0, true)
+        }
+      })
 
-    xcoordsMap.foreach({ case (xcoord, valence) =>
-      /**
-        * This is where the  ASSUMPTION is used.  Given the assumption,
-        * this intersection  should be used as  the open or close  of a
-        * run of  turned-on pixels  if and only  if the  sum associated
-        * with that intersection is -1, 0, or 1.
-        */
-      if (valence == -1 || valence == 0 || valence == 1)
-        xcoordsList += (xcoord + 0.5)
-    })
+    var penDown = false
+    xcoordsMap
+      .toList
+      .sortBy(_._1)
+      .foreach({ case (xcoord, (valence, meetsHorizontal)) =>
+        /**
+          * This is where the  ASSUMPTION is used.  Given the assumption,
+          * this intersection  should be used as  the open or close  of a
+          * run of  turned-on pixels  if and only  if the  sum associated
+          * with that intersection is -1, 0, or 1.
+          */
+        if (valence == -1 || valence == 0 || valence == 1)
+          if (penDown == false || ((penDown == true) && (meetsHorizontal == false))) {
+            penDown ^= true
+            xcoordsList += (xcoord + 0.5)
+          }
+      })
 
-    val xcoords = xcoordsList.toArray
-    Arrays.sort(xcoords)
-    xcoords
+    xcoordsList.toArray
   }
 
   /**
