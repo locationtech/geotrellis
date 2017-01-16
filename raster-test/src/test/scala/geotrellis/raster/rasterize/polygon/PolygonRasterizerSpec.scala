@@ -99,7 +99,7 @@ class PolygonRasterizerSpec extends FunSuite
     // LoadWKT()
   }
 
-  test("failing example should work") {
+  test("previously-failing example should work") {
     val p = Polygon(Line((-9510600.807354769, 4176519.1962707597), (-9511212.30358105,4172238.854275199), (-9503568.600752532,4175602.1747499597), (-9510600.807354769,4176519.1962707597)))
     val re = RasterExtent(Extent(-9509377.814902207,4174073.2405969054,-9508766.318675926,4174684.736823185),2.3886571339098737,2.3886571339044167,256,256)
     val r = Rasterizer.rasterizeWithValue(p, re, 1 )
@@ -631,8 +631,16 @@ class PolygonRasterizerSpec extends FunSuite
     val polygon = WKT.read(polygonStr)
     val extent = Extent(0.0, -0.904, 0.9188, 0.0)
     val rasterExtent = RasterExtent(extent, 10, 10)
-    val tile = Rasterizer.rasterizeWithValue(polygon, rasterExtent, 1)
 
-    println(tile.asciiDraw)
+    Rasterizer.rasterizeWithValue(polygon, rasterExtent, 1)
+  }
+
+  test("Should correctly bad geometry") {
+    val polygonStr = "POLYGON ((0.7754 -0.6775, 0.7758 -0.6768, 0.776 -0.6766, 0.7763 -0.6762, 0.7765 -0.6761, 0.7772 -0.6762, 0.7777 -0.6763, 0.7782 -0.6765, 0.779 -0.677, 0.7791 -0.6773, 0.7792 -0.6779, 0.779 -0.6785, 0.7787 -0.6787, 0.7781 -0.6786, 0.7773 -0.6783, 0.7768 -0.678, 0.7761 -0.678, 0.7755 -0.6779, 0.7754 -0.6775))"
+    val polygon = WKT.read(polygonStr)
+    val extent = Extent(0.0, -0.904, 0.9188, 0.0)
+    val rasterExtent = RasterExtent(extent, 10, 10)
+
+    Rasterizer.rasterizeWithValue(polygon, rasterExtent, 1)
   }
 }
