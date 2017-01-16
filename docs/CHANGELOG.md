@@ -1,3 +1,134 @@
+1.0.0
+------
+
+<h3>Major Features</h3>
+
+- GeoTools support
+    - Add Support for GeoTools SimpleFeature [#1495](https://github.com/locationtech/geotrellis/pull/1495)
+    - Conversions between GeoTools GridCoverage2D and GeoTrellis Raster types [#1502](https://github.com/locationtech/geotrellis/pull/1502)
+- Streaming GeoTiff reading [#1559](https://github.com/locationtech/geotrellis/pull/1559)
+- Windowed GeoTiff ingests into GeoTrellis layers, allowing users to ingest
+large GeoTiffs [#1763](https://github.com/locationtech/geotrellis/pull/1763)
+    - Reading TiffTags via MappedByteBuffer [#1541](https://github.com/locationtech/geotrellis/pull/1541)
+    - Cropped Windowed GeoTiff Reading [#1559](https://github.com/locationtech/geotrellis/pull/1559)
+    - Added documentation to the GeoTiff* files [#1560](https://github.com/locationtech/geotrellis/pull/1560)
+    - Windowed GeoTiff Docs [#1616](https://github.com/locationtech/geotrellis/pull/1616)
+- GeoWave Raster/Vector support (experimental)
+    - Create GeoWave Subproject [#1542](https://github.com/locationtech/geotrellis/pull/1542)
+    - Add vector capabilities to GeoWave support [#1581](https://github.com/locationtech/geotrellis/pull/1581)
+    - Fix GeoWave Tests [#1665](https://github.com/locationtech/geotrellis/pull/1665)
+- GeoMesa Vector support (experimental)
+    - Create GeoMesa suproject [#1621](https://github.com/locationtech/geotrellis/pull/1621)
+- Moved to a JSON-configuration ETL process
+    - ETL Refactor [#1553](https://github.com/locationtech/geotrellis/pull/1553)
+    - ETL Improvements and other issues fixes [#1647](https://github.com/locationtech/geotrellis/pull/1647)
+- Vector Tile reading and writing, file-based and as GeoTrellis layers in
+RDDs. [#1622](https://github.com/locationtech/geotrellis/pull/1622)
+- File Backends
+    - Cassandra support [#1452](https://github.com/locationtech/geotrellis/pull/1452)
+    - HBase support [#1586](https://github.com/locationtech/geotrellis/pull/1586)
+- Collections API [#1606](https://github.com/locationtech/geotrellis/pull/1606)
+    - Collections polygonal summary functions [#1614](https://github.com/locationtech/geotrellis/pull/1614)
+    - Collections mapalgebra focal functions [#1619](https://github.com/locationtech/geotrellis/pull/1619)
+- Add `TileFeature` Type [#1429](https://github.com/locationtech/geotrellis/pull/1429)
+- Added Focal calculation target type [#1601](https://github.com/locationtech/geotrellis/pull/1601)
+- Triangulation
+    - Voronoi diagrams and Delaunay triangulations [#1545](https://github.com/locationtech/geotrellis/pull/1545), [#1699](https://github.com/locationtech/geotrellis/pull/1699)
+    - Conforming Delaunay Triangulation [#1848](https://github.com/locationtech/geotrellis/pull/1848)
+- Euclidean distance tiles [#1552](https://github.com/locationtech/geotrellis/pull/1552)
+- Spark, Scala and Java version version support
+    - Move to Spark 2; Scala 2.10 deprecation [#1628](https://github.com/locationtech/geotrellis/pull/1628)
+    - Java 7 deprecation [#1640](https://github.com/locationtech/geotrellis/pull/1640)
+- Color correction features:
+    - Histogram Equalization [#1668](https://github.com/locationtech/geotrellis/pull/1668)
+    - Sigmoidal Contrast [#1681](https://github.com/locationtech/geotrellis/pull/1681)
+    - Histogram matching [#1769](https://github.com/locationtech/geotrellis/pull/1769)
+- `CollectNeighbors` feature, allowing users to group arbitrary values by
+the neighbor keys according to their SpatialComponent
+[#1860](https://github.com/locationtech/geotrellis/pull/1860)
+- **Documentation:** We moved to ReadTheDocs, and put a lot of work into making
+our docs significantly better. [See them here.](http://geotrellis.readthedocs.io/en/1.0/)
+
+<h3>Minor Additions</h3>
+
+- Documentation improvements
+    - Quickstart
+    - Examples
+        - Added example for translating from `SpaceTimeKey` to `SpatialKey` [#1549](https://github.com/locationtech/geotrellis/pull/1549)
+        - doc-examples subproject; example for tiling to GeoTiff [#1564](https://github.com/locationtech/geotrellis/pull/1564)
+        - Added example for focal operation on multiband layer. [#1577](https://github.com/locationtech/geotrellis/pull/1577)
+        - Projections, Extents, and Layout Definitions doc [#1608](https://github.com/locationtech/geotrellis/pull/1608)
+        - Added example of turning a list of features into GeoJson [#1609](https://github.com/locationtech/geotrellis/pull/1609)
+        - Example: `ShardingKeyIndex[K]` [#1633](https://github.com/locationtech/geotrellis/pull/1633)
+        - Example: `VoxelKey` [#1639](https://github.com/locationtech/geotrellis/pull/1639)
+ - Introduce ADR concept
+    - ADR: HDFS Raster Layers [#1582](https://github.com/locationtech/geotrellis/pull/1582)
+    - [ADR] Readers / Writers Multithreading [#1613](https://github.com/locationtech/geotrellis/pull/1613)
+- Fixes
+    - Fixed some markdown docs [#1625](https://github.com/locationtech/geotrellis/pull/1625)
+    - `parseGeoJson` lives in geotrellis.vector.io [#1649](https://github.com/locationtech/geotrellis/pull/1649)
+- Parallelize reads for S3, File, and Cassandra backends
+[#1607](https://github.com/locationtech/geotrellis/pull/1607)
+- Kernel Density in Spark
+- k-Nearest Neighbors
+- Updated slick
+- Added GeoTiff read/write support of TIFFTAG_PHOTOMETRIC via
+`GeoTiffOptions`.
+[#1667](https://github.com/locationtech/geotrellis/pull/1667)
+- Added ability to read/write color tables for GeoTIFFs encoded with palette
+photometric interpretation
+[#1802](https://github.com/locationtech/geotrellis/pull/1802)
+- Added `ColorMap` to String conversion [#1512](https://github.com/locationtech/geotrellis/pull/1512)
+- Add split by cols/rows to SplitMethods [#1538](https://github.com/locationtech/geotrellis/pull/1538)
+- Improved HDFS support [#1556](https://github.com/locationtech/geotrellis/pull/1556)
+- Added Vector Join operation for Spark [#1610](https://github.com/locationtech/geotrellis/pull/1610)
+- Added Histograms Over Fractions of RDDs of Tiles
+[#1692](https://github.com/locationtech/geotrellis/pull/1692)
+- Add `interpretAs` and `withNoData` methods to Tile
+[#1702](https://github.com/locationtech/geotrellis/pull/1702)
+- Changed GeoTiff reader to handle BigTiff [#1753](https://github.com/locationtech/geotrellis/pull/1753)
+- Added `BreakMap` for reclassification based on range values.
+[#1760](https://github.com/locationtech/geotrellis/pull/1760)
+- Allow custom save actions on ETL [#1764](https://github.com/locationtech/geotrellis/pull/1764)
+- Multiband histogram methods [#1784](https://github.com/locationtech/geotrellis/pull/1784)
+- `DelayedConvert` feature, allowing users to delay conversions on tiles until
+a map or combine operation, so that tiles are not iterated over
+unnecessarily [#1797](https://github.com/locationtech/geotrellis/pull/1797)
+- Add convenience overloads to GeoTiff companion object
+[#1840](https://github.com/locationtech/geotrellis/pull/1840)
+
+<h3>Fixes / Optimizations</h3>
+
+- Fixed GeoTiff bug in reading NoData value if len = 4
+[#1490](https://github.com/locationtech/geotrellis/pull/1490)
+- Add detail to avro exception message [#1505](https://github.com/locationtech/geotrellis/pull/1505)
+- Fix: The toSpatial Method gives metadata of type TileLayerMetadata[SpaceTimeKey]
+    - Custom `Functor` Typeclass [#1643](https://github.com/locationtech/geotrellis/pull/1643)
+- Allow `Intersects(polygon: Polygon)` in layer query
+[#1644](https://github.com/locationtech/geotrellis/pull/1644)
+- Optimize `ColorMap` [#1648](https://github.com/locationtech/geotrellis/pull/1648)
+- Make regex for s3 URLs handle s3/s3a/s3n [#1652](https://github.com/locationtech/geotrellis/pull/1652)
+- Fixed metadata handling on surface calculation for tile layer RDDs
+[#1684](https://github.com/locationtech/geotrellis/pull/1684)
+- Fixed reading GeoJson with 3d values [#1704](https://github.com/locationtech/geotrellis/pull/1704)
+- Fix to Bicubic Interpolation [#1708](https://github.com/locationtech/geotrellis/pull/1708)
+- Fixed: Band tags with values of length > 31 have additional white space
+added to them [#1756](https://github.com/locationtech/geotrellis/pull/1756)
+- Fixed NoData bug in tile merging logic [#1793](https://github.com/locationtech/geotrellis/pull/1793)
+- Fixed Non-Point Pixel + Partial Cell Rasterizer Bug
+[#1804](https://github.com/locationtech/geotrellis/pull/1804)
+
+<h3>New committers</h3>
+
+- metasim
+- lokifacio
+- aeffrig
+- jpolchlo
+- jbouffard
+- vsimko
+- longcmu
+- miafg
+
 0.10.3
 ------
 

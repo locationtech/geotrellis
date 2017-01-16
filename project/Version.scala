@@ -17,7 +17,7 @@
 object Version {
   val geotrellis  = "1.1.0-PC-SNAPSHOT"
   val scala       = "2.11.8"
-  val geotools    = "14.4"
+  val geotools    = "16.0"
   val akka        = "2.4.10"
   val spray       = "1.3.3"
   val sprayJson   = "1.3.2"
@@ -25,7 +25,7 @@ object Version {
   val accumulo    = "1.7.2"
   val cassandra   = "3.1.0"
   val hbase       = "1.2.4"
-  val geomesa     = "1.2.5"
+  val geomesa     = "1.2.7"
   lazy val hadoop = Environment.hadoopVersion
   lazy val spark  = Environment.sparkVersion
 }
