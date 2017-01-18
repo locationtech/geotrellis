@@ -17,7 +17,7 @@
 package geotrellis.spark.io.avro.codecs
 
 import geotrellis.spark.io.avro._
-import geotrellis.vector._
+import geotrellis.vector.Extent
 
 import org.apache.avro._
 import org.apache.avro.generic._
