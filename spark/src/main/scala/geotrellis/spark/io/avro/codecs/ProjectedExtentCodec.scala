@@ -15,7 +15,7 @@ import org.apache.avro.generic._
 trait ProjectedExtentCodec {
   implicit def projectedExtentCodec = new AvroRecordCodec[ProjectedExtent] {
     def schema: Schema = SchemaBuilder
-      .record("ProjectedExtent").namespace("geotrellis.spark")
+      .record("ProjectedExtent").namespace("geotrellis.vector")
       .fields()
       .name("extent").`type`(extentCodec.schema).noDefault()
       .name("epsg").`type`().intType().noDefault()
