@@ -187,17 +187,16 @@ object PolygonRasterizer {
       var nonHorizontal = 0
       var horizontal = false
 
-      val segments: List[(Segment, Double, Int)] =
+      val segments =
         rtree
           .query(new Envelope(Double.MinValue, Double.MaxValue, row, row))
           .asScala
-          .toList
           .flatMap({ edgeObj =>
             val edge = edgeObj.asInstanceOf[Segment]
             if (edge._2 != edge._4) {
               val (xcoord, parity) = lineAxisIntersection(edge,row)
               nonHorizontal += 1
-              if (parity != Int.MaxValue) Some((edge, xcoord, parity))
+              if (parity != Int.MaxValue) Some((xcoord, parity))
               else None
             }
             else {
@@ -206,18 +205,31 @@ object PolygonRasterizer {
             }
           })
 
+      /**
+        * Remove horizontal edges by perturbing the scanline up or
+        * down infinitesimally.
+        */
       if (horizontal == true) {
-        // val upward = segments.filter({ case (_, _, parity) => parity != 1 })
-        // val downward = segments.filter({ case (_, _, parity) => parity != -1 })
-        // if (upward.size == nonHorizontal) upward
-        // else if (downward.size == nonHorizontal) downward
-        // else throw new Exception(s"non-horizontal=$nonHorizontal upward=${upward.size} downward=${downward.size}")
-        segments.filter({ case (_, _, parity) => parity != 1 })
+        val upward = segments.filter({ case (_, parity) => parity != 1 })
+        val downward = segments.filter({ case (_, parity) => parity != -1 })
+        val upwardDistance = math.abs(nonHorizontal - upward.length)
+        val downwardDistance = math.abs(nonHorizontal - downward.length)
+
+        /**
+          * A better measure of distance would probably be the
+          * Levenshtein distance[1], but instead the respective
+          * differences in length from the original sequence (minus
+          * horizontal edges) are used as proxies.
+          *
+          * https://en.wikipedia.org/wiki/Levenshtein_distance
+          */
+        if (upwardDistance < downwardDistance) upward
+        else downward
       }
       else segments
     }
 
-    segments.foreach({ case (_, xcoord, parity) =>
+    segments.foreach({ case (xcoord, parity) =>
       if (xcoordsMap.contains(xcoord)) xcoordsMap(xcoord) += parity
       else xcoordsMap(xcoord) = parity
     })
