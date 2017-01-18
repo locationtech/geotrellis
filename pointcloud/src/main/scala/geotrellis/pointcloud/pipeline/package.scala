@@ -23,5 +23,6 @@ import io.circe.syntax._
 package object pipeline extends json.Implicits {
   implicit def pipelineExprToConstructor[T <: PipelineExpr](expr: T): PipelineConstructor = PipelineConstructor(expr :: Nil)
   implicit def pipelineExprToJson(expr: PipelineExpr): Json = expr.asJson
-  implicit def pipelineExprToString(expr: PipelineExpr): String = expr.asJson.noSpaces
+  implicit def pipelineConstructorToJson(expr: PipelineConstructor): Json = expr.asJson
+  implicit def pipelineConstructorToString(expr: PipelineConstructor): String = expr.asJson.noSpaces
 }
