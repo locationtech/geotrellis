@@ -16,14 +16,12 @@
 
 package geotrellis.pointcloud
 
-import io.circe.{Encoder, Json}
+import io.circe.Json
+import io.circe.generic.extras.auto._
 import io.circe.syntax._
 
 package object pipeline extends json.Implicits {
-  implicit def pipelineExprToJson[T <: PipelineExpr](expr: T)(implicit encoder: Encoder[T]): Json = expr.asJson
-  implicit def pipelineConstructorToJson(cons: PipelineConstructor): Json = cons.asJson
-  implicit def jsonToString(json: Json): String = json.noSpaces
-  implicit def pipelineExprToString[T <: PipelineExpr](expr: T)(implicit encoder: Encoder[T]): String = expr.asJson.noSpaces
-  implicit def pipelineConstructorToString(cons: PipelineConstructor): String = cons.asJson.noSpaces
   implicit def pipelineExprToConstructor[T <: PipelineExpr](expr: T): PipelineConstructor = PipelineConstructor(expr :: Nil)
+  implicit def pipelineExprToJson(expr: PipelineExpr): Json = expr.asJson
+  implicit def pipelineExprToString(expr: PipelineExpr): String = expr.asJson.noSpaces
 }
