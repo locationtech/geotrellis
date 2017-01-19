@@ -20,10 +20,14 @@ import io.circe.Json
 import io.circe.generic.extras.auto._
 import io.circe.syntax._
 
+/**
+  * There is no implicit PipelineExprToString function to avoid
+  * implicit casts in places where PipelineConstructor should be used.
+  */
+
 package object pipeline extends json.Implicits {
   implicit def pipelineExprToConstructor[T <: PipelineExpr](expr: T): PipelineConstructor = PipelineConstructor(expr :: Nil)
   implicit def pipelineExprToJson(expr: PipelineExpr): Json = expr.asJson
-  implicit def pipelineExprToString(expr: PipelineExpr): String = expr.asJson.noSpaces
   implicit def pipelineConstructorToJson(expr: PipelineConstructor): Json = expr.asJson
   implicit def pipelineConstructorToString(expr: PipelineConstructor): String = expr.asJson.noSpaces
 }
