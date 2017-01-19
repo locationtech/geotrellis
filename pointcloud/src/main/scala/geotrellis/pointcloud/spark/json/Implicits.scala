@@ -62,6 +62,6 @@ trait Implicits {
         case Left(e) => throw new Exception("Incorrect CRS metadata information, try to provide the input CRS").initCause(e)
       })
 
-    cursor.top.as[Extent3D].right.map(ProjectedExtent3D(_, crs))
+    cursor.value.as[Extent3D].right.map(ProjectedExtent3D(_, crs))
   }
 }
