@@ -2,7 +2,7 @@ import Dependencies._
 
 name := "geotrellis-pointcloud"
 
-val circeVersion = "0.6.1"
+val circeVersion = "0.7.0"
 
 libraryDependencies ++= Seq(
   "io.circe" %% "circe-core" % circeVersion,
