@@ -90,12 +90,10 @@ case class StitchedDelaunay(
 
   def rasterize(re: RasterExtent, cellType: CellType = DoubleConstantNoDataCellType)(center: DelaunayTriangulation) = {
     DelaunayRasterizer
-      .rasterizeTriangles
-        (re, cellType)
-        (fillTriangles.getTriangles, 
-         DelaunayRasterizer.rasterizeDelaunayTriangulation
-           (re, cellType)
-           (center, ArrayTile.empty(cellType, re.cols, re.rows))
-        )(indexToCoord, edges)
+      .rasterizeTriangles(re, cellType)(fillTriangles.getTriangles, 
+         DelaunayRasterizer.rasterizeDelaunayTriangulation(re, cellType)(
+           center, ArrayTile.empty(cellType, re.cols, re.rows)
+         )
+       )(indexToCoord, edges)
   }
 }
