@@ -138,7 +138,10 @@ object TinToDem {
               layoutDefinition.tileCols,
               layoutDefinition.tileRows
             )
+
+          //val tile = ArrayTile.empty(options.cellType, re.rows, re.cols)
           val tile = stitched.rasterize(re, options.cellType)(triangulation)
+          //val tile = DelaunayRasterizer.rasterizeDelaunayTriangulation(re, options.cellType)(triangulation)
 
           (key, tile)
         }

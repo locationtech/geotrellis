@@ -88,8 +88,14 @@ case class StitchedDelaunay(
                            ) {
   def triangles(): Seq[(Int, Int, Int)] = fillTriangles.getTriangles.keys.toSeq
 
-  def rasterize(re: RasterExtent, cellType: CellType = DoubleConstantNoDataCellType)(center: DelaunayTriangulation, tile: MutableArrayTile = ArrayTile.empty(cellType, re.cols, re.rows)) = {
-    DelaunayRasterizer.rasterizeDelaunayTriangulation(re, cellType)(center, tile)
-    DelaunayRasterizer.rasterizeTriangles(re, cellType)(fillTriangles.getTriangles, tile)(indexToCoord, edges)
+  def rasterize(re: RasterExtent, cellType: CellType = DoubleConstantNoDataCellType)(center: DelaunayTriangulation) = {
+    DelaunayRasterizer
+      .rasterizeTriangles
+        (re, cellType)
+        (fillTriangles.getTriangles, 
+         DelaunayRasterizer.rasterizeDelaunayTriangulation
+           (re, cellType)
+           (center, ArrayTile.empty(cellType, re.cols, re.rows))
+        )(indexToCoord, edges)
   }
 }
