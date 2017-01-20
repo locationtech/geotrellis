@@ -41,8 +41,8 @@ object DelaunayStitcher {
     import het._
     import Predicates._
 
-    var left = left0
-    var right = right0
+    var left = advanceIfNotCorner(left0)
+    var right = advanceIfNotCorner(right0)
 
     // if (isLeftLinear && isRightLinear) {
     //   // In the linear case, in the event of a linear result, we want to make 

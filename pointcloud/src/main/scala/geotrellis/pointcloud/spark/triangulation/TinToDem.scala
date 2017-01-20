@@ -138,6 +138,7 @@ object TinToDem {
               layoutDefinition.tileCols,
               layoutDefinition.tileRows
             )
+
           val tile = stitched.rasterize(re, options.cellType)(triangulation)
 
           (key, tile)

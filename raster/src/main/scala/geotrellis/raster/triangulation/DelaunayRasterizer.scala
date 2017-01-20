@@ -77,7 +77,7 @@ object DelaunayRasterizer {
     tile
   }
 
-  def rasterizeDelaunayTriangulation(re: RasterExtent, cellType: CellType = DoubleConstantNoDataCellType)(dt: DelaunayTriangulation, tile: MutableArrayTile = ArrayTile.empty(cellType, re.rows, re.cols)) = {
+  def rasterizeDelaunayTriangulation(re: RasterExtent, cellType: CellType = DoubleConstantNoDataCellType)(dt: DelaunayTriangulation, tile: MutableArrayTile = ArrayTile.empty(cellType, re.cols, re.rows)) = {
     implicit val trans = dt.verts.getCoordinate(_)
     implicit val nav = dt.navigator
     rasterizeTriangles(re, cellType)(dt.triangles.getTriangles)
