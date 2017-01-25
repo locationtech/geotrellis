@@ -29,4 +29,7 @@ trait Implicits {
 
   implicit class withLocalTileRDDSeqMethods[K](val self: Traversable[RDD[(K, Tile)]])
     (implicit val keyClassTag: ClassTag[K]) extends LocalTileRDDSeqMethods[K]
+
+  implicit class withLocalTileCollectionMethods[K](val self: Seq[(K, Tile)]) extends LocalTileCollectionMethods[K]
+  implicit class withLocalTileCollectionSeqMethods[K](val self: Traversable[Seq[(K, Tile)]]) extends LocalTileCollectionSeqMethods[K]
 }

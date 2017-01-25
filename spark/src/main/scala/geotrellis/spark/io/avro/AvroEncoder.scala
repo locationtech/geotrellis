@@ -25,7 +25,7 @@ import org.apache.commons.io.IOUtils
 import org.apache.commons.io.output.ByteArrayOutputStream
 
 object AvroEncoder {
-  val deflater =new Deflater(Deflater.BEST_SPEED)
+  val deflater = new Deflater(Deflater.BEST_SPEED)
 
   def compress(bytes: Array[Byte]): Array[Byte] = {
     val deflater = new java.util.zip.Deflater
@@ -38,14 +38,14 @@ object AvroEncoder {
     baos.toByteArray
   }
 
-  def  decompress(bytes: Array[Byte]): Array[Byte] = {
+  def decompress(bytes: Array[Byte]): Array[Byte] = {
     val deflater = new java.util.zip.Inflater()
     val bytesIn = new ByteArrayInputStream(bytes)
     val in = new InflaterInputStream(bytesIn, deflater)
     IOUtils.toByteArray(in)
   }
 
-  def toBinary[T: AvroRecordCodec](thing: T): Array[Byte] = {
+  def toBinary[T: AvroRecordCodec](thing: T, deflate: Boolean = true): Array[Byte] = {
     val format = implicitly[AvroRecordCodec[T]]
     val schema: Schema = format.schema
 
@@ -54,7 +54,10 @@ object AvroEncoder {
     val encoder = EncoderFactory.get().binaryEncoder(jos, null)
     writer.write(format.encode(thing), encoder)
     encoder.flush()
-    compress(jos.toByteArray)
+    if (deflate)
+      compress(jos.toByteArray)
+    else
+      jos.toByteArray
   }
 
   def fromBinary[T: AvroRecordCodec](bytes: Array[Byte]): T = {
@@ -62,12 +65,22 @@ object AvroEncoder {
     fromBinary[T](format.schema, bytes)
   }
 
-  def fromBinary[T: AvroRecordCodec](writerSchema: Schema, bytes: Array[Byte]): T = {
+  def fromBinary[T: AvroRecordCodec](bytes: Array[Byte], uncompress: Boolean): T = {
+    val format = implicitly[AvroRecordCodec[T]]
+    fromBinary[T](format.schema, bytes, uncompress)
+  }
+
+  def fromBinary[T: AvroRecordCodec](writerSchema: Schema, bytes: Array[Byte],
+    uncompress: Boolean = true): T = {
     val format = implicitly[AvroRecordCodec[T]]
     val schema = format.schema
 
     val reader = new GenericDatumReader[GenericRecord](writerSchema, schema)
-    val decoder = DecoderFactory.get().binaryDecoder(decompress(bytes), null)
+    val decoder =
+      if (uncompress)
+        DecoderFactory.get().binaryDecoder(decompress(bytes), null)
+      else
+        DecoderFactory.get().binaryDecoder(bytes, null)
     try {
       val rec = reader.read(null.asInstanceOf[GenericRecord], decoder)
       format.decode(rec)

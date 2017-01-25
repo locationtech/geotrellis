@@ -99,7 +99,23 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
     if (null == partitionCountConf) {
       // By default attempt to make partitions the same size
       val maxSplitBytes = if (null == partitionSizeConf) S3InputFormat.DEFAULT_PARTITION_BYTES else partitionSizeConf.toLong
+
+      /**
+        * Divide the problem harmonically and apply the NF ("Next
+        * Fit") strategy to each sub-part[1].
+        *
+        * 1. Epstein, Leah, Lene M. Favrholdt, and Jens S. Kohrt.
+        *    "Comparing online algorithms for bin packing problems."
+        *    Journal of Scheduling 15.1 (2012): 13-21.
+        */
+      var h1 = splits
+      var h2: Vector[S3InputSplit] = Vector(makeNewSplit)
+      var h3: Vector[S3InputSplit] = Vector(makeNewSplit)
+      val h1Cutoff = maxSplitBytes / 2
+      val h2Cutoff = maxSplitBytes / 3
+
       logger.info(s"Building partitions, attempting to create them with size at most $maxSplitBytes bytes")
+
       s3client
         .listObjectsIterator(request)
         .filter(!_.getKey.endsWith("/"))
@@ -112,8 +128,11 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
           }
         }
         .foreach { obj =>
-          val curSplit = splits.last
           val objSize = obj.getSize
+          val curSplit =
+            if (objSize <= h2Cutoff) h3.last
+            else if ((h2Cutoff < objSize) && (objSize <= h1Cutoff)) h2.last
+            else h1.last
           if (curSplit.getLength == 0)
             curSplit.addKey(obj)
           else if (curSplit.size + objSize <= maxSplitBytes)
@@ -121,9 +140,12 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
           else {
             val newSplit = makeNewSplit
             newSplit.addKey(obj)
-            splits = splits :+ newSplit
+            if (objSize <= h2Cutoff) h3 = h3 :+ newSplit
+            else if ((h2Cutoff < objSize) && (objSize <= h1Cutoff)) h2 = h2 :+ newSplit
+            else h1 = h1 :+ newSplit
           }
         }
+      splits = (h1 ++ h2 ++ h3).filter(_.getLength >  0)
     } else {
       val partitionCount = partitionCountConf.toInt
       logger.info(s"Building partitions of at most $partitionCount objects")
