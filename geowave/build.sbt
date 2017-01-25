@@ -8,25 +8,25 @@ libraryDependencies ++= Seq(
   "org.apache.accumulo" % "accumulo-core" % Version.accumulo
     exclude("org.jboss.netty", "netty")
     exclude("org.apache.hadoop", "hadoop-client"),
-  "mil.nga.giat" % "geowave-adapter-raster" % "0.9.3-SNAPSHOT"
+  "mil.nga.giat" % "geowave-adapter-raster" % "0.9.3"
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
-  "mil.nga.giat" % "geowave-adapter-vector" % "0.9.3-SNAPSHOT"
+  "mil.nga.giat" % "geowave-adapter-vector" % "0.9.3"
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
-  "mil.nga.giat" % "geowave-core-store" % "0.9.3-SNAPSHOT"
+  "mil.nga.giat" % "geowave-core-store" % "0.9.3"
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
-  "mil.nga.giat" % "geowave-core-geotime" % "0.9.3-SNAPSHOT"
+  "mil.nga.giat" % "geowave-core-geotime" % "0.9.3"
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
-  "mil.nga.giat" % "geowave-datastore-accumulo" % "0.9.3-SNAPSHOT"
+  "mil.nga.giat" % "geowave-datastore-accumulo" % "0.9.3"
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
   hadoopClient % "provided"
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
-  "org.geoserver" % "gs-wms" % "2.8.2"
+  "org.geoserver" % "gs-wms" % "2.10.1"
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
   "org.geotools" % "gt-coverage" % Version.geotools % "provided"
@@ -44,7 +44,7 @@ libraryDependencies ++= Seq(
   "org.geotools" % "gt-referencing" % Version.geotools % "provided"
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
-  "com.jsuereth" %% "scala-arm" % "1.4",
+  "com.jsuereth" %% "scala-arm" % "2.0",
   "de.javakaffee" % "kryo-serializers" % "0.38" exclude("com.esotericsoftware", "kryo"),
   "com.esotericsoftware" % "kryo-shaded" % "3.0.3",
   sparkCore % "provided",

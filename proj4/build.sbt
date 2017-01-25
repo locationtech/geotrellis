@@ -5,6 +5,7 @@ name := "geotrellis-proj4"
 
 libraryDependencies ++= Seq(
   openCSV,
+  parserCombinators,
   scalatest   % "test",
   scalacheck  % "test")
 

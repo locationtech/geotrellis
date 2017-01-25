@@ -17,7 +17,7 @@ libraryDependencies := {
     // if scala 2.11+ is used, add dependency on scala-xml module
     case Some((2, scalaMajor)) if scalaMajor >= 11 =>
       libraryDependencies.value ++ Seq(
-        "org.scala-lang.modules" %% "scala-xml" % "1.0.5"
+        "org.scala-lang.modules" %% "scala-xml" % "1.0.6"
       )
     case _ =>
       libraryDependencies.value
@@ -26,7 +26,7 @@ libraryDependencies := {
 
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
 scalacOptions ++= Seq("-optimize", "-language:experimental.macros")
-sourceGenerators in Compile <+= (sourceManaged in Compile).map(Boilerplate.genRaster)
+sourceGenerators in Compile += (sourceManaged in Compile).map(Boilerplate.genRaster).taskValue
 
 initialCommands in console :=
   """

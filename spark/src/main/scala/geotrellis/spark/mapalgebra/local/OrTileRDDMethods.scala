@@ -26,7 +26,7 @@ import org.apache.spark.rdd.RDD
 trait OrTileRDDMethods[K] extends TileRDDMethods[K] {
   /** Or a constant Int value to each cell. */
   def localOr(i: Int) =
-    self.mapValues { case r => Or(r, i) }
+    self.mapValues { r => Or(r, i) }
 
   /** Or a constant Int value to each cell. */
   def |(i: Int) = localOr(i)

@@ -2,7 +2,7 @@ import Dependencies._
 
 name := "geotrellis-macros"
 
-sourceGenerators in Compile <+= (sourceManaged in Compile).map(Boilerplate.genMacro)
+sourceGenerators in Compile += (sourceManaged in Compile).map(Boilerplate.genMacro).taskValue
 
 libraryDependencies ++= Seq(
   "org.spire-math" %% "spire-macros" % "0.11.0",
