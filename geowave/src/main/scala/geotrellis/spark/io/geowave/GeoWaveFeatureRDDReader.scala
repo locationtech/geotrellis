@@ -22,7 +22,7 @@ import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.util.KryoWrapper
-import geotrellis.util.annotations.experimental
+import geotrellis.util.annotations._
 import geotrellis.vector._
 
 import org.apache.avro.Schema
@@ -101,8 +101,7 @@ import scala.reflect._
     val queryOptions = new QueryOptions(gwDataAdapter, gw2dIndex)
     queryOptions.setLimit(queryLimit)
 
-    GeoWaveInputFormat.setDataStoreName(jobConf, "accumulo")
-    GeoWaveInputFormat.setStoreConfigOptions(jobConf, pluginOpts.getFactoryOptionsAsMap)
+    GeoWaveInputFormat.setStoreOptions(jobConf, pluginOpts)
     GeoWaveInputFormat.setQuery(jobConf, query)
     GeoWaveInputFormat.setQueryOptions(jobConf, queryOptions)
 

@@ -70,5 +70,5 @@ case class LazySegmentBytes(byteReader: ByteReader, tiffTags: TiffTags) extends 
    * @return An Array[Byte] that contains the bytes of the segment
    */
   def getSegment(i: Int) =
-    byteReader.getSignedByteArray(byteCounts(i), offsets(i))
+    byteReader.getSignedByteArray(offsets(i), byteCounts(i))
 }

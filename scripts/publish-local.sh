@@ -21,7 +21,7 @@
 ./sbt "project cassandra" publish-local && \
 ./sbt "project geomesa" publish-local && \
 ./sbt "project geotools" publish-local && \
-# ./sbt "project geowave" publish-local && \
+./sbt "project geowave" publish-local && \
 ./sbt "project hbase" publish-local && \
 ./sbt "project s3" publish-local && \
 ./sbt "project s3-testkit" publish-local

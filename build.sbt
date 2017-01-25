@@ -25,18 +25,17 @@ lazy val commonSettings = Seq(
   publishArtifact in Test := false,
   pomIncludeRepository := { _ => false },
 
-  // Publish to sonatype
-  licenses := Seq("Apache 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
-  publishTo <<= version { (v: String) =>
-    val nexus = "https://oss.sonatype.org/"
-    if (v.trim.endsWith("SNAPSHOT"))
-      Some("snapshots" at nexus + "content/repositories/snapshots")
-    else
-      Some("releases" at nexus + "service/local/staging/deploy/maven2")
-  },
+  publishTo := {
+     val nexus = "https://repo.locationtech.org/content/repositories"
+     if (isSnapshot.value)
+       Some("LocationTech Nexus Repository" at s"$nexus/geotrellis-snapshots")
+     else
+       Some("LocationTech Nexus Repository" at s"$nexus/geotrellis-releases")
+   },
+
   credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
 
-  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.0" cross CrossVersion.binary),
+  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.3" cross CrossVersion.binary),
   addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.full),
 
   pomExtra := (
@@ -82,7 +81,7 @@ lazy val root = Project("geotrellis", file(".")).
     accumulo,
     cassandra,
     hbase,
-    // geowave, Removed so that unidoc can publish. TODO: Update to GeoWave API when release happens.
+    geowave,
     geomesa,
     geotools,
     slick,

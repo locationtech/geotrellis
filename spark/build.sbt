@@ -15,11 +15,11 @@ libraryDependencies ++= Seq(
 )
 
 // must use this method of import to avoid cyclic dependency errors
-internalDependencyClasspath in Test <++=
-  exportedProducts in Compile in LocalProject("raster-testkit")
+internalDependencyClasspath in Test ++=
+  { exportedProducts in Compile in LocalProject("raster-testkit") }.value
 
-internalDependencyClasspath in Test <++=
-  exportedProducts in Compile in LocalProject("spark-testkit")
+internalDependencyClasspath in Test ++=
+  { exportedProducts in Compile in LocalProject("spark-testkit") }.value
 
 fork in Test := false
 parallelExecution in Test := false

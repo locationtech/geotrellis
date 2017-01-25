@@ -43,7 +43,7 @@ object Mask {
 
   object Options {
     def DEFAULT = Options()
-    implicit def rasterizerOptionsToOptions(opt: Rasterizer.Options) = Options(opt)
+    implicit def rasterizerOptionsToOptions(opt: Rasterizer.Options): Options = Options(opt)
   }
 
   // As done by [[geotrellis.raster.rasterize.polygon.TestLineSet]] in [[geotrellis.raster.rasterize.polygon.PolygonRasterizer]].
@@ -88,6 +88,24 @@ object Mask {
     ContextRDD(masked, rdd.metadata)
   }
 
+  private def _mask[
+    K: SpatialComponent,
+    V,
+    M: GetComponent[?, LayoutDefinition]
+  ](seq: Seq[(K, V)] with Metadata[M], masker: (Extent, V) => Option[V]): Seq[(K, V)] with Metadata[M] = {
+    val mapTransform = seq.metadata.getComponent[LayoutDefinition].mapTransform
+    val masked =
+      seq.flatMap { case (k, tile) =>
+        val key = k.getComponent[SpatialKey]
+        val tileExtent = mapTransform(key)
+        masker(tileExtent, tile).map { result =>
+          (k, result)
+        }
+      }
+
+    ContextCollection(masked, seq.metadata)
+  }
+
   def apply[
     K: SpatialComponent: ClassTag,
     V: (? => TileMaskMethods[V]),
@@ -103,6 +121,22 @@ object Mask {
         Some(tile.mask(tileExtent, tileGeoms, options.rasterizerOptions))
       }
     })
+
+  def apply[
+    K: SpatialComponent,
+    V: (? => TileMaskMethods[V]),
+    M: GetComponent[?, LayoutDefinition]
+  ](seq: Seq[(K, V)] with Metadata[M], geoms: Traversable[Polygon], options: Options): Seq[(K, V)] with Metadata[M] =
+    _mask(seq, { case (tileExtent, tile) =>
+      val tileGeoms = geoms.flatMap { g =>
+        val intersections = g.safeIntersection(tileExtent).toGeometry()
+        eliminateNotQualified(intersections)
+      }
+      if(tileGeoms.isEmpty && options.filterEmptyTiles) { None }
+      else {
+        Some(tile.mask(tileExtent, tileGeoms, options.rasterizerOptions))
+      }
+    }: (Extent, V) => Option[V])
 
   /** Masks this raster by the given MultiPolygons. */
   def apply[
@@ -121,19 +155,82 @@ object Mask {
       }
     })
 
+  def apply[
+    K: SpatialComponent,
+    V: (? => TileMaskMethods[V]),
+    M: GetComponent[?, LayoutDefinition]
+  ](seq: Seq[(K, V)] with Metadata[M], geoms: Traversable[MultiPolygon], options: Options)(implicit d: DummyImplicit): Seq[(K, V)] with Metadata[M] =
+    _mask(seq, { case (tileExtent, tile) =>
+      val tileGeoms = geoms.flatMap { g =>
+        val intersections = g.safeIntersection(tileExtent).toGeometry()
+        eliminateNotQualified(intersections)
+      }
+      if(tileGeoms.isEmpty && options.filterEmptyTiles) { None }
+      else {
+        Some(tile.mask(tileExtent, tileGeoms, options.rasterizerOptions))
+      }
+    }: (Extent, V) => Option[V])
+
   /** Masks this raster by the given Extent. */
   def apply[
     K: SpatialComponent: ClassTag,
     V: (? => TileMaskMethods[V]),
     M: GetComponent[?, LayoutDefinition]
-  ](rdd: RDD[(K, V)] with Metadata[M], ext: Extent, options: Options = Options.DEFAULT): RDD[(K, V)] with Metadata[M] =
+  ](rdd: RDD[(K, V)] with Metadata[M], ext: Extent, options: Options): RDD[(K, V)] with Metadata[M] =
     _mask(rdd, { case (tileExtent, tile) =>
       val tileExts = ext.intersection(tileExtent)
       tileExts match {
         case Some(intersected) if intersected.area != 0 => Some(tile.mask(tileExtent, intersected.toPolygon(), options.rasterizerOptions))
-        case _ if options.filterEmptyTiles == true => None
+        case _ if options.filterEmptyTiles => None
         case _ => Some(tile.mask(tileExtent, Extent(0.0, 0.0, 0.0, 0.0), options.rasterizerOptions))
       }
     })
+
+  def apply[
+    K: SpatialComponent: ClassTag,
+    V: (? => TileMaskMethods[V]),
+    M: GetComponent[?, LayoutDefinition]
+  ](rdd: RDD[(K, V)] with Metadata[M], ext: Extent): RDD[(K, V)] with Metadata[M] = {
+    val options = Options.DEFAULT
+    _mask(rdd, { case (tileExtent, tile) =>
+      val tileExts = ext.intersection(tileExtent)
+      tileExts match {
+        case Some(intersected) if intersected.area != 0 => Some(tile.mask(tileExtent, intersected.toPolygon(), options.rasterizerOptions))
+        case _ if options.filterEmptyTiles => None
+        case _ => Some(tile.mask(tileExtent, Extent(0.0, 0.0, 0.0, 0.0), options.rasterizerOptions))
+      }
+    })
+  }
+
+  def apply[
+    K: SpatialComponent,
+    V: (? => TileMaskMethods[V]),
+    M: GetComponent[?, LayoutDefinition]
+  ](seq: Seq[(K, V)] with Metadata[M], ext: Extent, options: Options): Seq[(K, V)] with Metadata[M] =
+    _mask(seq, { case (tileExtent, tile) =>
+      val tileExts = ext.intersection(tileExtent)
+      tileExts match {
+        case Some(intersected) if intersected.area != 0 => Some(tile.mask(tileExtent, intersected.toPolygon(), options.rasterizerOptions))
+        case _ if options.filterEmptyTiles => None
+        case _ => Some(tile.mask(tileExtent, Extent(0.0, 0.0, 0.0, 0.0), options.rasterizerOptions))
+      }
+    }: (Extent, V) => Option[V])
+
+  def apply[
+    K: SpatialComponent,
+    V: (? => TileMaskMethods[V]),
+    M: GetComponent[?, LayoutDefinition]
+  ](seq: Seq[(K, V)] with Metadata[M], ext: Extent): Seq[(K, V)] with Metadata[M] = {
+    val options = Options.DEFAULT
+    _mask(seq, {
+      case (tileExtent, tile) =>
+        val tileExts = ext.intersection(tileExtent)
+        tileExts match {
+          case Some(intersected) if intersected.area != 0 => Some(tile.mask(tileExtent, intersected.toPolygon(), options.rasterizerOptions))
+          case _ if options.filterEmptyTiles => None
+          case _ => Some(tile.mask(tileExtent, Extent(0.0, 0.0, 0.0, 0.0), options.rasterizerOptions))
+        }
+    }: (Extent, V) => Option[V])
+  }
 
 }
