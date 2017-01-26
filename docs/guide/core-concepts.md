@@ -945,7 +945,7 @@ Map Algebra operations fall into 3 general categories:
 
 **Local Operations**
 
-![Local Operations](./images/local-animations-optimized.gif localops)
+![Local Operations](images/local-animations-optimized.gif "localops")
 
 Local operations are ones that only take into account the information of on
 cell at a time. In the animation above, we can see that the blue and the
@@ -958,7 +958,7 @@ yellow, then the resulting tile of the local operation would be green.
 
 **Focal Operations**
 
-![Focal Operations](./images/focal-animations.gif focalops)
+![Focal Operations](images/focal-animations.gif "focalops")
 
 Focal operations take into account a cell, and a neighborhood around that
 cell. A neighborhood can be defined as a square of a specific size, or
