@@ -19,4 +19,5 @@
     && ./sbt "project vectortile" publish-signed \
     && ./sbt "project raster-testkit" publish-signed \
     && ./sbt "project vector-testkit" publish-signed \
-    && ./sbt "project spark-testkit" publish-signed
+    && ./sbt "project spark-testkit" publish-signed \
+    && ./sbt "project s3-testkit" publish-signed
