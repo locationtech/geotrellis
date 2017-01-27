@@ -25,13 +25,17 @@ lazy val commonSettings = Seq(
   publishArtifact in Test := false,
   pomIncludeRepository := { _ => false },
 
-  publishTo := {
-     val nexus = "https://repo.locationtech.org/content/repositories"
-     if (isSnapshot.value)
-       Some("LocationTech Nexus Repository" at s"$nexus/geotrellis-snapshots")
-     else
-       Some("LocationTech Nexus Repository" at s"$nexus/geotrellis-releases")
-   },
+  publishTo <<= version { (v: String) =>
+    val sonatype = "https://oss.sonatype.org/"
+    val locationtech = "https://repo.locationtech.org/content/repositories"
+    if (v.trim.endsWith("SNAPSHOT")) {
+      // Publish snapshots to LocationTech
+      Some("LocationTech Snapshot Repository" at s"${locationtech}/geotrellis-snapshots")
+    } else {
+      // Publish releases to Sonatype
+      Some("Sonatype Release Repository" at s"${sonatype}service/local/staging/deploy/maven2")
+    }
+  },
 
   credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
 
