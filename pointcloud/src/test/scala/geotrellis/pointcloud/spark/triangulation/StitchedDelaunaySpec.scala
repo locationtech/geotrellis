@@ -144,11 +144,11 @@ class StitchedDelaunaySpec extends FunSpec with Matchers {
       // val dtC = triangulations.find(_._1 == Center).get._2
       // val bdtC = stitchInput(Center)._1
 
-      stitchInput.foreach { case (dir, (bdt, _)) =>
-        bdt.writeWKT(s"boundary${dir}.wkt")
-      }
+      //stitchInput.foreach { case (dir, (bdt, _)) =>
+      //  bdt.writeWKT(s"boundary${dir}.wkt")
+      //}
 
-      StitchedDelaunay(stitchInput.filterKeys(Seq(TopLeft, Left).contains(_)), true)
+      //StitchedDelaunay(stitchInput.filterKeys(Seq(TopLeft, Left).contains(_)), true)
 
       val stitch = StitchedDelaunay(stitchInput, false)
       //stitch.writeWKT("stitched.wkt")
