@@ -1,6 +1,7 @@
 package geotrellis.vector.triangulation
 
 import com.vividsolutions.jts.geom.Coordinate
+import geotrellis.vector.{Line, MultiLine, Point}
 
 object DelaunayStitcher {
   def advance(e0: Int)(implicit trans: Int => Coordinate, het: HalfEdgeTable): Int = {
@@ -174,9 +175,15 @@ object DelaunayStitcher {
    * Stiches two non-intersecting Delaunay triangulations, given as half edges
    * on the outside boundary of each constituent triangulation.  
    */
-  def merge(left: Int, isLeftLinear: Boolean, right: Int, isRightLinear: Boolean, triangles: TriangleMap)(implicit trans: Int => Coordinate, nav: HalfEdgeTable): (Int, Boolean) = {
+  def merge(left: Int, isLeftLinear: Boolean, right: Int, isRightLinear: Boolean, triangles: TriangleMap, debug: Boolean = false)(implicit trans: Int => Coordinate, nav: HalfEdgeTable): (Int, Boolean) = {
     import nav._
     import Predicates._
+
+    // A function to make code readable.  The `e` parameter will refer to
+    // either the left or right candidate edges for extending the stitch.  If
+    // the candidate is not right of the base edge, then it cannot participate
+    // in a triangle with `b`, and that candidate will be considered invalid.
+    def valid(e: Int, b: Int) = isCCW(getDest(e), getDest(b), getSrc(b))
 
     var base = insertBase(left, isLeftLinear, right, isRightLinear)(trans, nav)
 
@@ -193,14 +200,63 @@ object DelaunayStitcher {
       }
     }
 
+    val allEs = collection.mutable.Set.empty[Line]
+
     var continue = true
     while(continue) {
-      // println("zippering")
+      if (debug) {
+        var e = rotCCWSrc(getFlip(base))
+        var xs = List.empty[Double]
+        var ys = List.empty[Double]
+        do {
+          val p0 = trans(getSrc(e))
+          val p1 = trans(getDest(e))
+          xs = xs :+ p0.x
+          xs = xs :+ p1.x
+          ys = ys :+ p0.y
+          ys = ys :+ p1.y
+          e = rotCCWSrc(e)
+        } while (e != getFlip(base))
+        
+        print("plot([")
+        xs.foreach{ x => print(s"$x, ") }
+        print("\b\b], [")
+        ys.foreach{ y => print(s"$y, ") }
+        println("\b\b], 'b*-')")
+
+        xs = List.empty
+        ys = List.empty
+        e = rotCWSrc(base)
+        do {
+          val p0 = trans(getSrc(e))
+          val p1 = trans(getDest(e))
+          xs = xs :+ p0.x
+          xs = xs :+ p1.x
+          ys = ys :+ p0.y
+          ys = ys :+ p1.y
+          e = rotCWSrc(e)
+        } while (e != base)
+
+        print("plot([")
+        xs.foreach{ x => print(s"$x, ") }
+        print("\b\b], [")
+        ys.foreach{ y => print(s"$y, ") }
+        println("\b\b], 'b*-')")
+      }
+
       var lcand = rotCCWSrc(getFlip(base))
       var rcand = rotCWSrc(base)
 
+      if (debug) {
+        val lc = trans(getDest(lcand))
+        val rc = trans(getDest(rcand))
+        val b0 = trans(getSrc(base))
+        val b1 = trans(getDest(base))
+        println(s"plot([${lc.x}, ${b1.x}, ${b0.x}, ${rc.x}], [${lc.y}, ${b1.y}, ${b0.y}, ${rc.y}], 'ro-')")
+      }
+
       // Find left side candidate edge for extending the fill triangulation
-      if(isCCW(getDest(lcand), getDest(base), getSrc(base))) {
+      if(valid(lcand, base)) {
         while(
           inCircle(
             getDest(base),
@@ -214,11 +270,21 @@ object DelaunayStitcher {
           setNext(rotCCWDest(lcand), getNext(lcand))
           setNext(getPrev(lcand), getNext(getFlip(lcand)))
           lcand = e
+
+          if (debug) {
+            val c = circleCenter(getDest(base), getSrc(base), getDest(lcand))
+            val r = c.distance(trans(getDest(base)))
+
+            println(s"   [31m✘[0m Deleted LCAND [circle center = $c, radius = $r]")
+          }
+
         }
       }
 
+      
+
       // Find right side candidate edge for extending the fill triangulation
-      if(isCCW(getDest(rcand), getDest(base), getSrc(base))) {
+      if(valid(rcand, base)) {
         while(
           inCircle(
             getDest(base),
@@ -232,21 +298,24 @@ object DelaunayStitcher {
           setNext(getFlip(base), rotCWSrc(rcand))
           setNext(rotCCWDest(rcand), getNext(rcand))
           rcand = e
+
+          if (debug) {
+            val c = circleCenter(getDest(base), getSrc(base), getDest(rcand))
+            val r = c.distance(trans(getDest(base)))
+
+            println(s"   [31m✘[0m Deleted RCAND [circle center = $c, radius = $r]")
+          }
         }
       }
 
       if(
-        !isCCW(getDest(lcand), getDest(base), getSrc(base)) &&
-        !isCCW(getDest(rcand), getDest(base), getSrc(base))
+        !valid(lcand, base) &&
+        !valid(rcand, base)
       ) {
         // no further Delaunay triangles to add
         continue = false
       } else {
-        if (!isCCW(getDest(lcand), getDest(base), getSrc(base)) ||
-            (
-              isCCW(getDest(rcand), getDest(base), getSrc(base)) &&
-              inCircle(getDest(lcand), getSrc(lcand), getSrc(rcand), getDest(rcand))
-            )
+        if (!valid(lcand, base) || (valid(rcand, base) && inCircle(getDest(lcand), getSrc(lcand), getSrc(rcand), getDest(rcand)))
           ) {
           // form new triangle from rcand and base
           val e = createHalfEdges(getDest(rcand), getDest(base))
@@ -255,6 +324,10 @@ object DelaunayStitcher {
           setNext(rcand, e)
           setNext(getFlip(lcand), getFlip(e))
           base = e
+
+          if (debug) {
+            println("   [32m✔[0m Seleted RCAND\n")
+          }
         } else {
           // form new triangle from lcand and base
           val e = createHalfEdges(getSrc(base), getDest(lcand))
@@ -263,12 +336,21 @@ object DelaunayStitcher {
           setNext(getFlip(e), rcand)
           setNext(getFlip(base), e)
           base = e
+
+          if (debug) {
+            println("   [32m✔[0m Seleted LCAND\n")
+          }
         }
 
         triangles += base
       }
     }
 
+    if (debug) {
+      val ml = MultiLine(allEs)
+      val str = geotrellis.vector.io.wkt.WKT.write(ml)
+      new java.io.PrintWriter("zipper.wkt") { write(str); close }      
+    }
 
     (advance(getFlip(base)), false)
   }

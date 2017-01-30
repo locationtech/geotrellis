@@ -170,6 +170,30 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
 
       overlapping should be (false)
     }
+
+    it("should have sane triangle ordering near boundaries") {
+      val pts = randomizedGrid(100, Extent(0,0,1,1)).toArray
+      val dt = DelaunayTriangulation(pts, false)
+      implicit val trans = { i: Int => pts(i) }
+      implicit val nav = dt.navigator
+      import nav._
+
+      var valid = true
+      var e = dt.boundary
+      do {
+        var f = e
+        do {
+          if (rotCWSrc(f) != e)
+            valid = !Predicates.isLeftOf(f, getDest(rotCWSrc(f)))
+
+          f = rotCWSrc(f)
+        } while (valid && f != e)
+
+        e = getNext(e)
+      } while (valid && e != dt.boundary)
+
+      valid should be (true)
+    }
   }
 
 }

@@ -1,6 +1,6 @@
 package geotrellis.pointcloud.spark.triangulation
 
-import geotrellis.vector.Extent
+import geotrellis.vector.{Extent, MultiPolygon, Point, Polygon}
 import geotrellis.vector.triangulation.{DelaunayTriangulation, HalfEdgeTable, Predicates, TriangleMap}
 
 import com.vividsolutions.jts.algorithm.distance.{DistanceToPoint, PointPairDistance}
@@ -209,12 +209,16 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
           // r.showBoundingLoop(r.getFlip(r.getNext(opp)))
           case None =>
             //println("     --- DID NOT FIND TRIANGLE")
+            val tri = copyConvertTriangle(e)
+            navigator.join(opp, tri)
+
             if (circumcircleLeavesExtent(boundingExtent)(e)) {
               //println("         Triangle circle leaves extent")
-              val tri = copyConvertTriangle(e)
+      //        val tri = copyConvertTriangle(e)
+
               //print("         ")
               //navigator.showLoop(tri)
-              navigator.join(opp, tri)
+      //        navigator.join(opp, tri)
 
               workQueue.enqueue( (getFlip(getNext(e)), navigator.getNext(tri)) )
               workQueue.enqueue( (getFlip(getNext(getNext(e))), navigator.getNext(navigator.getNext(tri))) )
@@ -281,5 +285,12 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
       copyConvertLinearBound
     else
       copyConvertBoundingTris
+
+  def writeWKT(wktFile: String) = {
+    val indexToCoord = { i: Int => Point.jtsCoord2Point(dt.verts.getCoordinate(i)) }
+    val mp = geotrellis.vector.MultiPolygon(triangles.getTriangles.keys.map{ case (i,j,k) => Polygon(indexToCoord(i), indexToCoord(j), indexToCoord(k), indexToCoord(i)) })
+    val wktString = geotrellis.vector.io.wkt.WKT.write(mp)
+    new java.io.PrintWriter(wktFile) { write(wktString); close }
+  }
 
 }

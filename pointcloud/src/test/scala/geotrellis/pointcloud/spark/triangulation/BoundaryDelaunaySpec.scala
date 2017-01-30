@@ -19,6 +19,16 @@ class BoundaryDelaunaySpec extends FunSpec with Matchers {
     new Coordinate(randInRange(extent.xmin, extent.xmax), randInRange(extent.ymin, extent.ymax))
   }
 
+  def randomizedGrid(n: Int, extent: Extent): Seq[Coordinate] = {
+    val xs = (for (i <- 1 to n) yield randInRange(extent.xmin, extent.xmax)).sorted
+    val ys = for (i <- 1 to n*n) yield randInRange(extent.ymin, extent.ymax)
+
+    xs.flatMap{ x => {
+      val yvals = Random.shuffle(ys).take(n).sorted
+      yvals.map{ y => new Coordinate(x, y) }
+    }}
+  }
+
   describe("BoundaryDelaunay") {
     it("should take all and only triangles with circumcircles outside extent") {
       val ex = Extent(0,0,1,1)
@@ -45,6 +55,46 @@ class BoundaryDelaunaySpec extends FunSpec with Matchers {
         else
           !bdtTris.contains(idx)
       }} should be (true)
+    }
+
+    it("should have sane triangle ordering near boundaries") {
+      val pts = randomizedGrid(100, Extent(0,0,1,1)).toArray
+      val dt = DelaunayTriangulation(pts, false)
+      val bdt = BoundaryDelaunay(dt, Extent(0,0,1,1))
+
+      implicit val trans = { i: Int => pts(i) }
+      implicit val nav = bdt.navigator
+      import nav._
+
+      var validCW = true
+      var e = bdt.boundary
+      do {
+        var f = e
+        do {
+          if (rotCWSrc(f) != e)
+            validCW = !Predicates.isLeftOf(f, getDest(rotCWSrc(f)))
+
+          f = rotCWSrc(f)
+        } while (validCW && f != e)
+
+        e = getNext(e)
+      } while (validCW && e != bdt.boundary)
+
+      var validCCW = true
+      e = bdt.boundary
+      do {
+        var f = getFlip(e)
+        do {
+          if (rotCCWSrc(f) != getFlip(e))
+            validCCW = !Predicates.isRightOf(f, getDest(rotCCWSrc(f)))
+
+          f = rotCCWSrc(f)
+        } while (validCCW && f != getFlip(e))
+
+        e = getNext(e)
+      } while (validCCW && e != bdt.boundary)
+
+      (validCW && validCCW) should be (true)
     }
   }
 

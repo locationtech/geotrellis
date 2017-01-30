@@ -5,6 +5,7 @@ import geotrellis.spark.SpatialKey
 import geotrellis.spark.buffer.Direction
 import geotrellis.spark.buffer.Direction._
 import geotrellis.vector._
+import geotrellis.vector.io.wkt.WKT
 import geotrellis.vector.triangulation._
 import org.scalatest.{FunSpec, Matchers}
 
@@ -12,7 +13,13 @@ import scala.util.Random
 
 class StitchedDelaunaySpec extends FunSpec with Matchers {
 
-  val numPoints = 1000
+  def time[R](msg: String)(block: => R): R = {  
+    val t0 = System.nanoTime()
+    val result = block    // call-by-name
+    val t1 = System.nanoTime()
+    println(msg + "\n   ➠ Elapsed time: " + (t1 - t0).toDouble * 1e-9 + "s")
+    result
+  }
 
   def randInRange(low: Double, high: Double): Double = {
     val x = Random.nextDouble
@@ -61,12 +68,12 @@ class StitchedDelaunaySpec extends FunSpec with Matchers {
     }
   }
 
-  describe("Stitched Delaunay triangulation") {
-    it("should have no stitch triangles with circumcircles containing other points") {
-      val directions = Seq(TopLeft, Top, TopRight, Left, Center, Right, BottomLeft, Bottom, BottomRight)
-      val chunks: Seq[(Extent, Direction)] = directions.map{ dir => (directionToExtent(dir), dir) }
-      def findDirection(pt: Coordinate) = chunks.find { pair => pair._1.contains(Point.jtsCoord2Point(pt)) }.get._2
+  val directions = Seq(TopLeft, Top, TopRight, Left, Center, Right, BottomLeft, Bottom, BottomRight)
+  val chunks: Seq[(Extent, Direction)] = directions.map{ dir => (directionToExtent(dir), dir) }
+  def findDirection(pt: Coordinate) = chunks.find { pair => pair._1.contains(Point.jtsCoord2Point(pt)) }.get._2
 
+  describe("Stitched Delaunay triangulation") {
+    ignore("should have no stitch triangles with circumcircles containing other points") {
       val points: Seq[Coordinate] = randomizedGrid(300, Extent(0,0,3,3))
       val keyedPoints: Seq[(Direction, Array[Coordinate])] = 
         points
@@ -82,8 +89,8 @@ class StitchedDelaunaySpec extends FunSpec with Matchers {
           }}
           .toMap
 
-      val dtC = triangulations.find(_._1 == Center).get._2
-      val bdtC = stitchInput(Center)._1
+      //val dtC = triangulations.find(_._1 == Center).get._2
+      //val bdtC = stitchInput(Center)._1
 
       val stitch = StitchedDelaunay(stitchInput)
 
@@ -101,6 +108,58 @@ class StitchedDelaunaySpec extends FunSpec with Matchers {
           // if (!result) {
           //   println(s"plot([${pt.x}], [${pt.y}], 'k*', [${a.x}, ${b.x}, ${c.x}, ${a.x}], [${a.y}, ${b.y}, ${c.y}, ${a.y}], 'r-', [${a.x}], [${a.y}], 'b*', [${b.x}], [${b.y}], 'g*')")
           // }
+          result
+        }}
+      }} should be (true)
+    }
+
+    it ("Should correctly stitch a problematic data set") {
+      val wktIS = getClass.getResourceAsStream("/wkt/erringPoints.wkt")
+      val wktString = scala.io.Source.fromInputStream(wktIS).getLines.mkString
+      val points: Array[Coordinate] = WKT.read(wktString).asInstanceOf[MultiPoint].points.map(_.jtsGeom.getCoordinate)
+
+      val keyedPoints: Seq[(Direction, Array[Coordinate])] = 
+        points
+          .map{ pt => (findDirection(pt), pt) }
+          .groupBy(_._1).toSeq
+          .map{ case (dir, lst) => (dir, lst.map(_._2).toArray) }
+      val triangulations = keyedPoints.map{ case (dir, pts) => {
+        val tri: DelaunayTriangulation = time(s"Computing triangulation for $dir (${pts.size} points)")(DelaunayTriangulation(pts))
+        if (tri.isUnfolded()) {
+          println("   [32m➠ Triangulation is OK[0m")
+        } else {
+          println("   [31m➠ Triangulation is creased![0m")
+        }
+        (dir, tri) 
+      }}
+      val stitchInput =
+        triangulations
+          .map{ case (dir, dt) => {
+            val ex = directionToExtent(dir)
+            (dir, (BoundaryDelaunay(dt, ex), ex))
+            //(dir, (dt, ex))
+          }}
+          .toMap
+
+      // val dtC = triangulations.find(_._1 == Center).get._2
+      // val bdtC = stitchInput(Center)._1
+
+      stitchInput.foreach { case (dir, (bdt, _)) =>
+        bdt.writeWKT(s"boundary${dir}.wkt")
+      }
+
+      StitchedDelaunay(stitchInput.filterKeys(Seq(TopLeft, Left).contains(_)), true)
+
+      val stitch = StitchedDelaunay(stitchInput, false)
+      //stitch.writeWKT("stitched.wkt")
+      //triangulations.foreach{ case (dir, tri) => tri.writeWKT(s"triangles${dir}.wkt") }
+
+      stitch.triangles.forall { case (ai, bi, ci) => {
+        val a = stitch.indexToCoord(ai)
+        val b = stitch.indexToCoord(bi)
+        val c = stitch.indexToCoord(ci)
+        points.forall{ pt => {
+          val result = !Predicates.inCircle(a, b, c, pt)
           result
         }}
       }} should be (true)

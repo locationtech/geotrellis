@@ -2,6 +2,7 @@ package geotrellis.vector.triangulation
 
 // for debugging
 import geotrellis.vector._
+import geotrellis.vector.io.wkt.WKT
 import java.io._
 
 import scala.annotation.tailrec
@@ -127,6 +128,41 @@ case class DelaunayTriangulation(verts: DelaunayPointSet, navigator: HalfEdgeTab
   }
 
   val (boundary, isLinear) = triangulate(0, sortedVs.length - 1)
+
+  def writeWKT(wktFile: String) = {
+    val indexToCoord = verts.getCoordinate(_)
+    val mp = MultiPolygon(triangles.getTriangles.keys.toSeq.map{ 
+      case (i,j,k) => Polygon(indexToCoord(i), indexToCoord(j), indexToCoord(k), indexToCoord(i)) 
+    })
+    val wktString = WKT.write(mp)
+    new java.io.PrintWriter(wktFile) { write(wktString); close }
+  }
+
+  def isUnfolded(): Boolean = {
+    import nav._
+    import Predicates._
+
+    val bounds = collection.mutable.Set.empty[Int]
+
+    var e = boundary
+    do {
+      bounds += e
+      e = getNext(e)
+    } while (e != boundary)
+
+    triangles.getTriangles.forall{ case (_, e) => {
+      var f = e
+      var ok = true
+      do {
+        if (!bounds.contains(getFlip(f))) {
+          val v = getDest(getNext(getFlip(f)))
+          ok = ok && isRightOf(f, v)
+        }
+        f = getNext(f)
+      } while (f != e)
+      ok
+    }}
+  }
 }
 
 object DelaunayTriangulation {
