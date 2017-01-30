@@ -57,6 +57,9 @@ case class TiffTags(
   nonStandardizedTags: NonStandardizedTags = NonStandardizedTags()
 ) {
 
+  def cellSize =
+    CellSize(this.extent.width / this.cols, this.extent.height / this.rows)
+
   def compression =
     (this
       &|-> TiffTags._basicTags
