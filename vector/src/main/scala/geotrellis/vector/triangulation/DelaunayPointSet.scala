@@ -11,9 +11,36 @@ trait DelaunayPointSet {
   def getY(i: Int): Double
   def getZ(i: Int): Double
   def getCoordinate(i: Int): Coordinate = new Coordinate(getX(i), getY(i), getZ(i))
+  def distance(i1: Int, i2: Int): Double = {
+    val dx = getX(i1) - getX(i2)
+    val dy = getY(i1) - getY(i2)
+
+    math.sqrt((dx * dx) + (dy * dy))
+  }
 }
 
 object DelaunayPointSet {
+
+  def apply(points: Array[Coordinate]): DelaunayPointSet =
+    new DelaunayPointSet {
+      def length = points.length
+      def getX(i: Int) = points(i).x
+      def getY(i: Int) = points(i).y
+      def getZ(i: Int) = points(i).z
+      override def getCoordinate(i: Int) = points(i)
+    }
+
+  def apply(points: Map[Int, Coordinate]): DelaunayPointSet =
+    apply(points, points.size)
+
+  def apply(points: Int => Coordinate, length: Int): DelaunayPointSet =
+    new DelaunayPointSet {
+      def length = length
+      def getX(i: Int) = points(i).x
+      def getY(i: Int) = points(i).y
+      def getZ(i: Int) = points(i).z
+      override def getCoordinate(i: Int) = points(i)
+    }
 
   // implicit def pointCloudToDelaunayPointSet(pointCloud: PointCloud): DelaunayPointSet =
   //   new DelaunayPointSet {
@@ -24,11 +51,5 @@ object DelaunayPointSet {
   //   }
 
   implicit def coordinateArrayToDelaunayPointSet(points: Array[Coordinate]): DelaunayPointSet =
-    new DelaunayPointSet {
-      def length = points.length
-      def getX(i: Int) = points(i).x
-      def getY(i: Int) = points(i).y
-      def getZ(i: Int) = points(i).z
-      override def getCoordinate(i: Int) = points(i)
-    }
+    apply(points)
 }

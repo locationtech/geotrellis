@@ -86,7 +86,7 @@ object TinToDem {
             val tile =
               ArrayTile.empty(options.cellType, re.cols, re.rows)
 
-            DelaunayRasterizer.rasterizeDelaunayTriangulation(re, options.cellType)(delaunay, tile)
+            DelaunayRasterizer.rasterizeDelaunayTriangulation(delaunay, re, tile)
 
             Some((key, tile))
           } else {
@@ -110,7 +110,7 @@ object TinToDem {
         .mapPartitions{ iter =>
           iter.map{ case (sk, dt) => {
             val ex: Extent = layoutDefinition.mapTransform(sk)
-            (sk, new BoundaryDelaunay(dt, ex))
+            (sk, BoundaryDelaunay(dt, ex))
           }
           }}
 

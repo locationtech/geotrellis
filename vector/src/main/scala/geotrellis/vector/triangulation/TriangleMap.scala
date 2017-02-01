@@ -1,6 +1,9 @@
 package geotrellis.vector.triangulation
 
-class TriangleMap {
+class TriangleMap(halfEdgeTable: HalfEdgeTable) {
+  import halfEdgeTable._
+  import  TriangleMap.regularizeIndex
+
   type TriIdx = TriangleMap.TriIdx
 
   private val triangles = collection.mutable.Map.empty[TriIdx, Int]
@@ -14,18 +17,26 @@ class TriangleMap {
     //println(s"Adding triangle ($a, $b, $c)")
     triangles += TriangleMap.regularizeIndex(a, b, c) -> edge
   }
-    
-  def +=(edge: Int)(implicit het: HalfEdgeTable): Unit = {
-    this += TriangleMap.regularizeIndex(het.getDest(edge), het.getDest(het.getNext(edge)), het.getDest(het.getNext(het.getNext(edge)))) -> edge
+
+  def +=(edge: Int): Unit = {
+    triangles += {(
+      regularizeIndex(
+        getDest(edge),
+        getDest(getNext(edge)),
+        getDest(getNext(getNext(edge)))
+      ),
+      edge
+    )}
   }
 
   def -=(idx: TriIdx): Unit = {
     //println(s"Removing triangle $idx")
-    triangles -= TriangleMap.regularizeIndex(idx)
+    triangles -= regularizeIndex(idx)
   }
 
-  def -=(edge: Int)(implicit het: HalfEdgeTable): Unit = {
-    this -= TriangleMap.regularizeIndex(het.getDest(edge), het.getDest(het.getNext(edge)), het.getDest(het.getNext(het.getNext(edge))))
+  def -=(edge: Int): Unit = {
+    triangles -=
+      regularizeIndex(getDest(edge), getDest(getNext(edge)), getDest(getNext(getNext(edge))))
   }
 
   def apply(i1: Int, i2: Int, i3: Int): Int = triangles((i1, i2, i3))
@@ -41,9 +52,16 @@ class TriangleMap {
   def get(i1: Int, i2: Int, i3: Int): Option[Int] = triangles.get((i1, i2, i3))
 
   def getTriangles() = triangles.toMap
+
+  def triangleVertices =
+    triangles.keys
+
+  def triangleEdges =
+    triangles.values
+
 }
 
-object TriangleMap { 
+object TriangleMap {
   type TriIdx = (Int, Int, Int)
 
   def regularizeIndex(a: Int, b: Int, c: Int): TriIdx = {

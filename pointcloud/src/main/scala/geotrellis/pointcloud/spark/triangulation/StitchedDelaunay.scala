@@ -27,41 +27,43 @@ object StitchedDelaunay {
     }
   }
 
-  def indexToVertex(neighbors: Map[Direction, (BoundaryDelaunay, Extent)])(i: Int) = {
-    val increment = Int.MaxValue / 9
-    val group = i / increment
-    val index = i % increment
-    val dir = group match {
-      case 0 => TopLeft
-      case 1 => Top
-      case 2 => TopRight
-      case 3 => Left
-      case 4 => Center
-      case 5 => Right
-      case 6 => BottomLeft
-      case 7 => Bottom
-      case 8 => BottomRight
+  def indexToVertex(neighbors: Map[Direction, (BoundaryDelaunay, Extent)]): Int => Coordinate =
+    { i =>
+      val increment = Int.MaxValue / 9
+      val group = i / increment
+      val index = i % increment
+      val dir = group match {
+        case 0 => TopLeft
+        case 1 => Top
+        case 2 => TopRight
+        case 3 => Left
+        case 4 => Center
+        case 5 => Right
+        case 6 => BottomLeft
+        case 7 => Bottom
+        case 8 => BottomRight
+      }
+      neighbors(dir)._1.pointSet.getCoordinate(i)
     }
-    neighbors(dir)._1.verts(index)
-  }
 
-  def indexToVertex(neighbors: Map[Direction, (DelaunayTriangulation, Extent)])(i: Int)(implicit dummy: DummyImplicit) = {
-    val increment = Int.MaxValue / 9
-    val group = i / increment
-    val index = i % increment
-    val dir = group match {
-      case 0 => TopLeft
-      case 1 => Top
-      case 2 => TopRight
-      case 3 => Left
-      case 4 => Center
-      case 5 => Right
-      case 6 => BottomLeft
-      case 7 => Bottom
-      case 8 => BottomRight
+  def indexToVertex(neighbors: Map[Direction, (DelaunayTriangulation, Extent)])(implicit dummy: DummyImplicit): Int => Coordinate =
+    { i =>
+      val increment = Int.MaxValue / 9
+      val group = i / increment
+      val index = i % increment
+      val dir = group match {
+        case 0 => TopLeft
+        case 1 => Top
+        case 2 => TopRight
+        case 3 => Left
+        case 4 => Center
+        case 5 => Right
+        case 6 => BottomLeft
+        case 7 => Bottom
+        case 8 => BottomRight
+      }
+      neighbors(dir)._1.pointSet.getCoordinate(i)
     }
-    neighbors(dir)._1.verts.getCoordinate(index)
-  }
 
   /**
     * Given a set of BoundaryDelaunay objects and their non-overlapping boundary
@@ -69,18 +71,21 @@ object StitchedDelaunay {
     * creates a merged representation
     */
   def apply(neighbors: Map[Direction, (BoundaryDelaunay, Extent)], debug: Boolean = false): StitchedDelaunay = {
-    val vertCount = neighbors.map{ case (_, (bdt, _)) => bdt.verts.size }.reduce(_ + _)
-    implicit val allEdges = new HalfEdgeTable(2 * (3 * vertCount - 6))
+    val vertCount = neighbors.map{ case (_, (bdt, _)) => bdt.pointSet.length }.reduce(_ + _)
+    val allEdges = new HalfEdgeTable(2 * (3 * vertCount - 6))
+    val pointMap = indexToVertex(neighbors)
+    val allPoints = DelaunayPointSet(pointMap, vertCount)
     val boundaries = neighbors.map{ case (dir, (bdt, _)) => {
       val offset = directionToVertexOffset(dir)
       val reindex = {x: Int => x + offset}
-      val edgeoffset = allEdges.appendTable(bdt.navigator, reindex)
+      val edgeoffset = allEdges.appendTable(bdt.halfEdgeTable, reindex)
       (dir, (bdt.boundary + edgeoffset, bdt.isLinear))
     }}
-    implicit val trans = indexToVertex(neighbors)(_)
+
 
     val dirs = Seq(Seq(TopLeft, Top, TopRight), Seq(Left, Center, Right), Seq(BottomLeft, Bottom, BottomRight))
-    val overlayTris = new TriangleMap
+    val overlayTris = new TriangleMap(allEdges)
+    val stitcher = new DelaunayStitcher(allPoints, allEdges)
 
     dirs
       .map{row => row.flatMap{ dir => boundaries.get(dir) }}
@@ -88,30 +93,33 @@ object StitchedDelaunay {
       .map{row => row.reduce{ (l, r) => {
         val (left, isLeftLinear) = l
         val (right, isRightLinear) = r
-        DelaunayStitcher.merge(left, isLeftLinear, right, isRightLinear, overlayTris, debug)
+        stitcher.merge(left, isLeftLinear, right, isRightLinear, overlayTris, debug)
       }}}
       .reduce{ (l, r) => {
         val (left, isLeftLinear) = l
         val (right, isRightLinear) = r
-        DelaunayStitcher.merge(left, isLeftLinear, right, isRightLinear, overlayTris, debug)
+        stitcher.merge(left, isLeftLinear, right, isRightLinear, overlayTris, debug)
       }}
 
-    new StitchedDelaunay(trans, allEdges, overlayTris)
+    new StitchedDelaunay(pointMap, allEdges, allPoints, overlayTris)
   }
 
   def apply(neighbors: Map[Direction, (DelaunayTriangulation, Extent)], debug: Boolean)(implicit dummy: DummyImplicit): StitchedDelaunay = {
-    val vertCount = neighbors.map{ case (_, (bdt, _)) => bdt.verts.length }.reduce(_ + _)
-    implicit val allEdges = new HalfEdgeTable(2 * (3 * vertCount - 6))
+    val vertCount = neighbors.map{ case (_, (bdt, _)) => bdt.pointSet.length }.reduce(_ + _)
+    val allEdges = new HalfEdgeTable(2 * (3 * vertCount - 6))
+    val pointMap = indexToVertex(neighbors)
+    val allPoints = DelaunayPointSet(pointMap, vertCount)
+
     val boundaries = neighbors.map{ case (dir, (bdt, _)) => {
       val offset = directionToVertexOffset(dir)
       val reindex = {x: Int => x + offset}
-      val edgeoffset = allEdges.appendTable(bdt.navigator, reindex)
+      val edgeoffset = allEdges.appendTable(bdt.halfEdgeTable, reindex)
       (dir, (bdt.boundary + edgeoffset, bdt.isLinear))
     }}
-    implicit val trans = indexToVertex(neighbors)(_)
 
     val dirs = Seq(Seq(TopLeft, Top, TopRight), Seq(Left, Center, Right), Seq(BottomLeft, Bottom, BottomRight))
-    val overlayTris = new TriangleMap
+    val overlayTris = new TriangleMap(allEdges)
+    val stitcher = new DelaunayStitcher(allPoints, allEdges)
 
     dirs
       .map{row => row.flatMap{ dir => boundaries.get(dir) }}
@@ -119,23 +127,24 @@ object StitchedDelaunay {
       .map{row => row.reduce{ (l, r) => {
         val (left, isLeftLinear) = l
         val (right, isRightLinear) = r
-        DelaunayStitcher.merge(left, isLeftLinear, right, isRightLinear, overlayTris, debug)
+        stitcher.merge(left, isLeftLinear, right, isRightLinear, overlayTris, debug)
       }}}
       .reduce{ (l, r) => {
         val (left, isLeftLinear) = l
         val (right, isRightLinear) = r
-        DelaunayStitcher.merge(left, isLeftLinear, right, isRightLinear, overlayTris, debug)
+        stitcher.merge(left, isLeftLinear, right, isRightLinear, overlayTris, debug)
       }}
 
-    new StitchedDelaunay(trans, allEdges, overlayTris)
+    new StitchedDelaunay(pointMap, allEdges, allPoints, overlayTris)
   }
 }
 
 case class StitchedDelaunay(
-                             indexToCoord: Int => Coordinate,
-                             private val edges: HalfEdgeTable,
-                             private val fillTriangles: TriangleMap
-                           ) {
+  indexToCoord: Int => Coordinate,
+  private val edges: HalfEdgeTable,
+  private val pointSet: DelaunayPointSet,
+  private val fillTriangles: TriangleMap
+) {
   def triangles(): Seq[(Int, Int, Int)] = fillTriangles.getTriangles.keys.toSeq
 
   def writeWKT(wktFile: String) = {
@@ -143,14 +152,18 @@ case class StitchedDelaunay(
     val wktString = WKT.write(mp)
     new java.io.PrintWriter(wktFile) { write(wktString); close }
   }
-      
+
 
   def rasterize(re: RasterExtent, cellType: CellType = DoubleConstantNoDataCellType)(center: DelaunayTriangulation) = {
-    DelaunayRasterizer
-      .rasterizeTriangles(re, cellType)(fillTriangles.getTriangles, 
-         DelaunayRasterizer.rasterizeDelaunayTriangulation(re, cellType)(
-           center, ArrayTile.empty(cellType, re.cols, re.rows)
-         )
-       )(indexToCoord, edges)
+    val tile = ArrayTile.empty(cellType, re.cols, re.rows)
+    DelaunayRasterizer.rasterizeDelaunayTriangulation(center, re, tile)
+    DelaunayRasterizer.rasterize(
+      tile,
+      re,
+      fillTriangles,
+      edges,
+      pointSet
+    )
+    tile
   }
 }

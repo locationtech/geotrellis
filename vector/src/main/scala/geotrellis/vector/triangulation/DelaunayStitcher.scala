@@ -3,25 +3,32 @@ package geotrellis.vector.triangulation
 import com.vividsolutions.jts.geom.Coordinate
 import geotrellis.vector.{Line, MultiLine, Point}
 
-object DelaunayStitcher {
-  def advance(e0: Int)(implicit trans: Int => Coordinate, het: HalfEdgeTable): Int = {
-    var e = het.getNext(e0)
-    while (!Predicates.isCorner(e))
-      e = het.getNext(e)
+import Predicates.{LEFTOF, RIGHTOF, ON}
+
+final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdgeTable) {
+  val predicates = new Predicates(pointSet, halfEdgeTable)
+  import predicates._
+  import pointSet._
+  import halfEdgeTable._
+
+  def advance(e0: Int): Int = {
+    var e = getNext(e0)
+    while (!isCorner(e))
+      e = getNext(e)
     e
   }
 
-  def reverse(e0: Int)(implicit trans: Int => Coordinate, het: HalfEdgeTable): Int = {
-    var e = het.getPrev(e0)
-    while (!Predicates.isCorner(e))
-      e = het.getPrev(e)
+  def reverse(e0: Int): Int = {
+    var e = getPrev(e0)
+    while (!isCorner(e))
+      e = getPrev(e)
     e
   }
 
-  def advanceIfNotCorner(e0: Int)(implicit trans: Int => Coordinate, het: HalfEdgeTable): Int = {
+  def advanceIfNotCorner(e0: Int): Int = {
     var e = e0
-    while (!Predicates.isCorner(e))
-      e = het.getNext(e)
+    while (!isCorner(e))
+      e = getNext(e)
     e
   }
 
@@ -38,15 +45,13 @@ object DelaunayStitcher {
    * bounding loops represented by left and right be convex and mutually
    * non-intersecting.
    */
-  def insertBase(left0: Int, isLeftLinear: Boolean, right0: Int, isRightLinear: Boolean)(implicit trans: Int => Coordinate, het: HalfEdgeTable): Int = {
-    import het._
-    import Predicates._
+  def insertBase(left0: Int, isLeftLinear: Boolean, right0: Int, isRightLinear: Boolean): Int = {
 
     var left = advanceIfNotCorner(left0)
     var right = advanceIfNotCorner(right0)
 
     // if (isLeftLinear && isRightLinear) {
-    //   // In the linear case, in the event of a linear result, we want to make 
+    //   // In the linear case, in the event of a linear result, we want to make
     //   // sure base will be set to join the two segments at the closest points
     //   val lnext = advance(left)
     //   val rnext = advance(right)
@@ -125,9 +130,9 @@ object DelaunayStitcher {
         setDest(base, getSrc(left))
       } else {
         val lpsRel = relativeTo(base, getSrc(getPrev(left)))
-        if (!(lpsRel == RIGHTOF || 
-              (lpsRel == ON && ldRel == ON && 
-               trans(getSrc(base)).distance(trans(getDest(base))) < trans(getSrc(base)).distance(trans(getDest(left)))))) {
+        if (!(lpsRel == RIGHTOF ||
+              (lpsRel == ON && ldRel == ON &&
+                distance(getSrc(base), getDest(base)) < distance(getSrc(base), getDest(left))))) {
           // left still needs to be moved
           if (ldRel == RIGHTOF) {
             //println(s"Left previous source is not RIGHTOF base and left dest is RIGHTOF base (reverse left)")
@@ -147,9 +152,9 @@ object DelaunayStitcher {
             setSrc(base, getSrc(right))
           } else {
             val rdRel = relativeTo(base, getDest(right))
-            if (!(rdRel == RIGHTOF || 
-                  (rdRel == ON && rpsRel == ON && 
-                   trans(getDest(base)).distance(trans(getSrc(base))) < trans(getDest(base)).distance(trans(getDest(right)))))) {
+            if (!(rdRel == RIGHTOF ||
+                  (rdRel == ON && rpsRel == ON &&
+                   distance(getDest(base), getSrc(base)) < distance(getDest(base), getDest(right))))) {
               //println(s"Right dest is not RIGHTOF base, or right dest and prev src are ON base")
               right = advance(right)
               setSrc(base, getSrc(right))
@@ -171,21 +176,19 @@ object DelaunayStitcher {
     base
   }
 
+  // A function to make code readable.  The `e` parameter will refer to
+  // either the left or right candidate edges for extending the stitch.  If
+  // the candidate is not right of the base edge, then it cannot participate
+  // in a triangle with `b`, and that candidate will be considered invalid.
+  @inline final def valid(e: Int, b: Int) = isCCW(getDest(e), getDest(b), getSrc(b))
+
   /**
    * Stiches two non-intersecting Delaunay triangulations, given as half edges
-   * on the outside boundary of each constituent triangulation.  
+   * on the outside boundary of each constituent triangulation.
    */
-  def merge(left: Int, isLeftLinear: Boolean, right: Int, isRightLinear: Boolean, triangles: TriangleMap, debug: Boolean = false)(implicit trans: Int => Coordinate, nav: HalfEdgeTable): (Int, Boolean) = {
-    import nav._
-    import Predicates._
+  def merge(left: Int, isLeftLinear: Boolean, right: Int, isRightLinear: Boolean, triangles: TriangleMap, debug: Boolean = false): (Int, Boolean) = {
 
-    // A function to make code readable.  The `e` parameter will refer to
-    // either the left or right candidate edges for extending the stitch.  If
-    // the candidate is not right of the base edge, then it cannot participate
-    // in a triangle with `b`, and that candidate will be considered invalid.
-    def valid(e: Int, b: Int) = isCCW(getDest(e), getDest(b), getSrc(b))
-
-    var base = insertBase(left, isLeftLinear, right, isRightLinear)(trans, nav)
+    var base = insertBase(left, isLeftLinear, right, isRightLinear)
 
     // If linear joins to linear, check that the current state
     // isn't already done (linear result)
@@ -196,7 +199,7 @@ object DelaunayStitcher {
       val r = getDest(getNext(getFlip(base)))
       if (isCollinear(b0, b1, l) && isCollinear(b0, b1, r)) {
         //println("Join has linear result")
-        return (advance(getFlip(base))(trans, nav), true)
+        return (advance(getFlip(base)), true)
       }
     }
 
@@ -209,15 +212,15 @@ object DelaunayStitcher {
         var xs = List.empty[Double]
         var ys = List.empty[Double]
         do {
-          val p0 = trans(getSrc(e))
-          val p1 = trans(getDest(e))
+          val p0 = getCoordinate(getSrc(e))
+          val p1 = getCoordinate(getDest(e))
           xs = xs :+ p0.x
           xs = xs :+ p1.x
           ys = ys :+ p0.y
           ys = ys :+ p1.y
           e = rotCCWSrc(e)
         } while (e != getFlip(base))
-        
+
         print("plot([")
         xs.foreach{ x => print(s"$x, ") }
         print("\b\b], [")
@@ -228,8 +231,8 @@ object DelaunayStitcher {
         ys = List.empty
         e = rotCWSrc(base)
         do {
-          val p0 = trans(getSrc(e))
-          val p1 = trans(getDest(e))
+          val p0 = getCoordinate(getSrc(e))
+          val p1 = getCoordinate(getDest(e))
           xs = xs :+ p0.x
           xs = xs :+ p1.x
           ys = ys :+ p0.y
@@ -248,10 +251,10 @@ object DelaunayStitcher {
       var rcand = rotCWSrc(base)
 
       if (debug) {
-        val lc = trans(getDest(lcand))
-        val rc = trans(getDest(rcand))
-        val b0 = trans(getSrc(base))
-        val b1 = trans(getDest(base))
+        val lc = getCoordinate(getDest(lcand))
+        val rc = getCoordinate(getDest(rcand))
+        val b0 = getCoordinate(getSrc(base))
+        val b1 = getCoordinate(getDest(base))
         println(s"plot([${lc.x}, ${b1.x}, ${b0.x}, ${rc.x}], [${lc.y}, ${b1.y}, ${b0.y}, ${rc.y}], 'ro-')")
       }
 
@@ -273,7 +276,7 @@ object DelaunayStitcher {
 
           if (debug) {
             val c = circleCenter(getDest(base), getSrc(base), getDest(lcand))
-            val r = c.distance(trans(getDest(base)))
+            val r = c.distance(getCoordinate(getDest(base)))
 
             println(s"   [31m✘[0m Deleted LCAND [circle center = $c, radius = $r]")
           }
@@ -281,7 +284,7 @@ object DelaunayStitcher {
         }
       }
 
-      
+
 
       // Find right side candidate edge for extending the fill triangulation
       if(valid(rcand, base)) {
@@ -301,7 +304,7 @@ object DelaunayStitcher {
 
           if (debug) {
             val c = circleCenter(getDest(base), getSrc(base), getDest(rcand))
-            val r = c.distance(trans(getDest(base)))
+            val r = c.distance(getCoordinate(getDest(base)))
 
             println(s"   [31m✘[0m Deleted RCAND [circle center = $c, radius = $r]")
           }
@@ -349,7 +352,7 @@ object DelaunayStitcher {
     if (debug) {
       val ml = MultiLine(allEs)
       val str = geotrellis.vector.io.wkt.WKT.write(ml)
-      new java.io.PrintWriter("zipper.wkt") { write(str); close }      
+      new java.io.PrintWriter("zipper.wkt") { write(str); close }
     }
 
     (advance(getFlip(base)), false)
