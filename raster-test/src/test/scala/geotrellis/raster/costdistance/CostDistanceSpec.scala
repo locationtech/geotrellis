@@ -33,7 +33,7 @@ class CostDistanceSpec extends FunSuite with RasterMatchers {
 
   def asTile(a: Array[Int], cols: Int, rows: Int): Tile =
     IntArrayTile(a, cols, rows)
-  
+
   test("ESRI example") {
     val n = NODATA
     val N = Double.NaN
@@ -90,7 +90,7 @@ class CostDistanceSpec extends FunSuite with RasterMatchers {
     val cd = CostDistance(costTile, points)
 
     val d = cd.toArrayDouble()
-    
+
     val expected = Array(
       22,21,21,20,17,15,14,
       20,19,22,20,15,12,11,
