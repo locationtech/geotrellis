@@ -33,9 +33,9 @@ object DelaunayPointSet {
   def apply(points: Map[Int, Coordinate]): DelaunayPointSet =
     apply(points, points.size)
 
-  def apply(points: Int => Coordinate, length: Int): DelaunayPointSet =
+  def apply(points: Int => Coordinate, len: Int): DelaunayPointSet =
     new DelaunayPointSet {
-      def length = length
+      def length = len
       def getX(i: Int) = points(i).x
       def getY(i: Int) = points(i).y
       def getZ(i: Int) = points(i).z
