@@ -27,32 +27,32 @@ object DelaunayRasterizer {
   //     v
   //   }
 
-    def report() = {
-      var sum = 0
-      var count = 0
-      var min = Int.MaxValue
-      var max = -1
-      var countAbove1ms = 0
-      var countAbove1s = 0
-      var numberOfMax = 0
-      for(timing <- timings) {
-        sum += timing
-        count += 1
-        if(timing < min) { min = timing }
-        if(max < timing) { max = timing }
-        if(timing > 1) { countAbove1ms += 1 }
-        if(timing > 1000) { countAbove1s += 1 }
-      }
-      println(s"[TIMING ITERATION] $msg:")
-      println(s"   Total: ${f(sum)} ms")
-      println(s"   Count: ${f(count)}")
-      println(s"    Mean: ${sum.toDouble / count} ms")
-      println(s"     Min: ${f(min)} ms")
-      println(s"     Max: ${f(max)} ms")
-      println(s" # > 1ms: ${f(countAbove1ms)}")
-      println(s"  # > 1s: ${f(countAbove1s)}")
-    }
-  }
+  //   def report() = {
+  //     var sum = 0
+  //     var count = 0
+  //     var min = Int.MaxValue
+  //     var max = -1
+  //     var countAbove1ms = 0
+  //     var countAbove1s = 0
+  //     var numberOfMax = 0
+  //     for(timing <- timings) {
+  //       sum += timing
+  //       count += 1
+  //       if(timing < min) { min = timing }
+  //       if(max < timing) { max = timing }
+  //       if(timing > 1) { countAbove1ms += 1 }
+  //       if(timing > 1000) { countAbove1s += 1 }
+  //     }
+  //     println(s"[TIMING ITERATION] $msg:")
+  //     println(s"   Total: ${f(sum)} ms")
+  //     println(s"   Count: ${f(count)}")
+  //     println(s"    Mean: ${sum.toDouble / count} ms")
+  //     println(s"     Min: ${f(min)} ms")
+  //     println(s"     Max: ${f(max)} ms")
+  //     println(s" # > 1ms: ${f(countAbove1ms)}")
+  //     println(s"  # > 1s: ${f(countAbove1s)}")
+  //   }
+  // }
 
 
   /**
