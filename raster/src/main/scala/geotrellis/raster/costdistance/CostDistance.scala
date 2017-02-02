@@ -31,24 +31,16 @@ object CostDistance {
   type Q = PriorityQueue[Cost]
   type EdgeCallback = (Cost => Unit)
 
-  def apply(frictionTile: Tile, points: Seq[(Int, Int)]): Tile = {
-    val cols = frictionTile.cols
-    val rows = frictionTile.rows
-    val costTile = DoubleArrayTile.empty(cols, rows)
-    val q: Q = new PriorityQueue(
-      (cols*2 + rows*2), new java.util.Comparator[Cost] {
+  /**
+    * Generate a Queue suitable for working with a tile of the given
+    * dimensions.
+    */
+  def generateQueue(cols: Int, rows: Int): Q = {
+    new PriorityQueue(
+      (cols*16 + rows*16), new java.util.Comparator[Cost] {
         override def equals(a: Any) = a.equals(this)
         def compare(a: Cost, b: Cost) = a._4.compareTo(b._4)
       })
-
-    def nop(cost: Cost): Unit = {}
-
-    points.foreach({ case (col, row) =>
-      val entry = (col, row, frictionTile.getDouble(col, row), 0.0)
-      q.add(entry)
-    })
-
-    compute(frictionTile, costTile, q, nop, nop, nop, nop)
   }
 
   /**
@@ -64,13 +56,46 @@ object CostDistance {
     * @param  points    List of starting points as tuples
     *
     */
+  def apply(
+    frictionTile: Tile,
+    points: Seq[(Int, Int)],
+    maxCost: Double = Double.PositiveInfinity
+  ): DoubleArrayTile = {
+    val cols = frictionTile.cols
+    val rows = frictionTile.rows
+    val costTile = DoubleArrayTile.empty(cols, rows)
+    val q: Q = generateQueue(cols, rows)
+
+    def nop(cost: Cost): Unit = {}
+
+    points.foreach({ case (col, row) =>
+      val entry = (col, row, frictionTile.getDouble(col, row), 0.0)
+      q.add(entry)
+    })
+
+    compute(frictionTile, costTile, maxCost, q, nop, nop, nop, nop)
+  }
+
+  /**
+    * Compute a cost tile.
+    *
+    * @param  frictionTile    The friction tile
+    * @param  costTile        The tile that will contain the costs
+    * @param  maxCost         The maximum cost of any path (truncates to limit computational cost)
+    * @param  q               A priority queue of Cost objects (a.k.a. candidate paths)
+    * @param  leftCallback    Called when a pixel in the left-most column is updated
+    * @param  rightCallback   Called when a pixel in the right-most column is updated
+    * @param  topCallbck      Called when a pixel in the top-most row is updated
+    * @param  bottomCallback  Called when a pixel in the bottom-most row is updated
+    */
   def compute(
     frictionTile: Tile,
     costTile: DoubleArrayTile,
+    maxCost: Double,
     q: Q,
     leftCallback: EdgeCallback, rightCallback: EdgeCallback,
     topCallback: EdgeCallback, bottomCallback: EdgeCallback
-  ): Tile = {
+  ): DoubleArrayTile = {
     val cols = frictionTile.cols
     val rows = frictionTile.rows
 
@@ -135,7 +160,7 @@ object CostDistance {
           Double.NaN
 
       // If the candidate path is a possible improvement ...
-      if (!isData(currentCost) || candidateCost <= currentCost) {
+      if ((candidateCost <= maxCost) && (!isData(currentCost) || candidateCost <= currentCost)) {
 
         // Over-write the current cost with the candidate cost
         if (inTile(col, row)) {
