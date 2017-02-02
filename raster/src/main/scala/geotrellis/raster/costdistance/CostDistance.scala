@@ -31,7 +31,7 @@ object CostDistance {
   type Q = PriorityQueue[Cost]
 
   val q: Q = new PriorityQueue(
-    (1<<11), new java.util.Comparator[Cost] {
+    (1<<12), new java.util.Comparator[Cost] {
       override def equals(a: Any) = a.equals(this)
       def compare(a: Cost, b: Cost) = a._4.compareTo(b._4)
     })
@@ -75,9 +75,9 @@ object CostDistance {
 
   /**
     * Given a location, an instantaneous cost at that neighboring
-    * location (friction), a friction tile, the cost to get to that
-    * location, and the distance from the neighboring pixel, enqueue a
-    * candidate path to this pixel.
+    * location (friction), a friction tile, the cost to get to the
+    * neighboring location, and the distance from the neighboring
+    * pixel, enqueue a candidate path to the present pixel.
     *
     * @param  col           The column of the given location
     * @param  row           The row of the given location
@@ -119,12 +119,12 @@ object CostDistance {
 
     // If the candidate path is a possible improvement ...
     if (!isData(currentCost) || candidateCost <= currentCost) {
+
       // ... over-write the current cost with the candidate cost
       if (inTile(col, row)) costTile.setDouble(col, row, candidateCost)
 
       // ... compute candidate costs for neighbors and enqueue them
       if (isPassable(friction1)) {
-
         enqueueNeighbor(col-1, row+0, friction1, frictionTile, candidateCost)
         enqueueNeighbor(col+1, row+0, friction1, frictionTile, candidateCost)
         enqueueNeighbor(col+0, row+1, friction1, frictionTile, candidateCost)
