@@ -108,6 +108,61 @@ class CostDistanceSpec extends FunSuite with RasterMatchers {
     }
   }
 
+  test("Boundary Callbacks") {
+    val n = NODATA
+    val N = Double.NaN
+    val size = 6
+
+    // Example from ESRI
+    // http://webhelp.esri.com/arcgisdesktop/9.2/index.cfm?TopicName=Cost_Distance_algorithm
+    val frictionTile = Array(
+      1,3,4,4,3,2,
+      4,6,2,3,7,6,
+      5,8,7,5,6,6,
+      1,4,5,n,5,1,
+      4,7,5,n,2,6,
+      1,2,2,1,3,4)
+
+    val actualLeft = Array.ofDim[Double](size)
+    val actualRight = Array.ofDim[Double](size)
+    val actualTop = Array.ofDim[Double](size)
+    val actualBottom = Array.ofDim[Double](size)
+
+    val expectedLeft = Array(2.0, 4.5, 8.0, 5.0, 2.5, 0.0)
+    val expectedRight = Array(9.2, 13.1, 12.7, 9.2, 11.1, 10.5)
+    val expectedTop = Array(2.0, 0.0, 0.0, 4.0, 6.7, 9.2)
+    val expectedBottom = Array(0.0, 1.5, 3.5, 5.0, 7.0, 10.5)
+
+    // Produce priority queue
+    val q = CostDistance.generateEmptyQueue(size, size)
+
+    // Insert starting points
+    val points = Seq((1,0), (2,0), (2,1), (0,5))
+    points.foreach({ case (col, row) =>
+      val entry = (col, row, frictionTile.getDouble(col, row), 0.0)
+      q.add(entry)
+    })
+
+    // Generate initial (empty) cost tile
+    val costTile = CostDistance.generateEmptyCostTile(size, size)
+
+    // Various callbacks to fill in the "actual" arrays
+    val leftCb: CostDistance.EdgeCallback = { case (_, row: Int, _, cost: Double) => actualLeft(row) = math.floor(cost*10)/10 }
+    val topCb: CostDistance.EdgeCallback = { case (col: Int, _, _, cost: Double) => actualTop(col) = math.floor(cost*10)/10 }
+    val rightCb: CostDistance.EdgeCallback = { case (_, row: Int, _, cost: Double) => actualRight(row) = math.floor(cost*10)/10 }
+    val bottomCb: CostDistance.EdgeCallback = { case (col: Int, _, _, cost: Double) => actualBottom(col) = math.floor(cost*10)/10 }
+
+    CostDistance.compute(
+      frictionTile, costTile,
+      Double.PositiveInfinity, q,
+      leftCb, topCb, rightCb, bottomCb)
+
+    actualLeft should be (expectedLeft)
+    actualTop should be (expectedTop)
+    actualRight should be (expectedRight)
+    actualBottom should be (expectedBottom)
+  }
+
   def print(d: DoubleArrayTile):Unit = println(d.array.toList.map(i => " %04.1f ".formatLocal(Locale.ENGLISH, i)).grouped(d.cols).map(_.mkString(",")).mkString("\n"))
 
 }

@@ -35,13 +35,16 @@ object CostDistance {
     * Generate a Queue suitable for working with a tile of the given
     * dimensions.
     */
-  def generateQueue(cols: Int, rows: Int): Q = {
+  def generateEmptyQueue(cols: Int, rows: Int): Q = {
     new PriorityQueue(
       (cols*16 + rows*16), new java.util.Comparator[Cost] {
         override def equals(a: Any) = a.equals(this)
         def compare(a: Cost, b: Cost) = a._4.compareTo(b._4)
       })
   }
+
+  def generateEmptyCostTile(cols: Int, rows: Int): DoubleArrayTile =
+    DoubleArrayTile.empty(cols, rows)
 
   /**
     * Generate a cost-distance raster based on a set of starting
@@ -63,8 +66,8 @@ object CostDistance {
   ): DoubleArrayTile = {
     val cols = frictionTile.cols
     val rows = frictionTile.rows
-    val costTile = DoubleArrayTile.empty(cols, rows)
-    val q: Q = generateQueue(cols, rows)
+    val costTile = generateEmptyCostTile(cols, rows)
+    val q: Q = generateEmptyQueue(cols, rows)
 
     def nop(cost: Cost): Unit = {}
 
@@ -84,8 +87,8 @@ object CostDistance {
     * @param  maxCost         The maximum cost of any path (truncates to limit computational cost)
     * @param  q               A priority queue of Cost objects (a.k.a. candidate paths)
     * @param  leftCallback    Called when a pixel in the left-most column is updated
-    * @param  rightCallback   Called when a pixel in the right-most column is updated
     * @param  topCallbck      Called when a pixel in the top-most row is updated
+    * @param  rightCallback   Called when a pixel in the right-most column is updated
     * @param  bottomCallback  Called when a pixel in the bottom-most row is updated
     */
   def compute(
@@ -93,8 +96,10 @@ object CostDistance {
     costTile: DoubleArrayTile,
     maxCost: Double,
     q: Q,
-    leftCallback: EdgeCallback, rightCallback: EdgeCallback,
-    topCallback: EdgeCallback, bottomCallback: EdgeCallback
+    leftCallback: EdgeCallback,
+    topCallback: EdgeCallback,
+    rightCallback: EdgeCallback,
+    bottomCallback: EdgeCallback
   ): DoubleArrayTile = {
     val cols = frictionTile.cols
     val rows = frictionTile.rows
