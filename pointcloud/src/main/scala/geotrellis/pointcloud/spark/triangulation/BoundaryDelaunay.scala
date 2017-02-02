@@ -249,11 +249,24 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
 
     // display the original inner loop
     val vs = collection.mutable.ListBuffer((dt.verts.getX(navigator.getSrc(o)), dt.verts.getY(navigator.getSrc(o))))
+    val path = collection.mutable.ListBuffer.empty[(ResultEdge, HalfEdge, ResultEdge)] // (o, e, ONext) 
     var lim = 0
     do {
       val oNext = navigator.getFlip(navigator.getNext(o))
+
       vs += ((dt.verts.getX(navigator.getDest(o)), dt.verts.getY(navigator.getDest(o))))
+      path += ((o, e, oNext))
+
+      var j = 0
+      do {
+        e = rotCWDest(e)
+        j += 1
+      } while (getSrc(e) != navigator.getSrc(oNext) && j < 20)
+      if (j == 20)
+        println("God damn it")
+
       o = navigator.getFlip(oNext)
+      e = getFlip(e)
       lim += 1
     } while (navigator.getDest(navigator.getFlip(o)) != navigator.getDest(o0) && lim < 10000)
     //println(geotrellis.vector.io.wkt.WKT.write(geotrellis.vector.Line(vs)))
@@ -265,25 +278,31 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
 
     val polys = collection.mutable.ListBuffer.empty[Polygon]
     var i = 0
-    do {
-      val oNext = navigator.getFlip(navigator.getNext(o))
+    path.foreach { case (oInit, eInit, oNext) => {
+      o = oInit
+      e = eInit
       println(s"oNext = [${navigator.getSrc(oNext)} -> ${navigator.getDest(oNext)}]")
       
       if (getSrc(e) != navigator.getSrc(o) || getDest(e) != navigator.getDest(o)) {
+        // send out accumulated triangles (debug)
         new java.io.PrintWriter("buffer.wkt") { write(geotrellis.vector.io.wkt.WKT.write(MultiPolygon(polys))); close }
+
+        println(s"Inconsistent state: e = [${getSrc(e)} -> ${getDest(e)}], o = [${navigator.getSrc(o)} -> ${navigator.getDest(o)}]")
         return ()
       }
+
       var j = 0
       do {
+        // rotate around an innerLoop point, adding and linking triangles
         println(s"e = ${(getSrc(e), getDest(e), getDest(getNext(e)))}, o = [${navigator.getSrc(o)} -> ${navigator.getDest(o)}]")
-        //println(s"o refers to edge [${navigator.getSrc(o)} -> ${navigator.getDest(o)}]")
+
         lookupTriangle(e) match {
           case None =>
             // bounding triangle has not yet been added
-           println("ADDING TRIANGLE")
+            println("ADDING TRIANGLE")
             val tri = copyConvertTriangle(e)
 
-            // add new tri to polys
+            // add new tri to polys (debugging)
             val a = navigator.getDest(tri)
             val b = navigator.getDest(navigator.getNext(tri))
             val c = navigator.getDest(navigator.getNext(navigator.getNext(tri)))
@@ -292,44 +311,58 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
             val pc = Point(verts(c).x, verts(c).y)
             polys += Polygon(pa, pb, pc, pa)
 
+            // link new triangle to existing triangulation
             try {
               navigator.join(tri, navigator.getFlip(o))
             } catch {
               case _: AssertionError =>
-                println("Shit.")
+                println("Improper join (should never see this)")
                 println(geotrellis.vector.io.wkt.WKT.write(Polygon(pa, pb, pc, pa)))
             }
 
             o = tri
           case Some(tri) =>
-            // bounding triangle exists
+            // bounding triangle already exists
             if (o != tri) {
-             println("join")
+              // join if it hasn't already been linked
+              println("join")
               navigator.join(tri, navigator.getFlip(o))
               o = tri
             } else {
-             println("no join")
+              // triangle is already properly connected
+              println("no join") // (debug)
             }
         }
-       //println(s"o refers to triangle ${(navigator.getSrc(o), navigator.getDest(o), navigator.getDest(navigator.getNext(o)))}")
 
         e = rotCWDest(e)
         o = navigator.rotCWDest(o)
+
+        // triangle neighborhood should be sane
         if (getSrc(e) != navigator.getSrc(o))
           println(s"Neighborhood out of sync in fillInnerLoop.  Expected ${getSrc(e)}, got ${navigator.getSrc(o)}")
         j += 1
-      } while (navigator.getSrc(o) != navigator.getSrc(oNext) && j < 16)
-     println("BUMP")
+      } while (navigator.getSrc(o) != navigator.getSrc(oNext) && j < 20)
 
-      // if (o != oNext) {
-      //   navigator.join(navigator.getFlip(o), oNext)
-      // }
-      o = navigator.getFlip(oNext)
-      e = getFlip(e)
-      i += 1
-    } while (navigator.getSrc(o) != navigator.getDest(o0) && i <= 5*lim/4)
-    if (i>5*lim/4)
-      println("stopped")
+      if (j == 20)
+        println("Early termination of linking stage")
+
+      println("BUMP")
+    }}
+
+    // sanity checks (debug)
+    val (_, fstE, fstOnext) = path.head
+    val (_, _, lstOnext) = path.last
+    var fstO = fstOnext
+    var j = 0
+    do {
+      fstO = navigator.rotCCWDest(fstO)
+      j += 1
+    } while (navigator.getSrc(fstO) != getSrc(fstE) && j < 20)
+    if (j == 20)
+      println("Problem around first")
+    j = 0
+    if (lstOnext != navigator.getFlip(fstO))
+      println("Didn't complete the loop!")
 
     new java.io.PrintWriter("buffer.wkt") { write(geotrellis.vector.io.wkt.WKT.write(MultiPolygon(polys))); close }
   }
