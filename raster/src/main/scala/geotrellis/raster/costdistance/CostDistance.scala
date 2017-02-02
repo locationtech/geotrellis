@@ -29,6 +29,27 @@ object CostDistance {
 
   type Cost = (Int, Int, Double, Double) // column, row, friction, cost
   type Q = PriorityQueue[Cost]
+  type EdgeCallback = (Cost => Unit)
+
+  def apply(frictionTile: Tile, points: Seq[(Int, Int)]): Tile = {
+    val cols = frictionTile.cols
+    val rows = frictionTile.rows
+    val costTile = DoubleArrayTile.empty(cols, rows)
+    val q: Q = new PriorityQueue(
+      (cols*2 + rows*2), new java.util.Comparator[Cost] {
+        override def equals(a: Any) = a.equals(this)
+        def compare(a: Cost, b: Cost) = a._4.compareTo(b._4)
+      })
+
+    def nop(cost: Cost): Unit = {}
+
+    points.foreach({ case (col, row) =>
+      val entry = (col, row, frictionTile.getDouble(col, row), 0.0)
+      q.add(entry)
+    })
+
+    compute(frictionTile, costTile, q, nop, nop, nop, nop)
+  }
 
   /**
     * Generate a cost-distance raster based on a set of starting
@@ -43,21 +64,31 @@ object CostDistance {
     * @param  points    List of starting points as tuples
     *
     */
-  def apply(frictionTile: Tile, points: Seq[(Int, Int)]): Tile = {
+  def compute(
+    frictionTile: Tile,
+    costTile: DoubleArrayTile,
+    q: Q,
+    leftCallback: EdgeCallback, rightCallback: EdgeCallback,
+    topCallback: EdgeCallback, bottomCallback: EdgeCallback
+  ): Tile = {
     val cols = frictionTile.cols
     val rows = frictionTile.rows
-    val costTile = DoubleArrayTile.empty(cols, rows)
-    val q: Q = new PriorityQueue(
-      (cols*2 + rows*2), new java.util.Comparator[Cost] {
-        override def equals(a: Any) = a.equals(this)
-        def compare(a: Cost, b: Cost) = a._4.compareTo(b._4)
-      })
+
+    require(frictionTile.dimensions == costTile.dimensions)
 
     def inTile(col: Int, row: Int): Boolean =
       ((0 <= col && col < cols) && (0 <= row && row < rows))
 
     def isPassable(f: Double): Boolean =
       (isData(f) && 0 <= f)
+
+    def leftEdge(col: Int, row: Int): Boolean = (col == 0)
+
+    def rightEdge(col: Int, row: Int): Boolean = (col == cols-1)
+
+    def topEdge(col: Int, row: Int): Boolean = (row == 0)
+
+    def bottomEdge(col: Int, row: Int): Boolean = (row == rows-1)
 
     /**
       * Given a location, an instantaneous cost at that neighboring
@@ -95,7 +126,8 @@ object CostDistance {
       * @param  q             The priority queue of candidate paths
       */
     def processNext(): Unit = {
-      val (col, row, friction1, candidateCost) = q.poll
+      val cost: Cost = q.poll
+      val (col, row, friction1, candidateCost) = cost
       val currentCost =
         if (inTile(col, row))
           costTile.getDouble(col, row)
@@ -105,10 +137,18 @@ object CostDistance {
       // If the candidate path is a possible improvement ...
       if (!isData(currentCost) || candidateCost <= currentCost) {
 
-        // ... over-write the current cost with the candidate cost
-        if (inTile(col, row)) costTile.setDouble(col, row, candidateCost)
+        // Over-write the current cost with the candidate cost
+        if (inTile(col, row)) {
+          costTile.setDouble(col, row, candidateCost)
 
-        // ... compute candidate costs for neighbors and enqueue them
+          // Register changes on the boundary
+          if (leftEdge(col, row)) leftCallback(cost)
+          if (rightEdge(col, row)) rightCallback(cost)
+          if (topEdge(col, row)) topCallback(cost)
+          if (bottomEdge(col, row)) bottomCallback(cost)
+        }
+
+        // Compute candidate costs for neighbors and enqueue them
         if (isPassable(friction1)) {
           enqueueNeighbor(col-1, row+0, friction1, candidateCost)
           enqueueNeighbor(col+1, row+0, friction1, candidateCost)
@@ -122,10 +162,6 @@ object CostDistance {
       }
     }
 
-    points.foreach({ case (col, row) =>
-      val entry = (col, row, frictionTile.getDouble(col, row), 0.0)
-      q.add(entry)
-    })
     while (!q.isEmpty) processNext
 
     costTile
