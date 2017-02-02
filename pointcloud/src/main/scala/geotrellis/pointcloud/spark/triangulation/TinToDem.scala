@@ -145,4 +145,46 @@ object TinToDem {
         }
       }, preservesPartitioning = true)
   }
+
+  def allStitch(rdd: RDD[(SpatialKey, Array[Coordinate])], layoutDefinition: LayoutDefinition, extent: Extent, options: Options = Options.DEFAULT): RDD[(SpatialKey, Tile)] = {
+
+    // Assumes that a partitioner has already been set
+
+    val triangulations: RDD[(SpatialKey, DelaunayTriangulation)] =
+      rdd
+        .mapValues { points =>
+          DelaunayTriangulation(points)
+        }
+
+    triangulations
+      .collectNeighbors
+      .mapPartitions({ partition =>
+        partition.map { case (key, neighbors) =>
+          val newNeighbors =
+            neighbors.map { case (direction, (key2, dt)) =>
+              val ex = layoutDefinition.mapTransform(key2)
+              (direction, (dt, ex))
+            }
+          (key, newNeighbors.toMap)
+        }
+      }, preservesPartitioning = true)
+      .join(triangulations)
+      .mapPartitions({ partition =>
+        partition.map { case (key, (nbhd, triangulation)) => // : (Map[Direction, (BoundaryDelaunay, Extent)], DelaunayTriangulation)
+          val stitched = StitchedDelaunay(nbhd, false)
+
+          val extent = layoutDefinition.mapTransform(key)
+          val re =
+            RasterExtent(
+              extent,
+              layoutDefinition.tileCols,
+              layoutDefinition.tileRows
+            )
+
+          val tile = stitched.rasterize(re, options.cellType)(triangulation)
+
+          (key, tile)
+        }
+      }, preservesPartitioning = true)
+  }
 }

@@ -9,12 +9,16 @@ class TriangleMap(halfEdgeTable: HalfEdgeTable) {
   private val triangles = collection.mutable.Map.empty[TriIdx, Int]
 
   def +=(i1: Int, i2: Int, i3: Int, edge: Int): Unit = {
+    // if (isTriangle(i1,i2,i3))
+    //   println(s"Attempting to re-add triangle ${(i1,i2,i3)}")
     triangles += TriangleMap.regularizeIndex(i1, i2, i3) -> edge
   }
 
   def +=(keyValue: (TriIdx, Int)): Unit = {
     val ((a, b, c), edge) = keyValue
     //println(s"Adding triangle ($a, $b, $c)")
+    // if (isTriangle(a,b,c))
+    //   println(s"Attempting to re-add triangle ${(a,b,c)}")
     triangles += TriangleMap.regularizeIndex(a, b, c) -> edge
   }
 
@@ -47,9 +51,9 @@ class TriangleMap(halfEdgeTable: HalfEdgeTable) {
 
   def isTriangle(idx: (Int, Int, Int)): Boolean = triangles.contains(TriangleMap.regularizeIndex(idx))
 
-  def get(idx: TriIdx): Option[Int] = triangles.get(idx)
+  def get(idx: TriIdx): Option[Int] = triangles.get(TriangleMap.regularizeIndex(idx))
 
-  def get(i1: Int, i2: Int, i3: Int): Option[Int] = triangles.get((i1, i2, i3))
+  def get(i1: Int, i2: Int, i3: Int): Option[Int] = triangles.get(TriangleMap.regularizeIndex(i1, i2, i3))
 
   def getTriangles() = triangles.toMap
 
