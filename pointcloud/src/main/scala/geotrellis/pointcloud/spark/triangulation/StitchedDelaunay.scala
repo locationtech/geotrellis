@@ -43,7 +43,7 @@ object StitchedDelaunay {
         case 7 => Bottom
         case 8 => BottomRight
       }
-      neighbors(dir)._1.pointSet.getCoordinate(i)
+      neighbors(dir)._1.pointSet.getCoordinate(index)
     }
 
   def indexToVertex(neighbors: Map[Direction, (DelaunayTriangulation, Extent)])(implicit dummy: DummyImplicit): Int => Coordinate =
@@ -62,7 +62,7 @@ object StitchedDelaunay {
         case 7 => Bottom
         case 8 => BottomRight
       }
-      neighbors(dir)._1.pointSet.getCoordinate(i)
+      neighbors(dir)._1.pointSet.getCoordinate(index)
     }
 
   /**

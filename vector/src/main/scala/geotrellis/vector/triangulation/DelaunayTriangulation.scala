@@ -8,7 +8,7 @@ import scala.annotation.tailrec
 
 case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdgeTable, debug: Boolean)
 {
-  val triangles = new TriangleMap(halfEdgeTable)
+  val triangleMap = new TriangleMap(halfEdgeTable)
 
   val predicates = new Predicates(pointSet, halfEdgeTable)
   import halfEdgeTable._
@@ -141,11 +141,11 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
         if (isCCW(v1, v2, v3)) {
           val e = createHalfEdges(v1, v2, v3)
           val p = getPrev(e)
-          triangles += (v1, v2, v3) -> p
+          triangleMap += (v1, v2, v3) -> p
           (p, false)
         } else if(isCCW(v1, v3, v2)) {
           val e = createHalfEdges(v1, v3, v2)
-          triangles += (v1, v3, v2) -> e
+          triangleMap += (v1, v3, v2) -> e
           (e, false)
         } else {
           // Linear case
@@ -164,7 +164,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
         var (right, isRightLinear) = triangulate(med+1,hi)
 
         // iTimer.time {
-        stitcher.merge(left, isLeftLinear, right, isRightLinear, triangles)
+        stitcher.merge(left, isLeftLinear, right, isRightLinear, triangleMap)
         // }
       }
     }
@@ -192,7 +192,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
       e = getNext(e)
     } while (e != boundary)
 
-    triangles.getTriangles.forall{ case (_, e) =>
+    triangleMap.getTriangles.forall{ case (_, e) =>
       var f = e
       var ok = true
       do {
@@ -216,7 +216,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
       e = getNext(e)
     } while (e != bound)
 
-    triangles.getTriangles.filter { case ((a, b, c), _) =>
+    triangleMap.getTriangles.filter { case ((a, b, c), _) =>
       (lo <= a && a <= hi) &&
       (lo <= b && b <= hi) &&
       (lo <= c && c <= hi)
@@ -236,7 +236,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
 
   def writeWKT(wktFile: String) = {
     val indexToCoord = pointSet.getCoordinate(_)
-    val mp = MultiPolygon(triangles.getTriangles.keys.toSeq.map{
+    val mp = MultiPolygon(triangleMap.getTriangles.keys.toSeq.map{
       case (i,j,k) => Polygon(indexToCoord(i), indexToCoord(j), indexToCoord(k), indexToCoord(i))
     })
     val wktString = WKT.write(mp)

@@ -203,5 +203,5 @@ object DelaunayRasterizer {
   }
 
   def rasterizeDelaunayTriangulation(dt: DelaunayTriangulation, re: RasterExtent, tile: MutableArrayTile): Unit =
-    rasterize(tile, re, dt.triangles, dt.halfEdgeTable, dt.pointSet)
+    rasterize(tile, re, dt.triangleMap, dt.halfEdgeTable, dt.pointSet)
 }

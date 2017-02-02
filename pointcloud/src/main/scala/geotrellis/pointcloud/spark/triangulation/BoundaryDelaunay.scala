@@ -289,7 +289,7 @@ object BoundaryDelaunay {
       else
         copyConvertBoundingTris
 
-    BoundaryDelaunay(DelaunayPointSet(verts.toMap), halfEdgeTable, boundary, isLinear)
+    BoundaryDelaunay(DelaunayPointSet(verts.toMap), halfEdgeTable, triangles, boundary, isLinear)
   }
 
   // // TODO: Remove
@@ -305,6 +305,7 @@ object BoundaryDelaunay {
 case class BoundaryDelaunay(
   pointSet: DelaunayPointSet,
   halfEdgeTable: HalfEdgeTable,
+  triangleMap: TriangleMap,
   boundary: Int,
   isLinear: Boolean
 )

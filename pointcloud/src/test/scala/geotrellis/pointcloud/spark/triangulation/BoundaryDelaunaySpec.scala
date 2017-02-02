@@ -35,21 +35,22 @@ class BoundaryDelaunaySpec extends FunSpec with Matchers {
       val pts = (for ( i <- 1 to 1000 ) yield randomPoint(ex)).toArray
       val dt = DelaunayTriangulation(pts)
       val bdt = BoundaryDelaunay(dt, ex)
-      val bdtTris = bdt.triangles.getTriangles.keys.toSet
+      val bdtTris = bdt.triangleMap.getTriangles.keys.toSet
 
       def circumcircleLeavesExtent(tri: Int): Boolean = {
-        import dt.navigator._
-        implicit val trans = dt.verts.getCoordinate(_)
+        import dt.halfEdgeTable._
+        import dt.pointSet._
+        import dt.predicates._
 
-        val center = Predicates.circleCenter(getDest(tri), getDest(getNext(tri)), getDest(getNext(getNext(tri))))
-        val radius = center.distance(trans(getDest(tri)))
+        val center = circleCenter(getDest(tri), getDest(getNext(tri)), getDest(getNext(getNext(tri))))
+        val radius = center.distance(getCoordinate(getDest(tri)))
         val ppd = new PointPairDistance
-        
+
         DistanceToPoint.computeDistance(ex.toPolygon.jtsGeom, center, ppd)
         ppd.getDistance < radius
       }
 
-      dt.triangles.getTriangles.toSeq.forall{ case (idx, tri) => {
+      dt.triangleMap.getTriangles.toSeq.forall{ case (idx, tri) => {
         if (circumcircleLeavesExtent(tri))
           bdtTris.contains(idx)
         else {
@@ -64,9 +65,10 @@ class BoundaryDelaunaySpec extends FunSpec with Matchers {
       val dt = DelaunayTriangulation(pts, false)
       val bdt = BoundaryDelaunay(dt, Extent(0,0,1,1))
 
-      implicit val trans = { i: Int => pts(i) }
-      implicit val nav = bdt.navigator
-      import nav._
+      // implicit val trans = { i: Int => pts(i) }
+      import bdt.halfEdgeTable._
+      val predicates = new Predicates(bdt.pointSet, bdt.halfEdgeTable)
+      import predicates._
 
       var validCW = true
       var e = bdt.boundary
@@ -74,7 +76,7 @@ class BoundaryDelaunaySpec extends FunSpec with Matchers {
         var f = e
         do {
           if (rotCWSrc(f) != e)
-            validCW = !Predicates.isLeftOf(f, getDest(rotCWSrc(f)))
+            validCW = !isLeftOf(f, getDest(rotCWSrc(f)))
 
           f = rotCWSrc(f)
         } while (validCW && f != e)
@@ -88,7 +90,7 @@ class BoundaryDelaunaySpec extends FunSpec with Matchers {
         var f = getFlip(e)
         do {
           if (rotCCWSrc(f) != getFlip(e))
-            validCCW = !Predicates.isRightOf(f, getDest(rotCCWSrc(f)))
+            validCCW = !isRightOf(f, getDest(rotCCWSrc(f)))
 
           f = rotCCWSrc(f)
         } while (validCCW && f != getFlip(e))
