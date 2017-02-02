@@ -50,11 +50,11 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
   def lookupTriangle(tri: HalfEdge): Option[ResultEdge] = {
     import dt.navigator._
 
-    val normalized =
-      TriangleMap.regularizeIndex(
-        getDest(tri), getDest(getNext(tri)), getDest(getNext(getNext(tri)))
-      )
-    triangles.get(normalized) match {
+    // val normalized =
+    //   TriangleMap.regularizeIndex(
+    //     getDest(tri), getDest(getNext(tri)), getDest(getNext(getNext(tri)))
+    //   )
+    triangles.get(getDest(tri), getDest(getNext(tri)), getDest(getNext(getNext(tri)))) match {
       case Some(base) => {
         var e = base
         do {
@@ -65,6 +65,7 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
           e = navigator.getNext(e)
         } while (e != base)
 
+        println("Should never see this")
         Some(base)
       }
       case None => {
@@ -179,6 +180,9 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
     copy
   }
 
+  //val innerLoop = collection.mutable.ListBuffer.empty[(HalfEdge, ResultEdge)]
+  var innerLoop: (HalfEdge, ResultEdge) = (-1, -1)
+
   def recursiveAddTris(e0: HalfEdge, opp0: ResultEdge): Unit = {
     import dt.navigator._
 
@@ -192,40 +196,142 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
       //navigator.showLoop(opp)
       //println(s"=======")
       val isOuterEdge = outerEdges.contains((getSrc(e), getDest(e)))
-      val isFlipOuterEdge = {
+      val isFlipInInnerRing = {
         val flip = navigator.getFlip(opp)
         navigator.getDest(navigator.getNext(navigator.getNext(navigator.getNext(flip)))) != navigator.getDest(flip)
       }
-      if (!isOuterEdge && isFlipOuterEdge) {
-        //  opp.flip must be boundary edge (isn't interior to triangle)
+      if (!isOuterEdge && isFlipInInnerRing) {
+        //  We are not on the boundary of the original triangulation, and opp.flip isn't already part of a triangle
         lookupTriangle(e) match {
           case Some(tri) =>
+            // opp.flip should participate in the existing triangle specified by tri.  Connect opp to tri so that it does.
             //println(s"    --- FOUND TRIANGLE:")
             //navigator.showLoop(tri)
             navigator.join(opp, tri)
-          // r.joinTriangles(opp, tri)
-          // println(s"    JOIN FOUND TRIANGLE")
-          // r.showBoundingLoop(r.getFlip(r.getNext(tri)))
-          // r.showBoundingLoop(r.getFlip(r.getNext(opp)))
+            // r.joinTriangles(opp, tri)
+            // println(s"    JOIN FOUND TRIANGLE")
+            // r.showBoundingLoop(r.getFlip(r.getNext(tri)))
+            // r.showBoundingLoop(r.getFlip(r.getNext(opp)))
           case None =>
+            // We haven't been here yet, so create a triangle to mirror the one referred to by e, and link opp to it.
+            // (If that triangle belongs in the boundary, otherwise, mark opp as part of the inner ring for later)
             //println("     --- DID NOT FIND TRIANGLE")
-            val tri = copyConvertTriangle(e)
-            navigator.join(opp, tri)
+
+      //      val tri = copyConvertTriangle(e)
+      //      navigator.join(opp, tri)
 
             if (circumcircleLeavesExtent(boundingExtent)(e)) {
               //println("         Triangle circle leaves extent")
-      //        val tri = copyConvertTriangle(e)
+              val tri = copyConvertTriangle(e)
 
               //print("         ")
               //navigator.showLoop(tri)
-      //        navigator.join(opp, tri)
+              navigator.join(opp, tri)
 
               workQueue.enqueue( (getFlip(getNext(e)), navigator.getNext(tri)) )
               workQueue.enqueue( (getFlip(getNext(getNext(e))), navigator.getNext(navigator.getNext(tri))) )
+            } else {
+              //innerLoop += ((e, opp))
+              innerLoop = (e, opp)
             }
         }
       }
     }
+  }
+
+  def fillInnerLoop(): Unit = {
+    import dt.navigator._
+
+    val e0 = innerLoop._1
+    val o0 = innerLoop._2
+
+    var (e, o) = (e0, navigator.getFlip(o0))
+
+    // display the original inner loop
+    val vs = collection.mutable.ListBuffer((dt.verts.getX(navigator.getSrc(o)), dt.verts.getY(navigator.getSrc(o))))
+    var lim = 0
+    do {
+      val oNext = navigator.getFlip(navigator.getNext(o))
+      vs += ((dt.verts.getX(navigator.getDest(o)), dt.verts.getY(navigator.getDest(o))))
+      o = navigator.getFlip(oNext)
+      lim += 1
+    } while (navigator.getDest(navigator.getFlip(o)) != navigator.getDest(o0) && lim < 10000)
+    //println(geotrellis.vector.io.wkt.WKT.write(geotrellis.vector.Line(vs)))
+    o = navigator.getFlip(o0)
+
+    println(s"Initial condition: e = [${getSrc(e)} -> ${getDest(e)}], o = [${navigator.getSrc(o)} -> ${navigator.getDest(o)}]")
+    println(s"Next on inner loop: [${navigator.getSrc(navigator.getNext(o))} -> ${navigator.getDest(navigator.getNext(o))}]")
+    println(s"lim = $lim")
+
+    val polys = collection.mutable.ListBuffer.empty[Polygon]
+    var i = 0
+    do {
+      val oNext = navigator.getFlip(navigator.getNext(o))
+      println(s"oNext = [${navigator.getSrc(oNext)} -> ${navigator.getDest(oNext)}]")
+      
+      if (getSrc(e) != navigator.getSrc(o) || getDest(e) != navigator.getDest(o)) {
+        new java.io.PrintWriter("buffer.wkt") { write(geotrellis.vector.io.wkt.WKT.write(MultiPolygon(polys))); close }
+        return ()
+      }
+      var j = 0
+      do {
+        println(s"e = ${(getSrc(e), getDest(e), getDest(getNext(e)))}, o = [${navigator.getSrc(o)} -> ${navigator.getDest(o)}]")
+        //println(s"o refers to edge [${navigator.getSrc(o)} -> ${navigator.getDest(o)}]")
+        lookupTriangle(e) match {
+          case None =>
+            // bounding triangle has not yet been added
+           println("ADDING TRIANGLE")
+            val tri = copyConvertTriangle(e)
+
+            // add new tri to polys
+            val a = navigator.getDest(tri)
+            val b = navigator.getDest(navigator.getNext(tri))
+            val c = navigator.getDest(navigator.getNext(navigator.getNext(tri)))
+            val pa = Point(verts(a).x, verts(a).y)
+            val pb = Point(verts(b).x, verts(b).y)
+            val pc = Point(verts(c).x, verts(c).y)
+            polys += Polygon(pa, pb, pc, pa)
+
+            try {
+              navigator.join(tri, navigator.getFlip(o))
+            } catch {
+              case _: AssertionError =>
+                println("Shit.")
+                println(geotrellis.vector.io.wkt.WKT.write(Polygon(pa, pb, pc, pa)))
+            }
+
+            o = tri
+          case Some(tri) =>
+            // bounding triangle exists
+            if (o != tri) {
+             println("join")
+              navigator.join(tri, navigator.getFlip(o))
+              o = tri
+            } else {
+             println("no join")
+            }
+        }
+       //println(s"o refers to triangle ${(navigator.getSrc(o), navigator.getDest(o), navigator.getDest(navigator.getNext(o)))}")
+
+        e = rotCWDest(e)
+        o = navigator.rotCWDest(o)
+        if (getSrc(e) != navigator.getSrc(o))
+          println(s"Neighborhood out of sync in fillInnerLoop.  Expected ${getSrc(e)}, got ${navigator.getSrc(o)}")
+        j += 1
+      } while (navigator.getSrc(o) != navigator.getSrc(oNext) && j < 16)
+     println("BUMP")
+
+      // if (o != oNext) {
+      //   navigator.join(navigator.getFlip(o), oNext)
+      // }
+      o = navigator.getFlip(oNext)
+      e = getFlip(e)
+      i += 1
+    } while (navigator.getSrc(o) != navigator.getDest(o0) && i <= 5*lim/4)
+    if (i>5*lim/4)
+      println("stopped")
+
+    new java.io.PrintWriter("buffer.wkt") { write(geotrellis.vector.io.wkt.WKT.write(MultiPolygon(polys))); close }
   }
 
   def copyConvertBoundingTris(): ResultEdge = {
@@ -243,6 +349,9 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
       e = getNext(e)
       ne = navigator.getNext(ne)
     } while (e != dt.boundary)
+
+    writeWKT("bounds.wkt")
+    fillInnerLoop
 
     // // Add fans of boundary edges
     // do {
