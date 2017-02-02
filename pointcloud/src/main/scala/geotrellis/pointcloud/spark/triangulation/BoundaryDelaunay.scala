@@ -108,7 +108,8 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
     correspondingEdge((getSrc(dt.boundary), getDest(dt.boundary)))
   }
 
-  val outerEdges = collection.mutable.Set[(Vertex, Vertex)]()
+  val outerEdges = collection.mutable.Set.empty[(Vertex, Vertex)]
+  val innerEdges = collection.mutable.Map.empty[(Vertex, Vertex), (HalfEdge, ResultEdge)]
 
   def copyConvertBoundingLoop(): ResultEdge = {
     import dt.navigator._
@@ -127,14 +128,16 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
     // navigator.setNext(navigator.getFlip(navigator.getNext(copy)), navigator.getFlip(copy))
     // copy
 
-    outerEdges += ((getSrc(dt.boundary), getDest(dt.boundary)))
     val first = copyConvertEdge(dt.boundary)
     var last = first
+    outerEdges += ((getSrc(dt.boundary), getDest(dt.boundary)))
+    innerEdges += (getDest(dt.boundary), getSrc(dt.boundary)) -> (getFlip(dt.boundary), first)
     var e = getNext(dt.boundary)
 
     do {
-      outerEdges += ((getSrc(e), getDest(e)))
       val copy = copyConvertEdge(e)
+      outerEdges += ((getSrc(e), getDest(e)))
+      innerEdges += (getDest(e), getSrc(e)) -> (getFlip(e), copy)
       navigator.setNext(last, copy)
       navigator.setNext(navigator.getFlip(copy), navigator.getFlip(last))
       last = copy
@@ -180,7 +183,7 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
     copy
   }
 
-  val innerLoop = collection.mutable.ListBuffer.empty[(HalfEdge, ResultEdge)]
+  //val innerLoop = collection.mutable.ListBuffer.empty[(HalfEdge, ResultEdge)]
   //var innerLoop: (HalfEdge, ResultEdge) = (-1, -1)
 
   def recursiveAddTris(e0: HalfEdge, opp0: ResultEdge): Unit = {
@@ -196,11 +199,12 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
       //navigator.showLoop(opp)
       //println(s"=======")
       val isOuterEdge = outerEdges.contains((getSrc(e), getDest(e)))
-      val isFlipInInnerRing = {
-        val flip = navigator.getFlip(opp)
-        navigator.getDest(navigator.getNext(navigator.getNext(navigator.getNext(flip)))) != navigator.getDest(flip)
-      }
-      if (!isOuterEdge && isFlipInInnerRing) {
+      // val isFlipInInnerRing = {
+      //   val flip = navigator.getFlip(opp)
+      //   navigator.getDest(navigator.getNext(navigator.getNext(navigator.getNext(flip)))) != navigator.getDest(flip)
+      // }
+      val isInInnerRing = innerEdges.contains(getSrc(e) -> getDest(e))
+      if (!isOuterEdge && isInInnerRing) {
         //  We are not on the boundary of the original triangulation, and opp.flip isn't already part of a triangle
         lookupTriangle(e) match {
           case Some(tri) =>
@@ -208,6 +212,8 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
             //println(s"    --- FOUND TRIANGLE:")
             //navigator.showLoop(tri)
             navigator.join(opp, tri)
+            innerEdges -= navigator.getSrc(tri) -> navigator.getDest(tri)
+            innerEdges -= navigator.getDest(tri) -> navigator.getSrc(tri)
             // r.joinTriangles(opp, tri)
             // println(s"    JOIN FOUND TRIANGLE")
             // r.showBoundingLoop(r.getFlip(r.getNext(tri)))
@@ -223,15 +229,20 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
             if (circumcircleLeavesExtent(boundingExtent)(e)) {
               //println("         Triangle circle leaves extent")
               val tri = copyConvertTriangle(e)
+              val tri2 = navigator.getNext(tri)
+              val tri3 = navigator.getNext(navigator.getNext(tri))
 
               //print("         ")
               //navigator.showLoop(tri)
               navigator.join(opp, tri)
+              innerEdges -= navigator.getSrc(tri) -> navigator.getDest(tri)
+              innerEdges += (navigator.getDest(tri2), navigator.getSrc(tri2)) -> (getFlip(getNext(e)), tri2)
+              innerEdges += (navigator.getDest(tri3), navigator.getSrc(tri3)) -> (getFlip(getNext(getNext(e))), tri3)
 
-              workQueue.enqueue( (getFlip(getNext(e)), navigator.getNext(tri)) )
-              workQueue.enqueue( (getFlip(getNext(getNext(e))), navigator.getNext(navigator.getNext(tri))) )
+              workQueue.enqueue( (getFlip(getNext(e)), tri2) )
+              workQueue.enqueue( (getFlip(getNext(getNext(e))), tri3) )
             } else {
-              innerLoop += ((e, opp))
+              //innerLoop += ((e, opp))
               //innerLoop = (e, opp)
             }
         }
@@ -243,10 +254,12 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
     import dt.navigator._
 
     val polys = collection.mutable.ListBuffer.empty[Polygon]
-    val bounds = innerLoop.map{ case (_, o) => (navigator.getSrc(o) -> navigator.getDest(o), o) }.toMap
-    val boundrefs = innerLoop.map(_._2).toSet
+    // val bounds = innerLoop.map{ case (_, o) => (navigator.getSrc(o) -> navigator.getDest(o), o) }.toMap
+    // val boundrefs = innerLoop.map(_._2).toSet
+    val bounds = innerEdges.values.map{ case (_, o) => (navigator.getSrc(o) -> navigator.getDest(o), o) }.toMap
+    val boundrefs = innerEdges.values.map(_._2).toSet
 
-    innerLoop.foreach{ case (e0, o0) =>{
+    innerEdges.values.foreach{ case (e0, o0) =>{
       var e = e0
       var o = navigator.getFlip(o0)
 
@@ -321,6 +334,8 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
       if (j == 20)
         println("Premature termination")
     }}
+
+    new java.io.PrintWriter("buffer.wkt") { write(geotrellis.vector.io.wkt.WKT.write(MultiPolygon(polys))); close }
 
 /*
     val e0 = innerLoop._1
@@ -446,8 +461,6 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
       println("Didn't complete the loop!")
 
 */
-    new java.io.PrintWriter("buffer.wkt") { write(geotrellis.vector.io.wkt.WKT.write(MultiPolygon(polys))); close }
-
   }
 
   def copyConvertBoundingTris(): ResultEdge = {
