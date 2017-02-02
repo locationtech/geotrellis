@@ -180,8 +180,8 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
     copy
   }
 
-  //val innerLoop = collection.mutable.ListBuffer.empty[(HalfEdge, ResultEdge)]
-  var innerLoop: (HalfEdge, ResultEdge) = (-1, -1)
+  val innerLoop = collection.mutable.ListBuffer.empty[(HalfEdge, ResultEdge)]
+  //var innerLoop: (HalfEdge, ResultEdge) = (-1, -1)
 
   def recursiveAddTris(e0: HalfEdge, opp0: ResultEdge): Unit = {
     import dt.navigator._
@@ -231,8 +231,8 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
               workQueue.enqueue( (getFlip(getNext(e)), navigator.getNext(tri)) )
               workQueue.enqueue( (getFlip(getNext(getNext(e))), navigator.getNext(navigator.getNext(tri))) )
             } else {
-              //innerLoop += ((e, opp))
-              innerLoop = (e, opp)
+              innerLoop += ((e, opp))
+              //innerLoop = (e, opp)
             }
         }
       }
@@ -242,6 +242,83 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
   def fillInnerLoop(): Unit = {
     import dt.navigator._
 
+    val polys = collection.mutable.ListBuffer.empty[Polygon]
+    val bounds = innerLoop.map{ case (_, o) => (navigator.getSrc(o) -> navigator.getDest(o), o) }.toMap
+    val boundrefs = innerLoop.map(_._2).toSet
+
+    innerLoop.foreach{ case (e0, o0) =>{
+      var e = e0
+      var o = navigator.getFlip(o0)
+
+      var continue = true
+      do {
+        if (getSrc(e) != navigator.getSrc(o) || getDest(e) != navigator.getDest(o)) {
+          new java.io.PrintWriter("buffer.wkt") { write(geotrellis.vector.io.wkt.WKT.write(MultiPolygon(polys))); close } // (debug)
+
+          println(s"Inconsistent state: e = [${getSrc(e)} -> ${getDest(e)}], o = [${navigator.getSrc(o)} -> ${navigator.getDest(o)}]")
+          return ()
+        }
+        
+        // pulse (debug)
+        println(s"e = ${(getSrc(e), getDest(e), getDest(getNext(e)))}, o = [${navigator.getSrc(o)} -> ${navigator.getDest(o)}]")
+
+        bounds.get(navigator.getSrc(o) -> navigator.getDest(o)) match {
+          case Some(oNext) =>
+            // we've arrived at the edge.  Make sure we're joined up.
+            if (o != oNext)
+              navigator.join(navigator.getFlip(o), oNext)
+            continue = false
+
+          case None =>
+            // not at the boundary.  Keep going.
+            
+            lookupTriangle(e) match {
+              case None =>
+                // bounding triangle has not yet been added
+                println("ADDING TRIANGLE")
+                val tri = copyConvertTriangle(e)
+
+                // add new tri to polys (debugging)
+                val a = navigator.getDest(tri)
+                val b = navigator.getDest(navigator.getNext(tri))
+                val c = navigator.getDest(navigator.getNext(navigator.getNext(tri)))
+                val pa = Point(verts(a).x, verts(a).y)
+                val pb = Point(verts(b).x, verts(b).y)
+                val pc = Point(verts(c).x, verts(c).y)
+                polys += Polygon(pa, pb, pc, pa)
+
+                // link new triangle to existing triangulation
+                try {
+                  navigator.join(tri, navigator.getFlip(o))
+                } catch {
+                  case _: AssertionError =>
+                    println("Improper join (should never see this)")
+                    println(geotrellis.vector.io.wkt.WKT.write(Polygon(pa, pb, pc, pa)))
+                }
+
+                o = tri
+              case Some(tri) =>
+                continue = false
+
+                // bounding triangle already exists
+                if (o != tri) {
+                  // join if it hasn't already been linked
+                  println("join")
+                  navigator.join(tri, navigator.getFlip(o))
+                  o = tri
+                } else {
+                  // triangle is already properly connected
+                  println("no join") // (debug)
+                }
+            }
+        }
+
+        e = rotCWDest(e)
+        o = navigator.rotCWDest(o)
+      } while (continue)
+    }}
+
+/*
     val e0 = innerLoop._1
     val o0 = innerLoop._2
 
@@ -364,7 +441,9 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
     if (lstOnext != navigator.getFlip(fstO))
       println("Didn't complete the loop!")
 
+*/
     new java.io.PrintWriter("buffer.wkt") { write(geotrellis.vector.io.wkt.WKT.write(MultiPolygon(polys))); close }
+
   }
 
   def copyConvertBoundingTris(): ResultEdge = {
