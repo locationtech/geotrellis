@@ -251,6 +251,7 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
       var o = navigator.getFlip(o0)
 
       var continue = true
+      var j = 0
       do {
         if (getSrc(e) != navigator.getSrc(o) || getDest(e) != navigator.getDest(o)) {
           new java.io.PrintWriter("buffer.wkt") { write(geotrellis.vector.io.wkt.WKT.write(MultiPolygon(polys))); close } // (debug)
@@ -298,7 +299,7 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
 
                 o = tri
               case Some(tri) =>
-                continue = false
+                // continue = false
 
                 // bounding triangle already exists
                 if (o != tri) {
@@ -315,7 +316,10 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
 
         e = rotCWDest(e)
         o = navigator.rotCWDest(o)
-      } while (continue)
+        j += 1
+      } while (continue && j < 20)
+      if (j == 20)
+        println("Premature termination")
     }}
 
 /*
