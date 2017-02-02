@@ -16,13 +16,14 @@
 
 package geotrellis.raster.costdistance
 
-import java.util.Locale
-
 import geotrellis.raster._
 import geotrellis.raster.testkit._
+
 import org.scalatest._
 
+import java.util.Locale
 import scala.language.implicitConversions
+
 
 class CostDistanceSpec extends FunSuite with RasterMatchers {
   implicit def array2Tile(a: Array[Int]): Tile = {
@@ -161,6 +162,45 @@ class CostDistanceSpec extends FunSuite with RasterMatchers {
     actualTop should be (expectedTop)
     actualRight should be (expectedRight)
     actualBottom should be (expectedBottom)
+  }
+
+  test("Max Distance") {
+    val n = NODATA
+    val N = Double.NaN
+
+    // Example from ESRI
+    // http://webhelp.esri.com/arcgisdesktop/9.2/index.cfm?TopicName=Cost_Distance_algorithm
+    val costTile = Array(
+      1,3,4,4,3,2,
+      4,6,2,3,7,6,
+      5,8,7,5,6,6,
+      1,4,5,n,5,1,
+      4,7,5,n,2,6,
+      1,2,2,1,3,4)
+
+    val points = Seq(
+      (1,0),
+      (2,0),
+      (2,1),
+      (0,5))
+
+    val cd = CostDistance(costTile, points, 2.6)
+
+    val d = cd.toArrayDouble()
+
+    val expected = Array(
+      2.0, 0.0, 0.0,   N,   N,   N,
+        N,   N, 0.0, 2.5,   N,   N,
+        N,   N,   N,   N,   N,   N,
+        N,   N,   N,   N,   N,   N,
+      2.5,   N,   N,   N,   N,   N,
+      0.0, 1.5,   N,   N,   N,   N).map(i => " %04.1f ".formatLocal(Locale.ENGLISH, i))
+
+    val strings = d.map(i => " %04.1f ".formatLocal(Locale.ENGLISH, i))
+
+    for(i <- 0 until strings.length) {
+      strings(i) should be (expected(i))
+    }
   }
 
   def print(d: DoubleArrayTile):Unit = println(d.array.toList.map(i => " %04.1f ".formatLocal(Locale.ENGLISH, i)).grouped(d.cols).map(_.mkString(",")).mkString("\n"))
