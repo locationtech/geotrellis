@@ -34,6 +34,7 @@ object BoundaryDelaunay {
       import dt.halfEdgeTable._
       import dt.predicates._
       implicit val trans = dt.pointSet.getCoordinate(_)
+    }
 
   /*
    * A function to convert an original triangle (referencing HalfEdge and Vertex)
