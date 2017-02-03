@@ -125,14 +125,14 @@ class CostDistanceSpec extends FunSuite with RasterMatchers {
       1,2,2,1,3,4)
 
     val actualLeft = Array.ofDim[Double](size)
+    val actualUp = Array.ofDim[Double](size)
     val actualRight = Array.ofDim[Double](size)
-    val actualTop = Array.ofDim[Double](size)
-    val actualBottom = Array.ofDim[Double](size)
+    val actualDown = Array.ofDim[Double](size)
 
     val expectedLeft = Array(2.0, 4.5, 8.0, 5.0, 2.5, 0.0)
+    val expectedUp = Array(2.0, 0.0, 0.0, 4.0, 6.7, 9.2)
     val expectedRight = Array(9.2, 13.1, 12.7, 9.2, 11.1, 10.5)
-    val expectedTop = Array(2.0, 0.0, 0.0, 4.0, 6.7, 9.2)
-    val expectedBottom = Array(0.0, 1.5, 3.5, 5.0, 7.0, 10.5)
+    val expectedDown = Array(0.0, 1.5, 3.5, 5.0, 7.0, 10.5)
 
     // Produce priority queue
     val q = CostDistance.generateEmptyQueue(size, size)
@@ -148,20 +148,22 @@ class CostDistanceSpec extends FunSuite with RasterMatchers {
     val costTile = CostDistance.generateEmptyCostTile(size, size)
 
     // Various callbacks to fill in the "actual" arrays
-    val leftCb: CostDistance.EdgeCallback = { case (_, row: Int, _, cost: Double) => actualLeft(row) = math.floor(cost*10)/10 }
-    val topCb: CostDistance.EdgeCallback = { case (col: Int, _, _, cost: Double) => actualTop(col) = math.floor(cost*10)/10 }
-    val rightCb: CostDistance.EdgeCallback = { case (_, row: Int, _, cost: Double) => actualRight(row) = math.floor(cost*10)/10 }
-    val bottomCb: CostDistance.EdgeCallback = { case (col: Int, _, _, cost: Double) => actualBottom(col) = math.floor(cost*10)/10 }
+    val edgeCb: CostDistance.EdgeCallback = { case (col: Int, row: Int, _: Double, cost: Double) =>
+      if (col == 0) actualLeft(row) = math.floor(cost*10)/10
+      if (col == size-1) actualRight(row) = math.floor(cost*10)/10
+      if (row == 0) actualUp(col) = math.floor(cost*10)/10
+      if (row == size-1) actualDown(col) = math.floor(cost*10)/10
+    }
 
     CostDistance.compute(
       frictionTile, costTile,
       Double.PositiveInfinity, q,
-      leftCb, topCb, rightCb, bottomCb)
+      edgeCb)
 
     actualLeft should be (expectedLeft)
-    actualTop should be (expectedTop)
+    actualUp should be (expectedUp)
     actualRight should be (expectedRight)
-    actualBottom should be (expectedBottom)
+    actualDown should be (expectedDown)
   }
 
   test("Max Distance") {
