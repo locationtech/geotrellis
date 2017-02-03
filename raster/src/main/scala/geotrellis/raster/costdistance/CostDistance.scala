@@ -16,9 +16,9 @@
 
 package geotrellis.raster.costdistance
 
-import java.util.PriorityQueue
-
 import geotrellis.raster._
+
+import java.util.PriorityQueue
 
 
 /**
@@ -76,7 +76,7 @@ object CostDistance {
       q.add(entry)
     })
 
-    compute(frictionTile, costTile, maxCost, q, nop, nop, nop, nop)
+    compute(frictionTile, costTile, maxCost, q, nop)
   }
 
   /**
@@ -86,20 +86,14 @@ object CostDistance {
     * @param  costTile        The tile that will contain the costs
     * @param  maxCost         The maximum cost of any path (truncates to limit computational cost)
     * @param  q               A priority queue of Cost objects (a.k.a. candidate paths)
-    * @param  leftCallback    Called when a pixel in the left-most column is updated
-    * @param  topCallbck      Called when a pixel in the top-most row is updated
-    * @param  rightCallback   Called when a pixel in the right-most column is updated
-    * @param  bottomCallback  Called when a pixel in the bottom-most row is updated
+    * @param  edgeCallback    Called when a pixel on the edge of the tile is updated
     */
   def compute(
     frictionTile: Tile,
     costTile: DoubleArrayTile,
     maxCost: Double,
     q: Q,
-    leftCallback: EdgeCallback,
-    topCallback: EdgeCallback,
-    rightCallback: EdgeCallback,
-    bottomCallback: EdgeCallback
+    edgeCallback: EdgeCallback
   ): DoubleArrayTile = {
     val cols = frictionTile.cols
     val rows = frictionTile.rows
@@ -112,13 +106,8 @@ object CostDistance {
     def isPassable(f: Double): Boolean =
       (isData(f) && 0 <= f)
 
-    def leftEdge(col: Int, row: Int): Boolean = (col == 0)
-
-    def rightEdge(col: Int, row: Int): Boolean = (col == cols-1)
-
-    def topEdge(col: Int, row: Int): Boolean = (row == 0)
-
-    def bottomEdge(col: Int, row: Int): Boolean = (row == rows-1)
+    def onEdge(col: Int, row: Int): Boolean =
+      ((col == 0) || (row == 0) || (col == cols-1) || (row == rows-1))
 
     /**
       * Given a location, an instantaneous cost at that neighboring
@@ -172,10 +161,7 @@ object CostDistance {
           costTile.setDouble(col, row, candidateCost)
 
           // Register changes on the boundary
-          if (leftEdge(col, row)) leftCallback(cost)
-          if (rightEdge(col, row)) rightCallback(cost)
-          if (topEdge(col, row)) topCallback(cost)
-          if (bottomEdge(col, row)) bottomCallback(cost)
+          if (onEdge(col, row)) edgeCallback(cost)
         }
 
         // Compute candidate costs for neighbors and enqueue them
