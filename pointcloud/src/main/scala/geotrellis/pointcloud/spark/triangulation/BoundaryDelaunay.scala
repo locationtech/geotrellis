@@ -274,7 +274,7 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
         }
         
         // pulse (debug)
-        println(s"e = ${(getSrc(e), getDest(e), getDest(getNext(e)))}, o = [${navigator.getSrc(o)} -> ${navigator.getDest(o)}]")
+        //println(s"e = ${(getSrc(e), getDest(e), getDest(getNext(e)))}, o = [${navigator.getSrc(o)} -> ${navigator.getDest(o)}]")
 
         bounds.get(navigator.getSrc(o) -> navigator.getDest(o)) match {
           case Some(oNext) =>
@@ -289,7 +289,7 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
             lookupTriangle(e) match {
               case None =>
                 // bounding triangle has not yet been added
-                println("ADDING TRIANGLE")
+                //println("ADDING TRIANGLE")
                 val tri = copyConvertTriangle(e)
 
                 // add new tri to polys (debugging)
@@ -317,12 +317,12 @@ case class BoundaryDelaunay (dt: DelaunayTriangulation, boundingExtent: Extent) 
                 // bounding triangle already exists
                 if (o != tri) {
                   // join if it hasn't already been linked
-                  println("join")
+                  //println("join")
                   navigator.join(tri, navigator.getFlip(o))
                   o = tri
                 } else {
                   // triangle is already properly connected
-                  println("no join") // (debug)
+                  //println("no join") // (debug)
                 }
             }
         }
