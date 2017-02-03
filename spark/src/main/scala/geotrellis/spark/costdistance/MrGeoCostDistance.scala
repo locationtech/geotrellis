@@ -60,7 +60,7 @@ object MrGeoCostDistance {
     friction: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     points: List[Point],
     maxCost: Double = Double.PositiveInfinity
-  )(implicit sc: SparkContext): RDD[(K, DoubleArrayTile)] = {
+  )(implicit sc: SparkContext): RDD[(K, Tile)] = {
 
     val accumulator = new PixelMapAccumulator
     sc.register(accumulator, "Pixel Map Accumulator")
@@ -87,10 +87,6 @@ object MrGeoCostDistance {
       accumulator.add((key, costs))
     })
 
-    // Move starting values from accumulator to local variable
-    var changes: PixelMap = accumulator.value
-    accumulator.reset
-
     // Create RDD of initial (empty) cost tiles
     var costs: RDD[(K, V, DoubleArrayTile)] = friction.map({ case (k, v) =>
       val tile = implicitly[Tile](v)
@@ -100,25 +96,30 @@ object MrGeoCostDistance {
       (k, v, CostDistance.generateEmptyCostTile(cols, rows))
     })
 
-    do {
-      costs = costs.map({ case (k, v, cost) =>
-        val key = implicitly[SpatialKey](k)
-        val friction = implicitly[Tile](v)
-        val cols = friction.cols
-        val rows = friction.rows
-        val q: CostDistance.Q = {
-          val q = CostDistance.generateEmptyQueue(cols, rows)
+    // XXX Should be shared variable
+    val changes = accumulator.value
 
-          changes
-            .getOrElse(key, List.empty[CostDistance.Cost])
-            .foreach({ (entry: CostDistance.Cost) => q.add(entry) })
-          q
-        }
+    // do {
+    costs = costs.map({ case (k, v, cost) =>
+      val key = implicitly[SpatialKey](k)
+      val friction = implicitly[Tile](v)
+      val cols = friction.cols
+      val rows = friction.rows
+      val q: CostDistance.Q = {
+        val q = CostDistance.generateEmptyQueue(cols, rows)
 
-        (k, v, CostDistance.compute(friction, cost, maxCost, q, CostDistance.nop)) })
-      changes = accumulator.value
-      accumulator.reset
-    } while (changes.size > 0)
+        changes
+          .getOrElse(key, List.empty[CostDistance.Cost])
+          .foreach({ (entry: CostDistance.Cost) => q.add(entry) })
+        q
+      }
+
+      (k, v, CostDistance.compute(friction, cost, maxCost, q, CostDistance.nop))
+      // (k, v, CostDistance.compute(CostDistance.generateEmptyCostTile(cols, rows), cost, maxCost, q, CostDistance.nop))
+    })
+
+    accumulator.reset
+    // } while (changes.size > 0)
 
     costs.map({ case (k, _, cost) => (k, cost) })
   }
