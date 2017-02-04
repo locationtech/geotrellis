@@ -32,6 +32,11 @@ object CostDistance {
   type EdgeCallback = (Cost => Unit)
 
   /**
+    * NOP EdgeCallback
+    */
+  def nop(cost: Cost): Unit = {}
+
+  /**
     * Generate a Queue suitable for working with a tile of the given
     * dimensions.
     */
@@ -68,8 +73,6 @@ object CostDistance {
     val rows = frictionTile.rows
     val costTile = generateEmptyCostTile(cols, rows)
     val q: Q = generateEmptyQueue(cols, rows)
-
-    def nop(cost: Cost): Unit = {}
 
     points.foreach({ case (col, row) =>
       val entry = (col, row, frictionTile.getDouble(col, row), 0.0)
@@ -129,10 +132,21 @@ object CostDistance {
       // If the location is inside of the tile ...
       if (inTile(col, row)) {
         val friction2 = frictionTile.getDouble(col, row)
-        // ... and if the location is passable, enqueue it for future processing
+        val currentCost = costTile.getDouble(col, row)
+
+        // ... and if the location is passable ...
         if (isPassable(friction2)) {
           val entry = (col, row, friction2, cost + distance * (friction1 + friction2) / 2.0)
-          q.add(entry)
+          val candidateCost = entry._4
+
+          // ... and the candidate cost is less than the maximum cost ...
+          if (candidateCost <= maxCost) {
+            // ... and the candidate is a possible improvement ...
+            if ((isData(currentCost) && candidateCost < currentCost) || !isData(currentCost)) {
+              costTile.setDouble(col, row, candidateCost) // then increase lower bound on pixel,
+              q.add(entry) // and enqueue candidate for future processing
+            }
+          }
         }
       }
     }
@@ -154,11 +168,11 @@ object CostDistance {
           Double.NaN
 
       // If the candidate path is a possible improvement ...
-      if ((candidateCost <= maxCost) && (!isData(currentCost) || candidateCost <= currentCost)) {
+      if (!isData(currentCost) || candidateCost <= currentCost) {
 
         // Over-write the current cost with the candidate cost
         if (inTile(col, row)) {
-          costTile.setDouble(col, row, candidateCost)
+          costTile.setDouble(col, row, candidateCost) // XXX
 
           // Register changes on the boundary
           if (onEdge(col, row)) edgeCallback(cost)
