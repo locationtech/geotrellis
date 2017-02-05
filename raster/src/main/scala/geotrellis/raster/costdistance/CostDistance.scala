@@ -159,24 +159,18 @@ object CostDistance {
       * @param  q             The priority queue of candidate paths
       */
     def processNext(): Unit = {
-      val cost: Cost = q.poll
-      val (col, row, friction1, candidateCost) = cost
+      val entry: Cost = q.poll
+      val (col, row, friction1, candidateCost) = entry
       val currentCost =
         if (inTile(col, row))
           costTile.getDouble(col, row)
         else
           Double.NaN
 
-      // If the candidate path is a possible improvement ...
+      // If the candidate path is an improvement ...
       if (!isData(currentCost) || candidateCost <= currentCost) {
-
-        // Over-write the current cost with the candidate cost
-        if (inTile(col, row)) {
-          costTile.setDouble(col, row, candidateCost) // XXX
-
-          // Register changes on the boundary
-          if (onEdge(col, row)) edgeCallback(cost)
-        }
+        if (inTile(col, row)) costTile.setDouble(col, row, candidateCost) // XXX
+        if (onEdge(col, row)) edgeCallback(entry) // XXX
 
         // Compute candidate costs for neighbors and enqueue them
         if (isPassable(friction1)) {

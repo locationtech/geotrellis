@@ -8,6 +8,7 @@ import geotrellis.raster.costdistance.CostDistance
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 import org.apache.spark.util.AccumulatorV2
+import org.apache.spark.storage.StorageLevel
 
 import scala.collection.mutable
 
@@ -27,16 +28,16 @@ object MrGeoCostDistance {
 
   type CostList = List[CostDistance.Cost]
   type KeyListPair = (SpatialKey, CostList)
-  type PixelMap = mutable.Map[SpatialKey, CostList]
+  type Changes = mutable.Map[SpatialKey, CostList]
 
   /**
     * An accumulator to hold lists of edge changes.
     */
-  class PixelMapAccumulator extends AccumulatorV2[KeyListPair, PixelMap] {
-    private var map: PixelMap = mutable.Map.empty
+  class ChangesAccumulator extends AccumulatorV2[KeyListPair, Changes] {
+    private var map: Changes = mutable.Map.empty
 
-    def copy: PixelMapAccumulator = {
-      val other = new PixelMapAccumulator
+    def copy: ChangesAccumulator = {
+      val other = new ChangesAccumulator
       other.merge(this)
       other
     }
@@ -48,9 +49,9 @@ object MrGeoCostDistance {
       else map.put(key, map.get(key).get ++ list)
     }
     def isZero: Boolean = map.isEmpty
-    def merge(other: AccumulatorV2[(SpatialKey, CostList), PixelMap]): Unit = map ++= other.value
-    def reset: Unit = map = mutable.Map.empty
-    def value: PixelMap = map
+    def merge(other: AccumulatorV2[(SpatialKey, CostList), Changes]): Unit = map ++= other.value
+    def reset: Unit = map.clear
+    def value: Changes = map
   }
 
   /**
@@ -62,10 +63,13 @@ object MrGeoCostDistance {
     maxCost: Double = Double.PositiveInfinity
   )(implicit sc: SparkContext): RDD[(K, Tile)] = {
 
-    val accumulator = new PixelMapAccumulator
-    sc.register(accumulator, "Pixel Map Accumulator")
-
     val mt = friction.metadata.mapTransform
+    val bounds = friction.metadata.bounds.asInstanceOf[KeyBounds[K]]
+    val minKey = implicitly[SpatialKey](bounds.minKey)
+    val maxKey = implicitly[SpatialKey](bounds.maxKey)
+
+    val accumulator = new ChangesAccumulator
+    sc.register(accumulator, "Changes")
 
     // Load the accumulator with the starting values
     friction.foreach({ case (k, v) =>
@@ -83,7 +87,6 @@ object MrGeoCostDistance {
           val friction = tile.getDouble(col, row)
           (col, row, friction, 0.0)
         })
-
       accumulator.add((key, costs))
     })
 
@@ -92,34 +95,92 @@ object MrGeoCostDistance {
       val tile = implicitly[Tile](v)
       val cols = tile.cols
       val rows = tile.rows
-
       (k, v, CostDistance.generateEmptyCostTile(cols, rows))
     })
 
-    // XXX Should be shared variable
-    val changes = accumulator.value
+    // Repeatedly map over the RDD of cost tiles until no more changes
+    // occur on the periphery of any tile.
+    do {
+      val changes = sc.broadcast(accumulator.value.toMap)
+      println(s"${changes.value.size}") // XXX
 
-    // do {
-    costs = costs.map({ case (k, v, cost) =>
-      val key = implicitly[SpatialKey](k)
-      val friction = implicitly[Tile](v)
-      val cols = friction.cols
-      val rows = friction.rows
-      val q: CostDistance.Q = {
-        val q = CostDistance.generateEmptyQueue(cols, rows)
+      accumulator.reset
 
-        changes
-          .getOrElse(key, List.empty[CostDistance.Cost])
-          .foreach({ (entry: CostDistance.Cost) => q.add(entry) })
-        q
-      }
+      val previous = costs
 
-      (k, v, CostDistance.compute(friction, cost, maxCost, q, CostDistance.nop))
-      // (k, v, CostDistance.compute(CostDistance.generateEmptyCostTile(cols, rows), cost, maxCost, q, CostDistance.nop))
-    })
+      costs = previous.map({ case (k, v, oldCostTile) =>
+        val key = implicitly[SpatialKey](k)
+        val frictionTile = implicitly[Tile](v)
+        val keyCol = key._1
+        val keyRow = key._2
+        val frictionTileCols = frictionTile.cols
+        val frictionTileRows = frictionTile.rows
+        val q: CostDistance.Q = {
+          val q = CostDistance.generateEmptyQueue(frictionTileCols, frictionTileRows)
+          changes.value
+            .getOrElse(key, List.empty[CostDistance.Cost])
+            .foreach({ (entry: CostDistance.Cost) => q.add(entry) })
+          q
+        }
+        val buffer: mutable.ArrayBuffer[CostDistance.Cost] = mutable.ArrayBuffer.empty
+        val newCostTile = CostDistance.compute(
+          frictionTile, oldCostTile,
+          maxCost, q,
+          { (entry: CostDistance.Cost) => buffer.append(entry) }
+        )
 
-    accumulator.reset
-    // } while (changes.size > 0)
+        // Register changes on left periphery
+        if (minKey._1 <= keyCol-1) {
+          val leftKey = SpatialKey(keyCol-1, keyRow)
+          val leftList = buffer
+            .filter({ (entry: CostDistance.Cost) => entry._1 == 0 })
+            .map({ case (_, row: Int, f: Double, c: Double) =>
+              (frictionTileCols, row, f, c) })
+            .toList
+          if (leftList.size > 0)
+            accumulator.add((leftKey, leftList))
+        }
+
+        // Register changes on upper periphery
+        if (keyRow+1 <= maxKey._2) {
+          val upKey = SpatialKey(keyCol, keyRow+1)
+          val upList = buffer
+            .filter({ (entry: CostDistance.Cost) => entry._2 == frictionTileRows-1 })
+            .map({ case (col: Int, _, f: Double, c: Double) => (col, -1, f, c) })
+            .toList
+          if (upList.size > 0)
+            accumulator.add((upKey, upList))
+        }
+
+        // Register changes on right periphery
+        if (keyCol+1 <= maxKey._1) {
+          val rightKey = SpatialKey(keyCol+1, keyRow)
+          val rightList = buffer
+            .filter({ (entry: CostDistance.Cost) => entry._1 == frictionTileCols-1 })
+            .map({ case (_, row: Int, f: Double, c: Double) => (-1, row, f, c) })
+            .toList
+          if (rightList.size > 0)
+            accumulator.add((rightKey, rightList))
+        }
+
+        // Register changes on lower periphery
+        if (minKey._2 <= keyRow-1) {
+          val downKey = SpatialKey(keyCol, keyRow-1)
+          val downList = buffer
+            .filter({ (entry: CostDistance.Cost) => entry._2 == 0 })
+            .map({ case (col: Int, _, f: Double, c: Double) =>
+              (col, frictionTileRows, f, c) })
+            .toList
+          if (downList.size > 0)
+            accumulator.add((downKey, downList))
+        }
+
+        (k, v, newCostTile)
+      }).persist(StorageLevel.MEMORY_AND_DISK_SER)
+
+      costs.count
+      previous.unpersist()
+    } while (accumulator.value.size > 0)
 
     costs.map({ case (k, _, cost) => (k, cost) })
   }
