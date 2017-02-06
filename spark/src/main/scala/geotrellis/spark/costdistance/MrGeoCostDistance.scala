@@ -5,10 +5,11 @@ import geotrellis.spark._
 import geotrellis.vector._
 import geotrellis.raster.costdistance.CostDistance
 
+import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
-import org.apache.spark.util.AccumulatorV2
 import org.apache.spark.storage.StorageLevel
+import org.apache.spark.util.AccumulatorV2
 
 import scala.collection.mutable
 
@@ -29,6 +30,8 @@ object MrGeoCostDistance {
   type CostList = List[CostDistance.Cost]
   type KeyListPair = (SpatialKey, CostList)
   type Changes = mutable.Map[SpatialKey, CostList]
+
+  val logger = Logger.getLogger(MrGeoCostDistance.getClass)
 
   /**
     * An accumulator to hold lists of edge changes.
@@ -71,8 +74,9 @@ object MrGeoCostDistance {
     val accumulator = new ChangesAccumulator
     sc.register(accumulator, "Changes")
 
-    // Load the accumulator with the starting values
-    friction.foreach({ case (k, v) =>
+    // Create RDD of initial (empty) cost tiles and load the
+    // accumulator with the starting values.
+    var costs: RDD[(K, V, DoubleArrayTile)] = friction.map({ case (k, v) =>
       val key = implicitly[SpatialKey](k)
       val tile = implicitly[Tile](v)
       val cols = tile.cols
@@ -87,14 +91,10 @@ object MrGeoCostDistance {
           val friction = tile.getDouble(col, row)
           (col, row, friction, 0.0)
         })
-      accumulator.add((key, costs))
-    })
 
-    // Create RDD of initial (empty) cost tiles
-    var costs: RDD[(K, V, DoubleArrayTile)] = friction.map({ case (k, v) =>
-      val tile = implicitly[Tile](v)
-      val cols = tile.cols
-      val rows = tile.rows
+      if (costs.length > 0)
+        accumulator.add((key, costs))
+
       (k, v, CostDistance.generateEmptyCostTile(cols, rows))
     })
 
@@ -102,7 +102,7 @@ object MrGeoCostDistance {
     // occur on the periphery of any tile.
     do {
       val changes = sc.broadcast(accumulator.value.toMap)
-      println(s"${changes.value.size}") // XXX
+      logger.debug(s"At least ${changes.value.size} changed tiles")
 
       accumulator.reset
 
@@ -115,67 +115,75 @@ object MrGeoCostDistance {
         val keyRow = key._2
         val frictionTileCols = frictionTile.cols
         val frictionTileRows = frictionTile.rows
-        val q: CostDistance.Q = {
-          val q = CostDistance.generateEmptyQueue(frictionTileCols, frictionTileRows)
-          changes.value
-            .getOrElse(key, List.empty[CostDistance.Cost])
-            .foreach({ (entry: CostDistance.Cost) => q.add(entry) })
-          q
-        }
-        val buffer: mutable.ArrayBuffer[CostDistance.Cost] = mutable.ArrayBuffer.empty
-        val newCostTile = CostDistance.compute(
-          frictionTile, oldCostTile,
-          maxCost, q,
-          { (entry: CostDistance.Cost) => buffer.append(entry) }
-        )
+        val localChanges = changes.value.getOrElse(key, List.empty[CostDistance.Cost])
 
-        // Register changes on left periphery
-        if (minKey._1 <= keyCol-1) {
-          val leftKey = SpatialKey(keyCol-1, keyRow)
-          val leftList = buffer
-            .filter({ (entry: CostDistance.Cost) => entry._1 == 0 })
-            .map({ case (_, row: Int, f: Double, c: Double) =>
-              (frictionTileCols, row, f, c) })
-            .toList
-          if (leftList.size > 0)
-            accumulator.add((leftKey, leftList))
-        }
+        if (localChanges.length > 0) {
+          val q: CostDistance.Q = CostDistance.generateEmptyQueue(frictionTileCols, frictionTileRows)
+          localChanges.foreach({ (entry: CostDistance.Cost) => q.add(entry) })
 
-        // Register changes on upper periphery
-        if (keyRow+1 <= maxKey._2) {
-          val upKey = SpatialKey(keyCol, keyRow+1)
-          val upList = buffer
-            .filter({ (entry: CostDistance.Cost) => entry._2 == frictionTileRows-1 })
-            .map({ case (col: Int, _, f: Double, c: Double) => (col, -1, f, c) })
-            .toList
-          if (upList.size > 0)
-            accumulator.add((upKey, upList))
-        }
+          val buffer: mutable.ArrayBuffer[CostDistance.Cost] = mutable.ArrayBuffer.empty
 
-        // Register changes on right periphery
-        if (keyCol+1 <= maxKey._1) {
-          val rightKey = SpatialKey(keyCol+1, keyRow)
-          val rightList = buffer
-            .filter({ (entry: CostDistance.Cost) => entry._1 == frictionTileCols-1 })
-            .map({ case (_, row: Int, f: Double, c: Double) => (-1, row, f, c) })
-            .toList
-          if (rightList.size > 0)
-            accumulator.add((rightKey, rightList))
-        }
+          val newCostTile = CostDistance.compute(
+            frictionTile, oldCostTile,
+            maxCost, q,
+            { (entry: CostDistance.Cost) => buffer.append(entry) }
+          )
 
-        // Register changes on lower periphery
-        if (minKey._2 <= keyRow-1) {
-          val downKey = SpatialKey(keyCol, keyRow-1)
-          val downList = buffer
-            .filter({ (entry: CostDistance.Cost) => entry._2 == 0 })
-            .map({ case (col: Int, _, f: Double, c: Double) =>
-              (col, frictionTileRows, f, c) })
-            .toList
-          if (downList.size > 0)
-            accumulator.add((downKey, downList))
-        }
+          // Register changes on left periphery
+          if (minKey._1 <= keyCol-1) {
+            val leftKey = SpatialKey(keyCol-1, keyRow)
+            val leftList = buffer
+              .filter({ (entry: CostDistance.Cost) => entry._1 == 0 })
+              .map({ case (_, row: Int, f: Double, c: Double) =>
+                (frictionTileCols, row, f, c) })
+              .toList
+            if (leftList.size > 0)
+              accumulator.add((leftKey, leftList))
+          }
 
-        (k, v, newCostTile)
+          // Register changes on upper periphery
+          if (keyRow+1 <= maxKey._2) {
+            val upKey = SpatialKey(keyCol, keyRow+1)
+            val upList = buffer
+              .filter({ (entry: CostDistance.Cost) => entry._2 == frictionTileRows-1 })
+              .map({ case (col: Int, _, f: Double, c: Double) => (col, -1, f, c) })
+              .toList
+            if (upList.size > 0)
+              accumulator.add((upKey, upList))
+          }
+
+          // Register changes on right periphery
+          if (keyCol+1 <= maxKey._1) {
+            val rightKey = SpatialKey(keyCol+1, keyRow)
+            val rightList = buffer
+              .filter({ (entry: CostDistance.Cost) => entry._1 == frictionTileCols-1 })
+              .map({ case (_, row: Int, f: Double, c: Double) => (-1, row, f, c) })
+              .toList
+            if (rightList.size > 0)
+              accumulator.add((rightKey, rightList))
+          }
+
+          // Register changes on lower periphery
+          if (minKey._2 <= keyRow-1) {
+            val downKey = SpatialKey(keyCol, keyRow-1)
+            val downList = buffer
+              .filter({ (entry: CostDistance.Cost) => entry._2 == 0 })
+              .map({ case (col: Int, _, f: Double, c: Double) =>
+                (col, frictionTileRows, f, c) })
+              .toList
+            if (downList.size > 0)
+              accumulator.add((downKey, downList))
+          }
+
+          // XXX It would be slightly more correct to include the four
+          // diagonal tiles as well, but there would be at most a one
+          // pixel contribution each, so it probably is not worth the
+          // expense.
+
+          (k, v, newCostTile)
+        }
+        else
+          (k, v, oldCostTile)
       }).persist(StorageLevel.MEMORY_AND_DISK_SER)
 
       costs.count

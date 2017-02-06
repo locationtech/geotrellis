@@ -48,6 +48,10 @@ object CostDistance {
       })
   }
 
+  /**
+    * Generate an empty double-valued array tile of the correct
+    * dimensions.
+    */
   def generateEmptyCostTile(cols: Int, rows: Int): DoubleArrayTile =
     DoubleArrayTile.empty(cols, rows)
 
@@ -62,7 +66,6 @@ object CostDistance {
     *
     * @param  friction  Friction tile
     * @param  points    List of starting points as tuples
-    *
     */
   def apply(
     frictionTile: Tile,
@@ -169,8 +172,8 @@ object CostDistance {
 
       // If the candidate path is an improvement ...
       if (!isData(currentCost) || candidateCost <= currentCost) {
-        if (inTile(col, row)) costTile.setDouble(col, row, candidateCost) // XXX
-        if (onEdge(col, row)) edgeCallback(entry) // XXX
+        if (inTile(col, row)) costTile.setDouble(col, row, candidateCost)
+        if (onEdge(col, row)) edgeCallback(entry)
 
         // Compute candidate costs for neighbors and enqueue them
         if (isPassable(friction1)) {
