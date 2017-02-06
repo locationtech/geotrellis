@@ -25,13 +25,13 @@ import scala.collection.mutable
   *
   * 2. https://github.com/ngageoint/mrgeo/blob/0c6ed4a7e66bb0923ec5c570b102862aee9e885e/mrgeo-mapalgebra/mrgeo-mapalgebra-costdistance/src/main/scala/org/mrgeo/mapalgebra/CostDistanceMapOp.scala
   */
-object MrGeoCostDistance {
+object IterativeCostDistance {
 
   type CostList = List[CostDistance.Cost]
   type KeyListPair = (SpatialKey, CostList)
   type Changes = mutable.Map[SpatialKey, CostList]
 
-  val logger = Logger.getLogger(MrGeoCostDistance.getClass)
+  val logger = Logger.getLogger(IterativeCostDistance.getClass)
 
   /**
     * An accumulator to hold lists of edge changes.
