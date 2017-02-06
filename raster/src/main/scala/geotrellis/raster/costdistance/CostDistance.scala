@@ -39,6 +39,9 @@ object CostDistance {
   /**
     * Generate a Queue suitable for working with a tile of the given
     * dimensions.
+    *
+    * @param  cols  The number of columns of the friction tile
+    * @param  rows  The number of rows of the friction tile
     */
   def generateEmptyQueue(cols: Int, rows: Int): Q = {
     new PriorityQueue(
@@ -51,6 +54,9 @@ object CostDistance {
   /**
     * Generate an empty double-valued array tile of the correct
     * dimensions.
+    *
+    * @param  cols  The number of cols of the friction tile (and therefore the cost tile)
+    * @param  rows  The number of rows of the frition tile and cost tiles
     */
   def generateEmptyCostTile(cols: Int, rows: Int): DoubleArrayTile =
     DoubleArrayTile.empty(cols, rows)
@@ -64,13 +70,16 @@ object CostDistance {
     *    "Propagating radial waves of travel cost in a grid."
     *    International Journal of Geographical Information Science 24.9 (2010): 1391-1413.
     *
-    * @param  friction  Friction tile
-    * @param  points    List of starting points as tuples
+    * @param  friction    Friction tile; pixels are interpreted as "second per meter"
+    * @param  points      List of starting points as tuples
+    * @param  maxCost     The maximum cost before pruning a path (in units of "seconds")
+    * @param  resolution  The resolution of the tiles (in units of "meters per pixel")
     */
   def apply(
     frictionTile: Tile,
     points: Seq[(Int, Int)],
-    maxCost: Double = Double.PositiveInfinity
+    maxCost: Double = Double.PositiveInfinity,
+    resolution: Double = 1
   ): DoubleArrayTile = {
     val cols = frictionTile.cols
     val rows = frictionTile.rows
@@ -82,7 +91,7 @@ object CostDistance {
       q.add(entry)
     })
 
-    compute(frictionTile, costTile, maxCost, q, nop)
+    compute(frictionTile, costTile, maxCost, resolution, q, nop)
   }
 
   /**
@@ -90,16 +99,16 @@ object CostDistance {
     *
     * @param  frictionTile    The friction tile
     * @param  costTile        The tile that will contain the costs
-    * @param  maxCost         The maximum cost of any path (truncates to limit computational cost)
+    * @param  maxCost         The maximum cost before pruning a path (in units of "seconds")
+    * @param  resolution      The resolution of the tiles (in units of "meters per pixel")
     * @param  q               A priority queue of Cost objects (a.k.a. candidate paths)
     * @param  edgeCallback    Called when a pixel on the edge of the tile is updated
     */
   def compute(
     frictionTile: Tile,
     costTile: DoubleArrayTile,
-    maxCost: Double,
-    q: Q,
-    edgeCallback: EdgeCallback
+    maxCost: Double, resolution: Double,
+    q: Q, edgeCallback: EdgeCallback
   ): DoubleArrayTile = {
     val cols = frictionTile.cols
     val rows = frictionTile.rows
@@ -128,8 +137,7 @@ object CostDistance {
       * @param  distance      The distance from the neighboring location to this location
       */
     @inline def enqueueNeighbor(
-      col: Int, row: Int, friction1: Double,
-      cost: Double,
+      col: Int, row: Int, friction1: Double, cost: Double,
       distance: Double = 1.0
     ): Unit = {
       // If the location is inside of the tile ...
@@ -139,7 +147,8 @@ object CostDistance {
 
         // ... and if the location is passable ...
         if (isPassable(friction2)) {
-          val entry = (col, row, friction2, cost + distance * (friction1 + friction2) / 2.0)
+          val step = resolution * distance * (friction1 + friction2) / 2.0
+          val entry = (col, row, friction2, cost + step)
           val candidateCost = entry._4
 
           // ... and the candidate cost is less than the maximum cost ...

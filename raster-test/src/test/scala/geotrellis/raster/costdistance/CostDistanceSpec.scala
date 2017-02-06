@@ -157,8 +157,8 @@ class CostDistanceSpec extends FunSuite with RasterMatchers {
 
     CostDistance.compute(
       frictionTile, costTile,
-      Double.PositiveInfinity, q,
-      edgeCb)
+      Double.PositiveInfinity, 1,
+      q, edgeCb)
 
     actualLeft should be (expectedLeft)
     actualUp should be (expectedUp)

@@ -1,9 +1,10 @@
 package geotrellis.spark.costdistance
 
+import geotrellis.proj4.LatLng
 import geotrellis.raster._
+import geotrellis.raster.costdistance.CostDistance
 import geotrellis.spark._
 import geotrellis.vector._
-import geotrellis.raster.costdistance.CostDistance
 
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
@@ -59,6 +60,10 @@ object IterativeCostDistance {
 
   /**
     * Perform the cost-distance computation.
+    *
+    * @param  friction  The friction layer; pixels are in units of "seconds per meter"
+    * @param  points    The starting locations from-which to compute the cost of traveling
+    * @param  maxCost   The maximum cost before pruning a path (in units of "seconds")
     */
   def apply[K: (? => SpatialKey), V: (? => Tile)](
     friction: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
@@ -66,7 +71,22 @@ object IterativeCostDistance {
     maxCost: Double = Double.PositiveInfinity
   )(implicit sc: SparkContext): RDD[(K, Tile)] = {
 
-    val mt = friction.metadata.mapTransform
+    val md = friction.metadata
+
+    val mt = md.mapTransform
+
+    val resolution = {
+      val kv = friction.first
+      val key = implicitly[SpatialKey](kv._1)
+      val tile = implicitly[Tile](kv._2)
+      val extent = mt(key).reproject(md.crs, LatLng)
+      val degrees = extent.xmax - extent.xmin
+      val meters = degrees * (6378137 * 2.0 * math.Pi) / 360.0
+      val pixels = tile.cols
+      math.abs(meters / pixels)
+    }
+    logger.debug(s"Computed resolution: $resolution meters/pixel")
+
     val bounds = friction.metadata.bounds.asInstanceOf[KeyBounds[K]]
     val minKey = implicitly[SpatialKey](bounds.minKey)
     val maxKey = implicitly[SpatialKey](bounds.maxKey)
@@ -125,8 +145,8 @@ object IterativeCostDistance {
 
           val newCostTile = CostDistance.compute(
             frictionTile, oldCostTile,
-            maxCost, q,
-            { (entry: CostDistance.Cost) => buffer.append(entry) }
+            maxCost, resolution,
+            q, { (entry: CostDistance.Cost) => buffer.append(entry) }
           )
 
           // Register changes on left periphery
