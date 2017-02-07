@@ -5,6 +5,7 @@
 
  ./sbt "project macros" publish -no-colors \
    && ./sbt "project vector" publish -no-colors \
+   && ./sbt "project pointcloud" publish -no-colors \
    && ./sbt "project proj4" publish -no-colors \
    && ./sbt "project raster" publish -no-colors \
    && ./sbt "project spark" publish -no-colors \
