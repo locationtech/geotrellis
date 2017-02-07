@@ -92,7 +92,7 @@ object IterativeCostDistance {
     val maxKey = implicitly[SpatialKey](bounds.maxKey)
 
     val accumulator = new ChangesAccumulator
-    sc.register(accumulator, "Changes")
+    sc.register(accumulator)
 
     // Create RDD of initial (empty) cost tiles and load the
     // accumulator with the starting values.
