@@ -66,14 +66,8 @@ object TinToDem {
 
           if(j > 2) {
             val pointSet =
-              new DelaunayPointSet {
-                def length: Int = j
-                def getX(i: Int): Double = points(i).x
-                def getY(i: Int): Double = points(i).y
-                def getZ(i: Int): Double = points(i).z
-              }
+              DelaunayPointSet(points)
 
-            //val delaunay = PointCloudTriangulation(pointSet)
             val delaunay = DelaunayTriangulation(pointSet)
 
             val re =

@@ -543,4 +543,33 @@ case class BoundaryDelaunay(
   triangleMap: TriangleMap,
   boundary: Int,
   isLinear: Boolean
-)
+) {
+  def trianglesFromVertices: MultiPolygon = {
+    val indexToCoord = { i: Int => Point.jtsCoord2Point(pointSet.getCoordinate(i)) }
+    geotrellis.vector.MultiPolygon(
+      triangleMap
+        .triangleVertices
+        .map { case (i, j, k) =>
+          Polygon(indexToCoord(i), indexToCoord(j), indexToCoord(k), indexToCoord(i))
+        }
+    )
+  }
+
+  def trianglesFromEdges: MultiPolygon = {
+    val indexToCoord = { i: Int => Point.jtsCoord2Point(pointSet.getCoordinate(i)) }
+    import halfEdgeTable._
+    geotrellis.vector.MultiPolygon(
+      triangleMap
+        .triangleEdges
+        .map { case v =>
+          Polygon(indexToCoord(v), indexToCoord(getNext(v)), indexToCoord(getNext(getNext(v))), indexToCoord(v))
+        }
+    )
+  }
+  def writeWkt(wktFile: String) = {
+    val indexToCoord = { i: Int => Point.jtsCoord2Point(pointSet.getCoordinate(i)) }
+    val mp = geotrellis.vector.MultiPolygon(triangleMap.triangleVertices.map{ case (i,j,k) => Polygon(indexToCoord(i), indexToCoord(j), indexToCoord(k), indexToCoord(i)) })
+    val wktString = geotrellis.vector.io.wkt.WKT.write(mp)
+    new java.io.PrintWriter(wktFile) { write(wktString); close }
+  }
+}
