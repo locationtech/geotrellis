@@ -2,19 +2,70 @@ package geotrellis.vector.triangulation
 
 // for debugging
 import geotrellis.vector._
-import java.io._
+import geotrellis.vector.io.wkt.WKT
 
 import scala.annotation.tailrec
 
-case class DelaunayTriangulation(verts: DelaunayPointSet, navigator: HalfEdgeTable, debug: Boolean)
+case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdgeTable, debug: Boolean)
 {
-  implicit val nav = navigator
-  implicit val trans = verts.getCoordinate(_)
+  val triangleMap = new TriangleMap(halfEdgeTable)
 
-  val triangles = new TriangleMap
+  val predicates = new Predicates(pointSet, halfEdgeTable)
+  import halfEdgeTable._
+  import predicates._
+
+  private val stitcher = new DelaunayStitcher(pointSet, halfEdgeTable)
+
+
+  // def time[T](msg: String)(f: => T) = {
+  //   val start = System.currentTimeMillis
+  //   val v = f
+  //   val end = System.currentTimeMillis
+  //   println(s"[TIMING] $msg: ${java.text.NumberFormat.getIntegerInstance.format(end - start)} ms")
+  //   v
+  // }
+
+  // class IterationTimer(msg: String) {
+  //   private val timings = scala.collection.mutable.ListBuffer[Int]()
+  //   private def f(i: Int) = java.text.NumberFormat.getIntegerInstance.format(i)
+  //   def time[T](f: => T) = {
+  //     val start = System.currentTimeMillis
+  //     val v = f
+  //     val end = System.currentTimeMillis
+  //     timings += ((end - start).toInt)
+  //     v
+  //   }
+
+  //   def report() = {
+  //     var sum = 0
+  //     var count = 0
+  //     var min = Int.MaxValue
+  //     var max = -1
+  //     var countAbove1ms = 0
+  //     var countAbove1s = 0
+  //     var numberOfMax = 0
+  //     for(timing <- timings) {
+  //       sum += timing
+  //       count += 1
+  //       if(timing < min) { min = timing }
+  //       if(max < timing) { max = timing }
+  //       if(timing > 1) { countAbove1ms += 1 }
+  //       if(timing > 1000) { countAbove1s += 1 }
+  //     }
+  //     println(s"[TIMING ITERATION] $msg:")
+  //     println(s"   Total: ${f(sum)} ms")
+  //     println(s"   Count: ${f(count)}")
+  //     println(s"    Mean: ${sum.toDouble / count} ms")
+  //     println(s"     Min: ${f(min)} ms")
+  //     println(s"     Max: ${f(max)} ms")
+  //     println(s" # > 1ms: ${f(countAbove1ms)}")
+  //     println(s"  # > 1s: ${f(countAbove1s)}")
+  //   }
+  // }
+
 
   def distinctPoints(lst: List[Int]): List[Int] = {
-    import verts._
+    import pointSet._
 
     @tailrec def dpInternal(l: List[Int], acc: List[Int]): List[Int] = {
       l match {
@@ -41,9 +92,9 @@ case class DelaunayTriangulation(verts: DelaunayPointSet, navigator: HalfEdgeTab
   }
 
   val sortedVs = {
-    import verts._
+    import pointSet._
     val s =
-      (0 until verts.length).toList.sortWith{
+      (0 until pointSet.length).toList.sortWith{
         (i1,i2) => {
           val x1 = getX(i1)
           val x2 = getX(i2)
@@ -64,10 +115,10 @@ case class DelaunayTriangulation(verts: DelaunayPointSet, navigator: HalfEdgeTab
     .toArray
   }
 
+  // val iTimer = new IterationTimer("Trianglate function")
+
   def triangulate(lo: Int, hi: Int): (Int, Boolean) = {
     // Implementation follows Guibas and Stolfi, ACM Transations on Graphics, vol. 4(2), 1985, pp. 74--123
-    import nav._
-    import Predicates._
 
     val n = hi - lo + 1
 
@@ -90,11 +141,11 @@ case class DelaunayTriangulation(verts: DelaunayPointSet, navigator: HalfEdgeTab
         if (isCCW(v1, v2, v3)) {
           val e = createHalfEdges(v1, v2, v3)
           val p = getPrev(e)
-          triangles += (v1, v2, v3) -> p
+          triangleMap += (v1, v2, v3) -> p
           (p, false)
         } else if(isCCW(v1, v3, v2)) {
           val e = createHalfEdges(v1, v3, v2)
-          triangles += (v1, v3, v2) -> e
+          triangleMap += (v1, v3, v2) -> e
           (e, false)
         } else {
           // Linear case
@@ -112,25 +163,90 @@ case class DelaunayTriangulation(verts: DelaunayPointSet, navigator: HalfEdgeTab
         var (left, isLeftLinear) = triangulate(lo,med)
         var (right, isRightLinear) = triangulate(med+1,hi)
 
-        DelaunayStitcher.merge(left, isLeftLinear, right, isRightLinear, triangles)
+        // iTimer.time {
+        stitcher.merge(left, isLeftLinear, right, isRightLinear, triangleMap)
+        // }
       }
-    }
-    
-    if (debug) {
-      val dtPolys = MultiPolygon(triangles.getTriangles.keys.flatMap { 
-        case (ai, bi, ci) => if (List(ai,bi,ci).forall{i => lo <= i && i <= hi}) Some(Polygon(Seq(ai,bi,ci,ai).map{ i => Point.jtsCoord2Point(verts.getCoordinate(i)) })) else None
-      })
-      new java.io.PrintWriter(s"/data/delaunay${lo}_${hi}.wkt") { write(dtPolys.toString); close }
     }
 
     result
   }
 
+  def write(path: String, txt: String): Unit = {
+    import java.nio.file.{Paths, Files}
+    import java.nio.charset.StandardCharsets
+
+    Files.write(Paths.get(path), txt.getBytes(StandardCharsets.UTF_8))
+  }
+
   val (boundary, isLinear) = triangulate(0, sortedVs.length - 1)
+  // iTimer.report()
+
+  def isUnfolded(): Boolean = {
+
+    val bounds = collection.mutable.Set.empty[Int]
+
+    var e = boundary
+    do {
+      bounds += e
+      e = getNext(e)
+    } while (e != boundary)
+
+    triangleMap.getTriangles.forall{ case (_, e) =>
+      var f = e
+      var ok = true
+      do {
+        if (!bounds.contains(getFlip(f))) {
+          val v = getDest(getNext(getFlip(f)))
+          ok = ok && isRightOf(f, v)
+        }
+        f = getNext(f)
+      } while (f != e)
+      ok
+    }
+  }
+
+  def isUnfolded(bound: Int, lo: Int, hi: Int): Boolean = {
+
+    val bounds = collection.mutable.Set.empty[Int]
+
+    var e = bound
+    do {
+      bounds += e
+      e = getNext(e)
+    } while (e != bound)
+
+    triangleMap.getTriangles.filter { case ((a, b, c), _) =>
+      (lo <= a && a <= hi) &&
+      (lo <= b && b <= hi) &&
+      (lo <= c && c <= hi)
+    }.forall{ case (_, e) =>
+      var f = e
+      var ok = true
+      do {
+        if (!bounds.contains(getFlip(f))) {
+          val v = getDest(getNext(getFlip(f)))
+          ok = ok && isRightOf(f, v)
+        }
+        f = getNext(f)
+      } while (f != e)
+      ok
+    }
+  }
+
+  def writeWKT(wktFile: String) = {
+    val indexToCoord = pointSet.getCoordinate(_)
+    val mp = MultiPolygon(triangleMap.getTriangles.keys.toSeq.map{
+      case (i,j,k) => Polygon(indexToCoord(i), indexToCoord(j), indexToCoord(k), indexToCoord(i))
+    })
+    val wktString = WKT.write(mp)
+    new java.io.PrintWriter(wktFile) { write(wktString); close }
+  }
 }
 
 object DelaunayTriangulation {
-  def apply(verts: DelaunayPointSet, debug: Boolean = false) = {
-    new DelaunayTriangulation(verts, new HalfEdgeTable(2*(3*verts.length - 6)), debug)
+  def apply(pointSet: DelaunayPointSet, debug: Boolean = false) = {
+    val initialSize = 2 * (3 * pointSet.length - 6)
+    new DelaunayTriangulation(pointSet, new HalfEdgeTable(initialSize), debug)
   }
 }

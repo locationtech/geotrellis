@@ -66,14 +66,8 @@ object TinToDem {
 
           if(j > 2) {
             val pointSet =
-              new DelaunayPointSet {
-                def length: Int = j
-                def getX(i: Int): Double = points(i).x
-                def getY(i: Int): Double = points(i).y
-                def getZ(i: Int): Double = points(i).z
-              }
+              DelaunayPointSet(points)
 
-            //val delaunay = PointCloudTriangulation(pointSet)
             val delaunay = DelaunayTriangulation(pointSet)
 
             val re =
@@ -86,7 +80,7 @@ object TinToDem {
             val tile =
               ArrayTile.empty(options.cellType, re.cols, re.rows)
 
-            DelaunayRasterizer.rasterizeDelaunayTriangulation(re, options.cellType)(delaunay, tile)
+            DelaunayRasterizer.rasterizeDelaunayTriangulation(delaunay, re, tile)
 
             Some((key, tile))
           } else {
@@ -110,7 +104,7 @@ object TinToDem {
         .mapPartitions{ iter =>
           iter.map{ case (sk, dt) => {
             val ex: Extent = layoutDefinition.mapTransform(sk)
-            (sk, new BoundaryDelaunay(dt, ex))
+            (sk, BoundaryDelaunay(dt, ex))
           }
           }}
 
@@ -130,6 +124,48 @@ object TinToDem {
       .mapPartitions({ partition =>
         partition.map { case (key, (borders, triangulation)) => // : (Map[Direction, (BoundaryDelaunay, Extent)], DelaunayTriangulation)
           val stitched = StitchedDelaunay(borders)
+
+          val extent = layoutDefinition.mapTransform(key)
+          val re =
+            RasterExtent(
+              extent,
+              layoutDefinition.tileCols,
+              layoutDefinition.tileRows
+            )
+
+          val tile = stitched.rasterize(re, options.cellType)(triangulation)
+
+          (key, tile)
+        }
+      }, preservesPartitioning = true)
+  }
+
+  def allStitch(rdd: RDD[(SpatialKey, Array[Coordinate])], layoutDefinition: LayoutDefinition, extent: Extent, options: Options = Options.DEFAULT): RDD[(SpatialKey, Tile)] = {
+
+    // Assumes that a partitioner has already been set
+
+    val triangulations: RDD[(SpatialKey, DelaunayTriangulation)] =
+      rdd
+        .mapValues { points =>
+          DelaunayTriangulation(points)
+        }
+
+    triangulations
+      .collectNeighbors
+      .mapPartitions({ partition =>
+        partition.map { case (key, neighbors) =>
+          val newNeighbors =
+            neighbors.map { case (direction, (key2, dt)) =>
+              val ex = layoutDefinition.mapTransform(key2)
+              (direction, (dt, ex))
+            }
+          (key, newNeighbors.toMap)
+        }
+      }, preservesPartitioning = true)
+      .join(triangulations)
+      .mapPartitions({ partition =>
+        partition.map { case (key, (nbhd, triangulation)) => // : (Map[Direction, (BoundaryDelaunay, Extent)], DelaunayTriangulation)
+          val stitched = StitchedDelaunay(nbhd, false)
 
           val extent = layoutDefinition.mapTransform(key)
           val re =
