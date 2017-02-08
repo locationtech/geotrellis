@@ -117,7 +117,7 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
       // exhibit the Delaunay property
       //rasterizeDT(dt)
 
-      (dt.triangles.getTriangles.forall{ case ((ai,bi,ci),_) =>
+      (dt.triangleMap.getTriangles.forall{ case ((ai,bi,ci),_) =>
         val otherPts = (0 until numpts).filter{ i: Int => i != ai && i != bi && i != ci }
         otherPts.forall{ i => ! Predicates.inCircle(ai, bi, ci, i) }
       }) should be (true)
@@ -139,7 +139,7 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
         e = getNext(e)
       } while (valid && e != dt.boundary)
 
-      (dt.triangles.getTriangles.isEmpty && valid) should be (true)
+      (dt.triangleMap.getTriangles.isEmpty && valid) should be (true)
     }
 
     it("should have no overlapping triangles") {
@@ -147,7 +147,7 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
       val dt = DelaunayTriangulation(pts, false) // to kick travis
       implicit val trans = { i: Int => pts(i) }
       import dt.halfEdgeTable._
-      val tris = dt.triangles.getTriangles.keys.toArray
+      val tris = dt.triangleMap.getTriangles.keys.toArray
       val ntris = tris.size
 
       var overlapping = false
