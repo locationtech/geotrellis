@@ -89,17 +89,16 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
       val pts = (for (i <- range) yield randomPoint(Extent(0, 0, 1, 1))).toArray
       implicit val trans = { i: Int => pts(i) }
       val dt = DelaunayTriangulation(pts)
-      implicit val nav = dt.navigator
+      import dt.halfEdgeTable._
 
       def boundingEdgeIsConvex(e: Int) = {
-        import nav._
-        Predicates.isRightOf(e, getDest(getNext(e)))
+        dt.predicates.isRightOf(e, getDest(getNext(e)))
       }
       var isConvex = true
       var e = dt.boundary
       do {
         isConvex = isConvex && boundingEdgeIsConvex(e)
-        e = nav.getNext(e)
+        e = getNext(e)
       } while (e != dt.boundary)
 
       isConvex should be (true)
@@ -125,12 +124,12 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
     }
 
     it("should work for points on a line") {
-      // this is equally a test of the robustness of the predicates and of the 
+      // this is equally a test of the robustness of the predicates and of the
       // triangulator's logic vis-a-vis linear triangulations
 
       val pts: Array[Coordinate] = (for (v <- 0.0 to 100.0 by 1.0) yield { new Coordinate(v,v) }).toArray
       val dt = DelaunayTriangulation(pts)
-      import dt.navigator._
+      import dt.halfEdgeTable._
 
       var e = dt.boundary
       var valid = true
@@ -139,7 +138,7 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
         valid = valid && (diff * diff == 1)
         e = getNext(e)
       } while (valid && e != dt.boundary)
-      
+
       (dt.triangles.getTriangles.isEmpty && valid) should be (true)
     }
 
@@ -147,7 +146,7 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
       val pts = randomizedGrid(13, Extent(0,0,1,1)).toArray
       val dt = DelaunayTriangulation(pts, false) // to kick travis
       implicit val trans = { i: Int => pts(i) }
-      implicit val nav = dt.navigator
+      import dt.halfEdgeTable._
       val tris = dt.triangles.getTriangles.keys.toArray
       val ntris = tris.size
 
@@ -163,12 +162,36 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
         }}
       }}
 
-      // val dtPolys = MultiPolygon(dt.triangles.getTriangles.keys.map { 
+      // val dtPolys = MultiPolygon(dt.triangles.getTriangles.keys.map {
       //   case (ai, bi, ci) => Polygon(Seq(ai,bi,ci,ai).map{ i => Point.jtsCoord2Point(dt.verts.getCoordinate(i)) })
       // })
       // new java.io.PrintWriter("/data/overlap.wkt") { write(dtPolys.toString); close }
 
       overlapping should be (false)
+    }
+
+    it("should have sane triangle ordering near boundaries") {
+      val pts = randomizedGrid(100, Extent(0,0,1,1)).toArray
+      val dt = DelaunayTriangulation(pts, false)
+      implicit val trans = { i: Int => pts(i) }
+      import dt.halfEdgeTable._
+      import dt.predicates._
+
+      var valid = true
+      var e = dt.boundary
+      do {
+        var f = e
+        do {
+          if (rotCWSrc(f) != e)
+            valid = !isLeftOf(f, getDest(rotCWSrc(f)))
+
+          f = rotCWSrc(f)
+        } while (valid && f != e)
+
+        e = getNext(e)
+      } while (valid && e != dt.boundary)
+
+      valid should be (true)
     }
   }
 
