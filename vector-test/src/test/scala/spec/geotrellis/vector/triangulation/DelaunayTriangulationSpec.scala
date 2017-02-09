@@ -193,6 +193,32 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
 
       valid should be (true)
     }
+
+    it("should allow for interior point removal") {
+      val range = 0 until 100
+      val pts = (for (i <- range) yield randomPoint(Extent(0, 0, 1, 1))).toArray
+      val subpts = pts.slice(0, 99)
+
+      val dt = DelaunayTriangulation(pts)
+      dt.deletePoint(99)
+
+      val subdt = DelaunayTriangulation(subpts)
+
+      dt.triangleMap.triangleVertices.toSet.equals(subdt.triangleMap.triangleVertices.toSet) should be (true)
+    }
+
+    it("should allow for boundary point removal") {
+      val range = 0 until 99
+      val pts = ((for (i <- range) yield randomPoint(Extent(0, 0, 1, 1))).toArray) :+ new Coordinate(1.01, 0.5)
+      val subpts = pts.slice(0, 99)
+
+      val dt = DelaunayTriangulation(pts)
+      dt.deletePoint(99)
+
+      val subdt = DelaunayTriangulation(subpts)
+
+      dt.triangleMap.triangleVertices.toSet.equals(subdt.triangleMap.triangleVertices.toSet) should be (true)
+    }
   }
 
 }

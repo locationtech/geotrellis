@@ -63,6 +63,9 @@ class TriangleMap(halfEdgeTable: HalfEdgeTable) {
   def triangleEdges =
     triangles.values
 
+  def triangleIncidentTo(i: Int) = {
+
+  }
 }
 
 object TriangleMap {
