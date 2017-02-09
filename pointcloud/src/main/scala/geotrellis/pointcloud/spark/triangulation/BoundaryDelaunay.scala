@@ -337,7 +337,7 @@ object BoundaryDelaunay {
           println("Premature termination")
       }}
 
-      new java.io.PrintWriter("buffer.wkt") { write(geotrellis.vector.io.wkt.WKT.write(MultiPolygon(polys))); close }
+      // new java.io.PrintWriter("buffer.wkt") { write(geotrellis.vector.io.wkt.WKT.write(MultiPolygon(polys))); close }
 
   /*
       val e0 = innerLoop._1
