@@ -58,6 +58,21 @@ object IterativeCostDistance {
     def value: Changes = map
   }
 
+  def computeResolution[K: (? => SpatialKey), V: (? => Tile)](
+    friction: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
+  ) = {
+    val md = friction.metadata
+    val mt = md.mapTransform
+    val kv = friction.first
+    val key = implicitly[SpatialKey](kv._1)
+    val tile = implicitly[Tile](kv._2)
+    val extent = mt(key).reproject(md.crs, LatLng)
+    val degrees = extent.xmax - extent.xmin
+    val meters = degrees * (6378137 * 2.0 * math.Pi) / 360.0
+    val pixels = tile.cols
+    math.abs(meters / pixels)
+  }
+
   /**
     * Perform the cost-distance computation.
     *
@@ -72,19 +87,8 @@ object IterativeCostDistance {
   )(implicit sc: SparkContext): RDD[(K, Tile)] = {
 
     val md = friction.metadata
-
     val mt = md.mapTransform
-
-    val resolution = {
-      val kv = friction.first
-      val key = implicitly[SpatialKey](kv._1)
-      val tile = implicitly[Tile](kv._2)
-      val extent = mt(key).reproject(md.crs, LatLng)
-      val degrees = extent.xmax - extent.xmin
-      val meters = degrees * (6378137 * 2.0 * math.Pi) / 360.0
-      val pixels = tile.cols
-      math.abs(meters / pixels)
-    }
+    val resolution = computeResolution(friction)
     logger.debug(s"Computed resolution: $resolution meters/pixel")
 
     val bounds = friction.metadata.bounds.asInstanceOf[KeyBounds[K]]
