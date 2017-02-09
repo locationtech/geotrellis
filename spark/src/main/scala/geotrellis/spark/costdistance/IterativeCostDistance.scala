@@ -160,20 +160,30 @@ object IterativeCostDistance {
               maxCost, resolution,
               q, { (entry: CostDistance.Cost) =>
                 val (col, row, f, c) = entry
-                if (col == 0 && (minKeyCol <= keyCol-1))
+                if (col == 0 && (minKeyCol <= keyCol-1)) // left
                   accumulator.add((SpatialKey(keyCol-1, keyRow), (frictionTileCols, row, f, c)))
-                if (row == frictionTileRows-1 && (keyRow+1 <= maxKeyRow))
-                  accumulator.add((SpatialKey(keyCol, keyRow+1), (col, -1, f, c)))
-                if (col == frictionTileCols-1 && (keyCol+1 <= maxKeyCol))
-                  accumulator.add((SpatialKey(keyCol+1, keyRow), (-1, row, f, c)))
-                if (row == 0 && (minKeyRow <= keyRow-1))
-                  accumulator.add((SpatialKey(keyCol, keyRow-1)), (col, frictionTileRows, f, c))
-              })
 
-            // XXX It would be slightly more correct to include the four
-            // diagonal tiles as well, but there would be at most a one
-            // pixel contribution each, so it probably is not worth the
-            // expense.
+                if (row == frictionTileRows-1 && (keyRow+1 <= maxKeyRow)) // up
+                  accumulator.add((SpatialKey(keyCol, keyRow+1), (col, -1, f, c)))
+
+                if (col == frictionTileCols-1 && (keyCol+1 <= maxKeyCol)) // right
+                  accumulator.add((SpatialKey(keyCol+1, keyRow), (-1, row, f, c)))
+
+                if (row == 0 && (minKeyRow <= keyRow-1)) // down
+                  accumulator.add((SpatialKey(keyCol, keyRow-1), (col, frictionTileRows, f, c)))
+
+                if (col == 0 && row == 0 && (minKeyCol <= keyCol-1) && (minKeyRow <= keyRow-1)) // upper-left
+                  accumulator.add((SpatialKey(keyCol-1,keyRow-1), (frictionTileCols, frictionTileRows, f, c)))
+
+                if (col == frictionTileCols-1 && row == 0 && (keyCol+1 <= maxKeyCol) && (minKeyRow <= keyRow-1)) // upper-right
+                  accumulator.add((SpatialKey(keyCol+1,keyRow-1), (-1, frictionTileRows, f, c)))
+
+                if (col == frictionTileCols-1 && row == frictionTileRows-1 && (keyCol+1 <= maxKeyCol) && (keyRow+1 <= maxKeyCol)) // lower-right
+                  accumulator.add((SpatialKey(keyCol+1,keyRow+1), (-1, -1, f, c)))
+
+                if (col == 0 && row == frictionTileRows-1 && (minKeyCol <= keyCol-1) && (keyRow+1 <= maxKeyRow)) // lower-left
+                  accumulator.add((SpatialKey(keyCol-1,keyRow+1), (frictionTileCols, -1, f, c)))
+              })
 
             (k, v, newCostTile)
           }
