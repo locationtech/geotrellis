@@ -119,7 +119,7 @@ object CostDistance {
       ((0 <= col && col < cols) && (0 <= row && row < rows))
 
     def isPassable(f: Double): Boolean =
-      (isData(f) && 0 <= f)
+      (isData(f) && 0.0 <= f)
 
     def onEdge(col: Int, row: Int): Boolean =
       ((col == 0) || (row == 0) || (col == cols-1) || (row == rows-1))
@@ -137,7 +137,7 @@ object CostDistance {
       * @param  distance      The distance from the neighboring location to this location
       */
     @inline def enqueueNeighbor(
-      col: Int, row: Int, friction1: Double, cost: Double,
+      col: Int, row: Int, friction1: Double, neighborCost: Double,
       distance: Double = 1.0
     ): Unit = {
       // If the location is inside of the tile ...
@@ -148,13 +148,13 @@ object CostDistance {
         // ... and if the location is passable ...
         if (isPassable(friction2)) {
           val step = resolution * distance * (friction1 + friction2) / 2.0
-          val entry = (col, row, friction2, cost + step)
-          val candidateCost = entry._4
+          val candidateCost = neighborCost + step
+          val entry = (col, row, friction2, candidateCost)
 
           // ... and the candidate cost is less than the maximum cost ...
           if (candidateCost <= maxCost) {
             // ... and the candidate is a possible improvement ...
-            if ((isData(currentCost) && candidateCost < currentCost) || !isData(currentCost)) {
+            if (!isData(currentCost) || candidateCost < currentCost) {
               costTile.setDouble(col, row, candidateCost) // then increase lower bound on pixel,
               q.add(entry) // and enqueue candidate for future processing
             }

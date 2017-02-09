@@ -28,34 +28,30 @@ import scala.collection.mutable
   */
 object IterativeCostDistance {
 
-  type CostList = List[CostDistance.Cost]
-  type KeyListPair = (SpatialKey, CostList)
-  type Changes = mutable.Map[SpatialKey, CostList]
+  type KeyCostPair = (SpatialKey, CostDistance.Cost)
+  type Changes = mutable.ArrayBuffer[KeyCostPair]
 
   val logger = Logger.getLogger(IterativeCostDistance.getClass)
 
   /**
     * An accumulator to hold lists of edge changes.
     */
-  class ChangesAccumulator extends AccumulatorV2[KeyListPair, Changes] {
-    private var map: Changes = mutable.Map.empty
+  class ChangesAccumulator extends AccumulatorV2[KeyCostPair, Changes] {
+    private val list: Changes = mutable.ArrayBuffer.empty
 
     def copy: ChangesAccumulator = {
       val other = new ChangesAccumulator
       other.merge(this)
       other
     }
-    def add(kv: (SpatialKey, CostList)): Unit = {
-      val key = kv._1
-      val list = kv._2
-
-      if (!map.contains(key)) map.put(key, list)
-      else map.put(key, map.get(key).get ++ list)
+    def add(pair: KeyCostPair): Unit = {
+      this.synchronized { list.append(pair) }
     }
-    def isZero: Boolean = map.isEmpty
-    def merge(other: AccumulatorV2[(SpatialKey, CostList), Changes]): Unit = map ++= other.value
-    def reset: Unit = map.clear
-    def value: Changes = map
+    def isZero: Boolean = list.isEmpty
+    def merge(other: AccumulatorV2[KeyCostPair, Changes]): Unit =
+      this.synchronized { list ++= other.value }
+    def reset: Unit = this.synchronized { list.clear }
+    def value: Changes = list
   }
 
   def computeResolution[K: (? => SpatialKey), V: (? => Tile)](
@@ -93,7 +89,11 @@ object IterativeCostDistance {
 
     val bounds = friction.metadata.bounds.asInstanceOf[KeyBounds[K]]
     val minKey = implicitly[SpatialKey](bounds.minKey)
+    val minKeyCol = minKey._1
+    val minKeyRow = minKey._2
     val maxKey = implicitly[SpatialKey](bounds.maxKey)
+    val maxKeyCol = maxKey._1
+    val maxKeyRow = maxKey._2
 
     val accumulator = new ChangesAccumulator
     sc.register(accumulator)
@@ -107,25 +107,31 @@ object IterativeCostDistance {
       val rows = tile.rows
       val extent = mt(key)
       val rasterExtent = RasterExtent(extent, cols, rows)
-      val costs: List[CostDistance.Cost] = points
+
+      points
         .filter({ point => extent.contains(point) })
         .map({ point =>
           val col = rasterExtent.mapXToGrid(point.x)
           val row = rasterExtent.mapYToGrid(point.y)
           val friction = tile.getDouble(col, row)
-          (col, row, friction, 0.0)
+          val cost = (col, row, friction, 0.0)
+          accumulator.add((key, cost))
         })
 
-      if (costs.length > 0)
-        accumulator.add((key, costs))
-
       (k, v, CostDistance.generateEmptyCostTile(cols, rows))
-    })
+    }).persist(StorageLevel.MEMORY_AND_DISK_SER)
+
+    costs.count
 
     // Repeatedly map over the RDD of cost tiles until no more changes
     // occur on the periphery of any tile.
     do {
-      val changes = sc.broadcast(accumulator.value.toMap)
+      val _changes: Map[SpatialKey, Seq[CostDistance.Cost]] =
+        accumulator.value
+          .groupBy(_._1)
+          .map({ case (k, list) => (k, list.map({ case (_, v) => v })) })
+          .toMap
+      val changes = sc.broadcast(_changes)
       logger.debug(s"At least ${changes.value.size} changed tiles")
 
       accumulator.reset
@@ -139,75 +145,40 @@ object IterativeCostDistance {
         val keyRow = key._2
         val frictionTileCols = frictionTile.cols
         val frictionTileRows = frictionTile.rows
-        val localChanges = changes.value.getOrElse(key, List.empty[CostDistance.Cost])
+        val localChanges: Option[Seq[CostDistance.Cost]] = changes.value.get(key)
 
-        if (localChanges.length > 0) {
-          val q: CostDistance.Q = CostDistance.generateEmptyQueue(frictionTileCols, frictionTileRows)
-          localChanges.foreach({ (entry: CostDistance.Cost) => q.add(entry) })
+        localChanges match {
+          case Some(localChanges) => {
+            val q: CostDistance.Q = {
+              val q = CostDistance.generateEmptyQueue(frictionTileCols, frictionTileRows)
+              localChanges.foreach({ (entry: CostDistance.Cost) => q.add(entry) })
+              q
+            }
 
-          val buffer: mutable.ArrayBuffer[CostDistance.Cost] = mutable.ArrayBuffer.empty
+            val newCostTile = CostDistance.compute(
+              frictionTile, oldCostTile,
+              maxCost, resolution,
+              q, { (entry: CostDistance.Cost) =>
+                val (col, row, f, c) = entry
+                if (col == 0 && (minKeyCol <= keyCol-1))
+                  accumulator.add((SpatialKey(keyCol-1, keyRow), (frictionTileCols, row, f, c)))
+                if (row == frictionTileRows-1 && (keyRow+1 <= maxKeyRow))
+                  accumulator.add((SpatialKey(keyCol, keyRow+1), (col, -1, f, c)))
+                if (col == frictionTileCols-1 && (keyCol+1 <= maxKeyCol))
+                  accumulator.add((SpatialKey(keyCol+1, keyRow), (-1, row, f, c)))
+                if (row == 0 && (minKeyRow <= keyRow-1))
+                  accumulator.add((SpatialKey(keyCol, keyRow-1)), (col, frictionTileRows, f, c))
+              })
 
-          val newCostTile = CostDistance.compute(
-            frictionTile, oldCostTile,
-            maxCost, resolution,
-            q, { (entry: CostDistance.Cost) => buffer.append(entry) }
-          )
+            // XXX It would be slightly more correct to include the four
+            // diagonal tiles as well, but there would be at most a one
+            // pixel contribution each, so it probably is not worth the
+            // expense.
 
-          // Register changes on left periphery
-          if (minKey._1 <= keyCol-1) {
-            val leftKey = SpatialKey(keyCol-1, keyRow)
-            val leftList = buffer
-              .filter({ (entry: CostDistance.Cost) => entry._1 == 0 })
-              .map({ case (_, row: Int, f: Double, c: Double) =>
-                (frictionTileCols, row, f, c) })
-              .toList
-            if (leftList.size > 0)
-              accumulator.add((leftKey, leftList))
+            (k, v, newCostTile)
           }
-
-          // Register changes on upper periphery
-          if (keyRow+1 <= maxKey._2) {
-            val upKey = SpatialKey(keyCol, keyRow+1)
-            val upList = buffer
-              .filter({ (entry: CostDistance.Cost) => entry._2 == frictionTileRows-1 })
-              .map({ case (col: Int, _, f: Double, c: Double) => (col, -1, f, c) })
-              .toList
-            if (upList.size > 0)
-              accumulator.add((upKey, upList))
-          }
-
-          // Register changes on right periphery
-          if (keyCol+1 <= maxKey._1) {
-            val rightKey = SpatialKey(keyCol+1, keyRow)
-            val rightList = buffer
-              .filter({ (entry: CostDistance.Cost) => entry._1 == frictionTileCols-1 })
-              .map({ case (_, row: Int, f: Double, c: Double) => (-1, row, f, c) })
-              .toList
-            if (rightList.size > 0)
-              accumulator.add((rightKey, rightList))
-          }
-
-          // Register changes on lower periphery
-          if (minKey._2 <= keyRow-1) {
-            val downKey = SpatialKey(keyCol, keyRow-1)
-            val downList = buffer
-              .filter({ (entry: CostDistance.Cost) => entry._2 == 0 })
-              .map({ case (col: Int, _, f: Double, c: Double) =>
-                (col, frictionTileRows, f, c) })
-              .toList
-            if (downList.size > 0)
-              accumulator.add((downKey, downList))
-          }
-
-          // XXX It would be slightly more correct to include the four
-          // diagonal tiles as well, but there would be at most a one
-          // pixel contribution each, so it probably is not worth the
-          // expense.
-
-          (k, v, newCostTile)
+          case None => (k, v, oldCostTile)
         }
-        else
-          (k, v, oldCostTile)
       }).persist(StorageLevel.MEMORY_AND_DISK_SER)
 
       costs.count
