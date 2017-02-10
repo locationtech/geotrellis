@@ -24,7 +24,6 @@ object Implicits extends Implicits
 trait Implicits
     extends TileCodecs
     with TileFeatureCodec
-    with VectorTileCodec
     with ExtentCodec
     with ProjectedExtentCodec
     with TemporalProjectedExtentCodec
