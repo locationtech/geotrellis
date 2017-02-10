@@ -217,6 +217,19 @@ class HalfEdgeTable(_size: Int) {
   def rotCCWDest(e: Int): Int =
     getPrev(getFlip(e))
 
+  def neighborsOf(vi: Int): Seq[Int] = {
+    val nbhd = collection.mutable.ListBuffer.empty[Int]
+    val e0 = getFlip(edgeIncidentTo(vi))
+    var e = e0
+
+    do {
+      nbhd += getDest(e)
+      e = rotCWSrc(e)
+    } while (e != e0)
+
+    nbhd.toSeq
+  }
+
   private def resize() {
     // It's important that size always be a power of 2. We grow our
     // hash table by x4 until it starts getting big, at which point we
@@ -296,6 +309,7 @@ class HalfEdgeTable(_size: Int) {
   def edgeIncidentTo(i: Int) = edgeAt(i)
   def removeIncidentEdge(i: Int) = { edgeAt -= i }
   def setIncidentEdge(i: Int, e: Int) = { edgeAt -= i }
+  def allVertices() = edgeAt.keys
 
   def reindexVertices(reindex: Int => Int) = {
     var i = 0
