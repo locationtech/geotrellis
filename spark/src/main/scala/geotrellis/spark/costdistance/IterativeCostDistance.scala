@@ -17,8 +17,9 @@ import scala.collection.mutable
 
 /**
   * This Spark-enabled implementation of the standard cost-distance
-  * algorithm [1] is "heavily inspired" by the MrGeo implementation
-  * [2] but does not share any code with it.
+  * algorithm mentioned in the "previous work" section of [1] is
+  * "heavily inspired" by the MrGeo implementation [2] but does not
+  * share any code with it.
   *
   * 1. Tomlin, Dana.
   *    "Propagating radial waves of travel cost in a grid."

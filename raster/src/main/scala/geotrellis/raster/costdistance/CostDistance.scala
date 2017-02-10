@@ -64,7 +64,7 @@ object CostDistance {
   /**
     * Generate a cost-distance raster based on a set of starting
     * points and a friction raster.  This is an implementation of the
-    * standard algorithm from [1].
+    * standard algorithm mentioned in the "previous work" section of [1].
     *
     * 1. Tomlin, Dana.
     *    "Propagating radial waves of travel cost in a grid."
