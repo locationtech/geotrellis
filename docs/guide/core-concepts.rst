@@ -165,8 +165,8 @@ a ``SpaceTimeKey``:
 
     case class SpaceTimeKey(col: Int, row: Int, instant: Long)
 
-although there is nothing stopping you from `defining your own key
-type <#>`__.
+although there is nothing stopping you from `defining your own key type
+<extending-geotrellis.html#custom-keys>`__.
 
 Assuming some tile layer ``Extent`` on the earth, ``SpatialKey(0, 0)``
 would index the top-leftmost ``Tile`` in the Tile grid.
@@ -179,12 +179,12 @@ from. To make such a guarantee, we use a ``KeyIndex``.
 Key Indexes
 -----------
 
-A ``KeyIndex`` is a GeoTrellis ``trait`` that represents `**Space
-Filling Curves** <https://en.wikipedia.org/wiki/Space-filling_curve>`__.
-They are a means by which to translate multi-dimensional indices into a
-single-dimensional one, while maintaining spatial locality. In
-GeoTrellis, we use these chiefly when writing Tile Layers to one of our
-`Tile Layer Backends <./tile-backends.html>`__.
+A ``KeyIndex`` is a GeoTrellis ``trait`` that represents `Space Filling
+Curves <https://en.wikipedia.org/wiki/Space-filling_curve>`__. They are a
+means by which to translate multi-dimensional indices into a
+single-dimensional one, while maintaining spatial locality. In GeoTrellis,
+we use these chiefly when writing Tile Layers to one of our `Tile Layer
+Backends <./tile-backends.html>`__.
 
 Although ``KeyIndex`` is often used in its generic ``trait`` form, we
 supply three underlying implementations.

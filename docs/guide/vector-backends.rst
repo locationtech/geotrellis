@@ -20,7 +20,7 @@ We analysed a number of angles, including:
 -  Ease of use
 -  Project maturity
 
-`Click here for the full report. <#>`__
+The full report should be made public in Q1/Q2 of 2017.
 
 While developing applications directly with these projects is quite a
 different experience, in terms of our GeoTrellis interfaces for each
