@@ -222,7 +222,7 @@ trait ConstantTileCodecs {
     */
   implicit def floatConstantTileCodec: AvroRecordCodec[FloatConstantTile] = new AvroRecordCodec[FloatConstantTile] {
     def schema = SchemaBuilder
-      .record("FloatArrayTile").namespace("geotrellis.raster")
+      .record("FloatConstantTile").namespace("geotrellis.raster")
       .fields()
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
