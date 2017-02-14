@@ -1,3 +1,0 @@
-# Scala
-# Docker
-# SBT
