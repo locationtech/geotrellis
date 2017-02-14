@@ -94,6 +94,7 @@ Ready? `Setup a GeoTrellis development environment. <tutorials/setup.html>`__
 .. toctree::
    :maxdepth: 2
    :caption: Home
+   :hidden:
 
    Changelog <CHANGELOG>
    contributing
@@ -102,6 +103,7 @@ Ready? `Setup a GeoTrellis development environment. <tutorials/setup.html>`__
    :maxdepth: 3
    :caption: Tutorials
    :glob:
+   :hidden:
 
    tutorials/setup
    tutorials/quickstart
@@ -113,6 +115,7 @@ Ready? `Setup a GeoTrellis development environment. <tutorials/setup.html>`__
    :maxdepth: 4
    :caption: User Guide
    :glob:
+   :hidden:
 
    guide/core-concepts
    Using Rasters <guide/rasters>
@@ -129,6 +132,7 @@ Ready? `Setup a GeoTrellis development environment. <tutorials/setup.html>`__
    :maxdepth: 2
    :caption: Architecture
    :glob:
+   :hidden:
 
    Architecture Decision Records <architecture/adr>
    Proj4 Implementation <architecture/proj4-implementation>
