@@ -27,7 +27,7 @@ You want to see ``1.8`` like above.
    if you plan to run ingests (as shown in our `ETL
    tutorial <./etl-tutorial.html>`__) or write a serious application.
    Otherwise, fetching Spark dependencies for playing with GeoTrellis is
-   handled automatically, as shown in our `Quick-Start Guide <#>`__.
+   handled automatically, as shown in our `Quick-Start Guide <./quickstart.html>`__.
 
 When running more involved applications, ``spark-submit`` should be on
 your ``PATH``:
