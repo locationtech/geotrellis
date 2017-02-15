@@ -23,6 +23,7 @@ object Implicits extends Implicits
 
 trait Implicits
     extends TileCodecs
+    with ConstantTileCodecs
     with TileFeatureCodec
     with VectorTileCodec
     with ExtentCodec
@@ -37,7 +38,16 @@ trait Implicits
     intArrayTileCodec,
     bitArrayTileCodec,
     uByteArrayTileCodec,
-    uShortArrayTileCodec)
+    uShortArrayTileCodec,
+    byteConstantTileCodec,
+    floatConstantTileCodec,
+    doubleConstantTileCodec,
+    shortConstantTileCodec,
+    intConstantTileCodec,
+    bitConstantTileCodec,
+    uByteConstantTileCodec,
+    uShortConstantTileCodec
+  )
 
   implicit def tupleCodec[A: AvroRecordCodec, B: AvroRecordCodec]: TupleCodec[A, B] = TupleCodec[A, B]
 }
