@@ -12,6 +12,7 @@ class TriangleMap(halfEdgeTable: HalfEdgeTable) {
     // if (isTriangle(i1,i2,i3))
     //   println(s"Attempting to re-add triangle ${(i1,i2,i3)}")
     triangles += TriangleMap.regularizeIndex(i1, i2, i3) -> edge
+    registerFace(edge)
   }
 
   def +=(keyValue: (TriIdx, Int)): Unit = {
@@ -20,6 +21,7 @@ class TriangleMap(halfEdgeTable: HalfEdgeTable) {
     // if (isTriangle(a,b,c))
     //   println(s"Attempting to re-add triangle ${(a,b,c)}")
     triangles += TriangleMap.regularizeIndex(a, b, c) -> edge
+    registerFace(edge)
   }
 
   def +=(edge: Int): Unit = {
@@ -31,16 +33,23 @@ class TriangleMap(halfEdgeTable: HalfEdgeTable) {
       ),
       edge
     )}
+    registerFace(edge)
   }
 
   def -=(idx: TriIdx): Unit = {
     //println(s"Removing triangle $idx")
     triangles -= regularizeIndex(idx)
+    removeIncidentEdge(idx._1)
+    removeIncidentEdge(idx._2)
+    removeIncidentEdge(idx._3)
   }
 
   def -=(edge: Int): Unit = {
     triangles -=
       regularizeIndex(getDest(edge), getDest(getNext(edge)), getDest(getNext(getNext(edge))))
+    removeIncidentEdge(getDest(edge))
+    removeIncidentEdge(getDest(getNext(edge)))
+    removeIncidentEdge(getDest(getNext(getNext(edge))))
   }
 
   def apply(i1: Int, i2: Int, i3: Int): Int = triangles((i1, i2, i3))

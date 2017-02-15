@@ -47,8 +47,8 @@ class HalfEdgeTable(_size: Int) {
     setFlip(e, opp)
     setFlip(opp, e)
 
-    edgeAt += getDest(opp) -> opp
-    edgeAt += getDest(e) -> e
+    //edgeAt += getDest(opp) -> opp
+    //edgeAt += getDest(e) -> e
   }
 
   /** Create an edge pointing to single vertex.
@@ -92,8 +92,8 @@ class HalfEdgeTable(_size: Int) {
     setFlip(e1, e2)
     setNext(e1, e2)
 
-    edgeAt += v1 -> e1
-    edgeAt += v2 -> e2
+    // edgeAt += v1 -> e1
+    // edgeAt += v2 -> e2
 
     e2
   }
@@ -230,6 +230,12 @@ class HalfEdgeTable(_size: Int) {
     nbhd.toSeq
   }
 
+  def killEdge(e: Int): Unit = {
+    table(e * 3) = -1
+    table(e * 3 + 1) = -1
+    table(e * 3 + 2) = -1
+  }
+
   private def resize() {
     // It's important that size always be a power of 2. We grow our
     // hash table by x4 until it starts getting big, at which point we
@@ -308,7 +314,18 @@ class HalfEdgeTable(_size: Int) {
 
   def edgeIncidentTo(i: Int) = edgeAt(i)
   def removeIncidentEdge(i: Int) = { edgeAt -= i }
-  def setIncidentEdge(i: Int, e: Int) = { edgeAt -= i }
+  def setIncidentEdge(i: Int, e: Int) = { 
+    assert(i == getDest(e))
+    edgeAt += i -> e 
+  }
+  def registerFace(e: Int) = {
+    var f = e
+    do {
+      setIncidentEdge(getDest(f), f)
+      f = getNext(f)
+    } while (f != e)
+  }
+
   def allVertices() = edgeAt.keys
 
   def reindexVertices(reindex: Int => Int) = {

@@ -271,6 +271,9 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
           triangles -= lcand
           setNext(rotCCWDest(lcand), getNext(lcand))
           setNext(getPrev(lcand), getNext(getFlip(lcand)))
+          killEdge(getFlip(lcand))
+          killEdge(lcand)
+          
           lcand = e
 
           if (debug) {
@@ -299,6 +302,9 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
           triangles -= getFlip(rcand)
           setNext(getFlip(base), rotCWSrc(rcand))
           setNext(rotCCWDest(rcand), getNext(rcand))
+          killEdge(getFlip(rcand))
+          killEdge(rcand)
+
           rcand = e
 
           if (debug) {
@@ -325,6 +331,7 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
           setNext(e, getFlip(base))
           setNext(rcand, e)
           setNext(getFlip(lcand), getFlip(e))
+          triangles += getFlip(base)
           base = e
 
           if (debug) {
@@ -337,6 +344,7 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
           setNext(e, getFlip(lcand))
           setNext(getFlip(e), rcand)
           setNext(getFlip(base), e)
+          triangles += getFlip(base)
           base = e
 
           if (debug) {
@@ -344,7 +352,6 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
           }
         }
 
-        triangles += base
       }
     }
 
