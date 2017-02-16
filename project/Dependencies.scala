@@ -44,9 +44,6 @@ object Dependencies {
   val slf4jApi      = "org.slf4j"         % "slf4j-api" % "1.7.22"
   val asm           = "asm"               % "asm"       % "3.3.1"
 
-  val slick         = "com.typesafe.slick" %% "slick"      % "3.1.1"
-  val postgresql    = "postgresql"         % "postgresql"  % "9.1-901.jdbc4"
-
   val caliper       = ("com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT"
     from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar")
 
@@ -61,7 +58,7 @@ object Dependencies {
 
   val avro          = "org.apache.avro" % "avro" % "1.8.1"
 
-  val slickPG      = "com.github.tminglei" %% "slick-pg" % "0.14.4"
+  val slickPG      = "com.github.tminglei" %% "slick-pg" % "0.14.6"
 
   val parserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.5"
 }
