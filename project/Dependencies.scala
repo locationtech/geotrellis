@@ -28,11 +28,6 @@ object Dependencies {
 
   val openCSV       = "com.opencsv" % "opencsv" % "3.8"
 
-  val akkaKernel    = "com.typesafe.akka" %% "akka-kernel"  % Version.akka
-  val akkaRemote    = "com.typesafe.akka" %% "akka-remote"  % Version.akka
-  val akkaActor     = "com.typesafe.akka" %% "akka-actor"   % Version.akka
-  val akkaCluster   = "com.typesafe.akka" %% "akka-cluster" % Version.akka
-
   val spire         = "org.spire-math" %% "spire" % "0.13.0"
 
   val sprayJson     = "io.spray"        %% "spray-json"    % Version.sprayJson
