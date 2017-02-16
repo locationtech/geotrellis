@@ -4,7 +4,6 @@ name := "geotrellis-spark-etl"
 libraryDependencies ++= Seq(
   "com.github.fge" % "json-schema-validator" % "2.2.6",
   sparkCore % "provided",
-  logging,
   scalatest % "test")
 
 test in assembly := {}

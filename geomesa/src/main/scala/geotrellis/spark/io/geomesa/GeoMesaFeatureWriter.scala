@@ -20,8 +20,8 @@ import geotrellis.geomesa.geotools._
 import geotrellis.spark._
 import geotrellis.util.annotations.experimental
 import geotrellis.vector._
+import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 import org.geotools.data.Transaction
