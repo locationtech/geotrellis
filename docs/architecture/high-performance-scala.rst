@@ -4,10 +4,10 @@ High Performance Scala
 Macros
 ======
 
-    NOTE: Because scala macros require a separate stage of compilation,
-    they've been broken out into their own package in GeoTrellis.
-    Otherwise, the functionality to be found there fits most neatly into
-    ``geotrellis.raster``.
+.. note:: Because scala macros require a separate stage of compilation,
+          they've been broken out into their own package in GeoTrellis.
+          Otherwise, the functionality to be found there fits most neatly into
+          ``geotrellis.raster``.
 
 Why Macros?
 -----------

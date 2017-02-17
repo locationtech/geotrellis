@@ -7,15 +7,15 @@ This documentation series describes the use of the vast
 On Distributed Computation
 ==========================
 
-    NOTE: Distributed computing is difficult to get right. Luckily, we
-    are able to lean on the ``RDD`` abstraction provided by Apache Spark
-    to simplify matters somewhat. Still, the conceptual difficulties in
-    ``geotrellis.spark`` are arguably as great as can be found in any
-    part of the GeoTrellis library. As such, the discussion in this
-    portion of the documentation assumes a passing familiarity with the
-    key concepts of ``geotrellis.raster``. If this is a difficulty,
-    please refer to the `documentation for
-    ``geotrellis.raster`` <./core-concepts.html#raster-data>`__.
+.. note:: Distributed computing is difficult to get right. Luckily, we
+          are able to lean on the ``RDD`` abstraction provided by Apache Spark
+          to simplify matters somewhat. Still, the conceptual difficulties in
+          ``geotrellis.spark`` are arguably as great as can be found in any
+          part of the GeoTrellis library. As such, the discussion in this
+          portion of the documentation assumes a passing familiarity with the
+          key concepts of ``geotrellis.raster``. If this is a difficulty,
+          please refer to the documentation for `the
+          geotrellis.raster package <./core-concepts.html#raster-data>`__.
 
 Consider the (relatively) simple case of carrying out local addition on
 two raster tiles. In the abstract, this merely involves adding together
@@ -798,9 +798,9 @@ This example will show how to start with an
 ``RDD[(ProjectedExtent, Tile)]`` and end with a stitched together
 GeoTiff.
 
-**Note**: Stitching together an RDD can produce a tile that is far
-bigger than the driver program's memory can handle. You should only do
-this with small layers, or a filtered RDD.
+.. note:: Stitching together an RDD can produce a tile that is far
+          bigger than the driver program's memory can handle. You should only do
+          this with small layers, or a filtered RDD.
 
 .. code:: scala
 
