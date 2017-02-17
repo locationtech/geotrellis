@@ -1,5 +1,4 @@
 import Dependencies._
-import UnidocKeys._
 import sbt.Keys._
 import de.heikoseeberger.sbtheader.license.Apache2_0
 
@@ -92,6 +91,7 @@ lazy val root = Project("geotrellis", file(".")).
     vectortile
   ).
   settings(commonSettings: _*).
+  enablePlugins(ScalaUnidocPlugin).
   settings(
     scalacOptions in (ScalaUnidoc, unidoc) += "-Ymacro-expand:none",
     initialCommands in console :=
@@ -101,9 +101,8 @@ lazy val root = Project("geotrellis", file(".")).
       import geotrellis.proj4._
       import geotrellis.spark._
       """
-  )
-  .settings(unidocSettings: _*)
-  .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(geowave))
+  ).
+  settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(geowave))
 
 lazy val macros = Project("macros", file("macros")).
   settings(commonSettings: _*)

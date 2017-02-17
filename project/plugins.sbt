@@ -7,7 +7,7 @@ addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.8.2")
 
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.14.4")
 
-addSbtPlugin("com.eed3si9n" % "sbt-unidoc" % "0.3.3")
+addSbtPlugin("com.eed3si9n" % "sbt-unidoc" % "0.4.0")
 
 addSbtPlugin("com.eed3si9n" % "sbt-dirty-money" % "0.1.0")
 
