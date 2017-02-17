@@ -26,7 +26,7 @@ object Dependencies {
   val monocleCore   = "com.github.julien-truffaut" %% "monocle-core"    % Version.monocle
   val monocleMacro  = "com.github.julien-truffaut" %% "monocle-macro"   % Version.monocle
 
-  val openCSV       = "com.opencsv" % "opencsv" % "3.8"
+  val openCSV       = "com.opencsv" % "opencsv" % "3.9"
 
   val akkaKernel    = "com.typesafe.akka" %% "akka-kernel"  % Version.akka
   val akkaRemote    = "com.typesafe.akka" %% "akka-remote"  % Version.akka
@@ -39,20 +39,12 @@ object Dependencies {
 
   val apacheMath    = "org.apache.commons" % "commons-math3" % "3.6.1"
 
-  val jettyWebapp   = "org.eclipse.jetty" % "jetty-webapp" % "9.4.0.M1"
-  val jerseyBundle  = "com.sun.jersey"    % "jersey-bundle" % "1.19.2"
-  val slf4jApi      = "org.slf4j"         % "slf4j-api" % "1.7.22"
-  val asm           = "asm"               % "asm"       % "3.3.1"
-
   val slick         = "com.typesafe.slick" %% "slick"      % "3.1.1"
   val postgresql    = "postgresql"         % "postgresql"  % "9.1-901.jdbc4"
 
-  val caliper       = ("com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT"
-    from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar")
+  val chronoscala   = "jp.ne.opt" %% "chronoscala" % "0.1.2"
 
-  val chronoscala   = "jp.ne.opt" %% "chronoscala" % "0.1.0"
-
-  val awsSdkS3      = "com.amazonaws" % "aws-java-sdk-s3" % "1.11.70"
+  val awsSdkS3      = "com.amazonaws" % "aws-java-sdk-s3" % "1.11.92"
 
   val scalazStream  = "org.scalaz.stream" %% "scalaz-stream" % "0.8.6a"
 

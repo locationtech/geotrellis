@@ -19,13 +19,12 @@ object Version {
   val scala       = "2.11.8"
   val geotools    = "16.1"
   val akka        = "2.4.16"
-  val spray       = "1.3.3"
-  val sprayJson   = "1.3.2"
-  val monocle     = "1.4.0-M1"
+  val sprayJson   = "1.3.3"
+  val monocle     = "1.4.0"
   val accumulo    = "1.7.2"
-  val cassandra   = "3.1.2"
+  val cassandra   = "3.1.4"
   val hbase       = "1.2.4"
-  val geomesa     = "1.2.7.2"
+  val geomesa     = "1.2.7.3"
   lazy val hadoop = Environment.hadoopVersion
   lazy val spark  = Environment.sparkVersion
 }
