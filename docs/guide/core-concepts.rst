@@ -980,6 +980,147 @@ that call ``geotrellis.vector`` home:
 -  ``geotrellis.vector.reproject`` defines methods for translating
    between projections
 
+Catalogs
+========
+
+We call the output of any ingest a *catalog*. It is a collection of
+serialized ``Tile``\ s and metadata that make up the various zoom levels of an
+ingested dataset.
+
+Layout
+------
+
+Our `Landsat Tutorial
+<https://github.com/geotrellis/geotrellis-landsat-tutorial>`__ produces a
+simple catalog on the filesystem at ``data/catalog/`` which we can use here
+as a reference. Running ``tree -L 2`` gives us a view of the directory
+layout:
+
+.. code::
+
+   .
+   ├── attributes
+   │   ├── landsat__.__0__.__metadata.json
+   │   ├── landsat__.__10__.__metadata.json
+   │   ├── landsat__.__11__.__metadata.json
+   │   ├── landsat__.__12__.__metadata.json
+   │   ├── landsat__.__13__.__metadata.json
+   │   ├── landsat__.__1__.__metadata.json
+   │   ├── landsat__.__2__.__metadata.json
+   │   ├── landsat__.__3__.__metadata.json
+   │   ├── landsat__.__4__.__metadata.json
+   │   ├── landsat__.__5__.__metadata.json
+   │   ├── landsat__.__6__.__metadata.json
+   │   ├── landsat__.__7__.__metadata.json
+   │   ├── landsat__.__8__.__metadata.json
+   │   └── landsat__.__9__.__metadata.json
+   └── landsat
+       ├── 0
+       ├── 1
+       ├── 10
+       ├── 11
+       ├── 12
+       ├── 13
+       ├── 2
+       ├── 3
+       ├── 4
+       ├── 5
+       ├── 6
+       ├── 7
+       ├── 8
+       └── 9
+
+   16 directories, 14 files
+
+The children of ``landsat`` are directories, but we used ``-L 2`` to hide
+their contents. They actually contain thousands of ``Tile`` files.
+
+Metadata
+--------
+
+The metadata JSON files contain familiar information:
+
+.. code:: console
+
+   $ jshon < lansat__.__6__.__metadata.json
+     [
+       {
+         "name": "landsat",
+         "zoom": 6
+       },
+       {
+         "header": {
+           "format": "file",
+           "keyClass": "geotrellis.spark.SpatialKey",
+           "valueClass": "geotrellis.raster.MultibandTile",
+           "path": "landsat/6"
+         },
+         "metadata": {
+           "extent": {
+             "xmin": 15454940.911194608,
+             "ymin": 4146935.160646211,
+             "xmax": 15762790.223459147,
+             "ymax": 4454355.929947533
+           },
+           "layoutDefinition": { ... }
+         },
+         ... // more here
+         "keyIndex": {
+           "type": "zorder",
+           "properties": {
+             "keyBounds": {
+               "minKey": { "col": 56, "row": 24 },
+               "maxKey": { "col": 57, "row": 25 }
+             }
+           }
+         },
+         ... // more here
+       }
+     ]
+
+Of note is the ``header`` block, which tells GeoTrellis where to look for
+and how to interpret the stored ``Tile``\ s, and the ``keyIndex`` block
+which is critical for reading/writing specific ranges of tiles. For more
+information, see our `section on Key Indexes <#key-indexes>`__.
+
+Tiles
+-----
+
+From above, the numbered directories under ``landsat/`` contain serialized
+``Tile`` files.
+
+.. code:: console
+
+   $ ls
+   attributes/  landsat/
+   $ cd landsat/6/
+   $ ls
+   1984  1985  1986  1987
+   $ du -sh *
+   12K     1984
+   8.0K    1985
+   44K     1986
+   16K     1987
+
+.. note:: These ``Tile`` files are not images, but can be rendered by
+          GeoTrellis into PNGs.
+
+Separate Stores for Attributes and Tiles
+----------------------------------------
+
+The real story here is that layer attributes and the ``Tile``\ s themselves
+don't need to be stored via the same `backend <tile-backends.html>`__.
+Indeed, when instantiating a Layer IO class like ``S3LayerReader``, we notice
+that its ``AttributeStore`` parameter is type-agnostic:
+
+.. code:: scala
+
+   class S3LayerReader(val attributeStore: AttributeStore)
+
+So it's entirely possible to store your metadata with one service and your
+tiles with another. This arrangement could be more performant/convenient for
+you, depending on your architecture.
+
 Layout Definitions and Layout Schemes
 =====================================
 
