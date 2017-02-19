@@ -1,3 +1,19 @@
+/*
+ * Copyright 2017 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.spark.costdistance
 
 import geotrellis.proj4.LatLng
@@ -79,9 +95,9 @@ object IterativeCostDistance {
     */
   def apply[K: (? => SpatialKey), V: (? => Tile)](
     friction: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
-    points: List[Point],
+    points: Seq[Point],
     maxCost: Double = Double.PositiveInfinity
-  )(implicit sc: SparkContext): RDD[(K, Tile)] = {
+  )(implicit sc: SparkContext): RDD[(K, DoubleArrayTile)] with Metadata[TileLayerMetadata[K]]= {
 
     val md = friction.metadata
     val mt = md.mapTransform
@@ -196,6 +212,10 @@ object IterativeCostDistance {
       previous.unpersist()
     } while (accumulator.value.size > 0)
 
-    costs.map({ case (k, _, cost) => (k, cost) })
+    // Construct return value and return it
+    val metadata = TileLayerMetadata(DoubleCellType, md.layout, md.extent, md.crs, md.bounds)
+    val rdd = costs.map({ case (k, _, cost) => (k, cost) })
+    ContextRDD(rdd, metadata)
   }
+
 }
