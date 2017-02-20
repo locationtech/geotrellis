@@ -30,13 +30,13 @@ abstract class RDDCostDistanceMethods[K: (? => SpatialKey), V: (? => Tile)]
 
   def costdistance(
     points: Seq[Point]
-  )(implicit sc: SparkContext): RDD[(K, DoubleArrayTile)] with Metadata[TileLayerMetadata[K]] =
+  )(implicit sc: SparkContext): RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]] =
     IterativeCostDistance(self, points)
 
   def costdistance(
     points: Seq[Point],
     maxCost: Double
-  )(implicit sc: SparkContext): RDD[(K, DoubleArrayTile)] with Metadata[TileLayerMetadata[K]] =
+  )(implicit sc: SparkContext): RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]] =
     IterativeCostDistance(self, points, maxCost)
 
 }
