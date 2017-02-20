@@ -60,7 +60,7 @@ trait PointCloudCodecs {
       .endRecord()
 
     def encode(arr: Array[Coordinate], rec: GenericRecord): Unit = {
-      rec.put("arr", arr.map(coordinateCodec.encode))
+      rec.put("arr", java.util.Arrays.asList(arr.map(coordinateCodec.encode):_*))
     }
 
     def decode(rec: GenericRecord): Array[Coordinate] =
