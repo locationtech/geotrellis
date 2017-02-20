@@ -93,7 +93,6 @@ lazy val root = Project("geotrellis", file(".")).
   settings(commonSettings: _*).
   enablePlugins(ScalaUnidocPlugin).
   settings(
-    scalacOptions in (ScalaUnidoc, unidoc) += "-Ymacro-expand:none",
     initialCommands in console :=
       """
       import geotrellis.raster._
