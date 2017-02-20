@@ -11,10 +11,11 @@ import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestFiles
 
+import com.vividsolutions.jts.geom.Coordinate
 import org.scalatest._
 
-class HadoopPointCloudSpatialSpec
-  extends PersistenceSpec[SpatialKey, PointCloud, TileLayerMetadata[SpatialKey]]
+class HadoopArrayCoordinateSpatialSpec
+  extends PersistenceSpec[SpatialKey, Array[Coordinate], TileLayerMetadata[SpatialKey]]
     with SpatialKeyIndexMethods
     with PointCloudTestEnvironment
     with TestFiles
@@ -29,15 +30,15 @@ class HadoopPointCloudSpatialSpec
   lazy val reindexer = HadoopLayerReindexer(outputLocal)
   lazy val updater = HadoopLayerUpdater(outputLocal)
   lazy val tiles = HadoopValueReader(outputLocal)
-  lazy val sample = pointCloudSample
+  lazy val sample = pointCloudSampleC
 
   describe("HDFS layer names") {
     it("should handle layer names with spaces") {
       val layer = sample
       val layerId = LayerId("Some layer", 10)
 
-      writer.write[SpatialKey, PointCloud, TileLayerMetadata[SpatialKey]](layerId, layer, ZCurveKeyIndexMethod)
-      val backin = reader.read[SpatialKey, PointCloud, TileLayerMetadata[SpatialKey]](layerId)
+      writer.write[SpatialKey, Array[Coordinate], TileLayerMetadata[SpatialKey]](layerId, layer, ZCurveKeyIndexMethod)
+      val backin = reader.read[SpatialKey, Array[Coordinate], TileLayerMetadata[SpatialKey]](layerId)
     }
 
     it("should fail gracefully with colon in name") {
@@ -45,7 +46,7 @@ class HadoopPointCloudSpatialSpec
       val layerId = LayerId("Some:layer", 10)
 
       intercept[InvalidLayerIdError] {
-        writer.write[SpatialKey, PointCloud, TileLayerMetadata[SpatialKey]](layerId, layer, ZCurveKeyIndexMethod)
+        writer.write[SpatialKey, Array[Coordinate], TileLayerMetadata[SpatialKey]](layerId, layer, ZCurveKeyIndexMethod)
       }
     }
   }
