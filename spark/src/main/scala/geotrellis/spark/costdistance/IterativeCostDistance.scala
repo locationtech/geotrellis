@@ -97,7 +97,7 @@ object IterativeCostDistance {
     friction: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     points: Seq[Point],
     maxCost: Double = Double.PositiveInfinity
-  )(implicit sc: SparkContext): RDD[(K, DoubleArrayTile)] with Metadata[TileLayerMetadata[K]]= {
+  )(implicit sc: SparkContext): RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]= {
 
     val md = friction.metadata
     val mt = md.mapTransform
@@ -214,7 +214,7 @@ object IterativeCostDistance {
 
     // Construct return value and return it
     val metadata = TileLayerMetadata(DoubleCellType, md.layout, md.extent, md.crs, md.bounds)
-    val rdd = costs.map({ case (k, _, cost) => (k, cost) })
+    val rdd = costs.map({ case (k, _, cost) => (k, cost.asInstanceOf[Tile]) })
     ContextRDD(rdd, metadata)
   }
 
