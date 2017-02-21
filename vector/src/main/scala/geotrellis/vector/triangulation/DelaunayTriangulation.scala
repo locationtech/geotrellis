@@ -492,9 +492,13 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
     var e = e0
     val toKill = Set.empty[Int]
     do {
-      setNext(getPrev(getFlip(e)), getNext(e))
       //println(s"    removing triangle ${(getSrc(getFlip(e)), getDest(getFlip(e)), getDest(getNext(getFlip(e))))}")
       triangleMap -= ((getSrc(getFlip(e)), getDest(getFlip(e)), getDest(getNext(getFlip(e)))))
+      setNext(getPrev(getFlip(e)), getNext(e))
+      val b = getFlip(getNext(e))
+      if (b == getNext(getNext(getNext(b)))) {
+        setIncidentEdge(getDest(e), b)
+      }
       toKill += e
       e = rotCWSrc(e)
     } while (e != e0)
@@ -612,28 +616,28 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
                 edges += (getSrc(t) -> getDest(t)) -> t
               case Some(s) =>
                 if (getFlip(t) != s || getFlip(s) != t) {
-                  //println(s"Edges [${getSrc(t)} -> ${getDest(t)}] and [${getSrc(s)} -> ${getDest(s)}] are not mutual flips!")
+                  println(s"Edges [${getSrc(t)} -> ${getDest(t)}] and [${getSrc(s)} -> ${getDest(s)}] are not mutual flips!")
                   result = false
                 }
             }
           case Some(s) =>
-            //println(s"Already encountered edge [${getSrc(t)} -> ${getDest(t)}]!")
-            //print("   first in ") ; showLoop(s)
-            //print("   and then in ") ; showLoop(t)
+            println(s"Already encountered edge [${getSrc(t)} -> ${getDest(t)}]!")
+            print("   first in ") ; showLoop(s)
+            print("   and then in ") ; showLoop(t)
             result = false
         }
         i += 1
         t = getNext(t)
       } while (t != t0)
       if (i != 3) {
-        //println(s"Edge [${getSrc(t0)} -> ${getDest(t0)}] does not participate in triangle! (loop of length $i)")
+        println(s"Edge [${getSrc(t0)} -> ${getDest(t0)}] does not participate in triangle! (loop of length $i)")
       }
     }
 
     allVertices.foreach{ v => 
       val t = edgeIncidentTo(v)
       if (!triedges.contains(t)) {
-        //println(s"edgeIncidentTo($v) refers to non-interior or stale edge [${getSrc(t)} -> ${getDest(t)}] (ID: ${t})")
+        println(s"edgeIncidentTo($v) refers to non-interior or stale edge [${getSrc(t)} -> ${getDest(t)}] (ID: ${t})")
         result = false
       }
     }
@@ -760,7 +764,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
     //   println("  \u001b[31m➟ Initial mesh is NOT valid\u001b[0m")
 
     // build priority queue
-    //println(s"  \u001b[32m➟ Applying initial score to vertices\u001b[0m")
+    println(s"  \u001b[32m➟ Applying initial score to vertices\u001b[0m")
     var pq = PriorityQueue.empty[(Double, Int, RealMatrix, Map[(Int, Int, Int), HalfEdge[Int, Int]])](
       Ordering.by((_: (Double, Int, RealMatrix, Map[(Int, Int, Int), HalfEdge[Int, Int]]))._1).reverse
     )
@@ -770,11 +774,11 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
     cfor(0)(i => i < nRemove && !pq.isEmpty, _ + 1) { i =>
       val (score, vi, _, tris) = pq.dequeue
 
-      //println(s"\u001b[1m[Iteration $i] Removing vertex $vi with score = ${score}\u001b[0m")
+      println(s"\u001b[1m[Iteration $i] Removing vertex $vi with score = ${score}\u001b[0m")
       //navigate
 
-      // if (boundvs.contains(vi))
-      //   println("  ➟ point is on boundary")
+      if (boundvs.contains(vi))
+        println("  ➟ point is on boundary")
 
       // remove vertex and record all vertices that require updating
       val nbhd = neighborsOf(vi).toSet ++ removeVertexAndFill(vi, tris)
@@ -786,7 +790,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
       //   println("  \u001b[31m➟ mesh is NOT valid\u001b[0m")
 
       // update neighbor entries from pqueue
-      //println(s"  ➟ update neighbors [$nbhd]")
+      println(s"  ➟ update neighbors [$nbhd]")
       pq = pq.filter { case (_, ix, _, _) => !nbhd.contains(ix) }
       //println(s"    left alone patches for vertices ${pq.map(_._2)}")
       nbhd.foreach{ neighbor => pq.enqueue(constructPQEntry(neighbor)) }

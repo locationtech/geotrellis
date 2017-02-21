@@ -286,7 +286,7 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
       }
       def surfacePoint(x: Double, y: Double) = new Coordinate(x, y, f(x, y))
 
-      val grid = 20.0
+      val grid = 100.0
       val pts = Array(
         surfacePoint(0, 0),
         surfacePoint(0, 1),
@@ -307,7 +307,7 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
       val dt = DelaunayTriangulation(pts)
       dt.writeWKT("original.wkt")
 
-      dt.decimate(400)
+      dt.decimate(9500)
       dt.writeWKT("simplified.wkt")
 
       true should be (true)

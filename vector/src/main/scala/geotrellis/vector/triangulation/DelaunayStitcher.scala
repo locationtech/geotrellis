@@ -45,10 +45,29 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
    * bounding loops represented by left and right be convex and mutually
    * non-intersecting.
    */
-  def insertBase(left0: Int, isLeftLinear: Boolean, right0: Int, isRightLinear: Boolean): Int = {
+  def insertBase(left0: Int, isLeftLinear: Boolean, right0: Int, isRightLinear: Boolean, debug: Boolean): Int = {
+    if (debug) println("Finding base ...")
 
     var left = advanceIfNotCorner(left0)
     var right = advanceIfNotCorner(right0)
+
+    if (debug) {
+      var l = left
+      val pts = collection.mutable.ListBuffer.empty[Point]
+      do {
+        pts += Point.jtsCoord2Point(pointSet.getCoordinate(getDest(l)))
+        l = getNext(l)
+      } while (l != left)
+      new java.io.PrintWriter("left.wkt") { write(geotrellis.vector.io.wkt.WKT.write(Line(pts))); close }
+
+      pts.clear
+      var r = right
+      do {
+        pts += Point.jtsCoord2Point(pointSet.getCoordinate(getDest(r)))
+        r = getNext(r)
+      } while (r != right)
+      new java.io.PrintWriter("right.wkt") { write(geotrellis.vector.io.wkt.WKT.write(Line(pts))); close }
+    }
 
     // if (isLeftLinear && isRightLinear) {
     //   // In the linear case, in the event of a linear result, we want to make
@@ -122,9 +141,9 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
     while(continue) {
       //println("Walking the base")
       val ldRel = relativeTo(base, getDest(left))
-      //println(s"Candidate: ${getSrc(base)} -> ${getDest(base)}, left.dest: ${getDest(left)}")
+      if (debug) println(s"Candidate: ${getSrc(base)} -> ${getDest(base)}, left.dest: ${getDest(left)}")
       if (ldRel == LEFTOF) {
-        // println("Left dest is LEFTOF base (advance left)")
+        if (debug) println("Left dest is LEFTOF base (advance left)")
         left = advance(left)
         setDest(base, getSrc(left))
       } else {
@@ -135,11 +154,11 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
           // left still needs to be moved
           if (ldRel == RIGHTOF) {
             // TODO: THIS IS WHERE I'VE SEEN INFINITE LOOPS IN BOUNDARY STITCHING
-            // println(s"Left previous source is not RIGHTOF base and left dest is RIGHTOF base (reverse left)")
+            if (debug) println(s"Left previous source is not RIGHTOF base and left dest is RIGHTOF base (reverse left)")
             left = reverse(left)
             setDest(base, getSrc(left))
           } else {
-            // println(s"Left dest is ON base (advance left)")
+            if (debug) println(s"Left dest is ON base (advance left)")
             left = advance(left)
             setDest(base, getSrc(left))
           }
@@ -147,7 +166,7 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
           // left is acceptable, try to adjust right
           val rpsRel = relativeTo(base, getSrc(getPrev(right)))
           if (rpsRel == LEFTOF) {
-            // println(s"Right previous source is LEFTOF base (reverse right)")
+            if (debug) println(s"Right previous source is LEFTOF base (reverse right)")
             right = reverse(right)
             setSrc(base, getSrc(right))
           } else {
@@ -155,7 +174,7 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
             if (!(rdRel == RIGHTOF ||
                   (rdRel == ON && rpsRel == ON &&
                    distance(getDest(base), getSrc(base)) < distance(getDest(base), getDest(right))))) {
-              // println(s"Right dest is not RIGHTOF base, or right dest and prev src are ON base")
+              if (debug) println(s"Right dest is not RIGHTOF base, or right dest and prev src are ON base")
               right = advance(right)
               setSrc(base, getSrc(right))
             } else {
@@ -171,7 +190,7 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
     setNext(getPrev(left), getFlip(base))
     setNext(getPrev(right), base)
 
-    //println(s"Found base: ${getSrc(base)} -> ${getDest(base)}")
+    if (debug) println(s"Found base: ${getSrc(base)} -> ${getDest(base)}")
 
     base
   }
@@ -187,7 +206,7 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
    * on the outside boundary of each constituent triangulation.
    */
   def merge(left: Int, isLeftLinear: Boolean, right: Int, isRightLinear: Boolean, triangles: TriangleMap, debug: Boolean = false): (Int, Boolean) = {
-    var base = insertBase(left, isLeftLinear, right, isRightLinear)
+    var base = insertBase(left, isLeftLinear, right, isRightLinear, debug)
 
     // If linear joins to linear, check that the current state
     // isn't already done (linear result)
