@@ -21,7 +21,6 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext

@@ -16,20 +16,19 @@
 
 package geotrellis.spark.io.hadoop
 
-import geotrellis.spark.io.hadoop.formats._
+import geotrellis.util.LazyLogging
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._
 import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.io._
+
+import java.io._
 import java.util.Scanner
-import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
-import scala.reflect._
-import java.io._
 
 abstract class LineScanner extends Iterator[String] with java.io.Closeable
 

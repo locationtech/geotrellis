@@ -26,7 +26,6 @@ import geotrellis.util._
 
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd._
-import com.typesafe.scalalogging.LazyLogging
 
 import scala.reflect.ClassTag
 

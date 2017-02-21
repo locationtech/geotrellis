@@ -28,7 +28,6 @@ import geotrellis.util._
 import geotrellis.util.annotations.experimental
 import geotrellis.vector.Extent
 
-import com.typesafe.scalalogging.LazyLogging
 import mil.nga.giat.geowave.adapter.raster.adapter.merge.RasterTileRowTransform
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
 import mil.nga.giat.geowave.core.geotime.index.dimension._
