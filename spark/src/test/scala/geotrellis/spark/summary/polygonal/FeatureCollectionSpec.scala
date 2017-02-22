@@ -19,6 +19,8 @@ package geotrellis.spark.summary.polygonal
 import geotrellis.spark._
 import geotrellis.vector._
 import geotrellis.vector.summary.polygonal._
+import geotrellis.spark.testkit._
+
 import org.scalatest._
 
 class FeatureCollectionSpec extends FunSpec

@@ -18,8 +18,10 @@ package geotrellis.spark.mapalgebra.focal
 
 import geotrellis.raster._
 import geotrellis.spark._
-import org.scalatest.FunSpec
+import geotrellis.spark.testkit._
 import geotrellis.raster.io.geotiff._
+
+import org.scalatest.FunSpec
 import java.io._
 
 class SlopeSpec extends FunSpec with TestEnvironment {

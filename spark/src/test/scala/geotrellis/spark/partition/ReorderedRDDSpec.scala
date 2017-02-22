@@ -18,6 +18,8 @@ package geotrellis.spark.partition
 
 import geotrellis.spark._
 import geotrellis.spark.io.index.zcurve._
+import geotrellis.spark.testkit._
+
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.{PairRDDFunctions, RDD}
 import org.scalatest._

@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.spark
+package geotrellis.spark.testkit
 
 import geotrellis.spark.io.hadoop.HdfsUtils
-import geotrellis.spark.testkit._
 import geotrellis.spark.util.SparkUtils
 import geotrellis.spark.io.kryo.KryoRegistrator
 

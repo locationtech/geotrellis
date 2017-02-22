@@ -19,6 +19,7 @@ package geotrellis.spark.reproject
 import geotrellis.spark._
 import geotrellis.spark.reproject.Reproject.Options
 import geotrellis.spark.tiling._
+import geotrellis.spark.testkit._
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._

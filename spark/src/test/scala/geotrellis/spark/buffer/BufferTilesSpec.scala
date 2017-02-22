@@ -19,6 +19,7 @@ package geotrellis.spark.buffer
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.raster.io.geotiff.SinglebandGeoTiff
+import geotrellis.spark.testkit._
 
 import org.scalatest.FunSpec
 

@@ -19,11 +19,12 @@ package geotrellis.spark.io.s3
 import com.amazonaws.services.s3.model.GetObjectRequest
 import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.spark._
+import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.s3.testkit._
 import org.scalatest._
-import java.nio.file.{ Paths, Files }
 
+import java.nio.file.{Paths, Files}
 
 class TiffTagsS3InputFormatSpec extends FunSpec with Matchers with TestEnvironment {
   implicit val mockClient = new MockS3Client()

@@ -22,6 +22,7 @@ import geotrellis.spark._
 import geotrellis.spark.render._
 import geotrellis.spark.testfiles.TestFiles
 import geotrellis.spark.io.hadoop._
+import geotrellis.spark.testkit._
 
 import org.scalatest._
 import org.apache.hadoop.fs._

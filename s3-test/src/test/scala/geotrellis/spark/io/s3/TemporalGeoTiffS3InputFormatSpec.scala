@@ -25,6 +25,7 @@ import geotrellis.spark.ingest._
 import geotrellis.util.Filesystem
 import geotrellis.spark.io.json._
 import geotrellis.spark.io.s3.testkit._
+import geotrellis.spark.testkit.TestEnvironment
 
 import com.amazonaws.auth.AWSCredentials
 import org.apache.hadoop.conf.Configuration
