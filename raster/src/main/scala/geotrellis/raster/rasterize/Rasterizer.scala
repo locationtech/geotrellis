@@ -232,8 +232,11 @@ object Rasterizer {
     * @param    skipLast           Boolean flag
     * @param    f                  Function to apply: f(cols, row, feature)
     */
-  def foreachCellInGridLine[D](x0: Int, y0: Int, x1: Int, y1: Int, p: Line, re: RasterExtent, skipLast: Boolean = false)
-                              (f: (Int, Int) => Unit) = {
+  def foreachCellInGridLine[D](
+    x0: Int, y0: Int,
+    x1: Int, y1: Int,
+    p: Line, re: RasterExtent, skipLast: Boolean = false
+  )(f: (Int, Int) => Unit) = {
     val dx=math.abs(x1 - x0)
     val sx=if (x0 < x1) 1 else -1
     val dy=math.abs(y1 - y0)
