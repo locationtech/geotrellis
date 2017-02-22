@@ -47,10 +47,9 @@ object TileLayout {
  */
 case class TileLayout(layoutCols: Int, layoutRows: Int, tileCols: Int, tileRows: Int) {
 
-  assert(
+  require(
     layoutCols >= 0 && layoutRows >= 0 && tileCols >= 0 && tileRows >= 0,
-    s"TileLayout should contain cols and rows >= 0: " +
-    s"TileLayout(layoutCols = $layoutCols, layoutRows = $layoutRows, tileCols = $tileCols, tileRows = $tileRows)"
+    s"TileLayout should contain cols and rows >= 0: $toString"
   )
 
   def isTiled = layoutCols > 1 || layoutRows > 1
