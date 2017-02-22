@@ -90,17 +90,17 @@ object ApproxViewshed extends Serializable {
                 }else if (yVal.isValidInt) {
                   tile.getDouble(x - math.signum(x - startCol), yInt)
                 } else { // need linear interpolation
-                  (yInt + 1 - yVal) *  tile.getDouble(x - math.signum(x-startCol), yInt) + 
+                  (yInt + 1 - yVal) *  tile.getDouble(x - math.signum(x-startCol), yInt) +
                   (yVal - yInt) * tile.getDouble(x - math.signum(x-startCol), yInt + 1)
                 }
               }
 
               if (x > startCol) {
-                tile.setDouble(x, y, 
+                tile.setDouble(x, y,
                   math.max(z, 1.0 / (startCol - (x - 1)) * (k - closestHeight) + closestHeight)
                 )
               } else {
-                tile.setDouble(x, y, 
+                tile.setDouble(x, y,
                   math.max(z, -1.0 / (startCol - (x+1)) * (k-closestHeight) + closestHeight)
                 )
               }
