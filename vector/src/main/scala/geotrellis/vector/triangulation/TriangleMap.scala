@@ -11,7 +11,9 @@ class TriangleMap(halfEdgeTable: HalfEdgeTable) {
   def +=(i1: Int, i2: Int, i3: Int, edge: Int): Unit = {
     // if (isTriangle(i1,i2,i3))
     //   println(s"Attempting to re-add triangle ${(i1,i2,i3)}")
-    triangles += TriangleMap.regularizeIndex(i1, i2, i3) -> edge
+    assert(edge == getNext(getNext(getNext(edge))))
+    assert(Set(i1, i2, i3) == Set(getSrc(edge), getDest(edge), getDest(getNext(edge))))
+    triangles += regularizeIndex(i1, i2, i3) -> edge
     registerFace(edge)
   }
 
@@ -20,11 +22,14 @@ class TriangleMap(halfEdgeTable: HalfEdgeTable) {
     //println(s"Adding triangle ($a, $b, $c)")
     // if (isTriangle(a,b,c))
     //   println(s"Attempting to re-add triangle ${(a,b,c)}")
+    assert(edge == getNext(getNext(getNext(edge))))
+    assert(Set(a, b, c) == Set(getSrc(edge), getDest(edge), getDest(getNext(edge))))
     triangles += TriangleMap.regularizeIndex(a, b, c) -> edge
     registerFace(edge)
   }
 
   def +=(edge: Int): Unit = {
+    assert(edge == getNext(getNext(getNext(edge))))
     triangles += {(
       regularizeIndex(
         getDest(edge),
@@ -72,9 +77,6 @@ class TriangleMap(halfEdgeTable: HalfEdgeTable) {
   def triangleEdges =
     triangles.values
 
-  def triangleIncidentTo(i: Int) = {
-
-  }
 }
 
 object TriangleMap {

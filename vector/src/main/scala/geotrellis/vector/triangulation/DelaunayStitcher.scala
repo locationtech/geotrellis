@@ -289,7 +289,7 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
           val e = rotCCWSrc(lcand)
           triangles -= lcand
           setNext(rotCCWDest(lcand), getNext(lcand))
-          setNext(getPrev(lcand), getNext(getFlip(lcand)))
+          setNext(getPrev(lcand), getFlip(base))
           killEdge(getFlip(lcand))
           killEdge(lcand)
           

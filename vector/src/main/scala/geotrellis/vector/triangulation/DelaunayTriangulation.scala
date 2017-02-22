@@ -145,11 +145,11 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
         if (isCCW(v1, v2, v3)) {
           val e = createHalfEdges(v1, v2, v3)
           val p = getPrev(e)
-          triangleMap += (v1, v2, v3) -> p
+          triangleMap += (v1, v2, v3) -> getFlip(p)
           (p, false)
         } else if(isCCW(v1, v3, v2)) {
           val e = createHalfEdges(v1, v3, v2)
-          triangleMap += (v1, v3, v2) -> e
+          triangleMap += (v1, v3, v2) -> getFlip(e)
           (e, false)
         } else {
           // Linear case
@@ -487,28 +487,34 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
 
   def decoupleVertex(vi: Int) = {
     // remove links to original vertex
-    //println(s"  ➟ disconnect original vertex $vi")
+    println(s"  ➟ disconnect original vertex $vi")
     val e0 = getFlip(edgeIncidentTo(vi))
     var e = e0
     val toKill = Set.empty[Int]
+    val pts = collection.mutable.ListBuffer.empty[Point]
+    do {
+      triangleMap -= ((getSrc(getFlip(e)), getDest(getFlip(e)), getDest(getNext(getFlip(e)))))
+      e = rotCWSrc(e)
+    } while (e != e0)
     do {
       //println(s"    removing triangle ${(getSrc(getFlip(e)), getDest(getFlip(e)), getDest(getNext(getFlip(e))))}")
-      triangleMap -= ((getSrc(getFlip(e)), getDest(getFlip(e)), getDest(getNext(getFlip(e)))))
+      pts.prepend(Point.jtsCoord2Point(pointSet.getCoordinate(getDest(e))))
       setNext(getPrev(getFlip(e)), getNext(e))
       val b = getFlip(getNext(e))
-      if (b == getNext(getNext(getNext(b)))) {
-        setIncidentEdge(getDest(e), b)
-      }
+      setIncidentEdge(getDest(e), b)
       toKill += e
       e = rotCWSrc(e)
     } while (e != e0)
+    //pts.prepend(Point.jtsCoord2Point(pointSet.getCoordinate(getDest(e))))
+    val region = Line(pts)
+    println(s"    Bounding loop: ${WKT.write(region)}")
 
     toKill.foreach{ e => {
       //println(s"    destroying edge [${getSrc(e)} -> ${getDest(e)}] (edge ids: $e and ${getFlip(e)})")
       killEdge(getFlip(e))
       killEdge(e) } }
 
-    //removeIncidentEdge(vi)
+    removeIncidentEdge(vi)
   }
 
   def removeVertexAndFill(vi: Int, tris: Map[(Int, Int, Int), HalfEdge[Int, Int]]): Seq[Int] = {
@@ -604,9 +610,22 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
       e = getNext(e)
     } while (e != boundary)
 
-    triangleMap.triangleEdges.foreach { t0 => 
+    val triverts = Set.empty[Int]
+    triangleMap.triangleVertices.foreach { case (i, j, k) =>
+      triverts += i
+      triverts += j
+      triverts += k
+    }
+
+    triangleMap.getTriangles.foreach { case ((i1, i2, i3), t0) => 
       var t = t0
       var i = 0
+
+      if (Set(i1, i2, i3) != Set(getSrc(t), getDest(t), getDest(getNext(t)))) {
+        println(s"Triangle ${(i1, i2, i3)} references loop over [${getSrc(t)}, ${getDest(t)}, ${getDest(getNext(t))}, ${getDest(getNext(getNext(t)))}, ...]")
+        result = false
+      }
+
       do {
         triedges += t
         edges.get(getSrc(t) -> getDest(t)) match {
@@ -621,7 +640,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
                 }
             }
           case Some(s) =>
-            println(s"Already encountered edge [${getSrc(t)} -> ${getDest(t)}]!")
+            println(s"In triangle ${(i1, i2, i3)}: already encountered edge [${getSrc(t)} -> ${getDest(t)}]!")
             print("   first in ") ; showLoop(s)
             print("   and then in ") ; showLoop(t)
             result = false
@@ -630,7 +649,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
         t = getNext(t)
       } while (t != t0)
       if (i != 3) {
-        println(s"Edge [${getSrc(t0)} -> ${getDest(t0)}] does not participate in triangle! (loop of length $i)")
+        println(s"Edge [${getSrc(t0)} -> ${getDest(t0)}] does not participate in triangle ${(i1, i2, i3)}! (loop of length $i)")
       }
     }
 
@@ -640,6 +659,18 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
         println(s"edgeIncidentTo($v) refers to non-interior or stale edge [${getSrc(t)} -> ${getDest(t)}] (ID: ${t})")
         result = false
       }
+    }
+
+    if (allVertices != triverts) {
+      val vertsNotInTris = allVertices.toSet -- triverts
+      val trivertsNotInEdges = triverts -- allVertices
+      if (vertsNotInTris nonEmpty) {
+        println(s"The vertices $vertsNotInTris are not contained in triangles but have incident edges")
+      }
+      if (trivertsNotInEdges nonEmpty) {
+        println(s"The vertices $trivertsNotInEdges appear in triangles but have no incident edges")
+      }
+      result = false
     }
 
     result
@@ -758,10 +789,10 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
       (score, vi, quadric, tris)
     }
 
-    // if (isMeshValid)
-    //   println("  \u001b[32m➟ Initial mesh is valid\u001b[0m")
-    // else
-    //   println("  \u001b[31m➟ Initial mesh is NOT valid\u001b[0m")
+    if (isMeshValid)
+      println("  \u001b[32m➟ Initial mesh is valid\u001b[0m")
+    else
+      println("  \u001b[31m➟ Initial mesh is NOT valid\u001b[0m")
 
     // build priority queue
     println(s"  \u001b[32m➟ Applying initial score to vertices\u001b[0m")
