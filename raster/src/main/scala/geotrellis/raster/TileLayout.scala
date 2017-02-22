@@ -46,6 +46,13 @@ object TileLayout {
  * @param tileRows   number of pixel rows in each tile, North to South
  */
 case class TileLayout(layoutCols: Int, layoutRows: Int, tileCols: Int, tileRows: Int) {
+
+  assert(
+    layoutCols >= 0 && layoutRows >= 0 && tileCols >= 0 && tileRows >= 0,
+    s"TileLayout should contain cols and rows >= 0: " +
+    s"TileLayout(layoutCols = $layoutCols, layoutRows = $layoutRows, tileCols = $tileCols, tileRows = $tileRows)"
+  )
+
   def isTiled = layoutCols > 1 || layoutRows > 1
 
   /**
