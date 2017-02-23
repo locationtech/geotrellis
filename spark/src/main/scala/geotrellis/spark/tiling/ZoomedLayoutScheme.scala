@@ -116,13 +116,15 @@ class ZoomedLayoutScheme(val crs: CRS, val tileSize: Int, resolutionThreshold: D
 
   def zoomOut(level: LayoutLevel) = {
     val layout = level.layout
+    val newZoom = level.zoom - 1
+    val newSize = math.pow(2, newZoom).toInt
     new LayoutLevel(
-      zoom = level.zoom - 1,
+      zoom = newZoom,
       layout = LayoutDefinition(
         extent = layout.extent,
         tileLayout = TileLayout(
-          layout.tileLayout.layoutCols / 2,
-          layout.tileLayout.layoutRows / 2,
+          newSize,
+          newSize,
           layout.tileLayout.tileCols,
           layout.tileLayout.tileRows
         )
@@ -132,13 +134,15 @@ class ZoomedLayoutScheme(val crs: CRS, val tileSize: Int, resolutionThreshold: D
 
   def zoomIn(level: LayoutLevel) = {
     val layout = level.layout
+    val newZoom = level.zoom + 1
+    val newSize = math.pow(2, newZoom).toInt
     new LayoutLevel(
-      zoom = level.zoom + 1,
+      zoom = newZoom,
       layout = LayoutDefinition(
         extent = layout.extent,
         tileLayout = TileLayout(
-          layout.tileLayout.layoutCols * 2,
-          layout.tileLayout.layoutRows * 2,
+          newSize,
+          newSize,
           layout.tileLayout.tileCols,
           layout.tileLayout.tileRows
         )
