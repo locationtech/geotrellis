@@ -766,15 +766,8 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
 
     val trans = pointSet.getCoordinate(_)
 
-    val boundvs = Set.empty[Int]
-    var e = boundary
-    do {
-      boundvs += getDest(e)
-      e = getNext(e)
-    } while (e != boundary)
-
     def constructPQEntry(vi: Int) = {
-      val (quadric, tris) = if (boundvs.contains(vi)) {
+      val (quadric, tris) = if (onBoundary(vi, boundary)) {
         val (bound, end, tris) = retriangulateBoundaryPoint(vi)
         val quadric = QuadricError.facetMatrix(tris.keys, trans).add(QuadricError.edgeMatrix(bound, end, trans))
         (quadric, tris)
@@ -808,7 +801,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
       println(s"\u001b[1m[Iteration $i] Removing vertex $vi with score = ${score}\u001b[0m")
       //navigate
 
-      if (boundvs.contains(vi))
+      if (onBoundary(vi, boundary))
         println("  ➟ point is on boundary")
 
       // remove vertex and record all vertices that require updating

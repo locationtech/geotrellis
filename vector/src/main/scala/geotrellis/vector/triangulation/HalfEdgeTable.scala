@@ -230,6 +230,16 @@ class HalfEdgeTable(_size: Int) {
     nbhd.toSeq
   }
 
+  def onBoundary(vi: Int, boundary: Int): Boolean = {
+    var e = boundary
+    do {
+      if (getDest(e) == vi)
+        return true
+      e = getNext(e)
+    } while (e != boundary)
+    return false
+  }
+
   def killEdge(e: Int): Unit = {
     table(e * 3) = -1
     table(e * 3 + 1) = -1
