@@ -18,9 +18,9 @@ package geotrellis.spark.equalization
 
 import geotrellis.raster._
 import geotrellis.spark._
+import geotrellis.spark.testkit._
 
 import org.scalatest._
-
 
 class RDDHistogramEqualizationSpec extends FunSpec
     with Matchers

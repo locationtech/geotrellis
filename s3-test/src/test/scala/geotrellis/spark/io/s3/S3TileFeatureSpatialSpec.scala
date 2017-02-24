@@ -22,9 +22,9 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.s3.testkit._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestTileFeatureFiles
+import geotrellis.spark.testkit.TestEnvironment
 
 import org.scalatest._
-
 
 class S3TileFeatureSpatialSpec
   extends PersistenceSpec[SpatialKey, TileFeature[Tile, Tile], TileLayerMetadata[SpatialKey]]

@@ -20,6 +20,8 @@ import java.io.IOException
 
 import geotrellis.util.Filesystem
 import geotrellis.spark._
+import geotrellis.spark.testkit._
+
 import org.scalatest._
 import org.apache.hadoop.fs.Path
 

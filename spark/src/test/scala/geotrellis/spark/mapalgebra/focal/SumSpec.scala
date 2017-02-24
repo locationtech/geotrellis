@@ -22,6 +22,7 @@ import geotrellis.raster.mapalgebra.focal._
 
 import geotrellis.spark._
 import geotrellis.spark.mapalgebra.focal._
+import geotrellis.spark.testkit._
 
 import org.scalatest._
 

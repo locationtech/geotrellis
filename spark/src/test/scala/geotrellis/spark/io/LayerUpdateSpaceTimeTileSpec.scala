@@ -27,6 +27,7 @@ import geotrellis.spark.tiling._
 import geotrellis.spark.util._
 import geotrellis.util._
 import geotrellis.vector._
+import geotrellis.spark.testkit._
 
 import org.apache.spark.rdd._
 import jp.ne.opt.chronoscala.Imports._

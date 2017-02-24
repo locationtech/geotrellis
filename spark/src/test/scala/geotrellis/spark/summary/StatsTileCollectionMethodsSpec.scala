@@ -19,6 +19,7 @@ package geotrellis.spark.summary
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testfiles._
+import geotrellis.spark.testkit._
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._

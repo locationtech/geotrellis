@@ -22,9 +22,9 @@ import geotrellis.raster.io.geotiff.SinglebandGeoTiff
 import geotrellis.spark._
 import geotrellis.spark.testkit._
 import geotrellis.vector.Extent
+import geotrellis.spark.testkit._
 
 import org.scalatest.FunSpec
-
 
 class ZoomResampleMethodsSpec extends FunSpec
     with TileBuilders

@@ -20,6 +20,8 @@ import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.TileLayerRDD
 import geotrellis.spark.testfiles._
+import geotrellis.spark.testkit._
+
 import org.scalatest.FunSpec
 
 class GreaterOrEqualSpec extends FunSpec with TestEnvironment with TestFiles {
