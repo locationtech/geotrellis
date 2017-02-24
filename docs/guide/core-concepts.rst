@@ -983,18 +983,26 @@ that call ``geotrellis.vector`` home:
 Catalogs
 ========
 
-We call the output of any ingest a *catalog*. It is a collection of
-serialized ``Tile``\ s and metadata that make up the various zoom levels of an
-ingested dataset.
+We call the basic output of an ingest a **Layer**, and many GeoTrellis
+operations `follow this idea <#tile-layers>`__. Layers may be written in
+related groups we call **Pyramids**, which are made up of
+interpolations/extrapolations of some base Layer (i.e. different zoom
+levels). Finally, collections of Pyramids (or just single Layers) can be
+grouped in a **Catalog** in an organized fashion that allows for logical
+querying later.
 
-Layout
-------
+While the term "Catalog" is not as pervasive as "Layer" in the GeoTrellis
+API, it deserves mention nonetheless as Catalogs are the result of normal
+GeoTrellis usage.
+
+Catalog Organization
+--------------------
 
 Our `Landsat Tutorial
 <https://github.com/geotrellis/geotrellis-landsat-tutorial>`__ produces a
-simple catalog on the filesystem at ``data/catalog/`` which we can use here
-as a reference. Running ``tree -L 2`` gives us a view of the directory
-layout:
+simple single-pyramid catalog on the filesystem at ``data/catalog/`` which
+we can use here as a reference. Running ``tree -L 2`` gives us a view of the
+directory layout:
 
 .. code::
 
@@ -1032,8 +1040,9 @@ layout:
 
    16 directories, 14 files
 
-The children of ``landsat`` are directories, but we used ``-L 2`` to hide
-their contents. They actually contain thousands of ``Tile`` files.
+The children of ``landsat/`` are directories, but we used ``-L 2`` to hide
+their contents. They actually contain thousands of ``Tile`` files, which are
+explained below.
 
 Metadata
 --------
@@ -1083,6 +1092,21 @@ and how to interpret the stored ``Tile``\ s, and the ``keyIndex`` block
 which is critical for reading/writing specific ranges of tiles. For more
 information, see our `section on Key Indexes <#key-indexes>`__.
 
+As we have multiple storage backends, ``header`` can look different. Here's
+an example for a Layer ingested to S3:
+
+.. code:: javascript
+
+   ... // more here
+   "header": {
+      "format": "s3",
+      "key": "catalog/nlcd-tms-epsg3857/6",
+      "keyClass": "geotrellis.spark.SpatialKey",
+      "valueClass": "geotrellis.raster.Tile",
+      "bucket": "azavea-datahub"
+    },
+    ... // more here
+
 Tiles
 -----
 
@@ -1105,6 +1129,14 @@ From above, the numbered directories under ``landsat/`` contain serialized
 .. note:: These ``Tile`` files are not images, but can be rendered by
           GeoTrellis into PNGs.
 
+Notice that the four ``Tile`` files here have different sizes. Why might
+that be, if ``Tile``\ s are all Rasters of the same dimension? The answer is
+that a ``Tile`` file can contain multiple tiles. Specifically, it is a
+serialized ``Array[(K, V)]`` of which ``Array[(SpatialKey, Tile)]`` is a
+common case. When or why multiple ``Tile``\ s might be grouped into a single
+file like this is the result of the `Space Filling Curve <#key-indexes>`__
+algorithm applied during ingest.
+
 Separate Stores for Attributes and Tiles
 ----------------------------------------
 
@@ -1118,8 +1150,14 @@ that its ``AttributeStore`` parameter is type-agnostic:
    class S3LayerReader(val attributeStore: AttributeStore)
 
 So it's entirely possible to store your metadata with one service and your
-tiles with another. This arrangement could be more performant/convenient for
-you, depending on your architecture.
+tiles with another. Due to the ``header`` block in each Layer's metadata,
+GeoTrellis will know how to fetch the ``Tile``\ s, no matter how they're
+stored. This arrangement could be more performant/convenient for you,
+depending on your architecture.
+
+.. raw:: html
+
+   <hr>
 
 Layout Definitions and Layout Schemes
 =====================================
