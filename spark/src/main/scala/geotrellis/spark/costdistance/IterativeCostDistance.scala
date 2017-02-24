@@ -19,7 +19,10 @@ package geotrellis.spark.costdistance
 import geotrellis.proj4.LatLng
 import geotrellis.raster._
 import geotrellis.raster.costdistance.CostDistance
+import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.spark._
+import geotrellis.spark.tiling._
+import geotrellis.util._
 import geotrellis.vector._
 
 import org.apache.log4j.Logger
@@ -86,16 +89,45 @@ object IterativeCostDistance {
     math.abs(meters / pixels)
   }
 
+  private def geometryToKeys[K: (? => SpatialKey)](
+    md: TileLayerMetadata[K],
+    g: Geometry
+  ) = {
+    val keys = mutable.ArrayBuffer.empty[SpatialKey]
+    val bounds = md.layout.mapTransform(g.envelope)
+
+    var row = bounds.rowMin; while (row <= bounds.rowMax) {
+      var col = bounds.colMin; while (col <= bounds.colMax) {
+        keys.append(SpatialKey(col, row))
+        col += 1
+      }
+      row += 1
+    }
+
+    keys.toList
+  }
+
+  private def geometryMap[K: (? => SpatialKey)](
+    md: TileLayerMetadata[K],
+    gs: Seq[Geometry]
+  ): Map[SpatialKey, Seq[Geometry]] = {
+    gs
+      .flatMap({ g => geometryToKeys(md, g).map({ k => (k, g) }) })
+      .groupBy(_._1)
+      .mapValues({ list => list.map({ case (_, v) => v }) })
+      .toMap
+  }
+
   /**
     * Perform the cost-distance computation.
     *
-    * @param  friction  The friction layer; pixels are in units of "seconds per meter"
-    * @param  points    The starting locations from-which to compute the cost of traveling
-    * @param  maxCost   The maximum cost before pruning a path (in units of "seconds")
+    * @param  friction    The friction layer; pixels are in units of "seconds per meter"
+    * @param  geometries  The starting locations from-which to compute the cost of traveling
+    * @param  maxCost     The maximum cost before pruning a path (in units of "seconds")
     */
   def apply[K: (? => SpatialKey), V: (? => Tile)](
     friction: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
-    points: Seq[Point],
+    geometries: Seq[Geometry],
     maxCost: Double = Double.PositiveInfinity
   )(implicit sc: SparkContext): RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]= {
 
@@ -115,6 +147,9 @@ object IterativeCostDistance {
     val accumulator = new ChangesAccumulator
     sc.register(accumulator)
 
+    // Index the input geometry by SpatialKey
+    val gs = sc.broadcast(geometryMap(md, geometries))
+
     // Create RDD of initial (empty) cost tiles and load the
     // accumulator with the starting values.
     var costs: RDD[(K, V, DoubleArrayTile)] = friction.map({ case (k, v) =>
@@ -124,15 +159,17 @@ object IterativeCostDistance {
       val rows = tile.rows
       val extent = mt(key)
       val rasterExtent = RasterExtent(extent, cols, rows)
+      val options = Rasterizer.Options.DEFAULT
 
-      points
-        .filter({ point => extent.contains(point) })
-        .map({ point =>
-          val col = rasterExtent.mapXToGrid(point.x)
-          val row = rasterExtent.mapYToGrid(point.y)
-          val friction = tile.getDouble(col, row)
-          val cost = (col, row, friction, 0.0)
-          accumulator.add((key, cost))
+      gs.value.getOrElse(key, List.empty[Geometry])
+        .filter({ geometry => extent.intersects(geometry) })
+        .foreach({ geometry =>
+          Rasterizer
+            .foreachCellByGeometry(geometry, rasterExtent, options)({ (col, row) =>
+              val friction = tile.getDouble(col, row)
+              val entry = (col, row, friction, 0.0)
+              accumulator.add((key, entry))
+            })
         })
 
       (k, v, CostDistance.generateEmptyCostTile(cols, rows))
