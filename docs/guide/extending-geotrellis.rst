@@ -269,8 +269,8 @@ few caveats:
       }
     }
 
-**Note:** Our ``Format`` here only has a ``K`` constraint because of our
-inner ``KeyIndex``. Yours likely won't.
+.. note::  Our ``Format`` here only has a ``K`` constraint because of our
+           inner ``KeyIndex``. Yours likely won't.
 
 Now for the final piece of the puzzle, the format Registrator. With the
 above in place, it's quite simple:

@@ -7,15 +7,15 @@ This documentation series describes the use of the vast
 On Distributed Computation
 ==========================
 
-    NOTE: Distributed computing is difficult to get right. Luckily, we
-    are able to lean on the ``RDD`` abstraction provided by Apache Spark
-    to simplify matters somewhat. Still, the conceptual difficulties in
-    ``geotrellis.spark`` are arguably as great as can be found in any
-    part of the GeoTrellis library. As such, the discussion in this
-    portion of the documentation assumes a passing familiarity with the
-    key concepts of ``geotrellis.raster``. If this is a difficulty,
-    please refer to the `documentation for
-    ``geotrellis.raster`` <./core-concepts.html#raster-data>`__.
+.. note:: Distributed computing is difficult to get right. Luckily, we
+          are able to lean on the ``RDD`` abstraction provided by Apache Spark
+          to simplify matters somewhat. Still, the conceptual difficulties in
+          ``geotrellis.spark`` are arguably as great as can be found in any
+          part of the GeoTrellis library. As such, the discussion in this
+          portion of the documentation assumes a passing familiarity with the
+          key concepts of ``geotrellis.raster``. If this is a difficulty,
+          please refer to the documentation for `the
+          geotrellis.raster package <./core-concepts.html#raster-data>`__.
 
 Consider the (relatively) simple case of carrying out local addition on
 two raster tiles. In the abstract, this merely involves adding together
@@ -81,15 +81,8 @@ should be necessary to satisfy these conditions). The overloaded methods
 allow you to optionally specify how the key index will be created, or to
 supply your own ``KeyIndex``.
 
-.. raw:: html
-
-   <h3>
-
 Key Index
-
-.. raw:: html
-
-   </h3>
+---------
 
 A ``KeyIndex`` determines how your N-dimensional key (the ``K`` in
 ``RDD[(K, V)] with Metadtaa[M]``) will be translated to a space filling
@@ -168,35 +161,28 @@ implementation of the backend you are using can be passed in a
 Reading Layers
 ==============
 
-Layer readers read either whole or a portion of the persisted layer back
-into ``RDD[(K, V)] with Metadata[M]``. All layer readers extend the
-```FilteringLayerReader`` <../../spark/src/main/scala/geotrellis/spark/io/FilteringLayerReader.scala>`__
-trait which in turn extends
-```LayerReader`` <../../spark/src/main/scala/geotrellis/spark/io/LayerReader.scala>`__.
-The former type should be used when abstracting over the specific
-back-end implementation of a reader with region query support while the
-latter when referring to a reader that may only read the layers fully.
+Layer readers read all or part of a persisted layer back into ``RDD[(K, V)]
+with Metadata[M]``. All layer readers extend the `FilteringLayerReader
+<https://github.com/locationtech/geotrellis/blob/master/spark/src/main/scala/geotrellis/spark/io/FilteringLayerReader.scala>`__
+trait which in turn extends `LayerReader
+<https://github.com/locationtech/geotrellis/blob/master/spark/src/main/scala/geotrellis/spark/io/LayerReader.scala>`__.
+The former type should be used when abstracting over the specific back-end
+implementation of a reader with region query support, and the latter when
+referring to a reader that may only read the layers fully.
 
 In order to read a layer correctly some metadata regarding the type and
 format of the values must be stored as well as metadata regarding layer
-properties. All layer readers lean on instances of
-```AttributeStore`` <../../spark/src/main/scala/geotrellis/spark/io/AttributeStore.scala>`__
+properties. All layer readers lean on instances of `AttributeStore
+<https://github.com/locationtech/geotrellis/blob/master/spark/src/main/scala/geotrellis/spark/io/AttributeStore.scala>`__
 to provide this functionality. As a convenience each concrete type of a
 ``LayerReader`` will provide a constructor that will instantiate an
-``AttributeStore`` of the same type with reasonable defaults. For
-instance ``S3LayerReader`` constructor, which requires S3 bucket and
-prefix parameters, would instantiate an ``S3AttributeStore`` in with the
-bucket and prefix.
-
-.. raw:: html
-
-   <h3>
+``AttributeStore`` of the same type with reasonable defaults. For instance
+``S3LayerReader`` constructor, which requires S3 bucket and prefix
+parameters, would instantiate an ``S3AttributeStore`` with the bucket and
+prefix.
 
 LayerReader
-
-.. raw:: html
-
-   </h3>
+-----------
 
 .. code:: scala
 
@@ -247,15 +233,8 @@ to inspect the layer through ``reader.attributeStore`` field.
     assert(header.keyClass == "geotrellis.spark.SpatialKey")
     assert(header.valueClass == "geotrellis.raster.Tile")
 
-.. raw:: html
-
-   <h4>
-
 LayerReader.reader
-
-.. raw:: html
-
-   </h4>
+^^^^^^^^^^^^^^^^^^
 
 In addition to ``reader.read`` there exists a ``reader.reader`` method
 defined as follows:
@@ -279,15 +258,8 @@ formats for ``K``, ``V``, and ``M`` such that a "clean" reader can be
 passed to modules where those formats are not available in the implicit
 scope.
 
-.. raw:: html
-
-   <h3>
-
 FilteringLayerReader
-
-.. raw:: html
-
-   </h3>
+--------------------
 
 .. code:: scala
 
@@ -381,15 +353,8 @@ noted that the layer metadata is accessed during the construction of the
 ``Reader[SpatialKey, Tile]`` and saved for all future calls to read a
 tile.
 
-.. raw:: html
-
-   <h3>
-
 Reader Threads
-
-.. raw:: html
-
-   </h3>
+--------------
 
 Cassandra and S3 Layer RDDReaders / RDDWriters are configurable by
 threads amount. It's a programm setting, that can be different for a
@@ -475,15 +440,8 @@ First, we'll set the stage for a discussion of joins in
 ``geotrellis.spark`` with a discussion of how metadata is used in this
 context.
 
-.. raw:: html
-
-   <h3>
-
 Metadata
-
-.. raw:: html
-
-   </h3>
+--------
 
 A previously tiled and saved ``RasterRDD`` read in through an instance
 of ``geotrellis.spark.io.LayerReader`` will be mixed in with the
@@ -517,15 +475,8 @@ us to verify that we're working with compatible layers.
     val rdd3: TileLayerRDD[SpaitalKey] =
       reader.read(getLayerId(3))
 
-.. raw:: html
-
-   <h3>
-
 Default Joins
-
-.. raw:: html
-
-   </h3>
+-------------
 
 GeoTrellis provides an API for interaction with RDDs of tiles as a
 single unit. Where possible, we attempt to provide symbolic methods
@@ -553,15 +504,8 @@ appropriate partitioner for the result. Thus, if two layers being
 operated on are not aligned the result of the operation will contain
 **only** the intersecting tiles.
 
-.. raw:: html
-
-   <h3>
-
 Explicit Joins
-
-.. raw:: html
-
-   </h3>
+--------------
 
 In cases where it is important to control the type of join a more
 explicit method is required. We make a direct call to
@@ -583,15 +527,8 @@ arguments.
     // using GeoTrellis method extensions
     rdd1.join(rdd2).combineValues(Add(_, _))
 
-.. raw:: html
-
-   <h4>
-
 Left Join
-
-.. raw:: html
-
-   </h4>
+^^^^^^^^^
 
 Another reason to want to control a join is to perform an update of a
 larger layer with a smaller layer, performing an operation where two
@@ -612,15 +549,8 @@ operations with signature of ``(V, V) => V``.
     // using GeoTrellis method extensions
     rdd1.leftOuterJoin(rdd2).updateValues(Add(_, _))
 
-.. raw:: html
-
-   <h4>
-
 Spatial Join
-
-.. raw:: html
-
-   </h4>
+^^^^^^^^^^^^
 
 Given that we know the key bounds of our RDD, from accompanying
 ``TileLayerMetadata``, before performing the join we may use a spark
@@ -650,15 +580,8 @@ must match on the resulting ``Bounds`` object to find out if it's
     val leftJoinRes: RDD[(SpatialKey, (Tile, Option[Tile])] with Metadata[Bounds[SpatialKey]] =
       rdd1.spatialLeftOuterJoin(rdd2)
 
-.. raw:: html
-
-   <h3>
-
 Manipulating Metadata
-
-.. raw:: html
-
-   </h3>
+---------------------
 
 Metadata is provided when loading a layer from a GeoTrellis layer reader
 and is required when writing a layer through a GeoTrellis layer writer.
@@ -674,15 +597,8 @@ signature in GeoTrellis is ``ContextRDD[K, V, M]``
     val rddWithContext: RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata] =
       ContextRDD(rdd, rdd1.metadata)
 
-.. raw:: html
-
-   <h4>
-
 Preserving Metadata Through Operations
-
-.. raw:: html
-
-   </h4>
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 There are extension methods in ``RDD[(K, V]] with Metadata[M]`` that
 allow either changing rdd while preserving metadata or changing metadata
@@ -706,15 +622,9 @@ while preserving the rdd.
         .withContext { _ localEqual 123 }
         .mapContext { metadata: TileLayerMetadata => metadata.copy(cellType = TypeBit) }
 
-.. raw:: html
-
-   <h4>
 
 Preserving Metadata Through Spatial Joins
-
-.. raw:: html
-
-   </h4>
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Since spatial joins produce metadata, in contrast to vanilla spark
 joins, we must use ``.withContext`` wrapper at every transformation in
@@ -798,9 +708,9 @@ This example will show how to start with an
 ``RDD[(ProjectedExtent, Tile)]`` and end with a stitched together
 GeoTiff.
 
-**Note**: Stitching together an RDD can produce a tile that is far
-bigger than the driver program's memory can handle. You should only do
-this with small layers, or a filtered RDD.
+.. note:: Stitching together an RDD can produce a tile that is far
+          bigger than the driver program's memory can handle. You should only do
+          this with small layers, or a filtered RDD.
 
 .. code:: scala
 
