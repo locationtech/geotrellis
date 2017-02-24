@@ -19,7 +19,7 @@ package geotrellis.spark.costdistance
 import geotrellis.raster.{Tile, DoubleArrayTile}
 import geotrellis.spark._
 import geotrellis.util.MethodExtensions
-import geotrellis.vector.Point
+import geotrellis.vector.Geometry
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
@@ -29,14 +29,14 @@ abstract class RDDCostDistanceMethods[K: (? => SpatialKey), V: (? => Tile)]
     extends MethodExtensions[RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
 
   def costdistance(
-    points: Seq[Point]
+    geometries: Seq[Geometry]
   )(implicit sc: SparkContext): RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]] =
-    IterativeCostDistance(self, points)
+    IterativeCostDistance(self, geometries)
 
   def costdistance(
-    points: Seq[Point],
+    geometries: Seq[Geometry],
     maxCost: Double
   )(implicit sc: SparkContext): RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]] =
-    IterativeCostDistance(self, points, maxCost)
+    IterativeCostDistance(self, geometries, maxCost)
 
 }
