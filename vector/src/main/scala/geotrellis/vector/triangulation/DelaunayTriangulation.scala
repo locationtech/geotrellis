@@ -517,11 +517,18 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
     removeIncidentEdge(vi)
   }
 
-  def removeVertexAndFill(vi: Int, tris: Map[(Int, Int, Int), HalfEdge[Int, Int]]): Seq[Int] = {
+  def removeVertexAndFill(vi: Int, tris: Map[(Int, Int, Int), HalfEdge[Int, Int]], bnd: Option[Int]): Seq[Int] = {
     val exteriorRing = ListBuffer.empty[Int]
 
     decoupleVertex(vi)
-    
+
+    // in the event of a boundary with no fill triangles, set the boundary 
+    // reference in case we destroyed the old boundary edge (happens when 
+    // corner points are deleted)
+    if (bnd != None) {
+      _boundary = getFlip(bnd.get)
+    }
+  
     // merge triangles
     //println("  ➟ merge new triangles")
     val edges = Map.empty[(Int, Int), Int]
@@ -586,16 +593,17 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
       e = getNext(e)
     } while (e != boundary)
 
-    val tris =
+    val (tris, bnd) =
       if (boundvs.contains(vi)) {
         //println("  ➟ boundary point")
-        retriangulateBoundaryPoint(vi)._3
+        val (bnd, _, tris) = retriangulateBoundaryPoint(vi)
+        (tris, bnd.flip.face)
       } else {
         //println("  ➟ interior point")
-        retriangulateInteriorPoint(vi)
+        (retriangulateInteriorPoint(vi), None)
       }
 
-    removeVertexAndFill(vi, tris)
+    removeVertexAndFill(vi, tris, bnd)
     ()
   }
 
@@ -767,19 +775,19 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
     val trans = pointSet.getCoordinate(_)
 
     def constructPQEntry(vi: Int) = {
-      val (quadric, tris) = if (onBoundary(vi, boundary)) {
+      val (quadric, tris, bnd) = if (onBoundary(vi, boundary)) {
         val (bound, end, tris) = retriangulateBoundaryPoint(vi)
         val quadric = QuadricError.facetMatrix(tris.keys, trans).add(QuadricError.edgeMatrix(bound, end, trans))
-        (quadric, tris)
+        (quadric, tris, bound.flip.face)
       } else {
         val tris = retriangulateInteriorPoint(vi)
         val quadric = QuadricError.facetMatrix(tris.keys, trans)
-        (quadric, tris)
+        (quadric, tris, None)
       }
       val pt = trans(vi)
       val v = MatrixUtils.createRealVector(Array(pt.x, pt.y, pt.z, 1))
       val score = v dotProduct ( quadric operate v)
-      (score, vi, quadric, tris)
+      (score, vi, quadric, tris, bnd)
     }
 
     if (isMeshValid)
@@ -789,14 +797,14 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
 
     // build priority queue
     println(s"  \u001b[32m➟ Applying initial score to vertices\u001b[0m")
-    var pq = PriorityQueue.empty[(Double, Int, RealMatrix, Map[(Int, Int, Int), HalfEdge[Int, Int]])](
-      Ordering.by((_: (Double, Int, RealMatrix, Map[(Int, Int, Int), HalfEdge[Int, Int]]))._1).reverse
+    var pq = PriorityQueue.empty[(Double, Int, RealMatrix, Map[(Int, Int, Int), HalfEdge[Int, Int]], Option[Int])](
+      Ordering.by((_: (Double, Int, RealMatrix, Map[(Int, Int, Int), HalfEdge[Int, Int]], Option[Int]))._1).reverse
     )
     allVertices.foreach { vi: Int => pq.enqueue(constructPQEntry(vi)) }
 
     // iterate
     cfor(0)(i => i < nRemove && !pq.isEmpty, _ + 1) { i =>
-      val (score, vi, _, tris) = pq.dequeue
+      val (score, vi, _, tris, bnd) = pq.dequeue
 
       println(s"\u001b[1m[Iteration $i] Removing vertex $vi with score = ${score}\u001b[0m")
       //navigate
@@ -805,7 +813,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
         println("  ➟ point is on boundary")
 
       // remove vertex and record all vertices that require updating
-      val nbhd = neighborsOf(vi).toSet ++ removeVertexAndFill(vi, tris)
+      val nbhd = neighborsOf(vi).toSet ++ removeVertexAndFill(vi, tris, bnd)
 
       // println("  ➟ checking mesh validity")
       // if (isMeshValid)
@@ -815,7 +823,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
 
       // update neighbor entries from pqueue
       println(s"  ➟ update neighbors [$nbhd]")
-      pq = pq.filter { case (_, ix, _, _) => !nbhd.contains(ix) }
+      pq = pq.filter { case (_, ix, _, _, _) => !nbhd.contains(ix) }
       //println(s"    left alone patches for vertices ${pq.map(_._2)}")
       nbhd.foreach{ neighbor => pq.enqueue(constructPQEntry(neighbor)) }
 
