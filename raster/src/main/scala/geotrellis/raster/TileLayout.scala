@@ -48,8 +48,8 @@ object TileLayout {
 case class TileLayout(layoutCols: Int, layoutRows: Int, tileCols: Int, tileRows: Int) {
 
   require(
-    layoutCols >= 0 && layoutRows >= 0 && tileCols >= 0 && tileRows >= 0,
-    s"TileLayout should contain cols and rows >= 0: $toString"
+    layoutCols > 0 && layoutRows > 0 && tileCols > 0 && tileRows > 0,
+    s"TileLayout should contain only cols and rows number > 0: $toString"
   )
 
   def isTiled = layoutCols > 1 || layoutRows > 1
