@@ -58,7 +58,7 @@ object ArraySegmentBytes {
     */
   def apply(byteReader: ByteReader, tiffTags: TiffTags): ArraySegmentBytes = {
    // TODO: use streaming read here to improve performance via chunking
-    val streaming = StreamingSegmentBytes(byteReader, tiffTags)
+    val streaming = LazySegmentBytes(byteReader, tiffTags)
     val compressedBytes = Array.ofDim[Array[Byte]](streaming.length)
     streaming.getSegments(0 until compressedBytes.length).foreach {
       case (i, bytes) => compressedBytes(i) = bytes

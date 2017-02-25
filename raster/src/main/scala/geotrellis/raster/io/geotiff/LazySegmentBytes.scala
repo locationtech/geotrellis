@@ -6,12 +6,12 @@ import geotrellis.raster.io.geotiff.tags._
 import monocle.syntax.apply._
 import geotrellis.raster.io.geotiff.util._
 
-class StreamingSegmentBytes(
+class LazySegmentBytes(
   byteReader: ByteReader,
   tiffTags: TiffTags,
   maxChunkSize: Int = 32 * 1024 * 1024
 ) extends SegmentBytes with LazyLogging {
-  import StreamingSegmentBytes.Segment
+  import LazySegmentBytes.Segment
 
   // TODO: verify this is correct
   def length = tiffTags.segmentCount
@@ -86,9 +86,9 @@ class StreamingSegmentBytes(
   override def toString(): String = s"StreamingSegmentBytes($byteReader, $tiffTags, $maxChunkSize)"
 }
 
-object StreamingSegmentBytes {
-  def apply(byteReader: ByteReader, tiffTags: TiffTags): StreamingSegmentBytes =
-    new StreamingSegmentBytes(byteReader, tiffTags)
+object LazySegmentBytes {
+  def apply(byteReader: ByteReader, tiffTags: TiffTags): LazySegmentBytes =
+    new LazySegmentBytes(byteReader, tiffTags)
 
   case class Segment(id: Int, startOffset: Long, endOffset: Long) {
     def size: Long = endOffset - startOffset + 1
