@@ -177,28 +177,40 @@ object GeoTiffSegment {
   }
 
   /**
-   * Splits interleaved bit pixels into component bands
-   *
-   * @param bytes Pixel interleaved segment as bytes
-   * @param bandCount Number of bit interleaved into each pixel
-   * @param nbits Number of bits in each band
-   */
-  def deinterleaveBits(bytes: Array[Byte], bandCount: Int, nbits: Int): Array[Array[Byte]] = {
-    val source = BitSet.valueOf(bytes)
-    val bands: Array[BitSet] = new Array[BitSet](bandCount)
-    cfor(0)(_ < bandCount, _ + 1) { i =>
-      bands(i) = new BitSet(nbits)
+    * Splits interleaved bit pixels into component bands
+    *
+    * @param segment segment of pixel interleaved bits
+    * @param cols number of pixel columns in each band
+    * @param rows number of pixel rows in each band
+    * @param bandCount Number of bit interleaved into each pixel
+    */
+  def deinterleaveBitSegment(segment: GeoTiffSegment, cols: Int, rows: Int, bandCount: Int): Array[Array[Byte]] = {
+    val paddedCols = {
+      val bytesWidth = (cols + 7) / 8
+      bytesWidth * 8
+    }
+    val resultByteCount = (paddedCols / 8) * rows
+
+    // packed byte arrays for each band in this segment
+    val bands = Array.fill[Array[Byte]](bandCount)(Array.ofDim[Byte](resultByteCount))
+
+    cfor(0)(_ < segment.size, _ + 1) { i =>
+      val bandIndex = i % bandCount
+      val j = i / bandCount
+      val col = j % cols
+      val row = j / cols
+      val i2 = (row * paddedCols) + col
+      BitArrayTile.update(bands(bandIndex), i2, segment.getInt(i))
     }
 
-    cfor(0)(_ < nbits * bandCount, _ + 1) { si =>
-      val ti = si / bandCount
-      val bi = si % bandCount
-
-      if (source.get(si)) bands(bi).set(ti)
-      else bands(bi).clear(ti)
+    // Inverse the byte, to account for endian mismatching.
+    cfor(0)(_ < bandCount, _ + 1) { bandIndex =>
+      val bytes = bands(bandIndex)
+      cfor(0)(_ < bytes.length, _ + 1) { i =>
+        bytes(i) = invertByte(bytes(i))
+      }
     }
 
-    bands.map(_.toByteArray)
+    bands
   }
-
 }

@@ -81,6 +81,9 @@ class StreamingSegmentBytes(
       .toIterator
       .flatMap( chunk => readChunk(chunk))
   }
+
+  // Must prevent inherited `Seq.toString` from calling `foreach` method
+  override def toString(): String = s"StreamingSegmentBytes($byteReader, $tiffTags, $maxChunkSize)"
 }
 
 object StreamingSegmentBytes {

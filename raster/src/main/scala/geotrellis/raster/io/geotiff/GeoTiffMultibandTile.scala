@@ -158,7 +158,7 @@ abstract class GeoTiffMultibandTile(
 
   def getSegments(ids: Traversable[Int]): Iterator[(Int, GeoTiffSegment)]
 
-  val segmentCount = segmentBytes.size
+  val segmentCount: Int = segmentBytes.size
   private val isTiled = segmentLayout.isTiled
 
   /**
@@ -179,7 +179,7 @@ abstract class GeoTiffMultibandTile(
             val (cols, rows) =
               if (segmentLayout.isTiled) (segmentLayout.tileLayout.tileCols, segmentLayout.tileLayout.tileRows)
               else segmentLayout.getSegmentDimensions(segmentIndex)
-            val bytes = GeoTiffSegment.deinterleaveBits(segment.bytes, bandCount, cols * rows)(bandIndex)
+            val bytes = GeoTiffSegment.deinterleaveBitSegment(segment, cols, rows, bandCount)(bandIndex)
             compressedBandBytes(segmentIndex) = compressor.compress(bytes, segmentIndex)
           }
 
