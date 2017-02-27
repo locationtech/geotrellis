@@ -18,6 +18,7 @@ package geotrellis.raster.crop
 
 import geotrellis.vector._
 import geotrellis.raster._
+import geotrellis.raster.io.geotiff.GeoTiffMultibandTile
 
 
 /**
@@ -31,13 +32,22 @@ trait MultibandTileCropMethods extends TileCropMethods[MultibandTile] {
     * [[MultibandTile]] and return a new MultibandTile.
     */
   def crop(gb: GridBounds, options: Options): MultibandTile = {
-    val croppedBands = Array.ofDim[Tile](self.bandCount)
-
-    for(b <- 0 until self.bandCount) {
-      croppedBands(b) = self.band(b).crop(gb, options)
+    self match {
+      case geotiffTile: GeoTiffMultibandTile =>
+        val cropBounds =
+          if(options.clamp)
+            gb.intersection(self)
+              .getOrElse(throw new GeoAttrsError(s"Grid bounds do not intersect: $self crop $gb"))
+          else
+            gb
+        geotiffTile.crop(cropBounds)
+      case _ =>
+        val croppedBands = Array.ofDim[Tile](self.bandCount)
+        for(b <- 0 until self.bandCount) {
+          croppedBands(b) = self.band(b).crop(gb, options)
+        }
+        ArrayMultibandTile(croppedBands)
     }
-
-    ArrayMultibandTile(croppedBands)
   }
 
   /**
