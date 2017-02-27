@@ -260,7 +260,7 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
         (for (i <- (0 until 25).toArray) yield new Coordinate(Random.nextDouble, Random.nextDouble, 0))
 
       val dt = DelaunayTriangulation(pts)
-      dt.writeWKT("original.wkt")
+      // dt.writeWKT("original.wkt")
 
       dt.decimate(45)
 
