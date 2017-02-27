@@ -20,7 +20,7 @@ import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.tiling._
-import geotrellis.spark.tiling.{LayoutDefinition, MapKeyTransform}
+import geotrellis.spark.testkit._
 
 import org.apache.spark._
 import org.apache.spark.rdd.RDD

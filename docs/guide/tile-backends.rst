@@ -215,7 +215,7 @@ fast, column-based NoSQL database. It is likely the most performant of
 our backends, although this has yet to be confirmed. To work with
 GeoTrellis, it requires an external Cassandra process to be running.
 
-Note (2016 October 26): our Cassandra support is still relatively new.
+.. note:: As of 2016 October 26, our Cassandra support is still relatively new.
 
 .. code:: scala
 
@@ -254,7 +254,7 @@ HBase
 implementation based on HDFS. To work with GeoTrellis, HBase requires
 external processes much like Accumulo.
 
-Note (2016 October 26): Our HBase support is still relatively new.
+.. note:: As of 2016 October 26, our HBase support is still relatively new.
 
 .. code:: scala
 

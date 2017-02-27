@@ -95,4 +95,53 @@ Contributions to the project, no matter what kind, are always very
 welcome. Everyone who contributes code to GeoTrellis will be asked to
 sign the Eclipse Contributor Agreement. You can electronically sign the
 `Eclipse Contributor Agreement
-here. <https://www.eclipse.org/legal/ECA.php>`__.
+here <https://www.eclipse.org/legal/ECA.php>`__.
+
+Editing these Docs
+------------------
+
+Contributions to these docs are welcome as well. To build them on your own
+machine, ensure that ``sphinx`` and ``make`` are installed.
+
+Installing Dependencies
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Ubuntu 16.04
+''''''''''''
+
+.. code:: console
+
+   > sudo apt-get install python-sphinx python-sphinx-rtd-theme
+
+Arch Linux
+''''''''''
+
+.. code:: console
+
+   > sudo pacman -S python-sphinx python-sphinx_rtd_theme
+
+MacOS
+'''''
+
+``brew`` doesn't supply the sphinx binaries, so use ``pip`` here.
+
+Pip
+'''
+
+.. code:: console
+
+   > pip install sphinx sphinx_rtd_theme
+
+Building the Docs
+^^^^^^^^^^^^^^^^^
+
+Assuming you've cloned the `GeoTrellis repo
+<https://github.com/locationtech/geotrellis>`__, you can now build the docs
+yourself. Steps:
+
+1. Navigate to the ``docs/`` directory
+2. Run ``make html``
+3. View the docs in your browser by opening ``_build/html/index.html``
+
+.. note:: Changes you make will not be automatically applied; you will have
+          to rebuild the docs yourself. Luckily the docs build in about a second.

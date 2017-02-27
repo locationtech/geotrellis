@@ -22,6 +22,7 @@ import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.spark.testfiles._
 import geotrellis.spark.io.hadoop.formats._
+import geotrellis.spark.testkit._
 
 import org.apache.hadoop.fs.Path
 

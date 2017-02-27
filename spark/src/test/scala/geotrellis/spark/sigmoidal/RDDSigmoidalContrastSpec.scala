@@ -18,9 +18,9 @@ package geotrellis.spark.sigmoidal
 
 import geotrellis.raster._
 import geotrellis.spark._
+import geotrellis.spark.testkit._
 
 import org.scalatest._
-
 
 class RDDSigmoidalContrastSpec extends FunSpec
     with Matchers

@@ -18,6 +18,8 @@ package geotrellis.spark.mapalgebra.focal
 
 import geotrellis.raster._
 import geotrellis.spark._
+import geotrellis.spark.testkit._
+
 import org.scalatest.FunSpec
 
 class AspectSpec extends FunSpec with TestEnvironment {

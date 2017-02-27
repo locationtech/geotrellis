@@ -21,6 +21,7 @@ import geotrellis.raster._
 import geotrellis.raster.testkit._
 import geotrellis.spark._
 import geotrellis.vector._
+import geotrellis.spark.testkit._
 
 import org.apache.spark.rdd.RDD
 import org.scalatest._

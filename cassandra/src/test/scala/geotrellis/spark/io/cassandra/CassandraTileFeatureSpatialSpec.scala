@@ -20,6 +20,7 @@ import geotrellis.raster.{Tile, TileFeature}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.testfiles.{TestFiles, TestTileFeatureFiles}
+import geotrellis.spark.testkit.TestEnvironment
 
 class CassandraTileFeatureSpatialSpec
   extends PersistenceSpec[SpatialKey, TileFeature[Tile, Tile], TileLayerMetadata[SpatialKey]]

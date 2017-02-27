@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.spark
+package geotrellis.spark.testkit
 
+import geotrellis.spark._
 import geotrellis.raster._
 import geotrellis.raster.stitch._
 import geotrellis.raster.io.arg.ArgReader

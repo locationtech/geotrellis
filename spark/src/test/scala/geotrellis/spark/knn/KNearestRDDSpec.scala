@@ -18,6 +18,7 @@ package geotrellis.spark.knn
 
 import geotrellis.spark._
 import geotrellis.vector._
+import geotrellis.spark.testkit._
 
 import org.apache.spark.rdd.RDD._
 import org.apache.spark._
