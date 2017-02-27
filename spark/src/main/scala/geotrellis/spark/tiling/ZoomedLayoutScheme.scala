@@ -125,8 +125,8 @@ class ZoomedLayoutScheme(val crs: CRS, val tileSize: Int, resolutionThreshold: D
         tileLayout = TileLayout(
           newSize,
           newSize,
-          layout.tileLayout.tileCols,
-          layout.tileLayout.tileRows
+          layout.tileCols,
+          layout.tileRows
         )
       )
     )
@@ -143,8 +143,8 @@ class ZoomedLayoutScheme(val crs: CRS, val tileSize: Int, resolutionThreshold: D
         tileLayout = TileLayout(
           newSize,
           newSize,
-          layout.tileLayout.tileCols,
-          layout.tileLayout.tileRows
+          layout.tileCols,
+          layout.tileRows
         )
       )
     )
