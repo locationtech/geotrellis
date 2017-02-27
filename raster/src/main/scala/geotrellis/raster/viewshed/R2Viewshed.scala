@@ -26,16 +26,28 @@ import java.util.Comparator
 
 object R2Viewshed extends Serializable {
 
-  type Ray = (Double, Double) // slope, alpha
+  sealed abstract class From()
+  object FromNorth extends From
+  object FromEast extends From
+  object FromSouth extends From
+  object FromWest extends From
+  object FromInside extends From
 
-  class RayComparator extends Comparator[Ray] {
+
+  sealed case class DirectedSegment(
+    startCol: Int, startRow: Int,
+    endCol: Int, endRow: Int,
+    theta: Double
+  )
+
+  sealed case class Ray(theta: Double, alpha: Double)
+
+  object RayComparator extends Comparator[Ray] {
     def compare(left: Ray, right: Ray): Int =
-      if (left._1 < right._1) -1
-      else if (left._1 > right._1) +1
+      if (left.theta < right.theta) -1
+      else if (left.theta > right.theta) +1
       else 0
   }
-
-  val rayComparator = new RayComparator
 
   def apply(tile: Tile, col: Int, row: Int): Tile =
     R2Viewshed.apply(tile, col, row, 0)
@@ -44,34 +56,84 @@ object R2Viewshed extends Serializable {
     tile: Tile,
     startCol: Int, startRow: Int, height: Double,
     resolution: Double = 1.0,
+    from: From = FromInside,
     rays: Array[Ray] = null
   ): Tile = {
     val cols = tile.cols
     val rows = tile.rows
     val re = RasterExtent(Extent(0, 0, cols, rows), cols, rows)
     val viewshed = ArrayTile.empty(IntCellType, cols, rows)
-
+    val inTile: Boolean = (0 <= startCol && startCol < cols && 0 <= startRow && startRow <= rows)
     val viewHeight =
-      if (height >= 0)
-        tile.getDouble(startCol, startRow) + height
-      else
-        -height
-    var slope: Double = 0.0
+      if (inTile) tile.getDouble(startCol, startRow) + height
+      else height
+    var theta: Double = 0.0
     var alpha: Double = 0.0
 
-    @inline def slopeToAlpha(theta: Double): Double = {
-      val index = binarySearch(rays, (theta, Double.NaN), rayComparator)
-      if (index >= 0) rays(index)._2
+    @inline def slopeToTheta(slope: Double): Double =
+      math.atan(slope)
+
+    def clipRayNorthSouth(newStartRow: Int)(endCol: Int, endRow: Int): Option[DirectedSegment] = {
+      if (startCol == endCol) {
+        if (startRow >= endRow)
+          Some(DirectedSegment(startCol, newStartRow, endCol, endRow, -Math.PI/2))
+        else
+          Some(DirectedSegment(startCol, newStartRow, endCol, endRow, Math.PI/2))
+      }
       else {
-        val place = -1 - index
-        if (place == rays.length) rays.last._2
-        else rays(place)._2 // XXX interpolate
+        val m = (startRow - endRow).toDouble / (startCol - endCol)
+        val newStartCol = math.round(((newStartRow - startRow) / m) + startCol).toInt
+        if (newStartCol == endCol && newStartRow == endRow) None
+        else if (0 <= newStartCol && newStartCol < cols)
+          Some(DirectedSegment(newStartCol, newStartRow, endCol, endRow, slopeToTheta(m)))
+        else None
       }
     }
 
+    def clipRayEastWest(newStartCol: Int)(endCol: Int, endRow: Int): Option[DirectedSegment] = {
+      if (startCol == endCol) None
+      else {
+        val m = (startRow - endRow).toDouble / (startCol - endCol)
+        val newStartRow = math.round(m * (newStartCol - startCol) + startRow).toInt
+        if (newStartCol == endCol && newStartRow == endRow) None
+        else if (0 <= newStartRow && newStartRow < rows)
+          Some(DirectedSegment(newStartCol, newStartRow, endCol, endRow, slopeToTheta(m)))
+        else None
+      }
+    }
+
+    def clipRayInside(endCol: Int, endRow: Int): Option[DirectedSegment] = {
+      val m = (startRow - endRow).toDouble / (startCol - endCol)
+      Some(DirectedSegment(startCol, startRow, endCol, endRow, slopeToTheta(m)))
+    }
+
+    val clipRay: ((Int, Int) => Option[DirectedSegment]) =
+      from match {
+        case FromNorth => clipRayNorthSouth(0)
+        case FromEast => clipRayEastWest(cols-1)
+        case FromSouth => clipRayNorthSouth(rows-1)
+        case FromWest => clipRayEastWest(0)
+        case FromInside =>
+          if (inTile) clipRayInside
+          else throw new Exception("Cannot be both inside and outside")
+      }
+
+    val thetaToAlpha: (Double => Double) =
+      from match {
+        case FromInside => { _ => -Math.PI }
+        case _ => { theta: Double =>
+          val index = binarySearch(rays, Ray(theta, Double.NaN), RayComparator)
+          if (index >= 0) rays(index).alpha
+          else {
+            val place = -1 - index
+            if (place == rays.length) rays.last.alpha
+            else rays(place).alpha // XXX interpolate
+          }
+        }
+      }
+
     def callback(col: Int, row: Int) = {
       if (col == startCol && row == startRow) { // starting point
-        alpha = -180.0
         viewshed.setDouble(col, row, 1)
       }
       else { // any other point
@@ -87,82 +149,38 @@ object R2Viewshed extends Serializable {
       }
     }
 
-    if (0 <= startCol && startCol < cols && 0 <= startRow && startRow < rows) { // starting point is in this tile
-      var col = 0; while (col < cols) {
-        slope = startRow.toDouble / (startCol - col)
-        Rasterizer.foreachCellInGridLine(startCol, startRow, col, 0, null, re, false)(callback) // north
-        slope = (startRow - rows + 1).toDouble / (startCol - col)
-        Rasterizer.foreachCellInGridLine(startCol, startRow, col, rows-1, null, re, false)(callback) // south
-        col += 1
-      }
-      var row = 0; while (row < rows) {
-        slope = (startRow - row).toDouble / (startCol - cols + 1)
-        Rasterizer.foreachCellInGridLine(startCol, startRow, cols-1, row, null, re, false)(callback) // east
-        slope = (startRow - row).toDouble / startCol
-        Rasterizer.foreachCellInGridLine(startCol, startRow, 0, row, null, re, false)(callback) // west
-        row += 1
-      }
-    }
-    else { // starting point is outside of this tile
-      if (startCol < cols-1) { // right side
-        val leftCol = 0
-        val rightCol = cols-1
-        var rightRow = 0; while (rightRow < rows) {
-          slope = (startRow - rightRow).toDouble / (startCol - rightCol)
-          alpha = slopeToAlpha(slope)
-          val leftRow = math.round(slope * (leftCol - startCol) - startRow).toInt
-          Rasterizer.foreachCellInGridLine(leftCol, leftRow, rightCol, rightRow, null, re, false)(callback)
-          rightRow += 1
-        }
-      }
-      if (startCol > 0) { // left side
-        val leftCol = 0
-        val rightCol = cols-1
-        var leftRow = 0; while (leftRow < rows) {
-          slope = (startRow - leftRow).toDouble / (startCol - leftCol)
-          alpha = slopeToAlpha(slope)
-          val rightRow = math.round(slope * (rightCol - startCol) - startRow).toInt
-          Rasterizer.foreachCellInGridLine(rightCol, rightRow, leftCol, leftRow, null, re, false)(callback)
-          leftRow += 1
-        }
-      }
-      if (startRow < rows-1) { // bottom side
-        val topRow = 0
-        val bottomRow = rows-1
-        var bottomCol = 0; while (bottomCol < cols) {
-          val topCol =
-            if (startCol == bottomCol) { // infinite slope
-              alpha = slopeToAlpha(Double.PositiveInfinity)
-              bottomCol
-            }
-            else { // finite slope
-              slope = (startRow - bottomRow).toDouble / (startCol - bottomCol)
-              alpha = slopeToAlpha(slope)
-              math.round(((topRow - startRow) / slope) + startCol).toInt
-            }
-          Rasterizer.foreachCellInGridLine(topCol, topRow, bottomCol, bottomRow, null, re, false)(callback)
-          bottomCol += 1
-        }
-      }
-      if (startRow > 0) { // top side
-        val topRow = 0
-        val bottomRow = rows-1
-        var topCol = 0; while (topCol < cols) {
-          val bottomCol =
-            if (startCol == topCol) { // infinite slope
-              alpha = slopeToAlpha(Double.PositiveInfinity)
-              topCol
-            }
-            else { //finite slope
-              slope = (startRow - topRow).toDouble / (startCol - topCol)
-              alpha = slopeToAlpha(slope)
-              math.round(((bottomRow - startRow) / slope) + startCol).toInt
-            }
-          Rasterizer.foreachCellInGridLine(bottomCol, bottomRow, topCol, topRow, null, re, false)(callback)
-          topCol += 1
-        }
-      }
-    }
+    Range(0, cols) // North
+      .flatMap({ col => clipRay(col, 0) })
+      .foreach({ seg =>
+        theta = seg.theta
+        alpha = thetaToAlpha(theta)
+        Rasterizer.foreachCellInGridLine(
+          seg.startCol, seg.startRow, seg.endCol, seg.endRow, null, re, false)(callback)
+      })
+    Range(0, rows) // East
+      .flatMap({ row => clipRay(cols-1, row) })
+      .foreach({ seg =>
+        theta = seg.theta
+        alpha = thetaToAlpha(theta)
+        Rasterizer.foreachCellInGridLine(
+          seg.startCol, seg.startRow, seg.endCol, seg.endRow, null, re, false)(callback)
+      })
+    Range(0, cols) // South
+      .flatMap({ col => clipRay(col, rows-1) })
+      .foreach({ seg =>
+        theta = seg.theta
+        alpha = thetaToAlpha(theta)
+        Rasterizer.foreachCellInGridLine(
+          seg.startCol, seg.startRow, seg.endCol, seg.endRow, null, re, false)(callback)
+      })
+    Range(0, rows) // West
+      .flatMap({ row => clipRay(0, row) })
+      .foreach({ seg =>
+        theta = seg.theta
+        alpha = thetaToAlpha(theta)
+        Rasterizer.foreachCellInGridLine(
+          seg.startCol, seg.startRow, seg.endCol, seg.endRow, null, re, false)(callback)
+      })
 
     viewshed
   }
