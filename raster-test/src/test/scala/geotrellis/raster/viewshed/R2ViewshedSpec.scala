@@ -18,18 +18,124 @@ package geotrellis.raster.viewshed
 
 import geotrellis.raster._
 import geotrellis.raster.testkit._
+import geotrellis.raster.viewshed.R2Viewshed._
+
 import org.scalatest._
 
 
-/**
-  * Created by jchien on 4/24/14.
-  */
 class R2ViewshedSpec extends FunSpec
     with Matchers
     with RasterMatchers with TestFiles
     with TileBuilders {
 
   describe("Viewshed") {
+
+    val elevationTile = IntArrayTile(Array.fill[Int](25)(1), 5, 5)
+    val viewshedTile = ArrayTile.empty(IntCellType, 5, 5)
+
+    it("propogates up") {
+      val left: Array[Ray] = Array(Ray(1000000, 7), Ray(Double.PositiveInfinity, 13))
+      val right: Array[Ray] = Array(Ray(1000000, 22))
+      var a: Int = 0
+      var b: Int = 0
+      var c: Int = 0
+      var all: Int = 0
+
+      R2Viewshed.compute(
+        elevationTile, viewshedTile,
+        2, 7, 0, 1,
+        FromSouth, left, right,
+        { case Ray(m, alpha) =>
+          all += 1
+          if (alpha == 7) a += 1
+          else if (alpha == 13) b += 1
+          else if (alpha == 22) c += 1
+          else throw new Exception
+        })
+
+      a should be (6)
+      b should be (1)
+      c should be (6)
+      all should be (13)
+    }
+
+    it("propogates right") {
+      val left: Array[Ray] = Array(Ray(1, 7))
+      val right: Array[Ray] = Array(Ray(0, 13), Ray(1, 22))
+      var a: Int = 0
+      var b: Int = 0
+      var c: Int = 0
+      var all: Int = 0
+
+      R2Viewshed.compute(
+        elevationTile, viewshedTile,
+        -3, 2, 0, 1,
+        FromWest, left, right,
+        { case Ray(m, alpha) =>
+          all += 1
+          if (alpha == 7) a += 1
+          else if (alpha == 13) b += 1
+          else if (alpha == 22) c += 1
+          else throw new Exception
+        })
+
+      a should be (6)
+      b should be (1)
+      c should be (6)
+      all should be (13)
+    }
+
+    it("propogates down") {
+      val left: Array[Ray] = Array(Ray(1000000, 22))
+      val right: Array[Ray] = Array(Ray(1000000, 7), Ray(Double.PositiveInfinity, 13))
+      var a: Int = 0
+      var b: Int = 0
+      var c: Int = 0
+      var all: Int = 0
+
+      R2Viewshed.compute(
+        elevationTile, viewshedTile,
+        2, -3, 0, 1,
+        FromNorth, left, right,
+        { case Ray(m, alpha) =>
+          all += 1
+          if (alpha == 7) a += 1
+          else if (alpha == 13) b += 1
+          else if (alpha == 22) c += 1
+          else throw new Exception
+        })
+
+      a should be (6)
+      b should be (1)
+      c should be (6)
+      all should be (13)
+    }
+
+    it("propogates left") {
+      val left: Array[Ray] = Array(Ray(1, 7))
+      val right: Array[Ray] = Array(Ray(0, 13), Ray(1, 22))
+      var a: Int = 0
+      var b: Int = 0
+      var c: Int = 0
+      var all: Int = 0
+
+      R2Viewshed.compute(
+        elevationTile, viewshedTile,
+        7, 2, 0, 1,
+        FromEast, left, right,
+        { case Ray(m, alpha) =>
+          all += 1
+          if (alpha == 7) a += 1
+          else if (alpha == 13) b += 1
+          else if (alpha == 22) c += 1
+          else throw new Exception
+        })
+
+      a should be (6)
+      b should be (1)
+      c should be (6)
+      all should be (13)
+    }
 
     it("computes the viewshed of a flat int plane") {
       val r = createTile(Array.fill(7 * 8)(1), 7, 8)
