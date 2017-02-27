@@ -23,5 +23,3 @@ fork in Test := true
 parallelExecution in Test := false
 
 javaOptions += s"-Djava.library.path=${Environment.ldLibraryPath}"
-
-testOptions in Test += Tests.Argument("-oDF")
