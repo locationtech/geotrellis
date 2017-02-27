@@ -114,7 +114,6 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
           }
         }
       }
-    //println("Finding distinct points")
     distinctPoints(s)
     .toArray
   }
@@ -250,9 +249,6 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
   }
 
   def holeBound(vi: Int) = {
-    //println(s"  ➟ holeBound($vi)")
-    //navigate()
-
     val e0 = getFlip(edgeIncidentTo(vi))
     val b0 = HalfEdge[Int, Int](getDest(rotCCWSrc(e0)), getDest(e0))
     b0.face = Some(rotCWDest(e0))
@@ -274,8 +270,6 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
   }
 
   def triangulateHole(inner: HalfEdge[Int, Int], tris: Map[(Int, Int, Int), HalfEdge[Int, Int]]): Unit = {
-    //println("  ➟ triangulateHole")
-
     val bps = ListBuffer.empty[Point]
     bps += Point.jtsCoord2Point(pointSet.getCoordinate(inner.src))
 
@@ -287,9 +281,6 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
       e = e.next
     } while (e != inner)
 
-    //println(s"  ➟ bounding loop has $n points")
-    //println(WKT.write(Polygon(bps)))
-
     if (n == 3) {
       tris += TriangleMap.regularizeIndex(inner.src, inner.vert, inner.next.vert) -> inner
       return ()
@@ -297,25 +288,18 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
 
     // find initial best point
     var best = inner.next
-    // print(s"  ➟ find initial best vertex")
     while (!isCCW(inner.src, inner.vert, best.vert)) {
       best = best.next
     }
-    // println(s" = ${pointSet.getCoordinate(best.vert)}")
 
     e = best.next
-    // print(s"  ➟ find initial candidate")
     while (e.vert != inner.src && !isCCW(inner.src, inner.vert, e.vert)) {
       e = e.next
     }
-    // println(s" = ${pointSet.getCoordinate(e.vert)}")
 
-    // println(s"  ➟ check for better candidates")
     while (e.vert != inner.src) {
       if (inCircle(inner.src, inner.vert, best.vert, e.vert)) {
-        // print(s"  ➟ found better")
         best = e
-        // println(s" = ${pointSet.getCoordinate(best.vert)}")
         while (!isCCW(inner.src, inner.vert, best.vert)) {
           best = best.next
         }
@@ -324,7 +308,6 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
       while (e.vert != inner.src && !isCCW(inner.src, inner.vert, e.vert))
       e = e.next
     }
-    // println(WKT.write(Polygon(Point.jtsCoord2Point(pointSet.getCoordinate(inner.src)), Point.jtsCoord2Point(pointSet.getCoordinate(inner.vert)), Point.jtsCoord2Point(pointSet.getCoordinate(best.vert)), Point.jtsCoord2Point(pointSet.getCoordinate(inner.src)))))
 
     if (best != inner.next) {
       val te = HalfEdge[Int, Int](inner.vert, best.vert)
@@ -351,8 +334,6 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
 
   // checks a predicate at all edges in a chain from a to b (not including b)
   def allSatisfy(a: HalfEdge[Int, Int], b: HalfEdge[Int, Int], f: HalfEdge[Int, Int] => Boolean): Boolean = {
-    //println("  ➟ allSatisfy()")
-
     var e = a
     var result = true
     do {
@@ -363,8 +344,6 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
   }
 
   def link(a: HalfEdge[Int, Int], b: HalfEdge[Int, Int]): HalfEdge[Int, Int] = {
-    // println("  ➟ link()")
-
     val result = HalfEdge[Int, Int](a.src, b.vert)
     result.flip.next = a
     result.next = b.next
@@ -415,8 +394,6 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
     }
     val outOfBounds = last.next
 
-    // println(WKT.write(Line(bps)))
-
     // find convex hull segments and triangulate developed loops
     var base = first
     var best: HalfEdge[Int, Int] = null
@@ -454,40 +431,9 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
     tris
   }
 
-  // def writeFillPatch(vi: Int) = {
-  //   println(s"Writing fill patch for vertex $vi")
-
-  //   val boundvs = Set.empty[Int]
-  //   var e = boundary
-  //   do {
-  //     boundvs += getDest(e)
-  //     e = getNext(e)
-  //   } while (e != boundary)
-
-  //   val tris =
-  //     if (boundvs.contains(vi)) {
-  //       println("  ➟ boundary point")
-  //       val (_, _, tris) = retriangulateBoundaryPoint(vi)
-  //       tris
-  //     } else {
-  //       println("  ➟ interior point")
-  //       retriangulateInteriorPoint(vi)
-  //     }
-
-  //   val mp = MultiPolygon(tris.map{ case ((a,b,c), _) => {
-  //     val pa = Point.jtsCoord2Point(pointSet.getCoordinate(a))
-  //     val pb = Point.jtsCoord2Point(pointSet.getCoordinate(b))
-  //     val pc = Point.jtsCoord2Point(pointSet.getCoordinate(c))
-
-  //     Polygon(pa, pb, pc, pa)
-  //   }})
-
-  //   new java.io.PrintWriter(s"patch${vi}.wkt") { write(WKT.write(mp)); close }
-  // }
-
   def decoupleVertex(vi: Int) = {
     // remove links to original vertex
-    println(s"  ➟ disconnect original vertex $vi")
+    //println(s"  ➟ disconnect original vertex $vi")
     val e0 = getFlip(edgeIncidentTo(vi))
     var e = e0
     val toKill = Set.empty[Int]
@@ -505,9 +451,8 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
       toKill += e
       e = rotCWSrc(e)
     } while (e != e0)
-    //pts.prepend(Point.jtsCoord2Point(pointSet.getCoordinate(getDest(e))))
     val region = Line(pts)
-    println(s"    Bounding loop: ${WKT.write(region)}")
+    // println(s"    Bounding loop: ${WKT.write(region)}")
 
     toKill.foreach{ e => {
       //println(s"    destroying edge [${getSrc(e)} -> ${getDest(e)}] (edge ids: $e and ${getFlip(e)})")
@@ -770,7 +715,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
   }
 
   def decimate(nRemove: Int) = {
-    println(s"\n\u001b[1mStarting to decimate $nRemove points...\u001b[0m")
+    //println(s"\n\u001b[1mStarting to decimate $nRemove points...\u001b[0m")
 
     val trans = pointSet.getCoordinate(_)
 
@@ -790,13 +735,13 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
       (score, vi, quadric, tris, bnd)
     }
 
-    if (isMeshValid)
-      println("  \u001b[32m➟ Initial mesh is valid\u001b[0m")
-    else
-      println("  \u001b[31m➟ Initial mesh is NOT valid\u001b[0m")
+    // if (isMeshValid)
+    //   println("  \u001b[32m➟ Initial mesh is valid\u001b[0m")
+    // else
+    //   println("  \u001b[31m➟ Initial mesh is NOT valid\u001b[0m")
 
     // build priority queue
-    println(s"  \u001b[32m➟ Applying initial score to vertices\u001b[0m")
+    // println(s"  \u001b[32m➟ Applying initial score to vertices\u001b[0m")
     var pq = PriorityQueue.empty[(Double, Int, RealMatrix, Map[(Int, Int, Int), HalfEdge[Int, Int]], Option[Int])](
       Ordering.by((_: (Double, Int, RealMatrix, Map[(Int, Int, Int), HalfEdge[Int, Int]], Option[Int]))._1).reverse
     )
@@ -806,11 +751,11 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
     cfor(0)(i => i < nRemove && !pq.isEmpty, _ + 1) { i =>
       val (score, vi, _, tris, bnd) = pq.dequeue
 
-      println(s"\u001b[1m[Iteration $i] Removing vertex $vi with score = ${score}\u001b[0m")
-      //navigate
+      // println(s"\u001b[1m[Iteration $i] Removing vertex $vi with score = ${score}\u001b[0m")
+      // navigate
 
-      if (onBoundary(vi, boundary))
-        println("  ➟ point is on boundary")
+      // if (onBoundary(vi, boundary))
+      //   println("  ➟ point is on boundary")
 
       // remove vertex and record all vertices that require updating
       val nbhd = neighborsOf(vi).toSet ++ removeVertexAndFill(vi, tris, bnd)
@@ -822,7 +767,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
       //   println("  \u001b[31m➟ mesh is NOT valid\u001b[0m")
 
       // update neighbor entries from pqueue
-      println(s"  ➟ update neighbors [$nbhd]")
+      //println(s"  ➟ update neighbors [$nbhd]")
       pq = pq.filter { case (_, ix, _, _, _) => !nbhd.contains(ix) }
       //println(s"    left alone patches for vertices ${pq.map(_._2)}")
       nbhd.foreach{ neighbor => pq.enqueue(constructPQEntry(neighbor)) }
