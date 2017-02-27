@@ -16,20 +16,21 @@
 
 package geotrellis.raster.io.geotiff
 
+import com.typesafe.scalalogging.LazyLogging
 import geotrellis.util.ByteReader
-import geotrellis.raster._
+import geotrellis.raster.{RasterExtent, _}
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 
 case class MultibandGeoTiff(
-  val tile: MultibandTile,
-  val extent: Extent,
-  val crs: CRS,
-  val tags: Tags,
+  tile: MultibandTile,
+  extent: Extent,
+  crs: CRS,
+  tags: Tags,
   options: GeoTiffOptions
 ) extends GeoTiff[MultibandTile] {
-  val cellType = tile.cellType
+  val cellType: CellType = tile.cellType
 
   def mapTile(f: MultibandTile => MultibandTile): MultibandGeoTiff =
     MultibandGeoTiff(f(tile), extent, crs, tags, options)
@@ -41,20 +42,18 @@ case class MultibandGeoTiff(
     }
 
   def crop(subExtent: Extent): MultibandGeoTiff = {
-    val raster: Raster[MultibandTile] =
-      this.raster.crop(subExtent)
-
-    MultibandGeoTiff(raster, subExtent, this.crs, this.tags)
+    val gridBounds = rasterExtent.gridBoundsFor(subExtent)
+    val croppedTile = tile.crop(gridBounds)
+    MultibandGeoTiff(croppedTile, subExtent, this.crs, this.tags)
   }
 
   def crop(colMax: Int, rowMax: Int): MultibandGeoTiff =
     crop(0, 0, colMax, rowMax)
 
   def crop(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int): MultibandGeoTiff = {
-    val raster: Raster[MultibandTile] =
-      this.raster.crop(colMin, rowMin, colMax, rowMax)
-
-    MultibandGeoTiff(raster, raster._2, this.crs, this.tags)
+    val bounds = GridBounds(colMin, rowMin, colMax, rowMax)
+    val subExtent = rasterExtent.extentFor(bounds)
+    MultibandGeoTiff(tile.crop(bounds), subExtent, this.crs, this.tags)
   }
 }
 

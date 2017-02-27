@@ -22,9 +22,9 @@ import geotrellis.raster.io.geotiff.util._
 import geotrellis.raster.resample.ResampleMethod
 import geotrellis.raster.split._
 import geotrellis.vector.Extent
-
 import java.util.BitSet
 
+import com.typesafe.scalalogging.LazyLogging
 import spire.syntax.cfor._
 
 object GeoTiffMultibandTile {
@@ -149,7 +149,7 @@ abstract class GeoTiffMultibandTile(
   val compression: Compression,
   val bandCount: Int,
   val hasPixelInterleave: Boolean
-) extends MultibandTile with GeoTiffImageData with MacroGeotiffMultibandCombiners {
+) extends MultibandTile with GeoTiffImageData with MacroGeotiffMultibandCombiners with LazyLogging {
   val cellType: CellType
   val cols: Int = segmentLayout.totalCols
   val rows: Int = segmentLayout.totalRows
@@ -168,7 +168,7 @@ abstract class GeoTiffMultibandTile(
    * @return The corresponding [[GeoTiffTile]]
    */
   def band(bandIndex: Int): GeoTiffTile = {
-    if(bandIndex >= bandCount) { throw new IllegalArgumentException(s"Band $bandIndex does not exist") }
+    require(bandIndex < bandCount,  s"Band $bandIndex does not exist")
     if(hasPixelInterleave) {
       bandType match {
         case BitBandType =>
@@ -197,6 +197,7 @@ abstract class GeoTiffMultibandTile(
           GeoTiffTile(new ArraySegmentBytes(compressedBandBytes), compressor.createDecompressor(), segmentLayout, compression, cellType, Some(bandType))
       }
     } else {
+      // TODO: rewrite this to center around getSegments
       val bandSegmentCount = segmentCount / bandCount
       val compressedBandBytes = Array.ofDim[Array[Byte]](bandSegmentCount)
 
@@ -248,8 +249,74 @@ abstract class GeoTiffMultibandTile(
    * @param  gridBounds  A [[GridBounds]] that contains the area to be cropped.
    * @return             A [[ArrayMultibandTile]]
    */
-  def crop(gridBounds: GridBounds): ArrayMultibandTile =
-    ArrayMultibandTile((0 until bandCount map { band(_).crop(gridBounds) }):_*)
+  def crop(gridBounds: GridBounds): ArrayMultibandTile = {
+    val bands = Array.fill(bandCount)(ArrayTile.empty(cellType, gridBounds.width, gridBounds.height))
+    val intersectingSegments = segmentLayout.intersectingSegments(gridBounds)
+    if (hasPixelInterleave) {
+      logger.debug(s"Cropping $gridBounds uses ${intersectingSegments.length} out of ${segmentCount} segments")
+
+      // de-interlace the pixels from each segment
+      for ((segmentId, segment) <- getSegments(intersectingSegments)) {
+        val segmentBounds = segmentLayout.getGridBounds(segmentId)
+        val segmentTransform = segmentLayout.getSegmentTransform(segmentId)
+        val overlap = gridBounds.intersection(segmentBounds).get
+
+        if (cellType.isFloatingPoint) {
+          cfor(overlap.colMin)(_ <= overlap.colMax, _ + 1) { col =>
+            cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
+              cfor(0)( _ < bandCount, _ + 1) { band =>
+                val i = segmentTransform.gridToIndex(col, row)
+                val v = segment.getDouble(i + band)
+                bands(band).setDouble(col - gridBounds.colMin, row - gridBounds.rowMin, v)
+              }
+            }
+          }
+        } else {
+          cfor(overlap.colMin)(_ <= overlap.colMax, _ + 1) { col =>
+            cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
+              cfor(0)( _ < bandCount, _ + 1) { band =>
+                val i = segmentTransform.gridToIndex(col, row)
+                val v = segment.getInt(i)
+                bands(band).set(col - gridBounds.colMin, row - gridBounds.rowMin, v)
+              }
+            }
+          }
+        }
+      }
+    } else {
+      logger.debug(s"Cropping $gridBounds uses ${intersectingSegments.length * bandCount} out of ${segmentCount * bandCount} segments")
+
+      // read segments in band order
+      cfor(0)( _ <= bandCount, _ + 1) { band =>
+        val segmentOffset = segmentCount * band
+        for ((segmentId, segment) <- getSegments(intersectingSegments.map(_ + segmentOffset))) {
+          val segmentBounds = segmentLayout.getGridBounds(segmentId)
+          val segmentTransform = segmentLayout.getSegmentTransform(segmentId)
+          val overlap = gridBounds.intersection(segmentBounds).get
+
+          if (cellType.isFloatingPoint) {
+            cfor(overlap.colMin)(_ <= overlap.colMax, _ + 1) { col =>
+              cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
+                val i = segmentTransform.gridToIndex(col, row)
+                val v = segment.getDouble(i + band)
+                bands(band).setDouble(col - gridBounds.colMin, row - gridBounds.rowMin, v)
+              }
+            }
+          } else {
+            cfor(overlap.colMin)(_ <= overlap.colMax, _ + 1) { col =>
+              cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
+                val i = segmentTransform.gridToIndex(col, row)
+                val v = segment.getInt(i)
+                bands(band).set(col - gridBounds.colMin, row - gridBounds.rowMin, v)
+              }
+            }
+          }
+        }
+      }
+    }
+
+    ArrayMultibandTile(bands)
+  }
 
   /**
    * Converts the CellTypes of a MultibandTile to the given CellType.
