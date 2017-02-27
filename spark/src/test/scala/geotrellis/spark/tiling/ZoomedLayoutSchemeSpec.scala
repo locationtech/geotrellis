@@ -136,7 +136,7 @@ class ZoomedLayoutSchemeSpec extends FunSpec with Matchers {
 
         l.layout.cellSize should be (CellSize(c, c))
 
-        l = zscheme.zoomOut(l)
+        l = if(z > 0) zscheme.zoomOut(l) else l
       }
     }
   }
