@@ -25,6 +25,7 @@ import geotrellis.spark.testkit._
 
 import org.apache.hadoop.fs.Path
 import org.scalatest._
+import scala.collection.mutable
 
 class IngestSpec extends FunSpec
   with Matchers
@@ -42,6 +43,22 @@ class IngestSpec extends FunSpec
         zoom should be (10)
         rdd.filter(!_._2.isNoDataTile).count should be (8)
       }
+    }
+
+    it("should ingest GeoTiff with pyramid on a zoomed and floating schemes") {
+      val source = sc.hadoopGeoTiffRDD(new Path(inputHome, "all-ones.tif"))
+      val (zlist, flist) = mutable.ListBuffer[(Int, Long)]() -> mutable.ListBuffer[(Int, Long)]()
+
+      // force to use zoomed layout scheme
+      Ingest[ProjectedExtent, SpatialKey](source, LatLng, ZoomedLayoutScheme(LatLng, 512), pyramid = true, maxZoom = Some(10)) { (rdd, zoom) =>
+        zlist += (zoom -> rdd.filter(!_._2.isNoDataTile).count)
+      }
+
+      Ingest[ProjectedExtent, SpatialKey](source, LatLng, ZoomedLayoutScheme(LatLng, 512), pyramid = true) { (rdd, zoom) =>
+        flist += (zoom -> rdd.filter(!_._2.isNoDataTile).count)
+      }
+
+      zlist should contain theSameElementsAs flist
     }
 
     it("should ingest GeoTiff with preset max zoom level") {
