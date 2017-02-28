@@ -16,12 +16,10 @@
 
 package geotrellis.spark.io.avro
 
-import geotrellis.spark.io.avro.codecs._
 import org.scalatest._
 import geotrellis.proj4._
 import geotrellis.vector._
 import geotrellis.spark._
-import geotrellis.spark.io.avro.AvroTools._
 
 class ExtentCodecsSpec extends FunSpec with Matchers with AvroTools  {
   describe("ExtentCodecs") {
@@ -33,6 +31,12 @@ class ExtentCodecsSpec extends FunSpec with Matchers with AvroTools  {
     }
     it("encodes TemporalProjectedExtent"){
       roundTrip(TemporalProjectedExtent(Extent(0, 1, 2, 3), CRS.fromEpsgCode(4324), 1.toLong))
+    }
+    it("encodes TemporalProjectedExtent with missing EPSG code"){
+      // A proj4 CRS known to not have a CRS code.
+      val crs = CRS.fromString("+proj=sinu +lon_0=0.0 +x_0=0.0 +y_0=0.0 +a=6371007.181 +b=6371007.181 +units=m")
+      assert(crs.epsgCode.isEmpty)
+      roundTrip(TemporalProjectedExtent(Extent(0, 1, 2, 3), crs, 1.toLong))
     }
   }
 }
