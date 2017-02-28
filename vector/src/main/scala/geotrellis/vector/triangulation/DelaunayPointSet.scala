@@ -3,6 +3,7 @@ package geotrellis.vector.triangulation
 import com.vividsolutions.jts.geom.Coordinate
 
 import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
+import geotrellis.vector.Point
 
 trait DelaunayPointSet {
   def length: Int
@@ -10,6 +11,8 @@ trait DelaunayPointSet {
   def getY(i: Int): Double
   def getZ(i: Int): Double
   def getCoordinate(i: Int): Coordinate = new Coordinate(getX(i), getY(i), getZ(i))
+  def getPoint(i: Int): Point = Point.jtsCoord2Point(getCoordinate(i))
+  def apply(i: Int): Coordinate = getCoordinate(i)
   def distance(i1: Int, i2: Int): Double = {
     val dx = getX(i1) - getX(i2)
     val dy = getY(i1) - getY(i2)

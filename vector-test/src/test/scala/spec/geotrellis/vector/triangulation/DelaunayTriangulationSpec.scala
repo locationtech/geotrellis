@@ -14,6 +14,8 @@ import org.scalatest.{FunSpec, Matchers}
 
 class DelaunayTriangulationSpec extends FunSpec with Matchers {
 
+  println("Starting tests for DelaunayTriangulationSpec")
+
   val numpts = 2000
 
   def randInRange(low: Double, high: Double): Double = {
@@ -192,6 +194,123 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
       } while (valid && e != dt.boundary)
 
       valid should be (true)
+    }
+
+    it("should allow for interior point removal") {
+      val range = 0 until 99
+      val pts = ((for (i <- range.toArray) yield randomPoint(Extent(0, 0, 1, 1)))) :+ new Coordinate(0.5, 0.5)
+      val subpts = pts.slice(0, 99)
+
+      val dt = DelaunayTriangulation(pts)
+      //dt.writeWKT("delete1orig.wkt")
+      // if (dt.isMeshValid) {
+      //   println("\u001b[32m  ➟ Initial mesh is valid\u001b[0m")
+      // } else {
+      //   println("\u001b[31m  ➟ Initial mesh is NOT valid\u001b[0m")
+      // }
+      dt.deletePoint(99)
+      //dt.writeWKT("delete1modi.wkt")
+      // if (dt.isMeshValid) {
+      //   println("\u001b[32m  ➟ Modified mesh is valid\u001b[0m")
+      // } else {
+      //   println("\u001b[31m  ➟ Modified mesh is NOT valid\u001b[0m")
+      // }
+
+      val subdt = DelaunayTriangulation(subpts)
+
+      dt.triangleMap.triangleVertices.toSet.equals(subdt.triangleMap.triangleVertices.toSet) should be (true)
+    }
+
+    it("should allow for boundary point removal") {
+      val range = 0 until 99
+      val pts = ((for (i <- range) yield randomPoint(Extent(0, 0, 1, 1))).toArray) :+ new Coordinate(1.01, 0.5)
+      val subpts = pts.slice(0, 99)
+
+      val dt = DelaunayTriangulation(pts)
+      // dt.writeWKT("delete2orig.wkt")
+      // if (dt.isMeshValid) {
+      //   println("\u001b[32m  ➟ Initial mesh is valid\u001b[0m")
+      // } else {
+      //   println("\u001b[31m  ➟ Initial mesh is NOT valid\u001b[0m")
+      // }
+      dt.deletePoint(99)
+      // dt.writeWKT("delete2modi.wkt")
+      // if (dt.isMeshValid) {
+      //   println("\u001b[32m  ➟ Modified mesh is valid\u001b[0m")
+      // } else {
+      //   println("\u001b[31m  ➟ Modified mesh is NOT valid\u001b[0m")
+      // }
+
+      val subdt = DelaunayTriangulation(subpts)
+
+      dt.triangleMap.triangleVertices.toSet.equals(subdt.triangleMap.triangleVertices.toSet) should be (true)
+    }
+
+    it("should simplify a flat surface") {
+      Random.setSeed(1)
+      val pts = Array(
+        new Coordinate(0, 0, 0),
+        new Coordinate(0, 1, 0),
+        new Coordinate(1, 0, 0),
+        new Coordinate(1, 1, 0)) ++
+        (for (i <- (0 until 5).toArray) yield new Coordinate(0, Random.nextDouble, 0)) ++
+        (for (i <- (0 until 5).toArray) yield new Coordinate(1, Random.nextDouble, 0)) ++
+        (for (i <- (0 until 5).toArray) yield new Coordinate(Random.nextDouble, 0, 0)) ++
+        (for (i <- (0 until 5).toArray) yield new Coordinate(Random.nextDouble, 1, 0)) ++
+        (for (i <- (0 until 25).toArray) yield new Coordinate(Random.nextDouble, Random.nextDouble, 0))
+
+      val dt = DelaunayTriangulation(pts)
+      // dt.writeWKT("original.wkt")
+
+      dt.decimate(45)
+
+      dt.triangleMap.triangleVertices.forall{ case (a,b,c) => {
+        Seq(a,b,c).forall{ i => 0 <= i && i < 4 }
+      }} should be (true)
+    }
+
+    ignore("should simplify a curved surface") {
+      /*
+       * This test is meant to check that the appropriate actions are being
+       * taken at each step, but it ends up being a visual check.  The generated
+       * surface is the Mexican hat function, and after simplification, the
+       * radial character of the mesh can be clearly seen, indicating that the
+       * reduction works, since the points that remain are those in areas of
+       * high curvature, mainly in the ridge and trough of the sombrero.
+       */
+      def f(x: Double, y: Double): Double = {
+        val u = 8 * x - 4
+        val v = 8 * y - 4
+
+        12 / math.Pi * (1 - (u * u + v * v) / 2) * math.exp(-(u * u + v * v)/2)
+      }
+      def surfacePoint(x: Double, y: Double) = new Coordinate(x, y, f(x, y))
+
+      val grid = 100.0
+      val pts = Array(
+        surfacePoint(0, 0),
+        surfacePoint(0, 1),
+        surfacePoint(1, 0),
+        surfacePoint(1, 1)) ++
+        (for (i <- (0.0 until grid by 1.0).toArray) yield surfacePoint(0, (i.toDouble + Random.nextDouble)/ grid)) ++
+        (for (i <- (0.0 until grid by 1.0).toArray) yield surfacePoint(1, (i.toDouble + Random.nextDouble)/ grid)) ++
+        (for (i <- (0.0 until grid by 1.0).toArray) yield surfacePoint((i.toDouble + Random.nextDouble)/ grid, 0)) ++
+        (for (i <- (0.0 until grid by 1.0).toArray) yield surfacePoint((i.toDouble + Random.nextDouble)/ grid, 1)) ++
+        ((0.0 until grid by 1.0).toArray).flatMap { i =>
+           (0.0 until grid by 1.0).toArray.map { j =>
+             val x = (i.toDouble + Random.nextDouble) / grid
+             val y = (j.toDouble + Random.nextDouble) / grid
+             surfacePoint(x, y)
+           }
+        }
+
+      val dt = DelaunayTriangulation(pts)
+      dt.writeWKT("original.wkt")
+
+      dt.decimate(9500)
+      dt.writeWKT("simplified.wkt")
+
+      true should be (true)
     }
   }
 

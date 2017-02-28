@@ -22,12 +22,55 @@ import io.pdal._
 import org.apache.avro._
 import org.apache.avro.generic._
 import org.apache.avro.util.Utf8
+import com.vividsolutions.jts.geom.Coordinate
 
 import java.util
 import java.nio.ByteBuffer
 import scala.collection.JavaConverters._
 
 trait PointCloudCodecs {
+  implicit def coordinateCodec = new AvroRecordCodec[Coordinate] {
+    def schema: Schema = SchemaBuilder
+      .record("Coordinate").namespace("com.vividsolutions.jts.geom")
+      .fields()
+      .name("x").`type`().doubleType().noDefault()
+      .name("y").`type`().doubleType().noDefault()
+      .name("z").`type`().doubleType().noDefault()
+      .endRecord()
+
+    def encode(c: Coordinate, rec: GenericRecord): Unit = {
+      rec.put("x", c.x)
+      rec.put("y", c.y)
+      rec.put("z", c.z)
+    }
+
+    def decode(rec: GenericRecord): Coordinate =
+      new Coordinate(
+        rec[Double]("x"),
+        rec[Double]("y"),
+        rec[Double]("z")
+      )
+  }
+
+  implicit def arrayCoordinateCodec = new AvroRecordCodec[Array[Coordinate]] {
+    def schema: Schema = SchemaBuilder
+      .record("ArrayCoordinate").namespace("com.vividsolutions.jts.geom")
+      .fields()
+      .name("arr").`type`.array().items.`type`(coordinateCodec.schema).noDefault()
+      .endRecord()
+
+    def encode(arr: Array[Coordinate], rec: GenericRecord): Unit = {
+      rec.put("arr", java.util.Arrays.asList(arr.map(coordinateCodec.encode):_*))
+    }
+
+    def decode(rec: GenericRecord): Array[Coordinate] =
+      rec.get("arr")
+        .asInstanceOf[java.util.Collection[GenericRecord]]
+        .asScala
+        .map(coordinateCodec.decode)
+        .toArray
+  }
+
   implicit def dimTypeCodec = new AvroRecordCodec[DimType] {
     def schema: Schema = SchemaBuilder
       .record("DimType").namespace("io.pdal")

@@ -15,6 +15,9 @@ class HalfEdgeTable(_size: Int) {
   private var idx = 0
   private var edgeCount = 0
 
+  // An object to keep an edge arriving at each vertex
+  private var edgeAt = collection.mutable.Map.empty[Int, Int]
+
   // This array will hold the packed arrays of the halfedge table.
   private var table = Array.ofDim[Int](size * 3)
 
@@ -43,6 +46,9 @@ class HalfEdgeTable(_size: Int) {
     setNext(getPrev(getFlip(opp)), getNext(getFlip(e)))
     setFlip(e, opp)
     setFlip(opp, e)
+
+    //edgeAt += getDest(opp) -> opp
+    //edgeAt += getDest(e) -> e
   }
 
   /** Create an edge pointing to single vertex.
@@ -85,6 +91,10 @@ class HalfEdgeTable(_size: Int) {
 
     setFlip(e1, e2)
     setNext(e1, e2)
+
+    // edgeAt += v1 -> e1
+    // edgeAt += v2 -> e2
+
     e2
   }
 
@@ -105,6 +115,10 @@ class HalfEdgeTable(_size: Int) {
     val outer1 = createHalfEdge(v1)
     val outer2 = createHalfEdge(v2)
     val outer3 = createHalfEdge(v3)
+
+    edgeAt += v1 -> inner1
+    edgeAt += v2 -> inner2
+    edgeAt += v3 -> inner3
 
     setNext(inner1, inner2)
     setNext(inner2, inner3)
@@ -203,6 +217,35 @@ class HalfEdgeTable(_size: Int) {
   def rotCCWDest(e: Int): Int =
     getPrev(getFlip(e))
 
+  def neighborsOf(vi: Int): Seq[Int] = {
+    val nbhd = collection.mutable.ListBuffer.empty[Int]
+    val e0 = getFlip(edgeIncidentTo(vi))
+    var e = e0
+
+    do {
+      nbhd += getDest(e)
+      e = rotCWSrc(e)
+    } while (e != e0)
+
+    nbhd.toSeq
+  }
+
+  def onBoundary(vi: Int, boundary: Int): Boolean = {
+    var e = boundary
+    do {
+      if (getDest(e) == vi)
+        return true
+      e = getNext(e)
+    } while (e != boundary)
+    return false
+  }
+
+  def killEdge(e: Int): Unit = {
+    table(e * 3) = -1
+    table(e * 3 + 1) = -1
+    table(e * 3 + 2) = -1
+  }
+
   private def resize() {
     // It's important that size always be a power of 2. We grow our
     // hash table by x4 until it starts getting big, at which point we
@@ -279,12 +322,29 @@ class HalfEdgeTable(_size: Int) {
     offset
   }
 
+  def edgeIncidentTo(i: Int) = edgeAt(i)
+  def removeIncidentEdge(i: Int) = { edgeAt -= i }
+  def setIncidentEdge(i: Int, e: Int) = { 
+    assert(i == getDest(e))
+    edgeAt += i -> e 
+  }
+  def registerFace(e: Int) = {
+    var f = e
+    do {
+      setIncidentEdge(getDest(f), f)
+      f = getNext(f)
+    } while (f != e)
+  }
+
+  def allVertices() = edgeAt.keys
+
   def reindexVertices(reindex: Int => Int) = {
     var i = 0
     while (i < idx) {
       table(i) = reindex(table(i))
       i += 3
     }
+    edgeAt = edgeAt.map{ case (vi, e) => (reindex(vi), e) }
   }
 
 }
