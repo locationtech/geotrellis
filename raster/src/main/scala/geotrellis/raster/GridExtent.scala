@@ -41,8 +41,8 @@ class GridExtent(val extent: Extent, val cellwidth: Double, val cellheight: Doub
     *       types.
     */
   def toRasterExtent(): RasterExtent = {
-    val targetCols = 1L.max(math.round(extent.width / cellwidth).toLong)
-    val targetRows = 1L.max(math.round(extent.height / cellheight).toLong)
+    val targetCols = math.max(1L, math.round(extent.width / cellwidth).toLong)
+    val targetRows = math.max(1L, math.round(extent.height / cellheight).toLong)
     if(targetCols > Int.MaxValue) {
       throw new GeoAttrsError(s"Cannot convert GridExtent into a RasterExtent: number of columns exceeds maximum integer value ($targetCols > ${Int.MaxValue})")
     }
