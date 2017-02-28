@@ -20,5 +20,4 @@
       "project spark-testkit" publish \
       "project util" publish \
       "project vector" publish \
-      "project vector-testkit" publish \
-      "project vectortile" publish
+      "project vector-testkit" publish

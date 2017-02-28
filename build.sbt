@@ -87,8 +87,7 @@ lazy val root = Project("geotrellis", file(".")).
     geowave,
     geomesa,
     geotools,
-    slick,
-    vectortile
+    slick
   ).
   settings(commonSettings: _*).
   enablePlugins(ScalaUnidocPlugin).
@@ -105,10 +104,6 @@ lazy val root = Project("geotrellis", file(".")).
 
 lazy val macros = Project("macros", file("macros")).
   settings(commonSettings: _*)
-
-lazy val vectortile = Project("vectortile", file("vectortile"))
-  .dependsOn(vector)
-  .settings(commonSettings: _*)
 
 lazy val vector = Project("vector", file("vector")).
   dependsOn(proj4, util).
@@ -143,7 +138,7 @@ lazy val slick = Project("slick", file("slick")).
   settings(commonSettings: _*)
 
 lazy val spark = Project("spark", file("spark")).
-  dependsOn(util, vectortile, raster, rasterTestkit % "provided;test->test").
+  dependsOn(util, raster, rasterTestkit % "provided;test->test").
   settings(commonSettings: _*)
 
 lazy val sparkTestkit: Project = Project("spark-testkit", file("spark-testkit")).

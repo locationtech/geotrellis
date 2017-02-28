@@ -57,7 +57,6 @@ libraryDependencies += "org.locationtech.geotrellis" %% "geotrellis-raster" % "1
 - `geotrellis-geowave`: Experimental GeoWave integration
 - `geotrellis-shapefile`: Read shapefiles into GeoTrellis data types via GeoTools
 - `geotrellis-slick`: Read vector data out of PostGIS via [LightBend Slick](http://slick.lightbend.com/)
-- `geotrellis-vectortile`: Experimental vector tile support, including reading and writing
 - `geotrellis-raster-testkit`: Testkit for testing geotrellis-raster types
 - `geotrellis-vector-testkit`: Testkit for testing geotrellis-vector types
 - `geotrellis-spark-testkit`: Testkit for testing geotrellis-spark code
