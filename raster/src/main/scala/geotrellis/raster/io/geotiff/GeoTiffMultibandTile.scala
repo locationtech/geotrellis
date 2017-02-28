@@ -197,13 +197,12 @@ abstract class GeoTiffMultibandTile(
           GeoTiffTile(new ArraySegmentBytes(compressedBandBytes), compressor.createDecompressor(), segmentLayout, compression, cellType, Some(bandType))
       }
     } else {
-      // TODO: rewrite this to center around getSegments
       val bandSegmentCount = segmentCount / bandCount
       val compressedBandBytes = Array.ofDim[Array[Byte]](bandSegmentCount)
-
       val start = bandSegmentCount * bandIndex
-      cfor(0)(_ < bandSegmentCount, _ + 1) { i =>
-        compressedBandBytes(i) = segmentBytes.getSegment(i + start).clone
+
+      segmentBytes.getSegments(start until bandSegmentCount + start).foreach { case (segmentIndex, segment) =>
+        compressedBandBytes(segmentIndex - start) = segment.clone
       }
 
       GeoTiffTile(new ArraySegmentBytes(compressedBandBytes), decompressor, segmentLayout, compression, cellType, Some(bandType))
