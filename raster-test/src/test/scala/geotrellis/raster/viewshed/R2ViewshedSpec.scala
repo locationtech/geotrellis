@@ -44,8 +44,9 @@ class R2ViewshedSpec extends FunSpec
       R2Viewshed.compute(
         elevationTile, viewshedTile,
         2, 7, 0, 1,
-        FromSouth, left, right,
-        { case Ray(m, alpha) =>
+        FromSouth(), left, right,
+        { (ray, _) =>
+          val Ray(m, alpha) = ray
           all += 1
           if (alpha == 7) a += 1
           else if (alpha == 13) b += 1
@@ -70,8 +71,9 @@ class R2ViewshedSpec extends FunSpec
       R2Viewshed.compute(
         elevationTile, viewshedTile,
         -3, 2, 0, 1,
-        FromWest, left, right,
-        { case Ray(m, alpha) =>
+        FromWest(), left, right,
+        { (ray, _) =>
+          val Ray(m, alpha) = ray
           all += 1
           if (alpha == 7) a += 1
           else if (alpha == 13) b += 1
@@ -96,8 +98,9 @@ class R2ViewshedSpec extends FunSpec
       R2Viewshed.compute(
         elevationTile, viewshedTile,
         2, -3, 0, 1,
-        FromNorth, left, right,
-        { case Ray(m, alpha) =>
+        FromNorth(), left, right,
+        { (ray, _) =>
+          val Ray(m, alpha) = ray
           all += 1
           if (alpha == 7) a += 1
           else if (alpha == 13) b += 1
@@ -122,8 +125,9 @@ class R2ViewshedSpec extends FunSpec
       R2Viewshed.compute(
         elevationTile, viewshedTile,
         7, 2, 0, 1,
-        FromEast, left, right,
-        { case Ray(m, alpha) =>
+        FromEast(), left, right,
+        { (ray, _) =>
+          val Ray(m, alpha) = ray
           all += 1
           if (alpha == 7) a += 1
           else if (alpha == 13) b += 1

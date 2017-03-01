@@ -27,11 +27,11 @@ import java.util.Comparator
 object R2Viewshed extends Serializable {
 
   sealed abstract class From()
-  object FromNorth extends From
-  object FromEast extends From
-  object FromSouth extends From
-  object FromWest extends From
-  object FromInside extends From
+  case class FromNorth() extends From
+  case class FromEast() extends From
+  case class FromSouth() extends From
+  case class FromWest() extends From
+  case class FromInside() extends From
 
 
   sealed case class DirectedSegment(
@@ -42,7 +42,7 @@ object R2Viewshed extends Serializable {
 
   sealed case class Ray(m: Double, alpha: Double)
 
-  type EdgeCallback = (Ray => Unit)
+  type EdgeCallback = ((Ray, From) => Unit)
 
   object RayComparator extends Comparator[Ray] {
     def compare(left: Ray, right: Ray): Int =
@@ -51,16 +51,19 @@ object R2Viewshed extends Serializable {
       else 0
   }
 
+  def generateEmptyViewshedTile(cols: Int, rows: Int) =
+    ArrayTile.empty(IntCellType, cols, rows)
+
   def apply(tile: Tile, col: Int, row: Int): Tile = {
     val cols = tile.cols
     val rows = tile.rows
-    val viewshedTile = ArrayTile.empty(IntCellType, cols, rows)
+    val viewshedTile = generateEmptyViewshedTile(cols, rows)
 
     R2Viewshed.compute(
       tile, viewshedTile,
       col, row, 0, 1.0,
-      FromInside, null, null,
-      { _ => }
+      FromInside(), null, null,
+      { (_, _) => }
     )
     viewshedTile
   }
@@ -118,18 +121,18 @@ object R2Viewshed extends Serializable {
 
     val clipRay: ((Int, Int) => Option[DirectedSegment]) =
       from match {
-        case FromNorth => clipRayNorthSouth(0)
-        case FromEast => clipRayEastWest(cols-1)
-        case FromSouth => clipRayNorthSouth(rows-1)
-        case FromWest => clipRayEastWest(0)
-        case FromInside =>
+        case _: FromNorth => clipRayNorthSouth(0)
+        case _: FromEast => clipRayEastWest(cols-1)
+        case _: FromSouth => clipRayNorthSouth(rows-1)
+        case _: FromWest => clipRayEastWest(0)
+        case _: FromInside =>
           if (inTile) clipRayInside
           else throw new Exception("Cannot be both inside and outside")
       }
 
     val slopeToAlpha: (Double => Double) =
       from match {
-        case FromInside => { _ => -Math.PI }
+        case _: FromInside => { _ => -Math.PI }
         case _ => { m: Double =>
           val array = if (m < 0) left; else right
           val index = binarySearch(array, Ray(math.abs(m), Double.NaN), RayComparator)
@@ -165,52 +168,48 @@ object R2Viewshed extends Serializable {
       .foreach({ seg =>
         m = seg.m
         alpha = slopeToAlpha(m)
-        // println(s"NORTH ($startCol, $startRow) $seg $alpha")
         Rasterizer.foreachCellInGridLine(
           seg.startCol, seg.startRow,
           seg.endCol, seg.endRow,
           null, re, false
         )(callback)
-        edgeCallback(Ray(m, alpha))
+        edgeCallback(Ray(m, alpha), FromSouth())
       })
     Range(0, rows) // East
       .flatMap({ row => clipRay(cols-1, row) })
       .foreach({ seg =>
         m = seg.m
         alpha = slopeToAlpha(m)
-        // println(s"EAST ($startCol, $startRow) $seg $alpha")
         Rasterizer.foreachCellInGridLine(
           seg.startCol, seg.startRow,
           seg.endCol, seg.endRow,
           null, re, false
         )(callback)
-        edgeCallback(Ray(m, alpha))
+        edgeCallback(Ray(m, alpha), FromWest())
       })
     Range(0, cols) // South
       .flatMap({ col => clipRay(col, rows-1) })
       .foreach({ seg =>
         m = seg.m
         alpha = slopeToAlpha(m)
-        // println(s"SOUTH ($startCol, $startRow) $seg $alpha")
         Rasterizer.foreachCellInGridLine(
           seg.startCol, seg.startRow,
           seg.endCol, seg.endRow,
           null, re, false
         )(callback)
-        edgeCallback(Ray(m, alpha))
+        edgeCallback(Ray(m, alpha), FromNorth())
       })
     Range(0, rows) // West
       .flatMap({ row => clipRay(0, row) })
       .foreach({ seg =>
         m = seg.m
         alpha = slopeToAlpha(m)
-        // println(s"WEST ($startCol, $startRow) $seg $alpha")
         Rasterizer.foreachCellInGridLine(
           seg.startCol, seg.startRow,
           seg.endCol, seg.endRow,
           null, re, false
         )(callback)
-        edgeCallback(Ray(m, alpha))
+        edgeCallback(Ray(m, alpha), FromEast())
       })
 
     viewshedTile
