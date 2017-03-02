@@ -87,7 +87,6 @@ class FileAttributeStore(val catalogPath: String) extends BlobLayerAttributeStor
     val layerFiles =
       attributeDirectory
         .listFiles(new WildcardFileFilter(s"${layerId.name}${SEP}${layerId.zoom}${SEP}*.json"): FileFilter)
-    if(layerFiles.isEmpty) throw new LayerNotFoundError(layerId)
     layerFiles.find(f => f.getAbsolutePath.endsWith(s"${SEP}${attributeName}.json")) match {
       case Some(f) => f.delete()
       case _ =>
@@ -99,7 +98,6 @@ class FileAttributeStore(val catalogPath: String) extends BlobLayerAttributeStor
     val layerFiles =
       attributeDirectory
         .listFiles(new WildcardFileFilter(s"${layerId.name}${SEP}${layerId.zoom}${SEP}*.json"): FileFilter)
-    if(layerFiles.isEmpty) throw new LayerNotFoundError(layerId)
     layerFiles.foreach { f => f.delete() }
     clearCache(layerId)
   }
