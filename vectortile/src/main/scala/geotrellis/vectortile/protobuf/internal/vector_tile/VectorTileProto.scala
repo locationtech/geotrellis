@@ -22,9 +22,8 @@
 package geotrellis.vectortile.protobuf.internal.vector_tile
 
 object VectorTileProto {
-  lazy val descriptor: com.google.protobuf.Descriptors.FileDescriptor = {
-    val proto = com.google.protobuf.DescriptorProtos.FileDescriptorProto.parseFrom(
-      com.trueaccord.scalapb.Encoding.fromBase64(Seq(
+  private lazy val ProtoBytes: Array[Byte] =
+      com.trueaccord.scalapb.Encoding.fromBase64(scala.collection.Seq(
   """ChF2ZWN0b3JfdGlsZS5wcm90bxILdmVjdG9yX3RpbGUi4wUKBFRpbGUSLwoGbGF5ZXJzGAMgAygLMhcudmVjdG9yX3RpbGUuV
   GlsZS5MYXllclIGbGF5ZXJzGvIBCgVWYWx1ZRIhCgxzdHJpbmdfdmFsdWUYASABKAlSC3N0cmluZ1ZhbHVlEh8KC2Zsb2F0X3Zhb
   HVlGAIgASgCUgpmbG9hdFZhbHVlEiEKDGRvdWJsZV92YWx1ZRgDIAEoAVILZG91YmxlVmFsdWUSGwoJaW50X3ZhbHVlGAQgASgDU
@@ -36,8 +35,17 @@ object VectorTileProto {
   2V5cxgDIAMoCVIEa2V5cxIvCgZ2YWx1ZXMYBCADKAsyFy52ZWN0b3JfdGlsZS5UaWxlLlZhbHVlUgZ2YWx1ZXMSHAoGZXh0ZW50G
   AUgASgNOgQ0MDk2UgZleHRlbnQqCAgQEICAgIACIj8KCEdlb21UeXBlEgsKB1VOS05PV04QABIJCgVQT0lOVBABEg4KCkxJTkVTV
   FJJTkcQAhILCgdQT0xZR09OEAMqBQgQEIBAQgJIAw=="""
-      ).mkString))
+      ).mkString)
+  lazy val scalaDescriptor: _root_.scalapb.descriptors.FileDescriptor = {
+    val scalaProto = com.google.protobuf.descriptor.FileDescriptorProto.parseFrom(ProtoBytes)
+    _root_.scalapb.descriptors.FileDescriptor.buildFrom(scalaProto, Seq(
+    ))
+  }
+  lazy val javaDescriptor: com.google.protobuf.Descriptors.FileDescriptor = {
+    val proto = com.google.protobuf.DescriptorProtos.FileDescriptorProto.parseFrom(ProtoBytes)
     com.google.protobuf.Descriptors.FileDescriptor.buildFrom(proto, Array(
     ))
   }
+  @deprecated("Use javaDescriptor instead. In a future version this will refer to scalaDescriptor.", "ScalaPB 0.5.47")
+  def descriptor: com.google.protobuf.Descriptors.FileDescriptor = javaDescriptor
 }
