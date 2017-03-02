@@ -23,7 +23,6 @@ import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.merge._
 import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json._

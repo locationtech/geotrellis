@@ -18,6 +18,7 @@ package geotrellis.spark.join
 
 import geotrellis.spark._
 import geotrellis.spark.partition._
+import geotrellis.spark.testkit._
 
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd.{PairRDDFunctions, RDD}

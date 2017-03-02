@@ -19,7 +19,12 @@ package geotrellis.spark.io.s3.util
 import geotrellis.spark.io.s3._
 import geotrellis.util.RangeReader
 
+import com.amazonaws.services.s3.{ AmazonS3URI, AmazonS3Client => AWSAmazonS3Client }
 import com.amazonaws.services.s3.model._
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
+
+import java.net.URI
+
 
 /**
  * This class extends [[RangeReader]] by reading chunks out of a GeoTiff on the
@@ -45,6 +50,21 @@ class S3RangeReader(
 
 /** The companion object of [[S3RangeReader]] */
 object S3RangeReader {
+
+  def apply(s3address: String): S3RangeReader =
+    apply(new URI(s3address), new AmazonS3Client(new AWSAmazonS3Client(new DefaultAWSCredentialsProviderChain)))
+
+  def apply(s3address: String, client: S3Client): S3RangeReader =
+    apply(new URI(s3address), client)
+
+  def apply(uri: URI): S3RangeReader =
+    apply(uri, new AmazonS3Client(new AWSAmazonS3Client(new DefaultAWSCredentialsProviderChain)))
+
+  def apply(uri: URI, client: S3Client): S3RangeReader = {
+    val s3uri = new AmazonS3URI(uri)
+    apply(new GetObjectRequest(s3uri.getBucket, s3uri.getKey), client)
+  }
+
   /**
    * Returns a new instance of S3RangeReader.
    *

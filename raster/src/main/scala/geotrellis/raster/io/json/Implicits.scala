@@ -39,6 +39,19 @@ trait Implicits extends HistogramJsonFormats {
       }
   }
 
+  implicit object CellSizeFormat extends RootJsonFormat[CellSize] {
+    def write(cs: CellSize): JsValue = JsObject(
+      "width"  -> JsNumber(cs.width),
+      "height" -> JsNumber(cs.height)
+    )
+    def read(value: JsValue): CellSize =
+      value.asJsObject.getFields("width", "height") match {
+        case Seq(JsNumber(width), JsNumber(height)) => CellSize(width.toInt, height.toInt)
+        case _ =>
+          throw new DeserializationException("BackendType must be a valid object.")
+      }
+  }
+
   implicit object RasterExtentFormat extends RootJsonFormat[RasterExtent] {
     def write(rasterExtent: RasterExtent) =
       JsObject(

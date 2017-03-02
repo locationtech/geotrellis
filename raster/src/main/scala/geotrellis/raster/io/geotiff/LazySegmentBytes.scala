@@ -7,10 +7,10 @@ import monocle.syntax.apply._
 import geotrellis.raster.io.geotiff.util._
 
 class LazySegmentBytes(
-  byteReader: ByteReader,
-  tiffTags: TiffTags,
-  maxChunkSize: Int = 32 * 1024 * 1024
-) extends SegmentBytes with LazyLogging {
+                        byteReader: ByteReader,
+                        tiffTags: TiffTags,
+                        maxChunkSize: Int = 32 * 1024 * 1024
+                      ) extends SegmentBytes with LazyLogging {
   import LazySegmentBytes.Segment
 
   // TODO: verify this is correct
@@ -19,22 +19,22 @@ class LazySegmentBytes(
   val (segmentOffsets, segmentByteCounts) =
     if (tiffTags.hasStripStorage) {
       val stripOffsets = tiffTags &|->
-      TiffTags._basicTags ^|->
-      BasicTags._stripOffsets get
+        TiffTags._basicTags ^|->
+        BasicTags._stripOffsets get
 
       val stripByteCounts = tiffTags &|->
-      TiffTags._basicTags ^|->
-      BasicTags._stripByteCounts get
+        TiffTags._basicTags ^|->
+        BasicTags._stripByteCounts get
 
       (stripOffsets.get, stripByteCounts.get)
     } else {
       val tileOffsets = tiffTags &|->
-      TiffTags._tileTags ^|->
-      TileTags._tileOffsets get
+        TiffTags._tileTags ^|->
+        TileTags._tileOffsets get
 
       val tileByteCounts = tiffTags &|->
-      TiffTags._tileTags ^|->
-      TileTags._tileByteCounts get
+        TiffTags._tileTags ^|->
+        TileTags._tileByteCounts get
 
       (tileOffsets.get, tileByteCounts.get)
     }

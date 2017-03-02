@@ -34,7 +34,6 @@ import org.opengis.parameter.GeneralParameterValue
 
 import org.scalatest._
 
-
 class GeowaveSpatialSpec
     extends FunSpec
     with Matchers

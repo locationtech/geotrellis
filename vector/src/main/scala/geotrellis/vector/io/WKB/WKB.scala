@@ -16,10 +16,11 @@
 
 package geotrellis.vector.io.wkb
 
-import com.vividsolutions.jts.io.WKBReader
-import com.vividsolutions.jts.{geom => jts}
+import geotrellis.util.LazyLogging
 import geotrellis.vector._
-import com.typesafe.scalalogging.LazyLogging
+
+import com.vividsolutions.jts.io.WKBReader
+
 
 /** A thread-safe wrapper for the [https://en.wikipedia.org/wiki/Well-known_text#Well-known_binary WKB]
   * Writer and Reader

@@ -47,11 +47,13 @@ object FileLayerDeleter {
 
         // Delete the elements
         val sourceLayerPath = new File(attributeStore.catalogPath, header.path)
-        sourceLayerPath
-          .listFiles()
-          .foreach(_.delete())
+        if(sourceLayerPath.exists()) {
+          sourceLayerPath
+            .listFiles()
+            .foreach(_.delete())
 
-        sourceLayerPath.delete
+          sourceLayerPath.delete
+        }
       }
     }
 

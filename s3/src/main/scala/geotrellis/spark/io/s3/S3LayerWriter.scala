@@ -25,7 +25,6 @@ import geotrellis.spark.io.index._
 import geotrellis.util._
 
 import com.amazonaws.services.s3.model.PutObjectRequest
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.rdd.RDD
 import spray.json._
 

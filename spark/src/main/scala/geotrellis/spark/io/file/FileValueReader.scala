@@ -48,7 +48,7 @@ class FileValueReader(
       val path = keyPath(key)
 
       if(!new File(path).exists)
-        throw new TileNotFoundError(key, layerId)
+        throw new ValueNotFoundError(key, layerId)
 
       val bytes = Filesystem.slurp(path)
       val recs = AvroEncoder.fromBinary(writerSchema, bytes)(KeyValueRecordCodec[K, V])
@@ -56,7 +56,7 @@ class FileValueReader(
       recs
         .find { case (recordKey, _) => recordKey == key }
         .map { case (_, recordValue) => recordValue }
-        .getOrElse(throw new TileNotFoundError(key, layerId))
+        .getOrElse(throw new ValueNotFoundError(key, layerId))
     }
   }
 }

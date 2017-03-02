@@ -18,7 +18,7 @@ package geotrellis.spark.render
 
 import geotrellis.raster.{Tile, TileLayout}
 import geotrellis.spark.{SpatialKey, LayerId}
-import geotrellis.spark.TestEnvironment
+import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.spark.render._
 import geotrellis.spark.testfiles.TestFiles
 import geotrellis.spark.io.s3._
@@ -26,7 +26,6 @@ import geotrellis.spark.io.s3.testkit._
 import geotrellis.spark.io.s3.SaveToS3
 
 import org.scalatest._
-
 
 class S3SaveImagesSpec extends FunSpec with TestEnvironment with Matchers {
   lazy val sample = TestFiles.generateSpatial("all-ones")

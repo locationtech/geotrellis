@@ -1,5 +1,4 @@
 import Dependencies._
-import UnidocKeys._
 import sbt.Keys._
 import de.heikoseeberger.sbtheader.license.Apache2_0
 
@@ -25,17 +24,21 @@ lazy val commonSettings = Seq(
   publishArtifact in Test := false,
   pomIncludeRepository := { _ => false },
 
-  publishTo <<= version { (v: String) =>
-     val nexus = "https://repo.locationtech.org/content/repositories"
-     if (v.trim.endsWith("SNAPSHOT"))
-       Some("LocationTech Nexus Repository" at s"$nexus/geotrellis-snapshots")
-     else
-       Some("LocationTech Nexus Repository" at s"$nexus/geotrellis-releases")
-   },
+  publishTo := {
+    val sonatype = "https://oss.sonatype.org/"
+    val locationtech = "https://repo.locationtech.org/content/repositories"
+    if (isSnapshot.value) {
+      // Publish snapshots to LocationTech
+      Some("LocationTech Snapshot Repository" at s"${locationtech}/geotrellis-snapshots")
+    } else {
+      // Publish releases to Sonatype
+      Some("Sonatype Release Repository" at s"${sonatype}service/local/staging/deploy/maven2")
+    }
+  },
 
   credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
 
-  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.0" cross CrossVersion.binary),
+  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.3" cross CrossVersion.binary),
   addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.full),
 
   pomExtra := (
@@ -81,15 +84,15 @@ lazy val root = Project("geotrellis", file(".")).
     accumulo,
     cassandra,
     hbase,
-    // geowave, Removed so that unidoc can publish. TODO: Update to GeoWave API when release happens.
+    geowave,
     geomesa,
     geotools,
     slick,
     vectortile
   ).
   settings(commonSettings: _*).
+  enablePlugins(ScalaUnidocPlugin).
   settings(
-    scalacOptions in (ScalaUnidoc, unidoc) += "-Ymacro-expand:none",
     initialCommands in console :=
       """
       import geotrellis.raster._
@@ -97,8 +100,8 @@ lazy val root = Project("geotrellis", file(".")).
       import geotrellis.proj4._
       import geotrellis.spark._
       """
-  )
-  .settings(unidocSettings: _*)
+  ).
+  settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(geowave))
 
 lazy val macros = Project("macros", file("macros")).
   settings(commonSettings: _*)

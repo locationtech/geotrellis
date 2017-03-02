@@ -19,15 +19,13 @@ package geotrellis.spark.io.hadoop
 import geotrellis.spark._
 import geotrellis.spark.util._
 import geotrellis.spark.partition._
-import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
+import geotrellis.util.LazyLogging
 
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io._
-import org.apache.hadoop.mapreduce.lib.output._
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.rdd._
 

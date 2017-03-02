@@ -21,6 +21,7 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestFiles
+import geotrellis.spark.testkit.TestEnvironment
 
 class AccumuloSpatialSpec
   extends PersistenceSpec[SpatialKey, Tile, TileLayerMetadata[SpatialKey]]

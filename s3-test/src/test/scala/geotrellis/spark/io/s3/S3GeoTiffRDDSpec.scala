@@ -25,6 +25,7 @@ import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.s3.testkit._
+import geotrellis.spark.testkit.TestEnvironment
 
 import org.apache.hadoop.conf.Configuration
 import com.amazonaws.auth.AWSCredentials

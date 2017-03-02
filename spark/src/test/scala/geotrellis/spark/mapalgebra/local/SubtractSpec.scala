@@ -19,6 +19,8 @@ package geotrellis.spark.mapalgebra.local
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testfiles._
+import geotrellis.spark.testkit._
+
 import org.scalatest.FunSpec
 
 class SubtractSpec extends FunSpec with TestEnvironment with TestFiles {

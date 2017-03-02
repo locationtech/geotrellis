@@ -19,7 +19,7 @@ package geotrellis.spark.io.geomesa
 import geotrellis.geomesa.geotools.{GeoMesaSimpleFeatureType, GeometryToGeoMesaSimpleFeature}
 import geotrellis.spark.LayerId
 import geotrellis.vector._
-import geotrellis.spark.TestEnvironment
+import geotrellis.spark.testkit.TestEnvironment
 
 import org.opengis.filter.Filter
 import org.apache.spark.rdd.RDD

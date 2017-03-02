@@ -21,6 +21,8 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testfiles._
+import geotrellis.spark.testkit._
+
 import org.scalatest.FunSpec
 
 class MinoritySpec extends FunSpec with TestEnvironment with TestFiles {

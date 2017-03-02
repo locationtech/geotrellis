@@ -28,7 +28,6 @@ import geotrellis.util._
 import geotrellis.util.annotations.experimental
 import geotrellis.vector.Extent
 
-import com.typesafe.scalalogging.LazyLogging
 import mil.nga.giat.geowave.adapter.raster.adapter.merge.RasterTileRowTransform
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
 import mil.nga.giat.geowave.core.geotime.index.dimension._
@@ -37,11 +36,6 @@ import mil.nga.giat.geowave.core.index.sfc.SFCDimensionDefinition
 import mil.nga.giat.geowave.core.index.sfc.SFCFactory.SFCType
 import mil.nga.giat.geowave.core.index.sfc.tiered.TieredSFCIndexFactory
 import mil.nga.giat.geowave.core.store._
-import mil.nga.giat.geowave.core.store.adapter.statistics.StatsCompositionTool
-import mil.nga.giat.geowave.core.store.data.VisibilityWriter
-import mil.nga.giat.geowave.core.store.index.PrimaryIndex
-import mil.nga.giat.geowave.core.store.operations.remote.options.DataStorePluginOptions
-import mil.nga.giat.geowave.core.store.util.DataStoreUtils
 import mil.nga.giat.geowave.datastore.accumulo._
 import mil.nga.giat.geowave.datastore.accumulo.metadata._
 import mil.nga.giat.geowave.datastore.accumulo.operations.config.AccumuloOptions
@@ -64,9 +58,13 @@ import javax.media.jai.{ ImageLayout, JAI }
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
 import scala.reflect._
+import mil.nga.giat.geowave.core.store.util.DataStoreUtils
 
 import resource._
 import spray.json._
+import mil.nga.giat.geowave.core.store.operations.remote.options.DataStorePluginOptions
+import mil.nga.giat.geowave.core.store.adapter.statistics.StatsCompositionTool
+import mil.nga.giat.geowave.core.store.data.VisibilityWriter
 
 
 /**
@@ -112,15 +110,11 @@ import spray.json._
     val pluginOptions = new DataStorePluginOptions
     pluginOptions.setFactoryOptions(as.accumuloRequiredOptions)
 
-    val configOptions = pluginOptions.getFactoryOptionsAsMap
+    val configOptions = pluginOptions.getOptionsAsMap
 
     val geotrellisKvToGeoWaveKv: Iterable[(K, V)] => Iterable[(Key, Value)] = { pairs =>
       {
         val gwMetadata = new java.util.HashMap[String, String](); gwMetadata.put("cellType", cellType)
-        configOptions.put(
-          GeoWaveStoreFinder.STORE_HINT_OPTION.getName(),
-          "accumulo"
-        )
 
         /* Produce mosaic from all of the tiles in this partition */
         val sources = new java.util.ArrayList(pairs.map(geotrellisKvToGeotools))

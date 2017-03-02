@@ -25,7 +25,6 @@ import geotrellis.raster._
 import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
-import com.typesafe.scalalogging.LazyLogging
 import spray.json._
 
 import scala.reflect._

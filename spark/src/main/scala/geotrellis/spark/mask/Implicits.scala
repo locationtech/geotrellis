@@ -33,4 +33,10 @@ trait Implicits {
     V: (? => TileMaskMethods[V]),
     M: GetComponent[?, LayoutDefinition]
   ](val self: RDD[(K, V)] with Metadata[M]) extends TileRDDMaskMethods[K, V, M]
+
+  implicit class withTileCollectionMaskMethods[
+    K: SpatialComponent,
+    V: (? => TileMaskMethods[V]),
+    M: GetComponent[?, LayoutDefinition]
+  ](val self: Seq[(K, V)] with Metadata[M]) extends TileCollectionMaskMethods[K, V, M]
 }

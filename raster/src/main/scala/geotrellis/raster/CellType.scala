@@ -44,6 +44,18 @@ sealed abstract class DataType extends Serializable { self: CellType =>
     */
   def withNoData(noDataValue: Option[Double]): CellType
 
+  /**
+   * Creates a [[CellType]] with the default `ConstantNoData` value. If instance is already one of the default `NoData`
+   * values then a reference to self is returned.
+   * @return [[CellType]] with same bit width as this but with the default `NoData` value.
+   */
+  def withDefaultNoData(): CellType
+
+  /**
+   * Bytes per sample (bits divided by 8).
+   *
+   * @return Bytes per sample.
+   */
   def bytes = bits / 8
 
   /**
@@ -123,6 +135,7 @@ sealed trait BitCells extends DataType { self: CellType =>
   def equalDataType(other: DataType) = other.isInstanceOf[BitCells]
   def withNoData(noDataValue: Option[Double]): BitCells with NoDataHandling =
     BitCellType // No other options is possible
+  def withDefaultNoData(): BitCells with NoDataHandling = BitCellType
 }
 
 /**
@@ -135,6 +148,7 @@ sealed trait ByteCells extends DataType { self: CellType =>
   def equalDataType(other: DataType) = other.isInstanceOf[ByteCells]
   def withNoData(noDataValue: Option[Double]): ByteCells with NoDataHandling =
     ByteCells.withNoData(noDataValue.map(_.toByte))
+  def withDefaultNoData(): ByteCells with NoDataHandling = ByteConstantNoDataCellType
 }
 
 object ByteCells {
@@ -159,6 +173,7 @@ sealed trait UByteCells extends DataType { self: CellType =>
   def equalDataType(other: DataType) = other.isInstanceOf[UByteCells]
   def withNoData(noDataValue: Option[Double]): UByteCells with NoDataHandling =
     UByteCells.withNoData(noDataValue.map(_.toByte))
+  def withDefaultNoData(): UByteCells with NoDataHandling = UByteConstantNoDataCellType
 }
 
 object UByteCells {
@@ -183,6 +198,7 @@ sealed trait ShortCells extends DataType { self: CellType =>
   def equalDataType(other: DataType) = other.isInstanceOf[ShortCells]
   def withNoData(noDataValue: Option[Double]): ShortCells with NoDataHandling =
     ShortCells.withNoData(noDataValue.map(_.toShort))
+  def withDefaultNoData(): ShortCells with NoDataHandling = ShortConstantNoDataCellType
 }
 
 object ShortCells {
@@ -207,6 +223,7 @@ sealed trait UShortCells extends DataType { self: CellType =>
   def equalDataType(other: DataType) = other.isInstanceOf[UShortCells]
   def withNoData(noDataValue: Option[Double]): UShortCells with NoDataHandling =
     UShortCells.withNoData(noDataValue.map(_.toShort))
+  def withDefaultNoData(): UShortCells with NoDataHandling = UShortConstantNoDataCellType
 }
 
 object UShortCells {
@@ -231,6 +248,7 @@ sealed trait IntCells extends DataType { self: CellType =>
   def equalDataType(other: DataType) = other.isInstanceOf[IntCells]
   def withNoData(noDataValue: Option[Double]): IntCells with NoDataHandling =
     IntCells.withNoData(noDataValue.map(_.toInt))
+  def withDefaultNoData(): IntCells with NoDataHandling = IntConstantNoDataCellType
 }
 
 object IntCells {
@@ -252,6 +270,7 @@ sealed trait FloatCells extends DataType { self: CellType =>
   def equalDataType(other: DataType) = other.isInstanceOf[FloatCells]
   def withNoData(noDataValue: Option[Double]): FloatCells with NoDataHandling =
     FloatCells.withNoData(noDataValue.map(_.toFloat))
+  def withDefaultNoData(): FloatCells with NoDataHandling = FloatConstantNoDataCellType
 }
 
 object FloatCells {
@@ -276,6 +295,8 @@ sealed trait DoubleCells extends DataType { self: CellType =>
   def equalDataType(other: DataType) = other.isInstanceOf[DoubleCells]
   def withNoData(noDataValue: Option[Double]): DoubleCells with NoDataHandling =
     DoubleCells.withNoData(noDataValue)
+  def withDefaultNoData(): DoubleCells with NoDataHandling = DoubleConstantNoDataCellType
+
 }
 
 object DoubleCells {

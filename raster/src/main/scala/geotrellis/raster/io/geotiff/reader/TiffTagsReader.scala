@@ -518,7 +518,7 @@ object TiffTagsReader {
           NonStandardizedTags._longsMap modify(_ + (tag -> ints.map(_.toLong)))
       }
     }
-    
+
     def readLongsTag(tiffTags: TiffTags,
       tagMetadata: TiffTagMetadata) = {
       val longs = byteReader.getLongArray(offset = tagMetadata.offset, length = tagMetadata.length)

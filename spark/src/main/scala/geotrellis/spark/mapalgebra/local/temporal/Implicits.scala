@@ -31,6 +31,9 @@ trait Implicits  {
   implicit class withLocalTemporalTileRDDMethods[K: ClassTag: SpatialComponent: TemporalComponent](self: RDD[(K, Tile)])
       extends LocalTemporalTileRDDMethods[K](self)
 
+  implicit class withLocalTemporalTileCollectionMethods[K: SpatialComponent: TemporalComponent](self: Seq[(K, Tile)])
+    extends LocalTemporalTileCollectionMethods[K](self)
+
   implicit class TemporalWindow[K: ClassTag: SpatialComponent: TemporalComponent](val self: RDD[(K, Tile)]) extends MethodExtensions[RDD[(K, Tile)]] {
 
     import TemporalWindowHelper._

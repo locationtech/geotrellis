@@ -24,7 +24,6 @@ import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
-
 abstract class CombineMethods[K: ClassTag, V: ClassTag] extends MethodExtensions[RDD[(K, V)]] {
   def combineValues[R: ClassTag](other: RDD[(K, V)])(f: (V, V) => R): RDD[(K, R)] = combineValues(other, None)(f)
   def combineValues[R: ClassTag](other: RDD[(K, V)], partitioner: Option[Partitioner])(f: (V, V) => R): RDD[(K, R)] =
