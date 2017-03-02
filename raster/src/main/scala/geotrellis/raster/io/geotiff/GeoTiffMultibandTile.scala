@@ -831,7 +831,7 @@ abstract class GeoTiffMultibandTile(
 
   private def _combine(initValueHolder: SegmentCombiner => Unit)(placeValue: SegmentCombiner => (GeoTiffSegment, Int, Int) => Unit)(setFromValues: SegmentCombiner => (Int) => Unit): Tile = {
     val (arr, compressor) =
-      if(hasPixelInterleave) {
+      if (hasPixelInterleave) {
         val compressor = compression.createCompressor(segmentCount)
         val arr = Array.ofDim[Array[Byte]](segmentCount)
 
@@ -860,14 +860,14 @@ abstract class GeoTiffMultibandTile(
         val compressor = compression.createCompressor(bandSegmentCount)
         val arr = Array.ofDim[Array[Byte]](bandSegmentCount)
 
-        cfor(0)(_ < bandSegmentCount, _ + 1) { segmentIndex =>
-          val segmentSize = getSegment(segmentIndex).size
+        segmentBytes.getSegments(0 until bandSegmentCount).foreach { case (segmentIndex, segment) =>
+          val segmentSize = segment.length
           val segmentCombiner = createSegmentCombiner(segmentSize)
           initValueHolder(segmentCombiner)
 
           cfor(0)(_ < segmentSize, _ + 1) { i =>
-            cfor(0)(_ < bandCount, _ + 1) { bandIndex =>
-              val segment = getSegment(bandIndex * bandSegmentCount + segmentIndex)
+            getSegments((0 until bandCount).map(_ * bandSegmentCount + segmentIndex)).foreach { case (index, segment) =>
+              val bandIndex = (index - segmentIndex) / bandSegmentCount
               placeValue(segmentCombiner)(segment, i, bandIndex)
             }
             setFromValues(segmentCombiner)(i)
