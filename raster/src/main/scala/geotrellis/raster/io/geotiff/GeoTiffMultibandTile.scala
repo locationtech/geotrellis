@@ -860,8 +860,8 @@ abstract class GeoTiffMultibandTile(
         val compressor = compression.createCompressor(bandSegmentCount)
         val arr = Array.ofDim[Array[Byte]](bandSegmentCount)
 
-        segmentBytes.getSegments(0 until bandSegmentCount).foreach { case (segmentIndex, segment) =>
-          val segmentSize = segment.length
+        getSegments(0 until bandSegmentCount).foreach { case (segmentIndex, segment) =>
+          val segmentSize = segment.size
           val segmentCombiner = createSegmentCombiner(segmentSize)
           initValueHolder(segmentCombiner)
 
@@ -951,19 +951,19 @@ abstract class GeoTiffMultibandTile(
 
         val start0 = bandSegmentCount * b0
         val start1 = bandSegmentCount * b1
-        cfor(0)(_ < bandSegmentCount, _ + 1) { segmentIndex =>
-          val segment0 = getSegment(start0 + segmentIndex)
-          val segment1 = getSegment(start1 + segmentIndex)
-          val segmentSize0 = segment0.size
-          val segmentSize1 = segment1.size
-          assert(segmentSize0 == segmentSize1, "GeoTiff band segments do not match in size!")
-          val segmentCombiner = createSegmentCombiner(segmentSize0)
+        getSegments(start0 until bandSegmentCount).zip(getSegments(start1 until bandSegmentCount)).foreach {
+          case ((segmentIndex0, segment0), (_, segment1)) =>
+            val segmentSize0 = segment0.size
+            val segmentSize1 = segment1.size
 
-          cfor(0)(_ < segmentSize0, _ + 1) { i =>
-            set(segmentCombiner)(i, segment0, i, segment1, i)
-          }
+            assert(segmentSize0 == segmentSize1, "GeoTiff band segments do not match in size!")
+            val segmentCombiner = createSegmentCombiner(segmentSize0)
 
-          arr(segmentIndex) = compressor.compress(segmentCombiner.getBytes, segmentIndex)
+            cfor(0)(_ < segmentSize0, _ + 1) { i =>
+              set(segmentCombiner)(i, segment0, i, segment1, i)
+            }
+
+            arr(segmentIndex0 - start0) = compressor.compress(segmentCombiner.getBytes, segmentIndex0 - start0)
         }
 
         (arr, compressor)
