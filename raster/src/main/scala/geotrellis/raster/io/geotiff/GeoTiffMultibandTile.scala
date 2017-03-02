@@ -335,7 +335,6 @@ abstract class GeoTiffMultibandTile(
     val bands = Array.fill(bandCount)(ArrayTile.empty(cellType, gridBounds.width, gridBounds.height))
     val intersectingSegments = segmentLayout.intersectingSegments(gridBounds)
     if (hasPixelInterleave) {
-      println("hasPixelInterleave")
       logger.debug(s"Cropping $gridBounds uses ${intersectingSegments.length} out of ${segmentCount} segments")
 
       // de-interlace the pixels from each segment
