@@ -951,8 +951,9 @@ abstract class GeoTiffMultibandTile(
 
         val start0 = bandSegmentCount * b0
         val start1 = bandSegmentCount * b1
-        getSegments(start0 until bandSegmentCount).zip(getSegments(start1 until bandSegmentCount)).foreach {
+        getSegments(start0 until start0 + bandSegmentCount).zip(getSegments(start1 until start1 + bandSegmentCount)).foreach {
           case ((segmentIndex0, segment0), (_, segment1)) =>
+            val segmentIndex = segmentIndex0 - start0
             val segmentSize0 = segment0.size
             val segmentSize1 = segment1.size
 
@@ -963,7 +964,7 @@ abstract class GeoTiffMultibandTile(
               set(segmentCombiner)(i, segment0, i, segment1, i)
             }
 
-            arr(segmentIndex0 - start0) = compressor.compress(segmentCombiner.getBytes, segmentIndex0 - start0)
+            arr(segmentIndex) = compressor.compress(segmentCombiner.getBytes, segmentIndex)
         }
 
         (arr, compressor)
