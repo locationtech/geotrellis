@@ -176,9 +176,14 @@ object GeoTiffSegment {
     bands
   }
 
+  def deinterleave(bytes: Array[Byte], bandCount: Int, bytesPerSample: Int, index: Int): Array[Byte] =
+    deinterleave(bytes, bandCount, bytesPerSample, index :: Nil).head
+
   def deinterleave(bytes: Array[Byte], bandCount: Int, bytesPerSample: Int, indices: Traversable[Int]): Array[Array[Byte]] = {
-    val indexToPosition = indices.toList.zipWithIndex.toMap
-    val actualBandCount = indices.size
+    val indicesList = indices.toList
+    val bandToIndex = indicesList.zipWithIndex.toMap
+    val actualBandCount = indicesList.length
+
     val bands: Array[Array[Byte]] = new Array[Array[Byte]](actualBandCount)
     val segmentSize = bytes.length / bandCount
     cfor(0)(_ < actualBandCount, _ + 1) { i =>
@@ -188,9 +193,8 @@ object GeoTiffSegment {
     val bb = ByteBuffer.wrap(bytes)
     cfor(0)(_ < segmentSize, _ + bytesPerSample) { offset =>
       cfor(0)(_ < bandCount, _ + 1) { band =>
-        if(indices.exists(_ == band)) {
-          bb.get(bands(band), offset, bytesPerSample)
-        }
+        if(indicesList.contains(band)) bb.get(bands(bandToIndex(band)), offset, bytesPerSample)
+        else bb.position(bb.position() + bytesPerSample)
       }
     }
 
@@ -236,7 +240,7 @@ object GeoTiffSegment {
   }
 
   def deinterleaveBitSegment(segment: GeoTiffSegment, cols: Int, rows: Int, bandCount: Int, index: Int): Array[Byte] =
-    deinterleaveBitSegment(segment, cols, rows, bandCount, index :: Nil)(0)
+    deinterleaveBitSegment(segment, cols, rows, bandCount, index :: Nil).head
 
   def deinterleaveBitSegment(segment: GeoTiffSegment, cols: Int, rows: Int, bandCount: Int, indices: Traversable[Int]): Array[Array[Byte]] = {
     val paddedCols = {
@@ -244,20 +248,21 @@ object GeoTiffSegment {
       bytesWidth * 8
     }
     val resultByteCount = (paddedCols / 8) * rows
-    val indexToPosition = indices.toList.zipWithIndex.toMap
-    val actualBandCount = indices.size
+    val indicesList = indices.toList
+    val bandToIndex = indicesList.zipWithIndex.toMap
+    val actualBandCount = indicesList.length
 
     // packed byte arrays for each band in this segment
     val bands = Array.fill[Array[Byte]](actualBandCount)(Array.ofDim[Byte](resultByteCount))
 
     cfor(0)(_ < segment.size, _ + 1) { i =>
       val bandIndex = i % bandCount
-      if(indices.exists(_ == bandIndex)) {
+      if(indicesList.contains(bandIndex)) {
         val j = i / bandCount
         val col = j % cols
         val row = j / cols
         val i2 = (row * paddedCols) + col
-        BitArrayTile.update(bands(indexToPosition(bandIndex)), i2, segment.getInt(i))
+        BitArrayTile.update(bands(bandToIndex(bandIndex)), i2, segment.getInt(i))
       }
     }
 
