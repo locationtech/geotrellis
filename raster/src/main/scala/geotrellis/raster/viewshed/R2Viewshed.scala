@@ -33,118 +33,140 @@ object R2Viewshed extends Serializable {
   case class FromWest() extends From
   case class FromInside() extends From
 
+  sealed case class DirectedSegment(x0: Int, y0: Int, x1: Int, y1: Int, theta: Double) {
+    override def toString(): String =
+      s"($x0, $y0) to ($x1, $y1) θ=$theta"
+  }
 
-  sealed case class DirectedSegment(
-    startCol: Int, startRow: Int,
-    endCol: Int, endRow: Int,
-    m: Double
-  )
-
-  sealed case class Ray(m: Double, alpha: Double)
+  sealed case class Ray(theta: Double, alpha: Double) {
+    override def toString(): String =
+      s"θ=$theta α=$alpha"
+  }
 
   type EdgeCallback = ((Ray, From) => Unit)
 
   object RayComparator extends Comparator[Ray] {
     def compare(left: Ray, right: Ray): Int =
-      if (left.m < right.m) -1
-      else if (left.m > right.m) +1
+      if (left.theta < right.theta) -1
+      else if (left.theta > right.theta) +1
       else 0
   }
 
   def generateEmptyViewshedTile(cols: Int, rows: Int) =
     ArrayTile.empty(IntCellType, cols, rows)
 
-  def apply(tile: Tile, col: Int, row: Int): Tile = {
-    val cols = tile.cols
-    val rows = tile.rows
+  /**
+    * Compute the viewshed of the tile.
+    */
+  def apply(elevationTile: Tile, col: Int, row: Int): Tile = {
+    val cols = elevationTile.cols
+    val rows = elevationTile.rows
+    val viewHeight = elevationTile.getDouble(col, row)
     val viewshedTile = generateEmptyViewshedTile(cols, rows)
 
     R2Viewshed.compute(
-      tile, viewshedTile,
-      col, row, 0, 1.0,
-      FromInside(), null, null,
+      elevationTile, viewshedTile,
+      col, row, viewHeight, 1.0,
+      FromInside(),
+      null,
       { (_, _) => }
     )
     viewshedTile
   }
 
+  /**
+    * Compute the viewshed of the tile using the R2 algorithm from [1].
+    *
+    * 1. Franklin, Wm Randolph, and Clark Ray.
+    *    "Higher isn’t necessarily better: Visibility algorithms and experiments."
+    *    Advances in GIS research: sixth international symposium on spatial data handling. Vol. 2.
+    *    Taylor & Francis Edinburgh, 1994.
+    */
   def compute(
     elevationTile: Tile, viewshedTile: MutableArrayTile,
-    startCol: Int, startRow: Int, height: Double, resolution: Double,
-    from: From, left: Array[Ray], right: Array[Ray],
+    startCol: Int, startRow: Int, viewHeight: Double, resolution: Double,
+    from: From,
+    rays: Array[Ray],
     edgeCallback: EdgeCallback
   ): Tile = {
     val cols = elevationTile.cols
     val rows = elevationTile.rows
     val re = RasterExtent(Extent(0, 0, cols, rows), cols, rows)
     val inTile: Boolean = (0 <= startCol && startCol < cols && 0 <= startRow && startRow <= rows)
-    val viewHeight =
-      if (inTile) elevationTile.getDouble(startCol, startRow) + height
-      else height
     var m: Double = 0.0
     var alpha: Double = 0.0
 
-    def clipRayNorthSouth(newStartRow: Int)(endCol: Int, endRow: Int): Option[DirectedSegment] = {
-      if (startCol == endCol) {
-        if (newStartRow == endRow) None
-        else if (startRow >= endRow)
-          Some(DirectedSegment(startCol, newStartRow, endCol, endRow, Double.NegativeInfinity))
-        else
-          Some(DirectedSegment(startCol, newStartRow, endCol, endRow, Double.PositiveInfinity))
-      }
+    def computeTheta(x0: Int, y0: Int, x1: Int, y1: Int): Double = {
+      val m = (y0 - y1).toDouble / (x0 - x1)
+
+      if (x0 == x1 && y0 < y1) Math.PI/2
+      else if (x0 == x1 /*&& y0 > y1*/) 1.5*Math.PI
+      // else if (x0 == x1 && y0 == y1) throw new Exception
       else {
-        val m = (startRow - endRow).toDouble / (startCol - endCol)
-        val newStartCol = math.round(((newStartRow - startRow) / m) + startCol).toInt
-        if (newStartCol == endCol && newStartRow == endRow) None
-        else if (0 <= newStartCol && newStartCol < cols)
-          Some(DirectedSegment(newStartCol, newStartRow, endCol, endRow, m))
-        else None
+        val theta = math.atan(m)
+
+        if (x1 >= x0 && y1 >= y0 && 0 <= theta && theta <= Math.PI/2) theta
+        else if (x1 >= x0 && y1 >= y0) throw new Exception
+        else if (x1 >= x0 && y1 <= y0 && -Math.PI/2 <= theta && theta <= 0) theta + 2.0*Math.PI
+        else if (x1 >= x0 && y1 <= y0) throw new Exception
+        else if (x1 <= x0 && y1 <= y0 && 0 <= theta && theta <= Math.PI/2) theta + Math.PI
+        else if (x1 <= x0 && y1 <= y0) throw new Exception
+        else if (x1 <= x0 && y1 >= y0 && -Math.PI/2 <= theta && theta <= 0) theta + Math.PI
+        else if (x1 <= x0 && y1 >= y0) throw new Exception
+        else throw new Exception
       }
     }
 
-    def clipRayEastWest(newStartCol: Int)(endCol: Int, endRow: Int): Option[DirectedSegment] = {
-      if (startCol == endCol) None
-      else {
-        val m = (startRow - endRow).toDouble / (startCol - endCol)
-        val newStartRow = math.round(m * (newStartCol - startCol) + startRow).toInt
-        if (newStartCol == endCol && newStartRow == endRow) None
-        else if (0 <= newStartRow && newStartRow < rows)
-          Some(DirectedSegment(newStartCol, newStartRow, endCol, endRow, m))
-        else None
-      }
-    }
-
-    def clipRayInside(endCol: Int, endRow: Int): Option[DirectedSegment] = {
-      val m = (startRow - endRow).toDouble / (startCol - endCol)
-      Some(DirectedSegment(startCol, startRow, endCol, endRow, m))
-    }
-
-    val clipRay: ((Int, Int) => Option[DirectedSegment]) =
+    def thetaToAlpha(theta: Double): Double = {
       from match {
-        case _: FromNorth => clipRayNorthSouth(0)
-        case _: FromEast => clipRayEastWest(cols-1)
-        case _: FromSouth => clipRayNorthSouth(rows-1)
-        case _: FromWest => clipRayEastWest(0)
-        case _: FromInside =>
-          if (inTile) clipRayInside
-          else throw new Exception("Cannot be both inside and outside")
-      }
-
-    val slopeToAlpha: (Double => Double) =
-      from match {
-        case _: FromInside => { _ => -Math.PI }
-        case _ => { m: Double =>
-          val array = if (m < 0) left; else right
-          val index = binarySearch(array, Ray(math.abs(m), Double.NaN), RayComparator)
-
-          if (index >= 0) array(index).alpha
+        case _: FromInside => -Math.PI
+        case _ =>
+          val index = binarySearch(rays, Ray(theta, Double.NaN), RayComparator)
+          if (index >= 0) rays(index).alpha
           else {
             val place = -1 - index
-            if (place == array.length) array.last.alpha
-            else array(place).alpha // XXX interpolate
+            if (place == rays.length) rays.last.alpha
+            else if (place == 0) rays.head.alpha
+            else if (math.abs(rays(place-1).theta - theta) < math.abs(rays(place).theta - theta))
+              rays(place-1).alpha
+            else rays(place).alpha
           }
-        }
       }
+    }
+
+    def clipAndQualifyRay(x0: Int, y0: Int, x1: Int, y1: Int): Option[DirectedSegment] = {
+      val theta = computeTheta(x0, y0, x1, y1)
+      val m = (y0 - y1).toDouble / (x0 - x1)
+
+      from match {
+        case _: FromInside if inTile => Some(DirectedSegment(x0, y0, x1, y1, theta))
+        case _: FromInside if !inTile => throw new Exception
+        case _: FromNorth =>
+          val y2 = rows-1
+          val x2 = math.round(((y2 - y1) / m) + x1).toInt
+          if ((0 <= x2 && x2 < cols && !(x2 == x1 && y2 == y1)) && (y2 <= y0 && -math.sin(theta) > 0))
+            Some(DirectedSegment(x2,y2,x1,y1,theta))
+          else None
+        case _: FromEast =>
+          val x2 = cols-1
+          val y2 = math.round((m * (x2 - x1)) + y1).toInt
+          if ((0 <= y2 && y2 < rows && !(x2 == x1 && y2 == y1)) && (x2 <= x0 && math.cos(theta) > 0))
+            Some(DirectedSegment(x2,y2,x1,y1,theta))
+          else None
+        case _: FromSouth =>
+          val y2 = 0
+          val x2 = math.round(((y2 - y1) / m) + x1).toInt
+          if ((0 <= x2 && x2 < cols && !(x2 == x1 && y2 == y1)) && (y2 >= y0 && math.sin(theta) > 0))
+            Some(DirectedSegment(x2,y2,x1,y1,theta))
+          else None
+        case _: FromWest =>
+          val x2 = 0
+          val y2 = math.round((m * (x2 - x1)) + y1).toInt
+          if ((0 <= y2 && y2 < rows && !(x2 == x1 && y2 == y1)) && (x2 >= x0 && -math.cos(theta) > 0))
+            Some(DirectedSegment(x2,y2,x1,y1,theta))
+          else None
+      }
+    }
 
     def callback(col: Int, row: Int) = {
       if (col == startCol && row == startRow) { // starting point
@@ -164,53 +186,44 @@ object R2Viewshed extends Serializable {
     }
 
     Range(0, cols) // North
-      .flatMap({ col => clipRay(col, 0) })
+      .flatMap({ col => clipAndQualifyRay(startCol,startRow,col,rows-1) })
       .foreach({ seg =>
-        m = seg.m
-        alpha = slopeToAlpha(m)
+        alpha = thetaToAlpha(seg.theta)
         Rasterizer.foreachCellInGridLine(
-          seg.startCol, seg.startRow,
-          seg.endCol, seg.endRow,
+          seg.x0, seg.y0, seg.x1, seg.y1,
           null, re, false
         )(callback)
-        edgeCallback(Ray(m, alpha), FromSouth())
-      })
+        edgeCallback(Ray(seg.theta, alpha), FromSouth()) })
+
     Range(0, rows) // East
-      .flatMap({ row => clipRay(cols-1, row) })
+      .flatMap({ row => clipAndQualifyRay(startCol,startRow,0,row) })
       .foreach({ seg =>
-        m = seg.m
-        alpha = slopeToAlpha(m)
+        alpha = thetaToAlpha(seg.theta)
         Rasterizer.foreachCellInGridLine(
-          seg.startCol, seg.startRow,
-          seg.endCol, seg.endRow,
+          seg.x0, seg.y0, seg.x1, seg.y1,
           null, re, false
         )(callback)
-        edgeCallback(Ray(m, alpha), FromWest())
-      })
+        edgeCallback(Ray(seg.theta, alpha), FromWest()) })
+
     Range(0, cols) // South
-      .flatMap({ col => clipRay(col, rows-1) })
+      .flatMap({ col => clipAndQualifyRay(startCol,startRow,col,0) })
       .foreach({ seg =>
-        m = seg.m
-        alpha = slopeToAlpha(m)
+        alpha = thetaToAlpha(seg.theta)
         Rasterizer.foreachCellInGridLine(
-          seg.startCol, seg.startRow,
-          seg.endCol, seg.endRow,
+          seg.x0, seg.y0, seg.x1, seg.y1,
           null, re, false
         )(callback)
-        edgeCallback(Ray(m, alpha), FromNorth())
-      })
+        edgeCallback(Ray(seg.theta, alpha), FromNorth()) })
+
     Range(0, rows) // West
-      .flatMap({ row => clipRay(0, row) })
+      .flatMap({ row => clipAndQualifyRay(startCol,startRow,cols-1,row) })
       .foreach({ seg =>
-        m = seg.m
-        alpha = slopeToAlpha(m)
+        alpha = thetaToAlpha(seg.theta)
         Rasterizer.foreachCellInGridLine(
-          seg.startCol, seg.startRow,
-          seg.endCol, seg.endRow,
+          seg.x0, seg.y0, seg.x1, seg.y1,
           null, re, false
         )(callback)
-        edgeCallback(Ray(m, alpha), FromEast())
-      })
+        edgeCallback(Ray(seg.theta, alpha), FromEast()) })
 
     viewshedTile
   }

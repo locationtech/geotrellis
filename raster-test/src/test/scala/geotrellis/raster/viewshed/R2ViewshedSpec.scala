@@ -34,8 +34,7 @@ class R2ViewshedSpec extends FunSpec
     val viewshedTile = ArrayTile.empty(IntCellType, 5, 5)
 
     it("propogates up") {
-      val left: Array[Ray] = Array(Ray(1000000, 7), Ray(Double.PositiveInfinity, 13))
-      val right: Array[Ray] = Array(Ray(1000000, 22))
+      val rays: Array[Ray] = Array(Ray(Math.PI/2 - 0.001, 7), Ray(Math.PI/2, 13), Ray(Math.PI/2 + 0.001, 22))
       var a: Int = 0
       var b: Int = 0
       var c: Int = 0
@@ -43,8 +42,9 @@ class R2ViewshedSpec extends FunSpec
 
       R2Viewshed.compute(
         elevationTile, viewshedTile,
-        2, 7, 0, 1,
-        FromSouth(), left, right,
+        2, -3, 0, 1,
+        FromSouth(),
+        rays,
         { (ray, _) =>
           val Ray(m, alpha) = ray
           all += 1
@@ -61,8 +61,7 @@ class R2ViewshedSpec extends FunSpec
     }
 
     it("propogates right") {
-      val left: Array[Ray] = Array(Ray(1, 7))
-      val right: Array[Ray] = Array(Ray(0, 13), Ray(1, 22))
+      val rays: Array[Ray] = Array(Ray(0, 13), Ray(0.001, 22), Ray(2*Math.PI - 0.001, 7))
       var a: Int = 0
       var b: Int = 0
       var c: Int = 0
@@ -71,7 +70,8 @@ class R2ViewshedSpec extends FunSpec
       R2Viewshed.compute(
         elevationTile, viewshedTile,
         -3, 2, 0, 1,
-        FromWest(), left, right,
+        FromWest(),
+        rays,
         { (ray, _) =>
           val Ray(m, alpha) = ray
           all += 1
@@ -88,8 +88,7 @@ class R2ViewshedSpec extends FunSpec
     }
 
     it("propogates down") {
-      val left: Array[Ray] = Array(Ray(1000000, 22))
-      val right: Array[Ray] = Array(Ray(1000000, 7), Ray(Double.PositiveInfinity, 13))
+      val rays: Array[Ray] = Array(Ray(1.5*Math.PI - 0.001, 7), Ray(1.5*Math.PI, 13), Ray(1.5*Math.PI + 0.001, 22))
       var a: Int = 0
       var b: Int = 0
       var c: Int = 0
@@ -97,8 +96,9 @@ class R2ViewshedSpec extends FunSpec
 
       R2Viewshed.compute(
         elevationTile, viewshedTile,
-        2, -3, 0, 1,
-        FromNorth(), left, right,
+        2, 7, 0, 1,
+        FromNorth(),
+        rays,
         { (ray, _) =>
           val Ray(m, alpha) = ray
           all += 1
@@ -115,8 +115,7 @@ class R2ViewshedSpec extends FunSpec
     }
 
     it("propogates left") {
-      val left: Array[Ray] = Array(Ray(1, 7))
-      val right: Array[Ray] = Array(Ray(0, 13), Ray(1, 22))
+      val rays: Array[Ray] = Array(Ray(Math.PI - 0.001, 22), Ray(Math.PI, 13), Ray(Math.PI + 0.001, 7))
       var a: Int = 0
       var b: Int = 0
       var c: Int = 0
@@ -125,7 +124,8 @@ class R2ViewshedSpec extends FunSpec
       R2Viewshed.compute(
         elevationTile, viewshedTile,
         7, 2, 0, 1,
-        FromEast(), left, right,
+        FromEast(),
+        rays,
         { (ray, _) =>
           val Ray(m, alpha) = ray
           all += 1
