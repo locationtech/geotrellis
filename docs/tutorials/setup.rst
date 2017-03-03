@@ -84,10 +84,10 @@ the ``libraryDependencies`` list in your ``build.sbt``:
 .. code:: scala
 
     libraryDependencies ++= Seq(
-        "com.azavea.geotrellis" %% "geotrellis-spark"  % "1.0.0",
-        "com.azavea.geotrellis" %% "geotrellis-s3"     % "1.0.0", // now we can use Amazon S3!
-        "org.apache.spark"      %% "spark-core"        % "2.0.1" % "provided",
-        "org.scalatest"         %% "scalatest"         % "3.0.0" % "test"
+        "org.locationtech.geotrellis" %% "geotrellis-spark"  % "1.0.0",
+        "org.locationtech.geotrellis" %% "geotrellis-s3"     % "1.0.0", // now we can use Amazon S3!
+        "org.apache.spark"            %% "spark-core"        % "2.1.0" % "provided",
+        "org.scalatest"               %% "scalatest"         % "3.0.0" % "test"
     )
 
 `Click here for a full list and explanation of each GeoTrellis
