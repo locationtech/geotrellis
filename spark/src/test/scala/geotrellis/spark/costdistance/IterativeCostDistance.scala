@@ -19,6 +19,7 @@ package geotrellis.spark.costdistance
 import geotrellis.proj4.LatLng
 import geotrellis.raster._
 import geotrellis.spark._
+import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.vector._
 
