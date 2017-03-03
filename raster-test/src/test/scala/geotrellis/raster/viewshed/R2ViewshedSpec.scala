@@ -54,10 +54,10 @@ class R2ViewshedSpec extends FunSpec
           else throw new Exception
         })
 
-      a should be (6)
-      b should be (1)
-      c should be (6)
-      all should be (13)
+      a should be (9)
+      b should be (2)
+      c should be (9)
+      all should be (20)
     }
 
     it("propogates right") {
@@ -81,10 +81,10 @@ class R2ViewshedSpec extends FunSpec
           else throw new Exception
         })
 
-      a should be (6)
-      b should be (1)
-      c should be (6)
-      all should be (13)
+      a should be (9)
+      b should be (2)
+      c should be (9)
+      all should be (20)
     }
 
     it("propogates down") {
@@ -108,10 +108,10 @@ class R2ViewshedSpec extends FunSpec
           else throw new Exception
         })
 
-      a should be (6)
-      b should be (1)
-      c should be (6)
-      all should be (13)
+      a should be (9)
+      b should be (2)
+      c should be (9)
+      all should be (20)
     }
 
     it("propogates left") {
@@ -135,10 +135,10 @@ class R2ViewshedSpec extends FunSpec
           else throw new Exception
         })
 
-      a should be (6)
-      b should be (1)
-      c should be (6)
-      all should be (13)
+      a should be (9)
+      b should be (2)
+      c should be (9)
+      all should be (20)
     }
 
     it("computes the viewshed of a flat int plane") {

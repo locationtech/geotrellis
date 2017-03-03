@@ -91,8 +91,8 @@ object IterativeViewshed {
 
   def apply[K: (? => SpatialKey), V: (? => Tile)](
     elevation: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
-    point: Point
-  )(implicit sc: SparkContext)/*: RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]*/= {
+    point: Point, viewHeight: Double
+  )(implicit sc: SparkContext): RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]] = {
 
     val md = elevation.metadata
     val mt = md.mapTransform
@@ -143,9 +143,10 @@ object IterativeViewshed {
       val shed = R2Viewshed.generateEmptyViewshedTile(cols, rows)
 
       if (extent.contains(point)) {
-        pointHeight.reset ; pointHeight.add(0.0) // XXX
         Rasterizer
           .foreachCellByGeometry(point, rasterExtent, options)({ (col, row) =>
+            val height = if (viewHeight >= 0.0) tile.getDouble(col, row) + viewHeight ; else -viewHeight
+            pointHeight.reset ; pointHeight.add(height)
             pointKeyCol.reset ; pointKeyCol.add(key.col)
             pointKeyRow.reset ; pointKeyRow.add(key.row)
             pointCol.reset ; pointCol.add(col)
@@ -153,7 +154,7 @@ object IterativeViewshed {
 
             R2Viewshed.compute(
               tile, shed,
-              col, row, pointHeight.value, resolution,
+              col, row, height, resolution,
               FromInside(),
               null,
               rayCatcherFn(key)
@@ -178,6 +179,7 @@ object IterativeViewshed {
           .toMap
       val changes = sc.broadcast(_changes)
 
+      logger.debug(s"≥ ${rays.value.size} tiles")
       val oldSheds = sheds
       rays.reset
       sheds = oldSheds.map({ case (k, v, shed) =>
@@ -186,7 +188,7 @@ object IterativeViewshed {
         val cols = elevationTile.cols
         val rows = elevationTile.rows
         val localChanges: Option[Seq[(From, Ray)]] = changes.value.get(key)
-        val (pointKeyCol, pointKeyRow, pointCol, pointRow, viewHeight) = details.value
+        val (pointKeyCol, pointKeyRow, pointCol, pointRow, height) = details.value
 
         localChanges match {
           case Some(localChanges) => {
@@ -199,13 +201,16 @@ object IterativeViewshed {
             packets.foreach({ case (from, rays) =>
               val startCol = (pointKeyCol - key.col) * cols + pointCol
               val startRow = (pointKeyRow - key.row) * rows + pointRow
+              // println(s"AAA $key $from ($startCol, $startRow) pointKeyCol=$pointKeyCol pointKeyRow=$pointKeyRow key.col=${key.col} key.row=${key.row} pointCol=$pointCol pointRow=$pointRow")
 
               R2Viewshed.compute(
                 elevationTile, shed,
-                startCol.toInt, startRow.toInt, viewHeight, resolution,
+                startCol.toInt, startRow.toInt, height, resolution,
                 from,
                 rays.sortBy({ _.theta }).toArray,
-                rayCatcherFn(key)
+                rayCatcherFn(key),
+                // key == SpatialKey(1,0)
+                false
               )
             })
           }
@@ -218,10 +223,10 @@ object IterativeViewshed {
       oldSheds.unpersist()
     } while (rays.value.size > 0)
 
-    // println(s"XXX $bounds")
-    // rays.value.foreach({ case (key, from, ray) =>
-    //   println(s"XXX $key $from $ray")
-    // })
+    // Return the computed viewshed layer
+    val metadata = TileLayerMetadata(DoubleCellType, md.layout, md.extent, md.crs, md.bounds)
+    val rdd = sheds.map({ case (k, _, v) => (k, v.asInstanceOf[Tile]) })
+    ContextRDD(rdd, metadata)
   }
 
 }

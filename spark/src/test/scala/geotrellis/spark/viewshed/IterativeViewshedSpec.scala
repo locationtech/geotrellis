@@ -30,18 +30,73 @@ class IterativeViewshedSpec extends FunSpec
     with Matchers
     with TestEnvironment {
 
-  val rdd = {
-    val tile = IntArrayTile(Array.fill[Int](25)(1), 5, 5)
-    val extent = Extent(0, 0, 15, 15)
-    val gridExtent = GridExtent(extent, 1, 1) // 15×15 pixels
-    val layoutDefinition = LayoutDefinition(gridExtent, 5)
-    val bounds = Bounds(SpatialKey(0, 0), SpatialKey(2, 2))
-    val tileLayerMetadata = TileLayerMetadata(IntCellType, layoutDefinition, extent, LatLng, bounds)
-    val list = for (col <- 0 to 2; row <- 0 to 2) yield (SpatialKey(col, row), tile)
-    ContextRDD(sc.parallelize(list), tileLayerMetadata)
-  }
-
   describe("Iterative Viewshed") {
-    IterativeViewshed(rdd, Point(7, 7))
+
+    it("should assert all pixels on a flat plane") {
+      val rdd = {
+        val tile = IntArrayTile(Array.fill[Int](25)(1), 5, 5)
+        val extent = Extent(0, 0, 15, 15)
+        val gridExtent = GridExtent(extent, 1, 1) // 15×15 pixels
+        val layoutDefinition = LayoutDefinition(gridExtent, 5)
+        val bounds = Bounds(SpatialKey(0, 0), SpatialKey(2, 2))
+        val tileLayerMetadata = TileLayerMetadata(IntCellType, layoutDefinition, extent, LatLng, bounds)
+        val list = for (col <- 0 to 2; row <- 0 to 2) yield (SpatialKey(col, row), tile)
+        ContextRDD(sc.parallelize(list), tileLayerMetadata)
+      }
+
+      val viewshed = IterativeViewshed(rdd, Point(7, 7), -0.0)
+      val actual = viewshed.map({ case (_, v) => v.toArray.sum }).reduce(_ + _)
+      val expected = 15*15
+
+      actual should be (expected)
+    }
+
+    it("should compute shadows") {
+      val rdd = {
+        val tile = IntArrayTile(Array.fill[Int](25)(1), 5, 5); tile.set(2, 2, 42)
+        val extent = Extent(0, 0, 15, 15)
+        val gridExtent = GridExtent(extent, 1, 1) // 15×15 pixels
+        val layoutDefinition = LayoutDefinition(gridExtent, 5)
+        val bounds = Bounds(SpatialKey(0, 0), SpatialKey(2, 2))
+        val tileLayerMetadata = TileLayerMetadata(IntCellType, layoutDefinition, extent, LatLng, bounds)
+        val list = for (col <- 0 to 2; row <- 0 to 2) yield (SpatialKey(col, row), tile)
+        ContextRDD(sc.parallelize(list), tileLayerMetadata)
+      }
+
+      val viewshed = IterativeViewshed(rdd, Point(7, 7), -0.0)
+      val actual = viewshed.map({ case (_, v) => v.toArray.sum }).reduce(_ + _)
+      val expected = 180
+
+      actual should be (expected)
+    }
+
+    it("should see tall items behind short items") {
+      val rdd = {
+        val tile = IntArrayTile(Array.fill[Int](25)(1), 5, 5)
+        val specialTile = IntArrayTile(Array.fill[Int](25)(1), 5, 5); specialTile.set(2,0,3) ; specialTile.set(2,4,107)
+        val extent = Extent(0, 0, 15, 15)
+        val gridExtent = GridExtent(extent, 1, 1) // 15×15 pixels
+        val layoutDefinition = LayoutDefinition(gridExtent, 5)
+        val bounds = Bounds(SpatialKey(0, 0), SpatialKey(2, 2))
+        val tileLayerMetadata = TileLayerMetadata(IntCellType, layoutDefinition, extent, LatLng, bounds)
+        val list = for (col <- 0 to 2; row <- 0 to 2) yield (if (col == 1 && row == 2) (SpatialKey(col, row), specialTile); else (SpatialKey(col, row), tile))
+        ContextRDD(sc.parallelize(list), tileLayerMetadata)
+      }
+
+      val viewshed = IterativeViewshed(rdd, Point(7, 7), -0.0)
+      val expected: Array[Int] = Array(
+        1,     1,     1,     1,     1,
+        1,     1,     0,     1,     1,
+        1,     1,     0,     1,     1,
+        1,     0,     0,     0,     1,
+        1,     0,     1,     0,     1
+      )
+      val actual = viewshed
+        .collect
+        .filter({ case (key, _) => key == SpatialKey(1,2) })
+        .head._2.toArray
+
+      actual should be (expected)
+    }
   }
 }
