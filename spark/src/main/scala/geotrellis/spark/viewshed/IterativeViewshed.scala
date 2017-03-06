@@ -170,7 +170,7 @@ object IterativeViewshed {
     val details = sc.broadcast(_details)
 
     // Repeatedly  map over the RDD  of viewshed tiles until  all rays
-    // have reached the periphery.
+    // have reached the periphery of the layer.
     do {
       val _changes: Map[SpatialKey, Seq[(From, Ray)]] =
         rays.value
@@ -179,7 +179,7 @@ object IterativeViewshed {
           .toMap
       val changes = sc.broadcast(_changes)
 
-      logger.debug(s"≥ ${rays.value.size} tiles")
+      logger.debug(s"≥ ${changes.value.size} tiles in motion")
       val oldSheds = sheds
       rays.reset
       sheds = oldSheds.map({ case (k, v, shed) =>
