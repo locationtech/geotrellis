@@ -66,7 +66,7 @@ object R2Viewshed extends Serializable {
     * @param  rows  The number of rows
     */
   def generateEmptyViewshedTile(cols: Int, rows: Int) =
-    ArrayTile.empty(IntCellType, cols, rows)
+    ArrayTile.empty(IntConstantNoDataCellType, cols, rows)
 
   /**
     * Compute the drop in elevation due to Earth's curvature (please
@@ -85,11 +85,16 @@ object R2Viewshed extends Serializable {
     * @param  startCol       The x position of the vantage point
     * @param  startRow       The y position of the vantage point
     */
-  def apply(elevationTile: Tile, startCol: Int, startRow: Int): Tile = {
+  def apply(
+    elevationTile: Tile,
+    startCol: Int, startRow: Int,
+    and: Boolean = false): Tile = {
     val cols = elevationTile.cols
     val rows = elevationTile.rows
     val viewHeight = elevationTile.getDouble(startCol, startRow)
-    val viewshedTile = generateEmptyViewshedTile(cols, rows)
+    val viewshedTile =
+      if (!and) ArrayTile.empty(IntCellType, cols, rows)
+      else ArrayTile.empty(IntConstantNoDataCellType, cols, rows)
 
     R2Viewshed.compute(
       elevationTile, viewshedTile,
@@ -98,7 +103,7 @@ object R2Viewshed extends Serializable {
       FromInside(),
       null,
       { (_, _) => },
-      false, // OR
+      and,
       false // Ignore curvature
     )
     viewshedTile
@@ -248,10 +253,12 @@ object R2Viewshed extends Serializable {
         if (distance >= maxDistance) alpha.terminated = true
         if (!alpha.terminated) {
           val visible = alpha <= angle
+          val bit = viewshedTile.get(col, row)
+
           if (visible) alpha.alpha = angle
           if (!and && visible) viewshedTile.set(col, row, 1)
           else if (and && !visible) viewshedTile.set(col, row, 0)
-          else if (and && visible && isNoData(viewshedTile.get(col, row))) viewshedTile.set(col, row, 1)
+          else if (and && visible && isNoData(bit)) viewshedTile.set(col, row, 1)
         }
       }
     }

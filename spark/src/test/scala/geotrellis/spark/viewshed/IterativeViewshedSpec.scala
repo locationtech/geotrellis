@@ -45,7 +45,7 @@ class IterativeViewshedSpec extends FunSpec
      }
 
       val viewshed = IterativeViewshed(rdd, Point(7, 7), -0.0, Double.PositiveInfinity, false, false)
-      val actual = viewshed.map({ case (_, v) => v.toArray.sum }).reduce(_ + _)
+      var actual = 0 ; viewshed.collect.foreach({ case (_, v) => v.foreach({ z => if (isData(z)) actual += z }) })
       val expected = 15*15
 
       actual should be (expected)
@@ -64,7 +64,7 @@ class IterativeViewshedSpec extends FunSpec
       }
 
       val viewshed = IterativeViewshed(rdd, Point(7, 7), -0.0, Double.PositiveInfinity, false, false)
-      val actual = viewshed.map({ case (_, v) => v.toArray.sum }).reduce(_ + _)
+      var actual = 0 ; viewshed.collect.foreach({ case (_, v) => v.foreach({ z => if (isData(z)) actual += z }) })
       val expected = 180
 
       actual should be (expected)
@@ -84,12 +84,13 @@ class IterativeViewshedSpec extends FunSpec
       }
 
       val viewshed = IterativeViewshed(rdd, Point(7, 7), -0.0, Double.PositiveInfinity, false, false)
+      val ND = NODATA
       val expected: Array[Int] = Array(
         1,     1,     1,     1,     1,
-        1,     1,     0,     1,     1,
-        1,     1,     0,     1,     1,
-        1,     0,     0,     0,     1,
-        1,     0,     1,     0,     1
+        1,     1,     ND,    1,     1,
+        1,     1,     ND,    1,     1,
+        1,     ND,    ND,    ND,    1,
+        1,     ND,    1,     ND,    1
       )
       val actual = viewshed
         .collect

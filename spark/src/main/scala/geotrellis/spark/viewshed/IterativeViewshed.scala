@@ -231,7 +231,7 @@ object IterativeViewshed {
     } while (rays.value.size > 0)
 
     // Return the computed viewshed layer
-    val metadata = TileLayerMetadata(DoubleCellType, md.layout, md.extent, md.crs, md.bounds)
+    val metadata = TileLayerMetadata(IntConstantNoDataCellType, md.layout, md.extent, md.crs, md.bounds)
     val rdd = sheds.map({ case (k, _, v) => (k, v.asInstanceOf[Tile]) })
     ContextRDD(rdd, metadata)
   }
