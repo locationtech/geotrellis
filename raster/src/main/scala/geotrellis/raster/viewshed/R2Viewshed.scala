@@ -52,21 +52,42 @@ object R2Viewshed extends Serializable {
       else 0
   }
 
+  /**
+    * Generate an empty tile that is suitable for use as a viewshed
+    * tile.
+    *
+    * @param  cols  The number of columns
+    * @param  rows  The number of rows
+    */
   def generateEmptyViewshedTile(cols: Int, rows: Int) =
     ArrayTile.empty(IntCellType, cols, rows)
 
   /**
-    * Compute the viewshed of the tile.
+    * Compute the drop in elevation due to Earth's curvature (please
+    * see [1]).
+    *
+    * 1. https://en.wikipedia.org/wiki/Arc_(geometry)
     */
-  def apply(elevationTile: Tile, col: Int, row: Int): Tile = {
+  @inline def downwardCurve(distance: Double): Double =
+    6378137 * (1 - math.cos(distance / 6378137))
+
+  /**
+    * Compute the viewshed of the tile using the R2 algorithm.  Makes
+    * use of the compute method of this object.
+    *
+    * @param  elevationTile  Elevations in units of meters
+    * @param  startCol       The x position of the vantage point
+    * @param  startRow       The y position of the vantage point
+    */
+  def apply(elevationTile: Tile, startCol: Int, startRow: Int): Tile = {
     val cols = elevationTile.cols
     val rows = elevationTile.rows
-    val viewHeight = elevationTile.getDouble(col, row)
+    val viewHeight = elevationTile.getDouble(startCol, startRow)
     val viewshedTile = generateEmptyViewshedTile(cols, rows)
 
     R2Viewshed.compute(
       elevationTile, viewshedTile,
-      col, row, viewHeight, 1.0,
+      startCol, startRow, viewHeight, 1.0,
       FromInside(),
       null,
       { (_, _) => }
@@ -75,7 +96,20 @@ object R2Viewshed extends Serializable {
   }
 
   /**
-    * Compute the viewshed of the tile using the R2 algorithm from [1].
+    * Compute the viewshed of the tile using the R2 algorithm from
+    * [1].  The numbers in the elevationTile are assumed to be
+    * elevations in units of meters.  The results are written into the
+    * viewshedTile.
+    *
+    * @param  elevationTile  Elevations in units of meters
+    * @param  viewshedTile   The tile into which the viewshed will be written
+    * @param  startCol       The x position of the vantage point
+    * @param  startRow       The y position of the vantage point
+    * @param  viewHeight     The height of the vantage
+    * @param  resolution     The resolution of the elevationTile in units of meters/pixel
+    * @param  from           The direction from which the rays are allowed to come
+    * @param  rays           Rays shining in from other tiles
+    * @param  edgeCallback   A callback that is called when a ray reaches the periphery of this tile
     *
     * 1. Franklin, Wm Randolph, and Clark Ray.
     *    "Higher isn’t necessarily better: Visibility algorithms and experiments."
@@ -197,7 +231,8 @@ object R2Viewshed extends Serializable {
         val deltax = startCol-col
         val deltay = startRow-row
         val distance = math.sqrt(deltax*deltax + deltay*deltay) * resolution
-        val angle = math.atan((elevationTile.getDouble(col, row) - viewHeight) / distance)
+        val curve = downwardCurve(distance)
+        val angle = math.atan((elevationTile.getDouble(col, row) - curve - viewHeight) / distance)
 
         if (debug) println(s"AAA $startCol $startRow col=$col row=$row ∠=$angle α=$alpha ${alpha <= angle}")
         if (alpha <= angle) {
