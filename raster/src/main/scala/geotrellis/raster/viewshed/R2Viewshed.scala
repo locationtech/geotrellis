@@ -43,7 +43,7 @@ object R2Viewshed extends Serializable {
       s"θ=$theta α=$alpha"
   }
 
-  sealed case class Alpha(var alpha: Double) {
+  sealed case class Alpha(var alpha: Double, var terminated: Boolean = false) {
     override def toString(): String = s"$alpha"
   }
 
@@ -93,7 +93,8 @@ object R2Viewshed extends Serializable {
 
     R2Viewshed.compute(
       elevationTile, viewshedTile,
-      startCol, startRow, viewHeight, 1.0,
+      startCol, startRow, viewHeight,
+      1.0, Double.PositiveInfinity,
       FromInside(),
       null,
       { (_, _) => }
@@ -124,7 +125,8 @@ object R2Viewshed extends Serializable {
     */
   def compute(
     elevationTile: Tile, viewshedTile: MutableArrayTile,
-    startCol: Int, startRow: Int, viewHeight: Double, resolution: Double,
+    startCol: Int, startRow: Int, viewHeight: Double,
+    resolution: Double, maxDistance: Double,
     from: From,
     rays: Array[Ray],
     edgeCallback: EdgeCallback,
@@ -231,15 +233,16 @@ object R2Viewshed extends Serializable {
       if (col == startCol && row == startRow) { // starting point
         viewshedTile.setDouble(col, row, 1)
       }
-      else { // any other point
-        val deltax = startCol-col
-        val deltay = startRow-row
-        val distance = math.sqrt(deltax*deltax + deltay*deltay) * resolution
+      else if (!alpha.terminated) { // any other point
+        val deltax = startCol - col
+        val deltay = startRow - row
+        val distance = math.sqrt(deltax * deltax + deltay * deltay) * resolution
         val curve = downwardCurve(distance)
         val angle = math.atan((elevationTile.getDouble(col, row) - curve - viewHeight) / distance)
 
         if (debug) println(s"AAA $startCol $startRow col=$col row=$row ∠=$angle α=$alpha ${alpha <= angle}")
-        if (alpha <= angle) {
+        if (distance >= maxDistance) alpha.terminated = true
+        if (alpha <= angle && !alpha.terminated) {
           alpha.alpha = angle
           viewshedTile.setDouble(col, row, 1)
         }
@@ -252,11 +255,13 @@ object R2Viewshed extends Serializable {
       .foreach({ seg =>
         val alpha = Alpha(thetaToAlpha(seg.theta))
         val cb = callback(alpha)_
+
         Rasterizer.foreachCellInGridLine(
           seg.x0, seg.y0, seg.x1, seg.y1,
           null, re, false
         )(cb)
-        edgeCallback(Ray(seg.theta, alpha), FromSouth()) })
+        if (!alpha.terminated) edgeCallback(Ray(seg.theta, alpha), FromSouth())
+      })
 
     if (debug) println("EAST")
     Range(0, rows) // East
@@ -264,11 +269,13 @@ object R2Viewshed extends Serializable {
       .foreach({ seg =>
         val alpha = Alpha(thetaToAlpha(seg.theta))
         val cb = callback(alpha)_
+
         Rasterizer.foreachCellInGridLine(
           seg.x0, seg.y0, seg.x1, seg.y1,
           null, re, false
         )(cb)
-        edgeCallback(Ray(seg.theta, alpha), FromWest()) })
+        if (!alpha.terminated) edgeCallback(Ray(seg.theta, alpha), FromWest())
+      })
 
     if (debug) println("SOUTH")
     Range(0, cols) // South
@@ -276,11 +283,13 @@ object R2Viewshed extends Serializable {
       .foreach({ seg =>
         val alpha = Alpha(thetaToAlpha(seg.theta))
         val cb = callback(alpha)_
+
         Rasterizer.foreachCellInGridLine(
           seg.x0, seg.y0, seg.x1, seg.y1,
           null, re, false
         )(cb)
-        edgeCallback(Ray(seg.theta, alpha), FromNorth()) })
+        if (!alpha.terminated) edgeCallback(Ray(seg.theta, alpha), FromNorth())
+      })
 
     if (debug) println("WEST")
     Range(0, rows) // West
@@ -288,11 +297,13 @@ object R2Viewshed extends Serializable {
       .foreach({ seg =>
         val alpha = Alpha(thetaToAlpha(seg.theta))
         val cb = callback(alpha)_
+
         Rasterizer.foreachCellInGridLine(
           seg.x0, seg.y0, seg.x1, seg.y1,
           null, re, false
         )(cb)
-        edgeCallback(Ray(seg.theta, alpha), FromEast()) })
+        if (!alpha.terminated) edgeCallback(Ray(seg.theta, alpha), FromEast())
+      })
 
     viewshedTile
   }

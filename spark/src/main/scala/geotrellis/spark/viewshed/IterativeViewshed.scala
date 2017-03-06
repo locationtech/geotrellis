@@ -91,7 +91,8 @@ object IterativeViewshed {
 
   def apply[K: (? => SpatialKey), V: (? => Tile)](
     elevation: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
-    point: Point, viewHeight: Double
+    point: Point, viewHeight: Double,
+    maxDistance: Double
   )(implicit sc: SparkContext): RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]] = {
 
     val md = elevation.metadata
@@ -154,7 +155,8 @@ object IterativeViewshed {
 
             R2Viewshed.compute(
               tile, shed,
-              col, row, height, resolution,
+              col, row, height,
+              resolution, maxDistance,
               FromInside(),
               null,
               rayCatcherFn(key)
@@ -205,7 +207,8 @@ object IterativeViewshed {
 
               R2Viewshed.compute(
                 elevationTile, shed,
-                startCol.toInt, startRow.toInt, height, resolution,
+                startCol.toInt, startRow.toInt, height,
+                resolution, maxDistance,
                 from,
                 rays.sortBy({ _.theta }).toArray,
                 rayCatcherFn(key),
