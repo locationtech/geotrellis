@@ -43,6 +43,12 @@ object R2Viewshed extends Serializable {
       s"θ=$theta α=$alpha"
   }
 
+  sealed case class Alpha(var alpha: Double) {
+    override def toString(): String = s"$alpha"
+  }
+
+  implicit def convert(alpha: Alpha): Double = alpha.alpha
+
   type EdgeCallback = ((Ray, From) => Unit)
 
   object RayComparator extends Comparator[Ray] {
@@ -128,8 +134,6 @@ object R2Viewshed extends Serializable {
     val rows = elevationTile.rows
     val re = RasterExtent(Extent(0, 0, cols, rows), cols, rows)
     val inTile: Boolean = (0 <= startCol && startCol < cols && 0 <= startRow && startRow <= rows)
-    var m: Double = 0.0
-    var alpha: Double = 0.0
 
     def computeTheta(x0: Int, y0: Int, x1: Int, y1: Int): Double = {
       val m = (y0 - y1).toDouble / (x0 - x1)
@@ -223,7 +227,7 @@ object R2Viewshed extends Serializable {
       }
     }
 
-    def callback(col: Int, row: Int) = {
+    def callback(alpha: Alpha)(col: Int, row: Int) = {
       if (col == startCol && row == startRow) { // starting point
         viewshedTile.setDouble(col, row, 1)
       }
@@ -236,7 +240,7 @@ object R2Viewshed extends Serializable {
 
         if (debug) println(s"AAA $startCol $startRow col=$col row=$row ∠=$angle α=$alpha ${alpha <= angle}")
         if (alpha <= angle) {
-          alpha = angle
+          alpha.alpha = angle
           viewshedTile.setDouble(col, row, 1)
         }
       }
@@ -246,44 +250,48 @@ object R2Viewshed extends Serializable {
     Range(0, cols) // North
       .flatMap({ col => clipAndQualifyRay(startCol,startRow,col,rows-1) })
       .foreach({ seg =>
-        alpha = thetaToAlpha(seg.theta)
+        val alpha = Alpha(thetaToAlpha(seg.theta))
+        val cb = callback(alpha)_
         Rasterizer.foreachCellInGridLine(
           seg.x0, seg.y0, seg.x1, seg.y1,
           null, re, false
-        )(callback)
+        )(cb)
         edgeCallback(Ray(seg.theta, alpha), FromSouth()) })
 
     if (debug) println("EAST")
     Range(0, rows) // East
       .flatMap({ row => clipAndQualifyRay(startCol,startRow,cols-1,row) })
       .foreach({ seg =>
-        alpha = thetaToAlpha(seg.theta)
+        val alpha = Alpha(thetaToAlpha(seg.theta))
+        val cb = callback(alpha)_
         Rasterizer.foreachCellInGridLine(
           seg.x0, seg.y0, seg.x1, seg.y1,
           null, re, false
-        )(callback)
+        )(cb)
         edgeCallback(Ray(seg.theta, alpha), FromWest()) })
 
     if (debug) println("SOUTH")
     Range(0, cols) // South
       .flatMap({ col => clipAndQualifyRay(startCol,startRow,col,0) })
       .foreach({ seg =>
-        alpha = thetaToAlpha(seg.theta)
+        val alpha = Alpha(thetaToAlpha(seg.theta))
+        val cb = callback(alpha)_
         Rasterizer.foreachCellInGridLine(
           seg.x0, seg.y0, seg.x1, seg.y1,
           null, re, false
-        )(callback)
+        )(cb)
         edgeCallback(Ray(seg.theta, alpha), FromNorth()) })
 
     if (debug) println("WEST")
     Range(0, rows) // West
       .flatMap({ row => clipAndQualifyRay(startCol,startRow,0,row) })
       .foreach({ seg =>
-        alpha = thetaToAlpha(seg.theta)
+        val alpha = Alpha(thetaToAlpha(seg.theta))
+        val cb = callback(alpha)_
         Rasterizer.foreachCellInGridLine(
           seg.x0, seg.y0, seg.x1, seg.y1,
           null, re, false
-        )(callback)
+        )(cb)
         edgeCallback(Ray(seg.theta, alpha), FromEast()) })
 
     viewshedTile
