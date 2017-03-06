@@ -42,9 +42,9 @@ class IterativeViewshedSpec extends FunSpec
         val tileLayerMetadata = TileLayerMetadata(IntCellType, layoutDefinition, extent, LatLng, bounds)
         val list = for (col <- 0 to 2; row <- 0 to 2) yield (SpatialKey(col, row), tile)
         ContextRDD(sc.parallelize(list), tileLayerMetadata)
-      }
+     }
 
-      val viewshed = IterativeViewshed(rdd, Point(7, 7), -0.0)
+      val viewshed = IterativeViewshed(rdd, Point(7, 7), -0.0, Double.PositiveInfinity, false, false)
       val actual = viewshed.map({ case (_, v) => v.toArray.sum }).reduce(_ + _)
       val expected = 15*15
 
@@ -63,7 +63,7 @@ class IterativeViewshedSpec extends FunSpec
         ContextRDD(sc.parallelize(list), tileLayerMetadata)
       }
 
-      val viewshed = IterativeViewshed(rdd, Point(7, 7), -0.0)
+      val viewshed = IterativeViewshed(rdd, Point(7, 7), -0.0, Double.PositiveInfinity, false, false)
       val actual = viewshed.map({ case (_, v) => v.toArray.sum }).reduce(_ + _)
       val expected = 180
 
@@ -83,7 +83,7 @@ class IterativeViewshedSpec extends FunSpec
         ContextRDD(sc.parallelize(list), tileLayerMetadata)
       }
 
-      val viewshed = IterativeViewshed(rdd, Point(7, 7), -0.0)
+      val viewshed = IterativeViewshed(rdd, Point(7, 7), -0.0, Double.PositiveInfinity, false, false)
       val expected: Array[Int] = Array(
         1,     1,     1,     1,     1,
         1,     1,     0,     1,     1,

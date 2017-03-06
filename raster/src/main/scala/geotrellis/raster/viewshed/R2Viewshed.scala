@@ -97,7 +97,9 @@ object R2Viewshed extends Serializable {
       1.0, Double.PositiveInfinity,
       FromInside(),
       null,
-      { (_, _) => }
+      { (_, _) => },
+      false, // OR
+      false // Ignore curvature
     )
     viewshedTile
   }
@@ -130,6 +132,8 @@ object R2Viewshed extends Serializable {
     from: From,
     rays: Array[Ray],
     edgeCallback: EdgeCallback,
+    and: Boolean,
+    curve: Boolean = true,
     debug: Boolean = false
   ): Tile = {
     val cols = elevationTile.cols
@@ -237,14 +241,17 @@ object R2Viewshed extends Serializable {
         val deltax = startCol - col
         val deltay = startRow - row
         val distance = math.sqrt(deltax * deltax + deltay * deltay) * resolution
-        val curve = downwardCurve(distance)
-        val angle = math.atan((elevationTile.getDouble(col, row) - curve - viewHeight) / distance)
+        val drop = if (curve) downwardCurve(distance); else 0.0
+        val angle = math.atan((elevationTile.getDouble(col, row) - drop - viewHeight) / distance)
 
         if (debug) println(s"AAA $startCol $startRow col=$col row=$row ∠=$angle α=$alpha ${alpha <= angle}")
         if (distance >= maxDistance) alpha.terminated = true
-        if (alpha <= angle && !alpha.terminated) {
-          alpha.alpha = angle
-          viewshedTile.setDouble(col, row, 1)
+        if (!alpha.terminated) {
+          val visible = alpha <= angle
+          if (visible) alpha.alpha = angle
+          if (!and && visible) viewshedTile.set(col, row, 1)
+          else if (and && !visible) viewshedTile.set(col, row, 0)
+          else if (and && visible && isNoData(viewshedTile.get(col, row))) viewshedTile.set(col, row, 1)
         }
       }
     }

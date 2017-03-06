@@ -42,7 +42,8 @@ class R2ViewshedSpec extends FunSpec
 
       R2Viewshed.compute(
         elevationTile, viewshedTile,
-        2, -3, 0, 1,
+        2, -3, 0,
+        1, Double.PositiveInfinity,
         FromSouth(),
         rays,
         { (ray, _) =>
@@ -52,7 +53,9 @@ class R2ViewshedSpec extends FunSpec
           else if (alpha == 13) b += 1
           else if (alpha == 22) c += 1
           else throw new Exception
-        })
+        },
+        false, false
+      )
 
       a should be (9)
       b should be (2)
@@ -69,7 +72,8 @@ class R2ViewshedSpec extends FunSpec
 
       R2Viewshed.compute(
         elevationTile, viewshedTile,
-        -3, 2, 0, 1,
+        -3, 2, 0,
+        1, Double.PositiveInfinity,
         FromWest(),
         rays,
         { (ray, _) =>
@@ -79,7 +83,9 @@ class R2ViewshedSpec extends FunSpec
           else if (alpha == 13) b += 1
           else if (alpha == 22) c += 1
           else throw new Exception
-        })
+        },
+        false, false
+      )
 
       a should be (9)
       b should be (2)
@@ -96,7 +102,8 @@ class R2ViewshedSpec extends FunSpec
 
       R2Viewshed.compute(
         elevationTile, viewshedTile,
-        2, 7, 0, 1,
+        2, 7, 0,
+        1, Double.PositiveInfinity,
         FromNorth(),
         rays,
         { (ray, _) =>
@@ -106,7 +113,9 @@ class R2ViewshedSpec extends FunSpec
           else if (alpha == 13) b += 1
           else if (alpha == 22) c += 1
           else throw new Exception
-        })
+        },
+        false, false
+      )
 
       a should be (9)
       b should be (2)
@@ -123,7 +132,8 @@ class R2ViewshedSpec extends FunSpec
 
       R2Viewshed.compute(
         elevationTile, viewshedTile,
-        7, 2, 0, 1,
+        7, 2, 0,
+        1, Double.PositiveInfinity,
         FromEast(),
         rays,
         { (ray, _) =>
@@ -133,7 +143,9 @@ class R2ViewshedSpec extends FunSpec
           else if (alpha == 13) b += 1
           else if (alpha == 22) c += 1
           else throw new Exception
-        })
+        },
+        false, false
+      )
 
       a should be (9)
       b should be (2)
