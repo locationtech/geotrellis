@@ -34,6 +34,8 @@ import org.apache.spark.util.AccumulatorV2
 
 import scala.collection.mutable
 
+import com.vividsolutions.jts.{ geom => jts }
+
 
 object IterativeViewshed {
 
@@ -74,9 +76,9 @@ object IterativeViewshed {
 
   def apply[K: (? => SpatialKey), V: (? => Tile)](
     elevation: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
-    point: Point, viewHeight: Double,
+    point: jts.Coordinate,
     maxDistance: Double,
-    and: Boolean = false,
+    op: AggregationOperator = Or(),
     curve: Boolean = true
   )(implicit sc: SparkContext): RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]] = {
 
@@ -131,7 +133,7 @@ object IterativeViewshed {
       if (extent.contains(point)) {
         Rasterizer
           .foreachCellByGeometry(point, rasterExtent, options)({ (col, row) =>
-            val height = if (viewHeight >= 0.0) tile.getDouble(col, row) + viewHeight ; else -viewHeight
+            val height = if (point.z >= 0.0) tile.getDouble(col, row) + point.z ; else -point.z
             pointHeight.reset ; pointHeight.add(height)
             pointKeyCol.reset ; pointKeyCol.add(key.col)
             pointKeyRow.reset ; pointKeyRow.add(key.row)
@@ -145,7 +147,7 @@ object IterativeViewshed {
               FromInside(),
               null,
               rayCatcherFn(key),
-              and, curve
+              op, curve
             )
           })
       }
@@ -197,7 +199,7 @@ object IterativeViewshed {
                 from,
                 rays.sortBy({ _.theta }).toArray,
                 rayCatcherFn(key),
-                and, curve
+                op, curve
               )
             })
           }

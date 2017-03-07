@@ -18,10 +18,13 @@ package geotrellis.spark.viewshed
 
 import geotrellis.proj4.LatLng
 import geotrellis.raster._
+import geotrellis.raster.viewshed.R2Viewshed._
 import geotrellis.spark._
 import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.vector._
+
+import com.vividsolutions.jts.{ geom => jts }
 
 import org.scalatest._
 
@@ -44,7 +47,8 @@ class IterativeViewshedSpec extends FunSpec
         ContextRDD(sc.parallelize(list), tileLayerMetadata)
      }
 
-      val viewshed = IterativeViewshed(rdd, Point(7, 7), -0.0, Double.PositiveInfinity, false, false)
+      val point = new jts.Coordinate(7, 7, -0.0)
+      val viewshed = IterativeViewshed(rdd, point, Double.PositiveInfinity, Or(), false)
       var actual = 0 ; viewshed.collect.foreach({ case (_, v) => v.foreach({ z => if (isData(z)) actual += z }) })
       val expected = 15*15
 
@@ -63,7 +67,8 @@ class IterativeViewshedSpec extends FunSpec
         ContextRDD(sc.parallelize(list), tileLayerMetadata)
       }
 
-      val viewshed = IterativeViewshed(rdd, Point(7, 7), -0.0, Double.PositiveInfinity, false, false)
+      val point = new jts.Coordinate(7, 7, -0.0)
+      val viewshed = IterativeViewshed(rdd, point, Double.PositiveInfinity, Or(), false)
       var actual = 0 ; viewshed.collect.foreach({ case (_, v) => v.foreach({ z => if (isData(z)) actual += z }) })
       val expected = 180
 
@@ -83,7 +88,8 @@ class IterativeViewshedSpec extends FunSpec
         ContextRDD(sc.parallelize(list), tileLayerMetadata)
       }
 
-      val viewshed = IterativeViewshed(rdd, Point(7, 7), -0.0, Double.PositiveInfinity, false, false)
+      val point = new jts.Coordinate(7, 7, -0.0)
+      val viewshed = IterativeViewshed(rdd, point, Double.PositiveInfinity, Or(), false)
       val ND = NODATA
       val expected: Array[Int] = Array(
         1,     1,     1,     1,     1,

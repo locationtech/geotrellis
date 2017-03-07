@@ -54,7 +54,7 @@ class R2ViewshedSpec extends FunSpec
           else if (alpha == 22) c += 1
           else throw new Exception
         },
-        false, false
+        Or(), false
       )
 
       a should be (9)
@@ -84,7 +84,7 @@ class R2ViewshedSpec extends FunSpec
           else if (alpha == 22) c += 1
           else throw new Exception
         },
-        false, false
+        Or(), false
       )
 
       a should be (9)
@@ -114,7 +114,7 @@ class R2ViewshedSpec extends FunSpec
           else if (alpha == 22) c += 1
           else throw new Exception
         },
-        false, false
+        Or(), false
       )
 
       a should be (9)
@@ -144,7 +144,7 @@ class R2ViewshedSpec extends FunSpec
           else if (alpha == 22) c += 1
           else throw new Exception
         },
-        false, false
+        Or(), false
       )
 
       a should be (9)
@@ -153,29 +153,47 @@ class R2ViewshedSpec extends FunSpec
       all should be (20)
     }
 
+    // ---------------------------------
+
     it("computes the viewshed of a flat int plane (OR)") {
       val r = createTile(Array.fill(7 * 8)(1), 7, 8)
-      val shed = R2Viewshed(r, 4, 3)
+      val shed = R2Viewshed(r, 4, 3, Or())
+      assertEqual(BitConstantTile(true, 7, 8), shed)
+    }
+
+    it("computes the viewshed of a flat int plane (U.PLUS)") {
+      val r = createTile(Array.fill(7 * 8)(1), 7, 8)
+      val shed = R2Viewshed(r, 4, 3, UniquePlus())
       assertEqual(BitConstantTile(true, 7, 8), shed)
     }
 
     it("computes the viewshed of a flat int plane (AND)") {
       val r = createTile(Array.fill(7 * 8)(1), 7, 8)
-      val shed = R2Viewshed(r, 4, 3, true)
+      val shed = R2Viewshed(r, 4, 3, And())
       assertEqual(BitConstantTile(true, 7, 8), shed)
     }
 
+    // ---------------------------------
+
     it("computes the viewshed of a flat double plane (OR)") {
       val r = createTile(Array.fill(7 * 8)(1.5), 7, 8)
-      val shed = R2Viewshed(r, 4, 3)
+      val shed = R2Viewshed(r, 4, 3, Or())
+      assertEqual(BitConstantTile(true, 7, 8), shed)
+    }
+
+    it("computes the viewshed of a flat double plane (U.PLUS)") {
+      val r = createTile(Array.fill(7 * 8)(1.5), 7, 8)
+      val shed = R2Viewshed(r, 4, 3, UniquePlus())
       assertEqual(BitConstantTile(true, 7, 8), shed)
     }
 
     it("computes the viewshed of a flat double plane (AND)") {
       val r = createTile(Array.fill(7 * 8)(1.5), 7, 8)
-      val shed = R2Viewshed(r, 4, 3, true)
+      val shed = R2Viewshed(r, 4, 3, And())
       assertEqual(BitConstantTile(true, 7, 8), shed)
     }
+
+    // ---------------------------------
 
     it("computes the viewshed of a double line (OR)") {
       val rasterData = Array (
@@ -186,7 +204,21 @@ class R2ViewshedSpec extends FunSpec
       )
       val r = createTile(rasterData, 7, 1)
       val viewRaster = createTile(viewable, 7, 1).convert(BitCellType)
-      val shed = R2Viewshed(r, 3, 0)
+      val shed = R2Viewshed(r, 3, 0, Or())
+      assertEqual(viewRaster, shed)
+    }
+
+    it("computes the viewshed of a double line (U.PLUS)") {
+      val ND = NODATA
+      val rasterData = Array (
+        300.0, 1.0, 99.0, 0.0, 10.0, 200.0, 137.0
+      )
+      val viewable = Array (
+        1, ND, 1, 1, 1, 1, ND
+      )
+      val r = createTile(rasterData, 7, 1)
+      val viewRaster = createTile(viewable, 7, 1).convert(IntConstantNoDataCellType)
+      val shed = R2Viewshed(r, 3, 0, UniquePlus())
       assertEqual(viewRaster, shed)
     }
 
@@ -199,9 +231,11 @@ class R2ViewshedSpec extends FunSpec
       )
       val r = createTile(rasterData, 7, 1)
       val viewRaster = createTile(viewable, 7, 1).convert(BitCellType)
-      val shed = R2Viewshed(r, 3, 0, true)
+      val shed = R2Viewshed(r, 3, 0, And())
       assertEqual(viewRaster, shed)
     }
+
+    // ---------------------------------
 
     it("computes the viewshed of a double plane (OR)") {
       val rasterData = Array (
@@ -224,7 +258,33 @@ class R2ViewshedSpec extends FunSpec
       )
       val r = createTile(rasterData, 7, 7)
       val viewRaster = createTile(viewable, 7, 7).convert(BitCellType)
-      val shed = R2Viewshed(r, 3, 3)
+      val shed = R2Viewshed(r, 3, 3, Or())
+      assertEqual(viewRaster, shed)
+    }
+
+    it("computes the viewshed of a double plane (U.PLUS)") {
+      val ND = NODATA
+      val rasterData = Array (
+        999.0, 1.0,   1.0,   1.0,   1.0,   1.0,   999.0,
+        1.0,   1.0,   1.0,   1.0,   1.0,   499.0, 1.0,
+        1.0,   1.0,   1.0,   1.0,   99.0,  1.0,   1.0,
+        1.0,   1.0,   999.0, 1.0,   1.0,   1.0,   1.0,
+        1.0,   1.0,   1.0,   1.0,   100.0, 1.0,   1.0,
+        1.0,   1.0,   1.0,   1.0,   1.0,   101.0, 1.0,
+        1.0,   1.0,   1.0,   1.0,   1.0,   1.0,   102.0
+      )
+      val viewable = Array (
+        1,     1,     1,     1,     1,     ND,    1,
+        1,     1,     1,     1,     1,     1,     ND,
+        ND,    1,     1,     1,     1,     1,     1,
+        ND,    ND,    1,     1,     1,     1,     1,
+        ND,    1,     1,     1,     1,     1,     1,
+        1,     1,     1,     1,     1,     ND,    ND,
+        1,     1,     1,     1,     1,     ND,    ND
+      )
+      val r = createTile(rasterData, 7, 7)
+      val viewRaster = createTile(viewable, 7, 7).convert(IntConstantNoDataCellType)
+      val shed = R2Viewshed(r, 3, 3, UniquePlus())
       assertEqual(viewRaster, shed)
     }
 
@@ -249,9 +309,11 @@ class R2ViewshedSpec extends FunSpec
       )
       val r = createTile(rasterData, 7, 7)
       val viewRaster = createTile(viewable, 7, 7).convert(BitCellType)
-      val shed = R2Viewshed(r, 3, 3, true)
+      val shed = R2Viewshed(r, 3, 3, And())
       assertEqual(viewRaster, shed)
     }
+
+    // ---------------------------------
 
     it("computes the viewshed of a int plane (OR)") {
       val rasterData = Array (
@@ -274,7 +336,33 @@ class R2ViewshedSpec extends FunSpec
       )
       val r = createTile(rasterData, 7, 7)
       val viewRaster = createTile(viewable, 7, 7).convert(BitCellType)
-      val shed = R2Viewshed(r, 3, 3)
+      val shed = R2Viewshed(r, 3, 3, Or())
+      assertEqual(viewRaster, shed)
+    }
+
+    it("computes the viewshed of a int plane (U.PLUS)") {
+      val ND = NODATA
+      val rasterData = Array (
+        999, 1,   1,   1,   1,   499, 999,
+        1,   1,   1,   1,   1,   499, 250,
+        1,   1,   1,   1,   99,  1,   1,
+        1,   999, 1,   1,   1,   1,   1,
+        1,   1,   1,   1,   1,   1,   1,
+        1,   1,   1,   0,   1,   1,   1,
+        1,   1,   1,   1,   1,   1,   1
+      )
+      val viewable = Array (
+        1,     1,     1,     1,     1,     1,     1,
+        1,     1,     1,     1,     1,     1,     ND,
+        1,     1,     1,     1,     1,     1,     1,
+        ND,    1,     1,     1,     1,     1,     1,
+        1,     1,     1,     1,     1,     1,     1,
+        1,     1,     1,     ND,    1,     1,     1,
+        1,     1,     1,     1,     1,     1,     1
+      )
+      val r = createTile(rasterData, 7, 7)
+      val viewRaster = createTile(viewable, 7, 7).convert(IntConstantNoDataCellType)
+      val shed = R2Viewshed(r, 3, 3, UniquePlus())
       assertEqual(viewRaster, shed)
     }
 
@@ -299,9 +387,11 @@ class R2ViewshedSpec extends FunSpec
       )
       val r = createTile(rasterData, 7, 7)
       val viewRaster = createTile(viewable, 7, 7).convert(BitCellType)
-      val shed = R2Viewshed(r, 3, 3, true)
+      val shed = R2Viewshed(r, 3, 3, And())
       assertEqual(viewRaster, shed)
     }
+
+    // ---------------------------------
 
     it("ignores NoData values and indicates they're unviewable (OR)"){
       val rasterData = Array (
@@ -312,7 +402,21 @@ class R2ViewshedSpec extends FunSpec
       )
       val r = createTile(rasterData, 7, 1)
       val viewRaster = createTile(viewable, 7, 1).convert(BitCellType)
-      val shed = R2Viewshed(r, 3, 0)
+      val shed = R2Viewshed(r, 3, 0, Or())
+      assertEqual(viewRaster, shed)
+    }
+
+    it("ignores NoData values and indicates they're unviewable (U.PLUS)"){
+      val ND = NODATA
+      val rasterData = Array (
+        300.0, 1.0, 99.0, 0.0, Double.NaN, 200.0, 137.0
+      )
+      val viewable = Array (
+        1, ND, 1, 1, ND, 1, ND
+      )
+      val r = createTile(rasterData, 7, 1)
+      val viewRaster = createTile(viewable, 7, 1).convert(IntConstantNoDataCellType)
+      val shed = R2Viewshed(r, 3, 0, UniquePlus())
       assertEqual(viewRaster, shed)
     }
 
@@ -325,9 +429,11 @@ class R2ViewshedSpec extends FunSpec
       )
       val r = createTile(rasterData, 7, 1)
       val viewRaster = createTile(viewable, 7, 1).convert(BitCellType)
-      val shed = R2Viewshed(r, 3, 0, true)
+      val shed = R2Viewshed(r, 3, 0, And())
       assertEqual(viewRaster, shed)
     }
+
+    // ---------------------------------
 
     it("should match veiwshed generated by ArgGIS (OR)") {
       val rs = loadTestArg("data/viewshed-elevation")
@@ -337,13 +443,42 @@ class R2ViewshedSpec extends FunSpec
 
       val (x, y) = (-93.63300872055451407, 30.54649743277299123) // create overload
       val (col, row) = rasterExtent.mapToGrid(x, y)
-      val actual = R2Viewshed(elevation, col, row)
+      val actual = R2Viewshed(elevation, col, row, Or())
 
       def countDiff(a: Tile, b: Tile): Int = {
         var ans = 0
         for(col <- 0 until 256) {
           for(row <- 0 until 256) {
             if (a.get(col, row) != b.get(col, row)) ans += 1;
+          }
+        }
+        ans
+      }
+
+      val diff = (countDiff(expected, actual) / (256 * 256).toDouble) * 100
+      val allowable = 8.72
+      // System.out.println(s"${diff} / ${256 * 256} = ${diff / (256 * 256).toDouble}")
+      withClue(s"Percent difference from ArgGIS raster is more than $allowable%:") {
+        diff should be < allowable
+      }
+    }
+
+    it("should match veiwshed generated by ArgGIS (U.PLUS)") {
+      val rs = loadTestArg("data/viewshed-elevation")
+      val elevation = rs.tile
+      val rasterExtent = rs.rasterExtent
+      val expected = loadTestArg("data/viewshed-expected")
+
+      val (x, y) = (-93.63300872055451407, 30.54649743277299123) // create overload
+      val (col, row) = rasterExtent.mapToGrid(x, y)
+      val actual = R2Viewshed(elevation, col, row, UniquePlus())
+
+      def countDiff(a: Tile, b: Tile): Int = {
+        var ans = 0
+        for(col <- 0 until 256) {
+          for(row <- 0 until 256) {
+            if (a.get(col, row) != b.get(col, row) && !isNoData(b.get(col, row)))
+              ans += 1;
           }
         }
         ans
@@ -365,7 +500,7 @@ class R2ViewshedSpec extends FunSpec
 
       val (x, y) = (-93.63300872055451407, 30.54649743277299123) // create overload
       val (col, row) = rasterExtent.mapToGrid(x, y)
-      val actual = R2Viewshed(elevation, col, row, true)
+      val actual = R2Viewshed(elevation, col, row, And())
 
       def countDiff(a: Tile, b: Tile): Int = {
         var ans = 0
