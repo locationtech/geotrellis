@@ -115,6 +115,11 @@ object R2Viewshed extends Serializable {
     * elevations in units of meters.  The results are written into the
     * viewshedTile.
     *
+    * 1. Franklin, Wm Randolph, and Clark Ray.
+    *    "Higher isn’t necessarily better: Visibility algorithms and experiments."
+    *    Advances in GIS research: sixth international symposium on spatial data handling. Vol. 2.
+    *    Taylor & Francis Edinburgh, 1994.
+    *
     * @param  elevationTile  Elevations in units of meters
     * @param  viewshedTile   The tile into which the viewshed will be written
     * @param  startCol       The x position of the vantage point
@@ -124,11 +129,6 @@ object R2Viewshed extends Serializable {
     * @param  from           The direction from which the rays are allowed to come
     * @param  rays           Rays shining in from other tiles
     * @param  edgeCallback   A callback that is called when a ray reaches the periphery of this tile
-    *
-    * 1. Franklin, Wm Randolph, and Clark Ray.
-    *    "Higher isn’t necessarily better: Visibility algorithms and experiments."
-    *    Advances in GIS research: sixth international symposium on spatial data handling. Vol. 2.
-    *    Taylor & Francis Edinburgh, 1994.
     */
   def compute(
     elevationTile: Tile, viewshedTile: MutableArrayTile,
@@ -138,8 +138,7 @@ object R2Viewshed extends Serializable {
     rays: Array[Ray],
     edgeCallback: EdgeCallback,
     and: Boolean,
-    curve: Boolean = true,
-    debug: Boolean = false
+    curve: Boolean = true
   ): Tile = {
     val cols = elevationTile.cols
     val rows = elevationTile.rows
@@ -149,19 +148,17 @@ object R2Viewshed extends Serializable {
     def computeTheta(x0: Int, y0: Int, x1: Int, y1: Int): Double = {
       val m = (y0 - y1).toDouble / (x0 - x1)
 
-      if (x0 == x1 && y0 < y1) Math.PI/2
-      else if (x0 == x1 /*&& y0 > y1*/) 1.5*Math.PI
-      // else if (x0 == x1 && y0 == y1) throw new Exception
+      if (x0 == x1 && y0 < y1) math.Pi/2
+      else if (x0 == x1) 1.5*math.Pi
       else {
         val theta = math.atan(m)
-
-        if (x1 >= x0 && y1 >= y0 && 0 <= theta && theta <= Math.PI/2) theta
+        if (x1 >= x0 && y1 >= y0 && 0 <= theta && theta <= math.Pi/2) theta
         else if (x1 >= x0 && y1 >= y0) throw new Exception
-        else if (x1 >= x0 && y1 <= y0 && -Math.PI/2 <= theta && theta <= 0) theta + 2.0*Math.PI
+        else if (x1 >= x0 && y1 <= y0 && -math.Pi/2 <= theta && theta <= 0) theta + 2.0*math.Pi
         else if (x1 >= x0 && y1 <= y0) throw new Exception
-        else if (x1 <= x0 && y1 <= y0 && 0 <= theta && theta <= Math.PI/2) theta + Math.PI
+        else if (x1 <= x0 && y1 <= y0 && 0 <= theta && theta <= math.Pi/2) theta + math.Pi
         else if (x1 <= x0 && y1 <= y0) throw new Exception
-        else if (x1 <= x0 && y1 >= y0 && -Math.PI/2 <= theta && theta <= 0) theta + Math.PI
+        else if (x1 <= x0 && y1 >= y0 && -math.Pi/2 <= theta && theta <= 0) theta + math.Pi
         else if (x1 <= x0 && y1 >= y0) throw new Exception
         else throw new Exception
       }
@@ -169,7 +166,7 @@ object R2Viewshed extends Serializable {
 
     def thetaToAlpha(theta: Double): Double = {
       from match {
-        case _: FromInside => -Math.PI
+        case _: FromInside => -math.Pi
         case _ =>
           val index = binarySearch(rays, Ray(theta, Double.NaN), RayComparator)
           if (index >= 0) rays(index).alpha
@@ -194,47 +191,27 @@ object R2Viewshed extends Serializable {
         case _: FromNorth =>
           val y2 = rows-1
           val x2 = math.round(((y2 - y1) / m) + x1).toInt
-          if ((0 <= x2 && x2 < cols /*&& !(x2 == x1 && y2 == y1)*/) && (y2 <= y0 && -math.sin(theta) > 0)) {
-            if (debug) println(s"BBB NORTH YES ${DirectedSegment(x2,y2,x1,y1,theta)} ${thetaToAlpha(theta)}")
+          if ((0 <= x2 && x2 < cols) && (y2 <= y0 && -math.sin(theta) > 0))
             Some(DirectedSegment(x2,y2,x1,y1,theta))
-          }
-          else {
-            if (debug) println(s"BBB NORTH NO  ($x0,$y0) ($x2,$y2) ($x1,$y1) $theta | ${0 <= x2} ${x2 < cols} ${!(x2 == x1 && y2 == y1)} ${y2 <= y0} ${-math.sin(theta) > 0}")
-            None
-          }
+          else None
         case _: FromEast =>
           val x2 = cols-1
           val y2 = math.round((m * (x2 - x1)) + y1).toInt
-          if ((0 <= y2 && y2 < rows /*&& !(x2 == x1 && y2 == y1)*/) && (x2 <= x0 && -math.cos(theta) > 0)) {
-            if (debug) println(s"BBB EAST YES ${DirectedSegment(x2,y2,x1,y1,theta)}")
+          if ((0 <= y2 && y2 < rows) && (x2 <= x0 && -math.cos(theta) > 0))
             Some(DirectedSegment(x2,y2,x1,y1,theta))
-          }
-          else {
-            if (debug) println(s"BBB EAST NO  ($x0,$y0) ($x2,$y2) ($x1,$y1) $theta | ${0 <= y2} ${y2 < rows} ${!(x2 == x1 && y2 == y1)} ${x2 <= x0} ${-math.cos(theta) > 0}")
-            None
-          }
+          else None
         case _: FromSouth =>
           val y2 = 0
           val x2 = math.round(((y2 - y1) / m) + x1).toInt
-          if ((0 <= x2 && x2 < cols /*&& !(x2 == x1 && y2 == y1)*/) && (y2 >= y0 && math.sin(theta) > 0)) {
-            if (debug) println(s"BBB SOUTH YES ${DirectedSegment(x2,y2,x1,y1,theta)}")
+          if ((0 <= x2 && x2 < cols) && (y2 >= y0 && math.sin(theta) > 0))
             Some(DirectedSegment(x2,y2,x1,y1,theta))
-          }
-          else {
-            if (debug) println(s"BBB SOUTH NO  ($x0,$y0) ($x2,$y2) ($x1,$y1) $theta | ${0 <= x2} ${x2 < cols} ${!(x2 == x1 && y2 == y1)} ${y2 >= y0} ${math.sin(theta) > 0}")
-            None
-          }
+          else None
         case _: FromWest =>
           val x2 = 0
           val y2 = math.round((m * (x2 - x1)) + y1).toInt
-          if ((0 <= y2 && y2 < rows /*&& !(x2 == x1 && y2 == y1)*/) && (x2 >= x0 && math.cos(theta) > 0)) {
-            if (debug) println(s"BBB WEST YES ${DirectedSegment(x2,y2,x1,y1,theta)}")
+          if ((0 <= y2 && y2 < rows) && (x2 >= x0 && math.cos(theta) > 0))
             Some(DirectedSegment(x2,y2,x1,y1,theta))
-          }
-          else {
-            if (debug) println(s"BBB WEST NO  ($x0,$y0) ($x2,$y2) ($x1,$y1) $theta | ${0 <= y2} ${y2 < rows} ${!(x2 == x1 && y2 == y1)} ${x2 >= x0} ${math.cos(theta) > 0}")
-            None
-          }
+          else None
       }
     }
 
@@ -249,7 +226,6 @@ object R2Viewshed extends Serializable {
         val drop = if (curve) downwardCurve(distance); else 0.0
         val angle = math.atan((elevationTile.getDouble(col, row) - drop - viewHeight) / distance)
 
-        if (debug) println(s"AAA $startCol $startRow col=$col row=$row ∠=$angle α=$alpha ${alpha <= angle}")
         if (distance >= maxDistance) alpha.terminated = true
         if (!alpha.terminated) {
           val visible = alpha <= angle
@@ -263,59 +239,39 @@ object R2Viewshed extends Serializable {
       }
     }
 
-    if (debug) println("NORTH")
     Range(0, cols) // North
       .flatMap({ col => clipAndQualifyRay(startCol,startRow,col,rows-1) })
       .foreach({ seg =>
         val alpha = Alpha(thetaToAlpha(seg.theta))
         val cb = callback(alpha)_
-
-        Rasterizer.foreachCellInGridLine(
-          seg.x0, seg.y0, seg.x1, seg.y1,
-          null, re, false
-        )(cb)
+        Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(cb)
         if (!alpha.terminated) edgeCallback(Ray(seg.theta, alpha), FromSouth())
       })
 
-    if (debug) println("EAST")
     Range(0, rows) // East
       .flatMap({ row => clipAndQualifyRay(startCol,startRow,cols-1,row) })
       .foreach({ seg =>
         val alpha = Alpha(thetaToAlpha(seg.theta))
         val cb = callback(alpha)_
-
-        Rasterizer.foreachCellInGridLine(
-          seg.x0, seg.y0, seg.x1, seg.y1,
-          null, re, false
-        )(cb)
+        Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(cb)
         if (!alpha.terminated) edgeCallback(Ray(seg.theta, alpha), FromWest())
       })
 
-    if (debug) println("SOUTH")
     Range(0, cols) // South
       .flatMap({ col => clipAndQualifyRay(startCol,startRow,col,0) })
       .foreach({ seg =>
         val alpha = Alpha(thetaToAlpha(seg.theta))
         val cb = callback(alpha)_
-
-        Rasterizer.foreachCellInGridLine(
-          seg.x0, seg.y0, seg.x1, seg.y1,
-          null, re, false
-        )(cb)
+        Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(cb)
         if (!alpha.terminated) edgeCallback(Ray(seg.theta, alpha), FromNorth())
       })
 
-    if (debug) println("WEST")
     Range(0, rows) // West
       .flatMap({ row => clipAndQualifyRay(startCol,startRow,0,row) })
       .foreach({ seg =>
         val alpha = Alpha(thetaToAlpha(seg.theta))
         val cb = callback(alpha)_
-
-        Rasterizer.foreachCellInGridLine(
-          seg.x0, seg.y0, seg.x1, seg.y1,
-          null, re, false
-        )(cb)
+        Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(cb)
         if (!alpha.terminated) edgeCallback(Ray(seg.theta, alpha), FromEast())
       })
 

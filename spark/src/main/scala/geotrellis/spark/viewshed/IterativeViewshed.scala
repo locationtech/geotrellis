@@ -34,8 +34,6 @@ import org.apache.spark.util.AccumulatorV2
 
 import scala.collection.mutable
 
-import java.util.Arrays.sort
-
 
 object IterativeViewshed {
 
@@ -44,21 +42,6 @@ object IterativeViewshed {
   type Message = (SpatialKey, From, Ray)
   type Messages = mutable.ArrayBuffer[Message]
   type Rays = (Array[Ray], Array[Ray])
-  // type Coordinates = (Int, Int, Int, Int)
-
-  // class PointFinder extends AccumulatorV2[Coordinates, Coordinates] {
-  //   private var coordinates: Coordinates = null
-  //   def copy PointFinder = {
-  //     val other = new PointFinder
-  //     other.merge(this)
-  //     other
-  //   }
-  //   def add(_coordinates: Coordinates): Unit = this.synchronized { coordinates = _coordinates }
-  //   def isZero: Boolean = (coordinates == null)
-  //   def merge(other: AccumulatorV2[Coordinates, Coordinates]): Unit = this.synchronized { coordinates = other.value }
-  //   def reset: Unit = this.synchronized { coordinates = null }
-  //   def value: Coordinates = coordinates.copy
-  // }
 
   class RayCatcher extends AccumulatorV2[Message, Messages] {
     private val messages: Messages = mutable.ArrayBuffer.empty
@@ -206,7 +189,6 @@ object IterativeViewshed {
             packets.foreach({ case (from, rays) =>
               val startCol = (pointKeyCol - key.col) * cols + pointCol
               val startRow = (pointKeyRow - key.row) * rows + pointRow
-              // println(s"AAA $key $from ($startCol, $startRow) pointKeyCol=$pointKeyCol pointKeyRow=$pointKeyRow key.col=${key.col} key.row=${key.row} pointCol=$pointCol pointRow=$pointRow")
 
               R2Viewshed.compute(
                 elevationTile, shed,
@@ -215,9 +197,7 @@ object IterativeViewshed {
                 from,
                 rays.sortBy({ _.theta }).toArray,
                 rayCatcherFn(key),
-                and, curve,
-                // key == SpatialKey(1,0)
-                false
+                and, curve
               )
             })
           }
