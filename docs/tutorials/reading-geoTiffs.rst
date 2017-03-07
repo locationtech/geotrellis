@@ -8,10 +8,7 @@ Guide <setup.html>`__ to get GeoTrellis working on your system. Also, this
 tutorial uses GeoTiffs from the ``raster-test`` project from GeoTrellis.
 If you have not already done so, please clone GeoTrellis
 `here <https://github.com/locationtech/geotrellis>`__ so that you can
-access the needed files. - - -
-
-Reading GeoTiffs With GeoTrellis
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+access the needed files.
 
 One of the most common methods of storing geospatial information is
 through GeoTiffs. This is reflected throughout the GeoTrellis library
@@ -22,8 +19,8 @@ needed to load in a GeoTiff from your local filesystem.
 
 Before we start, open a Scala REPL in the Geotrellis directory.
 
-Reading Locally Part 1: Reading For the First Time
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Reading For the First Time
+--------------------------
 
 Reading a local GeoTiff is actually pretty easy. You can see how to do
 it below.
@@ -119,15 +116,8 @@ GeoTiff.
 
 And that's it! We now have our ``MutlibandGeoTiff``.
 
-.. raw:: html
-
-   <h4>
-
 Beginner Tip
-
-.. raw:: html
-
-   </h4>
+^^^^^^^^^^^^
 
 A good way to ensure that your codes works properly is to give the
 return data type for each of your ``val``\ s and ``def``\ s. If by
@@ -198,8 +188,8 @@ Our overview of basic GeoTiff reading is now done! But keep reading! For
 you have greater say over how your GeoTiff will be read than what has
 been shown. - - -
 
-Reading Locally Part 2: Expanding Our Vocab
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Expanding Our Vocab
+-------------------
 
 We can read GeoTiffs, now what? Well, there's actually more that we can
 do when reading in a file. Sometimes you have a compressed GeoTiff, or
@@ -433,7 +423,7 @@ data can still be accessed. Here's how to do the cropping:
 --------------
 
 Conclusion
-~~~~~~~~~~
+----------
 
 That takes care of reading local GeoTiff files! It should be said,
 though, that what we went over here does not just apply to reading local
