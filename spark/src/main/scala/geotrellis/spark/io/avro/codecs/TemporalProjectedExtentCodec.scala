@@ -16,15 +16,11 @@
 
 package geotrellis.spark.io.avro.codecs
 
-import geotrellis.proj4.CRS
 import geotrellis.spark._
 import geotrellis.spark.io.avro._
-import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.avro.codecs.Implicits._
-import geotrellis.vector._
 import org.apache.avro._
 import org.apache.avro.generic._
-import org.apache.avro.util.Utf8
 
 
 trait TemporalProjectedExtentCodec {
@@ -33,35 +29,20 @@ trait TemporalProjectedExtentCodec {
       .record("TemporalProjectedExtent").namespace("geotrellis.spark")
       .fields()
       .name("extent").`type`(extentCodec.schema).noDefault()
-      .name("epsg").`type`().optional().intType()
-      .name("proj4").`type`().optional().stringType()
+      .name("epsg").`type`(crsCodec.schema.getField("epsg").schema).noDefault()
+      .name("proj4").`type`(crsCodec.schema.getField("proj4").schema).noDefault()
       .name("instant").`type`().longType().noDefault()
       .endRecord()
 
     def encode(temporalProjectedExtent: TemporalProjectedExtent, rec: GenericRecord): Unit = {
-      val crs = temporalProjectedExtent.crs
       rec.put("extent", extentCodec.encode(temporalProjectedExtent.extent))
-      if(crs.epsgCode.isDefined) {
-        rec.put("epsg", crs.epsgCode.get)
-      }
-      else {
-        rec.put("proj4", crs.toProj4String)
-      }
+      crsCodec.encode(temporalProjectedExtent.crs, rec)
       rec.put("instant", temporalProjectedExtent.instant)
     }
 
     def decode(rec: GenericRecord): TemporalProjectedExtent = {
-
       val instant = rec[Long]("instant")
-      val crs = if(rec[AnyRef]("epsg") != null) {
-        val epsg = rec[Int]("epsg")
-        CRS.fromEpsgCode(epsg)
-      }
-      else {
-        val proj4 = rec[Utf8]("proj4")
-        CRS.fromString(proj4.toString)
-      }
-
+      val crs = crsCodec.decode(rec)
       val extent = extentCodec.decode(rec[GenericRecord]("extent"))
 
       TemporalProjectedExtent(extent, crs, instant)

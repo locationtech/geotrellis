@@ -34,18 +34,17 @@ trait ProjectedExtentCodec {
       .record("ProjectedExtent").namespace("geotrellis.vector")
       .fields()
       .name("extent").`type`(extentCodec.schema).noDefault()
-      .name("epsg").`type`().intType().noDefault()
+      .name("epsg").`type`(crsCodec.schema.getField("epsg").schema).noDefault()
+      .name("proj4").`type`(crsCodec.schema.getField("proj4").schema).noDefault()
       .endRecord()
 
     def encode(projectedExtent: ProjectedExtent, rec: GenericRecord): Unit = {
       rec.put("extent", extentCodec.encode(projectedExtent.extent))
-      rec.put("epsg", projectedExtent.crs.epsgCode.get)
+      crsCodec.encode(projectedExtent.crs, rec)
     }
 
     def decode(rec: GenericRecord): ProjectedExtent = {
-      val epsg = rec[Int]("epsg")
-      val crs = CRS.fromEpsgCode(epsg)
-
+      val crs = crsCodec.decode(rec)
       val extent = extentCodec.decode(rec[GenericRecord]("extent"))
 
       ProjectedExtent(extent, crs)
