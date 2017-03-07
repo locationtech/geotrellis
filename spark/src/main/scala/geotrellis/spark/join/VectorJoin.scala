@@ -48,9 +48,13 @@ object VectorJoin {
 
   /**
     * Perform the vector join operation over an RDD[L] and and RDD[R],
-    * where both L and R are viewble as Geometry.  This makes use of
+    * where both L and R are viewable as Geometry.  This makes use of
     * the FilteredCartesianRDD type to accelerate the process
     * (relative to plain-old CartesianRDD).
+    *
+    * It is assumed that geometries in each partition of left and right
+    * RDDs are spatially related, such that each partition in left may
+    * have a limited number of potentially intersecting partitions in right.
     *
     * @param  left   An RDD[L], where L is viewable as a Geometry
     * @param  right  An RDD[R], where R is viewable as a Geometry
