@@ -200,7 +200,7 @@ object R2Viewshed extends Serializable {
     val re = RasterExtent(Extent(0, 0, cols, rows), cols, rows)
     val inTile: Boolean = (0 <= startCol && startCol < cols && 0 <= startRow && startRow <= rows)
 
-    def clipAndQualifyRay(x0: Int, y0: Int, x1: Int, y1: Int): Option[DirectedSegment] = {
+    def clipAndQualifyRay(from: From)(x0: Int, y0: Int, x1: Int, y1: Int): Option[DirectedSegment] = {
       val theta = computeTheta(x0, y0, x1, y1)
       val m = (y0 - y1).toDouble / (x0 - x1)
 
@@ -210,7 +210,9 @@ object R2Viewshed extends Serializable {
         case _: FromNorth =>
           val y2 = rows-1
           val x2 = math.round(((y2 - y1) / m) + x1).toInt
-          if ((0 <= x2 && x2 < cols) && (y2 <= y0 && -math.sin(theta) > 0))
+          if (x1 == cols-1 && y1 == rows-1 && startCol >= cols && startRow >= rows)
+            None
+          else if ((0 <= x2 && x2 < cols) && (y2 <= y0 && -math.sin(theta) > 0))
             Some(DirectedSegment(x2,y2,x1,y1,theta))
           else None
         case _: FromEast =>
@@ -237,6 +239,12 @@ object R2Viewshed extends Serializable {
     var alpha: Double = Double.NaN
     var terminated: Boolean = false
     val dejaVu = mutable.Set.empty[(Int, Int)]
+
+    def preventative(col: Int, row: Int) ={
+      val colrow = (col, row)
+      dejaVu += colrow
+    }
+
     def callback(col: Int, row: Int) = {
       if (col == startCol && row == startRow) { // starting point
         viewshedTile.setDouble(col, row, 1)
@@ -264,7 +272,7 @@ object R2Viewshed extends Serializable {
               viewshedTile.set(col, row, 1)
             case _: Plus if (visible && isNoData(current)) =>
               viewshedTile.set(col, row, 1)
-            case _: Plus if (visible && !isNoData(current)) =>
+            case _: Plus if (visible && !isNoData(current) && !dejaVu.contains(colrow)) =>
               viewshedTile.set(col, row, 1 + current)
             case _: UniquePlus if (visible && isNoData(current)) =>
               viewshedTile.set(col, row, 1)
@@ -278,8 +286,39 @@ object R2Viewshed extends Serializable {
       }
     }
 
+    if ((op.isInstanceOf[Plus] || op.isInstanceOf[UniquePlus]) &&
+        (from.isInstanceOf[FromNorth] || from.isInstanceOf[FromSouth]) &&
+        (startCol < 0 || startCol >= cols)) {
+      val clip = if (startCol >= cols) clipAndQualifyRay(FromEast())_ ; else clipAndQualifyRay(FromWest())_
+
+      Range(0, cols) // North
+        .flatMap({ col => clip(startCol,startRow,col,rows-1) })
+        .foreach({ seg =>
+          Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(preventative)
+        })
+
+      Range(0, rows) // East
+        .flatMap({ row => clip(startCol,startRow,cols-1,row) })
+        .foreach({ seg =>
+          Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(preventative)
+        })
+
+      Range(0, cols) // South
+        .flatMap({ col => clip(startCol,startRow,col,0) })
+        .foreach({ seg =>
+          Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(preventative)
+        })
+
+      Range(0, rows) // West
+        .flatMap({ row => clip(startCol,startRow,0,row) })
+        .foreach({ seg =>
+          Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(preventative)
+        })
+    }
+
+    val clip = clipAndQualifyRay(from)_
     Range(0, cols) // North
-      .flatMap({ col => clipAndQualifyRay(startCol,startRow,col,rows-1) })
+      .flatMap({ col => clip(startCol,startRow,col,rows-1) })
       .foreach({ seg =>
         alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
         Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
@@ -287,7 +326,7 @@ object R2Viewshed extends Serializable {
       })
 
     Range(0, rows) // East
-      .flatMap({ row => clipAndQualifyRay(startCol,startRow,cols-1,row) })
+      .flatMap({ row => clip(startCol,startRow,cols-1,row) })
       .foreach({ seg =>
         alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
         Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
@@ -295,7 +334,7 @@ object R2Viewshed extends Serializable {
       })
 
     Range(0, cols) // South
-      .flatMap({ col => clipAndQualifyRay(startCol,startRow,col,0) })
+      .flatMap({ col => clip(startCol,startRow,col,0) })
       .foreach({ seg =>
         alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
         Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
@@ -303,7 +342,7 @@ object R2Viewshed extends Serializable {
       })
 
     Range(0, rows) // West
-      .flatMap({ row => clipAndQualifyRay(startCol,startRow,0,row) })
+      .flatMap({ row => clip(startCol,startRow,0,row) })
       .foreach({ seg =>
         alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
         Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)

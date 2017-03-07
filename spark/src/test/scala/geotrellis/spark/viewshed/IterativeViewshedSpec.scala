@@ -48,7 +48,7 @@ class IterativeViewshedSpec extends FunSpec
      }
 
       val point = new jts.Coordinate(7, 7, -0.0)
-      val viewshed = IterativeViewshed(rdd, point, Double.PositiveInfinity, Or(), false)
+      val viewshed = IterativeViewshed(rdd, List(point), Double.PositiveInfinity, Or(), false)
       var actual = 0 ; viewshed.collect.foreach({ case (_, v) => v.foreach({ z => if (isData(z)) actual += z }) })
       val expected = 15*15
 
@@ -68,7 +68,7 @@ class IterativeViewshedSpec extends FunSpec
       }
 
       val point = new jts.Coordinate(7, 7, -0.0)
-      val viewshed = IterativeViewshed(rdd, point, Double.PositiveInfinity, Or(), false)
+      val viewshed = IterativeViewshed(rdd, List(point), Double.PositiveInfinity, Or(), false)
       var actual = 0 ; viewshed.collect.foreach({ case (_, v) => v.foreach({ z => if (isData(z)) actual += z }) })
       val expected = 180
 
@@ -89,7 +89,7 @@ class IterativeViewshedSpec extends FunSpec
       }
 
       val point = new jts.Coordinate(7, 7, -0.0)
-      val viewshed = IterativeViewshed(rdd, point, Double.PositiveInfinity, Or(), false)
+      val viewshed = IterativeViewshed(rdd, List(point), Double.PositiveInfinity, Or(), false)
       val ND = NODATA
       val expected: Array[Int] = Array(
         1,     1,     1,     1,     1,
@@ -105,5 +105,59 @@ class IterativeViewshedSpec extends FunSpec
 
       actual should be (expected)
     }
+
+    it("should work with multiple points") {
+      val rdd = {
+        val tile = IntArrayTile(Array.fill[Int](25)(1), 5, 5)
+        val extent = Extent(0, 0, 15, 15)
+        val gridExtent = GridExtent(extent, 1, 1) // 15×15 pixels
+        val layoutDefinition = LayoutDefinition(gridExtent, 5)
+        val bounds = Bounds(SpatialKey(0, 0), SpatialKey(2, 2))
+        val tileLayerMetadata = TileLayerMetadata(IntCellType, layoutDefinition, extent, LatLng, bounds)
+        val list = for (col <- 0 to 2; row <- 0 to 2) yield (SpatialKey(col, row), tile)
+        ContextRDD(sc.parallelize(list), tileLayerMetadata)
+      }
+
+      val point1 = new jts.Coordinate(2,  7, -0.0)
+      val point2 = new jts.Coordinate(7,  7, -0.0)
+      val point3 = new jts.Coordinate(12, 7, -0.0)
+      val viewshed = IterativeViewshed(rdd, List(point1, point2, point3), Double.PositiveInfinity, UniquePlus(), false)
+      val expected = 15 * 15 * 3
+      var actual: Int = 0
+      viewshed.collect.foreach({ case (k, v) => actual += v.toArray.sum })
+
+      actual should be (expected)
+    }
+
+    it("should keep isolated points isolated") {
+      val rdd = {
+        val array: Array[Int] = Array(
+          0,     107,   107,   107,   0,
+          0,     107,   0,     107,   0,
+          0,     107,   0,     107,   0,
+          0,     107,   0,     107,   0,
+          0,     107,   107,   107,   0
+        )
+        val tile = IntArrayTile(array, 5, 5)
+        val extent = Extent(0, 0, 15, 15)
+        val gridExtent = GridExtent(extent, 1, 1) // 15×15 pixels
+        val layoutDefinition = LayoutDefinition(gridExtent, 5)
+        val bounds = Bounds(SpatialKey(0, 0), SpatialKey(2, 2))
+        val tileLayerMetadata = TileLayerMetadata(IntCellType, layoutDefinition, extent, LatLng, bounds)
+        val list = for (col <- 0 to 2; row <- 0 to 2) yield (SpatialKey(col, row), tile)
+        ContextRDD(sc.parallelize(list), tileLayerMetadata)
+      }
+
+      val point1 = new jts.Coordinate(2,  7, -0.0)
+      val point2 = new jts.Coordinate(7,  7, -0.0)
+      val point3 = new jts.Coordinate(12, 7, -0.0)
+      val viewshed = IterativeViewshed(rdd, List(point1, point2, point3), Double.PositiveInfinity, UniquePlus(), false)
+      val expected = 3
+      var actual: Int = 0
+      viewshed.collect.foreach({ case (k, v) => actual += v.get(2, 2) })
+
+      actual should be (expected)
+    }
+
   }
 }
