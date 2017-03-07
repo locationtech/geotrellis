@@ -25,14 +25,16 @@ import org.apache.avro.generic._
 
 trait TemporalProjectedExtentCodec {
   implicit def temporalProjectedExtentCodec = new AvroRecordCodec[TemporalProjectedExtent] {
-    def schema: Schema = SchemaBuilder
-      .record("TemporalProjectedExtent").namespace("geotrellis.spark")
-      .fields()
-      .name("extent").`type`(extentCodec.schema).noDefault()
-      .name("epsg").`type`(crsCodec.schema.getField("epsg").schema).noDefault()
-      .name("proj4").`type`(crsCodec.schema.getField("proj4").schema).noDefault()
-      .name("instant").`type`().longType().noDefault()
-      .endRecord()
+    def schema: Schema = {
+      val base = SchemaBuilder
+        .record("TemporalProjectedExtent").namespace("geotrellis.spark")
+        .fields()
+        .name("extent").`type`(extentCodec.schema).noDefault()
+
+      injectFields(crsCodec.schema, base)
+        .name("instant").`type`().longType().noDefault()
+        .endRecord()
+    }
 
     def encode(temporalProjectedExtent: TemporalProjectedExtent, rec: GenericRecord): Unit = {
       rec.put("extent", extentCodec.encode(temporalProjectedExtent.extent))
