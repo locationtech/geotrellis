@@ -18,12 +18,12 @@ package geotrellis.spark.io.hadoop.formats
 
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
+import geotrellis.spark.io.index.MergeQueue
 import org.apache.hadoop.conf._
 import org.apache.hadoop.fs._
 import org.apache.hadoop.io._
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.lib.input._
-import geotrellis.util.MergeQueue
 
 import scala.collection.JavaConversions._
 import scala.reflect._

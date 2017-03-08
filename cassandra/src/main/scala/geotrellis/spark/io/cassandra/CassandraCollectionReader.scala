@@ -20,8 +20,8 @@ import geotrellis.spark.{Boundable, KeyBounds, LayerId}
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
+import geotrellis.spark.io.index.MergeQueue
 import geotrellis.spark.util.KryoWrapper
-import geotrellis.util.MergeQueue
 
 import org.apache.avro.Schema
 import com.datastax.driver.core.querybuilder.QueryBuilder

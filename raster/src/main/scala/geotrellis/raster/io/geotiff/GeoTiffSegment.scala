@@ -159,6 +159,7 @@ object GeoTiffSegment {
    * @param bandCount Number of samples interleaved in each pixel
    * @param bytesPerSample Number of bytes in each sample
    */
+  private[raster]
   def deinterleave(bytes: Array[Byte], bandCount: Int, bytesPerSample: Int): Array[Array[Byte]] = {
     val bands: Array[Array[Byte]] = new Array[Array[Byte]](bandCount)
     val segmentSize = bytes.length / bandCount
@@ -176,9 +177,11 @@ object GeoTiffSegment {
     bands
   }
 
+  private[raster]
   def deinterleave(bytes: Array[Byte], bandCount: Int, bytesPerSample: Int, index: Int): Array[Byte] =
     deinterleave(bytes, bandCount, bytesPerSample, index :: Nil).head
 
+  private[raster]
   def deinterleave(bytes: Array[Byte], bandCount: Int, bytesPerSample: Int, indices: Traversable[Int]): Array[Array[Byte]] = {
     val indicesList = indices.toList
     val bandToIndex = indicesList.zipWithIndex.toMap
@@ -209,6 +212,7 @@ object GeoTiffSegment {
     * @param rows number of pixel rows in each band
     * @param bandCount Number of bit interleaved into each pixel
     */
+  private[raster]
   def deinterleaveBitSegment(segment: GeoTiffSegment, cols: Int, rows: Int, bandCount: Int): Array[Array[Byte]] = {
     val paddedCols = {
       val bytesWidth = (cols + 7) / 8
@@ -239,9 +243,11 @@ object GeoTiffSegment {
     bands
   }
 
+  private[raster]
   def deinterleaveBitSegment(segment: GeoTiffSegment, cols: Int, rows: Int, bandCount: Int, index: Int): Array[Byte] =
     deinterleaveBitSegment(segment, cols, rows, bandCount, index :: Nil).head
 
+  private[raster]
   def deinterleaveBitSegment(segment: GeoTiffSegment, cols: Int, rows: Int, bandCount: Int, indices: Traversable[Int]): Array[Array[Byte]] = {
     val paddedCols = {
       val bytesWidth = (cols + 7) / 8
@@ -257,6 +263,7 @@ object GeoTiffSegment {
 
     cfor(0)(_ < segment.size, _ + 1) { i =>
       val bandIndex = i % bandCount
+      // TODO: flip this loop to avoid conditional test per-pixel
       if(indicesList.contains(bandIndex)) {
         val j = i / bandCount
         val col = j % cols

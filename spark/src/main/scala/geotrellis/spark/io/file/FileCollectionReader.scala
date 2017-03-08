@@ -19,8 +19,9 @@ package geotrellis.spark.io.file
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
+import geotrellis.spark.io.index.MergeQueue
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.util.{Filesystem, MergeQueue}
+import geotrellis.util.Filesystem
 
 import org.apache.avro.Schema
 import com.typesafe.config.ConfigFactory

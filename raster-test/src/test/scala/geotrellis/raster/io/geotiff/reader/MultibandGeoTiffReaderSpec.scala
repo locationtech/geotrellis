@@ -153,8 +153,7 @@ class MultibandGeoTiffReaderSpec extends FunSpec
         MultibandGeoTiff(
           path = p("striped", "pixel"),
           decompress = false,
-          streaming = false,
-          extent = None
+          streaming = false
         ).tile.asInstanceOf[GeoTiffMultibandTile]
 
       // println("         BIT BANDS")

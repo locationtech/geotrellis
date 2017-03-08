@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.util
+package geotrellis.spark.io.index
 
 import scala.collection.TraversableOnce
 

@@ -26,7 +26,7 @@ trait BitGeoTiffSegmentCollection extends GeoTiffSegmentCollection {
   val bandCount: Int
   val hasPixelInterleave: Boolean
 
-  val decompressGeoTiffSegment = { (i: Int, bytes: Array[Byte]) =>
+  lazy val decompressGeoTiffSegment = { (i: Int, bytes: Array[Byte]) =>
     val (_, segmentRows) = segmentLayout.getSegmentDimensions(i)
 
     val cols = {

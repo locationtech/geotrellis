@@ -21,6 +21,6 @@ trait UInt32GeoTiffSegmentCollection extends GeoTiffSegmentCollection {
 
   val bandType = UInt32BandType
 
-  val decompressGeoTiffSegment =
+  lazy val decompressGeoTiffSegment =
     (i: Int, bytes: Array[Byte]) => new UInt32GeoTiffSegment(decompressor.decompress(bytes, i))
 }
