@@ -86,7 +86,7 @@ object R2Viewshed extends Serializable {
       val theta = math.atan(m)
       if (x1 >= x0 && y1 >= y0 && 0 <= theta && theta <= math.Pi/2) theta
       else if (x1 >= x0 && y1 >= y0) throw new Exception
-      else if (x1 >= x0 && y1 <= y0 && -math.Pi/2 <= theta && theta <= 0) theta + 2.0*math.Pi
+      else if (x1 >= x0 && y1 <= y0 && -math.Pi/2 <= theta && theta <= 0) theta + 2*math.Pi
       else if (x1 >= x0 && y1 <= y0) throw new Exception
       else if (x1 <= x0 && y1 <= y0 && 0 <= theta && theta <= math.Pi/2) theta + math.Pi
       else if (x1 <= x0 && y1 <= y0) throw new Exception
@@ -97,22 +97,35 @@ object R2Viewshed extends Serializable {
   }
 
   /**
-    * Given a direction of propagation, a packet of rays, and and
-    * angle theta, return alpha (the angle of elevation).
+    * Given a direction of propagation, a packet of rays, and an angle
+    * theta, return alpha (the angle of elevation).
     */
   private def thetaToAlpha(from: From, rays: Array[Ray], theta: Double): Double = {
     from match {
       case _: FromInside => -math.Pi
       case _ =>
         val index = binarySearch(rays, Ray(theta, Double.NaN), RayComparator)
+
         if (index >= 0) rays(index).alpha
         else {
           val place = -1 - index
-          if (place == rays.length) rays.last.alpha
-          else if (place == 0) rays.head.alpha
-          else if (math.abs(rays(place-1).theta - theta) < math.abs(rays(place).theta - theta))
+
+          if (place == rays.length) {
+            if (math.abs(rays.last.theta - theta) < math.abs(rays.head.theta - theta - 2*math.Pi))
+              rays.last.alpha
+            else
+              rays.head.alpha
+          }
+          else if (place == 0) {
+            if (math.abs(rays.head.theta - theta) < math.abs(rays.last.theta - theta + 2*math.Pi))
+              rays.head.alpha
+            else
+              rays.last.alpha
+          }
+          else if (math.abs(rays(place-1).theta - theta) < math.abs(rays(place).theta - theta)) // left
             rays(place-1).alpha
-          else rays(place).alpha
+          else // right
+            rays(place).alpha
         }
     }
   }
@@ -193,7 +206,8 @@ object R2Viewshed extends Serializable {
     rays: Array[Ray],
     edgeCallback: EdgeCallback,
     op: AggregationOperator,
-    curve: Boolean = true
+    curve: Boolean = true,
+    debug: Boolean = false
   ): Tile = {
     val cols = elevationTile.cols
     val rows = elevationTile.rows
@@ -210,9 +224,7 @@ object R2Viewshed extends Serializable {
         case _: FromNorth =>
           val y2 = rows-1
           val x2 = math.round(((y2 - y1) / m) + x1).toInt
-          if (x1 == cols-1 && y1 == rows-1 && startCol >= cols && startRow >= rows)
-            None
-          else if ((0 <= x2 && x2 < cols) && (y2 <= y0 && -math.sin(theta) > 0))
+          if ((0 <= x2 && x2 < cols) && (y2 <= y0 && -math.sin(theta) > 0))
             Some(DirectedSegment(x2,y2,x1,y1,theta))
           else None
         case _: FromEast =>
@@ -270,11 +282,11 @@ object R2Viewshed extends Serializable {
               viewshedTile.set(col, row, 0)
             case _: And if (visible && isNoData(current)) =>
               viewshedTile.set(col, row, 1)
-            case _: Plus if (visible && isNoData(current)) =>
+            case _: Plus if (visible && isNoData(current) && !dejaVu.contains(colrow)) =>
               viewshedTile.set(col, row, 1)
             case _: Plus if (visible && !isNoData(current) && !dejaVu.contains(colrow)) =>
               viewshedTile.set(col, row, 1 + current)
-            case _: UniquePlus if (visible && isNoData(current)) =>
+            case _: UniquePlus if (visible && isNoData(current) && !dejaVu.contains(colrow)) =>
               viewshedTile.set(col, row, 1)
               dejaVu += colrow
             case _: UniquePlus if (visible && !isNoData(current) && !dejaVu.contains(colrow)) =>
@@ -286,7 +298,7 @@ object R2Viewshed extends Serializable {
       }
     }
 
-    if ((op.isInstanceOf[Plus] || op.isInstanceOf[UniquePlus]) &&
+    if ((op.isInstanceOf[UniquePlus]) &&
         (from.isInstanceOf[FromNorth] || from.isInstanceOf[FromSouth]) &&
         (startCol < 0 || startCol >= cols)) {
       val clip = if (startCol >= cols) clipAndQualifyRay(FromEast())_ ; else clipAndQualifyRay(FromWest())_
@@ -329,6 +341,7 @@ object R2Viewshed extends Serializable {
       .flatMap({ row => clip(startCol,startRow,cols-1,row) })
       .foreach({ seg =>
         alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
+        if (debug) println(s"--- $alpha | $seg | ${rays.head} | ${rays.last}")
         Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
         if (!terminated) edgeCallback(Ray(seg.theta, alpha), FromWest())
       })
