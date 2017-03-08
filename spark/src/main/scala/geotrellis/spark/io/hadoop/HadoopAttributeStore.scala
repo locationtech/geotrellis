@@ -48,7 +48,6 @@ class HadoopAttributeStore(val rootPath: Path, val hadoopConfiguration: Configur
   }
 
   private def delete(layerId: LayerId, path: Path): Unit = {
-    if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
     HdfsUtils
       .listFiles(new Path(attributePath, path), hadoopConfiguration)
       .foreach(fs.delete(_, false))
