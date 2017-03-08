@@ -653,16 +653,8 @@ For instance lets assume we wrote ``updateLayout`` that combines
 Example Use Cases
 =================
 
-.. raw:: html
-
-   <h3>
-
-Using a SpaceTimeKey -> SpatialKey transformation to get summary
-information about tiles overlapping an area
-
-.. raw:: html
-
-   </h3>
+Summaries from Temporal Overlap of Tiles
+----------------------------------------
 
 Sometimes you'd like to take a layer that has multiple tiles over the
 same spatial area through time, and reduce it down to a layer that has
@@ -693,16 +685,8 @@ time, and calculating the maximum temperature per pixel for the layer:
         // Simply reduce by the key with a localMax
         .reduceByKey(_.localMax(_))
 
-.. raw:: html
-
-   <h3>
-
-Tiling an RDD of spatial tiles, stitching and saving off as a single
-GeoTiff
-
-.. raw:: html
-
-   </h3>
+Stiching Tiles into a single GeoTiff
+------------------------------------
 
 This example will show how to start with an
 ``RDD[(ProjectedExtent, Tile)]`` and end with a stitched together
@@ -772,16 +756,8 @@ GeoTiff.
 
     GeoTiff(raster, metadata.crs).write("/some/path/result.tif")
 
-.. raw:: html
-
-   <h3>
-
-Applying a threshold and then median filter on multiband imagery in an
-RDD layer
-
-.. raw:: html
-
-   </h3>
+Median Filter over Multiband Imagery
+------------------------------------
 
 This example shows how to take some multiband imagery that exists in a
 layer, filter it with some upper bound threshold, and then apply a 5x5
@@ -813,16 +789,8 @@ median filter.
           }
         }
 
-.. raw:: html
-
-   <h3>
-
-Query region, mask by that region, compute max NDVI and save as a
-GeoTiff
-
-.. raw:: html
-
-   </h3>
+Region Query and NDVI Calculation
+---------------------------------
 
 .. code:: scala
 
