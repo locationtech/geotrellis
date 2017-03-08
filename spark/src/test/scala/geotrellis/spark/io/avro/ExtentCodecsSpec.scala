@@ -25,14 +25,15 @@ import geotrellis.spark.io.avro.AvroTools._
 
 class ExtentCodecsSpec extends FunSpec with Matchers with AvroTools  {
   describe("ExtentCodecs") {
+    val crs = CRS.fromEpsgCode(4324)
     it("encodes Extent"){
       roundTrip(Extent(0, 1, 2, 3))
     }
     it("encodes ProjectedExtent") {
-      roundTrip(ProjectedExtent(Extent(0, 1, 2, 3), CRS.fromEpsgCode(4324)))
+      roundTrip(ProjectedExtent(Extent(0, 1, 2, 3), crs))
     }
     it("encodes TemporalProjectedExtent"){
-      roundTrip(TemporalProjectedExtent(Extent(0, 1, 2, 3), CRS.fromEpsgCode(4324), 1.toLong))
+      roundTrip(TemporalProjectedExtent(Extent(0, 1, 2, 3), crs, 1.toLong))
     }
   }
 }

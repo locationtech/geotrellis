@@ -23,6 +23,9 @@ import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.avro.codecs.Implicits._
 import geotrellis.vector._
 
+import java.nio.charset.Charset
+import java.nio.ByteBuffer
+
 import org.apache.avro._
 import org.apache.avro.generic._
 
@@ -34,17 +37,17 @@ trait ProjectedExtentCodec {
       .record("ProjectedExtent").namespace("geotrellis.vector")
       .fields()
       .name("extent").`type`(extentCodec.schema).noDefault()
-      .name("epsg").`type`().intType().noDefault()
+      .name("proj4").`type`().stringType().noDefault()
       .endRecord()
 
     def encode(projectedExtent: ProjectedExtent, rec: GenericRecord): Unit = {
       rec.put("extent", extentCodec.encode(projectedExtent.extent))
-      rec.put("epsg", projectedExtent.crs.epsgCode.get)
+      rec.put("proj4", projectedExtent.crs.toProj4String)
     }
 
     def decode(rec: GenericRecord): ProjectedExtent = {
-      val epsg = rec[Int]("epsg")
-      val crs = CRS.fromEpsgCode(epsg)
+      val proj4 = rec.get("proj4").toString()
+      val crs = CRS.fromString(proj4)
 
       val extent = extentCodec.decode(rec[GenericRecord]("extent"))
 

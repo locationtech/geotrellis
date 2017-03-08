@@ -33,20 +33,21 @@ trait TemporalProjectedExtentCodec {
       .record("TemporalProjectedExtent").namespace("geotrellis.spark")
       .fields()
       .name("extent").`type`(extentCodec.schema).noDefault()
-      .name("epsg").`type`().intType().noDefault()
+      .name("proj4").`type`().stringType().noDefault()
       .name("instant").`type`().longType().noDefault()
       .endRecord()
 
     def encode(temporalProjectedExtent: TemporalProjectedExtent, rec: GenericRecord): Unit = {
       rec.put("extent", extentCodec.encode(temporalProjectedExtent.extent))
-      rec.put("epsg", temporalProjectedExtent.crs.epsgCode.get)
+      rec.put("proj4", temporalProjectedExtent.crs.toProj4String)
       rec.put("instant", temporalProjectedExtent.instant)
     }
 
     def decode(rec: GenericRecord): TemporalProjectedExtent = {
       val instant = rec[Long]("instant")
-      val epsg = rec[Int]("epsg")
-      val crs = CRS.fromEpsgCode(epsg)
+
+      val proj4 = rec.get("proj4").toString()
+      val crs = CRS.fromString(proj4)
 
       val extent = extentCodec.decode(rec[GenericRecord]("extent"))
 
@@ -54,4 +55,3 @@ trait TemporalProjectedExtentCodec {
     }
   }
 }
-
