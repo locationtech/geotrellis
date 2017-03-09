@@ -123,36 +123,7 @@ case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: Tile
 
     GridBounds(startCol, startRow, endCol, endRow)
   }
-
-  /**
-   * Generate layout for cropped a cropped region of this raster.
-   * Preserves the structure of parent layout as best possible,
-   * using same storageMethod and segment size.
-   *
-   * @param bounds Pixel bounds inside the current segment layout
-   */
-  def crop(bounds: GridBounds): GeoTiffSegmentLayout = {
-    if(isTiled) {
-      val newLayout = tileLayout.copy(
-        layoutCols = math.ceil(bounds.width.toDouble / tileLayout.tileCols).toInt,
-        layoutRows = math.ceil(bounds.height.toDouble / tileLayout.tileRows).toInt
-      )
-      GeoTiffSegmentLayout(bounds.width, bounds.height, newLayout, isTiled = true)
-    } else {
-      val stripRows: Double = math.ceil(
-        (tileLayout.tileRows * tileLayout.tileCols).toDouble / bounds.width
-      )
-
-      val newLayout = TileLayout(
-        layoutCols = 1,
-        layoutRows = math.ceil(bounds.height.toDouble / stripRows).toInt,
-        tileCols = bounds.width,
-        tileRows = stripRows.toInt
-      )
-      GeoTiffSegmentLayout(bounds.width, bounds.height, newLayout, isTiled = false)
-    }
-  }
-
+  
   /** Returns all segment indices which intersect given pixel grid bounds */
   def intersectingSegments(bounds: GridBounds): Array[Int] = {
     val tc = tileLayout.tileCols
