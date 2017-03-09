@@ -17,11 +17,8 @@
 package geotrellis.spark.io
 
 import geotrellis.util._
-
 import org.apache.avro._
 import org.apache.avro.generic._
-
-import scala.reflect.ClassTag
 
 package object avro {
   implicit class withGenericRecordMethods(val self: GenericRecord) extends MethodExtensions[GenericRecord] {

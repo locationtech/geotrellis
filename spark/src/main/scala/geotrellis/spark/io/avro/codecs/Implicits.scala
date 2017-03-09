@@ -26,6 +26,7 @@ trait Implicits
     with ConstantTileCodecs
     with TileFeatureCodec
     with VectorTileCodec
+    with CRSCodec
     with ExtentCodec
     with ProjectedExtentCodec
     with TemporalProjectedExtentCodec
