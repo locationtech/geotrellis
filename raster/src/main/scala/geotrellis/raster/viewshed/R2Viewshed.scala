@@ -38,8 +38,8 @@ object R2Viewshed extends Serializable {
   sealed abstract class AggregationOperator()
   case class And() extends AggregationOperator { override def toString: String = "AND" }
   case class Or() extends AggregationOperator { override def toString: String = "OR" }
+  case class Debug() extends AggregationOperator { override def toString: String = "DEBUG" }
   case class Plus() extends AggregationOperator { override def toString: String = "PLUS" }
-  case class UniquePlus() extends AggregationOperator { override def toString: String = "U.PLUS" }
 
   sealed case class DirectedSegment(x0: Int, y0: Int, x1: Int, y1: Int, theta: Double) {
     override def toString(): String = s"($x0, $y0) to ($x1, $y1) θ=$theta"
@@ -282,14 +282,14 @@ object R2Viewshed extends Serializable {
               viewshedTile.set(col, row, 0)
             case _: And if (visible && isNoData(current)) =>
               viewshedTile.set(col, row, 1)
+            case _: Debug if (visible && isNoData(current) && !dejaVu.contains(colrow)) =>
+              viewshedTile.set(col, row, 1)
+            case _: Debug if (visible && !isNoData(current) && !dejaVu.contains(colrow)) =>
+              viewshedTile.set(col, row, 1 + current)
             case _: Plus if (visible && isNoData(current) && !dejaVu.contains(colrow)) =>
               viewshedTile.set(col, row, 1)
-            case _: Plus if (visible && !isNoData(current) && !dejaVu.contains(colrow)) =>
-              viewshedTile.set(col, row, 1 + current)
-            case _: UniquePlus if (visible && isNoData(current) && !dejaVu.contains(colrow)) =>
-              viewshedTile.set(col, row, 1)
               dejaVu += colrow
-            case _: UniquePlus if (visible && !isNoData(current) && !dejaVu.contains(colrow)) =>
+            case _: Plus if (visible && !isNoData(current) && !dejaVu.contains(colrow)) =>
               viewshedTile.set(col, row, 1 + current)
               dejaVu += colrow
             case _ =>
@@ -298,7 +298,7 @@ object R2Viewshed extends Serializable {
       }
     }
 
-    if ((op.isInstanceOf[UniquePlus]) &&
+    if ((op.isInstanceOf[Plus]) &&
         (from.isInstanceOf[FromNorth] || from.isInstanceOf[FromSouth]) &&
         (startCol < 0 || startCol >= cols)) {
       val clip = if (startCol >= cols) clipAndQualifyRay(FromEast())_ ; else clipAndQualifyRay(FromWest())_

@@ -121,7 +121,7 @@ class IterativeViewshedSpec extends FunSpec
       val point1 = new jts.Coordinate(2,  7, -0.0)
       val point2 = new jts.Coordinate(7,  7, -0.0)
       val point3 = new jts.Coordinate(12, 7, -0.0)
-      val viewshed = IterativeViewshed(rdd, List(point1, point2, point3), Double.PositiveInfinity, UniquePlus(), false)
+      val viewshed = IterativeViewshed(rdd, List(point1, point2, point3), Double.PositiveInfinity, Plus(), false)
       val expected = 15 * 15 * 3
       var actual: Int = 0
       viewshed.collect.foreach({ case (k, v) => actual += v.toArray.sum })
@@ -151,7 +151,7 @@ class IterativeViewshedSpec extends FunSpec
       val point1 = new jts.Coordinate(2,  7, -0.0)
       val point2 = new jts.Coordinate(7,  7, -0.0)
       val point3 = new jts.Coordinate(12, 7, -0.0)
-      val viewshed = IterativeViewshed(rdd, List(point1, point2, point3), Double.PositiveInfinity, UniquePlus(), false)
+      val viewshed = IterativeViewshed(rdd, List(point1, point2, point3), Double.PositiveInfinity, Plus(), false)
       val expected = 3
       var actual: Int = 0
       viewshed.collect.foreach({ case (k, v) => actual += v.get(2, 2) })
