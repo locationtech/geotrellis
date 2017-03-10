@@ -13,6 +13,7 @@
 ./sbt "project vectortile" publish-local && \
 ./sbt "project slick" publish-local && \
 ./sbt "project spark" publish-local && \
+./sbt "project spark-sql" publish-local && \
 ./sbt "project spark-testkit" publish-local && \
 ./sbt "project shapefile" publish-local && \
 ./sbt "project spark-etl" publish-local && \

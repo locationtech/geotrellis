@@ -17,6 +17,7 @@
       "project hbase" publish \
       "project shapefile" publish \
       "project spark" publish \
+      "project spark-sql" +publish-m2 \
       "project spark-testkit" publish \
       "project util" publish \
       "project vector" publish \
