@@ -206,8 +206,7 @@ object R2Viewshed extends Serializable {
     rays: Array[Ray],
     edgeCallback: EdgeCallback,
     op: AggregationOperator,
-    curve: Boolean = true,
-    debug: Boolean = false
+    curve: Boolean = true
   ): Tile = {
     val cols = elevationTile.cols
     val rows = elevationTile.rows
@@ -219,30 +218,30 @@ object R2Viewshed extends Serializable {
       val m = (y0 - y1).toDouble / (x0 - x1)
 
       from match {
-        case _: FromInside if inTile => Some(DirectedSegment(x0, y0, x1, y1, theta))
+        case _: FromInside if inTile => Some(DirectedSegment(x0,y0,x1,y1,theta))
         case _: FromInside if !inTile => throw new Exception
         case _: FromNorth =>
           val y2 = rows-1
           val x2 = math.round(((y2 - y1) / m) + x1).toInt
-          if ((0 <= x2 && x2 < cols) && (y2 <= y0 && -math.sin(theta) > 0))
+          if ((0 <= x2 && x2 < cols) && (y2 <= y0 && -math.sin(theta) > 0.0))
             Some(DirectedSegment(x2,y2,x1,y1,theta))
           else None
         case _: FromEast =>
           val x2 = cols-1
           val y2 = math.round((m * (x2 - x1)) + y1).toInt
-          if ((0 <= y2 && y2 < rows) && (x2 <= x0 && -math.cos(theta) > 0))
+          if ((0 <= y2 && y2 < rows) && (x2 <= x0 && -math.cos(theta) > 0.0))
             Some(DirectedSegment(x2,y2,x1,y1,theta))
           else None
         case _: FromSouth =>
           val y2 = 0
           val x2 = math.round(((y2 - y1) / m) + x1).toInt
-          if ((0 <= x2 && x2 < cols) && (y2 >= y0 && math.sin(theta) > 0))
+          if ((0 <= x2 && x2 < cols) && (y2 >= y0 && math.sin(theta) > 0.0))
             Some(DirectedSegment(x2,y2,x1,y1,theta))
           else None
         case _: FromWest =>
           val x2 = 0
           val y2 = math.round((m * (x2 - x1)) + y1).toInt
-          if ((0 <= y2 && y2 < rows) && (x2 >= x0 && math.cos(theta) > 0))
+          if ((0 <= y2 && y2 < rows) && (x2 >= x0 && math.cos(theta) > 0.0))
             Some(DirectedSegment(x2,y2,x1,y1,theta))
           else None
       }
@@ -341,7 +340,6 @@ object R2Viewshed extends Serializable {
       .flatMap({ row => clip(startCol,startRow,cols-1,row) })
       .foreach({ seg =>
         alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
-        if (debug) println(s"--- $alpha | $seg | ${rays.head} | ${rays.last}")
         Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
         if (!terminated) edgeCallback(Ray(seg.theta, alpha), FromWest())
       })

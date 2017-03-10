@@ -169,9 +169,8 @@ object IterativeViewshed {
         .toMap
     val heights = sc.broadcast(_heights)
 
-    // Create RDD of viewsheds; the tile containing the starting point
-    // is  complete and  the accumulator  contains the  rays emanating
-    // from that.
+    // Create RDD  of viewsheds; after this,  the accumulator contains
+    // the rays emanating from the starting points.
     var sheds: RDD[(K, V, MutableArrayTile)] = elevation.map({ case (k, v) =>
       val key = implicitly[SpatialKey](k)
       val tile = implicitly[Tile](v)
@@ -244,8 +243,7 @@ object IterativeViewshed {
                   from,
                   sortedRays,
                   rayCatcherFn(key, index),
-                  op, curve,
-                  false //(key == SpatialKey(116,196) && from.isInstanceOf[FromEast])
+                  op, curve
                 )
               })
             })
