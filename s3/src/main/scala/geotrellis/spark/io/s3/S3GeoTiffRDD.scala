@@ -16,8 +16,6 @@
 
 package geotrellis.spark.io.s3
 
-import java.nio.ByteBuffer
-
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.tags.TiffTags
@@ -26,17 +24,23 @@ import geotrellis.spark.io.RasterReader
 import geotrellis.spark.io.s3.util.S3RangeReader
 import geotrellis.util.StreamingByteReader
 import geotrellis.vector._
-import org.apache.hadoop.conf.Configuration
 
+import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-
 import com.amazonaws.services.s3.model._
+
+import java.net.URI
+import java.nio.ByteBuffer
 
 /**
  * The S3GeoTiffRDD object allows for the creation of whole or windowed RDD[(K, V)]s from files on S3.
  */
 object S3GeoTiffRDD {
+  import geotrellis.spark.io.hadoop.HadoopGeoTiffRDD.keyTransformId
+
+  implicit def stringToUri(str: String): URI = new URI(str)
+
   final val GEOTIFF_TIME_TAG_DEFAULT = "TIFFTAG_DATETIME"
   final val GEOTIFF_TIME_FORMAT_DEFAULT = "yyyy:MM:dd HH:mm:ss"
 
@@ -79,7 +83,7 @@ object S3GeoTiffRDD {
    * @param options  An instance of [[Options]] that contains any user defined or default settings.
    */
   private def configuration(bucket: String, prefix: String, options: S3GeoTiffRDD.Options)(implicit sc: SparkContext): Configuration = {
-    val conf =sc.hadoopConfiguration
+    val conf = sc.hadoopConfiguration
     S3InputFormat.setBucket(conf, bucket)
     S3InputFormat.setPrefix(conf, prefix)
     S3InputFormat.setExtensions(conf, options.tiffExtensions)
@@ -94,10 +98,11 @@ object S3GeoTiffRDD {
     *
     * @param bucket   Name of the bucket on S3 where the files are kept.
     * @param prefix   Prefix of all of the keys on S3 that are to be read in.
+    * @param keyTransform function to transform input key basing on the URI information.
     * @param options  An instance of [[Options]] that contains any user defined or default settings.
     */
-  def apply[K, V](bucket: String, prefix: String, options: Options = Options.DEFAULT)
-    (implicit sc: SparkContext, rr: RasterReader[Options, (K, V)]): RDD[(K, V)] = {
+  def apply[I, K, V](bucket: String, prefix: String, keyTransform: (URI, I) => K, options: Options)
+    (implicit sc: SparkContext, rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
 
     val conf = configuration(bucket, prefix, options)
 
@@ -111,7 +116,7 @@ object S3GeoTiffRDD {
             classOf[TiffTags]
           ).mapValues { tiffTags => (tiffTags.cols, tiffTags.rows) }
 
-        apply[K, V](objectRequestsToDimensions, options)
+        apply[I, K, V](objectRequestsToDimensions, keyTransform, options)
       case None =>
         sc.newAPIHadoopRDD(
           conf,
@@ -119,7 +124,10 @@ object S3GeoTiffRDD {
           classOf[String],
           classOf[Array[Byte]]
         ).mapPartitions(
-          _.map { case (_, bytes) => rr.readFully(ByteBuffer.wrap(bytes), options) },
+          _.map { case (key, bytes) =>
+            val (k, v) = rr.readFully(ByteBuffer.wrap(bytes), options)
+            keyTransform(key, k) -> v
+          },
           preservesPartitioning = true
         )
 
@@ -130,10 +138,11 @@ object S3GeoTiffRDD {
     * Creates a RDD[(K, V)] whose K and V depends on the type of the GeoTiff that is going to be read in.
     *
     * @param objectRequestsToDimensions A RDD of GetObjectRequest of a given GeoTiff and its cols and rows as a (Int, Int).
+    * @param keyTransform function to transform input key basing on the URI information.
     * @param options An instance of [[Options]] that contains any user defined or default settings.
     */
-  def apply[K, V](objectRequestsToDimensions: RDD[(GetObjectRequest, (Int, Int))], options: Options)
-    (implicit rr: RasterReader[Options, (K, V)]): RDD[(K, V)] = {
+  def apply[I, K, V](objectRequestsToDimensions: RDD[(GetObjectRequest, (Int, Int))], keyTransform: (URI, I) => K, options: Options)
+    (implicit rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
 
     val windows =
       objectRequestsToDimensions
@@ -156,9 +165,35 @@ object S3GeoTiffRDD {
           StreamingByteReader(S3RangeReader(objectRequest, options.getS3Client()))
       }
 
-      rr.readWindow(reader, pixelWindow, options)
+      val (k, v) = rr.readWindow(reader, pixelWindow, options)
+
+      keyTransform(objectRequest.getKey, k) -> v
     }
   }
+
+  /**
+    * Creates RDD that will read all GeoTiffs in the given bucket and prefix as singleband GeoTiffs.
+    * If a GeoTiff contains multiple bands, only the first will be read.
+    *
+    * @param bucket Name of the bucket on S3 where the files are kept.
+    * @param prefix Prefix of all of the keys on S3 that are to be read in.
+    * @param keyTransform function to transform input key basing on the URI information.
+    */
+
+  def singleband[I, K](bucket: String, prefix: String, keyTransform: (URI, I) => K, options: Options)(implicit sc: SparkContext, rr: RasterReader[Options, (I, Tile)]): RDD[(K, Tile)] =
+    apply[I, K, Tile](bucket, prefix, keyTransform, options)
+
+  /**
+    * Creates RDD that will read all GeoTiffs in the given bucket and prefix as multiband GeoTiffs.
+    * If a GeoTiff contains multiple bands, only the first will be read.
+    *
+    * @param bucket Name of the bucket on S3 where the files are kept.
+    * @param prefix Prefix of all of the keys on S3 that are to be read in.
+    * @param keyTransform function to transform input key basing on the URI information.
+    */
+
+  def multiband[I, K](bucket: String, prefix: String, keyTransform: (URI, I) => K, options: Options)(implicit sc: SparkContext, rr: RasterReader[Options, (I, MultibandTile)]): RDD[(K, MultibandTile)] =
+    apply[I, K, MultibandTile](bucket, prefix, keyTransform, options)
 
   /**
     * Creates RDD that will read all GeoTiffs in the given bucket and prefix as singleband GeoTiffs.
@@ -179,7 +214,19 @@ object S3GeoTiffRDD {
     * @param options  An instance of [[Options]] that contains any user defined or default settings.
     */
   def spatial(bucket: String, prefix: String, options: Options)(implicit sc: SparkContext): RDD[(ProjectedExtent, Tile)] =
-    apply[ProjectedExtent, Tile](bucket, prefix, options)
+    spatial(bucket, prefix, keyTransformId, options)
+
+  /**
+    * Creates RDD that will read all GeoTiffs in the given bucket and prefix as singleband tiles.
+    * If a GeoTiff contains multiple bands, only the first will be read.
+    *
+    * @param bucket   Name of the bucket on S3 where the files are kept.
+    * @param prefix   Prefix of all of the keys on S3 that are to be read in.
+    * @param keyTransform function to transform input key basing on the URI information.
+    * @param options  An instance of [[Options]] that contains any user defined or default settings.
+    */
+  def spatial(bucket: String, prefix: String, keyTransform: (URI, ProjectedExtent) => ProjectedExtent, options: Options)(implicit sc: SparkContext): RDD[(ProjectedExtent, Tile)] =
+    singleband[ProjectedExtent, ProjectedExtent](bucket, prefix, keyTransform, options)
 
   /**
     * Creates RDD that will read all GeoTiffs in the given bucket and prefix as multiband tiles.
@@ -198,7 +245,19 @@ object S3GeoTiffRDD {
     * @param options  An instance of [[Options]] that contains any user defined or default settings.
     */
   def spatialMultiband(bucket: String, prefix: String, options: Options)(implicit sc: SparkContext): RDD[(ProjectedExtent, MultibandTile)] =
-    apply[ProjectedExtent, MultibandTile](bucket, prefix, options)
+    spatialMultiband(bucket, prefix, keyTransformId, options)
+
+  /**
+    * Creates RDD that will read all GeoTiffs in the given bucket and prefix as multiband tiles.
+    * If a GeoTiff contains multiple bands, only the first will be read.
+    *
+    * @param bucket   Name of the bucket on S3 where the files are kept.
+    * @param prefix   Prefix of all of the keys on S3 that are to be read in.
+    * @param keyTransform function to transform input key basing on the URI information.
+    * @param options  An instance of [[Options]] that contains any user defined or default settings.
+    */
+  def spatialMultiband(bucket: String, prefix: String, keyTransform: (URI, ProjectedExtent) => ProjectedExtent, options: Options)(implicit sc: SparkContext): RDD[(ProjectedExtent, MultibandTile)] =
+    multiband[ProjectedExtent, ProjectedExtent](bucket, prefix, keyTransform, options)
 
   /**
     * Creates RDD that will read all GeoTiffs in the given bucket and prefix as singleband tiles.
@@ -219,7 +278,19 @@ object S3GeoTiffRDD {
     * @param options  Options for the reading process. Including the timestamp tiff tag and its pattern.
     */
   def temporal(bucket: String, prefix: String, options: Options)(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, Tile)] =
-    apply[TemporalProjectedExtent, Tile](bucket, prefix, options)
+    temporal(bucket, prefix, keyTransformId, options)
+
+  /**
+    * Creates RDD that will read all GeoTiffs in the given bucket and prefix as singleband tiles.
+    * Will parse a timestamp from a tiff tags specified in options to associate with each tile.
+    *
+    * @param bucket   Name of the bucket on S3 where the files are kept.
+    * @param prefix   Prefix of all of the keys on S3 that are to be read in.
+    * @param keyTransform function to transform input key basing on the URI information.
+    * @param options  Options for the reading process. Including the timestamp tiff tag and its pattern.
+    */
+  def temporal(bucket: String, prefix: String, keyTransform: (URI, TemporalProjectedExtent) => TemporalProjectedExtent, options: Options)(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, Tile)] =
+    singleband[TemporalProjectedExtent, TemporalProjectedExtent](bucket, prefix, keyTransform, options)
 
   /**
     * Creates RDD that will read all GeoTiffs in the given bucket and prefix as multiband tiles.
@@ -240,5 +311,17 @@ object S3GeoTiffRDD {
     * @param options  Options for the reading process. Including the timestamp tiff tag and its pattern.
     */
   def temporalMultiband(bucket: String, prefix: String, options: Options)(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, MultibandTile)] =
-    apply[TemporalProjectedExtent, MultibandTile](bucket, prefix, options)
+    temporalMultiband(bucket, prefix, keyTransformId, options)
+
+  /**
+    * Creates RDD that will read all GeoTiffs in the given bucket and prefix as multiband tiles.
+    * Will parse a timestamp from a tiff tags specified in options to associate with each tile.
+    *
+    * @param bucket   Name of the bucket on S3 where the files are kept.
+    * @param prefix   Prefix of all of the keys on S3 that are to be read in.
+    * @param keyTransform function to transform input key basing on the URI information.
+    * @param options  Options for the reading process. Including the timestamp tiff tag and its pattern.
+    */
+  def temporalMultiband(bucket: String, prefix: String, keyTransform: (URI, TemporalProjectedExtent) => TemporalProjectedExtent, options: Options)(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, MultibandTile)] =
+    multiband[TemporalProjectedExtent, TemporalProjectedExtent](bucket, prefix, keyTransform, options)
 }
