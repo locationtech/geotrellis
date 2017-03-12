@@ -74,29 +74,6 @@ object R2Viewshed extends Serializable {
     ArrayTile.empty(IntConstantNoDataCellType, cols, rows)
 
   /**
-    * Given the endpoints of a (directed) line segment, compute the
-    * angle of the segment.
-    */
-  private def computeTheta(x0: Int, y0: Int, x1: Int, y1: Int): Double = {
-    val m = (y0 - y1).toDouble / (x0 - x1)
-
-    if (x0 == x1 && y0 < y1) math.Pi/2
-    else if (x0 == x1) 1.5*math.Pi
-    else {
-      val theta = math.atan(m)
-      if (x1 >= x0 && y1 >= y0 && 0 <= theta && theta <= math.Pi/2) theta
-      else if (x1 >= x0 && y1 >= y0) throw new Exception
-      else if (x1 >= x0 && y1 <= y0 && -math.Pi/2 <= theta && theta <= 0) theta + 2*math.Pi
-      else if (x1 >= x0 && y1 <= y0) throw new Exception
-      else if (x1 <= x0 && y1 <= y0 && 0 <= theta && theta <= math.Pi/2) theta + math.Pi
-      else if (x1 <= x0 && y1 <= y0) throw new Exception
-      else if (x1 <= x0 && y1 >= y0 && -math.Pi/2 <= theta && theta <= 0) theta + math.Pi
-      else if (x1 <= x0 && y1 >= y0) throw new Exception
-      else throw new Exception
-    }
-  }
-
-  /**
     * Given a direction of propagation, a packet of rays, and an angle
     * theta, return alpha (the angle of elevation).
     */
@@ -214,7 +191,8 @@ object R2Viewshed extends Serializable {
     val inTile: Boolean = (0 <= startCol && startCol < cols && 0 <= startRow && startRow <= rows)
 
     def clipAndQualifyRay(from: From)(x0: Int, y0: Int, x1: Int, y1: Int): Option[DirectedSegment] = {
-      val theta = computeTheta(x0, y0, x1, y1)
+      val _theta = math.atan2((y1-y0), (x1-x0))
+      val theta = if (_theta >= 0.0) _theta ; else _theta + 2*math.Pi
       val m = (y0 - y1).toDouble / (x0 - x1)
 
       from match {
