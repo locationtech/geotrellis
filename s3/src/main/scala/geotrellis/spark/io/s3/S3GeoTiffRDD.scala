@@ -37,8 +37,6 @@ import java.nio.ByteBuffer
  * The S3GeoTiffRDD object allows for the creation of whole or windowed RDD[(K, V)]s from files on S3.
  */
 object S3GeoTiffRDD {
-  implicit def stringToUri(str: String): URI = new URI(str)
-
   final val GEOTIFF_TIME_TAG_DEFAULT = "TIFFTAG_DATETIME"
   final val GEOTIFF_TIME_FORMAT_DEFAULT = "yyyy:MM:dd HH:mm:ss"
 
@@ -124,7 +122,7 @@ object S3GeoTiffRDD {
         ).mapPartitions(
           _.map { case (key, bytes) =>
             val (k, v) = rr.readFully(ByteBuffer.wrap(bytes), options)
-            keyTransform(key, k) -> v
+            keyTransform(new URI(key), k) -> v
           },
           preservesPartitioning = true
         )
@@ -175,7 +173,7 @@ object S3GeoTiffRDD {
 
       val (k, v) = rr.readWindow(reader, pixelWindow, options)
 
-      keyTransform(objectRequest.getKey, k) -> v
+      keyTransform(new URI(objectRequest.getKey), k) -> v
     }
   }
 
