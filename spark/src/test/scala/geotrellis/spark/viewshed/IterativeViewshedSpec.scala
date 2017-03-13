@@ -47,7 +47,7 @@ class IterativeViewshedSpec extends FunSpec
         ContextRDD(sc.parallelize(list), tileLayerMetadata)
      }
 
-      val point = Array(7, 7, -0.0, 0, -1.0)
+      val point = Array(7, 7, -0.0, 0, -1.0, 0)
       val viewshed = IterativeViewshed(rdd, List(point),
         maxDistance = Double.PositiveInfinity,
         curvature = false,
@@ -71,7 +71,7 @@ class IterativeViewshedSpec extends FunSpec
         ContextRDD(sc.parallelize(list), tileLayerMetadata)
       }
 
-      val point = Array(7, 7, -0.0, 0, -1.0)
+      val point = Array(7, 7, -0.0, 0, -1.0, 0)
       val viewshed = IterativeViewshed(rdd, List(point),
         maxDistance = Double.PositiveInfinity,
         curvature = false,
@@ -96,7 +96,7 @@ class IterativeViewshedSpec extends FunSpec
         ContextRDD(sc.parallelize(list), tileLayerMetadata)
       }
 
-      val point = Array(7, 7, -0.0, 0, -1.0)
+      val point = Array(7, 7, -0.0, 0, -1.0, 0)
       val viewshed = IterativeViewshed(rdd, List(point),
         maxDistance = Double.PositiveInfinity,
         curvature = false,
@@ -130,9 +130,9 @@ class IterativeViewshedSpec extends FunSpec
         ContextRDD(sc.parallelize(list), tileLayerMetadata)
       }
 
-      val point1 = Array(2,  7, -0.0, 0, -1.0)
-      val point2 = Array(7,  7, -0.0, 0, -1.0)
-      val point3 = Array(12, 7, -0.0, 0, -1.0)
+      val point1 = Array(2,  7, -0.0, 0, -1.0, 0)
+      val point2 = Array(7,  7, -0.0, 0, -1.0, 0)
+      val point3 = Array(12, 7, -0.0, 0, -1.0, 0)
       val viewshed = IterativeViewshed(rdd, List(point1, point2, point3),
         maxDistance = Double.PositiveInfinity,
         curvature = false,
@@ -164,9 +164,9 @@ class IterativeViewshedSpec extends FunSpec
         ContextRDD(sc.parallelize(list), tileLayerMetadata)
       }
 
-      val point1 = Array(2,  7, -0.0, 0, -1.0)
-      val point2 = Array(7,  7, -0.0, 0, -1.0)
-      val point3 = Array(12, 7, -0.0, 0, -1.0)
+      val point1 = Array(2,  7, -0.0, 0, -1.0, 0)
+      val point2 = Array(7,  7, -0.0, 0, -1.0, 0)
+      val point3 = Array(12, 7, -0.0, 0, -1.0, 0)
       val expected = 3
       val viewshed = IterativeViewshed(rdd, List(point1, point2, point3),
         maxDistance = Double.PositiveInfinity,

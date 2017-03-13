@@ -147,6 +147,7 @@ object R2Viewshed extends Serializable {
       maxDistance = Double.PositiveInfinity,
       curvature = false,
       operator = op,
+      altitude = 0.0,
       cameraDirection = 0,
       cameraFOV = -1.0
     )
@@ -154,8 +155,8 @@ object R2Viewshed extends Serializable {
   }
 
   /**
-    * Compute the viewshed of the tile using the R2 algorithm from
-    * [1].  The numbers in the elevationTile are assumed to be
+    * Compute the viewshed of the elevatonTile using the R2 algorithm
+    * from [1].  The numbers in the elevationTile are assumed to be
     * elevations in units of meters.  The results are written into the
     * viewshedTile.
     *
@@ -177,8 +178,9 @@ object R2Viewshed extends Serializable {
     * @param  maxDistance      The maximum distance that any ray is allowed to travel
     * @param  curvature        Whether to account for the Earth's curvature or not
     * @param  operator         The aggregation operator to use
+    * @param  altitude         The altitude to look at
     * @param  cameraDirection  The direction (in radians) of the camera
-    * @param  cameraFOV        The camera field of view, angles whose dot product with the camera direction are less than this are filtered out
+    * @param  cameraFOV        The camera field of view, rays whose dot product with the camera direction are less than this are filtered out
     */
   def compute(
     elevationTile: Tile, viewshedTile: MutableArrayTile,
@@ -190,6 +192,7 @@ object R2Viewshed extends Serializable {
     maxDistance: Double,
     curvature: Boolean,
     operator: AggregationOperator,
+    altitude: Double,
     cameraDirection: Double,
     cameraFOV: Double
   ): Tile = {
@@ -255,30 +258,37 @@ object R2Viewshed extends Serializable {
         val deltay = startRow - row
         val distance = math.sqrt(deltax * deltax + deltay * deltay) * resolution
         val drop = if (curvature) downwardCurvature(distance); else 0.0
-        val angle = math.atan((elevationTile.getDouble(col, row) - drop - viewHeight) / distance)
+        val elevation = elevationTile.getDouble(col, row) - drop - viewHeight
+        val groundAngle = math.atan(elevation / distance)
+        val subjectAngle =
+          if (altitude > 0.0) math.atan((altitude - drop - viewHeight) / distance)
+          else if (altitude < 0.0) math.atan((elevation - altitude) / distance)
+          else groundAngle
 
         if (distance >= maxDistance) terminated = true
         if (!terminated) {
-          val visible = alpha <= angle
+          val groundVisible = alpha <= groundAngle
+          val subjectVisible = alpha <= subjectAngle
           val current = viewshedTile.get(col, row)
           val colrow = (col, row)
 
-          if (visible) alpha = angle
+          if (groundVisible) alpha = groundAngle
+
           operator match {
-            case _: Or if visible =>
+            case _: Or if subjectVisible =>
               viewshedTile.set(col, row, 1)
-            case _: And if !visible =>
+            case _: And if !subjectVisible =>
               viewshedTile.set(col, row, 0)
-            case _: And if (visible && isNoData(current)) =>
+            case _: And if (subjectVisible && isNoData(current)) =>
               viewshedTile.set(col, row, 1)
-            case _: Debug if (visible && isNoData(current) && !dejaVu.contains(colrow)) =>
+            case _: Debug if (subjectVisible && isNoData(current) && !dejaVu.contains(colrow)) =>
               viewshedTile.set(col, row, 1)
-            case _: Debug if (visible && !isNoData(current) && !dejaVu.contains(colrow)) =>
+            case _: Debug if (subjectVisible && !isNoData(current) && !dejaVu.contains(colrow)) =>
               viewshedTile.set(col, row, 1 + current)
-            case _: Plus if (visible && isNoData(current) && !dejaVu.contains(colrow)) =>
+            case _: Plus if (subjectVisible && isNoData(current) && !dejaVu.contains(colrow)) =>
               viewshedTile.set(col, row, 1)
               dejaVu += colrow
-            case _: Plus if (visible && !isNoData(current) && !dejaVu.contains(colrow)) =>
+            case _: Plus if (subjectVisible && !isNoData(current) && !dejaVu.contains(colrow)) =>
               viewshedTile.set(col, row, 1 + current)
               dejaVu += colrow
             case _ =>

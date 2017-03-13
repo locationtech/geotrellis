@@ -56,6 +56,7 @@ class R2ViewshedSpec extends FunSpec
         maxDistance = Double.PositiveInfinity,
         curvature = false,
         operator = Or(),
+        altitude = 0,
         cameraDirection = 0,
         cameraFOV = -1.0
       )
@@ -91,6 +92,7 @@ class R2ViewshedSpec extends FunSpec
         maxDistance = Double.PositiveInfinity,
         curvature = false,
         operator = Or(),
+        altitude = 0,
         cameraDirection = 0,
         cameraFOV = -1.0
       )
@@ -126,6 +128,7 @@ class R2ViewshedSpec extends FunSpec
         maxDistance = Double.PositiveInfinity,
         curvature = false,
         operator = Or(),
+        altitude = 0,
         cameraDirection = 0,
         cameraFOV = -1.0
       )
@@ -161,6 +164,7 @@ class R2ViewshedSpec extends FunSpec
         maxDistance = Double.PositiveInfinity,
         curvature = false,
         operator = Or(),
+        altitude = 0,
         cameraDirection = 0,
         cameraFOV = -1.0
       )
@@ -173,7 +177,7 @@ class R2ViewshedSpec extends FunSpec
 
     // ---------------------------------
 
-    it("Accounts for field of view when looking East") {
+    it("Correctly handles field of view when looking East") {
       val elevation = createTile(Array.fill(7 * 7)(1), 7, 7)
       val actual = ArrayTile.empty(IntCellType, 7, 7)
       val expected = Array (
@@ -196,6 +200,7 @@ class R2ViewshedSpec extends FunSpec
         maxDistance = Double.PositiveInfinity,
         curvature = false,
         operator = Or(),
+        altitude = 0,
         cameraDirection = 0,
         cameraFOV = math.cos(math.Pi/4)
       )
@@ -203,6 +208,76 @@ class R2ViewshedSpec extends FunSpec
       assertEqual(actual, expected)
     }
 
+    // ---------------------------------
+
+    it("Correctly handles altitude") {
+      val ar = Array (
+        0,     0,     0,     0,     1,     1,     0,
+        0,     0,     0,     0,     1,     1,     0,
+        0,     0,     0,     0,     1,     1,     0,
+        0,     0,     0,     0,     1,     1,     0,
+        0,     0,     0,     0,     1,     1,     0,
+        0,     0,     0,     0,     1,     1,     0,
+        0,     0,     0,     0,     1,     1,     0
+      )
+      val elevation = createTile(ar, 7, 7)
+      val low = ArrayTile.empty(IntCellType, 7, 7)
+      val medium = ArrayTile.empty(IntCellType, 7, 7)
+      val hi = ArrayTile.empty(IntCellType, 7, 7)
+
+      R2Viewshed.compute(
+        elevation, low,
+        3, 3, 0.1,
+        FromInside(),
+        null,
+        { (_, _) => },
+        resolution = 1,
+        maxDistance = Double.PositiveInfinity,
+        curvature = false,
+        operator = Or(),
+        altitude = 0,
+        cameraDirection = 0,
+        cameraFOV = -1
+      )
+
+      R2Viewshed.compute(
+        elevation, medium,
+        3, 3, 0.1,
+        FromInside(),
+        null,
+        { (_, _) => },
+        resolution = 1,
+        maxDistance = Double.PositiveInfinity,
+        curvature = false,
+        operator = Or(),
+        altitude = -2,
+        cameraDirection = 0,
+        cameraFOV = -1
+      )
+
+      R2Viewshed.compute(
+        elevation, hi,
+        3, 3, 0.1,
+        FromInside(),
+        null,
+        { (_, _) => },
+        resolution = 1,
+        maxDistance = Double.PositiveInfinity,
+        curvature = false,
+        operator = Or(),
+        altitude = -3,
+        cameraDirection = 0,
+        cameraFOV = -1
+      )
+
+      val lowCount = low.toArray.sum
+      val mediumCount = medium.toArray.sum
+      val hiCount = hi.toArray.sum
+
+      lowCount should be (33)
+      mediumCount should be (42)
+      hiCount should be (49)
+    }
 
     // ---------------------------------
 
@@ -570,5 +645,6 @@ class R2ViewshedSpec extends FunSpec
         diff should be < allowable
       }
     }
+
   }
 }
