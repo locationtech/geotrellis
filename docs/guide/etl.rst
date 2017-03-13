@@ -564,9 +564,10 @@ Extension
 ---------
 
 In order to provide your own input or output modules you must extend
-```InputPlugin`` <src/main/scala/geotrellis/spark/etl/InputPlugin>`__
-and
-```OutputPlugin`` <src/main/scala/geotrellis/spark/etl/OutputPlugin>`__
+`InputPlugin
+<https://geotrellis.github.io/scaladocs/latest/#geotrellis.spark.etl.InputPlugin>`__
+and `OutputPlugin
+<https://geotrellis.github.io/scaladocs/latest/#geotrellis.spark.etl.OutputPlugin>`__
 and register them in the ``Etl`` constructor via a ``TypedModule``.
 
 Examples
