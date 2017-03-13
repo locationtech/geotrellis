@@ -356,22 +356,21 @@ tile.
 Reader Threads
 --------------
 
-Cassandra and S3 Layer RDDReaders / RDDWriters are configurable by
-threads amount. It's a programm setting, that can be different for a
-certain machine (depends on resources available). Configuration could be
-set in the ``reference.conf`` / ``application.conf`` file of your app,
-default settings available in a ``reference.conf`` file of each backend
-subproject (we use `TypeSafe
-Config <https://github.com/typesafehub/config>`__). For a File backend
-only RDDReader is configurable, For Accumulo - only RDDWriter (Socket
-Strategy). For all backends CollectionReaders are configurable as well.
-By default thread pool size per each configurable reader / writer equals
-by virtual machine cpu cores available. Word ``default`` means thread
+Cassandra and S3 Layer RDDReaders / RDDWriters are configurable by threads
+amount. It's a programm setting, that can be different for a certain machine
+(depends on resources available). Configuration could be set in the
+``reference.conf`` / ``application.conf`` file of your app, default settings
+available in a ``reference.conf`` file of each backend subproject (we use
+`TypeSafe Config <https://github.com/typesafehub/config>`__). For a File
+backend only RDDReader is configurable, For Accumulo - only RDDWriter
+(Socket Strategy). For all backends CollectionReaders are configurable as
+well. By default thread pool size per each configurable reader / writer
+equals by virtual machine cpu cores available. Word ``default`` means thread
 per cpu core, it can be changed to any integer value.
 
 Default configuration example:
 
-.. code:: conf
+.. code:: javascript
 
     geotrellis.accumulo.threads {
       collection.read = default
@@ -401,9 +400,9 @@ Default configuration example:
 
 Cassandra has additional configuration settings:
 
-And additional connections parameters for\ ``Cassandra``:
+And additional connections parameters for ``Cassandra``:
 
-.. code:: conf
+.. code:: javascript
 
     geotrellis.cassandra {
       keyspace             = "geotrellis"
