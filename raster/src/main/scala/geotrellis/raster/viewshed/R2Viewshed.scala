@@ -37,8 +37,8 @@ object R2Viewshed extends Serializable {
 
   sealed abstract class AggregationOperator()
   case class And() extends AggregationOperator { override def toString: String = "AND" }
-  case class Or() extends AggregationOperator { override def toString: String = "OR" }
   case class Debug() extends AggregationOperator { override def toString: String = "DEBUG" }
+  case class Or() extends AggregationOperator { override def toString: String = "OR" }
   case class Plus() extends AggregationOperator { override def toString: String = "PLUS" }
 
   sealed case class DirectedSegment(x0: Int, y0: Int, x1: Int, y1: Int, theta: Double) {
@@ -113,7 +113,7 @@ object R2Viewshed extends Serializable {
     *
     * 1. https://en.wikipedia.org/wiki/Arc_(geometry)
     */
-  @inline private def downwardCurve(distance: Double): Double =
+  @inline private def downwardCurvature(distance: Double): Double =
     6378137 * (1 - math.cos(distance / 6378137))
 
   /**
@@ -140,12 +140,15 @@ object R2Viewshed extends Serializable {
     R2Viewshed.compute(
       elevationTile, viewshedTile,
       startCol, startRow, viewHeight,
-      1.0, Double.PositiveInfinity,
       FromInside(),
       null,
       nop,
-      op,
-      false // Ignore curvature
+      resolution = 1,
+      maxDistance = Double.PositiveInfinity,
+      curvature = false,
+      operator = op,
+      cameraDirection = 0,
+      cameraFOV = -1.0
     )
     viewshedTile
   }
@@ -162,33 +165,40 @@ object R2Viewshed extends Serializable {
     *    Taylor & Francis Edinburgh, 1994.
     *
     *
-    * @param  elevationTile  Elevations in units of meters
-    * @param  viewshedTile   The tile into which the viewshed will be written
-    * @param  startCol       The x position of the vantage point
-    * @param  startRow       The y position of the vantage point
-    * @param  viewHeight     The height of the vantage
-    * @param  resolution     The resolution of the elevationTile in units of meters/pixel
-    * @param  maxDistance    The maximum distance that any ray is allowed to travel
-    * @param  from           The direction from which the rays are allowed to come
-    * @param  rays           Rays shining in from other tiles
-    * @param  edgeCallback   A callback that is called when a ray reaches the periphery of this tile
-    * @param  op             The aggregation operator to use
-    * @param  curve          Whether to account for the Earth's curvature or not
+    * @param  elevationTile    Elevations in units of meters
+    * @param  viewshedTile     The tile into which the viewshed will be written
+    * @param  startCol         The x position of the vantage point
+    * @param  startRow         The y position of the vantage point
+    * @param  viewHeight       The height of the vantage
+    * @param  from             The direction from which the rays are allowed to come
+    * @param  rays             Rays shining in from other tiles
+    * @param  edgeCallback     A callback that is called when a ray reaches the periphery of this tile
+    * @param  resolution       The resolution of the elevationTile in units of meters/pixel
+    * @param  maxDistance      The maximum distance that any ray is allowed to travel
+    * @param  curvature        Whether to account for the Earth's curvature or not
+    * @param  operator         The aggregation operator to use
+    * @param  cameraDirection  The direction (in radians) of the camera
+    * @param  cameraFOV        The camera field of view, angles whose dot product with the camera direction are less than this are filtered out
     */
   def compute(
     elevationTile: Tile, viewshedTile: MutableArrayTile,
     startCol: Int, startRow: Int, viewHeight: Double,
-    resolution: Double, maxDistance: Double,
     from: From,
     rays: Array[Ray],
     edgeCallback: EdgeCallback,
-    op: AggregationOperator,
-    curve: Boolean = true
+    resolution: Double,
+    maxDistance: Double,
+    curvature: Boolean,
+    operator: AggregationOperator,
+    cameraDirection: Double,
+    cameraFOV: Double
   ): Tile = {
     val cols = elevationTile.cols
     val rows = elevationTile.rows
     val re = RasterExtent(Extent(0, 0, cols, rows), cols, rows)
     val inTile: Boolean = (0 <= startCol && startCol < cols && 0 <= startRow && startRow <= rows)
+    val vx = math.cos(cameraDirection)
+    val vy = math.sin(cameraDirection)
 
     def clipAndQualifyRay(from: From)(x0: Int, y0: Int, x1: Int, y1: Int): Option[DirectedSegment] = {
       val _theta = math.atan2((y1-y0), (x1-x0))
@@ -196,6 +206,8 @@ object R2Viewshed extends Serializable {
       val m = (y0 - y1).toDouble / (x0 - x1)
 
       from match {
+        case _ if (-1.0 < cameraFOV && cameraFOV < 1.0 && (vx*math.cos(theta) + vy*math.sin(theta)) < cameraFOV) =>
+          None
         case _: FromInside if inTile => Some(DirectedSegment(x0,y0,x1,y1,theta))
         case _: FromInside if !inTile => throw new Exception
         case _: FromNorth =>
@@ -242,7 +254,7 @@ object R2Viewshed extends Serializable {
         val deltax = startCol - col
         val deltay = startRow - row
         val distance = math.sqrt(deltax * deltax + deltay * deltay) * resolution
-        val drop = if (curve) downwardCurve(distance); else 0.0
+        val drop = if (curvature) downwardCurvature(distance); else 0.0
         val angle = math.atan((elevationTile.getDouble(col, row) - drop - viewHeight) / distance)
 
         if (distance >= maxDistance) terminated = true
@@ -252,7 +264,7 @@ object R2Viewshed extends Serializable {
           val colrow = (col, row)
 
           if (visible) alpha = angle
-          op match {
+          operator match {
             case _: Or if visible =>
               viewshedTile.set(col, row, 1)
             case _: And if !visible =>
@@ -275,7 +287,7 @@ object R2Viewshed extends Serializable {
       }
     }
 
-    if ((op.isInstanceOf[Plus]) &&
+    if ((operator.isInstanceOf[Plus]) &&
         (from.isInstanceOf[FromNorth] || from.isInstanceOf[FromSouth]) &&
         (startCol < 0 || startCol >= cols)) {
       val clip = if (startCol >= cols) clipAndQualifyRay(FromEast())_ ; else clipAndQualifyRay(FromWest())_

@@ -31,9 +31,8 @@ class R2ViewshedSpec extends FunSpec
   describe("Viewshed") {
 
     val elevationTile = IntArrayTile(Array.fill[Int](25)(1), 5, 5)
-    val viewshedTile = ArrayTile.empty(IntCellType, 5, 5)
-
     it("propogates up") {
+      val viewshedTile = ArrayTile.empty(IntCellType, 5, 5)
       val rays: Array[Ray] = Array(Ray(Math.PI/2 - 0.001, 7), Ray(Math.PI/2, 13), Ray(Math.PI/2 + 0.001, 22))
       var a: Int = 0
       var b: Int = 0
@@ -43,7 +42,6 @@ class R2ViewshedSpec extends FunSpec
       R2Viewshed.compute(
         elevationTile, viewshedTile,
         2, -3, 0,
-        1, Double.PositiveInfinity,
         FromSouth(),
         rays,
         { (ray, _) =>
@@ -54,7 +52,12 @@ class R2ViewshedSpec extends FunSpec
           else if (alpha == 22) c += 1
           else throw new Exception
         },
-        Or(), false
+        resolution = 1,
+        maxDistance = Double.PositiveInfinity,
+        curvature = false,
+        operator = Or(),
+        cameraDirection = 0,
+        cameraFOV = -1.0
       )
 
       a should be (9)
@@ -64,6 +67,7 @@ class R2ViewshedSpec extends FunSpec
     }
 
     it("propogates right") {
+      val viewshedTile = ArrayTile.empty(IntCellType, 5, 5)
       val rays: Array[Ray] = Array(Ray(0, 13), Ray(0.001, 22), Ray(2*Math.PI - 0.001, 7))
       var a: Int = 0
       var b: Int = 0
@@ -73,7 +77,6 @@ class R2ViewshedSpec extends FunSpec
       R2Viewshed.compute(
         elevationTile, viewshedTile,
         -3, 2, 0,
-        1, Double.PositiveInfinity,
         FromWest(),
         rays,
         { (ray, _) =>
@@ -84,7 +87,12 @@ class R2ViewshedSpec extends FunSpec
           else if (alpha == 22) c += 1
           else throw new Exception
         },
-        Or(), false
+        resolution = 1,
+        maxDistance = Double.PositiveInfinity,
+        curvature = false,
+        operator = Or(),
+        cameraDirection = 0,
+        cameraFOV = -1.0
       )
 
       a should be (9)
@@ -94,6 +102,7 @@ class R2ViewshedSpec extends FunSpec
     }
 
     it("propogates down") {
+      val viewshedTile = ArrayTile.empty(IntCellType, 5, 5)
       val rays: Array[Ray] = Array(Ray(1.5*Math.PI - 0.001, 7), Ray(1.5*Math.PI, 13), Ray(1.5*Math.PI + 0.001, 22))
       var a: Int = 0
       var b: Int = 0
@@ -103,7 +112,6 @@ class R2ViewshedSpec extends FunSpec
       R2Viewshed.compute(
         elevationTile, viewshedTile,
         2, 7, 0,
-        1, Double.PositiveInfinity,
         FromNorth(),
         rays,
         { (ray, _) =>
@@ -114,7 +122,12 @@ class R2ViewshedSpec extends FunSpec
           else if (alpha == 22) c += 1
           else throw new Exception
         },
-        Or(), false
+        resolution = 1,
+        maxDistance = Double.PositiveInfinity,
+        curvature = false,
+        operator = Or(),
+        cameraDirection = 0,
+        cameraFOV = -1.0
       )
 
       a should be (9)
@@ -124,6 +137,7 @@ class R2ViewshedSpec extends FunSpec
     }
 
     it("propogates left") {
+      val viewshedTile = ArrayTile.empty(IntCellType, 5, 5)
       val rays: Array[Ray] = Array(Ray(Math.PI - 0.001, 22), Ray(Math.PI, 13), Ray(Math.PI + 0.001, 7))
       var a: Int = 0
       var b: Int = 0
@@ -133,7 +147,6 @@ class R2ViewshedSpec extends FunSpec
       R2Viewshed.compute(
         elevationTile, viewshedTile,
         7, 2, 0,
-        1, Double.PositiveInfinity,
         FromEast(),
         rays,
         { (ray, _) =>
@@ -144,7 +157,12 @@ class R2ViewshedSpec extends FunSpec
           else if (alpha == 22) c += 1
           else throw new Exception
         },
-        Or(), false
+        resolution = 1,
+        maxDistance = Double.PositiveInfinity,
+        curvature = false,
+        operator = Or(),
+        cameraDirection = 0,
+        cameraFOV = -1.0
       )
 
       a should be (9)
@@ -152,6 +170,39 @@ class R2ViewshedSpec extends FunSpec
       c should be (9)
       all should be (20)
     }
+
+    // ---------------------------------
+
+    it("Accounts for field of view when looking East") {
+      val elevation = createTile(Array.fill(7 * 7)(1), 7, 7)
+      val actual = ArrayTile.empty(IntCellType, 7, 7)
+      val expected = Array (
+        0,     0,     0,     0,     0,     0,     0,
+        0,     0,     0,     0,     0,     0,     1,
+        0,     0,     0,     0,     1,     1,     1,
+        0,     0,     0,     1,     1,     1,     1,
+        0,     0,     0,     0,     1,     1,     1,
+        0,     0,     0,     0,     0,     1,     1,
+        0,     0,     0,     0,     0,     0,     1
+      )
+
+      R2Viewshed.compute(
+        elevation, actual,
+        3, 3, 1,
+        FromInside(),
+        null,
+        { (_, _) => },
+        resolution = 1,
+        maxDistance = Double.PositiveInfinity,
+        curvature = false,
+        operator = Or(),
+        cameraDirection = 0,
+        cameraFOV = math.cos(math.Pi/4)
+      )
+
+      assertEqual(actual, expected)
+    }
+
 
     // ---------------------------------
 

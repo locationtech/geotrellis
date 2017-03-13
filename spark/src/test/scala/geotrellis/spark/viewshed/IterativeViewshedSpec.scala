@@ -47,8 +47,12 @@ class IterativeViewshedSpec extends FunSpec
         ContextRDD(sc.parallelize(list), tileLayerMetadata)
      }
 
-      val point = new jts.Coordinate(7, 7, -0.0)
-      val viewshed = IterativeViewshed(rdd, List(point), Double.PositiveInfinity, Or(), false)
+      val point = Array(7, 7, -0.0, 0, -1.0)
+      val viewshed = IterativeViewshed(rdd, List(point),
+        maxDistance = Double.PositiveInfinity,
+        curvature = false,
+        operator = Or()
+      )
       var actual = 0 ; viewshed.collect.foreach({ case (_, v) => v.foreach({ z => if (isData(z)) actual += z }) })
       val expected = 15*15
 
@@ -67,8 +71,12 @@ class IterativeViewshedSpec extends FunSpec
         ContextRDD(sc.parallelize(list), tileLayerMetadata)
       }
 
-      val point = new jts.Coordinate(7, 7, -0.0)
-      val viewshed = IterativeViewshed(rdd, List(point), Double.PositiveInfinity, Or(), false)
+      val point = Array(7, 7, -0.0, 0, -1.0)
+      val viewshed = IterativeViewshed(rdd, List(point),
+        maxDistance = Double.PositiveInfinity,
+        curvature = false,
+        operator = Or()
+      )
       var actual = 0 ; viewshed.collect.foreach({ case (_, v) => v.foreach({ z => if (isData(z)) actual += z }) })
       val expected = 180
 
@@ -88,8 +96,12 @@ class IterativeViewshedSpec extends FunSpec
         ContextRDD(sc.parallelize(list), tileLayerMetadata)
       }
 
-      val point = new jts.Coordinate(7, 7, -0.0)
-      val viewshed = IterativeViewshed(rdd, List(point), Double.PositiveInfinity, Or(), false)
+      val point = Array(7, 7, -0.0, 0, -1.0)
+      val viewshed = IterativeViewshed(rdd, List(point),
+        maxDistance = Double.PositiveInfinity,
+        curvature = false,
+        operator = Or()
+      )
       val ND = NODATA
       val expected: Array[Int] = Array(
         1,     1,     1,     1,     1,
@@ -118,10 +130,14 @@ class IterativeViewshedSpec extends FunSpec
         ContextRDD(sc.parallelize(list), tileLayerMetadata)
       }
 
-      val point1 = new jts.Coordinate(2,  7, -0.0)
-      val point2 = new jts.Coordinate(7,  7, -0.0)
-      val point3 = new jts.Coordinate(12, 7, -0.0)
-      val viewshed = IterativeViewshed(rdd, List(point1, point2, point3), Double.PositiveInfinity, Plus(), false)
+      val point1 = Array(2,  7, -0.0, 0, -1.0)
+      val point2 = Array(7,  7, -0.0, 0, -1.0)
+      val point3 = Array(12, 7, -0.0, 0, -1.0)
+      val viewshed = IterativeViewshed(rdd, List(point1, point2, point3),
+        maxDistance = Double.PositiveInfinity,
+        curvature = false,
+        operator = Plus()
+      )
       val expected = 15 * 15 * 3
       var actual: Int = 0
       viewshed.collect.foreach({ case (k, v) => actual += v.toArray.sum })
@@ -148,11 +164,15 @@ class IterativeViewshedSpec extends FunSpec
         ContextRDD(sc.parallelize(list), tileLayerMetadata)
       }
 
-      val point1 = new jts.Coordinate(2,  7, -0.0)
-      val point2 = new jts.Coordinate(7,  7, -0.0)
-      val point3 = new jts.Coordinate(12, 7, -0.0)
-      val viewshed = IterativeViewshed(rdd, List(point1, point2, point3), Double.PositiveInfinity, Plus(), false)
+      val point1 = Array(2,  7, -0.0, 0, -1.0)
+      val point2 = Array(7,  7, -0.0, 0, -1.0)
+      val point3 = Array(12, 7, -0.0, 0, -1.0)
       val expected = 3
+      val viewshed = IterativeViewshed(rdd, List(point1, point2, point3),
+        maxDistance = Double.PositiveInfinity,
+        curvature = false,
+        operator = Plus()
+      )
       var actual: Int = 0
       viewshed.collect.foreach({ case (k, v) => actual += v.get(2, 2) })
 
