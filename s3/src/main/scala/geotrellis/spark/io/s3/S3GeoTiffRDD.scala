@@ -37,8 +37,6 @@ import java.nio.ByteBuffer
  * The S3GeoTiffRDD object allows for the creation of whole or windowed RDD[(K, V)]s from files on S3.
  */
 object S3GeoTiffRDD {
-  import geotrellis.spark.io.hadoop.HadoopGeoTiffRDD.keyTransformId
-
   implicit def stringToUri(str: String): URI = new URI(str)
 
   final val GEOTIFF_TIME_TAG_DEFAULT = "TIFFTAG_DATETIME"
@@ -130,9 +128,19 @@ object S3GeoTiffRDD {
           },
           preservesPartitioning = true
         )
-
     }
   }
+
+  /**
+    * Creates a RDD[(K, V)] whose K and V  on the type of the GeoTiff that is going to be read in.
+    *
+    * @param bucket   Name of the bucket on S3 where the files are kept.
+    * @param prefix   Prefix of all of the keys on S3 that are to be read in.
+    * @param options  An instance of [[Options]] that contains any user defined or default settings.
+    */
+  def apply[K, V](bucket: String, prefix: String, options: Options)
+                 (implicit sc: SparkContext, rr: RasterReader[Options, (K, V)]): RDD[(K, V)] =
+    apply[K, K, V](bucket, prefix, (_: URI, key: K) => key, options)
 
   /**
     * Creates a RDD[(K, V)] whose K and V depends on the type of the GeoTiff that is going to be read in.
@@ -179,9 +187,18 @@ object S3GeoTiffRDD {
     * @param prefix Prefix of all of the keys on S3 that are to be read in.
     * @param keyTransform function to transform input key basing on the URI information.
     */
-
   def singleband[I, K](bucket: String, prefix: String, keyTransform: (URI, I) => K, options: Options)(implicit sc: SparkContext, rr: RasterReader[Options, (I, Tile)]): RDD[(K, Tile)] =
     apply[I, K, Tile](bucket, prefix, keyTransform, options)
+
+  /**
+    * Creates RDD that will read all GeoTiffs in the given bucket and prefix as singleband GeoTiffs.
+    * If a GeoTiff contains multiple bands, only the first will be read.
+    *
+    * @param bucket Name of the bucket on S3 where the files are kept.
+    * @param prefix Prefix of all of the keys on S3 that are to be read in.
+    */
+  def singleband[K](bucket: String, prefix: String, options: Options)(implicit sc: SparkContext, rr: RasterReader[Options, (K, Tile)]): RDD[(K, Tile)] =
+    apply[K, Tile](bucket, prefix, options)
 
   /**
     * Creates RDD that will read all GeoTiffs in the given bucket and prefix as multiband GeoTiffs.
@@ -191,9 +208,18 @@ object S3GeoTiffRDD {
     * @param prefix Prefix of all of the keys on S3 that are to be read in.
     * @param keyTransform function to transform input key basing on the URI information.
     */
-
   def multiband[I, K](bucket: String, prefix: String, keyTransform: (URI, I) => K, options: Options)(implicit sc: SparkContext, rr: RasterReader[Options, (I, MultibandTile)]): RDD[(K, MultibandTile)] =
     apply[I, K, MultibandTile](bucket, prefix, keyTransform, options)
+
+  /**
+    * Creates RDD that will read all GeoTiffs in the given bucket and prefix as multiband GeoTiffs.
+    * If a GeoTiff contains multiple bands, only the first will be read.
+    *
+    * @param bucket Name of the bucket on S3 where the files are kept.
+    * @param prefix Prefix of all of the keys on S3 that are to be read in.
+    */
+  def multiband[K](bucket: String, prefix: String, options: Options)(implicit sc: SparkContext, rr: RasterReader[Options, (K, MultibandTile)]): RDD[(K, MultibandTile)] =
+    apply[K, MultibandTile](bucket, prefix, options)
 
   /**
     * Creates RDD that will read all GeoTiffs in the given bucket and prefix as singleband GeoTiffs.
@@ -214,7 +240,7 @@ object S3GeoTiffRDD {
     * @param options  An instance of [[Options]] that contains any user defined or default settings.
     */
   def spatial(bucket: String, prefix: String, options: Options)(implicit sc: SparkContext): RDD[(ProjectedExtent, Tile)] =
-    spatial(bucket, prefix, keyTransformId, options)
+    singleband[ProjectedExtent](bucket, prefix, options)
 
   /**
     * Creates RDD that will read all GeoTiffs in the given bucket and prefix as singleband tiles.
@@ -245,7 +271,7 @@ object S3GeoTiffRDD {
     * @param options  An instance of [[Options]] that contains any user defined or default settings.
     */
   def spatialMultiband(bucket: String, prefix: String, options: Options)(implicit sc: SparkContext): RDD[(ProjectedExtent, MultibandTile)] =
-    spatialMultiband(bucket, prefix, keyTransformId, options)
+    multiband[ProjectedExtent](bucket, prefix, options)
 
   /**
     * Creates RDD that will read all GeoTiffs in the given bucket and prefix as multiband tiles.
@@ -278,7 +304,7 @@ object S3GeoTiffRDD {
     * @param options  Options for the reading process. Including the timestamp tiff tag and its pattern.
     */
   def temporal(bucket: String, prefix: String, options: Options)(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, Tile)] =
-    temporal(bucket, prefix, keyTransformId, options)
+    singleband[TemporalProjectedExtent](bucket, prefix, options)
 
   /**
     * Creates RDD that will read all GeoTiffs in the given bucket and prefix as singleband tiles.
@@ -311,7 +337,7 @@ object S3GeoTiffRDD {
     * @param options  Options for the reading process. Including the timestamp tiff tag and its pattern.
     */
   def temporalMultiband(bucket: String, prefix: String, options: Options)(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, MultibandTile)] =
-    temporalMultiband(bucket, prefix, keyTransformId, options)
+    multiband[TemporalProjectedExtent](bucket, prefix, options)
 
   /**
     * Creates RDD that will read all GeoTiffs in the given bucket and prefix as multiband tiles.

@@ -81,13 +81,6 @@ object HadoopGeoTiffRDD {
   }
 
   /**
-    * Identity key transform function
-    * @tparam K
-    * @return
-    */
-  def keyTransformId[K] = (_: URI, key: K) => key
-
-  /**
     * Creates a RDD[(K, V)] whose K and V depends on the type of the GeoTiff that is going to be read in.
     *
     * @param path     Hdfs GeoTiff path.
@@ -122,6 +115,15 @@ object HadoopGeoTiffRDD {
         )
     }
   }
+
+  /**
+    * Creates a RDD[(K, V)] whose K and V depends on the type of the GeoTiff that is going to be read in.
+    *
+    * @param path     Hdfs GeoTiff path.
+    * @param options  An instance of [[Options]] that contains any user defined or default settings.
+    */
+  def apply[K, V](path: Path, options: Options)(implicit sc: SparkContext, rr: RasterReader[Options, (K, V)]): RDD[(K, V)] =
+    apply[K, K, V](path, (_: URI, key: K) => key, options)
 
   /**
     * Creates a RDD[(K, V)] whose K and V depends on the type of the GeoTiff that is going to be read in.
@@ -169,9 +171,18 @@ object HadoopGeoTiffRDD {
     * @param keyTransform function to transform input key basing on the URI information.
     * @param options  An instance of [[Options]] that contains any user defined or default settings.
     */
-
   def singleband[I, K](path: Path, keyTransform: (URI, I) => K, options: Options)(implicit sc: SparkContext, rr: RasterReader[Options, (I, Tile)]): RDD[(K, Tile)] =
     apply[I, K, Tile](path, keyTransform, options)
+
+  /**
+    * Creates RDDs with the [(K, V)] values where V is a [[Tile]].
+    * It assumes that the provided files are [[SinglebandGeoTiff]]s.
+    *
+    * @param path     Hadoop path to recursively search for GeoTiffs.
+    * @param options  An instance of [[Options]] that contains any user defined or default settings.
+    */
+  def singleband[K](path: Path, options: Options)(implicit sc: SparkContext, rr: RasterReader[Options, (K, Tile)]): RDD[(K, Tile)] =
+    apply[K, Tile](path, options)
 
   /**
     * Creates RDDs with the [(K, V)] values where V is a [[MultibandTile]].
@@ -184,6 +195,16 @@ object HadoopGeoTiffRDD {
 
   def multiband[I, K](path: Path, keyTransform: (URI, I) => K, options: Options)(implicit sc: SparkContext, rr: RasterReader[Options, (I, MultibandTile)]): RDD[(K, MultibandTile)] =
     apply[I, K, MultibandTile](path, keyTransform, options)
+
+  /**
+    * Creates RDDs with the [(K, V)] values where V is a [[MultibandTile]].
+    * It assumes that the provided files are [[MultibandGeoTiff]]s.
+    *
+    * @param path     Hadoop path to recursively search for GeoTiffs.
+    * @param options  An instance of [[Options]] that contains any user defined or default settings.
+    */
+  def multiband[K](path: Path, options: Options)(implicit sc: SparkContext, rr: RasterReader[Options, (K, MultibandTile)]): RDD[(K, MultibandTile)] =
+    apply[K, MultibandTile](path,options)
 
   /**
     * Creates RDDs with the [(K, V)] values being [[ProjectedExtent]] and [[Tile]], respectively.
@@ -202,7 +223,7 @@ object HadoopGeoTiffRDD {
     * @param options  An instance of [[Options]] that contains any user defined or default settings.
     */
   def spatial(path: Path, options: Options)(implicit sc: SparkContext): RDD[(ProjectedExtent, Tile)] =
-    spatial(path, keyTransformId, options)
+    singleband[ProjectedExtent](path, options)
 
   /**
     * Creates RDDs with the [(K, V)] values being [[ProjectedExtent]] and [[Tile]], respectively.
@@ -213,7 +234,7 @@ object HadoopGeoTiffRDD {
     * @param options  An instance of [[Options]] that contains any user defined or default settings.
     */
   def spatial(path: Path, keyTransform: (URI, ProjectedExtent) => ProjectedExtent, options: Options)(implicit sc: SparkContext): RDD[(ProjectedExtent, Tile)] =
-    apply[ProjectedExtent, ProjectedExtent, Tile](path, keyTransform, options)
+    singleband[ProjectedExtent, ProjectedExtent](path, keyTransform, options)
 
   /**
     * Creates RDDs with the [(K, V)] values being [[ProjectedExtent]] and [[MultibandTile]], respectively.
@@ -232,7 +253,7 @@ object HadoopGeoTiffRDD {
     * @param options  An instance of [[Options]] that contains any user defined or default settings.
     */
   def spatialMultiband(path: Path, options: Options)(implicit sc: SparkContext): RDD[(ProjectedExtent, MultibandTile)] =
-    spatialMultiband(path, keyTransformId, options)
+    multiband[ProjectedExtent](path, options)
 
   /**
     * Creates RDDs with the [(K, V)] values being [[ProjectedExtent]] and [[MultibandTile]], respectively.
@@ -262,7 +283,7 @@ object HadoopGeoTiffRDD {
     * @param options  An instance of [[Options]] that contains any user defined or default settings.
     */
   def temporal(path: Path, options: Options)(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, Tile)] =
-    temporal(path, keyTransformId, options)
+    singleband[TemporalProjectedExtent](path, options)
 
   /**
     * Creates RDDs with the [(K, V)] values being [[TemporalProjectedExtent]] and [[Tile]], respectively.
@@ -292,7 +313,7 @@ object HadoopGeoTiffRDD {
     * @param options  An instance of [[Options]] that contains any user defined or default settings.
     */
   def temporalMultiband(path: Path, options: Options)(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, MultibandTile)] =
-    temporalMultiband(path, keyTransformId, options)
+    multiband[TemporalProjectedExtent](path, options)
 
   /**
     * Creates RDDs with the [(K, V)] values being [[TemporalProjectedExtent]] and [[MultibandTile]], respectively.
