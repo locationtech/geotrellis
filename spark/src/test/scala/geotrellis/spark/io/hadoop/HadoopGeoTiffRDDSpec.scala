@@ -23,11 +23,14 @@ import geotrellis.spark.tiling._
 import geotrellis.spark.testfiles._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.testkit._
+import geotrellis.vector.ProjectedExtent
 
 import org.apache.hadoop.fs.Path
-
 import spire.syntax.cfor._
 import org.scalatest._
+
+import java.net.URI
+import java.time.{LocalDateTime, ZoneId}
 
 class HadoopGeoTiffRDDSpec
   extends FunSpec
@@ -113,6 +116,38 @@ class HadoopGeoTiffRDDSpec
         info.time should be (dateTime)
       }
 
+    }
+
+    it("should read the rasters with each raster path handling") {
+      val tilesDir: Path = new Path(localFS.getWorkingDirectory, "raster-test/data/one-month-tiles/")
+      val pattern = """-(\d+)*_""".r
+      def zdtFromString(str: String) = {
+        val n = pattern.findAllIn(str)
+        n.next()
+        val gr = n.group(1)
+        LocalDateTime.of(gr.substring(0, 4).toInt, gr.substring(4, 6).toInt, 1, 0, 0, 0).atZone(ZoneId.of("UTC"))
+      }
+
+      val expected = HdfsUtils.listFiles(tilesDir, sc.hadoopConfiguration).map { path =>
+        zdtFromString(path.getName).toInstant.toEpochMilli
+      }
+
+      val actual =
+        HadoopGeoTiffRDD.singleband[ProjectedExtent, TemporalProjectedExtent](
+          path = tilesDir,
+          keyTransform = (uri: URI, key: ProjectedExtent) => {
+            val n = pattern.findAllIn(uri.getPath.split("/").last)
+            n.next()
+            val gr = n.group(1)
+            val zdt = LocalDateTime.of(gr.substring(0, 4).toInt, gr.substring(4, 6).toInt, 1, 0, 0, 0).atZone(ZoneId.of("UTC"))
+
+            TemporalProjectedExtent(key, zdt)
+          },
+          options = HadoopGeoTiffRDD.Options.DEFAULT
+        ).map(_._1.instant).collect().toList
+
+
+      actual should contain theSameElementsAs expected
     }
   }
 }
