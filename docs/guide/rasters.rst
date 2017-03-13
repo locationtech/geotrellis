@@ -191,6 +191,12 @@ An 8-hue qualitative scheme used to show different kinds of map topology
 or features. This is generally used to show landforms, terrain, and
 topology.
 
+Viridis, Magma, Plasma and Inferno
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The Viridis, Magma, Plasma and Inferno color ramps were developed for matplotlib,
+and are incorporated into our default color ramp set. You can read more about
+`these color ramps here <https://bids.github.io/colormap/>`.
+
 Custom Color Ramps
 ^^^^^^^^^^^^^^^^^^
 
@@ -229,6 +235,7 @@ for blue values:
 There are many online and offline resources for generating color
 palettes for cartography including:
 
+-  `Carto Colors <https://carto.com/carto-colors>`__
 -  `ColorBrewer 2.0 <http://colorbrewer2.org/js/>`__
 -  `Cartographer’s Toolkit: Colors, Typography,
    Patterns <http://www.amazon.com/Cartographers-Toolkit-Colors-Typography-Patterns/dp/0615467946>`__,
