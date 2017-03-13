@@ -37,8 +37,8 @@ object ZoomedLayoutScheme {
     new ZoomedLayoutScheme(crs, tileSize, resolutionThreshold)
 
   def layoutForZoom(zoom: Int, layoutExtent: Extent, tileSize: Int = DEFAULT_TILE_SIZE): LayoutDefinition = {
-    if(zoom < 1)
-      sys.error("TMS Tiling scheme does not have levels below 1")
+    if(zoom < 0)
+      sys.error("TMS Tiling scheme does not have levels below 0")
     LayoutDefinition(layoutExtent, TileLayout(layoutColsForZoom(zoom), layoutRowsForZoom(zoom), tileSize, tileSize))
   }
 }
