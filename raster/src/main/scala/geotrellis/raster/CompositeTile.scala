@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2014 Azavea.
+ * Copyright 2016 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -132,11 +132,17 @@ case class CompositeTile(tiles: Seq[Tile],
     * Returns a [[Tile]] equivalent to this [[CompositeTile]], except
     * with cells of the given type.
     *
-    * @param   cellType  The type of cells that the result should have
-    * @return            The new Tile
+    * @param   targetCellType  The type of cells that the result should have
+    * @return                  The new Tile
     */
   def convert(targetCellType: CellType): Tile =
     mutable(targetCellType)
+
+  def withNoData(noDataValue: Option[Double]): CompositeTile =
+    CompositeTile(tiles.map(_.withNoData(noDataValue)), tileLayout)
+
+  def interpretAs(targetCellType: CellType): CompositeTile =
+    CompositeTile(tiles.map(_.interpretAs(targetCellType)), tileLayout)
 
   /**
     * Another name for the 'mutable' method on this class.

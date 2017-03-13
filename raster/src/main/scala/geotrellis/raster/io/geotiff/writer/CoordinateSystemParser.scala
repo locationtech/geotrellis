@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2014 Azavea.
+ * Copyright 2016 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -162,7 +162,7 @@ class CoordinateSystemParser(val crs: CRS, val pixelSampleType: Option[PixelSamp
     case Some("lcc") => lccProps
     case Some("longlat") | Some("latlong") => longLatProps
     case Some(p) => throw new GeoTiffWriterLimitationException(
-      s"This GeoTiff writer does not currently support the projection $proj4String. Please reproject before writing to GeoTIFF."
+      s"This GeoTiff writer does not currently support the projection $proj4String without an EPSG code associated with the CRS. You'll need to use a CRS that has an EPSG code, or reproject before writing to GeoTIFF."
     )
     case None => throw new MalformedProj4Exception(
       "No +proj flag specified."

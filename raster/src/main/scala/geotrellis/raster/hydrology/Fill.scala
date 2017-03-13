@@ -1,18 +1,18 @@
 /*
-* Copyright (c) 2014 Azavea.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package geotrellis.raster.hydrology
 
@@ -34,17 +34,17 @@ object FillOptions {
   *        the threshold appropriately.
   */
 object Fill {
-  def apply(r: Tile, n: Neighborhood, bounds: Option[GridBounds], threshold: Double): Tile = {
+  def apply(r: Tile, n: Neighborhood, bounds: Option[GridBounds], threshold: Double, target: TargetCell = TargetCell.All): Tile = {
     if (r.cellType.isFloatingPoint) {
-      new CursorFillCalcDouble(r, Square(1), bounds, threshold)
+      new CursorFillCalcDouble(r, Square(1), bounds, threshold, target)
     } else {
-      new CursorFillCalc(r, Square(1), bounds, threshold.toInt)
+      new CursorFillCalc(r, Square(1), bounds, threshold.toInt, target)
     }
   }.execute()
 }
 
-class CursorFillCalcDouble(r: Tile, n: Neighborhood, bounds: Option[GridBounds], threshold: Double)
-  extends CursorCalculation[Tile](r, n, bounds)
+class CursorFillCalcDouble(r: Tile, n: Neighborhood, bounds: Option[GridBounds], threshold: Double, target: TargetCell) 
+  extends CursorCalculation[Tile](r, n, bounds, target)
   with DoubleArrayTileResult
 {
   def calc(r: Tile, c: Cursor) = {
@@ -70,8 +70,8 @@ class CursorFillCalcDouble(r: Tile, n: Neighborhood, bounds: Option[GridBounds],
 }
 
 
-class CursorFillCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], threshold: Int)
-  extends CursorCalculation[Tile](r, n, bounds)
+class CursorFillCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], threshold: Int, target: TargetCell)
+  extends CursorCalculation[Tile](r, n, bounds, target)
   with IntArrayTileResult
 {
   def calc(r: Tile, c: Cursor) = {

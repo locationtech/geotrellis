@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2014 DigitalGlobe.
+ * Copyright 2016 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -123,6 +123,10 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[geotrellis.raster.CellSize])
     kryo.register(classOf[geotrellis.raster.GridBounds])
     kryo.register(classOf[geotrellis.raster.GridExtent])
+    kryo.register(classOf[geotrellis.raster.mapalgebra.focal.TargetCell])
+    kryo.register(geotrellis.raster.mapalgebra.focal.TargetCell.All.getClass)
+    kryo.register(geotrellis.raster.mapalgebra.focal.TargetCell.Data.getClass)
+    kryo.register(geotrellis.raster.mapalgebra.focal.TargetCell.NoData.getClass)
 
     kryo.register(classOf[geotrellis.spark.SpatialKey])
     kryo.register(classOf[geotrellis.spark.SpaceTimeKey])
@@ -136,15 +140,15 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[geotrellis.proj4.CRS])
 
     // UnmodifiableCollectionsSerializer.registerSerializers(kryo)
-    kryo.register(geotrellis.spark.buffer.BufferTiles.Center.getClass)
-    kryo.register(geotrellis.spark.buffer.BufferTiles.Top.getClass)
-    kryo.register(geotrellis.spark.buffer.BufferTiles.Bottom.getClass)
-    kryo.register(geotrellis.spark.buffer.BufferTiles.Left.getClass)
-    kryo.register(geotrellis.spark.buffer.BufferTiles.Right.getClass)
-    kryo.register(geotrellis.spark.buffer.BufferTiles.TopLeft.getClass)
-    kryo.register(geotrellis.spark.buffer.BufferTiles.TopRight.getClass)
-    kryo.register(geotrellis.spark.buffer.BufferTiles.BottomLeft.getClass)
-    kryo.register(geotrellis.spark.buffer.BufferTiles.BottomRight.getClass)
+    kryo.register(geotrellis.spark.buffer.Direction.Center.getClass)
+    kryo.register(geotrellis.spark.buffer.Direction.Top.getClass)
+    kryo.register(geotrellis.spark.buffer.Direction.Bottom.getClass)
+    kryo.register(geotrellis.spark.buffer.Direction.Left.getClass)
+    kryo.register(geotrellis.spark.buffer.Direction.Right.getClass)
+    kryo.register(geotrellis.spark.buffer.Direction.TopLeft.getClass)
+    kryo.register(geotrellis.spark.buffer.Direction.TopRight.getClass)
+    kryo.register(geotrellis.spark.buffer.Direction.BottomLeft.getClass)
+    kryo.register(geotrellis.spark.buffer.Direction.BottomRight.getClass)
 
     /* Exhaustive Registration */
     kryo.register(classOf[Array[Double]])

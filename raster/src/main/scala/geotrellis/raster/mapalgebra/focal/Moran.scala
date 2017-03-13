@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.raster.mapalgebra.focal
 
 import geotrellis.raster._
@@ -21,8 +37,8 @@ import geotrellis.raster.histogram.FastMapHistogram
  *                        of a double typed Tile (FloatConstantNoDataCellType, DoubleConstantNoDataCellType).
  */
 object TileMoransICalculation {
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds]): Tile = {
-    new CursorCalculation[Tile](tile, n, bounds)
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds], target: TargetCell = TargetCell.All): Tile = {
+    new CursorCalculation[Tile](tile, n, bounds, target)
       with DoubleArrayTileResult
     {
 
@@ -73,8 +89,7 @@ object TileMoransICalculation {
  */
 object ScalarMoransICalculation {
   def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds]): Double = {
-    new CursorCalculation[Double](tile, n, bounds)
-    {
+    new CursorCalculation[Double](tile, n, bounds, TargetCell.All) {
       var mean: Double = 0
       var `stddev^2`: Double = 0
 
@@ -99,6 +114,11 @@ object ScalarMoransICalculation {
       }
 
       def result = count / ws
+
+      // Hack to make it work with the focal architecture, in which it clearly does not quite fit.
+      val copyOriginalValue: (Int, Int, Int, Int) => Unit = { (focusCol: Int, focusRow: Int, col: Int, row: Int) =>
+        ???
+      }
     }
   }.execute()
 }

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.raster.resample
 
 import geotrellis.raster._
@@ -75,52 +91,6 @@ class CubicResampleSpec extends FunSpec with Matchers {
       val extent = Extent(0, 0, 100, 100)
       val ci = new CubicResample6By6(tile, extent)
       whenToNotUseBilinear(ci, 25, 974, 26, 975)
-    }
-
-  }
-
-  describe("it should use bilinear resample but only when when needed") {
-
-    def whenToUseBilinear(
-      int: Resample,
-      leftEnd: Int,
-      rightStart: Int,
-      bottomEnd: Int,
-      topStart: Int) = {
-      val max = 1000
-      for (i <- 0 to leftEnd; j <- 0 to max) // left
-        withClue(s"Failed on ($i, $j): ") {
-          int.resample(i / 10.0, j / 10.0) should be (100)
-        }
-
-      for (i <- rightStart to max; j <- 0 to max) // right
-        withClue(s"Failed on ($i, $j): ") {
-          int.resample(i / 10.0, j / 10.0) should be (100)
-        }
-
-      for (i <- 0 to max; j <- 0 to bottomEnd) // bottom
-        withClue(s"Failed on ($i, $j): ") {
-          int.resample(i / 10.0, j / 10.0) should be (100)
-        }
-
-      for (i <- 0 to max; j <- topStart to max) // top
-        withClue(s"Failed on ($i, $j): ") {
-          int.resample(i / 10.0, j / 10.0) should be (100)
-        }
-    }
-
-    it("should use bilinear resample when 4 * 4 points can't be resolved") {
-      val tile = ArrayTile(Array.fill[Int](10000)(100), 100, 100)
-      val extent = Extent(0, 0, 100, 100)
-      val ci = new CubicResample4By4(tile, extent)
-      whenToUseBilinear(ci, 14, 985, 15, 986)
-    }
-
-    it("should use bilinear resample when 6 * 6 points can't be resolved") {
-      val tile = ArrayTile(Array.fill[Int](10000)(100), 100, 100)
-      val extent = Extent(0, 0, 100, 100)
-      val ci = new CubicResample6By6(tile, extent)
-      whenToUseBilinear(ci, 24, 975, 25, 976)
     }
 
   }

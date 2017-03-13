@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.spark.io.cassandra
 
 import geotrellis.spark.io._
@@ -59,42 +75,44 @@ object CassandraRDDWriter {
     // on a key type that may no longer by valid for the key type of the resulting RDD.
       raster.groupBy({ row => decomposeKey(row._1) }, numPartitions = raster.partitions.length)
         .foreachPartition { partition =>
-          instance.withSession { session =>
-            val statement = session.prepare(query)
+          if(partition.nonEmpty) {
+            instance.withSession { session =>
+              val statement = session.prepare(query)
 
-            val queries: Process[Task, (java.lang.Long, ByteBuffer)] =
-              Process.unfold(partition) { iter =>
-                if (iter.hasNext) {
-                  val recs = iter.next()
-                  val id    = recs._1
-                  val pairs = recs._2.toVector
-                  val bytes = ByteBuffer.wrap(AvroEncoder.toBinary(pairs)(codec))
-                  Some((id, bytes), iter)
-                } else {
-                  None
+              val queries: Process[Task, (java.lang.Long, ByteBuffer)] =
+                Process.unfold(partition) { iter =>
+                  if (iter.hasNext) {
+                    val recs = iter.next()
+                    val id = recs._1
+                    val pairs = recs._2.toVector
+                    val bytes = ByteBuffer.wrap(AvroEncoder.toBinary(pairs)(codec))
+                    Some((id, bytes), iter)
+                  } else {
+                    None
+                  }
                 }
+
+              val pool = Executors.newFixedThreadPool(threads)
+
+              val write: ((java.lang.Long, ByteBuffer)) => Process[Task, ResultSet] = {
+                case (id, value) =>
+                  Process eval Task {
+                    session.execute(statement.bind(id, value))
+                  }(pool)
               }
 
-            val pool = Executors.newFixedThreadPool(threads)
-
-            val write: ((java.lang.Long, ByteBuffer)) => Process[Task, ResultSet] = {
-              case (id, value) =>
+              val results = nondeterminism.njoin(maxOpen = threads, maxQueued = threads) {
+                queries map write
+              }(Strategy.Executor(pool)) onComplete {
                 Process eval Task {
-                  session.execute(statement.bind(id, value))
+                  session.closeAsync()
+                  session.getCluster.closeAsync()
                 }(pool)
-            }
+              }
 
-            val results = nondeterminism.njoin(maxOpen = threads, maxQueued = threads) {
-              queries map write
-            }(Strategy.Executor(pool)) onComplete {
-              Process eval Task {
-                session.closeAsync()
-                session.getCluster.closeAsync()
-              }(pool)
+              results.run.unsafePerformSync
+              pool.shutdown()
             }
-
-            results.run.unsafePerformSync
-            pool.shutdown()
           }
         }
   }

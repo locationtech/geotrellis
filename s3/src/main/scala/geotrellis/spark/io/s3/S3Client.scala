@@ -1,18 +1,31 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.spark.io.s3
 
-import com.amazonaws.auth.{DefaultAWSCredentialsProviderChain, AWSCredentials, AWSCredentialsProvider}
+import geotrellis.util.LazyLogging
+
+import com.amazonaws.auth._
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion
-import com.amazonaws.services.s3.{AmazonS3Client => AWSAmazonS3Client}
-import java.io.{InputStream, ByteArrayInputStream}
 import com.amazonaws.retry.PredefinedRetryPolicies
 import com.amazonaws.services.s3.model._
-import com.typesafe.scalalogging.LazyLogging
+
+import java.io.{InputStream, ByteArrayInputStream}
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
-import scala.collection.mutable
-import com.amazonaws.ClientConfiguration
-import org.apache.commons.io.IOUtils
-import scala.collection.JavaConversions._
 
 trait S3Client extends LazyLogging {
 
@@ -34,8 +47,17 @@ trait S3Client extends LazyLogging {
 
   @tailrec
   final def deleteListing(bucket: String, listing: ObjectListing): Unit = {
-    deleteObjects(bucket, listing.getObjectSummaries.map { os => new KeyVersion(os.getKey) }.toList)
-    if (listing.isTruncated) deleteListing(bucket, listNextBatchOfObjects(listing))
+    val listings = listing
+      .getObjectSummaries
+      .asScala
+      .map { os => new KeyVersion(os.getKey) }
+      .toList
+
+    // Empty listings cause malformed XML to be sent to AWS and lead to unhelpful exceptions
+    if (! listings.isEmpty) {
+      deleteObjects(bucket, listings)
+      if (listing.isTruncated) deleteListing(bucket, listNextBatchOfObjects(listing))
+    }
   }
 
   def deleteObject(deleteObjectRequest: DeleteObjectRequest): Unit
@@ -54,7 +76,7 @@ trait S3Client extends LazyLogging {
   }
 
   def copyObject(sourceBucketName: String, sourceKey: String,
-                 destinationBucketName: String, destinationKey: String): CopyObjectResult =
+    destinationBucketName: String, destinationKey: String): CopyObjectResult =
     copyObject(new CopyObjectRequest(sourceBucketName, sourceKey, destinationBucketName, destinationKey))
 
   def deleteObject(bucketName: String, key: String): Unit =
@@ -75,7 +97,7 @@ trait S3Client extends LazyLogging {
     readBytes(new GetObjectRequest(bucketName, key))
 
   def readBytes(getObjectRequest: GetObjectRequest): Array[Byte]
-  
+
   def readRange(start: Long, end: Long, getObjectRequest: GetObjectRequest): Array[Byte]
 
   def getObjectMetadata(bucketName: String, key: String): ObjectMetadata =
@@ -84,7 +106,7 @@ trait S3Client extends LazyLogging {
   def getObjectMetadata(getObjectMetadataRequest: GetObjectMetadataRequest): ObjectMetadata
 
   def listObjectsIterator(bucketName: String, prefix: String, maxKeys: Int = 0): Iterator[S3ObjectSummary] =
-      listObjectsIterator(new ListObjectsRequest(bucketName, prefix, null, null, if (maxKeys == 0) null else maxKeys))
+    listObjectsIterator(new ListObjectsRequest(bucketName, prefix, null, null, if (maxKeys == 0) null else maxKeys))
 
   def listObjectsIterator(request: ListObjectsRequest): Iterator[S3ObjectSummary] =
     new Iterator[S3ObjectSummary] {
@@ -121,80 +143,9 @@ object S3Client {
     config
   }
 
-  def default =
-    new AmazonS3Client(new DefaultAWSCredentialsProviderChain(), defaultConfiguration)
-}
+  def DEFAULT =
+    AmazonS3Client(new DefaultAWSCredentialsProviderChain(), defaultConfiguration)
 
-class AmazonS3Client(s3client: AWSAmazonS3Client) extends S3Client {
-
-  def this(credentials: AWSCredentials, config: ClientConfiguration) =
-    this(new AWSAmazonS3Client(credentials, config))
-
-  def this(provider: AWSCredentialsProvider, config: ClientConfiguration) =
-    this(new AWSAmazonS3Client(provider, config))
-
-  def this(provider: AWSCredentialsProvider) =
-    this(provider, new ClientConfiguration())
-
-  def listObjects(listObjectsRequest: ListObjectsRequest): ObjectListing =
-    s3client.listObjects(listObjectsRequest)
-
-  def listKeys(listObjectsRequest: ListObjectsRequest): Seq[String] = {
-    var listing: ObjectListing = null
-    val result = mutable.ListBuffer[String]()
-    do {
-      listing = s3client.listObjects(listObjectsRequest)
-      // avoid including "directories" in the input split, can cause 403 errors on GET
-      result ++= listing.getObjectSummaries.asScala.map(_.getKey).filterNot(_ endsWith "/")
-      listObjectsRequest.setMarker(listing.getNextMarker)
-    } while (listing.isTruncated)
-
-    result.toSeq
-  }
-
-  def getObject(getObjectRequest: GetObjectRequest): S3Object =
-    s3client.getObject(getObjectRequest)
-
-  def putObject(putObjectRequest: PutObjectRequest): PutObjectResult =
-    s3client.putObject(putObjectRequest)
-
-  def deleteObject(deleteObjectRequest: DeleteObjectRequest): Unit =
-    s3client.deleteObject(deleteObjectRequest)
-
-  def copyObject(copyObjectRequest: CopyObjectRequest): CopyObjectResult =
-    s3client.copyObject(copyObjectRequest)
-
-  def listNextBatchOfObjects(listing: ObjectListing): ObjectListing =
-    s3client.listNextBatchOfObjects(listing)
-  
-  def deleteObjects(deleteObjectsRequest: DeleteObjectsRequest): Unit =
-    s3client.deleteObjects(deleteObjectsRequest)
-
-  def readBytes(getObjectRequest: GetObjectRequest): Array[Byte] = {
-    val obj = s3client.getObject(getObjectRequest)
-    val inStream = obj.getObjectContent
-    try {
-      IOUtils.toByteArray(inStream)
-    } finally {
-      inStream.close()
-    }
-  }
-
-  def readRange(start: Long, end: Long, getObjectRequest: GetObjectRequest): Array[Byte] = {
-    getObjectRequest.setRange(start, end - 1)
-    val obj = s3client.getObject(getObjectRequest)
-    val stream = obj.getObjectContent
-    try {
-      IOUtils.toByteArray(stream)
-    } finally {
-      stream.close()
-    }
-  }
-  
-  def getObjectMetadata(getObjectMetadataRequest: GetObjectMetadataRequest): ObjectMetadata =
-    s3client.getObjectMetadata(getObjectMetadataRequest)
-
-  def setRegion(region: com.amazonaws.regions.Region): Unit = {
-    s3client.setRegion(region)
-  }
+  def ANONYMOUS =
+    AmazonS3Client(new AnonymousAWSCredentials(), defaultConfiguration)
 }

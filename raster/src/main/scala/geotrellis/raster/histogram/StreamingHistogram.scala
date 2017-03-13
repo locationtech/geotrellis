@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2016 Azavea.
+ * Copyright 2016 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -605,10 +605,10 @@ class StreamingHistogram(
     percentileBreaks(List(q)).head
 
   /**
-    * This method return the (approximate) quantile breaks of the
+    * This method returns the (approximate) quantile breaks of the
     * distribution of points that the histogram has seen so far.  It
     * is guaranteed that no value in the returned array will be
-    * outside the range minimum-maximum range of values seen.
+    * outside the minimum-maximum range of values seen.
     *
     * @param  num  The number of breaks desired
     */

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
@@ -32,7 +48,6 @@ class HadoopAttributeStore(val rootPath: Path, val hadoopConfiguration: Configur
   }
 
   private def delete(layerId: LayerId, path: Path): Unit = {
-    if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
     HdfsUtils
       .listFiles(new Path(attributePath, path), hadoopConfiguration)
       .foreach(fs.delete(_, false))
@@ -96,13 +111,15 @@ class HadoopAttributeStore(val rootPath: Path, val hadoopConfiguration: Configur
     }
   }
 
-  def layerExists(layerId: LayerId): Boolean =
+  def layerExists(layerId: LayerId): Boolean = {
+    // Use a relative path, since
+    // the listFiles could return a different host name.
+    val metadataRelativePath =
+      attributePath(layerId, AttributeStore.Fields.metadata).toUri.getPath
     HdfsUtils
       .listFiles(new Path(attributePath, s"*.json"), hadoopConfiguration)
-      .exists { path: Path =>
-        val List(name, zoomStr) = path.getName.split(SEP).take(2).toList
-        layerId == LayerId(name, zoomStr.toInt)
-      }
+      .exists { _.toUri.getPath ==  metadataRelativePath }
+  }
 
   def delete(layerId: LayerId): Unit = {
     delete(layerId, new Path(s"${layerId.name}${SEP}${layerId.zoom}${SEP}*.json"))

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.spark.io.accumulo
 
 import geotrellis.spark.util._
@@ -100,27 +116,29 @@ case class SocketWriteStrategy(
     val serializeWrapper = KryoWrapper(config) // BatchWriterConfig is not java serializable
     val kwThreads = KryoWrapper(threads)
     kvPairs.foreachPartition { partition =>
-      val poolSize = kwThreads.value
-      val pool = Executors.newFixedThreadPool(poolSize)
-      val config = serializeWrapper.value
-      val writer = instance.connector.createBatchWriter(table, config)
+      if(partition.nonEmpty) {
+        val poolSize = kwThreads.value
+        val pool = Executors.newFixedThreadPool(poolSize)
+        val config = serializeWrapper.value
+        val writer = instance.connector.createBatchWriter(table, config)
 
-      val mutations: Process[Task, Mutation] =
-        Process.unfold(partition){ iter =>
-          if (iter.hasNext) {
-            val (key, value) = iter.next()
-            val mutation = new Mutation(key.getRow)
-            mutation.put(key.getColumnFamily, key.getColumnQualifier, System.currentTimeMillis(), value)
-            Some(mutation, iter)
-          } else {
-            None
+        val mutations: Process[Task, Mutation] =
+          Process.unfold(partition){ iter =>
+            if (iter.hasNext) {
+              val (key, value) = iter.next()
+              val mutation = new Mutation(key.getRow)
+              mutation.put(key.getColumnFamily, key.getColumnQualifier, System.currentTimeMillis(), value)
+              Some(mutation, iter)
+            } else {
+              None
+            }
           }
-        }
 
-      val writeChannel = channel.lift { (mutation: Mutation) => Task { writer.addMutation(mutation) } (pool) }
-      val writes = mutations.tee(writeChannel)(tee.zipApply).map(Process.eval)
-      nondeterminism.njoin(maxOpen = poolSize, maxQueued = poolSize)(writes)(Strategy.Executor(pool)).run.unsafePerformSync
-      writer.close(); pool.shutdown()
+        val writeChannel = channel.lift { (mutation: Mutation) => Task { writer.addMutation(mutation) } (pool) }
+        val writes = mutations.tee(writeChannel)(tee.zipApply).map(Process.eval)
+        nondeterminism.njoin(maxOpen = poolSize, maxQueued = poolSize)(writes)(Strategy.Executor(pool)).run.unsafePerformSync
+        writer.close(); pool.shutdown()
+      }
     }
   }
 }

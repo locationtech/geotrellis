@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.spark.tiling
 
 import geotrellis.spark._
@@ -98,6 +114,30 @@ class ZoomedLayoutSchemeSpec extends FunSpec with Matchers {
       val scheme = ZoomedLayoutScheme(LatLng, 256)
       val z = scheme.zoom(lon1, lat1, CellSize(lon2 - lon1, lat2 - lat1))
       z should be (6)
+    }
+
+    it("should pyramid floating layout") {
+      val extent = Extent(0, 0, 37, 27)
+      val cellSize = CellSize(0.5, 0.5)
+      val fscheme = FloatingLayoutScheme(512)
+      val zscheme = ZoomedLayoutScheme(WebMercator)
+
+      val LayoutLevel(_, layout) = fscheme.levelFor(extent, cellSize)
+      val LayoutLevel(zoom, _) = zscheme.levelFor(extent, cellSize)
+      val level = LayoutLevel(zoom, layout)
+
+      var l = zscheme.zoomOut(level)
+      ((zoom - 1 to 0) by -1) foreach { z =>
+        val n = math.pow(2, z).toInt
+        val c = math.pow(0.5, z + 1)
+
+        n should be (l.layout.layoutCols)
+        n should be (l.layout.layoutRows)
+
+        l.layout.cellSize should be (CellSize(c, c))
+
+        l = if(z > 0) zscheme.zoomOut(l) else l
+      }
     }
   }
 }

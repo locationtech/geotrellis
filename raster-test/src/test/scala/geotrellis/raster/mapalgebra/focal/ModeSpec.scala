@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.raster.mapalgebra.focal
 
 import org.scalatest._
@@ -64,6 +80,28 @@ class ModeSpec extends FunSpec with Matchers with FocalOpSpec with RasterMatcher
       val inputTile = createTile(input, 9, 4)
       val expectedTile = createTile(expected, 9, 4)
       val actualTile = inputTile.focalMode(Square(1))
+
+      assertEqual(actualTile, expectedTile, threshold = 0.001)
+    }
+
+    it("square mode for nd cells") {
+      val input = Array[Int](
+        nd,7,1,     1, 3,5,      9,8,2,
+         9,1,1,     2, 2,2,      4,3,5,
+         3,8,1,     3, 3,3,      1,2,2,
+         2,4,7,     1,nd,1,      8,4,3)
+
+      val expected = Array(
+        nd,7, 1,   1, 3, 5,   9, 8, 2,
+        9, 1, 1,   2, 2, 2,   4, 3, 5,
+
+        3, 8, 1,   3, 3, 3,   1, 2, 2,
+        2, 4, 7,   1,3, 1,   8, 4, 3
+      )
+
+      val inputTile = createTile(input, 9, 4)
+      val expectedTile = createTile(expected, 9, 4)
+      val actualTile = inputTile.focalMode(Square(1), target = TargetCell.NoData)
 
       assertEqual(actualTile, expectedTile, threshold = 0.001)
     }

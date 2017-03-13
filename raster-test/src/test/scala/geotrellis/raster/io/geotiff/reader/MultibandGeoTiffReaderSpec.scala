@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.raster.io.geotiff.reader
 
 import geotrellis.raster._
@@ -133,8 +149,12 @@ class MultibandGeoTiffReaderSpec extends FunSpec
       geoTiffPath(s"3bands/bit/3bands-${s}-${i}.tif")
 
     it("should read pixel interleave, striped") {
-      val tile =
-        MultibandGeoTiff(p("striped", "pixel")).tile
+      val tile: GeoTiffMultibandTile =
+        MultibandGeoTiff(
+          path = p("striped", "pixel"),
+          decompress = false,
+          streaming = false
+        ).tile.asInstanceOf[GeoTiffMultibandTile]
 
       // println("         BIT BANDS")
       // println(tile.band(0).asciiDraw)

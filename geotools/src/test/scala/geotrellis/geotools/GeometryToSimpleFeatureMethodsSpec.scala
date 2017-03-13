@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2016 Azavea.
+ * Copyright 2016 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,7 +34,7 @@ class GeometryToSimpleFeatureMethodsSpec
     val multiPoint = MultiPoint(Point(0, 0), Point(4, 0), Point(0, 3), Point(0, 0))
     val multiLine = MultiLine(Line(Point(0, 0), Point(4, 0)), Line(Point(0, 3), Point(0, 0)))
     val multiPolygon = MultiPolygon(
-      Polygon(Point(0, 0), Point(4, 0), Point(0, 3), Point(0, 0)),
+      Polygon(Point(0, 0), Point(-4, 0), Point(0, -3), Point(0, 0)),
       Polygon(Point(0, 0), Point(5, 0), Point(0, 12), Point(0, 0))
     )
 

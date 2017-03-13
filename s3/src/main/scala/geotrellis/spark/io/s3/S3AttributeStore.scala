@@ -1,15 +1,33 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.spark.io.s3
 
-import java.nio.charset.Charset
 import geotrellis.spark._
 import geotrellis.spark.io._
+
 import spray.json._
 import DefaultJsonProtocol._
 import com.amazonaws.services.s3.model.{ObjectMetadata, AmazonS3Exception}
-import scala.io.Source
-import java.io.ByteArrayInputStream
+import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion
 
 import scala.util.matching.Regex
+import scala.io.Source
+import java.nio.charset.Charset
+import java.io.ByteArrayInputStream
 
 /**
  * Stores and retrieves layer attributes in an S3 bucket in JSON format
@@ -17,8 +35,8 @@ import scala.util.matching.Regex
  * @param bucket    S3 bucket to use for attribute store
  * @param prefix  path in the bucket for given LayerId, not ending in "/"
  */
-class S3AttributeStore(val bucket: String, val prefix: String) extends AttributeStore with BlobLayerAttributeStore {
-  val s3Client: S3Client = S3Client.default
+class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayerAttributeStore {
+  val s3Client: S3Client = S3Client.DEFAULT
   import S3AttributeStore._
 
   /** NOTE:
@@ -79,10 +97,9 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends Attribute
   def layerExists(layerId: LayerId): Boolean =
     s3Client
       .listObjectsIterator(bucket, path(prefix, "_attributes"))
-      .exists(_.getKey.endsWith(s"${SEP}${layerId.name}${SEP}${layerId.zoom}.json"))
+      .exists(_.getKey.endsWith(s"${AttributeStore.Fields.metadata}${SEP}${layerId.name}${SEP}${layerId.zoom}.json"))
 
   def delete(layerId: LayerId, attributeName: String): Unit = {
-    if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
     s3Client.deleteObject(bucket, attributePath(layerId, attributeName))
     clearCache(layerId, attributeName)
   }
@@ -96,8 +113,8 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends Attribute
   }
 
   def delete(layerId: LayerId): Unit = {
-    if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
-    layerKeys(layerId).foreach(s3Client.deleteObject(bucket, _))
+    val keys = layerKeys(layerId).map(new KeyVersion(_)).toList
+    s3Client.deleteObjects(bucket, keys)
     clearCache(layerId)
   }
 

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.spark.io.file
 
 import geotrellis.spark._
@@ -65,13 +81,12 @@ class FileAttributeStore(val catalogPath: String) extends BlobLayerAttributeStor
       .listFiles(new WildcardFileFilter(s"${layerId.name}${SEP}${layerId.zoom}${SEP}*.json"): FileFilter)
 
   def layerExists(layerId: LayerId): Boolean =
-    layerAttributeFiles(layerId).nonEmpty
+    attributeFile(layerId, AttributeStore.Fields.metadata).exists
 
   def delete(layerId: LayerId, attributeName: String): Unit = {
     val layerFiles =
       attributeDirectory
         .listFiles(new WildcardFileFilter(s"${layerId.name}${SEP}${layerId.zoom}${SEP}*.json"): FileFilter)
-    if(layerFiles.isEmpty) throw new LayerNotFoundError(layerId)
     layerFiles.find(f => f.getAbsolutePath.endsWith(s"${SEP}${attributeName}.json")) match {
       case Some(f) => f.delete()
       case _ =>
@@ -83,7 +98,6 @@ class FileAttributeStore(val catalogPath: String) extends BlobLayerAttributeStor
     val layerFiles =
       attributeDirectory
         .listFiles(new WildcardFileFilter(s"${layerId.name}${SEP}${layerId.zoom}${SEP}*.json"): FileFilter)
-    if(layerFiles.isEmpty) throw new LayerNotFoundError(layerId)
     layerFiles.foreach { f => f.delete() }
     clearCache(layerId)
   }

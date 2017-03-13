@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
@@ -112,14 +128,14 @@ abstract class GeoTiffTile(
    * @param newCellType: The [[CellType]] to be converted to
    * @return A new [[Tile]] that contains the new CellTypes
    */
-  def convert(newCellType: CellType): Tile = {
+  def convert(newCellType: CellType): GeoTiffTile = {
     if(newCellType.isFloatingPoint != cellType.isFloatingPoint)
       logger.warn(s"Conversion from $cellType to $newCellType may lead to data loss.")
 
     val arr = Array.ofDim[Array[Byte]](segmentCount)
     val compressor = compression.createCompressor(segmentCount)
-    cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-      val segment = getSegment(segmentIndex)
+
+    getSegments(0 until segmentCount).foreach { case (segmentIndex, segment) =>
       val newBytes = segment.convert(newCellType)
       arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
     }
@@ -142,6 +158,8 @@ abstract class GeoTiffTile(
    * @return The corresponding [[GeoTiffSegment]]
    */
   def getSegment(i: Int): GeoTiffSegment
+
+  def getSegments(ids: Traversable[Int]): Iterator[(Int, GeoTiffSegment)]
 
   /**
    * Given a col and row, find the segment where this point resides.
@@ -179,8 +197,7 @@ abstract class GeoTiffTile(
    * @return A Unit for each segment in the GeoTiffTile
    */
   def foreach(f: Int => Unit): Unit = {
-    cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-      val segment = getSegment(segmentIndex)
+    getSegments(0 until segmentCount).foreach { case (segmentIndex, segment) =>
       val segmentSize = segment.size
 
       if(isTiled) {
@@ -209,8 +226,7 @@ abstract class GeoTiffTile(
    * @return A Unit for each segment in the GeoTiffTile
    */
   def foreachDouble(f: Double => Unit): Unit = {
-    cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-      val segment = getSegment(segmentIndex)
+    getSegments(0 until segmentCount).foreach { case (segmentIndex, segment) =>
       val segmentSize = segment.size
 
       if(isTiled) {
@@ -241,8 +257,7 @@ abstract class GeoTiffTile(
   def map(f: Int => Int): GeoTiffTile = {
     val arr = Array.ofDim[Array[Byte]](segmentCount)
     val compressor = compression.createCompressor(segmentCount)
-    cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-      val segment = getSegment(segmentIndex)
+    getSegments(0 until segmentCount).foreach { case (segmentIndex, segment) =>
       val newBytes = segment.map(f(_))
       arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
     }
@@ -266,8 +281,7 @@ abstract class GeoTiffTile(
   def mapDouble(f: Double => Double): GeoTiffTile = {
     val arr = Array.ofDim[Array[Byte]](segmentCount)
     val compressor = compression.createCompressor(segmentCount)
-    cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-      val segment = getSegment(segmentIndex)
+    getSegments(0 until segmentCount).foreach { case (segmentIndex, segment) =>
       val newBytes = segment.mapDouble(f)
       arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
     }
@@ -287,10 +301,11 @@ abstract class GeoTiffTile(
    * @param visitor: An IntTileVisitor
    */
   def foreachIntVisitor(visitor: IntTileVisitor): Unit = {
-    cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-      val segment = getSegment(segmentIndex)
+    getSegments(0 until segmentCount).foreach { case (segmentIndex, segment) =>
       val segmentSize = segment.size
+
       val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
+
       cfor(0)(_ < segmentSize, _ + 1) { i =>
         val col = segmentTransform.indexToCol(i)
         val row = segmentTransform.indexToRow(i)
@@ -307,8 +322,7 @@ abstract class GeoTiffTile(
    * @param visitor: An DoubleTileVisitor
    */
   def foreachDoubleVisitor(visitor: DoubleTileVisitor): Unit = {
-    cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-      val segment = getSegment(segmentIndex)
+    getSegments(0 until segmentCount).foreach { case (segmentIndex, segment) =>
       val segmentSize = segment.size
       val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
       cfor(0)(_ < segmentSize, _ + 1) { i =>
@@ -330,9 +344,9 @@ abstract class GeoTiffTile(
   def mapIntMapper(mapper: IntTileMapper): Tile = {
     val arr = Array.ofDim[Array[Byte]](segmentCount)
     val compressor = compression.createCompressor(segmentCount)
-    cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-      val segment = getSegment(segmentIndex)
+    getSegments(0 until segmentCount).foreach { case (segmentIndex, segment) =>
       val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
+
       val newBytes = segment.mapWithIndex { (i, z) =>
         val col = segmentTransform.indexToCol(i)
         val row = segmentTransform.indexToRow(i)
@@ -362,8 +376,7 @@ abstract class GeoTiffTile(
   def mapDoubleMapper(mapper: DoubleTileMapper): Tile = {
     val arr = Array.ofDim[Array[Byte]](segmentCount)
     val compressor = compression.createCompressor(segmentCount)
-    cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-      val segment = getSegment(segmentIndex)
+    getSegments(0 until segmentCount).foreach { case (segmentIndex, segment) =>
       val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
       val newBytes = segment.mapDoubleWithIndex { (i, z) =>
         val col = segmentTransform.indexToCol(i)
@@ -398,14 +411,15 @@ abstract class GeoTiffTile(
         // GeoTiffs with the same segment sizes, can map over segments.
         val arr = Array.ofDim[Array[Byte]](segmentCount)
         val compressor = compression.createCompressor(segmentCount)
-        cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-          val segment = getSegment(segmentIndex)
-          val otherSegment = otherGeoTiff.getSegment(segmentIndex)
-          val newBytes = segment.mapWithIndex { (i, z) =>
-            f(z, otherSegment.getInt(i))
+        getSegments(0 until segmentCount)
+          .zip(otherGeoTiff.getSegments(0 until segmentCount))
+          .foreach { case ((segmentIndex, segment), (otherIndex, otherSegment)) =>
+            require(segmentIndex == otherIndex, s"Segment index mismatch: $segmentIndex != $otherIndex")
+            val newBytes = segment.mapWithIndex { (i, z) =>
+              f(z, otherSegment.getInt(i))
+            }
+            arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
           }
-          arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
-        }
 
         GeoTiffTile(
           new ArraySegmentBytes(arr),
@@ -434,14 +448,15 @@ abstract class GeoTiffTile(
         // GeoTiffs with the same segment sizes, can map over segments.
         val arr = Array.ofDim[Array[Byte]](segmentCount)
         val compressor = compression.createCompressor(segmentCount)
-        cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-          val segment = getSegment(segmentIndex)
-          val otherSegment = otherGeoTiff.getSegment(segmentIndex)
-          val newBytes = segment.mapDoubleWithIndex { (i, z) =>
-            f(z, otherSegment.getDouble(i))
+        getSegments(0 until segmentCount)
+          .zip(otherGeoTiff.getSegments(0 until segmentCount))
+          .foreach { case ((segmentIndex, segment), (otherIndex, otherSegment)) =>
+            require(segmentIndex == otherIndex, s"Segment index mismatch: $segmentIndex != $otherIndex")
+            val newBytes = segment.mapDoubleWithIndex { (i, z) =>
+              f(z, otherSegment.getDouble(i))
+            }
+            arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
           }
-          arr(segmentIndex) = compressor.compress(newBytes, segmentIndex)
-        }
 
         GeoTiffTile(
           new ArraySegmentBytes(arr),
@@ -484,17 +499,72 @@ abstract class GeoTiffTile(
    *
    * @return A [[MutableArrayTile]] of the GeoTiffTile
    */
-  def mutable: MutableArrayTile
+  def mutable: MutableArrayTile = {
+    val tile = ArrayTile.empty(cellType, cols, rows)
+
+    getSegments(0 until segmentCount).foreach { case (segmentId, segment) =>
+      val segmentTransform = segmentLayout.getSegmentTransform(segmentId)
+
+      if (cellType.isFloatingPoint)
+        cfor(0)(_ < segment.size, _ + 1) { i =>
+          val col = segmentTransform.indexToCol(i)
+          val row = segmentTransform.indexToRow(i)
+          if(col < cols && row < rows) {
+            val v = segment.getDouble(i)
+            tile.setDouble(col, row, v)
+          }
+        }
+      else
+        cfor(0)(_ < segment.size, _ + 1) { i =>
+          val col = segmentTransform.indexToCol(i)
+          val row = segmentTransform.indexToRow(i)
+          if(col < cols && row < rows) {
+            val v = segment.getInt(i)
+            tile.set(col, row, v)
+          }
+        }
+    }
+
+    tile
+  }
 
   /**
-   * Performs a crop on itself where the returned GeoTiffTile will jave the
-   * same dimensions as the GridBounds.
+   * Crop this tile to given pixel region.
    *
-   * @param gridBounds: A [[GridBounds]] that contains the area to be cropped.
-   *
-   * @return A [[MutableArrayTile]]
+   * @param bounds: Pixel bounds specifying the crop area.
+   * @return A [[MutableArrayTile]] of the cropped region
    */
-  def crop(gridBounds: GridBounds): MutableArrayTile
+  def crop(bounds: GridBounds): MutableArrayTile = {
+    val tile = ArrayTile.empty(cellType, bounds.width, bounds.height)
+    val intersectingSegments = segmentLayout.intersectingSegments(bounds)
+
+    getSegments(intersectingSegments).foreach { case (segmentId, segment) =>
+      val segmentBounds = segmentLayout.getGridBounds(segmentId)
+      val segmentTransform = segmentLayout.getSegmentTransform(segmentId)
+      val overlap = bounds.intersection(segmentBounds).get
+
+      if (cellType.isFloatingPoint) {
+        cfor(overlap.colMin)(_ <= overlap.colMax, _ + 1) { col =>
+          cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
+            val i = segmentTransform.gridToIndex(col, row)
+            val v = segment.getDouble(i)
+            tile.setDouble(col - bounds.colMin, row - bounds.rowMin, v)
+          }
+        }
+
+      } else {
+        cfor(overlap.colMin)(_ <= overlap.colMax, _ + 1) { col =>
+          cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
+            val i = segmentTransform.gridToIndex(col, row)
+            val v = segment.getInt(i)
+            tile.set(col - bounds.colMin, row - bounds.rowMin, v)
+          }
+        }
+      }
+    }
+
+    tile
+  }
 
   /**
    * Converts the GeoTiffTile to an Array[Byte]

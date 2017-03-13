@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.raster
 
 import geotrellis.raster.summary._
@@ -117,6 +133,19 @@ class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMu
     ArrayMultibandTile(newBands)
   }
 
+  /** Return tile with cellType that reflects new NoData value */
+  def withNoData(noDataValue: Option[Double]): MultibandTile =
+    new ArrayMultibandTile(_bands.map(_.withNoData(noDataValue)))
+
+  /** Changes the interpretation of the tile cells through changing NoData handling and optionally cell data type.
+    * If [[DataType]] portion of the [[CellType]] is unchanged the tile data is not duplicated through conversion.
+    * If cell [[DataType]] conversion is required it is done in a naive way, without considering NoData handling.
+    *
+    * @param newCellType CellType to be used in interpreting existing cells
+    */
+  def interpretAs(newCellType: CellType): MultibandTile =
+    new ArrayMultibandTile(_bands.map(_.interpretAs(newCellType)))
+
   /**
     * Map over a subset of the bands of an [[ArrayMultibandTile]] to
     * create a new integer-valued [[MultibandTile]].
@@ -136,8 +165,6 @@ class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMu
     (0 until bandCount).foreach({ b =>
       if (set.contains(b))
         newBands(b) = band(b).map({ z => f(b, z) })
-      else if (cellType.isFloatingPoint)
-        newBands(b) = band(b).map({ z => z })
       else
         newBands(b) = band(b)
     })
@@ -164,10 +191,8 @@ class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMu
     (0 until bandCount).foreach({ b =>
       if (set.contains(b))
         newBands(b) = band(b).mapDouble({ z => f(b, z) })
-      else if (cellType.isFloatingPoint)
-        newBands(b) = band(b)
       else
-        newBands(b) = band(b).mapDouble({ z => z })
+        newBands(b) = band(b)
     })
 
     ArrayMultibandTile(newBands)
@@ -306,22 +331,29 @@ class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMu
 
   /**
     * Combine a subset of the bands of a [[ArrayMultibandTile]] into a
-    * new integer-valued [[MultibandTile]] using the function f.
+    * new [[ArrayTile]] using the function f.
     *
     * @param    subset   A sequence containing the subset of bands that are of interest.
     * @param    f        A function to combine the bands.
+    *
     * @return            The [[Tile]] that results from combining the bands.
     */
   def combine(subset: Seq[Int])(f: Seq[Int] => Int): Tile = {
     subset.foreach({ b => require(0 <= b && b < bandCount, "All elements of subset must be present") })
+    val subsetSize = subset.size
+    val subsetArray = subset.toArray
 
     val result = ArrayTile.empty(cellType, cols, rows)
+    val values: Array[Int] = Array.ofDim(subsetSize)
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
-        val data = subset.map({ b => band(b).get(col, row) })
-        result.set(col, row, f(data))
+        cfor(0)(_ < subsetSize, _ + 1) { i =>
+          values(i) = _bands(subsetArray(i)).get(col, row)
+        }
+        result.set(col, row, f(values))
       }
     }
+
     result
   }
 
@@ -335,12 +367,17 @@ class ArrayMultibandTile(_bands: Array[Tile]) extends MultibandTile with MacroMu
     */
   def combineDouble(subset: Seq[Int])(f: Seq[Double] => Double): Tile = {
     subset.foreach({ b => require(0 <= b && b < bandCount, "All elements of subset must be present") })
+    val subsetSize = subset.size
+    val subsetArray = subset.toArray
 
     val result = ArrayTile.empty(cellType, cols, rows)
+    val values: Array[Double] = Array.ofDim(subsetSize)
     cfor(0)(_ < rows, _ + 1) { row =>
       cfor(0)(_ < cols, _ + 1) { col =>
-        val data = subset.map({ b => band(b).getDouble(col, row) })
-        result.setDouble(col, row, f(data))
+        cfor(0)(_ < subsetSize, _ + 1) { i =>
+          values(i) = _bands(subsetArray(i)).getDouble(col, row)
+        }
+        result.setDouble(col, row, f(values))
       }
     }
     result

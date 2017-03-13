@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2015 Azavea.
+ * Copyright 2016 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -108,7 +108,7 @@ object PolygonRasterizer {
     else if ((min(y1,y2) <= y) && (y <= max(y1,y2))) { // Between endpoints
       (((x1-x2)*y-(x1*y2-y1*x2))/(y1-y2),0)
     }
-    else (Double.NegativeInfinity, 8) // No intersection
+    else (Double.NegativeInfinity, Int.MaxValue) // No intersection
   }
 
   /**
@@ -123,7 +123,7 @@ object PolygonRasterizer {
 
     val rtree = new STRtree
 
-    /* Find the outer ring's segments */
+    /** Find the outer ring's segments */
     val coords = poly.jtsGeom.getExteriorRing.getCoordinates
     cfor(1)(_ < coords.length, _ + 1) { ci =>
       val coord1 = coords(ci - 1)
@@ -141,7 +141,7 @@ object PolygonRasterizer {
       rtree.insert(new Envelope(min(col1, col2), max(col1, col2), segment._2, segment._4), segment)
     }
 
-    /* Find the segments for the holes */
+    /** Find the segments for the holes */
     cfor(0)(_ < poly.numberOfHoles, _ + 1) { i =>
       val coords = poly.jtsGeom.getInteriorRingN(i).getCoordinates
       cfor(1)(_ < coords.length, _ + 1) { ci =>
@@ -164,40 +164,85 @@ object PolygonRasterizer {
   }
 
   /**
-   * Given a list of edges, a y-value (the scanline), and a maximum
-   * x-coordinate, this function generates a list of left- and
-   * right-endpoints for runs of pixels.  When this function is run
-   * over all of the rows, the collective output is a rasterized
-   * polygon.  This implements part of the traditional scanline
-   * algorithm.
-   *
-   * This routine ASSUMES that the polygon is closed, is of finite
-   * area, and that its boundary does not self-intersect.
-   *
-   * @param edges  A list of active edges
-   * @param y      The y-value of the vertical scanline
-   * @param maxX   The maximum-possible x-coordinate
-   */
+    * Given a list of edges, a y-value (the scanline), and a maximum
+    * x-coordinate, this function generates a list of left- and
+    * right-endpoints for runs of pixels.  When this function is run
+    * over all of the rows, the collective output is a rasterized
+    * polygon.  This implements part of the traditional scanline
+    * algorithm.
+    *
+    * This routine ASSUMES that the polygon is closed, is of finite
+    * area, and that its boundary does not self-intersect.
+    *
+    * @param edges  A list of active edges
+    * @param y      The y-value of the vertical scanline
+    * @param maxX   The maximum-possible x-coordinate
+    */
   private def runsPoint(rtree: STRtree, y: Int, maxX: Int) = {
     val row = y + 0.5
     val xcoordsMap = mutable.Map[Double, Int]()
     val xcoordsList = mutable.ListBuffer[Double]()
 
-    rtree.query(new Envelope(Double.MinValue, Double.MaxValue, row, row)).asScala.foreach({ edgeObj =>
-      val edge = edgeObj.asInstanceOf[Segment]
-      if (edge._2 != edge._4) { // If edge is not horizontal, process it ...
-        val (xcoord, valence) = lineAxisIntersection(edge,row)
-        if (xcoordsMap.contains(xcoord)) xcoordsMap(xcoord) += valence
-        else xcoordsMap(xcoord) = valence
+    val segments = {
+      var nonHorizontal = 0
+      var horizontal = false
+
+      val segments =
+        rtree
+          .query(new Envelope(Double.MinValue, Double.MaxValue, row, row))
+          .asScala
+          .flatMap({ edgeObj =>
+            val edge = edgeObj.asInstanceOf[Segment]
+            if (edge._2 != edge._4) {
+              val (xcoord, parity) = lineAxisIntersection(edge,row)
+              nonHorizontal += 1
+              if (parity != Int.MaxValue) Some((xcoord, parity))
+              else None
+            }
+            else {
+              horizontal = true
+              None
+            }
+          })
+
+      /**
+        * Remove horizontal edges by perturbing the scanline up or
+        * down infinitesimally.
+        */
+      if (horizontal == true) {
+        val upward = segments.filter({ case (_, parity) => parity != 1 })
+        val downward = segments.filter({ case (_, parity) => parity != -1 })
+        val upwardDistance = math.abs(nonHorizontal - upward.length)
+        val downwardDistance = math.abs(nonHorizontal - downward.length)
+
+        /**
+          * A better measure of distance would probably be the
+          * Levenshtein distance[1], but instead the respective
+          * differences in length from the original sequence (minus
+          * horizontal edges) are used as proxies.
+          *
+          * https://en.wikipedia.org/wiki/Levenshtein_distance
+          */
+        if (upwardDistance < downwardDistance) upward
+        else downward
       }
+      else segments
+    }
+
+    segments.foreach({ case (xcoord, parity) =>
+      if (xcoordsMap.contains(xcoord)) xcoordsMap(xcoord) += parity
+      else xcoordsMap(xcoord) = parity
     })
 
-    xcoordsMap.foreach({ case (xcoord, valence) =>
-      /* This is where the  ASSUMPTION is used.  Given the assumption,
-       * this intersection  should be used as  the open or close  of a
-       * run of  turned-on pixels  if and only  if the  sum associated
-       * with that intersection is -1, 0, or 1. */
-      if (valence == -1 || valence == 0 || valence == 1) xcoordsList += (xcoord + 0.5)
+    xcoordsMap.foreach({ case (xcoord, parity) =>
+      /**
+        * This is where the  ASSUMPTION is used.  Given the assumption,
+        * this intersection  should be used as  the open or close  of a
+        * run of  turned-on pixels  if and only  if the  sum associated
+        * with that intersection is -1, 0, or 1.
+        */
+      if (parity == -1 || parity == 0 || parity == 1)
+        xcoordsList += (xcoord + 0.5)
     })
 
     val xcoords = xcoordsList.toArray
@@ -206,21 +251,21 @@ object PolygonRasterizer {
   }
 
   /**
-   * This does much the same things as runsPoint, except that instead
-   * of using a scanline, a "scan-rectangle" is used.  When this is
-   * run over all of the rows, the collective output is collection of
-   * pixels which completely covers the input polygon (when partial is
-   * true) or the collection of pixels which are completely inside of
-   * the polygon (when partial = false).
-   *
-   * This routine ASSUMES that the polygon is closed, is of finite
-   * area, and that its boundary does not self-intersect.
-   *
-   * @param edges    A list of active edges
-   * @param y        The y-value of the bottom of the vertical scan-rectangle
-   * @param maxX     The maximum-possible x-coordinate
-   * @param partial  True if all intersected cells are to be reported, otherwise only those on the interior of the polygon
-   */
+    * This does much the same things as runsPoint, except that instead
+    * of using a scanline, a "scan-rectangle" is used.  When this is
+    * run over all of the rows, the collective output is collection of
+    * pixels which completely covers the input polygon (when partial
+    * is true) or the collection of pixels which are completely inside
+    * of the polygon (when partial = false).
+    *
+    * This routine ASSUMES that the polygon is closed, is of finite
+    * area, and that its boundary does not self-intersect.
+    *
+    * @param edges    A list of active edges
+    * @param y        The y-value of the bottom of the vertical scan-rectangle
+    * @param maxX     The maximum-possible x-coordinate
+    * @param partial  True if all intersected cells are to be reported, otherwise only those on the interior of the polygon
+    */
   private def runsArea(rtree: STRtree, y: Int, maxX: Int, partial: Boolean) = {
     val (top, bot) = (y + 1, y + 0)
     val interactions = mutable.ListBuffer[Segment]()
@@ -234,9 +279,11 @@ object PolygonRasterizer {
     var botIntervalStart = 0.0
     var topIntervalStart = 0.0
 
-    /* Process each edge  which intersects the scan-rectangle.  Report
-     * all edges  except those which only  touch the top or  bottom of
-     * the scan-rectangle. */
+    /**
+      * Process each edge  which intersects the scan-rectangle.  Report
+      * all edges  except those which only  touch the top or  bottom of
+      * the scan-rectangle.
+      */
     rtree.query(new Envelope(Double.MinValue, Double.MaxValue, bot, top))
       .asScala
       .foreach({ edgeObj =>
@@ -255,67 +302,94 @@ object PolygonRasterizer {
     interactions
       .sortWith(_._1 < _._1)
       .foreach({ edge =>
-        val topIntervalStop = lineAxisIntersection(edge, top)._1
-        val botIntervalStop = lineAxisIntersection(edge, bot)._1
-        val touchesTop = (topIntervalStop != Double.NegativeInfinity)
-        val touchesBot = (botIntervalStop != Double.NegativeInfinity)
+        val topIntervalX = lineAxisIntersection(edge, top)._1
+        val botIntervalX = lineAxisIntersection(edge, bot)._1
+        val touchesTop = (topIntervalX != Double.NegativeInfinity)
+        val touchesBot = (botIntervalX != Double.NegativeInfinity)
 
-        /* Create top intervals: Generate  the list of intervals which
-         * are due to  intersections of the polygon  boundary with the
-         * top  of  the  scan-rectangle.    The  correctness  of  this
-         * approach comes from the ASSUMPTION stated above. */
+        /**
+          * If partial pixels are being reported, then all pixels which
+          * intersect with an edge must be reported.
+          */
+        if (partial) {
+          val firstX =
+            if (edge._2 <= bot) botIntervalX
+            else if (edge._2 >= top) topIntervalX
+            else edge._1
+          val secondX =
+            if (edge._4 <= bot) botIntervalX
+            else if (edge._4 >= top) topIntervalX
+            else edge._3
+
+          val smallerX = min(firstX, secondX)
+          val largerX = max(firstX, secondX)
+
+          intervals += ((floor(smallerX), ceil(largerX)))
+        }
+
+        /**
+          * Create top intervals: Generate the list of intervals which
+          * are due to intersections of the polygon boundary with the
+          * top of the scan-rectangle.  The correctness of this
+          * approach comes from the ASSUMPTION stated above.
+          */
         if (touchesTop) {
           if (topInterval == false) { // Start new top interval
             topInterval = true
-            topIntervalStart = topIntervalStop
+            topIntervalStart = topIntervalX
           }
           else if (topInterval == true) { // Finish current top interval
             topInterval = false
-            val smaller = min(topIntervalStart, topIntervalStop)
-            val larger = max(topIntervalStart, topIntervalStop)
-            if (partial)
-              intervals += ((floor(smaller), ceil(larger)))
-            else
-              topIntervals += ((ceil(smaller), floor(larger)))
+            val smaller = min(topIntervalStart, topIntervalX)
+            val larger = max(topIntervalStart, topIntervalX)
+
+            if (partial) intervals += ((floor(smaller), ceil(larger)))
+            else topIntervals += ((ceil(smaller), floor(larger)))
           }
         }
 
-        /* Create bottom intervals. */
+        /** Create bottom intervals. */
         if (touchesBot) {
           if (botInterval == false) { // Start new bot interval
             botInterval = true
-            botIntervalStart = botIntervalStop
+            botIntervalStart = botIntervalX
           }
           else if (botInterval == true) { // Finish current bot interval
             botInterval = false
-            val smaller = min(botIntervalStart, botIntervalStop)
-            val larger = max(botIntervalStart, botIntervalStop)
+            val smaller = min(botIntervalStart, botIntervalX)
+            val larger = max(botIntervalStart, botIntervalX)
+
             if (partial) intervals += ((floor(smaller), ceil(larger)))
             else botIntervals += ((ceil(smaller), floor(larger)))
           }
         }
 
-        /* Create middle intervals.  These result form boundary segments
-         * entirely contained in the scan-rectangle. */
-        if (partial && !touchesTop && !touchesBot)
-          intervals += ((math.floor(edge._1), math.ceil(edge._3)))
-        else if (!partial && (!touchesTop || !touchesBot))
+        /**
+          * Create middle intervals.  These result form boundary
+          * segments in the interior of the scan-rectangle.
+          */
+        if (!partial && (!touchesTop || !touchesBot))
           midIntervals += ((math.floor(edge._1), math.ceil(edge._3)))
       })
 
-    if (partial) mergeIntervals(intervals.sortWith(_._1 < _._1))
+    if (partial)
+      mergeIntervals(intervals.sortWith(_._1 < _._1))
     else {
-      /* When  partial pixels are  not being reported,  intervals from
-       * intersections with  the top and bottom  of the scan-rectangle
-       * must ratify one-another. */
+      /**
+        * When partial pixels are not being reported, intervals from
+        * intersections with the top and bottom of the scan-rectangle
+        * must ratify one-another.
+        */
       val sortedTopIntervals = topIntervals.sortWith(_._1 < _._1)
       val sortedBotIntervals = botIntervals.sortWith(_._1 < _._1)
       val intervals = mutable.ListBuffer.empty[Interval]
 
       sortedTopIntervals.zip(sortedBotIntervals).map({ case(a,b) =>
         val intersection = intervalIntersection(a,b)
-        /* Thanks to the ASSUMPTION stated above, middle intervals imply
-         * partial pixels in their x-extents. */
+        /**
+          * Thanks to the ASSUMPTION stated above, middle intervals imply
+          * partial pixels in their x-extents.
+          */
         val differences = midIntervals.foldLeft(intersection)(intervalDifference)
         intervals ++= differences
       })
@@ -333,7 +407,11 @@ object PolygonRasterizer {
    * @param re       A raster extent to rasterize the polygon into
    * @param options  The options parameter controls whether to treat pixels as points or areas and whether to report partially-intersected areas.
    */
-  def foreachCellByPolygon(poly: Polygon, re: RasterExtent, options: Options = Options.DEFAULT)(f: Callback): Unit = {
+  def foreachCellByPolygon(
+    poly: Polygon,
+    re: RasterExtent,
+    options: Options = Options.DEFAULT
+  )(f: Callback): Unit = {
     val sampleType = options.sampleType
     val partial = options.includePartial
 

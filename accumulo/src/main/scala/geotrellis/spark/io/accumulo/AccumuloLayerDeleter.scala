@@ -1,33 +1,52 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.spark.io.accumulo
 
 import geotrellis.spark.LayerId
 import geotrellis.spark.io._
+import geotrellis.util.LazyLogging
+
 import org.apache.accumulo.core.client.{BatchWriterConfig, Connector}
 import org.apache.accumulo.core.security.Authorizations
-import spray.json.JsonFormat
 import org.apache.accumulo.core.data.{Range => AccumuloRange}
+import spray.json.JsonFormat
 import spray.json.DefaultJsonProtocol._
+
 import scala.collection.JavaConversions._
 
-class AccumuloLayerDeleter(val attributeStore: AttributeStore, connector: Connector) extends LayerDeleter[LayerId] {
+class AccumuloLayerDeleter(val attributeStore: AttributeStore, connector: Connector) extends LazyLogging with LayerDeleter[LayerId] {
 
   def delete(id: LayerId): Unit = {
-    if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-    val header = try {
-      attributeStore.readHeader[AccumuloLayerHeader](id)
+    try {
+      val header = attributeStore.readHeader[AccumuloLayerHeader](id)
+      val numThreads = 1
+      val config = new BatchWriterConfig()
+      config.setMaxWriteThreads(numThreads)
+      val deleter = connector.createBatchDeleter(header.tileTable, new Authorizations(), numThreads, config)
+      deleter.fetchColumnFamily(columnFamily(id))
+      deleter.setRanges(new AccumuloRange() :: Nil)
+      deleter.delete()
     } catch {
-      case e: AttributeNotFoundError => throw new LayerDeleteError(id).initCause(e)
+      case e: AttributeNotFoundError =>
+        logger.info(s"Metadata for $id was not found. Any associated layer data (if any) will require manual deletion")
+        throw new LayerDeleteError(id).initCause(e)
+    } finally {
+      attributeStore.delete(id)
     }
-
-    val numThreads = 1
-    val config = new BatchWriterConfig()
-    config.setMaxWriteThreads(numThreads)
-    val deleter = connector.createBatchDeleter(header.tileTable, new Authorizations(), numThreads, config)
-    deleter.fetchColumnFamily(columnFamily(id))
-    deleter.setRanges(new AccumuloRange() :: Nil)
-    deleter.delete()
-
-    attributeStore.delete(id)
   }
 }
 

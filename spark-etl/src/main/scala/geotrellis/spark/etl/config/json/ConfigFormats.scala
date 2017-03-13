@@ -1,7 +1,24 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.spark.etl.config.json
 
 import geotrellis.vector.io._
 import geotrellis.raster.{CellSize, CellType}
+import geotrellis.raster.io._
 import geotrellis.raster.resample._
 import geotrellis.spark.etl.config._
 import geotrellis.vector.Extent
@@ -13,15 +30,6 @@ import spray.json.DefaultJsonProtocol._
 import scala.util.matching.Regex
 
 trait ConfigFormats {
-  implicit object CellTypeFormat extends RootJsonFormat[CellType] {
-    def write(ct: CellType): JsValue = ct.name.toJson
-    def read(value: JsValue): CellType =
-      value match {
-        case JsString(ctype) => CellType.fromString(ctype)
-        case _ =>
-          throw new DeserializationException("CellType must be a valid string.")
-      }
-  }
 
   implicit object StorageLevelFormat extends RootJsonFormat[StorageLevel] {
     def write(sl: StorageLevel): JsValue = sl match {
@@ -85,19 +93,6 @@ trait ConfigFormats {
         }
         case _ =>
           throw new DeserializationException("PointResampleMethod must be a valid string.")
-      }
-  }
-
-  implicit object CellSizeFormat extends RootJsonFormat[CellSize] {
-    def write(cs: CellSize): JsValue = JsObject(
-      "width"  -> cs.width.toJson,
-      "height" -> cs.height.toJson
-    )
-    def read(value: JsValue): CellSize =
-      value.asJsObject.getFields("width", "height") match {
-        case Seq(JsNumber(width), JsNumber(height)) => CellSize(width.toInt, height.toInt)
-        case _ =>
-          throw new DeserializationException("BackendType must be a valid object.")
       }
   }
 
@@ -200,7 +195,10 @@ trait ConfigFormats {
       "backend" -> bf.write(i.backend),
       "cache"   -> i.cache.toJson,
       "noData"  -> i.noData.toJson,
-      "clip"    -> i.clip.toJson
+      "clip"    -> i.clip.toJson,
+      "crs"   -> i.crs.toJson,
+      "maxTileSize"   -> i.crs.toJson,
+      "numPartitions" -> i.numPartitions.toJson
     )
     def read(value: JsValue): Input =
       value match {
@@ -211,7 +209,10 @@ trait ConfigFormats {
             backend = bf.read(fields("backend")),
             cache   = fields.get("cache").map(_.convertTo[StorageLevel]),
             noData  = fields.get("noData").map(_.convertTo[Double]),
-            clip    = fields.get("clip").map(_.convertTo[Extent])
+            clip    = fields.get("clip").map(_.convertTo[Extent]),
+            crs     = fields.get("crs").map(_.convertTo[String]),
+            maxTileSize = fields.get("maxTileSize").map(_.convertTo[Int]),
+            numPartitions = fields.get("numPartitions").map(_.convertTo[Int])
           )
         case _ =>
           throw new DeserializationException("Input must be a valid json object.")

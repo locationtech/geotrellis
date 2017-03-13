@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2014 DigitalGlobe.
+ * Copyright 2016 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -42,21 +42,23 @@ package object spark
     with filter.Implicits
     with join.Implicits
     with knn.Implicits
+    with mapalgebra.focal.hillshade.Implicits
+    with mapalgebra.focal.Implicits
     with mapalgebra.Implicits
     with mapalgebra.local.Implicits
     with mapalgebra.local.temporal.Implicits
-    with mapalgebra.focal.Implicits
-    with mapalgebra.focal.hillshade.Implicits
     with mapalgebra.zonal.Implicits
     with mask.Implicits
+    with matching.Implicits
     with merge.Implicits
     with partition.Implicits
-    with resample.Implicits
     with reproject.Implicits
+    with resample.Implicits
+    with sigmoidal.Implicits
     with split.Implicits
     with stitch.Implicits
-    with summary.polygonal.Implicits
     with summary.Implicits
+    with summary.polygonal.Implicits
     with tiling.Implicits {
   type TileLayerRDD[K] = RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]
   object TileLayerRDD {
@@ -136,6 +138,9 @@ package object spark
   implicit class withTileLayerRDDMethods[K: SpatialComponent: ClassTag](val self: TileLayerRDD[K])
       extends TileLayerRDDMethods[K]
 
+  implicit class withTileLayerCollectionMethods[K: SpatialComponent](val self: TileLayerCollection[K])
+    extends TileLayerCollectionMethods[K]
+
   implicit class withMultibandTileLayerRDDMethods[K: SpatialComponent: ClassTag](val self: MultibandTileLayerRDD[K])
       extends MultibandTileLayerRDDMethods[K]
 
@@ -186,6 +191,11 @@ package object spark
     def collectMetadata[K2: Boundable: SpatialComponent](layoutScheme: LayoutScheme)
         (implicit ev: K1 => TilerKeyMethods[K1, K2], ev1: GetComponent[K1, ProjectedExtent]): (Int, TileLayerMetadata[K2]) = {
       TileLayerMetadata.fromRdd[K1, V, K2](rdd, layoutScheme)
+    }
+
+    def collectMetadata[K2: Boundable: SpatialComponent](crs: CRS, size: Int, zoom: Int)
+        (implicit ev: K1 => TilerKeyMethods[K1, K2], ev1: GetComponent[K1, ProjectedExtent]): (Int, TileLayerMetadata[K2]) = {
+      TileLayerMetadata.fromRdd[K1, V, K2](rdd, ZoomedLayoutScheme(crs, size), zoom)
     }
 
     def collectMetadata[K2: Boundable: SpatialComponent](layout: LayoutDefinition)

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.raster
 
 import geotrellis.vector.Extent
@@ -25,8 +41,8 @@ class GridExtent(val extent: Extent, val cellwidth: Double, val cellheight: Doub
     *       types.
     */
   def toRasterExtent(): RasterExtent = {
-    val targetCols = math.round(extent.width / cellwidth).toLong
-    val targetRows = math.round(extent.height / cellheight).toLong
+    val targetCols = math.max(1L, math.round(extent.width / cellwidth).toLong)
+    val targetRows = math.max(1L, math.round(extent.height / cellheight).toLong)
     if(targetCols > Int.MaxValue) {
       throw new GeoAttrsError(s"Cannot convert GridExtent into a RasterExtent: number of columns exceeds maximum integer value ($targetCols > ${Int.MaxValue})")
     }

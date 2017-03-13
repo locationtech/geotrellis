@@ -1,8 +1,25 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.spark.reproject
 
 import geotrellis.spark._
 import geotrellis.spark.reproject.Reproject.Options
 import geotrellis.spark.tiling._
+import geotrellis.spark.testkit._
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
@@ -124,7 +141,7 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
       val cellSize = CellSize(0.083328250000000, 0.083328250000000)
       val re = RasterExtent(extent, cellSize)
 
-      val (_, md) = TileLayerMetadata.fromRdd(rdd, scheme)
+      val (_, md) = rdd.collectMetadata[SpatialKey](scheme)
       val tiled = ContextRDD(rdd.tileToLayout[SpatialKey](md, NearestNeighbor), md)
       val beforeMetadata = tiled.metadata
 

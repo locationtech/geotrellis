@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.spark.io.s3
 
 import geotrellis.spark.io._
@@ -41,46 +57,48 @@ trait S3RDDWriter {
       rdd.groupBy({ row => keyPath(row._1) }, numPartitions = rdd.partitions.length)
 
     pathsToTiles.foreachPartition { partition =>
-      import geotrellis.spark.util.TaskUtils._
-      val getS3Client = _getS3Client
-      val s3client: S3Client = getS3Client()
+      if(partition.nonEmpty) {
+        import geotrellis.spark.util.TaskUtils._
+        val getS3Client = _getS3Client
+        val s3client: S3Client = getS3Client()
 
-      val requests: Process[Task, PutObjectRequest] =
-        Process.unfold(partition){ iter =>
-          if (iter.hasNext) {
-            val recs = iter.next()
-            val key = recs._1
-            val pairs = recs._2.toVector
-            val bytes = AvroEncoder.toBinary(pairs)(_codec)
-            val metadata = new ObjectMetadata()
-            metadata.setContentLength(bytes.length)
-            val is = new ByteArrayInputStream(bytes)
-            val request = putObjectModifier(new PutObjectRequest(bucket, key, is, metadata))
-            Some(request, iter)
-          } else  {
-            None
+        val requests: Process[Task, PutObjectRequest] =
+          Process.unfold(partition) { iter =>
+            if (iter.hasNext) {
+              val recs = iter.next()
+              val key = recs._1
+              val pairs = recs._2.toVector
+              val bytes = AvroEncoder.toBinary(pairs)(_codec)
+              val metadata = new ObjectMetadata()
+              metadata.setContentLength(bytes.length)
+              val is = new ByteArrayInputStream(bytes)
+              val request = putObjectModifier(new PutObjectRequest(bucket, key, is, metadata))
+              Some(request, iter)
+            } else {
+              None
+            }
+          }
+
+        val pool = Executors.newFixedThreadPool(threads)
+
+        val write: PutObjectRequest => Process[Task, PutObjectResult] = { request =>
+          Process eval Task {
+            request.getInputStream.reset() // reset in case of retransmission to avoid 400 error
+            s3client.putObject(request)
+          }(pool).retryEBO {
+            case e: AmazonS3Exception if e.getStatusCode == 503 => true
+            case _ => false
           }
         }
 
-      val pool = Executors.newFixedThreadPool(threads)
-
-      val write: PutObjectRequest => Process[Task, PutObjectResult] = { request =>
-        Process eval Task {
-          request.getInputStream.reset() // reset in case of retransmission to avoid 400 error
-          s3client.putObject(request)
-        }(pool).retryEBO {
-          case e: AmazonS3Exception if e.getStatusCode == 503 => true
-          case _ => false
-        }
+        val results = nondeterminism.njoin(maxOpen = threads, maxQueued = threads) { requests map write }(Strategy.Executor(pool))
+        results.run.unsafePerformSync
+        pool.shutdown()
       }
-
-      val results = nondeterminism.njoin(maxOpen = threads, maxQueued = threads) { requests map write } (Strategy.Executor(pool))
-      results.run.unsafePerformSync
-      pool.shutdown()
     }
   }
 }
 
 object S3RDDWriter extends S3RDDWriter {
-  def getS3Client: () => S3Client = () => S3Client.default
+  def getS3Client: () => S3Client = () => S3Client.DEFAULT
 }

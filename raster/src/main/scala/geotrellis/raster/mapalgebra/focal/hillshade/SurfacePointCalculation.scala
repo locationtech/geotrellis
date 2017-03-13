@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2014 Azavea.
+ * Copyright 2016 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,7 +17,7 @@
 package geotrellis.raster.mapalgebra.focal.hillshade
 
 import geotrellis.raster._
-import geotrellis.raster.mapalgebra.focal.{FocalCalculation, Neighborhood}
+import geotrellis.raster.mapalgebra.focal.{FocalCalculation, Neighborhood, TargetCell}
 
 import scala.math._
 
@@ -54,7 +54,7 @@ class SurfacePoint() {
 
   // Trig functions for slope and aspect.
   // Use these if you want to get the sine or cosine of the aspect or slope,
-  // since they are a lot more performant than calling scala.math.sin or 
+  // since they are a lot more performant than calling scala.math.sin or
   // scala.math.cos
 
   /** Cosine of the slope, computed using partial derivatives */
@@ -104,9 +104,12 @@ class SurfacePoint() {
  * For edge cells, the neighborhood points that lie outside the extent of the raster
  * will be counted as having the same value as the focal point.
  */
-abstract class SurfacePointCalculation[T](r: Tile, n: Neighborhood, analysisArea: Option[GridBounds], val cellSize: CellSize)
-  extends FocalCalculation[T](r, n, analysisArea)
+abstract class SurfacePointCalculation[T](r: Tile, n: Neighborhood, analysisArea: Option[GridBounds], val cellSize: CellSize, target: TargetCell = TargetCell.All)
+  extends FocalCalculation[T](r, n, analysisArea, target)
 {
+  // Use trait instead of Function3 to avoid boxing
+  private trait SetValue { def apply(z: Double, x: Int, y: Int): Unit }
+
   var lastY = -1
 
   var cellWidth = 0.0
@@ -125,18 +128,42 @@ abstract class SurfacePointCalculation[T](r: Tile, n: Neighborhood, analysisArea
    */
   def setValue(x: Int, y: Int, s: SurfacePoint): Unit
 
-  def setValue(x: Int, y: Int): Unit = {
-    calcSurface()
-    setValue(x, y, s)
-  }
-  
+  private val _setValue: SetValue =
+    target match {
+      case TargetCell.All =>
+        new SetValue {
+          def apply(z: Double, x: Int, y: Int): Unit = {
+            calcSurface()
+            setValue(x, y, s)
+          }
+        }
+      case TargetCell.Data =>
+        new SetValue {
+          def apply(z: Double, x: Int, y: Int): Unit = {
+            if(isData(z)) {
+              calcSurface()
+              setValue(x, y, s)
+            }
+          }
+        }
+      case TargetCell.NoData =>
+        new SetValue {
+          def apply(z: Double, x: Int, y: Int) = {
+            if(isNoData(z)) {
+              calcSurface()
+              setValue(x, y, s)
+            }
+          }
+        }
+    }
+
   def moveRight() = {
     val tmp = west
     west = base
     base = east
     east = tmp
   }
-  
+
   protected def calcSurface(): Unit = {
     if(isNoData(base(1))) {
       s.`dz/dx` = Double.NaN
@@ -181,8 +208,8 @@ abstract class SurfacePointCalculation[T](r: Tile, n: Neighborhood, analysisArea
     cellWidth = cellSize.width
     cellHeight = cellSize.height
 
-    if(colBorderMax < 3 || rowBorderMax < 3) { 
-      sys.error(s"Tile is too small to get surface values. ($colBorderMax, $rowBorderMax)") 
+    if(colBorderMax < 3 || rowBorderMax < 3) {
+      sys.error(s"Tile is too small to get surface values. ($colBorderMax, $rowBorderMax)")
     }
 
     def getValSafe(col: Int, row: Int, focalVal: Double) = {
@@ -194,7 +221,7 @@ abstract class SurfacePointCalculation[T](r: Tile, n: Neighborhood, analysisArea
     }
 
     var focalValue = r.getDouble(colMin, rowMin)
-    
+
     // Handle top row
 
     /// Top Left
@@ -207,8 +234,8 @@ abstract class SurfacePointCalculation[T](r: Tile, n: Neighborhood, analysisArea
     east(0) = getValSafe(colMin+1, rowMin-1, focalValue)
     east(1) = r.getDouble(colMin + 1, rowMin)
     east(2) = r.getDouble(colMin + 1, rowMin + 1)
-    setValue(0, 0)
-    
+    _setValue(focalValue, 0, 0)
+
     var col = colMin + 1
 
     /// Top Middle
@@ -220,7 +247,7 @@ abstract class SurfacePointCalculation[T](r: Tile, n: Neighborhood, analysisArea
       east(0) = getValSafe(col+1, rowMin-1, focalValue)
       east(1) = r.getDouble(col+1, rowMin)
       east(2) = r.getDouble(col+1, rowMin + 1)
-      setValue(col-colMin, 0)
+      _setValue(focalValue, col-colMin, 0)
       col += 1
     }
 
@@ -232,8 +259,8 @@ abstract class SurfacePointCalculation[T](r: Tile, n: Neighborhood, analysisArea
     east(0) = getValSafe(col+1, rowMin-1, focalValue)
     east(1) = getValSafe(col+1, rowMin  , focalValue)
     east(2) = getValSafe(col+1, rowMin+1, focalValue)
-    setValue(col-colMin, 0)
-    
+    _setValue(focalValue, col-colMin, 0)
+
     var row = rowMin + 1
 
     // Handle middle rows
@@ -249,7 +276,7 @@ abstract class SurfacePointCalculation[T](r: Tile, n: Neighborhood, analysisArea
       east(0) = r.getDouble(colMin+1, row-1)
       east(1) = r.getDouble(colMin+1, row)
       east(2) = r.getDouble(colMin+1, row+1)
-      setValue(0, row-rowMin)
+      _setValue(focalValue, 0, row-rowMin)
 
       /// Middle Middle
       col = colMin + 1
@@ -258,7 +285,7 @@ abstract class SurfacePointCalculation[T](r: Tile, n: Neighborhood, analysisArea
         east(0) = r.getDouble(col+1, row-1)
         east(1) = r.getDouble(col+1, row)
         east(2) = r.getDouble(col+1, row+1)
-        setValue(col-colMin, row-rowMin)
+        _setValue(focalValue, col-colMin, row-rowMin)
         col += 1
       }
 
@@ -270,7 +297,7 @@ abstract class SurfacePointCalculation[T](r: Tile, n: Neighborhood, analysisArea
       east(1) = getValSafe(col+1, row  , focalValue)
       east(2) = getValSafe(col+1, row+1, focalValue)
 
-      setValue(col-colMin, row-rowMin)
+      _setValue(focalValue, col-colMin, row-rowMin)
 
       row += 1
     }
@@ -288,7 +315,7 @@ abstract class SurfacePointCalculation[T](r: Tile, n: Neighborhood, analysisArea
     east(0) = r.getDouble(colMin+1, row-1)
     east(1) = r.getDouble(colMin+1, row)
     east(2) = getValSafe(colMin+1, row+1, focalValue)
-    setValue(0, row-rowMin)
+    _setValue(focalValue, 0, row-rowMin)
 
     /// Bottom Middle
     col = colMin + 1
@@ -300,7 +327,7 @@ abstract class SurfacePointCalculation[T](r: Tile, n: Neighborhood, analysisArea
       east(0) = r.getDouble(col+1, row-1)
       east(1) = r.getDouble(col+1, row)
       east(2) = getValSafe(col+1, row+1, focalValue)
-      setValue(col-colMin, row-rowMin)
+      _setValue(focalValue, col-colMin, row-rowMin)
       col += 1
     }
 
@@ -312,7 +339,7 @@ abstract class SurfacePointCalculation[T](r: Tile, n: Neighborhood, analysisArea
     east(0) = getValSafe(col+1, row-1, focalValue)
     east(1) = getValSafe(col+1, row  , focalValue)
     east(2) = getValSafe(col+1, row+1, focalValue)
-    setValue(col-colMin, row-rowMin)
+    _setValue(focalValue, col-colMin, row-rowMin)
 
     result
   }

@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2014 Azavea.
+ * Copyright 2016 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -49,11 +49,8 @@ object ShapeFileReader {
   def readSimpleFeatures(path: String) = {
     // Extract the features as GeoTools 'SimpleFeatures'
     val url = s"file://${new File(path).getAbsolutePath}"
-    val ftItr: SimpleFeatureIterator =
-      new ShapefileDataStore(new URL(url))
-        .getFeatureSource
-        .getFeatures
-        .features
+    val ds = new ShapefileDataStore(new URL(url))
+    val ftItr: SimpleFeatureIterator = ds.getFeatureSource.getFeatures.features
 
     try {
       val simpleFeatures = mutable.ListBuffer[SimpleFeature]()
@@ -61,10 +58,11 @@ object ShapeFileReader {
       simpleFeatures.toList
     } finally {
       ftItr.close
+      ds.dispose
     }
   }
 
-  def readPointFeatures(path: String): Seq[PointFeature[Map[String,Object]]] =
+  def readPointFeatures(path: String): Seq[PointFeature[Map[String,Object]]] = 
     readSimpleFeatures(path)
       .flatMap { ft => ft.geom[jts.Point].map(PointFeature(_, ft.attributeMap)) }
 

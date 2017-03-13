@@ -1,20 +1,33 @@
-package geotrellis.raster.io.geotiff
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff.compression._
+package geotrellis.raster.io.geotiff
 
 trait ByteGeoTiffSegmentCollection extends GeoTiffSegmentCollection {
   type T = ByteGeoTiffSegment
 
   val bandType = ByteBandType
-  val noDataValue: Option[Byte]
+  def noDataValue: Option[Byte]
 
-  lazy val createSegment: Int => ByteGeoTiffSegment = noDataValue match {
+  lazy val decompressGeoTiffSegment = noDataValue match {
     case None =>
-      { i: Int => new ByteRawGeoTiffSegment(getDecompressedBytes(i)) }
-    case Some(nd) if (nd == Short.MinValue) =>
-      { i: Int => new ByteConstantNoDataCellTypeGeoTiffSegment(getDecompressedBytes(i)) }
+      (i: Int, bytes: Array[Byte]) => new ByteRawGeoTiffSegment(decompressor.decompress(bytes, i))
+    case Some(nd) if nd == Byte.MinValue =>
+      (i: Int, bytes: Array[Byte]) => new ByteConstantNoDataCellTypeGeoTiffSegment(decompressor.decompress(bytes, i))
     case Some(nd) =>
-      { i: Int => new ByteUserDefinedNoDataGeoTiffSegment(getDecompressedBytes(i), nd) }
-    }
+      (i: Int, bytes: Array[Byte]) => new ByteUserDefinedNoDataGeoTiffSegment(decompressor.decompress(bytes, i), nd)
+  }
 }

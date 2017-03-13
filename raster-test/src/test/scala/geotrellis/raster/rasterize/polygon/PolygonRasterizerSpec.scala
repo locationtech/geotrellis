@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2014 Azavea.
+ * Copyright 2016 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,6 +23,7 @@ import geotrellis.raster.rasterize._
 import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.raster.testkit._
 import geotrellis.vector._
+import geotrellis.vector.io.wkt.WKT
 
 import math.{max,min,round}
 
@@ -51,7 +52,7 @@ class PolygonRasterizerSpec extends FunSuite
     val square2 = Polygon( Line( (1.0,9.0), (1.0,8.5), (1.0,6.0), (4.0, 6.0), (4.0, 8.5), (4.0, 9.0), (1.0, 9.0) ))
 
     val r1 = Rasterizer.rasterizeWithValue(square, re, 0x11)
-    // println(r1.asciiDraw)
+    // println(r1.tile.asciiDraw)
 
     // values match gdal
     for ( i <- 1 to 3; j <- 1 to 3) {
@@ -63,7 +64,7 @@ class PolygonRasterizerSpec extends FunSuite
     assert(sum === 9)
 
     val r2 = Rasterizer.rasterizeWithValue(diamond, re, 0x22)
-    // println(r2.asciiDraw())
+    // println(r2.tile.asciiDraw())
     assert(r2.get(3,3) === 0x22)
     for (i <- 2 to 4) { assert(r2.get(i,4) === 0x22) }
     for (i <- 1 to 5) { assert(r2.get(i,5) === 0x22) }
@@ -76,7 +77,7 @@ class PolygonRasterizerSpec extends FunSuite
     assert(sum === 18)
 
     val r3 = Rasterizer.rasterizeWithValue(triangle, re, 0x33)
-    // println(r3.asciiDraw())
+    // println(r3.tile.asciiDraw())
 
     assert(r3.get(3,2) === 0x33)
     assert(r3.get(4,3) === 0x33)
@@ -86,19 +87,19 @@ class PolygonRasterizerSpec extends FunSuite
     assert(sum === 3)
 
     val r4 = Rasterizer.rasterizeWithValue(square2, re, 0x44)
-    // println(r4.asciiDraw())
+    // println(r4.tile.asciiDraw())
 
     val r5 = Rasterizer.rasterizeWithValue(outsideSquare, re, 0x55)
-    // println(r5.asciiDraw())
+    // println(r5.tile.asciiDraw())
 
     val r6 = Rasterizer.rasterizeWithValue(envelopingSquare, re, 0x66)
-    // println(r6.asciiDraw())
+    // println(r6.tile.asciiDraw())
 
     val emptyGeom = outsideSquare.intersection(envelopingSquare)
     // LoadWKT()
   }
 
-  test("failing example should work") {
+  test("previously-failing example should work") {
     val p = Polygon(Line((-9510600.807354769, 4176519.1962707597), (-9511212.30358105,4172238.854275199), (-9503568.600752532,4175602.1747499597), (-9510600.807354769,4176519.1962707597)))
     val re = RasterExtent(Extent(-9509377.814902207,4174073.2405969054,-9508766.318675926,4174684.736823185),2.3886571339098737,2.3886571339044167,256,256)
     val r = Rasterizer.rasterizeWithValue(p, re, 1 )
@@ -227,7 +228,7 @@ class PolygonRasterizerSpec extends FunSuite
     s.size should be (25)
   }
 
-  test("Polygon w/ non-point pixels, w/o partial cells, not contianing border center cells") {
+  test("Polygon w/ non-point pixels, w/o partial cells, not containing border center cells") {
     val extent = Extent(0, 0, 10, 10)
     val rasterExtent = RasterExtent(extent, 10, 10)
     val extent2 = Extent(0.7, 0.7, 9.3, 9.3)
@@ -240,7 +241,7 @@ class PolygonRasterizerSpec extends FunSuite
     assert(s.size < 100)
   }
 
-  test("Polygon w/ non-point pixels and partial cells, not contianing border center cells") {
+  test("Polygon w/ non-point pixels and partial cells, not containing border center cells") {
     val extent = Extent(0, 0, 10, 10)
     val rasterExtent = RasterExtent(extent, 10, 10)
     val extent2 = Extent(0.7, 0.7, 9.3, 9.3)
@@ -308,7 +309,7 @@ class PolygonRasterizerSpec extends FunSuite
       tile.set(col, row, 1)
       sum = sum + 1
     }
-    // println(tile.asciiDraw)
+    // println(tile.tile.asciiDraw)
 
     sum should be (12)
   }
@@ -340,7 +341,7 @@ class PolygonRasterizerSpec extends FunSuite
     })
 
     count should be (50)
-    println(GeoTiff(tile, e, LatLng).asciiDraw)
+//    println(GeoTiff(tile, e, LatLng).tile.asciiDraw)
   }
 
   test("Triangle w/ non-point pixels and w/o partial cells") {
@@ -368,7 +369,7 @@ class PolygonRasterizerSpec extends FunSuite
     })
 
     count should be (40)
-    println(GeoTiff(tile, e, LatLng).asciiDraw)
+    // println(GeoTiff(tile, e, LatLng).tile.asciiDraw)
   }
 
   test("Triangle w/ non-point pixels and w/ partial cells") {
@@ -396,7 +397,7 @@ class PolygonRasterizerSpec extends FunSuite
     })
 
     count should be (60)
-    println(GeoTiff(tile, e, LatLng).asciiDraw)
+    // println(GeoTiff(tile, e, LatLng).tile.asciiDraw)
   }
 
   val tiny = Polygon(Point(40, 40), Point(40, 59), Point(59, 50), Point(40, 40))
@@ -419,7 +420,7 @@ class PolygonRasterizerSpec extends FunSuite
     })
 
     count should be (1)
-    println(GeoTiff(tile, e, LatLng).asciiDraw)
+    // println(GeoTiff(tile, e, LatLng).tile.asciiDraw)
   }
 
   test("Sub-Pixel Geometry w/ non-point pixels and w/ partial cells") {
@@ -440,7 +441,7 @@ class PolygonRasterizerSpec extends FunSuite
     })
 
     count should be (1)
-    println(GeoTiff(tile, e, LatLng).asciiDraw)
+    // println(GeoTiff(tile, e, LatLng).tile.asciiDraw)
   }
 
   test("Sub-Pixel Geometry w/ non-point pixels and w/o partial cells") {
@@ -461,7 +462,7 @@ class PolygonRasterizerSpec extends FunSuite
     })
 
     count should be (0)
-    println(GeoTiff(tile, e, LatLng).asciiDraw)
+    // println(GeoTiff(tile, e, LatLng).tile.asciiDraw)
   }
 
   val tiny2 = Polygon(Point(40, 40), Point(40, 42), Point(42, 41), Point(40, 40))
@@ -488,7 +489,7 @@ class PolygonRasterizerSpec extends FunSuite
     })
 
     count should be (0)
-    println(GeoTiff(tile, e, LatLng).asciiDraw)
+    // println(GeoTiff(tile, e, LatLng).tile.asciiDraw)
   }
 
   test("More Sub-Pixel Geometry w/ non-point pixels and w/ partial cells") {
@@ -513,7 +514,7 @@ class PolygonRasterizerSpec extends FunSuite
     })
 
     count should be (1)
-    println(GeoTiff(tile, e, LatLng).asciiDraw)
+    // println(GeoTiff(tile, e, LatLng).tile.asciiDraw)
   }
 
   test("More Sub-Pixel Geometry w/ non-point pixels and w/o partial cells") {
@@ -538,6 +539,135 @@ class PolygonRasterizerSpec extends FunSuite
     })
 
     count should be (0)
-    println(GeoTiff(tile, e, LatLng).asciiDraw)
+    // println(GeoTiff(tile, e, LatLng).tile.asciiDraw)
+  }
+
+  test("Small triangle w/ non-point pixels (1/4)") {
+    /*
+      ND ND  1
+      ND  1  1
+      ND ND  1
+     */
+    val tiny3 = Polygon(Point(50, 48), Point(99, 32), Point(99, 68), Point(50,48))
+    val e = Extent(0,0,100,100)
+    val re = RasterExtent(e, 3, 3)
+    val ro = Options(includePartial = true, sampleType=PixelIsArea)
+    val tile = IntArrayTile.empty(3,3)
+    var count = 0
+
+    PolygonRasterizer.foreachCellByPolygon(tiny3, re, ro)({ (col, row) =>
+      tile.set(col, row, 1)
+      count += 1
+    })
+
+    count should be (4)
+  }
+
+  test("Small triangle w/ non-point pixels (2/4)") {
+    /*
+      1  ND  ND
+      1   1  ND
+      1  ND  ND
+     */
+    val tiny3 = Polygon(Point(50, 48), Point(1, 32), Point(1, 68), Point(50, 48))
+    val e = Extent(0,0,100,100)
+    val re = RasterExtent(e, 3, 3)
+    val ro = Options(includePartial = true, sampleType=PixelIsArea)
+    val tile = IntArrayTile.empty(3,3)
+    var count = 0
+
+    PolygonRasterizer.foreachCellByPolygon(tiny3, re, ro)({ (col, row) =>
+      tile.set(col, row, 1)
+      count += 1
+    })
+
+    count should be (4)
+  }
+
+  test("Small triangle w/ non-point pixels (3/4)") {
+    /*
+       1  1  1
+      ND  1 ND
+      ND ND ND
+     */
+    val tiny3 = Polygon(Point(48, 50), Point(32, 99), Point(68, 99), Point(48, 50))
+    val e = Extent(0,0,100,100)
+    val re = RasterExtent(e, 3, 3)
+    val ro = Options(includePartial = true, sampleType=PixelIsArea)
+    val tile = IntArrayTile.empty(3,3)
+    var count = 0
+
+    PolygonRasterizer.foreachCellByPolygon(tiny3, re, ro)({ (col, row) =>
+      tile.set(col, row, 1)
+      count += 1
+    })
+
+    count should be (4)
+  }
+
+  test("Small triangle w/ non-point pixels (4/4)") {
+    /*
+      ND  ND  ND
+      ND  1   ND
+      1   1   1
+     */
+    val tiny3 = Polygon(Point(48, 50), Point(32, 1), Point(68, 1), Point(48, 50))
+    val e = Extent(0,0,100,100)
+    val re = RasterExtent(e, 3, 3)
+    val ro = Options(includePartial = true, sampleType=PixelIsArea)
+    val tile = IntArrayTile.empty(3,3)
+    var count = 0
+
+    PolygonRasterizer.foreachCellByPolygon(tiny3, re, ro)({ (col, row) =>
+      tile.set(col, row, 1)
+      count += 1
+    })
+
+    count should be (4)
+  }
+
+  test("Should correctly handle horizontal segments (1/2)") {
+    val polygonStr = "POLYGON ((0.7754 -0.6775, 0.774 -0.6779, 0.7773 -0.6783, 0.7768 -0.678, 0.7761 -0.678, 0.7754 -0.6775))"
+    val polygon = WKT.read(polygonStr)
+    val extent = Extent(0.0, -0.904, 0.9188, 0.0)
+    val rasterExtent = RasterExtent(extent, 10, 10)
+
+    Rasterizer.rasterizeWithValue(polygon, rasterExtent, 1)
+  }
+
+  test("Should correctly handle horizontal segments (2/2)") {
+    val polygonStr = "POLYGON ((0.7754 -0.6775, 0.7758 -0.6768, 0.776 -0.6766, 0.7763 -0.6762, 0.7765 -0.6761, 0.7772 -0.6762, 0.7777 -0.6763, 0.7782 -0.6765, 0.779 -0.677, 0.7791 -0.6773, 0.7792 -0.6779, 0.779 -0.6785, 0.7787 -0.6787, 0.7781 -0.6786, 0.7773 -0.6783, 0.7768 -0.678, 0.7761 -0.678, 0.7755 -0.6779, 0.7754 -0.6775))"
+    val polygon = WKT.read(polygonStr)
+    val extent = Extent(0.0, -0.904, 0.9188, 0.0)
+    val rasterExtent = RasterExtent(extent, 10, 10)
+
+    Rasterizer.rasterizeWithValue(polygon, rasterExtent, 1)
+  }
+
+  test("Should correctly handle difficult polygon (1/3)") {
+    val polygonStr = "POLYGON ((0.007754 -0.006775, 0.007758 -0.006768, 0.00776 -0.006766, 0.007763 -0.006762, 0.007765 -0.006761, 0.007772 -0.006762, 0.007777 -0.006763, 0.007782 -0.006765, 0.00779 -0.00677, 0.007791 -0.006773, 0.007792 -0.006779, 0.00779 -0.006785, 0.007787 -0.006787, 0.007781 -0.006786, 0.007773 -0.006783, 0.007768 -0.00678, 0.007761 -0.00678, 0.007755 -0.006779, 0.007754 -0.006775))"
+    val polygon = WKT.read(polygonStr)
+    val extent = Extent(0.0, -0.00904, 0.009188, 0.0)
+    val rasterExtent = RasterExtent(extent, 10, 10)
+
+    Rasterizer.rasterizeWithValue(polygon, rasterExtent, 1)
+  }
+
+  test("Should correctly handle difficult polygon (2/3)") {
+    val polygonStr = "POLYGON ((0.00498 -0.004533, 0.004975 -0.004582, 0.004975 -0.004583, 0.004974 -0.004594, 0.004968 -0.004605, 0.004959 -0.00461, 0.004955 -0.004611, 0.00495 -0.004611, 0.004913 -0.004595, 0.004903 -0.004587, 0.004902 -0.004584, 0.004886 -0.004542, 0.004884 -0.004535, 0.004885 -0.004507, 0.004889 -0.004495, 0.004897 -0.004489, 0.004904 -0.004486, 0.004916 -0.004484, 0.004917 -0.004485, 0.004927 -0.004487, 0.004938 -0.004494, 0.004939 -0.004497, 0.004943 -0.004502, 0.004951 -0.00451, 0.004966 -0.004518, 0.004967 -0.004519, 0.004971 -0.004521, 0.004972 -0.004521, 0.004976 -0.004524, 0.00498 -0.004532, 0.00498 -0.004533))"
+    val polygon = WKT.read(polygonStr)
+    val extent = Extent(0.0, -0.009042, 0.009171, 0.0)
+    val rasterExtent = RasterExtent(extent, 10, 10)
+
+    Rasterizer.rasterizeWithValue(polygon, rasterExtent, 1)
+  }
+
+  test("Should correctly handle difficult polygon (3/3)") {
+    val polygonStr = "POLYGON ((0.003045 -0.004534, 0.003045 -0.004538, 0.003044 -0.004539, 0.003042 -0.004542, 0.003042 -0.004544, 0.003041 -0.004544, 0.003041 -0.004545, 0.00304 -0.004547, 0.003039 -0.004547, 0.003038 -0.004548, 0.003037 -0.004549, 0.003037 -0.00455, 0.003036 -0.00455, 0.003035 -0.004551, 0.003035 -0.004552, 0.003034 -0.004553, 0.003033 -0.004554, 0.003032 -0.004555, 0.003032 -0.004556, 0.00303 -0.004556, 0.003029 -0.004557, 0.003027 -0.004558, 0.003026 -0.004558, 0.003026 -0.004559, 0.003025 -0.004559, 0.003024 -0.004559, 0.003023 -0.00456, 0.003022 -0.00456, 0.00302 -0.004561, 0.00302 -0.004562, 0.003017 -0.004562, 0.003015 -0.004563, 0.003009 -0.004563, 0.003008 -0.00456, 0.003007 -0.004559, 0.003007 -0.004558, 0.003007 -0.004557, 0.003006 -0.004555, 0.003006 -0.004553, 0.003005 -0.004551, 0.003005 -0.004536, 0.003006 -0.004535, 0.003007 -0.004534, 0.003007 -0.004532, 0.003008 -0.004532, 0.003008 -0.004531, 0.003009 -0.00453, 0.003009 -0.004528, 0.00301 -0.004528, 0.00301 -0.004527, 0.003011 -0.004526, 0.003012 -0.004525, 0.003013 -0.004524, 0.003014 -0.004523, 0.003015 -0.004523, 0.003015 -0.004522, 0.003016 -0.004522, 0.003018 -0.004521, 0.003019 -0.004521, 0.00302 -0.00452, 0.00302 -0.004519, 0.003021 -0.004518, 0.003022 -0.004518, 0.003023 -0.004517, 0.003024 -0.004517, 0.003026 -0.004515, 0.003027 -0.004515, 0.003029 -0.004514, 0.00303 -0.004514, 0.003031 -0.004513, 0.003032 -0.004512, 0.003035 -0.004512, 0.003036 -0.004513, 0.003037 -0.004514, 0.003038 -0.004516, 0.003038 -0.004519, 0.003039 -0.00452, 0.00304 -0.004521, 0.00304 -0.004522, 0.003041 -0.004524, 0.003041 -0.004525, 0.003042 -0.004526, 0.003043 -0.004527, 0.003045 -0.004534))"
+    val polygon = WKT.read(polygonStr)
+    val extent = Extent(0.0, -0.009042, 0.009156, 0.0)
+    val rasterExtent = RasterExtent(extent, 10, 10)
+
+    Rasterizer.rasterizeWithValue(polygon, rasterExtent, 1)
   }
 }

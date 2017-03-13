@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.spark.tiling
 
 import geotrellis.proj4._
@@ -21,8 +37,8 @@ object ZoomedLayoutScheme {
     new ZoomedLayoutScheme(crs, tileSize, resolutionThreshold)
 
   def layoutForZoom(zoom: Int, layoutExtent: Extent, tileSize: Int = DEFAULT_TILE_SIZE): LayoutDefinition = {
-    if(zoom < 1)
-      sys.error("TMS Tiling scheme does not have levels below 1")
+    if(zoom < 0)
+      sys.error("TMS Tiling scheme does not have levels below 0")
     LayoutDefinition(layoutExtent, TileLayout(layoutColsForZoom(zoom), layoutRowsForZoom(zoom), tileSize, tileSize))
   }
 }
@@ -100,15 +116,17 @@ class ZoomedLayoutScheme(val crs: CRS, val tileSize: Int, resolutionThreshold: D
 
   def zoomOut(level: LayoutLevel) = {
     val layout = level.layout
+    val newZoom = level.zoom - 1
+    val newSize = math.pow(2, newZoom).toInt
     new LayoutLevel(
-      zoom = level.zoom - 1,
+      zoom = newZoom,
       layout = LayoutDefinition(
         extent = layout.extent,
         tileLayout = TileLayout(
-          layout.tileLayout.layoutCols / 2,
-          layout.tileLayout.layoutRows / 2,
-          layout.tileLayout.tileCols,
-          layout.tileLayout.tileRows
+          newSize,
+          newSize,
+          layout.tileCols,
+          layout.tileRows
         )
       )
     )
@@ -116,15 +134,17 @@ class ZoomedLayoutScheme(val crs: CRS, val tileSize: Int, resolutionThreshold: D
 
   def zoomIn(level: LayoutLevel) = {
     val layout = level.layout
+    val newZoom = level.zoom + 1
+    val newSize = math.pow(2, newZoom).toInt
     new LayoutLevel(
-      zoom = level.zoom + 1,
+      zoom = newZoom,
       layout = LayoutDefinition(
         extent = layout.extent,
         tileLayout = TileLayout(
-          layout.tileLayout.layoutCols * 2,
-          layout.tileLayout.layoutRows * 2,
-          layout.tileLayout.tileCols,
-          layout.tileLayout.tileRows
+          newSize,
+          newSize,
+          layout.tileCols,
+          layout.tileRows
         )
       )
     )

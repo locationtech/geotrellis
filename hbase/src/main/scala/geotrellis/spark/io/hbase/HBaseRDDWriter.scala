@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.spark.io.hbase
 
 import geotrellis.spark.LayerId
@@ -41,20 +57,22 @@ object HBaseRDDWriter {
 
     raster.groupBy({ row => decomposeKey(row._1) }, numPartitions = raster.partitions.length)
       .foreachPartition { partition: Iterator[(Long, Iterable[(K, V)])] =>
-        instance.withConnectionDo { connection =>
-          val mutator = connection.getBufferedMutator(table)
+        if(partition.nonEmpty) {
+          instance.withConnectionDo { connection =>
+            val mutator = connection.getBufferedMutator(table)
 
-          partition.foreach { recs =>
-            val id = recs._1
-            val pairs = recs._2.toVector
-            val bytes = AvroEncoder.toBinary(pairs)(codec)
-            val put = new Put(HBaseKeyEncoder.encode(layerId, id))
-            put.addColumn(tilesCF, "", System.currentTimeMillis(), bytes)
-            mutator.mutate(put)
+            partition.foreach { recs =>
+              val id = recs._1
+              val pairs = recs._2.toVector
+              val bytes = AvroEncoder.toBinary(pairs)(codec)
+              val put = new Put(HBaseKeyEncoder.encode(layerId, id))
+              put.addColumn(tilesCF, "", System.currentTimeMillis(), bytes)
+              mutator.mutate(put)
+            }
+
+            mutator.flush()
+            mutator.close()
           }
-
-          mutator.flush()
-          mutator.close()
         }
       }
   }

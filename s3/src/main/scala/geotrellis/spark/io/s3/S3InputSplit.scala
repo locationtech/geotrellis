@@ -1,11 +1,29 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.spark.io.s3
 
-import java.io.{DataOutput, DataInput}
+import geotrellis.util.LazyLogging
+
 import com.amazonaws.services.s3.model.{S3ObjectSummary, ObjectListing}
 import org.apache.hadoop.io.Writable
 import org.apache.hadoop.mapreduce.InputSplit
 import com.amazonaws.auth.{AWSCredentials, BasicAWSCredentials, AnonymousAWSCredentials, BasicSessionCredentials}
-import com.typesafe.scalalogging.LazyLogging
+
+import java.io.{DataOutput, DataInput}
 
 /**
  * Represents are batch of keys to be read from an S3 bucket.
@@ -13,40 +31,11 @@ import com.typesafe.scalalogging.LazyLogging
  */
 class S3InputSplit extends InputSplit with Writable with LazyLogging
 {
-  var accessKeyId: String = null
-  var secretKey: String = null
   var sessionToken: String = null
   var bucket: String = _
   var keys: Seq[String] = Vector.empty
   /** Combined size of objects in bytes */
   var size: Long = _
-
-  def credentials: AWSCredentials = {
-    logger.debug(s"AWS Credentials: $accessKeyId:$secretKey")
-    if (accessKeyId != null && secretKey != null && sessionToken != null)
-      new BasicSessionCredentials(accessKeyId, secretKey, sessionToken)
-    else if (accessKeyId != null && secretKey != null)
-      new BasicAWSCredentials(accessKeyId, secretKey)
-    else
-      new AnonymousAWSCredentials()
-  }
-
-  def setCredentials(cred: AWSCredentials) = cred match {
-    case c: AnonymousAWSCredentials =>
-      accessKeyId = null
-      secretKey = null
-      sessionToken = null
-    case c: BasicAWSCredentials =>
-      accessKeyId = c.getAWSAccessKeyId
-      secretKey = c.getAWSSecretKey
-      sessionToken = null
-    case c: BasicSessionCredentials =>
-      accessKeyId = c.getAWSAccessKeyId
-      secretKey = c.getAWSSecretKey
-      sessionToken = c.getSessionToken
-    case _ =>
-      throw new IllegalArgumentException("Can not handle $c")
-  }
 
   def addKey(obj: S3ObjectSummary): Long = {
     val objSize = obj.getSize
@@ -60,12 +49,6 @@ class S3InputSplit extends InputSplit with Writable with LazyLogging
   override def getLocations: Array[String] = Array.empty
 
   override def write(out: DataOutput): Unit = {
-    val haveAuth = accessKeyId != null && secretKey != null
-    out.writeBoolean(haveAuth)
-    if (haveAuth){
-      out.writeUTF(accessKeyId)
-      out.writeUTF(secretKey)
-    }
     out.writeBoolean(null != sessionToken)
     if (null != sessionToken)
       out.writeUTF(sessionToken)
@@ -75,13 +58,6 @@ class S3InputSplit extends InputSplit with Writable with LazyLogging
   }
 
   override def readFields(in: DataInput): Unit = {
-    if (in.readBoolean){
-      accessKeyId = in.readUTF
-      secretKey = in.readUTF
-    }else{
-      accessKeyId = null
-      secretKey = null
-    }
     if(in.readBoolean)
       sessionToken = in.readUTF
     else

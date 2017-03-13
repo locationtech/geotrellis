@@ -1,19 +1,36 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.spark.io.geomesa
 
 import geotrellis.geomesa.geotools.{GeoMesaSimpleFeatureType, GeometryToGeoMesaSimpleFeature}
-import geotrellis.spark.{LayerId, TestEnvironment}
+import geotrellis.spark.LayerId
 import geotrellis.vector._
+import geotrellis.spark.testkit.TestEnvironment
+
 import org.opengis.filter.Filter
 import org.apache.spark.rdd.RDD
 import org.geotools.data.Query
 import org.geotools.filter.text.ecql.ECQL
 import org.scalatest.{BeforeAndAfterAll, FunSpec, Matchers, Suite}
+
 import java.text.SimpleDateFormat
 import java.util.TimeZone
 
-import geotrellis.GeoMesaTestEnvironment
-
-class GeoMesaPersistenceSpec extends FunSpec with Suite with BeforeAndAfterAll with Matchers with GeoMesaTestEnvironment {
+class GeoMesaPersistenceSpec extends FunSpec with Suite with BeforeAndAfterAll with Matchers with TestEnvironment {
 
   describe("GeoMesa Features Spec") {
     val featuresInstance = GeoMesaInstance(
@@ -63,21 +80,21 @@ class GeoMesaPersistenceSpec extends FunSpec with Suite with BeforeAndAfterAll w
     val spaceTimeFeatureType = GeoMesaSimpleFeatureType[Point](spaceTimeFeatureName, temporal = true)
 
     it("should not find layer before write") {
-      val res = layerReader.read[Point, Map[String, Any]](LayerId(spatialFeatureName, 0), new Query(spatialFeatureName, Filter.INCLUDE), spatialFeatureType)
-      val resTemporal = layerReaderTemporal.read[Point, Map[String, Any]](LayerId(spaceTimeFeatureName, 0), new Query(spaceTimeFeatureName, Filter.INCLUDE), spaceTimeFeatureType)
+      val res = layerReader.read[Point, Map[String, Any]](LayerId(spatialFeatureName, 0), spatialFeatureType, new Query(spatialFeatureName, Filter.INCLUDE))
+      val resTemporal = layerReaderTemporal.read[Point, Map[String, Any]](LayerId(spaceTimeFeatureName, 0), spaceTimeFeatureType, new Query(spaceTimeFeatureName, Filter.INCLUDE))
       res.count() shouldBe 0
       resTemporal.count() shouldBe 0
     }
 
     it("should write a layer") {
-      layerWriter.write(LayerId(spatialFeatureName, 0), featuresRDD)
-      layerWriterTemporal.write(LayerId(spaceTimeFeatureName, 0), featuresTemporalRDD)
+      layerWriter.write(LayerId(spatialFeatureName, 0), spatialFeatureType, featuresRDD)
+      layerWriterTemporal.write(LayerId(spaceTimeFeatureName, 0), spaceTimeFeatureType, featuresTemporalRDD)
     }
 
     it("should read a layer back") {
       val actual =
         layerReader
-          .read[Point, Map[String, Any]](LayerId(spatialFeatureName, 0), new Query(spatialFeatureName, Filter.INCLUDE), spatialFeatureType)
+          .read[Point, Map[String, Any]](LayerId(spatialFeatureName, 0), spatialFeatureType, new Query(spatialFeatureName, Filter.INCLUDE))
           .collect()
 
       if (features.diff(actual).nonEmpty)
@@ -91,7 +108,7 @@ class GeoMesaPersistenceSpec extends FunSpec with Suite with BeforeAndAfterAll w
     it("should read a temporal layer back") {
       val actual =
         layerReaderTemporal
-          .read[Point, Map[String, Any]](LayerId(spaceTimeFeatureName, 0), new Query(spaceTimeFeatureName, Filter.INCLUDE), spaceTimeFeatureType)
+          .read[Point, Map[String, Any]](LayerId(spaceTimeFeatureName, 0), spaceTimeFeatureType, new Query(spaceTimeFeatureName, Filter.INCLUDE))
           .collect()
 
       if (featuresTemporal.diff(actual).nonEmpty)
@@ -112,7 +129,7 @@ class GeoMesaPersistenceSpec extends FunSpec with Suite with BeforeAndAfterAll w
 
       val actual =
         layerReaderTemporal
-          .read[Point, Map[String, Any]](LayerId(spaceTimeFeatureName, 0), new Query(spaceTimeFeatureName, filter), spaceTimeFeatureType)
+          .read[Point, Map[String, Any]](LayerId(spaceTimeFeatureName, 0), spaceTimeFeatureType, new Query(spaceTimeFeatureName, filter))
           .collect()
 
       actual.length shouldBe expectedLength

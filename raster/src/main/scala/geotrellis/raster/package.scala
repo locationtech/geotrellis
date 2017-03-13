@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2014 Azavea.
+ * Copyright 2016 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,6 +27,7 @@ package object raster
     with distance.Implicits
     with density.Implicits
     with geotrellis.raster.mapalgebra.focal.hillshade.Implicits
+    with interpolation.Implicits
     with mask.Implicits
     with merge.Implicits
     with reproject.Implicits
@@ -50,16 +51,18 @@ package object raster
       with rasterize.FeatureDoubleRasterizeMethods[Geometry]
 
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
+      with DelayedConversionTileMethods
       with costdistance.CostDistanceMethods
       with crop.SinglebandTileCropMethods
       with equalization.SinglebandEqualizationMethods
       with hydrology.HydrologyMethods
-      with mask.SinglebandTileMaskMethods
-      with merge.SinglebandTileMergeMethods
-      with mapalgebra.local.LocalMethods
       with mapalgebra.focal.FocalMethods
-      with mapalgebra.zonal.ZonalMethods
       with mapalgebra.focal.hillshade.HillshadeMethods
+      with mapalgebra.local.LocalMethods
+      with mapalgebra.zonal.ZonalMethods
+      with mask.SinglebandTileMaskMethods
+      with matching.SinglebandMatchingMethods
+      with merge.SinglebandTileMergeMethods
       with prototype.SinglebandTilePrototypeMethods
       with regiongroup.RegionGroupMethods
       with render.ColorMethods
@@ -67,24 +70,29 @@ package object raster
       with render.PngRenderMethods
       with reproject.SinglebandTileReprojectMethods
       with resample.SinglebandTileResampleMethods
+      with sigmoidal.SinglebandSigmoidalMethods
       with split.SinglebandTileSplitMethods
-      with summary.SummaryMethods
       with summary.polygonal.PolygonalSummaryMethods
-      with viewshed.ViewshedMethods
+      with summary.SinglebandTileSummaryMethods
       with vectorize.VectorizeMethods
+      with viewshed.ViewshedMethods
 
   implicit class withMultibandTileMethods(val self: MultibandTile) extends MethodExtensions[MultibandTile]
+      with DelayedConversionMultibandTileMethods
       with crop.MultibandTileCropMethods
       with equalization.MultibandEqualizationMethods
       with mask.MultibandTileMaskMethods
+      with matching.MultibandMatchingMethods
       with merge.MultibandTileMergeMethods
       with prototype.MultibandTilePrototypeMethods
-      with reproject.MultibandTileReprojectMethods
-      with render.MultibandJpgRenderMethods
       with render.MultibandColorMethods
+      with render.MultibandJpgRenderMethods
       with render.MultibandPngRenderMethods
+      with reproject.MultibandTileReprojectMethods
       with resample.MultibandTileResampleMethods
+      with sigmoidal.MultibandSigmoidalMethods
       with split.MultibandTileSplitMethods
+      with summary.MultibandTileSummaryMethods
 
   implicit class withSinglebandRasterMethods(val self: SinglebandRaster) extends MethodExtensions[SinglebandRaster]
       with reproject.SinglebandRasterReprojectMethods

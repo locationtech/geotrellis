@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2014 DigitalGlobe.
+ * Copyright 2016 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,15 +17,15 @@
 package geotrellis.spark
 
 import geotrellis.spark.io.kryo.GeowaveKryoRegistrator
+import geotrellis.spark.testkit.TestEnvironment
 
 import org.apache.spark.SparkConf
 import org.scalatest._
 
-
 trait GeowaveTestEnvironment extends TestEnvironment { self: Suite =>
   override def setKryoRegistrator(conf: SparkConf) = {
     conf
-      .set("spark.kryo.registrator", "geotrellis.spark.io.kryo.GeowaveKryoRegistrator")
+      .set("spark.kryo.registrator", classOf[GeowaveKryoRegistrator].getName)
       .set("spark.kryo.registrationRequired", "false")
   }
 }

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.spark.etl
 
 import geotrellis.raster.CellGrid
@@ -8,6 +24,7 @@ import geotrellis.raster.reproject._
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.stitch.Stitcher
 import geotrellis.spark._
+import geotrellis.spark.io._
 import geotrellis.spark.tiling._
 import geotrellis.spark.pyramid._
 import geotrellis.spark.tiling._
@@ -17,13 +34,21 @@ import geotrellis.spark.etl.config._
 
 import org.apache.spark._
 import org.apache.spark.rdd.RDD
-import com.typesafe.scalalogging.LazyLogging
 
 import scala.reflect._
 import scala.reflect.runtime.universe._
 
 object Etl {
   val defaultModules = Array(s3.S3Module, hadoop.HadoopModule, file.FileModule, accumulo.AccumuloModule, cassandra.CassandraModule, hbase.HBaseModule)
+
+  type SaveAction[K, V, M] = (AttributeStore, Writer[LayerId, RDD[(K, V)] with Metadata[M]], LayerId, RDD[(K, V)] with Metadata[M]) => Unit
+
+  object SaveAction {
+    def DEFAULT[K, V, M] = {
+      (_: AttributeStore, writer: Writer[LayerId, RDD[(K, V)] with Metadata[M]], layerId: LayerId, rdd: RDD[(K, V)] with Metadata[M]) =>
+        writer.write(layerId, rdd)
+    }
+  }
 
   def ingest[
     I: Component[?, ProjectedExtent]: TypeTag: ? => TilerKeyMethods[I, K],
@@ -49,6 +74,8 @@ object Etl {
 }
 
 case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.defaultModules) extends LazyLogging {
+  import Etl.SaveAction
+
   val input  = conf.input
   val output = conf.output
 
@@ -125,11 +152,10 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
         val reprojected = rdd.reproject(destCrs)
         val (zoom: Int, md: TileLayerMetadata[K]) = scheme match {
           case Left(layoutScheme) => output.maxZoom match {
-            case Some(zoom) =>  TileLayerMetadata.fromRdd(reprojected, ZoomedLayoutScheme(destCrs, output.tileSize), zoom)
-            case _ => TileLayerMetadata.fromRdd(reprojected, layoutScheme)
+            case Some(zoom) =>  reprojected.collectMetadata(destCrs, output.tileSize, zoom)
+            case _ => reprojected.collectMetadata(layoutScheme)
           }
-          case Right(layoutDefinition) =>
-            TileLayerMetadata.fromRdd(reprojected, layoutDefinition)
+          case Right(layoutDefinition) => reprojected.collectMetadata(layoutDefinition)
         }
         val amd = adjustCellType(md)
         val tilerOptions = Tiler.Options(resampleMethod = method, partitioner = new HashPartitioner(rdd.partitions.length))
@@ -137,8 +163,8 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
 
       case BufferedReproject =>
         val (_, md) = output.maxZoom match {
-          case Some(zoom) =>  TileLayerMetadata.fromRdd(rdd, ZoomedLayoutScheme(destCrs, output.tileSize), zoom)
-          case _ => TileLayerMetadata.fromRdd(rdd, FloatingLayoutScheme(output.tileSize))
+          case Some(zoom) => rdd.collectMetadata(destCrs, output.tileSize, zoom)
+          case _ => rdd.collectMetadata(FloatingLayoutScheme(output.tileSize))
         }
         val amd = adjustCellType(md)
         // Keep the same number of partitions after tiling.
@@ -157,15 +183,23 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
     * Saves provided RDD to an output module specified by the ETL arguments.
     * This step may perform two to one pyramiding until zoom level 1 is reached.
     *
-    * @param id     Layout ID to b
-    * @param rdd Tiled raster RDD with TileLayerMetadata
+    * @param id          Layout ID to b
+    * @param rdd         Tiled raster RDD with TileLayerMetadata
+    * @param saveAction  Function to be called for saving. Defaults to writing the layer.
+    *                    This gives the caller an oppurtunity to modify the layer before writing,
+    *                    or to save additional attributes in the attributes store.
+    *
     * @tparam K  Key type with SpatialComponent corresponding LayoutDefinition
     * @tparam V  Tile raster with cells from single tile in LayoutDefinition
     */
   def save[
     K: SpatialComponent: TypeTag,
     V <: CellGrid: TypeTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): Unit = {
+  ](
+    id: LayerId,
+    rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
+    saveAction: SaveAction[K, V, TileLayerMetadata[K]] = SaveAction.DEFAULT[K, V, TileLayerMetadata[K]]
+  ): Unit = {
     implicit def classTagK = ClassTag(typeTag[K].mirror.runtimeClass(typeTag[K].tpe)).asInstanceOf[ClassTag[K]]
     implicit def classTagV = ClassTag(typeTag[V].mirror.runtimeClass(typeTag[V].tpe)).asInstanceOf[ClassTag[V]]
 
@@ -177,7 +211,7 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
 
     def savePyramid(zoom: Int, rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): Unit = {
       val currentId = id.copy(zoom = zoom)
-      outputPlugin(currentId, rdd, conf)
+      outputPlugin(currentId, rdd, conf, saveAction)
 
       scheme match {
         case Left(s) =>

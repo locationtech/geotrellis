@@ -11,7 +11,16 @@
     "cache": {
       "type": "string"
     },
+    "crs": {
+      "type": "string"
+    },
     "noData": {
+      "type": "integer"
+    },
+    "maxTileSize": {
+      "type": "integer"
+    },
+    "numPartitions": {
       "type": "integer"
     },
     "clip": {

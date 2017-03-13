@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2014 DigitalGlobe.
+ * Copyright 2016 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,20 +16,19 @@
 
 package geotrellis.spark.io.hadoop
 
-import geotrellis.spark.io.hadoop.formats._
+import geotrellis.util.LazyLogging
+
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs._
 import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.io._
+
+import java.io._
 import java.util.Scanner
-import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
-import scala.reflect._
-import java.io._
 
 abstract class LineScanner extends Iterator[String] with java.io.Closeable
 
@@ -171,6 +170,21 @@ object HdfsUtils extends LazyLogging {
 
     try {
       stream.readFully(0, bytes)
+    } finally {
+      stream.close()
+    }
+
+    bytes
+  }
+
+  def readRange(path: Path, start: Long, length: Int, conf: Configuration): Array[Byte] = {
+    val fs: FileSystem = path.getFileSystem(conf)
+    val end: Long = start + length
+    val bytes: Array[Byte] = Array.ofDim[Byte]((end - start).toInt)
+    val stream: FSDataInputStream = fs.open(path)
+
+    try {
+      stream.readFully(start, bytes, 0, length)
     } finally {
       stream.close()
     }
