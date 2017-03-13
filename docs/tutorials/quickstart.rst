@@ -54,8 +54,8 @@ It is first necessary to expose functionality from the relevant packages
     scala> import geotrellis.raster._
     import geotrellis.raster._
 
-    scala> import geotrellis.raster.op.focal._
-    import geotrellis.raster.op.focal._
+    scala> import geotrellis.raster.mapalgebra.focal._
+    import geotrellis.raster.mapalgebra.focal._
 
 Much of GeoTrellis' core functionality lies in the raster library.
 `Rasters <../guide/core-concepts.html#raster-data>`__ are regular grids of
@@ -70,10 +70,10 @@ can create an example Tile as follows:
     nd: Int = -2147483648
 
     scala> val input = Array[Int](
-         |         nd, 7, 1, 1, 3, 5, 9, 8, 2,
-         |         9, 1, 1, 2, 2, 2, 4, 3, 5,
-         |         3, 8, 1, 3, 3, 3, 1, 2, 2,
-         |         2, 4, 7, 1, nd, 1, 8, 4, 3)
+         nd, 7, 1, 1, 3, 5, 9, 8, 2,
+         9, 1, 1, 2, 2, 2, 4, 3, 5,
+         3, 8, 1, 3, 3, 3, 1, 2, 2,
+         2, 4, 7, 1, nd, 1, 8, 4, 3)
     input: Array[Int] = Array(-2147483648, 7, 1, 1, 3, 5, 9, 8, 2, 9, 1, 1, 2,
     2, 2, 4, 3, 5, 3, 8, 1, 3, 3, 3, 1, 2, 2, 2, 4, 7, 1, -2147483648, 1, 8, 4, 3)
 

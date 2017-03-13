@@ -37,3 +37,7 @@ abstract class AvroRecordCodec[T: ClassTag] extends AvroCodec[T, GenericRecord] 
     implicitly[ClassTag[T]].unapply(other).isDefined
   }
 }
+
+object AvroRecordCodec {
+  def apply[T: AvroRecordCodec]: AvroRecordCodec[T] = implicitly
+}

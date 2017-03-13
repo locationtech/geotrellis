@@ -47,8 +47,17 @@ trait S3Client extends LazyLogging {
 
   @tailrec
   final def deleteListing(bucket: String, listing: ObjectListing): Unit = {
-    deleteObjects(bucket, listing.getObjectSummaries.asScala.map { os => new KeyVersion(os.getKey) }.toList)
-    if (listing.isTruncated) deleteListing(bucket, listNextBatchOfObjects(listing))
+    val listings = listing
+      .getObjectSummaries
+      .asScala
+      .map { os => new KeyVersion(os.getKey) }
+      .toList
+
+    // Empty listings cause malformed XML to be sent to AWS and lead to unhelpful exceptions
+    if (! listings.isEmpty) {
+      deleteObjects(bucket, listings)
+      if (listing.isTruncated) deleteListing(bucket, listNextBatchOfObjects(listing))
+    }
   }
 
   def deleteObject(deleteObjectRequest: DeleteObjectRequest): Unit
@@ -67,7 +76,7 @@ trait S3Client extends LazyLogging {
   }
 
   def copyObject(sourceBucketName: String, sourceKey: String,
-                 destinationBucketName: String, destinationKey: String): CopyObjectResult =
+    destinationBucketName: String, destinationKey: String): CopyObjectResult =
     copyObject(new CopyObjectRequest(sourceBucketName, sourceKey, destinationBucketName, destinationKey))
 
   def deleteObject(bucketName: String, key: String): Unit =
@@ -97,7 +106,7 @@ trait S3Client extends LazyLogging {
   def getObjectMetadata(getObjectMetadataRequest: GetObjectMetadataRequest): ObjectMetadata
 
   def listObjectsIterator(bucketName: String, prefix: String, maxKeys: Int = 0): Iterator[S3ObjectSummary] =
-      listObjectsIterator(new ListObjectsRequest(bucketName, prefix, null, null, if (maxKeys == 0) null else maxKeys))
+    listObjectsIterator(new ListObjectsRequest(bucketName, prefix, null, null, if (maxKeys == 0) null else maxKeys))
 
   def listObjectsIterator(request: ListObjectsRequest): Iterator[S3ObjectSummary] =
     new Iterator[S3ObjectSummary] {

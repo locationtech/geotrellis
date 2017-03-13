@@ -4,15 +4,8 @@ Changelog
 1.0.0
 -----
 
-.. raw:: html
-
-   <h3>
-
 Major Features
-
-.. raw:: html
-
-   </h3>
+^^^^^^^^^^^^^^
 
 -  GeoTools support
 
@@ -113,15 +106,8 @@ Major Features
    into making our docs significantly better. `See them
    here. <http://geotrellis.readthedocs.io/en/1.0/>`__
 
-.. raw:: html
-
-   <h3>
-
 Minor Additions
-
-.. raw:: html
-
-   </h3>
+^^^^^^^^^^^^^^^
 
 -  Documentation improvements
 
@@ -196,15 +182,8 @@ Minor Additions
 -  Add convenience overloads to GeoTiff companion object
    `#1840 <https://github.com/locationtech/geotrellis/pull/1840>`__
 
-.. raw:: html
-
-   <h3>
-
 Fixes / Optimizations
-
-.. raw:: html
-
-   </h3>
+^^^^^^^^^^^^^^^^^^^^^
 
 -  Fixed GeoTiff bug in reading NoData value if len = 4
    `#1490 <https://github.com/locationtech/geotrellis/pull/1490>`__
@@ -236,15 +215,8 @@ Fixes / Optimizations
 -  Fixed Non-Point Pixel + Partial Cell Rasterizer Bug
    `#1804 <https://github.com/locationtech/geotrellis/pull/1804>`__
 
-.. raw:: html
-
-   <h3>
-
-New committers
-
-.. raw:: html
-
-   </h3>
+New Committers
+^^^^^^^^^^^^^^
 
 -  metasim
 -  lokifacio

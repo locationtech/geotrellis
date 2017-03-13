@@ -325,7 +325,11 @@ object GenMacroSegmentCombiner extends Template {
       val diffs        = (1 until arity) map { i => s"val diff$i = b$i - b0 "} mkString "; "
       val diffsArgs    = ((((1 until arity) map { i => s"i + diff$i, segment" } mkString ", ") split ", ") init) mkString ", "
       val startVals    = (0 until arity) map { i => s"val start$i = bandSegmentCount * b$i" } mkString "; "
-      val segmentVals  = (0 until arity) map { i => s"val segment$i = getSegment(start$i + segmentIndex)" } mkString "; "
+      val getSegmentsZip = (0 until arity) map { i =>
+        if(i == 0) s"getSegments(start$i until start$i + bandSegmentCount)" else s"zip(getSegments(start$i until start$i + bandSegmentCount))"
+      } mkString "."
+      val bracesForZipArgs = (0 until arity - 1) map { _ => "(" } mkString ""
+      val segmentsZipArgs = bracesForZipArgs concat ((0 until arity) map { i => if(i == 0) s"(segmentIndex$i, segment$i)" else s"(_, segment$i))" } mkString ", ")
       val segmentArgs  = (0 until arity) map { i => s"i, segment$i" } mkString ", "
       val combinerArgs = (0 until arity) map { i => s"combiner.b$i" } mkString ", "
       val siArgs       = (1 to arity) map { i => s"s$i: GeoTiffSegment, i$i: Int" } mkString ", "
@@ -341,6 +345,7 @@ object GenMacroSegmentCombiner extends Template {
          |trait MacroGeotiffMultibandCombiners {
          |  def cellType: CellType
          |  def getSegment(i: Int): GeoTiffSegment
+         |  def getSegments(ids: Traversable[Int]): Iterator[(Int, GeoTiffSegment)]
          |
          |  val segmentLayout: GeoTiffSegmentLayout
          |  val segmentCount: Int
@@ -366,8 +371,7 @@ object GenMacroSegmentCombiner extends Template {
         -        ${diffs}
         -        val compressor = compression.createCompressor(segmentCount)
         -        val arr = Array.ofDim[Array[Byte]](segmentCount)
-        -        cfor(0)(_ < segmentCount, _ + 1) { segmentIndex =>
-        -          val segment = getSegment(segmentIndex)
+        -        getSegments(0 until segmentCount).foreach { case (segmentIndex, segment) =>
         -          val segmentSize = segment.size
         -          val segmentCombiner = createSegmentCombiner(segmentSize / bandCount)
         -          var j = 0
@@ -383,8 +387,8 @@ object GenMacroSegmentCombiner extends Template {
         -      val compressor = compression.createCompressor(bandSegmentCount)
         -      val arr = Array.ofDim[Array[Byte]](bandSegmentCount)
         -      ${startVals}
-        -      cfor(0)(_ < bandSegmentCount, _ + 1) { segmentIndex =>
-        -        ${segmentVals}
+        -      ${getSegmentsZip}.foreach { case (${segmentsZipArgs}) =>
+        -        val segmentIndex = segmentIndex0 - start0
         -        val segmentSize = segment0.size
         -        val segmentCombiner = createSegmentCombiner(segmentSize)
         -        cfor(0)(_ < segmentSize, _ + 1) { i =>

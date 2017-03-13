@@ -16,23 +16,33 @@
 
 package geotrellis.spark.io.avro
 
-import geotrellis.spark.io.avro.codecs._
 import org.scalatest._
 import geotrellis.proj4._
 import geotrellis.vector._
 import geotrellis.spark._
-import geotrellis.spark.io.avro.AvroTools._
 
 class ExtentCodecsSpec extends FunSpec with Matchers with AvroTools  {
+  val fortyThreeTwentyFour = CRS.fromEpsgCode(4324)
+  // A proj4 CRS known to not have a CRS code.
+  val nonEpsgCrs = CRS.fromString("+proj=sinu +lon_0=0.0 +x_0=0.0 +y_0=0.0 +a=6371007.181 +b=6371007.181 +units=m")
+
   describe("ExtentCodecs") {
     it("encodes Extent"){
       roundTrip(Extent(0, 1, 2, 3))
     }
     it("encodes ProjectedExtent") {
-      roundTrip(ProjectedExtent(Extent(0, 1, 2, 3), CRS.fromEpsgCode(4324)))
+      roundTrip(ProjectedExtent(Extent(0, 1, 2, 3), fortyThreeTwentyFour))
+    }
+    it("encodes ProjectedExtent with missing EPSG code"){
+      assert(nonEpsgCrs.epsgCode.isEmpty)
+      roundTrip(ProjectedExtent(Extent(0, 1, 2, 3), nonEpsgCrs))
     }
     it("encodes TemporalProjectedExtent"){
-      roundTrip(TemporalProjectedExtent(Extent(0, 1, 2, 3), CRS.fromEpsgCode(4324), 1.toLong))
+      roundTrip(TemporalProjectedExtent(Extent(0, 1, 2, 3), fortyThreeTwentyFour, 1.toLong))
+    }
+    it("encodes TemporalProjectedExtent with missing EPSG code"){
+      assert(nonEpsgCrs.epsgCode.isEmpty)
+      roundTrip(TemporalProjectedExtent(Extent(0, 1, 2, 3), nonEpsgCrs, 1.toLong))
     }
   }
 }

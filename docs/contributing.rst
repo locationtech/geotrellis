@@ -64,30 +64,6 @@ below. Also, you'll need to signoff on your commits, using the
 ``git commit -s`` flag. See
 https://help.github.com/articles/signing-tags-using-gpg/ for more info.
 
-Contributing documentation
---------------------------
-
-GeoTrellis documentation comes in two flavors: markdown and scaladoc.
-The `latest
-scaladocs <https://geotrellis.github.io/scaladocs/latest/#geotrellis.package>`__
-are generated upon Travis' successful compilation of the master branch.
-`GeoTrellis markdown
-documentation/ReadTheDocs <http://geotrellis.readthedocs.io/en/latest/>`__
-is version controlled with the rest of the source.
-
-When adding or editing documentation, keep in mind the following file
-structure:
-
--  ``docs/tutorials/`` contains simple beginner tutorials with concrete
-   goals
--  ``docs/guide/`` contains detailed explanations of GeoTrellis concepts
--  ``docs/architecture`` contains in-depth discussion on GeoTrellis
-   implementation details
-
-To visually debug your changes in real time, consider using the `mkdocs
-tool <http://www.mkdocs.org/>`__. It should be available in your package
-repositories for Linux and Mac users.
-
 Eclipse Contributor Agreement (ECA)
 -----------------------------------
 
@@ -145,3 +121,15 @@ yourself. Steps:
 
 .. note:: Changes you make will not be automatically applied; you will have
           to rebuild the docs yourself. Luckily the docs build in about a second.
+
+File Structure
+^^^^^^^^^^^^^^
+
+When adding or editing documentation, keep in mind the following file
+structure:
+
+-  ``docs/tutorials/`` contains simple beginner tutorials with concrete
+   goals
+-  ``docs/guide/`` contains detailed explanations of GeoTrellis concepts
+-  ``docs/architecture`` contains in-depth discussion on GeoTrellis
+   implementation details

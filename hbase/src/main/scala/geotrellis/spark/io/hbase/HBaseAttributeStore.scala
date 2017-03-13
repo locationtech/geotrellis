@@ -73,16 +73,16 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
 
   private def delete(layerId: LayerId, attributeName: Option[String]): Unit =
     instance.withTableConnectionDo(attributeTableName) { table =>
-      if (!layerExists(layerId)) throw new LayerNotFoundError(layerId)
-
       val delete = new Delete(layerIdString(layerId))
       attributeName.foreach(delete.addFamily(_))
       table.delete(delete)
-      attributeName.foreach(table.getTableDescriptor.removeFamily(_))
 
       attributeName match {
-        case Some(attribute) => clearCache(layerId, attribute)
-        case None => clearCache(layerId)
+        case Some(attribute) =>
+          table.getTableDescriptor.removeFamily(attribute)
+          clearCache(layerId, attribute)
+        case None =>
+          clearCache(layerId)
       }
     }
 

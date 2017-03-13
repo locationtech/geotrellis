@@ -17,10 +17,6 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.util.ByteReader
-import geotrellis.vector.Extent
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
-import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.io.geotiff.tags._
 import geotrellis.raster.io.geotiff.util._
 
@@ -35,7 +31,7 @@ import spire.syntax.cfor._
   */
 class ArraySegmentBytes(compressedBytes: Array[Array[Byte]]) extends SegmentBytes {
 
-  override val size = compressedBytes.size
+  def length = compressedBytes.length
 
   /**
     * Returns an Array[Byte] that represents a [[GeoTiffSegment]] via
@@ -45,6 +41,10 @@ class ArraySegmentBytes(compressedBytes: Array[Array[Byte]]) extends SegmentByte
     * @return    An Array[Byte] that contains the bytes of the segment
     */
   def getSegment(i: Int) = compressedBytes(i)
+
+  def getSegments(indices: Traversable[Int]): Iterator[(Int, Array[Byte])] =
+    indices.toIterator
+      .map { i => i -> compressedBytes(i) }
 }
 
 object ArraySegmentBytes {
@@ -57,43 +57,12 @@ object ArraySegmentBytes {
     *  @return             A new instance of ArraySegmentBytes
     */
   def apply(byteReader: ByteReader, tiffTags: TiffTags): ArraySegmentBytes = {
-
-      val compressedBytes: Array[Array[Byte]] = {
-        def readSections(offsets: Array[Long],
-          byteCounts: Array[Long]): Array[Array[Byte]] = {
-            val result = Array.ofDim[Array[Byte]](offsets.size)
-
-            cfor(0)(_ < offsets.size, _ + 1) { i =>
-              result(i) = byteReader.getSignedByteArray(offsets(i), byteCounts(i))
-            }
-
-            result
-          }
-
-          if (tiffTags.hasStripStorage) {
-
-            val stripOffsets = (tiffTags &|->
-              TiffTags._basicTags ^|->
-              BasicTags._stripOffsets get)
-
-            val stripByteCounts = (tiffTags &|->
-              TiffTags._basicTags ^|->
-              BasicTags._stripByteCounts get)
-
-            readSections(stripOffsets.get, stripByteCounts.get)
-
-          } else {
-            val tileOffsets = (tiffTags &|->
-              TiffTags._tileTags ^|->
-              TileTags._tileOffsets get)
-
-            val tileByteCounts = (tiffTags &|->
-              TiffTags._tileTags ^|->
-              TileTags._tileByteCounts get)
-
-            readSections(tileOffsets.get, tileByteCounts.get)
-          }
-      }
-      new ArraySegmentBytes(compressedBytes)
+    // use streaming read here to improve performance via chunking
+    val streaming = LazySegmentBytes(byteReader, tiffTags)
+    val compressedBytes = Array.ofDim[Array[Byte]](streaming.length)
+    streaming.getSegments(compressedBytes.indices).foreach {
+      case (i, bytes) => compressedBytes(i) = bytes
     }
+    new ArraySegmentBytes(compressedBytes)
+  }
 }

@@ -154,15 +154,8 @@ outputs and inputs can be setup through command line arguments like so:
 Note that the arguments before the ``$JAR`` configure ``SparkContext``
 and arguments after configure GeoTrellis ETL inputs and outputs.
 
-.. raw:: html
-
-   <h3>
-
 Command Line Arguments
-
-.. raw:: html
-
-   </h3>
+^^^^^^^^^^^^^^^^^^^^^^
 
 +--------------------+----------------+
 | Option             | Description    |
@@ -331,15 +324,8 @@ Output JSON
 |                       | (optional field)  |
 +-----------------------+-------------------+
 
-.. raw:: html
-
-   <h4>
-
 Backend Keyword
-
-.. raw:: html
-
-   </h4>
+^^^^^^^^^^^^^^^
 
 +-----------+------------------------------------------------------------------+
 | Key       | Value                                                            |
@@ -351,15 +337,8 @@ Backend Keyword
 | profile   | Profile name to use for input                                    |
 +-----------+------------------------------------------------------------------+
 
-.. raw:: html
-
-   <h4>
-
 Supported Layout Schemes
-
-.. raw:: html
-
-   </h4>
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 +-----------------+-------------------------------------------------+
 | Layout Scheme   | Options                                         |
@@ -369,15 +348,8 @@ Supported Layout Schemes
 | floating        | Floating layout scheme in a native projection   |
 +-----------------+-------------------------------------------------+
 
-.. raw:: html
-
-   <h4>
-
 KeyIndex Methods
-
-.. raw:: html
-
-   </h4>
+^^^^^^^^^^^^^^^^
 
 +----------------------+-------------------+
 | Key                  | Options           |
@@ -466,15 +438,8 @@ Input JSON
 |                    | (optional field)  |
 +--------------------+-------------------+
 
-.. raw:: html
-
-   <h4>
-
 Supported Formats
-
-.. raw:: html
-
-   </h4>
+^^^^^^^^^^^^^^^^^
 
 +--------------------+-------------------+
 | Format             | Options           |
@@ -484,15 +449,8 @@ Supported Formats
 | temporal-geotiff   | Temporal ingest   |
 +--------------------+-------------------+
 
-.. raw:: html
-
-   <h4>
-
 Supported Inputs
-
-.. raw:: html
-
-   </h4>
+^^^^^^^^^^^^^^^^
 
 +----------+----------------------------+
 | Input    | Options                    |
@@ -502,15 +460,8 @@ Supported Inputs
 | s3       | s3:// url                  |
 +----------+----------------------------+
 
-.. raw:: html
-
-   <h4>
-
 Supported Outputs
-
-.. raw:: html
-
-   </h4>
+^^^^^^^^^^^^^^^^^
 
 +-------------+-------------------------------------------------+
 | Output      | Options                                         |
@@ -526,15 +477,8 @@ Supported Outputs
 | render      | Path                                            |
 +-------------+-------------------------------------------------+
 
-.. raw:: html
-
-   <h4>
-
 Accumulo Output
-
-.. raw:: html
-
-   </h4>
+^^^^^^^^^^^^^^^
 
 Accumulo output module has two write strategies:
 
@@ -545,15 +489,8 @@ When using ``hdfs`` strategy ``ingestPath`` argument will be used as the
 temporary directory where records will be written for use by Accumulo
 bulk import. This directory should ideally be an HDFS path.
 
-.. raw:: html
-
-   <h4>
-
 Layout Scheme
-
-.. raw:: html
-
-   </h4>
+^^^^^^^^^^^^^
 
 GeoTrellis is able to tile layers in either ``ZoomedLayoutScheme``,
 matching TMS pyramid, or ``FloatingLayoutScheme``, matching the native
@@ -657,15 +594,8 @@ Every example can be launched using:
     --output "file://output.json" \
     --backend-profiles "file://backend-profiles.json"
 
-.. raw:: html
-
-   <h3>
-
 Example Backend Profile
-
-.. raw:: html
-
-   </h3>
+^^^^^^^^^^^^^^^^^^^^^^^
 
 ``backend-profiles.json``:
 
@@ -696,15 +626,8 @@ Example Backend Profile
        ]
     }
 
-.. raw:: html
-
-   <h3>
-
 Example Output JSON
-
-.. raw:: html
-
-   </h3>
+^^^^^^^^^^^^^^^^^^^
 
 ``output.json``:
 
@@ -741,15 +664,8 @@ Example Output JSON
        "crs":"EPSG:3857"
     }
 
-.. raw:: html
-
-   <h3>
-
 Example Input JSON
-
-.. raw:: html
-
-   </h3>
+^^^^^^^^^^^^^^^^^^
 
 ``input.json``:
 

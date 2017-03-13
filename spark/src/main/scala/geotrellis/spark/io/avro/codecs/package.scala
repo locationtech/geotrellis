@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2014 Azavea.
+ * Copyright 2017 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-object Version {
-  val geotrellis  = "1.1.0" + Environment.versionSuffix
-  val scala       = "2.11.8"
-  val geotools    = "16.1"
-  val akka        = "2.4.16"
-  val sprayJson   = "1.3.3"
-  val monocle     = "1.4.0"
-  val accumulo    = "1.7.2"
-  val cassandra   = "3.1.4"
-  val hbase       = "1.3.0"
-  val geomesa     = "1.2.7.3"
-  lazy val hadoop = Environment.hadoopVersion
-  lazy val spark  = Environment.sparkVersion
+package geotrellis.spark.io.avro
+
+import org.apache.avro.Schema
+import org.apache.avro.SchemaBuilder.FieldAssembler
+
+import scala.collection.JavaConversions._
+
+package object codecs {
+  private[codecs] def injectFields(from: Schema, to: FieldAssembler[Schema]): FieldAssembler[Schema] = {
+    from.getFields.foldLeft(to){
+      case (builder, field) ⇒
+        builder.name(field.name()).`type`(field.schema()).noDefault()
+    }
+  }
 }

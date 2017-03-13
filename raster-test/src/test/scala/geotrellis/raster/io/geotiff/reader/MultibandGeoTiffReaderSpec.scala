@@ -149,8 +149,12 @@ class MultibandGeoTiffReaderSpec extends FunSpec
       geoTiffPath(s"3bands/bit/3bands-${s}-${i}.tif")
 
     it("should read pixel interleave, striped") {
-      val tile =
-        MultibandGeoTiff(p("striped", "pixel")).tile
+      val tile: GeoTiffMultibandTile =
+        MultibandGeoTiff(
+          path = p("striped", "pixel"),
+          decompress = false,
+          streaming = false
+        ).tile.asInstanceOf[GeoTiffMultibandTile]
 
       // println("         BIT BANDS")
       // println(tile.band(0).asciiDraw)
