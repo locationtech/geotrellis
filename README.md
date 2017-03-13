@@ -28,7 +28,7 @@ You can find more information and talk to developers
 (let us know what you're working on!) at:
 
   - [Gitter](https://gitter.im/geotrellis/geotrellis)
-  - [GeoTrellis mailing list](https://groups.google.com/group/geotrellis-user)
+  - [GeoTrellis mailing list](https://locationtech.org/mailman/listinfo/geotrellis-user)
 
 
 ## Getting Started
