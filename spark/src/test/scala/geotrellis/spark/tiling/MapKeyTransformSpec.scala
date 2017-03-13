@@ -84,5 +84,12 @@ class MapKeyTransformSpec extends FunSpec with Matchers {
       assert(mp(Extent(0,0,0,0)) === GridBounds(0, 2, 0, 2))
       assert(mp(Extent(0,0,2,0)) === GridBounds(0, 2, 1, 2))
     }
+
+    it("should properly handle points north or west of the extent bounds") {
+      val mp = MapKeyTransform(Extent(0.0, 0.0, 1.0, 1.0), 2, 2)
+      assert(mp(Point(0.0, 1.0)) == SpatialKey(0, 0))
+      assert(mp(Point(-0.1, 1.0)) == SpatialKey(-1, 0))
+      assert(mp(Point(0.0, 1.1)) == SpatialKey(0, -1))
+    }
   }
 }
