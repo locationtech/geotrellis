@@ -95,3 +95,32 @@ module <../guide/module-hierarchy.html>`__.
 
 Now that you've gotten a simple GeoTrellis environment set up, it's time
 to get your feet wet with some of its capabilities.
+
+Dependency issues
+-----------------
+
+GeoTrellis depends on a huge number of complex dependencies that may cause a dependency hell. One of such dependency
+is a guava library. ``GeoTrellis ETL`` and ``GeoTrellis Cassandra`` depend on ``Guava 16.01``, but Hadoop depends on ``Guava 11.0.2``
+that causes strong libs incompatibility runtime issues. When two different versions of the same library both available in a
+Spark classpath and in a fat assembly jar, Spark would use library version from its classpath.
+
+There're two possible solutions:
+
+1. To ``shade`` the conflicting library (example below shades Guava in all GeoTrellis related deps, this idea can be extrapolated
+on all conflicting libraries):
+
+.. code:: scala
+
+    assemblyShadeRules in assembly := {
+      val shadePackage = "com.azavea.shaded.demo"
+      Seq(
+        ShadeRule.rename("com.google.common.**" -> s"$shadePackage.google.common.@1")
+          .inLibrary(
+            "com.azavea.geotrellis" %% "geotrellis-cassandra" % gtVersion,
+            "com.github.fge" % "json-schema-validator" % "2.2.6"
+          ).inAll
+      )
+    }
+
+2. To use `spark.driver.userClassPathFirst <http://spark.apache.org/docs/latest/configuration.html#runtime-environment>`__.
+It's an experimental Spark property to force Spark using all deps from the fat assembly jar.
