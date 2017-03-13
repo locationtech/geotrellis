@@ -146,8 +146,8 @@ The result of this command is a collection of smaller GeoTiff tiles in
 the directory ``/tmp/rasters``.
 
 Now with all of the files that we need in place
-(``/tmp/geotrellis-spark-etl-assembly-1.0.0.jar``, ``/tmp/input.json``,
-``/tmp/output.json``, ``/tmp/backend-profiles.json``, and
+(``/tmp/geotrellis-spark-etl-assembly-1.0.0.jar``, ``/tmp/json/input.json``,
+``/tmp/json/output.json``, ``/tmp/json/backend-profiles.json``, and
 ``/tmp/rasters/*.tif``) we are ready to perform the ingest. That can be
 done by typing:
 
@@ -211,8 +211,8 @@ filesystem, albeit via Hadoop. In this section, we will give a basic
 example of how to use the ETL machinery to ingest into HDFS on
 GeoDocker. Throughout this section we will assume that the files that
 were previously created in the local ``/tmp`` directory (namely
-``/tmp/geotrellis-spark-etl-assembly-1.0.0.jar``, ``/tmp/input.json``,
-``/tmp/output.json``, ``/tmp/backend-profiles.json``, and
+``/tmp/geotrellis-spark-etl-assembly-1.0.0.jar``, ``/tmp/json/input.json``,
+``/tmp/json/output.json``, ``/tmp/json/backend-profiles.json``, and
 ``/tmp/rasters/*.tif``) still exist.
 
 In addition to the dependencies needed to complete the steps given
