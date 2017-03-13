@@ -5,6 +5,7 @@ libraryDependencies ++= Seq(
   sparkCore % "provided",
   hadoopClient % "provided",
   "com.google.uzaygezen" % "uzaygezen-core" % "0.2",
+  "org.scalaj" %% "scalaj-http" % "2.3.0",
   avro,
   spire,
   monocleCore, monocleMacro,
