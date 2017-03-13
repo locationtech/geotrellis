@@ -171,12 +171,12 @@ Full possible exception message:
     Please upgrade to Guava 16.01 or later.
 
 
-GeoTrellis depends on a huge number of complex dependencies that may cause a dependency hell. One of such dependency
-is a guava library. ``GeoTrellis ETL`` and ``GeoTrellis Cassandra`` depend on ``Guava 16.01``, but Hadoop depends on ``Guava 11.0.2``
-that causes strong libs incompatibility runtime issues. When two different versions of the same library both available in a
-Spark classpath and in a fat assembly jar, Spark would use library version from its classpath.
+GeoTrellis depends on a huge number of complex dependencies that may cause dependency hell. One of such dependency
+is the Guava library. ``GeoTrellis ETL`` and ``GeoTrellis Cassandra`` depend on ``Guava 16.01``, but Hadoop depends on ``Guava 11.0.2``
+which causes runtime issues due to library incompatibility. When two different versions of the same library are both available in the
+Spark classpath and in a fat assembly jar, Spark will use library version from its classpath.
 
-There're two possible solutions:
+There are two possible solutions:
 
 1. To ``shade`` the conflicting library (example below shades Guava in all GeoTrellis related deps, this idea can be extrapolated
 on all conflicting libraries):
