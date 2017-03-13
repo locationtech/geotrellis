@@ -74,6 +74,8 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
         chunkSizeConf
     }
 
+    val delimiter = S3InputFormat.getDelimiter(conf)
+
     val partitionCountConf = conf.get(PARTITION_COUNT)
     val partitionSizeConf = conf.get(PARTITION_BYTES)
     require(null == partitionCountConf || null == partitionSizeConf,
@@ -87,6 +89,11 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
     val request = new ListObjectsRequest()
       .withBucketName(bucket)
       .withPrefix(prefix)
+
+    delimiter match {
+      case Some(d) => request.setDelimiter(d)
+      case None => // pass
+    }
 
     def makeNewSplit =  {
       val split = new S3InputSplit
@@ -185,6 +192,7 @@ object S3InputFormat {
   final val CHUNK_SIZE = "s3.chunkSize"
   final val CRS_VALUE = "s3.crs"
   final val CREATE_S3CLIENT = "s3.client"
+  final val DELIMITER = "s3.delimiter"
 
   private val idRx = "[A-Z0-9]{20}"
   private val keyRx = "[a-zA-Z0-9+/]+={0,2}"
@@ -269,4 +277,24 @@ object S3InputFormat {
   /** Set valid key extensions filter */
   def setExtensions(conf: Configuration, extensions: Seq[String]): Unit =
     conf.set(EXTENSIONS, extensions.mkString(","))
+
+  /** Set delimiter for S3 object listing requests */
+  def setDelimiter(job: Job, delimiter: String): Unit =
+    setDelimiter(job.getConfiguration, delimiter)
+
+  /** Set delimiter for S3 object listing requests */
+  def setDelimiter(conf: Configuration, delimiter: String): Unit =
+    conf.set(DELIMITER, delimiter)
+
+  def getDelimiter(job: JobContext): Option[String] =
+    getDelimiter(job.getConfiguration)
+
+  def getDelimiter(conf: Configuration): Option[String] = {
+    val d = conf.get(DELIMITER)
+    if(d != null)
+      Some(d)
+    else
+      None
+  }
+
 }
