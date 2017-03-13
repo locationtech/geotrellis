@@ -158,3 +158,41 @@ This does.
 
 TL;DR: Make sure you're importing the appropriate implicits. They define
 methods that extend GeoTrellis types.
+
+How do I resolve a Guava / other library dependency incompatibility issue(s)?
+===================================
+
+Full possible exception message:
+
+.. code::
+
+    Caused by: java.lang.IllegalStateException: Detected Guava issue #1635 which indicates that a version of Guava less
+    than 16.01 is in use.  This introduces codec resolution issues and potentially other incompatibility issues in the driver.
+    Please upgrade to Guava 16.01 or later.
+
+
+GeoTrellis depends on a huge number of complex dependencies that may cause dependency hell. One of such dependency
+is the Guava library. ``GeoTrellis ETL`` and ``GeoTrellis Cassandra`` depend on ``Guava 16.01``, but Hadoop depends on ``Guava 11.0.2``
+which causes runtime issues due to library incompatibility. When two different versions of the same library are both available in the
+Spark classpath and in a fat assembly jar, Spark will use library version from its classpath.
+
+There are two possible solutions:
+
+1. To ``shade`` the conflicting library (example below shades Guava in all GeoTrellis related deps, this idea can be extrapolated
+on all conflicting libraries):
+
+.. code:: scala
+
+    assemblyShadeRules in assembly := {
+      val shadePackage = "com.azavea.shaded.demo"
+      Seq(
+        ShadeRule.rename("com.google.common.**" -> s"$shadePackage.google.common.@1")
+          .inLibrary(
+            "com.azavea.geotrellis" %% "geotrellis-cassandra" % gtVersion,
+            "com.github.fge" % "json-schema-validator" % "2.2.6"
+          ).inAll
+      )
+    }
+
+2. To use `spark.driver.userClassPathFirst <http://spark.apache.org/docs/latest/configuration.html#runtime-environment>`__.
+It's an experimental Spark property to force Spark using all deps from the fat assembly jar.
