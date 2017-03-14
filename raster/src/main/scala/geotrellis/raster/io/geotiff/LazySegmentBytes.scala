@@ -76,7 +76,7 @@ class LazySegmentBytes(
     val chunkEndOffset = segments.maxBy(_.endOffset).endOffset
     byteReader.position(chunkStartOffset)
     logger.debug(s"Fetching segments ${segments.map(_.id).mkString(", ")} at [$chunkStartOffset, $chunkEndOffset]")
-    val chunkBytes = byteReader.getSignedByteArray(chunkStartOffset, chunkEndOffset - chunkStartOffset + 1)
+    val chunkBytes = getBytes(chunkStartOffset, chunkEndOffset - chunkStartOffset + 1)
     for { segment <- segments } yield {
       val segmentStart = (segment.startOffset - chunkStartOffset).toInt
       val segmentEnd = (segment.endOffset - chunkStartOffset).toInt
@@ -88,13 +88,18 @@ class LazySegmentBytes(
     val startOffset = segmentOffsets(i)
     val endOffset = segmentOffsets(i) + segmentByteCounts(i) - 1
     logger.debug(s"Fetching segment $i at [$startOffset, $endOffset]")
-    byteReader.getSignedByteArray(startOffset, segmentByteCounts(i))
+    getBytes(startOffset, segmentByteCounts(i))
   }
 
   def getSegments(indices: Traversable[Int]): Iterator[(Int, Array[Byte])] = {
     chunkSegments(indices)
       .toIterator
       .flatMap( chunk => readChunk(chunk))
+  }
+
+  private def getBytes(offset: Long, length: Long): Array[Byte] = {
+    byteReader.position(offset)
+    byteReader.getBytes(length.toInt)
   }
 
   // Must prevent inherited `Seq.toString` from calling `foreach` method

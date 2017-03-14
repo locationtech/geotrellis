@@ -525,6 +525,15 @@ class GeoTiffReaderSpec extends FunSpec
 
       gt3.tags.headTags.get(Tags.TIFFTAG_DATETIME) should be (Some("1988:02:18 13:59:59"))
     }
+
+    it("must read tiny tiles") {
+      val extent = Extent(0,0,100,100)
+      val expected = IntArrayTile(Array(145), 1, 1)
+      GeoTiff(expected, extent, LatLng).write(path)
+      addToPurge(path)
+      val actual = SinglebandGeoTiff(path).tile
+      assertEqual(actual, expected)
+    }
   }
 
   describe("handling special CRS cases") {
