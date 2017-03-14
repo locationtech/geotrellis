@@ -23,6 +23,8 @@ Features
 
 - `Add MGRS encode/decode support to proj4 <https://github.com/locationtech/geotrellis/pull/1838>`__
 
+- `Added Range-based reading of HTTP resources <https://github.com/locationtech/geotrellis/pull/2067>`__
+
 - `Improved the WKT parser that powers the WKT.getEpsgCode method <https://github.com/locationtech/geotrellis/pull/1931>`__
 
 - `Updated the geotrellis-geowave subproject to GeoWave 0.9.3 <https://github.com/locationtech/geotrellis/pull/1933>`__
