@@ -555,9 +555,10 @@ A sample render output configuration template could be:
 
     {
       "path": "s3://tms-bucket/layers/{name}/{z}-{x}-{y}.png",
-      "ingestType":{
+      "ingestType": {
         "format":"geotiff",
         "output":"render"
+      }
     }
 
 Extension
