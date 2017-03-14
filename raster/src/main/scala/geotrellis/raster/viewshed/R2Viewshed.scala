@@ -170,7 +170,7 @@ object R2Viewshed extends Serializable {
     * @param  viewshedTile     The tile into which the viewshed will be written
     * @param  startCol         The x position of the vantage point
     * @param  startRow         The y position of the vantage point
-    * @param  viewHeight       The height of the vantage
+    * @param  viewHeight       The height of the vantage point (above the surface, not above sea level)
     * @param  from             The direction from which the rays are allowed to come
     * @param  rays             Rays shining in from other tiles
     * @param  edgeCallback     A callback that is called when a ray reaches the periphery of this tile

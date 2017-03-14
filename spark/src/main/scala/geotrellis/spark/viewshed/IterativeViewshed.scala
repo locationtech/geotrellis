@@ -97,8 +97,9 @@ object IterativeViewshed {
     elevation: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     ps: Seq[Array[Double]],
     maxDistance: Double,
-    curvature: Boolean,
-    operator: AggregationOperator
+    curvature: Boolean = true,
+    operator: AggregationOperator = Or(),
+    touched: mutable.Set[SpatialKey] = null
   )(implicit sc: SparkContext): RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]] = {
 
     ps.foreach({ p => require(p.length == 6) })
@@ -127,6 +128,7 @@ object IterativeViewshed {
         case _: FromEast =>  SpatialKey(key.col - 1, key.row + 0)
         case _: FromInside => throw new Exception
       }
+
       if (minKeyCol <= key2.col && key2.col <= maxKeyCol && minKeyRow <= key2.row && key2.row <= maxKeyRow) {
         val message = (key2, index, from, ray)
         rays.add(message)
@@ -144,6 +146,7 @@ object IterativeViewshed {
         .mapValues({ list => list.map({ case (_, v) => v }) })
         .toMap
     val pointsByKey = sc.broadcast(_pointsByKey)
+    if (touched != null) touched ++= _pointsByKey.keys
 
     val _pointsByIndex: Map[Int, (SpatialKey, Int, Int, Double, Double, Double)] = // value: key, col, angle, fov, altitude
       info
@@ -216,6 +219,7 @@ object IterativeViewshed {
           .map({ case (k, list) => (k, list.map({ case (_, index, from, ray) => (index, from, ray) })) })
           .toMap
       val changes = sc.broadcast(_changes)
+      if (touched != null) touched ++= _changes.keys
 
       logger.debug(s"≥ ${changes.value.size} tiles in motion")
       val oldSheds = sheds
@@ -269,6 +273,7 @@ object IterativeViewshed {
       }).persist(StorageLevel.MEMORY_AND_DISK_SER)
       sheds.count
       oldSheds.unpersist()
+
     } while (rays.value.size > 0)
 
     // Return the computed viewshed layer
