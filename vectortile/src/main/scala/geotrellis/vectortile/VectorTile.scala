@@ -16,7 +16,9 @@
 
 package geotrellis.vectortile
 
-import geotrellis.vector.Extent
+import geotrellis.vector._
+import geotrellis.vectortile.internal._
+import geotrellis.vectortile.internal.{vector_tile => vt}
 
 // --- //
 
@@ -29,23 +31,57 @@ import geotrellis.vector.Extent
   * provides a codec for. However, by making this top-level type a trait, we
   * are able to define alternative backends (GeoJson, for instance. Yet unimplemented.).
   *
-  * See [[geotrellis.vectortile.protobuf.ProtobufTile]] for more information
+  * See [[geotrellis.vectortile.protobuf.VectorTile]] for more information
   * on how to decode and encode VectorTiles.
   *
   */
-trait VectorTile extends Serializable {
-  /** Every Layer in this Tile, with its name as a lookup key. */
-  val layers: Map[String, Layer]
 
-  /** The [[Extent]] of '''this''' Tile in some CRS.
-    * A Tile's extent can be easily found from its Key and [[LayoutDefinition]]:
+
+/**
+  * A concrete representation of a VectorTile, as one decoded from Protobuf
+  * bytes.
+  *
+  * {{{
+  * import geotrellis.vectortile.protobuf._
+  *
+  * val bytes: Array[Byte] = ...  // from some `.mvt` file
+  * val key: SpatialKey = ...  // preknown
+  * val layout: LayoutDefinition = ...  // preknown
+  * val tileExtent: Extent = layout.mapTransform(key)
+  *
+  * val tile: VectorTile = VectorTile.fromBytes(bytes, tileExtent)
+  * }}}
+  *
+  * @constructor This is not meant to be called directly. See this class's
+  * companion object for the available helper methods.
+  */
+case class VectorTile(layers: Map[String, Layer], tileExtent: Extent) {
+  /** Encode this VectorTile back into a mid-level Protobuf object. */
+  def toProtobuf: vt.Tile = vt.Tile(layers = layers.values.map(_.toProtobuf).toSeq)
+
+  /** Encode this VectorTile back into its original form of Protobuf bytes. */
+  def toBytes: Array[Byte] = toProtobuf.toByteArray
+}
+
+object VectorTile {
+  /** Create a VectorTile from a low-level protobuf Tile type. */
+  def fromPBTile(tile: vt.Tile, tileExtent: Extent): VectorTile = {
+
+    val layers: Map[String, Layer] = tile.layers.map({ l =>
+      val pbl = LazyLayer(l, tileExtent)
+
+      pbl.name -> pbl
+    }).toMap
+
+    VectorTile(layers, tileExtent)
+  }
+
+  /** Create a [[VectorTile]] from raw Protobuf bytes.
     *
-    * {{{
-    * val key: SpatialKey = ...
-    * val layout: LayoutDefinition = ...
-    *
-    * val tileExtent: Extent = layout.mapTransform(key)
-    * }}}
+    * @param bytes  Raw Protobuf bytes from a `.mvt` file or otherwise.
+    * @param tileExtent The [[Extent]] of this tile, '''not''' the global extent.
     */
-  val tileExtent: Extent
+  def fromBytes(bytes: Array[Byte], tileExtent: Extent): VectorTile =
+    fromPBTile(vt.Tile.parseFrom(bytes), tileExtent)
+
 }

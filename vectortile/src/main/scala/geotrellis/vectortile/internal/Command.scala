@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.vectortile.protobuf.internal
+package geotrellis.vectortile.internal
 
 import scala.collection.mutable.ListBuffer
 import scala.annotation.tailrec

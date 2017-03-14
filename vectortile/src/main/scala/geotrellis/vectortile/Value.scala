@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package geotrellis.vectortile.protobuf
+package geotrellis.vectortile
 
-import geotrellis.vectortile.protobuf.internal.{vector_tile => vt}
+import geotrellis.vectortile.internal.{vector_tile => vt}
 
 // --- //
 

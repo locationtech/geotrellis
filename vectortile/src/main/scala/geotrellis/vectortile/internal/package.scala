@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package geotrellis.vectortile.protobuf
+package geotrellis.vectortile
 
 import geotrellis.vector._
-import geotrellis.vectortile.protobuf.internal.ProtobufGeom
-import geotrellis.vectortile.protobuf.internal.{vector_tile => vt}
+import geotrellis.vectortile.internal.ProtobufGeom
+import geotrellis.vectortile.internal.{vector_tile => vt}
 
 import com.vividsolutions.jts.geom.LineString
 import java.lang.IllegalArgumentException

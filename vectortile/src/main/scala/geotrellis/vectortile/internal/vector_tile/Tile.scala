@@ -19,7 +19,7 @@
 //
 // Protofile syntax: PROTO2
 
-package geotrellis.vectortile.protobuf.internal.vector_tile
+package geotrellis.vectortile.internal.vector_tile
 
 @SerialVersionUID(0L)
 final case class Tile(
