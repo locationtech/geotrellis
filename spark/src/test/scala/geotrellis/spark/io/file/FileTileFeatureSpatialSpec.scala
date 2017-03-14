@@ -21,9 +21,9 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestTileFeatureFiles
+import geotrellis.spark.testkit._
 
 import org.apache.spark.rdd.RDD
-
 
 class FileTileFeatureSpatialSpec
     extends PersistenceSpec[SpatialKey, TileFeature[Tile, Tile], TileLayerMetadata[SpatialKey]]

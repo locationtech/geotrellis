@@ -16,22 +16,18 @@
 
 package geotrellis.raster.io.geotiff
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff.compression._
-import spire.syntax.cfor._
-
 trait Int32GeoTiffSegmentCollection extends GeoTiffSegmentCollection {
   type T = Int32GeoTiffSegment
 
   val bandType = Int32BandType
-  val noDataValue: Option[Int]
+  def noDataValue: Option[Int]
 
-  lazy val createSegment: Int => Int32GeoTiffSegment = noDataValue match {
+  lazy val decompressGeoTiffSegment = noDataValue match {
     case None =>
-      { i: Int => new Int32RawGeoTiffSegment(getDecompressedBytes(i)) }
-    case Some(nd) if (nd == Int.MinValue) =>
-      { i: Int => new Int32ConstantNoDataGeoTiffSegment(getDecompressedBytes(i)) }
+      (i: Int, bytes: Array[Byte]) => new Int32RawGeoTiffSegment(decompressor.decompress(bytes, i))
+    case Some(nd) if nd == Int.MinValue =>
+      (i: Int, bytes: Array[Byte]) => new Int32ConstantNoDataGeoTiffSegment(decompressor.decompress(bytes, i))
     case Some(nd) =>
-      { i: Int => new Int32UserDefinedNoDataGeoTiffSegment(getDecompressedBytes(i), nd) }
+      (i: Int, bytes: Array[Byte]) => new Int32UserDefinedNoDataGeoTiffSegment(decompressor.decompress(bytes, i), nd)
   }
 }

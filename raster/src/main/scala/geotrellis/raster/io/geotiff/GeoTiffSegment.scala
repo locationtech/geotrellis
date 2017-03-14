@@ -20,6 +20,7 @@ import geotrellis.raster.io.geotiff.util._
 import geotrellis.raster._
 
 import java.util.BitSet
+import java.nio.ByteBuffer
 import spire.syntax.cfor._
 
 /**
@@ -148,4 +149,138 @@ trait GeoTiffSegment {
         }
         arr.toArrayByte()
     }
+}
+
+object GeoTiffSegment {
+  /**
+   * Splits interleave pixel segment into component band bytes
+   *
+   * @param bytes Pixel interleaved segment bytes
+   * @param bandCount Number of samples interleaved in each pixel
+   * @param bytesPerSample Number of bytes in each sample
+   */
+  private[raster]
+  def deinterleave(bytes: Array[Byte], bandCount: Int, bytesPerSample: Int): Array[Array[Byte]] = {
+    val bands: Array[Array[Byte]] = new Array[Array[Byte]](bandCount)
+    val segmentSize = bytes.length / bandCount
+    cfor(0)(_ < bandCount, _ + 1) { i =>
+      bands(i) = new Array[Byte](segmentSize)
+    }
+
+    val bb = ByteBuffer.wrap(bytes)
+    cfor(0)(_ < segmentSize, _ + bytesPerSample) { offset =>
+      cfor(0)(_ < bandCount, _ + 1) { band =>
+        bb.get(bands(band), offset, bytesPerSample)
+      }
+    }
+
+    bands
+  }
+
+  private[raster]
+  def deinterleave(bytes: Array[Byte], bandCount: Int, bytesPerSample: Int, index: Int): Array[Byte] =
+    deinterleave(bytes, bandCount, bytesPerSample, index :: Nil).head
+
+  private[raster]
+  def deinterleave(bytes: Array[Byte], bandCount: Int, bytesPerSample: Int, indices: Traversable[Int]): Array[Array[Byte]] = {
+    val indicesList = indices.toList
+    val bandToIndex = indicesList.zipWithIndex.toMap
+    val actualBandCount = indicesList.length
+
+    val bands: Array[Array[Byte]] = new Array[Array[Byte]](actualBandCount)
+    val segmentSize = bytes.length / bandCount
+    cfor(0)(_ < actualBandCount, _ + 1) { i =>
+      bands(i) = new Array[Byte](segmentSize)
+    }
+
+    val bb = ByteBuffer.wrap(bytes)
+    cfor(0)(_ < segmentSize, _ + bytesPerSample) { offset =>
+      cfor(0)(_ < bandCount, _ + 1) { band =>
+        if(indicesList.contains(band)) bb.get(bands(bandToIndex(band)), offset, bytesPerSample)
+        else bb.position(bb.position() + bytesPerSample)
+      }
+    }
+
+    bands
+  }
+
+  /**
+    * Splits interleaved bit pixels into component bands
+    *
+    * @param segment segment of pixel interleaved bits
+    * @param cols number of pixel columns in each band
+    * @param rows number of pixel rows in each band
+    * @param bandCount Number of bit interleaved into each pixel
+    */
+  private[raster]
+  def deinterleaveBitSegment(segment: GeoTiffSegment, cols: Int, rows: Int, bandCount: Int): Array[Array[Byte]] = {
+    val paddedCols = {
+      val bytesWidth = (cols + 7) / 8
+      bytesWidth * 8
+    }
+    val resultByteCount = (paddedCols / 8) * rows
+
+    // packed byte arrays for each band in this segment
+    val bands = Array.fill[Array[Byte]](bandCount)(Array.ofDim[Byte](resultByteCount))
+
+    cfor(0)(_ < segment.size, _ + 1) { i =>
+      val bandIndex = i % bandCount
+      val j = i / bandCount
+      val col = j % cols
+      val row = j / cols
+      val i2 = (row * paddedCols) + col
+      BitArrayTile.update(bands(bandIndex), i2, segment.getInt(i))
+    }
+
+    // Inverse the byte, to account for endian mismatching.
+    cfor(0)(_ < bandCount, _ + 1) { bandIndex =>
+      val bytes = bands(bandIndex)
+      cfor(0)(_ < bytes.length, _ + 1) { i =>
+        bytes(i) = invertByte(bytes(i))
+      }
+    }
+
+    bands
+  }
+
+  private[raster]
+  def deinterleaveBitSegment(segment: GeoTiffSegment, cols: Int, rows: Int, bandCount: Int, index: Int): Array[Byte] =
+    deinterleaveBitSegment(segment, cols, rows, bandCount, index :: Nil).head
+
+  private[raster]
+  def deinterleaveBitSegment(segment: GeoTiffSegment, cols: Int, rows: Int, bandCount: Int, indices: Traversable[Int]): Array[Array[Byte]] = {
+    val paddedCols = {
+      val bytesWidth = (cols + 7) / 8
+      bytesWidth * 8
+    }
+    val resultByteCount = (paddedCols / 8) * rows
+    val indicesList = indices.toList
+    val bandToIndex = indicesList.zipWithIndex.toMap
+    val actualBandCount = indicesList.length
+
+    // packed byte arrays for each band in this segment
+    val bands = Array.fill[Array[Byte]](actualBandCount)(Array.ofDim[Byte](resultByteCount))
+
+    cfor(0)(_ < segment.size, _ + 1) { i =>
+      val bandIndex = i % bandCount
+      // TODO: flip this loop to avoid conditional test per-pixel
+      if(indicesList.contains(bandIndex)) {
+        val j = i / bandCount
+        val col = j % cols
+        val row = j / cols
+        val i2 = (row * paddedCols) + col
+        BitArrayTile.update(bands(bandToIndex(bandIndex)), i2, segment.getInt(i))
+      }
+    }
+
+    // Inverse the byte, to account for endian mismatching.
+    cfor(0)(_ < actualBandCount, _ + 1) { bandIndex =>
+      val bytes = bands(bandIndex)
+      cfor(0)(_ < bytes.length, _ + 1) { i =>
+        bytes(i) = invertByte(bytes(i))
+      }
+    }
+
+    bands
+  }
 }

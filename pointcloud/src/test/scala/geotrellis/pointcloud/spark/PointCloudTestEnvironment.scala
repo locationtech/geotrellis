@@ -1,10 +1,10 @@
 package geotrellis.pointcloud.spark
 
-import java.io.File
-
-import geotrellis.spark._
+import geotrellis.spark.testkit.TestEnvironment
 import org.apache.hadoop.fs.Path
 import org.scalatest.Suite
+
+import java.io.File
 
 trait PointCloudTestEnvironment extends TestEnvironment { self: Suite =>
   val testResources = new File("src/test/resources")

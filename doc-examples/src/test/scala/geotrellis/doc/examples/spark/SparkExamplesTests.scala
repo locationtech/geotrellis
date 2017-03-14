@@ -20,7 +20,7 @@ import geotrellis.raster._
 import geotrellis.raster.testkit._
 import geotrellis.spark._
 import geotrellis.spark.testkit._
-import geotrellis.spark.TestEnvironment
+import geotrellis.spark.testkit.TestEnvironment
 
 import org.joda.time._
 import org.scalatest._

@@ -44,7 +44,7 @@ case class SinglebandGeoTiff(
     val raster: Raster[Tile] =
       this.raster.crop(subExtent)
 
-    SinglebandGeoTiff(raster, subExtent, this.crs)
+    SinglebandGeoTiff(raster, subExtent, this.crs, this.tags, this.options)
   }
 
   def crop(colMax: Int, rowMax: Int): SinglebandGeoTiff =
@@ -54,7 +54,7 @@ case class SinglebandGeoTiff(
     val raster: Raster[Tile] =
       this.raster.crop(colMin, rowMin, colMax, rowMax)
 
-    SinglebandGeoTiff(raster, raster._2, this.crs)
+    SinglebandGeoTiff(raster, raster._2, this.crs, this.tags, this.options)
   }
 }
 
@@ -65,7 +65,7 @@ object SinglebandGeoTiff {
     extent: Extent,
     crs: CRS
   ): SinglebandGeoTiff =
-    new SinglebandGeoTiff(tile, extent, crs, Tags.empty, GeoTiffOptions.DEFAULT)
+    SinglebandGeoTiff(tile, extent, crs, Tags.empty, GeoTiffOptions.DEFAULT)
 
   /** Read a single-band GeoTIFF file from a byte array.
     * The GeoTIFF will be fully decompressed and held in memory.

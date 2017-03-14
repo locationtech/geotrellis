@@ -19,8 +19,6 @@ package geotrellis.raster.io.geotiff
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.compression._
 
-import spire.syntax.cfor._
-
 class ByteGeoTiffMultibandTile(
   compressedBytes: SegmentBytes,
   decompressor: Decompressor,

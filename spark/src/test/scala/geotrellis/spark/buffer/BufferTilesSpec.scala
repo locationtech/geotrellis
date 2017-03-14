@@ -20,9 +20,9 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.raster.io.geotiff.SinglebandGeoTiff
 import geotrellis.vector._
+import geotrellis.spark.testkit._
 
 import org.scalatest.FunSpec
-
 
 class BufferTilesSpec extends FunSpec with TestEnvironment {
 

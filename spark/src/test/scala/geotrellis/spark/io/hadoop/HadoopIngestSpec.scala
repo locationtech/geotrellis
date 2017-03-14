@@ -22,6 +22,8 @@ import geotrellis.spark.ingest._
 import geotrellis.spark.testfiles._
 import geotrellis.spark.tiling._
 import geotrellis.vector._
+import geotrellis.spark.testkit._
+
 import org.apache.hadoop.fs.Path
 import org.scalatest._
 

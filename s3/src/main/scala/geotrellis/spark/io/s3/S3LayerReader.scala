@@ -24,7 +24,6 @@ import geotrellis.util._
 
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
-import com.typesafe.scalalogging.LazyLogging
 
 import scala.reflect.ClassTag
 

@@ -22,6 +22,7 @@ import geotrellis.spark.io.s3.testkit._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testfiles.TestFiles
 import geotrellis.spark._
+import geotrellis.spark.testkit.TestEnvironment
 
 import org.scalatest._
 

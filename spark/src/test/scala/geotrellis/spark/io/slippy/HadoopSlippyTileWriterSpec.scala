@@ -22,6 +22,7 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.proj4._
 import geotrellis.vector._
+import geotrellis.spark.testkit._
 
 import geotrellis.spark.testfiles._
 

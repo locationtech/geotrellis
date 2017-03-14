@@ -17,12 +17,11 @@
 package geotrellis.raster
 
 import spire.syntax.cfor._
-import com.typesafe.scalalogging._
+import geotrellis.util._
 
 import java.util.Locale
 import scala.collection.mutable.ArrayBuffer
 import scala.math.BigDecimal
-
 
 /**
   * Base trait for a Tile.

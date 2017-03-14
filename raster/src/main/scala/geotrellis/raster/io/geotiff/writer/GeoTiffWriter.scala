@@ -131,9 +131,9 @@ class GeoTiffWriter(geoTiff: GeoTiffData, dos: DataOutputStream) {
 
       val offsets = Array.ofDim[Int](segmentCount)
       var offset = imageDataStartOffset
-      cfor(0)(_ < segmentCount, _ + 1) { i =>
+      segments.getSegments(0 until segmentCount).foreach { case (i, segment) =>
         offsets(i) = offset
-        offset += segments.getSegment(i).length
+        offset += segment.length
       }
       offsetFieldValueBuilder(offsets)
     }
@@ -188,8 +188,8 @@ class GeoTiffWriter(geoTiff: GeoTiffData, dos: DataOutputStream) {
     }
 
     // Write the image data.
-    cfor(0)(_ < segmentCount, _ + 1) { i =>
-      writeBytes(segments.getSegment(i))
+    segments.getSegments(0 until segmentCount).foreach { case (_, segment) =>
+      writeBytes(segment)
     }
 
     dos.flush()

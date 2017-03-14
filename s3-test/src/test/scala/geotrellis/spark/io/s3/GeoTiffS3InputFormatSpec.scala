@@ -22,13 +22,14 @@ import geotrellis.vector._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.s3.testkit._
+import geotrellis.spark.testkit.TestEnvironment
 
 import org.apache.hadoop.conf.Configuration
 import com.amazonaws.auth.AWSCredentials
-import org.apache.hadoop.mapreduce.{ TaskAttemptContext, InputSplit }
+import org.apache.hadoop.mapreduce.{TaskAttemptContext, InputSplit}
 import org.scalatest._
 
-import java.nio.file.{ Paths, Files }
+import java.nio.file.{Paths, Files}
 
 class GeoTiffS3InputFormatSpec extends FunSpec with TestEnvironment with Matchers {
 

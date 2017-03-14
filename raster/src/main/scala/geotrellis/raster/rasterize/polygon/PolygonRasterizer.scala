@@ -108,7 +108,7 @@ object PolygonRasterizer {
     else if ((min(y1,y2) <= y) && (y <= max(y1,y2))) { // Between endpoints
       (((x1-x2)*y-(x1*y2-y1*x2))/(y1-y2),0)
     }
-    else (Double.NegativeInfinity, 8) // No intersection
+    else (Double.NegativeInfinity, Int.MaxValue) // No intersection
   }
 
   /**
@@ -183,23 +183,66 @@ object PolygonRasterizer {
     val xcoordsMap = mutable.Map[Double, Int]()
     val xcoordsList = mutable.ListBuffer[Double]()
 
-    rtree.query(new Envelope(Double.MinValue, Double.MaxValue, row, row)).asScala.foreach({ edgeObj =>
-      val edge = edgeObj.asInstanceOf[Segment]
-      if (edge._2 != edge._4) { // If edge is not horizontal, process it ...
-        val (xcoord, valence) = lineAxisIntersection(edge,row)
-        if (xcoordsMap.contains(xcoord)) xcoordsMap(xcoord) += valence
-        else xcoordsMap(xcoord) = valence
+    val segments = {
+      var nonHorizontal = 0
+      var horizontal = false
+
+      val segments =
+        rtree
+          .query(new Envelope(Double.MinValue, Double.MaxValue, row, row))
+          .asScala
+          .flatMap({ edgeObj =>
+            val edge = edgeObj.asInstanceOf[Segment]
+            if (edge._2 != edge._4) {
+              val (xcoord, parity) = lineAxisIntersection(edge,row)
+              nonHorizontal += 1
+              if (parity != Int.MaxValue) Some((xcoord, parity))
+              else None
+            }
+            else {
+              horizontal = true
+              None
+            }
+          })
+
+      /**
+        * Remove horizontal edges by perturbing the scanline up or
+        * down infinitesimally.
+        */
+      if (horizontal == true) {
+        val upward = segments.filter({ case (_, parity) => parity != 1 })
+        val downward = segments.filter({ case (_, parity) => parity != -1 })
+        val upwardDistance = math.abs(nonHorizontal - upward.length)
+        val downwardDistance = math.abs(nonHorizontal - downward.length)
+
+        /**
+          * A better measure of distance would probably be the
+          * Levenshtein distance[1], but instead the respective
+          * differences in length from the original sequence (minus
+          * horizontal edges) are used as proxies.
+          *
+          * https://en.wikipedia.org/wiki/Levenshtein_distance
+          */
+        if (upwardDistance < downwardDistance) upward
+        else downward
       }
+      else segments
+    }
+
+    segments.foreach({ case (xcoord, parity) =>
+      if (xcoordsMap.contains(xcoord)) xcoordsMap(xcoord) += parity
+      else xcoordsMap(xcoord) = parity
     })
 
-    xcoordsMap.foreach({ case (xcoord, valence) =>
+    xcoordsMap.foreach({ case (xcoord, parity) =>
       /**
         * This is where the  ASSUMPTION is used.  Given the assumption,
         * this intersection  should be used as  the open or close  of a
         * run of  turned-on pixels  if and only  if the  sum associated
         * with that intersection is -1, 0, or 1.
         */
-      if (valence == -1 || valence == 0 || valence == 1) xcoordsList += (xcoord + 0.5)
+      if (parity == -1 || parity == 0 || parity == 1)
+        xcoordsList += (xcoord + 0.5)
     })
 
     val xcoords = xcoordsList.toArray

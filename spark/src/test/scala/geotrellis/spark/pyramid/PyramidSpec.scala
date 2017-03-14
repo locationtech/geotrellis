@@ -21,6 +21,7 @@ import geotrellis.spark.tiling._
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.vector._
+import geotrellis.spark.testkit._
 
 import jp.ne.opt.chronoscala.Imports._
 
@@ -126,6 +127,77 @@ class PyramidSpec extends FunSpec with Matchers with TestEnvironment {
         nextExtent.contains(previousExtent) should be (true)
         zoom = newZoom
         rdd = newRDD
+      }
+    }
+
+    it("should pyramid floating layer") {
+      val tileLayout = TileLayout(4, 4, 2, 2)
+
+      val dt1 = ZonedDateTime.of(2014, 5, 17, 4, 0, 0, 0, ZoneOffset.UTC)
+      val dt2 = ZonedDateTime.of(2014, 5, 18, 3, 0, 0, 0, ZoneOffset.UTC)
+
+      val tile1 =
+        ArrayTile(Array(
+          1, 1,  1, 1,   2, 2,  2, 2,
+          1, 1,  1, 1,   2, 2,  2, 2,
+
+          1, 1,  1, 1,   2, 2,  2, 2,
+          1, 1,  1, 1,   2, 2,  2, 2,
+
+
+          3, 3,  3, 3,   4, 4,  4, 4,
+          3, 3,  3, 3,   4, 4,  4, 4,
+
+          3, 3,  3, 3,   4, 4,  4, 4,
+          3, 3,  3, 3,   4, 4,  4, 4
+        ) , 8, 8)
+
+      val tile2 =
+        ArrayTile(Array(
+          10, 10,  10, 10,   20, 20,  20, 20,
+          10, 10,  10, 10,   20, 20,  20, 20,
+
+          10, 10,  10, 10,   20, 20,  20, 20,
+          10, 10,  10, 10,   20, 20,  20, 20,
+
+
+          30, 30,  30, 30,   40, 40,  40, 40,
+          30, 30,  30, 30,   40, 40,  40, 40,
+
+          30, 30,  30, 30,   40, 40,  40, 40,
+          30, 30,  30, 30,   40, 40,  40, 40
+        ) , 8, 8)
+
+      val rdd =
+        createSpaceTimeTileLayerRDD(
+          Seq( (tile1, dt1), (tile2, dt2) ),
+          tileLayout
+        )
+
+      val layoutScheme = ZoomedLayoutScheme(LatLng, 2)
+      val level = LayoutLevel(2, FloatingLayoutScheme(512).levelFor(LatLng.worldExtent, CellSize(0.5, 0.5)).layout)
+
+      val (levelOne, levelOneRDD) = Pyramid.up(rdd,layoutScheme, level.zoom)
+
+      levelOneRDD.metadata.layout.tileLayout should be (TileLayout(2, 2, 2, 2))
+      val results: Array[(SpaceTimeKey, Tile)] = levelOneRDD.collect()
+
+      results.map(_._1.temporalKey.instant).distinct.sorted.toSeq should be (Seq(dt1.toInstant.toEpochMilli, dt2.toInstant.toEpochMilli))
+
+      for((key, tile) <- results) {
+        val multi =
+          if(key.temporalKey.instant == dt1.toInstant.toEpochMilli) 1
+          else 10
+        key.spatialKey match {
+          case SpatialKey(0, 0) =>
+            tile.toArray.distinct should be (Array(1 * multi))
+          case SpatialKey(1, 0) =>
+            tile.toArray.distinct should be (Array(2 * multi))
+          case SpatialKey(0, 1) =>
+            tile.toArray.distinct should be (Array(3 * multi))
+          case SpatialKey(1, 1) =>
+            tile.toArray.distinct should be (Array(4 * multi))
+        }
       }
     }
   }

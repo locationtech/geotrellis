@@ -1,9 +1,9 @@
 package geotrellis.spark.buffer
 
 import geotrellis.spark._
+import geotrellis.spark.testkit._
 
 import org.scalatest.FunSpec
-
 
 object Stuff {
   case class UnionableThing(n: Int) {

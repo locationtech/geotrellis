@@ -115,5 +115,29 @@ class ZoomedLayoutSchemeSpec extends FunSpec with Matchers {
       val z = scheme.zoom(lon1, lat1, CellSize(lon2 - lon1, lat2 - lat1))
       z should be (6)
     }
+
+    it("should pyramid floating layout") {
+      val extent = Extent(0, 0, 37, 27)
+      val cellSize = CellSize(0.5, 0.5)
+      val fscheme = FloatingLayoutScheme(512)
+      val zscheme = ZoomedLayoutScheme(WebMercator)
+
+      val LayoutLevel(_, layout) = fscheme.levelFor(extent, cellSize)
+      val LayoutLevel(zoom, _) = zscheme.levelFor(extent, cellSize)
+      val level = LayoutLevel(zoom, layout)
+
+      var l = zscheme.zoomOut(level)
+      ((zoom - 1 to 0) by -1) foreach { z =>
+        val n = math.pow(2, z).toInt
+        val c = math.pow(0.5, z + 1)
+
+        n should be (l.layout.layoutCols)
+        n should be (l.layout.layoutRows)
+
+        l.layout.cellSize should be (CellSize(c, c))
+
+        l = if(z > 0) zscheme.zoomOut(l) else l
+      }
+    }
   }
 }

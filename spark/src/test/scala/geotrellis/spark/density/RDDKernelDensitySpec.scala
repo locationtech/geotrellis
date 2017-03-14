@@ -31,12 +31,13 @@ import geotrellis.spark._
 import geotrellis.spark.stitch._
 import geotrellis.spark.tiling._
 import geotrellis.vector._
+import geotrellis.spark.testkit._
 
 import geotrellis.raster.render._
 
 import org.scalatest._
 
-class KernelDensityRDDSpec extends FunSpec
+class RDDKernelDensitySpec extends FunSpec
     with Matchers
     with TestEnvironment
     with RasterMatchers {

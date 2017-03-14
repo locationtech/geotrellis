@@ -24,9 +24,9 @@ import geotrellis.spark.render._
 import geotrellis.spark.testfiles._
 import geotrellis.spark.testkit._
 import geotrellis.spark.io.hadoop._
+import geotrellis.spark.testkit._
 
 import org.scalatest._
-
 
 class SpatialTileRDDRenderMethodsSpec extends FunSpec
     with TestEnvironment

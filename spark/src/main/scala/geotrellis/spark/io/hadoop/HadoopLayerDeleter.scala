@@ -19,6 +19,7 @@ package geotrellis.spark.io.hadoop
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.AttributeStore.Fields
+import geotrellis.util.LazyLogging
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -26,19 +27,18 @@ import org.apache.spark._
 import spray.json.JsonFormat
 import spray.json.DefaultJsonProtocol._
 
-class HadoopLayerDeleter(val attributeStore: AttributeStore, conf: Configuration) extends LayerDeleter[LayerId] {
+class HadoopLayerDeleter(val attributeStore: AttributeStore, conf: Configuration) extends LazyLogging with LayerDeleter[LayerId] {
   def delete(id: LayerId): Unit = {
-    if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-    val header =
-      try {
-      attributeStore.readHeader[HadoopLayerHeader](id)
-      } catch {
-        case e: AttributeNotFoundError => throw new LayerDeleteError(id).initCause(e)
-      }
-
-    HdfsUtils.deletePath(header.path, conf)
-    attributeStore.delete(id)
-    attributeStore.clearCache()
+    try {
+      val header = attributeStore.readHeader[HadoopLayerHeader](id)
+      HdfsUtils.deletePath(header.path, conf)
+    } catch {
+      case e: AttributeNotFoundError =>
+        logger.info(s"Metadata for $id was not found. Any associated layer data (if any) will require manual deletion")
+        throw new LayerDeleteError(id).initCause(e)
+    } finally {
+      attributeStore.delete(id)
+    }
   }
 }
 

@@ -16,16 +16,18 @@
 
 package geotrellis.spark.io.s3
 
-import java.nio.charset.Charset
 import geotrellis.spark._
 import geotrellis.spark.io._
+
 import spray.json._
 import DefaultJsonProtocol._
 import com.amazonaws.services.s3.model.{ObjectMetadata, AmazonS3Exception}
-import scala.io.Source
-import java.io.ByteArrayInputStream
+import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion
 
 import scala.util.matching.Regex
+import scala.io.Source
+import java.nio.charset.Charset
+import java.io.ByteArrayInputStream
 
 /**
  * Stores and retrieves layer attributes in an S3 bucket in JSON format
@@ -98,7 +100,6 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayer
       .exists(_.getKey.endsWith(s"${AttributeStore.Fields.metadata}${SEP}${layerId.name}${SEP}${layerId.zoom}.json"))
 
   def delete(layerId: LayerId, attributeName: String): Unit = {
-    if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
     s3Client.deleteObject(bucket, attributePath(layerId, attributeName))
     clearCache(layerId, attributeName)
   }
@@ -112,8 +113,8 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayer
   }
 
   def delete(layerId: LayerId): Unit = {
-    if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
-    layerKeys(layerId).foreach(s3Client.deleteObject(bucket, _))
+    val keys = layerKeys(layerId).map(new KeyVersion(_)).toList
+    s3Client.deleteObjects(bucket, keys)
     clearCache(layerId)
   }
 

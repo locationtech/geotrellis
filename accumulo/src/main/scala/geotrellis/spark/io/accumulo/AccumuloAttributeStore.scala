@@ -70,7 +70,6 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
   }
 
   private def delete(layerId: LayerId, attributeName: Option[String]): Unit = {
-    if(!layerExists(layerId)) throw new LayerNotFoundError(layerId)
     val numThreads = 1
     val config = new BatchWriterConfig()
     config.setMaxWriteThreads(numThreads)

@@ -16,10 +16,12 @@
 
 package geotrellis.spark.util
 
-import com.typesafe.scalalogging.LazyLogging
+import geotrellis.util.LazyLogging
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
+
 import java.io.File
 
 object SparkUtils extends LazyLogging {

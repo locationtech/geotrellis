@@ -20,9 +20,9 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.SinglebandGeoTiff
 import geotrellis.spark._
 import geotrellis.vector.Extent
+import geotrellis.spark.testkit._
 
 import org.scalatest.FunSpec
-
 
 class TileLayerRDDCropMethodsSpec extends FunSpec with TestEnvironment {
 
