@@ -25,8 +25,8 @@ import scala.util.Try
 
 
 /**
- * This class extends [[RangeReader]] by reading chunks out of a GeoTiff on the
- * AWS S3 server.
+ * This class extends [[RangeReader]] by reading chunks out of a GeoTiff at the
+ * specified HTTP location.
  *
  * @param url: A [[URL]] pointing to the desired GeoTiff.
  */
