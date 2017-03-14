@@ -22,7 +22,6 @@ import geotrellis.spark.SpatialKey
 import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.vector.Extent
 import geotrellis.vectortile._
-import geotrellis.vectortile.protobuf.ProtobufTile
 
 import org.scalatest._
 
@@ -45,26 +44,26 @@ class VectorTileCodecSpec extends FunSpec with Matchers {
   describe("Avro Codec Isomorphism") {
     it("onepoint.mvt") {
       val bytes = read("vectortile/data/onepoint.mvt")
-      val tile = ProtobufTile.fromBytes(bytes, tileExtent)
+      val tile = VectorTile.fromBytes(bytes, tileExtent)
 
       vectorTileCodec.decode(vectorTileCodec.encode(tile)) shouldBe tile
-      tile.asInstanceOf[ProtobufTile].toBytes shouldBe bytes
+      tile.toBytes shouldBe bytes
     }
 
     it("linestring.mvt") {
       val bytes = read("vectortile/data/linestring.mvt")
-      val tile = ProtobufTile.fromBytes(bytes, tileExtent)
+      val tile = VectorTile.fromBytes(bytes, tileExtent)
 
       vectorTileCodec.decode(vectorTileCodec.encode(tile)) shouldBe tile
-      tile.asInstanceOf[ProtobufTile].toBytes shouldBe bytes
+      tile.toBytes shouldBe bytes
     }
 
     it("polygon.mvt") {
       val bytes = read("vectortile/data/polygon.mvt")
-      val tile = ProtobufTile.fromBytes(bytes, tileExtent)
+      val tile = VectorTile.fromBytes(bytes, tileExtent)
 
       vectorTileCodec.decode(vectorTileCodec.encode(tile)) shouldBe tile
-      tile.asInstanceOf[ProtobufTile].toBytes shouldBe bytes
+      tile.toBytes shouldBe bytes
     }
 
     /* This test does not check for byte-to-byte equivalence, as that
@@ -74,7 +73,7 @@ class VectorTileCodecSpec extends FunSpec with Matchers {
      */
     it("roads.mvt") {
       val bytes = read("vectortile/data/roads.mvt")
-      val tile = ProtobufTile.fromBytes(bytes, tileExtent)
+      val tile = VectorTile.fromBytes(bytes, tileExtent)
 
       val decoded = vectorTileCodec.decode(vectorTileCodec.encode(tile))
 

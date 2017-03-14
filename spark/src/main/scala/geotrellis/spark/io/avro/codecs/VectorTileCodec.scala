@@ -17,11 +17,9 @@
 package geotrellis.spark.io.avro.codecs
 
 import geotrellis.spark.io.avro._
-import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.avro.codecs.Implicits._
 import geotrellis.vector.Extent
 import geotrellis.vectortile.VectorTile
-import geotrellis.vectortile.protobuf._
 
 import org.apache.avro._
 import org.apache.avro.generic._
@@ -43,19 +41,15 @@ trait VectorTileCodec {
       .endRecord()
 
     def encode(tile: VectorTile, rec: GenericRecord): Unit = {
-      tile match {
-        case t: ProtobufTile => {
-          rec.put("bytes", ByteBuffer.wrap(t.toBytes))
-          rec.put("extent", extentCodec.encode(t.tileExtent))
-        }
-      }
+      rec.put("bytes", ByteBuffer.wrap(tile.toBytes))
+      rec.put("extent", extentCodec.encode(tile.tileExtent))
     }
 
     def decode(rec: GenericRecord): VectorTile = {
       val bytes: Array[Byte] = rec[ByteBuffer]("bytes").array
       val extent: Extent = extentCodec.decode(rec[GenericRecord]("extent"))
 
-      ProtobufTile.fromBytes(bytes, extent)
+      VectorTile.fromBytes(bytes, extent)
     }
   }
 }
