@@ -20,18 +20,18 @@ import java.nio.{ByteOrder, ByteBuffer}
 
 /**
   * This class extends [[ByteReader]] who's source of bytes is from a
-  * BytesStreamer instance.
+  * [[RangeReader]] instance.
   *
   * The StreamingByteReader will read ranges of bytes (chunks) from
   * a source using a RangeReader. If bytes are requested from it
   * that require chunks it does not have, it will fetch those chunks
-  * and store them in memory. If the maximum number of chunks (numChunks)
-  * is reached, the oldes chunks will be kicked out.
+  * and store them in memory. If the maximum number of chunks
+  * is reached, the oldest chunks will be kicked out.
   *
-  * @param bytesStreamer: A [[BytesStreamer]] instance
+  * @param rangeReader: A [[RangeReader]] instance
   * @param chunkSize: The size of chunks that will be streamed from the source
   *
-  * @return A new instance of StreamByteReader
+  * @return A new instance of StreamingByteReader
   */
 class StreamingByteReader(rangeReader: RangeReader, chunkSize: Int = 65536) extends ByteReader {
   class Chunk(val offset: Long, val length: Int, _data: () => Array[Byte]) {
@@ -148,7 +148,7 @@ class StreamingByteReader(rangeReader: RangeReader, chunkSize: Int = 65536) exte
     }
 }
 
-/** The companion object of [[StreamByteReader]] */
+/** The companion object of [[StreamingByteReader]] */
 object StreamingByteReader {
   /**
    * Creates a new instance of StreamByteReader.
