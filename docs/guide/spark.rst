@@ -163,9 +163,9 @@ Reading Layers
 
 Layer readers read all or part of a persisted layer back into ``RDD[(K, V)]
 with Metadata[M]``. All layer readers extend the `FilteringLayerReader
-<https://github.com/locationtech/geotrellis/blob/master/spark/src/main/scala/geotrellis/spark/io/FilteringLayerReader.scala>`__
+<https://geotrellis.github.io/scaladocs/latest/#geotrellis.spark.io.FilteringLayerReader>`__
 trait which in turn extends `LayerReader
-<https://github.com/locationtech/geotrellis/blob/master/spark/src/main/scala/geotrellis/spark/io/LayerReader.scala>`__.
+<https://geotrellis.github.io/scaladocs/latest/#geotrellis.spark.io.LayerReader>`__.
 The former type should be used when abstracting over the specific back-end
 implementation of a reader with region query support, and the latter when
 referring to a reader that may only read the layers fully.
@@ -173,7 +173,7 @@ referring to a reader that may only read the layers fully.
 In order to read a layer correctly some metadata regarding the type and
 format of the values must be stored as well as metadata regarding layer
 properties. All layer readers lean on instances of `AttributeStore
-<https://github.com/locationtech/geotrellis/blob/master/spark/src/main/scala/geotrellis/spark/io/AttributeStore.scala>`__
+<https://geotrellis.github.io/scaladocs/latest/#geotrellis.spark.io.AttributeStore>`__
 to provide this functionality. As a convenience each concrete type of a
 ``LayerReader`` will provide a constructor that will instantiate an
 ``AttributeStore`` of the same type with reasonable defaults. For instance
@@ -278,12 +278,12 @@ FilteringLayerReader
 
 When using the ``.query`` method the expected return types must still be
 provided just like we did when calling ``.read``, however instead of
-producing an ``RDD`` it produced an instance of
-```LayerQuery`` <../../spark/src/main/scala/geotrellis/spark/io/LayerQuery.scala>`__
+producing an ``RDD`` it produced an instance of `LayerQuery
+<https://geotrellis.github.io/scaladocs/latest/#geotrellis.spark.io.LayerQuery>`__
 which is essentially a query builder in a fluent style, allowing for
-multiple '.where' clauses to be specified. Only when ``.result`` is
-called will an ``RDD`` object be produced. When multiple ``.where``
-clauses are used, the query specified their intersection.
+multiple '.where' clauses to be specified. Only when ``.result`` is called
+will an ``RDD`` object be produced. When multiple ``.where`` clauses are
+used, the query specified their intersection.
 
 This behavior allows us to build queries that filter on space and time
 independently.
@@ -303,7 +303,7 @@ independently.
         .result
 
 Other query filters are supported through the
-```LayerFilter`` <../../spark/src/main/scala/geotrellis/spark/io/LayerFilter.scala>`__
+`LayerFilter <https://geotrellis.github.io/scaladocs/latest/#geotrellis.spark.io.LayerFilter>`__
 type class. Implemented instances include:
 
 -  ``Contains``: Tile which contains a point
@@ -356,22 +356,21 @@ tile.
 Reader Threads
 --------------
 
-Cassandra and S3 Layer RDDReaders / RDDWriters are configurable by
-threads amount. It's a programm setting, that can be different for a
-certain machine (depends on resources available). Configuration could be
-set in the ``reference.conf`` / ``application.conf`` file of your app,
-default settings available in a ``reference.conf`` file of each backend
-subproject (we use `TypeSafe
-Config <https://github.com/typesafehub/config>`__). For a File backend
-only RDDReader is configurable, For Accumulo - only RDDWriter (Socket
-Strategy). For all backends CollectionReaders are configurable as well.
-By default thread pool size per each configurable reader / writer equals
-by virtual machine cpu cores available. Word ``default`` means thread
+Cassandra and S3 Layer RDDReaders / RDDWriters are configurable by threads
+amount. It's a programm setting, that can be different for a certain machine
+(depends on resources available). Configuration could be set in the
+``reference.conf`` / ``application.conf`` file of your app, default settings
+available in a ``reference.conf`` file of each backend subproject (we use
+`TypeSafe Config <https://github.com/typesafehub/config>`__). For a File
+backend only RDDReader is configurable, For Accumulo - only RDDWriter
+(Socket Strategy). For all backends CollectionReaders are configurable as
+well. By default thread pool size per each configurable reader / writer
+equals by virtual machine cpu cores available. Word ``default`` means thread
 per cpu core, it can be changed to any integer value.
 
 Default configuration example:
 
-.. code:: conf
+.. code:: javascript
 
     geotrellis.accumulo.threads {
       collection.read = default
@@ -401,9 +400,9 @@ Default configuration example:
 
 Cassandra has additional configuration settings:
 
-And additional connections parameters for\ ``Cassandra``:
+And additional connections parameters for ``Cassandra``:
 
-.. code:: conf
+.. code:: javascript
 
     geotrellis.cassandra {
       keyspace             = "geotrellis"
