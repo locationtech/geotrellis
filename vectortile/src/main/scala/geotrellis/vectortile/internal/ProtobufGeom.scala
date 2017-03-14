@@ -20,7 +20,7 @@ import geotrellis.vector.{ Geometry, MultiGeometry, Point }
 
 // --- //
 
-/** An isomorphism for any Geotrellis geometry type that can convert
+/** An isomorphism for any GeoTrellis geometry type that can convert
   * between a collection of Command Integers. As of version 2.1 of
   * the VectorTile spec, there is no explicit difference between single
   * and multi geometries. When there eventually is, this trait will have to be
@@ -42,7 +42,7 @@ import geotrellis.vector.{ Geometry, MultiGeometry, Point }
   */
 trait ProtobufGeom[G1 <: Geometry, G2 <: MultiGeometry] extends Serializable {
   /**
-    * Decode a sequence of VectorTile [[Command]]s into a Geotrellis
+    * Decode a sequence of VectorTile [[Command]]s into a GeoTrellis
     * Geometry. Due to the reasons stated above, this may be either
     * the single or the ''Multi'' variety of the Geometry.
     *
@@ -55,11 +55,11 @@ trait ProtobufGeom[G1 <: Geometry, G2 <: MultiGeometry] extends Serializable {
   def fromCommands(cmds: Seq[Command], topLeft: Point, resolution: Double): Either[G1, G2]
 
   /**
-    * Encode a Geotrellis Geometry into a sequence of VectorTile [[Command]]s.
+    * Encode a GeoTrellis Geometry into a sequence of VectorTile [[Command]]s.
     *
     * This forms an isomorphism with [[fromCommands]].
     *
-    * @param g          A Geotrellis Geometry, either a `Left(Single)` or a `Right(Multi)`.
+    * @param g          A GeoTrellis Geometry, either a `Left(Single)` or a `Right(Multi)`.
     * @param topLeft    The location in the current CRS of the top-left corner of this Tile.
     * @param resolution How much of the CRS's units are covered by a single VT grid coordinate..
     */

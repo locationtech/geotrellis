@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Azavea
+ * Copyright 2016 - 2017 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import scala.collection.mutable.ListBuffer
 // --- //
 
 /** A layer, which could contain any number of Features of any Geometry type.
-  * Here, "Feature" and "Geometry" refer specifically to the Geotrellis classes
+  * Here, "Feature" and "Geometry" refer specifically to the GeoTrellis classes
   * of the same names.
   */
 trait Layer extends Serializable {
@@ -76,7 +76,7 @@ trait Layer extends Serializable {
   }
 
   /** Encode this ProtobufLayer a mid-level Layer ready to be encoded as protobuf bytes. */
-  def toProtobuf: vt.Tile.Layer = {
+  private[vectortile] def toProtobuf: vt.Tile.Layer = {
     val pgp = implicitly[ProtobufGeom[Point, MultiPoint]]
     val pgl = implicitly[ProtobufGeom[Line, MultiLine]]
     val pgy = implicitly[ProtobufGeom[Polygon, MultiPolygon]]
@@ -272,7 +272,7 @@ case class LazyLayer(
     (points, lines, polys)
   }
 
-  /** Convert to a [[StrictProtobufLayer]]. */
+  /** Convert to a [[StrictLayer]]. */
   def toStrict: StrictLayer = {
     StrictLayer(
       name,

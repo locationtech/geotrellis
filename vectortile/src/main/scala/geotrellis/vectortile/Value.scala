@@ -51,48 +51,48 @@ import geotrellis.vectortile.internal.{vector_tile => vt}
   */
 sealed trait Value extends Serializable {
   /** Encode this Value back into a mid-level Protobuf object. */
-  def toProtobuf: vt.Tile.Value
+  private[vectortile] def toProtobuf: vt.Tile.Value
 }
 
 /** A wrapper for `String` to allow all `Value` subtypes to be stored in
   * the same Map.
   */
 case class VString(value: String) extends Value {
-  def toProtobuf: vt.Tile.Value = vt.Tile.Value().withStringValue(value)
+  private[vectortile] def toProtobuf: vt.Tile.Value = vt.Tile.Value().withStringValue(value)
 }
 /** A wrapper for `Float` to allow all `Value` subtypes to be stored in
   * the same Map.
   */
 case class VFloat(value: Float) extends Value {
-  def toProtobuf: vt.Tile.Value = vt.Tile.Value().withFloatValue(value)
+  private[vectortile] def toProtobuf: vt.Tile.Value = vt.Tile.Value().withFloatValue(value)
 }
 /** A wrapper for `Double` to allow all `Value` subtypes to be stored in
   * the same Map.
   */
 case class VDouble(value: Double) extends Value {
-  def toProtobuf: vt.Tile.Value = vt.Tile.Value().withDoubleValue(value)
+  private[vectortile] def toProtobuf: vt.Tile.Value = vt.Tile.Value().withDoubleValue(value)
 }
 /** A wrapper for `Long` to allow all `Value` subtypes to be stored in
   * the same Map.
   */
 case class VInt64(value: Long) extends Value {
-  def toProtobuf: vt.Tile.Value = vt.Tile.Value().withIntValue(value)
+  private[vectortile] def toProtobuf: vt.Tile.Value = vt.Tile.Value().withIntValue(value)
 }
 /** A wrapper for unsigned, 64-bit ints to allow all `Value` subtypes to be
   * stored in the same Map.
   */
 case class VWord64(value: Long) extends Value {
-  def toProtobuf: vt.Tile.Value = vt.Tile.Value().withUintValue(value)
+  private[vectortile] def toProtobuf: vt.Tile.Value = vt.Tile.Value().withUintValue(value)
 }
 /** A wrapper for zig-zag encoded ints to allow all `Value` subtypes to be
   * stored in the same Map.
   */
 case class VSint64(value: Long) extends Value {
-  def toProtobuf: vt.Tile.Value = vt.Tile.Value().withSintValue(value)
+  private[vectortile] def toProtobuf: vt.Tile.Value = vt.Tile.Value().withSintValue(value)
 }
 /** A wrapper for `Boolean` to allow all `Value` subtypes to be stored in
   * the same Map.
   */
 case class VBool(value: Boolean) extends Value {
-  def toProtobuf: vt.Tile.Value = vt.Tile.Value().withBoolValue(value)
+  private[vectortile] def toProtobuf: vt.Tile.Value = vt.Tile.Value().withBoolValue(value)
 }
