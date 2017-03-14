@@ -41,7 +41,7 @@ class S3GeoTiffRDDSpec
     with RasterMatchers
     with TestEnvironment {
 
-  describe("S3GeoTiffRDD Spatial") {
+  describe("S3GeoTiffRDD") {
     implicit val mockClient = new MockS3Client()
     val bucket = this.getClass.getSimpleName
 
@@ -62,7 +62,7 @@ class S3GeoTiffRDDSpec
 
       assertEqual(stitched1, stitched2)
     }
-    
+
     it("should read the same rasters when reading small windows or with no windows, Spatial, MultibandGeoTiff") {
       val key = "geoTiff/multi.tif"
       val testGeoTiffPath = "raster-test/data/geotiff-test-files/3bands/byte/3bands-striped-band.tif"
@@ -82,7 +82,7 @@ class S3GeoTiffRDDSpec
 
       assertEqual(stitched1, stitched2)
     }
-    
+
     it("should read the same rasters when reading small windows or with no windows, TemporalSpatial, SinglebandGeoTiff") {
       val key = "geoTiff/time.tif"
       val testGeoTiffPath = "raster-test/data/one-month-tiles/test-200506000000_0_0.tif"
@@ -106,7 +106,7 @@ class S3GeoTiffRDDSpec
       val dateTime = wholeInfo.time
 
       val collection = source2.collect
-      
+
       cfor(0)(_ < source2.count, _ + 1){ i =>
         val (info, _) = collection(i)
 
@@ -142,12 +142,32 @@ class S3GeoTiffRDDSpec
       val dateTime = wholeInfo.time
 
       val collection = source2.collect
-      
+
       cfor(0)(_ < source2.count, _ + 1){ i =>
         val (info, _) = collection(i)
 
         info.time should be (dateTime)
       }
+    }
+
+    it("should apply the delimiter option") {
+      MockS3Client.reset()
+
+      val key = "geoTiff/multi-time.tif"
+
+      val source1 =
+        S3GeoTiffRDD.temporalMultiband(
+          bucket,
+          key,
+          S3GeoTiffRDD.Options(
+            timeTag = "ISO_TIME",
+            timeFormat = "yyyy-MM-dd'T'HH:mm:ss",
+            getS3Client = () => new MockS3Client,
+            delimiter = Some("/")
+          )
+        ).count
+
+      MockS3Client.lastListObjectsRequest.get.getDelimiter should be ("/")
     }
   }
 }

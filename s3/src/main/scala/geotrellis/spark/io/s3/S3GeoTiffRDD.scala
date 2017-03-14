@@ -53,6 +53,7 @@ object S3GeoTiffRDD {
     * @param numPartitions  How many partitions Spark should create when it repartitions the data.
     * @param partitionBytes Desired partition size in bytes, at least one item per partition will be assigned
     * @param chunkSize      How many bytes should be read in at a time.
+    * @param delimiter      Delimiter to use for S3 objet listings. See
     * @param getS3Client    A function to instantiate an S3Client. Must be serializable.
     */
   case class Options(
@@ -64,6 +65,7 @@ object S3GeoTiffRDD {
     numPartitions: Option[Int] = None,
     partitionBytes: Option[Long] = None,
     chunkSize: Option[Int] = None,
+    delimiter: Option[String] = None,
     getS3Client: () => S3Client = () => S3Client.DEFAULT
   ) extends RasterReader.Options
 
@@ -86,6 +88,7 @@ object S3GeoTiffRDD {
     S3InputFormat.setCreateS3Client(conf, options.getS3Client)
     options.numPartitions.foreach{ n => S3InputFormat.setPartitionCount(conf, n) }
     options.partitionBytes.foreach{ n => S3InputFormat.setPartitionBytes(conf, n) }
+    options.delimiter.foreach { n => S3InputFormat.setDelimiter(conf, n) }
     conf
   }
 
