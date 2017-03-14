@@ -85,6 +85,8 @@ Fixes
 
 - `Fixed malformed XML error that was happening after failed S3 ingest <https://github.com/locationtech/geotrellis/pull/2040>`__
 
+- `Fix issue with S3LayerDeleter deleting files outside of layer <https://github.com/locationtech/geotrellis/pull/2070>`__
+
 - `Fix TemporalProjectedExtentCodec to handling proj4 strings when CRS isn't available <https://github.com/locationtech/geotrellis/pull/2034>`__
 
 - `Fixed layoutForZoom to allow 0 zoom level <https://github.com/locationtech/geotrellis/pull/2057>`__
