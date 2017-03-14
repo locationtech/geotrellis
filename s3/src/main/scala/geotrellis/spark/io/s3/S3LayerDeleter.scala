@@ -31,7 +31,7 @@ class S3LayerDeleter(val attributeStore: AttributeStore) extends LazyLogging wit
     try {
       val header = attributeStore.readHeader[S3LayerHeader](id)
       val bucket = header.bucket
-      val prefix = header.key
+      val prefix = header.key + "/"
       val s3Client = getS3Client()
 
       s3Client.deleteListing(bucket, s3Client.listObjects(bucket, prefix))
