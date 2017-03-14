@@ -28,7 +28,7 @@ You can find more information and talk to developers
 (let us know what you're working on!) at:
 
   - [Gitter](https://gitter.im/geotrellis/geotrellis)
-  - [GeoTrellis mailing list](https://groups.google.com/group/geotrellis-user)
+  - [GeoTrellis mailing list](https://locationtech.org/mailman/listinfo/geotrellis-user)
 
 
 ## Getting Started
@@ -273,8 +273,9 @@ This is a list of features contained in the GeoTrellis library. It is broken up 
 
 ## Contributing
 
-Feedback and contributions to the project, no matter what kind,
-are always very welcome. A CLA is required for contribution, see
-[contributing.md](./contributing.md) for more information. Please
-refer to the [Scala style guide](http://docs.scala-lang.org/style/)
-for formatting patches to the codebase.
+Feedback and contributions to the project, no matter what kind, are always
+very welcome. A CLA is required for contribution, see
+[Contributing](https://geotrellis.readthedocs.io/en/latest/contributing.html)
+for more information. Please refer to the [Scala style
+guide](http://docs.scala-lang.org/style/) for formatting patches to the
+codebase.

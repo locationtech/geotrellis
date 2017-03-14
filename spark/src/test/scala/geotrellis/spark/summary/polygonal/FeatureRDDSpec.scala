@@ -20,6 +20,7 @@ import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testfiles._
 import geotrellis.raster.summary.polygonal._
+import geotrellis.spark.testkit._
 
 import geotrellis.vector._
 import geotrellis.vector.summary.polygonal._

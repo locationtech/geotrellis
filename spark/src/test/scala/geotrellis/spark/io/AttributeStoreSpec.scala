@@ -21,6 +21,7 @@ import geotrellis.spark.testfiles._
 import geotrellis.spark.summary._
 import geotrellis.raster.io._
 import geotrellis.raster.histogram._
+import geotrellis.spark.testkit._
 
 import org.scalatest._
 import spray.json._

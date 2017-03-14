@@ -17,13 +17,16 @@
 package geotrellis.spark.io.s3.testkit
 
 import geotrellis.spark.io.s3._
-import java.io.ByteArrayInputStream
+import geotrellis.util.LazyLogging
+
 import com.amazonaws.services.s3.model._
-import java.util.concurrent.ConcurrentHashMap
 import com.amazonaws.services.s3.internal.AmazonS3ExceptionBuilder
-import scala.collection.immutable.TreeMap
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.commons.io.IOUtils
+
+import java.io.ByteArrayInputStream
+import java.util.concurrent.ConcurrentHashMap
+
+import scala.collection.immutable.TreeMap
 import scala.collection.JavaConverters._
 
 class MockS3Client() extends S3Client with LazyLogging {

@@ -22,6 +22,7 @@ import geotrellis.spark.testfiles._
 import geotrellis.raster._
 import geotrellis.raster.summary.polygonal._
 import geotrellis.vector._
+import geotrellis.spark.testkit._
 
 import org.apache.spark.SparkContext
 import org.scalatest.FunSpec

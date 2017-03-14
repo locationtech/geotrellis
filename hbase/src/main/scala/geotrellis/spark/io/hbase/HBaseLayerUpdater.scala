@@ -24,7 +24,6 @@ import geotrellis.spark.merge._
 import geotrellis.util._
 
 import org.apache.spark.SparkContext
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.rdd.RDD
 import spray.json._
 

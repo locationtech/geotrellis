@@ -75,8 +75,7 @@ object GeoTiffReader {
   /* Read a single band GeoTIFF file.
    * If there is more than one band in the GeoTiff, read the first band only.
    */
-  def readSingleband(bytes: Array[Byte], decompress: Boolean,
-    streaming: Boolean = false): SinglebandGeoTiff =
+  def readSingleband(bytes: Array[Byte], decompress: Boolean, streaming: Boolean = false): SinglebandGeoTiff =
       readSingleband(ByteBuffer.wrap(bytes), decompress, streaming)
 
   def readSingleband(byteReader: ByteReader): SinglebandGeoTiff =
@@ -168,8 +167,7 @@ object GeoTiffReader {
 
   /* Read a multi band GeoTIFF file.
    */
-  def readMultiband(bytes: Array[Byte], decompress: Boolean,
-    streaming: Boolean = false): MultibandGeoTiff =
+  def readMultiband(bytes: Array[Byte], decompress: Boolean, streaming: Boolean = false): MultibandGeoTiff =
       readMultiband(ByteBuffer.wrap(bytes), decompress, streaming)
 
   def readMultiband(byteReader: ByteReader, decompress: Boolean, streaming: Boolean): MultibandGeoTiff = {
@@ -315,18 +313,19 @@ object GeoTiffReader {
         Tiled(blockCols, blockRows)
       }
 
-    val segmentBytes: SegmentBytes =
-      if (streaming)
-        LazySegmentBytes(byteReader, tiffTags)
-      else
-        ArraySegmentBytes(byteReader, tiffTags)
-
     val cols = tiffTags.cols
     val rows = tiffTags.rows
     val bandType = tiffTags.bandType
     val bandCount = tiffTags.bandCount
 
     val segmentLayout = GeoTiffSegmentLayout(cols, rows, storageMethod, bandType)
+
+    val segmentBytes: SegmentBytes =
+      if (streaming)
+        LazySegmentBytes(byteReader, tiffTags)
+      else
+        ArraySegmentBytes(byteReader, tiffTags)
+
     val noDataValue =
       (tiffTags
         &|-> TiffTags._geoTiffTags

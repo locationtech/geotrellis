@@ -34,7 +34,6 @@ import geotrellis.spark.etl.config._
 
 import org.apache.spark._
 import org.apache.spark.rdd.RDD
-import com.typesafe.scalalogging.LazyLogging
 
 import scala.reflect._
 import scala.reflect.runtime.universe._

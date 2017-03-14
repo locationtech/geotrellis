@@ -23,7 +23,6 @@ import geotrellis.spark.io.index._
 import geotrellis.util._
 
 import spray.json.JsonFormat
-import com.typesafe.scalalogging.LazyLogging
 
 import scala.reflect.ClassTag
 

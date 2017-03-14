@@ -23,13 +23,13 @@ package geotrellis.vectortile.protobuf.internal.vector_tile
 
 @SerialVersionUID(0L)
 final case class Tile(
-    layers: Seq[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Layer] = Nil
+    layers: _root_.scala.collection.Seq[Tile.Layer] = _root_.scala.collection.Seq.empty
     ) extends com.trueaccord.scalapb.GeneratedMessage with com.trueaccord.scalapb.Message[Tile] with com.trueaccord.lenses.Updatable[Tile] {
     @transient
     private[this] var __serializedSizeCachedValue: Int = 0
     private[this] def __computeSerializedValue(): Int = {
       var __size = 0
-      layers.foreach(layers => __size += 1 + com.google.protobuf.CodedOutputStream.computeUInt32SizeNoTag(layers.serializedSize) + layers.serializedSize)
+      layers.foreach(layers => __size += 1 + _root_.com.google.protobuf.CodedOutputStream.computeUInt32SizeNoTag(layers.serializedSize) + layers.serializedSize)
       __size
     }
     final override def serializedSize: Int = {
@@ -40,75 +40,88 @@ final case class Tile(
       }
       read
     }
-    def writeTo(output: com.google.protobuf.CodedOutputStream): Unit = {
+    def writeTo(`_output__`: _root_.com.google.protobuf.CodedOutputStream): Unit = {
       layers.foreach { __v =>
-        output.writeTag(3, 2)
-        output.writeUInt32NoTag(__v.serializedSize)
-        __v.writeTo(output)
+        _output__.writeTag(3, 2)
+        _output__.writeUInt32NoTag(__v.serializedSize)
+        __v.writeTo(_output__)
       };
     }
-    def mergeFrom(__input: com.google.protobuf.CodedInputStream): geotrellis.vectortile.protobuf.internal.vector_tile.Tile = {
-      val __layers = (scala.collection.immutable.Vector.newBuilder[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Layer] ++= this.layers)
+    def mergeFrom(`_input__`: _root_.com.google.protobuf.CodedInputStream): Tile = {
+      val __layers = (_root_.scala.collection.immutable.Vector.newBuilder[Tile.Layer] ++= this.layers)
       var _done__ = false
       while (!_done__) {
-        val _tag__ = __input.readTag()
+        val _tag__ = _input__.readTag()
         _tag__ match {
           case 0 => _done__ = true
           case 26 =>
-            __layers += com.trueaccord.scalapb.LiteParser.readMessage(__input, geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Layer.defaultInstance)
-          case tag => __input.skipField(tag)
+            __layers += _root_.com.trueaccord.scalapb.LiteParser.readMessage(_input__, Tile.Layer.defaultInstance)
+          case tag => _input__.skipField(tag)
         }
       }
-      geotrellis.vectortile.protobuf.internal.vector_tile.Tile(
+      Tile(
           layers = __layers.result()
       )
     }
-    def clearLayers = copy(layers = Seq.empty)
-    def addLayers(__vs: geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Layer*): Tile = addAllLayers(__vs)
-    def addAllLayers(__vs: TraversableOnce[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Layer]): Tile = copy(layers = layers ++ __vs)
-    def withLayers(__v: Seq[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Layer]): Tile = copy(layers = __v)
-    def getField(__field: com.google.protobuf.Descriptors.FieldDescriptor): scala.Any = {
-      __field.getNumber match {
+    def clearLayers = copy(layers = _root_.scala.collection.Seq.empty)
+    def addLayers(__vs: Tile.Layer*): Tile = addAllLayers(__vs)
+    def addAllLayers(__vs: TraversableOnce[Tile.Layer]): Tile = copy(layers = layers ++ __vs)
+    def withLayers(__v: _root_.scala.collection.Seq[Tile.Layer]): Tile = copy(layers = __v)
+    def getFieldByNumber(__fieldNumber: Int): scala.Any = {
+      __fieldNumber match {
         case 3 => layers
       }
     }
-    override def toString: String = com.trueaccord.scalapb.TextFormat.printToUnicodeString(this)
-    def companion = geotrellis.vectortile.protobuf.internal.vector_tile.Tile
+    def getField(__field: _root_.scalapb.descriptors.FieldDescriptor): _root_.scalapb.descriptors.PValue = {
+      require(__field.containingMessage eq companion.scalaDescriptor)
+      __field.number match {
+        case 3 => _root_.scalapb.descriptors.PRepeated(layers.map(_.toPMessage)(_root_.scala.collection.breakOut))
+      }
+    }
+    override def toString: String = _root_.com.trueaccord.scalapb.TextFormat.printToUnicodeString(this)
+    def companion = Tile
 }
 
-object Tile extends com.trueaccord.scalapb.GeneratedMessageCompanion[geotrellis.vectortile.protobuf.internal.vector_tile.Tile] {
-  implicit def messageCompanion: com.trueaccord.scalapb.GeneratedMessageCompanion[geotrellis.vectortile.protobuf.internal.vector_tile.Tile] = this
-  def fromFieldsMap(__fieldsMap: Map[com.google.protobuf.Descriptors.FieldDescriptor, scala.Any]): geotrellis.vectortile.protobuf.internal.vector_tile.Tile = {
-    require(__fieldsMap.keys.forall(_.getContainingType() == descriptor), "FieldDescriptor does not match message type.")
-    val __fields = descriptor.getFields
-    geotrellis.vectortile.protobuf.internal.vector_tile.Tile(
-      __fieldsMap.getOrElse(__fields.get(0), Nil).asInstanceOf[Seq[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Layer]]
+object Tile extends com.trueaccord.scalapb.GeneratedMessageCompanion[Tile] {
+  implicit def messageCompanion: com.trueaccord.scalapb.GeneratedMessageCompanion[Tile] = this
+  def fromFieldsMap(__fieldsMap: scala.collection.immutable.Map[_root_.com.google.protobuf.Descriptors.FieldDescriptor, scala.Any]): Tile = {
+    require(__fieldsMap.keys.forall(_.getContainingType() == javaDescriptor), "FieldDescriptor does not match message type.")
+    val __fields = javaDescriptor.getFields
+    Tile(
+      __fieldsMap.getOrElse(__fields.get(0), Nil).asInstanceOf[_root_.scala.collection.Seq[Tile.Layer]]
     )
   }
-  def descriptor: com.google.protobuf.Descriptors.Descriptor = VectorTileProto.descriptor.getMessageTypes.get(0)
-  def messageCompanionForField(__field: com.google.protobuf.Descriptors.FieldDescriptor): com.trueaccord.scalapb.GeneratedMessageCompanion[_] = {
-    require(__field.getContainingType() == descriptor, "FieldDescriptor does not match message type.")
-    var __out: com.trueaccord.scalapb.GeneratedMessageCompanion[_] = null
-    __field.getNumber match {
-      case 3 => __out = geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Layer
+  implicit def messageReads: _root_.scalapb.descriptors.Reads[Tile] = _root_.scalapb.descriptors.Reads(_ match {
+    case _root_.scalapb.descriptors.PMessage(__fieldsMap) =>
+      require(__fieldsMap.keys.forall(_.containingMessage == scalaDescriptor), "FieldDescriptor does not match message type.")
+      Tile(
+        __fieldsMap.get(scalaDescriptor.findFieldByNumber(3).get).map(_.as[_root_.scala.collection.Seq[Tile.Layer]]).getOrElse(_root_.scala.collection.Seq.empty)
+      )
+    case _ => throw new RuntimeException("Expected PMessage")
+  })
+  def javaDescriptor: _root_.com.google.protobuf.Descriptors.Descriptor = VectorTileProto.javaDescriptor.getMessageTypes.get(0)
+  def scalaDescriptor: _root_.scalapb.descriptors.Descriptor = VectorTileProto.scalaDescriptor.messages(0)
+  def messageCompanionForFieldNumber(__fieldNumber: Int): _root_.com.trueaccord.scalapb.GeneratedMessageCompanion[_] = {
+    var __out: _root_.com.trueaccord.scalapb.GeneratedMessageCompanion[_] = null
+    __fieldNumber match {
+      case 3 => __out = Tile.Layer
     }
   __out
   }
-  def enumCompanionForField(__field: com.google.protobuf.Descriptors.FieldDescriptor): com.trueaccord.scalapb.GeneratedEnumCompanion[_] = throw new MatchError(__field)
-  lazy val defaultInstance = geotrellis.vectortile.protobuf.internal.vector_tile.Tile(
+  def enumCompanionForFieldNumber(__fieldNumber: Int): _root_.com.trueaccord.scalapb.GeneratedEnumCompanion[_] = throw new MatchError(__fieldNumber)
+  lazy val defaultInstance = Tile(
   )
-  sealed trait GeomType extends com.trueaccord.scalapb.GeneratedEnum {
+  sealed trait GeomType extends _root_.com.trueaccord.scalapb.GeneratedEnum {
     type EnumType = GeomType
     def isUnknown: Boolean = false
     def isPoint: Boolean = false
     def isLinestring: Boolean = false
     def isPolygon: Boolean = false
-    def isUnrecognized: Boolean = false
-    def companion: com.trueaccord.scalapb.GeneratedEnumCompanion[GeomType] = GeomType
+    def companion: _root_.com.trueaccord.scalapb.GeneratedEnumCompanion[GeomType] = GeomType
   }
 
-  object GeomType extends com.trueaccord.scalapb.GeneratedEnumCompanion[GeomType] {
-    implicit def enumCompanion: com.trueaccord.scalapb.GeneratedEnumCompanion[GeomType] = this
+  object GeomType extends _root_.com.trueaccord.scalapb.GeneratedEnumCompanion[GeomType] {
+    implicit def enumCompanion: _root_.com.trueaccord.scalapb.GeneratedEnumCompanion[GeomType] = this
     @SerialVersionUID(0L)
     case object UNKNOWN extends GeomType {
       val value = 0
@@ -142,13 +155,9 @@ object Tile extends com.trueaccord.scalapb.GeneratedMessageCompanion[geotrellis.
     }
 
     @SerialVersionUID(0L)
-    case class Unrecognized(value: Int) extends GeomType {
-      val name = "UNRECOGNIZED"
-      val index = -1
-      override def isUnrecognized: Boolean = true
-    }
+    case class Unrecognized(value: Int) extends GeomType with _root_.com.trueaccord.scalapb.UnrecognizedEnum
 
-    lazy val values = Seq(UNKNOWN, POINT, LINESTRING, POLYGON)
+    lazy val values = scala.collection.Seq(UNKNOWN, POINT, LINESTRING, POLYGON)
     def fromValue(value: Int): GeomType = value match {
       case 0 => UNKNOWN
       case 1 => POINT
@@ -156,8 +165,15 @@ object Tile extends com.trueaccord.scalapb.GeneratedMessageCompanion[geotrellis.
       case 3 => POLYGON
       case __other => Unrecognized(__other)
     }
-    def descriptor: com.google.protobuf.Descriptors.EnumDescriptor = geotrellis.vectortile.protobuf.internal.vector_tile.Tile.descriptor.getEnumTypes.get(0)
+    def javaDescriptor: _root_.com.google.protobuf.Descriptors.EnumDescriptor = Tile.javaDescriptor.getEnumTypes.get(0)
+    def scalaDescriptor: _root_.scalapb.descriptors.EnumDescriptor = Tile.scalaDescriptor.enums(0)
   }
+  /** Variant type encoding
+    * The use of values is described in section 4.1 of the specification
+    *
+    * @param stringValue
+    *   Exactly one of these values must be present in a valid message
+    */
   @SerialVersionUID(0L)
   final case class Value(
       stringValue: scala.Option[String] = None,
@@ -172,13 +188,13 @@ object Tile extends com.trueaccord.scalapb.GeneratedMessageCompanion[geotrellis.
       private[this] var __serializedSizeCachedValue: Int = 0
       private[this] def __computeSerializedValue(): Int = {
         var __size = 0
-        if (stringValue.isDefined) { __size += com.google.protobuf.CodedOutputStream.computeStringSize(1, stringValue.get) }
-        if (floatValue.isDefined) { __size += com.google.protobuf.CodedOutputStream.computeFloatSize(2, floatValue.get) }
-        if (doubleValue.isDefined) { __size += com.google.protobuf.CodedOutputStream.computeDoubleSize(3, doubleValue.get) }
-        if (intValue.isDefined) { __size += com.google.protobuf.CodedOutputStream.computeInt64Size(4, intValue.get) }
-        if (uintValue.isDefined) { __size += com.google.protobuf.CodedOutputStream.computeUInt64Size(5, uintValue.get) }
-        if (sintValue.isDefined) { __size += com.google.protobuf.CodedOutputStream.computeSInt64Size(6, sintValue.get) }
-        if (boolValue.isDefined) { __size += com.google.protobuf.CodedOutputStream.computeBoolSize(7, boolValue.get) }
+        if (stringValue.isDefined) { __size += _root_.com.google.protobuf.CodedOutputStream.computeStringSize(1, stringValue.get) }
+        if (floatValue.isDefined) { __size += _root_.com.google.protobuf.CodedOutputStream.computeFloatSize(2, floatValue.get) }
+        if (doubleValue.isDefined) { __size += _root_.com.google.protobuf.CodedOutputStream.computeDoubleSize(3, doubleValue.get) }
+        if (intValue.isDefined) { __size += _root_.com.google.protobuf.CodedOutputStream.computeInt64Size(4, intValue.get) }
+        if (uintValue.isDefined) { __size += _root_.com.google.protobuf.CodedOutputStream.computeUInt64Size(5, uintValue.get) }
+        if (sintValue.isDefined) { __size += _root_.com.google.protobuf.CodedOutputStream.computeSInt64Size(6, sintValue.get) }
+        if (boolValue.isDefined) { __size += _root_.com.google.protobuf.CodedOutputStream.computeBoolSize(7, boolValue.get) }
         __size
       }
       final override def serializedSize: Int = {
@@ -189,30 +205,30 @@ object Tile extends com.trueaccord.scalapb.GeneratedMessageCompanion[geotrellis.
         }
         read
       }
-      def writeTo(output: com.google.protobuf.CodedOutputStream): Unit = {
+      def writeTo(`_output__`: _root_.com.google.protobuf.CodedOutputStream): Unit = {
         stringValue.foreach { __v =>
-          output.writeString(1, __v)
+          _output__.writeString(1, __v)
         };
         floatValue.foreach { __v =>
-          output.writeFloat(2, __v)
+          _output__.writeFloat(2, __v)
         };
         doubleValue.foreach { __v =>
-          output.writeDouble(3, __v)
+          _output__.writeDouble(3, __v)
         };
         intValue.foreach { __v =>
-          output.writeInt64(4, __v)
+          _output__.writeInt64(4, __v)
         };
         uintValue.foreach { __v =>
-          output.writeUInt64(5, __v)
+          _output__.writeUInt64(5, __v)
         };
         sintValue.foreach { __v =>
-          output.writeSInt64(6, __v)
+          _output__.writeSInt64(6, __v)
         };
         boolValue.foreach { __v =>
-          output.writeBool(7, __v)
+          _output__.writeBool(7, __v)
         };
       }
-      def mergeFrom(__input: com.google.protobuf.CodedInputStream): geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Value = {
+      def mergeFrom(`_input__`: _root_.com.google.protobuf.CodedInputStream): Tile.Value = {
         var __stringValue = this.stringValue
         var __floatValue = this.floatValue
         var __doubleValue = this.doubleValue
@@ -222,27 +238,27 @@ object Tile extends com.trueaccord.scalapb.GeneratedMessageCompanion[geotrellis.
         var __boolValue = this.boolValue
         var _done__ = false
         while (!_done__) {
-          val _tag__ = __input.readTag()
+          val _tag__ = _input__.readTag()
           _tag__ match {
             case 0 => _done__ = true
             case 10 =>
-              __stringValue = Some(__input.readString())
+              __stringValue = Some(_input__.readString())
             case 21 =>
-              __floatValue = Some(__input.readFloat())
+              __floatValue = Some(_input__.readFloat())
             case 25 =>
-              __doubleValue = Some(__input.readDouble())
+              __doubleValue = Some(_input__.readDouble())
             case 32 =>
-              __intValue = Some(__input.readInt64())
+              __intValue = Some(_input__.readInt64())
             case 40 =>
-              __uintValue = Some(__input.readUInt64())
+              __uintValue = Some(_input__.readUInt64())
             case 48 =>
-              __sintValue = Some(__input.readSInt64())
+              __sintValue = Some(_input__.readSInt64())
             case 56 =>
-              __boolValue = Some(__input.readBool())
-            case tag => __input.skipField(tag)
+              __boolValue = Some(_input__.readBool())
+            case tag => _input__.skipField(tag)
           }
         }
-        geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Value(
+        Tile.Value(
             stringValue = __stringValue,
             floatValue = __floatValue,
             doubleValue = __doubleValue,
@@ -273,27 +289,39 @@ object Tile extends com.trueaccord.scalapb.GeneratedMessageCompanion[geotrellis.
       def getBoolValue: Boolean = boolValue.getOrElse(false)
       def clearBoolValue: Value = copy(boolValue = None)
       def withBoolValue(__v: Boolean): Value = copy(boolValue = Some(__v))
-      def getField(__field: com.google.protobuf.Descriptors.FieldDescriptor): scala.Any = {
-        __field.getNumber match {
-          case 1 => stringValue.getOrElse(null)
-          case 2 => floatValue.getOrElse(null)
-          case 3 => doubleValue.getOrElse(null)
-          case 4 => intValue.getOrElse(null)
-          case 5 => uintValue.getOrElse(null)
-          case 6 => sintValue.getOrElse(null)
-          case 7 => boolValue.getOrElse(null)
+      def getFieldByNumber(__fieldNumber: Int): scala.Any = {
+        __fieldNumber match {
+          case 1 => stringValue.orNull
+          case 2 => floatValue.orNull
+          case 3 => doubleValue.orNull
+          case 4 => intValue.orNull
+          case 5 => uintValue.orNull
+          case 6 => sintValue.orNull
+          case 7 => boolValue.orNull
         }
       }
-      override def toString: String = com.trueaccord.scalapb.TextFormat.printToUnicodeString(this)
-      def companion = geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Value
+      def getField(__field: _root_.scalapb.descriptors.FieldDescriptor): _root_.scalapb.descriptors.PValue = {
+        require(__field.containingMessage eq companion.scalaDescriptor)
+        __field.number match {
+          case 1 => stringValue.map(_root_.scalapb.descriptors.PString(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+          case 2 => floatValue.map(_root_.scalapb.descriptors.PFloat(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+          case 3 => doubleValue.map(_root_.scalapb.descriptors.PDouble(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+          case 4 => intValue.map(_root_.scalapb.descriptors.PLong(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+          case 5 => uintValue.map(_root_.scalapb.descriptors.PLong(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+          case 6 => sintValue.map(_root_.scalapb.descriptors.PLong(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+          case 7 => boolValue.map(_root_.scalapb.descriptors.PBoolean(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        }
+      }
+      override def toString: String = _root_.com.trueaccord.scalapb.TextFormat.printToUnicodeString(this)
+      def companion = Tile.Value
   }
 
-  object Value extends com.trueaccord.scalapb.GeneratedMessageCompanion[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Value] {
-    implicit def messageCompanion: com.trueaccord.scalapb.GeneratedMessageCompanion[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Value] = this
-    def fromFieldsMap(__fieldsMap: Map[com.google.protobuf.Descriptors.FieldDescriptor, scala.Any]): geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Value = {
-      require(__fieldsMap.keys.forall(_.getContainingType() == descriptor), "FieldDescriptor does not match message type.")
-      val __fields = descriptor.getFields
-      geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Value(
+  object Value extends com.trueaccord.scalapb.GeneratedMessageCompanion[Tile.Value] {
+    implicit def messageCompanion: com.trueaccord.scalapb.GeneratedMessageCompanion[Tile.Value] = this
+    def fromFieldsMap(__fieldsMap: scala.collection.immutable.Map[_root_.com.google.protobuf.Descriptors.FieldDescriptor, scala.Any]): Tile.Value = {
+      require(__fieldsMap.keys.forall(_.getContainingType() == javaDescriptor), "FieldDescriptor does not match message type.")
+      val __fields = javaDescriptor.getFields
+      Tile.Value(
         __fieldsMap.get(__fields.get(0)).asInstanceOf[scala.Option[String]],
         __fieldsMap.get(__fields.get(1)).asInstanceOf[scala.Option[Float]],
         __fieldsMap.get(__fields.get(2)).asInstanceOf[scala.Option[Double]],
@@ -303,26 +331,41 @@ object Tile extends com.trueaccord.scalapb.GeneratedMessageCompanion[geotrellis.
         __fieldsMap.get(__fields.get(6)).asInstanceOf[scala.Option[Boolean]]
       )
     }
-    def descriptor: com.google.protobuf.Descriptors.Descriptor = geotrellis.vectortile.protobuf.internal.vector_tile.Tile.descriptor.getNestedTypes.get(0)
-    def messageCompanionForField(__field: com.google.protobuf.Descriptors.FieldDescriptor): com.trueaccord.scalapb.GeneratedMessageCompanion[_] = throw new MatchError(__field)
-    def enumCompanionForField(__field: com.google.protobuf.Descriptors.FieldDescriptor): com.trueaccord.scalapb.GeneratedEnumCompanion[_] = throw new MatchError(__field)
-    lazy val defaultInstance = geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Value(
+    implicit def messageReads: _root_.scalapb.descriptors.Reads[Tile.Value] = _root_.scalapb.descriptors.Reads(_ match {
+      case _root_.scalapb.descriptors.PMessage(__fieldsMap) =>
+        require(__fieldsMap.keys.forall(_.containingMessage == scalaDescriptor), "FieldDescriptor does not match message type.")
+        Tile.Value(
+          __fieldsMap.get(scalaDescriptor.findFieldByNumber(1).get).flatMap(_.as[scala.Option[String]]),
+          __fieldsMap.get(scalaDescriptor.findFieldByNumber(2).get).flatMap(_.as[scala.Option[Float]]),
+          __fieldsMap.get(scalaDescriptor.findFieldByNumber(3).get).flatMap(_.as[scala.Option[Double]]),
+          __fieldsMap.get(scalaDescriptor.findFieldByNumber(4).get).flatMap(_.as[scala.Option[Long]]),
+          __fieldsMap.get(scalaDescriptor.findFieldByNumber(5).get).flatMap(_.as[scala.Option[Long]]),
+          __fieldsMap.get(scalaDescriptor.findFieldByNumber(6).get).flatMap(_.as[scala.Option[Long]]),
+          __fieldsMap.get(scalaDescriptor.findFieldByNumber(7).get).flatMap(_.as[scala.Option[Boolean]])
+        )
+      case _ => throw new RuntimeException("Expected PMessage")
+    })
+    def javaDescriptor: _root_.com.google.protobuf.Descriptors.Descriptor = Tile.javaDescriptor.getNestedTypes.get(0)
+    def scalaDescriptor: _root_.scalapb.descriptors.Descriptor = Tile.scalaDescriptor.nestedMessages(0)
+    def messageCompanionForFieldNumber(__fieldNumber: Int): _root_.com.trueaccord.scalapb.GeneratedMessageCompanion[_] = throw new MatchError(__fieldNumber)
+    def enumCompanionForFieldNumber(__fieldNumber: Int): _root_.com.trueaccord.scalapb.GeneratedEnumCompanion[_] = throw new MatchError(__fieldNumber)
+    lazy val defaultInstance = Tile.Value(
     )
-    implicit class ValueLens[UpperPB](_l: com.trueaccord.lenses.Lens[UpperPB, geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Value]) extends com.trueaccord.lenses.ObjectLens[UpperPB, geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Value](_l) {
-      def stringValue: com.trueaccord.lenses.Lens[UpperPB, String] = field(_.getStringValue)((c_, f_) => c_.copy(stringValue = Some(f_)))
-      def optionalStringValue: com.trueaccord.lenses.Lens[UpperPB, scala.Option[String]] = field(_.stringValue)((c_, f_) => c_.copy(stringValue = f_))
-      def floatValue: com.trueaccord.lenses.Lens[UpperPB, Float] = field(_.getFloatValue)((c_, f_) => c_.copy(floatValue = Some(f_)))
-      def optionalFloatValue: com.trueaccord.lenses.Lens[UpperPB, scala.Option[Float]] = field(_.floatValue)((c_, f_) => c_.copy(floatValue = f_))
-      def doubleValue: com.trueaccord.lenses.Lens[UpperPB, Double] = field(_.getDoubleValue)((c_, f_) => c_.copy(doubleValue = Some(f_)))
-      def optionalDoubleValue: com.trueaccord.lenses.Lens[UpperPB, scala.Option[Double]] = field(_.doubleValue)((c_, f_) => c_.copy(doubleValue = f_))
-      def intValue: com.trueaccord.lenses.Lens[UpperPB, Long] = field(_.getIntValue)((c_, f_) => c_.copy(intValue = Some(f_)))
-      def optionalIntValue: com.trueaccord.lenses.Lens[UpperPB, scala.Option[Long]] = field(_.intValue)((c_, f_) => c_.copy(intValue = f_))
-      def uintValue: com.trueaccord.lenses.Lens[UpperPB, Long] = field(_.getUintValue)((c_, f_) => c_.copy(uintValue = Some(f_)))
-      def optionalUintValue: com.trueaccord.lenses.Lens[UpperPB, scala.Option[Long]] = field(_.uintValue)((c_, f_) => c_.copy(uintValue = f_))
-      def sintValue: com.trueaccord.lenses.Lens[UpperPB, Long] = field(_.getSintValue)((c_, f_) => c_.copy(sintValue = Some(f_)))
-      def optionalSintValue: com.trueaccord.lenses.Lens[UpperPB, scala.Option[Long]] = field(_.sintValue)((c_, f_) => c_.copy(sintValue = f_))
-      def boolValue: com.trueaccord.lenses.Lens[UpperPB, Boolean] = field(_.getBoolValue)((c_, f_) => c_.copy(boolValue = Some(f_)))
-      def optionalBoolValue: com.trueaccord.lenses.Lens[UpperPB, scala.Option[Boolean]] = field(_.boolValue)((c_, f_) => c_.copy(boolValue = f_))
+    implicit class ValueLens[UpperPB](_l: _root_.com.trueaccord.lenses.Lens[UpperPB, Tile.Value]) extends _root_.com.trueaccord.lenses.ObjectLens[UpperPB, Tile.Value](_l) {
+      def stringValue: _root_.com.trueaccord.lenses.Lens[UpperPB, String] = field(_.getStringValue)((c_, f_) => c_.copy(stringValue = Some(f_)))
+      def optionalStringValue: _root_.com.trueaccord.lenses.Lens[UpperPB, scala.Option[String]] = field(_.stringValue)((c_, f_) => c_.copy(stringValue = f_))
+      def floatValue: _root_.com.trueaccord.lenses.Lens[UpperPB, Float] = field(_.getFloatValue)((c_, f_) => c_.copy(floatValue = Some(f_)))
+      def optionalFloatValue: _root_.com.trueaccord.lenses.Lens[UpperPB, scala.Option[Float]] = field(_.floatValue)((c_, f_) => c_.copy(floatValue = f_))
+      def doubleValue: _root_.com.trueaccord.lenses.Lens[UpperPB, Double] = field(_.getDoubleValue)((c_, f_) => c_.copy(doubleValue = Some(f_)))
+      def optionalDoubleValue: _root_.com.trueaccord.lenses.Lens[UpperPB, scala.Option[Double]] = field(_.doubleValue)((c_, f_) => c_.copy(doubleValue = f_))
+      def intValue: _root_.com.trueaccord.lenses.Lens[UpperPB, Long] = field(_.getIntValue)((c_, f_) => c_.copy(intValue = Some(f_)))
+      def optionalIntValue: _root_.com.trueaccord.lenses.Lens[UpperPB, scala.Option[Long]] = field(_.intValue)((c_, f_) => c_.copy(intValue = f_))
+      def uintValue: _root_.com.trueaccord.lenses.Lens[UpperPB, Long] = field(_.getUintValue)((c_, f_) => c_.copy(uintValue = Some(f_)))
+      def optionalUintValue: _root_.com.trueaccord.lenses.Lens[UpperPB, scala.Option[Long]] = field(_.uintValue)((c_, f_) => c_.copy(uintValue = f_))
+      def sintValue: _root_.com.trueaccord.lenses.Lens[UpperPB, Long] = field(_.getSintValue)((c_, f_) => c_.copy(sintValue = Some(f_)))
+      def optionalSintValue: _root_.com.trueaccord.lenses.Lens[UpperPB, scala.Option[Long]] = field(_.sintValue)((c_, f_) => c_.copy(sintValue = f_))
+      def boolValue: _root_.com.trueaccord.lenses.Lens[UpperPB, Boolean] = field(_.getBoolValue)((c_, f_) => c_.copy(boolValue = Some(f_)))
+      def optionalBoolValue: _root_.com.trueaccord.lenses.Lens[UpperPB, scala.Option[Boolean]] = field(_.boolValue)((c_, f_) => c_.copy(boolValue = f_))
     }
     final val STRING_VALUE_FIELD_NUMBER = 1
     final val FLOAT_VALUE_FIELD_NUMBER = 2
@@ -333,22 +376,36 @@ object Tile extends com.trueaccord.scalapb.GeneratedMessageCompanion[geotrellis.
     final val BOOL_VALUE_FIELD_NUMBER = 7
   }
 
+  /** Features are described in section 4.2 of the specification
+    *
+    * @param tags
+    *   Tags of this feature are encoded as repeated pairs of
+    *   integers.
+    *   A detailed description of tags is located in sections
+    *   4.2 and 4.4 of the specification
+    * @param type
+    *   The type of geometry stored in this feature.
+    * @param geometry
+    *   Contains a stream of commands and parameters (vertices).
+    *   A detailed description on geometry encoding is located in
+    *   section 4.3 of the specification.
+    */
   @SerialVersionUID(0L)
   final case class Feature(
       id: scala.Option[Long] = None,
-      tags: Seq[Int] = Nil,
-      `type`: scala.Option[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.GeomType] = None,
-      geometry: Seq[Int] = Nil
+      tags: _root_.scala.collection.Seq[Int] = _root_.scala.collection.Seq.empty,
+      `type`: scala.Option[Tile.GeomType] = None,
+      geometry: _root_.scala.collection.Seq[Int] = _root_.scala.collection.Seq.empty
       ) extends com.trueaccord.scalapb.GeneratedMessage with com.trueaccord.scalapb.Message[Feature] with com.trueaccord.lenses.Updatable[Feature] {
       private[this] def tagsSerializedSize = {
       if (__tagsSerializedSizeField == 0) __tagsSerializedSizeField =
-        tags.map(com.google.protobuf.CodedOutputStream.computeUInt32SizeNoTag).sum
+        tags.map(_root_.com.google.protobuf.CodedOutputStream.computeUInt32SizeNoTag).sum
       __tagsSerializedSizeField
       }
       @transient private[this] var __tagsSerializedSizeField: Int = 0
       private[this] def geometrySerializedSize = {
       if (__geometrySerializedSizeField == 0) __geometrySerializedSizeField =
-        geometry.map(com.google.protobuf.CodedOutputStream.computeUInt32SizeNoTag).sum
+        geometry.map(_root_.com.google.protobuf.CodedOutputStream.computeUInt32SizeNoTag).sum
       __geometrySerializedSizeField
       }
       @transient private[this] var __geometrySerializedSizeField: Int = 0
@@ -356,15 +413,15 @@ object Tile extends com.trueaccord.scalapb.GeneratedMessageCompanion[geotrellis.
       private[this] var __serializedSizeCachedValue: Int = 0
       private[this] def __computeSerializedValue(): Int = {
         var __size = 0
-        if (id.isDefined) { __size += com.google.protobuf.CodedOutputStream.computeUInt64Size(1, id.get) }
+        if (id.isDefined) { __size += _root_.com.google.protobuf.CodedOutputStream.computeUInt64Size(1, id.get) }
         if(tags.nonEmpty) {
           val __localsize = tagsSerializedSize
-          __size += 1 + com.google.protobuf.CodedOutputStream.computeUInt32SizeNoTag(__localsize) + __localsize
+          __size += 1 + _root_.com.google.protobuf.CodedOutputStream.computeUInt32SizeNoTag(__localsize) + __localsize
         }
-        if (`type`.isDefined) { __size += com.google.protobuf.CodedOutputStream.computeEnumSize(3, `type`.get.value) }
+        if (`type`.isDefined) { __size += _root_.com.google.protobuf.CodedOutputStream.computeEnumSize(3, `type`.get.value) }
         if(geometry.nonEmpty) {
           val __localsize = geometrySerializedSize
-          __size += 1 + com.google.protobuf.CodedOutputStream.computeUInt32SizeNoTag(__localsize) + __localsize
+          __size += 1 + _root_.com.google.protobuf.CodedOutputStream.computeUInt32SizeNoTag(__localsize) + __localsize
         }
         __size
       }
@@ -376,62 +433,62 @@ object Tile extends com.trueaccord.scalapb.GeneratedMessageCompanion[geotrellis.
         }
         read
       }
-      def writeTo(output: com.google.protobuf.CodedOutputStream): Unit = {
+      def writeTo(`_output__`: _root_.com.google.protobuf.CodedOutputStream): Unit = {
         id.foreach { __v =>
-          output.writeUInt64(1, __v)
+          _output__.writeUInt64(1, __v)
         };
         if (tags.nonEmpty) {
-          output.writeTag(2, 2)
-          output.writeUInt32NoTag(tagsSerializedSize)
-          tags.foreach(output.writeUInt32NoTag)
+          _output__.writeTag(2, 2)
+          _output__.writeUInt32NoTag(tagsSerializedSize)
+          tags.foreach(_output__.writeUInt32NoTag)
         };
         `type`.foreach { __v =>
-          output.writeEnum(3, __v.value)
+          _output__.writeEnum(3, __v.value)
         };
         if (geometry.nonEmpty) {
-          output.writeTag(4, 2)
-          output.writeUInt32NoTag(geometrySerializedSize)
-          geometry.foreach(output.writeUInt32NoTag)
+          _output__.writeTag(4, 2)
+          _output__.writeUInt32NoTag(geometrySerializedSize)
+          geometry.foreach(_output__.writeUInt32NoTag)
         };
       }
-      def mergeFrom(__input: com.google.protobuf.CodedInputStream): geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Feature = {
+      def mergeFrom(`_input__`: _root_.com.google.protobuf.CodedInputStream): Tile.Feature = {
         var __id = this.id
-        val __tags = (scala.collection.immutable.Vector.newBuilder[Int] ++= this.tags)
+        val __tags = (_root_.scala.collection.immutable.Vector.newBuilder[Int] ++= this.tags)
         var __type = this.`type`
-        val __geometry = (scala.collection.immutable.Vector.newBuilder[Int] ++= this.geometry)
+        val __geometry = (_root_.scala.collection.immutable.Vector.newBuilder[Int] ++= this.geometry)
         var _done__ = false
         while (!_done__) {
-          val _tag__ = __input.readTag()
+          val _tag__ = _input__.readTag()
           _tag__ match {
             case 0 => _done__ = true
             case 8 =>
-              __id = Some(__input.readUInt64())
+              __id = Some(_input__.readUInt64())
             case 16 =>
-              __tags += __input.readUInt32()
+              __tags += _input__.readUInt32()
             case 18 => {
-              val length = __input.readRawVarint32()
-              val oldLimit = __input.pushLimit(length)
-              while (__input.getBytesUntilLimit > 0) {
-                __tags += __input.readUInt32
+              val length = _input__.readRawVarint32()
+              val oldLimit = _input__.pushLimit(length)
+              while (_input__.getBytesUntilLimit > 0) {
+                __tags += _input__.readUInt32
               }
-              __input.popLimit(oldLimit)
+              _input__.popLimit(oldLimit)
             }
             case 24 =>
-              __type = Some(geotrellis.vectortile.protobuf.internal.vector_tile.Tile.GeomType.fromValue(__input.readEnum()))
+              __type = Some(Tile.GeomType.fromValue(_input__.readEnum()))
             case 32 =>
-              __geometry += __input.readUInt32()
+              __geometry += _input__.readUInt32()
             case 34 => {
-              val length = __input.readRawVarint32()
-              val oldLimit = __input.pushLimit(length)
-              while (__input.getBytesUntilLimit > 0) {
-                __geometry += __input.readUInt32
+              val length = _input__.readRawVarint32()
+              val oldLimit = _input__.pushLimit(length)
+              while (_input__.getBytesUntilLimit > 0) {
+                __geometry += _input__.readUInt32
               }
-              __input.popLimit(oldLimit)
+              _input__.popLimit(oldLimit)
             }
-            case tag => __input.skipField(tag)
+            case tag => _input__.skipField(tag)
           }
         }
-        geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Feature(
+        Tile.Feature(
             id = __id,
             tags = __tags.result(),
             `type` = __type,
@@ -441,58 +498,78 @@ object Tile extends com.trueaccord.scalapb.GeneratedMessageCompanion[geotrellis.
       def getId: Long = id.getOrElse(0L)
       def clearId: Feature = copy(id = None)
       def withId(__v: Long): Feature = copy(id = Some(__v))
-      def clearTags = copy(tags = Seq.empty)
+      def clearTags = copy(tags = _root_.scala.collection.Seq.empty)
       def addTags(__vs: Int*): Feature = addAllTags(__vs)
       def addAllTags(__vs: TraversableOnce[Int]): Feature = copy(tags = tags ++ __vs)
-      def withTags(__v: Seq[Int]): Feature = copy(tags = __v)
-      def getType: geotrellis.vectortile.protobuf.internal.vector_tile.Tile.GeomType = `type`.getOrElse(geotrellis.vectortile.protobuf.internal.vector_tile.Tile.GeomType.UNKNOWN)
+      def withTags(__v: _root_.scala.collection.Seq[Int]): Feature = copy(tags = __v)
+      def getType: Tile.GeomType = `type`.getOrElse(Tile.GeomType.UNKNOWN)
       def clearType: Feature = copy(`type` = None)
-      def withType(__v: geotrellis.vectortile.protobuf.internal.vector_tile.Tile.GeomType): Feature = copy(`type` = Some(__v))
-      def clearGeometry = copy(geometry = Seq.empty)
+      def withType(__v: Tile.GeomType): Feature = copy(`type` = Some(__v))
+      def clearGeometry = copy(geometry = _root_.scala.collection.Seq.empty)
       def addGeometry(__vs: Int*): Feature = addAllGeometry(__vs)
       def addAllGeometry(__vs: TraversableOnce[Int]): Feature = copy(geometry = geometry ++ __vs)
-      def withGeometry(__v: Seq[Int]): Feature = copy(geometry = __v)
-      def getField(__field: com.google.protobuf.Descriptors.FieldDescriptor): scala.Any = {
-        __field.getNumber match {
-          case 1 => id.getOrElse(null)
+      def withGeometry(__v: _root_.scala.collection.Seq[Int]): Feature = copy(geometry = __v)
+      def getFieldByNumber(__fieldNumber: Int): scala.Any = {
+        __fieldNumber match {
+          case 1 => id.orNull
           case 2 => tags
-          case 3 => `type`.map(_.valueDescriptor).getOrElse(null)
+          case 3 => `type`.map(_.javaValueDescriptor).orNull
           case 4 => geometry
         }
       }
-      override def toString: String = com.trueaccord.scalapb.TextFormat.printToUnicodeString(this)
-      def companion = geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Feature
+      def getField(__field: _root_.scalapb.descriptors.FieldDescriptor): _root_.scalapb.descriptors.PValue = {
+        require(__field.containingMessage eq companion.scalaDescriptor)
+        __field.number match {
+          case 1 => id.map(_root_.scalapb.descriptors.PLong(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+          case 2 => _root_.scalapb.descriptors.PRepeated(tags.map(_root_.scalapb.descriptors.PInt(_))(_root_.scala.collection.breakOut))
+          case 3 => `type`.map(__e => _root_.scalapb.descriptors.PEnum(__e.scalaValueDescriptor)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+          case 4 => _root_.scalapb.descriptors.PRepeated(geometry.map(_root_.scalapb.descriptors.PInt(_))(_root_.scala.collection.breakOut))
+        }
+      }
+      override def toString: String = _root_.com.trueaccord.scalapb.TextFormat.printToUnicodeString(this)
+      def companion = Tile.Feature
   }
 
-  object Feature extends com.trueaccord.scalapb.GeneratedMessageCompanion[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Feature] {
-    implicit def messageCompanion: com.trueaccord.scalapb.GeneratedMessageCompanion[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Feature] = this
-    def fromFieldsMap(__fieldsMap: Map[com.google.protobuf.Descriptors.FieldDescriptor, scala.Any]): geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Feature = {
-      require(__fieldsMap.keys.forall(_.getContainingType() == descriptor), "FieldDescriptor does not match message type.")
-      val __fields = descriptor.getFields
-      geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Feature(
+  object Feature extends com.trueaccord.scalapb.GeneratedMessageCompanion[Tile.Feature] {
+    implicit def messageCompanion: com.trueaccord.scalapb.GeneratedMessageCompanion[Tile.Feature] = this
+    def fromFieldsMap(__fieldsMap: scala.collection.immutable.Map[_root_.com.google.protobuf.Descriptors.FieldDescriptor, scala.Any]): Tile.Feature = {
+      require(__fieldsMap.keys.forall(_.getContainingType() == javaDescriptor), "FieldDescriptor does not match message type.")
+      val __fields = javaDescriptor.getFields
+      Tile.Feature(
         __fieldsMap.get(__fields.get(0)).asInstanceOf[scala.Option[Long]],
-        __fieldsMap.getOrElse(__fields.get(1), Nil).asInstanceOf[Seq[Int]],
-        __fieldsMap.get(__fields.get(2)).asInstanceOf[scala.Option[com.google.protobuf.Descriptors.EnumValueDescriptor]].map(__e => geotrellis.vectortile.protobuf.internal.vector_tile.Tile.GeomType.fromValue(__e.getNumber)),
-        __fieldsMap.getOrElse(__fields.get(3), Nil).asInstanceOf[Seq[Int]]
+        __fieldsMap.getOrElse(__fields.get(1), Nil).asInstanceOf[_root_.scala.collection.Seq[Int]],
+        __fieldsMap.get(__fields.get(2)).asInstanceOf[scala.Option[_root_.com.google.protobuf.Descriptors.EnumValueDescriptor]].map(__e => Tile.GeomType.fromValue(__e.getNumber)),
+        __fieldsMap.getOrElse(__fields.get(3), Nil).asInstanceOf[_root_.scala.collection.Seq[Int]]
       )
     }
-    def descriptor: com.google.protobuf.Descriptors.Descriptor = geotrellis.vectortile.protobuf.internal.vector_tile.Tile.descriptor.getNestedTypes.get(1)
-    def messageCompanionForField(__field: com.google.protobuf.Descriptors.FieldDescriptor): com.trueaccord.scalapb.GeneratedMessageCompanion[_] = throw new MatchError(__field)
-    def enumCompanionForField(__field: com.google.protobuf.Descriptors.FieldDescriptor): com.trueaccord.scalapb.GeneratedEnumCompanion[_] = {
-      require(__field.getContainingType() == descriptor, "FieldDescriptor does not match message type.")
-      __field.getNumber match {
-        case 3 => geotrellis.vectortile.protobuf.internal.vector_tile.Tile.GeomType
+    implicit def messageReads: _root_.scalapb.descriptors.Reads[Tile.Feature] = _root_.scalapb.descriptors.Reads(_ match {
+      case _root_.scalapb.descriptors.PMessage(__fieldsMap) =>
+        require(__fieldsMap.keys.forall(_.containingMessage == scalaDescriptor), "FieldDescriptor does not match message type.")
+        Tile.Feature(
+          __fieldsMap.get(scalaDescriptor.findFieldByNumber(1).get).flatMap(_.as[scala.Option[Long]]),
+          __fieldsMap.get(scalaDescriptor.findFieldByNumber(2).get).map(_.as[_root_.scala.collection.Seq[Int]]).getOrElse(_root_.scala.collection.Seq.empty),
+          __fieldsMap.get(scalaDescriptor.findFieldByNumber(3).get).flatMap(_.as[scala.Option[_root_.scalapb.descriptors.EnumValueDescriptor]]).map(__e => Tile.GeomType.fromValue(__e.number)),
+          __fieldsMap.get(scalaDescriptor.findFieldByNumber(4).get).map(_.as[_root_.scala.collection.Seq[Int]]).getOrElse(_root_.scala.collection.Seq.empty)
+        )
+      case _ => throw new RuntimeException("Expected PMessage")
+    })
+    def javaDescriptor: _root_.com.google.protobuf.Descriptors.Descriptor = Tile.javaDescriptor.getNestedTypes.get(1)
+    def scalaDescriptor: _root_.scalapb.descriptors.Descriptor = Tile.scalaDescriptor.nestedMessages(1)
+    def messageCompanionForFieldNumber(__fieldNumber: Int): _root_.com.trueaccord.scalapb.GeneratedMessageCompanion[_] = throw new MatchError(__fieldNumber)
+    def enumCompanionForFieldNumber(__fieldNumber: Int): _root_.com.trueaccord.scalapb.GeneratedEnumCompanion[_] = {
+      __fieldNumber match {
+        case 3 => Tile.GeomType
       }
     }
-    lazy val defaultInstance = geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Feature(
+    lazy val defaultInstance = Tile.Feature(
     )
-    implicit class FeatureLens[UpperPB](_l: com.trueaccord.lenses.Lens[UpperPB, geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Feature]) extends com.trueaccord.lenses.ObjectLens[UpperPB, geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Feature](_l) {
-      def id: com.trueaccord.lenses.Lens[UpperPB, Long] = field(_.getId)((c_, f_) => c_.copy(id = Some(f_)))
-      def optionalId: com.trueaccord.lenses.Lens[UpperPB, scala.Option[Long]] = field(_.id)((c_, f_) => c_.copy(id = f_))
-      def tags: com.trueaccord.lenses.Lens[UpperPB, Seq[Int]] = field(_.tags)((c_, f_) => c_.copy(tags = f_))
-      def `type`: com.trueaccord.lenses.Lens[UpperPB, geotrellis.vectortile.protobuf.internal.vector_tile.Tile.GeomType] = field(_.getType)((c_, f_) => c_.copy(`type` = Some(f_)))
-      def optionalType: com.trueaccord.lenses.Lens[UpperPB, scala.Option[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.GeomType]] = field(_.`type`)((c_, f_) => c_.copy(`type` = f_))
-      def geometry: com.trueaccord.lenses.Lens[UpperPB, Seq[Int]] = field(_.geometry)((c_, f_) => c_.copy(geometry = f_))
+    implicit class FeatureLens[UpperPB](_l: _root_.com.trueaccord.lenses.Lens[UpperPB, Tile.Feature]) extends _root_.com.trueaccord.lenses.ObjectLens[UpperPB, Tile.Feature](_l) {
+      def id: _root_.com.trueaccord.lenses.Lens[UpperPB, Long] = field(_.getId)((c_, f_) => c_.copy(id = Some(f_)))
+      def optionalId: _root_.com.trueaccord.lenses.Lens[UpperPB, scala.Option[Long]] = field(_.id)((c_, f_) => c_.copy(id = f_))
+      def tags: _root_.com.trueaccord.lenses.Lens[UpperPB, _root_.scala.collection.Seq[Int]] = field(_.tags)((c_, f_) => c_.copy(tags = f_))
+      def `type`: _root_.com.trueaccord.lenses.Lens[UpperPB, Tile.GeomType] = field(_.getType)((c_, f_) => c_.copy(`type` = Some(f_)))
+      def optionalType: _root_.com.trueaccord.lenses.Lens[UpperPB, scala.Option[Tile.GeomType]] = field(_.`type`)((c_, f_) => c_.copy(`type` = f_))
+      def geometry: _root_.com.trueaccord.lenses.Lens[UpperPB, _root_.scala.collection.Seq[Int]] = field(_.geometry)((c_, f_) => c_.copy(geometry = f_))
     }
     final val ID_FIELD_NUMBER = 1
     final val TAGS_FIELD_NUMBER = 2
@@ -500,25 +577,42 @@ object Tile extends com.trueaccord.scalapb.GeneratedMessageCompanion[geotrellis.
     final val GEOMETRY_FIELD_NUMBER = 4
   }
 
+  /** Layers are described in section 4.1 of the specification
+    *
+    * @param version
+    *   Any compliant implementation must first read the version
+    *   number encoded in this message and choose the correct
+    *   implementation for this version number before proceeding to
+    *   decode other parts of this message.
+    * @param features
+    *   The actual features in this tile.
+    * @param keys
+    *   Dictionary encoding for keys
+    * @param values
+    *   Dictionary encoding for values
+    * @param extent
+    *   Although this is an "optional" field it is required by the specification.
+    *   See https://github.com/mapbox/vector-tile-spec/issues/47
+    */
   @SerialVersionUID(0L)
   final case class Layer(
-      version: Int = 1,
-      name: String = "",
-      features: Seq[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Feature] = Nil,
-      keys: Seq[String] = Nil,
-      values: Seq[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Value] = Nil,
+      version: Int,
+      name: String,
+      features: _root_.scala.collection.Seq[Tile.Feature] = _root_.scala.collection.Seq.empty,
+      keys: _root_.scala.collection.Seq[String] = _root_.scala.collection.Seq.empty,
+      values: _root_.scala.collection.Seq[Tile.Value] = _root_.scala.collection.Seq.empty,
       extent: scala.Option[Int] = None
       ) extends com.trueaccord.scalapb.GeneratedMessage with com.trueaccord.scalapb.Message[Layer] with com.trueaccord.lenses.Updatable[Layer] {
       @transient
       private[this] var __serializedSizeCachedValue: Int = 0
       private[this] def __computeSerializedValue(): Int = {
         var __size = 0
-        __size += com.google.protobuf.CodedOutputStream.computeUInt32Size(15, version)
-        __size += com.google.protobuf.CodedOutputStream.computeStringSize(1, name)
-        features.foreach(features => __size += 1 + com.google.protobuf.CodedOutputStream.computeUInt32SizeNoTag(features.serializedSize) + features.serializedSize)
-        keys.foreach(keys => __size += com.google.protobuf.CodedOutputStream.computeStringSize(3, keys))
-        values.foreach(values => __size += 1 + com.google.protobuf.CodedOutputStream.computeUInt32SizeNoTag(values.serializedSize) + values.serializedSize)
-        if (extent.isDefined) { __size += com.google.protobuf.CodedOutputStream.computeUInt32Size(5, extent.get) }
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeUInt32Size(15, version)
+        __size += _root_.com.google.protobuf.CodedOutputStream.computeStringSize(1, name)
+        features.foreach(features => __size += 1 + _root_.com.google.protobuf.CodedOutputStream.computeUInt32SizeNoTag(features.serializedSize) + features.serializedSize)
+        keys.foreach(keys => __size += _root_.com.google.protobuf.CodedOutputStream.computeStringSize(3, keys))
+        values.foreach(values => __size += 1 + _root_.com.google.protobuf.CodedOutputStream.computeUInt32SizeNoTag(values.serializedSize) + values.serializedSize)
+        if (extent.isDefined) { __size += _root_.com.google.protobuf.CodedOutputStream.computeUInt32Size(5, extent.get) }
         __size
       }
       final override def serializedSize: Int = {
@@ -529,54 +623,58 @@ object Tile extends com.trueaccord.scalapb.GeneratedMessageCompanion[geotrellis.
         }
         read
       }
-      def writeTo(output: com.google.protobuf.CodedOutputStream): Unit = {
-        output.writeString(1, name)
+      def writeTo(`_output__`: _root_.com.google.protobuf.CodedOutputStream): Unit = {
+        _output__.writeString(1, name)
         features.foreach { __v =>
-          output.writeTag(2, 2)
-          output.writeUInt32NoTag(__v.serializedSize)
-          __v.writeTo(output)
+          _output__.writeTag(2, 2)
+          _output__.writeUInt32NoTag(__v.serializedSize)
+          __v.writeTo(_output__)
         };
         keys.foreach { __v =>
-          output.writeString(3, __v)
+          _output__.writeString(3, __v)
         };
         values.foreach { __v =>
-          output.writeTag(4, 2)
-          output.writeUInt32NoTag(__v.serializedSize)
-          __v.writeTo(output)
+          _output__.writeTag(4, 2)
+          _output__.writeUInt32NoTag(__v.serializedSize)
+          __v.writeTo(_output__)
         };
         extent.foreach { __v =>
-          output.writeUInt32(5, __v)
+          _output__.writeUInt32(5, __v)
         };
-        output.writeUInt32(15, version)
+        _output__.writeUInt32(15, version)
       }
-      def mergeFrom(__input: com.google.protobuf.CodedInputStream): geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Layer = {
+      def mergeFrom(`_input__`: _root_.com.google.protobuf.CodedInputStream): Tile.Layer = {
         var __version = this.version
         var __name = this.name
-        val __features = (scala.collection.immutable.Vector.newBuilder[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Feature] ++= this.features)
-        val __keys = (scala.collection.immutable.Vector.newBuilder[String] ++= this.keys)
-        val __values = (scala.collection.immutable.Vector.newBuilder[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Value] ++= this.values)
+        val __features = (_root_.scala.collection.immutable.Vector.newBuilder[Tile.Feature] ++= this.features)
+        val __keys = (_root_.scala.collection.immutable.Vector.newBuilder[String] ++= this.keys)
+        val __values = (_root_.scala.collection.immutable.Vector.newBuilder[Tile.Value] ++= this.values)
         var __extent = this.extent
+        var __requiredFields0: Long = 0x3L
         var _done__ = false
         while (!_done__) {
-          val _tag__ = __input.readTag()
+          val _tag__ = _input__.readTag()
           _tag__ match {
             case 0 => _done__ = true
             case 120 =>
-              __version = __input.readUInt32()
+              __version = _input__.readUInt32()
+              __requiredFields0 &= 0xfffffffffffffffeL
             case 10 =>
-              __name = __input.readString()
+              __name = _input__.readString()
+              __requiredFields0 &= 0xfffffffffffffffdL
             case 18 =>
-              __features += com.trueaccord.scalapb.LiteParser.readMessage(__input, geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Feature.defaultInstance)
+              __features += _root_.com.trueaccord.scalapb.LiteParser.readMessage(_input__, Tile.Feature.defaultInstance)
             case 26 =>
-              __keys += __input.readString()
+              __keys += _input__.readString()
             case 34 =>
-              __values += com.trueaccord.scalapb.LiteParser.readMessage(__input, geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Value.defaultInstance)
+              __values += _root_.com.trueaccord.scalapb.LiteParser.readMessage(_input__, Tile.Value.defaultInstance)
             case 40 =>
-              __extent = Some(__input.readUInt32())
-            case tag => __input.skipField(tag)
+              __extent = Some(_input__.readUInt32())
+            case tag => _input__.skipField(tag)
           }
         }
-        geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Layer(
+        if (__requiredFields0 != 0L) { throw new _root_.com.google.protobuf.InvalidProtocolBufferException("Message missing required fields.") }
+        Tile.Layer(
             version = __version,
             name = __name,
             features = __features.result(),
@@ -587,72 +685,96 @@ object Tile extends com.trueaccord.scalapb.GeneratedMessageCompanion[geotrellis.
       }
       def withVersion(__v: Int): Layer = copy(version = __v)
       def withName(__v: String): Layer = copy(name = __v)
-      def clearFeatures = copy(features = Seq.empty)
-      def addFeatures(__vs: geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Feature*): Layer = addAllFeatures(__vs)
-      def addAllFeatures(__vs: TraversableOnce[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Feature]): Layer = copy(features = features ++ __vs)
-      def withFeatures(__v: Seq[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Feature]): Layer = copy(features = __v)
-      def clearKeys = copy(keys = Seq.empty)
+      def clearFeatures = copy(features = _root_.scala.collection.Seq.empty)
+      def addFeatures(__vs: Tile.Feature*): Layer = addAllFeatures(__vs)
+      def addAllFeatures(__vs: TraversableOnce[Tile.Feature]): Layer = copy(features = features ++ __vs)
+      def withFeatures(__v: _root_.scala.collection.Seq[Tile.Feature]): Layer = copy(features = __v)
+      def clearKeys = copy(keys = _root_.scala.collection.Seq.empty)
       def addKeys(__vs: String*): Layer = addAllKeys(__vs)
       def addAllKeys(__vs: TraversableOnce[String]): Layer = copy(keys = keys ++ __vs)
-      def withKeys(__v: Seq[String]): Layer = copy(keys = __v)
-      def clearValues = copy(values = Seq.empty)
-      def addValues(__vs: geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Value*): Layer = addAllValues(__vs)
-      def addAllValues(__vs: TraversableOnce[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Value]): Layer = copy(values = values ++ __vs)
-      def withValues(__v: Seq[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Value]): Layer = copy(values = __v)
+      def withKeys(__v: _root_.scala.collection.Seq[String]): Layer = copy(keys = __v)
+      def clearValues = copy(values = _root_.scala.collection.Seq.empty)
+      def addValues(__vs: Tile.Value*): Layer = addAllValues(__vs)
+      def addAllValues(__vs: TraversableOnce[Tile.Value]): Layer = copy(values = values ++ __vs)
+      def withValues(__v: _root_.scala.collection.Seq[Tile.Value]): Layer = copy(values = __v)
       def getExtent: Int = extent.getOrElse(4096)
       def clearExtent: Layer = copy(extent = None)
       def withExtent(__v: Int): Layer = copy(extent = Some(__v))
-      def getField(__field: com.google.protobuf.Descriptors.FieldDescriptor): scala.Any = {
-        __field.getNumber match {
+      def getFieldByNumber(__fieldNumber: Int): scala.Any = {
+        __fieldNumber match {
           case 15 => version
           case 1 => name
           case 2 => features
           case 3 => keys
           case 4 => values
-          case 5 => extent.getOrElse(null)
+          case 5 => extent.orNull
         }
       }
-      override def toString: String = com.trueaccord.scalapb.TextFormat.printToUnicodeString(this)
-      def companion = geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Layer
+      def getField(__field: _root_.scalapb.descriptors.FieldDescriptor): _root_.scalapb.descriptors.PValue = {
+        require(__field.containingMessage eq companion.scalaDescriptor)
+        __field.number match {
+          case 15 => _root_.scalapb.descriptors.PInt(version)
+          case 1 => _root_.scalapb.descriptors.PString(name)
+          case 2 => _root_.scalapb.descriptors.PRepeated(features.map(_.toPMessage)(_root_.scala.collection.breakOut))
+          case 3 => _root_.scalapb.descriptors.PRepeated(keys.map(_root_.scalapb.descriptors.PString(_))(_root_.scala.collection.breakOut))
+          case 4 => _root_.scalapb.descriptors.PRepeated(values.map(_.toPMessage)(_root_.scala.collection.breakOut))
+          case 5 => extent.map(_root_.scalapb.descriptors.PInt(_)).getOrElse(_root_.scalapb.descriptors.PEmpty)
+        }
+      }
+      override def toString: String = _root_.com.trueaccord.scalapb.TextFormat.printToUnicodeString(this)
+      def companion = Tile.Layer
   }
 
-  object Layer extends com.trueaccord.scalapb.GeneratedMessageCompanion[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Layer] {
-    implicit def messageCompanion: com.trueaccord.scalapb.GeneratedMessageCompanion[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Layer] = this
-    def fromFieldsMap(__fieldsMap: Map[com.google.protobuf.Descriptors.FieldDescriptor, scala.Any]): geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Layer = {
-      require(__fieldsMap.keys.forall(_.getContainingType() == descriptor), "FieldDescriptor does not match message type.")
-      val __fields = descriptor.getFields
-      geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Layer(
+  object Layer extends com.trueaccord.scalapb.GeneratedMessageCompanion[Tile.Layer] {
+    implicit def messageCompanion: com.trueaccord.scalapb.GeneratedMessageCompanion[Tile.Layer] = this
+    def fromFieldsMap(__fieldsMap: scala.collection.immutable.Map[_root_.com.google.protobuf.Descriptors.FieldDescriptor, scala.Any]): Tile.Layer = {
+      require(__fieldsMap.keys.forall(_.getContainingType() == javaDescriptor), "FieldDescriptor does not match message type.")
+      val __fields = javaDescriptor.getFields
+      Tile.Layer(
         __fieldsMap(__fields.get(0)).asInstanceOf[Int],
         __fieldsMap(__fields.get(1)).asInstanceOf[String],
-        __fieldsMap.getOrElse(__fields.get(2), Nil).asInstanceOf[Seq[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Feature]],
-        __fieldsMap.getOrElse(__fields.get(3), Nil).asInstanceOf[Seq[String]],
-        __fieldsMap.getOrElse(__fields.get(4), Nil).asInstanceOf[Seq[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Value]],
+        __fieldsMap.getOrElse(__fields.get(2), Nil).asInstanceOf[_root_.scala.collection.Seq[Tile.Feature]],
+        __fieldsMap.getOrElse(__fields.get(3), Nil).asInstanceOf[_root_.scala.collection.Seq[String]],
+        __fieldsMap.getOrElse(__fields.get(4), Nil).asInstanceOf[_root_.scala.collection.Seq[Tile.Value]],
         __fieldsMap.get(__fields.get(5)).asInstanceOf[scala.Option[Int]]
       )
     }
-    def descriptor: com.google.protobuf.Descriptors.Descriptor = geotrellis.vectortile.protobuf.internal.vector_tile.Tile.descriptor.getNestedTypes.get(2)
-    def messageCompanionForField(__field: com.google.protobuf.Descriptors.FieldDescriptor): com.trueaccord.scalapb.GeneratedMessageCompanion[_] = {
-      require(__field.getContainingType() == descriptor, "FieldDescriptor does not match message type.")
-      var __out: com.trueaccord.scalapb.GeneratedMessageCompanion[_] = null
-      __field.getNumber match {
-        case 2 => __out = geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Feature
-        case 4 => __out = geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Value
+    implicit def messageReads: _root_.scalapb.descriptors.Reads[Tile.Layer] = _root_.scalapb.descriptors.Reads(_ match {
+      case _root_.scalapb.descriptors.PMessage(__fieldsMap) =>
+        require(__fieldsMap.keys.forall(_.containingMessage == scalaDescriptor), "FieldDescriptor does not match message type.")
+        Tile.Layer(
+          __fieldsMap.get(scalaDescriptor.findFieldByNumber(15).get).get.as[Int],
+          __fieldsMap.get(scalaDescriptor.findFieldByNumber(1).get).get.as[String],
+          __fieldsMap.get(scalaDescriptor.findFieldByNumber(2).get).map(_.as[_root_.scala.collection.Seq[Tile.Feature]]).getOrElse(_root_.scala.collection.Seq.empty),
+          __fieldsMap.get(scalaDescriptor.findFieldByNumber(3).get).map(_.as[_root_.scala.collection.Seq[String]]).getOrElse(_root_.scala.collection.Seq.empty),
+          __fieldsMap.get(scalaDescriptor.findFieldByNumber(4).get).map(_.as[_root_.scala.collection.Seq[Tile.Value]]).getOrElse(_root_.scala.collection.Seq.empty),
+          __fieldsMap.get(scalaDescriptor.findFieldByNumber(5).get).flatMap(_.as[scala.Option[Int]])
+        )
+      case _ => throw new RuntimeException("Expected PMessage")
+    })
+    def javaDescriptor: _root_.com.google.protobuf.Descriptors.Descriptor = Tile.javaDescriptor.getNestedTypes.get(2)
+    def scalaDescriptor: _root_.scalapb.descriptors.Descriptor = Tile.scalaDescriptor.nestedMessages(2)
+    def messageCompanionForFieldNumber(__fieldNumber: Int): _root_.com.trueaccord.scalapb.GeneratedMessageCompanion[_] = {
+      var __out: _root_.com.trueaccord.scalapb.GeneratedMessageCompanion[_] = null
+      __fieldNumber match {
+        case 2 => __out = Tile.Feature
+        case 4 => __out = Tile.Value
       }
     __out
     }
-    def enumCompanionForField(__field: com.google.protobuf.Descriptors.FieldDescriptor): com.trueaccord.scalapb.GeneratedEnumCompanion[_] = throw new MatchError(__field)
-    lazy val defaultInstance = geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Layer(
+    def enumCompanionForFieldNumber(__fieldNumber: Int): _root_.com.trueaccord.scalapb.GeneratedEnumCompanion[_] = throw new MatchError(__fieldNumber)
+    lazy val defaultInstance = Tile.Layer(
       version = 1,
       name = ""
     )
-    implicit class LayerLens[UpperPB](_l: com.trueaccord.lenses.Lens[UpperPB, geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Layer]) extends com.trueaccord.lenses.ObjectLens[UpperPB, geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Layer](_l) {
-      def version: com.trueaccord.lenses.Lens[UpperPB, Int] = field(_.version)((c_, f_) => c_.copy(version = f_))
-      def name: com.trueaccord.lenses.Lens[UpperPB, String] = field(_.name)((c_, f_) => c_.copy(name = f_))
-      def features: com.trueaccord.lenses.Lens[UpperPB, Seq[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Feature]] = field(_.features)((c_, f_) => c_.copy(features = f_))
-      def keys: com.trueaccord.lenses.Lens[UpperPB, Seq[String]] = field(_.keys)((c_, f_) => c_.copy(keys = f_))
-      def values: com.trueaccord.lenses.Lens[UpperPB, Seq[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Value]] = field(_.values)((c_, f_) => c_.copy(values = f_))
-      def extent: com.trueaccord.lenses.Lens[UpperPB, Int] = field(_.getExtent)((c_, f_) => c_.copy(extent = Some(f_)))
-      def optionalExtent: com.trueaccord.lenses.Lens[UpperPB, scala.Option[Int]] = field(_.extent)((c_, f_) => c_.copy(extent = f_))
+    implicit class LayerLens[UpperPB](_l: _root_.com.trueaccord.lenses.Lens[UpperPB, Tile.Layer]) extends _root_.com.trueaccord.lenses.ObjectLens[UpperPB, Tile.Layer](_l) {
+      def version: _root_.com.trueaccord.lenses.Lens[UpperPB, Int] = field(_.version)((c_, f_) => c_.copy(version = f_))
+      def name: _root_.com.trueaccord.lenses.Lens[UpperPB, String] = field(_.name)((c_, f_) => c_.copy(name = f_))
+      def features: _root_.com.trueaccord.lenses.Lens[UpperPB, _root_.scala.collection.Seq[Tile.Feature]] = field(_.features)((c_, f_) => c_.copy(features = f_))
+      def keys: _root_.com.trueaccord.lenses.Lens[UpperPB, _root_.scala.collection.Seq[String]] = field(_.keys)((c_, f_) => c_.copy(keys = f_))
+      def values: _root_.com.trueaccord.lenses.Lens[UpperPB, _root_.scala.collection.Seq[Tile.Value]] = field(_.values)((c_, f_) => c_.copy(values = f_))
+      def extent: _root_.com.trueaccord.lenses.Lens[UpperPB, Int] = field(_.getExtent)((c_, f_) => c_.copy(extent = Some(f_)))
+      def optionalExtent: _root_.com.trueaccord.lenses.Lens[UpperPB, scala.Option[Int]] = field(_.extent)((c_, f_) => c_.copy(extent = f_))
     }
     final val VERSION_FIELD_NUMBER = 15
     final val NAME_FIELD_NUMBER = 1
@@ -662,8 +784,8 @@ object Tile extends com.trueaccord.scalapb.GeneratedMessageCompanion[geotrellis.
     final val EXTENT_FIELD_NUMBER = 5
   }
 
-  implicit class TileLens[UpperPB](_l: com.trueaccord.lenses.Lens[UpperPB, geotrellis.vectortile.protobuf.internal.vector_tile.Tile]) extends com.trueaccord.lenses.ObjectLens[UpperPB, geotrellis.vectortile.protobuf.internal.vector_tile.Tile](_l) {
-    def layers: com.trueaccord.lenses.Lens[UpperPB, Seq[geotrellis.vectortile.protobuf.internal.vector_tile.Tile.Layer]] = field(_.layers)((c_, f_) => c_.copy(layers = f_))
+  implicit class TileLens[UpperPB](_l: _root_.com.trueaccord.lenses.Lens[UpperPB, Tile]) extends _root_.com.trueaccord.lenses.ObjectLens[UpperPB, Tile](_l) {
+    def layers: _root_.com.trueaccord.lenses.Lens[UpperPB, _root_.scala.collection.Seq[Tile.Layer]] = field(_.layers)((c_, f_) => c_.copy(layers = f_))
   }
   final val LAYERS_FIELD_NUMBER = 3
 }

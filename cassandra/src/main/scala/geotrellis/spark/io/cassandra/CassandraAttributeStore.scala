@@ -73,8 +73,6 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeKeys
   }
 
   private def delete(layerId: LayerId, attributeName: Option[String]): Unit = instance.withSessionDo { session =>
-    if (!layerExists(layerId)) throw new LayerNotFoundError(layerId)
-
     val query =
       attributeName match {
         case Some(name) =>

@@ -18,6 +18,7 @@ package geotrellis.spark
 
 import geotrellis.spark.io.hbase._
 import geotrellis.spark.io.kryo.KryoRegistrator
+import geotrellis.spark.testkit.TestEnvironment
 
 import org.apache.spark.SparkConf
 import org.apache.zookeeper.client.FourLetterWordMain

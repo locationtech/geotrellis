@@ -104,8 +104,8 @@ abstract class PersistenceSpec[
         }
       }
 
-      it("should not delete layer before write") {
-        intercept[LayerNotFoundError] {
+      it("should throw a layer deletion error if metadata required for deleting a layer's tiles is not found") {
+        intercept[LayerDeleteError] {
           deleter.delete(layerId)
         }
       }

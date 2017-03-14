@@ -92,7 +92,7 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
     val trow =
       ((extent.ymax - y) / extent.height) * layoutRows
 
-    (tcol.toInt, trow.toInt)
+    (tcol.floor.toInt, trow.floor.toInt)
   }
 
   def apply[K: SpatialComponent](key: K): Extent = {

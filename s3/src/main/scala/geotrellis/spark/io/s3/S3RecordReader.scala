@@ -21,7 +21,6 @@ import geotrellis.util._
 
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.services.s3.model.GetObjectRequest
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext, RecordReader}
 import org.apache.commons.io.IOUtils
 

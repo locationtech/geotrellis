@@ -45,7 +45,10 @@ object AvroEncoder {
     IOUtils.toByteArray(in)
   }
 
-  def toBinary[T: AvroRecordCodec](thing: T, deflate: Boolean = true): Array[Byte] = {
+  def toBinary[T: AvroRecordCodec](thing: T): Array[Byte] =
+    toBinary(thing, deflate = true)
+
+  def toBinary[T: AvroRecordCodec](thing: T, deflate: Boolean): Array[Byte] = {
     val format = implicitly[AvroRecordCodec[T]]
     val schema: Schema = format.schema
 
@@ -70,8 +73,10 @@ object AvroEncoder {
     fromBinary[T](format.schema, bytes, uncompress)
   }
 
-  def fromBinary[T: AvroRecordCodec](writerSchema: Schema, bytes: Array[Byte],
-    uncompress: Boolean = true): T = {
+  def fromBinary[T: AvroRecordCodec](writerSchema: Schema, bytes: Array[Byte]): T =
+    fromBinary(writerSchema, bytes, uncompress = true)
+
+  def fromBinary[T: AvroRecordCodec](writerSchema: Schema, bytes: Array[Byte], uncompress: Boolean): T = {
     val format = implicitly[AvroRecordCodec[T]]
     val schema = format.schema
 
