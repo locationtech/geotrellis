@@ -129,7 +129,7 @@ class IterativeViewshedSpec extends FunSpec
         operator = Or()
       )
       var actual = 0 ; viewshed.collect.foreach({ case (_, v) => v.foreach({ z => if (isData(z)) actual += z }) })
-      val expected = 180
+      val expected = 171
 
       actual should be (expected)
     }

@@ -43,6 +43,7 @@ object R2Viewshed extends Serializable {
 
   sealed case class DirectedSegment(x0: Int, y0: Int, x1: Int, y1: Int, theta: Double) {
     override def toString(): String = s"($x0, $y0) to ($x1, $y1) θ=$theta"
+    def rump(): Boolean = ((x0 == x1) && (y0 == y1))
   }
 
   sealed case class Ray(theta: Double, alpha: Double) {
@@ -209,7 +210,7 @@ object R2Viewshed extends Serializable {
       val m = (y0 - y1).toDouble / (x0 - x1)
 
       from match {
-        case _ if (-1.0 < cameraFOV && cameraFOV < 1.0 && (vx*math.cos(theta) + vy*math.sin(theta)) < cameraFOV) =>
+        case _ if ((-1.0 < cameraFOV && cameraFOV < 1.0) && (vx*math.cos(theta) + vy*math.sin(theta)) < cameraFOV) =>
           None
         case _: FromInside if inTile => Some(DirectedSegment(x0,y0,x1,y1,theta))
         case _: FromInside if !inTile => throw new Exception
@@ -332,7 +333,7 @@ object R2Viewshed extends Serializable {
       .foreach({ seg =>
         alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
         Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
-        if (!terminated) edgeCallback(Ray(seg.theta, alpha), FromSouth())
+        if (!terminated && !seg.rump) edgeCallback(Ray(seg.theta, alpha), FromSouth())
       })
 
     Range(0, rows) // East
@@ -340,7 +341,7 @@ object R2Viewshed extends Serializable {
       .foreach({ seg =>
         alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
         Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
-        if (!terminated) edgeCallback(Ray(seg.theta, alpha), FromWest())
+        if (!terminated && !seg.rump) edgeCallback(Ray(seg.theta, alpha), FromWest())
       })
 
     Range(0, cols) // South
@@ -348,7 +349,7 @@ object R2Viewshed extends Serializable {
       .foreach({ seg =>
         alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
         Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
-        if (!terminated) edgeCallback(Ray(seg.theta, alpha), FromNorth())
+        if (!terminated && !seg.rump) edgeCallback(Ray(seg.theta, alpha), FromNorth())
       })
 
     Range(0, rows) // West
@@ -356,7 +357,7 @@ object R2Viewshed extends Serializable {
       .foreach({ seg =>
         alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
         Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
-        if (!terminated) edgeCallback(Ray(seg.theta, alpha), FromEast())
+        if (!terminated && !seg.rump) edgeCallback(Ray(seg.theta, alpha), FromEast())
       })
 
     viewshedTile

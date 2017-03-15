@@ -235,7 +235,7 @@ object IterativeViewshed {
 
         changes.value.get(key) match {
           case Some(localChanges: Seq[(Int, From, Ray)]) => { // sequence of <index, from, ray> triples for this key
-            val indexed: Map[Int, Seq[(From, Ray)]] = // a map from index to a sequence of <from, ray> pairs
+            val indexed: Map[Int, Seq[(From, Ray)]] = // a map from an index to a sequence of <from, ray> pairs
               localChanges
                 .groupBy(_._1)
                 .map({ case (index, list) => (index, list.map({ case (_, from, ray) => (from, ray) })) })

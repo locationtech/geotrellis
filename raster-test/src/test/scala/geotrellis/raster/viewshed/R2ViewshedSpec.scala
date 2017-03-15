@@ -58,10 +58,10 @@ class R2ViewshedSpec extends FunSpec
         operator = Or()
       )
 
-      a should be (9)
-      b should be (2)
-      c should be (9)
-      all should be (20)
+      a should be (6)
+      b should be (1)
+      c should be (6)
+      all should be (13)
     }
 
     it("propogates right") {
@@ -91,10 +91,10 @@ class R2ViewshedSpec extends FunSpec
         operator = Or()
       )
 
-      a should be (9)
-      b should be (2)
-      c should be (9)
-      all should be (20)
+      a should be (6)
+      b should be (1)
+      c should be (6)
+      all should be (13)
     }
 
     it("propogates down") {
@@ -124,10 +124,10 @@ class R2ViewshedSpec extends FunSpec
         operator = Or()
       )
 
-      a should be (9)
-      b should be (2)
-      c should be (9)
-      all should be (20)
+      a should be (6)
+      b should be (1)
+      c should be (6)
+      all should be (13)
     }
 
     it("propogates left") {
@@ -157,10 +157,10 @@ class R2ViewshedSpec extends FunSpec
         operator = Or()
       )
 
-      a should be (9)
-      b should be (2)
-      c should be (9)
-      all should be (20)
+      a should be (6)
+      b should be (1)
+      c should be (6)
+      all should be (13)
     }
 
     // ---------------------------------
