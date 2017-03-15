@@ -147,7 +147,7 @@ case class StrictLayer(
 
 object StrictLayer {
   /** A [[StrictLayer]] with no Geometries. */
-  def empty(name: String, tileExtent: Extent): Layer = StrictLayer(
+  def empty(name: String, tileExtent: Extent): StrictLayer = StrictLayer(
     name, 4096, 2, tileExtent, Seq.empty, Seq.empty, Seq.empty, Seq.empty, Seq.empty, Seq.empty
   )
 }
