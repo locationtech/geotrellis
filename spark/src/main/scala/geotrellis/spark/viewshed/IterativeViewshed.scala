@@ -39,10 +39,10 @@ import com.vividsolutions.jts.{ geom => jts }
 
 object IterativeViewshed {
 
-  val logger = Logger.getLogger(IterativeViewshed.getClass)
+  private val logger = Logger.getLogger(IterativeViewshed.getClass)
 
-  type Message = (SpatialKey, Int, From, Ray) // key, point index, direction, ray
-  type Messages = mutable.ArrayBuffer[Message]
+  private type Message = (SpatialKey, Int, From, Ray) // key, point index, direction, ray
+  private type Messages = mutable.ArrayBuffer[Message]
 
   private class RayCatcher extends AccumulatorV2[Message, Messages] {
     private val messages: Messages = mutable.ArrayBuffer.empty
@@ -93,6 +93,9 @@ object IterativeViewshed {
     (key, (index, col, row, p(2), p(3), p(4), p(5)))
   }
 
+  /**
+    *
+    */
   def apply[K: (? => SpatialKey), V: (? => Tile)](
     elevation: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     ps: Seq[Array[Double]],

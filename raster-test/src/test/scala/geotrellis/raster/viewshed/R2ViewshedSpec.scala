@@ -55,10 +55,7 @@ class R2ViewshedSpec extends FunSpec
         resolution = 1,
         maxDistance = Double.PositiveInfinity,
         curvature = false,
-        operator = Or(),
-        altitude = 0,
-        cameraDirection = 0,
-        cameraFOV = -1.0
+        operator = Or()
       )
 
       a should be (9)
@@ -91,10 +88,7 @@ class R2ViewshedSpec extends FunSpec
         resolution = 1,
         maxDistance = Double.PositiveInfinity,
         curvature = false,
-        operator = Or(),
-        altitude = 0,
-        cameraDirection = 0,
-        cameraFOV = -1.0
+        operator = Or()
       )
 
       a should be (9)
@@ -127,10 +121,7 @@ class R2ViewshedSpec extends FunSpec
         resolution = 1,
         maxDistance = Double.PositiveInfinity,
         curvature = false,
-        operator = Or(),
-        altitude = 0,
-        cameraDirection = 0,
-        cameraFOV = -1.0
+        operator = Or()
       )
 
       a should be (9)
@@ -163,10 +154,7 @@ class R2ViewshedSpec extends FunSpec
         resolution = 1,
         maxDistance = Double.PositiveInfinity,
         curvature = false,
-        operator = Or(),
-        altitude = 0,
-        cameraDirection = 0,
-        cameraFOV = -1.0
+        operator = Or()
       )
 
       a should be (9)
@@ -200,7 +188,6 @@ class R2ViewshedSpec extends FunSpec
         maxDistance = Double.PositiveInfinity,
         curvature = false,
         operator = Or(),
-        altitude = 0,
         cameraDirection = 0,
         cameraFOV = math.cos(math.Pi/4)
       )
@@ -235,7 +222,6 @@ class R2ViewshedSpec extends FunSpec
         maxDistance = Double.PositiveInfinity,
         curvature = false,
         operator = Or(),
-        altitude = 0,
         cameraDirection = 0,
         cameraFOV = -1
       )
@@ -250,7 +236,7 @@ class R2ViewshedSpec extends FunSpec
         maxDistance = Double.PositiveInfinity,
         curvature = false,
         operator = Or(),
-        altitude = -2,
+        altitude = 2,
         cameraDirection = 0,
         cameraFOV = -1
       )
@@ -265,7 +251,7 @@ class R2ViewshedSpec extends FunSpec
         maxDistance = Double.PositiveInfinity,
         curvature = false,
         operator = Or(),
-        altitude = -3,
+        altitude = 3,
         cameraDirection = 0,
         cameraFOV = -1
       )
@@ -275,7 +261,7 @@ class R2ViewshedSpec extends FunSpec
       val hiCount = hi.toArray.sum
 
       lowCount should be (33)
-      mediumCount should be (42)
+      mediumCount should be (40)
       hiCount should be (49)
     }
 
