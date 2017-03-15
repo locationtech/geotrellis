@@ -27,6 +27,9 @@ import scala.collection.mutable.ListBuffer
 
 // --- //
 
+/** Users need not concern themselves with this subpackage; it handles the
+  * details internal to the VectorTile encoding/decoding process.
+  */
 package object internal {
 
   /** If an sequence of Commands is given that does not conform to what the
@@ -331,7 +334,7 @@ package object internal {
    * If the value reported here is negative, then the [[Polygon]] should be
    * considered an Interior Ring.
    */
-  private def surveyor(l: ListBuffer[(Int, Int)]): Double = {
+  def surveyor(l: ListBuffer[(Int, Int)]): Double = {
     val ps: ListBuffer[(Int, Int)] = l.init
     val xs = ps.map(_._1)
     val yns = (ps :+ ps.head).tail.map(_._2)
