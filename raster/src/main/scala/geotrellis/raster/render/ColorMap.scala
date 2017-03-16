@@ -256,6 +256,8 @@ class IntColorMap(breaksToColors: Map[Int, Int], val options: Options = Options.
   * In order for this class to work correctly the histogram acts as a map from values to their colors
   * and must contain a value for each pixel value that we expect to encounter.
   *
+  * The performance benefit is `eC` lookup cost instead of `Log` provided by [[IntColorMap]]
+  *
   * @param colors All color values that can be encountered
   * @param h      Histogram where counts of values have been replaced cached RGBA color
   */
