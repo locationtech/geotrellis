@@ -33,6 +33,7 @@ import org.apache.spark.storage.StorageLevel
 import org.apache.spark.util.AccumulatorV2
 
 import scala.collection.mutable
+import scala.reflect.ClassTag
 
 import com.vividsolutions.jts.{ geom => jts }
 
@@ -58,18 +59,16 @@ object IterativeViewshed {
     def value: Messages = messages
   }
 
-  private def computeResolution[K: (? => SpatialKey), V: (? => Tile)](
+  private def computeResolution[K: (? => SpatialKey): ClassTag, V: (? => Tile)](
     elevation: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
   ) = {
     val md = elevation.metadata
     val mt = md.mapTransform
-    val kv = elevation.first
-    val key = implicitly[SpatialKey](kv._1)
-    val tile = implicitly[Tile](kv._2)
+    val key = implicitly[SpatialKey](elevation.map(_._1).first)
     val extent = mt(key).reproject(md.crs, LatLng)
     val degrees = extent.xmax - extent.xmin
     val meters = degrees * (6378137 * 2.0 * math.Pi) / 360.0
-    val pixels = tile.cols
+    val pixels = md.layout.tileCols
     math.abs(meters / pixels)
   }
 
@@ -96,7 +95,7 @@ object IterativeViewshed {
   /**
     *
     */
-  def apply[K: (? => SpatialKey), V: (? => Tile)](
+  def apply[K: (? => SpatialKey): ClassTag, V: (? => Tile)](
     elevation: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     ps: Seq[Array[Double]],
     maxDistance: Double,
