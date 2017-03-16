@@ -19,7 +19,7 @@ package geotrellis.raster.render
 import geotrellis.raster._
 import geotrellis.raster.histogram.Histogram
 import geotrellis.util._
-
+import spire.syntax.cfor._
 import spire.std.any._
 
 import scala.util.Try
@@ -179,6 +179,8 @@ trait ColorMap extends Serializable {
   def mapDouble(v: Double): Int
 
   def mapColors(f: Int => Int): ColorMap
+  /** Maps each color value to its index in the [[colors]] sequence.
+    * This is useful for table lookup encodings (ex: [[geotrellis.raster.render.png.IndexedPngEncoding]]) */
   def mapColorsToIndex(): ColorMap
 
   def withNoDataColor(color: Int): ColorMap
@@ -228,8 +230,15 @@ class IntColorMap(breaksToColors: Map[Int, Int], val options: Options = Options.
 
   def cache(h: Histogram[Int]): ColorMap = {
     val ch = h.mutable
-    h.foreachValue(z => ch.setItem(z, map(z)))
-    new IntCachedColorMap(colors, ch, options)
+    val cachedColors = h.values()
+    cfor(0)( _ < cachedColors.length, _ + 1) { i =>
+      val z = cachedColors(i)
+      val itemColor = map(z)
+      cachedColors(i) = itemColor
+      ch.setItem(z, itemColor)
+    }
+    // multiple values could have mapped to same color, use only distinct color values
+    new IntCachedColorMap(cachedColors.distinct.toVector, ch, options)
   }
 
   def breaksString: String = {
@@ -243,10 +252,20 @@ class IntColorMap(breaksToColors: Map[Int, Int], val options: Options = Options.
 /** Caches a color ramp based on a histogram of values. This is an optimization, since
   * often times we create a histogram while classifying, and can reuse that computed
   * information in the color mapping.
+  *
+  * In order for this class to work correctly the histogram acts as a map from values to their colors
+  * and must contain a value for each pixel value that we expect to encounter.
+  *
+  * @param colors All color values that can be encountered
+  * @param h      Histogram where counts of values have been replaced cached RGBA color
   */
 class IntCachedColorMap(val colors: Vector[Int], h: Histogram[Int], val options: Options)
     extends ColorMap {
   val noDataColor = options.noDataColor
+
+  h.foreachValue{ z =>
+    println(s"Cache map: $z -> ${h.itemCount(z)}")
+  }
 
   def map(z: Int): Int = { if(isNoData(z)) noDataColor else h.itemCount(z).toInt }
 
@@ -259,7 +278,7 @@ class IntCachedColorMap(val colors: Vector[Int], h: Histogram[Int], val options:
   }
 
   def mapColorsToIndex(): ColorMap = {
-    val colorIndexMap = colors.zipWithIndex.map { case (c, i) => (i, c) }.toMap
+    val colorIndexMap = colors.zipWithIndex.toMap
     val ch = h.mutable
     h.foreachValue(z => ch.setItem(z, colorIndexMap(h.itemCount(z).toInt)))
     new IntCachedColorMap((0 to colors.length).toVector, ch, options)
