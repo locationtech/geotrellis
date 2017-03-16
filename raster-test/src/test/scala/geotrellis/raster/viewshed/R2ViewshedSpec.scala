@@ -44,13 +44,18 @@ class R2ViewshedSpec extends FunSpec
         2, -3, 0,
         FromSouth(),
         rays,
-        { (ray, _) =>
-          val Ray(m, alpha) = ray
-          all += 1
-          if (alpha == 7) a += 1
-          else if (alpha == 13) b += 1
-          else if (alpha == 22) c += 1
-          else throw new Exception
+        { bundle: Bundle =>
+          bundle.foreach({ case (_, list) =>
+            list.foreach({ case Ray(theta, alpha) =>
+              all += 1
+              alpha match {
+                case 7 => a += 1
+                case 13 => b += 1
+                case 22 => c += 1
+                case x => throw new Exception
+              }
+            })
+          })
         },
         resolution = 1,
         maxDistance = Double.PositiveInfinity,
@@ -77,13 +82,18 @@ class R2ViewshedSpec extends FunSpec
         -3, 2, 0,
         FromWest(),
         rays,
-        { (ray, _) =>
-          val Ray(m, alpha) = ray
-          all += 1
-          if (alpha == 7) a += 1
-          else if (alpha == 13) b += 1
-          else if (alpha == 22) c += 1
-          else throw new Exception
+        { bundle: Bundle =>
+          bundle.foreach({ case (_, list) =>
+            list.foreach({ case Ray(theta, alpha) =>
+              all += 1
+              alpha match {
+                case 7 => a += 1
+                case 13 => b += 1
+                case 22 => c += 1
+                case _ => throw new Exception
+              }
+            })
+          })
         },
         resolution = 1,
         maxDistance = Double.PositiveInfinity,
@@ -110,13 +120,18 @@ class R2ViewshedSpec extends FunSpec
         2, 7, 0,
         FromNorth(),
         rays,
-        { (ray, _) =>
-          val Ray(m, alpha) = ray
-          all += 1
-          if (alpha == 7) a += 1
-          else if (alpha == 13) b += 1
-          else if (alpha == 22) c += 1
-          else throw new Exception
+        { bundle: Bundle =>
+          bundle.foreach({ case (_, list) =>
+            list.foreach({ case Ray(theta, alpha) =>
+              all += 1
+              alpha match {
+                case 7 => a += 1
+                case 13 => b += 1
+                case 22 => c += 1
+                case _ => throw new Exception
+              }
+            })
+          })
         },
         resolution = 1,
         maxDistance = Double.PositiveInfinity,
@@ -143,13 +158,18 @@ class R2ViewshedSpec extends FunSpec
         7, 2, 0,
         FromEast(),
         rays,
-        { (ray, _) =>
-          val Ray(m, alpha) = ray
-          all += 1
-          if (alpha == 7) a += 1
-          else if (alpha == 13) b += 1
-          else if (alpha == 22) c += 1
-          else throw new Exception
+        { bundle: Bundle =>
+          bundle.foreach({ case (_, list) =>
+            list.foreach({ case Ray(theta, alpha) =>
+              all += 1
+              alpha match {
+                case 7 => a += 1
+                case 13 => b += 1
+                case 22 => c += 1
+                case _ => throw new Exception
+              }
+            })
+          })
         },
         resolution = 1,
         maxDistance = Double.PositiveInfinity,
@@ -183,7 +203,7 @@ class R2ViewshedSpec extends FunSpec
         3, 3, 1,
         FromInside(),
         null,
-        { (_, _) => },
+        { _ => },
         resolution = 1,
         maxDistance = Double.PositiveInfinity,
         curvature = false,
@@ -217,7 +237,7 @@ class R2ViewshedSpec extends FunSpec
         3, 3, 0.1,
         FromInside(),
         null,
-        { (_, _) => },
+        { _ => },
         resolution = 1,
         maxDistance = Double.PositiveInfinity,
         curvature = false,
@@ -231,7 +251,7 @@ class R2ViewshedSpec extends FunSpec
         3, 3, 0.1,
         FromInside(),
         null,
-        { (_, _) => },
+        { _ => },
         resolution = 1,
         maxDistance = Double.PositiveInfinity,
         curvature = false,
@@ -246,7 +266,7 @@ class R2ViewshedSpec extends FunSpec
         3, 3, 0.1,
         FromInside(),
         null,
-        { (_, _) => },
+        { _ => },
         resolution = 1,
         maxDistance = Double.PositiveInfinity,
         curvature = false,

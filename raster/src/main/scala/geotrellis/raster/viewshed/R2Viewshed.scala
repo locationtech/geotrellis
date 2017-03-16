@@ -50,8 +50,9 @@ object R2Viewshed extends Serializable {
     override def toString(): String = s"θ=$theta α=$alpha"
   }
 
-  type EdgeCallback = ((Ray, From) => Unit)
-  def nop(a: Ray, b: From): Unit = {}
+  type Bundle = Map[From, mutable.ArrayBuffer[Ray]]
+  type TileCallback = (Bundle => Unit)
+  def nop(b: Bundle): Unit = {}
 
   /**
     * A Comparator for Rays which compares them by their theta angle.
@@ -174,7 +175,7 @@ object R2Viewshed extends Serializable {
     * @param  viewHeight       The absolute height (above sea level) of the vantage point
     * @param  from             The direction from which the rays are allowed to come
     * @param  rays             Rays shining in from other tiles
-    * @param  edgeCallback     A callback that is called when a ray reaches the periphery of this tile
+    * @param  tileCallback     A callback to communicate rays which have reached the periphery of the tile
     * @param  resolution       The resolution of the elevationTile in units of meters/pixel
     * @param  maxDistance      The maximum distance that any ray is allowed to travel
     * @param  curvature        Whether to account for the Earth's curvature or not
@@ -188,7 +189,7 @@ object R2Viewshed extends Serializable {
     startCol: Int, startRow: Int, viewHeight: Double,
     from: From,
     rays: Array[Ray],
-    edgeCallback: EdgeCallback,
+    tileCallback: TileCallback,
     resolution: Double,
     maxDistance: Double,
     curvature: Boolean,
@@ -328,12 +329,17 @@ object R2Viewshed extends Serializable {
     }
 
     val clip = clipAndQualifyRay(from)_
+    val north = mutable.ArrayBuffer.empty[Ray]
+    val east = mutable.ArrayBuffer.empty[Ray]
+    val south = mutable.ArrayBuffer.empty[Ray]
+    val west = mutable.ArrayBuffer.empty[Ray]
+
     Range(0, cols) // North
       .flatMap({ col => clip(startCol,startRow,col,rows-1) })
       .foreach({ seg =>
         alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
         Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
-        if (!terminated && !seg.rump) edgeCallback(Ray(seg.theta, alpha), FromSouth())
+        if (!terminated && !seg.rump) south.append(Ray(seg.theta, alpha))
       })
 
     Range(0, rows) // East
@@ -341,7 +347,7 @@ object R2Viewshed extends Serializable {
       .foreach({ seg =>
         alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
         Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
-        if (!terminated && !seg.rump) edgeCallback(Ray(seg.theta, alpha), FromWest())
+        if (!terminated && !seg.rump) west.append(Ray(seg.theta, alpha))
       })
 
     Range(0, cols) // South
@@ -349,7 +355,7 @@ object R2Viewshed extends Serializable {
       .foreach({ seg =>
         alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
         Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
-        if (!terminated && !seg.rump) edgeCallback(Ray(seg.theta, alpha), FromNorth())
+        if (!terminated && !seg.rump) north.append(Ray(seg.theta, alpha))
       })
 
     Range(0, rows) // West
@@ -357,8 +363,16 @@ object R2Viewshed extends Serializable {
       .foreach({ seg =>
         alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
         Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
-        if (!terminated && !seg.rump) edgeCallback(Ray(seg.theta, alpha), FromEast())
+        if (!terminated && !seg.rump) east.append(Ray(seg.theta, alpha))
       })
+
+    val bundle: Bundle = Map(
+      FromSouth() -> south,
+      FromWest() -> west,
+      FromNorth() -> north,
+      FromEast() -> east
+    )
+    tileCallback(bundle)
 
     viewshedTile
   }
