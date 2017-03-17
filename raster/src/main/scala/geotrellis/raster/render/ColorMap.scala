@@ -265,10 +265,6 @@ class IntCachedColorMap(val colors: Vector[Int], h: Histogram[Int], val options:
     extends ColorMap {
   val noDataColor = options.noDataColor
 
-  h.foreachValue{ z =>
-    println(s"Cache map: $z -> ${h.itemCount(z)}")
-  }
-
   def map(z: Int): Int = { if(isNoData(z)) noDataColor else h.itemCount(z).toInt }
 
   def mapDouble(z: Double): Int = map(d2i(z))
@@ -282,6 +278,7 @@ class IntCachedColorMap(val colors: Vector[Int], h: Histogram[Int], val options:
   def mapColorsToIndex(): ColorMap = {
     val colorIndexMap = colors.zipWithIndex.toMap
     val ch = h.mutable
+
     h.foreachValue(z => ch.setItem(z, colorIndexMap(h.itemCount(z).toInt)))
     new IntCachedColorMap((0 to colors.length).toVector, ch, options)
   }
