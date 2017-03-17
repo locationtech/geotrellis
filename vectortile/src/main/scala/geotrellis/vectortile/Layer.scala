@@ -129,6 +129,52 @@ trait Layer extends Serializable {
     vt.Tile.Feature(None, tags, Some(geomType), Command.uncommands(cmds))
   }
 
+  /** Pretty-print this `Layer`. */
+  def pretty: String = {
+    s"""
+  layer ${name} {
+    version       = ${version}
+    vt_resolution = ${tileWidth}
+    tile_extent   = ${tileExtent}
+
+    features {
+      points (${points.length}) {${prettyFeature(points)}
+
+      multiPoints (${multiPoints.length}) {${prettyFeature(multiPoints)}
+
+      lines (${lines.length}) {${prettyFeature(lines)}
+
+      multiLines (${multiLines.length}) {${prettyFeature(multiLines)}
+
+      polygons (${polygons.length}) {${prettyFeature(polygons)}
+
+      multiPolygons (${multiPolygons.length}) {${prettyFeature(multiPolygons)}
+    }
+  }
+"""
+  }
+
+  private def prettyFeature[G <: Geometry](fs: Seq[Feature[G, Map[String, Value]]]): String = {
+    if (fs.isEmpty) "}" else {
+      fs.map({ f =>
+s"""
+        feature {
+          geometry = ${f.geom}
+          ${prettyMeta(f.data)}
+        }
+"""
+      }).mkString("\n") ++ "      }"
+    }
+  }
+
+  private def prettyMeta(meta: Map[String, Value]): String = {
+    if (meta.isEmpty) "metadata {}" else {
+      s"""
+          metadata {
+${meta.map({ case (k,v) => s"            ${k}: ${v}"}).mkString("\n")}
+          }"""
+    }
+  }
 }
 
 /** A [[Layer]] crafted through some strict ingest process. */

@@ -17,7 +17,6 @@
 package geotrellis.vectortile
 
 import geotrellis.vector.Extent
-import geotrellis.vectortile.internal._
 import geotrellis.vectortile.internal.{vector_tile => vt}
 
 // --- //
@@ -49,6 +48,14 @@ case class VectorTile(layers: Map[String, Layer], tileExtent: Extent) {
 
   /** Encode this VectorTile back into its original form of Protobuf bytes. */
   def toBytes: Array[Byte] = toProtobuf.toByteArray
+
+  /** Pretty-print this VectorTile. */
+  def pretty: String = {
+    s"""tile {
+${layers.values.map(_.pretty).mkString}
+}
+"""
+  }
 }
 
 object VectorTile {
