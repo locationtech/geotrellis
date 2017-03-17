@@ -145,13 +145,6 @@ case class StrictLayer(
   multiPolygons: Seq[Feature[MultiPolygon, Map[String, Value]]]
 ) extends Layer
 
-object StrictLayer {
-  /** A [[StrictLayer]] with no Geometries. */
-  def empty(name: String, tileExtent: Extent): StrictLayer = StrictLayer(
-    name, 4096, 2, tileExtent, Seq.empty, Seq.empty, Seq.empty, Seq.empty, Seq.empty, Seq.empty
-  )
-}
-
 /**
   * A [[Layer]] decoded from Protobuf data. All of its Features are decoded
   * lazily, making for very fast extraction of single features/geometries.
