@@ -29,10 +29,12 @@ class HalfEdgeTable(_size: Int) {
   // for our table.
   private final val MAXSIZE: Int = Int.MaxValue / 3
 
-  // Once our buckets get 80% full, we need to resize
-  private final val FACTOR: Double = 0.8
+  // Once our buckets get 90% full, we need to resize
+  private final val FACTOR: Double = 0.9
 
   private var limit = (size * FACTOR).toInt
+
+  private val freed = collection.mutable.ListBuffer.empty[Int]
 
   def join(e: Int, opp: Int): Unit = {
     assert(getSrc(e) == getDest(opp) && getDest(e) == getSrc(opp))
@@ -42,10 +44,15 @@ class HalfEdgeTable(_size: Int) {
     // e.flip = opp
     // opp.flip = e
 
+    val toKill = (getFlip(e), getFlip(opp))
+
     setNext(getPrev(getFlip(e)), getNext(getFlip(opp)))
     setNext(getPrev(getFlip(opp)), getNext(getFlip(e)))
     setFlip(e, opp)
     setFlip(opp, e)
+
+    killEdge(toKill._1)
+    killEdge(toKill._2)
 
     //edgeAt += getDest(opp) -> opp
     //edgeAt += getDest(e) -> e
@@ -55,26 +62,40 @@ class HalfEdgeTable(_size: Int) {
     * This edge will have no flip or next set.
     */
   def createHalfEdge(v: Int): Int = {
-    val e = edgeCount
-    table(idx) = v
-    idx += 3
-    edgeCount += 1
-    if (edgeCount > limit) resize()
-    e
+    if (freed isEmpty) {
+      val e = edgeCount
+      table(idx) = v
+      idx += 3
+      edgeCount += 1
+      if (edgeCount > limit) resize()
+      e
+    } else {
+      val e = freed.remove(0)
+      table(e * 3) = v
+      e
+    }
   }
 
   /** Create an edge for a single vertex,
     * with the specified flip and next set.
     */
   def createHalfEdge(v: Int, flip: Int, next: Int): Int = {
-    val e = edgeCount
-    table(idx) = v
-    table(idx + 1) = flip
-    table(idx + 2) = next
-    idx += 3
-    edgeCount += 1
-    if (edgeCount > limit) { resize() }
-    e
+    if (freed isEmpty) {
+      val e = edgeCount
+      table(idx) = v
+      table(idx + 1) = flip
+      table(idx + 2) = next
+      idx += 3
+      edgeCount += 1
+      if (edgeCount > limit) { resize() }
+      e
+    } else {
+      val e = freed.remove(0)
+      table(e*3) = v
+      table(e*3 + 1) = flip
+      table(e*3 + 2) = next
+      e
+    }
   }
 
   /** Create two half edges that
@@ -137,6 +158,13 @@ class HalfEdgeTable(_size: Int) {
     setFlip(outer3, inner1)
 
     outer1
+  }
+
+  def killEdge(e: Int): Unit = {
+    freed += e
+    table(e * 3) = -1
+    table(e * 3 + 1) = -1
+    table(e * 3 + 2) = -1
   }
 
   /** Sets a half edge's flip half edge
@@ -240,10 +268,17 @@ class HalfEdgeTable(_size: Int) {
     return false
   }
 
-  def killEdge(e: Int): Unit = {
-    table(e * 3) = -1
-    table(e * 3 + 1) = -1
-    table(e * 3 + 2) = -1
+  def foreachInLoop(e0: Int)(f: Int => Unit): Unit = {
+    var e = e0
+    do {
+      f(e)
+      e = getNext(e)
+    } while (e != e0)
+  }
+
+  def showLoop(e0: Int): Unit = {
+    foreachInLoop(e0) { e => print(s"[${getSrc(e)} -> ${getDest(e)}] ") }
+    println
   }
 
   private def resize() {
@@ -270,15 +305,6 @@ class HalfEdgeTable(_size: Int) {
     size = nextSize
     table = nextTable
     limit = (size * FACTOR).toInt
-  }
-
-  def showLoop(e0: Int): Unit = {
-    var e = e0
-    do {
-      print(s"[${getSrc(e)} -> ${getDest(e)}] ")
-      e = getNext(e)
-    } while (e != e0)
-    println
   }
 
   /**
@@ -319,6 +345,9 @@ class HalfEdgeTable(_size: Int) {
     table = nextTable
     limit = (size * FACTOR).toInt
 
+    freed ++= that.freed.map(_ + offset)
+    edgeAt ++= that.edgeAt.map { case (v, e) => (reindex(v), e + offset) }
+
     offset
   }
 
@@ -341,7 +370,8 @@ class HalfEdgeTable(_size: Int) {
   def reindexVertices(reindex: Int => Int) = {
     var i = 0
     while (i < idx) {
-      table(i) = reindex(table(i))
+      if (table(i) >= 0)
+        table(i) = reindex(table(i))
       i += 3
     }
     edgeAt = edgeAt.map{ case (vi, e) => (reindex(vi), e) }
