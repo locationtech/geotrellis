@@ -44,15 +44,16 @@ class HalfEdgeTable(_size: Int) {
     // e.flip = opp
     // opp.flip = e
 
-    val toKill = (getFlip(e), getFlip(opp))
+    val toKill1 = getFlip(e)
+    val toKill2 = getFlip(opp)
 
     setNext(getPrev(getFlip(e)), getNext(getFlip(opp)))
     setNext(getPrev(getFlip(opp)), getNext(getFlip(e)))
     setFlip(e, opp)
     setFlip(opp, e)
 
-    killEdge(toKill._1)
-    killEdge(toKill._2)
+    killEdge(toKill1)
+    killEdge(toKill2)
 
     //edgeAt += getDest(opp) -> opp
     //edgeAt += getDest(e) -> e
