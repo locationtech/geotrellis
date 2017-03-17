@@ -132,8 +132,10 @@ class ColorMapSpec extends FunSpec with Matchers
 
       // check that PNG will correctly convert raster to their color index values
       val pngMap = color.convertColorMap(colorMap)
-      for ( (c, i) <- colorMap.colors.zipWithIndex) {
-        pngMap.map(c) should be (i)
+      h.foreachValue { z =>
+        val color = colorMap.map(z)
+        val colorIndex = colorMap.colors.indexOf(color)
+        pngMap.map(z) should be(colorIndex)
       }
 
       // check that we can convert all raster values we have seen in our histogram
