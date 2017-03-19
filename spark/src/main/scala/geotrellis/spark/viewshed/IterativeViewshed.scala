@@ -76,11 +76,25 @@ object IterativeViewshed {
     math.abs(meters / pixels)
   }
 
-  private def pointInfo[K: (? => SpatialKey)](md: TileLayerMetadata[K])(
-    pi: (Array[Double], Int)
+  private case class PointInfo(
+    index: Int,
+    key: SpatialKey,
+    col: Int,
+    row: Int,
+    viewHeight: Double,
+    angle: Double,
+    fov: Double,
+    alt: Double
+  )
+
+  private def pointInfo[K: (? => SpatialKey), V: (? => Tile)](
+    rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]])(
+    pi: (Point6D, Int)
   )= {
     val (p, index) = pi
-    val p2 = new jts.Coordinate(p(0),p(1),p(2))
+    val md = rdd.metadata
+
+    val p2 = new jts.Coordinate(p(0),p(1))
     val bounds = md.layout.mapTransform(p2.envelope)
     require(bounds.colMin == bounds.colMax)
     require(bounds.rowMin == bounds.rowMax)
@@ -92,8 +106,18 @@ object IterativeViewshed {
     val re = RasterExtent(extent, cols, rows)
     val col = re.mapXToGrid(p2.x)
     val row = re.mapYToGrid(p2.y)
+    val viewHeight = p(2)
 
-    (key, (index, col, row, p(2), p(3), p(4), p(5)))
+    PointInfo(
+      index = index,
+      key = key,
+      col = col,
+      row = row,
+      viewHeight = viewHeight,
+      angle = p(3),
+      fov = p(4),
+      alt = p(5)
+    )
   }
 
   /**
@@ -101,11 +125,11 @@ object IterativeViewshed {
     */
   def apply[K: (? => SpatialKey): ClassTag, V: (? => Tile)](
     elevation: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
-    ps: Seq[Array[Double]],
+    ps: Seq[Point6D],
     maxDistance: Double,
     curvature: Boolean = true,
     operator: AggregationOperator = Or(),
-    touched: mutable.Set[SpatialKey] = null
+    touchedKeys: mutable.Set[SpatialKey] = null
   )(implicit sc: SparkContext): RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]] = {
 
     ps.foreach({ p => require(p.length == 6) })
@@ -137,41 +161,42 @@ object IterativeViewshed {
       val northKey = SpatialKey(key.col + 0, key.row - 1)
       val eastKey = SpatialKey(key.col - 1, key.row + 0)
 
-      Map(FromSouth() -> southKey, FromWest() -> westKey, FromNorth() -> northKey, FromEast() -> eastKey)
-        .foreach({ case (dir, key) =>
-          if (validKey(key)) {
-            val rs = bundle.getOrElse(dir, throw new Exception)
-            if (rs.length > 0) {
-              val message = (key, index, dir, rs)
-              rays.add(message)
-            }
+      Map(
+        FromSouth() -> southKey,
+        FromWest() -> westKey,
+        FromNorth() -> northKey,
+        FromEast() -> eastKey
+      ).foreach({ case (dir, key) =>
+        if (validKey(key)) {
+          val rs = bundle.getOrElse(dir, throw new Exception)
+          if (rs.length > 0) {
+            val message = (key, index, dir, rs)
+            rays.add(message)
           }
-        })
+        }
+      })
     }
 
-    val info: Seq[(SpatialKey, (Int, Int, Int, Double, Double, Double, Double))] = { // inner tuple: index, col, row, z, angle, fov, altitude
-      val fn = pointInfo(md)_
+    val info: Seq[PointInfo] = {
+      val fn = pointInfo(elevation)_
       ps.zipWithIndex.map(fn)
     }
 
-    val _pointsByKey: Map[SpatialKey, Seq[(Int, Int, Int, Double, Double, Double, Double)]] = // value: index, col, row, z, angle, fov, altitude
+    val _pointsByKey: Map[SpatialKey, Seq[PointInfo]] =
       info
-        .groupBy(_._1)
-        .mapValues({ list => list.map({ case (_, v) => v }) })
+        .groupBy(_.key)
         .toMap
     val pointsByKey = sc.broadcast(_pointsByKey)
-    if (touched != null) touched ++= _pointsByKey.keys
+    if (touchedKeys != null) touchedKeys ++= _pointsByKey.keys
 
-    val _pointsByIndex: Map[Int, (SpatialKey, Int, Int, Double, Double, Double)] = // value: key, col, angle, fov, altitude
+    val _pointsByIndex: Map[Int, PointInfo] =
       info
-        .groupBy(_._2._1)
-        .mapValues({ list => list.map({ case (key, (index, col, row, z, angle, fov, alt)) =>
-          (key, col, row, angle, fov, alt) }) })
+        .groupBy(_.index)
         .mapValues({ list => list.head })
         .toMap
     val pointsByIndex = sc.broadcast(_pointsByIndex)
 
-    val _heights: Map[Int, Double] = // index -> height
+    val _heightsByIndex: Map[Int, Double] = // index -> height
       elevation
         .flatMap({ case (k, v) =>
           val key = implicitly[SpatialKey](k)
@@ -179,16 +204,17 @@ object IterativeViewshed {
 
           pointsByKey.value.get(key) match {
             case Some(list) =>
-              list.map({ case (index: Int, col: Int, row: Int, z: Double, _, _, _) =>
-                val height = if (z >= 0.0) tile.getDouble(col, row) + z ; else -z
-                (index, height)
+              list.map({ case PointInfo(index, _, col, row, viewHeight0, _, _, _) =>
+                val viewHeight =
+                  if (viewHeight0 >= 0.0) tile.getDouble(col, row) + viewHeight0 ; else -viewHeight0
+                (index, viewHeight)
               })
             case None => Seq.empty[(Int, Double)]
           }
         })
         .collect
         .toMap
-    val heights = sc.broadcast(_heights)
+    val heightsByIndex = sc.broadcast(_heightsByIndex)
 
     // Create RDD  of viewsheds; after this,  the accumulator contains
     // the rays emanating from the starting points.
@@ -199,12 +225,12 @@ object IterativeViewshed {
 
       pointsByKey.value.get(key) match {
         case Some(list) =>
-          list.foreach({ case (index: Int, col: Int, row: Int, z: Double, ang: Double, fov: Double, alt: Double) =>
-            val height = heights.value.getOrElse(index, throw new Exception)
+          list.foreach({ case PointInfo(index, _, col, row, _, ang, fov, alt) =>
+            val viewHeight = heightsByIndex.value.getOrElse(index, throw new Exception)
 
             R2Viewshed.compute(
               tile, shed,
-              col, row, height,
+              col, row, viewHeight,
               FromInside(),
               null,
               rayCatcherFn(key, index),
@@ -236,7 +262,7 @@ object IterativeViewshed {
           .toMap
       val changes = sc.broadcast(_changes)
 
-      if (touched != null) touched ++= _changes.keys
+      if (touchedKeys != null) touchedKeys ++= _changes.keys
       rays.reset
       logger.debug(s"≥ ${changes.value.size} tiles in motion")
 
@@ -257,10 +283,10 @@ object IterativeViewshed {
                 })
 
             indexed.foreach({ case (index, list) => // for all <from, rays> pairs generated by this point (this index)
-              val (pointKey, col, row, angle, fov, alt) = pointsByIndex.value.getOrElse(index, throw new Exception)
+              val PointInfo(_, pointKey, col, row, _, angle, fov, alt) = pointsByIndex.value.getOrElse(index, throw new Exception)
               val startCol = (pointKey.col - key.col) * cols + col
               val startRow = (pointKey.row - key.row) * rows + row
-              val height = heights.value.getOrElse(index, throw new Exception)
+              val viewHeight = heightsByIndex.value.getOrElse(index, throw new Exception)
               val packets: Map[From, Array[Ray]] = list
                 .groupBy(_._1)
                 .mapValues({ case rss =>
@@ -274,7 +300,7 @@ object IterativeViewshed {
                 if (rays.length > 0) {
                   R2Viewshed.compute(
                     elevationTile, shed,
-                    startCol, startRow, height,
+                    startCol, startRow, viewHeight,
                     from,
                     sortedRays,
                     rayCatcherFn(key, index),

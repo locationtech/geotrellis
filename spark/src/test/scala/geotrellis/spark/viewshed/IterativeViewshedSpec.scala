@@ -56,7 +56,7 @@ class IterativeViewshedSpec extends FunSpec
         maxDistance = Double.PositiveInfinity,
         curvature = false,
         operator = Or(),
-        touched = touched
+        touchedKeys = touched
       )
 
       touched.size should be (9)
@@ -80,7 +80,7 @@ class IterativeViewshedSpec extends FunSpec
         maxDistance = Double.PositiveInfinity,
         curvature = false,
         operator = Or(),
-        touched = touched
+        touchedKeys = touched
       )
 
       touched.size should be (6)
