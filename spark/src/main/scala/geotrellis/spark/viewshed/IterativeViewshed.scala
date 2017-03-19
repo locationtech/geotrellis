@@ -26,6 +26,7 @@ import geotrellis.spark.tiling._
 import geotrellis.util._
 import geotrellis.vector._
 
+import com.vividsolutions.jts.{ geom => jts }
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
@@ -35,10 +36,13 @@ import org.apache.spark.util.AccumulatorV2
 import scala.collection.mutable
 import scala.reflect.ClassTag
 
-import com.vividsolutions.jts.{ geom => jts }
-
 
 object IterativeViewshed {
+
+  type Point6D = Array[Double]
+
+  implicit def coordinatesToPoints(points: Seq[jts.Coordinate]): Seq[Point6D] =
+    points.map({ p => Array(p.x, p.y, p.z, 0, -1.0, Double.NegativeInfinity) })
 
   private val logger = Logger.getLogger(IterativeViewshed.getClass)
 

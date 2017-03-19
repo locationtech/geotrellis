@@ -60,7 +60,8 @@ package object spark
     with stitch.Implicits
     with summary.Implicits
     with summary.polygonal.Implicits
-    with tiling.Implicits {
+    with tiling.Implicits
+    with viewshed.Implicits {
   type TileLayerRDD[K] = RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]
   object TileLayerRDD {
     def apply[K](rdd: RDD[(K, Tile)], metadata: TileLayerMetadata[K]): TileLayerRDD[K] =
