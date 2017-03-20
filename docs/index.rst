@@ -50,17 +50,17 @@ Here's a small example showing a routine focal operation over a single
     scala> import geotrellis.raster._
     import geotrellis.raster._
 
-    scala> import geotrellis.raster.op.focal._
-    import geotrellis.raster.op.focal._
+    scala> import geotrellis.raster.mapalgebra.focal._
+    import geotrellis.raster.mapalgebra.focal._
 
     scala> val nd = NODATA
     nd: Int = -2147483648
 
     scala> val input = Array[Int](
-         |         nd, 7, 1, 1,  3, 5, 9, 8, 2,
-         |          9, 1, 1, 2,  2, 2, 4, 3, 5,
-         |          3, 8, 1, 3,  3, 3, 1, 2, 2,
-         |          2, 4, 7, 1, nd, 1, 8, 4, 3)
+         nd, 7, 1, 1,  3, 5, 9, 8, 2,
+          9, 1, 1, 2,  2, 2, 4, 3, 5,
+          3, 8, 1, 3,  3, 3, 1, 2, 2,
+          2, 4, 7, 1, nd, 1, 8, 4, 3)
     input: Array[Int] = Array(-2147483648, 7, 1, 1, 3, 5, 9, 8, 2, 9, 1, 1, 2,
     2, 2, 4, 3, 5, 3, 8, 1, 3, 3, 3, 1, 2, 2, 2, 4, 7, 1, -2147483648, 1, 8, 4, 3)
 

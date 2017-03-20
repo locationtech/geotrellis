@@ -3,6 +3,7 @@ index.js
 package.html
 lib
 site/
+docs/_build/
 
 project/boot
 project/plugins/project
