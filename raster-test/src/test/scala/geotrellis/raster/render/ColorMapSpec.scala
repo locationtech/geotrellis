@@ -117,11 +117,13 @@ class ColorMapSpec extends FunSpec with Matchers
       val limits = Array(25,50,80,100)
       val colors = Array(100,110,120,130)
 
-      val colorMap1 = ColorMap(limits, colors)
+      val colorRamp: ColorRamp = colors
+      val breaksToColors: Map[Int, Int] = (limits zip colorRamp.stops(limits.size).colors).toMap
+      val colorMap1 = new IntColorMap(breaksToColors, ColorMap.Options(noDataColor =  0, classBoundaryType = LessThanOrEqualTo))
       val arr = (0 until 90 by 5).toArray
       val r = createTile(arr)
       val h = r.histogram
-      val colorMap = colorMap1.withNoDataColor(0).withBoundaryType(LessThanOrEqualTo).asInstanceOf[IntColorMap].cache(h)
+      val colorMap = colorMap1.cache(h)
 
       val color: IndexedPngEncoding =
         PngColorEncoding(colorMap.colors, colorMap.options.noDataColor, colorMap.options.fallbackColor) match {
