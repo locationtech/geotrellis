@@ -22,6 +22,7 @@ import geotrellis.pointcloud.spark.io.hadoop.HadoopPointCloudRDD
 import geotrellis.pointcloud.spark.{PointCloudTestEnvironment, _}
 import geotrellis.spark.tiling._
 import geotrellis.vector.Extent
+
 import org.scalatest._
 
 class PointCloudDemSpec extends FunSpec

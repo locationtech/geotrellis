@@ -5,7 +5,6 @@ import geotrellis.spark.testkit._
 
 import org.scalatest.FunSpec
 
-
 object Stuff {
   case class UnionableThing(n: Int) {
     def union(other: Any): UnionableThing = {

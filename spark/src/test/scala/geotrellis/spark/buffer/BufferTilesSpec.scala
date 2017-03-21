@@ -24,7 +24,6 @@ import geotrellis.spark.testkit._
 
 import org.scalatest.FunSpec
 
-
 class BufferTilesSpec extends FunSpec with TestEnvironment {
 
   describe("The BufferTiles functionality") {
