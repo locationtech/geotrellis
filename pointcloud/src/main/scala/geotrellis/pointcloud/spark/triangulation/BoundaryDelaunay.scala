@@ -282,9 +282,8 @@ object BoundaryDelaunay {
         var continue = true
         var j = 0
         do {
-          assert(getSrc(e) == halfEdgeTable.getSrc(pairedE) && getDest(e) == halfEdgeTable.getDest(pairedE))
-
-          println(s"Building off [${halfEdgeTable.getSrc(pairedE)} -> ${halfEdgeTable.getDest(pairedE)}]")
+          //assert(getSrc(e) == halfEdgeTable.getSrc(pairedE) && getDest(e) == halfEdgeTable.getDest(pairedE))
+          //println(s"Building off [${halfEdgeTable.getSrc(pairedE)} -> ${halfEdgeTable.getDest(pairedE)}]")
 
           // if (getSrc(e) != halfEdgeTable.getSrc(o) || getDest(e) != halfEdgeTable.getDest(o)) {
           //   new java.io.PrintWriter("buffer.wkt") { write(geotrellis.vector.io.wkt.WKT.write(MultiPolygon(polys))); close } // (debug)
@@ -297,7 +296,7 @@ object BoundaryDelaunay {
 
           bounds.get(halfEdgeTable.getSrc(pairedE) -> halfEdgeTable.getDest(pairedE)) match {
             case Some(next) =>
-              println("Edge is on bounding loop")
+              //println("Edge is on bounding loop")
 
               // we've arrived at the edge.  Make sure we're joined up.
               if (pairedE != next) {
@@ -307,7 +306,7 @@ object BoundaryDelaunay {
               continue = false
 
             case None =>
-              println("Edge is not on boundary")
+              //println("Edge is not on boundary")
               // not at the boundary.  Keep going.
 
               lookupTriangle(e) match {
