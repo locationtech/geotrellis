@@ -274,21 +274,14 @@ object BoundaryDelaunay {
 
       val polys = collection.mutable.ListBuffer.empty[Polygon]
       val bounds = innerEdges.values.map{ case (_, o) => (halfEdgeTable.getSrc(o) -> halfEdgeTable.getDest(o), o) }.toMap
-      // val boundrefs = innerEdges.values.map(_._2).toSet
 
       innerEdges.values.foreach{ case (e0, o0) =>{
         var e = e0
         var pairedE = halfEdgeTable.getFlip(o0)
 
-        // println(s"\u001b[38;5;208m☆ Navigating original mesh ☆\u001b[0m")
-        // navigate(e, dt.pointSet.getCoordinate(_), Map.empty)
-
         var continue = true
         var j = 0
         do {
-          // println(s"\u001b[38;5;55m☆ Navigating boundary mesh ☆\u001b[0m")
-          // halfEdgeTable.navigate(pairedE, verts(_), Map.empty) 
-
           assert(getSrc(e) == halfEdgeTable.getSrc(pairedE) && getDest(e) == halfEdgeTable.getDest(pairedE))
 
           println(s"Building off [${halfEdgeTable.getSrc(pairedE)} -> ${halfEdgeTable.getDest(pairedE)}]")
@@ -366,132 +359,6 @@ object BoundaryDelaunay {
           println("Premature termination")
       }}
 
-      // new java.io.PrintWriter("buffer.wkt") { write(geotrellis.vector.io.wkt.WKT.write(MultiPolygon(polys))); close }
-
-  /*
-      val e0 = innerLoop._1
-      val o0 = innerLoop._2
-
-      var (e, o) = (e0, halfEdgeTable.getFlip(o0))
-
-      // display the original inner loop
-      val vs = collection.mutable.ListBuffer((dt.pointSet.getX(halfEdgeTable.getSrc(o)), dt.pointSet.getY(halfEdgeTable.getSrc(o))))
-      val path = collection.mutable.ListBuffer.empty[(ResultEdge, HalfEdge, ResultEdge)] // (o, e, ONext)
-      var lim = 0
-      do {
-        val oNext = halfEdgeTable.getFlip(halfEdgeTable.getNext(o))
-
-        vs += ((dt.pointSet.getX(halfEdgeTable.getDest(o)), dt.pointSet.getY(halfEdgeTable.getDest(o))))
-        path += ((o, e, oNext))
-
-        var j = 0
-        do {
-          e = rotCWDest(e)
-          j += 1
-        } while (getSrc(e) != halfEdgeTable.getSrc(oNext) && j < 20)
-        if (j == 20)
-          println("God damn it")
-
-        o = halfEdgeTable.getFlip(oNext)
-        e = getFlip(e)
-        lim += 1
-      } while (halfEdgeTable.getDest(halfEdgeTable.getFlip(o)) != halfEdgeTable.getDest(o0) && lim < 10000)
-      //println(geotrellis.vector.io.wkt.WKT.write(geotrellis.vector.Line(vs)))
-      o = halfEdgeTable.getFlip(o0)
-
-      println(s"Initial condition: e = [${getSrc(e)} -> ${getDest(e)}], o = [${halfEdgeTable.getSrc(o)} -> ${halfEdgeTable.getDest(o)}]")
-      println(s"Next on inner loop: [${halfEdgeTable.getSrc(halfEdgeTable.getNext(o))} -> ${halfEdgeTable.getDest(halfEdgeTable.getNext(o))}]")
-      println(s"lim = $lim")
-
-      val polys = collection.mutable.ListBuffer.empty[Polygon]
-      var i = 0
-      path.foreach { case (oInit, eInit, oNext) => {
-        o = oInit
-        e = eInit
-        println(s"oNext = [${halfEdgeTable.getSrc(oNext)} -> ${halfEdgeTable.getDest(oNext)}]")
-
-        if (getSrc(e) != halfEdgeTable.getSrc(o) || getDest(e) != halfEdgeTable.getDest(o)) {
-          // send out accumulated triangles (debug)
-          new java.io.PrintWriter("buffer.wkt") { write(geotrellis.vector.io.wkt.WKT.write(MultiPolygon(polys))); close }
-
-          println(s"Inconsistent state: e = [${getSrc(e)} -> ${getDest(e)}], o = [${halfEdgeTable.getSrc(o)} -> ${halfEdgeTable.getDest(o)}]")
-          return ()
-        }
-
-        var j = 0
-        do {
-          // rotate around an innerLoop point, adding and linking triangles
-          println(s"e = ${(getSrc(e), getDest(e), getDest(getNext(e)))}, o = [${halfEdgeTable.getSrc(o)} -> ${halfEdgeTable.getDest(o)}]")
-
-          lookupTriangle(e) match {
-            case None =>
-              // bounding triangle has not yet been added
-              println("ADDING TRIANGLE")
-              val tri = copyConvertTriangle(e)
-
-              // add new tri to polys (debugging)
-              val a = halfEdgeTable.getDest(tri)
-              val b = halfEdgeTable.getDest(halfEdgeTable.getNext(tri))
-              val c = halfEdgeTable.getDest(halfEdgeTable.getNext(halfEdgeTable.getNext(tri)))
-              val pa = Point(verts(a).x, verts(a).y)
-              val pb = Point(verts(b).x, verts(b).y)
-              val pc = Point(verts(c).x, verts(c).y)
-              polys += Polygon(pa, pb, pc, pa)
-
-              // link new triangle to existing triangulation
-              try {
-                halfEdgeTable.join(tri, halfEdgeTable.getFlip(o))
-              } catch {
-                case _: AssertionError =>
-                  println("Improper join (should never see this)")
-                  println(geotrellis.vector.io.wkt.WKT.write(Polygon(pa, pb, pc, pa)))
-              }
-
-              o = tri
-            case Some(tri) =>
-              // bounding triangle already exists
-              if (o != tri) {
-                // join if it hasn't already been linked
-                println("join")
-                halfEdgeTable.join(tri, halfEdgeTable.getFlip(o))
-                o = tri
-              } else {
-                // triangle is already properly connected
-                println("no join") // (debug)
-              }
-          }
-
-          e = rotCWDest(e)
-          o = halfEdgeTable.rotCWDest(o)
-
-          // triangle neighborhood should be sane
-          if (getSrc(e) != halfEdgeTable.getSrc(o))
-            println(s"Neighborhood out of sync in fillInnerLoop.  Expected ${getSrc(e)}, got ${halfEdgeTable.getSrc(o)}")
-          j += 1
-        } while (halfEdgeTable.getSrc(o) != halfEdgeTable.getSrc(oNext) && j < 20)
-
-        if (j == 20)
-          println("Early termination of linking stage")
-
-        println("BUMP")
-      }}
-
-      // sanity checks (debug)
-      val (_, fstE, fstOnext) = path.head
-      val (_, _, lstOnext) = path.last
-      var fstO = fstOnext
-      var j = 0
-      do {
-        fstO = halfEdgeTable.rotCCWDest(fstO)
-        j += 1
-      } while (halfEdgeTable.getSrc(fstO) != getSrc(fstE) && j < 20)
-      if (j == 20)
-        println("Problem around first")
-      j = 0
-      if (lstOnext != halfEdgeTable.getFlip(fstO))
-        println("Didn't complete the loop!")
-
-  */
     }
 
     def validate() = {
@@ -525,22 +392,8 @@ object BoundaryDelaunay {
         ne = halfEdgeTable.getNext(ne)
       } while (e != dt.boundary)
 
-      isMeshValid(triangles, halfEdgeTable)
+      //isMeshValid(triangles, halfEdgeTable)
 
-      // halfEdgeTable.navigate(
-      //   newBound, 
-      //   verts(_), 
-      //   Map[Char, (String, Int => Int)](
-      //     'i' -> (("jump to inner loop", { _ => halfEdgeTable.getFlip(innerEdges.head._2._2) })),
-      //     'x' -> (("export loop as WKT", { h => 
-      //       val line = Line(halfEdgeTable.mapOverLoop(h){ ix => verts(halfEdgeTable.getDest(ix)) }.map(Point.jtsCoord2Point(_)))
-      //       println(geotrellis.vector.io.wkt.WKT.write(line.closed))
-      //       h
-      //     }))
-      //   )
-      // )
-
-      // writeWKT("bounds.wkt")
       fillInnerLoop
 
       // // Add fans of boundary edges
