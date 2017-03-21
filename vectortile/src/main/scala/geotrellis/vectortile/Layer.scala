@@ -169,9 +169,11 @@ s"""
 
   private def prettyMeta(meta: Map[String, Value]): String = {
     if (meta.isEmpty) "metadata {}" else {
+      val sortedMeta = meta.toSeq.sortBy(_._1)
+
       s"""
           metadata {
-${meta.map({ case (k,v) => s"            ${k}: ${v}"}).mkString("\n")}
+${sortedMeta.map({ case (k,v) => s"            ${k}: ${v}"}).mkString("\n")}
           }"""
     }
   }
