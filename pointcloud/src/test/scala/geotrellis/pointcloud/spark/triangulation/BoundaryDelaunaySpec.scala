@@ -2,8 +2,11 @@ package geotrellis.pointcloud.spark.triangulation
 
 import com.vividsolutions.jts.algorithm.distance.{DistanceToPoint, PointPairDistance}
 import com.vividsolutions.jts.geom.Coordinate
+
+import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.vector.Extent
 import geotrellis.vector.triangulation._
+
 import org.scalatest.{FunSpec, Matchers}
 
 import scala.util.Random

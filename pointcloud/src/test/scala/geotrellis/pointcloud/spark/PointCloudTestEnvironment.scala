@@ -3,6 +3,7 @@ package geotrellis.pointcloud.spark
 import java.io.File
 
 import geotrellis.spark._
+import geotrellis.spark.testkit._
 import org.apache.hadoop.fs.Path
 import org.scalatest.Suite
 

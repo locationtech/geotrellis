@@ -630,88 +630,104 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
   }
 
   def navigate(): Unit = {
-    var e = boundary
-    var continue = true
+    val cmds = collection.immutable.Map[Char, (String, Int => Int)](
+      'i' -> ("mesh information", { e =>
+        println(s"Number of vertices:  ${allVertices.size}")
+        println(s"Number of triangles: ${triangleMap.getTriangles.size}")
+        print(s"List of triangles:   ")
+        triangleMap.triangleVertices.foreach{ t => print(s"$t ") }
+        println
+        e }),
+      'x' -> ("export to WKT file", { e =>
+        val name = scala.io.StdIn.readLine("Enter file name: ")
+        writeWKT(name)
+        e })
+    )
 
-    def showMenu() = {
-      println("""List of commands:
-  n: next
-  b: prev
-  f: flip
-  w: rotCCWSrc
-  e: rotCWSrc
-  s: rotCWDest
-  d: rotCCWDest
-  j: jump to vertex
-  l: show loop
-  i: mesh information
-  x: export to WKT file
-  k: kill (throws exception)
-  q: quit""")
-    }
+    halfEdgeTable.navigate(boundary, pointSet.getCoordinate(_), cmds)
 
-    while (continue) {
-      println(s"Current edge ($e): [${getSrc(e)} -> ${getDest(e)}]\nDestination @ ${pointSet.getCoordinate(getDest(e))}")
+    //   var e = boundary
+    //   var continue = true
 
-      scala.io.StdIn.readLine("> ") match {
-        case "q" =>
-          continue = false
+    //   def showMenu() = {
+    //     println("""List of commands:
+    // n: next
+    // b: prev
+    // f: flip
+    // w: rotCCWSrc
+    // e: rotCWSrc
+    // s: rotCWDest
+    // d: rotCCWDest
+    // j: jump to vertex
+    // l: show loop
+    // i: mesh information
+    // x: export to WKT file
+    // k: kill (throws exception)
+    // q: quit""")
+    //   }
 
-        case "k" =>
-          throw new Exception("User requested halt")
+    //   while (continue) {
+    //     println(s"Current edge ($e): [${getSrc(e)} -> ${getDest(e)}]\nDestination @ ${pointSet.getCoordinate(getDest(e))}")
 
-        case "x" =>
-          val name = scala.io.StdIn.readLine("Enter file name: ")
-          writeWKT(name)
+    //     scala.io.StdIn.readLine("> ") match {
+    //       case "q" =>
+    //         continue = false
 
-        case "i" =>
-          println(s"Number of vertices:  ${allVertices.size}")
-          println(s"Number of triangles: ${triangleMap.getTriangles.size}")
-          print(s"List of triangles:   ")
-          triangleMap.triangleVertices.foreach{ t => print(s"$t ") }
-          println
+    //       case "k" =>
+    //         throw new Exception("User requested halt")
 
-        case "?" =>
-          showMenu
+    //       case "x" =>
+    //         val name = scala.io.StdIn.readLine("Enter file name: ")
+    //         writeWKT(name)
 
-        case "n" => 
-          e = getNext(e)
+    //       case "i" =>
+    //         println(s"Number of vertices:  ${allVertices.size}")
+    //         println(s"Number of triangles: ${triangleMap.getTriangles.size}")
+    //         print(s"List of triangles:   ")
+    //         triangleMap.triangleVertices.foreach{ t => print(s"$t ") }
+    //         println
 
-        case "b" => 
-          e = getPrev(e)
+    //       case "?" =>
+    //         showMenu
 
-        case "f" => 
-          e = getFlip(e)
+    //       case "n" => 
+    //         e = getNext(e)
 
-        case "w" =>
-          e = rotCCWSrc(e)
+    //       case "b" => 
+    //         e = getPrev(e)
 
-        case "e" =>
-          e = rotCWSrc(e)
+    //       case "f" => 
+    //         e = getFlip(e)
 
-        case "s" =>
-          e = rotCWDest(e)
+    //       case "w" =>
+    //         e = rotCCWSrc(e)
 
-        case "d" =>
-          e = rotCCWDest(e)
+    //       case "e" =>
+    //         e = rotCWSrc(e)
 
-        case "l" =>
-          showLoop(e)
+    //       case "s" =>
+    //         e = rotCWDest(e)
 
-        case "j" =>
-          print("Enter target vertex: ")
-          val x = scala.io.StdIn.readInt
-          try {
-            e = edgeIncidentTo(x)
-          } catch {
-            case _: Throwable => 
-              println(s"ERROR: VERTEX $x NOT FOUND")
-          }
+    //       case "d" =>
+    //         e = rotCCWDest(e)
 
-        case _ =>
-          println("Unrecognized command!")
-      }
-    }
+    //       case "l" =>
+    //         showLoop(e)
+
+    //       case "j" =>
+    //         print("Enter target vertex: ")
+    //         val x = scala.io.StdIn.readInt
+    //         try {
+    //           e = edgeIncidentTo(x)
+    //         } catch {
+    //           case _: Throwable => 
+    //             println(s"ERROR: VERTEX $x NOT FOUND")
+    //         }
+
+    //       case _ =>
+    //         println("Unrecognized command!")
+    //     }
+    //   }
   }
 
   def decimate(nRemove: Int) = {

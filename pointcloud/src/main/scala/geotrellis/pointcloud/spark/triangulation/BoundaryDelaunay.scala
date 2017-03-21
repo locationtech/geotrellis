@@ -1,6 +1,6 @@
 package geotrellis.pointcloud.spark.triangulation
 
-import geotrellis.vector.{Extent, MultiPolygon, Point, Polygon}
+import geotrellis.vector.{Extent, Line, MultiPolygon, Point, Polygon}
 import geotrellis.vector.triangulation._
 
 import com.vividsolutions.jts.algorithm.distance.{DistanceToPoint, PointPairDistance}
@@ -10,6 +10,23 @@ object BoundaryDelaunay {
   type HalfEdge = Int
   type ResultEdge = Int
   type Vertex = Int
+
+  def isMeshValid(triangles: TriangleMap, het: HalfEdgeTable): Boolean = {
+    import het._
+    var valid = true
+    triangles.getTriangles.map { case (idx, e0) => {
+      val (a, b, c) = idx
+      var e = e0
+      do {
+        if (getFlip(getFlip(e)) != e) {
+          println(s"In triangle ${(a,b,c)}: edge ${getSrc(e)} -> ${getDest(e)} has improper flips")
+          valid = false
+        }
+        e = getNext(e)
+      } while (e != e0)
+    }}
+    valid
+  }
 
   def apply(dt: DelaunayTriangulation, boundingExtent: Extent): BoundaryDelaunay = {
 
@@ -200,7 +217,7 @@ object BoundaryDelaunay {
         //showLoop(e)
         //halfEdgeTable.showLoop(opp)
         //println(s"=======")
-        val isOuterEdge = outerEdges.contains((getSrc(e), getDest(e)))
+        val isOuterEdge = outerEdges.contains(getSrc(e) -> getDest(e))
         // val isFlipInInnerRing = {
         //   val flip = halfEdgeTable.getFlip(opp)
         //   halfEdgeTable.getDest(halfEdgeTable.getNext(halfEdgeTable.getNext(halfEdgeTable.getNext(flip)))) != halfEdgeTable.getDest(flip)
@@ -256,18 +273,26 @@ object BoundaryDelaunay {
       import dt.halfEdgeTable._
 
       val polys = collection.mutable.ListBuffer.empty[Polygon]
-      // val bounds = innerLoop.map{ case (_, o) => (halfEdgeTable.getSrc(o) -> halfEdgeTable.getDest(o), o) }.toMap
-      // val boundrefs = innerLoop.map(_._2).toSet
       val bounds = innerEdges.values.map{ case (_, o) => (halfEdgeTable.getSrc(o) -> halfEdgeTable.getDest(o), o) }.toMap
-      val boundrefs = innerEdges.values.map(_._2).toSet
+      // val boundrefs = innerEdges.values.map(_._2).toSet
 
       innerEdges.values.foreach{ case (e0, o0) =>{
         var e = e0
-        var o = halfEdgeTable.getFlip(o0)
+        var pairedE = halfEdgeTable.getFlip(o0)
+
+        // println(s"\u001b[38;5;208m☆ Navigating original mesh ☆\u001b[0m")
+        // navigate(e, dt.pointSet.getCoordinate(_), Map.empty)
 
         var continue = true
         var j = 0
         do {
+          // println(s"\u001b[38;5;55m☆ Navigating boundary mesh ☆\u001b[0m")
+          // halfEdgeTable.navigate(pairedE, verts(_), Map.empty) 
+
+          assert(getSrc(e) == halfEdgeTable.getSrc(pairedE) && getDest(e) == halfEdgeTable.getDest(pairedE))
+
+          println(s"Building off [${halfEdgeTable.getSrc(pairedE)} -> ${halfEdgeTable.getDest(pairedE)}]")
+
           // if (getSrc(e) != halfEdgeTable.getSrc(o) || getDest(e) != halfEdgeTable.getDest(o)) {
           //   new java.io.PrintWriter("buffer.wkt") { write(geotrellis.vector.io.wkt.WKT.write(MultiPolygon(polys))); close } // (debug)
 
@@ -275,17 +300,21 @@ object BoundaryDelaunay {
           //   return ()
           // }
 
-          // pulse (debug)
           //println(s"e = ${(getSrc(e), getDest(e), getDest(getNext(e)))}, o = [${halfEdgeTable.getSrc(o)} -> ${halfEdgeTable.getDest(o)}]")
 
-          bounds.get(halfEdgeTable.getSrc(o) -> halfEdgeTable.getDest(o)) match {
-            case Some(oNext) =>
+          bounds.get(halfEdgeTable.getSrc(pairedE) -> halfEdgeTable.getDest(pairedE)) match {
+            case Some(next) =>
+              println("Edge is on bounding loop")
+
               // we've arrived at the edge.  Make sure we're joined up.
-              if (o != oNext)
-                halfEdgeTable.join(halfEdgeTable.getFlip(o), oNext)
+              if (pairedE != next) {
+                halfEdgeTable.join(halfEdgeTable.getFlip(pairedE), next)
+                pairedE = next
+              }
               continue = false
 
             case None =>
+              println("Edge is not on boundary")
               // not at the boundary.  Keep going.
 
               lookupTriangle(e) match {
@@ -305,23 +334,23 @@ object BoundaryDelaunay {
 
                   // link new triangle to existing triangulation
                   try {
-                    halfEdgeTable.join(tri, halfEdgeTable.getFlip(o))
+                    halfEdgeTable.join(tri, halfEdgeTable.getFlip(pairedE))
                   } catch {
                     case _: AssertionError =>
                       println("Improper join (should never see this)")
                       println(geotrellis.vector.io.wkt.WKT.write(Polygon(pa, pb, pc, pa)))
                   }
 
-                  o = tri
+                  pairedE = tri
                 case Some(tri) =>
                   // continue = false
 
                   // bounding triangle already exists
-                  if (o != tri) {
+                  if (pairedE != tri) {
                     // join if it hasn't already been linked
                     //println("join")
-                    halfEdgeTable.join(tri, halfEdgeTable.getFlip(o))
-                    o = tri
+                    halfEdgeTable.join(tri, halfEdgeTable.getFlip(pairedE))
+                    pairedE = tri
                   } else {
                     // triangle is already properly connected
                     //println("no join") // (debug)
@@ -330,7 +359,7 @@ object BoundaryDelaunay {
           }
 
           e = rotCWDest(e)
-          o = halfEdgeTable.rotCWDest(o)
+          pairedE = halfEdgeTable.rotCWDest(pairedE)
           j += 1
         } while (continue && j < 20)
         if (j == 20)
@@ -465,6 +494,21 @@ object BoundaryDelaunay {
   */
     }
 
+    def validate() = {
+      import halfEdgeTable._
+      val (_, (_, opp0)) = innerEdges.head
+      val e0 = getFlip(opp0)
+      var e = getNext(e0)
+
+      do {
+        if (!innerEdges.contains(getSrc(e) -> getDest(e))) {
+          throw new Exception(s"${getSrc(e)} -> ${getDest(e)} not found in innerLoop")
+        }
+
+        e = getNext(e)
+      } while (e != e0)
+    }
+
     def copyConvertBoundingTris(): ResultEdge = {
       import dt.halfEdgeTable._
 
@@ -480,6 +524,21 @@ object BoundaryDelaunay {
         e = getNext(e)
         ne = halfEdgeTable.getNext(ne)
       } while (e != dt.boundary)
+
+      isMeshValid(triangles, halfEdgeTable)
+
+      // halfEdgeTable.navigate(
+      //   newBound, 
+      //   verts(_), 
+      //   Map[Char, (String, Int => Int)](
+      //     'i' -> (("jump to inner loop", { _ => halfEdgeTable.getFlip(innerEdges.head._2._2) })),
+      //     'x' -> (("export loop as WKT", { h => 
+      //       val line = Line(halfEdgeTable.mapOverLoop(h){ ix => verts(halfEdgeTable.getDest(ix)) }.map(Point.jtsCoord2Point(_)))
+      //       println(geotrellis.vector.io.wkt.WKT.write(line.closed))
+      //       h
+      //     }))
+      //   )
+      // )
 
       // writeWKT("bounds.wkt")
       fillInnerLoop
@@ -526,7 +585,7 @@ object BoundaryDelaunay {
       else
         copyConvertBoundingTris
 
-    BoundaryDelaunay(DelaunayPointSet(verts.toMap), halfEdgeTable, triangles, boundary, isLinear)  }
+    BoundaryDelaunay(DelaunayPointSet(verts.toMap), halfEdgeTable, triangles, boundary, innerEdges.head._2._2, isLinear)  }
 
   // def writeWKT(wktFile: String) = {
   //   val indexToCoord = { i: Int => Point.jtsCoord2Point(dt.pointSet.getCoordinate(i)) }
@@ -542,6 +601,7 @@ case class BoundaryDelaunay(
   halfEdgeTable: HalfEdgeTable,
   triangleMap: TriangleMap,
   boundary: Int,
+  inner: Int,
   isLinear: Boolean
 ) {
   def trianglesFromVertices: MultiPolygon = {
@@ -572,4 +632,13 @@ case class BoundaryDelaunay(
     val wktString = geotrellis.vector.io.wkt.WKT.write(mp)
     new java.io.PrintWriter(wktFile) { write(wktString); close }
   }
+
+  def isMeshValid(): Boolean = { BoundaryDelaunay.isMeshValid(triangleMap, halfEdgeTable) }
+
+  def navigate() = halfEdgeTable.navigate(boundary, 
+                                          pointSet.getCoordinate(_), 
+                                          Map[Char, (String, Int => Int)](
+                                            'i' -> (("jump to inner edge", { _ => inner }))
+                                          )
+                                         )
 }

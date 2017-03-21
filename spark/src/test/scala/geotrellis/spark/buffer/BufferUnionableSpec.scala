@@ -1,6 +1,7 @@
 package geotrellis.spark.buffer
 
 import geotrellis.spark._
+import geotrellis.spark.testkit._
 
 import org.scalatest.FunSpec
 
