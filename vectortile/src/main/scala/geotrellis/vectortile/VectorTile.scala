@@ -16,7 +16,9 @@
 
 package geotrellis.vectortile
 
+import geotrellis.proj4.{LatLng, WebMercator}
 import geotrellis.vector.Extent
+import geotrellis.vector.io._
 import geotrellis.vectortile.internal.{vector_tile => vt}
 
 // --- //
@@ -56,6 +58,12 @@ ${layers.values.map(_.pretty).mkString}
 }
 """
   }
+
+  /** Yield GeoJson for this VectorTile. Geometries are reprojected from
+    * WebMercator to LatLng, and metadata is dropped.
+    */
+  def toGeoJson: String =
+    layers.values.flatMap(_.features).map(_.geom.reproject(WebMercator,LatLng)).toGeoJson
 }
 
 object VectorTile {
