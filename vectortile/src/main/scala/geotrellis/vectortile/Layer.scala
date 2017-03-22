@@ -16,7 +16,9 @@
 
 package geotrellis.vectortile
 
+import geotrellis.proj4.{ LatLng, WebMercator }
 import geotrellis.vector._
+import geotrellis.vector.io._
 import geotrellis.vectortile.internal._
 import geotrellis.vectortile.internal.{vector_tile => vt}
 import geotrellis.vectortile.internal.vector_tile.Tile.GeomType.{POINT, LINESTRING, POLYGON}
@@ -159,7 +161,8 @@ trait Layer extends Serializable {
       fs.map({ f =>
 s"""
         feature {
-          geometry = ${f.geom}
+          geometry (WKT) = ${f.geom}
+          geometry (LatLng GeoJson) = ${f.geom.reproject(WebMercator, LatLng).toGeoJson}
           ${prettyMeta(f.data)}
         }
 """
