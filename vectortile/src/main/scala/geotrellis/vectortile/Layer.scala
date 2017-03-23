@@ -22,6 +22,7 @@ import geotrellis.vector.io._
 import geotrellis.vectortile.internal._
 import geotrellis.vectortile.internal.{vector_tile => vt}
 import geotrellis.vectortile.internal.vector_tile.Tile.GeomType.{POINT, LINESTRING, POLYGON}
+import scala.collection.immutable.HashMap
 
 import scala.collection.mutable.ListBuffer
 
@@ -85,6 +86,13 @@ trait Layer extends Serializable {
 
     val (keys, values) = totalMeta
 
+    /* Construct Maps of keys and values with their Seq indices, so that
+     * lookups in `unfeature` will be fast. Previously they were using
+     * `Seq.indexOf`, which turned out to be O(n^2) for Analytic vectortiles.
+     */
+    val keyMap: Map[String, Int] = keys.zipWithIndex.toMap
+    val valMap: Map[Value, Int] = values.zipWithIndex.toMap
+
     /* In a future version of the VectorTile spec, when Single and Multi
      * Geometries are separate, we will be able to restructre `ProtobufGeom`
      * in such a way that makes `Geometry.toCommands` possible here.
@@ -94,12 +102,12 @@ trait Layer extends Serializable {
      *   points.map(f => unfeature(keys, values, f))
      */
     val features = Seq(
-      points.map(f => unfeature(keys, values, POINT, pgp.toCommands(Left(f.geom), tileExtent.northWest, resolution), f.data)),
-      multiPoints.map(f => unfeature(keys, values, POINT, pgp.toCommands(Right(f.geom), tileExtent.northWest, resolution), f.data)),
-      lines.map(f => unfeature(keys, values, LINESTRING, pgl.toCommands(Left(f.geom), tileExtent.northWest, resolution), f.data)),
-      multiLines.map(f => unfeature(keys, values, LINESTRING, pgl.toCommands(Right(f.geom), tileExtent.northWest, resolution), f.data)),
-      polygons.map(f => unfeature(keys, values, POLYGON, pgy.toCommands(Left(f.geom), tileExtent.northWest, resolution), f.data)),
-      multiPolygons.map(f => unfeature(keys, values, POLYGON, pgy.toCommands(Right(f.geom), tileExtent.northWest, resolution), f.data))
+      points.map(f => unfeature(keyMap, valMap, POINT, pgp.toCommands(Left(f.geom), tileExtent.northWest, resolution), f.data)),
+      multiPoints.map(f => unfeature(keyMap, valMap, POINT, pgp.toCommands(Right(f.geom), tileExtent.northWest, resolution), f.data)),
+      lines.map(f => unfeature(keyMap, valMap, LINESTRING, pgl.toCommands(Left(f.geom), tileExtent.northWest, resolution), f.data)),
+      multiLines.map(f => unfeature(keyMap, valMap, LINESTRING, pgl.toCommands(Right(f.geom), tileExtent.northWest, resolution), f.data)),
+      polygons.map(f => unfeature(keyMap, valMap, POLYGON, pgy.toCommands(Left(f.geom), tileExtent.northWest, resolution), f.data)),
+      multiPolygons.map(f => unfeature(keyMap, valMap, POLYGON, pgy.toCommands(Right(f.geom), tileExtent.northWest, resolution), f.data))
     ).flatten
 
     vt.Tile.Layer(version, name, features, keys, values.map(_.toProtobuf), Some(tileWidth))
@@ -118,14 +126,15 @@ trait Layer extends Serializable {
   }
 
   private def unfeature(
-    keys: Seq[String],
-    values: Seq[Value],
+    keys: Map[String, Int],
+    values: Map[Value, Int],
     geomType: vt.Tile.GeomType,
     cmds: Seq[Command],
     data: Map[String, Value]
   ): vt.Tile.Feature = {
     val tags = data.toSeq.foldRight(List.empty[Int]) { case (pair, acc) =>
-      keys.indexOf(pair._1) :: values.indexOf(pair._2) :: acc
+      /* These `Option.get` _should_ never fail */
+      keys.get(pair._1).get :: values.get(pair._2).get :: acc
     }
 
     vt.Tile.Feature(None, tags, Some(geomType), Command.uncommands(cmds))
