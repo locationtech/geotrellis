@@ -437,7 +437,7 @@ object BoundaryDelaunay {
       else
         copyConvertBoundingTris
 
-    BoundaryDelaunay(DelaunayPointSet(verts.toMap), halfEdgeTable, triangles, boundary, innerEdges.head._2._2, isLinear)  }
+    BoundaryDelaunay(DelaunayPointSet(verts.toMap), halfEdgeTable, triangles, boundary, /*innerEdges.head._2._2,*/ isLinear)  }
 
   // def writeWKT(wktFile: String) = {
   //   val indexToCoord = { i: Int => Point.jtsCoord2Point(dt.pointSet.getCoordinate(i)) }
@@ -453,7 +453,7 @@ case class BoundaryDelaunay(
   halfEdgeTable: HalfEdgeTable,
   triangleMap: TriangleMap,
   boundary: Int,
-  inner: Int,
+  // inner: Int,
   isLinear: Boolean
 ) {
   def trianglesFromVertices: MultiPolygon = {
@@ -487,10 +487,10 @@ case class BoundaryDelaunay(
 
   def isMeshValid(): Boolean = { BoundaryDelaunay.isMeshValid(triangleMap, halfEdgeTable) }
 
-  def navigate() = halfEdgeTable.navigate(boundary, 
-                                          pointSet.getCoordinate(_), 
-                                          Map[Char, (String, Int => Int)](
-                                            'i' -> (("jump to inner edge", { _ => inner }))
-                                          )
-                                         )
+  // def navigate() = halfEdgeTable.navigate(boundary, 
+  //                                         pointSet.getCoordinate(_), 
+  //                                         Map[Char, (String, Int => Int)](
+  //                                           'i' -> (("jump to inner edge", { _ => inner }))
+  //                                         )
+  //                                        )
 }
