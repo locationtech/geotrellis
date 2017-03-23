@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Azavea
+ * Copyright 2017 Astraea, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,7 +90,6 @@ trait ClassificationColorMaps {
 
   private val defaultOptions = ColorMap.Options(
     classBoundaryType = Exact,
-    noDataColor = 0x00000000,
     fallbackColor = 0x000000FF
   )
 }
