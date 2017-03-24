@@ -206,7 +206,7 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
    * on the outside boundary of each constituent triangulation.
    */
   def merge(left: Int, isLeftLinear: Boolean, right: Int, isRightLinear: Boolean, triangles: TriangleMap, debug: Boolean = false): (Int, Boolean) = {
-    var base = insertBase(left, isLeftLinear, right, isRightLinear, false /*debug*/)
+    var base = insertBase(left, isLeftLinear, right, isRightLinear, debug)
 
     // If linear joins to linear, check that the current state
     // isn't already done (linear result)
