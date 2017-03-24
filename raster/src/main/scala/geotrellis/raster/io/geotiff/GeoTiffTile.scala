@@ -204,7 +204,7 @@ abstract class GeoTiffTile(
         // Need to check for bounds
         val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
         cfor(0)(_ < segmentSize, _ + 1) { i =>
-          val col = segmentTransform.indexToCol(i)
+          val col = segmentTransform.indexToCol(i) // TODO: Is there another way to do this?
           val row = segmentTransform.indexToRow(i)
           if(col < cols && row < rows) {
             f(segment.getInt(i))
@@ -541,6 +541,7 @@ abstract class GeoTiffTile(
     getSegments(intersectingSegments).foreach { case (segmentId, segment) =>
       val segmentBounds = segmentLayout.getGridBounds(segmentId)
       val segmentTransform = segmentLayout.getSegmentTransform(segmentId)
+      // TODO - remove get
       val overlap = bounds.intersection(segmentBounds).get
 
       if (cellType.isFloatingPoint) {
