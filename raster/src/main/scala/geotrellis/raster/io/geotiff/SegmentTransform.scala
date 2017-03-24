@@ -1,6 +1,6 @@
 package geotrellis.raster.io.geotiff
 
-trait GridIndexTransform {
+trait SegmentTransform {
   def segmentIndex: Int
   def segmentLayout: GeoTiffSegmentLayout
 
@@ -13,39 +13,20 @@ trait GridIndexTransform {
   def layoutCol: Int = segmentIndex % layoutCols
   def layoutRow: Int = segmentIndex / layoutCols
 
-  def segmentCols =
-    if(layoutCol == layoutCols - 1)
-      segmentLayout.totalCols - ( (layoutCols - 1) * tileCols)
-    else
-      tileCols
+  val (segmentCols, segmentRows) =
+    segmentLayout.getSegmentDimensions(segmentIndex)
 
-  def segmentRows =
-    if(layoutRow == layoutRows - 1)
-      segmentLayout.totalRows - ((layoutRows - 1) * tileRows)
-    else
-      tileRows
+  // TODO: Get rid of all these non-abstract methods.
 
-  /** The col of the source raster that this index represents. Can produce indefid cols */
+  /** The col of the source raster that this index represents. Can produce invalid cols */
   def indexToCol(i: Int) = {
     def tileCol = i % tileCols
     (layoutCol * tileCols) + tileCol
   }
 
-  /** The row of the source raster that this index represents. Can produce indefid rows */
+  /** The row of the source raster that this index represents. Can produce invalid rows */
   def indexToRow(i: Int) = {
     def tileRow = i / tileCols
-    (layoutRow * tileRows) + tileRow
-  }
-
-  /** Specific to BitGeoTiffSegment index. The col of the source raster that this index represents. */
-  def bitIndexToCol(i: Int) = {
-    def tileCol = i % segmentCols
-    (layoutCol * tileCols) + tileCol
-  }
-
-  /** Specific to BitGeoTiffSegment index. The row of the source raster that this index represents. */
-  def bitIndexToRow(i: Int) = {
-    def tileRow = i / segmentCols
     (layoutRow * tileRows) + tileRow
   }
 
@@ -53,7 +34,7 @@ trait GridIndexTransform {
 }
 
 
-case class StripedSegmentTransform(segmentIndex: Int, segmentLayout: GeoTiffSegmentLayout) extends GridIndexTransform {
+case class StripedSegmentTransform(segmentIndex: Int, segmentLayout: GeoTiffSegmentLayout) extends SegmentTransform {
   def gridToIndex(col: Int, row: Int): Int = {
     val tileCol = col - (layoutCol * tileCols)
     val tileRow = row - (layoutRow * tileRows)
@@ -61,12 +42,10 @@ case class StripedSegmentTransform(segmentIndex: Int, segmentLayout: GeoTiffSegm
   }
 }
 
-case class TiledSegmentTransform(segmentIndex: Int, segmentLayout: GeoTiffSegmentLayout) extends GridIndexTransform {
+case class TiledSegmentTransform(segmentIndex: Int, segmentLayout: GeoTiffSegmentLayout) extends SegmentTransform {
   def gridToIndex(col: Int, row: Int): Int = {
     val tileCol = col - (layoutCol * tileCols)
     val tileRow = row - (layoutRow * tileRows)
     tileRow * tileCols + tileCol
   }
 }
-
-

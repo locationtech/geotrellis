@@ -95,35 +95,29 @@ case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: Tile
     (layoutRow * tileLayout.layoutCols) + layoutCol
   }
 
-  def getSegmentTransform(segmentIndex: Int): GridIndexTransform =
+  def getSegmentCoordinate(segmentIndex: Int): (Int, Int) =
+    (segmentIndex % tileLayout.layoutCols, segmentIndex / tileLayout.layoutCols)
+
+  def getSegmentTransform(segmentIndex: Int): SegmentTransform =
     if (isStriped)
-      StripedSegmentTransform(segmentIndex, GeoTiffSegmentLayout(totalCols, totalRows, tileLayout, isTiled))
+      StripedSegmentTransform(segmentIndex, this)
     else
-      TiledSegmentTransform(segmentIndex, GeoTiffSegmentLayout(totalCols, totalRows, tileLayout, isTiled))
+      TiledSegmentTransform(segmentIndex, this)
 
   def getGridBounds(segmentIndex: Int, isBit: Boolean = false): GridBounds = {
-    val segmentTransform = getSegmentTransform(segmentIndex)
+    val (segmentCols, segmentRows) = getSegmentDimensions(segmentIndex)
 
-    val segmentCols = segmentTransform.segmentCols
-    val segmentRows = segmentTransform.segmentRows
-
-    val startCol =
-      if (isBit)
-        segmentTransform.bitIndexToCol(0)
-      else
-        segmentTransform.indexToCol(0)
-    val startRow =
-      if (isBit)
-        segmentTransform.bitIndexToRow(0)
-      else
-        segmentTransform.indexToRow(0)
+    val (startCol, startRow) = {
+      val (layoutCol, layoutRow) = getSegmentCoordinate(segmentIndex)
+      (layoutCol * tileLayout.tileCols, layoutRow * tileLayout.tileRows)
+    }
 
     val endCol = (startCol + segmentCols) - 1
     val endRow = (startRow + segmentRows) - 1
 
     GridBounds(startCol, startRow, endCol, endRow)
   }
-  
+
   /** Returns all segment indices which intersect given pixel grid bounds */
   def intersectingSegments(bounds: GridBounds): Array[Int] = {
     val tc = tileLayout.tileCols
