@@ -213,7 +213,7 @@ class CroppedGeoTiffSpec extends FunSpec
     }
   }
 
-  describe("multiband Geotiffs") {
+  describe("multiband Band Interleave Geotiffs") {
     val bitStriped = geoTiffPath("3bands/bit/3bands-striped-band.tif")
     val byteStriped = geoTiffPath("3bands/byte/3bands-striped-band.tif")
     val int16Striped = geoTiffPath("3bands/int16/3bands-striped-band.tif")
@@ -231,6 +231,170 @@ class CroppedGeoTiffSpec extends FunSpec
     val uint32Tiled = geoTiffPath("3bands/uint32/3bands-tiled-band.tif")
     val float32Tiled = geoTiffPath("3bands/float32/3bands-tiled-band.tif")
     val float64Tiled = geoTiffPath("3bands/float64/3bands-tiled-band.tif")
+
+    describe("reading striped geotiffs around the edges") {
+      val extent = Extent(0, 1.5, 97.79, 88.82)
+      it("bit") {
+        val (expected, actual) = Reader.multiBand(bitStriped, extent)
+        assertEqual(actual, expected)
+      }
+      it("byte") {
+        val (expected, actual) = Reader.multiBand(byteStriped, extent)
+        assertEqual(actual, expected)
+      }
+      it("int16") {
+        val (expected, actual) = Reader.multiBand(int16Striped, extent)
+        assertEqual(actual, expected)
+      }
+      it("int32") {
+        val (expected, actual) = Reader.multiBand(int32Striped, extent)
+        assertEqual(actual, expected)
+      }
+      it("uint16") {
+        val (expected, actual) = Reader.multiBand(uint16Striped, extent)
+        assertEqual(actual, expected)
+      }
+      it("uint32") {
+        val (expected, actual) = Reader.multiBand(uint32Striped, extent)
+        assertEqual(actual, expected)
+      }
+      it("float32") {
+        val (expected, actual) = Reader.multiBand(float32Striped, extent)
+        assertEqual(actual, expected)
+      }
+      it("float64") {
+        val (expected, actual) = Reader.multiBand(float64Striped, extent)
+        assertEqual(actual, expected)
+      }
+    }
+
+    describe("reading striped geoTiffs in the middle") {
+      val extent = Extent(7, 1.5, 15, 15)
+      it("bit") {
+        val (expected, actual) = Reader.multiBand(bitStriped, extent)
+        assertEqual(actual, expected)
+      }
+      it("byte") {
+        val (expected, actual) = Reader.multiBand(byteStriped, extent)
+        assertEqual(actual, expected)
+      }
+      it("int16") {
+        val (expected, actual) = Reader.multiBand(int16Striped, extent)
+        assertEqual(actual, expected)
+      }
+      it("int32") {
+        val (expected, actual) = Reader.multiBand(int32Striped, extent)
+        assertEqual(actual, expected)
+      }
+      it("uint16") {
+        val (expected, actual) = Reader.multiBand(uint16Striped, extent)
+        assertEqual(actual, expected)
+      }
+      it("uint32") {
+        val (expected, actual) = Reader.multiBand(uint32Striped, extent)
+        assertEqual(actual, expected)
+      }
+      it("float32") {
+        val (expected, actual) = Reader.multiBand(float32Striped, extent)
+        assertEqual(actual, expected)
+      }
+      it("float64") {
+        val (expected, actual) = Reader.multiBand(float64Striped, extent)
+        assertEqual(actual, expected)
+      }
+    }
+
+    describe("reading tiled geoTiffs around the edges") {
+      val extent = Extent(0, 1.5, 3, 8)
+      it("bit") {
+        val (expected, actual) = Reader.multiBand(bitTiled, extent)
+        assertEqual(actual, expected)
+      }
+      it("byte") {
+        val (expected, actual) = Reader.multiBand(byteTiled, extent)
+        assertEqual(actual,expected)
+      }
+      it("int16") {
+        val (expected, actual) = Reader.multiBand(int16Tiled, extent)
+        assertEqual(actual,expected)
+      }
+      it("int32") {
+        val (expected, actual) = Reader.multiBand(int32Tiled, extent)
+        assertEqual(actual,expected)
+      }
+      it("uint16") {
+        val (expected, actual) = Reader.multiBand(uint16Tiled, extent)
+        assertEqual(actual,expected)
+      }
+      it("uint32") {
+        val (expected, actual) = Reader.multiBand(uint32Tiled, extent)
+        assertEqual(actual,expected)
+      }
+      it("float32") {
+        val (expected, actual) = Reader.multiBand(float32Tiled, extent)
+        assertEqual(actual,expected)
+      }
+      it("float64") {
+        val (expected, actual) = Reader.multiBand(float64Tiled, extent)
+        assertEqual(actual,expected)
+      }
+    }
+
+    describe("reading tiled geoTiffs in the middle") {
+      val extent = Extent(4, 5, 7, 15)
+      it("bit") {
+        val (expected, actual) = Reader.multiBand(bitTiled, extent)
+        assertEqual(actual, expected)
+      }
+      it("byte") {
+        val (expected, actual) = Reader.multiBand(byteTiled, extent)
+        assertEqual(actual,expected)
+      }
+      it("int16") {
+        val (expected, actual) = Reader.multiBand(int16Tiled, extent)
+        assertEqual(actual,expected)
+      }
+      it("int32") {
+        val (expected, actual) = Reader.multiBand(int32Tiled, extent)
+        assertEqual(actual,expected)
+      }
+      it("uint16") {
+        val (expected, actual) = Reader.multiBand(uint16Tiled, extent)
+        assertEqual(actual,expected)
+      }
+      it("uint32") {
+        val (expected, actual) = Reader.multiBand(uint32Tiled, extent)
+        assertEqual(actual,expected)
+      }
+      it("float32") {
+        val (expected, actual) = Reader.multiBand(float32Tiled, extent)
+        assertEqual(actual,expected)
+      }
+      it("float64") {
+        val (expected, actual) = Reader.multiBand(float64Tiled, extent)
+        assertEqual(actual,expected)
+      }
+    }
+  }
+
+  describe("multipixel Pixel Interleave Geotiffs") {
+    val bitStriped = geoTiffPath("3bands/bit/3bands-striped-pixel.tif")
+    val byteStriped = geoTiffPath("3bands/byte/3bands-striped-pixel.tif")
+    val int16Striped = geoTiffPath("3bands/int16/3bands-striped-pixel.tif")
+    val int32Striped = geoTiffPath("3bands/int32/3bands-striped-pixel.tif")
+    val uint16Striped = geoTiffPath("3bands/uint16/3bands-striped-pixel.tif")
+    val uint32Striped = geoTiffPath("3bands/uint32/3bands-striped-pixel.tif")
+    val float32Striped = geoTiffPath("3bands/float32/3bands-striped-pixel.tif")
+    val float64Striped = geoTiffPath("3bands/float64/3bands-striped-pixel.tif")
+
+    val bitTiled = geoTiffPath("3bands/bit/3bands-tiled-pixel.tif")
+    val byteTiled = geoTiffPath("3bands/byte/3bands-tiled-pixel.tif")
+    val int16Tiled = geoTiffPath("3bands/int16/3bands-tiled-pixel.tif")
+    val int32Tiled = geoTiffPath("3bands/int32/3bands-tiled-pixel.tif")
+    val uint16Tiled = geoTiffPath("3bands/uint16/3bands-tiled-pixel.tif")
+    val uint32Tiled = geoTiffPath("3bands/uint32/3bands-tiled-pixel.tif")
+    val float32Tiled = geoTiffPath("3bands/float32/3bands-tiled-pixel.tif")
+    val float64Tiled = geoTiffPath("3bands/float64/3bands-tiled-pixel.tif")
 
     describe("reading striped geotiffs around the edges") {
       val extent = Extent(0, 1.5, 97.79, 88.82)
