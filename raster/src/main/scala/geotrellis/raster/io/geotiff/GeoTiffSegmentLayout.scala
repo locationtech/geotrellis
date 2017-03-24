@@ -98,7 +98,7 @@ case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: Tile
   def getSegmentCoordinate(segmentIndex: Int): (Int, Int) =
     (segmentIndex % tileLayout.layoutCols, segmentIndex / tileLayout.layoutCols)
 
-  def getSegmentTransform(segmentIndex: Int, bandCount: Int): SegmentTransform =
+  private [geotiff] def getSegmentTransform(segmentIndex: Int, bandCount: Int): SegmentTransform =
     if (isStriped)
       StripedSegmentTransform(segmentIndex, bandCount, this)
     else
