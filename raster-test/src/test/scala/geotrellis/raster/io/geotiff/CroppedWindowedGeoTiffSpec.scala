@@ -36,8 +36,8 @@ object Reader {
     (expected, actual)
   }
   def multiBand(path: String, extent: Extent): (Raster[MultibandTile], Raster[MultibandTile]) = {
-    val expected = MultibandGeoTiff(path, extent).raster
-    val actual = MultibandGeoTiff(path).raster.crop(extent)
+    val expected = MultibandGeoTiff(path).raster.crop(extent)
+    val actual = MultibandGeoTiff.streaming(path).crop(extent).raster
     (expected, actual)
   }
 }

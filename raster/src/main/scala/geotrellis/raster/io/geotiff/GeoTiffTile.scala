@@ -170,7 +170,7 @@ abstract class GeoTiffTile(
    */
   def get(col: Int, row: Int): Int = {
     val segmentIndex = segmentLayout.getSegmentIndex(col, row)
-    val i = segmentLayout.getSegmentTransform(segmentIndex).gridToIndex(col, row)
+    val i = segmentLayout.getSegmentTransform(segmentIndex, 1).gridToIndex(col, row)
 
     getSegment(segmentIndex).getInt(i)
   }
@@ -184,7 +184,7 @@ abstract class GeoTiffTile(
    */
   def getDouble(col: Int, row: Int): Double = {
     val segmentIndex = segmentLayout.getSegmentIndex(col, row)
-    val i = segmentLayout.getSegmentTransform(segmentIndex).gridToIndex(col, row)
+    val i = segmentLayout.getSegmentTransform(segmentIndex, 1).gridToIndex(col, row)
 
     getSegment(segmentIndex).getDouble(i)
   }
@@ -202,7 +202,7 @@ abstract class GeoTiffTile(
 
       if(isTiled) {
         // Need to check for bounds
-        val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
+        val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex, 1)
         cfor(0)(_ < segmentSize, _ + 1) { i =>
           val col = segmentTransform.indexToCol(i) // TODO: Is there another way to do this?
           val row = segmentTransform.indexToRow(i)
@@ -231,7 +231,7 @@ abstract class GeoTiffTile(
 
       if(isTiled) {
         // Need to check for bounds
-        val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
+        val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex, 1)
         cfor(0)(_ < segmentSize, _ + 1) { i =>
           val col = segmentTransform.indexToCol(i)
           val row = segmentTransform.indexToRow(i)
@@ -304,7 +304,7 @@ abstract class GeoTiffTile(
     getSegments(0 until segmentCount).foreach { case (segmentIndex, segment) =>
       val segmentSize = segment.size
 
-      val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
+      val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex, 1)
 
       cfor(0)(_ < segmentSize, _ + 1) { i =>
         val col = segmentTransform.indexToCol(i)
@@ -324,7 +324,7 @@ abstract class GeoTiffTile(
   def foreachDoubleVisitor(visitor: DoubleTileVisitor): Unit = {
     getSegments(0 until segmentCount).foreach { case (segmentIndex, segment) =>
       val segmentSize = segment.size
-      val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
+      val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex, 1)
       cfor(0)(_ < segmentSize, _ + 1) { i =>
         val col = segmentTransform.indexToCol(i)
         val row = segmentTransform.indexToRow(i)
@@ -345,7 +345,7 @@ abstract class GeoTiffTile(
     val arr = Array.ofDim[Array[Byte]](segmentCount)
     val compressor = compression.createCompressor(segmentCount)
     getSegments(0 until segmentCount).foreach { case (segmentIndex, segment) =>
-      val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
+      val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex, 1)
 
       val newBytes = segment.mapWithIndex { (i, z) =>
         val col = segmentTransform.indexToCol(i)
@@ -377,7 +377,7 @@ abstract class GeoTiffTile(
     val arr = Array.ofDim[Array[Byte]](segmentCount)
     val compressor = compression.createCompressor(segmentCount)
     getSegments(0 until segmentCount).foreach { case (segmentIndex, segment) =>
-      val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
+      val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex, 1)
       val newBytes = segment.mapDoubleWithIndex { (i, z) =>
         val col = segmentTransform.indexToCol(i)
         val row = segmentTransform.indexToRow(i)
@@ -503,7 +503,7 @@ abstract class GeoTiffTile(
     val tile = ArrayTile.empty(cellType, cols, rows)
 
     getSegments(0 until segmentCount).foreach { case (segmentId, segment) =>
-      val segmentTransform = segmentLayout.getSegmentTransform(segmentId)
+      val segmentTransform = segmentLayout.getSegmentTransform(segmentId, 1)
 
       if (cellType.isFloatingPoint)
         cfor(0)(_ < segment.size, _ + 1) { i =>
@@ -540,27 +540,30 @@ abstract class GeoTiffTile(
 
     getSegments(intersectingSegments).foreach { case (segmentId, segment) =>
       val segmentBounds = segmentLayout.getGridBounds(segmentId)
-      val segmentTransform = segmentLayout.getSegmentTransform(segmentId)
+      val segmentTransform = segmentLayout.getSegmentTransform(segmentId, 1)
       // TODO - remove get
-      val overlap = bounds.intersection(segmentBounds).get
+      bounds.intersection(segmentBounds) match {
+        case Some(overlap) =>
+          if (cellType.isFloatingPoint) {
+            cfor(overlap.colMin)(_ <= overlap.colMax, _ + 1) { col =>
+              cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
+                val i = segmentTransform.gridToIndex(col, row)
+                val v = segment.getDouble(i)
+                tile.setDouble(col - bounds.colMin, row - bounds.rowMin, v)
+              }
+            }
 
-      if (cellType.isFloatingPoint) {
-        cfor(overlap.colMin)(_ <= overlap.colMax, _ + 1) { col =>
-          cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
-            val i = segmentTransform.gridToIndex(col, row)
-            val v = segment.getDouble(i)
-            tile.setDouble(col - bounds.colMin, row - bounds.rowMin, v)
+          } else {
+            cfor(overlap.colMin)(_ <= overlap.colMax, _ + 1) { col =>
+              cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
+                val i = segmentTransform.gridToIndex(col, row)
+                val v = segment.getInt(i)
+                tile.set(col - bounds.colMin, row - bounds.rowMin, v)
+              }
+            }
           }
-        }
-
-      } else {
-        cfor(overlap.colMin)(_ <= overlap.colMax, _ + 1) { col =>
-          cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
-            val i = segmentTransform.gridToIndex(col, row)
-            val v = segment.getInt(i)
-            tile.set(col - bounds.colMin, row - bounds.rowMin, v)
-          }
-        }
+        case None =>
+          throw new reader.MalformedGeoTiffException(s"segmentLayout.intersectingSegments returned non-interesecting segment (bounds: $bounds, segmentBoudns: $segmentBounds")
       }
     }
 
