@@ -1,6 +1,6 @@
 package geotrellis.raster.io.geotiff
 
-trait SegmentTransform {
+private [geotiff] trait SegmentTransform {
   def segmentIndex: Int
   def segmentLayout: GeoTiffSegmentLayout
 
@@ -16,8 +16,6 @@ trait SegmentTransform {
   val (segmentCols, segmentRows) =
     segmentLayout.getSegmentDimensions(segmentIndex)
 
-  // TODO: Get rid of all these non-abstract methods.
-
   /** The col of the source raster that this index represents. Can produce invalid cols */
   def indexToCol(i: Int) = {
     def tileCol = i % tileCols
@@ -30,22 +28,38 @@ trait SegmentTransform {
     (layoutRow * tileRows) + tileRow
   }
 
+  /** For single band or band interleave */
   def gridToIndex(col: Int, row: Int): Int
+
+  /** For pixel interleave multiband */
+  def gridToIndex(col: Int, row: Int, bandOffset: Int): Int
 }
 
 
-case class StripedSegmentTransform(segmentIndex: Int, segmentLayout: GeoTiffSegmentLayout) extends SegmentTransform {
+private [geotiff] case class StripedSegmentTransform(segmentIndex: Int, bandCount: Int, segmentLayout: GeoTiffSegmentLayout) extends SegmentTransform {
   def gridToIndex(col: Int, row: Int): Int = {
     val tileCol = col - (layoutCol * tileCols)
     val tileRow = row - (layoutRow * tileRows)
     tileRow * segmentCols + tileCol
   }
+
+  def gridToIndex(col: Int, row: Int, bandOffset: Int): Int = {
+    val tileCol = col - (layoutCol * tileCols)
+    val tileRow = row - (layoutRow * tileRows)
+    (tileRow * segmentCols * bandCount) + (tileCol * bandCount) + bandOffset
+  }
 }
 
-case class TiledSegmentTransform(segmentIndex: Int, segmentLayout: GeoTiffSegmentLayout) extends SegmentTransform {
+private [geotiff] case class TiledSegmentTransform(segmentIndex: Int, bandCount: Int, segmentLayout: GeoTiffSegmentLayout) extends SegmentTransform {
   def gridToIndex(col: Int, row: Int): Int = {
     val tileCol = col - (layoutCol * tileCols)
     val tileRow = row - (layoutRow * tileRows)
     tileRow * tileCols + tileCol
+  }
+
+  def gridToIndex(col: Int, row: Int, bandOffset: Int): Int = {
+    val tileCol = col - (layoutCol * tileCols)
+    val tileRow = row - (layoutRow * tileRows)
+    (tileRow * tileCols * bandCount) + (tileCol * bandCount) + bandOffset
   }
 }
