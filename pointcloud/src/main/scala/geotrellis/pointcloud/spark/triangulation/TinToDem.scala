@@ -89,14 +89,15 @@ object TinToDem {
         }
       }, preservesPartitioning = true)
 
-  def withStitch(rdd: RDD[(SpatialKey, Array[Coordinate])], layoutDefinition: LayoutDefinition, extent: Extent, options: Options = Options.DEFAULT): RDD[(SpatialKey, Tile)] = {
+  def boundaryStitch(rdd: RDD[(SpatialKey, Array[Coordinate])], layoutDefinition: LayoutDefinition, extent: Extent, options: Options = Options.DEFAULT): RDD[(SpatialKey, Tile)] = {
 
     // Assumes that a partitioner has already been set
 
     val triangulations: RDD[(SpatialKey, DelaunayTriangulation)] =
       rdd
-        .mapValues { points =>
-          DelaunayTriangulation(points)
+        .map { case (key, points) =>
+          // println(s"Calculating Delaunay triangulation for $key")
+          (key, DelaunayTriangulation(points))
         }
 
     val borders: RDD[(SpatialKey, BoundaryDelaunay)] =
@@ -104,9 +105,10 @@ object TinToDem {
         .mapPartitions{ iter =>
           iter.map{ case (sk, dt) => {
             val ex: Extent = layoutDefinition.mapTransform(sk)
+            // println(s"Extracting BoundaryDelaunay for $sk")
             (sk, BoundaryDelaunay(dt, ex))
-          }
           }}
+        }
 
     borders
       .collectNeighbors
@@ -123,8 +125,6 @@ object TinToDem {
       .join(triangulations)
       .mapPartitions({ partition =>
         partition.map { case (key, (borders, triangulation)) => // : (Map[Direction, (BoundaryDelaunay, Extent)], DelaunayTriangulation)
-          val stitched = StitchedDelaunay(borders)
-
           val extent = layoutDefinition.mapTransform(key)
           val re =
             RasterExtent(
@@ -133,6 +133,12 @@ object TinToDem {
               layoutDefinition.tileRows
             )
 
+          // println(s"Stitching for $key [$extent]:")
+          // borders.foreach{ case (dir, (_, ex)) =>
+          //   println(s"  Neighbor $dir has $ex")
+          // }
+
+          val stitched = StitchedDelaunay(borders)
           val tile = stitched.rasterize(re, options.cellType)(triangulation)
 
           (key, tile)
