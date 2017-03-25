@@ -335,19 +335,19 @@ abstract class GeoTiffMultibandTile(
     val bands = Array.fill(bandCount)(ArrayTile.empty(cellType, gridBounds.width, gridBounds.height))
     val intersectingSegments = segmentLayout.intersectingSegments(gridBounds)
     if (hasPixelInterleave) {
-      logger.debug(s"Cropping $gridBounds uses ${intersectingSegments.length} out of ${segmentCount} segments")
+      logger.debug(s"Cropping $gridBounds uses ${intersectingSegments.length} out of ${segmentCount} pixel-interleave segments")
 
       // de-interlace the pixels from each segment
       for ((segmentId, segment) <- getSegments(intersectingSegments)) {
         val segmentBounds = segmentLayout.getGridBounds(segmentId)
-        val segmentTransform = segmentLayout.getSegmentTransform(segmentId)
+        val segmentTransform = segmentLayout.getSegmentTransform(segmentId, bandCount)
         val overlap = gridBounds.intersection(segmentBounds).get
 
         if (cellType.isFloatingPoint) {
           cfor(overlap.colMin)(_ <= overlap.colMax, _ + 1) { col =>
             cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
               cfor(0)(_ < bandCount, _ + 1) { band =>
-                val i = segmentTransform.gridToIndex(col, row)
+                val i = segmentTransform.gridToIndex(col, row, band)
                 val v = segment.getDouble(i)
                 bands(band).setDouble(col - gridBounds.colMin, row - gridBounds.rowMin, v)
               }
@@ -357,7 +357,7 @@ abstract class GeoTiffMultibandTile(
           cfor(overlap.colMin)(_ <= overlap.colMax, _ + 1) { col =>
             cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
               cfor(0)(_ < bandCount, _ + 1) { band =>
-                val i = segmentTransform.gridToIndex(col, row)
+                val i = segmentTransform.gridToIndex(col, row, band)
                 val v = segment.getInt(i)
                 bands(band).set(col - gridBounds.colMin, row - gridBounds.rowMin, v)
               }
@@ -375,7 +375,7 @@ abstract class GeoTiffMultibandTile(
         getSegments(intersectingSegments.map(_ + segmentOffset)).foreach { case (id, segment) =>
           val segmentId = id - segmentOffset
           val segmentBounds = segmentLayout.getGridBounds(segmentId)
-          val segmentTransform = segmentLayout.getSegmentTransform(segmentId)
+          val segmentTransform = segmentLayout.getSegmentTransform(segmentId, bandCount)
           val overlap = gridBounds.intersection(segmentBounds).get
 
           if (cellType.isFloatingPoint) {
@@ -635,7 +635,7 @@ abstract class GeoTiffMultibandTile(
       if(isTiled) {
         getSegments(0 until segmentCount).foreach { case (segmentIndex, segment) =>
           val segmentSize = segment.size
-          val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
+          val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex, bandCount)
           cfor(0)(_ < segmentSize, _ + 1) { i =>
             if(i % bandCount == b0) {
               val col = segmentTransform.indexToCol(i / bandCount)
@@ -663,7 +663,7 @@ abstract class GeoTiffMultibandTile(
       if(isTiled) {
         getSegments(start until start + bandSegmentCount).foreach { case (segmentIndex, segment) =>
           val segmentSize = segment.size
-          val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex % bandSegmentCount)
+          val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex % bandSegmentCount, bandCount)
           cfor(0)(_ < segmentSize, _ + 1) { i =>
             val col = segmentTransform.indexToCol(i)
             val row = segmentTransform.indexToRow(i)
@@ -712,7 +712,7 @@ abstract class GeoTiffMultibandTile(
       if(isTiled) {
         getSegments(0 until segmentCount).foreach { case (segmentIndex, segment) =>
           val segmentSize = segment.size
-          val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
+          val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex, bandCount)
           cfor(0)(_ < segmentSize, _ + 1) { i =>
             val col = segmentTransform.indexToCol(i / bandCount)
             val row = segmentTransform.indexToRow(i / bandCount)
@@ -734,7 +734,7 @@ abstract class GeoTiffMultibandTile(
       if(isTiled) {
         getSegments(0 until segmentCount).foreach { case (segmentIndex, segment) =>
           val segmentSize = segment.size
-          val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex)
+          val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex, bandCount)
           val bandIndex = segmentIndex / bandSegmentCount
 
           cfor(0)(_ < segmentSize, _ + 1) { i =>
