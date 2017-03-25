@@ -49,10 +49,10 @@ object CassandraRDDWriter {
     implicit val sc = raster.sparkContext
 
     val codec = KeyValueRecordCodec[K, V]
-    val schema = codec.schema
 
-    instance.withSessionDo {
-      _.execute(
+    instance.withSessionDo { session =>
+      instance.ensureKeyspaceExists(keyspace, session)
+      session.execute(
         SchemaBuilder.createTable(keyspace, table).ifNotExists()
           .addPartitionKey("key", bigint)
           .addClusteringColumn("name", text)
