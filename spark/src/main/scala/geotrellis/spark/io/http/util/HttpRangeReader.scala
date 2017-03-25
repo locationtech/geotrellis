@@ -30,12 +30,16 @@ import scala.util.Try
  *
  * @param url: A [[URL]] pointing to the desired GeoTiff.
  */
-class HttpRangeReader(url: URL) extends RangeReader with LazyLogging {
+class HttpRangeReader(url: URL, useHeadRequest: Boolean) extends RangeReader with LazyLogging {
 
   val request = Http(url.toString)
 
   val totalLength: Long = {
-    val headers = request.method("HEAD").asString
+    val headers = if(useHeadRequest) {
+      request.method("HEAD").asString
+    } else {
+      request.method("GET").execute { is => "" }
+    }
     val contentLength = headers
         .header("Content-Length")
         .flatMap({ cl => Try(cl.toLong).toOption }) match {
@@ -94,5 +98,18 @@ object HttpRangeReader {
    * @param url: A [[URL]] pointing to the desired GeoTiff.
    * @return A new instance of HttpRangeReader.
    */
-  def apply(url: URL): HttpRangeReader = new HttpRangeReader(url)
+  def apply(url: URL): HttpRangeReader = new HttpRangeReader(url, true)
+
+  /**
+   * Returns a new instance of HttpRangeReader which does not use HEAD
+   * to determine the totalLength.
+   *
+   * @param url: A [[URL]] pointing to the desired GeoTiff.
+   * @return A new instance of HttpRangeReader.
+   */
+  def withoutHeadRequest(url: URL): HttpRangeReader = new HttpRangeReader(url, false)
+
+  def withoutHeadRequest(address: String): HttpRangeReader = withoutHeadRequest(new URL(address))
+
+  def withoutHeadRequest(uri: URI): HttpRangeReader = withoutHeadRequest(uri.toURL)
 }
