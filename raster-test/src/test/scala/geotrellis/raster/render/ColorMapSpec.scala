@@ -113,6 +113,44 @@ class ColorMapSpec extends FunSpec with Matchers
       }
     }
 
+    it("should correctly map values to colors using IntCacheColorMap") {
+      val limits = Array(25,50,80,100)
+      val colors = Array(100,110,120,130)
+
+      val colorRamp: ColorRamp = colors
+      val breaksToColors: Map[Int, Int] = (limits zip colorRamp.stops(limits.size).colors).toMap
+      val colorMap1 = new IntColorMap(breaksToColors, ColorMap.Options(noDataColor =  0, classBoundaryType = LessThanOrEqualTo))
+      val arr = (0 until 90 by 5).toArray
+      val r = createTile(arr)
+      val h = r.histogram
+      val colorMap = colorMap1.cache(h)
+
+      val color: IndexedPngEncoding =
+        PngColorEncoding(colorMap.colors, colorMap.options.noDataColor, colorMap.options.fallbackColor) match {
+          case i @ IndexedPngEncoding(_, _) => i
+          case _ =>
+            withClue(s"Color should be Indexed") { sys.error("") }
+        }
+
+      // check that PNG will correctly convert raster to their color index values
+      val pngMap = color.convertColorMap(colorMap)
+      h.foreachValue { z =>
+        val color = colorMap.map(z)
+        val colorIndex = colorMap.colors.indexOf(color)
+        pngMap.map(z) should be(colorIndex)
+      }
+
+      // check that we can convert all raster values we have seen in our histogram
+      withClue(s"Cached colors: ${colorMap.colors.toList}") {
+        for (x <- arr) {
+          if (x <= 25) colorMap.map(x) should be(100)
+          else if (x <= 50) colorMap.map(x) should be(110)
+            // tile does not have any values past 75, since we didn't see them, we don't expect to color them
+          else if (x > 75) colorMap.options.noDataColor
+        }
+      }
+    }
+
     it("should correctly map redundant values to colors") {
       val limits = Array(25,42,60)
       val colors = Array(10,20,30)

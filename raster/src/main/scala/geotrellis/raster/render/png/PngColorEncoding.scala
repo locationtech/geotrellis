@@ -18,6 +18,7 @@ package geotrellis.raster.render.png
 
 import geotrellis.raster.render._
 
+/** Captures the conversion strategies from RGBA color space to PNG pixels. */
 sealed abstract class PngColorEncoding(val n: Byte, val depth: Int) {
  def convertColorMap(colorMap: ColorMap): ColorMap
 }
