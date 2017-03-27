@@ -64,16 +64,16 @@ object SimpleCostDistance {
   /**
     * Generate a cost-distance raster based on a set of starting
     * points and a friction raster.  This is an implementation of the
-    * standard algorithm mentioned in the "previous work" section of [1].
+    * standard algorithm cited in the "previous work" section of [1].
     *
     * 1. Tomlin, Dana.
     *    "Propagating radial waves of travel cost in a grid."
     *    International Journal of Geographical Information Science 24.9 (2010): 1391-1413.
     *
-    * @param  friction    Friction tile; pixels are interpreted as "second per meter"
-    * @param  points      List of starting points as tuples
-    * @param  maxCost     The maximum cost before pruning a path (in units of "seconds")
-    * @param  resolution  The resolution of the tiles (in units of "meters per pixel")
+    * @param  frictionTile  Friction tile; pixels are interpreted as "second per meter"
+    * @param  points        List of starting points as tuples
+    * @param  maxCost       The maximum cost before pruning a path (in units of "seconds")
+    * @param  resolution    The resolution of the tiles (in units of "meters per pixel")
     */
   def apply(
     frictionTile: Tile,
@@ -86,10 +86,12 @@ object SimpleCostDistance {
     val costTile = generateEmptyCostTile(cols, rows)
     val q: Q = generateEmptyQueue(cols, rows)
 
-    points.foreach({ case (col, row) =>
+    var i = 0; while (i < points.length) {
+      val (col, row) = points(i)
       val entry = (col, row, frictionTile.getDouble(col, row), 0.0)
       q.add(entry)
-    })
+      i += 1
+    }
 
     compute(frictionTile, costTile, maxCost, resolution, q, nop)
   }
@@ -133,6 +135,7 @@ object SimpleCostDistance {
       * @param  col           The column of the given location
       * @param  row           The row of the given location
       * @param  friction1     The instantaneous cost (friction) at the neighboring location
+      * @param  neighborCost  The cost of the neighbor
       * @param  cost          The length of the best-known path from a source to the neighboring location
       * @param  distance      The distance from the neighboring location to this location
       */
@@ -149,12 +152,12 @@ object SimpleCostDistance {
         if (isPassable(friction2)) {
           val step = resolution * distance * (friction1 + friction2) / 2.0
           val candidateCost = neighborCost + step
-          val entry = (col, row, friction2, candidateCost)
 
           // ... and the candidate cost is less than the maximum cost ...
           if (candidateCost <= maxCost) {
             // ... and the candidate is a possible improvement ...
             if (!isData(currentCost) || candidateCost < currentCost) {
+              val entry = (col, row, friction2, candidateCost)
               costTile.setDouble(col, row, candidateCost) // then increase lower bound on pixel,
               q.add(entry) // and enqueue candidate for future processing
             }
@@ -165,10 +168,6 @@ object SimpleCostDistance {
 
     /**
       * Process the candidate path on the top of the queue.
-      *
-      * @param  frictionTile  The friction tile
-      * @param  costTile      The cost tile
-      * @param  q             The priority queue of candidate paths
       */
     def processNext(): Unit = {
       val entry: Cost = q.poll
