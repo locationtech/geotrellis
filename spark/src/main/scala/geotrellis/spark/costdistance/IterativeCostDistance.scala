@@ -79,9 +79,7 @@ object IterativeCostDistance {
   ) = {
     val md = friction.metadata
     val mt = md.mapTransform
-    val kv = friction.first
-    val key = implicitly[SpatialKey](kv._1)
-    val tile = implicitly[Tile](kv._2)
+    val (key: SpatialKey, tile: Tile) = friction.first
     val extent = mt(key).reproject(md.crs, LatLng)
     val degrees = extent.xmax - extent.xmin
     val meters = degrees * (6378137 * 2.0 * math.Pi) / 360.0
@@ -115,7 +113,6 @@ object IterativeCostDistance {
       .flatMap({ g => geometryToKeys(md, g).map({ k => (k, g) }) })
       .groupBy(_._1)
       .mapValues({ list => list.map({ case (_, v) => v }) })
-      .toMap
   }
 
   /**
@@ -136,13 +133,16 @@ object IterativeCostDistance {
     val resolution = computeResolution(friction)
     logger.debug(s"Computed resolution: $resolution meters/pixel")
 
-    val bounds = friction.metadata.bounds.asInstanceOf[KeyBounds[K]]
-    val minKey = implicitly[SpatialKey](bounds.minKey)
-    val minKeyCol = minKey._1
-    val minKeyRow = minKey._2
-    val maxKey = implicitly[SpatialKey](bounds.maxKey)
-    val maxKeyCol = maxKey._1
-    val maxKeyRow = maxKey._2
+    val bounds = friction.metadata.bounds match {
+      case b: KeyBounds[K] => b
+      case _ => throw new Exception
+    }
+    val minKey: SpatialKey = bounds.minKey
+    val minKeyCol = minKey.col
+    val minKeyRow = minKey.row
+    val maxKey: SpatialKey = bounds.maxKey
+    val maxKeyCol = maxKey.col
+    val maxKeyRow = maxKey.row
 
     val accumulator = new ChangesAccumulator
     sc.register(accumulator)
@@ -153,8 +153,8 @@ object IterativeCostDistance {
     // Create RDD of initial (empty) cost tiles and load the
     // accumulator with the starting values.
     var costs: RDD[(K, V, DoubleArrayTile)] = friction.map({ case (k, v) =>
-      val key = implicitly[SpatialKey](k)
-      val tile = implicitly[Tile](v)
+      val key: SpatialKey = k
+      val tile: Tile = v
       val cols = tile.cols
       val rows = tile.rows
       val extent = mt(key)
@@ -184,7 +184,6 @@ object IterativeCostDistance {
         accumulator.value
           .groupBy(_._1)
           .map({ case (k, list) => (k, list.map({ case (_, v) => v })) })
-          .toMap
       val changes = sc.broadcast(_changes)
       logger.debug(s"At least ${changes.value.size} changed tiles")
 
@@ -193,10 +192,10 @@ object IterativeCostDistance {
       val previous = costs
 
       costs = previous.map({ case (k, v, oldCostTile) =>
-        val key = implicitly[SpatialKey](k)
-        val frictionTile = implicitly[Tile](v)
-        val keyCol = key._1
-        val keyRow = key._2
+        val key: SpatialKey = k
+        val frictionTile: Tile = v
+        val keyCol = key.col
+        val keyRow = key.row
         val frictionTileCols = frictionTile.cols
         val frictionTileRows = frictionTile.rows
         val localChanges: Option[Seq[SimpleCostDistance.Cost]] = changes.value.get(key)
@@ -247,11 +246,11 @@ object IterativeCostDistance {
 
       costs.count
       previous.unpersist()
-    } while (accumulator.value.size > 0)
+    } while (accumulator.value.nonEmpty)
 
     // Construct return value and return it
     val metadata = TileLayerMetadata(DoubleCellType, md.layout, md.extent, md.crs, md.bounds)
-    val rdd = costs.map({ case (k, _, cost) => (k, cost.asInstanceOf[Tile]) })
+    val rdd = costs.map({ case (k, _, cost) => (k, cost: Tile) })
     ContextRDD(rdd, metadata)
   }
 
