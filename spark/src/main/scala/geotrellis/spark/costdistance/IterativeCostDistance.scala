@@ -18,7 +18,7 @@ package geotrellis.spark.costdistance
 
 import geotrellis.proj4.LatLng
 import geotrellis.raster._
-import geotrellis.raster.costdistance.CostDistance
+import geotrellis.raster.costdistance.SimpleCostDistance
 import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.spark._
 import geotrellis.spark.tiling._
@@ -48,7 +48,7 @@ import scala.collection.mutable
   */
 object IterativeCostDistance {
 
-  type KeyCostPair = (SpatialKey, CostDistance.Cost)
+  type KeyCostPair = (SpatialKey, SimpleCostDistance.Cost)
   type Changes = mutable.ArrayBuffer[KeyCostPair]
 
   val logger = Logger.getLogger(IterativeCostDistance.getClass)
@@ -172,7 +172,7 @@ object IterativeCostDistance {
             })
         })
 
-      (k, v, CostDistance.generateEmptyCostTile(cols, rows))
+      (k, v, SimpleCostDistance.generateEmptyCostTile(cols, rows))
     }).persist(StorageLevel.MEMORY_AND_DISK_SER)
 
     costs.count
@@ -180,7 +180,7 @@ object IterativeCostDistance {
     // Repeatedly map over the RDD of cost tiles until no more changes
     // occur on the periphery of any tile.
     do {
-      val _changes: Map[SpatialKey, Seq[CostDistance.Cost]] =
+      val _changes: Map[SpatialKey, Seq[SimpleCostDistance.Cost]] =
         accumulator.value
           .groupBy(_._1)
           .map({ case (k, list) => (k, list.map({ case (_, v) => v })) })
@@ -199,20 +199,20 @@ object IterativeCostDistance {
         val keyRow = key._2
         val frictionTileCols = frictionTile.cols
         val frictionTileRows = frictionTile.rows
-        val localChanges: Option[Seq[CostDistance.Cost]] = changes.value.get(key)
+        val localChanges: Option[Seq[SimpleCostDistance.Cost]] = changes.value.get(key)
 
         localChanges match {
           case Some(localChanges) => {
-            val q: CostDistance.Q = {
-              val q = CostDistance.generateEmptyQueue(frictionTileCols, frictionTileRows)
-              localChanges.foreach({ (entry: CostDistance.Cost) => q.add(entry) })
+            val q: SimpleCostDistance.Q = {
+              val q = SimpleCostDistance.generateEmptyQueue(frictionTileCols, frictionTileRows)
+              localChanges.foreach({ (entry: SimpleCostDistance.Cost) => q.add(entry) })
               q
             }
 
-            val newCostTile = CostDistance.compute(
+            val newCostTile = SimpleCostDistance.compute(
               frictionTile, oldCostTile,
               maxCost, resolution,
-              q, { (entry: CostDistance.Cost) =>
+              q, { (entry: SimpleCostDistance.Cost) =>
                 val (col, row, f, c) = entry
                 if (col == 0 && (minKeyCol <= keyCol-1)) // left
                   accumulator.add((SpatialKey(keyCol-1, keyRow), (frictionTileCols, row, f, c)))
