@@ -225,56 +225,65 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
 
     var continue = true
     while(continue) {
+      // if (debug) {
+      //   var e = rotCCWSrc(getFlip(base))
+      //   var xs = List.empty[Double]
+      //   var ys = List.empty[Double]
+      //   do {
+      //     val p0 = getCoordinate(getSrc(e))
+      //     val p1 = getCoordinate(getDest(e))
+      //     xs = xs :+ p0.x
+      //     xs = xs :+ p1.x
+      //     ys = ys :+ p0.y
+      //     ys = ys :+ p1.y
+      //     e = rotCCWSrc(e)
+      //   } while (e != getFlip(base))
+
+      //   print("plot([")
+      //   xs.foreach{ x => print(s"$x, ") }
+      //   print("\b\b], [")
+      //   ys.foreach{ y => print(s"$y, ") }
+      //   println("\b\b], 'b*-')")
+
+      //   xs = List.empty
+      //   ys = List.empty
+      //   e = rotCWSrc(base)
+      //   do {
+      //     val p0 = getCoordinate(getSrc(e))
+      //     val p1 = getCoordinate(getDest(e))
+      //     xs = xs :+ p0.x
+      //     xs = xs :+ p1.x
+      //     ys = ys :+ p0.y
+      //     ys = ys :+ p1.y
+      //     e = rotCWSrc(e)
+      //   } while (e != base)
+
+      //   print("plot([")
+      //   xs.foreach{ x => print(s"$x, ") }
+      //   print("\b\b], [")
+      //   ys.foreach{ y => print(s"$y, ") }
+      //   println("\b\b], 'b*-')")
+      // }
+
       if (debug) {
-        var e = rotCCWSrc(getFlip(base))
-        var xs = List.empty[Double]
-        var ys = List.empty[Double]
-        do {
-          val p0 = getCoordinate(getSrc(e))
-          val p1 = getCoordinate(getDest(e))
-          xs = xs :+ p0.x
-          xs = xs :+ p1.x
-          ys = ys :+ p0.y
-          ys = ys :+ p1.y
-          e = rotCCWSrc(e)
-        } while (e != getFlip(base))
-
-        print("plot([")
-        xs.foreach{ x => print(s"$x, ") }
-        print("\b\b], [")
-        ys.foreach{ y => print(s"$y, ") }
-        println("\b\b], 'b*-')")
-
-        xs = List.empty
-        ys = List.empty
-        e = rotCWSrc(base)
-        do {
-          val p0 = getCoordinate(getSrc(e))
-          val p1 = getCoordinate(getDest(e))
-          xs = xs :+ p0.x
-          xs = xs :+ p1.x
-          ys = ys :+ p0.y
-          ys = ys :+ p1.y
-          e = rotCWSrc(e)
-        } while (e != base)
-
-        print("plot([")
-        xs.foreach{ x => print(s"$x, ") }
-        print("\b\b], [")
-        ys.foreach{ y => print(s"$y, ") }
-        println("\b\b], 'b*-')")
+        println(s"Base = [${getSrc(base)} -> ${getDest(base)}]")
       }
 
       var lcand = rotCCWSrc(getFlip(base))
       var rcand = rotCWSrc(base)
 
       if (debug) {
-        val lc = getCoordinate(getDest(lcand))
-        val rc = getCoordinate(getDest(rcand))
-        val b0 = getCoordinate(getSrc(base))
-        val b1 = getCoordinate(getDest(base))
-        println(s"plot([${lc.x}, ${b1.x}, ${b0.x}, ${rc.x}], [${lc.y}, ${b1.y}, ${b0.y}, ${rc.y}], 'ro-')")
+        println(s"Initial LCAND = [${getSrc(lcand)} -> ${getDest(lcand)}]")
+        println(s"Initial RCAND = [${getSrc(rcand)} -> ${getDest(rcand)}]")
       }
+
+      // if (debug) {
+      //   val lc = getCoordinate(getDest(lcand))
+      //   val rc = getCoordinate(getDest(rcand))
+      //   val b0 = getCoordinate(getSrc(base))
+      //   val b1 = getCoordinate(getDest(base))
+      //   println(s"plot([${lc.x}, ${b1.x}, ${b0.x}, ${rc.x}], [${lc.y}, ${b1.y}, ${b0.y}, ${rc.y}], 'ro-')")
+      // }
 
       // Find left side candidate edge for extending the fill triangulation
       if(valid(lcand, base)) {
@@ -287,6 +296,12 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
           )
         ) {
           val e = rotCCWSrc(lcand)
+
+          if (debug) {
+            println(s"Deleting LCAND")
+            println(s"Advancing LCAND to [${getSrc(e)} -> ${getDest(e)}]")
+          }
+
           triangles -= lcand
           setNext(rotCCWDest(lcand), getNext(lcand))
           setNext(getPrev(lcand), getFlip(base))
@@ -295,13 +310,12 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
           
           lcand = e
 
-          if (debug) {
-            val c = circleCenter(getDest(base), getSrc(base), getDest(lcand))
-            val r = c.distance(getCoordinate(getDest(base)))
+          // if (debug) {
+          //   val c = circleCenter(getDest(base), getSrc(base), getDest(lcand))
+          //   val r = c.distance(getCoordinate(getDest(base)))
 
-            println(s"   [31m✘[0m Deleted LCAND [circle center = $c, radius = $r]")
-          }
-
+          //   println(s"   [31m✘[0m Deleted LCAND [circle center = $c, radius = $r]")
+          // }
         }
       }
 
@@ -318,6 +332,12 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
           )
         ) {
           val e = rotCWSrc(rcand)
+
+          if (debug) {
+            println(s"Deleting RCAND")
+            println(s"Advancing RCAND to [${getSrc(e)} -> ${getDest(e)}]")
+          }
+
           triangles -= getFlip(rcand)
           setNext(getFlip(base), rotCWSrc(rcand))
           setNext(rotCCWDest(rcand), getNext(rcand))
@@ -326,12 +346,12 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
 
           rcand = e
 
-          if (debug) {
-            val c = circleCenter(getDest(base), getSrc(base), getDest(rcand))
-            val r = c.distance(getCoordinate(getDest(base)))
+          // if (debug) {
+          //   val c = circleCenter(getDest(base), getSrc(base), getDest(rcand))
+          //   val r = c.distance(getCoordinate(getDest(base)))
 
-            println(s"   [31m✘[0m Deleted RCAND [circle center = $c, radius = $r]")
-          }
+          //   println(s"   [31m✘[0m Deleted RCAND [circle center = $c, radius = $r]")
+          // }
         }
       }
 
@@ -351,11 +371,14 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
           setNext(rcand, e)
           setNext(getFlip(lcand), getFlip(e))
           triangles += getFlip(base)
-          base = e
 
           if (debug) {
-            println("   [32m✔[0m Seleted RCAND\n")
+            // println("   [32m✔[0m Seleted RCAND\n")
+            val t = getFlip(base)
+            println(s"   Seleted RCAND, creating triangle ${(getSrc(t), getDest(t), getDest(getNext(t)))}")
           }
+
+          base = e
         } else {
           // form new triangle from lcand and base
           val e = createHalfEdges(getSrc(base), getDest(lcand))
@@ -364,21 +387,24 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
           setNext(getFlip(e), rcand)
           setNext(getFlip(base), e)
           triangles += getFlip(base)
-          base = e
 
           if (debug) {
-            println("   [32m✔[0m Seleted LCAND\n")
+            // println("   [32m✔[0m Seleted LCAND\n")
+            val t = getFlip(base)
+            println(s"   Seleted LCAND, creating triangle ${(getSrc(t), getDest(t), getDest(getNext(t)))}")
           }
+
+          base = e
         }
 
       }
     }
 
-    if (debug) {
-      val ml = MultiLine(allEs)
-      val str = geotrellis.vector.io.wkt.WKT.write(ml)
-      new java.io.PrintWriter("zipper.wkt") { write(str); close }
-    }
+    // if (debug) {
+    //   val ml = MultiLine(allEs)
+    //   val str = geotrellis.vector.io.wkt.WKT.write(ml)
+    //   new java.io.PrintWriter("zipper.wkt") { write(str); close }
+    // }
 
     (advance(getFlip(base)), false)
   }

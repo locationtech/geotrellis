@@ -3,15 +3,42 @@ package geotrellis.vector.triangulation
 import org.apache.commons.math3.linear.{MatrixUtils, RealMatrix}
 import spire.syntax.cfor._
 
-// for debugging
 import geotrellis.vector._
 import geotrellis.vector.io.wkt.WKT
 
 import scala.annotation.tailrec
 import scala.collection.mutable.{ListBuffer, Map, PriorityQueue, Set}
 
-case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdgeTable, debug: Boolean)
+/** Generates the Delaunay triangulation of a set of points.
+ *
+ * The DelaunayTriangulation class operates on a collection of Coordinates to
+ * produce the unique triangulation (after projecting the points to the x-y
+ * plane) that satisfies the condition of each triangle in the result having a
+ * circumscribing circle where no vertices of the input point set are in the
+ * interior of that circle.
+ *
+ * Note that the input set must have 2 or more distinct points.  Collinear points
+ * are allowed.
+ *
+ * Whenever using this class for complex tasks with large quantities of points,
+ * numerical issues must be considered.  First, this triangulator will pare down
+ * the input set so as to remove points which are not numerically distinct.  This
+ * may result in points which are not strictly equal, but indistinguishable from
+ * one another with respect to the geometric predicates (collinearity tests,
+ * in-circle tests, orientation tests).  Failure to understand and address
+ * potential numerical issues in your data *may cause infinite loops*!  (It is
+ * our experience that sufficiently large point sets will eventually run afoul of
+ * these problems if left alone.)  The /tolerance/ parameter is set to a
+ * reasonable value in the defaults of the DelaunayTriangulation object's apply()
+ * method, but bear in mind that problems may arise in your particular case.
+ */
+case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdgeTable, tolerance: Double, debug: Boolean)
 {
+  /**
+   * Contains the triangles of a DelaunayTriangulation
+   *
+   * Note: This collection will be empty if isLinear is true.
+   */
   val triangleMap = new TriangleMap(halfEdgeTable)
 
   val predicates = new Predicates(pointSet, halfEdgeTable)
@@ -68,7 +95,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
   // }
 
 
-  def distinctPoints(lst: List[Int]): List[Int] = {
+  private def distinctPoints(lst: List[Int]): List[Int] = {
     import pointSet._
 
     @tailrec def dpInternal(l: List[Int], acc: List[Int]): List[Int] = {
@@ -76,14 +103,14 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
         case Nil => acc
         case i :: Nil => i :: acc
         case i :: rest => {
-          val chunk = rest.takeWhile{j => getX(j) <= getX(i) + 1e-8}
+          val chunk = rest.takeWhile{j => getX(j) <= getX(i) + tolerance}
           if (chunk.exists { j =>
             val (xj, yj) = (getX(j), getY(j))
-              val (xi, yi) = (getX(i), getY(i))
-                val dx = xj - xi
-                            val dy = yj - yi
-                            math.sqrt((dx * dx) + (dy * dy)) < 1e-10
-                          }) {
+            val (xi, yi) = (getX(i), getY(i))
+            val dx = xj - xi
+            val dy = yj - yi
+            math.sqrt((dx * dx) + (dy * dy)) < tolerance
+          }) {
             dpInternal(rest, acc)
           } else {
             dpInternal(rest, i :: acc)
@@ -95,7 +122,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
     dpInternal(lst, Nil).reverse
   }
 
-  val sortedVs = {
+  private val sortedVs = {
     import pointSet._
     val s =
       (0 until pointSet.length).toList.sortWith{
@@ -120,12 +147,14 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
 
   // val iTimer = new IterationTimer("Trianglate function")
 
-  def triangulate(lo: Int, hi: Int): (Int, Boolean) = {
+  private def triangulate(lo: Int, hi: Int): (Int, Boolean) = {
     // Implementation follows Guibas and Stolfi, ACM Transations on Graphics, vol. 4(2), 1985, pp. 74--123
 
     val n = hi - lo + 1
 
-    //println(s"Triangulating [$lo..$hi]")
+    if (debug) {
+      println(s"\u001b[38;5;208mTriangulating [$lo..$hi]\u001b[0m")
+    }
 
     val result =
     n match {
@@ -167,7 +196,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
         var (right, isRightLinear) = triangulate(med+1,hi)
 
         // iTimer.time {
-        stitcher.merge(left, isLeftLinear, right, isRightLinear, triangleMap)
+        stitcher.merge(left, isLeftLinear, right, isRightLinear, triangleMap, debug)
         // }
       }
     }
@@ -175,7 +204,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
     result
   }
 
-  def write(path: String, txt: String): Unit = {
+  private def write(path: String, txt: String): Unit = {
     import java.nio.file.{Paths, Files}
     import java.nio.charset.StandardCharsets
 
@@ -184,9 +213,29 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
 
   var (_boundary, _isLinear) = triangulate(0, sortedVs.length - 1)
   // iTimer.report()
+
+  /**
+   * Returns a reference to the half edge on the outside of the boundary of the
+   * triangulation.
+   *
+   * Starting from this half edge, the boundary of the triangulation can be
+   * traversed.  This exterior loop will have a clockwise winding and will
+   * be convex.
+   */
   def boundary() = _boundary
+
+  /**
+   * Is this triangulation linear?
+   *
+   * If all distinct input points are collinear, this will return true.  If so,
+   * the triangleMap will be empty.
+   */
   def isLinear() = _isLinear
 
+  /**
+   * A correctness check which tests if two triangles which share an edge
+   * overlapping.
+   */
   def isUnfolded(): Boolean = {
 
     val bounds = Set.empty[Int]
@@ -239,6 +288,10 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
     }
   }
 
+  /**
+   * Outputs the triangulation to the named file as a WKT representation of a
+   * MultiPolygon.
+   */
   def writeWKT(wktFile: String) = {
     val indexToCoord = pointSet.getCoordinate(_)
     val mp = MultiPolygon(triangleMap.getTriangles.keys.toSeq.map{
@@ -248,7 +301,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
     new java.io.PrintWriter(wktFile) { write(wktString); close }
   }
 
-  def holeBound(vi: Int) = {
+  private def holeBound(vi: Int) = {
     val e0 = getFlip(edgeIncidentTo(vi))
     val b0 = HalfEdge[Int, Int](getDest(rotCCWSrc(e0)), getDest(e0))
     b0.face = Some(rotCWDest(e0))
@@ -269,7 +322,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
     b0.flip
   }
 
-  def triangulateHole(inner: HalfEdge[Int, Int], tris: Map[(Int, Int, Int), HalfEdge[Int, Int]]): Unit = {
+  private def triangulateHole(inner: HalfEdge[Int, Int], tris: Map[(Int, Int, Int), HalfEdge[Int, Int]]): Unit = {
     val bps = ListBuffer.empty[Point]
     bps += Point.jtsCoord2Point(pointSet.getCoordinate(inner.src))
 
@@ -333,7 +386,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
   }
 
   // checks a predicate at all edges in a chain from a to b (not including b)
-  def allSatisfy(a: HalfEdge[Int, Int], b: HalfEdge[Int, Int], f: HalfEdge[Int, Int] => Boolean): Boolean = {
+  private def allSatisfy(a: HalfEdge[Int, Int], b: HalfEdge[Int, Int], f: HalfEdge[Int, Int] => Boolean): Boolean = {
     var e = a
     var result = true
     do {
@@ -343,7 +396,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
     result
   }
 
-  def link(a: HalfEdge[Int, Int], b: HalfEdge[Int, Int]): HalfEdge[Int, Int] = {
+  private def link(a: HalfEdge[Int, Int], b: HalfEdge[Int, Int]): HalfEdge[Int, Int] = {
     val result = HalfEdge[Int, Int](a.src, b.vert)
     result.flip.next = a
     result.next = b.next
@@ -352,7 +405,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
     result
   }
 
-  def retriangulateBoundaryPoint(vi: Int): (HalfEdge[Int, Int], Int, Map[(Int, Int, Int), HalfEdge[Int, Int]]) = {
+  private def retriangulateBoundaryPoint(vi: Int): (HalfEdge[Int, Int], Int, Map[(Int, Int, Int), HalfEdge[Int, Int]]) = {
     //println(s"  \u001b[38;5;55m➟ retriangulateBoundaryPoint($vi)\u001b[0m")
 
     val c2p = { i: Int => Point.jtsCoord2Point(pointSet.getCoordinate(i)) }
@@ -423,7 +476,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
     (first.flip.next, end, tris)
   }
 
-  def retriangulateInteriorPoint(vi: Int) = {
+  private def retriangulateInteriorPoint(vi: Int) = {
     //println(s"  \u001b[38;5;208m➟ retriangulateInteriorPoint($vi)\u001b[0m")
     val tris = Map.empty[(Int, Int, Int), HalfEdge[Int, Int]]
     triangulateHole(holeBound(vi), tris)
@@ -431,7 +484,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
     tris
   }
 
-  def decoupleVertex(vi: Int) = {
+  private def decoupleVertex(vi: Int) = {
     // remove links to original vertex
     //println(s"  ➟ disconnect original vertex $vi")
     val e0 = getFlip(edgeIncidentTo(vi))
@@ -462,7 +515,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
     removeIncidentEdge(vi)
   }
 
-  def removeVertexAndFill(vi: Int, tris: Map[(Int, Int, Int), HalfEdge[Int, Int]], bnd: Option[Int]): Seq[Int] = {
+  private def removeVertexAndFill(vi: Int, tris: Map[(Int, Int, Int), HalfEdge[Int, Int]], bnd: Option[Int]): Seq[Int] = {
     val exteriorRing = ListBuffer.empty[Int]
 
     decoupleVertex(vi)
@@ -524,7 +577,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
     exteriorRing
   }
 
-  /** A function to remove a vertex from a DelaunayTriangulation that adheres to
+  /** A function to remove a vertex from a DelaunayTriangulation that preserves
    *  the Delaunay property for all newly created fill triangles.
    */
   def deletePoint(vi: Int) = {
@@ -552,6 +605,12 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
     ()
   }
 
+  /**
+   * A correctness check for the triangulation.
+   *
+   * Ensures that the mesh is correctly built with no obvious topological errors
+   * in the mesh.
+   */
   def isMeshValid(): Boolean = {
     val edges = Map.empty[(Int, Int), Int]
     val triedges = Set.empty[Int]
@@ -629,91 +688,42 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
     result
   }
 
+  /**
+   * Provides a text-based interactive interface to explore the structure of a
+   * triangulation.
+   */
   def navigate(): Unit = {
-    var e = boundary
-    var continue = true
+    val cmds = collection.immutable.Map[Char, (String, Int => Int)](
+      'i' -> ("mesh information", { e =>
+        println(s"Number of vertices:  ${allVertices.size}")
+        println(s"Number of triangles: ${triangleMap.getTriangles.size}")
+        print(s"List of triangles:   ")
+        triangleMap.triangleVertices.foreach{ t => print(s"$t ") }
+        println
+        e }),
+      'x' -> ("export to WKT file", { e =>
+        val name = scala.io.StdIn.readLine("Enter file name: ")
+        writeWKT(name)
+        e })
+    )
 
-    def showMenu() = {
-      println("""List of commands:
-  n: next
-  b: prev
-  f: flip
-  w: rotCCWSrc
-  e: rotCWSrc
-  s: rotCWDest
-  d: rotCCWDest
-  j: jump to vertex
-  l: show loop
-  i: mesh information
-  x: export to WKT file
-  k: kill (throws exception)
-  q: quit""")
-    }
-
-    while (continue) {
-      println(s"Current edge ($e): [${getSrc(e)} -> ${getDest(e)}]\nDestination @ ${pointSet.getCoordinate(getDest(e))}")
-
-      scala.io.StdIn.readLine("> ") match {
-        case "q" =>
-          continue = false
-
-        case "k" =>
-          throw new Exception("User requested halt")
-
-        case "x" =>
-          val name = scala.io.StdIn.readLine("Enter file name: ")
-          writeWKT(name)
-
-        case "i" =>
-          println(s"Number of vertices:  ${allVertices.size}")
-          println(s"Number of triangles: ${triangleMap.getTriangles.size}")
-          print(s"List of triangles:   ")
-          triangleMap.triangleVertices.foreach{ t => print(s"$t ") }
-          println
-
-        case "?" =>
-          showMenu
-
-        case "n" => 
-          e = getNext(e)
-
-        case "b" => 
-          e = getPrev(e)
-
-        case "f" => 
-          e = getFlip(e)
-
-        case "w" =>
-          e = rotCCWSrc(e)
-
-        case "e" =>
-          e = rotCWSrc(e)
-
-        case "s" =>
-          e = rotCWDest(e)
-
-        case "d" =>
-          e = rotCCWDest(e)
-
-        case "l" =>
-          showLoop(e)
-
-        case "j" =>
-          print("Enter target vertex: ")
-          val x = scala.io.StdIn.readInt
-          try {
-            e = edgeIncidentTo(x)
-          } catch {
-            case _: Throwable => 
-              println(s"ERROR: VERTEX $x NOT FOUND")
-          }
-
-        case _ =>
-          println("Unrecognized command!")
-      }
-    }
+    halfEdgeTable.navigate(boundary, pointSet.getCoordinate(_), cmds)
   }
 
+  /**
+   * Simplifies a triangulation.
+   *
+   * This method will remove a specified number of vertices from the
+   * triangulation, where the next vertex to be removed causes the least amount
+   * of error to be introduced to the surface.  This function assumes that all
+   * coordinates have a valid z component, and therefore, the triangulation is
+   * interpretable as a height field.
+   *
+   * Implementation is based on paper by Garland, Michael, and Paul S. Heckbert.
+   * "Surface simplification using quadric error metrics." Proceedings of the
+   * 24th annual conference on Computer graphics and interactive techniques. ACM
+   * Press/Addison-Wesley Publishing Co., 1997.
+   */
   def decimate(nRemove: Int) = {
     //println(s"\n\u001b[1mStarting to decimate $nRemove points...\u001b[0m")
 
@@ -779,8 +789,8 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
 }
 
 object DelaunayTriangulation {
-  def apply(pointSet: DelaunayPointSet, debug: Boolean = false) = {
+  def apply(pointSet: DelaunayPointSet, tolerance: Double = 1e-8, debug: Boolean = false) = {
     val initialSize = 2 * (3 * pointSet.length - 6)
-    new DelaunayTriangulation(pointSet, new HalfEdgeTable(initialSize), debug)
+    new DelaunayTriangulation(pointSet, new HalfEdgeTable(initialSize), tolerance, debug)
   }
 }

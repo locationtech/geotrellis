@@ -29,10 +29,12 @@ class HalfEdgeTable(_size: Int) {
   // for our table.
   private final val MAXSIZE: Int = Int.MaxValue / 3
 
-  // Once our buckets get 80% full, we need to resize
-  private final val FACTOR: Double = 0.8
+  // Once our buckets get 90% full, we need to resize
+  private final val FACTOR: Double = 0.9
 
   private var limit = (size * FACTOR).toInt
+
+  private val freed = collection.mutable.ListBuffer.empty[Int]
 
   def join(e: Int, opp: Int): Unit = {
     assert(getSrc(e) == getDest(opp) && getDest(e) == getSrc(opp))
@@ -42,10 +44,16 @@ class HalfEdgeTable(_size: Int) {
     // e.flip = opp
     // opp.flip = e
 
+    val toKill1 = getFlip(e)
+    val toKill2 = getFlip(opp)
+
     setNext(getPrev(getFlip(e)), getNext(getFlip(opp)))
     setNext(getPrev(getFlip(opp)), getNext(getFlip(e)))
     setFlip(e, opp)
     setFlip(opp, e)
+
+    killEdge(toKill1)
+    killEdge(toKill2)
 
     //edgeAt += getDest(opp) -> opp
     //edgeAt += getDest(e) -> e
@@ -55,26 +63,40 @@ class HalfEdgeTable(_size: Int) {
     * This edge will have no flip or next set.
     */
   def createHalfEdge(v: Int): Int = {
-    val e = edgeCount
-    table(idx) = v
-    idx += 3
-    edgeCount += 1
-    if (edgeCount > limit) resize()
-    e
+    if (freed isEmpty) {
+      val e = edgeCount
+      table(idx) = v
+      idx += 3
+      edgeCount += 1
+      if (edgeCount > limit) resize()
+      e
+    } else {
+      val e = freed.remove(0)
+      table(e * 3) = v
+      e
+    }
   }
 
   /** Create an edge for a single vertex,
     * with the specified flip and next set.
     */
   def createHalfEdge(v: Int, flip: Int, next: Int): Int = {
-    val e = edgeCount
-    table(idx) = v
-    table(idx + 1) = flip
-    table(idx + 2) = next
-    idx += 3
-    edgeCount += 1
-    if (edgeCount > limit) { resize() }
-    e
+    if (freed isEmpty) {
+      val e = edgeCount
+      table(idx) = v
+      table(idx + 1) = flip
+      table(idx + 2) = next
+      idx += 3
+      edgeCount += 1
+      if (edgeCount > limit) { resize() }
+      e
+    } else {
+      val e = freed.remove(0)
+      table(e*3) = v
+      table(e*3 + 1) = flip
+      table(e*3 + 2) = next
+      e
+    }
   }
 
   /** Create two half edges that
@@ -137,6 +159,13 @@ class HalfEdgeTable(_size: Int) {
     setFlip(outer3, inner1)
 
     outer1
+  }
+
+  def killEdge(e: Int): Unit = {
+    freed += e
+    table(e * 3) = -1
+    table(e * 3 + 1) = -1
+    table(e * 3 + 2) = -1
   }
 
   /** Sets a half edge's flip half edge
@@ -240,10 +269,83 @@ class HalfEdgeTable(_size: Int) {
     return false
   }
 
-  def killEdge(e: Int): Unit = {
-    table(e * 3) = -1
-    table(e * 3 + 1) = -1
-    table(e * 3 + 2) = -1
+  def foreachInLoop(e0: Int)(f: Int => Unit): Unit = {
+    var e = e0
+    do {
+      f(e)
+      e = getNext(e)
+    } while (e != e0)
+  }
+
+  def mapOverLoop[T](e0: Int)(f: Int => T): Seq[T] = {
+    var e = e0
+    val accum = collection.mutable.ListBuffer.empty[T]
+    do {
+      accum += f(e)
+      e = getNext(e)
+    } while (e != e0)
+    accum.toSeq
+  }
+
+  def showLoop(e0: Int): Unit = {
+    foreachInLoop(e0) { e => print(s"[${getSrc(e)} -> ${getDest(e)}] ") }
+    println
+  }
+
+  def navigate(e0: Int, trans: Int => com.vividsolutions.jts.geom.Coordinate, addedCmds: Map[Char, (String, Int => Int)]) = {
+    val cmds = Map[Char, (String, Int => Int)](
+      'k' -> ("kill (throws exception)", { _ => throw new Exception("user requested halt") }),
+      'l' -> ("show loop", { e => showLoop(e); e }),
+      'j' -> (("jump to vertex", { e => 
+        print("Enter target vertex: ")
+        val x = scala.io.StdIn.readInt
+        try {
+          edgeIncidentTo(x)
+        } catch {
+          case _: Throwable => 
+            println(s"ERROR: VERTEX $x NOT FOUND")
+            e
+        }})),
+      'n' -> ("next", getNext(_)),
+      'p' -> ("prev", getPrev(_)),
+      'f' -> ("flip", getFlip(_)),
+      'n' -> ("next", getNext(_)),
+      'w' -> ("rotCCWSrc", rotCCWSrc(_)),
+      'e' -> ("rotCWSrc", rotCWSrc(_)),
+      's' -> ("rotCWDest", rotCWDest(_)),
+      'd' -> ("rotCCWDest", rotCCWDest(_))
+    ) ++ addedCmds
+
+    def showHelp() = {
+      println("""List of commands:
+                |  q: quit
+                |  ?: show this menu""".stripMargin)
+      cmds.foreach { case (c, (name, _)) => println(s"  ${c}: ${name}") }
+    }
+
+    var e = e0
+    var continue = true
+
+    println("Press '?<CR>' for help")
+
+    def repl() = {
+      do {
+        println(s"Current edge ($e): [${getSrc(e)} -> ${getDest(e)}]\nDestination @ ${trans(getDest(e))}")
+      
+        scala.io.StdIn.readLine("> ") match {
+          case "q" => continue = false
+          case "?" => showHelp
+          case "" => ()
+          case str =>
+            cmds.get(str.head) match {
+              case None => println("Unrecognized command!")
+              case Some((_, fn)) => e = fn(e)
+            }
+        }
+      } while(continue)
+    }
+
+    repl
   }
 
   private def resize() {
@@ -270,15 +372,6 @@ class HalfEdgeTable(_size: Int) {
     size = nextSize
     table = nextTable
     limit = (size * FACTOR).toInt
-  }
-
-  def showLoop(e0: Int): Unit = {
-    var e = e0
-    do {
-      print(s"[${getSrc(e)} -> ${getDest(e)}] ")
-      e = getNext(e)
-    } while (e != e0)
-    println
   }
 
   /**
@@ -319,6 +412,9 @@ class HalfEdgeTable(_size: Int) {
     table = nextTable
     limit = (size * FACTOR).toInt
 
+    freed ++= that.freed.map(_ + offset)
+    edgeAt ++= that.edgeAt.map { case (v, e) => (reindex(v), e + offset) }
+
     offset
   }
 
@@ -341,7 +437,8 @@ class HalfEdgeTable(_size: Int) {
   def reindexVertices(reindex: Int => Int) = {
     var i = 0
     while (i < idx) {
-      table(i) = reindex(table(i))
+      if (table(i) >= 0)
+        table(i) = reindex(table(i))
       i += 3
     }
     edgeAt = edgeAt.map{ case (vi, e) => (reindex(vi), e) }

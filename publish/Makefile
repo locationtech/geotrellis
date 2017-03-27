@@ -4,6 +4,7 @@ TAG  := "latest"
 build: Dockerfile
 	@cp ~/.ivy2/.credentials .credentials
 	@cp ~/.sbt/0.13/local.sbt local.sbt
+	@cp ~/.sbt/0.13/plugins/plugins.sbt plugins.sbt
 	@cp -r ~/.gnupg ./gnupg
 	docker build --no-cache -t ${IMG}:${TAG} .
 	@rm .credentials

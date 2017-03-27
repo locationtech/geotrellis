@@ -1,6 +1,7 @@
 package geotrellis.pointcloud.spark
 
-import geotrellis.spark.testkit.TestEnvironment
+import geotrellis.spark._
+import geotrellis.spark.testkit._
 import org.apache.hadoop.fs.Path
 import org.scalatest.Suite
 

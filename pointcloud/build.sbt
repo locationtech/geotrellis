@@ -21,5 +21,6 @@ resolvers ++= Seq(
 
 fork in Test := true
 parallelExecution in Test := false
+connectInput in Test := true
 
 javaOptions += s"-Djava.library.path=${Environment.ldLibraryPath}"

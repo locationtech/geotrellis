@@ -146,7 +146,7 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
 
     it("should have no overlapping triangles") {
       val pts = randomizedGrid(13, Extent(0,0,1,1)).toArray
-      val dt = DelaunayTriangulation(pts, false) // to kick travis
+      val dt = DelaunayTriangulation(pts, debug=false) // to kick travis
       implicit val trans = { i: Int => pts(i) }
       import dt.halfEdgeTable._
       val tris = dt.triangleMap.getTriangles.keys.toArray
@@ -174,7 +174,7 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
 
     it("should have sane triangle ordering near boundaries") {
       val pts = randomizedGrid(100, Extent(0,0,1,1)).toArray
-      val dt = DelaunayTriangulation(pts, false)
+      val dt = DelaunayTriangulation(pts, debug=false)
       implicit val trans = { i: Int => pts(i) }
       import dt.halfEdgeTable._
       import dt.predicates._

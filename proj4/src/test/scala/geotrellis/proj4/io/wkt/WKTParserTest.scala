@@ -9,7 +9,7 @@ class WKTParserTest extends FunSpec {
     parseAll(string, """"EPSG"""") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -21,7 +21,7 @@ class WKTParserTest extends FunSpec {
     parseAll(string, """"Barbados 1938 / Barbados National Grid"""") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -33,7 +33,7 @@ class WKTParserTest extends FunSpec {
     parseAll(string, """"RGR92 (3D deg)"""") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -45,7 +45,7 @@ class WKTParserTest extends FunSpec {
     parseAll(comma, """,""") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -57,7 +57,7 @@ class WKTParserTest extends FunSpec {
     parseAll(comma, """, """) match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -69,7 +69,7 @@ class WKTParserTest extends FunSpec {
     parseAll(double, "-220.3") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -81,7 +81,7 @@ class WKTParserTest extends FunSpec {
     parseAll(int, "12") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -93,7 +93,7 @@ class WKTParserTest extends FunSpec {
     parseAll(int, "-12") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -105,7 +105,7 @@ class WKTParserTest extends FunSpec {
     parseAll(value, "12") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -117,7 +117,7 @@ class WKTParserTest extends FunSpec {
     parseAll(value, "12.123") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -129,7 +129,7 @@ class WKTParserTest extends FunSpec {
     parseAll(value, """"helloWorld"""") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -141,7 +141,7 @@ class WKTParserTest extends FunSpec {
     parseAll(value, """"Barbados 1938 / Barbados National Grid"""") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -153,7 +153,7 @@ class WKTParserTest extends FunSpec {
     parseAll(authority, """AUTHORITY["EPSG","7019"]""") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -166,7 +166,7 @@ class WKTParserTest extends FunSpec {
     parseAll(spheroid, """SPHEROID["GRS 1980", 6378137.0, 298.257222101, AUTHORITY["EPSG","7019"]]""") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -178,7 +178,7 @@ class WKTParserTest extends FunSpec {
     parseAll(spheroid, """SPHEROID["GRS 1980", 6378137.0, 298.257222101]""") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -190,7 +190,7 @@ class WKTParserTest extends FunSpec {
     parseAll(toWgs, """TOWGS84[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]""") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -206,7 +206,7 @@ class WKTParserTest extends FunSpec {
     parseAll(datum, """DATUM["NAD83 Canadian Spatial Reference System", SPHEROID["GRS 1980", 6378137.0, 298.257222101, AUTHORITY["EPSG","7019"]], TOWGS84[-0.991, 1.9072, 0.5129, 0.0257899075194932, -0.009650098960270402, -0.011659943232342112, 0.0], AUTHORITY["EPSG","6140"]]""") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -221,7 +221,7 @@ class WKTParserTest extends FunSpec {
     parseAll(datum, """DATUM["NAD83 Canadian Spatial Reference System", SPHEROID["GRS 1980", 6378137.0, 298.257222101, AUTHORITY["EPSG","7019"]], AUTHORITY["EPSG","6140"]]""") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -236,7 +236,7 @@ class WKTParserTest extends FunSpec {
     parseAll(datum, """DATUM["NAD83 Canadian Spatial Reference System", SPHEROID["GRS 1980", 6378137.0, 298.257222101, AUTHORITY["EPSG","7019"]], TOWGS84[-0.991, 1.9072, 0.5129, 0.0257899075194932, -0.009650098960270402, -0.011659943232342112, 0.0]]""") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -249,7 +249,7 @@ class WKTParserTest extends FunSpec {
     parseAll(primeM, """PRIMEM["Greenwich", 0.0, AUTHORITY["EPSG","8901"]]""") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -262,7 +262,7 @@ class WKTParserTest extends FunSpec {
     parseAll(primeM, """PRIMEM["Greenwich", 0.0]""") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -276,7 +276,7 @@ class WKTParserTest extends FunSpec {
     parseAll(twinAxis, """AXIS["Geodetic longitude", EAST], AXIS["Geodetic latitude", NORTH]""") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -288,7 +288,7 @@ class WKTParserTest extends FunSpec {
     parseAll(unitField, """UNIT["degree", 0.017453292519943295]""") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -312,7 +312,7 @@ class WKTParserTest extends FunSpec {
     parseAll(geogcs, geo) match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -325,7 +325,7 @@ class WKTParserTest extends FunSpec {
     parseAll(projection, """PROJECTION["Lambert_Conformal_Conic_2SP", AUTHORITY["EPSG","9802"]]""") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -337,7 +337,7 @@ class WKTParserTest extends FunSpec {
     parseAll(parameter, """PARAMETER["central_meridian", 3.0]""") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -353,7 +353,7 @@ class WKTParserTest extends FunSpec {
     parseAll(parameterList, """PARAMETER["central_meridian", 3.0], PARAMETER["latitude_of_origin", 42.0], PARAMETER["standard_parallel_1", 42.75], PARAMETER["false_easting", 1700000.0]""") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -393,7 +393,7 @@ class WKTParserTest extends FunSpec {
     parseAll(projcs, projcsString) match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -410,7 +410,7 @@ class WKTParserTest extends FunSpec {
     parseAll(vertcs, """VERT_CS["EVRF2007 height", VERT_DATUM["European Vertical Reference Frame 2007", 2005, AUTHORITY["EPSG","5215"]], UNIT["m", 1.0], AXIS["Gravity-related height", UP], AUTHORITY["EPSG","5621"]]""") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -424,7 +424,7 @@ class WKTParserTest extends FunSpec {
     parseAll(getAxisList, """AXIS["x", EAST], AXIS["y", NORTH]""") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -436,7 +436,7 @@ class WKTParserTest extends FunSpec {
     parseAll(localDatum, """LOCAL_DATUM["Unknown", 0]""") match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -456,7 +456,7 @@ class WKTParserTest extends FunSpec {
     parseAll(localcs, localCSString) match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -480,7 +480,7 @@ class WKTParserTest extends FunSpec {
     parseAll(geoccs, geoCCSString) match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -524,7 +524,7 @@ class WKTParserTest extends FunSpec {
     parseAll(compdcs, geoCCSString) match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
@@ -560,7 +560,7 @@ class WKTParserTest extends FunSpec {
     parseAll(projcs, projcsString) match {
       case Success(n, _) =>
         assert(n == expected)
-      case Failure(msg, _) =>
+      case NoSuccess(msg, _) =>
         info(msg)
         fail()
     }
