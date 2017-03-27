@@ -65,7 +65,7 @@ class BoundaryDelaunaySpec extends FunSpec with Matchers {
 
     it("should have sane triangle ordering near boundaries") {
       val pts = randomizedGrid(300, Extent(0,0,1,1)).toArray
-      val dt = DelaunayTriangulation(pts, false)
+      val dt = DelaunayTriangulation(pts, debug=false)
       val bdt = BoundaryDelaunay(dt, Extent(0,0,1,1))
 
       // implicit val trans = { i: Int => pts(i) }
