@@ -112,5 +112,5 @@ A better alternative to streaming the whole GeoTiff from S3 is to do a windowed 
 ```
 - - -
 
-###Conclusion
+### Conclusion
 The core functionality of this feature is now believed to work, but there still needs to be improvements done to both the API and the streaming process itself. Any feedback at all about this new feature would be greatly appreciated. Please feel free to contact the author, [@jbouffard](https://github.com/jbouffard), on either Geotrellis' [Gitter room](https://gitter.im/geotrellis/geotrellis#) or [mailing list](https://groups.google.com/forum/#!forum/geotrellis-user). In addition, you can feel free to leave a comment on this feature's [pull request](https://github.com/geotrellis/geotrellis/pull/1617).

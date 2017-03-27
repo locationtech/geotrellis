@@ -6,9 +6,16 @@ This directory contains the elements needed to publish GeoTrellis to Sonatype.
 
 You'll need to have the proper Sonatype credentials in `~/.ivy2/.credentials`,
 the proper PGP public and private key in `~/.gnupg`,
-and the password for the private key (for jar signing) in `~/.sbt/0.13/local.sbt`.
+the password for the private key (for jar signing) in `~/.sbt/0.13/local.sbt`,
+and a `~/.sbt/0.13/plugins/plugins.sbt` that looks like:
+
+```
+addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.0.0")
+```
+
 As we change SBT versions, we'll need to modify the `Makefile` to point the correct
-file locations.
+file locations. A current problem with this process is that you may be prompted for and
+need to enter the pgp password manually.
 
 We also have to change the branch that is checked out in the `Dockerfile` to the
 proper version branch as we change GeoTrellis versions.

@@ -21,6 +21,8 @@ Features
 
 - `Added matplotlib's Magma, Inferno, Plasma, and Viridis color ramps <https://github.com/locationtech/geotrellis/pull/2053>`__
 
+- `Added library of land use classification color maps. <https://github.com/locationtech/geotrellis/pull/2073>`__
+
 - `Add MGRS encode/decode support to proj4 <https://github.com/locationtech/geotrellis/pull/1838>`__
 
 - `Added Range-based reading of HTTP resources <https://github.com/locationtech/geotrellis/pull/2067>`__
@@ -34,6 +36,8 @@ Features
 - `Use H3 rather than Next Fit when building S3 partitions from paths <https://github.com/locationtech/geotrellis/pull/1956>`__
 
 - `Added delimiter option to S3InputFormat and S3GeoTiffRDD. <https://github.com/locationtech/geotrellis/pull/2062>`__
+
+- `Signed S3 Streaming for GeoTiff reader (HTTP with GET instead of HEAD request) <https://github.com/locationtech/geotrellis/pull/2091>`__
 
 - `Relaxed constraints to improve layer deletion capabilities <https://github.com/locationtech/geotrellis/pull/2039>`__
 
@@ -96,6 +100,12 @@ Fixes
 - `Fixed GeoTiff reading for GeoTiffs with model tie point and PixelIsPoint <https://github.com/locationtech/geotrellis/pull/2061>`__
 
 - `Fixed issue with reading tiny (4 pixel or less) GeoTiffs <https://github.com/locationtech/geotrellis/pull/2063>`__
+
+- `Fix usage of IntCachedColorMap in Indexed PNG encoding <https://github.com/locationtech/geotrellis/pull/2075>`__
+
+- `Ensure keyspace exists in CassandraRDDWriter <https://github.com/locationtech/geotrellis/pull/2083>`__
+
+
 
 API Changes
 ^^^^^^^^^^^
