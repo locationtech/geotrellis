@@ -33,13 +33,13 @@ class TransformMethodsSpec extends FunSpec with Matchers with TileBuilders {
   describe("TransformMethods Spec") {
     it("rotate 90 degrees") {
       val expected = IntArrayTile(Array(
-        8, 8, 8, 7, 2, 2,
-        1, 8, 7, 1, 2, 2,
-        1, 1, 8, 1, 8, 1,
-        2, 1, 8, 8, 8, 1,
-        5, 5, 8, 2, 5, 5,
-        3, 3, 8, 2, 2, 5,
-        9, 9, 5, 2, 1, 5), 6, 7)
+        5, 1, 2, 5, 9, 9,
+        5, 2, 2, 8, 3, 3,
+        5, 5, 2, 8, 5, 5,
+        1, 8, 8, 8, 1, 2,
+        1, 8, 1, 8, 1, 1,
+        2, 2, 1, 7, 8, 1,
+        2, 2, 7, 8, 8, 8), 6, 7)
 
       val actual = tile.rotate90()
       val actualOverload = tile.rotate90(n = 5)
@@ -66,13 +66,13 @@ class TransformMethodsSpec extends FunSpec with Matchers with TileBuilders {
 
     it("rotate 270 degrees") {
       val expected = IntArrayTile(Array(
-        5, 1, 2, 5, 9, 9,
-        5, 2, 2, 8, 3, 3,
-        5, 5, 2, 8, 5, 5,
-        1, 8, 8, 8, 1, 2,
-        1, 8, 1, 8, 1, 1,
-        2, 2, 1, 7, 8, 1,
-        2, 2, 7, 8, 8, 8), 6, 7)
+        8, 8, 8, 7, 2, 2,
+        1, 8, 7, 1, 2, 2,
+        1, 1, 8, 1, 8, 1,
+        2, 1, 8, 8, 8, 1,
+        5, 5, 8, 2, 5, 5,
+        3, 3, 8, 2, 2, 5,
+        9, 9, 5, 2, 1, 5), 6, 7)
 
       val actual = tile.rotate270
       val actualOverload = tile.rotate90(n = 7)

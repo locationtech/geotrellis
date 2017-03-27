@@ -27,7 +27,23 @@ trait TransformTileMethods extends TransformMethods[Tile] {
   def rotate90(n: Int = 1): Tile = {
     val (rows, cols) = self.rows -> self.cols
     if (n % 4 == 0) self
-    else if (n % 2 == 0) {
+    else if (4 * math.ceil(n.toDouble / 4).toInt - 1 == n) {
+      val tile = ArrayTile.alloc(self.cellType, self.rows, self.cols)
+      if (!self.cellType.isFloatingPoint) {
+        cfor(0)(_ < cols, _ + 1) { col =>
+          cfor(0)(_ < rows, _ + 1) { row =>
+            tile.set(rows - 1 - row, col, self.get(col, row))
+          }
+        }
+      } else {
+        cfor(0)(_ < cols, _ + 1) { col =>
+          cfor(0)(_ < rows, _ + 1) { row =>
+            tile.setDouble(rows - 1 - row, col, self.getDouble(col, row))
+          }
+        }
+      }
+      tile
+    } else if (n % 2 == 0) {
       val tile = ArrayTile.alloc(self.cellType, self.cols, self.rows)
       if (!self.cellType.isFloatingPoint) {
         cfor(0)(_ < cols, _ + 1) { col =>
@@ -43,7 +59,7 @@ trait TransformTileMethods extends TransformMethods[Tile] {
         }
       }
       tile
-    } else if (n % 3 == 0) {
+    } else {
       val tile = ArrayTile.alloc(self.cellType, self.rows, self.cols)
       if (!self.cellType.isFloatingPoint) {
         cfor(0)(_ < cols, _ + 1) { col =>
@@ -55,22 +71,6 @@ trait TransformTileMethods extends TransformMethods[Tile] {
         cfor(0)(_ < cols, _ + 1) { col =>
           cfor(0)(_ < rows, _ + 1) { row =>
             tile.setDouble(row, cols - 1 - col, self.getDouble(col, row))
-          }
-        }
-      }
-      tile
-    } else {
-      val tile = ArrayTile.alloc(self.cellType, self.rows, self.cols)
-      if (!self.cellType.isFloatingPoint) {
-        cfor(0)(_ < cols, _ + 1) { col =>
-          cfor(0)(_ < rows, _ + 1) { row =>
-            tile.set(rows - 1 - row, col, self.get(col, row))
-          }
-        }
-      } else {
-        cfor(0)(_ < cols, _ + 1) { col =>
-          cfor(0)(_ < rows, _ + 1) { row =>
-            tile.setDouble(rows - 1 - row, col, self.getDouble(col, row))
           }
         }
       }
