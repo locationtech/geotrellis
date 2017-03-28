@@ -117,7 +117,6 @@ object GeoTiffReader {
         info.segmentLayout,
         info.compression,
         info.bandCount,
-        info.hasPixelInterleave,
         info.cellType,
         Some(info.bandType)
       ).band(0)
@@ -184,7 +183,6 @@ object GeoTiffReader {
       info.segmentLayout,
       info.compression,
       info.bandCount,
-      info.hasPixelInterleave,
       info.cellType,
       Some(info.bandType)
     )
@@ -200,7 +198,6 @@ object GeoTiffReader {
     segmentLayout: GeoTiffSegmentLayout,
     compression: Compression,
     bandCount: Int,
-    hasPixelInterleave: Boolean,
     noDataValue: Option[Double]
   ) {
     def rasterExtent: RasterExtent =
@@ -281,6 +278,7 @@ object GeoTiffReader {
         case _ => throw new MalformedGeoTiffException("incorrect byte order")
       }
 
+      byteReader.position(oldPos + 2)
       // Validate Tiff identification number
       val tiffIdNumber = byteReader.getChar
       if (tiffIdNumber != 42 && tiffIdNumber != 43)
@@ -296,7 +294,7 @@ object GeoTiffReader {
           TiffTagsReader.read(byteReader, bigStart)(LongTiffTagOffsetSize)
         }
 
-      val hasPixelInterleave = tiffTags.hasPixelInterleave
+      val interleaveMethod = tiffTags.interleaveMethod
 
       val decompressor = Decompressor(tiffTags, byteReader.order)
 
@@ -327,7 +325,7 @@ object GeoTiffReader {
       val bandType = tiffTags.bandType
       val bandCount = tiffTags.bandCount
 
-      val segmentLayout = GeoTiffSegmentLayout(cols, rows, storageMethod, bandType)
+      val segmentLayout = GeoTiffSegmentLayout(cols, rows, storageMethod, interleaveMethod, bandType)
 
       val segmentBytes: SegmentBytes =
         if (streaming)
@@ -343,10 +341,10 @@ object GeoTiffReader {
       // If the GeoTiff is coming is as uncompressed, leave it as uncompressed.
       // If it's any sort of compression, move forward with ZLib compression.
       val compression =
-        decompressor match {
-          case NoCompression => NoCompression
-          case _ => DeflateCompression
-        }
+      decompressor match {
+        case NoCompression => NoCompression
+        case _ => DeflateCompression
+      }
 
       val colorSpace = tiffTags.basicTags.photometricInterp
 
@@ -358,14 +356,13 @@ object GeoTiffReader {
         tiffTags.extent,
         tiffTags.crs,
         tiffTags.tags,
-        GeoTiffOptions(storageMethod, compression, colorSpace, colorMap),
+        GeoTiffOptions(storageMethod, interleaveMethod, compression, colorSpace, colorMap),
         bandType,
         segmentBytes,
         decompressor,
         segmentLayout,
         compression,
         bandCount,
-        hasPixelInterleave,
         noDataValue
       )
     } finally {

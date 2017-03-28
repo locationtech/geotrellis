@@ -351,7 +351,6 @@ object GenMacroSegmentCombiner extends Template {
          |  val segmentCount: Int
          |  val bandCount: Int
          |  val compression: Compression
-         |  val hasPixelInterleave: Boolean
          |
          | /** Creates a segment combiner, which is an abstraction that allows us to generalize
          | * the combine algorithms over BandType. */
@@ -367,7 +366,7 @@ object GenMacroSegmentCombiner extends Template {
         -  protected def _combine(${argsInt})(set: SegmentCombiner => (Int, ${tupArgs}) => Unit): Tile = {
         -    ${asserts}
         -    val (arr, compressor) =
-        -      if(hasPixelInterleave) {
+        -      if(segmentLayout.hasPixelInterleave) {
         -        ${diffs}
         -        val compressor = compression.createCompressor(segmentCount)
         -        val arr = Array.ofDim[Array[Byte]](segmentCount)

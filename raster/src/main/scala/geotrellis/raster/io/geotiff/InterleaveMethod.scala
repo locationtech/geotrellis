@@ -16,22 +16,11 @@
 
 package geotrellis.raster.io.geotiff
 
-trait BitGeoTiffSegmentCollection extends GeoTiffSegmentCollection { self: GeoTiffSegmentLayoutTransform =>
-  type T = BitGeoTiffSegment
+import geotrellis.raster._
 
-  val bandType = BitBandType
+abstract sealed class InterleaveMethod
 
-  lazy val decompressGeoTiffSegment = { (i: Int, bytes: Array[Byte]) =>
-    val (_, segmentRows) = getSegmentDimensions(i)
-
-    val cols = {
-      val c = segmentLayout.tileLayout.tileCols
-      if(segmentLayout.hasPixelInterleave) c * bandCount
-      else c
-    }
-
-    val rows = if(segmentLayout.isStriped) { segmentRows } else { segmentLayout.tileLayout.tileRows }
-
-    new BitGeoTiffSegment(decompressor.decompress(bytes, i), cols, rows)
-  }
-}
+/** Pixel Interleave: The pixels of each band are stored int the same segment, contiguously */
+case object PixelInterleave extends InterleaveMethod
+/** Band Interleave: The pixels of each band are in separate segments */
+case object BandInterleave extends InterleaveMethod

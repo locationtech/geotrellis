@@ -79,19 +79,22 @@ case class TiffTags(
       &|-> TiffTags._tileTags
       ^|-> TileTags._tileWidth get).isEmpty
 
-  def hasPixelInterleave(): Boolean =
+  def interleaveMethod(): InterleaveMethod =
     (this
       &|-> TiffTags._nonBasicTags
       ^|-> NonBasicTags._planarConfiguration get) match {
       case Some(PlanarConfigurations.PixelInterleave) =>
-        true
+        PixelInterleave
       case Some(PlanarConfigurations.BandInterleave) =>
-        false
+        BandInterleave
       case None =>
-        true
+        PixelInterleave
       case Some(i) =>
           throw new MalformedGeoTiffException(s"Bad PlanarConfiguration tag: $i")
     }
+
+  def hasPixelInterleave: Boolean =
+    interleaveMethod == PixelInterleave
 
   def rowsInStrip(index: Int): Option[Long] =
     if (hasStripStorage) {

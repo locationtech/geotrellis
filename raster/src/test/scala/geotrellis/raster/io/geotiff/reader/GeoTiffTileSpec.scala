@@ -24,7 +24,7 @@ import geotrellis.raster.testkit._
 import spire.syntax.cfor._
 import org.scalatest._
 
-class GeoTiffTileSpec extends FunSpec 
+class GeoTiffTileSpec extends FunSpec
     with RasterMatchers
     with TileBuilders
     with GeoTiffTestUtils {
@@ -49,7 +49,7 @@ class GeoTiffTileSpec extends FunSpec
     }
 
     it("should work against econic.tif Striped NoCompression") {
-      val options = GeoTiffOptions(Striped, NoCompression)
+      val options = GeoTiffOptions(Striped, BandInterleave, NoCompression)
       val expected = SinglebandGeoTiff(s"$baseDataPath/econic.tif").tile
       val actual = expected.toGeoTiffTile(options).toArrayTile
 
@@ -57,7 +57,7 @@ class GeoTiffTileSpec extends FunSpec
     }
 
     it("should work against econic.tif Striped with Deflate compression") {
-      val options = GeoTiffOptions(Striped, DeflateCompression)
+      val options = GeoTiffOptions(Striped, BandInterleave, DeflateCompression)
 
       val expected = SinglebandGeoTiff(s"$baseDataPath/econic.tif").tile
       val actual = expected.toGeoTiffTile(options)
@@ -66,7 +66,7 @@ class GeoTiffTileSpec extends FunSpec
     }
 
     it("should work against econic.tif Tiled with no compression") {
-      val options = GeoTiffOptions(Tiled, NoCompression)
+      val options = GeoTiffOptions(Tiled, BandInterleave, NoCompression)
 
       val expected = SinglebandGeoTiff(s"$baseDataPath/econic.tif").tile
       val actual = expected.toGeoTiffTile(options)
@@ -75,7 +75,7 @@ class GeoTiffTileSpec extends FunSpec
     }
 
     it("should work against econic.tif Tiled with Deflate compression") {
-      val options = GeoTiffOptions(Tiled, Deflate)
+      val options = GeoTiffOptions(Tiled, BandInterleave, Deflate)
 
       val expected = SinglebandGeoTiff(s"$baseDataPath/econic.tif").tile
       val actual = expected.toGeoTiffTile(options)
@@ -86,7 +86,7 @@ class GeoTiffTileSpec extends FunSpec
 
   describe("GeoTiffTile") {
     it("should convert from IntConstantNoDataCellType to DoubleConstantNoDataCellType") {
-      val arrInt = 
+      val arrInt =
         Array(1, 2, 1, 1, 2,
               1, 2, 2, 1, 2,
               1, 1, 2, 1, 2)

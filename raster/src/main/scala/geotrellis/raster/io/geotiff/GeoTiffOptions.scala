@@ -27,6 +27,7 @@ import geotrellis.raster.render.IndexedColorMap
   */
 case class GeoTiffOptions(
   storageMethod: StorageMethod = GeoTiffOptions.DEFAULT.storageMethod,
+  interleaveMethod: InterleaveMethod = GeoTiffOptions.DEFAULT.interleaveMethod,
   compression: Compression = GeoTiffOptions.DEFAULT.compression,
   colorSpace: Int = GeoTiffOptions.DEFAULT.colorSpace,
   colorMap: Option[IndexedColorMap] = GeoTiffOptions.DEFAULT.colorMap
@@ -36,7 +37,7 @@ case class GeoTiffOptions(
  * The companion object to [[GeoTiffOptions]]
  */
 object GeoTiffOptions {
-  val DEFAULT = GeoTiffOptions(Striped, NoCompression, ColorSpace.BlackIsZero, None)
+  val DEFAULT = GeoTiffOptions(Striped, BandInterleave, NoCompression, ColorSpace.BlackIsZero, None)
 
   /**
    * Creates a new instance of [[GeoTiffOptions]] with the given
