@@ -18,6 +18,7 @@ package geotrellis.spark.raster
 
 import geotrellis.spark._
 import geotrellis.raster.io.geotiff._
+import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.testkit._
 import geotrellis.spark.testkit.TestEnvironment
 
@@ -38,7 +39,7 @@ object RasterHadoopReader {
       val codec = factory.getCodec(path)
 
       if (codec == null) {
-        println(s"No codec found for $path, writing without compression.")
+        println(s"No codec found for $path, reading without compression.")
         fs.open(path)
       } else {
         codec.createInputStream(fs.open(path))
@@ -64,14 +65,12 @@ class HadoopWriterSpec extends FunSpec
   with TileBuilders
   with TestEnvironment {
 
-  val testDirPath = "raster-test/data/geotiff-test-files"
-
   describe ("writing GeoTiffs without errors and with correct tiles, crs and extent") {
     val temp = File.createTempFile("geotiff-writer", ".tif")
     val path = temp.getPath
 
     it("should write GeoTiff with tags") {
-      val existencePath = s"$testDirPath/multi-tag.tif"
+      val existencePath = "raster-test/data/aspect.tif"
 
       val geoTiff = MultibandGeoTiff(existencePath)
 
@@ -80,7 +79,7 @@ class HadoopWriterSpec extends FunSpec
 
       geoTiff.write(new Path(path))
 
-      val actualTiff = RasterHadoopReader(new Path(path), sc.hadoopConfiguration) { is => MultibandGeoTiff(IOUtils.toByteArray(is)) }
+      val actualTiff = RasterHadoopReader(new Path(path), sc.hadoopConfiguration) { is => GeoTiffReader.readMultiband(IOUtils.toByteArray(is)) }
       val actual = actualTiff.tile
       val actualTags = actualTiff.tags
 
