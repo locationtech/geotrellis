@@ -10,7 +10,7 @@
  * http://www.eclipse.org/org/documents/edl-v10.php.
  */
 
-package geotrellis.vector.triangulation;
+package geotrellis.vector;
 
 // This file is a modified port that is in JTS of SHewchuk's predicates.
 // Below are the original comments by the JTS developer.

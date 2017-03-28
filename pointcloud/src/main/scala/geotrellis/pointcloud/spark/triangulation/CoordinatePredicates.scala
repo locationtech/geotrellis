@@ -16,6 +16,7 @@
 
 package geotrellis.pointcloud.spark.triangulation
 
+import geotrellis.vector.{RobustPredicates, ShewchuksDeterminant}
 import geotrellis.vector.triangulation._
 import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
 
@@ -23,15 +24,6 @@ import org.apache.commons.math3.linear._
 import com.vividsolutions.jts.geom.Coordinate
 
 object CoordinatePredicates {
-  def det3 (a11: Double, a12: Double, a13: Double,
-            a21: Double, a22: Double, a23: Double,
-            a31: Double, a32: Double, a33: Double): Double = {
-    val m = MatrixUtils.createRealMatrix(Array(Array(a11, a12, a13),
-                                               Array(a21, a22, a23),
-                                               Array(a31, a32, a33)))
-    new LUDecomposition(m).getDeterminant
-  }
-
   def isCollinear(a: Coordinate, b: Coordinate, c: Coordinate): Boolean =
     math.abs(ShewchuksDeterminant.orient2d(a.x, a.y, b.x, b.y, c.x, c.y)) < EPSILON
 
@@ -100,33 +92,12 @@ object CoordinatePredicates {
     ShewchuksDeterminant.incircle(a.x, a.y, b.x, b.y, c.x, c.y, d.x, d.y) > EPSILON
   }
 
-  def circleCenter(a: Coordinate, b: Coordinate, c: Coordinate): Coordinate = {
-    val d = 2.0 * det3(a.x, a.y, 1.0,
-                       b.x, b.y, 1.0,
-                       c.x, c.y, 1.0)
-    val h = det3(a.x * a.x + a.y * a.y, a.y, 1.0,
-                 b.x * b.x + b.y * b.y, b.y, 1.0,
-                 c.x * c.x + c.y * c.y, c.y, 1.0) / d
-    val k = det3(a.x, a.x * a.x + a.y * a.y, 1.0,
-                 b.x, b.x * b.x + b.y * b.y, 1.0,
-                 c.x, c.x * c.x + c.y * c.y, 1.0) / d
-    new Coordinate(h,k)
-  }
-
-  def circleCenter[V](ai: V, bi: V, ci: V)(implicit trans: V => Coordinate): Coordinate = {
+  def circleCenter[V](ai: V, bi: V, ci: V)(implicit trans: V => Coordinate): (Double, Coordinate) = {
     val a = trans(ai)
     val b = trans(bi)
     val c = trans(ci)
-    val d = 2.0 * det3(a.x, a.y, 1.0,
-                       b.x, b.y, 1.0,
-                       c.x, c.y, 1.0)
-    val h = det3(a.x * a.x + a.y * a.y, a.y, 1.0,
-                 b.x * b.x + b.y * b.y, b.y, 1.0,
-                 c.x * c.x + c.y * c.y, c.y, 1.0) / d
-    val k = det3(a.x, a.x * a.x + a.y * a.y, 1.0,
-                 b.x, b.x * b.x + b.y * b.y, 1.0,
-                 c.x, c.x * c.x + c.y * c.y, 1.0) / d
-    new Coordinate(h,k)
+
+    RobustPredicates.circleCenter(a.x, a.y, b.x, b.y, c.x, c.y)
   }
 
   def isDelaunayEdge[V,T](e: HalfEdge[V,T])(implicit trans: V => Coordinate): Boolean = {
