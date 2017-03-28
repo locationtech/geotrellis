@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.raster
+package geotrellis.spark.raster.io
 
 import geotrellis.raster.CellGrid
 import geotrellis.raster.io.geotiff.GeoTiff
@@ -29,16 +29,16 @@ object Implicits extends Implicits
 trait Implicits {
   implicit class withJpgHadoopWriteMethods(val self: Jpg) extends HadoopWriteMethods[Jpg] {
     def write(path: Path, gzip: Boolean, conf: Configuration): Unit =
-      HadoopWriteMethods.write(path, gzip, conf) { _.write(self.bytes) }
+      HadoopRWMethods.write(path, gzip, conf) { _.write(self.bytes) }
   }
 
   implicit class withPngHadoopWriteMethods(val self: Png) extends HadoopWriteMethods[Png] {
     def write(path: Path, gzip: Boolean, conf: Configuration): Unit =
-      HadoopWriteMethods.write(path, gzip, conf) { _.write(self.bytes) }
+      HadoopRWMethods.write(path, gzip, conf) { _.write(self.bytes) }
   }
 
   implicit class withGeoTiffHadoopWriteMethods[T <: CellGrid](val self: GeoTiff[T]) extends HadoopWriteMethods[GeoTiff[T]] {
     def write(path: Path, gzip: Boolean, conf: Configuration): Unit =
-      HadoopWriteMethods.write(path, gzip, conf) { new GeoTiffWriter(self, _).write() }
+      HadoopRWMethods.write(path, gzip, conf) { new GeoTiffWriter(self, _).write() }
   }
 }

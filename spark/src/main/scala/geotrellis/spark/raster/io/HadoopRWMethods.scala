@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.raster
+package geotrellis.spark.raster.io
+
+import java.io.{DataInputStream, DataOutputStream}
 
 import geotrellis.util.MethodExtensions
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.io.compress.CompressionCodecFactory
 import org.apache.spark.SparkContext
-
-import java.io.DataOutputStream
 
 trait HadoopWriteMethods[T] extends MethodExtensions[T] {
   def write(path: Path)(implicit sc: SparkContext): Unit = write(path, gzip = false)
@@ -32,7 +31,7 @@ trait HadoopWriteMethods[T] extends MethodExtensions[T] {
   def write(path: Path, gzip: Boolean, conf: Configuration): Unit
 }
 
-object HadoopWriteMethods {
+object HadoopRWMethods {
   def write(path: Path, gzip: Boolean, conf: Configuration)(dosWrite: DataOutputStream => Unit): Unit = {
     val fs = FileSystem.get(conf)
 
@@ -61,6 +60,32 @@ object HadoopWriteMethods {
       }
     } finally {
       os.close
+    }
+  }
+
+  def read[T](path: Path, conf: Configuration)(disRead: DataInputStream => T): T = {
+    val fs = FileSystem.get(conf)
+
+    val is = {
+      val factory = new CompressionCodecFactory(conf)
+      val codec = factory.getCodec(path)
+
+      if (codec == null) {
+        println(s"No codec found for $path, reading without compression.")
+        fs.open(path)
+      } else {
+        codec.createInputStream(fs.open(path))
+      }
+    }
+    try {
+      val dis = new DataInputStream(is)
+      try {
+        disRead(dis)
+      } finally {
+        dis.close
+      }
+    } finally {
+      is.close
     }
   }
 }

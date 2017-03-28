@@ -60,7 +60,7 @@ package object spark
     with summary.Implicits
     with summary.polygonal.Implicits
     with tiling.Implicits
-    with spark.raster.Implicits {
+    with spark.raster.io.Implicits {
   type TileLayerRDD[K] = RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]
   object TileLayerRDD {
     def apply[K](rdd: RDD[(K, Tile)], metadata: TileLayerMetadata[K]): TileLayerRDD[K] =

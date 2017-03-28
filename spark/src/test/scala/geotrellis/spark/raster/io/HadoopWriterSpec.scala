@@ -14,49 +14,17 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.raster
+package geotrellis.spark.raster.io
 
-import geotrellis.spark._
 import geotrellis.raster.io.geotiff._
-import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.testkit._
+import geotrellis.spark._
 import geotrellis.spark.testkit.TestEnvironment
 
-import org.apache.commons.io.IOUtils
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
-import org.apache.hadoop.io.compress.CompressionCodecFactory
+import org.apache.hadoop.fs.Path
 import org.scalatest._
 
 import java.io._
-
-object RasterHadoopReader {
-  def apply[T](path: Path, conf: Configuration)(dosRead: DataInputStream => T): T = {
-    val fs = FileSystem.get(conf)
-
-    val is = {
-      val factory = new CompressionCodecFactory(conf)
-      val codec = factory.getCodec(path)
-
-      if (codec == null) {
-        println(s"No codec found for $path, reading without compression.")
-        fs.open(path)
-      } else {
-        codec.createInputStream(fs.open(path))
-      }
-    }
-    try {
-      val dos = new DataInputStream(is)
-      try {
-        dosRead(dos)
-      } finally {
-        dos.close
-      }
-    } finally {
-      is.close
-    }
-  }
-}
 
 class HadoopWriterSpec extends FunSpec
   with Matchers
@@ -79,7 +47,7 @@ class HadoopWriterSpec extends FunSpec
 
       geoTiff.write(new Path(path))
 
-      val actualTiff = RasterHadoopReader(new Path(path), sc.hadoopConfiguration) { is => GeoTiffReader.readMultiband(IOUtils.toByteArray(is)) }
+      val actualTiff = GeoTiffHadoopReader.readMultiband(new Path(path))
       val actual = actualTiff.tile
       val actualTags = actualTiff.tags
 
