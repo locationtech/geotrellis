@@ -21,7 +21,6 @@ import geotrellis.macros.{ NoDataMacros, TypeConversionMacros }
 import geotrellis.vector.{Geometry, Feature}
 import geotrellis.util.MethodExtensions
 
-
 package object raster
     extends crop.Implicits
     with distance.Implicits
@@ -31,7 +30,8 @@ package object raster
     with mask.Implicits
     with merge.Implicits
     with reproject.Implicits
-    with split.Implicits {
+    with split.Implicits
+    with transform.Implicits {
   type CellType = DataType with NoDataHandling
   type SinglebandRaster = Raster[Tile]
   type MultibandRaster = Raster[MultibandTile]
