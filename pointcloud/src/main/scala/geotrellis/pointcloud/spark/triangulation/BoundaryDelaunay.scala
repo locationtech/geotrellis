@@ -72,8 +72,8 @@ object BoundaryDelaunay {
           val predicates = new TriangulationPredicates(DelaunayPointSet(verts.toMap), halfEdgeTable)
           import predicates._
           import halfEdgeTable._
-          val (_, center) = circleCenter(getDest(e), getDest(getNext(e)), getDest(getNext(getNext(e))))
-          println(s"Circle center: $center")
+          val (_, center, valid) = circleCenter(getDest(e), getDest(getNext(e)), getDest(getNext(getNext(e))))
+          println(s"Circle center: $center " + {if (valid) "[valid]" else "[invalid]"})
           e
         })),
         't' -> (("export triangles to triangles.wkt", { e => 
@@ -93,11 +93,41 @@ object BoundaryDelaunay {
       import dt.halfEdgeTable._
       import dt.predicates._
 
-      val (radius, center) = circleCenter(getDest(tri), getDest(getNext(tri)), getDest(getNext(getNext(tri))))
+      val (radius, center, valid) = circleCenter(getDest(tri), getDest(getNext(tri)), getDest(getNext(getNext(tri))))
       val ppd = new PointPairDistance
 
       DistanceToPoint.computeDistance(extent.toPolygon.jtsGeom, center, ppd)
-      ppd.getDistance < radius
+      !valid || ppd.getDistance < radius
+    }
+
+    def inclusionTest(extent: Extent, thresh: Double)(tri: HalfEdge): Boolean = {
+      import dt.halfEdgeTable._
+
+      val (i, j, k) = (getSrc(tri), getDest(tri), getDest(getNext(tri)))
+      val trans = dt.pointSet.getCoordinate(_)
+
+      val pi = trans(i)
+      val pj = trans(j)
+      val pk = trans(k)
+
+      val (radius, center, _) = dt.predicates.circleCenter(i, j, k)
+      val shortest = Seq(pi.distance(pj), pi.distance(pk), pj.distance(pk)).min
+      
+      if (radius / shortest > thresh)
+        true
+      else {
+        // val ppd = new PointPairDistance
+        // DistanceToPoint.computeDistance(extent.toPolygon.jtsGeom, center, ppd)
+        // ppd.getDistance < radius
+
+        val Extent(x0, y0, x1, y1) = extent
+        def outside(x: Double): Boolean = x < 0.0 || x > 1.0
+
+        x1 - radius < x0 + radius || 
+        y1 - radius < y0 + radius || 
+        outside((center.x - (x0 + radius)) / ((x1 - radius) - (x0 + radius))) || 
+        outside((center.y - (y0 + radius)) / ((y1 - radius) - (y0 + radius)))
+      }
     }
 
     /*
@@ -286,7 +316,7 @@ object BoundaryDelaunay {
               //      val tri = copyConvertTriangle(e)
               //      halfEdgeTable.join(opp, tri)
 
-              if (circumcircleLeavesExtent(boundingExtent)(e)) {
+              if (inclusionTest(boundingExtent, 5)(e)/*circumcircleLeavesExtent(boundingExtent)(e)*/) {
                 //println("         Triangle circle leaves extent")
                 val tri = copyConvertTriangle(e)
                 val tri2 = halfEdgeTable.getNext(tri)
@@ -422,18 +452,18 @@ object BoundaryDelaunay {
       val newBound: ResultEdge = copyConvertBoundingLoop()
       var e = dt.boundary
       var ne = newBound
-      navigateThis(ne)
+      //navigateThis(ne)
 
       val boundingTris = collection.mutable.Set.empty[Int]
       do {
         // println(s"in CCBT $e")
         assert(getDest(e) == halfEdgeTable.getDest(ne) && getSrc(e) == halfEdgeTable.getSrc(ne))
-        if (circumcircleLeavesExtent(boundingExtent)(getFlip(e))) {
-          val f = getFlip(e)
-          println(s"Triangle ${(getSrc(f), getDest(f), getDest(getNext(f)), getDest(getNext(getNext(f))))} has circumcircle outside extent")
-        }
+        // if (circumcircleLeavesExtent(boundingExtent)(getFlip(e))) {
+        //   val f = getFlip(e)
+        //   println(s"Triangle ${(getSrc(f), getDest(f), getDest(getNext(f)), getDest(getNext(getNext(f))))} has circumcircle outside extent")
+        // }
         recursiveAddTris(getFlip(e), ne)
-        navigateThis(ne)
+        //navigateThis(ne)
         e = getNext(e)
         ne = halfEdgeTable.getNext(ne)
       } while (e != dt.boundary)

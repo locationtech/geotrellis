@@ -92,7 +92,7 @@ object CoordinatePredicates {
     ShewchuksDeterminant.incircle(a.x, a.y, b.x, b.y, c.x, c.y, d.x, d.y) > EPSILON
   }
 
-  def circleCenter[V](ai: V, bi: V, ci: V)(implicit trans: V => Coordinate): (Double, Coordinate) = {
+  def circleCenter[V](ai: V, bi: V, ci: V)(implicit trans: V => Coordinate): (Double, Coordinate, Boolean) = {
     val a = trans(ai)
     val b = trans(bi)
     val c = trans(ci)

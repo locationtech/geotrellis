@@ -136,7 +136,7 @@ final class TriangulationPredicates(pointSet: DelaunayPointSet, halfEdgeTable: H
     RobustPredicates.inCircle(ax, ay, bx, by, cx, cy, dx, dy)
   }
 
-  def circleCenter(ai: Int, bi: Int, ci: Int): (Double, Coordinate) = {
+  def circleCenter(ai: Int, bi: Int, ci: Int): (Double, Coordinate, Boolean) = {
     val ax = getX(ai)
     val ay = getY(ai)
     val bx = getX(bi)

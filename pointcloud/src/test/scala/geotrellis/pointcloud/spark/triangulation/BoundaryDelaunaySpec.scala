@@ -45,12 +45,11 @@ class BoundaryDelaunaySpec extends FunSpec with Matchers {
         import dt.pointSet._
         import dt.predicates._
 
-        val center = circleCenter(getDest(tri), getDest(getNext(tri)), getDest(getNext(getNext(tri))))
-        val radius = center.distance(getCoordinate(getDest(tri)))
+        val (radius, center, valid) = circleCenter(getDest(tri), getDest(getNext(tri)), getDest(getNext(getNext(tri))))
         val ppd = new PointPairDistance
 
         DistanceToPoint.computeDistance(ex.toPolygon.jtsGeom, center, ppd)
-        ppd.getDistance < radius
+        !valid || ppd.getDistance < radius
       }
 
       dt.triangleMap.getTriangles.toSeq.forall{ case (idx, tri) => {
@@ -70,7 +69,7 @@ class BoundaryDelaunaySpec extends FunSpec with Matchers {
 
       // implicit val trans = { i: Int => pts(i) }
       import bdt.halfEdgeTable._
-      val predicates = new Predicates(bdt.pointSet, bdt.halfEdgeTable)
+      val predicates = new TriangulationPredicates(bdt.pointSet, bdt.halfEdgeTable)
       import predicates._
 
       var validCW = true

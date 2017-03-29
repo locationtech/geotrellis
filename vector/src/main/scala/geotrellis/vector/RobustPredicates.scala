@@ -57,7 +57,7 @@ object RobustPredicates {
   def inCircle(a: Coordinate, b: Coordinate, c: Coordinate, d: Coordinate): Boolean =
     inCircle(a.x, a.y, b.x, b.y, c.x, c.y, d.x, d.y)
 
-  def circleCenter(ax: Double, ay: Double, bx: Double, by: Double, cx: Double, cy: Double): (Double, Coordinate) = {
+  def circleCenter(ax: Double, ay: Double, bx: Double, by: Double, cx: Double, cy: Double): (Double, Coordinate, Boolean) = {
     // val d = 2.0 * det3(ax, ay, 1.0,
     //                    bx, by, 1.0,
     //                    cx, cy, 1.0)
@@ -80,12 +80,12 @@ object RobustPredicates {
                        dcx, dcy)
     val h = ax - det2(dby, lenΔb2,
                       dcy, lenΔc2) / d
-    val k = ay - det2(dbx, lenΔb2,
+    val k = ay + det2(dbx, lenΔb2,
                       dcx, lenΔc2) / d
 
     val r = math.sqrt(lenΔb2 * lenΔc2 * ((bx - cx) * (bx - cx) + (by - cy) * (by - cy))) / d
 
-    (r, new Coordinate(h,k))
+    (r, new Coordinate(h,k), d > 2e-8)
   }
 
 }
