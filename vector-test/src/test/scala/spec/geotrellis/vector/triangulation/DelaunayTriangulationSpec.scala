@@ -121,7 +121,7 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
 
       (dt.triangleMap.getTriangles.forall{ case ((ai,bi,ci),_) =>
         val otherPts = (0 until numpts).filter{ i: Int => i != ai && i != bi && i != ci }
-        otherPts.forall{ i => ! RobustPredicates.inCircle(ai, bi, ci, i) }
+        otherPts.forall{ i => ! dt.predicates.inCircle(ai, bi, ci, i) }
       }) should be (true)
     }
 
