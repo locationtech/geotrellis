@@ -14,43 +14,37 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.raster.io
-
-import java.io.{DataInputStream, DataOutputStream}
+package geotrellis.spark.io.hadoop
 
 import geotrellis.util.MethodExtensions
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.io.compress.CompressionCodecFactory
 import org.apache.spark.SparkContext
+import java.io.{DataInputStream, DataOutputStream}
 
-trait HadoopWriteMethods[T] extends MethodExtensions[T] {
-  def write(path: Path)(implicit sc: SparkContext): Unit = write(path, gzip = false)
-  def write(path: Path, gzip: Boolean)(implicit sc: SparkContext): Unit = write(path, gzip, sc.hadoopConfiguration)
-  def write(path: Path, conf: Configuration): Unit = write(path, gzip = false, conf)
-  def write(path: Path, gzip: Boolean, conf: Configuration): Unit
+
+trait HadoopRasterMethods[T] extends MethodExtensions[T] {
+  def write(path: Path)(implicit sc: SparkContext): Unit = write(path, sc.hadoopConfiguration)
+  def write(path: Path, conf: Configuration): Unit
 }
 
-object HadoopRWMethods {
-  def write(path: Path, gzip: Boolean, conf: Configuration)(dosWrite: DataOutputStream => Unit): Unit = {
+object HadoopRasterMethods {
+  def write(path: Path, conf: Configuration)(dosWrite: DataOutputStream => Unit): Unit = {
     val fs = FileSystem.get(conf)
 
-    val os =
-      if (!gzip) {
+    val os = {
+      val factory = new CompressionCodecFactory(conf)
+      val codec = factory.getCodec(path)
+
+      if (codec == null) {
+        println(s"No codec found for $path, writing without compression.")
         fs.create(path)
       } else {
-        val factory = new CompressionCodecFactory(conf)
-        val outputUri = new Path(s"${path.toUri.toString}.gz")
-
-        val codec = factory.getCodec(outputUri)
-
-        if (codec == null) {
-          println(s"No codec found for $outputUri, writing without compression.")
-          fs.create(path)
-        } else {
-          codec.createOutputStream(fs.create(outputUri))
-        }
+        codec.createOutputStream(fs.create(path))
       }
+    }
     try {
       val dos = new DataOutputStream(os)
       try {

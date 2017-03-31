@@ -24,7 +24,6 @@ import geotrellis.spark.tiling._
 import geotrellis.spark.ingest._
 import geotrellis.spark.crop._
 import geotrellis.spark.filter._
-
 import org.apache.spark.{Partitioner, SparkContext}
 import org.apache.spark.rdd._
 import spire.syntax.cfor._
@@ -59,8 +58,7 @@ package object spark
     with stitch.Implicits
     with summary.Implicits
     with summary.polygonal.Implicits
-    with tiling.Implicits
-    with spark.raster.io.Implicits {
+    with tiling.Implicits {
   type TileLayerRDD[K] = RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]
   object TileLayerRDD {
     def apply[K](rdd: RDD[(K, Tile)], metadata: TileLayerMetadata[K]): TileLayerRDD[K] =
