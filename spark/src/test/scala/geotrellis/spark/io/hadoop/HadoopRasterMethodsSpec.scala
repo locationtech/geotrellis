@@ -14,26 +14,27 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.raster.io
+package geotrellis.spark.io.hadoop
 
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.testkit._
-import geotrellis.spark._
+import geotrellis.raster.{IntCellType, MultibandTile}
+import geotrellis.spark.io.hadoop
 import geotrellis.spark.testkit.TestEnvironment
+
 import org.apache.hadoop.fs.Path
 import org.scalatest._
+
 import java.io._
 
-import geotrellis.raster.{IntCellType, MultibandTile}
-
-class HadoopWriterSpec extends FunSpec
+class HadoopRasterMethodsSpec extends FunSpec
   with Matchers
   with BeforeAndAfterAll
   with RasterMatchers
   with TileBuilders
   with TestEnvironment {
 
-  describe ("writing Rasters without errors and with correct tiles, crs and extent using Hadoop output stream") {
+  describe ("writing Rasters without errors and with correct tiles, crs and extent using Hadoop FSData{Input|Output} stream") {
     def expandGeoTiff(geoTiff: MultibandGeoTiff) =
       MultibandGeoTiff(
         MultibandTile(
@@ -52,6 +53,7 @@ class HadoopWriterSpec extends FunSpec
     )
 
     val (pathTiff, pathPng, pathJpg) = (tempTiff.getPath, tempPng.getPath, tempJpg.getPath)
+    val (pathTiffGz, pathPngGz, pathJpgGz) = (s"${tempTiff.getPath}.gz", s"${tempPng.getPath}.gz", s"${tempJpg.getPath}.gz")
     val existencePath = "raster-test/data/aspect.tif"
 
     it("should write GeoTiff with tags") {
@@ -62,7 +64,7 @@ class HadoopWriterSpec extends FunSpec
 
       geoTiff.write(new Path(pathTiff))
 
-      val actualTiff = GeoTiffHadoopReader.readMultiband(new Path(pathTiff))
+      val actualTiff = hadoop.HadoopGeoTiffReader.readMultiband(new Path(pathTiff))
       val actual = actualTiff.tile
       val actualTags = actualTiff.tags
 
@@ -76,9 +78,9 @@ class HadoopWriterSpec extends FunSpec
       val expected = geoTiff.tile
       val expectedTags = geoTiff.tags
 
-      geoTiff.write(new Path(pathTiff), true)
+      geoTiff.write(new Path(pathTiffGz))
 
-      val actualTiff = GeoTiffHadoopReader.readMultiband(new Path(s"$pathTiff.gz"))
+      val actualTiff = hadoop.HadoopGeoTiffReader.readMultiband(new Path(pathTiffGz))
       val actual = actualTiff.tile
       val actualTags = actualTiff.tags
 
@@ -92,7 +94,7 @@ class HadoopWriterSpec extends FunSpec
       val expected = geoTiff.tile.convert(IntCellType).renderPng()
       expected.write(new Path(pathPng))
 
-      val actual = PngHadoopReader.read(new Path(pathPng))
+      val actual = hadoop.HadoopPngReader.read(new Path(pathPng))
 
       actual.bytes should be (expected.bytes)
     }
@@ -100,9 +102,9 @@ class HadoopWriterSpec extends FunSpec
     it("should write Png with gzip") {
       val geoTiff = expandGeoTiff(MultibandGeoTiff(existencePath))
       val expected = geoTiff.tile.convert(IntCellType).renderPng()
-      expected.write(new Path(pathPng), true)
+      expected.write(new Path(pathPngGz))
 
-      val actual = PngHadoopReader.read(new Path(s"$pathPng.gz"))
+      val actual = hadoop.HadoopPngReader.read(new Path(pathPngGz))
 
       actual.bytes should be (expected.bytes)
     }
@@ -112,7 +114,7 @@ class HadoopWriterSpec extends FunSpec
       val expected = geoTiff.tile.convert(IntCellType).renderJpg()
       expected.write(new Path(pathJpg))
 
-      val actual = PngHadoopReader.read(new Path(pathJpg))
+      val actual = hadoop.HadoopPngReader.read(new Path(pathJpg))
 
       actual.bytes should be (expected.bytes)
     }
@@ -120,9 +122,9 @@ class HadoopWriterSpec extends FunSpec
     it("should write Jpg with gzip") {
       val geoTiff = expandGeoTiff(MultibandGeoTiff(existencePath))
       val expected = geoTiff.tile.convert(IntCellType).renderJpg()
-      expected.write(new Path(pathJpg), true)
+      expected.write(new Path(pathJpgGz))
 
-      val actual = PngHadoopReader.read(new Path(s"$pathJpg.gz"))
+      val actual = hadoop.HadoopPngReader.read(new Path(pathJpgGz))
 
       actual.bytes should be (expected.bytes)
     }
