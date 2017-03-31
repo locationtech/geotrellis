@@ -135,8 +135,8 @@ class HadoopGeoTiffRDDSpec
       val actual =
         HadoopGeoTiffRDD.singleband[ProjectedExtent, TemporalProjectedExtent](
           path = tilesDir,
-          pathToKey = (p: Path, key: ProjectedExtent) => {
-            val n = pattern.findAllIn(p.toUri.getPath.split("/").last)
+          uriToKey = (u: URI, key: ProjectedExtent) => {
+            val n = pattern.findAllIn(u.getPath.split("/").last)
             n.next()
             val gr = n.group(1)
             val zdt = LocalDateTime.of(gr.substring(0, 4).toInt, gr.substring(4, 6).toInt, 1, 0, 0, 0).atZone(ZoneId.of("UTC"))
