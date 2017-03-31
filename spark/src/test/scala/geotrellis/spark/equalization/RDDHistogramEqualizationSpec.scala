@@ -40,7 +40,7 @@ class RDDHistogramEqualizationSpec extends FunSpec
 
   describe("RDD Histogram Equalization") {
 
-    it("should work with float-point rasters") {
+    it("should work with floating-point rasters") {
       val tile1: Tile = DoubleArrayTile(data1.map(_.toDouble).toArray, 1, 8)
       val tile2: Tile = DoubleArrayTile(data2.map(_.toDouble).toArray, 1, 8)
       val rdd = ContextRDD(sc.parallelize(List((0, tile1), (1, tile2))), 33).equalize
