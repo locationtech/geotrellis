@@ -24,7 +24,6 @@ import geotrellis.spark.tiling._
 import geotrellis.spark.ingest._
 import geotrellis.spark.crop._
 import geotrellis.spark.filter._
-
 import org.apache.spark.{Partitioner, SparkContext}
 import org.apache.spark.rdd._
 import spire.syntax.cfor._
