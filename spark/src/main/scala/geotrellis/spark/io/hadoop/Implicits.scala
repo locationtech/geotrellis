@@ -35,18 +35,16 @@ trait Implicits {
 
   implicit class withJpgHadoopWriteMethods(val self: Jpg) extends HadoopRasterMethods[Jpg] {
     def write(path: Path, conf: Configuration): Unit =
-      HadoopRasterMethods.write(path, conf) { _.write(self.bytes) }
+      HdfsUtils.write(path, conf) { _.write(self.bytes) }
   }
 
   implicit class withPngHadoopWriteMethods(val self: Png) extends HadoopRasterMethods[Png] {
     def write(path: Path, conf: Configuration): Unit =
-      HadoopRasterMethods.write(path, conf) { _.write(self.bytes) }
+      HdfsUtils.write(path, conf) { _.write(self.bytes) }
   }
 
   implicit class withGeoTiffHadoopWriteMethods[T <: CellGrid](val self: GeoTiff[T]) extends HadoopRasterMethods[GeoTiff[T]] {
     def write(path: Path, conf: Configuration): Unit =
-      HadoopRasterMethods.write(path, conf) { new GeoTiffWriter(self, _).write() }
+      HdfsUtils.write(path, conf) { new GeoTiffWriter(self, _).write() }
   }
-
-
 }

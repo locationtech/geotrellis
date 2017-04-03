@@ -27,22 +27,22 @@ import org.apache.spark.SparkContext
 
 object HadoopGeoTiffReader {
   def readSingleband(path: Path)(implicit sc: SparkContext): SinglebandGeoTiff = readSingleband(path, decompress = true, streaming = false, None, sc.hadoopConfiguration)
-  def readSingleband(path: Path, decompress: Boolean, streaming: Boolean, extent: Option[Extent], conf: Configuration): SinglebandGeoTiff = HadoopRasterMethods.read(path, conf) { is =>
-    val geoTiff = GeoTiffReader.readSingleband(IOUtils.toByteArray(is), decompress, streaming)
-    extent match {
-      case Some(e) => geoTiff.crop(e)
-      case _ => geoTiff
+  def readSingleband(path: Path, decompress: Boolean, streaming: Boolean, extent: Option[Extent], conf: Configuration): SinglebandGeoTiff =
+    HdfsUtils.read(path, conf) { is =>
+      val geoTiff = GeoTiffReader.readSingleband(IOUtils.toByteArray(is), decompress, streaming)
+      extent match {
+        case Some(e) => geoTiff.crop(e)
+        case _ => geoTiff
+      }
     }
-  }
 
   def readMultiband(path: Path)(implicit sc: SparkContext): MultibandGeoTiff = readMultiband(path, decompress = true, streaming = false, None, sc.hadoopConfiguration)
-  def readMultiband(path: Path, decompress: Boolean, streaming: Boolean, extent: Option[Extent], conf: Configuration): MultibandGeoTiff = {
-    HadoopRasterMethods.read(path, conf) { is =>
+  def readMultiband(path: Path, decompress: Boolean, streaming: Boolean, extent: Option[Extent], conf: Configuration): MultibandGeoTiff =
+    HdfsUtils.read(path, conf) { is =>
       val geoTiff = GeoTiffReader.readMultiband(IOUtils.toByteArray(is), decompress, streaming)
       extent match {
         case Some(e) => geoTiff.crop(e)
         case _ => geoTiff
       }
     }
-  }
 }

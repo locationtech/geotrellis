@@ -25,5 +25,5 @@ import org.apache.spark.SparkContext
 
 object HadoopJpgReader {
   def read(path: Path)(implicit sc: SparkContext): Jpg = read(path, sc.hadoopConfiguration)
-  def read(path: Path, conf: Configuration): Jpg = HadoopRasterMethods.read(path, conf) { is => Jpg(IOUtils.toByteArray(is)) }
+  def read(path: Path, conf: Configuration): Jpg = HdfsUtils.read(path, conf) { is => Jpg(IOUtils.toByteArray(is)) }
 }
