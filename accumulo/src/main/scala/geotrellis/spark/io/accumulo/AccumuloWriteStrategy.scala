@@ -122,22 +122,33 @@ case class SocketWriteStrategy(
         val config = serializeWrapper.value
         val writer = instance.connector.createBatchWriter(table, config)
 
-        val mutations: Process[Task, Mutation] =
-          Process.unfold(partition){ iter =>
-            if (iter.hasNext) {
-              val (key, value) = iter.next()
-              val mutation = new Mutation(key.getRow)
-              mutation.put(key.getColumnFamily, key.getColumnQualifier, System.currentTimeMillis(), value)
-              Some(mutation, iter)
-            } else {
-              None
-            }
-          }
+        try {
 
-        val writeChannel = channel.lift { (mutation: Mutation) => Task { writer.addMutation(mutation) } (pool) }
-        val writes = mutations.tee(writeChannel)(tee.zipApply).map(Process.eval)
-        nondeterminism.njoin(maxOpen = poolSize, maxQueued = poolSize)(writes)(Strategy.Executor(pool)).run.unsafePerformSync
-        writer.close(); pool.shutdown()
+          val mutations: Process[Task, Mutation] =
+            Process.unfold(partition){ iter =>
+              if (iter.hasNext) {
+                val (key, value) = iter.next()
+                val mutation = new Mutation(key.getRow)
+                mutation.put(key.getColumnFamily, key.getColumnQualifier, System.currentTimeMillis(), value)
+                Some(mutation, iter)
+              } else {
+                None
+              }
+            }
+
+          val writeChannel =
+            channel.lift { (mutation: Mutation) =>
+              Task { writer.addMutation(mutation) } (pool)
+            }
+
+          val writes = mutations.tee(writeChannel)(tee.zipApply).map(Process.eval)
+
+          val joined =
+            nondeterminism.njoin(maxOpen = poolSize, maxQueued = poolSize)(writes)(Strategy.Executor(pool))
+          joined.run.unsafePerformSync
+        } finally {
+          writer.close(); pool.shutdown()
+        }
       }
     }
   }
