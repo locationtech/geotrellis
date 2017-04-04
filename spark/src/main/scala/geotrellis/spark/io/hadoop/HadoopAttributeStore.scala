@@ -34,8 +34,12 @@ import scala.util.matching.Regex
 class HadoopAttributeStore(val rootPath: Path, val hadoopConfiguration: Configuration) extends BlobLayerAttributeStore {
   import HadoopAttributeStore._
 
-  val attributePath = new Path(rootPath, "_attributes")
-  val fs = attributePath.getFileSystem(hadoopConfiguration)
+  val (fs, attributePath) = {
+    val ap = new Path(rootPath, "_attributes")
+    val fs = ap.getFileSystem(hadoopConfiguration)
+    // Get the absolute path to attributes
+    (fs, fs.getFileStatus(ap).getPath)
+  }
 
   // Create directory if it doesn't exist
   if(!fs.exists(attributePath)) {
