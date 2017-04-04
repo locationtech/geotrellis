@@ -180,7 +180,7 @@ trait ConstantTileCodecs {
       .fields()
       .name("cols").`type`().intType().noDefault()
       .name("rows").`type`().intType().noDefault()
-      .name("cell").`type`().array().items().intType().noDefault()
+      .name("cell").`type`().intType().noDefault()
       .name("noDataValue").`type`().unionOf().intType().and().nullType().endUnion().intDefault(Int.MinValue)
       .endRecord()
 
