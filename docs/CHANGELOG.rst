@@ -7,6 +7,8 @@ Changelog
 Features
 ^^^^^^^^
 
+- `Spark Enabled Cost Distance <https://github.com/locationtech/geotrellis/pull/1999>`__
+
 - `Conforming Delaunay Triangulation <https://github.com/locationtech/geotrellis/pull/1848>`__
 
 - Added a fractional-pixel rasterizer for `polygons <https://github.com/locationtech/geotrellis/pull/1873>`__ and `multipolygons <https://github.com/locationtech/geotrellis/pull/1894>`__
@@ -24,6 +26,8 @@ Features
 - `Added library of land use classification color maps. <https://github.com/locationtech/geotrellis/pull/2073>`__
 
 - `Add MGRS encode/decode support to proj4 <https://github.com/locationtech/geotrellis/pull/1838>`__
+
+- `Rasters write support to HDFS / S3 <https://github.com/locationtech/geotrellis/pull/2102>`__
 
 - `Added Range-based reading of HTTP resources <https://github.com/locationtech/geotrellis/pull/2067>`__
 
@@ -105,6 +109,13 @@ Fixes
 
 - `Ensure keyspace exists in CassandraRDDWriter <https://github.com/locationtech/geotrellis/pull/2083>`__
 
+- `Resolved repartitioning issue with HadoopGeoTiffRDD <https://github.com/locationtech/geotrellis/pull/2105>`__
+
+- `Fixed schema for intConstantTileCodec <https://github.com/locationtech/geotrellis/pull/2110>`__
+
+- `In HadoopAttributeStore, get absolute path for attributePath <https://github.com/locationtech/geotrellis/pull/2123>`__
+
+- `In AccumuloLayerDeleter, close batch deleter <https://github.com/locationtech/geotrellis/pull/2117>`__
 
 
 API Changes
