@@ -37,9 +37,13 @@ class AccumuloLayerDeleter(val attributeStore: AttributeStore, connector: Connec
       val config = new BatchWriterConfig()
       config.setMaxWriteThreads(numThreads)
       val deleter = connector.createBatchDeleter(header.tileTable, new Authorizations(), numThreads, config)
-      deleter.fetchColumnFamily(columnFamily(id))
-      deleter.setRanges(new AccumuloRange() :: Nil)
-      deleter.delete()
+      try {
+        deleter.fetchColumnFamily(columnFamily(id))
+        deleter.setRanges(new AccumuloRange() :: Nil)
+        deleter.delete()
+      } finally {
+        deleter.close()
+      }
     } catch {
       case e: AttributeNotFoundError =>
         logger.info(s"Metadata for $id was not found. Any associated layer data (if any) will require manual deletion")
