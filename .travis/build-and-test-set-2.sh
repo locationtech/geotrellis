@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Removing until the geowave API we need solidifies
 ./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" "project geowave" compile test:compile || { exit 1; }
 ./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" "project cassandra" test  || { exit 1; }
 ./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" "project vector-test" test || { exit 1; }
