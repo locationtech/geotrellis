@@ -7,53 +7,6 @@ import geotrellis.vector._
 import geotrellis.vector.triangulation._
 
 object DelaunayRasterizer {
-  // def time[T](msg: String)(f: => T) = {
-  //   val start = System.currentTimeMillis
-  //   val v = f
-  //   val end = System.currentTimeMillis
-  //   println(s"[TIMING-RAST] $msg: ${java.text.NumberFormat.getIntegerInstance.format(end - start)} ms")
-  //   v
-  // }
-
-
-  // class IterationTimer(msg: String) {
-  //   private val timings = scala.collection.mutable.ListBuffer[Int]()
-  //   private def f(i: Int) = java.text.NumberFormat.getIntegerInstance.format(i)
-  //   def time[T](f: => T) = {
-  //     val start = System.currentTimeMillis
-  //     val v = f
-  //     val end = System.currentTimeMillis
-  //     timings += ((end - start).toInt)
-  //     v
-  //   }
-
-  //   def report() = {
-  //     var sum = 0
-  //     var count = 0
-  //     var min = Int.MaxValue
-  //     var max = -1
-  //     var countAbove1ms = 0
-  //     var countAbove1s = 0
-  //     var numberOfMax = 0
-  //     for(timing <- timings) {
-  //       sum += timing
-  //       count += 1
-  //       if(timing < min) { min = timing }
-  //       if(max < timing) { max = timing }
-  //       if(timing > 1) { countAbove1ms += 1 }
-  //       if(timing > 1000) { countAbove1s += 1 }
-  //     }
-  //     println(s"[TIMING ITERATION] $msg:")
-  //     println(s"   Total: ${f(sum)} ms")
-  //     println(s"   Count: ${f(count)}")
-  //     println(s"    Mean: ${sum.toDouble / count} ms")
-  //     println(s"     Min: ${f(min)} ms")
-  //     println(s"     Max: ${f(max)} ms")
-  //     println(s" # > 1ms: ${f(countAbove1ms)}")
-  //     println(s"  # > 1s: ${f(countAbove1s)}")
-  //   }
-  // }
-
 
   /**
    * Produces a Tile with shape given by a RasterExtent where pixels are linearly interpolated
@@ -75,9 +28,7 @@ object DelaunayRasterizer {
     import halfEdgeTable._
     import pointSet._
 
-    // val iTimer = new IterationTimer("Rasterization!")
-
-    def rasterizeTriangle(tri: Int): Unit = /* iTimer.time */ {
+    def rasterizeTriangle(tri: Int): Unit = {
       val e1 = tri
       val v1 = getDest(e1)
       val v1x = getX(v1)
@@ -187,10 +138,7 @@ object DelaunayRasterizer {
       }
     }
 
-    // time("RAST LOOP") {
       triangleMap.triangleEdges.foreach { e => rasterizeTriangle(e) }
-    // }
-    // time("Timer report:") { iTimer.report() }
   }
 
   def rasterizeDelaunayTriangulation(dt: DelaunayTriangulation, re: RasterExtent): Tile =
