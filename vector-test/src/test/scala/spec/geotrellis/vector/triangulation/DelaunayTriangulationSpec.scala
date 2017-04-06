@@ -66,11 +66,6 @@ class DelaunayTriangulationSpec extends FunSpec with Matchers {
       val dt = DelaunayTriangulation(pts)
       implicit val trans = { i: Int => pts(i) }
 
-      // NOTE: In the event of failure, the following line will draw the triangulation
-      // to delaunay.png in the working directory, indicating which triangle did not
-      // exhibit the Delaunay property
-      //rasterizeDT(dt)
-
       (dt.triangleMap.getTriangles.forall{ case ((ai,bi,ci),_) =>
         val otherPts = (0 until numpts).filter{ i: Int => i != ai && i != bi && i != ci }
         otherPts.forall{ i => ! dt.predicates.inCircle(ai, bi, ci, i) }
