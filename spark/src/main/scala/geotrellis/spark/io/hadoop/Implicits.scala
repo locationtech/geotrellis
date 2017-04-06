@@ -16,6 +16,13 @@
 
 package geotrellis.spark.io.hadoop
 
+import geotrellis.raster.CellGrid
+import geotrellis.raster.io.geotiff.GeoTiff
+import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
+import geotrellis.raster.render.{Jpg, Png}
+
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.Path
 import org.apache.spark._
 import org.apache.spark.rdd._
 
@@ -25,4 +32,19 @@ trait Implicits {
   implicit class HadoopSparkContextMethodsWrapper(val sc: SparkContext) extends HadoopSparkContextMethods
   implicit class withSaveBytesToHadoopMethods[K](rdd: RDD[(K, Array[Byte])]) extends SaveBytesToHadoopMethods[K](rdd)
   implicit class withSaveToHadoopMethods[K,V](rdd: RDD[(K,V)]) extends SaveToHadoopMethods[K, V](rdd)
+
+  implicit class withJpgHadoopWriteMethods(val self: Jpg) extends HadoopRasterMethods[Jpg] {
+    def write(path: Path, conf: Configuration): Unit =
+      HdfsUtils.write(path, conf) { _.write(self.bytes) }
+  }
+
+  implicit class withPngHadoopWriteMethods(val self: Png) extends HadoopRasterMethods[Png] {
+    def write(path: Path, conf: Configuration): Unit =
+      HdfsUtils.write(path, conf) { _.write(self.bytes) }
+  }
+
+  implicit class withGeoTiffHadoopWriteMethods[T <: CellGrid](val self: GeoTiff[T]) extends HadoopRasterMethods[GeoTiff[T]] {
+    def write(path: Path, conf: Configuration): Unit =
+      HdfsUtils.write(path, conf) { new GeoTiffWriter(self, _).write() }
+  }
 }

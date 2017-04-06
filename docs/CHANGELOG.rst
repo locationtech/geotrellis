@@ -1,6 +1,148 @@
 Changelog
 =========
 
+1.1.0
+-----
+
+Features
+^^^^^^^^
+
+- `Spark Enabled Cost Distance <https://github.com/locationtech/geotrellis/pull/1999>`__
+
+- `Conforming Delaunay Triangulation <https://github.com/locationtech/geotrellis/pull/1848>`__
+
+- Added a fractional-pixel rasterizer for `polygons <https://github.com/locationtech/geotrellis/pull/1873>`__ and `multipolygons <https://github.com/locationtech/geotrellis/pull/1894>`__
+
+- `Added collections API mapalgebra local and masking functions <https://github.com/locationtech/geotrellis/pull/1947>`__
+
+- `Added withDefaultNoData method for CellTypes <https://github.com/locationtech/geotrellis/pull/1966>`__
+
+- `Moved Spark TestEnvironment to spark-testkit subproject for usage outside of GeoTrellis <https://github.com/locationtech/geotrellis/issues/2012>`__
+
+- `Add convenience overloads to GeoTiff companion object <https://github.com/locationtech/geotrellis/pull/1840>`__
+
+- `Added matplotlib's Magma, Inferno, Plasma, and Viridis color ramps <https://github.com/locationtech/geotrellis/pull/2053>`__
+
+- `Added library of land use classification color maps. <https://github.com/locationtech/geotrellis/pull/2073>`__
+
+- `Add MGRS encode/decode support to proj4 <https://github.com/locationtech/geotrellis/pull/1838>`__
+
+- `Rasters write support to HDFS / S3 <https://github.com/locationtech/geotrellis/pull/2102>`__
+
+- `Added Range-based reading of HTTP resources <https://github.com/locationtech/geotrellis/pull/2067>`__
+
+- `Improved the WKT parser that powers the WKT.getEpsgCode method <https://github.com/locationtech/geotrellis/pull/1931>`__
+
+- `Updated the geotrellis-geowave subproject to GeoWave 0.9.3 <https://github.com/locationtech/geotrellis/pull/1933>`__
+
+- `Updated the geotrellis-geomesa subproject to GeoMesa 1.2.7 <https://github.com/locationtech/geotrellis/pull/1930>`__
+
+- `Use H3 rather than Next Fit when building S3 partitions from paths <https://github.com/locationtech/geotrellis/pull/1956>`__
+
+- `Added delimiter option to S3InputFormat and S3GeoTiffRDD. <https://github.com/locationtech/geotrellis/pull/2062>`__
+
+- `Signed S3 Streaming for GeoTiff reader (HTTP with GET instead of HEAD request) <https://github.com/locationtech/geotrellis/pull/2091>`__
+
+- `Relaxed constraints to improve layer deletion capabilities <https://github.com/locationtech/geotrellis/pull/2039>`__
+
+- `Allow HadoopGeoTiffRDD and S3GeoTiffRDD to maintain additional key information such as file name <https://github.com/locationtech/geotrellis/pull/2050>`__
+
+- `Added API sugar for simplying construction of AvroRecordCodec <https://github.com/locationtech/geotrellis/pull/2030>`__
+
+- `Make compression optional for Avro encoding and decoding <https://github.com/locationtech/geotrellis/pull/1952/files>`__
+
+- `Optimization to avoid unspecialized Function3 usage in Hillshade, Slope and Aspect <https://github.com/locationtech/geotrellis/pull/2049/files>`__
+
+- `Updated multiple dependencies <https://github.com/locationtech/geotrellis/pull/1945>`__
+
+- `Upgraded ScalaPB version for VectorTile <https://github.com/locationtech/geotrellis/pull/2038>`__
+
+- Added Avro codecs for `ProjectedExtent and TemporalProjectedExtent <https://github.com/locationtech/geotrellis/pull/1971>`__ and `ConstantTile types <https://github.com/locationtech/geotrellis/pull/2015>`__
+
+- `In GeoTiff reader, compute CellSize from TIFF tags <https://github.com/locationtech/geotrellis/pull/1996>`__
+
+- `Improved apply methods for constructing S3RangeReader <https://github.com/locationtech/geotrellis/pull/1994>`__
+
+- Documentation improvements, including `porting the docts to reStructuredText <https://github.com/locationtech/geotrellis/pull/2016>`__
+
+
+Fixes
+^^^^^
+
+- `Fixed issues that made GeoTiff streaming off of S3 slow and broken <https://github.com/locationtech/geotrellis/pull/1905>`__
+
+- `Give a better error message for CRS write failures <https://github.com/locationtech/geotrellis/pull/1874>`__
+
+- `Fixed type for CRS authority in NAD83 <https://github.com/locationtech/geotrellis/pull/1916>`__
+
+- `Moved JsonFormats for CellSize and CellType to their proper place <https://github.com/locationtech/geotrellis/pull/1919>`__
+
+- `Fixed polygon rasterization for complex polygon test cases <https://github.com/locationtech/geotrellis/pull/1963>`__
+
+- `Fixed issue with FileLayerDeleter <https://github.com/locationtech/geotrellis/pull/2015>`__
+
+- `Fixed issue with logger serialization <https://github.com/locationtech/geotrellis/pull/2017>`__
+
+- `Fixed bug in renderPng that caused incorrect rendering of non-floating-point rasters <https://github.com/locationtech/geotrellis/issues/2022>`__
+
+- `Don't allow illegal TileLayouts <https://github.com/locationtech/geotrellis/issues/2026>`__
+
+- `Prevent error from happening during Pyramiding <https://github.com/locationtech/geotrellis/pull/2029>`__
+
+- `Ensure tile columns are not zero when rounding <https://github.com/locationtech/geotrellis/pull/2031>`__
+
+- `Fixed malformed XML error that was happening after failed S3 ingest <https://github.com/locationtech/geotrellis/pull/2040>`__
+
+- `Fix issue with S3LayerDeleter deleting files outside of layer <https://github.com/locationtech/geotrellis/pull/2070>`__
+
+- `Fix TemporalProjectedExtentCodec to handling proj4 strings when CRS isn't available <https://github.com/locationtech/geotrellis/pull/2034>`__
+
+- `Fixed layoutForZoom to allow 0 zoom level <https://github.com/locationtech/geotrellis/pull/2057>`__
+
+- `Fixed MapKeyTransform to deal with points north and west of extent <https://github.com/locationtech/geotrellis/pull/2060>`__
+
+- `Fixed GeoTiff reading for GeoTiffs with model tie point and PixelIsPoint <https://github.com/locationtech/geotrellis/pull/2061>`__
+
+- `Fixed issue with reading tiny (4 pixel or less) GeoTiffs <https://github.com/locationtech/geotrellis/pull/2063>`__
+
+- `Fix usage of IntCachedColorMap in Indexed PNG encoding <https://github.com/locationtech/geotrellis/pull/2075>`__
+
+- `Ensure keyspace exists in CassandraRDDWriter <https://github.com/locationtech/geotrellis/pull/2083>`__
+
+- `Resolved repartitioning issue with HadoopGeoTiffRDD <https://github.com/locationtech/geotrellis/pull/2105>`__
+
+- `Fixed schema for intConstantTileCodec <https://github.com/locationtech/geotrellis/pull/2110>`__
+
+- `In HadoopAttributeStore, get absolute path for attributePath <https://github.com/locationtech/geotrellis/pull/2123>`__
+
+- `In AccumuloLayerDeleter, close batch deleter <https://github.com/locationtech/geotrellis/pull/2117>`__
+
+
+API Changes
+^^^^^^^^^^^
+
+While we are trying to stick strictly to `SemVer <http://semver.org/>`__, there are slight API changes in this release. We felt that while this does break SemVer in the strictest sense, the change were not enough to warrant a 2.0 release. Our hope is in the future to be more cognizant of API changes for future releases.
+
+- Made EPSG capatilization `consistent in method names <https://github.com/locationtech/geotrellis/commit/343588b4b066851ea6b35a7d9cc671f4a6d47f2c>`__:
+
+   - In ``geotrellis.proj4.CRS``, changed ``getEPSGCode`` to ``getEpsgCode``
+   - In ``geotrellis.proj4.io.wkt.WKT``, changed ``fromEPSGCode`` to ``fromEpsgCode`` and ``getEPSGCode`` to ``getEpsgCode``
+
+- Changed some internal but publicly visible `classes dealing with GeoTiff reading <https://github.com/locationtech/geotrellis/pull/1905>`__
+
+   - Changed ``size`` to ``length`` in ``ArraySegmentBytes``
+   - Replaced ``foreach`` on SegmentBytes with ``getSegments``, which the caller can iterate over themselves
+   - Changed ``getDecompressedBytes`` to ``decompressGeoTiffSegment``
+
+- Moved some misplaced `implicit JsonFormats <https://github.com/locationtech/geotrellis/pull/1919>`__
+
+   - Moved ``CellTypeFormat`` and ``CellSizeFormat`` from `` geotrellis.spark.etl.config.json`` in the ``spark-etl`` subproject to ``geotrellis.raster.io.json.Implicits`` in the ``raster`` subproject.
+
+- Changed LazyLogger `from the com.typesafe.scalalogging version to our own version <https://github.com/locationtech/geotrellis/pull/2017>`__
+
+   - This shouldn't break any code, but technically is an API change.
+
+
 1.0.0
 -----
 

@@ -1324,15 +1324,15 @@ geotrellis.raster._``.
 The following packages are where Map Algebra operations are defined in
 GeoTrellis:
 
--  ```geotrellis.raster.local`` <../../raster/src/main/scala/geotrellis/raster/mapalgebra/local>`__
+-  `geotrellis.raster.mapalgebra.local <https://geotrellis.github.io/scaladocs/latest/#geotrellis.raster.mapalgebra.local.package>`__
    defines operations which act on a cell without regard to its spatial
    relations. Need to double every cell on a tile? This is the module
    you'll want to explore.
--  ```geotrellis.raster.focal`` <../../raster/src/main/scala/geotrellis/raster/mapalgebra/focal>`__
+-  `geotrellis.raster.mapalgebra.focal <https://geotrellis.github.io/scaladocs/latest/#geotrellis.raster.mapalgebra.focal.package>`__
    defines operations which focus on two-dimensional windows (internally
    referred to as neighborhoods) of a raster's values to determine their
    outputs.
--  ```geotrellis.raster.zonal`` <../..raster/src/main/scala/geotrellis/raster/mapalgebra/zonal>`__
+-  `geotrellis.raster.mapalgebra.zonal <https://geotrellis.github.io/scaladocs/latest/#geotrellis.raster.mapalgebra.zonal.package>`__
    defines operations which apply over a zones as defined by
    corresponding cell values in the zones raster.
 

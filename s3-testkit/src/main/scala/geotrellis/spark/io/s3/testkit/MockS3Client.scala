@@ -33,6 +33,7 @@ class MockS3Client() extends S3Client with LazyLogging {
   import MockS3Client._
 
   def listObjects(r: ListObjectsRequest): ObjectListing = this.synchronized {
+    setLastListObjectsRequest(r)
     if (null == r.getMaxKeys)
       r.setMaxKeys(64)
 
@@ -256,8 +257,10 @@ object MockS3Client{
     }
   }
 
-  def reset(): Unit =
+  def reset(): Unit = {
     buckets.clear()
+    _lastListObjectsRequest = None
+  }
 
   val buckets = new ConcurrentHashMap[String, Bucket]()
 
@@ -270,4 +273,13 @@ object MockS3Client{
       bucket
     }
   }
+
+  // Allow tests to inspect the last ListObjectRequest
+
+  var _lastListObjectsRequest: Option[ListObjectsRequest] = None
+  def lastListObjectsRequest = _lastListObjectsRequest
+  def setLastListObjectsRequest(r: ListObjectsRequest) =
+    _lastListObjectsRequest.synchronized {
+      _lastListObjectsRequest = Some(r)
+    }
 }

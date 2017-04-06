@@ -186,7 +186,8 @@ case class TiffTags(
         getExtentFromModelFunction { pixel =>
           val transformed = Array.ofDim[Double](3)
           cfor(0)(_ < 3, _ + 1) { row =>
-            transformed(row) = trans(row)(0) * pixel.x + trans(row)(1) * pixel.y + trans(row)(2) * pixel.z + trans(row)(3)
+            transformed(row) =
+              trans(row)(0) * pixel.x + trans(row)(1) * pixel.y + trans(row)(2) * pixel.z + trans(row)(3)
           }
 
           Pixel3D.fromArray(transformed)
@@ -258,23 +259,39 @@ case class TiffTags(
     )
   }
 
-  private def tiePointsModelSpace(tiePoints: Array[(Pixel3D, Pixel3D)],
-    pixelScaleOption: Option[(Double, Double, Double)]) =
+  private def tiePointsModelSpace(
+    tiePoints: Array[(Pixel3D, Pixel3D)],
+    pixelScaleOption: Option[(Double, Double, Double)]
+  ) =
     pixelScaleOption match {
-      case Some(pixelScales) => {
+      case Some(pixelScales) =>
         def modelFunc(pixel: Pixel3D) = {
-          val (first, second) = tiePoints.head
+          val (rasterPoint, mapPoint) = tiePoints.head
 
-          val scaleX = (pixel.x - first.x) * pixelScales._1
-          val scaleY = (pixel.y - first.y) * pixelScales._2
-          val scaleZ = (pixel.z - first.z) * pixelScales._3
+          val scaleX = (pixel.x - rasterPoint.x) * pixelScales._1
+          val scaleY = (pixel.y - rasterPoint.y) * pixelScales._2
+          val scaleZ = (pixel.z - rasterPoint.z) * pixelScales._3
 
-          Pixel3D(scaleX + second.x, second.y - scaleY, scaleZ + second.z)
+          val x = mapPoint.x + scaleX
+          val y = mapPoint.y - scaleY
+          val z = mapPoint.z + scaleZ
+
+          pixelSampleType match {
+            case Some(PixelIsPoint) =>
+              // If PixelIsPoint, we have to consider the tie point to be
+              // the center of the pixel
+              Pixel3D(
+                x - (pixelScales._1 * 0.5),
+                y + (pixelScales._2 * 0.5),
+                z - (pixelScales._3 * 0.5)
+              )
+            case _ =>
+              Pixel3D(x, y, z)
+          }
         }
 
         getExtentFromModelFunction(modelFunc)
-      }
-      case None => {
+      case None =>
         val imageWidth = cols
         val imageLength = rows
 
@@ -288,8 +305,11 @@ case class TiffTags(
           val xt = if (i % 2 == 1) imageWidth - 1 else 0
           val yt = if (i >= 2) imageLength - 1 else 0
 
-          val optPixel = tiePoints.filter(pixel => pixel._1.x == xt &&
-            pixel._1.y == yt).map(_._2).headOption
+          val optPixel =
+            tiePoints
+              .filter { pixel => pixel._1.x == xt && pixel._1.y == yt }
+              .map(_._2)
+              .headOption
 
           if (!optPixel.isEmpty) {
             val pixel = optPixel.get
@@ -303,7 +323,6 @@ case class TiffTags(
         }
 
         Extent(minX, minY, maxX, maxY)
-      }
     }
 
   private def getExtentFromModelFunction(func: Pixel3D => Pixel3D) = {

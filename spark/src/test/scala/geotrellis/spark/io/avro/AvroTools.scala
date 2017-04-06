@@ -65,6 +65,9 @@ object AvroTools {
   implicit class ShortNoDataValueCheckMethods(val self: ShortArrayTile) extends
     ShortNoDataChecker(self.cellType) with AvroNoDataCheckMethods[ShortArrayTile] {}
 
+  implicit class ShortConstantNoDataValueCheckMethods(val self: ShortConstantTile) extends
+    ShortNoDataChecker(self.cellType) with AvroNoDataCheckMethods[ShortConstantTile] {}
+
   class ShortNoDataChecker(cellType: CellType) extends NoDataValueChecker[ShortArrayTile] {
     override def doCheck(nodata: Option[Any]): Unit = {
       cellType match {
@@ -78,6 +81,9 @@ object AvroTools {
 
   implicit class UShortNoDataValueCheckMethods(val self: UShortArrayTile) extends
     UShortNoDataChecker(self.cellType) with AvroNoDataCheckMethods[UShortArrayTile] {}
+
+  implicit class UShortConstantNoDataValueCheckMethods(val self: UShortConstantTile) extends
+    UShortNoDataChecker(self.cellType) with AvroNoDataCheckMethods[UShortConstantTile] {}
 
   class UShortNoDataChecker(cellType: CellType) extends NoDataValueChecker[UShortArrayTile] {
     override def doCheck(nodata: Option[Any]): Unit = {
@@ -93,6 +99,9 @@ object AvroTools {
   implicit class IntNoDataValueCheckMethods(val self: IntArrayTile) extends
     IntNoDataChecker(self.cellType) with AvroNoDataCheckMethods[IntArrayTile] {}
 
+  implicit class IntConstantNoDataValueCheckMethods(val self: IntConstantTile) extends
+    IntNoDataChecker(self.cellType) with AvroNoDataCheckMethods[IntConstantTile] {}
+
   class IntNoDataChecker(cellType: CellType) extends NoDataValueChecker[IntArrayTile] {
     override def doCheck(nodata: Option[Any]): Unit = {
       cellType match {
@@ -106,6 +115,9 @@ object AvroTools {
 
   implicit class FloatNoDataValueCheckMethods(val self: FloatArrayTile) extends
     FloatNoDataChecker(self.cellType) with AvroNoDataCheckMethods[FloatArrayTile] {}
+
+  implicit class FloatConstantNoDataValueCheckMethods(val self: FloatConstantTile) extends
+    FloatNoDataChecker(self.cellType) with AvroNoDataCheckMethods[FloatConstantTile] {}
 
   class FloatNoDataChecker(cellType: CellType) extends NoDataValueChecker[FloatArrayTile] {
     override def doCheck(nodata: Option[Any]): Unit = {
@@ -124,6 +136,9 @@ object AvroTools {
   implicit class DoubleNoDataValueCheckMethods(val self: DoubleArrayTile) extends
     DoubleNoDataChecker(self.cellType) with AvroNoDataCheckMethods[DoubleArrayTile] {}
 
+  implicit class DoubleConstantNoDataValueCheckMethods(val self: DoubleConstantTile) extends
+    DoubleNoDataChecker(self.cellType) with AvroNoDataCheckMethods[DoubleConstantTile] {}
+
   class DoubleNoDataChecker(cellType: CellType) extends NoDataValueChecker[DoubleArrayTile] {
     override def doCheck(nodata: Option[Any]): Unit = {
       cellType match {
@@ -137,6 +152,9 @@ object AvroTools {
 
   implicit class ByteNoDataValueCheckMethods(val self: ByteArrayTile) extends
     ByteNoDataChecker(self.cellType) with AvroNoDataCheckMethods[ByteArrayTile] {}
+
+  implicit class ByteConstantNoDataValueCheckMethods(val self: ByteConstantTile) extends
+    ByteNoDataChecker(self.cellType) with AvroNoDataCheckMethods[ByteConstantTile] {}
 
   class ByteNoDataChecker(cellType: CellType) extends NoDataValueChecker[ByteArrayTile] {
     override def doCheck(nodata: Option[Any]): Unit = {
@@ -152,6 +170,9 @@ object AvroTools {
   implicit class UByteNoDataValueCheckMethods(val self: UByteArrayTile) extends
     UByteNoDataChecker(self.cellType) with AvroNoDataCheckMethods[UByteArrayTile] {}
 
+  implicit class UByteConstantNoDataValueCheckMethods(val self: UByteConstantTile) extends
+    UByteNoDataChecker(self.cellType) with AvroNoDataCheckMethods[UByteConstantTile] {}
+
   class UByteNoDataChecker(cellType: CellType) extends NoDataValueChecker[UByteArrayTile] {
     override def doCheck(nodata: Option[Any]): Unit = {
       cellType match {
@@ -165,6 +186,9 @@ object AvroTools {
 
   implicit class BitNoDataValueCheckMethods(val self: BitArrayTile) extends
     BitNoDataChecker(self.cellType) with AvroNoDataCheckMethods[BitArrayTile] {}
+
+  implicit class BitConstantNoDataValueCheckMethods(val self: BitConstantTile) extends
+    BitNoDataChecker(self.cellType) with AvroNoDataCheckMethods[BitConstantTile] {}
 
   class BitNoDataChecker(cellType: CellType) extends NoDataValueChecker[BitArrayTile] {
     override def doCheck(nodata: Option[Any]): Unit = {
