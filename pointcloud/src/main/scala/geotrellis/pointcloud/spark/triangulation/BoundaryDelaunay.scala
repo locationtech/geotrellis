@@ -94,10 +94,12 @@ object BoundaryDelaunay {
       import dt.predicates._
 
       val (radius, center, valid) = circleCenter(getDest(tri), getDest(getNext(tri)), getDest(getNext(getNext(tri))))
-      val ppd = new PointPairDistance
 
-      DistanceToPoint.computeDistance(extent.toPolygon.jtsGeom, center, ppd)
-      !valid || ppd.getDistance < radius
+      !valid || {
+        val ppd = new PointPairDistance
+        DistanceToPoint.computeDistance(extent.toPolygon.jtsGeom, center, ppd)
+        ppd.getDistance < radius
+      }
     }
 
     def inclusionTest(extent: Extent, thresh: Double)(tri: HalfEdge): Boolean = {
