@@ -236,7 +236,7 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
           lcand = e
 
           if (debug) {
-            val c = circleCenter(getDest(base), getSrc(base), getDest(lcand))
+            val c = circleCenter(getDest(base), getSrc(base), getDest(lcand))._2
             val r = c.distance(getCoordinate(getDest(base)))
 
             println(s"   [31m✘[0m Deleted LCAND [circle center = $c, radius = $r]")
@@ -272,7 +272,7 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
           rcand = e
 
           if (debug) {
-            val c = circleCenter(getDest(base), getSrc(base), getDest(rcand))
+            val c = circleCenter(getDest(base), getSrc(base), getDest(rcand))._2
             val r = c.distance(getCoordinate(getDest(base)))
 
             println(s"   [31m✘[0m Deleted RCAND [circle center = $c, radius = $r]")
