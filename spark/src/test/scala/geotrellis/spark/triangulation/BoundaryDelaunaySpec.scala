@@ -56,7 +56,6 @@ class BoundaryDelaunaySpec extends FunSpec with Matchers {
         if (circumcircleLeavesExtent(tri))
           bdtTris.contains(idx)
         else {
-          //!bdtTris.contains(idx)
           true
         }
       }} should be (true)
@@ -67,7 +66,6 @@ class BoundaryDelaunaySpec extends FunSpec with Matchers {
       val dt = DelaunayTriangulation(pts, debug=false)
       val bdt = BoundaryDelaunay(dt, Extent(0,0,1,1))
 
-      // implicit val trans = { i: Int => pts(i) }
       import bdt.halfEdgeTable._
       val predicates = new TriangulationPredicates(bdt.pointSet, bdt.halfEdgeTable)
       import predicates._

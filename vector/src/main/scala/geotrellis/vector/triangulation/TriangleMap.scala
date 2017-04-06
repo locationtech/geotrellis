@@ -9,8 +9,6 @@ class TriangleMap(halfEdgeTable: HalfEdgeTable) {
   private val triangles = collection.mutable.Map.empty[TriIdx, Int]
 
   def +=(i1: Int, i2: Int, i3: Int, edge: Int): Unit = {
-    // if (isTriangle(i1,i2,i3))
-    //   println(s"Attempting to re-add triangle ${(i1,i2,i3)}")
     assert(edge == getNext(getNext(getNext(edge))))
     assert(Set(i1, i2, i3) == Set(getSrc(edge), getDest(edge), getDest(getNext(edge))))
     triangles += regularizeIndex(i1, i2, i3) -> edge
@@ -19,9 +17,6 @@ class TriangleMap(halfEdgeTable: HalfEdgeTable) {
 
   def +=(keyValue: (TriIdx, Int)): Unit = {
     val ((a, b, c), edge) = keyValue
-    //println(s"Adding triangle ($a, $b, $c)")
-    // if (isTriangle(a,b,c))
-    //   println(s"Attempting to re-add triangle ${(a,b,c)}")
     assert(edge == getNext(getNext(getNext(edge))))
     assert(Set(a, b, c) == Set(getSrc(edge), getDest(edge), getDest(getNext(edge))))
     triangles += TriangleMap.regularizeIndex(a, b, c) -> edge
@@ -42,7 +37,6 @@ class TriangleMap(halfEdgeTable: HalfEdgeTable) {
   }
 
   def -=(idx: TriIdx): Unit = {
-    //println(s"Removing triangle $idx")
     triangles -= regularizeIndex(idx)
     removeIncidentEdge(idx._1)
     removeIncidentEdge(idx._2)

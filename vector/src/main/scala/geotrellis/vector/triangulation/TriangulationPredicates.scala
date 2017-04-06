@@ -83,10 +83,6 @@ final class TriangulationPredicates(pointSet: DelaunayPointSet, halfEdgeTable: H
       ON
   }
 
-  // final def isRightOf(e: Int, p: Coordinate) = {
-  //   isCCW(p, trans(het.getDest(e)), trans(het.getSrc(e)))
-  // }
-
   def isCCW(a: Int, b: Int, c: Int) = {
     val ax = getX(a)
     val ay = getY(a)
@@ -108,9 +104,6 @@ final class TriangulationPredicates(pointSet: DelaunayPointSet, halfEdgeTable: H
     val cy = getY(c)
     RobustPredicates.isCCW(px, py, bx, by, cx, cy)
   }
-
-  // def isLeftOf(e: Int, p: Coordinate)(implicit trans: Int => Coordinate, het: HalfEdgeTable) =
-  //   isCCW(p, trans(het.getSrc(e)), trans(het.getDest(e)))
 
   def isLeftOf(e: Int, p: Int) = {
     val px = getX(p)

@@ -58,16 +58,6 @@ object RobustPredicates {
     inCircle(a.x, a.y, b.x, b.y, c.x, c.y, d.x, d.y)
 
   def circleCenter(ax: Double, ay: Double, bx: Double, by: Double, cx: Double, cy: Double): (Double, Coordinate, Boolean) = {
-    // val d = 2.0 * det3(ax, ay, 1.0,
-    //                    bx, by, 1.0,
-    //                    cx, cy, 1.0)
-    // val h = det3(ax * ax + ay * ay, ay, 1.0,
-    //              bx * bx + by * by, by, 1.0,
-    //              cx * cx + cy * cy, cy, 1.0) / d
-    // val k = det3(ax, ax * ax + ay * ay, 1.0,
-    //              bx, bx * bx + by * by, 1.0,
-    //              cx, cx * cx + cy * cy, 1.0) / d
-
     val dbx = bx - ax
     val dby = by - ay
     val dcx = cx - ax

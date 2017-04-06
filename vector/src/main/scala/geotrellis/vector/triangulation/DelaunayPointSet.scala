@@ -44,14 +44,6 @@ object DelaunayPointSet {
       override def getCoordinate(i: Int) = points(i)
     }
 
-  // implicit def pointCloudToDelaunayPointSet(pointCloud: PointCloud): DelaunayPointSet =
-  //   new DelaunayPointSet {
-  //     def length = pointCloud.length
-  //     def getX(i: Int) = pointCloud.getX(i)
-  //     def getY(i: Int) = pointCloud.getY(i)
-  //     def getZ(i: Int) = pointCloud.getZ(i)
-  //   }
-
   implicit def coordinateArrayToDelaunayPointSet(points: Array[Coordinate]): DelaunayPointSet =
     apply(points)
 }

@@ -89,15 +89,7 @@ class StitchedDelaunaySpec extends FunSpec with Matchers {
           }}
           .toMap
 
-      //val dtC = triangulations.find(_._1 == Center).get._2
-      //val bdtC = stitchInput(Center)._1
-
       val stitch = StitchedDelaunay(stitchInput)
-
-      // val dtPolys = MultiPolygon(stitch.triangles.map { 
-      //   case (ai, bi, ci) => Polygon(Seq(ai,bi,ci,ai).map{ i => Point.jtsCoord2Point(stitch.indexToCoord(i)) })
-      // })
-      // new java.io.PrintWriter("/data/stitchpolys.wkt") { write(dtPolys.toString); close }
 
       stitch.triangles.forall { case (ai, bi, ci) => {
         val a = stitch.indexToCoord(ai)
@@ -105,9 +97,6 @@ class StitchedDelaunaySpec extends FunSpec with Matchers {
         val c = stitch.indexToCoord(ci)
         points.forall{ pt => {
           val result = !RobustPredicates.inCircle(a, b, c, pt)
-          // if (!result) {
-          //   println(s"plot([${pt.x}], [${pt.y}], 'k*', [${a.x}, ${b.x}, ${c.x}, ${a.x}], [${a.y}, ${b.y}, ${c.y}, ${a.y}], 'r-', [${a.x}], [${a.y}], 'b*', [${b.x}], [${b.y}], 'g*')")
-          // }
           result
         }}
       }} should be (true)
@@ -137,18 +126,8 @@ class StitchedDelaunaySpec extends FunSpec with Matchers {
           .map{ case (dir, dt) => {
             val ex = directionToExtent(dir)
             (dir, (BoundaryDelaunay(dt, ex), ex))
-            //(dir, (dt, ex))
           }}
           .toMap
-
-      // val dtC = triangulations.find(_._1 == Center).get._2
-      // val bdtC = stitchInput(Center)._1
-
-      //stitchInput.foreach { case (dir, (bdt, _)) =>
-      //  bdt.writeWKT(s"boundary${dir}.wkt")
-      //}
-
-      //StitchedDelaunay(stitchInput.filterKeys(Seq(TopLeft, Left).contains(_)), true)
 
       val stitch = StitchedDelaunay(stitchInput, false)
       //stitch.writeWKT("stitched.wkt")

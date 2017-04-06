@@ -118,10 +118,6 @@ object BoundaryDelaunay {
       if (radius / shortest > thresh)
         true
       else {
-        // val ppd = new PointPairDistance
-        // DistanceToPoint.computeDistance(extent.toPolygon.jtsGeom, center, ppd)
-        // ppd.getDistance < radius
-
         val Extent(x0, y0, x1, y1) = extent
         def outside(x: Double): Boolean = x < 0.0 || x > 1.0
 
@@ -142,15 +138,10 @@ object BoundaryDelaunay {
     def lookupTriangle(tri: HalfEdge): Option[ResultEdge] = {
       import dt.halfEdgeTable._
 
-      // val normalized =
-      //   TriangleMap.regularizeIndex(
-      //     getDest(tri), getDest(getNext(tri)), getDest(getNext(getNext(tri)))
-      //   )
       triangles.get(getDest(tri), getDest(getNext(tri)), getDest(getNext(getNext(tri)))) match {
         case Some(base) => {
           var e = base
           do {
-            //println(s"YUP THIS IS IT $e")
             if (halfEdgeTable.getDest(e) == getDest(tri)) {
               return Some(e)
             }
@@ -177,7 +168,6 @@ object BoundaryDelaunay {
     def copyConvertLinearBound(): ResultEdge = {
       import dt.halfEdgeTable._
 
-      //println("copyConvertLinearBound")
       val correspondingEdge = collection.mutable.Map.empty[(Vertex, Vertex), ResultEdge]
       var e = dt.boundary
 
@@ -206,20 +196,6 @@ object BoundaryDelaunay {
     def copyConvertBoundingLoop(): ResultEdge = {
       import dt.halfEdgeTable._
 
-      //println("copyConvertBoundingLoop")
-      // Record orig as a outer bound
-      // outerEdges += ((getSrc(orig), getDest(orig)))
-
-      // var copy = if (orig == dt.boundary) newBound else copyConvertEdge(orig)
-
-      // if (getNext(orig) != dt.boundary) {
-      //   halfEdgeTable.setNext(copy, copyConvertBoundingLoop(getNext(orig), newBound))
-      // } else {
-      //   halfEdgeTable.setNext(copy, newBound)
-      // }
-      // halfEdgeTable.setNext(halfEdgeTable.getFlip(halfEdgeTable.getNext(copy)), halfEdgeTable.getFlip(copy))
-      // copy
-
       val first = copyConvertEdge(dt.boundary)
       var last = first
       outerEdges += ((getSrc(dt.boundary), getDest(dt.boundary)))
@@ -244,7 +220,6 @@ object BoundaryDelaunay {
     def copyConvertTriangle(tri: HalfEdge): ResultEdge = {
       import dt.halfEdgeTable._
 
-      //println(s"COPY CONV BEG")
       val a = addPoint(getDest(tri))
       val b = addPoint(getDest(getNext(tri)))
       val c = addPoint(getDest(getNext(getNext(tri))))
@@ -252,80 +227,40 @@ object BoundaryDelaunay {
       val copy =
         halfEdgeTable.getFlip(
           halfEdgeTable.getNext(
-            // halfEdgeTable.createHalfEdges(getDest(tri),
-            //                           getDest(getNext(tri)),
-            //                           getDest(getNext(getNext(tri))))
             halfEdgeTable.createHalfEdges(a, b, c)
           )
         )
 
-      // val idx =
-      //   TriangleMap.regularizeTriangleIndex(
-      //     halfEdgeTable.getDest(copy),
-      //     halfEdgeTable.getDest(halfEdgeTable.getNext(copy)),
-      //     halfEdgeTable.getDest(halfEdgeTable.getNext(halfEdgeTable.getNext(copy)))
-      //   )
-
       triangles += (a, b, c) -> copy
-      // println(s"COPY CONV END")
-      // print(s" ADDIN TRIANGLE ${idx}: ")
-      // showBoundingLoop(tri)
-      // println("      ADD +++++++++")
-      // r.showBoundingLoop(copy)
       copy
     }
-
-    //val innerLoop = collection.mutable.ListBuffer.empty[(HalfEdge, ResultEdge)]
-    //var innerLoop: (HalfEdge, ResultEdge) = (-1, -1)
 
     def recursiveAddTris(e0: HalfEdge, opp0: ResultEdge): Unit = {
       import dt.halfEdgeTable._
 
-      //println("recursiveAddTris")
       val workQueue = collection.mutable.Queue( (e0, opp0) )
 
       while (!workQueue.isEmpty) {
         val (e, opp) = workQueue.dequeue
-        //println(s"     WORKING ON:")
-        //showLoop(e)
-        //halfEdgeTable.showLoop(opp)
-        //println(s"=======")
         val isOuterEdge = outerEdges.contains(getSrc(e) -> getDest(e))
-        // val isFlipInInnerRing = {
-        //   val flip = halfEdgeTable.getFlip(opp)
-        //   halfEdgeTable.getDest(halfEdgeTable.getNext(halfEdgeTable.getNext(halfEdgeTable.getNext(flip)))) != halfEdgeTable.getDest(flip)
-        // }
         val isInInnerRing = innerEdges.contains(getSrc(e) -> getDest(e))
         if (!isOuterEdge && isInInnerRing) {
           //  We are not on the boundary of the original triangulation, and opp.flip isn't already part of a triangle
           lookupTriangle(e) match {
             case Some(tri) =>
               // opp.flip should participate in the existing triangle specified by tri.  Connect opp to tri so that it does.
-              //println(s"    --- FOUND TRIANGLE:")
-              //halfEdgeTable.showLoop(tri)
               halfEdgeTable.join(opp, tri)
               innerEdges -= halfEdgeTable.getSrc(tri) -> halfEdgeTable.getDest(tri)
               innerEdges -= halfEdgeTable.getDest(tri) -> halfEdgeTable.getSrc(tri)
-            // r.joinTriangles(opp, tri)
-            // println(s"    JOIN FOUND TRIANGLE")
-            // r.showBoundingLoop(r.getFlip(r.getNext(tri)))
-            // r.showBoundingLoop(r.getFlip(r.getNext(opp)))
             case None =>
               // We haven't been here yet, so create a triangle to mirror the one referred to by e, and link opp to it.
               // (If that triangle belongs in the boundary, otherwise, mark opp as part of the inner ring for later)
-              //println("     --- DID NOT FIND TRIANGLE")
 
-              //      val tri = copyConvertTriangle(e)
-              //      halfEdgeTable.join(opp, tri)
-
-              if (inclusionTest(boundingExtent, 5)(e)/*circumcircleLeavesExtent(boundingExtent)(e)*/) {
-                //println("         Triangle circle leaves extent")
+              if (inclusionTest(boundingExtent, 5)(e)) {
                 val tri = copyConvertTriangle(e)
                 val tri2 = halfEdgeTable.getNext(tri)
                 val tri3 = halfEdgeTable.getNext(halfEdgeTable.getNext(tri))
 
-                //print("         ")
-                //halfEdgeTable.showLoop(tri)
                 halfEdgeTable.join(opp, tri)
                 innerEdges -= halfEdgeTable.getSrc(tri) -> halfEdgeTable.getDest(tri)
                 innerEdges += (halfEdgeTable.getDest(tri2), halfEdgeTable.getSrc(tri2)) -> (getFlip(getNext(e)), tri2)
@@ -333,9 +268,6 @@ object BoundaryDelaunay {
 
                 workQueue.enqueue( (getFlip(getNext(e)), tri2) )
                 workQueue.enqueue( (getFlip(getNext(getNext(e))), tri3) )
-              } else {
-                //innerLoop += ((e, opp))
-                //innerLoop = (e, opp)
               }
           }
         }
@@ -355,22 +287,8 @@ object BoundaryDelaunay {
         var continue = true
         var j = 0
         do {
-          //assert(getSrc(e) == halfEdgeTable.getSrc(pairedE) && getDest(e) == halfEdgeTable.getDest(pairedE))
-          //println(s"Building off [${halfEdgeTable.getSrc(pairedE)} -> ${halfEdgeTable.getDest(pairedE)}]")
-
-          // if (getSrc(e) != halfEdgeTable.getSrc(o) || getDest(e) != halfEdgeTable.getDest(o)) {
-          //   new java.io.PrintWriter("buffer.wkt") { write(geotrellis.vector.io.wkt.WKT.write(MultiPolygon(polys))); close } // (debug)
-
-          //   println(s"Inconsistent state: e = [${getSrc(e)} -> ${getDest(e)}], o = [${halfEdgeTable.getSrc(o)} -> ${halfEdgeTable.getDest(o)}]")
-          //   return ()
-          // }
-
-          //println(s"e = ${(getSrc(e), getDest(e), getDest(getNext(e)))}, o = [${halfEdgeTable.getSrc(o)} -> ${halfEdgeTable.getDest(o)}]")
-
           bounds.get(halfEdgeTable.getSrc(pairedE) -> halfEdgeTable.getDest(pairedE)) match {
             case Some(next) =>
-              //println("Edge is on bounding loop")
-
               // we've arrived at the edge.  Make sure we're joined up.
               if (pairedE != next) {
                 halfEdgeTable.join(halfEdgeTable.getFlip(pairedE), next)
@@ -379,13 +297,11 @@ object BoundaryDelaunay {
               continue = false
 
             case None =>
-              //println("Edge is not on boundary")
               // not at the boundary.  Keep going.
 
               lookupTriangle(e) match {
                 case None =>
                   // bounding triangle has not yet been added
-                  //println("ADDING TRIANGLE")
                   val tri = copyConvertTriangle(e)
 
                   // add new tri to polys (debugging)
@@ -408,17 +324,11 @@ object BoundaryDelaunay {
 
                   pairedE = tri
                 case Some(tri) =>
-                  // continue = false
-
                   // bounding triangle already exists
                   if (pairedE != tri) {
                     // join if it hasn't already been linked
-                    //println("join")
                     halfEdgeTable.join(tri, halfEdgeTable.getFlip(pairedE))
                     pairedE = tri
-                  } else {
-                    // triangle is already properly connected
-                    //println("no join") // (debug)
                   }
               }
           }
@@ -449,66 +359,20 @@ object BoundaryDelaunay {
     def copyConvertBoundingTris(): ResultEdge = {
       import dt.halfEdgeTable._
 
-      //println("copyConvertBoundingTris")
-      // val newBound: ResultEdge = copyConvertBoundingLoop(boundary, copyConvertEdge(boundary))
       val newBound: ResultEdge = copyConvertBoundingLoop()
       var e = dt.boundary
       var ne = newBound
-      //navigateThis(ne)
 
       val boundingTris = collection.mutable.Set.empty[Int]
       do {
-        // println(s"in CCBT $e")
         assert(getDest(e) == halfEdgeTable.getDest(ne) && getSrc(e) == halfEdgeTable.getSrc(ne))
-        // if (circumcircleLeavesExtent(boundingExtent)(getFlip(e))) {
-        //   val f = getFlip(e)
-        //   println(s"Triangle ${(getSrc(f), getDest(f), getDest(getNext(f)), getDest(getNext(getNext(f))))} has circumcircle outside extent")
-        // }
         recursiveAddTris(getFlip(e), ne)
-        //navigateThis(ne)
         e = getNext(e)
         ne = halfEdgeTable.getNext(ne)
       } while (e != dt.boundary)
 
-      //writeWKT("bounds.wkt")
-      //isMeshValid(triangles, halfEdgeTable)
-
       fillInnerLoop
-      //writeWKT("filled.wkt")
 
-      // // Add fans of boundary edges
-      // do {
-      //   var rot = e
-      //   var rotNe = ne
-      //   do {
-      //     val flip = getFlip(rot)
-
-      //     val isOuterEdge = outerEdges.contains((getSrc(flip), getDest(flip)))
-      //     if (!isOuterEdge) {
-      //       lookupTriangle(flip) match {
-      //         case Some(tri) =>
-      //           if(rotNe != halfEdgeTable.getFlip(tri)) {
-      //             halfEdgeTable.join(rotNe, tri)
-      //             // halfEdgeTable.joinTriangles(rotNe, tri)
-      //           }
-      //         case None =>
-      //           val tri = copyConvertTriangle(flip)
-      //           halfEdgeTable.join(rotNe, tri)
-      //           // halfEdgeTable.joinTriangles(rotNe, tri)
-      //           assert(halfEdgeTable.rotCWSrc(rotNe) == halfEdgeTable.getNext(tri))
-      //       }
-      //     }
-      //     rot = rotCWSrc(rot)
-      //     rotNe = halfEdgeTable.rotCWSrc(rotNe)
-      //     assert(getDest(rot) == halfEdgeTable.getDest(rotNe))
-      //     assert(getSrc(rot) == halfEdgeTable.getSrc(rotNe))
-      //   } while(rot != e)
-
-      //   e = getNext(e)
-      //   ne = halfEdgeTable.getNext(ne)
-      // } while(e != dt.boundary)
-
-      assert(ne == newBound)
       newBound
     }
 
@@ -527,7 +391,6 @@ case class BoundaryDelaunay(
   halfEdgeTable: HalfEdgeTable,
   triangleMap: TriangleMap,
   boundary: Int,
-  // inner: Int,
   isLinear: Boolean
 ) {
   def trianglesFromVertices: MultiPolygon = {
@@ -560,11 +423,4 @@ case class BoundaryDelaunay(
   }
 
   def isMeshValid(): Boolean = { BoundaryDelaunay.isMeshValid(triangleMap, halfEdgeTable) }
-
-  // def navigate() = halfEdgeTable.navigate(boundary, 
-  //                                         pointSet.getCoordinate(_), 
-  //                                         Map[Char, (String, Int => Int)](
-  //                                           'i' -> (("jump to inner edge", { _ => inner }))
-  //                                         )
-  //                                        )
 }

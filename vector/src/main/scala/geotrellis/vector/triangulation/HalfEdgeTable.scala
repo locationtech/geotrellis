@@ -39,11 +39,6 @@ class HalfEdgeTable(_size: Int) {
   def join(e: Int, opp: Int): Unit = {
     assert(getSrc(e) == getDest(opp) && getDest(e) == getSrc(opp))
 
-    // e.flip.prev.next = opp.flip.next
-    // opp.flip.prev.next = e.flip.next
-    // e.flip = opp
-    // opp.flip = e
-
     val toKill1 = getFlip(e)
     val toKill2 = getFlip(opp)
 
@@ -54,9 +49,6 @@ class HalfEdgeTable(_size: Int) {
 
     killEdge(toKill1)
     killEdge(toKill2)
-
-    //edgeAt += getDest(opp) -> opp
-    //edgeAt += getDest(e) -> e
   }
 
   /** Create an edge pointing to single vertex.
@@ -114,9 +106,6 @@ class HalfEdgeTable(_size: Int) {
     setFlip(e1, e2)
     setNext(e1, e2)
 
-    // edgeAt += v1 -> e1
-    // edgeAt += v2 -> e2
-
     e2
   }
 
@@ -129,7 +118,6 @@ class HalfEdgeTable(_size: Int) {
     * @note It's up to the caller to set these edges in counter clockwise order
     */
   def createHalfEdges(v1: Int, v2: Int, v3: Int): Int = {
-    //println(s"DELAUNAY2 - HE $v1 $v2 $v3")
     val inner1 = createHalfEdge(v1)
     val inner2 = createHalfEdge(v2)
     val inner3 = createHalfEdge(v3)
@@ -356,8 +344,6 @@ class HalfEdgeTable(_size: Int) {
 
     val nextSize = size * factor
     val nextTable = Array.ofDim[Int](nextSize * 3)
-
-    //println(s"RESIZE $size TO $nextSize")
 
     // Given the underlying array implementation we can only store so
     // many unique values. given that 1<<30

@@ -69,30 +69,6 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
       new java.io.PrintWriter("right.wkt") { write(geotrellis.vector.io.wkt.WKT.write(Line(pts))); close }
     }
 
-    // if (isLeftLinear && isRightLinear) {
-    //   // In the linear case, in the event of a linear result, we want to make
-    //   // sure base will be set to join the two segments at the closest points
-    //   val lnext = advance(left)
-    //   val rnext = advance(right)
-
-    //   val l0 = trans(getSrc(left))
-    //   val l1 = trans(getSrc(lnext))
-    //   val r0 = trans(getSrc(right))
-    //   val r1 = trans(getSrc(rnext))
-
-    //   val d00 = l0.distance(r0)
-    //   val d01 = l0.distance(r1)
-    //   val d10 = l1.distance(r0)
-    //   val d11 = l1.distance(r1)
-
-    //   List(d00, d10, d01, d11).min match {
-    //     case d if d == d01 => right = rnext
-    //     case d if d == d10 => left = lnext
-    //     case d if d == d11 => right = rnext
-    //                           left = lnext
-    //     case _ => ()
-    //   }
-    // }
     // compute the lower common tangent of left and right
     var continue = true
     var base = createHalfEdges(getSrc(right), getSrc(left))
@@ -139,7 +115,6 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
     // handling, but when both are on base, we only need to advance if
     // e.dest lies inside the line segment from base.src to base.dest.
     while(continue) {
-      //println("Walking the base")
       val ldRel = relativeTo(base, getDest(left))
       if (debug) println(s"Candidate: ${getSrc(base)} -> ${getDest(base)}, left.dest: ${getDest(left)}")
       if (ldRel == LEFTOF) {
@@ -153,7 +128,6 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
                 distance(getSrc(base), getDest(base)) < distance(getSrc(base), getDest(left))))) {
           // left still needs to be moved
           if (ldRel == RIGHTOF) {
-            // TODO: THIS IS WHERE I'VE SEEN INFINITE LOOPS IN BOUNDARY STITCHING
             if (debug) println(s"Left previous source is not RIGHTOF base and left dest is RIGHTOF base (reverse left)")
             left = reverse(left)
             setDest(base, getSrc(left))
@@ -216,7 +190,6 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
       val l = getDest(getNext(base))
       val r = getDest(getNext(getFlip(base)))
       if (isCollinear(b0, b1, l) && isCollinear(b0, b1, r)) {
-        //println("Join has linear result")
         return (advance(getFlip(base)), true)
       }
     }
@@ -225,46 +198,6 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
 
     var continue = true
     while(continue) {
-      // if (debug) {
-      //   var e = rotCCWSrc(getFlip(base))
-      //   var xs = List.empty[Double]
-      //   var ys = List.empty[Double]
-      //   do {
-      //     val p0 = getCoordinate(getSrc(e))
-      //     val p1 = getCoordinate(getDest(e))
-      //     xs = xs :+ p0.x
-      //     xs = xs :+ p1.x
-      //     ys = ys :+ p0.y
-      //     ys = ys :+ p1.y
-      //     e = rotCCWSrc(e)
-      //   } while (e != getFlip(base))
-
-      //   print("plot([")
-      //   xs.foreach{ x => print(s"$x, ") }
-      //   print("\b\b], [")
-      //   ys.foreach{ y => print(s"$y, ") }
-      //   println("\b\b], 'b*-')")
-
-      //   xs = List.empty
-      //   ys = List.empty
-      //   e = rotCWSrc(base)
-      //   do {
-      //     val p0 = getCoordinate(getSrc(e))
-      //     val p1 = getCoordinate(getDest(e))
-      //     xs = xs :+ p0.x
-      //     xs = xs :+ p1.x
-      //     ys = ys :+ p0.y
-      //     ys = ys :+ p1.y
-      //     e = rotCWSrc(e)
-      //   } while (e != base)
-
-      //   print("plot([")
-      //   xs.foreach{ x => print(s"$x, ") }
-      //   print("\b\b], [")
-      //   ys.foreach{ y => print(s"$y, ") }
-      //   println("\b\b], 'b*-')")
-      // }
-
       if (debug) {
         println(s"Base = [${getSrc(base)} -> ${getDest(base)}]")
       }
@@ -276,14 +209,6 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
         println(s"Initial LCAND = [${getSrc(lcand)} -> ${getDest(lcand)}]")
         println(s"Initial RCAND = [${getSrc(rcand)} -> ${getDest(rcand)}]")
       }
-
-      // if (debug) {
-      //   val lc = getCoordinate(getDest(lcand))
-      //   val rc = getCoordinate(getDest(rcand))
-      //   val b0 = getCoordinate(getSrc(base))
-      //   val b1 = getCoordinate(getDest(base))
-      //   println(s"plot([${lc.x}, ${b1.x}, ${b0.x}, ${rc.x}], [${lc.y}, ${b1.y}, ${b0.y}, ${rc.y}], 'ro-')")
-      // }
 
       // Find left side candidate edge for extending the fill triangulation
       if(valid(lcand, base)) {
@@ -310,12 +235,12 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
           
           lcand = e
 
-          // if (debug) {
-          //   val c = circleCenter(getDest(base), getSrc(base), getDest(lcand))
-          //   val r = c.distance(getCoordinate(getDest(base)))
+          if (debug) {
+            val c = circleCenter(getDest(base), getSrc(base), getDest(lcand))
+            val r = c.distance(getCoordinate(getDest(base)))
 
-          //   println(s"   [31m✘[0m Deleted LCAND [circle center = $c, radius = $r]")
-          // }
+            println(s"   [31m✘[0m Deleted LCAND [circle center = $c, radius = $r]")
+          }
         }
       }
 
@@ -346,12 +271,12 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
 
           rcand = e
 
-          // if (debug) {
-          //   val c = circleCenter(getDest(base), getSrc(base), getDest(rcand))
-          //   val r = c.distance(getCoordinate(getDest(base)))
+          if (debug) {
+            val c = circleCenter(getDest(base), getSrc(base), getDest(rcand))
+            val r = c.distance(getCoordinate(getDest(base)))
 
-          //   println(s"   [31m✘[0m Deleted RCAND [circle center = $c, radius = $r]")
-          // }
+            println(s"   [31m✘[0m Deleted RCAND [circle center = $c, radius = $r]")
+          }
         }
       }
 
@@ -373,9 +298,8 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
           triangles += getFlip(base)
 
           if (debug) {
-            // println("   [32m✔[0m Seleted RCAND\n")
             val t = getFlip(base)
-            println(s"   Seleted RCAND, creating triangle ${(getSrc(t), getDest(t), getDest(getNext(t)))}")
+            println(s"   [32m✔[0m Seleted RCAND, creating triangle ${(getSrc(t), getDest(t), getDest(getNext(t)))}")
           }
 
           base = e
@@ -389,9 +313,8 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
           triangles += getFlip(base)
 
           if (debug) {
-            // println("   [32m✔[0m Seleted LCAND\n")
             val t = getFlip(base)
-            println(s"   Seleted LCAND, creating triangle ${(getSrc(t), getDest(t), getDest(getNext(t)))}")
+            println(s"   [32m✔[0m Seleted LCAND, creating triangle ${(getSrc(t), getDest(t), getDest(getNext(t)))}")
           }
 
           base = e
@@ -399,12 +322,6 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
 
       }
     }
-
-    // if (debug) {
-    //   val ml = MultiLine(allEs)
-    //   val str = geotrellis.vector.io.wkt.WKT.write(ml)
-    //   new java.io.PrintWriter("zipper.wkt") { write(str); close }
-    // }
 
     (advance(getFlip(base)), false)
   }
