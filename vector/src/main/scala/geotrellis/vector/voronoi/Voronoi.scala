@@ -37,11 +37,13 @@ class Voronoi(val verts: Array[Point]) {
 
   val del = Delaunay(verts)
 
+  @deprecated("use VoronoiDiagram.voronoiCells() instead", "1.2")
   def voronoiCells(): Seq[Polygon] = {
     val vd = del.subd.getVoronoiDiagram(del.gf).asInstanceOf[GeometryCollection]
     for ( i <- 0 until vd.getNumGeometries) yield Polygon(vd.getGeometryN(i).asInstanceOf[JTSPolygon])
   }
 
+  @deprecated("use VoronoiDiagram.voronoiCellsWithPoints() instead", "1.2")
   def voronoiCellsWithPoints: Seq[(Polygon, Point)] = {
     val vd = del.subd.getVoronoiDiagram(del.gf).asInstanceOf[GeometryCollection]
     for ( i <- 0 until vd.getNumGeometries) yield {
