@@ -262,36 +262,6 @@ class VoronoiDiagram(val dt: DelaunayTriangulation, val extent: Extent) {
   private val boundEs = collection.mutable.Set.empty[Int]
   dt.halfEdgeTable.foreachInLoop(dt.boundary){ e => boundEs += e }
 
-  // /*
-  //  * A method to generate the Voronoi cell corresponding to the point in verts(incidentEdge.vert).
-  //  * If the incident edge is not an interior edge (incidentEdge.face == None) the results are
-  //  * undefined.
-  //  */
-  // def voronoiCell(incidentEdge: HalfEdge[Int, Coordinate]): Polygon = {
-  //   val cell = cellBounds(incidentEdge)
-  //   var i = 0
-  //   var accum: List[Coordinate] = Nil
-
-  //   while (i < cell.length) {
-  //     val lrei = lastRayExtentIntersection(cell(i))
-  //     i = i + 1
-  //     if (lrei != None) {
-  //       val (cellVert, vertLoc) = lrei.get
-  //       accum = accum :+ cellVert
-  //       if (vertLoc != INTERIOR) {
-  //         var frei = firstRayExtentIntersection(cell(i % cell.length))
-  //         while(frei == None) {
-  //           i = i + 1
-  //           frei = firstRayExtentIntersection(cell(i % cell.length))
-  //         }
-  //         accum = accum ++ infill(lrei.get, frei.get)
-  //       }
-  //     }
-  //   }
-
-  //   Polygon(Line(accum).closed)
-  // }
-
   /**
    * A method to generate the Voronoi cell corresponding to the point in verts(i).  Note that if
    * verts(i) is not distinct, this function may raise an exception.
