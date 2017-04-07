@@ -31,7 +31,7 @@ object EuclideanDistanceTile {
     val currentValue = tile.getDouble(col, row)
     val newValue = sqrt((x - base.x) * (x - base.x) + (y - base.y) * (y - base.y))
 
-    if (currentValue.isNaN || currentValue > newValue)
+    if (java.lang.Double.isNaN(currentValue) || currentValue > newValue)
       tile.setDouble(col, row, newValue)
   }
 
