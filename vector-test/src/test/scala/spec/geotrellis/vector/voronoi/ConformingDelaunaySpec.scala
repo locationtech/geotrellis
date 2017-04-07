@@ -19,8 +19,10 @@ package geotrellis.vector.voronoi
 import geotrellis.vector._
 
 import com.vividsolutions.jts.{ geom => jts }
-import com.vividsolutions.jts.triangulate.ConformingDelaunayTriangulationBuilder
+import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, MultiPoint, Polygon => JTSPolygon}
+import com.vividsolutions.jts.triangulate.{ConformingDelaunayTriangulationBuilder, DelaunayTriangulationBuilder}
 import org.scalatest.{FunSpec, Matchers}
+import spire.syntax.cfor._
 
 
 class ConformingDelaunaySpec extends FunSpec with Matchers {
@@ -32,16 +34,30 @@ class ConformingDelaunaySpec extends FunSpec with Matchers {
 
   describe("Conforming Delaunay Triangulation") {
 
+    val delaunayTriangles = {
+      val gf = new GeometryFactory
+      val sites = new MultiPoint(points.map(_.jtsGeom), gf)
+      val builder = new DelaunayTriangulationBuilder
+      builder.setSites(sites)
+      val subd = builder.getSubdivision
+
+      val tris = subd.getTriangles(gf)
+      val len = tris.getNumGeometries
+      val arr = Array.ofDim[Polygon](len)
+      cfor(0)(_ < len, _ + 1) { i => arr(i) = Polygon(tris.getGeometryN(i).asInstanceOf[JTSPolygon]) }
+      arr
+    }
+
     it("should be the same as standard Delaunay when no constraints are given") {
       val conformingDelaunay = ConformingDelaunay(points, emptyCollection)
       val delaunay = Delaunay(points)
-      conformingDelaunay.triangles.toSet should be (delaunay.triangles.toSet)
+      conformingDelaunay.triangles.toSet should be (delaunayTriangles.toSet)
     }
 
     it("should produce same results with redundant constraints as without any") {
       val conformingDelaunay = ConformingDelaunay(points, List(polygon))
       val delaunay = Delaunay(points)
-      conformingDelaunay.triangles.toSet should be (delaunay.triangles.toSet)
+      conformingDelaunay.triangles.toSet should be (delaunayTriangles.toSet)
     }
 
     it("should only produce Steiner points on constraints") {
