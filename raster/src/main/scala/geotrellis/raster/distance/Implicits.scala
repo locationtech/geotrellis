@@ -16,6 +16,7 @@
 
 package geotrellis.raster.distance
 
+import com.vividsolutions.jts.geom.Coordinate
 import geotrellis.vector.Point
 
 object Implicits extends Implicits
@@ -24,4 +25,8 @@ trait Implicits {
   implicit class withEuclideanDistanceTileMethods(val self: Traversable[Point]) extends EuclideanDistanceTileMethods
 
   implicit class withEuclideanDistanceTileArrayMethods(val self: Array[Point]) extends EuclideanDistanceTileArrayMethods
+
+  implicit class withEuclideanDistanceTileCoordinateMethods(val self: Traversable[Coordinate]) extends EuclideanDistanceTileCoordinateMethods
+
+  implicit class withEuclideanDistanceTileArrayCoordinateMethods(val self: Array[Coordinate]) extends EuclideanDistanceTileCoordinateArrayMethods
 }
