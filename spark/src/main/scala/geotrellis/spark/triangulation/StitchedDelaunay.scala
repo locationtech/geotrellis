@@ -15,15 +15,15 @@ object StitchedDelaunay {
   def directionToVertexOffset(d: Direction) = {
     val increment = Int.MaxValue / 9
     d match {
-      case TopLeft => 0
-      case Top => increment
-      case TopRight => 2 * increment
-      case Left => 3 * increment
-      case Center => 4 * increment
+      case Center => 0
+      case Left => increment
+      case BottomLeft => 2 * increment
+      case Bottom => 3 * increment
+      case BottomRight => 4 * increment
       case Right => 5 * increment
-      case BottomLeft => 6 * increment
-      case Bottom => 7 * increment
-      case BottomRight => 8 * increment
+      case TopRight => 6 * increment
+      case Top => 7 * increment
+      case TopLeft => 8 * increment
     }
   }
 
@@ -33,15 +33,15 @@ object StitchedDelaunay {
       val group = i / increment
       val index = i % increment
       val dir = group match {
-        case 0 => TopLeft
-        case 1 => Top
-        case 2 => TopRight
-        case 3 => Left
-        case 4 => Center
+        case 0 => Center
+        case 1 => Left
+        case 2 => BottomLeft
+        case 3 => Bottom
+        case 4 => BottomRight
         case 5 => Right
-        case 6 => BottomLeft
-        case 7 => Bottom
-        case 8 => BottomRight
+        case 6 => TopRight
+        case 7 => Top
+        case 8 => TopLeft
       }
       neighbors(dir)._1.pointSet.getCoordinate(index)
     }
@@ -52,15 +52,15 @@ object StitchedDelaunay {
       val group = i / increment
       val index = i % increment
       val dir = group match {
-        case 0 => TopLeft
-        case 1 => Top
-        case 2 => TopRight
-        case 3 => Left
-        case 4 => Center
+        case 0 => Center
+        case 1 => Left
+        case 2 => BottomLeft
+        case 3 => Bottom
+        case 4 => BottomRight
         case 5 => Right
-        case 6 => BottomLeft
-        case 7 => Bottom
-        case 8 => BottomRight
+        case 6 => TopRight
+        case 7 => Top
+        case 8 => TopLeft
       }
       neighbors(dir)._1.pointSet.getCoordinate(index)
     }
