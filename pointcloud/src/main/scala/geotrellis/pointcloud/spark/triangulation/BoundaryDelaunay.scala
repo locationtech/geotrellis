@@ -470,11 +470,11 @@ object BoundaryDelaunay {
         ne = halfEdgeTable.getNext(ne)
       } while (e != dt.boundary)
 
-      writeWKT("bounds.wkt")
+      //writeWKT("bounds.wkt")
       //isMeshValid(triangles, halfEdgeTable)
 
       fillInnerLoop
-      writeWKT("filled.wkt")
+      //writeWKT("filled.wkt")
 
       // // Add fans of boundary edges
       // do {
