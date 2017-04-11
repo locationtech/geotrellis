@@ -49,5 +49,51 @@ class VoronoiDiagramSpec extends FunSpec with Matchers {
       voronoi.voronoiCells.forall (validCoveredPolygon(_)) should be (true)
       //rasterizeVoronoi(voronoi)
     }
+
+    it("should work for linear input set") {
+      val extent = Extent(-2.25, -3, 1, 3)
+      val pts = Array((0.0,-2.0), (0.0,-1.0), (0.0,0.0), (0.0,1.0), (0.0,2.0)).map{ case (x ,y) => new Coordinate(x, y) }
+      implicit val trans = { i: Int => Point.jtsCoord2Point(pts(i)) }
+      val voronoi = VoronoiDiagram(pts, extent)
+
+      def validCoveredPolygon(poly: Polygon) = {
+        // println(s"Polygon cell: $poly")
+        poly.isValid && extent.covers(poly)
+      }
+
+      voronoi.voronoiCells.forall (validCoveredPolygon(_)) should be (true)
+      // rasterizeVoronoi(voronoi)
+    }
+
+    it("should work when some cells don't intersect the extent") {
+      val extent = Extent(-2.25, 0, 1, 6)
+      val pts = Array((0.0,-2.0), (0.0,-1.0), (0.0,0.0), (0.0,1.0), (0.0,2.0)).map{ case (x ,y) => new Coordinate(x, y) }
+      implicit val trans = { i: Int => Point.jtsCoord2Point(pts(i)) }
+      val voronoi = VoronoiDiagram(pts, extent)
+
+      def validCoveredPolygon(poly: Polygon) = {
+        // println(s"Polygon cell: $poly")
+        poly.isValid && extent.covers(poly)
+      }
+
+      val cells = voronoi.voronoiCells
+      (cells.forall (validCoveredPolygon(_)) && cells.length == 3) should be (true)
+      // rasterizeVoronoi(voronoi)
+    }
+
+    it("should work when extent is entirely contained by a cell") {
+      val extent = Extent(-2.25, 3, 1, 9)
+      val pts = Array((0.0,-2.0), (0.0,-1.0), (0.0,0.0), (0.0,1.0), (0.0,2.0)).map{ case (x ,y) => new Coordinate(x, y) }
+      implicit val trans = { i: Int => Point.jtsCoord2Point(pts(i)) }
+      val voronoi = VoronoiDiagram(pts, extent)
+
+      def sameAsExtent(poly: Polygon) = {
+        extent.covers(poly) && poly.covers(extent)
+      }
+
+      val cells = voronoi.voronoiCells
+      (cells.length == 1 && sameAsExtent(cells(0))) should be (true)
+      // rasterizeVoronoi(voronoi)
+    }
   }
 }
