@@ -61,6 +61,8 @@ sealed trait Bounds[+A] extends Product with Serializable {
     }
 
   def setSpatialBounds[B >: A](other: KeyBounds[SpatialKey])(implicit ev: SpatialComponent[B]): Bounds[B]
+
+  def toOption: Option[KeyBounds[A]]
 }
 
 object Bounds {
@@ -100,6 +102,8 @@ case object EmptyBounds extends Bounds[Nothing] {
 
   def setSpatialBounds[B](other: KeyBounds[SpatialKey])(implicit ev: SpatialComponent[B]): Bounds[B] =
     this
+
+  def toOption = None
 }
 
 case class KeyBounds[+K](
@@ -155,6 +159,8 @@ case class KeyBounds[+K](
 
   def setSpatialBounds[B >: K](gb: GridBounds)(implicit ev: SpatialComponent[B]): KeyBounds[B] =
     setSpatialBounds[B](KeyBounds(SpatialKey(gb.colMin, gb.rowMin), SpatialKey(gb.colMax, gb.rowMax)))
+
+  def toOption: Option[KeyBounds[K]] = Some(this)
 }
 
 object KeyBounds {
