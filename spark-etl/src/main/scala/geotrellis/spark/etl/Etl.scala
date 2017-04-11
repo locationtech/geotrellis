@@ -197,8 +197,8 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
 
         scheme match {
           case Left(layoutScheme: ZoomedLayoutScheme) if output.maxZoom.isDefined =>
-            val LayoutLevel(_, layoutDefinition) = layoutScheme.levelForZoom(output.maxZoom.get)
-            tiled.reproject(destCrs, layoutDefinition, method)
+            val LayoutLevel(zoom, layoutDefinition) = layoutScheme.levelForZoom(output.maxZoom.get)
+            zoom -> tiled.reproject(destCrs, layoutDefinition, method)._2
 
           case Left(layoutScheme) =>
             tiled.reproject(destCrs, layoutScheme, method)
