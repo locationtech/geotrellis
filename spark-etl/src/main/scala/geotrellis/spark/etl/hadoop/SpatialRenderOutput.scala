@@ -21,10 +21,11 @@ import java.math.BigInteger
 import geotrellis.raster.Tile
 import geotrellis.raster.render._
 import geotrellis.spark.etl.OutputPlugin
+
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark._
 import geotrellis.spark.etl.Etl
-import geotrellis.spark.etl.config.{Backend, EtlConf}
+import geotrellis.spark.etl.config.{Backend, EtlConf, HadoopPath, UserDefinedPath}
 import geotrellis.spark.render._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.s3._
@@ -68,7 +69,12 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetada
     conf: EtlConf,
     saveAction: SaveAction[SpatialKey, Tile, TileLayerMetadata[SpatialKey]] = SaveAction.DEFAULT[SpatialKey, Tile, TileLayerMetadata[SpatialKey]]
   ): Unit = {
-    val useS3 = getPath(conf.output.backend).path.take(5) == "s3://"
+    val outputUri = conf.output.backend.path match {
+      case HadoopPath(p) => p
+      case UserDefinedPath(p) => p
+      case path => throw new IllegalArgumentException(s"Can't handle $path for render")
+    }
+    val useS3 = outputUri.take(5) == "s3://"
     val images =
       conf.output.encoding.get.toLowerCase match {
           case "png" =>
@@ -90,11 +96,11 @@ class SpatialRenderOutput extends OutputPlugin[SpatialKey, Tile, TileLayerMetada
         }
 
     if (useS3) {
-      val keyToPath = SaveToS3.spatialKeyToPath(id, getPath(conf.output.backend).path)
+      val keyToPath = SaveToS3.spatialKeyToPath(id, outputUri)
       images.saveToS3(keyToPath)
     }
     else {
-      val keyToPath = SaveToHadoop.spatialKeyToPath(id, getPath(conf.output.backend).path)
+      val keyToPath = SaveToHadoop.spatialKeyToPath(id, outputUri)
       images.saveToHadoop(keyToPath)
     }
   }
