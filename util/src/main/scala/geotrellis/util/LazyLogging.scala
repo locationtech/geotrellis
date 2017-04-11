@@ -29,3 +29,9 @@ trait LazyLogging {
   @transient protected lazy val logger: Logger =
     Logger(LoggerFactory.getLogger(getClass.getName))
 }
+
+object LazyLogging {
+  private[geotrellis]
+  def apply(source: Any): Logger =
+    Logger(LoggerFactory.getLogger(source.getClass.getName))
+}
