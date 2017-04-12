@@ -61,6 +61,29 @@ object StitchedDelaunay {
       neighbors(dir)._1.pointSet.getCoordinate(index)
     }
 
+  def indexToVertex(center: DelaunayTriangulation, neighbors: Map[Direction, (BoundaryDelaunay, Extent)])(implicit dummy: DummyImplicit): Int => Coordinate =
+    { i =>
+      val increment = Int.MaxValue / 9
+      val group = i / increment
+      val index = i % increment
+
+      if (group == 0) {
+        center.pointSet.getCoordinate(index)
+      } else {
+        val dir = group match {
+          case 1 => Left
+          case 2 => BottomLeft
+          case 3 => Bottom
+          case 4 => BottomRight
+          case 5 => Right
+          case 6 => TopRight
+          case 7 => Top
+          case 8 => TopLeft
+        }
+        neighbors(dir)._1.pointSet.getCoordinate(index)
+      }
+    }
+
   /**
     * Given a set of BoundaryDelaunay objects and their non-overlapping boundary
     * extents, each pair associated with a cardinal direction, this function
@@ -135,11 +158,58 @@ object StitchedDelaunay {
 
     new StitchedDelaunay(pointMap, allEdges, allPoints, overlayTris)
   }
+
+  def apply(center: DelaunayTriangulation, neighbors: Map[Direction, (BoundaryDelaunay, Extent)], debug: Boolean): StitchedDelaunay = {
+    val vertCount = center.pointSet.length + neighbors.map{ case (dir, (bdt, _)) => if (dir == Center) 0 else bdt.pointSet.length }.reduce(_ + _)
+    val allEdges = new HalfEdgeTable(2 * (3 * vertCount - 6))
+    val pointMap = indexToVertex(center, neighbors)
+    val allPoints = IndexedPointSet(pointMap, vertCount)
+
+    val boundaries = neighbors.map{ case (dir, (bdt, _)) => {
+      val offset = directionToVertexOffset(dir)
+      val reindex = {x: Int => x + offset}
+      if (dir == Center) {
+        val edgeoffset = allEdges.appendTable(center.halfEdgeTable, reindex)
+        // println(s"Center boundary loop (before): ${center.halfEdgeTable.showLoop(center.boundary)}")
+        // println(s"Center boundary loop (after):  ${allEdges.showLoop(center.boundary + edgeoffset)}")
+        (dir, (center.boundary + edgeoffset, center.isLinear))
+      } else {
+        val edgeoffset = allEdges.appendTable(bdt.halfEdgeTable, reindex)
+        // println(s"$dir boundary loop (before): ${bdt.halfEdgeTable.mapOverLoop(bdt.boundary) { e => reindex(bdt.halfEdgeTable.getSrc(e))}} ")
+        // println(s"$dir boundary loop (after):  ${allEdges.mapOverLoop(bdt.boundary + edgeoffset) { e => allEdges.getSrc(e) }}")
+        (dir, (bdt.boundary + edgeoffset, bdt.isLinear))
+      }
+    }}
+
+    val dirs = Seq(Seq(TopLeft, Top, TopRight), Seq(Left, Center, Right), Seq(BottomLeft, Bottom, BottomRight))
+    val overlayTris = new TriangleMap(allEdges)
+    val stitcher = new DelaunayStitcher(allPoints, allEdges)
+
+    dirs
+      .map{row => row.flatMap{ dir => boundaries.get(dir) }}
+      .filter{ row => !row.isEmpty }
+      .map{row => row.reduce{ (l, r) => {
+        val (left, isLeftLinear) = l
+        val (right, isRightLinear) = r
+        val result = stitcher.merge(left, isLeftLinear, right, isRightLinear, overlayTris, debug)
+        result
+      }}}
+      .reduce{ (l, r) => {
+        val (left, isLeftLinear) = l
+        val (right, isRightLinear) = r
+        stitcher.merge(left, isLeftLinear, right, isRightLinear, overlayTris, debug)
+      }}
+
+    // println("Done merging")
+
+    new StitchedDelaunay(pointMap, allEdges, allPoints, overlayTris)
+  }
+
 }
 
 case class StitchedDelaunay(
   indexToCoord: Int => Coordinate,
-  private val edges: HalfEdgeTable,
+  halfEdgeTable: HalfEdgeTable,
   private val pointSet: IndexedPointSet,
   private val fillTriangles: TriangleMap
 ) {
