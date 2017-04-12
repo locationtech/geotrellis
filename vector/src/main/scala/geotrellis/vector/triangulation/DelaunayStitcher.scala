@@ -51,24 +51,6 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
     var left = advanceIfNotCorner(left0)
     var right = advanceIfNotCorner(right0)
 
-    if (debug) {
-      var l = left
-      val pts = collection.mutable.ListBuffer.empty[Point]
-      do {
-        pts += Point.jtsCoord2Point(pointSet.getCoordinate(getDest(l)))
-        l = getNext(l)
-      } while (l != left)
-      new java.io.PrintWriter("left.wkt") { write(geotrellis.vector.io.wkt.WKT.write(Line(pts))); close }
-
-      pts.clear
-      var r = right
-      do {
-        pts += Point.jtsCoord2Point(pointSet.getCoordinate(getDest(r)))
-        r = getNext(r)
-      } while (r != right)
-      new java.io.PrintWriter("right.wkt") { write(geotrellis.vector.io.wkt.WKT.write(Line(pts))); close }
-    }
-
     // compute the lower common tangent of left and right
     var continue = true
     var base = createHalfEdges(getSrc(right), getSrc(left))
