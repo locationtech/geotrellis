@@ -35,7 +35,7 @@ object EuclideanDistanceTile {
       tile.setDouble(col, row, newValue)
   }
 
-  private def rasterizeDistanceCell(rasterExtent: RasterExtent, tile: DoubleArrayTile)(arg: (Polygon, Coordinate)) = {
+  def rasterizeDistanceCell(rasterExtent: RasterExtent, tile: DoubleArrayTile)(arg: (Polygon, Coordinate)) = {
     val (poly, coord) = arg
 
     val buffered = poly.buffer(math.max(rasterExtent.cellwidth, rasterExtent.cellheight))
