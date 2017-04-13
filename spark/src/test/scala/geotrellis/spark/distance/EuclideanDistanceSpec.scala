@@ -66,8 +66,8 @@ class EuclideanDistanceSpec extends FunSpec
       println("  Forming baseline EuclideanDistanceTile")
       val rasterExtent = RasterExtent(centerEx, 512, 512)
       val rasterTile = RasterEuclideanDistance(points, rasterExtent)
-      val maxDistance = rasterTile.findMinMaxDouble._2
-      // val cm = ColorMap((0.0 to maxDistance by maxDistance/512).toArray, ColorRamps.BlueToRed)
+      val maxDistance = rasterTile.findMinMaxDouble._2 + 1e-8
+      // val cm = ColorMap((0.0 to maxDistance by (maxDistance/512)).toArray, ColorRamps.BlueToRed)
       // rasterTile.renderPng(cm).write("base_distance.png")
 
       println("  Forming sparkified EuclideanDistance tile")
