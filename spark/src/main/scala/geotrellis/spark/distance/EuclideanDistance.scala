@@ -31,15 +31,12 @@ object EuclideanDistance {
       if (!visited.contains(here)) {
         visited += here
 
-        // println(s"    Generating cell for vertex $here")
         val poly = VoronoiDiagram.polygonalCell(centerStitched.halfEdgeTable, centerStitched.indexToCoord, extent)(incoming)
 
         if (poly isDefined) {
-          // getDest(incoming) has a Voronoi cell intersecting the extent; add it to the cell complex and recurse to the neighbors
           result += ((poly.get, centerStitched.indexToCoord(here)))
           var e = getFlip(incoming)
           do {
-            // println(s"    Queueing vertex ${getDest(e)}")
             queue += ((e, getDest(e)))
             e = rotCWSrc(e)
           } while (e != getFlip(incoming))
