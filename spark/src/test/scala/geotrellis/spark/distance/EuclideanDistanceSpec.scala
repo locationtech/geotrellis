@@ -1,6 +1,7 @@
 package geotrellis.spark.distance
 
 import com.vividsolutions.jts.geom.Coordinate
+import org.apache.spark.rdd.RDD
 
 import geotrellis.raster._
 import geotrellis.raster.distance.{EuclideanDistanceTile => RasterEuclideanDistance}
@@ -9,7 +10,6 @@ import geotrellis.raster.testkit._
 import geotrellis.spark._
 import geotrellis.spark.buffer.Direction
 import geotrellis.spark.buffer.Direction._
-import geotrellis.spark.distance.{EuclideanDistance => SparkEuclideanDistance}
 import geotrellis.spark.testkit._
 import geotrellis.spark.tiling._
 import geotrellis.spark.triangulation._
@@ -19,6 +19,8 @@ import geotrellis.vector.io.wkt.WKT
 
 import scala.util.Random
 import scala.math.{Pi, sin, cos, atan, max, pow}
+
+import Implicits._
 
 import org.scalatest._
 
@@ -55,18 +57,18 @@ class EuclideanDistanceSpec extends FunSpec
     while (i < n) {
       val next = proposal
       if (next.z > site.z || Random.nextDouble < next.z / site.z) {
-        if (next.z > site.z)
-          print("↑")
-        else
-          print("↓")
+        // if (next.z > site.z)
+        //   print("↑")
+        // else
+        //   print("↓")
         sample(i) = next
         site = next
         i += 1
       } else {
-        if (next.z < 0)
-          print("☠")
-        else
-          print("-")
+        // if (next.z < 0)
+        //   print("☠")
+        // else
+        //   print("-")
       }
     }
     println
@@ -123,7 +125,7 @@ class EuclideanDistanceSpec extends FunSpec
       // rasterTile.renderPng(cm).write("base_distance.png")
 
       println("  Forming sparkified EuclideanDistance tile")
-      val neighborTile = SparkEuclideanDistance.neighborEuclideanDistance(center, bounds, rasterExtent)
+      val neighborTile = EuclideanDistance.neighborEuclideanDistance(center, bounds, rasterExtent)
       // neighborTile.renderPng(cm).write("spark_distance.png")
       println("  Finished")
 
@@ -134,26 +136,33 @@ class EuclideanDistanceSpec extends FunSpec
       // val domain = Extent(-1.0, -0.5, 1.0, 1.0)
       val domain = Extent(0, -1.15, 1, -0.05)
       val sample = generatePoints(domain, 2500)
-
+      
       val rasterExtent = RasterExtent(domain, 1024, 1024)
       val layoutdef = LayoutDefinition(rasterExtent, 256, 256)
       val maptrans = layoutdef.mapTransform
 
       val rasterTile = RasterEuclideanDistance(sample, rasterExtent)
-      val rdd = 
+      val rdd: RDD[(SpatialKey, Array[Coordinate])] = 
         sc.parallelize(sample.map{ coord => (maptrans(coord.x, coord.y), coord) })
           .groupByKey
           .map{ case (key, iter) => (key, iter.toArray) }
 
       rdd.foreach{ case (key, arr) => println(s"$key has ${arr.length} coordinates") }
 
-      val tileRDD = SparkEuclideanDistance(rdd, layoutdef)
+      val tileRDD: RDD[(SpatialKey, Tile)] = rdd.euclideanDistance(layoutdef)
       val stitched = tileRDD.stitch
 
+      // // For to export point data 
+      // val mp = MultiPoint(sample.toSeq.map{ Point.jtsCoord2Point(_)})
+      // val wktString = geotrellis.vector.io.wkt.WKT.write(mp)
+      // new java.io.PrintWriter("euclidean_distance_sample.wkt") { write(wktString); close }
+
+      // // Image file output
       // val maxDistance = rasterTile.findMinMaxDouble._2 + 1e-8
       // val cm = ColorMap((0.0 to maxDistance by (maxDistance/512)).toArray, ColorRamps.BlueToRed)
       // rasterTile.renderPng(cm).write("distance.png")
       // stitched.renderPng(cm).write("stitched.png")
+      // geotrellis.raster.io.geotiff.GeoTiff(rasterTile, domain, geotrellis.proj4.LatLng).write("distance.tif")
 
       assertEqual(rasterTile, stitched)
     }

@@ -51,9 +51,7 @@ object EuclideanDistance {
   }
 
   def neighborEuclideanDistance(center: DelaunayTriangulation, neighbors: Map[Direction, (BoundaryDelaunay, Extent)], re: RasterExtent): Tile = {
-    // println("    Forming center-stitched BoundaryDelaunay")
     val stitched = StitchedDelaunay(center, neighbors, false)
-    // println("    -> OK!")
     val origin = center.halfEdgeTable.getDest(center.boundary)
     val extent = neighbors(Center)._2
     val cells = voronoiCells(stitched, origin, extent)
@@ -107,15 +105,6 @@ object EuclideanDistance {
             )
 
           (key, neighborEuclideanDistance(triangulation, borders, re))
-
-          // val stitched = StitchedDelaunay(triangulation, borders, false)
-          // val origin = triangulation.halfEdgeTable.getDest(triangulation.boundary)
-          // val cells = voronoiCells(stitched, origin, extent)
-
-          // val tile = DoubleArrayTile.empty(re.cols, re.rows)
-          // cells.foreach(EuclideanDistanceTile.rasterizeDistanceCell(re, tile))
-
-          // (key, tile)
         }}
       }, preservesPartitioning = true)
 
