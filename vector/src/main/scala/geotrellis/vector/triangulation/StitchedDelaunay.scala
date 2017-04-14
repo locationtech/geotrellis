@@ -88,7 +88,7 @@ object StitchedDelaunay {
     center: DelaunayTriangulation, 
     neighbors: Map[Direction, (BoundaryDelaunay, Extent)]
   ): (Int, IndexedPointSet, Map[Direction, Map[Int, Int]]) = {
-    val regions: Seq[Direction] = Seq(Center, Left, BottomLeft, Bottom, BottomRight, Right, TopRight, Top, TopLeft)
+    val regions: Seq[Direction] = Seq(Center, Left, BottomLeft, Bottom, BottomRight, Right, TopRight, Top, TopLeft).filter(neighbors.keys.toSet.contains(_))
     val ptCounts: Seq[Int] = regions.map { dir => if (dir == Center) center.pointSet.length else neighbors.get(dir).map{_._1.pointSet.length}.getOrElse(0) }
     val countMap = regions.zip(ptCounts).toMap
     val startIndices: Map[Direction, Int] = regions.zip(ptCounts.foldLeft(Seq(0)){ (accum, count) => accum :+ (accum.last + count) }).toMap
