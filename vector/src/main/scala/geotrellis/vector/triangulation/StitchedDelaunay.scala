@@ -8,82 +8,6 @@ import geotrellis.vector.io.wkt.WKT
 
 object StitchedDelaunay {
 
-  // def directionToVertexOffset(d: Direction) = {
-  //   val increment = Int.MaxValue / 9
-  //   d match {
-  //     case Center => 0
-  //     case Left => increment
-  //     case BottomLeft => 2 * increment
-  //     case Bottom => 3 * increment
-  //     case BottomRight => 4 * increment
-  //     case Right => 5 * increment
-  //     case TopRight => 6 * increment
-  //     case Top => 7 * increment
-  //     case TopLeft => 8 * increment
-  //   }
-  // }
-
-  // def indexToVertex(neighbors: Map[Direction, (BoundaryDelaunay, Extent)]): Int => Coordinate =
-  //   { i =>
-  //     val increment = Int.MaxValue / 9
-  //     val group = i / increment
-  //     val index = i % increment
-  //     val dir = group match {
-  //       case 0 => Center
-  //       case 1 => Left
-  //       case 2 => BottomLeft
-  //       case 3 => Bottom
-  //       case 4 => BottomRight
-  //       case 5 => Right
-  //       case 6 => TopRight
-  //       case 7 => Top
-  //       case 8 => TopLeft
-  //     }
-  //     neighbors(dir)._1.pointSet.getCoordinate(index)
-  //   }
-
-  // def indexToVertex(neighbors: Map[Direction, (DelaunayTriangulation, Extent)])(implicit dummy: DummyImplicit): Int => Coordinate =
-  //   { i =>
-  //     val increment = Int.MaxValue / 9
-  //     val group = i / increment
-  //     val index = i % increment
-  //     val dir = group match {
-  //       case 0 => Center
-  //       case 1 => Left
-  //       case 2 => BottomLeft
-  //       case 3 => Bottom
-  //       case 4 => BottomRight
-  //       case 5 => Right
-  //       case 6 => TopRight
-  //       case 7 => Top
-  //       case 8 => TopLeft
-  //     }
-  //     neighbors(dir)._1.pointSet.getCoordinate(index)
-  //   }
-
-  // def indexToVertex(center: DelaunayTriangulation, neighbors: Map[Direction, (BoundaryDelaunay, Extent)])(implicit dummy: DummyImplicit): Int => Coordinate =
-  //   { i =>
-  //     val increment = Int.MaxValue / 9
-  //     val group = i / increment
-  //     val index = i % increment
-
-  //     if (group == 0) {
-  //       center.pointSet.getCoordinate(index)
-  //     } else {
-  //       val dir = group match {
-  //         case 1 => Left
-  //         case 2 => BottomLeft
-  //         case 3 => Bottom
-  //         case 4 => BottomRight
-  //         case 5 => Right
-  //         case 6 => TopRight
-  //         case 7 => Top
-  //         case 8 => TopLeft
-  //       }
-  //       neighbors(dir)._1.pointSet.getCoordinate(index)
-  //     }
-  //   }
-
   def combinedPointSet(
     center: DelaunayTriangulation, 
     neighbors: Map[Direction, (BoundaryDelaunay, Extent)]
@@ -164,13 +88,9 @@ object StitchedDelaunay {
     * creates a merged representation
     */
   def apply(neighbors: Map[Direction, (BoundaryDelaunay, Extent)], debug: Boolean = false): StitchedDelaunay = {
-    // val vertCount = neighbors.map{ case (_, (bdt, _)) => bdt.pointSet.length }.reduce(_ + _)
-    // val allEdges = new HalfEdgeTable(2 * (3 * vertCount - 6))
-    // val pointMap = indexToVertex(neighbors)
-    // val allPoints = IndexedPointSet(pointMap, vertCount)
-
     val (vertCount, allPoints, vtrans) = combinedPointSet(neighbors)
     val allEdges = new HalfEdgeTable(2 * (3 * vertCount - 6))
+
     val boundaries = neighbors.map{ case (dir, (bdt, _)) => {
       val reindex = vtrans(dir).apply(_)
       val edgeoffset = allEdges.appendTable(bdt.halfEdgeTable, vtrans(dir)(_))
@@ -200,12 +120,9 @@ object StitchedDelaunay {
   }
 
   def apply(neighbors: Map[Direction, (DelaunayTriangulation, Extent)], debug: Boolean)(implicit dummy: DummyImplicit): StitchedDelaunay = {
-    // val vertCount = neighbors.map{ case (_, (bdt, _)) => bdt.pointSet.length }.reduce(_ + _)
-    // val pointMap = indexToVertex(neighbors)
-    // val allPoints = IndexedPointSet(pointMap, vertCount)
-
     val (vertCount, allPoints, vtrans) = combinedPointSet(neighbors)
     val allEdges = new HalfEdgeTable(2 * (3 * vertCount - 6))
+
     val boundaries = neighbors.map{ case (dir, (bdt, _)) => {
       val reindex = vtrans(dir).apply(_)
       val edgeoffset = allEdges.appendTable(bdt.halfEdgeTable, vtrans(dir)(_))
