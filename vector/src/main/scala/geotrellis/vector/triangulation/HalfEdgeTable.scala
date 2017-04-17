@@ -11,7 +11,7 @@ package geotrellis.vector.triangulation
   *                          (counter-clockwise of the triangle)
   */
 class HalfEdgeTable(_size: Int) {
-  private var size: Int = math.max(_size, 128)
+  private var size: Int = math.max(_size, 32)
   private var idx = 0
   private var edgeCount = 0
 
@@ -383,7 +383,7 @@ class HalfEdgeTable(_size: Int) {
     val nextCount = edgeCount + that.edgeCount
     edgeCount = nextCount
     val factor = if (nextCount < 10000) 4 else 2
-    val nextSize = nextCount * factor
+    val nextSize = math.max(32, nextCount * factor)
 
     if (nextSize > MAXSIZE) sys.error("edge table has exceeded max capacity")
 
