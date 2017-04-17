@@ -11,7 +11,7 @@ package geotrellis.vector.triangulation
   *                          (counter-clockwise of the triangle)
   */
 class HalfEdgeTable(_size: Int) {
-  private var size: Int = _size
+  private var size: Int = math.max(_size, 128)
   private var idx = 0
   private var edgeCount = 0
 
