@@ -308,4 +308,77 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
     (advance(getFlip(base)), false)
   }
 
+  private def shouldAdvance(b: Int, e: Int) = {
+    import TriangulationPredicates._
+
+    relativeTo(b, getDest(e)) match {
+      case LEFTOF => true
+      case RIGHTOF =>
+        relativeTo(b, getSrc(getPrev(e))) match {
+          case LEFTOF => true
+          case RIGHTOF =>  false
+          case ON => true
+        }
+      case ON =>
+        relativeTo(b, getSrc(getPrev(e))) match {
+          case RIGHTOF => false
+          case LEFTOF => true
+          case ON => distance(getSrc(b), getDest(b)) > distance(getSrc(b), getDest(e))
+        }
+    }
+  }
+
+  def joinToVertex(bound: Int, isLinear: Boolean, vertex: Int, triangles: TriangleMap) = {
+    // Find and form base
+    var e = advanceIfNotCorner(bound)
+    var base = createHalfEdges(vertex, getSrc(e))
+
+    println("Finding base ...")
+    while (shouldAdvance(base, e)) {
+      e = advance(e)
+      setDest(base, getSrc(e))
+    }
+    setNext(base, e)
+    setNext(getPrev(e), getFlip(base))
+    
+    if (isLinear && relativeTo(base, getDest(e)) == ON) {
+      println("Result is linear")
+      (base, true)
+    } else {
+      println("Starting stitch")
+
+      var cand = rotCCWSrc(getFlip(base))
+
+      while(valid(cand, base)) {
+        while(inCircle(getDest(base), getSrc(base), getDest(cand), getDest(rotCCWSrc(cand)))) {
+          val hold = rotCCWSrc(cand)
+
+          println(s"Deleting [${getSrc(cand)} -> ${getDest(cand)}]")
+
+          triangles -= cand
+          setNext(rotCCWDest(cand), getNext(cand))
+          setNext(getPrev(cand), getFlip(base))
+          killEdge(getFlip(cand))
+          killEdge(cand)
+
+          cand = hold
+        }
+
+        val added = createHalfEdges(getSrc(base), getDest(cand))
+        println(s"Adding [${getSrc(added)} -> ${getDest(added)}]")
+
+        setNext(rotCCWDest(cand), getFlip(added))
+        setNext(added, getFlip(cand))
+        setNext(getFlip(added), base)
+        setNext(getFlip(base), added)
+        triangles += added
+
+        cand = rotCCWSrc(getFlip(added))
+        base = added
+      }
+
+      (getFlip(base), false)
+    }
+  }
+
 }

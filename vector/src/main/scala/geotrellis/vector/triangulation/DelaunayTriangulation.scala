@@ -179,7 +179,10 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
     Files.write(Paths.get(path), txt.getBytes(StandardCharsets.UTF_8))
   }
 
-  var (_boundary, _isLinear) = triangulate(0, sortedVs.length - 1)
+  val liveVertices = collection.mutable.Set[Int](sortedVs: _*)
+  var numVertices = sortedVs.length
+
+  var (_boundary, _isLinear) = if (numVertices < 2) (-1, true) else triangulate(0, sortedVs.length - 1)
 
   /**
    * Returns a reference to the half edge on the outside of the boundary of the
@@ -206,6 +209,9 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
   def isUnfolded(): Boolean = {
 
     val bounds = Set.empty[Int]
+
+    if (liveVertices.size < 2)
+      return true
 
     var e = boundary
     do {
@@ -466,6 +472,8 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
       killEdge(getFlip(e))
       killEdge(e) } }
 
+    liveVertices.remove(vi)
+    numVertices -= 1
     removeIncidentEdge(vi)
   }
 
