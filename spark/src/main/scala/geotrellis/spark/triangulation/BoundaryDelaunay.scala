@@ -33,11 +33,13 @@ object BoundaryDelaunay {
     val verts = collection.mutable.Map[Vertex, Coordinate]()
     val halfEdgeTable = new HalfEdgeTable(3 * dt.pointSet.length - 6)  // Allocate for half as many edges as would be expected
 
+    val liveVertices = collection.mutable.Set.empty[Int]
     val isLinear = dt.isLinear
 
     def addPoint(v: Vertex): Vertex = {
       val ix = v
       verts.getOrElseUpdate(ix, new Coordinate(dt.pointSet.getX(v), dt.pointSet.getY(v), dt.pointSet.getZ(v)))
+      liveVertices += ix
       ix
     }
 
@@ -377,17 +379,23 @@ object BoundaryDelaunay {
     }
 
     val boundary =
-      if (dt.isLinear)
-        copyConvertLinearBound
-      else
+      if (dt.isLinear) {
+        if (dt.numVertices == 1) {
+          addPoint(dt.liveVertices.toSeq(0))
+          -1
+        } else
+          copyConvertLinearBound
+      } else
         copyConvertBoundingTris
 
-    BoundaryDelaunay(DelaunayPointSet(verts.toMap), halfEdgeTable, triangles, boundary, /*innerEdges.head._2._2,*/ isLinear)  }
+    BoundaryDelaunay(DelaunayPointSet(verts.toMap), liveVertices.toSet, halfEdgeTable, triangles, boundary, isLinear)  
+  }
 
 }
 
 case class BoundaryDelaunay(
   pointSet: DelaunayPointSet,
+  liveVertices: Set[Int],
   halfEdgeTable: HalfEdgeTable,
   triangleMap: TriangleMap,
   boundary: Int,
