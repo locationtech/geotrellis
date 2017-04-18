@@ -84,7 +84,7 @@ class VoronoiDiagramSpec extends FunSpec with Matchers {
     it("should work when extent is entirely contained by a cell") {
       val extent = Extent(-2.25, 3, 1, 9)
       val pts = Array((0.0,-2.0), (0.0,-1.0), (0.0,0.0), (0.0,1.0), (0.0,2.0)).map{ case (x ,y) => new Coordinate(x, y) }
-      implicit val trans = { i: Int => Point.jtsCoord2Point(pts(i)) }
+      //implicit val trans = { i: Int => Point.jtsCoord2Point(pts(i)) }
       val voronoi = VoronoiDiagram(pts, extent)
 
       def sameAsExtent(poly: Polygon) = {
@@ -94,6 +94,19 @@ class VoronoiDiagramSpec extends FunSpec with Matchers {
       val cells = voronoi.voronoiCells
       (cells.length == 1 && sameAsExtent(cells(0))) should be (true)
       // rasterizeVoronoi(voronoi)
+    }
+
+    it("should accept single point inputs") {
+      val extent = Extent(0, 0, 1, 1)
+      val pts = Array(new Coordinate(0.25, 0.25))
+      val voronoi = VoronoiDiagram(pts, extent)
+
+      def sameAsExtent(poly: Polygon) = {
+        extent.covers(poly) && poly.covers(extent)
+      }
+
+      val cells = voronoi.voronoiCells
+      (cells.length == 1 && sameAsExtent(cells(0))) should be (true)      
     }
   }
 }

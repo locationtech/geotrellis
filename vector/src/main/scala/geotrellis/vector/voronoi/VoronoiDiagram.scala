@@ -372,7 +372,10 @@ class VoronoiDiagram(val dt: DelaunayTriangulation, val extent: Extent) {
    * verts(i) is not distinct, this function may raise an exception.
    */
   def voronoiCell(i: Int): Option[Polygon] = {
-    polygonalCell(dt.halfEdgeTable, pointSet.getCoordinate(_), extent)(dt.halfEdgeTable.edgeIncidentTo(i))
+    if (dt.liveVertices.size == 1 && dt.liveVertices(i))
+      Some(extent.toPolygon)
+    else
+      polygonalCell(dt.halfEdgeTable, pointSet.getCoordinate(_), extent)(dt.halfEdgeTable.edgeIncidentTo(i))
   }
 
   /**
@@ -380,7 +383,7 @@ class VoronoiDiagram(val dt: DelaunayTriangulation, val extent: Extent) {
    * distinct vector of verts.
    */
   def voronoiCells(): Seq[Polygon] = {
-    dt.halfEdgeTable.allVertices.toSeq.flatMap(voronoiCell(_))
+    dt.liveVertices.toSeq.flatMap(voronoiCell(_))
   }
 
   /**
