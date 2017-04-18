@@ -444,36 +444,28 @@ object CellType {
     case ct if ct.startsWith("float32ud") =>
       try {
         val ndVal = ct.stripPrefix("float32ud").toDouble.toFloat
-        if (ndVal.isNaN) {
-          FloatConstantNoDataCellType
-        }
-        else {
-          FloatUserDefinedNoDataCellType(ndVal)
-        }
+        if (ndVal.isNaN) FloatConstantNoDataCellType
+        else FloatUserDefinedNoDataCellType(ndVal)
       } catch {
-        case e: NumberFormatException => throw new IllegalArgumentException(s"Cell type $name is not supported")
+        case _: NumberFormatException => throw new IllegalArgumentException(s"Cell type $name is not supported")
       }
     case ct if ct.startsWith("float64ud") =>
       try {
         val ndVal = ct.stripPrefix("float64ud").toDouble
-        if (ndVal.isNaN) {
-          DoubleConstantNoDataCellType
-        }
-        else {
-          DoubleUserDefinedNoDataCellType(ndVal)
-        }
+        if (ndVal.isNaN) DoubleConstantNoDataCellType
+        else DoubleUserDefinedNoDataCellType(ndVal)
       } catch {
-        case e: NumberFormatException => throw new IllegalArgumentException(s"Cell type $name is not supported")
+        case _: NumberFormatException => throw new IllegalArgumentException(s"Cell type $name is not supported")
       }
     case str =>
       throw new IllegalArgumentException(s"Cell type $name is not supported")
   }
 
   /**
-   * Translates a [[CellType]] into it's canonical String representation.
+   * Translates a [[CellType]] into its canonical String representation.
    *
    * @param cellType item to convert
-   * @return String represtentation
+   * @return String representation
    */
   def toName(cellType: CellType): String = {
     def forUserDefined[T <: AnyVal](base: CellType, value: T) = base.name + "ud" + value.toString

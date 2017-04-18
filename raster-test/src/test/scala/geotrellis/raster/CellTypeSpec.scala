@@ -36,9 +36,18 @@ class CellTypeSpec extends FunSpec with Matchers {
       FloatCellType.intersect(IntCellType) should be (IntCellType)
     }
     def roundTrip(ct: CellType) {
-      val str = ct.name
-      val ctp = CellType.fromName(str)
-      ctp should be (ct)
+      {
+        // Updated behavior.
+        val str = ct.name
+        val ctp = CellType.fromName(str)
+        ctp should be (ct)
+      }
+      {
+        // Tests backward compatibility.
+        val str = ct.toString
+        val ctp = CellType.fromString(str)
+        ctp should be (ct)
+      }
     }
 
     it("should serialize float64ud123") {
