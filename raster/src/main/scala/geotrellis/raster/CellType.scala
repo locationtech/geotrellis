@@ -391,7 +391,7 @@ object CellType {
    * @param name A string representing a cell type, as reported by [[DataType.name]] e.g. "uint32"
    * @return The CellType corresponding to `name`
    */
-  @deprecated("Use `fromName` instead", "1.2.0")
+  @deprecated("Use `fromName` instead", "1.1.0")
   def fromString(name: String): CellType = fromName(name)
 
   /**
