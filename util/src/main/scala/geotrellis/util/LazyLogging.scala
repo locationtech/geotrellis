@@ -26,8 +26,7 @@ import org.slf4j.LoggerFactory
   */
 
 trait LazyLogging {
-  @transient protected lazy val logger: Logger =
-    Logger(LoggerFactory.getLogger(getClass.getName))
+  @transient protected lazy val logger: Logger = LazyLogging(this)
 }
 
 object LazyLogging {
