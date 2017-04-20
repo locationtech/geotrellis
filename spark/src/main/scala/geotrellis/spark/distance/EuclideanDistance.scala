@@ -9,7 +9,6 @@ import geotrellis.spark._
 import geotrellis.spark.buffer.Direction
 import geotrellis.spark.buffer.Direction._
 import geotrellis.spark.tiling._
-import geotrellis.spark.triangulation._
 import geotrellis.vector._
 import geotrellis.vector.triangulation._
 import geotrellis.vector.voronoi._
@@ -18,10 +17,10 @@ import scala.collection.mutable.{ListBuffer, Set}
 
 object EuclideanDistance {
 
-  def voronoiCells(centerStitched: StitchedDelaunay, initialVert: Int, extent: Extent): Seq[(Polygon, Coordinate)] = {
+  private def voronoiCells(centerStitched: StitchedDelaunay, initialEdge: Int, extent: Extent): Seq[(Polygon, Coordinate)] = {
     import centerStitched.halfEdgeTable._
 
-    val queue = ListBuffer[(Int, Int)]((edgeIncidentTo(initialVert), initialVert))
+    val queue = ListBuffer[(Int, Int)]((initialEdge, getDest(initialEdge)))
     val visited = Set.empty[Int]
     val result = ListBuffer.empty[(Polygon, Coordinate)]
 
@@ -47,11 +46,34 @@ object EuclideanDistance {
     result
   }
 
-  def neighborEuclideanDistance(center: DelaunayTriangulation, neighbors: Map[Direction, (BoundaryDelaunay, Extent)], re: RasterExtent): Tile = {
-    val stitched = StitchedDelaunay(center, neighbors, false)
-    val origin = center.halfEdgeTable.getDest(center.boundary)
-    val extent = neighbors(Center)._2
-    val cells = voronoiCells(stitched, origin, extent)
+  def neighborEuclideanDistance(center: DelaunayTriangulation, neighbors: Map[Direction, (BoundaryDelaunay, Extent)], re: RasterExtent, debug: Boolean = false): Tile = {
+    val _neighbors = neighbors.map { case (dir, value) => (convertDirection(dir), value) }
+    val stitched = StitchedDelaunay(center, _neighbors, false)
+
+    def findBaseEdge(currentEdge: Int): Int = {
+      import stitched.halfEdgeTable._
+
+      var e = 0
+      var distance = 1.0/0.0
+      var best = -1
+      do {
+        while (getDest(e) == -1 && e < maxEdgeIndex)
+          e += 1
+        val dist = re.extent.distance(Point.jtsCoord2Point(stitched.indexToCoord(getDest(e))))
+        if (dist < distance) {
+          best = e
+          distance = dist
+        }
+        e += 1
+      } while (distance > 0 && e < stitched.boundary)
+
+      best
+    }
+
+    val baseEdge = if (center.boundary != -1) findBaseEdge(center.boundary) else findBaseEdge(stitched.boundary)
+
+    val extent = re.extent
+    val cells = voronoiCells(stitched, baseEdge, extent)
 
     val tile = DoubleArrayTile.empty(re.cols, re.rows)
     cells.foreach(EuclideanDistanceTile.rasterizeDistanceCell(re, tile))

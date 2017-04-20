@@ -1,5 +1,8 @@
 package geotrellis.vector.triangulation
 
+import com.vividsolutions.jts.geom.Coordinate
+import spire.syntax.cfor._
+
 /** Mutable, non-thread safe class to keep track of half edges
   * during Delaunay triangulation.
   *
@@ -47,6 +50,8 @@ class HalfEdgeTable(_size: Int) {
    * `getFlip(opp) = e` and the surrounding mesh is properly connected (assuming
    * the input meshes were correctly connected).
    */
+  def maxEdgeIndex() = edgeCount
+
   def join(e: Int, opp: Int): Unit = {
     assert(getSrc(e) == getDest(opp) && getDest(e) == getSrc(opp))
 
@@ -291,7 +296,7 @@ class HalfEdgeTable(_size: Int) {
     println
   }
 
-  def navigate(e0: Int, trans: Int => com.vividsolutions.jts.geom.Coordinate, addedCmds: Map[Char, (String, Int => Int)]) = {
+  def navigate(e0: Int, trans: Int => Coordinate, addedCmds: Map[Char, (String, Int => Int)]) = {
     val cmds = Map[Char, (String, Int => Int)](
       'k' -> ("kill (throws exception)", { _ => throw new Exception("user requested halt") }),
       'l' -> ("show loop", { e => showLoop(e); e }),

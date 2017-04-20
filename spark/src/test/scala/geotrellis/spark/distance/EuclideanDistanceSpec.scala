@@ -20,9 +20,8 @@ import geotrellis.vector.io.wkt.WKT
 import scala.util.Random
 import scala.math.{Pi, sin, cos, atan, max, pow}
 
-import Implicits._
-
 import org.scalatest._
+import spire.syntax.cfor._
 
 class EuclideanDistanceSpec extends FunSpec 
                             with TestEnvironment
@@ -77,7 +76,7 @@ class EuclideanDistanceSpec extends FunSpec
   }
 
   describe("Distributed Euclidean distance") {
-    println("Starting distributed Euclidean distance tests ...") 
+
     it("should work for a real data set") {
       println("  Reading points")
       val wkt = getClass.getResourceAsStream("/wkt/excerpt.wkt")
@@ -120,11 +119,11 @@ class EuclideanDistanceSpec extends FunSpec
       println("  Forming baseline EuclideanDistanceTile")
       val rasterExtent = RasterExtent(centerEx, 512, 512)
       val rasterTile = RasterEuclideanDistance(points, rasterExtent)
-      val maxDistance = rasterTile.findMinMaxDouble._2 + 1e-8
+      // val maxDistance = rasterTile.findMinMaxDouble._2 + 1e-8
       // val cm = ColorMap((0.0 to maxDistance by (maxDistance/512)).toArray, ColorRamps.BlueToRed)
       // rasterTile.renderPng(cm).write("base_distance.png")
 
-      println("  Forming sparkified EuclideanDistance tile")
+      println("  Forming stitched EuclideanDistance tile")
       val neighborTile = EuclideanDistance.neighborEuclideanDistance(center, bounds, rasterExtent)
       // neighborTile.renderPng(cm).write("spark_distance.png")
       println("  Finished")
@@ -141,10 +140,13 @@ class EuclideanDistanceSpec extends FunSpec
       val layoutdef = LayoutDefinition(rasterExtent, 256, 256)
       val maptrans = layoutdef.mapTransform
 
-      val rasterTile = RasterEuclideanDistance(sample, rasterExtent)
+      val broken = { val init = sample.groupBy{coord => maptrans(coord.x, coord.y)} ; init + ((SpatialKey(1,3), init(SpatialKey(1,3)).take(1))) }
+
+      val newsample = broken.map(_._2.toSeq).reduce(_ ++ _)
+      val rasterTile = newsample.euclideanDistanceTile(rasterExtent)
+
       val rdd: RDD[(SpatialKey, Array[Coordinate])] = 
-        sc.parallelize(sample.map{ coord => (maptrans(coord.x, coord.y), coord) })
-          .groupByKey
+        sc.parallelize(broken.toSeq)
           .map{ case (key, iter) => (key, iter.toArray) }
 
       rdd.foreach{ case (key, arr) => println(s"$key has ${arr.length} coordinates") }
@@ -152,19 +154,120 @@ class EuclideanDistanceSpec extends FunSpec
       val tileRDD: RDD[(SpatialKey, Tile)] = rdd.euclideanDistance(layoutdef)
       val stitched = tileRDD.stitch
 
-      // // For to export point data 
-      // val mp = MultiPoint(sample.toSeq.map{ Point.jtsCoord2Point(_)})
+      // For to export point data 
+      // val mp = MultiPoint(newsample.map{ Point.jtsCoord2Point(_)})
       // val wktString = geotrellis.vector.io.wkt.WKT.write(mp)
       // new java.io.PrintWriter("euclidean_distance_sample.wkt") { write(wktString); close }
 
-      // // Image file output
+      // Image file output
       // val maxDistance = rasterTile.findMinMaxDouble._2 + 1e-8
       // val cm = ColorMap((0.0 to maxDistance by (maxDistance/512)).toArray, ColorRamps.BlueToRed)
       // rasterTile.renderPng(cm).write("distance.png")
       // stitched.renderPng(cm).write("stitched.png")
-      // geotrellis.raster.io.geotiff.GeoTiff(rasterTile, domain, geotrellis.proj4.LatLng).write("distance.tif")
 
       assertEqual(rasterTile, stitched)
+    }
+
+    it("should work for zero- and one-point input partitions") {
+      val points = Array(new Coordinate(0.5, 1.5), new Coordinate(1.5, 0.5), new Coordinate(2.5, 1.5), new Coordinate(1.5, 2.5))
+      val dirs = Array(Left, Bottom, Right, Top)
+      val extent = Extent(1, 1, 2, 2)
+      val rasterExtent = RasterExtent(extent, 512, 512)
+
+      def directionToExtent(dir: Direction): Extent = dir match {
+        case Center =>      Extent(1, 1, 2, 2)
+        case Left =>        Extent(0, 1, 1, 2)
+        case BottomLeft =>  Extent(0, 0, 1, 1)
+        case Bottom =>      Extent(1, 0, 2, 1)
+        case BottomRight => Extent(2, 0, 3, 1)
+        case Right =>       Extent(2, 1, 3, 2)
+        case TopRight =>    Extent(2, 2, 3, 3)
+        case Top =>         Extent(1, 2, 2, 3)
+        case TopLeft =>     Extent(0, 2, 1, 3)
+      }
+
+      val keyedPoints: Seq[(Direction, Array[Coordinate])] =
+        dirs.zip(points).map{ case (dir, pt) => (dir, Array(pt)) }
+
+      println("Forming DelaunayTriangulations")
+      val triangulations = keyedPoints.map{ case (dir, pts) => {
+        (dir, DelaunayTriangulation(pts))
+      }}
+
+      println("Preparing input for stitching")
+      val stitchInput =
+        triangulations
+          .map{ case (dir, dt) => {
+            val ex = directionToExtent(dir)
+            (dir, (BoundaryDelaunay(dt, ex), ex))
+          }}
+          .toMap
+
+      println("Forming StitchedDelaunay")
+      val stitch = StitchedDelaunay(DelaunayTriangulation(Array.empty[Coordinate]), stitchInput, false)
+      cfor(0)(_ < stitch.pointSet.length, _ + 1) { i =>
+        println(s"${i}: ${stitch.pointSet.getCoordinate(i)}")
+      }
+      println(s"  Resulting triangles: ${stitch.triangles}")
+
+      println(s"Rasterizing full point set")
+      val baselineEDT = RasterEuclideanDistance(points, rasterExtent)
+      println(s"Rasterizing stitched point set")
+      val stitchedEDT = EuclideanDistance.neighborEuclideanDistance(DelaunayTriangulation(Array.empty[Coordinate]), stitchInput, rasterExtent)
+      println(s"Done!")
+
+      assertEqual(baselineEDT, stitchedEDT)
+    }
+
+    it("should work for a linear stitch result") {
+      val points = Array(new Coordinate(2.5, 0.5), new Coordinate(2.5, 2.5))
+      val dirs = Array(BottomRight, TopRight)
+      val extent = Extent(1, 1, 2, 2)
+      val rasterExtent = RasterExtent(extent, 512, 512)
+
+      def directionToExtent(dir: Direction): Extent = dir match {
+        case Center =>      Extent(1, 1, 2, 2)
+        case Left =>        Extent(0, 1, 1, 2)
+        case BottomLeft =>  Extent(0, 0, 1, 1)
+        case Bottom =>      Extent(1, 0, 2, 1)
+        case BottomRight => Extent(2, 0, 3, 1)
+        case Right =>       Extent(2, 1, 3, 2)
+        case TopRight =>    Extent(2, 2, 3, 3)
+        case Top =>         Extent(1, 2, 2, 3)
+        case TopLeft =>     Extent(0, 2, 1, 3)
+      }
+
+      val keyedPoints: Seq[(Direction, Array[Coordinate])] =
+        dirs.zip(points).map{ case (dir, pt) => (dir, Array(pt)) }
+
+      println("Forming DelaunayTriangulations")
+      val triangulations = keyedPoints.map{ case (dir, pts) => {
+        (dir, DelaunayTriangulation(pts))
+      }}
+
+      println("Preparing input for stitching")
+      val stitchInput =
+        triangulations
+          .map{ case (dir, dt) => {
+            val ex = directionToExtent(dir)
+            (dir, (BoundaryDelaunay(dt, ex), ex))
+          }}
+          .toMap
+
+      println("Forming StitchedDelaunay")
+      val stitch = StitchedDelaunay(stitchInput, false)
+      cfor(0)(_ < stitch.pointSet.length, _ + 1) { i =>
+        println(s"${i}: ${stitch.pointSet.getCoordinate(i)}")
+      }
+      println(s"  Resulting triangles: ${stitch.triangles}")
+
+      println(s"Rasterizing full point set")
+      val baselineEDT = RasterEuclideanDistance(points, rasterExtent)
+      println(s"Rasterizing stitched point set")
+      val stitchedEDT = EuclideanDistance.neighborEuclideanDistance(DelaunayTriangulation(Array.empty[Coordinate]), stitchInput, rasterExtent)
+      println(s"Done!")
+
+      assertEqual(baselineEDT, stitchedEDT)
     }
   }
 }

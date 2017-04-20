@@ -271,7 +271,14 @@ object VoronoiDiagram {
           }
         }
       } else {
-        // Degenerate line segment (equal endpoints); skip
+        // equal alphas
+        if (aplus > EPSILON) {
+          l += ReverseRay((x + norm * aplus).toCoord, norm * (-1))
+        } else if (aplus < -EPSILON) {
+          l += Ray((x + norm * aminus).toCoord, norm)
+        } else {
+          // Degenerate line segment (equal endpoints); skip
+        }
       }
 
       e = rotCCWDest(e)
