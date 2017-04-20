@@ -3,7 +3,7 @@ package geotrellis.vector.triangulation
 import com.vividsolutions.jts.geom.Coordinate
 import geotrellis.vector.{Line, MultiLine, Point}
 
-import TriangulationPredicates.{LEFTOF, RIGHTOF, ON}
+import geotrellis.vector.RobustPredicates.{LEFTOF, RIGHTOF, ON}
 
 final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdgeTable) {
   val predicates = new TriangulationPredicates(pointSet, halfEdgeTable)
@@ -309,8 +309,6 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
   }
 
   private def shouldAdvance(b: Int, e: Int) = {
-    import TriangulationPredicates._
-
     relativeTo(b, getDest(e)) match {
       case LEFTOF => true
       case RIGHTOF =>
@@ -328,32 +326,28 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
     }
   }
 
-  def joinToVertex(bound: Int, isLinear: Boolean, vertex: Int, triangles: TriangleMap) = {
-    // Find and form base
+  def joinToVertex(bound: Int, isLinear: Boolean, vertex: Int, triangles: TriangleMap, debug: Boolean = false) = {
     var e = advanceIfNotCorner(bound)
     var base = createHalfEdges(vertex, getSrc(e))
 
-    println("Finding base ...")
     while (shouldAdvance(base, e)) {
       e = advance(e)
       setDest(base, getSrc(e))
     }
-    setNext(base, e)
     setNext(getPrev(e), getFlip(base))
-    
+    setNext(base, e)
+    if (debug) println(s"Found base [$base]: [${getSrc(base)} ⇒ ${getDest(base)}], ${(getCoordinate(getSrc(base)), getCoordinate(getDest(base)))}")
+
     if (isLinear && relativeTo(base, getDest(e)) == ON) {
-      println("Result is linear")
       (base, true)
     } else {
-      println("Starting stitch")
-
       var cand = rotCCWSrc(getFlip(base))
 
       while(valid(cand, base)) {
         while(inCircle(getDest(base), getSrc(base), getDest(cand), getDest(rotCCWSrc(cand)))) {
           val hold = rotCCWSrc(cand)
 
-          println(s"Deleting [${getSrc(cand)} -> ${getDest(cand)}]")
+          if (debug) println(s"Deleting [${getSrc(cand)} -> ${getDest(cand)}]")
 
           triangles -= cand
           setNext(rotCCWDest(cand), getNext(cand))
@@ -364,20 +358,23 @@ final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdge
           cand = hold
         }
 
+        if (debug) println(s"Found candidate [$cand]: [${getSrc(cand)} ⇒ ${getDest(cand)}], ${(getCoordinate(getSrc(cand)), getCoordinate(getDest(cand)))}")
         val added = createHalfEdges(getSrc(base), getDest(cand))
-        println(s"Adding [${getSrc(added)} -> ${getDest(added)}]")
+        if (debug) println(s"Adding [$added]: [${getSrc(added)} ⇒ ${getDest(added)}]")
 
         setNext(rotCCWDest(cand), getFlip(added))
         setNext(added, getFlip(cand))
-        setNext(getFlip(added), base)
+        setNext(getFlip(added), getNext(getFlip(base)))
         setNext(getFlip(base), added)
         triangles += added
+        if (debug) println(s"Added triangle ${(getSrc(added), getDest(added), getDest(getNext(added)))}")
 
         cand = rotCCWSrc(getFlip(added))
         base = added
       }
 
-      (getFlip(base), false)
+      val `final` = advance(getFlip(base))
+      (`final`, false)
     }
   }
 
