@@ -36,9 +36,18 @@ class CellTypeSpec extends FunSpec with Matchers {
       FloatCellType.intersect(IntCellType) should be (IntCellType)
     }
     def roundTrip(ct: CellType) {
-      val str = ct.toString
-      val ctp = CellType.fromString(str)
-      ctp should be (ct)
+      {
+        // Updated behavior.
+        val str = ct.name
+        val ctp = CellType.fromName(str)
+        ctp should be (ct)
+      }
+      {
+        // Tests backward compatibility.
+        val str = ct.toString
+        val ctp = CellType.fromString(str)
+        ctp should be (ct)
+      }
     }
 
     it("should serialize float64ud123") {
@@ -78,7 +87,7 @@ class CellTypeSpec extends FunSpec with Matchers {
     }
 
     it("should read float64udNaN as float64") {
-      CellType.fromString(DoubleUserDefinedNoDataCellType(Double.NaN).toString) should be (DoubleConstantNoDataCellType)
+      CellType.fromName(DoubleUserDefinedNoDataCellType(Double.NaN).toString) should be (DoubleConstantNoDataCellType)
     }
 
     //----
@@ -115,7 +124,7 @@ class CellTypeSpec extends FunSpec with Matchers {
     }
 
     it("should read float32udNaN as float32") {
-      CellType.fromString(FloatUserDefinedNoDataCellType(Float.NaN).toString) should be (FloatConstantNoDataCellType)
+      CellType.fromName(FloatUserDefinedNoDataCellType(Float.NaN).toString) should be (FloatConstantNoDataCellType)
     }
 
   }
