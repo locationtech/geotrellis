@@ -31,6 +31,7 @@ class ReprojectSpec extends FunSpec with Matchers {
 
       ll.reproject(LatLng, WebMercator) should matchGeom(wm, 0.00001)
       wm.reproject(WebMercator, LatLng) should matchGeom(ll, 0.00001)
+      ll.reproject(LatLng, Sinusoidal).reproject(Sinusoidal, WebMercator) should matchGeom(wm, 0.00001)
     }
   }
 }
