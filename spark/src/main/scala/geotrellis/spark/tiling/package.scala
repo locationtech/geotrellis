@@ -31,10 +31,12 @@ package object tiling {
   implicit class CRSWorldExtent(crs: CRS) {
     def worldExtent: Extent =
       crs match {
-        case x if x == LatLng =>
+        case LatLng =>
           WORLD_WSG84
-        case x if x == WebMercator =>
+        case WebMercator =>
           Extent(-20037508.342789244, -20037508.342789244, 20037508.342789244, 20037508.342789244)
+        case Sinusoidal =>
+          Extent(-2.0015109355797417E7, -1.0007554677898709E7, 2.0015109355797417E7, 1.0007554677898709E7)
         case _ =>
           WORLD_WSG84.reproject(LatLng, crs)
       }
