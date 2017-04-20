@@ -44,6 +44,10 @@ case class Output(
   breaks: Option[String] = None,
   maxZoom: Option[Int] = None
 ) extends Serializable {
+
+  require(maxZoom.isEmpty || layoutScheme == Some("zoomed"),
+    "maxZoom can only be used with 'zoomed' layoutScheme")
+
   def getCrs = crs.map(CRS.fromName)
 
   def getLayoutScheme: LayoutScheme = (layoutScheme, getCrs, resolutionThreshold) match {
