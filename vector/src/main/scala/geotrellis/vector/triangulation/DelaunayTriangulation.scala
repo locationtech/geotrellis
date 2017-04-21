@@ -41,7 +41,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
    */
   val triangleMap = new TriangleMap(halfEdgeTable)
 
-  val predicates = new Predicates(pointSet, halfEdgeTable)
+  val predicates = new TriangulationPredicates(pointSet, halfEdgeTable)
   import halfEdgeTable._
   import predicates._
 

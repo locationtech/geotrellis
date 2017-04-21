@@ -3,69 +3,21 @@ package geotrellis.vector.triangulation
 import com.vividsolutions.jts.geom.Coordinate
 import org.apache.commons.math3.linear._
 
+import geotrellis.vector.ShewchuksDeterminant
+import geotrellis.vector.RobustPredicates
 import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
 
-object Predicates {
+object TriangulationPredicates {
   final val LEFTOF = -1
   final val RIGHTOF = 1
   final val ON = 0
-
-  def det3 (a11: Double, a12: Double, a13: Double,
-            a21: Double, a22: Double, a23: Double,
-            a31: Double, a32: Double, a33: Double): Double = {
-    val m = MatrixUtils.createRealMatrix(Array(Array(a11, a12, a13),
-                                               Array(a21, a22, a23),
-                                               Array(a31, a32, a33)))
-    (new LUDecomposition(m)).getDeterminant
-  }
-
-  def isCollinear(a: Coordinate, b: Coordinate, c: Coordinate): Boolean = {
-    isCollinear(a.x, a.y, b.x, b.y, c.x, c.y)
-  }
-
-  def isCollinear(
-    ax: Double, ay: Double,
-    bx: Double, by: Double,
-    cx: Double, cy: Double
-  ): Boolean = {
-    math.abs(ShewchuksDeterminant.orient2d(ax, ay, bx, by, cx, cy)) < EPSILON
-  }
-
-  def isCCW(
-    ax: Double, ay: Double,
-    bx: Double, by: Double,
-    cx: Double, cy: Double
-  ): Boolean = {
-    // det [ a.x-c.x  a.y-c.y ]
-    //     [ b.x-c.x  b.y-c.y ] > 0
-    ShewchuksDeterminant.orient2d(ax, ay, bx, by, cx, cy) > EPSILON
-  }
-
-  def isCCW(a: Coordinate, b: Coordinate, c: Coordinate): Boolean =
-    isCCW(a.x, a.y, b.x, b.y, c.x, c.y)
-
-  def inCircle(
-    ax: Double, ay: Double,
-    bx: Double, by: Double,
-    cx: Double, cy: Double,
-    dx: Double, dy: Double
-  ): Boolean = {
-    // det3(a.x - d.x, a.y - d.y, pow(a.x - d.x, 2) + pow(a.y - d.y, 2),
-    //      b.x - d.x, b.y - d.y, pow(b.x - d.x, 2) + pow(b.y - d.y, 2),
-    //      c.x - d.x, c.y - d.y, pow(c.x - d.x, 2) + pow(c.y - d.y, 2)) > EPSILON
-    ShewchuksDeterminant.incircle(ax, ay, bx, by, cx, cy, dx, dy) > EPSILON
-  }
-
-  def inCircle(a: Coordinate, b: Coordinate, c: Coordinate, d: Coordinate): Boolean =
-    inCircle(a.x, a.y, b.x, b.y, c.x, c.y, d.x, d.y)
-
-
 }
 
-final class Predicates(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdgeTable) {
+final class TriangulationPredicates(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdgeTable) {
   import pointSet._
   import halfEdgeTable._
-  import Predicates._
+  import TriangulationPredicates._
+  import RobustPredicates._
 
   def isCollinear(a: Int, b: Int, c: Int): Boolean =
     math.abs(
@@ -142,7 +94,7 @@ final class Predicates(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdgeTable)
     val by = getY(b)
     val cx = getX(c)
     val cy = getY(c)
-    Predicates.isCCW(ax, ay, bx, by, cx, cy)
+    RobustPredicates.isCCW(ax, ay, bx, by, cx, cy)
   }
 
   def isRightOf(e: Int, p: Int) = {
@@ -154,7 +106,7 @@ final class Predicates(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdgeTable)
     val c = getSrc(e)
     val cx = getX(c)
     val cy = getY(c)
-    Predicates.isCCW(px, py, bx, by, cx, cy)
+    RobustPredicates.isCCW(px, py, bx, by, cx, cy)
   }
 
   // def isLeftOf(e: Int, p: Coordinate)(implicit trans: Int => Coordinate, het: HalfEdgeTable) =
@@ -169,7 +121,7 @@ final class Predicates(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdgeTable)
     val c = getDest(e)
     val cx = getX(c)
     val cy = getY(c)
-    Predicates.isCCW(px, py, bx, by, cx, cy)
+    RobustPredicates.isCCW(px, py, bx, by, cx, cy)
   }
 
   def inCircle(ai: Int, bi: Int, ci: Int, di: Int): Boolean = {
@@ -181,41 +133,17 @@ final class Predicates(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdgeTable)
     val cy = getY(ci)
     val dx = getX(di)
     val dy = getY(di)
-    Predicates.inCircle(ax, ay, bx, by, cx, cy, dx, dy)
+    RobustPredicates.inCircle(ax, ay, bx, by, cx, cy, dx, dy)
   }
 
-  // def circleCenter(a: Coordinate, b: Coordinate, c: Coordinate): Coordinate = {
-  //   val d = 2.0 * det3(a.x, a.y, 1.0,
-  //                      b.x, b.y, 1.0,
-  //                      c.x, c.y, 1.0)
-  //   val h = det3(a.x * a.x + a.y * a.y, a.y, 1.0,
-  //                b.x * b.x + b.y * b.y, b.y, 1.0,
-  //                c.x * c.x + c.y * c.y, c.y, 1.0) / d
-  //   val k = det3(a.x, a.x * a.x + a.y * a.y, 1.0,
-  //                b.x, b.x * b.x + b.y * b.y, 1.0,
-  //                c.x, c.x * c.x + c.y * c.y, 1.0) / d
-  //   new Coordinate(h,k)
-  // }
-
-  def circleCenter(ai: Int, bi: Int, ci: Int): Coordinate = {
+  def circleCenter(ai: Int, bi: Int, ci: Int): (Double, Coordinate, Boolean) = {
     val ax = getX(ai)
     val ay = getY(ai)
     val bx = getX(bi)
     val by = getY(bi)
     val cx = getX(ci)
     val cy = getY(ci)
-
-    val d = 2.0 * det3(ax, ay, 1.0,
-                       bx, by, 1.0,
-                       cx, cy, 1.0)
-    val h = det3(ax * ax + ay * ay, ay, 1.0,
-                 bx * bx + by * by, by, 1.0,
-                 cx * cx + cy * cy, cy, 1.0) / d
-    val k = det3(ax, ax * ax + ay * ay, 1.0,
-                 bx, bx * bx + by * by, 1.0,
-                 cx, cx * cx + cy * cy, 1.0) / d
-
-    new Coordinate(h,k)
+    RobustPredicates.circleCenter(ax, ay, bx, by, cx, cy)
   }
 
   def isDelaunayEdge(e: Int): Boolean = {

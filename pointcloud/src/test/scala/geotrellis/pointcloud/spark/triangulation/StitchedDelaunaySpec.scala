@@ -104,7 +104,7 @@ class StitchedDelaunaySpec extends FunSpec with Matchers {
         val b = stitch.indexToCoord(bi)
         val c = stitch.indexToCoord(ci)
         points.forall{ pt => {
-          val result = !Predicates.inCircle(a, b, c, pt)
+          val result = !RobustPredicates.inCircle(a, b, c, pt)
           // if (!result) {
           //   println(s"plot([${pt.x}], [${pt.y}], 'k*', [${a.x}, ${b.x}, ${c.x}, ${a.x}], [${a.y}, ${b.y}, ${c.y}, ${a.y}], 'r-', [${a.x}], [${a.y}], 'b*', [${b.x}], [${b.y}], 'g*')")
           // }
@@ -159,7 +159,7 @@ class StitchedDelaunaySpec extends FunSpec with Matchers {
         val b = stitch.indexToCoord(bi)
         val c = stitch.indexToCoord(ci)
         points.forall{ pt => {
-          val result = !Predicates.inCircle(a, b, c, pt)
+          val result = !RobustPredicates.inCircle(a, b, c, pt)
           result
         }}
       }} should be (true)

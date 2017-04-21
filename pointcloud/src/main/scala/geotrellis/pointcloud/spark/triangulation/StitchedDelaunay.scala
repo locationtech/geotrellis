@@ -93,7 +93,29 @@ object StitchedDelaunay {
       .map{row => row.reduce{ (l, r) => {
         val (left, isLeftLinear) = l
         val (right, isRightLinear) = r
-        stitcher.merge(left, isLeftLinear, right, isRightLinear, overlayTris, debug)
+        val result = stitcher.merge(left, isLeftLinear, right, isRightLinear, overlayTris, debug)
+        // allEdges.navigate(result._1, pointMap, Map(
+        //   't' -> ("export triangles to triangles.wkt", { e0 =>
+        //     val mp = MultiPolygon(overlayTris.triangleVertices.map{ case (i,j,k) => {
+        //       Polygon(pointMap(i), pointMap(j), pointMap(k), pointMap(i))
+        //     }})
+        //     new java.io.PrintWriter("triangles.wkt") { write(WKT.write(mp)); close }
+        //     e0
+        //   }),
+        //   'x' -> ("export current loop to poly.wkt", { e0 =>
+        //     import allEdges._
+        //     var e = e0
+        //     val pts = collection.mutable.ListBuffer[Coordinate](pointMap(getSrc(e)))
+        //     do {
+        //       pts += pointMap(getDest(e))
+        //       e = getNext(e)
+        //     } while (e != e0)
+        //     val mp = Polygon(pts.map(Point.jtsCoord2Point(_)))
+        //     new java.io.PrintWriter("poly.wkt") { write(WKT.write(mp)); close }
+        //     e0
+        //   })
+        // ))
+        result
       }}}
       .reduce{ (l, r) => {
         val (left, isLeftLinear) = l
@@ -127,7 +149,9 @@ object StitchedDelaunay {
       .map{row => row.reduce{ (l, r) => {
         val (left, isLeftLinear) = l
         val (right, isRightLinear) = r
-        stitcher.merge(left, isLeftLinear, right, isRightLinear, overlayTris, debug)
+        val result = stitcher.merge(left, isLeftLinear, right, isRightLinear, overlayTris, debug)
+        //allEdges.navigate(result._1, pointMap, Map.empty)
+        result
       }}}
       .reduce{ (l, r) => {
         val (left, isLeftLinear) = l
