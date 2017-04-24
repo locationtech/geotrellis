@@ -94,7 +94,6 @@ object StitchedDelaunay {
     */
   def apply(neighbors: Map[Direction, (BoundaryDelaunay, Extent)], debug: Boolean = false): StitchedDelaunay = {
     val (vertCount, allPoints, vtrans) = combinedPointSet(neighbors)
-    // println(s"Found $vertCount points in input, allocating for ${2 * (3 * vertCount - 6)} edges")
     val allEdges = new HalfEdgeTable(2 * (3 * vertCount - 6))
 
     val boundaries = neighbors.map{ case (dir, (bdt, _)) => {
@@ -118,30 +117,22 @@ object StitchedDelaunay {
         .filter{ row => !row.isEmpty }
         .map{row => row.reduce{ (l, r) => (l, r) match {
           case (scala.Left((left, isLeftLinear)), scala.Left((right, isRightLinear))) =>
-            // println("Merging two normal triangulations (row)")
             scala.Left(stitcher.merge(left, isLeftLinear, right, isRightLinear, overlayTris, debug))
           case (scala.Left((left, isLeftLinear)), scala.Right(vertex)) =>
-            // println("Merging a single point to a normal triangulation (row)")
             scala.Left(stitcher.joinToVertex(left, isLeftLinear, vertex, overlayTris))
           case (scala.Right(vertex), scala.Left((right, isRightLinear))) =>
-            // println("Merging a single point to a normal triangulation (row)")
             scala.Left(stitcher.joinToVertex(right, isRightLinear, vertex, overlayTris))
           case (scala.Right(v1), scala.Right(v2)) =>
-            // println("Merging two single point 'triangulations' (row)")
             scala.Left((allEdges.createHalfEdges(v1, v2), true))
         }}}
         .reduce{ (l, r) => (l, r) match {
           case (scala.Left((left, isLeftLinear)), scala.Left((right, isRightLinear))) =>
-            // println("Merging two normal triangulations (column)")
             scala.Left(stitcher.merge(left, isLeftLinear, right, isRightLinear, overlayTris, debug))
           case (scala.Left((left, isLeftLinear)), scala.Right(vertex)) =>
-            // println("Merging a single point to a normal triangulation (column)")
             scala.Left(stitcher.joinToVertex(left, isLeftLinear, vertex, overlayTris))
           case (scala.Right(vertex), scala.Left((right, isRightLinear))) =>
-            // println("Merging a single point to a normal triangulation (column)")
             scala.Left(stitcher.joinToVertex(right, isRightLinear, vertex, overlayTris))
           case (scala.Right(v1), scala.Right(v2)) =>
-            // println("Merging two single point 'triangulations' (column)")
             scala.Left((allEdges.createHalfEdges(v1, v2), true))
         }}
 
@@ -245,7 +236,6 @@ object StitchedDelaunay {
     val overlayTris = new TriangleMap(allEdges)
     val stitcher = new DelaunayStitcher(allPoints, allEdges)
 
-    // println("Stitching")
     var i = 0
     val bound =
       dirs
@@ -317,7 +307,6 @@ object StitchedDelaunay {
           i += 1
           result
         }
-    // println("Stitched!")
     
     val boundary = bound match {
       case scala.Left((bnd, _)) => bnd
@@ -336,8 +325,6 @@ case class StitchedDelaunay(
   val pointSet: DelaunayPointSet,
   private val fillTriangles: TriangleMap
 ) {
-  // def predicates = TriangulationPredicates(pointSet, halfEdgeTable)
-
   def triangles(): Seq[(Int, Int, Int)] = fillTriangles.getTriangles.keys.toSeq
 
   def writeWKT(wktFile: String) = {
