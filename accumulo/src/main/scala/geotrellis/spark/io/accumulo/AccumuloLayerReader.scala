@@ -48,10 +48,14 @@ class AccumuloLayerReader(val attributeStore: AttributeStore)(implicit sc: Spark
 
     val queryKeyBounds = tileQuery(metadata)
 
-    val decompose = (bounds: KeyBounds[K]) =>
-      keyIndex.indexRanges(bounds).map { case (min, max) =>
-        new AccumuloRange(new Text(AccumuloKeyEncoder.long2Bytes(min)), new Text(AccumuloKeyEncoder.long2Bytes(max)))
-      }
+    val decompose = { (bounds: KeyBounds[K]) =>
+      if  (bounds == metadata.getComponent[Bounds[K]].get)
+        List(new AccumuloRange())
+      else
+        keyIndex.indexRanges(bounds).map { case (min, max) =>
+          new AccumuloRange(new Text(AccumuloKeyEncoder.long2Bytes(min)), new Text(AccumuloKeyEncoder.long2Bytes(max)))
+        }
+    }
 
     val rdd = AccumuloRDDReader.read[K, V](header.tileTable, columnFamily(id), queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema))
     new ContextRDD(rdd, metadata)
