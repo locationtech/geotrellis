@@ -134,111 +134,102 @@ class CellTypeSpec extends FunSpec with Matchers with Inspectors {
 
   describe("CellType Bounds checking") {
 
-    //    it("should serialize uint8ud with various ND values") {
-    //
-    //      val ndVals = Seq(0, 1, Byte.MaxValue/2, Byte.MaxValue - 1, Byte.MaxValue, Byte.MaxValue * 2)
-    //      forEvery(ndVals) { nd ⇒
-    //        roundTrip(UByteUserDefinedNoDataCellType(nd.toByte))
-    //      }
-    //    }
-    //
-    //    it("should serialize int8ud with various ND values") {
-    //
-    //      val ndVals = Seq(0, 1, 127, 128, 255)
-    //      forEvery(ndVals) { nd ⇒
-    //        roundTrip(ByteUserDefinedNoDataCellType(nd.toByte))
-    //      }
-    //    }
-
-
-
     implicit val doubleAsIntegral = scala.math.Numeric.DoubleAsIfIntegral
     implicit val floatAsIntegral = scala.math.Numeric.FloatAsIfIntegral
 
-
     it("should handle encoding no data types across valid bounds") {
-      forEvery(CellDef.all) { cellDef ⇒
-        val cd = cellDef.asInstanceOf[CellDef[AnyVal]]
-        forEvery(cd.testPoints) { nd ⇒
-          val ct = cd(nd)
-          assert(cd.toCode(nd) === ct.name)
-          roundTrip(ct)
+      type PhantomCell = AnyVal
+      type PhantomNoData = AnyVal
+
+      forEvery(CellDef.all) { cd ⇒
+        val cellDef = cd.asInstanceOf[CellDef[PhantomCell, PhantomNoData]]
+        withClue("Cell type " + cellDef) {
+          val range = cellDef.range
+          forEvery(cellDef.range.testPoints) { nd ⇒
+            withClue("No data " + nd) {
+              val ct = cellDef(nd)
+              roundTrip(ct)
+//          assert(cellDef.toCode(nd) === ct.name)
+//          println(ct.widenedNoData(cellDef.alg))
+            }
+          }
         }
       }
     }
-
     abstract class RangeAlgebra[T: Integral] {
-      protected val alg = implicitly[Integral[T]]
+      val alg = implicitly[Integral[T]]
       import alg._
       val one = alg.one
       val twice =  one + one
-      val half = one / twice
     }
 
     case class TestRange[Encoding: Integral](min: Encoding, max: Encoding) extends RangeAlgebra[Encoding]{
       import alg._
       def width = max - min
-      def middle = width * half
+      def middle = width / twice
+      def testPoints = Seq(
+        min, min + one, middle - one, middle, middle + one, max - one, max
+      )
     }
 
-    abstract class CellDef[T: Integral] extends RangeAlgebra[T] {
-      import alg._
-      type Encoding = T
-      val rng: TestRange[Encoding]
+    abstract class CellDef[CellEncoding: Integral, NoDataEncoding: Integral] extends RangeAlgebra[CellEncoding] {
+      val range: TestRange[NoDataEncoding]
       val baseCode: String
-      def apply(noData: Encoding): CellType with UserDefinedNoData[_]
-      def toCode(noData: Encoding): String = {
+      def apply(noData: NoDataEncoding): CellType with UserDefinedNoData[CellEncoding]
+      def toCode(noData: NoDataEncoding): String = {
         s"${baseCode}ud${noData}"
       }
-      def testPoints = Seq(
-        rng.min, rng.min + one, rng.middle - one, rng.middle, rng.middle + one, rng.max - one, rng.max
-      )
-      override def toString = getClass.getSimpleName
+
+      override def toString = baseCode
     }
     object CellDef {
       val all = Seq(UByteDef, ByteDef, UShortDef, ShortDef, IntDef, FloatDef, DoubleDef)
     }
 
-    object UByteDef extends CellDef[Short] {
+    object UByteDef extends CellDef[Byte, Short] {
       val baseCode = "uint8"
       def apply(noData: Short) = UByteUserDefinedNoDataCellType(noData.toByte)
-      val rng = TestRange(0.toShort, (Byte.MaxValue * 2).toShort)
+      val range = TestRange(0.toShort, (Byte.MaxValue * 2).toShort)
     }
 
-    object ByteDef extends CellDef[Byte] {
+    object ByteDef extends CellDef[Byte, Byte] {
       val baseCode = "int8"
       def apply(noData: Byte) = ByteUserDefinedNoDataCellType(noData.toByte)
-      val rng = TestRange(Byte.MinValue, Byte.MaxValue)
+      val range = TestRange(Byte.MinValue, Byte.MaxValue)
     }
 
-    object UShortDef extends CellDef[Int] {
+    object UShortDef extends CellDef[Short, Int] {
       val baseCode = "uint16"
       def apply(noData: Int) = UShortUserDefinedNoDataCellType(noData.toShort)
-      val rng = TestRange(0, Short.MaxValue * 2)
+      val range = TestRange(0, Short.MaxValue * 2)
     }
 
-    object ShortDef extends CellDef[Short] {
+    object ShortDef extends CellDef[Short, Short] {
       val baseCode = "int16"
       def apply(noData: Short) = ShortUserDefinedNoDataCellType(noData)
-      val rng = TestRange(Short.MinValue, Short.MaxValue)
+      val range = TestRange(Short.MinValue, Short.MaxValue)
     }
 
-    object IntDef extends CellDef[Int] {
+    object IntDef extends CellDef[Int, Int] {
       val baseCode = "int32"
       def apply(noData: Int) = IntUserDefinedNoDataCellType(noData)
-      val rng = TestRange(Int.MinValue, Int.MaxValue)
+      val range = TestRange(Int.MinValue, Int.MaxValue)
     }
 
-    object FloatDef extends CellDef[Float] {
+    object FloatDef extends CellDef[Float, Float] {
       val baseCode = "float32"
       def apply(noData: Float) = FloatUserDefinedNoDataCellType(noData)
-      val rng = TestRange(Float.MinValue, Float.MaxValue)
+      val range = new TestRange(Float.MinValue, Float.MaxValue) {
+        override def middle = 0.0f
+      }
     }
 
-    object DoubleDef extends CellDef[Double] {
+    object DoubleDef extends CellDef[Double, Double] {
       val baseCode = "float64"
       def apply(noData: Double) = DoubleUserDefinedNoDataCellType(noData)
-      val rng = TestRange(Double.MinValue, Double.MaxValue)
+      val range = new TestRange(Double.MinValue, Double.MaxValue) {
+        override def middle = 0.0
+      }
     }
   }
 
