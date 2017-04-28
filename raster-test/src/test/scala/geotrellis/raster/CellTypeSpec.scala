@@ -143,14 +143,16 @@ class CellTypeSpec extends FunSpec with Matchers with Inspectors {
 
       forEvery(CellDef.all) { cd ⇒
         val cellDef = cd.asInstanceOf[CellDef[PhantomCell, PhantomNoData]]
-        withClue("Cell type " + cellDef) {
-          val range = cellDef.range
+        withClue("for cell type " + cellDef) {
           forEvery(cellDef.range.testPoints) { nd ⇒
-            withClue("No data " + nd) {
+            withClue("for no data " + nd) {
               val ct = cellDef(nd)
               roundTrip(ct)
-//          assert(cellDef.toCode(nd) === ct.name)
-//          println(ct.widenedNoData(cellDef.alg))
+              assert(cellDef.toCode(nd) === ct.name)
+              ct.widenedNoData(cellDef.alg) match {
+                case WideIntNoData(wnd) ⇒ assert(wnd === nd)
+                case WideDoubleNoData(wnd) ⇒ assert(wnd === nd)
+              }
             }
           }
         }
@@ -179,6 +181,7 @@ class CellTypeSpec extends FunSpec with Matchers with Inspectors {
       def toCode(noData: NoDataEncoding): String = {
         s"${baseCode}ud${noData}"
       }
+      def toCellEncoding(noData: NoDataEncoding): CellEncoding
 
       override def toString = baseCode
     }
@@ -188,49 +191,55 @@ class CellTypeSpec extends FunSpec with Matchers with Inspectors {
 
     object UByteDef extends CellDef[Byte, Short] {
       val baseCode = "uint8"
-      def apply(noData: Short) = UByteUserDefinedNoDataCellType(noData.toByte)
+      def apply(noData: Short) = UByteUserDefinedNoDataCellType(toCellEncoding(noData))
       val range = TestRange(0.toShort, (Byte.MaxValue * 2).toShort)
+      def toCellEncoding(noData: Short) = noData.toByte
     }
 
     object ByteDef extends CellDef[Byte, Byte] {
       val baseCode = "int8"
-      def apply(noData: Byte) = ByteUserDefinedNoDataCellType(noData.toByte)
+      def apply(noData: Byte) = ByteUserDefinedNoDataCellType(toCellEncoding(noData))
       val range = TestRange(Byte.MinValue, Byte.MaxValue)
+      def toCellEncoding(noData: Byte) = noData
     }
 
     object UShortDef extends CellDef[Short, Int] {
       val baseCode = "uint16"
-      def apply(noData: Int) = UShortUserDefinedNoDataCellType(noData.toShort)
+      def apply(noData: Int) = UShortUserDefinedNoDataCellType(toCellEncoding(noData))
       val range = TestRange(0, Short.MaxValue * 2)
+      def toCellEncoding(noData: Int) = noData.toShort
     }
 
     object ShortDef extends CellDef[Short, Short] {
       val baseCode = "int16"
-      def apply(noData: Short) = ShortUserDefinedNoDataCellType(noData)
+      def apply(noData: Short) = ShortUserDefinedNoDataCellType(toCellEncoding(noData))
       val range = TestRange(Short.MinValue, Short.MaxValue)
+      def toCellEncoding(noData: Short) = noData
     }
 
     object IntDef extends CellDef[Int, Int] {
       val baseCode = "int32"
-      def apply(noData: Int) = IntUserDefinedNoDataCellType(noData)
+      def apply(noData: Int) = IntUserDefinedNoDataCellType(toCellEncoding(noData))
       val range = TestRange(Int.MinValue, Int.MaxValue)
+      def toCellEncoding(noData: Int) = noData
     }
 
-    object FloatDef extends CellDef[Float, Float] {
+    object FloatDef extends CellDef[Float, Double] {
       val baseCode = "float32"
-      def apply(noData: Float) = FloatUserDefinedNoDataCellType(noData)
-      val range = new TestRange(Float.MinValue, Float.MaxValue) {
+      def apply(noData: Double) = FloatUserDefinedNoDataCellType(toCellEncoding(noData))
+      val range = new TestRange(Float.MinValue.toDouble, Float.MaxValue.toDouble) {
         override def middle = 0.0f
       }
+      def toCellEncoding(noData: Double) = noData.toFloat
     }
 
     object DoubleDef extends CellDef[Double, Double] {
       val baseCode = "float64"
-      def apply(noData: Double) = DoubleUserDefinedNoDataCellType(noData)
+      def apply(noData: Double) = DoubleUserDefinedNoDataCellType(toCellEncoding(noData))
       val range = new TestRange(Double.MinValue, Double.MaxValue) {
         override def middle = 0.0
       }
+      def toCellEncoding(noData: Double) = noData
     }
   }
-
 }
