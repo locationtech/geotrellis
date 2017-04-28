@@ -76,7 +76,7 @@ sealed trait UserDefinedNoDataEncoding extends CellTypeEncoding { self ⇒
       val number = text.replace(name, "")
 
       if(isFloatingPoint) Try(number.toDouble).map(WideDoubleNoData).toOption
-      else Try(number.toInt).map(WideIntNoData).toOption
+      else Try(number.toInt).map(WideIntNoData.apply).toOption
     }
     else None
   }
@@ -99,6 +99,10 @@ sealed trait WidenedNoData {
 /** NoData value stored as an Int. */
 case class WideIntNoData(asInt: Int) extends WidenedNoData {
   def asDouble = asInt.toDouble
+}
+object WideIntNoData {
+  def apply(thinned: Byte) = new WideIntNoData(thinned & 0xFF)
+  def apply(thinned: Short) = new WideIntNoData(thinned & 0xFFFF)
 }
 
 /** NoData stored as a Double */

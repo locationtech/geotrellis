@@ -351,7 +351,7 @@ case object UByteConstantNoDataCellType
     extends UByteCells with ConstantNoData
 case class UByteUserDefinedNoDataCellType(noDataValue: Byte)
     extends UByteCells with UserDefinedNoData[Byte] {
-  override def widenedNoData(implicit ev: Numeric[Byte]) = WideIntNoData(noDataValue & 0xFF)
+  override def widenedNoData(implicit ev: Numeric[Byte]) = WideIntNoData(noDataValue)
 }
 
 case object ShortCellType
@@ -367,7 +367,7 @@ case object UShortConstantNoDataCellType
     extends UShortCells with ConstantNoData
 case class UShortUserDefinedNoDataCellType(noDataValue: Short)
     extends UShortCells with UserDefinedNoData[Short] {
-  override def widenedNoData(implicit ev: Numeric[Short]) = WideIntNoData(noDataValue & 0xFFFF)
+  override def widenedNoData(implicit ev: Numeric[Short]) = WideIntNoData(noDataValue)
 }
 
 case object IntCellType
