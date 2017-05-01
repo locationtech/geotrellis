@@ -99,6 +99,7 @@ sealed trait WidenedNoData {
 /** NoData value stored as an Int. */
 case class WideIntNoData(asInt: Int) extends WidenedNoData {
   def asDouble = asInt.toDouble
+  override def toString = asInt.toString
 }
 object WideIntNoData {
   def apply(thinned: Byte) = new WideIntNoData(thinned & 0xFF)
@@ -108,6 +109,7 @@ object WideIntNoData {
 /** NoData stored as a Double */
 case class WideDoubleNoData(asDouble: Double) extends WidenedNoData {
   def asInt = asDouble.toInt
+  override def toString = asDouble.toString
 }
 
 

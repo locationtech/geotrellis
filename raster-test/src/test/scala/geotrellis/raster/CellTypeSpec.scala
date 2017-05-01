@@ -16,6 +16,7 @@
 
 package geotrellis.raster
 
+import geotrellis.raster.io.geotiff.writer.TiffTagFieldValue
 import org.scalatest._
 
 class CellTypeSpec extends FunSpec with Matchers with Inspectors {
@@ -153,6 +154,8 @@ class CellTypeSpec extends FunSpec with Matchers with Inspectors {
                 case WideIntNoData(wnd) ⇒ assert(wnd === nd)
                 case WideDoubleNoData(wnd) ⇒ assert(wnd === nd)
               }
+
+              assert(TiffTagFieldValue.createNoDataString(ct) === Some(nd.toString))
             }
           }
         }
