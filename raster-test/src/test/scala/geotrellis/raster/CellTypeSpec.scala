@@ -16,7 +16,13 @@
 
 package geotrellis.raster
 
+import java.nio.file.Files
+import java.nio.file.attribute.FileAttribute
+
+import geotrellis.proj4.LatLng
+import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.io.geotiff.writer.TiffTagFieldValue
+import geotrellis.vector.Extent
 import org.scalatest._
 
 class CellTypeSpec extends FunSpec with Matchers with Inspectors {
@@ -34,6 +40,17 @@ class CellTypeSpec extends FunSpec with Matchers with Inspectors {
       val ctp = CellType.fromString(str)
       ctp should be (ct)
     }
+  }
+
+  def roundTripTiff(ct: CellType): Unit = {
+    val tiffOut = GeoTiff(ArrayTile.alloc(ct, 1, 1), Extent(0, 0, 1, 1), LatLng)
+    val path = Files.createTempFile("gt-", ".tiff")
+    tiffOut.write(path.toString)
+
+    val Left(tiffIn) = GeoTiff(path.toString)
+
+    tiffIn.cellType should (be (tiffOut.cellType) or be (tiffOut.cellType.withDefaultNoData()))
+    Files.delete(path)
   }
 
   describe("CellType") {
@@ -144,17 +161,17 @@ class CellTypeSpec extends FunSpec with Matchers with Inspectors {
 
       forEvery(CellDef.all) { cd ⇒
         val cellDef = cd.asInstanceOf[CellDef[PhantomCell, PhantomNoData]]
-        withClue("for cell type " + cellDef) {
+        withClue(s"for cell type '$cellDef'") {
           forEvery(cellDef.range.testPoints) { nd ⇒
-            withClue("for no data " + nd) {
+            withClue(s"for no data '$nd'") {
               val ct = cellDef(nd)
               roundTrip(ct)
+              roundTripTiff(ct)
               assert(cellDef.toCode(nd) === ct.name)
               ct.widenedNoData(cellDef.alg) match {
                 case WideIntNoData(wnd) ⇒ assert(wnd === nd)
                 case WideDoubleNoData(wnd) ⇒ assert(wnd === nd)
               }
-
               assert(TiffTagFieldValue.createNoDataString(ct) === Some(nd.toString))
             }
           }

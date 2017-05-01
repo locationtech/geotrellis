@@ -26,7 +26,6 @@ import spire.syntax.cfor._
 
 import scala.collection.mutable
 import java.nio.ByteOrder
-import java.util.IllegalFormatException
 
 case class TiffTagFieldValue(
   tag: Int,
