@@ -16,15 +16,13 @@
 
 package geotrellis.vectortile
 
-import geotrellis.proj4.{ LatLng, WebMercator }
+import scala.collection.mutable.ListBuffer
+
+import geotrellis.proj4.{LatLng, WebMercator}
 import geotrellis.vector._
 import geotrellis.vector.io._
-import geotrellis.vectortile.internal._
-import geotrellis.vectortile.internal.{vector_tile => vt}
-import geotrellis.vectortile.internal.vector_tile.Tile.GeomType.{POINT, LINESTRING, POLYGON}
-import scala.collection.immutable.HashMap
-
-import scala.collection.mutable.ListBuffer
+import geotrellis.vectortile.internal.{vector_tile => vt, _}
+import geotrellis.vectortile.internal.vector_tile.Tile.GeomType.{LINESTRING, POINT, POLYGON}
 
 // --- //
 
@@ -235,10 +233,23 @@ case class LazyLayer(
       if (fs.isEmpty) {
         Stream.empty[(Either[G1, G2], Map[String, Value])]
       } else {
-        val geoms = fs.head.geometry
-        val g = protobufGeom.fromCommands(Command.commands(geoms), tileExtent.northWest, resolution)
+        val geoms: Seq[Int] = fs.head.geometry
 
-        (g, getMeta(rawLayer.keys, rawLayer.values, fs.head.tags)) #:: loop(fs.tail)
+        /* 2017 May  1 @ 14:56
+         * There is a strange bug where a Feature is being parsed out of
+         * some Protobuf data, but that Feature has no geometries. This should never
+         * happen, but in the wild it seems to be (on a tile set that I injested
+         * myself.) This needs to be looked into.
+         *
+         * The `if` here is a workaround that ignores a Feature with no geoms.
+         */
+        if (geoms.isEmpty) {
+          loop(fs.tail)
+        } else {
+          val g = protobufGeom.fromCommands(Command.commands(geoms), tileExtent.northWest, resolution)
+
+          (g, getMeta(rawLayer.keys, rawLayer.values, fs.head.tags)) #:: loop(fs.tail)
+        }
       }
     }
 
@@ -272,6 +283,11 @@ case class LazyLayer(
    *
    * By calling directly what that implicit eventually calls at the bottom of
    * its call stack, we save some operations.
+   *
+   * BUG NOTES
+   * The `p.isEmpty` check is done here to ignore any empty Geometries, which is
+   * a legal state for JTS Geoms. These cause problems later when reading/writing
+   * VT Features, so we avoid those problems by ignoring any empty Geoms here.
    */
   lazy val points: Stream[Feature[Point, Map[String, Value]]] = pointStream
     .flatMap({
@@ -281,31 +297,31 @@ case class LazyLayer(
 
   lazy val multiPoints: Stream[Feature[MultiPoint, Map[String, Value]]] = pointStream
     .flatMap({
-      case (Right(p), meta) => new ::(Feature(p, meta), Nil)
+      case (Right(p), meta) if !p.isEmpty => new ::(Feature(p, meta), Nil)
       case _ => Nil
     })
 
   lazy val lines: Stream[Feature[Line, Map[String, Value]]] = lineStream
     .flatMap({
-      case (Left(p), meta) => new ::(Feature(p, meta), Nil)
+      case (Left(p), meta) if !p.isEmpty => new ::(Feature(p, meta), Nil)
       case _ => Nil
     })
 
   lazy val multiLines: Stream[Feature[MultiLine, Map[String, Value]]] = lineStream
     .flatMap({
-      case (Right(p), meta) => new ::(Feature(p, meta), Nil)
+      case (Right(p), meta) if !p.isEmpty => new ::(Feature(p, meta), Nil)
       case _ => Nil
     })
 
   lazy val polygons: Stream[Feature[Polygon, Map[String, Value]]] = polyStream
     .flatMap({
-      case (Left(p), meta) => new ::(Feature(p, meta), Nil)
+      case (Left(p), meta) if !p.isEmpty => new ::(Feature(p, meta), Nil)
       case _ => Nil
     })
 
   lazy val multiPolygons: Stream[Feature[MultiPolygon, Map[String, Value]]] = polyStream
     .flatMap({
-      case (Right(p), meta) => new ::(Feature(p, meta), Nil)
+      case (Right(p), meta) if !p.isEmpty => new ::(Feature(p, meta), Nil)
       case _ => Nil
     })
 
