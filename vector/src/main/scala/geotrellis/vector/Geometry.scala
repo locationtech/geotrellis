@@ -34,6 +34,18 @@ trait Geometry {
   def isValid: Boolean =
     jtsGeom.isValid
 
+  /** Is this Geometry empty? This is faster than checking manually like:
+    * {{{
+    * val mp: MultiPoint = ...
+    * val ps: Array[Point] = mp.points  // `.points` is a lazy val with processing overhead
+    *
+    * ps.isEmpty  // possible, but mp.isEmpty is faster
+    * }}}
+    * It would be similar for [[MultiLine]] or [[MultiPolygon]].
+    */
+  def isEmpty: Boolean =
+    jtsGeom.isEmpty
+
   /** Calculate the distance to another Geometry */
   def distance(other: Geometry): Double =
     jtsGeom.distance(other.jtsGeom)
