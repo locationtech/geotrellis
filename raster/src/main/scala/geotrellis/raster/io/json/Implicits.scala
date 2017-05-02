@@ -46,7 +46,7 @@ trait Implicits extends HistogramJsonFormats {
     )
     def read(value: JsValue): CellSize =
       value.asJsObject.getFields("width", "height") match {
-        case Seq(JsNumber(width), JsNumber(height)) => CellSize(width.toInt, height.toInt)
+        case Seq(JsNumber(width), JsNumber(height)) => CellSize(width.toDouble, height.toDouble)
         case _ =>
           throw new DeserializationException("BackendType must be a valid object.")
       }
