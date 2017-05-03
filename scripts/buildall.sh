@@ -21,3 +21,4 @@ HOSTALIASES=/tmp/hostaliases ./sbt -J-Xmx2G "project geowave" test || { exit 1; 
 ./sbt -J-Xmx2G "project util" compile || { exit 1; }
 ./sbt -J-Xmx2G "project vector-test" test || { exit 1; }
 ./sbt -J-Xmx2G "project vectortile" test || { exit 1; }
+./sbt -J-Xmx2G "project vectortile-spark" test || { exit 1; }

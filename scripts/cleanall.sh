@@ -16,6 +16,7 @@
 ./sbt -J-Xmx2G "project util" clean || { exit 1; }
 ./sbt -J-Xmx2G "project vector-test" clean || { exit 1; }
 ./sbt -J-Xmx2G "project vectortile" clean || { exit 1; }
+./sbt -J-Xmx2G "project vectortile-spark" clean || { exit 1; }
 
 rm -r accumulo/target
 rm -r cassandra/target
@@ -40,3 +41,4 @@ rm -r vector-test/target
 rm -r vector-testkit/target
 rm -r vector/target
 rm -r vectortile/target
+rm -r vectortile-spark/target

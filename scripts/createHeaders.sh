@@ -22,4 +22,5 @@
       "project util" createHeaders test:createHeaders \
       "project vector" createHeaders test:createHeaders \
       "project vector-test" createHeaders test:createHeaders \
-      "project vectortile" createHeaders test:createHeaders
+      "project vectortile" createHeaders test:createHeaders \
+      "project vectortile-spark" createHeaders test:createHeaders
