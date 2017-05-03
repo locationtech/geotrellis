@@ -99,7 +99,8 @@ lazy val root = Project("geotrellis", file(".")).
     vector,
     `vector-test`,
     `vector-testkit`,
-    vectortile
+    vectortile,
+    `vectortile-spark`
   ).
   settings(commonSettings: _*).
   enablePlugins(ScalaUnidocPlugin).
@@ -119,6 +120,10 @@ lazy val macros = project
 
 lazy val vectortile = project
   .dependsOn(vector)
+  .settings(commonSettings)
+
+lazy val `vectortile-spark` = project
+  .dependsOn(vectortile, spark)
   .settings(commonSettings)
 
 lazy val vector = project
@@ -154,7 +159,7 @@ lazy val slick = project
   .settings(commonSettings)
 
 lazy val spark = project
-  .dependsOn(util, vectortile, raster, `raster-testkit` % "test")
+  .dependsOn(util, raster, `raster-testkit` % "test")
   .settings(commonSettings)
   .settings(
     // This takes care of a pseudo-cyclic dependency between the `spark` test scope, `spark-testkit`,

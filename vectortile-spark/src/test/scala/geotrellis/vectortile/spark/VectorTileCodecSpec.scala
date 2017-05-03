@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.avro
+package geotrellis.vectortile.spark
 
 import geotrellis.spark.io.avro.codecs.Implicits._
 import geotrellis.raster.TileLayout
