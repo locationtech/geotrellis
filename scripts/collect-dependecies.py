@@ -31,7 +31,7 @@ def source_link(org, name, version):
         return "http://search.maven.org/remotecontent?filepath=%s/%s/%s/%s-%s-sources.jar" % s
     else:
         s = (org.replace('.', '/'), name, version, name, version)
-        return "http://download.osgeo.org/webdav/%s/%s/%s/%s-%s-sbources.jar" % s
+        return "http://download.osgeo.org/webdav/%s/%s/%s/%s-%s-sources.jar" % s
 
 
 published_projects = ['accumulo',
@@ -63,7 +63,9 @@ org_flags = { "org.apache.accumulo": "from:accumulo",
 
 ignore_orgs = [ "org.locationtech",
                 "org.eclipse",
-                "mil.nga.giat" ]
+                "mil.nga.giat",
+                "it.geosolutions" # CQ #10604
+]
 
 def gather_dependencies(projects):
     """
