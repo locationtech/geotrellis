@@ -17,7 +17,7 @@
 package geotrellis.vectortile
 
 import geotrellis.proj4.{LatLng, WebMercator}
-import geotrellis.vector.Extent
+import geotrellis.vector._
 import geotrellis.vector.io._
 import geotrellis.vectortile.internal.{vector_tile => vt}
 
@@ -64,6 +64,11 @@ ${layers.values.map(_.pretty).mkString}
     */
   def toGeoJson: String =
     layers.values.flatMap(_.features).map(_.geom.reproject(WebMercator,LatLng)).toGeoJson
+
+  /** Return a VectorTile to a Spark-friendly structure. */
+  def toIterator: Iterator[Feature[Geometry, Map[String, Value]]] =
+    layers.valuesIterator.flatMap(_.features)
+
 }
 
 object VectorTile {
