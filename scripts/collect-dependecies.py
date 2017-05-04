@@ -198,12 +198,14 @@ def run_write(args):
         output = args.output
 
     current_branch = subprocess.check_output(['git status -sb'], shell=True).decode('utf8').split('\n')[0][3:]
-    subprocess.call('git checkout ' + version, shell=True)
-    try:
-        deps = gather_dependencies(published_projects)
-        write_dependencies(deps, version, output)
-    finally:
-        subprocess.call('git checkout ' + current_branch, shell=True)
+    if subprocess.call('git checkout ' + version, shell=True) == 0:
+        try:
+            deps = gather_dependencies(published_projects)
+            write_dependencies(deps, version, output)
+        finally:
+            subprocess.call('git checkout ' + current_branch, shell=True)
+    else:
+        print("git checkout errored!")
 
 def read_deps_file(path):
     deps = {}
