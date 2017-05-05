@@ -135,12 +135,46 @@ class EuclideanDistanceSpec extends FunSpec
       // val domain = Extent(-1.0, -0.5, 1.0, 1.0)
       val domain = Extent(0, -1.15, 1, -0.05)
       val sample = generatePoints(domain, 2500)
-      
+
+      // val wktString = scala.io.Source.fromFile("euclidean_distance_sample.wkt").getLines.mkString
+      // val sample = geotrellis.vector.io.wkt.WKT.read(wktString).asInstanceOf[MultiPoint].points.map(_.jtsGeom.getCoordinate)
+
       val rasterExtent = RasterExtent(domain, 1024, 1024)
       val layoutdef = LayoutDefinition(rasterExtent, 256, 256)
       val maptrans = layoutdef.mapTransform
 
+      // Chunk up sample into Map[SpatialKey, Array[Coordinate]], leaving only a single point in SpatialKey(1, 3)
       val broken = { val init = sample.groupBy{coord => maptrans(coord.x, coord.y)} ; init + ((SpatialKey(1,3), init(SpatialKey(1,3)).take(1))) }
+
+      // def nbhdAround(key: SpatialKey, tiled: Map[SpatialKey, Array[Coordinate]]): Map[Direction, (SpatialKey, Array[Coordinate])] = {
+      //   def skdist(base: SpatialKey)(other: SpatialKey) = {
+      //     math.max(math.abs(base.col - other.col), math.abs(base.row - other.row))
+      //   }
+
+      //   tiled.filterKeys{ skdist(key)(_) <= 1 }.map{ case (k, coords) => {
+      //     (k.col - key.col, k.row - key.row) match {
+      //       case (0,0)   => (Center, (k, coords))
+      //       case (-1,0)  => (Left, (k, coords))
+      //       case (-1,1)  => (BottomLeft, (k, coords))
+      //       case (0,1)   => (Bottom, (k, coords))
+      //       case (1,1)   => (BottomRight, (k, coords))
+      //       case (1,0)   => (Right, (k, coords))
+      //       case (1,-1)  => (TopRight, (k, coords))
+      //       case (0,-1)  => (Top, (k, coords))
+      //       case (-1,-1) => (TopLeft, (k, coords))
+      //     }
+      //   }}
+      // }
+
+      // {
+      //   val nbhd = nbhdAround(SpatialKey(1,0), broken)
+      //   val dts = nbhd.map{ case (dir, (key, pts)) => (dir, (key, DelaunayTriangulation(pts))) }
+      //   val bdts = dts.map{ case (dir, (key, dt)) => (dir, (BoundaryDelaunay(dt, maptrans(key)), maptrans(key))) }
+      //   val (centerkey, center) = dts(Center)
+      //   val stitched = StitchedDelaunay(center, bdts, false)
+      //   println(s"Center boundary (id=${center.boundary}): [${center.halfEdgeTable.getSrc(center.boundary)} -> ${center.halfEdgeTable.getDest(center.boundary)}]")
+      //   stitched.halfEdgeTable.navigate(center.boundary, stitched.indexToCoord, Map.empty)
+      // }
 
       val newsample = broken.map(_._2.toSeq).reduce(_ ++ _)
       val rasterTile = newsample.euclideanDistanceTile(rasterExtent)
