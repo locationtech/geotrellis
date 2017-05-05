@@ -18,7 +18,7 @@ import scala.collection.mutable.{ListBuffer, Set}
 
 object EuclideanDistance {
 
-  private def voronoiCells(centerStitched: StitchedDelaunay, initialEdge: Int, extent: Extent): Seq[(Polygon, Coordinate)] = {
+  /*private*/ def voronoiCells(centerStitched: StitchedDelaunay, initialEdge: Int, extent: Extent): Seq[(Polygon, Coordinate)] = {
     import centerStitched.halfEdgeTable._
 
     val queue = ListBuffer[(Int, Int)]((initialEdge, getDest(initialEdge)))
@@ -50,27 +50,34 @@ object EuclideanDistance {
   def neighborEuclideanDistance(center: DelaunayTriangulation, neighbors: Map[Direction, (BoundaryDelaunay, Extent)], re: RasterExtent, debug: Boolean = false): Tile = {
     val stitched = StitchedDelaunay(center, neighbors, debug)
 
-    def findBaseEdge(currentEdge: Int): Int = {
+    def findBaseEdge(): Int = {
       import stitched.halfEdgeTable._
 
       var e = 0
-      var distance = 1.0/0.0
+      var bestdist = 1.0/0.0
       var best = -1
       do {
         while (getDest(e) == -1 && e < maxEdgeIndex)
           e += 1
         val dist = re.extent.distance(Point.jtsCoord2Point(stitched.indexToCoord(getDest(e))))
-        if (dist < distance) {
+        if (dist < bestdist) {
           best = e
-          distance = dist
+          bestdist = dist
         }
         e += 1
-      } while (distance > 0 && e < stitched.boundary)
+      } while (bestdist > 0 && e < maxEdgeIndex)
 
       best
     }
 
-    val baseEdge = if (center.boundary != -1) findBaseEdge(center.boundary) else findBaseEdge(stitched.boundary)
+    val baseEdge = 
+      if (center.boundary != -1) {
+        // center had edges
+        stitched.halfEdgeTable.edgeIncidentTo(center.halfEdgeTable.getDest(center.boundary)) 
+      } else {
+        // center either has 1 or no points
+        findBaseEdge()
+      }
 
     val extent = re.extent
     val cells = voronoiCells(stitched, baseEdge, extent)
