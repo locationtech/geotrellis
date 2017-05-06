@@ -1,9 +1,9 @@
 import os, sys, re, argparse, csv
 import subprocess
-from subprocess import Popen, PIPE, STDOUT
+from subprocess import Popen, PIPE, STDOUT, call
 
 class DepSet(object):
-    def __init__(self, deps_map, filter_func=lambda x: true):
+    def __init__(self, deps_map, filter_func=lambda x: True):
         self.deps_map = {}
         for k in deps_map:
             if filter_func(deps_map[k]):
@@ -218,21 +218,28 @@ def read_deps_file(path):
             deps[(org, name, version)] = tags
     return deps
 
-def run_diff(args):
-    # hack a tag filter, for now
-    def f(tags):
-        if "from:geowave" in tags and "from:geotools" not in tags:
-            return False
-        return True
+def read_diff_file(path):
+    deps = {}
+    with open(path, 'r') as csvfile:
+        for row in csv.DictReader(csvfile):
+            org = row['org']
+            name = row['name']
+            old_version = row['old_version']
+            new_version = row['new_version']
+            tags = row['tags'].split(',')
+            sources_link = row['sources_link']
+            deps[(org, name, new_version)] = (sources_link, tags, old_version)
+    return deps
 
-    old = DepSet(read_deps_file(args.old_version), filter_func=f)
-    new = DepSet(read_deps_file(args.new_version), filter_func=f)
+def run_diff(args):
+    old = DepSet(read_deps_file(args.old_version))
+    new = DepSet(read_deps_file(args.new_version))
 
     output = "DIFF-%s-%s.csv" % (args.old_version, args.new_version)
     if args.output:
         output = args.output
 
-    s = '"org","name","old_version","new_version","tags", "sources_link"\n'
+    s = '"org","name","old_version","new_version","tags","sources_link"\n'
 
     print("NEW:")
     for org, name in new.deps_only() - old.deps_only():
@@ -257,6 +264,21 @@ def run_diff(args):
 
     open(output, 'w').write(s)
 
+def run_download(args):
+    output = "cq-sources/"
+    if args.output:
+        output = args.output
+
+    diffs = read_diff_file(args.diff_file)
+    for org, name, version in diffs:
+        (link, _, _) = diffs[(org, name, version)]
+
+        d = os.path.join(output, org)
+        if not os.path.exists(d):
+            os.makedirs(d)
+        p = os.path.join(d, "%s-%s-sources.zip" % (name, version))
+        call("wget -O %s %s" % (p, link), shell=True)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Describe dependencies of this project.')
     parser.set_defaults(func=lambda x: parser.print_help())
@@ -269,14 +291,15 @@ if __name__ == "__main__":
 
     parser_diff = subparsers.add_parser('diff', help='Diff dependencies between two versions.')
     parser_diff.add_argument('--output', '-o', metavar='OUTPUT')
-    parser_diff.add_argument('type', nargs='?', default='latest')
-    parser_diff.add_argument('old_version', metavar='OLD_VERSION', help='Old branch name, tag, or commit to compare to')
-    parser_diff.add_argument('new_version', metavar='NEW_VERSION', help='New branch name, tag, or commit compare')
+    parser_diff.add_argument('old_version', metavar='OLD_DEPENDENCIES', help='Path to CSV of old dependencies, written through the "write" subcommand')
+    parser_diff.add_argument('new_version', metavar='NEW_DEPENDENCIES', help='Path to CSV of new dependencies, written through the "write" subcommand')
     parser_diff.set_defaults(func=run_diff)
+
+    parser_download = subparsers.add_parser('download', help='Download source jars as source zips.')
+    parser_download.add_argument('--output', '-o', metavar='OUTPUT_DIRECTORY')
+    parser_download.add_argument('diff_file', metavar='DIFF_FILE', help='Path to CSV of dependency diff, from "diff" command.')
+    parser_download.set_defaults(func=run_download)
+
 
     args = parser.parse_args()
     args.func(args)
-
-    # gather_all_dependencies()#sys.argv[1], sys.argv[2])
-    # gather_dependency_diff()
-    # write_version_dependencies(OLD_VERSION, NEW_VERSION)
