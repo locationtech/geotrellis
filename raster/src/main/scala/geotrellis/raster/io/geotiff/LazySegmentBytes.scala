@@ -54,6 +54,8 @@ class LazySegmentBytes(
       (tileOffsets.get, tileByteCounts.get)
     }
 
+  def getSegmentByteCount(i: Int): Int = segmentByteCounts(i).toInt
+
   /** These are chunked segments in the order they appear in Image Data */
   protected def chunkSegments(segmentIds: Traversable[Int]): List[List[Segment]]  = {
     {for { id <- segmentIds } yield {
