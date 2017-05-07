@@ -26,16 +26,10 @@ libraryDependencies ++= Seq(
   hadoopClient % "provided"
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
-  "org.geoserver" % "gs-wms" % "2.10.1"
-    excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
-      ExclusionRule(organization = "javax.servlet")),
   "org.geotools" % "gt-coverage" % Version.geotools % "provided"
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
   "org.geotools" % "gt-epsg-hsql" % Version.geotools % "provided"
-    excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
-      ExclusionRule(organization = "javax.servlet")),
-  "org.geotools" % "gt-geotiff" % Version.geotools % "provided"
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
   "org.geotools" % "gt-main" % Version.geotools % "provided"
