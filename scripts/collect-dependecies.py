@@ -2,6 +2,8 @@ import os, sys, re, argparse, csv
 import subprocess
 from subprocess import Popen, PIPE, STDOUT, call
 
+scala_versions = ['2.11', '2.12']
+
 class DepSet(object):
     def __init__(self, deps_map, filter_func=lambda x: True):
         self.deps_map = {}
@@ -31,7 +33,7 @@ def source_link(org, name, version):
         return "http://search.maven.org/remotecontent?filepath=%s/%s/%s/%s-%s-sources.jar" % s
     else:
         s = (org.replace('.', '/'), name, version, name, version)
-        return "http://download.osgeo.org/webdav/%s/%s/%s/%s-%s-sources.jar" % s
+        return "http://download.osgeo.org/webdav/geotools/%s/%s/%s/%s-%s-sources.jar" % s
 
 
 published_projects = ['accumulo',
@@ -66,6 +68,22 @@ ignore_orgs = [ "org.locationtech",
                 "mil.nga.giat",
                 "it.geosolutions" # CQ #10604
 ]
+
+# If the org equals the key, place in the corresponding group
+orgs_to_dl_groups = { "org.geotools" : "geotools",
+                      "org.geotools.ogc" : "geotools",
+                      "org.geotools.xsd" : "geotools",
+                      "org.apache.hbase" : "hbase",
+                      "org.scalaz" : "scalaz",
+                      "com.amazonaws" : "aws-java-sdk"}
+
+# If the name starts with the key, place in the corresponding group
+names_to_dl_groups = { "monocle" : "monocle",
+                       "slick-pg" : "slick-pg",
+                       "fastparse" : "fastparse",
+                       "scalactic" : "scalatest",
+                       "scalatest" : "scalatest" }
+
 
 def gather_dependencies(projects):
     """
@@ -235,7 +253,7 @@ def run_diff(args):
     old = DepSet(read_deps_file(args.old_version))
     new = DepSet(read_deps_file(args.new_version))
 
-    output = "DIFF-%s-%s.csv" % (args.old_version, args.new_version)
+    output = "DIFF-%s-%s.csv" % (args.old_version.replace('.csv',''), args.new_version.replace('.csv',''))
     if args.output:
         output = args.output
 
@@ -270,14 +288,37 @@ def run_download(args):
         output = args.output
 
     diffs = read_diff_file(args.diff_file)
+    errored = []
     for org, name, version in diffs:
+        group = None
+        if org in orgs_to_dl_groups:
+            group = orgs_to_dl_groups[org]
+        for k in names_to_dl_groups:
+            if name.startswith(k):
+                group = names_to_dl_groups[k]
+
         (link, _, _) = diffs[(org, name, version)]
 
-        d = os.path.join(output, org)
+        if group:
+            d = os.path.join(output, group)
+        else:
+            n = name
+            for v in scala_versions:
+                n = n.replace('_%s' % v, '')
+            d = os.path.join(output, n)
         if not os.path.exists(d):
             os.makedirs(d)
-        p = os.path.join(d, "%s-%s-sources.zip" % (name, version))
-        call("wget -O %s %s" % (p, link), shell=True)
+        p = os.path.join(d, "%s-%s-%s-sources.zip" % (org, name, version))
+        cmd = "wget -O %s %s" % (p, link)
+        # print(cmd)
+        if call(cmd, shell=True) > 0:
+            print("ERRORED!")
+            errored.append((org, name, version))
+
+    if errored:
+        print("THESE DEPENDENCIES DID NOT DOWNLOAD:")
+        for org, name, version in errored:
+            print("\t%s : %s : %s" % (org, name, version))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Describe dependencies of this project.')
