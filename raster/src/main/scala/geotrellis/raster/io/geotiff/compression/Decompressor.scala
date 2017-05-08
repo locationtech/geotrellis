@@ -23,6 +23,7 @@ import spire.syntax.cfor._
 
 trait Decompressor extends Serializable {
   def code: Int
+  def predictorCode: Int = Predictor.PREDICTOR_NONE
 
   def byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN
 
@@ -31,9 +32,10 @@ trait Decompressor extends Serializable {
   /** Internally, we use the ByteBuffer's default byte ordering (BigEndian).
     * If the decompressed bytes are LittleEndian, flip 'em.
     */
-  def flipEndian(bytesPerFlip: Int): Decompressor = 
+  def flipEndian(bytesPerFlip: Int): Decompressor =
     new Decompressor {
       def code = Decompressor.this.code
+      override def predictorCode = Decompressor.this.predictorCode
 
       override
       def byteOrder = ByteOrder.LITTLE_ENDIAN // Since we have to flip, image data is in Little Endian
@@ -63,6 +65,8 @@ trait Decompressor extends Serializable {
   def withPredictor(predictor: Predictor): Decompressor =
     new Decompressor {
       def code = Decompressor.this.code
+      override def predictorCode = predictor.code
+      override def byteOrder = Decompressor.this.byteOrder
 
       def decompress(bytes: Array[Byte], segmentIndex: Int): Array[Byte] =
         predictor(Decompressor.this.decompress(bytes, segmentIndex), segmentIndex)
@@ -103,13 +107,13 @@ object Decompressor {
     }
 
     tiffTags.compression match {
-      case Uncompressed => 
+      case Uncompressed =>
         checkEndian(NoCompression)
-      case LZWCoded => 
+      case LZWCoded =>
         checkPredictor(LZWDecompressor(segmentSizes))
-      case ZLibCoded | PkZipCoded => 
+      case ZLibCoded | PkZipCoded =>
         checkPredictor(DeflateCompression.createDecompressor(segmentSizes))
-      case PackBitsCoded => 
+      case PackBitsCoded =>
         checkEndian(PackBitsDecompressor(segmentSizes))
 
       // Unsupported compression types

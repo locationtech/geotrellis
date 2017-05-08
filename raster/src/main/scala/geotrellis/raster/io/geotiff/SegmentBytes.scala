@@ -27,7 +27,11 @@ trait SegmentBytes extends Seq[Array[Byte]] {
 
   def getSegments(indices: Traversable[Int]): Iterator[(Int, Array[Byte])]
 
+  def getSegmentByteCount(i: Int): Int
+
   def apply(idx: Int): Array[Byte] = getSegment(idx)
 
-  def iterator: Iterator[Array[Byte]] = getSegments(0 until length).map(_._2)
+  /** Provides and iterator for segments. Do not assume the segments are in a particular order. */
+  def iterator: Iterator[Array[Byte]] =
+    getSegments(0 until length).map(_._2)
 }
