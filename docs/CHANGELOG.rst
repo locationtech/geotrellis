@@ -71,6 +71,10 @@ Features
 
 - `Added top-level "Sinusoidal" CRS, commonly used with MODIS <https://github.com/locationtech/geotrellis/pull/2145>`__
 
+- `Added conditional to key bounds decomposition to detect full bounds query in Acccumulo.  <https://github.com/locationtech/geotrellis/pull/2164>`__
+
+- `Support for the ability to specify output CRS via proj4 string. <https://github.com/locationtech/geotrellis/pull/2169>`__
+
 Fixes
 ^^^^^
 
@@ -128,6 +132,13 @@ Fixes
 
 - `S3AttributeStore now handles ending slashes in prefix. <https://github.com/locationtech/geotrellis/pull/2147>`__
 
+- `Cell type NoData logic for unsigned byte / short not working properly <https://github.com/locationtech/geotrellis/pull/2171>`__
+
+-`CellSize values should not be truncated to integer when parsing from Json. <https://github.com/locationtech/geotrellis/pull/2174>`__
+
+-`Fixes to GeoTiff writing with original LZW compression. <https://github.com/locationtech/geotrellis/pull/2180>`__
+
+-`In ArrayTile.convert, debug instead of warn against floating point data loss. <https://github.com/locationtech/geotrellis/pull/2190>`__
 
 
 
