@@ -108,7 +108,7 @@ def gather_dependencies(projects):
                 print(line)
 
                 if not 'evicted' in line:
-                    m = re.search(r"""(.*)\+-([^:]+):([^:]+):([\d.]+)""", line)
+                    m = re.search(r"""(.*)\+-([^:]+):([^:]+):([\d\w-.]+)""", line)
                     if m:
                         org = m.group(2)
                         name = m.group(3)
@@ -191,23 +191,6 @@ def write_dependencies(deps, version, output):
         s += '"%s","%s","%s","%s"\n' % r
 
     open(output, 'w').write(s)
-
-# def write_version_dependencies(old_version, new_version):
-#     current_branch = subprocess.check_output(['git status -sb'], shell=True).decode('utf8').split('\n')[0][3:]
-
-#     # Gather old dependencies
-#     subprocess.call('git checkout ' + old_version, shell=True)
-#     old_deps = gather_dependencies(version_projects[old_version])
-#     write_dependencies(old_deps, old_version)
-
-#     # Gather new dependencies
-#     subprocess.call('git checkout ' + new_version, shell=True)
-#     new_deps = gather_dependencies(version_projects[new_version])
-#     write_dependencies(new_deps, new_version)
-
-#     subprocess.call('git checkout ' + current_branch, shell=True)
-
-#     print("Done.")
 
 def run_write(args):
     version = args.version
