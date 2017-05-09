@@ -59,10 +59,11 @@ object GeoTiffWriter {
 
 class GeoTiffWriter(geoTiff: GeoTiffData, dos: DataOutputStream) {
   implicit val toBytes: ToBytes =
-    if(geoTiff.imageData.decompressor.byteOrder == ByteOrder.BIG_ENDIAN)
+    if(geoTiff.imageData.decompressor.byteOrder == ByteOrder.BIG_ENDIAN) {
       BigEndianToBytes
-    else
+    } else {
       LittleEndianToBytes
+    }
 
   val (fieldValues, offsetFieldValueBuilder) = TiffTagFieldValue.collect(geoTiff)
   val segments = geoTiff.imageData.segmentBytes
@@ -102,7 +103,6 @@ class GeoTiffWriter(geoTiff: GeoTiffData, dos: DataOutputStream) {
   def writeDouble(value: Double) { writeBytes(toBytes(value)) }
 
   def write(): Unit = {
-
     // Write the header that determines the endian
     if(geoTiff.imageData.decompressor.byteOrder == ByteOrder.BIG_ENDIAN) {
       val m = 'M'.toByte
@@ -145,8 +145,8 @@ class GeoTiffWriter(geoTiff: GeoTiffData, dos: DataOutputStream) {
     writeShort(sortedTagFieldValues.length)
 
     // Write tag fields, sorted by tag code.
-    val tagDataStartOffset = 
-      index + 
+    val tagDataStartOffset =
+      index +
         4 + // Int for next IFD address
         tagFieldByteCount
 
