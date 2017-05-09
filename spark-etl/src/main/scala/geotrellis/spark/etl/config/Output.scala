@@ -23,8 +23,9 @@ import geotrellis.spark.io.index.{HilbertKeyIndexMethod, KeyIndexMethod, RowMajo
 import geotrellis.spark.pyramid.Pyramid
 import geotrellis.spark.tiling._
 import geotrellis.vector.Extent
-
 import org.apache.spark.HashPartitioner
+
+import scala.util.Try
 
 case class Output(
   backend: Backend,
@@ -48,7 +49,7 @@ case class Output(
   require(maxZoom.isEmpty || layoutScheme == Some("zoomed"),
     "maxZoom can only be used with 'zoomed' layoutScheme")
 
-  def getCrs = crs.map(CRS.fromName)
+  def getCrs = crs.map(c => Try(CRS.fromName(c)) getOrElse CRS.fromString(c))
 
   def getLayoutScheme: LayoutScheme = (layoutScheme, getCrs, resolutionThreshold) match {
     case (Some("floating"), _, _)            => FloatingLayoutScheme(tileSize)
