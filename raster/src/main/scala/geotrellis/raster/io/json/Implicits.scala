@@ -29,11 +29,11 @@ trait Implicits extends HistogramJsonFormats {
 
   implicit object CellTypeFormat extends RootJsonFormat[CellType] {
     def write(cellType: CellType) =
-      JsString(cellType.toString)
+      JsString(cellType.name)
 
     def read(value: JsValue): CellType =
       value match {
-        case JsString(name) => CellType.fromString(name)
+        case JsString(name) => CellType.fromName(name)
         case _ =>
           throw new DeserializationException("CellType must be a string")
       }

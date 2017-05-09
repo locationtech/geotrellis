@@ -321,7 +321,13 @@ sealed trait NoNoData extends NoDataHandling { cellType: CellType => }
   * The [[UserDefinedNoData]] type, derived from [[NoDataHandling]].
   */
 sealed trait UserDefinedNoData[@specialized(Byte, Short, Int, Float, Double) T] extends NoDataHandling { cellType: CellType =>
+  /** The no data value as represented in the JVM in the underlying cell. If unsigned types are involved then
+   * this value may be an overflow representation, and  `widenedNoData` should be used.*/
   val noDataValue: T
+
+  def widenedNoData(implicit ev: Numeric[T]): WidenedNoData =
+    if (cellType.isFloatingPoint) WideDoubleNoData(ev.toDouble(noDataValue))
+    else WideIntNoData(ev.toInt(noDataValue))
 }
 
 /**
@@ -344,7 +350,9 @@ case object UByteCellType
 case object UByteConstantNoDataCellType
     extends UByteCells with ConstantNoData
 case class UByteUserDefinedNoDataCellType(noDataValue: Byte)
-    extends UByteCells with UserDefinedNoData[Byte]
+    extends UByteCells with UserDefinedNoData[Byte] {
+  override def widenedNoData(implicit ev: Numeric[Byte]) = WideIntNoData(noDataValue)
+}
 
 case object ShortCellType
     extends ShortCells with NoNoData
@@ -358,7 +366,9 @@ case object UShortCellType
 case object UShortConstantNoDataCellType
     extends UShortCells with ConstantNoData
 case class UShortUserDefinedNoDataCellType(noDataValue: Short)
-    extends UShortCells with UserDefinedNoData[Short]
+    extends UShortCells with UserDefinedNoData[Short] {
+  override def widenedNoData(implicit ev: Numeric[Short]) = WideIntNoData(noDataValue)
+}
 
 case object IntCellType
     extends IntCells with NoNoData
@@ -381,9 +391,8 @@ case object DoubleConstantNoDataCellType
 case class DoubleUserDefinedNoDataCellType(noDataValue: Double)
     extends DoubleCells with UserDefinedNoData[Double]
 
-
-// No NoData
 object CellType {
+  import CellTypeEncoding._
 
   /**
    * Translate a string representing a cell type into a [[CellType]].
@@ -400,65 +409,37 @@ object CellType {
    * @param name A string representing a cell type, as reported by [[DataType.name]] e.g. "uint32"
    * @return The CellType corresponding to `name`
    */
-  def fromName(name: String): CellType = name match {
-    case "bool" | "boolraw" => BitCellType // No NoData values
-    case "int8raw" => ByteCellType
-    case "uint8raw" => UByteCellType
-    case "int16raw" => ShortCellType
-    case "uint16raw" => UShortCellType
-    case "float32raw" => FloatCellType
-    case "float64raw" => DoubleCellType
-    case "int8" => ByteConstantNoDataCellType // Constant NoData values
-    case "uint8" => UByteConstantNoDataCellType
-    case "int16" => ShortConstantNoDataCellType
-    case "uint16" => UShortConstantNoDataCellType
-    case "int32" => IntConstantNoDataCellType
-    case "int32raw" => IntCellType
-    case "float32" => FloatConstantNoDataCellType
-    case "float64" => DoubleConstantNoDataCellType
-    case ct if ct.startsWith("int8ud") =>
-      val ndVal = new Regex("\\d+$").findFirstIn(ct).getOrElse {
+  def fromName(name: String): CellType = {
+    name match {
+      case bool() | boolraw() => BitCellType // No NoData values
+      case int8raw() => ByteCellType
+      case uint8raw() => UByteCellType
+      case int16raw() => ShortCellType
+      case uint16raw() => UShortCellType
+      case float32raw() => FloatCellType
+      case float64raw() => DoubleCellType
+      case int8() => ByteConstantNoDataCellType // Constant NoData values
+      case uint8() => UByteConstantNoDataCellType
+      case int16() => ShortConstantNoDataCellType
+      case uint16() => UShortConstantNoDataCellType
+      case int32() => IntConstantNoDataCellType
+      case int32raw() => IntCellType
+      case float32() => FloatConstantNoDataCellType
+      case float64() => DoubleConstantNoDataCellType
+      case int8ud(nd) => ByteUserDefinedNoDataCellType(nd.asInt.toByte)
+      case uint8ud(nd) => UByteUserDefinedNoDataCellType(nd.asInt.toByte)
+      case int16ud(nd) => ShortUserDefinedNoDataCellType(nd.asInt.toShort)
+      case uint16ud(nd) => UShortUserDefinedNoDataCellType(nd.asInt.toShort)
+      case int32ud(nd) => IntUserDefinedNoDataCellType(nd.asInt)
+      case float32ud(nd) =>
+        if (nd.asDouble.isNaN) FloatConstantNoDataCellType
+        else FloatUserDefinedNoDataCellType(nd.asDouble.toFloat)
+      case float64ud(nd) =>
+        if (nd.asDouble.isNaN) DoubleConstantNoDataCellType
+        else DoubleUserDefinedNoDataCellType(nd.asDouble)
+      case _ =>
         throw new IllegalArgumentException(s"Cell type $name is not supported")
-      }
-      ByteUserDefinedNoDataCellType(ndVal.toByte)
-    case ct if ct.startsWith("uint8ud") =>
-      val ndVal = new Regex("\\d+$").findFirstIn(ct).getOrElse {
-        throw new IllegalArgumentException(s"Cell type $name is not supported")
-      }
-      UByteUserDefinedNoDataCellType(ndVal.toByte)
-    case ct if ct.startsWith("int16ud") =>
-      val ndVal = new Regex("\\d+$").findFirstIn(ct).getOrElse {
-        throw new IllegalArgumentException(s"Cell type $name is not supported")
-      }
-      ShortUserDefinedNoDataCellType(ndVal.toShort)
-    case ct if ct.startsWith("uint16ud") =>
-      val ndVal = new Regex("\\d+$").findFirstIn(ct).getOrElse {
-        throw new IllegalArgumentException(s"Cell type $name is not supported")
-      }
-      UShortUserDefinedNoDataCellType(ndVal.toShort)
-    case ct if ct.startsWith("int32ud") =>
-      val ndVal = new Regex("\\d+$").findFirstIn(ct).getOrElse {
-        throw new IllegalArgumentException(s"Cell type $name is not supported")
-      }
-      IntUserDefinedNoDataCellType(ndVal.toInt)
-    case ct if ct.startsWith("float32ud") =>
-      try {
-        val ndVal = ct.stripPrefix("float32ud").toDouble.toFloat
-        if (ndVal.isNaN) FloatConstantNoDataCellType
-        else FloatUserDefinedNoDataCellType(ndVal)
-      } catch {
-        case _: NumberFormatException => throw new IllegalArgumentException(s"Cell type $name is not supported")
-      }
-    case ct if ct.startsWith("float64ud") =>
-      try {
-        val ndVal = ct.stripPrefix("float64ud").toDouble
-        if (ndVal.isNaN) DoubleConstantNoDataCellType
-        else DoubleUserDefinedNoDataCellType(ndVal)
-      } catch {
-        case _: NumberFormatException => throw new IllegalArgumentException(s"Cell type $name is not supported")
-      }
-    case str =>
-      throw new IllegalArgumentException(s"Cell type $name is not supported")
+    }
   }
 
   /**
@@ -468,32 +449,33 @@ object CellType {
    * @return String representation
    */
   def toName(cellType: CellType): String = {
-    def forUserDefined[T <: AnyVal](base: CellType, value: T) = base.name + "ud" + value.toString
 
-    cellType match {
-      case BitCellType => "bool"
-      case ByteCellType => "int8raw"
-      case UByteCellType => "uint8raw"
-      case ShortCellType => "int16raw"
-      case UShortCellType => "uint16raw"
-      case IntCellType => "int32raw"
-      case FloatCellType => "float32raw"
-      case DoubleCellType => "float64raw"
-      case ByteConstantNoDataCellType => "int8"
-      case UByteConstantNoDataCellType => "uint8"
-      case ShortConstantNoDataCellType => "int16"
-      case UShortConstantNoDataCellType => "uint16"
-      case IntConstantNoDataCellType => "int32"
-      case FloatConstantNoDataCellType => "float32"
-      case DoubleConstantNoDataCellType => "float64"
-      case ByteUserDefinedNoDataCellType(nd) => forUserDefined(ByteConstantNoDataCellType, nd)
-      case UByteUserDefinedNoDataCellType(nd) => forUserDefined(UByteConstantNoDataCellType, nd)
-      case ShortUserDefinedNoDataCellType(nd) => forUserDefined(ShortConstantNoDataCellType, nd)
-      case UShortUserDefinedNoDataCellType(nd) => forUserDefined(UShortConstantNoDataCellType, nd)
-      case IntUserDefinedNoDataCellType(nd) => forUserDefined(IntConstantNoDataCellType, nd)
-      case FloatUserDefinedNoDataCellType(nd) => forUserDefined(FloatConstantNoDataCellType, nd)
-      case DoubleUserDefinedNoDataCellType(nd) => forUserDefined(DoubleConstantNoDataCellType, nd)
+    val encoding = cellType match {
+      case BitCellType => bool
+      case ByteCellType => int8raw
+      case UByteCellType => uint8raw
+      case ShortCellType => int16raw
+      case UShortCellType => uint16raw
+      case IntCellType => int32raw
+      case FloatCellType => float32raw
+      case DoubleCellType => float64raw
+      case ByteConstantNoDataCellType => int8
+      case UByteConstantNoDataCellType => uint8
+      case ShortConstantNoDataCellType => int16
+      case UShortConstantNoDataCellType => uint16
+      case IntConstantNoDataCellType => int32
+      case FloatConstantNoDataCellType => float32
+      case DoubleConstantNoDataCellType => float64
+      case ct: ByteUserDefinedNoDataCellType => int8ud(ct.widenedNoData.asInt)
+      case ct: UByteUserDefinedNoDataCellType => uint8ud(ct.widenedNoData.asInt)
+      case ct: ShortUserDefinedNoDataCellType => int16ud(ct.widenedNoData.asInt)
+      case ct: UShortUserDefinedNoDataCellType => uint16ud(ct.widenedNoData.asInt)
+      case ct: IntUserDefinedNoDataCellType => int32ud(ct.widenedNoData.asInt)
+      case ct: FloatUserDefinedNoDataCellType => float32ud(ct.widenedNoData.asDouble)
+      case ct: DoubleUserDefinedNoDataCellType => float64ud(ct.widenedNoData.asDouble)
     }
+
+    encoding.name
   }
 
   /**

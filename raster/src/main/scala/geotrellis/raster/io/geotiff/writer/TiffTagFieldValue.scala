@@ -26,7 +26,6 @@ import spire.syntax.cfor._
 
 import scala.collection.mutable
 import java.nio.ByteOrder
-import java.util.IllegalFormatException
 
 case class TiffTagFieldValue(
   tag: Int,
@@ -57,20 +56,21 @@ object TiffTagFieldValue {
 
   def createNoDataString(cellType: CellType): Option[String] =
     cellType match {
-      case BitCellType | ByteCellType | UByteCellType | ShortCellType | UShortCellType | IntCellType | FloatCellType | DoubleCellType => None
+      case BitCellType | ByteCellType | UByteCellType | ShortCellType | UShortCellType | IntCellType |
+           FloatCellType | DoubleCellType => None
       case ByteConstantNoDataCellType => Some(byteNODATA.toString)
-      case ByteUserDefinedNoDataCellType(nd) => Some(nd.toString)
       case UByteConstantNoDataCellType => Some(ubyteNODATA.toString)
-      case UByteUserDefinedNoDataCellType(nd) => Some(nd.toString)
       case ShortConstantNoDataCellType => Some(shortNODATA.toString)
-      case ShortUserDefinedNoDataCellType(nd) => Some(nd.toString)
       case UShortConstantNoDataCellType => Some(ushortNODATA.toString)
-      case UShortUserDefinedNoDataCellType(nd) => Some(nd.toString)
       case IntConstantNoDataCellType => Some(NODATA.toString)
-      case IntUserDefinedNoDataCellType(nd) => Some(nd.toString)
       case FloatConstantNoDataCellType | DoubleConstantNoDataCellType => Some("nan")
-      case FloatUserDefinedNoDataCellType(nd) => Some(nd.toDouble.toString) // Convert to a double, since there can be some weirdness with float toString.
-      case DoubleUserDefinedNoDataCellType(nd) => Some(nd.toString)
+      case ct: ByteUserDefinedNoDataCellType => Some(ct.widenedNoData.toString)
+      case ct: UByteUserDefinedNoDataCellType => Some(ct.widenedNoData.toString)
+      case ct: ShortUserDefinedNoDataCellType => Some(ct.widenedNoData.toString)
+      case ct: UShortUserDefinedNoDataCellType => Some(ct.widenedNoData.toString)
+      case ct: IntUserDefinedNoDataCellType => Some(ct.widenedNoData.toString)
+      case ct: FloatUserDefinedNoDataCellType => Some(ct.widenedNoData.toString)
+      case ct: DoubleUserDefinedNoDataCellType => Some(ct.widenedNoData.toString)
     }
 
   def collect(geoTiff: GeoTiffData): (Array[TiffTagFieldValue], Array[Int] => TiffTagFieldValue) = {
