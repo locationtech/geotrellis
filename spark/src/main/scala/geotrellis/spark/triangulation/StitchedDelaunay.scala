@@ -74,7 +74,7 @@ object StitchedDelaunay {
     val vertCount = neighbors.map{ case (_, (bdt, _)) => bdt.pointSet.length }.reduce(_ + _)
     val allEdges = new HalfEdgeTable(2 * (3 * vertCount - 6))
     val pointMap = indexToVertex(neighbors)
-    val allPoints = DelaunayPointSet(pointMap, vertCount)
+    val allPoints = IndexedPointSet(pointMap, vertCount)
     val boundaries = neighbors.map{ case (dir, (bdt, _)) => {
       val offset = directionToVertexOffset(dir)
       val reindex = {x: Int => x + offset}
@@ -109,7 +109,7 @@ object StitchedDelaunay {
     val vertCount = neighbors.map{ case (_, (bdt, _)) => bdt.pointSet.length }.reduce(_ + _)
     val allEdges = new HalfEdgeTable(2 * (3 * vertCount - 6))
     val pointMap = indexToVertex(neighbors)
-    val allPoints = DelaunayPointSet(pointMap, vertCount)
+    val allPoints = IndexedPointSet(pointMap, vertCount)
 
     val boundaries = neighbors.map{ case (dir, (bdt, _)) => {
       val offset = directionToVertexOffset(dir)
@@ -144,7 +144,7 @@ object StitchedDelaunay {
 case class StitchedDelaunay(
   indexToCoord: Int => Coordinate,
   private val edges: HalfEdgeTable,
-  private val pointSet: DelaunayPointSet,
+  private val pointSet: IndexedPointSet,
   private val fillTriangles: TriangleMap
 ) {
   def triangles(): Seq[(Int, Int, Int)] = fillTriangles.getTriangles.keys.toSeq

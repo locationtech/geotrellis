@@ -69,7 +69,7 @@ object BoundaryDelaunay {
           einit
         })),
         'c' -> (("print the center of the current triangle's circumscribing circle", { e =>
-          val predicates = new TriangulationPredicates(DelaunayPointSet(verts.toMap), halfEdgeTable)
+          val predicates = new TriangulationPredicates(IndexedPointSet(verts.toMap), halfEdgeTable)
           import predicates._
           import halfEdgeTable._
           val (_, center, valid) = circleCenter(getDest(e), getDest(getNext(e)), getDest(getNext(getNext(e))))
@@ -382,12 +382,12 @@ object BoundaryDelaunay {
       else
         copyConvertBoundingTris
 
-    BoundaryDelaunay(DelaunayPointSet(verts.toMap), halfEdgeTable, triangles, boundary, /*innerEdges.head._2._2,*/ isLinear)  }
+    BoundaryDelaunay(IndexedPointSet(verts.toMap), halfEdgeTable, triangles, boundary, /*innerEdges.head._2._2,*/ isLinear)  }
 
 }
 
 case class BoundaryDelaunay(
-  pointSet: DelaunayPointSet,
+  pointSet: IndexedPointSet,
   halfEdgeTable: HalfEdgeTable,
   triangleMap: TriangleMap,
   boundary: Int,

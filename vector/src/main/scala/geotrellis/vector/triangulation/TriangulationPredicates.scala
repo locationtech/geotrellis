@@ -13,7 +13,7 @@ object TriangulationPredicates {
   final val ON = 0
 }
 
-final class TriangulationPredicates(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdgeTable) {
+final class TriangulationPredicates(pointSet: IndexedPointSet, halfEdgeTable: HalfEdgeTable) {
   import pointSet._
   import halfEdgeTable._
   import TriangulationPredicates._

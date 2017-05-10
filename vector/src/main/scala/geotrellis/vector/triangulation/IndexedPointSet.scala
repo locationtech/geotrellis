@@ -5,11 +5,24 @@ import com.vividsolutions.jts.geom.Coordinate
 import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
 import geotrellis.vector.Point
 
-trait DelaunayPointSet {
+/**
+ * Provides an interface to a collection of Coordinates that have integer
+ * indices.  The wrapped collection may be sparsely indexed.
+ */
+trait IndexedPointSet {
+  /**
+   * Returns the number of points in the collection.
+   */
   def length: Int
+
+
   def getX(i: Int): Double
   def getY(i: Int): Double
   def getZ(i: Int): Double
+
+  /**
+   * Returns the coordinate at index `i`.
+   */
   def getCoordinate(i: Int): Coordinate = new Coordinate(getX(i), getY(i), getZ(i))
   def getPoint(i: Int): Point = Point.jtsCoord2Point(getCoordinate(i))
   def apply(i: Int): Coordinate = getCoordinate(i)
@@ -21,10 +34,16 @@ trait DelaunayPointSet {
   }
 }
 
-object DelaunayPointSet {
+/**
+ * A more specific version of IndexedPointSet guaranteeing that every index from
+ * 0 to length-1 has an associated Coordinate.
+ */
+trait CompleteIndexedPointSet extends IndexedPointSet
 
-  def apply(points: Array[Coordinate]): DelaunayPointSet =
-    new DelaunayPointSet {
+object IndexedPointSet {
+
+  def apply(points: Array[Coordinate]): CompleteIndexedPointSet =
+    new CompleteIndexedPointSet {
       def length = points.length
       def getX(i: Int) = points(i).x
       def getY(i: Int) = points(i).y
@@ -32,11 +51,11 @@ object DelaunayPointSet {
       override def getCoordinate(i: Int) = points(i)
     }
 
-  def apply(points: Map[Int, Coordinate]): DelaunayPointSet =
+  def apply(points: Map[Int, Coordinate]): IndexedPointSet =
     apply(points, points.size)
 
-  def apply(points: Int => Coordinate, len: Int): DelaunayPointSet =
-    new DelaunayPointSet {
+  def apply(points: Int => Coordinate, len: Int): IndexedPointSet =
+    new IndexedPointSet {
       def length = len
       def getX(i: Int) = points(i).x
       def getY(i: Int) = points(i).y
@@ -44,6 +63,6 @@ object DelaunayPointSet {
       override def getCoordinate(i: Int) = points(i)
     }
 
-  implicit def coordinateArrayToDelaunayPointSet(points: Array[Coordinate]): DelaunayPointSet =
+  implicit def coordinateArrayToIndexedPointSet(points: Array[Coordinate]): CompleteIndexedPointSet =
     apply(points)
 }

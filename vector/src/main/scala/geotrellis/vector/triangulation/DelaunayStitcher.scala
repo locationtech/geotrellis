@@ -5,7 +5,7 @@ import geotrellis.vector.{Line, MultiLine, Point}
 
 import TriangulationPredicates.{LEFTOF, RIGHTOF, ON}
 
-final class DelaunayStitcher(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdgeTable) {
+final class DelaunayStitcher(pointSet: IndexedPointSet, halfEdgeTable: HalfEdgeTable) {
   val predicates = new TriangulationPredicates(pointSet, halfEdgeTable)
   import predicates._
   import pointSet._
