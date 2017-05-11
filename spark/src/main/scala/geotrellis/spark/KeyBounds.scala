@@ -21,46 +21,82 @@ import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
 
+/** Represents a region of discrete space, bounding it by minimum and maximum points.
+ * The bounds maybe [[EmptyBounds]] as result of intersection operation.
+ *
+ * The dimensionality of region is implied by the dimensionality of type parameter A.
+ * [[Boundable]] typeclass is required to manipulate instance of A.
+ *
+ * Conceptually this ADT is similar `Option[KeyBounds[A]]` but adds methods convenient
+ * for testing and forming region intersection, union and mutation.
+ *
+ * @tparam A Type of keys, or points in descrete space
+ */
 sealed trait Bounds[+A] extends Product with Serializable {
+  /** Returns true if this is [[EmptyBounds]] */
   def isEmpty: Boolean
 
+  /** Returns false if this is [[EmptyBounds]] */
   def nonEmpty: Boolean = ! isEmpty
 
+  /** Expand bounds to include the key or keep unchanged if it is already included */
   def include[B >: A](key: B)(implicit b: Boundable[B]): KeyBounds[B]
 
+  /** Test if the key is included in bounds */
   def includes[B >: A](key: B)(implicit b: Boundable[B]): Boolean
 
+  /** Combine two regions by creating a region that covers both regions fully */
   def combine[B >: A](other: Bounds[B])(implicit b: Boundable[B]): Bounds[B]
 
+  /** Test if other bounds are fully contained by this bounds.
+   * [[EmptyBounds]] contain no other bounds but are contained by all non-empty bounds.
+   */
   def contains[B >: A](other: Bounds[B])(implicit b: Boundable[B]): Boolean
 
+  /** Returns the intersection, if any, between two bounds */
   def intersect[B >: A](other: Bounds[B])(implicit b: Boundable[B]): Bounds[B]
 
+  /** Test if two bounds for intersection */
   def intersects[B >: A](other: KeyBounds[B])(implicit b: Boundable[B]): Boolean =
     intersect(other).nonEmpty
 
+  /** Returns non-empty bounds or throws [[NoSuchElementException]] */
   def get: KeyBounds[A]
 
+  /** Returns non-empty bounds or the default value */
   def getOrElse[B >: A](default: => KeyBounds[B]): KeyBounds[B] =
     if (isEmpty) default else this.get
 
-  @inline
-  final def map[B](f: KeyBounds[A] => KeyBounds[B]): Bounds[B] =
-    if (isEmpty)
-      EmptyBounds
-    else {
-      f(get)
-    }
+  /** Returns the result of applying f to this [[Bounds]] minKey and maxKey if this it is nonempty.
+   * The minKey and maxKey are given as instance of [[KeyBounds]] instead of a tuple.
+   * If this [[Bounds]] is [[EmptyBounds]] it is returned unchanged.
+   */
+ @inline
+ final def map[B](f: KeyBounds[A] => KeyBounds[B]): Bounds[B] =
+   if (isEmpty)
+     EmptyBounds
+   else {
+     f(get)
+   }
 
-  @inline
-  final def flatMap[B](f: KeyBounds[A] => Bounds[B]): Bounds[B] =
-    if (isEmpty)
-      EmptyBounds
-    else {
-      f(get)
-    }
+  /** Returns the result of applying f to this [[Bounds]] minKey and maxKey if this it is nonempty.
+   * The minKey and maxKeys are given as instance of [[KeyBounds]] instead of a tuple.
+   * If this [[Bounds]] is [[EmptyBounds]] it is returned unchanged.
+   */
+ @inline
+ final def flatMap[B](f: KeyBounds[A] => Bounds[B]): Bounds[B] =
+   if (isEmpty)
+     EmptyBounds
+   else {
+     f(get)
+   }
 
+  /** Updates the spatial region of bounds to match that of the argument,
+   *  leaving other dimensions, if any, unchanged.
+   */
   def setSpatialBounds[B >: A](other: KeyBounds[SpatialKey])(implicit ev: SpatialComponent[B]): Bounds[B]
+
+  def toOption: Option[KeyBounds[A]]
 }
 
 object Bounds {
@@ -78,6 +114,9 @@ object Bounds {
     }
 }
 
+/** Represents empty region of space.
+ * Empty region contains no possible key.
+ */
 case object EmptyBounds extends Bounds[Nothing] {
   def isEmpty = true
 
@@ -100,8 +139,17 @@ case object EmptyBounds extends Bounds[Nothing] {
 
   def setSpatialBounds[B](other: KeyBounds[SpatialKey])(implicit ev: SpatialComponent[B]): Bounds[B] =
     this
+
+  def toOption = None
 }
 
+/** Represents non-empty region of descrete space.
+ * Any key which is greater than or equal to minKey and less then or equal to maxKey
+ * in each individual dimension is part of the region described by these [[Bounds]].
+ *
+ * @param minKey Minimum key of the region, inclusive.
+ * @param maxKey Maximum key of the region, inclusive.
+ */
 case class KeyBounds[+K](
   minKey: K,
   maxKey: K
@@ -155,6 +203,8 @@ case class KeyBounds[+K](
 
   def setSpatialBounds[B >: K](gb: GridBounds)(implicit ev: SpatialComponent[B]): KeyBounds[B] =
     setSpatialBounds[B](KeyBounds(SpatialKey(gb.colMin, gb.rowMin), SpatialKey(gb.colMax, gb.rowMax)))
+
+  def toOption: Option[KeyBounds[K]] = Some(this)
 }
 
 object KeyBounds {

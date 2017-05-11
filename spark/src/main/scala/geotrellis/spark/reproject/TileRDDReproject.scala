@@ -25,19 +25,20 @@ import geotrellis.raster.reproject._
 import geotrellis.raster.resample._
 import geotrellis.raster.stitch._
 import geotrellis.spark._
-import geotrellis.spark.mapalgebra._
-import geotrellis.spark.ingest._
 import geotrellis.spark.tiling._
 import geotrellis.spark.buffer._
 import geotrellis.vector._
+import geotrellis.util.LazyLogging
 
 import org.apache.spark.rdd._
-import org.apache.spark.storage.StorageLevel
+import org.apache.spark._
 
 import scala.reflect.ClassTag
 
 object TileRDDReproject {
   import Reproject.Options
+
+  @transient private lazy val logger = LazyLogging(this)
 
   /** Reproject a set of buffered
     * @tparam           K           Key type; requires spatial component.
@@ -136,9 +137,22 @@ object TileRDDReproject {
           (0, m, options.rasterReprojectOptions.method)
       }
 
-    val tiled =
-      reprojectedTiles
-        .tileToLayout(newMetadata, Tiler.Options(resampleMethod = tilerResampleMethod, partitioner = bufferedTiles.partitioner))
+    // Layout change may imply upsampling, creating more tiles. If so compensate by creating more partitions
+    val part: Option[Partitioner] =
+      for {
+        sourceBounds <- metadata.bounds.toOption
+        targetBounds <- newMetadata.bounds.toOption
+        sizeRatio = targetBounds.toGridBounds.size.toDouble / sourceBounds.toGridBounds.size.toDouble
+        if sizeRatio > 1.5
+      } yield {
+        val newPartitionCount = (bufferedTiles.partitions.length * sizeRatio).toInt
+        logger.info(s"Layout change grows potential number of tiles by $sizeRatio times, resizing to $newPartitionCount partitions.")
+        new HashPartitioner(partitions = newPartitionCount )
+      }
+
+    val tiled = reprojectedTiles.tileToLayout(newMetadata,
+      Tiler.Options(resampleMethod = tilerResampleMethod,
+        partitioner = if (part.isDefined) part else bufferedTiles.partitioner ))
 
     (zoom, ContextRDD(tiled, newMetadata))
   }

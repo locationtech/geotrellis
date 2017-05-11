@@ -144,35 +144,65 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
     val targetCellType = output.cellType
     val destCrs = output.getCrs.get
 
-    def adjustCellType(md: TileLayerMetadata[K]) =
-      md.copy(cellType = targetCellType.getOrElse(md.cellType))
+    /** Tile layers form some resolution and adjust partition count based on resolution difference */
+    def resizingTileRDD(
+      rdd: RDD[(I, V)],
+      floatMD: TileLayerMetadata[K],
+      targetLayout: LayoutDefinition
+    ): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] = {
+      // rekey metadata to targetLayout
+      val newSpatialBounds = KeyBounds(targetLayout.mapTransform(floatMD.extent))
+      val tiledMD = floatMD.copy(
+        bounds = floatMD.bounds.setSpatialBounds(newSpatialBounds))
+
+      // > 1 means we're upsampling during tiling process
+      val resolutionRatio = (floatMD.layout.cellSize.resolution / targetLayout.cellSize.resolution)
+      val tilerOptions = Tiler.Options(
+        resampleMethod = method,
+        partitioner = new HashPartitioner(
+          partitions = (math.pow(2, (resolutionRatio - 1) * 2) * rdd.partitions.length).toInt))
+
+      val tiledRDD = rdd.tileToLayout[K](tiledMD, tilerOptions)
+      ContextRDD(tiledRDD, tiledMD)
+    }
 
     output.reprojectMethod match {
       case PerTileReproject =>
         val reprojected = rdd.reproject(destCrs)
-        val (zoom: Int, md: TileLayerMetadata[K]) = scheme match {
-          case Left(layoutScheme) => output.maxZoom match {
-            case Some(zoom) =>  reprojected.collectMetadata(destCrs, output.tileSize, zoom)
-            case _ => reprojected.collectMetadata(layoutScheme)
-          }
-          case Right(layoutDefinition) => reprojected.collectMetadata(layoutDefinition)
+        val floatMD = { // collecting floating metadata allows detecting upsampling
+          val (_, md) = reprojected.collectMetadata(FloatingLayoutScheme(output.tileSize))
+          md.copy(cellType = targetCellType.getOrElse(md.cellType))
         }
-        val amd = adjustCellType(md)
-        val tilerOptions = Tiler.Options(resampleMethod = method, partitioner = new HashPartitioner(rdd.partitions.length))
-        zoom -> ContextRDD(reprojected.tileToLayout[K](amd, tilerOptions), amd)
+
+        scheme match {
+          case Left(scheme: ZoomedLayoutScheme) if output.maxZoom.isDefined=>
+            val LayoutLevel(zoom, layoutDefinition) = scheme.levelForZoom(output.maxZoom.get)
+            zoom -> resizingTileRDD(reprojected, floatMD, layoutDefinition)
+
+          case Left(scheme) => // True for both FloatinglayoutScheme and ZoomedlayoutScheme
+            val LayoutLevel(zoom, layoutDefinition) = scheme.levelFor(floatMD.extent, floatMD.cellSize)
+            zoom -> resizingTileRDD(reprojected, floatMD, layoutDefinition)
+
+          case Right(layoutDefinition) =>
+            0 -> resizingTileRDD(reprojected, floatMD, layoutDefinition)
+        }
 
       case BufferedReproject =>
-        val (_, md) = output.maxZoom match {
-          case Some(zoom) => rdd.collectMetadata(destCrs, output.tileSize, zoom)
-          case _ => rdd.collectMetadata(FloatingLayoutScheme(output.tileSize))
+        // Buffered reproject requires that tiles are already in some layout so we can find the neighbors
+        val md = { // collecting floating metadata allows detecting upsampling
+          val (_, md) = rdd.collectMetadata(FloatingLayoutScheme(output.tileSize))
+          md.copy(cellType = targetCellType.getOrElse(md.cellType))
         }
-        val amd = adjustCellType(md)
-        // Keep the same number of partitions after tiling.
-        val tilerOptions = Tiler.Options(resampleMethod = method, partitioner = new HashPartitioner(rdd.partitions.length))
-        val tiled = ContextRDD(rdd.tileToLayout[K](amd, tilerOptions), amd)
+        val tiled = ContextRDD(rdd.tileToLayout[K](md, method), md)
+
         scheme match {
+          case Left(layoutScheme: ZoomedLayoutScheme) if output.maxZoom.isDefined =>
+            val LayoutLevel(zoom, layoutDefinition) = layoutScheme.levelForZoom(output.maxZoom.get)
+            zoom -> tiled.reproject(destCrs, layoutDefinition, method)._2
+
           case Left(layoutScheme) =>
             tiled.reproject(destCrs, layoutScheme, method)
+
           case Right(layoutDefinition) =>
             tiled.reproject(destCrs, layoutDefinition, method)
         }

@@ -43,7 +43,7 @@ trait ArrayTile extends Tile with Serializable {
     val tile = ArrayTile.alloc(targetCellType, cols, rows)
 
     if(targetCellType.isFloatingPoint != cellType.isFloatingPoint)
-      logger.warn(s"Conversion from $cellType to $targetCellType may lead to data loss.")
+      logger.debug(s"Conversion from $cellType to $targetCellType may lead to data loss.")
 
     if(!cellType.isFloatingPoint) {
       cfor(0)(_ < rows, _ + 1) { row =>
