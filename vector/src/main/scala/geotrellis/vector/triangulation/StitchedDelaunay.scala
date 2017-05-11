@@ -3,14 +3,13 @@ package geotrellis.vector.triangulation
 import com.vividsolutions.jts.geom.Coordinate
 import geotrellis.util.Direction
 import geotrellis.util.Direction._
-import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
 import geotrellis.vector._
 import geotrellis.vector.io.wkt.WKT
 
 object StitchedDelaunay {
 
   def combinedPointSet(
-    center: DelaunayTriangulation, 
+    center: DelaunayTriangulation,
     neighbors: Map[Direction, (BoundaryDelaunay, Extent)]
   ): (Int, IndexedPointSet, Map[Direction, Map[Int, Int]]) = {
     val regions: Seq[Direction] = Center +: Seq(Left, BottomLeft, Bottom, BottomRight, Right, TopRight, Top, TopLeft).filter(neighbors.keys.toSet.contains(_))
@@ -26,14 +25,17 @@ object StitchedDelaunay {
       else
         neighbors(dir)._1.liveVertices
 
-      liveVs.toSeq.zip(startIndices(dir) to startIndices(dir) + countMap(dir)).toMap
+      liveVs.zip(startIndices(dir) to startIndices(dir) + countMap(dir)).toMap
     }
     val vtrans = regions.map { dir => (dir, vertIndices(dir)) }.toMap
 
     regions.foreach{ dir => 
       val mapping = vtrans(dir)
       val pointSet = if (dir == Center) center.pointSet else neighbors(dir)._1.pointSet
-      mapping.foreach { case (orig, newix) => assert(points(newix) == null) ; points(newix) = pointSet(orig) }
+      mapping.foreach { case (orig, newix) =>
+        assert(points(newix) == null)
+        points(newix) = pointSet(orig)
+      }
     }
 
     (vertCount, IndexedPointSet(points), vtrans)
@@ -210,7 +212,7 @@ object StitchedDelaunay {
             val edgeoffset = allEdges.appendTable(center.halfEdgeTable, reindex)
             val handle: Either[(Int, Boolean), Int] = 
               if (center.liveVertices.size == 1) 
-                scala.Right(reindex(center.liveVertices.toSeq(0)))
+                scala.Right(reindex(center.liveVertices.head))
               else {
                 scala.Left((center.boundary + edgeoffset, center.isLinear))
               }
@@ -219,7 +221,7 @@ object StitchedDelaunay {
             val edgeoffset = allEdges.appendTable(bdt.halfEdgeTable, reindex)
             val handle: Either[(Int, Boolean), Int] = 
               if (bdt.liveVertices.size == 1) 
-                scala.Right(reindex(bdt.liveVertices.toSeq(0)))
+                scala.Right(reindex(bdt.liveVertices.head))
               else {
                 scala.Left((bdt.boundary + edgeoffset, bdt.isLinear))
               }
