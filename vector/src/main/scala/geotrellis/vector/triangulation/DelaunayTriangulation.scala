@@ -114,6 +114,14 @@ case class DelaunayTriangulation(pointSet: CompleteIndexedPointSet, halfEdgeTabl
 
       case 2 =>
         val e = createHalfEdges(sortedVs(lo), sortedVs(hi))
+        setIncidentEdge(getDest(e), e)
+        setIncidentEdge(getSrc(e), getFlip(e))
+
+        if (debug) {
+          println(s"setIncidentEdge(${getDest(e)}, [${getSrc(e)} -> ${getDest(e)}])")
+          println(s"setIncidentEdge(${getSrc(e)}, [${getSrc(getFlip(e))} -> ${getDest(getFlip(e))}])")
+        }
+
         (e, true)
 
       case 3 =>
@@ -138,6 +146,17 @@ case class DelaunayTriangulation(pointSet: CompleteIndexedPointSet, halfEdgeTabl
 
           setNext(e1, e2)
           setNext(e2Flip, getFlip(e1))
+
+          setIncidentEdge(v1, getFlip(e1))
+          setIncidentEdge(v2, e1)
+          setIncidentEdge(v3, e2)
+
+          if (debug) {
+            println(s"setIncidentEdge($v1, [${getSrc(getFlip(e1))} -> ${getDest(getFlip(e1))}]")
+            println(s"setIncidentEdge($v2, [${getSrc(e1)} -> ${getDest(e1)}])")
+            println(s"setIncidentEdge($v3, [${getSrc(e2)} -> ${getDest(e2)}])")
+          }
+
           (e2Flip, true)
         }
 
