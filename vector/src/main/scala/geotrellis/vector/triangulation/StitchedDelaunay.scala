@@ -1,14 +1,10 @@
-package geotrellis.spark.triangulation
-
-import geotrellis.raster._
-import geotrellis.raster.triangulation.DelaunayRasterizer
-import geotrellis.spark.buffer.Direction
-import geotrellis.spark.buffer.Direction._
-import geotrellis.vector._
-import geotrellis.vector.io.wkt.WKT
-import geotrellis.vector.triangulation._
+package geotrellis.vector.triangulation
 
 import com.vividsolutions.jts.geom.Coordinate
+import geotrellis.util.Direction
+import geotrellis.util.Direction._
+import geotrellis.vector._
+import geotrellis.vector.io.wkt.WKT
 
 object StitchedDelaunay {
 
@@ -153,19 +149,5 @@ case class StitchedDelaunay(
     val mp = MultiPolygon(triangles.map{ case (i,j,k) => Polygon(indexToCoord(i), indexToCoord(j), indexToCoord(k), indexToCoord(i)) })
     val wktString = WKT.write(mp)
     new java.io.PrintWriter(wktFile) { write(wktString); close }
-  }
-
-
-  def rasterize(re: RasterExtent, cellType: CellType = DoubleConstantNoDataCellType)(center: DelaunayTriangulation) = {
-    val tile = ArrayTile.empty(cellType, re.cols, re.rows)
-    DelaunayRasterizer.rasterizeDelaunayTriangulation(center, re, tile)
-    DelaunayRasterizer.rasterize(
-      tile,
-      re,
-      fillTriangles,
-      edges,
-      pointSet
-    )
-    tile
   }
 }

@@ -1,10 +1,8 @@
-package geotrellis.spark.triangulation
-
-import geotrellis.vector.{Extent, Line, MultiPolygon, Point, Polygon, RobustPredicates}
-import geotrellis.vector.triangulation._
+package geotrellis.vector.triangulation
 
 import com.vividsolutions.jts.algorithm.distance.{DistanceToPoint, PointPairDistance}
 import com.vividsolutions.jts.geom.Coordinate
+import geotrellis.vector.{Extent, MultiPolygon, Point, Polygon}
 
 object BoundaryDelaunay {
   type HalfEdge = Int
@@ -46,48 +44,6 @@ object BoundaryDelaunay {
     }
 
     val triangles = new TriangleMap(halfEdgeTable)
-
-    def writeWKT(wktFile: String) = {
-      val indexToCoord = { i: Int => Point.jtsCoord2Point(dt.pointSet.getCoordinate(i)) }
-      val mp = geotrellis.vector.MultiPolygon(triangles.getTriangles.keys.map{ case (i,j,k) => Polygon(indexToCoord(i), indexToCoord(j), indexToCoord(k), indexToCoord(i)) })
-      val wktString = geotrellis.vector.io.wkt.WKT.write(mp)
-      new java.io.PrintWriter(wktFile) { write(wktString); close }
-    }
-
-    def navigateThis(e0: Int) = {
-      halfEdgeTable.navigate(e0, verts.apply(_), Map[Char, (String, Int => Int)](
-        'x' -> (("export current loop to loop.wkt", { einit =>
-          import halfEdgeTable._
-          var e = einit
-          val pts = collection.mutable.ListBuffer[Coordinate](verts(getSrc(e)))
-          do {
-            pts += verts(getDest(e))
-            e = getNext(e)
-          } while (e != einit)
-          val loop = Polygon(pts.map(Point.jtsCoord2Point(_)))
-          new java.io.PrintWriter("loop.wkt") { write(geotrellis.vector.io.wkt.WKT.write(loop)); close }
-          einit
-        })),
-        'c' -> (("print the center of the current triangle's circumscribing circle", { e =>
-          val predicates = new TriangulationPredicates(IndexedPointSet(verts.toMap), halfEdgeTable)
-          import predicates._
-          import halfEdgeTable._
-          val (_, center, valid) = circleCenter(getDest(e), getDest(getNext(e)), getDest(getNext(getNext(e))))
-          println(s"Circle center: $center " + {if (valid) "[valid]" else "[invalid]"})
-          e
-        })),
-        't' -> (("export triangles to triangles.wkt", { e => 
-          val polys = collection.mutable.ListBuffer.empty[Polygon]
-          val trans = { i : Int => Point.jtsCoord2Point(verts(i)) }
-          triangles.triangleVertices.foreach { case (i, j, k) => {
-            polys += Polygon(trans(i), trans(j), trans(k), trans(i))
-          }}
-          val mp = MultiPolygon(polys)
-          new java.io.PrintWriter("triangles.wkt"){ write(geotrellis.vector.io.wkt.WKT.write(mp)); close }
-          e
-        }))
-      ))
-    }
 
     def circumcircleLeavesExtent(extent: Extent)(tri: HalfEdge): Boolean = {
       import dt.halfEdgeTable._
@@ -148,8 +104,7 @@ object BoundaryDelaunay {
             e = halfEdgeTable.getNext(e)
           } while (e != base)
 
-          println("Should never see this")
-          Some(base)
+          throw new IllegalStateException("Unhandled case")
         }
         case None => {
           None
@@ -318,8 +273,8 @@ object BoundaryDelaunay {
                     halfEdgeTable.join(tri, halfEdgeTable.getFlip(pairedE))
                   } catch {
                     case _: AssertionError =>
-                      println("Improper join (should never see this)")
                       println(geotrellis.vector.io.wkt.WKT.write(Polygon(pa, pb, pc, pa)))
+                      throw new IllegalArgumentException("Improper join")
                   }
 
                   pairedE = tri
@@ -341,21 +296,6 @@ object BoundaryDelaunay {
 
     }
 
-    def validate() = {
-      import halfEdgeTable._
-      val (_, (_, opp0)) = innerEdges.head
-      val e0 = getFlip(opp0)
-      var e = getNext(e0)
-
-      do {
-        if (!innerEdges.contains(getSrc(e) -> getDest(e))) {
-          throw new Exception(s"${getSrc(e)} -> ${getDest(e)} not found in innerLoop")
-        }
-
-        e = getNext(e)
-      } while (e != e0)
-    }
-
     def copyConvertBoundingTris(): ResultEdge = {
       import dt.halfEdgeTable._
 
@@ -363,7 +303,6 @@ object BoundaryDelaunay {
       var e = dt.boundary
       var ne = newBound
 
-      val boundingTris = collection.mutable.Set.empty[Int]
       do {
         assert(getDest(e) == halfEdgeTable.getDest(ne) && getSrc(e) == halfEdgeTable.getSrc(ne))
         recursiveAddTris(getFlip(e), ne)

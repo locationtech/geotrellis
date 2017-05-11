@@ -1,15 +1,12 @@
-package geotrellis.spark.triangulation
+package geotrellis.vector.triangulation
 
 import com.vividsolutions.jts.algorithm.distance.{DistanceToPoint, PointPairDistance}
 import com.vividsolutions.jts.geom.Coordinate
-
-import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.vector.Extent
-import geotrellis.vector.triangulation._
-
-import org.scalatest.{FunSpec, Matchers}
 
 import scala.util.Random
+import org.scalatest._
+
 
 class BoundaryDelaunaySpec extends FunSpec with Matchers {
 
@@ -42,7 +39,6 @@ class BoundaryDelaunaySpec extends FunSpec with Matchers {
 
       def circumcircleLeavesExtent(tri: Int): Boolean = {
         import dt.halfEdgeTable._
-        import dt.pointSet._
         import dt.predicates._
 
         val (radius, center, valid) = circleCenter(getDest(tri), getDest(getNext(tri)), getDest(getNext(getNext(tri))))

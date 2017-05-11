@@ -1,19 +1,17 @@
-package geotrellis.spark.triangulation
+package geotrellis.vector.triangulation
 
 import com.vividsolutions.jts.geom.Coordinate
-import geotrellis.spark.SpatialKey
-import geotrellis.spark.buffer.Direction
-import geotrellis.spark.buffer.Direction._
+import geotrellis.util.Direction
+import geotrellis.util.Direction._
 import geotrellis.vector._
 import geotrellis.vector.io.wkt.WKT
-import geotrellis.vector.triangulation._
 import org.scalatest.{FunSpec, Matchers}
 
 import scala.util.Random
 
 class StitchedDelaunaySpec extends FunSpec with Matchers {
 
-  def time[R](msg: String)(block: => R): R = {  
+  def time[R](msg: String)(block: => R): R = {
     val t0 = System.nanoTime()
     val result = block    // call-by-name
     val t1 = System.nanoTime()
@@ -54,20 +52,6 @@ class StitchedDelaunaySpec extends FunSpec with Matchers {
     }
   }
 
-  def directionToSpatialKey(dir: Direction) = {
-    dir match {
-      case TopLeft     => SpatialKey(0,2)
-      case Top         => SpatialKey(1,2)
-      case TopRight    => SpatialKey(2,2)
-      case Left        => SpatialKey(0,1)
-      case Center      => SpatialKey(1,1)
-      case Right       => SpatialKey(2,1)
-      case BottomLeft  => SpatialKey(0,0)
-      case Bottom      => SpatialKey(1,0)
-      case BottomRight => SpatialKey(2,0)
-    }
-  }
-
   val directions = Seq(TopLeft, Top, TopRight, Left, Center, Right, BottomLeft, Bottom, BottomRight)
   val chunks: Seq[(Extent, Direction)] = directions.map{ dir => (directionToExtent(dir), dir) }
   def findDirection(pt: Coordinate) = chunks.find { pair => pair._1.contains(Point.jtsCoord2Point(pt)) }.get._2
@@ -75,7 +59,7 @@ class StitchedDelaunaySpec extends FunSpec with Matchers {
   describe("Stitched Delaunay triangulation") {
     ignore("should have no stitch triangles with circumcircles containing other points") {
       val points: Seq[Coordinate] = randomizedGrid(300, Extent(0,0,3,3))
-      val keyedPoints: Seq[(Direction, Array[Coordinate])] = 
+      val keyedPoints: Seq[(Direction, Array[Coordinate])] =
         points
           .map{ pt => (findDirection(pt), pt) }
           .groupBy(_._1).toSeq
@@ -107,7 +91,7 @@ class StitchedDelaunaySpec extends FunSpec with Matchers {
       val wktString = scala.io.Source.fromInputStream(wktIS).getLines.mkString
       val points: Array[Coordinate] = WKT.read(wktString).asInstanceOf[MultiPoint].points.map(_.jtsGeom.getCoordinate)
 
-      val keyedPoints: Seq[(Direction, Array[Coordinate])] = 
+      val keyedPoints: Seq[(Direction, Array[Coordinate])] =
         points
           .map{ pt => (findDirection(pt), pt) }
           .groupBy(_._1).toSeq
@@ -119,7 +103,7 @@ class StitchedDelaunaySpec extends FunSpec with Matchers {
         } else {
           println("   [31m➠ Triangulation is creased![0m")
         }
-        (dir, tri) 
+        (dir, tri)
       }}
       val stitchInput =
         triangulations
