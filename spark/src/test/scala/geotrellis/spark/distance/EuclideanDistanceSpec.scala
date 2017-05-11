@@ -12,7 +12,6 @@ import geotrellis.spark.buffer.Direction
 import geotrellis.spark.buffer.Direction._
 import geotrellis.spark.testkit._
 import geotrellis.spark.tiling._
-import geotrellis.spark.triangulation._
 import geotrellis.vector._
 import geotrellis.vector.triangulation._
 import geotrellis.vector.io.wkt.WKT

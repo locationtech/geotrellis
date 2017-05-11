@@ -16,6 +16,7 @@
 
 package geotrellis.spark.etl
 
+import geotrellis.proj4.{LatLng, Sinusoidal}
 import geotrellis.raster.{CellSize, CellType}
 import geotrellis.raster.resample.NearestNeighbor
 import geotrellis.spark.etl.config._
@@ -23,7 +24,7 @@ import geotrellis.vector.Extent
 import org.apache.spark.storage.StorageLevel
 import org.scalatest._
 
-object EtlSpec {
+class EtlSpec extends FunSuite {
   // Test that ETL module can be instantiated in convenient ways
   val profiles = List(
     AccumuloProfile("accumulo-name", "instance", "zookeepers", "user", "password"),
@@ -74,4 +75,13 @@ object EtlSpec {
 
   Etl(etlConf)
   Etl(etlConf, List(s3.S3Module, hadoop.HadoopModule))
+
+  test("OutputPlugin.getCrs should handle proj4 strings") {
+    assert(output.copy(crs = Some("EPSG:4326")).getCrs === Some(LatLng))
+    assert(output.copy(crs = Some(Sinusoidal.toProj4String)).getCrs === Some(Sinusoidal))
+    assert(output.copy(crs = None).getCrs === None)
+    intercept[Exception] {
+      output.copy(crs = Some("BAD:CRS")).getCrs
+    }
+  }
 }

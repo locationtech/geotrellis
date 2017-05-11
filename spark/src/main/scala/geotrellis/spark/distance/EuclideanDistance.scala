@@ -6,10 +6,9 @@ import org.apache.spark.rdd.RDD
 import geotrellis.raster._
 import geotrellis.raster.distance._
 import geotrellis.spark._
+import geotrellis.spark.tiling._
 import geotrellis.spark.buffer.Direction
 import geotrellis.spark.buffer.Direction._
-import geotrellis.spark.tiling._
-import geotrellis.spark.triangulation._
 import geotrellis.vector._
 import geotrellis.vector.triangulation._
 import geotrellis.vector.voronoi._
@@ -17,6 +16,18 @@ import geotrellis.vector.voronoi._
 import scala.collection.mutable.{ListBuffer, Set}
 
 object EuclideanDistance {
+
+  private def convertDirections(input: Direction): geotrellis.util.Direction = input match {
+    case TopLeft => geotrellis.util.Direction.TopLeft
+    case Top => geotrellis.util.Direction.Top
+    case TopRight => geotrellis.util.Direction.TopRight
+    case Left => geotrellis.util.Direction.Left
+    case Center => geotrellis.util.Direction.Center
+    case Right => geotrellis.util.Direction.Right
+    case BottomLeft => geotrellis.util.Direction.BottomLeft
+    case Bottom => geotrellis.util.Direction.Bottom
+    case BottomRight => geotrellis.util.Direction.BottomRight
+  }
 
   def voronoiCells(centerStitched: StitchedDelaunay, initialVert: Int, extent: Extent): Seq[(Polygon, Coordinate)] = {
     import centerStitched.halfEdgeTable._
@@ -48,7 +59,8 @@ object EuclideanDistance {
   }
 
   def neighborEuclideanDistance(center: DelaunayTriangulation, neighbors: Map[Direction, (BoundaryDelaunay, Extent)], re: RasterExtent): Tile = {
-    val stitched = StitchedDelaunay(center, neighbors, false)
+    val _neighbors = neighbors.map { case (dir, value) => (convertDirections(dir), value) }
+    val stitched = StitchedDelaunay(center, _neighbors, false)
     val origin = center.halfEdgeTable.getDest(center.boundary)
     val extent = neighbors(Center)._2
     val cells = voronoiCells(stitched, origin, extent)

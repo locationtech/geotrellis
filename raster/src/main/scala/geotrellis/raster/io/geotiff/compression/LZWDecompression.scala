@@ -108,7 +108,7 @@ class LZWDecompressor(segmentSizes: Array[Int]) extends Decompressor {
         if (code == EoICode) {
           break = true
         } else {
-          outputArrayIndex = 
+          outputArrayIndex =
             TokenTable.writeToOutput(tokenTable(code), outputArray, outputArrayIndex)
         }
       } else if (code < tokenTableIndex) {

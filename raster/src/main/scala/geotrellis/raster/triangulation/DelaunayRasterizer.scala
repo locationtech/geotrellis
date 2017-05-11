@@ -17,7 +17,7 @@ object DelaunayRasterizer {
     re: RasterExtent,
     triangleMap: TriangleMap,
     halfEdgeTable: HalfEdgeTable,
-    pointSet: DelaunayPointSet
+    pointSet: IndexedPointSet
   ): Unit = {
     val w = re.cellwidth
     val h = re.cellheight

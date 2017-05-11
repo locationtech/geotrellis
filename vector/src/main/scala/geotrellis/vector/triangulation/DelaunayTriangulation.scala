@@ -32,7 +32,7 @@ import scala.collection.mutable.{ListBuffer, Map, PriorityQueue, Set}
  * reasonable value in the defaults of the DelaunayTriangulation object's apply()
  * method, but bear in mind that problems may arise in your particular case.
  */
-case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: HalfEdgeTable, tolerance: Double, debug: Boolean)
+case class DelaunayTriangulation(pointSet: CompleteIndexedPointSet, halfEdgeTable: HalfEdgeTable, tolerance: Double, debug: Boolean)
 {
   /**
    * Contains the triangles of a DelaunayTriangulation
@@ -172,13 +172,6 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
     result
   }
 
-  private def write(path: String, txt: String): Unit = {
-    import java.nio.file.{Paths, Files}
-    import java.nio.charset.StandardCharsets
-
-    Files.write(Paths.get(path), txt.getBytes(StandardCharsets.UTF_8))
-  }
-
   var (_boundary, _isLinear) = triangulate(0, sortedVs.length - 1)
 
   /**
@@ -227,6 +220,15 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
     }
   }
 
+  /**
+   * A version of isUnfolded that is useful for testing subregions of a
+   * triangulation.
+   *
+   * If during construction, a triangulation has smaller regions with their own
+   * bounding loops involving only vertex indices in a certain range, one may
+   * provide a reference to a bounding edge and the lo and hi indices in the
+   * range, and perform the isUnfolded test on that subregion.
+   */
   def isUnfolded(bound: Int, lo: Int, hi: Int): Boolean = {
 
     val bounds = Set.empty[Int]
@@ -704,7 +706,7 @@ case class DelaunayTriangulation(pointSet: DelaunayPointSet, halfEdgeTable: Half
 }
 
 object DelaunayTriangulation {
-  def apply(pointSet: DelaunayPointSet, tolerance: Double = 1e-8, debug: Boolean = false) = {
+  def apply(pointSet: CompleteIndexedPointSet, tolerance: Double = 1e-8, debug: Boolean = false) = {
     val initialSize = 2 * (3 * pointSet.length - 6)
     new DelaunayTriangulation(pointSet, new HalfEdgeTable(initialSize), tolerance, debug)
   }

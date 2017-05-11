@@ -16,8 +16,6 @@
 
 package geotrellis.raster.io.geotiff.writer
 
-import java.io._
-
 import geotrellis.proj4.{CRS, LatLng}
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
@@ -25,7 +23,10 @@ import geotrellis.raster.io.geotiff.tags.codes.ColorSpace
 import geotrellis.raster.render.{ColorRamps, IndexedColorMap}
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
+
 import org.scalatest._
+
+import java.io._
 
 class GeoTiffWriterSpec extends FunSpec
     with Matchers

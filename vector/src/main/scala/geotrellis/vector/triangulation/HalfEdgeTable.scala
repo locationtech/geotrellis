@@ -36,6 +36,17 @@ class HalfEdgeTable(_size: Int) {
 
   private val freed = collection.mutable.ListBuffer.empty[Int]
 
+  /**
+   * Joins together two sections of a mesh along a common edge.
+   *
+   * Occasionally, it will be necessary to merge two sections of a triangulation
+   * along a common edge.  This function accepts as arguments two edge
+   * references which share the same endpoints.  Specifically, `e = [A -> B]`
+   * and `opp = [B -> A]` where the flips of each edge are on the boundary of
+   * the mesh.  The end result of this function is that `getFlip(e) = opp` and
+   * `getFlip(opp) = e` and the surrounding mesh is properly connected (assuming
+   * the input meshes were correctly connected).
+   */
   def join(e: Int, opp: Int): Unit = {
     assert(getSrc(e) == getDest(opp) && getDest(e) == getSrc(opp))
 

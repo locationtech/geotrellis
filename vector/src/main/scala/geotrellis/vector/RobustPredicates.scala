@@ -5,7 +5,8 @@ import org.apache.commons.math3.linear._
 
 import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
 
-
+/** Provides a set of numerically-sound geometric predicates.
+ */
 object RobustPredicates {
 
   def det2 (a11: Double, a12: Double,
@@ -22,6 +23,11 @@ object RobustPredicates {
     (new LUDecomposition(m)).getDeterminant
   }
 
+  /**
+   * Given three points in 2d, represented as the Double pairs `(ax, ay)`,
+   * `(bx, by)`, and `(cx, cy)`, this function returns true if all three points
+   * lie on a single line, up to the limits of numerical precision.
+   */
   def isCollinear(
     ax: Double, ay: Double,
     bx: Double, by: Double,
@@ -30,10 +36,22 @@ object RobustPredicates {
     math.abs(ShewchuksDeterminant.orient2d(ax, ay, bx, by, cx, cy)) < EPSILON
   }
 
+  /**
+   * Given three points in 2d, represented as jts Coordinates, this function
+   * returns true if all three points lie on a single line, up to the limits of
+   * numerical precision.  The z-coordinates of the input points are ignored.
+   */
   def isCollinear(a: Coordinate, b: Coordinate, c: Coordinate): Boolean = {
     isCollinear(a.x, a.y, b.x, b.y, c.x, c.y)
   }
 
+  /**
+   * Given three points in 2d, represented as the Double pairs `(ax, ay)`,
+   * `(bx, by)`, and `(cx, cy)`, this function returns true if the three points,
+   * in the order `a`, `b`, and then `c`, have a counterclockwise winding.  This
+   * function returns false if the winding of the points is clockwise, or if the
+   * points are collinear.
+   */
   def isCCW(
     ax: Double, ay: Double,
     bx: Double, by: Double,
@@ -42,9 +60,22 @@ object RobustPredicates {
     ShewchuksDeterminant.orient2d(ax, ay, bx, by, cx, cy) > EPSILON
   }
 
+  /**
+   * Given three points in 2d, represented as jts Coordinates, this function
+   * returns true if the three points, visted in the order `a`, `b`, and then
+   * `c`, have a counterclockwise winding.  This function returns false if the
+   * winding of the points is clockwise, or if the points are collinear.  The
+   * z-coordinates of the input points are ignored.
+   */
   def isCCW(a: Coordinate, b: Coordinate, c: Coordinate): Boolean =
     isCCW(a.x, a.y, b.x, b.y, c.x, c.y)
 
+  /**
+   * Given four points in 2d, represented as the Double pairs `(ax, ay)`,
+   * `(bx, by)`, `(cx, cy)`, and `(dx, dy)`, this function determines if the
+   * unique circle having points `a`, `b`, and `c` on its boundary
+   * (`isCCW(a, b, c)` must be true) contains point `d` in its interior.
+   */
   def inCircle(
     ax: Double, ay: Double,
     bx: Double, by: Double,
@@ -54,9 +85,24 @@ object RobustPredicates {
     ShewchuksDeterminant.incircle(ax, ay, bx, by, cx, cy, dx, dy) > EPSILON
   }
 
+  /**
+   * Given four points in 2d, represented as jts Coordinates, this function
+   * determines if the unique circle having points `a`, `b`, and `c` on its
+   * boundary (`isCCW(a, b, c)` must be true) contains point `d` in its
+   * interior.  The z-coordinates of the input points are ignored.
+   */
   def inCircle(a: Coordinate, b: Coordinate, c: Coordinate, d: Coordinate): Boolean =
     inCircle(a.x, a.y, b.x, b.y, c.x, c.y, d.x, d.y)
 
+  /**
+   * Given three points in 2d, represented as the Double pairs `(ax, ay)`,
+   * `(bx, by)`, and `(cx, cy)`, this function finds the center of the unique
+   * circle that contains the three points on its boundary.  The return of this
+   * function is a triple containing the radius of the circle, the center of the
+   * circle, represented as a jts Coordinate, and a Boolean flag indicating if
+   * the radius and center are numerically reliable.  This last value will be
+   * false if the points are too close to being collinear.
+   */
   def circleCenter(ax: Double, ay: Double, bx: Double, by: Double, cx: Double, cy: Double): (Double, Coordinate, Boolean) = {
     val dbx = bx - ax
     val dby = by - ay
