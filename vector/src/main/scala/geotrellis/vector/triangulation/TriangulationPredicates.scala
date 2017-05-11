@@ -11,8 +11,6 @@ import geotrellis.vector.mesh.{HalfEdgeTable, IndexedPointSet}
 final class TriangulationPredicates(pointSet: IndexedPointSet, halfEdgeTable: HalfEdgeTable) {
   import pointSet._
   import halfEdgeTable._
-  //import TriangulationPredicates._
-  import RobustPredicates._
 
   def isCollinear(a: Int, b: Int, c: Int): Boolean =
     math.abs(
@@ -68,14 +66,6 @@ final class TriangulationPredicates(pointSet: IndexedPointSet, halfEdgeTable: Ha
     val e1y = getY(e1)
     val ptx = getX(p)
     val pty = getY(p)
-    // val det = ShewchuksDeterminant.orient2d(e0x, e0y, e1x, e1y, ptx, pty)
-
-    // if(det > EPSILON)
-    //   LEFTOF
-    // else if(det < -EPSILON)
-    //   RIGHTOF
-    // else
-    //   ON
 
     RobustPredicates.relativeTo(e0x, e0y, e1x, e1y, ptx, pty)
   }
