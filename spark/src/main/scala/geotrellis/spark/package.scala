@@ -38,6 +38,7 @@ package object spark
     with costdistance.Implicits
     with crop.Implicits
     with density.Implicits
+    with distance.Implicits
     with equalization.Implicits
     with filter.Implicits
     with join.Implicits

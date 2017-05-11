@@ -25,13 +25,15 @@ import spire.syntax.cfor._
 
 
 object Delaunay {
-
+  @deprecated("use DelaunayTriangulation.apply() instead", "1.2")
   def apply(xs: Array[Double], ys: Array[Double]) =
     new Delaunay(xs.zip(ys).map({ case (x, y) => Point(x,y) }))
 
+  @deprecated("use DelaunayTriangulation.apply() instead", "1.2")
   def apply(coords: Array[Coordinate]) =
     new Delaunay(coords.map({ coord => Point(coord.x, coord.y) }))
 
+  @deprecated("use DelaunayTriangulation.apply() instead", "1.2")
   def apply(coords: Array[(Double, Double)]) =
     new Delaunay(coords.map({ case (x, y) => Point(x, y) }))
 
@@ -50,6 +52,7 @@ case class Delaunay(verts: Array[Point]) {
   builder.setSites(sites)
   private[voronoi] val subd = builder.getSubdivision
 
+  @deprecated("use DelaunayTriangulation instead", "1.2")
   val triangles: Seq[Polygon] = {
     val tris = subd.getTriangles(gf)
     val len = tris.getNumGeometries

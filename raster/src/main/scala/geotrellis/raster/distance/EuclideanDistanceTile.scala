@@ -16,6 +16,8 @@
 
 package geotrellis.raster.distance
 
+import com.vividsolutions.jts.geom.Coordinate
+
 import geotrellis.raster.{RasterExtent, DoubleArrayTile, Tile}
 import geotrellis.raster.rasterize.polygon.PolygonRasterizer
 import geotrellis.vector.{Point, Polygon}
@@ -24,22 +26,35 @@ import scala.math.sqrt
 
 object EuclideanDistanceTile {
 
+  private def fillFn(rasterExtent: RasterExtent, tile: DoubleArrayTile, base: Point)(col: Int, row: Int): Unit = {
+    val (x,y) = rasterExtent.gridToMap(col, row)
+    val currentValue = tile.getDouble(col, row)
+    val newValue = sqrt((x - base.x) * (x - base.x) + (y - base.y) * (y - base.y))
+
+    if (java.lang.Double.isNaN(currentValue) || currentValue > newValue)
+      tile.setDouble(col, row, newValue)
+  }
+
+  def rasterizeDistanceCell(rasterExtent: RasterExtent, tile: DoubleArrayTile)(arg: (Polygon, Coordinate)) = {
+    val (poly, coord) = arg
+
+    val buffered = poly.buffer(math.max(rasterExtent.cellwidth, rasterExtent.cellheight))
+    PolygonRasterizer.foreachCellByPolygon(buffered, rasterExtent)(fillFn(rasterExtent, tile, Point.jtsCoord2Point(coord)))
+  }
+
   def apply(pts: Array[Point], rasterExtent: RasterExtent): Tile = {
-    val vor = pts.toList.voronoiDiagram()
+    val vor = VoronoiDiagram(pts.map{ pt => new Coordinate(pt.x, pt.y) }, rasterExtent.extent)
     val tile = DoubleArrayTile.empty(rasterExtent.cols, rasterExtent.rows)
-    
-    def fillFn(base: Point)(col: Int, row: Int): Unit = {
-      val (x,y) = rasterExtent.gridToMap(col, row)
-      tile.setDouble(col, row, sqrt((x - base.x) * (x - base.x) + (y - base.y) * (y - base.y)))
-    }
 
-    def rasterizeDistanceCell(arg: (Polygon, Point)) = {
-      val (poly, pt) = arg
-      
-      PolygonRasterizer.foreachCellByPolygon(poly, rasterExtent)(fillFn(pt))
-    }
-    vor.voronoiCellsWithPoints.foreach(rasterizeDistanceCell)
+    vor.voronoiCellsWithPoints.foreach(rasterizeDistanceCell(rasterExtent, tile))
+    tile
+  }
 
+  def apply(pts: Array[Coordinate], rasterExtent: RasterExtent): Tile = {
+    val vor = VoronoiDiagram(pts, rasterExtent.extent)
+    val tile = DoubleArrayTile.empty(rasterExtent.cols, rasterExtent.rows)
+
+    vor.voronoiCellsWithPoints.foreach(rasterizeDistanceCell(rasterExtent, tile))
     tile
   }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Azavea
+ * Copyright 2017 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.distance
+package geotrellis.vector.triangulation
 
 import com.vividsolutions.jts.geom.Coordinate
-import geotrellis.vector.Point
 
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withEuclideanDistanceTileMethods(val self: Traversable[Point]) extends EuclideanDistanceTileMethods
+  implicit class withDelaunayTriangulationMethods(val self: Traversable[Coordinate]) extends DelaunayTriangulationMethods
 
-  implicit class withEuclideanDistanceTileArrayMethods(val self: Array[Point]) extends EuclideanDistanceTileArrayMethods
-
-  implicit class withEuclideanDistanceTileCoordinateMethods(val self: Traversable[Coordinate]) extends EuclideanDistanceTileCoordinateMethods
-
-  implicit class withEuclideanDistanceTileArrayCoordinateMethods(val self: Array[Coordinate]) extends EuclideanDistanceTileCoordinateArrayMethods
+  implicit class withDelaunayTriangulationArrayMethods(val self: Array[Coordinate]) extends DelaunayTriangulationArrayMethods
 }
