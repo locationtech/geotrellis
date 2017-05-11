@@ -5,6 +5,7 @@ import geotrellis.util.Direction
 import geotrellis.util.Direction._
 import geotrellis.vector._
 import geotrellis.vector.io.wkt.WKT
+import geotrellis.vector.mesh.{HalfEdgeTable, IndexedPointSet}
 
 object StitchedDelaunay {
 

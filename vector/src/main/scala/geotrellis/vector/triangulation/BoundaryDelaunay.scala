@@ -2,6 +2,7 @@ package geotrellis.vector.triangulation
 
 import com.vividsolutions.jts.algorithm.distance.{DistanceToPoint, PointPairDistance}
 import com.vividsolutions.jts.geom.Coordinate
+import geotrellis.vector.mesh.{HalfEdgeTable, IndexedPointSet}
 import geotrellis.vector.{Extent, MultiPolygon, Point, Polygon}
 
 object BoundaryDelaunay {

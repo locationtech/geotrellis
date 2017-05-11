@@ -2,8 +2,8 @@ package geotrellis.vector.triangulation
 
 import com.vividsolutions.jts.geom.Coordinate
 import geotrellis.vector.{Line, MultiLine, Point}
-
-import geotrellis.vector.RobustPredicates.{LEFTOF, RIGHTOF, ON}
+import geotrellis.vector.RobustPredicates.{LEFTOF, ON, RIGHTOF}
+import geotrellis.vector.mesh.{HalfEdgeTable, IndexedPointSet}
 
 final class DelaunayStitcher(pointSet: IndexedPointSet, halfEdgeTable: HalfEdgeTable) {
   val predicates = new TriangulationPredicates(pointSet, halfEdgeTable)

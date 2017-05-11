@@ -4,6 +4,7 @@ import org.apache.commons.math3.linear.{MatrixUtils, RealMatrix}
 import spire.syntax.cfor._
 import geotrellis.vector._
 import geotrellis.vector.io.wkt.WKT
+import geotrellis.vector.mesh.{CompleteIndexedPointSet, HalfEdge, HalfEdgeTable}
 
 import scala.annotation.tailrec
 import scala.collection.mutable.{ListBuffer, Map, PriorityQueue, Set}

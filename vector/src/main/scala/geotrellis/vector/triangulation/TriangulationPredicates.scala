@@ -2,10 +2,10 @@ package geotrellis.vector.triangulation
 
 import com.vividsolutions.jts.geom.Coordinate
 import org.apache.commons.math3.linear._
-
 import geotrellis.vector.ShewchuksDeterminant
 import geotrellis.vector.RobustPredicates
 import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
+import geotrellis.vector.mesh.{HalfEdgeTable, IndexedPointSet}
 
 
 final class TriangulationPredicates(pointSet: IndexedPointSet, halfEdgeTable: HalfEdgeTable) {

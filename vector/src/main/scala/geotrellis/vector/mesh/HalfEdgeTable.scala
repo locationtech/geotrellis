@@ -1,7 +1,6 @@
-package geotrellis.vector.triangulation
+package geotrellis.vector.mesh
 
 import com.vividsolutions.jts.geom.Coordinate
-import spire.syntax.cfor._
 
 /** Mutable, non-thread safe class to keep track of half edges
   * during Delaunay triangulation.

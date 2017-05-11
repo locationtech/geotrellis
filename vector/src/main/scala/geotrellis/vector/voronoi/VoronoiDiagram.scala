@@ -2,9 +2,9 @@ package geotrellis.vector.voronoi
 
 import com.vividsolutions.jts.geom.Coordinate
 import org.apache.commons.math3.linear._
-
 import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
 import geotrellis.vector._
+import geotrellis.vector.mesh.HalfEdgeTable
 import geotrellis.vector.triangulation._
 
 import scala.collection.mutable.{ListBuffer, Map}
