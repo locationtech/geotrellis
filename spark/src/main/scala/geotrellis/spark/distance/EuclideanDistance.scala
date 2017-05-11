@@ -17,7 +17,7 @@ import scala.collection.mutable.{ListBuffer, Set}
 
 object EuclideanDistance {
 
-  private def voronoiCells(centerStitched: StitchedDelaunay, initialEdge: Int, extent: Extent): Seq[(Polygon, Coordinate)] = {
+  private[spark] def voronoiCells(centerStitched: StitchedDelaunay, initialEdge: Int, extent: Extent): Seq[(Polygon, Coordinate)] = {
     import centerStitched.halfEdgeTable._
 
     val queue = ListBuffer[(Int, Int)]((initialEdge, getDest(initialEdge)))
@@ -46,7 +46,7 @@ object EuclideanDistance {
     result
   }
 
-  private def neighborEuclideanDistance(center: DelaunayTriangulation, neighbors: Map[Direction, (BoundaryDelaunay, Extent)], re: RasterExtent): Tile = {
+  private[spark] def neighborEuclideanDistance(center: DelaunayTriangulation, neighbors: Map[Direction, (BoundaryDelaunay, Extent)], re: RasterExtent): Tile = {
     val _neighbors = neighbors.map { case (dir, value) => (convertDirection(dir), value) }
     val stitched = StitchedDelaunay(center, _neighbors, false)
 
