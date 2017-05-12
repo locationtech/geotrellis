@@ -19,6 +19,7 @@ package geotrellis.vector.triangulation
 import com.vividsolutions.jts.geom.Coordinate
 
 import geotrellis.util.MethodExtensions
+import geotrellis.vector.MultiPoint
 
 trait DelaunayTriangulationMethods extends MethodExtensions[Traversable[Coordinate]] {
   def delaunayTriangulation(): DelaunayTriangulation = { DelaunayTriangulation(self.toArray) }
@@ -42,4 +43,8 @@ trait DelaunayTriangulationTripleMethods extends MethodExtensions[Traversable[(D
 
 trait DelaunayTriangulationTripleArrayMethods extends MethodExtensions[Array[(Double, Double, Double)]] {
   def delaunayTriangulation(): DelaunayTriangulation = { DelaunayTriangulation(self.map{ case (x, y, z) => new Coordinate(x, y, z) }) }
+}
+
+trait DelaunayTriangulationMultiPointMethods extends MethodExtensions[MultiPoint] {
+  def delaunayTriangulation(): DelaunayTriangulation = { DelaunayTriangulation(self.points.map(_.jtsGeom.getCoordinate)) }
 }

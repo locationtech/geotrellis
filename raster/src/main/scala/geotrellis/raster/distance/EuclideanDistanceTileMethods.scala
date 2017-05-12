@@ -20,7 +20,7 @@ import com.vividsolutions.jts.geom.Coordinate
 
 import geotrellis.raster.{RasterExtent, Tile}
 import geotrellis.util.MethodExtensions
-import geotrellis.vector.Point
+import geotrellis.vector.{MultiPoint, Point}
 
 trait EuclideanDistanceTileArrayMethods extends MethodExtensions[Array[Point]] {
   @deprecated("call euclideanDistanceTile() on Array[Coordinate] instead", "1.2")
@@ -54,4 +54,8 @@ trait EuclideanDistanceTileTripleArrayMethods extends MethodExtensions[Array[(Do
 
 trait EuclideanDistanceTileTripleMethods extends MethodExtensions[Traversable[(Double, Double, Double)]] {
   def euclideanDistanceTile(rasterExtent: RasterExtent): Tile = { EuclideanDistanceTile(self.toArray, rasterExtent) }
+}
+
+trait EuclideanDistanceTileMultiPointMethods extends MethodExtensions[MultiPoint] {
+  def euclideanDistanceTile(rasterExtent: RasterExtent): Tile = { EuclideanDistanceTile(self.points.map{_.jtsGeom.getCoordinate}, rasterExtent) }
 }

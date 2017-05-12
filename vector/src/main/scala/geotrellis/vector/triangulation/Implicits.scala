@@ -18,6 +18,8 @@ package geotrellis.vector.triangulation
 
 import com.vividsolutions.jts.geom.Coordinate
 
+import geotrellis.vector.MultiPoint
+
 object Implicits extends Implicits
 
 trait Implicits {
@@ -32,4 +34,6 @@ trait Implicits {
   implicit class withDelaunayTriangulationTripleMethods(val self: Traversable[(Double, Double, Double)]) extends DelaunayTriangulationTripleMethods
 
   implicit class withDelaunayTriangulationTripleArrayMethods(val self: Array[(Double, Double, Double)]) extends DelaunayTriangulationTripleArrayMethods
+
+  implicit class withDelaunayTriangulationMultiPointMethods(val self: MultiPoint) extends DelaunayTriangulationMultiPointMethods
 }

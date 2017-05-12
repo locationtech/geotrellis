@@ -17,7 +17,7 @@
 package geotrellis.vector.voronoi
 
 import com.vividsolutions.jts.geom.Coordinate
-import geotrellis.vector.Point
+import geotrellis.vector.{MultiPoint, Point}
 
 object Implicits extends Implicits
 
@@ -41,4 +41,6 @@ trait Implicits {
   implicit class withFastVoronoiDiagramTripleMethods(val self: Traversable[(Double, Double, Double)]) extends FastVoronoiDiagramTripleMethods
 
   implicit class withFastVoronoiDiagramTripleArrayMethods(val self: Array[(Double, Double, Double)]) extends FastVoronoiDiagramTripleArrayMethods
+
+  implicit class withFastVoronoiDiagramMultiPointMethods(val self: MultiPoint) extends FastVoronoiDiagramMultiPointMethods
 }

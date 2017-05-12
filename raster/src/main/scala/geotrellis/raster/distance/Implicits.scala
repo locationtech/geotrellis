@@ -17,7 +17,7 @@
 package geotrellis.raster.distance
 
 import com.vividsolutions.jts.geom.Coordinate
-import geotrellis.vector.Point
+import geotrellis.vector.{MultiPoint, Point}
 
 object Implicits extends Implicits
 
@@ -33,6 +33,8 @@ trait Implicits {
   implicit class withEuclideanDistanceTileTripleMethods(val self: Traversable[(Double, Double, Double)]) extends EuclideanDistanceTileTripleMethods
 
   implicit class withEuclideanDistanceTileTripleArrayMethods(val self: Array[(Double, Double, Double)]) extends EuclideanDistanceTileTripleArrayMethods
+
+  implicit class withEuclideanDistanceTileMultiPointMethods(val self: MultiPoint) extends EuclideanDistanceTileMultiPointMethods
 
   // The following will be edited to use the new Euclidean distance classes upon deleting the JTS-derived versions
   implicit class withEuclideanDistanceTileMethods(val self: Traversable[Point]) extends EuclideanDistanceTileMethods
