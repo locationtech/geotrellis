@@ -39,22 +39,6 @@ trait FastVoronoiDiagramArrayMethods extends MethodExtensions[Array[Coordinate]]
   def voronoiDiagram(extent: Extent): VoronoiDiagram = { VoronoiDiagram(self, extent) }
 }
 
-trait FastVoronoiDiagramPairMethods extends MethodExtensions[Traversable[(Double, Double)]] {
-  def voronoiDiagram(extent: Extent): VoronoiDiagram = { VoronoiDiagram(self.map{ case (x, y) => new Coordinate(x, y) }.toArray, extent) }
-}
-
-trait FastVoronoiDiagramPairArrayMethods extends MethodExtensions[Array[(Double, Double)]] {
-  def voronoiDiagram(extent: Extent): VoronoiDiagram = { VoronoiDiagram(self.map{ case (x, y) => new Coordinate(x, y) }, extent) }
-}
-
-trait FastVoronoiDiagramTripleMethods extends MethodExtensions[Traversable[(Double, Double, Double)]] {
-  def voronoiDiagram(extent: Extent): VoronoiDiagram = { VoronoiDiagram(self.map{ case (x, y, z) => new Coordinate(x, y, z) }.toArray, extent) }
-}
-
-trait FastVoronoiDiagramTripleArrayMethods extends MethodExtensions[Array[(Double, Double, Double)]] {
-  def voronoiDiagram(extent: Extent): VoronoiDiagram = { VoronoiDiagram(self.map{ case (x, y, z) => new Coordinate(x, y, z) }, extent) }
-}
-
 trait FastVoronoiDiagramMultiPointMethods extends MethodExtensions[MultiPoint] {
   def voronoiDiagram(extent: Extent): VoronoiDiagram = { VoronoiDiagram(self.points.map(_.jtsGeom.getCoordinate), extent) }
 }

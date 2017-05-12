@@ -17,16 +17,6 @@ trait EuclideanDistancePointRDDMethods extends MethodExtensions[RDD[(SpatialKey,
   def euclideanDistance(layout: LayoutDefinition): RDD[(SpatialKey, Tile)] = { EuclideanDistance(self.mapValues(_.map(_.jtsGeom.getCoordinate)), layout) }
 }
 
-trait EuclideanDistancePairRDDMethods extends MethodExtensions[RDD[(SpatialKey, Array[(Double, Double)])]] {
-  def euclideanDistance(layout: LayoutDefinition): RDD[(SpatialKey, Tile)] =
-    EuclideanDistance(self.mapValues(_.map{ case (x, y) => new Coordinate(x, y) }), layout) 
-}
-
-trait EuclideanDistanceTripleRDDMethods extends MethodExtensions[RDD[(SpatialKey, Array[(Double, Double, Double)])]] {
-  def euclideanDistance(layout: LayoutDefinition): RDD[(SpatialKey, Tile)] =
-    EuclideanDistance(self.mapValues(_.map{ case (x, y, z) => new Coordinate(x, y, z) }), layout) 
-}
-
 trait EuclideanDistanceMultiPointRDDMethods extends MethodExtensions[RDD[(SpatialKey, MultiPoint)]] {
   def euclideanDistance(layout: LayoutDefinition): RDD[(SpatialKey, Tile)] =
     EuclideanDistance(self.mapValues(_.points.map(_.jtsGeom.getCoordinate)), layout) 

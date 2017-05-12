@@ -13,9 +13,5 @@ trait Implicits {
 
   implicit class withEuclideanDistancePointRDDMethods(val self: RDD[(SpatialKey, Array[Point])]) extends EuclideanDistancePointRDDMethods
 
-  implicit class withEuclideanDistancePairRDDMethods(val self: RDD[(SpatialKey, Array[(Double, Double)])]) extends EuclideanDistancePairRDDMethods
-
-  implicit class withEuclideanDistanceTripleRDDMethods(val self: RDD[(SpatialKey, Array[(Double, Double, Double)])]) extends EuclideanDistanceTripleRDDMethods
-
   implicit class withEuclideanDistanceMultiPointRDDMethods(val self: RDD[(SpatialKey, MultiPoint)]) extends EuclideanDistanceMultiPointRDDMethods
 }

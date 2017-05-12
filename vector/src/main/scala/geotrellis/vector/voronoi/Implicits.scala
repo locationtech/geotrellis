@@ -34,13 +34,5 @@ trait Implicits {
 
   implicit class withFastVoronoiDiagramArrayMethods(val self: Array[Coordinate]) extends FastVoronoiDiagramArrayMethods
 
-  implicit class withFastVoronoiDiagramPairMethods(val self: Traversable[(Double, Double)]) extends FastVoronoiDiagramPairMethods
-
-  implicit class withFastVoronoiDiagramPairArrayMethods(val self: Array[(Double, Double)]) extends FastVoronoiDiagramPairArrayMethods
-
-  implicit class withFastVoronoiDiagramTripleMethods(val self: Traversable[(Double, Double, Double)]) extends FastVoronoiDiagramTripleMethods
-
-  implicit class withFastVoronoiDiagramTripleArrayMethods(val self: Array[(Double, Double, Double)]) extends FastVoronoiDiagramTripleArrayMethods
-
   implicit class withFastVoronoiDiagramMultiPointMethods(val self: MultiPoint) extends FastVoronoiDiagramMultiPointMethods
 }

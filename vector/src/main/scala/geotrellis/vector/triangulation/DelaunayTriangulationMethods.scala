@@ -29,22 +29,6 @@ trait DelaunayTriangulationArrayMethods extends MethodExtensions[Array[Coordinat
   def delaunayTriangulation(): DelaunayTriangulation = { DelaunayTriangulation(self) }
 }
 
-trait DelaunayTriangulationPairMethods extends MethodExtensions[Traversable[(Double, Double)]] {
-  def delaunayTriangulation(): DelaunayTriangulation = { DelaunayTriangulation(self.map{ case (x, y) => new Coordinate(x, y) }.toArray) }
-}
-
-trait DelaunayTriangulationPairArrayMethods extends MethodExtensions[Array[(Double, Double)]] {
-  def delaunayTriangulation(): DelaunayTriangulation = { DelaunayTriangulation(self.map{ case (x, y) => new Coordinate(x, y) }) }
-}
-
-trait DelaunayTriangulationTripleMethods extends MethodExtensions[Traversable[(Double, Double, Double)]] {
-  def delaunayTriangulation(): DelaunayTriangulation = { DelaunayTriangulation(self.map{ case (x, y, z) => new Coordinate(x, y, z) }.toArray) }
-}
-
-trait DelaunayTriangulationTripleArrayMethods extends MethodExtensions[Array[(Double, Double, Double)]] {
-  def delaunayTriangulation(): DelaunayTriangulation = { DelaunayTriangulation(self.map{ case (x, y, z) => new Coordinate(x, y, z) }) }
-}
-
 trait DelaunayTriangulationMultiPointMethods extends MethodExtensions[MultiPoint] {
   def delaunayTriangulation(): DelaunayTriangulation = { DelaunayTriangulation(self.points.map(_.jtsGeom.getCoordinate)) }
 }

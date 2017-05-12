@@ -27,13 +27,5 @@ trait Implicits {
 
   implicit class withDelaunayTriangulationArrayMethods(val self: Array[Coordinate]) extends DelaunayTriangulationArrayMethods
 
-  implicit class withDelaunayTriangulationPairMethods(val self: Traversable[(Double, Double)]) extends DelaunayTriangulationPairMethods
-
-  implicit class withDelaunayTriangulationPairArrayMethods(val self: Array[(Double, Double)]) extends DelaunayTriangulationPairArrayMethods
-
-  implicit class withDelaunayTriangulationTripleMethods(val self: Traversable[(Double, Double, Double)]) extends DelaunayTriangulationTripleMethods
-
-  implicit class withDelaunayTriangulationTripleArrayMethods(val self: Array[(Double, Double, Double)]) extends DelaunayTriangulationTripleArrayMethods
-
   implicit class withDelaunayTriangulationMultiPointMethods(val self: MultiPoint) extends DelaunayTriangulationMultiPointMethods
 }
