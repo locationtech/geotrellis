@@ -1,7 +1,8 @@
 package geotrellis.vector.triangulation
 
 import com.vividsolutions.jts.geom.Coordinate
-import org.apache.commons.math3.linear.{MatrixUtils}
+import geotrellis.vector.mesh.HalfEdge
+import org.apache.commons.math3.linear.MatrixUtils
 
 object QuadricError {
 

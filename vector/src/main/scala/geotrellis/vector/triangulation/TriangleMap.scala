@@ -1,5 +1,7 @@
 package geotrellis.vector.triangulation
 
+import geotrellis.vector.mesh.HalfEdgeTable
+
 class TriangleMap(halfEdgeTable: HalfEdgeTable) {
   import halfEdgeTable._
   import  TriangleMap.regularizeIndex

@@ -5,7 +5,9 @@ import geotrellis.util.Direction
 import geotrellis.util.Direction._
 import geotrellis.vector._
 import geotrellis.vector.io.wkt.WKT
+
 import org.scalatest.{FunSpec, Matchers}
+import spire.syntax.cfor._
 
 import scala.util.Random
 
@@ -15,7 +17,7 @@ class StitchedDelaunaySpec extends FunSpec with Matchers {
     val t0 = System.nanoTime()
     val result = block    // call-by-name
     val t1 = System.nanoTime()
-    println(msg + "\n   ➠ Elapsed time: " + (t1 - t0).toDouble * 1e-9 + "s")
+    println(msg + "\n   [36m➠ Elapsed time: " + (t1 - t0).toDouble * 1e-9 + "s[0m")
     result
   }
 
@@ -126,6 +128,43 @@ class StitchedDelaunaySpec extends FunSpec with Matchers {
           result
         }}
       }} should be (true)
+    }
+
+    it("should work for extents with zero or one point") {
+      val points = Array(new Coordinate(0.5, 1.5), new Coordinate(1.5, 0.5), new Coordinate(2.5, 1.5), new Coordinate(1.5, 2.5))
+
+      val keyedPoints: Seq[(Direction, Array[Coordinate])] =
+        points
+          .map{ pt => (findDirection(pt), pt) }
+          .groupBy(_._1).toSeq
+          .map{ case (dir, lst) => (dir, lst.map(_._2).toArray) }
+      val triangulations = keyedPoints.map{ case (dir, pts) => {
+        val tri: DelaunayTriangulation = time(s"Computing triangulation for $dir (${pts.size} points)")(DelaunayTriangulation(pts))
+        // if (tri.isUnfolded()) {
+        //   println("   [32m➠ Triangulation is OK[0m")
+        // } else {
+        //   println("   [31m➠ Triangulation is creased![0m")
+        // }
+        (dir, tri)
+      }}
+      val stitchInput =
+        triangulations
+          .map{ case (dir, dt) => {
+            val ex = directionToExtent(dir)
+            (dir, (BoundaryDelaunay(dt, ex), ex))
+          }}
+          .toMap
+
+      val stitch = StitchedDelaunay(stitchInput, false)
+      cfor(0)(_ < stitch.pointSet.length, _ + 1) { i =>
+        println(s"${i}: ${stitch.pointSet.getCoordinate(i)}")
+      }
+      println(s"Resulting triangles: ${stitch.triangles}")
+
+      val dt = DelaunayTriangulation(points)
+      println(s"Raw triangulation result: ${dt.triangleMap.triangleVertices}")
+
+      (dt.triangleMap.triangleVertices.sameElements(stitch.triangles)) should be (true)
     }
   }
 }

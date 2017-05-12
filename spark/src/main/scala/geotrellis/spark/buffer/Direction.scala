@@ -28,4 +28,18 @@ object Direction {
   case object BottomLeft extends Direction
   case object Left extends Direction
   case object TopLeft extends Direction
+
+  /** Adapter method until Direction moves fully out of spark package */
+  private[geotrellis] def convertDirection(input: Direction): geotrellis.util.Direction =
+    input match {
+      case TopLeft => geotrellis.util.Direction.TopLeft
+      case Top => geotrellis.util.Direction.Top
+      case TopRight => geotrellis.util.Direction.TopRight
+      case Left => geotrellis.util.Direction.Left
+      case Center => geotrellis.util.Direction.Center
+      case Right => geotrellis.util.Direction.Right
+      case BottomLeft => geotrellis.util.Direction.BottomLeft
+      case Bottom => geotrellis.util.Direction.Bottom
+      case BottomRight => geotrellis.util.Direction.BottomRight
+    }
 }

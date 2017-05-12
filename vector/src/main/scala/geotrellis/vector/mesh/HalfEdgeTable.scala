@@ -1,4 +1,6 @@
-package geotrellis.vector.triangulation
+package geotrellis.vector.mesh
+
+import com.vividsolutions.jts.geom.Coordinate
 
 /** Mutable, non-thread safe class to keep track of half edges
   * during Delaunay triangulation.
@@ -11,7 +13,7 @@ package geotrellis.vector.triangulation
   *                          (counter-clockwise of the triangle)
   */
 class HalfEdgeTable(_size: Int) {
-  private var size: Int = _size
+  private var size: Int = math.max(_size, 32)
   private var idx = 0
   private var edgeCount = 0
 
@@ -47,6 +49,8 @@ class HalfEdgeTable(_size: Int) {
    * `getFlip(opp) = e` and the surrounding mesh is properly connected (assuming
    * the input meshes were correctly connected).
    */
+  def maxEdgeIndex() = edgeCount
+
   def join(e: Int, opp: Int): Unit = {
     assert(getSrc(e) == getDest(opp) && getDest(e) == getSrc(opp))
 
@@ -291,7 +295,7 @@ class HalfEdgeTable(_size: Int) {
     println
   }
 
-  def navigate(e0: Int, trans: Int => com.vividsolutions.jts.geom.Coordinate, addedCmds: Map[Char, (String, Int => Int)]) = {
+  def navigate(e0: Int, trans: Int => Coordinate, addedCmds: Map[Char, (String, Int => Int)]) = {
     val cmds = Map[Char, (String, Int => Int)](
       'k' -> ("kill (throws exception)", { _ => throw new Exception("user requested halt") }),
       'l' -> ("show loop", { e => showLoop(e); e }),
@@ -383,7 +387,7 @@ class HalfEdgeTable(_size: Int) {
     val nextCount = edgeCount + that.edgeCount
     edgeCount = nextCount
     val factor = if (nextCount < 10000) 4 else 2
-    val nextSize = nextCount * factor
+    val nextSize = math.max(32, nextCount * factor)
 
     if (nextSize > MAXSIZE) sys.error("edge table has exceeded max capacity")
 
@@ -397,9 +401,15 @@ class HalfEdgeTable(_size: Int) {
 
     var j = 0
     while (j < that.idx) {
-      nextTable(i) = reindex(that.table(j))
-      nextTable(i + 1) = that.table(j + 1) + offset
-      nextTable(i + 2) = that.table(j + 2) + offset
+      if (that.table(j) != -1) {
+        nextTable(i) = reindex(that.table(j))
+        nextTable(i + 1) = that.table(j + 1) + offset
+        nextTable(i + 2) = that.table(j + 2) + offset
+      } else {
+        nextTable(i) = -1
+        nextTable(i + 1) = -1
+        nextTable(i + 2) = -1
+      }
       i += 3
       j += 3
     }

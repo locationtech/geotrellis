@@ -45,6 +45,9 @@ class EuclideanDistanceTileSpec extends FunSpec with Matchers with RasterMatcher
            row <- 0 until 512)
         tile.setDouble(col, row, smallestDistanceToPoint(rasterExtent.gridToMap(col, row)))
 
+      // val cm = ColorMap((0.0 to 4.5 by 0.01).toArray, ColorRamps.BlueToRed)
+      // euclideanDistanceTile.renderPng(cm).write("distance.png")
+
       assertEqual(tile, euclideanDistanceTile)
     }
   }

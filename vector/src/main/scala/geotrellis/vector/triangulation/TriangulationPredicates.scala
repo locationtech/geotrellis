@@ -2,22 +2,15 @@ package geotrellis.vector.triangulation
 
 import com.vividsolutions.jts.geom.Coordinate
 import org.apache.commons.math3.linear._
-
 import geotrellis.vector.ShewchuksDeterminant
 import geotrellis.vector.RobustPredicates
 import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
+import geotrellis.vector.mesh.{HalfEdgeTable, IndexedPointSet}
 
-object TriangulationPredicates {
-  final val LEFTOF = -1
-  final val RIGHTOF = 1
-  final val ON = 0
-}
 
 final class TriangulationPredicates(pointSet: IndexedPointSet, halfEdgeTable: HalfEdgeTable) {
   import pointSet._
   import halfEdgeTable._
-  import TriangulationPredicates._
-  import RobustPredicates._
 
   def isCollinear(a: Int, b: Int, c: Int): Boolean =
     math.abs(
@@ -73,14 +66,8 @@ final class TriangulationPredicates(pointSet: IndexedPointSet, halfEdgeTable: Ha
     val e1y = getY(e1)
     val ptx = getX(p)
     val pty = getY(p)
-    val det = ShewchuksDeterminant.orient2d(e0x, e0y, e1x, e1y, ptx, pty)
 
-    if(det > EPSILON)
-      LEFTOF
-    else if(det < -EPSILON)
-      RIGHTOF
-    else
-      ON
+    RobustPredicates.relativeTo(e0x, e0y, e1x, e1y, ptx, pty)
   }
 
   def isCCW(a: Int, b: Int, c: Int) = {

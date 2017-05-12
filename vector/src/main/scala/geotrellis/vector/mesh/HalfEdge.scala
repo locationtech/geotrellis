@@ -1,20 +1,4 @@
-/*
- * Copyright 2016 Azavea
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-package geotrellis.vector.voronoi
+package geotrellis.vector.mesh
 
 import geotrellis.vector.{Line, Point, Polygon}
 
@@ -25,8 +9,8 @@ class HalfEdge[V,F](val vert: V, var flip: HalfEdge[V,F], var next: HalfEdge[V,F
       throw new IllegalArgumentException(s"Cannot join facets by edges (${flip.vert},${vert}) and (${that.vert},${that.flip.vert})")
     }
 
-    next.flip.next = that.flip.next
-    that.next.flip.next = flip.next
+    flip.prev.next = that.flip.next
+    that.flip.prev.next = flip.next
     flip = that
     that.flip = this
   }
@@ -60,7 +44,7 @@ class HalfEdge[V,F](val vert: V, var flip: HalfEdge[V,F], var next: HalfEdge[V,F
 
   def rotCCWDest() = flip.prev
 
-  override def toString() = { if (flip == null) { s"[?? -> ${vert}]" } else { s"[${src} -> ${vert}]" } }
+  override def toString() = { s"[${src} -> ${vert}]" }
 }
 
 object HalfEdge {
@@ -73,7 +57,7 @@ object HalfEdge {
   }
 
   def apply[V,F](v1: V, v2: V) = {
-    val e1 = new HalfEdge[V,F](v1, null, null, None) 
+    val e1 = new HalfEdge[V,F](v1, null, null, None)
     val e2 = new HalfEdge[V,F](v2, e1, e1, None)
     e1.flip = e2
     e1.next = e2
@@ -85,15 +69,15 @@ object HalfEdge {
     val inner = verts.map { v => new HalfEdge[V,F](v, null, null, Some(f)) }
     val outer = verts.map { v => new HalfEdge[V,F](v, null, null, None) }
 
-    foreachWithIndex(inner){ 
+    foreachWithIndex(inner){
       (e,i) => {
-        e.next = inner((i+1) % n) 
+        e.next = inner((i+1) % n)
         e.flip = outer((i-1+n) % n)
       }
     }
-    foreachWithIndex(outer){ 
+    foreachWithIndex(outer){
       (e,i) => {
-        e.next = outer((i-1+n) % n) 
+        e.next = outer((i-1+n) % n)
         e.flip = inner((i+1) % n)
       }
     }
@@ -101,9 +85,9 @@ object HalfEdge {
     outer(0)
   }
 
-  def showBoundingLoop[T](base: HalfEdge[Int,T]): Unit = {
+  def showBoundingLoop[V,F](base: HalfEdge[V,F]): Unit = {
     var e = base
-    var l: List[HalfEdge[Int,T]] = Nil
+    var l: List[HalfEdge[V,F]] = Nil
 
     while (!l.contains(e)) {
       l = l :+ e

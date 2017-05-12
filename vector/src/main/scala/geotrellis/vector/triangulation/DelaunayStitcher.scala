@@ -2,8 +2,8 @@ package geotrellis.vector.triangulation
 
 import com.vividsolutions.jts.geom.Coordinate
 import geotrellis.vector.{Line, MultiLine, Point}
-
-import TriangulationPredicates.{LEFTOF, RIGHTOF, ON}
+import geotrellis.vector.RobustPredicates.{LEFTOF, ON, RIGHTOF}
+import geotrellis.vector.mesh.{HalfEdgeTable, IndexedPointSet}
 
 final class DelaunayStitcher(pointSet: IndexedPointSet, halfEdgeTable: HalfEdgeTable) {
   val predicates = new TriangulationPredicates(pointSet, halfEdgeTable)
@@ -50,24 +50,6 @@ final class DelaunayStitcher(pointSet: IndexedPointSet, halfEdgeTable: HalfEdgeT
 
     var left = advanceIfNotCorner(left0)
     var right = advanceIfNotCorner(right0)
-
-    if (debug) {
-      var l = left
-      val pts = collection.mutable.ListBuffer.empty[Point]
-      do {
-        pts += Point.jtsCoord2Point(pointSet.getCoordinate(getDest(l)))
-        l = getNext(l)
-      } while (l != left)
-      new java.io.PrintWriter("left.wkt") { write(geotrellis.vector.io.wkt.WKT.write(Line(pts))); close }
-
-      pts.clear
-      var r = right
-      do {
-        pts += Point.jtsCoord2Point(pointSet.getCoordinate(getDest(r)))
-        r = getNext(r)
-      } while (r != right)
-      new java.io.PrintWriter("right.wkt") { write(geotrellis.vector.io.wkt.WKT.write(Line(pts))); close }
-    }
 
     // compute the lower common tangent of left and right
     var continue = true
@@ -324,6 +306,76 @@ final class DelaunayStitcher(pointSet: IndexedPointSet, halfEdgeTable: HalfEdgeT
     }
 
     (advance(getFlip(base)), false)
+  }
+
+  private def shouldAdvance(b: Int, e: Int) = {
+    relativeTo(b, getDest(e)) match {
+      case LEFTOF => true
+      case RIGHTOF =>
+        relativeTo(b, getSrc(getPrev(e))) match {
+          case LEFTOF => true
+          case RIGHTOF =>  false
+          case ON => true
+        }
+      case ON =>
+        relativeTo(b, getSrc(getPrev(e))) match {
+          case RIGHTOF => false
+          case LEFTOF => true
+          case ON => distance(getSrc(b), getDest(b)) > distance(getSrc(b), getDest(e))
+        }
+    }
+  }
+
+  def joinToVertex(bound: Int, isLinear: Boolean, vertex: Int, triangles: TriangleMap, debug: Boolean = false) = {
+    var e = advanceIfNotCorner(bound)
+    var base = createHalfEdges(vertex, getSrc(e))
+
+    while (shouldAdvance(base, e)) {
+      e = advance(e)
+      setDest(base, getSrc(e))
+    }
+    setNext(getPrev(e), getFlip(base))
+    setNext(base, e)
+    if (debug) println(s"Found base [$base]: [${getSrc(base)} ⇒ ${getDest(base)}], ${(getCoordinate(getSrc(base)), getCoordinate(getDest(base)))}")
+
+    if (isLinear && relativeTo(base, getDest(e)) == ON) {
+      (base, true)
+    } else {
+      var cand = rotCCWSrc(getFlip(base))
+
+      while(valid(cand, base)) {
+        while(inCircle(getDest(base), getSrc(base), getDest(cand), getDest(rotCCWSrc(cand)))) {
+          val hold = rotCCWSrc(cand)
+
+          if (debug) println(s"Deleting [${getSrc(cand)} -> ${getDest(cand)}]")
+
+          triangles -= cand
+          setNext(rotCCWDest(cand), getNext(cand))
+          setNext(getPrev(cand), getFlip(base))
+          killEdge(getFlip(cand))
+          killEdge(cand)
+
+          cand = hold
+        }
+
+        if (debug) println(s"Found candidate [$cand]: [${getSrc(cand)} ⇒ ${getDest(cand)}], ${(getCoordinate(getSrc(cand)), getCoordinate(getDest(cand)))}")
+        val added = createHalfEdges(getSrc(base), getDest(cand))
+        if (debug) println(s"Adding [$added]: [${getSrc(added)} ⇒ ${getDest(added)}]")
+
+        setNext(rotCCWDest(cand), getFlip(added))
+        setNext(added, getFlip(cand))
+        setNext(getFlip(added), getNext(getFlip(base)))
+        setNext(getFlip(base), added)
+        triangles += added
+        if (debug) println(s"Added triangle ${(getSrc(added), getDest(added), getDest(getNext(added)))}")
+
+        cand = rotCCWSrc(getFlip(added))
+        base = added
+      }
+
+      val `final` = advance(getFlip(base))
+      (`final`, false)
+    }
   }
 
 }

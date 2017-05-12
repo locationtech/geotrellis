@@ -8,6 +8,9 @@ import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
 /** Provides a set of numerically-sound geometric predicates.
  */
 object RobustPredicates {
+  final val LEFTOF = -1
+  final val RIGHTOF = 1
+  final val ON = 0
 
   def det2 (a11: Double, a12: Double,
             a21: Double, a22: Double): Double = {
@@ -76,6 +79,21 @@ object RobustPredicates {
    * unique circle having points `a`, `b`, and `c` on its boundary
    * (`isCCW(a, b, c)` must be true) contains point `d` in its interior.
    */
+  def relativeTo(e0x: Double, e0y: Double, e1x: Double, e1y: Double, px: Double, py: Double): Int = {
+    val det = ShewchuksDeterminant.orient2d(e0x, e0y, e1x, e1y, px, py)
+
+    if(det > EPSILON)
+      LEFTOF
+    else if(det < -EPSILON)
+      RIGHTOF
+    else
+      ON
+  }
+
+  def relativeTo(e0: Coordinate, e1: Coordinate, p: Coordinate): Int = {
+    relativeTo(e0.x, e0.y, e1.x, e1.y, p.x, p.y)
+  }
+
   def inCircle(
     ax: Double, ay: Double,
     bx: Double, by: Double,
