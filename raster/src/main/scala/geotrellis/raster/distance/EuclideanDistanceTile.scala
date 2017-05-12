@@ -42,20 +42,24 @@ object EuclideanDistanceTile {
     PolygonRasterizer.foreachCellByPolygon(buffered, rasterExtent)(fillFn(rasterExtent, tile, Point.jtsCoord2Point(coord)))
   }
 
-  def apply(pts: Array[Point], rasterExtent: RasterExtent): Tile = {
-    val vor = VoronoiDiagram(pts.map{ pt => new Coordinate(pt.x, pt.y) }, rasterExtent.extent)
-    val tile = DoubleArrayTile.empty(rasterExtent.cols, rasterExtent.rows)
-
-    vor.voronoiCellsWithPoints.foreach(rasterizeDistanceCell(rasterExtent, tile))
-    tile
-  }
-
   def apply(pts: Array[Coordinate], rasterExtent: RasterExtent): Tile = {
     val vor = VoronoiDiagram(pts, rasterExtent.extent)
     val tile = DoubleArrayTile.empty(rasterExtent.cols, rasterExtent.rows)
 
     vor.voronoiCellsWithPoints.foreach(rasterizeDistanceCell(rasterExtent, tile))
     tile
+  }
+
+  def apply(pts: Array[Point], rasterExtent: RasterExtent): Tile = {
+    apply(pts.map{ pt => new Coordinate(pt.x, pt.y) }, rasterExtent)
+  }
+
+  def apply(pts: Array[(Double, Double)], rasterExtent: RasterExtent): Tile = {
+    apply(pts.map{ case (x, y) => new Coordinate(x, y) }, rasterExtent)
+  }
+
+  def apply(pts: Array[(Double, Double, Double)], rasterExtent: RasterExtent): Tile = {
+    apply(pts.map{ case (x, y, z) => new Coordinate(x, y, z) }, rasterExtent)
   }
 
 }

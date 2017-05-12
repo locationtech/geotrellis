@@ -220,7 +220,7 @@ class VoronoiDiagram(val dt: DelaunayTriangulation, val extent: Extent) {
    * corresponding polygonal regions.
    */
   def voronoiCellsWithPoints(): Seq[(Polygon, Coordinate)] = {
-    dt.halfEdgeTable.allVertices.toSeq.flatMap{ i: Int => 
+    dt.liveVertices.toSeq.flatMap{ i: Int => 
       voronoiCell(i) match { 
         case None => None
         case Some(poly) => Some(poly, dt.pointSet.getCoordinate(i)) 
