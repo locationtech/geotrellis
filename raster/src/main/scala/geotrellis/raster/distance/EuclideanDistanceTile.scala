@@ -58,4 +58,20 @@ object EuclideanDistanceTile {
     tile
   }
 
+  def apply(pts: Array[(Double, Double)], rasterExtent: RasterExtent): Tile = {
+    val vor = VoronoiDiagram(pts.map{ case (x, y) => new Coordinate(x, y) }, rasterExtent.extent)
+    val tile = DoubleArrayTile.empty(rasterExtent.cols, rasterExtent.rows)
+
+    vor.voronoiCellsWithPoints.foreach(rasterizeDistanceCell(rasterExtent, tile))
+    tile
+  }
+
+  def apply(pts: Array[(Double, Double, Double)], rasterExtent: RasterExtent): Tile = {
+    val vor = VoronoiDiagram(pts.map{ case (x, y, z) => new Coordinate(x, y, z) }, rasterExtent.extent)
+    val tile = DoubleArrayTile.empty(rasterExtent.cols, rasterExtent.rows)
+
+    vor.voronoiCellsWithPoints.foreach(rasterizeDistanceCell(rasterExtent, tile))
+    tile
+  }
+
 }

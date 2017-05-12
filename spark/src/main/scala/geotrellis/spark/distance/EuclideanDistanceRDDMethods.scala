@@ -12,3 +12,17 @@ import geotrellis.vector.{Extent, Point}
 trait EuclideanDistanceRDDMethods extends MethodExtensions[RDD[(SpatialKey, Array[Coordinate])]] {
   def euclideanDistance(layout: LayoutDefinition): RDD[(SpatialKey, Tile)] = { EuclideanDistance(self, layout) }
 }
+
+trait EuclideanDistancePointRDDMethods extends MethodExtensions[RDD[(SpatialKey, Array[Point])]] {
+  def euclideanDistance(layout: LayoutDefinition): RDD[(SpatialKey, Tile)] = { EuclideanDistance(self.mapValues(_.map(_.jtsGeom.getCoordinate)), layout) }
+}
+
+trait EuclideanDistancePairRDDMethods extends MethodExtensions[RDD[(SpatialKey, Array[(Double, Double)])]] {
+  def euclideanDistance(layout: LayoutDefinition): RDD[(SpatialKey, Tile)] =
+    EuclideanDistance(self.mapValues(_.map{ case (x, y) => new Coordinate(x, y) }), layout) 
+}
+
+trait EuclideanDistanceTripleRDDMethods extends MethodExtensions[RDD[(SpatialKey, Array[(Double, Double, Double)])]] {
+  def euclideanDistance(layout: LayoutDefinition): RDD[(SpatialKey, Tile)] =
+    EuclideanDistance(self.mapValues(_.map{ case (x, y, z) => new Coordinate(x, y, z) }), layout) 
+}

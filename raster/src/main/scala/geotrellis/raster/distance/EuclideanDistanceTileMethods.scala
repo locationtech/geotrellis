@@ -39,3 +39,19 @@ trait EuclideanDistanceTileCoordinateArrayMethods extends MethodExtensions[Array
 trait EuclideanDistanceTileCoordinateMethods extends MethodExtensions[Traversable[Coordinate]] {
   def euclideanDistanceTile(rasterExtent: RasterExtent): Tile = { EuclideanDistanceTile(self.toArray, rasterExtent) }
 }
+
+trait EuclideanDistanceTilePairArrayMethods extends MethodExtensions[Array[(Double, Double)]] {
+  def euclideanDistanceTile(rasterExtent: RasterExtent): Tile = { EuclideanDistanceTile(self, rasterExtent) }
+}
+
+trait EuclideanDistanceTilePairMethods extends MethodExtensions[Traversable[(Double, Double)]] {
+  def euclideanDistanceTile(rasterExtent: RasterExtent): Tile = { EuclideanDistanceTile(self.toArray, rasterExtent) }
+}
+
+trait EuclideanDistanceTileTripleArrayMethods extends MethodExtensions[Array[(Double, Double, Double)]] {
+  def euclideanDistanceTile(rasterExtent: RasterExtent): Tile = { EuclideanDistanceTile(self, rasterExtent) }
+}
+
+trait EuclideanDistanceTileTripleMethods extends MethodExtensions[Traversable[(Double, Double, Double)]] {
+  def euclideanDistanceTile(rasterExtent: RasterExtent): Tile = { EuclideanDistanceTile(self.toArray, rasterExtent) }
+}

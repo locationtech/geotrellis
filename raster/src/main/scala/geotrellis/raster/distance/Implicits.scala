@@ -22,11 +22,21 @@ import geotrellis.vector.Point
 object Implicits extends Implicits
 
 trait Implicits {
+  implicit class withEuclideanDistanceTileCoordinateMethods(val self: Traversable[Coordinate]) extends EuclideanDistanceTileCoordinateMethods
+
+  implicit class withEuclideanDistanceTileArrayCoordinateMethods(val self: Array[Coordinate]) extends EuclideanDistanceTileCoordinateArrayMethods
+
+  implicit class withEuclideanDistanceTilePairMethods(val self: Traversable[(Double, Double)]) extends EuclideanDistanceTilePairMethods
+
+  implicit class withEuclideanDistanceTilePairArrayMethods(val self: Array[(Double, Double)]) extends EuclideanDistanceTilePairArrayMethods
+
+  implicit class withEuclideanDistanceTileTripleMethods(val self: Traversable[(Double, Double, Double)]) extends EuclideanDistanceTileTripleMethods
+
+  implicit class withEuclideanDistanceTileTripleArrayMethods(val self: Array[(Double, Double, Double)]) extends EuclideanDistanceTileTripleArrayMethods
+
+  // The following will be edited to use the new Euclidean distance classes upon deleting the JTS-derived versions
   implicit class withEuclideanDistanceTileMethods(val self: Traversable[Point]) extends EuclideanDistanceTileMethods
 
   implicit class withEuclideanDistanceTileArrayMethods(val self: Array[Point]) extends EuclideanDistanceTileArrayMethods
 
-  implicit class withEuclideanDistanceTileCoordinateMethods(val self: Traversable[Coordinate]) extends EuclideanDistanceTileCoordinateMethods
-
-  implicit class withEuclideanDistanceTileArrayCoordinateMethods(val self: Array[Coordinate]) extends EuclideanDistanceTileCoordinateArrayMethods
 }
