@@ -58,7 +58,7 @@ object FileRDDReader {
     sc.parallelize(bins, bins.size)
       .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
         partition flatMap { seq =>
-          LayerReader.njoin[K, V](ranges.toIterator, threads) { index: Long =>
+          LayerReader.njoin[K, V](seq.toIterator, threads) { index: Long =>
             val path = keyPath(index)
             if (new File(path).exists) {
               val bytes: Array[Byte] = Filesystem.slurp(path)
