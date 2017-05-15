@@ -69,6 +69,7 @@ trait TestEnvironment extends BeforeAndAfterAll
     conf
       .setMaster("local")
       .setAppName("Test Context")
+      .set("spark.default.parallelism", "4")
 
     // Shortcut out of using Kryo serialization if we want to test against
     // java serialization.
