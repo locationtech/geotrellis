@@ -140,7 +140,7 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
     V <: CellGrid: Stitcher: ClassTag: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V]):
     (? => TileReprojectMethods[V]): (? => CropMethods[V]),
     K: SpatialComponent: Boundable: ClassTag
-  ](rdd: RDD[(I, V)], method: ResampleMethod = NearestNeighbor)(implicit sc: SparkContext): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
+  ](rdd: RDD[(I, V)], method: ResampleMethod = output.resampleMethod)(implicit sc: SparkContext): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
     val targetCellType = output.cellType
     val destCrs = output.getCrs.get
 
@@ -153,10 +153,12 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
       // rekey metadata to targetLayout
       val newSpatialBounds = KeyBounds(targetLayout.mapTransform(floatMD.extent))
       val tiledMD = floatMD.copy(
-        bounds = floatMD.bounds.setSpatialBounds(newSpatialBounds))
+        bounds = floatMD.bounds.setSpatialBounds(newSpatialBounds),
+        layout = targetLayout
+      )
 
       // > 1 means we're upsampling during tiling process
-      val resolutionRatio = (floatMD.layout.cellSize.resolution / targetLayout.cellSize.resolution)
+      val resolutionRatio = floatMD.layout.cellSize.resolution / targetLayout.cellSize.resolution
       val tilerOptions = Tiler.Options(
         resampleMethod = method,
         partitioner = new HashPartitioner(
@@ -175,7 +177,7 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
         }
 
         scheme match {
-          case Left(scheme: ZoomedLayoutScheme) if output.maxZoom.isDefined=>
+          case Left(scheme: ZoomedLayoutScheme) if output.maxZoom.isDefined =>
             val LayoutLevel(zoom, layoutDefinition) = scheme.levelForZoom(output.maxZoom.get)
             zoom -> resizingTileRDD(reprojected, floatMD, layoutDefinition)
 
