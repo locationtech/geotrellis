@@ -71,7 +71,7 @@ object VoronoiDiagram {
       if (abs(norm dot vplus) < EPSILON) {
         if (abs(norm dot vminus) < EPSILON) {
           // Linear triangulation; corresponding cell edge is an infinite line
-          l ++= Seq(ReverseRay(x.toCoord, norm * (-1)), Ray(x.toCoord, norm))
+          l ++= Seq(/*ReverseRay(x.toCoord, norm * (-1)), */Ray(x.toCoord, norm))
         } else {
           // On boundary; next "face center" is point at infinity
           l += Ray((x + norm * aminus).toCoord, norm)
