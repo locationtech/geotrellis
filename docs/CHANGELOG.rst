@@ -140,6 +140,10 @@ Fixes
 
 - `In ArrayTile.convert, debug instead of warn against floating point data loss. <https://github.com/locationtech/geotrellis/pull/2190>`__
 
+- `Fixes incorrect metadata update in a per-tile reprojection case <https://github.com/locationtech/geotrellis/pull/2201>`__
+
+- `Fix issue with duplicate tiles being read for File and Cassandra backends <https://github.com/locationtech/geotrellis/pull/2200>`__
+
 
 
 API Changes
