@@ -73,7 +73,7 @@ object CassandraRDDReader {
           val statement = session.prepare(query)
 
           val result = partition map { seq =>
-            LayerReader.njoin[K, V](ranges.iterator, threads) { index: Long =>
+            LayerReader.njoin[K, V](seq.iterator, threads) { index: Long =>
               val row = session.execute(statement.bind(index.asInstanceOf[java.lang.Long]))
               if (row.nonEmpty) {
                 val bytes = row.one().getBytes("value").array()
