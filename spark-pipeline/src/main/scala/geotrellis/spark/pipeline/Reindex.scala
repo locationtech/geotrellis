@@ -1,6 +1,6 @@
 package geotrellis.spark.pipeline
 
-trait Write extends PipelineExpr {
+trait Reindex extends PipelineExpr {
   val name: String
   val profile: String
   val uri: String
@@ -13,7 +13,7 @@ case class ReindexHadoop(
   uri: String,
   keyIndexMethod: PipelineKeyIndexMethod,
   `type`: String = "reindex.hadoop"
-)
+) extends Reindex
 
 case class ReindexS3(
   name: String,
@@ -21,7 +21,7 @@ case class ReindexS3(
   uri: String,
   keyIndexMethod: PipelineKeyIndexMethod,
   `type`: String = "reindex.s3"
-)
+) extends Reindex
 
 case class ReindexAccumulo(
   name: String,
@@ -29,7 +29,7 @@ case class ReindexAccumulo(
   uri: String,
   keyIndexMethod: PipelineKeyIndexMethod,
   `type`: String = "reindex.accumulo"
-)
+) extends Reindex
 
 case class ReindexCassandra(
   name: String,
@@ -37,7 +37,7 @@ case class ReindexCassandra(
   uri: String,
   keyIndexMethod: PipelineKeyIndexMethod,
   `type`: String = "reindex.cassandra"
-)
+) extends Reindex
 
 case class ReindexHBase(
   name: String,
@@ -45,4 +45,4 @@ case class ReindexHBase(
   uri: String,
   keyIndexMethod: PipelineKeyIndexMethod,
   `type`: String = "reindex.hbase"
-)
+) extends Reindex
