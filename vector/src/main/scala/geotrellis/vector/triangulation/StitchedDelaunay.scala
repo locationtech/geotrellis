@@ -235,7 +235,8 @@ object StitchedDelaunay {
     val stitcher = new DelaunayStitcher(allPoints, allEdges)
 
     var i = 0
-    val bound =
+
+    val joinedRows =
       dirs
         .map{row => row.flatMap{ dir => boundaries.get(dir) }}
         .filter{ row => !row.isEmpty }
@@ -272,39 +273,46 @@ object StitchedDelaunay {
           i += 1
           result
         }}
-        .reduce{ (l, r) => 
-          val result: Either[(Int, Boolean), Int] = (l, r) match {
-            case (scala.Left((left, isLeftLinear)), scala.Left((right, isRightLinear))) =>
-              val result = stitcher.merge(left, isLeftLinear, right, isRightLinear, overlayTris)
-              if (debug) {
-                println("Merging two normal triangulations (column)")
-                val mp = MultiPolygon(overlayTris.triangleVertices.map{ case (i,j,k) => Polygon(allPoints(i), allPoints(j), allPoints(k), allPoints(i)) })
-                new java.io.PrintWriter(s"stitch_c${i}.wkt"){ write(geotrellis.vector.io.wkt.WKT.write(mp)); close }
-              }
-              scala.Left(result)
-            case (scala.Left((left, isLeftLinear)), scala.Right(vertex)) =>
-              val result = stitcher.joinToVertex(left, isLeftLinear, vertex, overlayTris)
-              if (debug) {
-                println("Merging a single point to a normal triangulation (column)")
-                val mp = MultiPolygon(overlayTris.triangleVertices.map{ case (i,j,k) => Polygon(allPoints(i), allPoints(j), allPoints(k), allPoints(i)) })
-                new java.io.PrintWriter(s"stitch_c${i}.wkt"){ write(geotrellis.vector.io.wkt.WKT.write(mp)); close }
-              }
-              scala.Left(result)
-            case (scala.Right(vertex), scala.Left((right, isRightLinear))) =>
-              val result = stitcher.joinToVertex(right, isRightLinear, vertex, overlayTris)
-              if (debug) {
-                println("Merging a single point to a normal triangulation (column)")
-                val mp = MultiPolygon(overlayTris.triangleVertices.map{ case (i,j,k) => Polygon(allPoints(i), allPoints(j), allPoints(k), allPoints(i)) })
-                new java.io.PrintWriter(s"stitch_c${i}.wkt"){ write(geotrellis.vector.io.wkt.WKT.write(mp)); close }
-              }
-              scala.Left(result)
-            case (scala.Right(v1), scala.Right(v2)) =>
-              if (debug) println("Merging two single point 'triangulations' (column)")
-              scala.Left((allEdges.createHalfEdges(v1, v2), true))
-          }
-          i += 1
-          result
-        }
+
+    val bound = 
+      if (joinedRows.isEmpty) {
+        scala.Left((-1, true))
+      } else {
+        joinedRows
+          .reduce{ (l, r) => {
+            val result: Either[(Int, Boolean), Int] = (l, r) match {
+              case (scala.Left((left, isLeftLinear)), scala.Left((right, isRightLinear))) =>
+                val result = stitcher.merge(left, isLeftLinear, right, isRightLinear, overlayTris)
+                if (debug) {
+                  println("Merging two normal triangulations (column)")
+                  val mp = MultiPolygon(overlayTris.triangleVertices.map{ case (i,j,k) => Polygon(allPoints(i), allPoints(j), allPoints(k), allPoints(i)) })
+                  new java.io.PrintWriter(s"stitch_c${i}.wkt"){ write(geotrellis.vector.io.wkt.WKT.write(mp)); close }
+                }
+                scala.Left(result)
+              case (scala.Left((left, isLeftLinear)), scala.Right(vertex)) =>
+                val result = stitcher.joinToVertex(left, isLeftLinear, vertex, overlayTris)
+                if (debug) {
+                  println("Merging a single point to a normal triangulation (column)")
+                  val mp = MultiPolygon(overlayTris.triangleVertices.map{ case (i,j,k) => Polygon(allPoints(i), allPoints(j), allPoints(k), allPoints(i)) })
+                  new java.io.PrintWriter(s"stitch_c${i}.wkt"){ write(geotrellis.vector.io.wkt.WKT.write(mp)); close }
+                }
+                scala.Left(result)
+              case (scala.Right(vertex), scala.Left((right, isRightLinear))) =>
+                val result = stitcher.joinToVertex(right, isRightLinear, vertex, overlayTris)
+                if (debug) {
+                    println("Merging a single point to a normal triangulation (column)")
+                  val mp = MultiPolygon(overlayTris.triangleVertices.map{ case (i,j,k) => Polygon(allPoints(i), allPoints(j), allPoints(k), allPoints(i)) })
+                  new java.io.PrintWriter(s"stitch_c${i}.wkt"){ write(geotrellis.vector.io.wkt.WKT.write(mp)); close }
+                }
+                scala.Left(result)
+              case (scala.Right(v1), scala.Right(v2)) =>
+                if (debug) println("Merging two single point 'triangulations' (column)")
+                scala.Left((allEdges.createHalfEdges(v1, v2), true))
+            }
+            i += 1
+            result
+          }}
+      }
     
     val boundary = bound match {
       case scala.Left((bnd, _)) => bnd
