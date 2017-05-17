@@ -1,7 +1,5 @@
 package geotrellis.spark.pipeline
 
-import geotrellis.spark.TileLayerRDD
-
 trait Write extends PipelineExpr {
   val name: String
   val profile: String
