@@ -1,4 +1,4 @@
-package geotrellis.spark.pipeline
+package geotrellis.spark.pipeline.json
 
 trait Update extends PipelineExpr {
   val name: String
@@ -6,59 +6,58 @@ trait Update extends PipelineExpr {
   val uri: String
   val pyramid: Boolean // true | false
   val maxZoom: Option[Int]
-  val `type`: String
 }
 
 case class UpdateFile(
+  `type`: String,
   name: String,
   profile: String,
   uri: String,
   pyramid: Boolean,
-  maxZoom: Option[Int] = None,
-  `type`: String = "update.file"
+  maxZoom: Option[Int] = None
 ) extends Update
 
 case class UpdateHadoop(
+  `type`: String,
   name: String,
   profile: String,
   uri: String,
   pyramid: Boolean,
-  maxZoom: Option[Int] = None,
-  `type`: String = "update.hadoop"
+  maxZoom: Option[Int] = None
 ) extends Update
 
 case class UpdateS3(
+  `type`: String,
   name: String,
   profile: String,
   uri: String,
   pyramid: Boolean,
-  maxZoom: Option[Int] = None,
-  `type`: String = "update.s3"
+  maxZoom: Option[Int] = None
 ) extends Update
 
 case class UpdateAccumulo(
+  `type`: String,
   name: String,
   profile: String,
   uri: String,
   pyramid: Boolean,
-  maxZoom: Option[Int] = None,
-  `type`: String = "update.accumulo"
+  maxZoom: Option[Int] = None
 ) extends Update
 
 case class UpdateCassandra(
+  `type`: String,
   name: String,
   profile: String,
   uri: String,
   pyramid: Boolean,
-  maxZoom: Option[Int] = None,
-  `type`: String = "update.cassandra"
+  maxZoom: Option[Int] = None
 ) extends Update
 
 case class UpdateHBase(
+  `type`: String,
   name: String,
   profile: String,
   uri: String,
   pyramid: Boolean,
-  maxZoom: Option[Int] = None,
-  `type`: String = "update.hbase"
+  maxZoom: Option[Int] = None
 ) extends Update

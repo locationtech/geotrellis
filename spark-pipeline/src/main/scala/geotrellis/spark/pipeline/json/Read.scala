@@ -1,17 +1,9 @@
-package geotrellis.spark.pipeline
-
-import java.net.URI
+package geotrellis.spark.pipeline.json
 
 import geotrellis.proj4.CRS
-import geotrellis.raster.CellGrid
-import geotrellis.spark.Metadata
-import geotrellis.util.Component
-import geotrellis.vector.ProjectedExtent
-import org.apache.spark.rdd.RDD
 
-import scala.reflect._
-import scala.reflect.runtime.universe._
 import scala.util.Try
+import java.net.URI
 
 trait Read extends PipelineExpr {
   val profile: String
@@ -25,51 +17,37 @@ trait Read extends PipelineExpr {
   def getURI = new URI(uri)
   def getCRS = crs.map(c => Try(CRS.fromName(c)) getOrElse CRS.fromString(c))
   def getTag = tag.getOrElse("default")
-
-  def eval[I, V]: RDD[(I, V)]
 }
 
 case class ReadHadoop(
+  `type`: String,
   profile: String,
   uri: String,
   crs: Option[String] = None,
   tag: Option[String] = None,
   maxTileSize: Option[Int] = None,
   partitions: Option[Int] = None,
-  clip: Boolean = false,
-  `type`: String = "read.hadoop"
-) extends Read {
-  def eval[I, V]: RDD[(I, V)] = {
-    null
-  }
-}
+  clip: Boolean = false
+) extends Read
 
 case class ReadS3(
+  `type`: String,
   profile: String,
   uri: String,
   crs: Option[String] = None,
   tag: Option[String] = None,
   maxTileSize: Option[Int] = None,
   partitions: Option[Int] = None,
-  clip: Boolean = false,
-  `type`: String = "read.s3"
-) extends Read {
-  def eval[I, V]: RDD[(I, V)] = {
-    null
-  }
-}
+  clip: Boolean = false
+) extends Read
 
 case class ReadFile(
+  `type`: String,
   profile: String,
   uri: String,
   crs: Option[String] = None,
   tag: Option[String] = None,
   maxTileSize: Option[Int] = None,
   partitions: Option[Int] = None,
-  clip: Boolean = false,
-  `type`: String = "read.file"
-) extends Read {
-  def eval[I, V]: RDD[(I, V)] = {
-    null
-  }
-}
+  clip: Boolean = false
+) extends Read

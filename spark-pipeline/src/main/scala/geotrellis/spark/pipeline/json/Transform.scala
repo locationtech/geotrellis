@@ -1,16 +1,15 @@
-package geotrellis.spark.pipeline
+package geotrellis.spark.pipeline.json
 
 import geotrellis.proj4.CRS
-import geotrellis.raster.{CellGrid, CellSize, CellType}
 import geotrellis.raster.crop.CropMethods
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.prototype.TilePrototypeMethods
 import geotrellis.raster.reproject.TileReprojectMethods
-import geotrellis.raster.resample.{NearestNeighbor, PointResampleMethod, ResampleMethod}
+import geotrellis.raster.resample.{NearestNeighbor, PointResampleMethod}
 import geotrellis.raster.stitch.Stitcher
+import geotrellis.raster.{CellGrid, CellSize, CellType}
 import geotrellis.spark.tiling.{FloatingLayoutScheme, LayoutDefinition, LayoutLevel, LayoutScheme, TilerKeyMethods, ZoomedLayoutScheme}
-import geotrellis.spark._
-import geotrellis.spark.{Boundable, Metadata, SpatialComponent}
+import geotrellis.spark.{Boundable, Metadata, SpatialComponent, _}
 import geotrellis.util.Component
 import geotrellis.vector.ProjectedExtent
 import org.apache.spark.rdd.RDD
@@ -20,59 +19,38 @@ import scala.util.Try
 
 trait Transform extends PipelineExpr
 
-trait TransformHomo {
-
-}
-
 /** Rename Inputs into groups */
 case class TransformGroup(
+  `type`: String,
   tags: List[String],
-  tag: String,
-  `type`: String = "transform.group"
-) extends Transform {
-  def eval[I, V](labeledRDDs: List[(String, RDD[(I, V)])]): List[(String, RDD[(I, V)])] = {
-    val (grdds, rdds) = labeledRDDs.partition { case (l, _) => tags.contains(l) }
-    grdds.map { case (_, rdd) => tag -> rdd } ::: rdds
-  }
-}
+  tag: String
+) extends Transform
 
 /** Merge inputs into a single Multiband RDD */
-/*case class TransformMerge(
+case class TransformMerge(
+  `type`: String,
   tags: List[String],
-  tag: String,
-  `type`: String = "transform.merge"
-) extends Transform {
-  def eval[I, V, V2](rdds: List[RDD[(I, V)]]): List[RDD[(I, V2)]] = null
-}*/
+  tag: String
+) extends Transform
 
 case class TransformMap(
+  `type`: String,
   func: String, // function name
-  tag: Option[String] = None,
-  `type`: String = "transform.map"
-) extends Transform {
-  def eval[I, V](rdd: RDD[(I, V)]): RDD[(I, V)] = {
-    //Class.forName(func).newInstance().asInstanceOf[PipelineFunction]
-    null
-  }
-}
+  tag: Option[String] = None
+) extends Transform
 
 case class TransformPerTileReproject(
-  crs: String,
-  `type`: String = "transform.reproject.per-tile"
+  `type`: String,
+  crs: String
 ) extends Transform {
   def getCRS = Try(CRS.fromName(crs)) getOrElse CRS.fromString(crs)
-
-  def eval[
-    I: Component[?, ProjectedExtent],
-    V <: CellGrid: (? => TileReprojectMethods[V])
-  ](rdd: RDD[(I, V)]): RDD[(I, V)] = rdd.reproject(getCRS)
 }
 
 case class TransformBufferedReproject(
+  `type`: String,
   crs: String,
   resampleMethod: PointResampleMethod = NearestNeighbor,
-  maxZoom: Option[Int] = None,
-  `type`: String = "transform.reproject.buffered"
+  maxZoom: Option[Int] = None
 ) extends Transform {
   def getCRS = Try(CRS.fromName(crs)) getOrElse CRS.fromString(crs)
 

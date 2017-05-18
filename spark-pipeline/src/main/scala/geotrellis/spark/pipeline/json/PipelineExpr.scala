@@ -1,4 +1,6 @@
-package geotrellis.spark.pipeline
+package geotrellis.spark.pipeline.json
+
+import geotrellis.spark.pipeline.PipelineConstructor
 
 trait PipelineExpr {
   def ~(other: PipelineExpr): PipelineConstructor = this :: other :: Nil

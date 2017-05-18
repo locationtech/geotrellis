@@ -1,4 +1,4 @@
-package geotrellis.spark.pipeline
+package geotrellis.spark.pipeline.json
 
 trait Reindex extends PipelineExpr {
   val name: String
@@ -8,41 +8,41 @@ trait Reindex extends PipelineExpr {
 }
 
 case class ReindexHadoop(
+  `type`: String,
   name: String,
   profile: String,
   uri: String,
-  keyIndexMethod: PipelineKeyIndexMethod,
-  `type`: String = "reindex.hadoop"
+  keyIndexMethod: PipelineKeyIndexMethod
 ) extends Reindex
 
 case class ReindexS3(
+  `type`: String,
   name: String,
   profile: String,
   uri: String,
-  keyIndexMethod: PipelineKeyIndexMethod,
-  `type`: String = "reindex.s3"
+  keyIndexMethod: PipelineKeyIndexMethod
 ) extends Reindex
 
 case class ReindexAccumulo(
+  `type`: String,
   name: String,
   profile: String,
   uri: String,
-  keyIndexMethod: PipelineKeyIndexMethod,
-  `type`: String = "reindex.accumulo"
+  keyIndexMethod: PipelineKeyIndexMethod
 ) extends Reindex
 
 case class ReindexCassandra(
+  `type`: String,
   name: String,
   profile: String,
   uri: String,
-  keyIndexMethod: PipelineKeyIndexMethod,
-  `type`: String = "reindex.cassandra"
+  keyIndexMethod: PipelineKeyIndexMethod
 ) extends Reindex
 
 case class ReindexHBase(
+  `type`: String,
   name: String,
   profile: String,
   uri: String,
-  keyIndexMethod: PipelineKeyIndexMethod,
-  `type`: String = "reindex.hbase"
+  keyIndexMethod: PipelineKeyIndexMethod
 ) extends Reindex
