@@ -5,8 +5,7 @@ Context
 ^^^^^^^
 
 The current GeoTrellis ETL does not allow us to determine ETL as a pipeline of transformations / actions.
-This document describes a new approach (inspired by [PDAL Pipeline](https://www.pdal.io/pipeline.html))
-with a new ETL JSON description.
+This document describes a new approach (inspired by `PDAL Pipeline <https://www.pdal.io/pipeline.html>`_) with a new ETL JSON description.
 
 The new ETL would be in fact a Pipeline, which would allow flexible input sources / transofrmations / write
 steps definitions, in addition a flexible way to apply user defined functions would be introduced.
@@ -56,8 +55,11 @@ of separate sources to which functions would be applied.
 Scheme with Pipeline work description (arrows are actions):
 
 .. figure:: images/pipeline.png
-   :alt:
+:alt:
 
+
+The first attempt to describe it as JSON:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 **Read steps**
 
 *Read definition:*
@@ -283,6 +285,121 @@ Per-tile reproject can be applied only to unstructured rasters:
       "maxZoom": 19
     }
   ]
+
+** Problems **
+
+It worked in the PDAL Pipeline case, as all operations worked on the same types. Input sources could be different,
+but the internal type is always the same, the means that transformation functions have always the same type (as that would be the
+most significant problem in the GeoTrellis case (as inputs can be of a different type, and as a consequence there are two problems:
+such functions application and such functions result type)).
+
+During the attempt to implement rough version, was tried to unify typed and untyped ASTs (it was not obvious that in different cases different type information would be required), and different AST interpreters should be used (for typed and untyped cases).
+
+The following problems were figured out:
+* Types have to be described in the JSON representation
+* Internal AST should be typed (for internal Scala DSL) and untyped (with erased types, for JSON DSL, and with type information in the JSON fields)
+* The generic approach in JSON description should be followed, so the type would be a classname, and during JSON parsing the correct
+  AST Node representation should be loaded (for example using Java class loader).
+* As a consequence interpreters for typed and untyped ASTs should be different.
+
+The second attempt to describe it as JSON:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+There still a question how internal AST nodes should be represented.
+
+1. The correct Node (typed or untyped) would be picked during JSON parsing
+2. Json would be parsed into the set of internal case classes, and after that converted into typed ot untyped AST nodes.
+
+Json descriptions would be quite the same, but into the all `type` fields should be inserted actual class name, and in
+such class name path (package names) this class type can be hidden.
+
+For example:
+
+.. code:: javascript
+
+  "type": "geotrellis.pipeline.singleband.temporal.Reproject" // singleband and temporal quite important information
+
+It is not quite obvious how and when such class would be loaded, but it's possible, and it's possible to cast it into necessary type
+due to type information available.
+
+The following interpreter for untyped case can be implemented (just a snippet and definitely not the final version):
+
+.. code:: scala
+
+  def interpretUntyped = {
+    // everything should keep ordering
+    val reads: List[Read] = List()
+    val transformations: List[Transform] = List()
+    val writes: List[Write] = List()
+
+    val inputs: List[(String, RDD[Any])] = reads.map { r =>
+      // make instance of a class and typed; after that it's possible to erase types again.
+      // Class.forName(r.`type`).newInstance
+      // read =>
+      null: (String, RDD[Any])
+    }
+
+    // along with common transform operations there can be arguable aggregate functions,
+    // to rename multiple inputs
+    // or to merge them into multiband input
+
+    val reorogonizedInputs = transformations.flatMap {
+      case t: TransformGroup =>
+        // make instance of a class and typed; after that it's possible to erase types again.
+        // Class.forName(r.`type`).newInstance
+        // List[(String, RDD[Any])] => List[(String, RDD[Any])] function applied
+        // casting of RDD can be incapsulated into this functions
+        null: List[(String, RDD[Any])]
+
+      case t: TransformMerge =>
+        // make instance of a class and typed; after that it's possible to erase types again.
+        // Class.forName(r.`type`).newInstance
+        // List[(String, RDD[Any])] => List[(String, RDD[Any])] function applied
+        // casting of RDD can be incapsulated into this functions
+        null: List[(String, RDD[Any])]
+
+        // no transofmration steps applied
+      case _ => null: List[(String, RDD[Any])]
+    }
+
+    val generalTransformations: List[(String, RDD[Any])] = reorogonizedInputs.map {
+      case p @ (tag, rdd) =>
+        transformations.foldLeft(p) { case (acc, tr: Transform) =>
+          // make instance of a class and typed; after that it's possible to erase types again.
+          // Class.forName(r.`type`).newInstance
+          // List[(String, RDD[Any])] => List[(String, RDD[Any])] functions applied
+          // casting of RDD can be incapsulated into this functions
+          // String as a first tuple argument can be used to be sure that transformation can be applied
+          // runtime exceptions can happen: class not found, or type can't be casted
+          // shapeless.cast function can be used(?)
+
+          // tr.instance.apply(acc)
+
+          null: (String, RDD[Any])
+        }
+    }
+
+    writes.collect { case w: Write =>
+      // make instance of a class and typed; after that it's possible to erase types again.
+      // Class.forName(r.`type`).newInstance
+      // List[(String, RDD[Any])] => Boolean // Unit
+
+      ()
+    }
+
+There can be cases to omit ``write`` steps, or to return ``RDDs`` after all transformations applied in any case.
+Such approach would allow to write the following expression:
+
+.. code:: scala
+
+  // json can be AST / or a JSON string
+  val rdd: TileLayerRDD[SpatialKey] = Pipeline.execute[TileLayerRDD[SpatialKey](json)
+
+However there is still a lot to explore. The most significant questions still:
+
+* Interpreters versions
+* When to class load a class with necessary type (during initial JSON parsing or after)
+* How to load classes dynamically (just a Class Loader or Java SPI)
 
 Conclusion
 ^^^^^^^^^^
