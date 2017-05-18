@@ -286,7 +286,7 @@ Per-tile reproject can be applied only to unstructured rasters:
     }
   ]
 
-** Problems **
+**Problems**
 
 It worked in the PDAL Pipeline case, as all operations worked on the same types. Input sources could be different,
 but the internal type is always the same, the means that transformation functions have always the same type (as that would be the
@@ -296,6 +296,7 @@ such functions application and such functions result type)).
 During the attempt to implement rough version, was tried to unify typed and untyped ASTs (it was not obvious that in different cases different type information would be required), and different AST interpreters should be used (for typed and untyped cases).
 
 The following problems were figured out:
+
 * Types have to be described in the JSON representation
 * Internal AST should be typed (for internal Scala DSL) and untyped (with erased types, for JSON DSL, and with type information in the JSON fields)
 * The generic approach in JSON description should be followed, so the type would be a classname, and during JSON parsing the correct
