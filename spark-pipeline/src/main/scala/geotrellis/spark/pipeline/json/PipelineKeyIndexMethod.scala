@@ -1,4 +1,4 @@
-package geotrellis.spark.pipeline
+package geotrellis.spark.pipeline.json
 
 case class PipelineKeyIndexMethod(
   `type`: String,

@@ -1,9 +1,12 @@
 package geotrellis.spark
 
+import geotrellis.spark.pipeline.json._
 import org.apache.spark.rdd.RDD
 
 package object pipeline {
   type PipelineConstructor = List[PipelineExpr]
+  type LabeledListRDD = List[(String, RDD[Any])]
+  type ListRDD = List[RDD[Any]]
 
   implicit class PipelineMethods(pipeline: List[PipelineExpr]) {
     lazy val (read, transform, write) = {
