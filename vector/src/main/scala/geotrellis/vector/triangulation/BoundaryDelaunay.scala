@@ -320,11 +320,13 @@ object BoundaryDelaunay {
 
     val boundary =
       if (dt.isLinear) {
-        if (dt.numVertices == 1) {
-          addPoint(dt.liveVertices.toSeq(0))
-          -1
-        } else
-          copyConvertLinearBound
+        dt.numVertices match {
+          case 0 => -1
+          case 1 => 
+            addPoint(dt.liveVertices.toSeq(0))
+            -1
+          case _ => copyConvertLinearBound
+        }
       } else
         copyConvertBoundingTris
 

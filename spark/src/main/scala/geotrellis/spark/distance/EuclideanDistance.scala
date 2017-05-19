@@ -70,6 +70,9 @@ object EuclideanDistance {
       best
     }
 
+    if (stitched.pointSet.length == 0)
+      return DoubleArrayTile.empty(re.cols, re.rows)
+
     val baseEdge = 
       if (center.boundary != -1) {
         // center had edges

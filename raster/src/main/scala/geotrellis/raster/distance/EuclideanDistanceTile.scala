@@ -22,6 +22,7 @@ import geotrellis.raster.{RasterExtent, DoubleArrayTile, Tile}
 import geotrellis.raster.rasterize.polygon.PolygonRasterizer
 import geotrellis.vector.{Point, Polygon}
 import geotrellis.vector.voronoi._
+
 import scala.math.sqrt
 
 object EuclideanDistanceTile {
@@ -38,8 +39,12 @@ object EuclideanDistanceTile {
   def rasterizeDistanceCell(rasterExtent: RasterExtent, tile: DoubleArrayTile)(arg: (Polygon, Coordinate)) = {
     val (poly, coord) = arg
 
-    val buffered = poly.buffer(math.max(rasterExtent.cellwidth, rasterExtent.cellheight))
-    PolygonRasterizer.foreachCellByPolygon(buffered, rasterExtent)(fillFn(rasterExtent, tile, Point.jtsCoord2Point(coord)))
+    try {
+      val buffered = poly.buffer(math.max(rasterExtent.cellwidth, rasterExtent.cellheight))
+      PolygonRasterizer.foreachCellByPolygon(buffered, rasterExtent)(fillFn(rasterExtent, tile, Point.jtsCoord2Point(coord)))
+    } catch {
+      case e: Throwable => println(s"Error when handling ${poly}: ${e.getMessage}")
+    }
   }
 
   def apply(pts: Array[Coordinate], rasterExtent: RasterExtent): Tile = {
