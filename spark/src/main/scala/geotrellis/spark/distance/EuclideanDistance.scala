@@ -46,7 +46,7 @@ object EuclideanDistance {
     result
   }
 
-  private[spark] def neighborEuclideanDistance(center: DelaunayTriangulation, neighbors: Map[Direction, (BoundaryDelaunay, Extent)], re: RasterExtent): Tile = {
+  private[spark] def neighborEuclideanDistance(center: DelaunayTriangulation, neighbors: Map[Direction, (BoundaryDelaunay, Extent)], re: RasterExtent): Option[Tile] = {
     val _neighbors = neighbors.map { case (dir, value) => (convertDirection(dir), value) }
     val stitched = StitchedDelaunay(center, _neighbors, false)
 
@@ -70,25 +70,26 @@ object EuclideanDistance {
       best
     }
 
-    if (stitched.pointSet.length == 0)
-      return DoubleArrayTile.empty(re.cols, re.rows)
+    if (stitched.pointSet.length == 0) {
+      None
+    } else {
+      val baseEdge = 
+        if (center.boundary != -1) {
+          // center had edges
+          stitched.halfEdgeTable.edgeIncidentTo(center.halfEdgeTable.getDest(center.boundary)) 
+        } else {
+          // center either has 1 or no points
+          findBaseEdge()
+        }
 
-    val baseEdge = 
-      if (center.boundary != -1) {
-        // center had edges
-        stitched.halfEdgeTable.edgeIncidentTo(center.halfEdgeTable.getDest(center.boundary)) 
-      } else {
-        // center either has 1 or no points
-        findBaseEdge()
-      }
+      val extent = re.extent
+      val cells = voronoiCells(stitched, baseEdge, extent)
 
-    val extent = re.extent
-    val cells = voronoiCells(stitched, baseEdge, extent)
+      val tile = DoubleArrayTile.empty(re.cols, re.rows)
+      cells.foreach(EuclideanDistanceTile.rasterizeDistanceCell(re, tile))
 
-    val tile = DoubleArrayTile.empty(re.cols, re.rows)
-    cells.foreach(EuclideanDistanceTile.rasterizeDistanceCell(re, tile))
-
-    tile
+      Some(tile)
+    }
   }
 
   def apply(rdd: RDD[(SpatialKey, Array[Coordinate])], layoutDefinition: LayoutDefinition): RDD[(SpatialKey, Tile)] = {
@@ -121,7 +122,7 @@ object EuclideanDistance {
       }, preservesPartitioning = true)
       .join(triangulations)
       .mapPartitions({ partition =>
-        partition.map { case (key, (borders, triangulation)) => { // : (Map[Direction, (BoundaryDelaunay, Extent)], DelaunayTriangulation)
+        partition.flatMap { case (key, (borders, triangulation)) => { // : (Map[Direction, (BoundaryDelaunay, Extent)], DelaunayTriangulation)
           val extent = layoutDefinition.mapTransform(key)
           val re =
             RasterExtent(
@@ -130,7 +131,10 @@ object EuclideanDistance {
               layoutDefinition.tileRows
             )
 
-          (key, neighborEuclideanDistance(triangulation, borders, re))
+          neighborEuclideanDistance(triangulation, borders, re) match {
+            case None => None
+            case Some(tile) => Some(key, tile)
+          }
         }}
       }, preservesPartitioning = true)
 

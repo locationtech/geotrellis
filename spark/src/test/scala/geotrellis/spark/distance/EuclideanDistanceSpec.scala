@@ -124,7 +124,7 @@ class EuclideanDistanceSpec extends FunSpec
       // rasterTile.renderPng(cm).write("base_distance.png")
 
       println("  Forming stitched EuclideanDistance tile")
-      val neighborTile = EuclideanDistance.neighborEuclideanDistance(center, bounds, rasterExtent)
+      val neighborTile = EuclideanDistance.neighborEuclideanDistance(center, bounds, rasterExtent).get
       // neighborTile.renderPng(cm).write("spark_distance.png")
       println("  Finished")
 
@@ -283,7 +283,7 @@ class EuclideanDistanceSpec extends FunSpec
       println(s"Rasterizing full point set")
       val baselineEDT = RasterEuclideanDistance(points, rasterExtent)
       println(s"Rasterizing stitched point set")
-      val stitchedEDT = EuclideanDistance.neighborEuclideanDistance(DelaunayTriangulation(Array.empty[Coordinate]), stitchInput, rasterExtent)
+      val stitchedEDT = EuclideanDistance.neighborEuclideanDistance(DelaunayTriangulation(Array.empty[Coordinate]), stitchInput, rasterExtent).get
       println(s"Done!")
 
       assertEqual(baselineEDT, stitchedEDT)
@@ -334,7 +334,7 @@ class EuclideanDistanceSpec extends FunSpec
       println(s"Rasterizing full point set")
       val baselineEDT = RasterEuclideanDistance(points, rasterExtent)
       println(s"Rasterizing stitched point set")
-      val stitchedEDT = EuclideanDistance.neighborEuclideanDistance(DelaunayTriangulation(Array.empty[Coordinate]), stitchInput, rasterExtent)
+      val stitchedEDT = EuclideanDistance.neighborEuclideanDistance(DelaunayTriangulation(Array.empty[Coordinate]), stitchInput, rasterExtent).get
       println(s"Done!")
 
       assertEqual(baselineEDT, stitchedEDT)

@@ -18,7 +18,7 @@ package geotrellis.raster.distance
 
 import com.vividsolutions.jts.geom.Coordinate
 
-import geotrellis.raster.{RasterExtent, DoubleArrayTile, Tile}
+import geotrellis.raster._
 import geotrellis.raster.rasterize.polygon.PolygonRasterizer
 import geotrellis.vector.{Point, Polygon}
 import geotrellis.vector.voronoi._
@@ -27,7 +27,7 @@ import scala.math.sqrt
 
 object EuclideanDistanceTile {
 
-  private def fillFn(rasterExtent: RasterExtent, tile: DoubleArrayTile, base: Point)(col: Int, row: Int): Unit = {
+  private def fillFn(rasterExtent: RasterExtent, tile: MutableArrayTile, base: Point)(col: Int, row: Int): Unit = {
     val (x,y) = rasterExtent.gridToMap(col, row)
     val currentValue = tile.getDouble(col, row)
     val newValue = sqrt((x - base.x) * (x - base.x) + (y - base.y) * (y - base.y))
@@ -36,7 +36,7 @@ object EuclideanDistanceTile {
       tile.setDouble(col, row, newValue)
   }
 
-  def rasterizeDistanceCell(rasterExtent: RasterExtent, tile: DoubleArrayTile)(arg: (Polygon, Coordinate)) = {
+  def rasterizeDistanceCell(rasterExtent: RasterExtent, tile: MutableArrayTile)(arg: (Polygon, Coordinate)) = {
     val (poly, coord) = arg
 
     try {
@@ -47,9 +47,9 @@ object EuclideanDistanceTile {
     }
   }
 
-  def apply(pts: Array[Coordinate], rasterExtent: RasterExtent): Tile = {
+  def apply(pts: Array[Coordinate], rasterExtent: RasterExtent, cellType: CellType = DoubleConstantNoDataCellType): Tile = {
     val vor = VoronoiDiagram(pts, rasterExtent.extent)
-    val tile = DoubleArrayTile.empty(rasterExtent.cols, rasterExtent.rows)
+    val tile = ArrayTile.empty(cellType, rasterExtent.cols, rasterExtent.rows)
 
     vor.voronoiCellsWithPoints.foreach(rasterizeDistanceCell(rasterExtent, tile))
     tile
