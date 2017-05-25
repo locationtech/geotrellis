@@ -139,19 +139,11 @@ object Intersects {
         val mapTransform = metadata.getComponent[LayoutDefinition].mapTransform
         val extent = polygon.envelope
         val keyext = mapTransform(kb.minKey)
-        val bounds = mapTransform(extent)
+        val bounds: GridBounds = mapTransform(extent)
         val options = Options(includePartial=true, sampleType=PixelIsArea)
 
-        /*
-         * Construct  a  rasterExtent  that fits  tightly  around  the
-         * candidate tiles  (the candidate keys).  IT  IS ASSUMED THAT
-         * ALL TILES HAVE THE SAME LENGTH AND HEIGHT.
-         */
-        val xmin = math.floor(extent.min.x / keyext.width) * keyext.width
-        val ymin = math.floor(extent.min.y / keyext.height) * keyext.height
-        val xmax = math.ceil(extent.max.x / keyext.width) * keyext.width
-        val ymax = math.ceil(extent.max.y / keyext.height) * keyext.height
-        val rasterExtent = RasterExtent(Extent(xmin, ymin, xmax, ymax), bounds.width, bounds.height)
+        val boundsExtent: Extent = mapTransform(bounds)
+        val rasterExtent = RasterExtent(boundsExtent, bounds.width, bounds.height)
 
         /*
          * Use the Rasterizer to construct  a list of tiles which meet
