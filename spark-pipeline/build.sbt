@@ -4,6 +4,11 @@ name := "geotrellis-spark-pipeline"
 libraryDependencies ++= Seq(
   "com.github.fge" % "json-schema-validator" % "2.2.6",
   "com.chuusai" %% "shapeless" % "2.3.2",
+  "org.clapper" %% "classutil" % "1.1.2",
+  "org.clapper" %% "grizzled-scala" % "4.2.0",
+  "org.ow2.asm" % "asm" % "5.1",
+  "org.ow2.asm" % "asm-commons" % "5.1",
+  "org.ow2.asm" % "asm-util" % "5.1",
   sparkCore % "provided",
   scalatest % "test")
 
