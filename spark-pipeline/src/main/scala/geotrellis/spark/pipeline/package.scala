@@ -24,7 +24,7 @@ package object pipeline {
     }
 
     def interpretTransform[I, K, V, M[_]](t: Transform) = t match {
-      case tr: TransformPerTileReproject => tr.eval _
+      case tr: TransformPerTileReproject => null
     }
 
     /**
@@ -36,14 +36,14 @@ package object pipeline {
       * */
 
     def execute[I, K, V, M[_]] = {
-      val reads: Map[String, RDD[(I, V)]] =
-        read.map { r => r.getTag -> r.eval[I, V] }.toMap
+      val reads: Map[String, RDD[(I, V)]] = null
+      // read.map { r => r.getTag -> r.eval[I, V] }.toMap
 
       // first group operations
       val group = transform.collect { case t: TransformGroup => t }
-      //val merge = transform.collect { case t: TransformMerge => t }
+      // val merge = transform.collect { case t: TransformMerge => t }
 
-      val groupApply: List[(String, RDD[(I, V)])] = group.flatMap { _.eval(reads.toList) }
+      val groupApply: List[(String, RDD[(I, V)])] = null //group.flatMap { _.eval(reads.toList) }
 
       groupApply.foldLeft(List[RDD[(K, V)] with M[K]]()) { case (acc, lrdd: (String, RDD[(I, V)])) =>
         acc
@@ -57,7 +57,8 @@ package object pipeline {
         _ match {
           case t: TransformPerTileReproject => {
             isBuffered = false
-            groupApply.map { case (k, v) => k -> t.eval[I, V](v) }
+            // groupApply.map { case (k, v) => k -> t.eval[I, V](v) }
+            null
           }
 
           case _ => groupApply
@@ -70,7 +71,7 @@ package object pipeline {
         _ match {
           case t: TransformTile => {
             reprojectedPerTile.map { case (_, rdd) =>
-              t.eval[K, I, V](rdd)
+              null //t.eval[K, I, V](rdd)
             }
           }
         }
@@ -83,7 +84,7 @@ package object pipeline {
         _ match {
           case t: TransformBufferedReproject => {
             tileToLayout.map { case rdd =>
-              t.eval[K, V](rdd)(null)
+              null //t.eval[K, V](rdd)(null)
             }
           }
         }
