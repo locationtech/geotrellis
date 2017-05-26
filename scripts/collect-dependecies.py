@@ -1,8 +1,63 @@
-import os, sys, re, argparse, csv
+import os, sys, re, argparse, csv, shutil, json
 import subprocess
 from subprocess import Popen, PIPE, STDOUT, call
+import networkx as nx
+from networkx.readwrite import json_graph
 
 scala_versions = ['2.11', '2.12']
+GT_VERSION = "1.1"
+
+class Dependency(object):
+    def __init__(self, org, name, version, tags=[]):
+        self.org = org.strip()
+        self.name = name.strip()
+        self.version = version.strip()
+        self.tags = tags
+
+    def __hash__(self):
+        return hash((self.org, self.name, self.version))
+
+    def __repr__(self):
+        return "%s:%s:%s" % (self.org, self.name, self.version)
+
+    def __eq__(self, other):
+        if isinstance(other, Dependency):
+            return (self.org == other.org) and \
+                   (self.name == other.name) and \
+                   (self.version == other.version)
+        else:
+            return false
+
+    def __neq__(self, other):
+        return not self.__eq__(other)
+
+    def source_link(self):
+        (org, name, version) = (self.org, self.name, self.version)
+        if not org.startswith("org.geotools"):
+            s = (org.replace('.', '/'), name, version, name, version)
+            return "http://search.maven.org/remotecontent?filepath=%s/%s/%s/%s-%s-sources.jar" % s
+        else:
+            s = (org.replace('.', '/'), name, version, name, version)
+            return "http://download.osgeo.org/webdav/geotools/%s/%s/%s/%s-%s-sources.jar" % s
+    @classmethod
+    def from_string(cls, s):
+        l = s.split(':')
+        return cls(l[0], l[1], l[2])
+
+class DependencySet(object):
+    def __init__(self, dep_names):
+        self.deps = []
+        for l in map(lambda x: x.split(':'), dep_names):
+            self.deps.append(Dependency(l[0], l[1], l[2]))
+
+        self.versions = {}
+        self.dep_tag_map = {}
+        for dep in self.deps:
+            self.versions[(dep.org, dep.name)] = dep.version
+
+    def version(self, org, name):
+        return self.versions[(org, name)]
+
 
 class DepSet(object):
     def __init__(self, deps_map, filter_func=lambda x: True):
@@ -183,6 +238,119 @@ def gather_dependencies(projects):
                                     deps[dep] = set([])
     return deps
 
+def generate_dependency_graph_old(projects):
+    G = nx.DiGraph()
+
+    for project in projects:
+    # for project in ['raster']:
+        dep_stack = []
+        last_indent = 0
+
+        print("Checking %s..." % project)
+        cmd = ['sbt', '-no-colors', '%s/dependencyTree' % project]
+        print(cmd)
+        output = ""
+
+        def add_edge(d):
+            if dep_stack:
+                G.add_edge(str(dep_stack[-1]), str(d))
+                print("EDGE %s -> %s" % (str(dep_stack[-1]), str(d)))
+            else:
+                G.add_node(str(d))
+
+        with Popen(cmd, stdout=PIPE, stderr=STDOUT, bufsize=1, universal_newlines=True) as p:
+            for l in p.stdout:
+                line = l.strip()
+                print(line)
+
+                if not 'evicted' in line:
+                    mr = re.search(r"""\[info\] (org\.locationtech\.geotrellis):([^:]+):([-\d\w.]+)""", line)
+                    m = re.search(r"""\[info\](.*)\+-([^:]+):([^:]+):([-\d\w.]+)""", line)
+                    if mr:
+                        org = mr.group(1)
+                        name = mr.group(2)
+                        version = mr.group(3)
+                        this_indent = 0
+                    elif m:
+                        org = m.group(2)
+                        name = m.group(3)
+                        version = m.group(4)
+                        this_indent = len(m.group(1)) / 2
+
+                    if m or mr:
+                        dep = Dependency(org, name, version)
+
+                        if name == "machinist_2.11":
+                            print("THIS INDENT: %d  LAST INDENT: %d" % (this_indent, last_indent))
+
+                        if this_indent > last_indent:
+                            add_edge(dep)
+                            dep_stack.append(dep)
+                        elif this_indent == last_indent:
+                            dep_stack = dep_stack[:-1]
+                            add_edge(dep)
+                            dep_stack.append(dep)
+                        elif this_indent == 0:
+                            add_edge(dep)
+                            dep_stack.append(dep)
+                        else:
+                            dep_stack = dep_stack[:-1]
+                            d = int(this_indent - last_indent) # negative
+                            dep_stack = dep_stack[:d]
+                            add_edge(dep)
+                            dep_stack.append(dep)
+
+                        last_indent = this_indent
+    return G
+
+def generate_dependency_graph(projects):
+    G = nx.DiGraph()
+
+    for project in projects:
+    # for project in ['raster']:
+        dep_stack = []
+        last_indent = 0
+
+        print("Checking %s..." % project)
+        cmd = ['sbt', '-no-colors', '%s/dependencyDot' % project]
+        print(cmd)
+        output = ""
+
+        with Popen(cmd, stdout=PIPE, stderr=STDOUT, bufsize=1, universal_newlines=True) as p:
+            for l in p.stdout:
+                line = l.strip()
+                print(line)
+
+                if not 'evicted' in line:
+                    m = re.search(r"""Wrote dependency graph to '([^']+)'""", line)
+
+                    if m:
+                        path = m.group(1)
+                        H = nx.DiGraph(nx.drawing.nx_pydot.read_dot(path))
+                        G = nx.compose(G, H)
+
+    return G
+
+def run_graphml_export(args):
+    """
+    Generates the GraphML file
+    """
+    output_path = args.output
+    if not output_path:
+        output_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'dependencies.graphml')
+    print("Using output %s" % output_path)
+
+    projects = published_projects
+    if args.projects:
+        projects = args.projects.split(',')
+
+    G = generate_dependency_graph(projects)
+
+    nx.write_gml(G, output_path)
+    # data = json_graph.node_link_data(G)
+    # open("scripts/dependencies.json", 'w').write(json.dumps(data))
+
+
 def write_dependencies(deps, version, output):
     s = '"org","name","version","tags"\n'
 
@@ -323,6 +491,11 @@ if __name__ == "__main__":
     parser_download.add_argument('--output', '-o', metavar='OUTPUT_DIRECTORY')
     parser_download.add_argument('diff_file', metavar='DIFF_FILE', help='Path to CSV of dependency diff, from "diff" command.')
     parser_download.set_defaults(func=run_download)
+
+    parser_graphml = subparsers.add_parser('graphml', help='Generate GraphML for dependencies.')
+    parser_graphml.add_argument('--output', '-o', metavar='OUTPUT')
+    parser_graphml.add_argument('--projects', '-p', metavar='PROJECTS', help='Comma seperated list of subprojects to run.')
+    parser_graphml.set_defaults(func=run_graphml_export)
 
 
     args = parser.parse_args()
