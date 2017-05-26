@@ -43,7 +43,7 @@ object R2Viewshed extends Serializable {
 
   sealed case class DirectedSegment(x0: Int, y0: Int, x1: Int, y1: Int, theta: Double) {
     override def toString(): String = s"($x0, $y0) to ($x1, $y1) θ=$theta"
-    def rump(): Boolean = ((x0 == x1) && (y0 == y1))
+    def isRumpSegment(): Boolean = ((x0 == x1) && (y0 == y1))
   }
 
   sealed case class Ray(theta: Double, alpha: Double) {
@@ -298,6 +298,7 @@ object R2Viewshed extends Serializable {
       }
     }
 
+    // PLUS operator is expensive ...
     if ((operator.isInstanceOf[Plus]) &&
         (from.isInstanceOf[FromNorth] || from.isInstanceOf[FromSouth]) &&
         (startCol < 0 || startCol >= cols)) {
@@ -329,48 +330,82 @@ object R2Viewshed extends Serializable {
     }
 
     val clip = clipAndQualifyRay(from)_
-    val north = mutable.ArrayBuffer.empty[Ray]
-    val east = mutable.ArrayBuffer.empty[Ray]
-    val south = mutable.ArrayBuffer.empty[Ray]
-    val west = mutable.ArrayBuffer.empty[Ray]
+    val northRays = mutable.ArrayBuffer.empty[Ray]
+    val eastRays = mutable.ArrayBuffer.empty[Ray]
+    val southRays = mutable.ArrayBuffer.empty[Ray]
+    val westRays = mutable.ArrayBuffer.empty[Ray]
+    val northSegs = Range(0, cols).flatMap({ col => clip(startCol,startRow,col,rows-1) })
+    val southSegs = Range(0, cols).flatMap({ col => clip(startCol,startRow,col,0) })
+    val eastSegs = Range(0, rows).flatMap({ row => clip(startCol,startRow,cols-1,row) })
+    val westSegs = Range(0, rows).flatMap({ row => clip(startCol,startRow,0,row) })
 
-    Range(0, cols) // North
-      .flatMap({ col => clip(startCol,startRow,col,rows-1) })
+    /***************
+     * GOING NORTH *
+     ***************/
+    northSegs
       .foreach({ seg =>
         alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
         Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
-        if (!terminated && !seg.rump) south.append(Ray(seg.theta, alpha))
+        if (!terminated && !seg.isRumpSegment) southRays.append(Ray(seg.theta, alpha))
       })
 
-    Range(0, rows) // East
-      .flatMap({ row => clip(startCol,startRow,cols-1,row) })
+    /***************
+     * GOING SOUTH *
+     ***************/
+    southSegs
       .foreach({ seg =>
         alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
         Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
-        if (!terminated && !seg.rump) west.append(Ray(seg.theta, alpha))
+        if (!terminated && !seg.isRumpSegment) northRays.append(Ray(seg.theta, alpha))
       })
 
-    Range(0, cols) // South
-      .flatMap({ col => clip(startCol,startRow,col,0) })
-      .foreach({ seg =>
-        alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
-        Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
-        if (!terminated && !seg.rump) north.append(Ray(seg.theta, alpha))
-      })
+    /**************
+     * GOING EAST *
+     **************/
+    if ((cols <= startCol) && (startCol <= 2*cols) && (eastSegs.forall(_.isRumpSegment))) { // Sharp angle case
+      Range(0, rows).foreach({ row => viewshedTile.set(cols-1, row, viewshedTile.get(cols-2, row)) })
+    } else { // Normal case
+      eastSegs
+        .foreach({ seg =>
+          alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
+          Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
+          if (!terminated && !seg.isRumpSegment) westRays.append(Ray(seg.theta, alpha))
+        })
+    }
 
-    Range(0, rows) // West
-      .flatMap({ row => clip(startCol,startRow,0,row) })
-      .foreach({ seg =>
-        alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
-        Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
-        if (!terminated && !seg.rump) east.append(Ray(seg.theta, alpha))
-      })
+    /**************
+     * GOING WEST *
+     **************/
+    if ((-1*cols < startCol) && (startCol < 0) && (westSegs.forall(_.isRumpSegment))) {
+      Range(0, rows).foreach({ row => viewshedTile.set(0, row, viewshedTile.get(1, row)) })
+    } else {
+      westSegs
+        .foreach({ seg =>
+          alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
+          Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
+          if (!terminated && !seg.isRumpSegment) eastRays.append(Ray(seg.theta, alpha))
+        })
+    }
+
+    /***************
+     * NORTH AGAIN *
+     ***************/
+    if ((rows <= startRow) && (startRow <= 2*rows) && (northSegs.forall(_.isRumpSegment))) {
+      Range(0, cols).foreach({ col => viewshedTile.set(col, rows-1, viewshedTile.get(col, rows-2)) })
+    }
+
+    /***************
+     * SOUTH AGAIN *
+     ***************/
+    if ((-1*rows < startRow) && (startRow < 0) && (southSegs.forall(_.isRumpSegment))) {
+      Range(0, cols).foreach({ col => viewshedTile.set(col, 0, viewshedTile.get(col, 1)) })
+    }
 
     val bundle: Bundle = Map(
-      FromSouth() -> south,
-      FromWest() -> west,
-      FromNorth() -> north,
-      FromEast() -> east
+      FromSouth() -> southRays,
+      FromWest() -> westRays,
+      FromNorth() -> northRays,
+      FromEast() -> eastRays
     )
     tileCallback(bundle)
 
