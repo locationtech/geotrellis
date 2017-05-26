@@ -296,7 +296,7 @@ object IterativeViewshed {
                 .mapValues({ rs => rs.sortBy(_.theta).toArray })
 
               packets.foreach({ case (from, rays) => // for each <direction, packet> pair, evolve the tile
-                val sortedRays = rays.toArray.sortBy(_.theta)
+                val sortedRays = rays.toArray
                 if (rays.length > 0) {
                   R2Viewshed.compute(
                     elevationTile, shed,
