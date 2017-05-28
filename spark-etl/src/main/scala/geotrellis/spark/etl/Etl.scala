@@ -16,12 +16,13 @@
 
 package geotrellis.spark.etl
 
-import geotrellis.raster.CellGrid
+import geotrellis.raster.{CellGrid, CellSize}
 import geotrellis.raster.crop.CropMethods
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.prototype.TilePrototypeMethods
 import geotrellis.raster.reproject._
-import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
+import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
+import geotrellis.raster.resample.ResampleMethod
 import geotrellis.raster.stitch.Stitcher
 import geotrellis.spark._
 import geotrellis.spark.io._
@@ -170,23 +171,31 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
 
     output.reprojectMethod match {
       case PerTileReproject =>
-        val reprojected = rdd.reproject(destCrs)
-        val floatMD = { // collecting floating metadata allows detecting upsampling
-          val (_, md) = reprojected.collectMetadata(FloatingLayoutScheme(output.tileSize))
-          md.copy(cellType = targetCellType.getOrElse(md.cellType))
+        def reprojected(targetCellSize: Option[CellSize] = None) = {
+          val reprojectedRdd = rdd.reproject(destCrs, RasterReprojectOptions(method = method, targetCellSize = targetCellSize))
+
+          val floatMD = { // collecting floating metadata allows detecting upsampling
+            val (_, md) = reprojectedRdd.collectMetadata(FloatingLayoutScheme(output.tileSize))
+            md.copy(cellType = targetCellType.getOrElse(md.cellType))
+          }
+
+          reprojectedRdd -> floatMD
         }
 
         scheme match {
           case Left(scheme: ZoomedLayoutScheme) if output.maxZoom.isDefined =>
             val LayoutLevel(zoom, layoutDefinition) = scheme.levelForZoom(output.maxZoom.get)
-            zoom -> resizingTileRDD(reprojected, floatMD, layoutDefinition)
+            val (reprojectedRdd, floatMD) = reprojected(Some(layoutDefinition.cellSize))
+            zoom -> resizingTileRDD(reprojectedRdd, floatMD, layoutDefinition)
 
           case Left(scheme) => // True for both FloatinglayoutScheme and ZoomedlayoutScheme
+            val (reprojectedRdd, floatMD) = reprojected()
             val LayoutLevel(zoom, layoutDefinition) = scheme.levelFor(floatMD.extent, floatMD.cellSize)
-            zoom -> resizingTileRDD(reprojected, floatMD, layoutDefinition)
+            zoom -> resizingTileRDD(reprojectedRdd, floatMD, layoutDefinition)
 
           case Right(layoutDefinition) =>
-            0 -> resizingTileRDD(reprojected, floatMD, layoutDefinition)
+            val (reprojectedRdd, floatMD) = reprojected()
+            0 -> resizingTileRDD(reprojectedRdd, floatMD, layoutDefinition)
         }
 
       case BufferedReproject =>
@@ -200,7 +209,7 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
         scheme match {
           case Left(layoutScheme: ZoomedLayoutScheme) if output.maxZoom.isDefined =>
             val LayoutLevel(zoom, layoutDefinition) = layoutScheme.levelForZoom(output.maxZoom.get)
-            zoom -> tiled.reproject(destCrs, layoutDefinition, method)._2
+            zoom -> tiled.reproject(destCrs, layoutDefinition, RasterReprojectOptions(method = method, targetCellSize = Some(layoutDefinition.cellSize)))._2
 
           case Left(layoutScheme) =>
             tiled.reproject(destCrs, layoutScheme, method)

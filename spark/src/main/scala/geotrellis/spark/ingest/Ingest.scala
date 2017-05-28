@@ -19,6 +19,7 @@ package geotrellis.spark.ingest
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.resample.{ResampleMethod, NearestNeighbor}
+import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
 import geotrellis.spark._
 import geotrellis.spark.pyramid.Pyramid
 import geotrellis.spark.reproject._
@@ -68,20 +69,30 @@ object Ingest {
       partitioner: Option[Partitioner] = None,
       bufferSize: Option[Int] = None,
       maxZoom: Option[Int] = None,
-      tileSize: Option[Int] = Some(256))
+      tileSize: Option[Int] = None)
     (sink: (TileLayerRDD[K], Int) => Unit): Unit = {
-    val (_, tileLayerMetadata) = (maxZoom, tileSize) match {
-      case (Some(zoom), Some(tileSize)) => sourceTiles.collectMetadata(destCRS, tileSize, zoom)
-      case _                            => sourceTiles.collectMetadata(FloatingLayoutScheme(512))
-    }
-    val tiledRdd = sourceTiles.tileToLayout(tileLayerMetadata, resampleMethod).cache()
 
+    val (_, tileLayerMetadata) = tileSize match {
+      case Some(ts) => sourceTiles.collectMetadata(FloatingLayoutScheme(ts))
+      case _ => sourceTiles.collectMetadata(FloatingLayoutScheme(256))
+    }
+
+    val tiledRdd = sourceTiles.tileToLayout(tileLayerMetadata, resampleMethod).cache()
     val contextRdd = new ContextRDD(tiledRdd, tileLayerMetadata)
-    val (zoom, tileLayerRdd) =
-      bufferSize match {
-        case Some(bs) => contextRdd.reproject(destCRS, layoutScheme, bs)
-        case None => contextRdd.reproject(destCRS, layoutScheme)
+
+    val (zoom, tileLayerRdd) = (layoutScheme, maxZoom) match {
+      case (layoutScheme: ZoomedLayoutScheme, Some(mz)) =>
+        val LayoutLevel(zoom, layoutDefinition) = layoutScheme.levelForZoom(mz)
+        (zoom, bufferSize match {
+          case Some(bs) => contextRdd.reproject(destCRS, layoutDefinition, bs, options = RasterReprojectOptions(method = resampleMethod, targetCellSize = Some(layoutDefinition.cellSize)))._2
+          case _ => contextRdd.reproject(destCRS, layoutDefinition, options = RasterReprojectOptions(method = resampleMethod, targetCellSize = Some(layoutDefinition.cellSize)))._2
+        })
+
+      case _ => bufferSize match {
+        case Some(bs) => contextRdd.reproject(destCRS, layoutScheme, bs, resampleMethod)
+        case _ => contextRdd.reproject(destCRS, layoutScheme, resampleMethod)
       }
+    }
 
     tileLayerRdd.persist(cacheLevel)
 
