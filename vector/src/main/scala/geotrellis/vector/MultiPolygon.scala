@@ -94,41 +94,57 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
     intersection(p)
   def intersection(p: Point): PointOrNoResult =
     p.intersection(this)
-  def safeIntersection(p: Point): PointOrNoResult =
+  def intersectionSafe(p: Point): PointOrNoResult =
     try intersection(p)
     catch {
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(p.jtsGeom))
     }
 
+  @deprecated("This will be removed in 2.0 - use intersectionSafe instead", "1.2")
+  def safeIntersection(p: Point): PointOrNoResult =
+    intersectionSafe(p)
+
   def &(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
     intersection(l)
   def intersection(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
     l.intersection(this)
-  def safeIntersection(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
+  def intersectionSafe(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
     try intersection(l)
     catch {
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(l.jtsGeom))
     }
 
+  @deprecated("This will be removed in 2.0 - use intersectionSafe instead", "1.2")
+  def safeIntersection(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
+    intersectionSafe(l)
+
   def &(g: TwoDimensions): TwoDimensionsTwoDimensionsIntersectionResult =
     intersection(g)
   def intersection(g: TwoDimensions): TwoDimensionsTwoDimensionsIntersectionResult =
     jtsGeom.intersection(g.jtsGeom)
-  def safeIntersection(g: TwoDimensions): TwoDimensionsTwoDimensionsIntersectionResult =
+  def intersectionSafe(g: TwoDimensions): TwoDimensionsTwoDimensionsIntersectionResult =
     try intersection(g)
     catch {
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(g.jtsGeom))
     }
 
+  @deprecated("This will be removed in 2.0 - use intersectionSafe instead", "1.2")
+  def safeIntersection(g: TwoDimensions): TwoDimensionsTwoDimensionsIntersectionResult =
+    intersectionSafe(g)
+
   def &(ls: MultiLine): OneDimensionAtLeastOneDimensionIntersectionResult =
     intersection(ls)
   def intersection(ls: MultiLine): OneDimensionAtLeastOneDimensionIntersectionResult =
     ls.intersection(this)
-  def safeIntersection(ls: MultiLine): OneDimensionAtLeastOneDimensionIntersectionResult =
+  def intersectionSafe(ls: MultiLine): OneDimensionAtLeastOneDimensionIntersectionResult =
     try intersection(ls)
     catch {
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(ls.jtsGeom))
     }
+
+  @deprecated("This will be removed in 2.0 - use intersectionSafe instead", "1.2")
+  def safeIntersection(ls: MultiLine): OneDimensionAtLeastOneDimensionIntersectionResult =
+    intersectionSafe(ls)
 
   // -- Union
 

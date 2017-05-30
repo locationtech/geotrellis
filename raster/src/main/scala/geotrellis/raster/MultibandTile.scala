@@ -63,7 +63,7 @@ trait MultibandTile extends CellGrid with MacroCombinableMultibandTile[Tile] wit
   /** Safely fetch a band from a [[MultiBandTile]], given some band index
     * which may or may not be valid.
     */
-  def safeBand(bandIndex: Int): Option[Tile] =
+  def bandSafe(bandIndex: Int): Option[Tile] =
     if(bandIndex < bandCount && bandIndex >= 0) Some(band(bandIndex)) else None
 
   /**

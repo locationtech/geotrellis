@@ -94,9 +94,9 @@ class ArrayMultibandTileSpec extends FunSpec with Matchers {
 
   describe("ArrayMultibandTile - other methods") {
     it("safeBand") {
-      mbt1.safeBand(-1) shouldBe None
-      mbt1.safeBand(0) shouldBe Some(mbt1.band(0))
-      mbt1.safeBand(100) shouldBe None
+      mbt1.bandSafe(-1) shouldBe None
+      mbt1.bandSafe(0) shouldBe Some(mbt1.band(0))
+      mbt1.bandSafe(100) shouldBe None
     }
   }
 }
