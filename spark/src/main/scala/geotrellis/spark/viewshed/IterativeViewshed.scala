@@ -129,6 +129,7 @@ object IterativeViewshed {
     maxDistance: Double,
     curvature: Boolean = true,
     operator: AggregationOperator = Or(),
+    epsilon: Double = (1/math.Pi),
     touchedKeys: mutable.Set[SpatialKey] = null
   )(implicit sc: SparkContext): RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]] = {
 
@@ -310,7 +311,8 @@ object IterativeViewshed {
                     operator = operator,
                     altitude = alt,
                     cameraDirection = angle,
-                    cameraFOV = fov
+                    cameraFOV = fov,
+                    epsilon = epsilon
                   )
                 }
               })

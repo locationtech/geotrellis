@@ -44,6 +44,15 @@ object R2Viewshed extends Serializable {
   sealed case class DirectedSegment(x0: Int, y0: Int, x1: Int, y1: Int, theta: Double) {
     override def toString(): String = s"($x0, $y0) to ($x1, $y1) θ=$theta"
     def isRumpSegment(): Boolean = ((x0 == x1) && (y0 == y1))
+    def isNearVertical(epsilon: Double): Boolean = {
+      ((math.abs(theta - 0.5*math.Pi) < epsilon) ||
+       (math.abs(theta - 1.5*math.Pi) < epsilon))
+    }
+    def isNearHorizontal(epsilon: Double): Boolean = {
+      ((math.abs(theta - 0.0*math.Pi) < epsilon) ||
+       (math.abs(theta - 1.0*math.Pi) < epsilon) ||
+       (math.abs(theta - 2.0*math.Pi) < epsilon))
+    }
   }
 
   sealed case class Ray(theta: Double, alpha: Double) {
@@ -196,7 +205,10 @@ object R2Viewshed extends Serializable {
     operator: AggregationOperator,
     altitude: Double = Double.NegativeInfinity,
     cameraDirection: Double = 0,
-    cameraFOV: Double = -1.0
+    cameraFOV: Double = -1.0,
+    epsilon: Double = (1/math.Pi),
+    debugCol: Int = -1,
+    debugRow: Int = -1
   ): Tile = {
     val cols = elevationTile.cols
     val rows = elevationTile.rows
@@ -362,7 +374,9 @@ object R2Viewshed extends Serializable {
     /**************
      * GOING EAST *
      **************/
-    if ((cols <= startCol) && (startCol <= 2*cols) && (eastSegs.forall(_.isRumpSegment))) { // Sharp angle case
+    if ((cols <= startCol) && (startCol <= 2*cols) &&
+        (eastSegs.forall(_.isNearVertical(epsilon))) &&
+        (eastSegs.forall(_.isRumpSegment))) { // Sharp angle case
       Range(0, rows).foreach({ row => viewshedTile.set(cols-1, row, viewshedTile.get(cols-2, row)) })
     } else { // Normal case
       eastSegs
@@ -376,7 +390,9 @@ object R2Viewshed extends Serializable {
     /**************
      * GOING WEST *
      **************/
-    if ((-1*cols < startCol) && (startCol < 0) && (westSegs.forall(_.isRumpSegment))) {
+    if ((-1*cols < startCol) && (startCol < 0) &&
+        (westSegs.forall(_.isNearVertical(epsilon))) &&
+        (westSegs.forall(_.isRumpSegment))) {
       Range(0, rows).foreach({ row => viewshedTile.set(0, row, viewshedTile.get(1, row)) })
     } else {
       westSegs
@@ -390,14 +406,18 @@ object R2Viewshed extends Serializable {
     /***************
      * NORTH AGAIN *
      ***************/
-    if ((rows <= startRow) && (startRow <= 2*rows) && (northSegs.forall(_.isRumpSegment))) {
+    if ((rows <= startRow) && (startRow <= 2*rows) &&
+        (northSegs.forall(_.isNearHorizontal(epsilon))) &&
+        (northSegs.forall(_.isRumpSegment))) {
       Range(0, cols).foreach({ col => viewshedTile.set(col, rows-1, viewshedTile.get(col, rows-2)) })
     }
 
     /***************
      * SOUTH AGAIN *
      ***************/
-    if ((-1*rows < startRow) && (startRow < 0) && (southSegs.forall(_.isRumpSegment))) {
+    if ((-1*rows < startRow) && (startRow < 0) &&
+        (southSegs.forall(_.isNearHorizontal(epsilon))) &&
+        (southSegs.forall(_.isRumpSegment))) {
       Range(0, cols).foreach({ col => viewshedTile.set(col, 0, viewshedTile.get(col, 1)) })
     }
 
