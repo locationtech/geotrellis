@@ -339,5 +339,31 @@ class EuclideanDistanceSpec extends FunSpec
 
       assertEqual(baselineEDT, stitchedEDT)
     }
+
+    it("SparseEuclideanDistance should produce correct results") {
+      val geomWKT = scala.io.Source.fromInputStream(getClass.getResourceAsStream("/wkt/schools.wkt")).getLines.mkString
+      val geom = geotrellis.vector.io.wkt.WKT.read(geomWKT).asInstanceOf[MultiPoint]
+      val coords = geom.points.map(_.jtsGeom.getCoordinate)
+
+      val LayoutLevel(_, ld) = ZoomedLayoutScheme(WebMercator).levelForZoom(12)
+      val maptrans = ld.mapTransform
+      val gb @ GridBounds(cmin, rmin, cmax, rmax) = maptrans(geom.envelope)
+      val extent = maptrans(gb)
+      val rasterExtent = RasterExtent(extent, 256 * (cmax - cmin + 1), 256 * (rmax - rmin + 1))
+
+      println(s"Loaded ${coords.size} points")
+      println(s"$gb")
+
+      println("Computing baseline Euclidean distance tile (raster package)")
+      val baseline = RasterEuclideanDistance(coords, rasterExtent)
+      println(s"    Baseline has size (${baseline.cols}, ${baseline.rows})")
+
+      println("Computing sparse Euclidean distance (spark)")
+      val stitched = SparseEuclideanDistance(coords, extent, ld, 256, 256).stitch
+      println(s"    Stitched has size (${stitched.cols}, ${stitched.rows})")
+
+      assertEqual(baseline, stitched)
+    }
+
   }
 }
