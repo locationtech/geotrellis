@@ -141,7 +141,10 @@ object IterativeViewshed {
     val resolution = computeResolution(elevation)
     logger.debug(s"Computed resolution: $resolution meters/pixel")
 
-    val bounds = md.bounds.asInstanceOf[KeyBounds[K]]
+    val bounds = md.bounds match {
+      case b: KeyBounds[K] => b
+      case _ => throw new Exception
+    }
     val minKey = implicitly[SpatialKey](bounds.minKey)
     val minKeyCol = minKey._1
     val minKeyRow = minKey._2
@@ -335,7 +338,7 @@ object IterativeViewshed {
 
     // Return the computed viewshed layer
     val metadata = TileLayerMetadata(IntConstantNoDataCellType, md.layout, md.extent, md.crs, md.bounds)
-    val rdd = sheds.map({ case (k, _, v) => (k, v.asInstanceOf[Tile]) })
+    val rdd = sheds.map({ case (k, _, viewshed) => (k, viewshed: Tile) })
     ContextRDD(rdd, metadata)
   }
 
