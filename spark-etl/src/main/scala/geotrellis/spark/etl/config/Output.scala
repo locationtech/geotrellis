@@ -18,7 +18,7 @@ package geotrellis.spark.etl.config
 
 import geotrellis.proj4.CRS
 import geotrellis.raster.resample.PointResampleMethod
-import geotrellis.raster.{CellSize, CellType, RasterExtent}
+import geotrellis.raster.{CellSize, CellType, RasterExtent, TileLayout}
 import geotrellis.spark.io.index.{HilbertKeyIndexMethod, KeyIndexMethod, RowMajorKeyIndexMethod, ZCurveKeyIndexMethod}
 import geotrellis.spark.pyramid.Pyramid
 import geotrellis.spark.tiling._
@@ -43,7 +43,8 @@ case class Output(
   cellType: Option[CellType] = None,
   encoding: Option[String] = None,
   breaks: Option[String] = None,
-  maxZoom: Option[Int] = None
+  maxZoom: Option[Int] = None,
+  tileLayout: Option[TileLayout] = None
 ) extends Serializable {
 
   require(maxZoom.isEmpty || layoutScheme == Some("zoomed"),
@@ -58,8 +59,10 @@ case class Output(
     case _ => throw new Exception("unsupported layout scheme definition")
   }
 
-  def getLayoutDefinition = (layoutExtent, cellSize) match {
-    case (Some(le), Some(cs)) => LayoutDefinition(RasterExtent(le, cs), tileSize)
+  def getLayoutDefinition = (layoutExtent, cellSize, tileLayout) match {
+    case (Some(le), Some(cs), Some(tl)) => throw new Exception("Can't specify both cell size and tile layout in ETL config")
+    case (Some(le), Some(cs), _) => LayoutDefinition(RasterExtent(le, cs), tileSize)
+    case (Some(le), _, Some(tl)) => LayoutDefinition(le, tl)
     case _ => throw new Exception("unsupported layout definition")
   }
 
