@@ -145,12 +145,12 @@ object IterativeViewshed {
       case b: KeyBounds[K] => b
       case _ => throw new Exception
     }
-    val minKey = implicitly[SpatialKey](bounds.minKey)
-    val minKeyCol = minKey._1
-    val minKeyRow = minKey._2
-    val maxKey = implicitly[SpatialKey](bounds.maxKey)
-    val maxKeyCol = maxKey._1
-    val maxKeyRow = maxKey._2
+    val minKey: SpatialKey = bounds.minKey
+    val minKeyCol = minKey.col
+    val minKeyRow = minKey.row
+    val maxKey: SpatialKey = bounds.maxKey
+    val maxKeyCol = maxKey.col
+    val maxKeyRow = maxKey.row
 
     val rays = new RayCatcher; sc.register(rays)
 
@@ -334,7 +334,7 @@ object IterativeViewshed {
       sheds.count
       oldSheds.unpersist()
 
-    } while (rays.value.size > 0)
+    } while (rays.value.nonEmpty)
 
     // Return the computed viewshed layer
     val metadata = TileLayerMetadata(IntConstantNoDataCellType, md.layout, md.extent, md.crs, md.bounds)
