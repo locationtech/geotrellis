@@ -302,30 +302,34 @@ object R2Viewshed extends Serializable {
     val eastRays = mutable.ArrayBuffer.empty[Ray]
     val southRays = mutable.ArrayBuffer.empty[Ray]
     val westRays = mutable.ArrayBuffer.empty[Ray]
-    val northSegs = Range(0, cols).flatMap({ col => clip(startCol,startRow,col,rows-1) })
-    val southSegs = Range(0, cols).flatMap({ col => clip(startCol,startRow,col,0) })
-    val eastSegs = Range(0, rows).flatMap({ row => clip(startCol,startRow,cols-1,row) })
-    val westSegs = Range(0, rows).flatMap({ row => clip(startCol,startRow,0,row) })
+    val northSegs = Range(0, cols).flatMap({ col => clip(startCol,startRow,col,rows-1) }).toArray
+    val southSegs = Range(0, cols).flatMap({ col => clip(startCol,startRow,col,0) }).toArray
+    val eastSegs = Range(0, rows).flatMap({ row => clip(startCol,startRow,cols-1,row) }).toArray
+    val westSegs = Range(0, rows).flatMap({ row => clip(startCol,startRow,0,row) }).toArray
+
+    var i = 0
 
     /***************
      * GOING NORTH *
      ***************/
-    northSegs
-      .foreach({ seg =>
-        alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
-        Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
-        if (!terminated && !seg.isRumpSegment) southRays.append(Ray(seg.theta, alpha))
-      })
+    i = 0; while (i < northSegs.length) {
+      val seg = northSegs(i)
+      alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
+      Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
+      if (!terminated && !seg.isRumpSegment) southRays.append(Ray(seg.theta, alpha))
+      i += 1
+    }
 
     /***************
      * GOING SOUTH *
      ***************/
-    southSegs
-      .foreach({ seg =>
-        alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
-        Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
-        if (!terminated && !seg.isRumpSegment) northRays.append(Ray(seg.theta, alpha))
-      })
+    i = 0; while (i < southSegs.length) {
+      val seg = southSegs(i)
+      alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
+      Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
+      if (!terminated && !seg.isRumpSegment) northRays.append(Ray(seg.theta, alpha))
+      i += 1
+    }
 
     /**************
      * GOING EAST *
@@ -333,14 +337,18 @@ object R2Viewshed extends Serializable {
     if ((cols <= startCol) && (startCol <= 2*cols) &&
         (eastSegs.forall(_.isNearVertical(epsilon))) &&
         (eastSegs.forall(_.isRumpSegment))) { // Sharp angle case
-      Range(0, rows).foreach({ row => viewshedTile.set(cols-1, row, viewshedTile.get(cols-2, row)) })
+      i = 0; while (i < rows) {
+        viewshedTile.set(cols-1, i, viewshedTile.get(cols-2, i))
+        i += 1
+      }
     } else { // Normal case
-      eastSegs
-        .foreach({ seg =>
-          alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
-          Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
-          if (!terminated && !seg.isRumpSegment) westRays.append(Ray(seg.theta, alpha))
-        })
+      i = 0; while (i < eastSegs.length) {
+        val seg = eastSegs(i)
+        alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
+        Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
+        if (!terminated && !seg.isRumpSegment) westRays.append(Ray(seg.theta, alpha))
+        i += 1
+      }
     }
 
     /**************
@@ -349,14 +357,18 @@ object R2Viewshed extends Serializable {
     if ((-1*cols < startCol) && (startCol < 0) &&
         (westSegs.forall(_.isNearVertical(epsilon))) &&
         (westSegs.forall(_.isRumpSegment))) {
-      Range(0, rows).foreach({ row => viewshedTile.set(0, row, viewshedTile.get(1, row)) })
+      i = 0; while (i < rows) {
+        viewshedTile.set(0, i, viewshedTile.get(1, i))
+        i += 1
+      }
     } else {
-      westSegs
-        .foreach({ seg =>
-          alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
-          Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
-          if (!terminated && !seg.isRumpSegment) eastRays.append(Ray(seg.theta, alpha))
-        })
+      i = 0; while (i < westSegs.length) {
+        val seg = westSegs(i)
+        alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
+        Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
+        if (!terminated && !seg.isRumpSegment) eastRays.append(Ray(seg.theta, alpha))
+        i += 1
+      }
     }
 
     /***************
@@ -365,7 +377,10 @@ object R2Viewshed extends Serializable {
     if ((rows <= startRow) && (startRow <= 2*rows) &&
         (northSegs.forall(_.isNearHorizontal(epsilon))) &&
         (northSegs.forall(_.isRumpSegment))) {
-      Range(0, cols).foreach({ col => viewshedTile.set(col, rows-1, viewshedTile.get(col, rows-2)) })
+      i = 0; while (i < cols) {
+        viewshedTile.set(i, rows-1, viewshedTile.get(i, rows-2))
+        i += 1
+      }
     }
 
     /***************
@@ -374,7 +389,10 @@ object R2Viewshed extends Serializable {
     if ((-1*rows < startRow) && (startRow < 0) &&
         (southSegs.forall(_.isNearHorizontal(epsilon))) &&
         (southSegs.forall(_.isRumpSegment))) {
-      Range(0, cols).foreach({ col => viewshedTile.set(col, 0, viewshedTile.get(col, 1)) })
+      i = 0; while (i < cols) {
+        viewshedTile.set(i, 0, viewshedTile.get(i, 1))
+        i += 1
+      }
     }
 
     val bundle: Bundle = Map(
