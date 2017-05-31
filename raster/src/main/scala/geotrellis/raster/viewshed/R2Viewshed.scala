@@ -39,7 +39,6 @@ object R2Viewshed extends Serializable {
   case class And() extends AggregationOperator { override def toString: String = "AND" }
   case class Debug() extends AggregationOperator { override def toString: String = "DEBUG" }
   case class Or() extends AggregationOperator { override def toString: String = "OR" }
-  case class Plus() extends AggregationOperator { override def toString: String = "PLUS" }
 
   sealed case class DirectedSegment(x0: Int, y0: Int, x1: Int, y1: Int, theta: Double) {
     override def toString(): String = s"($x0, $y0) to ($x1, $y1) θ=$theta"
@@ -256,12 +255,6 @@ object R2Viewshed extends Serializable {
 
     var alpha: Double = Double.NaN
     var terminated: Boolean = false
-    val dejaVu = mutable.Set.empty[(Int, Int)]
-
-    def preventative(col: Int, row: Int) ={
-      val colrow = (col, row)
-      dejaVu += colrow
-    }
 
     def callback(col: Int, row: Int) = {
       if (col == startCol && row == startRow) { // starting point
@@ -294,51 +287,14 @@ object R2Viewshed extends Serializable {
               viewshedTile.set(col, row, 0)
             case _: And if (visible && isNoData(current)) =>
               viewshedTile.set(col, row, 1)
-            case _: Debug if (visible && isNoData(current) && !dejaVu.contains(colrow)) =>
+            case _: Debug if (visible && isNoData(current)) =>
               viewshedTile.set(col, row, 1)
-            case _: Debug if (visible && !isNoData(current) && !dejaVu.contains(colrow)) =>
+            case _: Debug if (visible && !isNoData(current)) =>
               viewshedTile.set(col, row, 1 + current)
-            case _: Plus if (visible && isNoData(current) && !dejaVu.contains(colrow)) =>
-              viewshedTile.set(col, row, 1)
-              dejaVu += colrow
-            case _: Plus if (visible && !isNoData(current) && !dejaVu.contains(colrow)) =>
-              viewshedTile.set(col, row, 1 + current)
-              dejaVu += colrow
             case _ =>
           }
         }
       }
-    }
-
-    // PLUS operator is expensive ...
-    if ((operator.isInstanceOf[Plus]) &&
-        (from.isInstanceOf[FromNorth] || from.isInstanceOf[FromSouth]) &&
-        (startCol < 0 || startCol >= cols)) {
-      val clip = if (startCol >= cols) clipAndQualifyRay(FromEast())_ ; else clipAndQualifyRay(FromWest())_
-
-      Range(0, cols) // North
-        .flatMap({ col => clip(startCol,startRow,col,rows-1) })
-        .foreach({ seg =>
-          Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(preventative)
-        })
-
-      Range(0, rows) // East
-        .flatMap({ row => clip(startCol,startRow,cols-1,row) })
-        .foreach({ seg =>
-          Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(preventative)
-        })
-
-      Range(0, cols) // South
-        .flatMap({ col => clip(startCol,startRow,col,0) })
-        .foreach({ seg =>
-          Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(preventative)
-        })
-
-      Range(0, rows) // West
-        .flatMap({ row => clip(startCol,startRow,0,row) })
-        .foreach({ seg =>
-          Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(preventative)
-        })
     }
 
     val clip = clipAndQualifyRay(from)_

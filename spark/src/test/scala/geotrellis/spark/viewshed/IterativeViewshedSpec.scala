@@ -187,9 +187,9 @@ class IterativeViewshedSpec extends FunSpec
         points = List(point1, point2, point3),
         maxDistance = Double.PositiveInfinity,
         curvature = false,
-        operator = Plus()
+        operator = Or()
       )
-      val expected = 15 * 15 * 3
+      val expected = 15 * 15 * 1
       var actual: Int = 0
       viewshed.collect.foreach({ case (k, v) => actual += v.toArray.sum })
 
@@ -223,7 +223,7 @@ class IterativeViewshedSpec extends FunSpec
         points = List(point1, point2, point3),
         maxDistance = Double.PositiveInfinity,
         curvature = false,
-        operator = Plus()
+        operator = Or()
       )
       var actual: Int = 0
       viewshed.collect.foreach({ case (k, v) => actual += v.get(2, 2) })
