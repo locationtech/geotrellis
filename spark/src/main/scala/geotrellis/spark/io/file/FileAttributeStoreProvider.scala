@@ -14,18 +14,23 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.accumulo
+package geotrellis.spark.io.file
 
+import geotrellis.spark._
 import geotrellis.spark.io._
-import org.apache.accumulo.core.client.security.tokens.PasswordToken
+import java.net.URI
+import java.io.File
 
-class AccumuloAttributeStoreSpec extends AttributeStoreSpec {
-  val accumulo = AccumuloInstance(
-    instanceName = "fake",
-    zookeeper = "localhost",
-    user = "root",
-    token = new PasswordToken("")
-  )
+/**
+ * Provides [[FileAttributeStore]] instance for URI with `file` scheme.
+ * The uri represents local path to catalog root.
+ *  ex: `file:/tmp/catalog`
+ */
+class FileAttributeStoreProvider extends AttributeStoreProvider {
+  def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "file"
 
-  lazy val attributeStore = new AccumuloAttributeStore(accumulo.connector, "attributes")
+  def attributeStore(uri: URI): AttributeStore = {
+    val file = new File(uri)
+    new FileAttributeStore(file.getCanonicalPath)
+  }
 }

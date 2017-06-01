@@ -24,7 +24,9 @@ import org.apache.avro.Schema
 import spray.json._
 import spray.json.DefaultJsonProtocol.JsValueFormat
 
-import scala.reflect.ClassTag
+import scala.reflect._
+import java.net.URI
+import java.util.ServiceLoader
 
 trait AttributeStore extends  AttributeCaching with LayerAttributeStore {
   def read[T: JsonFormat](layerId: LayerId, attributeName: String): T
@@ -53,6 +55,18 @@ object AttributeStore {
     val keyIndex = "keyIndex"
     val metadata = "metadata"
     val schema = "schema"
+  }
+
+  /**
+   * Produce AttributeStore instance based on URI description.
+   * This method uses instances of [[AttributeServiceProvider]] loaded through Java SPI.
+   */
+  def apply(uri: URI): AttributeStore = {
+    import scala.collection.JavaConversions._
+    ServiceLoader.load(classOf[AttributeStoreProvider]).iterator()
+      .find(_.canProcess(uri))
+      .getOrElse(throw new RuntimeException(s"Unable to find AttributeStoreProvider for $uri"))
+      .attributeStore(uri)
   }
 }
 

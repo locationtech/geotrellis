@@ -1,0 +1,2 @@
+geotrellis.spark.io.file.FileAttributeStoreProvider
+geotrellis.spark.io.hadoop.HadoopAttributeStoreProvider

@@ -14,18 +14,23 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.accumulo
+package geotrellis.spark.io.s3
 
+import geotrellis.spark._
 import geotrellis.spark.io._
-import org.apache.accumulo.core.client.security.tokens.PasswordToken
+import java.net.URI
 
-class AccumuloAttributeStoreSpec extends AttributeStoreSpec {
-  val accumulo = AccumuloInstance(
-    instanceName = "fake",
-    zookeeper = "localhost",
-    user = "root",
-    token = new PasswordToken("")
-  )
+/**
+ * Provides [[S3AttributeStore]] instance for URI with `s3` scheme.
+ * The uri represents S3 bucket an prefix of catalog root.
+ *  ex: `s3://<bucket>/<prefix-to-catalog>`
+ */
+class S3AttributeStoreProvider extends AttributeStoreProvider {
+  def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "s3"
 
-  lazy val attributeStore = new AccumuloAttributeStore(accumulo.connector, "attributes")
+  def attributeStore(uri: URI): AttributeStore = {
+    val bucket = uri.getAuthority
+    val prefix = uri.getPath.drop(1)
+    new S3AttributeStore(bucket, prefix)
+  }
 }
