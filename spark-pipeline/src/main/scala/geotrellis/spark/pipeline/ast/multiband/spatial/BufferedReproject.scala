@@ -10,4 +10,10 @@ case class BufferedReproject(
   arg: json.TransformBufferedReproject
 ) extends Transform[MultibandTileLayerRDD[SpatialKey], (Int, MultibandTileLayerRDD[SpatialKey])] {
   def get: (Int, MultibandTileLayerRDD[SpatialKey]) = arg.eval(node.get)
+  def validate: (Boolean, String) = {
+    val (f, msg) = if (node == null) (false, s"${this.getClass} has no node")
+    else node.validation
+    val (fs, msgs) = validation
+    (f && fs, msgs ++ msg)
+  }
 }

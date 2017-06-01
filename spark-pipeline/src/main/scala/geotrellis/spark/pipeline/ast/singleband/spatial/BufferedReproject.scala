@@ -12,4 +12,10 @@ case class BufferedReproject(
   arg: json.TransformBufferedReproject
 ) extends Transform[RDD[(ProjectedExtent, Tile)], (Int, TileLayerRDD[SpatialKey])] {
   def get: (Int, TileLayerRDD[SpatialKey]) = arg.eval(node.get)
+  def validate: (Boolean, String) = {
+    val (f, msg) = if (node == null) (false, s"${this.getClass} has no node")
+    else node.validation
+    val (fs, msgs) = validation
+    (f && fs, msgs ++ msg)
+  }
 }

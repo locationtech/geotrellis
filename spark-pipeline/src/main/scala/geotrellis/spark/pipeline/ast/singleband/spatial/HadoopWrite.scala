@@ -10,4 +10,10 @@ case class HadoopWrite(
   arg: json.WriteHadoop
 ) extends Write[(Int, TileLayerRDD[SpatialKey])] {
   def get: (Int, TileLayerRDD[SpatialKey]) = arg.eval(node.get)
+  def validate: (Boolean, String) = {
+    val (f, msg) = if (node == null) (false, s"${this.getClass} has no node")
+    else node.validation
+    val (fs, msgs) = validation
+    (f && fs, msgs ++ msg)
+  }
 }

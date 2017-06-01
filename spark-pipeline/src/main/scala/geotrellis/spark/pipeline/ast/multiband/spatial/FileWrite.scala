@@ -10,4 +10,10 @@ case class FileWrite(
   arg: json.WriteFile
 ) extends Write[(Int, MultibandTileLayerRDD[SpatialKey])] {
   def get: (Int, MultibandTileLayerRDD[SpatialKey]) = arg.eval(node.get)
+  def validate: (Boolean, String) = {
+    val (f, msg) = if (node == null) (false, s"${this.getClass} has no node")
+    else node.validation
+    val (fs, msgs) = validation
+    (f && fs, msgs ++ msg)
+  }
 }
