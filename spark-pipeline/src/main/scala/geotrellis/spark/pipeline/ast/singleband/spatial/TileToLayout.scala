@@ -9,7 +9,7 @@ import org.apache.spark.rdd.RDD
 
 case class TileToLayout(
   node: Node[RDD[(ProjectedExtent, Tile)]],
-  reproject: json.TransformTile
+  arg: json.TransformTile
 ) extends Transform[RDD[(ProjectedExtent, Tile)], TileLayerRDD[SpatialKey]] {
-  def get: TileLayerRDD[SpatialKey] = ???
+  def get: TileLayerRDD[SpatialKey] = arg.eval(node.get)
 }

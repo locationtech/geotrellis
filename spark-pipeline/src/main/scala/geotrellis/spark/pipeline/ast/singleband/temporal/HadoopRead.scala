@@ -6,6 +6,6 @@ import geotrellis.spark.pipeline.ast.Read
 import geotrellis.spark.pipeline.json
 import org.apache.spark.rdd.RDD
 
-case class HadoopRead(read: json.ReadHadoop) extends Read[RDD[(TemporalProjectedExtent, Tile)]] {
-  def get: RDD[(TemporalProjectedExtent, Tile)] = ???
+case class HadoopRead(arg: json.TemporalReadHadoop) extends Read[RDD[(TemporalProjectedExtent, Tile)]] {
+  def get: RDD[(TemporalProjectedExtent, Tile)] = arg.eval
 }

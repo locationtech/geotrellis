@@ -10,9 +10,7 @@ import org.apache.spark.rdd.RDD
 
 case class PerTileReproject(
   node: Node[RDD[(ProjectedExtent, MultibandTile)]],
-  reproject: json.TransformPerTileReproject
-) extends Transform[RDD[(ProjectedExtent, MultibandTile)], MultibandTileLayerRDD[SpatialKey]] {
-  def get: MultibandTileLayerRDD[SpatialKey] = {
-    reproject.eval(node.get)
-  }
+  arg: json.TransformPerTileReproject
+) extends Transform[RDD[(ProjectedExtent, MultibandTile)], RDD[(ProjectedExtent, MultibandTile)]] {
+  def get: RDD[(ProjectedExtent, MultibandTile)] = arg.eval(node.get)
 }

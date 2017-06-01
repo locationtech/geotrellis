@@ -9,7 +9,7 @@ import org.apache.spark.rdd.RDD
 
 case class TileToLayout(
   node: Node[RDD[(TemporalProjectedExtent, MultibandTile)]],
-  reproject: json.TransformTile
+  arg: json.TransformTile
 ) extends Transform[RDD[(TemporalProjectedExtent, MultibandTile)], MultibandTileLayerRDD[SpaceTimeKey]] {
-  def get: MultibandTileLayerRDD[SpaceTimeKey] = ???
+  def get: MultibandTileLayerRDD[SpaceTimeKey] = arg.eval(node.get)
 }

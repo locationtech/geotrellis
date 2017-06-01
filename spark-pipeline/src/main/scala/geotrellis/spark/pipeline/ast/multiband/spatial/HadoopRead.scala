@@ -7,6 +7,6 @@ import geotrellis.vector._
 
 import org.apache.spark.rdd.RDD
 
-case class HadoopRead(read: json.ReadHadoop) extends Read[RDD[(ProjectedExtent, MultibandTile)]] {
-  def get: RDD[(ProjectedExtent, MultibandTile)] = ???
+case class HadoopRead(arg: json.SpatialMultibandReadHadoop) extends Read[RDD[(ProjectedExtent, MultibandTile)]] {
+  def get: RDD[(ProjectedExtent, MultibandTile)] = arg.eval
 }
