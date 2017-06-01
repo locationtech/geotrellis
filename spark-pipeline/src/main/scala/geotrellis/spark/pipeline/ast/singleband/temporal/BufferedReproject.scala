@@ -4,11 +4,10 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.pipeline.ast._
 import geotrellis.spark.pipeline.json
-import org.apache.spark.rdd.RDD
 
 case class BufferedReproject(
-  node: Node[RDD[(TemporalProjectedExtent, Tile)]],
-  reproject: json.TransformBufferedReproject
-) extends Transform[RDD[(TemporalProjectedExtent, Tile)], TileLayerRDD[SpaceTimeKey]] {
-  def get: TileLayerRDD[SpaceTimeKey] = ???
+  node: Node[TileLayerRDD[SpaceTimeKey]],
+  arg: json.TransformBufferedReproject
+) extends Transform[TileLayerRDD[SpaceTimeKey], (Int, TileLayerRDD[SpaceTimeKey])] {
+  def get: (Int, TileLayerRDD[SpaceTimeKey]) = arg.eval(node.get)
 }

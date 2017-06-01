@@ -8,8 +8,8 @@ import geotrellis.vector._
 import org.apache.spark.rdd.RDD
 
 case class BufferedReproject(
-  node: Node[RDD[(ProjectedExtent, Tile)]],
-  reproject: json.TransformBufferedReproject
-) extends Transform[RDD[(ProjectedExtent, Tile)], TileLayerRDD[SpatialKey]] {
-  def get: TileLayerRDD[SpatialKey] = ???
+  node: Node[TileLayerRDD[SpatialKey]],
+  arg: json.TransformBufferedReproject
+) extends Transform[RDD[(ProjectedExtent, Tile)], (Int, TileLayerRDD[SpatialKey])] {
+  def get: (Int, TileLayerRDD[SpatialKey]) = arg.eval(node.get)
 }

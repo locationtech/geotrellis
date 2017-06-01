@@ -8,7 +8,7 @@ import org.apache.spark.rdd.RDD
 
 case class PerTileReproject(
   node: Node[RDD[(TemporalProjectedExtent, Tile)]],
-  reproject: json.TransformPerTileReproject
-) extends Transform[RDD[(TemporalProjectedExtent, Tile)], TileLayerRDD[SpaceTimeKey]] {
-  def get: TileLayerRDD[SpaceTimeKey] = ???
+  arg: json.TransformPerTileReproject
+) extends Transform[RDD[(TemporalProjectedExtent, Tile)], RDD[(TemporalProjectedExtent, Tile)]] {
+  def get: RDD[(TemporalProjectedExtent, Tile)] = arg.eval(node.get)
 }

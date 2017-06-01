@@ -5,6 +5,7 @@ import geotrellis.raster.crop.CropMethods
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.prototype.TilePrototypeMethods
 import geotrellis.raster.reproject.TileReprojectMethods
+import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
 import geotrellis.raster.resample.{NearestNeighbor, PointResampleMethod}
 import geotrellis.raster.stitch.Stitcher
 import geotrellis.raster.{CellGrid, CellSize, CellType}
@@ -12,6 +13,7 @@ import geotrellis.spark.tiling.{FloatingLayoutScheme, LayoutDefinition, LayoutLe
 import geotrellis.spark.{Boundable, Metadata, SpatialComponent, _}
 import geotrellis.util.Component
 import geotrellis.vector.ProjectedExtent
+
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
@@ -44,24 +46,28 @@ case class TransformPerTileReproject(
   crs: String
 ) extends Transform {
   def getCRS = Try(CRS.fromName(crs)) getOrElse CRS.fromString(crs)
+
+  def eval[I: Component[?, ProjectedExtent], V <: CellGrid: (? => TileReprojectMethods[V])](rdd: RDD[(I, V)]): RDD[(I, V)] =
+    rdd.reproject(getCRS)
 }
 
 case class TransformBufferedReproject(
   `type`: String,
   crs: String,
+  scheme: Either[LayoutScheme, LayoutDefinition],
   resampleMethod: PointResampleMethod = NearestNeighbor,
   maxZoom: Option[Int] = None
 ) extends Transform {
-  def getCRS = Try(CRS.fromName(crs)) getOrElse CRS.fromString(crs)
+  def getCRS: CRS = Try(CRS.fromName(crs)) getOrElse CRS.fromString(crs)
 
   def eval[
     K: SpatialComponent: Boundable: ClassTag,
     V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
-  ](rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]])(scheme: Either[LayoutScheme, LayoutDefinition]): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
+  ](rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
     (scheme, maxZoom) match {
       case (Left(layoutScheme: ZoomedLayoutScheme), Some(mz)) =>
         val LayoutLevel(zoom, layoutDefinition) = layoutScheme.levelForZoom(mz)
-        zoom -> rdd.reproject(getCRS, layoutDefinition, resampleMethod)._2
+        zoom -> rdd.reproject(getCRS, layoutDefinition, RasterReprojectOptions(method = resampleMethod, targetCellSize = Some(layoutDefinition.cellSize)))._2
 
       case (Left(layoutScheme), _) =>
         rdd.reproject(getCRS, layoutScheme, resampleMethod)
@@ -88,7 +94,7 @@ case class TransformTile(
     V <: CellGrid: (? => TileReprojectMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V]): ClassTag
   ](rdd: RDD[(I, V)]): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] = {
     val md = { // collecting floating metadata allows detecting upsampling
-      val (_, md) = rdd.collectMetadata(FloatingLayoutScheme(tileSize.get))
+      val (_, md) = rdd.collectMetadata(FloatingLayoutScheme(tileSize.getOrElse(256)))
       md.copy(cellType = cellType.getOrElse(md.cellType))
     }
     ContextRDD(withTilerMethods(rdd).tileToLayout[K](md, resampleMethod), md)
