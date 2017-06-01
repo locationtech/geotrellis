@@ -13,4 +13,10 @@ case class PerTileReproject(
   arg: json.TransformPerTileReproject
 ) extends Transform[RDD[(TemporalProjectedExtent, MultibandTile)], RDD[(TemporalProjectedExtent, MultibandTile)]] {
   def get: RDD[(TemporalProjectedExtent, MultibandTile)] = arg.eval(node.get)
+  def validate: (Boolean, String) = {
+    val (f, msg) = if (node == null) (false, s"${this.getClass} has no node")
+    else node.validation
+    val (fs, msgs) = validation
+    (f && fs, msgs ++ msg)
+  }
 }

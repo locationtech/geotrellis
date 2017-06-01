@@ -10,4 +10,5 @@ import org.apache.spark.rdd.RDD
 
 case class HadoopRead(arg: json.TemporalMultibandReadHadoop) extends Read[RDD[(TemporalProjectedExtent, MultibandTile)]] {
   def get: RDD[(TemporalProjectedExtent, MultibandTile)] = arg.eval
+  def validate: (Boolean, String) = validation
 }

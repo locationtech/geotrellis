@@ -12,4 +12,10 @@ case class TileToLayout(
   arg: json.TransformTile
 ) extends Transform[RDD[(ProjectedExtent, Tile)], TileLayerRDD[SpatialKey]] {
   def get: TileLayerRDD[SpatialKey] = arg.eval(node.get)
+  def validate: (Boolean, String) = {
+    val (f, msg) = if (node == null) (false, s"${this.getClass} has no node")
+    else node.validation
+    val (fs, msgs) = validation
+    (f && fs, msgs ++ msg)
+  }
 }
