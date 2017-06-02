@@ -26,6 +26,16 @@ import java.util.Arrays.binarySearch
 import java.util.Comparator
 
 
+/**
+  * An implementation of the R2 [1] Viewshed algorithm.
+  *
+  * 1. Franklin, Wm Randolph, and Clark Ray.
+  *    "Higher isn’t necessarily better: Visibility algorithms and experiments."
+  *    Advances in GIS research: sixth international symposium on spatial data handling. Vol. 2.
+  *    Taylor & Francis Edinburgh, 1994.
+  *
+  * @author James McClain
+  */
 object R2Viewshed extends Serializable {
 
   sealed abstract class From()
@@ -133,6 +143,7 @@ object R2Viewshed extends Serializable {
     * @param  elevationTile  Elevations in units of meters
     * @param  startCol       The x position of the vantage point
     * @param  startRow       The y position of the vantage point
+    * @param  op             The aggregation operator to use (e.g. Or)
     */
   def apply(
     elevationTile: Tile,
@@ -191,6 +202,7 @@ object R2Viewshed extends Serializable {
     * @param  altitude         The absolute altitude (above sea level) to query; if -∞, use the terrain height
     * @param  cameraDirection  The direction (in radians) of the camera
     * @param  cameraFOV        The camera field of view, rays whose dot product with the camera direction are less than this are filtered out
+    * @param  epsilon          Any ray within this many radians of vertical (horizontal) will be considered vertical (horizontal)
     */
   def compute(
     elevationTile: Tile, viewshedTile: MutableArrayTile,
@@ -205,9 +217,7 @@ object R2Viewshed extends Serializable {
     altitude: Double = Double.NegativeInfinity,
     cameraDirection: Double = 0,
     cameraFOV: Double = -1.0,
-    epsilon: Double = (1/math.Pi),
-    debugCol: Int = -1,
-    debugRow: Int = -1
+    epsilon: Double = (1/math.Pi)
   ): Tile = {
     val cols = elevationTile.cols
     val rows = elevationTile.rows
@@ -216,6 +226,18 @@ object R2Viewshed extends Serializable {
     val vx = math.cos(cameraDirection)
     val vy = math.sin(cameraDirection)
 
+    /**
+      * Given a direction and the endpoints of a line segment, either
+      * produce a directed segment clipped to the tile, or indicate
+      * that the segment is not valid.
+      *
+      * @param  From  The propagation direction to consider
+      * @param  x0    The x-coordinate of the start of the input segment
+      * @param  y0    The y-coordinate of the start of the input segment
+      * @param  x1    The x-coordinate of the end of the input segment
+      * @param  y1    The y-coordinate of the end of the input segment
+      * @return       A clipped directed segment is returned if appropriate
+      */
     def clipAndQualifyRay(from: From)(x0: Int, y0: Int, x1: Int, y1: Int): Option[DirectedSegment] = {
       val _theta = math.atan2((y1-y0), (x1-x0))
       val theta = if (_theta >= 0.0) _theta ; else _theta + 2*math.Pi
@@ -256,6 +278,15 @@ object R2Viewshed extends Serializable {
     var alpha: Double = Double.NaN
     var terminated: Boolean = false
 
+    /**
+      * This call back is called by the line rasterizer.  A ray
+      * emanating from the source is transformed into a
+      * DirectedSegments above, then each point on the ray is queried
+      * by this function via the line rasterizer.
+      *
+      * @param  col  The column (x-coordinate) of the pixel
+      * @param  row  The row (y-coordinate) of the pixel
+      */
     def callback(col: Int, row: Int) = {
       if (col == startCol && row == startRow) { // starting point
         viewshedTile.setDouble(col, row, 1)

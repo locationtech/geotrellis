@@ -37,8 +37,27 @@ import scala.collection.mutable
 import scala.reflect.ClassTag
 
 
+/**
+  * A Spark-enabled implementation of R2 [1] viewshed.
+  *
+  * 1. Franklin, Wm Randolph, and Clark Ray.
+  *    "Higher isn’t necessarily better: Visibility algorithms and experiments."
+  *    Advances in GIS research: sixth international symposium on spatial data handling. Vol. 2.
+  *    Taylor & Francis Edinburgh, 1994.
+  *
+  * @author James McClain
+  */
 object IterativeViewshed {
 
+  /**
+    * A `Point6D` is an array of six doubles.  The indices are mapped as follows:
+    *   0: x-coordinate (in the units used by the layer)
+    *   1: y-coordinate (in the units used by the layer)
+    *   2: view height (in units of "meters")
+    *   3: the angle in radians (about the z-axis) of the "camera"
+    *   4: the field of view of the "camera" in radians
+    *   5: the absolute altitude to query; if -∞ then use the terrain height
+    */
   type Point6D = Array[Double]
 
   implicit def coordinatesToPoints(points: Seq[jts.Coordinate]): Seq[Point6D] =
@@ -46,9 +65,14 @@ object IterativeViewshed {
 
   private val logger = Logger.getLogger(IterativeViewshed.getClass)
 
-  private type Message = (SpatialKey, Int, From, mutable.ArrayBuffer[Ray]) // key, point index, direction, ray
+  private type Message = (SpatialKey, Int, From, mutable.ArrayBuffer[Ray]) // key, point index, direction, rays
   private type Messages = mutable.ArrayBuffer[Message]
 
+  /**
+    * A Spark AccumulatorV2 to catch packets of rays as they cross the
+    * boundaries between tiles so that they can be forwarded to
+    * adjacent tiles.
+    */
   private class RayCatcher extends AccumulatorV2[Message, Messages] {
     private val messages: Messages = mutable.ArrayBuffer.empty
     def copy: RayCatcher = {
@@ -63,6 +87,9 @@ object IterativeViewshed {
     def value: Messages = messages
   }
 
+  /**
+    * Compute the resolution (in meters per pixel) of a layer.
+    */
   private def computeResolution[K: (? => SpatialKey): ClassTag, V: (? => Tile)](
     elevation: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
   ) = {
@@ -87,6 +114,9 @@ object IterativeViewshed {
     alt: Double
   )
 
+  /**
+    * Elaborate a point with information from the layer.
+    */
   private def pointInfo[K: (? => SpatialKey), V: (? => Tile)](
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]])(
     pi: (Point6D, Int)
@@ -121,7 +151,17 @@ object IterativeViewshed {
   }
 
   /**
+    * The main entry-point for the iterative viewshed implementation.
+    * Takes a layer, some source points, and other ancillary
+    * information and produces a viewshed layer.
     *
+    * @param  elevation    The elevation layer; pixel values are interpreted as being in units of "meters"
+    * @param  ps           Viewshed source points; their construction and interpretation is described above
+    * @param  maxDistance  The maximum distance that rays are allowed to travel; a lower number reduces computational cost
+    * @param  curvature    Whether or not to take the curvature of the Earth into account
+    * @param  operator     The aggregation operator to use (e.g. Or)
+    * @param  epsilon      Rays within this many radians of horizontal (vertical) are considered to be horizontal (vertical)
+    * @param  touchedKeys  A set of SpatialKeys to keep track of which keys have been touched
     */
   def apply[K: (? => SpatialKey): ClassTag, V: (? => Tile)](
     elevation: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
@@ -159,6 +199,13 @@ object IterativeViewshed {
        (minKeyRow <= key.row && key.row <= maxKeyRow))
     }
 
+    /**
+      * This function is used to create the `tileCallback` function
+      * that `R2Viewshed.compute` expects.  It receives packets of
+      * rays generated within the single-tile viewshed code and gives
+      * those to a Spark AccumulatorV2 so that they can be forwarded
+      * to interested neighbors.
+      */
     def rayCatcherFn(key: SpatialKey, index: Int)(bundle: Bundle): Unit = {
       val southKey = SpatialKey(key.col + 0, key.row + 1)
       val westKey = SpatialKey(key.col + 1, key.row + 0)
