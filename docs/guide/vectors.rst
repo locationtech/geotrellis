@@ -783,10 +783,10 @@ Among the design goals for this package was the need to handle extremely large
 point sets—on the order of 100s of millions of points.  To accomplish this
 end, we opted for a distributed solution using Spark.  Generally speaking,
 this interface will require the user to cut the incoming point set according
-to some LayoutDefinition into an ``RDD[(SpatialKey, Coordinate)]``.  After
-triangulating each grid cell individually, facilities are provided to join the
-results—though in certain cases, the results will not be as expected (see
-Known Limitations below).
+to some LayoutDefinition into an ``RDD[(SpatialKey, Array[Coordinate])]``.
+After triangulating each grid cell individually, facilities are provided to
+join the results—though in certain cases, the results will not be as expected
+(see Known Limitations below).
 
 Given an ``RDD[(SpatialKey, DelaunayTriangulation)]``, one is meant to apply
 the ``collectNeighbors()`` method to generate a map of nearby grid cells,
