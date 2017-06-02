@@ -5,7 +5,50 @@ import com.vividsolutions.jts.geom.Coordinate
 /** Mutable, non-thread safe class to keep track of half edges
   * during Delaunay triangulation.
   *
-  * Edge table contains an Array[Int] of triples:
+  * Half edge meshes are representations of piecewise linear, orientable,
+  * manifold surfaces, with or without boundary (no Mobius strips, edges are
+  * shared by at most two facets, every vertex has a single continuous fan of
+  * facets emanating from it).  Every facet in the mesh is defined by a loop of
+  * half edges that are in a linked list, and every facet is joined to its
+  * neighboring facets by linking complementary half edges.  In short, a half
+  * edge has three pieces of information: (1) a vertex reference (dest), (2) a
+  * complementary HalfEdge (flip), and (3) a pointer to the next edge on the
+  * boundary of a facet.  These are sufficient to allow complete navigation of a
+  * mesh.
+  *
+  * For convenience, derived navigation operations are provided.  Consider the
+  * following diagram:
+  *
+  * {{{
+  * v1 <---------- v2 <---------- v3
+  * ^|     e1      ^|     e2      ^|
+  * ||             ||             ||
+  * || e3       e4 || e5       e6 ||
+  * ||             ||             ||
+  * |V     e7      |V     e8      |V
+  * v4 ----------> v5 ----------> v6
+  * }}}
+  *
+  * Starting from e1, `getNext` produces the sequence e1, e3, e7, e4, e1, ...
+  * 
+  * Starting from e2, `getPrev` produces the sequence e2, e6, e8, e5, e2, ...
+  * 
+  * `getFlip(e4) == e5` and `getFlip(e5) == e4`
+  * 
+  * `rotCCWSrc(e4) == getFlip(e7)`
+  *
+  * `rotCWSrc(e4) == e8`
+  *
+  * `rotCCWDest(e4) == e2`
+  *
+  * `rotCWDest(e4) == getFlip(e1)`
+  *
+  * `getDest(e4) == v2`
+  *
+  * `getSrc(e4) == getDest(e5) == v5`
+  * 
+  * The HalfEdgeTable contains an Array[Int] in chunks of three where each of
+  * these chunks is specified as follows:
   *       [i,e1,e2] where i is the vertex of the halfedge (where the half edge 'points' to)
   *                       e1 is the halfedge index of the flip of the halfedge
   *                          (the halfedge that points to the source)
@@ -295,6 +338,17 @@ class HalfEdgeTable(_size: Int) {
     println
   }
 
+  /**
+   * Provides an interactive, text based means to explore a mesh.
+   *
+   * @param e0 the initial edge for the navigation
+   * @param trans a function that transforms vertex indices to Coordinates
+   * @param addedCmds a Map from Char to (String, Int => Int) where the
+   *        character is the key that will select this operation in the
+   *        interface, the string is descriptive of the operation, and the
+   *        Int => Int function maps the current edge to a new edge, possibly
+   *        with side effects
+   */
   def navigate(e0: Int, trans: Int => Coordinate, addedCmds: Map[Char, (String, Int => Int)]) = {
     val cmds = Map[Char, (String, Int => Int)](
       'k' -> ("kill (throws exception)", { _ => throw new Exception("user requested halt") }),
