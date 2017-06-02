@@ -131,41 +131,6 @@ class EuclideanDistanceSpec extends FunSpec
       assertEqual(neighborTile, rasterTile)
     }
 
-    ignore("should work for real data tiled in WebMercator") {
-      // This is a "test" showing some problems that may arise when using the
-      // distribued Euclidean distance operations on data that does not sufficiently
-      // cover the extent in question.  Run this test and look at the resulting
-      // schools.png; you'll notice the lower left hand corner has areas that are empty
-      // and other areas showing discontinuous behavior because the points which define
-      // the Euclidean distance are too far away.
-
-      val geomWKT = scala.io.Source.fromInputStream(getClass.getResourceAsStream("/wkt/schools.wkt")).getLines.mkString
-      val LayoutLevel(z, ld) = ZoomedLayoutScheme(WebMercator).levelForZoom(12)
-      val maptrans = ld.mapTransform
-
-      val geom = geotrellis.vector.io.wkt.WKT.read(geomWKT).asInstanceOf[MultiPoint]
-      val GridBounds(cmin, rmin, cmax, rmax) = maptrans(geom.envelope)
-
-      val skRDD = sc.parallelize(for (r <- rmin to rmax; c <- cmin to cmax) yield SpatialKey(c, r))
-
-      def createPoints(sk: SpatialKey): (SpatialKey, Array[Coordinate]) = {
-        val ex = maptrans(sk)
-        val coords = geom.points.filter(ex.contains(_)).map(_.jtsGeom.getCoordinate)
-        println(s"$sk has ${coords.size} points")
-        (sk, coords)
-      }
-
-      val inputRDD = skRDD.map(createPoints)
-
-      val tileRDD: RDD[(SpatialKey, Tile)] = inputRDD.euclideanDistance(ld)
-
-      val (_, maxDistance) = tileRDD.findMinMax
-      val cm = ColorMap((0.0 to maxDistance by (maxDistance/512)).toArray, ColorRamps.BlueToRed)
-      tileRDD.stitch().renderPng(cm).write("schools.png")
-
-      true should be (true)
-    }
-
     it("should work in a spark environment") {
       // val domain = Extent(-1.0, -0.5, 1.0, 1.0)
       val domain = Extent(0, -1.15, 1, -0.05)
@@ -339,5 +304,31 @@ class EuclideanDistanceSpec extends FunSpec
 
       assertEqual(baselineEDT, stitchedEDT)
     }
+
+    it("SparseEuclideanDistance should produce correct results") {
+      val geomWKT = scala.io.Source.fromInputStream(getClass.getResourceAsStream("/wkt/schools.wkt")).getLines.mkString
+      val geom = geotrellis.vector.io.wkt.WKT.read(geomWKT).asInstanceOf[MultiPoint]
+      val coords = geom.points.map(_.jtsGeom.getCoordinate)
+
+      val LayoutLevel(_, ld) = ZoomedLayoutScheme(WebMercator).levelForZoom(12)
+      val maptrans = ld.mapTransform
+      val gb @ GridBounds(cmin, rmin, cmax, rmax) = maptrans(geom.envelope)
+      val extent = maptrans(gb)
+      val rasterExtent = RasterExtent(extent, 256 * (cmax - cmin + 1), 256 * (rmax - rmin + 1))
+
+      println(s"Loaded ${coords.size} points")
+      println(s"$gb")
+
+      println("Computing baseline Euclidean distance tile (raster package)")
+      val baseline = RasterEuclideanDistance(coords, rasterExtent)
+      println(s"    Baseline has size (${baseline.cols}, ${baseline.rows})")
+
+      println("Computing sparse Euclidean distance (spark)")
+      val stitched = SparseEuclideanDistance(coords, extent, ld, 256, 256).stitch
+      println(s"    Stitched has size (${stitched.cols}, ${stitched.rows})")
+
+      assertEqual(baseline, stitched)
+    }
+
   }
 }

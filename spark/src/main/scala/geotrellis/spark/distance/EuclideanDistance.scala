@@ -1,6 +1,7 @@
 package geotrellis.spark.distance
 
 import com.vividsolutions.jts.geom.Coordinate
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import geotrellis.raster._
@@ -92,6 +93,27 @@ object EuclideanDistance {
     }
   }
 
+  /**
+   * Computes a tiled Euclidean distance raster over a very large, dense point set.
+   *
+   * Given a very large, dense point set—on the order of 10s to 100s of millions
+   * of points or more—this apply method provides the means to relatively
+   * efficiently produce a Euclidean distance raster layer for those points.
+   * This operator assumes that there is a layout definition for the space in
+   * qustion, and that the input points have been binned according to that
+   * layout's mapTransform object.
+   *
+   * There are caveats to using this function.  The assumption is that the
+   * incoming point set is _dense_ relative to the layout.  An empty SpatialKey
+   * in isolation is not probematic.  However, large areas devoid of points
+   * which translate to many adjacent spatial keys in the grid which are empty
+   * will likely cause problems.  Additionally, tiles whose Euclidean distance
+   * values are defined by points that are not in the current tile or in one of
+   * the 8 neighboring tiles will produce incorrect values.  This is
+   * particularly true in regions outside the mass of points where the medial
+   * axis of the point set intrudes (these will be generated in large interior
+   * voids or in areas where the point set boundary has nonconvex pockets).
+   */
   def apply(rdd: RDD[(SpatialKey, Array[Coordinate])], layoutDefinition: LayoutDefinition): RDD[(SpatialKey, Tile)] = {
     val triangulations: RDD[(SpatialKey, DelaunayTriangulation)] =
       rdd
@@ -138,6 +160,46 @@ object EuclideanDistance {
         }}
       }, preservesPartitioning = true)
 
+  }
+
+}
+
+object SparseEuclideanDistance {
+
+  /**
+   * Generates a Euclidean distance tile RDD from a small collection of points.
+   *
+   * The standard EuclideanDistance object apply method is meant to build
+   * Euclidean distance tiles from a very large, dense set of points where the
+   * generation of the triangulation itself is a significant performance
+   * bottleneck (i.e., when the point set is 10s or 100s of millions strong or
+   * more).  In the event that one wishes to generate a set of Euclidean
+   * distance tiles over a large area from a small or sparse set of points which
+   * would exhibit artifacts under the assumptions employed by the dense
+   * EuclideanDistance operator, this apply method will accomplish the desired
+   * end.  Be aware, however, that if there are many points, this operation will
+   * have a lengthy runtime.
+   */
+  def apply(pts: Array[Coordinate], 
+            geomExtent: Extent, 
+            ld: LayoutDefinition, 
+            tileCols: Int,
+            tileRows: Int,
+            cellType: CellType = DoubleConstantNoDataCellType)(implicit sc: SparkContext): RDD[(SpatialKey, Tile)] = {
+    val dt = sc.broadcast(DelaunayTriangulation(pts))
+    val GridBounds(cmin, rmin, cmax, rmax) = ld.mapTransform(geomExtent)
+    val keys = sc.parallelize(for (r <- rmin to rmax; c <- cmin to cmax) yield SpatialKey(c, r))
+
+    keys.mapPartitions(_.map{ key =>
+      val ex = ld.mapTransform(key)
+      val vor = new VoronoiDiagram(dt.value, ex)
+      val re = RasterExtent(ex, tileCols, tileRows)
+      val tile = ArrayTile.empty(cellType, re.cols, re.rows)
+
+      vor.voronoiCellsWithPoints.foreach(EuclideanDistanceTile.rasterizeDistanceCell(re, tile))
+
+      (key, tile)
+    }, preservesPartitioning=true)
   }
 
 }
