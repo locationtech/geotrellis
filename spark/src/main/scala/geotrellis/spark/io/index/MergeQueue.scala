@@ -28,9 +28,9 @@ object MergeQueue{
 class MergeQueue(initialSize: Int = 1) {
   private var array = if(initialSize <= 1) { Array.ofDim[(Long, Long)](1) } else { Array.ofDim[(Long, Long)](initialSize) }
   private var _size = 0
- 
+
   def size = _size
- 
+
   private def removeElement(i: Int): Unit = {
     if(i < _size - 1) {
       val result = array.clone
@@ -39,7 +39,7 @@ class MergeQueue(initialSize: Int = 1) {
     }
     _size = _size - 1
   }
- 
+
   private def insertElement(range: (Long, Long), i: Int): Unit = {
     ensureSize(_size + 1)
     if(i == _size) {
@@ -53,8 +53,8 @@ class MergeQueue(initialSize: Int = 1) {
     }
     _size += 1
   }
- 
- 
+
+
   /** Ensure that the internal array has at least `n` cells. */
   protected def ensureSize(n: Int) {
     // Use a Long to prevent overflows
@@ -66,15 +66,15 @@ class MergeQueue(initialSize: Int = 1) {
       }
       // Clamp newSize to Int.MaxValue
       if (newSize > Int.MaxValue) newSize = Int.MaxValue
- 
+
       val newArray: Array[(Long, Long)] = new Array(newSize.toInt)
       scala.compat.Platform.arraycopy(array, 0, newArray, 0, _size)
       array = newArray
     }
   }
- 
+
   val ordering = implicitly[Ordering[(Long, Long)]]
- 
+
   /** Inserts a single range into the priority queue.
    *
    *  @param  range        the element to insert.
@@ -86,17 +86,17 @@ class MergeQueue(initialSize: Int = 1) {
       val i = -(res + 1)
       var (thisStart, thisEnd) = range
       var removeLeft = false
- 
+
       var removeRight = false
       var rightRemainder: Option[(Long, Long)] = None
- 
+
       // Look at the left range
       if(i != 0) {
         val (prevStart, prevEnd) = array(i - 1)
         if(prevStart == thisStart) {
           removeLeft = true
         }
-        if (prevEnd + 1 >= thisStart) { 
+        if (prevEnd + 1 >= thisStart) {
           removeLeft = true
           thisStart = prevStart
           if(prevEnd > thisEnd) {
@@ -104,7 +104,7 @@ class MergeQueue(initialSize: Int = 1) {
           }
         }
       }
- 
+
       // Look at the right range
       if(i < _size  && _size > 0) {
         val (nextStart, nextEnd) = array(i)
@@ -123,8 +123,8 @@ class MergeQueue(initialSize: Int = 1) {
           }
         }
       }
- 
-      if(removeRight) { 
+
+      if(removeRight) {
         if(!removeLeft) {
           array(i) = (thisStart, thisEnd)
         } else {
@@ -136,14 +136,14 @@ class MergeQueue(initialSize: Int = 1) {
       } else {
         insertElement(range, i)
       }
-      
+
       rightRemainder match {
         case Some(r) => this += r
         case None =>
       }
     }
   }
- 
+
   def toSeq: Seq[(Long, Long)] = {
     val result = Array.ofDim[(Long, Long)](size)
     System.arraycopy(array, 0, result, 0, size)
