@@ -4,7 +4,7 @@ name := "geotrellis-spark"
 libraryDependencies ++= Seq(
   sparkCore % "provided",
   hadoopClient % "provided",
-  "com.google.uzaygezen" % "uzaygezen-core" % "0.2",
+  "org.locationtech.sfcurve" %% "sfcurve-geowave-index" % "0.2.1-SNAPSHOT",
   "org.scalaj" %% "scalaj-http" % "2.3.0",
   avro,
   spire,

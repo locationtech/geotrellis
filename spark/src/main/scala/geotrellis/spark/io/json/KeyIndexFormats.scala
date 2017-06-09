@@ -18,6 +18,7 @@ package geotrellis.spark.io.json
 
 import geotrellis.spark._
 import geotrellis.spark.io.index._
+import geotrellis.spark.io.index.geowave._
 import geotrellis.spark.io.index.hilbert._
 import geotrellis.spark.io.index.rowmajor._
 import geotrellis.spark.io.index.zcurve._
@@ -87,6 +88,7 @@ trait KeyIndexFormats {
       entryRegistry register KeyIndexFormatEntry[SpatialKey, HilbertSpatialKeyIndex](HilbertSpatialKeyIndexFormat.TYPE_NAME)
       entryRegistry register KeyIndexFormatEntry[SpatialKey, ZSpatialKeyIndex](ZSpatialKeyIndexFormat.TYPE_NAME)
       entryRegistry register KeyIndexFormatEntry[SpatialKey, RowMajorSpatialKeyIndex](RowMajorSpatialKeyIndexFormat.TYPE_NAME)
+      entryRegistry register KeyIndexFormatEntry[SpatialKey, GeowaveSpatialKeyIndex](GeowaveSpatialKeyIndexFormat.TYPE_NAME)
 
       entryRegistry register KeyIndexFormatEntry[SpaceTimeKey, HilbertSpaceTimeKeyIndex](HilbertSpaceTimeKeyIndexFormat.TYPE_NAME)
       entryRegistry register KeyIndexFormatEntry[SpaceTimeKey, ZSpaceTimeKeyIndex](ZSpaceTimeKeyIndexFormat.TYPE_NAME)
@@ -121,6 +123,42 @@ trait KeyIndexFormats {
 
   implicit def keyIndexJsonFormat[K: ClassTag]: RootJsonFormat[KeyIndex[K]] =
     KeyIndexJsonFormatFactory.getKeyIndexJsonFormat[K]
+
+  implicit object GeowaveSpatialKeyIndexFormat extends RootJsonFormat[GeowaveSpatialKeyIndex] {
+    final def TYPE_NAME = "geowave"
+
+    def write(obj: GeowaveSpatialKeyIndex): JsValue =
+      JsObject(
+        "type"   -> JsString(TYPE_NAME),
+        "properties" -> JsObject(
+          "keyBounds"   -> obj.keyBounds.toJson,
+          "xResolution" -> obj.xResolution.toJson,
+          "yResolution" -> obj.yResolution.toJson
+        )
+      )
+
+    def read(value: JsValue): GeowaveSpatialKeyIndex =
+      value.asJsObject.getFields("type", "properties") match {
+        case Seq(JsString(typeName), properties) => {
+          if (typeName != TYPE_NAME)
+            throw new DeserializationException(s"Wrong KeyIndex type: ${TYPE_NAME} expected.")
+          properties.convertTo[JsObject]
+            .getFields("keyBounds", "xResolution", "yResolution") match {
+            case Seq(kb, xr, yr) =>
+              GeowaveSpatialKeyIndex(
+                kb.convertTo[KeyBounds[SpatialKey]],
+                xr.convertTo[Int],
+                yr.convertTo[Int]
+              )
+            case _ =>
+              throw new DeserializationException(
+                "Wrong KeyIndex constructor arguments: GeowaveSpatialKeyIndex constructor arguments expected.")
+          }
+        }
+        case _ =>
+          throw new DeserializationException("Wrong KeyIndex type: GeowaveSpatialKeyIndex expected.")
+      }
+  }
 
   implicit object HilbertSpatialKeyIndexFormat extends RootJsonFormat[HilbertSpatialKeyIndex] {
     final def TYPE_NAME = "hilbert"
