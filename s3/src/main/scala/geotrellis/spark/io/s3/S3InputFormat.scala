@@ -20,9 +20,9 @@ import geotrellis.proj4.CRS
 import geotrellis.spark.io.hadoop._
 import geotrellis.util.LazyLogging
 
-import com.amazonaws.services.s3.model.{ListObjectsRequest, ObjectListing}
 import com.amazonaws.auth._
 import com.amazonaws.regions._
+import com.amazonaws.services.s3.model.{ListObjectsRequest, ObjectListing, S3ObjectSummary}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce.{InputFormat, Job, JobContext}
 
@@ -103,6 +103,21 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
 
     var splits: Vector[S3InputSplit] = Vector(makeNewSplit)
 
+    val s3ObjectFilter: S3ObjectSummary => Boolean =
+      { obj =>
+        val key = obj.getKey
+
+        val isDir = key.endsWith("/")
+        val isTiff =
+          if (extensions.isEmpty)
+            true
+          else {
+            extensions.map(key.endsWith).reduce(_ || _)
+          }
+
+        !isDir && isTiff
+      }
+
     if (null == partitionCountConf) {
       // By default attempt to make partitions the same size
       val maxSplitBytes = if (null == partitionSizeConf) S3InputFormat.DEFAULT_PARTITION_BYTES else partitionSizeConf.toLong
@@ -125,15 +140,7 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
 
       s3client
         .listObjectsIterator(request)
-        .filter(!_.getKey.endsWith("/"))
-        .filter { obj =>
-          if (extensions.isEmpty)
-            true
-          else {
-            val key = obj.getKey
-            extensions.map(key.endsWith).reduce(_ || _)
-          }
-        }
+        .filter(s3ObjectFilter)
         .foreach { obj =>
           val objSize = obj.getSize
           val curSplit =
@@ -159,7 +166,7 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
       val keys =
         s3client
           .listObjectsIterator(request)
-          .filter(! _.getKey.endsWith("/"))
+          .filter(s3ObjectFilter)
           .toVector
 
       val groupCount = math.max(1, keys.length / partitionCount)
