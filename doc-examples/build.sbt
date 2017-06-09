@@ -2,6 +2,6 @@ import Dependencies._
 
 name := "geotrellis-doc-examples"
 libraryDependencies ++= Seq(
-  sparkCore % "provided",
+  sparkCore,
   logging,
   scalatest % "test")
