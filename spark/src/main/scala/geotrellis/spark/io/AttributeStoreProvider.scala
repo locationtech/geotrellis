@@ -24,30 +24,4 @@ trait AttributeStoreProvider {
   def canProcess(uri: URI): Boolean
 
   def attributeStore(uri: URI): AttributeStore
-
-  /** Parse URI user and password */
-  protected def getUserInfo(uri: URI): (Option[String], Option[String]) = {
-    val info = uri.getUserInfo
-    if (null == info)
-      None -> None
-    else {
-      val chunk = info.split(":")
-      if (chunk.length == 1)
-        Some(chunk(0)) -> None
-      else
-        Some(chunk(0)) -> Some(chunk(1))
-    }
-  }
-
-  protected def getParams(uri: URI): Map[String, String] = {
-    val query = uri.getQuery
-    if (null == query)
-      Map.empty[String, String]
-    else {
-      query.split("&").map{ param =>
-        val arr = param.split("=")
-        arr(0) -> arr(1)
-      }.toMap
-    }
-  }
 }

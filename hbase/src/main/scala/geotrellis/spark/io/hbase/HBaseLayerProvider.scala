@@ -18,32 +18,40 @@ package geotrellis.spark.io.hbase
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-
+import geotrellis.util.UriUtils
+import org.apache.spark.SparkContext
 import java.net.URI
 
 
 /**
- * Provides [[HBaseAttributeStore]] instance for URI with `cassandra` scheme.
+ * Provides [[HBaseAttributeStore]] instance for URI with `hbase` scheme.
  *  ex: `hbase://zookeeper[:port][?master=host]#metadata-table-name]`
  *
  * Metadata table name is optional, not provided default value will be used.
  */
-class HBaseAttributeStoreProvider extends AttributeStoreProvider {
+class HBaseLayerProvider extends AttributeStoreProvider with LayerReaderProvider {
   def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "hbase"
 
   def attributeStore(uri: URI): AttributeStore = {
-    val zookeeper = uri.getHost
-    val port = Option(uri.getPort).getOrElse(2181)
+    val instance = HBaseInstance(uri)
     val attributeTable = uri.getFragment
-    val params = getParams(uri)
-    val instance = HBaseInstance(
-      List(zookeeper),
-      params.getOrElse("master", ""),
-      port.toString)
 
     if (null == attributeTable)
       HBaseAttributeStore(instance)
     else
       HBaseAttributeStore(instance, attributeTable)
+  }
+
+  def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {
+    val instance = HBaseInstance(uri)
+    new HBaseLayerReader(store, instance)(sc)
+  }
+
+  def layerWriter(uri: URI, store: AttributeStore): LayerWriter[LayerId] = {
+    val instance = HBaseInstance(uri)
+    val params = UriUtils.getParams(uri)
+    val table = params.getOrElse("table",
+      throw new IllegalArgumentException("Missing required URI parameter: table"))
+    new HBaseLayerWriter(store, instance, table)
   }
 }

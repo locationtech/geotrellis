@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Azavea
+ * Copyright 2016 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,14 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.s3
+package geotrellis.spark.io
 
 import geotrellis.spark._
-import geotrellis.spark.io._
+import org.apache.spark._
 import java.net.URI
 
-/**
- * Provides [[S3AttributeStore]] instance for URI with `s3` scheme.
- * The uri represents S3 bucket an prefix of catalog root.
- *  ex: `s3://<bucket>/<prefix-to-catalog>`
- */
-class S3AttributeStoreProvider extends AttributeStoreProvider {
-  def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "s3"
+trait LayerReaderProvider {
+  def canProcess(uri: URI): Boolean
 
-  def attributeStore(uri: URI): AttributeStore = {
-    val bucket = uri.getAuthority
-    val prefix = uri.getPath.drop(1)
-    new S3AttributeStore(bucket, prefix)
-  }
+  def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId]
 }

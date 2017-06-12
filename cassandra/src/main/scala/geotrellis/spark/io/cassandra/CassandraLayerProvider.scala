@@ -18,7 +18,8 @@ package geotrellis.spark.io.cassandra
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-
+import geotrellis.util.UriUtils
+import org.apache.spark.SparkContext
 import java.net.URI
 
 
@@ -28,26 +29,35 @@ import java.net.URI
  *
  * Metadata table name is optional, not provided default value will be used.
  */
-class CassandraAttributeStoreProvider extends AttributeStoreProvider {
+class CassandraLayerProvider extends AttributeStoreProvider with LayerReaderProvider {
   def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "cassandra"
 
   def attributeStore(uri: URI): AttributeStore = {
-    val zookeeper = uri.getHost
-    val port = Option(uri.getPort).getOrElse(2181)
-    val (user, pass) = getUserInfo(uri)
+    val instance = CassandraInstance(uri)
     val keyspace = Option(uri.getPath.drop(1))
       .getOrElse(Cassandra.cfg.getString("keyspace"))
     val attributeTable = Option(uri.getFragment)
       .getOrElse(Cassandra.cfg.getString("catalog"))
 
-    val instance = BaseCassandraInstance(
-      List(zookeeper),
-      user.getOrElse(""),
-      pass.getOrElse(""))
-
     if (null == attributeTable)
       CassandraAttributeStore(instance)
     else
       CassandraAttributeStore(instance, keyspace, attributeTable)
+  }
+
+  def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {
+    val instance = CassandraInstance(uri)
+    new CassandraLayerReader(store, instance)(sc)
+  }
+
+  def layerWriter(uri: URI, store: AttributeStore): LayerWriter[LayerId] = {
+    val instance = CassandraInstance(uri)
+    val keyspace = Option(uri.getPath.drop(1))
+      .getOrElse(Cassandra.cfg.getString("keyspace"))
+    val params = UriUtils.getParams(uri)
+    val table = params.getOrElse("table",
+      throw new IllegalArgumentException("Missing required URI parameter: table"))
+
+    new CassandraLayerWriter(store, instance, keyspace, table)
   }
 }

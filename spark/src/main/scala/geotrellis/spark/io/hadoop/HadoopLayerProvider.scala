@@ -20,6 +20,7 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.conf.Configuration
+import org.apache.spark.SparkContext
 import java.net.URI
 
 /**
@@ -28,7 +29,8 @@ import java.net.URI
  * This Provider intentinally does not handle the `s3` scheme because the Hadoop implemintation is poor.
  * That support is provided by [[S3Attributestore]]
  */
-class HadoopAttributeStoreProvider extends AttributeStoreProvider {
+class HadoopLayerProvider extends AttributeStoreProvider
+    with LayerReaderProvider {
   val schemes: Array[String] = Array("hdfs", "file", "s3n", "s3a")
 
   def canProcess(uri: URI): Boolean = schemes contains uri.getScheme.toLowerCase
@@ -37,4 +39,11 @@ class HadoopAttributeStoreProvider extends AttributeStoreProvider {
     val conf = new Configuration()
     new HadoopAttributeStore(new Path(uri), conf)
   }
+
+  def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {
+    // don't need uri because HadoopLayerHeader contains full path of the layer
+    val conf = new Configuration()
+    new HadoopLayerReader(store)(sc)
+  }
+
 }

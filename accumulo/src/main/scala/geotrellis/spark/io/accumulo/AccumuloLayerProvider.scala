@@ -18,6 +18,8 @@ package geotrellis.spark.io.accumulo
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.util.UriUtils
+import org.apache.spark.SparkContext
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
 import java.net.URI
 
@@ -28,22 +30,31 @@ import java.net.URI
  *
  * Metadata table name is optional, not provided default value will be used.
  */
-class AccumuloAttributeStoreProvider extends AttributeStoreProvider {
+class AccumuloLayerProvider extends AttributeStoreProvider with LayerReaderProvider {
   def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "accumulo"
 
   def attributeStore(uri: URI): AttributeStore = {
-    val zookeeper = uri.getHost
-    val instance = uri.getPath.drop(1)
-    val (user, pass) = getUserInfo(uri)
-    val accumuloInstance = AccumuloInstance(
-      instance, zookeeper,
-      user.getOrElse("root"),
-      new PasswordToken(pass.getOrElse("")))
+    val instance = AccumuloInstance(uri)
     val attributeTable = uri.getFragment
 
     if (null == attributeTable)
-      AccumuloAttributeStore(accumuloInstance)
+      AccumuloAttributeStore(instance)
     else
-      AccumuloAttributeStore(accumuloInstance, attributeTable)
+      AccumuloAttributeStore(instance, attributeTable)
+  }
+
+  def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {
+    val instance = AccumuloInstance(uri)
+
+    new AccumuloLayerReader(store)(sc, instance)
+  }
+
+  def layerWriter(uri: URI, store: AttributeStore): LayerWriter[LayerId] = {
+    val instance = AccumuloInstance(uri)
+    val params = UriUtils.getParams(uri)
+    val table = params.getOrElse("table",
+      throw new IllegalArgumentException("Missing required URI parameter: table"))
+
+    AccumuloLayerWriter(instance, store, table)
   }
 }

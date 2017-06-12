@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Azavea
+ * Copyright 2016 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,14 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.file
+package geotrellis.spark.io
 
 import geotrellis.spark._
-import geotrellis.spark.io._
+import org.apache.spark._
 import java.net.URI
-import java.io.File
 
-/**
- * Provides [[FileAttributeStore]] instance for URI with `file` scheme.
- * The uri represents local path to catalog root.
- *  ex: `file:/tmp/catalog`
- */
-class FileAttributeStoreProvider extends AttributeStoreProvider {
-  def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "file"
+trait LayerWriterProvider {
+  def canProcess(uri: URI): Boolean
 
-  def attributeStore(uri: URI): AttributeStore = {
-    val file = new File(uri)
-    new FileAttributeStore(file.getCanonicalPath)
-  }
+  def layerWriter(uri: URI, store: AttributeStore): LayerWriter[LayerId]
 }

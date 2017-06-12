@@ -19,6 +19,26 @@ package geotrellis.spark.io.cassandra
 import com.datastax.driver.core.policies.{DCAwareRoundRobinPolicy, TokenAwarePolicy}
 import com.datastax.driver.core.{Cluster, Session}
 import com.typesafe.config.ConfigFactory
+import java.net.URI
+
+object CassandraInstance {
+  def apply(uri: URI): CassandraInstance = {
+    import geotrellis.util.UriUtils._
+
+    val zookeeper = uri.getHost
+    val port = Option(uri.getPort).getOrElse(2181)
+    val (user, pass) = getUserInfo(uri)
+    val keyspace = Option(uri.getPath.drop(1))
+      .getOrElse(Cassandra.cfg.getString("keyspace"))
+    val attributeTable = Option(uri.getFragment)
+      .getOrElse(Cassandra.cfg.getString("catalog"))
+
+    BaseCassandraInstance(
+      List(zookeeper),
+      user.getOrElse(""),
+      pass.getOrElse(""))
+  }
+}
 
 trait CassandraInstance extends Serializable {
   val hosts: Seq[String]
