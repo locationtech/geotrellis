@@ -59,8 +59,9 @@ class StitchedDelaunaySpec extends FunSpec with Matchers {
   def findDirection(pt: Coordinate) = chunks.find { pair => pair._1.contains(Point.jtsCoord2Point(pt)) }.get._2
 
   describe("Stitched Delaunay triangulation") {
-    ignore("should have no stitch triangles with circumcircles containing other points") {
-      val points: Seq[Coordinate] = randomizedGrid(300, Extent(0,0,3,3))
+    it("should have no stitch triangles with circumcircles containing other points") {
+      //val points: Seq[Coordinate] = randomizedGrid(300, Extent(0,0,3,3))
+      val points: Seq[Coordinate] = for (i <- (1 to 300).toSeq) yield randomPoint(Extent(0,0,3,3))
       val keyedPoints: Seq[(Direction, Array[Coordinate])] =
         points
           .map{ pt => (findDirection(pt), pt) }
@@ -76,8 +77,10 @@ class StitchedDelaunaySpec extends FunSpec with Matchers {
           .toMap
 
       val stitch = StitchedDelaunay(stitchInput)
+      // stitch.writeWKT("stitched.wkt")
+      // triangulations.foreach{ case (dir, tri) => tri.writeWKT(s"triangles${dir}.wkt") }
 
-      stitch.triangles.forall { case (ai, bi, ci) => {
+       stitch.triangles.forall { case (ai, bi, ci) => {
         val a = stitch.indexToCoord(ai)
         val b = stitch.indexToCoord(bi)
         val c = stitch.indexToCoord(ci)
@@ -116,8 +119,8 @@ class StitchedDelaunaySpec extends FunSpec with Matchers {
           .toMap
 
       val stitch = StitchedDelaunay(stitchInput, false)
-      //stitch.writeWKT("stitched.wkt")
-      //triangulations.foreach{ case (dir, tri) => tri.writeWKT(s"triangles${dir}.wkt") }
+      // stitch.writeWKT("stitched.wkt")
+      // triangulations.foreach{ case (dir, tri) => tri.writeWKT(s"triangles${dir}.wkt") }
 
       stitch.triangles.forall { case (ai, bi, ci) => {
         val a = stitch.indexToCoord(ai)

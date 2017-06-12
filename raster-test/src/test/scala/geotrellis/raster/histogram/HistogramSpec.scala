@@ -16,17 +16,15 @@
 
 package geotrellis.raster.histogram
 
-import Console.printf
-import math.round
 import org.scalatest._
 
-import scala.util.Random
 import java.util.Locale
 
 
-class HistogramSpec extends FunSpec with Matchers {
-  def stringToInts(s:String) = {
-    s.toCharArray.map { _.toByte - 32 }
+class HistogramSpec extends FunSpec with Matchers with Inspectors {
+  private def charToInt(c: Char) = c.toByte - 32
+  private def stringToInts(s:String) = {
+    s.toCharArray.map(charToInt)
   }
   val kinds = List(("FastMapHistogram", FastMapHistogram, () => {FastMapHistogram()}))
   kinds.foreach {
@@ -62,12 +60,29 @@ class HistogramSpec extends FunSpec with Matchers {
           val s = "This is some great test data--see?"
           stringToInts(s).foreach { i => h.countItem(i) }
 
-          h.itemCount('z'.toByte - 32) should be (0)
-          h.itemCount('?'.toByte - 32) should be (1)
-          h.itemCount('T'.toByte - 32) should be (1)
-          h.itemCount('i'.toByte - 32) should be (2)
-          h.itemCount('s'.toByte - 32) should be (5)
-          h.itemCount(' '.toByte - 32) should be (5)
+          val expected = Seq(
+            ('z', 0),
+            ('?', 1),
+            ('T', 1),
+            ('i', 2),
+            ('s', 5),
+            (' ', 5)
+          )
+
+          forAll(expected) { case (char, count) ⇒
+            h.itemCount(charToInt(char)) should be (count)
+          }
+
+          val bins = h.binCounts()
+
+          bins.length should be (s.distinct.length)
+
+          bins.map(_._2).sum should be (s.length)
+
+          forAll(expected.filter(_._2 > 0)) { case (char, count) ⇒
+            val label = charToInt(char)
+            bins.find(_._1 == label) should be ('nonEmpty)
+          }
         }
 
         it("should do fancy kinds of counting and uncounting") {
