@@ -198,7 +198,7 @@ object IterativeViewshed {
 
     val bounds = md.bounds match {
       case b: KeyBounds[K] => b
-      case _ => throw new Exception
+      case _ => throw new EmptyBoundsError
     }
     val minKey: SpatialKey = bounds.minKey
     val minKeyCol = minKey.col
