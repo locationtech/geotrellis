@@ -104,6 +104,29 @@
     },
     "crs": {
       "type": "string"
+    },
+    "tileLayout": {
+      "type": "object",
+      "properties": {
+        "layoutCols": {
+          "type": "number"
+        },
+        "layoutRows": {
+          "type": "number"
+        },
+        "tileCols": {
+          "type": "number"
+        },
+        "TileRows": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "layoutCols",
+        "layoutRows",
+        "tileCols",
+        "tileRows"
+      ]
     }
   },
   "required": [

@@ -90,7 +90,7 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
       logger.info(layout.toString)
       Right(layout)
     } else
-      sys.error("Either layoutScheme or layoutExtent with cellSize must be provided")
+      sys.error("Either layoutScheme or layoutExtent with cellSize/tileLayout must be provided")
   }
 
   @transient val combinedModule = modules reduce (_ union _)

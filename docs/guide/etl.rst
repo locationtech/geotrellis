@@ -242,6 +242,12 @@ Output JSON
           "xmax":3.0,
           "ymax":4.0
        },
+       "tileLayout":{
+           "layoutCols": 360,
+           "layoutRows": 180,
+           "tileCols":   240,
+           "tileRows":   240
+        },
        "resolutionThreshold":0.1,
        "pyramid":true,
        "resampleMethod":"nearest-neighbor",
@@ -286,6 +292,11 @@ Output JSON
 +-----------------------+-------------------+
 | layoutExtent          | Layout extent     |
 |                       | (optional field)  |
++-----------------------+-------------------+
+| tileLayout            | Tile layout to    |
+|                       | specify layout    |
+|                       | grid (optional    |
+|                       | field)            |
 +-----------------------+-------------------+
 | resolutionThreshold   | Resolution for    |
 |                       | user defined      |
@@ -509,10 +520,11 @@ resampling.
 User-Defined Layout
 -------------------
 
-You may bypass the layout scheme logic by providing ``layoutExtent``,
-``cellSize``, and ``cellType`` instead of the ``layoutScheme`` option.
-Together with ``tileSize`` option this is enough to fully define the
-layout and start the tiling process.
+You may bypass the layout scheme logic by providing ``layoutExtent`` and
+either a ``tileLayout`` or a ``cellSize`` and ``tileSize`` to fully
+define the layout and start the tiling process.  The user may optionally
+specify an output ``cellType`` as well (default case uses the input
+``cellType``).
 
 Reprojection
 ------------

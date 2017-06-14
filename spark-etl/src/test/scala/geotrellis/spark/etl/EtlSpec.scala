@@ -17,12 +17,13 @@
 package geotrellis.spark.etl
 
 import geotrellis.proj4.{LatLng, Sinusoidal}
-import geotrellis.raster.{CellSize, CellType}
 import geotrellis.raster.resample.NearestNeighbor
+import geotrellis.raster.{CellSize, CellType, TileLayout}
 import geotrellis.spark.etl.config._
 import geotrellis.vector.Extent
 import org.apache.spark.storage.StorageLevel
 import org.scalatest._
+
 
 class EtlSpec extends FunSuite {
   // Test that ETL module can be instantiated in convenient ways
@@ -68,6 +69,7 @@ class EtlSpec extends FunSuite {
       maxZoom = Some(13)
     )
 
+  val outputNoScheme = output.copy(layoutScheme = None, maxZoom = None, cellSize = None, tileLayout = Some(TileLayout(100,100,240,240)))
   val etlConf = new EtlConf(
     input  = input,
     output = output
@@ -82,6 +84,28 @@ class EtlSpec extends FunSuite {
     assert(output.copy(crs = None).getCrs === None)
     intercept[Exception] {
       output.copy(crs = Some("BAD:CRS")).getCrs
+    }
+  }
+
+  test("Layout can be specified via TileLayout") {
+    val conf = new EtlConf(
+      input = input,
+      output = outputNoScheme
+    )
+    val etl = Etl(conf)
+    assert(etl.output.tileLayout.contains(TileLayout(100,100,240,240)))
+    assert(etl.output.cellSize.isEmpty)
+    assert(etl.scheme.isRight)
+  }
+
+  test("Exception thrown if specify both TileLayout and CellSize") {
+
+    intercept[Exception] {
+      val conf = new EtlConf(
+        input = input,
+        output = outputNoScheme.copy(cellSize = Some(CellSize(2.0,1.0)))
+      )
+      Etl(conf).scheme
     }
   }
 }
