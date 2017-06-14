@@ -102,12 +102,12 @@ object IterativeViewshed {
   /**
     * Compute the resolution (in meters per pixel) of a layer.
     */
-  private def computeResolution[K: (? => SpatialKey): ClassTag, V: (? => Tile)](
+  private def computeResolution[K: (? => SpatialKey), V: (? => Tile)](
     elevation: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
   ) = {
     val md = elevation.metadata
     val mt = md.mapTransform
-    val key = implicitly[SpatialKey](elevation.map(_._1).first)
+    val key: SpatialKey = md.bounds.get.minKey
     val extent = mt(key).reproject(md.crs, LatLng)
     val degrees = extent.xmax - extent.xmin
     val meters = degrees * (6378137 * 2.0 * math.Pi) / 360.0
