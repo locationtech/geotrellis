@@ -168,7 +168,7 @@ object IterativeViewshed {
     ps: Seq[Point6D],
     maxDistance: Double,
     curvature: Boolean = true,
-    operator: AggregationOperator = Or(),
+    operator: AggregationOperator = Or,
     epsilon: Double = (1/math.Pi),
     touchedKeys: mutable.Set[SpatialKey] = null
   )(implicit sc: SparkContext): RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]] = {
@@ -213,10 +213,10 @@ object IterativeViewshed {
       val eastKey = SpatialKey(key.col - 1, key.row + 0)
 
       Map(
-        FromSouth() -> southKey,
-        FromWest() -> westKey,
-        FromNorth() -> northKey,
-        FromEast() -> eastKey
+        FromSouth -> southKey,
+        FromWest -> westKey,
+        FromNorth -> northKey,
+        FromEast -> eastKey
       ).foreach({ case (dir, key) =>
         if (validKey(key)) {
           val rs = bundle.getOrElse(dir, throw new Exception)
@@ -282,7 +282,7 @@ object IterativeViewshed {
             R2Viewshed.compute(
               tile, shed,
               col, row, viewHeight,
-              FromInside(),
+              FromInside,
               null,
               rayCatcherFn(key, index),
               resolution = resolution,

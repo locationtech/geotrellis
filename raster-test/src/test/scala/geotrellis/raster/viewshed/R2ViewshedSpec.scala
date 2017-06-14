@@ -42,7 +42,7 @@ class R2ViewshedSpec extends FunSpec
       R2Viewshed.compute(
         elevationTile, viewshedTile,
         2, -3, 0,
-        FromSouth(),
+        FromSouth,
         rays,
         { bundle: Bundle =>
           bundle.foreach({ case (_, list) =>
@@ -60,7 +60,7 @@ class R2ViewshedSpec extends FunSpec
         resolution = 1,
         maxDistance = Double.PositiveInfinity,
         curvature = false,
-        operator = Or()
+        operator = Or
       )
 
       a should be (6)
@@ -80,7 +80,7 @@ class R2ViewshedSpec extends FunSpec
       R2Viewshed.compute(
         elevationTile, viewshedTile,
         -3, 2, 0,
-        FromWest(),
+        FromWest,
         rays,
         { bundle: Bundle =>
           bundle.foreach({ case (_, list) =>
@@ -98,7 +98,7 @@ class R2ViewshedSpec extends FunSpec
         resolution = 1,
         maxDistance = Double.PositiveInfinity,
         curvature = false,
-        operator = Or()
+        operator = Or
       )
 
       a should be (6)
@@ -118,7 +118,7 @@ class R2ViewshedSpec extends FunSpec
       R2Viewshed.compute(
         elevationTile, viewshedTile,
         2, 7, 0,
-        FromNorth(),
+        FromNorth,
         rays,
         { bundle: Bundle =>
           bundle.foreach({ case (_, list) =>
@@ -136,7 +136,7 @@ class R2ViewshedSpec extends FunSpec
         resolution = 1,
         maxDistance = Double.PositiveInfinity,
         curvature = false,
-        operator = Or()
+        operator = Or
       )
 
       a should be (6)
@@ -156,7 +156,7 @@ class R2ViewshedSpec extends FunSpec
       R2Viewshed.compute(
         elevationTile, viewshedTile,
         7, 2, 0,
-        FromEast(),
+        FromEast,
         rays,
         { bundle: Bundle =>
           bundle.foreach({ case (_, list) =>
@@ -174,7 +174,7 @@ class R2ViewshedSpec extends FunSpec
         resolution = 1,
         maxDistance = Double.PositiveInfinity,
         curvature = false,
-        operator = Or()
+        operator = Or
       )
 
       a should be (6)
@@ -201,13 +201,13 @@ class R2ViewshedSpec extends FunSpec
       R2Viewshed.compute(
         elevation, actual,
         3, 3, 1,
-        FromInside(),
+        FromInside,
         null,
         { _ => },
         resolution = 1,
         maxDistance = Double.PositiveInfinity,
         curvature = false,
-        operator = Or(),
+        operator = Or,
         cameraDirection = 0,
         cameraFOV = math.cos(math.Pi/4)
       )
@@ -235,13 +235,13 @@ class R2ViewshedSpec extends FunSpec
       R2Viewshed.compute(
         elevation, low,
         3, 3, 0.1,
-        FromInside(),
+        FromInside,
         null,
         { _ => },
         resolution = 1,
         maxDistance = Double.PositiveInfinity,
         curvature = false,
-        operator = Or(),
+        operator = Or,
         cameraDirection = 0,
         cameraFOV = -1
       )
@@ -249,13 +249,13 @@ class R2ViewshedSpec extends FunSpec
       R2Viewshed.compute(
         elevation, medium,
         3, 3, 0.1,
-        FromInside(),
+        FromInside,
         null,
         { _ => },
         resolution = 1,
         maxDistance = Double.PositiveInfinity,
         curvature = false,
-        operator = Or(),
+        operator = Or,
         altitude = 2,
         cameraDirection = 0,
         cameraFOV = -1
@@ -264,13 +264,13 @@ class R2ViewshedSpec extends FunSpec
       R2Viewshed.compute(
         elevation, hi,
         3, 3, 0.1,
-        FromInside(),
+        FromInside,
         null,
         { _ => },
         resolution = 1,
         maxDistance = Double.PositiveInfinity,
         curvature = false,
-        operator = Or(),
+        operator = Or,
         altitude = 3,
         cameraDirection = 0,
         cameraFOV = -1
@@ -289,13 +289,13 @@ class R2ViewshedSpec extends FunSpec
 
     it("computes the viewshed of a flat int plane (OR)") {
       val r = createTile(Array.fill(7 * 8)(1), 7, 8)
-      val shed = R2Viewshed(r, 4, 3, Or())
+      val shed = R2Viewshed(r, 4, 3, Or)
       assertEqual(BitConstantTile(true, 7, 8), shed)
     }
 
     it("computes the viewshed of a flat int plane (AND)") {
       val r = createTile(Array.fill(7 * 8)(1), 7, 8)
-      val shed = R2Viewshed(r, 4, 3, And())
+      val shed = R2Viewshed(r, 4, 3, And)
       assertEqual(BitConstantTile(true, 7, 8), shed)
     }
 
@@ -303,13 +303,13 @@ class R2ViewshedSpec extends FunSpec
 
     it("computes the viewshed of a flat double plane (OR)") {
       val r = createTile(Array.fill(7 * 8)(1.5), 7, 8)
-      val shed = R2Viewshed(r, 4, 3, Or())
+      val shed = R2Viewshed(r, 4, 3, Or)
       assertEqual(BitConstantTile(true, 7, 8), shed)
     }
 
     it("computes the viewshed of a flat double plane (AND)") {
       val r = createTile(Array.fill(7 * 8)(1.5), 7, 8)
-      val shed = R2Viewshed(r, 4, 3, And())
+      val shed = R2Viewshed(r, 4, 3, And)
       assertEqual(BitConstantTile(true, 7, 8), shed)
     }
 
@@ -324,7 +324,7 @@ class R2ViewshedSpec extends FunSpec
       )
       val r = createTile(rasterData, 7, 1)
       val viewRaster = createTile(viewable, 7, 1).convert(BitCellType)
-      val shed = R2Viewshed(r, 3, 0, Or())
+      val shed = R2Viewshed(r, 3, 0, Or)
       assertEqual(viewRaster, shed)
     }
 
@@ -337,7 +337,7 @@ class R2ViewshedSpec extends FunSpec
       )
       val r = createTile(rasterData, 7, 1)
       val viewRaster = createTile(viewable, 7, 1).convert(BitCellType)
-      val shed = R2Viewshed(r, 3, 0, And())
+      val shed = R2Viewshed(r, 3, 0, And)
       assertEqual(viewRaster, shed)
     }
 
@@ -364,7 +364,7 @@ class R2ViewshedSpec extends FunSpec
       )
       val r = createTile(rasterData, 7, 7)
       val viewRaster = createTile(viewable, 7, 7).convert(BitCellType)
-      val shed = R2Viewshed(r, 3, 3, Or())
+      val shed = R2Viewshed(r, 3, 3, Or)
       assertEqual(viewRaster, shed)
     }
 
@@ -389,7 +389,7 @@ class R2ViewshedSpec extends FunSpec
       )
       val r = createTile(rasterData, 7, 7)
       val viewRaster = createTile(viewable, 7, 7).convert(BitCellType)
-      val shed = R2Viewshed(r, 3, 3, And())
+      val shed = R2Viewshed(r, 3, 3, And)
       assertEqual(viewRaster, shed)
     }
 
@@ -416,7 +416,7 @@ class R2ViewshedSpec extends FunSpec
       )
       val r = createTile(rasterData, 7, 7)
       val viewRaster = createTile(viewable, 7, 7).convert(BitCellType)
-      val shed = R2Viewshed(r, 3, 3, Or())
+      val shed = R2Viewshed(r, 3, 3, Or)
       assertEqual(viewRaster, shed)
     }
 
@@ -441,7 +441,7 @@ class R2ViewshedSpec extends FunSpec
       )
       val r = createTile(rasterData, 7, 7)
       val viewRaster = createTile(viewable, 7, 7).convert(BitCellType)
-      val shed = R2Viewshed(r, 3, 3, And())
+      val shed = R2Viewshed(r, 3, 3, And)
       assertEqual(viewRaster, shed)
     }
 
@@ -456,7 +456,7 @@ class R2ViewshedSpec extends FunSpec
       )
       val r = createTile(rasterData, 7, 1)
       val viewRaster = createTile(viewable, 7, 1).convert(BitCellType)
-      val shed = R2Viewshed(r, 3, 0, Or())
+      val shed = R2Viewshed(r, 3, 0, Or)
       assertEqual(viewRaster, shed)
     }
 
@@ -469,7 +469,7 @@ class R2ViewshedSpec extends FunSpec
       )
       val r = createTile(rasterData, 7, 1)
       val viewRaster = createTile(viewable, 7, 1).convert(BitCellType)
-      val shed = R2Viewshed(r, 3, 0, And())
+      val shed = R2Viewshed(r, 3, 0, And)
       assertEqual(viewRaster, shed)
     }
 
@@ -483,7 +483,7 @@ class R2ViewshedSpec extends FunSpec
 
       val (x, y) = (-93.63300872055451407, 30.54649743277299123) // create overload
       val (col, row) = rasterExtent.mapToGrid(x, y)
-      val actual = R2Viewshed(elevation, col, row, Or())
+      val actual = R2Viewshed(elevation, col, row, Or)
 
       def countDiff(a: Tile, b: Tile): Int = {
         var ans = 0
@@ -511,7 +511,7 @@ class R2ViewshedSpec extends FunSpec
 
       val (x, y) = (-93.63300872055451407, 30.54649743277299123) // create overload
       val (col, row) = rasterExtent.mapToGrid(x, y)
-      val actual = R2Viewshed(elevation, col, row, And())
+      val actual = R2Viewshed(elevation, col, row, And)
 
       def countDiff(a: Tile, b: Tile): Int = {
         var ans = 0

@@ -36,7 +36,7 @@ abstract class RDDViewshedMethods[K: (? => SpatialKey): ClassTag, V: (? => Tile)
     points: Seq[Point6D],
     maxDistance: Double = Double.PositiveInfinity,
     curvature: Boolean = true,
-    operator: AggregationOperator = Or(),
+    operator: AggregationOperator = Or,
     touchedKeys: mutable.Set[SpatialKey] = null
   )(implicit sc: SparkContext): RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]] =
     IterativeViewshed(

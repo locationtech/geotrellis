@@ -38,17 +38,17 @@ import java.util.Comparator
   */
 object R2Viewshed extends Serializable {
 
-  sealed abstract class From()
-  case class FromNorth() extends From
-  case class FromEast() extends From
-  case class FromSouth() extends From
-  case class FromWest() extends From
-  case class FromInside() extends From
+  sealed trait From
+  case object FromNorth extends From
+  case object FromEast extends From
+  case object FromSouth extends From
+  case object FromWest extends From
+  case object FromInside extends From
 
-  sealed abstract class AggregationOperator()
-  case class And() extends AggregationOperator { override def toString: String = "AND" }
-  case class Debug() extends AggregationOperator { override def toString: String = "DEBUG" }
-  case class Or() extends AggregationOperator { override def toString: String = "OR" }
+  sealed trait AggregationOperator
+  case object And extends AggregationOperator { override def toString: String = "AND" }
+  case object Debug extends AggregationOperator { override def toString: String = "DEBUG" }
+  case object Or extends AggregationOperator { override def toString: String = "OR" }
 
   sealed case class DirectedSegment(x0: Int, y0: Int, x1: Int, y1: Int, theta: Double) {
     override def toString(): String = s"($x0, $y0) to ($x1, $y1) θ=$theta"
@@ -99,7 +99,7 @@ object R2Viewshed extends Serializable {
     */
   private def thetaToAlpha(from: From, rays: Array[Ray], theta: Double): Double = {
     from match {
-      case _: FromInside => -math.Pi
+      case FromInside => -math.Pi
       case _ =>
         val index = binarySearch(rays, Ray(theta, Double.NaN), RayComparator)
 
@@ -148,20 +148,20 @@ object R2Viewshed extends Serializable {
   def apply(
     elevationTile: Tile,
     startCol: Int, startRow: Int,
-    op: AggregationOperator = Or()): Tile = {
+    op: AggregationOperator = Or): Tile = {
     val cols = elevationTile.cols
     val rows = elevationTile.rows
     val viewHeight = elevationTile.getDouble(startCol, startRow)
     val viewshedTile =
       op match {
-        case _: Or => ArrayTile.empty(IntCellType, cols, rows)
+        case Or => ArrayTile.empty(IntCellType, cols, rows)
         case _ => ArrayTile.empty(IntConstantNoDataCellType, cols, rows)
       }
 
     R2Viewshed.compute(
       elevationTile, viewshedTile,
       startCol, startRow, viewHeight,
-      FromInside(),
+      FromInside,
       null,
       nop,
       resolution = 1,
@@ -246,27 +246,27 @@ object R2Viewshed extends Serializable {
       from match {
         case _ if ((-1.0 < cameraFOV && cameraFOV < 1.0) && (vx*math.cos(theta) + vy*math.sin(theta)) < cameraFOV) =>
           None
-        case _: FromInside if inTile => Some(DirectedSegment(x0,y0,x1,y1,theta))
-        case _: FromInside if !inTile => throw new Exception
-        case _: FromNorth =>
+        case FromInside if inTile => Some(DirectedSegment(x0,y0,x1,y1,theta))
+        case FromInside if !inTile => throw new Exception
+        case FromNorth =>
           val y2 = rows-1
           val x2 = math.round(((y2 - y1) / m) + x1).toInt
           if ((0 <= x2 && x2 < cols) && (y2 <= y0 && -math.sin(theta) > 0.0))
             Some(DirectedSegment(x2,y2,x1,y1,theta))
           else None
-        case _: FromEast =>
+        case FromEast =>
           val x2 = cols-1
           val y2 = math.round((m * (x2 - x1)) + y1).toInt
           if ((0 <= y2 && y2 < rows) && (x2 <= x0 && -math.cos(theta) > 0.0))
             Some(DirectedSegment(x2,y2,x1,y1,theta))
           else None
-        case _: FromSouth =>
+        case FromSouth =>
           val y2 = 0
           val x2 = math.round(((y2 - y1) / m) + x1).toInt
           if ((0 <= x2 && x2 < cols) && (y2 >= y0 && math.sin(theta) > 0.0))
             Some(DirectedSegment(x2,y2,x1,y1,theta))
           else None
-        case _: FromWest =>
+        case FromWest =>
           val x2 = 0
           val y2 = math.round((m * (x2 - x1)) + y1).toInt
           if ((0 <= y2 && y2 < rows) && (x2 >= x0 && math.cos(theta) > 0.0))
@@ -312,15 +312,15 @@ object R2Viewshed extends Serializable {
           if (groundVisible) alpha = groundAngle
 
           operator match {
-            case _: Or if visible =>
+            case Or if visible =>
               viewshedTile.set(col, row, 1)
-            case _: And if !visible =>
+            case And if !visible =>
               viewshedTile.set(col, row, 0)
-            case _: And if (visible && isNoData(current)) =>
+            case And if (visible && isNoData(current)) =>
               viewshedTile.set(col, row, 1)
-            case _: Debug if (visible && isNoData(current)) =>
+            case Debug if (visible && isNoData(current)) =>
               viewshedTile.set(col, row, 1)
-            case _: Debug if (visible && !isNoData(current)) =>
+            case Debug if (visible && !isNoData(current)) =>
               viewshedTile.set(col, row, 1 + current)
             case _ =>
           }
@@ -427,10 +427,10 @@ object R2Viewshed extends Serializable {
     }
 
     val bundle: Bundle = Map(
-      FromSouth() -> southRays,
-      FromWest() -> westRays,
-      FromNorth() -> northRays,
-      FromEast() -> eastRays
+      FromSouth -> southRays,
+      FromWest -> westRays,
+      FromNorth -> northRays,
+      FromEast -> eastRays
     )
     tileCallback(bundle)
 

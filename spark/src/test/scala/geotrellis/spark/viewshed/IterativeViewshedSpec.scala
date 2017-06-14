@@ -55,7 +55,7 @@ class IterativeViewshedSpec extends FunSpec
         points = List(point),
         maxDistance = Double.PositiveInfinity,
         curvature = false,
-        operator = Or(),
+        operator = Or,
         touchedKeys = touched
       )
 
@@ -79,7 +79,7 @@ class IterativeViewshedSpec extends FunSpec
         points = List(point),
         maxDistance = Double.PositiveInfinity,
         curvature = false,
-        operator = Or(),
+        operator = Or,
         touchedKeys = touched
       )
 
@@ -102,7 +102,7 @@ class IterativeViewshedSpec extends FunSpec
         points = List(point),
         maxDistance = Double.PositiveInfinity,
         curvature = false,
-        operator = Or()
+        operator = Or
       )
       var actual = 0 ; viewshed.collect.foreach({ case (_, v) => v.foreach({ z => if (isData(z)) actual += z }) })
       val expected = 15*15
@@ -126,7 +126,7 @@ class IterativeViewshedSpec extends FunSpec
       val viewshed = IterativeViewshed(rdd, List(point),
         maxDistance = Double.PositiveInfinity,
         curvature = false,
-        operator = Or()
+        operator = Or
       )
       var actual = 0 ; viewshed.collect.foreach({ case (_, v) => v.foreach({ z => if (isData(z)) actual += z }) })
       val expected = 171
@@ -151,7 +151,7 @@ class IterativeViewshedSpec extends FunSpec
         points = List(point),
         maxDistance = Double.PositiveInfinity,
         curvature = false,
-        operator = Or()
+        operator = Or
       )
       val ND = NODATA
       val expected: Array[Int] = Array(
@@ -187,7 +187,7 @@ class IterativeViewshedSpec extends FunSpec
         points = List(point1, point2, point3),
         maxDistance = Double.PositiveInfinity,
         curvature = false,
-        operator = Or()
+        operator = Or
       )
       val expected = 15 * 15 * 1
       var actual: Int = 0
@@ -223,7 +223,7 @@ class IterativeViewshedSpec extends FunSpec
         points = List(point1, point2, point3),
         maxDistance = Double.PositiveInfinity,
         curvature = false,
-        operator = Or()
+        operator = Or
       )
       var actual: Int = 0
       viewshed.collect.foreach({ case (k, v) => actual += v.get(2, 2) })
