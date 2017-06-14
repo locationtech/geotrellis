@@ -222,16 +222,16 @@ object IterativeViewshed {
       * to interested neighbors.
       */
     def rayCatcherFn(key: SpatialKey, index: Int)(bundle: Bundle): Unit = {
-      val southKey = SpatialKey(key.col + 0, key.row + 1)
-      val westKey = SpatialKey(key.col + 1, key.row + 0)
-      val northKey = SpatialKey(key.col + 0, key.row - 1)
-      val eastKey = SpatialKey(key.col - 1, key.row + 0)
+      val toTheNorth = SpatialKey(key.col + 0, key.row + 1) // key to the North of the present key
+      val toTheEast = SpatialKey(key.col + 1, key.row + 0)
+      val toTheSouth = SpatialKey(key.col + 0, key.row - 1)
+      val toTheWest = SpatialKey(key.col - 1, key.row + 0)
 
       Map(
-        FromSouth -> southKey,
-        FromWest -> westKey,
-        FromNorth -> northKey,
-        FromEast -> eastKey
+        FromSouth -> toTheNorth, // key is to the North, so rays arrive from the South
+        FromWest -> toTheEast,
+        FromNorth -> toTheSouth,
+        FromEast -> toTheWest
       ).foreach({ case (dir, key) =>
         if (validKey(key)) {
           val rs = bundle.getOrElse(dir, throw new Exception)
