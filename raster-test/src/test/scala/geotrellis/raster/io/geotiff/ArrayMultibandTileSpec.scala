@@ -20,7 +20,7 @@ import geotrellis.raster.testkit._
 
 import org.scalatest._
 
-class ArrayMultibandTileSpec extends FunSpec {
+class ArrayMultibandTileSpec extends FunSpec with Matchers {
 
   val mbt1 =
     ArrayMultibandTile(
@@ -89,6 +89,14 @@ class ArrayMultibandTileSpec extends FunSpec {
           assert(pair._1 == pair._2, s"actual should equal expected in band $b")
         })
       })
+    }
+  }
+
+  describe("ArrayMultibandTile - other methods") {
+    it("safeBand") {
+      mbt1.bandSafe(-1) shouldBe None
+      mbt1.bandSafe(0) shouldBe Some(mbt1.band(0))
+      mbt1.bandSafe(100) shouldBe None
     }
   }
 }

@@ -83,11 +83,15 @@ trait Geometry {
     * points shared by this Polygon and g. If it fails, it reduces the
     * precision to avoid TopologyException.
     */
-  def safeIntersection(g: Geometry): TwoDimensionsTwoDimensionsIntersectionResult =
+  def intersectionSafe(g: Geometry): TwoDimensionsTwoDimensionsIntersectionResult =
     try intersection(g)
     catch {
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(g.jtsGeom))
     }
+
+  @deprecated("This will be removed in 2.0 - use intersectionSafe instead", "1.2")
+  def safeIntersection(g: Geometry): TwoDimensionsTwoDimensionsIntersectionResult =
+    intersectionSafe(g)
 
   def intersects(other: Geometry): Boolean =
     jtsGeom.intersects(other.jtsGeom)
