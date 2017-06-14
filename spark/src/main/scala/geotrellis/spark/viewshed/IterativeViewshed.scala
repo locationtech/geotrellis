@@ -187,8 +187,9 @@ object IterativeViewshed {
     curvature: Boolean = true,
     operator: AggregationOperator = Or,
     epsilon: Double = (1/math.Pi)
-  )(implicit sc: SparkContext): RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]] = {
+  ): RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]] = {
 
+    val sparkContext = elevation.sparkContext
     val md = elevation.metadata
     val mt = md.mapTransform
 
@@ -206,7 +207,7 @@ object IterativeViewshed {
     val maxKeyCol = maxKey.col
     val maxKeyRow = maxKey.row
 
-    val rays = new RayCatcher; sc.register(rays)
+    val rays = new RayCatcher; sparkContext.register(rays)
 
     def validKey(key: SpatialKey): Boolean = {
       ((minKeyCol <= key.col && key.col <= maxKeyCol) &&
@@ -251,14 +252,14 @@ object IterativeViewshed {
       info
         .groupBy(_.key)
         .toMap
-    val pointsByKey = sc.broadcast(_pointsByKey)
+    val pointsByKey = sparkContext.broadcast(_pointsByKey)
 
     val _pointsByIndex: Map[Int, PointInfo] =
       info
         .groupBy(_.index)
         .mapValues({ list => list.head })
         .toMap
-    val pointsByIndex = sc.broadcast(_pointsByIndex)
+    val pointsByIndex = sparkContext.broadcast(_pointsByIndex)
 
     val _heightsByIndex: Map[Int, Double] = // index -> height
       elevation
@@ -278,7 +279,7 @@ object IterativeViewshed {
         })
         .collect
         .toMap
-    val heightsByIndex = sc.broadcast(_heightsByIndex)
+    val heightsByIndex = sparkContext.broadcast(_heightsByIndex)
 
     // Create RDD  of viewsheds; after this,  the accumulator contains
     // the rays emanating from the starting points.
@@ -314,7 +315,7 @@ object IterativeViewshed {
     }).persist(StorageLevel.MEMORY_AND_DISK_SER)
     sheds.count // make sheds materialize
 
-    // Repeatedly  map over the RDD  of viewshed tiles until  all rays
+    // Repeatedly map over the RDD of viewshed tiles until all rays
     // have reached the periphery of the layer.
     do {
       val _changes: Map[SpatialKey, Seq[(Int, From, mutable.ArrayBuffer[Ray])]] =
@@ -324,7 +325,7 @@ object IterativeViewshed {
             (k, list.map({ case Message(_, index, from, rs) => (index, from, rs) }))
           })
           .toMap
-      val changes = sc.broadcast(_changes)
+      val changes = sparkContext.broadcast(_changes)
 
       rays.reset
       logger.debug(s"≥ ${changes.value.size} tiles in motion")
