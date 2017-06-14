@@ -50,18 +50,24 @@ import scala.reflect.ClassTag
 object IterativeViewshed {
 
   /**
-    * A `Point6D` is an array of six doubles.  The indices are mapped as follows:
-    *   0: x-coordinate (in the units used by the layer)
-    *   1: y-coordinate (in the units used by the layer)
-    *   2: view height (in units of "meters")
-    *   3: the angle in radians (about the z-axis) of the "camera"
-    *   4: the field of view of the "camera" in radians
-    *   5: the absolute altitude to query; if -∞ then use the terrain height
+    * x:           x-coordinate (in the units used by the layer)
+    * y:           y-coordinate (in the units used by the layer)
+    * viewHeight:  view height (in units of "meters") if positive then height above the surface, if negative then absolute height
+    * angle:       the angle in radians (about the z-axis) of the "camera"
+    * fieldOfView: the field of view of the "camera" in radians
+    * altitude:    the absolute altitude to query; if -∞ then use the terrain height
     */
-  type Point6D = Array[Double]
+  case class Point6D(
+    x: Double,
+    y: Double,
+    viewHeight: Double,
+    angle: Double,
+    fieldOfView: Double,
+    altitude: Double
+  )
 
   implicit def coordinatesToPoints(points: Seq[jts.Coordinate]): Seq[Point6D] =
-    points.map({ p => Array(p.x, p.y, p.z, 0, -1.0, Double.NegativeInfinity) })
+    points.map({ p => Point6D(p.x, p.y, p.z, 0, -1.0, Double.NegativeInfinity) })
 
   private val logger = Logger.getLogger(IterativeViewshed.getClass)
 
@@ -124,7 +130,7 @@ object IterativeViewshed {
     val (p, index) = pi
     val md = rdd.metadata
 
-    val p2 = new jts.Coordinate(p(0),p(1))
+    val p2 = new jts.Coordinate(p.x, p.y)
     val bounds = md.layout.mapTransform(p2.envelope)
     require(bounds.colMin == bounds.colMax)
     require(bounds.rowMin == bounds.rowMax)
@@ -136,7 +142,7 @@ object IterativeViewshed {
     val re = RasterExtent(extent, cols, rows)
     val col = re.mapXToGrid(p2.x)
     val row = re.mapYToGrid(p2.y)
-    val viewHeight = p(2)
+    val viewHeight = p.viewHeight
 
     PointInfo(
       index = index,
@@ -144,9 +150,9 @@ object IterativeViewshed {
       col = col,
       row = row,
       viewHeight = viewHeight,
-      angle = p(3),
-      fov = p(4),
-      alt = p(5)
+      angle = p.angle,
+      fov = p.fieldOfView,
+      alt = p.altitude
     )
   }
 
@@ -172,8 +178,6 @@ object IterativeViewshed {
     epsilon: Double = (1/math.Pi),
     touchedKeys: mutable.Set[SpatialKey] = null
   )(implicit sc: SparkContext): RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]] = {
-
-    ps.foreach({ p => require(p.length == 6) })
 
     val md = elevation.metadata
     val mt = md.mapTransform
