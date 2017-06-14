@@ -71,7 +71,13 @@ object IterativeViewshed {
 
   private val logger = Logger.getLogger(IterativeViewshed.getClass)
 
-  private type Message = (SpatialKey, Int, From, mutable.ArrayBuffer[Ray]) // key, point index, direction, rays
+  private case class Message(
+    target: SpatialKey,
+    causalPoint: Int,
+    direction: From,
+    rays: mutable.ArrayBuffer[Ray]
+  )
+
   private type Messages = mutable.ArrayBuffer[Message]
 
   /**
@@ -225,7 +231,7 @@ object IterativeViewshed {
         if (validKey(key)) {
           val rs = bundle.getOrElse(dir, throw new Exception)
           if (rs.length > 0) {
-            val message = (key, index, dir, rs)
+            val message = Message(key, index, dir, rs)
             rays.add(message)
           }
         }
@@ -310,9 +316,9 @@ object IterativeViewshed {
     do {
       val _changes: Map[SpatialKey, Seq[(Int, From, mutable.ArrayBuffer[Ray])]] =
         rays.value
-          .groupBy(_._1)
+          .groupBy(_.target)
           .map({ case (k, list) =>
-            (k, list.map({ case (_, index, from, rs) => (index, from, rs) }))
+            (k, list.map({ case Message(_, index, from, rs) => (index, from, rs) }))
           })
           .toMap
       val changes = sc.broadcast(_changes)
