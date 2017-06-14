@@ -173,7 +173,6 @@ object IterativeViewshed {
     * @param  curvature    Whether or not to take the curvature of the Earth into account
     * @param  operator     The aggregation operator to use (e.g. Or)
     * @param  epsilon      Rays within this many radians of horizontal (vertical) are considered to be horizontal (vertical)
-    * @param  touchedKeys  A set of SpatialKeys to keep track of which keys have been touched
     */
   def apply[K: (? => SpatialKey): ClassTag, V: (? => Tile)](
     elevation: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
@@ -181,8 +180,7 @@ object IterativeViewshed {
     maxDistance: Double,
     curvature: Boolean = true,
     operator: AggregationOperator = Or,
-    epsilon: Double = (1/math.Pi),
-    touchedKeys: mutable.Set[SpatialKey] = null
+    epsilon: Double = (1/math.Pi)
   )(implicit sc: SparkContext): RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]] = {
 
     val md = elevation.metadata
@@ -248,7 +246,6 @@ object IterativeViewshed {
         .groupBy(_.key)
         .toMap
     val pointsByKey = sc.broadcast(_pointsByKey)
-    if (touchedKeys != null) touchedKeys ++= _pointsByKey.keys
 
     val _pointsByIndex: Map[Int, PointInfo] =
       info
@@ -323,7 +320,6 @@ object IterativeViewshed {
           .toMap
       val changes = sc.broadcast(_changes)
 
-      if (touchedKeys != null) touchedKeys ++= _changes.keys
       rays.reset
       logger.debug(s"≥ ${changes.value.size} tiles in motion")
 

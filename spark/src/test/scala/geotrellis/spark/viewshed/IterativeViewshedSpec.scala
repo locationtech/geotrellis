@@ -38,54 +38,6 @@ class IterativeViewshedSpec extends FunSpec
   describe("Iterative Viewshed") {
     val ninf = Double.NegativeInfinity
 
-    it("should report all touched keys") {
-      val rdd = {
-        val tile = IntArrayTile(Array.fill[Int](25)(1), 5, 5)
-        val extent = Extent(0, 0, 15, 15)
-        val gridExtent = GridExtent(extent, 1, 1) // 15×15 pixels
-        val layoutDefinition = LayoutDefinition(gridExtent, 5)
-        val bounds = Bounds(SpatialKey(0, 0), SpatialKey(2, 2))
-        val tileLayerMetadata = TileLayerMetadata(IntCellType, layoutDefinition, extent, LatLng, bounds)
-        val list = for (col <- 0 to 2; row <- 0 to 2) yield (SpatialKey(col, row), tile)
-        ContextRDD(sc.parallelize(list), tileLayerMetadata)
-     }
-      val touched = mutable.Set.empty[SpatialKey]
-      val point = IterativeViewshed.Point6D(7, 7, -0.0, 0, -1.0, ninf)
-      val viewshed = rdd.viewshed(
-        points = List(point),
-        maxDistance = Double.PositiveInfinity,
-        curvature = false,
-        operator = Or,
-        touchedKeys = touched
-      )
-
-      touched.size should be (9)
-    }
-
-    it("should report only touched keys") {
-      val rdd = {
-        val tile = IntArrayTile(Array.fill[Int](25)(1), 5, 5)
-        val extent = Extent(0, 0, 15, 15)
-        val gridExtent = GridExtent(extent, 1, 1) // 15×15 pixels
-        val layoutDefinition = LayoutDefinition(gridExtent, 5)
-        val bounds = Bounds(SpatialKey(0, 0), SpatialKey(2, 2))
-        val tileLayerMetadata = TileLayerMetadata(IntCellType, layoutDefinition, extent, LatLng, bounds)
-        val list = for (col <- 0 to 2; row <- 0 to 2) yield (SpatialKey(col, row), tile)
-        ContextRDD(sc.parallelize(list), tileLayerMetadata)
-     }
-      val touched = mutable.Set.empty[SpatialKey]
-      val point = IterativeViewshed.Point6D(7, 7, -0.0, 0, 0.0, ninf)
-      val viewshed = rdd.viewshed(
-        points = List(point),
-        maxDistance = Double.PositiveInfinity,
-        curvature = false,
-        operator = Or,
-        touchedKeys = touched
-      )
-
-      touched.size should be (6)
-    }
-
     it("should assert all pixels on a flat plane") {
       val rdd = {
         val tile = IntArrayTile(Array.fill[Int](25)(1), 5, 5)
