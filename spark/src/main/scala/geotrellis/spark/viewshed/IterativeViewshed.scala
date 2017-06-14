@@ -167,9 +167,15 @@ object IterativeViewshed {
     * Takes a layer, some source points, and other ancillary
     * information and produces a viewshed layer.
     *
+    * Parameters given in units of meters interact with the layer
+    * (approximate) layer resolution, which is computed in this
+    * function.  That approximation is done by reprojecting keys to
+    * EPSG:4326, then converting degrees to meters, then dividing the
+    * number of meters by the number of pixels.
+    *
     * @param  elevation    The elevation layer; pixel values are interpreted as being in units of "meters"
     * @param  ps           Viewshed source points; their construction and interpretation is described above
-    * @param  maxDistance  The maximum distance that rays are allowed to travel; a lower number reduces computational cost
+    * @param  maxDistance  The maximum distance that rays are allowed to travel; a lower number reduces computational cost.  This is given in units of meters.
     * @param  curvature    Whether or not to take the curvature of the Earth into account
     * @param  operator     The aggregation operator to use (e.g. Or)
     * @param  epsilon      Rays within this many radians of horizontal (vertical) are considered to be horizontal (vertical)
