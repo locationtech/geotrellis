@@ -73,12 +73,12 @@ object IterativeViewshed {
 
   private case class Message(
     target: SpatialKey,
-    causalPoint: Int,
-    direction: From,
+    index: Int,
+    from: From,
     rays: mutable.ArrayBuffer[Ray]
   )
 
-  private type Messages = mutable.ArrayBuffer[Message]
+  private type Messages = Map[SpatialKey, List[Message]]
 
   /**
     * A Spark AccumulatorV2 to catch packets of rays as they cross the
@@ -86,17 +86,43 @@ object IterativeViewshed {
     * adjacent tiles.
     */
   private class RayCatcher extends AccumulatorV2[Message, Messages] {
-    private val messages: Messages = mutable.ArrayBuffer.empty
+    private val messages = mutable.Map.empty[SpatialKey, List[Message]]
+
     def copy: RayCatcher = {
       val other = new RayCatcher
       other.merge(this)
       other
     }
-    def add(message: Message): Unit = this.synchronized { messages.append(message) }
+
+    def add(message: Message): Unit = this.synchronized {
+      if (messages contains message.target) {
+        val target = message.target
+        val list = messages.getOrElse(target, throw new Exception) :+ message
+        messages(message.target) = list
+      }
+      else {
+        messages += (message.target -> List(message))
+      }
+    }
+
     def isZero: Boolean = messages.isEmpty
-    def merge(other: AccumulatorV2[Message, Messages]): Unit = this.synchronized { messages ++= other.value }
+
+    def merge(other: AccumulatorV2[Message, Messages]): Unit =
+      this.synchronized {
+        val newMessages = (messages.toList ++ other.value.toList)
+          .groupBy(_._1)
+          .map({ case (key: SpatialKey, lists: List[(SpatialKey, List[Message])]) =>
+            val value = lists.map({ case (_, m) => m })
+            key -> lists.map({ case (_, m) => m }).reduce(_ ++ _)
+          })
+
+        messages.clear
+        messages ++= newMessages
+     }
+
     def reset: Unit = this.synchronized { messages.clear }
-    def value: Messages = messages
+
+    def value: Messages = messages.toMap
   }
 
   /**
@@ -316,7 +342,6 @@ object IterativeViewshed {
     do {
       val _changes: Map[SpatialKey, Seq[(Int, From, mutable.ArrayBuffer[Ray])]] =
         rays.value
-          .groupBy(_.target)
           .map({ case (k, list) =>
             (k, list.map({ case Message(_, index, from, rs) => (index, from, rs) }))
           })
