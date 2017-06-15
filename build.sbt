@@ -212,7 +212,7 @@ lazy val `spark-etl` = Project(id = "spark-etl", base = file("spark-etl")).
   settings(commonSettings)
 
 lazy val `spark-pipeline` = Project(id = "spark-pipeline", base = file("spark-pipeline")).
-  dependsOn(spark, s3, accumulo, cassandra, hbase).
+  dependsOn(spark, s3, accumulo, cassandra, hbase, `spark-testkit`).
   settings(commonSettings)
 
 lazy val geotools = project

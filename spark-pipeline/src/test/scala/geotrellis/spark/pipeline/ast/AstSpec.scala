@@ -90,5 +90,9 @@ object var2 {
   trait Transform[A, B] extends Node[B]
   trait Write[A] extends Node[A]
 
-  def eval[A]: Node[A] => A = ???
+  def eval[A]: Node[A] => A = { node => node match {
+    case smth => eval(smth)
+    case smth2 => smth2.asInstanceOf[A]
+    //case smth3 => eval(smth3: Node[B]) ???
+  } }
 }
