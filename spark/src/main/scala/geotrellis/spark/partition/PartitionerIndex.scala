@@ -25,8 +25,8 @@ import geotrellis.spark.io.index.zcurve.{Z3, Z2, ZSpatialKeyIndex}
   * This many to one mapping forms spatially relate key blocks
   */
 trait PartitionerIndex[K] extends Serializable {
-  def toIndex(key: K): Long
-  def indexRanges(keyRange: (K, K)): Seq[(Long, Long)]
+  def toIndex(key: K): BigInt
+  def indexRanges(keyRange: (K, K)): Seq[(BigInt, BigInt)]
 }
 
 object PartitionerIndex {
@@ -38,9 +38,9 @@ object PartitionerIndex {
   implicit object SpatialPartitioner extends  PartitionerIndex[SpatialKey] {
     private def toZ(key: SpatialKey): Z2 = Z2(key.col >> 4, key.row >> 4)
 
-    def toIndex(key: SpatialKey): Long = toZ(key).z
+    def toIndex(key: SpatialKey): BigInt = toZ(key).z
 
-    def indexRanges(keyRange: (SpatialKey, SpatialKey)): Seq[(Long, Long)] =
+    def indexRanges(keyRange: (SpatialKey, SpatialKey)): Seq[(BigInt, BigInt)] =
       Z2.zranges(toZ(keyRange._1), toZ(keyRange._2))
   }
 
@@ -51,9 +51,9 @@ object PartitionerIndex {
   implicit object SpaceTimePartitioner extends  PartitionerIndex[SpaceTimeKey] {
     private def toZ(key: SpaceTimeKey): Z3 = Z3(key.col >> 4, key.row >> 4, key.time.getYear)
 
-    def toIndex(key: SpaceTimeKey): Long = toZ(key).z
+    def toIndex(key: SpaceTimeKey): BigInt = toZ(key).z
 
-    def indexRanges(keyRange: (SpaceTimeKey, SpaceTimeKey)): Seq[(Long, Long)] =
+    def indexRanges(keyRange: (SpaceTimeKey, SpaceTimeKey)): Seq[(BigInt, BigInt)] =
       Z3.zranges(toZ(keyRange._1), toZ(keyRange._2))
   }
 }

@@ -30,7 +30,7 @@ import scala.reflect._
 case class SpacePartitioner[K: Boundable: ClassTag](bounds: Bounds[K])
   (implicit index: PartitionerIndex[K]) extends Partitioner {
 
-  val regions: Array[Long] =
+  val regions: Array[BigInt] =
     bounds match {
       case b: KeyBounds[K] =>
         for {
@@ -56,7 +56,7 @@ case class SpacePartitioner[K: Boundable: ClassTag](bounds: Bounds[K])
     regions.indexOf(i) > -1
   }
 
-  def regionIndex(region: Long): Option[Int] = {
+  def regionIndex(region: BigInt): Option[Int] = {
     // Note: Consider future design where region can overlap several partitions, would change Option -> List
     val i = regions.indexOf(region)
     if (i > -1) Some(i) else None
