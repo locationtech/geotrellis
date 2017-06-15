@@ -2,7 +2,6 @@ import Dependencies._
 
 name := "geotrellis-spark-pipeline"
 libraryDependencies ++= Seq(
-  "com.github.fge" % "json-schema-validator" % "2.2.6",
   "com.chuusai" %% "shapeless" % "2.3.2",
   "org.clapper" %% "classutil" % "1.1.2",
   "org.clapper" %% "grizzled-scala" % "4.2.0",
