@@ -26,8 +26,8 @@ object KeyPathGenerator {
     (key: K) => new File(f, Index.encode(keyIndex.toIndex(key), maxWidth)).getAbsolutePath
   }
 
-  def apply(catalogPath: String, layerPath: String, maxWidth: Int): Long => String = {
+  def apply(catalogPath: String, layerPath: String, maxWidth: Int): BigInt => String = {
     val f = new File(catalogPath, layerPath)
-    (index: Long) => new File(f, Index.encode(index, maxWidth)).getAbsolutePath
+    (index: BigInt) => new File(f, Index.encode(index, maxWidth)).getAbsolutePath
   }
 }

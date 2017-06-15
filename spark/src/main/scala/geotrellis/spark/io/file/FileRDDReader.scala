@@ -33,9 +33,9 @@ import java.io.File
 
 object FileRDDReader {
   def read[K: AvroRecordCodec: Boundable, V: AvroRecordCodec](
-    keyPath: Long => String,
+    keyPath: BigInt => String,
     queryKeyBounds: Seq[KeyBounds[K]],
-    decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
+    decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
     numPartitions: Option[Int] = None,
@@ -56,9 +56,9 @@ object FileRDDReader {
     val kwWriterSchema = KryoWrapper(writerSchema) // Avro Schema is not Serializable
 
     sc.parallelize(bins, bins.size)
-      .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
+      .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
         partition flatMap { seq =>
-          LayerReader.njoin[K, V](seq.toIterator, threads) { index: Long =>
+          LayerReader.njoin[K, V](seq.toIterator, threads) { index: BigInt =>
             val path = keyPath(index)
             if (new File(path).exists) {
               val bytes: Array[Byte] = Filesystem.slurp(path)

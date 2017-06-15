@@ -30,9 +30,9 @@ import java.io.File
 
 object FileCollectionReader {
   def read[K: AvroRecordCodec : Boundable, V: AvroRecordCodec](
-    keyPath: Long => String,
+    keyPath: BigInt => String,
     queryKeyBounds: Seq[KeyBounds[K]],
-    decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
+    decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
     threads: Int = ConfigFactory.load().getThreads("geotrellis.file.threads.collection.read")): Seq[(K, V)] = {
@@ -47,7 +47,7 @@ object FileCollectionReader {
     val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)(boundable)
     val _recordCodec = KeyValueRecordCodec[K, V]
 
-    LayerReader.njoin[K, V](ranges.toIterator, threads) { index: Long =>
+    LayerReader.njoin[K, V](ranges.toIterator, threads) { index: BigInt =>
       val path = keyPath(index)
       if (new File(path).exists) {
         val bytes: Array[Byte] = Filesystem.slurp(path)
