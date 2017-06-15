@@ -1,6 +1,6 @@
 package geotrellis.spark.pipeline.json
 
-import geotrellis.proj4.CRS
+import geotrellis.spark.pipeline._
 import geotrellis.raster.crop.CropMethods
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.prototype.TilePrototypeMethods
@@ -17,7 +17,6 @@ import geotrellis.vector.ProjectedExtent
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
-import scala.util.Try
 
 trait Transform extends PipelineExpr
 
@@ -43,12 +42,20 @@ case class TransformMap(
 
 case class TransformPerTileReproject(
   `type`: String,
-  crs: String
+  crs: String,
+  scheme: Either[LayoutScheme, LayoutDefinition],
+  resampleMethod: PointResampleMethod = NearestNeighbor,
+  maxZoom: Option[Int] = None
 ) extends Transform {
-  def getCRS = Try(CRS.fromName(crs)) getOrElse CRS.fromString(crs)
+  def eval[I: Component[?, ProjectedExtent], V <: CellGrid: (? => TileReprojectMethods[V])](rdd: RDD[(I, V)]): RDD[(I, V)] = {
+    (scheme, maxZoom) match {
+      case (Left(layoutScheme: ZoomedLayoutScheme), Some(mz)) =>
+        val LayoutLevel(zoom, layoutDefinition) = layoutScheme.levelForZoom(mz)
+        rdd.reproject(this.getCRS, RasterReprojectOptions(method = resampleMethod, targetCellSize = Some(layoutDefinition.cellSize)))
 
-  def eval[I: Component[?, ProjectedExtent], V <: CellGrid: (? => TileReprojectMethods[V])](rdd: RDD[(I, V)]): RDD[(I, V)] =
-    rdd.reproject(getCRS)
+      case _ => rdd.reproject(this.getCRS)
+    }
+  }
 }
 
 case class TransformBufferedReproject(
@@ -58,8 +65,6 @@ case class TransformBufferedReproject(
   resampleMethod: PointResampleMethod = NearestNeighbor,
   maxZoom: Option[Int] = None
 ) extends Transform {
-  def getCRS: CRS = Try(CRS.fromName(crs)) getOrElse CRS.fromString(crs)
-
   def eval[
     K: SpatialComponent: Boundable: ClassTag,
     V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
@@ -67,13 +72,13 @@ case class TransformBufferedReproject(
     (scheme, maxZoom) match {
       case (Left(layoutScheme: ZoomedLayoutScheme), Some(mz)) =>
         val LayoutLevel(zoom, layoutDefinition) = layoutScheme.levelForZoom(mz)
-        zoom -> rdd.reproject(getCRS, layoutDefinition, RasterReprojectOptions(method = resampleMethod, targetCellSize = Some(layoutDefinition.cellSize)))._2
+        zoom -> rdd.reproject(this.getCRS, layoutDefinition, RasterReprojectOptions(method = resampleMethod, targetCellSize = Some(layoutDefinition.cellSize)))._2
 
       case (Left(layoutScheme), _) =>
-        rdd.reproject(getCRS, layoutScheme, resampleMethod)
+        rdd.reproject(this.getCRS, layoutScheme, resampleMethod)
 
       case (Right(layoutDefinition), _) =>
-        rdd.reproject(getCRS, layoutDefinition, resampleMethod)
+        rdd.reproject(this.getCRS, layoutDefinition, resampleMethod)
     }
   }
 }

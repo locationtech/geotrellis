@@ -1,6 +1,6 @@
 package geotrellis.spark.pipeline.json
 
-import geotrellis.proj4.CRS
+import geotrellis.spark.pipeline._
 import geotrellis.raster.{MultibandTile, Tile}
 import geotrellis.spark.TemporalProjectedExtent
 import geotrellis.spark.io.hadoop.HadoopGeoTiffRDD
@@ -10,7 +10,6 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 
-import scala.util.Try
 import java.net.URI
 
 trait Read extends PipelineExpr {
@@ -23,7 +22,6 @@ trait Read extends PipelineExpr {
   val clip: Boolean
 
   def getURI = new URI(uri)
-  def getCRS = crs.map(c => Try(CRS.fromName(c)) getOrElse CRS.fromString(c))
   def getTag = tag.getOrElse("default")
 }
 
@@ -52,7 +50,7 @@ case class SpatialReadHadoop(
     HadoopGeoTiffRDD.spatial(
       new Path(uri),
       HadoopGeoTiffRDD.Options(
-        crs = getCRS,
+        crs = this.getCRS,
         maxTileSize = maxTileSize,
         numPartitions = partitions
       )
@@ -74,7 +72,7 @@ case class SpatialMultibandReadHadoop(
     HadoopGeoTiffRDD.spatialMultiband(
       new Path(uri),
       HadoopGeoTiffRDD.Options(
-        crs = getCRS,
+        crs = this.getCRS,
         maxTileSize = maxTileSize,
         numPartitions = partitions
       )
@@ -96,7 +94,7 @@ case class TemporalReadHadoop(
     HadoopGeoTiffRDD.temporal(
       new Path(uri),
       HadoopGeoTiffRDD.Options(
-        crs = getCRS,
+        crs = this.getCRS,
         maxTileSize = maxTileSize,
         numPartitions = partitions
       )
@@ -118,7 +116,7 @@ case class TemporalMultibandReadHadoop(
     HadoopGeoTiffRDD.temporalMultiband(
       new Path(uri),
       HadoopGeoTiffRDD.Options(
-        crs = getCRS,
+        crs = this.getCRS,
         maxTileSize = maxTileSize,
         numPartitions = partitions
       )
