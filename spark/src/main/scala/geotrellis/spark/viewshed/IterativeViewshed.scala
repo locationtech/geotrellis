@@ -162,18 +162,13 @@ object IterativeViewshed {
     val (p, index) = pi
     val md = rdd.metadata
 
-    val p2 = new jts.Coordinate(p.x, p.y)
-    val bounds = md.layout.mapTransform(p2.envelope)
-    require(bounds.colMin == bounds.colMax)
-    require(bounds.rowMin == bounds.rowMax)
-
     val cols = md.layout.tileCols
     val rows = md.layout.tileRows
-    val key = SpatialKey(bounds.colMin, bounds.rowMin)
+    val key = md.layout.mapTransform(Point(p.x, p.y))
     val extent = md.mapTransform(key)
     val re = RasterExtent(extent, cols, rows)
-    val col = re.mapXToGrid(p2.x)
-    val row = re.mapYToGrid(p2.y)
+    val col = re.mapXToGrid(p.x)
+    val row = re.mapYToGrid(p.y)
     val viewHeight = p.viewHeight
 
     PointInfo(
