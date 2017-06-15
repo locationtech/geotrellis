@@ -21,16 +21,15 @@ import scala.collection.mutable
 
 
 object MergeQueue{
-  def apply(ranges: TraversableOnce[(Long, Long)]): Seq[(Long, Long)] = {
+  def apply(ranges: TraversableOnce[(BigInt, BigInt)]): Seq[(BigInt, BigInt)] = {
     val q = new MergeQueue()
     ranges.foreach(range => q += range)
     q.toSeq
   }
 }
 
-private class RangeComparator extends java.util.Comparator[(Long, Long)] {
-
-  def compare(r1: (Long, Long), r2: (Long, Long)): Int = {
+private class RangeComparator extends java.util.Comparator[(BigInt, BigInt)] {
+  def compare(r1: (BigInt, BigInt), r2: (BigInt, BigInt)): Int = {
     val retval = (r1._2 - r2._2)
     if (retval < 0) +1
     else if (retval == 0) 0
@@ -53,16 +52,16 @@ class MergeQueue(initialSize: Int = 1) {
   /**
     * Add a range to the merge queue.
     */
-  def +=(range: (Long, Long)): Unit = treeSet.add(range)
+  def +=(range: (BigInt, BigInt)): Unit = treeSet.add(range)
 
   /**
     * Return a list of merged intervals.
     */
-  def toSeq: Seq[(Long, Long)] = {
-    var stack = List.empty[(Long, Long)]
+  def toSeq: Seq[(BigInt, BigInt)] = {
+    var stack = List.empty[(BigInt, BigInt)]
     // The TreeSet will be consumed in the process below, so do not
     // use the original.
-    val workingTreeSet = treeSet.clone.asInstanceOf[java.util.TreeSet[(Long,Long)]]
+    val workingTreeSet = treeSet.clone.asInstanceOf[java.util.TreeSet[(BigInt,BigInt)]]
 
     if (!workingTreeSet.isEmpty) stack = (workingTreeSet.pollFirst) +: stack
     while (!workingTreeSet.isEmpty) {
@@ -81,5 +80,4 @@ class MergeQueue(initialSize: Int = 1) {
 
     stack
   }
-
 }
