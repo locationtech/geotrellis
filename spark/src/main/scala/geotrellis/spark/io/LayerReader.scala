@@ -99,24 +99,24 @@ object LayerReader {
     apply(new URI(uri))
 
   def njoin[K, V](
-    ranges: Iterator[(Long, Long)],
+    ranges: Iterator[(BigInt, BigInt)],
     threads: Int
-   )(readFunc: Long => Vector[(K, V)]): Vector[(K, V)] = {
+   )(readFunc: BigInt => Vector[(K, V)]): Vector[(K, V)] = {
     val pool = Executors.newFixedThreadPool(threads)
 
-    val indices: Iterator[Long] = ranges.flatMap { case (start, end) =>
+    val indices: Iterator[BigInt] = ranges.flatMap { case (start, end) =>
       (start to end).toIterator
     }
 
-    val index: Process[Task, Long] = Process.unfold(indices) { iter =>
+    val index: Process[Task, BigInt] = Process.unfold(indices) { iter =>
       if (iter.hasNext) {
-        val index: Long = iter.next()
+        val index: BigInt = iter.next()
         Some(index, iter)
       }
       else None
     }
 
-    val readRecord: (Long => Process[Task, Vector[(K, V)]]) = { index =>
+    val readRecord: (BigInt => Process[Task, Vector[(K, V)]]) = { index =>
       Process eval Task { readFunc(index) } (pool)
     }
 

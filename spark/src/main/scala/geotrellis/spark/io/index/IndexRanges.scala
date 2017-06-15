@@ -21,19 +21,19 @@ object IndexRanges {
    * Will attempt to bin ranges into buckets, each containing at least the average number of elements.
    * Trailing bins may be empty if the count is too high for number of ranges.
    */
-  def bin(ranges: Seq[(Long, Long)], count: Int): Seq[Seq[(Long, Long)]] = {
+  def bin(ranges: Seq[(BigInt, BigInt)], count: Int): Seq[Seq[(BigInt, BigInt)]] = {
     var stack = ranges.toList
 
-    def len(r: (Long, Long)) = r._2 - r._1 + 1l
-    val total = ranges.foldLeft(0l) { (s, r) => s + len(r) }
+    def len(r: (BigInt, BigInt)): Long = (r._2 - r._1).toLong + 1l
+    val total: Long = ranges.foldLeft(0l) { (s, r) => s + len(r) }
     val binWidth = total / count + 1
 
-    def splitRange(range: (Long, Long), take: Long): ((Long, Long), (Long, Long)) = {
+    def splitRange(range: (BigInt, BigInt), take: Long): ((BigInt, BigInt), (BigInt, BigInt)) = {
       assert(len(range) > take)
       (range._1, range._1 + take - 1) -> (range._1 + take, range._2)
     }
 
-    val arr = Array.fill(count)(Nil: List[(Long, Long)])
+    val arr = Array.fill(count)(Nil: List[(BigInt, BigInt)])
     var sum = 0l
     var i = 0
     while (stack.nonEmpty) {
