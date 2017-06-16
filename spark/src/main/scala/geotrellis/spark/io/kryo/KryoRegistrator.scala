@@ -218,6 +218,7 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[org.apache.hadoop.io.BytesWritable])
     kryo.register(classOf[org.apache.hadoop.io.LongWritable])
     kryo.register(classOf[Array[org.apache.hadoop.io.LongWritable]])
+    kryo.register(classOf[Array[org.apache.hadoop.io.BytesWritable]])
     kryo.register(classOf[org.codehaus.jackson.node.BooleanNode])
     kryo.register(classOf[org.codehaus.jackson.node.IntNode])
     kryo.register(classOf[org.osgeo.proj4j.CoordinateReferenceSystem])

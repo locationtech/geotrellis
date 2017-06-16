@@ -49,10 +49,11 @@ class HadoopCollectionReader(maxOpenFiles: Int) {
   ](path: Path,
     conf: Configuration,
     queryKeyBounds: Seq[KeyBounds[K]],
-    decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
+    decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
     indexFilterOnly: Boolean,
     writerSchema: Option[Schema] = None,
-    threads: Int = ConfigFactory.load().getThreads("geotrellis.hadoop.threads.collection.read")): Seq[(K, V)] = {
+    threads: Int = ConfigFactory.load().getThreads("geotrellis.hadoop.threads.collection.read")
+  ): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
     val includeKey = (key: K) => KeyBounds.includeKey(queryKeyBounds, key)
@@ -60,16 +61,16 @@ class HadoopCollectionReader(maxOpenFiles: Int) {
 
     val codec = KeyValueRecordCodec[K, V]
 
-    val pathRanges: Vector[(Path, Long, Long)] =
+    val pathRanges: Vector[(Path, BigInt, BigInt)] =
       FilterMapFileInputFormat.layerRanges(path, conf)
 
-    LayerReader.njoin[K, V](indexRanges, threads){ index: Long =>
+    LayerReader.njoin[K, V](indexRanges, threads){ index: BigInt =>
       val valueWritable = pathRanges
         .find { row => index >= row._2 && index <= row._3 }
         .map { case (p, _, _) =>
           readers.get(p, path => new MapFile.Reader(path, conf))
         }
-        .map(_.get(new LongWritable(index), new BytesWritable()).asInstanceOf[BytesWritable])
+        .map(_.get(new BytesWritable(index.toByteArray), new BytesWritable()).asInstanceOf[BytesWritable])
         .getOrElse { println(s"Index ${index} not found."); null }
 
       if (valueWritable == null) Vector.empty

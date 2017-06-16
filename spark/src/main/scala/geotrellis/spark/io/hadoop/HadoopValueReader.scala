@@ -53,11 +53,11 @@ class HadoopValueReader(
     val writerSchema = attributeStore.readSchema(layerId)
     val codec = KeyValueRecordCodec[K, V]
 
-    val ranges: Vector[(Path, Long, Long)] =
+    val ranges: Vector[(Path, BigInt, BigInt)] =
       FilterMapFileInputFormat.layerRanges(header.path, conf)
 
     def read(key: K): V = {
-      val index: Long = keyIndex.toIndex(key)
+      val index: BigInt = keyIndex.toIndex(key)
       val valueWritable: BytesWritable =
       ranges
           .find{ row =>
@@ -67,7 +67,7 @@ class HadoopValueReader(
           readers.get((layerId, path), _ => new MapFile.Reader(path, conf))
         }
         .getOrElse(throw new ValueNotFoundError(key, layerId))
-          .get(new LongWritable(index), new BytesWritable())
+          .get(new BytesWritable(index.toByteArray), new BytesWritable())
           .asInstanceOf[BytesWritable]
 
       if (valueWritable == null) throw new ValueNotFoundError(key, layerId)
