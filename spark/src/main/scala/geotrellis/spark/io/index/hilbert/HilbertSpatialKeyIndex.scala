@@ -62,7 +62,7 @@ class HilbertSpatialKeyIndex(val keyBounds: KeyBounds[SpatialKey], val xResoluti
     new CompactHilbertCurve(dimensionSpec)
   }
 
-  def toIndex(key: SpatialKey): Long = {
+  def toIndex(key: SpatialKey): BigInt = {
     val bitVectors =
       Array(
         BitVectorFactories.OPTIMAL.apply(xResolution),
@@ -79,7 +79,7 @@ class HilbertSpatialKeyIndex(val keyBounds: KeyBounds[SpatialKey], val xResoluti
     hilbertBitVector.toExactLong
   }
 
-  def indexRanges(keyRange: (SpatialKey, SpatialKey)): Seq[(Long, Long)] = {
+  def indexRanges(keyRange: (SpatialKey, SpatialKey)): Seq[(BigInt, BigInt)] = {
 
     val ranges: java.util.List[LongRange] =
       List( //LongRange is exclusive on upper bound, adjusting for it here with + 1
@@ -112,12 +112,12 @@ class HilbertSpatialKeyIndex(val keyBounds: KeyBounds[SpatialKey], val xResoluti
     chc.accept(new ZoomingSpaceVisitorAdapter(chc, queryBuilder))
     val filteredIndexRanges = queryBuilder.get.getFilteredIndexRanges
     val size = filteredIndexRanges.size
-    val result = Array.ofDim[(Long, Long)](size)
+    val result = Array.ofDim[(BigInt, BigInt)](size)
 
     cfor(0)(_ < size, _ + 1) { i =>
       val range = filteredIndexRanges.get(i)
       //LongRange is exclusive on upper bound, adjusting for it here with - 1
-      result(i) = (range.getIndexRange.getStart, range.getIndexRange.getEnd - 1)
+      result(i) = (BigInt(range.getIndexRange.getStart), BigInt(range.getIndexRange.getEnd) - 1)
     }
 
     result

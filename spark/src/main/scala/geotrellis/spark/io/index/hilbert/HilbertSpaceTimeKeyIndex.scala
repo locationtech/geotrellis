@@ -77,7 +77,7 @@ class HilbertSpaceTimeKeyIndex(
     (if (bin == temporalBinCount) bin - 1  else bin).toLong
   }
 
-  def toIndex(key: SpaceTimeKey): Long = {
+  def toIndex(key: SpaceTimeKey): BigInt = {
     val bitVectors =
       Array(
         BitVectorFactories.OPTIMAL.apply(xResolution),
@@ -95,11 +95,11 @@ class HilbertSpaceTimeKeyIndex(
 
     chc.index(bitVectors, 0, hilbertBitVector)
 
-    hilbertBitVector.toExactLong
+    BigInt(hilbertBitVector.toExactLong)
   }
 
   // Note: this function will happily index outside of the index keyBounds
-  def indexRanges(keyRange: (SpaceTimeKey, SpaceTimeKey)): Seq[(Long, Long)] = {
+  def indexRanges(keyRange: (SpaceTimeKey, SpaceTimeKey)): Seq[(BigInt, BigInt)] = {
     val ranges: java.util.List[LongRange] =
       List( //LongRange is exclusive on upper bound, adjusting for it here with + 1
         LongRange.of(keyRange._1.spatialKey.col - minKey.col, keyRange._2.spatialKey.col - minKey.col + 1),
@@ -132,12 +132,12 @@ class HilbertSpaceTimeKeyIndex(
     chc.accept(new ZoomingSpaceVisitorAdapter(chc, queryBuilder))
     val filteredIndexRanges = queryBuilder.get.getFilteredIndexRanges
     val size = filteredIndexRanges.size
-    val result = Array.ofDim[(Long, Long)](size)
+    val result = Array.ofDim[(BigInt, BigInt)](size)
 
     cfor(0)(_ < size, _ + 1) { i =>
       val range = filteredIndexRanges.get(i)
       // uzaygezen ranges are exclusive on the interval, GeoTrellis index ranges are inclusive, adjusting here.
-      result(i) = (range.getIndexRange.getStart, range.getIndexRange.getEnd - 1)
+      result(i) = (BigInt(range.getIndexRange.getStart), BigInt(range.getIndexRange.getEnd) - 1)
     }
 
     result
