@@ -39,7 +39,7 @@ class IndexPartitioner[K](index: KeyIndex[K], count: Int) extends Partitioner {
     if (count > 1)
       KeyIndex.breaks(index.keyBounds, index, count - 1).sorted.toArray
     else
-      Array(BigInt(-1))
+      Array(BigInt(-1)) // XXX
 
   def numPartitions = breaks.length + 1
 

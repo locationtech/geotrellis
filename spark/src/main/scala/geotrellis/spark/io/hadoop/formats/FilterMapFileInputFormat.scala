@@ -32,9 +32,9 @@ object FilterMapFileInputFormat {
   // Define some key names for Hadoop configuration
   val FILTER_INFO_KEY = "geotrellis.spark.io.hadoop.filterinfo"
 
-  type FilterDefinition = Array[(Long, Long)]
+  type FilterDefinition = Array[(BigInt, BigInt)]
 
-  def layerRanges(layerPath: Path, conf: Configuration): Vector[(Path, Long, Long)] = {
+  def layerRanges(layerPath: Path, conf: Configuration): Vector[(Path, BigInt, BigInt)] = {
     val file = layerPath
       .getFileSystem(conf)
       .globStatus(new Path(layerPath, "*"))
@@ -43,7 +43,7 @@ object FilterMapFileInputFormat {
     mapFileRanges(file, conf)
   }
 
-  def mapFileRanges(mapFiles: Seq[Path], conf: Configuration): Vector[(Path, Long, Long)] = {
+  def mapFileRanges(mapFiles: Seq[Path], conf: Configuration): Vector[(Path, BigInt, BigInt)] = {
     // finding the max index for each file would be very expensive.
     // it may not be present in the index file and will require:
     //   - reading the index file
@@ -54,14 +54,14 @@ object FilterMapFileInputFormat {
     // instead we assume that each map file runs from its min index to min index of next file
 
     val fileNameRx = ".*part-r-([0-9]+)-([0-9]+)$".r
-    def readStartingIndex(path: Path): Long = {
+    def readStartingIndex(path: Path): BigInt = {
       path.toString match {
         case fileNameRx(part, firstIndex) =>
-          firstIndex.toLong
+          BigInt(firstIndex)
         case _ =>
           val indexPath = new Path(path, "index")
           val in = new SequenceFile.Reader(conf, SequenceFile.Reader.file(indexPath))
-          val minKey = new LongWritable
+          val minKey = new BytesWritable
           try {
             in.next(minKey)
           } finally { in.close() }
@@ -72,21 +72,21 @@ object FilterMapFileInputFormat {
     mapFiles
       .map { file => readStartingIndex(file) -> file }
       .sortBy(_._1)
-      .foldRight(Vector.empty[(Path, Long, Long)]) {
+      .foldRight(Vector.empty[(Path, BigInt, BigInt)]) {
         case ((minIndex, fs), vec @ Vector()) =>
-          (fs, minIndex, Long.MaxValue) +: vec
+          (fs, minIndex, BigInt(-1)) +: vec // XXX
         case ((minIndex, fs), vec) =>
           (fs, minIndex, vec.head._2 - 1) +: vec
       }
   }
 }
 
-class FilterMapFileInputFormat() extends FileInputFormat[LongWritable, BytesWritable] {
+class FilterMapFileInputFormat() extends FileInputFormat[BytesWritable, BytesWritable] {
   var _filterDefinition: Option[FilterMapFileInputFormat.FilterDefinition] = None
 
-  def createKey() = new LongWritable()
+  def createKey() = new BytesWritable()
 
-  def createKey(index: Long) = new LongWritable(index)
+  def createKey(index: BigInt) = new BytesWritable(index.toByteArray)
 
   def createValue() = new BytesWritable()
 
@@ -102,8 +102,8 @@ class FilterMapFileInputFormat() extends FileInputFormat[LongWritable, BytesWrit
     }
 
   /**
-    * Produce list of files that overlap our query region.
-    * This function will be called on the driver.
+    * Produce list of files that overlap our query region.  This
+    * function will be called on the driver.
     */
   override
   def listStatus(context: JobContext): java.util.List[FileStatus] = {
@@ -131,35 +131,38 @@ class FilterMapFileInputFormat() extends FileInputFormat[LongWritable, BytesWrit
   }
 
   override
-  def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[LongWritable, BytesWritable] =
+  def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[BytesWritable, BytesWritable] =
     new FilterMapFileRecordReader(getFilterDefinition(context.getConfiguration))
 
   override
   protected def getFormatMinSplitSize(): Long =
     return SequenceFile.SYNC_INTERVAL
 
-  /** The map files are not meant to be split. Raster sequence files
-    * are written such that data files should only be one block large */
+  /**
+    * The map files are not meant to be split. Raster sequence files
+    * are written such that data files should only be one large
+    * block.
+    */
   override
   def isSplitable(context: JobContext, filename: Path): Boolean =
     false
 
-  class FilterMapFileRecordReader(filterDefinition: FilterMapFileInputFormat.FilterDefinition) extends RecordReader[LongWritable, BytesWritable] {
+  class FilterMapFileRecordReader(filterDefinition: FilterMapFileInputFormat.FilterDefinition) extends RecordReader[BytesWritable, BytesWritable] {
     private var mapFile: MapFile.Reader = null
     private var start: Long = 0L
     private var more: Boolean = true
-    private var key: LongWritable = null
+    private var key: BytesWritable = null
     private var value: BytesWritable = null
 
     private val ranges = filterDefinition
-    private var currMinIndex: Long = 0L
-    private var currMaxIndex: Long = 0L
+    private var currMinIndex: BigInt = BigInt(0)
+    private var currMaxIndex: BigInt = BigInt(0)
     private var nextRangeIndex: Int = 0
 
     private var seek = false
-    private var seekKey: LongWritable = null
+    private var seekKey: BytesWritable = null
 
-    private def setNextIndexRange(index: Long = 0L): Boolean = {
+    private def setNextIndexRange(index: BigInt = BigInt(0)): Boolean = {
       if(nextRangeIndex >= ranges.length) {
         false
       } else {
@@ -205,12 +208,13 @@ class FilterMapFileInputFormat() extends FileInputFormat[LongWritable, BytesWrit
         val nextKey = createKey()
         val nextValue = createValue()
         var break = false
+
         while(!break) {
           if(seek) {
             seek = false
             if(key == null || BigInt(key.getBytes) < BigInt(seekKey.getBytes)) {
               // We are seeking to the beginning of a new range.
-              key = mapFile.getClosest(seekKey, nextValue).asInstanceOf[LongWritable]
+              key = mapFile.getClosest(seekKey, nextValue).asInstanceOf[BytesWritable]
               if(key == null) {
                 break = true
                 more = false
@@ -258,7 +262,7 @@ class FilterMapFileInputFormat() extends FileInputFormat[LongWritable, BytesWrit
     }
 
     override
-    def getCurrentKey(): LongWritable = key
+    def getCurrentKey(): BytesWritable = key
 
     override
     def getCurrentValue(): BytesWritable = value

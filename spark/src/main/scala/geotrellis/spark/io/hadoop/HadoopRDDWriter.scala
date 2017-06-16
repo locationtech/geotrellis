@@ -54,27 +54,27 @@ object HadoopRDDWriter extends LazyLogging {
     private var writer: MapFile.Writer = null // avoids creating a MapFile for empty partitions
     private var bytesRemaining = 0l
 
-    private def getWriter(firstIndex: Long) = {
+    private def getWriter(firstIndex: BigInt) = {
       val path = new Path(layerPath, f"part-r-${partition}%05d-${firstIndex}")
       bytesRemaining = blockSize - 16*1024 // buffer by 16BK for SEQ file overhead
       val writer =
         new MapFile.Writer(
           new Configuration,
           path.toString,
-          MapFile.Writer.keyClass(classOf[LongWritable]),
+          MapFile.Writer.keyClass(classOf[BytesWritable]),
           MapFile.Writer.valueClass(classOf[BytesWritable]),
           MapFile.Writer.compression(SequenceFile.CompressionType.NONE))
       writer.setIndexInterval(indexInterval)
       writer
     }
 
-    def write(key: LongWritable, value: BytesWritable): Unit = {
+    def write(key: BytesWritable, value: BytesWritable): Unit = {
       val recordSize = 8 + value.getLength
       if (writer == null) {
-        writer = getWriter(key.get)
+        writer = getWriter(BigInt(key.getBytes))
       } else if (bytesRemaining - recordSize < 0) {
         writer.close()
-        writer = getWriter(key.get)
+        writer = getWriter(BigInt(key.getBytes))
       }
       writer.append(key, value)
       bytesRemaining -= recordSize
@@ -219,7 +219,7 @@ object HadoopRDDWriter extends LazyLogging {
         val writer = new MultiMapWriter(layerPath, pid, blockSize, indexInterval)
         for ( (index, pairs) <- GroupConsecutiveIterator(iter)(r => keyIndex.toIndex(r._1))) {
           writer.write(
-            new LongWritable(index),
+            new BytesWritable(index.toByteArray),
             new BytesWritable(AvroEncoder.toBinary(pairs.toVector)(codec)))
         }
         writer.close()
