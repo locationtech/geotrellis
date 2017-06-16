@@ -27,20 +27,20 @@ class RowMajorSpatialKeyIndex(val keyBounds: KeyBounds[SpatialKey]) extends KeyI
   val minRow = keyBounds.minKey.row
   val layoutCols = keyBounds.maxKey.col - keyBounds.minKey.col + 1
 
-  def toIndex(key: SpatialKey): Long =
+  def toIndex(key: SpatialKey): BigInt =
     toIndex(key.col, key.row)
 
-  def toIndex(col: Int, row: Int): Long =
-    (layoutCols * (row - minRow) + (col - minCol)).toLong
+  def toIndex(col: Int, row: Int): BigInt =
+    BigInt(layoutCols * (row - minRow) + (col - minCol))
 
-  def indexRanges(keyRange: (SpatialKey, SpatialKey)): Seq[(Long, Long)] = {
+  def indexRanges(keyRange: (SpatialKey, SpatialKey)): Seq[(BigInt, BigInt)] = {
     val SpatialKey(colMin, rowMin) = keyRange._1
     val SpatialKey(colMax, rowMax) = keyRange._2
 
     val cols = colMax - colMin + 1
     val rows = rowMax - rowMin
 
-    val result = Array.ofDim[(Long, Long)](rowMax - rowMin + 1)
+    val result = Array.ofDim[(BigInt, BigInt)](rowMax - rowMin + 1)
 
     cfor(0)(_ <= rows, _ + 1) { i =>
       val row = rowMin + i
