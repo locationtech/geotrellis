@@ -47,6 +47,9 @@ class HadoopValueReader(
       .removalListener[(LayerId, Path), MapFile.Reader] { case (_, v, _) => v.close() }
       .build[(LayerId, Path), MapFile.Reader]
 
+  private def predicate(row: (Path, BigInt, BigInt), index: BigInt): Boolean =
+    (index >= row._2) && ((index <= row._3) || (row._3 == -1))
+
   def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
     val header = attributeStore.readHeader[HadoopLayerHeader](layerId)
     val keyIndex = attributeStore.readKeyIndex[K](layerId)
@@ -60,9 +63,7 @@ class HadoopValueReader(
       val index: BigInt = keyIndex.toIndex(key)
       val valueWritable: BytesWritable =
       ranges
-          .find{ row =>
-            index >= row._2 && index <= row._3
-          }
+        .find(row => predicate(row, index))
         .map { case (path, _, _) =>
           readers.get((layerId, path), _ => new MapFile.Reader(path, conf))
         }
