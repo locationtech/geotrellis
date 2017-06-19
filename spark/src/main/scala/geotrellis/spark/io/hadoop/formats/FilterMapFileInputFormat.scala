@@ -61,7 +61,7 @@ object FilterMapFileInputFormat {
         case _ =>
           val indexPath = new Path(path, "index")
           val in = new SequenceFile.Reader(conf, SequenceFile.Reader.file(indexPath))
-          val minKey = new BytesWritable
+          val minKey = new BytesWritable(Array[Byte](0))
           try {
             in.next(minKey)
           } finally { in.close() }
@@ -84,11 +84,11 @@ object FilterMapFileInputFormat {
 class FilterMapFileInputFormat() extends FileInputFormat[BytesWritable, BytesWritable] {
   var _filterDefinition: Option[FilterMapFileInputFormat.FilterDefinition] = None
 
-  def createKey() = new BytesWritable()
+  def createKey() = new BytesWritable(Array[Byte](0))
 
   def createKey(index: BigInt) = new BytesWritable(index.toByteArray)
 
-  def createValue() = new BytesWritable()
+  def createValue() = new BytesWritable
 
   def getFilterDefinition(conf: Configuration): FilterMapFileInputFormat.FilterDefinition =
     _filterDefinition match {
@@ -234,10 +234,12 @@ class FilterMapFileInputFormat() extends FileInputFormat[BytesWritable, BytesWri
           }
 
           if(!break) {
-            if (BigInt(nextKey.getBytes) > currMaxIndex) {
+            val nextKeyBytes: Array[Byte] = nextKey.getBytes.take(nextKey.getLength)
+
+            if ((nextKeyBytes.length > 0) && (BigInt(nextKeyBytes) > currMaxIndex)) {
               // Must be out of current index range.
               if(nextRangeIndex < ranges.size) {
-                if(!setNextIndexRange(BigInt(nextKey.getBytes))) {
+                if(!setNextIndexRange(BigInt(nextKeyBytes))) {
                   break = true
                   more = false
                   key = null
