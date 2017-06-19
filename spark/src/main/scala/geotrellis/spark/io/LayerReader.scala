@@ -63,10 +63,10 @@ trait LayerReader[ID] {
 
 object LayerReader {
   /**
-   * Produce LayerReader instance based on URI description.
+   * Produce FilteringLayerReader instance based on URI description.
    * Find instances of [[LayerReaderProvider]] through Java SPI.
    */
-  def apply(attributeStore: AttributeStore, layerReaderUri: URI)(implicit sc: SparkContext): LayerReader[LayerId] = {
+  def apply(attributeStore: AttributeStore, layerReaderUri: URI)(implicit sc: SparkContext): FilteringLayerReader[LayerId] = {
     import scala.collection.JavaConversions._
     ServiceLoader.load(classOf[LayerReaderProvider]).iterator()
       .find(_.canProcess(layerReaderUri))
@@ -75,18 +75,18 @@ object LayerReader {
   }
 
   /**
-   * Produce LayerReader instance based on URI description.
+   * Produce FilteringLayerReader instance based on URI description.
    * Find instances of [[LayerReaderProvider]] through Java SPI.
    */
-  def apply(attributeStoreUri: URI, layerReaderUri: URI)(implicit sc: SparkContext): LayerReader[LayerId] =
+  def apply(attributeStoreUri: URI, layerReaderUri: URI)(implicit sc: SparkContext): FilteringLayerReader[LayerId] =
     apply(attributeStore = AttributeStore(attributeStoreUri), layerReaderUri)
 
   /**
-   * Produce LayerReader instance based on URI description.
+   * Produce FilteringLayerReader instance based on URI description.
    * Find instances of [[LayerReaderProvider]] through Java SPI.
    * Required [[AttributeStoreProvider]] instance will be found from the same URI.
    */
-  def apply(uri: URI)(implicit sc: SparkContext): LayerReader[LayerId] =
+  def apply(uri: URI)(implicit sc: SparkContext): FilteringLayerReader[LayerId] =
     apply(attributeStoreUri = uri, layerReaderUri = uri)
 
   def njoin[K, V](
