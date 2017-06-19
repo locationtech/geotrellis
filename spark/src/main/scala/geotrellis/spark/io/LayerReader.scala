@@ -23,6 +23,7 @@ import geotrellis.util._
 import org.apache.avro.Schema
 
 import org.apache.spark.rdd._
+import org.apache.spark.SparkContext
 import spray.json._
 import scalaz.std.vector._
 import scalaz.concurrent.{Strategy, Task}
@@ -30,6 +31,8 @@ import scalaz.stream.{Process, nondeterminism}
 
 import scala.reflect._
 import java.util.concurrent.Executors
+import java.util.ServiceLoader
+import java.net.URI
 
 trait LayerReader[ID] {
   def defaultNumPartitions: Int
@@ -59,6 +62,33 @@ trait LayerReader[ID] {
 }
 
 object LayerReader {
+  /**
+   * Produce LayerReader instance based on URI description.
+   * Find instances of [[LayerReaderProvider]] through Java SPI.
+   */
+  def apply(attributeStore: AttributeStore, layerReaderUri: URI)(implicit sc: SparkContext): LayerReader[LayerId] = {
+    import scala.collection.JavaConversions._
+    ServiceLoader.load(classOf[LayerReaderProvider]).iterator()
+      .find(_.canProcess(layerReaderUri))
+      .getOrElse(throw new RuntimeException(s"Unable to find LayerReaderProvider for $layerReaderUri"))
+      .layerReader(layerReaderUri, attributeStore, sc)
+  }
+
+  /**
+   * Produce LayerReader instance based on URI description.
+   * Find instances of [[LayerReaderProvider]] through Java SPI.
+   */
+  def apply(attributeStoreUri: URI, layerReaderUri: URI)(implicit sc: SparkContext): LayerReader[LayerId] =
+    apply(attributeStore = AttributeStore(attributeStoreUri), layerReaderUri)
+
+  /**
+   * Produce LayerReader instance based on URI description.
+   * Find instances of [[LayerReaderProvider]] through Java SPI.
+   * Required [[AttributeStoreProvider]] instance will be found from the same URI.
+   */
+  def apply(uri: URI)(implicit sc: SparkContext): LayerReader[LayerId] =
+    apply(attributeStoreUri = uri, layerReaderUri = uri)
+
   def njoin[K, V](
     ranges: Iterator[(Long, Long)],
     threads: Int
