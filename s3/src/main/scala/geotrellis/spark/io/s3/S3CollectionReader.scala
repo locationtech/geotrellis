@@ -36,9 +36,9 @@ trait S3CollectionReader {
     V: AvroRecordCodec
   ](
      bucket: String,
-     keyPath: Long => String,
+     keyPath: BigInt => String,
      queryKeyBounds: Seq[KeyBounds[K]],
-     decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
+     decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
      filterIndexOnly: Boolean,
      writerSchema: Option[Schema] = None,
      threads: Int = ConfigFactory.load().getThreads("geotrellis.s3.threads.collection.read")
@@ -53,7 +53,7 @@ trait S3CollectionReader {
     val recordCodec = KeyValueRecordCodec[K, V]
     val s3client = getS3Client()
 
-    LayerReader.njoin[K, V](ranges.toIterator, threads){ index: Long =>
+    LayerReader.njoin[K, V](ranges.toIterator, threads){ index: BigInt =>
       try {
         val bytes = IOUtils.toByteArray(s3client.getObject(bucket, keyPath(index)).getObjectContent)
         val recs = AvroEncoder.fromBinary(writerSchema.getOrElse(recordCodec.schema), bytes)(recordCodec)

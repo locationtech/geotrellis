@@ -50,9 +50,9 @@ trait S3RDDReader {
     V: AvroRecordCodec
   ](
     bucket: String,
-    keyPath: Long => String,
+    keyPath: BigInt => String,
     queryKeyBounds: Seq[KeyBounds[K]],
-    decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
+    decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
     numPartitions: Option[Int] = None,
@@ -73,11 +73,11 @@ trait S3RDDReader {
     val kwWriterSchema = KryoWrapper(writerSchema) //Avro Schema is not Serializable
 
     sc.parallelize(bins, bins.size)
-      .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
+      .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
         val s3client = _getS3Client()
         val writerSchema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
         partition flatMap { seq =>
-          LayerReader.njoin[K, V](seq.toIterator, threads){ index: Long =>
+          LayerReader.njoin[K, V](seq.toIterator, threads){ index: BigInt =>
             try {
               val bytes = IOUtils.toByteArray(s3client.getObject(bucket, keyPath(index)).getObjectContent)
               val recs = AvroEncoder.fromBinary(writerSchema, bytes)(_recordCodec)
