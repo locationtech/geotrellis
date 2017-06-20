@@ -61,7 +61,7 @@ object FilterMapFileInputFormat {
         case _ =>
           val indexPath = new Path(path, "index")
           val in = new SequenceFile.Reader(conf, SequenceFile.Reader.file(indexPath))
-          val minKey = new BytesWritable(Array[Byte](0))
+          val minKey = new BigIntWritable(Array[Byte](0))
           try {
             in.next(minKey)
           } finally { in.close() }
@@ -81,12 +81,12 @@ object FilterMapFileInputFormat {
   }
 }
 
-class FilterMapFileInputFormat() extends FileInputFormat[BytesWritable, BytesWritable] {
+class FilterMapFileInputFormat() extends FileInputFormat[BigIntWritable, BytesWritable] {
   var _filterDefinition: Option[FilterMapFileInputFormat.FilterDefinition] = None
 
-  def createKey() = new BytesWritable(Array[Byte](0))
+  def createKey() = new BigIntWritable(Array[Byte](0))
 
-  def createKey(index: BigInt) = new BytesWritable(index.toByteArray)
+  def createKey(index: BigInt) = new BigIntWritable(index.toByteArray)
 
   def createValue() = new BytesWritable
 
@@ -131,7 +131,7 @@ class FilterMapFileInputFormat() extends FileInputFormat[BytesWritable, BytesWri
   }
 
   override
-  def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[BytesWritable, BytesWritable] =
+  def createRecordReader(split: InputSplit, context: TaskAttemptContext): RecordReader[BigIntWritable, BytesWritable] =
     new FilterMapFileRecordReader(getFilterDefinition(context.getConfiguration))
 
   override
@@ -147,11 +147,11 @@ class FilterMapFileInputFormat() extends FileInputFormat[BytesWritable, BytesWri
   def isSplitable(context: JobContext, filename: Path): Boolean =
     false
 
-  class FilterMapFileRecordReader(filterDefinition: FilterMapFileInputFormat.FilterDefinition) extends RecordReader[BytesWritable, BytesWritable] {
+  class FilterMapFileRecordReader(filterDefinition: FilterMapFileInputFormat.FilterDefinition) extends RecordReader[BigIntWritable, BytesWritable] {
     private var mapFile: MapFile.Reader = null
     private var start: Long = 0L
     private var more: Boolean = true
-    private var key: BytesWritable = null
+    private var key: BigIntWritable = null
     private var value: BytesWritable = null
 
     private val ranges = filterDefinition
@@ -160,7 +160,7 @@ class FilterMapFileInputFormat() extends FileInputFormat[BytesWritable, BytesWri
     private var nextRangeIndex: Int = 0
 
     private var seek = false
-    private var seekKey: BytesWritable = null
+    private var seekKey: BigIntWritable = null
 
     private def setNextIndexRange(index: BigInt = BigInt(0)): Boolean = {
       if(nextRangeIndex >= ranges.length) {
@@ -214,7 +214,7 @@ class FilterMapFileInputFormat() extends FileInputFormat[BytesWritable, BytesWri
             seek = false
             if(key == null || BigInt(key.getBytes) < BigInt(seekKey.getBytes)) {
               // We are seeking to the beginning of a new range.
-              key = mapFile.getClosest(seekKey, nextValue).asInstanceOf[BytesWritable]
+              key = mapFile.getClosest(seekKey, nextValue).asInstanceOf[BigIntWritable]
               if(key == null) {
                 break = true
                 more = false
@@ -264,7 +264,7 @@ class FilterMapFileInputFormat() extends FileInputFormat[BytesWritable, BytesWri
     }
 
     override
-    def getCurrentKey(): BytesWritable = key
+    def getCurrentKey(): BigIntWritable = key
 
     override
     def getCurrentValue(): BytesWritable = value
