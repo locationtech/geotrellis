@@ -62,12 +62,13 @@ object AccumuloCollectionReader {
       val scanner = instance.connector.createScanner(table, new Authorizations())
       scanner.setRange(range)
       scanner.fetchColumnFamily(columnFamily)
-      val result = scanner.iterator.map { case entry =>
-        AvroEncoder.fromBinary(writerSchema.getOrElse(codec.schema), entry.getValue.get)(codec)
-      }.flatMap { pairs: Vector[(K, V)] =>
-        if(filterIndexOnly) pairs
-        else pairs.filter { pair => includeKey(pair._1) }
-      }.toVector
+      val result = scanner.iterator
+        .map({ case entry =>
+          AvroEncoder.fromBinary(writerSchema.getOrElse(codec.schema), entry.getValue.get)(codec) })
+        .flatMap({ pairs: Vector[(K, V)] =>
+          if(filterIndexOnly) pairs
+          else pairs.filter { pair => includeKey(pair._1) } })
+        .toVector
       scanner.close()
       result
     }(pool) }

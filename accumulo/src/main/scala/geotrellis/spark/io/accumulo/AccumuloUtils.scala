@@ -32,7 +32,7 @@ object AccumuloUtils {
    * Mapping KeyBounds of Extent to SFC ranges will often result in a set of non-contigrious ranges.
    * The indices exluded by these ranges should not be included in split calculation as they will never be seen.
    */
-  def getSplits[K](kb: KeyBounds[K], ki: KeyIndex[K], count: Int): Seq[Long] =
+  def getSplits[K](kb: KeyBounds[K], ki: KeyIndex[K], count: Int): Seq[BigInt] =
     KeyIndex.breaks(kb, ki, count)
 
   /**

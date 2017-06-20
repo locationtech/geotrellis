@@ -22,12 +22,17 @@ import org.apache.accumulo.core.data.Key
 import org.apache.hadoop.io.Text
 
 object AccumuloKeyEncoder {
-  final def long2Bytes(x: Long): Array[Byte] =
-    Array[Byte](x>>56 toByte, x>>48 toByte, x>>40 toByte, x>>32 toByte, x>>24 toByte, x>>16 toByte, x>>8 toByte, x toByte)
+  final def long2Bytes(x: BigInt): Array[Byte] = {
+    val bytes1: Array[Byte] = x.toByteArray
+    val bytes2: Array[Byte] = Stream.continually(0.toByte).take(8 - bytes1.length).toArray
+    (bytes2 ++ bytes1) // XXX
+  }
 
-  final def index2RowId(index: Long): Text = new Text(long2Bytes(index))
+  final def index2RowId(index: BigInt): Text = {
+    new Text(long2Bytes(index))
+  }
 
-  def encode[K](id: LayerId, key: K, index: Long): Key =
+  def encode[K](id: LayerId, key: K, index: BigInt): Key =
     new Key(index2RowId(index), columnFamily(id))
 
   def getLocalityGroups(id: LayerId): Seq[String] = Seq(columnFamily(id))
