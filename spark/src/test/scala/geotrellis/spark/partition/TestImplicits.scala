@@ -26,10 +26,10 @@ object TestImplicits {
     def rescale(key: SpatialKey): SpatialKey =
       SpatialKey(key.col/2, key.row/2)
 
-    override def toIndex(key: SpatialKey): Long =
+    override def toIndex(key: SpatialKey): BigInt =
       zCurveIndex.toIndex(rescale(key))
 
-    override def indexRanges(r: (SpatialKey, SpatialKey)): Seq[(Long, Long)] =
+    override def indexRanges(r: (SpatialKey, SpatialKey)): Seq[(BigInt, BigInt)] =
       zCurveIndex.indexRanges((rescale(r._1), rescale(r._2)))
   }
 }

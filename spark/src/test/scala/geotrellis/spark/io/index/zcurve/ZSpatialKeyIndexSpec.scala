@@ -74,7 +74,7 @@ class ZSpatialKeyIndexSpec extends FunSpec with Matchers {
      val zsk = new ZSpatialKeyIndex(keyBounds)
 
      //checked by hand 4x4
-     var idx: Seq[(Long,Long)] = zsk.indexRanges((SpatialKey(0,0), SpatialKey(1,1)))
+     var idx: Seq[(BigInt, BigInt)] = zsk.indexRanges((SpatialKey(0,0), SpatialKey(1,1)))
      idx.length should be(1)
      idx(0)._1 should be(0)
      idx(0)._2 should be(3)
