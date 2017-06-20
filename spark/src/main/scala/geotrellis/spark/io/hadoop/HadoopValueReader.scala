@@ -68,7 +68,7 @@ class HadoopValueReader(
           readers.get((layerId, path), _ => new MapFile.Reader(path, conf))
         }
         .getOrElse(throw new ValueNotFoundError(key, layerId))
-          .get(new BytesWritable(index.toByteArray), new BytesWritable())
+          .get(new BigIntWritable(index.toByteArray), new BytesWritable())
           .asInstanceOf[BytesWritable]
 
       if (valueWritable == null) throw new ValueNotFoundError(key, layerId)

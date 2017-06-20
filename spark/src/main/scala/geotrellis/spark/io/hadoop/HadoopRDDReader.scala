@@ -48,8 +48,8 @@ object HadoopRDDReader extends LazyLogging {
 
     sc.newAPIHadoopRDD(
       inputConf,
-      classOf[SequenceFileInputFormat[BytesWritable, BytesWritable]],
-      classOf[BytesWritable], // key class
+      classOf[SequenceFileInputFormat[BigIntWritable, BytesWritable]],
+      classOf[BigIntWritable], // key class
       classOf[BytesWritable]  // value class
      )
       .flatMap { case (keyWritable, valueWritable) =>
@@ -86,7 +86,7 @@ object HadoopRDDReader extends LazyLogging {
     sc.newAPIHadoopRDD(
       inputConf,
       classOf[FilterMapFileInputFormat],
-      classOf[BytesWritable],
+      classOf[BigIntWritable],
       classOf[BytesWritable]
     )
       .flatMap { case (keyWritable, valueWritable) =>

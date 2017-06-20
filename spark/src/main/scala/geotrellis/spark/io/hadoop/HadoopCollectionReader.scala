@@ -73,7 +73,7 @@ class HadoopCollectionReader(maxOpenFiles: Int) {
         .map { case (p, _, _) =>
           readers.get(p, path => new MapFile.Reader(path, conf))
         }
-        .map(_.get(new BytesWritable(index.toByteArray), new BytesWritable()).asInstanceOf[BytesWritable])
+        .map(_.get(new BigIntWritable(index.toByteArray), new BytesWritable()).asInstanceOf[BytesWritable])
         .getOrElse { println(s"Index ${index} not found."); null }
 
       if (valueWritable == null) Vector.empty

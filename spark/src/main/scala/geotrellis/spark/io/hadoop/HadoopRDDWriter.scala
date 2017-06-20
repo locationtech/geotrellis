@@ -61,14 +61,14 @@ object HadoopRDDWriter extends LazyLogging {
         new MapFile.Writer(
           new Configuration,
           path.toString,
-          MapFile.Writer.keyClass(classOf[BytesWritable]),
+          MapFile.Writer.keyClass(classOf[BigIntWritable]),
           MapFile.Writer.valueClass(classOf[BytesWritable]),
           MapFile.Writer.compression(SequenceFile.CompressionType.NONE))
       writer.setIndexInterval(indexInterval)
       writer
     }
 
-    def write(key: BytesWritable, value: BytesWritable): Unit = {
+    def write(key: BigIntWritable, value: BytesWritable): Unit = {
       val recordSize = 8 + value.getLength
       if (writer == null) {
         writer = getWriter(BigInt(key.getBytes))
@@ -219,7 +219,7 @@ object HadoopRDDWriter extends LazyLogging {
         val writer = new MultiMapWriter(layerPath, pid, blockSize, indexInterval)
         for ( (index, pairs) <- GroupConsecutiveIterator(iter)(r => keyIndex.toIndex(r._1))) {
           writer.write(
-            new BytesWritable(index.toByteArray),
+            new BigIntWritable(index.toByteArray),
             new BytesWritable(AvroEncoder.toBinary(pairs.toVector)(codec)))
         }
         writer.close()
