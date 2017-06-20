@@ -64,8 +64,8 @@ object ZSpaceTimeKeyIndex {
 class ZSpaceTimeKeyIndex(val keyBounds: KeyBounds[SpaceTimeKey], val temporalResolution: Long) extends KeyIndex[SpaceTimeKey] {
   private def toZ(key: SpaceTimeKey): Z3 = Z3(key.col, key.row, (key.instant / temporalResolution).toInt)
 
-  def toIndex(key: SpaceTimeKey): Long = toZ(key).z
+  def toIndex(key: SpaceTimeKey): BigInt = toZ(key).z
 
-  def indexRanges(keyRange: (SpaceTimeKey, SpaceTimeKey)): Seq[(Long, Long)] =
+  def indexRanges(keyRange: (SpaceTimeKey, SpaceTimeKey)): Seq[(BigInt, BigInt)] =
     Z3.zranges(toZ(keyRange._1), toZ(keyRange._2))
 }

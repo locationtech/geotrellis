@@ -98,7 +98,7 @@ object Z2 {
   }
 
   /** Recurse down the quad-tree and report all z-ranges which are contained in the rectangle defined by the min and max points */
-  def zranges(min: Z2, max: Z2): Seq[(Long, Long)] = {
+  def zranges(min: Z2, max: Z2): Seq[(BigInt, BigInt)] = {
     val mq = new MergeQueue
     val sr = Z2Range(min, max)
 

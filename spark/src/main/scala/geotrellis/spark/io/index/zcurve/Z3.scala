@@ -109,7 +109,7 @@ object Z3 {
   }
 
   /** Recurse down the oct-tree and report all z-ranges which are contained in the cube defined by the min and max points */
-  def zranges(min: Z3, max: Z3): Seq[(Long, Long)] = {
+  def zranges(min: Z3, max: Z3): Seq[(BigInt, BigInt)] = {
     var mq: MergeQueue = new MergeQueue
     val sr = Z3Range(min, max)
 
