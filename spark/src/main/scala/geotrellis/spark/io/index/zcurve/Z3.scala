@@ -30,7 +30,7 @@ class Z3(val z: Long) extends AnyVal {
   def == (other: Z3) = other.z == z
 
   def decode: (Int, Int, Int) = {
-    ( combine(z), combine(z >> 1), combine(z >> 2) )      
+    ( combine(z), combine(z >> 1), combine(z >> 2) )
   }
 
   def dim(i: Int) = Z3.combine(z >> i)
@@ -42,7 +42,7 @@ class Z3(val z: Long) extends AnyVal {
     y >= rmin.dim(1) &&
     y <= rmax.dim(1) &&
     z >= rmin.dim(2) &&
-    z <= rmax.dim(2) 
+    z <= rmax.dim(2)
   }
 
   def mid(p: Z3): Z3 = {
@@ -70,16 +70,16 @@ object Z3 {
     x = (x | x << 16) & 0x1f0000ff0000ffL
     x = (x | x << 8)  & 0x100f00f00f00f00fL
     x = (x | x << 4)  & 0x10c30c30c30c30c3L
-    (x | x << 2)      & 0x1249249249249249L 
+    (x | x << 2)      & 0x1249249249249249L
   }
 
  /** combine every third bit to form a value. Maximum value is 21 bits. */
   def combine(z: Long): Int = {
     var x = z & 0x1249249249249249L
     x = (x ^ (x >>  2)) & 0x10c30c30c30c30c3L
-    x = (x ^ (x >>  4)) & 0x100f00f00f00f00fL 
-    x = (x ^ (x >>  8)) & 0x1f0000ff0000ffL 
-    x = (x ^ (x >> 16)) & 0x1f00000000ffffL 
+    x = (x ^ (x >>  4)) & 0x100f00f00f00f00fL
+    x = (x ^ (x >>  8)) & 0x1f0000ff0000ffL
+    x = (x ^ (x >> 16)) & 0x1f00000000ffffL
     x = (x ^ (x >> 32)) & MAX_MASK
     x.toInt
   }
@@ -93,20 +93,20 @@ object Z3 {
     new Z3(split(x) | split(y) << 1 | split(z) << 2)
   }
 
-  def unapply(z: Z3): Option[(Int, Int, Int)] = 
+  def unapply(z: Z3): Option[(Int, Int, Int)] =
     Some(z.decode)
 
   def zdivide(p: Z3, rmin: Z3, rmax: Z3): (Z3, Z3) = {
     val (litmax,bigmin) = zdiv(load, MAX_DIM)(p.z, rmin.z, rmax.z)
     (new Z3(litmax), new Z3(bigmin))
   }
-  
+
   /** Loads either 1000... or 0111... into starting at given bit index of a given dimention */
-  def load(target: Long, p: Long, bits: Int, dim: Int): Long = {    
+  def load(target: Long, p: Long, bits: Int, dim: Int): Long = {
     val mask = ~(Z3.split(MAX_MASK >> (MAX_BITS-bits)) << dim)
     val wiped = target & mask
     wiped | (split(p) << dim)
-  }  
+  }
 
   /** Recurse down the oct-tree and report all z-ranges which are contained in the cube defined by the min and max points */
   def zranges(min: Z3, max: Z3): Seq[(Long, Long)] = {
@@ -116,30 +116,30 @@ object Z3 {
     var recCounter = 0
     var reportCounter = 0
 
-    def _zranges(prefix: Long, offset: Int, quad: Long): Unit = {      
+    def _zranges(prefix: Long, offset: Int, quad: Long): Unit = {
       recCounter += 1
 
       val min: Long = prefix | (quad << offset) // QR + 000..
       val max: Long = min | (1L << offset) - 1  // QR + 111..
       val qr = Z3Range(new Z3(min), new Z3(max))
-      if (sr contains qr){                               // whole range matches, happy day        
-        mq += (qr.min.z, qr.max.z) 
+      if (sr contains qr){                               // whole range matches, happy day
+        mq += (qr.min.z, qr.max.z)
         reportCounter +=1
-      } else if (offset > 0 && (sr overlaps qr)) { // some portion of this range are excluded      
+      } else if (offset > 0 && (sr overlaps qr)) { // some portion of this range are excluded
         _zranges(min, offset - MAX_DIM, 0)
         _zranges(min, offset - MAX_DIM, 1)
         _zranges(min, offset - MAX_DIM, 2)
-        _zranges(min, offset - MAX_DIM, 3)        
-        _zranges(min, offset - MAX_DIM, 4)        
-        _zranges(min, offset - MAX_DIM, 5)        
-        _zranges(min, offset - MAX_DIM, 6)        
-        _zranges(min, offset - MAX_DIM, 7)        
+        _zranges(min, offset - MAX_DIM, 3)
+        _zranges(min, offset - MAX_DIM, 4)
+        _zranges(min, offset - MAX_DIM, 5)
+        _zranges(min, offset - MAX_DIM, 6)
+        _zranges(min, offset - MAX_DIM, 7)
         //let our children punt on each subrange
-      }      
+      }
     }
-    
+
     var prefix: Long = 0
-    var offset = MAX_BITS*MAX_DIM                
+    var offset = MAX_BITS*MAX_DIM
     _zranges(prefix, offset, 0) // the entire space
     mq.toSeq
   }
