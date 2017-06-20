@@ -47,20 +47,20 @@ object KeyIndex {
     */
   def breaks(ranges: Seq[(BigInt, BigInt)], count: Int): Vector[BigInt] = {
     require(count > 0, "breaks count must be at least one")
-    def len(r: (BigInt, BigInt)): Double = (r._2 - r._1).toDouble + 1
-    val total: Double = ranges.foldLeft(0.0)(_ + len(_))
-    val maxBinSize: Long =  math.max(math.ceil(total /count+1), 1).toLong
+    def len(r: (BigInt, BigInt)): BigInt = (r._2 - r._1) + BigInt(1)
+    val total: BigInt = ranges.foldLeft(BigInt(0))(_ + len(_))
+    val maxBinSize: BigInt = (total / count) + 1
 
-    def take(range: (BigInt, BigInt), count: Long): Long = {
+    def take(range: (BigInt, BigInt), count: BigInt): BigInt = {
       if (len(range) >= count) count
-      else len(range).toLong
+      else len(range)
     }
 
     ranges.foldLeft((Vector.empty[BigInt], maxBinSize)) { case ((_breaks, _roomLeft), range) =>
       var breaks = _breaks
       var roomLeft = _roomLeft
       var remainder = range
-      var taken: Long = 0l
+      var taken = BigInt(0)
       do {
         taken = take(remainder, roomLeft)
         if (taken == roomLeft) {

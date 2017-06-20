@@ -24,17 +24,17 @@ object IndexRanges {
   def bin(ranges: Seq[(BigInt, BigInt)], count: Int): Seq[Seq[(BigInt, BigInt)]] = {
     var stack = ranges.toList
 
-    def len(r: (BigInt, BigInt)): Long = (r._2 - r._1).toLong + 1l
-    val total: Long = ranges.foldLeft(0l) { (s, r) => s + len(r) }
-    val binWidth = total / count + 1
+    def len(r: (BigInt, BigInt)): BigInt = (r._2 - r._1) + BigInt(1)
+    val total: BigInt = ranges.foldLeft(BigInt(0)) { (s, r) => s + len(r) }
+    val binWidth: BigInt = (total / count) + 1
 
-    def splitRange(range: (BigInt, BigInt), take: Long): ((BigInt, BigInt), (BigInt, BigInt)) = {
+    def splitRange(range: (BigInt, BigInt), take: BigInt): ((BigInt, BigInt), (BigInt, BigInt)) = {
       assert(len(range) > take)
       (range._1, range._1 + take - 1) -> (range._1 + take, range._2)
     }
 
     val arr = Array.fill(count)(Nil: List[(BigInt, BigInt)])
-    var sum = 0l
+    var sum = BigInt(0)
     var i = 0
     while (stack.nonEmpty) {
       val head = stack.head
