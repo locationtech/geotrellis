@@ -56,7 +56,7 @@ class S3CollectionLayerReader(val attributeStore: AttributeStore) extends Collec
 
     val queryKeyBounds = rasterQuery(metadata)
     val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
-    val keyPath = (index: Long) => makePath(prefix, Index.encode(index, maxWidth))
+    val keyPath = (index: BigInt) => makePath(prefix, Index.encode(index, maxWidth))
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
     val seq = collectionReader.read[K, V](bucket, keyPath, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema))
 

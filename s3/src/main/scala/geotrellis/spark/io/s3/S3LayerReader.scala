@@ -60,7 +60,7 @@ class S3LayerReader(val attributeStore: AttributeStore)(implicit sc: SparkContex
 
     val queryKeyBounds = tileQuery(metadata)
     val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
-    val keyPath = (index: Long) => makePath(prefix, Index.encode(index, maxWidth))
+    val keyPath = (index: BigInt) => makePath(prefix, Index.encode(index, maxWidth))
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
     val rdd = rddReader.read[K, V](bucket, keyPath, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema), Some(numPartitions))
 
