@@ -39,7 +39,7 @@ class AccumuloValueReader(
   val attributeStore: AttributeStore
 ) extends OverzoomingValueReader {
 
-  val rowId = (index: Long) => new Text(AccumuloKeyEncoder.long2Bytes(index))
+  val rowId = (index: BigInt) => new Text(AccumuloKeyEncoder.long2Bytes(index))
 
   def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
     val header = attributeStore.readHeader[AccumuloLayerHeader](layerId)
