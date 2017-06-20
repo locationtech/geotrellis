@@ -41,7 +41,7 @@ object HBaseRDDWriter {
     raster: RDD[(K, V)],
     instance: HBaseInstance,
     layerId: LayerId,
-    decomposeKey: K => Long,
+    decomposeKey: K => BigInt,
     table: String
   ): Unit = update(raster, instance, layerId, decomposeKey, table, None, None)
 
@@ -75,7 +75,7 @@ object HBaseRDDWriter {
     // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
     // on a key type that may no longer by valid for the key type of the resulting RDD.
     raster.groupBy({ row => decomposeKey(row._1) }, numPartitions = raster.partitions.length)
-      .foreachPartition { partition: Iterator[(Long, Iterable[(K, V)])] =>
+      .foreachPartition { partition: Iterator[(BigInt, Iterable[(K, V)])] =>
         if(partition.nonEmpty) {
           instance.withConnectionDo { connection =>
             val mutator = connection.getBufferedMutator(table)
