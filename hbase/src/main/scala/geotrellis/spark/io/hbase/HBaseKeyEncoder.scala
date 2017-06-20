@@ -19,8 +19,11 @@ package geotrellis.spark.io.hbase
 import geotrellis.spark._
 
 object HBaseKeyEncoder {
-  def encode(id: LayerId, index: Long, trailingByte: Boolean = false): Array[Byte] = {
-    val result: Array[Byte] = (s"${HBaseRDDWriter.layerIdString(id)}": Array[Byte]) ++ (index: Array[Byte])
+  def encode(id: LayerId, index: BigInt, trailingByte: Boolean = false): Array[Byte] = {
+    val bytes3 = (index.toByteArray: Array[Byte])
+    val bytes2: Array[Byte] = Stream.continually(0.toByte).take(64 - bytes3.length).toArray
+    val bytes1 = (s"${HBaseRDDWriter.layerIdString(id)}": Array[Byte])
+    val result: Array[Byte] = bytes1 ++ bytes2 ++ bytes3
     if(trailingByte) result :+ 0.toByte else result
   }
 }

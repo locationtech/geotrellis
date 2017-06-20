@@ -35,7 +35,7 @@ object HBaseCollectionReader {
     table: String,
     layerId: LayerId,
     queryKeyBounds: Seq[KeyBounds[K]],
-    decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
+    decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
     numPartitions: Option[Int] = None
@@ -46,7 +46,7 @@ object HBaseCollectionReader {
     val _recordCodec = KeyValueRecordCodec[K, V]
     val kwWriterSchema = KryoWrapper(writerSchema) // Avro Schema is not Serializable
 
-    val ranges: Seq[(Long, Long)] = if (queryKeyBounds.length > 1)
+    val ranges: Seq[(BigInt, BigInt)] = if (queryKeyBounds.length > 1)
       MergeQueue(queryKeyBounds.flatMap(decomposeBounds))
     else
       queryKeyBounds.flatMap(decomposeBounds)
