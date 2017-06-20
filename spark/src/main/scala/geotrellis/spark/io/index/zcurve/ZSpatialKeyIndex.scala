@@ -23,8 +23,8 @@ import geotrellis.spark.io.index.zcurve._
 class ZSpatialKeyIndex(val keyBounds: KeyBounds[SpatialKey]) extends KeyIndex[SpatialKey] {
   private def toZ(key: SpatialKey): Z2 = Z2(key.col, key.row)
 
-  def toIndex(key: SpatialKey): Long = toZ(key).z
+  def toIndex(key: SpatialKey): BigInt = toZ(key).z
 
-  def indexRanges(keyRange: (SpatialKey, SpatialKey)): Seq[(Long, Long)] =
+  def indexRanges(keyRange: (SpatialKey, SpatialKey)): Seq[(BigInt, BigInt)] =
     Z2.zranges(toZ(keyRange._1), toZ(keyRange._2))
 }
