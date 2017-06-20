@@ -24,10 +24,10 @@ import spray.json._
 import spray.json.DefaultJsonProtocol._
 
 class TestKeyIndex(val keyBounds: KeyBounds[SpatialKey]) extends KeyIndex[SpatialKey] {
-  def toIndex(key: SpatialKey): Long = 1L
+  def toIndex(key: SpatialKey): BigInt = BigInt(1)
 
-  def indexRanges(keyRange: (SpatialKey, SpatialKey)): Seq[(Long, Long)] =
-    Seq((1L, 2L))
+  def indexRanges(keyRange: (SpatialKey, SpatialKey)): Seq[(BigInt, BigInt)] =
+    Seq((BigInt(1), BigInt(2)))
 }
 
 class TestKeyIndexRegistrator extends KeyIndexRegistrator {
