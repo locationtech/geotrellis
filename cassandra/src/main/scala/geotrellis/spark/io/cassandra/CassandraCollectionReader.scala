@@ -38,7 +38,7 @@ object CassandraCollectionReader {
     table: String,
     layerId: LayerId,
     queryKeyBounds: Seq[KeyBounds[K]],
-    decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
+    decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
     threads: Int = ConfigFactory.load().getThreads("geotrellis.cassandra.threads.collection.read")
@@ -64,8 +64,8 @@ object CassandraCollectionReader {
     instance.withSessionDo { session =>
       val statement = session.prepare(query)
 
-      LayerReader.njoin[K, V](ranges.toIterator, threads){ index: Long =>
-        val row = session.execute(statement.bind(index.asInstanceOf[java.lang.Long]))
+      LayerReader.njoin[K, V](ranges.toIterator, threads){ index: BigInt =>
+        val row = session.execute(statement.bind(index.toLong.asInstanceOf[java.lang.Long])) // XXX
         if (row.nonEmpty) {
           val bytes = row.one().getBytes("value").array()
           val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
