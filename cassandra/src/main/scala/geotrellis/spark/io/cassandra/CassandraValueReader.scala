@@ -50,7 +50,7 @@ class CassandraValueReader(
           .and(eqs("zoom", layerId.zoom))
       )
 
-      val row = session.execute(statement.bind(keyIndex.toIndex(key).asInstanceOf[java.lang.Long])).all()
+      val row = session.execute(statement.bind(keyIndex.toIndex(key).toLong.asInstanceOf[java.lang.Long])).all() // XXX
       val tiles = row.map { entry =>
           AvroEncoder.fromBinary(writerSchema, entry.getBytes("value").array())(codec)
         }
