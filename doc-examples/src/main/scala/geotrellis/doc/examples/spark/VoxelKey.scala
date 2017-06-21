@@ -84,9 +84,9 @@ class ZVoxelKeyIndex(val keyBounds: KeyBounds[VoxelKey]) extends KeyIndex[VoxelK
   /* ''Z3'' here is a convenient shorthand for any 3-dimensional key. */
   private def toZ(k: VoxelKey): Z3 = Z3(k.x, k.y, k.z)
 
-  def toIndex(k: VoxelKey): Long = toZ(k).z
+  def toIndex(k: VoxelKey): BigInt = toZ(k).z
 
-  def indexRanges(keyRange: (VoxelKey, VoxelKey)): Seq[(Long, Long)] =
+  def indexRanges(keyRange: (VoxelKey, VoxelKey)): Seq[(BigInt, BigInt)] =
     Z3.zranges(toZ(keyRange._1), toZ(keyRange._2))
 }
 

@@ -57,19 +57,19 @@ class ShardingKeyIndex[K](val inner: KeyIndex[K], val shardCount: Int) extends K
    * prefixWithShard(i, s) == 8070450532247928869
    * }}}
    */
-  private def prefixWithShard(i: Long, shard: Long): Long =
+  private def prefixWithShard(i: BigInt, shard: Long): BigInt =
     (shard << 60) | i
 
   /* Necessary for extending `KeyIndex` */
-  def toIndex(key: K): Long = {
-    val i: Long = inner.toIndex(key)
-    val shard: Long = i % shardCount /* Shard prefix between 0 and 7 */
+  def toIndex(key: K): BigInt = {
+    val i: BigInt = inner.toIndex(key)
+    val shard: Long = (i % shardCount).toLong /* Shard prefix between 0 and 7 */
 
     prefixWithShard(inner.toIndex(key), shard)
   }
 
   /* Necessary for extending `KeyIndex` */
-  def indexRanges(keyRange: (K, K)): Seq[(Long, Long)] = {
+  def indexRanges(keyRange: (K, K)): Seq[(BigInt, BigInt)] = {
     inner
       .indexRanges(keyRange)
       .flatMap({ case (i1, i2) =>
