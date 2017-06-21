@@ -2,7 +2,6 @@ package geotrellis.vector.voronoi
 
 import com.vividsolutions.jts.geom.Coordinate
 import org.apache.commons.math3.linear._
-import geotrellis.util.Constants.{FLOAT_EPSILON => EPSILON}
 import geotrellis.vector._
 import geotrellis.vector.mesh.HalfEdgeTable
 import geotrellis.vector.triangulation._
@@ -48,6 +47,8 @@ object VoronoiDiagram {
   case class BoundedRay(base: Coordinate, dir: V2) extends CellBound
   case class Ray(base: Coordinate, dir: V2) extends CellBound
   case class ReverseRay(base: Coordinate, dir: V2) extends CellBound
+
+  private final val EPSILON = 1e-10
 
   private def cellBoundsNew(het: HalfEdgeTable, verts: Int => Coordinate, extent: Extent)(incidentEdge: Int): Seq[CellBound] = {
     import het._
