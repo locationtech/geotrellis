@@ -7,6 +7,8 @@ import geotrellis.raster._
 import geotrellis.raster.rasterize._
 import geotrellis.raster.render._
 import geotrellis.vector._
+import geotrellis.vector.io._
+import geotrellis.vector.io.json._
 import geotrellis.vector.triangulation._
 
 import scala.util.Random
@@ -107,6 +109,33 @@ class VoronoiDiagramSpec extends FunSpec with Matchers {
 
       val cells = voronoi.voronoiCells
       (cells.length == 1 && sameAsExtent(cells(0))) should be (true)      
+    }
+
+    it("should produce a Voronoi diagram from a real dataset") {
+      val parksStream = getClass.getResourceAsStream("/wkt/parks_pts.wkt")
+      val parksWKT = scala.io.Source.fromInputStream(parksStream).getLines.mkString
+      val pts = geotrellis.vector.io.wkt.WKT.read(parksWKT).asInstanceOf[MultiPoint].points
+
+      val dt = DelaunayTriangulation(pts.map{_.jtsGeom.getCoordinate}.toArray)
+
+      val zoom = 12
+      def crToExtent(col: Int, row: Int): Extent = {
+        val xinc = 360.0 / math.pow(2, zoom)
+        val yinc = 180.0 / math.pow(2, zoom)
+        val x = xinc * col - 180.0
+        val y = 90.0 - yinc * row
+        Extent(x, y - yinc, x + xinc, y)
+      }
+
+      // val extents = for (c <- 655 to 660 ; r <- 1182 to 1193) yield crToExtent(c, r)
+      val extents = for (c <- 656 to 658 ; r <- 1185 to 1187) yield crToExtent(c, r)
+
+      val polys: Seq[Polygon] = extents.flatMap{ ex =>
+        val vd = new VoronoiDiagram(dt, ex)
+        vd.voronoiCells
+      }
+
+      polys.forall(_.isValid) should be (true)
     }
   }
 }
