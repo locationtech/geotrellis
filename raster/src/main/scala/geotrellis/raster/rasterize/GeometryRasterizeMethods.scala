@@ -95,5 +95,5 @@ trait GeometryRasterizeMethods extends MethodExtensions[Geometry] {
     ct : CellType = DoubleConstantNoDataCellType,
     options: Options = Options.DEFAULT
   ): Raster[ArrayTile] =
-    rasterizeDouble(re)({ (col: Int, row: Int) => value })
+    rasterizeDouble(re, ct, options)({ (col: Int, row: Int) => value })
 }
