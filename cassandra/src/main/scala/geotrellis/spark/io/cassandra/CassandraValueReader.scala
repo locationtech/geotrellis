@@ -30,6 +30,9 @@ import spray.json._
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
+import java.math.BigInteger
+
+
 class CassandraValueReader(
   instance: CassandraInstance,
   val attributeStore: AttributeStore
@@ -50,7 +53,7 @@ class CassandraValueReader(
           .and(eqs("zoom", layerId.zoom))
       )
 
-      val row = session.execute(statement.bind(keyIndex.toIndex(key).toLong.asInstanceOf[java.lang.Long])).all() // XXX
+      val row = session.execute(statement.bind(keyIndex.toIndex(key): BigInteger)).all()
       val tiles = row.map { entry =>
           AvroEncoder.fromBinary(writerSchema, entry.getBytes("value").array())(codec)
         }
