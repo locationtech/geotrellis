@@ -36,4 +36,18 @@ package object geotiff {
     def toGeoTiffTile(layout: StorageMethod): GeoTiffTile =
       GeoTiffTile(tile, GeoTiffOptions(layout))
   }
+
+  implicit class GeoTiffMultibandTileMethods(val tile: MultibandTile) extends AnyRef {
+    def toGeoTiffTile(): GeoTiffMultibandTile =
+      GeoTiffMultibandTile(tile)
+
+    def toGeoTiffTile(options: GeoTiffOptions): GeoTiffMultibandTile =
+      GeoTiffMultibandTile(tile, options)
+
+    def toGeoTiffTile(compression: Compression): GeoTiffMultibandTile =
+      GeoTiffMultibandTile(tile, GeoTiffOptions(compression))
+
+    def toGeoTiffTile(layout: StorageMethod): GeoTiffMultibandTile =
+      GeoTiffMultibandTile(tile, GeoTiffOptions(layout))
+  }
 }
