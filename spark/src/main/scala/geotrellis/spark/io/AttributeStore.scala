@@ -24,7 +24,10 @@ import org.apache.avro.Schema
 import spray.json._
 import spray.json.DefaultJsonProtocol.JsValueFormat
 
+import scala.ref.SoftReference
+import scala.collection.concurrent.TrieMap
 import scala.reflect._
+import scala.collection.mutable.WeakHashMap
 import java.net.URI
 import java.util.ServiceLoader
 
@@ -58,15 +61,33 @@ object AttributeStore {
   }
 
   /**
+   * Cache constructed AttributeStore instances by URI.
+   * AttributeStore keeps internal state, re-using instances helps to keep it consistent.
+   */
+  private val instancesByUri: TrieMap[URI, SoftReference[AttributeStore]] = new TrieMap()
+
+  /**
    * Produce AttributeStore instance based on URI description.
    * This method uses instances of [[AttributeServiceProvider]] loaded through Java SPI.
+   * Repeated calls to this function will return previosly instantiated instances.
    */
   def apply(uri: URI): AttributeStore = {
     import scala.collection.JavaConversions._
-    ServiceLoader.load(classOf[AttributeStoreProvider]).iterator()
-      .find(_.canProcess(uri))
-      .getOrElse(throw new RuntimeException(s"Unable to find AttributeStoreProvider for $uri"))
-      .attributeStore(uri)
+
+    def newInstance =
+      ServiceLoader.load(classOf[AttributeStoreProvider]).iterator()
+        .find(_.canProcess(uri))
+        .getOrElse(throw new RuntimeException(s"Unable to find AttributeStoreProvider for $uri"))
+        .attributeStore(uri)
+
+    val ref = instancesByUri.getOrElseUpdate(uri, new SoftReference(newInstance))
+    ref.get match { // reference may be old and busted, check and updated
+      case Some(attributeStore) =>
+        attributeStore
+      case None =>
+        instancesByUri.remove(uri, ref) // remove only the old reference
+        instancesByUri.getOrElseUpdate(uri, new SoftReference(newInstance)).apply()
+    }
   }
 }
 
