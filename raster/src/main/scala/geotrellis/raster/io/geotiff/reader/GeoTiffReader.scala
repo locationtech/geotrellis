@@ -20,6 +20,7 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.compression._
 import geotrellis.raster.io.geotiff.tags._
+import geotrellis.raster.io.geotiff.util._
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 import geotrellis.util.{ByteReader, Filesystem}
@@ -285,11 +286,11 @@ object GeoTiffReader {
       val tiffTags =
         if (tiffIdNumber == 42) {
           val smallStart = byteReader.getInt
-          TiffTagsReader.read(byteReader, smallStart)
+          TiffTagsReader.read(byteReader, smallStart.toLong)(IntTiffTagOffsetSize)
         } else {
           byteReader.position(8)
           val bigStart = byteReader.getLong
-          TiffTagsReader.read(byteReader, bigStart)
+          TiffTagsReader.read(byteReader, bigStart)(LongTiffTagOffsetSize)
         }
 
       val hasPixelInterleave = tiffTags.hasPixelInterleave
