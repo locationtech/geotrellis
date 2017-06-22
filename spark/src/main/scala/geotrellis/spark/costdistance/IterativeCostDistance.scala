@@ -126,7 +126,9 @@ object IterativeCostDistance {
     friction: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     geometries: Seq[Geometry],
     maxCost: Double = Double.PositiveInfinity
-  )(implicit sc: SparkContext): RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]= {
+  ): RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]= {
+
+    val sparkContext = friction.sparkContext
 
     val md = friction.metadata
     val mt = md.mapTransform
@@ -145,10 +147,10 @@ object IterativeCostDistance {
     val maxKeyRow = maxKey.row
 
     val accumulator = new ChangesAccumulator
-    sc.register(accumulator)
+    sparkContext.register(accumulator)
 
     // Index the input geometry by SpatialKey
-    val gs = sc.broadcast(geometryMap(md, geometries))
+    val gs = sparkContext.broadcast(geometryMap(md, geometries))
 
     // Create RDD of initial (empty) cost tiles and load the
     // accumulator with the starting values.
@@ -184,7 +186,7 @@ object IterativeCostDistance {
         accumulator.value
           .groupBy(_._1)
           .map({ case (k, list) => (k, list.map({ case (_, v) => v })) })
-      val changes = sc.broadcast(_changes)
+      val changes = sparkContext.broadcast(_changes)
       logger.debug(s"At least ${changes.value.size} changed tiles")
 
       accumulator.reset
