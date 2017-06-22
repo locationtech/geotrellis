@@ -38,7 +38,7 @@ trait FeatureIntRasterizeMethods[+G <: Geometry] extends MethodExtensions[Featur
     ct: CellType = IntConstantNoDataCellType,
     options: Options = Options.DEFAULT
   ): Raster[Tile] =
-    self.geom.rasterizeWithValueDouble(re, self.data, ct, options)
+    self.geom.rasterizeWithValue(re, self.data, ct, options)
 }
 
 /**
