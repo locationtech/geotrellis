@@ -82,6 +82,8 @@ Fixes
 
 - `Give a better error message for CRS write failures <https://github.com/locationtech/geotrellis/pull/1874>`__
 
+- `Fix clipping logic during polygon layer query <https://github.com/locationtech/geotrellis/pull/2213>`__
+
 - `Fixed type for CRS authority in NAD83 <https://github.com/locationtech/geotrellis/pull/1916>`__
 
 - `Moved JsonFormats for CellSize and CellType to their proper place <https://github.com/locationtech/geotrellis/pull/1919>`__
@@ -144,7 +146,17 @@ Fixes
 
 - `Fix issue with duplicate tiles being read for File and Cassandra backends <https://github.com/locationtech/geotrellis/pull/2200>`__
 
+- `Move to a different Json Schema validator <https://github.com/locationtech/geotrellis/pull/2222>`__
 
+- `S3InputFormat does not filter according to extensions when partitionCount is used <https://github.com/locationtech/geotrellis/issues/2231>`__
+
+- `In S3GeoTiffReader, partitionBytes has no effect if maxTileSize is set <https://github.com/locationtech/geotrellis/issues/2232>`__
+
+- `Fixes typos with rasterizer extension methods <https://github.com/locationtech/geotrellis/pull/2245>`__
+
+- `Fix writing multiband GeoTiff with compression <https://github.com/locationtech/geotrellis/pull/2246>`__
+
+- `Fixed issue with BigTiff vs non-BigTiff offset value packing <https://github.com/locationtech/geotrellis/pull/2247>`__
 
 API Changes
 ^^^^^^^^^^^
@@ -161,6 +173,8 @@ While we are trying to stick strictly to `SemVer <http://semver.org/>`__, there 
    - Changed ``size`` to ``length`` in ``ArraySegmentBytes``
    - Replaced ``foreach`` on SegmentBytes with ``getSegments``, which the caller can iterate over themselves
    - Changed ``getDecompressedBytes`` to ``decompressGeoTiffSegment``
+- Changed some interal but publicly visible `implicit classes and read methods around TiffTagReader <https://github.com/locationtech/geotrellis/pull/2247>`__
+   - Added as an implicit parameter to multiple locations, most publicly in `TiffTagReader.read(byteReader: ByteReader, tagsStartPosition: Long)(implicit ttos: TiffTagOffsetSize)`. Also changed that method from being generic to always taking a `Long` offset.
 
 - Moved some misplaced `implicit JsonFormats <https://github.com/locationtech/geotrellis/pull/1919>`__
 
