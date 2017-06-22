@@ -41,6 +41,8 @@ import java.util.concurrent.Executors
 
 import scala.collection.JavaConversions._
 
+import java.math.BigInteger
+
 
 object CassandraRDDWriter {
   final val DefaultThreadCount =
@@ -75,7 +77,7 @@ object CassandraRDDWriter {
       instance.ensureKeyspaceExists(keyspace, session)
       session.execute(
         SchemaBuilder.createTable(keyspace, table).ifNotExists()
-          .addPartitionKey("key", bigint)
+          .addPartitionKey("key", varint)
           .addClusteringColumn("name", text)
           .addClusteringColumn("zoom", cint)
           .addColumn("value", blob)
@@ -159,7 +161,7 @@ object CassandraRDDWriter {
               def retire(row: (BigInt, ByteBuffer)): Process[Task, ResultSet] = {
                 val (id, value) = row
                 Process eval Task({
-                  session.execute(writeStatement.bind(id, value))
+                  session.execute(writeStatement.bind(id: BigInteger, value))
                 })(pool)
               }
 

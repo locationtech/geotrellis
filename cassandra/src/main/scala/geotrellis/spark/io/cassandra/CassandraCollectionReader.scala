@@ -31,6 +31,9 @@ import com.typesafe.config.ConfigFactory
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
+import java.math.BigInteger
+
+
 object CassandraCollectionReader {
   def read[K: Boundable : AvroRecordCodec : ClassTag, V: AvroRecordCodec : ClassTag](
     instance: CassandraInstance,
@@ -65,7 +68,7 @@ object CassandraCollectionReader {
       val statement = session.prepare(query)
 
       LayerReader.njoin[K, V](ranges.toIterator, threads){ index: BigInt =>
-        val row = session.execute(statement.bind(index.toLong.asInstanceOf[java.lang.Long])) // XXX
+        val row = session.execute(statement.bind(index: BigInteger))
         if (row.nonEmpty) {
           val bytes = row.one().getBytes("value").array()
           val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)

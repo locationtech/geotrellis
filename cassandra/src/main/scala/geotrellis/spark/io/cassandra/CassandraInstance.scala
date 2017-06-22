@@ -34,6 +34,7 @@ object CassandraInstance {
       .getOrElse(Cassandra.cfg.getString("keyspace"))
     val attributeTable = Option(uri.getFragment)
       .getOrElse(Cassandra.cfg.getString("catalog"))
+    var registered: Boolean = false
 
     BaseCassandraInstance(
       List(zookeeper),
@@ -65,6 +66,16 @@ trait CassandraInstance extends Serializable {
 
   @transient lazy val cluster = getCluster
   @transient lazy val session = cluster.connect()
+
+  def register(): Unit = {
+    if (!CassandraInstance.registered) {
+      cluster
+        .getConfiguration()
+        .getCodecRegistry()
+        .register(BigIntegerIffBigint.instance)
+      CassandraInstance.registered = true
+    }
+  }
 
   def ensureKeyspaceExists(keyspace: String, session: Session): Unit =
     session.execute(s"create keyspace if not exists ${keyspace} with replication = {'class': '${replicationStrategy}', 'replication_factor': ${replicationFactor} }")
@@ -107,7 +118,9 @@ case class BaseCassandraInstance(
   replicationFactor: Int = Cassandra.cfg.getInt("replicationFactor"),
   localDc: String = Cassandra.cfg.getString("localDc"),
   usedHostsPerRemoteDc: Int = Cassandra.cfg.getInt("usedHostsPerRemoteDc"),
-  allowRemoteDCsForLocalConsistencyLevel: Boolean = Cassandra.cfg.getBoolean("allowRemoteDCsForLocalConsistencyLevel")) extends CassandraInstance
+  allowRemoteDCsForLocalConsistencyLevel: Boolean = Cassandra.cfg.getBoolean("allowRemoteDCsForLocalConsistencyLevel")) extends CassandraInstance {
+  register()
+}
 
 object Cassandra {
   lazy val cfg = ConfigFactory.load().getConfig("geotrellis.cassandra")
