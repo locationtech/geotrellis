@@ -2,7 +2,7 @@ import Dependencies._
 
 name := "geotrellis-spark-etl"
 libraryDependencies ++= Seq(
-  "com.github.fge" % "json-schema-validator" % "2.2.6",
+  jsonSchemaValidator,
   sparkCore % "provided",
   scalatest % "test")
 

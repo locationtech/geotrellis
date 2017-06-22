@@ -16,7 +16,9 @@
 
 package geotrellis.spark.etl.config
 
-import com.github.fge.jsonschema.main.JsonSchemaFactory
+import com.networknt.schema.JsonSchemaFactory
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
@@ -25,7 +27,7 @@ trait ConfigParse {
   val help: String
   val requiredFields: Set[Symbol]
 
-  val schemaFactory = JsonSchemaFactory.byDefault()
+  val schemaFactory = new JsonSchemaFactory()
 
   def getJson(filePath: String, conf: Configuration): String = {
     val path = new Path(filePath)
@@ -34,6 +36,8 @@ trait ConfigParse {
     val json = scala.io.Source.fromInputStream(is).getLines.mkString(" ")
     is.close(); fs.close(); json
   }
+
+  def jsonNodeFromString(content: String): JsonNode = new ObjectMapper().readTree(content)
 
   def nextOption(map: Map[Symbol, String], list: Seq[String]): Map[Symbol, String]
 

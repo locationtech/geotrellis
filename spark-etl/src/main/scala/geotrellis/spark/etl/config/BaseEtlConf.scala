@@ -17,12 +17,16 @@
 package geotrellis.spark.etl.config
 
 import geotrellis.spark.etl.config.json._
+import geotrellis.util.LazyLogging
 
 import org.apache.spark.SparkContext
-import com.github.fge.jackson.JsonLoader
 import spray.json._
 
-trait BaseEtlConf extends ConfigParse {
+import scala.collection.JavaConverters._
+
+trait BaseEtlConf extends ConfigParse with LazyLogging {
+  private def loggerError(str: String, color: String = Console.RED) = logger.error(s"${color}${str}${Console.RESET}")
+
   val help = """
                |geotrellis-etl
                |
@@ -40,9 +44,9 @@ trait BaseEtlConf extends ConfigParse {
 
   val requiredFields = Set('input, 'output, 'backendProfiles)
 
-  val backendProfilesSchema = schemaFactory.getJsonSchema(JsonLoader.fromResource("/backend-profiles-schema.json"))
-  val inputSchema           = schemaFactory.getJsonSchema(JsonLoader.fromResource("/input-schema.json"))
-  val outputSchema          = schemaFactory.getJsonSchema(JsonLoader.fromResource("/output-schema.json"))
+  val backendProfilesSchema = schemaFactory.getSchema(getClass.getResourceAsStream("/backend-profiles-schema.json"))
+  val inputSchema           = schemaFactory.getSchema(getClass.getResourceAsStream("/input-schema.json"))
+  val outputSchema          = schemaFactory.getSchema(getClass.getResourceAsStream("/output-schema.json"))
 
   def nextOption(map: Map[Symbol, String], list: Seq[String]): Map[Symbol, String] =
     list.toList match {
@@ -68,28 +72,28 @@ trait BaseEtlConf extends ConfigParse {
     val m = parse(args)
 
     if(m.keySet != requiredFields) {
-      println(s"missing required field(s): ${(requiredFields -- m.keySet).mkString(", ")}, use --help command to get additional information about input options.")
+      loggerError(s"missing required field(s): ${(requiredFields -- m.keySet).mkString(", ")}, use --help command to get additional information about input options.")
       sys.exit(1)
     }
 
     val(backendProfiles, input, output) = (m('backendProfiles), m('input), m('output))
 
-    val inputValidation           = inputSchema.validate(JsonLoader.fromString(input), true)
-    val backendProfilesValidation = backendProfilesSchema.validate(JsonLoader.fromString(backendProfiles), true)
-    val outputValidation          = outputSchema.validate(JsonLoader.fromString(output), true)
+    val inputValidation           = inputSchema.validate(jsonNodeFromString(input))
+    val backendProfilesValidation = backendProfilesSchema.validate(jsonNodeFromString(backendProfiles))
+    val outputValidation          = outputSchema.validate(jsonNodeFromString(output))
 
-    if(!inputValidation.isSuccess || !backendProfilesValidation.isSuccess || !outputValidation.isSuccess) {
-      if(!inputValidation.isSuccess) {
-        println("input validation error:")
-        println(inputValidation)
+    if(!inputValidation.isEmpty || !backendProfilesValidation.isEmpty || !outputValidation.isEmpty) {
+      if(!inputValidation.isEmpty) {
+        loggerError(s"input validation errors:")
+        inputValidation.asScala.foreach(msg => loggerError(s" - ${msg.getMessage}"))
       }
-      if(!backendProfilesValidation.isSuccess) {
-        println("backendProfiles validation error:")
-        println(backendProfilesValidation)
+      if(!backendProfilesValidation.isEmpty) {
+        loggerError(s"backendProfiles validation error:")
+        backendProfilesValidation.asScala.foreach(msg => loggerError(s" - ${msg.getMessage}"))
       }
-      if(!outputValidation.isSuccess) {
-        println("output validation error:")
-        println(outputValidation)
+      if(!outputValidation.isEmpty) {
+        loggerError(s"output validation error:")
+        outputValidation.asScala.foreach(msg => loggerError(s" - ${msg.getMessage}"))
       }
       sys.exit(1)
     }

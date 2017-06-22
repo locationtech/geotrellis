@@ -48,4 +48,6 @@ object Dependencies {
   val slickPG      = "com.github.tminglei" %% "slick-pg" % "0.14.6"
 
   val parserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.5"
+
+  val jsonSchemaValidator = "com.networknt" % "json-schema-validator" % "0.1.7"
 }
