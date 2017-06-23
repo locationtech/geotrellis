@@ -25,20 +25,26 @@ import org.apache.spark.SparkContext
 import java.net.URI
 
 /**
- * Provides [[HadoopAttributeStore]] instance for URI with `hdfs`, `file`, `s3n`, and `s3a` schemes.
+ * Provides [[HadoopAttributeStore]] instance for URI with `hdfs`, `hdfs+file`, `s3n`, and `s3a` schemes.
  * The uri represents Hadoop [[Path]] of catalog root.
  * This Provider intentinally does not handle the `s3` scheme because the Hadoop implemintation is poor.
  * That support is provided by [[S3Attributestore]]
  */
 class HadoopLayerProvider extends AttributeStoreProvider
     with LayerReaderProvider with LayerWriterProvider {
-  val schemes: Array[String] = Array("hdfs", "file", "s3n", "s3a")
+  val schemes: Array[String] = Array("hdfs", "hdfs+file", "s3n", "s3a")
+
+  private def trim(uri: URI): URI =
+    if (uri.getScheme.startsWith("hdfs+"))
+      new URI(uri.toString.stripPrefix("hdfs+"))
+    else uri
 
   def canProcess(uri: URI): Boolean = schemes contains uri.getScheme.toLowerCase
 
   def attributeStore(uri: URI): AttributeStore = {
+
     val conf = new Configuration()
-    new HadoopAttributeStore(new Path(uri), conf)
+    new HadoopAttributeStore(new Path(trim(uri)), conf)
   }
 
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {
@@ -47,8 +53,9 @@ class HadoopLayerProvider extends AttributeStoreProvider
   }
 
   def layerWriter(uri: URI, store: AttributeStore): LayerWriter[LayerId] = {
-    val path = new Path(uri)
-    val params = UriUtils.getParams(uri)
+    val _uri = trim(uri)
+    val path = new Path(_uri)
+    val params = UriUtils.getParams(_uri)
     val interval = params.getOrElse("interval", "4").toInt
     new HadoopLayerWriter(path, store, interval)
   }
