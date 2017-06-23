@@ -18,6 +18,7 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.util.UriUtils
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
@@ -30,20 +31,25 @@ import java.net.URI
  * That support is provided by [[S3Attributestore]]
  */
 class HadoopLayerProvider extends AttributeStoreProvider
-    with LayerReaderProvider {
+    with LayerReaderProvider with LayerWriterProvider {
   val schemes: Array[String] = Array("hdfs", "file", "s3n", "s3a")
 
   def canProcess(uri: URI): Boolean = schemes contains uri.getScheme.toLowerCase
 
-    def attributeStore(uri: URI): AttributeStore = {
+  def attributeStore(uri: URI): AttributeStore = {
     val conf = new Configuration()
     new HadoopAttributeStore(new Path(uri), conf)
   }
 
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {
     // don't need uri because HadoopLayerHeader contains full path of the layer
-    val conf = new Configuration()
     new HadoopLayerReader(store)(sc)
   }
 
+  def layerWriter(uri: URI, store: AttributeStore): LayerWriter[LayerId] = {
+    val path = new Path(uri)
+    val params = UriUtils.getParams(uri)
+    val interval = params.getOrElse("interval", "4").toInt
+    new HadoopLayerWriter(path, store, interval)
+  }
 }

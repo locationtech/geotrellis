@@ -26,21 +26,23 @@ import java.net.URI
 
 /**
  * Provides [[AccumuloAttributeStore]] instance for URI with `accumulo` scheme.
- *  ex: `accumulo://[user[:password]@]zookeeper/instance-name[#metadata-table-name]`
+ *  ex: `accumulo://[user[:password]@]zookeeper/instance-name[?attributes=table1[&layers=table2]]`
  *
- * Metadata table name is optional, not provided default value will be used.
+ * Attributes table name is optional, not provided default value will be used.
+ * Layers table name is required to instantiate a [[LayerWriter]]
  */
 class AccumuloLayerProvider extends AttributeStoreProvider with LayerReaderProvider {
   def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "accumulo"
 
   def attributeStore(uri: URI): AttributeStore = {
     val instance = AccumuloInstance(uri)
-    val attributeTable = uri.getFragment
-
-    if (null == attributeTable)
-      AccumuloAttributeStore(instance)
-    else
-      AccumuloAttributeStore(instance, attributeTable)
+    val params = UriUtils.getParams(uri)
+    params.get("attributes") match {
+      case Some(attributeTable) =>
+        AccumuloAttributeStore(instance, attributeTable)
+      case None =>
+        AccumuloAttributeStore(instance)
+    }
   }
 
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {
@@ -52,8 +54,8 @@ class AccumuloLayerProvider extends AttributeStoreProvider with LayerReaderProvi
   def layerWriter(uri: URI, store: AttributeStore): LayerWriter[LayerId] = {
     val instance = AccumuloInstance(uri)
     val params = UriUtils.getParams(uri)
-    val table = params.getOrElse("table",
-      throw new IllegalArgumentException("Missing required URI parameter: table"))
+    val table = params.getOrElse("layers",
+      throw new IllegalArgumentException("Missing required URI parameter: layers"))
 
     AccumuloLayerWriter(instance, store, table)
   }

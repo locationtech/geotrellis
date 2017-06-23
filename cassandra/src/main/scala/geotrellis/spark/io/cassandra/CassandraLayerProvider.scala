@@ -25,24 +25,24 @@ import java.net.URI
 
 /**
  * Provides [[CassandraAttributeStore]] instance for URI with `cassandra` scheme.
- *  ex: `cassandra://[user:password@]zookeeper[:port]/keyspace[#metadata-table-name]`
+ *  ex: `cassandra://[user:password@]zookeeper[:port][/keyspace][?attributes=table1[&layers=table2]]`
  *
  * Metadata table name is optional, not provided default value will be used.
+ * Layers table name is required to instantiate a [[LayerWriter]]
  */
 class CassandraLayerProvider extends AttributeStoreProvider with LayerReaderProvider {
   def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "cassandra"
 
   def attributeStore(uri: URI): AttributeStore = {
+    val params = UriUtils.getParams(uri)
     val instance = CassandraInstance(uri)
-    val keyspace = Option(uri.getPath.drop(1))
-      .getOrElse(Cassandra.cfg.getString("keyspace"))
-    val attributeTable = Option(uri.getFragment)
-      .getOrElse(Cassandra.cfg.getString("catalog"))
-
-    if (null == attributeTable)
-      CassandraAttributeStore(instance)
-    else
-      CassandraAttributeStore(instance, keyspace, attributeTable)
+    params.get("attributes")  match {
+      case Some(attributeTable) =>
+        val keyspace = Option(uri.getPath.drop(1)).getOrElse(Cassandra.cfg.getString("keyspace"))
+        CassandraAttributeStore(instance, keyspace, attributeTable)
+      case None =>
+        CassandraAttributeStore(instance)
+    }
   }
 
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {
@@ -55,8 +55,8 @@ class CassandraLayerProvider extends AttributeStoreProvider with LayerReaderProv
     val keyspace = Option(uri.getPath.drop(1))
       .getOrElse(Cassandra.cfg.getString("keyspace"))
     val params = UriUtils.getParams(uri)
-    val table = params.getOrElse("table",
-      throw new IllegalArgumentException("Missing required URI parameter: table"))
+    val table = params.getOrElse("layers",
+      throw new IllegalArgumentException("Missing required URI parameter: layers"))
 
     new CassandraLayerWriter(store, instance, keyspace, table)
   }

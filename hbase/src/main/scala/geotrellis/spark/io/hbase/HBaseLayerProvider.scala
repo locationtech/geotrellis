@@ -25,21 +25,23 @@ import java.net.URI
 
 /**
  * Provides [[HBaseAttributeStore]] instance for URI with `hbase` scheme.
- *  ex: `hbase://zookeeper[:port][?master=host]#metadata-table-name]`
+ *  ex: `hbase://zookeeper[:port][?master=host][?attributes=table1[&layers=table2]]`
  *
  * Metadata table name is optional, not provided default value will be used.
+ * Layers table name is required to instantiate a [[LayerWriter]]
  */
 class HBaseLayerProvider extends AttributeStoreProvider with LayerReaderProvider {
   def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "hbase"
 
   def attributeStore(uri: URI): AttributeStore = {
     val instance = HBaseInstance(uri)
-    val attributeTable = uri.getFragment
-
-    if (null == attributeTable)
-      HBaseAttributeStore(instance)
-    else
-      HBaseAttributeStore(instance, attributeTable)
+    val params = UriUtils.getParams(uri)
+    params.get("attributes")  match {
+      case Some(attributeTable) =>
+        HBaseAttributeStore(instance, attributeTable)
+      case None =>
+        HBaseAttributeStore(instance)
+    }
   }
 
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {
@@ -50,8 +52,8 @@ class HBaseLayerProvider extends AttributeStoreProvider with LayerReaderProvider
   def layerWriter(uri: URI, store: AttributeStore): LayerWriter[LayerId] = {
     val instance = HBaseInstance(uri)
     val params = UriUtils.getParams(uri)
-    val table = params.getOrElse("table",
-      throw new IllegalArgumentException("Missing required URI parameter: table"))
+    val table = params.getOrElse("layers",
+      throw new IllegalArgumentException("Missing required URI parameter: layers"))
     new HBaseLayerWriter(store, instance, table)
   }
 }
