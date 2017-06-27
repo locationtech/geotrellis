@@ -18,10 +18,13 @@ package geotrellis.spark.io.cassandra
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.util.UriUtils
+import geotrellis.util.{UriUtils, SoftCache}
 import org.apache.spark.SparkContext
 import java.net.URI
 
+object CassandraLayerProvider {
+  private val softCache: SoftCache[(String, String), AttributeStore] = new SoftCache()
+}
 
 /**
  * Provides [[CassandraAttributeStore]] instance for URI with `cassandra` scheme.
@@ -36,13 +39,13 @@ class CassandraLayerProvider extends AttributeStoreProvider with LayerReaderProv
   def attributeStore(uri: URI): AttributeStore = {
     val params = UriUtils.getParams(uri)
     val instance = CassandraInstance(uri)
-    params.get("attributes")  match {
-      case Some(attributeTable) =>
-        val keyspace = Option(uri.getPath.drop(1)).getOrElse(Cassandra.cfg.getString("keyspace"))
-        CassandraAttributeStore(instance, keyspace, attributeTable)
-      case None =>
-        CassandraAttributeStore(instance)
-    }
+    val attributeTable = params.getOrElse("attributes",
+      Cassandra.cfg.getString("catalog"))
+    val keyspace = Option(uri.getPath.drop(1)).getOrElse(
+      Cassandra.cfg.getString("keyspace"))
+
+    CassandraLayerProvider.softCache.getOrElseUpdate(uri.getSchemeSpecificPart -> attributeTable,
+      CassandraAttributeStore(instance, keyspace, attributeTable))
   }
 
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {
