@@ -111,4 +111,13 @@ object LayerWriter {
    */
   def apply(uri: URI): LayerWriter[LayerId] =
     apply(attributeStoreUri = uri, layerWriterUri = uri)
+
+  def apply(attributeStore: AttributeStore, layerWriterUri: String): LayerWriter[LayerId] =
+    apply(attributeStore, new URI(layerWriterUri))
+
+  def apply(attributeStoreUri: String, layerWriterUri: String): LayerWriter[LayerId] =
+    apply(new URI(attributeStoreUri), new URI(layerWriterUri))
+
+  def apply(uri: String): LayerWriter[LayerId] =
+    apply(new URI(uri))
 }

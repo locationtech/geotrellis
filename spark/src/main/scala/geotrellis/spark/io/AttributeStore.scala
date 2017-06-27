@@ -70,6 +70,8 @@ object AttributeStore {
       .getOrElse(throw new RuntimeException(s"Unable to find AttributeStoreProvider for $uri"))
       .attributeStore(uri)
   }
+
+  def apply(uri: String): AttributeStore = apply(new URI(uri))
 }
 
 case class LayerAttributes[H, M, K](header: H, metadata: M, keyIndex: KeyIndex[K], schema: Schema)

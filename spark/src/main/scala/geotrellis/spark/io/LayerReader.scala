@@ -89,6 +89,15 @@ object LayerReader {
   def apply(uri: URI)(implicit sc: SparkContext): FilteringLayerReader[LayerId] =
     apply(attributeStoreUri = uri, layerReaderUri = uri)
 
+  def apply(attributeStore: AttributeStore, layerReaderUri: String)(implicit sc: SparkContext): FilteringLayerReader[LayerId] =
+    apply(attributeStore, new URI(layerReaderUri))
+
+  def apply(attributeStoreUri: String, layerReaderUri: String)(implicit sc: SparkContext): FilteringLayerReader[LayerId] =
+    apply(new URI(attributeStoreUri), new URI(layerReaderUri))
+
+  def apply(uri: String)(implicit sc: SparkContext): FilteringLayerReader[LayerId] =
+    apply(new URI(uri))
+
   def njoin[K, V](
     ranges: Iterator[(Long, Long)],
     threads: Int
