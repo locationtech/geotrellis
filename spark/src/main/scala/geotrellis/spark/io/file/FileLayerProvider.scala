@@ -18,9 +18,14 @@ package geotrellis.spark.io.file
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+import com.github.blemale.scaffeine.{Scaffeine, Cache}
 import org.apache.spark.SparkContext
 import java.net.URI
 import java.io.File
+
+object FileLayerProvider {
+  private val cache: Cache[String, AttributeStore] = Scaffeine().softValues().build()
+}
 
 /**
  * Provides [[FileLayerReader]] instance for URI with `file` scheme.
@@ -28,13 +33,14 @@ import java.io.File
  *  ex: `file:/tmp/catalog`
  */
 class FileLayerProvider extends AttributeStoreProvider
-    with LayerReaderProvider {
+    with LayerReaderProvider with LayerWriterProvider {
 
   def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "file"
 
   def attributeStore(uri: URI): AttributeStore = {
     val file = new File(uri)
-    new FileAttributeStore(file.getCanonicalPath)
+    FileLayerProvider.cache.get(file.getCanonicalPath,
+      canonicalPath => new FileAttributeStore(canonicalPath))
   }
 
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {

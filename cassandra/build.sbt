@@ -8,6 +8,7 @@ libraryDependencies ++= Seq(
       ExclusionRule("org.slf4j"), ExclusionRule("io.spray"), ExclusionRule("com.typesafe.akka")
     ) exclude("org.apache.hadoop", "hadoop-client"),
   sparkCore % "provided",
+  scaffeine,
   spire,
   scalatest % "test")
 

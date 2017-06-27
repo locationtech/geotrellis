@@ -17,6 +17,7 @@
 import sbt._
 
 object Dependencies {
+  val scaffeine     = "com.github.blemale" %% "scaffeine"        % "2.2.0"
   val typesafeConfig = "com.typesafe"       %  "config"          % "1.3.1"
   val logging       = "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0"
   val scalatest     = "org.scalatest"       %%  "scalatest"      % "3.0.1"

@@ -19,10 +19,15 @@ package geotrellis.spark.io.accumulo
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.util.UriUtils
+import com.github.blemale.scaffeine.{Scaffeine, Cache}
 import org.apache.spark.SparkContext
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
+import com.typesafe.config.ConfigFactory
 import java.net.URI
 
+object AccumuloLayerProvider {
+  private val cache: Cache[(String, String), AttributeStore] = Scaffeine().softValues().build()
+}
 
 /**
  * Provides [[AccumuloAttributeStore]] instance for URI with `accumulo` scheme.
@@ -31,18 +36,17 @@ import java.net.URI
  * Attributes table name is optional, not provided default value will be used.
  * Layers table name is required to instantiate a [[LayerWriter]]
  */
-class AccumuloLayerProvider extends AttributeStoreProvider with LayerReaderProvider {
+class AccumuloLayerProvider extends AttributeStoreProvider with LayerReaderProvider with LayerWriterProvider {
   def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "accumulo"
 
   def attributeStore(uri: URI): AttributeStore = {
     val instance = AccumuloInstance(uri)
     val params = UriUtils.getParams(uri)
-    params.get("attributes") match {
-      case Some(attributeTable) =>
-        AccumuloAttributeStore(instance, attributeTable)
-      case None =>
-        AccumuloAttributeStore(instance)
-    }
+    val attributeTable = params.getOrElse("attributes",
+      ConfigFactory.load().getString("geotrellis.accumulo.catalog"))
+
+    AccumuloLayerProvider.cache.get(uri.getSchemeSpecificPart -> attributeTable,
+      _ => AccumuloAttributeStore(instance, attributeTable))
   }
 
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {

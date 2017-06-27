@@ -19,9 +19,14 @@ package geotrellis.spark.io.hbase
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.util.UriUtils
+import com.github.blemale.scaffeine.{Scaffeine, Cache}
+import com.typesafe.config.ConfigFactory
 import org.apache.spark.SparkContext
 import java.net.URI
 
+object HBaseLayerProvider {
+  private val cache: Cache[(String, String), AttributeStore] = Scaffeine().softValues().build()
+}
 
 /**
  * Provides [[HBaseAttributeStore]] instance for URI with `hbase` scheme.
@@ -36,12 +41,11 @@ class HBaseLayerProvider extends AttributeStoreProvider with LayerReaderProvider
   def attributeStore(uri: URI): AttributeStore = {
     val instance = HBaseInstance(uri)
     val params = UriUtils.getParams(uri)
-    params.get("attributes")  match {
-      case Some(attributeTable) =>
-        HBaseAttributeStore(instance, attributeTable)
-      case None =>
-        HBaseAttributeStore(instance)
-    }
+    val attributeTable = params.getOrElse("attributes",
+      ConfigFactory.load().getString("geotrellis.hbase.catalog"))
+
+    HBaseLayerProvider.cache.get(uri.getSchemeSpecificPart -> attributeTable,
+      _ => HBaseAttributeStore(instance, attributeTable))
   }
 
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {
