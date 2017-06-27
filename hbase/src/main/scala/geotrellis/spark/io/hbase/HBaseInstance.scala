@@ -25,8 +25,7 @@ object HBaseInstance {
     import geotrellis.util.UriUtils._
 
     val zookeeper = uri.getHost
-    val port = Option(uri.getPort).getOrElse(2181)
-    val attributeTable = uri.getFragment
+    val port = if (uri.getPort < 0) 2181 else uri.getPort
     val params = getParams(uri)
     HBaseInstance(
       List(zookeeper),

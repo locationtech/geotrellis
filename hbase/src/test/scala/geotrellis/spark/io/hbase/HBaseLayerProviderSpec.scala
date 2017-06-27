@@ -22,7 +22,7 @@ import geotrellis.spark.testkit.TestEnvironment
 import org.scalatest._
 
 class HBaseLayerProviderSpec extends FunSpec with HBaseTestEnvironment {
-  val uri = new java.net.URI("hbase://localhost?attributes=attributes&layers=tiles")
+  val uri = new java.net.URI("hbase://localhost?master=localhost&attributes=attributes&layers=tiles")
   it("construct HBaseAttributeStore from URI"){
     val store = AttributeStore(uri)
     assert(store.isInstanceOf[HBaseAttributeStore])

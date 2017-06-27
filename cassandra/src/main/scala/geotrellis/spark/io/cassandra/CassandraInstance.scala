@@ -26,7 +26,7 @@ object CassandraInstance {
     import geotrellis.util.UriUtils._
 
     val zookeeper = uri.getHost
-    val port = Option(uri.getPort).getOrElse(2181)
+    val port = if (uri.getPort < 0) 2181 else uri.getPort
     val (user, pass) = getUserInfo(uri)
     val keyspace = Option(uri.getPath.drop(1))
       .getOrElse(Cassandra.cfg.getString("keyspace"))
