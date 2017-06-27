@@ -35,7 +35,7 @@ object HBaseLayerProvider {
  * Metadata table name is optional, not provided default value will be used.
  * Layers table name is required to instantiate a [[LayerWriter]]
  */
-class HBaseLayerProvider extends AttributeStoreProvider with LayerReaderProvider {
+class HBaseLayerProvider extends AttributeStoreProvider with LayerReaderProvider with LayerWriterProvider {
   def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "hbase"
 
   def attributeStore(uri: URI): AttributeStore = {
