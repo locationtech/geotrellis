@@ -2,7 +2,6 @@ package geotrellis.vector.voronoi
 
 import com.vividsolutions.jts.geom.Coordinate
 import org.apache.commons.math3.linear._
-import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
 import geotrellis.vector._
 import geotrellis.vector.mesh.HalfEdgeTable
 import geotrellis.vector.triangulation._
@@ -49,13 +48,15 @@ object VoronoiDiagram {
   case class Ray(base: Coordinate, dir: V2) extends CellBound
   case class ReverseRay(base: Coordinate, dir: V2) extends CellBound
 
+  private final val EPSILON = 1e-10
+
   private def cellBoundsNew(het: HalfEdgeTable, verts: Int => Coordinate, extent: Extent)(incidentEdge: Int): Seq[CellBound] = {
     import het._
 
     var e = incidentEdge
+    val origin = V2(verts(getDest(e)))
     val l = collection.mutable.ListBuffer.empty[CellBound]
     do {
-      val origin = V2(verts(getDest(e)))
       val vplus = V2(verts(getSrc(rotCCWDest(e)))) - origin
       val v = V2(verts(getSrc(e))) - origin
       val vminus = V2(verts(getSrc(rotCWDest(e)))) - origin
@@ -93,14 +94,7 @@ object VoronoiDiagram {
           }
         }
       } else {
-        // equal alphas
-        if (aplus > EPSILON) {
-          l += ReverseRay((x + norm * aplus).toCoord, norm * (-1))
-        } else if (aplus < -EPSILON) {
-          l += Ray((x + norm * aminus).toCoord, norm)
-        } else {
-          // Degenerate line segment (equal endpoints); skip
-        }
+        // equal alphas => degenerate line segment (equal endpoints); skip
       }
 
       e = rotCCWDest(e)
@@ -108,7 +102,7 @@ object VoronoiDiagram {
     l
   }
 
-  private def cellExtentIntersection(cell: Seq[CellBound], extent: Extent) = {
+  private def cellExtentIntersection(het: HalfEdgeTable, verts: Int => Coordinate, incidentEdge: Int)(cell: Seq[CellBound], extent: Extent) = {
     val Extent(xmin, ymin, xmax, ymax) = extent
     val expts = ListBuffer((xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)).map{ case (x, y) => new Coordinate(x, y) }
 
@@ -175,13 +169,14 @@ object VoronoiDiagram {
       None
     } else {
       clippedCorners += clippedCorners.head
-      Some(Polygon(clippedCorners.map(Point.jtsCoord2Point(_))))
+      val poly = Polygon(clippedCorners.map(Point.jtsCoord2Point(_)))
+      Some(poly)
     }
   }
 
   def polygonalCell(het: HalfEdgeTable, verts: Int => Coordinate, extent: Extent)(incidentEdge: Int): Option[Polygon] = {
     val cell = cellBoundsNew(het, verts, extent)(incidentEdge)
-    cellExtentIntersection(cell, extent)
+    cellExtentIntersection(het, verts, incidentEdge)(cell, extent)
   }
 }
 
@@ -201,9 +196,12 @@ class VoronoiDiagram(val dt: DelaunayTriangulation, val extent: Extent) {
    * verts(i) is not distinct, this function may raise an exception.
    */
   def voronoiCell(i: Int): Option[Polygon] = {
-    if (dt.liveVertices.size == 1 && dt.liveVertices(i))
-      Some(extent.toPolygon)
-    else
+    if (dt.liveVertices.size == 1) {
+      if (dt.liveVertices(i)) {
+        Some(extent.toPolygon)
+      } else
+        throw new IllegalArgumentException(s"Cannot build Voronoi cell for nonexistent vertex $i")
+    } else
       polygonalCell(dt.halfEdgeTable, pointSet.getCoordinate(_), extent)(dt.halfEdgeTable.edgeIncidentTo(i))
   }
 
