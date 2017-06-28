@@ -170,23 +170,6 @@ object VoronoiDiagram {
     } else {
       clippedCorners += clippedCorners.head
       val poly = Polygon(clippedCorners.map(Point.jtsCoord2Point(_)))
-      // if (!poly.isValid) {
-      //   import het._
-
-      //   println("Invalid polygon generated:")
-      //   println(s"\t$poly")
-      //   println(s"\t$cell")
-
-      //   val coords = collection.mutable.ListBuffer.empty[Coordinate]
-      //   var e = incidentEdge
-      //   do {
-      //     coords += verts(getDest(e))
-      //     coords += verts(getSrc(e))
-      //     e = rotCCWDest(e)
-      //   } while (e != incidentEdge)
-
-      //   println(s"${Line(coords.map{Point.jtsCoord2Point(_)})}")
-      // }
       Some(poly)
     }
   }
