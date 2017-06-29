@@ -79,11 +79,11 @@ object IterativeCostDistance {
   ) = {
     val md = friction.metadata
     val mt = md.mapTransform
-    val (key: SpatialKey, tile: Tile) = friction.first
+    val key: SpatialKey = md.bounds.get.minKey
     val extent = mt(key).reproject(md.crs, LatLng)
     val degrees = extent.xmax - extent.xmin
     val meters = degrees * (6378137 * 2.0 * math.Pi) / 360.0
-    val pixels = tile.cols
+    val pixels = md.layout.tileCols
     math.abs(meters / pixels)
   }
 
