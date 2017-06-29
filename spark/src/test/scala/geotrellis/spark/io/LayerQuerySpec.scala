@@ -160,6 +160,35 @@ class LayerQuerySpec extends FunSpec
       // test specifically for previously missing key
       actual should contain (SpatialKey(272, 79))
     }
+
+    it("should query perimeter of huc10 polygon") {
+      val wkt = scala.io.Source.fromInputStream(getClass.getResourceAsStream("/wkt/huc10-conestoga.wkt")).getLines.mkString
+      val huc10 = WKT.read(wkt).asInstanceOf[MultiPolygon]
+      val ml = MultiLine(huc10.polygons.flatMap { p =>
+        p.exterior +: p.holes.toList
+      })
+      val huc10LayerMetadata = TileLayerMetadata(
+        crs = ConusAlbers,
+        cellType = FloatCellType,
+        layout = LayoutDefinition(Extent(-2493045.0, 177285.0, 2345355.0, 3310725.0),TileLayout(1315,1204,512,512)),
+        extent = Extent(-2493045.0, 177285.0, 2345355.0, 3310725.0),
+        bounds = KeyBounds(SpatialKey(0,0),SpatialKey(1314,1204))
+      )
+      val mapTransform = huc10LayerMetadata.mapTransform
+      val query = new LayerQuery[SpatialKey, TileLayerMetadata[SpatialKey]]
+        .where(Intersects(ml))
+      val actual: Seq[SpatialKey] = query(huc10LayerMetadata).flatMap(spatialKeyBoundsKeys)
+      val expected =  {
+        val bounds = huc10LayerMetadata.bounds.get.toGridBounds
+        for {
+          (x, y) <- bounds.coords
+          //
+          if ml.intersects(mapTransform(SpatialKey(x, y)))
+        } yield SpatialKey(x, y)
+      }
+
+      (expected.toList diff actual) should be ('empty)
+    }
   }
 
   describe("LayerQuery KeyBounds generation") {
