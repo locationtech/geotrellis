@@ -194,8 +194,10 @@ trait ByteReaderExtensions {
         }
         arr
       } else {
+        val oldPosition = byteReader.position
         byteReader.position(offset)
         val arr = byteReader.getBytes(len)
+        byteReader.position(oldPosition)
         arr
       }
     }
