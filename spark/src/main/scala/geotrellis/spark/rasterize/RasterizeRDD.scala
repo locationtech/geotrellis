@@ -12,8 +12,8 @@ import scala.collection.immutable.VectorBuilder
 
 object RasterizeRDD {
   /** Rasterize geometries using a constant value */
-  def fromGeometry[T: Numeric](
-    geoms: RDD[Geometry],
+  def fromGeometry[G <: Geometry, T: Numeric](
+    geoms: RDD[G],
     layout: LayoutDefinition,
     ct: CellType,
     value: T,
@@ -23,8 +23,8 @@ object RasterizeRDD {
   }
 
   /** Rasterize geometries using a constant value */
-  def fromGeometry[T: Numeric](
-    geoms: RDD[Geometry],
+  def fromGeometry[G <: Geometry, T: Numeric](
+    geoms: RDD[G],
     layout: LayoutDefinition,
     ct: CellType,
     value: T,
@@ -35,8 +35,8 @@ object RasterizeRDD {
   }
 
   /** Rasterize geometries using a constant value */
-  def fromGeometry[T: Numeric](
-    geoms: RDD[Geometry],
+  def fromGeometry[G <: Geometry, T: Numeric](
+    geoms: RDD[G],
     layout: LayoutDefinition,
     ct: CellType,
     value: T,
