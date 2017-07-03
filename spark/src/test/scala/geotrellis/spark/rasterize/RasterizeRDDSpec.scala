@@ -26,6 +26,7 @@ import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.vector._
 import geotrellis.vector.io._
+import geotrellis.vector.io.wkt._
 import geotrellis.vector.io.json._
 
 import java.nio.file.Files;
@@ -68,6 +69,39 @@ class RasterizeRDDSpec extends FunSpec with Matchers
         val keyExtent = ld.mapTransform(sk)
         sk -> Rasterizer.rasterizeWithValue(
           MultiLine(septaRailLines),
+          RasterExtent(keyExtent, 256, 256),
+          1)
+      }
+    }.stitch
+
+    tilesEqual(actual.tile, expected)
+  }
+
+  it("rasterize polygon"){
+    val wkt = scala.io.Source.fromInputStream(getClass.getResourceAsStream("/wkt/huc10-conestoga.wkt")).getLines.mkString
+    val huc10 = WKT.read(wkt).asInstanceOf[MultiPolygon]
+
+    val layout = TileLayout(3,3,256,256)
+    val ld = LayoutDefinition(huc10.envelope, layout)
+
+    val polyRdd = sc.parallelize(huc10.polygons)
+    val rasterizedRdd = RasterizeRDD.fromGeometry(
+      polyRdd, ld,
+      IntConstantNoDataCellType,
+      1,
+      Options.DEFAULT)
+    val actual = rasterizedRdd.stitch()
+
+
+    val expected: Tile = {
+      for {
+        tileCol <- 0 until 3
+        tileRow <- 0 until 3
+      } yield {
+        val sk = SpatialKey(tileCol, tileRow)
+        val keyExtent = ld.mapTransform(sk)
+        sk -> Rasterizer.rasterizeWithValue(
+          huc10,
           RasterExtent(keyExtent, 256, 256),
           1)
       }
