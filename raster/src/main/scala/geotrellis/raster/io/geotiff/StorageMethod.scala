@@ -18,7 +18,7 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
 
-abstract sealed class StorageMethod
+abstract sealed class StorageMethod extends Serializable
 
 case class Tiled(blockCols: Int = 256, blockRows: Int = 256) extends StorageMethod
 
