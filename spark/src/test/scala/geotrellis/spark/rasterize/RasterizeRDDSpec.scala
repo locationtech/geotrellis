@@ -50,11 +50,7 @@ class RasterizeRDDSpec extends FunSpec with Matchers
     val layout = TileLayout(3,3,256,256)
     val ld = LayoutDefinition(septaExtent, layout)
 
-    val rasterizedRdd = RasterizeRDD.fromGeometry(
-      linesRdd, ld,
-      IntConstantNoDataCellType,
-      1,
-      Options.DEFAULT)
+    val rasterizedRdd = linesRdd.rasterizeWithValue(1, ld)(cellType = IntConstantNoDataCellType)
     val actual = rasterizedRdd.stitch()
 
     // rasterizing a single 768x768 tile would actuall produce numerical differencies
@@ -85,13 +81,8 @@ class RasterizeRDDSpec extends FunSpec with Matchers
     val ld = LayoutDefinition(huc10.envelope, layout)
 
     val polyRdd = sc.parallelize(huc10.polygons)
-    val rasterizedRdd = RasterizeRDD.fromGeometry(
-      polyRdd, ld,
-      IntConstantNoDataCellType,
-      1,
-      Options.DEFAULT)
+    val rasterizedRdd = polyRdd.rasterizeWithValue(1, ld)(cellType = IntConstantNoDataCellType)
     val actual = rasterizedRdd.stitch()
-
 
     val expected: Tile = {
       for {
