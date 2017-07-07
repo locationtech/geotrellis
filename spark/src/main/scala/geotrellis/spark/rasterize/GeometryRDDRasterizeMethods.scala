@@ -18,7 +18,6 @@ package geotrellis.spark.rasterize
 
 import geotrellis.raster._
 import geotrellis.raster.rasterize._
-//import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.spark.rasterize._
@@ -31,20 +30,25 @@ import org.apache.spark.rdd._
   * Extension methods for invoking the rasterizer on RDD of Geometry objects.
   */
 trait GeometryRDDRasterizeMethods[G <: Geometry] extends MethodExtensions[RDD[G]] {
+
+  /**
+   * Rasterize an RDD of Geometry objects into a tiled raster RDD.
+   * Cells not intersecting any geometry will left as NODATA.
+   * Value will be converted to type matching specified [[CellType]].
+   *
+   * @param value Cell value for cells intersecting a geometry
+   * @param layout Raster layer layout for the result of rasterization
+   * @param cellType [[CellType]] for creating raster tiles
+   * @param options Rasterizer options for cell intersection rules
+   * @param partitioner Partitioner for result RDD
+   */
   def rasterizeWithValue(
     value: Double,
-    layout: LayoutDefinition
-  )(
-    cellType: CellType = IntConstantNoDataCellType,
-    includePartial: Boolean = true,
-    sampleType: PixelSampleType = PixelIsPoint,
-    partitioner: Partitioner = new HashPartitioner(self.getNumPartitions)
+    cellType: CellType,
+    layout: LayoutDefinition,
+    options: Rasterizer.Options = Rasterizer.Options.DEFAULT,
+    partitioner: Option[Partitioner] = None
   ): RDD[(SpatialKey, Tile)] with Metadata[LayoutDefinition] = {
-    RasterizeRDD.fromGeometry(self, value, layout, cellType,
-      RasterizeRDD.Options(
-        rasterizerOptions = Rasterizer.Options(includePartial, sampleType),
-        partitioner = Some(partitioner)
-      )
-    )
+    RasterizeRDD.fromGeometry(self, value, cellType, layout, options, partitioner)
   }
 }
