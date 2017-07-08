@@ -35,18 +35,12 @@ object RasterizeRDD {
     val layoutRasterizerOptions = Rasterizer.Options(includePartial=true, sampleType=PixelIsArea)
 
     /** Key geometry by spatial keys of intersecting tiles */
-    def keyGeom(geom: Geometry): List[(SpatialKey, (Geometry, SpatialKey))] = {
-      val mask = ArrayTile.empty(BitCellType, layout.layoutCols, layout.layoutRows)
-      var buff = List.empty[(SpatialKey, (Geometry, SpatialKey))]
-      // Visit all layout tiles intersected by the geometry
+    def keyGeom(geom: Geometry): Iterator[(SpatialKey, (Geometry, SpatialKey))] = {
+      var keySet = Set.empty[SpatialKey]
       geom.foreach(layoutRasterExtent, layoutRasterizerOptions){ (col, row) =>
-        if (mask.get(col, row) == 0) { // have not seen this key before
-          val key = SpatialKey(col, row)
-          buff = (key, (geom, key)) :: buff
-        }
-        mask.set(col, row, 1)
+        keySet = keySet + SpatialKey(col, row)
       }
-      buff
+      keySet.toIterator.map { key => (key, (geom, key)) }
     }
 
     // key the geometry to intersecting tiles so it can be rasterized in the map-side combine
