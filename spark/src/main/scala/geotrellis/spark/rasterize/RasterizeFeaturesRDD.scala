@@ -22,8 +22,7 @@ object RasterizeFeaturesRDD {
    * @param partitioner Partitioner for result RDD
    */
   def fromFeature[G <: Geometry, D <: Double](
-    //geoms: RDD[G], value: Double,
-    features: RDD[(G,D)],
+    features: RDD[Feature[G, D]],
     cellType: CellType,
     layout: LayoutDefinition,
     options: Rasterizer.Options = Rasterizer.Options.DEFAULT,
@@ -33,7 +32,7 @@ object RasterizeFeaturesRDD {
     val layoutRasterizerOptions = Rasterizer.Options(includePartial=true, sampleType=PixelIsArea)
 
     /** Key geometry by spatial keys of intersecting tiles */
-    def keyGeom(feature: (Geometry, Double)): Iterator[(SpatialKey, ((Geometry,Double), SpatialKey))] = {
+    def keyGeom(feature: (Geometry, Double)): Iterator[(SpatialKey, ((Geometry, Double), SpatialKey))] = {
       var keySet = Set.empty[SpatialKey]
       feature._1.foreach(layoutRasterExtent, layoutRasterizerOptions){ (col, row) =>
         keySet = keySet + SpatialKey(col, row)
@@ -43,7 +42,7 @@ object RasterizeFeaturesRDD {
 
     // key the geometry to intersecting tiles so it can be rasterized in the map-side combine
     val keyed: RDD[(SpatialKey, ((Geometry, Double), SpatialKey))] =
-      features.flatMap { case (geom,value) => keyGeom(geom, value) }
+      features.flatMap { feature => keyGeom(feature.geom, feature.data) }
 
     val createTile = (tup: ((Geometry, Double), SpatialKey)) => {
       val ((geom,value), key) = tup
