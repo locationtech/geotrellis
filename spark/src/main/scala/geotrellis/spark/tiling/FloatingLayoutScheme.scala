@@ -33,7 +33,7 @@ object FloatingLayoutScheme {
     new FloatingLayoutScheme(tileCols, tileRows)
 }
 
-class FloatingLayoutScheme(tileCols: Int, tileRows: Int) extends LayoutScheme {
+class FloatingLayoutScheme(val tileCols: Int, val tileRows: Int) extends LayoutScheme {
   def levelFor(extent: Extent, cellSize: CellSize) =
     0 -> LayoutDefinition(GridExtent(extent, cellSize), tileCols, tileRows)
 
