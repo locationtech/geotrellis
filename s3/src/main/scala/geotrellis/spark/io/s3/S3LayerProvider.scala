@@ -20,12 +20,7 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import org.apache.spark._
 import com.amazonaws.services.s3.AmazonS3URI
-import com.github.blemale.scaffeine.{Scaffeine, Cache}
 import java.net.URI
-
-object S3LayerProvider {
-  private val cache: Cache[String, AttributeStore] = Scaffeine().softValues().build()
-}
 
 /**
  * Provides [[S3LayerReader]] instance for URI with `s3` scheme.
@@ -38,8 +33,7 @@ class S3LayerProvider extends AttributeStoreProvider
 
   def attributeStore(uri: URI): AttributeStore = {
     val s3Uri = new AmazonS3URI(uri)
-    S3LayerProvider.cache.get(uri.getSchemeSpecificPart,
-      _ => new S3AttributeStore(bucket = s3Uri.getBucket, prefix = s3Uri.getKey))
+    new S3AttributeStore(bucket = s3Uri.getBucket, prefix = s3Uri.getKey)
   }
 
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {

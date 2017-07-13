@@ -11,7 +11,6 @@ libraryDependencies ++= Seq(
   monocleCore, monocleMacro,
   chronoscala,
   scalazStream,
-  scaffeine,
   scalatest % "test"
 )
 

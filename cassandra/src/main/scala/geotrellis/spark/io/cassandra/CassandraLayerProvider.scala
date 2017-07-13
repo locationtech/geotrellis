@@ -19,13 +19,8 @@ package geotrellis.spark.io.cassandra
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.util.UriUtils
-import com.github.blemale.scaffeine.{Scaffeine, Cache}
 import org.apache.spark.SparkContext
 import java.net.URI
-
-object CassandraLayerProvider {
-  private val cache: Cache[(String, String), AttributeStore] = Scaffeine().softValues().build()
-}
 
 /**
  * Provides [[CassandraAttributeStore]] instance for URI with `cassandra` scheme.
@@ -44,9 +39,7 @@ class CassandraLayerProvider extends AttributeStoreProvider with LayerReaderProv
       Cassandra.cfg.getString("catalog"))
     val keyspace = Option(uri.getPath.drop(1)).getOrElse(
       Cassandra.cfg.getString("keyspace"))
-
-    CassandraLayerProvider.cache.get(uri.getSchemeSpecificPart -> attributeTable,
-      _ => CassandraAttributeStore(instance, keyspace, attributeTable))
+    CassandraAttributeStore(instance, keyspace, attributeTable)
   }
 
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {

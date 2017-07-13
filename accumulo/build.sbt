@@ -7,7 +7,6 @@ libraryDependencies ++= Seq(
     exclude("org.apache.hadoop", "hadoop-client"),
   sparkCore % "provided",
   spire,
-  scaffeine,
   scalatest % "test")
 
 fork in Test := false

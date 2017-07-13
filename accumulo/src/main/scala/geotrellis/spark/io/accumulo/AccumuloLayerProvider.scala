@@ -19,15 +19,10 @@ package geotrellis.spark.io.accumulo
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.util.UriUtils
-import com.github.blemale.scaffeine.{Scaffeine, Cache}
 import org.apache.spark.SparkContext
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
 import com.typesafe.config.ConfigFactory
 import java.net.URI
-
-object AccumuloLayerProvider {
-  private val cache: Cache[(String, String), AttributeStore] = Scaffeine().softValues().build()
-}
 
 /**
  * Provides [[AccumuloAttributeStore]] instance for URI with `accumulo` scheme.
@@ -44,9 +39,7 @@ class AccumuloLayerProvider extends AttributeStoreProvider with LayerReaderProvi
     val params = UriUtils.getParams(uri)
     val attributeTable = params.getOrElse("attributes",
       ConfigFactory.load().getString("geotrellis.accumulo.catalog"))
-
-    AccumuloLayerProvider.cache.get(uri.getSchemeSpecificPart -> attributeTable,
-      _ => AccumuloAttributeStore(instance, attributeTable))
+    AccumuloAttributeStore(instance, attributeTable)
   }
 
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {

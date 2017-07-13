@@ -19,15 +19,10 @@ package geotrellis.spark.io.hadoop
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.util.UriUtils
-import com.github.blemale.scaffeine.{Scaffeine, Cache}
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
 import java.net.URI
-
-object HadoopLayerProvider {
-  private val cache: Cache[Path, AttributeStore] = Scaffeine().softValues().build()
-}
 
 /**
  * Provides [[HadoopAttributeStore]] instance for URI with `hdfs`, `hdfs+file`, `s3n`, and `s3a` schemes.
@@ -49,7 +44,7 @@ class HadoopLayerProvider extends AttributeStoreProvider
   def attributeStore(uri: URI): AttributeStore = {
     val path = new Path(trim(uri))
     val conf = new Configuration()
-    HadoopLayerProvider.cache.get(path, new HadoopAttributeStore(_, conf))
+    new HadoopAttributeStore(path, conf)
   }
 
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {

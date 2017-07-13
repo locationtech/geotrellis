@@ -60,7 +60,6 @@ object AttributeStore {
   /**
    * Produce AttributeStore instance based on URI description.
    * This method uses instances of [[AttributeServiceProvider]] loaded through Java SPI.
-   * Repeated calls to this function will return previosly instantiated instances.
    */
   def apply(uri: URI): AttributeStore = {
     import scala.collection.JavaConversions._
