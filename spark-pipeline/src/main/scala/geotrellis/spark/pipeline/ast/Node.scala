@@ -1,9 +1,10 @@
 package geotrellis.spark.pipeline.ast
 
 import geotrellis.spark.pipeline.json.PipelineExpr
+import org.apache.spark.SparkContext
 
 trait Node[T] {
-  def get: T
+  def get(implicit sc: SparkContext): T
   def arg: PipelineExpr
   def validation = {
     if (arg == null) (false, s"null")

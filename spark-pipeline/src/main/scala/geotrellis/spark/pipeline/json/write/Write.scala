@@ -1,16 +1,20 @@
-package geotrellis.spark.pipeline.json
+package geotrellis.spark.pipeline.json.write
 
+import io.circe.generic.extras.ConfiguredJsonCodec
+import _root_.io.circe.disjunctionCodecs._
+
+import geotrellis.spark.pipeline._
 import geotrellis.raster.CellGrid
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.prototype.TilePrototypeMethods
 import geotrellis.spark._
 import geotrellis.spark.io.LayerWriter
 import geotrellis.spark.io.avro.AvroRecordCodec
+import geotrellis.spark.pipeline.json.{PipelineExpr, PipelineKeyIndexMethod}
 import geotrellis.spark.pyramid.Pyramid
 import geotrellis.spark.tiling.{LayoutDefinition, LayoutScheme}
 import geotrellis.util.{Component, GetComponent}
 
-import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
 
@@ -18,7 +22,7 @@ import scala.reflect.ClassTag
 
 trait Write extends PipelineExpr {
   val name: String
-  val profile: String
+  val profile: Option[String]
   val uri: String
   val pyramid: Boolean // true | false
   val maxZoom: Option[Int]
@@ -42,7 +46,7 @@ trait Write extends PipelineExpr {
           }
         case Right(_) =>
           if (pyramid)
-            println("Pyramiding only supported with layoutScheme, skipping pyramid step")
+            logger.error("Pyramiding only supported with layoutScheme, skipping pyramid step")
       }
     }
 
@@ -53,68 +57,74 @@ trait Write extends PipelineExpr {
   }
 }
 
-case class WriteFile(
-  `type`: String,
+@ConfiguredJsonCodec
+case class File(
   name: String,
-  profile: String,
   uri: String,
   pyramid: Boolean,
   keyIndexMethod: PipelineKeyIndexMethod,
   scheme: Either[LayoutScheme, LayoutDefinition],
-  maxZoom: Option[Int] = None
+  maxZoom: Option[Int] = None,
+  profile: Option[String] = None,
+  `type`: String = "write.file"
 ) extends Write
 
-case class WriteHadoop(
-  `type`: String,
+@ConfiguredJsonCodec
+case class Hadoop(
   name: String,
-  profile: String,
   uri: String,
   pyramid: Boolean,
   keyIndexMethod: PipelineKeyIndexMethod,
   scheme: Either[LayoutScheme, LayoutDefinition],
-  maxZoom: Option[Int] = None
-)(implicit sc: SparkContext) extends Write
-
-case class WriteS3(
-  `type`: String,
-  name: String,
-  profile: String,
-  uri: String,
-  pyramid: Boolean,
-  keyIndexMethod: PipelineKeyIndexMethod,
-  scheme: Either[LayoutScheme, LayoutDefinition],
-  maxZoom: Option[Int] = None
+  maxZoom: Option[Int] = None,
+  profile: Option[String] = None,
+  `type`: String = "write.hadoop"
 ) extends Write
 
-case class WriteAccumulo(
-  `type`: String,
+@ConfiguredJsonCodec
+case class S3(
   name: String,
-  profile: String,
   uri: String,
   pyramid: Boolean,
   keyIndexMethod: PipelineKeyIndexMethod,
   scheme: Either[LayoutScheme, LayoutDefinition],
-  maxZoom: Option[Int] = None
+  maxZoom: Option[Int] = None,
+  profile: Option[String] = None,
+  `type`: String = "write.s3"
 ) extends Write
 
-case class WriteCassandra(
-  `type`: String,
+@ConfiguredJsonCodec
+case class Accumulo(
   name: String,
-  profile: String,
   uri: String,
   pyramid: Boolean,
   keyIndexMethod: PipelineKeyIndexMethod,
   scheme: Either[LayoutScheme, LayoutDefinition],
-  maxZoom: Option[Int] = None
+  maxZoom: Option[Int] = None,
+  profile: Option[String] = None,
+  `type`: String = "write.accumulo"
 ) extends Write
 
-case class WriteHBase(
-  `type`: String,
+@ConfiguredJsonCodec
+case class Cassandra(
   name: String,
-  profile: String,
   uri: String,
   pyramid: Boolean,
   keyIndexMethod: PipelineKeyIndexMethod,
   scheme: Either[LayoutScheme, LayoutDefinition],
-  maxZoom: Option[Int] = None
+  maxZoom: Option[Int] = None,
+  profile: Option[String] = None,
+  `type`: String = "write.cassandra"
+) extends Write
+
+@ConfiguredJsonCodec
+case class HBase(
+  name: String,
+  uri: String,
+  pyramid: Boolean,
+  keyIndexMethod: PipelineKeyIndexMethod,
+  scheme: Either[LayoutScheme, LayoutDefinition],
+  maxZoom: Option[Int] = None,
+  profile: Option[String] = None,
+  `type`: String = "write.hbase"
 ) extends Write

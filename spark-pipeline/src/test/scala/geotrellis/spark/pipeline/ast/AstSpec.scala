@@ -1,10 +1,13 @@
 package geotrellis.spark.pipeline.ast
 
-import geotrellis.spark.{MultibandTileLayerRDD, SpaceTimeKey, SpatialKey, TileLayerRDD}
+import io.circe.syntax._
+import geotrellis.spark._
+import geotrellis.spark.pipeline._
 import geotrellis.spark.pipeline.json
-import geotrellis.spark.pipeline.json.PipelineExpr
+import geotrellis.spark.pipeline.json.{PipelineExpr, PipelineKeyIndexMethod}
 import geotrellis.spark.tiling.{LayoutDefinition, LayoutScheme}
 import geotrellis.spark.testkit._
+import org.apache.spark.SparkContext
 import org.scalatest._
 
 class AstSpec extends FunSpec
@@ -19,7 +22,7 @@ class AstSpec extends FunSpec
       node: Node[TileLayerRDD[SpatialKey]],
       arg: NewReproject
     ) extends Transform[TileLayerRDD[SpatialKey], (Int, TileLayerRDD[SpatialKey])] {
-      def get: (Int, TileLayerRDD[SpatialKey]) = {
+      def get(implicit sc: SparkContext): (Int, TileLayerRDD[SpatialKey]) = {
         // some logic of cusom reprojection here
         null
       }
@@ -34,34 +37,20 @@ class AstSpec extends FunSpec
 
     it("should validate AST") {
       import singleband.spatial._
-      val read = HadoopRead(
-        json.SpatialReadHadoop("/", "", "")
-      )
+      val scheme = Left[LayoutScheme, LayoutDefinition](null)
+      val read = HadoopRead(json.read.SpatialHadoop("/"))
+      val tiled = TileToLayout(read, json.transform.TileToLayout())
+      val reproject = BufferedReproject(tiled, json.transform.BufferedReproject("", scheme))
+      val reprojectn = NewReprojectTransform(tiled, NewReproject("id", List()))
 
-      val tiled = TileToLayout(
-        read, json.TransformTile()
-      )
-
-      val reproject = BufferedReproject(
-        tiled, json.TransformBufferedReproject("", "", Left[LayoutScheme, LayoutDefinition](null))
-      )
-
-      val reprojectn = NewReprojectTransform(
-        tiled, NewReproject("id", List())
-      )
-
-      val write1 = HadoopWrite(reproject, json.WriteHadoop("", "", "", "/tmp", true, null))
-
-      val write2 = HadoopWrite(write1, json.WriteHadoop("", "", "", "/tmp", true, null))
-
+      val write1 = HadoopWrite(reproject, json.write.Hadoop("write1", "/tmp", pyramid = true, PipelineKeyIndexMethod("zorder"), scheme))
+      val write2 = HadoopWrite(write1, json.write.Hadoop("write2", "/tmp", pyramid = true, PipelineKeyIndexMethod("zorder"), scheme))
       val write3 = HadoopWrite(write2, null)
-
-      val write1n = HadoopWrite(reprojectn, json.WriteHadoop("", "", "", "/tmp", true, null))
-
-      val write2n = HadoopWrite(write1n, json.WriteHadoop("", "", "", "/tmp", true, null))
-
+      val write1n = HadoopWrite(reprojectn, json.write.Hadoop("write1n", "/tmp", pyramid = true, PipelineKeyIndexMethod("zorder"), scheme))
+      val write2n = HadoopWrite(write1n, json.write.Hadoop("write2n", "/tmp", pyramid = true, PipelineKeyIndexMethod("zorder"), scheme))
       val write3n = HadoopWrite(write2n, null)
 
+      /*
       println
       println
       println(write1)
@@ -74,6 +63,24 @@ class AstSpec extends FunSpec
       println(write1n)
       println
       println(write2n)
+      println
+      println(write3n.validation)
+      println
+      println
+      */
+
+      println
+      println
+      println(write1.asJson)
+      println
+      println(write2.asJson)
+      println
+      println(write3.validation)
+      println
+      println
+      println(write1n.asJson)
+      println
+      println(write2n.asJson)
       println
       println(write3n.validation)
       println

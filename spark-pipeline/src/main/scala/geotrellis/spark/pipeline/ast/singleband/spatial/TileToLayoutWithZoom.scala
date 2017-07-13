@@ -9,9 +9,9 @@ import geotrellis.vector._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-case class BufferedReproject(
-  node: Node[TileLayerRDD[SpatialKey]],
-  arg: transform.BufferedReproject
+case class TileToLayoutWithZoom(
+  node: Node[RDD[(ProjectedExtent, Tile)]],
+  arg: transform.TileToLayoutWithZoom
 ) extends Transform[RDD[(ProjectedExtent, Tile)], (Int, TileLayerRDD[SpatialKey])] {
   def get(implicit sc: SparkContext): (Int, TileLayerRDD[SpatialKey]) = arg.eval(node.get)
   def validate: (Boolean, String) = {
