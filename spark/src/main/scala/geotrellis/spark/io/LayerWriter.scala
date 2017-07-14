@@ -26,6 +26,8 @@ import org.apache.spark.rdd._
 import spray.json._
 
 import scala.reflect.ClassTag
+import java.util.ServiceLoader
+import java.net.URI
 
 trait LayerWriter[ID] {
   val attributeStore: AttributeStore
@@ -80,4 +82,42 @@ trait LayerWriter[ID] {
       def write(id: ID, layer: RDD[(K, V)] with Metadata[M]) =
         LayerWriter.this.write[K, V, M](id, layer, keyIndex)
     }
+}
+
+object LayerWriter {
+  /**
+   * Produce LayerWriter instance based on URI description.
+   * Find instances of [[LayerWriterProvider]] through Java SPI.
+   */
+  def apply(attributeStore: AttributeStore, layerWriterUri: URI): LayerWriter[LayerId] = {
+    import scala.collection.JavaConversions._
+    ServiceLoader.load(classOf[LayerWriterProvider]).iterator()
+      .find(_.canProcess(layerWriterUri))
+      .getOrElse(throw new RuntimeException(s"Unable to find LayerWriterProvider for $layerWriterUri"))
+      .layerWriter(layerWriterUri, attributeStore)
+  }
+
+  /**
+   * Produce LayerReader instance based on URI description.
+   * Find instances of [[LayerWriterProvider]] through Java SPI.
+   */
+  def apply(attributeStoreUri: URI, layerWriterUri: URI): LayerWriter[LayerId] =
+    apply(attributeStore = AttributeStore(attributeStoreUri), layerWriterUri)
+
+  /**
+   * Produce LayerReader instance based on URI description.
+   * Find instances of [[LayerWriterProvider]] through Java SPI.
+   * Required [[AttributeStoreProvider]] instance will be found from the same URI.
+   */
+  def apply(uri: URI): LayerWriter[LayerId] =
+    apply(attributeStoreUri = uri, layerWriterUri = uri)
+
+  def apply(attributeStore: AttributeStore, layerWriterUri: String): LayerWriter[LayerId] =
+    apply(attributeStore, new URI(layerWriterUri))
+
+  def apply(attributeStoreUri: String, layerWriterUri: String): LayerWriter[LayerId] =
+    apply(new URI(attributeStoreUri), new URI(layerWriterUri))
+
+  def apply(uri: String): LayerWriter[LayerId] =
+    apply(new URI(uri))
 }

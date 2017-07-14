@@ -14,18 +14,26 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.accumulo
+package geotrellis.spark.io.s3
 
 import geotrellis.spark.io._
-import org.apache.accumulo.core.client.security.tokens.PasswordToken
+import geotrellis.spark.testkit.TestEnvironment
+import org.scalatest._
 
-class AccumuloAttributeStoreSpec extends AttributeStoreSpec {
-  val accumulo = AccumuloInstance(
-    instanceName = "fake",
-    zookeeper = "localhost",
-    user = "root",
-    token = new PasswordToken("")
-  )
+class S3LayerProviderSpec extends FunSpec with TestEnvironment {
+  val uri = new java.net.URI("s3://fake-bucket/some-prefix")
+  it("construct S3AttributeStore from URI"){
+    val store = AttributeStore(uri)
+    assert(store.isInstanceOf[S3AttributeStore])
+  }
 
-  lazy val attributeStore = new AccumuloAttributeStore(accumulo.connector, "attributes")
+  it("construct S3LayerReader from URI") {
+    val reader = LayerReader(uri)
+    assert(reader.isInstanceOf[S3LayerReader])
+  }
+
+  it("construct S3LayerWriter from URI") {
+    val reader = LayerWriter(uri)
+    assert(reader.isInstanceOf[S3LayerWriter])
+  }
 }

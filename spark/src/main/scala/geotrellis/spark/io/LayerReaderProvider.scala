@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Azavea
+ * Copyright 2016 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.accumulo
+package geotrellis.spark.io
 
-import geotrellis.spark.io._
-import org.apache.accumulo.core.client.security.tokens.PasswordToken
+import geotrellis.spark._
+import org.apache.spark._
+import java.net.URI
 
-class AccumuloAttributeStoreSpec extends AttributeStoreSpec {
-  val accumulo = AccumuloInstance(
-    instanceName = "fake",
-    zookeeper = "localhost",
-    user = "root",
-    token = new PasswordToken("")
-  )
+trait LayerReaderProvider {
+  def canProcess(uri: URI): Boolean
 
-  lazy val attributeStore = new AccumuloAttributeStore(accumulo.connector, "attributes")
+  def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId]
 }
