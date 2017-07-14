@@ -4,8 +4,7 @@ import geotrellis.raster.{MultibandTile, Tile}
 import geotrellis.spark.TemporalProjectedExtent
 import geotrellis.spark.io.hadoop.HadoopGeoTiffRDD
 import geotrellis.spark.io.s3.S3GeoTiffRDD
-import geotrellis.spark.pipeline._
-import geotrellis.spark.pipeline.json.PipelineExpr
+import geotrellis.spark.pipeline.json._
 import geotrellis.vector.ProjectedExtent
 
 import io.circe.generic.extras.ConfiguredJsonCodec

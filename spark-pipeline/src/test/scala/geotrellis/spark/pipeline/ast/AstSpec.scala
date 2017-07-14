@@ -1,11 +1,11 @@
 package geotrellis.spark.pipeline.ast
 
-import io.circe.syntax._
+import _root_.io.circe.generic.extras.ConfiguredJsonCodec
+import _root_.io.circe.syntax._
 import geotrellis.spark._
-import geotrellis.spark.pipeline._
 import geotrellis.spark.pipeline.json
-import geotrellis.spark.pipeline.json.{PipelineExpr, PipelineKeyIndexMethod}
-import geotrellis.spark.tiling.{LayoutDefinition, LayoutScheme}
+import geotrellis.spark.pipeline.json._
+import geotrellis.spark.tiling.{FloatingLayoutScheme, LayoutDefinition, LayoutScheme}
 import geotrellis.spark.testkit._
 import org.apache.spark.SparkContext
 import org.scalatest._
@@ -16,6 +16,7 @@ class AstSpec extends FunSpec
   with TestEnvironment {
 
   describe("Build AST") {
+    @ConfiguredJsonCodec
     case class NewReproject(`type`: String, args: List[String]) extends PipelineExpr
 
     case class NewReprojectTransform(
@@ -26,6 +27,7 @@ class AstSpec extends FunSpec
         // some logic of cusom reprojection here
         null
       }
+
       // some validation function
       def validate: (Boolean, String) = {
         val (f, msg) = if (node == null) (false, s"${this.getClass} has no node")
@@ -33,11 +35,13 @@ class AstSpec extends FunSpec
         val (fs, msgs) = validation
         (f && fs, msgs ++ msg)
       }
+
+      def asJson = arg.asJson +: node.asJson
     }
 
     it("should validate AST") {
       import singleband.spatial._
-      val scheme = Left[LayoutScheme, LayoutDefinition](null)
+      val scheme = Left[LayoutScheme, LayoutDefinition](FloatingLayoutScheme(512))
       val read = HadoopRead(json.read.SpatialHadoop("/"))
       val tiled = TileToLayout(read, json.transform.TileToLayout())
       val reproject = BufferedReproject(tiled, json.transform.BufferedReproject("", scheme))
@@ -71,23 +75,22 @@ class AstSpec extends FunSpec
 
       println
       println
-      println(write1.asJson)
+      println(write1.asJson.map(_.pretty(jsonPrinter)))
       println
-      println(write2.asJson)
+      println(write2.asJson.map(_.pretty(jsonPrinter)))
       println
       println(write3.validation)
       println
       println
-      println(write1n.asJson)
+      println(write1n.asJson.map(_.pretty(jsonPrinter)))
       println
-      println(write2n.asJson)
+      println(write2n.asJson.map(_.pretty(jsonPrinter)))
       println
       println(write3n.validation)
       println
       println
     }
   }
-
 }
 
 
