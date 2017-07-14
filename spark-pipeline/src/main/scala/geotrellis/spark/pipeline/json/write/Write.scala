@@ -1,16 +1,14 @@
 package geotrellis.spark.pipeline.json.write
 
 import io.circe.generic.extras.ConfiguredJsonCodec
-import _root_.io.circe.disjunctionCodecs._
 
-import geotrellis.spark.pipeline._
 import geotrellis.raster.CellGrid
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.prototype.TilePrototypeMethods
 import geotrellis.spark._
 import geotrellis.spark.io.LayerWriter
 import geotrellis.spark.io.avro.AvroRecordCodec
-import geotrellis.spark.pipeline.json.{PipelineExpr, PipelineKeyIndexMethod}
+import geotrellis.spark.pipeline.json._
 import geotrellis.spark.pyramid.Pyramid
 import geotrellis.spark.tiling.{LayoutDefinition, LayoutScheme}
 import geotrellis.util.{Component, GetComponent}
@@ -35,7 +33,7 @@ trait Write extends PipelineExpr {
     K: SpatialComponent : AvroRecordCodec : JsonFormat : ClassTag,
     V <: CellGrid : AvroRecordCodec : ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]: JsonFormat : GetComponent[?, Bounds[K]]
-  ](tuple: (Int, RDD[(K, V)] with Metadata[M])) = {
+  ](tuple: (Int, RDD[(K, V)] with Metadata[M])): (Int, RDD[(K, V)] with Metadata[M]) = {
     lazy val _writer = writer
     def savePyramid(zoom: Int, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
       scheme match {

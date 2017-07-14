@@ -1,7 +1,6 @@
 package geotrellis.spark.pipeline.json.reindex
 
-import geotrellis.spark.pipeline._
-import geotrellis.spark.pipeline.json.{PipelineExpr, PipelineKeyIndexMethod}
+import geotrellis.spark.pipeline.json._
 import io.circe.generic.extras.ConfiguredJsonCodec
 
 trait Reindex extends PipelineExpr {

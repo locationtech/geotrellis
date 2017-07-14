@@ -1,9 +1,7 @@
 package geotrellis.spark.pipeline.json.transform
 
 import io.circe.generic.extras.ConfiguredJsonCodec
-import io.circe.disjunctionCodecs._
 
-import geotrellis.spark.pipeline._
 import geotrellis.raster.crop.CropMethods
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.prototype.TilePrototypeMethods
@@ -12,8 +10,7 @@ import geotrellis.raster.reproject.TileReprojectMethods
 import geotrellis.raster.resample.{NearestNeighbor, PointResampleMethod}
 import geotrellis.raster.stitch.Stitcher
 import geotrellis.raster.{CellGrid, CellSize, CellType}
-import geotrellis.spark.pipeline._
-import geotrellis.spark.pipeline.json.PipelineExpr
+import geotrellis.spark.pipeline.json._
 import geotrellis.spark.tiling.{FloatingLayoutScheme, LayoutDefinition, LayoutLevel, LayoutScheme, Tiler, TilerKeyMethods, ZoomedLayoutScheme}
 import geotrellis.spark._
 import geotrellis.util.Component

@@ -1,7 +1,6 @@
 package geotrellis.spark.pipeline.json.update
 
-import geotrellis.spark.pipeline._
-import geotrellis.spark.pipeline.json.PipelineExpr
+import geotrellis.spark.pipeline.json._
 import io.circe.generic.extras.ConfiguredJsonCodec
 
 trait Update extends PipelineExpr {

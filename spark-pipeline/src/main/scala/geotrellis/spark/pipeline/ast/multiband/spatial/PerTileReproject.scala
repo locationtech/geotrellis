@@ -1,5 +1,7 @@
 package geotrellis.spark.pipeline.ast.multiband.spatial
 
+import io.circe.syntax._
+
 import geotrellis.raster._
 import geotrellis.spark.pipeline.ast._
 import geotrellis.spark.pipeline.json.transform
@@ -12,6 +14,7 @@ case class PerTileReproject(
   node: Node[RDD[(ProjectedExtent, MultibandTile)]],
   arg: transform.PerTileReproject
 ) extends Transform[RDD[(ProjectedExtent, MultibandTile)], RDD[(ProjectedExtent, MultibandTile)]] {
+  def asJson = node.asJson :+ arg.asJson
   def get(implicit sc: SparkContext): RDD[(ProjectedExtent, MultibandTile)] = arg.eval(node.get)
   def validate: (Boolean, String) = {
     val (f, msg) = if (node == null) (false, s"${this.getClass} has no node")
