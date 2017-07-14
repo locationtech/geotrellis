@@ -21,7 +21,7 @@ import geotrellis.raster.{GridBounds, RasterExtent, PixelIsArea}
 import geotrellis.raster.rasterize.Rasterizer.Options
 import geotrellis.spark._
 import geotrellis.spark.tiling._
-import geotrellis.vector.{Extent, Point, MultiPolygon, Polygon}
+import geotrellis.vector._
 import geotrellis.util._
 
 import scala.annotation.implicitNotFound
@@ -139,19 +139,11 @@ object Intersects {
         val mapTransform = metadata.getComponent[LayoutDefinition].mapTransform
         val extent = polygon.envelope
         val keyext = mapTransform(kb.minKey)
-        val bounds = mapTransform(extent)
+        val bounds: GridBounds = mapTransform(extent)
         val options = Options(includePartial=true, sampleType=PixelIsArea)
 
-        /*
-         * Construct  a  rasterExtent  that fits  tightly  around  the
-         * candidate tiles  (the candidate keys).  IT  IS ASSUMED THAT
-         * ALL TILES HAVE THE SAME LENGTH AND HEIGHT.
-         */
-        val xmin = math.floor(extent.min.x / keyext.width) * keyext.width
-        val ymin = math.floor(extent.min.y / keyext.height) * keyext.height
-        val xmax = math.ceil(extent.max.x / keyext.width) * keyext.width
-        val ymax = math.ceil(extent.max.y / keyext.height) * keyext.height
-        val rasterExtent = RasterExtent(Extent(xmin, ymin, xmax, ymax), bounds.width, bounds.height)
+        val boundsExtent: Extent = mapTransform(bounds)
+        val rasterExtent = RasterExtent(boundsExtent, bounds.width, bounds.height)
 
         /*
          * Use the Rasterizer to construct  a list of tiles which meet
@@ -187,6 +179,55 @@ object Intersects {
     new LayerFilter[K, Intersects.type, Polygon, M] {
       def apply(metadata: M, kb: KeyBounds[K], polygon: Polygon) =
         forMultiPolygon[K, M].apply(metadata, kb, MultiPolygon(polygon))
+    }
+
+  /** Define Intersects filter for MultiLine */
+  implicit def forMultiLine[K: SpatialComponent: Boundable, M: GetComponent[?, LayoutDefinition]] =
+    new LayerFilter[K, Intersects.type, MultiLine, M] {
+      def apply(metadata: M, kb: KeyBounds[K], multiLine: MultiLine) = {
+        val mapTransform = metadata.getComponent[LayoutDefinition].mapTransform
+        val extent = multiLine.envelope
+        val keyext = mapTransform(kb.minKey)
+        val bounds: GridBounds = mapTransform(extent)
+        val options = Options(includePartial=true, sampleType=PixelIsArea)
+
+        val boundsExtent: Extent = mapTransform(bounds)
+        val rasterExtent = RasterExtent(boundsExtent, bounds.width, bounds.height)
+
+        /*
+         * Use the Rasterizer to construct  a list of tiles which meet
+         * the  query polygon.   That list  of tiles  is stored  as an
+         * array of  tuples which  is then  mapped-over to  produce an
+         * array of KeyBounds.
+         */
+        val tiles = new ConcurrentHashMap[(Int,Int), Unit]
+        val fn = new Callback {
+          def apply(col : Int, row : Int): Unit = {
+            val tile : (Int, Int) = (bounds.colMin + col, bounds.rowMin + row)
+            tiles.put(tile, Unit)
+          }
+        }
+
+        multiLine.foreach(rasterExtent, options)(fn)
+        tiles.keys.asScala
+          .map({ tile =>
+            val qb = KeyBounds(
+              kb.minKey setComponent SpatialKey(tile._1, tile._2),
+              kb.maxKey setComponent SpatialKey(tile._1, tile._2))
+            qb intersect kb match {
+              case kb: KeyBounds[K] => List(kb)
+              case EmptyBounds => Nil
+            }
+          })
+          .reduce({ (x,y) => x ++ y })
+      }
+    }
+
+  /** Define Intersects filter for Polygon */
+  implicit def forLine[K: SpatialComponent: Boundable, M: GetComponent[?, LayoutDefinition]] =
+    new LayerFilter[K, Intersects.type, Line, M] {
+      def apply(metadata: M, kb: KeyBounds[K], line: Line) =
+        forMultiLine[K, M].apply(metadata, kb, MultiLine(line))
     }
 }
 

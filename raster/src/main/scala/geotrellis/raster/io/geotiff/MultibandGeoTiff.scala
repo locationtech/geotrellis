@@ -37,7 +37,7 @@ case class MultibandGeoTiff(
   def imageData: GeoTiffImageData =
     tile match {
       case gtt: GeoTiffMultibandTile => gtt
-      case _ => GeoTiffMultibandTile(tile)
+      case _ => tile.toGeoTiffTile(options)
     }
 
   def crop(subExtent: Extent): MultibandGeoTiff = {
@@ -133,4 +133,32 @@ object MultibandGeoTiff {
     tags: Tags
   ): MultibandGeoTiff =
     apply(tile, extent, crs, tags, GeoTiffOptions.DEFAULT)
+
+  def apply(
+    tile: MultibandTile,
+    extent: Extent,
+    crs: CRS,
+    options: GeoTiffOptions
+  ): MultibandGeoTiff =
+    apply(tile, extent, crs, Tags.empty, options)
+
+  def apply(
+    raster: Raster[MultibandTile],
+    crs: CRS
+  ): MultibandGeoTiff =
+    apply(raster.tile, raster.extent, crs, Tags.empty)
+
+  def apply(
+    raster: Raster[MultibandTile],
+    crs: CRS,
+    tags: Tags
+  ): MultibandGeoTiff =
+    apply(raster.tile, raster.extent, crs, tags, GeoTiffOptions.DEFAULT)
+
+  def apply(
+    raster: Raster[MultibandTile],
+    crs: CRS,
+    options: GeoTiffOptions
+  ): MultibandGeoTiff =
+    apply(raster.tile, raster.extent, crs, Tags.empty, options)
 }

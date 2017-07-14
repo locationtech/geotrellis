@@ -18,6 +18,21 @@ package geotrellis.spark.io.hbase
 
 import org.apache.hadoop.hbase.{HBaseConfiguration, TableName}
 import org.apache.hadoop.hbase.client._
+import java.net.URI
+
+object HBaseInstance {
+  def apply(uri: URI): HBaseInstance = {
+    import geotrellis.util.UriUtils._
+
+    val zookeeper = uri.getHost
+    val port = if (uri.getPort < 0) 2181 else uri.getPort
+    val params = getParams(uri)
+    HBaseInstance(
+      List(zookeeper),
+      params.getOrElse("master", ""),
+      port.toString)
+  }
+}
 
 case class HBaseInstance(zookeepers: Seq[String], master: String, clientPort: String = "2181") extends Serializable {
   @transient lazy val conf = {

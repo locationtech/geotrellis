@@ -16,16 +16,18 @@
 
 package geotrellis.raster.io.geotiff.writer
 
-import java.io._
-
 import geotrellis.proj4.{CRS, LatLng}
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
+import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.raster.io.geotiff.tags.codes.ColorSpace
 import geotrellis.raster.render.{ColorRamps, IndexedColorMap}
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
+
 import org.scalatest._
+
+import java.io._
 
 class GeoTiffWriterSpec extends FunSpec
     with Matchers
@@ -144,6 +146,32 @@ class GeoTiffWriterSpec extends FunSpec
       GeoTiffWriter.write(geoTiff, path)
 
       addToPurge(path)
+
+      val gt = MultibandGeoTiff(path)
+
+      gt.extent should equal (geoTiff.extent)
+      gt.crs should equal (geoTiff.crs)
+      gt.tile.bandCount should equal (geoTiff.tile.bandCount)
+      for(i <- 0 until gt.tile.bandCount) {
+        val actualBand = gt.tile.band(i)
+        val expectedBand = geoTiff.tile.band(i)
+
+        assertEqual(actualBand, expectedBand)
+      }
+    }
+
+    it ("should read write multibandraster with compression correctly") {
+      val geoTiff = {
+        val gt = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
+        MultibandGeoTiff(gt.raster, gt.crs, options = GeoTiffOptions(compression.DeflateCompression))
+      }
+
+      GeoTiffWriter.write(geoTiff, path)
+
+      addToPurge(path)
+
+      val tags = TiffTags(path)
+      tags.compression should be (geotrellis.raster.io.geotiff.tags.codes.CompressionType.ZLibCoded)
 
       val gt = MultibandGeoTiff(path)
 

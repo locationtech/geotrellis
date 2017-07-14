@@ -18,28 +18,28 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.index.KeyIndex
-import org.apache.avro.Schema
 
 import spray.json._
 import DefaultJsonProtocol._
 import org.apache.hadoop.fs.Path
 import org.apache.spark._
-import java.io.PrintWriter
-
 import org.apache.hadoop.conf.Configuration
 
+import java.io.PrintWriter
 import scala.util.matching.Regex
 
 class HadoopAttributeStore(val rootPath: Path, val hadoopConfiguration: Configuration) extends BlobLayerAttributeStore {
   import HadoopAttributeStore._
 
-  val attributePath = new Path(rootPath, "_attributes")
-  val fs = attributePath.getFileSystem(hadoopConfiguration)
+  val (fs, attributePath) = {
+    val ap = new Path(rootPath, "_attributes")
+    val fs = ap.getFileSystem(hadoopConfiguration)
 
-  // Create directory if it doesn't exist
-  if(!fs.exists(attributePath)) {
-    fs.mkdirs(attributePath)
+    // Create directory if it doesn't exist
+    if(!fs.exists(ap)) fs.mkdirs(ap)
+
+    // Get the absolute path to attributes
+    (fs, fs.getFileStatus(ap).getPath)
   }
 
   def attributePath(layerId: LayerId, attributeName: String): Path = {

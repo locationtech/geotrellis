@@ -17,12 +17,11 @@
 package geotrellis.spark.etl.config.json
 
 import geotrellis.vector.io._
-import geotrellis.raster.{CellSize, CellType}
+import geotrellis.raster.{CellSize, CellType, TileLayout}
 import geotrellis.raster.io._
 import geotrellis.raster.resample._
 import geotrellis.spark.etl.config._
 import geotrellis.vector.Extent
-
 import org.apache.spark.storage.StorageLevel
 import spray.json._
 import spray.json.DefaultJsonProtocol._
@@ -136,7 +135,7 @@ trait ConfigFormats {
   case class BackendPathFormat(bt: BackendType) extends RootJsonFormat[BackendPath] {
     val idRx = "[A-Z0-9]{20}"
     val keyRx = "[a-zA-Z0-9+/]+={0,2}"
-    val slug = "[a-zA-Z0-9-]+"
+    val slug = "[a-zA-Z0-9-.]+"
     val S3UrlRx = new Regex(s"""s3://(?:($idRx):($keyRx)@)?($slug)/{0,1}(.*)""", "aws_id", "aws_key", "bucket", "prefix")
 
     def write(bp: BackendPath): JsValue = bp.toString.toJson
@@ -247,7 +246,8 @@ trait ConfigFormats {
       "cellType"            -> o.cellType.toJson,
       "encoding"            -> o.encoding.toJson,
       "breaks"              -> o.breaks.toJson,
-      "maxZoom"             -> o.maxZoom.toJson
+      "maxZoom"             -> o.maxZoom.toJson,
+      "tileLayout"          -> o.tileLayout.toJson
     )
 
     def read(value: JsValue): Output =
@@ -269,8 +269,8 @@ trait ConfigFormats {
             cellType            = fields.get("cellType").map(_.convertTo[CellType]),
             encoding            = fields.get("encoding").map(_.convertTo[String]),
             breaks              = fields.get("breaks").map(_.convertTo[String]),
-            maxZoom             = fields.get("maxZoom").map(_.convertTo[Int])
-
+            maxZoom             = fields.get("maxZoom").map(_.convertTo[Int]),
+            tileLayout          = fields.get("tileLayout").map(_.convertTo[TileLayout])
           )
         case _ =>
           throw DeserializationException("Output must be a valid json object.")

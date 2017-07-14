@@ -16,13 +16,29 @@
 
 package geotrellis.vector.voronoi
 
-import geotrellis.vector.{Extent, Point}
+import com.vividsolutions.jts.geom.Coordinate
+
 import geotrellis.util.MethodExtensions
+import geotrellis.vector.{Extent, MultiPoint, Point}
 
 trait VoronoiDiagramMethods extends MethodExtensions[Traversable[Point]] {
+  @deprecated("call voronoiDiagram() on Traversable[Coordinate] instead", "1.2")
   def voronoiDiagram(): Voronoi = { new Voronoi(self.toArray) }
 }
 
 trait VoronoiDiagramArrayMethods extends MethodExtensions[Array[Point]] {
+  @deprecated("call voronoiDiagram() on Array[Coordinate] instead", "1.2")
   def voronoiDiagram(): Voronoi = { new Voronoi(self) }
+}
+
+trait FastVoronoiDiagramMethods extends MethodExtensions[Traversable[Coordinate]] {
+  def voronoiDiagram(extent: Extent): VoronoiDiagram = { VoronoiDiagram(self.toArray, extent) }
+}
+
+trait FastVoronoiDiagramArrayMethods extends MethodExtensions[Array[Coordinate]] {
+  def voronoiDiagram(extent: Extent): VoronoiDiagram = { VoronoiDiagram(self, extent) }
+}
+
+trait FastVoronoiDiagramMultiPointMethods extends MethodExtensions[MultiPoint] {
+  def voronoiDiagram(extent: Extent): VoronoiDiagram = { VoronoiDiagram(self.points.map(_.jtsGeom.getCoordinate), extent) }
 }

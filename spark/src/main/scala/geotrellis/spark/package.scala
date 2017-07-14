@@ -24,7 +24,6 @@ import geotrellis.spark.tiling._
 import geotrellis.spark.ingest._
 import geotrellis.spark.crop._
 import geotrellis.spark.filter._
-
 import org.apache.spark.{Partitioner, SparkContext}
 import org.apache.spark.rdd._
 import spire.syntax.cfor._
@@ -36,8 +35,10 @@ import java.time.Instant
 
 package object spark
     extends buffer.Implicits
+    with costdistance.Implicits
     with crop.Implicits
     with density.Implicits
+    with distance.Implicits
     with equalization.Implicits
     with filter.Implicits
     with join.Implicits
@@ -59,7 +60,8 @@ package object spark
     with stitch.Implicits
     with summary.Implicits
     with summary.polygonal.Implicits
-    with tiling.Implicits {
+    with tiling.Implicits
+    with viewshed.Implicits {
   type TileLayerRDD[K] = RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]
   object TileLayerRDD {
     def apply[K](rdd: RDD[(K, Tile)], metadata: TileLayerMetadata[K]): TileLayerRDD[K] =

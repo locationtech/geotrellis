@@ -17,10 +17,10 @@
 package geotrellis
 
 import geotrellis.vector.Point
-import geotrellis.macros.{ NoDataMacros, TypeConversionMacros }
-import geotrellis.vector.{Geometry, Feature}
+import geotrellis.macros.{NoDataMacros, TypeConversionMacros}
+import geotrellis.vector.{Feature, Geometry}
 import geotrellis.util.MethodExtensions
-
+import geotrellis.vector.triangulation.StitchedDelaunay
 
 package object raster
     extends crop.Implicits
@@ -31,7 +31,8 @@ package object raster
     with mask.Implicits
     with merge.Implicits
     with reproject.Implicits
-    with split.Implicits {
+    with split.Implicits
+    with transform.Implicits {
   type CellType = DataType with NoDataHandling
   type SinglebandRaster = Raster[Tile]
   type MultibandRaster = Raster[MultibandTile]
@@ -49,6 +50,8 @@ package object raster
 
   implicit class withFeatureDoubleRasterizeMethods(val self : Feature[Geometry, Double]) extends MethodExtensions[Feature[Geometry, Double]]
       with rasterize.FeatureDoubleRasterizeMethods[Geometry]
+
+  implicit class withStitchedDelaunayRasterizeMethods(val self: StitchedDelaunay) extends rasterize.StitchedDelaunayRasterizeMethods
 
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with DelayedConversionTileMethods

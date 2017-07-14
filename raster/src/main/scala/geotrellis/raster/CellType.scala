@@ -18,7 +18,6 @@ package geotrellis.raster
 
 import scala.util.matching.Regex
 import java.awt.image.DataBuffer
-import java.lang.IllegalArgumentException
 
 // Note: CellType defined in package object as
 // `type CellType = DataType with NoDataHandling`
@@ -30,7 +29,7 @@ import java.lang.IllegalArgumentException
 sealed abstract class DataType extends Serializable { self: CellType =>
   val bits: Int
   val isFloatingPoint: Boolean
-  val name: String
+  def name: String = CellType.toName(self)
 
   /** Determine if two [[CellType]] instances have equal [[DataType]] component */
   def equalDataType(other: DataType): Boolean
@@ -56,7 +55,7 @@ sealed abstract class DataType extends Serializable { self: CellType =>
    *
    * @return Bytes per sample.
    */
-  def bytes = bits / 8
+  def bytes: Int = bits / 8
 
   /**
     * Union only checks to see that the correct bitsize and int vs
@@ -73,7 +72,7 @@ sealed abstract class DataType extends Serializable { self: CellType =>
     * @param   other  The other cell type
     * @return         The union of this data type and the other cell type
     */
-  def union(other: CellType) =
+  def union(other: CellType): CellType =
     if (bits < other.bits)
       other
     else if (bits > other.bits)
@@ -90,7 +89,7 @@ sealed abstract class DataType extends Serializable { self: CellType =>
     * @param   other  The other cell type
     * @return         The intersection of this data type and the other cell type
     */
-  def intersect(other: CellType) =
+  def intersect(other: CellType): CellType =
     if (bits < other.bits)
       self
     else if (bits > other.bits)
@@ -107,7 +106,7 @@ sealed abstract class DataType extends Serializable { self: CellType =>
     * @param   other  The other cell type
     * @return         True for containment, false otherwise
     */
-  def contains(other: CellType) = bits >= other.bits
+  def contains(other: CellType): Boolean = bits >= other.bits
 
   /**
     * Return the number of bytes that would be consumed by the given number of items of the present type.
@@ -115,7 +114,7 @@ sealed abstract class DataType extends Serializable { self: CellType =>
     * @param   size  The number of items
     * @return        The number of bytes
     */
-  def numBytes(size: Int) = bytes * size
+  def numBytes(size: Int): Int = bytes * size
 
   /**
     * Return the string representation of this data type.
@@ -131,8 +130,7 @@ sealed abstract class DataType extends Serializable { self: CellType =>
 sealed trait BitCells extends DataType { self: CellType =>
   val bits: Int = 1
   val isFloatingPoint: Boolean = false
-  val name = "bool"
-  def equalDataType(other: DataType) = other.isInstanceOf[BitCells]
+  def equalDataType(other: DataType): Boolean = other.isInstanceOf[BitCells]
   def withNoData(noDataValue: Option[Double]): BitCells with NoDataHandling =
     BitCellType // No other options is possible
   def withDefaultNoData(): BitCells with NoDataHandling = BitCellType
@@ -144,8 +142,7 @@ sealed trait BitCells extends DataType { self: CellType =>
 sealed trait ByteCells extends DataType { self: CellType =>
   val bits: Int = 8
   val isFloatingPoint: Boolean = false
-  val name = "int8"
-  def equalDataType(other: DataType) = other.isInstanceOf[ByteCells]
+  def equalDataType(other: DataType): Boolean = other.isInstanceOf[ByteCells]
   def withNoData(noDataValue: Option[Double]): ByteCells with NoDataHandling =
     ByteCells.withNoData(noDataValue.map(_.toByte))
   def withDefaultNoData(): ByteCells with NoDataHandling = ByteConstantNoDataCellType
@@ -169,8 +166,7 @@ object ByteCells {
 sealed trait UByteCells extends DataType { self: CellType =>
   val bits: Int = 8
   val isFloatingPoint: Boolean = false
-  val name = "uint8"
-  def equalDataType(other: DataType) = other.isInstanceOf[UByteCells]
+  def equalDataType(other: DataType): Boolean = other.isInstanceOf[UByteCells]
   def withNoData(noDataValue: Option[Double]): UByteCells with NoDataHandling =
     UByteCells.withNoData(noDataValue.map(_.toByte))
   def withDefaultNoData(): UByteCells with NoDataHandling = UByteConstantNoDataCellType
@@ -194,8 +190,7 @@ object UByteCells {
 sealed trait ShortCells extends DataType { self: CellType =>
   val bits: Int = 16
   val isFloatingPoint: Boolean = false
-  val name = "int16"
-  def equalDataType(other: DataType) = other.isInstanceOf[ShortCells]
+  def equalDataType(other: DataType): Boolean = other.isInstanceOf[ShortCells]
   def withNoData(noDataValue: Option[Double]): ShortCells with NoDataHandling =
     ShortCells.withNoData(noDataValue.map(_.toShort))
   def withDefaultNoData(): ShortCells with NoDataHandling = ShortConstantNoDataCellType
@@ -219,8 +214,7 @@ object ShortCells {
 sealed trait UShortCells extends DataType { self: CellType =>
   val bits: Int = 16
   val isFloatingPoint: Boolean = false
-  val name = "uint16"
-  def equalDataType(other: DataType) = other.isInstanceOf[UShortCells]
+  def equalDataType(other: DataType): Boolean = other.isInstanceOf[UShortCells]
   def withNoData(noDataValue: Option[Double]): UShortCells with NoDataHandling =
     UShortCells.withNoData(noDataValue.map(_.toShort))
   def withDefaultNoData(): UShortCells with NoDataHandling = UShortConstantNoDataCellType
@@ -244,8 +238,7 @@ object UShortCells {
 sealed trait IntCells extends DataType { self: CellType =>
   val bits: Int = 32
   val isFloatingPoint: Boolean = false
-  val name = "int32"
-  def equalDataType(other: DataType) = other.isInstanceOf[IntCells]
+  def equalDataType(other: DataType): Boolean = other.isInstanceOf[IntCells]
   def withNoData(noDataValue: Option[Double]): IntCells with NoDataHandling =
     IntCells.withNoData(noDataValue.map(_.toInt))
   def withDefaultNoData(): IntCells with NoDataHandling = IntConstantNoDataCellType
@@ -266,8 +259,7 @@ object IntCells {
 sealed trait FloatCells extends DataType { self: CellType =>
   val bits: Int = 32
   val isFloatingPoint: Boolean = true
-  val name = "float32"
-  def equalDataType(other: DataType) = other.isInstanceOf[FloatCells]
+  def equalDataType(other: DataType): Boolean = other.isInstanceOf[FloatCells]
   def withNoData(noDataValue: Option[Double]): FloatCells with NoDataHandling =
     FloatCells.withNoData(noDataValue.map(_.toFloat))
   def withDefaultNoData(): FloatCells with NoDataHandling = FloatConstantNoDataCellType
@@ -291,8 +283,7 @@ object FloatCells {
 sealed trait DoubleCells extends DataType { self: CellType =>
   val bits: Int = 64
   val isFloatingPoint: Boolean = true
-  val name = "float64"
-  def equalDataType(other: DataType) = other.isInstanceOf[DoubleCells]
+  def equalDataType(other: DataType): Boolean = other.isInstanceOf[DoubleCells]
   def withNoData(noDataValue: Option[Double]): DoubleCells with NoDataHandling =
     DoubleCells.withNoData(noDataValue)
   def withDefaultNoData(): DoubleCells with NoDataHandling = DoubleConstantNoDataCellType
@@ -324,16 +315,19 @@ sealed trait ConstantNoData extends NoDataHandling { cellType: CellType => }
 /**
   * The [[NoNoData]] type, derived from [[NoDataHandling]].
   */
-sealed trait NoNoData extends NoDataHandling { cellType: CellType =>
-  abstract override def toString: String = cellType.name + "raw"
-}
+sealed trait NoNoData extends NoDataHandling { cellType: CellType => }
 
 /**
   * The [[UserDefinedNoData]] type, derived from [[NoDataHandling]].
   */
 sealed trait UserDefinedNoData[@specialized(Byte, Short, Int, Float, Double) T] extends NoDataHandling { cellType: CellType =>
+  /** The no data value as represented in the JVM in the underlying cell. If unsigned types are involved then
+   * this value may be an overflow representation, and  `widenedNoData` should be used.*/
   val noDataValue: T
-  abstract override def toString: String = cellType.name + "ud" + noDataValue.toString
+
+  def widenedNoData(implicit ev: Numeric[T]): WidenedNoData =
+    if (cellType.isFloatingPoint) WideDoubleNoData(ev.toDouble(noDataValue))
+    else WideIntNoData(ev.toInt(noDataValue))
 }
 
 /**
@@ -341,7 +335,7 @@ sealed trait UserDefinedNoData[@specialized(Byte, Short, Int, Float, Double) T] 
   * [[NoNoData]].
   */
 case object BitCellType extends BitCells with NoNoData {
-  override final def numBytes(size: Int) = (size + 7) / 8
+  override final def numBytes(size: Int): Int = (size + 7) / 8
 }
 
 case object ByteCellType
@@ -356,7 +350,9 @@ case object UByteCellType
 case object UByteConstantNoDataCellType
     extends UByteCells with ConstantNoData
 case class UByteUserDefinedNoDataCellType(noDataValue: Byte)
-    extends UByteCells with UserDefinedNoData[Byte]
+    extends UByteCells with UserDefinedNoData[Byte] {
+  override def widenedNoData(implicit ev: Numeric[Byte]) = WideIntNoData(noDataValue)
+}
 
 case object ShortCellType
     extends ShortCells with NoNoData
@@ -370,7 +366,9 @@ case object UShortCellType
 case object UShortConstantNoDataCellType
     extends UShortCells with ConstantNoData
 case class UShortUserDefinedNoDataCellType(noDataValue: Short)
-    extends UShortCells with UserDefinedNoData[Short]
+    extends UShortCells with UserDefinedNoData[Short] {
+  override def widenedNoData(implicit ev: Numeric[Short]) = WideIntNoData(noDataValue)
+}
 
 case object IntCellType
     extends IntCells with NoNoData
@@ -393,17 +391,100 @@ case object DoubleConstantNoDataCellType
 case class DoubleUserDefinedNoDataCellType(noDataValue: Double)
     extends DoubleCells with UserDefinedNoData[Double]
 
-
-// No NoData
 object CellType {
+  import CellTypeEncoding._
 
   /**
-    * Translate an integer representing a cell type into a
-    * [[CellType]].  This is the opposite of toAwtType.
-    *
-    * @param   awtType  An integer representing a cell type
-    * @return           The CellType corresponding to awtType
-    */
+   * Translate a string representing a cell type into a [[CellType]].
+   *
+   * @param name A string representing a cell type, as reported by [[DataType.name]] e.g. "uint32"
+   * @return The CellType corresponding to `name`
+   */
+  @deprecated("Use `fromName` instead", "1.1.0")
+  def fromString(name: String): CellType = fromName(name)
+
+  /**
+   * Translate a string representing a cell type into a [[CellType]].
+   *
+   * @param name A string representing a cell type, as reported by [[DataType.name]] e.g. "uint32"
+   * @return The CellType corresponding to `name`
+   */
+  def fromName(name: String): CellType = {
+    name match {
+      case bool() | boolraw() => BitCellType // No NoData values
+      case int8raw() => ByteCellType
+      case uint8raw() => UByteCellType
+      case int16raw() => ShortCellType
+      case uint16raw() => UShortCellType
+      case float32raw() => FloatCellType
+      case float64raw() => DoubleCellType
+      case int8() => ByteConstantNoDataCellType // Constant NoData values
+      case uint8() => UByteConstantNoDataCellType
+      case int16() => ShortConstantNoDataCellType
+      case uint16() => UShortConstantNoDataCellType
+      case int32() => IntConstantNoDataCellType
+      case int32raw() => IntCellType
+      case float32() => FloatConstantNoDataCellType
+      case float64() => DoubleConstantNoDataCellType
+      case int8ud(nd) => ByteUserDefinedNoDataCellType(nd.asInt.toByte)
+      case uint8ud(nd) => UByteUserDefinedNoDataCellType(nd.asInt.toByte)
+      case int16ud(nd) => ShortUserDefinedNoDataCellType(nd.asInt.toShort)
+      case uint16ud(nd) => UShortUserDefinedNoDataCellType(nd.asInt.toShort)
+      case int32ud(nd) => IntUserDefinedNoDataCellType(nd.asInt)
+      case float32ud(nd) =>
+        if (nd.asDouble.isNaN) FloatConstantNoDataCellType
+        else FloatUserDefinedNoDataCellType(nd.asDouble.toFloat)
+      case float64ud(nd) =>
+        if (nd.asDouble.isNaN) DoubleConstantNoDataCellType
+        else DoubleUserDefinedNoDataCellType(nd.asDouble)
+      case _ =>
+        throw new IllegalArgumentException(s"Cell type $name is not supported")
+    }
+  }
+
+  /**
+   * Translates a [[CellType]] into its canonical String representation.
+   *
+   * @param cellType item to convert
+   * @return String representation
+   */
+  def toName(cellType: CellType): String = {
+
+    val encoding = cellType match {
+      case BitCellType => bool
+      case ByteCellType => int8raw
+      case UByteCellType => uint8raw
+      case ShortCellType => int16raw
+      case UShortCellType => uint16raw
+      case IntCellType => int32raw
+      case FloatCellType => float32raw
+      case DoubleCellType => float64raw
+      case ByteConstantNoDataCellType => int8
+      case UByteConstantNoDataCellType => uint8
+      case ShortConstantNoDataCellType => int16
+      case UShortConstantNoDataCellType => uint16
+      case IntConstantNoDataCellType => int32
+      case FloatConstantNoDataCellType => float32
+      case DoubleConstantNoDataCellType => float64
+      case ct: ByteUserDefinedNoDataCellType => int8ud(ct.widenedNoData.asInt)
+      case ct: UByteUserDefinedNoDataCellType => uint8ud(ct.widenedNoData.asInt)
+      case ct: ShortUserDefinedNoDataCellType => int16ud(ct.widenedNoData.asInt)
+      case ct: UShortUserDefinedNoDataCellType => uint16ud(ct.widenedNoData.asInt)
+      case ct: IntUserDefinedNoDataCellType => int32ud(ct.widenedNoData.asInt)
+      case ct: FloatUserDefinedNoDataCellType => float32ud(ct.widenedNoData.asDouble)
+      case ct: DoubleUserDefinedNoDataCellType => float64ud(ct.widenedNoData.asDouble)
+    }
+
+    encoding.name
+  }
+
+  /**
+   * Translate an integer representing a cell type into a
+   * [[CellType]].  This is the opposite of toAwtType.
+   *
+   * @param   awtType An integer representing a cell type
+   * @return The CellType corresponding to awtType
+   */
   def fromAwtType(awtType: Int): CellType = awtType match {
     case DataBuffer.TYPE_BYTE => UByteConstantNoDataCellType
     case DataBuffer.TYPE_SHORT => ShortConstantNoDataCellType
@@ -414,79 +495,12 @@ object CellType {
   }
 
   /**
-    * Translate a string representing a cell type into a [[CellType]].
-    *
-    * @param   name  An integer representing a cell type, e.g. "uint32"
-    * @return        The CellType corresponding to name
-    */
-  def fromString(name: String): CellType = name match {
-    case "bool" | "boolraw" => BitCellType  // No NoData values
-    case "int8raw" => ByteCellType
-    case "uint8raw" => UByteCellType
-    case "int16raw" => ShortCellType
-    case "uint16raw" => UShortCellType
-    case "float32raw" => FloatCellType
-    case "float64raw" => DoubleCellType
-    case "int8" => ByteConstantNoDataCellType  // Constant NoData values
-    case "uint8" => UByteConstantNoDataCellType
-    case "int16" => ShortConstantNoDataCellType
-    case "uint16" => UShortConstantNoDataCellType
-    case "int32" => IntConstantNoDataCellType
-    case "int32raw" => IntCellType
-    case "float32" => FloatConstantNoDataCellType
-    case "float64" => DoubleConstantNoDataCellType
-    case ct if ct.startsWith("int8ud") =>
-      val ndVal = new Regex("\\d+$").findFirstIn(ct).getOrElse {
-        throw new IllegalArgumentException(s"Cell type $name is not supported")
-      }
-      ByteUserDefinedNoDataCellType(ndVal.toByte)
-    case ct if ct.startsWith("uint8ud") =>
-      val ndVal = new Regex("\\d+$").findFirstIn(ct).getOrElse {
-        throw new IllegalArgumentException(s"Cell type $name is not supported")
-      }
-      UByteUserDefinedNoDataCellType(ndVal.toByte)
-    case ct if ct.startsWith("int16ud") =>
-      val ndVal = new Regex("\\d+$").findFirstIn(ct).getOrElse {
-        throw new IllegalArgumentException(s"Cell type $name is not supported")
-      }
-      ShortUserDefinedNoDataCellType(ndVal.toShort)
-    case ct if ct.startsWith("uint16ud") =>
-      val ndVal = new Regex("\\d+$").findFirstIn(ct).getOrElse {
-        throw new IllegalArgumentException(s"Cell type $name is not supported")
-      }
-      UShortUserDefinedNoDataCellType(ndVal.toShort)
-    case ct if ct.startsWith("int32ud") =>
-      val ndVal = new Regex("\\d+$").findFirstIn(ct).getOrElse {
-        throw new IllegalArgumentException(s"Cell type $name is not supported")
-      }
-      IntUserDefinedNoDataCellType(ndVal.toInt)
-    case ct if ct.startsWith("float32ud") =>
-      try {
-        val ndVal = ct.stripPrefix("float32ud").toDouble.toFloat
-        if (ndVal.isNaN) FloatConstantNoDataCellType
-        else FloatUserDefinedNoDataCellType(ndVal)
-      } catch {
-        case e: NumberFormatException => throw new IllegalArgumentException(s"Cell type $name is not supported")
-      }
-    case ct if ct.startsWith("float64ud") =>
-      try {
-        val ndVal = ct.stripPrefix("float64ud").toDouble
-        if (ndVal.isNaN) DoubleConstantNoDataCellType
-        else DoubleUserDefinedNoDataCellType(ndVal)
-      } catch {
-        case e: NumberFormatException => throw new IllegalArgumentException(s"Cell type $name is not supported")
-      }
-    case str =>
-      throw new IllegalArgumentException(s"Cell type $name is not supported")
-  }
-
-  /**
-    * Translate a [[CellType]] into the corresponding integer
-    * representation.  This is the opposite of fromAwtType.
-    *
-    * @param   cellType  A CellType
-    * @return            The corresponding integer representation of the given cell type
-    */
+   * Translate a [[CellType]] into the corresponding integer
+   * representation.  This is the opposite of fromAwtType.
+   *
+   * @param   cellType A CellType
+   * @return The corresponding integer representation of the given cell type
+   */
   def toAwtType(cellType: CellType): Int = cellType match {
     case _: BitCells => DataBuffer.TYPE_BYTE
     case _: ByteCells => DataBuffer.TYPE_BYTE
@@ -497,4 +511,30 @@ object CellType {
     case _: FloatCells => DataBuffer.TYPE_FLOAT
     case _: DoubleCells => DataBuffer.TYPE_DOUBLE
   }
+
+  /** Enumeration of pre-defined cell types without a `NoData` value. */
+  val noNoDataCellTypes = Seq(
+    BitCellType,
+    ByteCellType,
+    UByteCellType,
+    ShortCellType,
+    UShortCellType,
+    IntCellType,
+    FloatCellType,
+    DoubleCellType
+  )
+
+  /** Enumeration of pre-defined cell types with a default `NoData` value. */
+  val constantNoDataCellTypes = Seq(
+    ByteConstantNoDataCellType,
+    UByteConstantNoDataCellType,
+    ShortConstantNoDataCellType,
+    UShortConstantNoDataCellType,
+    IntConstantNoDataCellType,
+    FloatConstantNoDataCellType,
+    DoubleConstantNoDataCellType
+  )
+
+  /** Enumeration of all pre-defined cell types. */
+  val celltypes: Seq[DataType with NoDataHandling with Product] = noNoDataCellTypes ++ constantNoDataCellTypes
 }

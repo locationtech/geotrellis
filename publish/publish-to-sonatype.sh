@@ -12,6 +12,7 @@
     && ./sbt "project hbase" publish-signed \
     && ./sbt "project spark-etl" publish-signed \
     && ./sbt "project geomesa" publish-signed \
+    && ./sbt "project geowave" publish-signed \
     && ./sbt "project geotools" publish-signed \
     && ./sbt "project shapefile" publish-signed \
     && ./sbt "project slick" publish-signed \
