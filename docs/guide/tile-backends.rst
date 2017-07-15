@@ -39,6 +39,36 @@ By default, the stored attributes are:
 object. ``DiscreteLayerAttributeStore`` stores each attribute as a
 seperate object (say, a column in the case of databases).
 
+Backend URI
+===========
+
+Instances of ``AttributeStore``, ``LayerWriter``, and ```LayerReader`` can be created from a URI.
+
+.. code:: scala
+
+   val uri = new URI(""s3://bucket/catalog")
+   val store = AttributeStore(uri)
+   val reader = LayerReader(uri)
+   val writer = LayerWriter(uri)
+
+The backends are identified by the scheme portion of the URI.
+The address and path is used to identify the resource and query parameters are used to configure it.
+
+=============  ============
+Backend        URI
+=============  ============
+``Hadoop``     ``hdfs://path/to/catalog``
+``S3``.        ``s3://bucket/catalog-key``
+``File``       ``file://tmp/local-catalog``
+``Accumulo``   ``accumulo://[user[:password]@]zookeeper/instance-name[?attributes=table1[&layers=table2]]``
+``Cassandra``  ``cassandra://[user:password@]zookeeper[:port][/keyspace][?attributes=table1[&layers=table2]]``
+``HBase``      ``hbase://zookeeper[:port][?master=host][?attributes=table1[&layers=table2]]``
+=============  ============
+
+Backends that use a database need two extra settings:
+``attributes`` specifies which table is used for storing layer attributes. It is optional with a default value.
+``layers`` specifies which table to write values to. It is required when creating a ``LayerWriter``.
+
 File System
 ===========
 

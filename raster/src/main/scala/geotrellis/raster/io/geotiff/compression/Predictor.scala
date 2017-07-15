@@ -32,6 +32,7 @@ object Predictor {
     ) match {
       case None | Some(PREDICTOR_NONE) =>
         new Predictor {
+          val code = PREDICTOR_NONE
           val checkEndian = true
           def apply(bytes: Array[Byte], segmentIndex: Int) = bytes
         }
@@ -46,7 +47,10 @@ object Predictor {
 }
 
 trait Predictor {
+  /** True if this predictor needs to check if the endian requires flipping */
   def checkEndian: Boolean
+  /** GeoTiff tag value for this predictor */
+  def code: Int
 
   def apply(bytes: Array[Byte], segmentIndex: Int): Array[Byte]
 }

@@ -16,13 +16,14 @@
 
 package geotrellis.raster.costdistance
 
-import java.util.Locale
-
 import geotrellis.raster._
 import geotrellis.raster.testkit._
+
 import org.scalatest._
 
+import java.util.Locale
 import scala.language.implicitConversions
+
 
 class CostDistanceSpec extends FunSuite with RasterMatchers {
   implicit def array2Tile(a: Array[Int]): Tile = {
@@ -33,7 +34,7 @@ class CostDistanceSpec extends FunSuite with RasterMatchers {
 
   def asTile(a: Array[Int], cols: Int, rows: Int): Tile =
     IntArrayTile(a, cols, rows)
-  
+
   test("ESRI example") {
     val n = NODATA
     val N = Double.NaN
@@ -90,7 +91,7 @@ class CostDistanceSpec extends FunSuite with RasterMatchers {
     val cd = CostDistance(costTile, points)
 
     val d = cd.toArrayDouble()
-    
+
     val expected = Array(
       22,21,21,20,17,15,14,
       20,19,22,20,15,12,11,

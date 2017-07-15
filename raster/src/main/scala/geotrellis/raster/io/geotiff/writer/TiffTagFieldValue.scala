@@ -26,7 +26,6 @@ import spire.syntax.cfor._
 
 import scala.collection.mutable
 import java.nio.ByteOrder
-import java.util.IllegalFormatException
 
 case class TiffTagFieldValue(
   tag: Int,
@@ -57,20 +56,21 @@ object TiffTagFieldValue {
 
   def createNoDataString(cellType: CellType): Option[String] =
     cellType match {
-      case BitCellType | ByteCellType | UByteCellType | ShortCellType | UShortCellType | IntCellType | FloatCellType | DoubleCellType => None
+      case BitCellType | ByteCellType | UByteCellType | ShortCellType | UShortCellType | IntCellType |
+           FloatCellType | DoubleCellType => None
       case ByteConstantNoDataCellType => Some(byteNODATA.toString)
-      case ByteUserDefinedNoDataCellType(nd) => Some(nd.toString)
       case UByteConstantNoDataCellType => Some(ubyteNODATA.toString)
-      case UByteUserDefinedNoDataCellType(nd) => Some(nd.toString)
       case ShortConstantNoDataCellType => Some(shortNODATA.toString)
-      case ShortUserDefinedNoDataCellType(nd) => Some(nd.toString)
       case UShortConstantNoDataCellType => Some(ushortNODATA.toString)
-      case UShortUserDefinedNoDataCellType(nd) => Some(nd.toString)
       case IntConstantNoDataCellType => Some(NODATA.toString)
-      case IntUserDefinedNoDataCellType(nd) => Some(nd.toString)
       case FloatConstantNoDataCellType | DoubleConstantNoDataCellType => Some("nan")
-      case FloatUserDefinedNoDataCellType(nd) => Some(nd.toDouble.toString) // Convert to a double, since there can be some weirdness with float toString.
-      case DoubleUserDefinedNoDataCellType(nd) => Some(nd.toString)
+      case ct: ByteUserDefinedNoDataCellType => Some(ct.widenedNoData.toString)
+      case ct: UByteUserDefinedNoDataCellType => Some(ct.widenedNoData.toString)
+      case ct: ShortUserDefinedNoDataCellType => Some(ct.widenedNoData.toString)
+      case ct: UShortUserDefinedNoDataCellType => Some(ct.widenedNoData.toString)
+      case ct: IntUserDefinedNoDataCellType => Some(ct.widenedNoData.toString)
+      case ct: FloatUserDefinedNoDataCellType => Some(ct.widenedNoData.toString)
+      case ct: DoubleUserDefinedNoDataCellType => Some(ct.widenedNoData.toString)
     }
 
   def collect(geoTiff: GeoTiffData): (Array[TiffTagFieldValue], Array[Int] => TiffTagFieldValue) = {
@@ -89,6 +89,7 @@ object TiffTagFieldValue {
     fieldValues += TiffTagFieldValue(ImageLengthTag, IntsFieldType, 1, imageData.rows)
     fieldValues += TiffTagFieldValue(BitsPerSampleTag, ShortsFieldType, 1, imageData.bandType.bitsPerSample)
     fieldValues += TiffTagFieldValue(CompressionTag, ShortsFieldType, 1, imageData.decompressor.code)
+    fieldValues += TiffTagFieldValue(PredictorTag, ShortsFieldType, 1, imageData.decompressor.predictorCode)
     fieldValues += TiffTagFieldValue(PhotometricInterpTag, ShortsFieldType, 1, geoTiff.options.colorSpace)
     fieldValues += TiffTagFieldValue(SamplesPerPixelTag, ShortsFieldType, 1, imageData.bandCount)
     fieldValues += TiffTagFieldValue(PlanarConfigurationTag, ShortsFieldType, 1, PlanarConfigurations.PixelInterleave)
@@ -187,7 +188,15 @@ object TiffTagFieldValue {
     // Tags that are different if it is striped or tiled storage, and a function
     // that sets up a tag to point to the offsets of the image data.
 
-    val segmentByteCounts = imageData.segmentBytes.map { _.length }.toArray
+    val segmentByteCounts = {
+      val len = imageData.segmentBytes.length
+      val arr = Array.ofDim[Int](len)
+      cfor(0)(_ < len, _ + 1) { i =>
+        arr(i) = imageData.segmentBytes.getSegmentByteCount(i)
+      }
+      arr
+    }
+
     val offsetsFieldValueBuilder: Array[Int] => TiffTagFieldValue =
       imageData.segmentLayout.storageMethod match {
         case Tiled(tileCols, tileRows) =>

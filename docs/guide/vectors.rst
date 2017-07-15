@@ -566,92 +566,324 @@ computationally more intensive.
     mu(s) = x(s)' * beta,   beta unknown; s belongs to R
     cov[eps(s), eps(s')]    unknown; s, s' belongs to R
 
-Voronoi Diagrams
-================
+Delaunay Triangulations, Voronoi Diagrams, and Euclidean Distance
+=================================================================
 
-Voronoi diagrams specify a partitioning of the plane into convex
-polygonal regions based on an input set of points, with the points being
-in one-to-one correspondence with the polygons. Given the set of points
-``P``, let ``p`` be a point in that set; then ``V(p)`` is the Voronoi
-polygon corresponding to ``p``. The interior of ``V(p)`` contains the
-part of the plane closer to ``p`` than any other point in ``P``.
+When working with vector data, it is often necessary to establish sensible
+interconnections among a collection of discrete points in ℝ² (the Euclidean
+plane).  This operation supports nearest neighbor operations, linear
+interpolation among irregularly sampled data, and Euclidean distance, to name
+only a few applications.
 
-To compute the Voronoi diagram, one actually goes about creating a
-triangulation of the input points called the *Delaunay triangulation*.
-In this structure, all the points in ``P`` are vertices of a set of
-non-overlapping triangles that comprise the set ``T(P)``. Each triangle
-``t`` in ``T(P)`` has the property that the unique circle passing
-through the vertices of ``t`` has no points of ``P`` in its interior.
+For this reason, GeoTrellis provides a means to compute the Delaunay
+triangulation of a set of points.  Letting 𝒫 be the input set of points, the
+Delaunay triangulation is a partitioning of the convex hull of 𝒫 into
+triangular regions (a partition that completely covers the convex hull with no
+overlaps).  Each triangle, ``T``, has a unique circle passing through all of
+its vertices that we call the *circumscribing circle* of ``T``.  The defining
+property of a Delaunay triangulation is that each ``T`` has a circumscribing
+circle that contains no points of 𝒫 in their interiors (note that the vertices
+of ``T`` are on the boundary of the circumscribing circle, not in the
+interior).
 
-``T(P)`` and ``V(P)`` (with the latter defined as ``{V(p) | p in P}``)
-are *dual* to each other in the following sense. Each triangle in
-``T(P)`` corresponds to a vertex in ``V(P)`` (a corner of some
-``V(p)``), each vertex in ``T(P)`` (which is just a point in ``P``)
-corresponds to a polygon in ``V(P)``, and each edge in ``T(P)``
-corresponds to an edge in ``V(P)``. The vertices of ``V(P)`` are defined
-as the centers of the circumscribing circles of the triangles in
-``T(P)``. These vertices are connected by edges such that if ``t(p1)``
-and ``t(p2)`` share an edge, then the Voronoi vertices corresponding to
-those two triangles are connected in ``V(P)``. This duality between
-structures is important because it is much easier to compute the
-Delaunay triangulation and to take its dual than it is to directly
-compute the Voronoi diagram.
+.. image:: https://upload.wikimedia.org/wikipedia/commons/d/db/Delaunay_circumcircles_vectorial.svg
+   :alt: A Delaunay triangulation in the plane with circumcircles shown
+   :target: https://en.wikipedia.org/wiki/Delaunay_triangulation#/media/File:Delaunay_circumcircles_vectorial.svg
+   :align: center
 
-This PR provides a divide-and-conquer approach to computing the Delaunay
-triangulation based on Guibas and Stolfi's 1985 ACM Transactions on
-Graphics paper. In this case, the oldies are still the goodies, since
-only minor performance increases have been achieved over this baseline
-result---hardly worth the increase in complexity.
+Among the most important properties of a Delaunay triangulation is its
+relationship to the Voronoi diagram.  The Voronoi diagram is another
+partitioning of ℝ² based on the points in 𝒫.  This time, the partitioning is
+composed of convex polygonal regions—one for each point in 𝒫—that completely
+cover the plane (some of the convex regions are half open, which is to say
+that they may extend to infinity in certain directions).  The Delaunay
+triangulation of 𝒫 is the *dual* to the Voronoi diagram of 𝒫.  This means that
+elements of the Delaunay triangulation have a one-to-one correspondence with
+the elements of the Voronoi diagram.  Letting ``DT(𝒫)`` be the Delaunay
+triangulation of 𝒫 and ``V(𝒫)`` be the Voronoi diagram of 𝒫, we have that each
+vertex 𝓅 of ``DT(𝒫)`` corresponds to a polygonal region of ``V(𝒫)`` (called
+the *Voronoi cell* of 𝓅), each edge to an edge, and each triangle to a vertex.
+The number of edges emanating from a vertex in ``DT(𝒫)`` gives the number of
+sides of the corresponding polygonal region in ``V(𝒫)``.  The corresponding
+edges of each structure are perpendicular. The Voronoi vertex corresponding to
+a triangle of ``DT(𝒫)`` is the center of that triangle's circumscribing
+circle.  And if there are no more than 3 points of 𝒫 lying on any circle in
+the plane (a condition called *general position*), then there are no more than
+3 edges emanating from any vertex of ``V(𝒫)``, which matches the number of
+sides in each planar region of ``DT(𝒫)``.  (If we are not in general
+position, not all vertices of ``V(𝒫)`` will be distinct and some Voronoi edges
+may have zero length.)
 
-The triangulation algorithm starts by ordering vertices according to
-(ascending) x-coordinate, breaking ties with the y-coordinate. Duplicate
-vertices are ignored. Then, the right and left halves of the vertices
-are recursively triangulated. To stitch the resulting triangulations, we
-find a vertex from each of the left and right results so that the
-connecting edge is guaranteed to be in the convex hull of the merged
-triangulations; call this edge ``base``. Now, consider a circle that
-floats upwards and comes into contact with the endpoints of ``base``.
-This bubble will, by changing its radius, squeeze through the gap
-between the endpoints of ``base``, and rise until it encounters another
-vertex. By definition, this ball has no vertices of ``P`` in its
-interior, and so the three points on its boundary are the vertices of a
-Delaunay triangle. See the following image for clarification:
+.. image:: http://www.ae.metu.edu.tr/tuncer/ae546/prj/delaunay/dt.gif
+   :alt: Voronoi cells are drawn with dashed edges, the Delaunay triangulation
+         with solid edges
+   :target: http://www.ae.metu.edu.tr/tuncer/ae546/prj/delaunay/
+   :align: center
 
-.. figure:: images/stitch-triangles.png
-
-Here, we note that the red triangle's circumscribing ball contains
-vertices of the blue triangle, and so we will expect that the red
-triangle will not be part of the final triangulation. As such the
-leftmost edge of the red triangle be deleted before the triangulation
-can be updated to include the triangle circumscribed by the solid black
-circle.
-
-This process continues, with the newly created edge serving as the new
-``base``, and the ball rising through until another vertex is
-encountered and so on, until the ball exits out the top and the
-triangulation is complete.
+The dual relationship between ``DT(𝒫)`` and ``V(𝒫)`` is important because it
+means that we may compute whichever structure that is easiest and simply
+derive the other in a straightforward manner.  As it happens, it is generally
+easier to compute Delaunay triangulations, and we have implemented a very fast
+method for doing just that.  Specifically, we employ the divide-and-conquer
+approach to computing the Delaunay triangulation based on Guibas and Stolfi's
+1985 ACM Transactions on Graphics paper.
 
 Mesh Representation
 -------------------
 
-The output of Delaunay triangulation and Voronoi diagrams are in the
-form of meshes represented by the half-edge structure. These structures
-can be thought of as directed edges between points in space, where an
-edge needs two half-edges to complete its representation. A half-edge,
-``e``, has three vital pieces of information: a vertex to which it
-points, ``e.vert``; a pointer to its complementary half-edge,
-``e.flip``; and a pointer to the next half-edge in the polygon,
-``e.next``. The following image might be useful:
+Delaunay triangulations are represented using half edges, a common data
+structure for encoding polygonal meshes.  Half edges are so called because,
+when attempting to represent an edge from vertex ``A`` to vertex ``B``, we
+require two complementary half edges: one pointing to ``A`` and one pointing
+to ``B``.  Half edges are connected into *loops*, one for each face in the
+mesh; so given a half edge, the loop may be iterated over.  Surprisingly,
+these three pieces of information are enough to create a mesh that can be
+easily navigated, though the class of meshes that may be represented are
+limited to orientable (having an inside and an outside—i.e., no Möbius
+strips), manifold surfaces (for any point on the surface, the intersection of
+a small 3-d ball around the point and the surface is a disc—i.e., no more than
+two faces share an edge, faces sharing a vertex must be contiguous).  We also
+take on the convention that when viewed from the "outside" of the surface, the
+edges of a loop traverse the facet vertices in counterclockwise order.  But
+note that if a mesh has a boundary, as is the case with Delaunay
+triangulations, there is a boundary loop that navigates the vertices of the
+boundary in clockwise order.
 
 .. figure:: images/halfedge.png
+   :align: center
 
-Note that half-edges are only useful for representing orientable
-manifolds with boundary. As such, half edge structures couldn't be used
-to represent a Moebius strip, nor could they be used for meshes where
-two polygons share a vertex without sharing an edge. Furthermore, by
-convention, polygon edges are wound in counter-clockwise order. We also
-allow each half-edge to point to an attribute structure for the face
-that it bounds. In the case of a Delaunay triangle, that face attribute
-would be the circumscribing circle's center; edges on the boundary of a
-mesh have no face attribute (they are stored as ``Option[F]`` where
-``F`` is the type of the face attribute).
+There are two means to represent a half edge mesh in GeoTrellis: the
+object-based HalfEdge structure, and the faster, more space efficient, but
+less generic HalfEdgeTable structure.  The latter constitutes the core of our
+mesh structures, but the former has some uses for small-scale applications for
+intrepid users.
+
+Delaunay Triangulations
+-----------------------
+
+The intent for our DelaunayTriangulation implementation is that we be able to
+easily handle triangulations over 10s or 100s of millions of points (though
+the latter scale especially may require distribution via Spark to do so in a
+reasonable time/memory envelope).  Smaller scale applications can easily
+compute Delaunay triangulations of arrays of JTS Coordinates (GeoTrellis
+Points are too heavyweight given the scale of our intended applications,
+though they may be converted to Coordinates via ``_.jtsGeom.getCoordinate``)
+using our method extensions:
+
+.. code:: scala
+
+   val coordinates: Array[Coordinate] = ???
+   val triangulation = coordinates.delaunayTriangulation
+
+``DelaunayTriangulation`` objects contain a field ``halfEdgeTable`` of type
+``HalfEdgeTable`` which can be used to interrogate the mesh structure.  It is,
+however, necessary to have an entry point into this structure.  Typically, we
+either use the ``boundary`` field of the triangulation object, or we call
+``triangulation.halfEdgeTable.edgeIncidentTo(v)``, where ``v`` is the index of
+a vertex (``triangulation.liveVertices`` gives a ``Set[Int]`` listing the
+indices of vertices present in the triangulation).  From there, the standard
+half edge navigation operations are available:
+
+.. code:: scala
+
+   import triangulation.halfEdgeTable._
+
+   e = edgeIncidentTo(???)
+
+   getFlip(e)                                 // Returns the complementary half edge of e
+   assert(e == getFlip(getFlip(e)))           // Identity regarding complementary edges
+   assert(getSrc(e) == getDest(getFlip(e)))   // Vertices of half edges are sane
+
+   getNext(e)                                 // Returns the next half edge in the triangle
+   assert(e == getNext(getNext(getNext(e))))  // True if e is an edge of a triangle
+   assert(getPrev(e) == getNext(getNext(e))   // True if e is an edge of a triangle
+
+   assert(rotCWSrc(e) == getNext(getFlip(e))  // Find the edge next in clockwise order
+                                              // around the source vertex of e
+                                              // sharing the same destination vertex
+
+See the HalfEdgeTable documentation for more details.
+
+Finally, triangulations obviously contain triangles.  For ease of use,
+triangulation objects have a ``triangles`` field (or method) which return a
+``Seq[(Int, Int, Int)]`` containing triples of vertex indices that are the
+vertices of all the triangles in the triangulation (the indices are listed in
+counterclockwise order).
+
+Simplification
+^^^^^^^^^^^^^^
+
+When the Coordinates composing a triangulation have a meaningful z-coordinate,
+it may be of interest to reduce the number of points in the mesh
+representation while inflicting the smallest amount of change to the surface.
+We accomplish this by sorting vertices according to their error, which is
+derived from a quadric error metric (see Garland, Michael, and
+Paul S. Heckbert. "Surface simplification using quadric error metrics."
+Proceedings of the 24th annual conference on Computer graphics and interactive
+techniques. ACM Press/Addison-Wesley Publishing Co., 1997).  We remove the
+vertices with the smallest error using a Delaunay-preserving vertex removal,
+and iteratively apply this process until a desired number of vertices are
+removed.
+
+Voronoi Diagrams
+----------------
+
+As mentioned, a Voronoi diagram is directly derived from a
+DelaunayTriangulation object.  The VoronoiDiagram class is a thin veneer that
+exists only to extract the polygonal Voronoi cells corresponding to each
+vertex.  Because of the possibility of unbounded Voronoi cells around the
+boundaries of the Delaunay triangulation, we have opted to specify an extent
+at the time of construction of the VoronoiDiagram to which all the Voronoi
+cells will be clipped.  Voronoi cells may be gathered individually, or all at
+once.  These cells may also be collected with or without their corresponding
+point from the initial point set.
+
+Euclidean Distance and Interpolation
+------------------------------------
+
+A strong motivation for implementing Delaunay triangulations is to be able to
+furnish certain vector-to-raster operations.
+
+EuclideanDistance allows us to build a raster where each tile cell contains
+the distance from that cell to the closest point in a point set.  This is
+accomplished by rasterizing Voronoi cells using a distance function.
+Euclidean distance tiles may be computed using either the
+``coordinates.euclideanDistance(re: RasterExtent)`` method extension or the
+``EuclideanDistanceTile(re: RasterExtent)`` apply method.
+
+.. image:: images/euclidean-distance.png
+   :align: center
+
+The other main class of vector-to-raster functions enabled by Delaunay
+triangulations is linear interpolation of unstructured samples from some
+function.  We use the z-coordinate of our input points to store a Double
+attribute for each point, and we rasterize the Delaunay triangles to produce
+the final interpolation.  The most obvious candidate is to use the
+z-coordinates to indicate the elevation of points on the globe; the
+rasterization of these values is a digital elevation map.  This is the TIN
+algorithm for DEM generation.  Using this method, we would apply one of the
+methods in ``geotrellis.raster.triangulation.DelaunayRasterizer``.
+
+.. image:: images/tin-to-dem.png
+   :align: center
+
+(The above image has been hillshaded to better show the detail in the
+elevation raster.)
+
+The major advantage of using triangulations to interpolate is that it more
+gracefully handles areas with few or no samples, in contrast to a method such
+as inverse distance weighted interpolation, a raster-based technique.  This is
+common when dealing with LiDAR samples that include water, which has spotty
+coverage due to the reflectance of water.
+
+Distributed Computation
+-----------------------
+
+Among the design goals for this package was the need to handle extremely large
+point sets—on the order of 100s of millions of points.  To accomplish this
+end, we opted for a distributed solution using Spark.  Generally speaking,
+this interface will require the user to cut the incoming point set according
+to some LayoutDefinition into an ``RDD[(SpatialKey, Array[Coordinate])]``.
+After triangulating each grid cell individually, facilities are provided to
+join the results—though in certain cases, the results will not be as expected
+(see Known Limitations below).
+
+Given an ``RDD[(SpatialKey, DelaunayTriangulation)]``, one is meant to apply
+the ``collectNeighbors()`` method to generate a map of nearby grid cells,
+keyed by ``geotrellis.util.Direction``.  These maps are then taken as input to
+StitchedDelaunay's apply method.  This will join a 3x3 neighborhood of
+triangulations into a single triangulation by creating new triangles that fill
+in the gaps between the component triangulations.  For instance, if we begin
+with the following collection of triangulations
+
+.. image:: images/noStitch-cropped.png
+   :align: center
+
+The stitch operation creates the stitch triangles shown in red below:
+
+.. image:: images/withStitch-cropped.png
+   :align: center
+
+Notice that the stitch triangles overlap the base triangulations.  This is
+expected since not all the base triangles are Delaunay with respect to the
+merged triangulation.  Also keep in mind that in its current incarnation,
+StitchedDelaunay instances' ``triangles`` element contains only these fill
+triangles, not the triangles of the base triangulations.
+
+Because the interior of these base triangulations is often not needed, and
+they can be very large structures, to reduce shuffle volume during the
+distributed operation, we introduced the BoundaryDelaunay structure.  These
+are derived from DelaunayTriangulations and an extent that entirely contains
+the triangulation, and inside which no points will be added in a subsequent
+stitch operation.  The BoundaryDelaunay object will be a reduced mesh where
+the interior is empty.  This is for context, as it is not recommended to
+interact with BoundaryDelaunay objects directly; that way madness lies.
+Nonetheless, it is an important operation to include due to the massive memory
+savings and reduced network traffic.
+
+The immediate application of StitchedDelaunay is the ability to perform both
+EuclideanDistance and interpolation tasks in a distributed context.  We
+provide the ``euclideanDistance(ld: LayoutDefinition)`` method extension
+taking an ``RDD[(SpatialKey, Array[Coordinate])]`` to an ``RDD[(SpatialKey,
+Tile)]`` (also available as the apply method on the ``EuclideanDistance``
+object in the ``geotrellis.spark.distance`` package).  The following image is
+one tile from such a Euclidean distance RDD.  Notice that around the tile
+boundary, we are seeing the influence of points from outside the tile's
+extent.
+
+.. image:: images/ed-excerpt.png
+   :align: center
+
+Keep in mind that one can rasterize non-point geometries as the basis for
+generic Euclidean distance computations, though this might start to be cost
+prohibitive if there are many polygonal areas in the input set.
+
+Known Limitations
+^^^^^^^^^^^^^^^^^
+
+When designing this component, our aim was to handle the triangulation of
+dense, very large clouds of points with only small regions (relative to the
+layout definition) without any samples.  That is to say, if there are
+occasional, isolated SpatialKeys that have no points, there is unlikely to be
+a problem.  Multiple contiguous SpatialKeys with no points may cause
+problems.  Specifically, in the case of Euclidean distance, if a tile has
+influence from outside the 3x3 area, there is likely to be errors.  In the
+best case, there will be missing tiles, in the worst case, the Euclidean
+distance will simply be incorrect in certain areas.
+
+.. image:: images/bad-ed.png
+   :align: center
+
+In this example, one can see that there are clear discontinuities in the
+values along some tile boundaries.  The upshot is that these erroneous tiles
+are generated when ``(SpatialKey(c, r), Array.empty[Coordinate])`` is included
+in the source RDD.  If the spatial key is simply not present, no tile will be
+generated at that location, and the incidence of erroneous tiles will be
+reduced, though not necessarily eliminated.
+
+In cases where the point sample is small enough to be triangulated efficiently
+on a single node, we recommend using
+``geotrellis.spark.distance.SparseEuclideanDistance`` to produce the Euclidean
+distance tiles.  This will produce the desired result.
+
+Numerical Issues
+----------------
+
+When dealing with large, real-world point sets (particularly LiDAR data), one
+is likely to encounter triangulation errors that arise from numerical issues.
+We have done our best to be conscious of the numerical issues that surround
+these triangulation operations, including porting Jonathan Shewchuk's robust
+predicates to Java, and offering some sensible numerical thresholds and
+tolerance parameters (not always accessible from the interface).
+Specifically, the DelaunayTriangulation object allows a distance threshold to
+be set, defining when two points are considered the same (only one will be
+retained, with no means of allowing the user to select which one).
+
+The two most common errors will arise from points that are too close together
+for the numerical predicates to distinguish them, but too far apart to be
+considered a single point. Notably, during distributed tasks, this will
+produce stitch triangles which overlap the patches being joined.  These errors
+arise from a known place in the code and can be dealt with by altering
+numerical thresholds, but there is currently no handle in the interface for
+setting these values.
+

@@ -6,6 +6,8 @@ import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.vector._
 import geotrellis.vector.triangulation._
+import geotrellis.vector.mesh.IndexedPointSet
+import geotrellis.spark.buffer
 
 import com.vividsolutions.jts.geom.Coordinate
 import org.apache.spark.rdd.RDD
@@ -66,7 +68,7 @@ object TinToDem {
 
           if(j > 2) {
             val pointSet =
-              DelaunayPointSet(points)
+              IndexedPointSet(points)
 
             val delaunay = DelaunayTriangulation(pointSet)
 
@@ -117,7 +119,7 @@ object TinToDem {
           val newNeighbors =
             neighbors.map { case (direction, (key2, border)) =>
               val ex = layoutDefinition.mapTransform(key2)
-              (direction, (border, ex))
+              (buffer.Direction.convertDirection(direction), (border, ex))
             }
           (key, newNeighbors.toMap)
         }
@@ -163,7 +165,7 @@ object TinToDem {
           val newNeighbors =
             neighbors.map { case (direction, (key2, dt)) =>
               val ex = layoutDefinition.mapTransform(key2)
-              (direction, (dt, ex))
+              (buffer.Direction.convertDirection(direction), (dt, ex))
             }
           (key, newNeighbors.toMap)
         }

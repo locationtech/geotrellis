@@ -147,12 +147,14 @@ construction of a SparkContext using the following commands:
 It will then be possible to issue a command such as
 ``sc.parallelize(Array(1,2,3))``.
 
-Alternatively, if you have source files inside a project directory tree
-(perhaps derived from ``geotrellis-sbt-template``), you may issue the
-``assembly`` command from ``sbt`` to produce a fat .jar file, which will
-appear in the ``target/scala-<version>/`` directory. That jar file can
-be supplied to ``spark-shell --jars <jarfile>``, given you have Spark
-installed on your local machine. That same jar file could be supplied to
-``spark-submit`` if you are running on a remote Spark master. Again, the
-ins-and-outs of Spark are beyond the scope of this document, but these
-pointers might provide useful jumping off points.
+Alternatively, if you have source files inside a project directory tree, you
+may issue the ``assembly`` command from ``sbt`` to produce a fat .jar file,
+which will appear in the ``target/scala-<version>/`` directory under your
+current project's root directory. That jar file can be supplied to the Spark
+shell as part of the command ``spark-shell --conf
+spark.serializer=org.apache.spark.serializer.KryoSerializer --jars
+<jarfile>``, provided you have Spark installed on your local machine.  Fat
+jars created via ``assembly`` can be supplied as well to ``spark-submit``
+commands for running jobs on a remote Spark master.  Again, the ins-and-outs
+of Spark are beyond the scope of this document, but these pointers might
+provide useful jumping off points.

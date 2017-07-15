@@ -27,4 +27,13 @@ class S3AttributeStoreSpec extends AttributeStoreSpec {
   lazy val attributeStore = new S3AttributeStore(bucket, prefix) {
     override val s3Client = new MockS3Client()
   }
+
+  it("should handle prefix with ending slash") {
+    val bucket = "test-bucket"
+    val prefix = "some/key/"
+    val as = new S3AttributeStore(bucket, prefix) { override val s3Client = new MockS3Client() }
+
+    import S3AttributeStore.SEP
+    as.attributePath(LayerId("testLayer", 0), "metadata") should be (s"some/key/_attributes/metadata${SEP}testLayer${SEP}0.json")
+  }
 }

@@ -21,6 +21,7 @@ import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.tags.codes._
 import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.io.geotiff.util._
+import geotrellis.util.ByteReader
 import CommonPublicValues._
 import ModelTypes._
 import ProjectionTypesMap.UserDefinedProjectionType
@@ -40,6 +41,14 @@ import monocle.syntax.apply._
 import monocle.macros.Lenses
 
 import spire.syntax.cfor._
+
+object TiffTags {
+  def apply(path: String): TiffTags =
+    TiffTagsReader.read(path)
+
+  def apply(byteReader: ByteReader): TiffTags =
+    TiffTagsReader.read(byteReader)
+}
 
 @Lenses("_")
 case class TiffTags(

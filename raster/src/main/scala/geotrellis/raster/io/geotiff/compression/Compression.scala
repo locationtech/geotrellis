@@ -16,6 +16,6 @@
 
 package geotrellis.raster.io.geotiff.compression
 
-trait Compression {
+trait Compression extends Serializable {
   def createCompressor(segmentCount: Int): Compressor
 }

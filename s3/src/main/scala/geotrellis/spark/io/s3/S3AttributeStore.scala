@@ -33,7 +33,7 @@ import java.io.ByteArrayInputStream
  * Stores and retrieves layer attributes in an S3 bucket in JSON format
  *
  * @param bucket    S3 bucket to use for attribute store
- * @param prefix  path in the bucket for given LayerId, not ending in "/"
+ * @param prefix    path in the bucket for given LayerId
  */
 class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayerAttributeStore {
   val s3Client: S3Client = S3Client.DEFAULT
@@ -45,7 +45,11 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayer
    * It could be remedied by some kind of time-out cache for both read/write in this class.
    */
 
-  def path(parts: String*) = parts.filter(_.nonEmpty).mkString("/")
+  def path(parts: String*) =
+    parts
+      .filter(_.nonEmpty)
+      .map { s => if(s.endsWith("/")) s.dropRight(1) else s }
+      .mkString("/")
 
   def attributePath(id: LayerId, attributeName: String): String =
     path(prefix, "_attributes", s"${attributeName}${SEP}${id.name}${SEP}${id.zoom}.json")

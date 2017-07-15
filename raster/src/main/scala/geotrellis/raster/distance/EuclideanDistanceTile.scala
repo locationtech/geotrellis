@@ -16,31 +16,55 @@
 
 package geotrellis.raster.distance
 
-import geotrellis.raster.{RasterExtent, DoubleArrayTile, Tile}
+import com.vividsolutions.jts.geom.Coordinate
+
+import geotrellis.raster._
 import geotrellis.raster.rasterize.polygon.PolygonRasterizer
 import geotrellis.vector.{Point, Polygon}
 import geotrellis.vector.voronoi._
+
 import scala.math.sqrt
 
 object EuclideanDistanceTile {
 
-  def apply(pts: Array[Point], rasterExtent: RasterExtent): Tile = {
-    val vor = pts.toList.voronoiDiagram()
-    val tile = DoubleArrayTile.empty(rasterExtent.cols, rasterExtent.rows)
-    
-    def fillFn(base: Point)(col: Int, row: Int): Unit = {
-      val (x,y) = rasterExtent.gridToMap(col, row)
-      tile.setDouble(col, row, sqrt((x - base.x) * (x - base.x) + (y - base.y) * (y - base.y)))
-    }
+  private def fillFn(rasterExtent: RasterExtent, tile: MutableArrayTile, base: Point)(col: Int, row: Int): Unit = {
+    val (x,y) = rasterExtent.gridToMap(col, row)
+    val currentValue = tile.getDouble(col, row)
+    val newValue = sqrt((x - base.x) * (x - base.x) + (y - base.y) * (y - base.y))
 
-    def rasterizeDistanceCell(arg: (Polygon, Point)) = {
-      val (poly, pt) = arg
-      
-      PolygonRasterizer.foreachCellByPolygon(poly, rasterExtent)(fillFn(pt))
-    }
-    vor.voronoiCellsWithPoints.foreach(rasterizeDistanceCell)
+    if (java.lang.Double.isNaN(currentValue) || currentValue > newValue)
+      tile.setDouble(col, row, newValue)
+  }
 
+  def rasterizeDistanceCell(rasterExtent: RasterExtent, tile: MutableArrayTile)(arg: (Polygon, Coordinate)) = {
+    val (poly, coord) = arg
+
+    try {
+      val buffered = poly.buffer(math.max(rasterExtent.cellwidth, rasterExtent.cellheight))
+      PolygonRasterizer.foreachCellByPolygon(buffered, rasterExtent)(fillFn(rasterExtent, tile, Point.jtsCoord2Point(coord)))
+    } catch {
+      case e: Throwable => println(s"Error when handling ${poly}: ${e.getMessage}")
+    }
+  }
+
+  def apply(pts: Array[Coordinate], rasterExtent: RasterExtent, cellType: CellType = DoubleConstantNoDataCellType): Tile = {
+    val vor = VoronoiDiagram(pts, rasterExtent.extent)
+    val tile = ArrayTile.empty(cellType, rasterExtent.cols, rasterExtent.rows)
+
+    vor.voronoiCellsWithPoints.foreach(rasterizeDistanceCell(rasterExtent, tile))
     tile
+  }
+
+  def apply(pts: Array[Point], rasterExtent: RasterExtent): Tile = {
+    apply(pts.map{ pt => new Coordinate(pt.x, pt.y) }, rasterExtent)
+  }
+
+  def apply(pts: Array[(Double, Double)], rasterExtent: RasterExtent): Tile = {
+    apply(pts.map{ case (x, y) => new Coordinate(x, y) }, rasterExtent)
+  }
+
+  def apply(pts: Array[(Double, Double, Double)], rasterExtent: RasterExtent): Tile = {
+    apply(pts.map{ case (x, y, z) => new Coordinate(x, y, z) }, rasterExtent)
   }
 
 }

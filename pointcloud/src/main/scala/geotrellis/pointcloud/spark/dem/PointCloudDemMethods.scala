@@ -16,13 +16,16 @@
 
 package geotrellis.pointcloud.spark.dem
 
-import io.pdal._ // Placed here to avoid "object pdal is not a member of package geotrellis.raster.io"
+import io.pdal._
 
 import geotrellis.raster._
 import geotrellis.raster.rasterize.triangles.TrianglesRasterizer
 import geotrellis.util.MethodExtensions
 import geotrellis.vector._
-import geotrellis.vector.voronoi.Delaunay
+import geotrellis.vector.triangulation.DelaunayTriangulation
+import geotrellis.vector.mesh.IndexedPointSet
+
+import com.vividsolutions.jts.geom.Coordinate
 
 trait PointCloudDemMethods extends MethodExtensions[PointCloud] {
 
@@ -40,10 +43,16 @@ trait PointCloudDemMethods extends MethodExtensions[PointCloud] {
     PointCloud(self.bytes ++ otherCloud.bytes, self.dimTypes)
   }
 
+  lazy val coords: Array[Coordinate] =
+    (0 until self.length).map({ i => new Coordinate(self.getDouble(i, "X"), self.getDouble(i, "Y")) }).toArray
   lazy val xs = (0 until self.length).map({ i => self.getDouble(i, "X") }).toArray
   lazy val ys = (0 until self.length).map({ i => self.getDouble(i, "Y") }).toArray
   lazy val indexMap: Map[(Double, Double), Int] = xs.zip(ys).zipWithIndex.toMap
-  lazy val triangles = Delaunay(xs, ys).triangles
+  lazy val delaunayTriangulation = DelaunayTriangulation(IndexedPointSet(coords))
+  val indexToCoord = delaunayTriangulation.pointSet.getCoordinate(_)
+  lazy val triangles: Seq[Polygon] = delaunayTriangulation.triangleMap.triangleVertices.toSeq.map {
+    case (i, j, k) => Polygon(indexToCoord(i), indexToCoord(j), indexToCoord(k), indexToCoord(i))
+  }
 
   def toTile(re: RasterExtent, dimension: String): ArrayTile = {
     val sourceArray = (0 until self.length).map({ i => self.getDouble(i, dimension) }).toArray

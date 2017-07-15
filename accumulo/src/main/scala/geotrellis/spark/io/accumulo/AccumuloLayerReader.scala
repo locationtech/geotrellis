@@ -47,10 +47,20 @@ class AccumuloLayerReader(val attributeStore: AttributeStore)(implicit sc: Spark
     }
 
     val queryKeyBounds = tileQuery(metadata)
+    val layerBounds = metadata.getComponent[Bounds[K]]
 
-    val decompose = (bounds: KeyBounds[K]) =>
-      keyIndex.indexRanges(bounds).map { case (min, max) =>
-        new AccumuloRange(new Text(AccumuloKeyEncoder.long2Bytes(min)), new Text(AccumuloKeyEncoder.long2Bytes(max)))
+    val decompose: KeyBounds[K] => Seq[AccumuloRange] =
+      if(queryKeyBounds.size == 1 && queryKeyBounds.head.contains(layerBounds)) {
+        // This query is asking for all the keys of the layer;
+        // avoid a heavy set of accumulo ranges by not setting any at all,
+        // which equates to a full request.
+        { _ => Seq(new AccumuloRange()) }
+      } else {
+        (bounds: KeyBounds[K]) => {
+          keyIndex.indexRanges(bounds).map { case (min, max) =>
+            new AccumuloRange(new Text(AccumuloKeyEncoder.long2Bytes(min)), new Text(AccumuloKeyEncoder.long2Bytes(max)))
+          }
+        }
       }
 
     val rdd = AccumuloRDDReader.read[K, V](header.tileTable, columnFamily(id), queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema))

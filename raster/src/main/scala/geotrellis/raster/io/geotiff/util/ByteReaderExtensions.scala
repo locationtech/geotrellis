@@ -17,7 +17,7 @@
 package geotrellis.raster.io.geotiff.util
 
 import geotrellis.util.ByteReader
-import java.nio.ByteBuffer
+import java.nio.{ByteBuffer, ByteOrder}
 
 import spire.syntax.cfor._
 
@@ -51,11 +51,11 @@ trait ByteReaderExtensions {
       arr
     }
 
-    final def getByteArray(offset: Long, length: Long): Array[Short] = {
+    final def getByteArray(offset: Long, length: Long)(implicit ttos: TiffTagOffsetSize): Array[Short] = {
       val arr = Array.ofDim[Short](length.toInt)
 
-      if (length <= 4) {
-        val bb = ByteBuffer.allocate(4).order(byteReader.order).putInt(0, offset.toInt)
+      if (length <= ttos.size) {
+        val bb = ttos.allocateByteBuffer(offset, byteReader.order)
         cfor(0)( _ < length, _ + 1) { i =>
           arr(i) = ub2s(bb.get)
         }
@@ -73,11 +73,11 @@ trait ByteReaderExtensions {
       arr
     }
 
-    final def getShortArray(offset: Long, length: Long): Array[Int] = {
+    final def getShortArray(offset: Long, length: Long)(implicit ttos: TiffTagOffsetSize): Array[Int] = {
       val arr = Array.ofDim[Int](length.toInt)
 
-      if (length <= 2) {
-        val bb = ByteBuffer.allocate(4).order(byteReader.order).putInt(0, offset.toInt)
+      if (length * 2 <= ttos.size) {
+        val bb = ttos.allocateByteBuffer(offset, byteReader.order)
         cfor(0)(_ < length, _ + 1) { i =>
           arr(i) = us2i(bb.getShort)
         }
@@ -96,12 +96,14 @@ trait ByteReaderExtensions {
     }
 
     /** Get these as Longs, since they are unsigned and we might want to deal with values greater than Int.MaxValue */
-    final def getIntArray(offset: Long, length: Long): Array[Long] = {
+    final def getIntArray(offset: Long, length: Long)(implicit ttos: TiffTagOffsetSize): Array[Long] = {
       val arr = Array.ofDim[Long](length.toInt)
 
-      if (length == 1) {
-        val bb = ByteBuffer.allocate(4).order(byteReader.order).putInt(0, offset.toInt)
-        arr(0) = ui2l(bb.getInt)
+      if (length * 4 <= ttos.size) {
+        val bb = ttos.allocateByteBuffer(offset, byteReader.order)
+        cfor(0)(_ < length, _ + 1) { i =>
+          arr(i) = ui2l(bb.getInt)
+        }
       } else {
         val oldPos = byteReader.position
 
@@ -116,12 +118,14 @@ trait ByteReaderExtensions {
       arr
     }
 
-    final def getLongArray(offset: Long, length: Long): Array[Long] = {
+    final def getLongArray(offset: Long, length: Long)(implicit ttos: TiffTagOffsetSize): Array[Long] = {
       val arr = Array.ofDim[Long](length.toInt)
 
-      if (length <= 8) {
-        val bb = ByteBuffer.allocate(4).order(byteReader.order).putLong(0, offset)
-        arr(0) = bb.getLong
+      if (length * 8 <= ttos.size) {
+        val bb = ttos.allocateByteBuffer(offset, byteReader.order)
+        cfor(0)(_ < length, _ + 1) { i =>
+          arr(i) = bb.getLong
+        }
       } else {
         val oldPos = byteReader.position
 
@@ -136,11 +140,11 @@ trait ByteReaderExtensions {
       arr
     }
 
-    final def getString(offset: Long, length: Long): String = {
+    final def getString(offset: Long, length: Long)(implicit ttos: TiffTagOffsetSize): String = {
       val sb = new StringBuilder
-      if (length <= 4) {
-        val bb = ByteBuffer.allocate(4).order(byteReader.order).putInt(0, offset.toInt)
-        cfor(0)( _ < length, _ + 1) { i =>
+      if (length <= ttos.size) {
+        val bb = ttos.allocateByteBuffer(offset, byteReader.order)
+        cfor(0)(_ < length, _ + 1) { i =>
           sb.append(bb.get.toChar)
         }
       } else {
@@ -157,43 +161,52 @@ trait ByteReaderExtensions {
       sb.toString
     }
 
-    final def getFractionalArray(offset: Long, length: Long): Array[(Long, Long)] = {
+    final def getFractionalArray(offset: Long, length: Long)(implicit ttos: TiffTagOffsetSize): Array[(Long, Long)] = {
       val arr = Array.ofDim[(Long, Long)](length.toInt)
 
-      val oldPos = byteReader.position
-      byteReader.position(offset)
+      if (length * 8 <= ttos.size) {
+        val bb = ttos.allocateByteBuffer(offset, byteReader.order)
+        cfor(0)(_ < length, _ + 1) { i =>
+          arr(i) = (ui2l(bb.getInt), ui2l(bb.getInt))
+        }
+      } else {
+        val oldPos = byteReader.position
+        byteReader.position(offset)
 
-      cfor(0)(_ < length, _ + 1) { i =>
-        arr(i) = (ui2l(byteReader.getInt), ui2l(byteReader.getInt))
+        cfor(0)(_ < length, _ + 1) { i =>
+          arr(i) = (ui2l(byteReader.getInt), ui2l(byteReader.getInt))
+        }
+
+        byteReader.position(oldPos)
       }
-
-      byteReader.position(oldPos)
 
       arr
     }
 
     /** NOTE: We don't support lengths greater than Int.MaxValue yet (or ever). */
-    final def getSignedByteArray(offset: Long, length: Long): Array[Byte] = {
+    final def getSignedByteArray(offset: Long, length: Long)(implicit ttos: TiffTagOffsetSize): Array[Byte] = {
       val len = length.toInt
-      if (length <= 4) {
+      if (length <= ttos.size) {
         val arr = Array.ofDim[Byte](len)
-        val bb = ByteBuffer.allocate(4).order(byteReader.order).putInt(0, offset.toInt)
+        val bb = ttos.allocateByteBuffer(offset, byteReader.order)
         cfor(0)(_ < len, _ + 1) { i =>
           arr(i) = bb.get
         }
         arr
       } else {
+        val oldPosition = byteReader.position
         byteReader.position(offset)
         val arr = byteReader.getBytes(len)
+        byteReader.position(oldPosition)
         arr
       }
     }
 
-    final def getSignedShortArray(offset: Long, length: Long): Array[Short] = {
+    final def getSignedShortArray(offset: Long, length: Long)(implicit ttos: TiffTagOffsetSize): Array[Short] = {
       val arr = Array.ofDim[Short](length.toInt)
 
-      if (length <= 2) {
-        val bb = ByteBuffer.allocate(4).order(byteReader.order).putInt(0, offset.toInt)
+      if (length * 2 <= ttos.size) {
+        val bb = ttos.allocateByteBuffer(offset, byteReader.order)
         cfor(0)(_ < length, _ + 1) { i =>
           arr(i) = bb.getShort
         }
@@ -211,11 +224,14 @@ trait ByteReaderExtensions {
       arr
     }
 
-    final def getSignedIntArray(offset: Long, length: Long): Array[Int] = {
+    final def getSignedIntArray(offset: Long, length: Long)(implicit ttos: TiffTagOffsetSize): Array[Int] = {
       val arr = Array.ofDim[Int](1)
 
-      if (length == 1) {
-        arr(0) = ByteBuffer.allocate(4).order(byteReader.order).putInt(0, offset.toInt).getInt
+      if (length * 8 <= ttos.size) {
+        val bb = ttos.allocateByteBuffer(offset, byteReader.order)
+        cfor(0)(_ < length, _ + 1) { i =>
+          arr(i) = bb.getInt
+        }
       } else {
         val oldPos = byteReader.position
         byteReader.position(offset)
@@ -230,26 +246,35 @@ trait ByteReaderExtensions {
       arr
     }
 
-    final def getSignedFractionalArray(offset: Long, length: Long): Array[(Int, Int)] = {
+    final def getSignedFractionalArray(offset: Long, length: Long)(implicit ttos: TiffTagOffsetSize): Array[(Int, Int)] = {
       val arr = Array.ofDim[(Int, Int)](length.toInt)
 
-      val oldPos = byteReader.position
-      byteReader.position(offset)
+      if(length * 8 <= ttos.size) {
+        val bb = ttos.allocateByteBuffer(offset, byteReader.order)
+        cfor(0)(_ < length, _ + 1) { i =>
+          arr(i) = (bb.getInt, bb.getInt)
+        }
+      } else {
 
-      cfor(0)(_ < length, _ + 1) { i =>
-        arr(i) = (byteReader.getInt, byteReader.getInt)
+        val oldPos = byteReader.position
+        byteReader.position(offset)
+
+        cfor(0)(_ < length, _ + 1) { i =>
+          arr(i) = (byteReader.getInt, byteReader.getInt)
+        }
+
+        byteReader.position(oldPos)
       }
-
-      byteReader.position(oldPos)
 
       arr
     }
 
-    final def getFloatArray(offset: Long, length: Long): Array[Float] = {
+    final def getFloatArray(offset: Long, length: Long)(implicit ttos: TiffTagOffsetSize): Array[Float] = {
       val arr = Array.ofDim[Float](length.toInt)
 
-      if (length <= 1) {
-        val bb = ByteBuffer.allocate(4).order(byteReader.order).putInt(0, offset.toInt)
+      if (length * 4 <= ttos.size) {
+        val bb = ttos.allocateByteBuffer(offset, byteReader.order)
+
         cfor(0)(_ < length, _ + 1) { i =>
           arr(i) = bb.getFloat
         }
@@ -266,17 +291,26 @@ trait ByteReaderExtensions {
       arr
     }
 
-    final def getDoubleArray(offset: Long, length: Long): Array[Double] = {
+    final def getDoubleArray(offset: Long, length: Long)(implicit ttos: TiffTagOffsetSize): Array[Double] = {
       val arr = Array.ofDim[Double](length.toInt)
 
-      val oldPos = byteReader.position
-      byteReader.position(offset)
+      if (length * 8 <= ttos.size) {
+        val bb = ttos.allocateByteBuffer(offset, byteReader.order)
 
-      cfor(0)(_ < length, _ + 1) { i =>
-        arr(i) = byteReader.getDouble
+        cfor(0)(_ < length, _ + 1) { i =>
+          arr(i) = bb.getDouble
+        }
+      } else {
+
+        val oldPos = byteReader.position
+        byteReader.position(offset)
+
+        cfor(0)(_ < length, _ + 1) { i =>
+          arr(i) = byteReader.getDouble
+        }
+
+        byteReader.position(oldPos)
       }
-
-      byteReader.position(oldPos)
 
       arr
     }

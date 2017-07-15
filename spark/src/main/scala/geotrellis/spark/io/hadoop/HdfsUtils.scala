@@ -18,6 +18,7 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.util.LazyLogging
 
+import org.apache.hadoop.io.compress.CompressionCodecFactory
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._
 import org.apache.hadoop.mapreduce.Job
@@ -228,6 +229,58 @@ object HdfsUtils extends LazyLogging {
 
           Some(lineScanner)
         }
+    }
+  }
+
+  def write(path: Path, conf: Configuration)(dosWrite: DataOutputStream => Unit): Unit = {
+    val fs = path.getFileSystem(conf)
+
+    val os = {
+      val factory = new CompressionCodecFactory(conf)
+      val codec = factory.getCodec(path)
+
+      if (codec == null) {
+        println(s"No codec found for $path, writing without compression.")
+        fs.create(path)
+      } else {
+        codec.createOutputStream(fs.create(path))
+      }
+    }
+    try {
+      val dos = new DataOutputStream(os)
+      try {
+        dosWrite(dos)
+      } finally {
+        dos.close
+      }
+    } finally {
+      os.close
+    }
+  }
+
+  def read[T](path: Path, conf: Configuration)(disRead: DataInputStream => T): T = {
+    val fs = path.getFileSystem(conf)
+
+    val is = {
+      val factory = new CompressionCodecFactory(conf)
+      val codec = factory.getCodec(path)
+
+      if (codec == null) {
+        println(s"No codec found for $path, reading without compression.")
+        fs.open(path)
+      } else {
+        codec.createInputStream(fs.open(path))
+      }
+    }
+    try {
+      val dis = new DataInputStream(is)
+      try {
+        disRead(dis)
+      } finally {
+        dis.close
+      }
+    } finally {
+      is.close
     }
   }
 }
