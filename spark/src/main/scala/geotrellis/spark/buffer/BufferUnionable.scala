@@ -29,18 +29,20 @@ object BufferUnionable {
         val SpatialKey(col, row) = key
 
         for (deltaX <- -1 to +1; deltaY <- -1 to +1) yield {
-          if(deltaX == 0 && deltaY == 0)
-            (SpatialKey(col+deltaX, row+deltaY), (key, data, true))
+          if (deltaX == 0 && deltaY == 0)
+            (SpatialKey(col + deltaX, row + deltaY), (key, data, true))
           else
-            (SpatialKey(col+deltaX, row+deltaY), (key, data, false))
-        } })
+            (SpatialKey(col + deltaX, row + deltaY), (key, data, false))
+        }
+      })
       .groupByKey
-      .filter({ case (sortKey, seq) => seq.find { case (_, _, center) => center == true }.isDefined })
-      .map({ case (_, seq) =>
+      .filter({ case (_, seq) => seq.exists { case (_, _, center) => center } })
+      .map({ case (sortKey, seq) =>
         val resultKey = seq.filter({ case (_, _, center) => center }).head._1
         val resultValue = seq.map({ case (_, data, _) => data }).reduce(_ union _)
 
-        (resultKey, resultValue) })
+        (resultKey, resultValue)
+      })
   }
 
 }
