@@ -30,11 +30,11 @@ class BufferUnionableSpec extends FunSpec with TestEnvironment {
       val thing3 = UnionableThing(59)
 
       val rdd = sc.parallelize(List((key1, thing1), (key2, thing2), (key3, thing3)))
-      val results = BufferUnionable(rdd).map({ case (_, thing) => thing.n }).collect
+      val results = BufferUnionable(rdd).map({ case (k, thing) => k -> thing.n }).collect.toMap
 
-      results(0) should be (47 * 53)
-      results(1) should be (47 * 53)
-      results(2) should be (59)
+      results(key1) should be (47 * 53)
+      results(key2) should be (47 * 53)
+      results(key3) should be (59)
     }
   }
 
