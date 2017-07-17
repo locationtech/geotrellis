@@ -28,7 +28,7 @@ import java.net.URI
  *  ex: `s3://<bucket>/<prefix-to-catalog>`
  */
 class S3LayerProvider extends AttributeStoreProvider
-    with LayerReaderProvider with LayerWriterProvider {
+    with LayerReaderProvider with LayerWriterProvider with ValueReaderProvider {
   def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "s3"
 
   def attributeStore(uri: URI): AttributeStore = {
@@ -44,5 +44,9 @@ class S3LayerProvider extends AttributeStoreProvider
     // TODO: encoder ACL changes in putObjectModifier
     val s3Uri = new AmazonS3URI(uri)
     new S3LayerWriter(store, bucket = s3Uri.getBucket, keyPrefix = s3Uri.getKey)
+  }
+
+  def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] = {
+    new S3ValueReader(store)
   }
 }

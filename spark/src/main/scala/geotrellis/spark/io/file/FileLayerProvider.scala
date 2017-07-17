@@ -28,7 +28,7 @@ import java.io.File
  *  ex: `file:/tmp/catalog`
  */
 class FileLayerProvider extends AttributeStoreProvider
-    with LayerReaderProvider with LayerWriterProvider {
+    with LayerReaderProvider with LayerWriterProvider with ValueReaderProvider {
 
   def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "file"
 
@@ -45,5 +45,10 @@ class FileLayerProvider extends AttributeStoreProvider
   def layerWriter(uri: URI, store: AttributeStore): LayerWriter[LayerId] = {
     val file = new File(uri)
     new FileLayerWriter(store, file.getCanonicalPath)
+  }
+
+  def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] = {
+    val catalogPath = new File(uri).getCanonicalPath
+    new FileValueReader(store, catalogPath)
   }
 }

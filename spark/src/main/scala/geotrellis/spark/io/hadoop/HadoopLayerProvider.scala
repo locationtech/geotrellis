@@ -31,7 +31,7 @@ import java.net.URI
  * That support is provided by [[S3Attributestore]]
  */
 class HadoopLayerProvider extends AttributeStoreProvider
-    with LayerReaderProvider with LayerWriterProvider {
+    with LayerReaderProvider with LayerWriterProvider with ValueReaderProvider {
   val schemes: Array[String] = Array("hdfs", "hdfs+file", "s3n", "s3a")
 
   private def trim(uri: URI): URI =
@@ -58,5 +58,14 @@ class HadoopLayerProvider extends AttributeStoreProvider
     val params = UriUtils.getParams(_uri)
     val interval = params.getOrElse("interval", "4").toInt
     new HadoopLayerWriter(path, store, interval)
+  }
+
+  def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] = {
+    val _uri = trim(uri)
+    val path = new Path(_uri)
+    val params = UriUtils.getParams(_uri)
+    val conf = new Configuration()
+    val maxOpenFiles = params.getOrElse("maxOpenFiles", "16").toInt
+    new HadoopValueReader(store, conf, maxOpenFiles)
   }
 }

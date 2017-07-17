@@ -36,4 +36,10 @@ class AccumuloLayerProviderSpec extends FunSpec with TestEnvironment {
     val reader = LayerWriter(uri)
     assert(reader.isInstanceOf[AccumuloLayerWriter])
   }
+
+  it("construct AccumuloValueReader from URI") {
+    val reader = ValueReader(uri)
+    assert(reader.isInstanceOf[AccumuloValueReader])
+  }
+
 }

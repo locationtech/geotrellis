@@ -36,4 +36,9 @@ class S3LayerProviderSpec extends FunSpec with TestEnvironment {
     val reader = LayerWriter(uri)
     assert(reader.isInstanceOf[S3LayerWriter])
   }
+
+  it("construct S3ValueReader from URI") {
+    val reader = ValueReader(uri)
+    assert(reader.isInstanceOf[S3ValueReader])
+  }
 }
