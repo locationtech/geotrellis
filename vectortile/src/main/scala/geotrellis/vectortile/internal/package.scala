@@ -35,10 +35,10 @@ package object internal {
   /** If an sequence of Commands is given that does not conform to what the
     * Point, LineString, and Polygon decoders expect.
     */
-  case class CommandSequenceError(message: String) extends Exception(message)
+  private[vectortile] case class CommandSequenceError(message: String) extends Exception(message)
 
   /** If some invalid combination of command id and parameter count are given. */
-  case class CommandError(id: Int, count: Int) extends Exception(s"ID: ${id}, COUNT: ${count}")
+  private[vectortile] case class CommandError(id: Int, count: Int) extends Exception(s"ID: ${id}, COUNT: ${count}")
 
   /**
    * Expand a collection of diffs from some reference point into that
@@ -124,7 +124,7 @@ package object internal {
     * }}}
     *
     */
-  def toProjection(point: (Int, Int), topLeft: Point, resolution: Double): Point = {
+  private[vectortile] def toProjection(point: (Int, Int), topLeft: Point, resolution: Double): Point = {
     Point(
       topLeft.x + (resolution * point._1),
       topLeft.y - (resolution * point._2)
@@ -140,7 +140,7 @@ package object internal {
     * @param resolution How much of the CRS's units are covered by a single VT grid coordinate.
     * @return Grid coordinates in VectorTile space.
     */
-  def fromProjection(point: Point, topLeft: Point, resolution: Double): (Int, Int) = {
+  private[vectortile] def fromProjection(point: Point, topLeft: Point, resolution: Double): (Int, Int) = {
     (
       ((point.x - topLeft.x) / resolution).toInt,
       ((topLeft.y - point.y) / resolution).toInt
@@ -148,7 +148,7 @@ package object internal {
   }
 
   /** Instance definition of the ProtobufGeom typeclass for Points. */
-  implicit val protoPoint = new ProtobufGeom[Point, MultiPoint] {
+  private[vectortile] implicit val protoPoint = new ProtobufGeom[Point, MultiPoint] {
     def fromCommands(
       cmds: Seq[Command],
       topLeft: Point,
@@ -175,7 +175,7 @@ package object internal {
   }
 
   /** Instance definition of the ProtobufGeom typeclass for Lines. */
-  implicit val protoLine = new ProtobufGeom[Line, MultiLine] {
+  private[vectortile] implicit val protoLine = new ProtobufGeom[Line, MultiLine] {
     def fromCommands(
       cmds: Seq[Command],
       topLeft: Point,
@@ -230,7 +230,7 @@ package object internal {
   }
 
   /** Instance definition of the ProtobufGeom typeclass for Polygons. */
-  implicit val protoPolygon = new ProtobufGeom[Polygon, MultiPolygon] {
+  private[vectortile] implicit val protoPolygon = new ProtobufGeom[Polygon, MultiPolygon] {
     def fromCommands(
       cmds: Seq[Command],
       topLeft: Point,
@@ -334,7 +334,7 @@ package object internal {
    * If the value reported here is negative, then the [[Polygon]] should be
    * considered an Interior Ring.
    */
-  def surveyor(l: ListBuffer[(Int, Int)]): Double = {
+  private[vectortile] def surveyor(l: ListBuffer[(Int, Int)]): Double = {
     val ps: ListBuffer[(Int, Int)] = l.init
     val xs = ps.map(_._1)
     val yns = (ps :+ ps.head).tail.map(_._2)
@@ -353,7 +353,7 @@ package object internal {
   }
 
   /** Automatically convert mid-level Protobuf Values into a high-level [[Value]]. */
-  implicit def protoVal(value: vt.Tile.Value): Value = {
+  private[vectortile] implicit def protoVal(value: vt.Tile.Value): Value = {
     if (value.stringValue.isDefined) {
       VString(value.stringValue.get)
     } else if (value.floatValue.isDefined) {

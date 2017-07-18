@@ -21,7 +21,7 @@
 
 package geotrellis.vectortile.internal.vector_tile
 
-object VectorTileProto {
+private[vectortile] object VectorTileProto {
   private lazy val ProtoBytes: Array[Byte] =
       com.trueaccord.scalapb.Encoding.fromBase64(scala.collection.Seq(
   """ChF2ZWN0b3JfdGlsZS5wcm90bxILdmVjdG9yX3RpbGUi4wUKBFRpbGUSLwoGbGF5ZXJzGAMgAygLMhcudmVjdG9yX3RpbGUuV

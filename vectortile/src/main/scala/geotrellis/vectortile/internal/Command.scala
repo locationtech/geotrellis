@@ -49,24 +49,24 @@ import scala.annotation.tailrec
   *  - Any Polygon in a Polygon feature must have a LineTo with a count of at least 2.
   *  - ClosePath must always have a parameter count of 1.
   */
-sealed trait Command extends Serializable
+private[vectortile] sealed trait Command extends Serializable
 
 /** `MoveTo` signals a series of moves from the current cursor (default of `(0,0)`).
   * The parameter pairs that follow don't represent a point to move to,
   * but instead are deltas from the current cursor.
   */
-case class MoveTo(deltas: Array[(Int,Int)]) extends Command
+private[vectortile] case class MoveTo(deltas: Array[(Int,Int)]) extends Command
 
 /** `LineTo` indicates that a LineString should be continued from the current
   * cursor.
   */
-case class LineTo(deltas: Array[(Int,Int)]) extends Command
+private[vectortile] case class LineTo(deltas: Array[(Int,Int)]) extends Command
 
 /** Signals the end of a Polygon. Never has parameters, and doesn't move the cursor. */
-case object ClosePath extends Command
+private[vectortile] case object ClosePath extends Command
 
 /** Contains convenience functions for handling [[Command]]s. */
-object Command {
+private[vectortile] object Command {
   /** Attempt to parse a list of Command/Parameter Integers. */
   def commands(cmds: Seq[Int]): ListBuffer[Command] = {
     @tailrec def work(cmds: Seq[Int], curr: ListBuffer[Command]): ListBuffer[Command] = cmds match {

@@ -40,7 +40,7 @@ import geotrellis.vector.{ Geometry, MultiGeometry, Point }
   * implicitly[ProtobufGeom[Point, MultiPoint]].fromCommands(Command.commands(Seq(9,2,2)), topLeft, resolution)
   * }}}
   */
-trait ProtobufGeom[G1 <: Geometry, G2 <: MultiGeometry] extends Serializable {
+private[vectortile] trait ProtobufGeom[G1 <: Geometry, G2 <: MultiGeometry] extends Serializable {
   /**
     * Decode a sequence of VectorTile [[Command]]s into a GeoTrellis
     * Geometry. Due to the reasons stated above, this may be either

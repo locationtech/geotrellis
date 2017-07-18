@@ -16,7 +16,10 @@
 
 package geotrellis
 
-/** Invented by [[https://www.mapbox.com/ Mapbox]], VectorTiles are a combination of the
+/**
+  * ''This package is experimental. Expect API flux.''
+  *
+  * Invented by [[https://www.mapbox.com/ Mapbox]], VectorTiles are a combination of the
   * ideas of finite-sized tiles and vector geometries. Mapbox maintains the
   * official implementation spec for VectorTile codecs. The specification is free
   * and open source.
@@ -96,4 +99,4 @@ package geotrellis
   * @author cwoodbury@azavea.com
   * @version 2.1
   */
-package object vectortile
+package object vectortile {}
