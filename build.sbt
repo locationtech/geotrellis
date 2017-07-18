@@ -99,8 +99,7 @@ lazy val root = Project("geotrellis", file(".")).
     vector,
     `vector-test`,
     `vector-testkit`,
-    vectortile,
-    `vectortile-spark`
+    vectortile
   ).
   settings(commonSettings: _*).
   enablePlugins(ScalaUnidocPlugin).
@@ -120,10 +119,6 @@ lazy val macros = project
 
 lazy val vectortile = project
   .dependsOn(vector)
-  .settings(commonSettings)
-
-lazy val `vectortile-spark` = project
-  .dependsOn(vectortile, spark)
   .settings(commonSettings)
 
 lazy val vector = project

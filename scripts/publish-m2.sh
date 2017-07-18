@@ -20,5 +20,4 @@
       "project util" +publish-m2 \
       "project vector" +publish-m2 \
       "project vector-testkit" +publish-m2 \
-      "project vectortile" +publish-m2 \
-      "project vectortile-spark" +publish-m2
+      "project vectortile" +publish-m2
