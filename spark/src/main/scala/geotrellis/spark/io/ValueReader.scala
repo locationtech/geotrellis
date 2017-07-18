@@ -47,7 +47,7 @@ object ValueReader {
     apply(AttributeStore(attributeStoreUri), valueReaderUri)
 
   def apply(uri: URI): ValueReader[LayerId] =
-    apply(attributeStore = uri, valueReaderUri = uri)
+    apply(attributeStoreUri = uri, valueReaderUri = uri)
 
   def apply(attributeStore: AttributeStore, valueReaderUri: String): ValueReader[LayerId] =
     apply(attributeStore, new URI(valueReaderUri))
@@ -58,6 +58,6 @@ object ValueReader {
 
   def apply(uri: String): ValueReader[LayerId] = {
     val _uri = new URI(uri)
-    apply(attributeStore = _uri, valueReaderUri = _uri)
+    apply(attributeStoreUri = _uri, valueReaderUri = _uri)
   }
 }
