@@ -61,6 +61,7 @@ package object spark
     with summary.Implicits
     with summary.polygonal.Implicits
     with tiling.Implicits
+    with timeseries.Implicits
     with viewshed.Implicits {
   type TileLayerRDD[K] = RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]
   object TileLayerRDD {
