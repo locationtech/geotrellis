@@ -54,7 +54,7 @@ class AmazonS3Client(s3client: AWSAmazonS3Client) extends S3Client {
       listObjectsRequest.setMarker(listing.getNextMarker)
     } while (listing.isTruncated)
 
-    result.toSeq
+    result
   }
 
   def getObject(getObjectRequest: GetObjectRequest): S3Object =
