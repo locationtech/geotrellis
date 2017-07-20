@@ -24,6 +24,9 @@ object RDDTimeSeriesFunctions {
 
   def maxReduction(left: Double, right: Double): Double =
     MaxDoubleSummary.combineResults(List(left, right))
+
+  def minReduction(left: Double, right: Double): Double =
+    MinDoubleSummary.combineResults(List(left, right))
 }
 
 abstract class RDDTimeSeriesMethods
@@ -43,6 +46,36 @@ abstract class RDDTimeSeriesMethods
         }
       }
     })
+  }
+
+  def minSeries(
+    polygon: MultiPolygon,
+    options: Options
+  ): Map[ZonedDateTime, Double] =
+    minSeries(List(polygon), options)
+
+  def minSeries(
+    polygon: MultiPolygon
+  ): Map[ZonedDateTime, Double] =
+    minSeries(List(polygon), Options.DEFAULT)
+
+  def minSeries(
+    polygons: Traversable[MultiPolygon]
+  ): Map[ZonedDateTime, Double] =
+    minSeries(polygons, Options.DEFAULT)
+
+  def minSeries(
+    polygons: Traversable[MultiPolygon],
+    options: Options
+  ): Map[ZonedDateTime, Double] = {
+    TimeSeries(
+      self,
+      MinDoubleSummary.handleFullTile,
+      RDDTimeSeriesFunctions.minReduction,
+      polygons,
+      options
+    )
+      .collect().toMap
   }
 
   def maxSeries(
