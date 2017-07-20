@@ -2,11 +2,11 @@ package geotrellis.spark.timeseries
 
 import geotrellis.raster._
 import geotrellis.raster.histogram._
+import geotrellis.raster.summary.polygonal._
 import geotrellis.spark._
 import geotrellis.spark.mask.Mask.Options
 import geotrellis.util.MethodExtensions
 import geotrellis.vector._
-import geotrellis.raster.summary.polygonal._
 
 import java.time.ZonedDateTime
 
@@ -21,6 +21,9 @@ object RDDTimeSeriesFunctions {
 
   def meanReduction(left: MeanResult, right: MeanResult): MeanResult =
     left + right
+
+  def maxReduction(left: Double, right: Double): Double =
+    MaxDoubleSummary.combineResults(List(left, right))
 }
 
 abstract class RDDTimeSeriesMethods
@@ -40,6 +43,36 @@ abstract class RDDTimeSeriesMethods
         }
       }
     })
+  }
+
+  def maxSeries(
+    polygon: MultiPolygon,
+    options: Options
+  ): Map[ZonedDateTime, Double] =
+    maxSeries(List(polygon), options)
+
+  def maxSeries(
+    polygon: MultiPolygon
+  ): Map[ZonedDateTime, Double] =
+    maxSeries(List(polygon), Options.DEFAULT)
+
+  def maxSeries(
+    polygons: Traversable[MultiPolygon]
+  ): Map[ZonedDateTime, Double] =
+    maxSeries(polygons, Options.DEFAULT)
+
+  def maxSeries(
+    polygons: Traversable[MultiPolygon],
+    options: Options
+  ): Map[ZonedDateTime, Double] = {
+    TimeSeries(
+      self,
+      MaxDoubleSummary.handleFullTile,
+      RDDTimeSeriesFunctions.maxReduction,
+      polygons,
+      options
+    )
+      .collect().toMap
   }
 
   def meanSeries(
