@@ -17,7 +17,6 @@
 package geotrellis.raster
 
 import scala.collection.mutable
-import spire.syntax.cfor._
 
 /**
   * The companion object for the [[GridBounds]] type.
@@ -75,8 +74,7 @@ object GridBounds {
 case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
   def width = colMax - colMin + 1
   def height = rowMax - rowMin + 1
-  if(width.toLong * height.toLong > Int.MaxValue) { sys.error(s"Cannot construct grid bounds of this size: $width x $height") }
-  def size = width * height
+  def size: Long = width.toLong * height.toLong
   def isEmpty = size == 0
 
   /**
@@ -160,16 +158,10 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
   /**
     * Return the coordinates covered by the present [[GridBounds]].
     */
-  def coords: Array[(Int, Int)] = {
-    val arr = Array.ofDim[(Int, Int)](width*height)
-    cfor(0)(_ < height, _ + 1) { row =>
-      cfor(0)(_ < width, _ + 1) { col =>
-        arr(row * width + col) =
-          (col + colMin, row + rowMin)
-      }
-    }
-    arr
-  }
+  def coords: Stream[(Int, Int)] = for {
+    row <- Stream.range(0, height)
+    col <- Stream.range(0, width)
+  } yield (row, col)
 
   /**
     * Return the intersection of the present [[GridBounds]] and the
