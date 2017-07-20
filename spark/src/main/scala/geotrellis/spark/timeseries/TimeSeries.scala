@@ -10,7 +10,7 @@ import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
 
-import java.time.{ZoneOffset, ZonedDateTime}
+import java.time.ZonedDateTime
 
 
 /**
@@ -20,8 +20,6 @@ import java.time.{ZoneOffset, ZonedDateTime}
   * @author James McClain
   */
 object TimeSeries {
-
-  val logger = Logger.getLogger(TimeSeries.getClass)
 
   def apply[R: ClassTag](
     layer: TileLayerRDD[SpaceTimeKey],
@@ -33,10 +31,7 @@ object TimeSeries {
 
     layer
       .mask(geoms, options)
-      .map({ case (key: SpaceTimeKey, tile: Tile) =>
-        val time = ZonedDateTime.ofInstant(key.instant, ZoneOffset.UTC)
-        val data: R = projection(tile)
-        (time, data) })
+      .map({ case (key: SpaceTimeKey, tile: Tile) => (key.time, projection(tile)) })
       .reduceByKey(reduction)
   }
 

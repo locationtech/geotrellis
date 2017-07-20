@@ -23,13 +23,13 @@ object RDDTimeSeriesFunctions {
     left + right
 
   def maxReduction(left: Double, right: Double): Double =
-    MaxDoubleSummary.combineResults(List(left, right))
+    scala.math.max(left, right)
 
   def minReduction(left: Double, right: Double): Double =
-    MinDoubleSummary.combineResults(List(left, right))
+    scala.math.min(left, right)
 
   def sumReduction(left: Double, right: Double): Double =
-    SumDoubleSummary.combineResults(List(left, right))
+    left + right
 }
 
 abstract class RDDTimeSeriesMethods
@@ -78,7 +78,8 @@ abstract class RDDTimeSeriesMethods
       polygons,
       options
     )
-      .collect().toMap
+      .collect()
+      .toMap
   }
 
   def minSeries(
@@ -108,7 +109,8 @@ abstract class RDDTimeSeriesMethods
       polygons,
       options
     )
-      .collect().toMap
+      .collect()
+      .toMap
   }
 
   def maxSeries(
@@ -138,7 +140,8 @@ abstract class RDDTimeSeriesMethods
       polygons,
       options
     )
-      .collect().toMap
+      .collect()
+      .toMap
   }
 
   def meanSeries(
@@ -169,7 +172,8 @@ abstract class RDDTimeSeriesMethods
       options
     )
       .mapValues({ mr => mr.mean })
-      .collect().toMap
+      .collect()
+      .toMap
   }
 
   def histogramSeries(
@@ -199,7 +203,8 @@ abstract class RDDTimeSeriesMethods
       polygons,
       options
     )
-      .collect().toMap
+      .collect()
+      .toMap
   }
 
 }
