@@ -27,6 +27,9 @@ object RDDTimeSeriesFunctions {
 
   def minReduction(left: Double, right: Double): Double =
     MinDoubleSummary.combineResults(List(left, right))
+
+  def sumReduction(left: Double, right: Double): Double =
+    SumDoubleSummary.combineResults(List(left, right))
 }
 
 abstract class RDDTimeSeriesMethods
@@ -46,6 +49,36 @@ abstract class RDDTimeSeriesMethods
         }
       }
     })
+  }
+
+  def sumSeries(
+    polygon: MultiPolygon,
+    options: Options
+  ): Map[ZonedDateTime, Double] =
+    sumSeries(List(polygon), options)
+
+  def sumSeries(
+    polygon: MultiPolygon
+  ): Map[ZonedDateTime, Double] =
+    sumSeries(List(polygon), Options.DEFAULT)
+
+  def sumSeries(
+    polygons: Traversable[MultiPolygon]
+  ): Map[ZonedDateTime, Double] =
+    sumSeries(polygons, Options.DEFAULT)
+
+  def sumSeries(
+    polygons: Traversable[MultiPolygon],
+    options: Options
+  ): Map[ZonedDateTime, Double] = {
+    TimeSeries(
+      self,
+      SumDoubleSummary.handleFullTile,
+      RDDTimeSeriesFunctions.sumReduction,
+      polygons,
+      options
+    )
+      .collect().toMap
   }
 
   def minSeries(
