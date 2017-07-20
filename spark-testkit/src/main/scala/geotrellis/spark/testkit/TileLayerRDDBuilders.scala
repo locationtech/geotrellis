@@ -251,7 +251,7 @@ trait TileLayerRDDBuilders {
         else CompositeTile.wrap(tile, tileLayout, cropped = false)
 
       tmsTiles ++=
-        tileBounds.coords.map { case (col, row) =>
+        tileBounds.coordsIter.map { case (col, row) =>
 
           val targetRasterExtent =
             RasterExtent(

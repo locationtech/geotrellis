@@ -17,6 +17,7 @@
 package geotrellis.raster
 
 import scala.collection.mutable
+import spire.syntax.cfor._
 
 /**
   * The companion object for the [[GridBounds]] type.
@@ -74,8 +75,13 @@ object GridBounds {
 case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
   def width = colMax - colMin + 1
   def height = rowMax - rowMin + 1
-  def size: Long = width.toLong * height.toLong
-  def isEmpty = size == 0
+
+  def size: Int = width * height
+
+  @deprecated("This will be removed in favour of `size` returning a `Long`.", "1.2")
+  def sizeLong: Long = width.toLong * width.toLong
+
+  def isEmpty = sizeLong == 0
 
   /**
     * Return true if the present [[GridBounds]] contains the position
@@ -155,12 +161,24 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
       result
     }
 
+  @deprecated("Use `coordsIter` instead.", "1.2")
+  def coords: Array[(Int, Int)] = {
+    val arr = Array.ofDim[(Int, Int)](width*height)
+    cfor(0)(_ < height, _ + 1) { row =>
+      cfor(0)(_ < width, _ + 1) { col =>
+        arr(row * width + col) =
+          (col + colMin, row + rowMin)
+      }
+    }
+    arr
+  }
+
   /**
     * Return the coordinates covered by the present [[GridBounds]].
     */
-  def coords: Stream[(Int, Int)] = for {
-    row <- Stream.range(0, height)
-    col <- Stream.range(0, width)
+  def coordsIter: Iterator[(Int, Int)] = for {
+    row <- Iterator.range(0, height)
+    col <- Iterator.range(0, width)
   } yield (row, col)
 
   /**
