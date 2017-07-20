@@ -6,6 +6,7 @@ import geotrellis.spark._
 import geotrellis.spark.mask.Mask.Options
 import geotrellis.util.MethodExtensions
 import geotrellis.vector._
+import geotrellis.raster.summary.polygonal._
 
 import java.time.ZonedDateTime
 
@@ -17,39 +18,89 @@ object RDDTimeSeriesFunctions {
 
   def histogramReduction(left: StreamingHistogram, right: StreamingHistogram): StreamingHistogram =
     left + right
+
+  def meanReduction(left: MeanResult, right: MeanResult): MeanResult =
+    left + right
 }
 
 abstract class RDDTimeSeriesMethods
     extends MethodExtensions[TileLayerRDD[SpaceTimeKey]] {
 
-  def polygonalHistogram(
-    polygon: Geometry,
+  private def geometriesToMultiPolygons(
+    polygons: Traversable[Geometry]
+  ): Traversable[MultiPolygon] = {
+    polygons.map({ p =>
+      p match  {
+        case p: Polygon => MultiPolygon(p)
+        case p: MultiPolygon => p
+        case p: GeometryCollection => {
+          if (p.polygons.length > 0) MultiPolygon(p.polygons.head)
+          else if (p.multiPolygons.length > 0) p.multiPolygons.head
+          else throw new Exception(s"Cannot handle $p.")
+        }
+      }
+    })
+  }
+
+  def meanSeries(
+    polygon: MultiPolygon,
+    options: Options = Options.DEFAULT
+  ): Map[ZonedDateTime, Double] =
+    meanSeries(List(polygon), options)
+
+  def meanSeries(
+    polygon: MultiPolygon
+  ): Map[ZonedDateTime, Double] =
+    meanSeries(polygon, Options.DEFAULT)
+
+  def meanSeries(
+    polygons: Traversable[MultiPolygon]
+  ): Map[ZonedDateTime, Double] =
+    meanSeries(polygons, Options.DEFAULT)
+
+  def meanSeries(
+    polygons: Traversable[MultiPolygon],
+    options: Options
+  ): Map[ZonedDateTime, Double] = {
+    TimeSeries(
+      self,
+      MeanResult.fromFullTileDouble,
+      RDDTimeSeriesFunctions.meanReduction,
+      polygons,
+      options
+    )
+      .mapValues({ mr => mr.mean })
+      .collect().toMap
+  }
+
+  def histogramSeries(
+    polygon: MultiPolygon,
     options: Options = Options.DEFAULT
   ): Map[ZonedDateTime, Histogram[Double]] =
-    polygonalHistogram(List(polygon), options)
+    histogramSeries(List(polygon), options)
 
-  def polygonalHistogram(
-    polygons: Traversable[Geometry]
+  def histogramSeries(
+    polygon: MultiPolygon
   ): Map[ZonedDateTime, Histogram[Double]] =
-    polygonalHistogram(polygons, Options.DEFAULT)
+    histogramSeries(polygon, Options.DEFAULT)
 
-  def polygonalHistogram(
-    polygons: Traversable[Geometry],
+  def histogramSeries(
+    polygons: Traversable[MultiPolygon]
+  ): Map[ZonedDateTime, Histogram[Double]] =
+    histogramSeries(polygons, Options.DEFAULT)
+
+  def histogramSeries(
+    polygons: Traversable[MultiPolygon],
     options: Options
   ): Map[ZonedDateTime, Histogram[Double]] = {
     TimeSeries(
       self,
       RDDTimeSeriesFunctions.histogramProjection,
       RDDTimeSeriesFunctions.histogramReduction,
-      polygons.map({ p =>
-        p match  {
-          case p: Polygon => MultiPolygon(p)
-          case p: MultiPolygon => p
-          case _ => throw new Exception("Polygons and MultiPolygons only, please.")
-        }
-      }),
+      polygons,
       options
-    ).collect().toMap
+    )
+      .collect().toMap
   }
 
 }
