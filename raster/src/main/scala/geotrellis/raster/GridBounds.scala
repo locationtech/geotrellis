@@ -76,9 +76,10 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
   def width = colMax - colMin + 1
   def height = rowMax - rowMin + 1
 
+  @deprecated("This will return a `Long` in 2.0. Until then, sizeLong may be more accurate.", "1.2")
   def size: Int = width * height
 
-  @deprecated("This will be removed in favour of `size` returning a `Long`.", "1.2")
+  // TODO Mark for deprecation in 3.0 when 2.0 comes out!
   def sizeLong: Long = width.toLong * width.toLong
 
   def isEmpty = sizeLong == 0
