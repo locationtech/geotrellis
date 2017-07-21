@@ -180,7 +180,7 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
   def coordsIter: Iterator[(Int, Int)] = for {
     row <- Iterator.range(0, height)
     col <- Iterator.range(0, width)
-  } yield (row, col)
+  } yield (col + colMin, row + rowMin)
 
   /**
     * Return the intersection of the present [[GridBounds]] and the
