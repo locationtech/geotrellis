@@ -265,7 +265,7 @@ object GeoTiffReader {
     }
   }
 
-  private def readGeoTiffInfo(byteReader: ByteReader, decompress: Boolean, streaming: Boolean): GeoTiffInfo = {
+  def readGeoTiffInfo(byteReader: ByteReader, decompress: Boolean, streaming: Boolean): GeoTiffInfo = {
     val oldPos = byteReader.position
     try {
       byteReader.position(0)

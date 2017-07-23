@@ -24,14 +24,15 @@ import geotrellis.spark.io.RasterReader
 import geotrellis.spark.io.s3.util.S3RangeReader
 import geotrellis.util.{LazyLogging, StreamingByteReader}
 import geotrellis.vector._
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import com.amazonaws.services.s3.model._
-
 import java.net.URI
 import java.nio.ByteBuffer
+
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader
+import org.apache.spark.storage.StorageLevel
 
 /**
  * The S3GeoTiffRDD object allows for the creation of whole or windowed RDD[(K, V)]s from files on S3.
@@ -69,7 +70,8 @@ object S3GeoTiffRDD extends LazyLogging {
     partitionBytes: Option[Long] = Some(128l * 1024 * 1024),
     chunkSize: Option[Int] = None,
     delimiter: Option[String] = None,
-    getS3Client: () => S3Client = () => S3Client.DEFAULT
+    getS3Client: () => S3Client = () => S3Client.DEFAULT,
+    persistLevel: StorageLevel = StorageLevel.NONE
   ) extends RasterReader.Options
 
   object Options {
@@ -107,10 +109,22 @@ object S3GeoTiffRDD extends LazyLogging {
     (implicit sc: SparkContext, rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
 
     val conf = configuration(bucket, prefix, options)
-    lazy val sourceMetadata = S3GeoTiffMetadataReader(bucket, prefix, options)
+    lazy val sourceGeoTiffInfo = S3GeoTiffInfoReader(bucket, prefix, options)
 
-    options.maxTileSize match {
-      case Some(_) =>
+    (options.maxTileSize, options.partitionBytes) match {
+      /*case (maxTileSize @ Some(_), Some(partitionBytes)) => {
+        val segments: RDD[((String, GeoTiffReader.GeoTiffInfo), List[Int])] = sourceGeoTiffInfo.segmentsByPartitionBytes(partitionBytes, maxTileSize)
+        segments.persist(options.persistLevel)
+        val segmentsCount = segments.count.toInt
+        val repartition = segments.repartition(segmentsCount)
+        val chunks = repartition.map { case ((key, md), segmentIndices) =>
+          md.segmentBytes.getSegments(segmentIndices).map { case (i, bytes) =>
+            rr.readFully(ByteBuffer.wrap(bytes), options)
+          }
+        }
+
+      }*/
+      case (Some(_), _) =>
         val objectRequestsToDimensions: RDD[(GetObjectRequest, (Int, Int))] =
           sc.newAPIHadoopRDD(
             conf,
@@ -119,8 +133,8 @@ object S3GeoTiffRDD extends LazyLogging {
             classOf[TiffTags]
           ).mapValues { tiffTags => (tiffTags.cols, tiffTags.rows) }
 
-        apply[I, K, V](objectRequestsToDimensions, uriToKey, options, sourceMetadata)
-      case None =>
+        apply[I, K, V](objectRequestsToDimensions, uriToKey, options, sourceGeoTiffInfo)
+      case _ =>
         sc.newAPIHadoopRDD(
           conf,
           classOf[BytesS3InputFormat],
@@ -154,7 +168,7 @@ object S3GeoTiffRDD extends LazyLogging {
     * @param uriToKey function to transform input key basing on the URI information.
     * @param options An instance of [[Options]] that contains any user defined or default settings.
     */
-  def apply[I, K, V](objectRequestsToDimensions: RDD[(GetObjectRequest, (Int, Int))], uriToKey: (URI, I) => K, options: Options, sourceMetadata: => S3GeoTiffMetadataReader)
+  def apply[I, K, V](objectRequestsToDimensions: RDD[(GetObjectRequest, (Int, Int))], uriToKey: (URI, I) => K, options: Options, sourceGeoTiffInfo: => S3GeoTiffInfoReader)
     (implicit rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
 
     val windows =
@@ -170,7 +184,7 @@ object S3GeoTiffRDD extends LazyLogging {
         case None =>
           options.partitionBytes match {
             case Some(byteCount) =>
-              sourceMetadata.estimatePartitionsNumber(byteCount, options.maxTileSize) match {
+              sourceGeoTiffInfo.estimatePartitionsNumber(byteCount, options.maxTileSize) match {
                 case Some(numPartitions) if numPartitions != windows.partitions.length => windows.repartition(numPartitions)
                 case _ => windows
               }
