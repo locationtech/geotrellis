@@ -210,4 +210,16 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
         )
       )
     }
+
+  def combine(other: GridBounds): GridBounds =
+    GridBounds(
+      colMin = math.min(this.colMin, other.colMin),
+      rowMin = math.min(this.rowMin, other.rowMin),
+      colMax = math.max(this.colMax, other.colMax),
+      rowMax = math.max(this.rowMax, other.rowMax)
+    )
+
+  def contains(other: GridBounds): Boolean =
+    colMin <= other.colMin && rowMin <= other.rowMin &&
+    colMax >= other.colMax && rowMax >= other.rowMax
 }

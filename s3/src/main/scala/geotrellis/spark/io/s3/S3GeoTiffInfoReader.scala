@@ -95,23 +95,14 @@ case class S3GeoTiffInfoReader(
         // current buffer
         val currentBuffer: mutable.ListBuffer[Int] = mutable.ListBuffer()
         var currentSize = 0
-        // go through all segments which intersect desired bounds
-        layout.intersectingSegments(gb).foreach { i =>
+        // go through all segments which intersect desired bounds and was not put into any partition yet
+        layout.intersectingSegments(gb).intersect(allSegments.toSeq).foreach { i =>
           // val segmentSize = layout.getSegmentSize(i)
           val segmentSizeBytes = segmentBytes.getSegmentByteCount(i)
           val segmentGb = layout.getGridBounds(i)
 
-          def containsGb(gb1: GridBounds, gb2: GridBounds): Boolean = {
-            val GridBounds(colMin1, rowMin1, colMax1, rowMax1) = gb1
-            val GridBounds(colMin2, rowMin2, colMax2, rowMax2) = gb2
-
-            colMin1 <= colMin2 && rowMin1 <= rowMin2 && colMax1 >= colMax2 && rowMax1 >= rowMax2
-          }
-
           // if segment is inside the window
-          //println(s"containsGb($gb, $segmentGb): ${containsGb(gb, segmentGb)}")
-          //println(s"(containsGb(gb, segmentGb) && layout.isTiled) || segmentGb.size <= gb.size: ${(containsGb(gb, segmentGb) && layout.isTiled) || segmentGb.size <= gb.size}")
-          if ((containsGb(gb, segmentGb) && layout.isTiled) || segmentGb.size <= gb.size) {
+          if ((gb.contains(segmentGb) && layout.isTiled) || segmentGb.size <= gb.size) {
             // if segment fits partition
             if (segmentSizeBytes <= partitionBytes) {
               // check if we still want to put segment into the same partition
