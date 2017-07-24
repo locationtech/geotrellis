@@ -112,18 +112,25 @@ object S3GeoTiffRDD extends LazyLogging {
     lazy val sourceGeoTiffInfo = S3GeoTiffInfoReader(bucket, prefix, options)
 
     (options.maxTileSize, options.partitionBytes) match {
-      /*case (maxTileSize @ Some(_), Some(partitionBytes)) => {
-        val segments: RDD[((String, GeoTiffReader.GeoTiffInfo), List[Int])] = sourceGeoTiffInfo.segmentsByPartitionBytes(partitionBytes, maxTileSize)
+      case (maxTileSize @ Some(_), Some(partitionBytes)) => {
+        val segments: RDD[((String, GeoTiffReader.GeoTiffInfo), List[Int])] =
+          sourceGeoTiffInfo.segmentsByPartitionBytes(partitionBytes, maxTileSize)
+
         segments.persist(options.persistLevel)
         val segmentsCount = segments.count.toInt
-        val repartition = segments.repartition(segmentsCount)
-        val chunks = repartition.map { case ((key, md), segmentIndices) =>
-          md.segmentBytes.getSegments(segmentIndices).map { case (i, bytes) =>
-            rr.readFully(ByteBuffer.wrap(bytes), options)
-          }
-        }
 
-      }*/
+        println(s"segmentsCount: ${segmentsCount}")
+
+        val repartition =
+          if(segmentsCount > segments.partitions.length) segments.repartition(segmentsCount)
+          else segments
+        repartition.map { case ((key, md), segmentIndices) =>
+          //println(s"segmentIndices: ${segmentIndices}")
+          val (k, v) = rr.readSegments(segmentIndices, md, options)
+          uriToKey(new URI(s"s3://$bucket/$key"), k) -> v
+        }
+      }
+
       case (Some(_), _) =>
         val objectRequestsToDimensions: RDD[(GetObjectRequest, (Int, Int))] =
           sc.newAPIHadoopRDD(

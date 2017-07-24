@@ -22,6 +22,7 @@ import java.time.{ZoneOffset, ZonedDateTime}
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.spark._
 import geotrellis.util.{ByteReader, StreamingByteReader}
 import geotrellis.vector.ProjectedExtent
@@ -40,6 +41,7 @@ import spire.syntax.cfor._
 trait RasterReader[-O, R] extends Serializable {
   def readFully(byteReader: ByteReader, options: O): R
   def readWindow(byteReader: StreamingByteReader, pixelWindow: GridBounds, options: O): R
+  def readSegments(ids: Traversable[Int], info: GeoTiffReader.GeoTiffInfo, options: O): R
 }
 
 object RasterReader {
@@ -79,7 +81,30 @@ object RasterReader {
     result.toArray
   }
 
-  implicit def singlebandGeoTiffReader = new RasterReader[Options, (ProjectedExtent, Tile)]  {
+  implicit def singlebandGeoTiffReader = new RasterReader[Options, (ProjectedExtent, Tile)] {
+    def geoTiffTile(info: GeoTiffReader.GeoTiffInfo): GeoTiffTile =
+      if(info.bandCount == 1) {
+        GeoTiffTile(
+          info.segmentBytes,
+          info.decompressor,
+          info.segmentLayout,
+          info.compression,
+          info.cellType,
+          Some(info.bandType)
+        )
+      } else {
+        GeoTiffMultibandTile(
+          info.segmentBytes,
+          info.decompressor,
+          info.segmentLayout,
+          info.compression,
+          info.bandCount,
+          info.hasPixelInterleave,
+          info.cellType,
+          Some(info.bandType)
+        ).band(0)
+      }
+
     def readFully(byteReader: ByteReader, options: Options) = {
       val geotiff = SinglebandGeoTiff(byteReader)
       val raster: Raster[Tile] = geotiff.raster
@@ -91,9 +116,26 @@ object RasterReader {
       val raster: Raster[Tile] = geotiff.raster.crop(pixelWindow)
       (ProjectedExtent(raster.extent, options.crs.getOrElse(geotiff.crs)), raster.tile)
     }
+
+    def readSegments(ids: Traversable[Int], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
+      val tile = geoTiffTile(info).fromSegments(ids)
+      (ProjectedExtent(info.extent, options.crs.getOrElse(info.crs)), tile)
+    }
   }
 
-  implicit def multibandGeoTiffReader = new RasterReader[Options, (ProjectedExtent, MultibandTile)]  {
+  implicit def multibandGeoTiffReader = new RasterReader[Options, (ProjectedExtent, MultibandTile)] {
+    def geoTiffTile(info: GeoTiffReader.GeoTiffInfo) =
+      GeoTiffMultibandTile(
+        info.segmentBytes,
+        info.decompressor,
+        info.segmentLayout,
+        info.compression,
+        info.bandCount,
+        info.hasPixelInterleave,
+        info.cellType,
+        Some(info.bandType)
+      )
+
     def readFully(byteReader: ByteReader, options: Options) = {
       val geotiff = MultibandGeoTiff(byteReader)
       val raster: Raster[MultibandTile] = geotiff.raster
@@ -104,10 +146,38 @@ object RasterReader {
       val geotiff = MultibandGeoTiff.streaming(streamingByteReader)
       val raster: Raster[MultibandTile] = geotiff.raster.crop(pixelWindow)
       (ProjectedExtent(raster.extent, options.crs.getOrElse(geotiff.crs)), raster.tile)
+    }
+
+    def readSegments(ids: Traversable[Int], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
+      val tile = geoTiffTile(info).fromSegments(ids)
+      (ProjectedExtent(info.extent, options.crs.getOrElse(info.crs)), tile)
     }
   }
 
   implicit def temporalSinglebandGeoTiffReader = new RasterReader[Options, (TemporalProjectedExtent, Tile)]  {
+    def geoTiffTile(info: GeoTiffReader.GeoTiffInfo): GeoTiffTile =
+      if(info.bandCount == 1) {
+        GeoTiffTile(
+          info.segmentBytes,
+          info.decompressor,
+          info.segmentLayout,
+          info.compression,
+          info.cellType,
+          Some(info.bandType)
+        )
+      } else {
+        GeoTiffMultibandTile(
+          info.segmentBytes,
+          info.decompressor,
+          info.segmentLayout,
+          info.compression,
+          info.bandCount,
+          info.hasPixelInterleave,
+          info.cellType,
+          Some(info.bandType)
+        ).band(0)
+      }
+
     def readFully(byteReader: ByteReader, options: Options) = {
       val geotiff = SinglebandGeoTiff(byteReader)
       val raster: Raster[Tile] = geotiff.raster
@@ -123,10 +193,26 @@ object RasterReader {
       val crs = options.crs.getOrElse(geotiff.crs)
       (TemporalProjectedExtent(raster.extent, crs, time), raster.tile)
     }
+
+    def readSegments(ids: Traversable[Int], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
+      val tile = geoTiffTile(info).fromSegments(ids)
+      (TemporalProjectedExtent(info.extent, options.crs.getOrElse(info.crs), options.parseTime(info.tags)), tile)
+    }
   }
 
-
   implicit def temporalMultibandGeoTiffReader = new RasterReader[Options, (TemporalProjectedExtent, MultibandTile)]  {
+    def geoTiffTile(info: GeoTiffReader.GeoTiffInfo) =
+      GeoTiffMultibandTile(
+        info.segmentBytes,
+        info.decompressor,
+        info.segmentLayout,
+        info.compression,
+        info.bandCount,
+        info.hasPixelInterleave,
+        info.cellType,
+        Some(info.bandType)
+      )
+
     def readFully(byteReader: ByteReader, options: Options) = {
       val geotiff = MultibandGeoTiff(byteReader)
       val raster: Raster[MultibandTile] = geotiff.raster
@@ -141,6 +227,11 @@ object RasterReader {
       val time = options.parseTime(geotiff.tags)
       val crs = options.crs.getOrElse(geotiff.crs)
       (TemporalProjectedExtent(raster.extent, crs, time), raster.tile)
+    }
+
+    def readSegments(ids: Traversable[Int], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
+      val tile = geoTiffTile(info).fromSegments(ids)
+      (TemporalProjectedExtent(info.extent, options.crs.getOrElse(info.crs), options.parseTime(info.tags)), tile)
     }
   }
 }

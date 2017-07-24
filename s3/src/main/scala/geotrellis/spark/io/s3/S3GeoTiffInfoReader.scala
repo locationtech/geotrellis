@@ -6,6 +6,8 @@ import geotrellis.spark.io.s3.util.S3RangeReader
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader.GeoTiffInfo
 import geotrellis.util.LazyLogging
 import com.amazonaws.services.s3.model.ListObjectsRequest
+import geotrellis.raster.GridBounds
+import geotrellis.raster.io.geotiff.{GeoTiffMultibandTile, GeoTiffTile}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
@@ -33,14 +35,12 @@ case class S3GeoTiffInfoReader(
   }
 
   def geoTiffInfoRdd(implicit sc: SparkContext): RDD[(String, GeoTiffReader.GeoTiffInfo)] = {
-    val s3Client = getS3Client()
-
     val listObjectsRequest =
       delimiter
         .fold(new ListObjectsRequest(bucket, prefix, null, null, null))(new ListObjectsRequest(bucket, prefix, null, _, null))
 
-    sc.parallelize(s3Client.listKeys(listObjectsRequest))
-      .map(key => (key, GeoTiffReader.readGeoTiffInfo(S3RangeReader(bucket, key, s3Client), decompress, streaming)))
+    sc.parallelize(getS3Client().listKeys(listObjectsRequest))
+      .map(key => (key, GeoTiffReader.readGeoTiffInfo(S3RangeReader(bucket, key, getS3Client()), decompress, streaming)))
   }
 
   lazy val averagePixelSize: Option[Int] =
@@ -99,9 +99,19 @@ case class S3GeoTiffInfoReader(
         layout.intersectingSegments(gb).foreach { i =>
           // val segmentSize = layout.getSegmentSize(i)
           val segmentSizeBytes = segmentBytes.getSegmentByteCount(i)
-          val (row, col) = layout.getSegmentDimensions(i)
+          val segmentGb = layout.getGridBounds(i)
+
+          def containsGb(gb1: GridBounds, gb2: GridBounds): Boolean = {
+            val GridBounds(colMin1, rowMin1, colMax1, rowMax1) = gb1
+            val GridBounds(colMin2, rowMin2, colMax2, rowMax2) = gb2
+
+            colMin1 <= colMin2 && rowMin1 <= rowMin2 && colMax1 >= colMax2 && rowMax1 >= rowMax2
+          }
+
           // if segment is inside the window
-          if (gb.contains(col, row)) {
+          //println(s"containsGb($gb, $segmentGb): ${containsGb(gb, segmentGb)}")
+          //println(s"(containsGb(gb, segmentGb) && layout.isTiled) || segmentGb.size <= gb.size: ${(containsGb(gb, segmentGb) && layout.isTiled) || segmentGb.size <= gb.size}")
+          if ((containsGb(gb, segmentGb) && layout.isTiled) || segmentGb.size <= gb.size) {
             // if segment fits partition
             if (segmentSizeBytes <= partitionBytes) {
               // check if we still want to put segment into the same partition
@@ -124,6 +134,9 @@ case class S3GeoTiffInfoReader(
             allSegments -= i
           }
         }
+
+        // if we have smth left in the current buffer
+        if(currentBuffer.nonEmpty) windowsBuffer += currentBuffer.toList
 
         windowsBuffer.foreach { indices => buf += (bufferKey -> indices) }
       }
@@ -157,8 +170,13 @@ case class S3GeoTiffInfoReader(
           }
         }
 
+        // if we have smth left in the current buffer
+        if(currentBuffer.nonEmpty) windowsBuffer += currentBuffer.toList
+
         windowsBuffer.foreach { indices => buf += (bufferKey -> indices) }
       }
+
+      //println(s"buf: $buf")
 
       buf
     }
