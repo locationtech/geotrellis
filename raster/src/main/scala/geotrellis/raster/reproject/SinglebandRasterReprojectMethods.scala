@@ -27,7 +27,7 @@ trait SinglebandRasterReprojectMethods extends RasterReprojectMethods[Singleband
   import Reproject.Options
 
   def reproject(
-    targetRasterExtent: RasterExtent, 
+    targetRasterExtent: RasterExtent,
     transform: Transform,
     inverseTransform: Transform,
     options: Options

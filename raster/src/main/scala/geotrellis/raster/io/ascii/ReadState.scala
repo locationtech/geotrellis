@@ -35,7 +35,7 @@ trait ReadState {
 
   /**
     * Creates the Tile of the resampled Raster.
-    * By default creates an ArrayTile of the 
+    * By default creates an ArrayTile of the
     * type defined by getType.
     */
   def createTile(cols: Int, rows: Int): MutableArrayTile = ArrayTile.empty(getType, cols, rows)
@@ -97,7 +97,7 @@ trait ReadState {
     // TODO: only initialize the part we will read from
     val src_size = src_rows * src_cols
     initSource(0, src_size)
-    
+
     // this is the resampled destination array
     val dst_size = dst_cols * dst_rows
     val resampled = createTile(dst_cols, dst_rows)
@@ -123,12 +123,12 @@ trait ReadState {
 
         // start at the X-center of the first dst grid cell
         var x = xbase
-        
+
         // loop over cols
         cfor(0)(_ < dst_cols, _ + 1) { dst_col =>
           // calculate the X grid coordinate to read from
           val src_col = (x / src_cellwidth).asInstanceOf[Int]
-          
+
           // compute src and dst indices and ASSIGN!
           val src_i = src_span + src_col
 
@@ -139,7 +139,7 @@ trait ReadState {
             val dst_i = dst_span + dst_col
             assignFromSource(src_i, resampled, dst_i)
           }
-          
+
           // increase our X map coordinate
           x += dst_cellwidth
         }

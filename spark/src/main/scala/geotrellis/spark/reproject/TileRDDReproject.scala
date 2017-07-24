@@ -44,7 +44,7 @@ object TileRDDReproject {
     * @tparam           K           Key type; requires spatial component.
     * @tparam           V           Tile type; requires the ability to stitch, crop, reproject, merge, and create.
     *
-    * @param            bufferedTiles                An RDD of buffered tiles, created using the BufferTiles operation.
+    * @param            bufferedTiles      An RDD of buffered tiles, created using the BufferTiles operation.
     * @param            metadata           The raster metadata for this keyed tile set.
     * @param            destCrs            The CRS to reproject to.
     * @param            targetLayout       Either the layout scheme or layout definition to use when re-keying the reprojected layers.

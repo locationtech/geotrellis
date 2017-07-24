@@ -58,18 +58,18 @@ trait AffineTransformation {
 }
 
 object Reflection {
-  def apply(x: Double, y: Double): AffineTransformation = 
+  def apply(x: Double, y: Double): AffineTransformation =
     AffineTransformation().reflect(x, y)
 
-  def apply(x0: Double, y0: Double, x1: Double, y1: Double): AffineTransformation = 
+  def apply(x0: Double, y0: Double, x1: Double, y1: Double): AffineTransformation =
     AffineTransformation().reflect(x0, y0, x1, y1)
 }
 
 object Rotation {
-  def apply(theta: Double): AffineTransformation = 
+  def apply(theta: Double): AffineTransformation =
     AffineTransformation().rotate(theta)
 
-  def apply(sinTheta: Double, cosTheta: Double): AffineTransformation = 
+  def apply(sinTheta: Double, cosTheta: Double): AffineTransformation =
     AffineTransformation().rotate(sinTheta, cosTheta)
 }
 
