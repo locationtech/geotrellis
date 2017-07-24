@@ -113,7 +113,7 @@ package object spark
   implicit def longToInstant(millis: Long): Instant = Instant.ofEpochMilli(millis)
 
   /** Necessary for Contains.forPoint query */
-  implicit def tileLayerMetadataToMapKeyTransform(tm: TileLayerMetadata[SpatialKey]): MapKeyTransform = tm.mapTransform
+  implicit def tileLayerMetadataToMapKeyTransform[K](tm: TileLayerMetadata[K]): MapKeyTransform = tm.mapTransform
 
   implicit class WithContextWrapper[K, V, M](val rdd: RDD[(K, V)] with Metadata[M]) {
     def withContext[K2, V2](f: RDD[(K, V)] => RDD[(K2, V2)]) =
