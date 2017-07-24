@@ -99,7 +99,7 @@ case class S3GeoTiffInfoReader(
 
         // go through all segments which intersect desired bounds and was not put into any partition yet
         layout.intersectingSegments(gb).intersect(allSegments.toSeq).foreach { i =>
-          val segmentSize = layout.getSegmentSize(i)
+          val segmentSize = layout.getSegmentSize(i) // TODO: * md.bandCount ???
           val segmentSizeBytes = segmentBytes.getSegmentByteCount(i)
           val segmentGb = layout.getGridBounds(i)
 
