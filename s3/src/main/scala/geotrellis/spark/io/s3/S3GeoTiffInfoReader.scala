@@ -21,7 +21,7 @@ case class S3GeoTiffInfoReader(
   decompress: Boolean = false,
   streaming: Boolean = true
 ) extends LazyLogging {
-  lazy val geoTiffInfo: Iterator[(String, GeoTiffReader.GeoTiffInfo)] = {
+  lazy val geoTiffInfo: List[(String, GeoTiffReader.GeoTiffInfo)] = {
     val s3Client = getS3Client()
 
     val listObjectsRequest =
@@ -30,7 +30,7 @@ case class S3GeoTiffInfoReader(
 
     s3Client
       .listKeys(listObjectsRequest)
-      .toIterator
+      .toList
       .map(key => (key, GeoTiffReader.readGeoTiffInfo(S3RangeReader(bucket, key, s3Client), decompress, streaming)))
   }
 
@@ -95,24 +95,28 @@ case class S3GeoTiffInfoReader(
         // current buffer
         val currentBuffer: mutable.ListBuffer[Int] = mutable.ListBuffer()
         var currentSize = 0
+        var currentBoundsLength = 0
+
         // go through all segments which intersect desired bounds and was not put into any partition yet
         layout.intersectingSegments(gb).intersect(allSegments.toSeq).foreach { i =>
-          // val segmentSize = layout.getSegmentSize(i)
+          val segmentSize = layout.getSegmentSize(i)
           val segmentSizeBytes = segmentBytes.getSegmentByteCount(i)
           val segmentGb = layout.getGridBounds(i)
 
           // if segment is inside the window
-          if ((gb.contains(segmentGb) && layout.isTiled) || segmentGb.size <= gb.size) {
+          if ((gb.contains(segmentGb) && layout.isTiled) || segmentSize <= gb.size && layout.isStriped) {
             // if segment fits partition
             if (segmentSizeBytes <= partitionBytes) {
               // check if we still want to put segment into the same partition
-              if (currentSize <= partitionBytes) {
+              if (currentSize <= partitionBytes && (layout.isTiled || layout.isStriped && currentBoundsLength <= gb.size)) {
                 currentSize += segmentSizeBytes
                 currentBuffer += i
+                currentBoundsLength += segmentSize
               } else { // or put it into a separate partition
                 windowsBuffer += currentBuffer.toList
                 currentBuffer.clear()
                 currentSize = segmentSizeBytes
+                currentBoundsLength = segmentSize
                 currentBuffer += i
               }
             } else {
@@ -166,8 +170,6 @@ case class S3GeoTiffInfoReader(
 
         windowsBuffer.foreach { indices => buf += (bufferKey -> indices) }
       }
-
-      //println(s"buf: $buf")
 
       buf
     }

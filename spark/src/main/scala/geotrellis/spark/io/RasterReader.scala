@@ -82,44 +82,6 @@ object RasterReader {
     result.toArray
   }
 
-  def getMapTransform(info: GeoTiffReader.GeoTiffInfo) =
-    MapKeyTransform(info.extent, info.segmentLayout.tileLayout.layoutDimensions)
-
-  def geoTiffMultibandTile(info: GeoTiffReader.GeoTiffInfo) =
-    GeoTiffMultibandTile(
-      info.segmentBytes,
-      info.decompressor,
-      info.segmentLayout,
-      info.compression,
-      info.bandCount,
-      info.hasPixelInterleave,
-      info.cellType,
-      Some(info.bandType)
-    )
-
-  def geoTiffTile(info: GeoTiffReader.GeoTiffInfo): GeoTiffTile =
-    if(info.bandCount == 1) {
-      GeoTiffTile(
-        info.segmentBytes,
-        info.decompressor,
-        info.segmentLayout,
-        info.compression,
-        info.cellType,
-        Some(info.bandType)
-      )
-    } else {
-      GeoTiffMultibandTile(
-        info.segmentBytes,
-        info.decompressor,
-        info.segmentLayout,
-        info.compression,
-        info.bandCount,
-        info.hasPixelInterleave,
-        info.cellType,
-        Some(info.bandType)
-      ).band(0)
-    }
-
   implicit def singlebandGeoTiffReader = new RasterReader[Options, (ProjectedExtent, Tile)] {
     def readFully(byteReader: ByteReader, options: Options) = {
       val geotiff = SinglebandGeoTiff(byteReader)
@@ -134,12 +96,8 @@ object RasterReader {
     }
 
     def readSegments(ids: Traversable[Int], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
-      println(s"ids: $ids")
-      val tile = geoTiffTile(info).fromSegments(ids)
-      val mapTransform = getMapTransform(info)
-      val gb = ids.map(i => info.segmentLayout.getGridBounds(i)).reduce(_ combine _)
-      val extent = mapTransform(gb)
-      (ProjectedExtent(extent, options.crs.getOrElse(info.crs)), tile)
+      val tile = GeoTiffReader.geoTiffSinglebandTile(info).fromSegments(ids)
+      (ProjectedExtent(info.extent, options.crs.getOrElse(info.crs)), tile)
     }
   }
 
@@ -157,11 +115,8 @@ object RasterReader {
     }
 
     def readSegments(ids: Traversable[Int], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
-      val tile = geoTiffMultibandTile(info).fromSegments(ids)
-      val mapTransform = getMapTransform(info)
-      val gb = ids.map(i => info.segmentLayout.getGridBounds(i)).reduce(_ combine _)
-      val extent = mapTransform(gb)
-      (ProjectedExtent(extent, options.crs.getOrElse(info.crs)), tile)
+      val tile = GeoTiffReader.geoTiffMultibandTile(info).fromSegments(ids)
+      (ProjectedExtent(info.extent, options.crs.getOrElse(info.crs)), tile)
     }
   }
 
@@ -183,12 +138,8 @@ object RasterReader {
     }
 
     def readSegments(ids: Traversable[Int], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
-      println(s"ids: $ids")
-      val tile = geoTiffTile(info).fromSegments(ids)
-      val mapTransform = getMapTransform(info)
-      val gb = ids.map(i => info.segmentLayout.getGridBounds(i)).reduce(_ combine _)
-      val extent = mapTransform(gb)
-      (TemporalProjectedExtent(extent, options.crs.getOrElse(info.crs), options.parseTime(info.tags)), tile)
+      val tile = GeoTiffReader.geoTiffSinglebandTile(info).fromSegments(ids)
+      (TemporalProjectedExtent(info.extent, options.crs.getOrElse(info.crs), options.parseTime(info.tags)), tile)
     }
   }
 
@@ -210,11 +161,8 @@ object RasterReader {
     }
 
     def readSegments(ids: Traversable[Int], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
-      val tile = geoTiffMultibandTile(info).fromSegments(ids)
-      val mapTransform = getMapTransform(info)
-      val gb = ids.map(i => info.segmentLayout.getGridBounds(i)).reduce(_ combine _)
-      val extent = mapTransform(gb)
-      (TemporalProjectedExtent(extent, options.crs.getOrElse(info.crs), options.parseTime(info.tags)), tile)
+      val tile = GeoTiffReader.geoTiffMultibandTile(info).fromSegments(ids)
+      (TemporalProjectedExtent(info.extent, options.crs.getOrElse(info.crs), options.parseTime(info.tags)), tile)
     }
   }
 }

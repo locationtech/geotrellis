@@ -71,7 +71,8 @@ object S3GeoTiffRDD extends LazyLogging {
     chunkSize: Option[Int] = None,
     delimiter: Option[String] = None,
     getS3Client: () => S3Client = () => S3Client.DEFAULT,
-    persistLevel: StorageLevel = StorageLevel.NONE
+    persistLevel: StorageLevel = StorageLevel.NONE,
+    bySegments: Boolean = true
   ) extends RasterReader.Options
 
   object Options {
@@ -112,24 +113,22 @@ object S3GeoTiffRDD extends LazyLogging {
     lazy val sourceGeoTiffInfo = S3GeoTiffInfoReader(bucket, prefix, options)
 
     (options.maxTileSize, options.partitionBytes) match {
-      case (maxTileSize @ Some(_), Some(partitionBytes)) => {
+      case (maxTileSize @ Some(_), Some(partitionBytes)) if options.bySegments =>
         val segments: RDD[((String, GeoTiffReader.GeoTiffInfo), List[Int])] =
           sourceGeoTiffInfo.segmentsByPartitionBytes(partitionBytes, maxTileSize)
 
         segments.persist(options.persistLevel)
         val segmentsCount = segments.count.toInt
 
-        println(s"segmentsCount: ${segmentsCount}")
+        logger.info(s"repartition into ${segmentsCount} partitions.")
 
         val repartition =
           if(segmentsCount > segments.partitions.length) segments.repartition(segmentsCount)
           else segments
         repartition.map { case ((key, md), segmentIndices) =>
-          //println(s"segmentIndices: ${segmentIndices}")
           val (k, v) = rr.readSegments(segmentIndices, md, options)
           uriToKey(new URI(s"s3://$bucket/$key"), k) -> v
         }
-      }
 
       case (Some(_), _) =>
         val objectRequestsToDimensions: RDD[(GetObjectRequest, (Int, Int))] =
@@ -187,12 +186,16 @@ object S3GeoTiffRDD extends LazyLogging {
     // Windowed reading may have produced unbalanced partitions due to files of differing size
     val repartitioned =
       options.numPartitions match {
-        case Some(p) => windows.repartition(p)
+        case Some(p) =>
+          logger.info(s"repartition into $p partitions.")
+          windows.repartition(p)
         case None =>
           options.partitionBytes match {
             case Some(byteCount) =>
               sourceGeoTiffInfo.estimatePartitionsNumber(byteCount, options.maxTileSize) match {
-                case Some(numPartitions) if numPartitions != windows.partitions.length => windows.repartition(numPartitions)
+                case Some(numPartitions) if numPartitions != windows.partitions.length =>
+                  logger.info(s"repartition into $numPartitions partitions.")
+                  windows.repartition(numPartitions)
                 case _ => windows
               }
             case _ =>

@@ -29,11 +29,12 @@ import geotrellis.spark.testkit.TestEnvironment
 
 import org.apache.hadoop.conf.Configuration
 import com.amazonaws.auth.AWSCredentials
-import org.apache.hadoop.mapreduce.{ TaskAttemptContext, InputSplit }
+import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
 import org.apache.spark.rdd.RDD
-
-import java.nio.file.{ Paths, Files }
 import spire.syntax.cfor._
+
+import java.nio.file.{Files, Paths}
+
 import org.scalatest._
 
 class S3GeoTiffRDDSpec
@@ -46,15 +47,16 @@ class S3GeoTiffRDDSpec
     implicit val mockClient = new MockS3Client()
     val bucket = this.getClass.getSimpleName
 
-    ignore("should read the same rasters when reading small windows or with no windows, Spatial, SinglebandGeoTiff") {
-
+    it("should read the same rasters when reading small windows or with no windows, Spatial, SinglebandGeoTiff") {
       val key = "geoTiff/all-ones.tif"
       val testGeoTiffPath = "spark/src/test/resources/all-ones.tif"
       val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
       mockClient.putObject(bucket, key, geoTiffBytes)
 
-      val source1 = S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(maxTileSize = None, getS3Client = () => new MockS3Client))
-      val source2 = S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(maxTileSize = Some(128), getS3Client = () => new MockS3Client))
+      val source1 =
+        S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(maxTileSize = None, bySegments = false, partitionBytes = None, getS3Client = () => new MockS3Client))
+      val source2 =
+        S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(maxTileSize = Some(128), getS3Client = () => new MockS3Client))
 
       source1.count should be < (source2.count)
 
@@ -66,22 +68,22 @@ class S3GeoTiffRDDSpec
       assertEqual(stitched1, stitched2)
     }
 
-    ignore("should read the same rasters when reading small windows or with no windows, Spatial, MultibandGeoTiff") {
+    it("should read the same rasters when reading small windows or with no windows, Spatial, MultibandGeoTiff") {
       val key = "geoTiff/multi.tif"
       val testGeoTiffPath = "raster-test/data/geotiff-test-files/3bands/byte/3bands-striped-band.tif"
       val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
       mockClient.putObject(bucket, key, geoTiffBytes)
 
       val source1 =
-        S3GeoTiffRDD.spatialMultiband(bucket, key, S3GeoTiffRDD.Options(getS3Client = () => new MockS3Client))
+        S3GeoTiffRDD.spatialMultiband(bucket, key, S3GeoTiffRDD.Options(maxTileSize = None, bySegments = false, getS3Client = () => new MockS3Client))
       val source2 =
         S3GeoTiffRDD.spatialMultiband(bucket, key, S3GeoTiffRDD.Options(maxTileSize = Some(20), getS3Client = () => new MockS3Client))
 
-      source1.count should be < (source2.count)
-      val (_, md) = source1.collectMetadata[SpatialKey](FloatingLayoutScheme(20, 40))
+      //source1.count should be < (source2.count)
+      val (_, md1) = source1.collectMetadata[SpatialKey](FloatingLayoutScheme(20, 40))
 
-      val stitched1 = source1.tileToLayout(md).stitch
-      val stitched2 = source2.tileToLayout(md).stitch
+      val stitched1 = source1.tileToLayout(md1).stitch
+      val stitched2 = source2.tileToLayout(md1).stitch
 
       assertEqual(stitched1, stitched2)
     }
@@ -93,6 +95,8 @@ class S3GeoTiffRDDSpec
       mockClient.putObject(bucket, key, geoTiffBytes)
 
       val source1 = S3GeoTiffRDD.temporal(bucket, key, S3GeoTiffRDD.Options(
+        maxTileSize = None,
+        bySegments = false,
         timeTag = "ISO_TIME",
         timeFormat = "yyyy-MM-dd'T'HH:mm:ss",
         getS3Client = () => new MockS3Client))
@@ -129,6 +133,8 @@ class S3GeoTiffRDDSpec
       val geoTiffBytes = multiband.toByteArray
       mockClient.putObject(bucket, key, geoTiffBytes)
       val source1 = S3GeoTiffRDD.temporalMultiband(bucket, key, S3GeoTiffRDD.Options(
+        maxTileSize = None,
+        bySegments = false,
         timeTag = "ISO_TIME",
         timeFormat = "yyyy-MM-dd'T'HH:mm:ss",
         getS3Client = () => new MockS3Client))
