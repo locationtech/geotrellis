@@ -81,6 +81,55 @@ object TileRDDReproject {
           }
       }
 
+    val layerInfo: (Extent, CellSize, KeyBounds[K]) =
+      bufferedTiles
+        .mapPartitions({ partition =>
+          val transform = Transform(crs, destCrs)
+          val inverseTransform = Transform(destCrs, crs)
+
+          partition.map { case (key, BufferedTile(tile, gridBounds)) =>
+            val innerExtent = mapTransform(key)
+            val innerRasterExtent = RasterExtent(innerExtent, gridBounds.width, gridBounds.height)
+            val outerGridBounds =
+              GridBounds(
+                -gridBounds.colMin,
+                -gridBounds.rowMin,
+                tile.cols - gridBounds.colMin - 1,
+                tile.rows - gridBounds.rowMin - 1
+              )
+            val outerExtent = innerRasterExtent.extentFor(outerGridBounds, clamp = false)
+
+            val window =
+              if(options.matchLayerExtent) {
+                gridBounds
+              } else {
+                // Reproject extra cells that are half the buffer size, as to avoid
+                // any missed cells between tiles.
+                GridBounds(
+                  gridBounds.colMin / 2,
+                  gridBounds.rowMin / 2,
+                  (tile.cols + gridBounds.colMax - 1) / 2,
+                  (tile.rows + gridBounds.rowMax - 1) / 2
+                )
+              }
+
+            val Raster(newTile, newExtent) =
+              tile.reproject(outerExtent, window, transform, inverseTransform, rasterReprojectOptions)
+
+            ((key, newExtent), newTile)
+          }
+        })
+        .map({ case ((key, extent), tile) =>
+          (extent, CellSize(extent, tile.cols, tile.rows), KeyBounds(key, key))
+        })
+        .reduce({ case ((e1, cs1, kb1), (e2, cs2, kb2)) =>
+          val e = e1.combine(e2)
+          val cs = if (cs1.resolution < cs2.resolution) cs1 else cs2
+          val kb = kb1.combine(kb2)
+
+          (e, cs, kb)
+        })
+
     val reprojectedTiles =
       bufferedTiles
         .mapPartitions { partition =>
