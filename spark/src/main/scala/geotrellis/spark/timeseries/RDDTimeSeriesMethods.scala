@@ -35,22 +35,6 @@ object RDDTimeSeriesFunctions {
 abstract class RDDTimeSeriesMethods
     extends MethodExtensions[TileLayerRDD[SpaceTimeKey]] {
 
-  private def geometriesToMultiPolygons(
-    polygons: Traversable[Geometry]
-  ): Traversable[MultiPolygon] = {
-    polygons.map({ p =>
-      p match  {
-        case p: Polygon => MultiPolygon(p)
-        case p: MultiPolygon => p
-        case p: GeometryCollection => {
-          if (p.polygons.length > 0) MultiPolygon(p.polygons.head)
-          else if (p.multiPolygons.length > 0) p.multiPolygons.head
-          else throw new Exception(s"Cannot handle $p.")
-        }
-      }
-    })
-  }
-
   def sumSeries(
     polygon: MultiPolygon,
     options: Options
