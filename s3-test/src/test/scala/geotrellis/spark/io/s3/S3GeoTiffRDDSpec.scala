@@ -25,10 +25,6 @@ import geotrellis.spark.tiling._
 import geotrellis.spark.io.s3.testkit._
 import geotrellis.spark.testkit.TestEnvironment
 
-import org.apache.hadoop.conf.Configuration
-import com.amazonaws.auth.AWSCredentials
-import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
-import org.apache.spark.rdd.RDD
 import spire.syntax.cfor._
 
 import java.nio.file.{Files, Paths}
@@ -78,10 +74,10 @@ class S3GeoTiffRDDSpec
         S3GeoTiffRDD.spatialMultiband(bucket, key, S3GeoTiffRDD.Options(maxTileSize = Some(20), getS3Client = () => new MockS3Client))
 
       //source1.count should be < (source2.count)
-      val (_, md1) = source1.collectMetadata[SpatialKey](FloatingLayoutScheme(20, 40))
+      val (_, md) = source1.collectMetadata[SpatialKey](FloatingLayoutScheme(20, 40))
 
-      val stitched1 = source1.tileToLayout(md1).stitch
-      val stitched2 = source2.tileToLayout(md1).stitch
+      val stitched1 = source1.tileToLayout(md).stitch
+      val stitched2 = source2.tileToLayout(md).stitch
 
       assertEqual(stitched1, stitched2)
     }

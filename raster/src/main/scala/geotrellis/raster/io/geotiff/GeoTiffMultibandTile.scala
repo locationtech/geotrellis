@@ -364,7 +364,7 @@ abstract class GeoTiffMultibandTile(
 
             case (segmentIndex, _) =>
               cfor(0)(_ < actualBandCount, _ + 1) { bandIndex =>
-                bands(bandIndex)(segmentIndex) = Array[Byte]()
+                bands(bandIndex)(segmentIndex) = new Array[Byte](segmentCount)
               }
           }
 
@@ -389,7 +389,7 @@ abstract class GeoTiffMultibandTile(
               }
             case (segmentIndex, _) =>
               cfor(0)(_ < actualBandCount, _ + 1) { bandIndex =>
-                bands(bandIndex)(segmentIndex) = Array[Byte]()
+                bands(bandIndex)(segmentIndex) = new Array[Byte](segmentCount)
               }
           }
 
@@ -414,8 +414,8 @@ abstract class GeoTiffMultibandTile(
         segmentBytes.getSegments(segmentOffset until bandSegmentCount + segmentOffset).foreach {
           case (segmentIndex, segment) if segmentIdsList.contains(segmentIndex) =>
             bands(bandIndex)(segmentIndex - segmentOffset) = segment.clone
-          case (segmentIndex, _) =>
-            bands(bandIndex)(segmentIndex - segmentOffset) = Array[Byte]()
+          case (segmentIndex, segment) =>
+            bands(bandIndex)(segmentIndex - segmentOffset) = new Array[Byte](segment.length)
         }
       }
 

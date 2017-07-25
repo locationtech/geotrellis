@@ -141,18 +141,24 @@ case class S3GeoTiffInfoReader(
 
         val windowsBuffer: mutable.ListBuffer[List[Int]] = mutable.ListBuffer() // a buffer with segments refs
         val currentBuffer: mutable.ListBuffer[Int] = mutable.ListBuffer()
+        val gbSize = windows.head.size
         var currentSize = 0
+        var currentBoundsLength = 0
 
         allSegments.foreach { i =>
+          val segmentSize = layout.getSegmentSize(i)
           val segmentSizeBytes = segmentBytes.getSegmentByteCount(i) * md.bandCount
-          if (segmentSizeBytes <= partitionBytes) {
-            if (currentSize <= partitionBytes) {
+
+          if (currentSize <= partitionBytes) {
+            if (currentSize <= partitionBytes && (layout.isTiled || layout.isStriped && currentBoundsLength <= gbSize)) {
               currentSize += segmentSizeBytes
               currentBuffer += i
+              currentBoundsLength += segmentSize
             } else {
               windowsBuffer += currentBuffer.toList
               currentBuffer.clear()
               currentSize = segmentSizeBytes
+              currentBoundsLength = segmentSize
               currentBuffer += i
             }
           } else {
