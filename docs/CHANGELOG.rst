@@ -1,6 +1,15 @@
 Changelog
 =========
 
+1.2.0
+-----
+
+Deprecations
+^^^^^^^^^^^^
+
+- ``GridBounds.size`` in favour of ``GridBounds.sizeLong``
+- ``GridBounds.coords`` in favour of ``GridBounds.coordsIter``
+
 1.1.0
 -----
 

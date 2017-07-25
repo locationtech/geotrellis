@@ -30,6 +30,7 @@ import geotrellis.spark.testkit.TestEnvironment
 import org.apache.hadoop.conf.Configuration
 import com.amazonaws.auth.AWSCredentials
 import org.apache.hadoop.mapreduce.{ TaskAttemptContext, InputSplit }
+import org.apache.spark.rdd.RDD
 
 import java.nio.file.{ Paths, Files }
 import spire.syntax.cfor._
@@ -51,14 +52,18 @@ class S3GeoTiffRDDSpec
       val testGeoTiffPath = "spark/src/test/resources/all-ones.tif"
       val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
       mockClient.putObject(bucket, key, geoTiffBytes)
-      val source1 = S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(getS3Client = () => new MockS3Client))
-      val source2 = S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(maxTileSize = Some(128), getS3Client = () => new MockS3Client))
+
+      val source1: RDD[(ProjectedExtent, Tile)] =
+        S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(getS3Client = () => new MockS3Client))
+      val source2: RDD[(ProjectedExtent, Tile)] =
+        S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(maxTileSize = Some(128), getS3Client = () => new MockS3Client))
 
       source1.count should be < (source2.count)
+
       val (_, md) = source1.collectMetadata[SpatialKey](FloatingLayoutScheme(256))
 
-      val stitched1 = source1.tileToLayout(md).stitch
-      val stitched2 = source2.tileToLayout(md).stitch
+      val stitched1: Tile = source1.tileToLayout(md).stitch
+      val stitched2: Tile = source2.tileToLayout(md).stitch
 
       assertEqual(stitched1, stitched2)
     }
