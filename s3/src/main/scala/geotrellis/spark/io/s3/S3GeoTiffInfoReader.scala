@@ -5,9 +5,8 @@ import geotrellis.spark.io.RasterReader
 import geotrellis.spark.io.s3.util.S3RangeReader
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader.GeoTiffInfo
 import geotrellis.util.LazyLogging
+
 import com.amazonaws.services.s3.model.ListObjectsRequest
-import geotrellis.raster.GridBounds
-import geotrellis.raster.io.geotiff.{GeoTiffMultibandTile, GeoTiffTile}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
@@ -99,8 +98,8 @@ case class S3GeoTiffInfoReader(
 
         // go through all segments which intersect desired bounds and was not put into any partition yet
         layout.intersectingSegments(gb).intersect(allSegments.toSeq).foreach { i =>
-          val segmentSize = layout.getSegmentSize(i) // TODO: * md.bandCount ???
-          val segmentSizeBytes = segmentBytes.getSegmentByteCount(i)
+          val segmentSize = layout.getSegmentSize(i)
+          val segmentSizeBytes = segmentBytes.getSegmentByteCount(i) * md.bandCount
           val segmentGb = layout.getGridBounds(i)
 
           // if segment is inside the window
@@ -145,7 +144,7 @@ case class S3GeoTiffInfoReader(
         var currentSize = 0
 
         allSegments.foreach { i =>
-          val segmentSizeBytes = segmentBytes.getSegmentByteCount(i)
+          val segmentSizeBytes = segmentBytes.getSegmentByteCount(i) * md.bandCount
           if (segmentSizeBytes <= partitionBytes) {
             if (currentSize <= partitionBytes) {
               currentSize += segmentSizeBytes
