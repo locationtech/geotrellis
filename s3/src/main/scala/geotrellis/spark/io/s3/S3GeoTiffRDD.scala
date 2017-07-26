@@ -114,7 +114,7 @@ object S3GeoTiffRDD extends LazyLogging {
 
     (options.maxTileSize, options.partitionBytes) match {
       case (maxTileSize @ Some(_), Some(partitionBytes)) if options.bySegments =>
-        val segments: RDD[((String, GeoTiffReader.GeoTiffInfo), List[Int])] =
+        val segments: RDD[((String, GeoTiffReader.GeoTiffInfo), Array[GridBounds])] =
           sourceGeoTiffInfo.segmentsByPartitionBytes(partitionBytes, maxTileSize)
 
         segments.persist(options.persistLevel)
@@ -125,9 +125,10 @@ object S3GeoTiffRDD extends LazyLogging {
         val repartition =
           if(segmentsCount > segments.partitions.length) segments.repartition(segmentsCount)
           else segments
-        repartition.map { case ((key, md), segmentIndices) =>
-          val (k, v) = rr.readSegments(segmentIndices, md, options)
-          uriToKey(new URI(s"s3://$bucket/$key"), k) -> v
+        repartition.flatMap { case ((key, md), segmentIndices) =>
+          rr.readSegments(segmentIndices, md, options).map { case (k, v) =>
+            uriToKey(new URI(s"s3://$bucket/$key"), k) -> v
+          }
         }
 
       case (Some(_), _) =>

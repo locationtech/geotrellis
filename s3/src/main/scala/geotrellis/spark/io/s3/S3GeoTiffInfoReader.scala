@@ -5,8 +5,8 @@ import geotrellis.spark.io.RasterReader
 import geotrellis.spark.io.s3.util.S3RangeReader
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader.GeoTiffInfo
 import geotrellis.util.LazyLogging
-
 import com.amazonaws.services.s3.model.ListObjectsRequest
+import geotrellis.raster.GridBounds
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
@@ -70,11 +70,21 @@ case class S3GeoTiffInfoReader(
     }
   }
 
-  /** Returns ((key, GeoTiffInfo), List[SegmentIndicies]) */
+  /**
+    * Returns ((key, GeoTiffInfo), List[SegmentIndicies])
+    *
+    * Array of grid bounds use in crop function
+    * //
+    * */
   def segmentsByPartitionBytes(partitionBytes: Long = Long.MaxValue, maxTileSize: Option[Int] = None)
-                              (implicit sc: SparkContext): RDD[((String, GeoTiffInfo), List[Int])] = {
+                              (implicit sc: SparkContext): RDD[((String, GeoTiffInfo), Array[GridBounds])] = {
     geoTiffInfoRdd.flatMap { case (key: String, md: GeoTiffInfo) =>
       val bufferKey = key -> md
+      val entireGb =
+        md
+          .segmentLayout
+          .getGridBounds(md.segmentBytes.size - 1)
+          .copy(colMin = 0, rowMin = 0)
 
       val allSegments = mutable.Set(md.segmentBytes.indices: _*)
       val allSegmentsInitialSize = allSegments.size
@@ -85,14 +95,14 @@ case class S3GeoTiffInfoReader(
       // list of desired windows, we'll try to pack them with segments if its possible
       val windows = RasterReader.listWindows(layout.totalCols, layout.totalRows, maxTileSize)
       // a buffer with segments refs
-      val buf: mutable.ListBuffer[((String, GeoTiffInfo), List[Int])] = mutable.ListBuffer()
+      val buf: mutable.ListBuffer[((String, GeoTiffInfo), Array[GridBounds])] = mutable.ListBuffer()
 
       // walk though all desired windows
       windows.foreach { gb =>
         // buffer of segments which should fit bytes size & window size
-        val windowsBuffer: mutable.ListBuffer[List[Int]] = mutable.ListBuffer() // a buffer with segments refs
+        val windowsBuffer: mutable.ListBuffer[Array[GridBounds]] = mutable.ListBuffer() // a buffer with segments refs
         // current buffer
-        val currentBuffer: mutable.ListBuffer[Int] = mutable.ListBuffer()
+        val currentBuffer: mutable.ListBuffer[GridBounds] = mutable.ListBuffer()
         var currentSize = 0
         var currentBoundsLength = 0
 
@@ -102,35 +112,38 @@ case class S3GeoTiffInfoReader(
           val segmentSizeBytes = segmentBytes.getSegmentByteCount(i) * md.bandCount
           val segmentGb = layout.getGridBounds(i)
 
-          // if segment is inside the window
-          if ((gb.contains(segmentGb) && layout.isTiled) || segmentSize <= gb.size && layout.isStriped) {
-            // if segment fits partition
-            if (segmentSizeBytes <= partitionBytes) {
-              // check if we still want to put segment into the same partition
-              if (currentSize <= partitionBytes && (layout.isTiled || layout.isStriped && currentBoundsLength <= gb.size)) {
-                currentSize += segmentSizeBytes
-                currentBuffer += i
-                currentBoundsLength += segmentSize
-              } else { // or put it into a separate partition
-                windowsBuffer += currentBuffer.toList
-                currentBuffer.clear()
-                currentSize = segmentSizeBytes
-                currentBoundsLength = segmentSize
-                currentBuffer += i
+          if (!entireGb.contains(segmentGb)) allSegments -= i
+          else {
+            // if segment is inside the window
+            if ((gb.contains(segmentGb) && layout.isTiled) || segmentSize <= gb.size && layout.isStriped) {
+              // if segment fits partition
+              if (segmentSizeBytes <= partitionBytes) {
+                // check if we still want to put segment into the same partition
+                if (currentSize <= partitionBytes && (layout.isTiled || layout.isStriped && currentBoundsLength <= gb.size)) {
+                  currentSize += segmentSizeBytes
+                  currentBuffer += segmentGb
+                  currentBoundsLength += segmentSize
+                } else { // or put it into a separate partition
+                  windowsBuffer += currentBuffer.toArray
+                  currentBuffer.clear()
+                  currentSize = segmentSizeBytes
+                  currentBoundsLength = segmentSize
+                  currentBuffer += segmentGb
+                }
+              } else {
+                // case when segment size is bigger than a desired partition size
+                // it is better to use a different strategy for these purposes
+                logger.warn("Segment size is bigger than a desired partition size, " +
+                  "though it fits the window size. You can consider a different partitioning strategy.")
+                windowsBuffer += Array(segmentGb)
               }
-            } else {
-              // case when segment size is bigger than a desired partition size
-              // it is better to use a different strategy for these purposes
-              logger.warn("Segment size is bigger than a desired partition size, " +
-                "though it fits the window size. You can consider a different partitioning strategy.")
-              windowsBuffer += List(i)
+              allSegments -= i
             }
-            allSegments -= i
           }
         }
 
         // if we have smth left in the current buffer
-        if(currentBuffer.nonEmpty) windowsBuffer += currentBuffer.toList
+        if(currentBuffer.nonEmpty) windowsBuffer += currentBuffer.toArray
 
         windowsBuffer.foreach { indices => buf += (bufferKey -> indices) }
       }
@@ -139,8 +152,8 @@ case class S3GeoTiffInfoReader(
       if (allSegments.nonEmpty) {
         logger.warn(s"Some segments don't fit windows (${allSegments.size} of $allSegmentsInitialSize).")
 
-        val windowsBuffer: mutable.ListBuffer[List[Int]] = mutable.ListBuffer() // a buffer with segments refs
-        val currentBuffer: mutable.ListBuffer[Int] = mutable.ListBuffer()
+        val windowsBuffer: mutable.ListBuffer[Array[GridBounds]] = mutable.ListBuffer() // a buffer with segments refs
+        val currentBuffer: mutable.ListBuffer[GridBounds] = mutable.ListBuffer()
         val gbSize = windows.head.size
         var currentSize = 0
         var currentBoundsLength = 0
@@ -148,30 +161,31 @@ case class S3GeoTiffInfoReader(
         allSegments.foreach { i =>
           val segmentSize = layout.getSegmentSize(i)
           val segmentSizeBytes = segmentBytes.getSegmentByteCount(i) * md.bandCount
+          val segmentGb = layout.getGridBounds(i)
 
           if (currentSize <= partitionBytes) {
             if (currentSize <= partitionBytes && (layout.isTiled || layout.isStriped && currentBoundsLength <= gbSize)) {
               currentSize += segmentSizeBytes
-              currentBuffer += i
+              currentBuffer += segmentGb
               currentBoundsLength += segmentSize
             } else {
-              windowsBuffer += currentBuffer.toList
+              windowsBuffer += currentBuffer.toArray
               currentBuffer.clear()
               currentSize = segmentSizeBytes
               currentBoundsLength = segmentSize
-              currentBuffer += i
+              currentBuffer += segmentGb
             }
           } else {
             // case when segment size is bigger than a desired partition size
             // it is better to use a different strategy for these purposes
             logger.warn("Segment size is bigger than a desired partition size, " +
               "and it doesn't fit window a desired window size. You can consider a different partitioning strategy.")
-            windowsBuffer += List(i)
+            windowsBuffer += Array(segmentGb)
           }
         }
 
         // if we have smth left in the current buffer
-        if(currentBuffer.nonEmpty) windowsBuffer += currentBuffer.toList
+        if(currentBuffer.nonEmpty) windowsBuffer += currentBuffer.toArray
 
         windowsBuffer.foreach { indices => buf += (bufferKey -> indices) }
       }

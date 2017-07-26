@@ -528,37 +528,6 @@ abstract class GeoTiffTile(
     tile
   }
 
-  def fromSegments(ids: Traversable[Int]): ArrayTile = {
-    val gb = ids.map(segmentLayout.getGridBounds(_)).reduce(_ combine _)
-    val (cols, rows) = gb.width -> gb.height
-    val tile = ArrayTile.empty(cellType, cols, rows)
-
-    getSegments(ids).foreach { case (segmentId, segment) =>
-      val segmentTransform = segmentLayout.getSegmentTransform(segmentId, 1)
-
-      if (cellType.isFloatingPoint)
-        cfor(0)(_ < segment.size, _ + 1) { i =>
-          val col = segmentTransform.indexToCol(i)
-          val row = segmentTransform.indexToRow(i)
-          if(col < cols && row < rows) {
-            val v = segment.getDouble(i)
-            tile.setDouble(col, row, v)
-          }
-        }
-      else
-        cfor(0)(_ < segment.size, _ + 1) { i =>
-          val col = segmentTransform.indexToCol(i)
-          val row = segmentTransform.indexToRow(i)
-          if(col < cols && row < rows) {
-            val v = segment.getInt(i)
-            tile.set(col, row, v)
-          }
-        }
-    }
-
-    tile
-  }
-
   /**
    * Crop this tile to given pixel region.
    *

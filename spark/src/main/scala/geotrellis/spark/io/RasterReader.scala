@@ -42,7 +42,7 @@ import spire.syntax.cfor._
 trait RasterReader[-O, R] extends Serializable {
   def readFully(byteReader: ByteReader, options: O): R
   def readWindow(byteReader: StreamingByteReader, pixelWindow: GridBounds, options: O): R
-  def readSegments(ids: Traversable[Int], info: GeoTiffReader.GeoTiffInfo, options: O): R
+  def readSegments(gbs: Array[GridBounds], info: GeoTiffReader.GeoTiffInfo, options: O): Iterator[R]
 }
 
 object RasterReader {
@@ -82,6 +82,9 @@ object RasterReader {
     result.toArray
   }
 
+  def mapTransform(info: GeoTiffReader.GeoTiffInfo) =
+    MapKeyTransform(info.extent, info.segmentLayout.totalCols, info.segmentLayout.totalRows)
+
   implicit def singlebandGeoTiffReader = new RasterReader[Options, (ProjectedExtent, Tile)] {
     def readFully(byteReader: ByteReader, options: Options) = {
       val geotiff = SinglebandGeoTiff(byteReader)
@@ -95,9 +98,13 @@ object RasterReader {
       (ProjectedExtent(raster.extent, options.crs.getOrElse(geotiff.crs)), raster.tile)
     }
 
-    def readSegments(ids: Traversable[Int], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
-      val tile = GeoTiffReader.geoTiffSinglebandTile(info).fromSegments(ids)
-      (ProjectedExtent(info.extent, options.crs.getOrElse(info.crs)), tile)
+    def readSegments(gbs: Array[GridBounds], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
+      val geoTiff = GeoTiffReader.geoTiffSinglebandTile(info)
+      val gridBounds = geoTiff.gridBounds
+      gbs
+        .filter(gridBounds.contains)
+        .map { gb => (ProjectedExtent(mapTransform(info)(gb), options.crs.getOrElse(info.crs)), geoTiff.crop(gb)) }
+        .toIterator
     }
   }
 
@@ -114,9 +121,13 @@ object RasterReader {
       (ProjectedExtent(raster.extent, options.crs.getOrElse(geotiff.crs)), raster.tile)
     }
 
-    def readSegments(ids: Traversable[Int], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
-      val tile = GeoTiffReader.geoTiffMultibandTile(info).fromSegments(ids)
-      (ProjectedExtent(info.extent, options.crs.getOrElse(info.crs)), tile)
+    def readSegments(gbs: Array[GridBounds], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
+      val geoTiff = GeoTiffReader.geoTiffMultibandTile(info)
+      val gridBounds = geoTiff.gridBounds
+      gbs
+        .filter(gridBounds.contains)
+        .map { gb => (ProjectedExtent(mapTransform(info)(gb), options.crs.getOrElse(info.crs)), geoTiff.crop(gb)) }
+        .toIterator
     }
   }
 
@@ -137,9 +148,18 @@ object RasterReader {
       (TemporalProjectedExtent(raster.extent, crs, time), raster.tile)
     }
 
-    def readSegments(ids: Traversable[Int], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
-      val tile = GeoTiffReader.geoTiffSinglebandTile(info).fromSegments(ids)
-      (TemporalProjectedExtent(info.extent, options.crs.getOrElse(info.crs), options.parseTime(info.tags)), tile)
+    def readSegments(gbs: Array[GridBounds], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
+      val geoTiff = GeoTiffReader.geoTiffSinglebandTile(info)
+      val gridBounds = geoTiff.gridBounds
+      gbs
+        .filter(gridBounds.contains)
+        .map { gb =>
+          (TemporalProjectedExtent(
+            extent = info.extent,
+            crs = options.crs.getOrElse(info.crs),
+            options.parseTime(info.tags)), geoTiff.crop(gb))
+        }
+        .toIterator
     }
   }
 
@@ -160,9 +180,18 @@ object RasterReader {
       (TemporalProjectedExtent(raster.extent, crs, time), raster.tile)
     }
 
-    def readSegments(ids: Traversable[Int], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
-      val tile = GeoTiffReader.geoTiffMultibandTile(info).fromSegments(ids)
-      (TemporalProjectedExtent(info.extent, options.crs.getOrElse(info.crs), options.parseTime(info.tags)), tile)
+    def readSegments(gbs: Array[GridBounds], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
+      val geoTiff = GeoTiffReader.geoTiffMultibandTile(info)
+      val gridBounds = geoTiff.gridBounds
+      gbs
+        .filter(gridBounds.contains)
+        .map { gb =>
+          (TemporalProjectedExtent(
+            mapTransform(info)(gb),
+            options.crs.getOrElse(info.crs),
+            options.parseTime(info.tags)), geoTiff.crop(gb))
+        }
+        .toIterator
     }
   }
 }
