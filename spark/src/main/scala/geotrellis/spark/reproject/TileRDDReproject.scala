@@ -81,46 +81,56 @@ object TileRDDReproject {
           }
       }
 
+    val (sampleKey, BufferedTile(sampleTile, sampleGridBounds)) = bufferedTiles.first() // XXX
+    val tileCols = sampleTile.cols // XXX metadata.layout.tileCols
+    val tileRows = sampleTile.rows // XXX metadata.layout.tileRows
+    val KeyBounds(SpatialKey(keyColMin, keyRowMin), SpatialKey(keyColMax, keyRowMax)) = metadata.bounds
+    val lb = scala.collection.mutable.ListBuffer.empty[K]
+
+    }
+
     val layerInfo: (Extent, CellSize, KeyBounds[K]) =
       bufferedTiles
         .mapPartitions({ partition =>
           val transform = Transform(crs, destCrs)
           val inverseTransform = Transform(destCrs, crs)
 
-          partition.map { case (key, BufferedTile(tile, gridBounds)) =>
+          partition.map { case (key, BufferedTile(_, _)) =>
             val innerExtent = mapTransform(key)
-            val innerRasterExtent = RasterExtent(innerExtent, gridBounds.width, gridBounds.height)
+            val innerRasterExtent = RasterExtent(innerExtent, sampleGridBounds.width, sampleGridBounds.height)
             val outerGridBounds =
               GridBounds(
-                -gridBounds.colMin,
-                -gridBounds.rowMin,
-                tile.cols - gridBounds.colMin - 1,
-                tile.rows - gridBounds.rowMin - 1
+                -sampleGridBounds.colMin,
+                -sampleGridBounds.rowMin,
+                tileCols - sampleGridBounds.colMin - 1,
+                tileRows - sampleGridBounds.rowMin - 1
               )
             val outerExtent = innerRasterExtent.extentFor(outerGridBounds, clamp = false)
 
             val window =
               if(options.matchLayerExtent) {
-                gridBounds
+                sampleGridBounds
               } else {
                 // Reproject extra cells that are half the buffer size, as to avoid
                 // any missed cells between tiles.
                 GridBounds(
-                  gridBounds.colMin / 2,
-                  gridBounds.rowMin / 2,
-                  (tile.cols + gridBounds.colMax - 1) / 2,
-                  (tile.rows + gridBounds.rowMax - 1) / 2
+                  sampleGridBounds.colMin / 2,
+                  sampleGridBounds.rowMin / 2,
+                  (tileCols + sampleGridBounds.colMax - 1) / 2,
+                  (tileRows + sampleGridBounds.rowMax - 1) / 2
                 )
               }
 
-            val Raster(newTile, newExtent) =
-              tile.reproject(outerExtent, window, transform, inverseTransform, rasterReprojectOptions)
+            val rasterExtent = RasterExtent(outerExtent, tileCols, tileRows)
+            val windowExtent = rasterExtent.extentFor(window)
+            val windowRasterExtent = RasterExtent(windowExtent, window.width, window.height)
+            val targetRasterExtent = ReprojectRasterExtent(windowRasterExtent, transform)
 
-            ((key, newExtent), newTile)
+            (key, targetRasterExtent.extent, targetRasterExtent.cols, targetRasterExtent.rows)
           }
         })
-        .map({ case ((key, extent), tile) =>
-          (extent, CellSize(extent, tile.cols, tile.rows), KeyBounds(key, key))
+        .map({ case (key, extent, cols, rows) =>
+          (extent, CellSize(extent, cols, rows), KeyBounds(key, key))
         })
         .reduce({ case ((e1, cs1, kb1), (e2, cs2, kb2)) =>
           val e = e1.combine(e2)
