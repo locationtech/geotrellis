@@ -529,6 +529,8 @@ abstract class GeoTiffTile(
   }
 
   def fromSegments(ids: Traversable[Int]): ArrayTile = {
+    val gb = ids.map(segmentLayout.getGridBounds(_)).reduce(_ combine _)
+    val (cols, rows) = gb.width -> gb.height
     val tile = ArrayTile.empty(cellType, cols, rows)
 
     getSegments(ids).foreach { case (segmentId, segment) =>

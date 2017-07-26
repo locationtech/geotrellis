@@ -441,8 +441,11 @@ abstract class GeoTiffMultibandTile(
   def toArrayTile(): ArrayMultibandTile =
     ArrayMultibandTile(bands.map(_.toArrayTile): _*)
 
+  /*def fromSegments(ids: Traversable[Int]): ArrayMultibandTile =
+    ArrayMultibandTile((0 until bandCount).map(i => band(i).fromSegments(ids)))*/
+
   def fromSegments(ids: Traversable[Int]): ArrayMultibandTile =
-    ArrayMultibandTile(bandsFromSegments(ids): _*)
+    ArrayMultibandTile(bandsFromSegments(ids).map(_.toArrayTile): _*)
 
   /**
    * Performs a crop on itself. The returned MultibandGeoTiffTile will
