@@ -28,7 +28,7 @@ import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.spark.buffer._
 import geotrellis.vector._
-import geotrellis.util.LazyLogging
+import geotrellis.util._
 
 import org.apache.spark.rdd._
 import org.apache.spark._
@@ -88,15 +88,26 @@ object TileRDDReproject {
     val KeyBounds(SpatialKey(keyColMin, keyRowMin), SpatialKey(keyColMax, keyRowMax)) = metadata.bounds
     val lb = scala.collection.mutable.ListBuffer.empty[K]
 
+    if (sc != None) {
+      var col = keyColMin; while (col <= keyColMax) {
+        var row = keyRowMin; while (row <= keyRowMax) {
+          lb += sampleKey.setComponent(SpatialKey(col, row))
+          row += 1
+        }
+        col += 1
+      }
     }
 
     val layerInfo: (Extent, CellSize, KeyBounds[K]) =
-      bufferedTiles
+      (sc match {
+        case Some(sc) => sc.parallelize(lb)
+        case None => bufferedTiles.map({ case (key, _) => key })
+      })
         .mapPartitions({ partition =>
           val transform = Transform(crs, destCrs)
           val inverseTransform = Transform(destCrs, crs)
 
-          partition.map { case (key, BufferedTile(_, _)) =>
+          partition.map { key =>
             val innerExtent = mapTransform(key)
             val innerRasterExtent = RasterExtent(innerExtent, sampleGridBounds.width, sampleGridBounds.height)
             val outerGridBounds =
