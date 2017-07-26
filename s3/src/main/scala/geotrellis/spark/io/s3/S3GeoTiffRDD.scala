@@ -20,19 +20,20 @@ import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.spark._
-import geotrellis.spark.io.RasterReader
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader
+import geotrellis.spark.io.{GeoTiffInfoReader, RasterReader}
 import geotrellis.spark.io.s3.util.S3RangeReader
 import geotrellis.util.{LazyLogging, StreamingByteReader}
 import geotrellis.vector._
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import org.apache.spark.storage.StorageLevel
 import com.amazonaws.services.s3.model._
+
 import java.net.URI
 import java.nio.ByteBuffer
-
-import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import org.apache.spark.storage.StorageLevel
 
 /**
  * The S3GeoTiffRDD object allows for the creation of whole or windowed RDD[(K, V)]s from files on S3.
@@ -59,6 +60,8 @@ object S3GeoTiffRDD extends LazyLogging {
     * @param chunkSize      How many bytes should be read in at a time.
     * @param delimiter      Delimiter to use for S3 objet listings. See
     * @param getS3Client    A function to instantiate an S3Client. Must be serializable.
+    * @param persistLevel   A spark persist sotrage level, MEMORY_ONLY by default (similar to RDD.cache())
+    * @param bySegments     Minimize segments reads, read input data by segments.
     */
   case class Options(
     tiffExtensions: Seq[String] = Seq(".tif", ".TIF", ".tiff", ".TIFF"),
@@ -71,7 +74,7 @@ object S3GeoTiffRDD extends LazyLogging {
     chunkSize: Option[Int] = None,
     delimiter: Option[String] = None,
     getS3Client: () => S3Client = () => S3Client.DEFAULT,
-    persistLevel: StorageLevel = StorageLevel.NONE,
+    persistLevel: StorageLevel = StorageLevel.MEMORY_ONLY,
     bySegments: Boolean = true
   ) extends RasterReader.Options
 
@@ -125,11 +128,15 @@ object S3GeoTiffRDD extends LazyLogging {
         val repartition =
           if(segmentsCount > segments.partitions.length) segments.repartition(segmentsCount)
           else segments
-        repartition.flatMap { case ((key, md), segmentIndices) =>
+
+        val result = repartition.flatMap { case ((key, md), segmentIndices) =>
           rr.readSegments(segmentIndices, md, options).map { case (k, v) =>
             uriToKey(new URI(s"s3://$bucket/$key"), k) -> v
           }
         }
+
+        segments.unpersist()
+        result
 
       case (Some(_), _) =>
         val objectRequestsToDimensions: RDD[(GetObjectRequest, (Int, Int))] =
@@ -175,7 +182,7 @@ object S3GeoTiffRDD extends LazyLogging {
     * @param uriToKey function to transform input key basing on the URI information.
     * @param options An instance of [[Options]] that contains any user defined or default settings.
     */
-  def apply[I, K, V](objectRequestsToDimensions: RDD[(GetObjectRequest, (Int, Int))], uriToKey: (URI, I) => K, options: Options, sourceGeoTiffInfo: => S3GeoTiffInfoReader)
+  def apply[I, K, V](objectRequestsToDimensions: RDD[(GetObjectRequest, (Int, Int))], uriToKey: (URI, I) => K, options: Options, sourceGeoTiffInfo: => GeoTiffInfoReader)
     (implicit rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
 
     val windows =

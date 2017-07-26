@@ -219,14 +219,6 @@ abstract class GeoTiffMultibandTile(
       (bytes, bandCount, bytesPerSample, _) => GeoTiffSegment.deinterleave(bytes, bandCount, bytesPerSample)
     ).toVector
 
-  def bandsFromSegments(segmentIds: Traversable[Int]): Vector[Tile] =
-    _subsetBandsFromSegments(
-      0 until bandCount,
-      segmentIds,
-      (segment, cols, rows, bandCount, _) => GeoTiffSegment.deinterleaveBitSegment(segment, cols, rows, bandCount),
-      (bytes, bandCount, bytesPerSample, _) => GeoTiffSegment.deinterleave(bytes, bandCount, bytesPerSample)
-    ).toVector
-
   /**
    * Creates an ArrayMultibandTIle that contains a subset of bands
    * from the GeoTiff.
@@ -238,16 +230,6 @@ abstract class GeoTiffMultibandTile(
     new ArrayMultibandTile(
       _subsetBands(
         bandSequence,
-        (segment, cols, rows, bandCount, bandSequence) => GeoTiffSegment.deinterleaveBitSegment(segment, cols, rows, bandCount, bandSequence),
-        (bytes, bandCount, bytesPerSample, bandSequence) => GeoTiffSegment.deinterleave(bytes, bandCount, bytesPerSample, bandSequence)
-      )
-    )
-
-  def subsetBandsFromSegments(bandSequence: Seq[Int], segmentIds: Traversable[Int]): ArrayMultibandTile =
-    new ArrayMultibandTile(
-      _subsetBandsFromSegments(
-        bandSequence,
-        segmentIds,
         (segment, cols, rows, bandCount, bandSequence) => GeoTiffSegment.deinterleaveBitSegment(segment, cols, rows, bandCount, bandSequence),
         (bytes, bandCount, bytesPerSample, bandSequence) => GeoTiffSegment.deinterleave(bytes, bandCount, bytesPerSample, bandSequence)
       )
@@ -336,116 +318,11 @@ abstract class GeoTiffMultibandTile(
     tiles
   }
 
-  private def _subsetBandsFromSegments(
-    bandSequence: Seq[Int],
-    segmentIds: Traversable[Int],
-    deinterleaveBitSegment: (GeoTiffSegment, Int, Int, Int, Traversable[Int]) => Array[Array[Byte]],
-    deinterleave: (Array[Byte], Int, Int, Traversable[Int]) => Array[Array[Byte]]
-  ): Array[Tile] = {
-    val segmentIdsList = segmentIds.toList
-    val actualBandCount = bandSequence.size
-    val tiles = new Array[Tile](actualBandCount)
-
-    if (hasPixelInterleave) {
-      val bands = Array.ofDim[Array[Byte]](bandCount, segmentCount)
-      val compressor = compression.createCompressor(segmentCount)
-      val decompressor = compressor.createDecompressor()
-      bandType match {
-        case BitBandType =>
-          getSegments(segmentIds).foreach {
-            case (segmentIndex, segment) if segmentIdsList.contains(segmentIndex) =>
-              val (cols, rows) =
-                if (segmentLayout.isTiled) (segmentLayout.tileLayout.tileCols, segmentLayout.tileLayout.tileRows)
-                else segmentLayout.getSegmentDimensions(segmentIndex)
-              val bytes = deinterleaveBitSegment(segment, cols, rows, bandCount, bandSequence)
-              cfor(0)(_ < actualBandCount, _ + 1) { bandIndex =>
-                bands(bandIndex)(segmentIndex) = compressor.compress(bytes(bandIndex), segmentIndex)
-              }
-
-            case (segmentIndex, _) =>
-              cfor(0)(_ < actualBandCount, _ + 1) { bandIndex =>
-                bands(bandIndex)(segmentIndex) = new Array[Byte](segmentCount)
-              }
-          }
-
-          cfor(0)(_ < actualBandCount, _ + 1) { bandIndex =>
-            tiles(bandIndex) =
-              GeoTiffTile(
-                new ArraySegmentBytes(bands(bandIndex)),
-                decompressor,
-                segmentLayout,
-                compression,
-                cellType,
-                Some(bandType)
-              )
-          }
-        case _ =>
-          val bytesPerSample = bandType.bytesPerSample
-          getSegments(0 until segmentCount).foreach {
-            case (segmentIndex, geoTiffSegment) if segmentIdsList.contains(segmentIndex) =>
-              val bytes = deinterleave(geoTiffSegment.bytes, bandCount, bytesPerSample, bandSequence)
-              cfor(0)(_ < actualBandCount, _ + 1) { bandIndex =>
-                bands(bandIndex)(segmentIndex) = compressor.compress(bytes(bandIndex), segmentIndex)
-              }
-            case (segmentIndex, _) =>
-              cfor(0)(_ < actualBandCount, _ + 1) { bandIndex =>
-                bands(bandIndex)(segmentIndex) = new Array[Byte](segmentCount)
-              }
-          }
-
-          cfor(0)(_ < actualBandCount, _ + 1) { bandIndex =>
-            tiles(bandIndex) =
-              GeoTiffTile(
-                new ArraySegmentBytes(bands(bandIndex)),
-                decompressor,
-                segmentLayout,
-                compression,
-                cellType,
-                Some(bandType)
-              )
-          }
-      }
-    } else {
-      val bandSegmentCount = segmentCount / bandCount
-      val bands = Array.ofDim[Array[Byte]](bandCount, bandSegmentCount)
-
-      cfor(0)(_ < actualBandCount, _ + 1) { bandIndex =>
-        val segmentOffset = bandSegmentCount * bandIndex
-        segmentBytes.getSegments(segmentOffset until bandSegmentCount + segmentOffset).foreach {
-          case (segmentIndex, segment) if segmentIdsList.contains(segmentIndex) =>
-            bands(bandIndex)(segmentIndex - segmentOffset) = segment.clone
-          case (segmentIndex, segment) =>
-            bands(bandIndex)(segmentIndex - segmentOffset) = new Array[Byte](segment.length)
-        }
-      }
-
-      cfor(0)(_ < actualBandCount, _ + 1) { bandIndex =>
-        tiles(bandIndex) =
-          GeoTiffTile(
-            new ArraySegmentBytes(bands(bandIndex)),
-            decompressor,
-            segmentLayout,
-            compression,
-            cellType,
-            Some(bandType)
-          )
-      }
-    }
-
-    tiles
-  }
-
   /**
     * Converts the GeoTiffMultibandTile to an
     * [[ArrayMultibandTile]] */
   def toArrayTile(): ArrayMultibandTile =
     ArrayMultibandTile(bands.map(_.toArrayTile): _*)
-
-  /*def fromSegments(ids: Traversable[Int]): ArrayMultibandTile =
-    ArrayMultibandTile((0 until bandCount).map(i => band(i).fromSegments(ids)))*/
-
-  def fromSegments(ids: Traversable[Int]): ArrayMultibandTile =
-    ArrayMultibandTile(bandsFromSegments(ids).map(_.toArrayTile): _*)
 
   /**
    * Performs a crop on itself. The returned MultibandGeoTiffTile will
