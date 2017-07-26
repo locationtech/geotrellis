@@ -60,7 +60,8 @@ object TileRDDReproject {
     metadata: TileLayerMetadata[K],
     destCrs: CRS,
     targetLayout: Either[LayoutScheme, LayoutDefinition],
-    options: Options
+    options: Options,
+    sc: Option[SparkContext] = None
   ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
     val crs: CRS = metadata.crs
     val layout = metadata.layout
