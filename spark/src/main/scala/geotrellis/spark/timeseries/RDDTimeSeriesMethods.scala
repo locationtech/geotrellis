@@ -5,53 +5,90 @@ import geotrellis.raster.histogram._
 import geotrellis.raster.summary.polygonal._
 import geotrellis.spark._
 import geotrellis.spark.mask.Mask.Options
+import geotrellis.util.annotations.experimental
 import geotrellis.util.MethodExtensions
 import geotrellis.vector._
 
 import java.time.ZonedDateTime
 
 
-object RDDTimeSeriesFunctions {
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental object RDDTimeSeriesFunctions {
 
-  def histogramProjection(tile: Tile): StreamingHistogram =
+  /**
+    * $experimental
+    */
+  @experimental def histogramProjection(tile: Tile): StreamingHistogram =
     StreamingHistogram.fromTile(tile)
 
-  def histogramReduction(left: StreamingHistogram, right: StreamingHistogram): StreamingHistogram =
+  /**
+    * $experimental
+    */
+  @experimental def histogramReduction(left: StreamingHistogram, right: StreamingHistogram): StreamingHistogram =
     left + right
 
-  def meanReduction(left: MeanResult, right: MeanResult): MeanResult =
+  /**
+    * $experimental
+    */
+  @experimental def meanReduction(left: MeanResult, right: MeanResult): MeanResult =
     left + right
 
-  def maxReduction(left: Double, right: Double): Double =
+  /**
+    * $experimental
+    */
+  @experimental def maxReduction(left: Double, right: Double): Double =
     scala.math.max(left, right)
 
-  def minReduction(left: Double, right: Double): Double =
+  /**
+    * $experimental
+    */
+  @experimental def minReduction(left: Double, right: Double): Double =
     scala.math.min(left, right)
 
-  def sumReduction(left: Double, right: Double): Double =
+  /**
+    * $experimental
+    */
+  @experimental def sumReduction(left: Double, right: Double): Double =
     left + right
 }
 
-abstract class RDDTimeSeriesMethods
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental abstract class RDDTimeSeriesMethods
     extends MethodExtensions[TileLayerRDD[SpaceTimeKey]] {
 
-  def sumSeries(
+  /**
+    * $experimental
+    */
+  @experimental def sumSeries(
     polygon: MultiPolygon,
     options: Options
   ): Map[ZonedDateTime, Double] =
     sumSeries(List(polygon), options)
 
-  def sumSeries(
+  /**
+    * $experimental
+    */
+  @experimental def sumSeries(
     polygon: MultiPolygon
   ): Map[ZonedDateTime, Double] =
     sumSeries(List(polygon), Options.DEFAULT)
 
-  def sumSeries(
+  /**
+    * $experimental
+    */
+  @experimental def sumSeries(
     polygons: Traversable[MultiPolygon]
   ): Map[ZonedDateTime, Double] =
     sumSeries(polygons, Options.DEFAULT)
 
-  def sumSeries(
+  /**
+    * $experimental
+    */
+  @experimental def sumSeries(
     polygons: Traversable[MultiPolygon],
     options: Options
   ): Map[ZonedDateTime, Double] = {
@@ -66,23 +103,35 @@ abstract class RDDTimeSeriesMethods
       .toMap
   }
 
-  def minSeries(
+  /**
+    * $experimental
+    */
+  @experimental def minSeries(
     polygon: MultiPolygon,
     options: Options
   ): Map[ZonedDateTime, Double] =
     minSeries(List(polygon), options)
 
-  def minSeries(
+  /**
+    * $experimental
+    */
+  @experimental def minSeries(
     polygon: MultiPolygon
   ): Map[ZonedDateTime, Double] =
     minSeries(List(polygon), Options.DEFAULT)
 
-  def minSeries(
+  /**
+    * $experimental
+    */
+  @experimental def minSeries(
     polygons: Traversable[MultiPolygon]
   ): Map[ZonedDateTime, Double] =
     minSeries(polygons, Options.DEFAULT)
 
-  def minSeries(
+  /**
+    * $experimental
+    */
+  @experimental def minSeries(
     polygons: Traversable[MultiPolygon],
     options: Options
   ): Map[ZonedDateTime, Double] = {
@@ -97,23 +146,35 @@ abstract class RDDTimeSeriesMethods
       .toMap
   }
 
-  def maxSeries(
+  /**
+    * $experimental
+    */
+  @experimental def maxSeries(
     polygon: MultiPolygon,
     options: Options
   ): Map[ZonedDateTime, Double] =
     maxSeries(List(polygon), options)
 
-  def maxSeries(
+  /**
+    * $experimental
+    */
+  @experimental def maxSeries(
     polygon: MultiPolygon
   ): Map[ZonedDateTime, Double] =
     maxSeries(List(polygon), Options.DEFAULT)
 
-  def maxSeries(
+  /**
+    * $experimental
+    */
+  @experimental def maxSeries(
     polygons: Traversable[MultiPolygon]
   ): Map[ZonedDateTime, Double] =
     maxSeries(polygons, Options.DEFAULT)
 
-  def maxSeries(
+  /**
+    * $experimental
+    */
+  @experimental def maxSeries(
     polygons: Traversable[MultiPolygon],
     options: Options
   ): Map[ZonedDateTime, Double] = {
@@ -128,23 +189,35 @@ abstract class RDDTimeSeriesMethods
       .toMap
   }
 
-  def meanSeries(
+  /**
+    * $experimental
+    */
+  @experimental def meanSeries(
     polygon: MultiPolygon,
     options: Options = Options.DEFAULT
   ): Map[ZonedDateTime, Double] =
     meanSeries(List(polygon), options)
 
-  def meanSeries(
+  /**
+    * $experimental
+    */
+  @experimental def meanSeries(
     polygon: MultiPolygon
   ): Map[ZonedDateTime, Double] =
     meanSeries(polygon, Options.DEFAULT)
 
-  def meanSeries(
+  /**
+    * $experimental
+    */
+  @experimental def meanSeries(
     polygons: Traversable[MultiPolygon]
   ): Map[ZonedDateTime, Double] =
     meanSeries(polygons, Options.DEFAULT)
 
-  def meanSeries(
+  /**
+    * $experimental
+    */
+  @experimental def meanSeries(
     polygons: Traversable[MultiPolygon],
     options: Options
   ): Map[ZonedDateTime, Double] = {
@@ -160,23 +233,35 @@ abstract class RDDTimeSeriesMethods
       .toMap
   }
 
-  def histogramSeries(
+  /**
+    * $experimental
+    */
+  @experimental def histogramSeries(
     polygon: MultiPolygon,
     options: Options = Options.DEFAULT
   ): Map[ZonedDateTime, Histogram[Double]] =
     histogramSeries(List(polygon), options)
 
-  def histogramSeries(
+  /**
+    * $experimental
+    */
+  @experimental def histogramSeries(
     polygon: MultiPolygon
   ): Map[ZonedDateTime, Histogram[Double]] =
     histogramSeries(polygon, Options.DEFAULT)
 
-  def histogramSeries(
+  /**
+    * $experimental
+    */
+  @experimental def histogramSeries(
     polygons: Traversable[MultiPolygon]
   ): Map[ZonedDateTime, Histogram[Double]] =
     histogramSeries(polygons, Options.DEFAULT)
 
-  def histogramSeries(
+  /**
+    * $experimental
+    */
+  @experimental def histogramSeries(
     polygons: Traversable[MultiPolygon],
     options: Options
   ): Map[ZonedDateTime, Histogram[Double]] = {
