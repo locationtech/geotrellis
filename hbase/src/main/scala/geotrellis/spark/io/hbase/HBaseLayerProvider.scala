@@ -30,7 +30,8 @@ import java.net.URI
  * Metadata table name is optional, not provided default value will be used.
  * Layers table name is required to instantiate a [[LayerWriter]]
  */
-class HBaseLayerProvider extends AttributeStoreProvider with LayerReaderProvider with LayerWriterProvider {
+class HBaseLayerProvider extends AttributeStoreProvider
+    with LayerReaderProvider with LayerWriterProvider with ValueReaderProvider {
   def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "hbase"
 
   def attributeStore(uri: URI): AttributeStore = {
@@ -52,5 +53,10 @@ class HBaseLayerProvider extends AttributeStoreProvider with LayerReaderProvider
     val table = params.getOrElse("layers",
       throw new IllegalArgumentException("Missing required URI parameter: layers"))
     new HBaseLayerWriter(store, instance, table)
+  }
+
+  def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] = {
+    val instance = HBaseInstance(uri)
+    new HBaseValueReader(instance, store)
   }
 }

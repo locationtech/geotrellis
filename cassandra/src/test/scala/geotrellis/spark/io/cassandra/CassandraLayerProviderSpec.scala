@@ -37,4 +37,10 @@ class CassandraLayerProviderSpec extends FunSpec with CassandraTestEnvironment {
     val reader = LayerWriter(uri)
     assert(reader.isInstanceOf[CassandraLayerWriter])
   }
+
+  it("construct CassandraValueReader from URI") {
+    val reader = ValueReader(uri)
+    assert(reader.isInstanceOf[CassandraValueReader])
+  }
+
 }
