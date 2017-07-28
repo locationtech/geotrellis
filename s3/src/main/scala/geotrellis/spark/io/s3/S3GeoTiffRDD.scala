@@ -130,7 +130,7 @@ object S3GeoTiffRDD extends LazyLogging {
           else segments
 
         val result = repartition.flatMap { case ((key, md), segmentIndices) =>
-          rr.readSegments(segmentIndices, md, options).map { case (k, v) =>
+          rr.readSegmentsIterator(segmentIndices, md, options).map { case (k, v) =>
             uriToKey(new URI(s"s3://$bucket/$key"), k) -> v
           }
         }
@@ -148,6 +148,7 @@ object S3GeoTiffRDD extends LazyLogging {
           ).mapValues { tiffTags => (tiffTags.cols, tiffTags.rows) }
 
         apply[I, K, V](objectRequestsToDimensions, uriToKey, options, sourceGeoTiffInfo)
+
       case _ =>
         sc.newAPIHadoopRDD(
           conf,

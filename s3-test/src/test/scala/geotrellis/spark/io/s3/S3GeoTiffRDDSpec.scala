@@ -107,11 +107,12 @@ class S3GeoTiffRDDSpec
       val dateTime = wholeInfo.time
 
       val collection = source2.collect
+      val length = source2.count
 
-      cfor(0)(_ < source2.count, _ + 1){ i =>
+      cfor(0)(_ < length, _ + 1) { i =>
         val (info, _) = collection(i)
 
-        info.time should be (dateTime)
+        info.time should be(dateTime)
       }
     }
 
