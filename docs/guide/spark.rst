@@ -208,8 +208,8 @@ IO will happen right away in order to read the layer attributes from the
 ``AttributeStore``. However, the result of the call is an RDD, a
 description of the distributed collection at some point in the future.
 Consequently the distributed store (like HDFS or S3) will not touched
-until some spark "action" is called on either ``rdd`` or one of it's
-decedents.
+until some spark "action" is called on either ``rdd`` or one of its
+descendants.
 
 But what happens when IO gremlins strike and the type of the record
 stored does not match the type parameter? It depends. The layer reader
@@ -471,7 +471,7 @@ us to verify that we're working with compatible layers.
     val rdd2: RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata] =
       reader.read(getLayerId(2))
 
-    val rdd3: TileLayerRDD[SpaitalKey] =
+    val rdd3: TileLayerRDD[SpatialKey] =
       reader.read(getLayerId(3))
 
 Default Joins
