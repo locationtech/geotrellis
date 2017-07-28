@@ -22,7 +22,7 @@ import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.spark._
 import geotrellis.spark.io.RasterReader
 import geotrellis.spark.io.s3.util.S3RangeReader
-import geotrellis.util.{StreamingByteReader, LazyLogging}
+import geotrellis.util.{LazyLogging, StreamingByteReader}
 import geotrellis.vector._
 
 import org.apache.hadoop.conf.Configuration
@@ -50,9 +50,11 @@ object S3GeoTiffRDD extends LazyLogging {
     * @param maxTileSize    Maximum allowed size of each tiles in output RDD.
     *                       May result in a one input GeoTiff being split amongst multiple records if it exceeds this size.
     *                       If no maximum tile size is specific, then each file file is read fully.
+    *                       1024 by defaut.
     * @param numPartitions  How many partitions Spark should create when it repartitions the data.
     * @param partitionBytes Desired partition size in bytes, at least one item per partition will be assigned.
                             This option is incompatible with the maxTileSize option.
+    *                       128 Mb by default.
     * @param chunkSize      How many bytes should be read in at a time.
     * @param delimiter      Delimiter to use for S3 objet listings. See
     * @param getS3Client    A function to instantiate an S3Client. Must be serializable.
@@ -62,9 +64,9 @@ object S3GeoTiffRDD extends LazyLogging {
     crs: Option[CRS] = None,
     timeTag: String = GEOTIFF_TIME_TAG_DEFAULT,
     timeFormat: String = GEOTIFF_TIME_FORMAT_DEFAULT,
-    maxTileSize: Option[Int] = None,
+    maxTileSize: Option[Int] = Some(1024),
     numPartitions: Option[Int] = None,
-    partitionBytes: Option[Long] = None,
+    partitionBytes: Option[Long] = Some(128l * 1024 * 1024),
     chunkSize: Option[Int] = None,
     delimiter: Option[String] = None,
     getS3Client: () => S3Client = () => S3Client.DEFAULT
@@ -105,9 +107,10 @@ object S3GeoTiffRDD extends LazyLogging {
     (implicit sc: SparkContext, rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
 
     val conf = configuration(bucket, prefix, options)
+    lazy val sourceMetadata = S3GeoTiffMetadataReader(bucket, prefix, options)
 
     options.maxTileSize match {
-      case Some(tileSize) =>
+      case Some(_) =>
         val objectRequestsToDimensions: RDD[(GetObjectRequest, (Int, Int))] =
           sc.newAPIHadoopRDD(
             conf,
@@ -116,7 +119,7 @@ object S3GeoTiffRDD extends LazyLogging {
             classOf[TiffTags]
           ).mapValues { tiffTags => (tiffTags.cols, tiffTags.rows) }
 
-        apply[I, K, V](objectRequestsToDimensions, uriToKey, options)
+        apply[I, K, V](objectRequestsToDimensions, uriToKey, options, sourceMetadata)
       case None =>
         sc.newAPIHadoopRDD(
           conf,
@@ -151,7 +154,7 @@ object S3GeoTiffRDD extends LazyLogging {
     * @param uriToKey function to transform input key basing on the URI information.
     * @param options An instance of [[Options]] that contains any user defined or default settings.
     */
-  def apply[I, K, V](objectRequestsToDimensions: RDD[(GetObjectRequest, (Int, Int))], uriToKey: (URI, I) => K, options: Options)
+  def apply[I, K, V](objectRequestsToDimensions: RDD[(GetObjectRequest, (Int, Int))], uriToKey: (URI, I) => K, options: Options, sourceMetadata: => S3GeoTiffMetadataReader)
     (implicit rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
 
     val windows =
@@ -167,14 +170,11 @@ object S3GeoTiffRDD extends LazyLogging {
         case None =>
           options.partitionBytes match {
             case Some(byteCount) =>
-              // Because we do not have cell type information, we cannot
-              // perform the necessary estimates for the partition bytes.
-              logger.warn(
-                s"${classOf[Options].getName}.partitionBytes set with maxTileSize, " +
-                 "cannot perform partitioning based on byte count. Option ignored. " +
-                 "Use numPartitions instead.")
-              windows
-            case None =>
+              sourceMetadata.estimatePartitionsNumber(byteCount, options.maxTileSize) match {
+                case Some(numPartitions) if numPartitions != windows.partitions.length => windows.repartition(numPartitions)
+                case _ => windows
+              }
+            case _ =>
               windows
           }
       }

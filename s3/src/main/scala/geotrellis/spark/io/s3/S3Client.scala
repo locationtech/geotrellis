@@ -54,7 +54,7 @@ trait S3Client extends LazyLogging {
       .toList
 
     // Empty listings cause malformed XML to be sent to AWS and lead to unhelpful exceptions
-    if (! listings.isEmpty) {
+    if (listings.nonEmpty) {
       deleteObjects(bucket, listings)
       if (listing.isTruncated) deleteListing(bucket, listNextBatchOfObjects(listing))
     }

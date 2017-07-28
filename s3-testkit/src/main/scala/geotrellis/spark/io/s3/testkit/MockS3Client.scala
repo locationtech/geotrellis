@@ -18,16 +18,15 @@ package geotrellis.spark.io.s3.testkit
 
 import geotrellis.spark.io.s3._
 import geotrellis.util.LazyLogging
-
 import com.amazonaws.services.s3.model._
 import com.amazonaws.services.s3.internal.AmazonS3ExceptionBuilder
 import org.apache.commons.io.IOUtils
-
 import java.io.ByteArrayInputStream
 import java.util.concurrent.ConcurrentHashMap
 
 import scala.collection.immutable.TreeMap
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 class MockS3Client() extends S3Client with LazyLogging {
   import MockS3Client._
@@ -112,7 +111,18 @@ class MockS3Client() extends S3Client with LazyLogging {
     }
   }
 
-  def listKeys(listObjectsRequest: ListObjectsRequest): Seq[String] = ???
+  def listKeys(listObjectsRequest: ListObjectsRequest): Seq[String] = {
+    var listing: ObjectListing = null
+    val result = mutable.ListBuffer[String]()
+    do {
+      listing = listObjects(listObjectsRequest)
+      // avoid including "directories" in the input split, can cause 403 errors on GET
+      result ++= listing.getObjectSummaries.asScala.map(_.getKey).filterNot(_ endsWith "/")
+      listObjectsRequest.setMarker(listing.getNextMarker)
+    } while (listing.isTruncated)
+
+    result
+  }
 
   def readBytes(getObjectRequest: GetObjectRequest): Array[Byte] = {
     val obj = getObject(getObjectRequest)
