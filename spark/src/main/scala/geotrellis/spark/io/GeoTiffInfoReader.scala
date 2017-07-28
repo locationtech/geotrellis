@@ -11,10 +11,10 @@ import org.apache.spark.rdd.RDD
 import scala.collection.mutable
 
 trait GeoTiffInfoReader extends LazyLogging {
-  val geoTiffInfo: List[(String, GeoTiffReader.GeoTiffInfo)]
-  def geoTiffInfoRdd(implicit sc: SparkContext): RDD[(String, GeoTiffReader.GeoTiffInfo)]
+  private [geotrellis] val geoTiffInfo: List[(String, GeoTiffReader.GeoTiffInfo)]
+  private [geotrellis] def geoTiffInfoRdd(implicit sc: SparkContext): RDD[(String, GeoTiffReader.GeoTiffInfo)]
 
-  lazy val averagePixelSize: Option[Int] =
+  private [geotrellis] lazy val averagePixelSize: Option[Int] =
     if(geoTiffInfo.nonEmpty) {
       Some((geoTiffInfo.map(_._2.bandType.bytesPerSample.toLong).sum / geoTiffInfo.length).toInt)
     } else {
@@ -22,14 +22,14 @@ trait GeoTiffInfoReader extends LazyLogging {
       None
     }
 
-  def windowsCount(maxTileSize: Option[Int] = None): Int =
+  private [geotrellis] def windowsCount(maxTileSize: Option[Int] = None): Int =
     geoTiffInfo
       .flatMap { case (_, info) =>
         RasterReader.listWindows(info.segmentLayout.totalCols, info.segmentLayout.totalRows, maxTileSize)
       }
       .length
 
-  def estimatePartitionsNumber(partitionBytes: Long, maxTileSize: Option[Int] = None): Option[Int] = {
+  private [geotrellis] def estimatePartitionsNumber(partitionBytes: Long, maxTileSize: Option[Int] = None): Option[Int] = {
     (maxTileSize, averagePixelSize) match {
       case (Some(tileSize), Some(pixelSize)) =>
         val numPartitions = (tileSize * pixelSize * windowsCount(maxTileSize) / partitionBytes).toInt
@@ -49,8 +49,8 @@ trait GeoTiffInfoReader extends LazyLogging {
     * where GridBounds are gird bounds of a particular segment,
     * each segment can only be in a single partition.
     * */
-  def segmentsByPartitionBytes(partitionBytes: Long = Long.MaxValue, maxTileSize: Option[Int] = None)
-                              (implicit sc: SparkContext): RDD[((String, GeoTiffInfo), Array[GridBounds])] = {
+  private [geotrellis] def segmentsByPartitionBytes(partitionBytes: Long = Long.MaxValue, maxTileSize: Option[Int] = None)
+                                                   (implicit sc: SparkContext): RDD[((String, GeoTiffInfo), Array[GridBounds])] = {
     geoTiffInfoRdd.flatMap { case (key: String, md: GeoTiffInfo) =>
       val bufferKey = key -> md
 
