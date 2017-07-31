@@ -25,15 +25,15 @@ import geotrellis.spark.io.{GeoTiffInfoReader, RasterReader}
 import geotrellis.spark.io.s3.util.S3RangeReader
 import geotrellis.util.{LazyLogging, StreamingByteReader}
 import geotrellis.vector._
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import com.amazonaws.services.s3.model._
-
 import java.net.URI
 import java.nio.ByteBuffer
+
+import com.typesafe.config.ConfigFactory
 
 /**
  * The S3GeoTiffRDD object allows for the creation of whole or windowed RDD[(K, V)]s from files on S3.
@@ -41,9 +41,18 @@ import java.nio.ByteBuffer
 object S3GeoTiffRDD extends LazyLogging {
   final val GEOTIFF_TIME_TAG_DEFAULT = "TIFFTAG_DATETIME"
   final val GEOTIFF_TIME_FORMAT_DEFAULT = "yyyy:MM:dd HH:mm:ss"
+  lazy val windowSize: Option[Int] = try {
+    Some(ConfigFactory.load().getInt("geotrellis.s3.rdd.read.windowSize"))
+  } catch {
+    case _: Throwable =>
+      logger.warn("geotrellis.s3.rdd.read.windowSize is not set in .conf file.")
+      None
+  }
 
   /**
     * This case class contains the various parameters one can set when reading RDDs from S3 using Spark.
+    *
+    * TODO: Add persistLevel option
     *
     * @param tiffExtensions     Read all file with an extension contained in the given list.
     * @param crs            Override CRS of the input files. If [[None]], the reader will use the file's original CRS.
@@ -60,22 +69,18 @@ object S3GeoTiffRDD extends LazyLogging {
     * @param chunkSize      How many bytes should be read in at a time.
     * @param delimiter      Delimiter to use for S3 objet listings. See
     * @param getS3Client    A function to instantiate an S3Client. Must be serializable.
-    * @param persistLevel   A spark persist sotrage level, MEMORY_ONLY by default (similar to RDD.cache())
-    * @param bySegments     Minimize segments reads, read input data by segments.
     */
   case class Options(
     tiffExtensions: Seq[String] = Seq(".tif", ".TIF", ".tiff", ".TIFF"),
     crs: Option[CRS] = None,
     timeTag: String = GEOTIFF_TIME_TAG_DEFAULT,
     timeFormat: String = GEOTIFF_TIME_FORMAT_DEFAULT,
-    maxTileSize: Option[Int] = Some(1024),
+    maxTileSize: Option[Int] = None,
     numPartitions: Option[Int] = None,
     partitionBytes: Option[Long] = Some(128l * 1024 * 1024),
     chunkSize: Option[Int] = None,
     delimiter: Option[String] = None,
-    getS3Client: () => S3Client = () => S3Client.DEFAULT,
-    persistLevel: StorageLevel = StorageLevel.MEMORY_ONLY,
-    bySegments: Boolean = true
+    getS3Client: () => S3Client = () => S3Client.DEFAULT
   ) extends RasterReader.Options
 
   object Options {
@@ -116,11 +121,11 @@ object S3GeoTiffRDD extends LazyLogging {
     lazy val sourceGeoTiffInfo = S3GeoTiffInfoReader(bucket, prefix, options)
 
     (options.maxTileSize, options.partitionBytes) match {
-      case (maxTileSize @ Some(_), Some(partitionBytes)) if options.bySegments =>
+      case (None, Some(partitionBytes)) =>
         val segments: RDD[((String, GeoTiffReader.GeoTiffInfo), Array[GridBounds])] =
-          sourceGeoTiffInfo.segmentsByPartitionBytes(partitionBytes, maxTileSize)
+          sourceGeoTiffInfo.segmentsByPartitionBytes(partitionBytes, windowSize)
 
-        segments.persist(options.persistLevel)
+        segments.persist() // StorageLevel.MEMORY_ONLY by default
         val segmentsCount = segments.count.toInt
 
         logger.info(s"repartition into ${segmentsCount} partitions.")
@@ -129,8 +134,8 @@ object S3GeoTiffRDD extends LazyLogging {
           if(segmentsCount > segments.partitions.length) segments.repartition(segmentsCount)
           else segments
 
-        val result = repartition.flatMap { case ((key, md), segmentIndices) =>
-          rr.readWindows(segmentIndices, md, options).map { case (k, v) =>
+        val result = repartition.flatMap { case ((key, md), segmentBounds) =>
+          rr.readWindows(segmentBounds, md, options).map { case (k, v) =>
             uriToKey(new URI(s"s3://$bucket/$key"), k) -> v
           }
         }

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Azavea
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package geotrellis.spark.io
 
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
@@ -10,11 +26,11 @@ import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable
 
-trait GeoTiffInfoReader extends LazyLogging {
-  private [geotrellis] val geoTiffInfo: List[(String, GeoTiffReader.GeoTiffInfo)]
-  private [geotrellis] def geoTiffInfoRdd(implicit sc: SparkContext): RDD[(String, GeoTiffReader.GeoTiffInfo)]
+private [geotrellis] trait GeoTiffInfoReader extends LazyLogging {
+  val geoTiffInfo: List[(String, GeoTiffReader.GeoTiffInfo)]
+  def geoTiffInfoRdd(implicit sc: SparkContext): RDD[(String, GeoTiffReader.GeoTiffInfo)]
 
-  private [geotrellis] lazy val averagePixelSize: Option[Int] =
+  lazy val averagePixelSize: Option[Int] =
     if(geoTiffInfo.nonEmpty) {
       Some((geoTiffInfo.map(_._2.bandType.bytesPerSample.toLong).sum / geoTiffInfo.length).toInt)
     } else {
@@ -22,14 +38,14 @@ trait GeoTiffInfoReader extends LazyLogging {
       None
     }
 
-  private [geotrellis] def windowsCount(maxTileSize: Option[Int] = None): Int =
+  def windowsCount(maxTileSize: Option[Int] = None): Int =
     geoTiffInfo
       .flatMap { case (_, info) =>
         RasterReader.listWindows(info.segmentLayout.totalCols, info.segmentLayout.totalRows, maxTileSize)
       }
       .length
 
-  private [geotrellis] def estimatePartitionsNumber(partitionBytes: Long, maxTileSize: Option[Int] = None): Option[Int] = {
+  def estimatePartitionsNumber(partitionBytes: Long, maxTileSize: Option[Int] = None): Option[Int] = {
     (maxTileSize, averagePixelSize) match {
       case (Some(tileSize), Some(pixelSize)) =>
         val numPartitions = (tileSize * pixelSize * windowsCount(maxTileSize) / partitionBytes).toInt
@@ -49,7 +65,7 @@ trait GeoTiffInfoReader extends LazyLogging {
     * where GridBounds are gird bounds of a particular segment,
     * each segment can only be in a single partition.
     * */
-  private [geotrellis] def segmentsByPartitionBytes(partitionBytes: Long = Long.MaxValue, maxTileSize: Option[Int] = None)
+  def segmentsByPartitionBytes(partitionBytes: Long = Long.MaxValue, maxTileSize: Option[Int] = None)
                                                    (implicit sc: SparkContext): RDD[((String, GeoTiffInfo), Array[GridBounds])] = {
     geoTiffInfoRdd.flatMap { case (key: String, md: GeoTiffInfo) =>
       val bufferKey = key -> md
