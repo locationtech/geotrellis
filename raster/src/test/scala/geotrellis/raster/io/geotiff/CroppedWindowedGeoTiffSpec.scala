@@ -49,7 +49,7 @@ class CroppedGeoTiffSpec extends FunSpec
   with GeoTiffTestUtils
   with TileBuilders {
 
-  describe("windowed, singleband GeoTiffs") {
+  /*describe("windowed, singleband GeoTiffs") {
     val bitStriped = geoTiffPath("uncompressed/striped/bit.tif")
     val byteStriped = geoTiffPath("uncompressed/striped/byte.tif")
     val int16Striped = geoTiffPath("uncompressed/striped/int16.tif")
@@ -211,11 +211,11 @@ class CroppedGeoTiffSpec extends FunSpec
         assertEqual(actual,expected)
       }
     }
-  }
+  }*/
 
   describe("multiband Band Interleave Geotiffs") {
     val bitStriped = geoTiffPath("3bands/bit/3bands-striped-band.tif")
-    val byteStriped = geoTiffPath("3bands/byte/3bands-striped-band.tif")
+    /*val byteStriped = geoTiffPath("3bands/byte/3bands-striped-band.tif")
     val int16Striped = geoTiffPath("3bands/int16/3bands-striped-band.tif")
     val int32Striped = geoTiffPath("3bands/int32/3bands-striped-band.tif")
     val uint16Striped = geoTiffPath("3bands/uint16/3bands-striped-band.tif")
@@ -230,7 +230,7 @@ class CroppedGeoTiffSpec extends FunSpec
     val uint16Tiled = geoTiffPath("3bands/uint16/3bands-tiled-band.tif")
     val uint32Tiled = geoTiffPath("3bands/uint32/3bands-tiled-band.tif")
     val float32Tiled = geoTiffPath("3bands/float32/3bands-tiled-band.tif")
-    val float64Tiled = geoTiffPath("3bands/float64/3bands-tiled-band.tif")
+    val float64Tiled = geoTiffPath("3bands/float64/3bands-tiled-band.tif")*/
 
     describe("reading striped geotiffs around the edges") {
       val extent = Extent(0, 1.5, 97.79, 88.82)
@@ -238,7 +238,7 @@ class CroppedGeoTiffSpec extends FunSpec
         val (expected, actual) = Reader.multiBand(bitStriped, extent)
         assertEqual(actual, expected)
       }
-      it("byte") {
+      /*it("byte") {
         val (expected, actual) = Reader.multiBand(byteStriped, extent)
         assertEqual(actual, expected)
       }
@@ -374,10 +374,10 @@ class CroppedGeoTiffSpec extends FunSpec
         val (expected, actual) = Reader.multiBand(float64Tiled, extent)
         assertEqual(actual,expected)
       }
-    }
+    }*/
   }
 
-  describe("multipixel Pixel Interleave Geotiffs") {
+  /*describe("multipixel Pixel Interleave Geotiffs") {
     val bitStriped = geoTiffPath("3bands/bit/3bands-striped-pixel.tif")
     val byteStriped = geoTiffPath("3bands/byte/3bands-striped-pixel.tif")
     val int16Striped = geoTiffPath("3bands/int16/3bands-striped-pixel.tif")
@@ -538,6 +538,6 @@ class CroppedGeoTiffSpec extends FunSpec
         val (expected, actual) = Reader.multiBand(float64Tiled, extent)
         assertEqual(actual,expected)
       }
-    }
+    }*/
   }
 }

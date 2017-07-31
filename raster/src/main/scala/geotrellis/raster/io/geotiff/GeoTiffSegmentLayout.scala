@@ -68,7 +68,8 @@ trait GeoTiffSegmentLayoutTransform {
     * @return Tuple representing segment (cols, rows)
     */
   def getSegmentDimensions(segmentIndex: Int): (Int, Int) = {
-    val normalizedSegmentIndex = segmentIndex % bandSegmentCount
+    println(s"normalizedSegmentIndex = $segmentIndex % $bandSegmentCount // ${segmentLayout.hasPixelInterleave}")
+    val normalizedSegmentIndex = segmentIndex// * bandSegmentCount
     val layoutCol = normalizedSegmentIndex % tileLayout.layoutCols
     val layoutRow = normalizedSegmentIndex / tileLayout.layoutCols
 
@@ -105,7 +106,7 @@ trait GeoTiffSegmentLayoutTransform {
   }
 
   private [geotiff] def getSegmentTransform(segmentIndex: Int): SegmentTransform = {
-    val id = segmentIndex % bandSegmentCount
+    val id = segmentIndex //% bandSegmentCount
     if (segmentLayout.isStriped)
       StripedSegmentTransform(id, GeoTiffSegmentLayoutTransform(segmentLayout, bandCount))
     else
@@ -113,7 +114,7 @@ trait GeoTiffSegmentLayoutTransform {
   }
 
   private [geotiff] def getGridBounds(segmentIndex: Int, isBit: Boolean = false): GridBounds = {
-    val normalizedSegmentIndex = segmentIndex % bandSegmentCount
+    val normalizedSegmentIndex = segmentIndex //% bandSegmentCount
     val (segmentCols, segmentRows) = getSegmentDimensions(normalizedSegmentIndex)
 
     val (startCol, startRow) = {
