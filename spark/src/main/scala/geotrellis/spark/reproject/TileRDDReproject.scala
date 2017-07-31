@@ -60,13 +60,13 @@ object TileRDDReproject {
     metadata: TileLayerMetadata[K],
     destCrs: CRS,
     targetLayout: Either[LayoutScheme, LayoutDefinition],
-    options: Options,
-    sc: Option[SparkContext] = None
+    options: Options
   ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
     val crs: CRS = metadata.crs
     val layout = metadata.layout
     val mapTransform: MapKeyTransform = layout.mapTransform
     val tileLayout: TileLayout = layout.tileLayout
+    val sc = bufferedTiles.context
 
     val rasterReprojectOptions =
       options.rasterReprojectOptions.parentGridExtent match {
@@ -82,27 +82,24 @@ object TileRDDReproject {
           }
       }
 
-    val (sampleKey, BufferedTile(sampleTile, sampleGridBounds)) = bufferedTiles.first() // XXX
+    val BufferedTile(sampleTile, sampleGridBounds) = bufferedTiles.first()._2 // XXX
     val tileCols = sampleTile.cols // XXX metadata.layout.tileCols
     val tileRows = sampleTile.rows // XXX metadata.layout.tileRows
-    val KeyBounds(SpatialKey(keyColMin, keyRowMin), SpatialKey(keyColMax, keyRowMax)) = metadata.bounds
-    val lb = scala.collection.mutable.ListBuffer.empty[K]
+    val KeyBounds(keyMin, keyMax) = metadata.bounds
+    val SpatialKey(keyColMin, keyRowMin) = keyMin.getComponent[SpatialKey]
+    val SpatialKey(keyColMax, keyRowMax) = keyMax.getComponent[SpatialKey]
+    val lb = scala.collection.mutable.ListBuffer.empty[SpatialKey]
 
-    if (sc != None) {
-      var col = keyColMin; while (col <= keyColMax) {
-        var row = keyRowMin; while (row <= keyRowMax) {
-          lb += sampleKey.setComponent(SpatialKey(col, row))
-          row += 1
-        }
-        col += 1
+    var col = keyColMin; while (col <= keyColMax) {
+      var row = keyRowMin; while (row <= keyRowMax) {
+        lb += SpatialKey(col, row)
+        row += 1
       }
+      col += 1
     }
 
-    val layerInfo: (Extent, CellSize, KeyBounds[K]) =
-      (sc match {
-        case Some(sc) => sc.parallelize(lb)
-        case None => bufferedTiles.map({ case (key, _) => key })
-      })
+    val layerInfo: (Extent, CellSize) =
+      sc.parallelize(lb)
         .mapPartitions({ partition =>
           val transform = Transform(crs, destCrs)
           val inverseTransform = Transform(destCrs, crs)
@@ -138,18 +135,17 @@ object TileRDDReproject {
             val windowRasterExtent = RasterExtent(windowExtent, window.width, window.height)
             val targetRasterExtent = ReprojectRasterExtent(windowRasterExtent, transform)
 
-            (key, targetRasterExtent.extent, targetRasterExtent.cols, targetRasterExtent.rows)
+            (targetRasterExtent.extent, targetRasterExtent.cols, targetRasterExtent.rows)
           }
         })
-        .map({ case (key, extent, cols, rows) =>
-          (extent, CellSize(extent, cols, rows), KeyBounds(key, key))
+        .map({ case (extent, cols, rows) =>
+          (extent, CellSize(extent, cols, rows))
         })
-        .reduce({ case ((e1, cs1, kb1), (e2, cs2, kb2)) =>
-          val e = e1.combine(e2)
-          val cs = if (cs1.resolution < cs2.resolution) cs1 else cs2
-          val kb = kb1.combine(kb2)
+        .reduce({ case ((e1, cs1), (e2, cs2)) =>
+          val extent = e1.combine(e2)
+          val cellSize = if (cs1.resolution < cs2.resolution) cs1 else cs2
 
-          (e, cs, kb)
+          (extent, cellSize)
         })
 
     val reprojectedTiles =
@@ -195,9 +191,9 @@ object TileRDDReproject {
       targetLayout match {
         case Left(layoutScheme) =>
           // If it's a floating layout scheme, the cell grid will line up and we always want to use nearest neighbor resampling
-          val (extent, cellSize, bounds) = layerInfo
+          val (extent, cellSize) = layerInfo
           val LayoutLevel(z, layout) = layoutScheme.levelFor(extent, cellSize)
-          val kb = bounds.setSpatialBounds(KeyBounds(layout.mapTransform(extent)))
+          val kb = metadata.bounds.setSpatialBounds(KeyBounds(layout.mapTransform(extent)))
           val m = TileLayerMetadata(metadata.cellType, layout, extent, destCrs, kb)
 
           layoutScheme match {
@@ -208,8 +204,8 @@ object TileRDDReproject {
           }
 
         case Right(layoutDefinition) =>
-          val (extent, cellSize, bounds) = layerInfo
-          val kb = bounds.setSpatialBounds(KeyBounds(layout.mapTransform(extent)))
+          val (extent, cellSize) = layerInfo
+          val kb = metadata.bounds.setSpatialBounds(KeyBounds(layout.mapTransform(extent)))
           val m = TileLayerMetadata(metadata.cellType, layoutDefinition, extent, destCrs, kb)
 
           (0, m, options.rasterReprojectOptions.method)
