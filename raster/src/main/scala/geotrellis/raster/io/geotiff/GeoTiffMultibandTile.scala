@@ -21,11 +21,11 @@ import geotrellis.raster.io.geotiff.compression._
 import geotrellis.raster.io.geotiff.util._
 import geotrellis.raster.resample.ResampleMethod
 import geotrellis.raster.split._
-import geotrellis.vector.Extent
-import java.util.BitSet
 
 import com.typesafe.scalalogging.LazyLogging
 import spire.syntax.cfor._
+
+import scala.collection.mutable
 
 object GeoTiffMultibandTile {
   /**

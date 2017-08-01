@@ -20,18 +20,20 @@ import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.spark._
-import geotrellis.spark.io.RasterReader
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader
+import geotrellis.spark.io.{GeoTiffInfoReader, RasterReader}
 import geotrellis.spark.io.s3.util.S3RangeReader
-import geotrellis.util.{StreamingByteReader, LazyLogging}
+import geotrellis.util.{LazyLogging, StreamingByteReader}
 import geotrellis.vector._
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import org.apache.spark.storage.StorageLevel
 import com.amazonaws.services.s3.model._
-
 import java.net.URI
 import java.nio.ByteBuffer
+
+import com.typesafe.config.ConfigFactory
 
 /**
  * The S3GeoTiffRDD object allows for the creation of whole or windowed RDD[(K, V)]s from files on S3.
@@ -39,9 +41,18 @@ import java.nio.ByteBuffer
 object S3GeoTiffRDD extends LazyLogging {
   final val GEOTIFF_TIME_TAG_DEFAULT = "TIFFTAG_DATETIME"
   final val GEOTIFF_TIME_FORMAT_DEFAULT = "yyyy:MM:dd HH:mm:ss"
+  lazy val windowSize: Option[Int] = try {
+    Some(ConfigFactory.load().getInt("geotrellis.s3.rdd.read.windowSize"))
+  } catch {
+    case _: Throwable =>
+      logger.warn("geotrellis.s3.rdd.read.windowSize is not set in .conf file.")
+      None
+  }
 
   /**
     * This case class contains the various parameters one can set when reading RDDs from S3 using Spark.
+    *
+    * TODO: Add persistLevel option
     *
     * @param tiffExtensions     Read all file with an extension contained in the given list.
     * @param crs            Override CRS of the input files. If [[None]], the reader will use the file's original CRS.
@@ -50,9 +61,11 @@ object S3GeoTiffRDD extends LazyLogging {
     * @param maxTileSize    Maximum allowed size of each tiles in output RDD.
     *                       May result in a one input GeoTiff being split amongst multiple records if it exceeds this size.
     *                       If no maximum tile size is specific, then each file file is read fully.
+    *                       1024 by defaut.
     * @param numPartitions  How many partitions Spark should create when it repartitions the data.
     * @param partitionBytes Desired partition size in bytes, at least one item per partition will be assigned.
                             This option is incompatible with the maxTileSize option.
+    *                       128 Mb by default.
     * @param chunkSize      How many bytes should be read in at a time.
     * @param delimiter      Delimiter to use for S3 objet listings. See
     * @param getS3Client    A function to instantiate an S3Client. Must be serializable.
@@ -64,7 +77,7 @@ object S3GeoTiffRDD extends LazyLogging {
     timeFormat: String = GEOTIFF_TIME_FORMAT_DEFAULT,
     maxTileSize: Option[Int] = None,
     numPartitions: Option[Int] = None,
-    partitionBytes: Option[Long] = None,
+    partitionBytes: Option[Long] = Some(128l * 1024 * 1024),
     chunkSize: Option[Int] = None,
     delimiter: Option[String] = None,
     getS3Client: () => S3Client = () => S3Client.DEFAULT
@@ -105,9 +118,32 @@ object S3GeoTiffRDD extends LazyLogging {
     (implicit sc: SparkContext, rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
 
     val conf = configuration(bucket, prefix, options)
+    lazy val sourceGeoTiffInfo = S3GeoTiffInfoReader(bucket, prefix, options)
 
-    options.maxTileSize match {
-      case Some(tileSize) =>
+    (options.maxTileSize, options.partitionBytes) match {
+      case (None, Some(partitionBytes)) =>
+        val segments: RDD[((String, GeoTiffReader.GeoTiffInfo), Array[GridBounds])] =
+          sourceGeoTiffInfo.segmentsByPartitionBytes(partitionBytes, windowSize)
+
+        segments.persist() // StorageLevel.MEMORY_ONLY by default
+        val segmentsCount = segments.count.toInt
+
+        logger.info(s"repartition into ${segmentsCount} partitions.")
+
+        val repartition =
+          if(segmentsCount > segments.partitions.length) segments.repartition(segmentsCount)
+          else segments
+
+        val result = repartition.flatMap { case ((key, md), segmentBounds) =>
+          rr.readWindows(segmentBounds, md, options).map { case (k, v) =>
+            uriToKey(new URI(s"s3://$bucket/$key"), k) -> v
+          }
+        }
+
+        segments.unpersist()
+        result
+
+      case (Some(_), _) =>
         val objectRequestsToDimensions: RDD[(GetObjectRequest, (Int, Int))] =
           sc.newAPIHadoopRDD(
             conf,
@@ -116,8 +152,9 @@ object S3GeoTiffRDD extends LazyLogging {
             classOf[TiffTags]
           ).mapValues { tiffTags => (tiffTags.cols, tiffTags.rows) }
 
-        apply[I, K, V](objectRequestsToDimensions, uriToKey, options)
-      case None =>
+        apply[I, K, V](objectRequestsToDimensions, uriToKey, options, sourceGeoTiffInfo)
+
+      case _ =>
         sc.newAPIHadoopRDD(
           conf,
           classOf[BytesS3InputFormat],
@@ -151,7 +188,7 @@ object S3GeoTiffRDD extends LazyLogging {
     * @param uriToKey function to transform input key basing on the URI information.
     * @param options An instance of [[Options]] that contains any user defined or default settings.
     */
-  def apply[I, K, V](objectRequestsToDimensions: RDD[(GetObjectRequest, (Int, Int))], uriToKey: (URI, I) => K, options: Options)
+  def apply[I, K, V](objectRequestsToDimensions: RDD[(GetObjectRequest, (Int, Int))], uriToKey: (URI, I) => K, options: Options, sourceGeoTiffInfo: => GeoTiffInfoReader)
     (implicit rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
 
     val windows =
@@ -163,18 +200,19 @@ object S3GeoTiffRDD extends LazyLogging {
     // Windowed reading may have produced unbalanced partitions due to files of differing size
     val repartitioned =
       options.numPartitions match {
-        case Some(p) => windows.repartition(p)
+        case Some(p) =>
+          logger.info(s"repartition into $p partitions.")
+          windows.repartition(p)
         case None =>
           options.partitionBytes match {
             case Some(byteCount) =>
-              // Because we do not have cell type information, we cannot
-              // perform the necessary estimates for the partition bytes.
-              logger.warn(
-                s"${classOf[Options].getName}.partitionBytes set with maxTileSize, " +
-                 "cannot perform partitioning based on byte count. Option ignored. " +
-                 "Use numPartitions instead.")
-              windows
-            case None =>
+              sourceGeoTiffInfo.estimatePartitionsNumber(byteCount, options.maxTileSize) match {
+                case Some(numPartitions) if numPartitions != windows.partitions.length =>
+                  logger.info(s"repartition into $numPartitions partitions.")
+                  windows.repartition(numPartitions)
+                case _ => windows
+              }
+            case _ =>
               windows
           }
       }

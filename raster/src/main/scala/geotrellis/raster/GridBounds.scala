@@ -210,4 +210,22 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
         )
       )
     }
+
+  /** Return the union of GridBounds. */
+  def combine(other: GridBounds): GridBounds =
+    GridBounds(
+      colMin = math.min(this.colMin, other.colMin),
+      rowMin = math.min(this.rowMin, other.rowMin),
+      colMax = math.max(this.colMax, other.colMax),
+      rowMax = math.max(this.rowMax, other.rowMax)
+    )
+
+  /** Empty gridbounds contain nothing, though non empty gridbounds contains iteslf */
+  def contains(other: GridBounds): Boolean =
+    if(colMin == 0 && colMax == 0 && rowMin == 0 && rowMax == 0) false
+    else
+      other.colMin >= colMin &&
+      other.rowMin >= rowMin &&
+      other.colMax <= colMax &&
+      other.rowMax <= rowMax
 }

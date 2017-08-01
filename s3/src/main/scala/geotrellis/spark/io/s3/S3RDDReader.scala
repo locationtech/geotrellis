@@ -31,8 +31,8 @@ import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import com.typesafe.config.ConfigFactory
 
+import com.typesafe.config.ConfigFactory
 import java.util.concurrent.Executors
 
 trait S3RDDReader {
