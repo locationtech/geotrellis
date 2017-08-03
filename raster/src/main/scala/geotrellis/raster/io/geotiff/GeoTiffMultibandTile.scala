@@ -87,8 +87,8 @@ object GeoTiffMultibandTile {
     val bandCount = tile.bandCount
 
     // TODO: Handle band interleave construction.
-    val segmentLayout =
-      GeoTiffSegmentLayout(tile.cols, tile.rows, options.storageMethod, PixelInterleave, bandType)
+     val segmentLayout =
+       GeoTiffSegmentLayout(tile.cols, tile.rows, options.storageMethod, PixelInterleave, bandType)
 
     val segmentCount = segmentLayout.tileLayout.layoutCols * segmentLayout.tileLayout.layoutRows
     val compressor = options.compression.createCompressor(segmentCount)
@@ -343,9 +343,13 @@ abstract class GeoTiffMultibandTile(
   crop(List(gridBounds), (0 until bandCount).toArray).next._2
 
   /**
-    * Crop this tile to given pixel regions.
+    * Performs a crop and band subsetting operaiton. The returned MultibandGeoTiffTile will
+    * contain a subset of bands that have the same area as the input GridBounds.
+    * The bands will be in the order given.
     *
-    * @param windows Pixel bounds specifying the crop areas
+    * @param  windows  Pixel bounds specifying the crop areas
+    * @param  bandIndices       An array of band indexes.
+    *
     */
   def crop(windows: Seq[GridBounds], bandIndices: Array[Int]): Iterator[(GridBounds, ArrayMultibandTile)] = {
     val bandSubsetLength = bandIndices.length
