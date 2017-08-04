@@ -17,9 +17,11 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader.GeoTiffInfo
 import geotrellis.spark.io._
 import geotrellis.spark.io.s3.util.S3RangeReader
 
+import com.amazonaws.services.s3.AmazonS3URI
 import com.amazonaws.services.s3.model.ListObjectsRequest
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -32,7 +34,7 @@ case class S3GeoTiffInfoReader(
   decompress: Boolean = false,
   streaming: Boolean = true
 ) extends GeoTiffInfoReader {
-  lazy val geoTiffInfo: List[(String, GeoTiffReader.GeoTiffInfo)] = {
+  lazy val geoTiffInfo: List[(String, GeoTiffInfo)] = {
     val s3Client = getS3Client()
 
     val listObjectsRequest =
@@ -42,16 +44,22 @@ case class S3GeoTiffInfoReader(
     s3Client
       .listKeys(listObjectsRequest)
       .toList
-      .map(key => (key, GeoTiffReader.readGeoTiffInfo(S3RangeReader(bucket, key, s3Client), decompress, streaming)))
+      .map(key => (key, GeoTiffReader.readGeoTiffInfo(S3RangeReader(bucket, key, getS3Client()), decompress, streaming)))
   }
 
-  def geoTiffInfoRdd(implicit sc: SparkContext): RDD[(String, GeoTiffReader.GeoTiffInfo)] = {
+  /** Returns RDD of URIs to tiffs as GeoTiffInfo is not serializable. */
+  def geoTiffInfoRdd(implicit sc: SparkContext): RDD[String] = {
     val listObjectsRequest =
       delimiter
         .fold(new ListObjectsRequest(bucket, prefix, null, null, null))(new ListObjectsRequest(bucket, prefix, null, _, null))
 
     sc.parallelize(getS3Client().listKeys(listObjectsRequest))
-      .map(key => (key, GeoTiffReader.readGeoTiffInfo(S3RangeReader(bucket, key, getS3Client()), decompress, streaming)))
+      .map(key => s"s3://$bucket/$key")
+  }
+
+  def getGeoTiffInfo(uri: String): GeoTiffInfo = {
+    val s3Uri = new AmazonS3URI(uri)
+    GeoTiffReader.readGeoTiffInfo(S3RangeReader(s3Uri.getBucket, s3Uri.getKey, getS3Client()), decompress, streaming)
   }
 }
 
