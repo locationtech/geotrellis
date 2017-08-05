@@ -27,8 +27,9 @@ import org.apache.spark.rdd.RDD
 import scala.collection.mutable
 
 private [geotrellis] trait GeoTiffInfoReader extends LazyLogging {
-  val geoTiffInfo: List[(String, GeoTiffReader.GeoTiffInfo)]
-  def geoTiffInfoRdd(implicit sc: SparkContext): RDD[(String, GeoTiffReader.GeoTiffInfo)]
+  val geoTiffInfo: List[(String, GeoTiffInfo)]
+  def geoTiffInfoRdd(implicit sc: SparkContext): RDD[String]
+  def getGeoTiffInfo(uri: String): GeoTiffInfo
 
   lazy val averagePixelSize: Option[Int] =
     if(geoTiffInfo.nonEmpty) {
@@ -61,15 +62,16 @@ private [geotrellis] trait GeoTiffInfoReader extends LazyLogging {
   /**
     * Function calculates a split of segments, to minimize segments reads.
     *
-    * Returns RDD of pairs: ((String, GeoTiffInfo), Array[GridBounds])
+    * Returns RDD of pairs: (URI, Array[GridBounds])
     * where GridBounds are gird bounds of a particular segment,
     * each segment can only be in a single partition.
     * */
   def segmentsByPartitionBytes(partitionBytes: Long = Long.MaxValue, maxTileSize: Option[Int] = None)
-                                                   (implicit sc: SparkContext): RDD[((String, GeoTiffInfo), Array[GridBounds])] = {
-    geoTiffInfoRdd.flatMap { case (key: String, md: GeoTiffInfo) =>
-      val bufferKey = key -> md
+                              (implicit sc: SparkContext): RDD[(String, Array[GridBounds])] = {
+    geoTiffInfoRdd.flatMap { uri =>
+      val bufferKey = uri
 
+      val md = getGeoTiffInfo(uri)
       val allSegments = mutable.Set(md.segmentBytes.indices: _*)
       val allSegmentsInitialSize = allSegments.size
 
@@ -79,7 +81,7 @@ private [geotrellis] trait GeoTiffInfoReader extends LazyLogging {
       // list of desired windows, we'll try to pack them with segments if its possible
       val windows = RasterReader.listWindows(layout.totalCols, layout.totalRows, maxTileSize)
       // a buffer with segments refs
-      val buf: mutable.ListBuffer[((String, GeoTiffInfo), Array[GridBounds])] = mutable.ListBuffer()
+      val buf: mutable.ListBuffer[(String, Array[GridBounds])] = mutable.ListBuffer()
 
       // walk though all desired windows
       windows.foreach { gb =>
