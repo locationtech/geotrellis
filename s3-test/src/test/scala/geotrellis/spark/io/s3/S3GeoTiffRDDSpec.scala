@@ -202,10 +202,10 @@ class S3GeoTiffRDDSpec
       val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
       mockClient.putObject(bucket, key, geoTiffBytes)
 
-      val source1 =
+      val source =
         S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(maxTileSize = 512, numPartitions = 32, getS3Client = () => new MockS3Client))
 
-      source1.count.toInt should be > 0
+      source.count.toInt should be > 0
     }
   }
 }
