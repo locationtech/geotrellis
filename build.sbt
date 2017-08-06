@@ -232,7 +232,7 @@ lazy val shapefile = project
   .settings(commonSettings)
 
 lazy val pointcloud = project
-  .dependsOn(`spark-testkit` % "test->test", spark % "provided;test->test", raster % "provided;test->test", s3 % "provided;test->test", `s3-testkit`)
+  .dependsOn(`spark-testkit` % "test->test", spark % "provided;test->test", raster % "provided;test->test", s3 % "provided;test->test", `s3-testkit` % "test->test")
   .settings(commonSettings)
 
 lazy val util = project
