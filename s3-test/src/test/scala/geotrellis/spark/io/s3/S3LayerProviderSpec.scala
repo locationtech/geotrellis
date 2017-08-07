@@ -27,6 +27,13 @@ class S3LayerProviderSpec extends FunSpec with TestEnvironment {
     assert(store.isInstanceOf[S3AttributeStore])
   }
 
+  it("construct S3AttributeStore from URI with no prefix"){
+    val store = AttributeStore(new java.net.URI("s3://fake-bucket"))
+    assert(store.isInstanceOf[S3AttributeStore])
+    assert(store.asInstanceOf[S3AttributeStore].prefix != null)
+  }
+
+
   it("construct S3LayerReader from URI") {
     val reader = LayerReader(uri)
     assert(reader.isInstanceOf[S3LayerReader])

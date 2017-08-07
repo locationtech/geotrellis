@@ -33,7 +33,12 @@ class S3LayerProvider extends AttributeStoreProvider
 
   def attributeStore(uri: URI): AttributeStore = {
     val s3Uri = new AmazonS3URI(uri)
-    new S3AttributeStore(bucket = s3Uri.getBucket, prefix = s3Uri.getKey)
+    val prefix =
+      Option(s3Uri.getKey) match {
+        case Some(s) => s
+        case None => ""
+      }
+    new S3AttributeStore(bucket = s3Uri.getBucket, prefix = prefix)
   }
 
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {
