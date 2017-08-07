@@ -127,7 +127,6 @@ object TileRDDReproject {
           val (z, m) = reprojectedTiles.collectMetadata(destCrs, layoutScheme)
           layoutScheme match {
             case _: FloatingLayoutScheme =>
-              val (z, m) = reprojectedTiles.collectMetadata(destCrs, layoutScheme)
               (z, m, NearestNeighbor)
             case _ =>
               (z, m, options.rasterReprojectOptions.method)
