@@ -44,48 +44,101 @@ trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
     *                               equal extents.
     */
   def merge(other: Tile): Tile = {
-    val mutableTile = self.mutable
     Seq(self, other).assertEqualDimensions()
+    merge(other, GridBounds(0,0, self.cols - 1, self.rows - 1))
+  }
+
+  /** Merge this tile with another for given bounds.
+    *
+    * This method will replace the values of these cells with the
+    * values of the other tile's corresponding cells, if the source
+    * cell is of the transparent value.  The transparent value is
+    * determined by the tile's cell type; if the cell type has a
+    * NoData value, then that is considered the transparent value.  If
+    * there is no NoData value associated with the cell type, then a 0
+    * value is considered the transparent value. If this is not the
+    * desired effect, the caller is required to change the cell type
+    * before using this method to an appropriate cell type that has
+    * the desired NoData value.
+    *
+    * @note It is assumed that other tile cell (0,0) lines up with (0,0) of this tile.
+    *
+    * @param other     Source of cells to be merged
+    * @param bounds    Cell grid bounds in target tile for merge operation
+    */
+  def merge(other: Tile, bounds: GridBounds): Tile = {
+    require(other.cols <= bounds.width && other.rows <= bounds.height,
+      s"Not have enough cells ${self.dimensions} for $bounds")
+    merge(other, bounds, bounds.colMin, bounds.rowMin)
+  }
+
+  /** Merge this tile with another for given bounds.
+    *
+    * This method will replace the values of these cells with the
+    * values of the other tile's corresponding cells, if the source
+    * cell is of the transparent value.  The transparent value is
+    * determined by the tile's cell type; if the cell type has a
+    * NoData value, then that is considered the transparent value.  If
+    * there is no NoData value associated with the cell type, then a 0
+    * value is considered the transparent value. If this is not the
+    * desired effect, the caller is required to change the cell type
+    * before using this method to an appropriate cell type that has
+    * the desired NoData value.
+    *
+    * @note
+    * Offset of (0,0) indicates that upper left corner of other tile lines up with
+    * upper left corner of the merge bounds. Incrementing the offset will have the
+    * effect of moving other tile up and to the left relative to this tile.
+    *
+    * @param other     Source of cells to be merged
+    * @param bounds    Cell grid bounds in target tile for merge operation
+    * @param colOffset Offset of row 0 in other tile relative to merge bounds
+    * @param rowOffset Offset or col 0 in other tile relative to merge bounds
+    */
+  def merge(other: Tile, bounds: GridBounds, colOffset: Int, rowOffset: Int) = {
+    val mutableTile = self.mutable
+    val GridBounds(colMin, rowMin, colMax, rowMax) = bounds
+
     self.cellType match {
       case BitCellType =>
-        cfor(0)(_ < self.rows, _ + 1) { row =>
-          cfor(0)(_ < self.cols, _ + 1) { col =>
-            if (other.get(col, row) == 1) {
+        cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
+          cfor(colMin)(_ <= colMax, _ + 1) { col =>
+            if (other.get(col - colOffset, row - rowOffset) == 1) {
               mutableTile.set(col, row, 1)
             }
           }
         }
       case ByteCellType | UByteCellType | ShortCellType | UShortCellType | IntCellType  =>
         // Assume 0 as the transparent value
-        cfor(0)(_ < self.rows, _ + 1) { row =>
-          cfor(0)(_ < self.cols, _ + 1) { col =>
+        cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
+          cfor(colMin)(_ <= colMax, _ + 1) { col =>
             if (self.get(col, row) == 0) {
-              mutableTile.set(col, row, other.get(col, row))
+              mutableTile.set(col, row, other.get(col - colOffset, row - rowOffset))
             }
           }
         }
       case FloatCellType | DoubleCellType =>
         // Assume 0.0 as the transparent value
-        cfor(0)(_ < self.rows, _ + 1) { row =>
-          cfor(0)(_ < self.cols, _ + 1) { col =>
+        cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
+          cfor(colMin)(_ <= colMax, _ + 1) { col =>
             if (self.getDouble(col, row) == 0.0) {
-              mutableTile.setDouble(col, row, other.getDouble(col, row))
+              mutableTile.setDouble(col, row, other.getDouble(col - colOffset, row - rowOffset))
             }
           }
         }
       case x if x.isFloatingPoint =>
-        cfor(0)(_ < self.rows, _ + 1) { row =>
-          cfor(0)(_ < self.cols, _ + 1) { col =>
+        cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
+          cfor(colMin)(_ <= colMax, _ + 1) { col =>
             if (isNoData(self.getDouble(col, row))) {
-              mutableTile.setDouble(col, row, other.getDouble(col, row))
+              mutableTile.setDouble(col, row, other.getDouble(col - colOffset, row - rowOffset))
             }
           }
         }
       case _ =>
-        cfor(0)(_ < self.rows, _ + 1) { row =>
-          cfor(0)(_ < self.cols, _ + 1) { col =>
+        cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
+          cfor(colMin)(_ <= colMax, _ + 1) { col =>
             if (isNoData(self.get(col, row))) {
-              mutableTile.set(col, row, other.get(col, row))
+              mutableTile.set(col, row, other.get(col - colOffset, row - rowOffset))
             }
           }
         }
@@ -119,8 +172,8 @@ trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
           case BitCellType | ByteCellType | UByteCellType | ShortCellType | UShortCellType | IntCellType  =>
             val interpolate = Resample(method, other, otherExtent, targetCS).resample _
             // Assume 0 as the transparent value
-            cfor(0)(_ < self.rows, _ + 1) { row =>
-              cfor(0)(_ < self.cols, _ + 1) { col =>
+            cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
+              cfor(colMin)(_ <= colMax, _ + 1) { col =>
                 if (self.get(col, row) == 0) {
                   val (x, y) = re.gridToMap(col, row)
                   val v = interpolate(x, y)
@@ -133,8 +186,8 @@ trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
           case FloatCellType | DoubleCellType =>
             val interpolate = Resample(method, other, otherExtent, targetCS).resampleDouble _
             // Assume 0.0 as the transparent value
-            cfor(0)(_ < self.rows, _ + 1) { row =>
-              cfor(0)(_ < self.cols, _ + 1) { col =>
+            cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
+              cfor(colMin)(_ <= colMax, _ + 1) { col =>
                 if (self.getDouble(col, row) == 0.0) {
                   val (x, y) = re.gridToMap(col, row)
                   val v = interpolate(x, y)
@@ -146,8 +199,8 @@ trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
             }
           case x if x.isFloatingPoint =>
             val interpolate = Resample(method, other, otherExtent, targetCS).resampleDouble _
-            cfor(0)(_ < self.rows, _ + 1) { row =>
-              cfor(0)(_ < self.cols, _ + 1) { col =>
+            cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
+              cfor(colMin)(_ <= colMax, _ + 1) { col =>
                 if (isNoData(self.getDouble(col, row))) {
                   val (x, y) = re.gridToMap(col, row)
                   mutableTile.setDouble(col, row, interpolate(x, y))
@@ -156,8 +209,8 @@ trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
             }
           case _ =>
             val interpolate = Resample(method, other, otherExtent, targetCS).resample _
-            cfor(0)(_ < self.rows, _ + 1) { row =>
-              cfor(0)(_ < self.cols, _ + 1) { col =>
+            cfor(rowMin)(_ <= rowMax, _ + 1) { row =>
+              cfor(colMin)(_ <= colMax, _ + 1) { col =>
                 if (isNoData(self.get(col, row))) {
                   val (x, y) = re.gridToMap(col, row)
                   mutableTile.set(col, row, interpolate(x, y))
