@@ -91,17 +91,26 @@ object Pyramid extends LazyLogging {
     val targetTileCols = nextLayout.tileLayout.tileCols
     val targetTileRows = nextLayout.tileLayout.tileRows
 
-    val createTile: ((Extent, Extent, V)) => V = { case (targetExtent, baseExtent, baseTile) =>
+    type MergeTile = (V, Array[GridBounds])
+
+    val createTile: ((Extent, Extent, V)) => MergeTile = { case (targetExtent, baseExtent, baseTile) =>
       val targetTile = baseTile.prototype(targetTileCols, targetTileRows)
+      val bounds = RasterExtent(targetExtent, targetTile).gridBoundsFor(baseExtent)
       targetTile.merge(targetExtent, baseExtent, baseTile, resampleMethod)
+      (targetTile, Array(bounds))
     }
 
-    def includeTile: (V, (Extent, Extent, V)) => V = { case (targetTile, (targetExtent, baseExtent, baseTile)) =>
+    def includeTile: (MergeTile, (Extent, Extent, V)) => MergeTile = { case ((targetTile, mergedBounds), (targetExtent, baseExtent, baseTile)) =>
+      val bounds = RasterExtent(targetExtent, targetTile).gridBoundsFor(baseExtent)
       targetTile.merge(targetExtent, baseExtent, baseTile, resampleMethod)
+      (targetTile, bounds +: mergedBounds)
     }
 
-    def combineTile: (V, V) => V = { case (left: V, right: V) =>
-      left.merge(right)
+    def combineTile: (MergeTile, MergeTile) => MergeTile = { case ((targetTile, mergedBounds), (targetTile1, mergedBounds1)) =>
+      for (bound <- mergedBounds1){
+        targetTile.merge(targetTile1, bound)
+      }
+      (targetTile, mergedBounds ++ mergedBounds1)
     }
 
     val nextRdd = {
@@ -119,7 +128,7 @@ object Pyramid extends LazyLogging {
         transformedRdd.combineByKey(createTile, includeTile, combineTile)
       )(
         transformedRdd.combineByKey(createTile, includeTile, combineTile, _)
-      )
+      ).mapValues(_._1)  // discard list of updated bounds
     }
 
     nextZoom -> new ContextRDD(nextRdd, nextMetadata)
