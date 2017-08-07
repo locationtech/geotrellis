@@ -89,20 +89,31 @@ object S3GeoTiffRDD extends LazyLogging {
 
   /**
    * Create Configuration for [[S3InputFormat]] based on parameters and options.
+   * Important: won't pass partitionBytes into hadoop configuration if numPartition options is set.
    *
    * @param bucket   Name of the bucket on S3 where the files are kept.
    * @param prefix   Prefix of all of the keys on S3 that are to be read in.
    * @param options  An instance of [[Options]] that contains any user defined or default settings.
    */
   private def configuration(bucket: String, prefix: String, options: S3GeoTiffRDD.Options)(implicit sc: SparkContext): Configuration = {
+    if(options.numPartitions.isDefined && options.partitionBytes.isDefined)
+      logger.warn("Both numPartitions and partitionBytes options are set. " +
+        "Only numPartitions would be passed into hadoop configuration.")
+
     val conf = sc.hadoopConfiguration
     S3InputFormat.setBucket(conf, bucket)
     S3InputFormat.setPrefix(conf, prefix)
     S3InputFormat.setExtensions(conf, options.tiffExtensions)
     S3InputFormat.setCreateS3Client(conf, options.getS3Client)
-    options.numPartitions.foreach{ n => S3InputFormat.setPartitionCount(conf, n) }
-    options.partitionBytes.foreach{ n => S3InputFormat.setPartitionBytes(conf, n) }
-    options.delimiter.foreach { n => S3InputFormat.setDelimiter(conf, n) }
+    options.numPartitions
+      .fold(S3InputFormat.removePartitionCount(conf)) { n =>
+        S3InputFormat.setPartitionCount(conf, n)
+        S3InputFormat.removePartitionBytes(conf)
+      }
+    if(options.numPartitions.isEmpty)
+      options.partitionBytes
+        .fold(S3InputFormat.removePartitionBytes(conf))(S3InputFormat.setPartitionBytes(conf, _))
+    options.delimiter.fold(S3InputFormat.removeDelimiter(conf))(S3InputFormat.setDelimiter(conf, _))
     conf
   }
 

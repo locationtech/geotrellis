@@ -195,5 +195,17 @@ class S3GeoTiffRDDSpec
 
       MockS3Client.lastListObjectsRequest.get.getDelimiter should be ("/")
     }
+
+    it("should read with num partitions and window size options set") {
+      val key = "geoTiff/all-ones.tif"
+      val testGeoTiffPath = "spark/src/test/resources/all-ones.tif"
+      val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
+      mockClient.putObject(bucket, key, geoTiffBytes)
+
+      val source =
+        S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(maxTileSize = 512, numPartitions = 32, getS3Client = () => new MockS3Client))
+
+      source.count.toInt should be > 0
+    }
   }
 }
