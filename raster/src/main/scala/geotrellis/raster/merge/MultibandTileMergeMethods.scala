@@ -17,7 +17,7 @@
 package geotrellis.raster.merge
 
 import geotrellis.raster.resample.ResampleMethod
-import geotrellis.raster.{ArrayMultibandTile, Tile, MultibandTile}
+import geotrellis.raster.{ArrayMultibandTile, Tile, MultibandTile, GridBounds}
 import geotrellis.vector.Extent
 
 /**
@@ -42,6 +42,35 @@ trait MultibandTileMergeMethods extends TileMergeMethods[MultibandTile] {
 
     ArrayMultibandTile(bands)
   }
+
+  /** Merge this tile with another for given bounds. */
+  def merge(other: MultibandTile, bounds: GridBounds): MultibandTile = {
+    val bands: Seq[Tile] =
+      for {
+        bandIndex <- 0 until self.bandCount
+      } yield {
+        val thisBand = self.band(bandIndex)
+        val thatBand = other.band(bandIndex)
+        thisBand.merge(thatBand, bounds)
+      }
+
+    ArrayMultibandTile(bands)
+  }
+
+  /** Merge this tile with another for given bounds at offset in source tile. */
+  def merge(other: MultibandTile, bounds: GridBounds, colOffset: Int, rowOffset: Int): MultibandTile = {
+    val bands: Seq[Tile] =
+      for {
+        bandIndex <- 0 until self.bandCount
+      } yield {
+        val thisBand = self.band(bandIndex)
+        val thatBand = other.band(bandIndex)
+        thisBand.merge(thatBand, bounds, colOffset, rowOffset)
+      }
+
+    ArrayMultibandTile(bands)
+  }
+
 
   /**
     * Merge this [[MultibandTile]] with the other one.  All places in
