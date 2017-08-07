@@ -105,12 +105,15 @@ object S3GeoTiffRDD extends LazyLogging {
     S3InputFormat.setPrefix(conf, prefix)
     S3InputFormat.setExtensions(conf, options.tiffExtensions)
     S3InputFormat.setCreateS3Client(conf, options.getS3Client)
-    options.numPartitions.foreach { n =>
-      S3InputFormat.setPartitionCount(conf, n)
-      S3InputFormat.removePartitionBytes(conf)
-    }
-    if(options.numPartitions.isEmpty) options.partitionBytes.foreach(S3InputFormat.setPartitionBytes(conf, _))
-    options.delimiter.foreach(S3InputFormat.setDelimiter(conf, _))
+    options.numPartitions
+      .fold(S3InputFormat.removePartitionCount(conf)) { n =>
+        S3InputFormat.setPartitionCount(conf, n)
+        S3InputFormat.removePartitionBytes(conf)
+      }
+    if(options.numPartitions.isEmpty)
+      options.partitionBytes
+        .fold(S3InputFormat.removePartitionBytes(conf))(S3InputFormat.setPartitionBytes(conf, _))
+    options.delimiter.fold(S3InputFormat.removeDelimiter(conf))(S3InputFormat.setDelimiter(conf, _))
     conf
   }
 
