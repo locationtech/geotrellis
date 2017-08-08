@@ -28,6 +28,7 @@ import java.util.ServiceLoader
  * This interface abstracts over various construction requirements for
  * constructing a storage back-end specific reader. */
 trait ValueReader[ID] {
+  val attributeStore: AttributeStore
 
   /** Produce a key value reader for a specific layer, prefetching layer metadata once at construction time */
   def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: ID): Reader[K, V]
