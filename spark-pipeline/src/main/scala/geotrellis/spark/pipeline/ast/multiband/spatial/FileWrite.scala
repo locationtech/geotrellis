@@ -10,11 +10,11 @@ import geotrellis.spark.pipeline.json.write
 import org.apache.spark.SparkContext
 
 case class FileWrite(
-  node: Node[(Int, MultibandTileLayerRDD[SpatialKey])],
+  node: Node[Stream[(Int, MultibandTileLayerRDD[SpatialKey])]],
   arg: write.File
-) extends Write[(Int, MultibandTileLayerRDD[SpatialKey])] {
+) extends Write[Stream[(Int, MultibandTileLayerRDD[SpatialKey])]] {
   def asJson = node.asJson :+ arg.asJson
-  def get(implicit sc: SparkContext): (Int, MultibandTileLayerRDD[SpatialKey]) = arg.eval(node.get)
+  def get(implicit sc: SparkContext): Stream[(Int, MultibandTileLayerRDD[SpatialKey])] = Write.eval(arg)(node.get)
   def validate: (Boolean, String) = {
     val (f, msg) = if (node == null) (false, s"${this.getClass} has no node")
     else node.validation

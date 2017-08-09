@@ -15,7 +15,7 @@ case class TileToLayout(
   arg: transform.TileToLayout
 ) extends Transform[RDD[(TemporalProjectedExtent, Tile)], TileLayerRDD[SpaceTimeKey]] {
   def asJson = node.asJson :+ arg.asJson
-  def get(implicit sc: SparkContext): TileLayerRDD[SpaceTimeKey] = arg.eval(node.get)
+  def get(implicit sc: SparkContext): TileLayerRDD[SpaceTimeKey] = Transform.tileToLayout(arg)(node.get)
   def validate: (Boolean, String) = {
     val (f, msg) = if (node == null) (false, s"${this.getClass} has no node")
     else node.validation

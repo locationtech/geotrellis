@@ -1,9 +1,9 @@
-package geotrellis.spark.pipeline.ast.singleband.spatial
+package geotrellis.spark.pipeline.ast.multiband.spatial
 
 import io.circe.syntax._
-
 import geotrellis.raster._
 import geotrellis.spark._
+import geotrellis.spark.io._
 import geotrellis.spark.pipeline.ast._
 import geotrellis.spark.pipeline.json.transform
 import geotrellis.vector._
@@ -11,12 +11,13 @@ import geotrellis.vector._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-case class TileToLayoutWithZoom(
-  node: Node[RDD[(ProjectedExtent, Tile)]],
-  arg: transform.TileToLayoutWithZoom
-) extends Transform[RDD[(ProjectedExtent, Tile)], (Int, TileLayerRDD[SpatialKey])] {
+case class Pyramid(
+  node: Node[MultibandTileLayerRDD[SpatialKey]],
+  arg: transform.Pyramid
+) extends Transform[RDD[(ProjectedExtent, MultibandTile)], Stream[(Int, MultibandTileLayerRDD[SpatialKey])]] {
   def asJson = node.asJson :+ arg.asJson
-  def get(implicit sc: SparkContext): (Int, TileLayerRDD[SpatialKey]) = arg.eval(node.get)
+  def get(implicit sc: SparkContext): Stream[(Int, MultibandTileLayerRDD[SpatialKey])] =
+    Transform.pyramid(arg)(node.get)
   def validate: (Boolean, String) = {
     val (f, msg) = if (node == null) (false, s"${this.getClass} has no node")
     else node.validation

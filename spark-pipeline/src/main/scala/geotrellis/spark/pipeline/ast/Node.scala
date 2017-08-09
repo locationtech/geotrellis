@@ -14,7 +14,3 @@ trait Node[T] {
   }
   def asJson: List[Json]
 }
-
-trait Read[T] extends Node[T]
-trait Transform[F, T] extends Node[T]
-trait Write[T] extends Node[T]
