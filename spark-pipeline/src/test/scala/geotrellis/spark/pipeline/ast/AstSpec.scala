@@ -22,8 +22,8 @@ class AstSpec extends FunSpec
     case class NewReprojectTransform(
       node: Node[TileLayerRDD[SpatialKey]],
       arg: NewReproject
-    ) extends Transform[TileLayerRDD[SpatialKey], (Int, TileLayerRDD[SpatialKey])] {
-      def get(implicit sc: SparkContext): (Int, TileLayerRDD[SpatialKey]) = {
+    ) extends Transform[TileLayerRDD[SpatialKey], TileLayerRDD[SpatialKey]] {
+      def get(implicit sc: SparkContext): TileLayerRDD[SpatialKey] = {
         // some logic of cusom reprojection here
         null
       }
@@ -46,11 +46,13 @@ class AstSpec extends FunSpec
       val tiled = TileToLayout(read, json.transform.TileToLayout())
       val reproject = BufferedReproject(tiled, json.transform.BufferedReproject("", scheme))
       val reprojectn = NewReprojectTransform(tiled, NewReproject("id", List()))
+      val pyramid = Pyramid(reproject, json.transform.Pyramid())
+      val pyramidn = Pyramid(reprojectn, json.transform.Pyramid())
 
-      val write1 = HadoopWrite(reproject, json.write.Hadoop("write1", "/tmp", pyramid = true, PipelineKeyIndexMethod("zorder"), scheme))
+      val write1 = HadoopWrite(pyramid, json.write.Hadoop("write1", "/tmp", pyramid = true, PipelineKeyIndexMethod("zorder"), scheme))
       val write2 = HadoopWrite(write1, json.write.Hadoop("write2", "/tmp", pyramid = true, PipelineKeyIndexMethod("zorder"), scheme))
       val write3 = HadoopWrite(write2, null)
-      val write1n = HadoopWrite(reprojectn, json.write.Hadoop("write1n", "/tmp", pyramid = true, PipelineKeyIndexMethod("zorder"), scheme))
+      val write1n = HadoopWrite(pyramidn, json.write.Hadoop("write1n", "/tmp", pyramid = true, PipelineKeyIndexMethod("zorder"), scheme))
       val write2n = HadoopWrite(write1n, json.write.Hadoop("write2n", "/tmp", pyramid = true, PipelineKeyIndexMethod("zorder"), scheme))
       val write3n = HadoopWrite(write2n, null)
 

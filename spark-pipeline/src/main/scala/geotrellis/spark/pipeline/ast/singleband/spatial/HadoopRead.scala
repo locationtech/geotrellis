@@ -12,6 +12,6 @@ import org.apache.spark.rdd.RDD
 
 case class HadoopRead(arg: read.SpatialHadoop) extends Read[RDD[(ProjectedExtent, Tile)]] {
   def asJson = arg.asJson :: Nil
-  def get(implicit sc: SparkContext): RDD[(ProjectedExtent, Tile)] = arg.eval
+  def get(implicit sc: SparkContext): RDD[(ProjectedExtent, Tile)] = Read.evalSpatialHadoop(arg)
   def validate: (Boolean, String) = validation
 }

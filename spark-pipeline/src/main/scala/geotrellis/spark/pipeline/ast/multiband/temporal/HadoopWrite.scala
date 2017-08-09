@@ -10,11 +10,11 @@ import geotrellis.spark.pipeline.json.write
 import org.apache.spark.SparkContext
 
 case class HadoopWrite(
-  node: Node[(Int, MultibandTileLayerRDD[SpaceTimeKey])],
+  node: Node[Stream[(Int, MultibandTileLayerRDD[SpaceTimeKey])]],
   arg: write.Hadoop
-) extends Write[(Int, MultibandTileLayerRDD[SpaceTimeKey])] {
+) extends Write[Stream[(Int, MultibandTileLayerRDD[SpaceTimeKey])]] {
   def asJson = node.asJson :+ arg.asJson
-  def get(implicit sc: SparkContext): (Int, MultibandTileLayerRDD[SpaceTimeKey]) = arg.eval(node.get)
+  def get(implicit sc: SparkContext): Stream[(Int, MultibandTileLayerRDD[SpaceTimeKey])] = Write.eval(arg)(node.get)
   def validate: (Boolean, String) = {
     val (f, msg) = if (node == null) (false, s"${this.getClass} has no node")
     else node.validation

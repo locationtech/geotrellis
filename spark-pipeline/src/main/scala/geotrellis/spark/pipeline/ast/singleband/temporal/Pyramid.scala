@@ -1,21 +1,22 @@
-package geotrellis.spark.pipeline.ast.multiband.spatial
+package geotrellis.spark.pipeline.ast.singleband.temporal
 
 import io.circe.syntax._
-
 import geotrellis.raster._
+import geotrellis.spark._
+import geotrellis.spark.io._
 import geotrellis.spark.pipeline.ast._
 import geotrellis.spark.pipeline.json.transform
-import geotrellis.vector._
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-case class PerTileReproject(
-  node: Node[RDD[(ProjectedExtent, MultibandTile)]],
-  arg: transform.PerTileReproject
-) extends Transform[RDD[(ProjectedExtent, MultibandTile)], RDD[(ProjectedExtent, MultibandTile)]] {
+case class Pyramid(
+  node: Node[TileLayerRDD[SpaceTimeKey]],
+  arg: transform.Pyramid
+) extends Transform[RDD[(TemporalProjectedExtent, Tile)], Stream[(Int, TileLayerRDD[SpaceTimeKey])]] {
   def asJson = node.asJson :+ arg.asJson
-  def get(implicit sc: SparkContext): RDD[(ProjectedExtent, MultibandTile)] = Transform.perTileReproject(arg)(node.get)
+  def get(implicit sc: SparkContext): Stream[(Int, TileLayerRDD[SpaceTimeKey])] =
+    Transform.pyramid(arg)(node.get)
   def validate: (Boolean, String) = {
     val (f, msg) = if (node == null) (false, s"${this.getClass} has no node")
     else node.validation

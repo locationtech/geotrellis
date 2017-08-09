@@ -12,9 +12,9 @@ import org.apache.spark.SparkContext
 case class BufferedReproject(
   node: Node[MultibandTileLayerRDD[SpaceTimeKey]],
   arg: transform.BufferedReproject
-) extends Transform[MultibandTileLayerRDD[SpaceTimeKey], (Int, MultibandTileLayerRDD[SpaceTimeKey])] {
+) extends Transform[MultibandTileLayerRDD[SpaceTimeKey], MultibandTileLayerRDD[SpaceTimeKey]] {
   def asJson = node.asJson :+ arg.asJson
-  def get(implicit sc: SparkContext): (Int, MultibandTileLayerRDD[SpaceTimeKey]) = arg.eval(node.get)
+  def get(implicit sc: SparkContext): MultibandTileLayerRDD[SpaceTimeKey] = Transform.bufferedReproject(arg)(node.get)
   def validate: (Boolean, String) = {
     val (f, msg) = if (node == null) (false, s"${this.getClass} has no node")
     else node.validation
