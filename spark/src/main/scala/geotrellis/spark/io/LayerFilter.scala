@@ -34,6 +34,8 @@ trait LayerFilter[K, F, T, M] {
     * @param metadata  M of the layer being filtered
     * @param kb        KeyBounds within the layer, possibly already reduce for max
     * @param param     Parameter to the filter, contains information to restrict kb
+    *
+    * @note            The KeyBounds returned must be non-overlapping.
     */
   def apply(metadata: M, kb: KeyBounds[K], param: T): Seq[KeyBounds[K]]
 
@@ -50,13 +52,7 @@ trait LayerFilter[K, F, T, M] {
         case Or(v1, v2) => flatten(metadata, kb, v1) ++ flatten(metadata,kb, v2)
       }
 
-    val keyBounds = flatten(metadata, kb, ast)
-    keyBounds.combinations(2).foreach { case Seq(a, b) =>
-      if (a intersects b)
-        sys.error(s"Query expression produced intersecting bounds, only non-intersecting regions are supported. ($a, $b)")
-    }
-
-    keyBounds.toList
+    flatten(metadata, kb, ast).toList
   }
 }
 
