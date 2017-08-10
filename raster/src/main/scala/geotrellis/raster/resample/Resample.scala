@@ -17,7 +17,7 @@
 package geotrellis.raster.resample
 
 import geotrellis.raster._
-import geotrellis.vector.{Point, Extent}
+import geotrellis.vector.{Extent, Point}
 
 sealed trait ResampleMethod
 
@@ -34,6 +34,7 @@ case object Mode    extends AggregateResampleMethod
 case object Median    extends AggregateResampleMethod
 case object Max    extends AggregateResampleMethod
 case object Min    extends AggregateResampleMethod
+case object Sum extends AggregateResampleMethod
 
 object ResampleMethod {
   val DEFAULT: PointResampleMethod = NearestNeighbor
@@ -110,5 +111,6 @@ object Resample {
       case Median => new MedianResample(tile, extent, cs)
       case Max => new MaxResample(tile, extent, cs)
       case Min => new MinResample(tile, extent, cs)
+      case Sum =>  new SumResample(tile, extent, cs)
     }
 }
