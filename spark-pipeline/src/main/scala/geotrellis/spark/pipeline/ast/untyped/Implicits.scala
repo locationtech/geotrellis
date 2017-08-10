@@ -20,6 +20,6 @@ trait Implicits {
   implicit class withStringExtentions(json: String) {
     def toPipelineExpr: Either[circe.Error, List[PipelineExpr]] = decode[List[PipelineExpr]](json)
     def toTypeErased: Option[ErasedNode] = toPipelineExpr.map(_.typeErased).toOption
-    def to[T <: Node[_]: TypeTag]: Option[T] = toTypeErased.map(_.get[T])
+    def toTyped[T <: Node[_]: TypeTag]: Option[T] = toTypeErased.map(_.get[T])
   }
 }
