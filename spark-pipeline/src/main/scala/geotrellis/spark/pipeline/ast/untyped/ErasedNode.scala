@@ -1,7 +1,10 @@
 package geotrellis.spark.pipeline.ast.untyped
 
+import io.circe.Json
+
 import geotrellis.raster._
 import geotrellis.spark._
+import geotrellis.spark.pipeline.ast
 import geotrellis.spark.pipeline.ast._
 import geotrellis.spark.pipeline.json.transform
 import geotrellis.spark.pipeline.json.TransformTypes._
@@ -10,11 +13,26 @@ import geotrellis.spark.pipeline.json._
 import geotrellis.spark.pipeline.json.read._
 import geotrellis.vector._
 
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.runtime.universe.{TypeTag, typeTag}
 import scala.reflect.runtime.universe.Type
 import scala.util.Try
+
+trait RealWorld
+
+object RealWorld {
+  /** RealWorld node has nothing implemented */
+  def instance = new Node[RealWorld] {
+    def get(implicit sc: SparkContext): RealWorld =
+      throw new UnsupportedOperationException("get function is not supported by a RealWorld node")
+    def arg: PipelineExpr =
+      throw new UnsupportedOperationException("arg function is not supported by a RealWorld node")
+    def asJson: List[Json] =
+      throw new UnsupportedOperationException("asJson function is not supported by a RealWorld node")
+  }
+}
 
 trait ErasedNode extends (Any => Any) {
   def maybeApply(x: Any): Option[Any]
@@ -24,7 +42,7 @@ trait ErasedNode extends (Any => Any) {
       s"since it cannot be cast to $domain")
   }
 
-  def apply(): Any = apply(null)
+  def apply(): Any = apply(RealWorld.instance)
 
   def get[T <: Node[_]: TypeTag]: T = {
     val thatTpe = typeTag[T].tpe
@@ -87,13 +105,13 @@ case class ErasedTypedNode[Domain: TypeTag, Range: TypeTag](constructor: Node[Do
 }
 
 object ErasedTypedNode {
-  def fromRead[Range: TypeTag](node: geotrellis.spark.pipeline.ast.Read[Range]) =
-    ErasedTypedNode[Any, Range](_ => node)
+  def fromRead[Range: TypeTag](node: ast.Read[Range]) =
+    ErasedTypedNode[RealWorld, Range](_ => node)
 
-  def fromWrite[Range: TypeTag](constructor: Node[Range] => geotrellis.spark.pipeline.ast.Write[Range]) =
+  def fromWrite[Range: TypeTag](constructor: Node[Range] => ast.Write[Range]) =
     ErasedTypedNode[Range, Range](constructor)
 
-  def fromTransform[Domain: TypeTag, Range: TypeTag](constructor: Node[Domain] => geotrellis.spark.pipeline.ast.Transform[Domain, Range]) =
+  def fromTransform[Domain: TypeTag, Range: TypeTag](constructor: Node[Domain] => ast.Transform[Domain, Range]) =
     ErasedTypedNode[Domain, Range](constructor)
 }
 
@@ -232,7 +250,8 @@ object ErasedUtils {
     ErasedUtils.buildComposition(l.map(ErasedJsonNode(_).toErasedNode).reverse)
 
   /** Final function, which can be just applied to a some type */
-  def buildComposition(l: List[ErasedNode]): ErasedNode = l.reduceLeft[ErasedNode] { case (fst, snd) => fst.composeUnsafe(snd) }
+  def buildComposition(l: List[ErasedNode]): ErasedNode =
+    l.reduceLeft[ErasedNode] { case (fst, snd) => fst.composeUnsafe(snd) }
 
   def eprint(ef: ErasedNode) =
     println(ef.domainTpe.toString + " => " + ef.rangeTpe.toString)
