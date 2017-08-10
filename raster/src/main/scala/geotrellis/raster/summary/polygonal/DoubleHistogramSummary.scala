@@ -27,7 +27,7 @@ object DoubleHistogramSummary extends TilePolygonalSummaryHandler[Histogram[Doub
     val rasterExtent = raster.rasterExtent
     val histogram = StreamingHistogram()
     Rasterizer.foreachCellByGeometry(polygon, rasterExtent) { (col: Int, row: Int) =>
-      val z = tile.get(col, row)
+      val z = tile.getDouble(col, row)
       if (isData(z)) histogram.countItem(z, 1)
     }
     histogram

@@ -16,9 +16,43 @@
 
 package geotrellis.raster
 
+import java.nio.file.Files
+import java.nio.file.attribute.FileAttribute
+
+import geotrellis.proj4.LatLng
+import geotrellis.raster.io.geotiff.GeoTiff
+import geotrellis.raster.io.geotiff.writer.TiffTagFieldValue
+import geotrellis.vector.Extent
 import org.scalatest._
 
-class CellTypeSpec extends FunSpec with Matchers {
+class CellTypeSpec extends FunSpec with Matchers with Inspectors {
+  def roundTrip(ct: CellType) {
+    withClue("fromName"){
+      // Updated behavior.
+      val str = ct.name
+      val ctp = CellType.fromName(str)
+      ctp should be (ct)
+    }
+    withClue("fromString"){
+      // Tests backward compatibility.
+      val str = ct.toString
+      //noinspection ScalaDeprecation
+      val ctp = CellType.fromString(str)
+      ctp should be (ct)
+    }
+  }
+
+  def roundTripTiff(ct: CellType): Unit = {
+    val tiffOut = GeoTiff(ArrayTile.alloc(ct, 1, 1), Extent(0, 0, 1, 1), LatLng)
+    val path = Files.createTempFile("gt-", ".tiff")
+    tiffOut.write(path.toString)
+
+    val Left(tiffIn) = GeoTiff(path.toString)
+
+    tiffIn.cellType should (be (tiffOut.cellType) or be (tiffOut.cellType.withDefaultNoData()))
+    Files.delete(path)
+  }
+
   describe("CellType") {
     it("should union cells correctly under various circumstance") {
       ShortCellType.union(IntCellType) should be (IntCellType)
@@ -35,11 +69,7 @@ class CellTypeSpec extends FunSpec with Matchers {
       IntCellType.intersect(FloatCellType) should be (IntCellType)
       FloatCellType.intersect(IntCellType) should be (IntCellType)
     }
-    def roundTrip(ct: CellType) {
-      val str = ct.toString
-      val ctp = CellType.fromString(str)
-      ctp should be (ct)
-    }
+
 
     it("should serialize float64ud123") {
       roundTrip(DoubleUserDefinedNoDataCellType(123))
@@ -78,7 +108,7 @@ class CellTypeSpec extends FunSpec with Matchers {
     }
 
     it("should read float64udNaN as float64") {
-      CellType.fromString(DoubleUserDefinedNoDataCellType(Double.NaN).toString) should be (DoubleConstantNoDataCellType)
+      CellType.fromName(DoubleUserDefinedNoDataCellType(Double.NaN).toString) should be (DoubleConstantNoDataCellType)
     }
 
     //----
@@ -115,8 +145,121 @@ class CellTypeSpec extends FunSpec with Matchers {
     }
 
     it("should read float32udNaN as float32") {
-      CellType.fromString(FloatUserDefinedNoDataCellType(Float.NaN).toString) should be (FloatConstantNoDataCellType)
+      CellType.fromName(FloatUserDefinedNoDataCellType(Float.NaN).toString) should be (FloatConstantNoDataCellType)
     }
 
+  }
+
+  describe("CellType Bounds checking") {
+
+    implicit val doubleAsIntegral = scala.math.Numeric.DoubleAsIfIntegral
+    implicit val floatAsIntegral = scala.math.Numeric.FloatAsIfIntegral
+
+    it("should handle encoding no data types across valid bounds") {
+      type PhantomCell = AnyVal
+      type PhantomNoData = AnyVal
+
+      forEvery(CellDef.all) { cd ⇒
+        val cellDef = cd.asInstanceOf[CellDef[PhantomCell, PhantomNoData]]
+        withClue(s"for cell type '$cellDef'") {
+          forEvery(cellDef.range.testPoints) { nd ⇒
+            withClue(s"for no data '$nd'") {
+              val ct = cellDef(nd)
+              roundTrip(ct)
+              roundTripTiff(ct)
+              assert(cellDef.toCode(nd) === ct.name)
+              ct.widenedNoData(cellDef.alg) match {
+                case WideIntNoData(wnd) ⇒ assert(wnd === nd)
+                case WideDoubleNoData(wnd) ⇒ assert(wnd === nd)
+              }
+              assert(TiffTagFieldValue.createNoDataString(ct) === Some(nd.toString))
+            }
+          }
+        }
+      }
+    }
+    abstract class RangeAlgebra[T: Integral] {
+      val alg = implicitly[Integral[T]]
+      import alg._
+      val one = alg.one
+      val twice =  one + one
+    }
+
+    case class TestRange[Encoding: Integral](min: Encoding, max: Encoding) extends RangeAlgebra[Encoding]{
+      import alg._
+      def width = max - min
+      def middle = width / twice
+      def testPoints = Seq(
+        min, min + one, middle - one, middle, middle + one, max - one, max
+      )
+    }
+
+    abstract class CellDef[CellEncoding: Integral, NoDataEncoding: Integral] extends RangeAlgebra[CellEncoding] {
+      val range: TestRange[NoDataEncoding]
+      val baseCode: String
+      def apply(noData: NoDataEncoding): CellType with UserDefinedNoData[CellEncoding]
+      def toCode(noData: NoDataEncoding): String = {
+        s"${baseCode}ud${noData}"
+      }
+      def toCellEncoding(noData: NoDataEncoding): CellEncoding
+
+      override def toString = baseCode
+    }
+    object CellDef {
+      val all = Seq(UByteDef, ByteDef, UShortDef, ShortDef, IntDef, FloatDef, DoubleDef)
+    }
+
+    object UByteDef extends CellDef[Byte, Short] {
+      val baseCode = "uint8"
+      def apply(noData: Short) = UByteUserDefinedNoDataCellType(toCellEncoding(noData))
+      val range = TestRange(0.toShort, (Byte.MaxValue * 2).toShort)
+      def toCellEncoding(noData: Short) = noData.toByte
+    }
+
+    object ByteDef extends CellDef[Byte, Byte] {
+      val baseCode = "int8"
+      def apply(noData: Byte) = ByteUserDefinedNoDataCellType(toCellEncoding(noData))
+      val range = TestRange(Byte.MinValue, Byte.MaxValue)
+      def toCellEncoding(noData: Byte) = noData
+    }
+
+    object UShortDef extends CellDef[Short, Int] {
+      val baseCode = "uint16"
+      def apply(noData: Int) = UShortUserDefinedNoDataCellType(toCellEncoding(noData))
+      val range = TestRange(0, Short.MaxValue * 2)
+      def toCellEncoding(noData: Int) = noData.toShort
+    }
+
+    object ShortDef extends CellDef[Short, Short] {
+      val baseCode = "int16"
+      def apply(noData: Short) = ShortUserDefinedNoDataCellType(toCellEncoding(noData))
+      val range = TestRange(Short.MinValue, Short.MaxValue)
+      def toCellEncoding(noData: Short) = noData
+    }
+
+    object IntDef extends CellDef[Int, Int] {
+      val baseCode = "int32"
+      def apply(noData: Int) = IntUserDefinedNoDataCellType(toCellEncoding(noData))
+      val range = TestRange(Int.MinValue, Int.MaxValue)
+      def toCellEncoding(noData: Int) = noData
+    }
+
+    object FloatDef extends CellDef[Float, Double] {
+      val baseCode = "float32"
+      def apply(noData: Double) = FloatUserDefinedNoDataCellType(toCellEncoding(noData))
+      val range = new TestRange(Float.MinValue.toDouble, Float.MaxValue.toDouble) {
+        override def middle = 0.0f
+      }
+      def toCellEncoding(noData: Double) = noData.toFloat
+    }
+
+    object DoubleDef extends CellDef[Double, Double] {
+      val baseCode = "float64"
+      def apply(noData: Double) = DoubleUserDefinedNoDataCellType(toCellEncoding(noData))
+      val range = new TestRange(Double.MinValue, Double.MaxValue) {
+        override def middle = 0.0
+      }
+      def toCellEncoding(noData: Double) = noData
+    }
   }
 }

@@ -16,17 +16,18 @@
 
 package geotrellis.spark.io
 
-import java.time.format.DateTimeFormatter
-import java.time.{ZoneOffset, ZonedDateTime}
-
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.spark._
 import geotrellis.util.{ByteReader, StreamingByteReader}
 import geotrellis.vector.ProjectedExtent
+
 import spire.syntax.cfor._
 
+import java.time.format.DateTimeFormatter
+import java.time.{ZoneOffset, ZonedDateTime}
 
 /**
   * Type class to read a raster either fully or partially from a ByteReader.
@@ -40,6 +41,7 @@ import spire.syntax.cfor._
 trait RasterReader[-O, R] extends Serializable {
   def readFully(byteReader: ByteReader, options: O): R
   def readWindow(byteReader: StreamingByteReader, pixelWindow: GridBounds, options: O): R
+  def readWindows(gbs: Array[GridBounds], info: GeoTiffReader.GeoTiffInfo, options: O): Iterator[R]
 }
 
 object RasterReader {
@@ -79,7 +81,7 @@ object RasterReader {
     result.toArray
   }
 
-  implicit def singlebandGeoTiffReader = new RasterReader[Options, (ProjectedExtent, Tile)]  {
+  implicit def singlebandGeoTiffReader = new RasterReader[Options, (ProjectedExtent, Tile)] {
     def readFully(byteReader: ByteReader, options: Options) = {
       val geotiff = SinglebandGeoTiff(byteReader)
       val raster: Raster[Tile] = geotiff.raster
@@ -91,9 +93,18 @@ object RasterReader {
       val raster: Raster[Tile] = geotiff.raster.crop(pixelWindow)
       (ProjectedExtent(raster.extent, options.crs.getOrElse(geotiff.crs)), raster.tile)
     }
+
+    def readWindows(gbs: Array[GridBounds], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
+      val geoTiff = GeoTiffReader.geoTiffSinglebandTile(info)
+      val gridBounds = geoTiff.gridBounds
+      gbs
+        .filter(gridBounds.contains)
+        .map { gb => (ProjectedExtent(info.mapTransform(gb), options.crs.getOrElse(info.crs)), geoTiff.crop(gb)) }
+        .toIterator
+    }
   }
 
-  implicit def multibandGeoTiffReader = new RasterReader[Options, (ProjectedExtent, MultibandTile)]  {
+  implicit def multibandGeoTiffReader = new RasterReader[Options, (ProjectedExtent, MultibandTile)] {
     def readFully(byteReader: ByteReader, options: Options) = {
       val geotiff = MultibandGeoTiff(byteReader)
       val raster: Raster[MultibandTile] = geotiff.raster
@@ -104,6 +115,15 @@ object RasterReader {
       val geotiff = MultibandGeoTiff.streaming(streamingByteReader)
       val raster: Raster[MultibandTile] = geotiff.raster.crop(pixelWindow)
       (ProjectedExtent(raster.extent, options.crs.getOrElse(geotiff.crs)), raster.tile)
+    }
+
+    def readWindows(gbs: Array[GridBounds], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
+      val geoTiff = GeoTiffReader.geoTiffMultibandTile(info)
+      val gridBounds = geoTiff.gridBounds
+      gbs
+        .filter(gridBounds.contains)
+        .map { gb => (ProjectedExtent(info.mapTransform(gb), options.crs.getOrElse(info.crs)), geoTiff.crop(gb)) }
+        .toIterator
     }
   }
 
@@ -123,8 +143,21 @@ object RasterReader {
       val crs = options.crs.getOrElse(geotiff.crs)
       (TemporalProjectedExtent(raster.extent, crs, time), raster.tile)
     }
-  }
 
+    def readWindows(gbs: Array[GridBounds], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
+      val geoTiff = GeoTiffReader.geoTiffSinglebandTile(info)
+      val gridBounds = geoTiff.gridBounds
+      gbs
+        .filter(gridBounds.contains)
+        .map { gb =>
+          (TemporalProjectedExtent(
+            info.mapTransform(gb),
+            crs = options.crs.getOrElse(info.crs),
+            options.parseTime(info.tags)), geoTiff.crop(gb))
+        }
+        .toIterator
+    }
+  }
 
   implicit def temporalMultibandGeoTiffReader = new RasterReader[Options, (TemporalProjectedExtent, MultibandTile)]  {
     def readFully(byteReader: ByteReader, options: Options) = {
@@ -141,6 +174,20 @@ object RasterReader {
       val time = options.parseTime(geotiff.tags)
       val crs = options.crs.getOrElse(geotiff.crs)
       (TemporalProjectedExtent(raster.extent, crs, time), raster.tile)
+    }
+
+    def readWindows(gbs: Array[GridBounds], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
+      val geoTiff = GeoTiffReader.geoTiffMultibandTile(info)
+      val gridBounds = geoTiff.gridBounds
+      gbs
+        .filter(gridBounds.contains)
+        .map { gb =>
+          (TemporalProjectedExtent(
+            info.mapTransform(gb),
+            options.crs.getOrElse(info.crs),
+            options.parseTime(info.tags)), geoTiff.crop(gb))
+        }
+        .toIterator
     }
   }
 }

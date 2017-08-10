@@ -63,6 +63,12 @@ class TileRDDReprojectMethods[
   def reproject(destCrs: CRS, layoutScheme: LayoutScheme, bufferSize: Int): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
     reproject(destCrs, layoutScheme, bufferSize, Options.DEFAULT)
 
+  def reproject(destCrs: CRS, layoutDefinition: LayoutDefinition, bufferSize: Int, options: Options): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
+    TileRDDReproject(self, destCrs, Right(layoutDefinition), bufferSize, options)
+
+  def reproject(destCrs: CRS, layoutDefinition: LayoutDefinition, bufferSize: Int): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
+    TileRDDReproject(self, destCrs, Right(layoutDefinition), bufferSize, Options.DEFAULT)
+
   def reproject(destCrs: CRS, layoutDefinition: LayoutDefinition, options: Options): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
     TileRDDReproject(self, destCrs, Right(layoutDefinition), options)
 

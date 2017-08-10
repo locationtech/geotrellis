@@ -37,16 +37,19 @@ object RDDKernelDensity {
            p.y + kernelWidth * ld.cellheight / 2)
   }
 
-  private def pointFeatureToSpatialKey[D](kernelWidth: Double, 
-                                          tl: TileLayout, 
-                                          ld: LayoutDefinition,
-                                          dummy: D)(ptf: PointFeature[D]): Seq[(SpatialKey, PointFeature[D])] = {
-      val ptextent = pointFeatureToExtent(kernelWidth, ld)(ptf)
-      val gridBounds = ld.mapTransform(ptextent)
-      for ((c,r) <- gridBounds.coords;
-           if r < tl.totalRows;
-           if c < tl.totalCols) yield (SpatialKey(c,r), ptf)
-    }
+  private def pointFeatureToSpatialKey[D](
+    kernelWidth: Double,
+    tl: TileLayout,
+    ld: LayoutDefinition,
+    dummy: D)(ptf: PointFeature[D]): Seq[(SpatialKey, PointFeature[D])] = {
+    val ptextent = pointFeatureToExtent(kernelWidth, ld)(ptf)
+    val gridBounds = ld.mapTransform(ptextent)
+    val feats = for ((c,r) <- gridBounds.coordsIter;
+                     if r < tl.totalRows;
+                     if c < tl.totalCols) yield (SpatialKey(c,r), ptf)
+
+    feats.toSeq
+  }
 
   object Adder extends LocalTileBinaryOp {
     def combine(z1: Int, z2: Int) = {
@@ -69,16 +72,16 @@ object RDDKernelDensity {
     }
   }
 
-  def apply(rdd: RDD[PointFeature[Int]], 
-            ld: LayoutDefinition, 
-            kern: Kernel, 
+  def apply(rdd: RDD[PointFeature[Int]],
+            ld: LayoutDefinition,
+            kern: Kernel,
             crs: CRS)(implicit d: DummyImplicit): RDD[(SpatialKey,Tile)] with Metadata[TileLayerMetadata[SpatialKey]] = {
     apply(rdd, ld, kern, crs, IntConstantNoDataCellType)
   }
 
-  def apply(rdd: RDD[PointFeature[Int]], 
-            ld: LayoutDefinition, 
-            kern: Kernel, 
+  def apply(rdd: RDD[PointFeature[Int]],
+            ld: LayoutDefinition,
+            kern: Kernel,
             crs: CRS,
             cellType: CellType)(implicit d: DummyImplicit): RDD[(SpatialKey,Tile)] with Metadata[TileLayerMetadata[SpatialKey]] = {
 
@@ -121,16 +124,16 @@ object RDDKernelDensity {
     ContextRDD(tileRdd, metadata)
   }
 
-  def apply(rdd: RDD[PointFeature[Double]], 
-            ld: LayoutDefinition, 
-            kern: Kernel, 
+  def apply(rdd: RDD[PointFeature[Double]],
+            ld: LayoutDefinition,
+            kern: Kernel,
             crs: CRS): RDD[(SpatialKey,Tile)] with Metadata[TileLayerMetadata[SpatialKey]] = {
     apply(rdd, ld, kern, crs, DoubleConstantNoDataCellType)
   }
 
-  def apply(rdd: RDD[PointFeature[Double]], 
-            ld: LayoutDefinition, 
-            kern: Kernel, 
+  def apply(rdd: RDD[PointFeature[Double]],
+            ld: LayoutDefinition,
+            kern: Kernel,
             crs: CRS,
             cellType: CellType): RDD[(SpatialKey,Tile)] with Metadata[TileLayerMetadata[SpatialKey]] = {
 
@@ -139,7 +142,7 @@ object RDDKernelDensity {
 
     val ptfToSpatialKey = pointFeatureToSpatialKey(kw, tl, ld, 0.0)_
 
-    def sumTiles(t1: MutableArrayTile, t2: MutableArrayTile): MutableArrayTile = { 
+    def sumTiles(t1: MutableArrayTile, t2: MutableArrayTile): MutableArrayTile = {
       Adder(t1, t2).asInstanceOf[MutableArrayTile]
     }
 

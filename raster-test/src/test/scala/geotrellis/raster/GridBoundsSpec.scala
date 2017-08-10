@@ -100,4 +100,13 @@ class GridBoundsSpec extends FunSpec with Matchers{
       GridBounds.distinct(gridBounds).map(_.size).sum should be ((101 * 101) - (25 * 25 * 2))
     }
   }
+
+  describe("GridBounds.coords") {
+    // TODO This test can be removed in 2.0
+    it("should match the output of coordsIter") {
+      val gbs = GridBounds(0, 0, 10, 10)
+
+      gbs.coordsIter.toSeq shouldBe gbs.coords.toSeq
+    }
+  }
 }

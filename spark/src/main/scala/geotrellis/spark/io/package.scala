@@ -16,6 +16,9 @@
 
 package geotrellis.spark
 
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader
+import geotrellis.spark.tiling.MapKeyTransform
+
 import com.typesafe.config.Config
 
 import scala.util.{Failure, Success, Try}
@@ -37,6 +40,11 @@ package object io
         case Some(t) => Success(t)
         case None    => Failure(exception)
       }
+  }
+
+  implicit class GeoTiffInfoMethods(that: GeoTiffReader.GeoTiffInfo) {
+    def mapTransform =
+      MapKeyTransform(that.extent, that.segmentLayout.totalCols, that.segmentLayout.totalRows)
   }
 
   // Custom exceptions

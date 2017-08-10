@@ -20,8 +20,16 @@ import geotrellis.raster._
 import spire.syntax.cfor._
 
 /**
- * Created by jchien on 4/24/14.
- */
+  * Created by jchien on 4/24/14.
+  *
+  * This appears to be an implementation of the R3 Viewshed algorithm
+  * from [1].
+  *
+  * 1. Franklin, Wm Randolph, and Clark Ray.
+  *    "Higher isn’t necessarily better: Visibility algorithms and experiments."
+  *     Advances in GIS research: sixth international symposium on spatial data handling. Vol. 2.
+  *     Taylor & Francis Edinburgh, 1994.
+  */
 object Viewshed extends Serializable {
   def apply(r: Tile, startCol: Int, startRow: Int): Tile = {
     val (cols, rows) = r.dimensions

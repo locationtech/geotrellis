@@ -27,7 +27,7 @@ import scala.collection.mutable
 import spire.syntax.cfor._
 
 object DeflateCompression extends Compression {
-  def createCompressor(segmentCount: Int): Compressor = 
+  def createCompressor(segmentCount: Int): Compressor =
     new Compressor {
       private val segmentSizes = Array.ofDim[Int](segmentCount)
       def compress(segment: Array[Byte], segmentIndex: Int): Array[Byte] = {

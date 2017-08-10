@@ -572,15 +572,15 @@ class PackBitsGeoTiffReaderSpec extends FunSpec
 }
 
 class TiePointsTests extends FunSuite
-     with RasterMatchers
-     with GeoTiffTestUtils {
+    with RasterMatchers
+    with GeoTiffTestUtils {
 
-   test("Reads correct extent for tie points and PixelIsPoint") {
-     val actual = SinglebandGeoTiff.compressed(geoTiffPath("tie-points.tif")).extent
-     // The expected Extent is read in from gdalinfo
-     val expected = Extent( 0.5000000,   0.5000000,
-                           10.5000000,  10.5000000)
+  test("Reads correct extent for tie points and PixelIsPoint") {
+    val actual = SinglebandGeoTiff.compressed(geoTiffPath("tie-points.tif")).extent
+    // The expected Extent is read in from gdalinfo
+    val expected = Extent( 0.5000000,   0.5000000,
+      10.5000000,  10.5000000)
 
-     actual should be (expected)
-   }
- }
+    actual should be (expected)
+  }
+}

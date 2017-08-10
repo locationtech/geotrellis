@@ -19,8 +19,8 @@ import sbt._
 object Dependencies {
   val typesafeConfig = "com.typesafe"       %  "config"          % "1.3.1"
   val logging       = "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0"
-  val scalatest     = "org.scalatest"       %%  "scalatest"      % "3.0.1"
-  val scalacheck    = "org.scalacheck"      %% "scalacheck"      % "1.13.4"
+  val scalatest     = "org.scalatest"       %%  "scalatest"      % "3.0.3"
+  val scalacheck    = "org.scalacheck"      %% "scalacheck"      % "1.13.5"
   val jts           = "com.vividsolutions"  %  "jts-core"        % "1.14.0"
 
   val monocleCore   = "com.github.julien-truffaut" %% "monocle-core"  % Version.monocle
@@ -34,18 +34,20 @@ object Dependencies {
 
   val apacheMath    = "org.apache.commons" % "commons-math3" % "3.6.1"
 
-  val chronoscala   = "jp.ne.opt" %% "chronoscala" % "0.1.2"
+  val chronoscala   = "jp.ne.opt" %% "chronoscala" % "0.1.3"
 
-  val awsSdkS3      = "com.amazonaws" % "aws-java-sdk-s3" % "1.11.92"
+  val awsSdkS3      = "com.amazonaws" % "aws-java-sdk-s3" % "1.11.143"
 
   val scalazStream  = "org.scalaz.stream" %% "scalaz-stream" % "0.8.6a"
 
   val sparkCore     = "org.apache.spark" %% "spark-core" % Version.spark
   val hadoopClient  = "org.apache.hadoop" % "hadoop-client" % Version.hadoop
 
-  val avro          = "org.apache.avro" % "avro" % "1.8.1"
+  val avro          = "org.apache.avro" % "avro" % "1.8.2"
 
-  val slickPG      = "com.github.tminglei" %% "slick-pg" % "0.14.6"
+  val slickPG      = "com.github.tminglei" %% "slick-pg" % "0.15.0"
 
-  val parserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.5"
+  val parserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6"
+
+  val jsonSchemaValidator = "com.networknt" % "json-schema-validator" % "0.1.7"
 }

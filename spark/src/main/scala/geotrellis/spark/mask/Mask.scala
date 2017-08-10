@@ -113,7 +113,7 @@ object Mask {
   ](rdd: RDD[(K, V)] with Metadata[M], geoms: Traversable[Polygon], options: Options): RDD[(K, V)] with Metadata[M] =
     _mask(rdd, { case (tileExtent, tile) =>
       val tileGeoms = geoms.flatMap { g =>
-        val intersections = g.safeIntersection(tileExtent).toGeometry()
+        val intersections = g.intersectionSafe(tileExtent).toGeometry()
         eliminateNotQualified(intersections)
       }
       if(tileGeoms.isEmpty && options.filterEmptyTiles) { None }
@@ -129,7 +129,7 @@ object Mask {
   ](seq: Seq[(K, V)] with Metadata[M], geoms: Traversable[Polygon], options: Options): Seq[(K, V)] with Metadata[M] =
     _mask(seq, { case (tileExtent, tile) =>
       val tileGeoms = geoms.flatMap { g =>
-        val intersections = g.safeIntersection(tileExtent).toGeometry()
+        val intersections = g.intersectionSafe(tileExtent).toGeometry()
         eliminateNotQualified(intersections)
       }
       if(tileGeoms.isEmpty && options.filterEmptyTiles) { None }
@@ -146,7 +146,7 @@ object Mask {
   ](rdd: RDD[(K, V)] with Metadata[M], geoms: Traversable[MultiPolygon], options: Options)(implicit d: DummyImplicit): RDD[(K, V)] with Metadata[M] =
     _mask(rdd, { case (tileExtent, tile) =>
       val tileGeoms = geoms.flatMap { g =>
-        val intersections = g.safeIntersection(tileExtent).toGeometry()
+        val intersections = g.intersectionSafe(tileExtent).toGeometry()
         eliminateNotQualified(intersections)
       }
       if(tileGeoms.isEmpty && options.filterEmptyTiles) { None }
@@ -162,7 +162,7 @@ object Mask {
   ](seq: Seq[(K, V)] with Metadata[M], geoms: Traversable[MultiPolygon], options: Options)(implicit d: DummyImplicit): Seq[(K, V)] with Metadata[M] =
     _mask(seq, { case (tileExtent, tile) =>
       val tileGeoms = geoms.flatMap { g =>
-        val intersections = g.safeIntersection(tileExtent).toGeometry()
+        val intersections = g.intersectionSafe(tileExtent).toGeometry()
         eliminateNotQualified(intersections)
       }
       if(tileGeoms.isEmpty && options.filterEmptyTiles) { None }

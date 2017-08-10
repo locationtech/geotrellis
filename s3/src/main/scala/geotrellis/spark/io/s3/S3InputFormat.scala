@@ -20,9 +20,9 @@ import geotrellis.proj4.CRS
 import geotrellis.spark.io.hadoop._
 import geotrellis.util.LazyLogging
 
-import com.amazonaws.services.s3.model.{ListObjectsRequest, ObjectListing}
 import com.amazonaws.auth._
 import com.amazonaws.regions._
+import com.amazonaws.services.s3.model.{ListObjectsRequest, ObjectListing, S3ObjectSummary}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce.{InputFormat, Job, JobContext}
 
@@ -103,6 +103,21 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
 
     var splits: Vector[S3InputSplit] = Vector(makeNewSplit)
 
+    val s3ObjectFilter: S3ObjectSummary => Boolean =
+      { obj =>
+        val key = obj.getKey
+
+        val isDir = key.endsWith("/")
+        val isTiff =
+          if (extensions.isEmpty)
+            true
+          else {
+            extensions.map(key.endsWith).reduce(_ || _)
+          }
+
+        !isDir && isTiff
+      }
+
     if (null == partitionCountConf) {
       // By default attempt to make partitions the same size
       val maxSplitBytes = if (null == partitionSizeConf) S3InputFormat.DEFAULT_PARTITION_BYTES else partitionSizeConf.toLong
@@ -125,15 +140,7 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
 
       s3client
         .listObjectsIterator(request)
-        .filter(!_.getKey.endsWith("/"))
-        .filter { obj =>
-          if (extensions.isEmpty)
-            true
-          else {
-            val key = obj.getKey
-            extensions.map(key.endsWith).reduce(_ || _)
-          }
-        }
+        .filter(s3ObjectFilter)
         .foreach { obj =>
           val objSize = obj.getSize
           val curSplit =
@@ -159,7 +166,7 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
       val keys =
         s3client
           .listObjectsIterator(request)
-          .filter(! _.getKey.endsWith("/"))
+          .filter(s3ObjectFilter)
           .toVector
 
       val groupCount = math.max(1, keys.length / partitionCount)
@@ -211,6 +218,9 @@ object S3InputFormat {
       case None => S3Client.DEFAULT
     }
 
+  def removeCreateS3Client(conf: Configuration): Unit =
+    conf.unset(CREATE_S3CLIENT)
+
   /** Set S3N url to use, may include AWS Id and Key */
   def setUrl(job: Job, url: String): Unit =
     setUrl(job.getConfiguration, url)
@@ -226,17 +236,30 @@ object S3InputFormat {
     conf.set(PREFIX, prefix)
   }
 
+  def removeUrl(conf: Configuration): Unit = {
+    conf.unset(AWS_ID)
+    conf.unset(AWS_KEY)
+    removeBucket(conf)
+    removePrefix(conf)
+  }
+
   def setBucket(job: Job, bucket: String): Unit =
     setBucket(job.getConfiguration, bucket)
 
   def setBucket(conf: Configuration, bucket: String): Unit =
     conf.set(BUCKET, bucket)
 
+  def removeBucket(conf: Configuration): Unit =
+    conf.unset(BUCKET)
+
   def setPrefix(job: Job, prefix: String): Unit =
     setPrefix(job.getConfiguration, prefix)
 
   def setPrefix(conf: Configuration, prefix: String): Unit =
     conf.set(PREFIX, prefix)
+
+  def removePrefix(conf: Configuration): Unit =
+    conf.unset(PREFIX)
 
   /** Set desired partition count */
   def setPartitionCount(job: Job, limit: Int): Unit =
@@ -246,11 +269,18 @@ object S3InputFormat {
   def setPartitionCount(conf: Configuration, limit: Int): Unit =
     conf.set(PARTITION_COUNT, limit.toString)
 
+  /** Removes partition count */
+  def removePartitionCount(conf: Configuration): Unit =
+    conf.unset(PARTITION_COUNT)
+
   def setRegion(job: Job, region: String): Unit =
     setRegion(job.getConfiguration, region)
 
   def setRegion(conf: Configuration, region: String): Unit =
     conf.set(REGION, region)
+
+  def removeRegion(conf: Configuration): Unit =
+    conf.unset(REGION)
 
   /** Force anonymous access, bypass all key discovery */
   def setAnonymous(job: Job): Unit =
@@ -260,6 +290,9 @@ object S3InputFormat {
   def setAnonymous(conf: Configuration): Unit =
     conf.set(ANONYMOUS, "true")
 
+  def removeAnonymous(conf: Configuration): Unit =
+    conf.unset(ANONYMOUS)
+
   /** Set desired partition size in bytes, at least one item per partition will be assigned */
   def setPartitionBytes(job: Job, bytes: Long): Unit =
     setPartitionBytes(job.getConfiguration, bytes)
@@ -268,15 +301,25 @@ object S3InputFormat {
   def setPartitionBytes(conf: Configuration, bytes: Long): Unit =
     conf.set(PARTITION_BYTES, bytes.toString)
 
+  /** Removes partition size in bytes */
+  def removePartitionBytes(conf: Configuration): Unit =
+    conf.unset(PARTITION_BYTES)
+
   def setChunkSize(job: Job, chunkSize: Int): Unit =
     setChunkSize(job.getConfiguration, chunkSize)
 
   def setChunkSize(conf: Configuration, chunkSize: Int): Unit =
     conf.set(CHUNK_SIZE, chunkSize.toString)
 
+  def removeChunkSize(conf: Configuration): Unit =
+    conf.unset(CHUNK_SIZE)
+
   /** Set valid key extensions filter */
   def setExtensions(conf: Configuration, extensions: Seq[String]): Unit =
     conf.set(EXTENSIONS, extensions.mkString(","))
+
+  def removeExtensions(conf: Configuration): Unit =
+    conf.unset(EXTENSIONS)
 
   /** Set delimiter for S3 object listing requests */
   def setDelimiter(job: Job, delimiter: String): Unit =
@@ -289,12 +332,9 @@ object S3InputFormat {
   def getDelimiter(job: JobContext): Option[String] =
     getDelimiter(job.getConfiguration)
 
-  def getDelimiter(conf: Configuration): Option[String] = {
-    val d = conf.get(DELIMITER)
-    if(d != null)
-      Some(d)
-    else
-      None
-  }
+  def getDelimiter(conf: Configuration): Option[String] =
+    Option(conf.get(DELIMITER))
 
+  def removeDelimiter(conf: Configuration): Unit =
+    conf.unset(DELIMITER)
 }

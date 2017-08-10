@@ -4,5 +4,5 @@ name := "geotrellis-vectortile"
 
 libraryDependencies ++= Seq(
   scalatest % "test",
-  "com.trueaccord.scalapb" %% "scalapb-runtime" % "0.6.0-pre1"
+  "com.trueaccord.scalapb" %% "scalapb-runtime" % "0.6.0-pre4"
 )

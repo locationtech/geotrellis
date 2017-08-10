@@ -36,9 +36,11 @@ lazy val commonSettings = Seq(
     }
   },
 
-  credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
+  credentials ++= List(Path.userHome / ".ivy2" / ".credentials")
+    .filter(_.asFile.canRead)
+    .map(Credentials(_)),
 
-  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.3" cross CrossVersion.binary),
+  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.4" cross CrossVersion.binary),
   addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.full),
 
   pomExtra := (

@@ -1,71 +1,74 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "array",
-  "properties": {
-    "format": {
-      "type": "string"
-    },
-    "name": {
-      "type": "string"
-    },
-    "cache": {
-      "type": "string"
-    },
-    "crs": {
-      "type": "string"
-    },
-    "noData": {
-      "type": "integer"
-    },
-    "maxTileSize": {
-      "type": "integer"
-    },
-    "numPartitions": {
-      "type": "integer"
-    },
-    "clip": {
-      "type": "object",
-      "properties": {
-        "xmin": {
-          "type": "number"
-        },
-        "ymin": {
-          "type": "number"
-        },
-        "xmax": {
-          "type": "number"
-        },
-        "ymax": {
-          "type": "number"
-        }
+  "items": {
+    "type": "object",
+    "properties": {
+      "format": {
+        "type": "string"
       },
-      "required": [
-        "xmin",
-        "ymin",
-        "xmax",
-        "ymax"
-      ]
-    },
-    "backend": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "type": "string"
-        },
-        "path": {
-          "type": "string"
-        }
+      "name": {
+        "type": "string"
       },
-      "required": [
-        "type",
-        "path"
-      ]
-    }
+      "cache": {
+        "type": "string"
+      },
+      "crs": {
+        "type": "string"
+      },
+      "noData": {
+        "type": "integer"
+      },
+      "maxTileSize": {
+        "type": "integer"
+      },
+      "numPartitions": {
+        "type": "integer"
+      },
+      "clip": {
+        "type": "object",
+        "properties": {
+          "xmin": {
+            "type": "number"
+          },
+          "ymin": {
+            "type": "number"
+          },
+          "xmax": {
+            "type": "number"
+          },
+          "ymax": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "xmin",
+          "ymin",
+          "xmax",
+          "ymax"
+        ]
+      },
+      "backend": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "path"
+        ]
+      }
+    },
+    "required": [
+      "format",
+      "name",
+      "backend"
+    ]
   },
-  "required": [
-    "format",
-    "name",
-    "backend"
-  ],
   "additionalProperties": false
 }

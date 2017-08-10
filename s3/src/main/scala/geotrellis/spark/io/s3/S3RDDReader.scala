@@ -31,8 +31,8 @@ import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import com.typesafe.config.ConfigFactory
 
+import com.typesafe.config.ConfigFactory
 import java.util.concurrent.Executors
 
 trait S3RDDReader {
@@ -70,8 +70,8 @@ trait S3RDDReader {
       .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
         val s3client = _getS3Client()
         val writerSchema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
-        partition flatMap { ranges =>
-          LayerReader.njoin[K, V](ranges.toIterator, threads){ index: Long =>
+        partition flatMap { seq =>
+          LayerReader.njoin[K, V](seq.toIterator, threads){ index: Long =>
             try {
               val bytes = IOUtils.toByteArray(s3client.getObject(bucket, keyPath(index)).getObjectContent)
               val recs = AvroEncoder.fromBinary(writerSchema, bytes)(_recordCodec)

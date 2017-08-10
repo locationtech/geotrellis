@@ -15,16 +15,15 @@
  */
 
 object Version {
-  val geotrellis  = "1.1.0" + Environment.versionSuffix
-  val scala       = "2.11.8"
-  val geotools    = "16.1"
-  val akka        = "2.4.16"
+  val geotrellis  = "1.2.0" + Environment.versionSuffix
+  val scala       = "2.11.11"
+  val geotools    = "17.1"
   val sprayJson   = "1.3.3"
   val monocle     = "1.4.0"
-  val accumulo    = "1.7.2"
-  val cassandra   = "3.1.4"
-  val hbase       = "1.3.0"
-  val geomesa     = "1.2.7.3"
+  val accumulo    = "1.7.3"
+  val cassandra   = "3.2.0"
+  val hbase       = "1.3.1"
+  val geomesa     = "1.2.8"
   lazy val hadoop = Environment.hadoopVersion
   lazy val spark  = Environment.sparkVersion
 }

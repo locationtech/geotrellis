@@ -20,8 +20,16 @@ import geotrellis.raster._
 import spire.syntax.cfor._
 
 /**
- * Created by jchien on 4/30/14.
- */
+  * Created by jchien on 4/30/14.
+  *
+  * This appears to be an implementation of the DEM/Xdraw Viewshed
+  * algorithm from [1].
+  *
+  * 1. Franklin, Wm Randolph, and Clark Ray.
+  *    "Higher isn’t necessarily better: Visibility algorithms and experiments."
+  *     Advances in GIS research: sixth international symposium on spatial data handling. Vol. 2.
+  *     Taylor & Francis Edinburgh, 1994.
+  */
 object ApproxViewshed extends Serializable {
 
   def apply(r: Tile, col: Int, row: Int): Tile = {
@@ -49,7 +57,7 @@ object ApproxViewshed extends Serializable {
 
             if (layer == 1) {
               tile.setDouble(x,y,z)
-            }else {
+            } else {
               val xVal = math.abs(1.0 / (startRow - y)) * (startCol - x) + x
               val xInt = xVal.toInt
 
@@ -87,21 +95,21 @@ object ApproxViewshed extends Serializable {
               val closestHeight = {
                 if (startCol == x) {
                   tile.getDouble(x - math.signum(x - startCol), y)
-                }else if (yVal.isValidInt) {
+                } else if (yVal.isValidInt) {
                   tile.getDouble(x - math.signum(x - startCol), yInt)
                 } else { // need linear interpolation
-                  (yInt + 1 - yVal) *  tile.getDouble(x - math.signum(x-startCol), yInt) + 
+                  (yInt + 1 - yVal) *  tile.getDouble(x - math.signum(x-startCol), yInt) +
                   (yVal - yInt) * tile.getDouble(x - math.signum(x-startCol), yInt + 1)
                 }
               }
 
               if (x > startCol) {
-                tile.setDouble(x, y, 
+                tile.setDouble(x, y,
                   math.max(z, 1.0 / (startCol - (x - 1)) * (k - closestHeight) + closestHeight)
                 )
               } else {
-                tile.setDouble(x, y, 
-                  math.max(z, -1.0 / (startCol - (x+1)) * (k-closestHeight) + closestHeight)
+                tile.setDouble(x, y,
+                  math.max(z, -1.0 / (startCol - (x+1)) * (k - closestHeight) + closestHeight)
                 )
               }
             }

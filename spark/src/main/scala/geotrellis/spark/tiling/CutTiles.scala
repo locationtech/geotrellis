@@ -16,19 +16,20 @@
 
 package geotrellis.spark.tiling
 
-import geotrellis.vector.Extent
 import geotrellis.raster._
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.raster.resample._
 import geotrellis.spark._
+import geotrellis.util.LazyLogging
 
-import org.apache.spark._
 import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
 
 object CutTiles {
+  @transient private lazy val logger = LazyLogging(this)
+
   def apply[
     K1: (? => TilerKeyMethods[K1, K2]),
     K2: SpatialComponent: ClassTag,
@@ -39,6 +40,7 @@ object CutTiles {
     layoutDefinition: LayoutDefinition,
     resampleMethod: ResampleMethod = NearestNeighbor
   ): RDD[(K2, V)] = {
+    logger.debug(s"CutTiles($rdd, $cellType, $resampleMethod)")
     val mapTransform = layoutDefinition.mapTransform
     val (tileCols, tileRows) = layoutDefinition.tileLayout.tileDimensions
 
@@ -46,11 +48,12 @@ object CutTiles {
       .flatMap { tup =>
         val (inKey, tile) = tup
         val extent = inKey.extent
-
+        logger.debug(s"Cutting $inKey of ${tile.dimensions} cells covering $extent")
         mapTransform(extent)
-          .coords
+          .coordsIter
           .map  { spatialComponent =>
             val outKey = inKey.translate(spatialComponent)
+            logger.debug(s"Merge $inKey into $outKey of (${tileCols}, ${tileRows}) cells")
             val newTile = tile.prototype(cellType, tileCols, tileRows)
             (outKey, newTile.merge(mapTransform(outKey), extent, tile, resampleMethod))
           }

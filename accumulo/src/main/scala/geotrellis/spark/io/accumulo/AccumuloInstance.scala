@@ -19,11 +19,12 @@ package geotrellis.spark.io.accumulo
 import org.apache.accumulo.core.client._
 import org.apache.accumulo.core.client.mapreduce.{AbstractInputFormat => AIF, AccumuloOutputFormat => AOF}
 import org.apache.accumulo.core.client.mock.MockInstance
-import org.apache.accumulo.core.client.security.tokens.AuthenticationToken
+import org.apache.accumulo.core.client.security.tokens.{AuthenticationToken, PasswordToken}
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
 
 import scala.collection.JavaConversions._
+import java.net.URI
 
 trait AccumuloInstance  extends Serializable {
   def connector: Connector
@@ -49,6 +50,18 @@ object AccumuloInstance {
     val tokenBytes = AuthenticationToken.AuthenticationTokenSerializer.serialize(token)
     val tokenClass = token.getClass.getCanonicalName
     BaseAccumuloInstance(instanceName, zookeeper, user, (tokenClass, tokenBytes))
+  }
+
+  def apply(uri: URI): AccumuloInstance = {
+    import geotrellis.util.UriUtils._
+
+    val zookeeper = uri.getHost
+    val instance = uri.getPath.drop(1)
+    val (user, pass) = getUserInfo(uri)
+    AccumuloInstance(
+      instance, zookeeper,
+      user.getOrElse("root"),
+      new PasswordToken(pass.getOrElse("")))
   }
 }
 

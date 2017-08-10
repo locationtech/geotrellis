@@ -17,12 +17,11 @@
 package geotrellis.spark.etl.config.json
 
 import geotrellis.vector.io._
-import geotrellis.raster.{CellSize, CellType}
+import geotrellis.raster.{CellSize, CellType, TileLayout}
 import geotrellis.raster.io._
 import geotrellis.raster.resample._
 import geotrellis.spark.etl.config._
 import geotrellis.vector.Extent
-
 import org.apache.spark.storage.StorageLevel
 import spray.json._
 import spray.json.DefaultJsonProtocol._
@@ -248,7 +247,8 @@ trait ConfigFormats {
       "cellType"            -> o.cellType.toJson,
       "encoding"            -> o.encoding.toJson,
       "breaks"              -> o.breaks.toJson,
-      "maxZoom"             -> o.maxZoom.toJson
+      "maxZoom"             -> o.maxZoom.toJson,
+      "tileLayout"          -> o.tileLayout.toJson
     )
 
     def read(value: JsValue): Output =
@@ -270,8 +270,8 @@ trait ConfigFormats {
             cellType            = fields.get("cellType").map(_.convertTo[CellType]),
             encoding            = fields.get("encoding").map(_.convertTo[String]),
             breaks              = fields.get("breaks").map(_.convertTo[String]),
-            maxZoom             = fields.get("maxZoom").map(_.convertTo[Int])
-
+            maxZoom             = fields.get("maxZoom").map(_.convertTo[Int]),
+            tileLayout          = fields.get("tileLayout").map(_.convertTo[TileLayout])
           )
         case _ =>
           throw new DeserializationException("Output must be a valid json object.")

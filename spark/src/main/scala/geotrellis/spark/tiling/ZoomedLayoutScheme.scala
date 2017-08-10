@@ -109,8 +109,8 @@ class ZoomedLayoutScheme(val crs: CRS, val tileSize: Int, resolutionThreshold: D
     levelForZoom(crs.worldExtent, id)
 
   def levelForZoom(worldExtent: Extent, id: Int): LayoutLevel = {
-    if(id < 1)
-      sys.error("TMS Tiling scheme does not have levels below 1")
+    if(id < 0)
+      sys.error("TMS Tiling scheme does not have levels below 0")
     LayoutLevel(id, LayoutDefinition(worldExtent, TileLayout(layoutColsForZoom(id), layoutRowsForZoom(id), tileSize, tileSize)))
   }
 
