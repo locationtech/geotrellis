@@ -1,7 +1,5 @@
 package geotrellis.spark.pipeline.ast.untyped
 
-import io.circe.Json
-
 import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.pipeline.ast
@@ -13,27 +11,18 @@ import geotrellis.spark.pipeline.json._
 import geotrellis.spark.pipeline.json.read._
 import geotrellis.vector._
 
-import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.runtime.universe.{TypeTag, typeTag}
 import scala.reflect.runtime.universe.Type
 import scala.util.Try
 
-trait RealWorld
-
-object RealWorld {
-  /** RealWorld node has nothing implemented */
-  def instance = new Node[RealWorld] {
-    def get(implicit sc: SparkContext): RealWorld =
-      throw new UnsupportedOperationException("get function is not supported by a RealWorld node")
-    def arg: PipelineExpr =
-      throw new UnsupportedOperationException("arg function is not supported by a RealWorld node")
-    def asJson: List[Json] =
-      throw new UnsupportedOperationException("asJson function is not supported by a RealWorld node")
-  }
-}
-
+/**
+  * Erased node type, represents a typed Node with types kept inside.
+  * It is a function, as it should operate with nodes constructor types
+  * and to "compose" untyped nodes.
+  *
+  */
 trait ErasedNode extends (Any => Any) {
   def maybeApply(x: Any): Option[Any]
 
@@ -104,6 +93,7 @@ case class ErasedTypedNode[Domain: TypeTag, Range: TypeTag](constructor: Node[Do
       .map(_.asInstanceOf[Node[Any]])
 }
 
+/** Helper functions to convert typed nodes into erased typed nodes */
 object ErasedTypedNode {
   def fromRead[Range: TypeTag](node: ast.Read[Range]) =
     ErasedTypedNode[RealWorld, Range](_ => node)
@@ -115,8 +105,11 @@ object ErasedTypedNode {
     ErasedTypedNode[Domain, Range](constructor)
 }
 
-// TODO: support user defined types
+/**
+  * Class that allows to convert node json representation into an ErasedNode
+  */
 case class ErasedJsonNode(arg: PipelineExpr) {
+  // TODO: support user defined types
   def toErasedNode: ErasedNode = {
     arg.`type` match {
       case _: SinglebandSpatialExprType => {
