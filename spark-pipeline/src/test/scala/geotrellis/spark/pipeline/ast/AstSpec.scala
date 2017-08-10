@@ -81,9 +81,9 @@ class AstSpec extends FunSpec
 
       println
       println
-      println(write1.asJson.map(_.pretty(jsonPrinter)))
+      println(write1.asJson.map(_.pretty(pipelineJsonPrinter)))
       println
-      println(write2.asJson.map(_.pretty(jsonPrinter)))
+      println(write2.asJson.map(_.pretty(pipelineJsonPrinter)))
       println
       println(write3.validation)
       println
@@ -128,6 +128,7 @@ class AstSpec extends FunSpec
   }
 
   it("Untyped JAST") {
+    import geotrellis.spark.pipeline.ast.untyped.Implicits._
     val js: String =
       """
         |[
@@ -171,7 +172,7 @@ class AstSpec extends FunSpec
         |]
       """.stripMargin
 
-    val list = decode[List[PipelineExpr]](js) match {
+    val list: List[PipelineExpr] = js.toPipelineExpr match {
       case Right(r) => r
       case Left(e) => throw e
     }
