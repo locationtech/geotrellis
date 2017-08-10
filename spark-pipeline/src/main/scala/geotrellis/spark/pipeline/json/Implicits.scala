@@ -28,7 +28,7 @@ object Implicits extends Implicits
 
 trait Implicits extends LazyLogging {
   implicit val config: Configuration = Configuration.default.withDefaults.withSnakeCaseKeys
-  val jsonPrinter: Printer = Printer.spaces2.copy(dropNullKeys = true)
+  val pipelineJsonPrinter: Printer = Printer.spaces2.copy(dropNullKeys = true)
 
   implicit val uriEncoder: Encoder[URI] =
     Encoder.encodeString.contramap[URI] { _.toString }
