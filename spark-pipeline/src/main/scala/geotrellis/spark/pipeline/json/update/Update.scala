@@ -12,61 +12,11 @@ trait Update extends PipelineExpr {
 }
 
 @ConfiguredJsonCodec
-case class File(
+case class JsonUpdate(
   name: String,
   profile: String,
   uri: String,
   pyramid: Boolean,
   maxZoom: Option[Int] = None,
-  `type`: String = "update.file"
-) extends Update
-
-@ConfiguredJsonCodec
-case class Hadoop(
-  name: String,
-  profile: String,
-  uri: String,
-  pyramid: Boolean,
-  maxZoom: Option[Int] = None,
-  `type`: String = "update.hadoop"
-) extends Update
-
-@ConfiguredJsonCodec
-case class S3(
-  name: String,
-  profile: String,
-  uri: String,
-  pyramid: Boolean,
-  maxZoom: Option[Int] = None,
-  `type`: String = "update.s3"
-) extends Update
-
-@ConfiguredJsonCodec
-case class Accumulo(
-  name: String,
-  profile: String,
-  uri: String,
-  pyramid: Boolean,
-  maxZoom: Option[Int] = None,
-  `type`: String = "update.accumulo"
-) extends Update
-
-@ConfiguredJsonCodec
-case class Cassandra(
-  name: String,
-  profile: String,
-  uri: String,
-  pyramid: Boolean,
-  maxZoom: Option[Int] = None,
-  `type`: String = "update.cassandra"
-) extends Update
-
-@ConfiguredJsonCodec
-case class HBase(
-  name: String,
-  profile: String,
-  uri: String,
-  pyramid: Boolean,
-  maxZoom: Option[Int] = None,
-  `type`: String = "update.hbase"
+  `type`: PipelineExprType
 ) extends Update

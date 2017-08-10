@@ -13,8 +13,8 @@ import org.apache.spark.rdd.RDD
 
 case class BufferedReproject(
   node: Node[TileLayerRDD[SpatialKey]],
-  arg: transform.BufferedReproject
-) extends Transform[RDD[(ProjectedExtent, Tile)], TileLayerRDD[SpatialKey]] {
+  arg: transform.Reproject
+) extends Transform[TileLayerRDD[SpatialKey], TileLayerRDD[SpatialKey]] {
   def asJson = node.asJson :+ arg.asJson
   def get(implicit sc: SparkContext): TileLayerRDD[SpatialKey] = Transform.bufferedReproject(arg)(node.get)
   def validate: (Boolean, String) = {

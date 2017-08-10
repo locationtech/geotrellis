@@ -9,12 +9,11 @@ import geotrellis.spark.pipeline.json.transform
 import geotrellis.vector._
 
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
 
 case class Pyramid(
   node: Node[MultibandTileLayerRDD[SpaceTimeKey]],
   arg: transform.Pyramid
-) extends Transform[RDD[(TemporalProjectedExtent, MultibandTile)], Stream[(Int, MultibandTileLayerRDD[SpaceTimeKey])]] {
+) extends Transform[MultibandTileLayerRDD[SpaceTimeKey], Stream[(Int, MultibandTileLayerRDD[SpaceTimeKey])]] {
   def asJson = node.asJson :+ arg.asJson
   def get(implicit sc: SparkContext): Stream[(Int, MultibandTileLayerRDD[SpaceTimeKey])] =
     Transform.pyramid(arg)(node.get)

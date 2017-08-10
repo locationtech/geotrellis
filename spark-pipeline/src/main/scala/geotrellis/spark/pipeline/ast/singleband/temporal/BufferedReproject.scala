@@ -11,7 +11,7 @@ import org.apache.spark.SparkContext
 
 case class BufferedReproject(
   node: Node[TileLayerRDD[SpaceTimeKey]],
-  arg: transform.BufferedReproject
+  arg: transform.Reproject
 ) extends Transform[TileLayerRDD[SpaceTimeKey], TileLayerRDD[SpaceTimeKey]] {
   def asJson = node.asJson :+ arg.asJson
   def get(implicit sc: SparkContext): TileLayerRDD[SpaceTimeKey] = Transform.bufferedReproject(arg)(node.get)

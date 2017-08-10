@@ -9,7 +9,7 @@ import geotrellis.spark.pipeline.json.read
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-case class HadoopRead(arg: read.TemporalMultibandHadoop) extends Read[RDD[(TemporalProjectedExtent, MultibandTile)]] {
+case class HadoopRead(arg: read.JsonRead) extends Read[RDD[(TemporalProjectedExtent, MultibandTile)]] {
   def asJson = arg.asJson :: Nil
   def get(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, MultibandTile)] =
     Read.evalTemporalMultibandHadoop(arg)
