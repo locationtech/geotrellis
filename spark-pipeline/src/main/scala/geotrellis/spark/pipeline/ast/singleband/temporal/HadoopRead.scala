@@ -10,7 +10,7 @@ import geotrellis.spark.pipeline.json.read
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-case class HadoopRead(arg: read.TemporalHadoop) extends Read[RDD[(TemporalProjectedExtent, Tile)]] {
+case class HadoopRead(arg: read.JsonRead) extends Read[RDD[(TemporalProjectedExtent, Tile)]] {
   def asJson = arg.asJson :: Nil
   def get(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, Tile)] = Read.evalTemporalHadoop(arg)
   def validate: (Boolean, String) = validation

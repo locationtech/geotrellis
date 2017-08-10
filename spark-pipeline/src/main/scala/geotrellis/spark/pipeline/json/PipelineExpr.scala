@@ -9,6 +9,6 @@ trait PipelineExpr extends LazyLogging {
   def ~(other: Option[PipelineExpr]): PipelineConstructor =
     other.fold(this :: Nil)(o => this :: o :: Nil)
 
-  val `type`: String
+  val `type`: PipelineExprType
 }
 

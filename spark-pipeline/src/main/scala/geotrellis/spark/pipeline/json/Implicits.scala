@@ -1,11 +1,17 @@
 package geotrellis.spark.pipeline.json
 
+import geotrellis.spark.pipeline.json.read._
+import geotrellis.spark.pipeline.json.write._
+import geotrellis.spark.pipeline.json.reindex._
+import geotrellis.spark.pipeline.json.update._
+import geotrellis.spark.pipeline.json.transform._
 import geotrellis.proj4.CRS
 import geotrellis.spark.pipeline._
 import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.spark.tiling._
 import geotrellis.vector._
+import geotrellis.util.LazyLogging
 
 import _root_.io.circe.generic.extras.Configuration
 import _root_.io.circe._
@@ -15,11 +21,12 @@ import cats.syntax._
 import cats.implicits._
 
 import java.net.URI
+
 import scala.util.Try
 
 object Implicits extends Implicits
 
-trait Implicits {
+trait Implicits extends LazyLogging {
   implicit val config: Configuration = Configuration.default.withDefaults.withSnakeCaseKeys
   val jsonPrinter: Printer = Printer.spaces2.copy(dropNullKeys = true)
 
@@ -145,5 +152,81 @@ trait Implicits {
   implicit val cellTypeDecoder: Decoder[CellType] =
     Decoder.decodeString.emap { str =>
       Either.catchNonFatal(CellType.fromName(str)).leftMap(_ => "CellType")
+    }
+
+  implicit val pipelineExprTypeEncode: Encoder[PipelineExprType] =
+    Encoder.encodeString.contramap[PipelineExprType] { _.name }
+  implicit val pipelineExprTypeDecode: Decoder[PipelineExprType] =
+    Decoder.decodeString.emap { str =>
+      Either.catchNonFatal(PipelineExprType.fromName(str)).leftMap(_ => "PipelineExprType")
+    }
+
+  implicit val pipelineExprEncode: Encoder[PipelineExpr] =
+    Encoder.instance { expr: PipelineExpr =>
+      expr match {
+        case e: JsonWrite => e.asJson
+        case e: JsonRead => e.asJson
+        case e: JsonReindex => e.asJson
+        case e: JsonUpdate => e.asJson
+        case e: Reproject => e.asJson
+        case e: TileToLayout => e.asJson
+        case e: RetileToLayout => e.asJson
+        case e: Pyramid => e.asJson
+        case e => throw new Exception(s"Unsupported AST node $e")
+      }
+    }
+
+  // TODO: Implement a better PipelineExpr decoder
+  implicit val pipelineExprDecode: Decoder[PipelineExpr] =
+    Decoder.decodeJson.emap { json =>
+      val result: Either[DecodingFailure, PipelineExpr] = json.as[JsonWrite] match {
+        case right @ Right(_) => right
+        case Left(_) =>
+          json.as[JsonRead] match {
+            case right @ Right(_) => right
+            case Left(_) =>
+              json.as[JsonReindex] match {
+                case right @ Right(_) => right
+                case Left(_) =>
+                  json.as[JsonUpdate] match {
+                    case right @ Right(_) => right
+                    case Left(_) =>
+                      json.as[Reproject] match {
+                        case right @ Right(_) => right
+                        case Left(_) =>
+                          json.as[TileToLayout] match {
+                            case right @ Right(_) => {
+                              right.flatMap { r =>
+                                if (r.`type`.name.contains("retile")) {
+                                  json.as[RetileToLayout] match {
+                                    case right @ Right(_) => right
+                                    case Left(e) => throw e
+                                  }
+                                } else if (r.`type`.name.contains("pyramid")) {
+                                  json.as[Pyramid] match {
+                                    case right @ Right(_) => right
+                                    case Left(e) => throw e
+                                  }
+                                } else right
+                              }
+                            }
+                            case Left(_) =>
+                              json.as[RetileToLayout] match {
+                                case right @ Right(_) => right
+                                case Left(_) =>
+                                  json.as[Pyramid] match {
+                                    case right @ Right(_) => right
+                                    case Left(e) =>
+                                      throw e
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
+          }
+      }
+
+      result.leftMap(_ => "PipelineExpr")
     }
 }

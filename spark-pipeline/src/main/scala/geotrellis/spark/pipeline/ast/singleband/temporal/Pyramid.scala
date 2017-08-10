@@ -13,7 +13,7 @@ import org.apache.spark.rdd.RDD
 case class Pyramid(
   node: Node[TileLayerRDD[SpaceTimeKey]],
   arg: transform.Pyramid
-) extends Transform[RDD[(TemporalProjectedExtent, Tile)], Stream[(Int, TileLayerRDD[SpaceTimeKey])]] {
+) extends Transform[TileLayerRDD[SpaceTimeKey], Stream[(Int, TileLayerRDD[SpaceTimeKey])]] {
   def asJson = node.asJson :+ arg.asJson
   def get(implicit sc: SparkContext): Stream[(Int, TileLayerRDD[SpaceTimeKey])] =
     Transform.pyramid(arg)(node.get)

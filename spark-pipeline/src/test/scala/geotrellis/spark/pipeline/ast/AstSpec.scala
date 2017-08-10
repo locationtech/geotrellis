@@ -2,11 +2,16 @@ package geotrellis.spark.pipeline.ast
 
 import _root_.io.circe.generic.extras.ConfiguredJsonCodec
 import _root_.io.circe.syntax._
+import _root_.io.circe.parser._
+import cats.implicits._
 import geotrellis.spark._
+import geotrellis.spark.pipeline.ast.untyped.ErasedJsonNode
 import geotrellis.spark.pipeline.json
 import geotrellis.spark.pipeline.json._
 import geotrellis.spark.tiling.{FloatingLayoutScheme, LayoutDefinition, LayoutScheme}
 import geotrellis.spark.testkit._
+import geotrellis.spark.pipeline.ast.untyped._
+import geotrellis.spark.pipeline.json.write.JsonWrite
 import org.apache.spark.SparkContext
 import org.scalatest._
 
@@ -16,7 +21,7 @@ class AstSpec extends FunSpec
   with TestEnvironment {
 
   describe("Build AST") {
-    @ConfiguredJsonCodec
+    /*@ConfiguredJsonCodec
     case class NewReproject(`type`: String, args: List[String]) extends PipelineExpr
 
     case class NewReprojectTransform(
@@ -37,26 +42,25 @@ class AstSpec extends FunSpec
       }
 
       def asJson = arg.asJson +: node.asJson
-    }
+    }*/
 
     it("should validate AST") {
       import singleband.spatial._
       val scheme = Left[LayoutScheme, LayoutDefinition](FloatingLayoutScheme(512))
-      val read = HadoopRead(json.read.SpatialHadoop("/"))
-      val tiled = TileToLayout(read, json.transform.TileToLayout())
-      val reproject = BufferedReproject(tiled, json.transform.BufferedReproject("", scheme))
-      val reprojectn = NewReprojectTransform(tiled, NewReproject("id", List()))
-      val pyramid = Pyramid(reproject, json.transform.Pyramid())
-      val pyramidn = Pyramid(reprojectn, json.transform.Pyramid())
+      val read = HadoopRead(json.read.JsonRead("/", `type` = ReadTypes.SpatialHadoopType))
+      val tiled = TileToLayout(read, json.transform.TileToLayout(`type` = TransformTypes.SpatialTileToLayoutType))
+      val reproject = BufferedReproject(tiled, json.transform.Reproject("", scheme, `type` = TransformTypes.SpatialBufferedReprojectType))
+      //val reprojectn = NewReprojectTransform(tiled, NewReproject("id", List()))
+      val pyramid = Pyramid(reproject, json.transform.Pyramid(`type` = TransformTypes.SpatialPyramidType))
+      //val pyramidn = Pyramid(reprojectn, json.transform.Pyramid(`type` = TransformTypes.SpatialPyramidType))
 
-      val write1 = HadoopWrite(pyramid, json.write.Hadoop("write1", "/tmp", pyramid = true, PipelineKeyIndexMethod("zorder"), scheme))
-      val write2 = HadoopWrite(write1, json.write.Hadoop("write2", "/tmp", pyramid = true, PipelineKeyIndexMethod("zorder"), scheme))
+      val write1 = HadoopWrite(pyramid, json.write.JsonWrite("write1", "/tmp", PipelineKeyIndexMethod("zorder"), scheme, `type` = WriteTypes.SpatialHadoopType))
+      val write2 = HadoopWrite(write1, json.write.JsonWrite("write2", "/tmp", PipelineKeyIndexMethod("zorder"), scheme, `type` = WriteTypes.SpatialHadoopType))
       val write3 = HadoopWrite(write2, null)
-      val write1n = HadoopWrite(pyramidn, json.write.Hadoop("write1n", "/tmp", pyramid = true, PipelineKeyIndexMethod("zorder"), scheme))
-      val write2n = HadoopWrite(write1n, json.write.Hadoop("write2n", "/tmp", pyramid = true, PipelineKeyIndexMethod("zorder"), scheme))
-      val write3n = HadoopWrite(write2n, null)
+      //val write1n = HadoopWrite(pyramidn, json.write.JsonWrite("write1n", "/tmp", pyramid = true, PipelineKeyIndexMethod("zorder"), scheme, `type` = WriteTypes.SpatialHadoopType))
+      //val write2n = HadoopWrite(write1n, json.write.JsonWrite("write2n", "/tmp", pyramid = true, PipelineKeyIndexMethod("zorder"), scheme, `type` = WriteTypes.SpatialHadoopType))
+      //val write3n = HadoopWrite(write2n, null)
 
-      /*
       println
       println
       println(write1)
@@ -66,14 +70,14 @@ class AstSpec extends FunSpec
       println(write3.validation)
       println
       println
-      println(write1n)
+      /*println(write1n)
       println
       println(write2n)
       println
       println(write3n.validation)
       println
-      println
-      */
+      println*/
+
 
       println
       println
@@ -84,27 +88,107 @@ class AstSpec extends FunSpec
       println(write3.validation)
       println
       println
-      println(write1n.asJson.map(_.pretty(jsonPrinter)))
-      println
-      println(write2n.asJson.map(_.pretty(jsonPrinter)))
-      println
-      println(write3n.validation)
-      println
-      println
+    }
+
+    it("Untyped AST") {
+      import singleband.spatial._
+      val scheme = Left[LayoutScheme, LayoutDefinition](FloatingLayoutScheme(512))
+      val jsonRead = json.read.JsonRead("/", `type` = ReadTypes.SpatialHadoopType)
+      val jsonTileToLayout = json.transform.TileToLayout(`type` = TransformTypes.SpatialTileToLayoutType)
+      val jsonReproject = json.transform.Reproject("", scheme, `type` = TransformTypes.SpatialBufferedReprojectType)
+      val jsonPyramid = json.transform.Pyramid(`type` = TransformTypes.SpatialPyramidType)
+
+      val jsonWrite1 = json.write.JsonWrite("write1", "/tmp", PipelineKeyIndexMethod("zorder"), scheme, `type` = WriteTypes.SpatialHadoopType)
+      val jsonWrite2 = json.write.JsonWrite("write2", "/tmp", PipelineKeyIndexMethod("zorder"), scheme, `type` = WriteTypes.SpatialHadoopType)
+
+      /*val njsonRead = ErasedJsonNode(jsonRead)
+      val njsonTileToLayout = ErasedJsonNode(jsonTileToLayout)
+      val njsonReproject = ErasedJsonNode(jsonReproject)
+      val njsonPyramid = ErasedJsonNode(jsonPyramid)
+      val njsonWrite1 = ErasedJsonNode(jsonWrite1)
+      val njsonWrite2 = ErasedJsonNode(jsonWrite2)*/
+
+      val list: List[PipelineExpr] = List(jsonRead, jsonTileToLayout, jsonReproject, jsonPyramid, jsonWrite1, jsonWrite2)
+
+      val typedAst =
+        list
+          .get[Write[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]]
+
+      val untypedAst = list.typeErased
+
+      ErasedUtils.eprint(untypedAst)
+
+      val typedAst2 =
+        untypedAst.get[Write[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]]
+
+      println(typedAst.validation)
+
+      typedAst shouldBe typedAst2
     }
   }
-}
 
+  it("Untyped JAST") {
+    val js: String =
+      """
+        |[
+        |  {
+        |    "uri" : "/",
+        |    "time_tag" : "TIFFTAG_DATETIME",
+        |    "time_format" : "yyyy:MM:dd HH:mm:ss",
+        |    "type" : "singleband.spatial.read.hadoop"
+        |  },
+        |  {
+        |    "resample_method" : "nearest-neighbor",
+        |    "type" : "singleband.spatial.transform.tile-to-layout"
+        |  },
+        |  {
+        |    "crs" : "",
+        |    "scheme" : {
+        |      "tileCols" : 512,
+        |      "tileRows" : 512
+        |    },
+        |    "resample_method" : "nearest-neighbor",
+        |    "type" : "singleband.spatial.transform.buffered-reproject"
+        |  },
+        |  {
+        |    "end_zoom" : 0,
+        |    "resample_method" : "nearest-neighbor",
+        |    "type" : "singleband.spatial.transform.pyramid"
+        |  },
+        |  {
+        |    "name" : "write1",
+        |    "uri" : "/tmp",
+        |    "pyramid" : true,
+        |    "key_index_method" : {
+        |      "type" : "zorder"
+        |    },
+        |    "scheme" : {
+        |      "tileCols" : 512,
+        |      "tileRows" : 512
+        |    },
+        |    "type" : "singleband.spatial.write.hadoop"
+        |  }
+        |]
+      """.stripMargin
 
-object var2 {
-  trait Node[A]
-  trait Read[A] extends Node[A]
-  trait Transform[A, B] extends Node[B]
-  trait Write[A] extends Node[A]
+    val list = decode[List[PipelineExpr]](js) match {
+      case Right(r) => r
+      case Left(e) => throw e
+    }
 
-  def eval[A]: Node[A] => A = { node => node match {
-    case smth => eval(smth)
-    case smth2 => smth2.asInstanceOf[A]
-    //case smth3 => eval(smth3: Node[B]) ???
-  } }
+    val typedAst =
+      list
+        .get[Write[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]]
+
+    val untypedAst = list.typeErased
+
+    ErasedUtils.eprint(untypedAst)
+
+    val typedAst2 =
+      untypedAst.get[Write[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]]
+
+    println(typedAst.validation)
+
+    typedAst shouldBe typedAst2
+  }
 }

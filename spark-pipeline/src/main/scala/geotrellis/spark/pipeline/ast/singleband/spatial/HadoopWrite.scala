@@ -11,7 +11,7 @@ import org.apache.spark.SparkContext
 
 case class HadoopWrite(
   node: Node[Stream[(Int, TileLayerRDD[SpatialKey])]],
-  arg: write.Hadoop
+  arg: write.JsonWrite
 ) extends Write[Stream[(Int, TileLayerRDD[SpatialKey])]] {
   def asJson = node.asJson :+ arg.asJson
   def get(implicit sc: SparkContext): Stream[(Int, TileLayerRDD[SpatialKey])] = Write.eval(arg)(node.get)

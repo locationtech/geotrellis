@@ -16,7 +16,6 @@ import geotrellis.spark.pipeline.json.transform._
 import geotrellis.spark.pyramid.Pyramid
 import geotrellis.vector.ProjectedExtent
 import geotrellis.util._
-
 import org.apache.spark.HashPartitioner
 import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
@@ -29,7 +28,7 @@ object Transform {
   def perTileReproject[
     I: Component[?, ProjectedExtent],
     V <: CellGrid: (? => TileReprojectMethods[V])
-  ](arg: PerTileReproject)(rdd: RDD[(I, V)]): RDD[(I, V)] = {
+  ](arg: Reproject)(rdd: RDD[(I, V)]): RDD[(I, V)] = {
     (arg.scheme, arg.maxZoom) match {
       case (Left(layoutScheme: ZoomedLayoutScheme), Some(mz)) =>
         val LayoutLevel(_, layoutDefinition) = layoutScheme.levelForZoom(mz)
@@ -42,7 +41,7 @@ object Transform {
   def bufferedReproject[
     K: SpatialComponent: Boundable: ClassTag,
     V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
-  ](arg: BufferedReproject)(rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] = {
+  ](arg: Reproject)(rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] = {
     (arg.scheme, arg.maxZoom) match {
       case (Left(layoutScheme: ZoomedLayoutScheme), Some(mz)) =>
         val LayoutLevel(zoom, layoutDefinition) = layoutScheme.levelForZoom(mz)

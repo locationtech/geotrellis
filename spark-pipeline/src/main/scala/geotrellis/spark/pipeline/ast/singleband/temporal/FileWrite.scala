@@ -11,7 +11,7 @@ import org.apache.spark.SparkContext
 
 case class FileWrite(
   node: Node[Stream[(Int,TileLayerRDD[SpaceTimeKey])]],
-  arg: write.File
+  arg: write.JsonWrite
 ) extends Write[Stream[(Int, TileLayerRDD[SpaceTimeKey])]] {
   def asJson = node.asJson :+ arg.asJson
   def get(implicit sc: SparkContext): Stream[(Int, TileLayerRDD[SpaceTimeKey])] = Write.eval(arg)(node.get)

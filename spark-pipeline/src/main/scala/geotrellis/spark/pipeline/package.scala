@@ -1,14 +1,16 @@
 package geotrellis.spark
 
 import _root_.io.circe.Json
+
 import cats.Monoid
 import geotrellis.proj4.CRS
+import geotrellis.spark.pipeline.ast.untyped
 import geotrellis.spark.pipeline.json.PipelineExpr
 import org.apache.spark.rdd.RDD
 
 import scala.util.Try
 
-package object pipeline extends json.Implicits {
+package object pipeline extends json.Implicits with untyped.Implicits {
   type PipelineConstructor = List[PipelineExpr]
   type LabeledListRDD = List[(String, RDD[Any])]
   type ListRDD = List[RDD[Any]]

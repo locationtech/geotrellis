@@ -13,7 +13,7 @@ trait Transform extends PipelineExpr
 case class Group(
   tags: List[String],
   tag: String,
-  `type`: String = "transform.group"
+  `type`: PipelineExprType
 ) extends Transform
 
 /** Merge inputs into a single Multiband RDD */
@@ -21,32 +21,23 @@ case class Group(
 case class Merge(
   tags: List[String],
   tag: String,
-  `type`: String = "transform.merge"
+  `type`: PipelineExprType
 ) extends Transform
 
 @ConfiguredJsonCodec
 case class Map(
   func: String, // function name
   tag: Option[String] = None,
-  `type`: String = "transform.map"
+  `type`: PipelineExprType
 ) extends Transform
 
 @ConfiguredJsonCodec
-case class PerTileReproject(
+case class Reproject(
   crs: String,
   scheme: Either[LayoutScheme, LayoutDefinition],
   resampleMethod: PointResampleMethod = NearestNeighbor,
   maxZoom: Option[Int] = None,
-  `type`: String = "transform.reproject.per-tile"
-) extends Transform
-
-@ConfiguredJsonCodec
-case class BufferedReproject(
-  crs: String,
-  scheme: Either[LayoutScheme, LayoutDefinition],
-  resampleMethod: PointResampleMethod = NearestNeighbor,
-  maxZoom: Option[Int] = None,
-  `type`: String = "transform.reproject.buffered"
+  `type`: PipelineExprType
 ) extends Transform
 
 @ConfiguredJsonCodec
@@ -54,14 +45,14 @@ case class TileToLayout(
   resampleMethod: PointResampleMethod = NearestNeighbor,
   tileSize: Option[Int] = None,
   cellType: Option[CellType] = None,
-  `type`: String = "transform.tile-to-layout"
+  `type`: PipelineExprType
 ) extends Transform
 
 @ConfiguredJsonCodec
 case class RetileToLayout(
   layoutDefinition: LayoutDefinition,
   resampleMethod: PointResampleMethod = NearestNeighbor,
-  `type`: String = "transform.tile-to-layout"
+  `type`: PipelineExprType
 ) extends Transform
 
 @ConfiguredJsonCodec
@@ -69,5 +60,5 @@ case class Pyramid(
   startZoom: Option[Int] = None,
   endZoom: Option[Int] = Some(0),
   resampleMethod: PointResampleMethod = NearestNeighbor,
-  `type`: String = "transform.pyramid"
+  `type`: PipelineExprType
 ) extends Transform
