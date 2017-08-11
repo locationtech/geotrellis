@@ -54,16 +54,11 @@ class AstSpec extends FunSpec
       val read = HadoopRead(json.read.JsonRead("/", `type` = ReadTypes.SpatialHadoopType))
       val tiled = TileToLayout(read, json.transform.TileToLayout(`type` = TransformTypes.SpatialTileToLayoutType))
       val reproject = BufferedReproject(tiled, json.transform.Reproject("", scheme, `type` = TransformTypes.SpatialBufferedReprojectType))
-      //val reprojectn = NewReprojectTransform(tiled, NewReproject("id", List()))
       val pyramid = Pyramid(reproject, json.transform.Pyramid(`type` = TransformTypes.SpatialPyramidType))
-      //val pyramidn = Pyramid(reprojectn, json.transform.Pyramid(`type` = TransformTypes.SpatialPyramidType))
 
       val write1 = HadoopWrite(pyramid, json.write.JsonWrite("write1", "/tmp", PipelineKeyIndexMethod("zorder"), scheme, `type` = WriteTypes.SpatialHadoopType))
       val write2 = HadoopWrite(write1, json.write.JsonWrite("write2", "/tmp", PipelineKeyIndexMethod("zorder"), scheme, `type` = WriteTypes.SpatialHadoopType))
       val write3 = HadoopWrite(write2, null)
-      //val write1n = HadoopWrite(pyramidn, json.write.JsonWrite("write1n", "/tmp", pyramid = true, PipelineKeyIndexMethod("zorder"), scheme, `type` = WriteTypes.SpatialHadoopType))
-      //val write2n = HadoopWrite(write1n, json.write.JsonWrite("write2n", "/tmp", pyramid = true, PipelineKeyIndexMethod("zorder"), scheme, `type` = WriteTypes.SpatialHadoopType))
-      //val write3n = HadoopWrite(write2n, null)
 
       println
       println
@@ -74,13 +69,6 @@ class AstSpec extends FunSpec
       println(write3.validation)
       println
       println
-      /*println(write1n)
-      println
-      println(write2n)
-      println
-      println(write3n.validation)
-      println
-      println*/
 
 
       println
@@ -104,13 +92,6 @@ class AstSpec extends FunSpec
 
       val jsonWrite1 = json.write.JsonWrite("write1", "/tmp", PipelineKeyIndexMethod("zorder"), scheme, `type` = WriteTypes.SpatialHadoopType)
       val jsonWrite2 = json.write.JsonWrite("write2", "/tmp", PipelineKeyIndexMethod("zorder"), scheme, `type` = WriteTypes.SpatialHadoopType)
-
-      /*val njsonRead = ErasedJsonNode(jsonRead)
-      val njsonTileToLayout = ErasedJsonNode(jsonTileToLayout)
-      val njsonReproject = ErasedJsonNode(jsonReproject)
-      val njsonPyramid = ErasedJsonNode(jsonPyramid)
-      val njsonWrite1 = ErasedJsonNode(jsonWrite1)
-      val njsonWrite2 = ErasedJsonNode(jsonWrite2)*/
 
       val list: List[PipelineExpr] = List(jsonRead, jsonTileToLayout, jsonReproject, jsonPyramid, jsonWrite1, jsonWrite2)
 
@@ -247,8 +228,10 @@ class AstSpec extends FunSpec
       case Left(e) => throw e
     }
 
+    val erasedNode = list.erasedNode
+
     intercept[Exception] {
-      Try { list.unsafeRun } match {
+      Try { erasedNode.unsafeRun } match {
         case Failure(e) => println("unsafeRun failed as expected"); throw e
         case _ =>
       }
@@ -256,7 +239,7 @@ class AstSpec extends FunSpec
 
     intercept[Exception] {
       Try {
-        list.run[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]
+        erasedNode.run[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]
       } match {
         case Failure(e) => println("run failed as expected"); throw e
         case _ =>
