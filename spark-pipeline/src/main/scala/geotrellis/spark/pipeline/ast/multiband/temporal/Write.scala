@@ -9,10 +9,10 @@ import geotrellis.spark.pipeline.json.write
 
 import org.apache.spark.SparkContext
 
-case class HadoopWrite(
+case class Write(
   node: Node[Stream[(Int, MultibandTileLayerRDD[SpaceTimeKey])]],
   arg: write.JsonWrite
-) extends Write[Stream[(Int, MultibandTileLayerRDD[SpaceTimeKey])]] {
+) extends Output[Stream[(Int, MultibandTileLayerRDD[SpaceTimeKey])]] {
   def asJson = node.asJson :+ arg.asJson
-  def get(implicit sc: SparkContext): Stream[(Int, MultibandTileLayerRDD[SpaceTimeKey])] = Write.eval(arg)(node.get)
+  def get(implicit sc: SparkContext): Stream[(Int, MultibandTileLayerRDD[SpaceTimeKey])] = Output.eval(arg)(node.get)
 }

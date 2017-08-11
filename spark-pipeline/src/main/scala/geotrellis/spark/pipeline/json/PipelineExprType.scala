@@ -142,29 +142,17 @@ object TransformTypes {
 }
 
 object WriteTypes {
-  trait WriteType
-  trait FileType { sef: PipelineExprType => val `type`: String = "write.file" }
-  case object TemporalFileType extends WriteType with SinglebandTemporalExprType with FileType
-  case object SpatialFileType extends WriteType with SinglebandSpatialExprType with FileType
-  case object MultibandTemporalFileType extends WriteType with MultibandTemporalExprType with FileType
-  case object MultibandSpatialFileType extends WriteType with MultibandSpatialExprType with FileType
-
-  trait HadoopType { sef: PipelineExprType => val `type`: String = "write.hadoop" }
-  case object TemporalHadoopType extends WriteType with SinglebandTemporalExprType with HadoopType
-  case object SpatialHadoopType extends WriteType with SinglebandSpatialExprType with HadoopType
-  case object MultibandTemporalHadoopType extends WriteType with MultibandTemporalExprType with HadoopType
-  case object MultibandSpatialHadoopType extends WriteType with MultibandSpatialExprType with HadoopType
+  trait WriteType { sef: PipelineExprType => val `type`: String = "write" }
+  case object TemporalType extends SinglebandTemporalExprType with WriteType
+  case object SpatialType extends SinglebandSpatialExprType with WriteType
+  case object MultibandTemporalType extends MultibandTemporalExprType with WriteType
+  case object MultibandSpatialType extends MultibandSpatialExprType with WriteType
 
   def fromName(name: String) = name match {
-    case TemporalFileType.getName => TemporalFileType
-    case SpatialFileType.getName => SpatialFileType
-    case MultibandTemporalFileType.getName => MultibandTemporalFileType
-    case MultibandSpatialFileType.getName => MultibandSpatialFileType
-
-    case TemporalHadoopType.getName => TemporalHadoopType
-    case SpatialHadoopType.getName => SpatialHadoopType
-    case MultibandTemporalHadoopType.getName => MultibandTemporalHadoopType
-    case MultibandSpatialHadoopType.getName => MultibandSpatialHadoopType
+    case TemporalType.getName => TemporalType
+    case SpatialType.getName => SpatialType
+    case MultibandTemporalType.getName => MultibandTemporalType
+    case MultibandSpatialType.getName => MultibandSpatialType
 
     case _ =>
       throw new UnsupportedOperationException(

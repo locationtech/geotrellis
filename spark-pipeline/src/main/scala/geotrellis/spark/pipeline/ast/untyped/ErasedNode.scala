@@ -6,7 +6,6 @@ import geotrellis.spark.pipeline.ast
 import geotrellis.spark.pipeline.ast._
 import geotrellis.spark.pipeline.json.transform
 import geotrellis.spark.pipeline.json.TransformTypes._
-import geotrellis.spark.pipeline.json.WriteTypes._
 import geotrellis.spark.pipeline.json._
 import geotrellis.spark.pipeline.json.read._
 import geotrellis.vector._
@@ -96,7 +95,6 @@ case class ErasedTypedNode[Domain: TypeTag, Range: TypeTag](constructor: Node[Do
 
   def rangeTpe = rangeTag.tpe
 
-  // TODO: replace with shapeless Typeable
   def maybeApply(x: Any): Option[Node[Any]] =
     Try { x.asInstanceOf[Node[Domain]] }
       .toOption
@@ -106,10 +104,10 @@ case class ErasedTypedNode[Domain: TypeTag, Range: TypeTag](constructor: Node[Do
 
 /** Helper functions to convert typed nodes into erased typed nodes */
 object ErasedTypedNode {
-  def fromRead[Range: TypeTag](node: ast.Read[Range]) =
+  def fromRead[Range: TypeTag](node: Input[Range]) =
     ErasedTypedNode[RealWorld, Range](_ => node)
 
-  def fromWrite[Range: TypeTag](constructor: Node[Range] => ast.Write[Range]) =
+  def fromWrite[Range: TypeTag](constructor: Node[Range] => Output[Range]) =
     ErasedTypedNode[Range, Range](constructor)
 
   def fromTransform[Domain: TypeTag, Range: TypeTag](constructor: Node[Domain] => ast.Transform[Domain, Range]) =
@@ -140,14 +138,8 @@ case class ErasedJsonNode(arg: PipelineExpr) {
                 ErasedTypedNode.fromTransform { child: Node[RDD[(ProjectedExtent, Tile)]] => PerTileReproject(child, a) }
             }
           }
-          case a: write.JsonWrite => {
-            arg.`type` match {
-              case _: HadoopType =>
-                ErasedTypedNode.fromWrite { child: Node[Stream[(Int, TileLayerRDD[SpatialKey])]] => HadoopWrite(child, a) }
-              case _: FileType =>
-                ErasedTypedNode.fromWrite { child: Node[Stream[(Int, TileLayerRDD[SpatialKey])]] => FileWrite(child, a) }
-            }
-          }
+          case a: write.JsonWrite =>
+            ErasedTypedNode.fromWrite { child: Node[Stream[(Int, TileLayerRDD[SpatialKey])]] => Write(child, a) }
         }
       }
       case _: SinglebandTemporalExprType => {
@@ -169,14 +161,8 @@ case class ErasedJsonNode(arg: PipelineExpr) {
                 ErasedTypedNode.fromTransform { child: Node[RDD[(TemporalProjectedExtent, Tile)]] => PerTileReproject(child, a) }
             }
           }
-          case a: write.JsonWrite => {
-            arg.`type` match {
-              case _: HadoopType =>
-                ErasedTypedNode.fromWrite { child: Node[Stream[(Int, TileLayerRDD[SpaceTimeKey])]] => HadoopWrite(child, a) }
-              case _: FileType =>
-                ErasedTypedNode.fromWrite { child: Node[Stream[(Int, TileLayerRDD[SpaceTimeKey])]] => FileWrite(child, a) }
-            }
-          }
+          case a: write.JsonWrite =>
+            ErasedTypedNode.fromWrite { child: Node[Stream[(Int, TileLayerRDD[SpaceTimeKey])]] => Write(child, a) }
         }
       }
       case _: MultibandSpatialExprType => {
@@ -198,14 +184,8 @@ case class ErasedJsonNode(arg: PipelineExpr) {
                 ErasedTypedNode.fromTransform { child: Node[RDD[(ProjectedExtent, MultibandTile)]] => PerTileReproject(child, a) }
             }
           }
-          case a: write.JsonWrite => {
-            arg.`type` match {
-              case _: HadoopType =>
-                ErasedTypedNode.fromWrite { child: Node[Stream[(Int, MultibandTileLayerRDD[SpatialKey])]] => HadoopWrite(child, a) }
-              case _: FileType =>
-                ErasedTypedNode.fromWrite { child: Node[Stream[(Int, MultibandTileLayerRDD[SpatialKey])]] => FileWrite(child, a) }
-            }
-          }
+          case a: write.JsonWrite =>
+            ErasedTypedNode.fromWrite { child: Node[Stream[(Int, MultibandTileLayerRDD[SpatialKey])]] => Write(child, a) }
         }
       }
       case _: MultibandTemporalExprType => {
@@ -227,14 +207,8 @@ case class ErasedJsonNode(arg: PipelineExpr) {
                 ErasedTypedNode.fromTransform { child: Node[RDD[(TemporalProjectedExtent, MultibandTile)]] => PerTileReproject(child, a) }
             }
           }
-          case a: write.JsonWrite => {
-            arg.`type` match {
-              case _: HadoopType =>
-                ErasedTypedNode.fromWrite { child: Node[Stream[(Int, MultibandTileLayerRDD[SpaceTimeKey])]] => HadoopWrite(child, a) }
-              case _: FileType =>
-                ErasedTypedNode.fromWrite { child: Node[Stream[(Int, MultibandTileLayerRDD[SpaceTimeKey])]] => FileWrite(child, a) }
-            }
-          }
+          case a: write.JsonWrite =>
+            ErasedTypedNode.fromWrite { child: Node[Stream[(Int, MultibandTileLayerRDD[SpaceTimeKey])]] => Write(child, a) }
         }
       }
     }
