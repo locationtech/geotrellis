@@ -13,5 +13,4 @@ case class HadoopRead(arg: read.JsonRead) extends Read[RDD[(TemporalProjectedExt
   def asJson = arg.asJson :: Nil
   def get(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, MultibandTile)] =
     Read.evalTemporalMultibandHadoop(arg)
-  def validate: (Boolean, String) = validation
 }

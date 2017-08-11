@@ -3,6 +3,7 @@ package geotrellis.spark.pipeline.json.reindex
 import geotrellis.spark.pipeline.json._
 import io.circe.generic.extras.ConfiguredJsonCodec
 
+// TODO: implement node for these PipelineExpr
 trait Reindex extends PipelineExpr {
   val name: String
   val profile: String
