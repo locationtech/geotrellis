@@ -1,5 +1,6 @@
 package geotrellis.spark.pipeline.ast
 
+import geotrellis.spark.pipeline._
 import geotrellis.spark.pipeline.json
 import geotrellis.spark.pipeline.json._
 import geotrellis.spark.pipeline.ast.untyped._
@@ -24,8 +25,8 @@ class AstSpec extends FunSpec
       val reproject = BufferedReproject(tiled, json.transform.Reproject("", scheme, `type` = TransformTypes.SpatialBufferedReprojectType))
       val pyramid = Pyramid(reproject, json.transform.Pyramid(`type` = TransformTypes.SpatialPyramidType))
 
-      val write1 = HadoopWrite(pyramid, json.write.JsonWrite("write1", "/tmp", PipelineKeyIndexMethod("zorder"), scheme, `type` = WriteTypes.SpatialHadoopType))
-      val write2 = HadoopWrite(write1, json.write.JsonWrite("write2", "/tmp", PipelineKeyIndexMethod("zorder"), scheme, `type` = WriteTypes.SpatialHadoopType))
+      val write1 = Write(pyramid, json.write.JsonWrite("write1", "/tmp", PipelineKeyIndexMethod("zorder"), scheme, `type` = WriteTypes.SpatialType))
+      val write2 = Write(write1, json.write.JsonWrite("write2", "/tmp", PipelineKeyIndexMethod("zorder"), scheme, `type` = WriteTypes.SpatialType))
 
       println("------------------")
       println
@@ -50,21 +51,21 @@ class AstSpec extends FunSpec
       val jsonReproject = json.transform.Reproject("", scheme, `type` = TransformTypes.SpatialBufferedReprojectType)
       val jsonPyramid = json.transform.Pyramid(`type` = TransformTypes.SpatialPyramidType)
 
-      val jsonWrite1 = json.write.JsonWrite("write1", "/tmp", PipelineKeyIndexMethod("zorder"), scheme, `type` = WriteTypes.SpatialHadoopType)
-      val jsonWrite2 = json.write.JsonWrite("write2", "/tmp", PipelineKeyIndexMethod("zorder"), scheme, `type` = WriteTypes.SpatialHadoopType)
+      val jsonWrite1 = json.write.JsonWrite("write1", "/tmp", PipelineKeyIndexMethod("zorder"), scheme, `type` = WriteTypes.SpatialType)
+      val jsonWrite2 = json.write.JsonWrite("write2", "/tmp", PipelineKeyIndexMethod("zorder"), scheme, `type` = WriteTypes.SpatialType)
 
       val list = jsonRead ~ jsonTileToLayout ~ jsonReproject ~ jsonPyramid ~ jsonWrite1 ~ jsonWrite2
 
       val typedAst =
         list
-          .node[Write[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]]
+          .node[Output[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]]
 
       val untypedAst = list.erasedNode
 
       ErasedUtils.eprint(untypedAst)
 
       val typedAst2 =
-        untypedAst.node[Write[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]]
+        untypedAst.node[Output[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]]
 
       println("------------------")
       println(typedAst.prettyPrint)
@@ -75,7 +76,6 @@ class AstSpec extends FunSpec
   }
 
   it("Untyped JAST") {
-    import geotrellis.spark.pipeline.ast.untyped.Implicits._
     val js: String =
       """
         |[
@@ -114,7 +114,7 @@ class AstSpec extends FunSpec
         |      "tileCols" : 512,
         |      "tileRows" : 512
         |    },
-        |    "type" : "singleband.spatial.write.hadoop"
+        |    "type" : "singleband.spatial.write"
         |  }
         |]
       """.stripMargin
@@ -126,14 +126,14 @@ class AstSpec extends FunSpec
 
     val typedAst =
       list
-        .node[Write[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]]
+        .node[Output[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]]
 
     val untypedAst = list.erasedNode
 
     ErasedUtils.eprint(untypedAst)
 
     val typedAst2 =
-      untypedAst.node[Write[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]]
+      untypedAst.node[Output[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]]
 
     println("------------------")
     println(typedAst.prettyPrint)
@@ -143,7 +143,6 @@ class AstSpec extends FunSpec
   }
 
   it("Untyped JAST runnable") {
-    import geotrellis.spark.pipeline.ast.untyped.Implicits._
     val js: String =
       """
         |[
@@ -182,7 +181,7 @@ class AstSpec extends FunSpec
         |      "tileCols" : 512,
         |      "tileRows" : 512
         |    },
-        |    "type" : "singleband.spatial.write.hadoop"
+        |    "type" : "singleband.spatial.write"
         |  }
         |]
       """.stripMargin

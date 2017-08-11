@@ -4,13 +4,13 @@ import io.circe.syntax._
 
 import geotrellis.raster._
 import geotrellis.spark.TemporalProjectedExtent
-import geotrellis.spark.pipeline.ast.Read
+import geotrellis.spark.pipeline.ast.Input
 import geotrellis.spark.pipeline.json.read
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-case class HadoopRead(arg: read.JsonRead) extends Read[RDD[(TemporalProjectedExtent, Tile)]] {
+case class HadoopRead(arg: read.JsonRead) extends Input[RDD[(TemporalProjectedExtent, Tile)]] {
   def asJson = arg.asJson :: Nil
-  def get(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, Tile)] = Read.evalTemporalHadoop(arg)
+  def get(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, Tile)] = Input.evalTemporalHadoop(arg)
 }

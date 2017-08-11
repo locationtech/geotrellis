@@ -15,9 +15,9 @@ import spray.json.JsonFormat
 
 import scala.reflect.ClassTag
 
-trait Write[T] extends Node[T]
+trait Output[T] extends Node[T]
 
-object Write extends LazyLogging {
+object Output extends LazyLogging {
   def eval[
     K: SpatialComponent : AvroRecordCodec : JsonFormat : ClassTag,
     V <: CellGrid : AvroRecordCodec : ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
