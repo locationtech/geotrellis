@@ -8,9 +8,5 @@ import org.apache.spark.SparkContext
 trait Node[T] {
   def get(implicit sc: SparkContext): T
   def arg: PipelineExpr
-  def validation: (Boolean, String) = {
-    if (arg == null) (false, s"null")
-    else (true, "")
-  }
   def asJson: List[Json]
 }

@@ -17,10 +17,4 @@ case class BufferedReproject(
 ) extends Transform[TileLayerRDD[SpatialKey], TileLayerRDD[SpatialKey]] {
   def asJson = node.asJson :+ arg.asJson
   def get(implicit sc: SparkContext): TileLayerRDD[SpatialKey] = Transform.bufferedReproject(arg)(node.get)
-  def validate: (Boolean, String) = {
-    val (f, msg) = if (node == null) (false, s"${this.getClass} has no node")
-    else node.validation
-    val (fs, msgs) = validation
-    (f && fs, msgs ++ msg)
-  }
 }

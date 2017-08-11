@@ -161,6 +161,7 @@ trait Implicits extends LazyLogging {
       Either.catchNonFatal(PipelineExprType.fromName(str)).leftMap(_ => "PipelineExprType")
     }
 
+  // TODO: Implement user defined PipelineExpr Encoders and Decoders support
   implicit val pipelineExprEncode: Encoder[PipelineExpr] =
     Encoder.instance { expr: PipelineExpr =>
       expr match {
@@ -176,57 +177,26 @@ trait Implicits extends LazyLogging {
       }
     }
 
-  // TODO: Implement a better PipelineExpr decoder
+  // TODO: Probably json tags support is required, this decoder logic may change in a near future
   implicit val pipelineExprDecode: Decoder[PipelineExpr] =
-    Decoder.decodeJson.emap { json =>
-      val result: Either[DecodingFailure, PipelineExpr] = json.as[JsonWrite] match {
-        case right @ Right(_) => right
-        case Left(_) =>
-          json.as[JsonRead] match {
-            case right @ Right(_) => right
-            case Left(_) =>
-              json.as[JsonReindex] match {
-                case right @ Right(_) => right
-                case Left(_) =>
-                  json.as[JsonUpdate] match {
-                    case right @ Right(_) => right
-                    case Left(_) =>
-                      json.as[Reproject] match {
-                        case right @ Right(_) => right
-                        case Left(_) =>
-                          json.as[TileToLayout] match {
-                            case right @ Right(_) => {
-                              right.flatMap { r =>
-                                if (r.`type`.name.contains("retile")) {
-                                  json.as[RetileToLayout] match {
-                                    case right @ Right(_) => right
-                                    case Left(e) => throw e
-                                  }
-                                } else if (r.`type`.name.contains("pyramid")) {
-                                  json.as[Pyramid] match {
-                                    case right @ Right(_) => right
-                                    case Left(e) => throw e
-                                  }
-                                } else right
-                              }
-                            }
-                            case Left(_) =>
-                              json.as[RetileToLayout] match {
-                                case right @ Right(_) => right
-                                case Left(_) =>
-                                  json.as[Pyramid] match {
-                                    case right @ Right(_) => right
-                                    case Left(e) =>
-                                      throw e
-                                  }
-                              }
-                          }
-                      }
-                  }
+    Decoder.instance { hcursor =>
+      val ftype = hcursor.downField("type")
+      ftype.as[PipelineExprType] match {
+        case Right(exprType) =>
+          exprType match {
+            case _: ReadTypes.ReadType   => hcursor.as[JsonRead]
+            case _: WriteTypes.WriteType => hcursor.as[JsonWrite]
+            case _: TransformTypes.TransformType =>
+              exprType match {
+                case _: TransformTypes.PerTileReprojectType  => hcursor.as[Reproject]
+                case _: TransformTypes.BufferedReprojectType => hcursor.as[Reproject]
+                case _: TransformTypes.TileToLayoutType      => hcursor.as[TileToLayout]
+                case _: TransformTypes.RetileToLayoutType    => hcursor.as[RetileToLayout]
+                case _: TransformTypes.PyramidType           => hcursor.as[Pyramid]
               }
           }
+        case Left(e) =>
+          throw new UnsupportedOperationException(s"Type $ftype is not supported by a default PipelineExpr decoder").initCause(e)
       }
-
-      result.leftMap(_ => "PipelineExpr")
     }
 }

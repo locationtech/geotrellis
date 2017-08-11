@@ -8,6 +8,8 @@ import io.circe.generic.extras.ConfiguredJsonCodec
 
 trait Transform extends PipelineExpr
 
+// TODO: implement node for these PipelineExpressions
+// Not all functions are yet supported
 /** Rename Inputs into groups */
 @ConfiguredJsonCodec
 case class Group(

@@ -45,17 +45,18 @@ trait MultibandSpatialExprType extends SpatialExprType {
 }
 
 object ReadTypes {
+  trait ReadType
   trait S3ReadType { self: PipelineExprType => val `type`: String = "read.s3" }
-  case object TemporalS3Type extends SinglebandTemporalExprType with S3ReadType
-  case object SpatialS3Type extends SinglebandSpatialExprType with S3ReadType
-  case object MultibandTemporalS3Type extends MultibandTemporalExprType with S3ReadType
-  case object MultibandSpatialS3Type extends MultibandSpatialExprType with S3ReadType
+  case object TemporalS3Type extends ReadType with SinglebandTemporalExprType with S3ReadType
+  case object SpatialS3Type extends ReadType with SinglebandSpatialExprType with S3ReadType
+  case object MultibandTemporalS3Type extends ReadType with MultibandTemporalExprType with S3ReadType
+  case object MultibandSpatialS3Type extends ReadType with MultibandSpatialExprType with S3ReadType
 
   trait HadoopReadType { self: PipelineExprType => val `type`: String = "read.hadoop" }
-  case object TemporalHadoopType extends SinglebandTemporalExprType with HadoopReadType
-  case object SpatialHadoopType extends SinglebandSpatialExprType with HadoopReadType
-  case object MultibandTemporalHadoopType extends MultibandTemporalExprType with HadoopReadType
-  case object MultibandSpatialHadoopType extends MultibandSpatialExprType with HadoopReadType
+  case object TemporalHadoopType extends ReadType with SinglebandTemporalExprType with HadoopReadType
+  case object SpatialHadoopType extends ReadType with SinglebandSpatialExprType with HadoopReadType
+  case object MultibandTemporalHadoopType extends ReadType with MultibandTemporalExprType with HadoopReadType
+  case object MultibandSpatialHadoopType extends ReadType with MultibandSpatialExprType with HadoopReadType
 
   def fromName(name: String) = name match {
     case TemporalS3Type.getName => TemporalS3Type
@@ -76,35 +77,36 @@ object ReadTypes {
 }
 
 object TransformTypes {
+  trait TransformType
   trait PerTileReprojectType { self: PipelineExprType => val `type`: String = "transform.per-tile-reproject" }
-  case object TemporalPerTileReprojectType extends SinglebandTemporalExprType with PerTileReprojectType
-  case object SpatialPerTileReprojectType extends SinglebandSpatialExprType with PerTileReprojectType
-  case object MultibandTemporalPerTileReprojectType extends MultibandTemporalExprType with PerTileReprojectType
-  case object MultibandSpatialPerTileReprojectType extends MultibandSpatialExprType with PerTileReprojectType
+  case object TemporalPerTileReprojectType extends TransformType with SinglebandTemporalExprType with PerTileReprojectType
+  case object SpatialPerTileReprojectType extends TransformType with SinglebandSpatialExprType with PerTileReprojectType
+  case object MultibandTemporalPerTileReprojectType extends TransformType with MultibandTemporalExprType with PerTileReprojectType
+  case object MultibandSpatialPerTileReprojectType extends TransformType with MultibandSpatialExprType with PerTileReprojectType
 
   trait BufferedReprojectType { self: PipelineExprType => val `type`: String = "transform.buffered-reproject" }
-  case object TemporalBufferedReprojectType extends SinglebandTemporalExprType with BufferedReprojectType
-  case object SpatialBufferedReprojectType extends SinglebandSpatialExprType with BufferedReprojectType
-  case object MultibandTemporalBufferedReprojectType extends MultibandTemporalExprType with BufferedReprojectType
-  case object MultibandSpatialBufferedReprojectType extends MultibandSpatialExprType with BufferedReprojectType
+  case object TemporalBufferedReprojectType extends TransformType with SinglebandTemporalExprType with BufferedReprojectType
+  case object SpatialBufferedReprojectType extends TransformType with SinglebandSpatialExprType with BufferedReprojectType
+  case object MultibandTemporalBufferedReprojectType extends TransformType with MultibandTemporalExprType with BufferedReprojectType
+  case object MultibandSpatialBufferedReprojectType extends TransformType with MultibandSpatialExprType with BufferedReprojectType
 
   trait TileToLayoutType { self: PipelineExprType => val `type`: String = "transform.tile-to-layout" }
-  case object TemporalTileToLayoutType extends SinglebandTemporalExprType with TileToLayoutType
-  case object SpatialTileToLayoutType extends SinglebandSpatialExprType with TileToLayoutType
-  case object MultibandTemporalTileToLayoutType extends MultibandTemporalExprType with TileToLayoutType
-  case object MultibandSpatialTileToLayoutType extends MultibandSpatialExprType with TileToLayoutType
+  case object TemporalTileToLayoutType extends TransformType with SinglebandTemporalExprType with TileToLayoutType
+  case object SpatialTileToLayoutType extends TransformType with SinglebandSpatialExprType with TileToLayoutType
+  case object MultibandTemporalTileToLayoutType extends TransformType with MultibandTemporalExprType with TileToLayoutType
+  case object MultibandSpatialTileToLayoutType extends TransformType with MultibandSpatialExprType with TileToLayoutType
 
   trait RetileToLayoutType { self: PipelineExprType => val `type`: String = "transform.retile-to-layout" }
-  case object TemporalRetileToLayoutType extends SinglebandTemporalExprType with RetileToLayoutType
-  case object SpatialRetileToLayoutType extends SinglebandSpatialExprType with RetileToLayoutType
-  case object MultibandTemporalRetileToLayoutType extends MultibandTemporalExprType with RetileToLayoutType
-  case object MultibandSpatialRetileToLayoutType extends MultibandSpatialExprType with RetileToLayoutType
+  case object TemporalRetileToLayoutType extends TransformType with SinglebandTemporalExprType with RetileToLayoutType
+  case object SpatialRetileToLayoutType extends TransformType with SinglebandSpatialExprType with RetileToLayoutType
+  case object MultibandTemporalRetileToLayoutType extends TransformType with MultibandTemporalExprType with RetileToLayoutType
+  case object MultibandSpatialRetileToLayoutType extends TransformType with MultibandSpatialExprType with RetileToLayoutType
 
   trait PyramidType { self: PipelineExprType => val `type`: String = "transform.pyramid" }
-  case object TemporalPyramidType extends SinglebandTemporalExprType with PyramidType
-  case object SpatialPyramidType extends SinglebandSpatialExprType with PyramidType
-  case object MultibandTemporalPyramidType extends MultibandTemporalExprType with PyramidType
-  case object MultibandSpatialPyramidType extends MultibandSpatialExprType with PyramidType
+  case object TemporalPyramidType extends TransformType with SinglebandTemporalExprType with PyramidType
+  case object SpatialPyramidType extends TransformType with SinglebandSpatialExprType with PyramidType
+  case object MultibandTemporalPyramidType extends TransformType with MultibandTemporalExprType with PyramidType
+  case object MultibandSpatialPyramidType extends TransformType with MultibandSpatialExprType with PyramidType
 
   def fromName(name: String) = name match {
     case TemporalPerTileReprojectType.getName => TemporalPerTileReprojectType
@@ -140,17 +142,18 @@ object TransformTypes {
 }
 
 object WriteTypes {
+  trait WriteType
   trait FileType { sef: PipelineExprType => val `type`: String = "write.file" }
-  case object TemporalFileType extends SinglebandTemporalExprType with FileType
-  case object SpatialFileType extends SinglebandSpatialExprType with FileType
-  case object MultibandTemporalFileType extends MultibandTemporalExprType with FileType
-  case object MultibandSpatialFileType extends MultibandSpatialExprType with FileType
+  case object TemporalFileType extends WriteType with SinglebandTemporalExprType with FileType
+  case object SpatialFileType extends WriteType with SinglebandSpatialExprType with FileType
+  case object MultibandTemporalFileType extends WriteType with MultibandTemporalExprType with FileType
+  case object MultibandSpatialFileType extends WriteType with MultibandSpatialExprType with FileType
 
   trait HadoopType { sef: PipelineExprType => val `type`: String = "write.hadoop" }
-  case object TemporalHadoopType extends SinglebandTemporalExprType with HadoopType
-  case object SpatialHadoopType extends SinglebandSpatialExprType with HadoopType
-  case object MultibandTemporalHadoopType extends MultibandTemporalExprType with HadoopType
-  case object MultibandSpatialHadoopType extends MultibandSpatialExprType with HadoopType
+  case object TemporalHadoopType extends WriteType with SinglebandTemporalExprType with HadoopType
+  case object SpatialHadoopType extends WriteType with SinglebandSpatialExprType with HadoopType
+  case object MultibandTemporalHadoopType extends WriteType with MultibandTemporalExprType with HadoopType
+  case object MultibandSpatialHadoopType extends WriteType with MultibandSpatialExprType with HadoopType
 
   def fromName(name: String) = name match {
     case TemporalFileType.getName => TemporalFileType

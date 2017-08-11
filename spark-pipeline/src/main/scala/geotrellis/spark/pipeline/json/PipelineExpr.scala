@@ -11,4 +11,3 @@ trait PipelineExpr extends LazyLogging {
 
   val `type`: PipelineExprType
 }
-
