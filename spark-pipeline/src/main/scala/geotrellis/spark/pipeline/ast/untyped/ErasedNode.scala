@@ -11,6 +11,7 @@ import geotrellis.spark.pipeline.json._
 import geotrellis.spark.pipeline.json.read._
 import geotrellis.vector._
 
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.runtime.universe.{TypeTag, typeTag}
@@ -21,7 +22,6 @@ import scala.util.Try
   * Erased node type, represents a typed Node with types kept inside.
   * It is a function, as it should operate with nodes constructor types
   * and to "compose" untyped nodes.
-  *
   */
 trait ErasedNode extends (Any => Any) {
   def maybeApply(x: Any): Option[Any]
@@ -33,10 +33,22 @@ trait ErasedNode extends (Any => Any) {
 
   def apply(): Any = apply(RealWorld.instance)
 
-  def get[T <: Node[_]: TypeTag]: T = {
+  /** Get the typed node without its computation. */
+  def node[T <: Node[_]: TypeTag]: T = {
     val thatTpe = typeTag[T].tpe
     if(thatTpe.toString.contains(rangeTpe.toString)) apply().asInstanceOf[T]
     else throw new Exception(s"Cannot cast ErasedNode to $thatTpe " +
+      s"since it cannot be cast to $rangeTpe")
+  }
+
+  /** Compute the result of the node without. */
+  def unsafeRun(implicit sc: SparkContext): Any = apply().asInstanceOf[Node[Any]].get
+
+  /** Compute the result of the node and cast to type T. */
+  def run[T: TypeTag](implicit sc: SparkContext): T = {
+    val thatTpe = typeTag[T].tpe
+    if(thatTpe.toString.contains(rangeTpe.toString)) unsafeRun.asInstanceOf[T]
+    else throw new Exception(s"Cannot cast ErasedNode evaluation result to $thatTpe " +
       s"since it cannot be cast to $rangeTpe")
   }
 
@@ -105,9 +117,7 @@ object ErasedTypedNode {
     ErasedTypedNode[Domain, Range](constructor)
 }
 
-/**
-  * Class that allows to convert node json representation into an ErasedNode
-  */
+/** Class that allows to convert node json representation into an ErasedNode */
 case class ErasedJsonNode(arg: PipelineExpr) {
   // TODO: support user defined types
   def toErasedNode: ErasedNode = {
