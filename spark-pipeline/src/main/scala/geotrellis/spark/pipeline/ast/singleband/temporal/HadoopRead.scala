@@ -12,5 +12,5 @@ import org.apache.spark.rdd.RDD
 
 case class HadoopRead(arg: read.JsonRead) extends Input[RDD[(TemporalProjectedExtent, Tile)]] {
   def asJson = arg.asJson :: Nil
-  def get(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, Tile)] = Input.evalTemporalHadoop(arg)
+  def get(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, Tile)] = Input.temporalHadoop(arg)
 }

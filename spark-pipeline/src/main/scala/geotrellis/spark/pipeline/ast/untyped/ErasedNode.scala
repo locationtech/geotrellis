@@ -40,7 +40,7 @@ trait ErasedNode extends (Any => Any) {
       s"since it cannot be cast to $rangeTpe")
   }
 
-  /** Compute the result of the node without. */
+  /** Compute the result of the node. */
   def unsafeRun(implicit sc: SparkContext): Any = apply().asInstanceOf[Node[Any]].get
 
   /** Compute the result of the node and cast to type T. */
@@ -122,8 +122,12 @@ case class ErasedJsonNode(arg: PipelineExpr) {
       case _: SinglebandSpatialExprType => {
         import singleband.spatial._
         arg match {
-          case a: JsonRead =>
-            ErasedTypedNode.fromRead(HadoopRead(a))
+          case a: JsonRead => {
+            arg.`type` match {
+              case _: ReadTypes.HadoopReadType => ErasedTypedNode.fromRead(HadoopRead(a))
+              case _: ReadTypes.S3ReadType => ErasedTypedNode.fromRead(S3Read(a))
+            }
+          }
           case a: transform.TileToLayout =>
             ErasedTypedNode.fromTransform { child: Node[RDD[(ProjectedExtent, Tile)]] => TileToLayout(child, a) }
           case a: transform.RetileToLayout =>
@@ -145,8 +149,12 @@ case class ErasedJsonNode(arg: PipelineExpr) {
       case _: SinglebandTemporalExprType => {
         import singleband.temporal._
         arg match {
-          case a: JsonRead =>
-            ErasedTypedNode.fromRead(HadoopRead(a))
+          case a: JsonRead => {
+            arg.`type` match {
+              case _: ReadTypes.HadoopReadType => ErasedTypedNode.fromRead(HadoopRead(a))
+              case _: ReadTypes.S3ReadType => ErasedTypedNode.fromRead(S3Read(a))
+            }
+          }
           case a: transform.TileToLayout =>
             ErasedTypedNode.fromTransform { child: Node[RDD[(TemporalProjectedExtent, Tile)]] => TileToLayout(child, a) }
           case a: transform.RetileToLayout =>
@@ -168,8 +176,12 @@ case class ErasedJsonNode(arg: PipelineExpr) {
       case _: MultibandSpatialExprType => {
         import multiband.spatial._
         arg match {
-          case a: JsonRead =>
-            ErasedTypedNode.fromRead(HadoopRead(a))
+          case a: JsonRead => {
+            arg.`type` match {
+              case _: ReadTypes.HadoopReadType => ErasedTypedNode.fromRead(HadoopRead(a))
+              case _: ReadTypes.S3ReadType => ErasedTypedNode.fromRead(S3Read(a))
+            }
+          }
           case a: transform.TileToLayout =>
             ErasedTypedNode.fromTransform { child: Node[RDD[(ProjectedExtent, MultibandTile)]] => TileToLayout(child, a) }
           case a: transform.RetileToLayout =>
@@ -191,8 +203,12 @@ case class ErasedJsonNode(arg: PipelineExpr) {
       case _: MultibandTemporalExprType => {
         import multiband.temporal._
         arg match {
-          case a: JsonRead =>
-            ErasedTypedNode.fromRead(HadoopRead(a))
+          case a: JsonRead => {
+            arg.`type` match {
+              case _: ReadTypes.HadoopReadType => ErasedTypedNode.fromRead(HadoopRead(a))
+              case _: ReadTypes.S3ReadType => ErasedTypedNode.fromRead(S3Read(a))
+            }
+          }
           case a: transform.TileToLayout =>
             ErasedTypedNode.fromTransform { child: Node[RDD[(TemporalProjectedExtent, MultibandTile)]] => TileToLayout(child, a) }
           case a: transform.RetileToLayout =>
