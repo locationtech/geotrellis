@@ -15,7 +15,7 @@ import org.apache.spark.rdd.RDD
 trait Input[T] extends Node[T]
 
 object Input {
-  def evalSpatialS3(arg: JsonRead)(implicit sc: SparkContext): RDD[(ProjectedExtent, Tile)] = {
+  def spatialS3(arg: JsonRead)(implicit sc: SparkContext): RDD[(ProjectedExtent, Tile)] = {
     val s3Uri = new AmazonS3URI(arg.uri)
     S3GeoTiffRDD.spatial(
       s3Uri.getBucket, s3Uri.getKey,
@@ -30,7 +30,7 @@ object Input {
     )
   }
 
-  def evalSpatialMultibandS3(arg: JsonRead)(implicit sc: SparkContext): RDD[(ProjectedExtent, MultibandTile)] = {
+  def spatialMultibandS3(arg: JsonRead)(implicit sc: SparkContext): RDD[(ProjectedExtent, MultibandTile)] = {
     val s3Uri = new AmazonS3URI(arg.uri)
     S3GeoTiffRDD.spatialMultiband(
       s3Uri.getBucket, s3Uri.getKey,
@@ -45,7 +45,7 @@ object Input {
     )
   }
 
-  def evalTemporalS3(arg: JsonRead)(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, Tile)] = {
+  def temporalS3(arg: JsonRead)(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, Tile)] = {
     val s3Uri = new AmazonS3URI(arg.uri)
     S3GeoTiffRDD.temporal(
       s3Uri.getBucket, s3Uri.getKey,
@@ -62,7 +62,7 @@ object Input {
     )
   }
 
-  def evalTemporalMultibandS3(arg: JsonRead)(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, MultibandTile)] = {
+  def temporalMultibandS3(arg: JsonRead)(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, MultibandTile)] = {
     val s3Uri = new AmazonS3URI(arg.uri)
     S3GeoTiffRDD.temporalMultiband(
       s3Uri.getBucket, s3Uri.getKey,
@@ -79,7 +79,7 @@ object Input {
     )
   }
 
-  def evalSpatialHadoop(arg: JsonRead)(implicit sc: SparkContext): RDD[(ProjectedExtent, Tile)] = {
+  def spatialHadoop(arg: JsonRead)(implicit sc: SparkContext): RDD[(ProjectedExtent, Tile)] = {
     HadoopGeoTiffRDD.spatial(
       new Path(arg.uri),
       HadoopGeoTiffRDD.Options(
@@ -90,7 +90,7 @@ object Input {
     )
   }
 
-  def evalSpatialMultibandHadoop(arg: JsonRead)(implicit sc: SparkContext): RDD[(ProjectedExtent, MultibandTile)] = {
+  def spatialMultibandHadoop(arg: JsonRead)(implicit sc: SparkContext): RDD[(ProjectedExtent, MultibandTile)] = {
     HadoopGeoTiffRDD.spatialMultiband(
       new Path(arg.uri),
       HadoopGeoTiffRDD.Options(
@@ -101,7 +101,7 @@ object Input {
     )
   }
 
-  def evalTemporalHadoop(arg: JsonRead)(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, Tile)] = {
+  def temporalHadoop(arg: JsonRead)(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, Tile)] = {
     HadoopGeoTiffRDD.temporal(
       new Path(arg.uri),
       HadoopGeoTiffRDD.Options(
@@ -112,7 +112,7 @@ object Input {
     )
   }
 
-  def evalTemporalMultibandHadoop(arg: JsonRead)(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, MultibandTile)] = {
+  def temporalMultibandHadoop(arg: JsonRead)(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, MultibandTile)] = {
     HadoopGeoTiffRDD.temporalMultiband(
       new Path(arg.uri),
       HadoopGeoTiffRDD.Options(

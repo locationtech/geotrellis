@@ -10,7 +10,7 @@ import geotrellis.vector._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-case class HadoopRead(arg: read.JsonRead) extends Input[RDD[(ProjectedExtent, Tile)]] {
+case class S3Read(arg: read.JsonRead) extends Input[RDD[(ProjectedExtent, Tile)]] {
   def asJson = arg.asJson :: Nil
-  def get(implicit sc: SparkContext): RDD[(ProjectedExtent, Tile)] = Input.spatialHadoop(arg)
+  def get(implicit sc: SparkContext): RDD[(ProjectedExtent, Tile)] = Input.spatialS3(arg)
 }

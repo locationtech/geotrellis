@@ -18,7 +18,7 @@ import scala.reflect.ClassTag
 trait Output[T] extends Node[T]
 
 object Output extends LazyLogging {
-  def eval[
+  def write[
     K: SpatialComponent : AvroRecordCodec : JsonFormat : ClassTag,
     V <: CellGrid : AvroRecordCodec : ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]: JsonFormat : GetComponent[?, Bounds[K]]
