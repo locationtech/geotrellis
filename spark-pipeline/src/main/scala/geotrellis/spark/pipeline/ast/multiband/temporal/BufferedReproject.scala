@@ -14,5 +14,5 @@ case class BufferedReproject(
   arg: transform.Reproject
 ) extends Transform[MultibandTileLayerRDD[SpaceTimeKey], MultibandTileLayerRDD[SpaceTimeKey]] {
   def asJson = node.asJson :+ arg.asJson
-  def get(implicit sc: SparkContext): MultibandTileLayerRDD[SpaceTimeKey] = Transform.bufferedReproject(arg)(node.get)
+  def eval(implicit sc: SparkContext): MultibandTileLayerRDD[SpaceTimeKey] = Transform.bufferedReproject(arg)(node.eval)
 }

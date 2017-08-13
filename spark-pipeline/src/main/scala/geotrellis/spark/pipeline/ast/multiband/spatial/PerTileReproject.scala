@@ -15,5 +15,5 @@ case class PerTileReproject(
   arg: transform.Reproject
 ) extends Transform[RDD[(ProjectedExtent, MultibandTile)], RDD[(ProjectedExtent, MultibandTile)]] {
   def asJson = node.asJson :+ arg.asJson
-  def get(implicit sc: SparkContext): RDD[(ProjectedExtent, MultibandTile)] = Transform.perTileReproject(arg)(node.get)
+  def eval(implicit sc: SparkContext): RDD[(ProjectedExtent, MultibandTile)] = Transform.perTileReproject(arg)(node.eval)
 }

@@ -58,14 +58,14 @@ class AstSpec extends FunSpec
 
       val typedAst =
         list
-          .node[Output[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]]
+          .node[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]
 
       val untypedAst = list.erasedNode
 
       ErasedUtils.eprint(untypedAst)
 
       val typedAst2 =
-        untypedAst.node[Output[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]]
+        untypedAst.node[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]
 
       println("------------------")
       println(typedAst.prettyPrint)
@@ -126,14 +126,14 @@ class AstSpec extends FunSpec
 
     val typedAst =
       list
-        .node[Output[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]]
+        .node[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]
 
     val untypedAst = list.erasedNode
 
     ErasedUtils.eprint(untypedAst)
 
     val typedAst2 =
-      untypedAst.node[Output[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]]
+      untypedAst.node[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]
 
     println("------------------")
     println(typedAst.prettyPrint)
@@ -194,7 +194,7 @@ class AstSpec extends FunSpec
     val erasedNode = list.erasedNode
 
     intercept[Exception] {
-      Try { erasedNode.unsafeRun } match {
+      Try { erasedNode.unsafeEval } match {
         case Failure(e) => println("unsafeRun failed as expected"); throw e
         case _ =>
       }
@@ -202,7 +202,7 @@ class AstSpec extends FunSpec
 
     intercept[Exception] {
       Try {
-        erasedNode.run[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]
+        erasedNode.eval[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]
       } match {
         case Failure(e) => println("run failed as expected"); throw e
         case _ =>

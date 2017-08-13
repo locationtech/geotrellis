@@ -12,5 +12,5 @@ import org.apache.spark.rdd.RDD
 
 case class S3Read(arg: read.JsonRead) extends Input[RDD[(TemporalProjectedExtent, Tile)]] {
   def asJson = arg.asJson :: Nil
-  def get(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, Tile)] = Input.temporalS3(arg)
+  def eval(implicit sc: SparkContext): RDD[(TemporalProjectedExtent, Tile)] = Input.temporalS3(arg)
 }

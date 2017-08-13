@@ -23,9 +23,9 @@ import scala.util.Try
   * and to "compose" untyped nodes.
   */
 trait ErasedNode extends (Any => Any) {
-  def maybeApply(x: Any): Option[Any]
+  def maybeApply(x: Any): Option[Node[Any]]
 
-  def apply(x: Any): Any = maybeApply(x) getOrElse {
+  def apply(x: Any): Node[Any] = maybeApply(x) getOrElse {
     throw new Exception(s"Cannot apply ErasedNode to $x " +
       s"since it cannot be cast to $domain")
   }
@@ -33,20 +33,20 @@ trait ErasedNode extends (Any => Any) {
   def apply(): Any = apply(RealWorld.instance)
 
   /** Get the typed node without its computation. */
-  def node[T <: Node[_]: TypeTag]: T = {
+  def node[T: TypeTag]: Node[T] = {
     val thatTpe = typeTag[T].tpe
-    if(thatTpe.toString.contains(range)) apply().asInstanceOf[T]
+    if(thatTpe == rangeTpe) apply().asInstanceOf[Node[T]]
     else throw new Exception(s"Cannot cast ErasedNode to $thatTpe " +
       s"since it cannot be cast to $rangeTpe")
   }
 
   /** Compute the result of the node. */
-  def unsafeRun(implicit sc: SparkContext): Any = apply().asInstanceOf[Node[Any]].get
+  def unsafeEval(implicit sc: SparkContext): Any = apply().asInstanceOf[Node[Any]].eval
 
   /** Compute the result of the node and cast to type T. */
-  def run[T: TypeTag](implicit sc: SparkContext): T = {
+  def eval[T: TypeTag](implicit sc: SparkContext): T = {
     val thatTpe = typeTag[T].tpe
-    if(thatTpe.toString.contains(range)) unsafeRun.asInstanceOf[T]
+    if(thatTpe == rangeTpe) unsafeEval.asInstanceOf[T]
     else throw new Exception(s"Cannot cast ErasedNode evaluation result to $thatTpe " +
       s"since it cannot be cast to $rangeTpe")
   }
@@ -70,7 +70,7 @@ trait ErasedNode extends (Any => Any) {
     else None
   }
 
-  def composeUnsafe(inner: ErasedNode): ErasedNodeComposition = {
+  def unsafeCompose(inner: ErasedNode): ErasedNodeComposition = {
     val outer = this
     if (composable(inner)) ErasedNodeComposition(f = outer, g = inner)
     else throw new Exception(s"Cannot apply ErasedNode to $inner: ${inner.domainTpe} " +
@@ -243,7 +243,7 @@ object ErasedUtils {
 
   /** Final function, which can be just applied to a some type */
   def buildComposition(l: List[ErasedNode]): ErasedNode =
-    l.reduceLeft[ErasedNode] { case (fst, snd) => fst.composeUnsafe(snd) }
+    l.reduceLeft[ErasedNode] { case (fst, snd) => fst.unsafeCompose(snd) }
 
   def eprint(ef: ErasedNode) =
     println(ef.domainTpe.toString + " => " + ef.rangeTpe.toString)

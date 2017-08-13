@@ -15,5 +15,5 @@ case class TileToLayout(
   arg: transform.TileToLayout
 ) extends Transform[RDD[(TemporalProjectedExtent, MultibandTile)], MultibandTileLayerRDD[SpaceTimeKey]] {
   def asJson = node.asJson :+ arg.asJson
-  def get(implicit sc: SparkContext): MultibandTileLayerRDD[SpaceTimeKey] = Transform.tileToLayout(arg)(node.get)
+  def eval(implicit sc: SparkContext): MultibandTileLayerRDD[SpaceTimeKey] = Transform.tileToLayout(arg)(node.eval)
 }

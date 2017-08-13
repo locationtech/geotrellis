@@ -16,5 +16,5 @@ case class TileToLayout(
   arg: transform.TileToLayout
 ) extends Transform[RDD[(ProjectedExtent, Tile)], TileLayerRDD[SpatialKey]] {
   def asJson = node.asJson :+ arg.asJson
-  def get(implicit sc: SparkContext): TileLayerRDD[SpatialKey] = Transform.tileToLayout(arg)(node.get)
+  def eval(implicit sc: SparkContext): TileLayerRDD[SpatialKey] = Transform.tileToLayout(arg)(node.eval)
 }
