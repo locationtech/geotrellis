@@ -14,5 +14,5 @@ case class Write(
   arg: write.JsonWrite
 ) extends Output[Stream[(Int, TileLayerRDD[SpaceTimeKey])]] {
   def asJson = node.asJson :+ arg.asJson
-  def get(implicit sc: SparkContext): Stream[(Int, TileLayerRDD[SpaceTimeKey])] = Output.write(arg)(node.get)
+  def eval(implicit sc: SparkContext): Stream[(Int, TileLayerRDD[SpaceTimeKey])] = Output.write(arg)(node.eval)
 }

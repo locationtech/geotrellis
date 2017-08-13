@@ -6,7 +6,7 @@ import io.circe.Json
 import org.apache.spark.SparkContext
 
 trait Node[T] {
-  def get(implicit sc: SparkContext): T
+  def eval(implicit sc: SparkContext): T
   def arg: PipelineExpr
   def asJson: List[Json]
 }

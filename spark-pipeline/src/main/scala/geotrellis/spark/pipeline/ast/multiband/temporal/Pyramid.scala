@@ -15,6 +15,6 @@ case class Pyramid(
   arg: transform.Pyramid
 ) extends Transform[MultibandTileLayerRDD[SpaceTimeKey], Stream[(Int, MultibandTileLayerRDD[SpaceTimeKey])]] {
   def asJson = node.asJson :+ arg.asJson
-  def get(implicit sc: SparkContext): Stream[(Int, MultibandTileLayerRDD[SpaceTimeKey])] =
-    Transform.pyramid(arg)(node.get)
+  def eval(implicit sc: SparkContext): Stream[(Int, MultibandTileLayerRDD[SpaceTimeKey])] =
+    Transform.pyramid(arg)(node.eval)
 }

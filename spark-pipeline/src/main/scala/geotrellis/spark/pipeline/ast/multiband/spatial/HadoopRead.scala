@@ -12,5 +12,5 @@ import org.apache.spark.rdd.RDD
 
 case class HadoopRead(arg: read.JsonRead) extends Input[RDD[(ProjectedExtent, MultibandTile)]] {
   def asJson = arg.asJson :: Nil
-  def get(implicit sc: SparkContext): RDD[(ProjectedExtent, MultibandTile)] = Input.spatialMultibandHadoop(arg)
+  def eval(implicit sc: SparkContext): RDD[(ProjectedExtent, MultibandTile)] = Input.spatialMultibandHadoop(arg)
 }

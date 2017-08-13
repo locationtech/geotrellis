@@ -12,6 +12,6 @@ case class RetileToLayout(
   arg: transform.RetileToLayout
 ) extends Transform[MultibandTileLayerRDD[SpaceTimeKey], MultibandTileLayerRDD[SpaceTimeKey]] {
   def asJson = node.asJson :+ arg.asJson
-  def get(implicit sc: SparkContext): MultibandTileLayerRDD[SpaceTimeKey] =
-    Transform.retileToLayoutTemporal(arg)(node.get)
+  def eval(implicit sc: SparkContext): MultibandTileLayerRDD[SpaceTimeKey] =
+    Transform.retileToLayoutTemporal(arg)(node.eval)
 }

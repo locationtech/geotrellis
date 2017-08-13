@@ -16,6 +16,6 @@ case class Pyramid(
   arg: transform.Pyramid
 ) extends Transform[TileLayerRDD[SpatialKey], Stream[(Int, TileLayerRDD[SpatialKey])]] {
   def asJson = node.asJson :+ arg.asJson
-  def get(implicit sc: SparkContext): Stream[(Int, TileLayerRDD[SpatialKey])] =
-    Transform.pyramid(arg)(node.get)
+  def eval(implicit sc: SparkContext): Stream[(Int, TileLayerRDD[SpatialKey])] =
+    Transform.pyramid(arg)(node.eval)
 }
