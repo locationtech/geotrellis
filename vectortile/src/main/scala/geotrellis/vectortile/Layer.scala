@@ -23,6 +23,7 @@ import geotrellis.vector._
 import geotrellis.vector.io._
 import geotrellis.vectortile.internal.{vector_tile => vt, _}
 import geotrellis.vectortile.internal.vector_tile.Tile.GeomType.{LINESTRING, POINT, POLYGON}
+import geotrellis.util.annotations.experimental
 
 // --- //
 
@@ -30,7 +31,7 @@ import geotrellis.vectortile.internal.vector_tile.Tile.GeomType.{LINESTRING, POI
   * Here, "Feature" and "Geometry" refer specifically to the GeoTrellis classes
   * of the same names.
   */
-trait Layer extends Serializable {
+@experimental trait Layer extends Serializable {
   /** The VectorTile spec version that this Layer obeys. */
   def version: Int
 
@@ -190,7 +191,7 @@ ${sortedMeta.map({ case (k,v) => s"            ${k}: ${v}"}).mkString("\n")}
 }
 
 /** A [[Layer]] crafted through some strict ingest process. */
-case class StrictLayer(
+@experimental case class StrictLayer(
   name: String,
   tileWidth: Int,
   version: Int,
@@ -208,7 +209,7 @@ case class StrictLayer(
   * lazily, making for very fast extraction of single features/geometries.
   *
   */
-case class LazyLayer(
+@experimental case class LazyLayer(
   private val rawLayer: vt.Tile.Layer,
   tileExtent: Extent
 ) extends Layer {

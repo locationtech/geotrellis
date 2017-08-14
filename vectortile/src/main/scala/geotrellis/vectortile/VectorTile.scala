@@ -20,6 +20,7 @@ import geotrellis.proj4.{LatLng, WebMercator}
 import geotrellis.vector._
 import geotrellis.vector.io._
 import geotrellis.vectortile.internal.{vector_tile => vt}
+import geotrellis.util.annotations.experimental
 
 // --- //
 
@@ -44,7 +45,7 @@ import geotrellis.vectortile.internal.{vector_tile => vt}
   * @constructor This is not meant to be called directly - see this class's
   * companion object for the available helper methods.
   */
-case class VectorTile(layers: Map[String, Layer], tileExtent: Extent) {
+@experimental case class VectorTile(layers: Map[String, Layer], tileExtent: Extent) {
   /** Encode this VectorTile back into a mid-level Protobuf object. */
   private def toProtobuf: vt.Tile = vt.Tile(layers = layers.values.map(_.toProtobuf).toSeq)
 
@@ -71,7 +72,7 @@ ${layers.values.map(_.pretty).mkString}
 
 }
 
-object VectorTile {
+@experimental object VectorTile {
   /** Create a VectorTile from a low-level protobuf Tile type. */
   private def fromPBTile(tile: vt.Tile, tileExtent: Extent): VectorTile = {
 
