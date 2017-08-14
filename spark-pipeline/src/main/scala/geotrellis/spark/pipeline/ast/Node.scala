@@ -5,7 +5,7 @@ import geotrellis.spark.pipeline.json.PipelineExpr
 import io.circe.Json
 import org.apache.spark.SparkContext
 
-trait Node[T] {
+trait Node[T] extends Serializable {
   def eval(implicit sc: SparkContext): T
   def arg: PipelineExpr
   def asJson: List[Json]
