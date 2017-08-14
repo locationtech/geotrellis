@@ -9,7 +9,7 @@ sealed trait RealWorld
 
 object RealWorld {
   /** RealWorld node has nothing implemented */
-  def instance = new Node[RealWorld] {
+  def instance: Node[RealWorld] = new Node[RealWorld] {
     def eval(implicit sc: SparkContext): RealWorld =
       throw new UnsupportedOperationException("get function is not supported by a RealWorld node")
     def arg: PipelineExpr =
