@@ -21,6 +21,7 @@ import geotrellis.raster.resample._
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.util._
+import geotrellis.vector.Extent
 
 import org.apache.spark.rdd.RDD
 
@@ -76,42 +77,58 @@ object ZoomResample {
     val (resampledRdd: RDD[(K, Tile)], md) =
       targetGridBounds match {
         case Some(tgb) =>
-          val resampleKeyBounds = boundsAtZoom(sourceZoom, rdd.metadata.bounds, targetZoom).get
+          val resampleKeyBounds: KeyBounds[K] =
+            boundsAtZoom(sourceZoom, rdd.metadata.bounds, targetZoom).get
+
           resampleKeyBounds.toGridBounds.intersection(tgb) match {
-            case Some(resampleGridBounds) =>
-              val resampled =
-                rdd
-                  .mapPartitions { partition =>
-                    partition
-                      .map { case (key, tile) =>
-                        gridBoundsAtZoom(sourceZoom, key.getComponent[SpatialKey], targetZoom).intersection(resampleGridBounds).map { gb =>
-                          gb
-                            .coords
-                            .map { case (col, row) =>
-                              val sourceExtent = sourceMapTransform(key)
-                              val targetExtent = targetMapTransform(col, row)
-                              val resampled =
-                                tile.resample(sourceExtent, RasterExtent(targetExtent, tileSize, tileSize), method)
-                              (key.setComponent(SpatialKey(col, row)), resampled)
-                            }
-                          }
-                      }
-                      .flatten
-                      .flatten
+            case Some(resampleGridBounds) => {
+              val resampled: RDD[(K, Tile)] = rdd.flatMap { case (key, tile) =>
+                val gbaz: Option[GridBounds] =
+                  gridBoundsAtZoom(sourceZoom, key.getComponent[SpatialKey], targetZoom)
+                    .intersection(resampleGridBounds)
+
+                gbaz.map { gb =>
+                  gb.coordsIter
+                    .map { case (col, row) =>
+                      val sourceExtent = sourceMapTransform(key)
+                      val targetExtent = targetMapTransform(col, row)
+                      val resampled = tile.resample(
+                        sourceExtent,
+                        RasterExtent(targetExtent, tileSize, tileSize),
+                        method
+                      )
+
+                      (key.setComponent(SpatialKey(col, row)), resampled)
                     }
-              val extent = targetMapTransform(resampleGridBounds).intersection(rdd.metadata.extent).get
-              val md = rdd.metadata.copy(layout = targetLayoutDefinition, bounds = resampleKeyBounds.setSpatialBounds(resampleGridBounds), extent = extent)
+                }.getOrElse(Iterator.empty)
+              }
+
+              val extent: Extent =
+                targetMapTransform(resampleGridBounds).intersection(rdd.metadata.extent).get
+
+              val md = rdd.metadata.copy(
+                layout = targetLayoutDefinition,
+                bounds = resampleKeyBounds.setSpatialBounds(resampleGridBounds),
+                extent = extent
+              )
+
               (resampled, md)
-            case None =>
-              val md = rdd.metadata.copy(layout = targetLayoutDefinition, bounds = (EmptyBounds: Bounds[K]))
-              (rdd.sparkContext.parallelize(Seq()), md)
+            }
+            case None => {
+              val md = rdd.metadata.copy(
+                layout = targetLayoutDefinition,
+                bounds = (EmptyBounds: Bounds[K])
+              )
+
+              (rdd.sparkContext.emptyRDD[(K, Tile)], md)
+            }
           }
-        case None =>
-          val resampled =
+        case None => {
+          val resampled: RDD[(K, Tile)] =
             rdd
               .flatMap { case (key, tile) =>
                 gridBoundsAtZoom(sourceZoom, key.getComponent[SpatialKey], targetZoom)
-                  .coords
+                  .coordsIter
                   .map { case (col, row) =>
                     val sourceExtent = sourceMapTransform(key)
                     val targetExtent = targetMapTransform(col, row)
@@ -120,9 +137,16 @@ object ZoomResample {
                     (key.setComponent(SpatialKey(col, row)), resampled)
                   }
                }
-            val md = rdd.metadata.copy(layout = targetLayoutDefinition, bounds = boundsAtZoom(sourceZoom, rdd.metadata.bounds, targetZoom))
+
+          val md = rdd.metadata.copy(
+            layout = targetLayoutDefinition,
+            bounds = boundsAtZoom(sourceZoom, rdd.metadata.bounds, targetZoom)
+          )
+
           (resampled, md)
         }
+      }
+
     ContextRDD(resampledRdd, md)
   }
 }

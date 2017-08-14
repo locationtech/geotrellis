@@ -1,16 +1,21 @@
 package geotrellis.spark.etl.config
 
-import com.github.fge.jackson.JsonLoader
-import com.github.fge.jsonschema.main.JsonSchemaFactory
 import geotrellis.raster.TileLayout
 import geotrellis.spark.etl.config.json._
-import org.scalatest.FunSuite
+
 import spray.json._
+import com.networknt.schema.JsonSchemaFactory
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+
+import org.scalatest.FunSuite
 
 /**
   * Created by meldridge on 5/31/17.
   */
 class ConfigSpec extends FunSuite {
+
+  def jsonNodeFromString(content: String): JsonNode = new ObjectMapper().readTree(content)
 
   val bpJson =
     """
@@ -56,11 +61,11 @@ class ConfigSpec extends FunSuite {
     """.stripMargin
 
   test("Output config with TileLayout passes schema checks") {
-    val schemaFactory = JsonSchemaFactory.byDefault()
-    val outputSchema = schemaFactory.getJsonSchema(JsonLoader.fromResource("/output-schema.json"))
-    val report = outputSchema.validate(JsonLoader.fromString(outJson), true)
+    val schemaFactory = new JsonSchemaFactory()
+    val outputSchema = schemaFactory.getSchema(getClass.getResourceAsStream("/output-schema.json"))
+    val report = outputSchema.validate(jsonNodeFromString(outJson))
     println(report)
-    assert(report.isSuccess)
+    assert(report.isEmpty)
   }
   test("Output config with TileLayout parses correctly") {
     val backendProfilesParsed = bpJson.parseJson.convertTo[Map[String, BackendProfile]]

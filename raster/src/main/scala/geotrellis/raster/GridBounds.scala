@@ -75,9 +75,14 @@ object GridBounds {
 case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
   def width = colMax - colMin + 1
   def height = rowMax - rowMin + 1
-  if(width.toLong * height.toLong > Int.MaxValue) { sys.error(s"Cannot construct grid bounds of this size: $width x $height") }
-  def size = width * height
-  def isEmpty = size == 0
+
+  @deprecated("This will return a `Long` in 2.0. Until then, sizeLong may be more accurate.", "1.2")
+  def size: Int = width * height
+
+  // TODO Mark for deprecation in 3.0 when 2.0 comes out!
+  def sizeLong: Long = width.toLong * width.toLong
+
+  def isEmpty = sizeLong == 0
 
   /**
     * Return true if the present [[GridBounds]] contains the position
@@ -157,9 +162,7 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
       result
     }
 
-  /**
-    * Return the coordinates covered by the present [[GridBounds]].
-    */
+  @deprecated("Use `coordsIter` instead.", "1.2")
   def coords: Array[(Int, Int)] = {
     val arr = Array.ofDim[(Int, Int)](width*height)
     cfor(0)(_ < height, _ + 1) { row =>
@@ -170,6 +173,14 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
     }
     arr
   }
+
+  /**
+    * Return the coordinates covered by the present [[GridBounds]].
+    */
+  def coordsIter: Iterator[(Int, Int)] = for {
+    row <- Iterator.range(0, height)
+    col <- Iterator.range(0, width)
+  } yield (col + colMin, row + rowMin)
 
   /**
     * Return the intersection of the present [[GridBounds]] and the
@@ -199,4 +210,22 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
         )
       )
     }
+
+  /** Return the union of GridBounds. */
+  def combine(other: GridBounds): GridBounds =
+    GridBounds(
+      colMin = math.min(this.colMin, other.colMin),
+      rowMin = math.min(this.rowMin, other.rowMin),
+      colMax = math.max(this.colMax, other.colMax),
+      rowMax = math.max(this.rowMax, other.rowMax)
+    )
+
+  /** Empty gridbounds contain nothing, though non empty gridbounds contains iteslf */
+  def contains(other: GridBounds): Boolean =
+    if(colMin == 0 && colMax == 0 && rowMin == 0 && rowMax == 0) false
+    else
+      other.colMin >= colMin &&
+      other.rowMin >= rowMin &&
+      other.colMax <= colMax &&
+      other.rowMax <= rowMax
 }

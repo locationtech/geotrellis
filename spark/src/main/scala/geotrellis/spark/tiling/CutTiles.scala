@@ -50,7 +50,7 @@ object CutTiles {
         val extent = inKey.extent
         logger.debug(s"Cutting $inKey of ${tile.dimensions} cells covering $extent")
         mapTransform(extent)
-          .coords.toIterator
+          .coordsIter
           .map  { spatialComponent =>
             val outKey = inKey.translate(spatialComponent)
             logger.debug(s"Merge $inKey into $outKey of (${tileCols}, ${tileRows}) cells")

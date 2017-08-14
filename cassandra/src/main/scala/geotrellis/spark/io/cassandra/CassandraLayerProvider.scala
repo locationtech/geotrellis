@@ -29,7 +29,8 @@ import java.net.URI
  * Metadata table name is optional, not provided default value will be used.
  * Layers table name is required to instantiate a [[LayerWriter]]
  */
-class CassandraLayerProvider extends AttributeStoreProvider with LayerReaderProvider with LayerWriterProvider {
+class CassandraLayerProvider extends AttributeStoreProvider
+    with LayerReaderProvider with LayerWriterProvider with ValueReaderProvider {
   def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "cassandra"
 
   def attributeStore(uri: URI): AttributeStore = {
@@ -56,5 +57,10 @@ class CassandraLayerProvider extends AttributeStoreProvider with LayerReaderProv
       throw new IllegalArgumentException("Missing required URI parameter: layers"))
 
     new CassandraLayerWriter(store, instance, keyspace, table)
+  }
+
+  def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] = {
+    val instance = CassandraInstance(uri)
+    new CassandraValueReader(instance, store)
   }
 }

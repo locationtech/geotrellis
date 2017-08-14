@@ -50,6 +50,7 @@ Instances of ``AttributeStore``, ``LayerWriter``, and ```LayerReader`` can be cr
    val store = AttributeStore(uri)
    val reader = LayerReader(uri)
    val writer = LayerWriter(uri)
+   val values = ValueReader(uri)
 
 The backends are identified by the scheme portion of the URI.
 The address and path is used to identify the resource and query parameters are used to configure it.
@@ -68,6 +69,20 @@ Backend        URI
 Backends that use a database need two extra settings:
 ``attributes`` specifies which table is used for storing layer attributes. It is optional with a default value.
 ``layers`` specifies which table to write values to. It is required when creating a ``LayerWriter``.
+
+.. note:: When building an assembly make sure to define a merge strategy for concatenating service files
+
+
+.. code:: scala
+
+       assemblyMergeStrategy in assembly := {
+          case s if x.startsWith("META-INF/services") => MergeStrategy.concat
+          case "reference.conf" => MergeStrategy.concat
+          case "META-INF/MANIFEST.MF" => MergeStrategy.discard
+          case "META-INF/ECLIPSEF.RSA" => MergeStrategy.discard
+          case "META-INF/ECLIPSEF.SF" => MergeStrategy.discard
+          case _ => MergeStrategy.first
+       }
 
 File System
 ===========

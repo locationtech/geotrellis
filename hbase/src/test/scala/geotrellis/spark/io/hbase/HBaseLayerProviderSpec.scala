@@ -37,4 +37,10 @@ class HBaseLayerProviderSpec extends FunSpec with HBaseTestEnvironment {
     val reader = LayerWriter(uri)
     assert(reader.isInstanceOf[HBaseLayerWriter])
   }
+
+  it("construct HBaseValueReader from URI") {
+    val reader = ValueReader(uri)
+    assert(reader.isInstanceOf[HBaseValueReader])
+  }
+
 }

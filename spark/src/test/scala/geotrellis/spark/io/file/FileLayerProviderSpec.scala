@@ -36,4 +36,10 @@ class FileLayerProviderSpec extends FunSpec with TestEnvironment {
     val reader = LayerWriter(uri)
     assert(reader.isInstanceOf[FileLayerWriter])
   }
+
+  it("construct FileValueReader from URI") {
+    val reader = ValueReader(uri)
+    assert(reader.isInstanceOf[FileValueReader])
+  }
+
 }

@@ -71,6 +71,13 @@ class TileLayerRDDFilterMethodsSpec extends FunSpec with TestEnvironment {
     val gt = SinglebandGeoTiff(path)
     val originalRaster = gt.raster.resample(500, 500)
     val (_, rdd) = createTileLayerRDD(originalRaster, 5, 5, gt.crs)
+    val temporalRdd =
+      rdd
+        .withContext { _.map { case (k, v) => SpaceTimeKey(k, TemporalKey(1000l)) -> v } }
+        .mapContext { md => md.copy(bounds = md.bounds match {
+          case KeyBounds(minKey, maxKey) => KeyBounds(SpaceTimeKey(minKey, TemporalKey(1000l)), SpaceTimeKey(maxKey, TemporalKey(1000l)))
+          case _ => EmptyBounds
+        }) }
     val allKeys = KeyBounds(SpatialKey(0,0), SpatialKey(4,4))
     val someKeys = KeyBounds(SpatialKey(1,1), SpatialKey(3,3))
     val moreKeys = KeyBounds(SpatialKey(4,4), SpatialKey(4,4))
@@ -114,6 +121,32 @@ class TileLayerRDDFilterMethodsSpec extends FunSpec with TestEnvironment {
 
       val gb = filteredRdd.metadata.bounds.get.toGridBounds
       gb.width * gb.height should be (9)
+    }
+
+    it("should filter query by point") {
+      val md = rdd.metadata
+      val point = md.extent.center
+      val filteredRdd = rdd.filter().where(Contains(point)).result
+
+      val count = filteredRdd.count
+      count should be (1)
+
+      val gb = filteredRdd.metadata.bounds.get.toGridBounds
+
+      md.mapTransform(gb).center should be (md.extent.center)
+    }
+
+    it("should filter query by point (temporal)") {
+      val md = temporalRdd.metadata
+      val point = md.extent.center
+      val filteredRdd = temporalRdd.filter().where(Contains(point)).result
+
+      val count = filteredRdd.count
+      count should be (1)
+
+      val gb = filteredRdd.metadata.bounds.get.toGridBounds
+
+      md.mapTransform(gb).center should be (md.extent.center)
     }
   }
 }

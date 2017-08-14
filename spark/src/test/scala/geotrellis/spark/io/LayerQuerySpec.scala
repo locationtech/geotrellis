@@ -57,15 +57,6 @@ class LayerQuerySpec extends FunSpec
       info(outKeyBounds.toString)
     }
 
-    it("should throw on intersecting regions") {
-      val query = new LayerQuery[SpatialKey, TileLayerMetadata[SpatialKey]]
-        .where(Intersects(GridBounds(2, 2, 2, 2)) or Intersects(GridBounds(2, 2, 2, 2)))
-
-      intercept[RuntimeException] {
-        query(md)
-      }
-    }
-
   }
 
   describe("LayerFilter Polygon Intersection") {

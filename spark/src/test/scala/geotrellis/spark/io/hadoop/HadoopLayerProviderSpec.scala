@@ -36,4 +36,10 @@ class HadoopLayerProviderSpec extends FunSpec with TestEnvironment {
     val reader = LayerWriter(uri)
     assert(reader.isInstanceOf[HadoopLayerWriter])
   }
+
+  it("construct HadoopValueReader from URI") {
+    val reader = ValueReader(uri)
+    assert(reader.isInstanceOf[HadoopValueReader])
+  }
+
 }
