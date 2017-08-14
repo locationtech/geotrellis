@@ -4,8 +4,13 @@ import geotrellis.spark.pipeline._
 import geotrellis.spark.pipeline.json
 import geotrellis.spark.pipeline.json._
 import geotrellis.spark.pipeline.ast.untyped._
+import geotrellis.spark._
 import geotrellis.spark.tiling.{FloatingLayoutScheme, LayoutDefinition, LayoutScheme}
 import geotrellis.spark.testkit._
+
+import _root_.io.circe.syntax._
+import _root_.io.circe.parser._
+import cats.implicits._
 
 import org.scalatest._
 
@@ -15,6 +20,140 @@ class AstSpec extends FunSpec
   with Matchers
   with BeforeAndAfterAll
   with TestEnvironment {
+
+  val expectedWrite1 =
+    """
+      |[
+      |  {
+      |    "uri" : "/",
+      |    "crs" : null,
+      |    "tag" : null,
+      |    "max_tile_size" : null,
+      |    "partitions" : null,
+      |    "partition_bytes" : null,
+      |    "chunk_size" : null,
+      |    "delimiter" : null,
+      |    "time_tag" : "TIFFTAG_DATETIME",
+      |    "time_format" : "yyyy:MM:dd HH:mm:ss",
+      |    "type" : "singleband.spatial.read.hadoop"
+      |  },
+      |  {
+      |    "resample_method" : "nearest-neighbor",
+      |    "tile_size" : null,
+      |    "cell_type" : null,
+      |    "type" : "singleband.spatial.transform.tile-to-layout"
+      |  },
+      |  {
+      |    "crs" : "",
+      |    "scheme" : {
+      |      "tileCols" : 512,
+      |      "tileRows" : 512
+      |    },
+      |    "resample_method" : "nearest-neighbor",
+      |    "max_zoom" : null,
+      |    "type" : "singleband.spatial.transform.buffered-reproject"
+      |  },
+      |  {
+      |    "start_zoom" : null,
+      |    "end_zoom" : 0,
+      |    "resample_method" : "nearest-neighbor",
+      |    "type" : "singleband.spatial.transform.pyramid"
+      |  },
+      |  {
+      |    "name" : "write1",
+      |    "uri" : "/tmp",
+      |    "key_index_method" : {
+      |      "type" : "zorder",
+      |      "time_tag" : null,
+      |      "time_format" : null,
+      |      "temporal_resolution" : null
+      |    },
+      |    "scheme" : {
+      |      "tileCols" : 512,
+      |      "tileRows" : 512
+      |    },
+      |    "profile" : null,
+      |    "type" : "singleband.spatial.write"
+      |  }
+      |]
+    """.stripMargin
+
+  val expectedWrite1Json = parse(expectedWrite1).valueOr(throw _)
+
+  val expectedWrite2 =
+    """
+      |[
+      |  {
+      |    "uri" : "/",
+      |    "crs" : null,
+      |    "tag" : null,
+      |    "max_tile_size" : null,
+      |    "partitions" : null,
+      |    "partition_bytes" : null,
+      |    "chunk_size" : null,
+      |    "delimiter" : null,
+      |    "time_tag" : "TIFFTAG_DATETIME",
+      |    "time_format" : "yyyy:MM:dd HH:mm:ss",
+      |    "type" : "singleband.spatial.read.hadoop"
+      |  },
+      |  {
+      |    "resample_method" : "nearest-neighbor",
+      |    "tile_size" : null,
+      |    "cell_type" : null,
+      |    "type" : "singleband.spatial.transform.tile-to-layout"
+      |  },
+      |  {
+      |    "crs" : "",
+      |    "scheme" : {
+      |      "tileCols" : 512,
+      |      "tileRows" : 512
+      |    },
+      |    "resample_method" : "nearest-neighbor",
+      |    "max_zoom" : null,
+      |    "type" : "singleband.spatial.transform.buffered-reproject"
+      |  },
+      |  {
+      |    "start_zoom" : null,
+      |    "end_zoom" : 0,
+      |    "resample_method" : "nearest-neighbor",
+      |    "type" : "singleband.spatial.transform.pyramid"
+      |  },
+      |  {
+      |    "name" : "write1",
+      |    "uri" : "/tmp",
+      |    "key_index_method" : {
+      |      "type" : "zorder",
+      |      "time_tag" : null,
+      |      "time_format" : null,
+      |      "temporal_resolution" : null
+      |    },
+      |    "scheme" : {
+      |      "tileCols" : 512,
+      |      "tileRows" : 512
+      |    },
+      |    "profile" : null,
+      |    "type" : "singleband.spatial.write"
+      |  },
+      |  {
+      |    "name" : "write2",
+      |    "uri" : "/tmp",
+      |    "key_index_method" : {
+      |      "type" : "zorder",
+      |      "time_tag" : null,
+      |      "time_format" : null,
+      |      "temporal_resolution" : null
+      |    },
+      |    "scheme" : {
+      |      "tileCols" : 512,
+      |      "tileRows" : 512
+      |    },
+      |    "profile" : null,
+      |    "type" : "singleband.spatial.write"
+      |  }
+      |]
+    """.stripMargin
+
+  val expectedWrite2Json = parse(expectedWrite2).valueOr(throw _)
 
   describe("Build AST") {
     it("should validate AST") {
@@ -28,19 +167,11 @@ class AstSpec extends FunSpec
       val write1 = Write(pyramid, json.write.JsonWrite("write1", "/tmp", PipelineKeyIndexMethod("zorder"), scheme, `type` = WriteTypes.SpatialType))
       val write2 = Write(write1, json.write.JsonWrite("write2", "/tmp", PipelineKeyIndexMethod("zorder"), scheme, `type` = WriteTypes.SpatialType))
 
-      println("------------------")
-      println
-      println(write1)
-      println
-      println(write2)
-      println
-      println("------------------")
-      println
-      println(write1.prettyPrint)
-      println
-      println(write2.prettyPrint)
-      println
-      println("------------------")
+      // println(write1.prettyPrint)
+      // println(write2.prettyPrint)
+
+      write1.asJson.asJson shouldBe expectedWrite1Json
+      write2.asJson.asJson shouldBe expectedWrite2Json
     }
 
     it("Untyped AST") {
@@ -58,18 +189,17 @@ class AstSpec extends FunSpec
 
       val typedAst =
         list
-          .node[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]
+          .node[Stream[(Int, TileLayerRDD[SpatialKey])]]
 
       val untypedAst = list.erasedNode
 
       ErasedUtils.eprint(untypedAst)
 
       val typedAst2 =
-        untypedAst.node[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]
+        untypedAst.node[Stream[(Int, TileLayerRDD[SpatialKey])]]
 
-      println("------------------")
-      println(typedAst.prettyPrint)
-      println("------------------")
+      // println(typedAst.prettyPrint)
+      // println(typedAst2.prettyPrint)
 
       typedAst shouldBe typedAst2
     }
@@ -126,18 +256,17 @@ class AstSpec extends FunSpec
 
     val typedAst =
       list
-        .node[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]
+        .node[Stream[(Int, TileLayerRDD[SpatialKey])]]
 
     val untypedAst = list.erasedNode
 
     ErasedUtils.eprint(untypedAst)
 
     val typedAst2 =
-      untypedAst.node[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]
+      untypedAst.node[Stream[(Int, TileLayerRDD[SpatialKey])]]
 
-    println("------------------")
-    println(typedAst.prettyPrint)
-    println("------------------")
+    // println(typedAst.prettyPrint)
+    // println(typedAst2.prettyPrint)
 
     typedAst shouldBe typedAst2
   }
@@ -202,7 +331,7 @@ class AstSpec extends FunSpec
 
     intercept[Exception] {
       Try {
-        erasedNode.eval[Stream[(Int, geotrellis.spark.TileLayerRDD[geotrellis.spark.SpatialKey])]]
+        erasedNode.eval[Stream[(Int, TileLayerRDD[SpatialKey])]]
       } match {
         case Failure(e) => println("run failed as expected"); throw e
         case _ =>
