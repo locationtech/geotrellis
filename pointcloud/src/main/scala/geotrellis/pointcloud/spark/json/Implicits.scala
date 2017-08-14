@@ -16,7 +16,7 @@
 
 package geotrellis.pointcloud.spark.json
 
-import geotrellis.pointcloud.pipeline.ReaderTypes
+import io.pdal.pipeline.ReaderTypes
 import geotrellis.pointcloud.spark.{Extent3D, ProjectedExtent3D}
 import geotrellis.proj4.CRS
 import geotrellis.util.EitherMethods

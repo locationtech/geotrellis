@@ -16,12 +16,12 @@
 
 package geotrellis.pointcloud.spark.io.hadoop
 
-import geotrellis.pointcloud.pipeline._
 import geotrellis.pointcloud.spark.io.hadoop.formats._
 import geotrellis.spark.io.hadoop._
 import geotrellis.vector.Extent
 
 import io.pdal._
+import io.pdal.pipeline._
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD

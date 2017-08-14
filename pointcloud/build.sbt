@@ -2,17 +2,11 @@ import Dependencies._
 
 name := "geotrellis-pointcloud"
 
-val circeVersion = "0.7.0"
-
 libraryDependencies ++= Seq(
-  "io.circe" %% "circe-core" % circeVersion,
-  "io.circe" %% "circe-generic" % circeVersion,
-  "io.circe" %% "circe-generic-extras" % circeVersion,
-  "io.circe" %% "circe-literal" % circeVersion,
-  "io.circe" %% "circe-parser" % circeVersion,
+  pdalScala,
   sparkCore % "provided",
-  pdal,
-  scalatest % "test")
+  scalatest % "test"
+)
 
 resolvers ++= Seq(
   Resolver.sonatypeRepo("releases"),
