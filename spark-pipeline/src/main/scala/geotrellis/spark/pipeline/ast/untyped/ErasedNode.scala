@@ -25,7 +25,7 @@ import scala.util.Try
 trait ErasedNode extends (Any => Any) {
   def maybeApply(x: Any): Option[Node[Any]]
 
-  def apply(x: Any): Node[Any] = maybeApply(x) getOrElse {
+  def apply(x: Any): Any = maybeApply(x) getOrElse {
     throw new Exception(s"Cannot apply ErasedNode to $x " +
       s"since it cannot be cast to $domain")
   }
@@ -55,11 +55,11 @@ trait ErasedNode extends (Any => Any) {
 
   def rangeTpe: Type
 
-  def domain = domainTpe.toString
+  def domain: String = domainTpe.toString
 
-  def range = rangeTpe.toString
+  def range: String = rangeTpe.toString
 
-  def composable(that: ErasedNode) = domainTpe == that.rangeTpe
+  def composable(that: ErasedNode): Boolean = domainTpe == that.rangeTpe
 
   def compose(l: List[ErasedNode]): List[ErasedNodeComposition] =
     l flatMap { compose(_) }
@@ -79,21 +79,21 @@ trait ErasedNode extends (Any => Any) {
 }
 
 case class ErasedNodeComposition(f: ErasedNode, g: ErasedNode) extends ErasedNode {
-  val domainTpe = g.domainTpe
+  val domainTpe: Type = g.domainTpe
 
-  val rangeTpe = f.rangeTpe
+  val rangeTpe: Type = f.rangeTpe
 
-  def maybeApply(x: Any) = g.maybeApply(x) flatMap f.maybeApply
+  def maybeApply(x: Any): Option[Node[Any]] = g.maybeApply(x) flatMap f.maybeApply
 }
 
 case class ErasedTypedNode[Domain: TypeTag, Range: TypeTag](constructor: Node[Domain] => Node[Range]) extends ErasedNode {
-  def domainTag = typeTag[Domain]
+  def domainTag: TypeTag[Domain] = typeTag[Domain]
 
-  def rangeTag = typeTag[Range]
+  def rangeTag: TypeTag[Range] = typeTag[Range]
 
-  def domainTpe = domainTag.tpe
+  def domainTpe: Type = domainTag.tpe
 
-  def rangeTpe = rangeTag.tpe
+  def rangeTpe: Type = rangeTag.tpe
 
   def maybeApply(x: Any): Option[Node[Any]] =
     Try { x.asInstanceOf[Node[Domain]] }
@@ -245,7 +245,7 @@ object ErasedUtils {
   def buildComposition(l: List[ErasedNode]): ErasedNode =
     l.reduceLeft[ErasedNode] { case (fst, snd) => fst.unsafeCompose(snd) }
 
-  def eprint(ef: ErasedNode) =
+  def eprint(ef: ErasedNode): Unit =
     println(ef.domainTpe.toString + " => " + ef.rangeTpe.toString)
 
   def cprint(ef: ErasedNodeComposition, depth: Int): Unit = {
