@@ -21,7 +21,7 @@ import geotrellis.proj4._
 import geotrellis.spark.tiling._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.TileLayerRDD
-import geotrellis.spark.testfiles._
+import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.testkit._
 
 import org.scalatest.FunSpec

@@ -19,8 +19,8 @@ package geotrellis.spark.io.hbase
 import geotrellis.raster.{Tile, TileFeature}
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.testfiles.TestTileFeatureFiles
-import geotrellis.spark.testkit.TestEnvironment
+import geotrellis.spark.testkit.io._
+import geotrellis.spark.testkit.testfiles.TestTileFeatureFiles
 
 class HBaseTileFeatureSpatialSpec
   extends PersistenceSpec[SpatialKey, TileFeature[Tile, Tile], TileLayerMetadata[SpatialKey]]

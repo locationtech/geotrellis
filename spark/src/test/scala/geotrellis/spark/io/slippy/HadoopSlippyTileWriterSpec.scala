@@ -24,7 +24,7 @@ import geotrellis.proj4._
 import geotrellis.vector._
 import geotrellis.spark.testkit._
 
-import geotrellis.spark.testfiles._
+import geotrellis.spark.testkit.testfiles._
 
 import org.scalatest._
 import java.io.File

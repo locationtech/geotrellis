@@ -20,7 +20,7 @@ import geotrellis.raster.{Tile, TileLayout}
 import geotrellis.spark.{SpatialKey, LayerId}
 import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.spark.render._
-import geotrellis.spark.testfiles.TestFiles
+import geotrellis.spark.testkit.testfiles.TestFiles
 import geotrellis.spark.io.s3._
 import geotrellis.spark.io.s3.testkit._
 import geotrellis.spark.io.s3.SaveToS3

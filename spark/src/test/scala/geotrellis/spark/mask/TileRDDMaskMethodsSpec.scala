@@ -19,7 +19,7 @@ package geotrellis.spark.mask
 import geotrellis.raster._
 import geotrellis.raster.testkit._
 import geotrellis.spark._
-import geotrellis.spark.testfiles._
+import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.testkit._
 import geotrellis.vector._
 

@@ -20,6 +20,7 @@ import geotrellis.raster.{GridBounds, Tile, TileFeature}
 import geotrellis.spark._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.json._
+import geotrellis.spark.testkit.io._
 
 import java.time.{ZoneOffset, ZonedDateTime}
 

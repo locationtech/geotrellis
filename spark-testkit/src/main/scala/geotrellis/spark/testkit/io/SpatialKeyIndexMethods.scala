@@ -14,21 +14,16 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io
+package geotrellis.spark.testkit.io
 
 import geotrellis.spark._
 import geotrellis.spark.io.index._
 
-import jp.ne.opt.chronoscala.Imports._
-
-import java.time.ZonedDateTime
-
-trait SpaceTimeKeyIndexMethods {
-  def keyIndexMethods: Map[String, KeyIndexMethod[SpaceTimeKey]] =
+trait SpatialKeyIndexMethods {
+  def keyIndexMethods: Map[String, KeyIndexMethod[SpatialKey]] =
     Map(
-      "z order by year" -> ZCurveKeyIndexMethod.byYear,
-      "z order by 6 months" -> ZCurveKeyIndexMethod.byMonths(6),
-      "hilbert using now" -> HilbertKeyIndexMethod(ZonedDateTime.now - 20.years, ZonedDateTime.now, 4),
-      "hilbert resolution" -> HilbertKeyIndexMethod(2)
+      "row major" -> RowMajorKeyIndexMethod,
+      "z order" -> ZCurveKeyIndexMethod,
+      "hilbert" -> HilbertKeyIndexMethod
     )
 }

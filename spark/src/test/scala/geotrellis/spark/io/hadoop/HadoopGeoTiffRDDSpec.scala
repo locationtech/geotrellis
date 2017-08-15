@@ -20,7 +20,7 @@ import geotrellis.raster._
 import geotrellis.raster.testkit.RasterMatchers
 import geotrellis.spark._
 import geotrellis.spark.tiling._
-import geotrellis.spark.testfiles._
+import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.testkit._
 import geotrellis.vector.ProjectedExtent

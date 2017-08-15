@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.testfiles
+package geotrellis.spark.testkit.testfiles
 
 import geotrellis.proj4._
-import geotrellis.raster.{GridBounds, TileLayout, FloatConstantNoDataCellType}
+import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.spark.testkit._
 
 import org.apache.spark._
-import jp.ne.opt.chronoscala.Imports._
+import org.apache.spark.rdd.RDD
 
+import jp.ne.opt.chronoscala.Imports._
 import java.time.{ZoneOffset, ZonedDateTime}
 
-object TestFiles {
+object TestTileFeatureFiles {
   val ZOOM_LEVEL = 8
   val partitionCount = 4
 
-  def generateSpatial(layerName: String)(implicit sc: SparkContext): TileLayerRDD[SpatialKey] = {
+  def generateSpatial(layerName: String)(implicit sc: SparkContext): RDD[(SpatialKey, TileFeature[Tile, Tile])] with Metadata[TileLayerMetadata[SpatialKey]] = {
     val md = {
       val cellType = FloatConstantNoDataCellType
       val crs = LatLng
@@ -65,13 +66,13 @@ object TestFiles {
       ) yield {
         val key = SpatialKey(col, row)
         val tile = spatialTestFile(key)
-        (key, tile)
+        (key, TileFeature(tile, tile))
       }
 
     new ContextRDD(sc.parallelize(tiles, partitionCount), md)
   }
 
-  def generateSpaceTime(layerName: String)(implicit sc: SparkContext): TileLayerRDD[SpaceTimeKey] = {
+  def generateSpaceTime(layerName: String)(implicit sc: SparkContext): RDD[(SpaceTimeKey, TileFeature[Tile, Tile])]  with Metadata[TileLayerMetadata[SpaceTimeKey]] = {
     val times =
       (0 to 4).map(i => ZonedDateTime.of(2010 + i, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)).toArray
 
@@ -105,7 +106,7 @@ object TestFiles {
       ) yield {
         val key = SpaceTimeKey(col, row, time)
         val tile = spaceTimeTestTiles(key, timeIndex)
-        (key, tile)
+        (key, TileFeature(tile, tile))
 
       }
 
@@ -113,10 +114,10 @@ object TestFiles {
   }
 }
 
-trait TestFiles { self: TestEnvironment =>
-  def spatialTestFile(name: String) = TestFiles.generateSpatial(name)
+trait TestTileFeatureFiles { self: TestEnvironment =>
+  def spatialTestFile(name: String) = TestTileFeatureFiles.generateSpatial(name)
 
-  def spaceTimeTestFile(name: String) = TestFiles.generateSpaceTime(name)
+  def spaceTimeTestFile(name: String) = TestTileFeatureFiles.generateSpaceTime(name)
 
   lazy val AllOnesTestFile =
     spatialTestFile("all-ones")
