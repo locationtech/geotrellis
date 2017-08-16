@@ -22,6 +22,14 @@ fast batch processing of large raster data sets.
 Please visit the **[project site](http://geotrellis.io)**
 for more information as well as some interactive demos.
 
+#### Using GeoTrellis in Other Languages
+
+If you are interested in GeoTrellis but are unable to work in Scala, then
+there is an alternative available,
+[GeoPySpark](http://github.com/locationtech-labs/geopyspark). GeoPySpark
+is a Python bindings library for GeoTrellis and can do many (but not
+all) of the operations present in GeoTrellis.
+
 ## Contact and Support
 
 You can find more information and talk to developers
