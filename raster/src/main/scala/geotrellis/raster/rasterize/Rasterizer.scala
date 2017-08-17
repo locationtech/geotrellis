@@ -111,8 +111,8 @@ object Rasterizer {
     geom match {
       case geom: Point         => foreachCellByPoint(geom, re)(f)
       case geom: MultiPoint    => foreachCellByMultiPoint(geom, re)(f)
-      case geom: MultiLine     => foreachCellByMultiLineString(geom, re)(f)
-      case geom: Line          => foreachCellByLineString(geom, re)(f)
+      case geom: MultiLine     => foreachCellByMultiLineString(geom, re, options)(f)
+      case geom: Line          => foreachCellByLineString(geom, re, options)(f)
       case geom: Polygon       => PolygonRasterizer.foreachCellByPolygon(geom, re, options)(f)
       case geom: MultiPolygon  => foreachCellByMultiPolygon(geom, re, options)(f)
       case geom: GeometryCollection => geom.geometries.foreach(foreachCellByGeometry(_, re, options)(f))
@@ -151,12 +151,28 @@ object Rasterizer {
   /**
     * Apply function f to every cell contained within MultiLineString.
     *
+    * @param g        MultiLineString used to define zone
+    * @param re       RasterExtent used to determine cols and rows
+    * @param options  Rendering options
+    * @param f        Function to apply: f(cols, row, feature)
+    */
+  def foreachCellByMultiLineString(
+    g: MultiLine,
+    re: RasterExtent,
+    options: Options
+  )(f: (Int, Int) => Unit) {
+    g.lines.foreach(foreachCellByLineString(_, re, options)(f))
+  }
+
+  /**
+    * Apply function f to every cell contained within MultiLineString.
+    *
     * @param g   MultiLineString used to define zone
     * @param re  RasterExtent used to determine cols and rows
     * @param f   Function to apply: f(cols, row, feature)
     */
   def foreachCellByMultiLineString(g: MultiLine, re: RasterExtent)(f: (Int, Int) => Unit) {
-    g.lines.foreach(foreachCellByLineString(_, re)(f))
+    g.lines.foreach(foreachCellByLineString(_, re, Options.DEFAULT)(f))
   }
 
   /**
@@ -205,6 +221,29 @@ object Rasterizer {
     * LineString.  The iteration happens in the direction from the
     * first point to the last point.
     */
+  def foreachCellByLineString(
+    line: Line,
+    re: RasterExtent,
+    options: Options
+  )(f: (Int, Int) => Unit) {
+    val cells = (for(coord <- line.jtsGeom.getCoordinates()) yield {
+      (re.mapXToGrid(coord.x), re.mapYToGrid(coord.y))
+    }).toList
+
+    for(i <- 1 until cells.size) {
+      foreachCellInGridLine(
+        cells(i - 1)._1, cells(i - 1)._2,
+        cells(i)._1, cells(i)._2,
+        re, i != cells.size - 1,
+        options)(f)
+    }
+  }
+
+  /**
+    * Iterates over the cells determined by the segments of a
+    * LineString.  The iteration happens in the direction from the
+    * first point to the last point.
+    */
   def foreachCellByLineString(line: Line, re: RasterExtent)(f: (Int, Int) => Unit) {
     val coords = line.jtsGeom.getCoordinates()
     var i = 1; while (i < coords.size) {
@@ -234,8 +273,33 @@ object Rasterizer {
   def foreachCellInGridLine[D](
     x0: Int, y0: Int,
     x1: Int, y1: Int,
-    p: Line, re: RasterExtent, skipLast: Boolean = false
-  )(f: (Int, Int) => Unit) = {
+    p: Line, re: RasterExtent,
+    skipLast: Boolean = false
+  )(f: (Int, Int) => Unit): Unit = {
+    foreachCellInGridLine(x0, y0, x1, y1, re, skipLast, Options.DEFAULT)(f)
+  }
+
+  /**
+    * Implementation of the Bresenham line drawing algorithm.  Only
+    * calls on cell coordinates within raster extent.
+    *
+    * The parameter 'skipLast' is a flag which is 'true' if the
+    * function should skip function calling the last cell (x1, y1) and
+    * false otherwise.  This is useful for not duplicating end points
+    * when calling for multiple line segments.
+    *
+    * @param    p                  LineString used to define zone
+    * @param    re                 RasterExtent used to determine cols and rows
+    * @param    skipLast           Boolean flag
+    * @param    f                  Function to apply: f(cols, row, feature)
+    */
+  def foreachCellInGridLine(
+    x0: Int, y0: Int,
+    x1: Int, y1: Int,
+    re: RasterExtent,
+    skipLast: Boolean,
+    options: Options
+  )(f: (Int, Int) => Unit): Unit = {
     val dx=math.abs(x1 - x0)
     val sx=if (x0 < x1) 1 else -1
     val dy=math.abs(y1 - y0)
@@ -257,4 +321,5 @@ object Rasterizer {
        0 <= x && x < re.cols &&
        0 <= y && y < re.rows) { f(x, y); }
   }
+
 }
