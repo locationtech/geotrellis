@@ -16,12 +16,17 @@
 
 package geotrellis.spark
 
+import geotrellis.spark.tiling.LayoutDefinition
+import geotrellis.vector.Extent
 import org.apache.spark.rdd.RDD
 
 /** A SpatialKey designates the spatial positioning of a layer's tile. */
 case class SpatialKey(col: Int, row: Int) extends Product2[Int, Int] {
   def _1 = col
   def _2 = row
+
+  /** Retrieve the [[Extent]] that corresponds to this key, given a layout. */
+  def toExtent(layout: LayoutDefinition): Extent = layout.mapTransform(this)
 }
 
 object SpatialKey {
