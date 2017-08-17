@@ -1,0 +1,75 @@
+name: geotrellis
+
+full_name: GeoTrellis
+
+description: >
+  GeoTrellis is a geographic data processing engine for high performance applications.
+
+impact: >
+  GeoTrellis brings geospatial capability to the Spark/Scala ecosystem.
+
+owner_type: project
+
+stage: live
+
+testable: true
+
+licenses:
+  geotrellis:
+    name: Apache-2.0
+    url: https://github.com/locationtech/geotrellis/blob/master/LICENSE
+
+# partners:
+# - 
+
+contact:
+- url: https://github.com/locationtech/geotrellis/issues
+  text: GitHub Issue Tracker
+- url: https://gitter.im/geotrellis/geotrellis
+  text: Gitter Chat Room
+
+team:
+- github: echeipesh
+  role: lead
+- github: fosskers
+- github: jamesmcclain
+- github: jbouffard
+- github: jpolchlo
+- github: lossyrob
+  role: lead
+- github: moradology
+- github: pomadchin
+
+type: app
+
+# milestones:
+# - 
+
+# parent:
+
+links:
+- url: https://geotrellis.io/
+  text: Main Website
+- url: https://github.com/locationtech/geotrellis/releases
+  text: Releases
+
+# blogTag:
+# - 
+
+stack:
+- Scala:2.11
+- Spark:2.2
+
+services:
+- name: Travis CI
+  category: build
+
+# users:
+# - 
+
+tags:
+- big-data
+- geospatial
+- spark
+- scala
+- geotrellis
