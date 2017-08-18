@@ -226,16 +226,14 @@ object Rasterizer {
     re: RasterExtent,
     options: Options
   )(f: (Int, Int) => Unit) {
-    val cells = (for(coord <- line.jtsGeom.getCoordinates()) yield {
-      (re.mapXToGrid(coord.x), re.mapYToGrid(coord.y))
-    }).toList
-
-    for(i <- 1 until cells.size) {
-      foreachCellInGridLine(
-        cells(i - 1)._1, cells(i - 1)._2,
-        cells(i)._1, cells(i)._2,
-        re, i != cells.size - 1,
-        options)(f)
+    val coords = line.jtsGeom.getCoordinates()
+    var i = 1; while (i < coords.size) {
+      val x1 = re.mapXToGrid(coords(i-1).x)
+      val y1 = re.mapYToGrid(coords(i-1).y)
+      val x2 = re.mapXToGrid(coords(i+0).x)
+      val y2 = re.mapYToGrid(coords(i+0).y)
+      foreachCellInGridLine(x1, y1, x2, y2, re, i != coords.size - 1, options)(f)
+      i += 1
     }
   }
 
@@ -315,7 +313,13 @@ object Rasterizer {
          0 <= y && y < re.rows) { f(x, y); }
       e2 = err
       if (e2 > -dx) { err -= dy; x += sx; }
-      if (e2 < dy) { err += dx; y += sy; }
+      if (e2 < dy) {
+        if (options.sampleType == PixelIsArea &&
+            e2 > -dx &&
+            0 <= x && x < re.cols &&
+            0 <= y && y < re.rows) f(x, y)
+        err += dx; y += sy;
+      }
     }
     if(!skipLast &&
        0 <= x && x < re.cols &&
