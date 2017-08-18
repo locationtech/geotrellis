@@ -24,6 +24,4 @@ object Implicits extends Implicits
 trait Implicits {
   implicit class withGeometryRDDRasterizeMethods[G <: Geometry](val self: RDD[G])
       extends GeometryRDDRasterizeMethods[G]
-  implicit class withGeometryRDDRasterizeMethods[G <: Geometry](val self: RDD[Feature[G,Double]])
-      extends FeatureRDDRasterizeMethods[G]
 }
