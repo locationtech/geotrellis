@@ -7,6 +7,8 @@ import geotrellis.spark.tiling._
 import geotrellis.vector._
 import org.apache.spark.rdd._
 import org.apache.spark.{HashPartitioner, Partitioner}
+import org.apache.spark.rdd._
+import scala.collection.immutable.VectorBuilder
 
 object RasterizeFeaturesRDD {
 
