@@ -106,6 +106,64 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
     !(rowMax < other.rowMin || other.rowMax < rowMin)
 
   /**
+   * Creates a new [[GridBounds]] using a buffer around this
+   * GridBounds.
+   *
+   * @note This will not buffer past 0 regardless of how much the buffer
+   *       falls below it.
+   *
+   * @param bufferSize The amount this GridBounds should be buffered by.
+   */
+  def buffer(bufferSize: Int): GridBounds =
+    buffer(bufferSize, bufferSize)
+
+  /**
+   * Creates a new [[GridBounds]] using a buffer around this
+   * GridBounds.
+   *
+   * @note This will not buffer past 0 regardless of how much the buffer
+   *       falls below it.
+   *
+   * @param colBuffer The amount the cols within this GridBounds should be buffered.
+   * @param rowBuffer The amount the rows within this GridBounds should be buffered.
+   * @param clamp     Determines whether or not to clamp the GridBounds to the grid
+   *                  such that it no value will be under 0; defaults to true. If false,
+   *                  then the resulting GridBounds can contain negative values outside
+   *                  of the grid boundaries.
+   */
+  def buffer(colBuffer: Int, rowBuffer: Int, clamp: Boolean = true): GridBounds =
+    GridBounds(
+      if (clamp) math.max(colMin - colBuffer, 0) else colMin - colBuffer,
+      if (clamp) math.max(rowMin - rowBuffer, 0) else rowMin - rowBuffer,
+      colMax + colBuffer,
+      rowMax + rowBuffer
+    )
+
+  /**
+   * Offsets this [[GridBounds]] to a new location relative to its current
+   * position
+   *
+   * @param boundsOffset The amount the GridBounds should be shifted.
+   */
+  def offset(boundsOffset: Int): GridBounds =
+    offset(boundsOffset, boundsOffset)
+
+  /**
+   * Offsets this [[GridBounds]] to a new location relative to its current
+   * position
+   *
+   * @param colOffset The amount the cols should be shifted.
+   * @param rowOffset The amount the rows should be shifted.
+   */
+  def offset(colOffset: Int, rowOffset: Int): GridBounds =
+    GridBounds(
+      colMin + colOffset,
+      rowMin + rowOffset,
+      colMax + colOffset,
+      rowMax + rowOffset
+    )
+
+  /**
     * Another name for the 'minus' method.
     *
     * @param  other  The other GridBounds
