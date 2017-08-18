@@ -32,13 +32,44 @@ object RasterizeFeaturesRDD {
   ): RDD[(SpatialKey, Tile)] with Metadata[LayoutDefinition] = {
     val layoutRasterExtent = RasterExtent(layout.extent, layout.layoutCols, layout.layoutRows)
     val layoutRasterizerOptions = Rasterizer.Options(includePartial=true, sampleType=PixelIsArea)
+    val fudge = math.min(layoutRasterExtent.cellwidth, layoutRasterExtent.cellheight) * 0.01
+
+    def lineToPolygons(line: Line): Seq[Polygon] = {
+      line.points
+        .sliding(2)
+        .map({ case Array(a: Point, b: Point) =>
+          Polygon(
+            a, b,
+            Point(b.x+fudge, b.y+fudge),
+            Point(a.x+fudge, a.y+fudge),
+            a
+          ) })
+        .toList
+    }
+
+    def multiLineToPolygons(mline: MultiLine): Seq[Polygon] = {
+      mline.lines.flatMap({ line => lineToPolygons(line) })
+    }
 
     /** Key geometry by spatial keys of intersecting tiles */
     def keyGeom(feature: Feature[Geometry, Double]): Iterator[(SpatialKey, (Feature[Geometry, Double], SpatialKey))] = {
-      var keySet = Set.empty[SpatialKey]
-      feature.geom.foreach(layoutRasterExtent, layoutRasterizerOptions){ (col, row) =>
-        keySet = keySet + SpatialKey(col, row)
+      val geoms = feature.geom match {
+        case l: Line => lineToPolygons(l)
+        case ml: MultiLine => multiLineToPolygons(ml)
+        case g => List(g)
       }
+      var keySet = Set.empty[SpatialKey]
+
+      geoms.foreach({geom =>
+        Rasterizer.foreachCellByGeometry(
+          geom,
+          layoutRasterExtent,
+          layoutRasterizerOptions
+        )({ (col: Int, row: Int) =>
+          keySet = keySet + SpatialKey(col, row)
+        })
+      })
+
       keySet.toIterator.map { key => (key, (feature, key)) }
     }
 
