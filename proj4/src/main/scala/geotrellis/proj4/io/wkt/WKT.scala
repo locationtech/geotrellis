@@ -16,9 +16,6 @@
 
 package geotrellis.proj4.io.wkt
 
-import geotrellis.proj4.Memoize
-import org.osgeo.proj4j.NotFoundException
-
 import scala.io.Source
 
 object WKT {
@@ -30,7 +27,6 @@ object WKT {
   def parseWktEpsgResource(): Map[Int, String] = {
     //read input from epsg.properties file
     WKT.withWktFile { lines =>
-      println(lines)
       val iter =
         for (line <- lines) yield {
           //split the line for parsing the wkt, aka remove code infront
