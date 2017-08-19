@@ -16,7 +16,9 @@
 
 package geotrellis.proj4
 
-object LatLng extends CRS {
+import geotrellis.proj4.CRS.ObjectNameShowable
+
+object LatLng extends CRS with ObjectNameShowable {
   lazy val proj4jCrs = factory.createFromName("EPSG:4326")
 
   def epsgCode: Option[Int] = Some(4326)

@@ -21,7 +21,7 @@ import org.scalatest._
 /**
  * @author Manuri Perera
  */
-class CRSTest extends FunSpec {
+class CRSTest extends FunSpec with Inspectors {
 
   it("should return the proj4string corresponding to EPSG:4326") {
     val crs = CRS.fromName("EPSG:4326")
@@ -66,4 +66,18 @@ class CRSTest extends FunSpec {
     assert(wktString == Some("PROJCS[\"WGS 84 / Pseudo-Mercator\", GEOGCS[\"WGS 84\", DATUM[\"World Geodetic System 1984\", SPHEROID[\"WGS 84\", 6378137.0, 298.257223563, AUTHORITY[\"EPSG\",\"7030\"]], AUTHORITY[\"EPSG\",\"6326\"]], PRIMEM[\"Greenwich\", 0.0, AUTHORITY[\"EPSG\",\"8901\"]], UNIT[\"degree\", 0.017453292519943295], AXIS[\"Geodetic longitude\", EAST], AXIS[\"Geodetic latitude\", NORTH], AUTHORITY[\"EPSG\",\"4326\"]], PROJECTION[\"Popular Visualisation Pseudo Mercator\", AUTHORITY[\"EPSG\",\"1024\"]], PARAMETER[\"semi_minor\", 6378137.0], PARAMETER[\"latitude_of_origin\", 0.0], PARAMETER[\"central_meridian\", 0.0], PARAMETER[\"scale_factor\", 1.0], PARAMETER[\"false_easting\", 0.0], PARAMETER[\"false_northing\", 0.0], UNIT[\"m\", 1.0], AXIS[\"Easting\", EAST], AXIS[\"Northing\", NORTH], AUTHORITY[\"EPSG\",\"3857\"]]"))
   }
 
+  it("should have human friendly toString") {
+    val samples = Seq(
+      CRS.fromEpsgCode(3857),
+      CRS.fromWKT(WebMercator.toWKT().get),
+      CRS.fromName("EPSG:4326"),
+      CRS.fromString(Sinusoidal.toProj4String),
+      LatLng, Sinusoidal, WebMercator, ConusAlbers
+    )
+
+    forEvery(samples) { crs ⇒
+      val str = crs.toString
+      assert(!str.contains("$") && !str.contains("@"))
+    }
+  }
 }
