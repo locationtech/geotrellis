@@ -35,7 +35,7 @@ trait ErasedNode extends (Any => Any) {
   /** Get the typed node without its computation. */
   def node[T: TypeTag]: Node[T] = {
     val thatTpe = typeTag[T].tpe
-    if(thatTpe == rangeTpe) apply().asInstanceOf[Node[T]]
+    if(thatTpe =:= rangeTpe) apply().asInstanceOf[Node[T]]
     else throw new Exception(s"Cannot cast ErasedNode to $thatTpe " +
       s"since it cannot be cast to $rangeTpe")
   }
@@ -46,7 +46,7 @@ trait ErasedNode extends (Any => Any) {
   /** Compute the result of the node and cast to type T. */
   def eval[T: TypeTag](implicit sc: SparkContext): T = {
     val thatTpe = typeTag[T].tpe
-    if(thatTpe == rangeTpe) unsafeEval.asInstanceOf[T]
+    if(thatTpe =:= rangeTpe) unsafeEval.asInstanceOf[T]
     else throw new Exception(s"Cannot cast ErasedNode evaluation result to $thatTpe " +
       s"since it cannot be cast to $rangeTpe")
   }
@@ -59,7 +59,7 @@ trait ErasedNode extends (Any => Any) {
 
   def range: String = rangeTpe.toString
 
-  def composable(that: ErasedNode): Boolean = domainTpe == that.rangeTpe
+  def composable(that: ErasedNode): Boolean = domainTpe =:= that.rangeTpe
 
   def compose(l: List[ErasedNode]): List[ErasedNodeComposition] =
     l flatMap { compose(_) }
