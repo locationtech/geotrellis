@@ -12,6 +12,21 @@ import scala.collection.immutable.VectorBuilder
 
 object RasterizeFeaturesRDD {
 
+  case class FeatureInfo(value: Double, priority: Double)
+
+  def fromFeature[G <: Geometry](
+    features: RDD[Feature[G, Double]],
+    cellType: CellType,
+    layout: LayoutDefinition,
+    options: Rasterizer.Options = Rasterizer.Options.DEFAULT,
+    partitioner: Option[Partitioner] = None
+  ): RDD[(SpatialKey, Tile)] with Metadata[LayoutDefinition] = {
+    val features2 = features.map({ feature =>
+      Feature[G, FeatureInfo](feature.geom, FeatureInfo(feature.data, 0))
+    })
+    fromFeaturePriority(features2, cellType, layout, options, partitioner)
+  }
+
   /**
    * Rasterize an RDD of Geometry objects into a tiled raster RDD.
    * Cells not intersecting any geometry will left as NODATA.
@@ -23,8 +38,8 @@ object RasterizeFeaturesRDD {
    * @param options Rasterizer options for cell intersection rules
    * @param partitioner Partitioner for result RDD
    */
-  def fromFeature[G <: Geometry](
-    features: RDD[Feature[G, Double]],
+  def fromFeaturePriority[G <: Geometry](
+    features: RDD[Feature[G, FeatureInfo]],
     cellType: CellType,
     layout: LayoutDefinition,
     options: Rasterizer.Options = Rasterizer.Options.DEFAULT,
@@ -52,7 +67,9 @@ object RasterizeFeaturesRDD {
     }
 
     /** Key geometry by spatial keys of intersecting tiles */
-    def keyGeom(feature: Feature[Geometry, Double]): Iterator[(SpatialKey, (Feature[Geometry, Double], SpatialKey))] = {
+    def keyGeom(
+      feature: Feature[Geometry, FeatureInfo]
+    ): Iterator[(SpatialKey, (Feature[Geometry, FeatureInfo], SpatialKey))] = {
       val geoms = feature.geom match {
         case l: Line => lineToPolygons(l)
         case ml: MultiLine => multiLineToPolygons(ml)
@@ -74,21 +91,21 @@ object RasterizeFeaturesRDD {
     }
 
     // key the geometry to intersecting tiles so it can be rasterized in the map-side combine
-    val keyed: RDD[(SpatialKey, (Feature[Geometry, Double], SpatialKey))] =
+    val keyed: RDD[(SpatialKey, (Feature[Geometry, FeatureInfo], SpatialKey))] =
       features.flatMap { feature => keyGeom(feature) }
 
-    val createTile = (tup: (Feature[Geometry, Double], SpatialKey)) => {
+    val createTile = (tup: (Feature[Geometry, FeatureInfo], SpatialKey)) => {
       val (feature, key) = tup
       val tile = ArrayTile.empty(cellType, layout.tileCols, layout.tileRows)
       val re = RasterExtent(layout.mapTransform(key), layout.tileCols, layout.tileRows)
-      feature.geom.foreach(re, options){ tile.setDouble(_, _, feature.data) }
+      feature.geom.foreach(re, options){ tile.setDouble(_, _, feature.data.value) }
       tile: MutableArrayTile
     }
 
-    val updateTile = (tile: MutableArrayTile, tup: (Feature[Geometry, Double], SpatialKey)) => {
+    val updateTile = (tile: MutableArrayTile, tup: (Feature[Geometry, FeatureInfo], SpatialKey)) => {
       val (feature, key) = tup
       val re = RasterExtent(layout.mapTransform(key), layout.tileCols, layout.tileRows)
-      feature.geom.foreach(re, options){ tile.setDouble(_, _, feature.data) }
+      feature.geom.foreach(re, options){ tile.setDouble(_, _, feature.data.value) }
       tile: MutableArrayTile
     }
 
