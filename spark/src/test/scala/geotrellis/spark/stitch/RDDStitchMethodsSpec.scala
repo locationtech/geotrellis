@@ -16,13 +16,13 @@
 
 package geotrellis.spark.stitch
 
+import geotrellis.proj4.LatLng
 import geotrellis.raster._
 import geotrellis.raster.testkit._
-import geotrellis.raster.io.geotiff.SinglebandGeoTiff
 import geotrellis.spark._
 import geotrellis.spark.testkit._
+import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.vector.Extent
-
 import org.scalatest.FunSpec
 
 class RDDStitchMethodsSpec extends FunSpec
@@ -98,6 +98,41 @@ class RDDStitchMethodsSpec extends FunSpec
         )
 
       assertEqual(tile, layer.stitch.tile)
+    }
+
+    it("should reconstitute a tiled raster to its original size") {
+      import geotrellis.spark.stitch.Implicits.withSpatialTileRDDMethods
+      val tile: Tile = byteRaster
+      val offset = 10
+      val scale = 10
+      val size = 5
+
+      val extent = Extent(
+        offset, offset, offset + tile.cols * scale, offset + tile.rows * scale
+      )
+      val raster = ProjectedRaster(tile, extent, LatLng)
+      assert(raster.cellSize == CellSize(scale, scale))
+
+      val layout = LayoutDefinition(raster.rasterExtent, size, size)
+      val kb = KeyBounds(
+        SpatialKey(0, 0), SpatialKey(layout.layoutCols, layout.layoutRows)
+      )
+      val tlm = TileLayerMetadata(
+        raster.tile.cellType, layout, raster.extent, raster.crs, kb)
+
+      val rdd = sc.makeRDD(Seq((raster.projectedExtent, raster.tile)))
+
+      val tiled = rdd.tileToLayout(tlm)
+      val restitched: Tile = withSpatialTileRDDMethods(tiled).stitch()
+
+      assert(restitched.dimensions === raster.tile.dimensions,
+        s"""Expected:
+           |${raster.asciiDraw()}
+           |
+           |Stitched:
+           |${restitched.asciiDraw()}
+          """.stripMargin
+      )
     }
   }
 }
