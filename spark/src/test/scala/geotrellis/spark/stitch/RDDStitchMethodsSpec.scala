@@ -122,10 +122,10 @@ class RDDStitchMethodsSpec extends FunSpec
 
       val rdd = sc.makeRDD(Seq((raster.projectedExtent, raster.tile)))
 
-      val tiled = rdd.tileToLayout(tlm)
-      val restitched: Tile = withSpatialTileRDDMethods(tiled).stitch()
+      val tiled = TileLayerRDD(rdd.tileToLayout(tlm), tlm)
+      val restitched: Tile = withSpatialTileRDDMethods(tiled).stitch().crop(tile.cols, tile.rows)
 
-      assert(restitched.dimensions === raster.tile.dimensions,
+      assert(restitched.toArray() === tile.toArray(),
         s"""Expected:
            |${raster.asciiDraw()}
            |

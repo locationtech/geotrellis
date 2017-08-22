@@ -112,8 +112,8 @@ trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
       case Some(sharedExtent) =>
         val mutableTile = self.mutable
         val re = RasterExtent(extent, self.cols, self.rows)
-        val GridBounds(colMin, rowMin, colMax, rowMax) = re.gridBoundsFor(sharedExtent)
-        val targetCS = CellSize(sharedExtent, colMax, rowMax)
+        val gridBounds = re.gridBoundsFor(sharedExtent)
+        val targetCS = CellSize(sharedExtent, gridBounds.width, gridBounds.height)
 
         self.cellType match {
           case BitCellType | ByteCellType | UByteCellType | ShortCellType | UShortCellType | IntCellType  =>
