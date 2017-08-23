@@ -109,4 +109,58 @@ class GridBoundsSpec extends FunSpec with Matchers{
       gbs.coordsIter.toSeq shouldBe gbs.coords.toSeq
     }
   }
+
+  describe("GridBounds.buffer") {
+    it("should not produce a GridBounds with negative values") {
+      val gps = GridBounds(0, 0, 10, 10)
+
+      gps.buffer(5) shouldBe GridBounds(0, 0, 15, 15)
+    }
+
+    it("should produce a GridBounds with negative values when clamp is false") {
+      val gps = GridBounds(256, 0, 500, 256)
+
+      gps.buffer(128, 128, clamp = false) shouldBe GridBounds(128, -128, 628, 384)
+    }
+
+    it("should only buffer the cols") {
+      val gps = GridBounds(5, 5, 20, 20)
+
+      gps.buffer(5, 0) shouldBe GridBounds(0, 5, 25, 20)
+    }
+
+    it("should only buffer the rows") {
+      val gps = GridBounds(0, 15, 20, 35)
+
+      gps.buffer(0, 10) shouldBe GridBounds(0, 5, 20, 45)
+    }
+
+    it("should buffer both cols and rows") {
+      val gps = GridBounds(100, 100, 250, 250)
+
+      gps.buffer(25) shouldBe GridBounds(75, 75, 275, 275)
+    }
+  }
+
+  describe("GridBounds.offset") {
+    it("should move right 3 and down 5") {
+      val gps = GridBounds(250, 250, 500, 500)
+
+      val actual = gps.offset(3, 5)
+      val expected = GridBounds(253, 255, 503, 505)
+
+      actual shouldBe expected
+      actual.size shouldBe expected.size
+    }
+
+    it("should move to the left 10 and up 15") {
+      val gps = GridBounds(12, 22, 32, 42)
+
+      val actual = gps.offset(-10, -15)
+      val expected = GridBounds(2, 7, 22, 27)
+
+      actual shouldBe expected
+      actual.size shouldBe expected.size
+    }
+  }
 }
