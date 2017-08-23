@@ -137,12 +137,11 @@ class RasterizeSpec extends FunSuite with RasterMatchers
   test("4-connecting line drawing 1") {
     val e = Extent(0, 0, 1024, 1024)
     val re = RasterExtent(e, 1024, 1024)
-    val options = Rasterizer.Options(false, PixelIsArea)
     val line = Line((0, 0), (1022, 1024))
     val result4 = mutable.Set[(Int, Int)]()
     val result8 = mutable.Set[(Int, Int)]()
 
-    Rasterizer.foreachCellByLineString(line, re, options)({ (col: Int, row: Int) =>
+    Rasterizer.foreachCellByLineString(line, re, FourNeighbors)({ (col: Int, row: Int) =>
       if (col == 512) result4 += ((col, row)) })
     Rasterizer.foreachCellByLineString(line, re)({ (col: Int, row: Int) =>
       if (col == 512) result8 += ((col, row)) })
@@ -154,12 +153,11 @@ class RasterizeSpec extends FunSuite with RasterMatchers
   test("4-connecting line drawing 2") {
     val e = Extent(0, 0, 1024, 1024)
     val re = RasterExtent(e, 1024, 1024)
-    val options = Rasterizer.Options(false, PixelIsArea)
     val line = Line((0, 0), (1024, 1022))
     val result4 = mutable.Set[(Int, Int)]()
     val result8 = mutable.Set[(Int, Int)]()
 
-    Rasterizer.foreachCellByLineString(line, re, options)({ (col: Int, row: Int) =>
+    Rasterizer.foreachCellByLineString(line, re, FourNeighbors)({ (col: Int, row: Int) =>
       if (col == 512) result4 += ((col, row)) })
     Rasterizer.foreachCellByLineString(line, re)({ (col: Int, row: Int) =>
       if (col == 512) result8 += ((col, row)) })

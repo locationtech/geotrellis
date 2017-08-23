@@ -111,8 +111,8 @@ object Rasterizer {
     geom match {
       case geom: Point         => foreachCellByPoint(geom, re)(f)
       case geom: MultiPoint    => foreachCellByMultiPoint(geom, re)(f)
-      case geom: MultiLine     => foreachCellByMultiLineString(geom, re, options)(f)
-      case geom: Line          => foreachCellByLineString(geom, re, options)(f)
+      case geom: MultiLine     => foreachCellByMultiLineString(geom, re)(f)
+      case geom: Line          => foreachCellByLineString(geom, re)(f)
       case geom: Polygon       => PolygonRasterizer.foreachCellByPolygon(geom, re, options)(f)
       case geom: MultiPolygon  => foreachCellByMultiPolygon(geom, re, options)(f)
       case geom: GeometryCollection => geom.geometries.foreach(foreachCellByGeometry(_, re, options)(f))
@@ -151,17 +151,12 @@ object Rasterizer {
   /**
     * Apply function f to every cell contained within MultiLineString.
     *
-    * @param g        MultiLineString used to define zone
-    * @param re       RasterExtent used to determine cols and rows
-    * @param options  Rendering options
-    * @param f        Function to apply: f(cols, row, feature)
+    * @param g   MultiLineString used to define zone
+    * @param re  RasterExtent used to determine cols and rows
+    * @param f   Function to apply: f(cols, row, feature)
     */
-  def foreachCellByMultiLineString(
-    g: MultiLine,
-    re: RasterExtent,
-    options: Options
-  )(f: (Int, Int) => Unit) {
-    g.lines.foreach(foreachCellByLineString(_, re, options)(f))
+  def foreachCellByMultiLineString(g: MultiLine, re: RasterExtent)(f: (Int, Int) => Unit) {
+    g.lines.foreach(foreachCellByLineString(_, re)(f))
   }
 
   /**
@@ -169,10 +164,15 @@ object Rasterizer {
     *
     * @param g   MultiLineString used to define zone
     * @param re  RasterExtent used to determine cols and rows
+    * @param c   Desired connectivity of the line
     * @param f   Function to apply: f(cols, row, feature)
     */
-  def foreachCellByMultiLineString(g: MultiLine, re: RasterExtent)(f: (Int, Int) => Unit) {
-    g.lines.foreach(foreachCellByLineString(_, re, Options.DEFAULT)(f))
+  def foreachCellByMultiLineString(
+    g: MultiLine,
+    re: RasterExtent,
+    c: Connectivity
+  )(f: (Int, Int) => Unit) {
+    g.lines.foreach(foreachCellByLineString(_, re, c)(f))
   }
 
   /**
@@ -224,7 +224,7 @@ object Rasterizer {
   def foreachCellByLineString(
     line: Line,
     re: RasterExtent,
-    options: Options
+    c: Connectivity
   )(f: (Int, Int) => Unit) {
     val coords = line.jtsGeom.getCoordinates()
     var i = 1; while (i < coords.size) {
@@ -232,7 +232,7 @@ object Rasterizer {
       val y1 = re.mapYToGrid(coords(i-1).y)
       val x2 = re.mapXToGrid(coords(i+0).x)
       val y2 = re.mapYToGrid(coords(i+0).y)
-      foreachCellInGridLine(x1, y1, x2, y2, re, i != coords.size - 1, options)(f)
+      foreachCellInGridLine(x1, y1, x2, y2, re, i != coords.size - 1, c)(f)
       i += 1
     }
   }
@@ -274,7 +274,7 @@ object Rasterizer {
     p: Line, re: RasterExtent,
     skipLast: Boolean = false
   )(f: (Int, Int) => Unit): Unit = {
-    foreachCellInGridLine(x0, y0, x1, y1, re, skipLast, Options.DEFAULT)(f)
+    foreachCellInGridLine(x0, y0, x1, y1, re, skipLast, EightNeighbors)(f)
   }
 
   /**
@@ -296,7 +296,7 @@ object Rasterizer {
     x1: Int, y1: Int,
     re: RasterExtent,
     skipLast: Boolean,
-    options: Options
+    c: Connectivity
   )(f: (Int, Int) => Unit): Unit = {
     val dx=math.abs(x1 - x0)
     val sx=if (x0 < x1) 1 else -1
@@ -314,7 +314,7 @@ object Rasterizer {
       e2 = err
       if (e2 > -dx) { err -= dy; x += sx; }
       if (e2 < dy) {
-        if (options.sampleType == PixelIsArea &&
+        if (c == FourNeighbors &&
             e2 > -dx &&
             0 <= x && x < re.cols &&
             0 <= y && y < re.rows) f(x, y)
