@@ -206,15 +206,14 @@ object Rasterizer {
     * first point to the last point.
     */
   def foreachCellByLineString(line: Line, re: RasterExtent)(f: (Int, Int) => Unit) {
-    val cells = (for(coord <- line.jtsGeom.getCoordinates()) yield {
-      (re.mapXToGrid(coord.x), re.mapYToGrid(coord.y))
-    }).toList
-
-    for(i <- 1 until cells.size) {
-      foreachCellInGridLine(cells(i - 1)._1,
-                            cells(i - 1)._2,
-                            cells(i)._1,
-                            cells(i)._2, line, re, i != cells.size - 1)(f)
+    val coords = line.jtsGeom.getCoordinates()
+    var i = 1; while (i < coords.size) {
+      val x1 = re.mapXToGrid(coords(i-1).x)
+      val y1 = re.mapYToGrid(coords(i-1).y)
+      val x2 = re.mapXToGrid(coords(i+0).x)
+      val y2 = re.mapYToGrid(coords(i+0).y)
+      foreachCellInGridLine(x1, y1, x2, y2, line, re, i != coords.size - 1)(f)
+      i += 1
     }
   }
 
