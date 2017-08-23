@@ -17,7 +17,7 @@
 package geotrellis.vectortile
 
 import geotrellis.vector._
-import geotrellis.vectortile.protobuf.internal.{Command, ProtobufGeom}
+import geotrellis.vectortile.internal.{Command, ProtobufGeom}
 import org.scalatest._
 
 // --- //

@@ -17,8 +17,8 @@
 package geotrellis.vectortile
 
 import org.scalatest._
-import geotrellis.vectortile.protobuf.internal.Command._
-import geotrellis.vectortile.protobuf.internal.{ MoveTo, LineTo, ClosePath }
+import geotrellis.vectortile.internal.Command._
+import geotrellis.vectortile.internal.{ MoveTo, LineTo, ClosePath }
 
 // --- //
 

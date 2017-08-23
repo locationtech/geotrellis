@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Azavea
+ * Copyright 2016 - 2017 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,36 +16,81 @@
 
 package geotrellis.vectortile
 
-import geotrellis.vector.Extent
+import geotrellis.proj4.{LatLng, WebMercator}
+import geotrellis.vector._
+import geotrellis.vector.io._
+import geotrellis.vectortile.internal.{vector_tile => vt}
+import geotrellis.util.annotations.experimental
 
 // --- //
 
-/** A high-level representation of a Vector Tile. At its simplest, a Tile is
-  * just a collection of Layers. We opt to expose each Layer name at the Tile
-  * level, as the keys of a [[Map]]. This way, if the layer names are known by
-  * the user ahead of time, they can search through the Tile quickly.
+/**
+  * A concrete representation of a VectorTile, as one decoded from Protobuf
+  * bytes. At its simplest, a Tile is just a collection of Layers. We opt
+  * to expose each Layer name at the Tile level, as the keys of a [[Map]].
+  * This way, if the layer names are known by the user ahead of time,
+  * they can search through the Tile quickly.
   *
-  * Traditionally, VectorTiles are encoded as Protobuf data, which this library
-  * provides a codec for. However, by making this top-level type a trait, we
-  * are able to define alternative backends (GeoJson, for instance. Yet unimplemented.).
+  * {{{
+  * import geotrellis.vectortile._
   *
-  * See [[geotrellis.vectortile.protobuf.ProtobufTile]] for more information
-  * on how to decode and encode VectorTiles.
+  * val bytes: Array[Byte] = ...  // from some `.mvt` file
+  * val key: SpatialKey = ...  // preknown
+  * val layout: LayoutDefinition = ...  // preknown
+  * val tileExtent: Extent = layout.mapTransform(key)
   *
+  * val tile: VectorTile = VectorTile.fromBytes(bytes, tileExtent)
+  * }}}
+  *
+  * @constructor This is not meant to be called directly - see this class's
+  * companion object for the available helper methods.
   */
-trait VectorTile extends Serializable {
-  /** Every Layer in this Tile, with its name as a lookup key. */
-  val layers: Map[String, Layer]
+@experimental case class VectorTile(layers: Map[String, Layer], tileExtent: Extent) {
+  /** Encode this VectorTile back into a mid-level Protobuf object. */
+  private def toProtobuf: vt.Tile = vt.Tile(layers = layers.values.map(_.toProtobuf).toSeq)
 
-  /** The [[Extent]] of '''this''' Tile in some CRS.
-    * A Tile's extent can be easily found from its Key and [[LayoutDefinition]]:
-    *
-    * {{{
-    * val key: SpatialKey = ...
-    * val layout: LayoutDefinition = ...
-    *
-    * val tileExtent: Extent = layout.mapTransform(key)
-    * }}}
+  /** Encode this VectorTile back into its original form of Protobuf bytes. */
+  def toBytes: Array[Byte] = toProtobuf.toByteArray
+
+  /** Pretty-print this VectorTile. */
+  def pretty: String = {
+    s"""tile {
+${layers.values.map(_.pretty).mkString}
+}
+"""
+  }
+
+  /** Yield GeoJson for this VectorTile. Geometries are reprojected from
+    * WebMercator to LatLng, and metadata is dropped.
     */
-  val tileExtent: Extent
+  def toGeoJson: String =
+    layers.values.flatMap(_.features).map(_.geom.reproject(WebMercator,LatLng)).toGeoJson
+
+  /** Return a VectorTile to a Spark-friendly structure. */
+  def toIterable: Iterable[Feature[Geometry, Map[String, Value]]] =
+    layers.values.flatMap(_.features)
+
+}
+
+@experimental object VectorTile {
+  /** Create a VectorTile from a low-level protobuf Tile type. */
+  private def fromPBTile(tile: vt.Tile, tileExtent: Extent): VectorTile = {
+
+    val layers: Map[String, Layer] = tile.layers.map({ l =>
+      val pbl = LazyLayer(l, tileExtent)
+
+      pbl.name -> pbl
+    }).toMap
+
+    VectorTile(layers, tileExtent)
+  }
+
+  /** Create a [[VectorTile]] from raw Protobuf bytes.
+    *
+    * @param bytes  Raw Protobuf bytes from a `.mvt` file or otherwise.
+    * @param tileExtent The [[Extent]] of this tile, '''not''' the global extent.
+    */
+  def fromBytes(bytes: Array[Byte], tileExtent: Extent): VectorTile =
+    fromPBTile(vt.Tile.parseFrom(bytes), tileExtent)
+
 }

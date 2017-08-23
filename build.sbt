@@ -154,7 +154,7 @@ lazy val slick = project
   .settings(commonSettings)
 
 lazy val spark = project
-  .dependsOn(util, vectortile, raster, `raster-testkit` % "test")
+  .dependsOn(util, raster, `raster-testkit` % "test")
   .settings(commonSettings)
   .settings(
     // This takes care of a pseudo-cyclic dependency between the `spark` test scope, `spark-testkit`,

@@ -19,10 +19,10 @@
 //
 // Protofile syntax: PROTO2
 
-package geotrellis.vectortile.protobuf.internal.vector_tile
+package geotrellis.vectortile.internal.vector_tile
 
 @SerialVersionUID(0L)
-final case class Tile(
+private[vectortile] final case class Tile(
     layers: _root_.scala.collection.Seq[Tile.Layer] = _root_.scala.collection.Seq.empty
     ) extends com.trueaccord.scalapb.GeneratedMessage with com.trueaccord.scalapb.Message[Tile] with com.trueaccord.lenses.Updatable[Tile] {
     @transient
