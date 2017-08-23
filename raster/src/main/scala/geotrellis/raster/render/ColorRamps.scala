@@ -110,7 +110,15 @@ object ColorRamps extends MatplotLibColorRamps {
       0xD1DE8DFF, 0xEDECC3FF, 0xCCAFB4FF, 0xC99884FF
     )
 
-
+  /** Constructs a greyscale [[ColorRamp]] with `stops` discrete values. */
+  def greyscale(stops: Int): ColorRamp = {
+    val colors = (0 to stops)
+      .map(i ⇒ {
+        val c = java.awt.Color.HSBtoRGB(0f, 0f, i / stops.toFloat)
+        (c << 8) | 0xFF // Add alpha channel.
+      })
+    ColorRamp(colors)
+  }
 }
 
 /*
