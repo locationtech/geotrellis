@@ -26,7 +26,7 @@ import org.scalatest._
 import geotrellis.raster.testkit._
 import scala.collection.mutable
 
-class RasterizeSpec extends FunSuite with RasterMatchers 
+class RasterizeSpec extends FunSuite with RasterMatchers
                                      with Matchers {
    test("Point Rasterization") {
       val e = Extent(0.0, 0.0, 10.0, 10.0)
@@ -34,11 +34,11 @@ class RasterizeSpec extends FunSuite with RasterMatchers
 
       val data = (0 until 99).toArray
       val tile = ArrayTile(data, re.cols, re.rows)
-      
+
       val p = PointFeature(Point(1.0,2.0), "point one: ")
       val p2 = PointFeature(Point(9.5, 9.5), "point two: ")
       val p3 = PointFeature(Point(0.1, 9.9), "point three: ")
-      
+
 
       var f2output:String = ""
 
@@ -54,7 +54,7 @@ class RasterizeSpec extends FunSuite with RasterMatchers
         f2output = f2output + p2.data + z.toString
       }
       assert( f2output === "point two: 9")
-     
+
       f2output = ""
       Rasterizer.foreachCellByPoint(p3.geom, re) { (col:Int, row:Int) =>
         val z = tile.get(col,row)
@@ -95,7 +95,7 @@ class RasterizeSpec extends FunSuite with RasterMatchers
 
     val line1 = LineFeature(Line((1.0,3.5),(1.0,8.5), (5.0, 9.0)), "line" )
     val result = mutable.ListBuffer[(Int,Int)]()
-    
+
     Rasterizer.foreachCellByLineString(line1.geom, re) { (col:Int, row:Int) =>
       result += ((col,row))
     }
@@ -118,7 +118,7 @@ class RasterizeSpec extends FunSuite with RasterMatchers
 
     val line1 = LineFeature(Line((1.0,3.5),(1.0,8.5), (5.0, 9.0),(1.0,4.5)), "line" )
     val result = mutable.ListBuffer[(Int,Int)]()
-    
+
     Rasterizer.foreachCellByLineString(line1.geom, re) { (col:Int, row:Int) =>
       result += ((col,row))
     }
@@ -133,4 +133,37 @@ class RasterizeSpec extends FunSuite with RasterMatchers
                                        (2,4),
                                   (1,5)))
   }
+
+  test("4-connecting line drawing 1") {
+    val e = Extent(0, 0, 1024, 1024)
+    val re = RasterExtent(e, 1024, 1024)
+    val line = Line((0, 0), (1022, 1024))
+    val result4 = mutable.Set[(Int, Int)]()
+    val result8 = mutable.Set[(Int, Int)]()
+
+    Rasterizer.foreachCellByLineString(line, re, FourNeighbors)({ (col: Int, row: Int) =>
+      if (col == 512) result4 += ((col, row)) })
+    Rasterizer.foreachCellByLineString(line, re)({ (col: Int, row: Int) =>
+      if (col == 512) result8 += ((col, row)) })
+
+    (result4 diff result8) should be (Set((512,512)))
+    (result8 diff result4) should be (Set.empty)
+  }
+
+  test("4-connecting line drawing 2") {
+    val e = Extent(0, 0, 1024, 1024)
+    val re = RasterExtent(e, 1024, 1024)
+    val line = Line((0, 0), (1024, 1022))
+    val result4 = mutable.Set[(Int, Int)]()
+    val result8 = mutable.Set[(Int, Int)]()
+
+    Rasterizer.foreachCellByLineString(line, re, FourNeighbors)({ (col: Int, row: Int) =>
+      if (col == 512) result4 += ((col, row)) })
+    Rasterizer.foreachCellByLineString(line, re)({ (col: Int, row: Int) =>
+      if (col == 512) result8 += ((col, row)) })
+
+    (result4 diff result8) should be (Set((512,514)))
+    (result8 diff result4) should be (Set.empty)
+  }
+
 }

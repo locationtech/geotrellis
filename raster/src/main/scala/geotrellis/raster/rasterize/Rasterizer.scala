@@ -160,6 +160,22 @@ object Rasterizer {
   }
 
   /**
+    * Apply function f to every cell contained within MultiLineString.
+    *
+    * @param g   MultiLineString used to define zone
+    * @param re  RasterExtent used to determine cols and rows
+    * @param c   Desired connectivity of the line
+    * @param f   Function to apply: f(cols, row, feature)
+    */
+  def foreachCellByMultiLineString(
+    g: MultiLine,
+    re: RasterExtent,
+    c: Connectivity
+  )(f: (Int, Int) => Unit) {
+    g.lines.foreach(foreachCellByLineString(_, re, c)(f))
+  }
+
+  /**
     * Given a Polygon and a [[RasterExtent]], call the function 'f' at
     * each pixel in the raster extent covered by the geometry.  The
     * two arguments to the function 'f' are the column and row.
@@ -205,6 +221,27 @@ object Rasterizer {
     * LineString.  The iteration happens in the direction from the
     * first point to the last point.
     */
+  def foreachCellByLineString(
+    line: Line,
+    re: RasterExtent,
+    c: Connectivity
+  )(f: (Int, Int) => Unit) {
+    val coords = line.jtsGeom.getCoordinates()
+    var i = 1; while (i < coords.size) {
+      val x1 = re.mapXToGrid(coords(i-1).x)
+      val y1 = re.mapYToGrid(coords(i-1).y)
+      val x2 = re.mapXToGrid(coords(i+0).x)
+      val y2 = re.mapYToGrid(coords(i+0).y)
+      foreachCellInGridLine(x1, y1, x2, y2, re, i != coords.size - 1, c)(f)
+      i += 1
+    }
+  }
+
+  /**
+    * Iterates over the cells determined by the segments of a
+    * LineString.  The iteration happens in the direction from the
+    * first point to the last point.
+    */
   def foreachCellByLineString(line: Line, re: RasterExtent)(f: (Int, Int) => Unit) {
     val coords = line.jtsGeom.getCoordinates()
     var i = 1; while (i < coords.size) {
@@ -234,8 +271,33 @@ object Rasterizer {
   def foreachCellInGridLine[D](
     x0: Int, y0: Int,
     x1: Int, y1: Int,
-    p: Line, re: RasterExtent, skipLast: Boolean = false
-  )(f: (Int, Int) => Unit) = {
+    p: Line, re: RasterExtent,
+    skipLast: Boolean = false
+  )(f: (Int, Int) => Unit): Unit = {
+    foreachCellInGridLine(x0, y0, x1, y1, re, skipLast, EightNeighbors)(f)
+  }
+
+  /**
+    * Implementation of the Bresenham line drawing algorithm.  Only
+    * calls on cell coordinates within raster extent.
+    *
+    * The parameter 'skipLast' is a flag which is 'true' if the
+    * function should skip function calling the last cell (x1, y1) and
+    * false otherwise.  This is useful for not duplicating end points
+    * when calling for multiple line segments.
+    *
+    * @param    p                  LineString used to define zone
+    * @param    re                 RasterExtent used to determine cols and rows
+    * @param    skipLast           Boolean flag
+    * @param    f                  Function to apply: f(cols, row, feature)
+    */
+  def foreachCellInGridLine(
+    x0: Int, y0: Int,
+    x1: Int, y1: Int,
+    re: RasterExtent,
+    skipLast: Boolean,
+    c: Connectivity
+  )(f: (Int, Int) => Unit): Unit = {
     val dx=math.abs(x1 - x0)
     val sx=if (x0 < x1) 1 else -1
     val dy=math.abs(y1 - y0)
@@ -251,10 +313,17 @@ object Rasterizer {
          0 <= y && y < re.rows) { f(x, y); }
       e2 = err
       if (e2 > -dx) { err -= dy; x += sx; }
-      if (e2 < dy) { err += dx; y += sy; }
+      if (e2 < dy) {
+        if (c == FourNeighbors &&
+            e2 > -dx &&
+            0 <= x && x < re.cols &&
+            0 <= y && y < re.rows) f(x, y)
+        err += dx; y += sy;
+      }
     }
     if(!skipLast &&
        0 <= x && x < re.cols &&
        0 <= y && y < re.rows) { f(x, y); }
   }
+
 }
