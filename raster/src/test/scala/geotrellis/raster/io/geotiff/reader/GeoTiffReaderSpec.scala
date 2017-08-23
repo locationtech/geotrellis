@@ -350,7 +350,7 @@ class GeoTiffReaderSpec extends FunSpec
     val MeanEpsilon = 1e-8
 
     def testMinMaxAndMean(min: Double, max: Double, mean: Double, file: String) {
-      val SinglebandGeoTiff(tile, extent, _, _, _) = SinglebandGeoTiff.compressed(file)
+      val SinglebandGeoTiff(tile, extent, _, _, _, _) = SinglebandGeoTiff.compressed(file)
 
       tile.polygonalMax(extent, extent.toPolygon) should be (max)
       tile.polygonalMin(extent, extent.toPolygon) should be (min)
@@ -376,7 +376,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read GeoTiff without GeoKey Directory correctly") {
-      val SinglebandGeoTiff(tile, extent, crs, _, _) = SinglebandGeoTiff.compressed(geoTiffPath("no-geokey-dir.tif"))
+      val SinglebandGeoTiff(tile, extent, crs, _, _, _) = SinglebandGeoTiff.compressed(geoTiffPath("no-geokey-dir.tif"))
 
       crs should be (LatLng)
       extent should be (Extent(307485, 3911490, 332505, 3936510))

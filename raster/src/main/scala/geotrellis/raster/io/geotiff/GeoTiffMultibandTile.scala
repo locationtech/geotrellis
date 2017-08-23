@@ -47,7 +47,8 @@ object GeoTiffMultibandTile {
     compression: Compression,
     bandCount: Int,
     cellType: CellType,
-    bandType: Option[BandType] = None
+    bandType: Option[BandType] = None,
+    overviews: List[GeoTiffMultibandTile] = Nil
   ): GeoTiffMultibandTile =
     bandType match {
       case Some(UInt32BandType) =>
@@ -154,7 +155,8 @@ abstract class GeoTiffMultibandTile(
   val decompressor: Decompressor,
   val segmentLayout: GeoTiffSegmentLayout,
   val compression: Compression,
-  val bandCount: Int
+  val bandCount: Int,
+  val overviews: List[GeoTiffMultibandTile] = Nil
 ) extends MultibandTile with GeoTiffImageData with GeoTiffSegmentLayoutTransform with MacroGeotiffMultibandCombiners with LazyLogging {
   val cellType: CellType
   val cols: Int = segmentLayout.totalCols
@@ -168,6 +170,9 @@ abstract class GeoTiffMultibandTile(
 
   val segmentCount: Int = segmentBytes.size
   private val isTiled = segmentLayout.isTiled
+
+  def getOverviewsCount: Int = overviews.length
+  def getOverview(idx: Int): GeoTiffMultibandTile = overviews(idx)
 
   /**
    * Returns the corresponding GeoTiffTile from the inputted band index.
@@ -191,7 +196,7 @@ abstract class GeoTiffMultibandTile(
             compressedBandBytes(segmentIndex) = compressor.compress(bytes, segmentIndex)
           }
 
-          GeoTiffTile(new ArraySegmentBytes(compressedBandBytes), compressor.createDecompressor(), segmentLayout, compression, cellType, Some(bandType))
+          GeoTiffTile(new ArraySegmentBytes(compressedBandBytes), compressor.createDecompressor(), segmentLayout, compression, cellType, Some(bandType), overviews.map(_.band(bandIndex)))
         case _ =>
           val compressedBandBytes = Array.ofDim[Array[Byte]](segmentCount)
           val compressor = compression.createCompressor(segmentCount)
@@ -202,7 +207,7 @@ abstract class GeoTiffMultibandTile(
             compressedBandBytes(segmentIndex) = compressor.compress(bytes, segmentIndex)
           }
 
-          GeoTiffTile(new ArraySegmentBytes(compressedBandBytes), compressor.createDecompressor(), segmentLayout, compression, cellType, Some(bandType))
+          GeoTiffTile(new ArraySegmentBytes(compressedBandBytes), compressor.createDecompressor(), segmentLayout, compression, cellType, Some(bandType), overviews.map(_.band(bandIndex)))
       }
     } else {
       val bandSegmentCount = segmentCount / bandCount
@@ -213,7 +218,7 @@ abstract class GeoTiffMultibandTile(
         compressedBandBytes(segmentIndex - segmentOffset) = segment.clone
       }
 
-      GeoTiffTile(new ArraySegmentBytes(compressedBandBytes), decompressor, segmentLayout, compression, cellType, Some(bandType))
+      GeoTiffTile(new ArraySegmentBytes(compressedBandBytes), decompressor, segmentLayout, compression, cellType, Some(bandType), overviews.map(_.band(bandIndex)))
     }
   }
 

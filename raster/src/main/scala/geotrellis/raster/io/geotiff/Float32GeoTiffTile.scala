@@ -25,8 +25,9 @@ class Float32GeoTiffTile(
   val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
-  val cellType: FloatCells with NoDataHandling
-) extends GeoTiffTile(segmentLayout, compression) with Float32GeoTiffSegmentCollection {
+  val cellType: FloatCells with NoDataHandling,
+  overviews: List[Float32GeoTiffTile]
+) extends GeoTiffTile(segmentLayout, compression, overviews) with Float32GeoTiffSegmentCollection {
 
   val noDataValue: Option[Float] = cellType match {
     case FloatCellType => None
@@ -35,12 +36,19 @@ class Float32GeoTiffTile(
   }
   
   def withNoData(noDataValue: Option[Double]): Float32GeoTiffTile =
-    new Float32GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoData(noDataValue))
+    new Float32GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoData(noDataValue), overviews.map(_.withNoData(noDataValue)))
 
   def interpretAs(newCellType: CellType): Tile = {
     newCellType match {
       case dt: FloatCells with NoDataHandling =>
-        new Float32GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, dt)
+        new Float32GeoTiffTile(
+          segmentBytes,
+          decompressor,
+          segmentLayout,
+          compression,
+          dt,
+          overviews.map(_.interpretAs(newCellType)).collect { case gt: Float32GeoTiffTile => gt }
+        )
       case _ =>
         withNoData(None).convert(newCellType)
     }

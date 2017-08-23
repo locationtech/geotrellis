@@ -192,6 +192,5 @@ class MultibandGeoTiffReaderSpec extends FunSpec
       tile.band(1).foreach { z => z should be (0) }
       tile.band(2).foreach { z => z should be (1) }
     }
-
   }
 }

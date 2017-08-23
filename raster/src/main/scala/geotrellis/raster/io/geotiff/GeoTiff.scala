@@ -64,6 +64,10 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
 
   def toByteArray: Array[Byte] =
     GeoTiffWriter.write(this)
+
+  def overviews: List[GeoTiff[T]] = List()
+  def getOverviewsCount: Int = overviews.length
+  def getOverview(idx: Int): GeoTiff[T] = overviews(idx)
 }
 
 /**

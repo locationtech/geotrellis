@@ -24,8 +24,9 @@ class UByteGeoTiffTile(
   val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
-  val cellType: UByteCells with NoDataHandling
-) extends GeoTiffTile(segmentLayout, compression) with UByteGeoTiffSegmentCollection {
+  val cellType: UByteCells with NoDataHandling,
+  overviews: List[UByteGeoTiffTile]
+) extends GeoTiffTile(segmentLayout, compression, overviews) with UByteGeoTiffSegmentCollection {
 
   val noDataValue: Option[Int] = cellType match {
     case UByteCellType => None
@@ -34,12 +35,19 @@ class UByteGeoTiffTile(
   }
 
   def withNoData(noDataValue: Option[Double]): UByteGeoTiffTile =
-    new UByteGeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoData(noDataValue))
+    new UByteGeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoData(noDataValue), overviews.map(_.withNoData(noDataValue)))
 
   def interpretAs(newCellType: CellType): GeoTiffTile = {
     newCellType match {
       case dt: UByteCells with NoDataHandling =>
-        new UByteGeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, dt)
+        new UByteGeoTiffTile(
+          segmentBytes,
+          decompressor,
+          segmentLayout,
+          compression,
+          dt,
+          overviews.map(_.interpretAs(newCellType)).collect { case gt: UByteGeoTiffTile => gt }
+        )
       case _ =>
         withNoData(None).convert(newCellType)
     }
