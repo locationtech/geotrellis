@@ -22,6 +22,16 @@ fast batch processing of large raster data sets.
 Please visit the **[project site](http://geotrellis.io)**
 for more information as well as some interactive demos.
 
+#### GeoTrellis with Python
+
+GeoTrellis has Python bindings through a project called [GeoPySpark](http://github.com/locationtech-labs/geopyspark).
+GeoPySpark is a Python bindings library for GeoTrellis and can do many
+(but not all) of the operations present in GeoTrellis. GeoPySpark can
+be integrated with other tools in the Python ecosystem, such as NumPy,  
+scikit-learn, and Jupyter notebooks. Several GeoPySpark tutorials have
+been developed that leverage the visualization capability of [GeoNotebook](https://github.com/OpenGeoscience/geonotebook), 
+an open-source Jupyter extension that provides interactive map displays.
+
 ## Contact and Support
 
 You can find more information and talk to developers
