@@ -330,16 +330,22 @@ object GeoTiffReader {
       // IFD overviews may contain not all tags required for a proper work with it
       // for instance it may not contain CRS metadata
       val tiffTagsList: List[TiffTags] = {
-        // TODO: BigTiff support
+        val tiffTagsBuffer: ListBuffer[TiffTags] = ListBuffer()
         if(tiffIdNumber == 42) {
-          val tiffTagsBuffer: ListBuffer[TiffTags] = ListBuffer()
           var ifdOffset = byteReader.getInt
           while (ifdOffset > 0) {
             tiffTagsBuffer += TiffTagsReader.read(byteReader, ifdOffset)(IntTiffTagOffsetSize)
             ifdOffset = byteReader.getInt
           }
           tiffTagsBuffer.toList
-        } else Nil
+        } else {
+          var ifdOffset = byteReader.getLong
+          while (ifdOffset > 0) {
+            tiffTagsBuffer += TiffTagsReader.read(byteReader, ifdOffset)(LongTiffTagOffsetSize)
+            ifdOffset = byteReader.getLong
+          }
+          tiffTagsBuffer.toList
+        }
       }
 
       def getGeoTiffInfo(tiffTags: TiffTags, overviews: List[GeoTiffInfo] = Nil): GeoTiffInfo = {
