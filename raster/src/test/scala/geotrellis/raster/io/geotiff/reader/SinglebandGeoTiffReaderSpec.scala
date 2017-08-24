@@ -122,6 +122,7 @@ class SinglebandGeoTiffReaderSpec extends FunSpec
       val tile = tiff.tile
 
       tiff.getOverviewsCount should be (5)
+      tile.isNoDataTile should be (false)
 
       tile.cols -> tile.rows should be (sizes(0))
 
@@ -129,6 +130,7 @@ class SinglebandGeoTiffReaderSpec extends FunSpec
         val ovrTile = ovrTiff.tile
 
         ovrTiff.getOverviewsCount should be (0)
+        ovrTile.isNoDataTile should be (false)
 
         ovrTile.cols -> ovrTile.rows should be (ovrSize)
       }

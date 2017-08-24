@@ -94,6 +94,7 @@ class MultibandGeoTiffReaderSpec extends FunSpec
 
       tiff.getOverviewsCount should be (5)
       tile.bandCount should be (4)
+      tile.bands.map(_.isNoDataTile).reduce(_ && _) should be (false)
 
       tile.cols -> tile.rows should be (sizes(0))
 
@@ -102,6 +103,7 @@ class MultibandGeoTiffReaderSpec extends FunSpec
 
         ovrTiff.getOverviewsCount should be (0)
         ovrTile.bandCount should be (4)
+        ovrTile.bands.map(_.isNoDataTile).reduce(_ && _) should be (false)
 
         ovrTile.cols -> ovrTile.rows should be (ovrSize)
       }
