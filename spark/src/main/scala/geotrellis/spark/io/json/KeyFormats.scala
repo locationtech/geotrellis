@@ -53,7 +53,7 @@ trait KeyFormats {
         case Seq(JsNumber(col), JsNumber(row), JsNumber(time)) =>
           SpaceTimeKey(col.toInt, row.toInt, time.toLong)
         case _ =>
-          throw new DeserializationException("SpatialKey expected")
+          throw new DeserializationException("SpaceTimeKey expected")
       }
   }
 
