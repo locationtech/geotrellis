@@ -25,8 +25,9 @@ class ByteGeoTiffMultibandTile(
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
   bandCount: Int,
-  val cellType: ByteCells with NoDataHandling
-) extends GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount)
+  val cellType: ByteCells with NoDataHandling,
+  overviews: List[ByteGeoTiffMultibandTile] = Nil
+) extends GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, overviews)
     with ByteGeoTiffSegmentCollection {
 
   val noDataValue: Option[Byte] = cellType match {
@@ -50,13 +51,13 @@ class ByteGeoTiffMultibandTile(
       def getBytes(): Array[Byte] = arr
     }
 
-  def withNoData(noDataValue: Option[Double]) =
-    new ByteGeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, cellType.withNoData(noDataValue))
+  def withNoData(noDataValue: Option[Double]): ByteGeoTiffMultibandTile =
+    new ByteGeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, cellType.withNoData(noDataValue), overviews.map(_.withNoData(noDataValue)))
 
-  def interpretAs(newCellType: CellType)  = {
+  def interpretAs(newCellType: CellType): GeoTiffMultibandTile = {
     newCellType match {
       case dt: ByteCells with NoDataHandling =>
-        new ByteGeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, dt)
+        new ByteGeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, dt, overviews.map(_.interpretAs(newCellType)).collect { case gt: ByteGeoTiffMultibandTile => gt })
       case _ =>
         withNoData(None).convert(newCellType)
     }

@@ -113,6 +113,26 @@ class SinglebandGeoTiffReaderSpec extends FunSpec
       min should be (-0.014291191473603 +- 0.000000000000001)
       max should be (4.4320001602173 +- 0.0000000000001)
     }
+
+    it("should read tiff with overviews correct") {
+      // sizes of overviews, starting with the base ifd
+      val sizes = List(1056 -> 1052, 528 -> 526, 264 -> 263, 132 -> 132, 66 -> 66, 33 -> 33)
+
+      val tiff = SinglebandGeoTiff(geoTiffPath("overviews/singleband.tif"))
+      val tile = tiff.tile
+
+      tiff.getOverviewsCount should be (5)
+
+      tile.cols -> tile.rows should be (sizes(0))
+
+      tiff.overviews.zip(sizes.tail).foreach { case (ovrTiff, ovrSize) =>
+        val ovrTile = ovrTiff.tile
+
+        ovrTiff.getOverviewsCount should be (0)
+
+        ovrTile.cols -> ovrTile.rows should be (ovrSize)
+      }
+    }
   }
 
   describe("Reading NBITS=1 GeoTiffs") {

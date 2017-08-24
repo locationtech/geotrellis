@@ -105,7 +105,7 @@ object GeoTiffReader {
         info.crs,
         info.tags,
         info.options,
-        (geoTiffTile.overviews zip info.overviews).map { case (t, i) => getSingleband(t, i) }
+        info.overviews.map { i => getSingleband(geoTiffSinglebandTile(i), i) }
       )
 
     val info = readGeoTiffInfo(byteReader, decompress, streaming)
@@ -187,19 +187,20 @@ object GeoTiffReader {
       readMultiband(ByteBuffer.wrap(bytes), decompress, streaming)
 
   def readMultiband(byteReader: ByteReader, decompress: Boolean, streaming: Boolean): MultibandGeoTiff = {
-    /*def getMultiband(geoTiffTile: GeoTiffMultibandTile, info: GeoTiffInfo): MultibandGeoTiff =
-      MultibandGeoTiff(
+    def getMultiband(geoTiffTile: GeoTiffMultibandTile, info: GeoTiffInfo): MultibandGeoTiff =
+      new MultibandGeoTiff(
         if (decompress) geoTiffTile.toArrayTile else geoTiffTile,
         info.extent,
         info.crs,
         info.tags,
         info.options,
-        (geoTiffTile.overviews zip info.overviews).map { case (t, i) => getMultiband(t, i) }
-      )*/
+        info.overviews.map { i => getMultiband(geoTiffMultibandTile(i), i) }
+      )
 
     val info = readGeoTiffInfo(byteReader, decompress, streaming)
     val geoTiffTile = geoTiffMultibandTile(info)
-    new MultibandGeoTiff(if (decompress) geoTiffTile.toArrayTile else geoTiffTile, info.extent, info.crs, info.tags, info.options)
+
+    getMultiband(geoTiffTile, info)
   }
 
   def geoTiffMultibandTile(info: GeoTiffReader.GeoTiffInfo): GeoTiffMultibandTile = {

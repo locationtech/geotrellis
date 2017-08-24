@@ -27,12 +27,13 @@ case class MultibandGeoTiff(
   val extent: Extent,
   val crs: CRS,
   val tags: Tags,
-  options: GeoTiffOptions
+  options: GeoTiffOptions,
+  override val overviews: List[MultibandGeoTiff] = Nil
 ) extends GeoTiff[MultibandTile] {
   val cellType = tile.cellType
 
   def mapTile(f: MultibandTile => MultibandTile): MultibandGeoTiff =
-    MultibandGeoTiff(f(tile), extent, crs, tags, options)
+    MultibandGeoTiff(f(tile), extent, crs, tags, options, overviews)
 
   def imageData: GeoTiffImageData =
     tile match {
@@ -44,7 +45,7 @@ case class MultibandGeoTiff(
     val raster: Raster[MultibandTile] =
       this.raster.crop(subExtent)
 
-    MultibandGeoTiff(raster, subExtent, this.crs, this.tags)
+    MultibandGeoTiff(raster, subExtent, this.crs, this.tags, this.options, this.overviews)
   }
 
   def crop(colMax: Int, rowMax: Int): MultibandGeoTiff =
@@ -54,7 +55,7 @@ case class MultibandGeoTiff(
     val raster: Raster[MultibandTile] =
       this.raster.crop(colMin, rowMin, colMax, rowMax)
 
-    MultibandGeoTiff(raster, raster._2, this.crs, this.tags)
+    MultibandGeoTiff(raster, raster._2, this.crs, this.tags, this.options, this.overviews)
   }
 }
 
