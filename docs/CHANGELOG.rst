@@ -4,11 +4,18 @@ Changelog
 1.2.0
 -----
 
-Deprecations
-^^^^^^^^^^^^
+API Changes
+^^^^^^^^^^^
 
-- ``GridBounds.size`` in favour of ``GridBounds.sizeLong``
-- ``GridBounds.coords`` in favour of ``GridBounds.coordsIter``
+- ``raster``:
+
+  - ``GridBounds.size`` deprecated in favour of ``GridBounds.sizeLong``
+  - ``GridBounds.coords`` deprecated in favour of ``GridBounds.coordsIter``
+
+- ``vectortile`` (experimental):
+
+  - Library simplified by assuming the codec backend will always be Protobuf
+  - ``VectorTile.toGeoJson`` and ``VectorTile.toIterable`` added
 
 1.1.0
 -----
