@@ -20,7 +20,7 @@ import geotrellis.proj4.CRS
 import geotrellis.raster.{Tile, TileLayout}
 import geotrellis.spark._
 import geotrellis.spark.render._
-import geotrellis.spark.testfiles.TestFiles
+import geotrellis.spark.testkit.testfiles.TestFiles
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testkit._
 

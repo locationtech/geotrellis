@@ -19,7 +19,8 @@ package geotrellis.spark.io.cassandra
 import geotrellis.raster.Tile
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.testfiles.TestFiles
+import geotrellis.spark.testkit.io._
+import geotrellis.spark.testkit.testfiles.TestFiles
 import geotrellis.spark.testkit.TestEnvironment
 
 class CassandraSpaceTimeSpec

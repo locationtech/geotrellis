@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.testfiles
+package geotrellis.spark.testkit.testfiles
 
 import geotrellis.spark._
 import geotrellis.raster._

@@ -20,7 +20,8 @@ import geotrellis.raster.{Tile, TileFeature}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index._
-import geotrellis.spark.testfiles.TestTileFeatureFiles
+import geotrellis.spark.testkit.io._
+import geotrellis.spark.testkit.testfiles.TestTileFeatureFiles
 import geotrellis.spark.testkit.TestEnvironment
 
 class AccumuloTileFeatureSpaceTimeSpec

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io
+package geotrellis.spark.testkit.io
 
 import geotrellis.spark._
 import geotrellis.spark.io._

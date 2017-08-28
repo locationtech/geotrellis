@@ -21,7 +21,7 @@ import geotrellis.spark._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.json._
 import geotrellis.vector.Extent
-
+import geotrellis.spark.testkit.io._
 
 trait AllOnesTestTileSpec { self: PersistenceSpec[SpatialKey, Tile, TileLayerMetadata[SpatialKey]] =>
 

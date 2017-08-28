@@ -19,7 +19,7 @@ package geotrellis.spark.io.hadoop
 import geotrellis.proj4.LatLng
 import geotrellis.spark._
 import geotrellis.spark.ingest._
-import geotrellis.spark.testfiles._
+import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.tiling._
 import geotrellis.vector._
 import geotrellis.spark.testkit._
