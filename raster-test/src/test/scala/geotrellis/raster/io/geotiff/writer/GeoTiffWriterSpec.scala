@@ -107,6 +107,17 @@ class GeoTiffWriterSpec extends FunSpec
       actualCRS.epsgCode should be (geoTiff.crs.epsgCode)
     }
 
+    it ("should write Sinusoidal correctly") {
+
+      val geoTiff = SinglebandGeoTiff(geoTiffPath("../reproject/modis_sinu.tif"))
+
+      addToPurge(path)
+      geoTiff.write(path)
+      val actualCRS = SinglebandGeoTiff(path).crs
+
+      actualCRS.toProj4String should be (geoTiff.crs.toProj4String)
+    }
+
     it("should write floating point rasters correctly") {
       val t = DoubleArrayTile(Array(11.0, 22.0, 33.0, 44.0), 2, 2)
 

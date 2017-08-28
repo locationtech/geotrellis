@@ -24,7 +24,6 @@ import geotrellis.proj4.CRS
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.tags._
-import EllipsoidTypes._
 import DatumTypes._
 import GeographicCSTypes._
 import EllipsoidTypes._
@@ -34,6 +33,7 @@ import GeoKeys._
 import ModelTypes._
 import CoordinateTransformTypes._
 import ProjectedLinearUnits._
+import AngularUnitTypes.Angular_Degree
 
 case class GeoDirectoryTags(shortTags: Array[(Int, Int, Int, Int)], doubles: Array[Double])
 
@@ -161,6 +161,7 @@ class CoordinateSystemParser(val crs: CRS, val pixelSampleType: Option[PixelSamp
     case Some("utm") => utmProps
     case Some("lcc") => lccProps
     case Some("longlat") | Some("latlong") => longLatProps
+    case Some("sinu") ⇒ sinuProps
     case Some(p) => throw new GeoTiffWriterLimitationException(
       s"This GeoTiff writer does not currently support the projection $proj4String without an EPSG code associated with the CRS. You'll need to use a CRS that has an EPSG code, or reproject before writing to GeoTIFF."
     )
@@ -270,6 +271,25 @@ class CoordinateSystemParser(val crs: CRS, val pixelSampleType: Option[PixelSamp
       (geoKeysInt, doubles)
     } else (geoKeysInt, Nil)
   } else (Nil, Nil)
+
+  private lazy val sinuProps = {
+    val geoKeysInt = List(
+      (GTModelTypeGeoKey, ModelTypeProjected),
+      (ProjectedCSTypeGeoKey, UserDefinedCPV),
+      (ProjCoordTransGeoKey, CT_Sinusoidal),
+      (ProjLinearUnitsGeoKey, LinearMeterCode),
+      (GeogAngularUnitsGeoKey, Angular_Degree)
+    )
+
+    val doubles = List(
+      (ProjNatOriginLatGeoKey, getDouble("lat_0")),
+      (ProjNatOriginLongGeoKey, getDouble("lon_0")),
+      (ProjFalseEastingGeoKey, getDouble("x_0")),
+      (ProjFalseNorthingGeoKey, getDouble("y_0"))
+    )
+
+    (geoKeysInt, doubles)
+  }
 
   private lazy val linearUnitProps = {
     val unitString = getString("units", "err")
