@@ -109,7 +109,7 @@ class GeoTiffWriterSpec extends FunSpec
 
     it ("should write Sinusoidal correctly") {
 
-      val geoTiff = SinglebandGeoTiff(geoTiffPath("../reproject/modis_sinu.tif"))
+      val geoTiff = SinglebandGeoTiff(geoTiffPath("reproject/modis_sinu.tif"))
 
       addToPurge(path)
       geoTiff.write(path)
