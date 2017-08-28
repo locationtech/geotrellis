@@ -278,6 +278,57 @@ class GeoTiffWriterSpec extends FunSpec
         assertEqual(actualBand, expectedBand)
       }
     }
+
+    it("should write a MultibandGeoTiff with overviews correct") {
+      val sizes = List(1056 -> 1052, 528 -> 526, 264 -> 263, 132 -> 132, 66 -> 66, 33 -> 33)
+
+      val tiffOriginal = MultibandGeoTiff(geoTiffPath("overviews/multiband.tif"))
+      tiffOriginal.write(path)
+
+      val tiff = MultibandGeoTiff(path)
+      val tile = tiff.tile
+
+      tiff.getOverviewsCount should be (5)
+      tile.bandCount should be (4)
+      tile.bands.map(_.isNoDataTile).reduce(_ && _) should be (false)
+
+      tile.cols -> tile.rows should be (sizes(0))
+
+      tiff.overviews.zip(sizes.tail).foreach { case (ovrTiff, ovrSize) =>
+        val ovrTile = ovrTiff.tile
+
+        ovrTiff.getOverviewsCount should be (0)
+        ovrTile.bandCount should be (4)
+        ovrTile.bands.map(_.isNoDataTile).reduce(_ && _) should be (false)
+
+        ovrTile.cols -> ovrTile.rows should be (ovrSize)
+      }
+    }
+
+    it("should write a SinglebandGeoTiff with overviews correct") {
+      // sizes of overviews, starting with the base ifd
+      val sizes = List(1056 -> 1052, 528 -> 526, 264 -> 263, 132 -> 132, 66 -> 66, 33 -> 33)
+
+      val tiffOriginal = SinglebandGeoTiff(geoTiffPath("overviews/singleband.tif"))
+      tiffOriginal.write(path)
+
+      val tiff = SinglebandGeoTiff(path)
+      val tile = tiff.tile
+
+      tiff.getOverviewsCount should be (5)
+      tile.isNoDataTile should be (false)
+
+      tile.cols -> tile.rows should be (sizes(0))
+
+      tiff.overviews.zip(sizes.tail).foreach { case (ovrTiff, ovrSize) =>
+        val ovrTile = ovrTiff.tile
+
+        ovrTiff.getOverviewsCount should be (0)
+        ovrTile.isNoDataTile should be (false)
+
+        ovrTile.cols -> ovrTile.rows should be (ovrSize)
+      }
+    }
   }
   describe ("writing GeoTiffs with correct color handling") {
     val temp = File.createTempFile("geotiff-writer", ".tif")

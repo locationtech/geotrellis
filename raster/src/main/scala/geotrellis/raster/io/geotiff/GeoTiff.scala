@@ -30,6 +30,7 @@ trait GeoTiffData {
   val cellType: CellType
 
   def imageData: GeoTiffImageData
+  def overviews: List[GeoTiffData]
   def extent: Extent
   def crs: CRS
   def tags: Tags

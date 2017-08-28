@@ -317,34 +317,38 @@ object GeoTiffReader {
       if (tiffIdNumber != 42 && tiffIdNumber != 43)
         throw new MalformedGeoTiffException(s"bad identification number (must be 42 or 43, was $tiffIdNumber (${tiffIdNumber.toInt}))")
 
+      val tiffType = TiffType.fromCode(tiffIdNumber)
+
       val tiffTags: TiffTags =
-        if (tiffIdNumber == 42) {
-          val smallStart = byteReader.getInt
-          TiffTagsReader.read(byteReader, smallStart.toLong)(IntTiffTagOffsetSize)
-        } else {
-          byteReader.position(8)
-          val bigStart = byteReader.getLong
-          TiffTagsReader.read(byteReader, bigStart)(LongTiffTagOffsetSize)
+        tiffType match {
+          case Tiff =>
+            val smallStart = byteReader.getInt
+            TiffTagsReader.read(byteReader, smallStart.toLong)(IntTiffTagOffsetSize)
+          case _ =>
+            byteReader.position(8)
+            val bigStart = byteReader.getLong
+            TiffTagsReader.read(byteReader, bigStart)(LongTiffTagOffsetSize)
         }
 
       // IFD overviews may contain not all tags required for a proper work with it
       // for instance it may not contain CRS metadata
       val tiffTagsList: List[TiffTags] = {
         val tiffTagsBuffer: ListBuffer[TiffTags] = ListBuffer()
-        if(tiffIdNumber == 42) {
-          var ifdOffset = byteReader.getInt
-          while (ifdOffset > 0) {
-            tiffTagsBuffer += TiffTagsReader.read(byteReader, ifdOffset)(IntTiffTagOffsetSize)
-            ifdOffset = byteReader.getInt
-          }
-          tiffTagsBuffer.toList
-        } else {
-          var ifdOffset = byteReader.getLong
-          while (ifdOffset > 0) {
-            tiffTagsBuffer += TiffTagsReader.read(byteReader, ifdOffset)(LongTiffTagOffsetSize)
-            ifdOffset = byteReader.getLong
-          }
-          tiffTagsBuffer.toList
+        tiffType match {
+          case Tiff =>
+            var ifdOffset = byteReader.getInt
+            while (ifdOffset > 0) {
+              tiffTagsBuffer += TiffTagsReader.read(byteReader, ifdOffset)(IntTiffTagOffsetSize)
+              ifdOffset = byteReader.getInt
+            }
+            tiffTagsBuffer.toList
+          case _ =>
+            var ifdOffset = byteReader.getLong
+            while (ifdOffset > 0) {
+              tiffTagsBuffer += TiffTagsReader.read(byteReader, ifdOffset)(LongTiffTagOffsetSize)
+              ifdOffset = byteReader.getLong
+            }
+            tiffTagsBuffer.toList
         }
       }
 
@@ -393,6 +397,11 @@ object GeoTiffReader {
             &|-> TiffTags._geoTiffTags
             ^|-> GeoTiffTags._gdalInternalNoData get)
 
+        val subfileType =
+          (tiffTags
+            &|-> TiffTags._nonBasicTags ^|->
+            NonBasicTags._newSubfileType get).map(NewSubfileType.fromCode)
+
         // If the GeoTiff is coming is as uncompressed, leave it as uncompressed.
         // If it's any sort of compression, move forward with ZLib compression.
         val compression =
@@ -411,7 +420,7 @@ object GeoTiffReader {
           tiffTags.extent,
           tiffTags.crs,
           tiffTags.tags,
-          GeoTiffOptions(storageMethod, interleaveMethod, compression, colorSpace, colorMap),
+          GeoTiffOptions(storageMethod, compression, colorSpace, colorMap, interleaveMethod, subfileType, tiffType),
           bandType,
           segmentBytes,
           decompressor,
