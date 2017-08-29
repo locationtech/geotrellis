@@ -60,11 +60,14 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
 
   def mapTile(f: T => T): GeoTiff[T]
 
-  def write(path: String): Unit =
-    GeoTiffWriter.write(this, path)
+  def write(path: String, optimizedOrder: Boolean = false): Unit =
+    GeoTiffWriter.write(this, path, optimizedOrder)
 
   def toByteArray: Array[Byte] =
-    GeoTiffWriter.write(this)
+    GeoTiffWriter.write(this, false)
+
+  def toCloudOptimizedByteArray: Array[Byte] =
+    GeoTiffWriter.write(this, true)
 
   def overviews: List[GeoTiff[T]] = List()
   def getOverviewsCount: Int = overviews.length

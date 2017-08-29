@@ -18,21 +18,22 @@ package geotrellis.raster.io.geotiff.writer
 
 import geotrellis.raster.io.geotiff._
 import spire.syntax.cfor._
+
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.ByteOrder
 
-import scala.collection.mutable.ListBuffer
-
 object GeoTiffWriter {
-  def write(geoTiff: GeoTiffData, path: String): Unit = {
+  def write(geoTiff: GeoTiffData, path: String): Unit = write(geoTiff, path, false)
+
+  def write(geoTiff: GeoTiffData, path: String, optimizedOrder: Boolean): Unit = {
     val fos = new FileOutputStream(new File(path))
     try {
       val dos = new DataOutputStream(fos)
       try {
-        new GeoTiffWriter(geoTiff, dos).write()
+        new GeoTiffWriter(geoTiff, dos).write(optimizedOrder)
       } finally {
         dos.close
       }
@@ -41,12 +42,14 @@ object GeoTiffWriter {
     }
   }
 
-  def write(geoTiff: GeoTiffData): Array[Byte] = {
+  def write(geoTiff: GeoTiffData): Array[Byte] = write(geoTiff, false)
+
+  def write(geoTiff: GeoTiffData, optimizedOrder: Boolean): Array[Byte] = {
     val bos = new ByteArrayOutputStream()
     try {
       val dos = new DataOutputStream(bos)
       try {
-        new GeoTiffWriter(geoTiff, dos).write()
+        new GeoTiffWriter(geoTiff, dos).write(optimizedOrder)
         bos.toByteArray
       } finally {
         dos.close
@@ -189,7 +192,6 @@ class GeoTiffWriter(geoTiff: GeoTiffData, dos: DataOutputStream) {
   }
 
   private def appendCloudOptimized(list: List[GeoTiffData]): Unit = {
-    // sorted from the main IFD to the smalles overview
     val ifdCount = list.length
 
     val dataOffsets = list.map { geoTiff =>
@@ -320,7 +322,7 @@ class GeoTiffWriter(geoTiff: GeoTiffData, dos: DataOutputStream) {
     }
   }
 
-  def write(cloudOptimized: Boolean = false): Unit = {
+  def write(optimizedOrder: Boolean = false): Unit = {
     // Write the header that determines the endian
     if (geoTiff.imageData.decompressor.byteOrder == ByteOrder.BIG_ENDIAN) {
       val m = 'M'.toByte
@@ -339,7 +341,7 @@ class GeoTiffWriter(geoTiff: GeoTiffData, dos: DataOutputStream) {
     writeInt(index + 4)
 
     // Append all IFDs
-    if(cloudOptimized) appendCloudOptimized(IFDs)
+    if(optimizedOrder) appendCloudOptimized(IFDs)
     else append(IFDs)
 
     dos.flush()
