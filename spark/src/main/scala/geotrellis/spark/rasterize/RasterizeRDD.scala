@@ -200,7 +200,7 @@ object RasterizeRDD {
             val rightp = rightPriority.get(col, row)
             if (leftv == 0 && rightv == 1) { // merge seems to treat 0 as nodata
               leftTile.set(col, row, rightv)
-              leftPriority.setDouble(col, row, rightp)
+              leftPriority.set(col, row, rightp)
             }
           }
         }
@@ -214,7 +214,7 @@ object RasterizeRDD {
             val rightp = rightPriority.get(col, row)
             if ((leftv == 0 && rightv != 0) || (leftv != 0 && rightv != 0 && leftp < rightp)) {
               leftTile.set(col, row, rightTile.get(col, row))
-              leftPriority.setDouble(col, row, rightp)
+              leftPriority.set(col, row, rightp)
             }
           }
         }
@@ -228,7 +228,7 @@ object RasterizeRDD {
             val rightp = rightPriority.get(col, row)
             if ((leftv == 0.0 && rightv != 0.0) || (leftv != 0.0 && rightv != 0.0 && leftp < rightp)) {
               leftTile.setDouble(col, row, rightv)
-              leftPriority.setDouble(col, row, rightp)
+              leftPriority.set(col, row, rightp)
             }
           }
         }
@@ -243,7 +243,7 @@ object RasterizeRDD {
             val rightp = rightPriority.get(col, row)
             if ((leftnd && !rightnd) || (!leftnd && !rightnd && leftp < rightp)) {
               leftTile.setDouble(col, row, rightv)
-              leftPriority.setDouble(col, row, rightp)
+              leftPriority.set(col, row, rightp)
             }
           }
         }
@@ -258,7 +258,7 @@ object RasterizeRDD {
             val rightp = rightPriority.get(col, row)
             if ((leftnd && !rightnd) || (!leftnd && !rightnd && leftp < rightp)) {
               leftTile.set(col, row, rightv)
-              leftPriority.setDouble(col, row, rightp)
+              leftPriority.set(col, row, rightp)
             }
           }
         }
