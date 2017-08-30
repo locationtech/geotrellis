@@ -50,7 +50,7 @@ class RasterizeRDDSpec extends FunSpec with Matchers
     val layout = TileLayout(3,3,256,256)
     val ld = LayoutDefinition(septaExtent, layout)
 
-    val rasterizedRdd = linesRdd.rasterizeWithValue(1, IntConstantNoDataCellType, ld)
+    val rasterizedRdd = linesRdd.rasterize(1, IntConstantNoDataCellType, ld)
     val actual = rasterizedRdd.stitch()
 
     // rasterizing a single 768x768 tile would actuall produce numerical differencies
@@ -81,7 +81,7 @@ class RasterizeRDDSpec extends FunSpec with Matchers
     val ld = LayoutDefinition(huc10.envelope, layout)
 
     val polyRdd = sc.parallelize(huc10.polygons)
-    val rasterizedRdd = polyRdd.rasterizeWithValue(1, IntConstantNoDataCellType, ld)
+    val rasterizedRdd = polyRdd.rasterize(1, IntConstantNoDataCellType, ld)
     val actual = rasterizedRdd.stitch()
 
     val expected: Tile = {
@@ -97,9 +97,68 @@ class RasterizeRDDSpec extends FunSpec with Matchers
           1)
       }
     }.stitch
+
     info("MD: " + rasterizedRdd.metadata.tileLayout.toString)
     info("Expected" + expected.dimensions.toString)
     info("Actual: " + actual.tile.dimensions.toString)
     tilesEqual(actual.tile, expected)
+  }
+
+
+  val polygon0 = Polygon(
+    Point(4,4),
+    Point(5,4),
+    Point(5,5),
+    Point(4,5),
+    Point(4,4)
+  )
+  val polygon1 = Polygon(
+    Point(0,0),
+    Point(7,0),
+    Point(7,10),
+    Point(0,10),
+    Point(0,0)
+  )
+  val polygon2 = Polygon(
+    Point(3,0),
+    Point(10,0),
+    Point(10,10),
+    Point(3,10),
+    Point(3,0)
+  )
+
+  val e = Extent(0, 0, 10, 10)
+  val tl = TileLayout(1, 1, 16, 16)
+  val ld = LayoutDefinition(e, tl)
+  val ct = DoubleConstantNoDataCellType
+
+  it("rasterize feature with z-buffer 1"){
+    val features = sc.parallelize(List(
+      Feature(polygon0, CellValue(value = 1000, zindex = 0)),
+      Feature(polygon1, CellValue(value = 1, zindex = 1)),
+      Feature(polygon2, CellValue(value = 2, zindex = 2)),
+      Feature(polygon0, CellValue(value = 2000, zindex = 0)),
+      Feature(polygon0, CellValue(value = 3000, zindex = 0))
+    ))
+    val tile = RasterizeRDD
+      .fromFeatureWithZIndex(features, ct, ld)
+      .collect().head._2
+
+    tile.toArray.sum should be (432)
+  }
+
+  it("rasterize feature with z-buffer 2"){
+    val features = sc.parallelize(List(
+      Feature(polygon0, CellValue(value = 1000, zindex = 0)),
+      Feature(polygon1, CellValue(value = 1, zindex = 3)),
+      Feature(polygon2, CellValue(value = 2, zindex = 2)),
+      Feature(polygon0, CellValue(value = 2000, zindex = 0)),
+      Feature(polygon0, CellValue(value = 3000, zindex = 0))
+    ))
+    val tile = RasterizeRDD
+      .fromFeatureWithZIndex(features, ct, ld)
+      .collect().head._2
+
+    tile.toArray.sum should be (336)
   }
 }
