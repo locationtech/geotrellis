@@ -16,7 +16,8 @@
 
 package geotrellis.spark.rasterize
 
-import geotrellis.vector.Geometry
+import geotrellis.vector.{Geometry, Feature}
+import geotrellis.raster.rasterize.CellValue
 import org.apache.spark.rdd.RDD
 
 object Implicits extends Implicits
@@ -24,4 +25,10 @@ object Implicits extends Implicits
 trait Implicits {
   implicit class withGeometryRDDRasterizeMethods[G <: Geometry](val self: RDD[G])
       extends GeometryRDDRasterizeMethods[G]
+
+  implicit class withFeatureRDDRasterizeMethods[G <: Geometry](val self: RDD[Feature[G, Double]])
+      extends FeatureRDDRasterizeMethods[G]
+
+  implicit class withCellValueFeatureRDDRasterizeMethods[G <: Geometry](val self: RDD[Feature[G, CellValue]])
+      extends CellValueFeatureRDDRasterizeMethods[G]
 }
