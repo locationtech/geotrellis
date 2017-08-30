@@ -142,21 +142,21 @@ object RasterizeFeaturesRDD {
       (leftTile, leftPriority)
     }
 
-    def lineToPolygons(line: Line): Seq[Polygon] = {
+    def lineToPolygons(line: Line): Iterator[Polygon] = {
       line.points
+        .toIterator
         .sliding(2)
-        .map({ case Array(a: Point, b: Point) =>
+        .map({ case List(a, b) =>
           Polygon(
             a, b,
             Point(b.x+fudge, b.y+fudge),
             Point(a.x+fudge, a.y+fudge),
             a
           ) })
-        .toList
     }
 
-    def multiLineToPolygons(mline: MultiLine): Seq[Polygon] = {
-      mline.lines.flatMap({ line => lineToPolygons(line) })
+    def multiLineToPolygons(mline: MultiLine): Iterator[Polygon] = {
+      mline.lines.toIterator.flatMap({ line => lineToPolygons(line) })
     }
 
     /** Key geometry by spatial keys of intersecting tiles */
