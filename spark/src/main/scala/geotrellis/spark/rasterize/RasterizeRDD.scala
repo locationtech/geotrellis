@@ -17,16 +17,16 @@ import spire.syntax.cfor._
 
 object RasterizeRDD {
   /**
-    * Rasterize an RDD of Geometry objects into a tiled raster RDD.
-    * Cells not intersecting any geometry will left as NODATA.
-    * Value will be converted to type matching specified [[CellType]].
-    *
-    * @param value Cell value for cells intersecting a geometry
-    * @param layout Raster layer layout for the result of rasterization
-    * @param cellType [[CellType]] for creating raster tiles
-    * @param options Rasterizer options for cell intersection rules
-    * @param partitioner Partitioner for result RDD
-    */
+   * Rasterize an RDD of Feature objects into a tiled raster RDD.
+   * Cells not intersecting any geometry will left as NODATA.
+   * Feature data will be converted to type matching specified [[CellType]].
+   * Feature rasterization order is undefined in this operation.
+   *
+   * @param cellType [[CellType]] for creating raster tiles
+   * @param layout Raster layer layout for the result of rasterization
+   * @param options Rasterizer options for cell intersection rules
+   * @param partitioner Partitioner for result RDD
+   */
   def fromGeometry[G <: Geometry](
     geoms: RDD[G],
     value: Double,
@@ -40,16 +40,16 @@ object RasterizeRDD {
   }
 
   /**
-    * Rasterize an RDD of Geometry objects into a tiled raster RDD.
-    * Cells not intersecting any geometry will left as NODATA.
-    * Value will be converted to type matching specified [[CellType]].
-    *
-    * @param value Cell value for cells intersecting a geometry
-    * @param layout Raster layer layout for the result of rasterization
-    * @param cellType [[CellType]] for creating raster tiles
-    * @param options Rasterizer options for cell intersection rules
-    * @param partitioner Partitioner for result RDD
-    */
+   * Rasterize an RDD of Geometry objects into a tiled raster RDD.
+   * Cells not intersecting any geometry will left as NODATA.
+   * Value will be converted to type matching specified [[CellType]].
+   *
+   * @param value Cell value for cells intersecting a geometry
+   * @param layout Raster layer layout for the result of rasterization
+   * @param cellType [[CellType]] for creating raster tiles
+   * @param options Rasterizer options for cell intersection rules
+   * @param partitioner Partitioner for result RDD
+   */
   def fromFeature[G <: Geometry](
     features: RDD[Feature[G, Double]],
     cellType: CellType,
@@ -103,18 +103,17 @@ object RasterizeRDD {
   }
 
   /**
-    * Rasterize an RDD of Geometry objects into a tiled raster RDD.
-    * Cells not intersecting any geometry will left as NODATA.  Value
-    * will be converted to type matching specified [[CellType]].  The
-    * word "Priority" in the function name is being used as an
-    * adjective, not as a noun.
-    *
-    * @param features Cell values for cells intersecting a feature consisting of Feature(geometry,value)
-    * @param layout Raster layer layout for the result of rasterization
-    * @param cellType [[CellType]] for creating raster tiles
-    * @param options Rasterizer options for cell intersection rules
-    * @param partitioner Partitioner for result RDD
-    */
+   * Rasterize an RDD of Feature objects into a tiled raster RDD.
+   * Cells not intersecting any geometry will left as NODATA.
+   * Feature value will be converted to type matching specified [[CellType]].
+   * Z-Index from [[CellValue]] will be maintained per-cell during rasterization.
+   * A cell with greater zindex is always in front of a cell with a lower zinde.
+   *
+   * @param cellType [[CellType]] for creating raster tiles
+   * @param layout Raster layer layout for the result of rasterization
+   * @param options Rasterizer options for cell intersection rules
+   * @param partitioner Partitioner for result RDD
+   */
   def fromFeatureWithZIndex[G <: Geometry](
     features: RDD[Feature[G, CellValue]],
     cellType: CellType,

@@ -37,8 +37,8 @@ trait GeometryRDDRasterizeMethods[G <: Geometry] extends MethodExtensions[RDD[G]
    * Value will be converted to type matching specified [[CellType]].
    *
    * @param value Cell value for cells intersecting a geometry
-   * @param layout Raster layer layout for the result of rasterization
    * @param cellType [[CellType]] for creating raster tiles
+   * @param layout Raster layer layout for the result of rasterization
    * @param options Rasterizer options for cell intersection rules
    * @param partitioner Partitioner for result RDD
    */
@@ -54,18 +54,18 @@ trait GeometryRDDRasterizeMethods[G <: Geometry] extends MethodExtensions[RDD[G]
 }
 
 /**
-  * Extension methods for invoking the rasterizer on RDD of Geometry objects.
-  */
+ * Extension methods for invoking the rasterizer on RDD of Feature objects.
+ */
 trait FeatureRDDRasterizeMethods[G <: Geometry] extends MethodExtensions[RDD[Feature[G, Double]]] {
 
   /**
-   * Rasterize an RDD of Geometry objects into a tiled raster RDD.
+   * Rasterize an RDD of Feature objects into a tiled raster RDD.
    * Cells not intersecting any geometry will left as NODATA.
-   * Value will be converted to type matching specified [[CellType]].
+   * Feature data will be converted to type matching specified [[CellType]].
+   * Feature rasterization order is undefined in this operation.
    *
-   * @param value Cell value for cells intersecting a geometry
-   * @param layout Raster layer layout for the result of rasterization
    * @param cellType [[CellType]] for creating raster tiles
+   * @param layout Raster layer layout for the result of rasterization
    * @param options Rasterizer options for cell intersection rules
    * @param partitioner Partitioner for result RDD
    */
@@ -80,18 +80,19 @@ trait FeatureRDDRasterizeMethods[G <: Geometry] extends MethodExtensions[RDD[Fea
 }
 
 /**
-  * Extension methods for invoking the rasterizer on RDD of Geometry objects.
+  * Extension methods for invoking the rasterizer on RDD of Feature objects with CellValue data.
   */
 trait CellValueFeatureRDDRasterizeMethods[G <: Geometry] extends MethodExtensions[RDD[Feature[G, CellValue]]] {
 
   /**
-   * Rasterize an RDD of Geometry objects into a tiled raster RDD.
+   * Rasterize an RDD of Feature objects into a tiled raster RDD.
    * Cells not intersecting any geometry will left as NODATA.
-   * Value will be converted to type matching specified [[CellType]].
+   * Feature value will be converted to type matching specified [[CellType]].
+   * Z-Index from [[CellValue]] will be maintained per-cell during rasterization.
+   * A cell with greater zindex is always in front of a cell with a lower zinde.
    *
-   * @param value Cell value for cells intersecting a geometry
-   * @param layout Raster layer layout for the result of rasterization
    * @param cellType [[CellType]] for creating raster tiles
+   * @param layout Raster layer layout for the result of rasterization
    * @param options Rasterizer options for cell intersection rules
    * @param partitioner Partitioner for result RDD
    */
