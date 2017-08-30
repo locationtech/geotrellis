@@ -51,10 +51,6 @@ object RasterizeFeaturesRDD {
     partitioner: Option[Partitioner] = None,
     usePriority: Boolean = false
   ): RDD[(SpatialKey, Tile)] with Metadata[LayoutDefinition] = {
-    val layoutRasterExtent = RasterExtent(layout.extent, layout.layoutCols, layout.layoutRows)
-    val layoutRasterizerOptions = Rasterizer.Options(includePartial=true, sampleType=PixelIsArea)
-    val fudge = math.min(layoutRasterExtent.cellwidth, layoutRasterExtent.cellheight) * 0.01
-
     /**
       * "Priority" is being used as an adjective, not as a noun.
       */
@@ -142,50 +138,12 @@ object RasterizeFeaturesRDD {
       (leftTile, leftPriority)
     }
 
-    def lineToPolygons(line: Line): Iterator[Polygon] = {
-      line.points
-        .toIterator
-        .sliding(2)
-        .map({ case List(a, b) =>
-          Polygon(
-            a, b,
-            Point(b.x+fudge, b.y+fudge),
-            Point(a.x+fudge, a.y+fudge),
-            a
-          ) })
-    }
-
-    def multiLineToPolygons(mline: MultiLine): Iterator[Polygon] = {
-      mline.lines.toIterator.flatMap({ line => lineToPolygons(line) })
-    }
-
-    /** Key geometry by spatial keys of intersecting tiles */
-    def keyGeom(
-      feature: Feature[Geometry, CellValue]
-    ): Iterator[(SpatialKey, (Feature[Geometry, CellValue], SpatialKey))] = {
-      val geoms = feature.geom match {
-        case l: Line => lineToPolygons(l)
-        case ml: MultiLine => multiLineToPolygons(ml)
-        case g => List(g)
-      }
-      var keySet = Set.empty[SpatialKey]
-
-      geoms.foreach({geom =>
-        Rasterizer.foreachCellByGeometry(
-          geom,
-          layoutRasterExtent,
-          layoutRasterizerOptions
-        )({ (col: Int, row: Int) =>
-          keySet = keySet + SpatialKey(col, row)
-        })
-      })
-
-      keySet.toIterator.map { key => (key, (feature, key)) }
-    }
-
     // key the geometry to intersecting tiles so it can be rasterized in the map-side combine
     val keyed: RDD[(SpatialKey, (Feature[Geometry, CellValue], SpatialKey))] =
-      features.flatMap { feature => keyGeom(feature) }
+      features.flatMap { feature =>
+        layout.keysForGeometry(feature.geom).toIterator
+        .map( key => (key, (feature, key)))
+      }
 
     val createTile = (tup: (Feature[Geometry, CellValue], SpatialKey)) => {
       val (feature, key) = tup
