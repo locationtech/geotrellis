@@ -17,8 +17,6 @@ import spire.syntax.cfor._
 
 object RasterizeFeaturesRDD {
 
-  case class FeatureInfo(value: Double, priority: Double)
-
   def fromFeature[G <: Geometry](
     features: RDD[Feature[G, Double]],
     cellType: CellType,
@@ -27,7 +25,7 @@ object RasterizeFeaturesRDD {
     partitioner: Option[Partitioner] = None
   ): RDD[(SpatialKey, Tile)] with Metadata[LayoutDefinition] = {
     val features2 = features.map({ feature =>
-      Feature[G, FeatureInfo](feature.geom, FeatureInfo(feature.data, 0))
+      Feature[G, CellValue](feature.geom, CellValue(feature.data, 0))
     })
     fromFeaturePriority(features2, cellType, layout, options, partitioner)
   }
@@ -46,7 +44,7 @@ object RasterizeFeaturesRDD {
    * @param partitioner Partitioner for result RDD
    */
   def fromFeaturePriority[G <: Geometry](
-    features: RDD[Feature[G, FeatureInfo]],
+    features: RDD[Feature[G, CellValue]],
     cellType: CellType,
     layout: LayoutDefinition,
     options: Rasterizer.Options = Rasterizer.Options.DEFAULT,
@@ -62,10 +60,10 @@ object RasterizeFeaturesRDD {
       */
     def mergePriority(
       leftTile: MutableArrayTile,
-      leftPriority: DoubleArrayTile,
+      leftPriority: ShortArrayTile,
       rightTile: MutableArrayTile,
-      rightPriority: DoubleArrayTile
-    ): (MutableArrayTile, DoubleArrayTile) = {
+      rightPriority: ShortArrayTile
+    ): (MutableArrayTile, ShortArrayTile) = {
       Seq(leftTile, rightTile, leftPriority, rightPriority).assertEqualDimensions()
 
       leftTile.cellType match {
@@ -74,7 +72,7 @@ object RasterizeFeaturesRDD {
             cfor(0)(_ < leftTile.cols, _ + 1) { col =>
               val leftv = leftTile.get(col, row)
               val rightv = rightTile.get(col, row)
-              val rightp = rightPriority.getDouble(col, row)
+              val rightp = rightPriority.get(col, row)
               if (leftv == 0 && rightv == 1) { // merge seems to treat 0 as nodata
                 leftTile.set(col, row, rightv)
                 leftPriority.setDouble(col, row, rightp)
@@ -86,9 +84,9 @@ object RasterizeFeaturesRDD {
           cfor(0)(_ < leftTile.rows, _ + 1) { row =>
             cfor(0)(_ < leftTile.cols, _ + 1) { col =>
               val leftv = leftTile.get(col, row)
-              val leftp = leftPriority.getDouble(col, row)
+              val leftp = leftPriority.get(col, row)
               val rightv = rightTile.get(col, row)
-              val rightp = rightPriority.getDouble(col, row)
+              val rightp = rightPriority.get(col, row)
               if ((leftv == 0 && rightv != 0) || (leftv != 0 && rightv != 0 && leftp < rightp)) {
                 leftTile.set(col, row, rightTile.get(col, row))
                 leftPriority.setDouble(col, row, rightp)
@@ -100,9 +98,9 @@ object RasterizeFeaturesRDD {
           cfor(0)(_ < leftTile.rows, _ + 1) { row =>
             cfor(0)(_ < leftTile.cols, _ + 1) { col =>
               val leftv = leftTile.getDouble(col, row)
-              val leftp = leftPriority.getDouble(col, row)
+              val leftp = leftPriority.get(col, row)
               val rightv = rightTile.getDouble(col, row)
-              val rightp = rightPriority.getDouble(col, row)
+              val rightp = rightPriority.get(col, row)
               if ((leftv == 0.0 && rightv != 0.0) || (leftv != 0.0 && rightv != 0.0 && leftp < rightp)) {
                 leftTile.setDouble(col, row, rightv)
                 leftPriority.setDouble(col, row, rightp)
@@ -114,10 +112,10 @@ object RasterizeFeaturesRDD {
             cfor(0)(_ < leftTile.cols, _ + 1) { col =>
               val leftv = leftTile.getDouble(col, row)
               val leftnd = isNoData(leftTile.getDouble(col, row))
-              val leftp = leftPriority.getDouble(col, row)
+              val leftp = leftPriority.get(col, row)
               val rightv = rightTile.getDouble(col, row)
               val rightnd = isNoData(rightTile.getDouble(col, row))
-              val rightp = rightPriority.getDouble(col, row)
+              val rightp = rightPriority.get(col, row)
               if ((leftnd && !rightnd) || (!leftnd && !rightnd && leftp < rightp)) {
                 leftTile.setDouble(col, row, rightv)
                 leftPriority.setDouble(col, row, rightp)
@@ -129,10 +127,10 @@ object RasterizeFeaturesRDD {
             cfor(0)(_ < leftTile.cols, _ + 1) { col =>
               val leftv = leftTile.get(col, row)
               val leftnd = isNoData(leftTile.get(col, row))
-              val leftp = leftPriority.getDouble(col, row)
+              val leftp = leftPriority.get(col, row)
               val rightv = rightTile.get(col, row)
               val rightnd = isNoData(rightTile.get(col, row))
-              val rightp = rightPriority.getDouble(col, row)
+              val rightp = rightPriority.get(col, row)
               if ((leftnd && !rightnd) || (!leftnd && !rightnd && leftp < rightp)) {
                 leftTile.set(col, row, rightv)
                 leftPriority.setDouble(col, row, rightp)
@@ -163,8 +161,8 @@ object RasterizeFeaturesRDD {
 
     /** Key geometry by spatial keys of intersecting tiles */
     def keyGeom(
-      feature: Feature[Geometry, FeatureInfo]
-    ): Iterator[(SpatialKey, (Feature[Geometry, FeatureInfo], SpatialKey))] = {
+      feature: Feature[Geometry, CellValue]
+    ): Iterator[(SpatialKey, (Feature[Geometry, CellValue], SpatialKey))] = {
       val geoms = feature.geom match {
         case l: Line => lineToPolygons(l)
         case ml: MultiLine => multiLineToPolygons(ml)
@@ -186,47 +184,46 @@ object RasterizeFeaturesRDD {
     }
 
     // key the geometry to intersecting tiles so it can be rasterized in the map-side combine
-    val keyed: RDD[(SpatialKey, (Feature[Geometry, FeatureInfo], SpatialKey))] =
+    val keyed: RDD[(SpatialKey, (Feature[Geometry, CellValue], SpatialKey))] =
       features.flatMap { feature => keyGeom(feature) }
 
-    val createTile = (tup: (Feature[Geometry, FeatureInfo], SpatialKey)) => {
+    val createTile = (tup: (Feature[Geometry, CellValue], SpatialKey)) => {
       val (feature, key) = tup
       val tile = ArrayTile.empty(cellType, layout.tileCols, layout.tileRows)
       val ztile =
         if (usePriority)
-          DoubleArrayTile.empty(
+          ShortArrayTile.empty(
             layout.tileCols,
             layout.tileRows,
-            DoubleUserDefinedNoDataCellType(-1.0)
-          )
+            ShortConstantNoDataCellType)
         else
           null
       val re = RasterExtent(layout.mapTransform(key), layout.tileCols, layout.tileRows)
 
       feature.geom.foreach(re, options)({ (x: Int, y: Int) =>
-        val priority = tup._1.data.priority
+        val priority = tup._1.data.zindex
         tile.setDouble(x, y, feature.data.value)
         if (usePriority)
-          ztile.setDouble(x, y, priority)
+          ztile.set(x, y, priority)
       })
 
-      (tile, ztile): (MutableArrayTile, DoubleArrayTile)
+      (tile, ztile): (MutableArrayTile, ShortArrayTile)
     }
 
     val updateTile = (
-      pair: (MutableArrayTile, DoubleArrayTile),
-      tup: (Feature[Geometry, FeatureInfo], SpatialKey)
+      pair: (MutableArrayTile, ShortArrayTile),
+      tup: (Feature[Geometry, CellValue], SpatialKey)
     ) => {
       val (feature, key) = tup
       val re = RasterExtent(layout.mapTransform(key), layout.tileCols, layout.tileRows)
       val (tile, ztile) = pair
 
       if (usePriority) {
-        val priority = tup._1.data.priority
+        val priority = tup._1.data.zindex
         feature.geom.foreach(re, options)({ (x: Int, y: Int) =>
-          if (isNoData(pair._1.getDouble(x, y)) || (pair._2.getDouble(x, y) < priority)) {
+          if (isNoData(pair._1.getDouble(x, y)) || (pair._2.get(x, y) < priority)) {
             tile.setDouble(x, y, feature.data.value)
-            ztile.setDouble(x, y, priority)
+            ztile.set(x, y, priority)
           }
         })
       } else {
@@ -235,29 +232,29 @@ object RasterizeFeaturesRDD {
         })
       }
 
-      (tile, ztile): (MutableArrayTile, DoubleArrayTile)
+      (tile, ztile): (MutableArrayTile, ShortArrayTile)
     }
 
-    val mergeTiles = (pair1: (MutableArrayTile, DoubleArrayTile), pair2: (MutableArrayTile, DoubleArrayTile)) => {
+    val mergeTiles = (pair1: (MutableArrayTile, ShortArrayTile), pair2: (MutableArrayTile, ShortArrayTile)) => {
       val (left, leftPriority) = pair1
       val (right, rightPriority) = pair2
 
       if (usePriority) {
         mergePriority(left, leftPriority, right, rightPriority)
-        (left, leftPriority): (MutableArrayTile, DoubleArrayTile)
+        (left, leftPriority): (MutableArrayTile, ShortArrayTile)
       } else {
-        (pair1._1.merge(pair2._1).mutable, pair1._2): (MutableArrayTile, DoubleArrayTile)
+        (pair1._1.merge(pair2._1).mutable, pair1._2): (MutableArrayTile, ShortArrayTile)
       }
     }
 
     val tiles: RDD[(SpatialKey, MutableArrayTile)] =
-      keyed.combineByKeyWithClassTag[(MutableArrayTile, DoubleArrayTile)](
+      keyed.combineByKeyWithClassTag[(MutableArrayTile, ShortArrayTile)](
         createCombiner = createTile,
         mergeValue = updateTile,
         mergeCombiners = mergeTiles,
         partitioner.getOrElse(new HashPartitioner(features.getNumPartitions))
       )
-        .map({ (tup: (SpatialKey, (MutableArrayTile, DoubleArrayTile))) => (tup._1, tup._2._1) })
+        .map({ (tup: (SpatialKey, (MutableArrayTile, ShortArrayTile))) => (tup._1, tup._2._1) })
 
     ContextRDD(tiles.asInstanceOf[RDD[(SpatialKey, Tile)]], layout)
   }

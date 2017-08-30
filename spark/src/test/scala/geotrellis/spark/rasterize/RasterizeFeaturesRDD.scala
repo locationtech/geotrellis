@@ -64,14 +64,14 @@ class RasterizeFeatureRDDSpec extends FunSpec with Matchers
 
   it("z-buffer 1"){
     val features = sc.parallelize(List(
-      Feature(polygon0, RasterizeFeaturesRDD.FeatureInfo(value = 1000, priority = 0.5)),
-      Feature(polygon1, RasterizeFeaturesRDD.FeatureInfo(value = 1, priority = 1)),
-      Feature(polygon2, RasterizeFeaturesRDD.FeatureInfo(value = 2, priority = 2)),
-      Feature(polygon0, RasterizeFeaturesRDD.FeatureInfo(value = 2000, priority = 0.5)),
-      Feature(polygon0, RasterizeFeaturesRDD.FeatureInfo(value = 3000, priority = 0.5))
+      Feature(polygon0, CellValue(value = 1000, zindex = 0)),
+      Feature(polygon1, CellValue(value = 1, zindex = 1)),
+      Feature(polygon2, CellValue(value = 2, zindex = 2)),
+      Feature(polygon0, CellValue(value = 2000, zindex = 0)),
+      Feature(polygon0, CellValue(value = 3000, zindex = 0))
     ))
     val tile = RasterizeFeaturesRDD
-      .fromFeaturePriority(features, ct, ld, usePriority = true)
+      .fromFeaturePriority(features, ct, ld, usezindex = true)
       .collect().head._2
 
     tile.toArray.sum should be (432)
@@ -79,14 +79,14 @@ class RasterizeFeatureRDDSpec extends FunSpec with Matchers
 
   it("z-buffer 2"){
     val features = sc.parallelize(List(
-      Feature(polygon0, RasterizeFeaturesRDD.FeatureInfo(value = 1000, priority = 0.5)),
-      Feature(polygon1, RasterizeFeaturesRDD.FeatureInfo(value = 1, priority = 3)),
-      Feature(polygon2, RasterizeFeaturesRDD.FeatureInfo(value = 2, priority = 2)),
-      Feature(polygon0, RasterizeFeaturesRDD.FeatureInfo(value = 2000, priority = 0.5)),
-      Feature(polygon0, RasterizeFeaturesRDD.FeatureInfo(value = 3000, priority = 0.5))
+      Feature(polygon0, CellValue(value = 1000, zindex = 0)),
+      Feature(polygon1, CellValue(value = 1, zindex = 3)),
+      Feature(polygon2, CellValue(value = 2, zindex = 2)),
+      Feature(polygon0, CellValue(value = 2000, zindex = 0)),
+      Feature(polygon0, CellValue(value = 3000, zindex = 0))
     ))
     val tile = RasterizeFeaturesRDD
-      .fromFeaturePriority(features, ct, ld, usePriority = true)
+      .fromFeaturePriority(features, ct, ld, usezindex = true)
       .collect().head._2
 
     tile.toArray.sum should be (336)

@@ -31,7 +31,7 @@ object RasterizeRDD {
     options: Rasterizer.Options = Rasterizer.Options.DEFAULT,
     partitioner: Option[Partitioner] = None
   ): RDD[(SpatialKey, Tile)] with Metadata[LayoutDefinition] = {
-    val features = geoms.map({ g => Feature(g, RasterizeFeaturesRDD.FeatureInfo(value, 0)) })
+    val features = geoms.map({ g => Feature(g, CellValue(value, 0)) })
     RasterizeFeaturesRDD.fromFeaturePriority(features, cellType, layout, options, partitioner);
   }
 }
