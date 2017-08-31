@@ -17,7 +17,9 @@ assemblyShadeRules in assembly := {
     ShadeRule.rename("io.netty.**" -> s"$shadePackage.io.netty.@1")
       .inLibrary("com.azavea.geotrellis" %% "geotrellis-hbase" % Version.geotrellis).inAll,
     ShadeRule.rename("com.fasterxml.jackson.**" -> s"$shadePackage.com.fasterxml.jackson.@1")
-      .inLibrary(jsonSchemaValidator).inAll
+      .inLibrary(jsonSchemaValidator).inAll,
+    ShadeRule.rename("org.apache.avro.**" -> s"$shadePackage.org.apache.avro.@1")
+      .inLibrary("com.azavea.geotrellis" %% "geotrellis-spark" % Version.geotrellis).inAll
   )
 }
 
