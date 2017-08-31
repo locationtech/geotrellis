@@ -21,7 +21,9 @@ import org.apache.spark.rdd.RDD
 package object s3 {
   private[s3]
   def makePath(chunks: String*) =
-    chunks.filter(_.nonEmpty).mkString("/")
+    chunks
+      .collect { case str if str.nonEmpty => if(str.endsWith("/")) str.dropRight(1) else str }
+      .mkString("/")
 
   implicit class withSaveToS3Methods[K](rdd: RDD[(K, Array[Byte])]) extends SaveToS3Methods(rdd)
 }
