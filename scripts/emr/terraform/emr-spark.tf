@@ -5,10 +5,10 @@ provider "aws" {
   region     = "${var.region}"
 }
 
-# `aws_emr_cluster` is built-in to Terraform. We name ours `emrSparkCluster`.
-resource "aws_emr_cluster" "emrSparkCluster" {
+# `aws_emr_cluster` is built-in to Terraform. We name ours `emr-spark-cluster`.
+resource "aws_emr_cluster" "emr-spark-cluster" {
   name          = "EMR GeoTrellis Zeppelin"
-  release_label = "emr-5.7.0"               # 2017 July
+  release_label = "emr-5.8.0"
 
   # This it will work if only `Spark` is named here, but booting the cluster seems
   # to be much faster when `Hadoop` is included. Ingests, etc., will succeed
@@ -27,7 +27,7 @@ resource "aws_emr_cluster" "emrSparkCluster" {
     instance_count = 1
     instance_role  = "MASTER"
     instance_type  = "m3.xlarge"
-    name           = "emrGeoTrellisZeppelin-MasterGroup"
+    name           = "EmrGeoTrellisZeppelin-MasterGroup"
   }
 
   instance_group {
@@ -35,7 +35,7 @@ resource "aws_emr_cluster" "emrSparkCluster" {
     instance_count = 2
     instance_role  = "CORE"
     instance_type  = "m3.xlarge"
-    name           = "emrGeoTrellisZeppelin-CoreGroup"
+    name           = "EmrGeoTrellisZeppelin-CoreGroup"
   }
 
   # Location to dump logs
@@ -57,7 +57,7 @@ resource "aws_emr_cluster" "emrSparkCluster" {
     connection {
       type        = "ssh"
       user        = "hadoop"
-      host        = "${aws_emr_cluster.emrSparkCluster.master_public_dns}"
+      host        = "${aws_emr_cluster.emr-spark-cluster.master_public_dns}"
       private_key = "${file("${var.pem_path}")}"
     }
   }
@@ -65,5 +65,5 @@ resource "aws_emr_cluster" "emrSparkCluster" {
 
 # Pipable to other programs.
 output "emrID" {
-  value = "${aws_emr_cluster.emrSparkCluster.id}"
+  value = "${aws_emr_cluster.emr-spark-cluster.id}"
 }
