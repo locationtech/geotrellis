@@ -17,7 +17,9 @@
 package geotrellis.spark.tiling
 
 import geotrellis.raster._
-import geotrellis.vector.Extent
+import geotrellis.raster.rasterize._
+import geotrellis.vector._
+import geotrellis.spark.SpatialKey
 
 /**
  * Defines tiled raster layout
@@ -31,6 +33,49 @@ case class LayoutDefinition(override val extent: Extent, tileLayout: TileLayout)
   def tileRows = tileLayout.tileRows
   def layoutCols = tileLayout.layoutCols
   def layoutRows = tileLayout.layoutRows
+
+  /** Generate a set of tile keys that intersect given geometry */
+  def keysForGeometry(geom: Geometry): Set[SpatialKey] = {
+    val layoutRasterizerOptions = Rasterizer.Options(includePartial=true, sampleType=PixelIsArea)
+    val layoutRasterExtent = RasterExtent(extent, tileLayout.layoutCols, tileLayout.layoutRows)
+    val fudge = math.min(layoutRasterExtent.cellwidth, layoutRasterExtent.cellheight) * 0.01
+
+    def lineToPolygons(line: Line): Iterator[Polygon] = {
+      line.points
+        .toIterator
+        .sliding(2)
+        .map({ case List(a, b) =>
+          Polygon(
+            a, b,
+            Point(b.x+fudge, b.y+fudge),
+            Point(a.x+fudge, a.y+fudge),
+            a
+          ) })
+    }
+
+    def multiLineToPolygons(mline: MultiLine): Iterator[Polygon] = {
+      mline.lines.toIterator.flatMap({ line => lineToPolygons(line) })
+    }
+
+    val geoms = geom match {
+      case l: Line => lineToPolygons(l)
+      case ml: MultiLine => multiLineToPolygons(ml)
+      case g => List(g)
+    }
+    var keySet = Set.empty[SpatialKey]
+
+    geoms.foreach({geom =>
+      Rasterizer.foreachCellByGeometry(
+        geom,
+        layoutRasterExtent,
+        layoutRasterizerOptions
+      )({ (col: Int, row: Int) =>
+        keySet = keySet + SpatialKey(col, row)
+      })
+    })
+
+    keySet
+  }
 }
 
 object LayoutDefinition {

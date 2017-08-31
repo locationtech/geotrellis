@@ -55,6 +55,7 @@ package object spark
     with partition.Implicits
     with reproject.Implicits
     with resample.Implicits
+    with rasterize.Implicits
     with sigmoidal.Implicits
     with split.Implicits
     with stitch.Implicits
