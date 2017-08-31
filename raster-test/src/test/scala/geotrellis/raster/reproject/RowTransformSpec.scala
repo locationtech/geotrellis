@@ -30,7 +30,8 @@ import spire.syntax.cfor._
 
 class RowTransformSpec extends FunSpec
     with TileBuilders
-    with RasterMatchers {
+    with RasterMatchers
+    with GeoTiffTestUtils {
   val path = "raster-test/data/schoolgeo.json"
 
   val LLtoWM = Transform(LatLng, WebMercator)
@@ -80,7 +81,7 @@ class RowTransformSpec extends FunSpec
 
     it("should approximate WebMercator -> LatLng for raster extent") {
       val Raster(expected, expectedExtent) =
-        SinglebandGeoTiff("raster-test/data/reproject/slope_wsg84-nearestneighbor.tif").raster
+        SinglebandGeoTiff(geoTiffPath("reproject/slope_wsg84-nearestneighbor.tif")).raster
 
       val re = RasterExtent(expected, expectedExtent)
 
@@ -110,7 +111,7 @@ class RowTransformSpec extends FunSpec
 
     it("should approximate EPSG:32618 -> WebMercator for raster extent") {
       val Raster(expected, expectedExtent) =
-        SinglebandGeoTiff("raster-test/data/reproject/slope_epsg32618.tif").raster
+        SinglebandGeoTiff(geoTiffPath("reproject/slope_epsg32618.tif")).raster
 
       val re = RasterExtent(expected, expectedExtent)
 

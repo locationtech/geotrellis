@@ -37,10 +37,10 @@ class ReprojectSpec extends FunSpec
     import Reproject.Options
 
     it("should (approximately) match a GDAL nearest neighbor interpolation on nlcd tile") {
-      val ProjectedRaster(raster, crs) = SinglebandGeoTiff("raster-test/data/reproject/nlcd_tile_wsg84.tif").projectedRaster
+      val ProjectedRaster(raster, crs) = SinglebandGeoTiff(geoTiffPath("reproject/nlcd_tile_wsg84.tif")).projectedRaster
 
       val ree @ Raster(expected, expectedExtent) =
-        SinglebandGeoTiff("raster-test/data/reproject/nlcd_tile_webmercator-nearestneighbor.tif").raster
+        SinglebandGeoTiff(geoTiffPath("reproject/nlcd_tile_webmercator-nearestneighbor.tif")).raster
 
       val rea @ Raster(actual, actualExtent) =
         raster.reproject(crs, WebMercator, Options(method = NearestNeighbor, errorThreshold = 0.0))
@@ -66,10 +66,10 @@ class ReprojectSpec extends FunSpec
 
     it("should (approximately) match a GDAL nearest neighbor interpolation on slope tif") {
       val raster =
-        SinglebandGeoTiff("raster-test/data/reproject/slope_webmercator.tif").raster
+        SinglebandGeoTiff(geoTiffPath("reproject/slope_webmercator.tif")).raster
 
       val Raster(expected, expectedExtent) =
-        SinglebandGeoTiff("raster-test/data/reproject/slope_wsg84-nearestneighbor.tif").raster
+        SinglebandGeoTiff(geoTiffPath("reproject/slope_wsg84-nearestneighbor.tif")).raster
 
       val Raster(actual, actualExtent) =
         raster.reproject(WebMercator, LatLng, Options(method = NearestNeighbor, errorThreshold = 0.0))
@@ -93,10 +93,10 @@ class ReprojectSpec extends FunSpec
 
     it("should (approximately) match a GDAL nearest neighbor interpolation on slope tif and an error threshold of 0.125") {
       val raster =
-        SinglebandGeoTiff("raster-test/data/reproject/slope_webmercator.tif").raster
+        SinglebandGeoTiff(geoTiffPath("reproject/slope_webmercator.tif")).raster
 
       val Raster(expected, expectedExtent) =
-        SinglebandGeoTiff("raster-test/data/reproject/slope_wsg84-nearestneighbor-er0.125.tif").raster
+        SinglebandGeoTiff(geoTiffPath("reproject/slope_wsg84-nearestneighbor-er0.125.tif")).raster
 
       val Raster(actual, actualExtent) =
         raster.reproject(WebMercator, LatLng, Options(method = NearestNeighbor, errorThreshold = 0.124))

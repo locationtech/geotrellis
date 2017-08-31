@@ -350,7 +350,7 @@ class GeoTiffReaderSpec extends FunSpec
     val MeanEpsilon = 1e-8
 
     def testMinMaxAndMean(min: Double, max: Double, mean: Double, file: String) {
-      val SinglebandGeoTiff(tile, extent, _, _, _) = SinglebandGeoTiff.compressed(s"$baseDataPath/$file")
+      val SinglebandGeoTiff(tile, extent, _, _, _) = SinglebandGeoTiff.compressed(file)
 
       tile.polygonalMax(extent, extent.toPolygon) should be (max)
       tile.polygonalMin(extent, extent.toPolygon) should be (min)
@@ -361,7 +361,7 @@ class GeoTiffReaderSpec extends FunSpec
       val min = 71
       val max = 237
       val mean = 210.66777801514
-      val file = "reproject/nlcd_tile_wsg84.tif"
+      val file = geoTiffPath("reproject/nlcd_tile_wsg84.tif")
 
       testMinMaxAndMean(min, max, mean, file)
     }
@@ -370,7 +370,7 @@ class GeoTiffReaderSpec extends FunSpec
       val min = 0
       val max = 360
       val mean = 190.02287812187
-      val file = "aspect.tif"
+      val file = s"$baseDataPath/aspect.tif"
 
       testMinMaxAndMean(min, max, mean, file)
     }
@@ -513,7 +513,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("must read a tif, set a datetime, write it out, and then read the correct in") {
-      val gt = SinglebandGeoTiff.compressed(s"$baseDataPath/reproject/nlcd_tile_wsg84.tif")
+      val gt = SinglebandGeoTiff.compressed(geoTiffPath("reproject/nlcd_tile_wsg84.tif"))
       var headTags = gt.tags.headTags
       headTags += ((Tags.TIFFTAG_DATETIME, "1988:02:18 13:59:59"))
       val tags = Tags(headTags, gt.tags.bandTags)
