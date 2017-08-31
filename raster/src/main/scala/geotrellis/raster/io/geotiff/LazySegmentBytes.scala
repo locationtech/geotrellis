@@ -22,17 +22,35 @@ import geotrellis.raster.io.geotiff.tags._
 import monocle.syntax.apply._
 import geotrellis.raster.io.geotiff.util._
 
+/**
+  * LazySegmentBytes represents a lazy GeoTiff segments reader
+  *
+  * TODO: Use default parameters instead of constructor overloads
+  *
+  * @param byteReader
+  * @param tiffTags
+  * @param maxChunkSize   32 * 1024 * 1024 by default
+  * @param maxOffsetBetweenChunks   1024 by default, max distance between two segments in a group
+  *                                 used in a chunkSegments function
+  */
 class LazySegmentBytes(
   byteReader: ByteReader,
   tiffTags: TiffTags,
-  maxChunkSize: Int = 32 * 1024 * 1024
+  maxChunkSize: Int,
+  maxOffsetBetweenChunks: Int
 ) extends SegmentBytes with LazyLogging {
   import LazySegmentBytes.Segment
 
-  // TODO: make it a parameter in GeoTrellis 2.0
-  // max distance between two segments in a group
-  // used in a chunkSegments function
-  private val maxOffsetBetweenChunks: Int = 1024
+  def this(
+    byteReader: ByteReader,
+    tiffTags: TiffTags,
+    maxChunkSize: Int
+  ) = this(byteReader, tiffTags, maxChunkSize, 1024)
+
+  def this(
+    byteReader: ByteReader,
+    tiffTags: TiffTags
+  ) = this(byteReader, tiffTags, 32 * 1024 * 1024, 1024)
 
   def length: Int = tiffTags.segmentCount
 
