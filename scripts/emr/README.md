@@ -67,8 +67,7 @@ Terraform v0.10.0-dev (870617d22df3f9245889a75c63119b94057c6e48+CHANGES)
 ### Installing the AWS Provider Plugin
 
 Follow [the README instructions](https://github.com/terraform-providers/terraform-provider-aws/)
-for building the plugin manually, *except* that you must instead clone the version
-from user `apetresc` and use his `emr-improvements` branch. Building the plugin
+for building the plugin manually from the current master branch. Building the plugin
 will install it to the correct place in your `$GOPATH`, and it'll be automatically
 visible to Terraform.
 
