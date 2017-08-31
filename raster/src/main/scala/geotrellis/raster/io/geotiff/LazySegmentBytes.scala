@@ -32,7 +32,7 @@ class LazySegmentBytes(
   // TODO: make it a parameter in GeoTrellis 2.0
   // max distance between two segments in a group
   // used in a chunkSegments function
-  private val minChunkSize: Int = 1024
+  private val maxOffsetBetweenChunks: Int = 1024
 
   def length: Int = tiffTags.segmentCount
 
@@ -70,15 +70,15 @@ class LazySegmentBytes(
     }}.toSeq
       .sortBy(_.startOffset) // sort segments such that we inspect them in disk order
       .foldLeft((0l, List(List.empty[Segment]))) { case ((chunkSize, headChunk :: commitedChunks), seg) =>
-      // difference of offsets should be <= minChunkSize
+      // difference of offsets should be <= maxOffsetBetweenChunks
       // otherwise everything between these offsets would be read by reader
       // and the intention is to group segments by location and to limit groups by size
-      val notChunkByOffset =
+      val isSegmentNearChunk =
         headChunk.headOption.map { c =>
-          seg.startOffset - c.endOffset <= minChunkSize
+          seg.startOffset - c.endOffset <= maxOffsetBetweenChunks
         }.getOrElse(true)
 
-      if (chunkSize + seg.size <= maxChunkSize && notChunkByOffset)
+      if (chunkSize + seg.size <= maxChunkSize && isSegmentNearChunk)
         (chunkSize + seg.size) -> ((seg :: headChunk) :: commitedChunks)
       else
         seg.size -> ((seg :: Nil) :: headChunk :: commitedChunks)
