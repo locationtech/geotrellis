@@ -35,6 +35,9 @@ case class MultibandGeoTiff(
   def mapTile(f: MultibandTile => MultibandTile): MultibandGeoTiff =
     MultibandGeoTiff(f(tile), extent, crs, tags, options, overviews)
 
+  def withStorageMethod(storageMethod: StorageMethod): MultibandGeoTiff =
+    new MultibandGeoTiff(tile, extent, crs, tags, options.copy(storageMethod = storageMethod), overviews.map(_.withStorageMethod(storageMethod)))
+
   def imageData: GeoTiffImageData =
     tile match {
       case gtt: GeoTiffMultibandTile => gtt

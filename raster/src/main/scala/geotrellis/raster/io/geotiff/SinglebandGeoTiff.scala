@@ -35,6 +35,9 @@ case class SinglebandGeoTiff(
   def mapTile(f: Tile => Tile): SinglebandGeoTiff =
     SinglebandGeoTiff(f(tile), extent, crs, tags, options, overviews)
 
+  def withStorageMethod(storageMethod: StorageMethod): SinglebandGeoTiff =
+    SinglebandGeoTiff(tile, extent, crs, tags, options.copy(storageMethod = storageMethod), overviews)
+
   def imageData: GeoTiffImageData =
     tile match {
       case gtt: GeoTiffTile => gtt

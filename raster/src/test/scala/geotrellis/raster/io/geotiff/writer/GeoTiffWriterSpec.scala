@@ -316,27 +316,7 @@ class GeoTiffWriterSpec extends FunSpec
         case _: Tiled => false
       }) should be (true)
 
-      val tiledTiff =
-        new MultibandGeoTiff(
-          tiffOriginal.tile,
-          tiffOriginal.extent,
-          tiffOriginal.crs,
-          tiffOriginal.tags,
-          tiffOriginal.options.copy(
-            storageMethod = Tiled(128, 128)
-          ),
-          tiffOriginal.overviews.map { tiffOriginal =>
-            new MultibandGeoTiff(
-              tiffOriginal.tile,
-              tiffOriginal.extent,
-              tiffOriginal.crs,
-              tiffOriginal.tags,
-              tiffOriginal.options.copy(
-                storageMethod = Tiled(128, 128)
-              )
-            )
-          }
-        )
+      val tiledTiff = tiffOriginal.withStorageMethod(Tiled(128, 128))
 
       tiledTiff.write(path, true)
 
@@ -373,27 +353,7 @@ class GeoTiffWriterSpec extends FunSpec
         case _: Tiled => false
       }) should be (true)
 
-      val tiledTiff =
-        new SinglebandGeoTiff(
-          tiffOriginal.tile,
-          tiffOriginal.extent,
-          tiffOriginal.crs,
-          tiffOriginal.tags,
-          tiffOriginal.options.copy(
-            storageMethod = Tiled(128, 128)
-          ),
-          tiffOriginal.overviews.map { tiffOriginal =>
-            new SinglebandGeoTiff(
-              tiffOriginal.tile,
-              tiffOriginal.extent,
-              tiffOriginal.crs,
-              tiffOriginal.tags,
-              tiffOriginal.options.copy(
-                storageMethod = Tiled(128, 128)
-              )
-            )
-          }
-        )
+      val tiledTiff = tiffOriginal.withStorageMethod(Tiled(128, 128))
 
       tiledTiff.write(path, true)
 
