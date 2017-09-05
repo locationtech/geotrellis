@@ -62,11 +62,11 @@ case class MultibandGeoTiff(
     MultibandGeoTiff(raster, raster._2, this.crs, this.tags, this.options, this.overviews)
   }
 
-  def crop(subExtent: Extent, cellSize: CellSize, resampleMethod: ResampleMethod): MultibandRaster =
-    resample(RasterExtent(subExtent, cellSize), resampleMethod).crop(subExtent)
+  def crop(subExtent: Extent, cellSize: CellSize, resampleMethod: ResampleMethod, strategy: OverviewStrategy): MultibandRaster =
+    resample(RasterExtent(subExtent, cellSize), resampleMethod, strategy).crop(subExtent)
 
-  def resample(rasterExtent: RasterExtent, resampleMethod: ResampleMethod): MultibandRaster =
-    getClosestOverview(cellSize)
+  def resample(rasterExtent: RasterExtent, resampleMethod: ResampleMethod, strategy: OverviewStrategy): MultibandRaster =
+    getClosestOverview(cellSize, strategy)
       .raster
       .resample(rasterExtent, resampleMethod)
 }

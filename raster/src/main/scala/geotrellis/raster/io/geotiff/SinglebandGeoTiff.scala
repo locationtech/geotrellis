@@ -62,11 +62,11 @@ case class SinglebandGeoTiff(
     SinglebandGeoTiff(raster, raster._2, this.crs, this.tags, this.options, this.overviews)
   }
 
-  def crop(subExtent: Extent, cellSize: CellSize, resampleMethod: ResampleMethod): SinglebandRaster =
-    resample(RasterExtent(subExtent, cellSize), resampleMethod).crop(subExtent)
+  def crop(subExtent: Extent, cellSize: CellSize, resampleMethod: ResampleMethod, strategy: OverviewStrategy): SinglebandRaster =
+    resample(RasterExtent(subExtent, cellSize), resampleMethod, strategy).crop(subExtent)
 
-  def resample(rasterExtent: RasterExtent, resampleMethod: ResampleMethod): SinglebandRaster =
-    getClosestOverview(cellSize)
+  def resample(rasterExtent: RasterExtent, resampleMethod: ResampleMethod, strategy: OverviewStrategy): SinglebandRaster =
+    getClosestOverview(cellSize, strategy)
       .raster
       .resample(rasterExtent, resampleMethod)
 }

@@ -77,11 +77,11 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
   def getOverview(idx: Int): GeoTiff[T] = overviews(idx)
 
   /** Chooses the best matching overviews and makes resample */
-  def resample(rasterExtent: RasterExtent, resampleMethod: ResampleMethod): Raster[T]
+  def resample(rasterExtent: RasterExtent, resampleMethod: ResampleMethod, strategy: OverviewStrategy): Raster[T]
 
   /** Chooses the best matching overviews and makes resample & crop */
-  def crop(subExtent: Extent, cellSize: CellSize, resampleMethod: ResampleMethod): Raster[T]
-  def crop(subExtent: Extent, cellSize: CellSize): Raster[T] = crop(subExtent, cellSize, NearestNeighbor)
+  def crop(subExtent: Extent, cellSize: CellSize, resampleMethod: ResampleMethod, strategy: OverviewStrategy): Raster[T]
+  def crop(subExtent: Extent, cellSize: CellSize): Raster[T] = crop(subExtent, cellSize, NearestNeighbor, AutoHigherResolution)
   def crop(rasterExtent: RasterExtent): Raster[T] = crop(rasterExtent.extent, rasterExtent.cellSize)
 
   def crop(subExtent: Extent): GeoTiff[T]
@@ -89,10 +89,26 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
   def crop(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int): GeoTiff[T]
 
   /** Return the best matching overview to the given cellSize, returns "this" if no overviews available. */
-  protected def getClosestOverview(cellSize: CellSize): GeoTiff[T] =
+  protected def getClosestOverview(cellSize: CellSize, strategy: OverviewStrategy): GeoTiff[T] =
     overviews match {
       case Nil => this
-      case list => list.minBy(v => math.abs(v.cellSize.resolution - cellSize.resolution))
+      case list =>
+        strategy match {
+          case AutoHigherResolution =>
+            list
+              .map { v => (v.cellSize.resolution - cellSize.resolution) -> v }
+              .filter(_._1 >= 0)
+              .sortBy(_._1)
+              .map(_._2)
+              .headOption
+              .getOrElse(this)
+          case Auto(n) =>
+            list
+              .sortBy(v => math.abs(v.cellSize.resolution - cellSize.resolution))
+              .lift(n)
+              .getOrElse(this)
+          case Base => this
+        }
     }
 }
 
