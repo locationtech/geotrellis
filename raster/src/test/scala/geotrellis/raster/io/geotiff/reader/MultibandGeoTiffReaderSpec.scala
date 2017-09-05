@@ -133,6 +133,26 @@ class MultibandGeoTiffReaderSpec extends FunSpec
         ovrTile.cols -> ovrTile.rows should be (ovrSize)
       }
     }
+
+    it("should crop tiff with overviews correct choosing the best matching overview") {
+      // sizes of overviews, starting with the base ifd
+      val sizes = List(1056 -> 1052, 528 -> 526, 264 -> 263, 132 -> 132, 66 -> 66, 33 -> 33)
+
+      val tiff = MultibandGeoTiff(geoTiffPath("overviews/multiband.tif"))
+
+      // should grab the second overview
+      val ctiff = tiff.crop(tiff.extent, CellSize(tiff.extent, sizes(2)))
+      val otiff = tiff.overviews(1)
+
+      ctiff.rasterExtent should be (RasterExtent(tiff.extent, CellSize(tiff.extent, otiff.tile.dimensions)))
+
+      val (ctile, otile) = ctiff.tile -> otiff.tile
+
+      ctile.bandCount should be (otile.bandCount)
+      ctile.bands.map(_.isNoDataTile).reduce(_ && _) should be (otile.bands.map(_.isNoDataTile).reduce(_ && _))
+
+      ctile.cols -> ctile.rows should be (otile.cols -> otile.rows)
+    }
   }
 
   describe("Reading geotiffs with INTERLEAVE=BANDS") {

@@ -21,6 +21,7 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
+import geotrellis.raster.resample.ResampleMethod
 
 case class MultibandGeoTiff(
   val tile: MultibandTile,
@@ -60,6 +61,14 @@ case class MultibandGeoTiff(
 
     MultibandGeoTiff(raster, raster._2, this.crs, this.tags, this.options, this.overviews)
   }
+
+  def crop(subExtent: Extent, cellSize: CellSize, resampleMethod: ResampleMethod): MultibandRaster =
+    resample(RasterExtent(subExtent, cellSize), resampleMethod).crop(subExtent)
+
+  def resample(rasterExtent: RasterExtent, resampleMethod: ResampleMethod): MultibandRaster =
+    getClosestOverview(cellSize)
+      .raster
+      .resample(rasterExtent, resampleMethod)
 }
 
 object MultibandGeoTiff {

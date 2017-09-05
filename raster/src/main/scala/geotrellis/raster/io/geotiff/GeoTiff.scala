@@ -17,7 +17,7 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.reader.GeoTiffReader
+import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.vector.{Extent, ProjectedExtent}
 import geotrellis.proj4.CRS
@@ -57,6 +57,7 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
   def projectedRaster: ProjectedRaster[T] = ProjectedRaster(tile, extent, crs)
   def raster: Raster[T] = Raster(tile, extent)
   def rasterExtent: RasterExtent = RasterExtent(extent, tile.cols, tile.rows)
+  def cellSize: CellSize = rasterExtent.cellSize
 
   def mapTile(f: T => T): GeoTiff[T]
 
@@ -74,6 +75,25 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
   def overviews: List[GeoTiff[T]] = List()
   def getOverviewsCount: Int = overviews.length
   def getOverview(idx: Int): GeoTiff[T] = overviews(idx)
+
+  /** Chooses the best matching overviews and makes resample */
+  def resample(rasterExtent: RasterExtent, resampleMethod: ResampleMethod): Raster[T]
+
+  /** Chooses the best matching overviews and makes resample & crop */
+  def crop(subExtent: Extent, cellSize: CellSize, resampleMethod: ResampleMethod): Raster[T]
+  def crop(subExtent: Extent, cellSize: CellSize): Raster[T] = crop(subExtent, cellSize, NearestNeighbor)
+  def crop(rasterExtent: RasterExtent): Raster[T] = crop(rasterExtent.extent, rasterExtent.cellSize)
+
+  def crop(subExtent: Extent): GeoTiff[T]
+  def crop(colMax: Int, rowMax: Int): GeoTiff[T]
+  def crop(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int): GeoTiff[T]
+
+  /** Return the best matching overview to the given cellSize, returns "this" if no overviews available. */
+  protected def getClosestOverview(cellSize: CellSize): GeoTiff[T] =
+    overviews match {
+      case Nil => this
+      case list => list.minBy(v => math.abs(v.cellSize.resolution - cellSize.resolution))
+    }
 }
 
 /**
