@@ -16,9 +16,9 @@
 
 package geotrellis.proj4
 
-import geotrellis.proj4.CRS.ObjectNameShowable
+import geotrellis.proj4.CRS.ObjectNameToString
 
-object WebMercator extends CRS with ObjectNameShowable {
+object WebMercator extends CRS with ObjectNameToString {
   lazy val proj4jCrs = factory.createFromName("EPSG:3857")
 
   def epsgCode: Option[Int] = Some(3857)
