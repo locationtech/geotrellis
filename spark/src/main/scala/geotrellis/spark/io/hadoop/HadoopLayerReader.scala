@@ -47,6 +47,7 @@ class HadoopLayerReader(
   extends FilteringLayerReader[LayerId] with LazyLogging {
 
   val defaultNumPartitions = sc.defaultParallelism
+  def sparkContext: SparkContext = sc
 
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
