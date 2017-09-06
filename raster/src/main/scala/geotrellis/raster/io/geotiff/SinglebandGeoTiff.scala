@@ -29,7 +29,7 @@ case class SinglebandGeoTiff(
   crs: CRS,
   tags: Tags,
   options: GeoTiffOptions,
-  override val overviews: List[SinglebandGeoTiff] = Nil
+  overviews: List[SinglebandGeoTiff] = Nil
 ) extends GeoTiff[Tile] {
   val cellType = tile.cellType
 

@@ -24,12 +24,12 @@ import geotrellis.proj4.CRS
 import geotrellis.raster.resample.ResampleMethod
 
 case class MultibandGeoTiff(
-  val tile: MultibandTile,
-  val extent: Extent,
-  val crs: CRS,
-  val tags: Tags,
+  tile: MultibandTile,
+  extent: Extent,
+  crs: CRS,
+  tags: Tags,
   options: GeoTiffOptions,
-  override val overviews: List[MultibandGeoTiff] = Nil
+  overviews: List[MultibandGeoTiff] = Nil
 ) extends GeoTiff[MultibandTile] {
   val cellType = tile.cellType
 

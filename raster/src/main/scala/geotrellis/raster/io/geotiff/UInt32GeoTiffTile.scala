@@ -26,7 +26,7 @@ class UInt32GeoTiffTile(
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
   val cellType: FloatCells with NoDataHandling,
-  overviews: List[UInt32GeoTiffTile]
+  overviews: List[UInt32GeoTiffTile] = Nil
 ) extends GeoTiffTile(segmentLayout, compression) with UInt32GeoTiffSegmentCollection {
 
   def withNoData(noDataValue: Option[Double]): UInt32GeoTiffTile =

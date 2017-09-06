@@ -28,7 +28,7 @@ class BitGeoTiffTile(
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
   val cellType: BitCells with NoDataHandling,
-  overviews: List[BitGeoTiffTile]
+  overviews: List[BitGeoTiffTile] = Nil
 ) extends GeoTiffTile(segmentLayout, compression, overviews) with GeoTiffSegmentLayoutTransform with BitGeoTiffSegmentCollection {
 
   def withNoData(noDataValue: Option[Double]): BitGeoTiffTile =

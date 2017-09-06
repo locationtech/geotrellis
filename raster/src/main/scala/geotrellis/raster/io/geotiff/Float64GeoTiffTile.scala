@@ -25,7 +25,7 @@ class Float64GeoTiffTile(
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
   val cellType: DoubleCells with NoDataHandling,
-  overviews: List[Float64GeoTiffTile]
+  overviews: List[Float64GeoTiffTile] = Nil
 ) extends GeoTiffTile(segmentLayout, compression, overviews) with Float64GeoTiffSegmentCollection {
 
   val noDataValue: Option[Double] = cellType match {

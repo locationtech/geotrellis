@@ -72,7 +72,7 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
   def toCloudOptimizedByteArray: Array[Byte] =
     GeoTiffWriter.write(this, true)
 
-  def overviews: List[GeoTiff[T]] = List()
+  def overviews: List[GeoTiff[T]]
   def getOverviewsCount: Int = overviews.length
   def getOverview(idx: Int): GeoTiff[T] = overviews(idx)
 
