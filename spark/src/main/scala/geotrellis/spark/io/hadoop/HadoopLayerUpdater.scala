@@ -39,11 +39,41 @@ class HadoopLayerUpdater(
   layerCopier: HadoopLayerCopier
 ) extends LayerUpdater[LayerId] with LazyLogging {
 
+  protected def _overwrite[
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+  ](
+    id: LayerId,
+    rdd: RDD[(K, V)] with Metadata[M],
+    keyBounds: KeyBounds[K]
+  ): Unit = {
+    _update(id, rdd, keyBounds, None)
+  }
+
   protected def _update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K], mergeFunc: (V, V) => V) = {
+  ](
+    id: LayerId,
+    rdd: RDD[(K, V)] with Metadata[M],
+    keyBounds: KeyBounds[K],
+    mergeFunc: (V, V) => V
+  ): Unit = {
+    _update(id, rdd, keyBounds, Some(mergeFunc))
+  }
+
+  def _update[
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+  ](
+    id: LayerId,
+    rdd: RDD[(K, V)] with Metadata[M],
+    keyBounds: KeyBounds[K],
+    mergeFunc: Option[(V, V) => V]
+  ): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
       attributeStore.readLayerAttributes[HadoopLayerHeader,M, K](id)
@@ -61,11 +91,16 @@ class HadoopLayerUpdater(
     val updatedMetadata: M =
       metadata.merge(rdd.metadata)
 
+    val fn = mergeFunc match {
+      case Some(fn) => fn
+      case None => { (v1: V, v2: V) => v2 }
+    }
+
     val updatedRdd: RDD[(K, V)] =
       entireLayer
         .fullOuterJoin(rdd)
         .flatMapValues {
-          case (Some(layerTile), Some(updateTile)) => Some(mergeFunc(layerTile, updateTile))
+          case (Some(layerTile), Some(updateTile)) => Some(fn(layerTile, updateTile))
           case (Some(layerTile), _) => Some(layerTile)
           case (_, Some(updateTile)) => Some(updateTile)
           case _ => None
