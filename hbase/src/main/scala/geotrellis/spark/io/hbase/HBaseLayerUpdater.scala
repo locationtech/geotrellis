@@ -35,11 +35,41 @@ class HBaseLayerUpdater(
   layerReader: HBaseLayerReader
 ) extends LayerUpdater[LayerId] with LazyLogging {
 
+  protected def _overwrite[
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+  ](
+    id: LayerId,
+    rdd: RDD[(K, V)] with Metadata[M],
+    keyBounds: KeyBounds[K]
+  ): Unit = {
+    _update(id, rdd, keyBounds, None)
+  }
+
   protected def _update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K], mergeFunc: (V, V) => V) = {
+  ](
+    id: LayerId,
+    rdd: RDD[(K, V)] with Metadata[M],
+    keyBounds: KeyBounds[K],
+    mergeFunc: (V, V) => V
+  ): Unit = {
+    _update(id, rdd, keyBounds, Some(mergeFunc))
+  }
+
+  def _update[
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+  ](
+    id: LayerId,
+    rdd: RDD[(K, V)] with Metadata[M],
+    keyBounds: KeyBounds[K],
+    mergeFunc: Option[(V, V) => V]
+  ) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
@@ -74,14 +104,18 @@ class HBaseLayerUpdater(
       metadata.merge(rdd.metadata)
 
     val updatedRdd: RDD[(K, V)] =
-      existingTiles
-        .fullOuterJoin(rdd)
-        .flatMapValues {
-          case (Some(layerTile), Some(updateTile)) => Some(mergeFunc(layerTile, updateTile))
-          case (Some(layerTile), _) => Some(layerTile)
-          case (_, Some(updateTile)) => Some(updateTile)
-          case _ => None
-        }
+      mergeFunc match {
+        case Some(mergeFunc) =>
+          existingTiles
+            .fullOuterJoin(rdd)
+            .flatMapValues {
+            case (Some(layerTile), Some(updateTile)) => Some(mergeFunc(layerTile, updateTile))
+            case (Some(layerTile), _) => Some(layerTile)
+            case (_, Some(updateTile)) => Some(updateTile)
+            case _ => None
+          }
+        case None => rdd
+      }
 
     val codec  = KeyValueRecordCodec[K, V]
     val schema = codec.schema
