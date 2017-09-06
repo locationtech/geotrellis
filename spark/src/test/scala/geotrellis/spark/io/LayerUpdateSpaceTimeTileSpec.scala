@@ -65,9 +65,19 @@ trait LayerUpdateSpaceTimeTileSpec
         updater.update(layerId, sample)
       }
 
+      it("should overwrite a layer") {
+        updater.overwrite(layerId, sample)
+      }
+
       it("should not update a layer (empty set)") {
         intercept[EmptyBoundsError] {
           updater.update(layerId, new ContextRDD[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](sc.emptyRDD[(SpaceTimeKey, Tile)], emptyTileLayerMetadata))
+        }
+      }
+
+      it("should not overwrite a layer (empty set)") {
+        intercept[EmptyBoundsError] {
+          updater.overwrite(layerId, new ContextRDD[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](sc.emptyRDD[(SpaceTimeKey, Tile)], emptyTileLayerMetadata))
         }
       }
 
@@ -85,6 +95,20 @@ trait LayerUpdateSpaceTimeTileSpec
         }
       }
 
+      it("should not overwrite a layer (keys out of bounds)") {
+        val (minKey, minTile) = sample.sortByKey().first()
+        val (maxKey, maxTile) = sample.sortByKey(false).first()
+
+        val update = new ContextRDD(sc.parallelize(
+          (minKey.setComponent(SpatialKey(minKey.col - 1, minKey.row - 1)), minTile) ::
+            (minKey.setComponent(SpatialKey(maxKey.col + 1, maxKey.row + 1)), maxTile) :: Nil
+        ), dummyTileLayerMetadata)
+
+        intercept[LayerOutOfKeyBoundsError] {
+          updater.overwrite(layerId, update)
+        }
+      }
+
       it("should update a layer with preset keybounds, new rdd not intersects already ingested") {
         val (minKey, _) = sample.sortByKey().first()
         val (maxKey, _) = sample.sortByKey(false).first()
@@ -98,6 +122,22 @@ trait LayerUpdateSpaceTimeTileSpec
 
         writer.write[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId, sample, updatedKeyIndex)
         updater.update[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId, updatedSample)
+        reader.read[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId).count() shouldBe sample.count() * 2
+      }
+
+      it("should overwrite a layer with preset keybounds, new rdd not intersects already ingested") {
+        val (minKey, _) = sample.sortByKey().first()
+        val (maxKey, _) = sample.sortByKey(false).first()
+        val kb = KeyBounds(minKey, maxKey.setComponent(SpatialKey(maxKey.col + 20, maxKey.row + 20)))
+        val updatedLayerId = layerId.createTemporaryId
+        val updatedKeyIndex = keyIndexMethod.createIndex(kb)
+
+        val usample = sample.map { case (key, value) => (key.setComponent(SpatialKey(key.col + 10, key.row + 10)), value) }
+        val ukb = KeyBounds(usample.sortByKey().first()._1, usample.sortByKey(false).first()._1)
+        val updatedSample = new ContextRDD(usample, sample.metadata.copy(bounds = ukb))
+
+        writer.write[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId, sample, updatedKeyIndex)
+        updater.overwrite[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId, updatedSample)
         reader.read[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId).count() shouldBe sample.count() * 2
       }
 
