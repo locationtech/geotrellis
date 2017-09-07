@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Azavea
+ * Copyright 2016-2017 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,28 @@ case object NumericEncoder {
     formatTileString(buff, max, tile.cols, tile.rows)
   }
 
-  /** Helper. */
+  /**
+   * Returns an ASCII string representation of a subset of the tile, with cell
+   * values encoded as hexadecimal integers.
+   */
+  def rangeEncode(tile: Tile, colMin: Int, colMax: Int, rowMin: Int, rowMax: Int): String = {
+    val buff = ArrayBuffer[String]()
+
+    for (row <- rowMin to rowMax) {
+      for (col <- colMin to colMax) {
+        val z = tile.get(row, col)
+        if (isNoData(z)) {
+          buff += ".."
+        } else {
+          buff += "%02X".formatLocal(Locale.ENGLISH, z)
+        }
+      }
+      buff += "\n"
+    }
+    buff.toString
+  }
+
+  /** Stringization helper. */
   private def formatTileString(buff: ArrayBuffer[String], cols: Int, rows: Int, maxSize: Int) = {
     val sb = new StringBuilder
     val limit = math.max(6, maxSize)
@@ -88,23 +109,5 @@ case object NumericEncoder {
     sb.toString
   }
 
-  /**
-   * Returns an ASCII string representation of a subset of the tile, with cell
-   * values encoded as hexadecimal integers.
-   */
-  def rangeEncode(tile: Tile, colMin: Int, colMax: Int, rowMin: Int, rowMax: Int): String = {
-    var s = ""
-    for (row <- rowMin to rowMax) {
-      for (col <- colMin to colMax) {
-        val z = tile.get(row, col)
-        if (isNoData(z)) {
-          s += ".."
-        } else {
-          s += "%02X".formatLocal(Locale.ENGLISH, z)
-        }
-      }
-      s += "\n"
-    }
-    s
-  }
+
 }
