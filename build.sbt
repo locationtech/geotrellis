@@ -9,6 +9,9 @@ lazy val commonSettings = Seq(
   organization := "org.locationtech.geotrellis",
   licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url(Info.url)),
+  scmInfo := Some(ScmInfo(
+    url("https://github.com/locationtech/geotrellis"), "scm:git:git@github.com:locationtech/geotrellis.git"
+  )),
   scalacOptions ++= Seq(
     "-deprecation",
     "-unchecked",
