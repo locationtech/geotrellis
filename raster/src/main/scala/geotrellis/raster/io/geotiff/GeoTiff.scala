@@ -95,18 +95,18 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
       case list =>
         strategy match {
           case AutoHigherResolution =>
-            list
+            (this :: list)
               .map { v => (v.cellSize.resolution - cellSize.resolution) -> v }
               .filter(_._1 >= 0)
               .sortBy(_._1)
               .map(_._2)
-              .headOption
-              .getOrElse(this)
+              .head // there always would be at least this
           case Auto(n) =>
             list
               .sortBy(v => math.abs(v.cellSize.resolution - cellSize.resolution))
               .lift(n)
-              .getOrElse(this)
+              .getOrElse(this) // n can be out of bounds,
+                               // makes only overview lookup as overview position is important
           case Base => this
         }
     }
