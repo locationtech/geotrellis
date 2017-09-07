@@ -66,7 +66,9 @@ class S3LayerWriter(
     rdd: RDD[(K, V)] with Metadata[M],
     keyBounds: KeyBounds[K]
   ): Unit = {
-    _update(sc, id, rdd, keyBounds, None)
+    implicit val sparkContext: SparkContext = sc
+    val layerReader = new S3LayerReader(attributeStore)
+    _update(sc, id, rdd, keyBounds, None, layerReader)
   }
 
   protected def _update[
@@ -80,7 +82,9 @@ class S3LayerWriter(
     keyBounds: KeyBounds[K],
     mergeFunc: (V, V) => V
   ): Unit = {
-    _update(sc, id, rdd, keyBounds, Some(mergeFunc))
+    implicit val sparkContext: SparkContext = sc
+    val layerReader = new S3LayerReader(attributeStore)
+    _update(sc, id, rdd, keyBounds, Some(mergeFunc), layerReader)
   }
 
   def _update[
@@ -92,7 +96,8 @@ class S3LayerWriter(
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
     keyBounds: KeyBounds[K],
-    mergeFunc: Option[(V, V) => V]
+    mergeFunc: Option[(V, V) => V],
+    layerReader: S3LayerReader
   ) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
@@ -110,8 +115,6 @@ class S3LayerWriter(
 
     val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
     val keyPath = (key: K) => makePath(prefix, Index.encode(keyIndex.toIndex(key), maxWidth))
-    implicit val sparkContext: SparkContext = sc
-    val layerReader = new S3LayerReader(attributeStore)
 
     logger.info(s"Saving updated RDD for layer ${id} to $bucket $prefix")
     val existingTiles =
