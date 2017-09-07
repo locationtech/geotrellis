@@ -94,7 +94,7 @@ trait LayerWriter[ID] {
       case keyBounds: KeyBounds[K] =>
         _overwrite(sc, id, rdd, keyBounds)
       case EmptyBounds =>
-        throw new EmptyBoundsError(s"Cannot update layer $id with a layer with empty bounds.")
+        throw new EmptyBoundsError(s"Cannot overwrite layer $id with a layer with empty bounds.")
     }
 
   // Layer Writing
