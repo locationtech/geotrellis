@@ -27,6 +27,9 @@ import geotrellis.util.MethodExtensions
  */
 trait AsciiRenderMethods extends MethodExtensions[Tile] {
 
+  def renderAscii(settings: AsciiArtEncoder.Settings = AsciiArtEncoder.Settings()): String =
+    AsciiArtEncoder.encode(self, settings)
+
   /**
    * Return ASCII representation of the tile, emitting a string matrix of
    * integer values corresponding to the cell values.

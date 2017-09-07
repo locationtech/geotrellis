@@ -85,7 +85,6 @@ case object NumericEncoder {
 
       sb += '\n'
     }
-    sb += '\n'
     sb.toString
   }
 
