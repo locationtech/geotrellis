@@ -27,9 +27,10 @@ import spray.json._
 import scala.reflect._
 
 class HBaseLayerReader(val attributeStore: AttributeStore, instance: HBaseInstance)(implicit sc: SparkContext)
-  extends FilteringLayerReader[LayerId] {
+    extends FilteringLayerReader[LayerId] {
 
   val defaultNumPartitions = sc.defaultParallelism
+  def sparkContext: SparkContext = sc
 
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
