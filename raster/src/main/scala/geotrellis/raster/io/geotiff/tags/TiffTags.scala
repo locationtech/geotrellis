@@ -65,6 +65,51 @@ case class TiffTags(
   yCbCrTags: YCbCrTags = YCbCrTags(),
   nonStandardizedTags: NonStandardizedTags = NonStandardizedTags()
 ) {
+  def segmentOffsets: Array[Long] =
+    if (this.hasStripStorage)
+      (this &|->
+        TiffTags._basicTags ^|->
+        BasicTags._stripOffsets get).get
+    else
+      (this &|->
+        TiffTags._tileTags ^|->
+        TileTags._tileOffsets get).get
+
+  def segmentByteCounts: Array[Long] =
+    if (this.hasStripStorage)
+      (this &|->
+        TiffTags._basicTags ^|->
+        BasicTags._stripByteCounts get).get
+    else
+      (this &|->
+        TiffTags._tileTags ^|->
+        TileTags._tileByteCounts get).get
+
+
+  def storageMethod: StorageMethod =
+    if(hasStripStorage) {
+      val rowsPerStrip: Int =
+        (this
+          &|-> TiffTags._basicTags
+          ^|-> BasicTags._rowsPerStrip get).toInt
+
+      Striped(rowsPerStrip)
+    } else {
+      val blockCols =
+        (this
+          &|-> TiffTags._tileTags
+          ^|-> TileTags._tileWidth get).get.toInt
+
+      val blockRows =
+        (this
+          &|-> TiffTags._tileTags
+          ^|-> TileTags._tileLength get).get.toInt
+
+      Tiled(blockCols, blockRows)
+    }
+
+  def geoTiffSegmentLayout: GeoTiffSegmentLayout =
+    GeoTiffSegmentLayout(this.cols, this.rows, this.storageMethod, this.interleaveMethod, this.bandType)
 
   def cellSize =
     CellSize(this.extent.width / this.cols, this.extent.height / this.rows)
