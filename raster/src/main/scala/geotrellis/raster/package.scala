@@ -68,6 +68,7 @@ package object raster
       with render.ColorMethods
       with render.JpgRenderMethods
       with render.PngRenderMethods
+      with render.AsciiRenderMethods
       with reproject.SinglebandTileReprojectMethods
       with resample.SinglebandTileResampleMethods
       with sigmoidal.SinglebandSigmoidalMethods
