@@ -16,12 +16,13 @@
 
 package geotrellis.proj4
 
+import geotrellis.proj4.CRS.ObjectNameToString
 import org.osgeo.proj4j.CoordinateReferenceSystem
 
 /**
  * Sinusoidal projection, commonly used with MODIS-based data products.
  */
-object Sinusoidal extends CRS {
+object Sinusoidal extends CRS with ObjectNameToString {
   lazy val proj4jCrs: CoordinateReferenceSystem = factory.createFromParameters(null,
     "+proj=sinu +lon_0=0 +x_0=0 +y_0=0 +a=6371007.181 +b=6371007.181 +units=m +no_defs")
   val epsgCode: Option[Int] = None

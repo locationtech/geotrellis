@@ -40,7 +40,7 @@ object CRS {
     */
   def fromString(proj4Params: String): CRS =
     new CRS {
-      val proj4jCrs = crsFactory.createFromParameters(null, proj4Params)
+      val proj4jCrs: CoordinateReferenceSystem = crsFactory.createFromParameters(null, proj4Params)
 
       def epsgCode: Option[Int] = getEpsgCode(toProj4String + " <>")
     }
@@ -66,7 +66,7 @@ object CRS {
     */
   def fromString(name: String, proj4Params: String): CRS =
     new CRS {
-      val proj4jCrs = crsFactory.createFromParameters(name, proj4Params)
+      val proj4jCrs: CoordinateReferenceSystem = crsFactory.createFromParameters(name, proj4Params)
 
       def epsgCode: Option[Int] = getEpsgCode(toProj4String + " <>")
     }
@@ -108,7 +108,7 @@ object CRS {
    */
   def fromName(name: String): CRS =
     new CRS {
-      val proj4jCrs = crsFactory.createFromName(name)
+      val proj4jCrs: CoordinateReferenceSystem = crsFactory.createFromName(name)
 
       def epsgCode: Option[Int] = getEpsgCode(toProj4String + " <>")
     }
@@ -137,6 +137,11 @@ object CRS {
     } finally {
       stream.close()
     }
+  }
+
+  /** Mix-in for singleton CRS implementations where distinguished string should be the name of the object. */
+  private[proj4] trait ObjectNameToString { self: CRS ⇒
+    override def toString: String = self.getClass.getSimpleName.replaceAllLiterally("$", "")
   }
 }
 
@@ -214,4 +219,7 @@ trait CRS extends Serializable {
   }
 
   protected def factory = CRS.crsFactory
+
+  /** Default implementation returns the proj4 name. */
+  override def toString: String = this.proj4jCrs.getName
 }
