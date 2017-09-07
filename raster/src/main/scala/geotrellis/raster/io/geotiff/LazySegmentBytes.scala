@@ -36,21 +36,10 @@ import geotrellis.raster.io.geotiff.util._
 class LazySegmentBytes(
   byteReader: ByteReader,
   tiffTags: TiffTags,
-  maxChunkSize: Int,
-  maxOffsetBetweenChunks: Int
+  maxChunkSize: Int = 32 * 1024 * 1024,
+  maxOffsetBetweenChunks: Int = 1024
 ) extends SegmentBytes with LazyLogging {
   import LazySegmentBytes.Segment
-
-  def this(
-    byteReader: ByteReader,
-    tiffTags: TiffTags,
-    maxChunkSize: Int
-  ) = this(byteReader, tiffTags, maxChunkSize, 1024)
-
-  def this(
-    byteReader: ByteReader,
-    tiffTags: TiffTags
-  ) = this(byteReader, tiffTags, 32 * 1024 * 1024, 1024)
 
   def length: Int = tiffTags.segmentCount
 
