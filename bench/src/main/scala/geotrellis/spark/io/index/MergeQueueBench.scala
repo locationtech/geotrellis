@@ -18,27 +18,60 @@ package geotrellis.spark.io.index
 
 import org.openjdk.jmh.annotations._
 
+import scala.util.Random
+
 @BenchmarkMode(Array(Mode.AverageTime))
 @State(Scope.Thread)
 class MergeQueueBench {
 
-  var queue: MergeQueue = _
+  @Param(Array("10000", "100000", "1000000"))
+  // Number of ranges to insert
+  var size: Int = _
+  // How far each range is from the previous
+  @Param(Array("1", "2", "10"))
+  var skip: Int = _
+  // How wide each range is
+  @Param(Array("1", "10", "100"))
+  var span: Int = _
+  // Whether to shuffle the ranges or leave them sorted
+  @Param(Array("false", "true"))
+  var shuffle: Boolean = _
 
-  @Setup
-  def setup() = {
-    queue = new MergeQueue()
-  }
+  var ranges: Vector[(Long, Long)] = _
 
-  @TearDown
-  def tearDown() = {
-    queue = null
+  @Setup(Level.Invocation)
+  def setupData(): Unit = {
+    ranges = Vector.empty[(Long, Long)]
+
+    for(i ← 0 until size) {
+      val start: Long = skip.toLong * i
+      val end: Long = start + span
+      ranges = ranges :+ (start, end)
+    }
+
+    if(shuffle) {
+      ranges = Random.shuffle(ranges)
+    }
   }
 
   @Benchmark
-  def mergeOrderedDense  = {
-    for(i ← -10000 to 10000) {
-      queue += (i, i + 10)
-    }
-    queue
+  def insertRange() = MergeQueue(ranges)
+
+  @Benchmark
+  def insertAlternateRange() = AlternateMergeQueue(ranges)
+}
+
+object AlternateMergeQueue {
+  def apply(ranges: TraversableOnce[(Long, Long)]): Seq[(Long, Long)] = {
+    var merged: List[(Long, Long)] = Nil
+    ranges.toSeq.sortBy(_._1).foreach(r => {
+      merged = merged match {
+        case a :: rest if r._1 - 1 <= a._2 => (a._1, Math.max(a._2, r._2)) :: rest
+        case _ => r :: merged
+      }
+    })
+    merged.reverse
   }
 }
+
+

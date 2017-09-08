@@ -53,7 +53,7 @@ object GTBenchmarkPlugin extends AutoPlugin {
 
   val jmhRun = Def.taskDyn {
     val rf = jmhOutputFormat.value
-    def timestamp = new SimpleDateFormat("yyyyMMdd").format(new Date())
+    def timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date())
     val dir = jmhOutputDir.value
     IO.createDirectory(dir)
 
