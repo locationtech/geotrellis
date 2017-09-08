@@ -1,4 +1,6 @@
-ASSEMBLY := ../../spark-etl/target/scala-2.11/geotrellis-spark-etl-assembly-1.2.0-SNAPSHOT.jar
+GEOTRELLIS_VERSION ?= 1.2.0
+GEOTRELLIS_VERSION_SUFFIX ?= -SNAPSHOT
+ASSEMBLY := ../../spark-etl/target/scala-2.11/geotrellis-spark-etl-assembly-${GEOTRELLIS_VERSION}${GEOTRELLIS_VERSION_SUFFIX}.jar
 
 ${ASSEMBLY}: $(call rwildcard, ../../spark-etl/src, *.scala) ../../spark-etl/build.sbt ../../build.sbt
 	cd ../../; ./sbt spark-etl/assembly -no-colors
@@ -44,4 +46,4 @@ start-zeppelin:
 
 upload-assembly: ${ASSEMBLY}
 	cd terraform; aws emr put --cluster-id ${CLUSTER_ID} --key-pair-file ${KEY_PAIR_FILE} \
-	--src ../${ASSEMBLY} --dest /tmp/geotrellis-spark-etl-assembly-1.2.0-SNAPSHOT.jar
+	--src ../${ASSEMBLY} --dest /tmp/geotrellis-spark-etl-assembly-${GEOTRELLIS_VERSION}${GEOTRELLIS_VERSION_SUFFIX}.jar
