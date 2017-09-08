@@ -33,7 +33,7 @@ class AccumuloLayerReader(val attributeStore: AttributeStore)(implicit sc: Spark
 
   val defaultNumPartitions = sc.defaultParallelism
 
-  def sparkContext: SparkContext = sc
+  private[accumulo] def sparkContext: SparkContext = sc
 
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
