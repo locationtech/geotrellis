@@ -236,3 +236,7 @@ lazy val util = project
 lazy val `doc-examples` = project
   .dependsOn(spark, s3, accumulo, cassandra, hbase, spark, `spark-testkit`)
   .settings(commonSettings)
+
+lazy val bench = project
+  .dependsOn(spark)
+  .settings(commonSettings)

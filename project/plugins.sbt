@@ -16,3 +16,5 @@ addSbtPlugin("me.lessis" % "ls-sbt" % "0.1.3")
 addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.3.0")
 
 addSbtPlugin("de.heikoseeberger" % "sbt-header" % "1.7.0")
+
+addSbtPlugin("pl.project13.scala" % "sbt-jmh" % "0.2.27")
