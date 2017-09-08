@@ -87,7 +87,7 @@ class S3LayerWriter(
     _update(sc, id, rdd, keyBounds, Some(mergeFunc), layerReader)
   }
 
-  def _update[
+  private[s3] def _update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable

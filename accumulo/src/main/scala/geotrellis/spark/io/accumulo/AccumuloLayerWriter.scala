@@ -66,7 +66,7 @@ class AccumuloLayerWriter(
     _update(sc, id, rdd, keyBounds, Some(mergeFunc))
   }
 
-  def _update[
+  private def _update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
