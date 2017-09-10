@@ -24,18 +24,18 @@ import scala.util.Random
 @State(Scope.Thread)
 class MergeQueueBench {
 
-  @Param(Array("10000", "100000", "1000000"))
-  // Number of ranges to insert
-  var size: Int = _
-  // How far each range is from the previous
-  @Param(Array("1", "2", "10"))
-  var skip: Int = _
-  // How wide each range is
-  @Param(Array("1", "10", "100"))
-  var span: Int = _
   // Whether to shuffle the ranges or leave them sorted
   @Param(Array("false", "true"))
   var shuffle: Boolean = _
+  @Param(Array("100000", "10000"))
+  // Number of ranges to insert
+  var size: Int = _
+  // How far each range is from the previous
+  @Param(Array("10", "1"))
+  var skip: Int = _
+  // How wide each range is
+  @Param(Array("10", "1"))
+  var span: Int = _
 
   var ranges: Vector[(Long, Long)] = _
 
