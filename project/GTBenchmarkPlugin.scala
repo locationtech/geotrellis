@@ -16,11 +16,11 @@
 
 import sbt.Keys._
 import sbt._
-import sbt.Attributed.data
 import sbt.complete.DefaultParsers._
 import sbt.complete.Parser
 import java.text.SimpleDateFormat
 import java.util.Date
+import pl.project13.scala.sbt.JmhPlugin.JmhKeys.Jmh
 
 import pl.project13.scala.sbt.JmhPlugin
 
@@ -41,51 +41,29 @@ object GTBenchmarkPlugin extends AutoPlugin {
     val jmhOutputFormat = settingKey[String]("Output format: {text|csv|scsv|json|latex}")
     val jmhOutputDir = settingKey[File]("Directory for writing JMH results")
     val jmhFileRegex = settingKey[Regex]("Filename regular expression for selecting files to benchmark")
-    val jmhThreads = settingKey[Int]("Number of JMH worker threads")
-    val jmhFork = settingKey[Int]("How many times to fork a single JMH benchmark")
-    val jmhIterations = settingKey[Int]("Number of measurement iterations to do")
-    val jmhWarmupIterations = settingKey[Int]("Number of warmup iterations to do")
-    val jmhTimeUnit = settingKey[String]("Benchmark results time unit: {m|s|ms|us|ns}")
-    val jmhExtraOptions = settingKey[String]("Additional arguments to jmh:run before the filename regex")
+    val jmhThreads = settingKey[Option[Int]]("Number of JMH worker threads")
+    val jmhFork = settingKey[Option[Int]]("How many times to fork a single JMH benchmark")
+    val jmhIterations = settingKey[Option[Int]]("Number of measurement iterations to do")
+    val jmhWarmupIterations = settingKey[Option[Int]]("Number of warmup iterations to do")
+    val jmhTimeUnit = settingKey[Option[String]]("Benchmark results time unit: {m|s|ms|us|ns}")
+    val jmhExtraOptions = settingKey[Option[String]]("Additional arguments to jmh:run before the filename regex")
     val bench = taskKey[Unit]("Execute JMH benchmarks")
     val benchOnly = inputKey[Unit]("Execute JMH benchmarks on a single class")
   }
 
   val autoImport = Keys
   import autoImport._
-  import pl.project13.scala.sbt.JmhPlugin.JmhKeys.Jmh
-
-  def jmhRun(filePattern: Regex) = Def.taskDyn {
-    val rf = jmhOutputFormat.value
-    def timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date())
-    val dir = jmhOutputDir.value
-    IO.createDirectory(dir)
-
-    val rff = target.value / s"jmh-results-$timestamp.${jmhOutputFormat.value}"
-    val pat = filePattern.toString
-
-    val t = jmhThreads.value
-    val f = jmhFork.value
-    val i = jmhIterations.value
-    val wi = jmhWarmupIterations.value
-    val tu = jmhTimeUnit.value
-    val extra = jmhExtraOptions.value
-
-    val args = s" -t $t -f $f -i $i -wi $wi -tu $tu -rf $rf -rff $rff $extra $pat"
-    state.value.log.debug("Starting: jmh:run " + args)
-    (run in Jmh).toTask(args)
-  }
 
   override def projectSettings = Seq(
     jmhOutputFormat := "csv",
     jmhOutputDir := target.value,
     jmhFileRegex := ".*Bench.*".r,
-    jmhThreads := 1,
-    jmhFork := 1,
-    jmhIterations := 10,
-    jmhWarmupIterations := math.max(jmhIterations.value/2, 5),
-    jmhTimeUnit := "ms",
-    jmhExtraOptions := "",
+    jmhThreads := None,
+    jmhFork := Some(1),
+    jmhIterations := Some(10),
+    jmhWarmupIterations := Some(math.max(jmhIterations.value.getOrElse(0)/2, 5)),
+    jmhTimeUnit := Some("ms"),
+    jmhExtraOptions := None,
     cancelable in Global := true,
     bench := Def.taskDyn { jmhRun(jmhFileRegex.value) }.value,
     benchOnly := Def.inputTaskDyn {
@@ -94,6 +72,27 @@ object GTBenchmarkPlugin extends AutoPlugin {
       jmhRun(pat)
     }.evaluated
   )
+
+  def jmhRun(filePattern: Regex) = Def.taskDyn {
+    val rf = jmhOutputFormat.value
+    def timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date())
+    val dir = jmhOutputDir.value
+    IO.createDirectory(dir)
+
+    val rff = target.value / s"jmh-results-$timestamp.$rf"
+    val pat = filePattern.toString
+
+    val t = jmhThreads.value.map("-t " + _).getOrElse("")
+    val f = jmhFork.value.map("-f " + _).getOrElse("")
+    val i = jmhIterations.value.map("-i " + _).getOrElse("")
+    val wi = jmhWarmupIterations.value.map("-wi " + _).getOrElse("")
+    val tu = jmhTimeUnit.value.map("-tu " + _).getOrElse("")
+    val extra = jmhExtraOptions.value.getOrElse("")
+
+    val args = s" $t $f $i $wi $tu -rf $rf -rff $rff $extra $pat"
+    state.value.log.debug("Starting: jmh:run " + args)
+    (run in Jmh).toTask(args)
+  }
 
   val benchFilesParser: Def.Initialize[State => Parser[File]] = Def.setting { (state: State) =>
     val extracted = Project.extract(state)
