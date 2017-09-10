@@ -58,20 +58,21 @@ class MergeQueueBench {
   def insertRange() = MergeQueue(ranges)
 
   @Benchmark
-  def insertAlternateRange() = AlternateMergeQueue(ranges)
+  def insertAlternateRange() = MergeQueueBench.AlternateMergeQueue(ranges)
 }
 
-object AlternateMergeQueue {
-  def apply(ranges: TraversableOnce[(Long, Long)]): Seq[(Long, Long)] = {
-    var merged: List[(Long, Long)] = Nil
-    ranges.toSeq.sortBy(_._1).foreach(r => {
-      merged = merged match {
-        case a :: rest if r._1 - 1 <= a._2 => (a._1, Math.max(a._2, r._2)) :: rest
-        case _ => r :: merged
-      }
-    })
-    merged.reverse
+object MergeQueueBench {
+  object AlternateMergeQueue {
+    def apply(ranges: TraversableOnce[(Long, Long)]): Seq[(Long, Long)] = {
+      var merged: List[(Long, Long)] = Nil
+      ranges.toSeq.sortBy(_._1).foreach(r => {
+        merged = merged match {
+          case a :: rest if r._1 - 1 <= a._2 => (a._1, Math.max(a._2, r._2)) :: rest
+          case _ => r :: merged
+        }
+      })
+      merged.reverse
+    }
   }
 }
-
 
