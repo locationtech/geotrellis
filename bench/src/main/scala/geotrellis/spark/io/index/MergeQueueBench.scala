@@ -22,6 +22,7 @@ import scala.util.Random
 
 @BenchmarkMode(Array(Mode.AverageTime))
 @State(Scope.Thread)
+@Threads(2)
 class MergeQueueBench {
 
   // Whether to shuffle the ranges or leave them sorted
@@ -39,7 +40,7 @@ class MergeQueueBench {
 
   var ranges: Vector[(Long, Long)] = _
 
-  @Setup(Level.Invocation)
+  @Setup(Level.Trial)
   def setupData(): Unit = {
     ranges = Vector.empty[(Long, Long)]
 
