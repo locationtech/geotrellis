@@ -1,0 +1,15 @@
+"Benchmark","Mode","Threads","Samples","Score","Score Error (99.9%)","Unit","Param: size"
+"geotrellis.raster.GenericRasterBench.genericRasterMap","avgt",4,5,0.231878,0.003266,"ms/op",128
+"geotrellis.raster.GenericRasterBench.genericRasterMap","avgt",4,5,0.933077,0.040206,"ms/op",256
+"geotrellis.raster.GenericRasterBench.genericRasterMap","avgt",4,5,3.864863,0.101682,"ms/op",512
+"geotrellis.raster.GenericRasterBench.genericRasterMap","avgt",4,5,16.836667,0.217805,"ms/op",1024
+"geotrellis.raster.GenericRasterBench.genericRasterMap","avgt",4,5,73.759950,1.063825,"ms/op",2048
+"geotrellis.raster.GenericRasterBench.genericRasterMap","avgt",4,5,320.390178,19.503415,"ms/op",4096
+"geotrellis.raster.GenericRasterBench.genericRasterMap","avgt",4,5,1376.738914,413.050562,"ms/op",8192
+"geotrellis.raster.GenericRasterBench.rasterMap","avgt",4,5,0.014135,0.001352,"ms/op",128
+"geotrellis.raster.GenericRasterBench.rasterMap","avgt",4,5,0.095393,0.006496,"ms/op",256
+"geotrellis.raster.GenericRasterBench.rasterMap","avgt",4,5,0.419967,0.036730,"ms/op",512
+"geotrellis.raster.GenericRasterBench.rasterMap","avgt",4,5,1.919349,0.169448,"ms/op",1024
+"geotrellis.raster.GenericRasterBench.rasterMap","avgt",4,5,11.102899,0.653919,"ms/op",2048
+"geotrellis.raster.GenericRasterBench.rasterMap","avgt",4,5,96.351439,104.473458,"ms/op",4096
+"geotrellis.raster.GenericRasterBench.rasterMap","avgt",4,5,347.187871,75.589838,"ms/op",8192

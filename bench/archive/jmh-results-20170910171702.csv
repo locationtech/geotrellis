@@ -1,0 +1,4 @@
+"Benchmark","Mode","Threads","Samples","Score","Score Error (99.9%)","Unit"
+"geotrellis.raster.render.RenderBench.pngEncoding","avgt",4,5,13.927933,0.733101,"ms/op"
+"geotrellis.raster.render.RenderBench.rendering","avgt",4,5,169.238310,25.919763,"ms/op"
+"geotrellis.raster.render.RenderBench.renderingAndPngEncoding","avgt",4,5,184.101468,17.730219,"ms/op"
