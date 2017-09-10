@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-import sbt.Keys.{run, target}
+import sbt.Keys._
 import sbt._
+import sbt.Attributed.data
+import sbt.complete.DefaultParsers._
+import sbt.complete.Parser
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -45,20 +48,21 @@ object GTBenchmarkPlugin extends AutoPlugin {
     val jmhTimeUnit = settingKey[String]("Benchmark results time unit: {m|s|ms|us|ns}")
     val jmhExtraOptions = settingKey[String]("Additional arguments to jmh:run before the filename regex")
     val bench = taskKey[Unit]("Execute JMH benchmarks")
+    val benchOnly = inputKey[Unit]("Execute JMH benchmarks on a single class")
   }
 
   val autoImport = Keys
   import autoImport._
   import pl.project13.scala.sbt.JmhPlugin.JmhKeys.Jmh
 
-  val jmhRun = Def.taskDyn {
+  def jmhRun(filePattern: Regex) = Def.taskDyn {
     val rf = jmhOutputFormat.value
     def timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date())
     val dir = jmhOutputDir.value
     IO.createDirectory(dir)
 
     val rff = target.value / s"jmh-results-$timestamp.${jmhOutputFormat.value}"
-    val pat = jmhFileRegex.value.toString
+    val pat = filePattern.toString
 
     val t = jmhThreads.value
     val f = jmhFork.value
@@ -68,6 +72,7 @@ object GTBenchmarkPlugin extends AutoPlugin {
     val extra = jmhExtraOptions.value
 
     val args = s" -t $t -f $f -i $i -wi $wi -tu $tu -rf $rf -rff $rff $extra $pat"
+    state.value.log.debug("Starting: jmh:run " + args)
     (run in Jmh).toTask(args)
   }
 
@@ -81,6 +86,34 @@ object GTBenchmarkPlugin extends AutoPlugin {
     jmhWarmupIterations := math.max(jmhIterations.value/2, 5),
     jmhTimeUnit := "ms",
     jmhExtraOptions := "",
-    bench := jmhRun.value
+    cancelable in Global := true,
+    bench := Def.taskDyn { jmhRun(jmhFileRegex.value) }.value,
+    benchOnly := Def.inputTaskDyn {
+      val file = benchFilesParser.parsed.base
+      val pat = (".*" + file + ".*").r
+      jmhRun(pat)
+    }.evaluated
   )
+
+  val benchFilesParser: Def.Initialize[State => Parser[File]] = Def.setting { (state: State) =>
+    val extracted = Project.extract(state)
+    val pat = new PatternFilter(
+      extracted.getOpt(jmhFileRegex).getOrElse(".*".r).pattern
+    )
+
+    val dirs = Seq(
+      extracted.get(scalaSource in Compile),
+      extracted.get(scalaSource in Test)
+    )
+
+    def benchFileParser(dir: File) = fileParser(dir)
+      .filter(f ⇒ pat.accept(f.name), s ⇒ "Not a benchmark file: " + s)
+
+    val parsers = dirs.map(benchFileParser)
+
+    val folded  = parsers
+      .foldRight[Parser[File]](failure("<no input files>"))(_ | _)
+
+    token(Space ~> folded)
+  }
 }
