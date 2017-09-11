@@ -379,4 +379,82 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] with LazyL
 
     (zmin, zmax)
   }
+
+  /**
+    * Return ascii art of this raster.
+    */
+  def asciiDraw(): String = {
+    val buff = ArrayBuffer[String]()
+    var max = 0
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        val v = get(col, row)
+        val s = if (isNoData(v)) "ND" else s"$v"
+        max = math.max(max, s.size)
+        buff += s
+      }
+    }
+
+    createAsciiTileString(buff.toArray, max)
+  }
+
+  /**
+    * Return ascii art of this raster. The single int parameter
+    * indicates the number of significant digits to be printed.
+    */
+  def asciiDrawDouble(significantDigits: Int = Int.MaxValue): String = {
+    val buff = ArrayBuffer[String]()
+    val mc = new java.math.MathContext(significantDigits)
+    var max = 0
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        val v = getDouble(col, row)
+        val s = if (isNoData(v)) "ND" else {
+          val s = s"$v"
+          if (s.size > significantDigits) BigDecimal(s).round(mc).toString
+          else s
+        }
+
+        max = math.max(s.size, max)
+        buff += s
+      }
+    }
+
+    createAsciiTileString(buff.toArray, max)
+  }
+
+  private def createAsciiTileString(buff: Array[String], maxSize: Int) = {
+    val sb = new StringBuilder
+    val limit = math.max(6, maxSize)
+    cfor(0)(_ < rows, _ + 1) { row =>
+      cfor(0)(_ < cols, _ + 1) { col =>
+        val s = buff(row * cols + col)
+        val pad = " " * math.max(limit - s.length, 1)
+        sb.append(s"$pad$s")
+      }
+
+      sb += '\n'
+    }
+    sb += '\n'
+    sb.toString
+  }
+
+  /**
+    * Return ascii art of a range from this raster.
+    */
+  def asciiDrawRange(colMin: Int, colMax: Int, rowMin: Int, rowMax: Int): String = {
+    var s = ""
+    for (row <- rowMin to rowMax) {
+      for (col <- colMin to colMax) {
+        val z = this.get(row, col)
+        if (isNoData(z)) {
+          s += ".."
+        } else {
+          s += "%02X".formatLocal(Locale.ENGLISH, z)
+        }
+      }
+      s += "\n"
+    }
+    s
+  }
 }
