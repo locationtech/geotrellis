@@ -8,8 +8,8 @@ import geotrellis.spark._
 import geotrellis.spark.io.RasterReader
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.formats._
-import geotrellis.util.StreamingByteReader
-import geotrellis.vector.ProjectedExtent
+import geotrellis.util._
+import geotrellis.vector.{Extent, ProjectedExtent}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
@@ -19,6 +19,11 @@ import monocle.macros.Lenses
 import java.net.URI
 import java.nio.ByteBuffer
 
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader.GeoTiffInfo
+import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
+import geotrellis.spark.tiling.CutTiles.logger
+import spire.syntax.cfor._
 import geotrellis.spark.tiling.{LayoutDefinition, LayoutLevel, LayoutScheme, MapKeyTransform, ZoomedLayoutScheme}
 
 /** See http://www.gdal.org/gdal_vrttut.html */
@@ -56,6 +61,10 @@ object COGMetadataReader {
     lazy val (tileCols, tileRows) = tiffTags.cols -> tiffTags.rows
     lazy val extent = tiffTags.extent
 
+    val (segmentCount, segmentByteCounts, segmentOffsets) =
+      (tiffTags.segmentCount, tiffTags.segmentByteCounts, tiffTags.segmentOffsets)
+    val geoTiffSegmentLayout = tiffTags.geoTiffSegmentLayout
+
     // keys relative to the current tiff
     def localKeys: Iterator[SpatialKey] =
       localMapTransform(tiffTags.extent)
@@ -70,15 +79,16 @@ object COGMetadataReader {
 
     // how to deal with zoom level?
 
-    // smartly gets correct raster
-    def crop(x: Int, y: Int, z: Int)(layoutDefinition: LayoutDefinition, layoutScheme: ZoomedLayoutScheme): Raster[T] = {
-      tiff.crop(layoutDefinition.mapTransform(x -> y), layoutScheme.levelForZoom(z).layout.cellSize)
-    }
-
     def layoutLevel(layoutScheme: LayoutScheme): LayoutLevel =
       layoutScheme.levelFor(this.extent, tiffTags.cellSize)
 
+    // smartly gets correct raster
+    def crop(x: Int, y: Int, z: Int)(layoutScheme: ZoomedLayoutScheme): Raster[T] = {
+      val layout = layoutScheme.levelForZoom(z).layout
+      tiff.crop(layout.mapTransform(SpatialKey(x, y)), layout.cellSize)
+    }
 
+    // or go this way?
     def getClosestOverview(zoom: Int, layoutScheme: LayoutScheme): COGMetadata[T] = {
       (this :: overviews)
         .map { v => v.layoutLevel(layoutScheme).zoom -> v }
@@ -97,10 +107,182 @@ object COGMetadataReader {
     }
   }
 
-  class Prototype2(tiff: SinglebandGeoTiff) {
-    tiff
+  object md {
+    // tiffTags looks like a useless thing here
+    // handle temporl case ?
+    case class GeoTiffMetadata[T <: CellGrid](tiff: GeoTiff[T], tiffTags: TiffTags) {
+      def imageData: GeoTiffImageData = tiff.imageData
+      def segmentLayout: GeoTiffSegmentLayout = imageData.segmentLayout
+
+      lazy val (segmentCount, segmentByteCounts, segmentOffsets) =
+        (tiffTags.segmentCount, tiffTags.segmentByteCounts, tiffTags.segmentOffsets)
+
+      def localMapTransform =
+        MapKeyTransform(tiff.extent, imageData.segmentLayout.tileLayout.layoutDimensions)
+
+      def crop(x: Int, y: Int, z: Int)(layoutScheme: ZoomedLayoutScheme): Raster[T] = {
+        val layout = layoutScheme.levelForZoom(z).layout
+        tiff.crop(layout.mapTransform(SpatialKey(x, y)), layout.cellSize)
+      }
+
+      // keys relative to the current tiff
+      def localKeys: Iterator[SpatialKey] =
+        localMapTransform(tiffTags.extent)
+          .coordsIter
+          .map { spatialComponent => spatialComponent: SpatialKey }
+
+      // to persist them as Indexes?
+      def keys(layoutDefinition: LayoutDefinition): Iterator[SpatialKey] =
+        layoutDefinition
+          .mapTransform(tiffTags.extent)
+          .coordsIter
+          .map { spatialComponent => spatialComponent: SpatialKey }
+    }
+
+    case class GeoTiffLayerMetadata[T <: CellGrid](
+      tileDimensions: (Int, Int) = 256 -> 256,
+      tiffs: List[GeoTiffMetadata[T]] = Nil
+     ) {
+      def extent: Extent = tiffs.map(_.tiff.extent).reduceLeft(_ combine _)
+      def rasterExtent = RasterExtent(extent, tiffs.head.tiffTags.cellSize)
+      def layout = LayoutDefinition(rasterExtent, tileDimensions._1, tileDimensions._2)
+      def mapTransform = layout.mapTransform
+      def tileLayout = layout.tileLayout
+      def layoutExtent = layout.extent
+      def gridBounds = mapTransform(extent)
+
+      def combine(other: GeoTiffLayerMetadata[T]): GeoTiffLayerMetadata[T] =
+        this.copy(tiffs = tiffs ::: other.tiffs)
+
+      def getTiles(
+        x: Int,
+        y: Int,
+        z: Int
+      )(layoutScheme: ZoomedLayoutScheme): List[Raster[T]] = {
+        // a real pain here, makes sense to persist somehow indexes?
+        // to put into our own tags / store in a separate file
+        // would be not very cloud optimized though
+        tiffs.collect { case md if md.keys(layout).contains(SpatialKey(x, y)) =>
+          md.crop(x, y, z)(layoutScheme)
+        }
+      }
+    }
+
+    object GeoTiffLayerMetadata {
+      def fetchSingleband(tileDimensions: (Int, Int) = 256 -> 256, tiffPaths: List[String] = "tiff" :: Nil): GeoTiffLayerMetadata[Tile] =
+        GeoTiffLayerMetadata(
+          tileDimensions,
+          tiffs = tiffPaths.map { path =>
+            GeoTiffMetadata(SinglebandGeoTiff(path, false, true), TiffTags(path))
+          }
+        )
+    }
+
+    object Test {
+      val path = "/Users/daunnc/subversions/git/github/pomadchin/geotrellis/raster-test/data/geotiff-test-files/overviews/singleband_co.tif"
+      val p = "/data/OLI/tiff-hsl/175/017/LC81750172014163LGN00.TIF"
+
+      import geotrellis.raster.io.geotiff.reader._
+      GeoTiffReader.readMultiband(p).crop(RasterExtent(Extent(0, 0, 0, 0), CellSize(0.5, 0.5)))
+
+      GeoTiffReader.readSingleband(p).crop(RasterExtent(Extent(0, 0, 0, 0), CellSize(0.5, 0.5)))
+
+    }
   }
 
+
+  object md2 {
+    val zz = "/data/OLI/tiff-hsl/175/017/LC81750172014163LGN00_LOW5_tiled.TIF"
+
+    // tiffTags looks like a useless thing here
+    // handle temporl case ?
+    case class GeoTiffMetadata(info: GeoTiffInfo) {
+      def tiffTile: GeoTiffTile = GeoTiffReader.geoTiffSinglebandTile(info)
+      // or go this way?
+      def getClosestOverview(zoom: Int, layoutScheme: LayoutScheme): GeoTiffInfo = {
+        (info :: info.overviews)
+          .map { i =>
+            layoutScheme.levelFor(info.extent, i.segmentLayout.tileLayout.cellSize(info.extent)).zoom -> i
+          }
+          .filter(_._1 >= zoom)
+          .minBy { case (z, _) => math.abs(z - zoom) }
+          ._2
+      }
+
+
+
+      def segmentLayout: GeoTiffSegmentLayout = info.segmentLayout
+
+      /*def crop(x: Int, y: Int, z: Int)(layoutScheme: ZoomedLayoutScheme): Raster[T] = {
+        val layout = layoutScheme.levelForZoom(z).layout
+
+        tiff.crop(layout.mapTransform(SpatialKey(x, y)), layout.cellSize)
+      }*/
+
+      // keys relative to the current tiff
+      /*def localKeys: Iterator[SpatialKey] =
+        localMapTransform(tiffTags.extent)
+          .coordsIter
+          .map { spatialComponent => spatialComponent: SpatialKey }*/
+
+      // to persist them as Indexes?
+      /*def keys(layoutDefinition: LayoutDefinition): Iterator[SpatialKey] =
+        layoutDefinition
+          .mapTransform(tiffTags.extent)
+          .coordsIter
+          .map { spatialComponent => spatialComponent: SpatialKey }*/
+    }
+
+    /*case class GeoTiffLayerMetadata[T <: CellGrid](
+                                                    tileDimensions: (Int, Int) = 256 -> 256,
+                                                    tiffs: List[GeoTiffMetadata[T]] = Nil
+                                                  ) {
+      def extent: Extent = tiffs.map(_.tiff.extent).reduceLeft(_ combine _)
+      def rasterExtent = RasterExtent(extent, tiffs.head.tiffTags.cellSize)
+      def layout = LayoutDefinition(rasterExtent, tileDimensions._1, tileDimensions._2)
+      def mapTransform = layout.mapTransform
+      def tileLayout = layout.tileLayout
+      def layoutExtent = layout.extent
+      def gridBounds = mapTransform(extent)
+
+      def combine(other: GeoTiffLayerMetadata[T]): GeoTiffLayerMetadata[T] =
+        this.copy(tiffs = tiffs ::: other.tiffs)
+
+      def getTiles(
+                    x: Int,
+                    y: Int,
+                    z: Int
+                  )(layoutScheme: ZoomedLayoutScheme): List[Raster[T]] = {
+        // a real pain here, makes sense to persist somehow indexes?
+        // to put into our own tags / store in a separate file
+        // would be not very cloud optimized though
+        tiffs.collect { case md if md.keys(layout).contains(SpatialKey(x, y)) =>
+          md.crop(x, y, z)(layoutScheme)
+        }
+      }
+    }
+
+    object GeoTiffLayerMetadata {
+      def fetchSingleband(tileDimensions: (Int, Int) = 256 -> 256, tiffPaths: List[String] = "tiff" :: Nil): GeoTiffLayerMetadata[Tile] =
+        GeoTiffLayerMetadata(
+          tileDimensions,
+          tiffs = tiffPaths.map { path =>
+            GeoTiffMetadata(SinglebandGeoTiff(path, false, true), TiffTags(path))
+          }
+        )
+    }*/
+
+    /*object Test {
+      val path = "/Users/daunnc/subversions/git/github/pomadchin/geotrellis/raster-test/data/geotiff-test-files/overviews/singleband_co.tif"
+      val p = "/data/OLI/tiff-hsl/175/017/LC81750172014163LGN00.TIF"
+
+      import geotrellis.raster.io.geotiff.reader._
+      GeoTiffReader.readMultiband(p).crop(RasterExtent(Extent(0, 0, 0, 0), CellSize(0.5, 0.5)))
+
+      GeoTiffReader.readSingleband(p).crop(RasterExtent(Extent(0, 0, 0, 0), CellSize(0.5, 0.5)))
+
+    }*/
+  }
 
   final val GEOTIFF_TIME_TAG_DEFAULT = "TIFFTAG_DATETIME"
   final val GEOTIFF_TIME_FORMAT_DEFAULT = "yyyy:MM:dd HH:mm:ss"
