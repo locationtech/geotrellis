@@ -24,6 +24,8 @@ class GenericRasterBench  {
     val len = size * size
     // Because we can end up allocating a lot of memory here,
     // we only initialize the data that is needed for the current benchmark.
+    // There may be a better way of doing this using separate `State` classes
+    // that are injected on-demand by the framework.
     params.getBenchmark.split('.').last match {
       case "genericRasterMap" ⇒
         genericRaster = new GRaster(init(len)(Random.nextInt))
@@ -42,11 +44,9 @@ class GenericRasterBench  {
   def rasterMap = {
     tile.map { i => i * i }
   }
-
 }
 
 object GenericRasterBench {
-
   class GRaster[T](val array: Array[T]) {
     val size = array.length
     val newArr = array.clone
@@ -58,9 +58,5 @@ object GenericRasterBench {
       }
       new GRaster(newArr)
     }
-  }
-
-  class GRasterState {
-
   }
 }
