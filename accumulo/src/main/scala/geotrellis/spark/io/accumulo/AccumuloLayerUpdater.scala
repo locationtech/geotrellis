@@ -34,11 +34,11 @@ import AccumuloLayerWriter.Options
 class AccumuloLayerUpdater(
   val instance: AccumuloInstance,
   val attributeStore: AttributeStore,
-  layerReader: AccumuloLayerReader, // XXX unused
+  layerReader: AccumuloLayerReader,
   options: Options
 ) extends LayerUpdater[LayerId] with LazyLogging {
 
-  implicit val sc: SparkContext = layerReader.sparkContext
+  implicit private val sc: SparkContext = layerReader.sparkContext
 
   def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,

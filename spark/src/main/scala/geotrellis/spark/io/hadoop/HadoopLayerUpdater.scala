@@ -39,7 +39,7 @@ class HadoopLayerUpdater(
   layerCopier: HadoopLayerCopier
 ) extends LayerUpdater[LayerId] with LazyLogging {
 
-  implicit val sc = layerReader.sparkContext
+  implicit private val sc = layerReader.sparkContext
 
   def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,

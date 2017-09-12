@@ -39,8 +39,8 @@ class FileLayerUpdater(
   layerReader: FileLayerReader
 ) extends LayerUpdater[LayerId] with LazyLogging {
 
-  val layerWriter = new FileLayerWriter(attributeStore, catalogPath)
-  implicit val sc: SparkContext = layerReader.sparkContext
+  private val layerWriter = new FileLayerWriter(attributeStore, catalogPath)
+  implicit private val sc: SparkContext = layerReader.sparkContext
 
   def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
