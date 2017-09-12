@@ -36,8 +36,6 @@ class HBaseLayerUpdater(
   layerReader: HBaseLayerReader
 ) extends LayerUpdater[LayerId] with LazyLogging {
 
-  implicit private val sc = layerReader.sparkContext
-
   def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
@@ -45,6 +43,7 @@ class HBaseLayerUpdater(
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], mergeFunc: (V, V) => V): Unit = {
     val table = attributeStore.readHeader[HBaseLayerHeader](id).tileTable
     val layerWriter = new HBaseLayerWriter(attributeStore, instance, table)
+    implicit val sc = rdd.sparkContext
     layerWriter.update(id, rdd, mergeFunc)
   }
 
@@ -55,6 +54,7 @@ class HBaseLayerUpdater(
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
     val table = attributeStore.readHeader[HBaseLayerHeader](id).tileTable
     val layerWriter = new HBaseLayerWriter(attributeStore, instance, table)
+    implicit val sc = rdd.sparkContext
     layerWriter.update(id, rdd)
   }
 
@@ -65,6 +65,7 @@ class HBaseLayerUpdater(
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
     val table = attributeStore.readHeader[HBaseLayerHeader](id).tileTable
     val layerWriter = new HBaseLayerWriter(attributeStore, instance, table)
+    implicit val sc = rdd.sparkContext
     layerWriter.overwrite(id, rdd)
   }
 }

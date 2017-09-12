@@ -30,7 +30,6 @@ class HBaseLayerReader(val attributeStore: AttributeStore, instance: HBaseInstan
     extends FilteringLayerReader[LayerId] {
 
   val defaultNumPartitions = sc.defaultParallelism
-  private[hbase] def sparkContext: SparkContext = sc
 
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,

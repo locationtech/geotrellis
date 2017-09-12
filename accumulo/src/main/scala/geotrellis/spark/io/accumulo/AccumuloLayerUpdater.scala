@@ -38,8 +38,6 @@ class AccumuloLayerUpdater(
   options: Options
 ) extends LayerUpdater[LayerId] with LazyLogging {
 
-  implicit private val sc: SparkContext = layerReader.sparkContext
-
   def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
@@ -51,6 +49,7 @@ class AccumuloLayerUpdater(
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
     val layerWriter = new AccumuloLayerWriter(attributeStore, instance, header.tileTable, options)
+    implicit val sc: SparkContext = rdd.sparkContext
     layerWriter.update(id, rdd, mergeFunc)
   }
 
@@ -65,6 +64,7 @@ class AccumuloLayerUpdater(
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
     val layerWriter = new AccumuloLayerWriter(attributeStore, instance, header.tileTable, options)
+    implicit val sc: SparkContext = rdd.sparkContext
     layerWriter.update(id, rdd)
   }
 
@@ -79,6 +79,7 @@ class AccumuloLayerUpdater(
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
     val layerWriter = new AccumuloLayerWriter(attributeStore, instance, header.tileTable, options)
+    implicit val sc: SparkContext = rdd.sparkContext
     layerWriter.overwrite(id, rdd)
   }
 }

@@ -39,28 +39,33 @@ class HadoopLayerUpdater(
   layerCopier: HadoopLayerCopier
 ) extends LayerUpdater[LayerId] with LazyLogging {
 
-  implicit private val sc = layerReader.sparkContext
-
   def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], mergeFunc: (V, V) => V): Unit =
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], mergeFunc: (V, V) => V): Unit = {
+    implicit val sc = rdd.sparkContext
     layerWriter.update(id, rdd, mergeFunc)
+  }
 
   def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit =
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
+    implicit val sc = rdd.sparkContext
     layerWriter.update(id, rdd)
+  }
 
   def overwrite[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit =
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
+    implicit val sc = rdd.sparkContext
     layerWriter.overwrite(id, rdd)
+  }
+
 }
 
 object HadoopLayerUpdater {
