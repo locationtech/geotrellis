@@ -1,5 +1,7 @@
 package geotrellis
 
+import geotrellis.raster.io.geotiff.SinglebandGeoTiff
+
 /**
  * Module utilities. Originally from geotrellis-benchmark
  */
@@ -10,4 +12,7 @@ package object bench {
     for (i <- 0 until size) data(i) = init
     data
   }
+
+  def readSinglebandGeoTiff(name: String) =
+    SinglebandGeoTiff(getClass.getResource("/" + name).getPath)
 }
