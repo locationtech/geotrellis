@@ -134,27 +134,13 @@ class S3LayerWriter(
     val updatedMetadata: M =
       metadata.merge(rdd.metadata)
 
-    val updatedRdd: RDD[(K, V)] =
-      mergeFunc match {
-        case Some(mergeFunc) =>
-          existingTiles
-            .fullOuterJoin(rdd)
-            .flatMapValues {
-            case (Some(layerTile), Some(updateTile)) => Some(mergeFunc(layerTile, updateTile))
-            case (Some(layerTile), _) => Some(layerTile)
-            case (_, Some(updateTile)) => Some(updateTile)
-            case _ => None
-          }
-        case None => rdd
-      }
-
     val codec  = KeyValueRecordCodec[K, V]
     val schema = codec.schema
 
     // Write updated metadata, and the possibly updated schema
     // Only really need to write the metadata and schema
     attributeStore.writeLayerAttributes(id, header, updatedMetadata, keyIndex, schema)
-    rddWriter.write(updatedRdd, bucket, keyPath)
+    rddWriter.update(rdd, bucket, keyPath, Some(writerSchema), mergeFunc)
   }
 
   // Layer Writing
