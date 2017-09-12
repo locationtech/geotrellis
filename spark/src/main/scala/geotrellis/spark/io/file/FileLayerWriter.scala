@@ -125,27 +125,13 @@ class FileLayerWriter(
     val updatedMetadata: M =
       metadata.merge(rdd.metadata)
 
-    val updatedRdd: RDD[(K, V)] =
-      mergeFunc match {
-        case Some(mergeFunc) =>
-          existingTiles
-            .fullOuterJoin(rdd)
-            .flatMapValues {
-            case (Some(layerTile), Some(updateTile)) => Some(mergeFunc(layerTile, updateTile))
-            case (Some(layerTile), _) => Some(layerTile)
-            case (_, Some(updateTile)) => Some(updateTile)
-            case _ => None
-          }
-        case None => rdd
-      }
-
     val codec  = KeyValueRecordCodec[K, V]
     val schema = codec.schema
 
     // Write updated metadata, and the possibly updated schema
     // Only really need to write the metadata and schema
     attributeStore.writeLayerAttributes(id, header, updatedMetadata, keyIndex, schema)
-    FileRDDWriter.write[K, V](updatedRdd, layerPath, keyPath)
+    FileRDDWriter.update[K, V](rdd, layerPath, keyPath, Some(writerSchema), mergeFunc)
   }
 
   // Layer Writing
