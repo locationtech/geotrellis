@@ -30,7 +30,6 @@ class CassandraLayerReader(val attributeStore: AttributeStore, instance: Cassand
   extends FilteringLayerReader[LayerId] {
 
   val defaultNumPartitions = sc.defaultParallelism
-  private[cassandra] def sparkContext: SparkContext = sc
 
   def read[
   K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
