@@ -24,6 +24,11 @@ import java.nio.file._
 
 
 object Filesystem {
+
+  def exists(path : String): Boolean = {
+    Files.exists(Paths.get(path))
+  }
+
   /**
     * Read the contents of a file into a MappedByteBuffer.
     *
