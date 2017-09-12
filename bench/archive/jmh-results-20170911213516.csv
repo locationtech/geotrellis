@@ -1,0 +1,8 @@
+"Benchmark","Mode","Threads","Samples","Score","Score Error (99.9%)","Unit","Param: methodName"
+"geotrellis.raster.resample.ResampleBench.reproject","avgt",4,5,9.345466,0.960834,"ms/op",NearestNeighbor
+"geotrellis.raster.resample.ResampleBench.reproject","avgt",4,5,9.139909,0.867273,"ms/op",Bilinear
+"geotrellis.raster.resample.ResampleBench.reproject","avgt",4,5,9.386854,0.917362,"ms/op",CubicConvolution
+"geotrellis.raster.resample.ResampleBench.reproject","avgt",4,5,9.239445,1.143195,"ms/op",CubicSpline
+"geotrellis.raster.resample.ResampleBench.reproject","avgt",4,5,9.411850,1.365864,"ms/op",Lanczos
+"geotrellis.raster.resample.ResampleBench.reproject","avgt",4,5,9.422685,1.601492,"ms/op",Average
+"geotrellis.raster.resample.ResampleBench.reproject","avgt",4,5,9.318532,1.086037,"ms/op",Mode
