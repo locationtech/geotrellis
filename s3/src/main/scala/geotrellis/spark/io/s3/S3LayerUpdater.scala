@@ -50,7 +50,6 @@ class S3LayerUpdater(
 
   val as = attributeStore.asInstanceOf[S3AttributeStore]
   val layerWriter = new InnerS3LayerWriter(as, as.bucket, as.prefix)
-  val sc: SparkContext = layerReader.sparkContext
 
   def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
@@ -59,7 +58,10 @@ class S3LayerUpdater(
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], mergeFunc: (V, V) => V): Unit = {
     rdd.metadata.getComponent[Bounds[K]] match {
       case keyBounds: KeyBounds[K] =>
-        layerWriter._update(sc, id, rdd, keyBounds, Some(mergeFunc), layerReader)
+        layerWriter._update(
+          rdd.sparkContext, id, rdd, keyBounds,
+          Some(mergeFunc), layerReader
+        )
       case EmptyBounds =>
         throw new EmptyBoundsError(s"Cannot update layer $id with a layer with empty bounds.")
     }
@@ -72,7 +74,10 @@ class S3LayerUpdater(
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
     rdd.metadata.getComponent[Bounds[K]] match {
       case keyBounds: KeyBounds[K] =>
-        layerWriter._update(sc, id, rdd, keyBounds, Some({(_: V, v: V) => v}), layerReader)
+        layerWriter._update(
+          rdd.sparkContext, id, rdd, keyBounds,
+          Some({(_: V, v: V) => v}), layerReader
+        )
       case EmptyBounds =>
         throw new EmptyBoundsError(s"Cannot update layer $id with a layer with empty bounds.")
     }
@@ -85,7 +90,10 @@ class S3LayerUpdater(
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
     rdd.metadata.getComponent[Bounds[K]] match {
       case keyBounds: KeyBounds[K] =>
-        layerWriter._update(sc, id, rdd, keyBounds, None, layerReader)
+        layerWriter._update(
+          rdd.sparkContext, id, rdd, keyBounds,
+          None, layerReader
+        )
       case EmptyBounds =>
         throw new EmptyBoundsError(s"Cannot overwrite layer $id with a layer with empty bounds.")
     }

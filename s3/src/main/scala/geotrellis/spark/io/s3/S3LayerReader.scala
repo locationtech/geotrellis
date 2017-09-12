@@ -39,7 +39,6 @@ class S3LayerReader(val attributeStore: AttributeStore)(implicit sc: SparkContex
   extends FilteringLayerReader[LayerId] with LazyLogging {
 
   val defaultNumPartitions = sc.defaultParallelism
-  private[s3] def sparkContext: SparkContext = sc
 
   def rddReader: S3RDDReader = S3RDDReader
 

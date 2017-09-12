@@ -35,8 +35,6 @@ class CassandraLayerUpdater(
   layerReader: CassandraLayerReader
 ) extends LayerUpdater[LayerId] with LazyLogging {
 
-  implicit private val sc = layerReader.sparkContext
-
   def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
@@ -44,6 +42,7 @@ class CassandraLayerUpdater(
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], mergeFunc: (V, V) => V): Unit = {
     val CassandraLayerHeader(_, _, keyspace, table) = attributeStore.readHeader[CassandraLayerHeader](id)
     val layerWriter = new CassandraLayerWriter(attributeStore, instance, keyspace, table)
+    implicit val sc = rdd.sparkContext
     layerWriter.update(id, rdd, mergeFunc)
   }
 
@@ -54,6 +53,7 @@ class CassandraLayerUpdater(
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
     val CassandraLayerHeader(_, _, keyspace, table) = attributeStore.readHeader[CassandraLayerHeader](id)
     val layerWriter = new CassandraLayerWriter(attributeStore, instance, keyspace, table)
+    implicit val sc = rdd.sparkContext
     layerWriter.update(id, rdd)
   }
 
@@ -64,6 +64,7 @@ class CassandraLayerUpdater(
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
     val CassandraLayerHeader(_, _, keyspace, table) = attributeStore.readHeader[CassandraLayerHeader](id)
     val layerWriter = new CassandraLayerWriter(attributeStore, instance, keyspace, table)
+    implicit val sc = rdd.sparkContext
     layerWriter.overwrite(id, rdd)
   }
 
