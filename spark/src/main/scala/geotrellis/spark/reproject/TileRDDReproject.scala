@@ -141,7 +141,7 @@ object TileRDDReproject {
       for {
         sourceBounds <- metadata.bounds.toOption
         targetBounds <- newMetadata.bounds.toOption
-        sizeRatio = targetBounds.toGridBounds.size.toDouble / sourceBounds.toGridBounds.size.toDouble
+        sizeRatio = targetBounds.toGridBounds.sizeLong.toDouble / sourceBounds.toGridBounds.sizeLong.toDouble
         if sizeRatio > 1.5
       } yield {
         val newPartitionCount = (bufferedTiles.partitions.length * sizeRatio).toInt

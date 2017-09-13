@@ -96,8 +96,7 @@ class GridBoundsSpec extends FunSpec with Matchers{
           GridBounds(0, 0, 75, 75),
           GridBounds(25, 25, 100, 100)
         )
-      println(GridBounds.distinct(gridBounds))
-      GridBounds.distinct(gridBounds).map(_.size).sum should be ((101 * 101) - (25 * 25 * 2))
+      GridBounds.distinct(gridBounds).map(_.sizeLong).sum should be ((101 * 101) - (25 * 25 * 2))
     }
   }
 
@@ -106,7 +105,7 @@ class GridBoundsSpec extends FunSpec with Matchers{
     it("should match the output of coordsIter") {
       val gbs = GridBounds(0, 0, 10, 10)
 
-      gbs.coordsIter.toSeq shouldBe gbs.coords.toSeq
+      gbs.coordsIter.toSeq shouldBe gbs.coordsIter.toSeq
     }
   }
 
@@ -150,7 +149,7 @@ class GridBoundsSpec extends FunSpec with Matchers{
       val expected = GridBounds(253, 255, 503, 505)
 
       actual shouldBe expected
-      actual.size shouldBe expected.size
+      actual.sizeLong shouldBe expected.sizeLong
     }
 
     it("should move to the left 10 and up 15") {
@@ -160,7 +159,7 @@ class GridBoundsSpec extends FunSpec with Matchers{
       val expected = GridBounds(2, 7, 22, 27)
 
       actual shouldBe expected
-      actual.size shouldBe expected.size
+      actual.sizeLong shouldBe expected.sizeLong
     }
   }
 }
