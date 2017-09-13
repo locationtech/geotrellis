@@ -32,7 +32,7 @@ import java.net.URI
  */
 class HadoopLayerProvider extends AttributeStoreProvider
     with LayerReaderProvider with LayerWriterProvider with ValueReaderProvider {
-  val schemes: Array[String] = Array("hdfs", "hdfs+file", "s3n", "s3a")
+  val schemes: Array[String] = Array("hdfs", "hdfs+file", "s3n", "s3a", "wasb", "wasbs")
 
   private def trim(uri: URI): URI =
     if (uri.getScheme.startsWith("hdfs+"))
