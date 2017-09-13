@@ -35,6 +35,13 @@ trait Implicits {
     (implicit val keyClassTag: ClassTag[K], implicit val _sc: SpatialComponent[K])
       extends PolygonalSummaryTileLayerRDDMethods[K, M] with Serializable
 
+  implicit class withZonalSummaryMultibandTileLayerRDDMethods[
+    K,
+    M: GetComponent[?, LayoutDefinition]
+  ](val self: RDD[(K, MultibandTile)] with Metadata[M])
+    (implicit val keyClassTag: ClassTag[K], implicit val _sc: SpatialComponent[K])
+      extends PolygonalSummaryMultibandTileLayerRDDMethods[K, M] with Serializable
+
   implicit class withZonalSummaryFeatureRDDMethods[G <: Geometry, D](val featureRdd: RDD[Feature[G, D]])
       extends PolygonalSummaryFeatureRDDMethods[G, D]
 
@@ -48,6 +55,13 @@ trait Implicits {
   ](val self: Seq[(K, Tile)] with Metadata[M])
    (implicit val keyClassTag: ClassTag[K], implicit val _sc: SpatialComponent[K])
     extends PolygonalSummaryTileLayerCollectionMethods[K, M] with Serializable
+
+  implicit class withZonalSummaryMultibandTileLayerCollectionMethods[
+    K,
+    M: GetComponent[?, LayoutDefinition]
+  ](val self: Seq[(K, MultibandTile)] with Metadata[M])
+   (implicit val keyClassTag: ClassTag[K], implicit val _sc: SpatialComponent[K])
+    extends PolygonalSummaryMultibandTileLayerCollectionMethods[K, M] with Serializable
 
   implicit class withZonalSummaryFeatureCollectionMethods[G <: Geometry, D](val featureCollection: Seq[Feature[G, D]])
     extends PolygonalSummaryFeatureCollectionMethods[G, D]
