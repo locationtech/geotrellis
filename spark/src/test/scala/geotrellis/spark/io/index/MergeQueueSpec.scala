@@ -31,7 +31,7 @@ class MergeQueueSpec extends FunSpec {
 
 
     val numSides = if(maxNumSides <= 3) 3 else rgen.nextInt(maxNumSides - 2) + 3
-    val polars = for(_ <- 3 to numSides) yield (rgen.nextDouble*2.0*Math.PI, rgen.nextDouble*maxSideLength)
+    val polars = for(_ <- 1 to numSides) yield (rgen.nextDouble*2.0*Math.PI, rgen.nextDouble*maxSideLength)
     polars.sortBy(_._1)
     val points = polars.map { tup =>
       val (r,theta) = tup
