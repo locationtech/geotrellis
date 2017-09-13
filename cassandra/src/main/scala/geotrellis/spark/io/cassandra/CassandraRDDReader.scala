@@ -25,6 +25,7 @@ import geotrellis.spark.util.KryoWrapper
 
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
+
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -33,6 +34,7 @@ import com.typesafe.config.ConfigFactory
 
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
+
 
 object CassandraRDDReader {
   def read[K: Boundable : AvroRecordCodec : ClassTag, V: AvroRecordCodec : ClassTag](
