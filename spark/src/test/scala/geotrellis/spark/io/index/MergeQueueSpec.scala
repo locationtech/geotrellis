@@ -9,8 +9,6 @@ import geotrellis.spark._
 import geotrellis.spark.io.index.hilbert.HilbertSpaceTimeKeyIndex
 import geotrellis.spark.io.index.zcurve.ZSpaceTimeKeyIndex
 import geotrellis.spark.tiling._
-import geotrellis.vector.io._
-import geotrellis.vector.io.json.JsonFeatureCollection
 import geotrellis.vector._
 import org.scalatest._
 
@@ -27,7 +25,26 @@ class MergeQueueSpec extends FunSpec {
     Polygon(Point(x,y),Point(x+side,y),Point(x+side,y+side),Point(x,y+side),Point(x,y))
   }
 
-  val polys = for (i <- 1 to 1500) yield randomSquare(LatLng.worldExtent,.5)
+  def randomPoly(bounds: Extent, maxNumSides: Int, maxSideLength: Double) = {
+    val R = Point(bounds.xmin + rgen.nextFloat()*bounds.width,
+                  bounds.ymin + rgen.nextFloat()*bounds.height)
+
+
+    val numSides = if(maxNumSides <= 3) 3 else rgen.nextInt(maxNumSides - 2) + 3
+    val polars = for(_ <- 3 to numSides) yield (rgen.nextDouble*2.0*Math.PI, rgen.nextDouble*maxSideLength)
+    polars.sortBy(_._1)
+    val points = polars.map { tup =>
+      val (r,theta) = tup
+      val x = R.x + r*Math.cos(theta)
+      val y = R.y + r*Math.sin(theta)
+      val xClipped = bounds.xmin max x min bounds.xmax
+      val yClipped = bounds.ymin max y min bounds.ymax
+      Point(xClipped,yClipped)
+    }
+    Polygon(points :+ points.head)
+  }
+
+  val polys = for (i <- 1 to 1500) yield randomPoly(LatLng.worldExtent,10,.2)
   val mPoly = MultiPolygon(polys)
 
   val worldKB = KeyBounds(SpaceTimeKey(0, 0, 1325376000000L), SpaceTimeKey(360, 180, 1355788800000L))
