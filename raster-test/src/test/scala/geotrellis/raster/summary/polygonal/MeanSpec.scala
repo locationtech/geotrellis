@@ -26,27 +26,37 @@ class MeanSpec extends FunSpec
                   with Matchers
                   with RasterMatchers
                   with TileBuilders {
-  describe("Mean") {
-    it("computes Mean") {
-      val rs = createRaster(Array.fill(40*40)(1),40,40)
-      val tile = rs.tile
-      val extent = rs.extent
-      val zone = Extent(10,-10,30,10).toPolygon
 
+  describe("Mean") {
+    val rs = createRaster(Array.fill(40*40)(1),40,40)
+    val tile = rs.tile
+    val extent = rs.extent
+    val zone = Extent(10,-10,30,10).toPolygon
+
+    val multibandTile = MultibandTile(tile, tile, tile)
+
+    it("computes Mean for Singleband") {
       val result = tile.polygonalMean(extent, zone)
-      
+
       result should equal (1.0)
     }
 
-    it("computes Double Mean") {
-      val rs = createRaster(Array.fill(40*40)(1),40,40)
-      val tile = rs.tile
-      val extent = rs.extent
-      val zone = Extent(10,-10,30,10).toPolygon
+    it("computes Mean for Multiband") {
+      val result = multibandTile.polygonalMean(extent, zone)
 
+      result should equal (Array(1.0, 1.0, 1.0))
+    }
+
+    it("computes Double Mean for Singleband") {
       val result = tile.polygonalMean(extent, zone)
 
       result should equal (1.0)
+    }
+
+    it("computes Double Mean for for Multiband") {
+      val result = multibandTile.polygonalMean(extent, zone)
+
+      result should equal (Array(1.0, 1.0, 1.0))
     }
   }
 }

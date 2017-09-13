@@ -43,3 +43,38 @@ object DoubleHistogramSummary extends TilePolygonalSummaryHandler[Histogram[Doub
     if (rs.nonEmpty) rs.reduce(_ merge _)
     else StreamingHistogram()
 }
+
+object MultibandTileDoubleHistogramSummary extends MultibandTilePolygonalSummaryHandler[Array[Histogram[Double]]] {
+
+  /**
+    * Given a [[Raster]] which partially intersects the given polygon,
+    * find the sum of the Raster elements in the intersection.
+    */
+  def handlePartialMultibandTile(raster: Raster[MultibandTile], polygon: Polygon): Array[Histogram[Double]] = {
+    val Raster(multibandTile, extent) = raster
+    multibandTile.bands.map { tile => DoubleHistogramSummary.handlePartialTile(Raster(tile, extent), polygon) }.toArray
+  }
+
+  /**
+    * Find the sum of the elements in the [[Raster]].
+    */
+  def handleFullMultibandTile(multibandTile: MultibandTile): Array[Histogram[Double]] =
+    multibandTile.bands.map { DoubleHistogramSummary.handleFullTile(_) }.toArray
+
+  /**
+    * Combine the results into a larger result.
+    */
+  def combineOp(v1: Array[Histogram[Double]], v2: Array[Histogram[Double]]): Array[Histogram[Double]] =
+    v1 zip v2 map { case (r1, r2) => DoubleHistogramSummary.combineOp(r1, r2) }
+
+  def combineResults(res: Seq[Array[Histogram[Double]]]): Array[Histogram[Double]] =
+    if (res.isEmpty)
+      Array(StreamingHistogram())
+    else
+      res.reduce { (res1, res2) =>
+        res1 zip res2 map {
+          case (r1: Histogram[Double], r2: Histogram[Double]) =>
+            DoubleHistogramSummary.combineResults(Seq(r1, r2))
+        }
+      }
+}

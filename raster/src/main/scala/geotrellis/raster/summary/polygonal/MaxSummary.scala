@@ -51,6 +51,41 @@ object MaxSummary extends TilePolygonalSummaryHandler[Int] {
       }
 }
 
+object MultibandTileMaxSummary extends MultibandTilePolygonalSummaryHandler[Array[Int]] {
+
+  /**
+    * Given a [[Raster]] which partially intersects the given polygon,
+    * find the sum of the Raster elements in the intersection.
+    */
+  def handlePartialMultibandTile(raster: Raster[MultibandTile], polygon: Polygon): Array[Int] = {
+    val Raster(multibandTile, extent) = raster
+    multibandTile.bands.map { tile => MaxSummary.handlePartialTile(Raster(tile, extent), polygon) }.toArray
+  }
+
+  /**
+    * Find the sum of the elements in the [[Raster]].
+    */
+  def handleFullMultibandTile(multibandTile: MultibandTile): Array[Int] =
+    multibandTile.bands.map { MaxSummary.handleFullTile(_) }.toArray
+
+  /**
+    * Combine the results into a larger result.
+    */
+  def combineOp(v1: Array[Int], v2: Array[Int]): Array[Int] =
+    v1 zip v2 map { case (r1, r2) => MaxSummary.combineOp(r1, r2) }
+
+  def combineResults(res: Seq[Array[Int]]): Array[Int] =
+    if (res.isEmpty)
+      Array(NODATA)
+    else
+      res.reduce { (res1, res2) =>
+        res1 zip res2 map {
+          case (r1: Int, r2: Int) =>
+            MaxSummary.combineResults(Seq(r1, r2))
+        }
+      }
+}
+
 object MaxDoubleSummary extends TilePolygonalSummaryHandler[Double] {
   def handlePartialTile(raster: Raster[Tile], polygon: Polygon): Double = {
     val Raster(tile, _) = raster
@@ -78,5 +113,40 @@ object MaxDoubleSummary extends TilePolygonalSummaryHandler[Double] {
         if(isNoData(a)) { b }
         else if(isNoData(b)) { a }
         else { math.max(a, b) }
+      }
+}
+
+object MultibandTileMaxDoubleSummary extends MultibandTilePolygonalSummaryHandler[Array[Double]] {
+
+  /**
+    * Given a [[Raster]] which partially intersects the given polygon,
+    * find the sum of the Raster elements in the intersection.
+    */
+  def handlePartialMultibandTile(raster: Raster[MultibandTile], polygon: Polygon): Array[Double] = {
+    val Raster(multibandTile, extent) = raster
+    multibandTile.bands.map { tile => MaxDoubleSummary.handlePartialTile(Raster(tile, extent), polygon) }.toArray
+  }
+
+  /**
+    * Find the sum of the elements in the [[Raster]].
+    */
+  def handleFullMultibandTile(multibandTile: MultibandTile): Array[Double] =
+    multibandTile.bands.map { MaxDoubleSummary.handleFullTile(_) }.toArray
+
+  /**
+    * Combine the results into a larger result.
+    */
+  def combineOp(v1: Array[Double], v2: Array[Double]): Array[Double] =
+    v1 zip v2 map { case (r1, r2) => MaxDoubleSummary.combineOp(r1, r2) }
+
+  def combineResults(res: Seq[Array[Double]]): Array[Double] =
+    if (res.isEmpty)
+      Array(Double.NaN)
+    else
+      res.reduce { (res1, res2) =>
+        res1 zip res2 map {
+          case (r1: Double, r2: Double) =>
+            MaxDoubleSummary.combineResults(Seq(r1, r2))
+        }
       }
 }

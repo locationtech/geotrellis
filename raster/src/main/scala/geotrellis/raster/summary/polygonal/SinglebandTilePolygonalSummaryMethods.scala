@@ -22,11 +22,12 @@ import geotrellis.util.MethodExtensions
 import geotrellis.vector._
 
 
+
 /**
   * Trait containing extension methods for doing polygonal summaries
   * on tiles.
   */
-trait PolygonalSummaryMethods extends MethodExtensions[Tile] {
+trait SinglebandTilePolygonalSummaryMethods extends MethodExtensions[Tile] {
 
   /**
     * Given a Polygon, an Extent, and a summary handler, generate the

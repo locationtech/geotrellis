@@ -26,57 +26,68 @@ class MaxSpec extends FunSpec
                  with Matchers
                  with RasterMatchers
                  with TileBuilders {
-  describe("Max") {
-    it("computes Maximum") {
-      val rs = createRaster(Array.fill(40*40)(1),40,40)
-      val tile = rs.tile
-      val extent = rs.extent
-      val zone = Extent(10,-10,30,10).toPolygon
 
+  describe("Max") {
+    val rs = createRaster(Array.fill(40*40)(1),40,40)
+    val tile = rs.tile
+    val extent = rs.extent
+    val zone = Extent(10,-10,30,10).toPolygon
+
+    val multibandTile = MultibandTile(tile, tile, tile)
+
+    val xd = extent.xmax - extent.xmin / 4
+    val yd = extent.ymax - extent.ymin / 4
+
+    val tri1 = Polygon(
+      (extent.xmin + (xd / 2), extent.ymax - (yd / 2)),
+      (extent.xmin + (xd / 2) + xd, extent.ymax - (yd / 2)),
+      (extent.xmin + (xd / 2) + xd, extent.ymax - (yd)),
+      (extent.xmin + (xd / 2), extent.ymax - (yd / 2))
+    )
+
+    val tri2 = Polygon(
+      (extent.xmax - (xd / 2), extent.ymin + (yd / 2)),
+      (extent.xmax - (xd / 2) - xd, extent.ymin + (yd / 2)),
+      (extent.xmax - (xd / 2) - xd, extent.ymin + (yd)),
+      (extent.xmax - (xd / 2), extent.ymin + (yd / 2))
+    )
+
+    val mp = MultiPolygon(tri1, tri2)
+
+    it("computes Maximum for Singleband") {
       val result = tile.polygonalMax(extent, zone)
 
       result should equal (1)
     }
 
-    it("computes Double Maximum") {
-      val rs = createRaster(Array.fill(40*40)(1),40,40)
-      val tile = rs.tile
-      val extent = rs.extent
-      val zone = Extent(10,-10,30,10).toPolygon
+    it("computes Maximum for Multiband") {
+      val result = multibandTile.polygonalMax(extent, zone)
 
+      result should equal (Array(1, 1, 1))
+    }
+
+    it("computes Double Maximum for Singleband") {
       val result = tile.polygonalMaxDouble(extent, zone)
 
       result should equal (1.0)
     }
 
-      it("computes double max over multipolygon") {
-        val rs = createRaster(Array.fill(40*40)(1),40,40)
-        val tile = rs.tile
-        val extent = rs.extent
-        val zone = Extent(10,-10,30,10).toPolygon
+    it("computes Double Maximum for Multiband") {
+      val result = multibandTile.polygonalMaxDouble(extent, zone)
 
-        val xd = extent.xmax - extent.xmin / 4
-        val yd = extent.ymax - extent.ymin / 4
+      result should equal (Array(1.0, 1.0, 1.0))
+    }
 
-        val tri1 = Polygon( 
-          (extent.xmin + (xd / 2), extent.ymax - (yd / 2)),
-          (extent.xmin + (xd / 2) + xd, extent.ymax - (yd / 2)),
-          (extent.xmin + (xd / 2) + xd, extent.ymax - (yd)),
-          (extent.xmin + (xd / 2), extent.ymax - (yd / 2))
-        )
+    it("computes double max over multipolygon for Singleband") {
+      val result = tile.polygonalMaxDouble(extent, mp)
 
-        val tri2 = Polygon( 
-          (extent.xmax - (xd / 2), extent.ymin + (yd / 2)),
-          (extent.xmax - (xd / 2) - xd, extent.ymin + (yd / 2)),
-          (extent.xmax - (xd / 2) - xd, extent.ymin + (yd)),
-          (extent.xmax - (xd / 2), extent.ymin + (yd / 2))
-        )
+      result should equal (1.0)
+    }
 
-        val mp = MultiPolygon(tri1, tri2)
+    it("computes double max over multipolygon for Multiband") {
+      val result = multibandTile.polygonalMaxDouble(extent, mp)
 
-        val result = tile.polygonalMaxDouble(extent, mp)
-
-        result should equal (1.0)
-      }
+      result should equal (Array(1.0, 1.0, 1.0))
+    }
   }
 }

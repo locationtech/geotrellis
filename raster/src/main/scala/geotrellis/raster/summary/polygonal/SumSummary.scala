@@ -60,6 +60,36 @@ object SumSummary extends TilePolygonalSummaryHandler[Long] {
     rs.foldLeft(0L)(_+_)
 }
 
+object MultibandTileSumSummary extends MultibandTilePolygonalSummaryHandler[Array[Long]] {
+
+  /**
+    * Given a [[Raster]] which partially intersects the given polygon,
+    * find the sum of the Raster elements in the intersection.
+    */
+  def handlePartialMultibandTile(raster: Raster[MultibandTile], polygon: Polygon): Array[Long] = {
+    val Raster(multibandTile, extent) = raster
+    multibandTile.bands.map { tile => SumSummary.handlePartialTile(Raster(tile, extent), polygon) }.toArray
+  }
+
+  /**
+    * Find the sum of the elements in the [[Raster]].
+    */
+  def handleFullMultibandTile(multibandTile: MultibandTile): Array[Long] =
+    multibandTile.bands.map { SumSummary.handleFullTile(_) }.toArray
+
+  /**
+    * Combine the results into a larger result.
+    */
+  def combineOp(v1: Array[Long], v2: Array[Long]): Array[Long] =
+    v1 zip v2 map { case (r1, r2) => SumSummary.combineOp(r1, r2) }
+
+  def combineResults(res: Seq[Array[Long]]): Array[Long] =
+    if (res.isEmpty)
+      Array(0L)
+    else
+      res.reduce { (res1, res2) => res1 zip res2 map { case (r1: Long, r2: Long) => r1 + r2 } }
+}
+
 /**
   * Object containing functions for doing sum operations on
   * [[Raster]]s.
@@ -97,4 +127,34 @@ object SumDoubleSummary extends TilePolygonalSummaryHandler[Double] {
     */
   def combineResults(rs: Seq[Double]) =
     rs.foldLeft(0.0)(_+_)
+}
+
+object MultibandTileSumDoubleSummary extends MultibandTilePolygonalSummaryHandler[Array[Double]] {
+
+  /**
+    * Given a [[Raster]] which partially intersects the given polygon,
+    * find the sum of the Raster elements in the intersection.
+    */
+  def handlePartialMultibandTile(raster: Raster[MultibandTile], polygon: Polygon): Array[Double] = {
+    val Raster(multibandTile, extent) = raster
+    multibandTile.bands.map { tile => SumDoubleSummary.handlePartialTile(Raster(tile, extent), polygon) }.toArray
+  }
+
+  /**
+    * Find the sum of the elements in the [[Raster]].
+    */
+  def handleFullMultibandTile(multibandTile: MultibandTile): Array[Double] =
+    multibandTile.bands.map { SumDoubleSummary.handleFullTile(_) }.toArray
+
+  /**
+    * Combine the results into a larger result.
+    */
+  def combineOp(v1: Array[Double], v2: Array[Double]): Array[Double] =
+    v1 zip v2 map { case (r1, r2) => SumDoubleSummary.combineOp(r1, r2) }
+
+  def combineResults(res: Seq[Array[Double]]): Array[Double] =
+    if (res.isEmpty)
+      Array(0.0)
+    else
+      res.reduce { (res1, res2) => res1 zip res2 map { case (r1: Double, r2: Double) => r1 + r2 } }
 }
