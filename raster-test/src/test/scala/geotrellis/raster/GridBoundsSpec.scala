@@ -105,7 +105,7 @@ class GridBoundsSpec extends FunSpec with Matchers{
     it("should match the output of coordsIter") {
       val gbs = GridBounds(0, 0, 10, 10)
 
-      gbs.coordsIter.toSeq shouldBe gbs.coordsIter.toSeq
+      gbs.coordsIter.toSeq shouldBe gbs.coords.toSeq
     }
   }
 
