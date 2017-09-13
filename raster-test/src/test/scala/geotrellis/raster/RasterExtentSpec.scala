@@ -200,6 +200,55 @@ class RasterExtentSpec extends FunSpec with Matchers
 
       gb should be (GridBounds(-1, -1, 10, 12))
     }
+
+    // This case came up when attempting to rasterizeWithValue over the geometries in a geojson file causing
+    // the rasterization operation to fail - we get a negative grid bound even though clamp is true.
+    // It looks like the problem is if the upper side of query extent (subExtent) is less than epsilon from the
+    // upper end of the raster extent, then the grid bound returns -1.  Possible fix is to add additional check
+    // in the "if(clamp)..." portion of the code.
+    it("should handle this case! bad grid bounds (this breaks - happened for real, causing rasterizer to fail)") {
+      val re = RasterExtent(Extent(-8673214.05417888, 3224656.5073229168, -8562019.002202228, 3335851.5592995696), 463.31271656938674, 463.31271656938674, 240, 240)
+      val subExtent = Extent(-8666796.580822079, 3335851.559299569, -4288488.10014257, 5559752.598832616)
+
+      val gb = re.gridBoundsFor(subExtent)
+      gb.rowMax should not equal(-1)
+    }
+
+    // Exploring a little more...
+    it("reproduce bad grid bounds - another case") {
+      val re = RasterExtent(Extent(10.0, 30.0, 20.0, 40.0), 1.0, 1.0, 240, 240)
+      val subExtent = Extent(11.0, 39.9999999999, 100.0, 60.0)
+
+      val gb = re.gridBoundsFor(subExtent)
+      gb.rowMax should not equal(-1)
+    }
+
+    // Try negative side just for kicks
+    it("reproduce bad grid bounds - third case") {
+      val re = RasterExtent(Extent(10.0, -40.0, 20.0, -30.0), 1.0, 1.0, 240, 240)
+      val subExtent = Extent(11.0, -30.00000000001, 100.0, 60.0)
+
+      val gb = re.gridBoundsFor(subExtent)
+      gb.rowMax should not equal(-1)
+    }
+
+    // Doesn't break with rowMin...
+    it("reproduce bad grid bounds - rowMin") {
+      val re = RasterExtent(Extent(10.0, 30.0, 20.0, 40.0), 1.0, 1.0, 240, 240)
+      val subExtent = Extent(9.9999999999, 40.0, 100.0, 60.0)
+
+      val gb = re.gridBoundsFor(subExtent)
+      gb.rowMin should not equal(-1)
+    }
+
+    // Probably happens with colMax as well...
+    it("reproduce bad grid bounds - colMax") {
+      val re = RasterExtent(Extent(10.0, 30.0, 20.0, 40.0), 1.0, 1.0, 240, 240)
+      val subExtent = Extent(0.0, 30.0, 10.0000000001, 60.0)
+
+      val gb = re.gridBoundsFor(subExtent)
+      gb.colMax should not equal(-1)
+    }
   }
 
   describe("Creating aligned RasterExtent based on an extent") {

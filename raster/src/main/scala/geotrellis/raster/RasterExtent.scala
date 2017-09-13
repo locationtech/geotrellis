@@ -182,10 +182,10 @@ case class RasterExtent(
     }
 
     if(clamp) {
-      GridBounds(math.max(colMin, 0),
-                 math.max(rowMin, 0),
-                 math.min(colMax, cols - 1),
-                 math.min(rowMax, rows - 1))
+      GridBounds(math.min(math.max(colMin, 0), cols - 1),
+                 math.min(math.max(rowMin, 0), rows - 1),
+                 math.min(math.max(colMax, 0), cols - 1),
+                 math.min(math.max(rowMax, 0), rows - 1))
     } else {
       GridBounds(colMin, rowMin, colMax, rowMax)
     }
@@ -300,3 +300,4 @@ object RasterExtent {
   def apply(extent: Extent, tile: CellGrid): RasterExtent =
     apply(extent, tile.cols, tile.rows)
 }
+
