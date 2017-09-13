@@ -110,53 +110,59 @@ object CassandraRDDWriter {
               val readStatement = session.prepare(readQuery)
               val writeStatement = session.prepare(writeQuery)
 
-              val queries: Process[Task, (java.lang.Long, ByteBuffer)] =
-                Process.unfold(partition) { iter =>
+              val rows: Process[Task, (java.lang.Long, Vector[(K,V)])] =
+                Process.unfold(partition)({ iter =>
                   if (iter.hasNext) {
-                    val recs = iter.next()
-                    val key: java.lang.Long = recs._1
-                    val rows1: Vector[(K,V)] = recs._2.toVector
-                    val rows2: Vector[(K,V)] =
-                      if (mergeFunc != None) {
-                        val row = session.execute(readStatement.bind(key))
-                        if (row.nonEmpty) {
-                          val bytes = row.one().getBytes("value").array()
-                          val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
-                          recs
-                        } else Vector.empty
-                      }
-                      else Vector.empty
-
-                    val outRows: Vector[(K, V)] =
-                      mergeFunc match {
-                        case Some(fn) =>
-                          (rows2 ++ rows1)
-                            .groupBy({ case (k,v) => k })
-                            .map({ case (k, kvs) =>
-                              val vs = kvs.map({ case (k,v) => v }).toSeq
-                              val v: V = vs.tail.foldLeft(vs.head)(fn)
-                              (k, v) })
-                            .toVector
-                        case None => rows1
-                      }
-                    val bytes = ByteBuffer.wrap(AvroEncoder.toBinary(outRows)(codec))
-                    Some((key, bytes), iter)
-                  } else {
-                    None
-                  }
-                }
+                    val record = iter.next()
+                    Some((record._1, record._2.toVector), iter)
+                  } else None
+                })
 
               val pool = Executors.newFixedThreadPool(threads)
 
-              val write: ((java.lang.Long, ByteBuffer)) => Process[Task, ResultSet] = {
-                case (id, value) =>
-                  Process eval Task {
-                    session.execute(writeStatement.bind(id, value))
-                  }(pool)
+              def elaborateRow(row: (java.lang.Long, Vector[(K,V)])): Process[Task, (java.lang.Long, Vector[(K,V)])] = {
+                Process eval Task ({
+                  val (key, kvs1) = row
+                  val kvs2 =
+                    if (mergeFunc != None) {
+                      val oldRow = session.execute(readStatement.bind(key))
+                      if (oldRow.nonEmpty) {
+                        val bytes = oldRow.one().getBytes("value").array()
+                        AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
+                      } else Vector.empty
+                    } else Vector.empty
+                  val kvs = mergeFunc match {
+                    case Some(fn) =>
+                      (kvs2 ++ kvs1)
+                        .groupBy({ case (k,v) => k })
+                        .map({ case (k, kvs) =>
+                          val vs = kvs.map({ case (k,v) => v }).toSeq
+                          val v: V = vs.tail.foldLeft(vs.head)(fn)
+                          (k, v) })
+                        .toVector
+                    case None => kvs1
+                  }
+                  (key, kvs)
+                })(pool)
+              }
+
+              def rowToBytes(row: (java.lang.Long, Vector[(K,V)])): Process[Task, (java.lang.Long, ByteBuffer)] = {
+                Process eval Task({
+                  val (key, kvs) = row
+                  val bytes = ByteBuffer.wrap(AvroEncoder.toBinary(kvs)(codec))
+                  (key, bytes)
+                })(pool)
+              }
+
+              def retire(row: (java.lang.Long, ByteBuffer)): Process[Task, ResultSet] = {
+                val (id, value) = row
+                Process eval Task({
+                  session.execute(writeStatement.bind(id, value))
+                })(pool)
               }
 
               val results = nondeterminism.njoin(maxOpen = threads, maxQueued = threads) {
-                queries map write
+                rows flatMap elaborateRow flatMap rowToBytes map retire
               }(Strategy.Executor(pool)) onComplete {
                 Process eval Task {
                   session.closeAsync()
