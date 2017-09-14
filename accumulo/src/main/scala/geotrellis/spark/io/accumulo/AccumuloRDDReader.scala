@@ -16,21 +16,23 @@
 
 package geotrellis.spark.io.accumulo
 
-import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.spark.util.KryoWrapper
 import geotrellis.spark.{Boundable, KeyBounds}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
+import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
+import geotrellis.spark.util.KryoWrapper
+
 import org.apache.accumulo.core.client.mapreduce.{AccumuloInputFormat, InputFormatBase}
 import org.apache.accumulo.core.data.{Range => AccumuloRange, Value, Key}
 import org.apache.accumulo.core.util.{Pair => AccumuloPair}
 import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
-import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import org.apache.spark.SparkContext
 
-import scala.reflect.ClassTag
 import scala.collection.JavaConverters._
+import scala.reflect.ClassTag
+
 
 object AccumuloRDDReader {
   def read[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
