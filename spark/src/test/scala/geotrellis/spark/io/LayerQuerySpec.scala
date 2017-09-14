@@ -101,6 +101,14 @@ class LayerQuerySpec extends FunSpec
       (expected diff actual) should be ('empty)
     }
 
+    it("should find all keys that intersect appreciably with a horizontal rectangle that is in the same projection") {
+      val polygon = horizontal
+      val query = new LayerQuery[SpatialKey, TileLayerMetadata[SpatialKey]].where(Intersects(polygon -> md.crs))
+      val actual = query(md).flatMap(spatialKeyBoundsKeys)
+      val expected = naiveKeys(polygon)
+      (expected diff actual) should be ('empty)
+    }
+
     it("should find all keys that intersect appreciably with a vertical rectangle") {
       val polygon = vertical
       val query = new LayerQuery[SpatialKey, TileLayerMetadata[SpatialKey]].where(Intersects(polygon))
@@ -109,9 +117,27 @@ class LayerQuerySpec extends FunSpec
       (expected diff actual) should be ('empty)
     }
 
+    it("should find all keys that intersect appreciably with a vertical rectangle that is in a different projection") {
+      val polyCRS = CRS.fromEpsgCode(2033)
+      val polygon = vertical.reproject(md.crs, polyCRS)
+      val query = new LayerQuery[SpatialKey, TileLayerMetadata[SpatialKey]].where(Intersects(polygon -> polyCRS))
+      val actual = query(md).flatMap(spatialKeyBoundsKeys)
+      val expected = naiveKeys(polygon)
+      (expected diff actual) should be ('empty)
+    }
+
     it("should find all keys that intersect appreciably with an L-shaped polygon") {
       val polygon = MultiPolygon(List(horizontal, vertical))
       val query = new LayerQuery[SpatialKey, TileLayerMetadata[SpatialKey]].where(Intersects(polygon))
+      val actual = query(md).flatMap(spatialKeyBoundsKeys)
+      val expected = naiveKeys(polygon)
+      (expected diff actual) should be ('empty)
+    }
+
+    it("should find all keys that intersect appreciably with an L-shaped polygon that is in a differet projection") {
+      val polyCRS = CRS.fromEpsgCode(2023)
+      val polygon = MultiPolygon(List(horizontal, vertical)).reproject(md.crs, polyCRS)
+      val query = new LayerQuery[SpatialKey, TileLayerMetadata[SpatialKey]].where(Intersects(polygon -> polyCRS))
       val actual = query(md).flatMap(spatialKeyBoundsKeys)
       val expected = naiveKeys(polygon)
       (expected diff actual) should be ('empty)
