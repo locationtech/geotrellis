@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io
 
+import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.{GridBounds, RasterExtent, PixelIsArea}
 import geotrellis.raster.rasterize.Rasterizer.Options
@@ -175,6 +176,38 @@ object Intersects {
     new LayerFilter[K, Intersects.type, Polygon, M] {
       def apply(metadata: M, kb: KeyBounds[K], polygon: Polygon) =
         forMultiPolygon[K, M].apply(metadata, kb, MultiPolygon(polygon))
+    }
+
+  implicit def forProjectedPolygon[
+    K: SpatialComponent: Boundable,
+    M: GetComponent[?, LayoutDefinition]: GetComponent[?, CRS]
+  ] =
+    new LayerFilter[K, Intersects.type, (Polygon, CRS), M] {
+      def apply(metadata: M, kb: KeyBounds[K], projectedPolygon: (Polygon, CRS)) = {
+        val (polygon, srcCRS) = projectedPolygon
+        val layerCRS = metadata.getComponent[CRS]
+
+        if (srcCRS != layerCRS)
+          forMultiPolygon[K, M].apply(metadata, kb, MultiPolygon(polygon.reproject(srcCRS, layerCRS)))
+        else
+          forMultiPolygon[K, M].apply(metadata, kb, MultiPolygon(polygon))
+      }
+    }
+
+  implicit def forProjectedMultiPolygon[
+    K: SpatialComponent: Boundable,
+    M: GetComponent[?, LayoutDefinition]: GetComponent[?, CRS]
+  ] =
+    new LayerFilter[K, Intersects.type, (MultiPolygon, CRS), M] {
+      def apply(metadata: M, kb: KeyBounds[K], projectedMultiPolygon: (MultiPolygon, CRS)) = {
+        val (multiPolygon, srcCRS) = projectedMultiPolygon
+        val layerCRS = metadata.getComponent[CRS]
+
+        if (srcCRS != layerCRS)
+          forMultiPolygon[K, M].apply(metadata, kb, multiPolygon.reproject(srcCRS, layerCRS))
+        else
+          forMultiPolygon[K, M].apply(metadata, kb, multiPolygon)
+      }
     }
 
   /** Define Intersects filter for MultiLine */
