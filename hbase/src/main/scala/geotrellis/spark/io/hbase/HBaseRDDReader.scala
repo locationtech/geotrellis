@@ -16,11 +16,11 @@
 
 package geotrellis.spark.io.hbase
 
-import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
+import geotrellis.spark.{Boundable, KeyBounds, LayerId}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
+import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index.MergeQueue
 import geotrellis.spark.util.KryoWrapper
-import geotrellis.spark.{Boundable, KeyBounds, LayerId}
 
 import org.apache.avro.Schema
 import org.apache.hadoop.hbase.HBaseConfiguration
@@ -35,6 +35,7 @@ import org.apache.spark.deploy.SparkHadoopUtil
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
+
 
 object HBaseRDDReader {
   def read[K: Boundable : AvroRecordCodec : ClassTag, V: AvroRecordCodec : ClassTag](
