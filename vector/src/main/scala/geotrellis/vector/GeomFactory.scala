@@ -29,11 +29,11 @@ private[vector] object GeomFactory {
 
   val precisionModel = precisionType match {
     case "floating" => new PrecisionModel()
-    case "floating_single" => new PrecisionModel(PrecisionModel.Type.FLOATING_SINGLE)
+    case "floating_single" => new PrecisionModel(PrecisionModel.FLOATING_SINGLE)
     case "fixed" => 
-      val scale = Try(new PrecisionModel(ConfigFactory.load().getDouble("geotrellis.jts.precision.scale"))).getOrElse(1e12)
+      val scale = new PrecisionModel(Try(ConfigFactory.load().getDouble("geotrellis.jts.precision.scale")).getOrElse(1e12))
       new PrecisionModel(scale)
-    case s => throw new IllegalArgumentException(s"Unrecognized JTS precision model; expected \"floating\", \"floating_single\", or \"fixed\"")
+    case s => throw new IllegalArgumentException("Unrecognized JTS precision model; expected \"floating\", \"floating_single\", or \"fixed\"")
   }
 
   val factory = new geom.GeometryFactory(precisionModel)
