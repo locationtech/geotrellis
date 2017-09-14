@@ -1,6 +1,38 @@
 Using Vectors
 *************
 
+Numerical Precision and Topology Exceptions
+===========================================
+
+When doing any significant amount of geometric computation, there is the
+potential of encountering JTS TopologyExceptions or other numerical hiccups
+that arise, essentially, from asking too much of floating point numerical
+representations.  JTS offers the ability to snap coordinates to a grid, the
+scale of whose cells may be specified by the user.  This can often fix
+problems stemming from numerical error which makes two points that should be
+the same appear different due to miniscule rounding errors.
+
+However, GeoTrellis defaults to allowing the full floating point
+representation of coordinates.  To enable the fixed precision scheme, one must
+create an ``application.conf`` in ``your-project/src/main/resources/``
+containing the following lines:
+
+::
+
+   geotrellis.jts.precision.type="fixed"
+   geotrellis.jts.precision.scale=<scale factor>
+
+The scale factor should be ``10^x`` where ``x`` is the number of decimal
+places of precision you wish to keep.  The default scale factor is 1e12,
+indicating that 12 decimal places after the decimal point should be kept.
+Values less than 1 (negative exponents) allow for very coarse grids.  For
+example, a scale factor of 1e-2 will round coordinate components to the
+nearest hundred.
+
+Note that ``geotrellis.jts.precision.type`` make take on the value
+``floating`` for the default double precision case, or ``floating_single`` to
+use single precision floating point values.
+
 Parsing GeoJson
 ===============
 
