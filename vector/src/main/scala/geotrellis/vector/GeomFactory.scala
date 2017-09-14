@@ -16,13 +16,26 @@
 
 package geotrellis.vector
 
+import com.typesafe.config.ConfigFactory
 import com.vividsolutions.jts.geom
 import com.vividsolutions.jts.geom.PrecisionModel
 import com.vividsolutions.jts.precision.GeometryPrecisionReducer
 
+import scala.util.Try
+
 private[vector] object GeomFactory {
 
-  val factory = new geom.GeometryFactory()
+  val precisionType = Try(ConfigFactory.load().getString("geotrellis.jts.precision.type").toLowerCase).getOrElse("floating")
+
+  val precisionModel = precisionType match {
+    case "floating" => new PrecisionModel()
+    case "floating_single" => new PrecisionModel(PrecisionModel.Type.FLOATING_SINGLE)
+    case "fixed" => 
+      val scale = Try(new PrecisionModel(ConfigFactory.load().getDouble("geotrellis.jts.precision.scale"))).getOrElse(1e12)
+      new PrecisionModel(scale)
+  }
+
+  val factory = new geom.GeometryFactory(precisionModel)
 
   // 12 digits is maximum to avoid [[TopologyException]], see http://tsusiatsoftware.net/jts/jts-faq/jts-faq.html#D9
   lazy val simplifier = new GeometryPrecisionReducer(new PrecisionModel(12))
