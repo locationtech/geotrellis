@@ -40,7 +40,7 @@ trait AllOnesTestTileSpec { self: PersistenceSpec[SpatialKey, Tile, TileLayerMet
 
       it("query inside layer bounds") {
         val actual = query.where(Intersects(bounds1)).result.keys.collect()
-        val expected = for ((x, y) <- bounds1.coords) yield SpatialKey(x, y)
+        val expected = for ((x, y) <- bounds1.coordsIter.toSeq) yield SpatialKey(x, y)
 
         if (expected.diff(actual).nonEmpty)
           info(s"missing: ${(expected diff actual).toList}")
@@ -56,7 +56,7 @@ trait AllOnesTestTileSpec { self: PersistenceSpec[SpatialKey, Tile, TileLayerMet
 
       it("disjoint query on space") {
         val actual = query.where(Intersects(bounds1) or Intersects(bounds2)).result.keys.collect()
-        val expected = for ((x, y) <- bounds1.coords ++ bounds2.coords) yield SpatialKey(x, y)
+        val expected = for ((x, y) <- bounds1.coordsIter.toSeq ++ bounds2.coordsIter.toSeq) yield SpatialKey(x, y)
 
         if (expected.diff(actual).nonEmpty)
           info(s"missing: ${(expected diff actual).toList}")
@@ -70,7 +70,7 @@ trait AllOnesTestTileSpec { self: PersistenceSpec[SpatialKey, Tile, TileLayerMet
         val extent = Extent(-10, -10, 10, 10) // this should intersect the four central tiles in 8x8 layout
         query.where(Intersects(extent)).result.keys.collect() should
         contain theSameElementsAs {
-          for ((col, row) <- GridBounds(3, 3, 4, 4).coords) yield SpatialKey(col, row)
+          for ((col, row) <- GridBounds(3, 3, 4, 4).coordsIter.toSeq) yield SpatialKey(col, row)
         }
       }
     }

@@ -47,7 +47,7 @@ trait CoordinateSpaceTimeTileFeatureSpec { self: PersistenceSpec[SpaceTimeKey, T
 
         val expected = {
           for {
-            (col, row) <- bounds1.coords ++ bounds2.coords
+            (col, row) <- bounds1.coordsIter.toSeq ++ bounds2.coordsIter.toSeq
             time <- dates
           } yield SpaceTimeKey(col, row, time)
         }
@@ -66,7 +66,7 @@ trait CoordinateSpaceTimeTileFeatureSpec { self: PersistenceSpec[SpaceTimeKey, T
 
         val expected = {
           for {
-            (col, row) <- bounds1.coords ++ bounds2.coords
+            (col, row) <- bounds1.coordsIter.toSeq ++ bounds2.coordsIter.toSeq
             time <- dates diff Seq(dates(2))
           } yield {
             SpaceTimeKey(col, row, time)
@@ -87,7 +87,7 @@ trait CoordinateSpaceTimeTileFeatureSpec { self: PersistenceSpec[SpaceTimeKey, T
 
         val expected = {
           for {
-            (col, row) <- bounds1.coords ++ bounds2.coords
+            (col, row) <- bounds1.coordsIter.toSeq ++ bounds2.coordsIter.toSeq
             time <- Seq(dates(0), dates(4))
           } yield {
             SpaceTimeKey(col, row, time)
