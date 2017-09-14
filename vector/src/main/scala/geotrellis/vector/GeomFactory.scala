@@ -33,6 +33,7 @@ private[vector] object GeomFactory {
     case "fixed" => 
       val scale = Try(new PrecisionModel(ConfigFactory.load().getDouble("geotrellis.jts.precision.scale"))).getOrElse(1e12)
       new PrecisionModel(scale)
+    case s => throw new IllegalArgumentException(s"Unrecognized JTS precision model; expected \"floating\", \"floating_single\", or \"fixed\"")
   }
 
   val factory = new geom.GeometryFactory(precisionModel)
