@@ -18,17 +18,21 @@ package geotrellis.spark.io.kryo
 
 import geotrellis.util.annotations.experimental
 
-import com.esotericsoftware.kryo.io.{ Input, Output }
-import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.Serializer
-import de.javakaffee.kryoserializers._
-import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
-import java.io.{ ObjectInputStream, ObjectOutputStream }
-import mil.nga.giat.geowave.core.index.{ Persistable, PersistenceUtils }
 import org.apache.accumulo.core.data.Key
 import org.geotools.coverage.grid.GridCoverage2D
 import org.geotools.data.DataUtilities
 import org.opengis.feature.simple.SimpleFeatureType
+
+import com.esotericsoftware.kryo.io.{ Input, Output }
+import com.esotericsoftware.kryo.Kryo
+import com.esotericsoftware.kryo.Serializer
+
+import de.javakaffee.kryoserializers._
+
+import mil.nga.giat.geowave.core.index.{ Persistable, PersistenceUtils }
+
+import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
+import java.io.{ ObjectInputStream, ObjectOutputStream }
 
 
 /**
