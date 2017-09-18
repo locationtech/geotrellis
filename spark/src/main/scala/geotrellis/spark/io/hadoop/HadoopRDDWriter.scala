@@ -187,8 +187,10 @@ object HadoopRDDWriter extends LazyLogging {
                   val vs = ikvs.map({ case (_,_,v) => v }).toSeq
                   val v: V = vs.tail.foldLeft(vs.head)(fn)
                   (ikvs.head._1, k, v) })
-                .toVector
-            case None => ikvs1
+            case None =>
+              (ikvs2 ++ ikvs1)
+                .groupBy({ case (_,k,_) => k })
+                .map({ case (k, ikvs) => (ikvs.head._1, k, ikvs.head._3) })
           }).toVector.sortBy(_._1)
         val kvs = ikvs.map({ case (_,k,v) => (k,v) })
 
