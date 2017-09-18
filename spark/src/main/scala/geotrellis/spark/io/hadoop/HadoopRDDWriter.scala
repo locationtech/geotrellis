@@ -17,21 +17,43 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
-import geotrellis.spark.util._
-import geotrellis.spark.partition._
-import geotrellis.spark.io.index._
+import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
+import geotrellis.spark.io.hadoop.formats.FilterMapFileInputFormat
+import geotrellis.spark.io.index._
+import geotrellis.spark.partition._
+import geotrellis.spark.util._
+import geotrellis.spark.util.KryoWrapper
 import geotrellis.util.LazyLogging
 
+import org.apache.avro.Schema
+import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io._
-import org.apache.hadoop.conf.Configuration
 import org.apache.spark.rdd._
 
 import scala.reflect._
+import scala.collection.mutable
+
+import java.io.{ObjectInputStream, ObjectOutputStream}
+import org.apache.hadoop.conf.Configuration
+
 
 object HadoopRDDWriter extends LazyLogging {
+
+  // From https://github.com/apache/spark/blob/3b049abf102908ca72674139367e3b8d9ffcc283/core/src/main/scala/org/apache/spark/util/SerializableConfiguration.scala
+  private class SerializableConfiguration(@transient var value: Configuration) extends Serializable {
+    private def writeObject(out: ObjectOutputStream): Unit = {
+      out.defaultWriteObject()
+      value.write(out)
+    }
+
+    private def readObject(in: ObjectInputStream): Unit = {
+      value = new Configuration(false)
+      value.readFields(in)
+    }
+  }
 
   /**
     * When record being written would exceed the block size of the current MapFile
@@ -72,15 +94,127 @@ object HadoopRDDWriter extends LazyLogging {
       if (null != writer) writer.close()
   }
 
+  private[hadoop] def update[K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
+    rdd: RDD[(K, V)],
+    layerPath: Path,
+    id: LayerId,
+    as: AttributeStore,
+    mergeFunc: Option[(V,V) => V],
+    indexInterval: Int = 4
+  ): Unit = {
+    val header = as.readHeader[HadoopLayerHeader](id)
+    val keyIndex = as.readKeyIndex[K](id)
+    val writerSchema = as.readSchema(id)
+    val codec = KeyValueRecordCodec[K, V]
+
+    val kwWriterSchema = KryoWrapper(writerSchema)
+
+    val conf = rdd.sparkContext.hadoopConfiguration
+    val _conf = new SerializableConfiguration(conf)
+
+    val ranges: Vector[(String, Long, Long)] =
+      FilterMapFileInputFormat.layerRanges(header.path, conf)
+        .map({ case (path, start, end) => (path.toString, start, end) })
+
+    val layerPathStr = layerPath.toString
+
+    val firstIndex: Long = ranges.head._2
+    val lastIndex: Long = {
+      val path = ranges.last._1
+      val reader = new MapFile.Reader(path, conf)
+      var k = new LongWritable()
+      var v = new BytesWritable()
+      var index: Long = -1
+      while (reader.next(k, v)) { index = k.get }
+      reader.close
+      index
+    }
+
+    val rdd2: RDD[(Long, K, V)] = rdd.map({ case (k,v) =>
+      val i = keyIndex.toIndex(k)
+      (i, k, v)
+    })
+
+    // Write the portion of the update that does not overlap the existing layer
+    val nonOverlappers: RDD[(K,V)] =
+      rdd2
+        .filter({ case (i, k, v) =>
+          !(firstIndex <= i && i <= lastIndex) })
+        .sortBy(_._1) // Necessary?
+        .map({ case (_, k, v) => (k, v) })
+    write(nonOverlappers, layerPath, keyIndex, indexInterval, false)
+
+    // Write the portion of the update that overlaps the existing layer
+    val overlappers: RDD[(String, Iterable[(Long,K,V)])] =
+      rdd2
+        .filter({ case (i, k, v) =>
+          firstIndex <= i && i <= lastIndex })
+        .groupBy({ case (i, k,v) =>
+          ranges.find({ case (_,start,end) => start <= i && i <= end }) })
+        .map({ case (range, ikvs) =>
+          range match {
+            case Some((path, _, _)) => (path, ikvs)
+            case None => throw new Exception
+          } })
+
+    overlappers
+      .foreach({ case (_path, ikvs1) =>
+        val ikvs2 = mutable.ListBuffer.empty[(Long,K,V)]
+
+        val path = new Path(_path)
+        val conf = _conf.value
+        val fs = path.getFileSystem(conf)
+        val blockSize = fs.getDefaultBlockSize(path)
+        val reader = new MapFile.Reader(path, conf)
+
+        // Read records from map file, delete map file
+        var k = new LongWritable()
+        var v = new BytesWritable()
+        while (reader.next(k, v)) {
+          val _kvs2: Vector[(K,V)] = AvroEncoder.fromBinary(kwWriterSchema.value, v.getBytes)(codec)
+          ikvs2 ++= _kvs2.map({ case (k, v) => (keyIndex.toIndex(k),k,v) })
+        }
+        reader.close
+        HdfsUtils.deletePath(path, conf)
+
+        // Merge existing records with new records
+        val ikvs =
+          (mergeFunc match {
+            case Some(fn) =>
+              (ikvs2 ++ ikvs1)
+                .groupBy({ case (_,k,_) => k })
+                .map({ case (k, ikvs) =>
+                  val vs = ikvs.map({ case (_,_,v) => v }).toSeq
+                  val v: V = vs.tail.foldLeft(vs.head)(fn)
+                  (ikvs.head._1, k, v) })
+                .toVector
+            case None => ikvs1
+          }).toVector.sortBy(_._1)
+        val kvs = ikvs.map({ case (_,k,v) => (k,v) })
+
+        // Write merged records
+        val writer = new MultiMapWriter(layerPathStr, 33, blockSize, indexInterval)
+        for ( (index, pairs) <- GroupConsecutiveIterator(kvs.toIterator)(r => keyIndex.toIndex(r._1))) {
+          writer.write(
+            new LongWritable(index),
+            new BytesWritable(AvroEncoder.toBinary(pairs.toVector)(codec)))
+        }
+        writer.close() })
+  }
+
   def write[K: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
     rdd: RDD[(K, V)],
     path: Path,
     keyIndex: KeyIndex[K],
-    indexInterval: Int = 4
+    indexInterval: Int = 4,
+    existenceCheck: Boolean = true
   ): Unit = {
     implicit val sc = rdd.sparkContext
+
     val fs = path.getFileSystem(sc.hadoopConfiguration)
-    if(fs.exists(path)) throw new Exception(s"Directory already exists: $path")
+    if (existenceCheck) {
+      if(fs.exists(path)) throw new Exception(s"Directory already exists: $path")
+    }
 
     val codec = KeyValueRecordCodec[K, V]
     val blockSize = fs.getDefaultBlockSize(path)

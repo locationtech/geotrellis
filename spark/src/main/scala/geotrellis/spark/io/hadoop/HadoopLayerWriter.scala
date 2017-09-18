@@ -91,14 +91,14 @@ class HadoopLayerWriter(
     if (!(keyIndex.keyBounds contains keyBounds))
       throw new LayerOutOfKeyBoundsError(id, keyIndex.keyBounds)
 
-    logger.warn(s"MapFiles cannot be updated, so this requires rewriting the entire layer.")
+    // logger.warn(s"MapFiles cannot be updated, so this requires rewriting the entire layer.")
 
-    implicit val sc2: SparkContext = sc
-    val layerReader = new HadoopLayerReader(attributeStore)
-    val layerWriter = new HadoopLayerWriter(rootPath, attributeStore)
-    val layerDeleter = new HadoopLayerDeleter(attributeStore, sc.hadoopConfiguration)
-    val layerCopier = new HadoopLayerCopier(rootPath, attributeStore)
-    val entireLayer = layerReader.read[K, V, M](id)
+    // implicit val sc2: SparkContext = sc
+    // val layerReader = new HadoopLayerReader(attributeStore)
+    // val layerWriter = new HadoopLayerWriter(rootPath, attributeStore)
+    // val layerDeleter = new HadoopLayerDeleter(attributeStore, sc.hadoopConfiguration)
+    // val layerCopier = new HadoopLayerCopier(rootPath, attributeStore)
+    // val entireLayer = layerReader.read[K, V, M](id)
 
     val updatedMetadata: M =
       metadata.merge(rdd.metadata)
@@ -108,27 +108,38 @@ class HadoopLayerWriter(
       case None => { (v1: V, v2: V) => v2 }
     }
 
-    val updatedRdd: RDD[(K, V)] =
-      entireLayer
-        .fullOuterJoin(rdd)
-        .flatMapValues {
-          case (Some(layerTile), Some(updateTile)) => Some(fn(layerTile, updateTile))
-          case (Some(layerTile), _) => Some(layerTile)
-          case (_, Some(updateTile)) => Some(updateTile)
-          case _ => None
-        }
+    // val updatedRdd: RDD[(K, V)] =
+    //   entireLayer
+    //     .fullOuterJoin(rdd)
+    //     .flatMapValues {
+    //       case (Some(layerTile), Some(updateTile)) => Some(fn(layerTile, updateTile))
+    //       case (Some(layerTile), _) => Some(layerTile)
+    //       case (_, Some(updateTile)) => Some(updateTile)
+    //       case _ => None
+    //     }
 
-    val updated = ContextRDD(updatedRdd, updatedMetadata)
+    // val updated = ContextRDD(updatedRdd, updatedMetadata)
 
-    val tmpId = id.createTemporaryId
-    logger.info(s"Saving updated RDD to temporary id $tmpId")
-    layerWriter.write(tmpId, updated, keyIndex)
-    logger.info(s"Deleting layer $id")
-    layerDeleter.delete(id)
-    logger.info(s"Copying in $tmpId to $id")
-    layerCopier.copy[K, V, M](tmpId, id)
-    logger.info(s"Deleting temporary layer at $tmpId")
-    layerDeleter.delete(tmpId)
+    // val tmpId = id.createTemporaryId
+    // logger.info(s"Saving updated RDD to temporary id $tmpId")
+    // layerWriter.write(tmpId, updated, keyIndex)
+    // logger.info(s"Deleting layer $id")
+    // layerDeleter.delete(id)
+    // logger.info(s"Copying in $tmpId to $id")
+    // layerCopier.copy[K, V, M](tmpId, id)
+    // logger.info(s"Deleting temporary layer at $tmpId")
+    // layerDeleter.delete(tmpId)
+    val schema = attributeStore.readSchema(id)
+    val layerPath =
+      try {
+        new Path(rootPath,  s"${id.name}/${id.zoom}")
+      } catch {
+        case e: Exception =>
+          throw new InvalidLayerIdError(id).initCause(e)
+      }
+
+    attributeStore.writeLayerAttributes(id, header, updatedMetadata, keyIndex, schema)
+    HadoopRDDWriter.update(rdd, layerPath, id, attributeStore, mergeFunc)
   }
 
   // Layer Writing
