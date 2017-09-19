@@ -88,7 +88,10 @@ object IndexMethods {
 
       val zz = rdd
         .filter { case (lid, idx, (path, ranges)) =>
-          lid.zoom == z && idx == keyIndex.toIndex(SpatialKey(x, y)) && name.map(n => lid.name == n).getOrElse(true)
+          val cn = path.toString.split("/").last.split("\\.").head
+
+          println(s"lid.zoom == z && idx == keyIndex.toIndex(SpatialKey(x, y)) && name.map(n => n == cn).getOrElse(true): ${lid.zoom == z} && $idx == ${keyIndex.toIndex(SpatialKey(x, y))} && ${name.map(n => n == cn).getOrElse(true)}")
+          lid.zoom == z && idx == keyIndex.toIndex(SpatialKey(x, y)) && name.map(n => n == cn).getOrElse(true)
         }
         .map { case (lid, idx, (path, ranges)) =>
           path -> ranges
