@@ -20,13 +20,15 @@ import geotrellis.raster.io.geotiff.tags._
 import geotrellis.raster.io.geotiff.tags.codes._
 import TagCodes._
 import TiffFieldType._
-import geotrellis.util.{Filesystem, ByteReader}
-
+import geotrellis.util.{ByteReader, Filesystem}
 import geotrellis.raster.io.geotiff.util._
 import spire.syntax.cfor._
 import monocle.syntax.apply._
+import java.nio.{ByteBuffer, ByteOrder}
 
-import java.nio.{ ByteBuffer, ByteOrder }
+import geotrellis.raster.io.geotiff.{BigTiff, Tiff, TiffType}
+
+import scala.collection.mutable.ListBuffer
 
 object TiffTagsReader {
   def read(path: String): TiffTags =
@@ -43,17 +45,70 @@ object TiffTagsReader {
       case _ => throw new MalformedGeoTiffException("incorrect byte order")
     }
 
-    byteReader.getChar match {
-      case 42 =>
+    val tiffType = TiffType.fromCode(byteReader.getChar)
+    val tiffTags = tiffType match {
+      case Tiff =>
         // Regular GeoTiff
         read(byteReader, byteReader.getInt.toLong)(IntTiffTagOffsetSize)
-      case 43 =>
+      case BigTiff =>
         // BigTiff
         byteReader.position(8)
         read(byteReader, byteReader.getLong)(LongTiffTagOffsetSize)
-      case id =>
+      /*case id =>
         // Invalid Tiff identification number
-        throw new MalformedGeoTiffException(s"bad identification number (must be 42 or 43, was $id)")
+        throw new MalformedGeoTiffException(s"bad identification number (must be 42 or 43, was $id)")*/
+    }
+
+    val tiffTagsBuffer: ListBuffer[TiffTags] = ListBuffer()
+    val tiffTagsOverviews = tiffType match {
+      case Tiff =>
+        var ifdOffset = byteReader.getInt
+        while (ifdOffset > 0) {
+          tiffTagsBuffer += TiffTagsReader.read(byteReader, ifdOffset)(IntTiffTagOffsetSize)
+          ifdOffset = byteReader.getInt
+        }
+        tiffTagsBuffer.toList
+      case _ =>
+        var ifdOffset = byteReader.getLong
+        while (ifdOffset > 0) {
+          tiffTagsBuffer += TiffTagsReader.read(byteReader, ifdOffset)(LongTiffTagOffsetSize)
+          ifdOffset = byteReader.getLong
+        }
+        tiffTagsBuffer.toList
+    }
+
+
+    tiffTags.copy(overviews = tiffTagsOverviews)
+  }
+
+  def readWithOverviews(byteReader: ByteReader): List[TiffTags] = {
+    (byteReader.get.toChar, byteReader.get.toChar) match {
+      case ('I', 'I') => byteReader.order(ByteOrder.LITTLE_ENDIAN)
+      case ('M', 'M') => byteReader.order(ByteOrder.BIG_ENDIAN)
+      case _ => throw new MalformedGeoTiffException("incorrect byte order")
+    }
+
+    val tiffType = TiffType.fromCode(byteReader.getChar)
+
+
+    val tiffTagsBuffer: ListBuffer[TiffTags] = ListBuffer()
+    tiffTagsBuffer += read(byteReader)
+
+    tiffType match {
+      case Tiff =>
+        var ifdOffset = byteReader.getInt
+        while (ifdOffset > 0) {
+          tiffTagsBuffer += TiffTagsReader.read(byteReader, ifdOffset)(IntTiffTagOffsetSize)
+          ifdOffset = byteReader.getInt
+        }
+        tiffTagsBuffer.toList
+      case _ =>
+        var ifdOffset = byteReader.getLong
+        while (ifdOffset > 0) {
+          tiffTagsBuffer += TiffTagsReader.read(byteReader, ifdOffset)(LongTiffTagOffsetSize)
+          ifdOffset = byteReader.getLong
+        }
+        tiffTagsBuffer.toList
     }
   }
 

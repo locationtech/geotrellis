@@ -119,7 +119,7 @@ class LazySegmentBytes(
       .flatMap( chunk => readChunk(chunk))
   }
 
-  private def getBytes(offset: Long, length: Long): Array[Byte] = {
+  private[geotrellis] def getBytes(offset: Long, length: Long): Array[Byte] = {
     byteReader.position(offset)
     byteReader.getBytes(length.toInt)
   }
