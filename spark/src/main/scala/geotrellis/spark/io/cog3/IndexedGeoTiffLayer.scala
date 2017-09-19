@@ -201,7 +201,7 @@ object GeoTiffLayerMetadata {
     def buildPyramid(zoom: Int, rdd: RDD[(URI, TiffTags)]): List[(Int, IndexRDD)] = {
       val nrdd: IndexRDD =
         rdd.flatMap { case (p, tt) =>
-          val name = p.toString.split("/").last
+          val name = p.toString.split("/").last.split("\\.").head
           val layout = layoutScheme.levelForZoom(zoom).layout
           val cellSize = layout.cellSize
           val mtt = layout.mapTransform
