@@ -16,12 +16,10 @@
 
 package geotrellis.raster
 
-import scala.util.matching.Regex
 import java.awt.image.DataBuffer
 
 // Note: CellType defined in package object as
 // `type CellType = DataType with NoDataHandling`
-
 
 /**
   * The [[DataType]] type.
@@ -303,24 +301,19 @@ object DoubleCells {
 }
 
 /**
-  * The [[NoDataHandling]].
+  * Base trait for all cell types associated with handling `NoData` values or not.
   */
 sealed trait NoDataHandling { cellType: CellType => }
 
 /**
-  * The [[ConstantNoData]] type, derived from [[NoDataHandling]].
-  */
-sealed trait ConstantNoData extends NoDataHandling { cellType: CellType => }
-
-/**
-  * The [[NoNoData]] type, derived from [[NoDataHandling]].
-  */
+ * Base trait for all "raw" cell types, not having a `NoData` value.
+ */
 sealed trait NoNoData extends NoDataHandling { cellType: CellType => }
 
 /**
-  * The [[UserDefinedNoData]] type, derived from [[NoDataHandling]].
-  */
-sealed trait UserDefinedNoData[@specialized(Byte, Short, Int, Float, Double) T] extends NoDataHandling { cellType: CellType =>
+ *  Base trait for all cell type having a `NoData` value
+ */
+sealed trait HasNoData[@specialized(Byte, Short, Int, Float, Double) T] extends NoDataHandling { cellType: CellType =>
   /** The no data value as represented in the JVM in the underlying cell. If unsigned types are involved then
    * this value may be an overflow representation, and  `widenedNoData` should be used.*/
   val noDataValue: T
@@ -329,6 +322,17 @@ sealed trait UserDefinedNoData[@specialized(Byte, Short, Int, Float, Double) T] 
     if (cellType.isFloatingPoint) WideDoubleNoData(ev.toDouble(noDataValue))
     else WideIntNoData(ev.toInt(noDataValue))
 }
+
+/**
+  * The [[ConstantNoData]] type, derived from [[NoDataHandling]].
+  */
+sealed trait ConstantNoData[@specialized(Byte, Short, Int, Float, Double) T] extends HasNoData[T] { cellType: CellType => }
+
+/**
+  * The [[UserDefinedNoData]] type, derived from [[NoDataHandling]].
+  */
+sealed trait UserDefinedNoData[@specialized(Byte, Short, Int, Float, Double) T]
+  extends HasNoData[T] { cellType: CellType => }
 
 /**
   * The [[BitCellType]] type, derived from [[BitCells]] and
@@ -341,14 +345,14 @@ case object BitCellType extends BitCells with NoNoData {
 case object ByteCellType
     extends ByteCells with NoNoData
 case object ByteConstantNoDataCellType
-    extends ByteCells with ConstantNoData
+    extends ByteCells with ConstantNoData[Byte] { val noDataValue = byteNODATA }
 case class ByteUserDefinedNoDataCellType(noDataValue: Byte)
     extends ByteCells with UserDefinedNoData[Byte]
 
 case object UByteCellType
     extends UByteCells with NoNoData
 case object UByteConstantNoDataCellType
-    extends UByteCells with ConstantNoData
+    extends UByteCells with ConstantNoData[Byte] { val noDataValue = ubyteNODATA }
 case class UByteUserDefinedNoDataCellType(noDataValue: Byte)
     extends UByteCells with UserDefinedNoData[Byte] {
   override def widenedNoData(implicit ev: Numeric[Byte]) = WideIntNoData(noDataValue)
@@ -357,14 +361,14 @@ case class UByteUserDefinedNoDataCellType(noDataValue: Byte)
 case object ShortCellType
     extends ShortCells with NoNoData
 case object ShortConstantNoDataCellType
-    extends ShortCells with ConstantNoData
+    extends ShortCells with ConstantNoData[Short] { val noDataValue = shortNODATA }
 case class ShortUserDefinedNoDataCellType(noDataValue: Short)
     extends ShortCells with UserDefinedNoData[Short]
 
 case object UShortCellType
     extends UShortCells with NoNoData
 case object UShortConstantNoDataCellType
-    extends UShortCells with ConstantNoData
+    extends UShortCells with ConstantNoData[Short] { val noDataValue = ushortNODATA }
 case class UShortUserDefinedNoDataCellType(noDataValue: Short)
     extends UShortCells with UserDefinedNoData[Short] {
   override def widenedNoData(implicit ev: Numeric[Short]) = WideIntNoData(noDataValue)
@@ -373,21 +377,21 @@ case class UShortUserDefinedNoDataCellType(noDataValue: Short)
 case object IntCellType
     extends IntCells with NoNoData
 case object IntConstantNoDataCellType
-    extends IntCells with ConstantNoData
+    extends IntCells with ConstantNoData[Int] { val noDataValue = NODATA }
 case class IntUserDefinedNoDataCellType(noDataValue: Int)
     extends IntCells with UserDefinedNoData[Int]
 
 case object FloatCellType
     extends FloatCells with NoNoData
 case object FloatConstantNoDataCellType
-    extends FloatCells with ConstantNoData
+    extends FloatCells with ConstantNoData[Float] { val noDataValue = floatNODATA }
 case class FloatUserDefinedNoDataCellType(noDataValue: Float)
     extends FloatCells with UserDefinedNoData[Float]
 
 case object DoubleCellType
     extends DoubleCells with NoNoData
 case object DoubleConstantNoDataCellType
-    extends DoubleCells with ConstantNoData
+    extends DoubleCells with ConstantNoData[Double] { val noDataValue = doubleNODATA }
 case class DoubleUserDefinedNoDataCellType(noDataValue: Double)
     extends DoubleCells with UserDefinedNoData[Double]
 
