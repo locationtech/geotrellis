@@ -110,7 +110,8 @@ object COGMetadataReader {
   object md {
     // tiffTags looks like a useless thing here
     // handle temporl case ?
-    case class GeoTiffMetadata[T <: CellGrid](tiff: GeoTiff[T], tiffTags: TiffTags) {
+    case class GeoTiffMetadata[T <: CellGrid](tiff: GeoTiff[T], path: String) {
+      lazy val tiffTags = TiffTags(path)
       def imageData: GeoTiffImageData = tiff.imageData
       def segmentLayout: GeoTiffSegmentLayout = imageData.segmentLayout
 
@@ -132,8 +133,8 @@ object COGMetadataReader {
           .map { spatialComponent => spatialComponent: SpatialKey }
 
       // to persist them as Indexes?
-      def keys(layoutDefinition: LayoutDefinition): Iterator[SpatialKey] =
-        layoutDefinition
+      def keys(zoom: Int, layoutScheme: ZoomedLayoutScheme): Iterator[SpatialKey] =
+        layoutScheme.levelForZoom(zoom).layout
           .mapTransform(tiffTags.extent)
           .coordsIter
           .map { spatialComponent => spatialComponent: SpatialKey }
@@ -162,7 +163,7 @@ object COGMetadataReader {
         // a real pain here, makes sense to persist somehow indexes?
         // to put into our own tags / store in a separate file
         // would be not very cloud optimized though
-        tiffs.collect { case md if md.keys(layout).contains(SpatialKey(x, y)) =>
+        tiffs.collect { case md if md.keys(z, layoutScheme).contains(SpatialKey(x, y)) =>
           md.crop(x, y, z)(layoutScheme)
         }
       }
@@ -173,7 +174,7 @@ object COGMetadataReader {
         GeoTiffLayerMetadata(
           tileDimensions,
           tiffs = tiffPaths.map { path =>
-            GeoTiffMetadata(SinglebandGeoTiff(path, false, true), TiffTags(path))
+            GeoTiffMetadata(SinglebandGeoTiff(path, false, true), path)
           }
         )
     }

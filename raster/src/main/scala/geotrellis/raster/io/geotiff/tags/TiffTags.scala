@@ -63,8 +63,11 @@ case class TiffTags(
   colimetryTags: ColimetryTags = ColimetryTags(),
   jpegTags: JpegTags = JpegTags(),
   yCbCrTags: YCbCrTags = YCbCrTags(),
-  nonStandardizedTags: NonStandardizedTags = NonStandardizedTags()
+  nonStandardizedTags: NonStandardizedTags = NonStandardizedTags(),
+  overviews: List[TiffTags] = Nil
 ) {
+  def rasterExtent: RasterExtent = RasterExtent(extent, cols, rows)
+
   def segmentOffsets: Array[Long] =
     if (this.hasStripStorage)
       (this &|->
