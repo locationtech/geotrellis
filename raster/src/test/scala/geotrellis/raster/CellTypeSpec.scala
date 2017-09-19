@@ -262,4 +262,34 @@ class CellTypeSpec extends FunSpec with Matchers with Inspectors {
       def toCellEncoding(noData: Double) = noData
     }
   }
+
+  describe("CellType NoData query") {
+    it("should report nodata value for UserDefinedNoData") {
+
+      val noData: Int = 86
+      // Construct our own set of NoData cell types
+      val userDefinedCelltypes = CellType.noNoDataCellTypes
+        .filter(_ != BitCellType)
+        .map(_.withNoData(Some(noData)))
+
+      forEvery(userDefinedCelltypes) {
+        case c: UserDefinedNoData[_] ⇒ c.noDataValue match {
+          case n: Byte ⇒ assert(n === noData.toByte)
+          case n: Short ⇒ assert(n === noData.toShort)
+          case n: Int ⇒ assert(n === noData.toInt)
+          case n: Float ⇒ assert(n === noData.toFloat)
+          case n: Double ⇒ assert(n === noData.toDouble)
+        }
+      }
+    }
+    it("should report nodata value for ConstantNoData") {
+      forEvery(CellType.constantNoDataCellTypes) { _.noDataValue match {
+        case n: Byte ⇒ assert(n === byteNODATA || n === ubyteNODATA)
+        case n: Short ⇒ assert(n === shortNODATA || n === ushortNODATA)
+        case n: Int ⇒ assert(isNoData(n))
+        case n: Float ⇒ assert(isNoData(n))
+        case n: Double ⇒ assert(isNoData(n))
+      }}
+    }
+  }
 }
