@@ -2,7 +2,7 @@ package geotrellis.spark.io.geotiff
 
 import geotrellis.proj4.WebMercator
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.raster.{CellGrid, Raster, Tile}
+import geotrellis.raster.{Raster, Tile}
 import geotrellis.spark.tiling.ZoomedLayoutScheme
 import geotrellis.spark.util._
 import geotrellis.spark.{LayerId, SpatialKey}
@@ -13,14 +13,6 @@ import java.net.URI
 import java.nio.file.{Files, Paths}
 
 import scala.collection.JavaConverters._
-
-trait GeoTiffCollectionLayerReader[T <: CellGrid] {
-  val seq: Seq[(Extent, URI)]
-  val discriminator: URI => String
-
-  def read(layerId: LayerId)(x: Int, y: Int): Raster[T]
-  def readAll(layerId: LayerId): Seq[Raster[T]]
-}
 
 case class SinglebandGeoTiffCollectionLayerReader(
   seq: Seq[(Extent, URI)],
@@ -80,7 +72,6 @@ object SinglebandGeoTiffCollectionLayerReader {
           val tiff = GeoTiffReader.readSingleband(Filesystem.toMappedByteBuffer(uri.toString), false, true)
           tiff.extent -> uri
         }
-
 
     SinglebandGeoTiffCollectionLayerReader(seq, layoutScheme, discriminator)
   }
