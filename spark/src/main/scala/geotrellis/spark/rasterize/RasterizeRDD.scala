@@ -132,20 +132,20 @@ object RasterizeRDD {
     val createTile = (tup: (Feature[Geometry, CellValue], SpatialKey)) => {
       val (feature, key) = tup
       val tile = ArrayTile.empty(cellType, layout.tileCols, layout.tileRows)
-      val ztile = ShortArrayTile.empty(layout.tileCols, layout.tileRows, ShortConstantNoDataCellType)
+      val ztile = ArrayTile.empty(feature.data.celltype, layout.tileCols, layout.tileRows)
       val re = RasterExtent(layout.mapTransform(key), layout.tileCols, layout.tileRows)
 
       feature.geom.foreach(re, options)({ (x: Int, y: Int) =>
         val priority = tup._1.data.zindex
         tile.setDouble(x, y, feature.data.value)
-        ztile.set(x, y, priority)
+        ztile.setDouble(x, y, priority)
       })
 
-      (tile, ztile): (MutableArrayTile, ShortArrayTile)
+      (tile, ztile): (MutableArrayTile, MutableArrayTile)
     }
 
     val updateTile = (
-      pair: (MutableArrayTile, ShortArrayTile),
+      pair: (MutableArrayTile, MutableArrayTile),
       tup: (Feature[Geometry, CellValue], SpatialKey)
     ) => {
       val (feature, key) = tup
@@ -155,28 +155,28 @@ object RasterizeRDD {
       feature.geom.foreach(re, options)({ (x: Int, y: Int) =>
         if (isNoData(pair._1.getDouble(x, y)) || (pair._2.get(x, y) < priority)) {
           tile.setDouble(x, y, feature.data.value)
-          ztile.set(x, y, priority)
+          ztile.setDouble(x, y, priority)
         }
       })
 
-      (tile, ztile): (MutableArrayTile, ShortArrayTile)
+      (tile, ztile): (MutableArrayTile, MutableArrayTile)
     }
 
-    val mergeTiles = (pair1: (MutableArrayTile, ShortArrayTile), pair2: (MutableArrayTile, ShortArrayTile)) => {
+    val mergeTiles = (pair1: (MutableArrayTile, MutableArrayTile), pair2: (MutableArrayTile, MutableArrayTile)) => {
       val (left, leftPriority) = pair1
       val (right, rightPriority) = pair2
       mergePriority(left, leftPriority, right, rightPriority)
-        (left, leftPriority): (MutableArrayTile, ShortArrayTile)
+        (left, leftPriority): (MutableArrayTile, MutableArrayTile)
     }
 
     val tiles: RDD[(SpatialKey, MutableArrayTile)] =
-      keyed.combineByKeyWithClassTag[(MutableArrayTile, ShortArrayTile)](
+      keyed.combineByKeyWithClassTag[(MutableArrayTile, MutableArrayTile)](
         createCombiner = createTile,
         mergeValue = updateTile,
         mergeCombiners = mergeTiles,
         partitioner.getOrElse(new HashPartitioner(features.getNumPartitions))
       )
-        .map({ (tup: (SpatialKey, (MutableArrayTile, ShortArrayTile))) => (tup._1, tup._2._1) })
+        .map({ (tup: (SpatialKey, (MutableArrayTile, MutableArrayTile))) => (tup._1, tup._2._1) })
 
     ContextRDD(tiles.asInstanceOf[RDD[(SpatialKey, Tile)]], layout)
   }
@@ -185,10 +185,10 @@ object RasterizeRDD {
   private[geotrellis]
   def mergePriority(
     leftTile: MutableArrayTile,
-    leftPriority: ShortArrayTile,
+    leftPriority: MutableArrayTile,
     rightTile: MutableArrayTile,
-    rightPriority: ShortArrayTile
-  ): (MutableArrayTile, ShortArrayTile) = {
+    rightPriority: MutableArrayTile
+  ): (MutableArrayTile, MutableArrayTile) = {
     Seq(leftTile, rightTile, leftPriority, rightPriority).assertEqualDimensions()
 
     leftTile.cellType match {

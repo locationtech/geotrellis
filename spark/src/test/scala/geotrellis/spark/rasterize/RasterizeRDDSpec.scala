@@ -134,11 +134,11 @@ class RasterizeRDDSpec extends FunSpec with Matchers
 
   it("rasterize feature with z-buffer 1"){
     val features = sc.parallelize(List(
-      Feature(polygon0, CellValue(value = 1000, zindex = 0)),
-      Feature(polygon1, CellValue(value = 1, zindex = 1)),
-      Feature(polygon2, CellValue(value = 2, zindex = 2)),
-      Feature(polygon0, CellValue(value = 2000, zindex = 0)),
-      Feature(polygon0, CellValue(value = 3000, zindex = 0))
+      Feature(polygon0, CellValue(value = 1000, zindex = 0, ShortConstantNoDataCellType)),
+      Feature(polygon1, CellValue(value = 1, zindex = 1, ShortConstantNoDataCellType)),
+      Feature(polygon2, CellValue(value = 2, zindex = 2, ShortConstantNoDataCellType)),
+      Feature(polygon0, CellValue(value = 2000, zindex = 0, ShortConstantNoDataCellType)),
+      Feature(polygon0, CellValue(value = 3000, zindex = 0, ShortConstantNoDataCellType))
     ))
     val tile = RasterizeRDD
       .fromFeatureWithZIndex(features, ct, ld)
@@ -149,11 +149,11 @@ class RasterizeRDDSpec extends FunSpec with Matchers
 
   it("rasterize feature with z-buffer 2"){
     val features = sc.parallelize(List(
-      Feature(polygon0, CellValue(value = 1000, zindex = 0)),
-      Feature(polygon1, CellValue(value = 1, zindex = 3)),
-      Feature(polygon2, CellValue(value = 2, zindex = 2)),
-      Feature(polygon0, CellValue(value = 2000, zindex = 0)),
-      Feature(polygon0, CellValue(value = 3000, zindex = 0))
+      Feature(polygon0, CellValue(value = 1000, zindex = 0, ShortConstantNoDataCellType)),
+      Feature(polygon1, CellValue(value = 1, zindex = 3, ShortConstantNoDataCellType)),
+      Feature(polygon2, CellValue(value = 2, zindex = 2, ShortConstantNoDataCellType)),
+      Feature(polygon0, CellValue(value = 2000, zindex = 0, ShortConstantNoDataCellType)),
+      Feature(polygon0, CellValue(value = 3000, zindex = 0, ShortConstantNoDataCellType))
     ))
     val tile = RasterizeRDD
       .fromFeatureWithZIndex(features, ct, ld)
