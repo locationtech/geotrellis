@@ -11,7 +11,9 @@ libraryDependencies ++= Seq(
   monocleCore, monocleMacro,
   chronoscala,
   scalazStream,
-  scalatest % "test"
+  scalatest % "test",
+  logging,
+  scaffeine
 )
 
 fork in Test := false
