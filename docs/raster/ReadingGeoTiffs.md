@@ -32,7 +32,7 @@ Okay, so we brought in the object that will give us our GeoTiff, now we just nee
 ```scala
   val path: String = "raster/data/geotiff-test-files/lzw_int32.tif"
 ```
-Our `path` variable is a `String` that contains the file path to a GeoTiff in `geotrellis.raster-test`. `GeoTiffReader` will use this value then to read in our GeoTiff. There are more types `GeoTiffReader` can accept, however. There are two other data types it can take: these are `Array[Byte]`s and `ByteReader`s. We will stick with `String`s for this lesson, but `Array[Byte]` is not that much different. It's just all of the bytes within your file held in an Array. To learn more about `ByteReader`, follow this [link].
+Our `path` variable is a `String` that contains the file path to a GeoTiff in `geotrellis.raster`. `GeoTiffReader` will use this value then to read in our GeoTiff. There are more types `GeoTiffReader` can accept, however. There are two other data types it can take: these are `Array[Byte]`s and `ByteReader`s. We will stick with `String`s for this lesson, but `Array[Byte]` is not that much different. It's just all of the bytes within your file held in an Array. To learn more about `ByteReader`, follow this [link].
 
 The last part of three line, coding escapade is:
 ```scala
