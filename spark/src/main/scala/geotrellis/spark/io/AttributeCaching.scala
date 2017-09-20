@@ -18,29 +18,43 @@ package geotrellis.spark.io
 
 import geotrellis.spark.LayerId
 
+import com.github.blemale.scaffeine.Scaffeine
 import spray.json.JsonFormat
+import com.typesafe.config.ConfigFactory
+
+import scala.concurrent.duration._
+
 
 trait AttributeCaching { self: AttributeStore =>
-  private val cache = new collection.mutable.HashMap[(LayerId, String), Any]
+  private val expiration = ConfigFactory.load().getInt("geotrellis.attribute.caching.expirationMinutes")
+  private val maxSize = ConfigFactory.load().getInt("geotrellis.attribute.caching.maxSize")
+
+  private val cache =
+    Scaffeine()
+      .recordStats()
+      .expireAfterWrite(expiration.minutes)
+      .maximumSize(maxSize)
+      .build[(LayerId, String), Any]
 
   def cacheRead[T: JsonFormat](layerId: LayerId, attributeName: String): T = {
-    cache.getOrElseUpdate(layerId -> attributeName, read[T](layerId, attributeName)).asInstanceOf[T]
+    cache.get(layerId -> attributeName, { key => read[T](layerId, attributeName) }).asInstanceOf[T]
   }
 
   def cacheWrite[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
-    cache.update(layerId -> attributeName, value)
+    cache.put(layerId -> attributeName, value)
     write[T](layerId, attributeName, value)
   }
 
   def clearCache(): Unit = {
-    cache.clear()
+    cache.invalidateAll()
   }
 
   def clearCache(id: LayerId): Unit = {
-    cache.keySet.filter(_._1 == id).foreach(cache.remove)
+    val toInvalidate = cache.asMap.keys.filter(_._1 == id)
+    cache.invalidateAll(toInvalidate)
   }
 
   def clearCache(id: LayerId, attribute: String): Unit = {
-    cache.remove((id, attribute))
+    cache.invalidate(id -> attribute)
   }
 }
