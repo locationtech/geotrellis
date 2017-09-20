@@ -20,6 +20,7 @@ import java.io.{File, FileInputStream, FileOutputStream}
 
 import org.apache.commons.io.IOUtils
 
+@deprecated("This will be removed in favor of a pluggable cache in 2.0", "1.2")
 class FileCache(cacheDirectory: String, fileChunk: Long => String) extends Cache[Long, Array[Byte]] {
   val cacheRoot = new File(cacheDirectory)
   if (! cacheRoot.exists) cacheRoot.mkdirs()

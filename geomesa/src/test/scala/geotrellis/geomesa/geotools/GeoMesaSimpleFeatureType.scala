@@ -18,8 +18,8 @@ package geotrellis.geomesa.geotools
 
 import geotrellis.vector.Geometry
 import geotrellis.proj4.{WebMercator, CRS => GCRS}
-import geotrellis.spark.util.cache.LRUCache
 
+import com.github.blemale.scaffeine.Scaffeine
 import com.vividsolutions.jts.{geom => jts}
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder
 import org.locationtech.geomesa.accumulo.index.Constants
@@ -34,13 +34,13 @@ object GeoMesaSimpleFeatureType {
   val whereField = GeometryToGeoMesaSimpleFeature.whereField
 
   lazy val featureTypeCache =
-    new LRUCache[String, SimpleFeatureType](
-      maxSize = ConfigFactory.load().getInt("geotrellis.geomesa.featureTypeCacheSize"),
-      sizeOf  = {x => 1l}
-    )
+    Scaffeine()
+      .recordStats()
+      .maximumSize(ConfigFactory.load().getInt("geotrellis.geomesa.featureTypeCacheSize"))
+      .build[String, SimpleFeatureType]()
 
   def apply[G <: Geometry: ClassTag](featureName: String, crs: Option[GCRS] = Some(WebMercator), temporal: Boolean = false): SimpleFeatureType = {
-    featureTypeCache.getOrInsert(featureName, {
+    featureTypeCache.get(featureName, { key =>
       val sftb = (new SimpleFeatureTypeBuilder).minOccurs(1).maxOccurs(1).nillable(false)
 
       sftb.setName(featureName)
