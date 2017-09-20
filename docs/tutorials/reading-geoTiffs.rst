@@ -5,7 +5,7 @@ This tutorial will go over how to read GeoTiff files using GeoTrellis on
 your local filesystem. It assumes that you already have the environment
 needed to run these examples. If not, please see our `Setup
 Guide <setup.html>`__ to get GeoTrellis working on your system. Also, this
-tutorial uses GeoTiffs from the ``raster-test`` project from GeoTrellis.
+tutorial uses GeoTiffs from the ``raster`` project from GeoTrellis.
 If you have not already done so, please clone GeoTrellis
 `here <https://github.com/locationtech/geotrellis>`__ so that you can
 access the needed files.
@@ -65,7 +65,7 @@ comes into play.
     val path: String = "path/to/geotrellis/raster/data/geotiff-test-files/lzw_int32.tif"
 
 Our ``path`` variable is a ``String`` that contains the file path to a
-GeoTiff in ``geotrellis.raster-test``. ``GeoTiffReader`` will use this
+GeoTiff in ``geotrellis.raster``. ``GeoTiffReader`` will use this
 value then to read in our GeoTiff. There are more types of paramters
 ``GeoTiffReader`` can accept, however. These are ``Array[Byte]``\ s and
 ``ByteReader``\ s. We will stick with ``String``\ s for this lesson, but
