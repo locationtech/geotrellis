@@ -17,12 +17,20 @@
 package geotrellis.proj4
 
 import geotrellis.proj4.io.wkt.WKT
+
 import org.osgeo.proj4j._
+import com.github.blemale.scaffeine.Scaffeine
 
 import scala.io.Source
 
+
 object CRS {
-  private lazy val proj4ToEpsgMap = new Memoize[String, Option[String]](readEpsgCodeFromFile)
+  private lazy val proj4ToEpsgMap =
+    Scaffeine()
+      .recordStats()
+      .build[String, Option[String]]()
+
+  //  new Memoize[String, Option[String]](readEpsgCodeFromFile)
   private val crsFactory = new CRSFactory
   private val filePrefix = "/geotrellis/proj4/nad/"
 
@@ -49,7 +57,7 @@ object CRS {
     * Returns the numeric EPSG code of a proj4string.
     */
   def getEpsgCode(proj4String: String): Option[Int] =
-    proj4ToEpsgMap(proj4String).map(_.toInt)
+    proj4ToEpsgMap.get(proj4String, { key => readEpsgCodeFromFile(key) }).map(_.toInt)
 
   /**
     * Creates a CoordinateReferenceSystem

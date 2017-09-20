@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author Manuri Perera
  */
+@deprecated("This will be removed in 2.0", "1.2")
 class Memoize[T, R](f: T => R) extends (T => R) {
   val map: ConcurrentHashMap[T, R] = new ConcurrentHashMap()
 

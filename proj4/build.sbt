@@ -7,7 +7,9 @@ libraryDependencies ++= Seq(
   openCSV,
   parserCombinators,
   scalatest   % "test",
-  scalacheck  % "test")
+  scalacheck  % "test",
+  scaffeine
+)
 
 headers := Map(
   "scala" -> Apache2_0("2016", "Azavea"),
