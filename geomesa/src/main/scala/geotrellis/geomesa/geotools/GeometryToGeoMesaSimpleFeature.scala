@@ -21,6 +21,7 @@ import geotrellis.spark.util.cache.LRUCache
 import geotrellis.util.annotations.experimental
 import geotrellis.vector.{Geometry, Line, MultiLine, MultiPoint, MultiPolygon, Point, Polygon}
 
+import com.github.blemale.scaffeine.Scaffeine
 import com.vividsolutions.jts.{geom => jts}
 import org.geotools.feature.simple.{SimpleFeatureBuilder, SimpleFeatureTypeBuilder}
 import org.opengis.feature.simple.{SimpleFeature, SimpleFeatureType}
@@ -30,20 +31,22 @@ import com.typesafe.config.ConfigFactory
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
-@experimental object GeometryToGeoMesaSimpleFeature {
+@experimental
+object GeometryToGeoMesaSimpleFeature {
 
   val whenField  = "when"
   val whereField = "where"
 
   lazy val featureTypeCache =
-    new LRUCache[String, SimpleFeatureType](
-      maxSize = ConfigFactory.load().getInt("geotrellis.geomesa.featureTypeCacheSize"),
-      sizeOf  = {x => 1l}
-    )
+    Scaffeine()
+      .recordStats()
+      .maximumSize(ConfigFactory.load().getInt("geotrellis.geomesa.featureTypeCacheSize"))
+      .build[String, SimpleFeatureType]()
 
   /** $experimental */
-  @experimental def apply(featureName: String, geom: Geometry, featureId: Option[String], crs: Option[GCRS], data: Seq[(String, Any)]): SimpleFeature = {
-    val sft = featureTypeCache.getOrInsert(featureName, {
+  @experimental
+  def apply(featureName: String, geom: Geometry, featureId: Option[String], crs: Option[GCRS], data: Seq[(String, Any)]): SimpleFeature = {
+    val sft = featureTypeCache.get(featureName, { key =>
       val sftb = (new SimpleFeatureTypeBuilder).minOccurs(1).maxOccurs(1).nillable(false)
 
       sftb.setName(featureName)

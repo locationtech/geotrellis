@@ -27,6 +27,7 @@ import scala.collection.mutable
  * K is the cache key
  * V is the cache value
  */
+@deprecated("This will be removed in favor of a pluggable cache in 2.0", "1.2")
 trait Cache[K,V] extends Serializable {
 
   /** Lookup the value for key k
@@ -60,6 +61,7 @@ trait Cache[K,V] extends Serializable {
 /** A Cache Strategy that completely ignores caching and always returns the input object
  * Operations on this cache execute in O(1) time
  */
+@deprecated("This will be removed in favor of a pluggable cache in 2.0", "1.2")
 class NoCache[K,V] extends Cache[K,V] {
   def lookup(k: K):Option[V] = None
   def insert(k: K, v: V):Boolean = false
@@ -69,6 +71,7 @@ class NoCache[K,V] extends Cache[K,V] {
 /** An unbounded hash-backed cache
  * Operations on this cache execute in O(1) time
  */
+@deprecated("This will be removed in favor of a pluggable cache in 2.0", "1.2")
 trait HashBackedCache[K,V] extends Cache[K,V] {
   val cache = new ConcurrentHashMap[K, V]()
 
@@ -80,6 +83,7 @@ trait HashBackedCache[K,V] extends Cache[K,V] {
 /** A hash backed cache with a size boundary
  * Operations on this cache may required O(N) time to execute (N = size of cache)
  */
+@deprecated("This will be removed in favor of a pluggable cache in 2.0", "1.2")
 trait BoundedCache[K,V] extends Cache[K,V] {
 
   /** Return the size of a a given cache item
@@ -142,6 +146,7 @@ trait BoundedCache[K,V] extends Cache[K,V] {
   def evicted(v: V): Unit = {}
 }
 
+@deprecated("This will be removed in favor of a pluggable cache in 2.0", "1.2")
 class LRUCache[K,V](val maxSize: Long, val sizeOf: V => Long = (v:V) => 1) extends HashBackedCache[K,V]  with BoundedCache[K,V] {
 
   /** Contains order of cache requests, with the key at the tail read most recently */
