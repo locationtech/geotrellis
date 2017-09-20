@@ -19,7 +19,7 @@ The first way we will read in a GeoTiff is also the easiest, just a simple local
 ```scala
   import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 
-  val path: String = "raster-test/data/geotiff-test-files/lzw_int32.tif"
+  val path: String = "raster/data/geotiff-test-files/lzw_int32.tif"
   val geoTiff: SinglebandGeoTiff = GeoTiffReader.readSingleband(path)
 ```
 And that's it! Not too bad at all really, just three lines of code. Even still, though, let's break this down line-by-line so we can see what exactly is going on.
@@ -30,7 +30,7 @@ This import statement brings in `GeoTiffReader` from `geotrellis.raster.io.geoti
 
 Okay, so we brought in the object that will give us our GeoTiff, now we just need to supply it what to read. This is where the next line of code comes into play.
 ```scala
-  val path: String = "raster-test/data/geotiff-test-files/lzw_int32.tif"
+  val path: String = "raster/data/geotiff-test-files/lzw_int32.tif"
 ```
 Our `path` variable is a `String` that contains the file path to a GeoTiff in `geotrellis.raster-test`. `GeoTiffReader` will use this value then to read in our GeoTiff. There are more types `GeoTiffReader` can accept, however. There are two other data types it can take: these are `Array[Byte]`s and `ByteReader`s. We will stick with `String`s for this lesson, but `Array[Byte]` is not that much different. It's just all of the bytes within your file held in an Array. To learn more about `ByteReader`, follow this [link].
 
@@ -45,7 +45,7 @@ Great! We have a `SinglebandGeoTiff`. Let's say that we have a `MultibandGeoTiff
   import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 
   // now a MultibandGeoTiff!!!
-  val path: String = "raster-test/data/geotiff-test-files/3bands/3bands-striped-band.tif"
+  val path: String = "raster/data/geotiff-test-files/3bands/3bands-striped-band.tif"
   val geoTiff = GeoTiffReader.readSingleband(path)
 ```
 If we run this code, what do you think will happen? The result may surprise you, we get back a `SinglebandGeoTiff`! **When told to read a `SinglebandGeoTiff` from a `MultibandGeoTiff` without a return type, the `GeoTiffReader` will just read in the first band of the file and return that**. Thus, it is important to keep in mind what kind of GeoTiff you are working with, or else you could get back an incorrect result.
@@ -77,7 +77,7 @@ For `SinglebandGeoTiff`s:
 ```scala
   import geotrellis.raster.io.geotiff.SinglebandGeoTiff
 
-  val path: String = "raster-test/data/geotiff-test-files/lzw_int32.tif"
+  val path: String = "raster/data/geotiff-test-files/lzw_int32.tif"
   val geoTiff: SinglebandGeoTiff = SignlebandGeoTiff(path)
 ```
 There are two differences found within this code from the previous example. The first is this:
@@ -96,7 +96,7 @@ Here, we see `SinglebandGeoTiff`'s `apply` method being used on `path`. Which re
 ```Scala
   import geotrellis.raster.io.geotiff.MultibandGeoTiff
 
-  val path: String = "raster-test/data/geotiff-test-files/3bands/3bands-striped-band.tif"
+  val path: String = "raster/data/geotiff-test-files/3bands/3bands-striped-band.tif"
   val geoTiff: MultibandGeoTiff = MultibandGeoTiff(path)
 ```
 

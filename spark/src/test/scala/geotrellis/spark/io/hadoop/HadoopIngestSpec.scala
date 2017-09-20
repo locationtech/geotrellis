@@ -36,7 +36,7 @@ class HadoopIngestSpec
 
   it("should allow filtering files in hadoopGeoTiffRDD") {
     val tilesDir = new Path(localFS.getWorkingDirectory,
-      "raster-test/data/one-month-tiles/")
+      "raster/data/one-month-tiles/")
     val source = sc.hadoopGeoTiffRDD(tilesDir)
 
     // Raises exception if the bogus file isn't properly filtered out
@@ -45,7 +45,7 @@ class HadoopIngestSpec
 
   it("should allow overriding tiff file extensions in hadoopGeoTiffRDD") {
     val tilesDir = new Path(localFS.getWorkingDirectory,
-      "raster-test/data/one-month-tiles-tiff/")
+      "raster/data/one-month-tiles-tiff/")
     val source = sc.hadoopGeoTiffRDD(tilesDir, ".tiff")
 
     // Raises exception if the ".tiff" extension override isn't provided

@@ -9,7 +9,10 @@ libraryDependencies ++= Seq(
   spire,
   monocleCore,
   monocleMacro,
-  openCSV)
+  openCSV,
+  scalatest % "test",
+  scalacheck  % "test"
+)
 
 libraryDependencies := {
   CrossVersion.partialVersion(scalaVersion.value) match {
@@ -24,7 +27,7 @@ libraryDependencies := {
 }
 
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
-scalacOptions ++= Seq("-optimize", "-language:experimental.macros")
+
 sourceGenerators in Compile += (sourceManaged in Compile).map(Boilerplate.genRaster).taskValue
 
 initialCommands in console :=

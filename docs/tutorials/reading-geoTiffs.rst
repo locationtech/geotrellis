@@ -30,7 +30,7 @@ it below.
     import geotrellis.raster.io.geotiff.reader.GeoTiffReader
     import geotrellis.raster.io.geotiff._
 
-    val path: String = "path/to/geotrellis/raster-test/data/geotiff-test-files/lzw_int32.tif"
+    val path: String = "path/to/geotrellis/raster/data/geotiff-test-files/lzw_int32.tif"
     val geoTiff: SinglebandGeoTiff = GeoTiffReader.readSingleband(path)
 
 And that's it! Not too bad at all really, just four lines of code. Even
@@ -62,7 +62,7 @@ comes into play.
 
 .. code:: scala
 
-    val path: String = "path/to/geotrellis/raster-test/data/geotiff-test-files/lzw_int32.tif"
+    val path: String = "path/to/geotrellis/raster/data/geotiff-test-files/lzw_int32.tif"
 
 Our ``path`` variable is a ``String`` that contains the file path to a
 GeoTiff in ``geotrellis.raster-test``. ``GeoTiffReader`` will use this
@@ -96,7 +96,7 @@ Great! We have a ``SinglebandGeoTiff``. Let's say that we have a
     import geotrellis.raster.io.geotiff._
 
     // now a MultibandGeoTiff!
-    val path: String = "path/to/raster-test/data/geotiff-test-files/3bands/3bands-striped-band.tif"
+    val path: String = "path/to/raster/data/geotiff-test-files/3bands/3bands-striped-band.tif"
     val geoTiff = GeoTiffReader.readSingleband(path)
 
 If we run this code, what do you think will happen? The result may surprise
@@ -149,7 +149,7 @@ For ``SinglebandGeoTiff``\ s:
 
     import geotrellis.raster.io.geotiff.SinglebandGeoTiff
 
-    val path: String = "path/to/raster-test/data/geotiff-test-files/lzw_int32.tif"
+    val path: String = "path/to/raster/data/geotiff-test-files/lzw_int32.tif"
     val geoTiff: SinglebandGeoTiff = SinglebandGeoTiff(path)
 
 There are two differences found within this code from the previous
@@ -181,7 +181,7 @@ counterparts.
 
     import geotrellis.raster.io.geotiff.MultibandGeoTiff
 
-    val path: String = "raster-test/data/geotiff-test-files/3bands/3bands-striped-band.tif"
+    val path: String = "raster/data/geotiff-test-files/3bands/3bands-striped-band.tif"
     val geoTiff: MultibandGeoTiff = MultibandGeoTiff(path)
 
 Our overview of basic GeoTiff reading is now done! But keep reading! For

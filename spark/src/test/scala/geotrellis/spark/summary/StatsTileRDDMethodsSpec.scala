@@ -104,7 +104,7 @@ class StatsTileRDDMethodsSpec extends FunSpec with TestEnvironment with TestFile
     }
 
     it ("should find double histogram of aspect and match merged quantile breaks") {
-      val path = "raster-test/data/aspect.tif"
+      val path = "raster/data/aspect.tif"
       val gt = SinglebandGeoTiff(path)
       val originalRaster = gt.raster.resample(500, 500)
       val (_, rdd) = createTileLayerRDD(originalRaster, 5, 5, gt.crs)
@@ -116,7 +116,7 @@ class StatsTileRDDMethodsSpec extends FunSpec with TestEnvironment with TestFile
     }
 
     it ("should be able to sample a fraction of an RDD to compute a histogram") {
-      val path = "raster-test/data/aspect.tif"
+      val path = "raster/data/aspect.tif"
       val gt = SinglebandGeoTiff(path)
       val originalRaster = gt.raster.resample(500, 500)
       val (_, rdd) = createTileLayerRDD(originalRaster, 5, 5, gt.crs)

@@ -36,7 +36,7 @@ import org.scalatest.FunSpec
 class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
 
   describe("TileRDDReproject") {
-    val path = "raster-test/data/aspect.tif"
+    val path = "raster/data/aspect.tif"
     val gt = SinglebandGeoTiff(path)
     val originalRaster = gt.raster.resample(500, 500)
 

@@ -84,10 +84,8 @@ lazy val root = Project("geotrellis", file(".")).
     macros,
     proj4,
     raster,
-    `raster-test`,
     `raster-testkit`,
     s3,
-    `s3-test`,
     `s3-testkit`,
     shapefile,
     slick,
@@ -96,7 +94,6 @@ lazy val root = Project("geotrellis", file(".")).
     `spark-testkit`,
     util,
     vector,
-    `vector-test`,
     `vector-testkit`,
     vectortile
   ).
@@ -123,13 +120,12 @@ lazy val vectortile = project
 lazy val vector = project
   .dependsOn(proj4, util)
   .settings(commonSettings)
-
-lazy val `vector-test` = project
-  .dependsOn(vector, `vector-testkit`)
-  .settings(commonSettings)
+  .settings(
+    unmanagedClasspath in Test ++= (fullClasspath in (LocalProject("vector-testkit"), Compile)).value
+  )
 
 lazy val `vector-testkit` = project
-  .dependsOn(raster, vector)
+  .dependsOn(raster % "provided", vector % "provided")
   .settings(commonSettings)
 
 lazy val proj4 = project
@@ -139,13 +135,15 @@ lazy val proj4 = project
 lazy val raster = project
   .dependsOn(util, macros, vector)
   .settings(commonSettings)
-
-lazy val `raster-test` = project
-  .dependsOn(raster, `raster-testkit`, `vector-testkit`)
-  .settings(commonSettings)
+  .settings(
+    unmanagedClasspath in Test ++= (fullClasspath in (LocalProject("raster-testkit"), Compile)).value
+  )
+  .settings(
+    unmanagedClasspath in Test ++= (fullClasspath in (LocalProject("vector-testkit"), Compile)).value
+  )
 
 lazy val `raster-testkit` = project
-  .dependsOn(raster, vector)
+  .dependsOn(raster % "provided", vector % "provided")
   .settings(commonSettings)
 
 lazy val slick = project
@@ -167,16 +165,14 @@ lazy val `spark-testkit` = project
   .settings(commonSettings)
 
 lazy val s3 = project
-  .dependsOn(spark)
-  .settings(commonSettings)
-
-lazy val `s3-test` = project
   .dependsOn(
-    s3, `s3-testkit`,
-    spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
-    `spark-testkit`
+    spark % "compile->compile;test->test",  // <-- spark-testkit update should simplify this
+    `spark-testkit` % "test"
   )
   .settings(commonSettings)
+  .settings(
+    unmanagedClasspath in Test ++= (fullClasspath in (LocalProject("s3-testkit"), Compile)).value
+  )
 
 lazy val `s3-testkit` = project
   .dependsOn(s3, spark)
@@ -210,7 +206,7 @@ lazy val `spark-etl` = Project(id = "spark-etl", base = file("spark-etl")).
 
 lazy val geotools = project
   .dependsOn(raster, vector, proj4, `vector-testkit` % "test", `raster-testkit` % "test",
-    `raster-test` % "test->test" // <-- to get rid  of this, move `GeoTiffTestUtils` to the testkit.
+    `raster` % "test->test" // <-- to get rid  of this, move `GeoTiffTestUtils` to the testkit.
   )
   .settings(commonSettings)
 

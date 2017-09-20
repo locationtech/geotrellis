@@ -54,7 +54,7 @@ class HadoopRasterMethodsSpec extends FunSpec
 
     val (pathTiff, pathPng, pathJpg) = (tempTiff.getPath, tempPng.getPath, tempJpg.getPath)
     val (pathTiffGz, pathPngGz, pathJpgGz) = (s"${tempTiff.getPath}.gz", s"${tempPng.getPath}.gz", s"${tempJpg.getPath}.gz")
-    val existencePath = "raster-test/data/aspect.tif"
+    val existencePath = "raster/data/aspect.tif"
 
     it("should write GeoTiff with tags") {
       val geoTiff = MultibandGeoTiff(existencePath)
