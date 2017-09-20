@@ -119,7 +119,8 @@ object RasterizeRDD {
     cellType: CellType,
     layout: LayoutDefinition,
     options: Rasterizer.Options = Rasterizer.Options.DEFAULT,
-    partitioner: Option[Partitioner] = None
+    partitioner: Option[Partitioner] = None,
+    zIndexCellType: CellType = ByteConstantNoDataCellType
   ): RDD[(SpatialKey, Tile)] with Metadata[LayoutDefinition] = {
 
     // key the geometry to intersecting tiles so it can be rasterized in the map-side combine
@@ -132,7 +133,7 @@ object RasterizeRDD {
     val createTile = (tup: (Feature[Geometry, CellValue], SpatialKey)) => {
       val (feature, key) = tup
       val tile = ArrayTile.empty(cellType, layout.tileCols, layout.tileRows)
-      val ztile = ArrayTile.empty(feature.data.celltype, layout.tileCols, layout.tileRows)
+      val ztile = ArrayTile.empty(zIndexCellType, layout.tileCols, layout.tileRows)
       val re = RasterExtent(layout.mapTransform(key), layout.tileCols, layout.tileRows)
 
       feature.geom.foreach(re, options)({ (x: Int, y: Int) =>
