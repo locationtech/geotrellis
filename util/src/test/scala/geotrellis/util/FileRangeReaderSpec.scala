@@ -25,7 +25,7 @@ class FileRangeReaderSpec extends FunSpec
   with Matchers {
 
   describe("Streaming bytes locally") {
-    val path = "raster-test/data/aspect.tif"
+    val path = "raster/data/aspect.tif"
     val geoTiffBytes = Files.readAllBytes(Paths.get(path))
     val buffer = ByteBuffer.wrap(geoTiffBytes)
     val chunkSize = 2000

@@ -6,4 +6,8 @@ libraryDependencies ++= Seq(
   typesafeConfig,
   sprayJson,
   apacheMath,
-  spire)
+  spire,
+  scalatest   % "test",
+  scalacheck  % "test"
+)
+

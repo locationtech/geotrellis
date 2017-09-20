@@ -39,7 +39,7 @@ class RasterizeRDDSpec extends FunSpec with Matchers
     new String(Files.readAllBytes(Paths.get(path)));
 
   val septaRailLines = {
-    val s = readFile("vector-test/data/septaRail.geojson")
+    val s = readFile("vector/data/septaRail.geojson")
     s.parseGeoJson[JsonFeatureCollection].getAllLines
   }
 

@@ -27,7 +27,7 @@ import org.scalatest.FunSpec
 class TileLayerRDDCropMethodsSpec extends FunSpec with TestEnvironment {
 
   describe("TileLayerRDD Crop Methods") {
-    val path = "raster-test/data/aspect.tif"
+    val path = "raster/data/aspect.tif"
     val gt = SinglebandGeoTiff(path)
     val originalRaster = gt.raster.resample(500, 500)
     val (_, rdd) = createTileLayerRDD(originalRaster, 5, 5, gt.crs)
