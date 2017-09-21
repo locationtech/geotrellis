@@ -35,9 +35,9 @@ class RegridSpec extends FunSpec with TestEnvironment with RasterMatchers {
     it("should allow chipping into smaller tiles") {
       val newLayer = Regrid.regrid(simpleLayer, 16, 16)
 
-      import geotrellis.raster.render._
-      val cm = ColorMap((0 to 128).toArray, ColorRamps.Plasma)
-      newLayer.stitch.tile.renderPng(cm).write("regrid_16.png")
+      // import geotrellis.raster.render._
+      // val cm = ColorMap((0 to 128).toArray, ColorRamps.Plasma)
+      // newLayer.stitch.tile.renderPng(cm).write("regrid_16.png")
 
       assert(simpleLayer.stitch.dimensions == newLayer.stitch.dimensions)
       assertEqual(simpleLayer.stitch, newLayer.stitch)
@@ -46,9 +46,9 @@ class RegridSpec extends FunSpec with TestEnvironment with RasterMatchers {
     it("should allow joining into larger tiles") {
       val newLayer = Regrid.regrid(simpleLayer, 64, 64)
 
-      import geotrellis.raster.render._
-      val cm = ColorMap((0 to 128).toArray, ColorRamps.Plasma)
-      newLayer.stitch.tile.renderPng(cm).write("regrid_64.png")
+      // import geotrellis.raster.render._
+      // val cm = ColorMap((0 to 128).toArray, ColorRamps.Plasma)
+      // newLayer.stitch.tile.renderPng(cm).write("regrid_64.png")
 
       assert(newLayer.stitch.dimensions == (128, 128))
       assertEqual(simpleLayer.stitch, newLayer.stitch.tile.crop(0,0,127,95))
@@ -57,9 +57,9 @@ class RegridSpec extends FunSpec with TestEnvironment with RasterMatchers {
     it("should allow breaking into non-square tiles") {
       val newLayer = Regrid.regrid(simpleLayer, 50, 25)
 
-      import geotrellis.raster.render._
-      val cm = ColorMap((0 to 128).toArray, ColorRamps.Plasma)
-      newLayer.stitch.tile.renderPng(cm).write("regrid_50_25.png")
+      // import geotrellis.raster.render._
+      // val cm = ColorMap((0 to 128).toArray, ColorRamps.Plasma)
+      // newLayer.stitch.tile.renderPng(cm).write("regrid_50_25.png")
 
       assert(newLayer.stitch.dimensions == (150, 100))
       assertEqual(simpleLayer.stitch, newLayer.stitch.tile.crop(0,0,127,95))
