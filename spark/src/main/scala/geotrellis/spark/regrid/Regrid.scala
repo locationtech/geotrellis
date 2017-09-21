@@ -18,7 +18,8 @@ object Regrid {
 
   private case class Interval[N : Ordering](start: N, end: N) {
     val ord = implicitly[Ordering[N]]
-    assert(ord.compare(start, end) < 1)
+    // assert(ord.compare(start, end) < 1)
+
     // let the interval be start to end, inclusive
     def intersect(that: Interval[N]) = {
         Interval(if (ord.compare(this.start, that.start) > 0) this.start else that.start, 
@@ -31,7 +32,6 @@ object Regrid {
     V <: CellGrid: ClassTag: Stitcher: (? => CropMethods[V]): (? => TilePrototypeMethods[V]),
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
   ](layer: RDD[(K, V)] with Metadata[M], tileCols: Int, tileRows: Int): RDD[(K, V)] with Metadata[M] = {
-    // println(layer.metadata.toJson.prettyPrint)
     val md = layer.metadata
     val ld = md.getComponent[LayoutDefinition]
 
@@ -58,7 +58,6 @@ object Regrid {
           oldEx.xmin + cellW * ntl.layoutCols * tileCols,
           oldEx.ymax),
         ntl)
-      // println(s"Created new LayoutDefinition with ${nld.extent} and $ntl from ${ld.extent} and ${ld.tileLayout}")
 
       val bounds =
         md.getComponent[Bounds[K]] match {
@@ -71,7 +70,6 @@ object Regrid {
             val newMinKey = SpatialKey((pxXrange.start / tileCols).toInt, (pxYrange.start / tileRows).toInt)
             val newMaxKey = SpatialKey((pxXrange.end / tileCols).toInt, (pxYrange.end / tileRows).toInt)
 
-            // println(s"In bounds calculation: $minKey became $newMinKey and $maxKey became $newMaxKey")
             KeyBounds(minKey.setComponent[SpatialKey](newMinKey), maxKey.setComponent[SpatialKey](newMaxKey))
           case EmptyBounds =>
             EmptyBounds
@@ -94,20 +92,13 @@ object Regrid {
             val tileEx = ld.mapTransform(key)
             val newBounds = nld.mapTransform(tileEx)
 
-            val xBounds = (oldXstart / tileCols).toInt to (oldXrange.end.toDouble / tileCols).toInt
-            val yBounds = (oldYstart / tileRows).toInt to (oldYrange.end.toDouble / tileRows).toInt
-
-            // println(s"For $key:\n\tIntersects $newBounds in new layout (x: $xBounds, y: $yBounds) (pixel ranges, x=$oldXrange, y=$oldYrange)")
-
             for (
-              // x <- newBounds.colMin to newBounds.colMax ;
-              x <- xBounds ;
+              x <- (oldXstart / tileCols).toInt to (oldXrange.end.toDouble / tileCols).toInt ;
               newXrange = {
                 val newXstart = x * tileCols.toLong
                 Interval(newXstart, newXstart + tileCols - 1)
               } ;
-              // y <- newBounds.rowMin to newBounds.rowMax ;
-              y <- yBounds ;
+              y <- (oldYstart / tileRows).toInt to (oldYrange.end.toDouble / tileRows).toInt ;
               newYrange = {
                 val newYstart = y * tileRows.toLong
                 Interval(newYstart, newYstart + tileRows - 1)
