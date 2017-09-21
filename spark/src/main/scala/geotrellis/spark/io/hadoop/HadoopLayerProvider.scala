@@ -25,14 +25,16 @@ import org.apache.spark.SparkContext
 import java.net.URI
 
 /**
- * Provides [[HadoopAttributeStore]] instance for URI with `hdfs`, `hdfs+file`, `s3n`, and `s3a` schemes.
+ * Provides [[HadoopAttributeStore]] instance for URI with `hdfs`, `hdfs+file`, `s3n`, `s3a`, `wasb` and `wasbs` schemes.
  * The uri represents Hadoop [[Path]] of catalog root.
+ * `wasb` and `wasbs` provide support for the Hadoop Azure connector. Additional
+ * configuration is required for this.
  * This Provider intentinally does not handle the `s3` scheme because the Hadoop implemintation is poor.
  * That support is provided by [[S3Attributestore]]
  */
 class HadoopLayerProvider extends AttributeStoreProvider
     with LayerReaderProvider with LayerWriterProvider with ValueReaderProvider {
-  val schemes: Array[String] = Array("hdfs", "hdfs+file", "s3n", "s3a")
+  val schemes: Array[String] = Array("hdfs", "hdfs+file", "s3n", "s3a", "wasb", "wasbs")
 
   private def trim(uri: URI): URI =
     if (uri.getScheme.startsWith("hdfs+"))

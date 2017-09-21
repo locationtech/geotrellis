@@ -118,10 +118,11 @@ tiles to:
 HDFS
 ====
 
-**Choose HDFS if:** you want a simple setup and fast write speed.
+**Choose HDFS if:** you want a simple setup and fast write speed or the
+ability to write and read from Microsoft Azure's Blob storage.
 
-The `Hadoop Distributed File System <https://hadoop.apache.org/>`__.
-As the name implies, HDFS presents a view to the programmer as if their
+The `Hadoop Distributed File System <https://hadoop.apache.org/>`__ (HDFS), as
+the name implies, presents a view to the programmer as if their
 entire cluster were one giant file system.
 
 .. code:: scala
@@ -139,6 +140,19 @@ entire cluster were one giant file system.
     val reader = HadoopLayerReader(store)
     val writer = HadoopLayerWriter(rootPath, store)
 
+Additionally, HDFS provides the ability to connect to Azure Blob storage
+through the use of the Hadoop Azure connector. Similar to S3 this allows you
+to leverage cloud storage as a backend. This capability requires
+addition configuration to use that is outlined in the `Hadoop Azure Support <https://hadoop.apache.org/docs/stable/hadoop-azure/index.html>`__
+documentation. Notably you will need to:
+
+-  Provide Azure credentials in Hadoop's `core-site.xml`.
+-  [Optional] Configure the Hadoop's `fs.defaultFS` to use your `wasb` or
+   `wasbs` url. This allows for bare paths to the configured location to
+   be used.
+-  Provide additional dependencies, including the `hadoop-azure` module
+   and the Azure Storage SDK for Java.
+
 **PROs:**
 
 -  Built in: available from the ``geotrellis-spark`` package
@@ -146,6 +160,7 @@ entire cluster were one giant file system.
 -  Fast writes
 -  Can also be used locally (good for testing)
 -  Supports ``hadoop >= 2.6``
+-  Supports Microsoft Azure's Blob Storage
 
 **CONs**
 
