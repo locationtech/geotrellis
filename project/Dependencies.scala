@@ -50,5 +50,6 @@ object Dependencies {
   val parserCombinators   = "org.scala-lang.modules"     %% "scala-parser-combinators" % "1.0.6"
 
   val jsonSchemaValidator = "com.networknt"               % "json-schema-validator"    % "0.1.7"
-  val scaffeine           = "com.github.blemale"         %% "scaffeine"                % "2.1.0"
+
+  val scaffeine           = "com.github.blemale"         %% "scaffeine"                % "2.2.0"
 }
