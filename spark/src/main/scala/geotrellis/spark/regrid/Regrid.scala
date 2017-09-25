@@ -27,7 +27,7 @@ object Regrid {
     }
   }
 
-  def regrid[
+  def apply[
     K: SpatialComponent: ClassTag,
     V <: CellGrid: ClassTag: Stitcher: (? => CropMethods[V]): (? => TilePrototypeMethods[V]),
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
@@ -124,10 +124,10 @@ object Regrid {
     }
   }
 
-  def regrid[
+  def apply[
     K: SpatialComponent: ClassTag,
     V <: CellGrid: ClassTag: Stitcher: (? => CropMethods[V]): (? => TilePrototypeMethods[V]),
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
-  ](layer: RDD[(K, V)] with Metadata[M], tileSize: Int): RDD[(K, V)] with Metadata[M] = regrid(layer, tileSize, tileSize)
+  ](layer: RDD[(K, V)] with Metadata[M], tileSize: Int): RDD[(K, V)] with Metadata[M] = apply(layer, tileSize, tileSize)
 
 }

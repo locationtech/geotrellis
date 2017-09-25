@@ -33,7 +33,7 @@ class RegridSpec extends FunSpec with TestEnvironment with RasterMatchers {
 
   describe("Regridding") {
     it("should allow chipping into smaller tiles") {
-      val newLayer = Regrid.regrid(simpleLayer, 16, 16)
+      val newLayer = simpleLayer.regrid(16)
 
       // import geotrellis.raster.render._
       // val cm = ColorMap((0 to 128).toArray, ColorRamps.Plasma)
@@ -44,7 +44,7 @@ class RegridSpec extends FunSpec with TestEnvironment with RasterMatchers {
     }
 
     it("should allow joining into larger tiles") {
-      val newLayer = Regrid.regrid(simpleLayer, 64, 64)
+      val newLayer = simpleLayer.regrid(64)
 
       // import geotrellis.raster.render._
       // val cm = ColorMap((0 to 128).toArray, ColorRamps.Plasma)
@@ -55,7 +55,7 @@ class RegridSpec extends FunSpec with TestEnvironment with RasterMatchers {
     }
 
     it("should allow breaking into non-square tiles") {
-      val newLayer = Regrid.regrid(simpleLayer, 50, 25)
+      val newLayer = simpleLayer.regrid(50, 25)
 
       // import geotrellis.raster.render._
       // val cm = ColorMap((0 to 128).toArray, ColorRamps.Plasma)

@@ -53,6 +53,7 @@ package object spark
     with matching.Implicits
     with merge.Implicits
     with partition.Implicits
+    with regrid.Implicits
     with reproject.Implicits
     with resample.Implicits
     with rasterize.Implicits
