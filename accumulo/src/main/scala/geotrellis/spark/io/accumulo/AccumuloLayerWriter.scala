@@ -84,6 +84,7 @@ class AccumuloLayerWriter(
     } catch {
       case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
     }
+    requireSchemaCompatability[K, V](writerSchema)
 
     val table = header.tileTable
 
@@ -96,50 +97,14 @@ class AccumuloLayerWriter(
     val layerReader = new AccumuloLayerReader(attributeStore)
 
     logger.info(s"Saving updated RDD for layer ${id} to table $table")
-    val existingTiles =
-      if(schemaHasChanged[K, V](writerSchema)) {
-        logger.warn(s"RDD schema has changed, this requires rewriting the entire layer.")
-        layerReader
-          .read[K, V, M](id)
 
-      } else {
-        val query =
-          new LayerQuery[K, M]
-            .where(Intersects(rdd.metadata.getComponent[Bounds[K]].get))
-
-        layerReader.read[K, V, M](id, query, layerReader.defaultNumPartitions, filterIndexOnly = true)
-      }
-
-    val updatedMetadata: M =
-      metadata.merge(rdd.metadata)
-
-    val codec  = KeyValueRecordCodec[K, V]
-    val schema = codec.schema
+    val updatedMetadata: M = metadata.merge(rdd.metadata)
 
     options.writeStrategy match {
       case _: HdfsWriteStrategy =>
-        val updatedRdd: RDD[(K, V)] =
-          mergeFunc match {
-            case Some(mergeFunc) =>
-              existingTiles
-                .fullOuterJoin(rdd)
-                .flatMapValues {
-                case (Some(layerTile), Some(updateTile)) => Some(mergeFunc(layerTile, updateTile))
-                case (Some(layerTile), _) => Some(layerTile)
-                case (_, Some(updateTile)) => Some(updateTile)
-                case _ => None
-              }
-            case None => rdd
-          }
-
-        // Write updated metadata, and the possibly updated schema
-        // Only really need to write the metadata and schema
-        attributeStore.writeLayerAttributes(id, header, updatedMetadata, keyIndex, schema)
-        AccumuloRDDWriter.write(updatedRdd, instance, encodeKey, options.writeStrategy, table)
+        throw new UnsupportedOperationException("HDFS Write strategy not supported in updates")
       case _ =>
-        // Write updated metadata, and the possibly updated schema
-        // Only really need to write the metadata and schema
-        attributeStore.writeLayerAttributes(id, header, updatedMetadata, keyIndex, schema)
+        attributeStore.writeLayerAttributes(id, header, updatedMetadata, keyIndex, writerSchema)
         AccumuloRDDWriter.update(
           rdd, instance, encodeKey, options.writeStrategy, table,
           Some(writerSchema), mergeFunc

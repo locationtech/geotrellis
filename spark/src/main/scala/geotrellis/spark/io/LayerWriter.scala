@@ -24,7 +24,7 @@ import geotrellis.spark.io.json._
 import geotrellis.spark.merge._
 import geotrellis.util._
 
-import org.apache.avro.Schema
+import org.apache.avro._
 import org.apache.spark.rdd._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
@@ -53,10 +53,10 @@ trait LayerWriter[ID] {
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
   ](sc: SparkContext, id: ID, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K], mergeFunc: (V, V) => V): Unit
 
-  protected def schemaHasChanged[K: AvroRecordCodec, V: AvroRecordCodec](writerSchema: Schema): Boolean = {
-    val codec  = KeyValueRecordCodec[K, V]
-    val schema = codec.schema
-    !schema.fingerprintMatches(writerSchema)
+  protected def requireSchemaCompatability[K: AvroRecordCodec, V: AvroRecordCodec](writtenSchema: Schema): Unit = {
+    val updateSchemaHash = SchemaNormalization.parsingFingerprint64(KeyValueRecordCodec[K, V].schema)
+    val writtenSchemaHash = SchemaNormalization.parsingFingerprint64(writtenSchema)
+    require(updateSchemaHash == writtenSchemaHash, "Update Avro record schema does not match existing Avro record schema.")
   }
 
   def update[
