@@ -59,8 +59,8 @@ class CassandraLayerProvider extends AttributeStoreProvider
     new CassandraLayerWriter(store, instance, keyspace, table)
   }
 
-  def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] = {
+  def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] with OverzoomingValueReader = {
     val instance = CassandraInstance(uri)
-    new CassandraValueReader(instance, store)
+    new CassandraValueReader(instance, store) with OverzoomingValueReader
   }
 }

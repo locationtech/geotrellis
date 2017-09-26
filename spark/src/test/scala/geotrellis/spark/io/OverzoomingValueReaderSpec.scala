@@ -36,7 +36,7 @@ class OverzoomingValueReaderSpec
   describe("OverzoomingValueReader") {
     it("should work for simple case") {
       val vr = ValueReader("file:///tmp/OZVR_test").reader[SpatialKey, Tile](LayerId("test_layer", 0))
-      val ovr = OverzoomingValueReader("file:///tmp/OZVR_test").reader[SpatialKey, Tile](LayerId("test_layer", 1))
+      val ovr = ValueReader("file:///tmp/OZVR_test").overzoomingReader[SpatialKey, Tile](LayerId("test_layer", 1))
 
       val tile00z0 = vr.read(SpatialKey(0,0))
       val tile11z1 = ovr.read(SpatialKey(1,1))

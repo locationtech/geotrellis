@@ -62,12 +62,12 @@ class HadoopLayerProvider extends AttributeStoreProvider
     new HadoopLayerWriter(path, store, interval)
   }
 
-  def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] = {
+  def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] with OverzoomingValueReader = {
     val _uri = trim(uri)
     val path = new Path(_uri)
     val params = UriUtils.getParams(_uri)
     val conf = new Configuration()
     val maxOpenFiles = params.getOrElse("maxOpenFiles", "16").toInt
-    new HadoopValueReader(store, conf, maxOpenFiles)
+    new HadoopValueReader(store, conf, maxOpenFiles) with OverzoomingValueReader
   }
 }
