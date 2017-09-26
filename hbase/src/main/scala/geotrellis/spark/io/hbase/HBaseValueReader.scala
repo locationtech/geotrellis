@@ -16,7 +16,9 @@
 
 package geotrellis.spark.io.hbase
 
-import geotrellis.spark.LayerId
+import geotrellis.raster._
+import geotrellis.raster.resample._
+import geotrellis.spark.{LayerId, SpatialComponent}
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
@@ -63,15 +65,23 @@ object HBaseValueReader {
     attributeStore: AttributeStore,
     layerId: LayerId
   ): Reader[K, V] =
-    new HBaseValueReader(instance, attributeStore).reader[K, V](layerId)
+    (new HBaseValueReader(instance, attributeStore) with OverzoomingValueReader).reader[K, V](layerId)
 
-  def apply(instance: HBaseInstance): HBaseValueReader =
+  def apply[K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid: AvroRecordCodec: ? => TileResampleMethods[V]](
+    instance: HBaseInstance,
+    attributeStore: AttributeStore,
+    layerId: LayerId,
+    resampleMethod: ResampleMethod
+  ): Reader[K, V] =
+    (new HBaseValueReader(instance, attributeStore) with OverzoomingValueReader).overzoomingReader[K, V](layerId, resampleMethod)
+
+  def apply(instance: HBaseInstance): HBaseValueReader with OverzoomingValueReader =
     new HBaseValueReader(
       instance = instance,
-      attributeStore = HBaseAttributeStore(instance))
+      attributeStore = HBaseAttributeStore(instance)) with OverzoomingValueReader
 
-  def apply(attributeStore: HBaseAttributeStore): HBaseValueReader =
+  def apply(attributeStore: HBaseAttributeStore): HBaseValueReader with OverzoomingValueReader =
     new HBaseValueReader(
       instance = attributeStore.instance,
-      attributeStore = attributeStore)
+      attributeStore = attributeStore) with OverzoomingValueReader
 }

@@ -55,8 +55,8 @@ class HBaseLayerProvider extends AttributeStoreProvider
     new HBaseLayerWriter(store, instance, table)
   }
 
-  def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] = {
+  def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] with OverzoomingValueReader = {
     val instance = HBaseInstance(uri)
-    new HBaseValueReader(instance, store)
+    new HBaseValueReader(instance, store) with OverzoomingValueReader
   }
 }

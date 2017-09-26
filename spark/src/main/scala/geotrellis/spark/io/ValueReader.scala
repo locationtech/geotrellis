@@ -36,7 +36,7 @@ trait ValueReader[ID] {
 
 object ValueReader {
 
-  def apply(attributeStore: AttributeStore, valueReaderUri: URI): ValueReader[LayerId] = {
+  def apply(attributeStore: AttributeStore, valueReaderUri: URI): ValueReader[LayerId] with OverzoomingValueReader = {
     import scala.collection.JavaConversions._
     ServiceLoader.load(classOf[ValueReaderProvider]).iterator()
       .find(_.canProcess(valueReaderUri))
@@ -44,20 +44,20 @@ object ValueReader {
       .valueReader(valueReaderUri, attributeStore)
   }
 
-  def apply(attributeStoreUri: URI, valueReaderUri: URI): ValueReader[LayerId] =
+  def apply(attributeStoreUri: URI, valueReaderUri: URI): ValueReader[LayerId] with OverzoomingValueReader =
     apply(AttributeStore(attributeStoreUri), valueReaderUri)
 
   def apply(uri: URI): ValueReader[LayerId] =
     apply(attributeStoreUri = uri, valueReaderUri = uri)
 
-  def apply(attributeStore: AttributeStore, valueReaderUri: String): ValueReader[LayerId] =
+  def apply(attributeStore: AttributeStore, valueReaderUri: String): ValueReader[LayerId] with OverzoomingValueReader =
     apply(attributeStore, new URI(valueReaderUri))
 
 
-  def apply(attributeStoreUri: String, valueReaderUri: String): ValueReader[LayerId] =
+  def apply(attributeStoreUri: String, valueReaderUri: String): ValueReader[LayerId] with OverzoomingValueReader =
     apply(AttributeStore(new URI(attributeStoreUri)), new URI(valueReaderUri))
 
-  def apply(uri: String): ValueReader[LayerId] = {
+  def apply(uri: String): ValueReader[LayerId] with OverzoomingValueReader = {
     val _uri = new URI(uri)
     apply(attributeStoreUri = _uri, valueReaderUri = _uri)
   }
