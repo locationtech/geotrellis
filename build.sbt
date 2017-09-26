@@ -47,22 +47,18 @@ lazy val commonSettings = Seq(
   addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.full),
 
   pomExtra := (
-    <scm>
-      <url>git@github.com:geotrellis/geotrellis.git</url>
-      <connection>scm:git:git@github.com:geotrellis/geotrellis.git</connection>
-      </scm>
-      <developers>
+    <developers>
       <developer>
-      <id>echeipesh</id>
-      <name>Eugene Cheipesh</name>
-      <url>http://github.com/echeipesh/</url>
-        </developer>
+        <id>echeipesh</id>
+        <name>Eugene Cheipesh</name>
+        <url>http://github.com/echeipesh/</url>
+      </developer>
       <developer>
-      <id>lossyrob</id>
-      <name>Rob Emanuele</name>
-      <url>http://github.com/lossyrob/</url>
-        </developer>
-      </developers>),
+        <id>lossyrob</id>
+        <name>Rob Emanuele</name>
+        <url>http://github.com/lossyrob/</url>
+      </developer>
+    </developers>),
   shellPrompt := { s => Project.extract(s).currentProject.id + " > " },
   dependencyUpdatesExclusions := moduleFilter(organization = "org.scala-lang"),
 
