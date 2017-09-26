@@ -84,6 +84,7 @@ class CassandraLayerWriter(
     } catch {
       case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
     }
+    requireSchemaCompatability[K, V](writerSchema)
 
     val (keyspace, table) = header.keyspace -> header.tileTable
 
@@ -95,29 +96,8 @@ class CassandraLayerWriter(
     val layerReader = new CassandraLayerReader(attributeStore, instance)
 
     logger.info(s"Saving updated RDD for layer ${id} to table $table")
-    val existingTiles =
-      if(schemaHasChanged[K, V](writerSchema)) {
-        logger.warn(s"RDD schema has changed, this requires rewriting the entire layer.")
-        layerReader
-          .read[K, V, M](id)
-
-      } else {
-        val query =
-          new LayerQuery[K, M]
-            .where(Intersects(rdd.metadata.getComponent[Bounds[K]].get))
-
-        layerReader.read[K, V, M](id, query, layerReader.defaultNumPartitions, filterIndexOnly = true)
-      }
-
-    val updatedMetadata: M =
-      metadata.merge(rdd.metadata)
-
-    val codec  = KeyValueRecordCodec[K, V]
-    val schema = codec.schema
-
-    // Write updated metadata, and the possibly updated schema
-    // Only really need to write the metadata and schema
-    attributeStore.writeLayerAttributes(id, header, updatedMetadata, keyIndex, schema)
+    val updatedMetadata: M = metadata.merge(rdd.metadata)
+    attributeStore.writeLayerAttributes(id, header, updatedMetadata, keyIndex, writerSchema)
     CassandraRDDWriter.update(rdd, instance, id, encodeKey, keyspace, table, Some(writerSchema), mergeFunc)
   }
 

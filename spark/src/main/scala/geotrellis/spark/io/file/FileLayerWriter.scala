@@ -96,6 +96,7 @@ class FileLayerWriter(
     } catch {
       case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
     }
+    requireSchemaCompatability[K, V](writerSchema)
 
     val path = header.path
 
@@ -108,29 +109,9 @@ class FileLayerWriter(
     val layerReader = FileLayerReader(attributeStore, catalogPath)(sc)
 
     logger.info(s"Saving updated RDD for layer ${id} to $path")
-    val existingTiles =
-      if(schemaHasChanged[K, V](writerSchema)) {
-        logger.warn(s"RDD schema has changed, this requires rewriting the entire layer.")
-        layerReader
-          .read[K, V, M](id)
 
-      } else {
-        val query =
-          new LayerQuery[K, M]
-            .where(Intersects(rdd.metadata.getComponent[Bounds[K]].get))
-
-        layerReader.read[K, V, M](id, query, layerReader.defaultNumPartitions, filterIndexOnly = true)
-      }
-
-    val updatedMetadata: M =
-      metadata.merge(rdd.metadata)
-
-    val codec  = KeyValueRecordCodec[K, V]
-    val schema = codec.schema
-
-    // Write updated metadata, and the possibly updated schema
-    // Only really need to write the metadata and schema
-    attributeStore.writeLayerAttributes(id, header, updatedMetadata, keyIndex, schema)
+    val updatedMetadata: M = metadata.merge(rdd.metadata)
+    attributeStore.writeLayerAttributes(id, header, updatedMetadata, keyIndex, writerSchema)
     FileRDDWriter.update[K, V](rdd, layerPath, keyPath, Some(writerSchema), mergeFunc)
   }
 
