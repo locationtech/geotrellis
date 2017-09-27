@@ -43,63 +43,31 @@ class HadoopLayerWriter(
 ) extends LayerWriter[LayerId] with LazyLogging {
 
   // Layer Updating
-  protected def _overwrite[
+  def overwrite[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
-  ](
-    sc: SparkContext,
-    id: LayerId,
-    rdd: RDD[(K, V)] with Metadata[M],
-    keyBounds: KeyBounds[K]
-  ): Unit = {
-    _update(sc, id, rdd, keyBounds, None)
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
+    update(id, rdd, None)
   }
 
-  protected def _update[
+  def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
-  ](
-    sc: SparkContext,
-    id: LayerId,
-    rdd: RDD[(K, V)] with Metadata[M],
-    keyBounds: KeyBounds[K],
-    mergeFunc: (V, V) => V
-  ): Unit = {
-    _update(sc, id, rdd, keyBounds, Some(mergeFunc))
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], mergeFunc: (V, V) => V): Unit = {
+    update(id, rdd, Some(mergeFunc))
   }
 
-  private def _update[
+  private def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
   ](
-    sc: SparkContext,
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
-    keyBounds: KeyBounds[K],
     mergeFunc: Option[(V, V) => V]
   ): Unit = {
-    if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-    val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[HadoopLayerHeader,M, K](id)
-    } catch {
-      case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
-    }
-
-    if (!(keyIndex.keyBounds contains keyBounds))
-      throw new LayerOutOfKeyBoundsError(id, keyIndex.keyBounds)
-
-    val updatedMetadata: M =
-      metadata.merge(rdd.metadata)
-
-    val fn = mergeFunc match {
-      case Some(fn) => fn
-      case None => { (v1: V, v2: V) => v2 }
-    }
-
-    val schema = attributeStore.readSchema(id)
     val layerPath =
       try {
         new Path(rootPath,  s"${id.name}/${id.zoom}")
@@ -108,8 +76,17 @@ class HadoopLayerWriter(
           throw new InvalidLayerIdError(id).initCause(e)
       }
 
-    attributeStore.writeLayerAttributes(id, header, updatedMetadata, keyIndex, schema)
-    HadoopRDDWriter.update(rdd, layerPath, id, attributeStore, mergeFunc)
+    validateAndUpdate[HadoopLayerHeader, K, V, M](id, rdd.metadata) { case LayerAttributes(header, metadata, keyIndex, writerSchema) =>
+      val fn = mergeFunc match {
+        case Some(fn) => fn
+        case None => { (v1: V, v2: V) => v2 }
+      }
+
+      logger.info(s"Writing update for layer ${id} to ${header.path}")
+
+      attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, writerSchema)
+      HadoopRDDWriter.update(rdd, layerPath, id, attributeStore, mergeFunc)
+    }
   }
 
   // Layer Writing

@@ -36,26 +36,14 @@ class HBaseLayerUpdater(
   layerReader: HBaseLayerReader
 ) extends LayerUpdater[LayerId] with LazyLogging {
 
-  def update[
+  protected def _update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], mergeFunc: (V, V) => V): Unit = {
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K], mergeFunc: (V, V) => V): Unit = {
     val table = attributeStore.readHeader[HBaseLayerHeader](id).tileTable
     val layerWriter = new HBaseLayerWriter(attributeStore, instance, table)
-    implicit val sc = rdd.sparkContext
     layerWriter.update(id, rdd, mergeFunc)
-  }
-
-  def update[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
-    val table = attributeStore.readHeader[HBaseLayerHeader](id).tileTable
-    val layerWriter = new HBaseLayerWriter(attributeStore, instance, table)
-    implicit val sc = rdd.sparkContext
-    layerWriter.update(id, rdd)
   }
 
   def overwrite[
@@ -65,7 +53,6 @@ class HBaseLayerUpdater(
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
     val table = attributeStore.readHeader[HBaseLayerHeader](id).tileTable
     val layerWriter = new HBaseLayerWriter(attributeStore, instance, table)
-    implicit val sc = rdd.sparkContext
     layerWriter.overwrite(id, rdd)
   }
 }

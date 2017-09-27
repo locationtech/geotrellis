@@ -41,22 +41,12 @@ class FileLayerUpdater(
 
   private val layerWriter = new FileLayerWriter(attributeStore, catalogPath)
 
-  def update[
+  protected def _update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], mergeFunc: (V, V) => V): Unit = {
-    implicit val sc: SparkContext = rdd.sparkContext
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K], mergeFunc: (V, V) => V): Unit = {
     layerWriter.update(id, rdd, mergeFunc)
-  }
-
-  def update[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
-    implicit val sc: SparkContext = rdd.sparkContext
-    layerWriter.update(id, rdd)
   }
 
   def overwrite[
@@ -64,10 +54,8 @@ class FileLayerUpdater(
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
-    implicit val sc: SparkContext = rdd.sparkContext
     layerWriter.overwrite(id, rdd)
   }
-
 }
 
 object FileLayerUpdater {

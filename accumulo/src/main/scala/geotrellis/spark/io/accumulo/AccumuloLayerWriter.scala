@@ -39,76 +39,54 @@ class AccumuloLayerWriter(
 ) extends LayerWriter[LayerId] with LazyLogging {
 
   // Layer Updating
-  protected def _overwrite[
+  def overwrite[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
   ](
-    sc: SparkContext,
     id: LayerId,
-    rdd: RDD[(K, V)] with Metadata[M],
-    keyBounds: KeyBounds[K]
+    rdd: RDD[(K, V)] with Metadata[M]
   ): Unit = {
-    _update(sc, id, rdd, keyBounds, None)
+    update(id, rdd, None)
   }
 
-  protected def _update[
+  def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
   ](
-    sc: SparkContext,
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
-    keyBounds: KeyBounds[K],
     mergeFunc: (V, V) => V
   ): Unit = {
-    _update(sc, id, rdd, keyBounds, Some(mergeFunc))
+    update(id, rdd, Some(mergeFunc))
   }
 
-  private def _update[
+  private def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
   ](
-    sc: SparkContext,
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
-    keyBounds: KeyBounds[K],
     mergeFunc: Option[(V, V) => V]
   ) = {
-    if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
+    validateAndUpdate[AccumuloLayerHeader, K, V, M](id, rdd.metadata) { case LayerAttributes(header, metadata, keyIndex, writerSchema) =>
+      val table = header.tileTable
+      val encodeKey = (key: K) => AccumuloKeyEncoder.encode(id, key, keyIndex.toIndex(key))
 
-    val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, K](id)
-    } catch {
-      case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
-    }
-    requireSchemaCompatability[K, V](writerSchema)
+      options.writeStrategy match {
+        case _: HdfsWriteStrategy =>
+          throw new IllegalArgumentException("HDFS Write strategy not supported in updates")
+        case _ =>
+          logger.info(s"Writing updated for layer ${id} to table $table")
 
-    val table = header.tileTable
-
-    if (!(keyIndex.keyBounds contains keyBounds))
-      throw new LayerOutOfKeyBoundsError(id, keyIndex.keyBounds)
-
-    val encodeKey = (key: K) => AccumuloKeyEncoder.encode(id, key, keyIndex.toIndex(key))
-    implicit val sc2: SparkContext = sc
-    implicit val instance2 = instance
-    val layerReader = new AccumuloLayerReader(attributeStore)
-
-    logger.info(s"Saving updated RDD for layer ${id} to table $table")
-
-    val updatedMetadata: M = metadata.merge(rdd.metadata)
-
-    options.writeStrategy match {
-      case _: HdfsWriteStrategy =>
-        throw new UnsupportedOperationException("HDFS Write strategy not supported in updates")
-      case _ =>
-        attributeStore.writeLayerAttributes(id, header, updatedMetadata, keyIndex, writerSchema)
-        AccumuloRDDWriter.update(
-          rdd, instance, encodeKey, options.writeStrategy, table,
-          Some(writerSchema), mergeFunc
-        )
+          attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, writerSchema)
+          AccumuloRDDWriter.update(
+            rdd, instance, encodeKey, options.writeStrategy, table,
+            Some(writerSchema), mergeFunc
+          )
+      }
     }
   }
 

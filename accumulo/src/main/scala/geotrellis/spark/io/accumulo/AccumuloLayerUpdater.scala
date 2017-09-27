@@ -38,34 +38,18 @@ class AccumuloLayerUpdater(
   options: Options
 ) extends LayerUpdater[LayerId] with LazyLogging {
 
-  def update[
+  protected def _update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], mergeFunc: (V, V) => V): Unit = {
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K], mergeFunc: (V, V) => V): Unit = {
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
       attributeStore.readLayerAttributes[AccumuloLayerHeader, M, K](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
     val layerWriter = new AccumuloLayerWriter(attributeStore, instance, header.tileTable, options)
-    implicit val sc: SparkContext = rdd.sparkContext
     layerWriter.update(id, rdd, mergeFunc)
-  }
-
-  def update[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
-    val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, K](id)
-    } catch {
-      case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
-    }
-    val layerWriter = new AccumuloLayerWriter(attributeStore, instance, header.tileTable, options)
-    implicit val sc: SparkContext = rdd.sparkContext
-    layerWriter.update(id, rdd)
   }
 
   def overwrite[
@@ -79,7 +63,6 @@ class AccumuloLayerUpdater(
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
     val layerWriter = new AccumuloLayerWriter(attributeStore, instance, header.tileTable, options)
-    implicit val sc: SparkContext = rdd.sparkContext
     layerWriter.overwrite(id, rdd)
   }
 }

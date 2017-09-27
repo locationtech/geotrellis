@@ -75,10 +75,9 @@ trait LayerUpdateSpaceTimeTileSpec
         }
       }
 
-      it("should not overwrite a layer (empty set)") {
-        intercept[EmptyBoundsError] {
-          updater.overwrite(layerId, new ContextRDD[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](sc.emptyRDD[(SpaceTimeKey, Tile)], emptyTileLayerMetadata))
-        }
+      it("should silently not overwrite a layer (empty set)") {
+        updater.overwrite(layerId, new ContextRDD[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](sc.emptyRDD[(SpaceTimeKey, Tile)], emptyTileLayerMetadata))
+
       }
 
       it("should not update a layer (keys out of bounds)") {
