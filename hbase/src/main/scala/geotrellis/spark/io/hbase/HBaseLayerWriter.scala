@@ -38,66 +38,45 @@ class HBaseLayerWriter(
 ) extends LayerWriter[LayerId] with LazyLogging {
 
   // Layer Updating
-  protected def _overwrite[
+  def overwrite[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
   ](
-    sc: SparkContext,
     id: LayerId,
-    rdd: RDD[(K, V)] with Metadata[M],
-    keyBounds: KeyBounds[K]
+    rdd: RDD[(K, V)] with Metadata[M]
   ): Unit = {
-    _update(sc, id, rdd, keyBounds, None)
+    update(id, rdd, None)
   }
 
-  protected def _update[
+  def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
   ](
-    sc: SparkContext,
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
-    keyBounds: KeyBounds[K],
     mergeFunc: (V, V) => V
   ): Unit = {
-    _update(sc, id, rdd, keyBounds, Some(mergeFunc))
+    update(id, rdd, Some(mergeFunc))
   }
 
-  private def _update[
+  private def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
   ](
-    sc: SparkContext,
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
-    keyBounds: KeyBounds[K],
     mergeFunc: Option[(V, V) => V]
   ) = {
-    if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-
-    val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[HBaseLayerHeader, M, K](id)
-    } catch {
-      case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
+    validateAndUpdate[HBaseLayerHeader, K, V, M](id, rdd.metadata) { case LayerAttributes(header, metadata, keyIndex, writerSchema) =>
+      val table = header.tileTable
+      logger.info(s"Writing update for layer ${id} to table $table")
+      val encodeKey = (key: K) => keyIndex.toIndex(key)
+      attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, writerSchema)
+      HBaseRDDWriter.update(rdd, instance, id, encodeKey, table, Some(writerSchema), mergeFunc)
     }
-    requireSchemaCompatability[K, V](writerSchema)
-
-    val table = header.tileTable
-
-    if (!(keyIndex.keyBounds contains keyBounds))
-      throw new LayerOutOfKeyBoundsError(id, keyIndex.keyBounds)
-
-    val encodeKey = (key: K) => keyIndex.toIndex(key)
-    implicit val sparkContext: SparkContext = sc
-    val layerReader = new HBaseLayerReader(attributeStore, instance)
-
-    logger.info(s"Saving updated RDD for layer ${id} to table $table")
-    val updatedMetadata: M = metadata.merge(rdd.metadata)
-    attributeStore.writeLayerAttributes(id, header, updatedMetadata, keyIndex, writerSchema)
-    HBaseRDDWriter.update(rdd, instance, id, encodeKey, table, Some(writerSchema), mergeFunc)
   }
 
   // Layer Writing

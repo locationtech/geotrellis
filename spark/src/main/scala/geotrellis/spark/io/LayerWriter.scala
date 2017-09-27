@@ -33,69 +33,66 @@ import spray.json._
 
 import scala.reflect.ClassTag
 
+import com.typesafe.scalalogging.Logger
 import java.util.ServiceLoader
 import java.net.URI
 
 
-trait LayerWriter[ID] {
+trait LayerWriter[ID] extends LazyLogging {
   val attributeStore: AttributeStore
 
   // Layer Updating
-  protected def _overwrite[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
-  ](sc: SparkContext, id: ID, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K]): Unit
 
-  protected def _update[
+  /** Validate update metadata before delegating to update function with updated LayerAttributes.
+    * The update function is expected to handle the saving of updated attributes and values.
+    */
+  protected[geotrellis]
+  def validateAndUpdate[
+    H: JsonFormat,
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
-  ](sc: SparkContext, id: ID, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K], mergeFunc: (V, V) => V): Unit
+    V: AvroRecordCodec,
+    M: GetComponent[?, Bounds[K]]: Mergable: JsonFormat
+  ](id: LayerId, updateMetadata: M)(fUpdate: LayerAttributes[H, M, K] => Unit): Unit = {
+    if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
-  protected def requireSchemaCompatability[K: AvroRecordCodec, V: AvroRecordCodec](writtenSchema: Schema): Unit = {
-    val updateSchemaHash = SchemaNormalization.parsingFingerprint64(KeyValueRecordCodec[K, V].schema)
-    val writtenSchemaHash = SchemaNormalization.parsingFingerprint64(writtenSchema)
-    require(updateSchemaHash == writtenSchemaHash, "Update Avro record schema does not match existing Avro record schema.")
+    updateMetadata.getComponent[Bounds[K]] match {
+      case updateBounds: KeyBounds[K] =>
+        val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
+          attributeStore.readLayerAttributes[H, M, K](id)
+        } catch {
+          case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
+        }
+
+        if (!(keyIndex.keyBounds contains updateBounds))
+          throw new LayerOutOfKeyBoundsError(id, keyIndex.keyBounds)
+
+        val updateSchemaHash = SchemaNormalization.parsingFingerprint64(KeyValueRecordCodec[K, V].schema)
+        val writerSchemaHash = SchemaNormalization.parsingFingerprint64(writerSchema)
+        if (updateSchemaHash != writerSchemaHash)
+          throw new LayerUpdateError(id, "Update Avro record schema does not match existing schema.")
+
+        // Data extent could have grown
+        val updatedMetadata: M = metadata.merge(updateMetadata)
+        val updatedAttributes = LayerAttributes(header, updatedMetadata, keyIndex, writerSchema)
+
+        fUpdate(updatedAttributes)
+
+      case EmptyBounds =>
+        logger.warn(s"Skipping update with empty bounds for layer $id.")
+    }
   }
 
   def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
-  ](id: ID, rdd: RDD[(K, V)] with Metadata[M], mergeFunc: (V, V) => V)(implicit sc: SparkContext): Unit =
-    rdd.metadata.getComponent[Bounds[K]] match {
-      case keyBounds: KeyBounds[K] =>
-        _update(sc, id, rdd, keyBounds, mergeFunc)
-      case EmptyBounds =>
-        throw new EmptyBoundsError(s"Cannot update layer $id with a layer with empty bounds.")
-    }
-
-  def update[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
-  ](id: ID, rdd: RDD[(K, V)] with Metadata[M])(implicit sc: SparkContext): Unit =
-    rdd.metadata.getComponent[Bounds[K]] match {
-      case keyBounds: KeyBounds[K] =>
-        // By default, we want the updating tile to replace the existing tile.
-        val mergeFunc: (V, V) => V = { (existing, updating) => updating }
-        _update(sc, id, rdd, keyBounds, mergeFunc)
-      case EmptyBounds =>
-        throw new EmptyBoundsError(s"Cannot update layer $id with a layer with empty bounds.")
-    }
+  ](id: ID, rdd: RDD[(K, V)] with Metadata[M], mergeFunc: (V, V) => V): Unit
 
   def overwrite[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
-  ](id: ID, rdd: RDD[(K, V)] with Metadata[M])(implicit sc: SparkContext): Unit =
-    rdd.metadata.getComponent[Bounds[K]] match {
-      case keyBounds: KeyBounds[K] =>
-        _overwrite(sc, id, rdd, keyBounds)
-      case EmptyBounds =>
-        throw new EmptyBoundsError(s"Cannot overwrite layer $id with a layer with empty bounds.")
-    }
+  ](id: ID, rdd: RDD[(K, V)] with Metadata[M]): Unit
 
   // Layer Writing
   protected def _write[

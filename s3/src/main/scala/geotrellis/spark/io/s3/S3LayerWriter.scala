@@ -56,71 +56,44 @@ class S3LayerWriter(
   def rddWriter: S3RDDWriter = S3RDDWriter
 
   // Layer Updating
-  protected def _overwrite[
+  def overwrite[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
   ](
-    sc: SparkContext,
     id: LayerId,
-    rdd: RDD[(K, V)] with Metadata[M],
-    keyBounds: KeyBounds[K]
+    rdd: RDD[(K, V)] with Metadata[M]
   ): Unit = {
-    implicit val sparkContext: SparkContext = sc
-    val layerReader = new S3LayerReader(attributeStore)
-    _update(sc, id, rdd, keyBounds, None, layerReader)
+    update(id, rdd, None)
   }
 
-  protected def _update[
+  def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
-  ](
-    sc: SparkContext,
-    id: LayerId,
-    rdd: RDD[(K, V)] with Metadata[M],
-    keyBounds: KeyBounds[K],
-    mergeFunc: (V, V) => V
-  ): Unit = {
-    implicit val sparkContext: SparkContext = sc
-    val layerReader = new S3LayerReader(attributeStore)
-    _update(sc, id, rdd, keyBounds, Some(mergeFunc), layerReader)
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], mergeFunc: (V, V) => V): Unit = {
+    update(id, rdd, Some(mergeFunc))
   }
 
-  private[s3] def _update[
+  private def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
   ](
-    sc: SparkContext,
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
-    keyBounds: KeyBounds[K],
-    mergeFunc: Option[(V, V) => V],
-    layerReader: S3LayerReader
+    mergeFunc: Option[(V, V) => V]
   ) = {
-    if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
+    validateAndUpdate[S3LayerHeader, K, V, M](id, rdd.metadata) { case LayerAttributes(header, metadata, keyIndex, writerSchema) =>
+      val prefix = header.key
+      val bucket = header.bucket
+      val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
+      val keyPath = (key: K) => makePath(prefix, Index.encode(keyIndex.toIndex(key), maxWidth))
 
-    val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[S3LayerHeader, M, K](id)
-    } catch {
-      case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
+      logger.info(s"Writing update for layer ${id} to $bucket $prefix")
+      attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, writerSchema)
+      rddWriter.update(rdd, bucket, keyPath, Some(writerSchema), mergeFunc)
     }
-    requireSchemaCompatability[K, V](writerSchema)
-
-    if (!(keyIndex.keyBounds contains keyBounds))
-      throw new LayerOutOfKeyBoundsError(id, keyIndex.keyBounds)
-
-    val prefix = header.key
-    val bucket = header.bucket
-
-    val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
-    val keyPath = (key: K) => makePath(prefix, Index.encode(keyIndex.toIndex(key), maxWidth))
-
-    logger.info(s"Saving updated RDD for layer ${id} to $bucket $prefix")
-    val updatedMetadata: M = metadata.merge(rdd.metadata)
-    attributeStore.writeLayerAttributes(id, header, updatedMetadata, keyIndex, writerSchema)
-    rddWriter.update(rdd, bucket, keyPath, Some(writerSchema), mergeFunc)
   }
 
   // Layer Writing

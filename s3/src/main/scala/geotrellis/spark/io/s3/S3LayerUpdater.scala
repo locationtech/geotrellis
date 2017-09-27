@@ -51,36 +51,12 @@ class S3LayerUpdater(
   val as = attributeStore.asInstanceOf[S3AttributeStore]
   val layerWriter = new InnerS3LayerWriter(as, as.bucket, as.prefix)
 
-  def update[
+  protected def _update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], mergeFunc: (V, V) => V): Unit = {
-    rdd.metadata.getComponent[Bounds[K]] match {
-      case keyBounds: KeyBounds[K] =>
-        layerWriter._update(
-          rdd.sparkContext, id, rdd, keyBounds,
-          Some(mergeFunc), layerReader
-        )
-      case EmptyBounds =>
-        throw new EmptyBoundsError(s"Cannot update layer $id with a layer with empty bounds.")
-    }
-  }
-
-  def update[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
-    V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
-    rdd.metadata.getComponent[Bounds[K]] match {
-      case keyBounds: KeyBounds[K] =>
-        layerWriter._update(
-          rdd.sparkContext, id, rdd, keyBounds,
-          Some({(_: V, v: V) => v}), layerReader
-        )
-      case EmptyBounds =>
-        throw new EmptyBoundsError(s"Cannot update layer $id with a layer with empty bounds.")
-    }
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K], mergeFunc: (V, V) => V): Unit = {
+    layerWriter.update(id, rdd, mergeFunc)
   }
 
   def overwrite[
@@ -88,15 +64,7 @@ class S3LayerUpdater(
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
-    rdd.metadata.getComponent[Bounds[K]] match {
-      case keyBounds: KeyBounds[K] =>
-        layerWriter._update(
-          rdd.sparkContext, id, rdd, keyBounds,
-          None, layerReader
-        )
-      case EmptyBounds =>
-        throw new EmptyBoundsError(s"Cannot overwrite layer $id with a layer with empty bounds.")
-    }
+    layerWriter.overwrite(id, rdd)
   }
 }
 
