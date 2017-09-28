@@ -4,7 +4,8 @@ docker pull cassandra:latest
 
 docker run \
   --rm \
-  --net=host \
+  -p 9160:9160 \
+  -p 9042:9042 \
   -m 1G \
   --memory-swap -1 \
   --env="MAX_HEAP_SIZE=500M" \
