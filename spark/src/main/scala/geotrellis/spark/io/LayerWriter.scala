@@ -82,12 +82,42 @@ trait LayerWriter[ID] extends LazyLogging {
     }
   }
 
+  /** Update persisted layer, merging existing value with updated value.
+    *
+    * The layer metadata may change as result of the update to reflect added values.
+    *
+    * The method will throw if:
+    *  - Specified layer does not exist
+    *  - Change the Avro schema of records is detected
+    *  - Update RDD [[Bounds]] are outside of layer index [[Bounds]]
+    *
+    * Updates with empty [[Bounds]] will be ignored.
+    */
   def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
   ](id: ID, rdd: RDD[(K, V)] with Metadata[M], mergeFunc: (V, V) => V): Unit
 
+  /** Update persisted layer without checking for possible.
+    *
+    * ```Warning```: using this method may result in data loss.
+    * Unlike the [[LayerWriter.update]] this method will not check for existing
+    * records before writing the update. Use this as optimiation when you are
+    * certain that update will not overlap with existing records.
+    *
+    * Additional care is needed in cases where [[KeyIndex]] may map multiple,
+    * distinct, values of K to single index. This is likely with spatio-temproral layers.
+    * In these cases overwrite will replace the whole record, possibly overwriting
+    * (K,V) pairs with K is not contained in update RDD.
+    *
+    * The method will throw if:
+    *  - Specified layer does not exist
+    *  - Change the Avro schema of records is detected
+    *  - Update RDD [[Bounds]] are outside of layer index [[Bounds]]
+    *
+    * Updates with empty [[Bounds]] will be ignored.
+    */
   def overwrite[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
