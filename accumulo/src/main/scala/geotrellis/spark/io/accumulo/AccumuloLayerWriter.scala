@@ -71,22 +71,26 @@ class AccumuloLayerWriter(
     rdd: RDD[(K, V)] with Metadata[M],
     mergeFunc: Option[(V, V) => V]
   ) = {
-    validateAndUpdate[AccumuloLayerHeader, K, V, M](id, rdd.metadata) { case LayerAttributes(header, metadata, keyIndex, writerSchema) =>
-      val table = header.tileTable
-      val encodeKey = (key: K) => AccumuloKeyEncoder.encode(id, key, keyIndex.toIndex(key))
+    validateUpdate[AccumuloLayerHeader, K, V, M](id, rdd.metadata) match {
+      case Some(LayerAttributes(header, metadata, keyIndex, writerSchema)) =>
 
-      options.writeStrategy match {
-        case _: HdfsWriteStrategy =>
-          throw new IllegalArgumentException("HDFS Write strategy not supported in updates")
-        case _ =>
-          logger.info(s"Writing updated for layer ${id} to table $table")
+        val table = header.tileTable
+        val encodeKey = (key: K) => AccumuloKeyEncoder.encode(id, key, keyIndex.toIndex(key))
 
-          attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, writerSchema)
-          AccumuloRDDWriter.update(
-            rdd, instance, encodeKey, options.writeStrategy, table,
-            Some(writerSchema), mergeFunc
-          )
-      }
+        options.writeStrategy match {
+          case _: HdfsWriteStrategy =>
+            throw new IllegalArgumentException("HDFS Write strategy not supported in updates")
+          case writeStrategy =>
+            logger.info(s"Writing updated for layer ${id} to table $table")
+
+            attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, writerSchema)
+            AccumuloRDDWriter.update(
+              rdd, instance, encodeKey, writeStrategy, table,
+              Some(writerSchema), mergeFunc
+            )
+        }
+      case None =>
+        logger.warn(s"Skipping update with empty bounds for layer $id.")
     }
   }
 

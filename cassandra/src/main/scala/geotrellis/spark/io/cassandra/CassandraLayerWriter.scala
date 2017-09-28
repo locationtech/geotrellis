@@ -71,14 +71,18 @@ class CassandraLayerWriter(
     rdd: RDD[(K, V)] with Metadata[M],
     mergeFunc: Option[(V, V) => V]
   ) = {
-    validateAndUpdate[CassandraLayerHeader, K, V, M](id, rdd.metadata) { case LayerAttributes(header, metadata, keyIndex, writerSchema) =>
-      val (keyspace, table) = header.keyspace -> header.tileTable
+    validateUpdate[CassandraLayerHeader, K, V, M](id, rdd.metadata) match {
+      case Some(LayerAttributes(header, metadata, keyIndex, writerSchema)) =>
+        val (keyspace, table) = header.keyspace -> header.tileTable
 
-      logger.info(s"Writing update for layer ${id} to table $table")
+        logger.info(s"Writing update for layer ${id} to table $table")
 
-      val encodeKey = (key: K) => keyIndex.toIndex(key)
-      attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, writerSchema)
-      CassandraRDDWriter.update(rdd, instance, id, encodeKey, keyspace, table, Some(writerSchema), mergeFunc)
+        val encodeKey = (key: K) => keyIndex.toIndex(key)
+        attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, writerSchema)
+        CassandraRDDWriter.update(rdd, instance, id, encodeKey, keyspace, table, Some(writerSchema), mergeFunc)
+
+      case None =>
+        logger.warn(s"Skipping update with empty bounds for layer $id.")
     }
   }
 
