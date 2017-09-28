@@ -20,6 +20,7 @@ object Version {
   val geotools    = "17.1"
   val sprayJson   = "1.3.3"
   val monocle     = "1.4.0"
+  val spire       = "0.13.0"
   val accumulo    = "1.7.3"
   val cassandra   = "3.2.0"
   val hbase       = "1.3.1"
