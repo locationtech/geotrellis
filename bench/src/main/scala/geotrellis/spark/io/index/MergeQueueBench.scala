@@ -22,7 +22,6 @@ import scala.util.Random
 
 @BenchmarkMode(Array(Mode.AverageTime))
 @State(Scope.Thread)
-@Threads(2)
 class MergeQueueBench {
 
   // Whether to shuffle the ranges or leave them sorted
@@ -56,10 +55,10 @@ class MergeQueueBench {
   }
 
   @Benchmark
-  def insertRange() = MergeQueue(ranges)
+  def insertRange(): Seq[(Long, Long)] = MergeQueue(ranges)
 
   @Benchmark
-  def insertAlternateRange() = MergeQueueBench.AlternateMergeQueue(ranges)
+  def insertAlternateRange(): Seq[(Long, Long)] = MergeQueueBench.AlternateMergeQueue(ranges)
 }
 
 object MergeQueueBench {
