@@ -84,16 +84,20 @@ class FileLayerWriter(
     rdd: RDD[(K, V)] with Metadata[M],
     mergeFunc: Option[(V, V) => V]
   ): Unit = {
-    validateAndUpdate[FileLayerHeader, K, V, M](id, rdd.metadata) { case LayerAttributes(header, metadata, keyIndex, writerSchema) =>
-      val path = header.path
-      val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
-      val keyPath = KeyPathGenerator(catalogPath, path, keyIndex, maxWidth)
-      val layerPath = new File(catalogPath, path).getAbsolutePath
+    validateUpdate[FileLayerHeader, K, V, M](id, rdd.metadata) match {
+      case Some(LayerAttributes(header, metadata, keyIndex, writerSchema)) =>
+        val path = header.path
+        val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
+        val keyPath = KeyPathGenerator(catalogPath, path, keyIndex, maxWidth)
+        val layerPath = new File(catalogPath, path).getAbsolutePath
 
-      logger.info(s"Writing update for layer ${id} to $path")
+        logger.info(s"Writing update for layer ${id} to $path")
 
-      attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, writerSchema)
-      FileRDDWriter.update[K, V](rdd, layerPath, keyPath, Some(writerSchema), mergeFunc)
+        attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, writerSchema)
+        FileRDDWriter.update[K, V](rdd, layerPath, keyPath, Some(writerSchema), mergeFunc)
+        
+      case None =>
+        logger.warn(s"Skipping update with empty bounds for layer $id.")
     }
   }
 

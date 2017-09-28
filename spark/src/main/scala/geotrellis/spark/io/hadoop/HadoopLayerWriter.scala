@@ -76,16 +76,20 @@ class HadoopLayerWriter(
           throw new InvalidLayerIdError(id).initCause(e)
       }
 
-    validateAndUpdate[HadoopLayerHeader, K, V, M](id, rdd.metadata) { case LayerAttributes(header, metadata, keyIndex, writerSchema) =>
-      val fn = mergeFunc match {
-        case Some(fn) => fn
-        case None => { (v1: V, v2: V) => v2 }
-      }
+    validateUpdate[HadoopLayerHeader, K, V, M](id, rdd.metadata) match {
+      case Some(LayerAttributes(header, metadata, keyIndex, writerSchema)) =>
+        val fn = mergeFunc match {
+          case Some(fn) => fn
+          case None => { (v1: V, v2: V) => v2 }
+        }
 
-      logger.info(s"Writing update for layer ${id} to ${header.path}")
+        logger.info(s"Writing update for layer ${id} to ${header.path}")
 
-      attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, writerSchema)
-      HadoopRDDWriter.update(rdd, layerPath, id, attributeStore, mergeFunc)
+        attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, writerSchema)
+        HadoopRDDWriter.update(rdd, layerPath, id, attributeStore, mergeFunc)
+
+      case None =>
+        logger.warn(s"Skipping update with empty bounds for layer $id.")
     }
   }
 

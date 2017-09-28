@@ -84,15 +84,19 @@ class S3LayerWriter(
     rdd: RDD[(K, V)] with Metadata[M],
     mergeFunc: Option[(V, V) => V]
   ) = {
-    validateAndUpdate[S3LayerHeader, K, V, M](id, rdd.metadata) { case LayerAttributes(header, metadata, keyIndex, writerSchema) =>
-      val prefix = header.key
-      val bucket = header.bucket
-      val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
-      val keyPath = (key: K) => makePath(prefix, Index.encode(keyIndex.toIndex(key), maxWidth))
+    validateUpdate[S3LayerHeader, K, V, M](id, rdd.metadata) match {
+      case Some(LayerAttributes(header, metadata, keyIndex, writerSchema)) =>
+        val prefix = header.key
+        val bucket = header.bucket
+        val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
+        val keyPath = (key: K) => makePath(prefix, Index.encode(keyIndex.toIndex(key), maxWidth))
 
-      logger.info(s"Writing update for layer ${id} to $bucket $prefix")
-      attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, writerSchema)
-      rddWriter.update(rdd, bucket, keyPath, Some(writerSchema), mergeFunc)
+        logger.info(s"Writing update for layer ${id} to $bucket $prefix")
+        attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, writerSchema)
+        rddWriter.update(rdd, bucket, keyPath, Some(writerSchema), mergeFunc)
+
+      case None =>
+        logger.warn(s"Skipping update with empty bounds for layer $id.")
     }
   }
 

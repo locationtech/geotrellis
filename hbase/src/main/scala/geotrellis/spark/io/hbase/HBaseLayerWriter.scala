@@ -70,12 +70,16 @@ class HBaseLayerWriter(
     rdd: RDD[(K, V)] with Metadata[M],
     mergeFunc: Option[(V, V) => V]
   ) = {
-    validateAndUpdate[HBaseLayerHeader, K, V, M](id, rdd.metadata) { case LayerAttributes(header, metadata, keyIndex, writerSchema) =>
-      val table = header.tileTable
-      logger.info(s"Writing update for layer ${id} to table $table")
-      val encodeKey = (key: K) => keyIndex.toIndex(key)
-      attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, writerSchema)
-      HBaseRDDWriter.update(rdd, instance, id, encodeKey, table, Some(writerSchema), mergeFunc)
+    validateUpdate[HBaseLayerHeader, K, V, M](id, rdd.metadata) match {
+      case Some(LayerAttributes(header, metadata, keyIndex, writerSchema)) =>
+        val table = header.tileTable
+        logger.info(s"Writing update for layer ${id} to table $table")
+        val encodeKey = (key: K) => keyIndex.toIndex(key)
+        attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, writerSchema)
+        HBaseRDDWriter.update(rdd, instance, id, encodeKey, table, Some(writerSchema), mergeFunc)
+
+      case None =>
+        logger.warn(s"Skipping update with empty bounds for layer $id.")
     }
   }
 

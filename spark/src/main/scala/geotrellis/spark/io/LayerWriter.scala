@@ -33,12 +33,11 @@ import spray.json._
 
 import scala.reflect.ClassTag
 
-import com.typesafe.scalalogging.Logger
 import java.util.ServiceLoader
 import java.net.URI
 
 
-trait LayerWriter[ID] extends LazyLogging {
+trait LayerWriter[ID] {
   val attributeStore: AttributeStore
 
   // Layer Updating
@@ -47,12 +46,12 @@ trait LayerWriter[ID] extends LazyLogging {
     * The update function is expected to handle the saving of updated attributes and values.
     */
   protected[geotrellis]
-  def validateAndUpdate[
+  def validateUpdate[
     H: JsonFormat,
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec,
     M: GetComponent[?, Bounds[K]]: Mergable: JsonFormat
-  ](id: LayerId, updateMetadata: M)(fUpdate: LayerAttributes[H, M, K] => Unit): Unit = {
+  ](id: LayerId, updateMetadata: M): Option[LayerAttributes[H, M, K]] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     updateMetadata.getComponent[Bounds[K]] match {
@@ -75,10 +74,10 @@ trait LayerWriter[ID] extends LazyLogging {
         val updatedMetadata: M = metadata.merge(updateMetadata)
         val updatedAttributes = LayerAttributes(header, updatedMetadata, keyIndex, writerSchema)
 
-        fUpdate(updatedAttributes)
+        Some(updatedAttributes)
 
       case EmptyBounds =>
-        logger.warn(s"Skipping update with empty bounds for layer $id.")
+        None
     }
   }
 
@@ -177,7 +176,8 @@ trait LayerWriter[ID] extends LazyLogging {
     }
 }
 
-object LayerWriter {
+object LayerWriter extends LazyLogging {
+
   /**
    * Produce LayerWriter instance based on URI description.
    * Find instances of [[LayerWriterProvider]] through Java SPI.
@@ -213,4 +213,5 @@ object LayerWriter {
 
   def apply(uri: String): LayerWriter[LayerId] =
     apply(new URI(uri))
+
 }
