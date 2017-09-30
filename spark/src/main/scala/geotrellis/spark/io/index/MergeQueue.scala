@@ -17,6 +17,8 @@
 package geotrellis.spark.io.index
 
 import scala.collection.TraversableOnce
+import scala.collection.mutable
+
 
 object MergeQueue{
   def apply(ranges: TraversableOnce[(Long, Long)]): Seq[(Long, Long)] = {
@@ -25,128 +27,51 @@ object MergeQueue{
     q.toSeq
   }
 }
+
+private class RangeComparator extends java.util.Comparator[(Long, Long)] {
+
+  def compare(r1: (Long, Long), r2: (Long, Long)): Int = {
+    val retval = (r1._1 - r2._1)
+    if (retval < 0) -1
+    else if (retval == 0) 0
+    else +1
+  }
+}
+
 class MergeQueue(initialSize: Int = 1) {
-  private var array = if(initialSize <= 1) { Array.ofDim[(Long, Long)](1) } else { Array.ofDim[(Long, Long)](initialSize) }
-  private var _size = 0
- 
-  def size = _size
- 
-  private def removeElement(i: Int): Unit = {
-    if(i < _size - 1) {
-      val result = array.clone
-      System.arraycopy(array, i + 1, result, i, _size - i - 1)
-      array = result
-    }
-    _size = _size - 1
-  }
- 
-  private def insertElement(range: (Long, Long), i: Int): Unit = {
-    ensureSize(_size + 1)
-    if(i == _size) {
-      array(i) = range
-    } else {
-      val result = array.clone
-      System.arraycopy(array, 0, result, 0, i)
-      System.arraycopy(array, i, result, i + 1, _size - i)
-      result(i) = range
-      array = result
-    }
-    _size += 1
-  }
- 
- 
-  /** Ensure that the internal array has at least `n` cells. */
-  protected def ensureSize(n: Int) {
-    // Use a Long to prevent overflows
-    val arrayLength: Long = array.length
-    if (n > arrayLength - 1) {
-      var newSize: Long = arrayLength * 2
-      while (n > newSize) {
-        newSize = newSize * 2
-      }
-      // Clamp newSize to Int.MaxValue
-      if (newSize > Int.MaxValue) newSize = Int.MaxValue
- 
-      val newArray: Array[(Long, Long)] = new Array(newSize.toInt)
-      scala.compat.Platform.arraycopy(array, 0, newArray, 0, _size)
-      array = newArray
-    }
-  }
- 
-  val ordering = implicitly[Ordering[(Long, Long)]]
- 
-  /** Inserts a single range into the priority queue.
-   *
-   *  @param  range        the element to insert.
-   */
-  @annotation.tailrec
-  final def +=(range: (Long, Long)): Unit = {
-    val res = if(_size == 0) { -1 } else { java.util.Arrays.binarySearch(array, 0, _size, range, ordering) }
-    if(res < 0) {
-      val i = -(res + 1)
-      var (thisStart, thisEnd) = range
-      var removeLeft = false
- 
-      var removeRight = false
-      var rightRemainder: Option[(Long, Long)] = None
- 
-      // Look at the left range
-      if(i != 0) {
-        val (prevStart, prevEnd) = array(i - 1)
-        if(prevStart == thisStart) {
-          removeLeft = true
-        }
-        if (prevEnd + 1 >= thisStart) { 
-          removeLeft = true
-          thisStart = prevStart
-          if(prevEnd > thisEnd) {
-            thisEnd = prevEnd
-          }
-        }
-      }
- 
-      // Look at the right range
-      if(i < _size  && _size > 0) {
-        val (nextStart, nextEnd) = array(i)
-        if(thisStart == nextStart) {
-          removeRight = true
-          thisEnd = nextEnd
-        } else {
-          if(thisEnd + 1 >= nextStart) {
-            removeRight = true
-            if(nextEnd - 1 >= thisEnd) {
-              thisEnd = nextEnd
-            } else if (nextEnd < thisEnd - 1) {
-              rightRemainder = Some((nextEnd + 1, thisEnd))
-              thisEnd = nextEnd
-            }
-          }
-        }
-      }
- 
-      if(removeRight) { 
-        if(!removeLeft) {
-          array(i) = (thisStart, thisEnd)
-        } else {
-          array(i-1) = (thisStart, thisEnd)
-          removeElement(i)
-        }
-      } else if(removeLeft) {
-        array(i-1) = (thisStart, thisEnd)
-      } else {
-        insertElement(range, i)
-      }
-      
-      rightRemainder match {
-        case Some(r) => this += r
-        case None =>
-      }
-    }
-  }
- 
+  private val treeSet = new java.util.TreeSet(new RangeComparator()) // Sorted data structure
+  private val fudge = 1 // Set this to one to preserve original behavior
+
+  /**
+    * Ensure that the internal array has at least `n` cells.
+    */
+  protected def ensureSize(n: Int): Unit = {}
+
+  /**
+    * Add a range to the merge queue.
+    */
+  def +=(range: (Long, Long)): Unit = treeSet.add(range)
+
+  /**
+    * Return a list of merged intervals.
+    */
   def toSeq: Seq[(Long, Long)] = {
-    val result = Array.ofDim[(Long, Long)](size)
-    System.arraycopy(array, 0, result, 0, size)
-    result
+    val stack = mutable.ListBuffer.empty[(Long, Long)]
+
+    if (!treeSet.isEmpty) stack.append(treeSet.pollFirst)
+    while (!treeSet.isEmpty) {
+      val (nextStart, nextEnd) = treeSet.pollFirst
+      val (currStart, currEnd) = stack.last
+
+      // Overlap
+      if ((nextStart <= currStart && currStart <= nextEnd) || (nextStart <= (currEnd+fudge) && currEnd <= nextEnd)) {
+        // If new interval ends after the current one, extend the current one
+        if (currEnd < nextEnd) stack(stack.length-1) = (currStart, nextEnd)
+      }
+      else stack.append((nextStart, nextEnd))
+    }
+
+    stack.toList
   }
+
 }
