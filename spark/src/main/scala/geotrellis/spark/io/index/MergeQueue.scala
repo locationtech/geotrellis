@@ -56,22 +56,24 @@ class MergeQueue(initialSize: Int = 1) {
     * Return a list of merged intervals.
     */
   def toSeq: Seq[(Long, Long)] = {
-    val stack = mutable.ListBuffer.empty[(Long, Long)]
+    var stack = List.empty[(Long, Long)]
 
-    if (!treeSet.isEmpty) stack.append(treeSet.pollFirst)
+    if (!treeSet.isEmpty) stack = (treeSet.pollFirst) +: stack
     while (!treeSet.isEmpty) {
       val (nextStart, nextEnd) = treeSet.pollFirst
-      val (currStart, currEnd) = stack.last
+      val (currStart, currEnd) = stack.head
 
       // Overlap
       if ((nextStart <= currStart && currStart <= nextEnd) || (nextStart <= (currEnd+fudge) && currEnd <= nextEnd)) {
         // If new interval ends after the current one, extend the current one
-        if (currEnd < nextEnd) stack(stack.length-1) = (currStart, nextEnd)
+        if (currEnd < nextEnd) {
+          stack = (currStart, nextEnd) +: (stack.tail)
+        }
       }
-      else stack.append((nextStart, nextEnd))
+      else stack = (nextStart, nextEnd) +: stack
     }
 
-    stack.toList
+    stack.reverse
   }
 
 }
