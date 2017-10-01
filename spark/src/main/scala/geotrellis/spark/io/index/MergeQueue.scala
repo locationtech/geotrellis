@@ -31,10 +31,10 @@ object MergeQueue{
 private class RangeComparator extends java.util.Comparator[(Long, Long)] {
 
   def compare(r1: (Long, Long), r2: (Long, Long)): Int = {
-    val retval = (r1._1 - r2._1)
-    if (retval < 0) -1
+    val retval = (r1._2 - r2._2)
+    if (retval < 0) +1
     else if (retval == 0) 0
-    else +1
+    else -1
   }
 }
 
@@ -64,16 +64,16 @@ class MergeQueue(initialSize: Int = 1) {
       val (currStart, currEnd) = stack.head
 
       // Overlap
-      if ((nextStart <= currStart && currStart <= nextEnd) || (nextStart <= (currEnd+fudge) && currEnd <= nextEnd)) {
+      if (nextStart <= currStart && currStart <= nextEnd+fudge) {
         // If new interval ends after the current one, extend the current one
-        if (currEnd < nextEnd) {
-          stack = (currStart, nextEnd) +: (stack.tail)
+        if (nextStart < currStart) {
+          stack = (nextStart, currEnd) +: (stack.tail)
         }
       }
       else stack = (nextStart, nextEnd) +: stack
     }
 
-    stack.reverse
+    stack
   }
 
 }
