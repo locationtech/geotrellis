@@ -59,7 +59,7 @@ class MergeQueueSpec extends FunSpec {
   val index = ZSpaceTimeKeyIndex.byDay(worldKB)
   //val index = HilbertSpaceTimeKeyIndex(worldKB, 21, 9)
 
-  it("reproducing bad behavior...") {
+  it("should work on high-cardinality range sets") {
 
     val query = new LayerQuery[SpaceTimeKey, TileLayerMetadata[SpaceTimeKey]]
       .where(Intersects(mPoly))
