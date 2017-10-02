@@ -45,7 +45,7 @@ trait RasterReader[-O, R] extends Serializable {
 }
 
 object RasterReader {
-  
+
   trait Options {
     def crs: Option[CRS]
     def timeTag: String
