@@ -52,7 +52,7 @@ class HadoopGeoTiffRDDSpec
 
       assertEqual(stitched1, stitched2)
     }
-    
+
     it("should read the same rasters when reading small windows or with no windows, Spatial, MultibandGeoTiff") {
       val path = "raster/data/one-month-tiles"
       val tilesDir = new Path(localFS.getWorkingDirectory, path)
@@ -79,12 +79,12 @@ class HadoopGeoTiffRDDSpec
         timeTag = "ISO_TIME",
         timeFormat = "yyyy-MM-dd'T'HH:mm:ss",
         maxTileSize = Some(128)))
-      
+
       val (wholeInfo, _) = source1.first()
       val dateTime = wholeInfo.time
 
       val collection = source2.collect
-      
+
       cfor(0)(_ < source2.count, _ + 1){ i =>
         val (info, _) = collection(i)
 
@@ -104,12 +104,12 @@ class HadoopGeoTiffRDDSpec
         timeTag = "ISO_TIME",
         timeFormat = "yyyy-MM-dd'T'HH:mm:ss",
         maxTileSize = Some(128)))
-      
+
       val (wholeInfo, _) = source1.first()
       val dateTime = wholeInfo.time
 
       val collection = source2.collect
-      
+
       cfor(0)(_ < source2.count, _ + 1){ i =>
         val (info, _) = collection(i)
 
