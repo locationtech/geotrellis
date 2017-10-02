@@ -205,7 +205,13 @@ object S3GeoTiffRDD extends LazyLogging {
     val windows =
       objectRequestsToDimensions
         .flatMap { case (objectRequest, (cols, rows)) =>
-          RasterReader.listWindows(cols, rows, options.maxTileSize).map((objectRequest, _))
+          val bucket = objectRequest.getBucketName
+          val key = objectRequest.getKey
+          val layout = sourceGeoTiffInfo.getGeoTiffInfo(s"s3://$bucket/$key").segmentLayout.tileLayout
+
+          RasterReader
+            .listWindows(cols, rows, options.maxTileSize, layout.tileCols, layout.tileRows)
+            .map((objectRequest, _))
         }
 
     // Windowed reading may have produced unbalanced partitions due to files of differing size
