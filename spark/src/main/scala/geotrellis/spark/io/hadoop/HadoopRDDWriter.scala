@@ -41,6 +41,10 @@ import org.apache.hadoop.conf.Configuration
 
 
 object HadoopRDDWriter extends LazyLogging {
+  /** Index innterval at which map files should store an offset into sequence file.
+    * This value is picked as a compromize between in-memory footprint and IO cost of retreiving a single record.
+    */
+  final val DefaultIndexInterval = 4
 
   // From https://github.com/apache/spark/blob/3b049abf102908ca72674139367e3b8d9ffcc283/core/src/main/scala/org/apache/spark/util/SerializableConfiguration.scala
   private class SerializableConfiguration(@transient var value: Configuration) extends Serializable {
@@ -100,7 +104,7 @@ object HadoopRDDWriter extends LazyLogging {
     id: LayerId,
     as: AttributeStore,
     mergeFunc: Option[(V,V) => V],
-    indexInterval: Int = 4
+    indexInterval: Int = DefaultIndexInterval
   ): Unit = {
     val header = as.readHeader[HadoopLayerHeader](id)
     val keyIndex = as.readKeyIndex[K](id)
@@ -208,7 +212,7 @@ object HadoopRDDWriter extends LazyLogging {
     rdd: RDD[(K, V)],
     path: Path,
     keyIndex: KeyIndex[K],
-    indexInterval: Int = 4,
+    indexInterval: Int = DefaultIndexInterval,
     existenceCheck: Boolean = true
   ): Unit = {
     implicit val sc = rdd.sparkContext
