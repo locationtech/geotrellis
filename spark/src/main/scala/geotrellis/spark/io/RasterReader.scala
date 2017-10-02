@@ -59,6 +59,50 @@ object RasterReader {
     }
   }
 
+  private def best(m: Int, n: Int): Int = {
+    var i: Int = 1
+    var result: Int = m
+    // Search for the largest factor of n that is > 1 and <= m.  If
+    // one cannot be found, give up and return m.
+    while (i < math.sqrt(n) && result == m) {
+      if ((n % i == 0) && ((n/i) <= m)) result = (n/i)
+      i += 1
+    }
+    result
+  }
+
+  def listWindows(
+    cols: Int, rows: Int, maxTileSize: Option[Int],
+    segCols: Int, segRows: Int
+  ): Array[GridBounds] = {
+
+    maxTileSize match {
+      case Some(maxSize) =>
+        val maxColSize: Int = if (maxSize >= segCols) segCols; else best(maxSize, segCols)
+        val maxRowSize: Int = if (maxSize >= segRows) segRows; else best(maxSize, segRows)
+        listWindows(cols, rows, maxColSize, maxRowSize)
+      case None =>
+        listWindows(cols, rows, None)
+    }
+  }
+
+  /** List all pixel windows that cover a grid of given size */
+  def listWindows(cols: Int, rows: Int, maxColSize: Int, maxRowSize: Int): Array[GridBounds] = {
+    val result = scala.collection.mutable.ArrayBuffer[GridBounds]()
+    cfor(0)(_ < cols, _ + maxColSize) { col =>
+      cfor(0)(_ < rows, _ + maxRowSize) { row =>
+        result +=
+        GridBounds(
+          col,
+          row,
+          math.min(col + maxColSize - 1, cols - 1),
+          math.min(row + maxRowSize - 1, rows - 1)
+        )
+      }
+    }
+    result.toArray
+  }
+
   /** List all pixel windows that cover a grid of given size */
   def listWindows(cols: Int, rows: Int, maxTileSize: Option[Int]): Array[GridBounds] = {
     val result = scala.collection.mutable.ArrayBuffer[GridBounds]()
