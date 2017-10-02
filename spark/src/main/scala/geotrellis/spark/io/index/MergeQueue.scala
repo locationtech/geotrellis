@@ -57,15 +57,16 @@ class MergeQueue(initialSize: Int = 1) {
     */
   def toSeq: Seq[(Long, Long)] = {
     var stack = List.empty[(Long, Long)]
+    val ts = treeSet.clone.asInstanceOf[java.util.TreeSet[(Long,Long)]]
 
-    if (!treeSet.isEmpty) stack = (treeSet.pollFirst) +: stack
-    while (!treeSet.isEmpty) {
-      val (nextStart, nextEnd) = treeSet.pollFirst
+    if (!ts.isEmpty) stack = (ts.pollFirst) +: stack
+    while (!ts.isEmpty) {
+      val (nextStart, nextEnd) = ts.pollFirst
       val (currStart, currEnd) = stack.head
 
       // Overlap
       if (nextStart <= currStart && currStart <= nextEnd+fudge) {
-        // If new interval ends after the current one, extend the current one
+        // If new interval ends near the current one, extend the current one
         if (nextStart < currStart) {
           stack = (nextStart, currEnd) +: (stack.tail)
         }
