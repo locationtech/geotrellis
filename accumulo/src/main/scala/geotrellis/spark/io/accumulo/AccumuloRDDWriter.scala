@@ -66,8 +66,8 @@ object AccumuloRDDWriter {
         .map { case (key, _kvs1) =>
           val kvs1: Vector[(K,V)] = _kvs1.toVector
           val kvs2: Vector[(K,V)] =
-            if (mergeFunc != None) {
-              val scanner = instance.connector.createScanner(table, new Authorizations())
+            if (mergeFunc.nonEmpty) {
+              val scanner = instance.connector.createScanner(table, Authorizations.EMPTY)
               scanner.setRange(new Range(key.getRow))
               scanner.fetchColumnFamily(key.getColumnFamily)
               val result: Vector[(K,V)] = scanner.iterator().asScala.toVector.flatMap({ entry =>
