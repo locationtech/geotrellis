@@ -39,6 +39,8 @@ import scala.reflect._
 
 
 trait S3RDDWriter {
+  final val DefaultThreadCount =
+    ConfigFactory.load().getThreads("geotrellis.s3.threads.rdd.write")
 
   def getS3Client: () => S3Client
 
@@ -47,7 +49,7 @@ trait S3RDDWriter {
     bucket: String,
     keyPath: K => String,
     putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p },
-    threads: Int = ConfigFactory.load().getThreads("geotrellis.s3.threads.rdd.write")
+    threads: Int = DefaultThreadCount
   ): Unit = {
     update(rdd, bucket, keyPath, None, None, putObjectModifier, threads)
   }
@@ -59,7 +61,7 @@ trait S3RDDWriter {
     writerSchema: Option[Schema],
     mergeFunc: Option[(V, V) => V],
     putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p },
-    threads: Int = ConfigFactory.load().getThreads("geotrellis.s3.threads.rdd.write")
+    threads: Int = DefaultThreadCount
   ): Unit = {
     val codec  = KeyValueRecordCodec[K, V]
     val schema = codec.schema
