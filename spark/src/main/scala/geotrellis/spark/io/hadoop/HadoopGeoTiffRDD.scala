@@ -19,10 +19,11 @@ package geotrellis.spark.io.hadoop
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.spark._
-import geotrellis.spark.io.RasterReader
 import geotrellis.spark.io.hadoop.formats._
+import geotrellis.spark.io.RasterReader
 import geotrellis.util.StreamingByteReader
 import geotrellis.vector.ProjectedExtent
 
@@ -140,7 +141,14 @@ object HadoopGeoTiffRDD {
     val windows: RDD[(Path, GridBounds)] =
       pathsToDimensions
         .flatMap { case (objectRequest, (cols, rows)) =>
-          RasterReader.listWindows(cols, rows, options.maxTileSize).map((objectRequest, _))
+          val path: Path = objectRequest
+          val config: Configuration = conf.value
+          val rangeReader = HdfsRangeReader(path, config)
+          val layout = GeoTiffReader.readGeoTiffInfo(rangeReader, false, true).segmentLayout.tileLayout
+
+          RasterReader
+            .listWindows(cols, rows, options.maxTileSize, layout.tileCols, layout.tileRows)
+            .map((objectRequest, _))
         }
 
     // Windowed reading may have produced unbalanced partitions due to files of differing size
