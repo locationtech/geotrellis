@@ -19,7 +19,6 @@ package geotrellis.raster
 import geotrellis.raster.resample._
 import geotrellis.vector.Extent
 
-import java.lang.IllegalArgumentException
 import java.nio.ByteBuffer
 
 import spire.syntax.cfor._
@@ -219,13 +218,36 @@ trait ConstantTile extends Tile {
   }
 }
 
+object ConstantTile {
+  /**
+   * Create a [[ConstantTile]] from a byte array.
+   *
+   * @param   bytes  The array of bytes, as provided by [[ConstantTile.toBytes()]]
+   * @param   t      The [[CellType]] of the new [[ConstantTile]]
+   * @param   cols   The number of columns that the new [[ConstantTile]] should have
+   * @param   rows   The number of rows that the new [[ConstantTile]] should have
+   * @return         The new [[ConstantTile]]
+   */
+  def fromBytes(bytes: Array[Byte], t: CellType, cols: Int, rows: Int): ConstantTile =
+    t match {
+      case _: BitCells => BitConstantTile.fromBytes(bytes, cols, rows)
+      case ct: ByteCells => ByteConstantTile.fromBytes(bytes, cols, rows, ct)
+      case ct: UByteCells => UByteConstantTile.fromBytes(bytes, cols, rows, ct)
+      case ct: ShortCells => ShortConstantTile.fromBytes(bytes, cols, rows, ct)
+      case ct: UShortCells => UShortConstantTile.fromBytes(bytes, cols, rows, ct)
+      case ct: IntCells => IntConstantTile.fromBytes(bytes, cols, rows, ct)
+      case ct: FloatCells => FloatConstantTile.fromBytes(bytes, cols, rows, ct)
+      case ct: DoubleCells => DoubleConstantTile.fromBytes(bytes, cols, rows, ct)
+    }
+}
+
 /**
   * The companion object for the [[BitConstantTile]] type.
   */
 object BitConstantTile {
 
   /**
-    * A function which takes a number of colums and rows, and produces
+    * A function which takes a number of columns and rows, and produces
     * a new BitConstantTile.
     *
     * @param   cols  The number of columns
@@ -234,6 +256,19 @@ object BitConstantTile {
     */
   def apply(i: Int, cols: Int, rows: Int): BitConstantTile =
     BitConstantTile(if(i == 0) false else true, cols, rows)
+
+  /**
+   * Produce a new [[BitConstantTile]] from an array of bytes.
+   *
+   * @param   bytes  The value to fill into the new tile
+   * @param   cols   The number of columns
+   * @param   rows   The number of rows
+   * @return         The new BitArrayTile
+   */
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int): BitConstantTile = {
+    val interpreted = BitArrayTile.fromBytes(bytes, 1, 1)
+    BitConstantTile(interpreted.array(0), cols, rows)
+  }
 }
 
 /**
@@ -250,7 +285,7 @@ case class BitConstantTile(v: Boolean, cols: Int, rows: Int) extends ConstantTil
     *
     * @return  An [[ArrayTile]]
     */
-  def toArrayTile(): ArrayTile = mutable
+  def toArrayTile(): ArrayTile = mutable()
 
   /**
     * Return the [[MutableArrayTile]] equivalent of this tile.
@@ -273,7 +308,7 @@ case class BitConstantTile(v: Boolean, cols: Int, rows: Int) extends ConstantTil
   * The [[ByteConstantTile]] type.
   */
 case class ByteConstantTile(v: Byte, cols: Int, rows: Int,
-  val cellType: ByteCells with NoDataHandling = ByteConstantNoDataCellType
+  cellType: ByteCells with NoDataHandling = ByteConstantNoDataCellType
 ) extends ConstantTile {
   protected val (iVal: Int, dVal: Double) =
     cellType match {
@@ -309,11 +344,29 @@ case class ByteConstantTile(v: Byte, cols: Int, rows: Int,
     ByteConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 }
 
+object ByteConstantTile {
+  /**
+   * Create a new [[ByteConstantTile]] from the array of bytes
+   * produced by [[ByteConstantTile.toBytes()]].
+   *
+   * @param   bytes    The value to fill into the new tile
+   * @param   cols     The number of columns
+   * @param   rows     The number of rows
+   * @param   cellType The cell type from which to derive the NODATA
+   * @return           The new [[ByteConstantTile]]
+   */
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int,
+    cellType: ByteCells with NoDataHandling): ByteConstantTile = {
+    val interpreted = ByteArrayTile.fromBytes(bytes, 1, 1, cellType)
+    ByteConstantTile(interpreted.array(0), cols, rows, cellType)
+  }
+}
+
 /**
   * The [[UByteConstantTile]] type.
   */
 case class UByteConstantTile(v: Byte, cols: Int, rows: Int,
-  val cellType: UByteCells with NoDataHandling = UByteConstantNoDataCellType
+  cellType: UByteCells with NoDataHandling = UByteConstantNoDataCellType
 ) extends ConstantTile {
 
   protected val (iVal: Int, dVal: Double) =
@@ -330,7 +383,7 @@ case class UByteConstantTile(v: Byte, cols: Int, rows: Int,
   /**
     * Another name for the 'mutable' method on this class.
     */
-  def toArrayTile(): ArrayTile = mutable
+  def toArrayTile(): ArrayTile = mutable()
 
   /**
     * Return the [[MutableArrayTile]] equivalent of this tile.
@@ -361,11 +414,29 @@ case class UByteConstantTile(v: Byte, cols: Int, rows: Int,
     UByteConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 }
 
+object UByteConstantTile {
+  /**
+   * Create a new [[UByteConstantTile]] from the array of bytes
+   * produced by [[UByteConstantTile.toBytes()]].
+   *
+   * @param   bytes    The value to fill into the new tile
+   * @param   cols     The number of columns
+   * @param   rows     The number of rows
+   * @param   cellType The cell type from which to derive the NODATA
+   * @return           The new [[UByteConstantTile]]
+   */
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int,
+    cellType: UByteCells with NoDataHandling): UByteConstantTile = {
+    val interpreted = UByteArrayTile.fromBytes(bytes, 1, 1, cellType)
+    UByteConstantTile(interpreted.array(0), cols, rows, cellType)
+  }
+}
+
 /**
   * The [[ShortConstantTile]] type.
   */
 case class ShortConstantTile(v: Short, cols: Int, rows: Int,
-  val cellType: ShortCells with NoDataHandling = ShortConstantNoDataCellType
+  cellType: ShortCells with NoDataHandling = ShortConstantNoDataCellType
 ) extends ConstantTile {
 
   protected val (iVal: Int, dVal: Double) =
@@ -382,7 +453,7 @@ case class ShortConstantTile(v: Short, cols: Int, rows: Int,
   /**
     * Another name for the 'mutable' method on this class.
     */
-  def toArrayTile(): ArrayTile = mutable
+  def toArrayTile(): ArrayTile = mutable()
 
   /**
     * Return the [[MutableArrayTile]] equivalent of this tile.
@@ -406,11 +477,29 @@ case class ShortConstantTile(v: Short, cols: Int, rows: Int,
     ShortConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 }
 
+object ShortConstantTile {
+  /**
+   * Create a new [[ShortConstantTile]] from the array of bytes
+   * produced by [[ShortConstantTile.toBytes()]].
+   *
+   * @param   bytes    The value to fill into the new tile
+   * @param   cols     The number of columns
+   * @param   rows     The number of rows
+   * @param   cellType The cell type from which to derive the NODATA
+   * @return           The new [[ShortConstantTile]]
+   */
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int,
+    cellType: ShortCells with NoDataHandling): ShortConstantTile = {
+    val interpreted = ShortArrayTile.fromBytes(bytes, 1, 1, cellType)
+    ShortConstantTile(interpreted.array(0), cols, rows, cellType)
+  }
+}
+
 /**
   * The [[UShortConstantTile]] type.
   */
 case class UShortConstantTile(v: Short, cols: Int, rows: Int,
-  val cellType: UShortCells with NoDataHandling = UShortConstantNoDataCellType
+  cellType: UShortCells with NoDataHandling = UShortConstantNoDataCellType
 ) extends ConstantTile {
 
   protected val (iVal: Int, dVal: Double) =
@@ -427,7 +516,7 @@ case class UShortConstantTile(v: Short, cols: Int, rows: Int,
   /**
     * Another name for the 'mutable' method on this class.
     */
-  def toArrayTile(): ArrayTile = mutable
+  def toArrayTile(): ArrayTile = mutable()
 
   /**
     * Return the [[MutableArrayTile]] equivalent of this tile.
@@ -462,11 +551,29 @@ case class UShortConstantTile(v: Short, cols: Int, rows: Int,
     UShortConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 }
 
+object UShortConstantTile {
+  /**
+   * Create a new [[UShortConstantTile]] from the array of bytes
+   * produced by [[UShortConstantTile.toBytes()]].
+   *
+   * @param   bytes    The value to fill into the new tile
+   * @param   cols     The number of columns
+   * @param   rows     The number of rows
+   * @param   cellType The cell type from which to derive the NODATA
+   * @return           The new [[UShortConstantTile]]
+   */
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int,
+    cellType: UShortCells with NoDataHandling): UShortConstantTile = {
+    val interpreted = UShortArrayTile.fromBytes(bytes, 1, 1, cellType)
+    UShortConstantTile(interpreted.array(0), cols, rows, cellType)
+  }
+}
+
 /**
   * The [[IntConstantTile]] type.
   */
 case class IntConstantTile(v: Int, cols: Int, rows: Int,
-  val cellType: IntCells with NoDataHandling = IntConstantNoDataCellType
+  cellType: IntCells with NoDataHandling = IntConstantNoDataCellType
 ) extends ConstantTile {
 
   protected val (iVal: Int, dVal: Double) =
@@ -483,7 +590,7 @@ case class IntConstantTile(v: Int, cols: Int, rows: Int,
   /**
     * Another name for the 'mutable' method on this class.
     */
-  def toArrayTile(): ArrayTile = mutable
+  def toArrayTile(): ArrayTile = mutable()
 
   /**
     * Return the [[MutableArrayTile]] equivalent of this tile.
@@ -507,11 +614,29 @@ case class IntConstantTile(v: Int, cols: Int, rows: Int,
     IntConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 }
 
+object IntConstantTile {
+  /**
+   * Create a new [[IntConstantTile]] from the array of bytes
+   * produced by [[IntConstantTile.toBytes()]].
+   *
+   * @param   bytes    The value to fill into the new tile
+   * @param   cols     The number of columns
+   * @param   rows     The number of rows
+   * @param   cellType The cell type from which to derive the NODATA
+   * @return           The new [[IntConstantTile]]
+   */
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int,
+    cellType: IntCells with NoDataHandling): IntConstantTile = {
+    val interpreted = IntArrayTile.fromBytes(bytes, 1, 1, cellType)
+    IntConstantTile(interpreted.array(0), cols, rows, cellType)
+  }
+}
+
 /**
   * The [[FloatConstantTile]] type.
   */
 case class FloatConstantTile(v: Float, cols: Int, rows: Int,
-  val cellType: FloatCells with NoDataHandling = FloatConstantNoDataCellType
+  cellType: FloatCells with NoDataHandling = FloatConstantNoDataCellType
 ) extends ConstantTile {
 
   protected val (iVal: Int, dVal: Double) =
@@ -528,7 +653,7 @@ case class FloatConstantTile(v: Float, cols: Int, rows: Int,
   /**
     * Another name for the 'mutable' method on this class.
     */
-  def toArrayTile(): ArrayTile = mutable
+  def toArrayTile(): ArrayTile = mutable()
 
   /**
     * Return the [[MutableArrayTile]] equivalent of this tile.
@@ -552,11 +677,30 @@ case class FloatConstantTile(v: Float, cols: Int, rows: Int,
     FloatConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 }
 
+object FloatConstantTile {
+  /**
+   * Create a new [[FloatConstantTile]] from the array of bytes
+   * produced by [[FloatConstantTile.toBytes()]].
+   *
+   * @param   bytes    The value to fill into the new tile
+   * @param   cols     The number of columns
+   * @param   rows     The number of rows
+   * @param   cellType The cell type from which to derive the NODATA
+   * @return           The new [[FloatConstantTile]]
+   */
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int,
+    cellType: FloatCells with NoDataHandling): FloatConstantTile = {
+    val interpreted = FloatArrayTile.fromBytes(bytes, 1, 1, cellType)
+    FloatConstantTile(interpreted.array(0), cols, rows, cellType)
+  }
+}
+
+
 /**
   * The [[DoubleConstantTile]] type.
   */
 case class DoubleConstantTile(v: Double, cols: Int, rows: Int,
-  val cellType: DoubleCells with NoDataHandling = DoubleConstantNoDataCellType
+  cellType: DoubleCells with NoDataHandling = DoubleConstantNoDataCellType
 ) extends ConstantTile {
 
   protected val (iVal: Int, dVal: Double) =
@@ -573,7 +717,7 @@ case class DoubleConstantTile(v: Double, cols: Int, rows: Int,
   /**
     * Another name for the 'mutable' method on this class.
     */
-  def toArrayTile(): ArrayTile = mutable
+  def toArrayTile(): ArrayTile = mutable()
 
   /**
     * Return the [[MutableArrayTile]] equivalent of this tile.
@@ -595,4 +739,22 @@ case class DoubleConstantTile(v: Double, cols: Int, rows: Int,
 
   def withNoData(noDataValue: Option[Double]): ConstantTile =
     DoubleConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
+}
+
+object DoubleConstantTile {
+  /**
+   * Create a new [[DoubleConstantTile]] from the array of bytes
+   * produced by [[DoubleConstantTile.toBytes()]].
+   *
+   * @param   bytes    The value to fill into the new tile
+   * @param   cols     The number of columns
+   * @param   rows     The number of rows
+   * @param   cellType The cell type from which to derive the NODATA
+   * @return           The new [[DoubleConstantTile]]
+   */
+  def fromBytes(bytes: Array[Byte], cols: Int, rows: Int,
+    cellType: DoubleCells with NoDataHandling): DoubleConstantTile = {
+    val interpreted = DoubleArrayTile.fromBytes(bytes, 1, 1, cellType)
+    DoubleConstantTile(interpreted.array(0), cols, rows, cellType)
+  }
 }
