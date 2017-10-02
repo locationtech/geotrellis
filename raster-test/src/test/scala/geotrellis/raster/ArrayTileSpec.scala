@@ -16,15 +16,8 @@
 
 package geotrellis.raster
 
-import geotrellis.vector.Extent
 import geotrellis.raster.testkit._
-import geotrellis.raster.mapalgebra.local._
-import geotrellis.raster.resample._
-
 import org.scalatest._
-import scala.collection.mutable
-
-import spire.syntax.cfor._
 
 class ArrayTileSpec extends FunSpec
                   with Matchers
