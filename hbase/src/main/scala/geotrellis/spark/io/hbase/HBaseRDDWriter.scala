@@ -84,7 +84,7 @@ object HBaseRDDWriter {
               val id = recs._1
               val kvs1 = recs._2.toVector
               val kvs2: Vector[(K,V)] =
-                if (mergeFunc != None) {
+                if (mergeFunc.nonEmpty) {
                   val scan = new Scan()
                   scan.addFamily(tilesCF)
                   scan.setFilter(

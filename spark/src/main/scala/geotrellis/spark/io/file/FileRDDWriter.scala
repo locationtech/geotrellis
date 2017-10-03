@@ -53,7 +53,7 @@ object FileRDDWriter {
     pathsToTiles.foreach { case (path, rows) =>
       val rows1: Vector[(K,V)] = rows.toVector
       val rows2: Vector[(K,V)] =
-        if (mergeFunc != None && Filesystem.exists(path)) {
+        if (mergeFunc.nonEmpty && Filesystem.exists(path)) {
           val inBytes = Filesystem.slurp(path)
           AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), inBytes)(_recordCodec)
         }

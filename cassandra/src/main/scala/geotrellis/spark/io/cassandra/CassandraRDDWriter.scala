@@ -126,7 +126,7 @@ object CassandraRDDWriter {
                 Process eval Task ({
                   val (key, kvs1) = row
                   val kvs2 =
-                    if (mergeFunc != None) {
+                    if (mergeFunc.nonEmpty) {
                       val oldRow = session.execute(readStatement.bind(key))
                       if (oldRow.nonEmpty) {
                         val bytes = oldRow.one().getBytes("value").array()

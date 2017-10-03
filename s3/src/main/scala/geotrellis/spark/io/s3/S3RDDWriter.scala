@@ -103,7 +103,7 @@ trait S3RDDWriter {
           Process eval Task({
             val (key, kvs1) = row
             val kvs2: Vector[(K,V)] =
-              if (mergeFunc != None) {
+              if (mergeFunc.nonEmpty) {
                 try {
                   val bytes = IOUtils.toByteArray(s3client.getObject(bucket, key).getObjectContent)
                   AvroEncoder.fromBinary(schema, bytes)(_recordCodec)
