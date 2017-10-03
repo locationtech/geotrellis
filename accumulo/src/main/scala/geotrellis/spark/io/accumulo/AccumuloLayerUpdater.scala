@@ -46,7 +46,7 @@ class AccumuloLayerUpdater(
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
       attributeStore.readLayerAttributes[AccumuloLayerHeader, M, K](id)
     } catch {
-      case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
+      case e: AttributeNotFoundError => throw new LayerWriteError(id).initCause(e)
     }
     val layerWriter = new AccumuloLayerWriter(attributeStore, instance, header.tileTable, options)
     layerWriter.update(id, rdd, mergeFunc)
@@ -60,7 +60,7 @@ class AccumuloLayerUpdater(
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
       attributeStore.readLayerAttributes[AccumuloLayerHeader, M, K](id)
     } catch {
-      case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
+      case e: AttributeNotFoundError => throw new LayerWriteError(id).initCause(e)
     }
     val layerWriter = new AccumuloLayerWriter(attributeStore, instance, header.tileTable, options)
     layerWriter.overwrite(id, rdd)
