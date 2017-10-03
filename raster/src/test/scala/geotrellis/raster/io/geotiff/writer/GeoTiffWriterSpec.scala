@@ -16,7 +16,7 @@
 
 package geotrellis.raster.io.geotiff.writer
 
-import geotrellis.proj4.{CRS, LatLng}
+import geotrellis.proj4.{CRS, LatLng, WebMercator}
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.tags.TiffTags
@@ -24,9 +24,7 @@ import geotrellis.raster.io.geotiff.tags.codes.ColorSpace
 import geotrellis.raster.render.{ColorRamps, IndexedColorMap}
 import geotrellis.raster.testkit._
 import geotrellis.vector.Extent
-
 import org.scalatest._
-
 import java.io._
 
 class GeoTiffWriterSpec extends FunSpec
@@ -110,6 +108,16 @@ class GeoTiffWriterSpec extends FunSpec
     it ("should write Sinusoidal correctly") {
 
       val geoTiff = SinglebandGeoTiff(geoTiffPath("reproject/modis_sinu.tif"))
+
+      addToPurge(path)
+      geoTiff.write(path)
+      val actualCRS = SinglebandGeoTiff(path).crs
+
+      actualCRS.toProj4String should be (geoTiff.crs.toProj4String)
+    }
+
+    it ("should write DHDN_3_Degree_Gauss_Zone_3 correctly") {
+      val geoTiff = MultibandGeoTiff(geoTiffPath("epsg31467.tif"))
 
       addToPurge(path)
       geoTiff.write(path)
