@@ -125,5 +125,6 @@ object HBaseRDDWriter {
             mutator.close()
           }
         }
+      }
   }
 }
