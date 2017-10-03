@@ -26,14 +26,18 @@ import geotrellis.spark.util.KryoWrapper
 import scalaz.concurrent.{Strategy, Task}
 import scalaz.std.vector._
 import scalaz.stream.{Process, nondeterminism}
+
 import com.amazonaws.services.s3.model.AmazonS3Exception
+
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import com.typesafe.config.ConfigFactory
+
 import java.util.concurrent.Executors
+
 
 trait S3RDDReader {
 
