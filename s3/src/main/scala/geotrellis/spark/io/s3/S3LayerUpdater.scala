@@ -38,6 +38,7 @@ class S3LayerUpdater(
 ) extends LayerUpdater[LayerId] with LazyLogging {
 
   def rddWriter: S3RDDWriter = S3RDDWriter
+  def _rddWriter(): S3RDDWriter = rddWriter
 
   private class InnerS3LayerWriter(
     attributeStore: AttributeStore,
