@@ -283,5 +283,13 @@ class ReprojectSpec extends FunSpec
 
       windowedReproject.rasterExtent should be (regularReproject.rasterExtent)
     }
+
+    it ("should reproject cea projection into WebMercator correctly") {
+      val geoTiff = SinglebandGeoTiff(geoTiffPath("reproject/cea.tif"))
+      // should throw no exceptions
+      geoTiff.raster.reproject(geoTiff.crs, WebMercator)
+
+      geoTiff.crs.toProj4String should be ("+proj=cea +lat_ts=33.75 +lon_0=-117.333333333333 +x_0=0.0 +y_0=0.0 +datum=NAD27 +units=m ")
+    }
   }
 }
