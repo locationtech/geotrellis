@@ -16,7 +16,7 @@
 
 package geotrellis.raster.io.geotiff.writer
 
-import geotrellis.proj4.{CRS, LatLng, WebMercator}
+import geotrellis.proj4.{CRS, LatLng}
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.tags.TiffTags
