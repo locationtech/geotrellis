@@ -116,7 +116,7 @@ private [geotrellis] trait GeoTiffInfoReader extends LazyLogging {
     * Function calculates a split of segments, to minimize segments reads.
     *
     * Returns RDD of pairs: (URI, Array[GridBounds])
-    * where GridBounds are gird bounds of a particular segment,
+    * where GridBounds are grid bounds of a particular segment,
     * each segment can only be in a single partition.
     * */
   def segmentsByPartitionBytes(
