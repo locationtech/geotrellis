@@ -39,8 +39,11 @@ private class RangeComparator extends java.util.Comparator[(Long, Long)] {
 }
 
 class MergeQueue(initialSize: Int = 1) {
-  private val treeSet = new java.util.TreeSet(new RangeComparator()) // Sorted data structure
-  private val fudge = 1 // Set this to one to preserve original behavior
+  // Sorted data structure
+  private val treeSet = new java.util.TreeSet(new RangeComparator())
+  // Merge near-by intervals with a gap of up to this much.  The
+  // previous version of this code had an effective value of 1.
+  private val gap = 1
 
   /**
     * Ensure that the internal array has at least `n` cells.
@@ -57,15 +60,17 @@ class MergeQueue(initialSize: Int = 1) {
     */
   def toSeq: Seq[(Long, Long)] = {
     var stack = List.empty[(Long, Long)]
-    val ts = treeSet.clone.asInstanceOf[java.util.TreeSet[(Long,Long)]]
+    // The TreeSet will be consumed in the process below, so do not
+    // use the original.
+    val workingTreeSet = treeSet.clone.asInstanceOf[java.util.TreeSet[(Long,Long)]]
 
-    if (!ts.isEmpty) stack = (ts.pollFirst) +: stack
-    while (!ts.isEmpty) {
-      val (nextStart, nextEnd) = ts.pollFirst
+    if (!workingTreeSet.isEmpty) stack = (workingTreeSet.pollFirst) +: stack
+    while (!workingTreeSet.isEmpty) {
+      val (nextStart, nextEnd) = workingTreeSet.pollFirst
       val (currStart, currEnd) = stack.head
 
       // Overlap
-      if (nextStart <= currStart && currStart <= nextEnd+fudge) {
+      if (nextStart <= currStart && currStart <= nextEnd+gap) {
         // If new interval ends near the current one, extend the current one
         if (nextStart < currStart) {
           stack = (nextStart, currEnd) +: (stack.tail)
