@@ -23,22 +23,25 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop.formats._
+import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.RasterReader
-import geotrellis.util.StreamingByteReader
+import geotrellis.util.{LazyLogging, StreamingByteReader}
 import geotrellis.vector.ProjectedExtent
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
+
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import java.net.URI
 import java.nio.ByteBuffer
 
+
 /**
   * Allows for reading of whole or windowed GeoTiff as RDD[(K, V)]s through Hadoop FileSystem API.
   */
-object HadoopGeoTiffRDD {
+object HadoopGeoTiffRDD extends LazyLogging {
   final val GEOTIFF_TIME_TAG_DEFAULT = "TIFFTAG_DATETIME"
   final val GEOTIFF_TIME_FORMAT_DEFAULT = "yyyy:MM:dd HH:mm:ss"
 
@@ -63,6 +66,7 @@ object HadoopGeoTiffRDD {
     timeFormat: String = GEOTIFF_TIME_FORMAT_DEFAULT,
     maxTileSize: Option[Int] = None,
     numPartitions: Option[Int] = None,
+    partitionBytes: Option[Long] = Some(128l * 1024 * 1024),
     chunkSize: Option[Int] = None
   ) extends RasterReader.Options
 
@@ -88,22 +92,54 @@ object HadoopGeoTiffRDD {
     * @param uriToKey function to transform input key basing on the URI information.
     * @param options  An instance of [[Options]] that contains any user defined or default settings.
     */
-  def apply[I, K, V](path: Path, uriToKey: (URI, I) => K, options: Options)(implicit sc: SparkContext, rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
-    val conf = configuration(path, options)
-    options.maxTileSize match {
-      case Some(tileSize) =>
+  def apply[I, K, V](
+    path: Path,
+    uriToKey: (URI, I) => K,
+    options: Options
+  )(implicit sc: SparkContext, rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
+
+    val conf = new SerializableConfiguration(configuration(path, options))
+    val path2 = path.toString
+    lazy val sourceGeoTiffInfo = HadoopGeoTiffInfoReader(path2, conf, options.tiffExtensions)
+
+    (options.maxTileSize, options.partitionBytes) match {
+      case (_, Some(partitionBytes)) => {
+        val windows: RDD[(String, Array[GridBounds])] =
+          sourceGeoTiffInfo.windowsByBytes(partitionBytes, options.maxTileSize.getOrElse(1<<10))
+
+        windows.persist()
+
+        val windowCount = windows.count.toInt
+
+        logger.info(s"Repartition into ${windowCount} partitions.")
+
+        val repartition =
+          if (windowCount > windows.partitions.length) windows.repartition(windowCount)
+          else windows
+
+        val result = repartition.flatMap { case (path, windowBounds) =>
+          rr.readWindows(windowBounds, sourceGeoTiffInfo.getGeoTiffInfo(path), options).map { case (k, v) =>
+            uriToKey(new URI(path), k) -> v
+          }
+        }
+
+        windows.unpersist()
+        result
+      }
+      case (Some(_), _) =>
         val pathsAndDimensions: RDD[(Path, (Int, Int))] =
           sc.newAPIHadoopRDD(
-            conf,
+            conf.value,
             classOf[TiffTagsInputFormat],
             classOf[Path],
             classOf[TiffTags]
           ).mapValues { tiffTags => (tiffTags.cols, tiffTags.rows) }
 
         apply[I, K, V](pathsAndDimensions, uriToKey, options)
-      case None =>
+
+      case _ =>
         sc.newAPIHadoopRDD(
-          conf,
+          conf.value,
           classOf[BytesFileInputFormat],
           classOf[Path],
           classOf[Array[Byte]]
@@ -130,21 +166,21 @@ object HadoopGeoTiffRDD {
     * Creates a RDD[(K, V)] whose K and V depends on the type of the GeoTiff that is going to be read in.
     *
     * @param pathsToDimensions  RDD keyed by GeoTiff path with (cols, rows) tuple as value.
-    * @param uriToKey function to transform input key basing on the URI information.
+    * @param uriToKey           A function to transform input key basing on the URI information.
     * @param options            An instance of [[Options]] that contains any user defined or default settings.
     */
-  def apply[I, K, V](pathsToDimensions: RDD[(Path, (Int, Int))], uriToKey: (URI, I) => K, options: Options)
-                    (implicit rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
+  def apply[I, K, V](
+    pathsToDimensions: RDD[(Path, (Int, Int))],
+    uriToKey: (URI, I) => K,
+    options: Options
+  )(implicit rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
 
     val conf = new SerializableConfiguration(pathsToDimensions.sparkContext.hadoopConfiguration)
-
     val windows: RDD[(Path, GridBounds)] =
       pathsToDimensions
         .flatMap { case (objectRequest, (cols, rows)) =>
-          val path: Path = objectRequest
-          val config: Configuration = conf.value
-          val rangeReader = HdfsRangeReader(path, config)
-          val layout = GeoTiffReader.readGeoTiffInfo(rangeReader, false, true).segmentLayout.tileLayout
+          val info = HadoopGeoTiffInfoReader(objectRequest.toString, conf, options.tiffExtensions)
+          val layout = info.getGeoTiffInfo(objectRequest.toString).segmentLayout.tileLayout
 
           RasterReader
             .listWindows(cols, rows, options.maxTileSize.getOrElse(1<<10), layout.tileCols, layout.tileRows)
