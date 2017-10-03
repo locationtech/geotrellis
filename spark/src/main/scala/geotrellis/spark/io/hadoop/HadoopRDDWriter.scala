@@ -24,7 +24,6 @@ import geotrellis.spark.io.hadoop.formats.FilterMapFileInputFormat
 import geotrellis.spark.io.index._
 import geotrellis.spark.partition._
 import geotrellis.spark.util._
-import geotrellis.spark.util.KryoWrapper
 import geotrellis.util.LazyLogging
 
 import org.apache.avro.Schema
@@ -45,19 +44,6 @@ object HadoopRDDWriter extends LazyLogging {
     * This value is picked as a compromize between in-memory footprint and IO cost of retreiving a single record.
     */
   final val DefaultIndexInterval = 4
-
-  // From https://github.com/apache/spark/blob/3b049abf102908ca72674139367e3b8d9ffcc283/core/src/main/scala/org/apache/spark/util/SerializableConfiguration.scala
-  private class SerializableConfiguration(@transient var value: Configuration) extends Serializable {
-    private def writeObject(out: ObjectOutputStream): Unit = {
-      out.defaultWriteObject()
-      value.write(out)
-    }
-
-    private def readObject(in: ObjectInputStream): Unit = {
-      value = new Configuration(false)
-      value.readFields(in)
-    }
-  }
 
   /**
     * When record being written would exceed the block size of the current MapFile
