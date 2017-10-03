@@ -79,7 +79,7 @@ object HBaseRDDWriter {
         if(partition.nonEmpty) {
           instance.withConnectionDo { connection =>
             val mutator = connection.getBufferedMutator(table)
-            val _table = instance.getConnection.getTable(table)
+            val tableConnection = connection.getTable(table)
 
             partition.foreach { recs =>
               val id = recs._1
@@ -94,7 +94,7 @@ object HBaseRDDWriter {
                       new RowFilter(CompareOp.EQUAL, new BinaryComparator(HBaseKeyEncoder.encode(layerId, id)))
                     )
                   )
-                  val scanner = _table.getScanner(scan)
+                  val scanner = tableConnection.getScanner(scan)
                   val results: Vector[(K,V)] = scanner.iterator.asScala.toVector.flatMap{ result =>
                     val bytes = result.getValue(tilesCF, "")
                     AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
@@ -120,7 +120,7 @@ object HBaseRDDWriter {
               mutator.mutate(put)
             }
 
-            _table.close()
+            tableConnection.close()
             mutator.flush()
             mutator.close()
           }
