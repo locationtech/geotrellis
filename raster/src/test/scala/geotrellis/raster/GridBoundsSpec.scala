@@ -162,4 +162,36 @@ class GridBoundsSpec extends FunSpec with Matchers{
       actual.sizeLong shouldBe expected.sizeLong
     }
   }
+
+  describe("GridBounds.split") {
+    it("should not split too small a GridBounds") {
+      val gbs = GridBounds(0,0,7,5)
+      val result = gbs.split(10, 15).toList
+      result.head should be (gbs)
+    }
+
+    it("should split even GridBounds") {
+      val gbs = GridBounds(0,0,9,9)
+      val result = gbs.split(5,5).toList
+      result.length should be (4)
+      result should contain allOf (
+        GridBounds(0,0,4,4),
+        GridBounds(5,0,9,4),
+        GridBounds(0,5,4,9),
+        GridBounds(5,5,9,9)
+      )
+    }
+
+    it("should split un-even GridBounds") {
+      val gbs = GridBounds(0,0,10,10)
+      val result = gbs.split(10,10).toList
+      result.length should be (4)
+      result should contain allOf (
+        GridBounds(0,0,9,9),
+        GridBounds(10,0,10,9),
+        GridBounds(0,10,9,10),
+        GridBounds(10,10,10,10)
+      )
+    }
+  }
 }

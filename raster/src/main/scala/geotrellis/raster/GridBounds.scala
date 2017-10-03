@@ -286,4 +286,19 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
       other.rowMin >= rowMin &&
       other.colMax <= colMax &&
       other.rowMax <= rowMax
+
+  /** Split into windows, covering original GridBounds */
+  def split(cols: Int, rows: Int): Iterator[GridBounds] = {
+    for {
+      windowRowMin <- Iterator.range(start = rowMin, end = rowMax + 1, step = rows)
+      windowColMin <- Iterator.range(start = colMin, end = colMax + 1, step = cols)
+    } yield {
+      GridBounds(
+        colMin = windowColMin,
+        rowMin = windowRowMin,
+        colMax = math.min(windowColMin + cols - 1, colMax),
+        rowMax = math.min(windowRowMin + rows - 1, rowMax)
+      )
+    }
+  }
 }
