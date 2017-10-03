@@ -22,12 +22,15 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
+import geotrellis.spark.merge._
+import geotrellis.spark.util._
 import geotrellis.util._
 
 import org.apache.avro.Schema
 import org.apache.hadoop.fs.Path
-import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import org.apache.spark.SparkContext
+
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
@@ -37,8 +40,98 @@ class HadoopLayerWriter(
   rootPath: Path,
   val attributeStore: AttributeStore,
   indexInterval: Int = 4
-) extends LayerWriter[LayerId] {
+) extends LayerWriter[LayerId] with LazyLogging {
 
+  // Layer Updating
+  protected def _overwrite[
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+  ](
+    sc: SparkContext,
+    id: LayerId,
+    rdd: RDD[(K, V)] with Metadata[M],
+    keyBounds: KeyBounds[K]
+  ): Unit = {
+    _update(sc, id, rdd, keyBounds, None)
+  }
+
+  protected def _update[
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+  ](
+    sc: SparkContext,
+    id: LayerId,
+    rdd: RDD[(K, V)] with Metadata[M],
+    keyBounds: KeyBounds[K],
+    mergeFunc: (V, V) => V
+  ): Unit = {
+    _update(sc, id, rdd, keyBounds, Some(mergeFunc))
+  }
+
+  private def _update[
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+  ](
+    sc: SparkContext,
+    id: LayerId,
+    rdd: RDD[(K, V)] with Metadata[M],
+    keyBounds: KeyBounds[K],
+    mergeFunc: Option[(V, V) => V]
+  ): Unit = {
+    if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
+    val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
+      attributeStore.readLayerAttributes[HadoopLayerHeader,M, K](id)
+    } catch {
+      case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
+    }
+
+    if (!(keyIndex.keyBounds contains keyBounds))
+      throw new LayerOutOfKeyBoundsError(id, keyIndex.keyBounds)
+
+    logger.warn(s"MapFiles cannot be updated, so this requires rewriting the entire layer.")
+
+    implicit val sc2: SparkContext = sc
+    val layerReader = new HadoopLayerReader(attributeStore)
+    val layerWriter = new HadoopLayerWriter(rootPath, attributeStore)
+    val layerDeleter = new HadoopLayerDeleter(attributeStore, sc.hadoopConfiguration)
+    val layerCopier = new HadoopLayerCopier(rootPath, attributeStore)
+    val entireLayer = layerReader.read[K, V, M](id)
+
+    val updatedMetadata: M =
+      metadata.merge(rdd.metadata)
+
+    val fn = mergeFunc match {
+      case Some(fn) => fn
+      case None => { (v1: V, v2: V) => v2 }
+    }
+
+    val updatedRdd: RDD[(K, V)] =
+      entireLayer
+        .fullOuterJoin(rdd)
+        .flatMapValues {
+          case (Some(layerTile), Some(updateTile)) => Some(fn(layerTile, updateTile))
+          case (Some(layerTile), _) => Some(layerTile)
+          case (_, Some(updateTile)) => Some(updateTile)
+          case _ => None
+        }
+
+    val updated = ContextRDD(updatedRdd, updatedMetadata)
+
+    val tmpId = id.createTemporaryId
+    logger.info(s"Saving updated RDD to temporary id $tmpId")
+    layerWriter.write(tmpId, updated, keyIndex)
+    logger.info(s"Deleting layer $id")
+    layerDeleter.delete(id)
+    logger.info(s"Copying in $tmpId to $id")
+    layerCopier.copy[K, V, M](tmpId, id)
+    logger.info(s"Deleting temporary layer at $tmpId")
+    layerDeleter.delete(tmpId)
+  }
+
+  // Layer Writing
   protected def _write[
     K: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,

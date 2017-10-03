@@ -18,15 +18,16 @@ package geotrellis.spark.io.s3
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.avro.AvroRecordCodec
+import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
 import geotrellis.spark.merge._
 import geotrellis.util._
 
 import org.apache.avro.Schema
-import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import org.apache.spark.SparkContext
+
 import spray.json._
 
 import scala.reflect._
@@ -37,71 +38,72 @@ class S3LayerUpdater(
 ) extends LayerUpdater[LayerId] with LazyLogging {
 
   def rddWriter: S3RDDWriter = S3RDDWriter
+  def _rddWriter(): S3RDDWriter = rddWriter
 
-  protected def _update[
+  class InnerS3LayerWriter(
+    attributeStore: AttributeStore,
+    bucket: String,
+    keyPrefix: String
+  ) extends S3LayerWriter(attributeStore, bucket, keyPrefix) {
+    override def rddWriter() = _rddWriter
+  }
+
+  val as = attributeStore.asInstanceOf[S3AttributeStore]
+  val layerWriter = new InnerS3LayerWriter(as, as.bucket, as.prefix)
+
+  def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
-  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K], mergeFunc: (V, V) => V) = {
-    if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-
-    val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
-      attributeStore.readLayerAttributes[S3LayerHeader, M, K](id)
-    } catch {
-      case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], mergeFunc: (V, V) => V): Unit = {
+    rdd.metadata.getComponent[Bounds[K]] match {
+      case keyBounds: KeyBounds[K] =>
+        layerWriter._update(
+          rdd.sparkContext, id, rdd, keyBounds,
+          Some(mergeFunc), layerReader
+        )
+      case EmptyBounds =>
+        throw new EmptyBoundsError(s"Cannot update layer $id with a layer with empty bounds.")
     }
+  }
 
-    if (!(keyIndex.keyBounds contains keyBounds))
-      throw new LayerOutOfKeyBoundsError(id, keyIndex.keyBounds)
+  def update[
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
+    rdd.metadata.getComponent[Bounds[K]] match {
+      case keyBounds: KeyBounds[K] =>
+        layerWriter._update(
+          rdd.sparkContext, id, rdd, keyBounds,
+          Some({(_: V, v: V) => v}), layerReader
+        )
+      case EmptyBounds =>
+        throw new EmptyBoundsError(s"Cannot update layer $id with a layer with empty bounds.")
+    }
+  }
 
-    val prefix = header.key
-    val bucket = header.bucket
-
-    val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
-    val keyPath = (key: K) => makePath(prefix, Index.encode(keyIndex.toIndex(key), maxWidth))
-
-    logger.info(s"Saving updated RDD for layer ${id} to $bucket $prefix")
-    val existingTiles =
-      if(schemaHasChanged[K, V](writerSchema)) {
-        logger.warn(s"RDD schema has changed, this requires rewriting the entire layer.")
-        layerReader
-          .read[K, V, M](id)
-
-      } else {
-        val query =
-          new LayerQuery[K, M]
-            .where(Intersects(rdd.metadata.getComponent[Bounds[K]].get))
-
-        layerReader.read[K, V, M](id, query, layerReader.defaultNumPartitions, filterIndexOnly = true)
-      }
-
-    val updatedMetadata: M =
-      metadata.merge(rdd.metadata)
-
-    val updatedRdd: RDD[(K, V)] =
-      existingTiles
-        .fullOuterJoin(rdd)
-        .flatMapValues {
-          case (Some(layerTile), Some(updateTile)) => Some(mergeFunc(layerTile, updateTile))
-          case (Some(layerTile), _) => Some(layerTile)
-          case (_, Some(updateTile)) => Some(updateTile)
-          case _ => None
-        }
-
-    val codec  = KeyValueRecordCodec[K, V]
-    val schema = codec.schema
-
-    // Write updated metadata, and the possibly updated schema
-    // Only really need to write the metadata and schema
-    attributeStore.writeLayerAttributes(id, header, updatedMetadata, keyIndex, schema)
-    rddWriter.write(updatedRdd, bucket, keyPath)
+  def overwrite[
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+  ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
+    rdd.metadata.getComponent[Bounds[K]] match {
+      case keyBounds: KeyBounds[K] =>
+        layerWriter._update(
+          rdd.sparkContext, id, rdd, keyBounds,
+          None, layerReader
+        )
+      case EmptyBounds =>
+        throw new EmptyBoundsError(s"Cannot overwrite layer $id with a layer with empty bounds.")
+    }
   }
 }
 
 object S3LayerUpdater {
   def apply(
-      bucket: String,
-      prefix: String
+    bucket: String,
+    prefix: String
   )(implicit sc: SparkContext): S3LayerUpdater =
     new S3LayerUpdater(
       S3AttributeStore(bucket, prefix),
