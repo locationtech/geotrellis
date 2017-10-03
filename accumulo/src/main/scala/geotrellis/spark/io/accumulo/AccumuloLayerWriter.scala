@@ -21,9 +21,12 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
+import geotrellis.spark.merge._
 import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
+import org.apache.spark.SparkContext
+
 import spray.json._
 
 import scala.reflect._
@@ -33,8 +36,118 @@ class AccumuloLayerWriter(
   instance: AccumuloInstance,
   table: String,
   options: AccumuloLayerWriter.Options
-) extends LayerWriter[LayerId] {
+) extends LayerWriter[LayerId] with LazyLogging {
 
+  // Layer Updating
+  protected def _overwrite[
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+  ](
+    sc: SparkContext,
+    id: LayerId,
+    rdd: RDD[(K, V)] with Metadata[M],
+    keyBounds: KeyBounds[K]
+  ): Unit = {
+    _update(sc, id, rdd, keyBounds, None)
+  }
+
+  protected def _update[
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+  ](
+    sc: SparkContext,
+    id: LayerId,
+    rdd: RDD[(K, V)] with Metadata[M],
+    keyBounds: KeyBounds[K],
+    mergeFunc: (V, V) => V
+  ): Unit = {
+    _update(sc, id, rdd, keyBounds, Some(mergeFunc))
+  }
+
+  private def _update[
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+  ](
+    sc: SparkContext,
+    id: LayerId,
+    rdd: RDD[(K, V)] with Metadata[M],
+    keyBounds: KeyBounds[K],
+    mergeFunc: Option[(V, V) => V]
+  ) = {
+    if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
+
+    val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
+      attributeStore.readLayerAttributes[AccumuloLayerHeader, M, K](id)
+    } catch {
+      case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
+    }
+
+    val table = header.tileTable
+
+    if (!(keyIndex.keyBounds contains keyBounds))
+      throw new LayerOutOfKeyBoundsError(id, keyIndex.keyBounds)
+
+    val encodeKey = (key: K) => AccumuloKeyEncoder.encode(id, key, keyIndex.toIndex(key))
+    implicit val sc2: SparkContext = sc
+    implicit val instance2 = instance
+    val layerReader = new AccumuloLayerReader(attributeStore)
+
+    logger.info(s"Saving updated RDD for layer ${id} to table $table")
+    val existingTiles =
+      if(schemaHasChanged[K, V](writerSchema)) {
+        logger.warn(s"RDD schema has changed, this requires rewriting the entire layer.")
+        layerReader
+          .read[K, V, M](id)
+
+      } else {
+        val query =
+          new LayerQuery[K, M]
+            .where(Intersects(rdd.metadata.getComponent[Bounds[K]].get))
+
+        layerReader.read[K, V, M](id, query, layerReader.defaultNumPartitions, filterIndexOnly = true)
+      }
+
+    val updatedMetadata: M =
+      metadata.merge(rdd.metadata)
+
+    val codec  = KeyValueRecordCodec[K, V]
+    val schema = codec.schema
+
+    options.writeStrategy match {
+      case _: HdfsWriteStrategy =>
+        val updatedRdd: RDD[(K, V)] =
+          mergeFunc match {
+            case Some(mergeFunc) =>
+              existingTiles
+                .fullOuterJoin(rdd)
+                .flatMapValues {
+                case (Some(layerTile), Some(updateTile)) => Some(mergeFunc(layerTile, updateTile))
+                case (Some(layerTile), _) => Some(layerTile)
+                case (_, Some(updateTile)) => Some(updateTile)
+                case _ => None
+              }
+            case None => rdd
+          }
+
+        // Write updated metadata, and the possibly updated schema
+        // Only really need to write the metadata and schema
+        attributeStore.writeLayerAttributes(id, header, updatedMetadata, keyIndex, schema)
+        AccumuloRDDWriter.write(updatedRdd, instance, encodeKey, options.writeStrategy, table)
+      case _ =>
+        // Write updated metadata, and the possibly updated schema
+        // Only really need to write the metadata and schema
+        attributeStore.writeLayerAttributes(id, header, updatedMetadata, keyIndex, schema)
+        AccumuloRDDWriter.update(
+          rdd, instance, encodeKey, options.writeStrategy, table,
+          Some(writerSchema), mergeFunc
+        )
+    }
+  }
+
+  // Layer Writing
   protected def _write[
     K: AvroRecordCodec: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
