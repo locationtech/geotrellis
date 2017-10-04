@@ -21,15 +21,19 @@ import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.testkit.RasterMatchers
 import geotrellis.spark._
-import geotrellis.spark.tiling._
 import geotrellis.spark.io.s3.testkit._
 import geotrellis.spark.testkit.TestEnvironment
+import geotrellis.spark.tiling._
+import geotrellis.vector._
 
 import spire.syntax.cfor._
 
 import java.nio.file.{Files, Paths}
 
 import org.scalatest._
+
+import org.apache.spark.rdd.RDD
+
 
 class S3GeoTiffRDDSpec
   extends FunSpec
@@ -56,6 +60,27 @@ class S3GeoTiffRDDSpec
   describe("S3GeoTiffRDD") {
     implicit val mockClient = new MockS3Client()
     val bucket = this.getClass.getSimpleName
+
+    it("should filter by geometry") {
+      val key = "geoTiff/all-ones.tif"
+      val testGeoTiffPath = "spark/src/test/resources/all-ones.tif"
+      val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
+      mockClient.putObject(bucket, key, geoTiffBytes)
+
+      val options = S3GeoTiffRDD.Options(getS3Client = () => new MockS3Client, partitionBytes=1<<20)
+      val geometry = Line(Point(141.7066667, -17.5200000), Point(142.1333333, -17.7))
+      val fn = {( _: Any, key: ProjectedExtent) => key }
+      val source1 =
+        S3GeoTiffRDD
+          .apply[ProjectedExtent, ProjectedExtent, Tile](bucket, key, fn, options, Some(geometry))
+          .map(_._1)
+      val source2 =
+        S3GeoTiffRDD
+          .apply[ProjectedExtent, ProjectedExtent, Tile](bucket, key, fn, options, None)
+          .map(_._1)
+
+      source1.collect.toSet.size should be < source2.collect.toSet.size
+    }
 
     it("should read the same rasters when reading small windows or with no windows, Spatial, SinglebandGeoTiff") {
       val key = "geoTiff/all-ones.tif"
