@@ -27,7 +27,6 @@ public class CylindricalEqualAreaProjection extends Projection {
 
 	private double qp;
 	private double[] apa;
-	private double trueScaleLatitude;
 
 	public CylindricalEqualAreaProjection() {
 		this(0.0, 0.0, 0.0);

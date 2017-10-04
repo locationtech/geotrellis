@@ -580,7 +580,7 @@ class GeoTiffCSParser(geoKeyDirectory: GeoKeyDirectory) {
                       case None => (Some(semiMajor), None)
                     } else (Some(semiMajor), Some(semiMinor))
                   }
-                  case None => (Some(semiMajor), None)
+                  case _ => (Some(semiMajor), None)
                 }
               }
             } else (None, None)

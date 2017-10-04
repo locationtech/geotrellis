@@ -25,7 +25,6 @@ import geotrellis.raster.testkit._
 import geotrellis.proj4._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader._
-
 import org.scalatest._
 import spire.syntax.cfor._
 
@@ -282,6 +281,15 @@ class ReprojectSpec extends FunSpec
       val windowedReproject = expandedRaster.reproject(windowBounds, srcCRS, destCRS, options)
 
       windowedReproject.rasterExtent should be (regularReproject.rasterExtent)
+    }
+
+    it ("should reproject cea projection into WebMercator correctly") {
+      val geoTiff = SinglebandGeoTiff(geoTiffPath("reproject/cea.tif"))
+      val raster = geoTiff.raster.reproject(geoTiff.crs, WebMercator)
+
+      geoTiff.crs.toProj4String should be ("+proj=cea +lat_ts=33.75 +lon_0=-117.333333333333 +x_0=0.0 +y_0=0.0 +datum=NAD27 +units=m ")
+      raster.extent should be (Extent(-1.3095719172012957E7, 3983866.9277966353, -1.305868719072902E7, 4021260.5495227976))
+      raster.dimensions should be (512 -> 517)
     }
   }
 }

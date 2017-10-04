@@ -165,7 +165,7 @@ public class Registry {
     register( "bonne", BonneProjection.class, "Bonne (Werner lat_1=90)" );
     register( "cass", CassiniProjection.class, "Cassini" );
     register( "cc", CentralCylindricalProjection.class, "Central Cylindrical" );
-    register( "cea", EqualAreaCylindricalProjection.class, "Equal Area Cylindrical" );
+    register( "cea", CylindricalEqualAreaProjection.class, "Equal Area Cylindrical" );
 //    register( "chamb", Projection.class, "Chamberlin Trimetric" );
     register( "collg", CollignonProjection.class, "Collignon" );
     register( "crast", CrasterProjection.class, "Craster Parabolic (Putnins P4)" );
@@ -200,8 +200,10 @@ public class Registry {
     register( "lagrng", LagrangeProjection.class, "Lagrange" );
     register( "larr", LarriveeProjection.class, "Larrivee" );
     register( "lask", LaskowskiProjection.class, "Laskowski" );
-    register( "latlong", LongLatProjection.class, "Lat/Long" );
-    register( "longlat", LongLatProjection.class, "Lat/Long" );
+    register( "latlong", LongLatProjection.class, "Lat/Long (Geodetic alias)" );
+    register( "longlat", LongLatProjection.class, "Lat/Long (Geodetic alias)" );
+    register( "latlon", LongLatProjection.class, "Lat/Long (Geodetic alias)" );
+    register( "lonlat", LongLatProjection.class, "Lat/Long (Geodetic)" );
     register( "lcc", LambertConformalConicProjection.class, "Lambert Conformal Conic" );
     register( "leac", LambertEqualAreaConicProjection.class, "Lambert Equal Area Conic" );
 //    register( "lee_os", Projection.class, "Lee Oblated Stereographic" );
