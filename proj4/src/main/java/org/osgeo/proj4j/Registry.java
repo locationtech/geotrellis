@@ -200,8 +200,10 @@ public class Registry {
     register( "lagrng", LagrangeProjection.class, "Lagrange" );
     register( "larr", LarriveeProjection.class, "Larrivee" );
     register( "lask", LaskowskiProjection.class, "Laskowski" );
-    register( "latlong", LongLatProjection.class, "Lat/Long" );
-    register( "longlat", LongLatProjection.class, "Lat/Long" );
+    register( "latlong", LongLatProjection.class, "Lat/Long (Geodetic alias)" );
+    register( "longlat", LongLatProjection.class, "Lat/Long (Geodetic alias)" );
+    register( "latlon", LongLatProjection.class, "Lat/Long (Geodetic alias)" );
+    register( "lonlat", LongLatProjection.class, "Lat/Long (Geodetic)" );
     register( "lcc", LambertConformalConicProjection.class, "Lambert Conformal Conic" );
     register( "leac", LambertEqualAreaConicProjection.class, "Lambert Equal Area Conic" );
 //    register( "lee_os", Projection.class, "Lee Oblated Stereographic" );
