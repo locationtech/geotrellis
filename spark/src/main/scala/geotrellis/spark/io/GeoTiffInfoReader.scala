@@ -80,15 +80,16 @@ private [geotrellis] trait GeoTiffInfoReader extends LazyLogging {
           case DoubleCellType | DoubleConstantNoDataCellType | DoubleUserDefinedNoDataCellType(_) => 8
         }
       }
-      val (tileCols, tileRows, fileWindows) =
+      val fileWindows =
         RasterReader.listWindows(cols, rows, maxSize, segCols, segRows)
-      val windowBytes = tileCols * tileRows * depth
 
-      var currentBytes = 0
+      var currentBytes: Long = 0
       val currentPartition = mutable.ArrayBuffer.empty[GridBounds]
       val allPartitions = mutable.ArrayBuffer.empty[Array[GridBounds]]
 
       fileWindows.foreach({ gb =>
+        val windowBytes = gb.sizeLong * depth
+
         // Add the window to the present partition
         if (currentBytes + windowBytes <= partitionBytes) {
           currentPartition.append(gb)

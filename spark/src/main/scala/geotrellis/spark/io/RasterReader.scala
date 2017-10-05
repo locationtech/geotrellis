@@ -74,12 +74,12 @@ object RasterReader {
   def listWindows(
     cols: Int, rows: Int, maxSize: Int,
     segCols: Int, segRows: Int
-  ): (Int, Int, Array[GridBounds]) = {
+  ): Array[GridBounds] = {
     val colSize: Int = if (maxSize >= segCols) segCols; else best(maxSize, segCols)
     val rowSize: Int = if (maxSize >= segRows) segRows; else best(maxSize, segRows)
     val windows = listWindows(cols, rows, colSize, rowSize)
 
-    (colSize, rowSize, windows)
+    windows
   }
 
   /** List all pixel windows that cover a grid of given size */
