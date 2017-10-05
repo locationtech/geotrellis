@@ -21,10 +21,10 @@ import geotrellis.proj4.util.UTM
 import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.vector._
+import geotrellis.util.Haversine
 
 object ZoomedLayoutScheme {
-  val EARTH_RADIUS = 6378137 // Use what gdal2tiles uses.
-  val EARTH_CIRCUMFERENCE = 2 * math.Pi * EARTH_RADIUS
+  val EARTH_CIRCUMFERENCE = 2 * math.Pi * Haversine.EARTH_RADIUS
 
   val DEFAULT_TILE_SIZE = 256
   val DEFAULT_RESOLUTION_THRESHOLD = 0.1
@@ -75,11 +75,7 @@ class ZoomedLayoutScheme(val crs: CRS, val tileSize: Int, resolutionThreshold: D
 
         math.max(math.abs(p1.x - p2.x), math.abs(p1.y - p2.y))
       } else {
-        // Haversine distance formula
-        val p = math.Pi / 180
-        val a = 0.5 - math.cos((ll2.y - ll1.y) * p) / 2 + math.cos(ll1.y * p) * math.cos(ll2.y * p) * (1 - math.cos((ll2.x - ll1.x) * p)) / 2
-
-        2 * EARTH_CIRCUMFERENCE * math.asin(math.sqrt(a))
+        Haversine(ll1, ll2)
       }
     val z = (math.log(EARTH_CIRCUMFERENCE / (dist * tileSize)) / math.log(2)).toInt
     val zRes = EARTH_CIRCUMFERENCE / (math.pow(2, z) * tileSize)
