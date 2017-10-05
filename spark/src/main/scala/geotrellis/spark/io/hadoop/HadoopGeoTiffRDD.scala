@@ -26,7 +26,7 @@ import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.RasterReader
 import geotrellis.util.{LazyLogging, StreamingByteReader}
-import geotrellis.vector.ProjectedExtent
+import geotrellis.vector._
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -107,14 +107,16 @@ object HadoopGeoTiffRDD extends LazyLogging {
   /**
     * Creates a RDD[(K, V)] whose K and V depends on the type of the GeoTiff that is going to be read in.
     *
-    * @param path     Hdfs GeoTiff path.
-    * @param uriToKey function to transform input key basing on the URI information.
-    * @param options  An instance of [[Options]] that contains any user defined or default settings.
+    * @param  path      HDFS GeoTiff path.
+    * @param  uriToKey  Function to transform input key basing on the URI information.
+    * @param  options   An instance of [[Options]] that contains any user defined or default settings.
+    * @param  geometry  An optional geometry to filter by.  If this is provided, it is assumed that all GeoTiffs are in the same CRS, and that this geometry is in that CRS.
     */
   def apply[I, K, V](
     path: Path,
     uriToKey: (URI, I) => K,
-    options: Options
+    options: Options,
+    geometry: Option[Geometry] = None
   )(implicit sc: SparkContext, rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
 
     val conf = new SerializableConfiguration(configuration(path, options))
@@ -125,7 +127,7 @@ object HadoopGeoTiffRDD extends LazyLogging {
       case (_, Some(partitionBytes)) => {
         val maxSize = getMaxSize(options)
         val windows: RDD[(String, Array[GridBounds])] =
-          sourceGeoTiffInfo.windowsByBytes(partitionBytes, maxSize)
+          sourceGeoTiffInfo.windowsByBytes(partitionBytes, maxSize, geometry)
 
         windows.persist()
 
