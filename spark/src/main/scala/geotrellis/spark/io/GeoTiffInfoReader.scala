@@ -16,11 +16,12 @@
 
 package geotrellis.spark.io
 
+import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader.GeoTiffInfo
+import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.util.LazyLogging
-import geotrellis.raster.GridBounds
-import geotrellis.raster._
+import geotrellis.vector.Geometry
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -31,6 +32,7 @@ private [geotrellis] trait GeoTiffInfoReader extends LazyLogging {
   val geoTiffInfo: List[(String, GeoTiffInfo)]
   def geoTiffInfoRdd(implicit sc: SparkContext): RDD[String]
   def getGeoTiffInfo(uri: String): GeoTiffInfo
+  def getGeoTiffTags(uri: String): TiffTags
 
   lazy val averagePixelSize: Option[Int] =
     if(geoTiffInfo.nonEmpty) {
@@ -70,7 +72,8 @@ private [geotrellis] trait GeoTiffInfoReader extends LazyLogging {
     */
   def windowsByBytes(
     partitionBytes: Long,
-    maxSize: Int
+    maxSize: Int,
+    geometry: Option[Geometry]
   )(implicit sc: SparkContext): RDD[(String, Array[GridBounds])] = {
     geoTiffInfoRdd.flatMap({ uri =>
       val md = getGeoTiffInfo(uri)
@@ -89,7 +92,14 @@ private [geotrellis] trait GeoTiffInfoReader extends LazyLogging {
         }
       }
       val fileWindows =
-        RasterReader.listWindows(cols, rows, maxSize, segCols, segRows)
+        geometry match {
+          case Some(geometry) =>
+            val tags = getGeoTiffTags(uri)
+            val extent = tags.extent
+            RasterReader.listWindows(cols, rows, maxSize, extent, segCols, segRows, geometry)
+          case None =>
+            RasterReader.listWindows(cols, rows, maxSize, segCols, segRows)
+        }
 
       var currentBytes: Long = 0
       val currentPartition = mutable.ArrayBuffer.empty[GridBounds]

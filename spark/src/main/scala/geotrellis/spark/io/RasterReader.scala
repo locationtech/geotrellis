@@ -20,14 +20,16 @@ import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
+import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.spark._
 import geotrellis.util.{ByteReader, StreamingByteReader}
-import geotrellis.vector.ProjectedExtent
+import geotrellis.vector._
 
 import spire.syntax.cfor._
 
 import java.time.format.DateTimeFormatter
 import java.time.{ZoneOffset, ZonedDateTime}
+
 
 /**
   * Type class to read a raster either fully or partially from a ByteReader.
@@ -80,6 +82,29 @@ object RasterReader {
     val windows = listWindows(cols, rows, colSize, rowSize)
 
     windows
+  }
+
+  /** List all pixel windows that meet the given geometry */
+  def listWindows(
+    cols: Int, rows: Int, maxSize: Int,
+    extent: Extent, segCols: Int, segRows: Int, geometry: Geometry,
+    options: Rasterizer.Options = Rasterizer.Options.DEFAULT
+  ): Array[GridBounds] = {
+    val result = scala.collection.mutable.ArrayBuffer[GridBounds]()
+    val maxColSize: Int = if (maxSize >= segCols) segCols; else best(maxSize, segCols)
+    val maxRowSize: Int = if (maxSize >= segRows) segRows; else best(maxSize, segRows)
+    val re = RasterExtent(extent, cols/maxColSize, rows/maxRowSize)
+
+    Rasterizer.foreachCellByGeometry(geometry, re, options)({ (col: Int, row: Int) =>
+      result +=
+      GridBounds(
+        col * maxColSize,
+        row * maxRowSize,
+        math.min((col+1)*maxColSize - 1, cols-1),
+        math.min((row+1)*maxRowSize - 1, rows-1)
+      )
+    })
+    result.toArray
   }
 
   /** List all pixel windows that cover a grid of given size */

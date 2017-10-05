@@ -18,6 +18,7 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader.GeoTiffInfo
+import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.spark.io._
 import geotrellis.spark.io.hadoop._
 
@@ -55,8 +56,12 @@ case class HadoopGeoTiffInfoReader(
   }
 
   def getGeoTiffInfo(uri: String): GeoTiffInfo = {
-    val path = new Path(uri)
-    val rr = HdfsRangeReader(path, config.value)
+    val rr = HdfsRangeReader(new Path(uri), config.value)
     GeoTiffReader.readGeoTiffInfo(rr, decompress, streaming)
+  }
+
+  def getGeoTiffTags(uri: String): TiffTags = {
+    val rr = HdfsRangeReader(new Path(uri), config.value)
+    TiffTags(rr)
   }
 }
