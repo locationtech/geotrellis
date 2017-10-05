@@ -86,12 +86,13 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
     e1.expandToInclude(e2)
   }
 
+  /** Fetch the [[SpatialKey]] that corresponds to some coordinates in some CRS on the Earth. */
   def pointToKey(p: Point): SpatialKey = apply(p)
 
   def apply(p: Point): SpatialKey = apply(p.x, p.y)
 
   /** Fetch the [[SpatialKey]] that corresponds to some coordinates in some CRS on the Earth. */
-  def pointCoordsToKey(x: Double, y: Double): SpatialKey = apply(x, y)
+  def pointToKey(x: Double, y: Double): SpatialKey = apply(x, y)
 
   def apply(x: Double, y: Double): SpatialKey = {
     val tcol =
@@ -103,8 +104,7 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
     (tcol.floor.toInt, trow.floor.toInt)
   }
 
-  def keyLikeToExtent[K: SpatialComponent](key: K): Extent = apply(key)
-
+  @deprecated("Use this instead: MapKeyTransform.keyToExtent(key.getComponent[SpatialKey])", "1.2")
   def apply[K: SpatialComponent](key: K): Extent = apply(key.getComponent[SpatialKey])
 
   def keyToExtent(key: SpatialKey): Extent = apply(key)
