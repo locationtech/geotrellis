@@ -31,6 +31,9 @@ object Point {
 
   implicit def jtsCoord2Point(coord: jts.Coordinate): Point =
     Point(factory.createPoint(coord))
+
+  implicit def pointToTuple2(point: Point): (Double, Double) =
+    point.x -> point.y
 }
 
 /** Class representing a point */
