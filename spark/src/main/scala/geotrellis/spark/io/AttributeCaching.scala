@@ -26,15 +26,18 @@ import scala.concurrent.duration._
 
 
 trait AttributeCaching { self: AttributeStore =>
-  private val expiration = ConfigFactory.load().getInt("geotrellis.attribute.caching.expirationMinutes")
-  private val maxSize = ConfigFactory.load().getInt("geotrellis.attribute.caching.maxSize")
 
-  private val cache =
+  private final val cache = {
+    val config = ConfigFactory.load()
+    val expiration = config.getInt("geotrellis.attribute.caching.expirationMinutes")
+    val maxSize = config.getInt("geotrellis.attribute.caching.maxSize")
+
     Scaffeine()
       .recordStats()
       .expireAfterWrite(expiration.minutes)
       .maximumSize(maxSize)
       .build[(LayerId, String), Any]
+  }
 
   def cacheRead[T: JsonFormat](layerId: LayerId, attributeName: String): T = {
     cache.get(layerId -> attributeName, { key => read[T](layerId, attributeName) }).asInstanceOf[T]
