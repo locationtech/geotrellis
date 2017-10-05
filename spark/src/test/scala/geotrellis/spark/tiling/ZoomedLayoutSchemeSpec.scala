@@ -113,7 +113,7 @@ class ZoomedLayoutSchemeSpec extends FunSpec with Matchers {
       val (lat2, lon2) = (-81.572543, -148.009213)
       val scheme = ZoomedLayoutScheme(LatLng, 256)
       val z = scheme.zoom(lon1, lat1, CellSize(lon2 - lon1, lat2 - lat1))
-      z should be (6)
+      z should be (9)
     }
 
     it("should pyramid floating layout") {
