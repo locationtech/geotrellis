@@ -75,7 +75,7 @@ class ZoomedLayoutScheme(val crs: CRS, val tileSize: Int, resolutionThreshold: D
 
         math.max(math.abs(p1.x - p2.x), math.abs(p1.y - p2.y))
       } else {
-        Haversine(ll1, ll2)
+        Haversine(ll1.x, ll1.y, ll2.x, ll2.y)
       }
     val z = (math.log(EARTH_CIRCUMFERENCE / (dist * tileSize)) / math.log(2)).toInt
     val zRes = EARTH_CIRCUMFERENCE / (math.pow(2, z) * tileSize)
