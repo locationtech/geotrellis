@@ -19,10 +19,11 @@ package geotrellis.spark.io.hadoop
 import geotrellis.raster._
 import geotrellis.raster.testkit.RasterMatchers
 import geotrellis.spark._
-import geotrellis.spark.tiling._
-import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.testkit._
+import geotrellis.spark.testkit.testfiles._
+import geotrellis.spark.tiling._
+import geotrellis.vector._
 import geotrellis.vector.ProjectedExtent
 
 import org.apache.hadoop.fs.Path
@@ -32,6 +33,7 @@ import org.scalatest._
 import java.net.URI
 import java.time.{LocalDateTime, ZoneId}
 
+
 class HadoopGeoTiffRDDSpec
     extends FunSpec
     with Matchers
@@ -39,6 +41,23 @@ class HadoopGeoTiffRDDSpec
     with TestEnvironment
     with TestFiles {
   describe("HadoopGeoTiffRDD") {
+
+    it("should filter by geometry") {
+      val testGeoTiffPath = new Path(localFS.getWorkingDirectory, "spark/src/test/resources/all-ones.tif")
+      val options = HadoopGeoTiffRDD.Options(partitionBytes=Some(1<<20))
+      val geometry = Line(Point(141.7066667, -17.5200000), Point(142.1333333, -17.7))
+      val fn = {( _: URI, key: ProjectedExtent) => key }
+      val source1 =
+        HadoopGeoTiffRDD
+          .apply[ProjectedExtent, ProjectedExtent, Tile](testGeoTiffPath, fn, options, Some(geometry))
+          .map(_._1)
+      val source2 =
+        HadoopGeoTiffRDD
+          .apply[ProjectedExtent, ProjectedExtent, Tile](testGeoTiffPath, fn, options, None)
+          .map(_._1)
+
+      source1.collect.toSet.size should be < source2.collect.toSet.size
+    }
 
     it("should read the same rasters when reading small windows or with no windows, Spatial, SinglebandGeoTiff") {
       val tilesDir = new Path(localFS.getWorkingDirectory, "raster/data/one-month-tiles/")
