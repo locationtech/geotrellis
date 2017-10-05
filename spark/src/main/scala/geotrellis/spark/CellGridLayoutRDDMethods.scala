@@ -27,10 +27,11 @@ import scala.reflect.ClassTag
 abstract class CellGridLayoutRDDMethods[K: SpatialComponent: ClassTag, V <: CellGrid, M: GetComponent[?, LayoutDefinition]]
     extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
   def asRasters(): RDD[(K, Raster[V])] = {
-    val mapTransform = self.metadata.getComponent[LayoutDefinition].mapTransform
+    val layout = self.metadata.getComponent[LayoutDefinition]
+
     self.mapPartitions({ part =>
       part.map { case (key, tile) =>
-        (key, Raster(tile, mapTransform(key)))
+        (key, Raster(tile, key.getComponent[SpatialKey].toExtent(layout)))
       }
     }, true)
   }

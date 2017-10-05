@@ -21,7 +21,7 @@ import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.raster.resample._
 import geotrellis.spark._
-import geotrellis.util.LazyLogging
+import geotrellis.util._
 
 import org.apache.spark.rdd._
 
@@ -55,7 +55,7 @@ object CutTiles {
             val outKey = inKey.translate(spatialComponent)
             logger.debug(s"Merge $inKey into $outKey of (${tileCols}, ${tileRows}) cells")
             val newTile = tile.prototype(cellType, tileCols, tileRows)
-            (outKey, newTile.merge(mapTransform(outKey), extent, tile, resampleMethod))
+            (outKey, newTile.merge(mapTransform(outKey.getComponent[SpatialKey]), extent, tile, resampleMethod))
           }
       }
   }

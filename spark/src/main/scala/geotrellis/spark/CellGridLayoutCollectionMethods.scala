@@ -25,9 +25,10 @@ import scala.reflect.ClassTag
 abstract class CellGridLayoutCollectionMethods[K: SpatialComponent, V <: CellGrid, M: GetComponent[?, LayoutDefinition]]
     extends MethodExtensions[Seq[(K, V)] with Metadata[M]] {
   def asRasters(): Seq[(K, Raster[V])] = {
-    val mapTransform = self.metadata.getComponent[LayoutDefinition].mapTransform
+    val layout = self.metadata.getComponent[LayoutDefinition]
+
     self.map { case (key, tile) =>
-        (key, Raster(tile, mapTransform(key)))
+      (key, Raster(tile, key.getComponent[SpatialKey].toExtent(layout)))
     }
   }
 }

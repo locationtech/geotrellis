@@ -23,6 +23,7 @@ import geotrellis.raster.merge._
 import geotrellis.raster.resample._
 import geotrellis.raster.prototype._
 import geotrellis.util._
+import geotrellis.vector.Extent
 
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd._
@@ -95,7 +96,7 @@ object Pyramid extends LazyLogging {
     val nextRdd = {
      val transformedRdd = rdd
         .map { case (key, tile) =>
-          val extent = sourceLayout.mapTransform(key)
+          val extent: Extent = key.getComponent[SpatialKey].toExtent(sourceLayout)
           val newSpatialKey = nextLayout.mapTransform(extent.center)
           (key.setComponent(newSpatialKey), (key, tile))
         }
@@ -103,11 +104,11 @@ object Pyramid extends LazyLogging {
         partitioner
           .fold(transformedRdd.combineByKey(createTiles, mergeTiles1, mergeTiles2))(transformedRdd.combineByKey(createTiles _, mergeTiles1 _, mergeTiles2 _, _))
           .mapPartitions ( partition => partition.map { case (newKey: K, seq: Seq[(K, V)]) =>
-            val newExtent = nextLayout.mapTransform(newKey)
+            val newExtent = newKey.getComponent[SpatialKey].toExtent(nextLayout)
             val newTile = seq.head._2.prototype(nextLayout.tileLayout.tileCols, nextLayout.tileLayout.tileRows)
 
             for ((oldKey, tile) <- seq) {
-              val oldExtent = sourceLayout.mapTransform(oldKey)
+              val oldExtent = oldKey.getComponent[SpatialKey].toExtent(sourceLayout)
               newTile.merge(newExtent, oldExtent, tile, resampleMethod)
             }
             (newKey, newTile: V)
