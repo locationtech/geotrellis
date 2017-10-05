@@ -25,7 +25,7 @@ class HaversineSpec extends FunSpec with Matchers {
     // São Paulo
     val sp = -23.550520 -> -46.633309
 
-    it("should calculate distance between") {
+    it("should calculate distance between Rio de Janeiro and São Paulo") {
       (Haversine(rio, sp) / 1000).toInt shouldBe 388
     }
   }
