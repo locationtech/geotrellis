@@ -132,28 +132,29 @@ object S3GeoTiffRDD extends LazyLogging {
     lazy val sourceGeoTiffInfo = S3GeoTiffInfoReader(bucket, prefix, options)
 
     (options.maxTileSize, options.partitionBytes) match {
-      case (None, Some(partitionBytes)) =>
-        val segments: RDD[(String, Array[GridBounds])] =
-          sourceGeoTiffInfo.segmentsByPartitionBytes(partitionBytes, windowSize)
+      case (_, Some(partitionBytes)) => {
+        val windows: RDD[(String, Array[GridBounds])] =
+          sourceGeoTiffInfo.windowsByBytes(partitionBytes, options.maxTileSize.getOrElse(1<<10))
 
-        segments.persist() // StorageLevel.MEMORY_ONLY by default
-        val segmentsCount = segments.count.toInt
+        windows.persist()
 
-        logger.info(s"repartition into ${segmentsCount} partitions.")
+        val windowCount = windows.count.toInt
+
+        logger.info(s"Repartition into ${windowCount} partitions.")
 
         val repartition =
-          if(segmentsCount > segments.partitions.length) segments.repartition(segmentsCount)
-          else segments
+          if (windowCount > windows.partitions.length) windows.repartition(windowCount)
+          else windows
 
-        val result = repartition.flatMap { case (path, segmentBounds) =>
-          rr.readWindows(segmentBounds, sourceGeoTiffInfo.getGeoTiffInfo(path), options).map { case (k, v) =>
+        val result = repartition.flatMap { case (path, windowBounds) =>
+          rr.readWindows(windowBounds, sourceGeoTiffInfo.getGeoTiffInfo(path), options).map { case (k, v) =>
             uriToKey(new URI(path), k) -> v
           }
         }
 
-        segments.unpersist()
+        windows.unpersist()
         result
-
+      }
       case (Some(_), _) =>
         val objectRequestsToDimensions: RDD[(GetObjectRequest, (Int, Int))] =
           sc.newAPIHadoopRDD(
@@ -210,7 +211,8 @@ object S3GeoTiffRDD extends LazyLogging {
           val layout = sourceGeoTiffInfo.getGeoTiffInfo(s"s3://$bucket/$key").segmentLayout.tileLayout
 
           RasterReader
-            .listWindows(cols, rows, options.maxTileSize, layout.tileCols, layout.tileRows)
+            .listWindows(cols, rows, options.maxTileSize.getOrElse(1<<10), layout.tileCols, layout.tileRows)
+            ._3
             .map((objectRequest, _))
         }
 

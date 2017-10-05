@@ -147,7 +147,8 @@ object HadoopGeoTiffRDD {
           val layout = GeoTiffReader.readGeoTiffInfo(rangeReader, false, true).segmentLayout.tileLayout
 
           RasterReader
-            .listWindows(cols, rows, options.maxTileSize, layout.tileCols, layout.tileRows)
+            .listWindows(cols, rows, options.maxTileSize.getOrElse(1<<10), layout.tileCols, layout.tileRows)
+            ._3
             .map((objectRequest, _))
         }
 

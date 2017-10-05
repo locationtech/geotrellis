@@ -20,6 +20,7 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader.GeoTiffInfo
 import geotrellis.util.LazyLogging
 import geotrellis.raster.GridBounds
+import geotrellis.raster._
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -59,6 +60,58 @@ private [geotrellis] trait GeoTiffInfoReader extends LazyLogging {
     }
   }
 
+  def windowsByBytes(
+    partitionBytes: Long,
+    maxSize: Int
+  )(implicit sc: SparkContext): RDD[(String, Array[GridBounds])] = {
+    geoTiffInfoRdd.flatMap({ uri =>
+      val md = getGeoTiffInfo(uri)
+      val cols = md.segmentLayout.totalCols
+      val rows = md.segmentLayout.totalRows
+      val segCols = md.segmentLayout.tileLayout.tileCols
+      val segRows = md.segmentLayout.tileLayout.tileRows
+      val cellType = md.cellType
+      val depth = {
+        cellType match {
+          case BitCellType | ByteCellType | UByteCellType | ByteConstantNoDataCellType | ByteUserDefinedNoDataCellType(_) | UByteConstantNoDataCellType | UByteUserDefinedNoDataCellType(_) => 1
+          case ShortCellType | UShortCellType | ShortConstantNoDataCellType | ShortUserDefinedNoDataCellType(_) | UShortConstantNoDataCellType | UShortUserDefinedNoDataCellType(_) => 2
+          case IntCellType | IntConstantNoDataCellType | IntUserDefinedNoDataCellType(_) => 4
+          case FloatCellType | FloatConstantNoDataCellType | FloatUserDefinedNoDataCellType(_) => 4
+          case DoubleCellType | DoubleConstantNoDataCellType | DoubleUserDefinedNoDataCellType(_) => 8
+        }
+      }
+      val (tileCols, tileRows, fileWindows) =
+        RasterReader.listWindows(cols, rows, maxSize, segCols, segRows)
+      val windowBytes = tileCols * tileRows * depth
+
+      var currentBytes = 0
+      val currentPartition = mutable.ArrayBuffer.empty[GridBounds]
+      val allPartitions = mutable.ArrayBuffer.empty[Array[GridBounds]]
+
+      fileWindows.foreach({ gb =>
+        // Add the window to the present partition
+        if (currentBytes + windowBytes <= partitionBytes) {
+          currentPartition.append(gb)
+          currentBytes += windowBytes
+        }
+        // The window is small enough to fit into some partition,
+        // but not this partition; start a new partition.
+        else if ((currentBytes + windowBytes > partitionBytes) && (windowBytes < partitionBytes)) {
+          allPartitions.append(currentPartition.toArray)
+          currentPartition.clear
+          currentPartition.append(gb)
+          currentBytes = windowBytes
+        }
+        // The window is too large to fit into any partition.
+        else {
+          allPartitions.append(Array(gb))
+        }
+      })
+      allPartitions.append(currentPartition.toArray)
+      allPartitions.toArray.map({ array => (uri, array) })
+    })
+  }
+
   /**
     * Function calculates a split of segments, to minimize segments reads.
     *
@@ -66,8 +119,10 @@ private [geotrellis] trait GeoTiffInfoReader extends LazyLogging {
     * where GridBounds are gird bounds of a particular segment,
     * each segment can only be in a single partition.
     * */
-  def segmentsByPartitionBytes(partitionBytes: Long = Long.MaxValue, maxTileSize: Option[Int] = None)
-                              (implicit sc: SparkContext): RDD[(String, Array[GridBounds])] = {
+  def segmentsByPartitionBytes(
+    partitionBytes: Long = Long.MaxValue,
+    maxTileSize: Option[Int] = None
+  )(implicit sc: SparkContext): RDD[(String, Array[GridBounds])] = {
     geoTiffInfoRdd.flatMap { uri =>
       val bufferKey = uri
 
