@@ -17,7 +17,9 @@
 package geotrellis.spark.io.s3.util
 
 
+import java.net.URI
 import java.nio.file.{Files, Paths}
+
 import geotrellis.util._
 import geotrellis.vector.Extent
 import geotrellis.spark.io.s3._
@@ -25,9 +27,12 @@ import geotrellis.spark.io.s3.testkit._
 import geotrellis.raster.testkit._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader._
-
 import java.nio.{ByteBuffer, ByteOrder}
+
+import com.amazonaws.services.s3.AmazonS3URI
 import com.amazonaws.services.s3.model._
+import geotrellis.raster.CellSize
+import geotrellis.spark.SpatialKey
 import org.scalatest._
 
 class S3GeoTiffReadingSpec extends FunSpec
@@ -119,6 +124,47 @@ class S3GeoTiffReadingSpec extends FunSpec
       val expected = fromLocal.crop(e)
 
       assertEqual(actual.tile, expected.tile)
+    }
+
+    it("LC8") {
+      /**
+        * raster.extent: Extent(382185.0, 2279385.0, 610515.0, 2512515.0)
+raster.extent.reproject(layoutScheme.crs, projectedExtent.crs): Extent(-1.1310143810632845E7, 7402078.317559211, -1.030750136211167E7, 8339933.567258558)
+
+val craster = raster
+  .crop(
+    Extent(519448.87209671224, 2281518.9994109133, 592788.9240706906, 2354434.7531058947),
+    CellSize(305.748113140705,305.748113140705)
+  )
+        */
+
+      val uri = new URI("s3://geotrellis-test/daunnc/LC_TEST/LC08_L1TP_139045_20170304_20170316_01_T1_B4.TIF")
+      val auri = new AmazonS3URI(uri)
+
+      val raster = GeoTiffReader
+        .readSingleband(
+          StreamingByteReader(
+            S3RangeReader(
+              bucket = auri.getBucket,
+              key = auri.getKey,
+              client = S3Client.DEFAULT
+            )
+          ),
+          false,
+          true
+        )
+
+      //raster.extent.intersection()
+
+      val craster = raster
+        .crop(
+          Extent(519448.87209671224, 2281518.9994109133, 592788.9240706906, 2354434.7531058947),
+          CellSize(305.748113140705,305.748113140705)
+        )
+
+
+      craster
+
     }
   }
 }

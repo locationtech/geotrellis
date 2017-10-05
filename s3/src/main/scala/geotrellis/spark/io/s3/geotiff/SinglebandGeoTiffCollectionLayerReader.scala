@@ -36,9 +36,9 @@ case class SinglebandGeoTiffCollectionLayerReader(
           .intersects(mapTransform(SpatialKey(x, y))) && layerId.name == discriminator(p)
       }
       .map { case (projectedExtent, uri) =>
-        println(s"fetching $uri...")
         val auri = new AmazonS3URI(uri)
-        GeoTiffReader
+        println(s"fetching $uri raster...")
+        val raster = GeoTiffReader
           .readSingleband(
             StreamingByteReader(
               S3RangeReader(
@@ -50,10 +50,40 @@ case class SinglebandGeoTiffCollectionLayerReader(
             false,
             true
           )
+        println(s"fetched $uri raster...")
+
+        println(s"cropping $uri raster...")
+        println(
+          s"""
+             |raster.extent: ${raster.extent}
+             |raster.extent.reproject(layoutScheme.crs, projectedExtent.crs): ${raster.extent.reproject(layoutScheme.crs, projectedExtent.crs)}
+             |
+             |val craster = raster
+             |  .crop(
+             |    ${mapTransform(SpatialKey(x, y)).reproject(layoutScheme.crs, projectedExtent.crs)},
+             |    ${layout.cellSize}
+             |  )
+           """.stripMargin)
+
+        // for tests to enure that there are no extra segments in the query which may cause issues
+        val ext =
+          raster
+            .extent
+            .intersection(mapTransform(SpatialKey(x, y)).reproject(layoutScheme.crs, projectedExtent.crs))
+            .getOrElse(Extent(0, 0, 0, 0))
+
+        val craster = raster
           .crop(
-            mapTransform(SpatialKey(x, y)).reproject(layoutScheme.crs, projectedExtent.crs),
+            ext,
             layout.cellSize
-          ).reproject(projectedExtent.crs, layoutScheme.crs)
+          )
+        println(s"cropped $uri raster...")
+
+        println(s"reprojecting $uri raster...")
+        val rraster = craster.reproject(projectedExtent.crs, layoutScheme.crs)
+        println(s"reprojected $uri raster...")
+
+        craster
 
       }
       .reduce(_ merge _)
