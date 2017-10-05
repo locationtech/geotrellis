@@ -24,3 +24,5 @@ addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "1.0.0")
 addSbtPlugin("com.sksamuel.scapegoat" %% "sbt-scapegoat" % "1.0.4")
 
 addSbtPlugin("com.github.sbt" % "sbt-jacoco" % "3.0.2")
+
+addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "0.1.18")

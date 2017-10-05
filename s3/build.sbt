@@ -10,6 +10,10 @@ libraryDependencies ++= Seq(
 fork in Test := false
 parallelExecution in Test := false
 
+mimaPreviousArtifacts := Set(
+  "org.locationtech.geotrellis" %% "geotrellis-s3" % Version.previousVersion
+)
+
 initialCommands in console :=
   """
   import geotrellis.raster._
