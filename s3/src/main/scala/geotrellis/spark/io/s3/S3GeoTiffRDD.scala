@@ -133,8 +133,9 @@ object S3GeoTiffRDD extends LazyLogging {
 
     (options.maxTileSize, options.partitionBytes) match {
       case (_, Some(partitionBytes)) => {
+        val maxSize = math.min(options.maxTileSize.getOrElse(1<<10), windowSize.getOrElse(1<<10)) // XXX is windowSize a length or an area?
         val windows: RDD[(String, Array[GridBounds])] =
-          sourceGeoTiffInfo.windowsByBytes(partitionBytes, options.maxTileSize.getOrElse(1<<10))
+          sourceGeoTiffInfo.windowsByBytes(partitionBytes, maxSize)
 
         windows.persist()
 
