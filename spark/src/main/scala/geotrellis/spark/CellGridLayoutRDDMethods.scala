@@ -31,7 +31,7 @@ abstract class CellGridLayoutRDDMethods[K: SpatialComponent: ClassTag, V <: Cell
 
     self.mapPartitions({ part =>
       part.map { case (key, tile) =>
-        (key, Raster(tile, key.getComponent[SpatialKey].toExtent(layout)))
+        (key, Raster(tile, key.getComponent[SpatialKey].tileExtent(layout)))
       }
     }, true)
   }

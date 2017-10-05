@@ -107,12 +107,13 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
   @deprecated("Use this instead: MapKeyTransform.keyToExtent(key.getComponent[SpatialKey])", "1.2")
   def apply[K: SpatialComponent](key: K): Extent = apply(key.getComponent[SpatialKey])
 
-  def keyToExtent(key: SpatialKey): Extent = apply(key)
+  /** Get the [[Extent]] corresponding to a [[SpatialKey]] in some zoom level. */
+  def tileExtent(key: SpatialKey): Extent = apply(key)
 
   def apply(key: SpatialKey): Extent = apply(key.col, key.row)
 
   /** 'col' and 'row' correspond to a [[SpatialKey]] column and row in some grid. */
-  def coordsToExtent(col: Int, row: Int): Extent = apply(col, row)
+  def tileExtent(col: Int, row: Int): Extent = apply(col, row)
 
   def apply(col: Int, row: Int): Extent =
     Extent(

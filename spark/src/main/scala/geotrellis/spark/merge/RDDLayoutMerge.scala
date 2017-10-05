@@ -41,14 +41,14 @@ object RDDLayoutMerge {
     val cutRdd =
       right
         .flatMap { case (k: K, tile: V) =>
-          val extent: Extent = k.getComponent[SpatialKey].toExtent(thatLayout)
+          val extent: Extent = k.getComponent[SpatialKey].tileExtent(thatLayout)
 
           thisLayout.mapTransform(extent)
             .coordsIter
             .map { case (col, row) =>
               val outKey = k.setComponent(SpatialKey(col, row))
               val newTile = tile.prototype(thisLayout.tileCols, thisLayout.tileRows)
-              val merged = newTile.merge(outKey.getComponent[SpatialKey].toExtent(thisLayout), extent, tile)
+              val merged = newTile.merge(outKey.getComponent[SpatialKey].tileExtent(thisLayout), extent, tile)
               (outKey, merged)
             }
         }
