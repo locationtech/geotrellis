@@ -33,7 +33,7 @@ import java.net.URI
 import java.time.{LocalDateTime, ZoneId}
 
 class HadoopGeoTiffRDDSpec
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with RasterMatchers
     with TestEnvironment
@@ -83,13 +83,9 @@ class HadoopGeoTiffRDDSpec
       val (wholeInfo, _) = source1.first()
       val dateTime = wholeInfo.time
 
-      val collection = source2.collect
+      val collection = source2.map({ case (info, _) => info.time }).collect
 
-      cfor(0)(_ < source2.count, _ + 1){ i =>
-        val (info, _) = collection(i)
-
-        info.time should be (dateTime)
-      }
+      collection.forall({ t => t == dateTime }) should be (true)
     }
 
     it("should read the same rasters when reading small windows or with no windows, Temporal, MultibandGeoTiff") {
@@ -108,14 +104,9 @@ class HadoopGeoTiffRDDSpec
       val (wholeInfo, _) = source1.first()
       val dateTime = wholeInfo.time
 
-      val collection = source2.collect
+      val collection = source2.map({ case (info, _) => info.time }).collect
 
-      cfor(0)(_ < source2.count, _ + 1){ i =>
-        val (info, _) = collection(i)
-
-        info.time should be (dateTime)
-      }
-
+      collection.forall({ t => t == dateTime }) should be (true)
     }
 
     it("should read the rasters with each raster path handling") {
@@ -130,7 +121,7 @@ class HadoopGeoTiffRDDSpec
 
       val expected = HdfsUtils.listFiles(tilesDir, sc.hadoopConfiguration).map { path =>
         zdtFromString(path.getName).toInstant.toEpochMilli
-      }
+      }.toSet
 
       val actual =
         HadoopGeoTiffRDD.singleband[ProjectedExtent, TemporalProjectedExtent](
@@ -144,7 +135,7 @@ class HadoopGeoTiffRDDSpec
             TemporalProjectedExtent(key, zdt)
           },
           options = HadoopGeoTiffRDD.Options.DEFAULT
-        ).map(_._1.instant).collect().toList
+        ).map(_._1.instant).collect().toSet
 
 
       actual should contain theSameElementsAs expected
