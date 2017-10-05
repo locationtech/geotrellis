@@ -16,6 +16,10 @@ libraryDependencies ++= Seq(
   scaffeine
 )
 
+mimaPreviousArtifacts := Set(
+  "org.locationtech.geotrellis" %% "geotrellis-spark" % Version.previousVersion
+)
+
 fork in Test := false
 parallelExecution in Test := false
 

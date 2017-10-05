@@ -26,6 +26,10 @@ libraryDependencies := {
   }
 }
 
+mimaPreviousArtifacts := Set(
+  "org.locationtech.geotrellis" %% "geotrellis-raster" % Version.previousVersion
+)
+
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
 
 sourceGenerators in Compile += (sourceManaged in Compile).map(Boilerplate.genRaster).taskValue
