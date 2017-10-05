@@ -90,7 +90,7 @@ object ZoomResample {
                 gbaz.map { gb =>
                   gb.coordsIter
                     .map { case (col, row) =>
-                      val sourceExtent = sourceMapTransform(key)
+                      val sourceExtent = sourceMapTransform(key.getComponent[SpatialKey])
                       val targetExtent = targetMapTransform(col, row)
                       val resampled = tile.resample(
                         sourceExtent,
@@ -130,7 +130,7 @@ object ZoomResample {
                 gridBoundsAtZoom(sourceZoom, key.getComponent[SpatialKey], targetZoom)
                   .coordsIter
                   .map { case (col, row) =>
-                    val sourceExtent = sourceMapTransform(key)
+                    val sourceExtent = sourceMapTransform(key.getComponent[SpatialKey])
                     val targetExtent = targetMapTransform(col, row)
                     val resampled =
                       tile.resample(sourceExtent, RasterExtent(targetExtent, tileSize, tileSize), method)

@@ -42,7 +42,8 @@ object Crop {
               rdd
                 .mapPartitions({ partition =>
                   partition.flatMap({ case (key, tile) =>
-                    val srcExtent = mapTransform(key)
+                    val srcExtent: Extent = mapTransform(key.getComponent[SpatialKey])
+
                     if (extent.contains(srcExtent)) {
                       Some((key, tile))
                     } else if (extent.interiorIntersects(srcExtent)) {

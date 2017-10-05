@@ -134,8 +134,8 @@ object Intersects {
     new LayerFilter[K, Intersects.type, MultiPolygon, M] {
       def apply(metadata: M, kb: KeyBounds[K], polygon: MultiPolygon) = {
         val mapTransform = metadata.getComponent[LayoutDefinition].mapTransform
-        val extent = polygon.envelope
-        val keyext = mapTransform(kb.minKey)
+        val extent: Extent = polygon.envelope
+        val keyext: Extent = mapTransform(kb.minKey.getComponent[SpatialKey])
         val bounds: GridBounds = mapTransform(extent)
         val options = Options(includePartial=true, sampleType=PixelIsArea)
 
@@ -215,8 +215,8 @@ object Intersects {
     new LayerFilter[K, Intersects.type, MultiLine, M] {
       def apply(metadata: M, kb: KeyBounds[K], multiLine: MultiLine) = {
         val mapTransform = metadata.getComponent[LayoutDefinition].mapTransform
-        val extent = multiLine.envelope
-        val keyext = mapTransform(kb.minKey)
+        val extent: Extent = multiLine.envelope
+        val keyext: Extent = mapTransform(kb.minKey.getComponent[SpatialKey])
         val bounds: GridBounds = mapTransform(extent)
         val options = Options(includePartial=true, sampleType=PixelIsArea)
 

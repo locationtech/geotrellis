@@ -22,6 +22,7 @@ import geotrellis.raster.prototype._
 import geotrellis.spark._
 import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.util._
+import geotrellis.vector.Extent
 
 import org.apache.spark.rdd.RDD
 
@@ -40,13 +41,14 @@ object RDDLayoutMerge {
     val cutRdd =
       right
         .flatMap { case (k: K, tile: V) =>
-          val extent = thatLayout.mapTransform(k)
+          val extent: Extent = k.getComponent[SpatialKey].toExtent(thatLayout)
+
           thisLayout.mapTransform(extent)
             .coordsIter
             .map { case (col, row) =>
               val outKey = k.setComponent(SpatialKey(col, row))
               val newTile = tile.prototype(thisLayout.tileCols, thisLayout.tileRows)
-              val merged = newTile.merge(thisLayout.mapTransform(outKey), extent, tile)
+              val merged = newTile.merge(outKey.getComponent[SpatialKey].toExtent(thisLayout), extent, tile)
               (outKey, merged)
             }
         }

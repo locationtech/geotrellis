@@ -28,7 +28,7 @@ import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.spark.buffer._
 import geotrellis.vector._
-import geotrellis.util.LazyLogging
+import geotrellis.util._
 
 import org.apache.spark.rdd._
 import org.apache.spark._
@@ -64,7 +64,6 @@ object TileRDDReproject {
   ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
     val crs: CRS = metadata.crs
     val layout = metadata.layout
-    val mapTransform: MapKeyTransform = layout.mapTransform
     val tileLayout: TileLayout = layout.tileLayout
 
     val rasterReprojectOptions =
@@ -88,7 +87,7 @@ object TileRDDReproject {
           val inverseTransform = Transform(destCrs, crs)
 
           partition.map { case (key, BufferedTile(tile, gridBounds)) =>
-            val innerExtent = mapTransform(key)
+            val innerExtent = key.getComponent[SpatialKey].toExtent(layout)
             val innerRasterExtent = RasterExtent(innerExtent, gridBounds.width, gridBounds.height)
             val outerGridBounds =
               GridBounds(
@@ -200,7 +199,7 @@ object TileRDDReproject {
       }
     } else {
       val crs = rdd.metadata.crs
-      val mapTransform = rdd.metadata.layout.mapTransform
+      val layout = rdd.metadata.layout
       val tileLayout = rdd.metadata.layout.tileLayout
 
       val rasterExtents: RDD[(K, (RasterExtent, RasterExtent))] =
@@ -209,7 +208,7 @@ object TileRDDReproject {
             val transform = Transform(crs, destCrs)
 
             partition.map { case (key, _) =>
-              val extent = mapTransform(key)
+              val extent = key.getComponent[SpatialKey].toExtent(layout)
               val rasterExtent = RasterExtent(extent, tileLayout.tileCols, tileLayout.tileRows)
               (key, (rasterExtent, ReprojectRasterExtent(rasterExtent, transform)))
             }
