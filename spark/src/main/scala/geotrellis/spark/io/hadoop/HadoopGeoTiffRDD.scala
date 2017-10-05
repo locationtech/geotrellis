@@ -184,7 +184,6 @@ object HadoopGeoTiffRDD extends LazyLogging {
 
           RasterReader
             .listWindows(cols, rows, options.maxTileSize.getOrElse(1<<10), layout.tileCols, layout.tileRows)
-            ._3
             .map((objectRequest, _))
         }
 
