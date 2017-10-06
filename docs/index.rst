@@ -134,6 +134,6 @@ Ready? `Setup a GeoTrellis development environment. <tutorials/setup.html>`__
    :glob:
    :hidden:
 
-   Architecture Decision Records <architecture/adr>
+   Architecture Decision Records <architecture/adrs>
    Proj4 Implementation <architecture/proj4-implementation>
    architecture/high-performance-scala
