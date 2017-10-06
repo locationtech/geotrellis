@@ -40,9 +40,9 @@ private[vector] object GeomFactory extends LazyLogging {
   val precisionModel = precisionType match {
     case "floating" => new PrecisionModel()
     case "floating_single" => new PrecisionModel(PrecisionModel.FLOATING_SINGLE)
-    case "fixed" => 
+    case "fixed" =>
       val scaleFromConfig = Try(ConfigFactory.load().getDouble("geotrellis.jts.precision.scale"))
-      val scale = 
+      val scale =
         if (scaleFromConfig.isSuccess)
           scaleFromConfig.get
         else {
@@ -58,7 +58,7 @@ private[vector] object GeomFactory extends LazyLogging {
   // 12 digits is maximum to avoid [[TopologyException]], see https://web.archive.org/web/20160226031453/http://tsusiatsoftware.net/jts/jts-faq/jts-faq.html#D9
   lazy val simplifier = {
     val simplificationPrecision = Try(ConfigFactory.load().getDouble("geotrellis.jts.simplification.scale"))
-    val scale = 
+    val scale =
       if (simplificationPrecision.isSuccess)
         simplificationPrecision.get
       else {

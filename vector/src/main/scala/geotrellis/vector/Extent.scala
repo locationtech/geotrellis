@@ -48,7 +48,7 @@ object Extent {
   * @param extent The Extent which is projected
   * @param crs    The CRS projection of this extent
   */
-case class ProjectedExtent(extent: Extent, crs: CRS) {
+case class ProjectedExtent(extent: Extent, crs: CRS) extends Serializable {
   def reproject(dest: CRS): Extent =
     extent.reproject(crs, dest)
 }
@@ -66,7 +66,10 @@ object ProjectedExtent {
   * @param xmax The maximum x coordinate
   * @param ymax The maximum y coordinate
   */
-case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
+case class Extent(
+  xmin: Double, ymin: Double,
+  xmax: Double, ymax: Double
+) extends Serializable {
 
   // Validation: Do not accept extents min values greater than max values.
   if (xmin > xmax) { throw ExtentRangeError(s"Invalid Extent: xmin must be less than xmax (xmin=$xmin, xmax=$xmax)") }
@@ -113,15 +116,15 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
   def interiorIntersects(other: Extent): Boolean =
     !(other.xmax <= xmin ||
       other.xmin >= xmax) &&
-    !(other.ymax <= ymin ||
-      other.ymin >= ymax)
+  !(other.ymax <= ymin ||
+    other.ymin >= ymax)
 
   /** Predicate for whether this extent intersects another */
   def intersects(other: Extent): Boolean =
     !(other.xmax < xmin ||
       other.xmin > xmax) &&
-    !(other.ymax < ymin ||
-      other.ymin > ymax)
+  !(other.ymax < ymin ||
+    other.ymin > ymax)
 
   /** Predicate for whether this extent intersects another */
   def intersects(p: Point): Boolean =
@@ -136,9 +139,9 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
     if(xmin == 0 && xmax == 0 && ymin == 0 && ymax == 0) false
     else
       other.xmin >= xmin &&
-      other.ymin >= ymin &&
-      other.xmax <= xmax &&
-      other.ymax <= ymax
+    other.ymin >= ymin &&
+    other.xmax <= xmax &&
+    other.ymax <= ymax
   }
 
   /** Tests if the given point lies in or on the envelope.
@@ -183,21 +186,21 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
         else
           0.0
 
-        val dy =
-          if(ymax < other.ymin)
-            other.ymin - ymax
-          else if(ymin > other.ymax)
-            ymin - other.ymax
-          else
-            0.0
-
-        // if either is zero, the envelopes overlap either vertically or horizontally
-        if(dx == 0.0)
-          dy
-        else if(dy == 0.0)
-          dx
+      val dy =
+        if(ymax < other.ymin)
+          other.ymin - ymax
+        else if(ymin > other.ymax)
+          ymin - other.ymax
         else
-          math.sqrt(dx * dx + dy * dy)
+          0.0
+
+      // if either is zero, the envelopes overlap either vertically or horizontally
+      if(dx == 0.0)
+        dy
+      else if(dy == 0.0)
+        dx
+      else
+        math.sqrt(dx * dx + dy * dy)
     }
 
   /** Create an optional extent which represents the intersection with a provided extent */
@@ -310,7 +313,7 @@ case class Extent(xmin: Double, ymin: Double, xmax: Double, ymax: Double) {
         xmin == other.xmin && ymin == other.ymin &&
         xmax == other.xmax && ymax == other.ymax
       case _ => false
-  }
+    }
 
   override
   def hashCode(): Int = (xmin, ymin, xmax, ymax).hashCode

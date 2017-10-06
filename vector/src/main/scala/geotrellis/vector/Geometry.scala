@@ -25,7 +25,7 @@ import GeomFactory._
 import scala.reflect.{ ClassTag, classTag }
 
 /** A trait inherited by classes which wrap a jts.Geometry */
-trait Geometry {
+trait Geometry extends Serializable {
 
   /** Return the wrapped jts Geometry */
   def jtsGeom: jts.Geometry

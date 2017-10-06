@@ -19,7 +19,7 @@ package geotrellis.vector
 import com.vividsolutions.jts.{geom => jts}
 import scala.reflect._
 
-private[vector] trait GeometryResultMethods {
+private[vector] trait GeometryResultMethods extends Serializable {
   /** Returns this result as an option, unless this is NoResult, in which case it returns None */
   def toGeometry(): Option[Geometry]
 
