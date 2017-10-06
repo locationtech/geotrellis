@@ -28,7 +28,7 @@ abstract class CellGridLayoutCollectionMethods[K: SpatialComponent, V <: CellGri
     val layout = self.metadata.getComponent[LayoutDefinition]
 
     self.map { case (key, tile) =>
-      (key, Raster(tile, key.getComponent[SpatialKey].tileExtent(layout)))
+      (key, Raster(tile, key.getComponent[SpatialKey].extent(layout)))
     }
   }
 }

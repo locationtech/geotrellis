@@ -56,7 +56,7 @@ object CutTiles {
             logger.debug(s"Merge $inKey into $outKey of (${tileCols}, ${tileRows}) cells")
             val newTile = tile.prototype(cellType, tileCols, tileRows)
             (outKey, newTile.merge(
-               mapTransform.tileExtent(outKey.getComponent[SpatialKey]),
+               mapTransform.keyToExtent(outKey.getComponent[SpatialKey]),
                extent,
                tile,
                resampleMethod

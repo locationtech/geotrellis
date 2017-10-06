@@ -96,7 +96,7 @@ object Pyramid extends LazyLogging {
     val nextRdd = {
      val transformedRdd = rdd
         .map { case (key, tile) =>
-          val extent: Extent = key.getComponent[SpatialKey].tileExtent(sourceLayout)
+          val extent: Extent = key.getComponent[SpatialKey].extent(sourceLayout)
           val newSpatialKey = nextLayout.mapTransform(extent.center)
           (key.setComponent(newSpatialKey), (key, tile))
         }
@@ -104,11 +104,11 @@ object Pyramid extends LazyLogging {
         partitioner
           .fold(transformedRdd.combineByKey(createTiles, mergeTiles1, mergeTiles2))(transformedRdd.combineByKey(createTiles _, mergeTiles1 _, mergeTiles2 _, _))
           .mapPartitions ( partition => partition.map { case (newKey: K, seq: Seq[(K, V)]) =>
-            val newExtent = newKey.getComponent[SpatialKey].tileExtent(nextLayout)
+            val newExtent = newKey.getComponent[SpatialKey].extent(nextLayout)
             val newTile = seq.head._2.prototype(nextLayout.tileLayout.tileCols, nextLayout.tileLayout.tileRows)
 
             for ((oldKey, tile) <- seq) {
-              val oldExtent = oldKey.getComponent[SpatialKey].tileExtent(sourceLayout)
+              val oldExtent = oldKey.getComponent[SpatialKey].extent(sourceLayout)
               newTile.merge(newExtent, oldExtent, tile, resampleMethod)
             }
             (newKey, newTile: V)

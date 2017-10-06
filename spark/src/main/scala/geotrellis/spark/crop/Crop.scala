@@ -42,7 +42,7 @@ object Crop {
               rdd
                 .mapPartitions({ partition =>
                   partition.flatMap({ case (key, tile) =>
-                    val srcExtent: Extent = mapTransform.tileExtent(key.getComponent[SpatialKey])
+                    val srcExtent: Extent = mapTransform.keyToExtent(key.getComponent[SpatialKey])
 
                     if (extent.contains(srcExtent)) {
                       Some((key, tile))

@@ -87,7 +87,7 @@ object TileRDDReproject {
           val inverseTransform = Transform(destCrs, crs)
 
           partition.map { case (key, BufferedTile(tile, gridBounds)) =>
-            val innerExtent = key.getComponent[SpatialKey].tileExtent(layout)
+            val innerExtent = key.getComponent[SpatialKey].extent(layout)
             val innerRasterExtent = RasterExtent(innerExtent, gridBounds.width, gridBounds.height)
             val outerGridBounds =
               GridBounds(
@@ -208,7 +208,7 @@ object TileRDDReproject {
             val transform = Transform(crs, destCrs)
 
             partition.map { case (key, _) =>
-              val extent = key.getComponent[SpatialKey].tileExtent(layout)
+              val extent = key.getComponent[SpatialKey].extent(layout)
               val rasterExtent = RasterExtent(extent, tileLayout.tileCols, tileLayout.tileRows)
               (key, (rasterExtent, ReprojectRasterExtent(rasterExtent, transform)))
             }
