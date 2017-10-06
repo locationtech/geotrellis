@@ -182,6 +182,7 @@ package object spark
   }
 
   implicit class withCollectMetadataMethods[K1, V <: CellGrid](rdd: RDD[(K1, V)]) extends Serializable {
+    /** The `Int` is the zoom level if ingested with the produced Metadata. */
     def collectMetadata[K2: Boundable: SpatialComponent](crs: CRS, layoutScheme: LayoutScheme)
         (implicit ev: K1 => TilerKeyMethods[K1, K2]): (Int, TileLayerMetadata[K2]) = {
       TileLayerMetadata.fromRdd[K1, V, K2](rdd, crs, layoutScheme)
@@ -192,11 +193,13 @@ package object spark
       TileLayerMetadata.fromRdd[K1, V, K2](rdd, crs, layout)
     }
 
+    /** The `Int` is the zoom level if ingested with the produced Metadata. */
     def collectMetadata[K2: Boundable: SpatialComponent](layoutScheme: LayoutScheme)
         (implicit ev: K1 => TilerKeyMethods[K1, K2], ev1: GetComponent[K1, ProjectedExtent]): (Int, TileLayerMetadata[K2]) = {
       TileLayerMetadata.fromRdd[K1, V, K2](rdd, layoutScheme)
     }
 
+    /** The `Int` is the zoom level if ingested with the produced Metadata. */
     def collectMetadata[K2: Boundable: SpatialComponent](crs: CRS, size: Int, zoom: Int)
         (implicit ev: K1 => TilerKeyMethods[K1, K2], ev1: GetComponent[K1, ProjectedExtent]): (Int, TileLayerMetadata[K2]) = {
       TileLayerMetadata.fromRdd[K1, V, K2](rdd, ZoomedLayoutScheme(crs, size), zoom)
