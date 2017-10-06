@@ -51,7 +51,7 @@ class S3LayerProvider extends AttributeStoreProvider
     new S3LayerWriter(store, bucket = s3Uri.getBucket, keyPrefix = s3Uri.getKey)
   }
 
-  def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] with OverzoomingValueReader = {
-    new S3ValueReader(store) with OverzoomingValueReader
+  def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] = {
+    new S3ValueReader(store)
   }
 }

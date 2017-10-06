@@ -47,8 +47,8 @@ class FileLayerProvider extends AttributeStoreProvider
     new FileLayerWriter(store, file.getCanonicalPath)
   }
 
-  def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] with OverzoomingValueReader = {
+  def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] = {
     val catalogPath = new File(uri).getCanonicalPath
-    new FileValueReader(store, catalogPath) with OverzoomingValueReader
+    new FileValueReader(store, catalogPath)
   }
 }
