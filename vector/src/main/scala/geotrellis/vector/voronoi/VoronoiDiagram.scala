@@ -145,16 +145,16 @@ object VoronoiDiagram {
         // println(s"  edge from $v3 to $v4")
 
         (contained(i), contained((i + 1) % n)) match {
-          case (true, true)   => 
+          case (true, true)   =>
             // println("case 1")
             result += v3
-          case (true, false)  => 
+          case (true, false)  =>
             // println("case 2")
             result ++= Seq(v3, crossing(v3, v4))
-          case (false, true)  => 
+          case (false, true)  =>
             // println("case 3")
             result += crossing(v3, v4)
-          case (false, false) => 
+          case (false, false) =>
             // println("case 4")
             ()
         }
@@ -184,7 +184,7 @@ object VoronoiDiagram {
  * A class to compute the Voronoi diagram of a set of points.  See
  * <geotrellis_home>/docs/vector/voronoi.md for more information.
  */
-class VoronoiDiagram(val dt: DelaunayTriangulation, val extent: Extent) {
+class VoronoiDiagram(val dt: DelaunayTriangulation, val extent: Extent) extends Serializable {
   import VoronoiDiagram._
 
   val pointSet = dt.pointSet
@@ -218,10 +218,10 @@ class VoronoiDiagram(val dt: DelaunayTriangulation, val extent: Extent) {
    * corresponding polygonal regions.
    */
   def voronoiCellsWithPoints(): Seq[(Polygon, Coordinate)] = {
-    dt.liveVertices.toSeq.flatMap{ i: Int => 
-      voronoiCell(i) match { 
+    dt.liveVertices.toSeq.flatMap{ i: Int =>
+      voronoiCell(i) match {
         case None => None
-        case Some(poly) => Some(poly, dt.pointSet.getCoordinate(i)) 
+        case Some(poly) => Some(poly, dt.pointSet.getCoordinate(i))
       }
     }
   }

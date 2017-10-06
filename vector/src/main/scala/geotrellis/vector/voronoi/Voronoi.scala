@@ -33,7 +33,7 @@ import com.vividsolutions.jts.geom.{GeometryCollection, Coordinate, Point => JTS
  * user-specifiable.  If the target point set inhabits a region that is small with
  * respect to the domain of interest, you may have to handle cell boundaries.
  */
-class Voronoi(val verts: Array[Point]) {
+class Voronoi(val verts: Array[Point]) extends Serializable {
 
   val del = Delaunay(verts)
 
@@ -53,4 +53,3 @@ class Voronoi(val verts: Array[Point]) {
     }
   }
 }
-

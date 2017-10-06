@@ -55,7 +55,10 @@ object ConformingDelaunay {
   * resulting triangle's circumscribing circle will contain no other
   * points of the input set.
   */
-case class ConformingDelaunay(verts: Array[Point], constraints: jts.GeometryCollection) {
+case class ConformingDelaunay(
+  verts: Array[Point],
+  constraints: jts.GeometryCollection
+) extends Serializable {
 
   private[voronoi] val gf = new jts.GeometryFactory
   private val sites = new jts.MultiPoint(verts.map(_.jtsGeom), gf)
