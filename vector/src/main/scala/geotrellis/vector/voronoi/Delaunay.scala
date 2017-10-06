@@ -44,7 +44,7 @@ object Delaunay {
   * property.  Each resulting triangle's circumscribing circle will
   * contain no other points of the input set.
   */
-case class Delaunay(verts: Array[Point]) {
+case class Delaunay(verts: Array[Point]) extends Serializable {
 
   private[voronoi] val gf = new GeometryFactory
   private val sites = new MultiPoint(verts.map(_.jtsGeom), gf)
