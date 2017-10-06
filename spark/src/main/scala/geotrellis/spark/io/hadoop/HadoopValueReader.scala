@@ -38,7 +38,7 @@ class HadoopValueReader(
   val attributeStore: AttributeStore,
   conf: Configuration,
   maxOpenFiles: Int = 16
-) extends ValueReader[LayerId] {
+) extends OverzoomingValueReader {
 
   val readers = new LRUCache[(LayerId, Path), MapFile.Reader](maxOpenFiles.toLong, {x => 1l}) {
     override def evicted(reader: MapFile.Reader) = reader.close()
@@ -89,15 +89,15 @@ object HadoopValueReader {
     layerId: LayerId,
     resampleMethod: ResampleMethod
   )(implicit sc: SparkContext): Reader[K, V] =
-    (new HadoopValueReader(attributeStore, sc.hadoopConfiguration) with OverzoomingValueReader).overzoomingReader[K, V](layerId, resampleMethod)
+    new HadoopValueReader(attributeStore, sc.hadoopConfiguration).overzoomingReader[K, V](layerId, resampleMethod)
 
-  def apply(attributeStore: HadoopAttributeStore): HadoopValueReader with OverzoomingValueReader =
-    new HadoopValueReader(attributeStore, attributeStore.hadoopConfiguration) with OverzoomingValueReader
+  def apply(attributeStore: HadoopAttributeStore): HadoopValueReader =
+    new HadoopValueReader(attributeStore, attributeStore.hadoopConfiguration)
 
   def apply(rootPath: Path)
-    (implicit sc: SparkContext): HadoopValueReader with OverzoomingValueReader =
+    (implicit sc: SparkContext): HadoopValueReader =
     apply(HadoopAttributeStore(rootPath))
 
-  def apply(rootPath: Path, conf: Configuration): HadoopValueReader with OverzoomingValueReader =
+  def apply(rootPath: Path, conf: Configuration): HadoopValueReader =
     apply(HadoopAttributeStore(rootPath, conf))
 }

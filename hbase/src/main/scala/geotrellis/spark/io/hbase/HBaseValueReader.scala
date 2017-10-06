@@ -31,7 +31,7 @@ import scala.reflect.ClassTag
 class HBaseValueReader(
   instance: HBaseInstance,
   val attributeStore: AttributeStore
-) extends ValueReader[LayerId] {
+) extends OverzoomingValueReader {
 
   def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
     val header = attributeStore.readHeader[HBaseLayerHeader](layerId)
@@ -65,7 +65,7 @@ object HBaseValueReader {
     attributeStore: AttributeStore,
     layerId: LayerId
   ): Reader[K, V] =
-    (new HBaseValueReader(instance, attributeStore) with OverzoomingValueReader).reader[K, V](layerId)
+    new HBaseValueReader(instance, attributeStore).reader[K, V](layerId)
 
   def apply[K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid: AvroRecordCodec: ? => TileResampleMethods[V]](
     instance: HBaseInstance,
@@ -73,15 +73,15 @@ object HBaseValueReader {
     layerId: LayerId,
     resampleMethod: ResampleMethod
   ): Reader[K, V] =
-    (new HBaseValueReader(instance, attributeStore) with OverzoomingValueReader).overzoomingReader[K, V](layerId, resampleMethod)
+    new HBaseValueReader(instance, attributeStore).overzoomingReader[K, V](layerId, resampleMethod)
 
-  def apply(instance: HBaseInstance): HBaseValueReader with OverzoomingValueReader =
+  def apply(instance: HBaseInstance): HBaseValueReader =
     new HBaseValueReader(
       instance = instance,
-      attributeStore = HBaseAttributeStore(instance)) with OverzoomingValueReader
+      attributeStore = HBaseAttributeStore(instance))
 
-  def apply(attributeStore: HBaseAttributeStore): HBaseValueReader with OverzoomingValueReader =
+  def apply(attributeStore: HBaseAttributeStore): HBaseValueReader =
     new HBaseValueReader(
       instance = attributeStore.instance,
-      attributeStore = attributeStore) with OverzoomingValueReader
+      attributeStore = attributeStore)
 }

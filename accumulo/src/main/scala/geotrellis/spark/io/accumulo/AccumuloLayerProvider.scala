@@ -58,8 +58,8 @@ class AccumuloLayerProvider extends AttributeStoreProvider
     AccumuloLayerWriter(instance, store, table)
   }
 
-  def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] with OverzoomingValueReader = {
+  def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] = {
     val instance = AccumuloInstance(uri)
-    new AccumuloValueReader(instance, store) with OverzoomingValueReader
+    new AccumuloValueReader(instance, store)
   }
 }

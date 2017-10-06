@@ -35,7 +35,7 @@ import scala.reflect.ClassTag
 class FileValueReader(
   val attributeStore: AttributeStore,
   catalogPath: String
-) extends ValueReader[LayerId] {
+) extends OverzoomingValueReader {
 
   def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
 
@@ -69,7 +69,7 @@ object FileValueReader {
     catalogPath: String,
     layerId: LayerId
   ): Reader[K, V] =
-    (new FileValueReader(attributeStore, catalogPath) with OverzoomingValueReader).reader(layerId)
+    new FileValueReader(attributeStore, catalogPath).reader(layerId)
 
   def apply[K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid: AvroRecordCodec: ? => TileResampleMethods[V]](
     attributeStore: AttributeStore,
@@ -77,11 +77,11 @@ object FileValueReader {
     layerId: LayerId,
     resampleMethod: ResampleMethod
   ): Reader[K, V] =
-    (new FileValueReader(attributeStore, catalogPath) with OverzoomingValueReader).overzoomingReader(layerId, resampleMethod)
+    new FileValueReader(attributeStore, catalogPath).overzoomingReader(layerId, resampleMethod)
 
-  def apply(catalogPath: String): FileValueReader with OverzoomingValueReader =
-    new FileValueReader(new FileAttributeStore(catalogPath), catalogPath) with OverzoomingValueReader
+  def apply(catalogPath: String): FileValueReader =
+    new FileValueReader(new FileAttributeStore(catalogPath), catalogPath)
 
-  def apply(attributeStore: FileAttributeStore): FileValueReader with OverzoomingValueReader =
-    new FileValueReader(attributeStore, attributeStore.catalogPath) with OverzoomingValueReader
+  def apply(attributeStore: FileAttributeStore): FileValueReader =
+    new FileValueReader(attributeStore, attributeStore.catalogPath)
 }

@@ -37,7 +37,7 @@ import scala.reflect.ClassTag
 class AccumuloValueReader(
   instance: AccumuloInstance,
   val attributeStore: AttributeStore
-) extends ValueReader[LayerId] {
+) extends OverzoomingValueReader {
 
   val rowId = (index: Long) => new Text(AccumuloKeyEncoder.long2Bytes(index))
 
@@ -78,7 +78,7 @@ object AccumuloValueReader {
     attributeStore: AttributeStore,
     layerId: LayerId
   ): Reader[K, V] =
-    (new AccumuloValueReader(instance, attributeStore) with OverzoomingValueReader).reader[K, V](layerId)
+    new AccumuloValueReader(instance, attributeStore).reader[K, V](layerId)
 
   def apply[K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid: AvroRecordCodec: ? => TileResampleMethods[V]](
     instance: AccumuloInstance,
@@ -86,10 +86,10 @@ object AccumuloValueReader {
     layerId: LayerId,
     resampleMethod: ResampleMethod
   ): Reader[K, V] =
-    (new AccumuloValueReader(instance, attributeStore) with OverzoomingValueReader).overzoomingReader[K, V](layerId, resampleMethod)
+    new AccumuloValueReader(instance, attributeStore).overzoomingReader[K, V](layerId, resampleMethod)
 
-  def apply(instance: AccumuloInstance): AccumuloValueReader with OverzoomingValueReader =
+  def apply(instance: AccumuloInstance): AccumuloValueReader =
     new AccumuloValueReader(
       instance = instance,
-      attributeStore = AccumuloAttributeStore(instance.connector)) with OverzoomingValueReader
+      attributeStore = AccumuloAttributeStore(instance.connector))
 }
