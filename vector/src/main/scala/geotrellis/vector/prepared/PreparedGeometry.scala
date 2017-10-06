@@ -24,7 +24,7 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory
   * performance enhancements to operations over those geometries. See Chris Bennight's
   * [[https://github.com/chrisbennight/intersection-test writeup and benchmarks]] for more.
   */
-case class PreparedGeometry[G <: Geometry](val geom: Geometry) extends Serializable {
+case class PreparedGeometry[G <: Geometry](val geom: Geometry) {
   private val prepared = PreparedGeometry.factory.create(geom.jtsGeom)
   def contains(that: Geometry): Boolean =
     prepared.contains(that.jtsGeom)

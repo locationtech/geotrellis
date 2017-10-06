@@ -37,7 +37,7 @@ case class DelaunayTriangulation(
   halfEdgeTable: HalfEdgeTable,
   tolerance: Double,
   debug: Boolean
-) extends Serializable {
+) {
   /**
    * Contains the triangles of a DelaunayTriangulation
    *
