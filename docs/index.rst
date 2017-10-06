@@ -1,4 +1,3 @@
-
 What is GeoTrellis?
 -------------------
 
@@ -127,6 +126,7 @@ Ready? `Setup a GeoTrellis development environment. <tutorials/setup.html>`__
    Tile Layer Backends <guide/tile-backends>
    Vector Data Backends <guide/vector-backends>
    Frequently Asked Questions <guide/faq>
+   Example Archive <guide/examples>
 
 .. toctree::
    :maxdepth: 2
