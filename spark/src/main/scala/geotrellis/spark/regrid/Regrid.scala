@@ -12,13 +12,12 @@ import geotrellis.util._
 import geotrellis.vector._
 
 import scala.reflect._
-import scala.collection.mutable
 
 object Regrid {
 
   private case class Interval[N : Ordering](start: N, end: N) {
     val ord = implicitly[Ordering[N]]
-    // assert(ord.compare(start, end) < 1)
+    assert(ord.compare(start, end) < 1)
 
     // let the interval be start to end, inclusive
     def intersect(that: Interval[N]) = {
@@ -29,7 +28,7 @@ object Regrid {
 
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: Stitcher: (? => CropMethods[V]): (? => TilePrototypeMethods[V]),
+    V <: CellGrid: ClassTag: Stitcher: (? => CropMethods[V]),
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
   ](layer: RDD[(K, V)] with Metadata[M], tileCols: Int, tileRows: Int): RDD[(K, V)] with Metadata[M] = {
     val md = layer.metadata
@@ -89,9 +88,6 @@ object Regrid {
             val oldXrange = Interval(oldXstart, oldXstart + oldW - 1)
             val oldYrange = Interval(oldYstart, oldYstart + oldH - 1)
 
-            val tileEx = ld.mapTransform(key)
-            val newBounds = nld.mapTransform(tileEx)
-
             for (
               x <- (oldXstart / tileCols).toInt to (oldXrange.end.toDouble / tileCols).toInt ;
               newXrange = {
@@ -126,7 +122,7 @@ object Regrid {
 
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: Stitcher: (? => CropMethods[V]): (? => TilePrototypeMethods[V]),
+    V <: CellGrid: ClassTag: Stitcher: (? => CropMethods[V]),
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
   ](layer: RDD[(K, V)] with Metadata[M], tileSize: Int): RDD[(K, V)] with Metadata[M] = apply(layer, tileSize, tileSize)
 
