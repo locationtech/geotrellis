@@ -26,7 +26,7 @@ import spire.syntax.cfor._
   * @param y     Empirical Semivariogram's corresponding variance values
   * @param start Starting point for finding the optimization values of Semivariogram's parameters (range, sill, 0)
   */
-abstract class LeastSquaresFittingProblem(x: Array[Double], y: Array[Double], start: Array[Double]) {
+abstract class LeastSquaresFittingProblem(x: Array[Double], y: Array[Double], start: Array[Double]) extends Serializable {
   /**
     * @param r Denotes current Range of [[Semivariogram]] while performing fitting optimization
     * @param s Denotes current Sill of [[Semivariogram]] while performing fitting optimization
