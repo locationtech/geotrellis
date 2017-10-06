@@ -26,7 +26,7 @@ case class SpatialKey(col: Int, row: Int) extends Product2[Int, Int] {
   def _2 = row
 
   /** Retrieve the [[Extent]] that corresponds to this key, given a layout. */
-  def tileExtent(layout: LayoutDefinition): Extent = layout.mapTransform(this)
+  def extent(layout: LayoutDefinition): Extent = layout.mapTransform.keyToExtent(this)
 }
 
 object SpatialKey {

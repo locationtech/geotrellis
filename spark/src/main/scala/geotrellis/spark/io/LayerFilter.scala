@@ -134,7 +134,7 @@ object Intersects {
       def apply(metadata: M, kb: KeyBounds[K], polygon: MultiPolygon) = {
         val mapTransform = metadata.getComponent[LayoutDefinition].mapTransform
         val extent: Extent = polygon.envelope
-        val keyext: Extent = mapTransform.tileExtent(kb.minKey.getComponent[SpatialKey])
+        val keyext: Extent = mapTransform.keyToExtent(kb.minKey.getComponent[SpatialKey])
         val bounds: GridBounds = mapTransform.extentToBounds(extent)
         val options = Options(includePartial=true, sampleType=PixelIsArea)
 
@@ -183,7 +183,7 @@ object Intersects {
       def apply(metadata: M, kb: KeyBounds[K], multiLine: MultiLine) = {
         val mapTransform = metadata.getComponent[LayoutDefinition].mapTransform
         val extent: Extent = multiLine.envelope
-        val keyext: Extent = mapTransform.tileExtent(kb.minKey.getComponent[SpatialKey])
+        val keyext: Extent = mapTransform.keyToExtent(kb.minKey.getComponent[SpatialKey])
         val bounds: GridBounds = mapTransform(extent)
         val options = Options(includePartial=true, sampleType=PixelIsArea)
 
