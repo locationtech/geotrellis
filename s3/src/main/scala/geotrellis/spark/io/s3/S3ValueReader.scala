@@ -34,7 +34,7 @@ import scala.reflect.ClassTag
 
 class S3ValueReader(
   val attributeStore: AttributeStore
-) extends ValueReader[LayerId] {
+) extends OverzoomingValueReader {
 
   val s3Client: S3Client = S3Client.DEFAULT
 
@@ -72,18 +72,18 @@ object S3ValueReader {
     attributeStore: AttributeStore,
     layerId: LayerId
   ): Reader[K, V] =
-    (new S3ValueReader(attributeStore) with OverzoomingValueReader).reader[K, V](layerId)
+    new S3ValueReader(attributeStore).reader[K, V](layerId)
 
   def apply[K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid: AvroRecordCodec: ? => TileResampleMethods[V]](
     attributeStore: AttributeStore,
     layerId: LayerId,
     resampleMethod: ResampleMethod
   ): Reader[K, V] =
-    (new S3ValueReader(attributeStore) with OverzoomingValueReader).overzoomingReader[K, V](layerId, resampleMethod)
+    new S3ValueReader(attributeStore).overzoomingReader[K, V](layerId, resampleMethod)
 
-  def apply(bucket: String, root: String): S3ValueReader with OverzoomingValueReader =
-    new S3ValueReader(new S3AttributeStore(bucket, root)) with OverzoomingValueReader
+  def apply(bucket: String, root: String): S3ValueReader =
+    new S3ValueReader(new S3AttributeStore(bucket, root))
 
-  def apply(bucket: String): S3ValueReader with OverzoomingValueReader =
+  def apply(bucket: String): S3ValueReader =
     apply(bucket, "")
 }

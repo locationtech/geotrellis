@@ -27,12 +27,11 @@ import spray.json._
 import scala.reflect._
 import java.net.URI
 
-trait OverzoomingValueReader {
-  self: ValueReader[LayerId] =>
-
-  def overzoomingReader[K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, 
-             V <: CellGrid: AvroRecordCodec: ? => TileResampleMethods[V]
-  ](layerId: LayerId, resampleMethod: ResampleMethod = ResampleMethod.DEFAULT): Reader[K, V] = new Reader[K, V] {
+trait OverzoomingValueReader extends ValueReader[LayerId] {
+  def overzoomingReader[
+    K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, 
+    V <: CellGrid: AvroRecordCodec: ? => TileResampleMethods[V]
+  ](layerId: LayerId, resampleMethod: ResampleMethod): Reader[K, V] = new Reader[K, V] {
     val LayerId(layerName, requestedZoom) = layerId
     val maxAvailableZoom = attributeStore.layerIds.filter { case LayerId(name, _) => name == layerName }.map(_.zoom).max
     val metadata = attributeStore.readMetadata[TileLayerMetadata[K]](LayerId(layerName, maxAvailableZoom))

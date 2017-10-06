@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io
 
+import geotrellis.raster._
+import geotrellis.raster.resample._
 import geotrellis.spark._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.json._
@@ -32,11 +34,16 @@ trait ValueReader[ID] {
 
   /** Produce a key value reader for a specific layer, prefetching layer metadata once at construction time */
   def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: ID): Reader[K, V]
+
+  def overzoomingReader[
+    K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, 
+    V <: CellGrid: AvroRecordCodec: ? => TileResampleMethods[V]
+  ](layerId: ID, resampleMethod: ResampleMethod = ResampleMethod.DEFAULT): Reader[K, V]
 }
 
 object ValueReader {
 
-  def apply(attributeStore: AttributeStore, valueReaderUri: URI): ValueReader[LayerId] with OverzoomingValueReader = {
+  def apply(attributeStore: AttributeStore, valueReaderUri: URI): ValueReader[LayerId] = {
     import scala.collection.JavaConversions._
     ServiceLoader.load(classOf[ValueReaderProvider]).iterator()
       .find(_.canProcess(valueReaderUri))
@@ -44,20 +51,20 @@ object ValueReader {
       .valueReader(valueReaderUri, attributeStore)
   }
 
-  def apply(attributeStoreUri: URI, valueReaderUri: URI): ValueReader[LayerId] with OverzoomingValueReader =
+  def apply(attributeStoreUri: URI, valueReaderUri: URI): ValueReader[LayerId] =
     apply(AttributeStore(attributeStoreUri), valueReaderUri)
 
   def apply(uri: URI): ValueReader[LayerId] =
     apply(attributeStoreUri = uri, valueReaderUri = uri)
 
-  def apply(attributeStore: AttributeStore, valueReaderUri: String): ValueReader[LayerId] with OverzoomingValueReader =
+  def apply(attributeStore: AttributeStore, valueReaderUri: String): ValueReader[LayerId] =
     apply(attributeStore, new URI(valueReaderUri))
 
 
-  def apply(attributeStoreUri: String, valueReaderUri: String): ValueReader[LayerId] with OverzoomingValueReader =
+  def apply(attributeStoreUri: String, valueReaderUri: String): ValueReader[LayerId] =
     apply(AttributeStore(new URI(attributeStoreUri)), new URI(valueReaderUri))
 
-  def apply(uri: String): ValueReader[LayerId] with OverzoomingValueReader = {
+  def apply(uri: String): ValueReader[LayerId] = {
     val _uri = new URI(uri)
     apply(attributeStoreUri = _uri, valueReaderUri = _uri)
   }

@@ -33,7 +33,7 @@ import scala.reflect.ClassTag
 class CassandraValueReader(
   instance: CassandraInstance,
   val attributeStore: AttributeStore
-) extends ValueReader[LayerId] {
+) extends OverzoomingValueReader {
 
   def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
     val header = attributeStore.readHeader[CassandraLayerHeader](layerId)
@@ -76,7 +76,7 @@ object CassandraValueReader {
     attributeStore: AttributeStore,
     layerId: LayerId
   ): Reader[K, V] =
-    (new CassandraValueReader(instance, attributeStore) with OverzoomingValueReader).reader[K, V](layerId)
+    new CassandraValueReader(instance, attributeStore).reader[K, V](layerId)
 
   def apply[K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid: AvroRecordCodec: ? => TileResampleMethods[V]](
     instance: CassandraInstance,
@@ -84,15 +84,15 @@ object CassandraValueReader {
     layerId: LayerId,
     resampleMethod: ResampleMethod
   ): Reader[K, V] =
-    (new CassandraValueReader(instance, attributeStore) with OverzoomingValueReader).overzoomingReader[K, V](layerId, resampleMethod)
+    new CassandraValueReader(instance, attributeStore).overzoomingReader[K, V](layerId, resampleMethod)
 
-  def apply(instance: CassandraInstance): CassandraValueReader with OverzoomingValueReader =
+  def apply(instance: CassandraInstance): CassandraValueReader =
     new CassandraValueReader(
       instance = instance,
-      attributeStore = CassandraAttributeStore(instance)) with OverzoomingValueReader
+      attributeStore = CassandraAttributeStore(instance))
 
-  def apply(attributeStore: CassandraAttributeStore): CassandraValueReader with OverzoomingValueReader =
+  def apply(attributeStore: CassandraAttributeStore): CassandraValueReader =
     new CassandraValueReader(
       instance = attributeStore.instance,
-      attributeStore = attributeStore) with OverzoomingValueReader
+      attributeStore = attributeStore)
 }
