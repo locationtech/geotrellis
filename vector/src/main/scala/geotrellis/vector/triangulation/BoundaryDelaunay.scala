@@ -73,16 +73,16 @@ object BoundaryDelaunay {
 
       val (radius, center, _) = dt.predicates.circleCenter(i, j, k)
       val shortest = Seq(pi.distance(pj), pi.distance(pk), pj.distance(pk)).min
-      
+
       if (radius / shortest > thresh)
         true
       else {
         val Extent(x0, y0, x1, y1) = extent
         def outside(x: Double): Boolean = x < 0.0 || x > 1.0
 
-        x1 - radius < x0 + radius || 
-        y1 - radius < y0 + radius || 
-        outside((center.x - (x0 + radius)) / ((x1 - radius) - (x0 + radius))) || 
+        x1 - radius < x0 + radius ||
+        y1 - radius < y0 + radius ||
+        outside((center.x - (x0 + radius)) / ((x1 - radius) - (x0 + radius))) ||
         outside((center.y - (y0 + radius)) / ((y1 - radius) - (y0 + radius)))
       }
     }
@@ -322,7 +322,7 @@ object BoundaryDelaunay {
       if (dt.isLinear) {
         dt.numVertices match {
           case 0 => -1
-          case 1 => 
+          case 1 =>
             addPoint(dt.liveVertices.toSeq(0))
             -1
           case _ => copyConvertLinearBound
@@ -330,7 +330,7 @@ object BoundaryDelaunay {
       } else
         copyConvertBoundingTris
 
-    BoundaryDelaunay(IndexedPointSet(verts.toMap), liveVertices.toSet, halfEdgeTable, triangles, boundary, isLinear)  
+    BoundaryDelaunay(IndexedPointSet(verts.toMap), liveVertices.toSet, halfEdgeTable, triangles, boundary, isLinear)
   }
 
 }
@@ -342,7 +342,7 @@ case class BoundaryDelaunay(
   triangleMap: TriangleMap,
   boundary: Int,
   isLinear: Boolean
-) {
+) extends Serializable {
   def trianglesFromVertices: MultiPolygon = {
     val indexToCoord = { i: Int => Point.jtsCoord2Point(pointSet.getCoordinate(i)) }
     geotrellis.vector.MultiPolygon(

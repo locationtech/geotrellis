@@ -32,8 +32,12 @@ import scala.collection.mutable.{ListBuffer, Map, PriorityQueue, Set}
  * reasonable value in the defaults of the DelaunayTriangulation object's apply()
  * method, but bear in mind that problems may arise in your particular case.
  */
-case class DelaunayTriangulation(pointSet: CompleteIndexedPointSet, halfEdgeTable: HalfEdgeTable, tolerance: Double, debug: Boolean)
-{
+case class DelaunayTriangulation(
+  pointSet: CompleteIndexedPointSet,
+  halfEdgeTable: HalfEdgeTable,
+  tolerance: Double,
+  debug: Boolean
+) extends Serializable {
   /**
    * Contains the triangles of a DelaunayTriangulation
    *

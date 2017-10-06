@@ -30,9 +30,9 @@ object QuadricError {
   def edgeMatrix(e0: HalfEdge[Int, Int], end: Int, trans: Int => Coordinate) = {
     var e = e0
     var accum = MatrixUtils.createRealMatrix(Array(
-      Array[Double](0, 0, 0, 0), 
       Array[Double](0, 0, 0, 0),
-      Array[Double](0, 0, 0, 0), 
+      Array[Double](0, 0, 0, 0),
+      Array[Double](0, 0, 0, 0),
       Array[Double](0, 0, 0, 0)
     ))
 

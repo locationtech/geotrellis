@@ -30,7 +30,7 @@ object StitchedDelaunay {
     }
     val vtrans = regions.map { dir => (dir, vertIndices(dir)) }.toMap
 
-    regions.foreach{ dir => 
+    regions.foreach{ dir =>
       val mapping = vtrans(dir)
       val pointSet = if (dir == Center) center.pointSet else neighbors(dir)._1.pointSet
       mapping.foreach { case (orig, newix) =>
@@ -55,7 +55,7 @@ object StitchedDelaunay {
 
     val vtrans = regions.map { dir => (dir, vertIndices(dir)) }.toMap
 
-    regions.foreach{ dir => 
+    regions.foreach{ dir =>
       val mapping = vtrans(dir)
       val pointSet = neighbors(dir)._1.pointSet
       mapping.foreach { case (orig, newix) => assert(points(newix) == null) ; points(newix) = pointSet(orig) }
@@ -77,7 +77,7 @@ object StitchedDelaunay {
 
     val vtrans = regions.map { dir => (dir, vertIndices(dir)) }.toMap
 
-    regions.foreach{ dir => 
+    regions.foreach{ dir =>
       val mapping = vtrans(dir)
       val pointSet = neighbors(dir)._1.pointSet
       mapping.foreach { case (orig, newix) => assert(points(newix) == null) ; points(newix) = pointSet(orig) }
@@ -98,7 +98,7 @@ object StitchedDelaunay {
     val boundaries = neighbors.map{ case (dir, (bdt, _)) => {
       val reindex = vtrans(dir)(_)
       val edgeoffset = allEdges.appendTable(bdt.halfEdgeTable, reindex)
-      val handle: Either[(Int, Boolean), Int] = 
+      val handle: Either[(Int, Boolean), Int] =
         if (bdt.liveVertices.size == 1)
           scala.Right(reindex(bdt.liveVertices.toSeq(0)))
         else
@@ -150,10 +150,10 @@ object StitchedDelaunay {
     val boundaries = neighbors.map{ case (dir, (dt, _)) => {
       val reindex = vtrans(dir).apply(_)
       val edgeoffset = allEdges.appendTable(dt.halfEdgeTable, reindex)
-      val handle: Either[(Int, Boolean), Int] = 
-        if (dt.liveVertices.size == 1) 
+      val handle: Either[(Int, Boolean), Int] =
+        if (dt.liveVertices.size == 1)
           scala.Right(reindex(dt.liveVertices.toSeq(0)))
-        else 
+        else
           scala.Left((dt.boundary + edgeoffset, dt.isLinear))
       (dir, handle)
     }}
@@ -211,8 +211,8 @@ object StitchedDelaunay {
           val reindex = vtrans(dir)(_)
           if (dir == Center) {
             val edgeoffset = allEdges.appendTable(center.halfEdgeTable, reindex)
-            val handle: Either[(Int, Boolean), Int] = 
-              if (center.liveVertices.size == 1) 
+            val handle: Either[(Int, Boolean), Int] =
+              if (center.liveVertices.size == 1)
                 scala.Right(reindex(center.liveVertices.head))
               else {
                 scala.Left((center.boundary + edgeoffset, center.isLinear))
@@ -220,8 +220,8 @@ object StitchedDelaunay {
             (dir, handle)
           } else {
             val edgeoffset = allEdges.appendTable(bdt.halfEdgeTable, reindex)
-            val handle: Either[(Int, Boolean), Int] = 
-              if (bdt.liveVertices.size == 1) 
+            val handle: Either[(Int, Boolean), Int] =
+              if (bdt.liveVertices.size == 1)
                 scala.Right(reindex(bdt.liveVertices.head))
               else {
                 scala.Left((bdt.boundary + edgeoffset, bdt.isLinear))
@@ -240,7 +240,7 @@ object StitchedDelaunay {
       dirs
         .map{row => row.flatMap{ dir => boundaries.get(dir) }}
         .filter{ row => row.nonEmpty }
-        .map{row => row.reduce{ (l, r) => 
+        .map{row => row.reduce{ (l, r) =>
           val result: Either[(Int, Boolean), Int] = (l, r) match {
             case (scala.Left((left, isLeftLinear)), scala.Left((right, isRightLinear))) =>
               val result = stitcher.merge(left, isLeftLinear, right, isRightLinear, overlayTris, debug)
@@ -274,7 +274,7 @@ object StitchedDelaunay {
           result
         }}
 
-    val bound = 
+    val bound =
       if (joinedRows.isEmpty) {
         scala.Left((-1, true))
       } else {
@@ -313,7 +313,7 @@ object StitchedDelaunay {
             result
           }}
       }
-    
+
     val boundary = bound match {
       case scala.Left((bnd, _)) => bnd
       case scala.Right(_) => -1
@@ -330,7 +330,7 @@ case class StitchedDelaunay(
   boundary: Int,
   pointSet: IndexedPointSet,
   fillTriangles: TriangleMap
-) {
+) extends Serializable {
   def triangles(): Seq[(Int, Int, Int)] = fillTriangles.getTriangles.keys.toSeq
 
   def writeWKT(wktFile: String) = {
