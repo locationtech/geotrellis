@@ -8,7 +8,10 @@ import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
 import geotrellis.vector.mesh.{HalfEdgeTable, IndexedPointSet}
 
 
-final class TriangulationPredicates(pointSet: IndexedPointSet, halfEdgeTable: HalfEdgeTable) {
+final class TriangulationPredicates(
+  pointSet: IndexedPointSet,
+  halfEdgeTable: HalfEdgeTable
+) extends Serializable {
   import pointSet._
   import halfEdgeTable._
 
