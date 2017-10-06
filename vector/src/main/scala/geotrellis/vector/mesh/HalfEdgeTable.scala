@@ -30,11 +30,11 @@ import com.vividsolutions.jts.geom.Coordinate
   * }}}
   *
   * Starting from e1, `getNext` produces the sequence e1, e3, e7, e4, e1, ...
-  * 
+  *
   * Starting from e2, `getPrev` produces the sequence e2, e6, e8, e5, e2, ...
-  * 
+  *
   * `getFlip(e4) == e5` and `getFlip(e5) == e4`
-  * 
+  *
   * `rotCCWSrc(e4) == getFlip(e7)`
   *
   * `rotCWSrc(e4) == e8`
@@ -46,7 +46,7 @@ import com.vividsolutions.jts.geom.Coordinate
   * `getDest(e4) == v2`
   *
   * `getSrc(e4) == getDest(e5) == v5`
-  * 
+  *
   * The HalfEdgeTable contains an Array[Int] in chunks of three where each of
   * these chunks is specified as follows:
   *       [i,e1,e2] where i is the vertex of the halfedge (where the half edge 'points' to)
@@ -55,7 +55,7 @@ import com.vividsolutions.jts.geom.Coordinate
   *                       e2 is the halfedge index of the next half edge
   *                          (counter-clockwise of the triangle)
   */
-class HalfEdgeTable(_size: Int) {
+class HalfEdgeTable(_size: Int) extends Serializable {
   private var size: Int = math.max(_size, 32)
   private var idx = 0
   private var edgeCount = 0
@@ -353,13 +353,13 @@ class HalfEdgeTable(_size: Int) {
     val cmds = Map[Char, (String, Int => Int)](
       'k' -> ("kill (throws exception)", { _ => throw new Exception("user requested halt") }),
       'l' -> ("show loop", { e => showLoop(e); e }),
-      'j' -> (("jump to vertex", { e => 
+      'j' -> (("jump to vertex", { e =>
         print("Enter target vertex: ")
         val x = scala.io.StdIn.readInt
         try {
           edgeIncidentTo(x)
         } catch {
-          case _: Throwable => 
+          case _: Throwable =>
             println(s"ERROR: VERTEX $x NOT FOUND")
             e
         }})),
@@ -388,7 +388,7 @@ class HalfEdgeTable(_size: Int) {
     def repl() = {
       do {
         println(s"Current edge ($e): [${getSrc(e)} -> ${getDest(e)}]\nDestination @ ${trans(getDest(e))}")
-      
+
         scala.io.StdIn.readLine("> ") match {
           case "q" => continue = false
           case "?" => showHelp
@@ -481,9 +481,9 @@ class HalfEdgeTable(_size: Int) {
 
   def edgeIncidentTo(i: Int) = edgeAt(i)
   def removeIncidentEdge(i: Int) = { edgeAt -= i }
-  def setIncidentEdge(i: Int, e: Int) = { 
+  def setIncidentEdge(i: Int, e: Int) = {
     assert(i == getDest(e))
-    edgeAt += i -> e 
+    edgeAt += i -> e
   }
   def registerFace(e: Int) = {
     var f = e

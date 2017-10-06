@@ -2,7 +2,7 @@ package geotrellis.vector.mesh
 
 import geotrellis.vector.{Line, Point, Polygon}
 
-class HalfEdge[V,F](val vert: V, var flip: HalfEdge[V,F], var next: HalfEdge[V,F], var face: Option[F]) {
+class HalfEdge[V,F](val vert: V, var flip: HalfEdge[V,F], var next: HalfEdge[V,F], var face: Option[F]) extends Serializable {
 
   def join(that: HalfEdge[V,F]) = {
     if (vert != that.flip.vert || flip.vert != that.vert) {
