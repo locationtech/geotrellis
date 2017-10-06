@@ -17,7 +17,7 @@ object Implicits extends Implicits
 trait Implicits {
   implicit class withRegridMethods[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: Stitcher: (? => CropMethods[V]): (? => TilePrototypeMethods[V]),
+    V <: CellGrid: ClassTag: Stitcher: (? => CropMethods[V]),
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
   ](self: RDD[(K, V)] with Metadata[M]) extends RegridMethods[K, V, M](self)
 }
