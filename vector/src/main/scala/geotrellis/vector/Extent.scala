@@ -48,7 +48,7 @@ object Extent {
   * @param extent The Extent which is projected
   * @param crs    The CRS projection of this extent
   */
-case class ProjectedExtent(extent: Extent, crs: CRS) extends Serializable {
+case class ProjectedExtent(extent: Extent, crs: CRS) {
   def reproject(dest: CRS): Extent =
     extent.reproject(crs, dest)
 }
@@ -69,7 +69,7 @@ object ProjectedExtent {
 case class Extent(
   xmin: Double, ymin: Double,
   xmax: Double, ymax: Double
-) extends Serializable {
+) {
 
   // Validation: Do not accept extents min values greater than max values.
   if (xmin > xmax) { throw ExtentRangeError(s"Invalid Extent: xmin must be less than xmax (xmin=$xmin, xmax=$xmax)") }
