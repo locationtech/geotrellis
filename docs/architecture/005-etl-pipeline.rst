@@ -55,7 +55,6 @@ of separate sources to which functions would be applied.
 Scheme with Pipeline work description (arrows are actions):
 
 .. figure:: images/pipeline.png
-:alt:
 
 
 The first attempt to describe it as JSON:
