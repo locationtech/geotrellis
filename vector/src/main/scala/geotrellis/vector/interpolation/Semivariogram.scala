@@ -16,7 +16,7 @@
 
 package geotrellis.vector.interpolation
 
-abstract sealed class ModelType
+abstract sealed class ModelType extends Serializable
 
 case class Linear (radius: Option[Double], lag: Double) extends ModelType
 
@@ -34,7 +34,7 @@ object Linear {
     Linear(Some(radius), lag)
 }
 
-abstract class NonLinearModelType(maxDist: Double, binMax: Int)
+abstract class NonLinearModelType(maxDist: Double, binMax: Int) extends Serializable
 
 // Non-linear
 case object Gaussian extends ModelType
@@ -45,7 +45,7 @@ case object Wave extends ModelType
 
 abstract class Semivariogram(val range: Double,
                              val sill: Double,
-                             val nugget: Double) {
+                             val nugget: Double) extends Serializable {
   def apply(x: Double): Double
 }
 

@@ -22,7 +22,7 @@ import org.apache.commons.math3.linear._
 import spire.syntax.cfor._
 import scala.collection.mutable
 
-trait Kriging extends Function2[Double, Double, (Double, Double)] {
+trait Kriging extends Function2[Double, Double, (Double, Double)] with Serializable {
 
   private def distance(p1: Point, p2: Point): Double =
     math.abs(math.sqrt(math.pow(p1.x - p2.x, 2) + math.pow(p1.y - p2.y, 2)))

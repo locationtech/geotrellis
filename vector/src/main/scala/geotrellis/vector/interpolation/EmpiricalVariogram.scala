@@ -19,7 +19,7 @@ import geotrellis.vector._
 import spire.syntax.cfor._
 import scala.collection.mutable
 
-class EmpiricalVariogram(val distances: Array[Double], val variance: Array[Double])
+class EmpiricalVariogram(val distances: Array[Double], val variance: Array[Double]) extends Serializable
 
 /** This creates an empirical variogram from the dataset, which is
   * then used to fit into one of the semivariogram [[ModelType]] for use in
