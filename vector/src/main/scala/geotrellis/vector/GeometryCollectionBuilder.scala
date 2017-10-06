@@ -24,7 +24,7 @@ import scala.collection.mutable
 /** Builder for GeometryCollection.
   * @note This builder can accumulate from both geotrellis geometries and JTS geometries
   */
-class GeometryCollectionBuilder {
+class GeometryCollectionBuilder extends Serializable {
   val points = mutable.ListBuffer[Point]()
   val lines = mutable.ListBuffer[Line]()
   val polygons = mutable.ListBuffer[Polygon]()

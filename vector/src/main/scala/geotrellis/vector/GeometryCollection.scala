@@ -54,12 +54,12 @@ object GeometryCollection {
     builder.result()
   }
 
-  def unapply(gc: GeometryCollection): 
+  def unapply(gc: GeometryCollection):
       Some[(Seq[Point], Seq[Line], Seq[Polygon],
             Seq[MultiPoint], Seq[MultiLine], Seq[MultiPolygon],
             Seq[GeometryCollection])] =
-    Some((gc.points, gc.lines, gc.polygons, 
-          gc.multiPoints, gc.multiLines, gc.multiPolygons, 
+    Some((gc.points, gc.lines, gc.polygons,
+          gc.multiPoints, gc.multiLines, gc.multiPolygons,
           gc.geometryCollections))
 }
 
