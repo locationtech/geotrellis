@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Azavea
+ * Copyright 2017 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,17 @@
 package geotrellis.raster.merge
 
 import geotrellis.raster._
+import geotrellis.raster.resample._
+import geotrellis.vector._
 import cats.Semigroup
 
-object Implicits extends Implicits
-
-/**
-  * A trait holding the implicit class which makes the extensions
-  * methods available.
-  */
-trait Implicits {
-  implicit class withRasterMergeMethods[T <: CellGrid: ? => TileMergeMethods[T]](self: Raster[T]) extends RasterMergeMethods[T](self)
-
-  implicit class withTileFeatureMergeMethods[T <: CellGrid: ? => TileMergeMethods[T], D: Semigroup](self: TileFeature[T, D]) extends TileFeatureMergeMethods[T,D](self)
+class TileFeatureMergeMethods[
+  T <: CellGrid : (? => TileMergeMethods[T]), 
+  D : Semigroup
+](val self: TileFeature[T, D]) extends TileMergeMethods[TileFeature[T, D]] {
+  def merge(other: TileFeature[T, D]): TileFeature[T, D] =
+    TileFeature(self.tile.merge(other.tile), Semigroup[D].combine(self.data, other.data))
+  
+  def merge(extent: Extent, otherExtent: Extent, other: TileFeature[T, D], method: ResampleMethod): TileFeature[T, D] =
+    TileFeature(self.tile.merge(extent, otherExtent, other.tile), Semigroup[D].combine(self.data, other.data))
 }

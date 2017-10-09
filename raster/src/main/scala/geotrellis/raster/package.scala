@@ -29,6 +29,7 @@ package object raster
     with interpolation.Implicits
     with mask.Implicits
     with merge.Implicits
+    with prototype.Implicits
     with reproject.Implicits
     with split.Implicits
     with summary.polygonal.Implicits
