@@ -75,3 +75,28 @@ that does that could look like this:
 
      ContextRDD(layer.tileToLayout[SpatialKey](meta._2), meta._2)
    }
+
+Work with S3 using a custom S3Client configuration
+==================================================
+
+**Motivation:** You would like to work with assets on S3, but you want
+to use an S3 client (or clients) with a configuration (various
+configurations) different form the default client configuration.
+
+That can be accomplished by sub-classing ``S3AttributeStore`` and/or
+``S3ValueReader``, perhaps anonymously.
+
+.. code:: scala
+   import geotrellis.spark.io.s3._
+   import com.amazonaws.services.s3.{AmazonS3Client=>AWSAmazonS3Client}
+   
+   val aws: AWSAmazonS3Client = ???
+   val specialS3client = new AmazonS3Client(aws)
+   
+   val attributeStore = new S3AttributeStore("my-bucket", "my-prefix") {
+      override def s3Client = specialS3Client
+   }
+   
+   val valueReader = new S3ValueReader(attributeStore) {
+      override def s3Client = specialS3Client
+   }
