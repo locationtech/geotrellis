@@ -21,6 +21,9 @@ import geotrellis.util._
 
 import org.apache.spark.rdd._
 
+import scala.reflect.ClassTag
+
+
 object Implicits extends Implicits
 
 trait Implicits {
@@ -36,4 +39,10 @@ trait Implicits {
     V,
     M[_]
   ](val self: RDD[(K, V)] with Metadata[M[K]]) extends SpaceTimeToSpatialMethods[K, V, M]
+
+  implicit class withSpaceTimeToSpatialMethods2[
+    K: ClassTag: SpatialComponent: TemporalComponent: λ[α => M[α] => Functor[M, α]]: λ[α => Component[M[α], Bounds[α]]],
+    V: ClassTag,
+    M[_]
+  ](val self: RDD[(K, V)] with Metadata[M[K]]) extends SpaceTimeToSpatialMethods2[K, V, M]
 }
