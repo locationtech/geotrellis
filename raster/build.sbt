@@ -5,6 +5,7 @@ name := "geotrellis-raster"
 libraryDependencies ++= Seq(
   typesafeConfig,
   jts,
+  cats,
   spire,
   monocleCore,
   monocleMacro,

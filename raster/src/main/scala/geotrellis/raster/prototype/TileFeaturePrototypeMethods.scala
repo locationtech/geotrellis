@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 Azavea
+ * Copyright 2017 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,18 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.crop
+package geotrellis.raster.prototype
 
 import geotrellis.raster._
-import geotrellis.vector._
+import cats.Monoid
 
-object Implicits extends Implicits
+class TileFeaturePrototypeMethods[
+  T <: CellGrid : (? => TilePrototypeMethods[T]), 
+  D: Monoid
+](val self: TileFeature[T, D]) extends TilePrototypeMethods[TileFeature[T, D]] {
+  def prototype(cols: Int, rows: Int): TileFeature[T, D] =
+    TileFeature(self.tile.prototype(cols, rows), Monoid[D].empty)
 
-/**
-  * Trait housing the implicit class which add extension methods for
-  * cropping to [[CellGrid]].
-  */
-trait Implicits {
-  implicit class withExtentCropMethods[T <: CellGrid: (? => CropMethods[T])](self: Raster[T])
-      extends RasterCropMethods[T](self)
-
-  implicit class withTileFeatureCropMethods[
-    T <: CellGrid: (? => TileCropMethods[T]), D
-  ](self: TileFeature[T, D]) extends TileFeatureCropMethods[T, D](self)
+  def prototype(cellType: CellType, cols: Int, rows: Int): TileFeature[T, D] =
+    TileFeature(self.tile.prototype(cellType, cols, rows), Monoid[D].empty)
 }

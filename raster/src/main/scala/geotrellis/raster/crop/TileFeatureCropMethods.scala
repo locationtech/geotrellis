@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 Azavea
+ * Copyright 2017 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,15 @@ package geotrellis.raster.crop
 import geotrellis.raster._
 import geotrellis.vector._
 
-object Implicits extends Implicits
+class TileFeatureCropMethods[
+    T <: CellGrid : (? => TileCropMethods[T]), 
+    D
+  ](val self: TileFeature[T, D]) extends TileCropMethods[TileFeature[T, D]] {
+  import Crop.Options
 
-/**
-  * Trait housing the implicit class which add extension methods for
-  * cropping to [[CellGrid]].
-  */
-trait Implicits {
-  implicit class withExtentCropMethods[T <: CellGrid: (? => CropMethods[T])](self: Raster[T])
-      extends RasterCropMethods[T](self)
+  def crop(srcExtent: Extent, extent: Extent, options: Options): TileFeature[T, D] =
+    TileFeature(self.tile.crop(srcExtent, extent, options), self.data)
 
-  implicit class withTileFeatureCropMethods[
-    T <: CellGrid: (? => TileCropMethods[T]), D
-  ](self: TileFeature[T, D]) extends TileFeatureCropMethods[T, D](self)
+  def crop(gb: GridBounds, options: Options): TileFeature[T, D] =
+    TileFeature(self.tile.crop(gb, options), self.data)
 }

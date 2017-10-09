@@ -16,11 +16,12 @@
 
 package geotrellis.raster.split
 
-import geotrellis.raster.{RasterExtent, CellGrid, Raster}
+import geotrellis.raster.{RasterExtent, CellGrid, Raster, TileFeature}
 
 object Implicits extends Implicits
 
 trait Implicits {
   implicit class withRasterExtentSplitMethods(val self: RasterExtent) extends RasterExtentSplitMethods
   implicit class withRasterSplitMethods[T <: CellGrid: (? => SplitMethods[T])](val self: Raster[T]) extends RasterSplitMethods[T]
+  implicit class withTileFeatureSplitMethods[T <: CellGrid: (? => SplitMethods[T]), D](self: TileFeature[T, D]) extends TileFeatureSplitMethods[T, D](self)
 }

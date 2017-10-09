@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 Azavea
+ * Copyright 2017 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,18 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.crop
+package geotrellis.raster.split
 
 import geotrellis.raster._
-import geotrellis.vector._
 
-object Implicits extends Implicits
+class TileFeatureSplitMethods[
+  T <: CellGrid : (? => SplitMethods[T]), 
+  D
+](val self: TileFeature[T, D]) extends SplitMethods[TileFeature[T, D]] {
+  import Split.Options
 
-/**
-  * Trait housing the implicit class which add extension methods for
-  * cropping to [[CellGrid]].
-  */
-trait Implicits {
-  implicit class withExtentCropMethods[T <: CellGrid: (? => CropMethods[T])](self: Raster[T])
-      extends RasterCropMethods[T](self)
-
-  implicit class withTileFeatureCropMethods[
-    T <: CellGrid: (? => TileCropMethods[T]), D
-  ](self: TileFeature[T, D]) extends TileFeatureCropMethods[T, D](self)
+  def split(tileLayout: TileLayout, options: Options): Array[TileFeature[T, D]] = {
+    val results = self.tile.split(tileLayout, options)
+    results.map(t ⇒ TileFeature(t, self.data))
+  }
 }
