@@ -36,7 +36,7 @@ class S3ValueReader(
   val attributeStore: AttributeStore
 ) extends OverzoomingValueReader {
 
-  val s3Client: S3Client = S3Client.DEFAULT
+  def s3Client: S3Client = S3Client.DEFAULT
 
   def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
     val header = attributeStore.readHeader[S3LayerHeader](layerId)
