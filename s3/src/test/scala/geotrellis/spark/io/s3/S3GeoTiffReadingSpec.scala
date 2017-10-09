@@ -25,21 +25,23 @@ import geotrellis.vector.Extent
 import geotrellis.spark.io.s3._
 import geotrellis.spark.io.s3.testkit._
 import geotrellis.raster.testkit._
+import geotrellis.raster.render._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader._
 import java.nio.{ByteBuffer, ByteOrder}
 
 import com.amazonaws.services.s3.AmazonS3URI
 import com.amazonaws.services.s3.model._
-import geotrellis.raster.CellSize
-import geotrellis.spark.SpatialKey
+import geotrellis.raster.{CellSize, Raster}
+import geotrellis.spark.{LayerId, SpatialKey}
+import geotrellis.spark.io.s3.geotiff.SinglebandGeoTiffCollectionLayerReader
 import org.scalatest._
 
 class S3GeoTiffReadingSpec extends FunSpec
   with Matchers
   with RasterMatchers {
 
-  val bucket = this.getClass.getSimpleName
+  /*val bucket = this.getClass.getSimpleName
 
   describe("Reading from a local geotiff") {
     val fromLocal =
@@ -81,10 +83,10 @@ class S3GeoTiffReadingSpec extends FunSpec
 
       assertEqual(actual.tile, expected.tile)
     }
-  }
+  }*/
 
   describe("Reading GeoTiff from server") {
-    val mockClient = new MockS3Client
+    /*val mockClient = new MockS3Client
     val testGeoTiffPath = "spark/src/test/resources/all-ones.tif"
     val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
 
@@ -124,7 +126,7 @@ class S3GeoTiffReadingSpec extends FunSpec
       val expected = fromLocal.crop(e)
 
       assertEqual(actual.tile, expected.tile)
-    }
+    }*/
 
     it("LC8") {
       /**
@@ -154,17 +156,58 @@ val craster = raster
           true
         )
 
+      println("here!")
       //raster.extent.intersection()
 
-      val craster = raster
+      /*val craster = raster
         .crop(
           Extent(519448.87209671224, 2281518.9994109133, 592788.9240706906, 2354434.7531058947),
           CellSize(305.748113140705,305.748113140705)
+        )*/
+
+      val craster = raster
+        .crop(
+          Extent(519361.652022108, 2135266.0168493874, 815271.4903743851, 2429556.484264097),
+          CellSize(1222.99245256282,1222.99245256282)
         )
+
+      /*raster
+        .crop(
+          Extent(519361.652022108, 2135266.0168493874, 815271.4903743851, 2429556.484264097),
+          CellSize(1222.99245256282,1222.99245256282)
+        )
+
+      raster
+        .crop(
+          Extent(519361.652022108, 2135266.0168493874, 815271.4903743851, 2429556.484264097),
+          CellSize(1222.99245256282,1222.99245256282)
+        )
+
+      raster
+        .crop(
+          Extent(519361.652022108, 2135266.0168493874, 815271.4903743851, 2429556.484264097),
+          CellSize(1222.99245256282,1222.99245256282)
+        )*/
 
 
       craster
 
+    }
+
+    it ("ZLC82") {
+      val geoTiffLayer =
+        SinglebandGeoTiffCollectionLayerReader
+          .fetchSingleband(
+            Seq(
+              new URI("s3://geotrellis-test/daunnc/LC_TEST/LC08_L1TP_139045_20170304_20170316_01_T1_B4.TIF")
+            )
+          )
+
+      // 9/381/223
+      // 9))(380, 225) -- normal
+      //val t = geoTiffLayer.read(LayerId("LC08_L1TP_139045_20170304_20170316_01_T1_B4", 9))(381, 223)
+      geoTiffLayer.read(LayerId("LC08_L1TP_139045_20170304_20170316_01_T1_B4", 9))(380, 224)
+      //t.tile.renderPng().write("/tmp/test.png")
     }
   }
 }

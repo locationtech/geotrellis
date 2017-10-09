@@ -90,7 +90,7 @@ class LazySegmentBytes(
       else
         seg.size -> ((seg :: Nil) :: headChunk :: commitedChunks)
     }
-  }._2.reverse // get segments back in offset order
+  }._2.reverse.map(_.reverse) // get segments back in offset order
 
 
   protected def readChunk(segments: List[Segment]): Map[Int, Array[Byte]] = {
@@ -114,7 +114,9 @@ class LazySegmentBytes(
   }
 
   def getSegments(indices: Traversable[Int]): Iterator[(Int, Array[Byte])] = {
-    chunkSegments(indices)
+    val chunks = chunkSegments(indices)
+    println(s"chunks: ${chunks.toList.map(_.toList)}")
+    chunks
       .toIterator
       .flatMap( chunk => readChunk(chunk))
   }
