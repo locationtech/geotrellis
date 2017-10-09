@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io.avro.codecs
 
-import geotrellis.raster.Tile
+import geotrellis.raster.{ConstantTile, Tile}
 import geotrellis.spark.io.avro.{AvroRecordCodec, AvroUnionCodec}
 
 object Implicits extends Implicits
@@ -30,6 +30,17 @@ trait Implicits
     with ProjectedExtentCodec
     with TemporalProjectedExtentCodec
     with KeyCodecs {
+  implicit def constantTileUnionCodec = new AvroUnionCodec[ConstantTile](
+    byteConstantTileCodec,
+    floatConstantTileCodec,
+    doubleConstantTileCodec,
+    shortConstantTileCodec,
+    intConstantTileCodec,
+    bitConstantTileCodec,
+    uByteConstantTileCodec,
+    uShortConstantTileCodec
+  )
+
   implicit def tileUnionCodec = new AvroUnionCodec[Tile](
     byteArrayTileCodec,
     floatArrayTileCodec,
