@@ -87,16 +87,17 @@ That can be accomplished by sub-classing ``S3AttributeStore`` and/or
 ``S3ValueReader``, perhaps anonymously.
 
 .. code:: scala
+
    import geotrellis.spark.io.s3._
    import com.amazonaws.services.s3.{AmazonS3Client=>AWSAmazonS3Client}
-   
-   val aws: AWSAmazonS3Client = ???
+
+   val aws: AWSAmazonS3Client = ??? /* Special configuration happens here */
    val specialS3client = new AmazonS3Client(aws)
-   
+
    val attributeStore = new S3AttributeStore("my-bucket", "my-prefix") {
       override def s3Client = specialS3Client
    }
-   
+
    val valueReader = new S3ValueReader(attributeStore) {
       override def s3Client = specialS3Client
    }
