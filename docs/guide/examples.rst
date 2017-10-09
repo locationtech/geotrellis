@@ -52,6 +52,14 @@ that does that could look like this:
 
 .. code:: scala
 
+   import geotrellis.raster._
+   import geotrellis.spark._
+   import geotrellis.spark.SpatialKey._  /* To get a `Boundable` instance for `SpatialKey` */
+   import geotrellis.spark.tiling._
+   import geotrellis.vector._
+   import org.apache.spark._
+   import org.apache.spark.rdd._
+
    /** Convert an in-memory `Tile` into a GeoTrellis layer. */
    def toLayer(pr: ProjectedRaster[Tile])(implicit sc: SparkContext): TileLayerRDD[SpatialKey] = {
 
