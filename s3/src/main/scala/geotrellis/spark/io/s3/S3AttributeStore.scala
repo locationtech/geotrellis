@@ -36,7 +36,8 @@ import java.io.ByteArrayInputStream
  * @param prefix    path in the bucket for given LayerId
  */
 class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayerAttributeStore {
-  val s3Client: S3Client = S3Client.DEFAULT
+
+  def s3Client: S3Client = S3Client.DEFAULT
   import S3AttributeStore._
 
   /** NOTE:
