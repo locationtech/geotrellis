@@ -21,6 +21,9 @@ import geotrellis.util._
 
 import org.apache.spark.rdd._
 
+import scala.reflect.ClassTag
+
+
 object ToSpatial {
   /**
     * Restrict a tile layer and its metadata to two spatial dimensions.
@@ -71,7 +74,7 @@ object ToSpatial {
                   Some((key.getComponent[SpatialKey], tile))
                 else
                   None
-              }
+            }
 
           val newBounds =
             KeyBounds(
@@ -89,5 +92,23 @@ object ToSpatial {
           rdd.metadata.map(_.getComponent[SpatialKey])
         )
     }
+  }
+
+  def apply[
+    K: ClassTag: SpatialComponent: TemporalComponent: λ[α => M[α] => Functor[M, α]]: λ[α => Component[M[α], Bounds[α]]],
+    V: ClassTag,
+    M[_]
+  ](rdd: RDD[(K, V)] with Metadata[M[K]], ensureUnique: Boolean): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] = {
+    val metadata = rdd.metadata.map(_.getComponent[SpatialKey])
+    val rdd2 = ensureUnique match {
+      case true =>
+        rdd
+          .map({ case (k, v) => (k.getComponent[SpatialKey], v) })
+          .map(identity).reduceByKey({ case (left, right) => left })
+      case false =>
+        rdd
+          .map({ case (k, v) => (k.getComponent[SpatialKey], v) })
+    }
+    ContextRDD(rdd2, metadata)
   }
 }
