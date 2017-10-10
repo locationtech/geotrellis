@@ -322,7 +322,7 @@ abstract class GeoTiffMultibandTile(
     * Converts the GeoTiffMultibandTile to an
     * [[ArrayMultibandTile]] */
   def toArrayTile(): ArrayMultibandTile =
-    ArrayMultibandTile(bands.map(_.toArrayTile): _*)
+    crop(this.gridBounds)
 
   /**
    * Performs a crop on itself. The returned MultibandGeoTiffTile will
