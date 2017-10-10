@@ -29,5 +29,16 @@ class TileFeatureMergeMethods[
     TileFeature(self.tile.merge(other.tile), Semigroup[D].combine(self.data, other.data))
   
   def merge(extent: Extent, otherExtent: Extent, other: TileFeature[T, D], method: ResampleMethod): TileFeature[T, D] =
-    TileFeature(self.tile.merge(extent, otherExtent, other.tile), Semigroup[D].combine(self.data, other.data))
+    TileFeature(self.tile.merge(extent, otherExtent, other.tile, method), Semigroup[D].combine(self.data, other.data))
+}
+
+class RasterTileFeatureMergeMethods[
+  T <: CellGrid : (? => TileMergeMethods[T]), 
+  D : Semigroup
+](self: TileFeature[Raster[T], D]) extends RasterMergeMethods[T](self.tile) {
+  def merge(other: TileFeature[Raster[T], D]): TileFeature[Raster[T], D] =
+    TileFeature(self.tile.merge(other.tile), Semigroup[D].combine(self.data, other.data))
+  
+  def merge(other: TileFeature[Raster[T], D], method: ResampleMethod): TileFeature[Raster[T], D] =
+    TileFeature(self.tile.merge(other.tile, method), Semigroup[D].combine(self.data, other.data))
 }

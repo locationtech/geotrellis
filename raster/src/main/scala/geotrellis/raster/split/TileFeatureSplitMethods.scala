@@ -29,3 +29,4 @@ class TileFeatureSplitMethods[
     results.map(t ⇒ TileFeature(t, self.data))
   }
 }
+

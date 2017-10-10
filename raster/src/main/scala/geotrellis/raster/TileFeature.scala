@@ -28,3 +28,7 @@ case class TileFeature[+T <: CellGrid, D](tile: T, data: D) extends CellGrid {
   def cols: Int = tile.cols
   def rows: Int = tile.rows
 }
+
+object TileFeature {
+  implicit def tileFeatureToCellGrid[T <: CellGrid, D](tf: TileFeature[T, D]): T = tf.tile
+}
