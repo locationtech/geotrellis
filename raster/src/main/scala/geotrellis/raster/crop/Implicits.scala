@@ -32,4 +32,8 @@ trait Implicits {
   implicit class withTileFeatureCropMethods[
     T <: CellGrid: (? => TileCropMethods[T]), D
   ](self: TileFeature[T, D]) extends TileFeatureCropMethods[T, D](self)
+
+  implicit class withRasterTileFeatureCropMethods[
+    T <: CellGrid : (? => TileCropMethods[T]), D
+  ](self: TileFeature[Raster[T], D]) extends RasterTileFeatureCropMethods[T, D](self)
 }
