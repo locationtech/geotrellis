@@ -17,7 +17,7 @@
 package geotrellis.raster.merge
 
 import geotrellis.raster._
-import cats.Semigroup
+import scalaz.Semigroup
 
 object Implicits extends Implicits
 
