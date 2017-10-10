@@ -23,13 +23,13 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.hadoop.formats.FilterMapFileInputFormat
-import geotrellis.spark.util.cache._
 
 import org.apache.hadoop.fs._
 import org.apache.hadoop.io._
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
 import spray.json._
+import com.github.blemale.scaffeine.{Cache, Scaffeine}
 
 import scala.collection.immutable._
 import scala.reflect.ClassTag
@@ -40,9 +40,12 @@ class HadoopValueReader(
   maxOpenFiles: Int = 16
 ) extends OverzoomingValueReader {
 
-  val readers = new LRUCache[(LayerId, Path), MapFile.Reader](maxOpenFiles.toLong, {x => 1l}) {
-    override def evicted(reader: MapFile.Reader) = reader.close()
-  }
+  val readers: Cache[(LayerId, Path), MapFile.Reader] =
+    Scaffeine()
+      .recordStats()
+      .maximumSize(maxOpenFiles.toLong)
+      .removalListener[(LayerId, Path), MapFile.Reader] { case (_, v, _) => v.close() }
+      .build[(LayerId, Path), MapFile.Reader]
 
   def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
     val header = attributeStore.readHeader[HadoopLayerHeader](layerId)
@@ -61,7 +64,7 @@ class HadoopValueReader(
             index >= row._2 && index <= row._3
           }
         .map { case (path, _, _) =>
-            readers.getOrInsert((layerId, path), new MapFile.Reader(path, conf))
+          readers.get((layerId, path), _ => new MapFile.Reader(path, conf))
         }
         .getOrElse(throw new ValueNotFoundError(key, layerId))
           .get(new LongWritable(index), new BytesWritable())
