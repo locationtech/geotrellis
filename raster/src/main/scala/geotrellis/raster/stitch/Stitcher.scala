@@ -17,7 +17,7 @@
 package geotrellis.raster.stitch
 
 import geotrellis.raster._
-import cats.Semigroup
+import scalaz.Semigroup
 
 /**
   * The Stitcher base trait.
@@ -113,7 +113,7 @@ object Stitcher {
   ](val self: TileFeature[T, D]) extends Stitcher[TileFeature[T, D]] {
     def stitch(pieces: Iterable[(TileFeature[T, D], (Int, Int))], cols: Int, rows: Int): TileFeature[T, D] = {
       val newPieces = pieces.map{ piece ⇒ (piece._1.tile, piece._2) }
-      val newData = pieces.map(_._1.data).reduce(Semigroup[D].combine)
+      val newData = pieces.map(_._1.data).reduce(Semigroup[D].append(_, _))
       TileFeature(implicitly[Stitcher[T]].stitch(newPieces, cols, rows), newData)
     }
   }
