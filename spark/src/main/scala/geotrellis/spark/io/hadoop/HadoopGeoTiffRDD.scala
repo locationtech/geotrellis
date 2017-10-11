@@ -86,6 +86,23 @@ object HadoopGeoTiffRDD extends LazyLogging {
   }
 
   /**
+    * A helper function to get the maximum (linear) tile size.
+    */
+  private def getMaxSize(options: Options) = {
+    options.maxTileSize match {
+      case Some(maxTileSize) => maxTileSize
+      case None => {
+        val size = Options.DEFAULT.maxTileSize match {
+          case Some(maxTileSize) => maxTileSize
+          case None => throw new Exception("maxTileSize was not given and there is no default maxTileSize.")
+        }
+        logger.warn(s"maxTileSize was not given, defaulting to $size.")
+        size
+      }
+    }
+  }
+
+  /**
     * Creates a RDD[(K, V)] whose K and V depends on the type of the GeoTiff that is going to be read in.
     *
     * @param path     Hdfs GeoTiff path.
@@ -104,8 +121,9 @@ object HadoopGeoTiffRDD extends LazyLogging {
 
     (options.maxTileSize, options.partitionBytes) match {
       case (_, Some(partitionBytes)) => {
+        val maxSize = getMaxSize(options)
         val windows: RDD[(String, Array[GridBounds])] =
-          sourceGeoTiffInfo.windowsByBytes(partitionBytes, options.maxTileSize.getOrElse(1<<10))
+          sourceGeoTiffInfo.windowsByBytes(partitionBytes, maxSize)
 
         windows.persist()
 
@@ -181,9 +199,10 @@ object HadoopGeoTiffRDD extends LazyLogging {
         .flatMap { case (objectRequest, (cols, rows)) =>
           val info = HadoopGeoTiffInfoReader(objectRequest.toString, conf, options.tiffExtensions)
           val layout = info.getGeoTiffInfo(objectRequest.toString).segmentLayout.tileLayout
+          val maxSize = getMaxSize(options)
 
           RasterReader
-            .listWindows(cols, rows, options.maxTileSize.getOrElse(1<<10), layout.tileCols, layout.tileRows)
+            .listWindows(cols, rows, maxSize, layout.tileCols, layout.tileRows)
             .map((objectRequest, _))
         }
 
