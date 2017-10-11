@@ -83,6 +83,8 @@ object S3GeoTiffRDD extends LazyLogging {
     getS3Client: () => S3Client = () => S3Client.DEFAULT
   ) extends RasterReader.Options
 
+  val contingencyTileSize = 512
+
   object Options {
     def DEFAULT = Options()
   }
@@ -128,7 +130,7 @@ object S3GeoTiffRDD extends LazyLogging {
       case _ => {
         val size = Options.DEFAULT.maxTileSize match {
           case Some(maxTileSize) => maxTileSize
-          case None => throw new Exception("Neither maxTileSize nor windowSize was given, and there is no default maxTileSize.")
+          case None => contingencyTileSize
         }
         logger.warn(s"Neither maxTileSize nor windowSize was given, defaulting to $size.")
         size
