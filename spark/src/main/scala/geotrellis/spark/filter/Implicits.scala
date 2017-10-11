@@ -40,9 +40,9 @@ trait Implicits {
     M[_]
   ](val self: RDD[(K, V)] with Metadata[M[K]]) extends SpaceTimeToSpatialMethods[K, V, M]
 
-  implicit class withSpaceTimeToSpatialMethods2[
+  implicit class withSpaceTimeToSpatialMethodsOblivious[
     K: ClassTag: SpatialComponent: TemporalComponent: λ[α => M[α] => Functor[M, α]]: λ[α => Component[M[α], Bounds[α]]],
     V: ClassTag,
     M[_]
-  ](val self: RDD[(K, V)] with Metadata[M[K]]) extends SpaceTimeToSpatialMethods2[K, V, M]
+  ](val self: RDD[(K, V)] with Metadata[M[K]]) extends SpaceTimeToSpatialObliviousMethods[K, V, M]
 }

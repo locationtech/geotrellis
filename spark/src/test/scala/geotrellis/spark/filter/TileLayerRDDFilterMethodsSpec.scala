@@ -66,12 +66,12 @@ class TileLayerRDDFilterMethodsSpec extends FunSpec with TestEnvironment {
     }
 
     it ("should obliviously drop the temporal dimension when requested to do so (non-unique)") {
-      val spatial = tileLayerRdd.toSpatialNoEnsureUnique()
+      val spatial = tileLayerRdd.toSpatialObliviousNonUnique()
       spatial.count should be (10)
     }
 
     it ("should obliviously drop the temporal dimension when requested to do so (unique)") {
-      val spatial = tileLayerRdd.toSpatialEnsureUnique()
+      val spatial = tileLayerRdd.toSpatialObliviousUnique()
       spatial.count should be (4)
     }
 
