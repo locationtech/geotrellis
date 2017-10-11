@@ -24,15 +24,15 @@ import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.duration._
 
-
 trait AttributeCaching { self: AttributeStore =>
 
-  private final val cache = {
+  private final val (cacheEnabled, cache) = {
     val config = ConfigFactory.load()
     val expiration = config.getInt("geotrellis.attribute.caching.expirationMinutes")
     val maxSize = config.getInt("geotrellis.attribute.caching.maxSize")
+    val enabled = config.getBoolean("geotrellis.attribute.caching.enabled")
 
-    Scaffeine()
+    enabled -> Scaffeine()
       .recordStats()
       .expireAfterWrite(expiration.minutes)
       .maximumSize(maxSize)
@@ -40,24 +40,29 @@ trait AttributeCaching { self: AttributeStore =>
   }
 
   def cacheRead[T: JsonFormat](layerId: LayerId, attributeName: String): T = {
-    cache.get(layerId -> attributeName, { key => read[T](layerId, attributeName) }).asInstanceOf[T]
+    if(cacheEnabled)
+      cache.get(layerId -> attributeName, { _ => read[T](layerId, attributeName) }).asInstanceOf[T]
+    else
+      read[T](layerId, attributeName)
   }
 
   def cacheWrite[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
-    cache.put(layerId -> attributeName, value)
+    if(cacheEnabled) cache.put(layerId -> attributeName, value)
     write[T](layerId, attributeName, value)
   }
 
   def clearCache(): Unit = {
-    cache.invalidateAll()
+    if(cacheEnabled) cache.invalidateAll()
   }
 
   def clearCache(id: LayerId): Unit = {
-    val toInvalidate = cache.asMap.keys.filter(_._1 == id)
-    cache.invalidateAll(toInvalidate)
+    if(cacheEnabled) {
+      val toInvalidate = cache.asMap.keys.filter(_._1 == id)
+      cache.invalidateAll(toInvalidate)
+    }
   }
 
   def clearCache(id: LayerId, attribute: String): Unit = {
-    cache.invalidate(id -> attribute)
+    if(cacheEnabled) cache.invalidate(id -> attribute)
   }
 }
