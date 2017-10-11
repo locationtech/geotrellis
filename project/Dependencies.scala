@@ -29,6 +29,7 @@ object Dependencies {
   val openCSV             = "com.opencsv"                 % "opencsv"                  % "3.9"
 
   val spire               = "org.spire-math"             %% "spire"                    % Version.spire
+  val spireMacro          = "org.spire-math"             %% "spire-macros"             % Version.spire
 
   val sprayJson           = "io.spray"                   %% "spray-json"               % Version.sprayJson
 
