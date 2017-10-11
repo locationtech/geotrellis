@@ -118,6 +118,25 @@ object S3GeoTiffRDD extends LazyLogging {
   }
 
   /**
+    * A helper function to get the maximum (linear) tile size.
+    */
+  private def getMaxSize(options: Options) = {
+    (options.maxTileSize, windowSize) match {
+      case (Some(maxTileSize), Some(windowSize)) => math.min(maxTileSize, windowSize)
+      case (Some(maxTileSize), None) => maxTileSize
+      case (None, Some(windowSize)) => windowSize
+      case _ => {
+        val size = Options.DEFAULT.maxTileSize match {
+          case Some(maxTileSize) => maxTileSize
+          case None => throw new Exception("Neither maxTileSize nor windowSize was given, and there is no default maxTileSize.")
+        }
+        logger.warn(s"Neither maxTileSize nor windowSize was given, defaulting to $size.")
+        size
+      }
+    }
+  }
+
+  /**
     * Creates a RDD[(K, V)] whose K and V  on the type of the GeoTiff that is going to be read in.
     *
     * @param bucket   Name of the bucket on S3 where the files are kept.
@@ -133,7 +152,8 @@ object S3GeoTiffRDD extends LazyLogging {
 
     (options.maxTileSize, options.partitionBytes) match {
       case (_, Some(partitionBytes)) => {
-        val maxSize = math.min(options.maxTileSize.getOrElse(1<<10), windowSize.getOrElse(1<<10)) // XXX is windowSize a length or an area?
+        val maxSize = getMaxSize(options)
+
         val windows: RDD[(String, Array[GridBounds])] =
           sourceGeoTiffInfo.windowsByBytes(partitionBytes, maxSize)
 
@@ -210,9 +230,10 @@ object S3GeoTiffRDD extends LazyLogging {
           val bucket = objectRequest.getBucketName
           val key = objectRequest.getKey
           val layout = sourceGeoTiffInfo.getGeoTiffInfo(s"s3://$bucket/$key").segmentLayout.tileLayout
+          val maxSize = getMaxSize(options)
 
           RasterReader
-            .listWindows(cols, rows, options.maxTileSize.getOrElse(1<<10), layout.tileCols, layout.tileRows)
+            .listWindows(cols, rows, maxSize, layout.tileCols, layout.tileRows)
             .map((objectRequest, _))
         }
 
