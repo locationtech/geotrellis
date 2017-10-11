@@ -70,6 +70,8 @@ object HadoopGeoTiffRDD extends LazyLogging {
     chunkSize: Option[Int] = None
   ) extends RasterReader.Options
 
+  val contingencyTileSize = 512
+
   object Options {
     def DEFAULT = Options()
   }
@@ -94,7 +96,7 @@ object HadoopGeoTiffRDD extends LazyLogging {
       case None => {
         val size = Options.DEFAULT.maxTileSize match {
           case Some(maxTileSize) => maxTileSize
-          case None => throw new Exception("maxTileSize was not given and there is no default maxTileSize.")
+          case None => contingencyTileSize
         }
         logger.warn(s"maxTileSize was not given, defaulting to $size.")
         size
