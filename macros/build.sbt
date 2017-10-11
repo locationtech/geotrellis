@@ -5,7 +5,7 @@ name := "geotrellis-macros"
 sourceGenerators in Compile += (sourceManaged in Compile).map(Boilerplate.genMacro).taskValue
 
 libraryDependencies ++= Seq(
-  "org.spire-math" %% "spire-macros" % Version.spire,
+  spireMacro,
   "org.scala-lang" % "scala-reflect" % scalaVersion.value
 )
 
