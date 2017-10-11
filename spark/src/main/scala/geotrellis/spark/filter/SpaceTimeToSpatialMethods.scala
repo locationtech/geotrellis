@@ -40,20 +40,23 @@ abstract class SpaceTimeToSpatialMethods[
 
 /**
   * This exists because `reduceByKey` needs K and V to be members of
-  * `ClassTag` but adding that restriction to the type parameters of
-  * the class above would break the API.  Neither methods can be named
-  * `toSpatial` as that would hide the methods provided by the class
-  * above.
+  * the `ClassTag` type class, but adding that restriction to the type
+  * parameters of the class above would break the API.  Neither method
+  * can be named `toSpatial` as that would hide the methods provided
+  * by the class above.
   */
-abstract class SpaceTimeToSpatialMethods2[
+abstract class SpaceTimeToSpatialObliviousMethods[
   K: ClassTag: SpatialComponent: TemporalComponent: λ[α => M[α] => Functor[M, α]]: λ[α => Component[M[α], Bounds[α]]],
   V: ClassTag,
   M[_]
 ] extends MethodExtensions[RDD[(K, V)] with Metadata[M[K]]] {
 
-  def toSpatialEnsureUnique(): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] =
+  def toSpatialObliviousUnique(): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] =
     ToSpatial(self, ensureUnique = true)
 
-  def toSpatialNoEnsureUnique(): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] =
+  def toSpatialObliviousNonUnique(): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] =
     ToSpatial(self, ensureUnique = false)
+
+  def toSpatialOblivious(ensureUnique: Boolean): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] =
+    ToSpatial(self, ensureUnique = ensureUnique)
 }
