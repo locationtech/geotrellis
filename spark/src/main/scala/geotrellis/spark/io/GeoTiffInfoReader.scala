@@ -60,6 +60,14 @@ private [geotrellis] trait GeoTiffInfoReader extends LazyLogging {
     }
   }
 
+  /**
+    * Generate an RDD of URI, GridBounds pairs.  The URIs point to
+    * files and the GridBounds conform to GeoTiff segments (if
+    * possible).
+    *
+    * @param  partitionBytes  The desired number of bytes per partition.
+    * @param  maxSize         The maximum (linear) size of any window (any GridBounds)
+    */
   def windowsByBytes(
     partitionBytes: Long,
     maxSize: Int
