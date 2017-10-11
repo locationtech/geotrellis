@@ -116,8 +116,8 @@ object HadoopGeoTiffRDD extends LazyLogging {
   )(implicit sc: SparkContext, rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
 
     val conf = new SerializableConfiguration(configuration(path, options))
-    val path2 = path.toString
-    lazy val sourceGeoTiffInfo = HadoopGeoTiffInfoReader(path2, conf, options.tiffExtensions)
+    val pathString = path.toString // The given path as a String instead of a Path
+    lazy val sourceGeoTiffInfo = HadoopGeoTiffInfoReader(pathString, conf, options.tiffExtensions)
 
     (options.maxTileSize, options.partitionBytes) match {
       case (_, Some(partitionBytes)) => {
