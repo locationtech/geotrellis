@@ -9,7 +9,6 @@ libraryDependencies ++= Seq(
   spire,
   monocleCore,
   monocleMacro,
-  openCSV,
   scalatest % "test",
   scalacheck  % "test"
 )
