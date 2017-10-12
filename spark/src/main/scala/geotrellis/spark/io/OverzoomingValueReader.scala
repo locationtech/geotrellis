@@ -29,7 +29,7 @@ import java.net.URI
 
 trait OverzoomingValueReader extends ValueReader[LayerId] {
   def overzoomingReader[
-    K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, 
+    K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag,
     V <: CellGrid: AvroRecordCodec: ? => TileResampleMethods[V]
   ](layerId: LayerId, resampleMethod: ResampleMethod): Reader[K, V] = new Reader[K, V] {
     val LayerId(layerName, requestedZoom) = layerId
@@ -43,9 +43,9 @@ trait OverzoomingValueReader extends ValueReader[LayerId] {
     lazy val baseReader = reader[K, V](layerId)
     lazy val maxReader = reader[K, V](LayerId(layerName, maxAvailableZoom))
 
-    def read(key: K): V = {
+    def read(key: K): V =
       if (requestedZoom <= maxAvailableZoom) {
-        return baseReader.read(key)
+        baseReader.read(key)
       } else {
         val maxKey = {
           val srcSK = key.getComponent[SpatialKey]
@@ -55,9 +55,11 @@ trait OverzoomingValueReader extends ValueReader[LayerId] {
 
         val toResample = maxReader.read(maxKey)
 
-        return toResample.resample(maxMaptrans(maxKey), RasterExtent(requestedMaptrans(key), toResample.cols, toResample.rows), resampleMethod)
+        toResample.resample(
+          maxMaptrans.keyToExtent(maxKey.getComponent[SpatialKey]),
+          RasterExtent(requestedMaptrans.keyToExtent(key.getComponent[SpatialKey]), toResample.cols, toResample.rows),
+          resampleMethod
+        )
       }
-    }
   }
 }
-
