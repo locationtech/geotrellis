@@ -150,9 +150,13 @@ object TileRDDReproject {
           (0, m, options.rasterReprojectOptions.method)
       }
 
-    // Layout change may imply upsampling, creating more tiles. If so compensate by creating more partitions
-    val part: Option[Partitioner] = if (reprojectSummary.pixelRatio > 1.5) {
-      val pixelRatio = reprojectSummary.pixelRatio
+    val pixelRatio = {
+      // account for changes due to layout, may be snapping or up/down-sampling
+      val CellSize(w0, h0) = reprojectSummary.cellSize
+      val CellSize(w1, h1) = newMetadata.layout.cellSize
+      reprojectSummary.pixelRatio * (w1*h1)/(w0*h0)
+    }
+    val part: Option[Partitioner] = if (pixelRatio > 1.2) {
       val newPartitionCount = (bufferedTiles.partitions.length * pixelRatio).toInt
       logger.info(s"Layout change grows potential number of tiles by $pixelRatio times, resizing to $newPartitionCount partitions.")
       Some(new HashPartitioner(partitions = newPartitionCount))
@@ -333,25 +337,25 @@ object TileRDDReproject {
   }
 
   private case class ReprojectSummary(
-    sourcePixels: Long,
+    sourcePixels: Double,
     pixels: Double,
     extent: Extent,
     cellSize: CellSize
   ) {
+    /** Combine summary and project pixel counts to highest resolution */
     def combine(other: ReprojectSummary): ReprojectSummary = {
-      if (cellSize.resolution > other.cellSize.resolution) {
-        other.combine(this)
-      } else { // this has higher pixel resolution
-        val otherArea = other.pixels * other.cellSize.width + other.pixels * other.cellSize.height
-        val otherPixelsRescaled = otherArea / (cellSize.width * cellSize.height)
-        ReprojectSummary(
-          sourcePixels + other.sourcePixels,
-          pixels + otherPixelsRescaled,
-          extent combine other.extent,
-          cellSize)
-      }
+      val ct = if (cellSize.resolution < other.cellSize.resolution) cellSize else other.cellSize
+      val otherPixelArea = other.cellSize.width * other.cellSize.height
+      val otherPixelRatio = otherPixelArea / (cellSize.width * cellSize.height)
+
+      ReprojectSummary(
+        sourcePixels + other.sourcePixels,
+        pixels + other.pixels * otherPixelRatio,
+        extent combine other.extent,
+        ct)
     }
 
-    def pixelRatio: Double = pixels.toDouble / sourcePixels.toDouble
+    /** How many pixels were added in reproject */
+    def pixelRatio: Double = pixels / sourcePixels
   }
 }
