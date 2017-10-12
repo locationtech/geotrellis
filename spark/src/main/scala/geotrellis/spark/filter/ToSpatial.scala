@@ -19,6 +19,7 @@ package geotrellis.spark.filter
 import geotrellis.spark._
 import geotrellis.util._
 
+import org.apache.spark.Partitioner
 import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
@@ -98,14 +99,24 @@ object ToSpatial {
     K: ClassTag: SpatialComponent: TemporalComponent: λ[α => M[α] => Functor[M, α]]: λ[α => Component[M[α], Bounds[α]]],
     V: ClassTag,
     M[_]
-  ](rdd: RDD[(K, V)] with Metadata[M[K]], ensureUnique: Boolean): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] = {
+  ](
+    rdd: RDD[(K, V)] with Metadata[M[K]],
+    ensureUnique: Boolean,
+    partitioner: Option[Partitioner] = None
+  ): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] = {
     val metadata = rdd.metadata.map(_.getComponent[SpatialKey])
-    val rdd2 = ensureUnique match {
-      case true =>
+    val rdd2 = (ensureUnique,partitioner) match {
+      case (true, Some(partitioner)) =>
+        rdd
+          .map({ case (k, v) => (k.getComponent[SpatialKey], v) })
+          .map(identity).reduceByKey(partitioner, {(v: V, _: V) => v})
+
+      case (true, None) =>
         rdd
           .map({ case (k, v) => (k.getComponent[SpatialKey], v) })
           .map(identity).reduceByKey({ case (left, right) => left })
-      case false =>
+
+      case (false, _) =>
         rdd
           .map({ case (k, v) => (k.getComponent[SpatialKey], v) })
     }
