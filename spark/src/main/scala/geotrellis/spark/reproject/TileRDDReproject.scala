@@ -150,12 +150,9 @@ object TileRDDReproject {
           (0, m, options.rasterReprojectOptions.method)
       }
 
-    val pixelRatio = {
-      // account for changes due to layout, may be snapping or up/down-sampling
-      val CellSize(w0, h0) = reprojectSummary.cellSize
-      val CellSize(w1, h1) = newMetadata.layout.cellSize
-      reprojectSummary.pixelRatio * (w1*h1)/(w0*h0)
-    }
+    // account for changes due to layout, may be snapping or up/down-sampling
+    val pixelRatio = reprojectSummary.rescaledPixelRatio(newMetadata.layout.cellSize)
+
     val part: Option[Partitioner] = if (pixelRatio > 1.2) {
       val newPartitionCount = (bufferedTiles.partitions.length * pixelRatio).toInt
       logger.info(s"Layout change grows potential number of tiles by $pixelRatio times, resizing to $newPartitionCount partitions.")
@@ -344,18 +341,29 @@ object TileRDDReproject {
   ) {
     /** Combine summary and project pixel counts to highest resolution */
     def combine(other: ReprojectSummary): ReprojectSummary = {
-      val ct = if (cellSize.resolution < other.cellSize.resolution) cellSize else other.cellSize
-      val otherPixelArea = other.cellSize.width * other.cellSize.height
-      val otherPixelRatio = otherPixelArea / (cellSize.width * cellSize.height)
-
-      ReprojectSummary(
-        sourcePixels + other.sourcePixels,
-        pixels + other.pixels * otherPixelRatio,
-        extent combine other.extent,
-        ct)
+      if (cellSize.resolution < other.cellSize.resolution)
+        ReprojectSummary(
+          sourcePixels + other.sourcePixels,
+          pixels + other.rescaledPixelCount(cellSize),
+          extent combine other.extent,
+          cellSize)
+      else
+        other.combine(this)
     }
 
     /** How many pixels were added in reproject */
     def pixelRatio: Double = pixels / sourcePixels
+
+    def rescaledPixelRatio(target: CellSize): Double =
+      rescaledPixelCount(target) / sourcePixels
+
+    /** How many pixels would it take to cover the same area in different cellSize? */
+    def rescaledPixelCount(target: CellSize): Double = {
+      val CellSize(w0, h0) = cellSize
+      val CellSize(w1, h1) = target
+      pixels * (w0 * h0) / (w1 * h1)
+    }
+
+
   }
 }
