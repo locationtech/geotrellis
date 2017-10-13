@@ -123,8 +123,12 @@ object TileRDDReproject {
     val reprojectSummary = matchReprojectRasterExtent(
       metadata.crs, destCrs,
       metadata.layout,
-      Some(metadata.bounds.asInstanceOf[KeyBounds[SpatialKey]])
-    )(sc)
+      metadata.bounds match {
+        case KeyBounds(s, e) =>
+          Some(KeyBounds(s.getComponent[SpatialKey], e.getComponent[SpatialKey]))
+        case _ =>
+          None
+      })(sc)
     logger.info(s"$reprojectSummary")
     val extent = reprojectSummary.extent
     val cellSize = reprojectSummary.cellSize
