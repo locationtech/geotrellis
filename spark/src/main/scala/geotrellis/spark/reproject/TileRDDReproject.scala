@@ -352,7 +352,11 @@ object TileRDDReproject {
           extent combine other.extent,
           cellSize)
       else
-        other.combine(this)
+        ReprojectSummary(
+          sourcePixels + other.sourcePixels,
+          rescaledPixelCount(other.cellSize) + other.pixels
+          extent combine other.extent,
+          other.cellSize)
     }
 
     /** How many pixels were added in reproject */
