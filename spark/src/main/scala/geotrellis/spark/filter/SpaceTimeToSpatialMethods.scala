@@ -19,7 +19,9 @@ package geotrellis.spark.filter
 import geotrellis.spark._
 import geotrellis.util._
 
+import org.apache.spark.Partitioner
 import org.apache.spark.rdd._
+
 import java.time.ZonedDateTime
 
 import scala.reflect.ClassTag
@@ -51,12 +53,12 @@ abstract class SpaceTimeToSpatialObliviousMethods[
   M[_]
 ] extends MethodExtensions[RDD[(K, V)] with Metadata[M[K]]] {
 
-  def toSpatialObliviousUnique(): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] =
-    ToSpatial(self, ensureUnique = true)
+  def toSpatialObliviousUnique(
+    mergeFunc: Option[(V, V) => V] = None,
+    partitioner: Option[Partitioner] = None
+  ): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] =
+    ToSpatial(self, mergeFunc, partitioner)
 
   def toSpatialObliviousNonUnique(): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] =
-    ToSpatial(self, ensureUnique = false)
-
-  def toSpatialOblivious(ensureUnique: Boolean): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] =
-    ToSpatial(self, ensureUnique = ensureUnique)
+    ToSpatial(self)
 }

@@ -101,25 +101,36 @@ object ToSpatial {
     M[_]
   ](
     rdd: RDD[(K, V)] with Metadata[M[K]],
-    ensureUnique: Boolean,
+    mergeFun: Option[(V, V) => V],
     partitioner: Option[Partitioner] = None
   ): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] = {
     val metadata = rdd.metadata.map(_.getComponent[SpatialKey])
-    val rdd2 = (ensureUnique,partitioner) match {
-      case (true, Some(partitioner)) =>
-        rdd
-          .map({ case (k, v) => (k.getComponent[SpatialKey], v) })
-          .map(identity).reduceByKey(partitioner, {(v: V, _: V) => v})
-
-      case (true, None) =>
-        rdd
-          .map({ case (k, v) => (k.getComponent[SpatialKey], v) })
-          .map(identity).reduceByKey({ case (left, right) => left })
-
-      case (false, _) =>
-        rdd
-          .map({ case (k, v) => (k.getComponent[SpatialKey], v) })
+    val mergeFn = mergeFun match {
+      case Some(mergeFunc) => mergeFunc
+      case None => {(v: V, _: V) => v}
     }
+
+    val rdd2 = partitioner match {
+      case Some(partitioner) =>
+        rdd
+          .map({ case (k, v) => (k.getComponent[SpatialKey], v) })
+          .reduceByKey(partitioner, mergeFn)
+
+      case None =>
+        rdd
+          .map({ case (k, v) => (k.getComponent[SpatialKey], v) })
+          .reduceByKey(mergeFn)
+    }
+    ContextRDD(rdd2, metadata)
+  }
+
+  def apply[
+    K: ClassTag: SpatialComponent: TemporalComponent: λ[α => M[α] => Functor[M, α]]: λ[α => Component[M[α], Bounds[α]]],
+    V: ClassTag,
+    M[_]
+  ](rdd: RDD[(K, V)] with Metadata[M[K]]): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] = {
+    val metadata = rdd.metadata.map(_.getComponent[SpatialKey])
+    val rdd2 = rdd.map({ case (k, v) => (k.getComponent[SpatialKey], v) })
     ContextRDD(rdd2, metadata)
   }
 }
