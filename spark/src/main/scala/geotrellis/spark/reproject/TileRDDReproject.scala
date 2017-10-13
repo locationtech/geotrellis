@@ -44,7 +44,7 @@ object TileRDDReproject {
     * @tparam           K           Key type; requires spatial component.
     * @tparam           V           Tile type; requires the ability to stitch, crop, reproject, merge, and create.
     *
-    * @param            bufferedTiles                An RDD of buffered tiles, created using the BufferTiles operation.
+    * @param            bufferedTiles      An RDD of buffered tiles, created using the BufferTiles operation.
     * @param            metadata           The raster metadata for this keyed tile set.
     * @param            destCrs            The CRS to reproject to.
     * @param            targetLayout       Either the layout scheme or layout definition to use when re-keying the reprojected layers.
@@ -65,6 +65,7 @@ object TileRDDReproject {
     val crs: CRS = metadata.crs
     val layout = metadata.layout
     val tileLayout: TileLayout = layout.tileLayout
+    val sc = bufferedTiles.context
 
     val rasterReprojectOptions =
       options.rasterReprojectOptions.parentGridExtent match {
@@ -79,6 +80,72 @@ object TileRDDReproject {
             options.rasterReprojectOptions
           }
       }
+
+    val BufferedTile(sampleTile, sampleGridBounds) = bufferedTiles.first()._2 // XXX
+    val tileCols = sampleTile.cols // XXX metadata.layout.tileCols
+    val tileRows = sampleTile.rows // XXX metadata.layout.tileRows
+    val KeyBounds(keyMin, keyMax) = metadata.bounds
+    val SpatialKey(keyColMin, keyRowMin) = keyMin.getComponent[SpatialKey]
+    val SpatialKey(keyColMax, keyRowMax) = keyMax.getComponent[SpatialKey]
+    val lb = scala.collection.mutable.ListBuffer.empty[SpatialKey]
+
+    var col = keyColMin; while (col <= keyColMax) {
+      var row = keyRowMin; while (row <= keyRowMax) {
+        lb += SpatialKey(col, row)
+        row += 1
+      }
+      col += 1
+    }
+
+    val layerInfo: (Extent, CellSize) =
+      sc.parallelize(lb)
+        .mapPartitions({ partition =>
+          val transform = Transform(crs, destCrs)
+          val inverseTransform = Transform(destCrs, crs)
+
+          partition.map { key =>
+            val innerExtent = mapTransform(key)
+            val innerRasterExtent = RasterExtent(innerExtent, sampleGridBounds.width, sampleGridBounds.height)
+            val outerGridBounds =
+              GridBounds(
+                -sampleGridBounds.colMin,
+                -sampleGridBounds.rowMin,
+                tileCols - sampleGridBounds.colMin - 1,
+                tileRows - sampleGridBounds.rowMin - 1
+              )
+            val outerExtent = innerRasterExtent.extentFor(outerGridBounds, clamp = false)
+
+            val window =
+              if(options.matchLayerExtent) {
+                sampleGridBounds
+              } else {
+                // Reproject extra cells that are half the buffer size, as to avoid
+                // any missed cells between tiles.
+                GridBounds(
+                  sampleGridBounds.colMin / 2,
+                  sampleGridBounds.rowMin / 2,
+                  (tileCols + sampleGridBounds.colMax - 1) / 2,
+                  (tileRows + sampleGridBounds.rowMax - 1) / 2
+                )
+              }
+
+            val rasterExtent = RasterExtent(outerExtent, tileCols, tileRows)
+            val windowExtent = rasterExtent.extentFor(window)
+            val windowRasterExtent = RasterExtent(windowExtent, window.width, window.height)
+            val targetRasterExtent = ReprojectRasterExtent(windowRasterExtent, transform)
+
+            (targetRasterExtent.extent, targetRasterExtent.cols, targetRasterExtent.rows)
+          }
+        })
+        .map({ case (extent, cols, rows) =>
+          (extent, CellSize(extent, cols, rows))
+        })
+        .reduce({ case ((e1, cs1), (e2, cs2)) =>
+          val extent = e1.combine(e2)
+          val cellSize = if (cs1.resolution < cs2.resolution) cs1 else cs2
+
+          (extent, cellSize)
+        })
 
     val reprojectedTiles =
       bufferedTiles
@@ -123,15 +190,23 @@ object TileRDDReproject {
       targetLayout match {
         case Left(layoutScheme) =>
           // If it's a floating layout scheme, the cell grid will line up and we always want to use nearest neighbor resampling
-          val (z, m) = reprojectedTiles.collectMetadata(destCrs, layoutScheme)
+          val (extent, cellSize) = layerInfo
+          val LayoutLevel(z, layout) = layoutScheme.levelFor(extent, cellSize)
+          val kb = metadata.bounds.setSpatialBounds(KeyBounds(layout.mapTransform(extent)))
+          val m = TileLayerMetadata(metadata.cellType, layout, extent, destCrs, kb)
+
           layoutScheme match {
             case _: FloatingLayoutScheme =>
               (z, m, NearestNeighbor)
             case _ =>
               (z, m, options.rasterReprojectOptions.method)
           }
+
         case Right(layoutDefinition) =>
-          val m = reprojectedTiles.collectMetadata(destCrs, layoutDefinition)
+          val (extent, cellSize) = layerInfo
+          val kb = metadata.bounds.setSpatialBounds(KeyBounds(layout.mapTransform(extent)))
+          val m = TileLayerMetadata(metadata.cellType, layoutDefinition, extent, destCrs, kb)
+
           (0, m, options.rasterReprojectOptions.method)
       }
 
