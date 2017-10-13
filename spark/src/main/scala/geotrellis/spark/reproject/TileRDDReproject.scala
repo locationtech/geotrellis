@@ -345,7 +345,7 @@ object TileRDDReproject {
   ) {
     /** Combine summary and project pixel counts to highest resolution */
     def combine(other: ReprojectSummary): ReprojectSummary = {
-      if (cellSize.resolution < other.cellSize.resolution)
+      if (cellSize.resolution <= other.cellSize.resolution)
         ReprojectSummary(
           sourcePixels + other.sourcePixels,
           pixels + other.rescaledPixelCount(cellSize),
