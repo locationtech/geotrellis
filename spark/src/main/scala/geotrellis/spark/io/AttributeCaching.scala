@@ -24,15 +24,18 @@ import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.duration._
 
+object AttributeCaching {
+  private val config = ConfigFactory.load()
+  val expiration: Int = config.getInt("geotrellis.attribute.caching.expirationMinutes")
+  val maxSize: Int = config.getInt("geotrellis.attribute.caching.maxSize")
+  val enabled: Boolean = config.getBoolean("geotrellis.attribute.caching.enabled")
+}
+
 trait AttributeCaching { self: AttributeStore =>
+  import AttributeCaching._
 
-  private final val (cacheEnabled, cache) = {
-    val config = ConfigFactory.load()
-    val expiration = config.getInt("geotrellis.attribute.caching.expirationMinutes")
-    val maxSize = config.getInt("geotrellis.attribute.caching.maxSize")
-    val enabled = config.getBoolean("geotrellis.attribute.caching.enabled")
-
-    enabled -> Scaffeine()
+  private final val cache = {
+    Scaffeine()
       .recordStats()
       .expireAfterWrite(expiration.minutes)
       .maximumSize(maxSize)
@@ -40,29 +43,29 @@ trait AttributeCaching { self: AttributeStore =>
   }
 
   def cacheRead[T: JsonFormat](layerId: LayerId, attributeName: String): T = {
-    if(cacheEnabled)
+    if(enabled)
       cache.get(layerId -> attributeName, { _ => read[T](layerId, attributeName) }).asInstanceOf[T]
     else
       read[T](layerId, attributeName)
   }
 
   def cacheWrite[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
-    if(cacheEnabled) cache.put(layerId -> attributeName, value)
+    if(enabled) cache.put(layerId -> attributeName, value)
     write[T](layerId, attributeName, value)
   }
 
   def clearCache(): Unit = {
-    if(cacheEnabled) cache.invalidateAll()
+    if(enabled) cache.invalidateAll()
   }
 
   def clearCache(id: LayerId): Unit = {
-    if(cacheEnabled) {
+    if(enabled) {
       val toInvalidate = cache.asMap.keys.filter(_._1 == id)
       cache.invalidateAll(toInvalidate)
     }
   }
 
   def clearCache(id: LayerId, attribute: String): Unit = {
-    if(cacheEnabled) cache.invalidate(id -> attribute)
+    if(enabled) cache.invalidate(id -> attribute)
   }
 }
