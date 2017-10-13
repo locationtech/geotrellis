@@ -67,7 +67,7 @@ class S3GeoTiffRDDSpec
       val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
       mockClient.putObject(bucket, key, geoTiffBytes)
 
-      val options = S3GeoTiffRDD.Options(getS3Client = () => new MockS3Client, partitionBytes=1<<20)
+      val options = S3GeoTiffRDD.Options(getS3Client = () => new MockS3Client, partitionBytes=1<<20, maxTileSize = Some(64))
       val geometry = Line(Point(141.7066667, -17.5200000), Point(142.1333333, -17.7))
       val fn = {( _: Any, key: ProjectedExtent) => key }
       val source1 =

@@ -77,8 +77,20 @@ object RasterReader {
     cols: Int, rows: Int, maxSize: Int,
     segCols: Int, segRows: Int
   ): Array[GridBounds] = {
-    val colSize: Int = if (maxSize >= segCols) segCols; else best(maxSize, segCols)
-    val rowSize: Int = if (maxSize >= segRows) segRows; else best(maxSize, segRows)
+    val colSize: Int =
+      if (maxSize >= segCols * 2) {
+        math.floor(maxSize.toDouble / segCols).toInt * segCols
+      } else if (maxSize >= segCols) {
+        segCols
+      } else best(maxSize, segCols)
+
+    val rowSize: Int =
+      if (maxSize >= segRows * 2) {
+        math.floor(maxSize.toDouble / segRows).toInt * segRows
+      } else if (maxSize >= segRows) {
+        segRows
+      } else best(maxSize, segRows)
+
     val windows = listWindows(cols, rows, colSize, rowSize)
 
     windows
@@ -90,10 +102,22 @@ object RasterReader {
     extent: Extent, segCols: Int, segRows: Int, geometry: Geometry,
     options: Rasterizer.Options = Rasterizer.Options.DEFAULT
   ): Array[GridBounds] = {
+    val maxColSize: Int =
+      if (maxSize >= segCols * 2) {
+        math.floor(maxSize.toDouble / segCols).toInt * segCols
+      } else if (maxSize >= segCols) {
+        segCols
+      } else best(maxSize, segCols)
+
+    val maxRowSize: Int =
+      if (maxSize >= segRows) {
+        math.floor(maxSize.toDouble / segRows).toInt * segRows
+      } else if (maxSize >= segRows) {
+        segRows
+      } else best(maxSize, segRows)
+
     val result = scala.collection.mutable.ArrayBuffer[GridBounds]()
-    val maxColSize: Int = if (maxSize >= segCols) segCols; else best(maxSize, segCols)
-    val maxRowSize: Int = if (maxSize >= segRows) segRows; else best(maxSize, segRows)
-    val re = RasterExtent(extent, cols/maxColSize, rows/maxRowSize)
+    val re = RasterExtent(extent, math.max(cols/maxColSize,1), math.max(rows/maxRowSize,1))
 
     Rasterizer.foreachCellByGeometry(geometry, re, options)({ (col: Int, row: Int) =>
       result +=
