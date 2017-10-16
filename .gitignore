@@ -42,3 +42,6 @@ index.js
 nohup.out
 
 site/
+
+.ipynb_checkpoints/
+*.graphml
