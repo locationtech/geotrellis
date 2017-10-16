@@ -43,8 +43,9 @@ package object spark
     with filter.Implicits
     with join.Implicits
     with knn.Implicits
-    with mapalgebra.focal.hillshade.Implicits
     with mapalgebra.focal.Implicits
+    with mapalgebra.focal.hillshade.Implicits
+    with mapalgebra.focal.tobler.Implicits
     with mapalgebra.Implicits
     with mapalgebra.local.Implicits
     with mapalgebra.local.temporal.Implicits
