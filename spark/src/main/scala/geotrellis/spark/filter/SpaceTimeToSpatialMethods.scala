@@ -38,6 +38,9 @@ abstract class SpaceTimeToSpatialMethods[
 
   def toSpatial(dateTime: ZonedDateTime): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] =
     toSpatial(dateTime.toInstant.toEpochMilli)
+
+  def toSpatial(): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] =
+    ToSpatial(self)
 }
 
 /**
@@ -47,18 +50,21 @@ abstract class SpaceTimeToSpatialMethods[
   * can be named `toSpatial` as that would hide the methods provided
   * by the class above.
   */
-abstract class SpaceTimeToSpatialObliviousMethods[
+abstract class SpaceTimeToSpatialReduceMethods[
   K: ClassTag: SpatialComponent: TemporalComponent: λ[α => M[α] => Functor[M, α]]: λ[α => Component[M[α], Bounds[α]]],
   V: ClassTag,
   M[_]
 ] extends MethodExtensions[RDD[(K, V)] with Metadata[M[K]]] {
 
-  def toSpatialObliviousUnique(
-    mergeFunc: Option[(V, V) => V] = None,
-    partitioner: Option[Partitioner] = None
+  def toSpatialReduce(
+    mergeFunc: (V, V) => V
   ): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] =
-    ToSpatial(self, mergeFunc, partitioner)
+    ToSpatial(self, Some(mergeFunc), None)
 
-  def toSpatialObliviousNonUnique(): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] =
-    ToSpatial(self)
+  def toSpatialReduce(
+    mergeFunc: (V, V) => V,
+    partitioner: Partitioner
+  ): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] =
+    ToSpatial(self, Some(mergeFunc), Some(partitioner))
+
 }
