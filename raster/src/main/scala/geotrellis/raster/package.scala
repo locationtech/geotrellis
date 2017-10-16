@@ -59,6 +59,7 @@ package object raster
       with hydrology.HydrologyMethods
       with mapalgebra.focal.FocalMethods
       with mapalgebra.focal.hillshade.HillshadeMethods
+      with mapalgebra.focal.tobler.ToblerMethods
       with mapalgebra.local.LocalMethods
       with mapalgebra.zonal.ZonalMethods
       with mask.SinglebandTileMaskMethods
