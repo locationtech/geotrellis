@@ -61,16 +61,16 @@ object RasterReader {
     }
   }
 
-  private def best(m: Int, n: Int): Int = {
+  private def best(maxSize: Int, segment: Int): Int = {
     var i: Int = 1
-    var result: Int = m
+    var result: Int = -1
     // Search for the largest factor of n that is > 1 and <= m.  If
     // one cannot be found, give up and return m.
-    while (i < math.sqrt(n) && result == m) {
-      if ((n % i == 0) && ((n/i) <= m)) result = (n/i)
+    while (i < math.sqrt(segment) && result == -1) {
+      if ((segment % i == 0) && ((segment/i) <= maxSize)) result = (segment/i)
       i += 1
     }
-    result
+    if (result == -1) maxSize; else result
   }
 
   def listWindows(
