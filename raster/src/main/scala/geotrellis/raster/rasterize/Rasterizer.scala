@@ -393,8 +393,8 @@ object Rasterizer {
     val stepX = math.signum(x1 - x0).toInt
     val stepY = math.signum(y0 - y1).toInt
 
-    val firstX = (re.gridColToMap(cellX) + re.gridColToMap(cellX + stepX)) / 2.0
-    val firstY = (re.gridRowToMap(cellY) + re.gridRowToMap(cellY + stepY)) / 2.0
+    val firstX = if (stepX==0) Double.PositiveInfinity else (re.gridColToMap(cellX) + re.gridColToMap(cellX + stepX)) / 2.0
+    val firstY = if (stepY==0) Double.PositiveInfinity else (re.gridRowToMap(cellY) + re.gridRowToMap(cellY + stepY)) / 2.0
 
     val (dx, dy) = (finalPoint.get.x - initialPoint.x, finalPoint.get.y - initialPoint.y)
     var (tMaxX, tMaxY) = ((firstX - initialPoint.x) / dx, (firstY - initialPoint.y) / dy)
@@ -409,7 +409,7 @@ object Rasterizer {
         tMaxY += tDeltaY
         cellY += stepY
       }
-    } while (cellX != finalX || cellY!= finalY)
+    } while (cellX != finalX || cellY != finalY)
 
     if (!skipLast)
       f(cellX, cellY)
