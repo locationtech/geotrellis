@@ -402,12 +402,37 @@ object Rasterizer {
 
     do {
       f(cellX, cellY)
-      if (tMaxX <= tMaxY) {
-        tMaxX += tDeltaX
-        cellX += stepX
+      if (math.abs(tMaxX - tMaxY) < EPSILON) {
+        // crossing at grid intersection
+        (stepX, stepY) match {
+          case ( 1, -1) =>
+            cellX += stepX
+            tMaxX += tDeltaX
+          case ( 1,  1) => 
+            cellX += stepX
+            cellY += stepY
+            tMaxX += tDeltaX
+            tMaxY += tDeltaY
+          case (-1,  1) =>
+            cellY += stepY
+            tMaxY += tDeltaY
+          case (-1, -1) =>
+            cellX += stepX
+            cellY += stepY
+            tMaxX += tDeltaX
+            tMaxY += tDeltaY
+          case _ =>
+            throw new RuntimeException(s"Arrived at illegal configuration: stepX=$stepX, stepY=$stepY")
+        }
       } else {
-        tMaxY += tDeltaY
-        cellY += stepY
+        // regular crossing
+        if (tMaxX < tMaxY) {
+          tMaxX += tDeltaX
+          cellX += stepX
+        } else {
+          tMaxY += tDeltaY
+          cellY += stepY
+        }
       }
     } while (cellX != finalX || cellY != finalY)
 
