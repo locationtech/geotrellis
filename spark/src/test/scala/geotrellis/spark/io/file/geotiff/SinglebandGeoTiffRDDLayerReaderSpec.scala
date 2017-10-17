@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.geotiff
+package geotrellis.spark.io.file.geotiff
 
-import java.net.URI
-
-import geotrellis.proj4.WebMercator
 import geotrellis.raster.testkit._
-import geotrellis.spark.SpatialKey
-import geotrellis.spark.io.index.{KeyIndexMethod, ZCurveKeyIndexMethod}
 import geotrellis.spark.testkit._
 import geotrellis.spark.testkit.testfiles._
-import geotrellis.spark.tiling.ZoomedLayoutScheme
+
+import java.net.URI
 import org.scalatest._
 
 class SinglebandGeoTiffRDDLayerReaderSpec extends FunSpec
@@ -37,7 +33,7 @@ class SinglebandGeoTiffRDDLayerReaderSpec extends FunSpec
 
     it("first") {
       val path = new URI("file:///Users/daunnc/subversions/git/github/pomadchin/geotrellis-chatta-demo/service/geotrellis/data/arg_wm/")
-      val layer = SinglebandGeoTiffRDDLayerReader.fetchSingleband(path)
+      val layer = FileSinglebandGeoTiffRDDLayerReader.fetchSingleband(path)
 
       println(s"layer.rdd.length: ${layer.rdd.count}")
 

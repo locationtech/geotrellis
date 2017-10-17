@@ -1,4 +1,4 @@
-package geotrellis.spark.io.geotiff
+package geotrellis.spark.io.file.geotiff
 
 import geotrellis.raster.{CellGrid, Raster}
 import geotrellis.spark.LayerId
