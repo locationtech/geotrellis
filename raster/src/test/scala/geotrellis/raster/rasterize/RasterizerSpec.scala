@@ -19,6 +19,7 @@ package geotrellis.raster.rasterize
 import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.raster.testkit._
+import geotrellis.util.Constants.{FLOAT_EPSILON => EPSILON}
 import math.{max,min,round}
 
 import org.scalatest._
@@ -164,6 +165,54 @@ class RasterizeSpec extends FunSuite with RasterMatchers
 
     (result4 diff result8) should be (Set((512,514)))
     (result8 diff result4) should be (Set.empty)
+  }
+
+  test("exact line drawing works when line intersects corner (NW->SE)") {
+    val e = Extent(0.0, 0.0, 10.0, 10.0)
+    val re = RasterExtent(e, 10, 10)
+
+    val result = mutable.Set[(Int, Int)]()
+
+    val (x0, y0) = (10, 0)
+    val (x1, y1) = (0, 10)
+    val line = Line((x0, y0), (x1, y1))
+
+    Rasterizer.foreachCellInGridLineExact(x0, y0, x1, y1, re, false){ (x, y) => result += x -> y }
+
+    def lineInCell(cx: Int, cy: Int): Boolean = {
+      val w = re.cellwidth/2
+      val h = re.cellheight/2
+      val (x, y) = re.gridToMap(cx, cy)
+      val extent = Extent(x-w, y-h+EPSILON, x+w-EPSILON, y+h)
+      // println(s"($cx, $cy): center@($x,$y), $extent")
+      extent.intersects(line)
+    }
+
+    result should be ( (for ( x <- 0 to 9 ; y <- 0 to 9 ; if lineInCell(x, y) ) yield x -> y).toSet )
+  }
+
+  test("exact line drawing works when line intersects corner (SW->NE)") {
+    val e = Extent(0.0, 0.0, 10.0, 10.0)
+    val re = RasterExtent(e, 10, 10)
+
+    val result = mutable.Set[(Int, Int)]()
+
+    val (x0, y0) = (1, 1)
+    val (x1, y1) = (5, 3)
+    val line = Line((x0, y0), (x1, y1))
+
+    Rasterizer.foreachCellInGridLineExact(x0, y0, x1, y1, re, false){ (x, y) => result += x -> y }
+
+    def lineInCell(cx: Int, cy: Int): Boolean = {
+      val w = re.cellwidth/2
+      val h = re.cellheight/2
+      val (x, y) = re.gridToMap(cx, cy)
+      val extent = Extent(x-w, y-h+EPSILON, x+w-EPSILON, y+h)
+      // println(s"($cx, $cy): center@($x,$y), $extent")
+      extent.intersects(line)
+    }
+
+    result should be ( (for ( x <- 0 to 9 ; y <- 0 to 9 ; if lineInCell(x, y) ) yield x -> y).toSet )
   }
 
 }
