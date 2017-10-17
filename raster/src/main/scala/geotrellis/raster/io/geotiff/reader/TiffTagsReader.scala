@@ -54,9 +54,9 @@ object TiffTagsReader {
         // BigTiff
         byteReader.position(8)
         read(byteReader, byteReader.getLong)(LongTiffTagOffsetSize)
-      /*case id =>
+      case id =>
         // Invalid Tiff identification number
-        throw new MalformedGeoTiffException(s"bad identification number (must be 42 or 43, was $id)")*/
+        throw new MalformedGeoTiffException(s"bad identification number (must be 42 or 43, was $id)")
     }
 
     val tiffTagsBuffer: ListBuffer[TiffTags] = ListBuffer()
@@ -81,51 +81,19 @@ object TiffTagsReader {
     tiffTags.copy(overviews = tiffTagsOverviews)
   }
 
-  def readWithOverviews(byteReader: ByteReader): List[TiffTags] = {
-    (byteReader.get.toChar, byteReader.get.toChar) match {
-      case ('I', 'I') => byteReader.order(ByteOrder.LITTLE_ENDIAN)
-      case ('M', 'M') => byteReader.order(ByteOrder.BIG_ENDIAN)
-      case _ => throw new MalformedGeoTiffException("incorrect byte order")
-    }
-
-    val tiffType = TiffType.fromCode(byteReader.getChar)
-
-
-    val tiffTagsBuffer: ListBuffer[TiffTags] = ListBuffer()
-    tiffTagsBuffer += read(byteReader)
-
-    tiffType match {
-      case Tiff =>
-        var ifdOffset = byteReader.getInt
-        while (ifdOffset > 0) {
-          tiffTagsBuffer += TiffTagsReader.read(byteReader, ifdOffset)(IntTiffTagOffsetSize)
-          ifdOffset = byteReader.getInt
-        }
-        tiffTagsBuffer.toList
-      case _ =>
-        var ifdOffset = byteReader.getLong
-        while (ifdOffset > 0) {
-          tiffTagsBuffer += TiffTagsReader.read(byteReader, ifdOffset)(LongTiffTagOffsetSize)
-          ifdOffset = byteReader.getLong
-        }
-        tiffTagsBuffer.toList
-    }
-  }
-
   def read(byteReader: ByteReader, tagsStartPosition: Long)(implicit ttos: TiffTagOffsetSize): TiffTags = {
-
-    val tagCount =
+    val (tiffType: TiffType, tagCount: Long) =
       ttos match {
         case IntTiffTagOffsetSize =>
           byteReader.position(tagsStartPosition.toInt)
-          byteReader.getShort
+          Tiff -> byteReader.getShort
         case LongTiffTagOffsetSize =>
           byteReader.position(tagsStartPosition)
-          byteReader.getLong
+          BigTiff -> byteReader.getLong
       }
 
     // Read the tags.
-    var tiffTags = TiffTags()
+    var tiffTags = TiffTags(tiffType = tiffType)
 
     // Need to read geo tags last, relies on other tags already being read in.
     var geoTags: Option[TiffTagMetadata] = None

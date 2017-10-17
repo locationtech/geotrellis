@@ -91,7 +91,7 @@ object GeoTiffReader {
    * If there is more than one band in the GeoTiff, read the first band only.
    */
   def readSingleband(bytes: Array[Byte], decompress: Boolean, streaming: Boolean = false): SinglebandGeoTiff =
-      readSingleband(ByteBuffer.wrap(bytes), decompress, streaming)
+    readSingleband(ByteBuffer.wrap(bytes), decompress, streaming)
 
   def readSingleband(byteReader: ByteReader): SinglebandGeoTiff =
     readSingleband(byteReader, true, false)
@@ -209,7 +209,7 @@ object GeoTiffReader {
   /* Read a multi band GeoTIFF file.
    */
   def readMultiband(bytes: Array[Byte], decompress: Boolean, streaming: Boolean = false): MultibandGeoTiff =
-      readMultiband(ByteBuffer.wrap(bytes), decompress, streaming)
+    readMultiband(ByteBuffer.wrap(bytes), decompress, streaming)
 
   def readMultiband(byteReader: ByteReader, decompress: Boolean, streaming: Boolean): MultibandGeoTiff =
     readMultiband(byteReader, decompress, streaming, true, None)

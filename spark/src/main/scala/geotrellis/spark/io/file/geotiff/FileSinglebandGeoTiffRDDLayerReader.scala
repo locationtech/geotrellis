@@ -1,4 +1,4 @@
-package geotrellis.spark.io.geotiff
+package geotrellis.spark.io.file.geotiff
 
 import geotrellis.proj4.WebMercator
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
@@ -16,7 +16,7 @@ import org.apache.spark.rdd.RDD
 
 import java.net.URI
 
-case class SinglebandGeoTiffRDDLayerReader(
+case class FileSinglebandGeoTiffRDDLayerReader(
   rdd: RDD[(Extent, URI)],
   layoutScheme: ZoomedLayoutScheme,
   discriminator: URI => String
@@ -61,7 +61,7 @@ case class SinglebandGeoTiffRDDLayerReader(
   }
 }
 
-object SinglebandGeoTiffRDDLayerReader {
+object FileSinglebandGeoTiffRDDLayerReader {
   def fetchSingleband(
     path: URI,
     layoutScheme: ZoomedLayoutScheme = ZoomedLayoutScheme(WebMercator),
@@ -75,6 +75,6 @@ object SinglebandGeoTiffRDDLayerReader {
           tiff.extent -> p.toUri
         }
 
-    SinglebandGeoTiffRDDLayerReader(rdd, layoutScheme, discriminator)
+    FileSinglebandGeoTiffRDDLayerReader(rdd, layoutScheme, discriminator)
   }
 }

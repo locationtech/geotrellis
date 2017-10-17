@@ -22,7 +22,6 @@ import geotrellis.raster.io.geotiff.tags.codes._
 import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.io.geotiff.util._
 import geotrellis.util.ByteReader
-import CommonPublicValues._
 import ModelTypes._
 import ProjectionTypesMap.UserDefinedProjectionType
 
@@ -31,9 +30,7 @@ import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 import geotrellis.proj4.LatLng
 
-import collection.immutable.{HashMap, Map}
-
-import collection.mutable.ListBuffer
+import collection.immutable.Map
 
 import xml._
 
@@ -64,6 +61,7 @@ case class TiffTags(
   jpegTags: JpegTags = JpegTags(),
   yCbCrTags: YCbCrTags = YCbCrTags(),
   nonStandardizedTags: NonStandardizedTags = NonStandardizedTags(),
+  tiffType: TiffType = Tiff,
   overviews: List[TiffTags] = Nil
 ) {
   def rasterExtent: RasterExtent = RasterExtent(extent, cols, rows)

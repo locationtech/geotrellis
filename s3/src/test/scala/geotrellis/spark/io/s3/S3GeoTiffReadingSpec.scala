@@ -23,6 +23,7 @@ import java.nio.file.{Files, Paths}
 import geotrellis.util._
 import geotrellis.vector.Extent
 import geotrellis.spark.io.s3._
+import geotrellis.spark.io.s3.geotiff._
 import geotrellis.spark.io.s3.testkit._
 import geotrellis.raster.testkit._
 import geotrellis.raster.render._
@@ -34,7 +35,6 @@ import com.amazonaws.services.s3.AmazonS3URI
 import com.amazonaws.services.s3.model._
 import geotrellis.raster.{CellSize, Raster}
 import geotrellis.spark.{LayerId, SpatialKey}
-import geotrellis.spark.io.s3.geotiff.SinglebandGeoTiffCollectionLayerReader
 import org.scalatest._
 
 class S3GeoTiffReadingSpec extends FunSpec
@@ -196,7 +196,7 @@ val craster = raster
 
     it ("ZLC82") {
       val geoTiffLayer =
-        SinglebandGeoTiffCollectionLayerReader
+        S3SinglebandGeoTiffCollectionLayerReader
           .fetchSingleband(
             Seq(
               new URI("s3://geotrellis-test/daunnc/LC_TEST/LC08_L1TP_139045_20170304_20170316_01_T1_B4.TIF")

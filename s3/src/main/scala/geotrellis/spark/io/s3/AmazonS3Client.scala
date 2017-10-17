@@ -96,7 +96,8 @@ class AmazonS3Client(s3client: AWSAmazonS3Client) extends S3Client {
     val obj = s3client.getObject(getObjectRequest)
     val stream = obj.getObjectContent
     try {
-      sun.misc.IOUtils.readFully(stream, -1, true)
+      // sun.misc.IOUtils.readFully(stream, -1, true)
+      IOUtils.toByteArray(stream)
     } finally {
       stream.close()
     }
