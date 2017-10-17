@@ -19,6 +19,7 @@ package geotrellis.raster.rasterize
 import geotrellis.raster._
 import geotrellis.raster.rasterize.extent.ExtentRasterizer
 import geotrellis.raster.rasterize.polygon.PolygonRasterizer
+import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
 import geotrellis.vector._
 
 import spire.syntax.cfor._
@@ -324,6 +325,95 @@ object Rasterizer {
     if(!skipLast &&
        0 <= x && x < re.cols &&
        0 <= y && y < re.rows) { f(x, y); }
+  }
+
+  /**
+    * Implementation drawn from ``A Fast Voxel Traversal Algorithm for Ray
+    * Tracing'' by John Amanatides and Andrew Woo.  Dept. of Computer Science,
+    * University of Toronto.
+    *
+    * The parameter 'skipLast' is a flag which is 'true' if the
+    * function should skip function calling the last cell (x1, y1) and
+    * false otherwise.  This is useful for not duplicating end points
+    * when calling for multiple line segments.
+    *
+    * @param    x0                 x-coordinate of initial point
+    * @param    y0                 y-coordinate of initial point
+    * @param    x1                 x-coordinate of final point
+    * @param    y1                 y-coordinate of final point
+    * @param    re                 RasterExtent used to determine cols and rows
+    * @param    skipLast           Boolean flag
+    * @param    f                  Function to apply: f(cols, row, feature)
+    */
+  def foreachCellInGridLineExact(
+    x0: Double, y0: Double,
+    x1: Double, y1: Double,
+    re: RasterExtent,
+    skipLast: Boolean
+  )(f: (Int, Int) => Unit): Unit = {
+    def clamp(lo: Int, hi: Int)(x: Int) = {
+      if (x < lo)
+        lo
+      else
+        if (x > hi)
+          hi
+        else
+          x
+    }
+
+    // Find cell of first intersection with extent and ray
+    val (initialPoint, finalPoint) = re.extent.intersection(Line((x0, y0), (x1, y1))) match {
+      case NoResult => return
+      case PointResult(p) => (p, None)
+      case LineResult(l) =>
+        val p0 = l.vertices(0)
+        val p1 = l.vertices(1)
+        val base = Point(x0, y0)
+        if (base.distance(p0) <= base.distance(p1))
+          (p0, Some(p1))
+        else
+          (p1, Some(p0))
+    }
+
+    var (cellX, cellY) = {
+      val (x, y) = re.mapToGrid(initialPoint)
+      (clamp(0, re.cols - 1)(x), clamp(0, re.rows - 1)(y))
+    }
+
+    if (finalPoint.isEmpty) {
+      f(cellX, cellY)
+      return
+    }
+
+    val (finalX, finalY) = {
+      val (x, y) = re.mapToGrid(finalPoint.get)
+      (clamp(0, re.cols - 1)(x), clamp(0, re.rows - 1)(y))
+    }
+
+    val stepX = math.signum(x1 - x0).toInt
+    val stepY = math.signum(y0 - y1).toInt
+
+    val firstX = (re.gridColToMap(cellX) + re.gridColToMap(cellX + stepX)) / 2.0
+    val firstY = (re.gridRowToMap(cellY) + re.gridRowToMap(cellY + stepY)) / 2.0
+
+    val (dx, dy) = (finalPoint.get.x - initialPoint.x, finalPoint.get.y - initialPoint.y)
+    var (tMaxX, tMaxY) = ((firstX - initialPoint.x) / dx, (firstY - initialPoint.y) / dy)
+    val (tDeltaX, tDeltaY) = (re.cellwidth / math.abs(dx), re.cellheight / math.abs(dy))
+
+    do {
+      f(cellX, cellY)
+      if (tMaxX <= tMaxY) {
+        tMaxX += tDeltaX
+        cellX += stepX
+      } else {
+        tMaxY += tDeltaY
+        cellY += stepY
+      }
+    } while (cellX != finalX || cellY!= finalY)
+
+    if (!skipLast)
+      f(cellX, cellY)
+
   }
 
 }
