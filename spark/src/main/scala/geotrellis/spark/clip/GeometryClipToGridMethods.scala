@@ -16,16 +16,20 @@
 
 package geotrellis.spark.clip
 
+import geotrellis.spark._
+import geotrellis.spark.tiling.LayoutDefinition
+import geotrellis.util.MethodExtensions
 import geotrellis.vector._
 
 import org.apache.spark.rdd._
 
-trait Implicits {
-  implicit class withFeatureClipToGridMethods[G <: Geometry, D](val self: RDD[Feature[G, D]])
-      extends FeatureClipToGridMethods[G, D]
+trait GeometryClipToGridMethods[G <: Geometry] extends MethodExtensions[RDD[G]] {
+  def clipToGrid(layout: LayoutDefinition): RDD[(SpatialKey, Geometry)] =
+    ClipToGrid(self, layout)
 
-  implicit class withGeometryClipToGridMethods[G <: Geometry](val self: RDD[G])
-      extends GeometryClipToGridMethods[G]
+  def clipToGrid(
+    layout: LayoutDefinition,
+    clipGeom: (Extent, Geometry, ClipToGrid.Predicates) => Option[Geometry]
+  ): RDD[(SpatialKey, Geometry)] =
+    ClipToGrid(self, layout, clipGeom)
 }
-
-object Implicits extends Implicits
