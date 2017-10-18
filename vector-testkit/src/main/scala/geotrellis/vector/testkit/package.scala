@@ -34,8 +34,6 @@ package object testkit {
       math.abs(p1.x - p2.x) <= tolerance && math.abs(p1.y - p2.y) <= tolerance
 
     def matchLine(l1: Line, l2: Line, tolerance: Double): Boolean = {
-      println(l1.normalized)
-      println(l2.normalized)
       l1.normalized.points.zip(l2.normalized.points)
         .map { case (p1, p2) => matchPoint(p1, p2, tolerance) }.foldLeft(true)(_ && _)
     }
