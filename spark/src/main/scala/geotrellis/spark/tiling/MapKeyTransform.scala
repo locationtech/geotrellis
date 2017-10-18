@@ -128,10 +128,7 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
     )
 
   def multiLineToKeys(multiLine: MultiLine): Iterator[SpatialKey] = {
-    val extent = multiLine.envelope
-    val bounds: GridBounds = extentToBounds(extent)
-    val options = Rasterizer.Options(includePartial=true, sampleType=PixelIsArea)
-
+    val bounds: GridBounds = extentToBounds(multiLine.envelope)
     val boundsExtent: Extent = boundsToExtent(bounds)
     val rasterExtent = RasterExtent(boundsExtent, bounds.width, bounds.height)
 
@@ -143,13 +140,13 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
      */
     val tiles = new ConcurrentHashMap[(Int,Int), Unit]
     val fn = new Callback {
-      def apply(col : Int, row : Int): Unit = {
-        val tile : (Int, Int) = (bounds.colMin + col, bounds.rowMin + row)
+      def apply(col: Int, row: Int): Unit = {
+        val tile: (Int, Int) = (bounds.colMin + col, bounds.rowMin + row)
         tiles.put(tile, Unit)
       }
     }
 
-    multiLine.foreach(rasterExtent, options)(fn)
+    multiLine.lines.foreach { line => Rasterizer.foreachCellByLineStringDouble(line, rasterExtent)(fn) }
     tiles.keys.asScala.map { case (col, row) => SpatialKey(col, row) }
   }
 
@@ -168,8 +165,8 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
      */
     val tiles = new ConcurrentHashMap[(Int,Int), Unit]
     val fn = new Callback {
-      def apply(col : Int, row : Int): Unit = {
-        val tile : (Int, Int) = (bounds.colMin + col, bounds.rowMin + row)
+      def apply(col: Int, row: Int): Unit = {
+        val tile: (Int, Int) = (bounds.colMin + col, bounds.rowMin + row)
         tiles.put(tile, Unit)
       }
     }
