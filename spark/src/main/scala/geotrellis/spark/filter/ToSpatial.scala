@@ -19,7 +19,11 @@ package geotrellis.spark.filter
 import geotrellis.spark._
 import geotrellis.util._
 
+import org.apache.spark.Partitioner
 import org.apache.spark.rdd._
+
+import scala.reflect.ClassTag
+
 
 object ToSpatial {
   /**
@@ -71,7 +75,7 @@ object ToSpatial {
                   Some((key.getComponent[SpatialKey], tile))
                 else
                   None
-              }
+            }
 
           val newBounds =
             KeyBounds(
@@ -89,5 +93,44 @@ object ToSpatial {
           rdd.metadata.map(_.getComponent[SpatialKey])
         )
     }
+  }
+
+  def apply[
+    K: ClassTag: SpatialComponent: TemporalComponent: λ[α => M[α] => Functor[M, α]]: λ[α => Component[M[α], Bounds[α]]],
+    V: ClassTag,
+    M[_]
+  ](
+    rdd: RDD[(K, V)] with Metadata[M[K]],
+    mergeFun: Option[(V, V) => V],
+    partitioner: Option[Partitioner] = None
+  ): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] = {
+    val metadata = rdd.metadata.map(_.getComponent[SpatialKey])
+    val mergeFn = mergeFun match {
+      case Some(mergeFunc) => mergeFunc
+      case None => {(v: V, _: V) => v}
+    }
+
+    val rdd2 = partitioner match {
+      case Some(partitioner) =>
+        rdd
+          .map({ case (k, v) => (k.getComponent[SpatialKey], v) })
+          .reduceByKey(partitioner, mergeFn)
+
+      case None =>
+        rdd
+          .map({ case (k, v) => (k.getComponent[SpatialKey], v) })
+          .reduceByKey(mergeFn)
+    }
+    ContextRDD(rdd2, metadata)
+  }
+
+  def apply[
+    K: SpatialComponent: TemporalComponent: λ[α => M[α] => Functor[M, α]]: λ[α => Component[M[α], Bounds[α]]],
+    V,
+    M[_]
+  ](rdd: RDD[(K, V)] with Metadata[M[K]]): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] = {
+    val metadata = rdd.metadata.map(_.getComponent[SpatialKey])
+    val rdd2 = rdd.map({ case (k, v) => (k.getComponent[SpatialKey], v) })
+    ContextRDD(rdd2, metadata)
   }
 }

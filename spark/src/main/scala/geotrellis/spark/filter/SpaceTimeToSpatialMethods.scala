@@ -19,8 +19,13 @@ package geotrellis.spark.filter
 import geotrellis.spark._
 import geotrellis.util._
 
+import org.apache.spark.Partitioner
 import org.apache.spark.rdd._
+
 import java.time.ZonedDateTime
+
+import scala.reflect.ClassTag
+
 
 /** See [[geotrellis.spark.filter.ToSpatial]] to get explanations about Metadata (M[K]) constrains */
 abstract class SpaceTimeToSpatialMethods[
@@ -33,4 +38,33 @@ abstract class SpaceTimeToSpatialMethods[
 
   def toSpatial(dateTime: ZonedDateTime): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] =
     toSpatial(dateTime.toInstant.toEpochMilli)
+
+  def toSpatial(): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] =
+    ToSpatial(self)
+}
+
+/**
+  * This exists because `reduceByKey` needs K and V to be members of
+  * the `ClassTag` type class, but adding that restriction to the type
+  * parameters of the class above would break the API.  Neither method
+  * can be named `toSpatial` as that would hide the methods provided
+  * by the class above.
+  */
+abstract class SpaceTimeToSpatialReduceMethods[
+  K: ClassTag: SpatialComponent: TemporalComponent: λ[α => M[α] => Functor[M, α]]: λ[α => Component[M[α], Bounds[α]]],
+  V: ClassTag,
+  M[_]
+] extends MethodExtensions[RDD[(K, V)] with Metadata[M[K]]] {
+
+  def toSpatialReduce(
+    mergeFunc: (V, V) => V
+  ): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] =
+    ToSpatial(self, Some(mergeFunc), None)
+
+  def toSpatialReduce(
+    mergeFunc: (V, V) => V,
+    partitioner: Partitioner
+  ): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] =
+    ToSpatial(self, Some(mergeFunc), Some(partitioner))
+
 }

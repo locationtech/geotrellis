@@ -83,6 +83,8 @@ object S3GeoTiffRDD extends LazyLogging {
     getS3Client: () => S3Client = () => S3Client.DEFAULT
   ) extends RasterReader.Options
 
+  val contingencyTileSize = 512
+
   object Options {
     def DEFAULT = Options()
   }
@@ -118,42 +120,73 @@ object S3GeoTiffRDD extends LazyLogging {
   }
 
   /**
+    * A helper function to get the maximum (linear) tile size.
+    */
+  private def getMaxSize(options: Options) = {
+    (options.maxTileSize, windowSize) match {
+      case (Some(maxTileSize), Some(windowSize)) => math.min(maxTileSize, windowSize)
+      case (Some(maxTileSize), None) => maxTileSize
+      case (None, Some(windowSize)) => windowSize
+      case _ => {
+        val size = Options.DEFAULT.maxTileSize match {
+          case Some(maxTileSize) => maxTileSize
+          case None => contingencyTileSize
+        }
+        logger.warn(s"Neither maxTileSize nor windowSize was given, defaulting to $size.")
+        size
+      }
+    }
+  }
+
+  /**
     * Creates a RDD[(K, V)] whose K and V  on the type of the GeoTiff that is going to be read in.
     *
-    * @param bucket   Name of the bucket on S3 where the files are kept.
-    * @param prefix   Prefix of all of the keys on S3 that are to be read in.
-    * @param uriToKey function to transform input key basing on the URI information.
-    * @param options  An instance of [[Options]] that contains any user defined or default settings.
+    * @param  bucket    Name of the bucket on S3 where the files are kept.
+    * @param  prefix    Prefix of all of the keys on S3 that are to be read in.
+    * @param  uriToKey  Function to transform input key basing on the URI information.
+    * @param  options   An instance of [[Options]] that contains any user defined or default settings.
+    * @param  geometry  An optional geometry to filter by.  If this is provided, it is assumed that all GeoTiffs are in the same CRS, and that this geometry is in that CRS.
     */
-  def apply[I, K, V](bucket: String, prefix: String, uriToKey: (URI, I) => K, options: Options)
-    (implicit sc: SparkContext, rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
+  def apply[I, K, V](
+    bucket: String, prefix: String,
+    uriToKey: (URI, I) => K,
+    options: Options,
+    geometry: Option[Geometry]
+  )(implicit sc: SparkContext, rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
 
     val conf = configuration(bucket, prefix, options)
     lazy val sourceGeoTiffInfo = S3GeoTiffInfoReader(bucket, prefix, options)
 
     (options.maxTileSize, options.partitionBytes) match {
-      case (None, Some(partitionBytes)) =>
-        val segments: RDD[(String, Array[GridBounds])] =
-          sourceGeoTiffInfo.segmentsByPartitionBytes(partitionBytes, windowSize)
+      case (_, Some(partitionBytes)) => {
+        val maxSize = getMaxSize(options)
 
-        segments.persist() // StorageLevel.MEMORY_ONLY by default
-        val segmentsCount = segments.count.toInt
+        val windows: RDD[(String, Array[GridBounds])] =
+          sourceGeoTiffInfo.windowsByBytes(
+            partitionBytes,
+            maxSize,
+            geometry
+          )
 
-        logger.info(s"repartition into ${segmentsCount} partitions.")
+        windows.persist()
+
+        val windowCount = windows.count.toInt
+
+        logger.info(s"Repartition into ${windowCount} partitions.")
 
         val repartition =
-          if(segmentsCount > segments.partitions.length) segments.repartition(segmentsCount)
-          else segments
+          if (windowCount > windows.partitions.length) windows.repartition(windowCount)
+          else windows
 
-        val result = repartition.flatMap { case (path, segmentBounds) =>
-          rr.readWindows(segmentBounds, sourceGeoTiffInfo.getGeoTiffInfo(path), options).map { case (k, v) =>
+        val result = repartition.flatMap { case (path, windowBounds) =>
+          rr.readWindows(windowBounds, sourceGeoTiffInfo.getGeoTiffInfo(path), options).map { case (k, v) =>
             uriToKey(new URI(path), k) -> v
           }
         }
 
-        segments.unpersist()
+        windows.unpersist()
         result
-
+      }
       case (Some(_), _) =>
         val objectRequestsToDimensions: RDD[(GetObjectRequest, (Int, Int))] =
           sc.newAPIHadoopRDD(
@@ -184,6 +217,23 @@ object S3GeoTiffRDD extends LazyLogging {
   /**
     * Creates a RDD[(K, V)] whose K and V  on the type of the GeoTiff that is going to be read in.
     *
+    * @param  bucket    Name of the bucket on S3 where the files are kept.
+    * @param  prefix    Prefix of all of the keys on S3 that are to be read in.
+    * @param  uriToKey  Function to transform input key basing on the URI information.
+    * @param  options   An instance of [[Options]] that contains any user defined or default settings.
+    * @param  geometry  An optional geometry to filter by.  If this is provided, it is assumed that all GeoTiffs are in the same CRS, and that this geometry is in that CRS.
+    */
+  def apply[I, K, V](
+    bucket: String, prefix: String,
+    uriToKey: (URI, I) => K,
+    options: Options
+  )(implicit sc: SparkContext, rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
+    apply(bucket, prefix, uriToKey, options, None)
+  }
+
+  /**
+    * Creates a RDD[(K, V)] whose K and V  on the type of the GeoTiff that is going to be read in.
+    *
     * @param bucket   Name of the bucket on S3 where the files are kept.
     * @param prefix   Prefix of all of the keys on S3 that are to be read in.
     * @param options  An instance of [[Options]] that contains any user defined or default settings.
@@ -205,7 +255,14 @@ object S3GeoTiffRDD extends LazyLogging {
     val windows =
       objectRequestsToDimensions
         .flatMap { case (objectRequest, (cols, rows)) =>
-          RasterReader.listWindows(cols, rows, options.maxTileSize).map((objectRequest, _))
+          val bucket = objectRequest.getBucketName
+          val key = objectRequest.getKey
+          val layout = sourceGeoTiffInfo.getGeoTiffInfo(s"s3://$bucket/$key").segmentLayout.tileLayout
+          val maxSize = getMaxSize(options)
+
+          RasterReader
+            .listWindows(cols, rows, maxSize, layout.tileCols, layout.tileRows)
+            .map((objectRequest, _))
         }
 
     // Windowed reading may have produced unbalanced partitions due to files of differing size

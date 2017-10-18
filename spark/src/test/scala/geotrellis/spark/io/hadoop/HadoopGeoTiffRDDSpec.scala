@@ -19,10 +19,11 @@ package geotrellis.spark.io.hadoop
 import geotrellis.raster._
 import geotrellis.raster.testkit.RasterMatchers
 import geotrellis.spark._
-import geotrellis.spark.tiling._
-import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.testkit._
+import geotrellis.spark.testkit.testfiles._
+import geotrellis.spark.tiling._
+import geotrellis.vector._
 import geotrellis.vector.ProjectedExtent
 
 import org.apache.hadoop.fs.Path
@@ -32,13 +33,31 @@ import org.scalatest._
 import java.net.URI
 import java.time.{LocalDateTime, ZoneId}
 
+
 class HadoopGeoTiffRDDSpec
-  extends FunSpec
+    extends FunSpec
     with Matchers
     with RasterMatchers
     with TestEnvironment
     with TestFiles {
   describe("HadoopGeoTiffRDD") {
+
+    it("should filter by geometry") {
+      val testGeoTiffPath = new Path(localFS.getWorkingDirectory, "spark/src/test/resources/all-ones.tif")
+      val options = HadoopGeoTiffRDD.Options(partitionBytes=Some(1<<20))
+      val geometry = Line(Point(141.7066667, -17.5200000), Point(142.1333333, -17.7))
+      val fn = {( _: URI, key: ProjectedExtent) => key }
+      val source1 =
+        HadoopGeoTiffRDD
+          .apply[ProjectedExtent, ProjectedExtent, Tile](testGeoTiffPath, fn, options, Some(geometry))
+          .map(_._1)
+      val source2 =
+        HadoopGeoTiffRDD
+          .apply[ProjectedExtent, ProjectedExtent, Tile](testGeoTiffPath, fn, options, None)
+          .map(_._1)
+
+      source1.collect.toSet.size should be < source2.collect.toSet.size
+    }
 
     it("should read the same rasters when reading small windows or with no windows, Spatial, SinglebandGeoTiff") {
       val tilesDir = new Path(localFS.getWorkingDirectory, "raster/data/one-month-tiles/")
@@ -52,7 +71,7 @@ class HadoopGeoTiffRDDSpec
 
       assertEqual(stitched1, stitched2)
     }
-    
+
     it("should read the same rasters when reading small windows or with no windows, Spatial, MultibandGeoTiff") {
       val path = "raster/data/one-month-tiles"
       val tilesDir = new Path(localFS.getWorkingDirectory, path)
@@ -79,17 +98,13 @@ class HadoopGeoTiffRDDSpec
         timeTag = "ISO_TIME",
         timeFormat = "yyyy-MM-dd'T'HH:mm:ss",
         maxTileSize = Some(128)))
-      
+
       val (wholeInfo, _) = source1.first()
       val dateTime = wholeInfo.time
 
-      val collection = source2.collect
-      
-      cfor(0)(_ < source2.count, _ + 1){ i =>
-        val (info, _) = collection(i)
+      val collection = source2.map({ case (info, _) => info.time }).collect
 
-        info.time should be (dateTime)
-      }
+      collection.forall({ t => t == dateTime }) should be (true)
     }
 
     it("should read the same rasters when reading small windows or with no windows, Temporal, MultibandGeoTiff") {
@@ -104,18 +119,13 @@ class HadoopGeoTiffRDDSpec
         timeTag = "ISO_TIME",
         timeFormat = "yyyy-MM-dd'T'HH:mm:ss",
         maxTileSize = Some(128)))
-      
+
       val (wholeInfo, _) = source1.first()
       val dateTime = wholeInfo.time
 
-      val collection = source2.collect
-      
-      cfor(0)(_ < source2.count, _ + 1){ i =>
-        val (info, _) = collection(i)
+      val collection = source2.map({ case (info, _) => info.time }).collect
 
-        info.time should be (dateTime)
-      }
-
+      collection.forall({ t => t == dateTime }) should be (true)
     }
 
     it("should read the rasters with each raster path handling") {
@@ -130,7 +140,7 @@ class HadoopGeoTiffRDDSpec
 
       val expected = HdfsUtils.listFiles(tilesDir, sc.hadoopConfiguration).map { path =>
         zdtFromString(path.getName).toInstant.toEpochMilli
-      }
+      }.toSet
 
       val actual =
         HadoopGeoTiffRDD.singleband[ProjectedExtent, TemporalProjectedExtent](
@@ -144,7 +154,7 @@ class HadoopGeoTiffRDDSpec
             TemporalProjectedExtent(key, zdt)
           },
           options = HadoopGeoTiffRDD.Options.DEFAULT
-        ).map(_._1.instant).collect().toList
+        ).map(_._1.instant).collect().toSet
 
 
       actual should contain theSameElementsAs expected

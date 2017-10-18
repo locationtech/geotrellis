@@ -23,7 +23,7 @@ import spray.json.DefaultJsonProtocol._
 
 object KeyFormats extends KeyFormats
 
-trait KeyFormats {
+trait KeyFormats extends Serializable {
   implicit object SpatialKeyFormat extends RootJsonFormat[SpatialKey] {
     def write(key: SpatialKey) =
       JsObject(

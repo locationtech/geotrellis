@@ -20,14 +20,16 @@ import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
+import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.spark._
 import geotrellis.util.{ByteReader, StreamingByteReader}
-import geotrellis.vector.ProjectedExtent
+import geotrellis.vector._
 
 import spire.syntax.cfor._
 
 import java.time.format.DateTimeFormatter
 import java.time.{ZoneOffset, ZonedDateTime}
+
 
 /**
   * Type class to read a raster either fully or partially from a ByteReader.
@@ -45,7 +47,7 @@ trait RasterReader[-O, R] extends Serializable {
 }
 
 object RasterReader {
-  
+
   trait Options {
     def crs: Option[CRS]
     def timeTag: String
@@ -57,6 +59,69 @@ object RasterReader {
       val dateTimeString = tags.headTags.getOrElse(timeTag, sys.error(s"There is no tag $timeTag in the GeoTiff header"))
       ZonedDateTime.from(timeFormatter.parse(dateTimeString))
     }
+  }
+
+  private def best(m: Int, n: Int): Int = {
+    var i: Int = 1
+    var result: Int = m
+    // Search for the largest factor of n that is > 1 and <= m.  If
+    // one cannot be found, give up and return m.
+    while (i < math.sqrt(n) && result == m) {
+      if ((n % i == 0) && ((n/i) <= m)) result = (n/i)
+      i += 1
+    }
+    result
+  }
+
+  def listWindows(
+    cols: Int, rows: Int, maxSize: Int,
+    segCols: Int, segRows: Int
+  ): Array[GridBounds] = {
+    val colSize: Int = if (maxSize >= segCols) segCols; else best(maxSize, segCols)
+    val rowSize: Int = if (maxSize >= segRows) segRows; else best(maxSize, segRows)
+    val windows = listWindows(cols, rows, colSize, rowSize)
+
+    windows
+  }
+
+  /** List all pixel windows that meet the given geometry */
+  def listWindows(
+    cols: Int, rows: Int, maxSize: Int,
+    extent: Extent, segCols: Int, segRows: Int, geometry: Geometry,
+    options: Rasterizer.Options = Rasterizer.Options.DEFAULT
+  ): Array[GridBounds] = {
+    val result = scala.collection.mutable.ArrayBuffer[GridBounds]()
+    val maxColSize: Int = if (maxSize >= segCols) segCols; else best(maxSize, segCols)
+    val maxRowSize: Int = if (maxSize >= segRows) segRows; else best(maxSize, segRows)
+    val re = RasterExtent(extent, cols/maxColSize, rows/maxRowSize)
+
+    Rasterizer.foreachCellByGeometry(geometry, re, options)({ (col: Int, row: Int) =>
+      result +=
+      GridBounds(
+        col * maxColSize,
+        row * maxRowSize,
+        math.min((col+1)*maxColSize - 1, cols-1),
+        math.min((row+1)*maxRowSize - 1, rows-1)
+      )
+    })
+    result.toArray
+  }
+
+  /** List all pixel windows that cover a grid of given size */
+  def listWindows(cols: Int, rows: Int, colSize: Int, rowSize: Int): Array[GridBounds] = {
+    val result = scala.collection.mutable.ArrayBuffer[GridBounds]()
+    cfor(0)(_ < cols, _ + colSize) { col =>
+      cfor(0)(_ < rows, _ + rowSize) { row =>
+        result +=
+        GridBounds(
+          col,
+          row,
+          math.min(col + colSize - 1, cols - 1),
+          math.min(row + rowSize - 1, rows - 1)
+        )
+      }
+    }
+    result.toArray
   }
 
   /** List all pixel windows that cover a grid of given size */
