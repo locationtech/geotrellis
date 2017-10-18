@@ -99,7 +99,7 @@ object MultibandTileMeanSummary extends MultibandTilePolygonalSummaryHandler[Arr
     * Combine the results into a larger result.
     */
   def combineOp(v1: Array[MeanResult], v2: Array[MeanResult]): Array[MeanResult] =
-    v1 zip v2 map { case (r1, r2) => MeanSummary.combineOp(r1, r2) }
+    v1.zipAll(v2, MeanResult(0.0, 0L), MeanResult(0.0, 0L)) map { case (r1, r2) => MeanSummary.combineOp(r1, r2) }
 
   def combineResults(res: Seq[Array[MeanResult]]): Array[MeanResult] =
     if (res.isEmpty)

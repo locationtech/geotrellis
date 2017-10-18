@@ -111,6 +111,8 @@ class HistogramSpec extends FunSpec with TestEnvironment with TestFiles {
       val histogram = multi.polygonalHistogram(quarterExtent.toPolygon)
       val expected = multi.stitch.tile.polygonalHistogram(totalExtent, quarterExtent.toPolygon)
 
+      histogram.size should be (expected.size)
+
       histogram zip expected map { case (result, exp) =>
         result.minMaxValues should be (exp.minMaxValues)
         result.itemCount(1) should be (exp.itemCount(1))
@@ -129,6 +131,8 @@ class HistogramSpec extends FunSpec with TestEnvironment with TestFiles {
       val histogram = multi.polygonalHistogram(diamondPoly)
       val expected = multi.stitch.tile.polygonalHistogram(totalExtent, diamondPoly)
 
+      histogram.size should be (expected.size)
+
       histogram zip expected map { case (result, exp) =>
         result.minMaxValues should be (exp.minMaxValues)
         result.itemCount(1) should be (exp.itemCount(1))
@@ -146,6 +150,8 @@ class HistogramSpec extends FunSpec with TestEnvironment with TestFiles {
     it("should get correct histogram over polygon with hole for a MultibandTileRDD") {
       val histogram = multi.polygonalHistogram(polyWithHole)
       val expected = multi.stitch.tile.polygonalHistogram(totalExtent, polyWithHole)
+
+      histogram.size should be (expected.size)
 
       histogram zip expected map { case (result, exp) =>
         result.minMaxValues should be (exp.minMaxValues)
@@ -224,6 +230,8 @@ class HistogramSpec extends FunSpec with TestEnvironment with TestFiles {
       val histogram = multi.polygonalHistogram(quarterExtent.toPolygon)
       val expected = multi.stitch.tile.polygonalHistogram(totalExtent, quarterExtent.toPolygon)
 
+      histogram.size should be (expected.size)
+
       histogram zip expected map { case (result, exp) =>
         result.minMaxValues should be (exp.minMaxValues)
         result.itemCount(1) should be (exp.itemCount(1))
@@ -262,6 +270,8 @@ class HistogramSpec extends FunSpec with TestEnvironment with TestFiles {
 
       val histogram = multi.polygonalHistogram(poly)
       val expected = multi.stitch.tile.polygonalHistogram(totalExtent, poly)
+
+      histogram.size should be (expected.size)
 
       histogram zip expected map { case (result, exp) =>
         result.minMaxValues should be (exp.minMaxValues)
@@ -322,6 +332,8 @@ class HistogramSpec extends FunSpec with TestEnvironment with TestFiles {
 
       val histogram = multi.polygonalHistogram(poly)
       val expected = multi.stitch.tile.polygonalHistogram(totalExtent, poly)
+
+      histogram.size should be (expected.size)
 
       histogram zip expected map { case (result, exp) =>
         result.minMaxValues should be (exp.minMaxValues)

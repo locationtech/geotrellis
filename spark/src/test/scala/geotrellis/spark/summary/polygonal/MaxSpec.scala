@@ -66,6 +66,8 @@ class MaxSpec extends FunSpec with TestEnvironment with TestFiles {
       val result = multi.polygonalMax(quarterExtent.toPolygon)
       val expected = multi.stitch.tile.polygonalMax(totalExtent, quarterExtent.toPolygon)
 
+      result.size should be (expected.size)
+
       result zip expected map { case (res, exp) =>
         res should be (exp)
       }
@@ -118,6 +120,8 @@ class MaxSpec extends FunSpec with TestEnvironment with TestFiles {
 
       val result = multi.polygonalMax(quarterExtent.toPolygon)
       val expected = multi.stitch.tile.polygonalMax(totalExtent, quarterExtent.toPolygon)
+
+      result.size should be (expected.size)
 
       result zip expected map { case (res, exp) =>
         res should be (exp)

@@ -74,6 +74,8 @@ class MeanSpec extends FunSpec with TestEnvironment with TestFiles {
       val result = multi.polygonalMean(quarterExtent.toPolygon)
       val expected = multi.stitch.tile.polygonalMean(totalExtent, quarterExtent.toPolygon)
 
+      result.size should be (expected.size)
+
       result zip expected map { case (res, exp) =>
         res should be (exp)
       }
@@ -124,6 +126,8 @@ class MeanSpec extends FunSpec with TestEnvironment with TestFiles {
       )
       val result = multi.polygonalMean(quarterExtent.toPolygon)
       val expected = multi.stitch.tile.polygonalMean(totalExtent, quarterExtent.toPolygon)
+
+      result.size should be (expected.size)
 
       result zip expected map { case (res, exp) =>
         res should be (exp)

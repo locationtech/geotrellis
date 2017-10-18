@@ -65,7 +65,7 @@ object MultibandTileDoubleHistogramSummary extends MultibandTilePolygonalSummary
     * Combine the results into a larger result.
     */
   def combineOp(v1: Array[Histogram[Double]], v2: Array[Histogram[Double]]): Array[Histogram[Double]] =
-    v1 zip v2 map { case (r1, r2) => DoubleHistogramSummary.combineOp(r1, r2) }
+    v1.zipAll(v2, StreamingHistogram(), StreamingHistogram()) map { case (r1, r2) => DoubleHistogramSummary.combineOp(r1, r2) }
 
   def combineResults(res: Seq[Array[Histogram[Double]]]): Array[Histogram[Double]] =
     if (res.isEmpty)
