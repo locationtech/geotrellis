@@ -336,7 +336,7 @@ object Rasterizer {
   def foreachCellByLineStringDouble(line: Line, re: RasterExtent)(f: (Int, Int) => Unit) {
     val coords = line.jtsGeom.getCoordinates()
     var i = 1; while (i < coords.size) {
-      foreachCellInGridLine(coords(i-1).x, coords(i-1).y, coords(i+0).x, coords(i+0).y, re, line.isClosed || i != coords.size - 1)(f)
+      foreachCellInGridLineDouble(coords(i-1).x, coords(i-1).y, coords(i+0).x, coords(i+0).y, re, line.isClosed || i != coords.size - 1)(f)
       i += 1
     }
   }
