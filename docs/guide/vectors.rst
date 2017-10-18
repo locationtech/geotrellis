@@ -190,6 +190,91 @@ that call is:
       }]
     }
 
+`Working with Vectors in Spark`__
+=================================================================
+
+While GeoTrellis is focused on working with raster data in spark,
+we do have some functionality for working with vecto data in spark.
+
+ClipToGrid
+----------
+
+If you have an ``RDD[Geometry]`` or ``RDD[Feature[Geometry, D]]``, you may want to
+cut up the geometries according to ``SpatialKey``s, so that you can join
+that data to other raster or vector sources in an efficient way. To do this,
+you can use the `rdd.clipToGrid` methods.
+
+For example, if you want to read GeoTiffs on S3, and find the sum
+of raster values under each of the polygons, you could use the following technique:
+
+.. code:: scala
+    import geotrellis.raster._
+    import geotrellis.spark._
+    import geotrellis.spark.tiling._
+    import geotrellis.vector._
+
+    import org.apache.spark.HashPartitioner
+    import org.apache.spark.rdd.RDD
+
+    import java.net.URI
+    import java.util.UUID
+
+    // The extends of the GeoTiffs, along with the URIs
+    val geoTiffUris: RDD[Feature[Polygon, URI]] = ???
+    val polygons: RDD[Feature[Polygon, UUID]] = ???
+
+    // Choosing the appropriately resolute layout for the data is here considered a client concern.
+    val layout: LayoutDefinition = ???
+
+    // Abbreviation for the code to read the window of the GeoTiff off of S3
+    def read(uri: URI, window: Extent): Raster[Tile] = ???
+
+    val groupedPolys: RDD[(SpatialKey, Iterable[MultiPolygonFeature[UUID]])] =
+      polygons
+        .clipToGrid(layout)
+        .flatMap { case (key, feature) =>
+          val mpFeature: Option[MultiPolygonFeature[UUID]] =
+            feature.geom match {
+              case p: Polygon => Some(feature.mapGeom(_ => MultiPolygon(p)))
+              case mp: MultiPolygon => Some(feature.mapGeom(_ => mp))
+              case _ => None
+            }
+          mpFeature.map { mp => (key, mp) }
+        }
+        .groupByKey(new HashPartitioner(1000))
+
+    val rastersToKeys: RDD[(SpatialKey, URI)] =
+      geoTiffUris
+        .clipToGrid(layout)
+        .flatMap { case (key, feature) =>
+          // Filter out any non-polygonal intersections.
+          // Also, we will do the window read from the SpatialKey extent, so throw out polygon.
+          feature.geom match {
+            case p: Polygon => Some((key, feature.data))
+            case mp: MultiPolygon => Some((key, feature.data))
+            case _ => None
+          }
+        }
+
+    val joined: RDD[(SpatialKey, (Iterable[MultiPolygonFeature[UUID]], URI))] =
+      groupedPolys
+        .join(rastersToKeys)
+
+    val totals: Map[UUID, Long] =
+      joined
+        .flatMap { case (key, (features, uri)) =>
+          val raster = read(uri, layout.mapTransform.keyToExtent(key))
+
+          features.map { case Feature(mp, uuid) =>
+            (uuid, raster.tile.polygonalSum(raster.extent, mp).toLong)
+          }
+        }
+        .reduceByKey(_ + _)
+        .collect
+        .toMap
+
+
+
 `Kriging Interpolation <https://en.wikipedia.org/wiki/Kriging>`__
 =================================================================
 
@@ -918,4 +1003,3 @@ produce stitch triangles which overlap the patches being joined.  These errors
 arise from a known place in the code and can be dealt with by altering
 numerical thresholds, but there is currently no handle in the interface for
 setting these values.
-
