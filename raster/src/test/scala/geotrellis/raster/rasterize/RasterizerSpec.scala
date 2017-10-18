@@ -177,7 +177,7 @@ class RasterizeSpec extends FunSuite with RasterMatchers
     val (x1, y1) = (0, 10)
     val line = Line((x0, y0), (x1, y1))
 
-    Rasterizer.foreachCellInGridLineExact(x0, y0, x1, y1, re, false){ (x, y) => result += x -> y }
+    Rasterizer.foreachCellByLineStringDouble(line, re){ (x, y) => result += x -> y }
 
     def lineInCell(cx: Int, cy: Int): Boolean = {
       val w = re.cellwidth/2
@@ -201,7 +201,7 @@ class RasterizeSpec extends FunSuite with RasterMatchers
     val (x1, y1) = (5, 3)
     val line = Line((x0, y0), (x1, y1))
 
-    Rasterizer.foreachCellInGridLineExact(x0, y0, x1, y1, re, false){ (x, y) => result += x -> y }
+    Rasterizer.foreachCellByLineStringDouble(line, re){ (x, y) => result += x -> y }
 
     def lineInCell(cx: Int, cy: Int): Boolean = {
       val w = re.cellwidth/2
