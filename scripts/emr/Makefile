@@ -10,7 +10,11 @@ ifndef CLUSTER_ID
 CLUSTER_ID=$(shell cat terraform/terraform.tfstate | jq -r ".modules[].outputs.emrID.value")
 endif
 ifndef KEY_PAIR_FILE
+ifndef TF_VAR_pem_path
 KEY_PAIR_FILE=$(shell cat terraform/variables.tf.json | jq -r ".variable.pem_path.default")
+else
+KEY_PAIR_FILE=$TF_VAR_pem_path
+endif
 endif
 
 terraform-init:

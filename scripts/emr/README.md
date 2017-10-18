@@ -42,10 +42,7 @@ with very little config, and it also helps us keep track of their state.
 
 Providers used to be built-in to Terraform. As of a recent version, they've been
 removed and are instead provided by "plugins" that are usually automatically installable.
-For instance, we will use the `terraform-provider-aws` plugin. We can't use the automatically
-installed one right now, however, because we need a side-feature that only exists in some guy's
-PR. It will be merged soon, since contributors have responded to the PR and are just waiting
-for a few more additions.
+For instance, we will use the `terraform-provider-aws` plugin.
 
 ### Installing Terraform Core
 
@@ -63,6 +60,7 @@ and see something like:
 ```
 Terraform v0.10.0-dev (870617d22df3f9245889a75c63119b94057c6e48+CHANGES)
 ```
+then you have a successful installation.
 
 ### Installing the AWS Provider Plugin
 
@@ -73,13 +71,25 @@ visible to Terraform.
 
 ## Running
 
-Run cluster and upload assembly on EMR master node:
+Create a cluster and upload assembly on EMR master node:
 
 ```bash
 make terraform-init && \
 make create-cluster && \
 make upload-assembly
 ```
+
+It will be necessary to provide your AWS credentials to the Terraform script.
+Terraform will prompt for the access key, the secret key, and the PEM path for
+the current account.  You may enter these explicitly, or you may choose to set
+environment variables to avoid having to repeatedly fill out the prompts.  If
+`TF_VAR_access_key`, `TF_VAR_secret_key`, and `TF_VAR_pem_path`, these will be
+discovered by the Terraform script and you will not be prompted at startup.
+The same mechanism can be used to set other variables.  `TF_VAR_spot_price`
+and `TF_VAR_worker_count` are useful values.
+
+Note: long startup times (greater than 5 or 6 minutes) probably indicates that
+you have chosen a spot price that is too low.
 
 Make proxy and access Zeppelin though UI:
 

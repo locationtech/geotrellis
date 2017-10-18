@@ -1,20 +1,17 @@
 { 
   "variable": {
     "access_key": { 
-        "default": "",
         "description": "From your `~/.aws/credentials"
     },
     "secret_key": {
-        "default": "",
         "description": "From your `~/.aws/credentials"
+    },
+    "pem_path": {
+        "description": "Path to your EC2 secret key"
     },
     "region": {
         "default": "us-east-1",
         "description": "Can be overridden if necessary"
-    },
-    "pem_path": {
-        "default": "",
-        "description": "Path to your EC2 secret key"
     },
     "key_name": {
         "default": "geotrellis-emr",
@@ -23,6 +20,14 @@
     "s3_uri": {
         "default": "s3://geotrellis-test/terraform-logs",
         "description": "Location to dump EMR logs"
+    },
+    "spot_price": {
+        "default": "0.05",
+        "description": "The bid price for each EMR spot instance"
+    },
+    "worker_count": {
+        "default": "2",
+        "description": "The number of worker nodes to provision"
     }
   }
 }
