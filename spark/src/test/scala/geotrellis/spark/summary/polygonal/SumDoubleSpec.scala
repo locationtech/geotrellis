@@ -86,6 +86,8 @@ class SumDoubleSpec extends FunSpec with TestEnvironment with TestFiles {
       val result = multi.polygonalSumDouble(quarterExtent.toPolygon)
       val expected = multi.stitch.tile.polygonalSumDouble(totalExtent, quarterExtent.toPolygon)
 
+      result.size should be (expected.size)
+
       result zip expected map { case (res, exp) =>
         res should be (exp)
       }
@@ -102,6 +104,8 @@ class SumDoubleSpec extends FunSpec with TestEnvironment with TestFiles {
       val result = multi.polygonalSumDouble(diamondPoly)
       val expected = multi.stitch.tile.polygonalSumDouble(totalExtent, diamondPoly)
 
+      result.size should be (expected.size)
+
       result zip expected map { case (res, exp) =>
         res should be (exp)
       }
@@ -117,6 +121,8 @@ class SumDoubleSpec extends FunSpec with TestEnvironment with TestFiles {
     it("should get correct double sum over polygon with hole for MultibandTileRDD") {
       val result = multi.polygonalSumDouble(polyWithHole)
       val expected = multi.stitch.tile.polygonalSumDouble(totalExtent, polyWithHole)
+
+      result.size should be (expected.size)
 
       result zip expected map { case (res, exp) =>
         res should be (exp)
@@ -181,6 +187,8 @@ class SumDoubleSpec extends FunSpec with TestEnvironment with TestFiles {
       val result = multi.polygonalSumDouble(quarterExtent.toPolygon)
       val expected = multi.stitch.tile.polygonalSumDouble(totalExtent, quarterExtent.toPolygon)
 
+      result.size should be (expected.size)
+
       result zip expected map { case (res, exp) =>
         res should be (exp)
       }
@@ -197,6 +205,8 @@ class SumDoubleSpec extends FunSpec with TestEnvironment with TestFiles {
       val result = multi.polygonalSumDouble(diamondPoly)
       val expected = multi.stitch.tile.polygonalSumDouble(totalExtent, diamondPoly)
 
+      result.size should be (expected.size)
+
       result zip expected map { case (res, exp) =>
         res should be (exp)
       }
@@ -212,6 +222,8 @@ class SumDoubleSpec extends FunSpec with TestEnvironment with TestFiles {
     it("should get correct double sum over polygon with hole for MultibandTiles") {
       val result = multi.polygonalSumDouble(polyWithHole)
       val expected = multi.stitch.tile.polygonalSumDouble(totalExtent, polyWithHole)
+
+      result.size should be (expected.size)
 
       result zip expected map { case (res, exp) =>
         res should be (exp)

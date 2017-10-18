@@ -81,7 +81,7 @@ object MultibandTileSumSummary extends MultibandTilePolygonalSummaryHandler[Arra
     * Combine the results into a larger result.
     */
   def combineOp(v1: Array[Long], v2: Array[Long]): Array[Long] =
-    v1 zip v2 map { case (r1, r2) => SumSummary.combineOp(r1, r2) }
+    v1.zipAll(v2, 0L, 0L) map { case (r1, r2) => SumSummary.combineOp(r1, r2) }
 
   def combineResults(res: Seq[Array[Long]]): Array[Long] =
     if (res.isEmpty)
@@ -150,7 +150,7 @@ object MultibandTileSumDoubleSummary extends MultibandTilePolygonalSummaryHandle
     * Combine the results into a larger result.
     */
   def combineOp(v1: Array[Double], v2: Array[Double]): Array[Double] =
-    v1 zip v2 map { case (r1, r2) => SumDoubleSummary.combineOp(r1, r2) }
+    v1.zipAll(v2, 0.0, 0.0) map { case (r1, r2) => SumDoubleSummary.combineOp(r1, r2) }
 
   def combineResults(res: Seq[Array[Double]]): Array[Double] =
     if (res.isEmpty)

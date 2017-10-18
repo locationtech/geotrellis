@@ -76,6 +76,8 @@ class MinSpec extends FunSpec with TestEnvironment with TestFiles {
       val result = multi.polygonalMin(quarterExtent.toPolygon)
       val expected = multi.stitch.tile.polygonalMin(totalExtent, quarterExtent.toPolygon)
 
+      result.size should be (expected.size)
+
       result zip expected map { case (res, exp) =>
         res should be (exp)
       }
@@ -128,6 +130,8 @@ class MinSpec extends FunSpec with TestEnvironment with TestFiles {
 
       val result = multi.polygonalMin(quarterExtent.toPolygon)
       val expected = multi.stitch.tile.polygonalMin(totalExtent, quarterExtent.toPolygon)
+
+      result.size should be (expected.size)
 
       result zip expected map { case (res, exp) =>
         res should be (exp)

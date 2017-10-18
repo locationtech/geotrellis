@@ -70,56 +70,62 @@ class SumSpec extends FunSpec
       Polygon(exterior, interior)
     }
 
-    it("should get correct double sum over whole raster extent") {
+    it("should get correct sum over whole raster extent") {
       ones.polygonalSum(totalExtent.toPolygon) should be(count)
     }
 
-    it("should get correct double sum over whole raster extent for MultibandTileRDD") {
+    it("should get correct sum over whole raster extent for MultibandTileRDD") {
       multi.polygonalSum(totalExtent.toPolygon) map { _ should be(count) }
     }
 
-    it("should get correct double sum over a quarter of the extent") {
+    it("should get correct sum over a quarter of the extent") {
       val result = ones.polygonalSum(quarterExtent.toPolygon)
       val expected = ones.stitch.tile.polygonalSum(totalExtent, quarterExtent.toPolygon)
 
       result should be (expected)
     }
 
-    it("should get correct double sum over a quarter of the extent for MultibandTileRDD") {
+    it("should get correct sum over a quarter of the extent for MultibandTileRDD") {
       val result = multi.polygonalSum(quarterExtent.toPolygon)
       val expected = multi.stitch.tile.polygonalSum(totalExtent, quarterExtent.toPolygon)
+
+      result.size should be (expected.size)
 
       result zip expected map { case (res, exp) =>
         res should be (exp)
       }
     }
 
-    it("should get correct double sum over half of the extent in diamond shape") {
+    it("should get correct sum over half of the extent in diamond shape") {
       val result = ones.polygonalSum(diamondPoly)
       val expected = ones.stitch.tile.polygonalSum(totalExtent, diamondPoly)
 
       result should be (expected)
     }
 
-    it("should get correct double sum over half of the extent in diamond shape for MultibandTileRDD") {
+    it("should get correct sum over half of the extent in diamond shape for MultibandTileRDD") {
       val result = multi.polygonalSum(diamondPoly)
       val expected = multi.stitch.tile.polygonalSum(totalExtent, diamondPoly)
+
+      result.size should be (expected.size)
 
       result zip expected map { case (res, exp) =>
         res should be (exp)
       }
     }
 
-    it("should get correct double sum over polygon with hole") {
+    it("should get correct sum over polygon with hole") {
       val result = ones.polygonalSum(polyWithHole)
       val expected = ones.stitch.tile.polygonalSum(totalExtent, polyWithHole)
 
       result should be (expected)
     }
 
-    it("should get correct double sum over polygon with hole for MultibandTileRDD") {
+    it("should get correct sum over polygon with hole for MultibandTileRDD") {
       val result = multi.polygonalSum(polyWithHole)
       val expected = multi.stitch.tile.polygonalSum(totalExtent, polyWithHole)
+
+      result.size should be (expected.size)
 
       result zip expected map { case (res, exp) =>
         res should be (exp)
@@ -169,7 +175,7 @@ class SumSpec extends FunSpec
       ones.polygonalSum(totalExtent.toPolygon) should be(count)
     }
 
-    it("should get correct double sum over whole raster extent for MultibandTiles") {
+    it("should get correct sum over whole raster extent for MultibandTiles") {
       multi.polygonalSum(totalExtent.toPolygon) map { _ should be(count) }
     }
 
@@ -180,9 +186,11 @@ class SumSpec extends FunSpec
       result should be (expected)
     }
 
-    it("should get correct double sum over a quarter of the extent for MultibandTiles") {
+    it("should get correct sum over a quarter of the extent for MultibandTiles") {
       val result = multi.polygonalSum(quarterExtent.toPolygon)
       val expected = multi.stitch.tile.polygonalSum(totalExtent, quarterExtent.toPolygon)
+
+      result.size should be (expected.size)
 
       result zip expected map { case (res, exp) =>
         res should be (exp)
@@ -196,9 +204,11 @@ class SumSpec extends FunSpec
       result should be (expected)
     }
 
-    it("should get correct double sum over half of the extent in diamond shape for MultibandTiles") {
+    it("should get correct sum over half of the extent in diamond shape for MultibandTiles") {
       val result = multi.polygonalSum(diamondPoly)
       val expected = multi.stitch.tile.polygonalSum(totalExtent, diamondPoly)
+
+      result.size should be (expected.size)
 
       result zip expected map { case (res, exp) =>
         res should be (exp)
@@ -212,9 +222,11 @@ class SumSpec extends FunSpec
       result should be (expected)
     }
 
-    it("should get correct double sum over polygon with hole for MultibandTiles") {
+    it("should get correct sum over polygon with hole for MultibandTiles") {
       val result = multi.polygonalSum(polyWithHole)
       val expected = multi.stitch.tile.polygonalSum(totalExtent, polyWithHole)
+
+      result.size should be (expected.size)
 
       result zip expected map { case (res, exp) =>
         res should be (exp)

@@ -87,6 +87,8 @@ class MaxDoubleSpec extends FunSpec with TestEnvironment with TestFiles {
       val result = multi.polygonalMaxDouble(quarterExtent.toPolygon)
       val expected = multi.stitch.tile.polygonalMaxDouble(totalExtent, quarterExtent.toPolygon)
 
+      result.size should be (expected.size)
+
       result zip expected map { case (res, exp) =>
         res should be (exp)
       }
@@ -102,6 +104,8 @@ class MaxDoubleSpec extends FunSpec with TestEnvironment with TestFiles {
     it("should get correct double max over a two triangle multipolygon for MultibandTileRDD") {
       val result = multi.polygonalMaxDouble(mp)
       val expected = multi.stitch.tile.polygonalMaxDouble(totalExtent, mp)
+
+      result.size should be (expected.size)
 
       result zip expected map { case (res, exp) =>
         res should be (exp)
@@ -156,6 +160,8 @@ class MaxDoubleSpec extends FunSpec with TestEnvironment with TestFiles {
       val result = multi.polygonalMaxDouble(quarterExtent.toPolygon)
       val expected = multi.stitch.tile.polygonalMaxDouble(totalExtent, quarterExtent.toPolygon)
 
+      result.size should be (expected.size)
+
       result zip expected map { case (res, exp) =>
         res should be (exp)
       }
@@ -209,6 +215,8 @@ class MaxDoubleSpec extends FunSpec with TestEnvironment with TestFiles {
 
       val result = multi.polygonalMaxDouble(mp)
       val expected = multi.stitch.tile.polygonalMaxDouble(totalExtent, mp)
+
+      result.size should be (expected.size)
 
       result zip expected map { case (res, exp) =>
         res should be (exp)
