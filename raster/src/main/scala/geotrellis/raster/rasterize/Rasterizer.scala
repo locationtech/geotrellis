@@ -328,6 +328,19 @@ object Rasterizer {
   }
 
   /**
+    * Iterates over the cells determined by the segments of a
+    * LineString.  The iteration happens in the direction from the
+    * first point to the last point.
+    */
+  @deprecated("This function will be deprecated in 2.0 in favor of richer options on foreachCellByGeometry", "1.2")
+  def foreachCellByLineStringDouble(line: Line, re: RasterExtent)(f: (Int, Int) => Unit) {
+    val coords = line.jtsGeom.getCoordinates()
+    var i = 1; while (i < coords.size) {
+      foreachCellInGridLine(coords(i-1).x, coords(i-1).y, coords(i+0).x, coords(i+0).y, re, line.isClosed || i != coords.size - 1)(f)
+      i += 1
+    }
+  }
+  /**
     * Implementation drawn from ``A Fast Voxel Traversal Algorithm for Ray
     * Tracing'' by John Amanatides and Andrew Woo.  Dept. of Computer Science,
     * University of Toronto.
@@ -345,7 +358,7 @@ object Rasterizer {
     * @param    skipLast           Boolean flag
     * @param    f                  Function to apply: f(cols, row, feature)
     */
-  def foreachCellInGridLineExact(
+  private def foreachCellInGridLineDouble(
     x0: Double, y0: Double,
     x1: Double, y1: Double,
     re: RasterExtent,
