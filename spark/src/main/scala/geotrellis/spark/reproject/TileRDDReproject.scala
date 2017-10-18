@@ -120,18 +120,25 @@ object TileRDDReproject {
           }
         }
 
+    // no matter what we inspect the change in spatial extent to get the pixel counts
     val reprojectSummary = matchReprojectRasterExtent(
       metadata.crs, destCrs,
       metadata.layout,
-      metadata.bounds match {
-        case KeyBounds(s, e) =>
-          Some(KeyBounds(s.getComponent[SpatialKey], e.getComponent[SpatialKey]))
-        case _ =>
-          None
+      metadata.bounds.toOption.map { case KeyBounds(s, e) =>
+        KeyBounds(s.getComponent[SpatialKey], e.getComponent[SpatialKey])
       })(sc)
     logger.info(s"$reprojectSummary")
-    val extent = reprojectSummary.extent
-    val cellSize = reprojectSummary.cellSize
+
+    val (extent, cellSize) = options.rasterReprojectOptions.targetCellSize match {
+      case Some(cs) =>
+        val dataRasterExtent: RasterExtent = metadata.layout.createAlignedRasterExtent(metadata.extent)
+        val targetRasterExtent = ReprojectRasterExtent(dataRasterExtent, metadata.crs, destCrs)
+        logger.info(s"Target CellSize: $cs")
+        (targetRasterExtent.extent, cs)
+
+      case None =>
+        (reprojectSummary.extent, reprojectSummary.cellSize)
+    }
 
     val (zoom, newMetadata, tilerResampleMethod) =
       targetLayout match {
@@ -154,7 +161,7 @@ object TileRDDReproject {
           (0, m, options.rasterReprojectOptions.method)
       }
 
-    // account for changes due to layout, may be snapping or up/down-sampling
+    // account for changes due to target layout, may be snapping higher or lower resolution
     val pixelRatio = reprojectSummary.rescaledPixelRatio(newMetadata.layout.cellSize)
 
     val part: Option[Partitioner] = if (pixelRatio > 1.2) {
