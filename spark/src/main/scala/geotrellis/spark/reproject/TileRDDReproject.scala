@@ -135,22 +135,8 @@ object TileRDDReproject {
           (0, m, options.rasterReprojectOptions.method)
       }
 
-    // Layout change may imply upsampling, creating more tiles. If so compensate by creating more partitions
-    val part: Option[Partitioner] =
-      for {
-        sourceBounds <- metadata.bounds.toOption
-        targetBounds <- newMetadata.bounds.toOption
-        sizeRatio = targetBounds.toGridBounds.sizeLong.toDouble / sourceBounds.toGridBounds.sizeLong.toDouble
-        if sizeRatio > 1.5
-      } yield {
-        val newPartitionCount = (bufferedTiles.partitions.length * sizeRatio).toInt
-        logger.info(s"Layout change grows potential number of tiles by $sizeRatio times, resizing to $newPartitionCount partitions.")
-        new HashPartitioner(partitions = newPartitionCount )
-      }
-
     val tiled = reprojectedTiles.tileToLayout(newMetadata,
-      Tiler.Options(resampleMethod = tilerResampleMethod,
-        partitioner = if (part.isDefined) part else bufferedTiles.partitioner ))
+      Tiler.Options(resampleMethod = tilerResampleMethod, partitioner = bufferedTiles.partitioner))
 
     (zoom, ContextRDD(tiled, newMetadata))
   }
