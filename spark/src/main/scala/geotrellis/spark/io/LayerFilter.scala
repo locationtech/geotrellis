@@ -134,34 +134,11 @@ object Intersects {
     new LayerFilter[K, Intersects.type, MultiPolygon, M] {
       def apply(metadata: M, kb: KeyBounds[K], polygon: MultiPolygon) = {
         val mapTransform = metadata.getComponent[LayoutDefinition].mapTransform
-        val extent: Extent = polygon.envelope
-        val keyext: Extent = mapTransform.keyToExtent(kb.minKey.getComponent[SpatialKey])
-        val bounds: GridBounds = mapTransform.extentToBounds(extent)
-        val options = Options(includePartial=true, sampleType=PixelIsArea)
-
-        val boundsExtent: Extent = mapTransform(bounds)
-        val rasterExtent = RasterExtent(boundsExtent, bounds.width, bounds.height)
-
-        /*
-         * Use the Rasterizer to construct  a list of tiles which meet
-         * the  query polygon.   That list  of tiles  is stored  as an
-         * array of  tuples which  is then  mapped-over to  produce an
-         * array of KeyBounds.
-         */
-        val tiles = new ConcurrentHashMap[(Int,Int), Unit]
-        val fn = new Callback {
-          def apply(col : Int, row : Int): Unit = {
-            val tile : (Int, Int) = (bounds.colMin + col, bounds.rowMin + row)
-            tiles.put(tile, Unit)
-          }
-        }
-
-        polygon.foreach(rasterExtent, options)(fn)
-        tiles.keys.asScala
-          .map({ tile =>
+        mapTransform.multiPolygonToKeys(polygon)
+          .map({ key =>
             val qb = KeyBounds(
-              kb.minKey setComponent SpatialKey(tile._1, tile._2),
-              kb.maxKey setComponent SpatialKey(tile._1, tile._2))
+              kb.minKey setComponent key,
+              kb.maxKey setComponent key)
             qb intersect kb match {
               case kb: KeyBounds[K] => List(kb)
               case EmptyBounds => Nil
@@ -215,34 +192,11 @@ object Intersects {
     new LayerFilter[K, Intersects.type, MultiLine, M] {
       def apply(metadata: M, kb: KeyBounds[K], multiLine: MultiLine) = {
         val mapTransform = metadata.getComponent[LayoutDefinition].mapTransform
-        val extent: Extent = multiLine.envelope
-        val keyext: Extent = mapTransform.keyToExtent(kb.minKey.getComponent[SpatialKey])
-        val bounds: GridBounds = mapTransform(extent)
-        val options = Options(includePartial=true, sampleType=PixelIsArea)
-
-        val boundsExtent: Extent = mapTransform(bounds)
-        val rasterExtent = RasterExtent(boundsExtent, bounds.width, bounds.height)
-
-        /*
-         * Use the Rasterizer to construct  a list of tiles which meet
-         * the  query polygon.   That list  of tiles  is stored  as an
-         * array of  tuples which  is then  mapped-over to  produce an
-         * array of KeyBounds.
-         */
-        val tiles = new ConcurrentHashMap[(Int,Int), Unit]
-        val fn = new Callback {
-          def apply(col : Int, row : Int): Unit = {
-            val tile : (Int, Int) = (bounds.colMin + col, bounds.rowMin + row)
-            tiles.put(tile, Unit)
-          }
-        }
-
-        multiLine.foreach(rasterExtent, options)(fn)
-        tiles.keys.asScala
-          .map({ tile =>
+        mapTransform.multiLineToKeys(multiLine)
+          .map({ key =>
             val qb = KeyBounds(
-              kb.minKey setComponent SpatialKey(tile._1, tile._2),
-              kb.maxKey setComponent SpatialKey(tile._1, tile._2))
+              kb.minKey setComponent key,
+              kb.maxKey setComponent key)
             qb intersect kb match {
               case kb: KeyBounds[K] => List(kb)
               case EmptyBounds => Nil
