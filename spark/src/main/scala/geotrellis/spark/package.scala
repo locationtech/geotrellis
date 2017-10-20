@@ -35,6 +35,7 @@ import java.time.Instant
 
 package object spark
     extends buffer.Implicits
+    with clip.Implicits
     with costdistance.Implicits
     with crop.Implicits
     with density.Implicits
