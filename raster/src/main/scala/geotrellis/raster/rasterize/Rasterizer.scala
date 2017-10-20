@@ -403,6 +403,11 @@ object Rasterizer {
       (clamp(0, re.cols - 1)(x), clamp(0, re.rows - 1)(y))
     }
 
+    if (finalX == cellX && finalY == cellY) {
+      f(cellX, cellY)
+      return
+    }
+
     val stepX = math.signum(x1 - x0).toInt
     val stepY = math.signum(y0 - y1).toInt
 
@@ -413,7 +418,9 @@ object Rasterizer {
     var (tMaxX, tMaxY) = ((firstX - initialPoint.x) / dx, (firstY - initialPoint.y) / dy)
     val (tDeltaX, tDeltaY) = (re.cellwidth / math.abs(dx), re.cellheight / math.abs(dy))
 
+    // var i=0
     do {
+      // i += 1
       f(cellX, cellY)
       if (math.abs(tMaxX - tMaxY) < EPSILON) {
         // crossing at grid intersection
@@ -447,7 +454,10 @@ object Rasterizer {
           cellY += stepY
         }
       }
-    } while (cellX != finalX || cellY != finalY)
+    } while (/*i < 10000 && */(cellX != finalX || cellY != finalY))
+
+    // if (i == 10000)
+    //   throw new RuntimeException(s"Non-terminating loop in exact line rasterizer: ($x0, $y0) - ($x1, $y1) in $re")
 
     if (!skipLast)
       f(cellX, cellY)
