@@ -21,7 +21,6 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.hadoop.formats.FilterMapFileInputFormat
-import geotrellis.spark.util.cache.LRUCache
 
 import org.apache.avro.Schema
 import org.apache.hadoop.conf.Configuration
@@ -31,13 +30,18 @@ import scalaz.std.vector._
 import scalaz.concurrent.{Strategy, Task}
 import scalaz.stream.{Process, nondeterminism}
 import com.typesafe.config.ConfigFactory
+import com.github.blemale.scaffeine.{Cache, Scaffeine}
 
 import java.util.concurrent.Executors
 
 class HadoopCollectionReader(maxOpenFiles: Int) {
-  val readers = new LRUCache[Path, MapFile.Reader](maxOpenFiles.toLong, {x => 1l}) {
-    override def evicted(reader: MapFile.Reader) = reader.close()
-  }
+
+  val readers: Cache[Path, MapFile.Reader] =
+    Scaffeine()
+      .recordStats()
+      .maximumSize(maxOpenFiles.toLong)
+      .removalListener[Path, MapFile.Reader] { case (_, v, _) => v.close() }
+      .build[Path, MapFile.Reader]
 
   def read[
     K: AvroRecordCodec: Boundable,
@@ -62,7 +66,9 @@ class HadoopCollectionReader(maxOpenFiles: Int) {
     LayerReader.njoin[K, V](indexRanges, threads){ index: Long =>
       val valueWritable = pathRanges
         .find { row => index >= row._2 && index <= row._3 }
-        .map { case (p, _, _) => readers.getOrInsert(p, new MapFile.Reader(p, conf)) }
+        .map { case (p, _, _) =>
+          readers.get(path, _ => new MapFile.Reader(p, conf))
+        }
         .map(_.get(new LongWritable(index), new BytesWritable()).asInstanceOf[BytesWritable])
         .getOrElse { println(s"Index ${index} not found."); null }
 
