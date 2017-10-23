@@ -116,6 +116,17 @@ class GeoTiffWriterSpec extends FunSpec
       actualCRS.toProj4String should be (geoTiff.crs.toProj4String)
     }
 
+    it ("should write Albers Equal Area correctly") {
+
+      val geoTiff = SinglebandGeoTiff(geoTiffPath("reproject/alaska-aea.tif"))
+
+      addToPurge(path)
+      geoTiff.write(path)
+      val actualCRS = SinglebandGeoTiff(path).crs
+
+      actualCRS.toProj4String should be (geoTiff.crs.toProj4String)
+    }
+
     it ("should write DHDN_3_Degree_Gauss_Zone_3 correctly") {
       val geoTiff = MultibandGeoTiff(geoTiffPath("epsg31467.tif"))
 
