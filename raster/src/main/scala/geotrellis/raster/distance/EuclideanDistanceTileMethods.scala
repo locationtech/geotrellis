@@ -23,12 +23,10 @@ import geotrellis.util.MethodExtensions
 import geotrellis.vector.{MultiPoint, Point}
 
 trait EuclideanDistanceTileArrayMethods extends MethodExtensions[Array[Point]] {
-  @deprecated("call euclideanDistanceTile() on Array[Coordinate] instead", "1.2")
   def euclideanDistanceTile(rasterExtent: RasterExtent): Tile = { EuclideanDistanceTile(self, rasterExtent) }
 }
 
 trait EuclideanDistanceTileMethods extends MethodExtensions[Traversable[Point]] {
-  @deprecated("call euclideanDistanceTile() on Traversable[Coordinate] instead", "1.2")
   def euclideanDistanceTile(rasterExtent: RasterExtent): Tile = { EuclideanDistanceTile(self.toArray, rasterExtent) }
 }
 
