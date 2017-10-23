@@ -18,13 +18,31 @@ package geotrellis.spark.buffer
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.raster.crop._
+import geotrellis.raster.prototype._
 import geotrellis.raster.io.geotiff.SinglebandGeoTiff
+import geotrellis.raster.testkit._
 import geotrellis.spark.testkit._
 
 import org.scalatest.FunSpec
 
+object BufferTilesSpec {
+  def generateBufferSizes(bounds: Bounds[SpatialKey])(key: SpatialKey) = {
+    if (bounds includes key)
+      Some(BufferSizes(2,2,2,2))
+    else
+      None
+  }
 
-class BufferTilesSpec extends FunSpec with TestEnvironment {
+  def generateBufferSizesFromKeys(members: Set[SpatialKey])(key: SpatialKey) = {
+    if (members contains key)
+      Some(BufferSizes(2,2,2,2))
+    else
+      None
+  }
+}
+
+class BufferTilesSpec extends FunSpec with TestEnvironment with RasterMatchers {
 
   describe("The BufferTiles functionality") {
     val path = "raster/data/aspect.tif"
@@ -73,6 +91,37 @@ class BufferTilesSpec extends FunSpec with TestEnvironment {
     it("should work when the Collection is a square minus the other diagonal") {
       val partialCollection = ContextCollection(wholeCollection.filter({ case (k, _) => k.col != (4- k.row) }), cmetadata)
       BufferTiles(partialCollection, 1).length
+    }
+
+    it("the lightweight RDD version should work for the whole collection") {
+      val bounds = metadata.bounds
+
+      val buffers = BufferTiles(ContextRDD(wholeRdd, metadata), BufferTilesSpec.generateBufferSizes(bounds)(_)).collect
+      val tile11 = buffers.find{ case (key, _) => key == SpatialKey(1, 1) }.get._2.tile
+      val baseline = originalRaster.crop(98, 98, 201, 201, Crop.Options.DEFAULT)
+      assertEqual(baseline, tile11)
+    }
+
+    it("the lightweight RDD version should work with the main diagonal missing") {
+      val partialRdd = ContextRDD(wholeRdd.filter({ case (k, _) => k.col != k.row }), metadata)
+      val bounds = metadata.bounds
+      val members = partialRdd.collect.map(_._1).toSet
+
+      val blank = originalRaster.tile.prototype(100, 100)
+      println(blank)
+      val holey = originalRaster.tile.mapDouble{x => x}.mutable
+      println(holey)
+      for ( x <- 0 to 4 ) {
+        println(s"Updating tile ($x, $x)")
+        holey.update(x * 100, x * 100, blank)
+      }
+
+      val buffers = BufferTiles(partialRdd, BufferTilesSpec.generateBufferSizesFromKeys(members)(_)).collect
+      val tile11 = buffers.find{ case (key, _) => key == SpatialKey(2, 1) }.get._2.tile
+      println(tile11)
+      val baseline = holey.crop(198, 98, 301, 201, Crop.Options.DEFAULT)
+      println(baseline)
+      assertEqual(baseline, tile11)
     }
   }
 }
