@@ -34,8 +34,8 @@ lazy val commonSettings = Seq(
       // Publish snapshots to LocationTech
       Some("LocationTech Snapshot Repository" at s"${locationtech}/geotrellis-snapshots")
     } else {
-      val milestoenRx = """-(M|RC)\d+$""".r
-      milestoenRx.findFirstIn(Version.geotrellis) match {
+      val milestoneRx = """-(M|RC)\d+$""".r
+      milestoneRx.findFirstIn(Version.geotrellis) match {
         case Some(v) =>
           // Public milestones to LocationTech
           Some("LocationTech Release Repository" at s"${locationtech}/geotrellis-releases")
