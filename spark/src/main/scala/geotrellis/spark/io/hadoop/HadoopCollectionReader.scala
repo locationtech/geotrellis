@@ -67,7 +67,7 @@ class HadoopCollectionReader(maxOpenFiles: Int) {
       val valueWritable = pathRanges
         .find { row => index >= row._2 && index <= row._3 }
         .map { case (p, _, _) =>
-          readers.get(path, _ => new MapFile.Reader(p, conf))
+          readers.get(p, path => new MapFile.Reader(path, conf))
         }
         .map(_.get(new LongWritable(index), new BytesWritable()).asInstanceOf[BytesWritable])
         .getOrElse { println(s"Index ${index} not found."); null }
