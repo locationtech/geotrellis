@@ -17,8 +17,9 @@
 package geotrellis.spark.buffer
 
 import geotrellis.raster._
-import geotrellis.raster.stitch._
 import geotrellis.raster.crop._
+import geotrellis.raster.prototype._
+import geotrellis.raster.stitch._
 import geotrellis.spark._
 
 import org.apache.spark.rdd.RDD
@@ -35,11 +36,11 @@ trait Implicits {
 
   implicit class withBufferTilesMethodsWrapper[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: Stitcher: ClassTag: (? => CropMethods[V])
+    V <: CellGrid: Stitcher: ClassTag: (? => CropMethods[V]): (? => TilePrototypeMethods[V])
   ](self: RDD[(K, V)]) extends BufferTilesMethods[K, V](self)
 
   implicit class withCollectionsBufferTilesMethodsWrapper[
     K: SpatialComponent,
-    V <: CellGrid: Stitcher: (? => CropMethods[V])
+    V <: CellGrid: Stitcher: (? => CropMethods[V]): (? => TilePrototypeMethods[V])
   ](self: Seq[(K, V)]) extends CollectionBufferTilesMethods[K, V](self)
 }
