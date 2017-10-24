@@ -21,7 +21,6 @@ import collection.immutable.Map
 import collection.mutable.ListBuffer
 
 import geotrellis.proj4.CRS
-
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.tags._
 import DatumTypes._
@@ -162,6 +161,7 @@ class CoordinateSystemParser(val crs: CRS, val pixelSampleType: Option[PixelSamp
     case Some("lcc") => lccProps
     case Some("longlat") | Some("latlong") => longLatProps
     case Some("sinu") ⇒ sinuProps
+    case Some("aea") => aeaProps
     case Some(p) => throw new GeoTiffWriterLimitationException(
       s"This GeoTiff writer does not currently support the projection $proj4String without an EPSG code associated with the CRS. You'll need to use a CRS that has an EPSG code, or reproject before writing to GeoTIFF."
     )
@@ -301,6 +301,26 @@ class CoordinateSystemParser(val crs: CRS, val pixelSampleType: Option[PixelSamp
     val doubles =
       if (code == UserDefinedCPV) List((ProjLinearUnitSizeGeoKey, toMeters))
       else Nil
+
+    (geoKeysInt, doubles)
+  }
+
+  private lazy val aeaProps = {
+    val geoKeysInt = List(
+      (GTModelTypeGeoKey, ModelTypeProjected),
+      (ProjectedCSTypeGeoKey, UserDefinedCPV),
+      (ProjectionGeoKey, UserDefinedCPV),
+      (ProjCoordTransGeoKey, CT_AlbersEqualArea)
+    )
+
+    val doubles = List(
+      (ProjStdParallel1GeoKey -> getDouble("lat_1")),
+      (ProjStdParallel2GeoKey -> getDouble("lat_2")),
+      (ProjNatOriginLatGeoKey -> getDouble("lat_0")),
+      (ProjNatOriginLongGeoKey -> getDouble("lon_0")),
+      (ProjFalseEastingGeoKey -> getDouble("x_0")),
+      (ProjFalseNorthingGeoKey -> getDouble("y_0"))
+    )
 
     (geoKeysInt, doubles)
   }
