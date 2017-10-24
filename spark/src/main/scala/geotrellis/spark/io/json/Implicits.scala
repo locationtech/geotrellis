@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.json
 
+import java.net.URI
+
 import geotrellis.spark._
 import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.spark.util._
@@ -24,10 +26,8 @@ import geotrellis.raster._
 import geotrellis.raster.io._
 import geotrellis.vector._
 import geotrellis.vector.io._
-
 import org.apache.avro.Schema
 import spray.json._
-
 import java.time.{ZoneOffset, ZonedDateTime}
 
 object Implicits extends Implicits
@@ -43,6 +43,18 @@ trait Implicits extends KeyFormats with KeyIndexFormats {
         case JsString(proj4String) => CRS.fromString(proj4String)
         case _ =>
           throw new DeserializationException("CRS must be a proj4 string.")
+      }
+  }
+
+  implicit object URIFormat extends RootJsonFormat[URI] {
+    def write(uri: URI) =
+      JsString(uri.toString)
+
+    def read(value: JsValue): URI =
+      value match {
+        case JsString(str) => new URI(str)
+        case _ =>
+          throw new DeserializationException("URI must be a string.")
       }
   }
 
@@ -118,5 +130,21 @@ trait Implicits extends KeyFormats with KeyIndexFormats {
   implicit object SchemaFormat extends RootJsonFormat[Schema] {
     def read(json: JsValue) = (new Schema.Parser).parse(json.toString())
     def write(obj: Schema) = obj.toString.parseJson
+  }
+
+  implicit object ProjectedExtentFormat extends RootJsonFormat[ProjectedExtent] {
+    def write(projectedExtent: ProjectedExtent) =
+      JsObject(
+        "extent" -> projectedExtent.extent.toJson,
+        "crs" -> projectedExtent.crs.toJson
+      )
+
+    def read(value: JsValue): ProjectedExtent =
+      value.asJsObject.getFields("xmin", "ymin", "xmax", "ymax") match {
+        case Seq(extent: JsValue, crs: JsValue) =>
+          ProjectedExtent(extent.convertTo[Extent], crs.convertTo[CRS])
+        case _ =>
+          throw new DeserializationException(s"ProjectctionExtent [[xmin,ymin,xmax,ymax], crs] expected: $value")
+      }
   }
 }

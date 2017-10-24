@@ -277,6 +277,72 @@ case class TiffTags(
     BandType(bitsPerSample, sampleFormat)
   }
 
+  def noDataValue =
+    (this
+      &|-> TiffTags._geoTiffTags
+      ^|-> GeoTiffTags._gdalInternalNoData get)
+
+  def cellType: CellType = (bandType, noDataValue) match {
+    case (BitBandType, _) =>
+      BitCellType
+    // Byte
+    case (ByteBandType, Some(nd)) if (nd.toInt > Byte.MinValue.toInt && nd <= Byte.MaxValue.toInt) =>
+      ByteUserDefinedNoDataCellType(nd.toByte)
+    case (ByteBandType, Some(nd)) if (nd.toInt == Byte.MinValue.toInt) =>
+      ByteConstantNoDataCellType
+    case (ByteBandType, _) =>
+      ByteCellType
+    // UByte
+    case (UByteBandType, Some(nd)) if (nd.toInt > 0 && nd <= 255) =>
+      UByteUserDefinedNoDataCellType(nd.toByte)
+    case (UByteBandType, Some(nd)) if (nd.toInt == 0) =>
+      UByteConstantNoDataCellType
+    case (UByteBandType, _) =>
+      UByteCellType
+    // Int16/Short
+    case (Int16BandType, Some(nd)) if (nd > Short.MinValue.toDouble && nd <= Short.MaxValue.toDouble) =>
+      ShortUserDefinedNoDataCellType(nd.toShort)
+    case (Int16BandType, Some(nd)) if (nd == Short.MinValue.toDouble) =>
+      ShortConstantNoDataCellType
+    case (Int16BandType, _) =>
+      ShortCellType
+    // UInt16/UShort
+    case (UInt16BandType, Some(nd)) if (nd.toInt > 0 && nd <= 65535) =>
+      UShortUserDefinedNoDataCellType(nd.toShort)
+    case (UInt16BandType, Some(nd)) if (nd.toInt == 0) =>
+      UShortConstantNoDataCellType
+    case (UInt16BandType, _) =>
+      UShortCellType
+    // Int32
+    case (Int32BandType, Some(nd)) if (nd.toInt > Int.MinValue && nd.toInt <= Int.MaxValue) =>
+      IntUserDefinedNoDataCellType(nd.toInt)
+    case (Int32BandType, Some(nd)) if (nd.toInt == Int.MinValue) =>
+      IntConstantNoDataCellType
+    case (Int32BandType, _) =>
+      IntCellType
+    // UInt32
+    case (UInt32BandType, Some(nd)) if (nd.toLong > 0L && nd.toLong <= 4294967295L) =>
+      FloatUserDefinedNoDataCellType(nd.toFloat)
+    case (UInt32BandType, Some(nd)) if (nd.toLong == 0L) =>
+      FloatConstantNoDataCellType
+    case (UInt32BandType, _) =>
+      FloatCellType
+    // Float32
+    case (Float32BandType, Some(nd)) if (isData(nd) & Float.MinValue.toDouble <= nd & Float.MaxValue.toDouble >= nd) =>
+      FloatUserDefinedNoDataCellType(nd.toFloat)
+    case (Float32BandType, Some(nd)) =>
+      FloatConstantNoDataCellType
+    case (Float32BandType, _) =>
+      FloatCellType
+    // Float64/Double
+    case (Float64BandType, Some(nd)) if (isData(nd)) =>
+      DoubleUserDefinedNoDataCellType(nd)
+    case (Float64BandType, Some(nd)) =>
+      DoubleConstantNoDataCellType
+    case (Float64BandType, _) =>
+      DoubleCellType
+  }
+
   def proj4String: Option[String] =
     geoTiffCSTags.flatMap(_.getProj4String)
 

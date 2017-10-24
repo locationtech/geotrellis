@@ -5,10 +5,9 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.{Raster, Tile}
 import geotrellis.spark.tiling.ZoomedLayoutScheme
 import geotrellis.spark.util._
-import geotrellis.spark.{LayerId, SpatialKey}
+import geotrellis.spark.{LayerId, SpatialKey, TileLayerMetadata}
 import geotrellis.util.Filesystem
 import geotrellis.vector.Extent
-
 import java.net.URI
 import java.nio.file.{Files, Paths}
 
@@ -45,13 +44,16 @@ case class FileSinglebandGeoTiffCollectionLayerReader(
         .levelForZoom(layerId.zoom)
         .layout
 
-    seq
-      .filter { case (_, p) => layerId.name == discriminator(p) }
-      .map { case (extent, uri) =>
-        GeoTiffReader
-          .readSingleband(Filesystem.toMappedByteBuffer(uri.toString), false, true)
-          .crop(extent, layout.cellSize)
-      }
+    val result =
+      seq
+        .filter { case (_, p) => layerId.name == discriminator(p) }
+        .map { case (extent, uri) =>
+          GeoTiffReader
+            .readSingleband(Filesystem.toMappedByteBuffer(uri.toString), false, true)
+            .crop(extent, layout.cellSize)
+        }
+
+    result
   }
 }
 

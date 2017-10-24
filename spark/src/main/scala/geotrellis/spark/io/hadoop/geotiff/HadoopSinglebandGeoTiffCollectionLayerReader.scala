@@ -1,23 +1,23 @@
-package geotrellis.spark.io.s3.geotiff
+package geotrellis.spark.io.hadoop.geotiff
 
-import geotrellis.proj4.WebMercator
-import geotrellis.raster.io.geotiff.reader.{GeoTiffReader, TiffTagsReader}
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.{Raster, RasterExtent, Tile}
 import geotrellis.spark.tiling.ZoomedLayoutScheme
 import geotrellis.spark.{LayerId, SpatialKey}
 import geotrellis.util.StreamingByteReader
-import geotrellis.vector.Extent
-import geotrellis.raster.io.geotiff.tags.TiffTags
-import java.net.URI
+import geotrellis.vector.{Extent, ProjectedExtent}
+import geotrellis.spark.io.hadoop.HdfsRangeReader
 
-import geotrellis.spark.io.hadoop.{HdfsRangeReader, HdfsUtils}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 
+import java.net.URI
+
 /** Approach with TiffTags stored in a DB */
-case class HadoopSinglebandGeoTiffCollectionLayerReader(
+case class HadoopSinglebandGeoTiffCollectionLayerReader[M[T] <: Traversable[T]](
   // seq can be stored in some backend
-  seq: Seq[(TiffTags, URI)],
+  /** This should be done in a separate interface */
+  attributeStore: AttributeStore[M, GeoTiffMetadata],
   layoutScheme: ZoomedLayoutScheme,
   discriminator: URI => String,
   conf: Configuration
@@ -34,18 +34,13 @@ case class HadoopSinglebandGeoTiffCollectionLayerReader(
 
     // the question is here, in what CRS to store metadata
     // how to persist it? ~geohash?
-    seq
-      .filter { case (tiffTags, p) =>
-        tiffTags.extent
-          .reproject(tiffTags.crs, layoutScheme.crs)
-          .intersects(keyExtent) && layerId.name == discriminator(p)
-      }
-      .map { case (tiffTags, uri) =>
+    attributeStore
+      .query(layerId.name, ProjectedExtent(keyExtent, layoutScheme.crs))
+      .map { md =>
         val tiff =
           GeoTiffReader
             .readSingleband(
-              StreamingByteReader(HdfsRangeReader(new Path(uri), conf)),
-              tiffTags,
+              StreamingByteReader(HdfsRangeReader(new Path(md.uri), conf)),
               false,
               true
             )
@@ -66,47 +61,26 @@ case class HadoopSinglebandGeoTiffCollectionLayerReader(
       .resample(RasterExtent(keyExtent, layoutScheme.tileSize, layoutScheme.tileSize))
   }
 
-  def readAll(layerId: LayerId): Seq[Raster[Tile]] = {
+  def readAll(layerId: LayerId): Traversable[Raster[Tile]] = {
     val layout =
       layoutScheme
         .levelForZoom(layerId.zoom)
         .layout
 
-    seq
-      .filter { case (_, p) => layerId.name == discriminator(p) }
-      .map { case (tiffTags, uri) =>
+    attributeStore
+      .query(layerId.name)
+      .map { md =>
         val tiff =
           GeoTiffReader
             .readSingleband(
-              StreamingByteReader(HdfsRangeReader(new Path(uri), conf)),
-              tiffTags,
+              StreamingByteReader(HdfsRangeReader(new Path(md.uri), conf)),
               false,
               true
             )
 
-            tiff
-              .crop(tiff.extent, layout.cellSize)
-              .reproject(tiff.crs, layoutScheme.crs)
+        tiff
+          .crop(tiff.extent, layout.cellSize)
+          .reproject(tiff.crs, layoutScheme.crs)
       }
-  }
-}
-
-object HadoopSinglebandGeoTiffCollectionLayerReader {
-  def fetchSingleband(
-    path: URI,
-    layoutScheme: ZoomedLayoutScheme = ZoomedLayoutScheme(WebMercator),
-    discriminator: URI => String = uri => uri.toString.split("/").last.split("\\.").head,
-    filterPaths: String => Boolean = _ => true,
-    conf: Configuration = new Configuration
-  ): HadoopSinglebandGeoTiffCollectionLayerReader = {
-    val seq =
-      HdfsUtils
-        .listFiles(new Path(path), conf)
-        .map { p =>
-          val tiffTags = TiffTagsReader.read(StreamingByteReader(HdfsRangeReader(p, conf)))
-          tiffTags -> p.toUri
-        }
-
-    HadoopSinglebandGeoTiffCollectionLayerReader(seq, layoutScheme, discriminator, conf)
   }
 }
