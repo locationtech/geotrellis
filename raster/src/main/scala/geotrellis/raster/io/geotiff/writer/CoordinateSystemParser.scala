@@ -21,7 +21,6 @@ import collection.immutable.Map
 import collection.mutable.ListBuffer
 
 import geotrellis.proj4.CRS
-
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.tags._
 import DatumTypes._
@@ -307,9 +306,6 @@ class CoordinateSystemParser(val crs: CRS, val pixelSampleType: Option[PixelSamp
   }
 
   private lazy val aeaProps = {
-    val lat0 = getDouble("lat_0")
-    val lat1 = getDouble("lat_1")
-
     val geoKeysInt = List(
       (GTModelTypeGeoKey, ModelTypeProjected),
       (ProjectedCSTypeGeoKey, UserDefinedCPV),
@@ -317,23 +313,16 @@ class CoordinateSystemParser(val crs: CRS, val pixelSampleType: Option[PixelSamp
       (ProjCoordTransGeoKey, CT_AlbersEqualArea)
     )
 
-    val doublesLB = ListBuffer[(Int, Double)]()
+    val doubles = List(
+      (ProjStdParallel1GeoKey -> getDouble("lat_1")),
+      (ProjStdParallel2GeoKey -> getDouble("lat_2")),
+      (ProjNatOriginLatGeoKey -> getDouble("lat_0")),
+      (ProjNatOriginLongGeoKey -> getDouble("lon_0")),
+      (ProjFalseEastingGeoKey -> getDouble("x_0")),
+      (ProjFalseNorthingGeoKey -> getDouble("y_0"))
+    )
 
-    doublesLB += (ProjNatOriginLatGeoKey -> lat0)
-    doublesLB += (ProjNatOriginLongGeoKey -> getDouble("lon_0"))
-
-    if (lat0 == lat1) {
-      doublesLB += (ProjScaleAtNatOriginGeoKey -> getK(1.0))
-    } else {
-      val lat2 = getDouble("lat_2")
-      doublesLB += (ProjStdParallel1GeoKey -> lat1)
-      doublesLB += (ProjStdParallel2GeoKey -> lat2)
-    }
-
-    doublesLB += (ProjFalseEastingGeoKey -> getDouble("x_0"))
-    doublesLB += (ProjFalseNorthingGeoKey -> getDouble("y_0"))
-
-    (geoKeysInt, doublesLB.toList)
+    (geoKeysInt, doubles)
   }
 
 
