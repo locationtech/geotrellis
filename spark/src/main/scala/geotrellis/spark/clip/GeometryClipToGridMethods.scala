@@ -25,11 +25,11 @@ import org.apache.spark.rdd._
 
 trait GeometryClipToGridMethods[G <: Geometry] extends MethodExtensions[RDD[G]] {
   def clipToGrid(layout: LayoutDefinition): RDD[(SpatialKey, Geometry)] =
-    ClipToGrid(self, layout)
+    ClipToGrid(layout, self)
 
   def clipToGrid(
-    layout: LayoutDefinition,
-    clipGeom: (Extent, Geometry, ClipToGrid.Predicates) => Option[Geometry]
+    clipGeom: (Extent, Geometry, ClipToGrid.Predicates) => Option[Geometry],
+    layout: LayoutDefinition
   ): RDD[(SpatialKey, Geometry)] =
-    ClipToGrid(self, layout, clipGeom)
+    ClipToGrid(clipGeom, layout, self)
 }
