@@ -20,15 +20,13 @@ import geotrellis.raster.io.geotiff.tags._
 import geotrellis.raster.io.geotiff.tags.codes._
 import TagCodes._
 import TiffFieldType._
-import geotrellis.util.{ByteReader, Filesystem}
+import geotrellis.util.{Filesystem, ByteReader}
+
 import geotrellis.raster.io.geotiff.util._
 import spire.syntax.cfor._
 import monocle.syntax.apply._
-import java.nio.{ByteBuffer, ByteOrder}
 
-import geotrellis.raster.io.geotiff.{BigTiff, Tiff, TiffType}
-
-import scala.collection.mutable.ListBuffer
+import java.nio.{ ByteBuffer, ByteOrder }
 
 object TiffTagsReader {
   def read(path: String): TiffTags =
@@ -45,12 +43,11 @@ object TiffTagsReader {
       case _ => throw new MalformedGeoTiffException("incorrect byte order")
     }
 
-    val tiffType = TiffType.fromCode(byteReader.getChar)
-    val tiffTags = tiffType match {
-      case Tiff =>
+    byteReader.getChar match {
+      case 42 =>
         // Regular GeoTiff
         read(byteReader, byteReader.getInt.toLong)(IntTiffTagOffsetSize)
-      case BigTiff =>
+      case 43 =>
         // BigTiff
         byteReader.position(8)
         read(byteReader, byteReader.getLong)(LongTiffTagOffsetSize)
@@ -58,42 +55,22 @@ object TiffTagsReader {
         // Invalid Tiff identification number
         throw new MalformedGeoTiffException(s"bad identification number (must be 42 or 43, was $id)")
     }
-
-    val tiffTagsBuffer: ListBuffer[TiffTags] = ListBuffer()
-    val tiffTagsOverviews = tiffType match {
-      case Tiff =>
-        var ifdOffset = byteReader.getInt
-        while (ifdOffset > 0) {
-          tiffTagsBuffer += TiffTagsReader.read(byteReader, ifdOffset)(IntTiffTagOffsetSize)
-          ifdOffset = byteReader.getInt
-        }
-        tiffTagsBuffer.toList
-      case _ =>
-        var ifdOffset = byteReader.getLong
-        while (ifdOffset > 0) {
-          tiffTagsBuffer += TiffTagsReader.read(byteReader, ifdOffset)(LongTiffTagOffsetSize)
-          ifdOffset = byteReader.getLong
-        }
-        tiffTagsBuffer.toList
-    }
-
-
-    tiffTags.copy(overviews = tiffTagsOverviews)
   }
 
   def read(byteReader: ByteReader, tagsStartPosition: Long)(implicit ttos: TiffTagOffsetSize): TiffTags = {
-    val (tiffType: TiffType, tagCount: Long) =
+
+    val tagCount =
       ttos match {
         case IntTiffTagOffsetSize =>
           byteReader.position(tagsStartPosition.toInt)
-          Tiff -> byteReader.getShort
+          byteReader.getShort
         case LongTiffTagOffsetSize =>
           byteReader.position(tagsStartPosition)
-          BigTiff -> byteReader.getLong
+          byteReader.getLong
       }
 
     // Read the tags.
-    var tiffTags = TiffTags(tiffType = tiffType)
+    var tiffTags = TiffTags()
 
     // Need to read geo tags last, relies on other tags already being read in.
     var geoTags: Option[TiffTagMetadata] = None

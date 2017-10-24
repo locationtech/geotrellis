@@ -128,7 +128,7 @@ object GeoTiffReader {
     getSingleband(geoTiffTile, info)
   }
 
-  def geoTiffSinglebandTile(info: GeoTiffReader.GeoTiffInfo): GeoTiffTile =
+  def geoTiffSinglebandTile(info: GeoTiffInfo): GeoTiffTile =
     if(info.bandCount == 1) {
       GeoTiffTile(
         info.segmentBytes,
@@ -231,18 +231,18 @@ object GeoTiffReader {
     getMultiband(geoTiffTile, info)
   }
 
-  def geoTiffMultibandTile(info: GeoTiffReader.GeoTiffInfo): GeoTiffMultibandTile = {
-    GeoTiffMultibandTile(
-      info.segmentBytes,
-      info.decompressor,
-      info.segmentLayout,
-      info.compression,
-      info.bandCount,
-      info.cellType,
-      Some(info.bandType),
-      info.overviews.map(geoTiffMultibandTile)
-    )
-  }
+    def geoTiffMultibandTile(info: GeoTiffInfo): GeoTiffMultibandTile = {
+      GeoTiffMultibandTile(
+        info.segmentBytes,
+        info.decompressor,
+        info.segmentLayout,
+        info.compression,
+        info.bandCount,
+        info.cellType,
+        Some(info.bandType),
+        info.overviews.map(geoTiffMultibandTile)
+      )
+    }
 
   case class GeoTiffInfo(
     extent: Extent,

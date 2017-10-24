@@ -6,8 +6,7 @@ import geotrellis.raster.{Raster, RasterExtent, Tile}
 import geotrellis.spark.tiling.ZoomedLayoutScheme
 import geotrellis.spark.{LayerId, SpatialKey}
 import geotrellis.util.StreamingByteReader
-import geotrellis.vector.Extent
-import geotrellis.raster.io.geotiff.tags.TiffTags
+import geotrellis.vector.{Extent, ProjectedExtent}
 import geotrellis.spark.io.s3.util.S3RangeReader
 import geotrellis.spark.io.s3.S3Client
 
@@ -18,7 +17,7 @@ import java.net.URI
 /** Approach with TiffTags stored in a DB */
 case class S3SinglebandGeoTiffCollectionLayerReader(
   // seq can be stored in some backend
-  seq: Seq[(TiffTags, URI)],
+  seq: Seq[(ProjectedExtent, URI)],
   layoutScheme: ZoomedLayoutScheme,
   discriminator: URI => String,
   getS3Client: () => S3Client = () => S3Client.DEFAULT
@@ -36,12 +35,12 @@ case class S3SinglebandGeoTiffCollectionLayerReader(
     // the question is here, in what CRS to store metadata
     // how to persist it? ~geohash?
     seq
-      .filter { case (tiffTags, p) =>
-        tiffTags.extent
-          .reproject(tiffTags.crs, layoutScheme.crs)
+      .filter { case (projectedExtent, p) =>
+        projectedExtent
+          .reproject(layoutScheme.crs)
           .intersects(keyExtent) && layerId.name == discriminator(p)
       }
-      .map { case (tiffTags, uri) =>
+      .map { case (projectedExtent, uri) =>
         val auri = new AmazonS3URI(uri)
 
         val tiff =
@@ -54,7 +53,6 @@ case class S3SinglebandGeoTiffCollectionLayerReader(
                   client = getS3Client()
                 )
               ),
-              tiffTags,
               false,
               true
             )
@@ -83,7 +81,7 @@ case class S3SinglebandGeoTiffCollectionLayerReader(
 
     seq
       .filter { case (_, p) => layerId.name == discriminator(p) }
-      .map { case (tiffTags, uri) =>
+      .map { case (_, uri) =>
         val auri = new AmazonS3URI(uri)
         val tiff =
           GeoTiffReader
@@ -95,7 +93,6 @@ case class S3SinglebandGeoTiffCollectionLayerReader(
                   client = getS3Client()
                 )
               ),
-              tiffTags,
               false,
               true
             )
@@ -134,7 +131,7 @@ object S3SinglebandGeoTiffCollectionLayerReader {
           )
         ))
 
-        tiffTags -> new URI(auri.toString)
+        ProjectedExtent(tiffTags.extent, tiffTags.crs) -> new URI(auri.toString)
       }
 
     new S3SinglebandGeoTiffCollectionLayerReader(seq, layoutScheme, discriminator, getS3Client)

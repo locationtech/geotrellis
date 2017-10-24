@@ -32,7 +32,6 @@ import java.net.URI
  *
  * @param request: A [[GetObjectRequest]] of the desired GeoTiff.
  * @param client: The [[S3Client]] that retrieves the data.
- * @param chunkSize: An Int that specifies how many bytes should be read in at a time.
  * @return A new instance of S3RangeReader.
  */
 class S3RangeReader(
@@ -44,8 +43,19 @@ class S3RangeReader(
 
   val totalLength: Long = metadata.getContentLength
 
+  def timedCreate[T](endMsg: String)(f: => T): T = {
+    val s = System.currentTimeMillis
+    val result = f
+    val e = System.currentTimeMillis
+    val t = "%,d".format(e - s)
+    val p = s"\t$endMsg (in $t ms)"
+    println(p)
+
+    result
+  }
+
   def readClippedRange(start: Long, length: Int): Array[Byte] =
-    client.readRange(start, start + length, request)
+    timedCreate("client.readRange(start, start + length, request)")(client.readRange(start, start + length, request))
 }
 
 /** The companion object of [[S3RangeReader]] */

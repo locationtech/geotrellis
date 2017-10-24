@@ -91,13 +91,25 @@ class AmazonS3Client(s3client: AWSAmazonS3Client) extends S3Client {
     }
   }
 
+  def timedCreate[T](endMsg: String)(f: => T): T = {
+    val s = System.currentTimeMillis
+    val result = f
+    val e = System.currentTimeMillis
+    val t = "%,d".format(e - s)
+    val p = s"\t$endMsg (in $t ms)"
+    println(p)
+
+    result
+  }
+
   def readRange(start: Long, end: Long, getObjectRequest: GetObjectRequest): Array[Byte] = {
+    println(s"getObjectRequest.setRange(${start}, ${end - 1}): ${end - start}")
     getObjectRequest.setRange(start, end - 1)
-    val obj = s3client.getObject(getObjectRequest)
+    val obj = timedCreate("s3client.getObject(getObjectRequest)")(s3client.getObject(getObjectRequest))
     val stream = obj.getObjectContent
     try {
       // sun.misc.IOUtils.readFully(stream, -1, true)
-      IOUtils.toByteArray(stream)
+      timedCreate("IOUtils.toByteArray(stream)")(IOUtils.toByteArray(stream))
     } finally {
       stream.close()
     }
