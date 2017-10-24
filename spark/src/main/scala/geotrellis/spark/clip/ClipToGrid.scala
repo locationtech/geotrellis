@@ -148,56 +148,45 @@ object ClipToGrid {
 
     val iterator: Iterator[(SpatialKey, Feature[Geometry, D])] =
       feature.geom match {
-        case p: Point =>
-          val k = mapTransform(p)
-          clipToKey(k, pointPredicates).toSeq.iterator
+        case p: Point => Iterator.single(mapTransform(p) -> feature)
         case mp: MultiPoint =>
           mp.points
             .map(mapTransform(_))
-            .distinct
-            .map(clipToKey(_, mpOrLinePredicates))
-            .flatten
+            .toSet
+            .flatMap { k: SpatialKey => clipToKey(k, mpOrLinePredicates) }
             .iterator
         case l: Line =>
           mapTransform.multiLineToKeys(MultiLine(l))
-            .map(clipToKey(_, mpOrLinePredicates))
-            .flatten
+            .flatMap(clipToKey(_, mpOrLinePredicates))
         case ml: MultiLine =>
           mapTransform.multiLineToKeys(ml)
-            .map(clipToKey(_, mpOrLinePredicates))
-            .flatten
+            .flatMap(clipToKey(_, mpOrLinePredicates))
         case p: Polygon =>
           val pg = PreparedGeometryFactory.prepare(p.jtsGeom)
           val preds = polyPredicates(pg)
 
-          mapTransform
-            .multiPolygonToKeys(MultiPolygon(p))
-            .map(clipToKey(_, preds))
-            .flatten
+          mapTransform.multiPolygonToKeys(MultiPolygon(p))
+            .flatMap(clipToKey(_, preds))
         case mp: MultiPolygon =>
           val pg = PreparedGeometryFactory.prepare(mp.jtsGeom)
           val preds = polyPredicates(pg)
 
           mapTransform.multiPolygonToKeys(mp)
-            .map(clipToKey(_, preds))
-            .flatten
+            .flatMap(clipToKey(_, preds))
         case gc: GeometryCollection =>
           def keysFromGC(g: GeometryCollection): List[SpatialKey] = {
-            var keys: List[SpatialKey] = List()
-            keys = keys ++ gc.points.map(mapTransform.apply)
-            keys = keys ++ gc.multiPoints.flatMap(_.points.map(mapTransform.apply))
-            keys = keys ++ gc.lines.flatMap { l => mapTransform.multiLineToKeys(MultiLine(l)) }
-            keys = keys ++ gc.multiLines.flatMap { ml => mapTransform.multiLineToKeys(ml) }
-            keys = keys ++ gc.polygons.flatMap { p => mapTransform.multiPolygonToKeys(MultiPolygon(p)) }
-            keys = keys ++ gc.multiPolygons.flatMap { mp => mapTransform.multiPolygonToKeys(mp) }
-            keys = keys ++ gc.geometryCollections.flatMap(keysFromGC)
-            keys
+            List(
+              gc.points.map(mapTransform.pointToKey),
+              gc.multiPoints.flatMap(_.points.map(mapTransform.pointToKey)),
+              gc.lines.flatMap { l => mapTransform.multiLineToKeys(MultiLine(l)) },
+              gc.multiLines.flatMap { ml => mapTransform.multiLineToKeys(ml) },
+              gc.polygons.flatMap { p => mapTransform.multiPolygonToKeys(MultiPolygon(p)) },
+              gc.multiPolygons.flatMap { mp => mapTransform.multiPolygonToKeys(mp) },
+              gc.geometryCollections.flatMap(keysFromGC)
+            ).flatten
           }
 
-          keysFromGC(gc)
-            .map(clipToKey(_, gcPredicates))
-            .flatten
-            .iterator
+          keysFromGC(gc).flatMap(clipToKey(_, gcPredicates)).iterator
       }
 
     iterator
