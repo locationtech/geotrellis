@@ -4,12 +4,11 @@ This directory contains a make file to spin up an EMR cluster using [terraform](
 
 - [Requirements](#requirements)
 - [Makefile](#makefile)
-- [Terraform setup](#terraform-setup)
 - [Running](#running)
 
 ## Requirements
 
-You need to [install terraform, master branch build until release with spot instances support would be published](#terraform) and [jq](https://stedolan.github.io/jq/) to parse terraform json configuration (can be installed via brew on Mac OS).
+You need to install [Terraform 0.10.8](https://github.com/hashicorp/terraform/releases/tag/v0.10.8) and [jq](https://stedolan.github.io/jq/) to parse terraform json configuration (can be installed via brew on Mac OS).
 
 ## Settings
 
@@ -29,45 +28,6 @@ You need to [install terraform, master branch build until release with spot inst
 |restart-zeppelin  |Restart Zeppelin                                            |
 |stop-zeppelin     |Stop Zeppelin                                               |
 |start-zeppelin    |Start Zeppelin                                              |
-
-## Terraform setup
-
-(Instructions are written by @fosskers)
-
-Terraform has the concept of *providers*, which are web services like AWS that can
-provide *resources*. A *resource* is Terraform-lingo for anything that can "do work"
-on the web. In the case of AWS, these are things like EC2 instances, load balancers,
-and **EMR clusters**. Terraform is great because it helps us create/destroy these resources
-with very little config, and it also helps us keep track of their state.
-
-Providers used to be built-in to Terraform. As of a recent version, they've been
-removed and are instead provided by "plugins" that are usually automatically installable.
-For instance, we will use the `terraform-provider-aws` plugin.
-
-### Installing Terraform Core
-
-First, remove `terraform` from your machine if you have it installed already.
-Now, we need the most recent terraform, available on their `master` branch:
-
-```
-git clone git@github.com:hashicorp/terraform.git
-```
-
-Make sure to set up your `$GOPATH` properly as explained in their README. `make dev` will
-create an executable for you that lives in your `$GOPATH`. If you can do `terraform -v`
-and see something like:
-
-```
-Terraform v0.10.0-dev (870617d22df3f9245889a75c63119b94057c6e48+CHANGES)
-```
-then you have a successful installation.
-
-### Installing the AWS Provider Plugin
-
-Follow [the README instructions](https://github.com/terraform-providers/terraform-provider-aws/)
-for building the plugin manually from the current master branch. Building the plugin
-will install it to the correct place in your `$GOPATH`, and it'll be automatically
-visible to Terraform.
 
 ## Running
 
