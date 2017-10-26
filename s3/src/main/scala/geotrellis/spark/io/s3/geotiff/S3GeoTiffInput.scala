@@ -22,9 +22,6 @@ object S3GeoTiffInput {
     pattern: String,
     recursive: Boolean = true,
     getS3Client: () => S3Client = () => S3Client.DEFAULT): List[GeoTiffMetadata] = {
-
-    println(s"def list($name, $uri, $pattern, $recursive")
-
     val s3Client = getS3Client()
     val s3Uri = new AmazonS3URI(uri)
     val regexp = pattern.r
@@ -38,7 +35,6 @@ object S3GeoTiffInput {
 
     s3Client.listKeys(objectRequest)
       .flatMap { key =>
-        println(s"s3://${s3Uri.getBucket}/${key}")
         key match {
           case regexp(_*) => Some(new AmazonS3URI(s"s3://${s3Uri.getBucket}/${key}"))
           case _ => None

@@ -1,8 +1,7 @@
 package geotrellis.spark.io.s3.geotiff
 
-import geotrellis.raster.io.geotiff.reader.{GeoTiffReader, TiffTagsReader}
-import geotrellis.raster.{ArrayTile, CellType, IntArrayTile, Raster, RasterExtent, Tile}
-import geotrellis.raster.stitch._
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader
+import geotrellis.raster.{Raster, RasterExtent, Tile}
 import geotrellis.spark.tiling.ZoomedLayoutScheme
 import geotrellis.spark.{LayerId, SpatialKey}
 import geotrellis.spark.io.hadoop.geotiff.{AttributeStore, GeoTiffMetadata}
@@ -10,8 +9,8 @@ import geotrellis.util.StreamingByteReader
 import geotrellis.vector.{Extent, ProjectedExtent}
 import geotrellis.spark.io.s3.util.S3RangeReader
 import geotrellis.spark.io.s3.S3Client
-import com.amazonaws.services.s3.AmazonS3URI
 
+import com.amazonaws.services.s3.AmazonS3URI
 
 /** Approach with TiffTags stored in a DB */
 case class S3GeoTiffLayerReader[M[T] <: Traversable[T]](

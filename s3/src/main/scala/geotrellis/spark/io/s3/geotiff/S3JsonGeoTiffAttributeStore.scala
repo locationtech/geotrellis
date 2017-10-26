@@ -58,4 +58,6 @@ object S3JsonGeoTiffAttributeStore {
 
     attributeStore
   }
+
+
 }
