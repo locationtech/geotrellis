@@ -127,6 +127,17 @@ class GeoTiffWriterSpec extends FunSpec
       actualCRS.toProj4String should be (geoTiff.crs.toProj4String)
     }
 
+    it ("should write Lambert Conformal Conic correctly") {
+
+      val geoTiff = SinglebandGeoTiff(geoTiffPath("reproject/lcc.tif"))
+
+      addToPurge(path)
+      geoTiff.write(path)
+      val actualCRS = SinglebandGeoTiff(path).crs
+
+      actualCRS.toProj4String should be (geoTiff.crs.toProj4String)
+    }
+
     it ("should write DHDN_3_Degree_Gauss_Zone_3 correctly") {
       val geoTiff = MultibandGeoTiff(geoTiffPath("epsg31467.tif"))
 
