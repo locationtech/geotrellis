@@ -22,6 +22,7 @@ import java.nio.file.{Files, Paths}
 
 import geotrellis.util._
 import geotrellis.vector.Extent
+import geotrellis.spark.io.hadoop.geotiff._
 import geotrellis.spark.io.s3._
 import geotrellis.spark.io.s3.geotiff._
 import geotrellis.spark.io.s3.testkit._
@@ -33,7 +34,9 @@ import java.nio.{ByteBuffer, ByteOrder}
 
 import com.amazonaws.services.s3.AmazonS3URI
 import com.amazonaws.services.s3.model._
+import geotrellis.proj4.WebMercator
 import geotrellis.raster.{CellSize, Raster}
+import geotrellis.spark.tiling.ZoomedLayoutScheme
 import geotrellis.spark.{LayerId, SpatialKey}
 import org.scalatest._
 
@@ -195,18 +198,21 @@ val craster = raster
     }
 
     it ("ZLC82") {
-      val geoTiffLayer =
-        S3SinglebandGeoTiffCollectionLayerReader
-          .fetchSingleband(
-            Seq(
-              new URI("s3://geotrellis-test/daunnc/LC_TEST/LC08_L1TP_139045_20170304_20170316_01_T1_B4.TIF")
-            )
-          )
+      val attributeStore =
+        S3IMGeoTiffAttributeStore(
+          "RED",
+          new URI("s3://geotrellis-test/daunnc/LC_TEST/"),
+          "(.)*LC08_L1TP_13904[5-6]_20170304_20170316_01_T1_B4.TIF"
+        )
+
+      //println(s"attributeStore.data: ${attributeStore.data}")
+
+      val geoTiffLayer = S3GeoTiffLayerReader(attributeStore, ZoomedLayoutScheme(WebMercator))
 
       // 9/381/223
       // 9))(380, 225) -- normal
-      //val t = geoTiffLayer.read(LayerId("LC08_L1TP_139045_20170304_20170316_01_T1_B4", 9))(381, 223)
-      geoTiffLayer.read(LayerId("LC08_L1TP_139045_20170304_20170316_01_T1_B4", 9))(380, 224)
+      val t = geoTiffLayer.read(LayerId("LC08_L1TP_139045_20170304_20170316_01_T1_B4", 9))(381, 223)
+      //geoTiffLayer.read(LayerId("RED", 9))(380, 224)
       //t.tile.renderPng().write("/tmp/test.png")
     }
   }
