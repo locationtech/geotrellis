@@ -96,7 +96,7 @@ Ready? `Setup a GeoTrellis development environment. <tutorials/setup.html>`__
    :hidden:
 
    Changelog <CHANGELOG>
-   contributing
+   Contributing <CONTRIBUTING>
 
 .. toctree::
    :maxdepth: 3

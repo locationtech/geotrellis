@@ -81,9 +81,9 @@ Work with S3 using a custom S3Client configuration
 
 **Motivation:** You would like to work with assets on S3, but you want
 to use an S3 client (or clients) with a configuration (various
-configurations) different form the default client configuration.
+configurations) different from the default client configuration.
 
-That can be accomplished by sub-classing ``S3AttributeStore`` and/or
+This can be accomplished by sub-classing ``S3AttributeStore`` and/or
 ``S3ValueReader``, perhaps anonymously.
 
 .. code:: scala
