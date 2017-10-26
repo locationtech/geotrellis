@@ -43,19 +43,8 @@ class S3RangeReader(
 
   val totalLength: Long = metadata.getContentLength
 
-  def timedCreate[T](endMsg: String)(f: => T): T = {
-    val s = System.currentTimeMillis
-    val result = f
-    val e = System.currentTimeMillis
-    val t = "%,d".format(e - s)
-    val p = s"\t$endMsg (in $t ms)"
-    println(p)
-
-    result
-  }
-
   def readClippedRange(start: Long, length: Int): Array[Byte] =
-    timedCreate("client.readRange(start, start + length, request)")(client.readRange(start, start + length, request))
+    client.readRange(start, start + length, request)
 }
 
 /** The companion object of [[S3RangeReader]] */
