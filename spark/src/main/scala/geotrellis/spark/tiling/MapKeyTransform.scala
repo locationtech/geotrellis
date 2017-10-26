@@ -177,10 +177,10 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
     tiles.keys.asScala.map { case (col, row) => SpatialKey(col, row) }
   }
 
-  /** For some given [[Geometry]], find the SpatialKeys for all Tile extents
+  /** For some given [[Geometry]], find the unique SpatialKeys for all Tile extents
     * that it touches.
     */
-  def keysFromGeometry[G <: Geometry](g: G): Iterator[SpatialKey] = g match {
+  def keysForGeometry[G <: Geometry](g: G): Iterator[SpatialKey] = g match {
     case p:  Point        => Iterator.single(pointToKey(p))
     case mp: MultiPoint   => mp.points.map(pointToKey(_)).toSet.iterator
     case l:  Line         => multiLineToKeys(MultiLine(l))
@@ -195,7 +195,7 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
         gc.multiLines.flatMap { ml => multiLineToKeys(ml) },
         gc.polygons.flatMap { p => multiPolygonToKeys(MultiPolygon(p)) },
         gc.multiPolygons.flatMap { mp => multiPolygonToKeys(mp) },
-        gc.geometryCollections.flatMap(keysFromGeometry)
-      ).flatten.iterator
+        gc.geometryCollections.flatMap(keysForGeometry)
+      ).flatten.toSet.iterator
   }
 }
