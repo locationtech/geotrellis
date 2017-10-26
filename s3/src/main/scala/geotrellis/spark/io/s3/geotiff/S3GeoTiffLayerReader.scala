@@ -1,26 +1,24 @@
-package geotrellis.spark.io.hadoop.geotiff
+package geotrellis.spark.io.s3.geotiff
 
-import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.raster.{Raster, RasterExtent, Tile}
+import geotrellis.raster.io.geotiff.reader.{GeoTiffReader, TiffTagsReader}
+import geotrellis.raster.{ArrayTile, CellType, IntArrayTile, Raster, RasterExtent, Tile}
+import geotrellis.raster.stitch._
 import geotrellis.spark.tiling.ZoomedLayoutScheme
 import geotrellis.spark.{LayerId, SpatialKey}
+import geotrellis.spark.io.hadoop.geotiff.{AttributeStore, GeoTiffMetadata}
 import geotrellis.util.StreamingByteReader
 import geotrellis.vector.{Extent, ProjectedExtent}
-import geotrellis.spark.io.hadoop.HdfsRangeReader
+import geotrellis.spark.io.s3.util.S3RangeReader
+import geotrellis.spark.io.s3.S3Client
+import com.amazonaws.services.s3.AmazonS3URI
 
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.Path
-
-import java.net.URI
 
 /** Approach with TiffTags stored in a DB */
-case class HadoopSinglebandGeoTiffCollectionLayerReader[M[T] <: Traversable[T]](
-  // seq can be stored in some backend
+case class S3GeoTiffLayerReader[M[T] <: Traversable[T]](
   /** This should be done in a separate interface */
   attributeStore: AttributeStore[M, GeoTiffMetadata],
   layoutScheme: ZoomedLayoutScheme,
-  discriminator: URI => String,
-  conf: Configuration
+  getS3Client: () => S3Client = () => S3Client.DEFAULT
 ) {
 
   def read(layerId: LayerId)(x: Int, y: Int): Raster[Tile] = {
@@ -37,10 +35,17 @@ case class HadoopSinglebandGeoTiffCollectionLayerReader[M[T] <: Traversable[T]](
     attributeStore
       .query(layerId.name, ProjectedExtent(keyExtent, layoutScheme.crs))
       .map { md =>
+        val auri = new AmazonS3URI(md.uri)
         val tiff =
           GeoTiffReader
             .readSingleband(
-              StreamingByteReader(HdfsRangeReader(new Path(md.uri), conf)),
+              StreamingByteReader(
+                S3RangeReader(
+                  bucket = auri.getBucket,
+                  key = auri.getKey,
+                  client = getS3Client()
+                )
+              ),
               false,
               true
             )
@@ -53,12 +58,12 @@ case class HadoopSinglebandGeoTiffCollectionLayerReader[M[T] <: Traversable[T]](
             .intersection(reprojectedKeyExtent)
             .getOrElse(reprojectedKeyExtent)
 
-          tiff
-            .crop(ext, layout.cellSize)
-            .reproject(tiff.crs, layoutScheme.crs)
+        tiff
+          .crop(ext, layout.cellSize)
+          .reproject(tiff.crs, layoutScheme.crs)
+          .resample(RasterExtent(keyExtent, layoutScheme.tileSize, layoutScheme.tileSize))
       }
       .reduce(_ merge _)
-      .resample(RasterExtent(keyExtent, layoutScheme.tileSize, layoutScheme.tileSize))
   }
 
   def readAll(layerId: LayerId): Traversable[Raster[Tile]] = {
@@ -70,17 +75,25 @@ case class HadoopSinglebandGeoTiffCollectionLayerReader[M[T] <: Traversable[T]](
     attributeStore
       .query(layerId.name)
       .map { md =>
+        val auri = new AmazonS3URI(md.uri)
         val tiff =
           GeoTiffReader
             .readSingleband(
-              StreamingByteReader(HdfsRangeReader(new Path(md.uri), conf)),
+              StreamingByteReader(
+                S3RangeReader(
+                  bucket = auri.getBucket,
+                  key = auri.getKey,
+                  client = getS3Client()
+                )
+              ),
               false,
               true
             )
 
-        tiff
-          .crop(tiff.extent, layout.cellSize)
-          .reproject(tiff.crs, layoutScheme.crs)
+            tiff
+              .crop(tiff.extent, layout.cellSize)
+              .reproject(tiff.crs, layoutScheme.crs)
+              .resample(layoutScheme.tileSize, layoutScheme.tileSize)
       }
   }
 }
