@@ -44,7 +44,7 @@ Rasterizing ``Geometry`` Layers
 *******************************
 
 Finally, the full marriage of the ``vector``, ``raster``, and ``spark`` packages!
-You can now tranform an ``RDD[Geometry]`` into a writable GeoTrellis layer of
+You can now transform an ``RDD[Geometry]`` into a writable GeoTrellis layer of
 ``(SpatialKey, Tile)``!
 
 .. code-block:: scala
