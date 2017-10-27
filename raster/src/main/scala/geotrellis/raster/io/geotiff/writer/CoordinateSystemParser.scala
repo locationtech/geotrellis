@@ -215,31 +215,33 @@ class CoordinateSystemParser(val crs: CRS, val pixelSampleType: Option[PixelSamp
   private lazy val lccProps = {
     val lat0 = getDouble("lat_0")
     val lat1 = getDouble("lat_1")
+    val lon0 = getDouble("lon_0")
 
-    val geoKeysInt = List(
+    val geoKeysIntLB = ListBuffer(
       (GTModelTypeGeoKey, ModelTypeProjected),
       (ProjectedCSTypeGeoKey, UserDefinedCPV),
-      (ProjectionGeoKey, UserDefinedCPV),
-      (ProjCoordTransGeoKey, CT_LambertConfConic_2SP)
+      (ProjectionGeoKey, UserDefinedCPV)
     )
 
     val doublesLB = ListBuffer[(Int, Double)]()
 
-    doublesLB += (ProjNatOriginLatGeoKey -> lat0)
-    doublesLB += (ProjNatOriginLongGeoKey -> getDouble("lon_0"))
-
-    if (lat0 == lat1) {
+    if (lat0 == lat1 && !isDefined("lat_2")) {
+      geoKeysIntLB += (ProjCoordTransGeoKey -> CT_LambertConfConic_1SP)
+      doublesLB += (ProjNatOriginLatGeoKey -> lat0)
+      doublesLB += (ProjNatOriginLongGeoKey -> lon0)
       doublesLB += (ProjScaleAtNatOriginGeoKey -> getK(1.0))
     } else {
-      val lat2 = getDouble("lat_2")
+      geoKeysIntLB += (ProjCoordTransGeoKey -> CT_LambertConfConic_2SP)
+      doublesLB += (ProjFalseOriginLatGeoKey -> lat0)
+      doublesLB += (ProjFalseOriginLongGeoKey -> lon0)
       doublesLB += (ProjStdParallel1GeoKey -> lat1)
-      doublesLB += (ProjStdParallel2GeoKey -> lat2)
+      doublesLB += (ProjStdParallel2GeoKey -> getDouble("lat_2"))
     }
 
     doublesLB += (ProjFalseEastingGeoKey -> getDouble("x_0"))
     doublesLB += (ProjFalseNorthingGeoKey -> getDouble("y_0"))
 
-    (geoKeysInt, doublesLB.toList)
+    (geoKeysIntLB.toList, doublesLB.toList)
   }
 
   private lazy val longLatProps =
@@ -248,7 +250,7 @@ class CoordinateSystemParser(val crs: CRS, val pixelSampleType: Option[PixelSamp
   private lazy val gcsOrDatumProps = if (gcs != UserDefinedCPV) {
     (List((GeogTypeGeoKey, gcs)), Nil)
   } else {
-    var geoKeysInt = List(
+    val geoKeysInt = List(
       (GeogTypeGeoKey, UserDefinedCPV),
       (GeogGeodeticDatumGeoKey, datum)
     )
@@ -259,7 +261,7 @@ class CoordinateSystemParser(val crs: CRS, val pixelSampleType: Option[PixelSamp
   private lazy val ellipsoidProps = if (gcs == UserDefinedCPV) {
     val geoKeysInt = List((GeogEllipsoidGeoKey, ellipsoid))
 
-    if (!optSemis.isEmpty) {
+    if (optSemis.nonEmpty) {
       val (major, minor, invFlattening) = optSemis.get
 
       val doubles = List(
@@ -314,17 +316,19 @@ class CoordinateSystemParser(val crs: CRS, val pixelSampleType: Option[PixelSamp
     )
 
     val doubles = List(
-      (ProjStdParallel1GeoKey -> getDouble("lat_1")),
-      (ProjStdParallel2GeoKey -> getDouble("lat_2")),
-      (ProjNatOriginLatGeoKey -> getDouble("lat_0")),
-      (ProjNatOriginLongGeoKey -> getDouble("lon_0")),
-      (ProjFalseEastingGeoKey -> getDouble("x_0")),
-      (ProjFalseNorthingGeoKey -> getDouble("y_0"))
+      (ProjStdParallel1GeoKey, getDouble("lat_1")),
+      (ProjStdParallel2GeoKey, getDouble("lat_2")),
+      (ProjNatOriginLatGeoKey, getDouble("lat_0")),
+      (ProjNatOriginLongGeoKey, getDouble("lon_0")),
+      (ProjFalseEastingGeoKey, getDouble("x_0")),
+      (ProjFalseNorthingGeoKey, getDouble("y_0"))
     )
 
     (geoKeysInt, doubles)
   }
 
+
+  private def isDefined(key: String): Boolean = proj4Map.get(key).isDefined
 
   private def getString(key: String, defV: String) =
     proj4Map.getOrElse(key, defV)
