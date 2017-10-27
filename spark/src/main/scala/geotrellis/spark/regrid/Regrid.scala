@@ -97,7 +97,7 @@ object Regrid {
       val tiled: RDD[(K, V)] =
         layer
           .flatMap{ case (key, oldTile) => {
-            val SpatialKey(oldX, oldY) = key
+            val SpatialKey(oldX, oldY) = key.getComponent[SpatialKey]
 
             val oldXstart = oldX.toLong * oldW.toLong
             val oldYstart = oldY.toLong * oldH.toLong

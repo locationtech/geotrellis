@@ -47,6 +47,26 @@ class RegridSpec extends FunSpec with TestEnvironment with RasterMatchers {
     ContextRDD(rdd, md)
   }
 
+  val temporalLayer = {
+    val tiles = 
+      for ( x <- 0 to 3 ;
+            y <- 0 to 2
+      ) yield {
+        val tile = IntArrayTile.ofDim(32, 32)
+        (SpaceTimeKey(x, y, 0L), tile.map{ (tx, ty, _) => math.max(tx + 32 * x, ty + 32 * y) })
+      }
+    val rdd = sc.parallelize(tiles)
+    val ex = Extent(0,0,12.8,9.6)
+    val ld = LayoutDefinition(GridExtent(ex, 0.1, 0.1), 32, 32)
+    val md = TileLayerMetadata[SpaceTimeKey](IntConstantNoDataCellType,
+                                             ld,
+                                             ex,
+                                             LatLng,
+                                             KeyBounds[SpaceTimeKey](SpaceTimeKey(0,0,0L), SpaceTimeKey(3,2,0L)))
+    ContextRDD(rdd, md)
+  }
+
+
   describe("Regridding") {
     it("should allow chipping into smaller tiles") {
       val newLayer = simpleLayer.regrid(16)
@@ -67,6 +87,13 @@ class RegridSpec extends FunSpec with TestEnvironment with RasterMatchers {
 
       assert(newLayer.stitch.dimensions == (150, 100))
       assertEqual(simpleLayer.stitch, newLayer.stitch.tile.crop(0,0,127,95))
+    }
+
+    it("should work for spatiotemporal data") {
+      val newLayer = temporalLayer.regrid(50, 25)
+
+      assert(newLayer.toSpatial(0L).stitch.dimensions == (150, 100))
+      assertEqual(temporalLayer.toSpatial(0L).stitch, newLayer.toSpatial(0L).stitch.tile.crop(0,0,127,95))
     }
   }
 
