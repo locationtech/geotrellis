@@ -24,8 +24,6 @@ case class FileGeoTiffLayerReader[M[T] <: Traversable[T]](
     val mapTransform = layout.mapTransform
     val keyExtent: Extent = mapTransform(SpatialKey(x, y))
 
-    // the question is here, in what CRS to store metadata
-    // how to persist it? ~geohash?
     attributeStore
       .query(layerId.name, ProjectedExtent(keyExtent, layoutScheme.crs))
       .map { md =>
