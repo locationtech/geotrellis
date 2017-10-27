@@ -9,5 +9,5 @@ object HadoopIMGeoTiffAttributeStore {
     uri: URI,
     conf: Configuration = new Configuration()
   ): InMemoryGeoTiffAttributeStore =
-    InMemoryGeoTiffAttributeStore(() => HadoopGeoTiffInput.list(name, uri, conf))
+    InMemoryGeoTiffAttributeStore(() => GeoTiffMetadataTree.fromGeoTiffMetadataList(HadoopGeoTiffInput.list(name, uri, conf)))
 }

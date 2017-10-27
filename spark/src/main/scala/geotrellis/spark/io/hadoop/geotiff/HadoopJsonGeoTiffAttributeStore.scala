@@ -11,7 +11,7 @@ import java.io.PrintWriter
 import scala.io.Source
 
 object HadoopJsonGeoTiffAttributeStore {
-  def readData(uri: URI, conf: Configuration): Seq[GeoTiffMetadata] = {
+  def readData(uri: URI, conf: Configuration): List[GeoTiffMetadata] = {
     val path = new Path(uri)
     val fs = path.getFileSystem(conf)
     val stream = fs.open(path)
@@ -24,16 +24,19 @@ object HadoopJsonGeoTiffAttributeStore {
 
     json
       .parseJson
-      .convertTo[Seq[GeoTiffMetadata]]
+      .convertTo[List[GeoTiffMetadata]]
   }
+
+  def readDataAsTree(uri: URI, conf: Configuration): GeoTiffMetadataTree[GeoTiffMetadata] =
+    GeoTiffMetadataTree.fromGeoTiffMetadataList(readData(uri, conf))
 
 
   def apply(uri: URI): JsonGeoTiffAttributeStore =
-    JsonGeoTiffAttributeStore(uri, readData(_, new Configuration))
+    JsonGeoTiffAttributeStore(uri, readDataAsTree(_, new Configuration))
 
   def apply(path: Path, name: String, uri: URI, conf: Configuration): JsonGeoTiffAttributeStore = {
     val data = HadoopGeoTiffInput.list(name, uri, conf)
-    val attributeStore = JsonGeoTiffAttributeStore(path.toUri, readData(_, conf))
+    val attributeStore = JsonGeoTiffAttributeStore(path.toUri, readDataAsTree(_, conf))
     val fs = path.getFileSystem(conf)
 
     if(fs.exists(path)) {

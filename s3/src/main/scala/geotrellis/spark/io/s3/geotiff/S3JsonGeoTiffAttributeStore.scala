@@ -14,7 +14,7 @@ import java.net.URI
 import scala.io.Source
 
 object S3JsonGeoTiffAttributeStore {
-  def readData(uri: URI, getS3Client: () => S3Client = () => S3Client.DEFAULT): Seq[GeoTiffMetadata] = {
+  def readData(uri: URI, getS3Client: () => S3Client = () => S3Client.DEFAULT): List[GeoTiffMetadata] = {
     val s3Client = getS3Client()
     val s3Uri = new AmazonS3URI(uri)
 
@@ -32,12 +32,14 @@ object S3JsonGeoTiffAttributeStore {
 
     json
       .parseJson
-      .convertTo[Seq[GeoTiffMetadata]]
+      .convertTo[List[GeoTiffMetadata]]
   }
 
+  def readDataAsTree(uri: URI, getS3Client: () => S3Client): GeoTiffMetadataTree[GeoTiffMetadata] =
+    GeoTiffMetadataTree.fromGeoTiffMetadataList(readData(uri, getS3Client))
 
   def apply(uri: URI): JsonGeoTiffAttributeStore =
-    JsonGeoTiffAttributeStore(uri, readData(_, () => S3Client.DEFAULT))
+    JsonGeoTiffAttributeStore(uri, readDataAsTree(_, () => S3Client.DEFAULT), readData(_, () => S3Client.DEFAULT))
 
   def apply(
     path: URI,
@@ -50,7 +52,7 @@ object S3JsonGeoTiffAttributeStore {
     val s3Client = getS3Client()
     val s3Path = new AmazonS3URI(path)
     val data = S3GeoTiffInput.list(name, uri, pattern, recursive)
-    val attributeStore = JsonGeoTiffAttributeStore(path, readData(_, () => S3Client.DEFAULT))
+    val attributeStore = JsonGeoTiffAttributeStore(path, readDataAsTree(_, () => S3Client.DEFAULT))
 
     val str = data.toJson.compactPrint
     val is = new ByteArrayInputStream(str.getBytes("UTF-8"))
