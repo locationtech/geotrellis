@@ -44,10 +44,13 @@ Hello Raster!
 Here's a small example showing a routine focal operation over a single
 ``Tile``:
 
-.. code:: scala
+::
 
     scala> import geotrellis.raster._
     import geotrellis.raster._
+
+    scala> import geotrellis.raster.render.ascii._
+    import geotrellis.raster.render.ascii._
 
     scala> import geotrellis.raster.mapalgebra.focal._
     import geotrellis.raster.mapalgebra.focal._
@@ -66,15 +69,14 @@ Here's a small example showing a routine focal operation over a single
     scala> val iat = IntArrayTile(input, 9, 4)  // 9 and 4 here specify columns and rows
     iat: geotrellis.raster.IntArrayTile = IntArrayTile([I@278434d0,9,4)
 
-    // The asciiDraw method is mostly useful when you're working with small tiles
-    // which can be taken in at a glance
-    scala> iat.asciiDraw()
+    // The renderAscii method is mostly useful when you're working with small tiles
+    // which can be taken in at a glance.
+    scala> iat.renderAscii(AsciiArtEncoder.Palette.STIPLED)
     res0: String =
-    "    ND     7     1     1     3     5     9     8     2
-          9     1     1     2     2     2     4     3     5
-          3     8     1     3     3     3     1     2     2
-          2     4     7     1    ND     1     8     4     3
-    "
+    ∘█  ▚▜██▖
+    █  ▖▖▖▜▚▜
+    ▚█ ▚▚▚ ▖▖
+    ▖▜█ ∘ █▜▚
 
     scala> val focalNeighborhood = Square(1)  // a 3x3 square neighborhood
     focalNeighborhood: geotrellis.raster.op.focal.Square =
