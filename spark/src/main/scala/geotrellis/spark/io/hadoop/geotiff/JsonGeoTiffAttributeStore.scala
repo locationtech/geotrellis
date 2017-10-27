@@ -14,8 +14,8 @@ case class JsonGeoTiffAttributeStore(
         data.query(projectedExtent).filter { md => md.name == name }
       case (_, Some(projectedExtent)) =>
         data.query(projectedExtent)
-      case (Some(name), _) => data.query().filter { md => md.name == name }
-      case _ => data.query()
+      case (Some(name), _) => data.query.filter { md => md.name == name }
+      case _ => data.query
     }
   }
 }
