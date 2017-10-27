@@ -96,7 +96,7 @@ class BufferTilesSpec extends FunSpec with TestEnvironment with RasterMatchers {
     it("the lightweight RDD version should work for the whole collection") {
       val bounds = metadata.bounds
 
-      val buffers = BufferTiles(ContextRDD(wholeRdd, metadata), BufferTilesSpec.generateBufferSizes(bounds)(_)).collect
+      val buffers = BufferTiles(ContextRDD(wholeRdd, metadata), { _: SpatialKey => BufferSizes(2,2,2,2) }).collect
       val tile11 = buffers.find{ case (key, _) => key == SpatialKey(1, 1) }.get._2.tile
       val baseline = originalRaster.crop(98, 98, 201, 201, Crop.Options.DEFAULT)
       assertEqual(baseline, tile11)
@@ -116,9 +116,10 @@ class BufferTilesSpec extends FunSpec with TestEnvironment with RasterMatchers {
         holey.update(x * 100, x * 100, blank)
       }
 
-      val buffers = BufferTiles(partialRdd, BufferTilesSpec.generateBufferSizesFromKeys(members)(_)).collect
+      val buffers = BufferTiles(partialRdd, { _: SpatialKey => BufferSizes(2,2,2,2) }).collect
       val tile11 = buffers.find{ case (key, _) => key == SpatialKey(2, 1) }.get._2.tile
       println(tile11)
+      // Holey crop!
       val baseline = holey.crop(198, 98, 301, 201, Crop.Options.DEFAULT)
       println(baseline)
       assertEqual(baseline, tile11)

@@ -273,21 +273,21 @@ object BufferTiles {
     * @param          rdd               The keyed tile rdd.
     * @param          getBufferSizes    A function which returns the BufferSizes that should be used for a tile at this Key.
     */
-  def apply[
-    K: SpatialComponent: ClassTag,
-    V <: CellGrid: Stitcher: ClassTag: (? => CropMethods[V])
-  ](rdd: RDD[(K, V)], getBufferSizes: K => BufferSizes): RDD[(K, BufferedTile[V])] = {
-    val bufferSizesPerKey =
-      rdd
-        .mapPartitions({ partition =>
-          partition.map { case (key, _) => (key, getBufferSizes(key)) }
-        }, preservesPartitioning = true)
-        .persist(StorageLevel.MEMORY_ONLY)
+  // def apply[
+  //   K: SpatialComponent: ClassTag,
+  //   V <: CellGrid: Stitcher: ClassTag: (? => CropMethods[V])
+  // ](rdd: RDD[(K, V)], getBufferSizes: K => BufferSizes): RDD[(K, BufferedTile[V])] = {
+  //   val bufferSizesPerKey =
+  //     rdd
+  //       .mapPartitions({ partition =>
+  //         partition.map { case (key, _) => (key, getBufferSizes(key)) }
+  //       }, preservesPartitioning = true)
+  //       .persist(StorageLevel.MEMORY_ONLY)
 
-    val result = apply(rdd, bufferSizesPerKey)
-    bufferSizesPerKey.unpersist(blocking = false)
-    result
-  }
+  //   val result = apply(rdd, bufferSizesPerKey)
+  //   bufferSizesPerKey.unpersist(blocking = false)
+  //   result
+  // }
 
   /** Buffer the tiles of type V by a dynamic buffer size.
     *
@@ -441,10 +441,10 @@ object BufferTiles {
   }
 
   def apply[
-    K: SpatialComponent: Boundable: ClassTag,
+    K: SpatialComponent: ClassTag,
     V <: CellGrid: Stitcher: (? => CropMethods[V]): (? => TilePrototypeMethods[V]),
-    M: GetComponent[?, LayoutDefinition]: GetComponent[?, Bounds[K]]
-  ](layer: RDD[(K, V)] with Metadata[M], getBufferSizes: K => Option[BufferSizes]): RDD[(K, BufferedTile[V])] = {
+    M: GetComponent[?, LayoutDefinition]
+  ](layer: RDD[(K, V)], getBufferSizes: K => BufferSizes): RDD[(K, BufferedTile[V])] = {
     def dirToOffset(dir: Direction, xOfs: Int, yOfs: Int) = {
       val (x, y) = dir match {
         case TopLeft     => (0,0)
@@ -466,115 +466,99 @@ object BufferTiles {
         val cols = tile.cols
         val rows = tile.rows
 
-        def bufferForNeighbor(dir: Direction): Option[(K, (K, Direction, V))] = dir match {
-          case Center => Some(key -> (key, Center, tile))
+        def bufferForNeighbor(dir: Direction): (K, (K, Direction, V)) = dir match {
+          case Center => (key -> (key, Center, tile))
           case Left => 
             val k = key.setComponent(SpatialKey(x-1, y))
-            for ( bs <- getBufferSizes(k) ;
-                  slice <- Some(tile.crop(0, 0, bs.right - 1, rows - 1, Crop.Options(force = true))) ;
-                  res <- Some( k -> (k, Right, slice) )
-                ) yield res
+            val bs = getBufferSizes(k)
+            val slice = tile.crop(0, 0, bs.right - 1, rows - 1, Crop.Options(force = true))
+            k -> (k, Right, slice)
           case Right => 
             val k = key.setComponent(SpatialKey(x+1, y))
-            for ( bs <- getBufferSizes(k) ;
-                  slice <- Some(tile.crop(cols - bs.left, 0, cols - 1, rows - 1, Crop.Options(force = true))) ;
-                  res <- Some( k -> (k, Left, slice) )
-                ) yield res
+            val bs = getBufferSizes(k)
+            val slice = tile.crop(cols - bs.left, 0, cols - 1, rows - 1, Crop.Options(force = true))
+            k -> (k, Left, slice)
           case Top => 
             val k = key.setComponent(SpatialKey(x, y-1))
-            for ( bs <- getBufferSizes(k) ;
-                  slice <- Some(tile.crop(0, 0, cols - 1, bs.bottom - 1, Crop.Options(force = true))) ;
-                  res <- Some( k -> (k, Bottom, slice) )
-                ) yield res
+            val bs = getBufferSizes(k)
+            val slice = tile.crop(0, 0, cols - 1, bs.bottom - 1, Crop.Options(force = true))
+            k -> (k, Bottom, slice)
           case Bottom => 
             val k = key.setComponent(SpatialKey(x, y+1))
-            for ( bs <- getBufferSizes(k) ;
-                  slice <- Some(tile.crop(0, rows - bs.top, cols - 1, rows - 1, Crop.Options(force = true))) ;
-                  res <- Some( k -> (k, Top, slice) )
-                ) yield res
+            val bs = getBufferSizes(k)
+            val slice = tile.crop(0, rows - bs.top, cols - 1, rows - 1, Crop.Options(force = true))
+            k -> (k, Top, slice)
           case TopLeft => 
             val k = key.setComponent(SpatialKey(x-1, y-1))
-            for ( bs <- getBufferSizes(k) ;
-                  slice <- Some(tile.crop(0, 0, bs.right - 1, bs.bottom - 1, Crop.Options(force = true))) ;
-                  res <- Some( k -> (k, BottomRight, slice) )
-                ) yield res
+            val bs = getBufferSizes(k)
+            val slice = tile.crop(0, 0, bs.right - 1, bs.bottom - 1, Crop.Options(force = true))
+            k -> (k, BottomRight, slice)
           case TopRight => 
             val k = key.setComponent(SpatialKey(x+1, y-1))
-            for ( bs <- getBufferSizes(k) ;
-                  slice <- Some(tile.crop(cols - bs.left, 0, cols - 1, bs.bottom - 1, Crop.Options(force = true))) ;
-                  res <- Some( k -> (k, BottomLeft, slice) )
-                ) yield res
+            val bs = getBufferSizes(k)
+            val slice = tile.crop(cols - bs.left, 0, cols - 1, bs.bottom - 1, Crop.Options(force = true))
+            k -> (k, BottomLeft, slice)
           case BottomLeft => 
             val k = key.setComponent(SpatialKey(x-1, y+1))
-            for ( bs <- getBufferSizes(k) ;
-                  slice <- Some(tile.crop(0, rows - bs.top, bs.right - 1, rows - 1, Crop.Options(force = true))) ;
-                  res <- Some( k -> (k, TopRight, slice) )
-                ) yield res
+            val bs = getBufferSizes(k)
+            val slice = tile.crop(0, rows - bs.top, bs.right - 1, rows - 1, Crop.Options(force = true))
+            k -> (k, TopRight, slice)
           case BottomRight => 
             val k = key.setComponent(SpatialKey(x+1, y+1))
-            for ( bs <- getBufferSizes(k) ;
-                  slice <- Some(tile.crop(cols - bs.left, rows - bs.top, cols - 1, rows - 1, Crop.Options(force = true))) ;
-                  res <- Some( k -> (k, TopLeft, slice) )
-                ) yield res
+            val bs = getBufferSizes(k)
+            val slice = tile.crop(cols - bs.left, rows - bs.top, cols - 1, rows - 1, Crop.Options(force = true))
+            k -> (k, TopLeft, slice)
         }
 
-        Seq(Center, Left, Right, Bottom, Top, TopLeft, TopRight, BottomLeft, BottomRight).flatMap(bufferForNeighbor): Seq[(K, (K, Direction, V))]
+        Seq(Center, Left, Right, Bottom, Top, TopLeft, TopRight, BottomLeft, BottomRight).map(bufferForNeighbor): Seq[(K, (K, Direction, V))]
       }}
-      // .combineByKey(
-      //   { case tup => 
-      //     val (key, dir, tile) = tup
-      //     val bs = getBufferSizes(key)
-      //     val newtile = tile.prototype(tile.cols + bs.left + bs.right, tile.rows + bs.top + bs.bottom)
-      //     val ex = Extent(-bs.left, -bs.bottom, cols + bs.right, rows + bs.top, cols + bs.right)
-      //     (ex, newtile.merge(ex, dirToExtent(dir, bs, tile.cols, tile.rows), tile))
-      //   },
-      //   { case (combined, tup) =>
-      //     val (ex, whole) = combined
-      //     val (key, dir, tile) = tup
-      //     (ex, whole.merge(ex, dirToExtent(dir, getBufferSizes(key), ti
-      //   },
-      //   { (t1, t2) => t1.merge(t2) }
-      // )
-      // .mapValues(_._2)
       .groupByKey
-      .mapValues{ iter =>
-        val stitcher = implicitly[Stitcher[V]]
+      .flatMapValues{ iter =>
         val seq = iter.toSeq
         val pieces = seq.map{ case (_, dir, tile) => (dir, tile) }.toMap
         val key = seq.head._1
 
-        val lefts = 
-          Seq(Seq(TopLeft, Left, BottomLeft), Seq(Top, Center, Bottom), Seq(TopRight, Right, BottomRight))
-            .map(_.map{ x => pieces.get(x).map(_.cols).getOrElse(0) }.max)
-            .foldLeft(Seq(0)){ (acc, x) => acc :+ (acc.last + x) }
-        val tops = 
-          Seq(Seq(TopLeft, Top, TopRight), Seq(Left, Center, Right), Seq(BottomLeft, Bottom, BottomRight))
-            .map(_.map{ x => pieces.get(x).map(_.rows).getOrElse(0) }.max)
-            .foldLeft(Seq(0)){ (acc, x) => acc :+ (acc.last + x) }
+        if (pieces contains Center) {
+          val lefts = 
+            Seq(Seq(TopLeft, Left, BottomLeft), Seq(Top, Center, Bottom), Seq(TopRight, Right, BottomRight))
+              .map(_.map{ x => pieces.get(x).map(_.cols).getOrElse(0) }.max)
+              .foldLeft(Seq(0)){ (acc, x) => acc :+ (acc.last + x) }
+          val tops = 
+              Seq(Seq(TopLeft, Top, TopRight), Seq(Left, Center, Right), Seq(BottomLeft, Bottom, BottomRight))
+                .map(_.map{ x => pieces.get(x).map(_.rows).getOrElse(0) }.max)
+                .foldLeft(Seq(0)){ (acc, x) => acc :+ (acc.last + x) }
 
-        val totalWidth = lefts.last
-        val totalHeight = tops.last
+          val totalWidth = lefts.last
+          val totalHeight = tops.last
 
-        def loc(dir: Direction) = dir match {
-          case TopLeft     => (lefts(0), tops(0))
-          case Top         => (lefts(1), tops(0))
-          case TopRight    => (lefts(2), tops(0))
-          case Left        => (lefts(0), tops(1))
-          case Center      => (lefts(1), tops(1))
-          case Right       => (lefts(2), tops(1))
-          case BottomLeft  => (lefts(0), tops(2))
-          case Bottom      => (lefts(1), tops(2))
-          case BottomRight => (lefts(2), tops(2))
+          def loc(dir: Direction) = dir match {
+            case TopLeft     => (lefts(0), tops(0))
+            case Top         => (lefts(1), tops(0))
+            case TopRight    => (lefts(2), tops(0))
+            case Left        => (lefts(0), tops(1))
+            case Center      => (lefts(1), tops(1))
+            case Right       => (lefts(2), tops(1))
+            case BottomLeft  => (lefts(0), tops(2))
+            case Bottom      => (lefts(1), tops(2))
+            case BottomRight => (lefts(2), tops(2))
+          }
+
+          val toStitch = pieces.map{ case (dir, tile) => (tile, loc(dir)) }
+
+          println(s"For $key: stitching $pieces into $totalWidth x $totalHeight tile")
+
+          val stitcher = implicitly[Stitcher[V]]
+          val stitched = stitcher.stitch(toStitch, totalWidth, totalHeight)
+
+          val bufferSizes = getBufferSizes(key)
+          Some(BufferedTile(stitched, 
+                            GridBounds(bufferSizes.left, 
+                                       bufferSizes.top, 
+                                       pieces(Center).cols - bufferSizes.right - 1, 
+                                       pieces(Center).rows - bufferSizes.bottom - 1)))
+        } else {
+          None
         }
-
-        val toStitch = pieces.map{ case (dir, tile) => (tile, loc(dir)) }
-
-        println(s"For $key: stitching $pieces into $totalWidth x $totalHeight tile")
-
-        val stitched = stitcher.stitch(toStitch, totalWidth, totalHeight)
-
-        val bufferSizes = getBufferSizes(key).get
-        BufferedTile(stitched, GridBounds(bufferSizes.left, bufferSizes.top, pieces(Center).cols - bufferSizes.right - 1, pieces(Center).rows - bufferSizes.bottom - 1))
       }
   }
 }
