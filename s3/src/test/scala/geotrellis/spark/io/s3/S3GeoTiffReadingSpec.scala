@@ -211,8 +211,8 @@ val craster = raster
 
       // 9/381/223
       // 9))(380, 225) -- normal
-      val t = geoTiffLayer.read(LayerId("LC08_L1TP_139045_20170304_20170316_01_T1_B4", 9))(381, 223)
-      //geoTiffLayer.read(LayerId("RED", 9))(380, 224)
+      //val t = geoTiffLayer.read(LayerId("LC08_L1TP_139045_20170304_20170316_01_T1_B4", 9))(381, 223)
+      val t = geoTiffLayer.read(LayerId("RED", 9))(380, 224)
       //t.tile.renderPng().write("/tmp/test.png")
     }
   }

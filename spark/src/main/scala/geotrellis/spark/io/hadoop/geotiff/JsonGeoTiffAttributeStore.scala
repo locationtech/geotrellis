@@ -5,18 +5,17 @@ import java.net.URI
 
 case class JsonGeoTiffAttributeStore(
   uri: URI,
-  readData: URI => Seq[GeoTiffMetadata]
+  readData: URI => GeoTiffMetadataTree[GeoTiffMetadata]
 ) extends CollectionAttributeStore[GeoTiffMetadata] {
-  lazy val data: Seq[GeoTiffMetadata] = readData(uri)
-
+  lazy val data: GeoTiffMetadataTree[GeoTiffMetadata] = readData(uri)
   def query(layerName: Option[String] = None, extent: Option[ProjectedExtent] = None): Seq[GeoTiffMetadata] = {
     (layerName, extent) match {
-      case (Some(name), Some(ProjectedExtent(ext, crs))) =>
-        data.filter { md => md.name == name && md.extent.reproject(md.crs, crs).intersects(ext) }
-      case (_, Some(ProjectedExtent(ext, crs))) =>
-        data.filter { md => md.extent.reproject(md.crs, crs).intersects(ext) }
-      case (Some(name), _) => data.filter { md => md.name == name }
-      case _ => data
+      case (Some(name), Some(projectedExtent)) =>
+        data.query(projectedExtent).filter { md => md.name == name }
+      case (_, Some(projectedExtent)) =>
+        data.query(projectedExtent)
+      case (Some(name), _) => data.query().filter { md => md.name == name }
+      case _ => data.query()
     }
   }
 }
