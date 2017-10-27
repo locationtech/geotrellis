@@ -208,7 +208,7 @@ lazy val hbase = project
   .settings(projectDependencies := { Seq((projectID in spark).value.exclude("com.google.protobuf", "protobuf-java")) })
 
 lazy val `spark-etl` = Project(id = "spark-etl", base = file("spark-etl")).
-  dependsOn(spark, s3, accumulo, cassandra, hbase).
+  dependsOn(spark, s3, accumulo, cassandra, hbase, shapefile, geotools).
   settings(commonSettings)
 
 lazy val geotools = project
