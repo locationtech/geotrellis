@@ -39,7 +39,7 @@ object S3JsonGeoTiffAttributeStore {
     GeoTiffMetadataTree.fromGeoTiffMetadataList(readData(uri, getS3Client))
 
   def apply(uri: URI): JsonGeoTiffAttributeStore =
-    JsonGeoTiffAttributeStore(uri, readDataAsTree(_, () => S3Client.DEFAULT), readData(_, () => S3Client.DEFAULT))
+    JsonGeoTiffAttributeStore(uri, readDataAsTree(_, () => S3Client.DEFAULT))
 
   def apply(
     path: URI,
