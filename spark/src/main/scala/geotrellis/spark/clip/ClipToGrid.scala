@@ -30,7 +30,7 @@ object ClipToGrid {
     * the most optimal way to clip geometries and features
     * for ClipToGrid methods.
     */
-  trait Predicates {
+  trait Predicates extends Serializable {
     /** Returns true if the feature geometry covers the passed in extent */
     def covers(e: Extent): Boolean
     /** Returns true if the feature geometry is covered bythe passed in extent */
@@ -113,29 +113,32 @@ object ClipToGrid {
     clipFeature: (Extent, Feature[G, D], Predicates) => Option[Feature[Geometry, D]],
     feature: Feature[G, D]
   ): Iterator[(SpatialKey, Feature[Geometry, D])] = {
-    val pointPredicates =
+
+    /* Unique keys that this Feature touches */
+    val keys: Set[SpatialKey] = mapTransform.keysForGeometry(feature.geom)
+
+    lazy val mpOrLinePredicates =
       new Predicates {
         def covers(e: Extent) = false
-        def coveredBy(e: Extent) = true
+        def coveredBy(e: Extent) = keys.size < 2
       }
 
-    val mpOrLinePredicates =
-      new Predicates {
-        def covers(e: Extent) = false
-        def coveredBy(e: Extent) =
-          feature.geom.jtsGeom.coveredBy(e.toPolygon.jtsGeom)
-      }
-
-    def polyPredicates(pg: PreparedGeometry) =
+    def preparedPredicates(pg: PreparedGeometry) =
       new Predicates {
         def covers(e: Extent) = pg.covers(e.toPolygon.jtsGeom)
-        def coveredBy(e: Extent) = pg.coveredBy(e.toPolygon.jtsGeom)
+        def coveredBy(e: Extent) = keys.size < 2
       }
 
-    def gcPredicates =
+    lazy val polyPredicates =
       new Predicates {
         def covers(e: Extent) = feature.geom.jtsGeom.covers(e.toPolygon.jtsGeom)
-        def coveredBy(e: Extent) = feature.geom.jtsGeom.coveredBy(e.toPolygon.jtsGeom)
+        def coveredBy(e: Extent) = keys.size < 2
+      }
+
+    lazy val gcPredicates =
+      new Predicates {
+        def covers(e: Extent) = feature.geom.jtsGeom.covers(e.toPolygon.jtsGeom)
+        def coveredBy(e: Extent) = keys.size < 2
       }
 
     def clipToKey(
@@ -147,59 +150,28 @@ object ClipToGrid {
       clipFeature(extent, feature, preds).map(k -> _)
     }
 
-    val iterator: Iterator[(SpatialKey, Feature[Geometry, D])] =
+    val iterator: Iterator[(SpatialKey, Feature[Geometry, D])] = {
       feature.geom match {
-        case p: Point =>
-          val k = mapTransform(p)
-          clipToKey(k, pointPredicates).toSeq.iterator
-        case mp: MultiPoint =>
-          mp.points
-            .map(mapTransform(_))
-            .distinct
-            .map(clipToKey(_, mpOrLinePredicates))
-            .flatten
-            .iterator
-        case l: Line =>
-          mapTransform.multiLineToKeys(MultiLine(l))
-            .map(clipToKey(_, mpOrLinePredicates))
-            .flatten
-        case ml: MultiLine =>
-          mapTransform.multiLineToKeys(ml)
-            .map(clipToKey(_, mpOrLinePredicates))
-            .flatten
-        case p: Polygon =>
+        /* Points will always exist inside their Extent */
+        case p:  Point      => keys.iterator.map(k => (k, feature))
+        case mp: MultiPoint => keys.iterator.flatMap(k => clipToKey(k, mpOrLinePredicates))
+        case l:  Line       => keys.iterator.flatMap(k => clipToKey(k, mpOrLinePredicates))
+        case ml: MultiLine  => keys.iterator.flatMap(k => clipToKey(k, mpOrLinePredicates))
+        case p:  Polygon if keys.size > 10 =>
           val pg = PreparedGeometryFactory.prepare(p.jtsGeom)
-          val preds = polyPredicates(pg)
+          val preds = preparedPredicates(pg)
 
-          mapTransform
-            .multiPolygonToKeys(MultiPolygon(p))
-            .map(clipToKey(_, preds))
-            .flatten
-        case mp: MultiPolygon =>
+          keys.iterator.flatMap(k => clipToKey(k, preds))
+        case p:  Polygon => keys.iterator.flatMap(k => clipToKey(k, polyPredicates))
+        case mp: MultiPolygon if keys.size > 10 =>
           val pg = PreparedGeometryFactory.prepare(mp.jtsGeom)
-          val preds = polyPredicates(pg)
+          val preds = preparedPredicates(pg)
 
-          mapTransform.multiPolygonToKeys(mp)
-            .map(clipToKey(_, preds))
-            .flatten
-        case gc: GeometryCollection =>
-          def keysFromGC(g: GeometryCollection): List[SpatialKey] = {
-            var keys: List[SpatialKey] = List()
-            keys = keys ++ gc.points.map(mapTransform.apply)
-            keys = keys ++ gc.multiPoints.flatMap(_.points.map(mapTransform.apply))
-            keys = keys ++ gc.lines.flatMap { l => mapTransform.multiLineToKeys(MultiLine(l)) }
-            keys = keys ++ gc.multiLines.flatMap { ml => mapTransform.multiLineToKeys(ml) }
-            keys = keys ++ gc.polygons.flatMap { p => mapTransform.multiPolygonToKeys(MultiPolygon(p)) }
-            keys = keys ++ gc.multiPolygons.flatMap { mp => mapTransform.multiPolygonToKeys(mp) }
-            keys = keys ++ gc.geometryCollections.flatMap(keysFromGC)
-            keys
-          }
-
-          keysFromGC(gc)
-            .map(clipToKey(_, gcPredicates))
-            .flatten
-            .iterator
+          keys.iterator.flatMap(k => clipToKey(k, preds))
+        case mp: MultiPolygon       => keys.iterator.flatMap(k => clipToKey(k, polyPredicates))
+        case gc: GeometryCollection => keys.iterator.flatMap(k => clipToKey(k, gcPredicates))
       }
+    }
 
     iterator
   }
