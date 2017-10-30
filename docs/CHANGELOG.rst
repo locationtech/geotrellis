@@ -156,19 +156,6 @@ Now you can perform this same operation with ``Line``, ``MultiLine``, and even
 ``(Polygon, CRS)`` to ensure that your Layer and Geometry always exist in the
 same projection.
 
-Storage on Azure via HDFS
-*************************
-
-By adding some additional configuration, you can now use our
-`HDFS Layer Backend <guide/tile-backends.html#hdfs>`__ to read and write GeoTrellis
-layers to Microsoft Azure's blob storage.
-
-S3 Configurability
-******************
-
-`It's now possible to customize how our S3 backend communicates with S3.
-<guide/examples.html#work-with-s3-using-a-custom-s3client-configuration>`__
-
 Improved ``Tile`` ASCII Art
 ***************************
 
@@ -244,20 +231,18 @@ The new ``Tile.renderAscii: Palette => String`` method fulfills your heart's des
 
 Gorgious.
 
-Resampling via ``Sum``
-**********************
+Storage on Azure via HDFS
+*************************
 
-You can now resample pixels (say, during Pyramiding) as the sum of their neighbours:
+By adding some additional configuration, you can now use our
+`HDFS Layer Backend <guide/tile-backends.html#hdfs>`__ to read and write GeoTrellis
+layers to Microsoft Azure's blob storage.
 
-.. code-block:: scala
+S3 Configurability
+******************
 
-   import geotrellis.raster.resample._
-
-   val tile: Tile = ...
-   val extent: Extent = ...
-   val cellsize: CellSize = ...
-
-   val resampler: Resample = Resample(SumResample, tile, extent, cellsize)
+`It's now possible to customize how our S3 backend communicates with S3.
+<guide/examples.html#work-with-s3-using-a-custom-s3client-configuration>`__
 
 Configuring JTS Precision
 *************************
@@ -277,6 +262,7 @@ Other New Features
 - `Filter GeoTiffRDDs by Geometry <https://github.com/locationtech/geotrellis/pull/2409>`__
 - `Can create ValueReaders via URIs through LayerProvides classes <https://github.com/locationtech/geotrellis/pull/2286>`__
 - `Can read/write GeoTiffs with Sinusoidal projections <https://github.com/locationtech/geotrellis/pull/2345>`__
+- `Can Resample via Sum operation <https://github.com/locationtech/geotrellis/pull/2326>`__
 
 Fixes
 ^^^^^
