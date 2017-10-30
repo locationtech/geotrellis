@@ -210,7 +210,7 @@ object BufferTiles {
     K: SpatialComponent: ClassTag,
     V <: CellGrid: Stitcher: ClassTag: (? => CropMethods[V])
   ](rdd: RDD[(K, V)], bufferSize: Int): RDD[(K, BufferedTile[V])] =
-    apply(rdd, bufferSize, GridBounds(Int.MinValue, Int.MinValue, Int.MaxValue, Int.MaxValue))
+    apply(rdd, { _: K => BufferSizes(bufferSize, bufferSize, bufferSize, bufferSize) })
 
   /** Buffer the tiles of type V by a constant buffer size.
     *
@@ -243,25 +243,37 @@ object BufferTiles {
     *                                   border cells from valid tiles that would be used by keys outside of the bounds (and therefore
     *                                   unused).
     */
+  // def apply[
+  //   K: SpatialComponent: ClassTag,
+  //   V <: CellGrid: Stitcher: ClassTag: (? => CropMethods[V])
+  // ](rdd: RDD[(K, V)], bufferSize: Int, layerBounds: GridBounds): RDD[(K, BufferedTile[V])] = {
+  //   val bufferSizes = BufferSizes(bufferSize, bufferSize, bufferSize, bufferSize)
+  //   val tilesAndSlivers =
+  //     rdd
+  //       .flatMap { case (key, tile) =>
+  //         collectWithTileNeighbors(key, tile, { key => layerBounds.contains(key.col, key.row) }, { key => bufferSizes })
+  //       }
+
+  //   val grouped =
+  //     rdd.partitioner match {
+  //       case Some(partitioner) => tilesAndSlivers.groupByKey(partitioner)
+  //       case None => tilesAndSlivers.groupByKey
+  //     }
+
+  //   bufferWithNeighbors(grouped)
+  // }
   def apply[
     K: SpatialComponent: ClassTag,
     V <: CellGrid: Stitcher: ClassTag: (? => CropMethods[V])
-  ](rdd: RDD[(K, V)], bufferSize: Int, layerBounds: GridBounds): RDD[(K, BufferedTile[V])] = {
-    val bufferSizes = BufferSizes(bufferSize, bufferSize, bufferSize, bufferSize)
-    val tilesAndSlivers =
-      rdd
-        .flatMap { case (key, tile) =>
-          collectWithTileNeighbors(key, tile, { key => layerBounds.contains(key.col, key.row) }, { key => bufferSizes })
-        }
-
-    val grouped =
-      rdd.partitioner match {
-        case Some(partitioner) => tilesAndSlivers.groupByKey(partitioner)
-        case None => tilesAndSlivers.groupByKey
-      }
-
-    bufferWithNeighbors(grouped)
-  }
+  ](rdd: RDD[(K, V)], bufferSize: Int, layerBounds: GridBounds): RDD[(K, BufferedTile[V])] =
+    apply(
+      rdd, 
+      { key: K => 
+        val k = key.getComponent[SpatialKey]() 
+        layerBounds.contains(k.col, k.row) 
+      }, 
+      { _: K => BufferSizes(bufferSize, bufferSize, bufferSize, bufferSize) }
+    )
 
   /** Buffer the tiles of type V by a dynamic buffer size.
     *
@@ -442,9 +454,16 @@ object BufferTiles {
 
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: Stitcher: (? => CropMethods[V]): (? => TilePrototypeMethods[V]),
-    M: GetComponent[?, LayoutDefinition]
-  ](layer: RDD[(K, V)], getBufferSizes: K => BufferSizes): RDD[(K, BufferedTile[V])] = {
+    V <: CellGrid: Stitcher: (? => CropMethods[V])
+  ](layer: RDD[(K, V)], 
+    getBufferSizes: K => BufferSizes): RDD[(K, BufferedTile[V])] = apply(layer, { _: K => true }, getBufferSizes)
+
+  def apply[
+    K: SpatialComponent: ClassTag,
+    V <: CellGrid: Stitcher: (? => CropMethods[V])
+  ](layer: RDD[(K, V)], 
+    includeKey: K => Boolean,
+    getBufferSizes: K => BufferSizes): RDD[(K, BufferedTile[V])] = {
     def dirToOffset(dir: Direction, xOfs: Int, yOfs: Int) = {
       val (x, y) = dir match {
         case TopLeft     => (0,0)
@@ -510,7 +529,10 @@ object BufferTiles {
             k -> (k, TopLeft, slice)
         }
 
-        Seq(Center, Left, Right, Bottom, Top, TopLeft, TopRight, BottomLeft, BottomRight).map(bufferForNeighbor): Seq[(K, (K, Direction, V))]
+        if (includeKey(key))
+          Seq(Center, Left, Right, Bottom, Top, TopLeft, TopRight, BottomLeft, BottomRight).map(bufferForNeighbor): Seq[(K, (K, Direction, V))]
+        else
+          Seq(Left, Right, Bottom, Top, TopLeft, TopRight, BottomLeft, BottomRight).map(bufferForNeighbor): Seq[(K, (K, Direction, V))]
       }}
       .groupByKey
       .flatMapValues{ iter =>
@@ -544,8 +566,6 @@ object BufferTiles {
           }
 
           val toStitch = pieces.map{ case (dir, tile) => (tile, loc(dir)) }
-
-          println(s"For $key: stitching $pieces into $totalWidth x $totalHeight tile")
 
           val stitcher = implicitly[Stitcher[V]]
           val stitched = stitcher.stitch(toStitch, totalWidth, totalHeight)
