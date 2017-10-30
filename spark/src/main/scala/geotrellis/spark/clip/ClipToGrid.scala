@@ -16,53 +16,22 @@
 
 package geotrellis.spark.clip
 
-import geotrellis.raster.GridBounds
 import geotrellis.spark._
 import geotrellis.spark.tiling._
-import geotrellis.util._
 import geotrellis.vector._
 
-import com.vividsolutions.jts.geom.prep.{PreparedGeometry, PreparedGeometryFactory}
+import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory
 import org.apache.spark.rdd._
+import scala.util.Try
 
 object ClipToGrid {
-  /** Trait which contains methods to be used in determining
-    * the most optimal way to clip geometries and features
-    * for ClipToGrid methods.
-    */
-  trait Predicates {
-    /** Returns true if the feature geometry covers the passed in extent */
-    def covers(e: Extent): Boolean
-    /** Returns true if the feature geometry is covered bythe passed in extent */
-    def coveredBy(e: Extent): Boolean
-  }
-
-  /** Clips a feature to the given extent, that uses the given predicates
-    * to avoid doing intersections where unnecessary.
-    */
-  def clipFeatureToExtent[G <: Geometry, D](
-    e: Extent,
-    feature: Feature[G, D],
-    preds: Predicates
-  ): Option[Feature[Geometry, D]] =
-    if(preds.covers(e)) { Some(Feature(e, feature.data)) }
-    else if(preds.coveredBy(e)) { Some(feature) }
-    else {
-      feature.geom.intersection(e).toGeometry.map { g =>
-        Feature(g, feature.data)
-      }
-    }
 
   /** Clip each geometry in the RDD to the set of SpatialKeys
     * which intersect it, where the SpatialKeys map to the
     * given [[LayoutDefinition]].
     */
-  def apply[G <: Geometry](
-    rdd: RDD[G],
-    layout: LayoutDefinition
-  )(implicit d: DummyImplicit): RDD[(SpatialKey, Geometry)] =
-    apply[G, Unit](rdd.map(Feature(_, ())), layout)
-      .mapValues(_.geom)
+  def apply[G <: Geometry](layout: LayoutDefinition, rdd: RDD[G]): RDD[(SpatialKey, Geometry)] =
+    apply(layout, rdd, byExtent)
 
   /** Clip each geometry in the RDD to the set of SpatialKeys
     * which intersect it, where the SpatialKeys map to the
@@ -70,17 +39,11 @@ object ClipToGrid {
     * to clip each geometry to the extent.
     */
   def apply[G <: Geometry](
+    layout: LayoutDefinition,
     rdd: RDD[G],
-    layout: LayoutDefinition,
-    clipGeom: (Extent, G, Predicates) => Option[Geometry]
-  )(implicit d: DummyImplicit): RDD[(SpatialKey, Geometry)] =
-    apply[G, Unit](
-      rdd.map(Feature(_, ())),
-      layout,
-      { (e: Extent, f: Feature[G, Unit], p: Predicates) =>
-        clipGeom(e, f.geom, p).map(Feature(_, ()))
-      }
-    ).mapValues(_.geom)
+    clipGeom: (Extent, Feature[G, Unit]) => Option[Feature[Geometry, Unit]]
+  ): RDD[(SpatialKey, Geometry)] =
+    apply(layout, rdd.map(Feature(_, ())), clipGeom).mapValues(_.geom)
 
   /** Clip each geometry in the RDD to the set of SpatialKeys
     * which intersect it, where the SpatialKeys map to the
@@ -88,10 +51,10 @@ object ClipToGrid {
     * to clip each geometry to the extent.
     */
   def apply[G <: Geometry, D](
-    rdd: RDD[Feature[G, D]],
-    layout: LayoutDefinition
-  ): RDD[(SpatialKey, Feature[Geometry, D])] =
-    apply[G, D](rdd, layout, clipFeatureToExtent[G,D] _)
+    layout: LayoutDefinition,
+    rdd: RDD[Feature[G, D]]
+  )(implicit d: DummyImplicit): RDD[(SpatialKey, Feature[Geometry, D])] =
+    apply(layout, rdd, byExtent)
 
   /** Clip each geometry in the RDD to the set of SpatialKeys
     * which intersect it, where the SpatialKeys map to the
@@ -99,108 +62,65 @@ object ClipToGrid {
     * to clip each geometry to the extent.
     */
   def apply[G <: Geometry, D](
-    rdd: RDD[Feature[G, D]],
     layout: LayoutDefinition,
-    clipFeature: (Extent, Feature[G, D], Predicates) => Option[Feature[Geometry, D]]
-  ): RDD[(SpatialKey, Feature[Geometry, D])] = {
+    rdd: RDD[Feature[G, D]],
+    clipFeature: (Extent, Feature[G, D]) => Option[Feature[Geometry, D]]
+  )(implicit d: DummyImplicit): RDD[(SpatialKey, Feature[Geometry, D])] = {
     val mapTransform: MapKeyTransform = layout.mapTransform
 
-    rdd.flatMap { f => clipGeom(mapTransform, clipFeature, f) }
+    /* Associate each Feature with its SpatialKeys*/
+    val withKeys: RDD[(Iterator[SpatialKey], Feature[G,D])] =
+      rdd.map(f => (mapTransform.keysForGeometry(f.geom), f))
+
+    /* Clip every Feature */
+    withKeys.flatMap { case (ks, f) => ks.flatMap(k => clipFeature(k.extent(layout), f).map((k, _))) }
   }
 
-  private def clipGeom[G <: Geometry, D](
-    mapTransform: MapKeyTransform,
-    clipFeature: (Extent, Feature[G, D], Predicates) => Option[Feature[Geometry, D]],
-    feature: Feature[G, D]
-  ): Iterator[(SpatialKey, Feature[Geometry, D])] = {
-    val pointPredicates =
-      new Predicates {
-        def covers(e: Extent) = false
-        def coveredBy(e: Extent) = true
-      }
+  /** Clips Features to fit the given Extent. Does its best to avoid unnecessary
+    * JTS interactions.
+    */
+  def byExtent[G <: Geometry, D](extent: Extent, f: Feature[G, D]): Option[Feature[Geometry, D]] = f.geom match {
+    case g: Point                              => Some(f)
+    case g: MultiPoint if coveredBy(g, extent) => Some(f)
+    case g: MultiPoint                         => clip(extent, g).map(Feature(_, f.data))
+    case g: Line       if coveredBy(g, extent) => Some(f)
+    case g: Line                               => clip(extent, g).map(Feature(_, f.data))
+    case g: MultiLine  if coveredBy(g, extent) => Some(f)
+    case g: MultiLine                          => clip(extent, g).map(Feature(_, f.data))
+    case g =>  /* Polygon and MultiPolygon */
+      val pg = PreparedGeometryFactory.prepare(g.jtsGeom)
+      val ep = extent.toPolygon.jtsGeom
 
-    val mpOrLinePredicates =
-      new Predicates {
-        def covers(e: Extent) = false
-        def coveredBy(e: Extent) =
-          feature.geom.jtsGeom.coveredBy(e.toPolygon.jtsGeom)
-      }
+      if (pg.covers(ep)) Some(Feature(extent, f.data))
+      else if (pg.coveredBy(ep)) Some(f)
+      else clip(extent, g).map(Feature(_, f.data))
+  }
 
-    def polyPredicates(pg: PreparedGeometry) =
-      new Predicates {
-        def covers(e: Extent) = pg.covers(e.toPolygon.jtsGeom)
-        def coveredBy(e: Extent) = pg.coveredBy(e.toPolygon.jtsGeom)
-      }
+  private def coveredBy[G <: Geometry](g: G, e: Extent): Boolean =
+    g.jtsGeom.coveredBy(e.toPolygon.jtsGeom)
 
-    def gcPredicates =
-      new Predicates {
-        def covers(e: Extent) = feature.geom.jtsGeom.covers(e.toPolygon.jtsGeom)
-        def coveredBy(e: Extent) = feature.geom.jtsGeom.coveredBy(e.toPolygon.jtsGeom)
-      }
+  private def clip[G <: Geometry](e: Extent, g: G): Option[Geometry] = {
+    val exPoly: Polygon = e.toPolygon
 
-    def clipToKey(
-      k: SpatialKey,
-      preds: Predicates
-    ): Option[(SpatialKey, Feature[Geometry, D])] = {
-      val extent = mapTransform(k)
-
-      clipFeature(extent, feature, preds).map(k -> _)
+    val clipped: Try[Geometry] = g match {
+      case mp: MultiPolygon => Try(MultiPolygon(mp.polygons.flatMap(_.intersection(exPoly).as[Polygon])))
+      case _ => Try(g.intersection(exPoly).toGeometry.get)
     }
 
-    val iterator: Iterator[(SpatialKey, Feature[Geometry, D])] =
-      feature.geom match {
-        case p: Point =>
-          val k = mapTransform(p)
-          clipToKey(k, pointPredicates).toSeq.iterator
-        case mp: MultiPoint =>
-          mp.points
-            .map(mapTransform(_))
-            .distinct
-            .map(clipToKey(_, mpOrLinePredicates))
-            .flatten
-            .iterator
-        case l: Line =>
-          mapTransform.multiLineToKeys(MultiLine(l))
-            .map(clipToKey(_, mpOrLinePredicates))
-            .flatten
-        case ml: MultiLine =>
-          mapTransform.multiLineToKeys(ml)
-            .map(clipToKey(_, mpOrLinePredicates))
-            .flatten
-        case p: Polygon =>
-          val pg = PreparedGeometryFactory.prepare(p.jtsGeom)
-          val preds = polyPredicates(pg)
-
-          mapTransform
-            .multiPolygonToKeys(MultiPolygon(p))
-            .map(clipToKey(_, preds))
-            .flatten
-        case mp: MultiPolygon =>
-          val pg = PreparedGeometryFactory.prepare(mp.jtsGeom)
-          val preds = polyPredicates(pg)
-
-          mapTransform.multiPolygonToKeys(mp)
-            .map(clipToKey(_, preds))
-            .flatten
-        case gc: GeometryCollection =>
-          def keysFromGC(g: GeometryCollection): List[SpatialKey] = {
-            var keys: List[SpatialKey] = List()
-            keys = keys ++ gc.points.map(mapTransform.apply)
-            keys = keys ++ gc.multiPoints.flatMap(_.points.map(mapTransform.apply))
-            keys = keys ++ gc.lines.flatMap { l => mapTransform.multiLineToKeys(MultiLine(l)) }
-            keys = keys ++ gc.multiLines.flatMap { ml => mapTransform.multiLineToKeys(ml) }
-            keys = keys ++ gc.polygons.flatMap { p => mapTransform.multiPolygonToKeys(MultiPolygon(p)) }
-            keys = keys ++ gc.multiPolygons.flatMap { mp => mapTransform.multiPolygonToKeys(mp) }
-            keys = keys ++ gc.geometryCollections.flatMap(keysFromGC)
-            keys
-          }
-
-          keysFromGC(gc)
-            .map(clipToKey(_, gcPredicates))
-            .flatten
-            .iterator
-      }
-
-    iterator
+    clipped.toOption
   }
+
+  /** Clips Features to a 3x3 grid surrounding the current Tile.
+    * This has been found to capture ''most'' Features which stretch
+    * outside their original Tile, and helps avoid the pain of
+    * restitching later.
+    */
+  def byBufferedExtent[G <: Geometry, D](
+    extent: Extent,
+    f: Feature[G, D]
+  ): Option[Feature[Geometry, D]] = f.geom match {
+    case g: Point => Some(f)  /* A `Point` will always fall within the Extent */
+    case _ => byExtent(extent.expandBy(extent.width, extent.height), f)
+  }
+
 }

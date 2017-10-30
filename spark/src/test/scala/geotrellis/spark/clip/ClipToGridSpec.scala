@@ -63,7 +63,7 @@ class ClipToGridSpec extends FunSpec with TestEnvironment {
     it("should clip a point") {
       val p = Point(0, -10.0)
       val rdd = sc.parallelize(Array(p))
-      val result = ClipToGrid(rdd, layoutDefinition).collect().toVector
+      val result = ClipToGrid(layoutDefinition, rdd).collect().toVector
       result.size should be (1)
       result(0) should be ((SpatialKey(0, 5), p))
     }
@@ -74,7 +74,7 @@ class ClipToGridSpec extends FunSpec with TestEnvironment {
       val p3 = Point(0, 0)
 
       val rdd = sc.parallelize(Array(MultiPoint(p1, p2, p3)))
-      val result = ClipToGrid(rdd, layoutDefinition).collect().toVector.sortBy(_._2.envelope.ymin)
+      val result = ClipToGrid(layoutDefinition, rdd).collect().toVector.sortBy(_._2.envelope.ymin)
       result.size should be (2)
       result(0)._1 should be (SpatialKey(0, 5))
       result(0)._2 should be (an[MultiPoint])
@@ -94,7 +94,7 @@ class ClipToGridSpec extends FunSpec with TestEnvironment {
         )
 
       val rdd = sc.parallelize(Array(line))
-      val actual = ClipToGrid(rdd, layoutDefinition)
+      val actual = ClipToGrid(layoutDefinition, rdd)
 
       checkCorrect(actual,
         Vector(
@@ -123,7 +123,7 @@ class ClipToGridSpec extends FunSpec with TestEnvironment {
         )
 
       val rdd = sc.parallelize(Array(line))
-      val actual = ClipToGrid(rdd, layoutDefinition)
+      val actual = ClipToGrid(layoutDefinition, rdd)
 
       checkCorrect(actual, Vector((SpatialKey(1, 7), line)))
     }
@@ -168,7 +168,7 @@ class ClipToGridSpec extends FunSpec with TestEnvironment {
         }
 
       val rdd = sc.parallelize(Array(poly))
-      val actual = ClipToGrid(rdd, layoutDefinition)
+      val actual = ClipToGrid(layoutDefinition, rdd)
 
       checkCorrect(actual,
         Vector(

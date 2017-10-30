@@ -59,10 +59,7 @@ object RasterizeRDD {
   ): RDD[(SpatialKey, Tile)] with Metadata[LayoutDefinition] = {
     // key the geometry to intersecting tiles so it can be rasterized in the map-side combine
     val keyed: RDD[(SpatialKey, (Feature[Geometry, Double], SpatialKey))] =
-      features.flatMap { feature =>
-        layout.keysForGeometry(feature.geom).toIterator
-          .map(key => (key, (feature, key)) )
-      }
+      features.flatMap { f => layout.mapTransform.keysForGeometry(f.geom).map(key => (key, (f, key)) ) }
 
     val createTile = (tup: (Feature[Geometry, Double], SpatialKey)) => {
       val (feature, key) = tup
@@ -125,10 +122,7 @@ object RasterizeRDD {
 
     // key the geometry to intersecting tiles so it can be rasterized in the map-side combine
     val keyed: RDD[(SpatialKey, (Feature[Geometry, CellValue], SpatialKey))] =
-      features.flatMap { feature =>
-        layout.keysForGeometry(feature.geom).toIterator
-          .map(key => (key, (feature, key)) )
-      }
+      features.flatMap { f => layout.mapTransform.keysForGeometry(f.geom).map(key => (key, (f, key)) ) }
 
     val createTile = (tup: (Feature[Geometry, CellValue], SpatialKey)) => {
       val (feature, key) = tup
