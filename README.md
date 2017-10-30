@@ -2,6 +2,8 @@
 
 [![Build Status](https://api.travis-ci.org/locationtech/geotrellis.svg)](http://travis-ci.org/locationtech/geotrellis) [![Join the chat at https://gitter.im/geotrellis/geotrellis](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/geotrellis/geotrellis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.locationtech.geotrellis/geotrellis-spark_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.locationtech.geotrellis/geotrellis-spark_2.11)
 [![ReadTheDocs](https://readthedocs.org/projects/geotrellis/badge/?version=latest)](http://geotrellis.readthedocs.io/en/latest/)
+[![Changelog](https://img.shields.io/badge/changelog-v1.2.0-brightgreen.svg)](https://geotrellis.readthedocs.io/en/latest/CHANGELOG.html)
+[![Contributing](https://img.shields.io/badge/contributing-see%20conditions-brightgreen.svg)](https://github.com/locationtech/geotrellis/blob/master/docs/CONTRIBUTING.rst)
 
 *GeoTrellis* is a Scala library and framework that uses
 Spark to work with raster data.  It is released under
@@ -27,9 +29,9 @@ for more information as well as some interactive demos.
 GeoTrellis has Python bindings through a project called [GeoPySpark](http://github.com/locationtech-labs/geopyspark).
 GeoPySpark is a Python bindings library for GeoTrellis and can do many
 (but not all) of the operations present in GeoTrellis. GeoPySpark can
-be integrated with other tools in the Python ecosystem, such as NumPy,  
+be integrated with other tools in the Python ecosystem, such as NumPy,
 scikit-learn, and Jupyter notebooks. Several GeoPySpark tutorials have
-been developed that leverage the visualization capability of [GeoNotebook](https://github.com/OpenGeoscience/geonotebook), 
+been developed that leverage the visualization capability of [GeoNotebook](https://github.com/OpenGeoscience/geonotebook),
 an open-source Jupyter extension that provides interactive map displays.
 
 ## Contact and Support
