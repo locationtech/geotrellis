@@ -25,6 +25,7 @@ import geotrellis.util._
 
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.JavaConverters._
+import scala.collection.mutable.{ Set => MSet }
 
 object MapKeyTransform {
   def apply(crs: CRS, level: LayoutLevel): MapKeyTransform =
@@ -129,7 +130,7 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
       extent.ymax - row * tileHeight
     )
 
-  def multiLineToKeys(multiLine: MultiLine): Iterator[SpatialKey] = {
+  def multiLineToKeys(multiLine: MultiLine): Set[SpatialKey] = {
     val bounds: GridBounds = extentToBounds(multiLine.envelope)
     val boundsExtent: Extent = boundsToExtent(bounds)
     val rasterExtent = RasterExtent(boundsExtent, bounds.width, bounds.height)
@@ -140,19 +141,18 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
      * array of  tuples which  is then  mapped-over to  produce an
      * array of KeyBounds.
      */
-    val tiles = new ConcurrentHashMap[(Int,Int), Unit]
+    val tiles: MSet[(Int, Int)] = MSet.empty
     val fn = new Callback {
       def apply(col: Int, row: Int): Unit = {
-        val tile: (Int, Int) = (bounds.colMin + col, bounds.rowMin + row)
-        tiles.put(tile, Unit)
+        tiles += ((bounds.colMin + col, bounds.rowMin + row))
       }
     }
 
     multiLine.lines.foreach { line => Rasterizer.foreachCellByLineStringDouble(line, rasterExtent)(fn) }
-    tiles.keys.asScala.map { case (col, row) => SpatialKey(col, row) }
+    tiles.map { case (col, row) => SpatialKey(col, row) }.toSet
   }
 
-  def multiPolygonToKeys(multiPolygon: MultiPolygon): Iterator[SpatialKey] = {
+  def multiPolygonToKeys(multiPolygon: MultiPolygon): Set[SpatialKey] = {
     val extent = multiPolygon.envelope
     val bounds: GridBounds = extentToBounds(extent)
     val options = Rasterizer.Options(includePartial=true, sampleType=PixelIsArea)
@@ -165,15 +165,36 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
      * array of  tuples which  is then  mapped-over to  produce an
      * array of KeyBounds.
      */
-    val tiles = new ConcurrentHashMap[(Int,Int), Unit]
+    val tiles: MSet[(Int, Int)] = MSet.empty
     val fn = new Callback {
       def apply(col: Int, row: Int): Unit = {
-        val tile: (Int, Int) = (bounds.colMin + col, bounds.rowMin + row)
-        tiles.put(tile, Unit)
+        tiles += ((bounds.colMin + col, bounds.rowMin + row))
       }
     }
 
     multiPolygon.foreach(rasterExtent, options)(fn)
-    tiles.keys.asScala.map { case (col, row) => SpatialKey(col, row) }
+    tiles.map { case (col, row) => SpatialKey(col, row) }.toSet
+  }
+
+  /** For some given [[Geometry]], find the unique SpatialKeys for all Tile extents
+    * that it touches.
+    */
+  def keysForGeometry[G <: Geometry](g: G): Set[SpatialKey] = g match {
+    case p:  Point        => Set(pointToKey(p))
+    case mp: MultiPoint   => mp.points.map(pointToKey(_)).toSet
+    case l:  Line         => multiLineToKeys(MultiLine(l))
+    case ml: MultiLine    => multiLineToKeys(ml)
+    case p:  Polygon      => multiPolygonToKeys(MultiPolygon(p))
+    case mp: MultiPolygon => multiPolygonToKeys(mp)
+    case gc: GeometryCollection =>
+      List(
+        gc.points.map(pointToKey),
+        gc.multiPoints.flatMap(_.points.map(pointToKey)),
+        gc.lines.flatMap { l => multiLineToKeys(MultiLine(l)) },
+        gc.multiLines.flatMap { ml => multiLineToKeys(ml) },
+        gc.polygons.flatMap { p => multiPolygonToKeys(MultiPolygon(p)) },
+        gc.multiPolygons.flatMap { mp => multiPolygonToKeys(mp) },
+        gc.geometryCollections.flatMap(keysForGeometry)
+      ).flatten.toSet
   }
 }
