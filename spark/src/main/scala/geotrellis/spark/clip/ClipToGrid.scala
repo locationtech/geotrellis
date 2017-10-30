@@ -30,42 +30,42 @@ object ClipToGrid {
     * which intersect it, where the SpatialKeys map to the
     * given [[LayoutDefinition]].
     */
-  def geometries[G <: Geometry](layout: LayoutDefinition, rdd: RDD[G]): RDD[(SpatialKey, Geometry)] =
-    geometriesWith(layout, rdd, byExtent)
+  def apply[G <: Geometry](layout: LayoutDefinition, rdd: RDD[G]): RDD[(SpatialKey, Geometry)] =
+    apply(layout, rdd, byExtent)
 
   /** Clip each geometry in the RDD to the set of SpatialKeys
     * which intersect it, where the SpatialKeys map to the
     * given [[LayoutDefinition]], using the given method
     * to clip each geometry to the extent.
     */
-  def geometriesWith[G <: Geometry](
+  def apply[G <: Geometry](
     layout: LayoutDefinition,
     rdd: RDD[G],
     clipGeom: (Extent, Feature[G, Unit]) => Option[Feature[Geometry, Unit]]
   ): RDD[(SpatialKey, Geometry)] =
-    featuresWith(layout, rdd.map(Feature(_, ())), clipGeom).mapValues(_.geom)
+    apply(layout, rdd.map(Feature(_, ())), clipGeom).mapValues(_.geom)
 
   /** Clip each geometry in the RDD to the set of SpatialKeys
     * which intersect it, where the SpatialKeys map to the
     * given [[LayoutDefinition]], using the given method
     * to clip each geometry to the extent.
     */
-  def features[G <: Geometry, D](
+  def apply[G <: Geometry, D](
     layout: LayoutDefinition,
     rdd: RDD[Feature[G, D]]
-  ): RDD[(SpatialKey, Feature[Geometry, D])] =
-    featuresWith(layout, rdd, byExtent)
+  )(implicit d: DummyImplicit): RDD[(SpatialKey, Feature[Geometry, D])] =
+    apply(layout, rdd, byExtent)
 
   /** Clip each geometry in the RDD to the set of SpatialKeys
     * which intersect it, where the SpatialKeys map to the
     * given [[LayoutDefinition]], using the given method
     * to clip each geometry to the extent.
     */
-  def featuresWith[G <: Geometry, D](
+  def apply[G <: Geometry, D](
     layout: LayoutDefinition,
     rdd: RDD[Feature[G, D]],
     clipFeature: (Extent, Feature[G, D]) => Option[Feature[Geometry, D]]
-  ): RDD[(SpatialKey, Feature[Geometry, D])] = {
+  )(implicit d: DummyImplicit): RDD[(SpatialKey, Feature[Geometry, D])] = {
     val mapTransform: MapKeyTransform = layout.mapTransform
 
     /* Associate each Feature with its SpatialKeys*/
