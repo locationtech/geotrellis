@@ -356,7 +356,7 @@ object GeoTiffReader {
 
       val tiffType = TiffType.fromCode(tiffIdNumber)
 
-      val tiffTags: TiffTags =
+      val baseTiffTags: TiffTags =
         tiffType match {
           case Tiff =>
             val smallStart = byteReader.getInt
@@ -455,9 +455,9 @@ object GeoTiffReader {
         } else None
 
         GeoTiffInfo(
-          tiffTags.extent,
-          tiffTags.crs,
-          tiffTags.tags,
+          baseTiffTags.extent,
+          baseTiffTags.crs,
+          baseTiffTags.tags,
           GeoTiffOptions(storageMethod, compression, colorSpace, colorMap, interleaveMethod, subfileType, tiffType),
           bandType,
           segmentBytes,
@@ -475,12 +475,22 @@ object GeoTiffReader {
         /** if there are no internal overviews, try to find external */
         if(tiffTagsList.isEmpty && withOverviews)
           byteReaderExternal
-            .map(readGeoTiffInfo(_, decompress, streaming, withOverviews, None).toList)
+            .map { r =>
+              readGeoTiffInfo(r, decompress, streaming, withOverviews, None)
+                .toList
+                .map { gi =>
+                  gi.copy(
+                    extent = baseTiffTags.extent,
+                    crs    = baseTiffTags.crs,
+                    tags   = baseTiffTags.tags
+                  )
+                }
+            }
             .getOrElse(list)
         else list
       }
 
-      getGeoTiffInfo(tiffTags, overviews)
+      getGeoTiffInfo(baseTiffTags, overviews)
     } finally {
       byteReader.position(oldPos)
     }

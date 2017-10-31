@@ -92,15 +92,13 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
 
   /** Return the best matching overview to the given cellSize, returns "this" if no overviews available. */
   protected def getClosestOverview(cellSize: CellSize, strategy: OverviewStrategy): GeoTiff[T] = {
-    def overviewCellSize(ovr: GeoTiff[T]): CellSize = RasterExtent(extent, ovr.cols, ovr.rows).cellSize
-
     overviews match {
       case Nil => this
       case list =>
         strategy match {
           case AutoHigherResolution =>
             (this :: list) // overviews can have erased extent information
-              .map { v => (overviewCellSize(v).resolution - cellSize.resolution) -> v }
+              .map { v => (v.cellSize.resolution - cellSize.resolution) -> v }
               .filter(_._1 >= 0)
               .sortBy(_._1)
               .map(_._2)
@@ -108,7 +106,7 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
               .getOrElse(this)
           case Auto(n) =>
             list
-              .sortBy(v => math.abs(overviewCellSize(v).resolution - cellSize.resolution))
+              .sortBy(v => math.abs(v.cellSize.resolution - cellSize.resolution))
               .lift(n)
               .getOrElse(this) // n can be out of bounds,
           // makes only overview lookup as overview position is important
