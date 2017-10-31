@@ -208,6 +208,7 @@ For example, if you want to read GeoTiffs on S3, and find the sum
 of raster values under each of the polygons, you could use the following technique:
 
 .. code:: scala
+
     import geotrellis.raster._
     import geotrellis.spark._
     import geotrellis.spark.tiling._

@@ -2,6 +2,8 @@
 
 [![Build Status](https://api.travis-ci.org/locationtech/geotrellis.svg)](http://travis-ci.org/locationtech/geotrellis) [![Join the chat at https://gitter.im/geotrellis/geotrellis](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/geotrellis/geotrellis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.locationtech.geotrellis/geotrellis-spark_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.locationtech.geotrellis/geotrellis-spark_2.11)
 [![ReadTheDocs](https://readthedocs.org/projects/geotrellis/badge/?version=latest)](http://geotrellis.readthedocs.io/en/latest/)
+[![Changelog](https://img.shields.io/badge/changelog-v1.2.0-brightgreen.svg)](https://geotrellis.readthedocs.io/en/latest/CHANGELOG.html)
+[![Contributing](https://img.shields.io/badge/contributing-see%20conditions-brightgreen.svg)](https://github.com/locationtech/geotrellis/blob/master/docs/CONTRIBUTING.rst)
 
 *GeoTrellis* is a Scala library and framework that uses
 Spark to work with raster data.  It is released under
@@ -27,9 +29,9 @@ for more information as well as some interactive demos.
 GeoTrellis has Python bindings through a project called [GeoPySpark](http://github.com/locationtech-labs/geopyspark).
 GeoPySpark is a Python bindings library for GeoTrellis and can do many
 (but not all) of the operations present in GeoTrellis. GeoPySpark can
-be integrated with other tools in the Python ecosystem, such as NumPy,  
+be integrated with other tools in the Python ecosystem, such as NumPy,
 scikit-learn, and Jupyter notebooks. Several GeoPySpark tutorials have
-been developed that leverage the visualization capability of [GeoNotebook](https://github.com/OpenGeoscience/geonotebook), 
+been developed that leverage the visualization capability of [GeoNotebook](https://github.com/OpenGeoscience/geonotebook),
 an open-source Jupyter extension that provides interactive map displays.
 
 ## Contact and Support
@@ -122,33 +124,34 @@ https://github.com/lossyrob/geotrellis-before-locationtech/graphs/contributors
 scala> import geotrellis.raster._
 import geotrellis.raster._
 
-scala> import geotrellis.raster.op.focal._
-import geotrellis.raster.op.focal._
+scala> import geotrellis.raster.render.ascii._
+import geotrellis.raster.render.ascii._
+
+scala> import geotrellis.raster.mapalgebra.focal._
+import geotrellis.raster.mapalgebra.focal._
 
 scala> val nd = NODATA
 nd: Int = -2147483648
 
 scala> val input = Array[Int](
-     |         nd, 7, 1, 1, 3, 5, 9, 8, 2,
-     |         9, 1, 1, 2, 2, 2, 4, 3, 5,
-     |
-     |         3, 8, 1, 3, 3, 3, 1, 2, 2,
-     |         2, 4, 7, 1, nd, 1, 8, 4, 3)
+     nd, 7, 1, 1,  3, 5, 9, 8, 2,
+      9, 1, 1, 2,  2, 2, 4, 3, 5,
+      3, 8, 1, 3,  3, 3, 1, 2, 2,
+      2, 4, 7, 1, nd, 1, 8, 4, 3)
 input: Array[Int] = Array(-2147483648, 7, 1, 1, 3, 5, 9, 8, 2, 9, 1, 1, 2,
 2, 2, 4, 3, 5, 3, 8, 1, 3, 3, 3, 1, 2, 2, 2, 4, 7, 1, -2147483648, 1, 8, 4, 3)
 
 scala> val iat = IntArrayTile(input, 9, 4)  // 9 and 4 here specify columns and rows
 iat: geotrellis.raster.IntArrayTile = IntArrayTile([I@278434d0,9,4)
 
-// The asciiDraw method is mostly useful when you're working with small tiles
-// which can be taken in at a glance
-scala> iat.asciiDraw()
+// The renderAscii method is mostly useful when you're working with small tiles
+// which can be taken in at a glance.
+scala> iat.renderAscii(AsciiArtEncoder.Palette.STIPLED)
 res0: String =
-"    ND     7     1     1     3     5     9     8     2
-     9     1     1     2     2     2     4     3     5
-     3     8     1     3     3     3     1     2     2
-     2     4     7     1    ND     1     8     4     3
-"
+∘█  ▚▜██▖
+█  ▖▖▖▜▚▜
+▚█ ▚▚▚ ▖▖
+▖▜█ ∘ █▜▚
 
 scala> val focalNeighborhood = Square(1)  // a 3x3 square neighborhood
 focalNeighborhood: geotrellis.raster.op.focal.Square =
