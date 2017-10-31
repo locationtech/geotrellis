@@ -63,7 +63,9 @@ case class MultibandGeoTiff(
   }
 
   def crop(subExtent: Extent, cellSize: CellSize, resampleMethod: ResampleMethod, strategy: OverviewStrategy): MultibandRaster =
-    resample(RasterExtent(subExtent, cellSize), resampleMethod, strategy).crop(subExtent)
+    getClosestOverview(cellSize, strategy)
+      .crop(subExtent)
+      .resample(RasterExtent(subExtent, cellSize), resampleMethod, strategy)
 
   def resample(rasterExtent: RasterExtent, resampleMethod: ResampleMethod, strategy: OverviewStrategy): MultibandRaster =
     getClosestOverview(cellSize, strategy)
