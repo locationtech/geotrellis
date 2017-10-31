@@ -454,10 +454,11 @@ object GeoTiffReader {
           Option(IndexedColorMap.fromTiffPalette(tiffTags.basicTags.colorMap))
         } else None
 
+        // overviews can have no extent and crs, but it's required for most of our operations
         GeoTiffInfo(
           baseTiffTags.extent,
           baseTiffTags.crs,
-          baseTiffTags.tags,
+          tiffTags.tags,
           GeoTiffOptions(storageMethod, compression, colorSpace, colorMap, interleaveMethod, subfileType, tiffType),
           bandType,
           segmentBytes,
@@ -475,16 +476,10 @@ object GeoTiffReader {
         /** if there are no internal overviews, try to find external */
         if(tiffTagsList.isEmpty && withOverviews)
           byteReaderExternal
-            .map { r =>
-              readGeoTiffInfo(r, decompress, streaming, withOverviews, None)
-                .toList
-                .map { gi =>
-                  gi.copy(
-                    extent = baseTiffTags.extent,
-                    crs    = baseTiffTags.crs,
-                    tags   = baseTiffTags.tags
-                  )
-                }
+            .map { reader =>
+              readGeoTiffInfo(reader, decompress, streaming, withOverviews, None)
+                .toList // overviews can have no extent and crs, but it's required for most of our operations
+                .map { _.copy(extent = baseTiffTags.extent, crs = baseTiffTags.crs) }
             }
             .getOrElse(list)
         else list
