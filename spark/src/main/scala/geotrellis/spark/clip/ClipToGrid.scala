@@ -25,6 +25,36 @@ import geotrellis.vector._
 import com.vividsolutions.jts.geom.prep.{PreparedGeometry, PreparedGeometryFactory}
 import org.apache.spark.rdd._
 
+/**
+  * These functions perform the following transformation:
+  *
+  * {{{
+  * RDD[Geometry] => RDD[(SpatialKey, Geometry)]
+  * }}}
+  *
+  * such that each original [[Geometry]] is clipped in some way. By default,
+  * this clips them to fit inside the [[Extent]] of each [[SpatialKey]]
+  * they touch.
+  *
+  * If you'd like more customized clipping behaviour, you can compose
+  * over the [[clipFeatureToExtent]] function below, or write your own
+  * entirely, while following its type signature. That can then be passed
+  * into the appropriate `apply` method below.
+  *
+  * A variety of overloads are provided here to help you work with either
+  * [[Geometry]] or [[Feature]]. The injected
+  *
+  * {{{
+  * RDD[Geometry].clipToGrid: LayoutDefinition => RDD[(SpatialKey, Geometry)]
+  * }}}
+  *
+  * may also be preferable to you.
+  *
+  * '''Note:''' If your custom clipping function relies on [[Predicates]],
+  * note that its method `coveredBy` will always return `true` if your Geometry
+  * fits inside the passed-in [[Extent]]. Please avoid writing clipping
+  * functions that do non-sensical things.
+  */
 object ClipToGrid {
   /** Trait which contains methods to be used in determining
     * the most optimal way to clip geometries and features
@@ -33,7 +63,7 @@ object ClipToGrid {
   trait Predicates extends Serializable {
     /** Returns true if the feature geometry covers the passed in extent */
     def covers(e: Extent): Boolean
-    /** Returns true if the feature geometry is covered bythe passed in extent */
+    /** Returns true if the feature geometry is covered by the passed in extent */
     def coveredBy(e: Extent): Boolean
   }
 

@@ -23,6 +23,7 @@ import geotrellis.vector._
 
 import org.apache.spark.rdd._
 
+/** See [[ClipToGrid]]. */
 trait FeatureClipToGridMethods[G <: Geometry, D] extends MethodExtensions[RDD[Feature[G, D]]] {
   def clipToGrid(layout: LayoutDefinition): RDD[(SpatialKey, Feature[Geometry, D])] =
     ClipToGrid(self, layout)
