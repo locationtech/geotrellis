@@ -25,7 +25,7 @@ import geotrellis.util._
 
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.JavaConverters._
-import scala.collection.mutable.{ Set => MSet }
+import scala.collection.mutable
 
 object MapKeyTransform {
   def apply(crs: CRS, level: LayoutLevel): MapKeyTransform =
@@ -135,21 +135,15 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
     val boundsExtent: Extent = boundsToExtent(bounds)
     val rasterExtent = RasterExtent(boundsExtent, bounds.width, bounds.height)
 
-    /*
-     * Use the Rasterizer to construct  a list of tiles which meet
-     * the  query polygon.   That list  of tiles  is stored  as an
-     * array of  tuples which  is then  mapped-over to  produce an
-     * array of KeyBounds.
-     */
-    val tiles: MSet[(Int, Int)] = MSet.empty
+    /* Use the Rasterizer to construct a list of tiles which meet the query polygon. */
+    val tiles: mutable.Set[SpatialKey] = mutable.Set.empty
     val fn = new Callback {
-      def apply(col: Int, row: Int): Unit = {
-        tiles += ((bounds.colMin + col, bounds.rowMin + row))
-      }
+      def apply(col: Int, row: Int): Unit =
+        tiles += SpatialKey(bounds.colMin + col, bounds.rowMin + row)
     }
 
     multiLine.lines.foreach { line => Rasterizer.foreachCellByLineStringDouble(line, rasterExtent)(fn) }
-    tiles.map { case (col, row) => SpatialKey(col, row) }.toSet
+    tiles.toSet
   }
 
   def multiPolygonToKeys(multiPolygon: MultiPolygon): Set[SpatialKey] = {
@@ -159,21 +153,15 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
     val boundsExtent: Extent = boundsToExtent(bounds)
     val rasterExtent = RasterExtent(boundsExtent, bounds.width, bounds.height)
 
-    /*
-     * Use the Rasterizer to construct  a list of tiles which meet
-     * the  query polygon.   That list  of tiles  is stored  as an
-     * array of  tuples which  is then  mapped-over to  produce an
-     * array of KeyBounds.
-     */
-    val tiles: MSet[(Int, Int)] = MSet.empty
+    /* Use the Rasterizer to construct a list of tiles which meet the query polygon. */
+    val tiles: mutable.Set[SpatialKey] = mutable.Set.empty
     val fn = new Callback {
-      def apply(col: Int, row: Int): Unit = {
-        tiles += ((bounds.colMin + col, bounds.rowMin + row))
-      }
+      def apply(col: Int, row: Int): Unit =
+        tiles += SpatialKey(bounds.colMin + col, bounds.rowMin + row)
     }
 
     multiPolygon.foreach(rasterExtent, options)(fn)
-    tiles.map { case (col, row) => SpatialKey(col, row) }.toSet
+    tiles.toSet
   }
 
   /** For some given [[Geometry]], find the unique SpatialKeys for all Tile extents
