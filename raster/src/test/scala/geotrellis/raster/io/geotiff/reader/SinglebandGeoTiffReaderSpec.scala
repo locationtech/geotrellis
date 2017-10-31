@@ -19,6 +19,7 @@ package geotrellis.raster.io.geotiff.reader
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.testkit._
+import geotrellis.util.Filesystem
 
 import spire.syntax.cfor._
 import org.scalatest._
@@ -119,6 +120,28 @@ class SinglebandGeoTiffReaderSpec extends FunSpec
       val sizes = List(1056 -> 1052, 528 -> 526, 264 -> 263, 132 -> 132, 66 -> 66, 33 -> 33)
 
       val tiff = SinglebandGeoTiff(geoTiffPath("overviews/singleband.tif"))
+      val tile = tiff.tile
+
+      tiff.getOverviewsCount should be (5)
+      tile.isNoDataTile should be (false)
+
+      tile.cols -> tile.rows should be (sizes(0))
+
+      tiff.overviews.zip(sizes.tail).foreach { case (ovrTiff, ovrSize) =>
+        val ovrTile = ovrTiff.tile
+
+        ovrTiff.getOverviewsCount should be (0)
+        ovrTile.isNoDataTile should be (false)
+
+        ovrTile.cols -> ovrTile.rows should be (ovrSize)
+      }
+    }
+
+    it("should read tiff with external overviews correct") {
+      // sizes of overviews, starting with the base ifd
+      val sizes = List(1056 -> 1052, 528 -> 526, 264 -> 263, 132 -> 132, 66 -> 66, 33 -> 33)
+
+      val tiff = SinglebandGeoTiff(geoTiffPath("overviews/singleband_ext.tif"))
       val tile = tiff.tile
 
       tiff.getOverviewsCount should be (5)

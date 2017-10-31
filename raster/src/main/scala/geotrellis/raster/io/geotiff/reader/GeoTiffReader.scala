@@ -16,6 +16,8 @@
 
 package geotrellis.raster.io.geotiff.reader
 
+import java.io.File
+
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.compression._
@@ -26,9 +28,7 @@ import geotrellis.proj4.CRS
 import geotrellis.util.{ByteReader, Filesystem}
 import geotrellis.raster.io.geotiff.tags.codes.ColorSpace
 import geotrellis.raster.render.IndexedColorMap
-
 import monocle.syntax.apply._
-
 import java.nio.{ByteBuffer, ByteOrder}
 
 import scala.collection.mutable.ListBuffer
@@ -64,11 +64,22 @@ object GeoTiffReader {
   /* Read a single band GeoTIFF file.
    * If there is more than one band in the GeoTiff, read the first band only.
    */
-  def readSingleband(path: String, decompress: Boolean, streaming: Boolean): SinglebandGeoTiff =
+  def readSingleband(path: String, decompress: Boolean, streaming: Boolean): SinglebandGeoTiff = {
+    val ovrPath = s"${path}.ovr"
+    val ovrPathExists = new File(ovrPath).isFile
     if (streaming)
-      readSingleband(Filesystem.toMappedByteBuffer(path), decompress, streaming)
+      readSingleband(
+        Filesystem.toMappedByteBuffer(path),
+        decompress, streaming, true,
+        if(ovrPathExists) Some(Filesystem.toMappedByteBuffer(ovrPath)) else None
+      )
     else
-      readSingleband(ByteBuffer.wrap(Filesystem.slurp(path)), decompress, streaming)
+      readSingleband(
+        ByteBuffer.wrap(Filesystem.slurp(path)),
+        decompress, streaming, true,
+        if(ovrPathExists) Some(ByteBuffer.wrap(Filesystem.slurp(ovrPath))) else None
+      )
+  }
 
   /* Read a single band GeoTIFF file.
    * If there is more than one band in the GeoTiff, read the first band only.
@@ -97,7 +108,10 @@ object GeoTiffReader {
   /* Read a single band GeoTIFF file.
    * If there is more than one band in the GeoTiff, read the first band only.
    */
-  def readSingleband(byteReader: ByteReader, decompress: Boolean, streaming: Boolean): SinglebandGeoTiff = {
+  def readSingleband(byteReader: ByteReader, decompress: Boolean, streaming: Boolean): SinglebandGeoTiff =
+    readSingleband(byteReader, decompress, streaming, true, None)
+
+  def readSingleband(byteReader: ByteReader, decompress: Boolean, streaming: Boolean, withOverviews: Boolean, byteReaderExternal: Option[ByteReader]): SinglebandGeoTiff = {
     def getSingleband(geoTiffTile: GeoTiffTile, info: GeoTiffInfo): SinglebandGeoTiff =
       SinglebandGeoTiff(
         if (decompress) geoTiffTile.toArrayTile else geoTiffTile,
@@ -108,7 +122,7 @@ object GeoTiffReader {
         info.overviews.map { i => getSingleband(geoTiffSinglebandTile(i), i) }
       )
 
-    val info = readGeoTiffInfo(byteReader, decompress, streaming)
+    val info = readGeoTiffInfo(byteReader, decompress, streaming, withOverviews, byteReaderExternal)
     val geoTiffTile = geoTiffSinglebandTile(info)
 
     getSingleband(geoTiffTile, info)
@@ -158,11 +172,22 @@ object GeoTiffReader {
 
   /* Read a multi band GeoTIFF file.
    */
-  def readMultiband(path: String, decompress: Boolean, streaming: Boolean): MultibandGeoTiff =
+  def readMultiband(path: String, decompress: Boolean, streaming: Boolean): MultibandGeoTiff = {
+    val ovrPath = s"${path}.ovr"
+    val ovrPathExists = new File(ovrPath).isFile
     if (streaming)
-      readMultiband(Filesystem.toMappedByteBuffer(path), decompress, streaming)
+      readMultiband(
+        Filesystem.toMappedByteBuffer(path),
+        decompress, streaming, true,
+        if(ovrPathExists) Some(Filesystem.toMappedByteBuffer(ovrPath)) else None
+      )
     else
-      readMultiband(ByteBuffer.wrap(Filesystem.slurp(path)), decompress, streaming)
+      readMultiband(
+        ByteBuffer.wrap(Filesystem.slurp(path)),
+        decompress, streaming, true,
+        if(ovrPathExists) Some(ByteBuffer.wrap(Filesystem.slurp(ovrPath))) else None
+      )
+  }
 
   def readMultiband(byteReader: ByteReader): MultibandGeoTiff =
     readMultiband(byteReader, true, false)
@@ -186,7 +211,10 @@ object GeoTiffReader {
   def readMultiband(bytes: Array[Byte], decompress: Boolean, streaming: Boolean = false): MultibandGeoTiff =
       readMultiband(ByteBuffer.wrap(bytes), decompress, streaming)
 
-  def readMultiband(byteReader: ByteReader, decompress: Boolean, streaming: Boolean): MultibandGeoTiff = {
+  def readMultiband(byteReader: ByteReader, decompress: Boolean, streaming: Boolean): MultibandGeoTiff =
+    readMultiband(byteReader, decompress, streaming, true, None)
+
+  def readMultiband(byteReader: ByteReader, decompress: Boolean, streaming: Boolean, withOverviews: Boolean, byteReaderExternal: Option[ByteReader]): MultibandGeoTiff = {
     def getMultiband(geoTiffTile: GeoTiffMultibandTile, info: GeoTiffInfo): MultibandGeoTiff =
       new MultibandGeoTiff(
         if (decompress) geoTiffTile.toArrayTile else geoTiffTile,
@@ -197,7 +225,7 @@ object GeoTiffReader {
         info.overviews.map { i => getMultiband(geoTiffMultibandTile(i), i) }
       )
 
-    val info = readGeoTiffInfo(byteReader, decompress, streaming)
+    val info = readGeoTiffInfo(byteReader, decompress, streaming, withOverviews, byteReaderExternal)
     val geoTiffTile = geoTiffMultibandTile(info)
 
     getMultiband(geoTiffTile, info)
@@ -232,6 +260,9 @@ object GeoTiffReader {
   ) {
     def rasterExtent: RasterExtent =
       RasterExtent(extent = extent, cols = segmentLayout.totalCols, rows = segmentLayout.totalRows)
+
+    // converts GeoTiffInfo into list with Nil overviews
+    def toList: List[GeoTiffInfo] = this.copy(overviews = Nil) :: overviews
 
     def cellType: CellType = (bandType, noDataValue) match {
       case (BitBandType, _) =>
@@ -298,7 +329,13 @@ object GeoTiffReader {
     def getOverview(idx: Int): GeoTiffInfo = overviews(idx)
   }
 
-  def readGeoTiffInfo(byteReader: ByteReader, decompress: Boolean, streaming: Boolean): GeoTiffInfo = {
+  def readGeoTiffInfo(
+    byteReader: ByteReader,
+    decompress: Boolean,
+    streaming: Boolean,
+    withOverviews: Boolean,
+    byteReaderExternal: Option[ByteReader]
+  ): GeoTiffInfo = {
     val oldPos = byteReader.position
     try {
       byteReader.position(0)
@@ -334,22 +371,23 @@ object GeoTiffReader {
       // for instance it may not contain CRS metadata
       val tiffTagsList: List[TiffTags] = {
         val tiffTagsBuffer: ListBuffer[TiffTags] = ListBuffer()
-        tiffType match {
-          case Tiff =>
-            var ifdOffset = byteReader.getInt
-            while (ifdOffset > 0) {
-              tiffTagsBuffer += TiffTagsReader.read(byteReader, ifdOffset)(IntTiffTagOffsetSize)
-              ifdOffset = byteReader.getInt
-            }
-            tiffTagsBuffer.toList
-          case _ =>
-            var ifdOffset = byteReader.getLong
-            while (ifdOffset > 0) {
-              tiffTagsBuffer += TiffTagsReader.read(byteReader, ifdOffset)(LongTiffTagOffsetSize)
-              ifdOffset = byteReader.getLong
-            }
-            tiffTagsBuffer.toList
+        if(withOverviews) {
+          tiffType match {
+            case Tiff =>
+              var ifdOffset = byteReader.getInt
+              while (ifdOffset > 0) {
+                tiffTagsBuffer += TiffTagsReader.read(byteReader, ifdOffset)(IntTiffTagOffsetSize)
+                ifdOffset = byteReader.getInt
+              }
+            case _ =>
+              var ifdOffset = byteReader.getLong
+              while (ifdOffset > 0) {
+                tiffTagsBuffer += TiffTagsReader.read(byteReader, ifdOffset)(LongTiffTagOffsetSize)
+                ifdOffset = byteReader.getLong
+              }
+          }
         }
+        tiffTagsBuffer.toList
       }
 
       def getGeoTiffInfo(tiffTags: TiffTags, overviews: List[GeoTiffInfo] = Nil): GeoTiffInfo = {
@@ -432,7 +470,17 @@ object GeoTiffReader {
         )
       }
 
-      getGeoTiffInfo(tiffTags, tiffTagsList.map(getGeoTiffInfo(_)))
+      val overviews: List[GeoTiffInfo] = {
+        val list = tiffTagsList.map(getGeoTiffInfo(_))
+        /** if there are no internal overviews, try to find external */
+        if(tiffTagsList.isEmpty && withOverviews)
+          byteReaderExternal
+            .map(readGeoTiffInfo(_, decompress, streaming, withOverviews, None).toList)
+            .getOrElse(list)
+        else list
+      }
+
+      getGeoTiffInfo(tiffTags, overviews)
     } finally {
       byteReader.position(oldPos)
     }
