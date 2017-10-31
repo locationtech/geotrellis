@@ -41,6 +41,12 @@ object AmazonS3Client {
 }
 
 class AmazonS3Client(s3client: AWSAmazonS3Client) extends S3Client {
+  def doesBucketExist(bucket: String): Boolean =
+    s3client.doesBucketExist(bucket)
+
+  def doesObjectExist(bucket: String, key: String): Boolean =
+    s3client.doesObjectExist(bucket, key)
+
   def listObjects(listObjectsRequest: ListObjectsRequest): ObjectListing =
     s3client.listObjects(listObjectsRequest)
 

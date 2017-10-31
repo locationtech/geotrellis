@@ -29,6 +29,10 @@ import scala.collection.JavaConverters._
 
 trait S3Client extends LazyLogging {
 
+  def doesBucketExist(bucket: String): Boolean
+
+  def doesObjectExist(bucket: String, key: String): Boolean
+
   def listObjects(listObjectsRequest: ListObjectsRequest): ObjectListing
 
   def listObjects(bucketName: String, prefix: String): ObjectListing =
