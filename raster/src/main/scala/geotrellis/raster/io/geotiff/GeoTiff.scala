@@ -53,6 +53,8 @@ trait GeoTiffData {
 trait GeoTiff[T <: CellGrid] extends GeoTiffData {
   def tile: T
 
+  def cols: Int = tile.cols
+  def rows: Int = tile.rows
   def projectedExtent: ProjectedExtent = ProjectedExtent(extent, crs)
   def projectedRaster: ProjectedRaster[T] = ProjectedRaster(tile, extent, crs)
   def raster: Raster[T] = Raster(tile, extent)
@@ -89,27 +91,31 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
   def crop(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int): GeoTiff[T]
 
   /** Return the best matching overview to the given cellSize, returns "this" if no overviews available. */
-  protected def getClosestOverview(cellSize: CellSize, strategy: OverviewStrategy): GeoTiff[T] =
+  protected def getClosestOverview(cellSize: CellSize, strategy: OverviewStrategy): GeoTiff[T] = {
+    def overviewCellSize(ovr: GeoTiff[T]): CellSize = RasterExtent(extent, ovr.cols, ovr.rows).cellSize
+
     overviews match {
       case Nil => this
       case list =>
         strategy match {
           case AutoHigherResolution =>
-            (this :: list)
-              .map { v => (v.cellSize.resolution - cellSize.resolution) -> v }
+            (this :: list) // overviews can have erased extent information
+              .map { v => (overviewCellSize(v).resolution - cellSize.resolution) -> v }
               .filter(_._1 >= 0)
               .sortBy(_._1)
               .map(_._2)
-              .head // there always would be at least this
+              .headOption
+              .getOrElse(this)
           case Auto(n) =>
             list
-              .sortBy(v => math.abs(v.cellSize.resolution - cellSize.resolution))
+              .sortBy(v => math.abs(overviewCellSize(v).resolution - cellSize.resolution))
               .lift(n)
               .getOrElse(this) // n can be out of bounds,
-                               // makes only overview lookup as overview position is important
+          // makes only overview lookup as overview position is important
           case Base => this
         }
     }
+  }
 }
 
 /**
