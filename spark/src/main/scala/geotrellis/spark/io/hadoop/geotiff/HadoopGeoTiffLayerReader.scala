@@ -1,7 +1,8 @@
 package geotrellis.spark.io.hadoop.geotiff
 
+import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.raster.io.geotiff.SinglebandGeoTiff
+import geotrellis.raster.io.geotiff.{AutoHigherResolution, OverviewStrategy, SinglebandGeoTiff}
 import geotrellis.spark.tiling.ZoomedLayoutScheme
 import geotrellis.util.StreamingByteReader
 import geotrellis.spark.io.hadoop.HdfsRangeReader
@@ -16,7 +17,9 @@ case class HadoopGeoTiffLayerReader[M[T] <: Traversable[T]](
   /** This should be done in a separate interface */
   attributeStore: AttributeStore[M, GeoTiffMetadata],
   layoutScheme: ZoomedLayoutScheme,
-  conf: Configuration
+  resampleMethod: ResampleMethod = NearestNeighbor,
+  strategy: OverviewStrategy = AutoHigherResolution,
+  conf: Configuration = new Configuration
 ) extends GeoTiffLayerReader[M] {
   protected def readSingleband(uri: URI): SinglebandGeoTiff =
     GeoTiffReader.readSingleband(StreamingByteReader(HdfsRangeReader(new Path(uri), conf)), false, true)
