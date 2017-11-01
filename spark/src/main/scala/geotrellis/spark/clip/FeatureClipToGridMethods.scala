@@ -30,7 +30,7 @@ trait FeatureClipToGridMethods[G <: Geometry, D] extends MethodExtensions[RDD[Fe
 
   def clipToGrid(
     layout: LayoutDefinition,
-    clipFeature: (Extent, Feature[Geometry, D], ClipToGrid.Predicates) => Option[Feature[Geometry, D]]
+    clipFeature: (Extent, Feature[G, D], ClipToGrid.Predicates) => Option[Feature[Geometry, D]]
   ): RDD[(SpatialKey, Feature[Geometry, D])] =
     ClipToGrid(self, layout, clipFeature)
 }
