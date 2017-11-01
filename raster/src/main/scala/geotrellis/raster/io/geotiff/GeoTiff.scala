@@ -17,6 +17,7 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
+import geotrellis.raster.crop._
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.vector.{Extent, ProjectedExtent}
@@ -86,12 +87,13 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
   def crop(subExtent: Extent, cellSize: CellSize): Raster[T] = crop(subExtent, cellSize, NearestNeighbor, AutoHigherResolution)
   def crop(rasterExtent: RasterExtent): Raster[T] = crop(rasterExtent.extent, rasterExtent.cellSize)
 
+  def crop(subExtent: Extent, options: Crop.Options): GeoTiff[T]
   def crop(subExtent: Extent): GeoTiff[T]
   def crop(colMax: Int, rowMax: Int): GeoTiff[T]
   def crop(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int): GeoTiff[T]
 
   /** Return the best matching overview to the given cellSize, returns "this" if no overviews available. */
-  protected def getClosestOverview(cellSize: CellSize, strategy: OverviewStrategy): GeoTiff[T] = {
+  private [geotrellis] def getClosestOverview(cellSize: CellSize, strategy: OverviewStrategy): GeoTiff[T] = {
     overviews match {
       case Nil => this
       case list =>

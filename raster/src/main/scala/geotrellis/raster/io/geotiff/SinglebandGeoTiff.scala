@@ -21,6 +21,7 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
+import geotrellis.raster.crop.Crop
 import geotrellis.raster.resample.ResampleMethod
 
 case class SinglebandGeoTiff(
@@ -45,9 +46,9 @@ case class SinglebandGeoTiff(
       case _ => tile.toGeoTiffTile(options)
     }
 
-  def crop(subExtent: Extent): SinglebandGeoTiff = {
+  def crop(subExtent: Extent, options: Crop.Options): SinglebandGeoTiff = {
     val raster: Raster[Tile] =
-      this.raster.crop(subExtent)
+      this.raster.crop(subExtent, options)
 
     SinglebandGeoTiff(raster, subExtent, this.crs, this.tags, this.options, this.overviews)
   }
@@ -62,9 +63,11 @@ case class SinglebandGeoTiff(
     SinglebandGeoTiff(raster, raster._2, this.crs, this.tags, this.options, this.overviews)
   }
 
+  def crop(subExtent: Extent): SinglebandGeoTiff = crop(subExtent, Crop.Options.DEFAULT)
+
   def crop(subExtent: Extent, cellSize: CellSize, resampleMethod: ResampleMethod, strategy: OverviewStrategy): SinglebandRaster =
     getClosestOverview(cellSize, strategy)
-      .crop(subExtent)
+      .crop(subExtent, Crop.Options(clamp = false))
       .resample(RasterExtent(subExtent, cellSize), resampleMethod, strategy)
 
   def resample(rasterExtent: RasterExtent, resampleMethod: ResampleMethod, strategy: OverviewStrategy): SinglebandRaster =

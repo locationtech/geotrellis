@@ -35,6 +35,7 @@ import java.nio.{ByteBuffer, ByteOrder}
 import com.amazonaws.services.s3.AmazonS3URI
 import com.amazonaws.services.s3.model._
 import geotrellis.proj4.WebMercator
+import geotrellis.raster.resample.Bilinear
 import geotrellis.raster.{CellSize, Raster}
 import geotrellis.spark.tiling.ZoomedLayoutScheme
 import geotrellis.spark.{LayerId, SpatialKey}
@@ -212,8 +213,27 @@ val craster = raster
       // 9/381/223
       // 9))(380, 225) -- normal
       //val t = geoTiffLayer.read(LayerId("LC08_L1TP_139045_20170304_20170316_01_T1_B4", 9))(381, 223)
-      val t = geoTiffLayer.read(LayerId("RED", 9))(380, 224)
+      //val t = geoTiffLayer.read(LayerId("RED", 9))(380, 224)
+      val t = geoTiffLayer.read(LayerId("RED", 0))(0, 0)
       //t.tile.renderPng().write("/tmp/test.png")
+    }
+
+    it("QLC8") {
+      val mdJson = new URI("s3://geotrellis-test/daunnc/geotiff-layer/metadata.json")
+
+      val attributeStore = S3JsonGeoTiffAttributeStore(mdJson)
+
+      val geoTiffLayer = S3GeoTiffLayerReader(
+        attributeStore = attributeStore,
+        layoutScheme   = ZoomedLayoutScheme(WebMercator),
+        resampleMethod = Bilinear,
+        strategy       = Auto(1) // Auto(0) // AutoHigherResolution is the best matching ovr resolution
+        // Auto(1) is a bit better than we need to grab
+      )
+
+      val t = geoTiffLayer.read(LayerId("RED", 7))(102, 55)
+      println(s"t.findMinMaxDouble: ${t.findMinMaxDouble}")
+
     }
   }
 }
