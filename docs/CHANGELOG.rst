@@ -26,6 +26,13 @@ API Changes
     a ramp when given some number of stops.
   - **New:** ``ConstantTile.fromBytes`` to create any type of ``ConstantTile``
     from an ``Array[Byte]``.
+  - **New:** ``Tile.rotate90: Int => Tile``, ``Tile.flipVertical: Tile`` and
+    ``Tile.flipHorizontal: Tile``.
+
+- ``geotrellis.vector``
+
+  - **New:** ``Geometry.isEmpty: Boolean``. This incurs much less overhead than
+    previous ways of determining emptiness.
 
 - ``geotrellis.spark``
 
