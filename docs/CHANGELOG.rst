@@ -3,7 +3,15 @@ Changelog
 
 1.2.0
 -----
-*2017 Nov 1*
+*2017 Nov 6*
+
+This release cycle saw a regular contributor `Simeon Fitch <https://github.com/metasim>`__
+elevated to official *Committer* status within GeoTrellis.
+
+The team would like to thank him, along with our newest contributors `Aaron Santos <https://github.com/aaron-santos>`__,
+`Austin Heyne <https://github.com/aheyne>`__, `Christos Charmatzis <https://github.com/Charmatzis>`__,
+`Jessica Austin <https://github.com/jessicaaustin>`__, and `@mteldridge <https://github.com/mteldridge>`__
+for helping make this release possible.
 
 API Changes
 ^^^^^^^^^^^
