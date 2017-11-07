@@ -187,37 +187,29 @@ object TileRDDReproject {
       val crs = rdd.metadata.crs
       val layout = rdd.metadata.layout
       val tileLayout = rdd.metadata.layout.tileLayout
+      // Avoid capturing instantiated Transform in closure because its not Serializable
+      lazy val transform = Transform(crs, destCrs)
 
-      val rasterExtents: RDD[(K, (RasterExtent, RasterExtent))] =
-        rdd
-          .mapPartitions({ partition =>
-            val transform = Transform(crs, destCrs)
+      val bufferedTiles = BufferTiles(
+        layer = rdd, 
+        includeKey = rdd.metadata.bounds.includes(_: K),
+        getBufferSizes = { key: K => 
+          val extent = key.getComponent[SpatialKey].extent(layout)
+          val srcRE = RasterExtent(extent, tileLayout.tileCols, tileLayout.tileRows)
+          val dstRE = ReprojectRasterExtent(srcRE, transform)
 
-            partition.map { case (key, _) =>
-              val extent = key.getComponent[SpatialKey].extent(layout)
-              val rasterExtent = RasterExtent(extent, tileLayout.tileCols, tileLayout.tileRows)
-              (key, (rasterExtent, ReprojectRasterExtent(rasterExtent, transform)))
-            }
-          }, preservesPartitioning = true)
-
-      val borderSizesPerKey =
-        rasterExtents
-          .mapValues { case (re1, re2) =>
-            // Reproject the extent back into the original CRS,
-            // to determine how many border pixels we need.
-            // Pad by one extra pixel.
-            val e = re2.extent.reproject(destCrs, crs)
-            val gb = re1.gridBoundsFor(e, clamp = false)
-            BufferSizes(
-              left = 1 + (if(gb.colMin < 0) -gb.colMin else 0),
-              right = 1 + (if(gb.colMax >= re1.cols) gb.colMax - (re1.cols - 1) else 0),
-              top = 1 + (if(gb.rowMin < 0) -gb.rowMin else 0),
-              bottom = 1 + (if(gb.rowMax >= re1.rows) gb.rowMax - (re1.rows - 1) else 0)
-            )
-          }
-
-      val bufferedTiles =
-        rdd.bufferTiles(borderSizesPerKey)
+          // Reproject the extent back into the original CRS,
+          // to determine how many border pixels we need.
+          // Pad by one extra pixel.
+          val e = dstRE.extent.reproject(destCrs, crs)
+          val gb = srcRE.gridBoundsFor(e, clamp = false)
+          BufferSizes(
+            left   = 1 + (if(gb.colMin < 0) -gb.colMin else 0),
+            right  = 1 + (if(gb.colMax >= srcRE.cols) gb.colMax - (srcRE.cols - 1) else 0),
+            top    = 1 + (if(gb.rowMin < 0) -gb.rowMin else 0),
+            bottom = 1 + (if(gb.rowMax >= srcRE.rows) gb.rowMax - (srcRE.rows - 1) else 0)
+          )
+        })
 
       apply(bufferedTiles, rdd.metadata, destCrs, targetLayout, options)
     }
