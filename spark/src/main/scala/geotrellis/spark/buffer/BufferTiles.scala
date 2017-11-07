@@ -20,20 +20,21 @@ import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.raster._
 import geotrellis.raster.crop._
-import geotrellis.raster.prototype._
 import geotrellis.raster.stitch._
 import geotrellis.util._
 
+import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 
 import scala.reflect.ClassTag
 import scala.collection.mutable.ArrayBuffer
-import scala.util.Try
 
 import Direction._
 
 object BufferTiles {
+
+  val logger = Logger.getLogger(BufferTiles.getClass)
 
   /** Collects tile neighbors by slicing the neighboring tiles to the given
     * buffer size
@@ -478,7 +479,7 @@ object BufferTiles {
             case (_, _, true) => (rows - bs.top, rows - 1)
             case _ => throw new IllegalStateException("Unreachable state")
           }
-          // println(s"Generating buffer for $targetKey -> $targetDir from $key over span [${(l, t)}, ${(r, b)}]")
+          logger.debug(s"Generating buffer for $targetKey -> $targetDir from $key over span [${(l, t)}, ${(r, b)}]")
           val slice = tile.crop(l, t, r, b, Crop.Options(force = true))
           targetKey -> (targetKey, targetDir, slice)
         }
@@ -493,9 +494,7 @@ object BufferTiles {
 
     grouped
       .flatMapValues{ iter =>
-        // val seq = iter.toSeq
         val pieces = iter.map{ case (_, dir, tile) => (dir, tile) }.toMap
-        // val key = seq.head._1
 
         if (pieces contains Center) {
           val lefts = 
@@ -522,8 +521,6 @@ object BufferTiles {
             case BottomRight => (lefts(2), tops(2))
           }
 
-          // val arrstring = pieces.map{ case (dir, tile) => s"  $dir @ ${loc(dir)} [${tile.cols}x${tile.rows}] -> ${tile.asInstanceOf[DoubleArrayTile].toArrayDouble.map{ v => s"$v, " }.reduce(_ ++ _)}\b\b  \n" }.reduce(_++_)
-          // println(s"For $key, stitching ${totalWidth}x${totalHeight} tile:\n${arrstring}\b ")
           val toStitch = pieces.toSeq.map{ case (dir, tile) => (tile, loc(dir)) }
 
           val stitcher = implicitly[Stitcher[V]]
