@@ -2,10 +2,11 @@ import Dependencies._
 
 name := "geotrellis-s3"
 libraryDependencies ++= Seq(
-  sparkCore % "provided",
+  sparkCore % Provided,
   awsSdkS3,
   spire,
-  scalatest % "test")
+  scalatest % Test
+)
 
 fork in Test := false
 parallelExecution in Test := false

@@ -9,11 +9,11 @@ libraryDependencies ++= Seq(
   "org.geotools" % "gt-referencing" % Version.geotools,
   jts,
   spire,
-  "org.geotools" % "gt-geotiff" % Version.geotools % "test",
-  "org.geotools" % "gt-shapefile" % Version.geotools % "test",
-  scalatest % "test",
+  "org.geotools" % "gt-geotiff" % Version.geotools % Test,
+  "org.geotools" % "gt-shapefile" % Version.geotools % Test,
+  scalatest % Test,
   // This is one finicky dependency. Being explicit in hopes it will stop hurting Travis.
-  "javax.media" % "jai_core" % "1.1.3" % "test" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar"
+  "javax.media" % "jai_core" % "1.1.3" % Test from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar"
 )
 
 resolvers ++= Seq(
