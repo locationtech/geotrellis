@@ -72,6 +72,34 @@ You can now transform an ``RDD[Geometry]`` into a writable GeoTrellis layer of
    val layer: RDD[(SpatialKey, Tile)] with Metadata[LayoutDefinition] =
      geoms.rasterize(value, celltype, layout)
 
+Clipping ``Geometry`` Layers to a Grid
+**************************************
+
+In a similar vein to the above, you can now transform an arbitrarily large
+collection of Geometries into a proper GeoTrellis layer, where the sections
+of each Geometry are clipped to fit inside their enclosing Extents.
+
+.. figure:: img/cliptogrid.png
+
+Here we can see a large ``Line`` being clipping into nine sublines. It's
+one method call:
+
+.. code-block:: scala
+
+   import geotrellis.spark._
+
+   val layout: LayoutDefinition = ...  /* The definition of your grid */
+   val geoms: RDD[Geometry] = ...      /* Result of some previous work */
+
+   /* There are likely many Geometries per SpatialKey... */
+   val layer: RDD[(SpatialKey, Geometry)] = geoms.clipToGrid(layout)
+
+   /* ... so we can group them! */
+   val grouped: RDD[(SpatialKey, Iterable[Geometry])] = layer.groupByKey
+
+If clipping on the Extent boundaries is not what you want, there are ways
+to customize this. See `the ClipToGrid entry in our Scaladocs <https://geotrellis.github.io/scaladocs/latest/#geotrellis.spark.clip.ClipToGrid$>`__.
+
 Polygonal Summaries over Time
 *****************************
 
