@@ -7,9 +7,10 @@ libraryDependencies ++= Seq(
   "org.apache.hbase" % "hbase-server" % Version.hbase exclude ("org.mortbay.jetty", "servlet-api-2.5"),
   "org.apache.hbase" % "hbase-hadoop-compat" % Version.hbase exclude("javax.servlet", "servlet-api"),
   "org.codehaus.jackson"  % "jackson-core-asl" % "1.9.13",
-  sparkCore % "provided",
+  sparkCore % Provided,
   spire,
-  scalatest % "test")
+  scalatest % Test
+)
 
 fork in Test := false
 parallelExecution in Test := false

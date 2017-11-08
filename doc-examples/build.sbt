@@ -4,4 +4,5 @@ name := "geotrellis-doc-examples"
 libraryDependencies ++= Seq(
   sparkCore,
   logging,
-  scalatest % "test")
+  scalatest % Test
+)
