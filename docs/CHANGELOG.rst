@@ -81,7 +81,7 @@ of each Geometry are clipped to fit inside their enclosing Extents.
 
 .. figure:: img/cliptogrid.png
 
-Here we can see a large ``Line`` being clipping into nine sublines. It's
+Here we can see a large ``Line`` being clipped into nine sublines. It's
 one method call:
 
 .. code-block:: scala
@@ -91,7 +91,7 @@ one method call:
    val layout: LayoutDefinition = ...  /* The definition of your grid */
    val geoms: RDD[Geometry] = ...      /* Result of some previous work */
 
-   /* There are likely many Geometries per SpatialKey... */
+   /* There are likely many clipped Geometries per SpatialKey... */
    val layer: RDD[(SpatialKey, Geometry)] = geoms.clipToGrid(layout)
 
    /* ... so we can group them! */
@@ -99,6 +99,47 @@ one method call:
 
 If clipping on the Extent boundaries is not what you want, there are ways
 to customize this. See `the ClipToGrid entry in our Scaladocs <https://geotrellis.github.io/scaladocs/latest/#geotrellis.spark.clip.ClipToGrid$>`__.
+
+Sparkified Viewshed
+*******************
+
+A `Viewshed <https://en.wikipedia.org/wiki/Viewshed>`__ shows "visibility" from some
+set vantage point, given an Elevation raster. Prior to GeoTrellis 1.2 this was possible
+at the individual ``Tile`` level but not the Layer (``RDD``) level. Now it is.
+
+First, we need to think about the ``Point6D`` type:
+
+.. code-block:: scala
+
+   import geotrellis.spark.viewshed.IterativeViewshed._
+
+   val point: Point6D(
+     x = ...,                    // some coordinate.
+     y = ...,                    // some coordinate.
+     viewHeight = 4000,          // 4 kilometres above the surface.
+     angle = Math.PI / 2,        // direction that the "camera" faces (in radians).
+     fieldOfView = Math.PI / 2,  // angular width of the "view port".
+     altitude = ???              // TODO ???
+   )
+
+In other words:
+
+- x, y, viewHeight: where are we?
+- angle: where are we looking?
+- fieldOfView: how wide are we looking?
+
+Given a ``Seq[Point6D]`` (the algorithm supports multiple simultaneous view points),
+we can do:
+
+.. code-block:: scala
+
+   // Recall this common alias:
+   //   type TileLayerRDD[K] = RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]
+
+   val layer: TileLayerRDD[SpatialKey] = ...  /* Result of previous work */
+
+   val viewshed: TileLayerRDD[SpatialKey] = layer.viewshed(Seq(point))
+
 
 Polygonal Summaries over Time
 *****************************
