@@ -7,7 +7,7 @@ ${ASSEMBLY}: $(call rwildcard, ../../spark-etl/src, *.scala) ../../spark-etl/bui
 	@touch -m ${ASSEMBLY}
 
 ifndef CLUSTER_ID
-CLUSTER_ID=$(shell cat terraform/terraform.tfstate | jq -r ".modules[].outputs.emrID.value")
+CLUSTER_ID=$(shell cat terraform/terraform.tfstate | jq -r .modules[].resources[\"aws_emr_cluster.emr-spark-cluster\"].primary.id)
 endif
 ifndef KEY_PAIR_FILE
 ifndef TF_VAR_pem_path
