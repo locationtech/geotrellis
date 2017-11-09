@@ -19,7 +19,6 @@ package geotrellis.spark.viewshed
 import geotrellis.raster.{Tile, DoubleArrayTile}
 import geotrellis.raster.viewshed.R2Viewshed._
 import geotrellis.spark._
-import geotrellis.spark.viewshed.IterativeViewshed.Point6D
 import geotrellis.util.MethodExtensions
 
 import org.apache.spark.rdd.RDD
