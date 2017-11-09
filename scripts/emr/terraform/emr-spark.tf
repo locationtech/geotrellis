@@ -65,11 +65,25 @@ resource "aws_emr_cluster" "emr-spark-cluster" {
   provisioner "file" {
     source      = "bootstrap.sh"
     destination = "/tmp/bootstrap.sh"
+    connection {
+      type        = "ssh"
+      user        = "hadoop"
+      host        = "${aws_emr_cluster.emr-spark-cluster.master_public_dns}"
+      private_key = "${file("${var.pem_path}")}"
+    }
   }
 
-  bootstrap_action {
-    path = "file:///tmp/bootstrap.sh"
-    name = "Install JupyterHub"
+  provisioner "remote-exec" {
+    inline=[
+      "chmod +x /tmp/bootstrap.sh",
+      "/tmp/bootstrap.sh ${var.oauth_client_id} ${var.oauth_client_secret}"
+    ]
+    connection {
+      type        = "ssh"
+      user        = "hadoop"
+      host        = "${aws_emr_cluster.emr-spark-cluster.master_public_dns}"
+      private_key = "${file("${var.pem_path}")}"
+    }
   }
 }
 
