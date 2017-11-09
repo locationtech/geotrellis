@@ -1,5 +1,8 @@
 #!/bin/bash
 
+OAUTH_CLIENT_ID=$1
+OAUTH_CLIENT_SECRET=$2
+
 # Parses a configuration file put in place by EMR to determine the role of this node
 is_master() {
   if [ $(jq '.isMaster' /mnt/var/lib/info/instance.json) = 'true' ]; then
@@ -10,17 +13,18 @@ is_master() {
 }
 
 if is_master; then
-    sudo yum -y update
+    echo "Updating system software ..."
+    sudo yum -y -q update
     curl -sL https://rpm.nodesource.com/setup_6.x | sudo -E bash -
-    sudo yum install -y nodejs
+    sudo yum install -y -q nodejs
 
-    sudo pip-3.4 install jupyter
+    sudo pip-3.4 -q install jupyter
     sudo npm install -g configurable-http-proxy
-    sudo pip-3.4 install jupyterhub
-    sudo pip-3.4 install --upgrade notebook
+    sudo pip-3.4 -q install jupyterhub
+    sudo pip-3.4 -q install --upgrade notebook
 
-    sudo pip-3.4 install sudospawner
-    sudo pip-3.4 install "https://github.com/jupyterhub/oauthenticator/archive/f5e39b1ece62b8d075832054ed3213cc04f85030.zip"
+    sudo pip-3.4 -q install sudospawner
+    sudo pip-3.4 -q install "https://github.com/jupyterhub/oauthenticator/archive/f5e39b1ece62b8d075832054ed3213cc04f85030.zip"
 
     curl -L -o /tmp/jupyter-scala https://raw.githubusercontent.com/jupyter-scala/jupyter-scala/98bac7034f07e3e51d101846953aecbdb7a4bb5d/jupyter-scala
     chmod +x /tmp/jupyter-scala
@@ -58,6 +62,7 @@ user=\$1
 sudo useradd -m -G jupyterhub,hadoop \$user
 sudo -u hdfs hdfs dfs -mkdir /user/\$user
 
+sudo -u \$user /tmp/jupyter-scala
 EOF
     chmod +x /tmp/new_user
     sudo chown root:root /tmp/new_user
@@ -79,4 +84,5 @@ EOF
 
     # Execute
     cd /tmp
+    launch_hub &
 fi
