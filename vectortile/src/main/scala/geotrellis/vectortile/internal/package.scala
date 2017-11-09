@@ -214,7 +214,7 @@ package object internal {
           )
 
           /* Find new cursor position */
-          curs = fromProjection(l.points.last, topLeft, resolution)
+          curs = fromProjection(l.last, topLeft, resolution)
 
           buff.appendAll(Seq(MoveTo(Array(diffs.head)), LineTo(diffs.tail)))
         })
