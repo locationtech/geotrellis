@@ -86,10 +86,10 @@ class DissolveMethodsSpec extends FunSpec
 
     it("should handle two line segments intersecting") {
       val s = MultiLine(Line((0, 0), (1, 1)), Line((1, 0), (0, 1)))
-      s.dissolve.as[MultiLine].get.lines.sortBy(_.points.head.x) should be(List(
+      s.dissolve.as[MultiLine].get.lines.sortBy(_.head.x) should be(List(
         Line(Point(0, 0), Point(1, 1)),
         Line(Point(1, 0), Point(0, 1))
-      ).sortBy(_.points.head.x))
+      ).sortBy(_.head.x))
     }
 
     it("should not throw exceptions when dissolving a multiline that throws a topology exception in JTS for .union call") {
