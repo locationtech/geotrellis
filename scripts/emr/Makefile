@@ -17,6 +17,10 @@ KEY_PAIR_FILE=${TF_VAR_pem_path}
 endif
 endif
 
+ifndef TF_VAR_user
+export TF_VAR_user=${USER}
+endif
+
 terraform-init:
 	cd terraform; terraform init
 

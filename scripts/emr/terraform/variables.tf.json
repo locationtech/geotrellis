@@ -28,6 +28,10 @@
     "worker_count": {
         "default": "2",
         "description": "The number of worker nodes to provision"
-    }
+    },
+    "user": {
+        "default": "anonymous",
+        "description": "User name applied to cluster"
+    },
   }
 }
