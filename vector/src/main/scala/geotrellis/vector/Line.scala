@@ -82,6 +82,12 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
   lazy val boundary: OneDimensionBoundaryResult =
     jtsGeom.getBoundary
 
+  /* The first [[Point]] in this Line, which we know to exist. */
+  def head: Point = jtsGeom.getPointN(0)
+
+  /* The last [[Point]] in this Line, which we know to exist. */
+  def last: Point = jtsGeom.getPointN(jtsGeom.getNumPoints - 1)
+
   /** Returns the points which determine this line (i.e. its vertices */
   def points: Array[Point] = vertices
 
