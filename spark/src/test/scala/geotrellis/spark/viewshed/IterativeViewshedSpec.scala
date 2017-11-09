@@ -49,7 +49,7 @@ class IterativeViewshedSpec extends FunSpec
         val list = for (col <- 0 to 2; row <- 0 to 2) yield (SpatialKey(col, row), tile)
         ContextRDD(sc.parallelize(list), tileLayerMetadata)
      }
-      val point = IterativeViewshed.Point6D(7, 7, -0.0, 0, -1.0, ninf)
+      val point = Point6D(7, 7, -0.0, 0, -1.0, ninf)
       val viewshed = rdd.viewshed(
         points = List(point),
         maxDistance = Double.PositiveInfinity,
@@ -74,7 +74,7 @@ class IterativeViewshedSpec extends FunSpec
         ContextRDD(sc.parallelize(list), tileLayerMetadata)
       }
 
-      val point = IterativeViewshed.Point6D(7, 7, -0.0, 0, -1.0, ninf)
+      val point = Point6D(7, 7, -0.0, 0, -1.0, ninf)
       val viewshed = IterativeViewshed(rdd, List(point),
         maxDistance = Double.PositiveInfinity,
         curvature = false,
@@ -98,7 +98,7 @@ class IterativeViewshedSpec extends FunSpec
         val list = for (col <- 0 to 2; row <- 0 to 2) yield (if (col == 1 && row == 2) (SpatialKey(col, row), specialTile); else (SpatialKey(col, row), tile))
         ContextRDD(sc.parallelize(list), tileLayerMetadata)
       }
-      val point = IterativeViewshed.Point6D(7, 7, -0.0, 0, -1.0, ninf)
+      val point = Point6D(7, 7, -0.0, 0, -1.0, ninf)
       val viewshed = rdd.viewshed(
         points = List(point),
         maxDistance = Double.PositiveInfinity,
@@ -132,9 +132,9 @@ class IterativeViewshedSpec extends FunSpec
         val list = for (col <- 0 to 2; row <- 0 to 2) yield (SpatialKey(col, row), tile)
         ContextRDD(sc.parallelize(list), tileLayerMetadata)
       }
-      val point1 = IterativeViewshed.Point6D(2,  7, -0.0, 0, -1.0, ninf)
-      val point2 = IterativeViewshed.Point6D(7,  7, -0.0, 0, -1.0, ninf)
-      val point3 = IterativeViewshed.Point6D(12, 7, -0.0, 0, -1.0, ninf)
+      val point1 = Point6D(2,  7, -0.0, 0, -1.0, ninf)
+      val point2 = Point6D(7,  7, -0.0, 0, -1.0, ninf)
+      val point3 = Point6D(12, 7, -0.0, 0, -1.0, ninf)
       val viewshed = rdd.viewshed(
         points = List(point1, point2, point3),
         maxDistance = Double.PositiveInfinity,
@@ -167,9 +167,9 @@ class IterativeViewshedSpec extends FunSpec
         ContextRDD(sc.parallelize(list), tileLayerMetadata)
       }
 
-      val point1 = IterativeViewshed.Point6D(2,  7, -0.0, 0, -1.0, ninf)
-      val point2 = IterativeViewshed.Point6D(7,  7, -0.0, 0, -1.0, ninf)
-      val point3 = IterativeViewshed.Point6D(12, 7, -0.0, 0, -1.0, ninf)
+      val point1 = Point6D(2,  7, -0.0, 0, -1.0, ninf)
+      val point2 = Point6D(7,  7, -0.0, 0, -1.0, ninf)
+      val point3 = Point6D(12, 7, -0.0, 0, -1.0, ninf)
       val expected = 3
       val viewshed = rdd.viewshed(
         points = List(point1, point2, point3),
