@@ -140,6 +140,24 @@ we can do:
 
    val viewshed: TileLayerRDD[SpatialKey] = layer.viewshed(Seq(point))
 
+Sparkified Euclidean Distance
+*****************************
+
+We use *Euclidean Distance* to render a collection of points into a heatmap of
+proximities of some area. Say, of two roads crossing:
+
+.. figure:: img/euclid.png
+
+Prior to GeoTrellis 1.2, this was possible at the individual ``Tile`` level
+but not the Layer (``RDD``) level. Now it is.
+
+.. code-block:: scala
+
+   /* Result of previous work. Potentially millions of points per SpatialKey. */
+   val points: RDD[(SpatialKey, Array[Coordinate])] = ...
+   val layout: LayoutDefinition = ...  /* The definition of your grid */
+
+   val layer: RDD[(SpatialKey, Tile)] = point.euclideanDistance(layout)
 
 Polygonal Summaries over Time
 *****************************
