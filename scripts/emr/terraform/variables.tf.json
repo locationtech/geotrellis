@@ -28,6 +28,16 @@
     "worker_count": {
         "default": "2",
         "description": "The number of worker nodes to provision"
+    },
+    "user": {
+        "default": "anonymous",
+        "description": "User name applied to cluster"
+    },
+    "oauth_client_id": {
+        "description": "Client ID token for OAuth server"
+    },
+    "oauth_client_secret": {
+        "description": "Client secret token for OAuth server"
     }
   }
 }
