@@ -9,6 +9,12 @@
     "pem_path": {
         "description": "Path to your EC2 secret key"
     },
+    "s3_notebook_bucket": {
+        "description": "The bucket name on S3 where notebooks are stored"
+    },
+    "s3_notebook_prefix": {
+        "description": "The prefix path inside the S3 notebook bucket"
+    },
     "region": {
         "default": "us-east-1",
         "description": "Can be overridden if necessary"
@@ -33,11 +39,5 @@
         "default": "anonymous",
         "description": "User name applied to cluster"
     },
-    "oauth_client_id": {
-        "description": "Client ID token for OAuth server"
-    },
-    "oauth_client_secret": {
-        "description": "Client secret token for OAuth server"
-    }
   }
 }

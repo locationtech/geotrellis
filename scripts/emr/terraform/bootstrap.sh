@@ -1,7 +1,9 @@
 #!/bin/bash
 
-OAUTH_CLIENT_ID=$1
-OAUTH_CLIENT_SECRET=$2
+S3_ACCESS_KEY=$1
+S3_SECRET_KEY=$2
+S3_NOTEBOOK_BUCKET=$3
+S3_NOTEBOOK_PREFIX=$4
 
 # Parses a configuration file put in place by EMR to determine the role of this node
 is_master() {
@@ -13,8 +15,8 @@ is_master() {
 }
 
 if is_master; then
-    echo "Updating system software ..."
-    sudo yum -y -q update
+    echo "Installing system software ..."
+    #sudo yum -y -q update
     curl -sL https://rpm.nodesource.com/setup_6.x | sudo -E bash -
     sudo yum install -y -q nodejs
 
@@ -24,65 +26,74 @@ if is_master; then
     sudo pip-3.4 -q install --upgrade notebook
 
     sudo pip-3.4 -q install sudospawner
-    sudo pip-3.4 -q install "https://github.com/jupyterhub/oauthenticator/archive/f5e39b1ece62b8d075832054ed3213cc04f85030.zip"
-
-    curl -L -o /tmp/jupyter-scala https://raw.githubusercontent.com/jupyter-scala/jupyter-scala/98bac7034f07e3e51d101846953aecbdb7a4bb5d/jupyter-scala
-    chmod +x /tmp/jupyter-scala
-    /tmp/jupyter-scala
+    #sudo pip-3.4 -q install "https://github.com/jupyterhub/oauthenticator/archive/f5e39b1ece62b8d075832054ed3213cc04f85030.zip"
+    sudo pip-3.4 -q install s3contents
 
     # Set up user account to manage JupyterHub
+    echo "Setting up user accounts ..."
     sudo groupadd shadow
     sudo chgrp shadow /etc/shadow
     sudo chmod 640 /etc/shadow
     sudo useradd -G shadow -r hublauncher
     sudo groupadd jupyterhub
-
     echo 'hublauncher ALL=(%jupyterhub) NOPASSWD: /usr/local/bin/sudospawner' | sudo tee -a /etc/sudoers
-    echo 'hublauncher ALL=(ALL) NOPASSWD: /usr/sbin/useradd' | sudo tee -a /etc/sudoers
-    echo 'hublauncher ALL=(hdfs) NOPASSWD: /usr/bin/hdfs' | sudo tee -a /etc/sudoers
 
-    # Environment setup
-    cat <<EOF > /tmp/oauth_profile.sh
-export AWS_DNS_NAME=$(aws ec2 describe-network-interfaces --filters Name=private-ip-address,Values=$(hostname -i) | jq -r '.[] | .[] | .Association.PublicDnsName')
-export OAUTH_CALLBACK_URL=http://\$AWS_DNS_NAME:8000/hub/oauth_callback
-export OAUTH_CLIENT_ID=$OAUTH_CLIENT_ID
-export OAUTH_CLIENT_SECRET=$OAUTH_CLIENT_SECRET
+    # Do setup for user accounts that can spawn jupyter notebook instances
+    sudo adduser -G hadoop,jupyterhub user
+    echo 'user:password' | sudo chpasswd
 
-alias launch_hub='sudo -u hublauncher -E env "PATH=/usr/local/bin:$PATH" jupyterhub --JupyterHub.spawner_class=sudospawner.SudoSpawner --SudoSpawner.sudospawner_path=/usr/local/bin/sudospawner --Spawner.notebook_dir=/home/{username}'
-EOF
-    sudo mv /tmp/oauth_profile.sh /etc/profile.d
-    . /etc/profile.d/oauth_profile.sh
+    echo "Installing jupyter-scala kernel ..."
+    curl -L -q -o /tmp/jupyter-scala https://raw.githubusercontent.com/jupyter-scala/jupyter-scala/98bac7034f07e3e51d101846953aecbdb7a4bb5d/jupyter-scala
+    chmod +x /tmp/jupyter-scala
+    sudo -u user /tmp/jupyter-scala > /dev/null
 
-    # Setup required scripts/configurations for launching JupyterHub
-    cat <<EOF > /tmp/new_user
-#!/bin/bash
-
-user=\$1
-
-sudo useradd -m -G jupyterhub,hadoop \$user
-sudo -u hdfs hdfs dfs -mkdir /user/\$user
-
-sudo -u \$user /tmp/jupyter-scala
-EOF
-    chmod +x /tmp/new_user
-    sudo chown root:root /tmp/new_user
-    sudo mv /tmp/new_user /usr/local/bin
-    
     cat <<EOF > /tmp/jupyterhub_config.py
-from oauthenticator.github import LocalGitHubOAuthenticator
-
 c = get_config()
-c.JupyterHub.authenticator_class = LocalGitHubOAuthenticator
-c.LocalGitHubOAuthenticator.create_system_users = True
 
+# Let JupyterHub use sudospawner for spawning notebook instances 
 c.JupyterHub.spawner_class='sudospawner.SudoSpawner'
 c.SudoSpawner.sudospawner_path='/usr/local/bin/sudospawner'
-c.Spawner.notebook_dir='/home/{username}'
-c.LocalAuthenticator.add_user_cmd = ['new_user']
-
 EOF
+
+    cat <<EOF > /tmp/per_user_jupyter_notebook_config.py
+from s3contents import S3ContentsManager
+
+c = get_config()
+
+# Tell Jupyter to use S3ContentsManager for all storage.
+c.NotebookApp.contents_manager_class = S3ContentsManager
+c.S3ContentsManager.access_key_id = "$S3_ACCESS_KEY"
+c.S3ContentsManager.secret_access_key = "$S3_SECRET_KEY"
+c.S3ContentsManager.bucket_name = "$S3_NOTEBOOK_BUCKET"
+c.S3ContentsManager.prefix = "$S3_NOTEBOOK_PREFIX"
+EOF
+
+    sudo -u user mkdir /home/user/.jupyter
+    sudo -u user cp /tmp/per_user_jupyter_notebook_config.py /home/user/.jupyter/jupyter_notebook_config.py
+
+    # Fix a problem in the Jupyter notebook FileContentsManager
+    cat <<EOF > /tmp/manager.patch
+33c33
+< 
+---
+> import notebook.transutils
+EOF
+    patch /usr/local/lib/python3.4/site-packages/notebook/services/contents/manager.py -i /tmp/manager.patch -o /tmp/manager.py
+    sudo mv /tmp/manager.py /usr/local/lib/python3.4/site-packages/notebook/services/contents/manager.py
+    sudo chown root:root /usr/local/lib/python3.4/site-packages/notebook/services/contents/manager.py
+    sudo chmod 644 /usr/local/lib/python3.4/site-packages/notebook/services/contents/manager.py
+
+    # Environment setup
+    cat <<EOF > /tmp/jupyter_profile.sh
+export AWS_DNS_NAME=$(aws ec2 describe-network-interfaces --filters Name=private-ip-address,Values=$(hostname -i) | jq -r '.[] | .[] | .Association.PublicDnsName')
+
+alias launch_hub='sudo -u hublauncher -E env "PATH=/usr/local/bin:$PATH" jupyterhub -f /tmp/jupyterhub_config.py'
+EOF
+    sudo mv /tmp/jupyter_profile.sh /etc/profile.d
+    . /etc/profile.d/jupyter_profile.sh
 
     # Execute
     cd /tmp
-    launch_hub &
+    sudo -u hublauncher -E env "PATH=/usr/local/bin:$PATH" jupyterhub -f /tmp/jupyterhub_config.py &
+    echo "Running at host $AWS_DNS_NAME"
 fi

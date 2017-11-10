@@ -76,7 +76,7 @@ resource "aws_emr_cluster" "emr-spark-cluster" {
   provisioner "remote-exec" {
     inline=[
       "chmod +x /tmp/bootstrap.sh",
-      "/tmp/bootstrap.sh ${var.oauth_client_id} ${var.oauth_client_secret}"
+      "/tmp/bootstrap.sh ${var.access_key} ${var.secret_key} ${var.s3_notebook_bucket} ${var.s3_notebook_prefix}"
     ]
     connection {
       type        = "ssh"
