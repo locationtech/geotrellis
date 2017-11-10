@@ -44,7 +44,7 @@ import scala.reflect.ClassTag
   * @param fieldOfView: the field of view of the "camera" in radians
   * @param altitude:    the absolute altitude to query; if -∞ then use the terrain height
   */
-case class Point6D(
+case class Viewpoint(
   x: Double,
   y: Double,
   viewHeight: Double,
@@ -65,8 +65,8 @@ case class Point6D(
   */
 object IterativeViewshed {
 
-  implicit def coordinatesToPoints(points: Seq[jts.Coordinate]): Seq[Point6D] =
-    points.map({ p => Point6D(p.x, p.y, p.z, 0, -1.0, Double.NegativeInfinity) })
+  implicit def coordinatesToPoints(points: Seq[jts.Coordinate]): Seq[Viewpoint] =
+    points.map({ p => Viewpoint(p.x, p.y, p.z, 0, -1.0, Double.NegativeInfinity) })
 
   private val logger = Logger.getLogger(IterativeViewshed.getClass)
 
@@ -156,7 +156,7 @@ object IterativeViewshed {
     */
   private def pointInfo[K: (? => SpatialKey), V: (? => Tile)](
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]])(
-    pi: (Point6D, Int)
+    pi: (Viewpoint, Int)
   )= {
     val (p, index) = pi
     val md = rdd.metadata
@@ -202,7 +202,7 @@ object IterativeViewshed {
     */
   def apply[K: (? => SpatialKey): ClassTag, V: (? => Tile)](
     elevation: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
-    ps: Seq[Point6D],
+    ps: Seq[Viewpoint],
     maxDistance: Double,
     curvature: Boolean = true,
     operator: AggregationOperator = Or,
