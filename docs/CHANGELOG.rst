@@ -33,6 +33,8 @@ API Changes
 
   - **New:** ``Geometry.isEmpty: Boolean``. This incurs much less overhead than
     previous ways of determining emptiness.
+  - **New:** ``Line.head`` and ``Line.last`` for **efficiently** grabbing the first or
+    last ``Point`` in the ``Line``.
 
 - ``geotrellis.spark``
 
