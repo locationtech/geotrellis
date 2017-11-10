@@ -32,7 +32,7 @@ abstract class RDDViewshedMethods[K: (? => SpatialKey): ClassTag, V: (? => Tile)
     extends MethodExtensions[RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
 
   def viewshed(
-    points: Seq[Point6D],
+    points: Seq[Viewpoint],
     maxDistance: Double = Double.PositiveInfinity,
     curvature: Boolean = true,
     operator: AggregationOperator = Or
