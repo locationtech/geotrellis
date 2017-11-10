@@ -16,20 +16,17 @@ is_master() {
 
 if is_master; then
     echo "Installing system software ..."
-    #sudo yum -y -q update
     curl -sL https://rpm.nodesource.com/setup_6.x | sudo -E bash -
     sudo yum install -y -q nodejs
+    sudo service crond start
 
     sudo pip-3.4 -q install jupyter
     sudo npm install -g configurable-http-proxy
     sudo pip-3.4 -q install jupyterhub
     sudo pip-3.4 -q install --upgrade notebook
-
     sudo pip-3.4 -q install sudospawner
-    #sudo pip-3.4 -q install "https://github.com/jupyterhub/oauthenticator/archive/f5e39b1ece62b8d075832054ed3213cc04f85030.zip"
     sudo pip-3.4 -q install s3contents
 
-    # Set up user account to manage JupyterHub
     echo "Setting up user accounts ..."
     sudo groupadd shadow
     sudo chgrp shadow /etc/shadow
@@ -38,15 +35,17 @@ if is_master; then
     sudo groupadd jupyterhub
     echo 'hublauncher ALL=(%jupyterhub) NOPASSWD: /usr/local/bin/sudospawner' | sudo tee -a /etc/sudoers
 
-    # Do setup for user accounts that can spawn jupyter notebook instances
     sudo adduser -G hadoop,jupyterhub user
     echo 'user:password' | sudo chpasswd
+
+    echo 'cd /tmp && sudo -u hublauncher -E env "PATH=/usr/local/bin:$PATH" jupyterhub -f /tmp/jupyterhub_config.py' | at now + 1 minute
 
     echo "Installing jupyter-scala kernel ..."
     curl -L -q -o /tmp/jupyter-scala https://raw.githubusercontent.com/jupyter-scala/jupyter-scala/98bac7034f07e3e51d101846953aecbdb7a4bb5d/jupyter-scala
     chmod +x /tmp/jupyter-scala
     sudo -u user /tmp/jupyter-scala > /dev/null
 
+    echo "Configuring jupyterhub and S3 notebook storage ..."
     cat <<EOF > /tmp/jupyterhub_config.py
 c = get_config()
 
@@ -71,7 +70,7 @@ EOF
     sudo -u user mkdir /home/user/.jupyter
     sudo -u user cp /tmp/per_user_jupyter_notebook_config.py /home/user/.jupyter/jupyter_notebook_config.py
 
-    # Fix a problem in the Jupyter notebook FileContentsManager
+    # Fix a problem in the Jupyter notebook FileContentsManager (required by S3Contents)
     cat <<EOF > /tmp/manager.patch
 33c33
 < 
@@ -92,8 +91,5 @@ EOF
     sudo mv /tmp/jupyter_profile.sh /etc/profile.d
     . /etc/profile.d/jupyter_profile.sh
 
-    # Execute
-    cd /tmp
-    sudo -u hublauncher -E env "PATH=/usr/local/bin:$PATH" jupyterhub -f /tmp/jupyterhub_config.py &
     echo "Running at host $AWS_DNS_NAME"
 fi
