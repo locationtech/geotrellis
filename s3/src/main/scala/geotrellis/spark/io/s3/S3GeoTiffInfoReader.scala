@@ -33,7 +33,8 @@ case class S3GeoTiffInfoReader(
   getS3Client: () => S3Client = () => S3Client.DEFAULT,
   delimiter: Option[String] = None,
   decompress: Boolean = false,
-  streaming: Boolean = true
+  streaming: Boolean = true,
+  tiffExtensions: Seq[String] = S3GeoTiffRDD.Options.DEFAULT.tiffExtensions
 ) extends GeoTiffInfoReader {
   lazy val geoTiffInfo: List[(String, GeoTiffInfo)] = {
     val s3Client = getS3Client()
@@ -45,7 +46,11 @@ case class S3GeoTiffInfoReader(
     s3Client
       .listKeys(listObjectsRequest)
       .toList
-      .map(key => (key, GeoTiffReader.readGeoTiffInfo(S3RangeReader(bucket, key, getS3Client()), decompress, streaming)))
+      .flatMap { key =>
+        if(tiffExtensions.exists(key.endsWith))
+          Some(key -> GeoTiffReader.readGeoTiffInfo(S3RangeReader(bucket, key, getS3Client()), decompress, streaming))
+        else None
+      }
   }
 
   /** Returns RDD of URIs to tiffs as GeoTiffInfo is not serializable. */
@@ -55,7 +60,7 @@ case class S3GeoTiffInfoReader(
         .fold(new ListObjectsRequest(bucket, prefix, null, null, null))(new ListObjectsRequest(bucket, prefix, null, _, null))
 
     sc.parallelize(getS3Client().listKeys(listObjectsRequest))
-      .map(key => s"s3://$bucket/$key")
+      .flatMap(key => if(tiffExtensions.exists(key.endsWith)) Some(s"s3://$bucket/$key") else None)
   }
 
   def getGeoTiffInfo(uri: String): GeoTiffInfo = {
@@ -76,5 +81,5 @@ object S3GeoTiffInfoReader {
     bucket: String,
     prefix: String,
     options: S3GeoTiffRDD.Options
-  ): S3GeoTiffInfoReader = S3GeoTiffInfoReader(bucket, prefix, options.getS3Client, options.delimiter)
+  ): S3GeoTiffInfoReader = S3GeoTiffInfoReader(bucket, prefix, options.getS3Client, options.delimiter, tiffExtensions = options.tiffExtensions)
 }

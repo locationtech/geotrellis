@@ -20,19 +20,15 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader.GeoTiffInfo
 import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.spark.io._
-import geotrellis.spark.io.hadoop._
 
-import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-
 
 case class HadoopGeoTiffInfoReader(
   path: String,
   config: SerializableConfiguration,
-  extensions: Seq[String],
+  tiffExtensions: Seq[String] = HadoopGeoTiffRDD.Options.DEFAULT.tiffExtensions,
   decompress: Boolean = false,
   streaming: Boolean = true
 ) extends GeoTiffInfoReader {
@@ -41,7 +37,7 @@ case class HadoopGeoTiffInfoReader(
     HdfsUtils
       .listFiles(new Path(path), config.value)
       .map({ path => path.toString })
-      .filter({ path => extensions.exists({ e => path.endsWith(e) }) })
+      .filter({ path => tiffExtensions.exists({ e => path.endsWith(e) }) })
       .map({ uri => (uri, getGeoTiffInfo(uri)) })
   }
 
@@ -51,7 +47,7 @@ case class HadoopGeoTiffInfoReader(
       HdfsUtils
         .listFiles(new Path(path), config.value)
         .map({ path => path.toString })
-        .filter({ path => extensions.exists({ e => path.endsWith(e) }) })
+        .filter({ path => tiffExtensions.exists({ e => path.endsWith(e) }) })
     )
   }
 
