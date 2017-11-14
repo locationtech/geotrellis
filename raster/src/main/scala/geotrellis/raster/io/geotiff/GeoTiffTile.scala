@@ -528,46 +528,80 @@ abstract class GeoTiffTile(
     tile
   }
 
+
   /**
    * Crop this tile to given pixel region.
    *
-   * @param bounds: Pixel bounds specifying the crop area.
-   * @return A [[MutableArrayTile]] of the cropped region
+   * @param bounds: Pixel bounds specifying the crop area
    */
-  def crop(bounds: GridBounds): MutableArrayTile = {
-    val tile = ArrayTile.empty(cellType, bounds.width, bounds.height)
-    val intersectingSegments = segmentLayout.intersectingSegments(bounds)
+  def crop(bounds: GridBounds): MutableArrayTile =
+    crop(List(bounds)).next._2
 
-    getSegments(intersectingSegments).foreach { case (segmentId, segment) =>
-      val segmentBounds = segmentLayout.getGridBounds(segmentId)
-      val segmentTransform = segmentLayout.getSegmentTransform(segmentId, 1)
-      // TODO - remove get
-      bounds.intersection(segmentBounds) match {
-        case Some(overlap) =>
-          if (cellType.isFloatingPoint) {
-            cfor(overlap.colMin)(_ <= overlap.colMax, _ + 1) { col =>
-              cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
-                val i = segmentTransform.gridToIndex(col, row)
-                val v = segment.getDouble(i)
-                tile.setDouble(col - bounds.colMin, row - bounds.rowMin, v)
-              }
-            }
 
-          } else {
-            cfor(overlap.colMin)(_ <= overlap.colMax, _ + 1) { col =>
-              cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
-                val i = segmentTransform.gridToIndex(col, row)
-                val v = segment.getInt(i)
-                tile.set(col - bounds.colMin, row - bounds.rowMin, v)
-              }
-            }
-          }
-        case None =>
-          throw new reader.MalformedGeoTiffException(s"segmentLayout.intersectingSegments returned non-interesecting segment (bounds: $bounds, segmentBoudns: $segmentBounds")
+  /**
+   * Crop this tile to given pixel regions.
+   *
+   * @param windows: Pixel bounds specifying the crop areas
+   */
+  def crop(windows: Seq[GridBounds]): Iterator[(GridBounds, MutableArrayTile)] = {
+    case class Chip(
+      window: GridBounds,
+      tile: MutableArrayTile,
+      intersectingSegments: Int,
+      var segmentsBurned: Int = 0)
+    val chipsBySegment = scala.collection.mutable.Map.empty[Int, List[Chip]]
+    val intersectingSegments = scala.collection.mutable.SortedSet.empty[Int]
+
+    for (window <- windows) {
+      val segments: Array[Int] = segmentLayout.intersectingSegments(window)
+      val tile = ArrayTile.empty(cellType, window.width, window.height)
+      val chip = Chip(window, tile, segments.length)
+      for (segment <- segments) {
+        val tail = chipsBySegment.getOrElse(segment, Nil)
+        chipsBySegment.update(segment, chip :: tail)
       }
+      intersectingSegments ++= segments
     }
 
-    tile
+    def burnSegments(segmentId: Int, segment: GeoTiffSegment): List[Chip] = {
+      var finished: List[Chip] = Nil
+      val segmentBounds = segmentLayout.getGridBounds(segmentId)
+      val segmentTransform = segmentLayout.getSegmentTransform(segmentId, 1)
+
+      for (chip <- chipsBySegment(segmentId)) {
+        val gridBounds = chip.window
+        val overlap = gridBounds.intersection(segmentBounds).get
+        if (cellType.isFloatingPoint) {
+          cfor(overlap.colMin)(_ <= overlap.colMax, _ + 1) { col =>
+            cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
+              val i = segmentTransform.gridToIndex(col, row)
+              val v = segment.getDouble(i)
+              chip.tile.setDouble(col - gridBounds.colMin, row - gridBounds.rowMin, v)
+            }
+          }
+        } else {
+          cfor(overlap.colMin)(_ <= overlap.colMax, _ + 1) { col =>
+            cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
+              val i = segmentTransform.gridToIndex(col, row)
+              val v = segment.getInt(i)
+              chip.tile.set(col - gridBounds.colMin, row - gridBounds.rowMin, v)
+            }
+          }
+        }
+        chip.segmentsBurned += 1
+        if (chip.segmentsBurned == chip.intersectingSegments)
+          finished = chip :: finished
+      }
+
+      chipsBySegment.remove(segmentId)
+      finished
+    }
+
+    getSegments(intersectingSegments).flatMap { case (segmentId, segment) =>
+      burnSegments(segmentId, segment)
+    }.map { chip =>
+      chip.window -> chip.tile
+    }
   }
 
   /**
