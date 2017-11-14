@@ -18,7 +18,7 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.raster.GridBounds
 import geotrellis.raster.TileLayout
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable
 
 /**
  * This case class represents how the segments in a given [[GeoTiff]] are arranged.
@@ -122,13 +122,69 @@ case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: Tile
   def intersectingSegments(bounds: GridBounds): Array[Int] = {
     val tc = tileLayout.tileCols
     val tr = tileLayout.tileRows
-    val ab = ArrayBuffer[Int]()
+    val ab = mutable.ArrayBuffer[Int]()
     for (layoutCol <- (bounds.colMin / tc) to (bounds.colMax / tc)) {
       for (layoutRow <- (bounds.rowMin / tr) to (bounds.rowMax / tr)) {
         ab += (layoutRow * tileLayout.layoutCols) + layoutCol
       }
     }
     ab.toArray
+  }
+
+  /** Partition a list of pixel windows to localize required segment reads.
+    * Some segments may be required by more than one partition.
+    * Pixel windows outside of layout range will be filtered.
+    * Maximum partition size may be exceeded if any window size exceeds it.
+    * Windows will not be split to satisfy partition size limits.
+    *
+    * @param windows List of pixel windows from this layout
+    * @param maxPartitionSize Maximum pixel count for each partition
+    */
+  def partitionWindowsBySegments(
+    windows: Seq[GridBounds],
+    maxPartitionSize: Long
+  ): Array[Array[GridBounds]] = {
+    val partition = mutable.ArrayBuilder.make[GridBounds]
+    partition.sizeHintBounded(128, windows)
+    var partitionSize: Long = 0l
+    var partitionCount: Long = 0l
+    val partitions = mutable.ArrayBuilder.make[Array[GridBounds]]
+
+    def finalizePartition() {
+      val res = partition.result
+      if (res.nonEmpty) partitions += res
+      partition.clear()
+      partitionSize = 0l
+      partitionCount = 0l
+    }
+
+    def addToPartition(window: GridBounds) {
+      partition += window
+      partitionSize += window.sizeLong
+      partitionCount += 1
+    }
+
+    val sourceBounds = GridBounds(0, 0, totalCols - 1, totalRows - 1)
+
+    // Because GeoTiff segment indecies are enumorated in row-major order
+    // sorting windows by the min index also provides spatial order
+    val sorted = windows
+      .filter(sourceBounds.intersects(_))
+      .map { window =>
+        window -> getSegmentIndex(col = window.colMin, row = window.rowMin)
+      }.sortBy(_._2)
+
+    for ((window, _) <- sorted) {
+      if ((partitionCount == 0) || (partitionSize + window.sizeLong) < maxPartitionSize) {
+        addToPartition(window)
+      } else {
+        finalizePartition()
+        addToPartition(window)
+      }
+    }
+
+    finalizePartition()
+    partitions.result
   }
 }
 
