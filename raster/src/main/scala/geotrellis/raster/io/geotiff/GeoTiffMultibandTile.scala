@@ -325,31 +325,63 @@ abstract class GeoTiffMultibandTile(
     crop(this.gridBounds)
 
   /**
-   * Performs a crop on itself. The returned MultibandGeoTiffTile will
-   * contain bands that have the same area as the inputte GridBounds.
+   * Crop this tile to given pixel region.
    *
-   * @param  gridBounds  A [[GridBounds]] that contains the area to be cropped.
-   * @return             A [[ArrayMultibandTile]]
+   * @param bounds Pixel bounds specifying the crop area.
    */
-  def crop(gridBounds: GridBounds): ArrayMultibandTile = {
-    val bands = Array.fill(bandCount)(ArrayTile.empty(cellType, gridBounds.width, gridBounds.height))
-    val intersectingSegments = segmentLayout.intersectingSegments(gridBounds)
-    if (hasPixelInterleave) {
-      logger.debug(s"Cropping $gridBounds uses ${intersectingSegments.length} out of ${segmentCount} pixel-interleave segments")
+ def crop(gridBounds: GridBounds): ArrayMultibandTile =
+  crop(List(gridBounds)).next._2
 
-      // de-interlace the pixels from each segment
-      for ((segmentId, segment) <- getSegments(intersectingSegments)) {
-        val segmentBounds = segmentLayout.getGridBounds(segmentId)
-        val segmentTransform = segmentLayout.getSegmentTransform(segmentId, bandCount)
+  /**
+   * Crop this tile to given pixel regions.
+   *
+   * @param windows Pixel bounds specifying the crop areas
+   */
+  def crop(windows: Seq[GridBounds]): Iterator[(GridBounds, ArrayMultibandTile)] = {
+    case class Chip(
+      window: GridBounds,
+      bands: Array[MutableArrayTile],
+      intersectingSegments: Int,
+      var segmentsBurned: Int = 0)
+    val chipsBySegment = mutable.Map.empty[Int, List[Chip]]
+    val intersectingSegments = mutable.SortedSet.empty[Int]
+
+    for (window <- windows) {
+      val segments: Array[Int] =
+        if (hasPixelInterleave) {
+          segmentLayout.intersectingSegments(window)
+        } else {
+          val bandSegmentCount = segmentCount / bandCount
+          for {
+            band <- 0 until bandCount
+            segmentId <- segmentLayout.intersectingSegments(window)
+          } yield segmentId + (band * bandSegmentCount)
+        }.toArray
+
+      val bands = Array.fill(bandCount)(ArrayTile.empty(cellType, window.width, window.height))
+      val chip = Chip(window, bands, segments.length)
+      for (segment <- segments) {
+        val tail = chipsBySegment.getOrElse(segment, Nil)
+        chipsBySegment.update(segment, chip :: tail)
+      }
+      intersectingSegments ++= segments
+    }
+
+    def burnPixelInterleave(segmentId: Int, segment: GeoTiffSegment): List[Chip] = {
+      var finished: List[Chip] = Nil
+      val segmentBounds = segmentLayout.getGridBounds(segmentId)
+      val segmentTransform = segmentLayout.getSegmentTransform(segmentId, bandCount)
+
+      for (chip <- chipsBySegment(segmentId)) {
+        val gridBounds = chip.window
         val overlap = gridBounds.intersection(segmentBounds).get
-
         if (cellType.isFloatingPoint) {
           cfor(overlap.colMin)(_ <= overlap.colMax, _ + 1) { col =>
             cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
               cfor(0)(_ < bandCount, _ + 1) { band =>
                 val i = segmentTransform.gridToIndex(col, row, band)
                 val v = segment.getDouble(i)
-                bands(band).setDouble(col - gridBounds.colMin, row - gridBounds.rowMin, v)
+                chip.bands(band).setDouble(col - gridBounds.colMin, row - gridBounds.rowMin, v)
               }
             }
           }
@@ -359,47 +391,66 @@ abstract class GeoTiffMultibandTile(
               cfor(0)(_ < bandCount, _ + 1) { band =>
                 val i = segmentTransform.gridToIndex(col, row, band)
                 val v = segment.getInt(i)
-                bands(band).set(col - gridBounds.colMin, row - gridBounds.rowMin, v)
+                chip.bands(band).set(col - gridBounds.colMin, row - gridBounds.rowMin, v)
               }
             }
           }
         }
+        chip.segmentsBurned += 1
+        if (chip.segmentsBurned == chip.intersectingSegments)
+          finished = chip :: finished
       }
-    } else {
-      logger.debug(s"Cropping $gridBounds uses ${intersectingSegments.length * bandCount} out of ${segmentCount * bandCount} segments")
 
-      val bandSegmentCount = segmentCount / bandCount
-      // read segments in a band order
-      cfor(0)(_ < bandCount, _ + 1) { band =>
-        val segmentOffset = bandSegmentCount * band
-        getSegments(intersectingSegments.map(_ + segmentOffset)).foreach { case (id, segment) =>
-          val segmentId = id - segmentOffset
-          val segmentBounds = segmentLayout.getGridBounds(segmentId)
-          val segmentTransform = segmentLayout.getSegmentTransform(segmentId, bandCount)
-          val overlap = gridBounds.intersection(segmentBounds).get
-
-          if (cellType.isFloatingPoint) {
-            cfor(overlap.colMin)(_ <= overlap.colMax, _ + 1) { col =>
-              cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
-                val i = segmentTransform.gridToIndex(col, row)
-                val v = segment.getDouble(i)
-                bands(band).setDouble(col - gridBounds.colMin, row - gridBounds.rowMin, v)
-              }
-            }
-          } else {
-            cfor(overlap.colMin)(_ <= overlap.colMax, _ + 1) { col =>
-              cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
-                val i = segmentTransform.gridToIndex(col, row)
-                val v = segment.getInt(i)
-                bands(band).set(col - gridBounds.colMin, row - gridBounds.rowMin, v)
-              }
-            }
-          }
-        }
-      }
+      chipsBySegment.remove(segmentId)
+      finished
     }
 
-    ArrayMultibandTile(bands)
+    def burnBandInterleave(segmentId: Int, segment: GeoTiffSegment): List[Chip] = {
+      var finished: List[Chip] = Nil
+      val bandSegmentCount = segmentCount / bandCount
+      val segmentBounds = segmentLayout.getGridBounds(segmentId % bandSegmentCount)
+      val segmentTransform = segmentLayout.getSegmentTransform(segmentId % bandSegmentCount, bandCount)
+      val band: Int = segmentId / bandSegmentCount
+
+      for (chip <- chipsBySegment(segmentId)) {
+        val gridBounds = chip.window
+        val overlap = gridBounds.intersection(segmentBounds).get
+
+        if (cellType.isFloatingPoint) {
+          cfor(overlap.colMin)(_ <= overlap.colMax, _ + 1) { col =>
+            cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
+              val i = segmentTransform.gridToIndex(col, row)
+              val v = segment.getDouble(i)
+              chip.bands(band).setDouble(col - gridBounds.colMin, row - gridBounds.rowMin, v)
+            }
+          }
+        } else {
+          cfor(overlap.colMin)(_ <= overlap.colMax, _ + 1) { col =>
+            cfor(overlap.rowMin)(_ <= overlap.rowMax, _ + 1) { row =>
+              val i = segmentTransform.gridToIndex(col, row)
+              val v = segment.getInt(i)
+              chip.bands(band).set(col - gridBounds.colMin, row - gridBounds.rowMin, v)
+            }
+          }
+        }
+
+        chip.segmentsBurned += 1
+        if (chip.segmentsBurned == chip.intersectingSegments)
+          finished = chip :: finished
+      }
+
+      chipsBySegment.remove(segmentId)
+      finished
+    }
+
+    getSegments(intersectingSegments).flatMap { case (segmentId, segment) =>
+      if (hasPixelInterleave)
+        burnPixelInterleave(segmentId, segment)
+      else
+        burnBandInterleave(segmentId, segment)
+    }.map { chip =>
+      chip.window -> ArrayMultibandTile(chip.bands)
+    }
   }
 
   /**

@@ -185,11 +185,9 @@ object RasterReader {
 
     def readWindows(gbs: Array[GridBounds], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
       val geoTiff = GeoTiffReader.geoTiffSinglebandTile(info)
-      val gridBounds = geoTiff.gridBounds
-      gbs
-        .filter(gridBounds.contains)
-        .map { gb => (ProjectedExtent(info.mapTransform(gb), options.crs.getOrElse(info.crs)), geoTiff.crop(gb)) }
-        .toIterator
+      geoTiff.crop(gbs.filter(geoTiff.gridBounds.intersects)).map { case (gb, tile) =>
+        (ProjectedExtent(info.mapTransform(gb), options.crs.getOrElse(info.crs)), tile)
+      }
     }
   }
 
@@ -208,11 +206,9 @@ object RasterReader {
 
     def readWindows(gbs: Array[GridBounds], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
       val geoTiff = GeoTiffReader.geoTiffMultibandTile(info)
-      val gridBounds = geoTiff.gridBounds
-      gbs
-        .filter(gridBounds.contains)
-        .map { gb => (ProjectedExtent(info.mapTransform(gb), options.crs.getOrElse(info.crs)), geoTiff.crop(gb)) }
-        .toIterator
+      geoTiff.crop(gbs.filter(geoTiff.gridBounds.intersects)).map { case (gb, tile) =>
+        (ProjectedExtent(info.mapTransform(gb), options.crs.getOrElse(info.crs)), tile)
+      }
     }
   }
 
@@ -235,16 +231,13 @@ object RasterReader {
 
     def readWindows(gbs: Array[GridBounds], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
       val geoTiff = GeoTiffReader.geoTiffSinglebandTile(info)
-      val gridBounds = geoTiff.gridBounds
-      gbs
-        .filter(gridBounds.contains)
-        .map { gb =>
-          (TemporalProjectedExtent(
-            info.mapTransform(gb),
-            crs = options.crs.getOrElse(info.crs),
-            options.parseTime(info.tags)), geoTiff.crop(gb))
-        }
-        .toIterator
+      geoTiff.crop(gbs.filter(geoTiff.gridBounds.intersects)).map { case (gb, tile) =>
+        (TemporalProjectedExtent(
+          info.mapTransform(gb),
+          crs = options.crs.getOrElse(info.crs),
+          options.parseTime(info.tags)),
+        tile)
+      }
     }
   }
 
@@ -267,16 +260,13 @@ object RasterReader {
 
     def readWindows(gbs: Array[GridBounds], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
       val geoTiff = GeoTiffReader.geoTiffMultibandTile(info)
-      val gridBounds = geoTiff.gridBounds
-      gbs
-        .filter(gridBounds.contains)
-        .map { gb =>
-          (TemporalProjectedExtent(
-            info.mapTransform(gb),
-            options.crs.getOrElse(info.crs),
-            options.parseTime(info.tags)), geoTiff.crop(gb))
-        }
-        .toIterator
+      geoTiff.crop(gbs.filter(geoTiff.gridBounds.intersects)).map { case (gb, tile) =>
+        (TemporalProjectedExtent(
+          info.mapTransform(gb),
+          crs = options.crs.getOrElse(info.crs),
+          options.parseTime(info.tags)),
+        tile)
+      }
     }
   }
 }
