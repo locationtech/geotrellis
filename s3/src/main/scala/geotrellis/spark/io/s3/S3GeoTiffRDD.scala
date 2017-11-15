@@ -75,7 +75,7 @@ object S3GeoTiffRDD extends LazyLogging {
     crs: Option[CRS] = None,
     timeTag: String = GEOTIFF_TIME_TAG_DEFAULT,
     timeFormat: String = GEOTIFF_TIME_FORMAT_DEFAULT,
-    maxTileSize: Option[Int] = None,
+    maxTileSize: Option[Int] = Some(256),
     numPartitions: Option[Int] = None,
     partitionBytes: Option[Long] = Some(128l * 1024 * 1024),
     chunkSize: Option[Int] = None,
@@ -83,7 +83,8 @@ object S3GeoTiffRDD extends LazyLogging {
     getS3Client: () => S3Client = () => S3Client.DEFAULT
   ) extends RasterReader.Options
 
-  val contingencyTileSize = 512
+  private val DefaultMaxTileSize = 256
+  private val DefaultPartitionBytes = 128l * 1024 * 1024
 
   object Options {
     def DEFAULT = Options()
@@ -130,7 +131,7 @@ object S3GeoTiffRDD extends LazyLogging {
       case _ => {
         val size = Options.DEFAULT.maxTileSize match {
           case Some(maxTileSize) => maxTileSize
-          case None => contingencyTileSize
+          case None => DefaultMaxTileSize
         }
         logger.warn(s"Neither maxTileSize nor windowSize was given, defaulting to $size.")
         size
@@ -154,63 +155,53 @@ object S3GeoTiffRDD extends LazyLogging {
     geometry: Option[Geometry]
   )(implicit sc: SparkContext, rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
 
-    val conf = configuration(bucket, prefix, options)
-    lazy val sourceGeoTiffInfo = S3GeoTiffInfoReader(bucket, prefix, options)
+    if (options.maxTileSize.isDefined) {
+      if (options.numPartitions.isDefined) logger.warn("numPartitions option is ignored")
+      val sourceGeoTiffInfo = S3GeoTiffInfoReader(bucket, prefix, options)
 
-    (options.maxTileSize, options.partitionBytes) match {
-      case (_, Some(partitionBytes)) => {
-        val maxSize = getMaxSize(options)
+      val windows: RDD[(String, Array[GridBounds])] =
+        sourceGeoTiffInfo.geoTiffInfoRdd.flatMap({ uri =>
+          sourceGeoTiffInfo.windowsByPartition(
+            info = sourceGeoTiffInfo.getGeoTiffInfo(uri),
+            maxSize = getMaxSize(options),
+            partitionBytes = options.partitionBytes.getOrElse(DefaultPartitionBytes),
+            geometry = geometry
+          ).map { windows => (uri, windows) }
+        })
 
-        val windows: RDD[(String, Array[GridBounds])] =
-          sourceGeoTiffInfo.windowsByBytes(
-            partitionBytes,
-            maxSize,
-            geometry
-          )
+      windows.persist()
 
-        windows.persist()
-
+      val repartition = {
         val windowCount = windows.count.toInt
-
-        logger.info(s"Repartition into ${windowCount} partitions.")
-
-        val repartition =
-          if (windowCount > windows.partitions.length) windows.repartition(windowCount)
-          else windows
-
-        val result = repartition.flatMap { case (path, windowBounds) =>
-          rr.readWindows(windowBounds, sourceGeoTiffInfo.getGeoTiffInfo(path), options).map { case (k, v) =>
-            uriToKey(new URI(path), k) -> v
-          }
+        if (windowCount > windows.partitions.length) {
+          logger.info(s"Repartition into ${windowCount} partitions.")
+          windows.repartition(windowCount)
         }
-
-        windows.unpersist()
-        result
+        else windows
       }
-      case (Some(_), _) =>
-        val objectRequestsToDimensions: RDD[(GetObjectRequest, (Int, Int))] =
-          sc.newAPIHadoopRDD(
-            conf,
-            classOf[TiffTagsS3InputFormat],
-            classOf[GetObjectRequest],
-            classOf[TiffTags]
-          ).mapValues { tiffTags => (tiffTags.cols, tiffTags.rows) }
 
-        apply[I, K, V](objectRequestsToDimensions, uriToKey, options, sourceGeoTiffInfo)
+      val result = repartition.flatMap { case (path, windows) =>
+        val info = sourceGeoTiffInfo.getGeoTiffInfo(path)
+        rr.readWindows(windows, info, options).map { case (k, v) =>
+          uriToKey(new URI(path), k) -> v
+        }
+      }
 
-      case _ =>
-        sc.newAPIHadoopRDD(
-          conf,
-          classOf[BytesS3InputFormat],
-          classOf[String],
-          classOf[Array[Byte]]
-        ).mapPartitions(
-          _.map { case (key, bytes) =>
-            val (k, v) = rr.readFully(ByteBuffer.wrap(bytes), options)
-            uriToKey(new URI(key), k) -> v
-          },
-          preservesPartitioning = true
-        )
+      windows.unpersist()
+      result
+    } else {
+      sc.newAPIHadoopRDD(
+        configuration(bucket, prefix, options),
+        classOf[BytesS3InputFormat],
+        classOf[String],
+        classOf[Array[Byte]]
+      ).mapPartitions(
+        _.map { case (key, bytes) =>
+          val (k, v) = rr.readFully(ByteBuffer.wrap(bytes), options)
+          uriToKey(new URI(key), k) -> v
+        },
+        preservesPartitioning = true
+      )
     }
   }
 
@@ -252,52 +243,46 @@ object S3GeoTiffRDD extends LazyLogging {
   def apply[I, K, V](objectRequestsToDimensions: RDD[(GetObjectRequest, (Int, Int))], uriToKey: (URI, I) => K, options: Options, sourceGeoTiffInfo: => GeoTiffInfoReader)
     (implicit rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
 
+    if (options.numPartitions.isDefined) logger.warn("numPartitions option is ignored")
+
     val windows =
       objectRequestsToDimensions
-        .flatMap { case (objectRequest, (cols, rows)) =>
+        .flatMap { case (objectRequest, _) =>
           val bucket = objectRequest.getBucketName
           val key = objectRequest.getKey
-          val maxSize = getMaxSize(options)
 
-          sourceGeoTiffInfo
-            .getGeoTiffInfo(s"s3://$bucket/$key")
-            .segmentLayout
-            .listWindows(maxSize)
-            .map((objectRequest, _))
+          sourceGeoTiffInfo.windowsByPartition(
+            info = sourceGeoTiffInfo.getGeoTiffInfo(s"s3://$bucket/$key"),
+            maxSize = getMaxSize(options),
+            partitionBytes = options.partitionBytes.getOrElse(DefaultPartitionBytes),
+            geometry = None
+          ).map { windows => (objectRequest, windows) }
         }
 
-    // Windowed reading may have produced unbalanced partitions due to files of differing size
-    val repartitioned =
-      options.numPartitions match {
-        case Some(p) =>
-          logger.info(s"repartition into $p partitions.")
-          windows.repartition(p)
-        case None =>
-          options.partitionBytes match {
-            case Some(byteCount) =>
-              sourceGeoTiffInfo.estimatePartitionsNumber(byteCount, options.maxTileSize) match {
-                case Some(numPartitions) if numPartitions != windows.partitions.length =>
-                  logger.info(s"repartition into $numPartitions partitions.")
-                  windows.repartition(numPartitions)
-                case _ => windows
-              }
-            case _ =>
-              windows
-          }
+    windows.persist()
+
+    val repartition = {
+      val windowCount = windows.count.toInt
+      if (windowCount > windows.partitions.length) {
+        logger.info(s"Repartition into ${windowCount} partitions.")
+        windows.repartition(windowCount)
       }
-
-    repartitioned.map { case (objectRequest: GetObjectRequest, pixelWindow: GridBounds) =>
-      val reader = options.chunkSize match {
-        case Some(chunkSize) =>
-          StreamingByteReader(S3RangeReader(objectRequest, options.getS3Client()), chunkSize)
-        case None =>
-          StreamingByteReader(S3RangeReader(objectRequest, options.getS3Client()))
-      }
-
-      val (k, v) = rr.readWindow(reader, pixelWindow, options)
-
-      uriToKey(new URI(s"s3://${objectRequest.getBucketName}/${objectRequest.getKey}"), k) -> v
+      else windows
     }
+
+    val result = repartition.flatMap { case (objectRequest, windows) =>
+      val bucket = objectRequest.getBucketName
+      val key = objectRequest.getKey
+      val uri = s"s3://$bucket/$key"
+      val info = sourceGeoTiffInfo.getGeoTiffInfo(uri)
+
+      rr.readWindows(windows, info, options).map { case (k, v) =>
+        uriToKey(new URI(uri), k) -> v
+      }
+    }
+
+    windows.unpersist()
+    result
   }
 
   /**

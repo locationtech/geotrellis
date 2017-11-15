@@ -34,64 +34,28 @@ private [geotrellis] trait GeoTiffInfoReader extends LazyLogging {
   def getGeoTiffInfo(uri: String): GeoTiffInfo
   def getGeoTiffTags(uri: String): TiffTags
 
-  lazy val averagePixelSize: Option[Int] =
-    if(geoTiffInfo.nonEmpty) {
-      Some((geoTiffInfo.map(_._2.bandType.bytesPerSample.toLong).sum / geoTiffInfo.length).toInt)
-    } else {
-      logger.error(s"No tiff tags found.")
-      None
-    }
-
-  def windowsCount(maxTileSize: Option[Int] = None): Int =
-    geoTiffInfo
-      .flatMap { case (_, info) =>
-        RasterReader.listWindows(info.segmentLayout.totalCols, info.segmentLayout.totalRows, maxTileSize)
-        // TODO: really ?
-        // info.segmentLayout.listWindows(maxTileSize)
-      }
-      .length
-
-  def estimatePartitionsNumber(partitionBytes: Long, maxTileSize: Option[Int] = None): Option[Int] = {
-    (maxTileSize, averagePixelSize) match {
-      case (Some(tileSize), Some(pixelSize)) =>
-        val numPartitions = (tileSize * pixelSize * windowsCount(maxTileSize) / partitionBytes).toInt
-        logger.info(s"Estimated partitions number: $numPartitions")
-        if (numPartitions > 0) Some(numPartitions)
-        else None
-      case _ =>
-        logger.error("Can't estimate partitions number")
-        None
-    }
-  }
-
   /**
-    * Generate an RDD of URI, GridBounds pairs.  The URIs point to
-    * files and the GridBounds conform to GeoTiff segments (if
-    * possible).
+    * Generates and partitions windows for GeoTiff based on desired window size
+    * and query geometry. Partitioning is determined by total window sizes per partition.
     *
-    * @param  partitionBytes  The desired number of bytes per partition.
-    * @param  maxSize         The maximum (linear) size of any window (any GridBounds)
+    * @param info.
+    * @param partitionBytes  The desired number of bytes per partition.
+    * @param maxSize         The maximum (linear) size of any window (any GridBounds)
     */
-  def windowsByBytes(
-    partitionBytes: Long,
+  def windowsByPartition(
+    info: GeoTiffInfo,
     maxSize: Int,
+    partitionBytes: Long,
     geometry: Option[Geometry]
-  )(implicit sc: SparkContext): RDD[(String, Array[GridBounds])] = {
-    geoTiffInfoRdd.flatMap({ uri =>
-      val info = getGeoTiffInfo(uri)
+  ): Array[Array[GridBounds]] = {
+    val windows =
+      geometry match {
+        case Some(geometry) =>
+          info.segmentLayout.listWindows(maxSize, info.extent, geometry)
+        case None =>
+          info.segmentLayout.listWindows(maxSize)
+      }
 
-      val windows =
-        geometry match {
-          case Some(geometry) =>
-            val tags = getGeoTiffTags(uri)
-            val extent = tags.extent
-            info.segmentLayout.listWindows(maxSize, extent, geometry)
-          case None =>
-            info.segmentLayout.listWindows(maxSize)
-        }
-
-      val partitions = info.segmentLayout.partitionWindowsBySegments(windows, partitionBytes / info.cellType.bytes)
-      partitions.map({ windows => (uri, windows)})
-    })
+    info.segmentLayout.partitionWindowsBySegments(windows, partitionBytes / info.cellType.bytes)
   }
 }
