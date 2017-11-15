@@ -443,6 +443,64 @@ each run - often referred to as 'optimized' rendering. By default, a
 compressionQuality of 0.7 is used and Huffman table optimization is not
 used.
 
+Reprojecting
+============
+
+Many core GeoTrellis data types can be reprojected. To reproject a ``Line``:
+
+.. code-block:: scala
+
+    val wm: Line = ...
+
+    val ll: Line = wm.reproject(WebMercator, LatLng)  /* The Line reprojected into LatLng */
+
+To reproject a ``Tile``:
+
+.. code-block:: scala
+
+   val wm: Tile = ...
+   val extent: Extent = ....  /* Area covered by the Tile */
+   val raster: Raster[Tile] = Raster(wm, extent)  /* A Raster is a "location-aware" Tile */
+
+   val ll: Raster[Tile] = wm.reproject(WebMercator, LatLng)
+
+To reproject an ``Extent``:
+
+.. code-block:: scala
+
+   val wm: Extent = ...
+
+   val ll: Extent = wm.reproject(WebMercator, LatLng)
+
+See the pattern?
+
+A GeoTrellis "layer" (some ``RDD[(K, V)]``) conceptually represents a single, giant piece
+of imagery. In this form however it finds itself cut up into individual ``V`` (usually ``Tile``)
+and indexed by ``K`` (usually ``SpatialKey``). Is such a giant, cut-up raster still reprojectable?
+Certainly:
+
+.. code-block:: scala
+
+   // Recall this common alias:
+   //   type TileLayerRDD[K] = RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]
+   val wm: TileLayerRDD[SpatialKey] = ...  /* Result of previous work */
+   val layout: LayoutDefinition = ...      /* Size/shape of your new grid */
+
+   val (zoom, ll): (Int, TileLayerRDD[SpatialKey]) = wm.reproject(LatLng, layout)
+
+Let's break the last line some more:
+
+.. code::
+
+   val (zoom, ll): (Int, TileLayerRDD[SpatialKey]) = wm.reproject(LatLng, layout)
+        [1]                                                       [2]     [3]
+
+
+- [1]: We are also given back the zoom level corresponding to ??? TODO!
+- [2]: We only need to provide the target ``CRS`` here, since a ``TileLayerRDD``
+  implicitely knows its own projection.
+- [3]: Providing a ``LayoutDefinition`` allows us to blah blah blah TODO
+
 Resampling
 ==========
 
