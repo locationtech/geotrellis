@@ -1,5 +1,6 @@
-Core Concepts
-*************
+===============
+ Core Concepts
+===============
 
 Geographical Information Systems (GIS), like any specialized field, has
 a wealth of jargon and unique concepts. When represented in software,
@@ -76,7 +77,7 @@ TileLayerRDD
 A common specification of ``RDD[(K, V)] with Metadata[M]`` in GeoTrellis
 is as follows:
 
-.. code:: scala
+.. code-block:: scala
 
     type TileLayerRDD[K] = RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]
 
@@ -97,7 +98,7 @@ backend has an ``AttributeStore``, a ``LayerReader``, and a
 
 Example setup (with our ``File`` system backend):
 
-.. code:: scala
+.. code-block:: scala
 
     import geotrellis.spark._
     import geotrellis.spark.io._
@@ -112,7 +113,7 @@ Example setup (with our ``File`` system backend):
 
 Writing an entire layer:
 
-.. code:: scala
+.. code-block:: scala
 
     /* Zoom level 13 */
     val layerId = LayerId("myLayer", 13)
@@ -128,14 +129,14 @@ Writing an entire layer:
 
 Reading an entire layer:
 
-.. code:: scala
+.. code-block:: scala
 
     /* `.read` has many overloads, but this is the simplest */
     val sameLayer: TileLayerRDD[SpatialKey] = reader.read(layerId)
 
 Querying a layer (a "filtered" read):
 
-.. code:: scala
+.. code-block:: scala
 
     /* Some area on the earth to constrain your query to */
     val extent: Extent = ...
@@ -159,7 +160,7 @@ cubes) of ``Tile``\ s on the earth are organized by keys. This key,
 often refered to generically as ``K``, is typically a ``SpatialKey`` or
 a ``SpaceTimeKey``:
 
-.. code:: scala
+.. code-block:: scala
 
     case class SpatialKey(col: Int, row: Int)
 
@@ -190,7 +191,7 @@ Although ``KeyIndex`` is often used in its generic ``trait`` form, we
 supply three underlying implementations.
 
 Z-Curve
-^^^^^^^
+~~~~~~~
 
 .. figure:: https://upload.wikimedia.org/wikipedia/commons/c/cd/Four-level_Z.svg
    :alt:
@@ -198,7 +199,7 @@ Z-Curve
 The Z-Curve is the simplest ``KeyIndex`` to use (and implement). It can
 be used with both ``SpatialKey`` and ``SpaceTimeKey``.
 
-.. code:: scala
+.. code-block:: scala
 
     val b0: KeyBounds[SpatialKey] = ... /* from `TileLayerRDD.metadata.bounds` */
     val b1: KeyBounds[SpaceTimeKey] = ...
@@ -210,7 +211,7 @@ be used with both ``SpatialKey`` and ``SpaceTimeKey``.
     val oneD: Long = i0.toIndex(k) /* A SpatialKey's 2D coords mapped to 1D */
 
 Hilbert
-^^^^^^^
+~~~~~~~
 
 .. figure:: https://upload.wikimedia.org/wikipedia/commons/a/a5/Hilbert_curve.svg
    :alt:
@@ -218,28 +219,28 @@ Hilbert
 Another well-known curve, available for both ``SpatialKey`` and
 ``SpaceTimeKey``.
 
-.. code:: scala
+.. code-block:: scala
 
     val b: KeyBounds[SpatialKey] = ...
 
     val index: KeyIndex[SpatialKey] = HilbertKeyIndexMethod.createIndex(b)
 
 Index Resolution Changes Index Order
-""""""""""""""""""""""""""""""""""""
+++++++++++++++++++++++++++++++++++++
 
 Changing the resolution (in bits) of the index causes a rotation and/or
 reflection of the points with respect to curve-order. Take, for example
 the following code (which is actually derived from the testing
 codebase):
 
-.. code:: scala
+.. code-block:: scala
 
     HilbertSpaceTimeKeyIndex(SpaceTimeKey(0,0,y2k), SpaceTimeKey(2,2,y2k.plusMillis(1)),2,1)
 
 The last two arguments are the index resolutions. If that were changed
 to:
 
-.. code:: scala
+.. code-block:: scala
 
     HilbertSpaceTimeKeyIndex(SpaceTimeKey(0,0,y2k), SpaceTimeKey(2,2,y2k.plusMillis(1)),3,1)
 
@@ -253,7 +254,7 @@ complex and beyond the scope of GeoTrellis' concerns, which is why we
 lean on Google's ``uzaygezen`` library.
 
 Beware the 62-bit Limit
-"""""""""""""""""""""""
++++++++++++++++++++++++
 
 Currently, the spatial and temporal resolution required to index the
 points, expressed in bits, must sum to 62 bits or fewer.
@@ -261,7 +262,7 @@ points, expressed in bits, must sum to 62 bits or fewer.
 For example, the following code appears in
 ``HilbertSpaceTimeKeyIndex.scala``:
 
-.. code:: scala
+.. code-block:: scala
 
     @transient
     lazy val chc = {
@@ -281,7 +282,7 @@ dimensions. If those three integers sum to more than 62 bits, an error
 will be thrown at runtime.
 
 Row Major
-^^^^^^^^^
+~~~~~~~~~
 
 .. figure:: ./images/row-major.png
    :alt:
@@ -291,7 +292,7 @@ Row Major is only available for ``SpatialKey``, but provides the fastest
 locality guarantees, so should only be used when locality isn't as
 important to your application.
 
-.. code:: scala
+.. code-block:: scala
 
     val b: KeyBounds[SpatialKey] = ...
 
@@ -308,7 +309,7 @@ Tiles
 Layers <#tile-layers>`__, a common specification of
 ``RDD[(K, V)] with Metadata[M]`` is:
 
-.. code:: scala
+.. code-block:: scala
 
     type TileLayerRDD[K] = RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]
 
@@ -337,7 +338,7 @@ Critically, a ``Tile`` must know how big it is, and what its underlying
 Fundamentally, the union of a ``Tile`` and ``Extent`` is how GeoTrellis
 defines a ``Raster``:
 
-.. code:: scala
+.. code-block:: scala
 
     case class Raster[+T <: CellGrid](tile: T, extent: Extent) extends CellGrid
 
@@ -371,33 +372,25 @@ What is a Cell Type?
    note <./faq/#how-do-i-convert-a-tiles-celltype>`__ on ``CellType``
    conversions.
 
-+-----------+---------------+-------------------------+---------------------------+
-|           | No NoData     | Constant NoData         | User Defined NoData       |
-+===========+===============+=========================+===========================+
-| BitCells  | ``BitCellType | N/A                     | N/A                       |
-|           | ``            |                         |                           |
-+-----------+---------------+-------------------------+---------------------------+
-| ByteCells | ``ByteCellTyp | ``ByteConstantNoDataCel | ``ByteUserDefinedNoDataCe |
-|           | e``           | lType``                 | llType``                  |
-+-----------+---------------+-------------------------+---------------------------+
-| UbyteCell | ``UByteCellTy | ``UByteConstantNoDataCe | ``UByteUserDefinedNoDataC |
-| s         | pe``          | llType``                | ellType``                 |
-+-----------+---------------+-------------------------+---------------------------+
-| ShortCell | ``ShortCellTy | ``ShortConstantNoDataCe | ``ShortUserDefinedNoDataC |
-| s         | pe``          | llType``                | ellType``                 |
-+-----------+---------------+-------------------------+---------------------------+
-| UShortCel | ``UShortCellT | ``UShortConstantNoDataC | ``UShortUserDefinedNoData |
-| ls        | ype``         | ellType``               | CellType``                |
-+-----------+---------------+-------------------------+---------------------------+
-| IntCells  | ``IntCellType | ``IntConstantNoDataCell | ``IntUserDefinedNoDataCel |
-|           | ``            | Type``                  | lType``                   |
-+-----------+---------------+-------------------------+---------------------------+
-| FloatCell | ``FloatCellTy | ``FloatConstantNoDataCe | ``FloatUserDefinedNoDataC |
-| s         | pe``          | llType``                | ellType``                 |
-+-----------+---------------+-------------------------+---------------------------+
-| DoubleCel | ``DoubleCellT | ``DoubleConstantNoDataC | ``DoubleUserDefinedNoData |
-| ls        | ype``         | ellType``               | CellType``                |
-+-----------+---------------+-------------------------+---------------------------+
++-------------+--------------------+----------------------------------+-------------------------------------+
+|             | No NoData          | Constant NoData                  | User Defined NoData                 |
++=============+====================+==================================+=====================================+
+| BitCells    | ``BitCellType``    | N/A                              | N/A                                 |
++-------------+--------------------+----------------------------------+-------------------------------------+
+| ByteCells   | ``ByteCellType``   | ``ByteConstantNoDataCellType``   | ``ByteUserDefinedNoDataCellType``   |
++-------------+--------------------+----------------------------------+-------------------------------------+
+| UbyteCells  | ``UByteCellType``  | ``UByteConstantNoDataCellType``  | ``UByteUserDefinedNoDataCellType``  |
++-------------+--------------------+----------------------------------+-------------------------------------+
+| ShortCells  | ``ShortCellType``  | ``ShortConstantNoDataCellType``  | ``ShortUserDefinedNoDataCellType``  |
++-------------+--------------------+----------------------------------+-------------------------------------+
+| UShortCells | ``UShortCellType`` | ``UShortConstantNoDataCellType`` | ``UShortUserDefinedNoDataCellType`` |
++-------------+--------------------+----------------------------------+-------------------------------------+
+| IntCells    | ``IntCellType``    | ``IntConstantNoDataCellType``    | ``IntUserDefinedNoDataCellType``    |
++-------------+--------------------+----------------------------------+-------------------------------------+
+| FloatCells  | ``FloatCellType``  | ``FloatConstantNoDataCellType``  | ``FloatUserDefinedNoDataCellType``  |
++-------------+--------------------+----------------------------------+-------------------------------------+
+| DoubleCells | ``DoubleCellType`` | ``DoubleConstantNoDataCellType`` | ``DoubleUserDefinedNoDataCellType`` |
++-------------+--------------------+----------------------------------+-------------------------------------+
 
 The above table lists ``CellType`` ``DataType``\ s in the leftmost
 column and ``NoData`` policies along the top row. A couple of points are
@@ -414,7 +407,7 @@ worth making here:
 
 Let's look to how this information can be used:
 
-.. code:: scala
+.. code-block:: scala
 
     /** Here's an array we'll use to construct tiles */
     val myData = Array(42, 1, 2, 3)
@@ -592,7 +585,7 @@ a two-dimensional collection of evenly spaced data. Tiles are a lot like
 certain sequences of sequences (this array of arrays is like a 3x3
 tile):
 
-.. code:: scala
+.. code::
 
     // not real syntax
     val myFirstTile = [[1,1,1],[1,2,2],[1,2,3]]
@@ -648,7 +641,7 @@ lead you astray:
 
 From ``IntArrayTile.scala``:
 
-.. code:: scala
+.. code-block:: scala
 
     abstract class IntArrayTile(
       val array: Array[Int],
@@ -658,7 +651,7 @@ From ``IntArrayTile.scala``:
 
 From ``DoubleArrayTile.scala``:
 
-.. code:: scala
+.. code-block:: scala
 
     abstract class DoubleArrayTile(
       val array: Array[Double],
@@ -676,7 +669,7 @@ in-place manipulation of cells (GeoTrellis is about performance, so this
 minor affront to the gods of immutability can be forgiven). From
 MutableArrayTile.scala:
 
-.. code:: scala
+.. code-block:: scala
 
     trait MutableArrayTile extends ArrayTile { ... }
 
@@ -688,7 +681,7 @@ the neatly defined space-time of the JVM processes which are running on
 a single machine (this is the point of GeoTrellis' Spark integration).
 From ArrayTile.scala:
 
-.. code:: scala
+.. code-block:: scala
 
     trait ArrayTile extends Tile with Serializable { ... }
 
@@ -697,7 +690,7 @@ surprised how much we can say about tile behavior from the base of its
 inheritance tree, so the source is worth reading directly. From
 Tile.scala:
 
-.. code:: scala
+.. code-block:: scala
 
     trait Tile extends CellGrid with ... { ... }
 
@@ -722,7 +715,7 @@ Raster Examples
 
 In the repl, you can try this out to construct a simple ``Raster``:
 
-.. code:: scala
+.. code::
 
     import geotrellis.raster._
     import geotrellis.vector._
@@ -744,7 +737,7 @@ In the repl, you can try this out to construct a simple ``Raster``:
 
 Here's a fun method for exploring your tiles:
 
-.. code:: scala
+.. code-block:: scala
 
     scala> res0.asciiDraw()
     res3: String =
@@ -803,7 +796,7 @@ geometries include:
 Working with these geometries is a relatively straightforward affair.
 Let's take a look:
 
-.. code:: scala
+.. code-block:: scala
 
     import geotrellis.vector._
 
@@ -823,7 +816,7 @@ idiomatically destructure these wrappers, we can use the
 ``as[G <: Geometry]`` function which either returns ``Some(G)`` or
 ``None``.
 
-.. code:: scala
+.. code-block:: scala
 
     val pointIntersection = (Point(1.0, 2.0) & Point(1.0, 2.0)).as[Point]
     val pointNonIntersection = (Point(1.0, 2.0) & Point(12.0, 4.0)).as[Point]
@@ -852,7 +845,7 @@ For example, we note that a ``Point``/``Point`` intersection has the
 type ``PointOrNoResult``. From this we can deduce that it is either a
 ``Point`` underneath or else nothing:
 
-.. code:: scala
+.. code::
 
     scala> import geotrellis.vector._
     scala> p1 & p2 match {
@@ -867,7 +860,7 @@ capabilities. For instance, after importing ``geotrellis.vector.io._``,
 it becomes possible to call the ``toGeoJson`` method on any
 ``Geometry``:
 
-.. code:: scala
+.. code-block:: scala
 
     import geotrellis.vector.io._
     assert(Point(1,1).toGeoJson == """{"type":"Point","coordinates":[1.0,1.0]}""")
@@ -882,7 +875,7 @@ Methods which are specific to certain subclasses of ``Geometry`` exist
 too. For example, ``geotrellis.vector.MultiLine`` is implicitly extended
 by ``geotrellis.vector.op`` such that this becomes possible:
 
-.. code:: scala
+.. code-block:: scala
 
     import geotrellis.vector.op._
     val myML = MultiLine.EMPTY
@@ -909,7 +902,7 @@ software space. It can be found in ``Feature.scala``.
 Let's examine some source code so that this is all a bit clearer. From
 ``geotrellis.vector.Feature.scala``:
 
-.. code:: scala
+.. code-block:: scala
 
     abstract class Feature[D] {
       type G <: Geometry
@@ -1049,7 +1042,7 @@ Metadata
 
 The metadata JSON files contain familiar information:
 
-.. code:: console
+.. code-block:: console
 
    $ jshon < lansat__.__6__.__metadata.json
      [
@@ -1095,7 +1088,7 @@ information, see our `section on Key Indexes <#key-indexes>`__.
 As we have multiple storage backends, ``header`` can look different. Here's
 an example for a Layer ingested to S3:
 
-.. code:: javascript
+.. code-block:: javascript
 
    ... // more here
    "header": {
@@ -1113,7 +1106,7 @@ Tiles
 From above, the numbered directories under ``landsat/`` contain serialized
 ``Tile`` files.
 
-.. code:: console
+.. code-block:: console
 
    $ ls
    attributes/  landsat/
@@ -1145,7 +1138,7 @@ don't need to be stored via the same `backend <tile-backends.html>`__.
 Indeed, when instantiating a Layer IO class like ``S3LayerReader``, we notice
 that its ``AttributeStore`` parameter is type-agnostic:
 
-.. code:: scala
+.. code-block:: scala
 
    class S3LayerReader(val attributeStore: AttributeStore)
 
@@ -1202,7 +1195,7 @@ of a web-based map (e.g. `Leaflet <http://leafletjs.com>`__).
   ``ResampleMethod`` to use for generating data at new resolutions is
   ``tileToLayout``. Let's take a look at its use:
 
-.. code:: scala
+.. code-block:: scala
 
     val sourceTiles: RDD[(ProjectedExtent, Tile)] = ??? // Tiles from GeoTIFF
     val cellType: CellType = IntCellType
@@ -1288,7 +1281,7 @@ Map Algebra operations are defined as implicit methods on ``Tile`` or
 ``Traversable[Tile]``, which are imported with ``import
 geotrellis.raster._``.
 
-.. code:: scala
+.. code-block:: scala
 
     import geotrellis.raster._
 
@@ -1386,7 +1379,7 @@ aren't yet possible.
 Small Example
 -------------
 
-.. code:: scala
+.. code-block:: scala
 
     import geotrellis.spark.SpatialKey
     import geotrellis.spark.tiling.LayoutDefinition
@@ -1504,7 +1497,7 @@ that there are two ways in which the actual image data is formatted
 within the file. The two methods are: Striped and Tiled.
 
 Striped
-^^^^^^^
+~~~~~~~
 
 Striped storage breaks the image into segments of long, vertical bands
 that stretch the entire width of the picture. Contained within them are
@@ -1523,7 +1516,7 @@ starts within the file. The last tag, ``ByteSegmentCount``, is also an
 array of values that contains the size of each strip in terms of Bytes.
 
 Tiled
-^^^^^
+~~~~~
 
 Tiff 6.0 introduced a new way to arrange and store data within a Tiff,
 tiled storage. These rectangular segments have both a height and a width
@@ -1594,20 +1587,20 @@ Typeclasses are realized in Scala through a combination of ``trait``\ s
 and ``implicit`` class wrappings. A typeclass constraint is visible in a
 class/method signature like this:
 
-.. code:: scala
+.. code-block:: scala
 
     class Foo[A: Order](a: A) { ... }
 
 Meaning that ``Foo`` can accept any ``A``, so long as it is "orderable".
 In reality, this in syntactic sugar for the following:
 
-.. code:: scala
+.. code-block:: scala
 
     class Foo[A](a: A)(implicit ev: Order[A]) { ... }
 
 Here's a real-world example from GeoTrellis code:
 
-.. code:: scala
+.. code-block:: scala
 
     protected def _write[
       K: AvroRecordCodec: JsonFormat: ClassTag,
@@ -1640,7 +1633,7 @@ JsonFormat
 From the ``spray`` library. This constraint says that its type can be
 converted to and from JSON, like this:
 
-.. code:: scala
+.. code-block:: scala
 
     def toJsonAndBack[A: JsonFormat](a: A): A = {
       val json: Value = a.toJson
@@ -1663,7 +1656,7 @@ Boundable
 Always used on ``K``, ``Boundable`` means your key type has a finite
 bound.
 
-.. code:: scala
+.. code-block:: scala
 
     trait Boundable[K] extends Serializable {
       def minBound(p1: K, p2: K): K
@@ -1680,7 +1673,7 @@ functions that allow one to generically get and set values in a data
 structure. They are particularly useful for nested data structures.
 ``Component`` looks like this:
 
-.. code:: scala
+.. code-block:: scala
 
     trait Component[T, C] extends GetComponent[T, C] with SetComponent[T, C]
 
@@ -1708,7 +1701,7 @@ functionality anyway. Libraries like
 ``Functor``, but their definitions don't allow further constraints on
 your inner type. We have:
 
-.. code:: scala
+.. code-block:: scala
 
     trait Functor[F[_], A] extends MethodExtensions[F[A]]{
       /** Lift `f` into `F` and apply to `F[A]`. */
@@ -1717,7 +1710,7 @@ your inner type. We have:
 
 which allows us to do:
 
-.. code:: scala
+.. code-block:: scala
 
     def foo[M[_], K: SpatialComponent: λ[α => M[α] => Functor[M, α]]](mk: M[K]) { ... }
 
@@ -1757,7 +1750,7 @@ methods, should the need arise.
 
 Here is an example of using a ``CRS`` to reproject a ``Line``:
 
-.. code:: scala
+.. code-block:: scala
 
     val wm = Line(...)  // A `LineString` vector object in WebMercator.
     val ll: Line = wm.reproject(WebMercator, LatLng)  // The Line reprojected into LatLng.
