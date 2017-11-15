@@ -20,7 +20,6 @@ import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.spark._
 import geotrellis.util.{ByteReader, StreamingByteReader}
 import geotrellis.vector._
@@ -61,94 +60,8 @@ object RasterReader {
     }
   }
 
-  private def best(maxSize: Int, segment: Int): Int = {
-    var i: Int = 1
-    var result: Int = -1
-    // Search for the largest factor of segment that is > 1 and <=
-    // maxSize.  If one cannot be found, give up and return maxSize.
-    while (i < math.sqrt(segment) && result == -1) {
-      if ((segment % i == 0) && ((segment/i) <= maxSize)) result = (segment/i)
-      i += 1
-    }
-    if (result == -1) maxSize; else result
-  }
-
-  def listWindows(
-    cols: Int, rows: Int, maxSize: Int,
-    segCols: Int, segRows: Int
-  ): Array[GridBounds] = {
-    val colSize: Int =
-      if (maxSize >= segCols * 2) {
-        math.floor(maxSize.toDouble / segCols).toInt * segCols
-      } else if (maxSize >= segCols) {
-        segCols
-      } else best(maxSize, segCols)
-
-    val rowSize: Int =
-      if (maxSize >= segRows * 2) {
-        math.floor(maxSize.toDouble / segRows).toInt * segRows
-      } else if (maxSize >= segRows) {
-        segRows
-      } else best(maxSize, segRows)
-
-    val windows = listWindows(cols, rows, colSize, rowSize)
-
-    windows
-  }
-
-  /** List all pixel windows that meet the given geometry */
-  def listWindows(
-    cols: Int, rows: Int, maxSize: Int,
-    extent: Extent, segCols: Int, segRows: Int, geometry: Geometry,
-    options: Rasterizer.Options = Rasterizer.Options.DEFAULT
-  ): Array[GridBounds] = {
-    val maxColSize: Int =
-      if (maxSize >= segCols * 2) {
-        math.floor(maxSize.toDouble / segCols).toInt * segCols
-      } else if (maxSize >= segCols) {
-        segCols
-      } else best(maxSize, segCols)
-
-    val maxRowSize: Int =
-      if (maxSize >= segRows) {
-        math.floor(maxSize.toDouble / segRows).toInt * segRows
-      } else if (maxSize >= segRows) {
-        segRows
-      } else best(maxSize, segRows)
-
-    val result = scala.collection.mutable.ArrayBuffer[GridBounds]()
-    val re = RasterExtent(extent, math.max(cols/maxColSize,1), math.max(rows/maxRowSize,1))
-
-    Rasterizer.foreachCellByGeometry(geometry, re, options)({ (col: Int, row: Int) =>
-      result +=
-      GridBounds(
-        col * maxColSize,
-        row * maxRowSize,
-        math.min((col+1)*maxColSize - 1, cols-1),
-        math.min((row+1)*maxRowSize - 1, rows-1)
-      )
-    })
-    result.toArray
-  }
-
   /** List all pixel windows that cover a grid of given size */
-  def listWindows(cols: Int, rows: Int, colSize: Int, rowSize: Int): Array[GridBounds] = {
-    val result = scala.collection.mutable.ArrayBuffer[GridBounds]()
-    cfor(0)(_ < cols, _ + colSize) { col =>
-      cfor(0)(_ < rows, _ + rowSize) { row =>
-        result +=
-        GridBounds(
-          col,
-          row,
-          math.min(col + colSize - 1, cols - 1),
-          math.min(row + rowSize - 1, rows - 1)
-        )
-      }
-    }
-    result.toArray
-  }
-
-  /** List all pixel windows that cover a grid of given size */
+  @deprecated("use GeoTiffSegmentLayout.listWindows instead", "1.2")
   def listWindows(cols: Int, rows: Int, maxTileSize: Option[Int]): Array[GridBounds] = {
     val result = scala.collection.mutable.ArrayBuffer[GridBounds]()
     maxTileSize match {

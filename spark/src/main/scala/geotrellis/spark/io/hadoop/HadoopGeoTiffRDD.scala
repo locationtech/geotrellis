@@ -201,12 +201,13 @@ object HadoopGeoTiffRDD extends LazyLogging {
     val windows: RDD[(Path, GridBounds)] =
       pathsToDimensions
         .flatMap { case (objectRequest, (cols, rows)) =>
-          val info = HadoopGeoTiffInfoReader(objectRequest.toString, conf, options.tiffExtensions)
-          val layout = info.getGeoTiffInfo(objectRequest.toString).segmentLayout.tileLayout
+          val infoReader = HadoopGeoTiffInfoReader(objectRequest.toString, conf, options.tiffExtensions)
           val maxSize = getMaxSize(options)
 
-          RasterReader
-            .listWindows(cols, rows, maxSize, layout.tileCols, layout.tileRows)
+          infoReader
+            .getGeoTiffInfo(objectRequest.toString)
+            .segmentLayout
+            .listWindows(maxSize)
             .map((objectRequest, _))
         }
 
