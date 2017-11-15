@@ -160,7 +160,7 @@ but not the Layer (``RDD``) level. Now it is.
    val points: RDD[(SpatialKey, Array[Coordinate])] = ...
    val layout: LayoutDefinition = ...  /* The definition of your grid */
 
-   val layer: RDD[(SpatialKey, Tile)] = point.euclideanDistance(layout)
+   val layer: RDD[(SpatialKey, Tile)] = points.euclideanDistance(layout)
 
 Polygonal Summaries over Time
 *****************************
