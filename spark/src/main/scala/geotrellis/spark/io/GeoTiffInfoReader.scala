@@ -46,6 +46,8 @@ private [geotrellis] trait GeoTiffInfoReader extends LazyLogging {
     geoTiffInfo
       .flatMap { case (_, info) =>
         RasterReader.listWindows(info.segmentLayout.totalCols, info.segmentLayout.totalRows, maxTileSize)
+        // TODO: really ?
+        // info.segmentLayout.listWindows(maxTileSize)
       }
       .length
 
@@ -76,24 +78,19 @@ private [geotrellis] trait GeoTiffInfoReader extends LazyLogging {
     geometry: Option[Geometry]
   )(implicit sc: SparkContext): RDD[(String, Array[GridBounds])] = {
     geoTiffInfoRdd.flatMap({ uri =>
-      val md = getGeoTiffInfo(uri)
-      val cols = md.segmentLayout.totalCols
-      val rows = md.segmentLayout.totalRows
-      val segCols = md.segmentLayout.tileLayout.tileCols
-      val segRows = md.segmentLayout.tileLayout.tileRows
-      val cellType = md.cellType
+      val info = getGeoTiffInfo(uri)
 
-      val fileWindows =
+      val windows =
         geometry match {
           case Some(geometry) =>
             val tags = getGeoTiffTags(uri)
             val extent = tags.extent
-            RasterReader.listWindows(cols, rows, maxSize, extent, segCols, segRows, geometry)
+            info.segmentLayout.listWindows(maxSize, extent, geometry)
           case None =>
-            RasterReader.listWindows(cols, rows, maxSize, segCols, segRows)
+            info.segmentLayout.listWindows(maxSize)
         }
 
-      val partitions = md.segmentLayout.partitionWindowsBySegments(fileWindows, partitionBytes / cellType.bytes)
+      val partitions = info.segmentLayout.partitionWindowsBySegments(windows, partitionBytes / info.cellType.bytes)
       partitions.map({ windows => (uri, windows)})
     })
   }

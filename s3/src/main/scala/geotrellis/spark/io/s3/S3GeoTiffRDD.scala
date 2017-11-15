@@ -257,11 +257,12 @@ object S3GeoTiffRDD extends LazyLogging {
         .flatMap { case (objectRequest, (cols, rows)) =>
           val bucket = objectRequest.getBucketName
           val key = objectRequest.getKey
-          val layout = sourceGeoTiffInfo.getGeoTiffInfo(s"s3://$bucket/$key").segmentLayout.tileLayout
           val maxSize = getMaxSize(options)
 
-          RasterReader
-            .listWindows(cols, rows, maxSize, layout.tileCols, layout.tileRows)
+          sourceGeoTiffInfo
+            .getGeoTiffInfo(s"s3://$bucket/$key")
+            .segmentLayout
+            .listWindows(maxSize)
             .map((objectRequest, _))
         }
 
