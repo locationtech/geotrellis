@@ -4,8 +4,8 @@ Using Rasters
 This document serves as a complete guide to using ``Raster``\ s in
 GeoTrellis.
 
-Raster Rendering
-================
+Rendering
+=========
 
 Rendering Common Image Formats
 ------------------------------
@@ -30,7 +30,7 @@ integers in it are all *actually* hex codes for RGBA colors. In this
 case, your task is nearly complete. The following code should be
 sufficient:
 
-.. code:: scala
+.. code-block:: scala
 
     import geotrellis.raster._
 
@@ -203,7 +203,7 @@ Custom Color Ramps
 You can create your own color ramp with a list of integar values,
 constructed using our RBG or RGBA helper objects.
 
-.. code:: scala
+.. code-block:: scala
 
     val colorRamp =
       ColorRamp(
@@ -225,7 +225,7 @@ stops that interpolates colors between red and blue, with an alpha value
 that starts at totally opaque for the red values, and ends at 0xAA alpha
 for blue values:
 
-.. code:: scala
+.. code-block:: scala
 
     val colorRamp =
           ColorRamp(0xFF0000FF, 0x0000FFFF)
@@ -262,7 +262,7 @@ programming interface, just be sure to keep the distinction in mind.
 
 You can create RGB and RGBA colors in a variety of ways:
 
-.. code:: scala
+.. code-block:: scala
 
     import geotrellis.raster.render._
 
@@ -292,7 +292,7 @@ the color of any value that doesn't fit to the color map. Also, if the
 will throw an exception if a value does not fit the color map. The
 default values of these options are:
 
-.. code:: scala
+.. code-block:: scala
 
     val colorMapDefaultOptions =
       ColorMap.Options(
@@ -305,7 +305,7 @@ default values of these options are:
 To examplify the options, let's look at how two different color ramps
 will color values.
 
-.. code:: scala
+.. code-block:: scala
 
     import geotrellis.render._
 
@@ -353,7 +353,7 @@ will color values.
 If we were to use the ``mapDouble`` method of the color maps to find
 color values of the following points, we'd see the following:
 
-.. code:: scala
+.. code-block:: scala
 
     scala> colorMap1.mapDouble(2.0) == RGB(0, 255, 0)
     res1: Boolean = true
@@ -367,7 +367,7 @@ is based on the ``GreaterThanOrEqualTo`` class boundary type, and
 ``2.0`` is not greater than or equal to any of the mapped values, it
 maps ``2.0`` to the ``fallbackColor``.
 
-.. code:: scala
+.. code-block:: scala
 
     scala> colorMap1.mapDouble(23.5) == RGB(255,153,51)
     res4: Boolean = true
@@ -396,7 +396,7 @@ Here is an example of creating a ``ColorMap`` from a ``ColorRamp`` and a
 number of stops to 10, and convert it to a color map based on quantile
 breaks:
 
-.. code:: scala
+.. code-block:: scala
 
     val tile: Tile = ???
 
@@ -405,7 +405,7 @@ breaks:
 Here is another way to do the same thing, using the
 ``ColorRamp.toColorMap``:
 
-.. code:: scala
+.. code-block:: scala
 
     val tile: Tile = ???
 
@@ -565,7 +565,7 @@ For a code example, this is how we would do exactly what we talked
 about: color a raster tile into red, green and blue values based on it's
 quantile breaks:
 
-.. code:: scala
+.. code-block:: scala
 
     import geotrellis.raster.histogram._
     import geotrellis.raster.render._
@@ -604,7 +604,7 @@ Kriging Methods
 The Kriging methods are largely classified into different types in the
 way the mean(mu) and the covariance values of the object are dealt with.
 
-.. code:: scala
+.. code-block:: scala
 
     // Array of sample points with given data
     val points: Array[PointFeature[Double]] = ...
@@ -624,7 +624,7 @@ namely:
 Simple Kriging
 ^^^^^^^^^^^^^^
 
-.. code:: scala
+.. code-block:: scala
 
     // Simple kriging, a tile  set with the Kriging prediction per cell is returned
     val sv: Semivariogram = NonLinearSemivariogram(points, 30000, 0, Spherical)
@@ -654,7 +654,7 @@ interpolation set is constant (using solely the sample points)
 Ordinary Kriging
 ^^^^^^^^^^^^^^^^
 
-.. code:: scala
+.. code-block:: scala
 
     // Ordinary kriging, a tile  set with the Kriging prediction per cell is returned
     val sv: Semivariogram = NonLinearSemivariogram(points, 30000, 0, Spherical)
@@ -683,7 +683,7 @@ model.
 Universal Kriging
 ^^^^^^^^^^^^^^^^^
 
-.. code:: scala
+.. code-block:: scala
 
     // Universal kriging, a tile  set with the Kriging prediction per cell is returned
     val attrFunc: (Double, Double) => Array[Double] = {
@@ -728,7 +728,7 @@ Here, the "linear" refers to the linearity in parameters (beta).
 Geostatistical Kriging
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. code:: scala
+.. code-block:: scala
 
     // Geostatistical kriging, a tile  set with the Kriging prediction per cell is returned
     val attrFunc: (Double, Double) => Array[Double] = {
@@ -792,7 +792,7 @@ that the user may use any method for generating the set of attribute
 functions; in this case we have used coordinate transformation before
 the actual calculation).
 
-.. code:: scala
+.. code-block:: scala
 
     val c1: Double = 0.01 * (0.873 * (x - 418) - 0.488 * (y - 458))
     val c2: Double = 0.01 * (0.488 * (x - 418) + 0.873 * (y - 458))
@@ -808,7 +808,7 @@ Image taken from
 Elevation
 ^^^^^^^^^
 
-.. code:: scala
+.. code-block:: scala
 
     /** Estimate of the elevation's contribution to groundwater level
       * [10 * exp(-c1)]
@@ -826,7 +826,7 @@ Industry draw down (water usage of industry)
 Image taken from
 ``Smith, T.E., (2014) Notebook on Spatial Data Analysis [online]  http://www.seas.upenn.edu/~ese502/#notebook``
 
-.. code:: scala
+.. code-block:: scala
 
     /** Estimate of the industries' contribution to groundwater level
       * exp{ -1.0 * [(1.5)*c1^2 - c2^2]}
@@ -844,7 +844,7 @@ Island draw down (water usage of Venice)
 Image taken from
 ``Smith, T.E., (2014) Notebook on Spatial Data Analysis [online]  http://www.seas.upenn.edu/~ese502/#notebook``
 
-.. code:: scala
+.. code-block:: scala
 
     /** Estimate of the island's contribution to groundwater level
       * //exp{-1.0 * (sqrt((s1-560)^2 + (s2-390)^2) / 35)^8 }
@@ -864,7 +864,7 @@ In case the intuition for a relevant ``attrFunc`` is not clear; the user
 need not supply an ``attrFunc``, by default the following attribute
 Function is used :
 
-.. code:: scala
+.. code-block:: scala
 
     // For a Point(x, y), the set of default attributes is :
     Array(x, y, x * x, x * y, y * y)
