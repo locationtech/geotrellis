@@ -109,28 +109,29 @@ A `Viewshed <https://en.wikipedia.org/wiki/Viewshed>`__ shows "visibility" from 
 set vantage point, given an Elevation raster. Prior to GeoTrellis 1.2 this was possible
 at the individual ``Tile`` level but not the Layer (``RDD``) level. Now it is.
 
-First, we need to think about the ``Point6D`` type:
+First, we need to think about the ``Viewpoint`` type:
 
 .. code-block:: scala
 
-   import geotrellis.spark.viewshed.IterativeViewshed._
+   import geotrellis.spark.viewshed._
 
-   val point: Point6D(
+   val point: Viewpoint(
      x = ...,                    // some coordinate.
      y = ...,                    // some coordinate.
      viewHeight = 4000,          // 4 kilometres above the surface.
-     angle = Math.PI / 2,        // direction that the "camera" faces (in radians).
+     angle = Math.PI / 2,        // direction that the "camera" faces (in radians). 0 == east.
      fieldOfView = Math.PI / 2,  // angular width of the "view port".
-     altitude = ???              // TODO ???
+     altitude = 0                // the height of points you're interested in seeing.
    )
 
 In other words:
 
 - x, y, viewHeight: where are we?
-- angle: where are we looking?
+- angle: what direction are we looking?
 - fieldOfView: how wide are we looking?
+- altitude: how high/low is the "target" of our viewing?
 
-Given a ``Seq[Point6D]`` (the algorithm supports multiple simultaneous view points),
+Given a ``Seq[Viewpoint]`` (the algorithm supports multiple simultaneous view points),
 we can do:
 
 .. code-block:: scala
