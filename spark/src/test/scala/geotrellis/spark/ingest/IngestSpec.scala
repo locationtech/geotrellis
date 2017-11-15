@@ -16,22 +16,68 @@
 
 package geotrellis.spark.ingest
 
+import java.net.URI
+
 import geotrellis.vector._
 import geotrellis.spark._
+import geotrellis.spark.stitch._
 import geotrellis.spark.tiling._
 import geotrellis.spark.io.hadoop._
 import geotrellis.proj4._
+import geotrellis.raster.Tile
+import geotrellis.raster.io.geotiff.{GeoTiff, GeoTiffTile, SinglebandGeoTiff}
+import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
+import geotrellis.spark.cog.COGLayer
+import geotrellis.spark.io.index.zcurve.ZSpatialKeyIndex
 import geotrellis.spark.testkit._
-
 import org.apache.hadoop.fs.Path
 import org.scalatest._
-import scala.collection.mutable
+
+import scala.collection.mutable.ListBuffer
 
 class IngestSpec extends FunSpec
   with Matchers
   with TestEnvironment {
   describe("Ingest") {
-    it("should read GeoTiff with overrided input CRS") {
+    it("should ingest GeoTiff") {
+      val source = sc.hadoopGeoTiffRDD(new Path("file:///Users/daunnc/subversions/git/github/pomadchin/geotrellis/raster/data/geotiff-test-files/reproject/cea.tif"))
+      val list: ListBuffer[(Int, TileLayerRDD[SpatialKey])] = ListBuffer()
+      val layoutScheme = ZoomedLayoutScheme(LatLng, 512)
+
+      Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme) { (rdd, zoom) =>
+        list += zoom -> rdd
+      }
+
+      val (zoom, layer) = list.head
+      val index: ZSpatialKeyIndex = new ZSpatialKeyIndex(layer.metadata.bounds match {
+        case kb: KeyBounds[SpatialKey] => kb
+        case _ => null
+      })
+
+      //COGLayer.withStitch(layer)(zoom, 7, layoutScheme).collect().head
+
+      val cogs = COGLayer.withStitch(layer)(zoom, 10, layoutScheme)
+
+      val (key, tiff: GeoTiff[Tile]) = cogs.collect().head
+
+      COGLayer.write(cogs)(index, new URI("file:///tmp/write"))
+
+      val sfc = index.toIndex(key)
+
+
+      val tiff2 =
+        GeoTiff(layer.stitch, layer.metadata.mapTransform(layer.metadata.gridBounds), LatLng)
+          .copy(options = tiff.options)
+
+      GeoTiffWriter.write(tiff2.crop(layer.metadata.extent), "/tmp/testo2.tif", optimizedOrder = true)
+
+      //GeoTiffWriter.write(tiff, s"/tmp/${sfc}_base.tif", optimizedOrder = true)
+      //GeoTiffWriter.write(tiff.overviews(0), s"/tmp/${sfc}_0.tif", optimizedOrder = true)
+      //GeoTiffWriter.write(tiff.overviews(1), s"/tmp/${sfc}_1.tif", optimizedOrder = true)
+      //GeoTiffWriter.write(tiff.overviews(2), s"/tmp/${sfc}_2.tif", optimizedOrder = true)
+    }
+
+    /*it("should read GeoTiff with overrided input CRS") {
       val source = HadoopGeoTiffRDD.spatial(new Path(inputHome, "all-ones.tif"), HadoopGeoTiffRDD.Options(crs = Some(CRS.fromEpsgCode(3857))))
       // val source = sc.hadoopGeoTiffRDD(new Path(inputHome, "all-ones.tif"), sc.defaultTiffExtensions, crs = "EPSG:3857")
       source.take(1).toList.map { case (k, _) => k.crs.proj4jCrs.getName }.head shouldEqual "EPSG:3857"
@@ -67,6 +113,6 @@ class IngestSpec extends FunSpec
         zoom should be (11)
         rdd.filter(!_._2.isNoDataTile).count should be (18)
       }
-    }
+    }*/
   }
 }
