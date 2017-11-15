@@ -23,6 +23,8 @@ mimaPreviousArtifacts := Set(
 fork in Test := false
 parallelExecution in Test := false
 
+testOptions in Test += Tests.Argument("-oDF")
+
 initialCommands in console :=
   """
   import geotrellis.raster._
