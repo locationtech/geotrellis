@@ -27,9 +27,10 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable
+import java.net.URI
+
 
 private [geotrellis] trait GeoTiffInfoReader extends LazyLogging {
-  val geoTiffInfo: List[(String, GeoTiffInfo)]
   def geoTiffInfoRdd(implicit sc: SparkContext): RDD[String]
   def getGeoTiffInfo(uri: String): GeoTiffInfo
   def getGeoTiffTags(uri: String): TiffTags
@@ -42,7 +43,7 @@ private [geotrellis] trait GeoTiffInfoReader extends LazyLogging {
     * @param partitionBytes  The desired number of bytes per partition.
     * @param maxSize         The maximum (linear) size of any window (any GridBounds)
     */
-  def windowsByPartition(
+  private def windowsByPartition(
     info: GeoTiffInfo,
     maxSize: Int,
     partitionBytes: Long,
@@ -57,5 +58,47 @@ private [geotrellis] trait GeoTiffInfoReader extends LazyLogging {
       }
 
     info.segmentLayout.partitionWindowsBySegments(windows, partitionBytes / info.cellType.bytes)
+  }
+
+  def readWindows[O, I, K, V](
+    files: RDD[URI],
+    uriToKey: (URI, I) => K,
+    maxSize: Int,
+    partitionBytes: Long,
+    rasterReaderOptions: O,
+    geometry: Option[Geometry]
+  )(
+    implicit sc: SparkContext, rr: RasterReader[O, (I, V)]
+  ): RDD[(K, V)] = {
+    val windows: RDD[(URI, Array[GridBounds])] =
+      files.flatMap({ uri =>
+        windowsByPartition(
+          info = getGeoTiffInfo(uri.toString),
+          maxSize = maxSize,
+          partitionBytes = partitionBytes,
+          geometry = geometry
+        ).map { windows => (uri, windows) }
+      })
+
+    windows.persist()
+
+    val repartition = {
+      val windowCount = windows.count.toInt
+      if (windowCount > windows.partitions.length) {
+        logger.info(s"Repartition into ${windowCount} partitions.")
+        windows.repartition(windowCount)
+      }
+      else windows
+    }
+
+    val result = repartition.flatMap { case (uri, windows) =>
+      val info = getGeoTiffInfo(uri.toString)
+      rr.readWindows(windows, info, rasterReaderOptions).map { case (k, v) =>
+        uriToKey(uri, k) -> v
+      }
+    }
+
+    windows.unpersist()
+    result
   }
 }
