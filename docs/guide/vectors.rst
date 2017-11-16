@@ -48,7 +48,7 @@ Serializing to GeoJson
 All ``Geometry`` and ``Feature`` objects in ``geotrellis.vector`` have a
 method extension providing a ``toGeoJson`` method. This means that:
 
-.. code:: scala
+.. code-block:: scala
 
     import geotrellis.vector.io._
 
@@ -68,7 +68,7 @@ class. That class must also be registered with the Json reading
 infrastructure provided by ``spray``. The following example achieves
 these goals:
 
-.. code:: scala
+.. code-block:: scala
 
     import geotrellis.vector.io.json._
 
@@ -110,7 +110,7 @@ Again, it is generally more interesting to consider Json strings that
 contain ``FeatureCollection`` structures. These require more complex
 code. Consider the following Json string:
 
-.. code:: scala
+.. code-block:: scala
 
     val fc: String = """{
                        |  "type": "FeatureCollection",
@@ -135,7 +135,7 @@ will return queries as a ``Seq[Feature[G, T]]``, while the latter will
 return a ``Map[String, Feature[G, T]]`` where the key is the ``id``
 field of each feature. After calling:
 
-.. code:: scala
+.. code-block:: scala
 
     val collection = fc.parseGeoJson[JsonFeatureCollectionMap]
 
@@ -149,7 +149,7 @@ As in the case of serialization, to extract the feature data from this
 example string, we must create a case class with an integer member named
 ``someProp`` and register it using ``jsonFormat1``.
 
-.. code:: scala
+.. code-block:: scala
 
     case class SomeProp(someProp: Int)
     implicit val boxedToRead = jsonFormat1(SomeProp)
@@ -164,7 +164,7 @@ illustrated above. Simply package your features into a ``Seq`` and call
 ``toGeoJson``. In order to name those features, however, it requires
 that a JsonFeatureCollectionMap be explicitly created. For instance:
 
-.. code:: scala
+.. code-block:: scala
 
     val fcMap = JsonFeatureCollectionMap(Seq("bob" -> Feature(Point(0,0), UserData(13))))
 
@@ -173,7 +173,7 @@ Unfortunately, the ``toGeoJson`` method is not extended to
 ``fcMap.toJson.toString`` to get the same functionality. The return of
 that call is:
 
-.. code:: json
+.. code-block:: json
 
     {
       "type": "FeatureCollection",
@@ -190,8 +190,8 @@ that call is:
       }]
     }
 
-`Working with Vectors in Spark`__
-=================================================================
+Working with Vectors in Spark
+=============================
 
 While GeoTrellis is focused on working with raster data in spark,
 we do have some functionality for working with vecto data in spark.
@@ -200,14 +200,14 @@ ClipToGrid
 ----------
 
 If you have an ``RDD[Geometry]`` or ``RDD[Feature[Geometry, D]]``, you may want to
-cut up the geometries according to ``SpatialKey``s, so that you can join
+cut up the geometries according to ``SpatialKey`` s, so that you can join
 that data to other raster or vector sources in an efficient way. To do this,
-you can use the `rdd.clipToGrid` methods.
+you can use the ``rdd.clipToGrid`` methods.
 
 For example, if you want to read GeoTiffs on S3, and find the sum
 of raster values under each of the polygons, you could use the following technique:
 
-.. code:: scala
+.. code-block:: scala
 
     import geotrellis.raster._
     import geotrellis.spark._
@@ -301,7 +301,7 @@ Two types of Semivariograms are developed :
 Empirical Semivariogram
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code:: scala
+.. code-block:: scala
 
     //(The array of sample points)
     val points: Array[PointFeature[Double]] = ???
@@ -362,7 +362,7 @@ represented by:
 Non-Linear Semivariogram
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code:: scala
+.. code-block:: scala
 
     /**
       * ModelType can be any of the models from
@@ -381,7 +381,7 @@ distance).
 In case the empirical semivariogram has been previously constructed, it
 can be fitted into the semivariogram models by :
 
-.. code:: scala
+.. code-block:: scala
 
     val svSpherical: Semivariogram =
         Semivariogram.fit(empiricalSemivariogram, Spherical)
@@ -393,7 +393,7 @@ The popular types of Non-Linear Semivariograms are :
 Gaussian Semivariogram
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. code:: scala
+.. code-block:: scala
 
     // For explicit/theoretical Gaussian Semivariogram
     val gaussianSV: Semivariogram =
@@ -410,7 +410,7 @@ The formulation of the Gaussian model is :
 Circular Semivariogram
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. code:: scala
+.. code-block:: scala
 
     //For explicit/theoretical Circular Semivariogram
     val circularSV: Semivariogram =
@@ -431,7 +431,7 @@ Circular Semivariogram
 Spherical Semivariogram
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code:: scala
+.. code-block:: scala
 
     // For explicit/theoretical Spherical Semivariogram
     val sphericalSV: Semivariogram = NonLinearSemivariogram(range, sill, nugget, Spherical)
@@ -447,7 +447,7 @@ Spherical Semivariogram
 Exponential Semivariogram
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code:: scala
+.. code-block:: scala
 
     // For explicit/theoretical Exponential Semivariogram
     val exponentialSV: Semivariogram = NonLinearSemivariogram(range, sill, nugget, Exponential)
@@ -461,7 +461,7 @@ Exponential Semivariogram
 Wave Semivariogram
 ^^^^^^^^^^^^^^^^^^
 
-.. code:: scala
+.. code-block:: scala
 
     //For explicit/theoretical Exponential Semivariogram
     //For wave, range (viz. r) = wave (viz. w)
@@ -486,7 +486,7 @@ This internally uses jacobian (differential) functions corresponding to
 each of the individual models for finding the optimum range, sill and
 nugget values of the fitted semivariogram.
 
-.. code:: scala
+.. code-block:: scala
 
     // For the Spherical model
     val model: ModelType = Spherical
@@ -524,7 +524,7 @@ There exist four major kinds of Kriging interpolation techniques, namely
 Simple Kriging
 ^^^^^^^^^^^^^^
 
-.. code:: scala
+.. code-block:: scala
 
     //Simple kriging, tuples of (prediction, variance) per prediction point
     val sv: Semivariogram = NonLinearSemivariogram(points, 30000, 0, Spherical)
@@ -555,7 +555,7 @@ interpolation set is constant (using solely the sample points)
 Ordinary Kriging
 ^^^^^^^^^^^^^^^^
 
-.. code:: scala
+.. code-block:: scala
 
     //Ordinary kriging, tuples of (prediction, variance) per prediction point
     val sv: Semivariogram = NonLinearSemivariogram(points, 30000, 0, Spherical)
@@ -585,7 +585,7 @@ model.
 Universal Kriging
 ^^^^^^^^^^^^^^^^^
 
-.. code:: scala
+.. code-block:: scala
 
     //Universal kriging, tuples of (prediction, variance) per prediction point
 
@@ -651,7 +651,7 @@ detailed illustrations.
 Geostatistical Kriging
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. code:: scala
+.. code-block:: scala
 
     //Geostatistical kriging, tuples of (prediction, variance) per prediction point
     val attrFunc: (Double, Double) => Array[Double] = {
@@ -788,7 +788,7 @@ Points are too heavyweight given the scale of our intended applications,
 though they may be converted to Coordinates via ``_.jtsGeom.getCoordinate``)
 using our method extensions:
 
-.. code:: scala
+.. code-block:: scala
 
    val coordinates: Array[Coordinate] = ???
    val triangulation = coordinates.delaunayTriangulation
@@ -802,7 +802,7 @@ a vertex (``triangulation.liveVertices`` gives a ``Set[Int]`` listing the
 indices of vertices present in the triangulation).  From there, the standard
 half edge navigation operations are available:
 
-.. code:: scala
+.. code-block:: scala
 
    import triangulation.halfEdgeTable._
 
