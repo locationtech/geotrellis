@@ -488,18 +488,27 @@ Certainly:
 
    val (zoom, ll): (Int, TileLayerRDD[SpatialKey]) = wm.reproject(LatLng, layout)
 
-Let's break the last line some more:
+Let's break down the last line some more:
 
-.. code::
+::
 
    val (zoom, ll): (Int, TileLayerRDD[SpatialKey]) = wm.reproject(LatLng, layout)
         [1]                                                       [2]     [3]
-
 
 - [1]: We are also given back the zoom level corresponding to ??? TODO!
 - [2]: We only need to provide the target ``CRS`` here, since a ``TileLayerRDD``
   implicitely knows its own projection.
 - [3]: Providing a ``LayoutDefinition`` allows us to blah blah blah TODO
+
+You may also have a different formulation if your data source is a giant GeoTiff
+on S3, and not a pre-ingested GeoTrellis layer. In that case, you'd have:
+
+.. code-block:: scala
+
+   /* Magically extract windowed Tiles from a GeoTiff */
+   val wm: RDD[(ProjectedExtent, Tile)] = S3GeoTiffRDD.spatial("s3-bucket-name", "your-image.tiff")
+
+   val ll: RDD[(ProjectedExtent, Tile)] = wm.reproject(LatLng)
 
 Resampling
 ==========
