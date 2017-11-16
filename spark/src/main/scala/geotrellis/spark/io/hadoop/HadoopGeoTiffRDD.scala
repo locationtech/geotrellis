@@ -64,9 +64,9 @@ object HadoopGeoTiffRDD extends LazyLogging {
     crs: Option[CRS] = None,
     timeTag: String = GEOTIFF_TIME_TAG_DEFAULT,
     timeFormat: String = GEOTIFF_TIME_FORMAT_DEFAULT,
-    maxTileSize: Option[Int] = Some(256),
+    maxTileSize: Option[Int] = Some(DefaultMaxTileSize),
     numPartitions: Option[Int] = None,
-    partitionBytes: Option[Long] = Some(128l * 1024 * 1024),
+    partitionBytes: Option[Long] = Some(DefaultPartitionBytes),
     chunkSize: Option[Int] = None
   ) extends RasterReader.Options
 
@@ -86,23 +86,6 @@ object HadoopGeoTiffRDD extends LazyLogging {
   private def configuration(path: Path, options: Options)(implicit sc: SparkContext): Configuration = {
     val conf = sc.hadoopConfiguration.withInputDirectory(path, options.tiffExtensions)
     conf
-  }
-
-  /**
-    * A helper function to get the maximum (linear) tile size.
-    */
-  private def getMaxSize(options: Options) = {
-    options.maxTileSize match {
-      case Some(maxTileSize) => maxTileSize
-      case None => {
-        val size = Options.DEFAULT.maxTileSize match {
-          case Some(maxTileSize) => maxTileSize
-          case None => DefaultMaxTileSize
-        }
-        logger.warn(s"maxTileSize was not given, defaulting to $size.")
-        size
-      }
-    }
   }
 
   /**
@@ -131,30 +114,32 @@ object HadoopGeoTiffRDD extends LazyLogging {
     val conf = new SerializableConfiguration(configuration(path, options))
     val pathString = path.toString // The given path as a String instead of a Path
 
-    if (options.maxTileSize.isDefined) {
-      if (options.numPartitions.isDefined) logger.warn("numPartitions option is ignored")
-      val infoReader = HadoopGeoTiffInfoReader(pathString, conf, options.tiffExtensions)
+    options.maxTileSize match {
+      case Some(maxTileSize) =>
+        if (options.numPartitions.isDefined) logger.warn("numPartitions option is ignored")
+        val infoReader = HadoopGeoTiffInfoReader(pathString, conf, options.tiffExtensions)
 
-      infoReader.readWindows(
-        infoReader.geoTiffInfoRdd.map(new URI(_)),
-        uriToKey,
-        getMaxSize(options),
-        options.partitionBytes.getOrElse(DefaultPartitionBytes),
-        options,
-        geometry)
-    } else {
-      sc.newAPIHadoopRDD(
-        conf.value,
-        classOf[BytesFileInputFormat],
-        classOf[Path],
-        classOf[Array[Byte]]
-      ).mapPartitions(
-        _.map { case (p, bytes) =>
-          val (k, v) = rr.readFully(ByteBuffer.wrap(bytes), options)
-          uriToKey(p.toUri, k) -> v
-        },
-        preservesPartitioning = true
-      )
+        infoReader.readWindows(
+          infoReader.geoTiffInfoRdd.map(new URI(_)),
+          uriToKey,
+          maxTileSize,
+          options.partitionBytes.getOrElse(DefaultPartitionBytes),
+          options,
+          geometry)
+
+      case None =>
+        sc.newAPIHadoopRDD(
+          conf.value,
+          classOf[BytesFileInputFormat],
+          classOf[Path],
+          classOf[Array[Byte]]
+        ).mapPartitions(
+          _.map { case (p, bytes) =>
+            val (k, v) = rr.readFully(ByteBuffer.wrap(bytes), options)
+            uriToKey(p.toUri, k) -> v
+          },
+          preservesPartitioning = true
+        )
     }
   }
 
@@ -179,13 +164,16 @@ object HadoopGeoTiffRDD extends LazyLogging {
     uriToKey: (URI, I) => K,
     options: Options
   )(implicit rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
+    if (options.numPartitions.isDefined) logger.warn("numPartitions option is ignored")
+    if (options.maxTileSize.isEmpty) logger.info(s"Using default maxTileSize=$DefaultMaxTileSize")
+
     implicit val sc = pathsToDimensions.sparkContext
     val conf = new SerializableConfiguration(pathsToDimensions.sparkContext.hadoopConfiguration)
     val infoReader = HadoopGeoTiffInfoReader(null, conf, options.tiffExtensions)
     infoReader.readWindows(
       pathsToDimensions.map({ case (path, _) => path.toUri}),
       uriToKey,
-      getMaxSize(options),
+      options.maxTileSize.getOrElse(DefaultMaxTileSize),
       options.partitionBytes.getOrElse(DefaultPartitionBytes),
       options,
       None)

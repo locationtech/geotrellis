@@ -41,13 +41,6 @@ import com.typesafe.config.ConfigFactory
 object S3GeoTiffRDD extends LazyLogging {
   final val GEOTIFF_TIME_TAG_DEFAULT = "TIFFTAG_DATETIME"
   final val GEOTIFF_TIME_FORMAT_DEFAULT = "yyyy:MM:dd HH:mm:ss"
-  lazy val windowSize: Option[Int] = try {
-    Some(ConfigFactory.load().getInt("geotrellis.s3.rdd.read.windowSize"))
-  } catch {
-    case _: Throwable =>
-      logger.warn("geotrellis.s3.rdd.read.windowSize is not set in .conf file.")
-      None
-  }
 
   /**
     * This case class contains the various parameters one can set when reading RDDs from S3 using Spark.
@@ -75,9 +68,9 @@ object S3GeoTiffRDD extends LazyLogging {
     crs: Option[CRS] = None,
     timeTag: String = GEOTIFF_TIME_TAG_DEFAULT,
     timeFormat: String = GEOTIFF_TIME_FORMAT_DEFAULT,
-    maxTileSize: Option[Int] = Some(256),
+    maxTileSize: Option[Int] = Some(DefaultMaxTileSize),
     numPartitions: Option[Int] = None,
-    partitionBytes: Option[Long] = Some(128l * 1024 * 1024),
+    partitionBytes: Option[Long] = Some(DefaultPartitionBytes),
     chunkSize: Option[Int] = None,
     delimiter: Option[String] = None,
     getS3Client: () => S3Client = () => S3Client.DEFAULT
@@ -121,25 +114,6 @@ object S3GeoTiffRDD extends LazyLogging {
   }
 
   /**
-    * A helper function to get the maximum (linear) tile size.
-    */
-  private def getMaxSize(options: Options) = {
-    (options.maxTileSize, windowSize) match {
-      case (Some(maxTileSize), Some(windowSize)) => math.min(maxTileSize, windowSize)
-      case (Some(maxTileSize), None) => maxTileSize
-      case (None, Some(windowSize)) => windowSize
-      case _ => {
-        val size = Options.DEFAULT.maxTileSize match {
-          case Some(maxTileSize) => maxTileSize
-          case None => DefaultMaxTileSize
-        }
-        logger.warn(s"Neither maxTileSize nor windowSize was given, defaulting to $size.")
-        size
-      }
-    }
-  }
-
-  /**
     * Creates a RDD[(K, V)] whose K and V  on the type of the GeoTiff that is going to be read in.
     *
     * This function has two modes of operation:
@@ -163,29 +137,31 @@ object S3GeoTiffRDD extends LazyLogging {
     geometry: Option[Geometry]
   )(implicit sc: SparkContext, rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
 
-    if (options.maxTileSize.isDefined) {
-      if (options.numPartitions.isDefined) logger.warn("numPartitions option is ignored")
-      val infoReader = S3GeoTiffInfoReader(bucket, prefix, options)
+    options.maxTileSize match {
+      case Some(maxTileSize) =>
+        if (options.numPartitions.isDefined) logger.warn("numPartitions option is ignored")
+        val infoReader = S3GeoTiffInfoReader(bucket, prefix, options)
 
-      infoReader.readWindows(
-        infoReader.geoTiffInfoRdd.map(new URI(_)),
-        uriToKey,
-        getMaxSize(options),
-        options.partitionBytes.getOrElse(DefaultPartitionBytes),
-        options,
-        geometry)
-    } else {
-      sc.newAPIHadoopRDD(
-        configuration(bucket, prefix, options),
-        classOf[BytesS3InputFormat],
-        classOf[String],
-        classOf[Array[Byte]]
-      ).mapPartitions(
-        _.map { case (key, bytes) =>
-          val (k, v) = rr.readFully(ByteBuffer.wrap(bytes), options)
-          uriToKey(new URI(key), k) -> v
-        },
-        preservesPartitioning = true
+        infoReader.readWindows(
+          infoReader.geoTiffInfoRdd.map(new URI(_)),
+          uriToKey,
+          maxTileSize,
+          options.partitionBytes.getOrElse(DefaultPartitionBytes),
+          options,
+          geometry)
+
+      case None =>
+        sc.newAPIHadoopRDD(
+          configuration(bucket, prefix, options),
+          classOf[BytesS3InputFormat],
+          classOf[String],
+          classOf[Array[Byte]]
+        ).mapPartitions(
+          _.map { case (key, bytes) =>
+            val (k, v) = rr.readFully(ByteBuffer.wrap(bytes), options)
+            uriToKey(new URI(key), k) -> v
+          },
+          preservesPartitioning = true
       )
     }
   }
@@ -228,13 +204,15 @@ object S3GeoTiffRDD extends LazyLogging {
   def apply[I, K, V](objectRequestsToDimensions: RDD[(GetObjectRequest, (Int, Int))], uriToKey: (URI, I) => K, options: Options, sourceGeoTiffInfo: => GeoTiffInfoReader)
     (implicit rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
     if (options.numPartitions.isDefined) logger.warn("numPartitions option is ignored")
+    if (options.maxTileSize.isEmpty) logger.info(s"Using default maxTileSize=$DefaultMaxTileSize")
+
     implicit val sc = objectRequestsToDimensions.sparkContext
     sourceGeoTiffInfo.readWindows(
       objectRequestsToDimensions.map({ case (objectRequest, _) =>
         new URI(s"s3://${objectRequest.getBucketName}/${objectRequest.getKey}")
       }),
       uriToKey,
-      getMaxSize(options),
+      options.maxTileSize.getOrElse(DefaultMaxTileSize),
       options.partitionBytes.getOrElse(DefaultPartitionBytes),
       options,
       None)

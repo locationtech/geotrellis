@@ -44,18 +44,9 @@ class S3GeoTiffRDDSpec
 
   override def afterEach() {
     try super.afterEach()
-    finally setDefaultWindowSize
   }
 
   implicit def toOption[T](t: T): Option[T] = Option(t)
-
-  val defaultWindowSize: Option[Int] = S3GeoTiffRDD.windowSize
-  def setDefaultWindowSize: Unit = setWindowSize(defaultWindowSize)
-  def setWindowSize(size: Option[Int]): Unit = {
-    val field = S3GeoTiffRDD.getClass.getDeclaredField("windowSize")
-    field.setAccessible(true)
-    field.set(S3GeoTiffRDD, size)
-  }
 
   describe("S3GeoTiffRDD") {
     implicit val mockClient = new MockS3Client()
@@ -89,11 +80,9 @@ class S3GeoTiffRDDSpec
       mockClient.putObject(bucket, key, geoTiffBytes)
 
       val source1 =
-        S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(partitionBytes = None, getS3Client = () => new MockS3Client))
-      val source2 = {
-        setWindowSize(128)
-        S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(getS3Client = () => new MockS3Client))
-      }
+        S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(maxTileSize = None, partitionBytes = None, getS3Client = () => new MockS3Client))
+      val source2 =
+        S3GeoTiffRDD.spatial(bucket, key, S3GeoTiffRDD.Options(maxTileSize = Some(128), getS3Client = () => new MockS3Client))
 
       source1.count should be < (source2.count)
 
@@ -112,10 +101,9 @@ class S3GeoTiffRDDSpec
       mockClient.putObject(bucket, key, geoTiffBytes)
 
       val source1 =
-        S3GeoTiffRDD.spatialMultiband(bucket, key, S3GeoTiffRDD.Options(partitionBytes = None, getS3Client = () => new MockS3Client))
+        S3GeoTiffRDD.spatialMultiband(bucket, key, S3GeoTiffRDD.Options(maxTileSize=None, partitionBytes = None, getS3Client = () => new MockS3Client))
       val source2 = {
-        setWindowSize(20)
-        S3GeoTiffRDD.spatialMultiband(bucket, key, S3GeoTiffRDD.Options(getS3Client = () => new MockS3Client))
+        S3GeoTiffRDD.spatialMultiband(bucket, key, S3GeoTiffRDD.Options(maxTileSize=Some(128), getS3Client = () => new MockS3Client))
       }
 
       //source1.count should be < (source2.count)
@@ -134,14 +122,15 @@ class S3GeoTiffRDDSpec
       mockClient.putObject(bucket, key, geoTiffBytes)
 
       val source1 = S3GeoTiffRDD.temporal(bucket, key, S3GeoTiffRDD.Options(
+        maxTileSize=None,
         partitionBytes = None,
         timeTag = "ISO_TIME",
         timeFormat = "yyyy-MM-dd'T'HH:mm:ss",
         getS3Client = () => new MockS3Client))
 
       val source2 = {
-        setWindowSize(128)
         S3GeoTiffRDD.temporal(bucket, key, S3GeoTiffRDD.Options(
+          maxTileSize=Some(128),
           timeTag = "ISO_TIME",
           timeFormat = "yyyy-MM-dd'T'HH:mm:ss",
           getS3Client = () => new MockS3Client))
@@ -174,14 +163,16 @@ class S3GeoTiffRDDSpec
       val geoTiffBytes = multiband.toByteArray
       mockClient.putObject(bucket, key, geoTiffBytes)
       val source1 = S3GeoTiffRDD.temporalMultiband(bucket, key, S3GeoTiffRDD.Options(
+        maxTileSize = None,
         partitionBytes = None,
         timeTag = "ISO_TIME",
         timeFormat = "yyyy-MM-dd'T'HH:mm:ss",
         getS3Client = () => new MockS3Client))
 
       val source2 = {
-        setWindowSize(256)
         S3GeoTiffRDD.temporalMultiband(bucket, key, S3GeoTiffRDD.Options(
+          maxTileSize = Some(256),
+
           timeTag = "ISO_TIME",
           timeFormat = "yyyy-MM-dd'T'HH:mm:ss",
           getS3Client = () => new MockS3Client))
