@@ -36,22 +36,6 @@ case class S3GeoTiffInfoReader(
   streaming: Boolean = true,
   tiffExtensions: Seq[String] = S3GeoTiffRDD.Options.DEFAULT.tiffExtensions
 ) extends GeoTiffInfoReader {
-  lazy val geoTiffInfo: List[(String, GeoTiffInfo)] = {
-    val s3Client = getS3Client()
-
-    val listObjectsRequest =
-      delimiter
-        .fold(new ListObjectsRequest(bucket, prefix, null, null, null))(new ListObjectsRequest(bucket, prefix, null, _, null))
-
-    s3Client
-      .listKeys(listObjectsRequest)
-      .toList
-      .flatMap { key =>
-        if(tiffExtensions.exists(key.endsWith))
-          Some(key -> GeoTiffReader.readGeoTiffInfo(S3RangeReader(bucket, key, getS3Client()), decompress, streaming))
-        else None
-      }
-  }
 
   /** Returns RDD of URIs to tiffs as GeoTiffInfo is not serializable. */
   def geoTiffInfoRdd(implicit sc: SparkContext): RDD[String] = {

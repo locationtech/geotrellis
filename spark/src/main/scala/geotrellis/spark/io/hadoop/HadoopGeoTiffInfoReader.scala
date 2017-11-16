@@ -33,14 +33,6 @@ case class HadoopGeoTiffInfoReader(
   streaming: Boolean = true
 ) extends GeoTiffInfoReader {
 
-  lazy val geoTiffInfo: List[(String, GeoTiffInfo)] = {
-    HdfsUtils
-      .listFiles(new Path(path), config.value)
-      .map({ path => path.toString })
-      .filter({ path => tiffExtensions.exists({ e => path.endsWith(e) }) })
-      .map({ uri => (uri, getGeoTiffInfo(uri)) })
-  }
-
   /** Returns RDD of URIs to tiffs as GeoTiffInfo is not serializable. */
   def geoTiffInfoRdd(implicit sc: SparkContext): RDD[String] = {
     sc.parallelize(

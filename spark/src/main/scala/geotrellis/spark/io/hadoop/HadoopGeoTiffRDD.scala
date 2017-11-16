@@ -64,7 +64,7 @@ object HadoopGeoTiffRDD extends LazyLogging {
     crs: Option[CRS] = None,
     timeTag: String = GEOTIFF_TIME_TAG_DEFAULT,
     timeFormat: String = GEOTIFF_TIME_FORMAT_DEFAULT,
-    maxTileSize: Option[Int] = None,
+    maxTileSize: Option[Int] = Some(256),
     numPartitions: Option[Int] = None,
     partitionBytes: Option[Long] = Some(128l * 1024 * 1024),
     chunkSize: Option[Int] = None
@@ -108,6 +108,14 @@ object HadoopGeoTiffRDD extends LazyLogging {
   /**
     * Creates a RDD[(K, V)] whose K and V depends on the type of the GeoTiff that is going to be read in.
     *
+    * This function has two modes of operation:
+    * When options.maxTileSize is set windows will be read from GeoTiffs and their
+    * size and count will be balanced among partitions using partitionBytes option.
+    * Resulting partitions will be grouped in relation to GeoTiff segment layout.
+    *
+    * When maxTileSize is None the GeoTiffs will be read fully and balanced among
+    * partitions using either numPartitions or partitionBytes option.
+    *
     * @param  path      HDFS GeoTiff path.
     * @param  uriToKey  Function to transform input key basing on the URI information.
     * @param  options   An instance of [[Options]] that contains any user defined or default settings.
@@ -125,37 +133,15 @@ object HadoopGeoTiffRDD extends LazyLogging {
 
     if (options.maxTileSize.isDefined) {
       if (options.numPartitions.isDefined) logger.warn("numPartitions option is ignored")
-      val sourceGeoTiffInfo = HadoopGeoTiffInfoReader(pathString, conf, options.tiffExtensions)
+      val infoReader = HadoopGeoTiffInfoReader(pathString, conf, options.tiffExtensions)
 
-      val windows: RDD[(String, Array[GridBounds])] =
-        sourceGeoTiffInfo.geoTiffInfoRdd.flatMap({ uri =>
-          sourceGeoTiffInfo.windowsByPartition(
-            info = sourceGeoTiffInfo.getGeoTiffInfo(uri),
-            maxSize = getMaxSize(options),
-            partitionBytes = options.partitionBytes.getOrElse(DefaultPartitionBytes),
-            geometry = geometry
-          ).map { windows => (uri, windows) }
-        })
-
-
-      val repartition = {
-        val windowCount = windows.count.toInt
-        if (windowCount > windows.partitions.length) {
-          logger.info(s"Repartition into ${windowCount} partitions.")
-          windows.repartition(windowCount)
-        }
-        else windows
-      }
-
-      val result = repartition.flatMap { case (path, windows) =>
-        val info = sourceGeoTiffInfo.getGeoTiffInfo(path)
-        rr.readWindows(windows, info, options).map { case (k, v) =>
-          uriToKey(new URI(path), k) -> v
-        }
-      }
-
-      windows.unpersist()
-      result
+      infoReader.readWindows(
+        infoReader.geoTiffInfoRdd.map(new URI(_)),
+        uriToKey,
+        getMaxSize(options),
+        options.partitionBytes.getOrElse(DefaultPartitionBytes),
+        options,
+        geometry)
     } else {
       sc.newAPIHadoopRDD(
         conf.value,
@@ -193,45 +179,16 @@ object HadoopGeoTiffRDD extends LazyLogging {
     uriToKey: (URI, I) => K,
     options: Options
   )(implicit rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
-
+    implicit val sc = pathsToDimensions.sparkContext
     val conf = new SerializableConfiguration(pathsToDimensions.sparkContext.hadoopConfiguration)
-
-
-    val windows =
-      pathsToDimensions
-        .flatMap { case (path, _) =>
-          val infoReader = HadoopGeoTiffInfoReader(path.toString, conf, options.tiffExtensions)
-          infoReader.windowsByPartition(
-            info = infoReader.getGeoTiffInfo(path.toString),
-            maxSize = getMaxSize(options),
-            partitionBytes = options.partitionBytes.getOrElse(DefaultPartitionBytes),
-            geometry = None
-          ).map { windows => (path, windows) }
-        }
-
-    windows.persist()
-
-    val repartition = {
-      val windowCount = windows.count.toInt
-      if (windowCount > windows.partitions.length) {
-        logger.info(s"Repartition into ${windowCount} partitions.")
-        windows.repartition(windowCount)
-      }
-      else windows
-    }
-
-
-    val result = repartition.flatMap { case (path, windows) =>
-      val infoReader = HadoopGeoTiffInfoReader(path.toString, conf, options.tiffExtensions)
-      val info = infoReader.getGeoTiffInfo(path.toString)
-
-      rr.readWindows(windows, info, options).map { case (k, v) =>
-        uriToKey(new URI(path.toString), k) -> v
-      }
-    }
-
-    windows.unpersist()
-    result
+    val infoReader = HadoopGeoTiffInfoReader(null, conf, options.tiffExtensions)
+    infoReader.readWindows(
+      pathsToDimensions.map({ case (path, _) => path.toUri}),
+      uriToKey,
+      getMaxSize(options),
+      options.partitionBytes.getOrElse(DefaultPartitionBytes),
+      options,
+      None)
   }
 
   /**
