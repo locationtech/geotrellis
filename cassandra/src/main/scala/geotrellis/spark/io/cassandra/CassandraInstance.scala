@@ -24,6 +24,8 @@ import scala.util.Try
 import java.net.URI
 
 object CassandraInstance {
+  var bigIntegerRegistered: Boolean = false
+
   def apply(uri: URI): CassandraInstance = {
     import geotrellis.util.UriUtils._
 
@@ -34,7 +36,6 @@ object CassandraInstance {
       .getOrElse(Cassandra.cfg.getString("keyspace"))
     val attributeTable = Option(uri.getFragment)
       .getOrElse(Cassandra.cfg.getString("catalog"))
-    var registered: Boolean = false
 
     BaseCassandraInstance(
       List(zookeeper),
@@ -67,13 +68,13 @@ trait CassandraInstance extends Serializable {
   @transient lazy val cluster = getCluster
   @transient lazy val session = cluster.connect()
 
-  def register(): Unit = {
-    if (!CassandraInstance.registered) {
+  def registerBigInteger(): Unit = {
+    if (!CassandraInstance.bigIntegerRegistered) {
       cluster
         .getConfiguration()
         .getCodecRegistry()
         .register(BigIntegerIffBigint.instance)
-      CassandraInstance.registered = true
+      CassandraInstance.bigIntegerRegistered = true
     }
   }
 
@@ -119,7 +120,7 @@ case class BaseCassandraInstance(
   localDc: String = Cassandra.cfg.getString("localDc"),
   usedHostsPerRemoteDc: Int = Cassandra.cfg.getInt("usedHostsPerRemoteDc"),
   allowRemoteDCsForLocalConsistencyLevel: Boolean = Cassandra.cfg.getBoolean("allowRemoteDCsForLocalConsistencyLevel")) extends CassandraInstance {
-  register()
+  registerBigInteger()
 }
 
 object Cassandra {

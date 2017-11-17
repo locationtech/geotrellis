@@ -129,7 +129,7 @@ object CassandraRDDWriter {
                   val (key, kvs1) = row
                   val kvs2 =
                     if (mergeFunc.nonEmpty) {
-                      val oldRow = session.execute(readStatement.bind(key))
+                      val oldRow = session.execute(readStatement.bind(key: BigInteger))
                       if (oldRow.nonEmpty) {
                         val bytes = oldRow.one().getBytes("value").array()
                         AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
