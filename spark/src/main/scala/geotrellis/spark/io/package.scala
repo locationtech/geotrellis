@@ -44,7 +44,10 @@ package object io
 
   implicit class GeoTiffInfoMethods(that: GeoTiffReader.GeoTiffInfo) {
     def mapTransform =
-      MapKeyTransform(that.extent, that.segmentLayout.totalCols, that.segmentLayout.totalRows)
+      MapKeyTransform(
+        extent = that.extent,
+        layoutCols = that.segmentLayout.tileLayout.layoutCols,
+        layoutRows = that.segmentLayout.tileLayout.layoutRows)
   }
 
   // Custom exceptions

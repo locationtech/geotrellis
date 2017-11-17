@@ -203,6 +203,9 @@ object GeoTiffReader {
     hasPixelInterleave: Boolean,
     noDataValue: Option[Double]
   ) {
+    def rasterExtent: RasterExtent =
+      RasterExtent(extent = extent, cols = segmentLayout.totalCols, rows = segmentLayout.totalRows)
+
     def cellType: CellType = (bandType, noDataValue) match {
       case (BitBandType, _) =>
         BitCellType
