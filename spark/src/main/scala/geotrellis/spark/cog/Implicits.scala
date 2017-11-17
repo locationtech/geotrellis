@@ -5,11 +5,13 @@ import geotrellis.raster.crop._
 import geotrellis.raster.io.geotiff._
 import geotrellis.spark._
 import geotrellis.spark.tiling._
+import geotrellis.util._
 
 import spire.syntax.cfor._
 
 object Implicits extends Implicits
 
+// TODO: remove asInstanceOf casts
 trait Implicits {
   implicit class withSinglebandGeoTiffConstructMethods(val self: Tile) extends GeoTiffConstructMethods[Tile] {
     def toGeoTiff[K](
@@ -49,8 +51,10 @@ trait Implicits {
     }
   }
 
-  implicit class withSinglebandGeoTiffSegmentConstructMethods(val self: Iterable[(SpatialKey, Tile)]) extends GeoTiffSegmentConstructMethods[Tile] {
-    def toGeoTiff[K](
+  implicit class withSinglebandGeoTiffSegmentConstructMethods[K](val self: Iterable[(K, Tile)])
+                                                                (implicit val spatialComponent: SpatialComponent[K]) extends GeoTiffSegmentConstructMethods[K, Tile] {
+    // TODO: consider moving this code somewhere else, it's in fact a bit modified GeoTiffTile.apply function code
+    def toGeoTiff(
       nextLayout: LayoutDefinition,
       md: TileLayerMetadata[K],
       options: GeoTiffOptions,
@@ -66,7 +70,8 @@ trait Implicits {
 
         val segments: Map[Int, Array[Byte]] =
           self
-            .map { case (spatialKey, tile) =>
+            .map { case (key, tile) =>
+              val spatialKey = key.getComponent[SpatialKey]
               val updateCol = (spatialKey.col - gb.colMin) * md.tileLayout.tileCols
               val updateRow = (spatialKey.row - gb.rowMin) * md.tileLayout.tileRows
               val index = segmentLayout.getSegmentIndex(updateCol, updateRow)
@@ -97,8 +102,10 @@ trait Implicits {
     }
   }
 
-  implicit class withMultibandGeoTiffSegmentConstructMethods(val self: Iterable[(SpatialKey, MultibandTile)]) extends GeoTiffSegmentConstructMethods[MultibandTile] {
-    def toGeoTiff[K](
+  implicit class withMultibandGeoTiffSegmentConstructMethods[K](val self: Iterable[(K, MultibandTile)])
+                                                               (implicit val spatialComponent: SpatialComponent[K]) extends GeoTiffSegmentConstructMethods[K, MultibandTile] {
+    // TODO: consider moving this code somewhere else, it's in fact a bit modified GeoTiffMultibandTile.apply function code
+    def toGeoTiff(
       nextLayout: LayoutDefinition,
       md: TileLayerMetadata[K],
       options: GeoTiffOptions,
@@ -123,7 +130,8 @@ trait Implicits {
             cfor(0)(_ < bandCount, _ + 1) { bandIndex =>
               val bandTiles =
                 self
-                  .map { case (spatialKey, tile) =>
+                  .map { case (key, tile) =>
+                    val spatialKey = key.getComponent[SpatialKey]
                     val updateCol = (spatialKey.col - gb.colMin) * md.tileLayout.tileCols
                     val updateRow = (spatialKey.row - gb.rowMin) * md.tileLayout.tileRows
                     val index = segmentLayout.getSegmentIndex(updateCol, updateRow)
