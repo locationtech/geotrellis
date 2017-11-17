@@ -52,7 +52,7 @@ case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: Tile
     * @param row  Pixel row in overall layout
     * @return     The index of the segment in this layout
     */
-  private [geotiff] def getSegmentIndex(col: Int, row: Int): Int = {
+  private [geotrellis] def getSegmentIndex(col: Int, row: Int): Int = {
     val layoutCol = col / tileLayout.tileCols
     val layoutRow = row / tileLayout.tileRows
     (layoutRow * tileLayout.layoutCols) + layoutCol
