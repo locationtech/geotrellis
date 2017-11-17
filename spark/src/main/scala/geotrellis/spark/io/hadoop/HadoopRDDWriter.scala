@@ -102,26 +102,26 @@ object HadoopRDDWriter extends LazyLogging {
     val conf = rdd.sparkContext.hadoopConfiguration
     val _conf = new SerializableConfiguration(conf)
 
-    val ranges: Vector[(String, Long, Long)] =
+    val ranges: Vector[(String, BigInt, BigInt)] =
       FilterMapFileInputFormat.layerRanges(header.path, conf)
         .map({ case (path, start, end) => (path.toString, start, end) })
 
     val layerPathStr = layerPath.toString
 
-    val firstIndex: Long = ranges.head._2
-    val lastIndex: Long = {
+    val firstIndex: BigInt = ranges.head._2
+    val lastIndex: BigInt = {
       val path = ranges.last._1
       val reader = new MapFile.Reader(path, conf)
-      var k = new LongWritable()
+      var k = new BigIntWritable()
       var v = new BytesWritable()
-      var index: Long = -1
-      while (reader.next(k, v)) { index = k.get }
+      var index: BigInt = BigInt(-1)
+      while (reader.next(k, v)) { index = BigInt(new java.math.BigInteger(k.get)) }
       reader.close
       index
     }
 
-    val rdd2: RDD[(Long, K, V)] = rdd.map({ case (k,v) =>
-      val i = keyIndex.toIndex(k)
+    val rdd2: RDD[(BigInt, K, V)] = rdd.map({ case (k,v) =>
+      val i: BigInt = keyIndex.toIndex(k)
       (i, k, v)
     })
 
@@ -135,12 +135,17 @@ object HadoopRDDWriter extends LazyLogging {
     write(nonOverlappers, layerPath, keyIndex, indexInterval, false)
 
     // Write the portion of the update that overlaps the existing layer
-    val overlappers: RDD[(String, Iterable[(Long,K,V)])] =
+    val overlappers: RDD[(String, Iterable[(BigInt,K,V)])] =
       rdd2
         .filter({ case (i, k, v) =>
           firstIndex <= i && i <= lastIndex })
-        .groupBy({ case (i, k,v) =>
-          ranges.find({ case (_,start,end) => start <= i && i <= end }) })
+        .groupBy({ case (i, k, v) =>
+          ranges.find({ case (_,start,end) =>
+            if (end == BigInt(-1))
+              start <= i
+            else
+              start <= i && i <= end
+            }) })
         .map({ case (range, ikvs) =>
           range match {
             case Some((path, _, _)) => (path, ikvs)
@@ -149,7 +154,7 @@ object HadoopRDDWriter extends LazyLogging {
 
     overlappers
       .foreach({ case (_path, ikvs1) =>
-        val ikvs2 = mutable.ListBuffer.empty[(Long,K,V)]
+        val ikvs2 = mutable.ListBuffer.empty[(BigInt,K,V)]
 
         val path = new Path(_path)
         val conf = _conf.value
@@ -158,7 +163,7 @@ object HadoopRDDWriter extends LazyLogging {
         val reader = new MapFile.Reader(path, conf)
 
         // Read records from map file, delete map file
-        var k = new LongWritable()
+        var k = new BigIntWritable()
         var v = new BytesWritable()
         while (reader.next(k, v)) {
           val _kvs2: Vector[(K,V)] = AvroEncoder.fromBinary(kwWriterSchema.value, v.getBytes)(codec)
@@ -188,7 +193,7 @@ object HadoopRDDWriter extends LazyLogging {
         val writer = new MultiMapWriter(layerPathStr, 33, blockSize, indexInterval)
         for ( (index, pairs) <- GroupConsecutiveIterator(kvs.toIterator)(r => keyIndex.toIndex(r._1))) {
           writer.write(
-            new LongWritable(index),
+            new BigIntWritable(index.toByteArray),
             new BytesWritable(AvroEncoder.toBinary(pairs.toVector)(codec)))
         }
         writer.close() })
