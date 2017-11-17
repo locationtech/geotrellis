@@ -49,7 +49,7 @@ object HBaseRDDWriter {
     raster: RDD[(K, V)],
     instance: HBaseInstance,
     layerId: LayerId,
-    decomposeKey: K => Long,
+    decomposeKey: K => BigInt,
     table: String,
     writerSchema: Option[Schema],
     mergeFunc: Option[(V,V) => V]
