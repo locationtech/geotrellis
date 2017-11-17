@@ -98,8 +98,9 @@ object RasterReader {
 
     def readWindows(gbs: Array[GridBounds], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
       val geoTiff = GeoTiffReader.geoTiffSinglebandTile(info)
+      val re = info.rasterExtent
       geoTiff.crop(gbs.filter(geoTiff.gridBounds.intersects)).map { case (gb, tile) =>
-        (ProjectedExtent(info.mapTransform(gb), options.crs.getOrElse(info.crs)), tile)
+        (ProjectedExtent(re.extentFor(gb), options.crs.getOrElse(info.crs)), tile)
       }
     }
   }
@@ -119,8 +120,9 @@ object RasterReader {
 
     def readWindows(gbs: Array[GridBounds], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
       val geoTiff = GeoTiffReader.geoTiffMultibandTile(info)
+      val re = info.rasterExtent
       geoTiff.crop(gbs.filter(geoTiff.gridBounds.intersects)).map { case (gb, tile) =>
-        (ProjectedExtent(info.mapTransform(gb), options.crs.getOrElse(info.crs)), tile)
+        (ProjectedExtent(re.extentFor(gb), options.crs.getOrElse(info.crs)), tile)
       }
     }
   }
@@ -144,9 +146,10 @@ object RasterReader {
 
     def readWindows(gbs: Array[GridBounds], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
       val geoTiff = GeoTiffReader.geoTiffSinglebandTile(info)
+      val re = info.rasterExtent
       geoTiff.crop(gbs.filter(geoTiff.gridBounds.intersects)).map { case (gb, tile) =>
         (TemporalProjectedExtent(
-          info.mapTransform(gb),
+          extent = re.extentFor(gb),
           crs = options.crs.getOrElse(info.crs),
           options.parseTime(info.tags)),
         tile)
@@ -173,9 +176,10 @@ object RasterReader {
 
     def readWindows(gbs: Array[GridBounds], info: GeoTiffReader.GeoTiffInfo, options: Options) = {
       val geoTiff = GeoTiffReader.geoTiffMultibandTile(info)
+      val re = info.rasterExtent
       geoTiff.crop(gbs.filter(geoTiff.gridBounds.intersects)).map { case (gb, tile) =>
         (TemporalProjectedExtent(
-          info.mapTransform(gb),
+          extent = re.extentFor(gb),
           crs = options.crs.getOrElse(info.crs),
           options.parseTime(info.tags)),
         tile)
