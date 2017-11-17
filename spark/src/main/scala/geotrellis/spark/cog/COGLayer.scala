@@ -22,6 +22,10 @@ import java.net.URI
 import scala.reflect.ClassTag
 
 object COGLayer {
+  /**
+    * Make it more generic? GeoTiffs are Iterables of (K, V)s // K - is a segment key, V - is a segment itself
+    * Segments are in a row major order => profit?
+    */
   def pyramidUp[
     K: SpatialComponent: Ordering: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]
@@ -31,7 +35,7 @@ object COGLayer {
     layoutScheme: LayoutScheme,
     md: TileLayerMetadata[K],
     options: GeoTiffOptions
-   )(implicit tc: Iterable[(SpatialKey, V)] => GeoTiffSegmentConstructMethods[V]): List[GeoTiff[V]] = {
+   )(implicit tc: Iterable[(K, V)] => GeoTiffSegmentConstructMethods[K, V]): List[GeoTiff[V]] = {
     val nextLayoutLevel @ LayoutLevel(nextZoom, nextLayout) = layoutScheme.zoomOut(layoutLevel)
     if(nextZoom >= endZoom) {
       val list: List[(K, V)] =
@@ -55,9 +59,7 @@ object COGLayer {
           }.toList
 
       val ifdLayer: GeoTiff[V] =
-        list
-          .map { case (key, tile) => key.getComponent[SpatialKey] -> tile }
-          .toGeoTiff(nextLayout, md, options.copy(subfileType = Some(ReducedImage)))
+        list.toGeoTiff(nextLayout, md, options.copy(subfileType = Some(ReducedImage)))
 
       ifdLayer :: pyramidUp(list, endZoom, nextLayoutLevel, layoutScheme, md, options)
     } else List()
@@ -67,7 +69,7 @@ object COGLayer {
     K: SpatialComponent: Ordering: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]
   ](rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]])(startZoom: Int, endZoom: Int, layoutScheme: LayoutScheme)
-   (implicit tc: Iterable[(SpatialKey, V)] => GeoTiffSegmentConstructMethods[V]): RDD[(K, GeoTiff[V])] = {
+   (implicit tc: Iterable[(K, V)] => GeoTiffSegmentConstructMethods[K, V]): RDD[(K, GeoTiff[V])] = {
     val md = rdd.metadata
     val sourceLayout = md.layout
     val options: GeoTiffOptions = GeoTiffOptions(storageMethod = Tiled(sourceLayout.tileCols, sourceLayout.tileRows))
@@ -88,6 +90,7 @@ object COGLayer {
     groupedByEndZoom
       .repartition(groupedPartitions)
       .mapPartitions { partition: Iterator[(K, (Iterable[(K, V)]))] =>
+        // TODO: refactor, so ugly
         val list = partition.toList
         val flatList = list.flatMap(_._2)
 
@@ -98,9 +101,7 @@ object COGLayer {
             pyramidUp[K, V](flatList, endZoom, LayoutLevel(startZoom, sourceLayout), layoutScheme, md, options.copy(subfileType = Some(ReducedImage)))
 
           val stitchedTile: GeoTiff[V] =
-            flatList
-              .map { case (key, tile) => key.getComponent[SpatialKey] -> tile }
-              .toGeoTiff(sourceLayout, md, options, overviews)
+            flatList.toGeoTiff(sourceLayout, md, options, overviews)
 
           Iterator(sfc -> stitchedTile)
         } else Iterator()
