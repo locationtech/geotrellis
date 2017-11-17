@@ -155,7 +155,7 @@ object TileRDDReproject {
           }
 
         case Right(layoutDefinition) =>
-          val kb = metadata.bounds.setSpatialBounds(KeyBounds(layout.mapTransform(extent)))
+          val kb = metadata.bounds.setSpatialBounds(KeyBounds(layoutDefinition.mapTransform(extent)))
           val m = TileLayerMetadata(metadata.cellType, layoutDefinition, extent, destCrs, kb)
 
           (0, m, options.rasterReprojectOptions.method)
