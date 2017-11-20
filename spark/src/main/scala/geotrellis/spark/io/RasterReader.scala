@@ -100,7 +100,7 @@ object RasterReader {
       val geoTiff = GeoTiffReader.geoTiffSinglebandTile(info)
       val re = info.rasterExtent
       geoTiff.crop(gbs.filter(geoTiff.gridBounds.intersects)).map { case (gb, tile) =>
-        (ProjectedExtent(re.extentFor(gb), options.crs.getOrElse(info.crs)), tile)
+        (ProjectedExtent(re.extentFor(gb, clamp = false), options.crs.getOrElse(info.crs)), tile)
       }
     }
   }
@@ -122,7 +122,7 @@ object RasterReader {
       val geoTiff = GeoTiffReader.geoTiffMultibandTile(info)
       val re = info.rasterExtent
       geoTiff.crop(gbs.filter(geoTiff.gridBounds.intersects)).map { case (gb, tile) =>
-        (ProjectedExtent(re.extentFor(gb), options.crs.getOrElse(info.crs)), tile)
+        (ProjectedExtent(re.extentFor(gb, clamp = false), options.crs.getOrElse(info.crs)), tile)
       }
     }
   }
@@ -149,7 +149,7 @@ object RasterReader {
       val re = info.rasterExtent
       geoTiff.crop(gbs.filter(geoTiff.gridBounds.intersects)).map { case (gb, tile) =>
         (TemporalProjectedExtent(
-          extent = re.extentFor(gb),
+          extent = re.extentFor(gb, clamp = false),
           crs = options.crs.getOrElse(info.crs),
           options.parseTime(info.tags)),
         tile)
@@ -179,7 +179,7 @@ object RasterReader {
       val re = info.rasterExtent
       geoTiff.crop(gbs.filter(geoTiff.gridBounds.intersects)).map { case (gb, tile) =>
         (TemporalProjectedExtent(
-          extent = re.extentFor(gb),
+          extent = re.extentFor(gb, clamp = false ),
           crs = options.crs.getOrElse(info.crs),
           options.parseTime(info.tags)),
         tile)
