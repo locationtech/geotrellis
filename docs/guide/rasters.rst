@@ -446,6 +446,9 @@ used.
 Reprojecting
 ============
 
+Overview
+--------
+
 Many core GeoTrellis data types can be reprojected. To reproject a ``Line``:
 
 .. code-block:: scala
@@ -462,7 +465,7 @@ To reproject a ``Tile``:
    val extent: Extent = ....  /* Area covered by the Tile */
    val raster: Raster[Tile] = Raster(wm, extent)  /* A Raster is a "location-aware" Tile */
 
-   val ll: Raster[Tile] = wm.reproject(WebMercator, LatLng)
+   val ll: Raster[Tile] = raster.reproject(WebMercator, LatLng)
 
 To reproject an ``Extent``:
 
@@ -495,20 +498,33 @@ Let's break down the last line some more:
    val (zoom, ll): (Int, TileLayerRDD[SpatialKey]) = wm.reproject(LatLng, layout)
         [1]                                                       [2]     [3]
 
-- [1]: We are also given back the zoom level corresponding to ??? TODO!
+- [1]: When a ``ZoomedLayoutScheme`` was given instead of a ``LayoutDefinition``, this ``zoom``
+  value is the nearest zoom level that the layer was reprojected to. Otherwise, this value
+  is ``0``.
 - [2]: We only need to provide the target ``CRS`` here, since a ``TileLayerRDD``
   implicitely knows its own projection.
-- [3]: Providing a ``LayoutDefinition`` allows us to blah blah blah TODO
+- [3]: Providing a ``LayoutDefinition`` allows us to define the shape of the grid
+  that results from the reproject. As an overload, this method can accept a
+  ``LayoutScheme`` instead.
 
 You may also have a different formulation if your data source is a giant GeoTiff
 on S3, and not a pre-ingested GeoTrellis layer. In that case, you'd have:
 
 .. code-block:: scala
 
-   /* Magically extract windowed Tiles from a GeoTiff */
+   /* Extract Tiles efficiently from a remote GeoTiff */
    val wm: RDD[(ProjectedExtent, Tile)] = S3GeoTiffRDD.spatial("s3-bucket-name", "your-image.tiff")
 
    val ll: RDD[(ProjectedExtent, Tile)] = wm.reproject(LatLng)
+
+It's important to note that the RDDs in this example and the one previous are
+different. The latter is not keyed, and so doesn't necessarily represent some
+original, unified raster. Here, the projection is done per-Tile. In the previous
+example, the Tiles ... TODO
+
+
+Extended Example
+----------------
 
 Resampling
 ==========
