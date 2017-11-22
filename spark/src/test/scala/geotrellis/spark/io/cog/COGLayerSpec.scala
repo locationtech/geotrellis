@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.cog
+package geotrellis.spark.io.cog
 
 import geotrellis.vector._
 import geotrellis.spark._
@@ -77,7 +77,7 @@ class COGLayerSpec extends FunSpec
     it("should write GeoTrellis COGLayer") {
       val source = sc.hadoopGeoTiffRDD(new Path("file:///Users/daunnc/subversions/git/github/pomadchin/geotrellis/raster/data/geotiff-test-files/reproject/cea.tif"))
       val list: ListBuffer[(Int, TileLayerRDD[SpatialKey])] = ListBuffer()
-      val layoutScheme = ZoomedLayoutScheme(LatLng, 512)
+      val layoutScheme = ZoomedLayoutScheme(LatLng, 256)
 
       Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme) { (rdd, zoom) =>
         list += zoom -> rdd

@@ -1,4 +1,4 @@
-package geotrellis.spark.cog
+package geotrellis.spark.io.cog
 
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster._
