@@ -1,4 +1,4 @@
-package geotrellis.spark.cog
+package geotrellis.spark.io.cog
 
 import geotrellis.raster.{CellGrid, GridBounds}
 import geotrellis.raster.io.geotiff.{GeoTiff, GeoTiffOptions}

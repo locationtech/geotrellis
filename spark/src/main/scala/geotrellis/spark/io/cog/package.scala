@@ -1,3 +1,3 @@
-package geotrellis.spark
+package geotrellis.spark.io
 
 package object cog extends Implicits

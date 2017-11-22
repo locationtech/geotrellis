@@ -1,21 +1,17 @@
-package geotrellis.spark.cog
+package geotrellis.spark.io.cog
 
 import geotrellis.raster._
 import geotrellis.raster.crop._
-import geotrellis.spark.io.hadoop._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.raster.resample.NearestNeighbor
-import geotrellis.raster.stitch.Stitcher
-import geotrellis.spark.pyramid.Pyramid
-import geotrellis.spark.pyramid.Pyramid.{Options => PyramidOptions}
 import geotrellis.spark._
+import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.stitch.TileLayoutStitcher
-import geotrellis.spark.util._
 import geotrellis.spark.tiling._
+import geotrellis.spark.util._
 import geotrellis.util._
 import geotrellis.vector.Extent
 
@@ -25,17 +21,21 @@ import org.apache.spark.rdd._
 import java.net.URI
 import scala.reflect.ClassTag
 
-object COGLayerS {
+object COGLayer {
+  /**
+    * Make it more generic? GeoTiffs are Iterables of (K, V)s // K - is a segment key, V - is a segment itself
+    * Segments are in a row major order => profit?
+    */
   def pyramidUp[
     K: SpatialComponent: Ordering: ClassTag,
-    V <: CellGrid: Stitcher: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: ? => GeoTiffConstructMethods[V]
+    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]
   ](itr: Iterable[(K, V)],
     endZoom: Int,
     layoutLevel: LayoutLevel,
     layoutScheme: LayoutScheme,
     md: TileLayerMetadata[K],
     options: GeoTiffOptions
-   ): List[GeoTiff[V]] = {
+   )(implicit tc: Iterable[(K, V)] => GeoTiffSegmentConstructMethods[K, V]): List[GeoTiff[V]] = {
     val nextLayoutLevel @ LayoutLevel(nextZoom, nextLayout) = layoutScheme.zoomOut(layoutLevel)
     if(nextZoom >= endZoom) {
       val list: List[(K, V)] =
@@ -58,12 +58,8 @@ object COGLayerS {
             (newKey, newTile: V)
           }.toList
 
-      val (stitchedTile: V, gb) =
-        TileLayoutStitcher
-          .stitch[V](list.map { case (k, v) => k.getComponent[SpatialKey] -> v })
-
       val ifdLayer: GeoTiff[V] =
-        stitchedTile.toGeoTiff(nextLayout, gb, md, options.copy(subfileType = Some(ReducedImage)))
+        list.toGeoTiff(nextLayout, md, options.copy(subfileType = Some(ReducedImage)))
 
       ifdLayer :: pyramidUp(list, endZoom, nextLayoutLevel, layoutScheme, md, options)
     } else List()
@@ -71,12 +67,12 @@ object COGLayerS {
 
   def apply[
     K: SpatialComponent: Ordering: ClassTag,
-    V <: CellGrid: Stitcher: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: ? => GeoTiffConstructMethods[V]
-  ](rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]])(startZoom: Int, endZoom: Int, layoutScheme: LayoutScheme): RDD[(K, GeoTiff[V])] = {
-    val options: GeoTiffOptions = GeoTiffOptions(storageMethod = Tiled)
-
+    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]
+  ](rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]])(startZoom: Int, endZoom: Int, layoutScheme: LayoutScheme)
+   (implicit tc: Iterable[(K, V)] => GeoTiffSegmentConstructMethods[K, V]): RDD[(K, GeoTiff[V])] = {
     val md = rdd.metadata
     val sourceLayout = md.layout
+    val options: GeoTiffOptions = GeoTiffOptions(storageMethod = Tiled(sourceLayout.tileCols, sourceLayout.tileRows))
     val LayoutLevel(_, endLayout) = layoutScheme.zoomOut(LayoutLevel(endZoom, sourceLayout))
 
     val groupedByEndZoom =
@@ -94,28 +90,28 @@ object COGLayerS {
     groupedByEndZoom
       .repartition(groupedPartitions)
       .mapPartitions { partition: Iterator[(K, (Iterable[(K, V)]))] =>
+        // TODO: refactor, so ugly
         val list = partition.toList
         val flatList = list.flatMap(_._2)
 
         if(list.nonEmpty) {
           val sfc = list.head._1
 
-          val (stitchedTile, gb) = // replace to construct GeoTiff
-            TileLayoutStitcher
-              .stitch[V](flatList.map { case (k, v) => k.getComponent[SpatialKey] -> v })
+          val overviews: List[GeoTiff[V]] =
+            pyramidUp[K, V](flatList, endZoom, LayoutLevel(startZoom, sourceLayout), layoutScheme, md, options.copy(subfileType = Some(ReducedImage)))
 
-          val baseLayer: GeoTiff[V] =
-            stitchedTile
-              .toGeoTiff(
-                sourceLayout,
-                gb,
-                md,
-                options,
-                pyramidUp[K, V](flatList, endZoom, LayoutLevel(startZoom, sourceLayout), layoutScheme, md, options)
-              )
+          val stitchedTile: GeoTiff[V] =
+            flatList.toGeoTiff(sourceLayout, md, options, overviews)
 
-          Iterator(sfc -> baseLayer)
+          Iterator(sfc -> stitchedTile)
         } else Iterator()
       }
+  }
+
+  def write[K: SpatialComponent: ClassTag, V <: CellGrid: ClassTag](cogs: RDD[(K, GeoTiff[V])])(keyIndex: KeyIndex[K], uri: URI): Unit = {
+    val conf = HadoopConfiguration(cogs.sparkContext.hadoopConfiguration)
+    cogs.foreach { case (key, tiff) =>
+      HdfsUtils.write(new Path(s"${uri.toString}/${keyIndex.toIndex(key)}.tiff"), conf.get) { new GeoTiffWriter(tiff, _).write(true) }
+    }
   }
 }

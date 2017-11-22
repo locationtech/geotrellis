@@ -1,4 +1,4 @@
-package geotrellis.spark.cog
+package geotrellis.spark.io.cog
 
 import geotrellis.raster._
 import geotrellis.raster.crop._
