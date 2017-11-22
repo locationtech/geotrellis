@@ -517,14 +517,51 @@ on S3, and not a pre-ingested GeoTrellis layer. In that case, you'd have:
 
    val ll: RDD[(ProjectedExtent, Tile)] = wm.reproject(LatLng)
 
-It's important to note that the RDDs in this example and the one previous are
+``.reproject`` here doesn't need a source ``CRS``, since this information is
+encoded in each ``ProjectedExtent``.
+
+On Layer Reprojection
+---------------------
+
+It's important to note that the resulting RDDs in this last example and the one previous to it are
 different. The latter is not keyed, and so doesn't necessarily represent some
-original, unified raster. Here, the projection is done per-Tile. In the previous
-example, the Tiles ... TODO
+original, unified raster. It is not a "layer" in the usual GeoTrellis sense,
+and the projection is done per-Tile. With ``TileLayerRDD``, the Tiles were
+automatically given buffer pixels during reprojection in order to avoid
+artifacts (i.e. seams, dead pixels, etc.).
 
+Futhermore, we can expect the reprojected Tiles in the ``RDD[(ProjectedExtent, Tile)]`` to
+be skewed:
 
-Extended Example
-----------------
+.. figure:: ./images/reproject.png
+
+where the border regions of each ``Tile`` are almost certainly patches
+of ``NODATA``. This is undesirable but also fixable,
+thanks to ``.tileToLayout``:
+
+.. code-block:: scala
+
+   val wm: RDD[(ProjectedExtent, Tile)] = S3GeoTiffRDD.spatial("s3-bucket-name", "your-image.tiff")
+
+   val ll: RDD[(ProjectedExtent, Tile)] = wm.reproject(LatLng)
+
+   /* The value type held within the tiles. Example: `IntCellType` */
+   val ct: CellType = ???
+
+   /* The size and shape of your desired grid. */
+   val layout: LayoutDefinition = ???
+
+   /* Reorganize your reprojected Tiles into a true grid. */
+   val layer: RDD[(SpatialKey, Tile)] = ll.tileToLayout(ct, layout)
+
+``.tileToLayout`` works by recutting each source ``Tile`` into potentially
+many target tiles, associating each with a ``SpatialKey``, and merging any
+that have matching keys. This merging is what clears out our ``NODATA``.
+
+And now we've returned to a nice keyed Layer! Due to fewer
+Spark shuffles, this method technically has better
+performance than when we had a ``TileLayerRDD`` to begin with. However,
+you will not be freed from potential seams or other image artifacts.
 
 Resampling
 ==========
