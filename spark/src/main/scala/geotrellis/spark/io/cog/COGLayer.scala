@@ -28,6 +28,7 @@ object COGLayer {
     geoTiff: GeoTiff[T],
     metadata: TileLayerMetadata[K],
     zoom: Int,
+    layoutScheme: ZoomedLayoutScheme,
     zoomRanges: Option[(Int, Int)],
     overviews: List[(Int, TileLayerMetadata[K])]
   )
@@ -85,7 +86,7 @@ object COGLayer {
   ](itr: Iterable[(K, V)],
     endZoom: Int,
     layoutLevel: LayoutLevel,
-    layoutScheme: LayoutScheme,
+    layoutScheme: ZoomedLayoutScheme,
     md: TileLayerMetadata[K],
     options: GeoTiffOptions
    )(implicit tc: Iterable[(K, V)] => GeoTiffSegmentConstructMethods[K, V]): List[ContextGeoTiff[K, V]] = {
@@ -123,7 +124,7 @@ object COGLayer {
         bounds = KeyBounds(keys.min, keys.max)
       )
 
-      val ifdContextLayer = ContextGeoTiff(ifdLayer, nextMd, nextZoom, None, Nil)
+      val ifdContextLayer = ContextGeoTiff(ifdLayer, nextMd, nextZoom, layoutScheme, None, Nil)
 
       ifdContextLayer :: pyramidUpWithMetadata(list, endZoom, nextLayoutLevel, layoutScheme, md, options)
     } else List()
@@ -175,7 +176,7 @@ object COGLayer {
   def applyWithMetadata[
     K: SpatialComponent: Ordering: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]
-  ](rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]])(startZoom: Int, endZoom: Int, layoutScheme: LayoutScheme)
+  ](rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]])(startZoom: Int, endZoom: Int, layoutScheme: ZoomedLayoutScheme)
    (implicit tc: Iterable[(K, V)] => GeoTiffSegmentConstructMethods[K, V]): RDD[(K, ContextGeoTiff[K, V])] = {
     val md = rdd.metadata
     val sourceLayout = md.layout
@@ -222,7 +223,7 @@ object COGLayer {
           )
 
           val ifdContextLayer =
-            ContextGeoTiff(stitchedTile, currentMd, startZoom, Some(endZoom -> startZoom), overviews.map { o => o.zoom -> o.metadata })
+            ContextGeoTiff(stitchedTile, currentMd, startZoom, layoutScheme, Some(endZoom -> startZoom), overviews.map { o => o.zoom -> o.metadata })
 
           Iterator(sfc -> ifdContextLayer)
         } else Iterator()
