@@ -17,7 +17,8 @@
 package geotrellis.spark.io.s3.cog
 
 import geotrellis.raster.Tile
-import geotrellis.spark.io.LayerHeader
+import geotrellis.spark.io._
+import geotrellis.spark.tiling.ZoomedLayoutScheme
 
 import spray.json._
 import spray.json.DefaultJsonProtocol._
@@ -27,7 +28,8 @@ case class S3COGLayerHeader(
   valueClass: String,
   bucket: String,
   key: String,
-  zoomRanges: (Int, Int) // per each zoom level we keep its partial pyramid zoom levels
+  zoomRanges: (Int, Int), // per each zoom level we keep its partial pyramid zoom levels
+  layoutScheme: ZoomedLayoutScheme
 ) extends LayerHeader {
   def format = "s3"
 }
@@ -36,31 +38,34 @@ object S3COGLayerHeader {
   implicit object S3COGLayerHeaderFormat extends RootJsonFormat[S3COGLayerHeader] {
     def write(md: S3COGLayerHeader) =
       JsObject(
-        "format"     -> md.format.toJson,
-        "keyClass"   -> md.keyClass.toJson,
-        "valueClass" -> md.valueClass.toJson,
-        "bucket"     -> md.bucket.toJson,
-        "key"        -> md.key.toJson,
-        "zoomRanges" -> md.zoomRanges.toJson
+        "format"       -> md.format.toJson,
+        "keyClass"     -> md.keyClass.toJson,
+        "valueClass"   -> md.valueClass.toJson,
+        "bucket"       -> md.bucket.toJson,
+        "key"          -> md.key.toJson,
+        "zoomRanges"   -> md.zoomRanges.toJson,
+        "layoutScheme" -> md.layoutScheme.toJson
       )
 
     def read(value: JsValue): S3COGLayerHeader =
-      value.asJsObject.getFields("keyClass", "valueClass", "bucket", "key", "zoomRanges") match {
-        case Seq(JsString(keyClass), JsString(valueClass), JsString(bucket), JsString(key), zoomRanges) =>
+      value.asJsObject.getFields("keyClass", "valueClass", "bucket", "key", "zoomRanges", "layoutScheme") match {
+        case Seq(JsString(keyClass), JsString(valueClass), JsString(bucket), JsString(key), zoomRanges, layoutScheme) =>
           S3COGLayerHeader(
             keyClass,
             valueClass,
             bucket,
             key,
-            zoomRanges.convertTo[(Int, Int)]
+            zoomRanges.convertTo[(Int, Int)],
+            layoutScheme.convertTo[ZoomedLayoutScheme]
           )
-        case Seq(JsString(keyClass), JsString(bucket), JsString(key), zoomRanges) =>
+        case Seq(JsString(keyClass), JsString(bucket), JsString(key), zoomRanges, layoutScheme) =>
           S3COGLayerHeader(
             keyClass,
             classOf[Tile].getCanonicalName,
             bucket,
             key,
-            zoomRanges.convertTo[(Int, Int)]
+            zoomRanges.convertTo[(Int, Int)],
+            layoutScheme.convertTo[ZoomedLayoutScheme]
           )
 
         case other =>

@@ -19,11 +19,8 @@ package geotrellis.spark.io.cog
 import geotrellis.raster.CellGrid
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.avro._
-import geotrellis.spark.io.json._
-import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.util._
-import geotrellis.vector.Extent
+
 import org.apache.spark.rdd._
 import spray.json._
 
@@ -47,41 +44,41 @@ abstract class FilteringCOGLayerReader[ID] extends COGLayerReader[ID] {
 
     */
   def read[
-    K: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](id: ID, rasterQuery: LayerQuery[K, M], numPartitions: Int, indexFilterOnly: Boolean): RDD[(K, V)] with Metadata[M]
 
   def read[
-    K: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](id: ID, rasterQuery: LayerQuery[K, M], numPartitions: Int): RDD[(K, V)] with Metadata[M] =
     read(id, rasterQuery, numPartitions, false)
 
   def read[
-    K: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](id: ID, rasterQuery: LayerQuery[K, M]): RDD[(K, V)] with Metadata[M] =
     read(id, rasterQuery, defaultNumPartitions)
 
   def read[
-    K: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[M] =
     read(id, new LayerQuery[K, M], numPartitions)
 
   def query[
-    K: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](layerId: ID): BoundLayerQuery[K, M, RDD[(K, V)] with Metadata[M]] =
     new BoundLayerQuery(new LayerQuery, read(layerId, _))
 
   def query[
-    K: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](layerId: ID, numPartitions: Int): BoundLayerQuery[K, M, RDD[(K, V)] with Metadata[M]] =
