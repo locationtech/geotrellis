@@ -22,38 +22,39 @@ import geotrellis.spark.io.avro._
 import geotrellis.spark.io.json._
 import geotrellis.util._
 import org.apache.avro.Schema
-
 import org.apache.spark.rdd._
 import org.apache.spark.SparkContext
 import spray.json._
+
 import scalaz.std.vector._
 import scalaz.concurrent.{Strategy, Task}
 import scalaz.stream.{Process, nondeterminism}
-
 import scala.reflect._
 import java.util.concurrent.Executors
 import java.util.ServiceLoader
 import java.net.URI
+
+import geotrellis.raster.CellGrid
 
 trait COGLayerReader[ID] {
   def defaultNumPartitions: Int
 
   def read[
     K: Boundable: JsonFormat: ClassTag,
-    V: ClassTag,
+    V <: CellGrid: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[M]
 
   def read[
     K: Boundable: JsonFormat: ClassTag,
-    V: ClassTag,
+    V <: CellGrid: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](id: ID): RDD[(K, V)] with Metadata[M] =
     read(id, defaultNumPartitions)
 
   def reader[
     K: Boundable: JsonFormat: ClassTag,
-    V: ClassTag,
+    V <: CellGrid: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ]: Reader[ID, RDD[(K, V)] with Metadata[M]] =
     new Reader[ID, RDD[(K, V)] with Metadata[M]] {

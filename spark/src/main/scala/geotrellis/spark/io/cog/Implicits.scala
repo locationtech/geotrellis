@@ -65,21 +65,38 @@ trait Implicits {
       options: GeoTiffOptions,
       overviews: List[GeoTiff[Tile]] = Nil
     ): SinglebandGeoTiff = {
-      val geoTiffTile: GeoTiffTile = {
-        val (layoutCols, layoutRows) = gb.width * nextLayout.tileCols -> gb.height * nextLayout.tileRows
+      val (layoutCols, layoutRows) = gb.width * nextLayout.tileCols -> gb.height * nextLayout.tileRows
 
+      /*println(s"(layoutCols, layoutRows): ${(layoutCols, layoutRows)}")
+      println(s"${gb.width} * ${nextLayout.tileCols} -> ${gb.height} * ${nextLayout.tileRows}")*/
+
+      val re = RasterExtent(nextLayout.mapTransform(gb), layoutCols, layoutRows)
+      val gridBounds = re.gridBoundsFor(md.extent, clamp = false)
+
+      val geoTiffTile: GeoTiffTile = {
         val segmentLayout = GeoTiffSegmentLayout(layoutCols, layoutRows, options.storageMethod, BandInterleave, BandType.forCellType(md.cellType))
+
+        //println(s"segmentLayout: $segmentLayout")
 
         val segmentCount = segmentLayout.tileLayout.layoutCols * segmentLayout.tileLayout.layoutRows
         val compressor = options.compression.createCompressor(segmentCount)
 
         val segments: Map[Int, Array[Byte]] =
           self
+            .map { case (k, v) => k.getComponent[SpatialKey] -> v }
+            .toList
+            .sortBy(_._1)
             .map { case (key, tile) =>
               val spatialKey = key.getComponent[SpatialKey]
               val updateCol = (spatialKey.col - gb.colMin) * md.tileLayout.tileCols
               val updateRow = (spatialKey.row - gb.rowMin) * md.tileLayout.tileRows
               val index = segmentLayout.getSegmentIndex(updateCol, updateRow)
+
+              /*println(s"key($index): $key")
+              println(s"tile.dimensions($index): ${tile.dimensions}")
+              println(s"tile.findMinMaxDouble($index): ${tile.findMinMaxDouble}")
+              println(s"(updateCol, updateRow)($index): ${(updateCol, updateRow)}")
+              println(s"segmentBounds: ${segmentBounds}")*/
 
               index -> compressor.compress(tile.toBytes, index)
             }
@@ -90,20 +107,39 @@ trait Implicits {
           segmentBytes(i) = segments.getOrElse(i, compressor.compress(Array[Byte](), i))
         }
 
-        GeoTiffTile(new ArraySegmentBytes(segmentBytes), compressor.createDecompressor, segmentLayout, options.compression, md.cellType)
+         GeoTiffTile(new ArraySegmentBytes(segmentBytes), compressor.createDecompressor, segmentLayout, options.compression, md.cellType)
       }
 
-      val re = RasterExtent(nextLayout.mapTransform(gb), geoTiffTile.cols, geoTiffTile.rows)
-      val gridBounds = re.gridBoundsFor(md.extent, clamp = false)
+      /*(0 to geoTiffTile.segmentCount) foreach { case i =>
+        println(s"geoTiffTile.getGridBounds($i): ${geoTiffTile.getGridBounds(i)}")
+      }
+
+      println(s"geoTiffTile.getIntersectingSegments(gridBounds).sorted: ${geoTiffTile.getIntersectingSegments(gridBounds).toList.sorted}")
+
+      println(s"gridBounds: ${gridBounds}")
+      println(s"gridBounds: ${geoTiffTile.gridBounds}")*/
+
+      /*(0 to 15) foreach { case i =>
+        println(s"geoTiffTile.getGridBounds($i).crop(gridBounds): ${geoTiffTile.crop(gridBounds).getGridBounds(i)}")
+      }*/
 
       SinglebandGeoTiff(
-        geoTiffTile.crop(gridBounds),
+        geoTiffTile, //.crop(gridBounds), // impossible to read by segments with this crop function applied
         md.extent,
         md.crs,
         Tags.empty,
         options = options,
         overviews = overviews.map(_.asInstanceOf[SinglebandGeoTiff])
       )
+
+      /*SinglebandGeoTiff(
+        geoTiffTile.crop(gridBounds), // impossible to read by segments with this crop function applied
+        md.extent,
+        md.crs,
+        Tags.empty,
+        options = options,
+        overviews = overviews.map(_.asInstanceOf[SinglebandGeoTiff])
+      )*/
     }
   }
 
