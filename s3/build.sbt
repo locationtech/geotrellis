@@ -12,6 +12,8 @@ libraryDependencies ++= Seq(
 fork in Test := false
 parallelExecution in Test := false
 
+testOptions in Test += Tests.Argument("-oDF")
+
 mimaPreviousArtifacts := Set(
   "org.locationtech.geotrellis" %% "geotrellis-s3" % Version.previousVersion
 )

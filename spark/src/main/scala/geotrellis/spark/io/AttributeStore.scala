@@ -75,7 +75,7 @@ object AttributeStore {
 
 case class LayerAttributes[H, M, K](header: H, metadata: M, keyIndex: KeyIndex[K], schema: Schema)
 
-trait LayerAttributeStore {
+trait LayerAttributeStore extends Serializable {
   def readHeader[H: JsonFormat](id: LayerId): H
   def readMetadata[M: JsonFormat](id: LayerId): M
   def readKeyIndex[K: ClassTag](id: LayerId): KeyIndex[K]

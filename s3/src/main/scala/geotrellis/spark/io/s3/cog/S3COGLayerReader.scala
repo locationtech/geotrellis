@@ -16,8 +16,8 @@
 
 package geotrellis.spark.io.s3.cog
 
-import geotrellis.proj4.WebMercator
-import geotrellis.raster.{RasterExtent, Tile}
+import geotrellis.proj4.{LatLng, WebMercator}
+import geotrellis.raster.{CellGrid, GridBounds, RasterExtent, Tile}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.s3._
@@ -47,14 +47,16 @@ class S3COGLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkCon
 
   def read[
     K: Boundable: JsonFormat: ClassTag,
-    V: /*S3COGRDDReader: */ClassTag,
+    V <: CellGrid: /*S3COGRDDReader: */ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
     //M: JsonFormat: GetComponent[?, Bounds[K]]: GetComponent[?, LayoutDefinition]: GetComponent[?, Extent]
   ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
+    implicit val spatialComponent: SpatialComponent[K] = implicitly[SpatialComponent[SpatialKey]].asInstanceOf[SpatialComponent[K]]
+
     val rddReader = implicitly[S3COGRDDReader[Tile]].asInstanceOf[S3COGRDDReader[V]] // drity for now
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
-    val LayerAttributes(header, metadata, keyIndex, _) = try {
+    val LayerAttributes(header, metadata, _, _) = try {
       attributeStore.readLayerAttributes[S3COGLayerHeader, M, K](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
@@ -69,21 +71,54 @@ class S3COGLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkCon
     val bucket = header.bucket
     val prefix = header.key
 
-    val queryKeyBounds: Seq[KeyBounds[K]] = tileQuery(metadata)
-    val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
-    val keyPath = (index: Long) => makePath(prefix, Index.encode(index, maxWidth))
-    val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
+    println(s"header: ${header}")
 
-    val layoutScheme = ZoomedLayoutScheme(WebMercator) // keep in header?
+    val queryKeyBounds: Seq[KeyBounds[K]] = tileQuery(metadata)
+    val maxWidth = Index.digits(baseKeyIndex.toIndex(baseKeyIndex.keyBounds.maxKey))
+    val keyPath = (index: Long) => makePath(prefix, Index.encode(index, maxWidth))
+    val decompose = (bounds: KeyBounds[K]) => baseKeyIndex.indexRanges(bounds)
+
+    println(s"metadata: $metadata")
+    println(s"metadata.extent: ${metadata}")
+    println(s"baseMetadata: $baseMetadata")
+
+    val layoutScheme = ZoomedLayoutScheme(LatLng, 512/*256*/) // keep in header? DONT FORGET THAT IT SHOULD CORRESPOND TO THE TIFF SCHEME
 
     val LayoutLevel(_, baseLayout) = layoutScheme.levelForZoom(header.zoomRanges._1)
     val LayoutLevel(_, layout) = layoutScheme.levelForZoom(id.zoom)
 
-    val sourceBounds = metadata.getComponent[Bounds[K]]
+    //val sourceBounds = metadata.getComponent[Bounds[K]]
     val baseKeyBounds = baseMetadata.getComponent[Bounds[K]]
 
+    def transformKey(key: K): K = {
+      val extent = layout.extent
+      val sourceRe = RasterExtent(extent, layout.layoutCols, layout.layoutRows)
+      val targetRe = RasterExtent(extent, baseLayout.layoutCols, baseLayout.layoutRows)
+      val SpatialKey(sourceCol, sourceRow) = key.asInstanceOf[SpatialKey] //key.getComponent[SpatialKey]
+      val (col, row) = {
+        val (x, y) = sourceRe.gridToMap(sourceCol, sourceRow)
+        targetRe.mapToGrid(x, y)
+      }
+
+      SpatialKey(col, row).asInstanceOf[K] //key.setComponent(SpatialKey(col, row))
+    }
+
+    def transformKeyToLayout(key: K, segmentLayout: LayoutDefinition): K = {
+      val extent = layout.extent
+      val sourceRe = RasterExtent(extent, layout.layoutCols, layout.layoutRows)
+      val targetRe = RasterExtent(extent, segmentLayout.layoutCols, segmentLayout.layoutRows)
+      val SpatialKey(sourceCol, sourceRow) = key.asInstanceOf[SpatialKey] //key.getComponent[SpatialKey]
+
+      val (col, row) = {
+        val (x, y) = sourceRe.gridToMap(sourceCol, sourceRow)
+        targetRe.mapToGrid(x, y)
+      }
+
+      SpatialKey(col, row).asInstanceOf[K] //key.setComponent(SpatialKey(col, row))
+    }
+
     // (KeyBounds ->
-    val baseQueryKeyBounds: Seq[(KeyBounds[K], Seq[(KeyBounds[K], KeyBounds[K])])] = {
+    val baseQueryKeyBoundsMap: Seq[(KeyBounds[K], Seq[(KeyBounds[K], KeyBounds[K])])] = {
       queryKeyBounds
         .flatMap { qkb =>
           val KeyBounds(minKey, maxKey) = qkb
@@ -97,18 +132,52 @@ class S3COGLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkCon
         .toSeq
     }
 
-    def transformKey(key: K): K = {
+    val baseQueryKeyBounds: Seq[KeyBounds[K]] = {
+      queryKeyBounds
+        .flatMap { qkb =>
+          val KeyBounds(minKey, maxKey) = qkb
+
+          KeyBounds(transformKey(minKey), transformKey(maxKey)).intersect(baseKeyBounds) match {
+            case EmptyBounds => None
+            case kb: KeyBounds[K] => Some(kb)
+          }
+        }
+        .distinct
+    }
+
+    val overviewIndex = {
+      val (_, e) = header.zoomRanges
+      e - id.zoom - 1
+    }
+
+    val kbToGb: KeyBounds[K] => GridBounds = { kb =>
+      val KeyBounds(minKey, maxKey) = kb
       val extent = layout.extent
       val sourceRe = RasterExtent(extent, layout.layoutCols, layout.layoutRows)
-      val targetRe = RasterExtent(extent, baseLayout.layoutCols, baseLayout.layoutRows)
-      val SpatialKey(sourceCol, sourceRow) = key.getComponent[SpatialKey]
-      val (col, row) = {
-        val (x, y) = sourceRe.gridToMap(sourceCol, sourceRow)
-        targetRe.mapToGrid(x, y)
-      }
 
-      key.setComponent(SpatialKey(col, row))
+      val SpatialKey(minSourceCol, minSourceRow) = minKey.asInstanceOf[SpatialKey] //key.getComponent[SpatialKey]
+      val (minCol, minRow) = sourceRe.gridToMap(minSourceCol, minSourceRow)
+
+      val SpatialKey(maxSourceCol, maxSourceRow) = maxKey.asInstanceOf[SpatialKey] //key.getComponent[SpatialKey]
+      val (maxCol, maxRow) = sourceRe.gridToMap(maxSourceCol, maxSourceRow)
+
+      //GridBounds(minCol, minRow, maxCol, maxRow)
+      null
     }
+
+    val gbToKey: GridBounds => K = { gb =>
+      //key.setComponent[SpatialKey](layout.mapTransform(layout.mapTransform(gb).center))
+      layout.mapTransform(layout.mapTransform(gb).center).asInstanceOf[K]
+    }
+
+    val gbToGb: GridBounds => GridBounds = { gb =>
+      baseLayout.mapTransform(layout.mapTransform(gb))
+    }
+
+    //baseLayout
+
+    println(s"baseQueryKeyBounds: ${baseQueryKeyBounds}")
+    println(s"queryKeyBounds: ${queryKeyBounds}")
 
     val rdd = rddReader.read[K](
       bucket = bucket,
@@ -117,11 +186,16 @@ class S3COGLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkCon
       indexToKey = null,
       keyToExtent = null,
       keyBoundsToExtent = null,
-      queryKeyBounds = queryKeyBounds,
-      baseQueryKeyBounds = baseQueryKeyBounds,
+      queryKeyBounds = baseQueryKeyBounds,
+      realQueryKeyBounds = queryKeyBounds,
+      baseQueryKeyBounds = baseQueryKeyBoundsMap,
       decomposeBounds = decompose,
+      gbToKey = gbToKey,
+      gbToGb = gbToGb,
+      sourceLayout = layout,
       filterIndexOnly = filterIndexOnly,
-      cellSize = Some(null),
+      overviewIndex = overviewIndex,
+      cellSize = Some(layout.cellSize),
       Some(numPartitions)
     )
 

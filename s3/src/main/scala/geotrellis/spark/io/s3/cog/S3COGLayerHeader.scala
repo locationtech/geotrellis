@@ -45,7 +45,7 @@ object S3COGLayerHeader {
       )
 
     def read(value: JsValue): S3COGLayerHeader =
-      value.asJsObject.getFields("keyClass", "valueClass", "bucket", "key") match {
+      value.asJsObject.getFields("keyClass", "valueClass", "bucket", "key", "zoomRanges") match {
         case Seq(JsString(keyClass), JsString(valueClass), JsString(bucket), JsString(key), zoomRanges) =>
           S3COGLayerHeader(
             keyClass,
