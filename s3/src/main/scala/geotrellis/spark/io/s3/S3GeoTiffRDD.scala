@@ -47,20 +47,27 @@ object S3GeoTiffRDD extends LazyLogging {
     *
     * TODO: Add persistLevel option
     *
-    * @param tiffExtensions     Read all file with an extension contained in the given list.
+    * @param tiffExtensions Read all file with an extension contained in the given list.
     * @param crs            Override CRS of the input files. If [[None]], the reader will use the file's original CRS.
     * @param timeTag        Name of tiff tag containing the timestamp for the tile.
     * @param timeFormat     Pattern for [[java.time.format.DateTimeFormatter]] to parse timeTag.
     * @param maxTileSize    Maximum allowed size of each tiles in output RDD.
     *                       May result in a one input GeoTiff being split amongst multiple records if it exceeds this size.
-    *                       If no maximum tile size is specific, then each file file is read fully.
-    *                       1024 by defaut.
+    *                       If no maximum tile size is specific, then each file is broken into 256x256 tiles.
+    *                       If [[None]], then the whole file will be read in.
+    *                       This option is incompatible with numPartitions and anything set to that parameter will be ignored.
     * @param numPartitions  How many partitions Spark should create when it repartitions the data.
     * @param partitionBytes Desired partition size in bytes, at least one item per partition will be assigned.
-                            This option is incompatible with the maxTileSize option.
-    *                       128 Mb by default.
-    * @param chunkSize      How many bytes should be read in at a time.
-    * @param delimiter      Delimiter to use for S3 objet listings. See
+    *                       If no size is specified, then partitions 128 Mb in size will be created by default.
+    *                       This option is incompatible with the numPartitions option. If both are set and maxTileSize isn't,
+    *                       then partitionBytes will be ignored in favor of numPartitions. However, if maxTileSize is set,
+    *                       then partitionBytes will be retained.
+    *                       If [[None]] and maxTileSize is defined, then the default partitionBytes' value will still be used.
+    *                       If maxTileSize is also [[None]], then partitionBytes will remain [[None]] as well.
+    * @param chunkSize      How many bytes should be read in at a time when reading a file.
+    *                       If [[None]], then 65536 byte chunks will be read in at a time.
+    * @param delimiter      Delimiter to use for S3 objet listings. This provides a way to further define what files should
+    *                       be read. If [[None]], then only the prefix will be used when determing which files to read.
     * @param getS3Client    A function to instantiate an S3Client. Must be serializable.
     */
   case class Options(
