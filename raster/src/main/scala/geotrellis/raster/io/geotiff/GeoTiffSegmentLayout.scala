@@ -42,59 +42,6 @@ case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: Tile
   def isStriped: Boolean = !isTiled
 
   def hasPixelInterleave: Boolean = interleaveMethod == PixelInterleave
-}
-
-trait GeoTiffSegmentLayoutTransform {
-  private [geotrellis] def segmentLayout: GeoTiffSegmentLayout
-  private lazy val GeoTiffSegmentLayout(totalCols, totalRows, tileLayout, isTiled, interleaveMethod) =
-    segmentLayout
-
-  /** Count of the bands in the GeoTiff */
-  def bandCount: Int
-
-  /** Calculate the number of segments per band */
-  private def bandSegmentCount: Int =
-    tileLayout.layoutCols * tileLayout.layoutRows
-
-  /**
-    * Calculates pixel dimensions of a given segment in this layout.
-    * Segments are indexed in row-major order relative to the GeoTiff they comprise.
-    *
-    * @param segmentIndex: An Int that represents the given segment in the index
-    * @return Tuple representing segment (cols, rows)
-    */
-  def getSegmentDimensions(segmentIndex: Int): (Int, Int) = {
-    val normalizedSegmentIndex = segmentIndex % bandSegmentCount
-    val layoutCol = normalizedSegmentIndex % tileLayout.layoutCols
-    val layoutRow = normalizedSegmentIndex / tileLayout.layoutCols
-
-    val cols =
-      if(layoutCol == tileLayout.layoutCols - 1) {
-        totalCols - ((tileLayout.layoutCols - 1) * tileLayout.tileCols)
-      } else {
-        tileLayout.tileCols
-      }
-
-    val rows =
-      if(layoutRow == tileLayout.layoutRows - 1) {
-        totalRows - ((tileLayout.layoutRows - 1) * tileLayout.tileRows)
-      } else {
-        tileLayout.tileRows
-      }
-
-    (cols, rows)
-  }
-
-  /**
-    * Calculates the total pixel count for given segment in this layout.
-    *
-    * @param segmentIndex: An Int that represents the given segment in the index
-    * @return Pixel size of the segment
-    */
-  def getSegmentSize(segmentIndex: Int): Int = {
-    val (cols, rows) = getSegmentDimensions(segmentIndex)
-    cols * rows
-  }
 
   /**
     * Finds the corresponding segment index given GeoTiff col and row.
@@ -111,45 +58,6 @@ trait GeoTiffSegmentLayoutTransform {
     (layoutRow * tileLayout.layoutCols) + layoutCol
   }
 
-  private [geotiff] def getSegmentTransform(segmentIndex: Int): SegmentTransform = {
-    val id = segmentIndex % bandSegmentCount
-    if (segmentLayout.isStriped)
-      StripedSegmentTransform(id, GeoTiffSegmentLayoutTransform(segmentLayout, bandCount))
-    else
-      TiledSegmentTransform(id, GeoTiffSegmentLayoutTransform(segmentLayout, bandCount))
-  }
-
-  def getSegmentCoordinate(segmentIndex: Int): (Int, Int) =
-    (segmentIndex % tileLayout.layoutCols, segmentIndex / tileLayout.layoutCols)
-
-  private [geotrellis] def getGridBounds(segmentIndex: Int, isBit: Boolean = false): GridBounds = {
-    val normalizedSegmentIndex = segmentIndex % bandSegmentCount
-    val (segmentCols, segmentRows) = getSegmentDimensions(segmentIndex)
-
-    val (startCol, startRow) = {
-      val (layoutCol, layoutRow) = getSegmentCoordinate(normalizedSegmentIndex)
-      (layoutCol * tileLayout.tileCols, layoutRow * tileLayout.tileRows)
-    }
-
-    val endCol = (startCol + segmentCols) - 1
-    val endRow = (startRow + segmentRows) - 1
-
-    GridBounds(startCol, startRow, endCol, endRow)
-  }
-
-  /** Returns all segment indices which intersect given pixel grid bounds */
-  private [geotrellis] def getIntersectingSegments(bounds: GridBounds): Array[Int] = {
-    val tc = tileLayout.tileCols
-    val tr = tileLayout.tileRows
-    val ab = mutable.ArrayBuffer[Int]()
-    for (layoutCol <- (bounds.colMin / tc) to (bounds.colMax / tc)) {
-      for (layoutRow <- (bounds.rowMin / tr) to (bounds.rowMax / tr)) {
-        ab += (layoutRow * tileLayout.layoutCols) + layoutCol
-      }
-    }
-    ab.toArray
-  }
-
   /** Partition a list of pixel windows to localize required segment reads.
     * Some segments may be required by more than one partition.
     * Pixel windows outside of layout range will be filtered.
@@ -159,10 +67,7 @@ trait GeoTiffSegmentLayoutTransform {
     * @param windows List of pixel windows from this layout
     * @param maxPartitionSize Maximum pixel count for each partition
     */
-  def partitionWindowsBySegments(
-    windows: Seq[GridBounds],
-    maxPartitionSize: Long
-  ): Array[Array[GridBounds]] = {
+  def partitionWindowsBySegments(windows: Seq[GridBounds], maxPartitionSize: Long): Array[Array[GridBounds]] = {
     val partition = mutable.ArrayBuilder.make[GridBounds]
     partition.sizeHintBounded(128, windows)
     var partitionSize: Long = 0l
@@ -241,7 +146,7 @@ trait GeoTiffSegmentLayoutTransform {
     windows
   }
 
-   /** List all pixel windows that meet the given geometry */
+  /** List all pixel windows that meet the given geometry */
   def listWindows(maxSize: Int, extent: Extent, geometry: Geometry): Array[GridBounds] = {
     val segCols = tileLayout.tileCols
     val segRows = tileLayout.tileRows
@@ -266,12 +171,12 @@ trait GeoTiffSegmentLayoutTransform {
 
     Rasterizer.foreachCellByGeometry(geometry, re, options)({ (col: Int, row: Int) =>
       result +=
-      GridBounds(
-        col * maxColSize,
-        row * maxRowSize,
-        math.min((col + 1) * maxColSize - 1, totalCols - 1),
-        math.min((row + 1) * maxRowSize - 1, totalRows - 1)
-      )
+        GridBounds(
+          col * maxColSize,
+          row * maxRowSize,
+          math.min((col + 1) * maxColSize - 1, totalCols - 1),
+          math.min((row + 1) * maxRowSize - 1, totalRows - 1)
+        )
     })
     result.toArray
   }
@@ -284,16 +189,132 @@ trait GeoTiffSegmentLayoutTransform {
     cfor(0)(_ < totalCols, _ + cols) { col =>
       cfor(0)(_ < totalRows, _ + rows) { row =>
         result +=
-        GridBounds(
-          col,
-          row,
-          math.min(col + cols - 1, totalCols - 1),
-          math.min(row + rows - 1, totalRows - 1)
-        )
+          GridBounds(
+            col,
+            row,
+            math.min(col + cols - 1, totalCols - 1),
+            math.min(row + rows - 1, totalRows - 1)
+          )
       }
     }
     result.result
   }
+}
+
+trait GeoTiffSegmentLayoutTransform {
+  private [geotrellis] def segmentLayout: GeoTiffSegmentLayout
+  private lazy val GeoTiffSegmentLayout(totalCols, totalRows, tileLayout, isTiled, interleaveMethod) =
+    segmentLayout
+
+  /** Count of the bands in the GeoTiff */
+  def bandCount: Int
+
+  /** Calculate the number of segments per band */
+  private def bandSegmentCount: Int =
+    tileLayout.layoutCols * tileLayout.layoutRows
+
+  /**
+    * Calculates pixel dimensions of a given segment in this layout.
+    * Segments are indexed in row-major order relative to the GeoTiff they comprise.
+    *
+    * @param segmentIndex: An Int that represents the given segment in the index
+    * @return Tuple representing segment (cols, rows)
+    */
+  def getSegmentDimensions(segmentIndex: Int): (Int, Int) = {
+    val normalizedSegmentIndex = segmentIndex % bandSegmentCount
+    val layoutCol = normalizedSegmentIndex % tileLayout.layoutCols
+    val layoutRow = normalizedSegmentIndex / tileLayout.layoutCols
+
+    val cols =
+      if(layoutCol == tileLayout.layoutCols - 1) {
+        totalCols - ((tileLayout.layoutCols - 1) * tileLayout.tileCols)
+      } else {
+        tileLayout.tileCols
+      }
+
+    val rows =
+      if(layoutRow == tileLayout.layoutRows - 1) {
+        totalRows - ((tileLayout.layoutRows - 1) * tileLayout.tileRows)
+      } else {
+        tileLayout.tileRows
+      }
+
+    (cols, rows)
+  }
+
+  /**
+    * Calculates the total pixel count for given segment in this layout.
+    *
+    * @param segmentIndex: An Int that represents the given segment in the index
+    * @return Pixel size of the segment
+    */
+  def getSegmentSize(segmentIndex: Int): Int = {
+    val (cols, rows) = getSegmentDimensions(segmentIndex)
+    cols * rows
+  }
+
+  /**
+    * Finds the corresponding segment index given GeoTiff col and row.
+    * If this is a band interleave geotiff, returns the segment index
+    * for the first band.
+    *
+    * @param col  Pixel column in overall layout
+    * @param row  Pixel row in overall layout
+    * @return     The index of the segment in this layout
+    */
+  private [geotiff] def getSegmentIndex(col: Int, row: Int): Int =
+    segmentLayout.getSegmentIndex(col, row)
+
+  private [geotiff] def getSegmentTransform(segmentIndex: Int): SegmentTransform = {
+    val id = segmentIndex % bandSegmentCount
+    if (segmentLayout.isStriped)
+      StripedSegmentTransform(id, GeoTiffSegmentLayoutTransform(segmentLayout, bandCount))
+    else
+      TiledSegmentTransform(id, GeoTiffSegmentLayoutTransform(segmentLayout, bandCount))
+  }
+
+  def getSegmentCoordinate(segmentIndex: Int): (Int, Int) =
+    (segmentIndex % tileLayout.layoutCols, segmentIndex / tileLayout.layoutCols)
+
+  private [geotrellis] def getGridBounds(segmentIndex: Int, isBit: Boolean = false): GridBounds = {
+    val normalizedSegmentIndex = segmentIndex % bandSegmentCount
+    val (segmentCols, segmentRows) = getSegmentDimensions(segmentIndex)
+
+    val (startCol, startRow) = {
+      val (layoutCol, layoutRow) = getSegmentCoordinate(normalizedSegmentIndex)
+      (layoutCol * tileLayout.tileCols, layoutRow * tileLayout.tileRows)
+    }
+
+    val endCol = (startCol + segmentCols) - 1
+    val endRow = (startRow + segmentRows) - 1
+
+    GridBounds(startCol, startRow, endCol, endRow)
+  }
+
+  /** Returns all segment indices which intersect given pixel grid bounds */
+  private [geotrellis] def getIntersectingSegments(bounds: GridBounds): Array[Int] = {
+    val tc = tileLayout.tileCols
+    val tr = tileLayout.tileRows
+    val ab = mutable.ArrayBuffer[Int]()
+    for (layoutCol <- (bounds.colMin / tc) to (bounds.colMax / tc)) {
+      for (layoutRow <- (bounds.rowMin / tr) to (bounds.rowMax / tr)) {
+        ab += (layoutRow * tileLayout.layoutCols) + layoutCol
+      }
+    }
+    ab.toArray
+  }
+
+  /** Partition a list of pixel windows to localize required segment reads.
+    * Some segments may be required by more than one partition.
+    * Pixel windows outside of layout range will be filtered.
+    * Maximum partition size may be exceeded if any window size exceeds it.
+    * Windows will not be split to satisfy partition size limits.
+    *
+    * @param windows List of pixel windows from this layout
+    * @param maxPartitionSize Maximum pixel count for each partition
+    */
+  def partitionWindowsBySegments(windows: Seq[GridBounds], maxPartitionSize: Long): Array[Array[GridBounds]] =
+    segmentLayout.partitionWindowsBySegments(windows, maxPartitionSize)
 
   /** Returns all segment indices which intersect given pixel grid bounds,
     * and for a subset of bands.

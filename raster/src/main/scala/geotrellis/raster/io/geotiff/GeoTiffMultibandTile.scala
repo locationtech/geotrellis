@@ -340,7 +340,15 @@ abstract class GeoTiffMultibandTile(
    * @param gridBounds Pixel bounds specifying the crop area.
    */
  def crop(gridBounds: GridBounds): ArrayMultibandTile =
-  crop(List(gridBounds), (0 until bandCount).toArray).next._2
+  crop(List(gridBounds)).next._2
+
+  /**
+    * Performs a crop  operaiton.
+    *
+    * @param  windows  Pixel bounds specifying the crop areas
+    */
+  def crop(windows: Seq[GridBounds]): Iterator[(GridBounds, ArrayMultibandTile)] =
+    crop(windows, (0 until bandCount).toArray)
 
   /**
     * Performs a crop and band subsetting operaiton. The returned MultibandGeoTiffTile will
