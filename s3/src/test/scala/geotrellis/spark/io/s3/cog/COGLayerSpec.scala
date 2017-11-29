@@ -51,7 +51,7 @@ class COGLayerSpec extends FunSpec
       val tiff =
         GeoTiff(layer.stitch, layer.metadata.mapTransform(layer.metadata.gridBounds), LatLng)
 
-      GeoTiffWriter.write(tiff.crop(layer.metadata.extent), "/tmp/tests.tif", optimizedOrder = true)
+      GeoTiffWriter.write(tiff.crop(layer.metadata.extent), "/tmp/tests123.tif", optimizedOrder = true)
     }
 
     it("should write GeoTrellis COGLayer") {
