@@ -54,9 +54,19 @@ object HadoopGeoTiffRDD extends LazyLogging {
     * @param timeFormat    Pattern for [[java.time.format.DateTimeFormatter]] to parse timeTag.
     * @param maxTileSize   Maximum allowed size of each tiles in output RDD.
     *                      May result in a one input GeoTiff being split amongst multiple records if it exceeds this size.
-    *                      If no maximum tile size is specific, then each file file is read fully.
+    *                      If no maximum tile size is specific, then each file is broken into 256x256 tiles.
+    *                      If [[None]], then the whole file will be read in.
+    *                      This option is incompatible with numPartitions and anything set to that parameter will be ignored.
     * @param numPartitions How many partitions Spark should create when it repartitions the data.
-    * @param chunkSize     How many bytes should be read in at a time.
+    * @param partitionBytes Desired partition size in bytes, at least one item per partition will be assigned.
+    *                       If no size is specified, then partitions 128 Mb in size will be created by default.
+    *                       This option is incompatible with the numPartitions option. If both are set and maxTileSize isn't,
+    *                       then partitionBytes will be ignored in favor of numPartitions. However, if maxTileSize is set,
+    *                       then partitionBytes will be retained.
+    *                       If [[None]] and maxTileSize is defined, then the default partitionBytes' value will still be used.
+    *                       If maxTileSize is also [[None]], then partitionBytes will remain [[None]] as well.
+    * @param chunkSize     How many bytes should be read in at a time when reading a file.
+    *                      If [[None]], then 65536 byte chunks will be read in at a time.
     */
 
   case class Options(
