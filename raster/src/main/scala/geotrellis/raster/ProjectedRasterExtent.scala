@@ -48,6 +48,9 @@ object ProjectedRasterExtent {
                               cols,
                               rows)
 
+  def apply(re: RasterExtent, crs: CRS): ProjectedRasterExtent = 
+    apply(re.extent, crs, re.cols, re.rows)
+
   def unapply(projRE: ProjectedRasterExtent): Option[(ProjectedExtent, Double, Double, Int, Int)] =
     Some(projRE.projectedExtent, projRE.cellwidth, projRE.cellheight, projRE.cols, projRE.rows)
 
