@@ -45,6 +45,8 @@ trait S3COGRDDReader[V <: CellGrid] extends Serializable {
 
   def getSegmentGridBounds(uri: URI, index: Int): (Int, Int) => GridBounds
 
+  def tileTiff[K](tiff: GeoTiff[V], gridBounds: Map[GridBounds, K]): Vector[(K, V)]
+
   def read[K: SpatialComponent: Boundable](
     bucket: String,
     keyPath: Long => String,
@@ -91,17 +93,17 @@ trait S3COGRDDReader[V <: CellGrid] extends Serializable {
               val gb = tiff.rasterExtent.gridBounds
               val getGridBounds = getSegmentGridBounds(uri, overviewIndex)
 
-              realQueryKeyBoundsRange.flatMap { key =>
-                val spatialKey = key.getComponent[SpatialKey]
-                val minCol = (spatialKey.col - queryGb.colMin) * sourceLayout.tileLayout.tileCols
-                val minRow = (spatialKey.row - queryGb.rowMin) * sourceLayout.tileLayout.tileRows
+              val map: Map[GridBounds, K] =
+                realQueryKeyBoundsRange.flatMap { key =>
+                  val spatialKey = key.getComponent[SpatialKey]
+                  val minCol = (spatialKey.col - queryGb.colMin) * sourceLayout.tileLayout.tileCols
+                  val minRow = (spatialKey.row - queryGb.rowMin) * sourceLayout.tileLayout.tileRows
 
-                val currentGb = getGridBounds(minCol, minRow)
-                gb.intersection(currentGb).map {
-                  case GridBounds(minCol, minRow, maxCol, maxRow) =>
-                    key -> tiff.crop(minCol, minRow, maxCol, maxRow).tile
-                }
-              }
+                  val currentGb = getGridBounds(minCol, minRow)
+                  gb.intersection(currentGb).map(gb => gb -> key)
+                }.toMap
+
+              tileTiff(tiff, map)
             } catch {
               case e: AmazonS3Exception if e.getStatusCode == 404 => Vector.empty
             }
@@ -115,8 +117,8 @@ object S3COGRDDReader {
   /** TODO: Think about it in a more generic fasion */
   private final val S3COGRDDReaderRegistry: Map[String, S3COGRDDReader[_]] =
     Map(
-      classTag[Tile].runtimeClass.getCanonicalName -> implicitly[S3COGRDDReader[Tile]]
-      // classTag[MultibandTile].runtimeClass.getCanonicalName -> implicitly[S3COGRDDReader[MultibandTile]]
+      classTag[Tile].runtimeClass.getCanonicalName -> implicitly[S3COGRDDReader[Tile]],
+      classTag[MultibandTile].runtimeClass.getCanonicalName -> implicitly[S3COGRDDReader[MultibandTile]]
     )
 
   def fromRegistry[V <: CellGrid: ClassTag]: S3COGRDDReader[V] =
