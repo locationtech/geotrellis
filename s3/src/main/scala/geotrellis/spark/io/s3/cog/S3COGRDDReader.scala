@@ -121,11 +121,11 @@ object S3COGRDDReader {
       classTag[MultibandTile].runtimeClass.getCanonicalName -> implicitly[S3COGRDDReader[MultibandTile]]
     )
 
-  def fromRegistry[V <: CellGrid: ClassTag]: S3COGRDDReader[V] =
+  private [geotrellis] def fromRegistry[V <: CellGrid: ClassTag]: S3COGRDDReader[V] =
     S3COGRDDReaderRegistry
       .getOrElse(
-        classTag[Tile].runtimeClass.getCanonicalName,
-        throw new Exception(s"No S3COGRDDReaderRegistry for the type ${classTag[Tile].runtimeClass.getCanonicalName}")
+        classTag[V].runtimeClass.getCanonicalName,
+        throw new Exception(s"No S3COGRDDReaderRegistry for the type ${classTag[V].runtimeClass.getCanonicalName}")
       ).asInstanceOf[S3COGRDDReader[V]]
 
   def getReaders(uri: URI, getS3Client: () => S3Client = () => S3Client.DEFAULT): (ByteReader, Option[ByteReader]) = {
