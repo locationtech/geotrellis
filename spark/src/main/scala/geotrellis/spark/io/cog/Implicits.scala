@@ -65,6 +65,7 @@ trait Implicits {
       options: GeoTiffOptions,
       overviews: List[GeoTiff[Tile]] = Nil
     ): SinglebandGeoTiff = {
+      val gb = md.gridBounds
       val (layoutCols, layoutRows) = gb.width * nextLayout.tileCols -> gb.height * nextLayout.tileRows
 
       /*println(s"(layoutCols, layoutRows): ${(layoutCols, layoutRows)}")
@@ -104,7 +105,7 @@ trait Implicits {
 
         val segmentBytes = Array.ofDim[Array[Byte]](segmentCount)
         cfor(0)(_ < segmentCount, _ + 1) { i =>
-          segmentBytes(i) = segments.getOrElse(i, compressor.compress(Array[Byte](), i))
+          segmentBytes(i) = segments.getOrElse(i, compressor.compress(ArrayTile.empty(md.cellType, md.tileLayout.tileCols, md.tileLayout.tileRows).toBytes, i))
         }
 
          GeoTiffTile(new ArraySegmentBytes(segmentBytes), compressor.createDecompressor, segmentLayout, options.compression, md.cellType)
