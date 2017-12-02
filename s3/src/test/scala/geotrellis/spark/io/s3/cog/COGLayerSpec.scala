@@ -81,5 +81,165 @@ class COGLayerSpec extends FunSpec
 
       writer.write(cogs)(LayerId("test", 0), keyIndexMethod)
     }
+
+    it("should create no metadata GeoTrellis COGLayer") {
+      // /Users/daunnc/Downloads/2452.tiff
+      val source = sc.hadoopGeoTiffRDD(new Path("file:///Users/daunnc/subversions/git/github/pomadchin/geotrellis/raster/data/geotiff-test-files/reproject/cea.tif"))
+      val list: ListBuffer[(Int, TileLayerRDD[SpatialKey])] = ListBuffer()
+      val layoutScheme = ZoomedLayoutScheme(LatLng, 512)
+
+      Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme) { (rdd, zoom) =>
+        list += zoom -> rdd
+      }
+
+      val (zoom, layer) = list.head
+
+      val keyIndexMethod = ZCurveKeyIndexMethod
+
+      val index: ZSpatialKeyIndex = new ZSpatialKeyIndex(layer.metadata.bounds match {
+        case kb: KeyBounds[SpatialKey] => kb
+        case _ => null
+      })
+
+      //val attributeStore = S3AttributeStore("geotrellis-test", "daunnc/cogs")
+      //val writer =
+      //  new S3COGLayerWriter(() => attributeStore, "geotrellis-test", "daunnc/cogs")
+
+      val cogs1 = COGLayer.applyWithMetadata(layer)(zoom, 10, layoutScheme)
+      println(s"cogs1.count: ${cogs1.count()}")
+      println(s"cogs1.map(_._1).collect().toList: ${cogs1.map(_._1).collect().toList}")
+
+      val cogs2 = COGLayer.apply(layer)(zoom, 10, layoutScheme)
+      println(s"cogs2.count: ${cogs2.count()}")
+      println(s"cogs2.map(_._1).collect().toList: ${cogs2.map(_._1).collect().toList}")
+
+      //writer.write(cogs)(LayerId("test", 0), keyIndexMethod)
+    }
+
+    it("should create no metadata GeoTrellis stitched layer COGLayer") {
+      // /Users/daunnc/Downloads/2452.tiff
+      val source = sc.hadoopGeoTiffRDD(new Path("file:///Users/daunnc/subversions/git/github/pomadchin/geotrellis/raster/data/geotiff-test-files/reproject/cea.tif"))
+      val list: ListBuffer[(Int, TileLayerRDD[SpatialKey])] = ListBuffer()
+      val layoutScheme = ZoomedLayoutScheme(LatLng, 512)
+
+      Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme) { (rdd, zoom) =>
+        list += zoom -> rdd
+      }
+
+      val (zoom, layer) = list.head
+
+      val keyIndexMethod = ZCurveKeyIndexMethod
+
+      val index: ZSpatialKeyIndex = new ZSpatialKeyIndex(layer.metadata.bounds match {
+        case kb: KeyBounds[SpatialKey] => kb
+        case _ => null
+      })
+
+      val attributeStore = S3AttributeStore("geotrellis-test", "daunnc/cogs")
+      val writer =
+        new S3COGLayerWriter(() => attributeStore, "geotrellis-test", "daunnc/cogs")
+
+      val cogs = COGLayerS.applyWithMetadata(layer)(zoom, 10, layoutScheme)
+
+      writer.write(cogs)(LayerId("testStitched", 0), keyIndexMethod)
+    }
+
+    it("should write GeoTrellis COGLayerZZZ") {
+      // /Users/daunnc/Downloads/2452.tiff
+      val source = sc.hadoopGeoTiffRDD(new Path("file:///Users/daunnc/subversions/git/github/pomadchin/geotrellis/raster/data/geotiff-test-files/reproject/cea.tif"))
+      val list: ListBuffer[(Int, TileLayerRDD[SpatialKey])] = ListBuffer()
+      val layoutScheme = ZoomedLayoutScheme(LatLng, 512)
+
+      Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme) { (rdd, zoom) =>
+        list += zoom -> rdd
+      }
+
+      val (zoom, layer) = list.head
+
+      val keyIndexMethod = ZCurveKeyIndexMethod
+
+      val index: ZSpatialKeyIndex = new ZSpatialKeyIndex(layer.metadata.bounds match {
+        case kb: KeyBounds[SpatialKey] => kb
+        case _ => null
+      })
+
+      val attributeStore = S3AttributeStore("geotrellis-test", "daunnc/cogs")
+      val writer =
+        new S3COGLayerWriter(() => attributeStore, "geotrellis-test", "daunnc/cogs")
+
+      val cogs = COGLayer.applyWithMetadata(layer)(zoom, 10, layoutScheme)
+
+      writer.write(cogs)(LayerId("test10", 0), keyIndexMethod)
+    }
+
+    it("should read split GeoTrellis COGLayer") {
+      val attributeStore = S3AttributeStore("geotrellis-test", "daunnc/cogs")
+
+      val reader = new S3COGLayerReader(attributeStore)
+
+      val layer = reader.read[SpatialKey, Tile, TileLayerMetadata[SpatialKey]](LayerId("testSplited", 11))
+
+      println(s"layer.count(): ${layer.count()}")
+
+      val collected =
+        layer.collect().toList.map { case (SpatialKey(col, row), tile) =>
+          tile.renderPng().write(s"/tmp/pngs8/${col}_${row}.png")
+        }
+
+      val tiff =
+        GeoTiff(layer.stitch, layer.metadata.mapTransform(layer.metadata.gridBounds), LatLng)
+
+      GeoTiffWriter.write(tiff.crop(layer.metadata.extent), "/tmp/testSplited11.tif", optimizedOrder = true)
+    }
+
+
+    it("should write png") {
+      // /Users/daunnc/Downloads/2452.tiff
+      val source = sc.hadoopGeoTiffRDD(new Path("file:///Users/daunnc/subversions/git/github/pomadchin/geotrellis/raster/data/geotiff-test-files/reproject/cea.tif"))
+      val list: ListBuffer[(Int, TileLayerRDD[SpatialKey])] = ListBuffer()
+      val layoutScheme = ZoomedLayoutScheme(LatLng, 512)
+
+      Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme) { (rdd, zoom) =>
+        list += zoom -> rdd
+      }
+
+      val map = list.toMap
+
+      println(s"map.keys: ${map.keys}")
+      map(11).collect().toList.map { case (SpatialKey(col, row), tile) =>
+        tile.renderPng().write(s"/tmp/pngs_t/${col}_${row}.png")
+      }
+    }
+
+    it("should write split GeoTrellis COGLayer") {
+      // /Users/daunnc/Downloads/2452.tiff
+      val source = sc.hadoopGeoTiffRDD(new Path("file:///Users/daunnc/subversions/git/github/pomadchin/geotrellis/raster/data/geotiff-test-files/reproject/cea.tif"))
+      val list: ListBuffer[(Int, TileLayerRDD[SpatialKey])] = ListBuffer()
+      val layoutScheme = ZoomedLayoutScheme(LatLng, 512)
+
+      Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme) { (rdd, zoom) =>
+        list += zoom -> rdd
+      }
+
+      val (zoom, layer) = list.head
+
+      val keyIndexMethod = ZCurveKeyIndexMethod
+
+      val index: ZSpatialKeyIndex = new ZSpatialKeyIndex(layer.metadata.bounds match {
+        case kb: KeyBounds[SpatialKey] => kb
+        case _ => null
+      })
+
+      val attributeStore = S3AttributeStore("geotrellis-test", "daunnc/cogs")
+      val writer =
+        new S3COGLayerWriter(() => attributeStore, "geotrellis-test", "daunnc/cogs")
+
+      val cogsList = COGLayer.applyWithMetadataCalc(layer)(zoom, layoutScheme, minZoom = Some(7))
+
+      cogsList.map { cogs =>
+        writer.write(cogs)(LayerId("testSplited", 0), keyIndexMethod)
+      }
+
+    }
   }
 }

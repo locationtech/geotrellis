@@ -56,7 +56,7 @@ class COGLayerSpec extends FunSpec
 
     //COGLayer.withStitch(layer)(zoom, 7, layoutScheme).collect().head
 
-    val cogs = COGLayerS(layer)(zoom, 7, layoutScheme)
+    val cogs = COGLayerS(layer)(zoom, 10, layoutScheme)
     cogs.write(index, new URI("file:///tmp/write"))
 
     val (key, tiff: GeoTiff[Tile]) = cogs.collect().head
@@ -77,7 +77,7 @@ class COGLayerSpec extends FunSpec
     it("should write GeoTrellis COGLayer") {
       val source = sc.hadoopGeoTiffRDD(new Path("file:///Users/daunnc/subversions/git/github/pomadchin/geotrellis/raster/data/geotiff-test-files/reproject/cea.tif"))
       val list: ListBuffer[(Int, TileLayerRDD[SpatialKey])] = ListBuffer()
-      val layoutScheme = ZoomedLayoutScheme(LatLng, 256)
+      val layoutScheme = ZoomedLayoutScheme(LatLng, 512)
 
       Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme) { (rdd, zoom) =>
         list += zoom -> rdd
@@ -91,7 +91,7 @@ class COGLayerSpec extends FunSpec
 
       //COGLayer.withStitch(layer)(zoom, 7, layoutScheme).collect().head
 
-      val cogs = COGLayer(layer)(zoom, 7, layoutScheme)
+      val cogs = COGLayer(layer)(zoom, 10, layoutScheme)
       cogs.write(index, new URI("file:///tmp/write2"))
 
       //val (key, tiff: GeoTiff[Tile]) = cogs.collect().head

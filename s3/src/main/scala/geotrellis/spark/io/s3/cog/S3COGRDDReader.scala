@@ -21,6 +21,8 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.s3._
 import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
 import geotrellis.raster._
+import geotrellis.raster.merge._
+import geotrellis.raster.prototype._
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.spark.io.s3.util.S3RangeReader
 import geotrellis.spark.tiling.LayoutDefinition
@@ -35,9 +37,15 @@ import java.net.URI
 
 import scala.reflect._
 
+/**
+  * Generate VRTs to use from GDAL
+  * */
 trait S3COGRDDReader[V <: CellGrid] extends Serializable {
   @transient lazy val DefaultThreadCount: Int =
     ConfigFactory.load().getThreads("geotrellis.s3.threads.rdd.read")
+
+  implicit val tileMergeMethods: V => TileMergeMethods[V]
+  implicit val tilePrototypeMethods: V => TilePrototypeMethods[V]
 
   def getS3Client: () => S3Client
 
@@ -47,7 +55,7 @@ trait S3COGRDDReader[V <: CellGrid] extends Serializable {
 
   def tileTiff[K](tiff: GeoTiff[V], gridBounds: Map[GridBounds, K]): Vector[(K, V)]
 
-  def read[K: SpatialComponent: Boundable](
+  def read[K: SpatialComponent: Boundable: ClassTag](
     bucket: String,
     keyPath: Long => String,
     baseQueryKeyBounds: Seq[KeyBounds[K]],
@@ -81,13 +89,17 @@ trait S3COGRDDReader[V <: CellGrid] extends Serializable {
         }
         .toVector
 
-    val queryGb = realQueryKeyBounds.reduce(_ combine _).toGridBounds
+    val queryGb: GridBounds = realQueryKeyBounds.reduce(_ combine _).toGridBounds
 
-    sc.parallelize(bins, bins.size)
+    val t1 = sc.parallelize(bins, bins.size)
       .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
         partition flatMap { seq =>
           LayerReader.njoin[K, V](seq.toIterator, threads) { index: Long =>
-            try {
+            if(index == 0) Vector()
+            else { try {
+
+              println(s"index!: $index")
+
               val uri = new URI(s"s3://$bucket/${keyPath(index)}.tiff")
               val tiff = readTiff(uri, overviewIndex)
               val gb = tiff.rasterExtent.gridBounds
@@ -104,12 +116,30 @@ trait S3COGRDDReader[V <: CellGrid] extends Serializable {
                 }.toMap
 
               tileTiff(tiff, map)
+
+              /*realQueryKeyBoundsRange.flatMap { key =>
+                val spatialKey = key.getComponent[SpatialKey]
+                val minCol = (spatialKey.col - queryGb.colMin) * sourceLayout.tileLayout.tileCols
+                val minRow = (spatialKey.row - queryGb.rowMin) * sourceLayout.tileLayout.tileRows
+
+                val currentGb = getGridBounds(minCol, minRow)
+                gb.intersection(currentGb).map {
+                  case GridBounds(minCol, minRow, maxCol, maxRow) =>
+                    key -> tiff.crop(minCol, minRow, maxCol, maxRow).tile
+                }
+              }*/
             } catch {
               case e: AmazonS3Exception if e.getStatusCode == 404 => Vector.empty
-            }
+            } }
           }
         }
       }
+
+    val t2 =
+      t1
+        .groupBy(_._1)
+        .map { case (key, (seq: Iterable[(K, V)])) => key -> seq.map(_._2).reduce(_ merge _) }
+    t2
   }
 }
 

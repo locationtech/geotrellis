@@ -1,17 +1,26 @@
 package geotrellis.spark.io.s3.cog
 
-import geotrellis.raster.{GridBounds, MultibandTile, Tile}
+import geotrellis.raster._
 import geotrellis.raster.io.geotiff.{GeoTiff, GeoTiffMultibandTile, GeoTiffTile}
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader.readGeoTiffInfo
+import geotrellis.raster.merge._
+import geotrellis.raster.prototype._
+
 import geotrellis.spark.io.s3.S3Client
 import java.net.URI
 
-import geotrellis.spark.SpatialComponent
+import geotrellis.spark.util.KryoWrapper
 
 trait Implicits extends Serializable {
   implicit val s3SinglebandCOGRDDReader: S3COGRDDReader[Tile] =
     new S3COGRDDReader[Tile] {
+      implicit val tileMergeMethods: Tile => TileMergeMethods[Tile] =
+        tile => withTileMethods(tile)
+
+      implicit val tilePrototypeMethods: Tile => TilePrototypeMethods[Tile] =
+        tile => withTileMethods(tile)
+
       def getS3Client: () => S3Client = () => S3Client.DEFAULT
 
       def readTiff(uri: URI, index: Int): GeoTiff[Tile] = {
@@ -69,6 +78,12 @@ trait Implicits extends Serializable {
 
   implicit val s3MultibandCOGRDDReader: S3COGRDDReader[MultibandTile] =
     new S3COGRDDReader[MultibandTile] {
+      implicit val tileMergeMethods: MultibandTile => TileMergeMethods[MultibandTile] =
+        implicitly[MultibandTile => TileMergeMethods[MultibandTile]]
+
+      implicit val tilePrototypeMethods: MultibandTile => TilePrototypeMethods[MultibandTile] =
+        implicitly[MultibandTile => TilePrototypeMethods[MultibandTile]]
+
       def getS3Client: () => S3Client = () => S3Client.DEFAULT
 
       def readTiff(uri: URI, index: Int): GeoTiff[MultibandTile] = {
