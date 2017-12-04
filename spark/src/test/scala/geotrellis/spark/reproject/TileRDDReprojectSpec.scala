@@ -40,6 +40,10 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
     val gt = SinglebandGeoTiff(path)
     val originalRaster = gt.raster.resample(500, 500)
 
+    // import geotrellis.raster.render._
+    // val rainbow = ColorMap((0.0 to 360.0 by 1.0).map{ deg => (deg, HSV.toRGB(deg, 1.0, 1.0)) }.toMap)
+    // originalRaster.tile.renderPng(rainbow).write("original.png")
+
     val (raster, rdd) = {
       val (raster, rdd) = createTileLayerRDD(originalRaster, 10, 10, gt.crs)
       (raster, rdd.withContext { rdd => rdd.repartition(20) })
@@ -51,6 +55,8 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
           LatLng,
           RasterReprojectOptions(method = method, errorThreshold = 0)
         )
+
+      // expected.tile.renderPng(rainbow).write("expected.png")
 
       val (_, actualRdd) =
         if(constantBuffer) {
@@ -76,6 +82,10 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
 
       val actual =
         actualRdd.stitch
+
+      actualRdd.map { case (_, tile) => tile.dimensions == (25, 25) }.reduce(_ && _) should be (true)
+
+      // actual.tile.renderPng(rainbow).write("actual.png")
 
       // Account for tiles being a bit bigger then the actual result
       actual.extent.covers(expected.extent) should be (true)
