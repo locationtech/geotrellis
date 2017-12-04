@@ -36,6 +36,7 @@ import org.apache.hadoop.fs.Path
 import org.scalatest._
 
 import scala.collection.mutable.ListBuffer
+import java.nio.file.Paths
 
 class COGLayerSpec extends FunSpec
   with Matchers
@@ -55,8 +56,10 @@ class COGLayerSpec extends FunSpec
     }
 
     it("should write GeoTrellis COGLayer") {
-      // /Users/daunnc/Downloads/2452.tiff
-      val source = sc.hadoopGeoTiffRDD(new Path("file:///Users/daunnc/subversions/git/github/pomadchin/geotrellis/raster/data/geotiff-test-files/reproject/cea.tif"))
+      val source =
+        sc.hadoopGeoTiffRDD(
+          new Path(s"file:///${Paths.get("raster").toAbsolutePath.toString}/data/geotiff-test-files/reproject/cea.tif")
+        )
       val list: ListBuffer[(Int, TileLayerRDD[SpatialKey])] = ListBuffer()
       val layoutScheme = ZoomedLayoutScheme(LatLng, 512)
 
@@ -83,8 +86,10 @@ class COGLayerSpec extends FunSpec
     }
 
     it("should create no metadata GeoTrellis COGLayer") {
-      // /Users/daunnc/Downloads/2452.tiff
-      val source = sc.hadoopGeoTiffRDD(new Path("file:///Users/daunnc/subversions/git/github/pomadchin/geotrellis/raster/data/geotiff-test-files/reproject/cea.tif"))
+      val source =
+        sc.hadoopGeoTiffRDD(
+          new Path(s"file:///${Paths.get("raster").toAbsolutePath.toString}/data/geotiff-test-files/reproject/cea.tif")
+        )
       val list: ListBuffer[(Int, TileLayerRDD[SpatialKey])] = ListBuffer()
       val layoutScheme = ZoomedLayoutScheme(LatLng, 512)
 
@@ -118,7 +123,10 @@ class COGLayerSpec extends FunSpec
 
     it("should create no metadata GeoTrellis stitched layer COGLayer") {
       // /Users/daunnc/Downloads/2452.tiff
-      val source = sc.hadoopGeoTiffRDD(new Path("file:///Users/daunnc/subversions/git/github/pomadchin/geotrellis/raster/data/geotiff-test-files/reproject/cea.tif"))
+      val source =
+        sc.hadoopGeoTiffRDD(
+          new Path(s"file:///${Paths.get("raster").toAbsolutePath.toString}/data/geotiff-test-files/reproject/cea.tif")
+        )
       val list: ListBuffer[(Int, TileLayerRDD[SpatialKey])] = ListBuffer()
       val layoutScheme = ZoomedLayoutScheme(LatLng, 512)
 
@@ -145,8 +153,10 @@ class COGLayerSpec extends FunSpec
     }
 
     it("should write GeoTrellis COGLayerZZZ") {
-      // /Users/daunnc/Downloads/2452.tiff
-      val source = sc.hadoopGeoTiffRDD(new Path("file:///Users/daunnc/subversions/git/github/pomadchin/geotrellis/raster/data/geotiff-test-files/reproject/cea.tif"))
+      val source =
+        sc.hadoopGeoTiffRDD(
+          new Path(s"file:///${Paths.get("raster").toAbsolutePath.toString}/data/geotiff-test-files/reproject/cea.tif")
+        )
       val list: ListBuffer[(Int, TileLayerRDD[SpatialKey])] = ListBuffer()
       val layoutScheme = ZoomedLayoutScheme(LatLng, 512)
 
@@ -181,10 +191,10 @@ class COGLayerSpec extends FunSpec
 
       println(s"layer.count(): ${layer.count()}")
 
-      val collected =
+      /*val collected =
         layer.collect().toList.map { case (SpatialKey(col, row), tile) =>
           tile.renderPng().write(s"/tmp/pngs8/${col}_${row}.png")
-        }
+        }*/
 
       val tiff =
         GeoTiff(layer.stitch, layer.metadata.mapTransform(layer.metadata.gridBounds), LatLng)
@@ -193,9 +203,12 @@ class COGLayerSpec extends FunSpec
     }
 
 
-    it("should write png") {
-      // /Users/daunnc/Downloads/2452.tiff
-      val source = sc.hadoopGeoTiffRDD(new Path("file:///Users/daunnc/subversions/git/github/pomadchin/geotrellis/raster/data/geotiff-test-files/reproject/cea.tif"))
+    ignore("should write png") {
+      val source =
+        sc.hadoopGeoTiffRDD(
+          new Path(s"file:///${Paths.get("raster").toAbsolutePath.toString}/data/geotiff-test-files/reproject/cea.tif")
+        )
+
       val list: ListBuffer[(Int, TileLayerRDD[SpatialKey])] = ListBuffer()
       val layoutScheme = ZoomedLayoutScheme(LatLng, 512)
 
@@ -212,8 +225,11 @@ class COGLayerSpec extends FunSpec
     }
 
     it("should write split GeoTrellis COGLayer") {
-      // /Users/daunnc/Downloads/2452.tiff
-      val source = sc.hadoopGeoTiffRDD(new Path("file:///Users/daunnc/subversions/git/github/pomadchin/geotrellis/raster/data/geotiff-test-files/reproject/cea.tif"))
+      val source =
+        sc.hadoopGeoTiffRDD(
+          new Path(s"file:///${Paths.get("raster").toAbsolutePath.toString}/data/geotiff-test-files/reproject/cea.tif")
+        )
+
       val list: ListBuffer[(Int, TileLayerRDD[SpatialKey])] = ListBuffer()
       val layoutScheme = ZoomedLayoutScheme(LatLng, 512)
 
