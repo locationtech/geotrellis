@@ -331,7 +331,7 @@ case class ByteConstantTile(v: Byte, cols: Int, rows: Int,
     *
     * @return  The MutableArrayTile
     */
-  def mutable(): MutableArrayTile = ByteArrayTile.fill(v, cols, rows)
+  def mutable(): MutableArrayTile = ByteArrayTile.fill(v, cols, rows, cellType)
 
   /**
     * Return the underlying data behind this tile as an array.
@@ -390,7 +390,7 @@ case class UByteConstantTile(v: Byte, cols: Int, rows: Int,
     *
     * @return  The MutableArrayTile
     */
-  def mutable(): MutableArrayTile = ByteArrayTile.fill(v, cols, rows)
+  def mutable(): MutableArrayTile = UByteArrayTile.fill(v, cols, rows, cellType)
 
   /**
     * Return the underlying data behind this tile as an array.
@@ -460,7 +460,7 @@ case class ShortConstantTile(v: Short, cols: Int, rows: Int,
     *
     * @return  The MutableArrayTile
     */
-  def mutable(): MutableArrayTile = ShortArrayTile.fill(v, cols, rows)
+  def mutable(): MutableArrayTile = ShortArrayTile.fill(v, cols, rows, cellType)
 
   /**
     * Return the underlying data behind this tile as an array.
@@ -523,7 +523,7 @@ case class UShortConstantTile(v: Short, cols: Int, rows: Int,
     *
     * @return  The MutableArrayTile
     */
-  def mutable(): MutableArrayTile = UShortArrayTile.fill(v, cols, rows)
+  def mutable(): MutableArrayTile = UShortArrayTile.fill(v, cols, rows, cellType)
 
   /**
     * Return the underlying data behind this tile as an array.
@@ -597,7 +597,7 @@ case class IntConstantTile(v: Int, cols: Int, rows: Int,
     *
     * @return  The MutableArrayTile
     */
-  def mutable(): MutableArrayTile = IntArrayTile.fill(v, cols, rows)
+  def mutable(): MutableArrayTile = IntArrayTile.fill(v, cols, rows, cellType)
 
   /**
     * Return the underlying data behind this tile as an array.
@@ -660,7 +660,7 @@ case class FloatConstantTile(v: Float, cols: Int, rows: Int,
     *
     * @return  The MutableArrayTile
     */
-  def mutable(): MutableArrayTile = FloatArrayTile.fill(v, cols, rows)
+  def mutable(): MutableArrayTile = FloatArrayTile.fill(v, cols, rows, cellType)
 
   /**
     * Return the underlying data behind this tile as an array.
