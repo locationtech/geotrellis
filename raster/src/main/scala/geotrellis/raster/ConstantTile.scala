@@ -150,7 +150,7 @@ trait ConstantTile extends Tile {
     * @param   f  A function from Int to Int, executed at each point of the tile
     * @return     The result, a [[Tile]]
     */
-  def map(f: Int => Int): Tile = IntConstantTile(f(iVal), cols, rows)
+  def map(f: Int => Int): Tile
 
   /**
     * Combine two tiles' cells into new cells using the given integer
@@ -302,6 +302,8 @@ case class BitConstantTile(v: Boolean, cols: Int, rows: Int) extends ConstantTil
   def toBytes(): Array[Byte] = Array(iVal.toByte)
 
   def withNoData(noDataValue: Option[Double]): ConstantTile  =  this
+
+  def map(f: Int => Int): Tile = BitConstantTile(f(iVal), cols, rows)
 }
 
 /**
@@ -342,6 +344,8 @@ case class ByteConstantTile(v: Byte, cols: Int, rows: Int,
 
   def withNoData(noDataValue: Option[Double]) =
     ByteConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
+
+  def map(f: Int => Int): Tile = ByteConstantTile(i2b(f(iVal)), cols, rows, cellType)
 }
 
 object ByteConstantTile {
@@ -412,6 +416,8 @@ case class UByteConstantTile(v: Byte, cols: Int, rows: Int,
 
   def withNoData(noDataValue: Option[Double]) =
     UByteConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
+
+  def map(f: Int => Int): Tile = UByteConstantTile(i2ub(f(iVal)), cols, rows, cellType)
 }
 
 object UByteConstantTile {
@@ -475,6 +481,8 @@ case class ShortConstantTile(v: Short, cols: Int, rows: Int,
 
   def withNoData(noDataValue: Option[Double]) =
     ShortConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
+
+  def map(f: Int => Int): Tile = ShortConstantTile(i2s(f(iVal)), cols, rows, cellType)
 }
 
 object ShortConstantTile {
@@ -549,6 +557,8 @@ case class UShortConstantTile(v: Short, cols: Int, rows: Int,
 
   def withNoData(noDataValue: Option[Double]) =
     UShortConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
+
+  def map(f: Int => Int): Tile = UShortConstantTile(i2us(f(iVal)), cols, rows, cellType)
 }
 
 object UShortConstantTile {
@@ -612,6 +622,8 @@ case class IntConstantTile(v: Int, cols: Int, rows: Int,
 
   def withNoData(noDataValue: Option[Double]) =
     IntConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
+
+  def map(f: Int => Int): Tile = IntConstantTile(f(iVal), cols, rows, cellType)
 }
 
 object IntConstantTile {
@@ -675,6 +687,8 @@ case class FloatConstantTile(v: Float, cols: Int, rows: Int,
 
   def withNoData(noDataValue: Option[Double]) =
     FloatConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
+
+  def map(f: Int => Int): Tile = FloatConstantTile(i2f(f(iVal)), cols, rows, cellType)
 }
 
 object FloatConstantTile {
@@ -739,6 +753,8 @@ case class DoubleConstantTile(v: Double, cols: Int, rows: Int,
 
   def withNoData(noDataValue: Option[Double]): ConstantTile =
     DoubleConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
+
+  def map(f: Int => Int): Tile = DoubleConstantTile(i2d(f(iVal)), cols, rows, cellType)
 }
 
 object DoubleConstantTile {
