@@ -209,24 +209,6 @@ object COGLayer {
 
         if(list.nonEmpty) {
           val sfc = list.head._1
-          println(s"sfc: $sfc")
-
-          val ovrMetadata: Map[Int, TileLayerMetadata[K]] =
-            ((startZoom, md) :: transformKeyBounds(
-              md.bounds.asInstanceOf[KeyBounds[K]],
-              LayoutLevel(startZoom, md.layout), endZoom, layoutScheme
-            ).map { case (zoom, kb) =>
-              zoom -> TileLayerMetadata[K](
-                cellType = md.cellType,
-                layout = sourceLayout,
-                extent = md.extent,
-                crs = md.crs,
-                bounds = kb
-              )
-            }).toMap
-
-          println(s"ovrMetadata.map(_._1): ${ovrMetadata.map(_._1)}")
-
           val overviews: List[ContextGeoTiff[K, V]] =
             pyramidUpWithMetadata[K, V](
               flatList, endZoom,
@@ -238,23 +220,13 @@ object COGLayer {
           val stitchedTile: GeoTiff[V] =
             flatList.toGeoTiff(sourceLayout, md, options, overviews.map(_.geoTiff))
 
-          val realExtent = {
-            val keys = flatList.map(_._1)
-            val kb = KeyBounds(keys.min, keys.max)
-            md.mapTransform(kb.toGridBounds())
-          }
-
-          //val keys = list.map(_._1)
           val currentMd = TileLayerMetadata[K](
             cellType = stitchedTile.cellType,
             layout = sourceLayout,
-            extent = md.extent, // wrong extent
+            extent = md.extent, // wrong extent ?
             crs = stitchedTile.crs,
             bounds = md.bounds //KeyBounds(keys.min, keys.max)
           )
-
-          /*println(s"overviews.map { o => o.zoom -> o.metadata }: ${overviews.map { o => o.zoom -> o.metadata }}") */
-
 
           val ifdContextLayer =
             ContextGeoTiff(
@@ -278,7 +250,7 @@ object COGLayer {
     val endZoom = minZoom.getOrElse(0)
     val md = rdd.metadata
 
-    val bandsCount = {
+    val bandsCount = { // should be a part of the metadata?
       val sample = rdd.take(1)(0)
       if(classTag[V].runtimeClass.isAssignableFrom(classTag[MultibandTile].runtimeClass))
         sample.asInstanceOf[MultibandTile].bandCount
@@ -314,27 +286,7 @@ object COGLayer {
           case h :: t   => Some(h -> t.last)
         }
 
-    println(s"chunks: ${chunks}")
-
-    val res = chunks.map { case (minZoom, maxZoom) => applyWithMetadata[K, V](rdd)(maxZoom, minZoom, layoutScheme) }
-
-    val collectedOverviewMetadata: List[List[(Int, TileLayerMetadata[K])]] =
-      res
-        .map { list =>
-          list
-            .flatMap(_._2.overviews)
-            .collect()
-            .toList
-            .groupBy(_._1)
-            .map { case (k, iter) => k -> iter.map(_._2).reduce(_ combine _) }
-            .toList
-        }
-
-    collectedOverviewMetadata.zip(res).map { case (overviewMetadata, rdd) =>
-      rdd.map { case (key, value) =>
-        key -> value.copy(overviews = overviewMetadata)
-      }
-    }
+    chunks.map { case (minZoom, maxZoom) => applyWithMetadata[K, V](rdd)(maxZoom, minZoom, layoutScheme) }
   }
 
   def write[K: SpatialComponent: ClassTag, V <: CellGrid: ClassTag](cogs: RDD[(K, GeoTiff[V])])(keyIndex: KeyIndex[K], uri: URI): Unit = {
