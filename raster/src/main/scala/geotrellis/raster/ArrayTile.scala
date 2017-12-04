@@ -221,17 +221,16 @@ trait ArrayTile extends Tile with Serializable {
     * @param   f      A function from (Int, Int) to Int
     * @return         The result, an Tile
     */
-  def combine(other: Tile)(f: (Int, Int) => Int): Tile = {
+  def combine(other: Tile)(f: (Int, Int) => Int): Tile =
     other match {
       case ar: ArrayTile =>
         combine(ar)(f)
       case ct: ConstantTile =>
-        ct.combine(this)(f)
+        ct.combine(this)((z1, z2) => f(z2, z1))
       case ct: CompositeTile =>
         ct.combine(this)((z1, z2) => f(z2, z1))
       case ct: CroppedTile =>
         ct.combine(this)((z1, z2) => f(z2, z1))
-    }
   }
 
   /**
