@@ -92,10 +92,10 @@ object COGLayer {
     options: GeoTiffOptions
    )(implicit tc: Iterable[(K, V)] => GeoTiffSegmentConstructMethods[K, V]): List[ContextGeoTiff[K, V]] = {
     val nextLayoutLevel @ LayoutLevel(nextZoom, nextLayout) = layoutScheme.zoomOut(layoutLevel)
-    val nextKB = nextKeyBounds(md.bounds.asInstanceOf[KeyBounds[K]], layoutLevel, nextLayoutLevel)
 
     if(nextZoom >= endZoom) {
       //val md = mdMap(nextZoom)
+      val nextKB = nextKeyBounds(md.bounds.asInstanceOf[KeyBounds[K]], layoutLevel, nextLayoutLevel)
 
       val list: List[(K, V)] =
         itr
@@ -117,13 +117,30 @@ object COGLayer {
             (newKey, newTile: V)
           }.toList
 
+      val cgb = list.gb
+      println(s"====================")
+      println(s"cgb: $cgb")
+      println(s"md.layout.mapTransform(md.layout.mapTransform(cgb)): ${nextLayout.mapTransform(nextLayout.mapTransform(cgb))}")
+      println(s"====================")
+
+      val ckb = {
+        val GridBounds(colMin, rowMin, colMax, rowMax) = cgb
+        KeyBounds(SpatialKey(colMin, rowMin), SpatialKey(colMax, rowMax)).asInstanceOf[KeyBounds[K]]
+      }
+      val zze = nextLayout.mapTransform(cgb)
+
+      val kbe = {
+        val GridBounds(colMin, rowMin, colMax, rowMax) = nextLayout.mapTransform(zze)
+        KeyBounds(SpatialKey(colMin, rowMin), SpatialKey(colMax, rowMax)).asInstanceOf[KeyBounds[K]]
+      }
+
       //println(s"keys: $keys")
       val nextMd = TileLayerMetadata[K](
         cellType = md.cellType,
         layout = nextLayout,
         extent = md.extent,
         crs = md.crs,
-        bounds = nextKB
+        bounds = kbe
       )
 
       val ifdLayer: GeoTiff[V] =
@@ -131,7 +148,7 @@ object COGLayer {
 
       val ifdContextLayer = ContextGeoTiff(ifdLayer, nextMd, nextZoom, layoutScheme, None, Nil)
 
-      ifdContextLayer :: pyramidUpWithMetadata(list, endZoom, nextLayoutLevel, layoutScheme, nextMd, options)
+      ifdContextLayer :: pyramidUpWithMetadata(list, endZoom, nextLayoutLevel, layoutScheme, /*mdMap*/nextMd, options)
     } else List()
   }
 
@@ -179,7 +196,7 @@ object COGLayer {
   }
 
   def applyWithMetadata[
-    K: SpatialComponent: Ordering: ClassTag,
+    K: SpatialComponent: Boundable: Ordering: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]
   ](rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]])(startZoom: Int, endZoom: Int, layoutScheme: ZoomedLayoutScheme)
    (implicit tc: Iterable[(K, V)] => GeoTiffSegmentConstructMethods[K, V]): RDD[(K, ContextGeoTiff[K, V])] = {
@@ -209,24 +226,81 @@ object COGLayer {
 
         if(list.nonEmpty) {
           val sfc = list.head._1
+
+          val keys = flatList.map(_._1)
+
+          /*val croppedExtent = {
+            val re = md.toRasterExtent()
+            val croppedExtent = re.extentFor(KeyBounds(keys.min, keys.max).toGridBounds(), clamp = false)
+
+            croppedExtent
+          }*/
+
+          val cgb = flatList.gb
+
+          /*val ckb = {
+            val GridBounds(colMin, rowMin, colMax, rowMax) = cgb
+            KeyBounds(SpatialKey(colMin, rowMin), SpatialKey(colMax, rowMax)).asInstanceOf[KeyBounds[K]]
+          }*/
+          val zze = md.layout.mapTransform(cgb)
+
+          val kbe = {
+            val GridBounds(colMin, rowMin, colMax, rowMax) = md.layout.mapTransform(zze)
+            KeyBounds(SpatialKey(colMin, rowMin), SpatialKey(colMax, rowMax)).asInstanceOf[KeyBounds[K]]
+          }
+
+          val currentMd = TileLayerMetadata[K](
+            cellType = md.cellType,
+            layout   = md.layout,
+            extent   = zze, // wrong extent ?
+            crs      = md.crs,
+            bounds   = kbe
+          )
+
+          println(s"md.bounds: ${md.bounds}")
+          println(s"currentMd.bounds: ${currentMd.bounds}")
+
+          println(s"====================")
+          println(s"cgb: $cgb")
+          println(s"md.layout.mapTransform(md.layout.mapTransform(cgb)): ${md.layout.mapTransform(md.layout.mapTransform(cgb))}")
+          println(s"currentMd.bounds: ${currentMd.bounds}")
+          println(s"====================")
+
+          /*val ovrMetadata: Map[Int, TileLayerMetadata[K]] =
+            ((startZoom, currentMd) :: transformKeyBounds(
+              md.bounds.asInstanceOf[KeyBounds[K]],
+              LayoutLevel(startZoom, md.layout), endZoom, layoutScheme
+            ).map { case (zoom, kb) =>
+              zoom -> TileLayerMetadata[K](
+                cellType = md.cellType,
+                layout   = sourceLayout,
+                extent   = md.mapTransform(kb.toGridBounds()),
+                crs      = md.crs,
+                bounds   = kb
+              )
+            }).toMap*/
+
           val overviews: List[ContextGeoTiff[K, V]] =
             pyramidUpWithMetadata[K, V](
               flatList, endZoom,
               LayoutLevel(startZoom, sourceLayout),
-              layoutScheme, md,
+              layoutScheme, /*ovrMetadata*/currentMd,
               options.copy(subfileType = Some(ReducedImage))
             )
 
-          val stitchedTile: GeoTiff[V] =
-            flatList.toGeoTiff(sourceLayout, md, options, overviews.map(_.geoTiff))
+          println("=================")
+          println(s"STITCH: $sfc")
 
-          val currentMd = TileLayerMetadata[K](
-            cellType = stitchedTile.cellType,
-            layout = sourceLayout,
-            extent = md.extent, // wrong extent ?
-            crs = stitchedTile.crs,
-            bounds = md.bounds //KeyBounds(keys.min, keys.max)
-          )
+          val stitchedTile: GeoTiff[V] =
+            flatList.toGeoTiff(
+              sourceLayout, currentMd, options,
+              //md.bounds.asInstanceOf[KeyBounds[K]].toGridBounds(),
+              overviews.map(_.geoTiff)
+            )
+
+          println("=================")
+
+          println(s"currentMd.mapTransform(stitchedTile.extent): ${currentMd.mapTransform(stitchedTile.extent)}")
 
           val ifdContextLayer =
             ContextGeoTiff(
@@ -241,6 +315,8 @@ object COGLayer {
   }
 
   // maxTiffSize = 64mb
+  // use accumulator to collect metadata for attribetu store during layer writes
+  //
   def applyWithMetadataCalc[
     K: SpatialComponent: Boundable: Ordering: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]
@@ -250,7 +326,7 @@ object COGLayer {
     val endZoom = minZoom.getOrElse(0)
     val md = rdd.metadata
 
-    val bandsCount = { // should be a part of the metadata?
+    val bandsCount = {
       val sample = rdd.take(1)(0)
       if(classTag[V].runtimeClass.isAssignableFrom(classTag[MultibandTile].runtimeClass))
         sample.asInstanceOf[MultibandTile].bandCount
@@ -286,7 +362,34 @@ object COGLayer {
           case h :: t   => Some(h -> t.last)
         }
 
-    chunks.map { case (minZoom, maxZoom) => applyWithMetadata[K, V](rdd)(maxZoom, minZoom, layoutScheme) }
+    println(s"chunks: ${chunks}")
+
+    val res = chunks.map { case (minZoom, maxZoom) => applyWithMetadata[K, V](rdd)(maxZoom, minZoom, layoutScheme) }
+
+    val collectedMetadata: List[List[(Int, TileLayerMetadata[K])]] =
+      res
+        .map { list =>
+          list
+            .flatMap { case (_, v) =>
+              println(s"v.zoom: ${v.zoom}")
+              ((v.zoom -> v.metadata) :: v.overviews)
+            }
+            .collect()
+            .toList
+            .groupBy(_._1)
+            .map { case (k, iter) => k -> iter.map(_._2).reduce(_ combine _) }
+            .toList
+        }
+
+    println(s"collectedOverviewMetadata: ${collectedMetadata}")
+    println(s"collectedOverviewMetadata.map(_.map(_._1)): ${collectedMetadata.map(_.map(_._1))}")
+
+    collectedMetadata.zip(res).map { case (overviewMetadata, rdd) =>
+      val sortedMetadata = overviewMetadata.sortBy(- _._1)
+      rdd.map { case (key, value) =>
+        key -> value.copy(metadata = sortedMetadata.head._2, overviews = sortedMetadata.tail)
+      }
+    }
   }
 
   def write[K: SpatialComponent: ClassTag, V <: CellGrid: ClassTag](cogs: RDD[(K, GeoTiff[V])])(keyIndex: KeyIndex[K], uri: URI): Unit = {

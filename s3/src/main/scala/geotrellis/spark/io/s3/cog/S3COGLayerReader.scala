@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io.s3.cog
 
-import geotrellis.raster.{CellGrid, RasterExtent}
+import geotrellis.raster.{CellGrid, GridBounds, RasterExtent}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.s3._
@@ -24,7 +24,7 @@ import geotrellis.spark.io.cog._
 import geotrellis.spark.io.index._
 import geotrellis.spark.tiling.LayoutLevel
 import geotrellis.util._
-
+import geotrellis.vector.Extent
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
 
@@ -108,7 +108,10 @@ class S3COGLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkCon
         }
         .distinct
 
+    val q2 = queryKeyBounds.map { qkb => transformKeyBounds(qkb) }
+
     println(s"queryKeyBounds: ${queryKeyBounds}")
+    println(s"q2: ${q2}")
     println(s"baseKeyBounds: $baseKeyBounds")
     println(s"baseQueryKeyBounds: ${baseQueryKeyBounds}")
     println(s"baseQueryKeyBounds.map(decompose): ${baseQueryKeyBounds.map(decompose)}")
@@ -120,6 +123,10 @@ class S3COGLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkCon
     // overview index basing on the partial pyramid zoom ranges
     val overviewIndex = header.zoomRanges._2 - id.zoom - 1
 
+    val extToGridBounds: Extent => GridBounds = { ext =>
+      layout.mapTransform(ext)
+    }
+
     val rdd = rddReader.read[K](
       bucket             = bucket,
       keyPath            = keyPath,
@@ -128,6 +135,8 @@ class S3COGLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkCon
       decomposeBounds    = decompose,
       sourceLayout       = layout,
       overviewIndex      = overviewIndex,
+      extToGridBounds    = extToGridBounds,
+      realGridBounds     = metadata.getComponent[Bounds[K]].asInstanceOf[KeyBounds[K]].toGridBounds,
       numPartitions      = Some(numPartitions)
     )
 
