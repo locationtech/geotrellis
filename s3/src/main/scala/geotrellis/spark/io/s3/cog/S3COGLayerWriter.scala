@@ -103,6 +103,12 @@ class S3COGLayerWriter(
               if(tiff.overviews.nonEmpty) keyIndexMethod.createIndex(tiff.overviews.last._2.bounds.asInstanceOf[KeyBounds[K]])
               else keyIndexMethod.createIndex(tiff.metadata.bounds.asInstanceOf[KeyBounds[K]])
 
+            tiff.overviews.map { o =>
+              println(s"o._2.bounds: ${o._2.bounds}")
+            }
+
+            println(s"lastKeyIndex.keyBounds.maxKey: ${lastKeyIndex.keyBounds.maxKey}")
+
             val maxWidth = Index.digits(lastKeyIndex.toIndex(lastKeyIndex.keyBounds.maxKey))
             val keyPath = (key: K) => makePath(prefix, Index.encode(lastKeyIndex.toIndex(key), maxWidth))
 

@@ -63,16 +63,20 @@ trait Implicits {
       nextLayout: LayoutDefinition,
       md: TileLayerMetadata[K],
       options: GeoTiffOptions,
+      //gridBounds: GridBounds,
       overviews: List[GeoTiff[Tile]] = Nil
     ): SinglebandGeoTiff = {
-      val gb = md.gridBounds
+      val gb = md.bounds.asInstanceOf[KeyBounds[K]].toGridBounds()
+      println(s"gb: $gb")
+      println(s"md.gridBounds: ${md.gridBounds}")
+
       val (layoutCols, layoutRows) = gb.width * nextLayout.tileCols -> gb.height * nextLayout.tileRows
 
       /*println(s"(layoutCols, layoutRows): ${(layoutCols, layoutRows)}")
       println(s"${gb.width} * ${nextLayout.tileCols} -> ${gb.height} * ${nextLayout.tileRows}")*/
 
-      val re = RasterExtent(nextLayout.mapTransform(gb), layoutCols, layoutRows)
-      val gridBounds = re.gridBoundsFor(md.extent, clamp = false)
+      //val re = RasterExtent(nextLayout.mapTransform(gb), layoutCols, layoutRows)
+      //val gridBounds = re.gridBoundsFor(md.extent, clamp = false)
 
       val geoTiffTile: GeoTiffTile = {
         val segmentLayout = GeoTiffSegmentLayout(layoutCols, layoutRows, options.storageMethod, BandInterleave, BandType.forCellType(md.cellType))
@@ -93,11 +97,17 @@ trait Implicits {
               val updateRow = (spatialKey.row - gb.rowMin) * md.tileLayout.tileRows
               val index = segmentLayout.getSegmentIndex(updateCol, updateRow)
 
-              /*println(s"key($index): $key")
-              println(s"tile.dimensions($index): ${tile.dimensions}")
-              println(s"tile.findMinMaxDouble($index): ${tile.findMinMaxDouble}")
-              println(s"(updateCol, updateRow)($index): ${(updateCol, updateRow)}")
-              println(s"segmentBounds: ${segmentBounds}")*/
+              println(s"spatialKey: $spatialKey")
+              println(s"index: $index")
+              println(s"(updateCol, updateRow): ${updateCol -> updateRow}")
+              println(s"segmentLayout.getGridBounds($index): ${segmentLayout.getGridBounds(index)}")
+              //println(s"key($index): $key")
+              //println(s"tile.dimensions($index): ${tile.dimensions}")
+              //println(s"tile.findMinMaxDouble($index): ${tile.findMinMaxDouble}")
+              //println(s"(updateCol, updateRow)($index): ${(updateCol, updateRow)}")
+              //println(s"segmentBounds: ${segmentBounds}")
+
+              tile.renderPng().write(s"/tmp/pngs-write/${spatialKey.col}_${spatialKey.row}.png")
 
               index -> compressor.compress(tile.toBytes, index)
             }
@@ -151,6 +161,7 @@ trait Implicits {
       nextLayout: LayoutDefinition,
       md: TileLayerMetadata[K],
       options: GeoTiffOptions,
+      //gridBounds: GridBounds,
       overviews: List[GeoTiff[MultibandTile]] = Nil
     ): MultibandGeoTiff = {
       val geoTiffTile: GeoTiffMultibandTile = {

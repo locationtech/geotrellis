@@ -27,13 +27,14 @@ import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.spark.io.s3.util.S3RangeReader
 import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.util._
-
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import com.typesafe.config.ConfigFactory
 import com.amazonaws.services.s3.AmazonS3URI
 import java.net.URI
+
+import geotrellis.vector.Extent
 
 import scala.reflect._
 
@@ -63,6 +64,8 @@ trait S3COGRDDReader[V <: CellGrid] extends Serializable {
     decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
     sourceLayout: LayoutDefinition,
     overviewIndex: Int,
+    extToGridBounds: Extent => GridBounds,
+    realGridBounds: GridBounds,
     numPartitions: Option[Int] = None,
     threads: Int = DefaultThreadCount
   )(implicit sc: SparkContext): RDD[(K, V)] = {
@@ -95,38 +98,75 @@ trait S3COGRDDReader[V <: CellGrid] extends Serializable {
       .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
         partition flatMap { seq =>
           LayerReader.njoin[K, V](seq.toIterator, threads) { index: Long =>
-            if(index == 0) Vector()
+            if(index == 0/*156929*/) Vector()
             else { try {
 
               println(s"index!: $index")
 
               val uri = new URI(s"s3://$bucket/${keyPath(index)}.tiff")
               val tiff = readTiff(uri, overviewIndex)
+
+              //val rgb = GridBounds(353,637,357,641) //GridBounds(176,318,178,320)
+              val rgb = extToGridBounds(tiff.extent)
+              val rgb2 = sourceLayout.mapTransform(tiff.extent)
+
+              //val rgb = GridBounds(354,637,357,641)
+              //val rgb = queryGb
+              //val rgb = realGridBounds
               val gb = tiff.rasterExtent.gridBounds
               val getGridBounds = getSegmentGridBounds(uri, overviewIndex)
+
+              println(s"realGridBounds: $realGridBounds")
+              println(s"rgb: $rgb")
+              println(s"rgb2: ${rgb2}")
+              println(s"realQueryKeyBounds: $realQueryKeyBounds")
+              println(s"gb: $gb")
 
               val map: Map[GridBounds, K] =
                 realQueryKeyBoundsRange.flatMap { key =>
                   val spatialKey = key.getComponent[SpatialKey]
-                  val minCol = (spatialKey.col - queryGb.colMin) * sourceLayout.tileLayout.tileCols
-                  val minRow = (spatialKey.row - queryGb.rowMin) * sourceLayout.tileLayout.tileRows
+                  val minCol = (spatialKey.col - rgb.colMin) * sourceLayout.tileLayout.tileCols
+                  val minRow = (spatialKey.row - rgb.rowMin) * sourceLayout.tileLayout.tileRows
 
-                  val currentGb = getGridBounds(minCol, minRow)
-                  gb.intersection(currentGb).map(gb => gb -> key)
+                  println(s"spatialKey: $spatialKey")
+                  println(s"minCol: $minCol")
+                  println(s"minRow: $minRow")
+
+                  if(minCol >= 0 && minRow >= 0 && minCol < tiff.cols && minRow < tiff.rows) {
+                    val currentGb = getGridBounds(minCol, minRow)
+                    gb.intersection(currentGb).map(gb => gb -> key)
+                  } else None
                 }.toMap
 
               tileTiff(tiff, map)
 
               /*realQueryKeyBoundsRange.flatMap { key =>
-                val spatialKey = key.getComponent[SpatialKey]
-                val minCol = (spatialKey.col - queryGb.colMin) * sourceLayout.tileLayout.tileCols
-                val minRow = (spatialKey.row - queryGb.rowMin) * sourceLayout.tileLayout.tileRows
+                val spatialKey: SpatialKey = key.getComponent[SpatialKey]
+                val extent: Extent = sourceLayout.mapTransform(spatialKey)
+                val gb1: GridBounds = sourceLayout.mapTransform(extent)
 
+                val minCol = (spatialKey.col - rgb.colMin) * sourceLayout.tileLayout.tileCols
+                val minRow = (spatialKey.row - rgb.rowMin) * sourceLayout.tileLayout.tileRows
+
+                println(s"tiff.dimensions: ${tiff.cols -> tiff.rows}")
+                println(s"minCol: $minCol")
+                println(s"minRow: $minRow")
+
+                println(s"key: $key")
+                println(s"gb1: $gb1")
                 val currentGb = getGridBounds(minCol, minRow)
-                gb.intersection(currentGb).map {
-                  case GridBounds(minCol, minRow, maxCol, maxRow) =>
-                    key -> tiff.crop(minCol, minRow, maxCol, maxRow).tile
-                }
+                println(s"currentGb: ${currentGb}")
+
+                if(minCol >= 0 && minRow >= 0 && minCol < tiff.cols && minRow < tiff.rows) {
+                  if(gb.contains(currentGb)) {
+                    val GridBounds(minCol, minRow, maxCol, maxRow) = currentGb
+                    Some(key -> tiff.crop(minCol, minRow, maxCol, maxRow).tile)
+                  } else None
+                  /*gb.intersection(currentGb).map {
+                    case GridBounds(minCol, minRow, maxCol, maxRow) =>
+                      key -> tiff.crop(minCol, minRow, maxCol, maxRow).tile
+                  }*/
+                } else None
               }*/
             } catch {
               case e: AmazonS3Exception if e.getStatusCode == 404 => Vector.empty
