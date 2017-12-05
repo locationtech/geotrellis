@@ -1,6 +1,18 @@
 Changelog
 =========
 
+2.0.0
+-----
+
+API Changes
+^^^^^^^^^^^
+
+- ``geotrellis.spark``
+
+  - **Change:**  The length of the key (the space-filling curve index or address) used for layer reading and writing has
+    been extended from a fixed length of 8 bytes to an arbitrary length.  This change affects not only the
+    ``geotrellis.spark`` package, but all backends (excluding ``geotrellis.geowave`` and ``geotrellis.geomesa``).
+
 1.2.0
 -----
 *2017 Nov 6*
