@@ -22,7 +22,7 @@ import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.prototype.TilePrototypeMethods
 import geotrellis.raster.reproject._
 import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
-import geotrellis.raster.resample.ResampleMethod
+import geotrellis.raster.resample.{ResampleMethod, TileResampleMethods}
 import geotrellis.raster.stitch.Stitcher
 import geotrellis.spark._
 import geotrellis.spark.io._
@@ -54,7 +54,7 @@ object Etl {
   def ingest[
     I: Component[?, ProjectedExtent]: TypeTag: ? => TilerKeyMethods[I, K],
     K: SpatialComponent: Boundable: TypeTag,
-    V <: CellGrid: TypeTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
+    V <: CellGrid: TypeTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V]): (? => TileResampleMethods[V])
   ](
      args: Seq[String], modules: Seq[TypedModule] = Etl.defaultModules
    )(implicit sc: SparkContext) = {
@@ -235,7 +235,7 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
     */
   def save[
     K: SpatialComponent: TypeTag,
-    V <: CellGrid: TypeTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
+    V <: CellGrid: TypeTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileResampleMethods[V]
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
