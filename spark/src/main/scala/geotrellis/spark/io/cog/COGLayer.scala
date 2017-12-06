@@ -70,7 +70,7 @@ object COGLayer {
           }.toList
 
       val ifdLayer: GeoTiff[V] =
-        list.toGeoTiff(nextLayout, md, options.copy(subfileType = Some(ReducedImage)))
+        list.toGeoTiff(nextLayout, md, options.copy(subfileType = Some(ReducedImage)), null)
 
       ifdLayer :: pyramidUp(list, endZoom, nextLayoutLevel, layoutScheme, md, options)
     } else List()
@@ -81,22 +81,18 @@ object COGLayer {
     * Segments are in a row major order => profit?
     */
   def pyramidUpWithMetadata[
-    K: SpatialComponent: Ordering: ClassTag,
+    K: SpatialComponent: Boundable: Ordering: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]
   ](itr: Iterable[(K, V)],
     endZoom: Int,
     layoutLevel: LayoutLevel,
     layoutScheme: ZoomedLayoutScheme,
     md: TileLayerMetadata[K],
-    //mdMap: Map[Int, TileLayerMetadata[K]],
     options: GeoTiffOptions
    )(implicit tc: Iterable[(K, V)] => GeoTiffSegmentConstructMethods[K, V]): List[ContextGeoTiff[K, V]] = {
     val nextLayoutLevel @ LayoutLevel(nextZoom, nextLayout) = layoutScheme.zoomOut(layoutLevel)
 
     if(nextZoom >= endZoom) {
-      //val md = mdMap(nextZoom)
-      val nextKB = nextKeyBounds(md.bounds.asInstanceOf[KeyBounds[K]], layoutLevel, nextLayoutLevel)
-
       val list: List[(K, V)] =
         itr
           .map { case (key, tile) =>
@@ -117,30 +113,18 @@ object COGLayer {
             (newKey, newTile: V)
           }.toList
 
-      val cgb = list.gb
-      println(s"====================")
-      println(s"cgb: $cgb")
-      println(s"md.layout.mapTransform(md.layout.mapTransform(cgb)): ${nextLayout.mapTransform(nextLayout.mapTransform(cgb))}")
-      println(s"====================")
-
-      val ckb = {
-        val GridBounds(colMin, rowMin, colMax, rowMax) = cgb
-        KeyBounds(SpatialKey(colMin, rowMin), SpatialKey(colMax, rowMax)).asInstanceOf[KeyBounds[K]]
-      }
-      val zze = nextLayout.mapTransform(cgb)
-
-      val kbe = {
-        val GridBounds(colMin, rowMin, colMax, rowMax) = nextLayout.mapTransform(zze)
+      val gridBounds = list.gridBounds
+      val keyBounds = {
+        val GridBounds(colMin, rowMin, colMax, rowMax) = gridBounds
         KeyBounds(SpatialKey(colMin, rowMin), SpatialKey(colMax, rowMax)).asInstanceOf[KeyBounds[K]]
       }
 
-      //println(s"keys: $keys")
       val nextMd = TileLayerMetadata[K](
         cellType = md.cellType,
         layout = nextLayout,
         extent = md.extent,
         crs = md.crs,
-        bounds = kbe
+        bounds = keyBounds
       )
 
       val ifdLayer: GeoTiff[V] =
@@ -148,7 +132,7 @@ object COGLayer {
 
       val ifdContextLayer = ContextGeoTiff(ifdLayer, nextMd, nextZoom, layoutScheme, None, Nil)
 
-      ifdContextLayer :: pyramidUpWithMetadata(list, endZoom, nextLayoutLevel, layoutScheme, /*mdMap*/nextMd, options)
+      ifdContextLayer :: pyramidUpWithMetadata(list, endZoom, nextLayoutLevel, layoutScheme, nextMd, options)
     } else List()
   }
 
@@ -227,80 +211,39 @@ object COGLayer {
         if(list.nonEmpty) {
           val sfc = list.head._1
 
-          val keys = flatList.map(_._1)
+          val gridBounds = flatList.gridBounds
 
-          /*val croppedExtent = {
-            val re = md.toRasterExtent()
-            val croppedExtent = re.extentFor(KeyBounds(keys.min, keys.max).toGridBounds(), clamp = false)
-
-            croppedExtent
-          }*/
-
-          val cgb = flatList.gb
-
-          /*val ckb = {
-            val GridBounds(colMin, rowMin, colMax, rowMax) = cgb
-            KeyBounds(SpatialKey(colMin, rowMin), SpatialKey(colMax, rowMax)).asInstanceOf[KeyBounds[K]]
-          }*/
-          val zze = md.layout.mapTransform(cgb)
-
-          val kbe = {
-            val GridBounds(colMin, rowMin, colMax, rowMax) = md.layout.mapTransform(zze)
+          val keyBounds = {
+            val GridBounds(colMin, rowMin, colMax, rowMax) = gridBounds
             KeyBounds(SpatialKey(colMin, rowMin), SpatialKey(colMax, rowMax)).asInstanceOf[KeyBounds[K]]
           }
+          val extent =
+            sourceLayout
+              .mapTransform(gridBounds)
+              .intersection(md.extent)
+              .getOrElse(md.extent)
 
           val currentMd = TileLayerMetadata[K](
             cellType = md.cellType,
             layout   = md.layout,
-            extent   = zze, // wrong extent ?
+            extent   = extent,
             crs      = md.crs,
-            bounds   = kbe
+            bounds   = keyBounds
           )
-
-          println(s"md.bounds: ${md.bounds}")
-          println(s"currentMd.bounds: ${currentMd.bounds}")
-
-          println(s"====================")
-          println(s"cgb: $cgb")
-          println(s"md.layout.mapTransform(md.layout.mapTransform(cgb)): ${md.layout.mapTransform(md.layout.mapTransform(cgb))}")
-          println(s"currentMd.bounds: ${currentMd.bounds}")
-          println(s"====================")
-
-          /*val ovrMetadata: Map[Int, TileLayerMetadata[K]] =
-            ((startZoom, currentMd) :: transformKeyBounds(
-              md.bounds.asInstanceOf[KeyBounds[K]],
-              LayoutLevel(startZoom, md.layout), endZoom, layoutScheme
-            ).map { case (zoom, kb) =>
-              zoom -> TileLayerMetadata[K](
-                cellType = md.cellType,
-                layout   = sourceLayout,
-                extent   = md.mapTransform(kb.toGridBounds()),
-                crs      = md.crs,
-                bounds   = kb
-              )
-            }).toMap*/
 
           val overviews: List[ContextGeoTiff[K, V]] =
             pyramidUpWithMetadata[K, V](
               flatList, endZoom,
               LayoutLevel(startZoom, sourceLayout),
-              layoutScheme, /*ovrMetadata*/currentMd,
+              layoutScheme, currentMd,
               options.copy(subfileType = Some(ReducedImage))
             )
-
-          println("=================")
-          println(s"STITCH: $sfc")
 
           val stitchedTile: GeoTiff[V] =
             flatList.toGeoTiff(
               sourceLayout, currentMd, options,
-              //md.bounds.asInstanceOf[KeyBounds[K]].toGridBounds(),
               overviews.map(_.geoTiff)
             )
-
-          println("=================")
-
-          println(s"currentMd.mapTransform(stitchedTile.extent): ${currentMd.mapTransform(stitchedTile.extent)}")
 
           val ifdContextLayer =
             ContextGeoTiff(
@@ -370,19 +313,13 @@ object COGLayer {
       res
         .map { list =>
           list
-            .flatMap { case (_, v) =>
-              println(s"v.zoom: ${v.zoom}")
-              ((v.zoom -> v.metadata) :: v.overviews)
-            }
+            .flatMap { case (_, v) => ((v.zoom -> v.metadata) :: v.overviews) }
             .collect()
             .toList
             .groupBy(_._1)
             .map { case (k, iter) => k -> iter.map(_._2).reduce(_ combine _) }
             .toList
         }
-
-    println(s"collectedOverviewMetadata: ${collectedMetadata}")
-    println(s"collectedOverviewMetadata.map(_.map(_._1)): ${collectedMetadata.map(_.map(_._1))}")
 
     collectedMetadata.zip(res).map { case (overviewMetadata, rdd) =>
       val sortedMetadata = overviewMetadata.sortBy(- _._1)
