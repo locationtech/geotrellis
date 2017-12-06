@@ -19,6 +19,7 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.rdd._
 import java.net.URI
 
+import scala.collection.JavaConverters._
 import scala.reflect._
 
 object COGLayer {
@@ -29,8 +30,7 @@ object COGLayer {
     zoom: Int,
     layoutScheme: ZoomedLayoutScheme,
     zoomRanges: Option[(Int, Int)],
-    overviews: List[(Int, TileLayerMetadata[K])],
-    segments: List[Int] = Nil
+    overviews: List[(Int, TileLayerMetadata[K])]
   )
 
   /**
@@ -70,7 +70,7 @@ object COGLayer {
           }.toList
 
       val ifdLayer: GeoTiff[V] =
-        list.toGeoTiff(nextLayout, md, options.copy(subfileType = Some(ReducedImage)), null)
+        list.toGeoTiff(nextLayout, md, options.copy(subfileType = Some(ReducedImage)))
 
       ifdLayer :: pyramidUp(list, endZoom, nextLayoutLevel, layoutScheme, md, options)
     } else List()
@@ -88,7 +88,8 @@ object COGLayer {
     layoutLevel: LayoutLevel,
     layoutScheme: ZoomedLayoutScheme,
     md: TileLayerMetadata[K],
-    options: GeoTiffOptions
+    options: GeoTiffOptions,
+    metadataAccumulator: TileLayerMetadataMapAccumulator[K]
    )(implicit tc: Iterable[(K, V)] => GeoTiffSegmentConstructMethods[K, V]): List[ContextGeoTiff[K, V]] = {
     val nextLayoutLevel @ LayoutLevel(nextZoom, nextLayout) = layoutScheme.zoomOut(layoutLevel)
 
@@ -116,23 +117,34 @@ object COGLayer {
       val gridBounds = list.gridBounds
       val keyBounds = {
         val GridBounds(colMin, rowMin, colMax, rowMax) = gridBounds
-        KeyBounds(SpatialKey(colMin, rowMin), SpatialKey(colMax, rowMax)).asInstanceOf[KeyBounds[K]]
+        val KeyBounds(minKey, maxKey) =
+          md.bounds match {
+            case kb: KeyBounds[K] => kb
+            case EmptyBounds => throw new Exception("Empty RDD, can't generate a COG Layer.")
+          }
+        KeyBounds(
+          minKey.setComponent[SpatialKey](SpatialKey(colMin, rowMin)),
+          maxKey.setComponent[SpatialKey](SpatialKey(colMax, rowMax))
+        )
       }
 
       val nextMd = TileLayerMetadata[K](
         cellType = md.cellType,
-        layout = nextLayout,
-        extent = md.extent,
-        crs = md.crs,
-        bounds = keyBounds
+        layout   = nextLayout,
+        extent   = md.extent,
+        crs      = md.crs,
+        bounds   = keyBounds
       )
+
+      metadataAccumulator.add(nextZoom -> nextMd)
 
       val ifdLayer: GeoTiff[V] =
         list.toGeoTiff(nextLayout, nextMd, options.copy(subfileType = Some(ReducedImage)))
 
-      val ifdContextLayer = ContextGeoTiff(ifdLayer, nextMd, nextZoom, layoutScheme, None, Nil)
+      val ifdContextLayer =
+        ContextGeoTiff(ifdLayer, nextMd, nextZoom, layoutScheme, None, Nil)
 
-      ifdContextLayer :: pyramidUpWithMetadata(list, endZoom, nextLayoutLevel, layoutScheme, nextMd, options)
+      ifdContextLayer :: pyramidUpWithMetadata(list, endZoom, nextLayoutLevel, layoutScheme, nextMd, options, metadataAccumulator)
     } else List()
   }
 
@@ -184,9 +196,12 @@ object COGLayer {
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]
   ](rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]])(startZoom: Int, endZoom: Int, layoutScheme: ZoomedLayoutScheme)
    (implicit tc: Iterable[(K, V)] => GeoTiffSegmentConstructMethods[K, V]): RDD[(K, ContextGeoTiff[K, V])] = {
+    val metadataAccumulator = new TileLayerMetadataMapAccumulator[K]
+    rdd.sparkContext.register(metadataAccumulator, "metadata")
+
     val md = rdd.metadata
     val sourceLayout = md.layout
-    val options: GeoTiffOptions = GeoTiffOptions(/*compression = Deflate, */storageMethod = Tiled(sourceLayout.tileCols, sourceLayout.tileRows))
+    val options: GeoTiffOptions = GeoTiffOptions(/*compression = Deflate, */ storageMethod = Tiled(sourceLayout.tileCols, sourceLayout.tileRows))
     val LayoutLevel(_, endLayout) = layoutScheme.zoomOut(LayoutLevel(endZoom + 1, sourceLayout))
 
     val groupedByEndZoom =
@@ -201,22 +216,30 @@ object COGLayer {
 
     val groupedPartitions = groupedByEndZoom.count().toInt
 
-    groupedByEndZoom
+    val res = groupedByEndZoom
       .repartition(groupedPartitions)
       .mapPartitions { partition: Iterator[(K, (Iterable[(K, V)]))] =>
         // TODO: refactor, so ugly
         val list = partition.toList
         val flatList = list.flatMap(_._2)
 
-        if(list.nonEmpty) {
+        if (list.nonEmpty) {
           val sfc = list.head._1
 
           val gridBounds = flatList.gridBounds
-
           val keyBounds = {
             val GridBounds(colMin, rowMin, colMax, rowMax) = gridBounds
-            KeyBounds(SpatialKey(colMin, rowMin), SpatialKey(colMax, rowMax)).asInstanceOf[KeyBounds[K]]
+            val KeyBounds(minKey, maxKey) =
+              md.bounds match {
+                case kb: KeyBounds[K] => kb
+                case EmptyBounds => throw new Exception("Empty RDD, can't generate a COG Layer.")
+              }
+            KeyBounds(
+              minKey.setComponent[SpatialKey](SpatialKey(colMin, rowMin)),
+              maxKey.setComponent[SpatialKey](SpatialKey(colMax, rowMax))
+            )
           }
+
           val extent =
             sourceLayout
               .mapTransform(gridBounds)
@@ -231,12 +254,15 @@ object COGLayer {
             bounds   = keyBounds
           )
 
+          metadataAccumulator.add(startZoom -> currentMd)
+
           val overviews: List[ContextGeoTiff[K, V]] =
             pyramidUpWithMetadata[K, V](
               flatList, endZoom,
               LayoutLevel(startZoom, sourceLayout),
               layoutScheme, currentMd,
-              options.copy(subfileType = Some(ReducedImage))
+              options.copy(subfileType = Some(ReducedImage)),
+              metadataAccumulator
             )
 
           val stitchedTile: GeoTiff[V] =
@@ -255,6 +281,15 @@ object COGLayer {
         } else Iterator()
       }
 
+    res.cache().foreach { _ => () } // force metadata computation
+
+    val metadataMap = metadataAccumulator.value.asScala
+    res.mapValues { value =>
+      value.copy(
+        metadata  = metadataMap.getOrElse(value.zoom, value.metadata),
+        overviews = value.overviews.map { case (z, v) => z -> metadataMap.getOrElse(z, v) }
+      )
+    }
   }
 
   // maxTiffSize = 64mb
@@ -307,26 +342,7 @@ object COGLayer {
 
     println(s"chunks: ${chunks}")
 
-    val res = chunks.map { case (minZoom, maxZoom) => applyWithMetadata[K, V](rdd)(maxZoom, minZoom, layoutScheme) }
-
-    val collectedMetadata: List[List[(Int, TileLayerMetadata[K])]] =
-      res
-        .map { list =>
-          list
-            .flatMap { case (_, v) => ((v.zoom -> v.metadata) :: v.overviews) }
-            .collect()
-            .toList
-            .groupBy(_._1)
-            .map { case (k, iter) => k -> iter.map(_._2).reduce(_ combine _) }
-            .toList
-        }
-
-    collectedMetadata.zip(res).map { case (overviewMetadata, rdd) =>
-      val sortedMetadata = overviewMetadata.sortBy(- _._1)
-      rdd.map { case (key, value) =>
-        key -> value.copy(metadata = sortedMetadata.head._2, overviews = sortedMetadata.tail)
-      }
-    }
+    chunks.map { case (minZoom, maxZoom) => applyWithMetadata[K, V](rdd)(maxZoom, minZoom, layoutScheme) }
   }
 
   def write[K: SpatialComponent: ClassTag, V <: CellGrid: ClassTag](cogs: RDD[(K, GeoTiff[V])])(keyIndex: KeyIndex[K], uri: URI): Unit = {

@@ -65,7 +65,10 @@ trait Implicits {
       options: GeoTiffOptions,
       overviews: List[GeoTiff[Tile]] = Nil
     ): SinglebandGeoTiff = {
-      val gb = md.bounds.asInstanceOf[KeyBounds[K]].toGridBounds()
+      val gb = md.bounds match {
+        case kb: KeyBounds[K] => kb.toGridBounds()
+        case EmptyBounds => throw new Exception("Empty iterator, can't generate a COG.")
+      }
       val (layoutCols, layoutRows) = gb.width * nextLayout.tileCols -> gb.height * nextLayout.tileRows
 
       val geoTiffTile: GeoTiffTile = {
@@ -118,7 +121,10 @@ trait Implicits {
       overviews: List[GeoTiff[MultibandTile]] = Nil
     ): MultibandGeoTiff = {
       val geoTiffTile: GeoTiffMultibandTile = {
-        val gb = md.bounds.asInstanceOf[KeyBounds[K]].toGridBounds()
+        val gb = md.bounds match {
+          case kb: KeyBounds[K] => kb.toGridBounds()
+          case EmptyBounds => throw new Exception("Empty iterator, can't generate a COG.")
+        }
         val bandCount = self.head._2.bandCount
 
         // TODO: Handle band interleave construction.
