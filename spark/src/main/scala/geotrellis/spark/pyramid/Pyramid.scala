@@ -98,7 +98,12 @@ object Pyramid extends LazyLogging {
         .map { case (key, tile) =>
           val extent: Extent = key.getComponent[SpatialKey].extent(sourceLayout)
           val newSpatialKey = nextLayout.mapTransform(extent.center)
-          (key.setComponent(newSpatialKey), (key, tile))
+          // Resample the tile on the map side of the pyramid step.
+          // This helps with shuffle size.
+          val resampled = tile.prototype(nextLayout.tileLayout.tileCols, nextLayout.tileLayout.tileRows)
+          resampled.merge(extent, extent, tile, resampleMethod)
+
+          (key.setComponent(newSpatialKey), (key, resampled))
         }
 
         partitioner
@@ -109,7 +114,7 @@ object Pyramid extends LazyLogging {
 
             for ((oldKey, tile) <- seq) {
               val oldExtent = oldKey.getComponent[SpatialKey].extent(sourceLayout)
-              newTile.merge(newExtent, oldExtent, tile, resampleMethod)
+              newTile.merge(newExtent, oldExtent, tile, NearestNeighbor)
             }
             (newKey, newTile: V)
           },  preservesPartitioning = true)
