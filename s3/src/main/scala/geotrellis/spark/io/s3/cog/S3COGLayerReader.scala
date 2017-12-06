@@ -108,8 +108,6 @@ class S3COGLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkCon
         }
         .distinct
 
-    val q2 = queryKeyBounds.map { qkb => transformKeyBounds(qkb) }
-
     // overview index basing on the partial pyramid zoom ranges
     val overviewIndex = header.zoomRanges._2 - id.zoom - 1
 

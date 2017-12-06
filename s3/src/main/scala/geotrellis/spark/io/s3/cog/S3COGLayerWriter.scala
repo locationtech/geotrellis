@@ -34,7 +34,6 @@ class S3COGLayerWriter(
   ](cogs: RDD[(K, ContextGeoTiff[K, V])])(id: LayerId, keyIndexMethod: KeyIndexMethod[K]) = {
     // schema for compatability purposes
     val schema = KryoWrapper(KeyValueRecordCodec[SpatialKey, Tile].schema)
-    val conf = HadoopConfiguration(cogs.sparkContext.hadoopConfiguration)
     val kwFomat = KryoWrapper(implicitly[JsonFormat[K]])
 
     // headers would be stored AS IS
@@ -64,33 +63,31 @@ class S3COGLayerWriter(
 
             // header of all layers which corresponds to the current cog
             val header = S3COGLayerHeader(
-              keyClass = classTag[K].toString(),
-              valueClass = classTag[V].toString(),
-              bucket = bucket,
-              key = prefix,
-              zoomRanges = zoomRanges,
+              keyClass     = classTag[K].toString(),
+              valueClass   = classTag[V].toString(),
+              bucket       = bucket,
+              key          = prefix,
+              zoomRanges   = zoomRanges,
               layoutScheme = tiff.layoutScheme
             )
 
             // base layer attributes
             val metadata = tiff.metadata
-            val keyIndex = keyIndexMethod.createIndex(metadata.bounds.asInstanceOf[KeyBounds[K]])
+            val keyBounds = metadata.bounds match {
+              case kb: KeyBounds[K] => kb
+              case EmptyBounds      => throw new Exception("Can't write an empty COG Layer.")
+            }
+            val keyIndex = keyIndexMethod.createIndex(keyBounds)
             attributeStore.writeLayerAttributes(id.copy(zoom = tiff.zoom), header, metadata, keyIndex, schema.value)
 
             // overviews attributes
             tiff.overviews.foreach { case (zoom, ovrMetadata) =>
-              println(s"(zoom, metadata): ${(zoom, ovrMetadata)}")
+              val ovrKeyBounds = ovrMetadata.bounds match {
+                case kb: KeyBounds[K] => kb
+                case EmptyBounds      => throw new Exception("Can't write an empty COG Layer.")
+              }
 
-              /*val md = try {
-                println(s"attributeStore.readMetadata[TileLayerMetadata[K]](${id.copy(zoom = zoom)}): ${attributeStore.readMetadata[TileLayerMetadata[K]](id.copy(zoom = zoom))}")
-                println(s"ovrMetadata: $ovrMetadata")
-                attributeStore.readMetadata[TileLayerMetadata[K]](id.copy(zoom = zoom)).combine(ovrMetadata)
-              } catch {
-                case e: AttributeNotFoundError => ovrMetadata
-              }*/
-
-              val keyIndex = keyIndexMethod.createIndex(ovrMetadata.bounds.asInstanceOf[KeyBounds[K]])
-
+              val keyIndex = keyIndexMethod.createIndex(ovrKeyBounds)
               attributeStore.writeLayerAttributes(id.copy(zoom = zoom), header, ovrMetadata, keyIndex, schema.value)
             }
 
@@ -100,19 +97,17 @@ class S3COGLayerWriter(
 
             val is = new ByteArrayInputStream(bytes)
             val lastKeyIndex =
-              if(tiff.overviews.nonEmpty) keyIndexMethod.createIndex(tiff.overviews.last._2.bounds.asInstanceOf[KeyBounds[K]])
-              else keyIndexMethod.createIndex(tiff.metadata.bounds.asInstanceOf[KeyBounds[K]])
-
-            tiff.overviews.map { o =>
-              println(s"o._2.bounds: ${o._2.bounds}")
-            }
-
-            println(s"lastKeyIndex.keyBounds.maxKey: ${lastKeyIndex.keyBounds.maxKey}")
+              if(tiff.overviews.nonEmpty) {
+                val lastKeyBounds = tiff.overviews.last._2.bounds match {
+                  case kb: KeyBounds[K] => kb
+                  case EmptyBounds      => throw new Exception("Can't write an empty COG Layer.")
+                }
+                keyIndexMethod.createIndex(lastKeyBounds)
+              }
+              else keyIndexMethod.createIndex(keyBounds)
 
             val maxWidth = Index.digits(lastKeyIndex.toIndex(lastKeyIndex.keyBounds.maxKey))
             val keyPath = (key: K) => makePath(prefix, Index.encode(lastKeyIndex.toIndex(key), maxWidth))
-
-            println(s"keyPath($key): ${keyPath(key)}")
 
             val p = new PutObjectRequest(bucket, s"${keyPath(key)}.tiff", is, objectMetadata)
             Some((p, iter))
