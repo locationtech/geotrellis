@@ -187,19 +187,12 @@ class COGLayerSpec extends FunSpec
 
       val reader = new S3COGLayerReader(attributeStore)
 
-      val layer = reader.read[SpatialKey, Tile, TileLayerMetadata[SpatialKey]](LayerId("testSplited2", 8))
-
-      println(s"layer.count(): ${layer.count()}")
-
-      val collected =
-        layer.collect().toList.map { case (SpatialKey(col, row), tile) =>
-          tile.renderPng().write(s"/tmp/pngs211/${col}_${row}.png")
-        }
+      val layer = reader.read[SpatialKey, Tile, TileLayerMetadata[SpatialKey]](LayerId("testSplited", 11))
 
       val tiff =
         GeoTiff(layer.stitch, layer.metadata.mapTransform(layer.metadata.gridBounds), LatLng)
 
-      GeoTiffWriter.write(tiff.crop(layer.metadata.extent), "/tmp/testSplited28.tif", optimizedOrder = true)
+      GeoTiffWriter.write(tiff.crop(layer.metadata.extent), "/tmp/testSplited.tif", optimizedOrder = true)
     }
 
 
@@ -253,7 +246,7 @@ class COGLayerSpec extends FunSpec
       val cogsList = COGLayer.applyWithMetadataCalc(layer)(zoom, layoutScheme, minZoom = Some(7))
 
       cogsList.map { cogs =>
-        writer.write(cogs)(LayerId("testSplited2", 0), keyIndexMethod)
+        writer.write(cogs)(LayerId("testSplited", 0), keyIndexMethod)
       }
 
     }

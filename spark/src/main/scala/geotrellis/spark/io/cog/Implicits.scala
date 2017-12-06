@@ -63,25 +63,13 @@ trait Implicits {
       nextLayout: LayoutDefinition,
       md: TileLayerMetadata[K],
       options: GeoTiffOptions,
-      //gridBounds: GridBounds,
       overviews: List[GeoTiff[Tile]] = Nil
     ): SinglebandGeoTiff = {
       val gb = md.bounds.asInstanceOf[KeyBounds[K]].toGridBounds()
-      println(s"gb: $gb")
-      println(s"md.gridBounds: ${md.gridBounds}")
-
       val (layoutCols, layoutRows) = gb.width * nextLayout.tileCols -> gb.height * nextLayout.tileRows
-
-      /*println(s"(layoutCols, layoutRows): ${(layoutCols, layoutRows)}")
-      println(s"${gb.width} * ${nextLayout.tileCols} -> ${gb.height} * ${nextLayout.tileRows}")*/
-
-      //val re = RasterExtent(nextLayout.mapTransform(gb), layoutCols, layoutRows)
-      //val gridBounds = re.gridBoundsFor(md.extent, clamp = false)
 
       val geoTiffTile: GeoTiffTile = {
         val segmentLayout = GeoTiffSegmentLayout(layoutCols, layoutRows, options.storageMethod, BandInterleave, BandType.forCellType(md.cellType))
-
-        //println(s"segmentLayout: $segmentLayout")
 
         val segmentCount = segmentLayout.tileLayout.layoutCols * segmentLayout.tileLayout.layoutRows
         val compressor = options.compression.createCompressor(segmentCount)
@@ -97,18 +85,6 @@ trait Implicits {
               val updateRow = (spatialKey.row - gb.rowMin) * md.tileLayout.tileRows
               val index = segmentLayout.getSegmentIndex(updateCol, updateRow)
 
-              println(s"spatialKey: $spatialKey")
-              println(s"index: $index")
-              println(s"(updateCol, updateRow): ${updateCol -> updateRow}")
-              println(s"segmentLayout.getGridBounds($index): ${segmentLayout.getGridBounds(index)}")
-              //println(s"key($index): $key")
-              //println(s"tile.dimensions($index): ${tile.dimensions}")
-              //println(s"tile.findMinMaxDouble($index): ${tile.findMinMaxDouble}")
-              //println(s"(updateCol, updateRow)($index): ${(updateCol, updateRow)}")
-              //println(s"segmentBounds: ${segmentBounds}")
-
-              tile.renderPng().write(s"/tmp/pngs-write/${spatialKey.col}_${spatialKey.row}.png")
-
               index -> compressor.compress(tile.toBytes, index)
             }
             .toMap
@@ -121,36 +97,14 @@ trait Implicits {
          GeoTiffTile(new ArraySegmentBytes(segmentBytes), compressor.createDecompressor, segmentLayout, options.compression, md.cellType)
       }
 
-      /*(0 to geoTiffTile.segmentCount) foreach { case i =>
-        println(s"geoTiffTile.getGridBounds($i): ${geoTiffTile.getGridBounds(i)}")
-      }
-
-      println(s"geoTiffTile.getIntersectingSegments(gridBounds).sorted: ${geoTiffTile.getIntersectingSegments(gridBounds).toList.sorted}")
-
-      println(s"gridBounds: ${gridBounds}")
-      println(s"gridBounds: ${geoTiffTile.gridBounds}")*/
-
-      /*(0 to 15) foreach { case i =>
-        println(s"geoTiffTile.getGridBounds($i).crop(gridBounds): ${geoTiffTile.crop(gridBounds).getGridBounds(i)}")
-      }*/
-
       SinglebandGeoTiff(
-        geoTiffTile, //.crop(gridBounds), // impossible to read by segments with this crop function applied
+        geoTiffTile,
         md.extent,
         md.crs,
         Tags.empty,
         options = options,
         overviews = overviews.map(_.asInstanceOf[SinglebandGeoTiff])
       )
-
-      /*SinglebandGeoTiff(
-        geoTiffTile.crop(gridBounds), // impossible to read by segments with this crop function applied
-        md.extent,
-        md.crs,
-        Tags.empty,
-        options = options,
-        overviews = overviews.map(_.asInstanceOf[SinglebandGeoTiff])
-      )*/
     }
   }
 
@@ -161,10 +115,10 @@ trait Implicits {
       nextLayout: LayoutDefinition,
       md: TileLayerMetadata[K],
       options: GeoTiffOptions,
-      //gridBounds: GridBounds,
       overviews: List[GeoTiff[MultibandTile]] = Nil
     ): MultibandGeoTiff = {
       val geoTiffTile: GeoTiffMultibandTile = {
+        val gb = md.bounds.asInstanceOf[KeyBounds[K]].toGridBounds()
         val bandCount = self.head._2.bandCount
 
         // TODO: Handle band interleave construction.
@@ -236,11 +190,8 @@ trait Implicits {
         GeoTiffMultibandTile(new ArraySegmentBytes(segmentBytes), compressor.createDecompressor, segmentLayout, options.compression, bandCount, md.cellType)
       }
 
-      val re = RasterExtent(nextLayout.mapTransform(gb), geoTiffTile.cols, geoTiffTile.rows)
-      val gridBounds = re.gridBoundsFor(md.extent, clamp = false)
-
       MultibandGeoTiff(
-        geoTiffTile.crop(gridBounds),
+        geoTiffTile,
         md.extent,
         md.crs,
         Tags.empty,

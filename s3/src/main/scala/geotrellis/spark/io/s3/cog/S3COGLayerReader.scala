@@ -110,22 +110,8 @@ class S3COGLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkCon
 
     val q2 = queryKeyBounds.map { qkb => transformKeyBounds(qkb) }
 
-    println(s"queryKeyBounds: ${queryKeyBounds}")
-    println(s"q2: ${q2}")
-    println(s"baseKeyBounds: $baseKeyBounds")
-    println(s"baseQueryKeyBounds: ${baseQueryKeyBounds}")
-    println(s"baseQueryKeyBounds.map(decompose): ${baseQueryKeyBounds.map(decompose)}")
-
-    println(s"baseKeyIndex.toIndex(SpatialKey(178,320)): ${baseKeyIndex.toIndex(SpatialKey(178,320).asInstanceOf[K])}")
-    println(s"baseKeyIndex.toIndex(SpatialKey(177,320)): ${baseKeyIndex.toIndex(SpatialKey(177,320).asInstanceOf[K])}")
-    println(s"baseKeyIndex.toIndex(SpatialKey(177,321)): ${baseKeyIndex.toIndex(SpatialKey(177,321).asInstanceOf[K])}")
-
     // overview index basing on the partial pyramid zoom ranges
     val overviewIndex = header.zoomRanges._2 - id.zoom - 1
-
-    val extToGridBounds: Extent => GridBounds = { ext =>
-      layout.mapTransform(ext)
-    }
 
     val rdd = rddReader.read[K](
       bucket             = bucket,
@@ -135,8 +121,6 @@ class S3COGLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkCon
       decomposeBounds    = decompose,
       sourceLayout       = layout,
       overviewIndex      = overviewIndex,
-      extToGridBounds    = extToGridBounds,
-      realGridBounds     = metadata.getComponent[Bounds[K]].asInstanceOf[KeyBounds[K]].toGridBounds,
       numPartitions      = Some(numPartitions)
     )
 

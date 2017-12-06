@@ -8,13 +8,12 @@ import geotrellis.util._
 
 trait GeoTiffSegmentConstructMethods[K, T <: CellGrid] extends MethodExtensions[Iterable[(K, T)]] {
   implicit val spatialComponent: SpatialComponent[K]
-  lazy val gb: GridBounds = GridBounds.envelope(self.map(_._1.getComponent[SpatialKey]))
+  lazy val gridBounds: GridBounds = GridBounds.envelope(self.map(_._1.getComponent[SpatialKey]))
 
   def toGeoTiff(
     nextLayout: LayoutDefinition,
     md: TileLayerMetadata[K],
     options: GeoTiffOptions,
-    //gridBounds: GridBounds,
     overviews: List[GeoTiff[T]] = Nil
   ): GeoTiff[T]
 }
