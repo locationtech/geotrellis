@@ -171,7 +171,7 @@ trait ConstantTile extends Tile {
     * @param   f  A function from Double to Double, executed at each point of the tile
     * @return     The result, a [[Tile]]
     */
-  def mapDouble(f: Double => Double): Tile = DoubleConstantTile(f(dVal), cols, rows)
+  def mapDouble(f: Double => Double): Tile
 
   /**
     * Combine two tiles' cells into new cells using the given double
@@ -304,6 +304,8 @@ case class BitConstantTile(v: Boolean, cols: Int, rows: Int) extends ConstantTil
   def withNoData(noDataValue: Option[Double]): ConstantTile  =  this
 
   def map(f: Int => Int): Tile = BitConstantTile(f(iVal), cols, rows)
+
+  def mapDouble(f: Double => Double): Tile = BitConstantTile(d2i(f(dVal)), cols, rows)
 }
 
 /**
@@ -346,6 +348,8 @@ case class ByteConstantTile(v: Byte, cols: Int, rows: Int,
     ByteConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 
   def map(f: Int => Int): Tile = ByteConstantTile(i2b(f(iVal)), cols, rows, cellType)
+
+  def mapDouble(f: Double => Double): Tile = ByteConstantTile(d2b(f(dVal)), cols, rows)
 }
 
 object ByteConstantTile {
@@ -418,6 +422,8 @@ case class UByteConstantTile(v: Byte, cols: Int, rows: Int,
     UByteConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 
   def map(f: Int => Int): Tile = UByteConstantTile(i2ub(f(iVal)), cols, rows, cellType)
+
+  def mapDouble(f: Double => Double): Tile = UByteConstantTile(d2ub(f(dVal)), cols, rows)
 }
 
 object UByteConstantTile {
@@ -483,6 +489,8 @@ case class ShortConstantTile(v: Short, cols: Int, rows: Int,
     ShortConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 
   def map(f: Int => Int): Tile = ShortConstantTile(i2s(f(iVal)), cols, rows, cellType)
+
+  def mapDouble(f: Double => Double): Tile = ShortConstantTile(d2s(f(dVal)), cols, rows)
 }
 
 object ShortConstantTile {
@@ -559,6 +567,8 @@ case class UShortConstantTile(v: Short, cols: Int, rows: Int,
     UShortConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 
   def map(f: Int => Int): Tile = UShortConstantTile(i2us(f(iVal)), cols, rows, cellType)
+
+  def mapDouble(f: Double => Double): Tile = UShortConstantTile(d2us(f(dVal)), cols, rows)
 }
 
 object UShortConstantTile {
@@ -624,6 +634,8 @@ case class IntConstantTile(v: Int, cols: Int, rows: Int,
     IntConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 
   def map(f: Int => Int): Tile = IntConstantTile(f(iVal), cols, rows, cellType)
+
+  def mapDouble(f: Double => Double): Tile = IntConstantTile(d2i(f(dVal)), cols, rows)
 }
 
 object IntConstantTile {
@@ -689,6 +701,8 @@ case class FloatConstantTile(v: Float, cols: Int, rows: Int,
     FloatConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 
   def map(f: Int => Int): Tile = FloatConstantTile(i2f(f(iVal)), cols, rows, cellType)
+
+  def mapDouble(f: Double => Double): Tile = FloatConstantTile(d2f(f(dVal)), cols, rows)
 }
 
 object FloatConstantTile {
@@ -755,6 +769,8 @@ case class DoubleConstantTile(v: Double, cols: Int, rows: Int,
     DoubleConstantTile(v, cols, rows, cellType.withNoData(noDataValue))
 
   def map(f: Int => Int): Tile = DoubleConstantTile(i2d(f(iVal)), cols, rows, cellType)
+
+  def mapDouble(f: Double => Double): Tile = DoubleConstantTile(f(dVal), cols, rows)
 }
 
 object DoubleConstantTile {
