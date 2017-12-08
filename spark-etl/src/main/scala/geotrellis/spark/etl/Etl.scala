@@ -16,7 +16,7 @@
 
 package geotrellis.spark.etl
 
-import geotrellis.raster.{CellGrid, CellSize}
+import geotrellis.raster.{CellGrid, CellSize, Raster}
 import geotrellis.raster.crop.CropMethods
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.prototype.TilePrototypeMethods
@@ -57,7 +57,7 @@ object Etl {
     V <: CellGrid: TypeTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
      args: Seq[String], modules: Seq[TypedModule] = Etl.defaultModules
-   )(implicit sc: SparkContext) = {
+   )(implicit sc: SparkContext, ev: Raster[V] => RasterRasterizeReprojectMethods[V]) = {
     implicit def classTagK = ClassTag(typeTag[K].mirror.runtimeClass(typeTag[K].tpe)).asInstanceOf[ClassTag[K]]
     implicit def classTagV = ClassTag(typeTag[V].mirror.runtimeClass(typeTag[V].tpe)).asInstanceOf[ClassTag[V]]
 
@@ -141,7 +141,7 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
     V <: CellGrid: Stitcher: ClassTag: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V]):
     (? => TileReprojectMethods[V]): (? => CropMethods[V]),
     K: SpatialComponent: Boundable: ClassTag
-  ](rdd: RDD[(I, V)], method: ResampleMethod = output.resampleMethod)(implicit sc: SparkContext): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
+  ](rdd: RDD[(I, V)], method: ResampleMethod = output.resampleMethod)(implicit sc: SparkContext, ev: Raster[V] => RasterRasterizeReprojectMethods[V]): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
     val targetCellType = output.cellType
     val destCrs = output.getCrs.get
 
