@@ -65,7 +65,7 @@ class S3COGLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkCon
 
     val queryKeyBounds: Seq[KeyBounds[K]] = tileQuery(metadata)
     val maxWidth = Index.digits(baseKeyIndex.toIndex(baseKeyIndex.keyBounds.maxKey))
-    val keyPath = (index: Long) => makePath(prefix, Index.encode(index, maxWidth))
+    val keyPath = (index: BigInt) => makePath(prefix, Index.encode(index, maxWidth))
     val decompose = (bounds: KeyBounds[K]) => baseKeyIndex.indexRanges(bounds)
     val layoutScheme = header.layoutScheme
 

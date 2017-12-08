@@ -58,10 +58,10 @@ trait S3COGRDDReader[V <: CellGrid] extends Serializable {
 
   def read[K: SpatialComponent: Boundable: ClassTag](
     bucket: String,
-    keyPath: Long => String,
+    keyPath: BigInt => String,
     baseQueryKeyBounds: Seq[KeyBounds[K]],
     realQueryKeyBounds: Seq[KeyBounds[K]],
-    decomposeBounds: KeyBounds[K] => Seq[(Long, Long)],
+    decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
     sourceLayout: LayoutDefinition,
     overviewIndex: Int,
     numPartitions: Option[Int] = None,
@@ -90,9 +90,9 @@ trait S3COGRDDReader[V <: CellGrid] extends Serializable {
         .toVector
 
     sc.parallelize(bins, bins.size)
-      .mapPartitions { partition: Iterator[Seq[(Long, Long)]] =>
+      .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
         partition flatMap { seq =>
-          LayerReader.njoin[K, V](seq.toIterator, threads) { index: Long =>
+          LayerReader.njoin[K, V](seq.toIterator, threads) { index: BigInt =>
             try {
               val uri = new URI(s"s3://$bucket/${keyPath(index)}.tiff")
               val tiff = readTiff(uri, overviewIndex)
