@@ -305,7 +305,7 @@ object COGLayer {
     val md = rdd.metadata
 
     val bandsCount = {
-      val sample = rdd.take(1)(0)
+      val sample = rdd.take(1)(0)._2
       if(classTag[V].runtimeClass.isAssignableFrom(classTag[MultibandTile].runtimeClass))
         sample.asInstanceOf[MultibandTile].bandCount
       else 1
