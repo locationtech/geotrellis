@@ -49,4 +49,35 @@ package object render {
       RGBA(r, g, b, (alphaPct * 2.55).toInt)
     }
   }
+
+  object HSV {
+    private def convert(h: Double, s: Double, v: Double): (Double, Double, Double) = {
+      def mod(d: Double, n: Int) = {
+        val fraction = d - d.floor
+        (d.floor.longValue % n).toDouble + fraction
+      }
+
+      val c  = s*v
+      val h1 = h / 60.0
+      val x  = c*(1.0 - ((mod(h1,  2)) - 1.0).abs)
+      val (r,g,b) = if      (h1 < 1.0) (c, x, 0.0)
+                    else if (h1 < 2.0) (x, c, 0.0)
+                    else if (h1 < 3.0) (0.0, c, x)
+                    else if (h1 < 4.0) (0.0, x, c)
+                    else if (h1 < 5.0) (x, 0.0, c)
+                    else  /*h1 < 6.0*/ (c, 0.0, x)
+      val m = v-c
+      (r+m, g+m, b+m)
+    }
+
+    def toRGB(h: Double, s: Double, v: Double): Int = {
+      val (r, g, b) = convert(h, s, v)
+      RGB((r*255).toInt, (g*255).toInt, (b*255).toInt)
+    }
+
+    def toRGBA(h: Double, s: Double, v: Double, a: Double): Int = {
+      val (r, g, b) = convert(h, s, v)
+      RGBA((r*255).toInt, (g*255).toInt, (b*255).toInt, (a*255).toInt)
+    }
+  }
 }
