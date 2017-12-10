@@ -37,15 +37,15 @@ class MergeQueueBench {
   @Param(Array("10", "1"))
   var span: Int = _
 
-  var ranges: Vector[(Long, Long)] = _
+  var ranges: Vector[(BigInt, BigInt)] = _
 
   @Setup(Level.Trial)
   def setupData(): Unit = {
-    ranges = Vector.empty[(Long, Long)]
+    ranges = Vector.empty[(BigInt, BigInt)]
 
     for(i ← 0 until size) {
-      val start: Long = skip.toLong * i
-      val end: Long = start + span
+      val start: BigInt = BigInt(skip.toLong * i)
+      val end: BigInt = start + span
       ranges = ranges :+ (start, end)
     }
 
@@ -55,10 +55,11 @@ class MergeQueueBench {
   }
 
   @Benchmark
-  def insertRange(): Seq[(Long, Long)] = MergeQueue(ranges)
+  def insertRange(): Seq[(BigInt, BigInt)] = MergeQueue(ranges)
 
   @Benchmark
-  def insertAlternateRange(): Seq[(Long, Long)] = MergeQueueBench.AlternateMergeQueue(ranges)
+  def insertAlternateRange(): Seq[(Long, Long)] =
+    MergeQueueBench.AlternateMergeQueue(ranges.map { case (a, b) => (a.longValue, b.longValue) })
 }
 
 object MergeQueueBench {
@@ -75,4 +76,3 @@ object MergeQueueBench {
     }
   }
 }
-
