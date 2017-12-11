@@ -31,12 +31,13 @@ import geotrellis.spark.io.index.zcurve.ZSpatialKeyIndex
 import geotrellis.spark.testkit._
 import geotrellis.spark.tiling._
 import geotrellis.vector._
-
 import org.apache.hadoop.fs.Path
 import org.scalatest._
 
 import scala.collection.mutable.ListBuffer
 import java.nio.file.Paths
+
+import geotrellis.spark.io.cog.vrt.VRT
 
 class COGLayerSpec extends FunSpec
   with Matchers
@@ -248,7 +249,42 @@ class COGLayerSpec extends FunSpec
       cogsList.map { cogs =>
         writer.write(cogs)(LayerId("testSplited", 0), keyIndexMethod)
       }
+    }
 
+    it("should write vrt split GeoTrellis COGLayer") {
+      val source =
+        sc.hadoopGeoTiffRDD(
+          new Path(s"file:///${Paths.get("raster").toAbsolutePath.toString}/data/geotiff-test-files/reproject/cea.tif")
+        )
+
+      val list: ListBuffer[(Int, TileLayerRDD[SpatialKey])] = ListBuffer()
+      val layoutScheme = ZoomedLayoutScheme(LatLng, 512)
+
+      Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme) { (rdd, zoom) =>
+        list += zoom -> rdd
+      }
+
+      val (zoom, layer) = list.head
+
+      val keyIndexMethod = ZCurveKeyIndexMethod
+
+      val index: ZSpatialKeyIndex = new ZSpatialKeyIndex(layer.metadata.bounds match {
+        case kb: KeyBounds[SpatialKey] => kb
+        case _ => null
+      })
+
+      val attributeStore = S3AttributeStore("geotrellis-test", "daunnc/cogs")
+      val writer =
+        new S3COGLayerWriter(() => attributeStore, "geotrellis-test", "daunnc/cogs")
+
+      val cogsList = COGLayer.applyWithMetadataCalc(layer)(zoom, layoutScheme, minZoom = Some(7))
+
+      var i = 0
+      cogsList.map { cogs =>
+        val vrt = writer.writeVRT(cogs)(LayerId("testSplited", 0), keyIndexMethod, vrtOnly = true)
+        VRT.write(vrt)(s"/tmp/testSplited_${i}.vrt")
+        i = i + 1
+      }
     }
   }
 }
