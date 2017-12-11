@@ -282,7 +282,7 @@ class COGLayerSpec extends FunSpec
       var i = 0
       cogsList.map { cogs =>
         val vrt = writer.writeVRT(cogs)(LayerId("testSplited", 0), keyIndexMethod, vrtOnly = true)
-        VRT.write(vrt)(s"/tmp/testSplited_${i}.vrt")
+        vrt.write(s"/tmp/testSplited_${i}.vrt")
         i = i + 1
       }
     }

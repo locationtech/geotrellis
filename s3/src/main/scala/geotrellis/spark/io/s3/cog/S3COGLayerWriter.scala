@@ -136,9 +136,9 @@ class S3COGLayerWriter(
   def writeVRT[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag
-  ](cogs: RDD[(K, ContextGeoTiff[K, V])])(id: LayerId, keyIndexMethod: KeyIndexMethod[K], vrtOnly: Boolean = false): Elem = {
+  ](cogs: RDD[(K, ContextGeoTiff[K, V])])(id: LayerId, keyIndexMethod: KeyIndexMethod[K], vrtOnly: Boolean = false): VRT[K] = {
     val sc = cogs.sparkContext
-    val vrts = sc.collectionAccumulator[VRTBuilder[K]](s"vrt_$id")
+    val vrts = sc.collectionAccumulator[VRT[K]](s"vrt_$id")
     val samplesAccumulator = sc.collectionAccumulator[(Int, Elem)](s"vrt_samples_$id")
 
     // schema for compatability purposes
@@ -190,7 +190,7 @@ class S3COGLayerWriter(
             val metadata = tiff.metadata
 
             // create vrt
-            val vrt = VRTBuilder(metadata)
+            val vrt = VRT(metadata)
             vrts.add(vrt)
 
             val keyBounds = metadata.bounds match {
@@ -269,6 +269,6 @@ class S3COGLayerWriter(
 
     // at least one vrt builder should be avail, otherwise the dataset is empty
     val vrt = vrts.value.get(0)
-    vrt.toXMLFromBands(samplesAccumulator.value.asScala.toList)
+    vrt.fromSimpleSources(samplesAccumulator.value.asScala.toList)
   }
 }
