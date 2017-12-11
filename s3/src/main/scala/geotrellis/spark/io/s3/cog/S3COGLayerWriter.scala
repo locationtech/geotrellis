@@ -243,8 +243,8 @@ class S3COGLayerWriter(
           } else None
         })
 
-      if(!vrtOnly) {
-        val write: PutObjectRequest => Process[Task, PutObjectResult] = { request =>
+      val write: PutObjectRequest => Process[Task, Any] =
+        if(!vrtOnly) { request =>
           Process eval Task {
             request.getInputStream.reset() // reset in case of retransmission to avoid 400 error
             s3Client.putObject(request)
@@ -252,23 +252,22 @@ class S3COGLayerWriter(
             case e: AmazonS3Exception if e.getStatusCode == 503 => true
             case _ => false
           }
+        } else { request =>
+          Process eval Task {}(pool).retryEBO {
+            case e: AmazonS3Exception if e.getStatusCode == 503 => true
+            case _ => false
+          }
         }
 
-        val results = nondeterminism.njoin(maxOpen = threads, maxQueued = threads) {
-          requests map write
-        }(Strategy.Executor(pool))
-        results.run.unsafePerformSync
-        pool.shutdown()
-      } else {
-        val write: PutObjectRequest => Process[Task, Any] = { request => Process eval Task { }(pool) }
-        val results = nondeterminism.njoin(maxOpen = threads, maxQueued = threads) {
-          requests map write
-        }(Strategy.Executor(pool))
-        results.run.unsafePerformSync
-        pool.shutdown()
-      }
+      val results = nondeterminism.njoin(maxOpen = threads, maxQueued = threads) {
+        requests map write
+      }(Strategy.Executor(pool))
+      results.run.unsafePerformSync
+
+      pool.shutdown()
     }
 
+    // at least one vrt builder should be avail, otherwise the dataset is empty
     val vrt = vrts.value.get(0)
     vrt.toXMLFromBands(samplesAccumulator.value.asScala.toList)
   }
