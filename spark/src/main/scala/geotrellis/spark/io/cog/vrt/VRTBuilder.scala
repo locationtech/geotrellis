@@ -7,13 +7,14 @@ import geotrellis.vector.Extent
 import scala.xml.{Elem, XML}
 
 case class VRTBuilder[K: SpatialComponent](base: TileLayerMetadata[K]) {
-  val gb: GridBounds = base.bounds match {
+  lazy val gb: GridBounds = base.bounds match {
     case kb: KeyBounds[K] => kb.toGridBounds()
     case EmptyBounds => throw new Exception("Empty iterator, can't generate a COG.")
   }
-  val (layoutCols, layoutRows) = gb.width * base.layout.tileCols -> gb.height * base.layout.tileRows
 
-  val re: RasterExtent = RasterExtent(base.extent, layoutCols, layoutRows)
+  lazy val (layoutCols, layoutRows) = gb.width * base.layout.tileCols -> gb.height * base.layout.tileRows
+
+  lazy val re: RasterExtent = RasterExtent(base.extent, layoutCols, layoutRows)
 
   // TODO: refactor, code style kept to follow GDAL: https://github.com/OSGeo/gdal/blob/9a21e8dcaf36a7e046ee87cd57c8c03812dd20ed/gdal/frmts/sde/sdedataset.cpp
   def geoTransform: (Double, Double, Double, Double, Double, Double) = {
