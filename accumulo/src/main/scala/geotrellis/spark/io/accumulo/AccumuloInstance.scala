@@ -19,7 +19,7 @@ package geotrellis.spark.io.accumulo
 import org.apache.accumulo.core.client._
 import org.apache.accumulo.core.client.mapreduce.{AbstractInputFormat => AIF, AccumuloOutputFormat => AOF}
 import org.apache.accumulo.core.client.mock.MockInstance
-import org.apache.accumulo.core.client.security.tokens.{AuthenticationToken, PasswordToken}
+import org.apache.accumulo.core.client.security.tokens.{AuthenticationToken, KerberosToken, PasswordToken}
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
 
@@ -58,10 +58,19 @@ object AccumuloInstance {
     val zookeeper = uri.getHost
     val instance = uri.getPath.drop(1)
     val (user, pass) = getUserInfo(uri)
+    val useKerberos = ClientConfiguration.loadDefault().getBoolean(ClientConfiguration.ClientProperty.INSTANCE_RPC_SASL_ENABLED.getKey,false)
+    val (username:String,token:AuthenticationToken) = {
+      if(useKerberos){
+        val token = new KerberosToken()
+        (user.getOrElse(token.getPrincipal()),token)
+      }else{
+        (user.getOrElse("root"),new PasswordToken(pass.getOrElse("")))
+      }
+    }
     AccumuloInstance(
       instance, zookeeper,
-      user.getOrElse("root"),
-      new PasswordToken(pass.getOrElse("")))
+      username,
+      token)
   }
 }
 
