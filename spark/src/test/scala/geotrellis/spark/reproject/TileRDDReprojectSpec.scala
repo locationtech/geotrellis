@@ -16,16 +16,15 @@
 
 package geotrellis.spark.reproject
 
-import geotrellis.spark._
-import geotrellis.spark.reproject.Reproject.Options
-import geotrellis.spark.tiling._
-import geotrellis.spark.testkit._
-
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.resample._
 import geotrellis.raster.reproject._
 import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
+import geotrellis.spark._
+import geotrellis.spark.reproject.Reproject.Options
+import geotrellis.spark.tiling._
+import geotrellis.spark.testkit._
 import geotrellis.vector._
 
 import geotrellis.proj4._
@@ -139,6 +138,69 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
 
     it("should reproject a raster split into tiles the same as the raster itself: dynamic border and NearestNeighbor") {
       testReproject(NearestNeighbor, false)
+    }
+
+    it("should function correctly for multiband tiles") {
+      val expected =
+        ProjectedRaster(raster, gt.crs).reproject(
+          LatLng,
+          RasterReprojectOptions(NearestNeighbor, errorThreshold = 0)
+        )
+
+      val mbrdd = ContextRDD(rdd.mapValues{ tile => MultibandTile(Array(tile)) }, rdd.metadata)
+      val (_, actualRdd) =
+        mbrdd.reproject(
+          LatLng,
+          FloatingLayoutScheme(25),
+          Options(
+            rasterReprojectOptions = RasterReprojectOptions(NearestNeighbor, errorThreshold = 0),
+            matchLayerExtent = true
+          )
+        )
+
+      val actual: Raster[MultibandTile] =
+        actualRdd.stitch
+
+      // actual.tile.renderPng(rainbow).write("actual.png")
+
+      // Account for tiles being a bit bigger then the actual result
+      actual.extent.covers(expected.extent) should be (true)
+      actual.rasterExtent.extent.xmin should be (expected.rasterExtent.extent.xmin +- 0.00001)
+      actual.rasterExtent.extent.ymax should be (expected.rasterExtent.extent.ymax +- 0.00001)
+      actual.rasterExtent.cellwidth should be (expected.rasterExtent.cellwidth +- 0.00001)
+      actual.rasterExtent.cellheight should be (expected.rasterExtent.cellheight +- 0.00001)
+
+      val expectedTile = expected.tile
+      val actualTile = actual.tile
+
+      actualTile.cols should be >= (expectedTile.cols)
+      actualTile.rows should be >= (expectedTile.rows)
+
+      val tile = actual.tile.bandSafe(0).get
+
+      cfor(0)(_ < actual.rows, _ + 1) { row =>
+        cfor(0)(_ < actual.cols, _ + 1) { col =>
+          val a = tile.getDouble(col, row)
+          if(row >= expectedTile.rows || col >= expectedTile.cols) {
+            isNoData(a) should be (true)
+          } else if(row != 1){
+            val expected = expectedTile.getDouble(col, row)
+            if (a.isNaN) {
+              withClue(s"Failed at col: $col and row: $row, $a != $expected") {
+                expected.isNaN should be (true)
+              }
+            } else if (expected.isNaN) {
+              withClue(s"Failed at col: $col and row: $row, $a != $expected") {
+                a.isNaN should be (true)
+              }
+            } else {
+              withClue(s"Failed at col: $col and row: $row, $a != $expected") {
+                a should be (expected +- 0.001)
+              }
+            }
+          }
+        }
+      }
     }
   }
 

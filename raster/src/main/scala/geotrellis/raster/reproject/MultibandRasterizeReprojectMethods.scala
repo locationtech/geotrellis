@@ -38,24 +38,31 @@ trait MultibandRasterRasterizeReprojectMethods extends RasterRasterizeReprojectM
     val trans = Proj4Transform(destCRS, srcCRS)
     val bands = Array.ofDim[MutableArrayTile](self.tile.bandCount)
 
-    cfor(0)(_ < self.tile.bandCount, _ + 1) { i =>
+    cfor(0)(_ < self.bandCount, _ + 1) { i =>
       bands(i) = self.band(i).prototype(destCellType, destRE.cols, destRE.rows).mutable
-      val resampler = Resample.apply(resampleMethod, 
-                                     bands(i), 
-                                     self.extent, 
-                                     CellSize(self.rasterExtent.cellwidth, self.rasterExtent.cellheight))
+    }
 
-      if (bands(i).cellType.isFloatingPoint) {
-        Rasterizer.foreachCellByPolygon(destRegion, destRE) { (px, py) =>
-          val (x, y) = destRE.gridToMap(px, py)
-          val (tx, ty) = trans(x, y)
-          bands(i).setDouble(px, py, resampler.resampleDouble(tx, ty))
+    val resampler = (0 until self.bandCount).map{ i =>
+      Resample.apply(resampleMethod,
+                     self.band(i),
+                     self.extent,
+                     CellSize(self.rasterExtent.cellwidth, self.rasterExtent.cellheight))
+    }
+
+    if (self.cellType.isFloatingPoint) {
+      Rasterizer.foreachCellByPolygon(destRegion, destRE) { (px, py) =>
+        val (x, y) = destRE.gridToMap(px, py)
+        val (tx, ty) = trans(x, y)
+        cfor(0)(_ < self.bandCount, _ + 1) { i =>
+          bands(i).setDouble(px, py, resampler(i).resampleDouble(tx, ty))
         }
-      } else {
-        Rasterizer.foreachCellByPolygon(destRegion, destRE) { (px, py) =>
-          val (x, y) = destRE.gridToMap(px, py)
-          val (tx, ty) = trans(x, y)
-          bands(i).set(px, py, resampler.resample(tx, ty))
+      }
+    } else {
+      Rasterizer.foreachCellByPolygon(destRegion, destRE) { (px, py) =>
+        val (x, y) = destRE.gridToMap(px, py)
+        val (tx, ty) = trans(x, y)
+        cfor(0)(_ < self.bandCount, _ + 1) { i =>
+          bands(i).set(px, py, resampler(i).resample(tx, ty))
         }
       }
     }

@@ -151,6 +151,7 @@ object TileRDDReproject {
 
     val newMetadata = {
       metadata.copy(
+        crs = destCrs,
         layout = targetLayerLayout,
         extent = targetDataExtent,
         bounds = metadata.bounds.setSpatialBounds(
