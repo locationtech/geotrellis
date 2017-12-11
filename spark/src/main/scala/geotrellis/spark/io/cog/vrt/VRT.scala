@@ -6,7 +6,7 @@ import geotrellis.vector.Extent
 
 import scala.xml.{Elem, XML}
 
-case class VRTBuilder[K: SpatialComponent](base: TileLayerMetadata[K]) {
+case class VRT[K: SpatialComponent](base: TileLayerMetadata[K], bands: List[Elem] = Nil) {
   lazy val gb: GridBounds = base.bounds match {
     case kb: KeyBounds[K] => kb.toGridBounds()
     case EmptyBounds => throw new Exception("Empty iterator, can't generate a COG.")
@@ -29,8 +29,8 @@ case class VRTBuilder[K: SpatialComponent](base: TileLayerMetadata[K]) {
     var dfMaxX = extent.xmax
     var dfMaxY = extent.ymax
 
-    dfMaxX = (x0-dfMinX) + dfMaxX
-    dfMinY = (y0-dfMaxY) + dfMinY
+    dfMaxX = (x0 - dfMinX) + dfMaxX
+    dfMinY = (y0 - dfMaxY) + dfMinY
 
     // adjust the bbox based on the tile origin.
     dfMinX = math.min(x0, dfMinX)
@@ -61,7 +61,7 @@ case class VRTBuilder[K: SpatialComponent](base: TileLayerMetadata[K]) {
 
   def extentToOffsets(extent: Extent): (Double, Double, Double, Double) = {
     val (xoff, yoff) = re.mapToGrid(extent.xmin, extent.ymax)
-    val (xmax,ymin)  = re.mapToGrid(extent.xmax, extent.ymin)
+    val (xmax, ymin)  = re.mapToGrid(extent.xmax, extent.ymin)
 
     val xsize = xmax - xoff
     val ysize = ymin - yoff
@@ -95,12 +95,15 @@ case class VRTBuilder[K: SpatialComponent](base: TileLayerMetadata[K]) {
       }
   }
 
+  def fromSimpleSources(elems: List[(Int, Elem)]): VRT[K] =
+    this.copy(bands = simpleSourcesToBands(elems))
+
   def toXML(bands: List[Elem]): Elem = {
     val rasterXSize = layoutCols
     val rasterYSize = layoutRows
 
     <VRTDataset rasterXSize={rasterXSize.toString} rasterYSize={rasterYSize.toString}>
-      <SRS>{base.crs.toWKT.get}</SRS>
+      <SRS>{xml.Unparsed(base.crs.toWKT.get)}</SRS>
       <GeoTransform>{geoTransformString}</GeoTransform>
       {bands}
     </VRTDataset>
@@ -108,6 +111,8 @@ case class VRTBuilder[K: SpatialComponent](base: TileLayerMetadata[K]) {
 
   def toXMLFromBands(elems: List[(Int, Elem)]): Elem =
     toXML(simpleSourcesToBands(elems))
+
+  def write(path: String): Unit = VRT.write(toXML(this.bands))(path)
 
 }
 
