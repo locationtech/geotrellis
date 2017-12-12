@@ -25,8 +25,9 @@ import geotrellis.util.MethodExtensions
 import spire.syntax.cfor._
 
 
-class ProjectedRasterReprojectMethods[T <: CellGrid](val self: ProjectedRaster[T])(implicit ev: Raster[T] => RasterReprojectMethods[Raster[T]])
-    extends MethodExtensions[ProjectedRaster[T]] {
+class ProjectedRasterReprojectMethods[T <: CellGrid](val self: ProjectedRaster[T])(
+  implicit ev: Raster[T] => RasterReprojectMethods[Raster[T]]
+) extends MethodExtensions[ProjectedRaster[T]] {
   import Reproject.Options
 
   def reproject(dest: CRS, options: Options): ProjectedRaster[T] =
@@ -41,4 +42,15 @@ class ProjectedRasterReprojectMethods[T <: CellGrid](val self: ProjectedRaster[T
 
   def reproject(gridBounds: GridBounds, dest: CRS): ProjectedRaster[T] =
     reproject(gridBounds, dest, Options.DEFAULT)
+
+  def reproject(dest: CRS, rasterExtent: RasterExtent, resampleMethod: ResampleMethod)
+               (implicit ev: RasterRegionReproject[T]): ProjectedRaster[T] = {
+    ProjectedRaster(
+      raster = ev.regionReproject(
+        self.raster, self.crs, dest, rasterExtent,
+        self.projectedExtent.reprojectAsPolygon(dest, 0.005),
+        resampleMethod),
+      crs = dest
+    )
+  }
 }
