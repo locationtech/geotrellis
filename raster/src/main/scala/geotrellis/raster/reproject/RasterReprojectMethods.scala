@@ -67,5 +67,4 @@ trait RasterReprojectMethods[+T <: Raster[_]] extends MethodExtensions[T] {
 
   def reproject(gridBounds: GridBounds, transform: Transform, inverseTransform: Transform): T =
     reproject(gridBounds, transform, inverseTransform, Options.DEFAULT)
-
 }

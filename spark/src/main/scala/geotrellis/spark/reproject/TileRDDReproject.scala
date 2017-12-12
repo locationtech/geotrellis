@@ -55,15 +55,13 @@ object TileRDDReproject {
     */
   def apply[
     K: SpatialComponent: Boundable: ClassTag,
-    V <: CellGrid: ClassTag: Stitcher: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
+    V <: CellGrid: ClassTag: RasterRegionReproject: Stitcher: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
     bufferedTiles: RDD[(K, BufferedTile[V])],
     metadata: TileLayerMetadata[K],
     destCrs: CRS,
     targetLayout: Either[LayoutScheme, LayoutDefinition],
     options: Options
-  )(
-    implicit ev: Raster[V] => RasterRasterizeReprojectMethods[V]
   ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
     val crs: CRS = metadata.crs
     val layout = metadata.layout
@@ -188,13 +186,12 @@ object TileRDDReproject {
 
             maptrans.keysForGeometry(destRegion).map { newKey =>
               val destRE = RasterExtent(maptrans(newKey), newLayout.tileLayout.tileCols, newLayout.tileLayout.tileRows)
-              val ProjectedRaster(Raster(newTile, newExtent), _) = 
-                Raster(tile, outerExtent).rasterizeReproject(crs, 
-                                                             destRegion, 
-                                                             destRE,
-                                                             destCrs, 
-                                                             rasterReprojectOptions.method, 
-                                                             metadata.cellType)
+              val Raster(newTile, newExtent) = 
+                implicitly[RasterRegionReproject[V]].regionReproject(
+                  Raster(tile, outerExtent),
+                  crs, destCrs,
+                  destRE, destRegion,
+                  rasterReprojectOptions.method)
 
               (key.setComponent[SpatialKey](newKey), newTile)
             }
@@ -229,14 +226,12 @@ object TileRDDReproject {
     */
   def apply[
     K: SpatialComponent: Boundable: ClassTag,
-    V <: CellGrid: ClassTag: Stitcher: (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
+    V <: CellGrid: ClassTag: RasterRegionReproject: Stitcher: (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     destCrs: CRS,
     targetLayout: Either[LayoutScheme, LayoutDefinition],
     options: Options
-  )(
-    implicit ev: Raster[V] => RasterRasterizeReprojectMethods[V]
   ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
     if(rdd.metadata.crs == destCrs) {
       val layout = rdd.metadata.layout
@@ -310,15 +305,13 @@ object TileRDDReproject {
     */
   def apply[
     K: SpatialComponent: Boundable: ClassTag,
-    V <: CellGrid: ClassTag: Stitcher: (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
+    V <: CellGrid: ClassTag: RasterRegionReproject: Stitcher: (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     destCrs: CRS,
     targetLayout: Either[LayoutScheme, LayoutDefinition],
     bufferSize: Int,
     options: Options
-  )(
-    implicit ev: Raster[V] => RasterRasterizeReprojectMethods[V]
   ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
     if(bufferSize == 0) {
       val fakeBuffers: RDD[(K, BufferedTile[V])] = rdd.withContext(_.mapValues { tile: V => BufferedTile(tile, GridBounds(0, 0, tile.cols - 1, tile.rows - 1)) })

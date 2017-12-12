@@ -98,13 +98,11 @@ package object raster
 
   implicit class withSinglebandRasterMethods(val self: SinglebandRaster) extends MethodExtensions[SinglebandRaster]
       with reproject.SinglebandRasterReprojectMethods
-      with reproject.SinglebandRasterRasterizeReprojectMethods
       with resample.SinglebandRasterResampleMethods
       with vectorize.SinglebandRasterVectorizeMethods
 
   implicit class withMultibandRasterMethods(val self: MultibandRaster) extends MethodExtensions[MultibandRaster]
       with reproject.MultibandRasterReprojectMethods
-      with reproject.MultibandRasterRasterizeReprojectMethods
       with resample.MultibandRasterResampleMethods
 
   implicit class withTileSeqMethods(val self: Traversable[Tile]) extends MethodExtensions[Traversable[Tile]]
