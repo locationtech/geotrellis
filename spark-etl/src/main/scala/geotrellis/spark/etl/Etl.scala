@@ -54,10 +54,10 @@ object Etl {
   def ingest[
     I: Component[?, ProjectedExtent]: TypeTag: ? => TilerKeyMethods[I, K],
     K: SpatialComponent: Boundable: TypeTag,
-    V <: CellGrid: TypeTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
+    V <: CellGrid: TypeTag: RasterRegionReproject: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
      args: Seq[String], modules: Seq[TypedModule] = Etl.defaultModules
-   )(implicit sc: SparkContext, ev: Raster[V] => RasterRasterizeReprojectMethods[V]) = {
+   )(implicit sc: SparkContext) = {
     implicit def classTagK = ClassTag(typeTag[K].mirror.runtimeClass(typeTag[K].tpe)).asInstanceOf[ClassTag[K]]
     implicit def classTagV = ClassTag(typeTag[V].mirror.runtimeClass(typeTag[V].tpe)).asInstanceOf[ClassTag[V]]
 
@@ -138,10 +138,10 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
     */
   def tile[
     I: Component[?, ProjectedExtent]: (? => TilerKeyMethods[I, K]),
-    V <: CellGrid: Stitcher: ClassTag: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V]):
+    V <: CellGrid: RasterRegionReproject: Stitcher: ClassTag: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V]):
     (? => TileReprojectMethods[V]): (? => CropMethods[V]),
     K: SpatialComponent: Boundable: ClassTag
-  ](rdd: RDD[(I, V)], method: ResampleMethod = output.resampleMethod)(implicit sc: SparkContext, ev: Raster[V] => RasterRasterizeReprojectMethods[V]): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
+  ](rdd: RDD[(I, V)], method: ResampleMethod = output.resampleMethod): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
     val targetCellType = output.cellType
     val destCrs = output.getCrs.get
 
