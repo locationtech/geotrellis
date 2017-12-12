@@ -7,6 +7,6 @@ import java.net.URI
 
 trait TiffMethods[V <: CellGrid] {
   def readTiff(uri: URI, index: Int): GeoTiff[V]
-  def tileTiff[K](tiff: GeoTiff[V], gridBounds: Map[GridBounds, K]): Vector[(K, V)]
+  def tileTiff[K](tiff: GeoTiff[V], gridBounds: GridBounds): V
   def getSegmentGridBounds(uri: URI, index: Int): (Int, Int) => GridBounds
 }

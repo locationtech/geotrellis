@@ -30,13 +30,9 @@ trait S3TiffMethods {
       else tiff.getOverview(index)
     }
 
-    def tileTiff[K](tiff: GeoTiff[Tile], gridBounds: Map[GridBounds, K]): Vector[(K, Tile)] = {
+    def tileTiff[K](tiff: GeoTiff[Tile], gridBounds: GridBounds): Tile = {
       tiff.tile match {
-        case gtTile: GeoTiffTile =>
-          gtTile
-            .crop(gridBounds.keys.toSeq)
-            .flatMap { case (k, v) => gridBounds.get(k).map(i => i -> v) }
-            .toVector
+        case gtTile: GeoTiffTile => gtTile.crop(gridBounds)
         case _ => throw new UnsupportedOperationException("Can be applied to a GeoTiffTile only.")
       }
     }
@@ -86,13 +82,9 @@ trait S3TiffMethods {
       else tiff.getOverview(index)
     }
 
-    def tileTiff[K](tiff: GeoTiff[MultibandTile], gridBounds: Map[GridBounds, K]): Vector[(K, MultibandTile)] = {
+    def tileTiff[K](tiff: GeoTiff[MultibandTile], gridBounds: GridBounds): MultibandTile = {
       tiff.tile match {
-        case gtTile: GeoTiffMultibandTile =>
-          gtTile
-            .crop(gridBounds.keys.toSeq)
-            .flatMap { case (k, v) => gridBounds.get(k).map(i => i -> v) }
-            .toVector
+        case gtTile: GeoTiffMultibandTile => gtTile.crop(gridBounds)
         case _ => throw new UnsupportedOperationException("Can be applied to a GeoTiffTile only.")
       }
     }

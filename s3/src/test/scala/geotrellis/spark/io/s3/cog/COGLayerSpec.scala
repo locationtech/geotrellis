@@ -196,8 +196,21 @@ class COGLayerSpec extends FunSpec
       GeoTiffWriter.write(tiff.crop(layer.metadata.extent), "/tmp/testSplited.tif", optimizedOrder = true)
     }
 
+    it("should read split value GeoTrellis COGLayer") {
+      // KeyBounds(SpatialKey(177,318),SpatialKey(178,321))
 
-    ignore("should write png") {
+      val attributeStore = S3AttributeStore("geotrellis-test", "daunnc/cogs")
+
+      val reader = new S3COGLayerReader(attributeStore)
+
+      val valueReader = new S3COGValueReader(attributeStore).reader[SpatialKey, Tile](LayerId("testSplited", 11))
+
+      val tile = valueReader.read(SpatialKey(355,638))
+
+      tile.renderPng().write(s"/tmp/${355}_${638}.png")
+    }
+
+    it("should write png") {
       val source =
         sc.hadoopGeoTiffRDD(
           new Path(s"file:///${Paths.get("raster").toAbsolutePath.toString}/data/geotiff-test-files/reproject/cea.tif")
