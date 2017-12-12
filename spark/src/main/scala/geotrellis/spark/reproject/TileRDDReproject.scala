@@ -171,6 +171,7 @@ object TileRDDReproject {
     val reprojectedTiles =
       bufferedTiles
         .mapPartitions { partition =>
+          val rrp = implicitly[RasterRegionReproject[V]]
           partition.flatMap { case (key, BufferedTile(tile, gridBounds)) => {
             val innerExtent = key.getComponent[SpatialKey].extent(layout)
             val innerRasterExtent = RasterExtent(innerExtent, gridBounds.width, gridBounds.height)
@@ -187,7 +188,7 @@ object TileRDDReproject {
             maptrans.keysForGeometry(destRegion).map { newKey =>
               val destRE = RasterExtent(maptrans(newKey), newLayout.tileLayout.tileCols, newLayout.tileLayout.tileRows)
               val Raster(newTile, newExtent) = 
-                implicitly[RasterRegionReproject[V]].regionReproject(
+                rrp.regionReproject(
                   Raster(tile, outerExtent),
                   crs, destCrs,
                   destRE, destRegion,

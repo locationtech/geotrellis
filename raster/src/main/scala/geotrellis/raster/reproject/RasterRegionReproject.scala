@@ -8,7 +8,7 @@ import geotrellis.proj4._
 
 import spire.syntax.cfor._
 
-trait RasterRegionReproject[T <: CellGrid]{
+trait RasterRegionReproject[T <: CellGrid] extends Serializable {
   /** Reproject raster to a region that may partially intersect target raster extent.
     *
     * Back-projects only the cells overlapping the destination region before sampling their value from the source raster.
