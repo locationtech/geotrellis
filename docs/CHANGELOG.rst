@@ -379,6 +379,7 @@ to your application's needs. `See here for the specifics. <guide/vectors.html#nu
 Other New Features
 ******************
 
+- `Kerberos authentication is available for properly configured Accumulo clusters <https://github.com/locationtech/geotrellis/pull/2510>`__
 - `Polygonal Summaries for MultibandTiles <https://github.com/locationtech/geotrellis/pull/2374>`__
 - `Filter GeoTiffRDDs by Geometry <https://github.com/locationtech/geotrellis/pull/2409>`__
 - `Can create ValueReaders via URIs through LayerProvides classes <https://github.com/locationtech/geotrellis/pull/2286>`__
