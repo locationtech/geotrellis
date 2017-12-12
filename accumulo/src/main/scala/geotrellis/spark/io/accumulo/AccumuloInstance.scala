@@ -58,19 +58,23 @@ object AccumuloInstance {
     val zookeeper = uri.getHost
     val instance = uri.getPath.drop(1)
     val (user, pass) = getUserInfo(uri)
-    val useKerberos = ClientConfiguration.loadDefault().getBoolean(ClientConfiguration.ClientProperty.INSTANCE_RPC_SASL_ENABLED.getKey,false)
+    val useKerberos = ClientConfiguration
+        .loadDefault()
+        .getBoolean(ClientConfiguration.ClientProperty.INSTANCE_RPC_SASL_ENABLED.getKey, false)
+
     val (username:String,token:AuthenticationToken) = {
-      if(useKerberos){
+      if (useKerberos) {
         val token = new KerberosToken()
-        (user.getOrElse(token.getPrincipal()),token)
-      }else{
-        (user.getOrElse("root"),new PasswordToken(pass.getOrElse("")))
+        (user.getOrElse(token.getPrincipal()), token)
+      } else {
+        (user.getOrElse("root"), new PasswordToken(pass.getOrElse("")))
       }
     }
     AccumuloInstance(
       instance, zookeeper,
       username,
-      token)
+      token
+    )
   }
 }
 
