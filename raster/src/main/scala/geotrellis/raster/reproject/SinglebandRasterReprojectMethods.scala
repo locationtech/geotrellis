@@ -18,8 +18,9 @@ package geotrellis.raster.reproject
 
 import geotrellis.raster._
 import geotrellis.raster.resample._
-import geotrellis.vector.Extent
+import geotrellis.raster.rasterize._
 import geotrellis.proj4._
+import geotrellis.vector.Polygon
 
 import spire.syntax.cfor._
 
@@ -33,7 +34,6 @@ trait SinglebandRasterReprojectMethods extends RasterReprojectMethods[Singleband
     options: Options
   ): SinglebandRaster = {
     val Raster(tile, extent) = self
-    val RasterExtent(_, cellwidth, cellheight, _, _) = self.rasterExtent
     val RasterExtent(newExtent, newCellWidth, newCellHeight, newCols, newRows) = targetRasterExtent
 
     val newTile = ArrayTile.empty(tile.cellType, newCols, newRows)
@@ -63,12 +63,13 @@ trait SinglebandRasterReprojectMethods extends RasterReprojectMethods[Singleband
     val resampler = Resample(options.method, tile, extent, CellSize(newCellWidth, newCellHeight))
 
     if(tile.cellType.isFloatingPoint) {
-      val resample = resampler.resampleDouble _
       cfor(0)(_ < newRows, _ + 1) { row =>
         // Reproject this whole row.
         rowTransform(destX, destY, srcX, srcY)
         cfor(0)(_ < newCols, _ + 1) { col =>
-          val v = resample(srcX(col), srcY(col))
+          val x = srcX(col)
+          val y = srcY(col)
+          val v = resampler.resampleDouble(x, y)
           newTile.setDouble(col, row, v)
 
           // Add row height for next iteration
@@ -76,15 +77,13 @@ trait SinglebandRasterReprojectMethods extends RasterReprojectMethods[Singleband
         }
       }
     } else {
-      val resample = resampler.resample _
       cfor(0)(_ < newRows, _ + 1) { row =>
         // Reproject this whole row.
         rowTransform(destX, destY, srcX, srcY)
         cfor(0)(_ < newCols, _ + 1) { col =>
           val x = srcX(col)
           val y = srcY(col)
-
-          val v = resample(x, y)
+          val v = resampler.resample(x, y)
           newTile.set(col, row, v)
 
           // Add row height for next iteration
