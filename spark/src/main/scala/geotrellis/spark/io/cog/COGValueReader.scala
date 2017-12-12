@@ -17,11 +17,12 @@
 package geotrellis.spark.io.cog
 
 import geotrellis.raster._
+import geotrellis.raster.merge._
+import geotrellis.raster.prototype._
 import geotrellis.raster.resample._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
-
 import spray.json._
 
 import scala.reflect._
@@ -30,11 +31,11 @@ trait COGValueReader[ID] {
   val attributeStore: AttributeStore
 
   /** Produce a key value reader for a specific layer, prefetching layer metadata once at construction time */
-  def reader[K: JsonFormat: ClassTag, V <: CellGrid: TiffMethods](layerId: ID): Reader[K, V]
+  def reader[K: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid: TiffMethods: ? => TileMergeMethods[V]](layerId: ID): Reader[K, V]
 
   def overzoomingReader[
     K: JsonFormat: SpatialComponent: ClassTag,
-    V <: CellGrid: ? => TileResampleMethods[V]: TiffMethods
+    V <: CellGrid: ? => TileResampleMethods[V]: TiffMethods: ? => TileMergeMethods[V]
   ](layerId: ID, resampleMethod: ResampleMethod = ResampleMethod.DEFAULT): Reader[K, V]
 }
 
