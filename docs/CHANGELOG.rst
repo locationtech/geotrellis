@@ -13,6 +13,10 @@ API Changes
     been extended from a fixed length of 8 bytes to an arbitrary length.  This change affects not only the
     ``geotrellis.spark`` package, but all backends (excluding ``geotrellis.geowave`` and ``geotrellis.geomesa``).
 
+  - **Change:** Reprojection has improved performance due to one less shuffle stage and lower memory usage.
+  ``TileRDDReproject`` loses dependency on ``TileReprojectMethods`` in favor of ``RasterRegionReproject``
+    
+
 1.2.0
 -----
 *2017 Nov 6*
