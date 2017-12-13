@@ -393,6 +393,9 @@ Fixes
 - `Allow rasterizer to store Z value at double precision <https://github.com/locationtech/geotrellis/pull/2388>`__
 - `Changed scheme path file from /User -> current working dir <https://github.com/locationtech/geotrellis/pull/2393>`__
 - `Fix CRS parser and proj4 cea projection support <https://github.com/locationtech/geotrellis/pull/2403>`__
+- `Spark pyramid resamples tiles on the map side, reducing shuffle sizes <https://github.com/locationtech/geotrellis/pull/2505>`__
+- `ConstantTile map and mapDouble methods preserve CellType of tile <https://github.com/locationtech/geotrellis/pull/2501>`__
+- `ConstantTile combination with ArrayTile <https://github.com/locationtech/geotrellis/pull/2502>`__
 
 
 
