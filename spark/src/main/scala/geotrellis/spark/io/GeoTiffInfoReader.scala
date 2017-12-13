@@ -62,7 +62,7 @@ private [geotrellis] trait GeoTiffInfoReader extends LazyLogging {
           info.segmentLayout.listWindows(maxSize)
       }
 
-    info.segmentLayout.partitionWindowsBySegments(windows, partitionBytes / info.cellType.bytes)
+    info.segmentLayout.partitionWindowsBySegments(windows, partitionBytes / math.max(info.cellType.bytes, 1))
   }
 
   def readWindows[O, I, K, V](
