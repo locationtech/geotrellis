@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.s3
 
+import geotrellis.spark.io._
 import geotrellis.spark.render._
 import geotrellis.spark.{LayerId, SpatialKey}
 
@@ -31,8 +32,11 @@ import org.apache.spark.rdd.RDD
 import scalaz.stream._
 import scalaz.concurrent.Task
 
+import com.typesafe.config.ConfigFactory
 
 object SaveToS3 {
+  final val DefaultThreadCount = ConfigFactory.load().getThreads("geotrellis.s3.threads.rdd.write")
+
   /**
     * @param id           A Layer ID
     * @param pathTemplate The template used to convert a Layer ID and a SpatialKey into an S3 URI
@@ -54,12 +58,14 @@ object SaveToS3 {
     * @param rdd       An RDD of K, Byte-Array pairs (where the byte-arrays contains image data) to send to S3
     * @param putObjectModifier  Function that will be applied ot S3 PutObjectRequests, so that they can be modified (e.g. to change the ACL settings)
     * @param s3Maker   A function which returns an S3 Client (real or mock) into-which to save the data
+    * @param threads   Number of threads dedicated for the IO
     */
   def apply[K](
     rdd: RDD[(K, Array[Byte])],
     keyToUri: K => String,
     putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p },
-    s3Maker: () => S3Client = () => S3Client.DEFAULT
+    s3Maker: () => S3Client = () => S3Client.DEFAULT,
+    threads: Int = DefaultThreadCount
   ): Unit = {
     val keyToPrefix: K => (String, String) = key => {
       val uri = new URI(keyToUri(key))
@@ -86,7 +92,7 @@ object SaveToS3 {
           }
         }
 
-      val pool = Executors.newFixedThreadPool(8)
+      val pool = Executors.newFixedThreadPool(threads)
 
       import geotrellis.spark.util.TaskUtils._
       val write: PutObjectRequest => Process[Task, PutObjectResult] = { request =>
@@ -99,7 +105,7 @@ object SaveToS3 {
         }
       }
 
-      val results = nondeterminism.njoin(maxOpen = 8, maxQueued = 8) {
+      val results = nondeterminism.njoin(maxOpen = threads, maxQueued = threads) {
         requests map write
       }
 
