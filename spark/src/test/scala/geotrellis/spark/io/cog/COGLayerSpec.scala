@@ -17,7 +17,9 @@
 package geotrellis.spark.io.cog
 
 import geotrellis.vector._
+import geotrellis.vector.io._
 import geotrellis.spark._
+import geotrellis.spark.io._
 import geotrellis.spark.ingest._
 import geotrellis.spark.stitch._
 import geotrellis.spark.tiling._
@@ -33,6 +35,10 @@ import org.apache.hadoop.fs.Path
 import org.scalatest._
 
 import java.net.URI
+
+import geotrellis.spark.io.file.FileAttributeStore
+import geotrellis.spark.io.file.cog.{FileCOGLayerReader, FileCOGValueReader}
+
 import scala.collection.mutable.ListBuffer
 
 class COGLayerSpec extends FunSpec
@@ -108,5 +114,15 @@ class COGLayerSpec extends FunSpec
       //GeoTiffWriter.write(tiff.overviews(1), s"/tmp/${sfc}_1.tif", optimizedOrder = true)
       //GeoTiffWriter.write(tiff.overviews(2), s"/tmp/${sfc}_2.tif", optimizedOrder = true)
     }
+  }
+
+  it("nicez") {
+    import geotrellis.spark.io.file.cog._
+
+    val attributeStore = FileAttributeStore("/data/chatta-cogs-file")
+    lazy val reader = new FileCOGLayerReader(attributeStore, "/data/chatta-cogs-file")
+    lazy val tileReader = new FileCOGValueReader(attributeStore, "/data/chatta-cogs-file")
+
+    tileReader.reader[SpatialKey, Tile](LayerId("mask", 0)).read(SpatialKey(0, 0))
   }
 }

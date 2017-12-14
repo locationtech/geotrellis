@@ -10,7 +10,7 @@ import geotrellis.raster.prototype._
 import java.net.URI
 
 trait Implicits extends Serializable {
-  implicit val s3SinglebandCOGRDDReader: FileCOGRDDReader[Tile] =
+  implicit val fileSinglebandCOGRDDReader: FileCOGRDDReader[Tile] =
     new FileCOGRDDReader[Tile] {
       implicit val tileMergeMethods: Tile => TileMergeMethods[Tile] =
         tile => withTileMethods(tile)
@@ -71,7 +71,7 @@ trait Implicits extends Serializable {
       }
     }
 
-  implicit val s3MultibandCOGRDDReader: FileCOGRDDReader[MultibandTile] =
+  implicit val fileMultibandCOGRDDReader: FileCOGRDDReader[MultibandTile] =
     new FileCOGRDDReader[MultibandTile] {
       implicit val tileMergeMethods: MultibandTile => TileMergeMethods[MultibandTile] =
         implicitly[MultibandTile => TileMergeMethods[MultibandTile]]

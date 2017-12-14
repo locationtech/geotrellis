@@ -83,26 +83,29 @@ trait FileCOGRDDReader[V <: CellGrid] extends Serializable {
       .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
         partition flatMap { seq =>
           LayerReader.njoin[K, V](seq.toIterator, threads) { index: BigInt =>
-            val uri = new URI(s"file:///${keyPath(index)}.tiff")
-            val tiff = readTiff(uri, overviewIndex)
-            val rgb = sourceLayout.mapTransform(tiff.extent)
+            if (!new File(s"${keyPath(index)}.tiff").isFile) Vector()
+            else {
+              val uri = new URI(s"file://${keyPath(index)}.tiff")
+              val tiff = readTiff(uri, overviewIndex)
+              val rgb = sourceLayout.mapTransform(tiff.extent)
 
-            val gb = tiff.rasterExtent.gridBounds
-            val getGridBounds = getSegmentGridBounds(uri, overviewIndex)
+              val gb = tiff.rasterExtent.gridBounds
+              val getGridBounds = getSegmentGridBounds(uri, overviewIndex)
 
-            val map: Map[GridBounds, K] =
-              realQueryKeyBoundsRange.flatMap { key =>
-                val spatialKey = key.getComponent[SpatialKey]
-                val minCol = (spatialKey.col - rgb.colMin) * sourceLayout.tileLayout.tileCols
-                val minRow = (spatialKey.row - rgb.rowMin) * sourceLayout.tileLayout.tileRows
+              val map: Map[GridBounds, K] =
+                realQueryKeyBoundsRange.flatMap { key =>
+                  val spatialKey = key.getComponent[SpatialKey]
+                  val minCol = (spatialKey.col - rgb.colMin) * sourceLayout.tileLayout.tileCols
+                  val minRow = (spatialKey.row - rgb.rowMin) * sourceLayout.tileLayout.tileRows
 
-                if (minCol >= 0 && minRow >= 0 && minCol < tiff.cols && minRow < tiff.rows) {
-                  val currentGb = getGridBounds(minCol, minRow)
-                  gb.intersection(currentGb).map(gb => gb -> key)
-                } else None
-              }.toMap
+                  if (minCol >= 0 && minRow >= 0 && minCol < tiff.cols && minRow < tiff.rows) {
+                    val currentGb = getGridBounds(minCol, minRow)
+                    gb.intersection(currentGb).map(gb => gb -> key)
+                  } else None
+                }.toMap
 
-            tileTiff(tiff, map)
+              tileTiff(tiff, map)
+            }
           }
         }
       }
@@ -128,6 +131,8 @@ object FileCOGRDDReader {
       ).asInstanceOf[FileCOGRDDReader[V]]
 
   def getReaders(uri: URI): (ByteReader, Option[ByteReader]) = {
+    println(s"getReaders::")
+
     val path = uri.getPath
     val ovrPath = s"$path.ovr"
     val ovrPathExists = new File(ovrPath).isFile
@@ -135,8 +140,7 @@ object FileCOGRDDReader {
     val ovrReader: Option[ByteReader] =
       if (ovrPathExists) Some(Filesystem.toMappedByteBuffer(ovrPath)) else None
 
-    val reader: ByteReader = Filesystem.toMappedByteBuffer(ovrPath)
-
+    val reader: ByteReader = Filesystem.toMappedByteBuffer(path)
     reader -> ovrReader
   }
 }

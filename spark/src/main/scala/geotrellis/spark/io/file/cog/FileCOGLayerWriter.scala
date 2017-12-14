@@ -94,7 +94,7 @@ class FileCOGLayerWriter(
         val maxWidth = Index.digits(lastKeyIndex.toIndex(lastKeyIndex.keyBounds.maxKey))
         val keyPath = KeyPathGenerator(catalogPath, path, keyIndex, maxWidth)
 
-        tiff.geoTiff.write(keyPath(key), true)
+        tiff.geoTiff.write(s"${keyPath(key)}.tiff", true)
       }
     }
   }
