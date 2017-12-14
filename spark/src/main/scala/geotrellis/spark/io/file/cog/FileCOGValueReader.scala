@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.file.cog
 
+import java.io.File
+
 import geotrellis.raster._
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.spark._
@@ -25,7 +27,6 @@ import geotrellis.spark.io.file.KeyPathGenerator
 import geotrellis.spark.io.index._
 import geotrellis.spark.tiling.LayoutLevel
 import geotrellis.util._
-
 import spray.json._
 
 import scala.reflect.ClassTag
@@ -101,29 +102,32 @@ class FileCOGValueReader(
       val tiles =
         neighbourBaseKeys
           .flatMap { k =>
-            val uri = new URI(s"file:///${keyPath(k)}.tiff")
+            if (!new File(s"${keyPath(k)}.tiff").isFile) None
+            else {
+              val uri = new URI(s"file://${keyPath(k)}.tiff")
 
-            println(s"baseKey: $baseKey")
-            println(s"uri $k: $uri")
+              println(s"baseKey: $baseKey")
+              println(s"uri $k: $uri")
 
-            val tiff = tiffMethods.readTiff(uri, overviewIndex)
-            val rgb = layout.mapTransform(tiff.extent)
+              val tiff = tiffMethods.readTiff(uri, overviewIndex)
+              val rgb = layout.mapTransform(tiff.extent)
 
-            val gb = tiff.rasterExtent.gridBounds
-            val getGridBounds = tiffMethods.getSegmentGridBounds(uri, overviewIndex)
+              val gb = tiff.rasterExtent.gridBounds
+              val getGridBounds = tiffMethods.getSegmentGridBounds(uri, overviewIndex)
 
-            val tiffGridBounds = {
-              val spatialKey = key.getComponent[SpatialKey]
-              val minCol = (spatialKey.col - rgb.colMin) * layout.tileLayout.tileCols
-              val minRow = (spatialKey.row - rgb.rowMin) * layout.tileLayout.tileRows
+              val tiffGridBounds = {
+                val spatialKey = key.getComponent[SpatialKey]
+                val minCol = (spatialKey.col - rgb.colMin) * layout.tileLayout.tileCols
+                val minRow = (spatialKey.row - rgb.rowMin) * layout.tileLayout.tileRows
 
-              if (minCol >= 0 && minRow >= 0 && minCol < tiff.cols && minRow < tiff.rows) {
-                val currentGb = getGridBounds(minCol, minRow)
-                gb.intersection(currentGb)
-              } else None
+                if (minCol >= 0 && minRow >= 0 && minCol < tiff.cols && minRow < tiff.rows) {
+                  val currentGb = getGridBounds(minCol, minRow)
+                  gb.intersection(currentGb)
+                } else None
+              }
+
+              tiffGridBounds.map(tiffMethods.tileTiff(tiff, _))
             }
-
-            tiffGridBounds.map(tiffMethods.tileTiff(tiff, _))
           }
 
       tiles.reduce(_ merge _)
