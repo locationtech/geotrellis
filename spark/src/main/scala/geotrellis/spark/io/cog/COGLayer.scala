@@ -91,61 +91,62 @@ object COGLayer {
     options: GeoTiffOptions,
     metadataAccumulator: TileLayerMetadataMapAccumulator[K]
    )(implicit tc: Iterable[(K, V)] => GeoTiffSegmentConstructMethods[K, V]): List[ContextGeoTiff[K, V]] = {
-    val nextLayoutLevel @ LayoutLevel(nextZoom, nextLayout) = layoutScheme.zoomOut(layoutLevel)
-
-    if(nextZoom >= endZoom) {
-      val list: List[(K, V)] =
-        itr
-          .map { case (key, tile) =>
-            val extent: Extent = key.getComponent[SpatialKey].extent(layoutLevel.layout)
-            val newSpatialKey = nextLayout.mapTransform(extent.center)
-            (key.setComponent(newSpatialKey), (key, tile))
-          }
-          .groupBy(_._1)
-          .map { case (newKey, (nseq: Seq[(K, (K, V))])) =>
-            val seq = nseq.map(_._2)
-            val newExtent = newKey.getComponent[SpatialKey].extent(nextLayout)
-            val newTile = seq.head._2.prototype(nextLayout.tileLayout.tileCols, nextLayout.tileLayout.tileRows)
-
-            for ((oldKey, tile) <- seq) {
-              val oldExtent = oldKey.getComponent[SpatialKey].extent(layoutLevel.layout)
-              newTile.merge(newExtent, oldExtent, tile, NearestNeighbor)
+    if(layoutLevel.zoom > 0) {
+      val nextLayoutLevel@LayoutLevel(nextZoom, nextLayout) = layoutScheme.zoomOut(layoutLevel)
+      if (nextZoom >= endZoom) {
+        val list: List[(K, V)] =
+          itr
+            .map { case (key, tile) =>
+              val extent: Extent = key.getComponent[SpatialKey].extent(layoutLevel.layout)
+              val newSpatialKey = nextLayout.mapTransform(extent.center)
+              (key.setComponent(newSpatialKey), (key, tile))
             }
-            (newKey, newTile: V)
-          }.toList
+            .groupBy(_._1)
+            .map { case (newKey, (nseq: Seq[(K, (K, V))])) =>
+              val seq = nseq.map(_._2)
+              val newExtent = newKey.getComponent[SpatialKey].extent(nextLayout)
+              val newTile = seq.head._2.prototype(nextLayout.tileLayout.tileCols, nextLayout.tileLayout.tileRows)
 
-      val gridBounds = list.gridBounds
-      val keyBounds = {
-        val GridBounds(colMin, rowMin, colMax, rowMax) = gridBounds
-        val KeyBounds(minKey, maxKey) =
-          md.bounds match {
-            case kb: KeyBounds[K] => kb
-            case EmptyBounds => throw new Exception("Empty RDD, can't generate a COG Layer.")
-          }
-        KeyBounds(
-          minKey.setComponent[SpatialKey](SpatialKey(colMin, rowMin)),
-          maxKey.setComponent[SpatialKey](SpatialKey(colMax, rowMax))
+              for ((oldKey, tile) <- seq) {
+                val oldExtent = oldKey.getComponent[SpatialKey].extent(layoutLevel.layout)
+                newTile.merge(newExtent, oldExtent, tile, NearestNeighbor)
+              }
+              (newKey, newTile: V)
+            }.toList
+
+        val gridBounds = list.gridBounds
+        val keyBounds = {
+          val GridBounds(colMin, rowMin, colMax, rowMax) = gridBounds
+          val KeyBounds(minKey, maxKey) =
+            md.bounds match {
+              case kb: KeyBounds[K] => kb
+              case EmptyBounds => throw new Exception("Empty RDD, can't generate a COG Layer.")
+            }
+          KeyBounds(
+            minKey.setComponent[SpatialKey](SpatialKey(colMin, rowMin)),
+            maxKey.setComponent[SpatialKey](SpatialKey(colMax, rowMax))
+          )
+        }
+
+        val nextMd = TileLayerMetadata[K](
+          cellType = md.cellType,
+          layout = nextLayout,
+          extent = md.extent,
+          crs = md.crs,
+          bounds = keyBounds
         )
-      }
 
-      val nextMd = TileLayerMetadata[K](
-        cellType = md.cellType,
-        layout   = nextLayout,
-        extent   = md.extent,
-        crs      = md.crs,
-        bounds   = keyBounds
-      )
+        metadataAccumulator.add(nextZoom -> nextMd)
 
-      metadataAccumulator.add(nextZoom -> nextMd)
+        val ifdLayer: GeoTiff[V] =
+          list.toGeoTiff(nextLayout, nextMd, options.copy(subfileType = Some(ReducedImage)))
 
-      val ifdLayer: GeoTiff[V] =
-        list.toGeoTiff(nextLayout, nextMd, options.copy(subfileType = Some(ReducedImage)))
+        val ifdContextLayer =
+          ContextGeoTiff(ifdLayer, nextMd, nextZoom, layoutScheme, None, Nil)
 
-      val ifdContextLayer =
-        ContextGeoTiff(ifdLayer, nextMd, nextZoom, layoutScheme, None, Nil)
-
-      ifdContextLayer :: pyramidUpWithMetadata(list, endZoom, nextLayoutLevel, layoutScheme, nextMd, options, metadataAccumulator)
-    } else List()
+        ifdContextLayer :: pyramidUpWithMetadata(list, endZoom, nextLayoutLevel, layoutScheme, nextMd, options, metadataAccumulator)
+      } else Nil
+    } else Nil
   }
 
   def apply[
@@ -398,33 +399,35 @@ object COGLayer {
   ): List[(Int, KeyBounds[K])] = {
     val KeyBounds(minKey, maxKey) = keyBounds
     val LayoutLevel(_, layout) = layoutLevel
-    val nextLayoutLevel @ LayoutLevel(nextZoom, nextLayout) = layoutScheme.zoomOut(layoutLevel)
+    if (layoutLevel.zoom > 0) {
+      val nextLayoutLevel@LayoutLevel(nextZoom, nextLayout) = layoutScheme.zoomOut(layoutLevel)
 
-    if (nextZoom < endZoom) Nil
-    else {
-      val extent = layout.extent
-      val sourceRe = RasterExtent(extent, layout.layoutCols, layout.layoutRows)
-      val targetRe = RasterExtent(extent, nextLayout.layoutCols, nextLayout.layoutRows)
+      if (nextZoom < endZoom) Nil
+      else {
+        val extent = layout.extent
+        val sourceRe = RasterExtent(extent, layout.layoutCols, layout.layoutRows)
+        val targetRe = RasterExtent(extent, nextLayout.layoutCols, nextLayout.layoutRows)
 
-      val minSpatialKey = minKey.getComponent[SpatialKey]
-      val (minCol, minRow) = {
-        val (x, y) = sourceRe.gridToMap(minSpatialKey.col, minSpatialKey.row)
-        targetRe.mapToGrid(x, y)
+        val minSpatialKey = minKey.getComponent[SpatialKey]
+        val (minCol, minRow) = {
+          val (x, y) = sourceRe.gridToMap(minSpatialKey.col, minSpatialKey.row)
+          targetRe.mapToGrid(x, y)
+        }
+
+        val maxSpatialKey = maxKey.getComponent[SpatialKey]
+        val (maxCol, maxRow) = {
+          val (x, y) = sourceRe.gridToMap(maxSpatialKey.col, maxSpatialKey.row)
+          targetRe.mapToGrid(x, y)
+        }
+
+        val kb =
+          KeyBounds(
+            minKey.setComponent(SpatialKey(minCol, minRow)),
+            maxKey.setComponent(SpatialKey(maxCol, maxRow))
+          )
+
+        (nextZoom, kb) :: transformKeyBounds(kb, nextLayoutLevel, endZoom, layoutScheme)
       }
-
-      val maxSpatialKey = maxKey.getComponent[SpatialKey]
-      val (maxCol, maxRow) = {
-        val (x, y) = sourceRe.gridToMap(maxSpatialKey.col, maxSpatialKey.row)
-        targetRe.mapToGrid(x, y)
-      }
-
-      val kb =
-        KeyBounds(
-          minKey.setComponent(SpatialKey(minCol, minRow)),
-          maxKey.setComponent(SpatialKey(maxCol, maxRow))
-        )
-
-      (nextZoom, kb) :: transformKeyBounds(kb, nextLayoutLevel, endZoom, layoutScheme)
-    }
+    } else Nil
   }
 }

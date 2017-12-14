@@ -14,46 +14,43 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.s3.cog
+package geotrellis.spark.io.file.cog
 
 import geotrellis.raster._
+import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.spark._
-import geotrellis.spark.tiling._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
+import geotrellis.spark.io.file.KeyPathGenerator
 import geotrellis.spark.io.index._
-import geotrellis.spark.io.s3.S3Client
 import geotrellis.spark.tiling.LayoutLevel
-import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.util._
+
 import spray.json._
-import com.amazonaws.services.s3.model.AmazonS3Exception
 
 import scala.reflect.ClassTag
 import java.net.URI
 
-class S3COGValueReader(
-  val attributeStore: AttributeStore
+class FileCOGValueReader(
+  val attributeStore: AttributeStore,
+  catalogPath: String
 ) extends OverzoomingCOGValueReader {
-
-  def s3Client: S3Client = S3Client.DEFAULT
 
   def reader[
     K: JsonFormat: SpatialComponent: ClassTag,
     V <: CellGrid: TiffMethods: ? => TileMergeMethods[V]
   ](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
-    val header = attributeStore.readHeader[S3COGLayerHeader](layerId)
+    val header = attributeStore.readHeader[FileCOGLayerHeader](layerId)
     val keyIndex = attributeStore.readKeyIndex[K](layerId)
     val writerSchema = attributeStore.readSchema(layerId)
 
     val baseLayerId = layerId.copy(zoom = header.zoomRanges._1)
 
-    val baseHeader = attributeStore.readHeader[S3COGLayerHeader](baseLayerId)
+    val baseHeader = attributeStore.readHeader[FileCOGLayerHeader](baseLayerId)
     val baseMetadata = attributeStore.readMetadata[TileLayerMetadata[K]](baseLayerId)
     val baseKeyIndex = attributeStore.readKeyIndex[K](baseLayerId)
 
-    val bucket = header.bucket
-    val prefix = header.key
+    val path = header.path
 
     val tiffMethods = implicitly[TiffMethods[V]]
     val overviewIndex = header.zoomRanges._2 - layerId.zoom - 1
@@ -92,57 +89,46 @@ class S3COGValueReader(
     }
 
     def read(key: K): V = {
-      val _s3Client = s3Client
       val baseKey = transformKey(key)
 
       val neighbourBaseKeys = populateKeys(key)
 
       val maxWidth = Index.digits(baseKeyIndex.toIndex(baseKeyIndex.keyBounds.maxKey))
-      val path = (k: K) => s"$prefix/${Index.encode(baseKeyIndex.toIndex(k), maxWidth)}"
+      val keyPath = KeyPathGenerator(catalogPath, path, keyIndex, maxWidth)
 
-      println(s"$baseKey path(transformKey(key)): ${path(transformKey(key))}")
+      println(s"$baseKey path(transformKey(key)): ${keyPath(transformKey(key))}")
 
-      try {
-        val tiles =
-          neighbourBaseKeys
-            .flatMap { k =>
-              val uri = new URI(s"s3://$bucket/${path(k)}.tiff")
+      val tiles =
+        neighbourBaseKeys
+          .flatMap { k =>
+            val uri = new URI(s"file:///${keyPath(k)}.tiff")
 
-              println(s"baseKey: $baseKey")
-              println(s"uri $k: $uri")
+            println(s"baseKey: $baseKey")
+            println(s"uri $k: $uri")
 
-              if (_s3Client.doesObjectExist(bucket, s"${path(k)}.tiff")) {
-                val tiff = tiffMethods.readTiff(uri, overviewIndex)
-                val rgb = layout.mapTransform(tiff.extent)
+            val tiff = tiffMethods.readTiff(uri, overviewIndex)
+            val rgb = layout.mapTransform(tiff.extent)
 
-                val gb = tiff.rasterExtent.gridBounds
-                val getGridBounds = tiffMethods.getSegmentGridBounds(uri, overviewIndex)
+            val gb = tiff.rasterExtent.gridBounds
+            val getGridBounds = tiffMethods.getSegmentGridBounds(uri, overviewIndex)
 
-                val tiffGridBounds = {
-                  val spatialKey = key.getComponent[SpatialKey]
-                  val minCol = (spatialKey.col - rgb.colMin) * layout.tileLayout.tileCols
-                  val minRow = (spatialKey.row - rgb.rowMin) * layout.tileLayout.tileRows
+            val tiffGridBounds = {
+              val spatialKey = key.getComponent[SpatialKey]
+              val minCol = (spatialKey.col - rgb.colMin) * layout.tileLayout.tileCols
+              val minRow = (spatialKey.row - rgb.rowMin) * layout.tileLayout.tileRows
 
-                  if (minCol >= 0 && minRow >= 0 && minCol < tiff.cols && minRow < tiff.rows) {
-                    val currentGb = getGridBounds(minCol, minRow)
-                    gb.intersection(currentGb)
-                  } else None
-                }
-
-                tiffGridBounds.map(tiffMethods.tileTiff(tiff, _))
+              if (minCol >= 0 && minRow >= 0 && minCol < tiff.cols && minRow < tiff.rows) {
+                val currentGb = getGridBounds(minCol, minRow)
+                gb.intersection(currentGb)
               } else None
             }
 
-        tiles.reduce(_ merge _)
-      } catch {
-        case e: AmazonS3Exception if e.getStatusCode == 404 =>
-          throw new ValueNotFoundError(key, layerId)
-      }
+            tiffGridBounds.map(tiffMethods.tileTiff(tiff, _))
+          }
+
+      tiles.reduce(_ merge _)
     }
   }
 }
 
-object S3COGValueReader {
-  def apply(attributeStore: AttributeStore): S3COGValueReader =
-    new S3COGValueReader(attributeStore)
-}
+
