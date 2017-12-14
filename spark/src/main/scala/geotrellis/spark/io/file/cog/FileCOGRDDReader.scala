@@ -131,8 +131,6 @@ object FileCOGRDDReader {
       ).asInstanceOf[FileCOGRDDReader[V]]
 
   def getReaders(uri: URI): (ByteReader, Option[ByteReader]) = {
-    println(s"getReaders::")
-
     val path = uri.getPath
     val ovrPath = s"$path.ovr"
     val ovrPathExists = new File(ovrPath).isFile
