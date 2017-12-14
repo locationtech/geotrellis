@@ -1,6 +1,6 @@
 package geotrellis.spark.io.cog.vrt
 
-import geotrellis.raster.{GridBounds, RasterExtent}
+import geotrellis.raster.{CellType, GridBounds, RasterExtent}
 import geotrellis.spark.{EmptyBounds, KeyBounds, SpatialComponent, TileLayerMetadata}
 import geotrellis.vector.Extent
 
@@ -69,6 +69,9 @@ case class VRT[K: SpatialComponent](base: TileLayerMetadata[K], bands: List[Elem
     (xoff, yoff, xsize, ysize)
   }
 
+  def cellTypeToString(ct: CellType): String =
+    ct.getClass.getName.split("\\$").last.split("CellType").head.split("\\.").last.split("U").last
+
   // absolue path
   def simpleSource(path: String, band: Int)(xSize: Int, ySize: Int)(extent: Extent): (Int, Elem) = {
     val (dstXOff, dstYOff, dstXSize, dstYSize) = extentToOffsets(extent)
@@ -76,7 +79,7 @@ case class VRT[K: SpatialComponent](base: TileLayerMetadata[K], bands: List[Elem
       <SimpleSource>
         <SourceFilename relativeToVRT="0">{path}</SourceFilename>
         <SourceBand>{band.toString}</SourceBand>
-        <SourceProperties RasterXSize={xSize.toString} RasterYSize={ySize.toString} DataType={base.cellType.toString.capitalize} BlockXSize={base.layout.tileCols.toString} BlockYSize={base.layout.tileRows.toString}/>
+        <SourceProperties RasterXSize={xSize.toString} RasterYSize={ySize.toString} DataType={cellTypeToString(base.cellType)} BlockXSize={base.layout.tileCols.toString} BlockYSize={base.layout.tileRows.toString}/>
         <SrcRect xOff="0" yOff="0" xSize={xSize.toString} ySize={ySize.toString}/>
         <DstRect xOff={dstXOff.toString} yOff={dstYOff.toString} xSize={dstXSize.toString} ySize={dstYSize.toString}/>
       </SimpleSource>
@@ -89,7 +92,7 @@ case class VRT[K: SpatialComponent](base: TileLayerMetadata[K], bands: List[Elem
       .groupBy(_._1)
       .toList
       .map { case (band, list) =>
-        <VRTRasterBand dataType={base.cellType.toString.capitalize} band={band.toString}>
+        <VRTRasterBand dataType={cellTypeToString(base.cellType)} band={band.toString}>
           {list.map(_._2)}
         </VRTRasterBand>
       }
