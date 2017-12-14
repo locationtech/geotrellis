@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.s3.cog
+package geotrellis.spark.io.file.cog
 
-import geotrellis.raster.{CellGrid, GridBounds, RasterExtent}
+import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.s3._
 import geotrellis.spark.io.cog._
+import geotrellis.spark.io.file.KeyPathGenerator
 import geotrellis.spark.io.index._
 import geotrellis.spark.tiling.LayoutLevel
 import geotrellis.util._
-import geotrellis.vector.Extent
+
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
 
@@ -35,7 +35,7 @@ import scala.reflect.ClassTag
  *
  * @param attributeStore  AttributeStore that contains metadata for corresponding LayerId
  */
-class S3COGLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkContext)
+class FileCOGLayerReader(val attributeStore: AttributeStore, catalogPath: String)(implicit sc: SparkContext)
   extends FilteringCOGLayerReader[LayerId] with LazyLogging {
 
   val defaultNumPartitions: Int = sc.defaultParallelism
@@ -45,27 +45,26 @@ class S3COGLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkCon
     V <: CellGrid: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
-    val rddReader = S3COGRDDReader.fromRegistry[V]
+    val rddReader = FileCOGRDDReader.fromRegistry[V]
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val LayerAttributes(header, metadata, _, _) = try {
-      attributeStore.readLayerAttributes[S3COGLayerHeader, M, K](id)
+      attributeStore.readLayerAttributes[FileCOGLayerHeader, M, K](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
 
     val LayerAttributes(_, baseMetadata, baseKeyIndex, _) = try {
-      attributeStore.readLayerAttributes[S3COGLayerHeader, M, K](id.copy(zoom = header.zoomRanges._1))
+      attributeStore.readLayerAttributes[FileCOGLayerHeader, M, K](id.copy(zoom = header.zoomRanges._1))
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
 
-    val bucket = header.bucket
-    val prefix = header.key
+    val layerPath = header.path
 
     val queryKeyBounds: Seq[KeyBounds[K]] = tileQuery(metadata)
     val maxWidth = Index.digits(baseKeyIndex.toIndex(baseKeyIndex.keyBounds.maxKey))
-    val keyPath = (index: BigInt) => makePath(prefix, Index.encode(index, maxWidth))
+    val keyPath = KeyPathGenerator(catalogPath, layerPath, maxWidth)
     val decompose = (bounds: KeyBounds[K]) => baseKeyIndex.indexRanges(bounds)
     val layoutScheme = header.layoutScheme
 
@@ -112,7 +111,6 @@ class S3COGLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkCon
     val overviewIndex = header.zoomRanges._2 - id.zoom - 1
 
     val rdd = rddReader.read[K](
-      bucket             = bucket,
       keyPath            = keyPath,
       baseQueryKeyBounds = baseQueryKeyBounds,
       realQueryKeyBounds = queryKeyBounds,
@@ -126,10 +124,4 @@ class S3COGLayerReader(val attributeStore: AttributeStore)(implicit sc: SparkCon
   }
 }
 
-object S3COGLayerReader {
-  def apply(attributeStore: AttributeStore)(implicit sc: SparkContext): S3COGLayerReader =
-    new S3COGLayerReader(attributeStore)
 
-  def apply(bucket: String, prefix: String)(implicit sc: SparkContext): S3COGLayerReader =
-    apply(new S3AttributeStore(bucket, prefix))
-}

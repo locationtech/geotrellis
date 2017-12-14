@@ -20,8 +20,10 @@ import geotrellis.proj4._
 import geotrellis.raster.Tile
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
+import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.reproject._
 import geotrellis.spark.ingest._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.s3._
@@ -31,12 +33,14 @@ import geotrellis.spark.io.index.zcurve.ZSpatialKeyIndex
 import geotrellis.spark.testkit._
 import geotrellis.spark.tiling._
 import geotrellis.vector._
+
 import org.apache.hadoop.fs.Path
 import org.scalatest._
 
 import scala.collection.mutable.ListBuffer
 import java.nio.file.Paths
 
+import geotrellis.raster.resample.NearestNeighbor
 import geotrellis.spark.io.cog.vrt.VRT
 
 class COGLayerSpec extends FunSpec
@@ -181,6 +185,34 @@ class COGLayerSpec extends FunSpec
       val cogs = COGLayer.applyWithMetadata(layer)(zoom, 10, layoutScheme)
 
       writer.write(cogs)(LayerId("test10", 0), keyIndexMethod)
+    }
+
+    it("should write chatta GeoTrellis COGLayer") {
+      val layoutScheme = ZoomedLayoutScheme(LatLng, 256)
+
+      val sourceTiles =
+        sc.hadoopGeoTiffRDD(
+          new Path(s"file:///data/arg_wm/DevelopedLand.tiff")
+        )
+
+      val (_, md) = sourceTiles.collectMetadata[SpatialKey](FloatingLayoutScheme(256))
+
+      println(s"md.crs.epsgCode: ${md.crs.epsgCode}")
+
+      val tiled = ContextRDD(sourceTiles.tileToLayout[SpatialKey](md, NearestNeighbor), md)
+
+      val LayoutLevel(zoom, layoutDefinition) = layoutScheme.levelForZoom(13)
+      val layer =
+        tiled
+          .reproject(
+            LatLng, layoutDefinition,
+            RasterReprojectOptions(method = NearestNeighbor, targetCellSize = Some(layoutDefinition.cellSize))
+          )._2
+
+      val tiff =
+        GeoTiff(layer.stitch, layer.metadata.mapTransform(layer.metadata.gridBounds), LatLng)
+
+      GeoTiffWriter.write(tiff, "/tmp/testsChatta.tif", optimizedOrder = true)
     }
 
     it("should read split GeoTrellis COGLayer") {
