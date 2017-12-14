@@ -139,7 +139,7 @@ class S3COGLayerWriter(
   ](cogs: RDD[(K, ContextGeoTiff[K, V])])(id: LayerId, keyIndexMethod: KeyIndexMethod[K], vrtOnly: Boolean = false): VRT[K] = {
     val sc = cogs.sparkContext
     val vrts = sc.collectionAccumulator[VRT[K]](s"vrt_$id")
-    val samplesAccumulator = sc.collectionAccumulator[(Int, Elem)](s"vrt_samples_$id")
+    val samplesAccumulator = sc.collectionAccumulator[(String, (Int, Elem))](s"vrt_samples_$id")
 
     // schema for compatability purposes
     val schema = KryoWrapper(KeyValueRecordCodec[SpatialKey, Tile].schema)
@@ -230,11 +230,11 @@ class S3COGLayerWriter(
 
             val maxWidth = Index.digits(lastKeyIndex.toIndex(lastKeyIndex.keyBounds.maxKey))
             val keyPath = (key: K) => makePath(prefix, Index.encode(lastKeyIndex.toIndex(key), maxWidth))
-
+            val keyIndexPath = (key: K) => Index.encode(lastKeyIndex.toIndex(key), maxWidth)
 
             // collect bands information
-            val samples: List[(Int, Elem)] = (0 until bandsCount).map { b =>
-              vrt.simpleSource(s"s3://${keyPath(key)}.tiff", b)(geoTiff.cols, geoTiff.rows)(geoTiff.extent)
+            val samples: List[(String, (Int, Elem))] = (0 until bandsCount).map { b =>
+              keyIndexPath(key) -> vrt.simpleSource(s"s3://${keyPath(key)}.tiff", b + 1)(geoTiff.cols, geoTiff.rows)(geoTiff.extent)
             }.toList
             samples.foreach(samplesAccumulator.add)
 
@@ -269,6 +269,6 @@ class S3COGLayerWriter(
 
     // at least one vrt builder should be avail, otherwise the dataset is empty
     val vrt = vrts.value.get(0)
-    vrt.fromSimpleSources(samplesAccumulator.value.asScala.toList)
+    vrt.fromSimpleSources(samplesAccumulator.value.asScala.toList.sortBy(_._1.toLong).map(_._2))
   }
 }
