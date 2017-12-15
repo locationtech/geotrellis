@@ -9,7 +9,7 @@ import geotrellis.raster.io.geotiff.{GeoTiff, GeoTiffMultibandTile, GeoTiffTile}
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 
-/*trait Implicits extends Serializable {
+trait Implicits extends Serializable {
   implicit val fileSinglebandCOGRDDReader: HadoopCOGRDDReader[Tile] =
     new HadoopCOGRDDReader[Tile] {
       implicit val tileMergeMethods: Tile => TileMergeMethods[Tile] =
@@ -131,4 +131,4 @@ import geotrellis.raster.prototype._
         func
       }
     }
-}*/
+}
