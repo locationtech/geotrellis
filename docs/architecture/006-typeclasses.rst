@@ -97,17 +97,131 @@ mechanisms (``A <: FooBar``). Typeclasses bring together types that otherwise sh
 no supertype/subtype relationship, so laws are what guarantee sane behaviour now
 and in the future.
 
+Usage
+-----
+
+Custom Types and Typeclasses
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+First we define our typeclass:
+
+.. code-block:: scala
+
+   package geotrellis
+
+   import simulacrum._
+
+   /**
+    * LAW: Associativity
+    * (a <> b) <> c == a <> (b <> c)
+    */
+   @typeclass trait Semigroup[A] {
+     @op("<>") def combine(x: A, y: A): A
+   }
+
+Now we define an instance. This is always done in the companion object of the associated type:
+
+.. code-block:: scala
+
+   package geotrellis.foobar
+
+   case class Pair(a: Int, b: Int)
+
+   object Pair {
+     implicit val pairSemi: Semigroup[Pair] = new Semigroup[Pair] {
+       def combine(x: Pair, y: Pair): Pair = Pair(x.a + y.a, x.b + y.b)
+     }
+   }
+
+Then "forward" the method injection mechanisms through a top-level import:
+
+.. code-block:: scala
+
+   package object geotrellis extends Semigroup.ToSemigroupOps
+
+And then the following will work:
+
+.. code-block:: scala
+
+   scala> import geotrellis._
+   scala> import geotrellis.foobar.Pair
+
+   scala> Pair(1, 2) <> Pair(3, 4)
+   res0: Pair = Pair(4, 6)
+
+Instances for Stdlib Types
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sometimes you want to provide an instance for an existing type whose
+companion object you don't have access to, say ``scala.collection.immutable.List``.
+Consider how to write an instance of ``Layer`` for ``List``:
+
+.. code-block:: scala
+
+   package geotrellis
+
+   /**
+    * LAW: Blah blah something about Layer keys
+    */
+   @typeclass trait Layer[F[_]] {
+     def stitch[K, V: Semigroup](layer: F[(K, V)]): V
+     // ... other functions
+   }
+
+Where to put the instance? One option is in a neatly labelled object:
+
+.. code-block:: scala
+
+   package geotrellis
+
+   object StdInstances {
+     implicit val listLayer: Layer[List] = new Layer[List] {
+       def stitch[K, V: Semigroup](layer: List[(K, V)]): V = ???  // super smart implementation
+       // ... other functions
+     }
+   }
+
+and then "forward" as usual:
+
+.. code-block:: scala
+
+   package object geotrellis extends Semigroup.ToSemigroupOps with StdInstances
+
+The other option being to write them directly in the ``package object``:
+
+.. code-block:: scala
+
+   package object geotrellis extends Semigroup.ToSemigroupOps {
+     implicit val listLayer: Layer[List] = new Layer[List] {
+       def stitch[K, V: Semigroup](layer: List[(K, V)]): V = ???  // super smart implementation
+       // ... other functions
+     }
+   }
+
 Best Practices
 --------------
 
-Try to find the minimal set of operations and laws that describe the fundamentals.
-No orphans!!!!!
-Scaladocs (i.e. where to look for instances, etc). Scala has no "reverse instance lookup"
-like Haskell.
-Mention laws in typeclass docstrings.
+- **Minimalism**: Try to find the minimal set of operations and laws that describe the fundamentals.
+  We need not overcomplicate each typeclass - in fact, we can break more complex behaviour
+  into child typeclasses, forming a hierarchy (like ``Semigroup`` and ``Monoid``).
+- **No Orphans**: Always write typeclass instances in the companion object of
+  the associated type. *Not*
+  doing so is called writing "Orphan Instances", which is an abyss of import confusion
+  and developer pain.
+- **Law Clarity**: State the typeclass's laws in its docstrings, and verify each instance with unit tests.
+- **Discovery**: In rendered Haskell docs, a type's typeclass instances are very visible:
 
-Usage
------
+.. figure:: images/instances1.png
+
+And "reverse lookup" is also possible. For any given typeclass, we can see what
+types implement instances for it:
+
+.. figure:: images/instances2.png
+
+Unfortunately in Scala we can only achieve the former. So, when trying to discover
+what a type can "do", check its companion object for the typeclass instances it
+implements. Dev/user chin-scratchers like "Can I reproject this thing?" should
+become easily answerable.
 
 Proposed Typeclasses
 --------------------
