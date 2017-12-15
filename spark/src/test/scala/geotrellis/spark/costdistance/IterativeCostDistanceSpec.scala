@@ -31,7 +31,7 @@ class IterativeCostDistanceSpec extends FunSpec
     with TestEnvironment {
 
   val rdd1 = {
-    val tile = IntArrayTile(Array.fill[Int](25)(1), 5, 5)
+    val tile = MultibandTile(IntArrayTile(Array.fill[Int](25)(1), 5, 5))
     val skey = SpatialKey(0, 0)
     val extent = Extent(0, 0, 5, 5)
     val gridExtent = GridExtent(extent, 1, 1) // 5×5 pixels
@@ -43,7 +43,7 @@ class IterativeCostDistanceSpec extends FunSpec
   }
 
   val rdd2 = {
-    val tile = IntArrayTile(Array.fill[Int](25)(1), 5, 5)
+    val tile = MultibandTile(IntArrayTile(Array.fill[Int](25)(1), 5, 5))
     val extent = Extent(0, 0, 10, 5)
     val gridExtent = GridExtent(extent, 1, 1) // 10×5 pixels
     val layoutDefinition = LayoutDefinition(gridExtent, 10, 5)
@@ -54,7 +54,7 @@ class IterativeCostDistanceSpec extends FunSpec
   }
 
   val rdd3 = {
-    val tile = IntArrayTile(Array.fill[Int](25)(1), 5, 5)
+    val tile = MultibandTile(IntArrayTile(Array.fill[Int](25)(1), 5, 5))
     val extent = Extent(0, 0, 5, 10)
     val gridExtent = GridExtent(extent, 1, 1) // 5×10 pixels
     val layoutDefinition = LayoutDefinition(gridExtent, 5, 10)
