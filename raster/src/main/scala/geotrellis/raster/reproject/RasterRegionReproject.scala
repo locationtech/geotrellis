@@ -3,7 +3,7 @@ package geotrellis.raster.reproject
 import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.raster.rasterize._
-import geotrellis.vector.Polygon
+import geotrellis.vector.{Geometry, GeometryCollection, Line, MultiLine, MultiPoint, Point, Polygon}
 import geotrellis.proj4._
 
 import spire.syntax.cfor._
@@ -24,23 +24,87 @@ trait RasterRegionReproject[T <: CellGrid] extends Serializable {
 }
 
 object RasterRegionReproject {
+  def rowCoords(destRegion: Polygon, destRasterExtent: RasterExtent, toSrcCrs: Transform): Int => (Array[Int], Array[Double], Array[Double]) = {
+    val extent = destRasterExtent.extent
+    val rowTransform = RowTransform.approximate(toSrcCrs, 0.125)
+
+    def scanlineCols(xmin: Double, xmax: Double): (Array[Int], Array[Double]) = {
+      val x0 = ((xmin - extent.xmin) / destRasterExtent.cellwidth + 0.5 - 1e-8).toInt
+      val x1 = ((xmax - extent.xmin) / destRasterExtent.cellwidth + 0.5).toInt - 1
+      val locations = Array.ofDim[Int](x1 - x0 + 1)
+      val result = Array.ofDim[Double](x1 - x0 + 1)
+      cfor(x0)(_ <= x1, _ + 1){ i =>
+        locations(i - x0) = i
+        result(i - x0) = (i + 0.5)* destRasterExtent.cellwidth + extent.xmin
+      }
+      (locations, result)
+    }
+
+    { i: Int =>
+      if (i >= 0 && i < destRasterExtent.rows) {
+        val scanline = Line(destRasterExtent.gridToMap(0, i), destRasterExtent.gridToMap(destRasterExtent.cols - 1, i))
+        val chunks = scanline.intersection(destRegion).toGeometry match {
+          case None => Array.empty[Geometry]
+          case Some(g) =>
+            if (g.isInstanceOf[GeometryCollection])
+              g.asInstanceOf[GeometryCollection].geometries.toArray
+            else if (g.isInstanceOf[Line])
+              Array(g.asInstanceOf[Line])
+            else if (g.isInstanceOf[Point])
+              Array(g.asInstanceOf[Point])
+            else if (g.isInstanceOf[MultiLine])
+              g.asInstanceOf[MultiLine].lines
+            else if (g.isInstanceOf[MultiPoint])
+              g.asInstanceOf[MultiPoint].points
+            else
+              throw new IllegalStateException("Line/polygon intersection may only produce a set of Lines and Points")
+        }
+
+        (for (chunk <- chunks) yield {
+          chunk match {
+            case l: Line =>
+              val (pxarr, xarr) = scanlineCols(l.head.x, l.last.x)
+              val yarr = Array.fill[Double](xarr.size)(destRasterExtent.gridRowToMap(i))
+              val xres = Array.ofDim[Double](xarr.size)
+              val yres = Array.ofDim[Double](xarr.size)
+
+              rowTransform(xarr, yarr, xres, yres)
+
+              (pxarr, xres, yres)
+            case p: Point =>
+              val (x, y) = toSrcCrs(p.x, p.y)
+              (Array(destRasterExtent.mapXToGrid(p.x)), Array(x), Array(y))
+            case g: Geometry =>
+              throw new IllegalStateException("Line-Polygon intersection cannot produce geometries that are not Points or Lines")
+            }
+        }).reduce{ (a1, a2) => {
+          val (px1, x1, y1) = a1
+          val (px2, x2, y2) = a2
+          (px1 ++ px2, x1 ++ x2, y1 ++ y2)
+        }}
+      } else
+        (Array.empty[Int], Array.empty[Double], Array.empty[Double])
+    }
+  }
+
   implicit val singlebandInstance = new RasterRegionReproject[Tile] {
     def regionReproject(raster: Raster[Tile], src: CRS, dest: CRS, rasterExtent: RasterExtent, region: Polygon, resampleMethod: ResampleMethod): Raster[Tile] = {
       val buffer = raster.tile.prototype(rasterExtent.cols, rasterExtent.rows)
       val trans = Proj4Transform(dest, src)
       val resampler = Resample.apply(resampleMethod, raster.tile, raster.extent, CellSize(raster.rasterExtent.cellwidth, raster.rasterExtent.cellheight))
 
-      if (raster.cellType.isFloatingPoint) {
-        Rasterizer.foreachCellByPolygon(region, rasterExtent) { (px, py) =>
-          val (x, y) = rasterExtent.gridToMap(px, py)
-          val (tx, ty) = trans(x, y)
-          buffer.setDouble(px, py, resampler.resampleDouble(tx, ty))
-        }
-      } else {
-        Rasterizer.foreachCellByPolygon(region, rasterExtent) { (px, py) =>
-          val (x, y) = rasterExtent.gridToMap(px, py)
-          val (tx, ty) = trans(x, y)
-          buffer.set(px, py, resampler.resample(tx, ty))
+      val rowcoords = rowCoords(region, rasterExtent, trans)
+
+      cfor(0)(_ < rasterExtent.rows, _ + 1){ i =>
+        val (pxs, xs, ys) = rowcoords(i)
+        if (raster.cellType.isFloatingPoint) {
+          cfor(0)(_ < xs.size, _ + 1){ s =>
+            buffer.setDouble(pxs(s), i, resampler.resampleDouble(xs(s), ys(s)))
+          }
+        } else {
+          cfor(0)(_ < xs.size, _ + 1){ s =>
+            buffer.set(pxs(s), i, resampler.resample(xs(s), ys(s)))
+          }
         }
       }
 
