@@ -76,6 +76,19 @@ object SimpleCostDistance {
   def apply(
     frictionTile: Tile,
     points: Seq[(Int, Int)],
+    maxCost: Double
+  ): DoubleArrayTile = {
+    apply(
+      MultibandTile(frictionTile),
+      points,
+      maxCost,
+      1
+    )
+  }
+
+  def apply(
+    frictionTile: Tile,
+    points: Seq[(Int, Int)],
     maxCost: Double,
     resolution: Double
   ): DoubleArrayTile = {

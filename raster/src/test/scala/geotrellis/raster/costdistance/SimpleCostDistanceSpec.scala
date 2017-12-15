@@ -156,7 +156,7 @@ class SimpleCostDistanceSpec extends FunSuite with RasterMatchers {
     }
 
     SimpleCostDistance.compute(
-      frictionTile, costTile,
+      MultibandTile(frictionTile), costTile,
       Double.PositiveInfinity, 1,
       q, edgeCb)
 
