@@ -17,7 +17,7 @@
 package geotrellis.spark.costdistance
 
 import geotrellis.spark._
-import geotrellis.raster.Tile
+import geotrellis.raster.{Tile, MultibandTile}
 
 import org.apache.spark.rdd.RDD
 
@@ -25,6 +25,7 @@ import org.apache.spark.rdd.RDD
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withRDDCostDistanceMethods[K: (? => SpatialKey), V: (? => Tile)](val self: RDD[(K, V)] with Metadata[TileLayerMetadata[K]])
+
+  implicit class withRDDCostDistanceMethods[K: (? => SpatialKey), V: (? => MultibandTile)](val self: RDD[(K, V)] with Metadata[TileLayerMetadata[K]])
       extends RDDCostDistanceMethods[K, V]
 }
