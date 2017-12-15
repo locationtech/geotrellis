@@ -16,28 +16,32 @@
 
 package geotrellis.spark.io.hadoop.cog
 
-import java.io.File
-import java.net.URI
-
-import com.typesafe.config.ConfigFactory
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.hadoop.{HdfsRangeReader, HdfsUtils}
 import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
 import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.util._
+
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import com.typesafe.config.ConfigFactory
+
+import java.io.File
+import java.net.URI
 
 import scala.reflect._
 
 /**
   * Generate VRTs to use from GDAL
   * */
-/*trait HadoopCOGRDDReader[V <: CellGrid] extends Serializable {
+trait HadoopCOGRDDReader[V <: CellGrid] extends Serializable {
   implicit val tileMergeMethods: V => TileMergeMethods[V]
   implicit val tilePrototypeMethods: V => TilePrototypeMethods[V]
 
@@ -112,8 +116,33 @@ import scala.reflect._
       .groupBy(_._1)
       .map { case (key, (seq: Iterable[(K, V)])) => key -> seq.map(_._2).reduce(_ merge _) }
   }
-}*/
+}
 
+object HadoopCOGRDDReader {
+  /** TODO: Think about it in a more generic fasion */
+  private final val HadoopCOGRDDReaderRegistry: Map[String, HadoopCOGRDDReader[_]] =
+    Map(
+      classTag[Tile].runtimeClass.getCanonicalName -> implicitly[HadoopCOGRDDReader[Tile]],
+      classTag[MultibandTile].runtimeClass.getCanonicalName -> implicitly[HadoopCOGRDDReader[MultibandTile]]
+    )
 
+  private [geotrellis] def fromRegistry[V <: CellGrid: ClassTag]: HadoopCOGRDDReader[V] =
+    HadoopCOGRDDReaderRegistry
+      .getOrElse(
+        classTag[V].runtimeClass.getCanonicalName,
+        throw new Exception(s"No HadoopCOGRDDReaderRegistry for the type ${classTag[V].runtimeClass.getCanonicalName}")
+      ).asInstanceOf[HadoopCOGRDDReader[V]]
 
+  def getReaders(uri: URI, conf: Configuration = new Configuration): (ByteReader, Option[ByteReader]) = {
+    val path = new Path(uri)
+    val ovrPath = new Path(s"${uri.toString}.ovr")
 
+    val ovrPathExists = HdfsUtils.pathExists(ovrPath, conf)
+
+    val ovrReader: Option[ByteReader] =
+      if (ovrPathExists) Some(StreamingByteReader(HdfsRangeReader(ovrPath, conf))) else None
+
+    val reader: ByteReader = StreamingByteReader(HdfsRangeReader(path, conf))
+    reader -> ovrReader
+  }
+}
