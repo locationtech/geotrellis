@@ -63,6 +63,7 @@ class S3COGValueReader(
     val LayoutLevel(_, baseLayout) = layoutScheme.levelForZoom(header.zoomRanges._1)
     val LayoutLevel(_, layout) = layoutScheme.levelForZoom(layerId.zoom)
 
+    // TODO: BUG!!!
     def populateKeys(thisKey: K): Set[K] = {
       val extent = baseMetadata.extent
       val sourceRe = RasterExtent(extent, layout.layoutCols, layout.layoutRows)

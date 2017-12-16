@@ -295,7 +295,7 @@ object COGLayer {
 
   // maxTiffSize = 64mb
   // use accumulator to collect metadata for attribetu store during layer writes
-  //
+  // instead of maxTiff size use cols rows
   def applyWithMetadataCalc[
     K: SpatialComponent: Boundable: Ordering: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]
