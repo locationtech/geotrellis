@@ -16,8 +16,6 @@
 
 package geotrellis.spark.io.file.cog
 
-import java.io.File
-
 import geotrellis.raster._
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.spark._
@@ -27,10 +25,19 @@ import geotrellis.spark.io.file.KeyPathGenerator
 import geotrellis.spark.io.index._
 import geotrellis.spark.tiling.LayoutLevel
 import geotrellis.util._
+
 import spray.json._
 
+// global context only for test purposes, should be refactored
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.blocking
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
+
 import scala.reflect.ClassTag
+
 import java.net.URI
+import java.io.File
 
 class FileCOGValueReader(
   val attributeStore: AttributeStore,
@@ -99,9 +106,9 @@ class FileCOGValueReader(
 
       println(s"$baseKey path(transformKey(key)): ${keyPath(transformKey(key))}")
 
-      val tiles =
+      val tiles: Set[Future[Option[V]]] =
         neighbourBaseKeys
-          .flatMap { k =>
+          .map { k => Future { blocking {
             if (!new File(s"${keyPath(k)}.tiff").isFile) None
             else {
               val uri = new URI(s"file://${keyPath(k)}.tiff")
@@ -128,9 +135,16 @@ class FileCOGValueReader(
 
               tiffGridBounds.map(tiffMethods.tileTiff(tiff, _))
             }
-          }
+          } } }
 
-      tiles.reduce(_ merge _)
+      Await
+        .result(
+          Future
+            .sequence(tiles)
+            .map(_.flatten)
+            .map(_.reduce(_ merge _)),
+          Duration.Inf
+        )
     }
   }
 }

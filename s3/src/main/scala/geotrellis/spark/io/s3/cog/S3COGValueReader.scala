@@ -26,11 +26,18 @@ import geotrellis.spark.io.s3.S3Client
 import geotrellis.spark.tiling.LayoutLevel
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.util._
+
 import spray.json._
 import com.amazonaws.services.s3.model.AmazonS3Exception
 
 import scala.reflect.ClassTag
 import java.net.URI
+
+// global context only for test purposes, should be refactored
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.blocking
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 
 class S3COGValueReader(
   val attributeStore: AttributeStore
@@ -104,9 +111,9 @@ class S3COGValueReader(
       println(s"$baseKey path(transformKey(key)): ${path(transformKey(key))}")
 
       try {
-        val tiles =
+        val tiles: Set[Future[Option[V]]] =
           neighbourBaseKeys
-            .flatMap { k =>
+            .map { k => Future { blocking {
               val uri = new URI(s"s3://$bucket/${path(k)}.tiff")
 
               println(s"baseKey: $baseKey")
@@ -132,9 +139,16 @@ class S3COGValueReader(
 
                 tiffGridBounds.map(tiffMethods.tileTiff(tiff, _))
               } else None
-            }
+            } } }
 
-        tiles.reduce(_ merge _)
+        Await
+          .result(
+            Future
+              .sequence(tiles)
+              .map(_.flatten)
+              .map(_.reduce(_ merge _)),
+            Duration.Inf
+          )
       } catch {
         case e: AmazonS3Exception if e.getStatusCode == 404 =>
           throw new ValueNotFoundError(key, layerId)
