@@ -133,6 +133,9 @@ class S3COGLayerWriter(
     }
   }
 
+  // write VRTs in the catalog in the backend, every time by default
+  // auto function
+  // remove common write funcion and VRT type from the user API
   def writeVRT[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag
