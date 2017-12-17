@@ -27,9 +27,8 @@ class UInt32GeoTiffMultibandTile(
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
   bandCount: Int,
-  hasPixelInterleave: Boolean,
   val cellType: FloatCells with NoDataHandling
-) extends GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
+) extends GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount)
     with UInt32GeoTiffSegmentCollection {
 
   protected def createSegmentCombiner(targetSize: Int): SegmentCombiner =
@@ -53,16 +52,15 @@ class UInt32GeoTiffMultibandTile(
     }
 
   def withNoData(noDataValue: Option[Double]): UInt32GeoTiffMultibandTile =
-    new UInt32GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType.withNoData(noDataValue))
+    new UInt32GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, cellType.withNoData(noDataValue))
 
 
   def interpretAs(newCellType: CellType): GeoTiffMultibandTile  = {
     newCellType match {
       case dt: FloatCells with NoDataHandling =>
-        new UInt32GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, dt)
+        new UInt32GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, dt)
       case _ =>
         withNoData(None).convert(newCellType)
     }
   }
 }
-

@@ -2,19 +2,22 @@ package geotrellis.raster.io.geotiff
 
 private [geotiff] trait SegmentTransform {
   def segmentIndex: Int
-  def segmentLayout: GeoTiffSegmentLayout
+  def segmentLayoutTransform: GeoTiffSegmentLayoutTransform
+  protected def segmentLayout = segmentLayoutTransform.segmentLayout
 
-  def layoutCols: Int = segmentLayout.tileLayout.layoutCols
-  def layoutRows: Int = segmentLayout.tileLayout.layoutRows
+  protected def bandCount = segmentLayoutTransform.bandCount
 
-  def tileCols: Int = segmentLayout.tileLayout.tileCols
-  def tileRows: Int = segmentLayout.tileLayout.tileRows
+  protected def layoutCols: Int = segmentLayout.tileLayout.layoutCols
+  protected def layoutRows: Int = segmentLayout.tileLayout.layoutRows
 
-  def layoutCol: Int = segmentIndex % layoutCols
-  def layoutRow: Int = segmentIndex / layoutCols
+  protected def tileCols: Int = segmentLayout.tileLayout.tileCols
+  protected def tileRows: Int = segmentLayout.tileLayout.tileRows
+
+  protected def layoutCol: Int = segmentIndex % layoutCols
+  protected def layoutRow: Int = segmentIndex / layoutCols
 
   val (segmentCols, segmentRows) =
-    segmentLayout.getSegmentDimensions(segmentIndex)
+    segmentLayoutTransform.getSegmentDimensions(segmentIndex)
 
   /** The col of the source raster that this index represents. Can produce invalid cols */
   def indexToCol(i: Int) = {
@@ -36,7 +39,7 @@ private [geotiff] trait SegmentTransform {
 }
 
 
-private [geotiff] case class StripedSegmentTransform(segmentIndex: Int, bandCount: Int, segmentLayout: GeoTiffSegmentLayout) extends SegmentTransform {
+private [geotiff] case class StripedSegmentTransform(segmentIndex: Int, segmentLayoutTransform: GeoTiffSegmentLayoutTransform) extends SegmentTransform {
   def gridToIndex(col: Int, row: Int): Int = {
     val tileCol = col - (layoutCol * tileCols)
     val tileRow = row - (layoutRow * tileRows)
@@ -50,7 +53,7 @@ private [geotiff] case class StripedSegmentTransform(segmentIndex: Int, bandCoun
   }
 }
 
-private [geotiff] case class TiledSegmentTransform(segmentIndex: Int, bandCount: Int, segmentLayout: GeoTiffSegmentLayout) extends SegmentTransform {
+private [geotiff] case class TiledSegmentTransform(segmentIndex: Int, segmentLayoutTransform: GeoTiffSegmentLayoutTransform) extends SegmentTransform {
   def gridToIndex(col: Int, row: Int): Int = {
     val tileCol = col - (layoutCol * tileCols)
     val tileRow = row - (layoutRow * tileRows)

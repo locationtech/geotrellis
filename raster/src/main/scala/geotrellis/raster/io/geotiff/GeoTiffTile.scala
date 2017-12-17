@@ -30,10 +30,10 @@ object GeoTiffTile {
   /**
    * Creates a new instance of GeoTiffTile.
    *
-   * @param compressedBytes: An Array[Array[Byte]] that represents the segments in the GeoTiff
+   * @param segmentBytes: An Array[Array[Byte]] that represents the segments in the GeoTiff
    * @param decompressor: A [[Decompressor]] for the given data compression
    * @param segmentLayout: The [[GeoTiffSegmentLayout]] of the GeoTiff
-   * @param compresson: The [[Compression]] type of the data
+   * @param compression: The [[Compression]] type of the data
    * @param cellType: The [[CellType]] of the segments
    * @param bandType: The data storage format of the band. Defaults to None
    * @return A new instance of GeoTiffTile based on the given bandType or cellType
@@ -87,7 +87,7 @@ object GeoTiffTile {
   def apply(tile: Tile, options: GeoTiffOptions): GeoTiffTile = {
     val bandType = BandType.forCellType(tile.cellType)
 
-    val segmentLayout = GeoTiffSegmentLayout(tile.cols, tile.rows, options.storageMethod, bandType)
+    val segmentLayout = GeoTiffSegmentLayout(tile.cols, tile.rows, options.storageMethod, BandInterleave, bandType)
 
     val segmentCount = segmentLayout.tileLayout.layoutCols * segmentLayout.tileLayout.layoutRows
     val compressor = options.compression.createCompressor(segmentCount)
@@ -111,7 +111,7 @@ object GeoTiffTile {
 abstract class GeoTiffTile(
   val segmentLayout: GeoTiffSegmentLayout,
   compression: Compression // Compression to use moving forward
-) extends Tile with GeoTiffImageData {
+) extends Tile with GeoTiffImageData with GeoTiffSegmentLayoutTransform {
   val cellType: CellType
 
   val bandCount = 1
@@ -169,8 +169,8 @@ abstract class GeoTiffTile(
    * @return An Int that represents the segment's index
    */
   def get(col: Int, row: Int): Int = {
-    val segmentIndex = segmentLayout.getSegmentIndex(col, row)
-    val i = segmentLayout.getSegmentTransform(segmentIndex, 1).gridToIndex(col, row)
+    val segmentIndex = getSegmentIndex(col, row)
+    val i = getSegmentTransform(segmentIndex).gridToIndex(col, row)
 
     getSegment(segmentIndex).getInt(i)
   }
@@ -183,8 +183,8 @@ abstract class GeoTiffTile(
    * @return A Double that represents the segment's index
    */
   def getDouble(col: Int, row: Int): Double = {
-    val segmentIndex = segmentLayout.getSegmentIndex(col, row)
-    val i = segmentLayout.getSegmentTransform(segmentIndex, 1).gridToIndex(col, row)
+    val segmentIndex = getSegmentIndex(col, row)
+    val i = getSegmentTransform(segmentIndex).gridToIndex(col, row)
 
     getSegment(segmentIndex).getDouble(i)
   }
@@ -202,7 +202,7 @@ abstract class GeoTiffTile(
 
       if(isTiled) {
         // Need to check for bounds
-        val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex, 1)
+        val segmentTransform = getSegmentTransform(segmentIndex)
         cfor(0)(_ < segmentSize, _ + 1) { i =>
           val col = segmentTransform.indexToCol(i) // TODO: Is there another way to do this?
           val row = segmentTransform.indexToRow(i)
@@ -231,7 +231,7 @@ abstract class GeoTiffTile(
 
       if(isTiled) {
         // Need to check for bounds
-        val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex, 1)
+        val segmentTransform = getSegmentTransform(segmentIndex)
         cfor(0)(_ < segmentSize, _ + 1) { i =>
           val col = segmentTransform.indexToCol(i)
           val row = segmentTransform.indexToRow(i)
@@ -304,7 +304,7 @@ abstract class GeoTiffTile(
     getSegments(0 until segmentCount).foreach { case (segmentIndex, segment) =>
       val segmentSize = segment.size
 
-      val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex, 1)
+      val segmentTransform = getSegmentTransform(segmentIndex)
 
       cfor(0)(_ < segmentSize, _ + 1) { i =>
         val col = segmentTransform.indexToCol(i)
@@ -324,7 +324,7 @@ abstract class GeoTiffTile(
   def foreachDoubleVisitor(visitor: DoubleTileVisitor): Unit = {
     getSegments(0 until segmentCount).foreach { case (segmentIndex, segment) =>
       val segmentSize = segment.size
-      val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex, 1)
+      val segmentTransform = getSegmentTransform(segmentIndex)
       cfor(0)(_ < segmentSize, _ + 1) { i =>
         val col = segmentTransform.indexToCol(i)
         val row = segmentTransform.indexToRow(i)
@@ -345,7 +345,7 @@ abstract class GeoTiffTile(
     val arr = Array.ofDim[Array[Byte]](segmentCount)
     val compressor = compression.createCompressor(segmentCount)
     getSegments(0 until segmentCount).foreach { case (segmentIndex, segment) =>
-      val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex, 1)
+      val segmentTransform = getSegmentTransform(segmentIndex)
 
       val newBytes = segment.mapWithIndex { (i, z) =>
         val col = segmentTransform.indexToCol(i)
@@ -377,7 +377,7 @@ abstract class GeoTiffTile(
     val arr = Array.ofDim[Array[Byte]](segmentCount)
     val compressor = compression.createCompressor(segmentCount)
     getSegments(0 until segmentCount).foreach { case (segmentIndex, segment) =>
-      val segmentTransform = segmentLayout.getSegmentTransform(segmentIndex, 1)
+      val segmentTransform = getSegmentTransform(segmentIndex)
       val newBytes = segment.mapDoubleWithIndex { (i, z) =>
         val col = segmentTransform.indexToCol(i)
         val row = segmentTransform.indexToRow(i)
@@ -503,7 +503,7 @@ abstract class GeoTiffTile(
     val tile = ArrayTile.empty(cellType, cols, rows)
 
     getSegments(0 until segmentCount).foreach { case (segmentId, segment) =>
-      val segmentTransform = segmentLayout.getSegmentTransform(segmentId, 1)
+      val segmentTransform = getSegmentTransform(segmentId)
 
       if (cellType.isFloatingPoint)
         cfor(0)(_ < segment.size, _ + 1) { i =>
@@ -534,8 +534,11 @@ abstract class GeoTiffTile(
    *
    * @param bounds: Pixel bounds specifying the crop area
    */
-  def crop(bounds: GridBounds): MutableArrayTile =
-    crop(List(bounds)).next._2
+  def crop(bounds: GridBounds): MutableArrayTile = {
+    val iter = crop(List(bounds))
+    if(iter.isEmpty) throw new reader.MalformedGeoTiffException(s"No intersections of ${bounds} vs ${gridBounds}")
+    else iter.next._2
+  }
 
 
   /**
@@ -543,17 +546,23 @@ abstract class GeoTiffTile(
    *
    * @param windows: Pixel bounds specifying the crop areas
    */
+  /**
+    * Crop this tile to given pixel regions.
+    *
+    * @param windows: Pixel bounds specifying the crop areas
+    */
   def crop(windows: Seq[GridBounds]): Iterator[(GridBounds, MutableArrayTile)] = {
     case class Chip(
       window: GridBounds,
       tile: MutableArrayTile,
       intersectingSegments: Int,
-      var segmentsBurned: Int = 0)
+      var segmentsBurned: Int = 0
+    )
     val chipsBySegment = scala.collection.mutable.Map.empty[Int, List[Chip]]
     val intersectingSegments = scala.collection.mutable.SortedSet.empty[Int]
 
     for (window <- windows) {
-      val segments: Array[Int] = segmentLayout.intersectingSegments(window)
+      val segments: Array[Int] = getIntersectingSegments(window)
       val tile = ArrayTile.empty(cellType, window.width, window.height)
       val chip = Chip(window, tile, segments.length)
       for (segment <- segments) {
@@ -565,8 +574,8 @@ abstract class GeoTiffTile(
 
     def burnSegments(segmentId: Int, segment: GeoTiffSegment): List[Chip] = {
       var finished: List[Chip] = Nil
-      val segmentBounds = segmentLayout.getGridBounds(segmentId)
-      val segmentTransform = segmentLayout.getSegmentTransform(segmentId, 1)
+      val segmentBounds = getGridBounds(segmentId)
+      val segmentTransform = getSegmentTransform(segmentId)
 
       for (chip <- chipsBySegment(segmentId)) {
         val gridBounds = chip.window

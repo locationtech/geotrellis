@@ -27,9 +27,8 @@ class Float64GeoTiffMultibandTile(
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
   bandCount: Int,
-  hasPixelInterleave: Boolean,
   val cellType: DoubleCells with NoDataHandling
-) extends GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave)
+) extends GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount)
     with Float64GeoTiffSegmentCollection {
 
   val noDataValue: Option[Double] = cellType match {
@@ -59,16 +58,15 @@ class Float64GeoTiffMultibandTile(
     }
 
   def withNoData(noDataValue: Option[Double]): Float64GeoTiffMultibandTile =
-    new Float64GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, cellType.withNoData(noDataValue))
+    new Float64GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, cellType.withNoData(noDataValue))
 
   def interpretAs(newCellType: CellType): GeoTiffMultibandTile  = {
     newCellType match {
       case dt: DoubleCells with NoDataHandling =>
-        new Float64GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, hasPixelInterleave, dt)
+        new Float64GeoTiffMultibandTile(compressedBytes, decompressor, segmentLayout, compression, bandCount, dt)
       case _ =>
         withNoData(None).convert(newCellType)
     }
   }
 
 }
-

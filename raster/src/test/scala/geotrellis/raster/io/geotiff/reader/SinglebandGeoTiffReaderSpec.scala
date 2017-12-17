@@ -139,8 +139,6 @@ class SinglebandGeoTiffReaderSpec extends FunSpec
     }
   }
 
-  /*
-
   // These tests don't have a single (or predictable on the basis of compression/storage) celltype
   // this won't work unless we change the tiles or duplicate these tests
 
@@ -149,8 +147,9 @@ class SinglebandGeoTiffReaderSpec extends FunSpec
       (col * 1000.0 + row) % 128
     }
 
-    val expected = expectedTile(UByteConstantNoDataCellType, testTiffByteValue _)
-    val expectedRaw = expectedTile(UByteUserDefinedNoDataCellType(2), testTiffByteValue _)
+    // NOTE: lines commented out in Reading UByte GeoTiffs test came with a streaming subband PR
+    val expected = expectedTile(ByteConstantNoDataCellType, testTiffByteValue _)
+    //val expectedRaw = expectedTile(UByteUserDefinedNoDataCellType(2), testTiffByteValue _)
     val t = "byte"
 
     it("should read each variation of compression and striped/tiled") {
@@ -162,13 +161,12 @@ class SinglebandGeoTiffReaderSpec extends FunSpec
         println(s"     Testing $c $s:")
         withClue(s"Failed for Compression $c, storage $s") {
           val tile = SinglebandGeoTiff.compressed(geoTiffPath(s"$c/$s/$t.tif")).tile
-
-          if(s == "striped") assertEqual(tile, expectedRaw) else assertEqual(tile, expected)
+          assertEqual(tile, expected)
+          //if(s == "striped") assertEqual(tile, expectedRaw) else assertEqual(tile, expected)
         }
       }
     }
   }
-  */
 
   describe("Reading UInt16 GeoTiffs") {
     def testTiffShortValue(col: Int, row: Int): Double = {
