@@ -278,6 +278,16 @@ object GeoTiffTile {
       segmentBytes(i) = compressor.compress(bytes, i)
     }
 
+    // Our BitCellType rasters have the bits encoded in a order inside of each byte that is
+    // the reverse of what a GeoTiff wants.
+    if(tile.cellType == BitCellType) {
+      cfor(0)(_ < segmentCount, _ + 1) { i =>
+        cfor(0)(_ < segmentBytes(i).length, _ + 1) { j =>
+          segmentBytes(i)(j) = ((Integer.reverse(segmentBytes(i)(j)) >>> 24) & 0xFF).toByte
+        }
+      }
+    }
+
     apply(new ArraySegmentBytes(segmentBytes), compressor.createDecompressor, segmentLayout, options.compression, tile.cellType)
   }
 }

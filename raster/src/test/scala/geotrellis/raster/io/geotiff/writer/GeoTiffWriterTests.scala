@@ -75,4 +75,26 @@ class GeoTiffWriterTests extends FunSuite
       assertEqual(result.tile, gt1.tile)
     }
   }
+
+  test("Writing out a bit raster and reading it back again") {
+    val temp = File.createTempFile("geotiff-writer", ".tif")
+    val path = temp.getPath
+
+    // ExpandPacked8ToByte1
+
+    // val (p1, p2) = ("/Users/rob/data/DevelopedLand-ch.tiff", "/Users/rob/data/DevelopedLand-ch-2.tiff")
+    val (p1, p2) = ("/Users/rob/data/DevelopedLand-sm.tiff", "/Users/rob/data/DevelopedLand-sm-2.tiff")
+    // val (p1, p2) = ("/Users/rob/data/DevelopedLand-df.tiff", "/Users/rob/data/DevelopedLand-df-2.tiff")
+    val p3 = "/users/rob/data/DevelopedLand-sm-nb.tiff"
+    val base = SinglebandGeoTiff(geoTiffPath("small-bit-raster.tif"))
+    val tiff = SinglebandGeoTiff(base.tile, base.extent, base.crs)
+
+    GeoTiffWriter.write(tiff, path)
+
+    val reread = SinglebandGeoTiff(path)
+
+    addToPurge(path)
+
+    assertEqual(reread.raster.tile, base.raster.tile)
+  }
 }
