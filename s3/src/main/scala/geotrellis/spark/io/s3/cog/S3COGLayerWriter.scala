@@ -35,6 +35,7 @@ class S3COGLayerWriter(
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag
   ](cogs: RDD[(K, ContextGeoTiff[K, V])])(id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit = {
+    // TODO: Remove Avro references from COG - will require AttributeStore changes potentially.
     // schema for compatability purposes
     val schema = KryoWrapper(KeyValueRecordCodec[SpatialKey, Tile].schema)
     val kwFomat = KryoWrapper(implicitly[JsonFormat[K]])

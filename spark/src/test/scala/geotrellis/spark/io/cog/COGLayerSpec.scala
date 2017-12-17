@@ -62,7 +62,7 @@ class COGLayerSpec extends FunSpec
 
     //COGLayer.withStitch(layer)(zoom, 7, layoutScheme).collect().head
 
-    val cogs = COGLayerS(layer)(zoom, 10, layoutScheme)
+    val cogs = COGLayer(layer)(zoom, 10, layoutScheme)
     cogs.write(index, new URI("file:///tmp/write"))
 
     val (key, tiff: GeoTiff[Tile]) = cogs.collect().head

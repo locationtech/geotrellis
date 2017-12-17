@@ -49,6 +49,8 @@ trait AttributeStore extends  AttributeCaching with LayerAttributeStore {
 }
 
 object AttributeStore {
+  // TODO: Move to LayerAttributeStore, and potentially rename that to
+  // AvroLayerAttributeStore (these things are not needed for COGs)
   object Fields {
     val metadataBlob = "metadata"
     val header = "header"

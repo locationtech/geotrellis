@@ -152,7 +152,7 @@ class COGLayerSpec extends FunSpec
       val writer =
         new S3COGLayerWriter(() => attributeStore, "geotrellis-test", "daunnc/cogs")
 
-      val cogs = COGLayerS.applyWithMetadata(layer)(zoom, 10, layoutScheme)
+      val cogs = COGLayer.applyWithMetadata(layer)(zoom, 10, layoutScheme)
 
       writer.write(cogs)(LayerId("testStitched", 0), keyIndexMethod)
     }
