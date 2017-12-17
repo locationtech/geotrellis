@@ -52,7 +52,7 @@ case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: Tile
     * @param row  Pixel row in overall layout
     * @return     The index of the segment in this layout
     */
-  private [geotiff] def getSegmentIndex(col: Int, row: Int): Int = {
+  private [geotrellis] def getSegmentIndex(col: Int, row: Int): Int = {
     val layoutCol = col / tileLayout.tileCols
     val layoutRow = row / tileLayout.tileRows
     (layoutRow * tileLayout.layoutCols) + layoutCol
@@ -198,6 +198,56 @@ case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: Tile
       }
     }
     result.result
+  }
+
+  private def bandSegmentCount: Int =
+    tileLayout.layoutCols * tileLayout.layoutRows
+
+  def getSegmentCoordinate(segmentIndex: Int): (Int, Int) =
+    (segmentIndex % tileLayout.layoutCols, segmentIndex / tileLayout.layoutCols)
+
+  /**
+    * Calculates pixel dimensions of a given segment in this layout.
+    * Segments are indexed in row-major order relative to the GeoTiff they comprise.
+    *
+    * @param segmentIndex: An Int that represents the given segment in the index
+    * @return Tuple representing segment (cols, rows)
+    */
+  def getSegmentDimensions(segmentIndex: Int): (Int, Int) = {
+    val normalizedSegmentIndex = segmentIndex % bandSegmentCount
+    val layoutCol = normalizedSegmentIndex % tileLayout.layoutCols
+    val layoutRow = normalizedSegmentIndex / tileLayout.layoutCols
+
+    val cols =
+      if(layoutCol == tileLayout.layoutCols - 1) {
+        totalCols - ((tileLayout.layoutCols - 1) * tileLayout.tileCols)
+      } else {
+        tileLayout.tileCols
+      }
+
+    val rows =
+      if(layoutRow == tileLayout.layoutRows - 1) {
+        totalRows - ((tileLayout.layoutRows - 1) * tileLayout.tileRows)
+      } else {
+        tileLayout.tileRows
+      }
+
+    (cols, rows)
+  }
+
+  private [geotrellis] def getGridBounds(segmentIndex: Int, isBit: Boolean = false): GridBounds = {
+    val normalizedSegmentIndex = segmentIndex % bandSegmentCount
+    val (segmentCols, segmentRows) = getSegmentDimensions(segmentIndex)
+
+    val (startCol, startRow) = {
+      val (layoutCol, layoutRow) = getSegmentCoordinate(normalizedSegmentIndex)
+      (layoutCol * tileLayout.tileCols, layoutRow * tileLayout.tileRows)
+    }
+
+    val endCol = (startCol + segmentCols) - 1
+    val endRow = (startRow + segmentRows) - 1
+
+    GridBounds(startCol, startRow, endCol, endRow)
   }
 }
 

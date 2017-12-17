@@ -66,6 +66,14 @@ package object spark
     with tiling.Implicits
     with timeseries.Implicits
     with viewshed.Implicits {
+  /** GeoTiff Layer */
+  type RasterRDD[M] = RDD[Raster[Tile]] with Metadata[M]
+  type MultibandRasterRDD[M] = RDD[Raster[MultibandTile]] with Metadata[M]
+
+  type RasterCollection[M] = Seq[Raster[Tile]] with Metadata[M]
+  type MultibandRasterCollection[M] = Seq[Raster[MultibandTile]] with Metadata[M]
+  /** ------------- */
+
   type TileLayerRDD[K] = RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]
   object TileLayerRDD {
     def apply[K](rdd: RDD[(K, Tile)], metadata: TileLayerMetadata[K]): TileLayerRDD[K] =

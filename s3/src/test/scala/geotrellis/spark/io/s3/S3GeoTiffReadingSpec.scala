@@ -17,24 +17,35 @@
 package geotrellis.spark.io.s3.util
 
 
+import java.net.URI
 import java.nio.file.{Files, Paths}
+
 import geotrellis.util._
 import geotrellis.vector.Extent
+import geotrellis.spark.io.hadoop.geotiff._
 import geotrellis.spark.io.s3._
+import geotrellis.spark.io.s3.geotiff._
 import geotrellis.spark.io.s3.testkit._
 import geotrellis.raster.testkit._
+import geotrellis.raster.render._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader._
-
 import java.nio.{ByteBuffer, ByteOrder}
+
+import com.amazonaws.services.s3.AmazonS3URI
 import com.amazonaws.services.s3.model._
+import geotrellis.proj4.WebMercator
+import geotrellis.raster.resample.Bilinear
+import geotrellis.raster.{CellSize, Raster}
+import geotrellis.spark.tiling.ZoomedLayoutScheme
+import geotrellis.spark.{LayerId, SpatialKey}
 import org.scalatest._
 
 class S3GeoTiffReadingSpec extends FunSpec
   with Matchers
   with RasterMatchers {
 
-  val bucket = this.getClass.getSimpleName
+  /*val bucket = this.getClass.getSimpleName
 
   describe("Reading from a local geotiff") {
     val fromLocal =
@@ -76,10 +87,10 @@ class S3GeoTiffReadingSpec extends FunSpec
 
       assertEqual(actual.tile, expected.tile)
     }
-  }
+  }*/
 
   describe("Reading GeoTiff from server") {
-    val mockClient = new MockS3Client
+    /*val mockClient = new MockS3Client
     val testGeoTiffPath = "spark/src/test/resources/all-ones.tif"
     val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
 
@@ -119,6 +130,110 @@ class S3GeoTiffReadingSpec extends FunSpec
       val expected = fromLocal.crop(e)
 
       assertEqual(actual.tile, expected.tile)
+    }*/
+
+    it("LC8") {
+      /**
+        * raster.extent: Extent(382185.0, 2279385.0, 610515.0, 2512515.0)
+raster.extent.reproject(layoutScheme.crs, projectedExtent.crs): Extent(-1.1310143810632845E7, 7402078.317559211, -1.030750136211167E7, 8339933.567258558)
+
+val craster = raster
+  .crop(
+    Extent(519448.87209671224, 2281518.9994109133, 592788.9240706906, 2354434.7531058947),
+    CellSize(305.748113140705,305.748113140705)
+  )
+        */
+
+      val uri = new URI("s3://geotrellis-test/daunnc/LC_TEST/LC08_L1TP_139045_20170304_20170316_01_T1_B4.TIF")
+      val auri = new AmazonS3URI(uri)
+
+      val raster = GeoTiffReader
+        .readSingleband(
+          StreamingByteReader(
+            S3RangeReader(
+              bucket = auri.getBucket,
+              key = auri.getKey,
+              client = S3Client.DEFAULT
+            )
+          ),
+          false,
+          true
+        )
+
+      println("here!")
+      //raster.extent.intersection()
+
+      /*val craster = raster
+        .crop(
+          Extent(519448.87209671224, 2281518.9994109133, 592788.9240706906, 2354434.7531058947),
+          CellSize(305.748113140705,305.748113140705)
+        )*/
+
+      val craster = raster
+        .crop(
+          Extent(519361.652022108, 2135266.0168493874, 815271.4903743851, 2429556.484264097),
+          CellSize(1222.99245256282,1222.99245256282)
+        )
+
+      /*raster
+        .crop(
+          Extent(519361.652022108, 2135266.0168493874, 815271.4903743851, 2429556.484264097),
+          CellSize(1222.99245256282,1222.99245256282)
+        )
+
+      raster
+        .crop(
+          Extent(519361.652022108, 2135266.0168493874, 815271.4903743851, 2429556.484264097),
+          CellSize(1222.99245256282,1222.99245256282)
+        )
+
+      raster
+        .crop(
+          Extent(519361.652022108, 2135266.0168493874, 815271.4903743851, 2429556.484264097),
+          CellSize(1222.99245256282,1222.99245256282)
+        )*/
+
+
+      craster
+
+    }
+
+    it ("ZLC82") {
+      val attributeStore =
+        S3IMGeoTiffAttributeStore(
+          "RED",
+          new URI("s3://geotrellis-test/daunnc/LC_TEST/"),
+          "(.)*LC08_L1TP_13904[5-6]_20170304_20170316_01_T1_B4.TIF"
+        )
+
+      //println(s"attributeStore.data: ${attributeStore.data}")
+
+      val geoTiffLayer = S3GeoTiffLayerReader(attributeStore, ZoomedLayoutScheme(WebMercator))
+
+      // 9/381/223
+      // 9))(380, 225) -- normal
+      //val t = geoTiffLayer.read(LayerId("LC08_L1TP_139045_20170304_20170316_01_T1_B4", 9))(381, 223)
+      //val t = geoTiffLayer.read(LayerId("RED", 9))(380, 224)
+      val t = geoTiffLayer.read(LayerId("RED", 0))(0, 0)
+      //t.tile.renderPng().write("/tmp/test.png")
+    }
+
+    it("QLC8") {
+      val mdJson = new URI("s3://geotrellis-test/daunnc/geotiff-layer/metadata.json")
+
+      val attributeStore = S3JsonGeoTiffAttributeStore(mdJson)
+
+      val geoTiffLayer = S3GeoTiffLayerReader(
+        attributeStore = attributeStore,
+        layoutScheme   = ZoomedLayoutScheme(WebMercator),
+        resampleMethod = Bilinear,
+        strategy       = Auto(1) // Auto(0) // AutoHigherResolution is the best matching ovr resolution
+        // Auto(1) is a bit better than we need to grab
+      )
+
+      val t = geoTiffLayer.read(LayerId("RED", 7))(102, 55)
+      println(s"t.findMinMaxDouble: ${t.findMinMaxDouble}")
+
     }
   }
 }

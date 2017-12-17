@@ -27,7 +27,7 @@ import geotrellis.vector._
   * 
   * It also provides methods for next zoomed out tile layout level.
   */
-trait LayoutScheme {
+trait LayoutScheme extends Serializable {
   def levelFor(extent: Extent, cellSize: CellSize): LayoutLevel
   def zoomOut(level: LayoutLevel): LayoutLevel
   def zoomIn(level: LayoutLevel): LayoutLevel
