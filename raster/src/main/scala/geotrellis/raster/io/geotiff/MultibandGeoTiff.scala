@@ -21,18 +21,23 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
+import geotrellis.raster.resample.ResampleMethod
 
 case class MultibandGeoTiff(
-  val tile: MultibandTile,
-  val extent: Extent,
-  val crs: CRS,
-  val tags: Tags,
-  options: GeoTiffOptions
+  tile: MultibandTile,
+  extent: Extent,
+  crs: CRS,
+  tags: Tags,
+  options: GeoTiffOptions,
+  overviews: List[MultibandGeoTiff] = Nil
 ) extends GeoTiff[MultibandTile] {
   val cellType = tile.cellType
 
   def mapTile(f: MultibandTile => MultibandTile): MultibandGeoTiff =
-    MultibandGeoTiff(f(tile), extent, crs, tags, options)
+    MultibandGeoTiff(f(tile), extent, crs, tags, options, overviews)
+
+  def withStorageMethod(storageMethod: StorageMethod): MultibandGeoTiff =
+    new MultibandGeoTiff(tile, extent, crs, tags, options.copy(storageMethod = storageMethod), overviews.map(_.withStorageMethod(storageMethod)))
 
   def imageData: GeoTiffImageData =
     tile match {
@@ -44,7 +49,7 @@ case class MultibandGeoTiff(
     val raster: Raster[MultibandTile] =
       this.raster.crop(subExtent)
 
-    MultibandGeoTiff(raster, subExtent, this.crs, this.tags)
+    MultibandGeoTiff(raster, subExtent, this.crs, this.tags, this.options, this.overviews)
   }
 
   def crop(colMax: Int, rowMax: Int): MultibandGeoTiff =
@@ -54,8 +59,18 @@ case class MultibandGeoTiff(
     val raster: Raster[MultibandTile] =
       this.raster.crop(colMin, rowMin, colMax, rowMax)
 
-    MultibandGeoTiff(raster, raster._2, this.crs, this.tags)
+    MultibandGeoTiff(raster, raster._2, this.crs, this.tags, this.options, this.overviews)
   }
+
+  def crop(subExtent: Extent, cellSize: CellSize, resampleMethod: ResampleMethod, strategy: OverviewStrategy): MultibandRaster =
+    getClosestOverview(cellSize, strategy)
+      .crop(subExtent)
+      .resample(RasterExtent(subExtent, cellSize), resampleMethod, strategy)
+
+  def resample(rasterExtent: RasterExtent, resampleMethod: ResampleMethod, strategy: OverviewStrategy): MultibandRaster =
+    getClosestOverview(cellSize, strategy)
+      .raster
+      .resample(rasterExtent, resampleMethod)
 }
 
 object MultibandGeoTiff {

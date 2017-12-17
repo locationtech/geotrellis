@@ -19,6 +19,7 @@ package geotrellis.raster.io.geotiff.reader
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.testkit._
+import geotrellis.util.Filesystem
 
 import spire.syntax.cfor._
 import org.scalatest._
@@ -112,6 +113,91 @@ class SinglebandGeoTiffReaderSpec extends FunSpec
       // Expected values from gdalinfo -stats
       min should be (-0.014291191473603 +- 0.000000000000001)
       max should be (4.4320001602173 +- 0.0000000000001)
+    }
+
+    it("should read tiff with overviews correct") {
+      // sizes of overviews, starting with the base ifd
+      val sizes = List(1056 -> 1052, 528 -> 526, 264 -> 263, 132 -> 132, 66 -> 66, 33 -> 33)
+
+      val tiff = SinglebandGeoTiff(geoTiffPath("overviews/singleband.tif"))
+      val tile = tiff.tile
+
+      tiff.getOverviewsCount should be (5)
+      tile.isNoDataTile should be (false)
+
+      tile.cols -> tile.rows should be (sizes(0))
+
+      tiff.overviews.zip(sizes.tail).foreach { case (ovrTiff, ovrSize) =>
+        val ovrTile = ovrTiff.tile
+
+        ovrTiff.getOverviewsCount should be (0)
+        ovrTile.isNoDataTile should be (false)
+
+        ovrTile.cols -> ovrTile.rows should be (ovrSize)
+      }
+    }
+
+    it("should read tiff with external overviews correct") {
+      // sizes of overviews, starting with the base ifd
+      val sizes = List(1056 -> 1052, 528 -> 526, 264 -> 263, 132 -> 132, 66 -> 66, 33 -> 33)
+
+      val tiff = SinglebandGeoTiff(geoTiffPath("overviews/singleband_ext.tif"))
+      val tile = tiff.tile
+
+      tiff.getOverviewsCount should be (5)
+      tile.isNoDataTile should be (false)
+
+      tile.cols -> tile.rows should be (sizes(0))
+
+      tiff.overviews.zip(sizes.tail).foreach { case (ovrTiff, ovrSize) =>
+        val ovrTile = ovrTiff.tile
+
+        ovrTiff.getOverviewsCount should be (0)
+        ovrTile.isNoDataTile should be (false)
+
+        ovrTile.cols -> ovrTile.rows should be (ovrSize)
+      }
+    }
+
+    it("should read bigtiff with overviews correct") {
+      // sizes of overviews, starting with the base ifd
+      val sizes = List(1056 -> 1052, 528 -> 526, 264 -> 263, 132 -> 132, 66 -> 66, 33 -> 33)
+
+      val tiff = SinglebandGeoTiff(geoTiffPath("overviews/big_singleband.tif"))
+      val tile = tiff.tile
+
+      tiff.getOverviewsCount should be (5)
+      tile.isNoDataTile should be (false)
+
+      tile.cols -> tile.rows should be (sizes(0))
+
+      tiff.overviews.zip(sizes.tail).foreach { case (ovrTiff, ovrSize) =>
+        val ovrTile = ovrTiff.tile
+
+        ovrTiff.getOverviewsCount should be (0)
+        ovrTile.isNoDataTile should be (false)
+
+        ovrTile.cols -> ovrTile.rows should be (ovrSize)
+      }
+    }
+
+    it("should crop tiff with overviews correct choosing the best matching overview") {
+      // sizes of overviews, starting with the base ifd
+      val sizes = List(1056 -> 1052, 528 -> 526, 264 -> 263, 132 -> 132, 66 -> 66, 33 -> 33)
+
+      val tiff = SinglebandGeoTiff(geoTiffPath("overviews/singleband.tif"))
+
+      // should grab the second overview
+      val ctiff = tiff.crop(tiff.extent, CellSize(tiff.extent, sizes(2)))
+      val otiff = tiff.overviews(1)
+
+      ctiff.rasterExtent should be (RasterExtent(tiff.extent, CellSize(tiff.extent, otiff.tile.dimensions)))
+
+      val (ctile, otile) = ctiff.tile -> otiff.tile
+
+      ctile.isNoDataTile should be (otile.isNoDataTile)
+
+      ctile.cols -> ctile.rows should be (otile.cols -> otile.rows)
     }
   }
 

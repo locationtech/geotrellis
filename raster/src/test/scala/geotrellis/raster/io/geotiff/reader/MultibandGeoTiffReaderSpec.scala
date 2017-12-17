@@ -83,6 +83,99 @@ class MultibandGeoTiffReaderSpec extends FunSpec
       tile.band(1).foreach { z => z should be (2) }
       tile.band(2).foreach { z => z should be (3) }
     }
+
+    it("should read tiff with overviews correct") {
+      // sizes of overviews, starting with the base ifd
+      val sizes = List(1056 -> 1052, 528 -> 526, 264 -> 263, 132 -> 132, 66 -> 66, 33 -> 33)
+
+      val tiff = MultibandGeoTiff(geoTiffPath("overviews/multiband.tif"))
+      val tile = tiff.tile
+
+      tiff.getOverviewsCount should be (5)
+      tile.bandCount should be (4)
+      tile.bands.map(_.isNoDataTile).reduce(_ && _) should be (false)
+
+      tile.cols -> tile.rows should be (sizes(0))
+
+      tiff.overviews.zip(sizes.tail).foreach { case (ovrTiff, ovrSize) =>
+        val ovrTile = ovrTiff.tile
+
+        ovrTiff.getOverviewsCount should be (0)
+        ovrTile.bandCount should be (4)
+        ovrTile.bands.map(_.isNoDataTile).reduce(_ && _) should be (false)
+
+        ovrTile.cols -> ovrTile.rows should be (ovrSize)
+      }
+    }
+
+    it("should read tiff with external overviews correct") {
+      // sizes of overviews, starting with the base ifd
+      val sizes = List(1056 -> 1052, 528 -> 526, 264 -> 263, 132 -> 132, 66 -> 66, 33 -> 33)
+
+      val tiff = MultibandGeoTiff(geoTiffPath("overviews/multiband_ext.tif"))
+      val tile = tiff.tile
+
+      tiff.getOverviewsCount should be (5)
+      tile.bandCount should be (4)
+      tile.bands.map(_.isNoDataTile).reduce(_ && _) should be (false)
+
+      tile.cols -> tile.rows should be (sizes(0))
+
+      tiff.overviews.zip(sizes.tail).foreach { case (ovrTiff, ovrSize) =>
+        val ovrTile = ovrTiff.tile
+
+        ovrTiff.getOverviewsCount should be (0)
+        ovrTile.bandCount should be (4)
+        ovrTile.bands.map(_.isNoDataTile).reduce(_ && _) should be (false)
+
+        ovrTile.cols -> ovrTile.rows should be (ovrSize)
+      }
+    }
+
+    it("should read bigtiff with overviews correct") {
+      // sizes of overviews, starting with the base ifd
+      val sizes = List(1056 -> 1052, 528 -> 526, 264 -> 263, 132 -> 132, 66 -> 66, 33 -> 33)
+
+      val tiff = MultibandGeoTiff(geoTiffPath("overviews/big_multiband.tif"))
+
+      val tile = tiff.tile
+
+      tiff.getOverviewsCount should be (5)
+      tile.bandCount should be (4)
+      tile.bands.map(_.isNoDataTile).reduce(_ && _) should be (false)
+
+      tile.cols -> tile.rows should be (sizes(0))
+
+      tiff.overviews.zip(sizes.tail).foreach { case (ovrTiff, ovrSize) =>
+        val ovrTile = ovrTiff.tile
+
+        ovrTiff.getOverviewsCount should be (0)
+        ovrTile.bandCount should be (4)
+        ovrTile.bands.map(_.isNoDataTile).reduce(_ && _) should be (false)
+
+        ovrTile.cols -> ovrTile.rows should be (ovrSize)
+      }
+    }
+
+    it("should crop tiff with overviews correct choosing the best matching overview") {
+      // sizes of overviews, starting with the base ifd
+      val sizes = List(1056 -> 1052, 528 -> 526, 264 -> 263, 132 -> 132, 66 -> 66, 33 -> 33)
+
+      val tiff = MultibandGeoTiff(geoTiffPath("overviews/multiband.tif"))
+
+      // should grab the second overview
+      val ctiff = tiff.crop(tiff.extent, CellSize(tiff.extent, sizes(2)))
+      val otiff = tiff.overviews(1)
+
+      ctiff.rasterExtent should be (RasterExtent(tiff.extent, CellSize(tiff.extent, otiff.tile.dimensions)))
+
+      val (ctile, otile) = ctiff.tile -> otiff.tile
+
+      ctile.bandCount should be (otile.bandCount)
+      ctile.bands.map(_.isNoDataTile).reduce(_ && _) should be (otile.bands.map(_.isNoDataTile).reduce(_ && _))
+
+      ctile.cols -> ctile.rows should be (otile.cols -> otile.rows)
+    }
   }
 
   describe("Reading geotiffs with INTERLEAVE=BANDS") {
@@ -192,6 +285,5 @@ class MultibandGeoTiffReaderSpec extends FunSpec
       tile.band(1).foreach { z => z should be (0) }
       tile.band(2).foreach { z => z should be (1) }
     }
-
   }
 }

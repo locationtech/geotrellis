@@ -35,6 +35,9 @@ abstract class LineScanner extends Iterator[String] with java.io.Closeable
 
 object HdfsUtils extends LazyLogging {
 
+  def pathExists(path: Path, conf: Configuration): Boolean =
+    path.getFileSystem(conf).exists(path)
+
   def renamePath(from: Path, to: Path, conf: Configuration): Unit = {
     val fs = from.getFileSystem(conf)
     fs.rename(from, to)

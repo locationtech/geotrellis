@@ -17,7 +17,6 @@
 package geotrellis.raster.io.geotiff.writer
 
 import geotrellis.raster.io.geotiff._
-
 import spire.syntax.cfor._
 
 import java.io.ByteArrayOutputStream
@@ -27,12 +26,14 @@ import java.io.FileOutputStream
 import java.nio.ByteOrder
 
 object GeoTiffWriter {
-  def write(geoTiff: GeoTiffData, path: String): Unit = {
+  def write(geoTiff: GeoTiffData, path: String): Unit = write(geoTiff, path, false)
+
+  def write(geoTiff: GeoTiffData, path: String, optimizedOrder: Boolean): Unit = {
     val fos = new FileOutputStream(new File(path))
     try {
       val dos = new DataOutputStream(fos)
       try {
-        new GeoTiffWriter(geoTiff, dos).write()
+        new GeoTiffWriter(geoTiff, dos).write(optimizedOrder)
       } finally {
         dos.close
       }
@@ -41,12 +42,14 @@ object GeoTiffWriter {
     }
   }
 
-  def write(geoTiff: GeoTiffData): Array[Byte] = {
+  def write(geoTiff: GeoTiffData): Array[Byte] = write(geoTiff, false)
+
+  def write(geoTiff: GeoTiffData, optimizedOrder: Boolean): Array[Byte] = {
     val bos = new ByteArrayOutputStream()
     try {
       val dos = new DataOutputStream(bos)
       try {
-        new GeoTiffWriter(geoTiff, dos).write()
+        new GeoTiffWriter(geoTiff, dos).write(optimizedOrder)
         bos.toByteArray
       } finally {
         dos.close
@@ -65,31 +68,7 @@ class GeoTiffWriter(geoTiff: GeoTiffData, dos: DataOutputStream) {
       LittleEndianToBytes
     }
 
-  val (fieldValues, offsetFieldValueBuilder) = TiffTagFieldValue.collect(geoTiff)
-  val segments = geoTiff.imageData.segmentBytes
-  val segmentCount = segments.size
-
-  val tagFieldByteCount = (fieldValues.length + 1) * 12 // Tiff Tag Fields are 12 bytes long.
-
-  val tagDataByteCount = {
-    var s = 0
-    cfor(0)(_ < fieldValues.length, _ + 1) { i =>
-      val len = fieldValues(i).value.length
-      // If value fits in 4 bytes, we store it in the offset,
-      // so only count data more than 4 bytes.
-      if(len > 4) {
-        s += fieldValues(i).value.length
-      }
-    }
-
-    // Account for offsetFieldValue size
-    // each offset is an Int long.
-    if(segmentCount > 1) {
-      s += (segmentCount * 4)
-    }
-
-    s
-  }
+  lazy val IFDs: List[GeoTiffData] = geoTiff :: geoTiff.overviews
 
   // Used to immediately write values to our ultimate destination.
   var index: Int = 0
@@ -102,23 +81,41 @@ class GeoTiffWriter(geoTiff: GeoTiffData, dos: DataOutputStream) {
   def writeFloat(value: Float) { writeBytes(toBytes(value)) }
   def writeDouble(value: Double) { writeBytes(toBytes(value)) }
 
-  def write(): Unit = {
-    // Write the header that determines the endian
-    if(geoTiff.imageData.decompressor.byteOrder == ByteOrder.BIG_ENDIAN) {
-      val m = 'M'.toByte
-      writeByte(m)
-      writeByte(m)
-    } else {
-      val i = 'I'.toByte
-      writeByte(i)
-      writeByte(i)
+  private def append(list: List[GeoTiffData]): Unit = {
+    val overviewsIter = (geoTiff +: geoTiff.overviews).toIterator
+    overviewsIter.foreach(append(_, !overviewsIter.hasNext))
+  }
+
+  private def append(geoTiff: GeoTiffData, last: Boolean = true): Unit = {
+    val (fieldValues, offsetFieldValueBuilder) = TiffTagFieldValue.collect(geoTiff)
+    val segments = geoTiff.imageData.segmentBytes
+    val segmentCount = segments.size
+    val segmentBytesCount = (0 until segmentCount).map(segments.getSegmentByteCount).sum
+
+    val tagFieldByteCount = (fieldValues.length + 1) * 12 // Tiff Tag Fields are 12 bytes long.
+
+    val tagDataByteCount = {
+      var s = 0
+      cfor(0)(_ < fieldValues.length, _ + 1) { i =>
+        val len = fieldValues(i).value.length
+        // If value fits in 4 bytes, we store it in the offset,
+        // so only count data more than 4 bytes.
+        if(len > 4) {
+          s += fieldValues(i).value.length
+        }
+      }
+
+      // Account for offsetFieldValue size
+      // each offset is an Int long.
+      if(segmentCount > 1) {
+        s += (segmentCount * 4)
+      }
+
+      s
     }
 
-    // TIFF header code.
-    writeShort(42.toShort)
-
     // Write tag start offset (immediately after this 4 byte integer)
-    writeInt(index + 4)
+    // writeInt(index + 4)
 
     // Compute the offsetFieldValue
     val offsetFieldValue = {
@@ -174,7 +171,8 @@ class GeoTiffWriter(geoTiff: GeoTiffData, dos: DataOutputStream) {
     }
 
     // Write 0 integer to indicate the end of the last IFD.
-    writeInt(0)
+    if(last) writeInt(0)
+    else writeInt(tagDataOffset + segmentBytesCount)
 
     assert(index == tagDataStartOffset, s"Writer error: index at $index, should be $tagDataStartOffset")
     assert(tagDataOffset == tagDataStartOffset + tagDataByteCount)
@@ -191,6 +189,160 @@ class GeoTiffWriter(geoTiff: GeoTiffData, dos: DataOutputStream) {
     segments.getSegments(0 until segmentCount).foreach { case (_, segment) =>
       writeBytes(segment)
     }
+  }
+
+  private def appendCloudOptimized(list: List[GeoTiffData]): Unit = {
+    val ifdCount = list.length
+
+    val dataOffsets = list.map { geoTiff =>
+      val (fieldValues, offsetFieldValueBuilder) = TiffTagFieldValue.collect(geoTiff)
+      val segments = geoTiff.imageData.segmentBytes
+      val segmentCount = segments.size
+      val segmentBytesCount = (0 until segmentCount).map(segments.getSegmentByteCount).sum
+
+      val tagFieldByteCount = (fieldValues.length + 1) * 12 // Tiff Tag Fields are 12 bytes long.
+
+      val tagDataByteCount = {
+        var s = 0
+        cfor(0)(_ < fieldValues.length, _ + 1) { i =>
+          val len = fieldValues(i).value.length
+          // If value fits in 4 bytes, we store it in the offset,
+          // so only count data more than 4 bytes.
+          if(len > 4) {
+            s += fieldValues(i).value.length
+          }
+        }
+
+        // Account for offsetFieldValue size
+        // each offset is an Int long.
+        if(segmentCount > 1) {
+          s += (segmentCount * 4)
+        }
+
+        s
+      }
+
+      val imageDataStartOffset =
+        2 + // Short for number of tags
+        4 + // Int for next IFD address
+        tagFieldByteCount + tagDataByteCount
+      
+      (fieldValues -> offsetFieldValueBuilder, tagFieldByteCount -> tagDataByteCount, imageDataStartOffset -> segmentBytesCount)
+    }
+
+
+    // IFD image data is stored here, sorted from min to max
+    val imageData = new Array[(SegmentBytes, Int)](ifdCount)
+    
+    cfor(0)(_ < ifdCount, _ + 1) { i =>
+      val (geoTiff, value, last) = (list(i), dataOffsets(i), i + 1 == ifdCount)
+      val (fieldValues, offsetFieldValueBuilder) = value._1
+      val segments = geoTiff.imageData.segmentBytes
+      val segmentCount = segments.size
+
+      val (tagFieldByteCount, tagDataByteCount) = value._2
+
+      // Compute the offsetFieldValue
+      // Sum smaller overviews + offset of the current IFD
+      val imageDataStartOffset: Int =
+      dataOffsets.slice(i + 1, dataOffsets.length).foldLeft(index) {
+        case (acc: Int, (_, _, (absStartOffset: Int, bytesCount: Int))) =>
+          acc + absStartOffset + bytesCount
+      } + value._3._1
+
+      val offsetFieldValue = {
+        val offsets = Array.ofDim[Int](segmentCount)
+        var offset = imageDataStartOffset
+        segments.getSegments(0 until segmentCount).foreach { case (i, segment) =>
+          offsets(i) = offset
+          offset += segment.length
+        }
+        offsetFieldValueBuilder(offsets)
+      }
+
+      // Sort the fields by tag code.
+      val sortedTagFieldValues = (offsetFieldValue :: fieldValues.toList).sortBy(_.tag).toArray
+
+      // Write the number of tags
+      writeShort(sortedTagFieldValues.length)
+
+      // Write tag fields, sorted by tag code.
+      val tagDataStartOffset =
+        index +
+          4 + // Int for next IFD address
+          tagFieldByteCount
+
+      var tagDataOffset = tagDataStartOffset
+
+      cfor(0)(_ < sortedTagFieldValues.length, _ + 1) { i =>
+        val TiffTagFieldValue(tag, fieldType, length, value) = sortedTagFieldValues(i)
+        writeShort(tag)
+        writeShort(fieldType)
+        writeInt(length)
+        if(value.length > 4) {
+          writeInt(tagDataOffset)
+          tagDataOffset += value.length
+        } else {
+          var i = 0
+          while(i < value.length) {
+            writeByte(value(i))
+            i += 1
+          }
+          while(i < 4) {
+            writeByte(0.toByte)
+            i += 1
+          }
+        }
+      }
+
+      // Write 0 integer to indicate the end of the last IFD.
+      if(last) writeInt(0)
+      else writeInt(tagDataOffset)
+
+      assert(index == tagDataStartOffset, s"Writer error: index at $index, should be $tagDataStartOffset")
+      assert(tagDataOffset == tagDataStartOffset + tagDataByteCount)
+
+      // write tag data
+      cfor(0)(_ < sortedTagFieldValues.length, _ + 1) { i =>
+        val TiffTagFieldValue(tag, fieldType, length, value) = sortedTagFieldValues(i)
+        if(value.length > 4) {
+          writeBytes(value)
+        }
+      }
+
+      imageData(ifdCount - i - 1) = segments -> segmentCount
+    }
+    
+    // write image data in the reversed order
+    // smaller IFDs data offset should go first
+    imageData.foreach { case (segments, segmentCount) =>
+      segments.getSegments(0 until segmentCount).foreach { case (_, segment) =>
+        writeBytes(segment)
+      }
+    }
+  }
+
+  def write(optimizedOrder: Boolean = false): Unit = {
+    // Write the header that determines the endian
+    if (geoTiff.imageData.decompressor.byteOrder == ByteOrder.BIG_ENDIAN) {
+      val m = 'M'.toByte
+      writeByte(m)
+      writeByte(m)
+    } else {
+      val i = 'I'.toByte
+      writeByte(i)
+      writeByte(i)
+    }
+
+    // TIFF header code.
+    writeShort(Tiff.code.toShort)
+
+    // Write tag start offset (immediately after this 4 byte integer)
+    writeInt(index + 4)
+
+    // Append all IFDs
+    if(optimizedOrder) appendCloudOptimized(IFDs)
+    else append(IFDs)
 
     dos.flush()
   }

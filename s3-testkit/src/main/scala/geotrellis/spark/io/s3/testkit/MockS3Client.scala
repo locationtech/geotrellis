@@ -31,6 +31,11 @@ import scala.collection.mutable
 class MockS3Client() extends S3Client with LazyLogging {
   import MockS3Client._
 
+  def doesBucketExist(bucket: String): Boolean = buckets.containsKey(bucket)
+
+  def doesObjectExist(bucket: String, key: String): Boolean =
+    getBucket(bucket).contains(key)
+
   def listObjects(r: ListObjectsRequest): ObjectListing = this.synchronized {
     setLastListObjectsRequest(r)
     if (null == r.getMaxKeys)

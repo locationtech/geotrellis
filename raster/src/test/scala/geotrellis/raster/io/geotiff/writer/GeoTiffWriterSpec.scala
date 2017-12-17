@@ -157,7 +157,7 @@ class GeoTiffWriterSpec extends FunSpec
 
       addToPurge(path)
 
-      val SinglebandGeoTiff(tile, extent, crs, _, _) = SinglebandGeoTiff(path)
+      val SinglebandGeoTiff(tile, extent, crs, _, _, _) = SinglebandGeoTiff(path)
 
       extent should equal (testExtent)
       crs should equal (testCRS)
@@ -174,7 +174,7 @@ class GeoTiffWriterSpec extends FunSpec
 
       addToPurge(path)
 
-      val SinglebandGeoTiff(actualTile, actualExtent, actualCrs, _, _) = SinglebandGeoTiff(path)
+      val SinglebandGeoTiff(actualTile, actualExtent, actualCrs, _, _, _) = SinglebandGeoTiff(path)
 
       actualExtent should equal (extent)
       crs should equal (LatLng)
@@ -276,6 +276,180 @@ class GeoTiffWriterSpec extends FunSpec
         val expectedBand = tile.band(i)
 
         assertEqual(actualBand, expectedBand)
+      }
+    }
+
+    it("should write a MultibandGeoTiff with overviews correct") {
+      val sizes = List(1056 -> 1052, 528 -> 526, 264 -> 263, 132 -> 132, 66 -> 66, 33 -> 33)
+
+      val tiffOriginal = MultibandGeoTiff(geoTiffPath("overviews/multiband.tif"))
+      tiffOriginal.write(path)
+
+      val tiff = MultibandGeoTiff(path)
+      val tile = tiff.tile
+
+      tiff.getOverviewsCount should be (5)
+      tile.bandCount should be (4)
+      tile.bands.map(_.isNoDataTile).reduce(_ && _) should be (false)
+
+      tile.cols -> tile.rows should be (sizes(0))
+
+      tiff.overviews.zip(sizes.tail).foreach { case (ovrTiff, ovrSize) =>
+        val ovrTile = ovrTiff.tile
+
+        ovrTiff.getOverviewsCount should be (0)
+        ovrTile.bandCount should be (4)
+        ovrTile.bands.map(_.isNoDataTile).reduce(_ && _) should be (false)
+
+        ovrTile.cols -> ovrTile.rows should be (ovrSize)
+      }
+    }
+
+    it("should write a striped MultibandGeoTiff with overviews as tiled cloud optimized 128x128 tiff") {
+      val sizes = List(1056 -> 1052, 528 -> 526, 264 -> 263, 132 -> 132, 66 -> 66, 33 -> 33)
+
+      // Reading not cloud optimized tiff
+      val tiffOriginal = MultibandGeoTiff(geoTiffPath("overviews/multiband.tif"))
+
+      (tiffOriginal.options.storageMethod match {
+        case _: Striped => true
+        case _: Tiled => false
+      }) should be (true)
+
+      val tiledTiff = tiffOriginal.withStorageMethod(Tiled(128, 128))
+
+      tiledTiff.write(path, true)
+
+      val tiff = MultibandGeoTiff(path)
+      val tile = tiff.tile
+
+      tiff.options.storageMethod should be (Tiled(128, 128))
+      tiff.getOverviewsCount should be (5)
+      tile.bandCount should be (4)
+      tile.bands.map(_.isNoDataTile).reduce(_ && _) should be (false)
+
+      tile.cols -> tile.rows should be (sizes(0))
+
+      tiff.overviews.zip(sizes.tail).foreach { case (ovrTiff, ovrSize) =>
+        val ovrTile = ovrTiff.tile
+
+        ovrTiff.options.storageMethod should be (Tiled(128, 128))
+        ovrTiff.getOverviewsCount should be (0)
+        ovrTile.bandCount should be (4)
+        ovrTile.bands.map(_.isNoDataTile).reduce(_ && _) should be (false)
+
+        ovrTile.cols -> ovrTile.rows should be (ovrSize)
+      }
+    }
+
+    it("should write a striped SinglebandGeoTiff with overviews as tiled cloud optimized 128x128 tiff") {
+      val sizes = List(1056 -> 1052, 528 -> 526, 264 -> 263, 132 -> 132, 66 -> 66, 33 -> 33)
+
+      // Reading not cloud optimized tiff
+      val tiffOriginal = SinglebandGeoTiff(geoTiffPath("overviews/singleband.tif"))
+
+      (tiffOriginal.options.storageMethod match {
+        case _: Striped => true
+        case _: Tiled => false
+      }) should be (true)
+
+      val tiledTiff = tiffOriginal.withStorageMethod(Tiled(128, 128))
+
+      tiledTiff.write(path, true)
+
+      val tiff = SinglebandGeoTiff(path)
+      val tile = tiff.tile
+
+      tiff.options.storageMethod should be (Tiled(128, 128))
+      tiff.getOverviewsCount should be (5)
+      tile.isNoDataTile should be (false)
+
+      tile.cols -> tile.rows should be (sizes(0))
+
+      tiff.overviews.zip(sizes.tail).foreach { case (ovrTiff, ovrSize) =>
+        val ovrTile = ovrTiff.tile
+
+        ovrTiff.options.storageMethod should be (Tiled(128, 128))
+        ovrTiff.getOverviewsCount should be (0)
+        ovrTile.isNoDataTile should be (false)
+
+        ovrTile.cols -> ovrTile.rows should be (ovrSize)
+      }
+    }
+
+    it("should write a SinglebandGeoTiff with overviews correct") {
+      // sizes of overviews, starting with the base ifd
+      val sizes = List(1056 -> 1052, 528 -> 526, 264 -> 263, 132 -> 132, 66 -> 66, 33 -> 33)
+
+      val tiffOriginal = SinglebandGeoTiff(geoTiffPath("overviews/singleband.tif"))
+      tiffOriginal.write(path)
+
+      val tiff = SinglebandGeoTiff(path)
+      val tile = tiff.tile
+
+      tiff.getOverviewsCount should be (5)
+      tile.isNoDataTile should be (false)
+
+      tile.cols -> tile.rows should be (sizes(0))
+
+      tiff.overviews.zip(sizes.tail).foreach { case (ovrTiff, ovrSize) =>
+        val ovrTile = ovrTiff.tile
+
+        ovrTiff.getOverviewsCount should be (0)
+        ovrTile.isNoDataTile should be (false)
+
+        ovrTile.cols -> ovrTile.rows should be (ovrSize)
+      }
+    }
+
+    it("should write cloud optimized MultibandGeoTiff with overviews correct") {
+      val sizes = List(1056 -> 1052, 528 -> 526, 264 -> 263, 132 -> 132, 66 -> 66, 33 -> 33)
+
+      val tiffOriginal = MultibandGeoTiff(geoTiffPath("overviews/multiband_co.tif"))
+      tiffOriginal.write(path, true)
+
+      val tiff = MultibandGeoTiff(path)
+      val tile = tiff.tile
+
+      tiff.getOverviewsCount should be (5)
+      tile.bandCount should be (4)
+      tile.bands.map(_.isNoDataTile).reduce(_ && _) should be (false)
+
+      tile.cols -> tile.rows should be (sizes(0))
+
+      tiff.overviews.zip(sizes.tail).foreach { case (ovrTiff, ovrSize) =>
+        val ovrTile = ovrTiff.tile
+
+        ovrTiff.getOverviewsCount should be (0)
+        ovrTile.bandCount should be (4)
+        ovrTile.bands.map(_.isNoDataTile).reduce(_ && _) should be (false)
+
+        ovrTile.cols -> ovrTile.rows should be (ovrSize)
+      }
+    }
+
+    it("should write cloud optimized SinglebandGeoTiff with overviews correct") {
+      // sizes of overviews, starting with the base ifd
+      val sizes = List(1056 -> 1052, 528 -> 526, 264 -> 263, 132 -> 132, 66 -> 66, 33 -> 33)
+
+      val tiffOriginal = SinglebandGeoTiff(geoTiffPath("overviews/singleband_co.tif"))
+      tiffOriginal.write(path, true)
+
+      val tiff = SinglebandGeoTiff(path)
+      val tile = tiff.tile
+
+      tiff.getOverviewsCount should be (5)
+      tile.isNoDataTile should be (false)
+
+      tile.cols -> tile.rows should be (sizes(0))
+
+      tiff.overviews.zip(sizes.tail).foreach { case (ovrTiff, ovrSize) =>
+        val ovrTile = ovrTiff.tile
+
+        ovrTiff.getOverviewsCount should be (0)
+        ovrTile.isNoDataTile should be (false)
+
+        ovrTile.cols -> ovrTile.rows should be (ovrSize)
       }
     }
   }

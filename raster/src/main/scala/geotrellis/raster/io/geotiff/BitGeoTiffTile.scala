@@ -27,16 +27,24 @@ class BitGeoTiffTile(
   val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
-  val cellType: BitCells with NoDataHandling
-) extends GeoTiffTile(segmentLayout, compression) with GeoTiffSegmentLayoutTransform with BitGeoTiffSegmentCollection {
+  val cellType: BitCells with NoDataHandling,
+  overviews: List[BitGeoTiffTile] = Nil
+) extends GeoTiffTile(segmentLayout, compression, overviews) with GeoTiffSegmentLayoutTransform with BitGeoTiffSegmentCollection {
 
   def withNoData(noDataValue: Option[Double]): BitGeoTiffTile =
-    new BitGeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoData(noDataValue))
+    new BitGeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoData(noDataValue), overviews.map(_.withNoData(noDataValue)))
 
   def interpretAs(newCellType: CellType): Tile = {
     newCellType match {
       case dt: BitCells with NoDataHandling =>
-        new BitGeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, dt)
+        new BitGeoTiffTile(
+          segmentBytes,
+          decompressor,
+          segmentLayout,
+          compression,
+          dt,
+          overviews.map(_.interpretAs(newCellType)).collect { case gt: BitGeoTiffTile => gt }
+        )
       case _ =>
         withNoData(None).convert(newCellType)
     }

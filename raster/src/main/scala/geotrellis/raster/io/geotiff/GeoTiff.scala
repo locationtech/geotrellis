@@ -17,7 +17,7 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.reader.GeoTiffReader
+import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.vector.{Extent, ProjectedExtent}
 import geotrellis.proj4.CRS
@@ -30,6 +30,7 @@ trait GeoTiffData {
   val cellType: CellType
 
   def imageData: GeoTiffImageData
+  def overviews: List[GeoTiffData]
   def extent: Extent
   def crs: CRS
   def tags: Tags
@@ -52,18 +53,67 @@ trait GeoTiffData {
 trait GeoTiff[T <: CellGrid] extends GeoTiffData {
   def tile: T
 
+  def cols: Int = tile.cols
+  def rows: Int = tile.rows
   def projectedExtent: ProjectedExtent = ProjectedExtent(extent, crs)
   def projectedRaster: ProjectedRaster[T] = ProjectedRaster(tile, extent, crs)
   def raster: Raster[T] = Raster(tile, extent)
   def rasterExtent: RasterExtent = RasterExtent(extent, tile.cols, tile.rows)
+  def cellSize: CellSize = rasterExtent.cellSize
 
   def mapTile(f: T => T): GeoTiff[T]
 
-  def write(path: String): Unit =
-    GeoTiffWriter.write(this, path)
+  def withStorageMethod(storageMethod: StorageMethod): GeoTiff[T]
+
+  def write(path: String, optimizedOrder: Boolean = false): Unit =
+    GeoTiffWriter.write(this, path, optimizedOrder)
 
   def toByteArray: Array[Byte] =
-    GeoTiffWriter.write(this)
+    GeoTiffWriter.write(this, false)
+
+  def toCloudOptimizedByteArray: Array[Byte] =
+    GeoTiffWriter.write(this, true)
+
+  def overviews: List[GeoTiff[T]]
+  def getOverviewsCount: Int = overviews.length
+  def getOverview(idx: Int): GeoTiff[T] = overviews(idx)
+
+  /** Chooses the best matching overviews and makes resample */
+  def resample(rasterExtent: RasterExtent, resampleMethod: ResampleMethod, strategy: OverviewStrategy): Raster[T]
+
+  /** Chooses the best matching overviews and makes resample & crop */
+  def crop(subExtent: Extent, cellSize: CellSize, resampleMethod: ResampleMethod, strategy: OverviewStrategy): Raster[T]
+  def crop(subExtent: Extent, cellSize: CellSize): Raster[T] = crop(subExtent, cellSize, NearestNeighbor, AutoHigherResolution)
+  def crop(rasterExtent: RasterExtent): Raster[T] = crop(rasterExtent.extent, rasterExtent.cellSize)
+
+  def crop(subExtent: Extent): GeoTiff[T]
+  def crop(colMax: Int, rowMax: Int): GeoTiff[T]
+  def crop(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int): GeoTiff[T]
+
+  /** Return the best matching overview to the given cellSize, returns "this" if no overviews available. */
+  protected def getClosestOverview(cellSize: CellSize, strategy: OverviewStrategy): GeoTiff[T] = {
+    overviews match {
+      case Nil => this
+      case list =>
+        strategy match {
+          case AutoHigherResolution =>
+            (this :: list) // overviews can have erased extent information
+              .map { v => (v.cellSize.resolution - cellSize.resolution) -> v }
+              .filter(_._1 >= 0)
+              .sortBy(_._1)
+              .map(_._2)
+              .headOption
+              .getOrElse(this)
+          case Auto(n) =>
+            list
+              .sortBy(v => math.abs(v.cellSize.resolution - cellSize.resolution))
+              .lift(n)
+              .getOrElse(this) // n can be out of bounds,
+          // makes only overview lookup as overview position is important
+          case Base => this
+        }
+    }
+  }
 }
 
 /**

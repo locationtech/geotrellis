@@ -21,18 +21,23 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
+import geotrellis.raster.resample.ResampleMethod
 
 case class SinglebandGeoTiff(
   tile: Tile,
   extent: Extent,
   crs: CRS,
   tags: Tags,
-  options: GeoTiffOptions
+  options: GeoTiffOptions,
+  overviews: List[SinglebandGeoTiff] = Nil
 ) extends GeoTiff[Tile] {
   val cellType = tile.cellType
 
   def mapTile(f: Tile => Tile): SinglebandGeoTiff =
-    SinglebandGeoTiff(f(tile), extent, crs, tags, options)
+    SinglebandGeoTiff(f(tile), extent, crs, tags, options, overviews)
+
+  def withStorageMethod(storageMethod: StorageMethod): SinglebandGeoTiff =
+    SinglebandGeoTiff(tile, extent, crs, tags, options.copy(storageMethod = storageMethod), overviews)
 
   def imageData: GeoTiffImageData =
     tile match {
@@ -44,7 +49,7 @@ case class SinglebandGeoTiff(
     val raster: Raster[Tile] =
       this.raster.crop(subExtent)
 
-    SinglebandGeoTiff(raster, subExtent, this.crs, this.tags, this.options)
+    SinglebandGeoTiff(raster, subExtent, this.crs, this.tags, this.options, this.overviews)
   }
 
   def crop(colMax: Int, rowMax: Int): SinglebandGeoTiff =
@@ -54,8 +59,18 @@ case class SinglebandGeoTiff(
     val raster: Raster[Tile] =
       this.raster.crop(colMin, rowMin, colMax, rowMax)
 
-    SinglebandGeoTiff(raster, raster._2, this.crs, this.tags, this.options)
+    SinglebandGeoTiff(raster, raster._2, this.crs, this.tags, this.options, this.overviews)
   }
+
+  def crop(subExtent: Extent, cellSize: CellSize, resampleMethod: ResampleMethod, strategy: OverviewStrategy): SinglebandRaster =
+    getClosestOverview(cellSize, strategy)
+      .crop(subExtent)
+      .resample(RasterExtent(subExtent, cellSize), resampleMethod, strategy)
+
+  def resample(rasterExtent: RasterExtent, resampleMethod: ResampleMethod, strategy: OverviewStrategy): SinglebandRaster =
+    getClosestOverview(cellSize, strategy)
+      .raster
+      .resample(rasterExtent, resampleMethod)
 }
 
 object SinglebandGeoTiff {

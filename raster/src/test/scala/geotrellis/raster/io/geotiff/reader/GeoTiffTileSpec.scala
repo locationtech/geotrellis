@@ -49,7 +49,7 @@ class GeoTiffTileSpec extends FunSpec
     }
 
     it("should work against econic.tif Striped NoCompression") {
-      val options = GeoTiffOptions(Striped, BandInterleave, NoCompression)
+      val options = GeoTiffOptions(Striped, NoCompression, interleaveMethod = BandInterleave)
       val expected = SinglebandGeoTiff(s"$baseDataPath/econic.tif").tile
       val actual = expected.toGeoTiffTile(options).toArrayTile
 
@@ -57,7 +57,7 @@ class GeoTiffTileSpec extends FunSpec
     }
 
     it("should work against econic.tif Striped with Deflate compression") {
-      val options = GeoTiffOptions(Striped, BandInterleave, DeflateCompression)
+      val options = GeoTiffOptions(Striped, DeflateCompression, interleaveMethod = BandInterleave)
 
       val expected = SinglebandGeoTiff(s"$baseDataPath/econic.tif").tile
       val actual = expected.toGeoTiffTile(options)
@@ -66,7 +66,7 @@ class GeoTiffTileSpec extends FunSpec
     }
 
     it("should work against econic.tif Tiled with no compression") {
-      val options = GeoTiffOptions(Tiled, BandInterleave, NoCompression)
+      val options = GeoTiffOptions(Tiled, NoCompression, interleaveMethod = BandInterleave)
 
       val expected = SinglebandGeoTiff(s"$baseDataPath/econic.tif").tile
       val actual = expected.toGeoTiffTile(options)
@@ -75,7 +75,7 @@ class GeoTiffTileSpec extends FunSpec
     }
 
     it("should work against econic.tif Tiled with Deflate compression") {
-      val options = GeoTiffOptions(Tiled, BandInterleave, Deflate)
+      val options = GeoTiffOptions(Tiled, Deflate, interleaveMethod = BandInterleave)
 
       val expected = SinglebandGeoTiff(s"$baseDataPath/econic.tif").tile
       val actual = expected.toGeoTiffTile(options)

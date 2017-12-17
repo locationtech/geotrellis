@@ -25,16 +25,24 @@ class UInt32GeoTiffTile(
   val decompressor: Decompressor,
   segmentLayout: GeoTiffSegmentLayout,
   compression: Compression,
-  val cellType: FloatCells with NoDataHandling
+  val cellType: FloatCells with NoDataHandling,
+  overviews: List[UInt32GeoTiffTile] = Nil
 ) extends GeoTiffTile(segmentLayout, compression) with UInt32GeoTiffSegmentCollection {
 
   def withNoData(noDataValue: Option[Double]): UInt32GeoTiffTile =
-    new UInt32GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoData(noDataValue))
+    new UInt32GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, cellType.withNoData(noDataValue), overviews.map(_.withNoData(noDataValue)))
 
   def interpretAs(newCellType: CellType): GeoTiffTile = {
     newCellType match {
       case dt: FloatCells with NoDataHandling =>
-        new UInt32GeoTiffTile(segmentBytes, decompressor, segmentLayout, compression, dt)
+        new UInt32GeoTiffTile(
+          segmentBytes,
+          decompressor,
+          segmentLayout,
+          compression,
+          dt,
+          overviews.map(_.interpretAs(newCellType)).collect { case gt: UInt32GeoTiffTile => gt }
+        )
       case _ =>
         withNoData(None).convert(newCellType)
     }

@@ -95,6 +95,10 @@ object TiffTagFieldValue {
     fieldValues += TiffTagFieldValue(PlanarConfigurationTag, ShortsFieldType, 1, PlanarConfigurations.PixelInterleave)
     fieldValues += TiffTagFieldValue(SampleFormatTag, ShortsFieldType, 1, imageData.bandType.sampleFormat)
 
+    geoTiff.options.subfileType.foreach { sft =>
+      fieldValues += TiffTagFieldValue(NewSubfileTypeTag, IntsFieldType, 1, toBytes(sft.code))
+    }
+
     if(geoTiff.options.colorSpace == ColorSpace.Palette) {
 
       val bitsPerSample = imageData.bandType.bitsPerSample

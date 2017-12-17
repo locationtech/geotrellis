@@ -21,6 +21,7 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader.GeoTiffInfo
 import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.spark.io._
 import geotrellis.spark.io.s3.util.S3RangeReader
+import geotrellis.util.ByteReader
 
 import com.amazonaws.services.s3.AmazonS3URI
 import com.amazonaws.services.s3.model.ListObjectsRequest
@@ -49,8 +50,11 @@ case class S3GeoTiffInfoReader(
 
   def getGeoTiffInfo(uri: String): GeoTiffInfo = {
     val s3Uri = new AmazonS3URI(uri)
-    val rr = S3RangeReader(s3Uri.getBucket, s3Uri.getKey, getS3Client())
-    GeoTiffReader.readGeoTiffInfo(rr, decompress, streaming)
+    val ovrKey = s"${s3Uri.getKey}.ovr"
+    val ovrReader: Option[ByteReader] =
+      if (getS3Client().doesObjectExist(bucket, ovrKey)) Some(S3RangeReader(bucket, ovrKey, getS3Client())) else None
+
+    GeoTiffReader.readGeoTiffInfo(S3RangeReader(s3Uri.getBucket, s3Uri.getKey, getS3Client()), decompress, streaming, true, ovrReader)
   }
 
   def getGeoTiffTags(uri: String): TiffTags = {

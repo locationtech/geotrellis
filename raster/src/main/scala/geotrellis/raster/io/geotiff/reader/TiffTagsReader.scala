@@ -447,7 +447,7 @@ object TiffTagsReader {
       )
 
     def readIntsTag(tiffTags: TiffTags,
-      tagMetadata: TiffTagMetadata)(implicit ttos: TiffTagOffsetSize) = {
+      tagMetadata: TiffTagMetadata)(implicit ttos: TiffTagOffsetSize): TiffTags = {
       val ints = byteReader.getIntArray(offset = tagMetadata.offset, length = tagMetadata.length)
 
       tagMetadata.tag match {

@@ -47,36 +47,225 @@ object GeoTiffMultibandTile {
     compression: Compression,
     bandCount: Int,
     cellType: CellType,
-    bandType: Option[BandType] = None
+    bandType: Option[BandType] = None,
+    overviews: List[GeoTiffMultibandTile] = Nil
   ): GeoTiffMultibandTile =
     bandType match {
       case Some(UInt32BandType) =>
         cellType match {
           case ct: FloatCells =>
-            new UInt32GeoTiffMultibandTile(segmentBytes, decompressor, segmentLayout, compression, bandCount, ct)
+            new UInt32GeoTiffMultibandTile(
+              segmentBytes,
+              decompressor,
+              segmentLayout,
+              compression,
+              bandCount,
+              ct,
+              overviews.map(applyOverview(_, compression, cellType, bandType)).collect { case gt: UInt32GeoTiffMultibandTile => gt }
+            )
           case _ =>
             throw new IllegalArgumentException("UInt32BandType should always resolve to Float celltype")
         }
       case _ =>
         cellType match {
           case ct: BitCells =>
-            new BitGeoTiffMultibandTile(segmentBytes, decompressor, segmentLayout, compression, bandCount, ct)
+            new BitGeoTiffMultibandTile(
+              segmentBytes,
+              decompressor,
+              segmentLayout,
+              compression,
+              bandCount,
+              ct,
+              overviews.map(applyOverview(_, compression, cellType, bandType)).collect { case gt: BitGeoTiffMultibandTile => gt }
+            )
           case ct: ByteCells =>
-            new ByteGeoTiffMultibandTile(segmentBytes, decompressor, segmentLayout, compression, bandCount, ct)
+            new ByteGeoTiffMultibandTile(
+              segmentBytes,
+              decompressor,
+              segmentLayout,
+              compression,
+              bandCount,
+              ct,
+              overviews.map(applyOverview(_, compression, cellType, bandType)).collect { case gt: ByteGeoTiffMultibandTile => gt }
+            )
           case ct: UByteCells =>
-            new UByteGeoTiffMultibandTile(segmentBytes, decompressor, segmentLayout, compression, bandCount, ct)
+            new UByteGeoTiffMultibandTile(
+              segmentBytes,
+              decompressor,
+              segmentLayout,
+              compression,
+              bandCount,
+              ct,
+              overviews.map(applyOverview(_, compression, cellType, bandType)).collect { case gt: UByteGeoTiffMultibandTile => gt }
+            )
           case ct: ShortCells =>
-            new Int16GeoTiffMultibandTile(segmentBytes, decompressor, segmentLayout, compression, bandCount, ct)
+            new Int16GeoTiffMultibandTile(
+              segmentBytes,
+              decompressor,
+              segmentLayout,
+              compression,
+              bandCount,
+              ct,
+              overviews.map(applyOverview(_, compression, cellType, bandType)).collect { case gt: Int16GeoTiffMultibandTile => gt }
+            )
           case ct: UShortCells =>
-            new UInt16GeoTiffMultibandTile(segmentBytes, decompressor, segmentLayout, compression, bandCount, ct)
+            new UInt16GeoTiffMultibandTile(
+              segmentBytes,
+              decompressor,
+              segmentLayout,
+              compression,
+              bandCount,
+              ct,
+              overviews.map(applyOverview(_, compression, cellType, bandType)).collect { case gt: UInt16GeoTiffMultibandTile => gt }
+            )
           case ct: IntCells =>
-            new Int32GeoTiffMultibandTile(segmentBytes, decompressor, segmentLayout, compression, bandCount, ct)
+            new Int32GeoTiffMultibandTile(
+              segmentBytes,
+              decompressor,
+              segmentLayout,
+              compression,
+              bandCount,
+              ct,
+              overviews.map(applyOverview(_, compression, cellType, bandType)).collect { case gt: Int32GeoTiffMultibandTile => gt }
+            )
           case ct: FloatCells =>
-            new Float32GeoTiffMultibandTile(segmentBytes, decompressor, segmentLayout, compression, bandCount, ct)
+            new Float32GeoTiffMultibandTile(
+              segmentBytes,
+              decompressor,
+              segmentLayout,
+              compression,
+              bandCount,
+              ct,
+              overviews.map(applyOverview(_, compression, cellType, bandType)).collect { case gt: Float32GeoTiffMultibandTile => gt }
+            )
           case ct: DoubleCells =>
-            new Float64GeoTiffMultibandTile(segmentBytes, decompressor, segmentLayout, compression, bandCount, ct)
+            new Float64GeoTiffMultibandTile(
+              segmentBytes,
+              decompressor,
+              segmentLayout,
+              compression,
+              bandCount,
+              ct,
+              overviews.map(applyOverview(_, compression, cellType, bandType)).collect { case gt: Float64GeoTiffMultibandTile => gt }
+            )
         }
     }
+
+  def applyOverview(
+    geoTiffTile: GeoTiffMultibandTile,
+    compression: Compression,
+    cellType: CellType,
+    bandType: Option[BandType] = None
+  ): GeoTiffMultibandTile = {
+    val segmentCount = geoTiffTile.segmentCount
+    val segmentBytes = geoTiffTile.segmentBytes
+    val segmentLayout = geoTiffTile.segmentLayout
+    val compressor = compression.createCompressor(segmentCount)
+    val decompressor = compressor.createDecompressor()
+    val bandCount = geoTiffTile.bandCount
+    val overviews = geoTiffTile.overviews.map(applyOverview(_, compression, cellType, bandType))
+
+    bandType match {
+      case Some(UInt32BandType) =>
+        cellType match {
+          case ct: FloatCells =>
+            new UInt32GeoTiffMultibandTile(
+              segmentBytes,
+              decompressor,
+              segmentLayout,
+              compression,
+              bandCount,
+              ct,
+              overviews.map(applyOverview(_, compression, cellType, bandType)).collect { case gt: UInt32GeoTiffMultibandTile => gt }
+            )
+          case _ =>
+            throw new IllegalArgumentException("UInt32BandType should always resolve to Float celltype")
+        }
+      case _ =>
+        cellType match {
+          case ct: BitCells =>
+            new BitGeoTiffMultibandTile(
+              segmentBytes,
+              decompressor,
+              segmentLayout,
+              compression,
+              bandCount,
+              ct,
+              overviews.map(applyOverview(_, compression, cellType, bandType)).collect { case gt: BitGeoTiffMultibandTile => gt }
+            )
+          case ct: ByteCells =>
+            new ByteGeoTiffMultibandTile(
+              segmentBytes,
+              decompressor,
+              segmentLayout,
+              compression,
+              bandCount,
+              ct,
+              overviews.map(applyOverview(_, compression, cellType, bandType)).collect { case gt: ByteGeoTiffMultibandTile => gt }
+            )
+          case ct: UByteCells =>
+            new UByteGeoTiffMultibandTile(
+              segmentBytes,
+              decompressor,
+              segmentLayout,
+              compression,
+              bandCount,
+              ct,
+              overviews.map(applyOverview(_, compression, cellType, bandType)).collect { case gt: UByteGeoTiffMultibandTile => gt }
+            )
+          case ct: ShortCells =>
+            new Int16GeoTiffMultibandTile(
+              segmentBytes,
+              decompressor,
+              segmentLayout,
+              compression,
+              bandCount,
+              ct,
+              overviews.map(applyOverview(_, compression, cellType, bandType)).collect { case gt: Int16GeoTiffMultibandTile => gt }
+            )
+          case ct: UShortCells =>
+            new UInt16GeoTiffMultibandTile(
+              segmentBytes,
+              decompressor,
+              segmentLayout,
+              compression,
+              bandCount,
+              ct,
+              overviews.map(applyOverview(_, compression, cellType, bandType)).collect { case gt: UInt16GeoTiffMultibandTile => gt }
+            )
+          case ct: IntCells =>
+            new Int32GeoTiffMultibandTile(
+              segmentBytes,
+              decompressor,
+              segmentLayout,
+              compression,
+              bandCount,
+              ct,
+              overviews.map(applyOverview(_, compression, cellType, bandType)).collect { case gt: Int32GeoTiffMultibandTile => gt }
+            )
+          case ct: FloatCells =>
+            new Float32GeoTiffMultibandTile(
+              segmentBytes,
+              decompressor,
+              segmentLayout,
+              compression,
+              bandCount,
+              ct,
+              overviews.map(applyOverview(_, compression, cellType, bandType)).collect { case gt: Float32GeoTiffMultibandTile => gt }
+            )
+          case ct: DoubleCells =>
+            new Float64GeoTiffMultibandTile(
+              segmentBytes,
+              decompressor,
+              segmentLayout,
+              compression,
+              bandCount,
+              ct,
+              overviews.map(applyOverview(_, compression, cellType, bandType)).collect { case gt: Float64GeoTiffMultibandTile => gt }
+            )
+        }
+    }
+  }
 
   /** Convert a multiband tile to a GeoTiffTile. Defaults to Striped GeoTIFF format. Only handles pixel interlacing. */
   def apply(tile: MultibandTile): GeoTiffMultibandTile =
@@ -154,7 +343,8 @@ abstract class GeoTiffMultibandTile(
   val decompressor: Decompressor,
   val segmentLayout: GeoTiffSegmentLayout,
   val compression: Compression,
-  val bandCount: Int
+  val bandCount: Int,
+  val overviews: List[GeoTiffMultibandTile] = Nil
 ) extends MultibandTile with GeoTiffImageData with GeoTiffSegmentLayoutTransform with MacroGeotiffMultibandCombiners with LazyLogging {
   val cellType: CellType
   val cols: Int = segmentLayout.totalCols
@@ -168,6 +358,9 @@ abstract class GeoTiffMultibandTile(
 
   val segmentCount: Int = segmentBytes.size
   private val isTiled = segmentLayout.isTiled
+
+  def getOverviewsCount: Int = overviews.length
+  def getOverview(idx: Int): GeoTiffMultibandTile = overviews(idx)
 
   /**
    * Returns the corresponding GeoTiffTile from the inputted band index.
@@ -508,7 +701,8 @@ abstract class GeoTiffMultibandTile(
       compression,
       bandCount,
       cellType,
-      Some(bandType)
+      Some(bandType),
+      overviews = overviews.map(_.convert(newCellType))
     )
   }
 
@@ -534,7 +728,8 @@ abstract class GeoTiffMultibandTile(
       compression,
       bandCount,
       cellType,
-      Some(bandType)
+      Some(bandType),
+      overviews = overviews
     )
   }
 
