@@ -226,6 +226,117 @@ become easily answerable.
 Proposed Typeclasses
 --------------------
 
+``Local``
+^^^^^^^^^
+
+Types which can have *Local* map algebra operations performed on them.
+Mostly a glorified, monomorphic ``Functor``.
+
+.. code-block:: scala
+
+   /**
+    * LAW: Identity
+    * {{{
+    * a.map(identity) == identity(a)
+    * }}}
+    *
+    * LAW: Composibility
+    * {{{
+    * a.map(f compose g) == a.map(g).map(f)
+    * }}}
+    *
+    * LAW: Right-laziness
+    * {{{
+    * val a: List[(SpatialKey, Tile)] = List.empty  /* Assume `List` has a `Local` instance */
+    * a.zipWith(???) == a
+    * }}}
+    *
+    * @groupname minimal Minimal Complete Definition
+    * @groupprio minimal 0
+    *
+    * @groupname local Local Operations
+    * @groupprio local 1
+    * @groupdesc local Per-"location" operations between one or more `A`.
+    */
+   @typeclass trait Local[A] {
+
+     /** @group minimal */
+     def map(self: A, f: Int => Int): A
+
+     /** @group minimal */
+     def zipWith(self: A, other: => A, f: (Int, Int) => Int): A  // Could also be called `parmap`.
+
+     /** @group local */
+     def classify(self: A, f: Int => Int): A = map(self, f)
+
+     /** @group local */
+     def localSum(self: A, other: => A): A = zipWith(self, other, (_ + _))
+
+     /* All other local ops would be provided for free, like `localSum` */
+
+   }
+
+Here, ``Tile`` remains a monomorphic Sum Type for performance reasons. Both ``Tile``
+and ``MultibandTile`` would be given instances of ``Local``, and ``Local`` itself
+remains with the kind ``Local :: *``. Were ``Tile`` higher-kinded, ``Local`` too
+could be ``Local :: * -> *`` and we could piggy-back off ``Functor``.
+Maybe one day.
+
+``Projected``
+^^^^^^^^^^^^^
+
+Types which exist in a projection, with the ability to be reprojected.
+
+.. code-block:: scala
+
+   /**
+    * LAW: Identity
+    *   if Projected[A].crs.get(a) == Foo then a.reproject(Foo) == a
+    *   with /no/ floating point error.
+    *
+    * LAW: Isomorphism
+    *   if Projected[A].crs.get(a) == Foo then a.reproject(Bar).reproject(Foo) ~= a
+    *   with /negligible/ floating point error.
+    *
+    * LAW: Transitivity
+    *   if Projected[A].crs.get(a) == Foo then a.reproject(Bar).reproject(Baz) ~= a.reproject(Baz)
+    *   with /negligible/ floating point error.
+    *
+    * Minimal Complete Definition: [[crs]], [[reproject]]
+    */
+   @typeclass trait Projected[A] {
+
+     def crs: Lens[A, CRS]
+
+     def reproject(a: A, target: CRS)
+
+   }
+
+``Layer``
+^^^^^^^^^
+
+Any higher-kinded type which could be considered a GeoTrellis "Layer".
+
+.. code-block:: scala
+
+   /**
+    * LAW: Keys or something?
+    *    Keys are sanely positioned? I don't know.
+    *
+    * Minimal Complete Definition: ???
+    */
+   @typeclass trait Layer[F[_]] extends Functor[F[_]] {
+
+     ???  // Some fundamental operation that gives the laws meaning.
+
+     def saveToS3[K: ???, V: Binary](layer: F[(K, V)]: IO[Unit] = { ... }  // Provided.
+
+   }
+
+where ``Binary`` is alluding to some binary codec, say Avro.
+
+*Note:* The ``Layer`` symbol is currently used in ``geotrellis-vectortile``.
+
 Further Work
 ------------
 
