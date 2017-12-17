@@ -247,8 +247,8 @@ Mostly a glorified, monomorphic ``Functor``.
     *
     * LAW: Right-laziness
     * {{{
-    * val a: List[(SpatialKey, Tile)] = List.empty  /* Assume `List` has a `Local` instance */
-    * a.zipWith(???) == a
+    * val a: Tile = ArrayTile.empty(IntCellType, 0, 0)
+    * a.zipWith(throw new Exception) == a
     * }}}
     *
     * @groupname minimal Minimal Complete Definition
