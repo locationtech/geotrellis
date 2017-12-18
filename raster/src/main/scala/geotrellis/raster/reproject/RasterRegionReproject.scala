@@ -30,7 +30,7 @@ object RasterRegionReproject {
 
     def scanlineCols(xmin: Double, xmax: Double): (Array[Int], Array[Double]) = {
       val x0 = ((xmin - extent.xmin) / destRasterExtent.cellwidth + 0.5 - 1e-8).toInt
-      val x1 = ((xmax - extent.xmin) / destRasterExtent.cellwidth + 0.5).toInt - 1
+      val x1 = ((xmax - extent.xmin) / destRasterExtent.cellwidth + 0.5 + 1e-8).toInt - 1
       val locations = Array.ofDim[Int](x1 - x0 + 1)
       val result = Array.ofDim[Double](x1 - x0 + 1)
       cfor(x0)(_ <= x1, _ + 1){ i =>
@@ -68,7 +68,8 @@ object RasterRegionReproject {
               val xres = Array.ofDim[Double](xarr.size)
               val yres = Array.ofDim[Double](xarr.size)
 
-              rowTransform(xarr, yarr, xres, yres)
+              if (xarr.size > 0)
+                rowTransform(xarr, yarr, xres, yres)
 
               (pxarr, xres, yres)
             case p: Point =>
@@ -77,7 +78,7 @@ object RasterRegionReproject {
             case g: Geometry =>
               throw new IllegalStateException("Line-Polygon intersection cannot produce geometries that are not Points or Lines")
             }
-        }).reduce{ (a1, a2) => {
+        }).fold( (Array.empty[Int], Array.empty[Double], Array.empty[Double]) ){ (a1, a2) => {
           val (px1, x1, y1) = a1
           val (px2, x2, y2) = a2
           (px1 ++ px2, x1 ++ x2, y1 ++ y2)

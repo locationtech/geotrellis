@@ -39,16 +39,34 @@ class RasterizeReprojectSpec extends FunSpec
       val ex = coloRaster.extent.buffer(-1e-3)
       var valid = true
 
+      val errTile = IntArrayTile.ofDim(reprojected.cols, reprojected.rows)
+
       reprojected.tile.foreach{ (px, py, v) =>
         val (x, y) = reprojected.rasterExtent.gridToMap(px, py)
         val (tx, ty) = trans(x, y)
         val dist = ex.distance(Point(tx, ty))
-        if (dist >= 1e-3) {
+        if (dist > 1.2e-3) {
           valid = valid && (v != 1)
+          v match {
+            case 1 => errTile.set(px, py, -1)
+            case _ => errTile.set(px, py, 1)
+          }
         } else if (dist == 0) {
           valid = valid && (v == 1)
+          v match {
+            case 1 => errTile.set(px, py, 1)
+            case _ => errTile.set(px, py, -1)
+          }
+        } else {
+          // we ignored these pixels to avoid spurious errors due to resampling
+          // near the original tile boundaries
+          errTile.set(px, py, 0)
         }
       }
+
+      // import geotrellis.raster.render._
+      // val cm = ColorMap(Map( -1 -> 0xff0000ff, 0 -> 0x000000ff, 1 -> 0x00ff00ff))
+      // errTile.renderPng(cm).write("colo.png")
 
       valid should be (true)
     }

@@ -66,4 +66,6 @@ case class ProjectedRaster[T <: CellGrid](raster: Raster[T], crs: CRS) {
   def tile = raster.tile
   def extent = raster.extent
   def projectedExtent = ProjectedExtent(extent, crs)
+  def cols = raster.cols
+  def rows = raster.rows
 }
