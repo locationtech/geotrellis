@@ -16,7 +16,7 @@ import scala.util.Random
 class RasterizingReprojectBench  {
   import RasterizingReprojectBench._
 
-  @Param(Array( "128", "256", "512", "1024", "2048", "4096", "8192"))
+  @Param(Array("32", "64", "128", "256", "512", "1024", "2048", "4096", "8192"))
   var size: Int = _
 
   var raster: ProjectedRaster[Tile] = _

@@ -85,6 +85,17 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
       actualRdd.map { case (_, tile) => tile.dimensions == (25, 25) }.reduce(_ && _) should be (true)
 
       // actual.tile.renderPng(rainbow).write("actual.png")
+      // val errorTile = IntArrayTile.ofDim(expected.tile.cols, expected.tile.rows)
+      // cfor(0)(_ < expected.rows, _ + 1) { row =>
+      //   cfor(0)(_ < expected.cols, _ + 1) { col =>
+      //     val diff = math.abs(actual.tile.getDouble(col, row) - expected.tile.getDouble(col, row))
+      //     if (isNoData(actual.tile.getDouble(col, row)) || diff <= 1e-3)
+      //       errorTile.set(col, row, 0)
+      //     else
+      //       errorTile.set(col, row, 1)
+      //   }
+      // }
+      // errorTile.renderPng(ColorMap(0 -> 0x000000ff, 1 -> 0xff0000ff)).write("error.png")
 
       // Account for tiles being a bit bigger then the actual result
       actual.extent.covers(expected.extent) should be (true)
@@ -99,6 +110,8 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
       actualTile.cols should be >= (expectedTile.cols)
       actualTile.rows should be >= (expectedTile.rows)
 
+      var errCount = 0
+      val errors = collection.mutable.ListBuffer.empty[String]
       cfor(0)(_ < actual.rows, _ + 1) { row =>
         cfor(0)(_ < actual.cols, _ + 1) { col =>
           val a = actualTile.getDouble(col, row)
@@ -107,20 +120,25 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
           } else if(row != 1){
             val expected = expectedTile.getDouble(col, row)
             if (a.isNaN) {
-              withClue(s"Failed at col: $col and row: $row, $a != $expected") {
-                expected.isNaN should be (true)
+              if (!expected.isNaN) {
+                errors.append(s"Failed at col: $col and row: $row, $a != $expected\n")
+                errCount += 1
               }
             } else if (expected.isNaN) {
-              withClue(s"Failed at col: $col and row: $row, $a != $expected") {
-                a.isNaN should be (true)
-              }
+              errors.append(s"Failed at col: $col and row: $row, $a != $expected\n")
+              errCount += 1
             } else {
-              withClue(s"Failed at col: $col and row: $row, $a != $expected") {
-                a should be (expected +- 0.001)
+              if (math.abs(expected - a) > 3) {
+                errors.append(s"Failed at col: $col and row: $row, $a != $expected\n")
+                errCount += 1
               }
             }
           }
         }
+      }
+
+      if (errCount > 24) {
+        fail("Too many pixels do not agree.  Error log follows.\n" ++ errors.reduce(_++_))
       }
     }
 
