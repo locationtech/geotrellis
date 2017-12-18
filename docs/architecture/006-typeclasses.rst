@@ -232,6 +232,7 @@ Proposed Typeclasses
 Types which can have *Local* map algebra operations performed on them.
 Mostly a glorified, monomorphic ``Functor``. Inspired by previous exploration
 `here <https://github.com/fosskers/mapalgebra/blob/master/lib/Geography/MapAlgebra.hs#L535>`__.
+Nothing is assumed about underlying implementations, including griddedness!
 
 .. code-block:: scala
 
@@ -284,6 +285,54 @@ and ``MultibandTile`` would be given instances of ``Local``, and ``Local`` itsel
 remains with the kind ``Local :: *``. Were ``Tile`` higher-kinded, ``Local`` too
 could be ``Local :: * -> *`` and we could piggy-back off ``Functor``.
 Maybe one day.
+
+``Focal``
+^^^^^^^^^
+
+Types which can have *Focal* operations performed on them. Mostly a glorified
+Indexed ``Functor``. Assumes a pseudo-griddedness, but not necessarily rectangularity.
+Would work for a sphere as well, for example.
+
+``Focal`` is uni-kinded (``Focal :: *``) for the same reasons as ``Local`` above.
+
+.. code-block:: scala
+
+   /**
+    * Types which can have ''Focal'' operations performed on them.
+    *
+    * LAW: Existance
+    *  `get(0,0)` must return a value.
+    *
+    * LAW: Solidity
+    *   for (y > 0), if get(x,y) then get(x, y-1)
+    *   for (x > 0), if get(x,y) then get(x-1, y)
+    *
+    * @groupname minimal Minimal Complete Definition
+    * @groupprio minimal 0
+    *
+    * @groupname focal Focal Operations
+    * @groupprio focal 1
+    * @groupdesc focal Operations over "neighbourhoods" of one `A`.
+    */
+   @typeclass trait Focal[A] {
+
+     /** @group minimal */
+     def get(self: A, x: Int, y: Int): Int
+
+     /** @group minimal */
+     def imap(self: A, f: (Int, Int, Int) => Int): A
+
+     /** @group focal */
+     def focal(self: A, n: Stencil, f: Neighbourhood => Int): A = { ... }  // provided
+
+     /** @group focal */
+     def focalSum(self: A, n: Stencil): A = focal(self, n, { _.foldLeft(0)(_ + _) })
+
+     /* All other focal ops would be provided for free here, like `focalSum` */
+
+   }
+
+where ``imap`` is short for "indexed map" as opposed to "invariant map".
 
 ``Projected``
 ^^^^^^^^^^^^^
