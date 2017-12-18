@@ -23,6 +23,7 @@ lazy val commonSettings = Seq(
     "-language:existentials",
     "-language:experimental.macros",
     "-feature"),
+  scalacOptions in (Compile, doc) += "-groups",
   publishMavenStyle := true,
   publishArtifact in Test := false,
   pomIncludeRepository := { _ => false },
@@ -83,6 +84,7 @@ lazy val root = Project("geotrellis", file(".")).
   aggregate(
     accumulo,
     cassandra,
+    core,
     `doc-examples`,
     geomesa,
     geotools,
@@ -119,6 +121,8 @@ lazy val root = Project("geotrellis", file(".")).
 
 lazy val macros = project
   .settings(commonSettings)
+
+lazy val core = project.in(file("core")).settings(commonSettings)
 
 lazy val vectortile = project
   .dependsOn(vector)
