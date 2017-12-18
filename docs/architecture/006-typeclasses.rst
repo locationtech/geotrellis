@@ -230,11 +230,14 @@ Proposed Typeclasses
 ^^^^^^^^^
 
 Types which can have *Local* map algebra operations performed on them.
-Mostly a glorified, monomorphic ``Functor``.
+Mostly a glorified, monomorphic ``Functor``. Inspired by previous exploration
+`here <https://github.com/fosskers/mapalgebra/blob/master/lib/Geography/MapAlgebra.hs#L535>`__.
 
 .. code-block:: scala
 
    /**
+    * Types which can have ''Local'' map algebra operations performed on them.
+    *
     * LAW: Identity
     * {{{
     * a.map(identity) == identity(a)
@@ -272,7 +275,7 @@ Mostly a glorified, monomorphic ``Functor``.
      /** @group local */
      def localSum(self: A, other: => A): A = zipWith(self, other, (_ + _))
 
-     /* All other local ops would be provided for free, like `localSum` */
+     /* All other local ops would be provided for free here, like `localSum` */
 
    }
 
@@ -333,7 +336,7 @@ Any higher-kinded type which could be considered a GeoTrellis "Layer".
 
    }
 
-where ``Binary`` is alluding to some binary codec, say Avro.
+where ``Binary`` is alluding to some binary codec, say Protobuf or Avro.
 
 *Note:* The ``Layer`` symbol is currently used in ``geotrellis-vectortile``.
 
