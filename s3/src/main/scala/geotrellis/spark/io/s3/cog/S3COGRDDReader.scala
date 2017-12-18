@@ -139,23 +139,4 @@ object S3COGRDDReader {
         classTag[V].runtimeClass.getCanonicalName,
         throw new Exception(s"No S3COGRDDReaderRegistry for the type ${classTag[V].runtimeClass.getCanonicalName}")
       ).asInstanceOf[S3COGRDDReader[V]]
-
-  def getReaders(uri: URI, getS3Client: () => S3Client = () => S3Client.DEFAULT): (ByteReader, Option[ByteReader]) = {
-    val auri = new AmazonS3URI(uri)
-    val (bucket, key) = auri.getBucket -> auri.getKey
-    val ovrKey = s"$key.ovr"
-    val ovrReader: Option[ByteReader] =
-      if (getS3Client().doesObjectExist(bucket, ovrKey)) Some(S3RangeReader(bucket, ovrKey, getS3Client())) else None
-
-    val reader =
-      StreamingByteReader(
-        S3RangeReader(
-          bucket = bucket,
-          key = key,
-          client = getS3Client()
-        )
-      )
-
-    reader -> ovrReader
-  }
 }

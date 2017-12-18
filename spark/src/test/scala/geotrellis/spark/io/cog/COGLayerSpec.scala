@@ -125,4 +125,28 @@ class COGLayerSpec extends FunSpec
 
     tileReader.reader[SpatialKey, Tile](LayerId("mask", 0)).read(SpatialKey(0, 0))
   }
+
+  it("test new COG") {
+    val source = sc.hadoopGeoTiffRDD(new Path("file:///Users/daunnc/subversions/git/github/pomadchin/geotrellis/raster/data/geotiff-test-files/reproject/cea.tif"))
+    val list: ListBuffer[(Int, TileLayerRDD[SpatialKey])] = ListBuffer()
+    val layoutScheme = ZoomedLayoutScheme(LatLng, 512)
+
+    Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme) { (rdd, zoom) =>
+      list += zoom -> rdd
+    }
+
+    val (zoom, layer) = list.head
+    val index: ZSpatialKeyIndex = new ZSpatialKeyIndex(layer.metadata.bounds match {
+      case kb: KeyBounds[SpatialKey] => kb
+      case _ => null
+    })
+
+    //COGLayer.withStitch(layer)(zoom, 7, layoutScheme).collect().head
+
+
+    val cogs = COGLayer.applyWithMetadataCalc(layer)(zoom, layoutScheme, minZoom = Some(7))
+
+    COGLayer.write(cogs.layers.values.last)(index, new URI("file:///tmp/test3"))
+    COGLayer.write(cogs.layers.values.head)(index, new URI("file:///tmp/test2"))
+  }
 }

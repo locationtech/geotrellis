@@ -26,7 +26,7 @@ class FileCOGLayerWriter(
 ) extends Serializable {
 
   def write[
-    K: SpatialComponent : Boundable : JsonFormat : ClassTag,
+    K: SpatialComponent: Boundable: JsonFormat : ClassTag,
     V <: CellGrid : ClassTag
   ](cogs: RDD[(K, ContextGeoTiff[K, V])])(id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit = {
     val catalogPathFile = new File(catalogPath)
@@ -38,6 +38,8 @@ class FileCOGLayerWriter(
     // schema for compatability purposes
     val schema = KryoWrapper(KeyValueRecordCodec[SpatialKey, Tile].schema)
     val kwFomat = KryoWrapper(implicitly[JsonFormat[K]])
+
+
 
     // headers would be stored AS IS
     // right now we are duplicating data

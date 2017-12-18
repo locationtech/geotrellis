@@ -63,7 +63,8 @@ trait Implicits {
       nextLayout: LayoutDefinition,
       md: TileLayerMetadata[K],
       options: GeoTiffOptions,
-      overviews: List[GeoTiff[Tile]] = Nil
+      overviews: List[GeoTiff[Tile]] = Nil,
+      print: Boolean = false
     ): SinglebandGeoTiff = {
       val gb = md.bounds match {
         case kb: KeyBounds[K] => kb.toGridBounds()
@@ -77,6 +78,8 @@ trait Implicits {
         val segmentCount = segmentLayout.tileLayout.layoutCols * segmentLayout.tileLayout.layoutRows
         val compressor = options.compression.createCompressor(segmentCount)
 
+        if(print) println(s"segmentCount: ${segmentCount}")
+
         val segments: Map[Int, Array[Byte]] =
           self
             .map { case (k, v) => k.getComponent[SpatialKey] -> v }
@@ -87,6 +90,8 @@ trait Implicits {
               val updateCol = (spatialKey.col - gb.colMin) * md.tileLayout.tileCols
               val updateRow = (spatialKey.row - gb.rowMin) * md.tileLayout.tileRows
               val index = segmentLayout.getSegmentIndex(updateCol, updateRow)
+
+              if(print) println(s":::key ($index): $key")
 
               index -> compressor.compress(tile.toBytes, index)
             }
@@ -118,7 +123,8 @@ trait Implicits {
       nextLayout: LayoutDefinition,
       md: TileLayerMetadata[K],
       options: GeoTiffOptions,
-      overviews: List[GeoTiff[MultibandTile]] = Nil
+      overviews: List[GeoTiff[MultibandTile]] = Nil,
+      print: Boolean = false
     ): MultibandGeoTiff = {
       val geoTiffTile: GeoTiffMultibandTile = {
         val gb = md.bounds match {

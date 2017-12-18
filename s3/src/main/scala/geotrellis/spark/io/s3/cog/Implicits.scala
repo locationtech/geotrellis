@@ -6,11 +6,13 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader.readGeoTiffInfo
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
-
 import geotrellis.spark.io.s3.S3Client
+
 import java.net.URI
 
-import geotrellis.spark.util.KryoWrapper
+import com.amazonaws.services.s3.AmazonS3URI
+import geotrellis.spark.io.s3.util.S3RangeReader
+import geotrellis.util.StreamingByteReader
 
 trait Implicits extends Serializable {
   implicit val s3SinglebandCOGRDDReader: S3COGRDDReader[Tile] =
@@ -24,17 +26,17 @@ trait Implicits extends Serializable {
       def getS3Client: () => S3Client = () => S3Client.DEFAULT
 
       def readTiff(uri: URI, index: Int): GeoTiff[Tile] = {
-        val (reader, ovrReader) = S3COGRDDReader.getReaders(uri, getS3Client)
+        val auri = new AmazonS3URI(uri)
 
-        val tiff =
-          GeoTiffReader
-            .readSingleband(
-              byteReader         = reader,
-              decompress         = false,
-              streaming          = true,
-              withOverviews      = true,
-              byteReaderExternal = ovrReader
-            )
+        val reader = StreamingByteReader(
+          S3RangeReader(
+            bucket = auri.getBucket,
+            key    = auri.getKey,
+            client = getS3Client()
+          )
+        )
+
+        val tiff = GeoTiffReader.readSingleband(reader, false, true)
 
         if(index < 0) tiff
         else tiff.getOverview(index)
@@ -52,7 +54,15 @@ trait Implicits extends Serializable {
       }
 
       def getSegmentGridBounds(uri: URI, index: Int): (Int, Int) => GridBounds = {
-        val (reader, ovrReader) = S3COGRDDReader.getReaders(uri, getS3Client)
+        val auri = new AmazonS3URI(uri)
+
+        val reader = StreamingByteReader(
+          S3RangeReader(
+            bucket = auri.getBucket,
+            key    = auri.getKey,
+            client = getS3Client()
+          )
+        )
 
         val info =
           readGeoTiffInfo(
@@ -60,7 +70,7 @@ trait Implicits extends Serializable {
             decompress         = false,
             streaming          = true,
             withOverviews      = true,
-            byteReaderExternal = ovrReader
+            byteReaderExternal = None
           )
 
         val geoTiffTile =
@@ -87,17 +97,17 @@ trait Implicits extends Serializable {
       def getS3Client: () => S3Client = () => S3Client.DEFAULT
 
       def readTiff(uri: URI, index: Int): GeoTiff[Tile] = {
-        val (reader, ovrReader) = S3COGCollectionReader.getReaders(uri, getS3Client)
+        val auri = new AmazonS3URI(uri)
 
-        val tiff =
-          GeoTiffReader
-            .readSingleband(
-              byteReader         = reader,
-              decompress         = false,
-              streaming          = true,
-              withOverviews      = true,
-              byteReaderExternal = ovrReader
-            )
+        val reader = StreamingByteReader(
+          S3RangeReader(
+            bucket = auri.getBucket,
+            key    = auri.getKey,
+            client = getS3Client()
+          )
+        )
+
+        val tiff = GeoTiffReader.readSingleband(reader, false, true)
 
         if(index < 0) tiff
         else tiff.getOverview(index)
@@ -115,7 +125,15 @@ trait Implicits extends Serializable {
       }
 
       def getSegmentGridBounds(uri: URI, index: Int): (Int, Int) => GridBounds = {
-        val (reader, ovrReader) = S3COGRDDReader.getReaders(uri, getS3Client)
+        val auri = new AmazonS3URI(uri)
+
+        val reader = StreamingByteReader(
+          S3RangeReader(
+            bucket = auri.getBucket,
+            key    = auri.getKey,
+            client = getS3Client()
+          )
+        )
 
         val info =
           readGeoTiffInfo(
@@ -123,7 +141,7 @@ trait Implicits extends Serializable {
             decompress         = false,
             streaming          = true,
             withOverviews      = true,
-            byteReaderExternal = ovrReader
+            byteReaderExternal = None
           )
 
         val geoTiffTile =
@@ -150,17 +168,17 @@ trait Implicits extends Serializable {
       def getS3Client: () => S3Client = () => S3Client.DEFAULT
 
       def readTiff(uri: URI, index: Int): GeoTiff[MultibandTile] = {
-        val (reader, ovrReader) = S3COGRDDReader.getReaders(uri, getS3Client)
+        val auri = new AmazonS3URI(uri)
 
-        val tiff =
-          GeoTiffReader
-            .readMultiband(
-              byteReader         = reader,
-              decompress         = false,
-              streaming          = true,
-              withOverviews      = true,
-              byteReaderExternal = ovrReader
-            )
+        val reader = StreamingByteReader(
+          S3RangeReader(
+            bucket = auri.getBucket,
+            key    = auri.getKey,
+            client = getS3Client()
+          )
+        )
+
+        val tiff = GeoTiffReader.readMultiband(reader, false, true)
 
         if(index < 0) tiff
         else tiff.getOverview(index)
@@ -178,7 +196,15 @@ trait Implicits extends Serializable {
       }
 
       def getSegmentGridBounds(uri: URI, index: Int): (Int, Int) => GridBounds = {
-        val (reader, ovrReader) = S3COGRDDReader.getReaders(uri, getS3Client)
+        val auri = new AmazonS3URI(uri)
+
+        val reader = StreamingByteReader(
+          S3RangeReader(
+            bucket = auri.getBucket,
+            key    = auri.getKey,
+            client = getS3Client()
+          )
+        )
 
         val info =
           readGeoTiffInfo(
@@ -186,7 +212,7 @@ trait Implicits extends Serializable {
             decompress         = false,
             streaming          = true,
             withOverviews      = true,
-            byteReaderExternal = ovrReader
+            byteReaderExternal = None
           )
 
         val geoTiffTile =
@@ -213,17 +239,17 @@ trait Implicits extends Serializable {
       def getS3Client: () => S3Client = () => S3Client.DEFAULT
 
       def readTiff(uri: URI, index: Int): GeoTiff[MultibandTile] = {
-        val (reader, ovrReader) = S3COGCollectionReader.getReaders(uri, getS3Client)
+        val auri = new AmazonS3URI(uri)
 
-        val tiff =
-          GeoTiffReader
-            .readMultiband(
-              byteReader         = reader,
-              decompress         = false,
-              streaming          = true,
-              withOverviews      = true,
-              byteReaderExternal = ovrReader
-            )
+        val reader = StreamingByteReader(
+          S3RangeReader(
+            bucket = auri.getBucket,
+            key    = auri.getKey,
+            client = getS3Client()
+          )
+        )
+
+        val tiff = GeoTiffReader.readMultiband(reader, false, true)
 
         if(index < 0) tiff
         else tiff.getOverview(index)
@@ -241,7 +267,15 @@ trait Implicits extends Serializable {
       }
 
       def getSegmentGridBounds(uri: URI, index: Int): (Int, Int) => GridBounds = {
-        val (reader, ovrReader) = S3COGRDDReader.getReaders(uri, getS3Client)
+        val auri = new AmazonS3URI(uri)
+
+        val reader = StreamingByteReader(
+          S3RangeReader(
+            bucket = auri.getBucket,
+            key    = auri.getKey,
+            client = getS3Client()
+          )
+        )
 
         val info =
           readGeoTiffInfo(
@@ -249,7 +283,7 @@ trait Implicits extends Serializable {
             decompress         = false,
             streaming          = true,
             withOverviews      = true,
-            byteReaderExternal = ovrReader
+            byteReaderExternal = None
           )
 
         val geoTiffTile =

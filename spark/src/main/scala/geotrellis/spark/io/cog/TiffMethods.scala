@@ -1,8 +1,7 @@
 package geotrellis.spark.io.cog
 
-import geotrellis.raster.{CellGrid, GridBounds}
-import geotrellis.raster.io.geotiff.GeoTiff
-
+import geotrellis.raster.{CellGrid, GridBounds, Tile}
+import geotrellis.raster.io.geotiff.{GeoTiff, GeoTiffTile}
 import java.net.URI
 
 trait TiffMethods[V <: CellGrid] {
@@ -11,4 +10,5 @@ trait TiffMethods[V <: CellGrid] {
   def tileTiff[K](tiff: GeoTiff[V], gridBounds: GridBounds): V
   def getSegmentGridBounds(uri: URI, index: Int): (Int, Int) => GridBounds
   def getSegmentGridBounds(bytes: Array[Byte], index: Int): (Int, Int) => GridBounds = { null }
+  def segments(tiff: GeoTiff[Tile]): List[(GridBounds, Tile)] = { null }
 }

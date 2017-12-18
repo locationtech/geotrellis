@@ -35,6 +35,23 @@ trait FileTiffMethods {
       }
     }
 
+    override def segments(tiff: GeoTiff[Tile]): List[(GridBounds, Tile)] =
+      tiff.tile match {
+        case gtTile: GeoTiffTile => {
+          println(s"ohlul: ${(0 to gtTile.segmentCount).map { i =>
+            i -> gtTile.segmentLayout.getGridBounds(i)
+          }}")
+
+          gtTile
+            .crop((0 to gtTile.segmentCount).map(gtTile.segmentLayout.getGridBounds(_)))
+            .collect { case (gb, tile) if !tile.isNoDataTile =>
+              gb -> tile
+            }
+            .toList
+        }
+        case _ => throw new UnsupportedOperationException("Can be applied to a GeoTiffTile only.")
+      }
+
     def getSegmentGridBounds(uri: URI, index: Int): (Int, Int) => GridBounds = {
       val (reader, ovrReader) = FileCOGRDDReader.getReaders(uri)
 
