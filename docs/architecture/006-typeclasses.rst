@@ -354,12 +354,15 @@ Types which exist in a projection, with the ability to be reprojected.
     *   if Projected[A].crs.get(a) == Foo then a.reproject(Bar).reproject(Baz) ~= a.reproject(Baz)
     *   with /negligible/ floating point error.
     *
-    * Minimal Complete Definition: [[crs]], [[reproject]]
+    * @groupname minimal Minimal Complete Definition
+    * @groupprio minimal 0
     */
    @typeclass trait Projected[A] {
 
+     /** @group minimal */
      def crs: Lens[A, CRS]
 
+     /** @group minimal */
      def reproject(a: A, target: CRS)
 
    }
@@ -375,7 +378,6 @@ Any higher-kinded type which could be considered a GeoTrellis "Layer".
     * LAW: Keys or something?
     *    Keys are sanely positioned? I don't know.
     *
-    * Minimal Complete Definition: ???
     */
    @typeclass trait Layer[F[_]] extends Functor[F[_]] {
 
