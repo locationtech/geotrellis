@@ -323,7 +323,7 @@ Would work for a sphere as well, for example.
      def imap(self: A, f: (Int, Int, Int) => Int): A
 
      /** @group focal */
-     def focal(self: A, n: Stencil, f: Neighbourhood => Int): A = { ... }  // provided
+     def focal(self: A, n: Stencil, f: Neighbourhood => Int): A = { ... }  // uses `imap` and `get`
 
      /** @group focal */
      def focalSum(self: A, n: Stencil): A = focal(self, n, { _.foldLeft(0)(_ + _) })
@@ -332,7 +332,13 @@ Would work for a sphere as well, for example.
 
    }
 
-where ``imap`` is short for "indexed map" as opposed to "invariant map".
+where ``imap`` is short for "indexed map" as opposed to "invariant map". ``Stencil``
+describes *how* to use ``get`` around each focus to form its ``Neighbourhood``,
+which could look like:
+
+.. code-block:: scala
+
+   case class Neighbourhood(focus: Int, friends: Array[Int])
 
 ``Projected``
 ^^^^^^^^^^^^^
