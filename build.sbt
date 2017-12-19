@@ -244,5 +244,5 @@ lazy val `doc-examples` = project
   .settings(commonSettings)
 
 lazy val bench = project
-  .dependsOn(spark)
+  .dependsOn(core, spark)
   .settings(commonSettings)
