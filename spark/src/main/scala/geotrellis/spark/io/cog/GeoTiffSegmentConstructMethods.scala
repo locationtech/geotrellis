@@ -14,7 +14,6 @@ trait GeoTiffSegmentConstructMethods[K, T <: CellGrid] extends MethodExtensions[
     nextLayout: LayoutDefinition,
     md: TileLayerMetadata[K],
     options: GeoTiffOptions,
-    overviews: List[GeoTiff[T]] = Nil,
-    print: Boolean = false
+    overviews: List[GeoTiff[T]] = Nil
   ): GeoTiff[T]
 }

@@ -227,16 +227,15 @@ object COGLayer {
     val sourceLayout = md.layout
     val options: GeoTiffOptions = GeoTiffOptions(storageMethod = Tiled(sourceLayout.tileCols, sourceLayout.tileRows))
     val LayoutLevel(_, endLayout) = layoutScheme.zoomOut(LayoutLevel(endZoom + 1, sourceLayout))
-    val LayoutLevel(_, baseLayout) = layoutScheme.zoomOut(LayoutLevel(endZoom, sourceLayout))
 
     val groupedByEndZoom =
       rdd
         .map { case (key, tile) =>
           val extent: Extent = key.getComponent[SpatialKey].extent(sourceLayout)
-          val endSpatialKey = baseLayout.mapTransform(extent.center)
+          val endSpatialKey = endLayout.mapTransform(extent.center)
 
           //println(s"endZoom::${endZoom}::key.setComponent(endSpatialKey): ${key.setComponent(endSpatialKey)}")
-          println(s"key.setComponent(endSpatialKey): ${key.setComponent(endSpatialKey)}")
+          //println(s"key.setComponent(endSpatialKey): ${key.setComponent(endSpatialKey)}")
 
           (key.setComponent(endSpatialKey), (key, tile))
         }
@@ -315,12 +314,8 @@ object COGLayer {
     // base - layout of segments
     // source - layout of a source tiff
     // end - layout of the target tiff
-    val (baseLayout, sourceLayout, endLayout) =
-      (md.layouts(startZoom + 1), md.layouts(startZoom), md.layouts(endZoom))
-
-    val finalLayout = layoutScheme.zoomOut(LayoutLevel(endZoom, endLayout)).layout
-
-    val testLayout = md.layouts(startZoom)
+    val (sourceLayout, endLayout) =
+      (md.layouts(startZoom + 1), md.layouts(endZoom))
 
     val options: GeoTiffOptions = GeoTiffOptions(storageMethod = Tiled(sourceLayout.tileCols, sourceLayout.tileRows))
 
@@ -328,12 +323,7 @@ object COGLayer {
       rdd
         .map { case (key, tiff) =>
           val extent: Extent = key.getComponent[SpatialKey].extent(sourceLayout)
-          val endSpatialKey = finalLayout.mapTransform(extent.center)
-
-          println(s"key: $key")
-          println(s"key.setComponent(endSpatialKey): ${key.setComponent(endSpatialKey)}")
-
-          tiff.tile.asInstanceOf[Tile].renderPng.write(s"/tmp/lol/${key}.png")
+          val endSpatialKey = endLayout.mapTransform(extent.center)
 
           (key.setComponent(endSpatialKey), (key, tiff))
         }
@@ -345,38 +335,16 @@ object COGLayer {
       .repartition(groupedPartitions)
       .mapPartitions { partition: Iterator[(K, (Iterable[(K, GeoTiff[V])]))] =>
         // TODO: refactor, so ugly
-        val tiffMethods = geotrellis.spark.io.file.cog.tiffMethods
         val list = partition.toList
         val flatList = list.flatMap(_._2)
 
-        val flatListTile = flatList.flatMap { case (k, v) =>
-          val tiles: Seq[(K, V)] =
-            tiffMethods
-              .segments(v.asInstanceOf[GeoTiff[Tile]])
-              .map { case (gb, tile) =>
-                val key = baseLayout
-                  .mapTransform(v.rasterExtent.extentFor(gb).center)
-                  .asInstanceOf[K]
-
-                println(s"gb: $gb")
-                println(s"key: $key")
-
-                key -> tile.asInstanceOf[V]
-              }
-              .groupBy(_._1)
-              .map { case (key, l) => key -> l.map(_._2).reduce(_ merge _) }
-              .toList
-
-          tiles
-        }
+        val flatListTile = flatList.map { case (k, v) => k -> v.tile }
 
         if(list.nonEmpty) {
           val sfc = list.head._1
 
           val gridBounds = flatListTile.gridBounds
           val currentExtent = flatList.map(_._2.extent).reduce(_ combine _)
-
-          println(s"gridBounds: $gridBounds")
 
           val keyBounds = {
             val GridBounds(colMin, rowMin, colMax, rowMax) = gridBounds
@@ -392,14 +360,14 @@ object COGLayer {
           }
 
           val extent =
-            baseLayout
+            sourceLayout
               .mapTransform(gridBounds)
               .intersection(currentExtent)
               .getOrElse(currentExtent)
 
           val currentMd = TileLayerMetadata[K](
             cellType = md.cellType,
-            layout   = baseLayout,
+            layout   = sourceLayout,
             extent   = extent,
             crs      = md.crs,
             bounds   = keyBounds
@@ -415,8 +383,8 @@ object COGLayer {
 
           val stitchedTile: GeoTiff[V] =
             flatListTile.toGeoTiff(
-              baseLayout, currentMd, options,
-              Nil, true
+              sourceLayout, currentMd, options,
+              overviews
             )
 
           Iterator(sfc -> stitchedTile)

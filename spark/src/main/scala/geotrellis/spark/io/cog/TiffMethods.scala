@@ -10,5 +10,4 @@ trait TiffMethods[V <: CellGrid] {
   def tileTiff[K](tiff: GeoTiff[V], gridBounds: GridBounds): V
   def getSegmentGridBounds(uri: URI, index: Int): (Int, Int) => GridBounds
   def getSegmentGridBounds(bytes: Array[Byte], index: Int): (Int, Int) => GridBounds = { null }
-  def segments(tiff: GeoTiff[Tile]): List[(GridBounds, Tile)] = { null }
 }
