@@ -13,16 +13,16 @@ import spire.syntax.ring._
 @typeclass trait Local1[F[_]] {
 
   /** @group minimal */
-  def map[@sp(Int, Double) A: ClassTag](self: F[A], f: A => A): F[A]
+  def map[@sp(Int, Double) A](self: F[A], f: A => A): F[A]
 
   /** @group minimal */
-  def zipWith[@sp(Int, Double) A: ClassTag](self: F[A], other: => F[A], f: (A, A) => A): F[A]
+  def zipWith[@sp(Int, Double) A](self: F[A], other: => F[A], f: (A, A) => A): F[A]
 
   /** @group local */
   // def classify(self: A, f: Int => Int): A = map(self, f)
 
   /** @group local */
-  def +[@sp(Int, Double) A: Ring: ClassTag](self: F[A], other: => F[A]): F[A] =
+  def +[@sp(Int, Double) A: Ring](self: F[A], other: => F[A]): F[A] =
     zipWith(self, other, { _ + _ })
 
   /** @group local */
@@ -46,9 +46,9 @@ private[geotrellis] trait LocalInstances {
 
   implicit val arrayLocal: Local1[Array] = new Local1[Array] {
 
-    def map[@sp(Int, Double) A: ClassTag](self: Array[A], f: A => A): Array[A] = {
+    def map[@sp(Int, Double) A](self: Array[A], f: A => A): Array[A] = {
       val len: Int = self.size
-      val res: Array[A] = Array.ofDim[A](len)
+      val res: Array[A] = self.clone
       var i: Int = 0
 
       while (i < len) {
@@ -59,11 +59,11 @@ private[geotrellis] trait LocalInstances {
       res
     }
 
-    def zipWith[@sp(Int, Double) A: ClassTag](self: Array[A], other: => Array[A], f: (A, A) => A): Array[A] = {
+    def zipWith[@sp(Int, Double) A](self: Array[A], other: => Array[A], f: (A, A) => A): Array[A] = {
 
       if (self.isEmpty) self else {
         val len: Int = self.size.min(other.size)
-        val res: Array[A] = Array.ofDim[A](len)
+        val res: Array[A] = self.clone
         var i: Int = 0
 
         while(i < len) {
