@@ -1,1 +1,1 @@
-package object geotrellis extends Local.ToLocalOps
+package object geotrellis extends Local.ToLocalOps with LocalInstances
