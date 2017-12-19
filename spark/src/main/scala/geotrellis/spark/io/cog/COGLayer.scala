@@ -16,13 +16,13 @@ import geotrellis.spark.util._
 import geotrellis.util._
 import geotrellis.vector._
 import geotrellis.vector.io._
-
 import org.apache.hadoop.fs.Path
 import org.apache.spark._
 import org.apache.spark.rdd._
 import java.net.URI
 
 import geotrellis.proj4.CRS
+import geotrellis.spark.pyramid.Pyramid
 
 import scala.collection.JavaConverters._
 import scala.reflect._
@@ -98,9 +98,23 @@ object COGLayer {
           if(acc.isEmpty) {
             List(range -> generateGeoTiffRDD(rdd, range, layoutScheme))
           } else {
-            val previousLayer = acc.head._2.mapValues(_.overviews.last.tile)
+            val previousLayer: RDD[(K, V)] = acc.head._2.mapValues { tiff =>
+              if(tiff.overviews.nonEmpty) tiff.overviews.last.tile
+              else tiff.tile
+            }
 
-            val rzz = generateGeoTiffRDD(previousLayer, range, layoutScheme)
+            val tmd = TileLayerMetadata[K](
+              cogLayerMetadata.cellType,
+              layoutScheme.levelForZoom(range.maxZoom + 1).layout,
+              cogLayerMetadata.extent,
+              cogLayerMetadata.crs,
+              cogLayerMetadata.zoomRangeInfoFor(range.maxZoom + 1)._2
+            )
+
+            val upsampledPreviousLayer =
+              Pyramid.up(ContextRDD(previousLayer, tmd), layoutScheme, range.maxZoom + 1)._2
+
+            val rzz = generateGeoTiffRDD(upsampledPreviousLayer, range, layoutScheme)
 
             (range -> rzz) :: acc
           }
@@ -118,8 +132,7 @@ object COGLayer {
      zoomRange: ZoomRange,
      layoutScheme: ZoomedLayoutScheme
    )(implicit tc: Iterable[(SpatialKey, V)] => GeoTiffSegmentConstructMethods[SpatialKey, V]): RDD[(K, GeoTiff[V])] = {
-    val (minZoomLayout, maxZoomLayout) =
-      (layoutScheme.levelForZoom(zoomRange.minZoom).layout, layoutScheme.levelForZoom(zoomRange.maxZoom).layout)
+    val (minZoomLayout, maxZoomLayout) = (layoutScheme.levelForZoom(zoomRange.minZoom).layout, layoutScheme.levelForZoom(zoomRange.maxZoom).layout)
 
     val options: GeoTiffOptions =
       GeoTiffOptions(
@@ -164,7 +177,7 @@ object COGLayer {
         val thisLayout = layoutScheme.levelForZoom(z).layout
         val newTiles =
           t.
-            groupBy { case (SpatialKey(c, r), tile) => SpatialKey(c/2, r/2) }.
+            groupBy { case (k @ SpatialKey(c, r), _) => SpatialKey(c / 2, r / 2) }.
             map { case (newKey, parts) =>
               // Make the prototype based on one of the constituent tiles, with same dimensions
               // (as always happens with power of two pyramids)

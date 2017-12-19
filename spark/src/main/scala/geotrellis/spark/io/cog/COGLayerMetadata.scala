@@ -13,9 +13,9 @@ import geotrellis.vector.io._
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
-case class COGLayerMetadata[K](
+case class COGLayerMetadata[K: SpatialComponent](
   cellType: CellType,
-  zoomRangeInfos: Vector[(ZoomRange, KeyBounds[K])],
+  zoomRangeInfos: Vector[(ZoomRange, KeyBounds[K])], // KeyBounds is for a minZoom in this ranges
   layoutScheme: ZoomedLayoutScheme,
   extent: Extent,
   crs: CRS
@@ -26,14 +26,17 @@ case class COGLayerMetadata[K](
   def zoomRanges: Vector[ZoomRange] =
     zoomRangeInfos.map(_._1)
 
-  def zoomRangeFor(zoom: Int): ZoomRange = {
+  def zoomRangeFor(zoom: Int): ZoomRange =
+    zoomRangeInfoFor(zoom)._1
+
+  def zoomRangeInfoFor(zoom: Int): (ZoomRange, KeyBounds[K]) = {
     val i = java.util.Arrays.binarySearch(maxZooms, zoom)
     val idx =
       if(i >= 0) { i }
       else {
         ~i - 1
       }
-    zoomRangeInfos(idx)._1
+    zoomRangeInfos(idx)
   }
 
 
@@ -45,16 +48,78 @@ case class COGLayerMetadata[K](
     * file should be cropped by
     */
   def getReadDefinitions(keyBounds: KeyBounds[SpatialKey], zoom: Int): (ZoomRange, Seq[(SpatialKey, Int, GridBounds, Seq[(GridBounds, SpatialKey)])]) = {
-    ???
+    val (zoomRange@ZoomRange(minZoom, maxZoom), currentKeyBounds) = zoomRangeInfoFor(zoom)
+    val (_, baseKeyBounds) = zoomRangeInfoFor(zoomRange.minZoom)
+    val overviewIdx = maxZoom - zoom - 1
+    val baseGridBounds@GridBounds(colMin, rowMin, colMax, rowMax) = baseKeyBounds.toGridBounds()
+    val currentGridBounds = currentKeyBounds.toGridBounds()
+
+    val baseLayout = layoutForZoom(minZoom)
+    val layout = layoutForZoom(zoom)
+    val KeyBounds(queryMinKey, queryMaxKey) = keyBounds
+
+    val seq =
+      for {
+        col <- colMin to colMax
+        row <- rowMin to rowMax
+      } yield {
+        val baseKey = SpatialKey(col, row)
+        val gridBounds = {
+          val gb = baseGridBounds
+          val (minCol, minRow) = ((col - gb.colMin) * baseLayout.tileCols, (row - gb.rowMin) * baseLayout.tileRows)
+          val (maxCol, maxRow) = (minCol + baseLayout.tileCols - 1, minRow + baseLayout.tileRows - 1)
+          GridBounds(minCol, minRow, maxCol, maxRow)
+        }
+
+        val seq = for {
+          qcol <- queryMinKey.col to queryMaxKey.col
+          qrow <- queryMinKey.row to queryMaxKey.row
+        } yield {
+          val qKey = SpatialKey(qcol, qrow)
+          val gridBounds = {
+            val gb = currentGridBounds
+
+            val (minCol, minRow) = ((qcol - gb.colMin) * layout.tileCols, (qrow - gb.rowMin) * layout.tileRows)
+            val (maxCol, maxRow) = (minCol + baseLayout.tileCols - 1, minRow + baseLayout.tileRows - 1)
+            GridBounds(minCol, minRow, maxCol, maxRow)
+          }
+
+          (gridBounds, qKey)
+        }
+
+        (baseKey, overviewIdx, gridBounds, seq)
+      }
+
+    (zoomRange, seq)
   }
 
   /** Returns the ZoomRange and SpatialKey of the COG to be read for this key, index of overview, as well as the GridBounds to crop
     * that COG to */
   def getReadDefinition(key: SpatialKey, zoom: Int): (ZoomRange, SpatialKey, Int, GridBounds) = {
-    val ZoomRange(minZoom, maxZoom) = zoomRangeFor(zoom)
+    val (zoomRange @ ZoomRange(minZoom, maxZoom), keyBounds) = zoomRangeInfoFor(zoom)
     val overviewIdx = maxZoom - zoom - 1
 
-    ???
+    val baseLayout = layoutForZoom(minZoom)
+    val layout = layoutForZoom(zoom)
+
+    val baseKey =
+      baseLayout
+        .mapTransform
+        .pointToKey(
+          layout
+            .mapTransform
+            .keyToExtent(key)
+            .center
+        )
+
+    val gridBounds = {
+      val gb = keyBounds.toGridBounds()
+      val (minCol, minRow) = ((key.col - gb.colMin) * layout.tileCols, (key.row - gb.rowMin) * layout.tileRows)
+      val (maxCol, maxRow) = (minCol + layout.tileCols - 1, minRow + layout.tileRows - 1)
+      GridBounds(minCol, minRow, maxCol, maxRow)
+    }
+
+    (zoomRange, baseKey, overviewIdx, gridBounds)
   }
 }
 
@@ -145,7 +210,7 @@ object COGLayerMetadata {
     )
   }
 
-  implicit def cogLayerMetadataFormat[K: JsonFormat] =
+  implicit def cogLayerMetadataFormat[K: SpatialComponent: JsonFormat] =
     new RootJsonFormat[COGLayerMetadata[K]] {
       def write(metadata: COGLayerMetadata[K]) =
         JsObject(

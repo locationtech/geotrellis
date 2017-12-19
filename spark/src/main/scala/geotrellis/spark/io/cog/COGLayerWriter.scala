@@ -34,7 +34,7 @@ import scala.reflect._
 case class COGLayerStorageMetadata[K](metadata: COGLayerMetadata[K], keyIndexes: Map[ZoomRange, KeyIndex[K]])
 
 object COGLayerStorageMetadata {
-  implicit def cogLayerStorageMetadataFormat[K: JsonFormat: ClassTag] =
+  implicit def cogLayerStorageMetadataFormat[K: SpatialComponent: JsonFormat: ClassTag] =
     new RootJsonFormat[COGLayerStorageMetadata[K]] {
       def write(sm: COGLayerStorageMetadata[K]) =
         JsObject(

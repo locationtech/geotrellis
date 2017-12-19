@@ -57,7 +57,7 @@ trait Implicits {
     }
   }
 
-  implicit class withSinglebandGeoTiffSegmentConstructMethods[K](val self: Iterable[(K, Tile)]) {
+  implicit class withSinglebandGeoTiffSegmentConstructMethods[K](val self: Iterable[(K, Tile)]) extends GeoTiffSegmentConstructMethods[K, Tile] {
     def toGeoTiff(
       layout: LayoutDefinition,
       extent: Extent,
