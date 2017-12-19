@@ -85,14 +85,14 @@ object TileRDDReproject {
     // You'll want to read [[ReprojectRasterExtent]] to grok this
     val LayoutLevel(targetZoom, targetLayerLayout) = targetLayout match {
       case Right(layoutDefinition) =>
-        // A LayoutDefinition specifies a GridExtent.  The presence of this 
+        // A LayoutDefinition specifies a GridExtent.  The presence of this
         // option indicates that the user knows exactly the grid to resample to.
         LayoutLevel(0, layoutDefinition)
 
       case Left(layoutScheme: FloatingLayoutScheme) =>
-        // FloatingLayoutScheme implies trying to match the resulting layout to 
-        // the extent of the reprojected input region.  This may require snapping 
-        // to a different GridExtent depending on the settings in 
+        // FloatingLayoutScheme implies trying to match the resulting layout to
+        // the extent of the reprojected input region.  This may require snapping
+        // to a different GridExtent depending on the settings in
         // rasterReprojectOptions.
         if (options.matchLayerExtent) {
           val tre = ReprojectRasterExtent(
@@ -168,10 +168,11 @@ object TileRDDReproject {
       Some(new HashPartitioner(partitions = newPartitionCount))
     } else None
 
-    val reprojectedTiles =
+    val rrp = implicitly[RasterRegionReproject[V]]
+
+    val stagedTiles: RDD[(K, (Raster[V], RasterExtent, Polygon))] =
       bufferedTiles
         .mapPartitions { partition =>
-          val rrp = implicitly[RasterRegionReproject[V]]
           partition.flatMap { case (key, BufferedTile(tile, gridBounds)) => {
             val innerExtent = key.getComponent[SpatialKey].extent(layout)
             val innerRasterExtent = RasterExtent(innerExtent, gridBounds.width, gridBounds.height)
@@ -187,14 +188,7 @@ object TileRDDReproject {
 
             maptrans.keysForGeometry(destRegion).map { newKey =>
               val destRE = RasterExtent(maptrans(newKey), newLayout.tileLayout.tileCols, newLayout.tileLayout.tileRows)
-              val Raster(newTile, newExtent) = 
-                rrp.regionReproject(
-                  Raster(tile, outerExtent),
-                  crs, destCrs,
-                  destRE, destRegion,
-                  rasterReprojectOptions.method)
-
-              (key.setComponent[SpatialKey](newKey), newTile)
+              (key.setComponent[SpatialKey](newKey), (Raster(tile, outerExtent), destRE, destRegion))
             }
           }}
         }
@@ -208,7 +202,21 @@ object TileRDDReproject {
     // val expectedCols = targetDataExtent.width / newMetadata.layout.cellSize.width
     // println(s"Expected width: $expectedCols")
 
-    val tiled = reprojectedTiles.merge(part)
+
+    // val tiled = reprojectedTiles.merge(part)
+    val tiled: RDD[(K, V)] = stagedTiles.combineByKey(
+      { case (raster, destRE, destRegion) =>
+        rrp.regionReproject(raster, crs, destCrs, destRE, destRegion, rasterReprojectOptions.method).tile
+      },
+      { (reprojectedTile, toReproject) =>
+        val (raster, destRE, destRegion) = toReproject
+        rrp.mutableRegionReproject(reprojectedTile, raster, crs, destCrs, destRE, destRegion, rasterReprojectOptions.method)
+        reprojectedTile
+      },
+      { (reproj1, reproj2) =>
+        reproj1.merge(reproj2)
+      }
+    )
 
     (targetZoom, ContextRDD(tiled, newMetadata))
   }
