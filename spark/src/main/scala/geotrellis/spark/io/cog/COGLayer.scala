@@ -30,7 +30,7 @@ import scala.reflect._
 case class COGLayer[K, T <: CellGrid](
   layers: Map[ZoomRange, RDD[(K, GeoTiff[T])]], // Construct lower zoom levels off of higher zoom levels
   metadata: COGLayerMetadata[K]
-)
+ )
 
 object COGLayer {
   private def isPowerOfTwo(x: Int): Boolean =
@@ -50,11 +50,11 @@ object COGLayer {
     K: SpatialComponent: Ordering: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]
   ](
-    rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
-    baseZoom: Int,
-    maxCOGTileSize: Int = 4096,
-    minZoom: Option[Int] = None
-  )(implicit tc: Iterable[(SpatialKey, V)] => GeoTiffSegmentConstructMethods[SpatialKey, V]): COGLayer[K, V] = {
+     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
+     baseZoom: Int,
+     maxCOGTileSize: Int = 4096,
+     minZoom: Option[Int] = None
+   )(implicit tc: Iterable[(SpatialKey, V)] => GeoTiffSegmentConstructMethods[SpatialKey, V]): COGLayer[K, V] = {
     // TODO: Clean up conditional checks, figure out how to bake into type system, or report errors better.
     if(minZoom.getOrElse(Double.NaN) != baseZoom.toDouble) {
       if(rdd.metadata.layout.tileCols != rdd.metadata.layout.tileRows) {
@@ -114,10 +114,10 @@ object COGLayer {
     K: SpatialComponent: Ordering: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]
   ](
-    rdd: RDD[(K, V)],
-    zoomRange: ZoomRange,
-    layoutScheme: ZoomedLayoutScheme
-  )(implicit tc: Iterable[(SpatialKey, V)] => GeoTiffSegmentConstructMethods[SpatialKey, V]): RDD[(K, GeoTiff[V])] = {
+     rdd: RDD[(K, V)],
+     zoomRange: ZoomRange,
+     layoutScheme: ZoomedLayoutScheme
+   )(implicit tc: Iterable[(SpatialKey, V)] => GeoTiffSegmentConstructMethods[SpatialKey, V]): RDD[(K, GeoTiff[V])] = {
     val (minZoomLayout, maxZoomLayout) =
       (layoutScheme.levelForZoom(zoomRange.minZoom).layout, layoutScheme.levelForZoom(zoomRange.maxZoom).layout)
 
@@ -149,13 +149,13 @@ object COGLayer {
     K: SpatialComponent: Ordering: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]
   ](
-    tiles: Iterable[(K, V)],
-    zoomRange: ZoomRange,
-    layoutScheme: ZoomedLayoutScheme,
-    extent: Extent,
-    crs: CRS,
-    options: GeoTiffOptions
-  )(implicit tc: Iterable[(SpatialKey, V)] => GeoTiffSegmentConstructMethods[SpatialKey, V]): GeoTiff[V] = {
+     tiles: Iterable[(K, V)],
+     zoomRange: ZoomRange,
+     layoutScheme: ZoomedLayoutScheme,
+     extent: Extent,
+     crs: CRS,
+     options: GeoTiffOptions
+   )(implicit tc: Iterable[(SpatialKey, V)] => GeoTiffSegmentConstructMethods[SpatialKey, V]): GeoTiff[V] = {
     val spatialTiles = tiles.map { case (key, value) => (key.getComponent[SpatialKey], value) }
     val accSeed = (List[GeoTiff[V]](), spatialTiles)
     val (overviews, _) =

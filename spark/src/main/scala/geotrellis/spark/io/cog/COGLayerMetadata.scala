@@ -52,7 +52,7 @@ case class COGLayerMetadata[K](
     * that COG to */
   def getReadDefinition(key: SpatialKey, zoom: Int): (ZoomRange, SpatialKey, Int, GridBounds) = {
     val ZoomRange(minZoom, maxZoom) = zoomRangeFor(zoom)
-    val overviewIdx = maxZoom - zoom
+    val overviewIdx = maxZoom - zoom - 1
 
     ???
   }

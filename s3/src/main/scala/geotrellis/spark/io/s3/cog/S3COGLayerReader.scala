@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io.s3.cog
 
-import geotrellis.raster.{CellGrid, GridBounds, RasterExtent}
+import geotrellis.raster.{CellGrid, RasterExtent}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.s3._
@@ -24,7 +24,7 @@ import geotrellis.spark.io.cog._
 import geotrellis.spark.io.index._
 import geotrellis.spark.tiling.LayoutLevel
 import geotrellis.util._
-import geotrellis.vector.Extent
+
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
 
