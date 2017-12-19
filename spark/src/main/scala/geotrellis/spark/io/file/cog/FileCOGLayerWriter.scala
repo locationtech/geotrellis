@@ -5,9 +5,10 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.cog.COGLayer.ContextGeoTiff
+import geotrellis.spark.io.cog._
 import geotrellis.spark.io.cog.vrt._
 import geotrellis.spark.io.file._
-import geotrellis.spark.io.index.{Index, KeyIndexMethod}
+import geotrellis.spark.io.index._
 import geotrellis.spark.util._
 import geotrellis.util.Filesystem
 
@@ -19,10 +20,43 @@ import scala.reflect.{ClassTag, classTag}
 import scala.xml.Elem
 import java.io.File
 
+class FileCOGLayerWriter2(
+  val attributeStore: FileAttributeStore
+) extends COGLayerWriter {
+  def writeCOGLayer[
+    K: SpatialComponent: Ordering: JsonFormat: ClassTag,
+    V <: CellGrid
+  ](
+    layerName: String,
+    cogLayer: COGLayer[K, V],
+    keyIndexes: Map[ZoomRange, KeyIndex[K]]
+  ): Unit = {
+    val catalogPath = new File(attributeStore.catalogPath).getAbsolutePath
+
+    Filesystem.ensureDirectory(new File(catalogPath, layerName).getAbsolutePath)
+
+    val storageMetadata = COGLayerStorageMetadata(cogLayer.metadata, keyIndexes)
+
+    attributeStore.write(LayerId(layerName, 0), "cog_metadata", storageMetadata)
+
+    for(zoomRange <- cogLayer.layers.keys.toSeq.sorted(Ordering[ZoomRange].reverse)) {
+      val keyIndex = keyIndexes(zoomRange)
+      val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
+      val keyPath = KeyPathGenerator(catalogPath, s"${layerName}/${zoomRange.slug}", keyIndex, maxWidth)
+      Filesystem.ensureDirectory(new File(catalogPath, s"${layerName}/${zoomRange.slug}").getAbsolutePath)
+
+      // Write each cog layer for each zoom range, starting from highest zoom levels.
+      cogLayer.layers(zoomRange).foreach { case (key, cog) =>
+        cog.write(s"${keyPath(key)}.tiff", true)
+      }
+    }
+  }
+}
+
 
 class FileCOGLayerWriter(
   val attributeStore: FileAttributeStore,
-  catalogPath: String
+  val catalogPath: String
 ) extends Serializable {
 
   def write[
@@ -38,8 +72,6 @@ class FileCOGLayerWriter(
     // schema for compatability purposes
     val schema = KryoWrapper(KeyValueRecordCodec[SpatialKey, Tile].schema)
     val kwFomat = KryoWrapper(implicitly[JsonFormat[K]])
-
-
 
     // headers would be stored AS IS
     // right now we are duplicating data

@@ -30,7 +30,7 @@ case class MultibandGeoTiff(
   crs: CRS,
   tags: Tags,
   options: GeoTiffOptions,
-  overviews: List[MultibandGeoTiff] = Nil
+  overviews: List[GeoTiff[MultibandTile]] = Nil
 ) extends GeoTiff[MultibandTile] {
   val cellType = tile.cellType
 

@@ -336,6 +336,80 @@ object GeoTiffMultibandTile {
     apply(new ArraySegmentBytes(segmentBytes), compressor.createDecompressor, segmentLayout, options.compression, bandCount, tile.cellType)
   }
 
+  // TODO: DRY this out with the above apply
+  /** Constructs a GeoTiffMultibandTile from a map of tile layout coordinate to MultibandTile,
+    * where each Tile represent the internal tile segments. If a MultibandTile does not exist
+    * for some tile coordinate of the TileLayout, a NoData segment will be constructed.
+    *
+    * @param tiles: The TileLayout coordinates mapped to the MultibandTiles that will make up the segments.
+    * @param tileLayout: The TileLayout that this GeoTiffMultibandTile should use for its segments
+    * @param options: GeoTiffOptions for this GeoTiffTile
+    *
+    * @return A GeoTiffMultibandTile
+    */
+  def apply(tiles: Map[(Int, Int), MultibandTile], tileLayout: TileLayout, options: GeoTiffOptions): GeoTiffMultibandTile = {
+    // Ensure the storage option is correct
+    val opts =
+      options.copy(storageMethod = Tiled(tileLayout.tileCols, tileLayout.tileRows))
+    val cellType = tiles.values.head.cellType
+    val bandCount = tiles.values.head.bandCount
+
+    val segmentLayout =
+      GeoTiffSegmentLayout(
+        tileLayout.totalCols.toInt,
+        tileLayout.totalRows.toInt,
+        options.storageMethod,
+        PixelInterleave,
+        BandType.forCellType(cellType)
+      )
+
+    val segmentCount = tileLayout.layoutCols * tileLayout.layoutRows
+    val compressor = options.compression.createCompressor(segmentCount)
+
+    val segmentBytes = Array.ofDim[Array[Byte]](segmentCount)
+    val segmentTiles = Array.ofDim[Array[Tile]](segmentCount)
+
+    segmentLayout.interleaveMethod match {
+      case PixelInterleave =>
+        val byteCount = cellType.bytes
+
+        cfor(0)(_ < tileLayout.layoutRows, _ + 1) { layoutRow =>
+          cfor(0)(_ < tileLayout.layoutCols, _ + 1) { layoutCol =>
+            val index = tileLayout.layoutCols * layoutRow + layoutCol
+            val (cols, rows) = (tileLayout.tileCols, tileLayout.tileRows)
+
+            val bandBytes: Vector[Array[Byte]] =
+              tiles.get((layoutCol, layoutRow)) match {
+                case Some(tile) => tile.bands.map(_.toBytes)
+                case None => (0 until bandCount).map { _ =>
+                  ArrayTile.empty(cellType, cols, rows).toBytes
+                }.toVector
+              }
+
+            val segBytes = Array.ofDim[Byte](cols * rows * bandCount * byteCount)
+            var segIndex = 0
+            cfor(0)(_ < cols * rows, _ + 1) { cellIndex =>
+              cfor(0)(_ < bandCount, _ + 1) { bandIndex =>
+                val bandByteArr = bandBytes(bandIndex)
+                cfor(0)(_ < byteCount, _ + 1) { b =>
+                  val bandByteIndex = cellIndex * byteCount + b
+                  segBytes(segIndex) = bandByteArr(cellIndex * byteCount + b)
+                  segIndex += 1
+                }
+              }
+            }
+
+            segmentBytes(index) =
+              compressor.compress(segBytes, index)
+          }
+        }
+      case BandInterleave =>
+        throw new Exception("Band interleave construction is not supported yet.")
+    }
+
+    apply(new ArraySegmentBytes(segmentBytes), compressor.createDecompressor, segmentLayout, options.compression, bandCount, cellType)
+  }
+
 }
 
 abstract class GeoTiffMultibandTile(

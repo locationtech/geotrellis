@@ -115,7 +115,6 @@ class LazySegmentBytes(
 
   def getSegments(indices: Traversable[Int]): Iterator[(Int, Array[Byte])] = {
     val chunks = chunkSegments(indices)
-    println(s"chunks: ${chunks.toList.map(_.toList)}")
     chunks
       .toIterator
       .flatMap( chunk => readChunk(chunk))

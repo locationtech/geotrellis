@@ -290,6 +290,60 @@ object GeoTiffTile {
 
     apply(new ArraySegmentBytes(segmentBytes), compressor.createDecompressor, segmentLayout, options.compression, tile.cellType)
   }
+
+  /** Constructs a GeoTiffTile from a map of tile layout coordinate to Tile,
+    * where each Tile represent the internal tile segments. If a Tile does not exist
+    * for some tile coordinate of the TileLayout, a NoData segment will be constructed.
+    *
+    * @param tiles: The TileLayout coordinates mapped to the Tiles that will make up the segments.
+    * @param tileLayout: The TileLayout that this GeoTiffTile should use for its segments
+    * @param options: GeoTiffOptions for this GeoTiffTile
+    *
+    * @return A GeoTiffTile
+    */
+  def apply(tiles: Map[(Int, Int), Tile], tileLayout: TileLayout, options: GeoTiffOptions): GeoTiffTile = {
+    // TODO: Test
+
+    // Ensure the storage option is correct
+    val opts =
+      options.copy(storageMethod = Tiled(tileLayout.tileCols, tileLayout.tileRows))
+    val cellType = tiles.values.head.cellType
+
+    val segmentLayout =
+      GeoTiffSegmentLayout(
+        tileLayout.totalCols.toInt,
+        tileLayout.totalRows.toInt,
+        options.storageMethod,
+        BandInterleave,
+        BandType.forCellType(cellType)
+      )
+
+    val segmentCount = tileLayout.layoutCols * tileLayout.layoutRows
+    val compressor = options.compression.createCompressor(segmentCount)
+
+    val segmentBytes = Array.ofDim[Array[Byte]](segmentCount)
+    cfor(0)(_ < tileLayout.layoutRows, _ + 1) { layoutRow =>
+      cfor(0)(_ < tileLayout.layoutCols, _ + 1) { layoutCol =>
+        val index = tileLayout.layoutCols * layoutRow + layoutCol
+        val tile =
+          tiles.getOrElse(
+            (layoutCol, layoutRow),
+            ArrayTile.empty(cellType, tileLayout.tileCols, tileLayout.tileRows)
+          )
+
+        segmentBytes(index) =
+          compressor.compress(tile.toBytes, index)
+      }
+    }
+
+    GeoTiffTile(
+      new ArraySegmentBytes(segmentBytes),
+      compressor.createDecompressor,
+      segmentLayout,
+      options.compression,
+      cellType
+    )
+  }
 }
 
 abstract class GeoTiffTile(
