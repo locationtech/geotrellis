@@ -39,6 +39,36 @@ import scala.reflect.ClassTag
 import java.net.URI
 import java.io.File
 
+class FileCOGValueReader2(
+  val attributeStore: AttributeStore,
+  catalogPath: String
+) extends OverzoomingCOGValueReader {
+
+  def reader[
+    K: JsonFormat : SpatialComponent : ClassTag,
+    V <: CellGrid : TiffMethods : ? => TileMergeMethods[V]
+  ](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
+    val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) = attributeStore.read[COGLayerStorageMetadata[K]](LayerId(layerId.name, 0), "cog_metadata")
+    val tiffMethods = implicitly[TiffMethods[V]]
+
+    def read(key: K): V = {
+      val (zoomRange, spatialKey, overviewIndex, gridBounds) =
+        cogLayerMetadata.getReadDefinition(key.getComponent[SpatialKey], layerId.zoom)
+
+      val baseKeyIndex = keyIndexes(zoomRange)
+
+      val maxWidth = Index.digits(baseKeyIndex.toIndex(baseKeyIndex.keyBounds.maxKey))
+      val keyPath = KeyPathGenerator(catalogPath, s"${layerId.name}/${zoomRange.slug}", baseKeyIndex, maxWidth)
+      Filesystem.ensureDirectory(new File(catalogPath, s"${layerId.name}/${zoomRange.slug}").getAbsolutePath)
+
+      val uri = new URI(s"${keyPath(key.setComponent(spatialKey))}.tiff")
+      val tiff = tiffMethods.readTiff(uri, overviewIndex)
+
+      tiffMethods.tileTiff(tiff, gridBounds)
+    }
+  }
+}
+
 class FileCOGValueReader(
   val attributeStore: AttributeStore,
   catalogPath: String

@@ -27,7 +27,7 @@ import geotrellis.raster.Tile
 import geotrellis.spark.io.index.zcurve.ZSpatialKeyIndex
 import geotrellis.spark.testkit._
 import geotrellis.spark.io.file.FileAttributeStore
-import geotrellis.spark.io.file.cog.{FileCOGLayerReader, FileCOGLayerWriter2, FileCOGValueReader}
+import geotrellis.spark.io.file.cog._
 import geotrellis.spark.io.index.ZCurveKeyIndexMethod
 import org.apache.hadoop.fs.Path
 import org.scalatest._
@@ -65,6 +65,21 @@ class COGLayerSpec extends FunSpec
 
 
       writer.write("landsat_cog", layer, zoom, ZCurveKeyIndexMethod)
+    }
+
+    it("should read GeoTrellis COGLayer") {
+      // Create the attributes store that will tell us information about our catalog.
+      val attributeStore = FileAttributeStore("/data/test-new")
+
+      // Create the writer that we will use to store the tiles in the local catalog.
+      val reader = new FileCOGValueReader2(attributeStore, "/data/test-new")
+
+      /*val f: Iterable[(SpatialKey, Tile)] => GeoTiffSegmentConstructMethods[SpatialKey, Tile] =
+        iter => withSinglebandGeoTiffSegmentConstructMethods(iter)*/
+
+
+      reader.reader[SpatialKey, Tile](LayerId("landsat_cog", 9)).read(SpatialKey(44,79))
+      //writer.write("landsat_cog", layer, zoom, ZCurveKeyIndexMethod)
     }
   }
 
