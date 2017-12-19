@@ -62,17 +62,17 @@ class COGLayerSpec extends FunSpec
 
     //COGLayer.withStitch(layer)(zoom, 7, layoutScheme).collect().head
 
-    val cogs = COGLayer(layer)(zoom, 10, layoutScheme)
-    cogs.write(index, new URI("file:///tmp/write"))
+    //val cogs = COGLayer(layer)(zoom, 10, layoutScheme)
+    //cogs.write(index, new URI("file:///tmp/write"))
 
-    val (key, tiff: GeoTiff[Tile]) = cogs.collect().head
-    val sfc = index.toIndex(key)
+    //val (key, tiff: GeoTiff[Tile]) = cogs.collect().head
+    /*val sfc = index.toIndex(key)
 
     val tiff2 =
       GeoTiff(layer.stitch, layer.metadata.mapTransform(layer.metadata.gridBounds), LatLng)
         .copy(options = tiff.options)
 
-    GeoTiffWriter.write(tiff2.crop(layer.metadata.extent), "/tmp/testo2.tif", optimizedOrder = true)
+    GeoTiffWriter.write(tiff2.crop(layer.metadata.extent), "/tmp/testo2.tif", optimizedOrder = true)*/
 
     //GeoTiffWriter.write(tiff, s"/tmp/${sfc}_base.tif", optimizedOrder = true)
     //GeoTiffWriter.write(tiff.overviews(0), s"/tmp/${sfc}_0.tif", optimizedOrder = true)
@@ -97,8 +97,8 @@ class COGLayerSpec extends FunSpec
 
       //COGLayer.withStitch(layer)(zoom, 7, layoutScheme).collect().head
 
-      val cogs = COGLayer(layer)(zoom, 10, layoutScheme)
-      cogs.write(index, new URI("file:///tmp/write2"))
+      //val cogs = COGLayer(layer)(zoom, 10, layoutScheme)
+      //cogs.write(index, new URI("file:///tmp/write2"))
 
       //val (key, tiff: GeoTiff[Tile]) = cogs.collect().head
       /*val sfc = index.toIndex(key)
@@ -144,7 +144,11 @@ class COGLayerSpec extends FunSpec
     //COGLayer.withStitch(layer)(zoom, 7, layoutScheme).collect().head
 
 
+    val (_, cogs1) = COGLayer.apply(layer)(zoom, layoutScheme)
+
     val cogs = COGLayer.applyWithMetadataCalc(layer)(zoom, layoutScheme, minZoom = Some(7))
+
+    COGLayer.write(cogs1)(index, new URI("file:///tmp/test4"))
 
     COGLayer.write(cogs.layers.values.last)(index, new URI("file:///tmp/test3"))
     COGLayer.write(cogs.layers.values.head)(index, new URI("file:///tmp/test2"))

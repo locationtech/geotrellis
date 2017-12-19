@@ -218,13 +218,33 @@ object COGLayer {
     } else Nil
   }
 
+  /**
+    *
+    * Smartly breaks up the input TileLayerRDD into partial pyramids
+    *
+    * */
   def apply[
     K: SpatialComponent: Ordering: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]
-  ](rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]])(startZoom: Int, endZoom: Int, layoutScheme: LayoutScheme)
-   (implicit tc: Iterable[(K, V)] => GeoTiffSegmentConstructMethods[K, V]): RDD[(K, GeoTiff[V])] = {
+  ](rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]])(startZoom: Int, layoutScheme: LayoutScheme)
+   (implicit tc: Iterable[(K, V)] => GeoTiffSegmentConstructMethods[K, V]): (ZoomRange, RDD[(K, GeoTiff[V])]) = {
     val md = rdd.metadata
     val sourceLayout = md.layout
+
+    val endZoom = {
+      val layerKb =
+        md.bounds match {
+          case kb: KeyBounds[K] => kb
+          case _ => throw new Exception("Empty RDD, can't generate a COG Layer.")
+        }
+
+      val GridBounds(minCol, minRow, maxCol, maxRow) = layerKb.toGridBounds()
+
+      math.round(math.sqrt(maxCol - minCol) * (maxRow - minRow)).toInt
+    }
+
+    val zoomRange = ZoomRange(endZoom, startZoom)
+
     val options: GeoTiffOptions = GeoTiffOptions(storageMethod = Tiled(sourceLayout.tileCols, sourceLayout.tileRows))
     val LayoutLevel(_, endLayout) = layoutScheme.zoomOut(LayoutLevel(endZoom + 1, sourceLayout))
 
@@ -233,9 +253,6 @@ object COGLayer {
         .map { case (key, tile) =>
           val extent: Extent = key.getComponent[SpatialKey].extent(sourceLayout)
           val endSpatialKey = endLayout.mapTransform(extent.center)
-
-          //println(s"endZoom::${endZoom}::key.setComponent(endSpatialKey): ${key.setComponent(endSpatialKey)}")
-          //println(s"key.setComponent(endSpatialKey): ${key.setComponent(endSpatialKey)}")
 
           (key.setComponent(endSpatialKey), (key, tile))
         }
@@ -299,7 +316,7 @@ object COGLayer {
         } else Iterator()
       }
 
-    result
+    zoomRange -> result
   }
 
   // rdd: RDD[(K, GeoTiff[V])] - tiff is the last overviews
@@ -495,6 +512,94 @@ object COGLayer {
     }
   }
 
+
+  def applySmart[
+    K: SpatialComponent: Boundable: Ordering: ClassTag,
+    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]
+  ](rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]])
+   (startZoom: Int, layoutScheme: ZoomedLayoutScheme, maxTiffSize: Long = 8l * 1024 * 1024)
+   (implicit tc: Iterable[(K, V)] => GeoTiffSegmentConstructMethods[K, V]): COGLayer[K, V] = {
+    val md = rdd.metadata
+
+    val bandsCount = {
+      val sample = rdd.take(1)(0)._2
+      if(classTag[V].runtimeClass.isAssignableFrom(classTag[MultibandTile].runtimeClass))
+        sample.asInstanceOf[MultibandTile].bandCount
+      else 1
+    }
+    val bytesPerTile = md.cellType.bytes.toLong * md.tileLayout.tileSize * bandsCount
+
+    val keyBounds =
+      md.bounds match {
+        case kb: KeyBounds[K] => kb
+        case EmptyBounds => throw new Exception("Empty RDD, can't generate a COG Layer.")
+      }
+
+    // build the entire pyramid, what to do if the end zoom level is different from 0?
+    val keyBoundsList: Seq[(Int, KeyBounds[K])] =
+      (startZoom, keyBounds) :: transformKeyBounds(keyBounds, LayoutLevel(startZoom, md.layout), 0, layoutScheme)
+
+    val bytesPerZoom: Seq[(Int, Long)] =
+      keyBoundsList
+        .map { case (zoom, kb) => zoom -> keyBoundsToRange(kb).length * bytesPerTile }
+        .sortBy(- _._1)
+
+    val chunks: List[ZoomRange] =
+      bytesPerZoom
+        .foldLeft(0l, List(List[Int]())) { case ((sliceBytes, zoomList @ zoomHead :: zoomTail), (zoom, bytes)) =>
+          if (sliceBytes + bytes <= maxTiffSize) (sliceBytes + bytes, (zoom :: zoomHead) :: zoomTail)
+          else (bytes, (zoom :: Nil) :: zoomList)
+        }._2
+        .flatMap {
+          case Nil      => None
+          case h :: Nil => Some(h -> h)
+          case h :: t   => Some(h -> t.last)
+        }
+        .map { case (minZoom, maxZoom) => ZoomRange(minZoom, maxZoom) }
+
+    val layouts =
+      (0 to startZoom)
+        .map { z => z -> layoutScheme.zoomOut(LayoutLevel(z + 1, md.layout)).layout }
+        .toMap
+
+    val cogMd =
+      COGLayerMetadata(
+        cellType   = md.cellType,
+        zoomRanges = chunks.toVector,
+        layouts    = layouts,
+        extent     = md.extent,
+        crs        = md.crs
+      )
+
+    val (zoomRange, baseRDD) = apply(rdd)(startZoom, layoutScheme)
+
+    (0 to zoomRange.minZoom).map { z =>
+      ZoomRange(z, z) -> applyCOG(baseRDD, cogMd, bounds = md.bounds)(z, z, layoutScheme)
+    }
+
+    /*val layers: Map[ZoomRange, RDD[(K, GeoTiff[V])]] =
+      chunks
+        .sorted
+        .reverse
+        .foldLeft(List[(ZoomRange, RDD[(K, GeoTiff[V])])]()) { case (acc, range) =>
+          if(acc.isEmpty) {
+            List(range -> apply(rdd)(range.maxZoom, layoutScheme))
+          } else {
+            val previousLayer = acc.head._2.mapValues(_.overviews.last)
+
+            val rzz = applyCOG(previousLayer, cogMd, bounds = md.bounds)(range.maxZoom, range.minZoom, layoutScheme)
+
+            (range -> rzz) :: acc
+          }
+        }
+        .toMap*/
+
+    COGLayer[K, V](
+      layers = Map[ZoomRange, RDD[(K, GeoTiff[V])]](), // Construct lower zoom levels off of higher zoom levels
+      metadata = cogMd
+    )
+  }
+
   // maxTiffSize = 64mb
   // use accumulator to collect metadata for attribetu store during layer writes
   // instead of maxTiff size use cols rows
@@ -556,13 +661,13 @@ object COGLayer {
         crs        = md.crs
       )
 
-    val layers: Map[ZoomRange, RDD[(K, GeoTiff[V])]] =
+    /*val layers: Map[ZoomRange, RDD[(K, GeoTiff[V])]] =
       chunks
         .sorted
         .reverse
         .foldLeft(List[(ZoomRange, RDD[(K, GeoTiff[V])])]()) { case (acc, range) =>
           if(acc.isEmpty) {
-            List(range -> apply(rdd)(range.maxZoom, range.minZoom, layoutScheme))
+            List(range -> apply(rdd)(range.maxZoom, layoutScheme))
           } else {
             val previousLayer = acc.head._2.mapValues(_.overviews.last)
 
@@ -571,10 +676,10 @@ object COGLayer {
             (range -> rzz) :: acc
           }
         }
-        .toMap
+        .toMap*/
 
-    COGLayer[K, V](
-      layers = layers, // Construct lower zoom levels off of higher zoom levels
+    new COGLayer[K, V](
+      layers = Map(), // Construct lower zoom levels off of higher zoom levels
       metadata = cogMd
     )
   }
