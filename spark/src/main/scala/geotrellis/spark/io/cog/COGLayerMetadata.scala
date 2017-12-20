@@ -48,16 +48,41 @@ case class COGLayerMetadata[K: SpatialComponent](
     * GridBounds to read from that COG, and the sequence of GridBounds -> Keys that that
     * file should be cropped by
     */
-  def getReadDefinitions(keyBounds: KeyBounds[SpatialKey], zoom: Int): (ZoomRange, Seq[(SpatialKey, Int, GridBounds, Seq[(GridBounds, SpatialKey)])]) = {
-    val (zoomRange@ZoomRange(minZoom, maxZoom), currentKeyBounds) = zoomRangeInfoFor(zoom)
-    val (_, baseKeyBounds) = zoomRangeInfoFor(zoomRange.minZoom)
-    val overviewIdx = maxZoom - zoom - 1
-    val baseGridBounds@GridBounds(colMin, rowMin, colMax, rowMax) = baseKeyBounds.toGridBounds()
-    val currentGridBounds = currentKeyBounds.toGridBounds()
+  def getReadDefinitions(queryKeyBounds: KeyBounds[SpatialKey], zoom: Int): (ZoomRange, Seq[(SpatialKey, Int, GridBounds, Seq[(GridBounds, SpatialKey)])]) = {
+    val zoomRange @ ZoomRange(minZoom, maxZoom) = zoomRangeFor(zoom)
+    val (baseLayout, layout) = layoutForZoom(minZoom) -> layoutForZoom(zoom)
 
-    val baseLayout = layoutForZoom(minZoom)
-    val layout = layoutForZoom(zoom)
-    val KeyBounds(queryMinKey, queryMaxKey) = keyBounds
+    val overviewIdx = maxZoom - zoom - 1
+    val KeyBounds(queryMinKey, queryMaxKey) = queryKeyBounds
+
+    // queryKeyBounds converted on a base zoom level
+    val baseQueryKeyBounds = {
+      val KeyBounds(minKey, maxKey) = queryKeyBounds
+
+      val baseMinKey =
+        baseLayout
+          .mapTransform
+          .pointToKey(
+            layout
+              .mapTransform
+              .keyToExtent(minKey)
+              .center
+          )
+
+      val baseMaxKey =
+        baseLayout
+          .mapTransform
+          .pointToKey(
+            layout
+              .mapTransform
+              .keyToExtent(maxKey)
+              .center
+          )
+
+      KeyBounds(baseMinKey, baseMaxKey)
+    }
+
+    val GridBounds(colMin, rowMin, colMax, rowMax) = baseQueryKeyBounds.toGridBounds()
 
     val seq =
       for {
@@ -65,33 +90,30 @@ case class COGLayerMetadata[K: SpatialComponent](
         row <- rowMin to rowMax
       } yield {
         val baseKey = SpatialKey(col, row)
-        val gridBounds = {
-          val gb = baseGridBounds
-          val (minCol, minRow) = ((col - gb.colMin) * baseLayout.tileCols, (row - gb.rowMin) * baseLayout.tileRows)
-          val (maxCol, maxRow) = (minCol + baseLayout.tileCols - 1, minRow + baseLayout.tileRows - 1)
-          GridBounds(minCol, minRow, maxCol, maxRow)
-        }
+        val layoutGridBounds = layout.mapTransform(baseKey.extent(baseLayout))
 
-        val seq = for {
-          qcol <- queryMinKey.col to queryMaxKey.col
-          qrow <- queryMinKey.row to queryMaxKey.row
-        } yield {
-          val qKey = SpatialKey(qcol, qrow)
-          val gridBounds = {
-            val gb = currentGridBounds
+        val seq =
+          (for {
+            qcol <- queryMinKey.col to queryMaxKey.col
+            qrow <- queryMinKey.row to queryMaxKey.row
+          } yield {
+            val key = SpatialKey(qcol, qrow)
+            val keyLayoutGridBounds = layout.mapTransform(key.extent(layout))
 
-            val (minCol, minRow) = ((qcol - gb.colMin) * layout.tileCols, (qrow - gb.rowMin) * layout.tileRows)
-            val (maxCol, maxRow) = (minCol + baseLayout.tileCols - 1, minRow + baseLayout.tileRows - 1)
-            GridBounds(minCol, minRow, maxCol, maxRow)
-          }
+            if(layoutGridBounds.contains(keyLayoutGridBounds)) {
+              val (minCol, minRow) = ((qcol - layoutGridBounds.colMin) * baseLayout.tileCols, (qrow - layoutGridBounds.rowMin) * baseLayout.tileRows)
+              val (maxCol, maxRow) = (minCol + layout.tileCols - 1, minRow + layout.tileRows - 1)
+              Some((GridBounds(minCol, minRow, maxCol, maxRow), key))
+            } else None
+          }).flatten
 
-          (gridBounds, qKey)
-        }
-
-        (baseKey, overviewIdx, gridBounds, seq)
+        if(seq.nonEmpty) {
+          val combinedGridBounds = seq.map(_._1).reduce(_ combine _)
+          Some((baseKey, overviewIdx, combinedGridBounds, seq))
+        } else None
       }
 
-    (zoomRange, seq)
+    (zoomRange, seq.flatten)
   }
 
   /** Returns the ZoomRange and SpatialKey of the COG to be read for this key, index of overview, as well as the GridBounds to crop
@@ -118,7 +140,6 @@ case class COGLayerMetadata[K: SpatialComponent](
     val gridBounds = {
       val gb = layoutGridBounds
       val (minCol, minRow) = ((key.col - gb.colMin) * layout.tileCols, (key.row - gb.rowMin) * layout.tileRows)
-
       val (maxCol, maxRow) = (minCol + layout.tileCols - 1, minRow + layout.tileRows - 1)
       GridBounds(minCol, minRow, maxCol, maxRow)
     }
