@@ -1,6 +1,13 @@
 package geotrellis
 
+import scala.{specialized => sp}
+
 import simulacrum._
+import spire.algebra._
+import spire.std.any._
+import spire.syntax.field._
+
+// --- //
 
 class Stencil       // stub
 
@@ -25,26 +32,18 @@ class Stencil       // stub
   * @groupprio focal 1
   * @groupdesc focal Operations over "neighbourhoods" of one `A`.
   */
-@typeclass trait Focal[A] {
+@typeclass trait Focal[F[_]] {
 
-  /** @group minimal */
-  def get(self: A, x: Int, y: Int): Int
+  def get[@sp(Int, Double) A](self: F[A], x: Int, y: Int): A
 
-  /** @group minimal */
-  def imap(self: A, f: (Int, Int, Int) => Int): A
+  def imap[@sp(Int, Double) A](self: F[A], f: ((Int, Int), A) => A): F[A]
 
-  /** The `.head` value of each `List` is the neighbourhood focus.
-    *
-    * @group focal
-    */
-  def focal(self: A, n: Stencil, f: List[Int] => Int): A = ???  // uses `imap` and `get`
+  def focal[@sp(Int, Double) A](self: F[A], n: Stencil, f: List[A] => A): F[A] = ???  // uses `imap` and `get`
 
-  /** @group focal */
-  def sum(self: A, s: Stencil): A = focal(self, s, { _.foldLeft(0)(_ + _) })
+  @inline def sum[@sp(Int, Double) A: Ring](self: F[A], s: Stencil): F[A] =
+    focal(self, s, { _.foldLeft(Ring[A].zero)(_ + _) })
 
-  /** @group focal */
-  def mean(self: A, s: Stencil): A = focal(self, s, { n => n.foldLeft(0)(_ + _) / n.length })
-
-  /* All other focal ops would be provided for free here */
+  @inline def mean[@sp(Int, Double) A: Field](self: F[A], s: Stencil): F[A] =
+    focal(self, s, { n => n.foldLeft(Field[A].zero)(_ + _) / n.length })
 
 }
