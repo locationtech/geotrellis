@@ -198,7 +198,7 @@ object COGLayer {
             thisLayout,
             extent,
             crs,
-            options
+            options.copy(subfileType = Some(ReducedImage))
           )
 
 
@@ -221,7 +221,7 @@ object COGLayer {
       extent,
       crs,
       options,
-      overviews = overviews
+      overviews = overviews.reverse
     )
   }
 

@@ -50,7 +50,7 @@ object COGLayerStorageMetadata {
               keyIndexes.map(_.convertTo[(ZoomRange, KeyIndex[K])]).toMap
             )
           case v =>
-            throw new DeserializationException(s"COGLayerMetadata expected, got: $v")
+            throw new DeserializationException(s"COGLayerStorageMetadata expected, got: $v")
         }
     }
 }

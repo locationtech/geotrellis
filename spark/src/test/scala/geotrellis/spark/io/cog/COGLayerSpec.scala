@@ -78,7 +78,30 @@ class COGLayerSpec extends FunSpec
         iter => withSinglebandGeoTiffSegmentConstructMethods(iter)*/
 
 
-      reader.reader[SpatialKey, Tile](LayerId("landsat_cog", 9)).read(SpatialKey(44,79))
+      val vreader = reader.reader[SpatialKey, Tile](LayerId("landsat_cog", 9))
+
+      for {
+        c <- 88 to 89
+        r <- 159 to 160
+      } yield {
+        vreader
+          .read(SpatialKey(c, r))
+          .renderPng()
+          .write(s"/tmp/${c}_${r}.png")
+      }
+
+      /*val vreader = reader.reader[SpatialKey, Tile](LayerId("landsat_cog", 10))
+
+      for {
+        c <- 177 to 178
+        r <- 318 to 321
+      } yield {
+        vreader
+          .read(SpatialKey(c, r))
+          .renderPng()
+          .write(s"/tmp/${c}_${r}.png")
+      }*/
+
       //writer.write("landsat_cog", layer, zoom, ZCurveKeyIndexMethod)
     }
   }

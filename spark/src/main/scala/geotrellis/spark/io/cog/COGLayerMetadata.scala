@@ -34,8 +34,9 @@ case class COGLayerMetadata[K: SpatialComponent](
     val idx =
       if(i >= 0) { i }
       else {
-        ~i - 1
+        ~i //- 1
       }
+
     zoomRangeInfos(idx)
   }
 
@@ -96,7 +97,7 @@ case class COGLayerMetadata[K: SpatialComponent](
   /** Returns the ZoomRange and SpatialKey of the COG to be read for this key, index of overview, as well as the GridBounds to crop
     * that COG to */
   def getReadDefinition(key: SpatialKey, zoom: Int): (ZoomRange, SpatialKey, Int, GridBounds) = {
-    val (zoomRange @ ZoomRange(minZoom, maxZoom), keyBounds) = zoomRangeInfoFor(zoom)
+    val zoomRange @ ZoomRange(minZoom, maxZoom) = zoomRangeFor(zoom)
     val overviewIdx = maxZoom - zoom - 1
 
     val baseLayout = layoutForZoom(minZoom)
@@ -112,9 +113,12 @@ case class COGLayerMetadata[K: SpatialComponent](
             .center
         )
 
+    val layoutGridBounds = layout.mapTransform(baseKey.extent(baseLayout))
+
     val gridBounds = {
-      val gb = keyBounds.toGridBounds()
+      val gb = layoutGridBounds
       val (minCol, minRow) = ((key.col - gb.colMin) * layout.tileCols, (key.row - gb.rowMin) * layout.tileRows)
+
       val (maxCol, maxRow) = (minCol + layout.tileCols - 1, minRow + layout.tileRows - 1)
       GridBounds(minCol, minRow, maxCol, maxRow)
     }
@@ -215,24 +219,24 @@ object COGLayerMetadata {
       def write(metadata: COGLayerMetadata[K]) =
         JsObject(
           "cellType" -> metadata.cellType.toJson,
-          "zoomRanges" -> JsArray(metadata.zoomRanges.map(_.toJson)),
+          "zoomRangesInfos" -> metadata.zoomRangeInfos.toJson,
           "layoutScheme" -> metadata.layoutScheme.toJson,
           "extent" -> metadata.extent.toJson,
           "crs" -> metadata.crs.toJson
         )
 
       def read(value: JsValue): COGLayerMetadata[K] =
-        value.asJsObject.getFields("cellType", "zoomRanges", "layoutScheme", "extent", "crs", "bounds") match {
-          case Seq(cellType, JsArray(zoomRanges), layoutScheme, extent, crs, bounds) =>
+        value.asJsObject.getFields("cellType", "zoomRangesInfos", "layoutScheme", "extent", "crs") match {
+          case Seq(cellType, JsArray(zoomRanges), layoutScheme, extent, crs) =>
             COGLayerMetadata(
               cellType.convertTo[CellType],
-              zoomRanges.map(_.convertTo[(ZoomRange, KeyBounds[K])]).toVector,
+              zoomRanges.map(_.convertTo[(ZoomRange, KeyBounds[K])]),
               layoutScheme.convertTo[ZoomedLayoutScheme],
               extent.convertTo[Extent],
               crs.convertTo[CRS]
             )
-          case _ =>
-            throw new DeserializationException("COGLayerMetadata expected")
+          case v =>
+            throw new DeserializationException(s"COGLayerMetadata expected, got $v")
         }
     }
 }
