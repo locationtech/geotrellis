@@ -193,30 +193,22 @@ object TileRDDReproject {
           }}
         }
 
-    // val inputCols = bufferedTiles.map{ case (key, BufferedTile(_, gb)) => (key.getComponent[SpatialKey].col, gb.width) }.collect.toMap.values.reduce(_+_)
-    // println(s"BufferedTile input total width: $inputCols")
-    // val outputCols = reprojectedTiles.map{ case (key, t) => (key.getComponent[SpatialKey].col, t.cols) }.collect.toMap.values.reduce(_+_)
-    // println(s"Reprojected output total width: $outputCols")
-    // val shouldBeCols = reprojectedTiles.map{ case (key, _) => (key.getComponent[SpatialKey].col, maptrans(key).width / newMetadata.layout.cellSize.width) }.collect.toMap.values.reduce(_+_)
-    // println(s"Reprojected output total width (by extent): $shouldBeCols")
-    // val expectedCols = targetDataExtent.width / newMetadata.layout.cellSize.width
-    // println(s"Expected width: $expectedCols")
-
-
-    // val tiled = reprojectedTiles.merge(part)
-    val tiled: RDD[(K, V)] = stagedTiles.combineByKey(
-      { case (raster, destRE, destRegion) =>
+    def createCombiner(tup: (Raster[V], RasterExtent, Polygon)) = {
+        val (raster, destRE, destRegion) = tup
         rrp.regionReproject(raster, crs, destCrs, destRE, destRegion, rasterReprojectOptions.method).tile
-      },
-      { (reprojectedTile, toReproject) =>
-        val (raster, destRE, destRegion) = toReproject
-        rrp.mutableRegionReproject(reprojectedTile, raster, crs, destCrs, destRE, destRegion, rasterReprojectOptions.method)
-        reprojectedTile
-      },
-      { (reproj1, reproj2) =>
-        reproj1.merge(reproj2)
       }
-    )
+    def mergeValues(reprojectedTile: V, toReproject: (Raster[V], RasterExtent, Polygon)) = {
+      val (raster, destRE, destRegion) = toReproject
+      rrp.mutableRegionReproject(reprojectedTile, raster, crs, destCrs, destRE, destRegion, rasterReprojectOptions.method)
+      reprojectedTile
+    }
+    def mergeCombiners(reproj1: V, reproj2: V) = reproj1.merge(reproj2)
+
+    val tiled: RDD[(K, V)] =
+      stagedTiles.partitioner match {
+        case Some(part) => stagedTiles.combineByKey(createCombiner, mergeValues, mergeCombiners, partitioner = part)
+        case None => stagedTiles.combineByKey(createCombiner, mergeValues, mergeCombiners)
+      }
 
     (targetZoom, ContextRDD(tiled, newMetadata))
   }

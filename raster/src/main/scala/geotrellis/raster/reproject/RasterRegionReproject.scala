@@ -27,7 +27,7 @@ trait RasterRegionReproject[T <: CellGrid] extends Serializable {
 }
 
 object RasterRegionReproject {
-  def rowCoords(destRegion: Polygon, destRasterExtent: RasterExtent, toSrcCrs: Transform): Int => (Array[Int], Array[Double], Array[Double]) = {
+  private def rowCoords(destRegion: Polygon, destRasterExtent: RasterExtent, toSrcCrs: Transform): Int => (Array[Int], Array[Double], Array[Double]) = {
     val extent = destRasterExtent.extent
     val rowTransform = RowTransform.approximate(toSrcCrs, 0.125)
 
@@ -94,24 +94,7 @@ object RasterRegionReproject {
   implicit val singlebandInstance = new RasterRegionReproject[Tile] {
     def regionReproject(raster: Raster[Tile], src: CRS, dest: CRS, rasterExtent: RasterExtent, region: Polygon, resampleMethod: ResampleMethod): Raster[Tile] = {
       val buffer = raster.tile.prototype(rasterExtent.cols, rasterExtent.rows)
-      val trans = Proj4Transform(dest, src)
-      val resampler = Resample.apply(resampleMethod, raster.tile, raster.extent, CellSize(raster.rasterExtent.cellwidth, raster.rasterExtent.cellheight))
-
-      val rowcoords = rowCoords(region, rasterExtent, trans)
-
-      cfor(0)(_ < rasterExtent.rows, _ + 1){ i =>
-        val (pxs, xs, ys) = rowcoords(i)
-        if (raster.cellType.isFloatingPoint) {
-          cfor(0)(_ < xs.size, _ + 1){ s =>
-            buffer.setDouble(pxs(s), i, resampler.resampleDouble(xs(s), ys(s)))
-          }
-        } else {
-          cfor(0)(_ < xs.size, _ + 1){ s =>
-            buffer.set(pxs(s), i, resampler.resample(xs(s), ys(s)))
-          }
-        }
-      }
-
+      mutableRegionReproject(buffer, raster, src, dest, rasterExtent, region, resampleMethod)
       Raster(buffer, rasterExtent.extent)
     }
 
@@ -139,35 +122,11 @@ object RasterRegionReproject {
 
   implicit val multibandInstance = new RasterRegionReproject[MultibandTile] {
     def regionReproject(raster: Raster[MultibandTile], src: CRS, dest: CRS, rasterExtent: RasterExtent, region: Polygon, resampleMethod: ResampleMethod): Raster[MultibandTile] = {
-      val trans = Proj4Transform(dest, src)
       val bands = Array.ofDim[MutableArrayTile](raster.tile.bandCount)
-
       cfor(0)(_ < bands.length, _ + 1) { i =>
         bands(i) = raster.band(i).prototype(rasterExtent.cols, rasterExtent.rows).mutable
       }
-
-      val resampler = (0 until raster.bandCount).map { i =>
-        Resample(resampleMethod, raster.band(i), raster.extent, raster.rasterExtent.cellSize)
-      }
-
-      if (raster.cellType.isFloatingPoint) {
-        Rasterizer.foreachCellByPolygon(region, rasterExtent) { (px, py) =>
-          val (x, y) = rasterExtent.gridToMap(px, py)
-          val (tx, ty) = trans(x, y)
-          cfor(0)(_ < bands.length, _ + 1) { i =>
-            bands(i).setDouble(px, py, resampler(i).resampleDouble(tx, ty))
-          }
-        }
-      } else {
-        Rasterizer.foreachCellByPolygon(region, rasterExtent) { (px, py) =>
-          val (x, y) = rasterExtent.gridToMap(px, py)
-          val (tx, ty) = trans(x, y)
-          cfor(0)(_ < bands.length, _ + 1) { i =>
-            bands(i).set(px, py, resampler(i).resample(tx, ty))
-          }
-        }
-      }
-
+      mutableRegionReproject(MultibandTile(bands), raster, src, dest, rasterExtent, region, resampleMethod)
       Raster(MultibandTile(bands), rasterExtent.extent)
     }
 
