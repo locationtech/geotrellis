@@ -53,4 +53,6 @@ object Dependencies {
   val jsonSchemaValidator = "com.networknt"               % "json-schema-validator"    % "0.1.7"
 
   val scaffeine           = "com.github.blemale"         %% "scaffeine"                % "2.2.0"
+
+  val cats                = "org.typelevel"              %% "cats-core"                % "1.0.0-RC2"
 }

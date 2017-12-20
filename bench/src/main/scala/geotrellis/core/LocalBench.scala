@@ -30,7 +30,9 @@ class LocalBench {
 
   def zip(a: Array[Int], b: Array[Int]): Array[Int] = a.zipWith(b, { _ + _ })
 
-  def manual(a: Array[Int], b: Array[Int]): Array[Int] = Local1[Array].zipWith(a, b, { _ + _ })
+  def manualZip(a: Array[Int], b: Array[Int]): Array[Int] = Local[Array].zipWith(a, b, { _ + _ })
+
+  def manualSum(a: Array[Int], b: Array[Int]): Array[Int] = Local[Array].+(a, b)
 
   def withWhile(a: Array[Int], b: Array[Int]): Array[Int] = {
     if (a.isEmpty) a else {
@@ -55,7 +57,10 @@ class LocalBench {
   def zipB: Array[Int] = zip(arr0, arr1)
 
   @Benchmark
-  def manualB: Array[Int] = manual(arr0, arr1)
+  def manualZipB: Array[Int] = manualZip(arr0, arr1)
+
+  @Benchmark
+  def manualSumB: Array[Int] = manualSum(arr0, arr1)
 
   @Benchmark
   def whileB: Array[Int] = withWhile(arr0, arr1)
