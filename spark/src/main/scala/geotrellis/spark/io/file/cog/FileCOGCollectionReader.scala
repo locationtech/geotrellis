@@ -25,9 +25,13 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.index.MergeQueue
 import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.util._
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader.readGeoTiffInfo
+import geotrellis.raster.io.geotiff.reader.TiffTagsReader
 
 import org.apache.spark.SparkContext
 import com.typesafe.config.ConfigFactory
+import spray.json._
+import spray.json.DefaultJsonProtocol._
 
 import java.io.File
 import java.net.URI
@@ -44,6 +48,23 @@ trait FileCOGCollectionReader[V <: CellGrid] extends Serializable {
   def readTiff(uri: URI, index: Int): GeoTiff[V]
 
   def getSegmentGridBounds(uri: URI, index: Int): (Int, Int) => GridBounds
+
+  def getGeoTiffInfo(uri: URI) =
+    readGeoTiffInfo(
+      byteReader = Filesystem.toMappedByteBuffer(uri.getPath),
+      decompress = false,
+      streaming = true,
+      withOverviews = true,
+      byteReaderExternal = None
+    )
+
+  def getKey[K: JsonFormat](uri: URI): K =
+    TiffTagsReader
+      .read(uri.getPath)
+      .tags
+      .headTags("GT_KEY")
+      .parseJson
+      .convertTo[K]
 
   def tileTiff[K](tiff: GeoTiff[V], gridBounds: Map[GridBounds, K]): Vector[(K, V)]
 
@@ -121,16 +142,4 @@ object FileCOGCollectionReader {
         classTag[V].runtimeClass.getCanonicalName,
         throw new Exception(s"No FileCOGCollectionReaderRegistry for the type ${classTag[V].runtimeClass.getCanonicalName}")
       ).asInstanceOf[FileCOGCollectionReader[V]]
-
-  def getReaders(uri: URI): (ByteReader, Option[ByteReader]) = {
-    val path = uri.getPath
-    val ovrPath = s"$path.ovr"
-    val ovrPathExists = new File(ovrPath).isFile
-
-    val ovrReader: Option[ByteReader] =
-      if (ovrPathExists) Some(Filesystem.toMappedByteBuffer(ovrPath)) else None
-
-    val reader: ByteReader = Filesystem.toMappedByteBuffer(path)
-    reader -> ovrReader
-  }
 }

@@ -1,29 +1,19 @@
 package geotrellis.spark.io.file.cog
 
-import java.net.URI
-
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader.readGeoTiffInfo
 import geotrellis.raster.io.geotiff.{GeoTiff, GeoTiffMultibandTile, GeoTiffTile}
 import geotrellis.raster.{GridBounds, MultibandTile, Tile}
 import geotrellis.spark.io.cog.TiffMethods
+import geotrellis.util.Filesystem
+
+import java.net.URI
 
 trait FileTiffMethods {
   implicit val tiffMethods = new TiffMethods[Tile] {
 
     def readTiff(uri: URI, index: Int): GeoTiff[Tile] = {
-      val (reader, ovrReader) = FileCOGRDDReader.getReaders(uri)
-
-      val tiff =
-        GeoTiffReader
-          .readSingleband(
-            byteReader         = reader,
-            decompress         = false,
-            streaming          = true,
-            withOverviews      = true,
-            byteReaderExternal = ovrReader
-          )
-
+      val tiff = GeoTiffReader.readSingleband(uri.getPath, false, true)
       if(index < 0) tiff
       else tiff.getOverview(index)
     }
@@ -36,15 +26,13 @@ trait FileTiffMethods {
     }
 
     def getSegmentGridBounds(uri: URI, index: Int): (Int, Int) => GridBounds = {
-      val (reader, ovrReader) = FileCOGRDDReader.getReaders(uri)
-
       val info =
         readGeoTiffInfo(
-          byteReader         = reader,
+          byteReader         = Filesystem.toMappedByteBuffer(uri.getPath),
           decompress         = false,
           streaming          = true,
           withOverviews      = true,
-          byteReaderExternal = ovrReader
+          byteReaderExternal = None
         )
 
       val geoTiffTile =
@@ -62,17 +50,7 @@ trait FileTiffMethods {
 
   implicit val multibandTiffMethods = new TiffMethods[MultibandTile] {
     def readTiff(uri: URI, index: Int): GeoTiff[MultibandTile] = {
-      val (reader, ovrReader) = FileCOGRDDReader.getReaders(uri)
-
-      val tiff =
-        GeoTiffReader
-          .readMultiband(
-            byteReader         = reader,
-            decompress         = false,
-            streaming          = true,
-            withOverviews      = true,
-            byteReaderExternal = ovrReader
-          )
+      val tiff = GeoTiffReader.readMultiband(uri.getPath, false, true)
 
       if(index < 0) tiff
       else tiff.getOverview(index)
@@ -86,15 +64,13 @@ trait FileTiffMethods {
     }
 
     def getSegmentGridBounds(uri: URI, index: Int): (Int, Int) => GridBounds = {
-      val (reader, ovrReader) = FileCOGRDDReader.getReaders(uri)
-
       val info =
         readGeoTiffInfo(
-          byteReader         = reader,
+          byteReader         = Filesystem.toMappedByteBuffer(uri.getPath),
           decompress         = false,
           streaming          = true,
           withOverviews      = true,
-          byteReaderExternal = ovrReader
+          byteReaderExternal = None
         )
 
       val geoTiffTile =

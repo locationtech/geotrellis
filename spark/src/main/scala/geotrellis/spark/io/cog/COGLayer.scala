@@ -23,6 +23,8 @@ import java.net.URI
 
 import geotrellis.proj4.CRS
 import geotrellis.spark.pyramid.Pyramid
+import spray.json._
+import spray.json.DefaultJsonProtocol._
 
 import scala.collection.JavaConverters._
 import scala.reflect._
@@ -47,7 +49,7 @@ object COGLayer {
   )
 
   def apply[
-    K: SpatialComponent: Ordering: ClassTag,
+    K: SpatialComponent: Ordering: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]
   ](
      rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
@@ -103,14 +105,7 @@ object COGLayer {
               else tiff.tile
             }
 
-            val tmd = TileLayerMetadata[K](
-              cogLayerMetadata.cellType,
-              layoutScheme.levelForZoom(range.maxZoom + 1).layout,
-              cogLayerMetadata.extent,
-              cogLayerMetadata.crs,
-              cogLayerMetadata.zoomRangeInfoFor(range.maxZoom + 1)._2
-            )
-
+            val tmd = cogLayerMetadata.tileLayerMetadata(range.maxZoom + 1)
             val upsampledPreviousLayer =
               Pyramid.up(ContextRDD(previousLayer, tmd), layoutScheme, range.maxZoom + 1)._2
 
@@ -125,15 +120,16 @@ object COGLayer {
   }
 
   private def generateGeoTiffRDD[
-    K: SpatialComponent: Ordering: ClassTag,
+    K: SpatialComponent: Ordering: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]
   ](
      rdd: RDD[(K, V)],
      zoomRange: ZoomRange,
      layoutScheme: ZoomedLayoutScheme
    )(implicit tc: Iterable[(SpatialKey, V)] => GeoTiffSegmentConstructMethods[SpatialKey, V]): RDD[(K, GeoTiff[V])] = {
-    val (minZoomLayout, maxZoomLayout) = (layoutScheme.levelForZoom(zoomRange.minZoom).layout, layoutScheme.levelForZoom(zoomRange.maxZoom).layout)
+    val kwFomat = KryoWrapper(implicitly[JsonFormat[K]])
 
+    val (minZoomLayout, maxZoomLayout) = (layoutScheme.levelForZoom(zoomRange.minZoom).layout, layoutScheme.levelForZoom(zoomRange.maxZoom).layout)
     val options: GeoTiffOptions =
       GeoTiffOptions(
         storageMethod = Tiled(maxZoomLayout.tileCols, maxZoomLayout.tileRows),
@@ -151,9 +147,10 @@ object COGLayer {
       }.
       groupByKey(new HashPartitioner(rdd.partitions.length)).
       mapPartitions { partition =>
+        val keyFormat = kwFomat.value
         partition.map { case (key, tiles) =>
           val extent = key.getComponent[SpatialKey].extent(minZoomLayout)
-          (key, createCog(tiles, zoomRange, layoutScheme, extent, layoutScheme.crs, options))
+          (key, createCog(tiles, zoomRange, layoutScheme, extent, layoutScheme.crs, options, Tags(Map("GT_KEY" -> keyFormat.write(key).prettyPrint), Nil)))
         }
       }
   }
@@ -167,7 +164,8 @@ object COGLayer {
      layoutScheme: ZoomedLayoutScheme,
      extent: Extent,
      crs: CRS,
-     options: GeoTiffOptions
+     options: GeoTiffOptions,
+     tags: Tags
    )(implicit tc: Iterable[(SpatialKey, V)] => GeoTiffSegmentConstructMethods[SpatialKey, V]): GeoTiff[V] = {
     val spatialTiles = tiles.map { case (key, value) => (key.getComponent[SpatialKey], value) }
     val accSeed = (List[GeoTiff[V]](), spatialTiles)
@@ -221,7 +219,8 @@ object COGLayer {
       extent,
       crs,
       options,
-      overviews = overviews.reverse
+      overviews = overviews.reverse,
+      tags = tags
     )
   }
 

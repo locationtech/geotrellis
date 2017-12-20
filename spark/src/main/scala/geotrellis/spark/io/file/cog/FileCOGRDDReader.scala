@@ -16,10 +16,6 @@
 
 package geotrellis.spark.io.file.cog
 
-import java.io.File
-import java.net.URI
-
-import com.typesafe.config.ConfigFactory
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.merge._
@@ -29,10 +25,103 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
 import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.util._
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader.readGeoTiffInfo
+import geotrellis.raster.io.geotiff.reader.{GeoTiffReader, TiffTagsReader}
+import geotrellis.spark.util.KryoWrapper
+
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import com.typesafe.config.ConfigFactory
+import spray.json._
+import spray.json.DefaultJsonProtocol
+
+import java.io.File
+import java.net.URI
 
 import scala.reflect._
+
+trait FileCOGRDDReader2[V <: CellGrid] extends Serializable {
+  implicit val tileMergeMethods: V => TileMergeMethods[V]
+  implicit val tilePrototypeMethods: V => TilePrototypeMethods[V]
+
+  def readTiff(uri: URI, index: Int): GeoTiff[V]
+
+  def getGeoTiffInfo(uri: URI) =
+    readGeoTiffInfo(
+      byteReader = Filesystem.toMappedByteBuffer(uri.getPath),
+      decompress = false,
+      streaming = true,
+      withOverviews = true,
+      byteReaderExternal = None
+    )
+
+  def getKey[K: JsonFormat](uri: URI): K =
+    TiffTagsReader
+      .read(uri.getPath)
+      .tags
+      .headTags("GT_KEY")
+      .parseJson
+      .convertTo[K]
+
+  def tileTiff[K](tiff: GeoTiff[V], gridBounds: Map[GridBounds, K]): Vector[(K, V)]
+
+  def read[K: SpatialComponent: Boundable: JsonFormat: ClassTag](
+    keyPath: BigInt => String,
+    baseQueryKeyBounds: Seq[KeyBounds[K]],
+    decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
+    readDefinitions: Seq[(SpatialKey, Int, GridBounds, Seq[(GridBounds, SpatialKey)])],
+    numPartitions: Option[Int] = None,
+    threads: Int = ConfigFactory.load().getThreads("geotrellis.file.threads.rdd.read")
+  )(implicit sc: SparkContext): RDD[(K, V)] = {
+    if (baseQueryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
+
+    val kwFormat = KryoWrapper(implicitly[JsonFormat[K]])
+
+    val ranges = if (baseQueryKeyBounds.length > 1)
+      MergeQueue(baseQueryKeyBounds.flatMap(decomposeBounds))
+    else
+      baseQueryKeyBounds.flatMap(decomposeBounds)
+
+    val bins = IndexRanges.bin(ranges, numPartitions.getOrElse(sc.defaultParallelism))
+
+    sc.parallelize(bins, bins.size)
+      .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
+        val keyFormat = kwFormat.value
+
+        partition flatMap { seq =>
+          LayerReader.njoin[K, V](seq.toIterator, threads) { index: BigInt =>
+            println(s"${keyPath(index)}.tiff")
+            if (!new File(s"${keyPath(index)}.tiff").isFile) Vector()
+            else {
+              val uri = new URI(s"file://${keyPath(index)}.tiff")
+              val baseKey = getKey[K](uri)(keyFormat)
+
+              println(s"baseKey: $baseKey")
+
+              val result: Vector[(K, V)] =
+                readDefinitions
+                  .toVector
+                  .flatMap {
+                    case (spatialKey, overviewIndex, _, seq) if spatialKey == baseKey.getComponent[SpatialKey] =>
+                      val key = baseKey.setComponent(spatialKey)
+                      val tiff = readTiff(uri, overviewIndex)
+                      val map = seq.map { case (gb, sk) => gb -> key.setComponent(sk) }.toMap
+
+                      tileTiff(tiff, map)
+                    case (spatialKey, overviewIndex, _, seq) =>
+                      println(s"spatialKey: $spatialKey")
+                      Vector()
+                  }
+
+              result
+            }
+          }
+        }
+      }
+      .groupBy(_._1)
+      .map { case (key, (seq: Iterable[(K, V)])) => key -> seq.map(_._2).reduce(_ merge _) }
+  }
+}
 
 /**
   * Generate VRTs to use from GDAL
@@ -44,6 +133,23 @@ trait FileCOGRDDReader[V <: CellGrid] extends Serializable {
   def readTiff(uri: URI, index: Int): GeoTiff[V]
 
   def getSegmentGridBounds(uri: URI, index: Int): (Int, Int) => GridBounds
+
+  def getGeoTiffInfo(uri: URI) =
+    readGeoTiffInfo(
+      byteReader = Filesystem.toMappedByteBuffer(uri.getPath),
+      decompress = false,
+      streaming = true,
+      withOverviews = true,
+      byteReaderExternal = None
+    )
+
+  def getKey[K: JsonFormat](uri: URI): K =
+    TiffTagsReader
+      .read(uri.getPath)
+      .tags
+      .headTags("GT_KEY")
+      .parseJson
+      .convertTo[K]
 
   def tileTiff[K](tiff: GeoTiff[V], gridBounds: Map[GridBounds, K]): Vector[(K, V)]
 
@@ -129,17 +235,20 @@ object FileCOGRDDReader {
         classTag[V].runtimeClass.getCanonicalName,
         throw new Exception(s"No FileCOGRDDReaderRegistry for the type ${classTag[V].runtimeClass.getCanonicalName}")
       ).asInstanceOf[FileCOGRDDReader[V]]
-
-  def getReaders(uri: URI): (ByteReader, Option[ByteReader]) = {
-    val path = uri.getPath
-    val ovrPath = s"$path.ovr"
-    val ovrPathExists = new File(ovrPath).isFile
-
-    val ovrReader: Option[ByteReader] =
-      if (ovrPathExists) Some(Filesystem.toMappedByteBuffer(ovrPath)) else None
-
-    val reader: ByteReader = Filesystem.toMappedByteBuffer(path)
-    reader -> ovrReader
-  }
 }
 
+object FileCOGRDDReader2 {
+  /** TODO: Think about it in a more generic fasion */
+  private final val FileCOGRDDReaderRegistry: Map[String, FileCOGRDDReader2[_]] =
+    Map(
+      classTag[Tile].runtimeClass.getCanonicalName -> implicitly[FileCOGRDDReader2[Tile]]//,
+      //classTag[MultibandTile].runtimeClass.getCanonicalName -> implicitly[FileCOGRDDReader[MultibandTile]]
+    )
+
+  private [geotrellis] def fromRegistry[V <: CellGrid: ClassTag]: FileCOGRDDReader2[V] =
+    FileCOGRDDReaderRegistry
+      .getOrElse(
+        classTag[V].runtimeClass.getCanonicalName,
+        throw new Exception(s"No FileCOGRDDReader2Registry for the type ${classTag[V].runtimeClass.getCanonicalName}")
+      ).asInstanceOf[FileCOGRDDReader2[V]]
+}

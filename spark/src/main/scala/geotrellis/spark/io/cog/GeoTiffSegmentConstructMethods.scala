@@ -14,6 +14,7 @@ trait GeoTiffSegmentConstructMethods[K, T <: CellGrid] extends MethodExtensions[
     extent: Extent,
     crs: CRS,
     options: GeoTiffOptions,
+    tags: Tags = Tags.empty,
     overviews: List[GeoTiff[T]] = Nil
   )(implicit sc: SpatialComponent[K]): GeoTiff[T]
 }

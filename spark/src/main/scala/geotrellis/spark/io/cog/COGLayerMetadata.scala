@@ -44,6 +44,15 @@ case class COGLayerMetadata[K: SpatialComponent](
   def layoutForZoom(z: Int): LayoutDefinition =
     layoutScheme.levelForZoom(z).layout
 
+  def tileLayerMetadata(zoom: Int) =
+    TileLayerMetadata[K](
+      cellType,
+      layoutScheme.levelForZoom(zoom).layout,
+      extent,
+      crs,
+      zoomRangeInfoFor(zoom)._2
+    )
+
   /** Returns the ZoomRange to read, and a Sequence of SpatialKey COGs to read, the total
     * GridBounds to read from that COG, and the sequence of GridBounds -> Keys that that
     * file should be cropped by

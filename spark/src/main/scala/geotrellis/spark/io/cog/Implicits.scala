@@ -14,6 +14,7 @@ import org.apache.spark.rdd.RDD
 import spire.syntax.cfor._
 
 import java.net.URI
+
 import scala.reflect.ClassTag
 
 object Implicits extends Implicits
@@ -63,6 +64,7 @@ trait Implicits {
       extent: Extent,
       crs: CRS,
       options: GeoTiffOptions,
+      tags: Tags = Tags.empty,
       overviews: List[GeoTiff[Tile]] = Nil
     )(implicit sc: SpatialComponent[K]): SinglebandGeoTiff = {
       val gridBounds =
@@ -84,7 +86,7 @@ trait Implicits {
         tile,
         extent,
         crs,
-        Tags.empty,
+        tags,
         options = options,
         overviews = overviews
       )
@@ -97,6 +99,7 @@ trait Implicits {
       extent: Extent,
       crs: CRS,
       options: GeoTiffOptions,
+      tags: Tags = Tags.empty,
       overviews: List[GeoTiff[MultibandTile]] = Nil
     )(implicit sc: SpatialComponent[K]): MultibandGeoTiff = {
       val gridBounds =
@@ -118,7 +121,7 @@ trait Implicits {
         tile,
         extent,
         crs,
-        Tags.empty,
+        tags,
         options = options,
         overviews = overviews
       )
