@@ -9,6 +9,29 @@ import spire.syntax.field._
 
 // --- //
 
+/** A strategy for handling locations outside the usual legal range of [[Focal.get]]. */
+sealed trait Boundary[A]
+
+/* Reference:
+ http://hackage.haskell.org/package/repa-3.4.1.3/docs/Data-Array-Repa-Stencil.html#t:Boundary
+ */
+object Boundary {
+  /** Locations outside the legal range of [[Focal.get]] will be completely ignored.
+   * Any neighbourhood that involves them will simply have less values.
+   */
+  case object Ignore extends Boundary[Nothing]
+
+  /** Locations outside the legal range of [[Focal.get]] will all return the
+   * same [[value]].
+   */
+  case class Constant[A](value: A) extends Boundary[A]
+
+  /** Locations outside the legal range of [[Focal.get]] will be given the
+   * value of the nearest legal location.
+   */
+  // case object Edge extends Boundary[Nothing]
+}
+
 class Stencil       // stub
 
 /**
