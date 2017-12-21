@@ -10,7 +10,7 @@ import spire.syntax.field._
 // --- //
 
 /** A strategy for handling locations outside the usual legal range of [[Focal.get]]. */
-sealed trait Boundary[A]
+sealed trait Boundary[@sp(Int, Double) A]
 
 /* Reference:
  http://hackage.haskell.org/package/repa-3.4.1.3/docs/Data-Array-Repa-Stencil.html#t:Boundary
@@ -24,7 +24,7 @@ object Boundary {
   /** Locations outside the legal range of [[Focal.get]] will all return the
    * same [[value]].
    */
-  case class Constant[A](value: A) extends Boundary[A]
+  case class Constant[@sp(Int, Double) A](value: A) extends Boundary[A]
 
   /** Locations outside the legal range of [[Focal.get]] will be given the
    * value of the nearest legal location.
@@ -36,7 +36,7 @@ object Boundary {
   * [[Focal]] operations. [[boundary]] specifies how to handle locations
   * outside the legal boundaries of [[Focal.get]].
   */
-case class Stencil[A](deltas: List[(Int, Int)], boundary: Boundary[A]) {
+case class Stencil[@sp(Int, Double) A](deltas: List[(Int, Int)], boundary: Boundary[A]) {
   /* Assumes symmetric stencil shapes. */
   val topLeft: (Int, Int) = deltas.foldLeft((0,0)) {
     case ((minx, miny), (x, y)) => (minx.min(x), miny.min(y))
@@ -44,6 +44,11 @@ case class Stencil[A](deltas: List[(Int, Int)], boundary: Boundary[A]) {
   val bottomRight: (Int, Int) = deltas.foldLeft((0,0)) {
     case ((maxx, maxy), (x, y)) => (maxx.max(x), maxy.max(y))
   }
+}
+
+object Stencil {
+  def square[@sp(Int, Double) A](boundary: Boundary[A]) =
+    Stencil(List((-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1,1)), boundary)
 }
 
 /**
@@ -81,7 +86,7 @@ case class Stencil[A](deltas: List[(Int, Int)], boundary: Boundary[A]) {
 
     // TODO Yield the correct out-of-bounds values! (use `Boundary`)
     def work(ix: (Int, Int), a: A): A = ix match {
-      /* Special checks must be done on each pixel in the neighbourhood */
+      // Special checks must be done on each pixel in the neighbourhood
       case _ if isBorder(self, s, ix) =>
         val ps: List[A] = s.deltas.foldLeft(Nil: List[A]) { (acc, d) =>
           val p: (Int, Int) = d |+| ix
@@ -89,17 +94,17 @@ case class Stencil[A](deltas: List[(Int, Int)], boundary: Boundary[A]) {
         }
         f(a :: ps)
 
-      /* By definition, each pixel in the neighbourhood is a legal location */
+      // By definition, each pixel in the neighbourhood is a legal location
       case _ => f(a :: s.deltas.map(d => get(self, d |+| ix)))
     }
 
     imap(self, work)
   }
 
-  @inline def sum[@sp(Int, Double) A: Ring](self: F[A], s: Stencil[A]): F[A] =
+  @inline def fsum[@sp(Int, Double) A: Ring](self: F[A], s: Stencil[A]): F[A] =
     focal(self, s, { _.foldLeft(Ring[A].zero)(_ + _) })
 
-  @inline def mean[@sp(Int, Double) A: Field](self: F[A], s: Stencil[A]): F[A] =
+  @inline def fmean[@sp(Int, Double) A: Field](self: F[A], s: Stencil[A]): F[A] =
     focal(self, s, { n => n.foldLeft(Field[A].zero)(_ + _) / n.length })
 
 }
