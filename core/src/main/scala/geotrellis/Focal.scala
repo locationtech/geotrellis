@@ -110,13 +110,17 @@ private[geotrellis] trait FocalInstances {
   implicit val arrayFocal: Focal[Array] = new Focal[Array] {
 
     /** Convert 2D row-major coordinates into a 1D index. */
-    private[this] def oneD(size: Int, x: Int, y: Int): Int = ???
+    private[this] def oneD(size: Int, x: Int, y: Int): Int = {
+      val dim: Int = Math.sqrt(size).toInt
+
+      x + (y * dim)
+    }
 
     def isBorder[@sp(Int, Double) A](self: Array[A], s: Stencil[A], xy: (Int, Int)): Boolean =
       !isLegal(self, xy |+| s.topLeft) || !isLegal(self, xy |+| s.bottomRight)
 
     def isLegal[@sp(Int, Double) A](self: Array[A], xy: (Int, Int)): Boolean = {
-      // TODO Fix. Assumes the a square tile.
+      // TODO Fix. Assumes a square tile.
       // This would be solved if this function also took the argument: F[A] => (Int, Int)
       // where the two Ints are the xmax and ymax respectively.
       val dim: Int = Math.sqrt(self.size).toInt
