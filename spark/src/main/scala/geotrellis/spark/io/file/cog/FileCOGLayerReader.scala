@@ -140,8 +140,6 @@ class FileCOGLayerReader2(val attributeStore: AttributeStore, catalogPath: Strin
     val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
       attributeStore.read[COGLayerStorageMetadata[K]](LayerId(id.name, 0), "cog_metadata")
 
-    val layerPath = catalogPath
-
     val metadata = cogLayerMetadata.tileLayerMetadata(id.zoom)
 
     val queryKeyBounds: Seq[KeyBounds[K]] = tileQuery(metadata.asInstanceOf[M])
@@ -204,7 +202,7 @@ class FileCOGLayerReader2(val attributeStore: AttributeStore, catalogPath: Strin
       keyPath = keyPath,
       baseQueryKeyBounds = baseQueryKeyBounds,
       decomposeBounds = decompose,
-      readDefinitions = readDefinitions.flatMap(_._2),
+      readDefinitions = readDefinitions.flatMap(_._2).groupBy(_._1),
       numPartitions = Some(numPartitions)
     )
 

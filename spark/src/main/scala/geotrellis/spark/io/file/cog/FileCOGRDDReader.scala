@@ -55,6 +55,7 @@ trait FileCOGRDDReader2[V <: CellGrid] extends Serializable {
       byteReaderExternal = None
     )
 
+  /** Smth to discuss */
   def getKey[K: JsonFormat](uri: URI): K =
     TiffTagsReader
       .read(uri.getPath)
@@ -69,7 +70,7 @@ trait FileCOGRDDReader2[V <: CellGrid] extends Serializable {
     keyPath: BigInt => String,
     baseQueryKeyBounds: Seq[KeyBounds[K]],
     decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
-    readDefinitions: Seq[(SpatialKey, Int, GridBounds, Seq[(GridBounds, SpatialKey)])],
+    readDefinitions: Map[SpatialKey, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])]],
     numPartitions: Option[Int] = None,
     threads: Int = ConfigFactory.load().getThreads("geotrellis.file.threads.rdd.read")
   )(implicit sc: SparkContext): RDD[(K, V)] = {
@@ -96,24 +97,17 @@ trait FileCOGRDDReader2[V <: CellGrid] extends Serializable {
               val uri = new URI(s"file://${keyPath(index)}.tiff")
               val baseKey = getKey[K](uri)(keyFormat)
 
-              println(s"baseKey: $baseKey")
+              readDefinitions
+                .get(baseKey.getComponent[SpatialKey])
+                .flatMap(_.headOption)
+                .map { case (spatialKey, overviewIndex, _, seq) =>
+                  val key = baseKey.setComponent(spatialKey)
+                  val tiff = readTiff(uri, overviewIndex)
+                  val map = seq.map { case (gb, sk) => gb -> key.setComponent(sk) }.toMap
 
-              val result: Vector[(K, V)] =
-                readDefinitions
-                  .toVector
-                  .flatMap {
-                    case (spatialKey, overviewIndex, _, seq) if spatialKey == baseKey.getComponent[SpatialKey] =>
-                      val key = baseKey.setComponent(spatialKey)
-                      val tiff = readTiff(uri, overviewIndex)
-                      val map = seq.map { case (gb, sk) => gb -> key.setComponent(sk) }.toMap
-
-                      tileTiff(tiff, map)
-                    case (spatialKey, overviewIndex, _, seq) =>
-                      println(s"spatialKey: $spatialKey")
-                      Vector()
-                  }
-
-              result
+                  tileTiff(tiff, map)
+                }
+                .getOrElse(Vector())
             }
           }
         }

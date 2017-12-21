@@ -25,13 +25,14 @@ import geotrellis.spark.tiling._
 import geotrellis.spark.io.hadoop._
 import geotrellis.proj4._
 import geotrellis.raster._
+import geotrellis.raster.io.geotiff.GeoTiff
+import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.raster.render._
 import geotrellis.spark.io.index.zcurve.ZSpatialKeyIndex
 import geotrellis.spark.testkit._
 import geotrellis.spark.io.file.FileAttributeStore
 import geotrellis.spark.io.file.cog._
 import geotrellis.spark.io.index.ZCurveKeyIndexMethod
-
 import org.apache.hadoop.fs.Path
 import org.scalatest._
 
@@ -119,11 +120,16 @@ class COGLayerSpec extends FunSpec
         iter => withSinglebandGeoTiffSegmentConstructMethods(iter)*/
 
 
-      val layer = reader.read[SpatialKey, Tile, TileLayerMetadata[SpatialKey]](LayerId("landsat_cog", 9))
+      val layer = reader.read[SpatialKey, Tile, TileLayerMetadata[SpatialKey]](LayerId("landsat_cog", 12))
 
       val tile: Tile = layer.stitch
 
-      tile.renderPng.write("/tmp/test_layer.png")
+      tile.renderPng.write("/data/test_layer.png")
+
+      val tiff =
+        GeoTiff(layer.stitch, layer.metadata.mapTransform(layer.metadata.gridBounds), LatLng)
+
+      GeoTiffWriter.write(tiff.crop(layer.metadata.extent), "/data/tests123.tif", optimizedOrder = true)
     }
   }
 

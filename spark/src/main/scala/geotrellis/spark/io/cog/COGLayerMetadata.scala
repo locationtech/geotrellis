@@ -44,13 +44,47 @@ case class COGLayerMetadata[K: SpatialComponent](
   def layoutForZoom(z: Int): LayoutDefinition =
     layoutScheme.levelForZoom(z).layout
 
-  def tileLayerMetadata(zoom: Int) =
+  def keyBoundsForZoom(zoom: Int): KeyBounds[K] = {
+    val (ZoomRange(minZoom, _), baseKeyBounds) = zoomRangeInfoFor(zoom)
+    if(minZoom == zoom) baseKeyBounds
+    else {
+      val (baseLayout, layout) = layoutForZoom(minZoom) -> layoutForZoom(zoom)
+      val KeyBounds(baseMinKey, baseMaxKey) = baseKeyBounds
+
+      val minKey =
+        layout
+          .mapTransform
+          .pointToKey(
+            baseLayout
+              .mapTransform
+              .keyToExtent(baseMinKey)
+              .center
+          )
+
+      val maxKey =
+        layout
+          .mapTransform
+          .pointToKey(
+            baseLayout
+              .mapTransform
+              .keyToExtent(baseMaxKey)
+              .center
+          )
+
+      KeyBounds(
+        baseMinKey.setComponent(minKey),
+        baseMaxKey.setComponent(maxKey)
+      )
+    }
+  }
+
+  def tileLayerMetadata(zoom: Int): TileLayerMetadata[K] =
     TileLayerMetadata[K](
       cellType,
       layoutScheme.levelForZoom(zoom).layout,
       extent,
       crs,
-      zoomRangeInfoFor(zoom)._2
+      keyBoundsForZoom(zoom)
     )
 
   /** Returns the ZoomRange to read, and a Sequence of SpatialKey COGs to read, the total
