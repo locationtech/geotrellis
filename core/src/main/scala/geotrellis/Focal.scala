@@ -36,7 +36,15 @@ object Boundary {
   * [[Focal]] operations. [[boundary]] specifies how to handle locations
   * outside the legal boundaries of [[Focal.get]].
   */
-case class Stencil[A](deltas: List[(Int, Int)], boundary: Boundary[A])
+case class Stencil[A](deltas: List[(Int, Int)], boundary: Boundary[A]) {
+  /* Assumes symmetric stencil shapes. */
+  val topLeft: (Int, Int) = deltas.foldLeft((0,0)) {
+    case ((minx, miny), (x, y)) => (minx.min(x), miny.min(y))
+  }
+  val bottomRight: (Int, Int) = deltas.foldLeft((0,0)) {
+    case ((maxx, maxy), (x, y)) => (maxx.max(x), maxy.max(y))
+  }
+}
 
 /**
   * Types which can have ''Focal'' operations performed on them.
@@ -61,18 +69,29 @@ case class Stencil[A](deltas: List[(Int, Int)], boundary: Boundary[A])
   */
 @typeclass trait Focal[F[_]] {
 
+  def isBorder[@sp(Int, Double) A](self: F[A], s: Stencil[A], xy: (Int, Int)): Boolean
+
+  def isLegal[@sp(Int, Double) A](self: F[A], xy: (Int, Int)): Boolean
+
   def get[@sp(Int, Double) A](self: F[A], xy: (Int, Int)): A
 
   def imap[@sp(Int, Double) A](self: F[A], f: ((Int, Int), A) => A): F[A]
 
-  def focal[@sp(Int, Double) A](self: F[A], n: Stencil[A], f: List[A] => A): F[A] = {
+  def focal[@sp(Int, Double) A](self: F[A], s: Stencil[A], f: List[A] => A): F[A] = {
 
-    // TODO Handle out-of-bounds indices.
-    // TODO Add "Cursor" logic here, or in instance implementation?
-    // Maybe use `State` monad within `imap` to propagate the Cursor,
-    // that way `work` would have access to it?
-    @inline def work(ix: (Int, Int), a: A): A =
-      f(n.deltas.map(delta => get(self, delta |+| ix)))
+    // TODO Yield the correct out-of-bounds values! (use `Boundary`)
+    def work(ix: (Int, Int), a: A): A = ix match {
+      /* Special checks must be done on each pixel in the neighbourhood */
+      case _ if isBorder(self, s, ix) =>
+        val ps: List[A] = s.deltas.foldLeft(Nil: List[A]) { (acc, d) =>
+          val p: (Int, Int) = d |+| ix
+          if (isLegal(self, p)) get(self, p) :: acc else acc
+        }
+        f(a :: ps)
+
+      /* By definition, each pixel in the neighbourhood is a legal location */
+      case _ => f(a :: s.deltas.map(d => get(self, d |+| ix)))
+    }
 
     imap(self, work)
   }
@@ -83,4 +102,55 @@ case class Stencil[A](deltas: List[(Int, Int)], boundary: Boundary[A])
   @inline def mean[@sp(Int, Double) A: Field](self: F[A], s: Stencil[A]): F[A] =
     focal(self, s, { n => n.foldLeft(Field[A].zero)(_ + _) / n.length })
 
+}
+
+private[geotrellis] trait FocalInstances {
+
+  /** Assumes a square Tile, which is not representative of reality. */
+  implicit val arrayFocal: Focal[Array] = new Focal[Array] {
+
+    /** Convert 2D row-major coordinates into a 1D index. */
+    private[this] def oneD(size: Int, x: Int, y: Int): Int = ???
+
+    def isBorder[@sp(Int, Double) A](self: Array[A], s: Stencil[A], xy: (Int, Int)): Boolean =
+      !isLegal(self, xy |+| s.topLeft) || !isLegal(self, xy |+| s.bottomRight)
+
+    def isLegal[@sp(Int, Double) A](self: Array[A], xy: (Int, Int)): Boolean = {
+      // TODO Fix. Assumes the a square tile.
+      // This would be solved if this function also took the argument: F[A] => (Int, Int)
+      // where the two Ints are the xmax and ymax respectively.
+      val dim: Int = Math.sqrt(self.size).toInt
+
+      xy._1 >= 0 && xy._1 < dim && xy._2 >= 0 && xy._2 < dim
+    }
+
+    def get[@sp(Int, Double) A](self: Array[A], xy: (Int, Int)): A =
+      self(oneD(self.size, xy._1, xy._2))
+
+    def imap[@sp(Int, Double) A](self: Array[A], f: ((Int, Int), A) => A): Array[A] = {
+
+      // TODO Fix. This is evil, since it assumes a square tile.
+      // Giving accurate dimensions either requires a wrapper around `Array`
+      // (potentially killing the specialization) or passing it in as another
+      // argument to `imap`.
+      val res: Array[A] = self.clone
+      val dim: Int = Math.sqrt(self.size).toInt
+      var x: Int = 0
+      var y: Int = 0
+
+      while(y < dim) {
+        while(x < dim) {
+          val i: Int = oneD(self.size, x, y)
+          res(i) = f((x, y), self(i))
+
+          x += 1
+        }
+
+        x = 0
+        y += 1
+      }
+
+      res
+    }
+  }
 }
