@@ -22,6 +22,7 @@ lazy val commonSettings = Seq(
     "-language:postfixOps",
     "-language:existentials",
     "-language:experimental.macros",
+    "-Ypartial-unification",
     "-feature"),
   scalacOptions in (Compile, doc) += "-groups",
   publishMavenStyle := true,

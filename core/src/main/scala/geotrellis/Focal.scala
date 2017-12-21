@@ -2,9 +2,9 @@ package geotrellis
 
 import scala.{specialized => sp}
 
+import cats.implicits._
 import simulacrum._
 import spire.algebra._
-import spire.std.any._
 import spire.syntax.field._
 
 // --- //
@@ -32,7 +32,11 @@ object Boundary {
   // case object Edge extends Boundary[Nothing]
 }
 
-class Stencil       // stub
+/** A description of deltas from the "current location" as occurs during
+  * [[Focal]] operations. [[boundary]] specifies how to handle locations
+  * outside the legal boundaries of [[Focal.get]].
+  */
+case class Stencil[A](deltas: List[(Int, Int)], boundary: Boundary[A])
 
 /**
   * Types which can have ''Focal'' operations performed on them.
@@ -57,16 +61,26 @@ class Stencil       // stub
   */
 @typeclass trait Focal[F[_]] {
 
-  def get[@sp(Int, Double) A](self: F[A], x: Int, y: Int): A
+  def get[@sp(Int, Double) A](self: F[A], xy: (Int, Int)): A
 
   def imap[@sp(Int, Double) A](self: F[A], f: ((Int, Int), A) => A): F[A]
 
-  def focal[@sp(Int, Double) A](self: F[A], n: Stencil, f: List[A] => A): F[A] = ???  // uses `imap` and `get`
+  def focal[@sp(Int, Double) A](self: F[A], n: Stencil[A], f: List[A] => A): F[A] = {
 
-  @inline def sum[@sp(Int, Double) A: Ring](self: F[A], s: Stencil): F[A] =
+    // TODO Handle out-of-bounds indices.
+    // TODO Add "Cursor" logic here, or in instance implementation?
+    // Maybe use `State` monad within `imap` to propagate the Cursor,
+    // that way `work` would have access to it?
+    @inline def work(ix: (Int, Int), a: A): A =
+      f(n.deltas.map(delta => get(self, delta |+| ix)))
+
+    imap(self, work)
+  }
+
+  @inline def sum[@sp(Int, Double) A: Ring](self: F[A], s: Stencil[A]): F[A] =
     focal(self, s, { _.foldLeft(Ring[A].zero)(_ + _) })
 
-  @inline def mean[@sp(Int, Double) A: Field](self: F[A], s: Stencil): F[A] =
+  @inline def mean[@sp(Int, Double) A: Field](self: F[A], s: Stencil[A]): F[A] =
     focal(self, s, { n => n.foldLeft(Field[A].zero)(_ + _) / n.length })
 
 }
