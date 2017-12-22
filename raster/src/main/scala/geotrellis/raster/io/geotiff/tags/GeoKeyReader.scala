@@ -34,10 +34,11 @@ object GeoKeyReader {
   ): GeoKeyDirectory = {
 
     def readGeoKeyEntry(keyMetadata: GeoKeyMetadata,
-      geoKeyDirectory: GeoKeyDirectory)  = keyMetadata.tiffTagLocation match {
-      case 0 => readShort(keyMetadata, geoKeyDirectory)
-      case DoublesTag => readDoubles(keyMetadata, geoKeyDirectory)
-      case AsciisTag => readAsciis(keyMetadata, geoKeyDirectory)
+      geoKeyDirectory: GeoKeyDirectory): Option[GeoKeyDirectory] = keyMetadata.tiffTagLocation match {
+      case 0 => Some(readShort(keyMetadata, geoKeyDirectory))
+      case DoublesTag => Some(readDoubles(keyMetadata, geoKeyDirectory))
+      case AsciisTag => Some(readAsciis(keyMetadata, geoKeyDirectory))
+      case _ => None
     }
 
     def readShort(keyMetadata: GeoKeyMetadata,
@@ -245,10 +246,10 @@ object GeoKeyReader {
           byteReader.getUnsignedShort,
           byteReader.getUnsignedShort
         )
-
-        val updatedDirectory = readGeoKeyEntry(keyEntryMetadata, geoKeyDirectory)
-
-        read(byteReader, imageDirectory, updatedDirectory, index + 1)
+        readGeoKeyEntry(keyEntryMetadata, geoKeyDirectory) match {
+          case Some(updatedDirectory) => read(byteReader, imageDirectory, updatedDirectory, index + 1)
+          case None => geoKeyDirectory
+        }
       }
     }
   }
