@@ -84,9 +84,11 @@ object Stencil {
 
   def focal[@sp(Int, Double) A](self: F[A], s: Stencil[A], f: List[A] => A): F[A] = {
 
+    // TODO Turn the `foldLeft` into a tail-recursive alg?
+
     // TODO Yield the correct out-of-bounds values! (use `Boundary`)
     def work(ix: (Int, Int), a: A): A = ix match {
-      // Special checks must be done on each pixel in the neighbourhood
+      /* Special checks must be done on each pixel in the neighbourhood */
       case _ if isBorder(self, s, ix) =>
         val ps: List[A] = s.deltas.foldLeft(Nil: List[A]) { (acc, d) =>
           val p: (Int, Int) = d |+| ix
@@ -94,7 +96,7 @@ object Stencil {
         }
         f(a :: ps)
 
-      // By definition, each pixel in the neighbourhood is a legal location
+      /* By definition, each pixel in the neighbourhood is a legal location */
       case _ => f(a :: s.deltas.map(d => get(self, d |+| ix)))
     }
 
@@ -107,12 +109,18 @@ object Stencil {
   @inline def fmean[@sp(Int, Double) A: Field](self: F[A], s: Stencil[A]): F[A] =
     focal(self, s, { n => n.foldLeft(Field[A].zero)(_ + _) / n.length })
 
+  @inline def fold[@sp(Int, Double) A: cats.Monoid](self: F[A], s: Stencil[A]): F[A] =
+    focal(self, s, { _.combineAll })
+
 }
 
 private[geotrellis] trait FocalInstances {
 
   /** Assumes a square Tile, which is not representative of reality. */
   implicit val arrayFocal: Focal[Array] = new Focal[Array] {
+
+    // TODO Try passing that `dim` function around: `F[A] => (Int, Int)`
+    // `get` calls `oneD`, which happens for a /shit/ ton of pixels.
 
     /** Convert 2D row-major coordinates into a 1D index. */
     private[this] def oneD(size: Int, x: Int, y: Int): Int = {
