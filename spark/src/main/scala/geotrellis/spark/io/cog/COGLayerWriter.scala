@@ -21,39 +21,12 @@ import geotrellis.raster.crop._
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.spark._
-import geotrellis.spark.io._
 import geotrellis.spark.io.index._
-import geotrellis.spark.tiling._
 
 import spray.json._
-import spray.json.DefaultJsonProtocol._
 import org.apache.spark.rdd.RDD
 
 import scala.reflect._
-
-case class COGLayerStorageMetadata[K](metadata: COGLayerMetadata[K], keyIndexes: Map[ZoomRange, KeyIndex[K]])
-
-object COGLayerStorageMetadata {
-  implicit def cogLayerStorageMetadataFormat[K: SpatialComponent: JsonFormat: ClassTag] =
-    new RootJsonFormat[COGLayerStorageMetadata[K]] {
-      def write(sm: COGLayerStorageMetadata[K]) =
-        JsObject(
-          "metadata" -> sm.metadata.toJson,
-          "keyIndexes" -> JsArray(sm.keyIndexes.map(_.toJson).toVector)
-        )
-
-      def read(value: JsValue): COGLayerStorageMetadata[K] =
-        value.asJsObject.getFields("metadata", "keyIndexes") match {
-          case Seq(metadata, JsArray(keyIndexes)) =>
-            COGLayerStorageMetadata(
-              metadata.convertTo[COGLayerMetadata[K]],
-              keyIndexes.map(_.convertTo[(ZoomRange, KeyIndex[K])]).toMap
-            )
-          case v =>
-            throw new DeserializationException(s"COGLayerStorageMetadata expected, got: $v")
-        }
-    }
-}
 
 trait COGLayerWriter {
   def writeCOGLayer[

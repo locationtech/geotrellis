@@ -1,39 +1,54 @@
 package geotrellis.spark.io.file.cog
 
-import geotrellis.raster.io.geotiff.reader.GeoTiffReader
+import geotrellis.raster.io.geotiff.reader.{GeoTiffReader, TiffTagsReader}
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader.readGeoTiffInfo
 import geotrellis.raster.io.geotiff.{GeoTiff, GeoTiffMultibandTile, GeoTiffTile}
 import geotrellis.raster.{GridBounds, MultibandTile, Tile}
 import geotrellis.spark.io.cog.TiffMethods
 import geotrellis.util.Filesystem
 
+import spray.json._
+
 import java.net.URI
 
 trait FileTiffMethods {
-  implicit val tiffMethods = new TiffMethods[Tile] {
-
-    def readTiff(uri: URI, index: Int): GeoTiff[Tile] = {
-      val tiff = GeoTiffReader.readSingleband(uri.getPath, false, true)
-      if(index < 0) tiff
-      else tiff.getOverview(index)
-    }
-
-    def tileTiff[K](tiff: GeoTiff[Tile], gridBounds: GridBounds): Tile = {
+  implicit val fileTiffMethods = new TiffMethods[Tile] with FileCOGBackend {
+    def cropTiff(tiff: GeoTiff[Tile], gridBounds: GridBounds): Tile = {
       tiff.tile match {
         case gtTile: GeoTiffTile => gtTile.crop(gridBounds)
         case _ => throw new UnsupportedOperationException("Can be applied to a GeoTiffTile only.")
       }
     }
 
+    def readTiff(uri: URI, index: Int): GeoTiff[Tile] = {
+      val tiff = GeoTiffReader.readSingleband(uri.getPath, false, true)
+
+      if(index < 0) tiff
+      else tiff.getOverview(index)
+    }
+
+    def getGeoTiffInfo(uri: URI): GeoTiffReader.GeoTiffInfo =
+      readGeoTiffInfo(
+        byteReader = Filesystem.toMappedByteBuffer(uri.getPath),
+        decompress = false,
+        streaming = true,
+        withOverviews = true,
+        byteReaderExternal = None
+      )
+
+    def tileTiff[K](tiff: GeoTiff[Tile], gridBounds: Map[GridBounds, K]): Vector[(K, Tile)] = {
+      tiff.tile match {
+        case gtTile: GeoTiffTile =>
+          gtTile
+            .crop(gridBounds.keys.toSeq)
+            .flatMap { case (k, v) => gridBounds.get(k).map(i => i -> v) }
+            .toVector
+        case _ => throw new UnsupportedOperationException("Can be applied to a GeoTiffTile only.")
+      }
+    }
+
     def getSegmentGridBounds(uri: URI, index: Int): (Int, Int) => GridBounds = {
-      val info =
-        readGeoTiffInfo(
-          byteReader         = Filesystem.toMappedByteBuffer(uri.getPath),
-          decompress         = false,
-          streaming          = true,
-          withOverviews      = true,
-          byteReaderExternal = None
-        )
+      val info = getGeoTiffInfo(uri)
 
       val geoTiffTile =
         GeoTiffReader.geoTiffSinglebandTile(info)
@@ -46,9 +61,30 @@ trait FileTiffMethods {
 
       func
     }
+
+    def getKey[K: JsonFormat](uri: URI): K =
+      TiffTagsReader
+        .read(uri.getPath)
+        .tags
+        .headTags("GT_KEY")
+        .parseJson
+        .convertTo[K]
+
+    def readTiff(bytes: Array[Byte], index: Int): GeoTiff[Tile] =
+      throw new UnsupportedOperationException("Method is not implemented.")
+
+    def getSegmentGridBounds(bytes: Array[Byte], index: Int): (Int, Int) => GridBounds =
+      throw new UnsupportedOperationException("Method is not implemented.")
   }
 
-  implicit val multibandTiffMethods = new TiffMethods[MultibandTile] {
+  implicit val fileMultibandTiffMethods = new TiffMethods[MultibandTile] with FileCOGBackend {
+    def cropTiff(tiff: GeoTiff[MultibandTile], gridBounds: GridBounds): MultibandTile = {
+      tiff.tile match {
+        case gtTile: GeoTiffMultibandTile => gtTile.crop(gridBounds)
+        case _ => throw new UnsupportedOperationException("Can be applied to a GeoTiffMultibandTile only.")
+      }
+    }
+
     def readTiff(uri: URI, index: Int): GeoTiff[MultibandTile] = {
       val tiff = GeoTiffReader.readMultiband(uri.getPath, false, true)
 
@@ -56,22 +92,28 @@ trait FileTiffMethods {
       else tiff.getOverview(index)
     }
 
-    def tileTiff[K](tiff: GeoTiff[MultibandTile], gridBounds: GridBounds): MultibandTile = {
+    def getGeoTiffInfo(uri: URI): GeoTiffReader.GeoTiffInfo =
+      readGeoTiffInfo(
+        byteReader = Filesystem.toMappedByteBuffer(uri.getPath),
+        decompress = false,
+        streaming = true,
+        withOverviews = true,
+        byteReaderExternal = None
+      )
+
+    def tileTiff[K](tiff: GeoTiff[MultibandTile], gridBounds: Map[GridBounds, K]): Vector[(K, MultibandTile)] = {
       tiff.tile match {
-        case gtTile: GeoTiffMultibandTile => gtTile.crop(gridBounds)
-        case _ => throw new UnsupportedOperationException("Can be applied to a GeoTiffTile only.")
+        case gtTile: GeoTiffMultibandTile =>
+          gtTile
+            .crop(gridBounds.keys.toSeq)
+            .flatMap { case (k, v) => gridBounds.get(k).map(i => i -> v) }
+            .toVector
+        case _ => throw new UnsupportedOperationException("Can be applied to a GeoTiffMultibandTile only.")
       }
     }
 
     def getSegmentGridBounds(uri: URI, index: Int): (Int, Int) => GridBounds = {
-      val info =
-        readGeoTiffInfo(
-          byteReader         = Filesystem.toMappedByteBuffer(uri.getPath),
-          decompress         = false,
-          streaming          = true,
-          withOverviews      = true,
-          byteReaderExternal = None
-        )
+      val info = getGeoTiffInfo(uri)
 
       val geoTiffTile =
         GeoTiffReader.geoTiffMultibandTile(info)
@@ -84,5 +126,19 @@ trait FileTiffMethods {
 
       func
     }
+
+    def getKey[K: JsonFormat](uri: URI): K =
+      TiffTagsReader
+        .read(uri.getPath)
+        .tags
+        .headTags("GT_KEY")
+        .parseJson
+        .convertTo[K]
+
+    def readTiff(bytes: Array[Byte], index: Int): GeoTiff[MultibandTile] =
+      throw new UnsupportedOperationException("Method is not implemented.")
+
+    def getSegmentGridBounds(bytes: Array[Byte], index: Int): (Int, Int) => GridBounds =
+      throw new UnsupportedOperationException("Method is not implemented.")
   }
 }

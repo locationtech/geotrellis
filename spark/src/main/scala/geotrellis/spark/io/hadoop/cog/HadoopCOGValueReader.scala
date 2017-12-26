@@ -16,35 +16,31 @@
 
 package geotrellis.spark.io.hadoop.cog
 
-import java.io.File
-import java.net.URI
-
-import com.github.blemale.scaffeine.{Cache, Scaffeine}
 import geotrellis.raster._
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.avro.AvroEncoder
 import geotrellis.spark.io.cog._
-import geotrellis.spark.io.file.KeyPathGenerator
 import geotrellis.spark.io.hadoop.formats.FilterMapFileInputFormat
-import geotrellis.spark.io.index._
-import geotrellis.spark.tiling.LayoutLevel
 import geotrellis.util._
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{BigIntWritable, BytesWritable, MapFile}
 import spray.json._
+import com.github.blemale.scaffeine.{Cache, Scaffeine}
 
 import scala.collection.immutable.Vector
-import scala.concurrent.Future
 import scala.reflect.ClassTag
 
 class HadoopCOGValueReader(
   val attributeStore: AttributeStore,
   conf: Configuration,
+  catalogPath: Path,
   maxOpenFiles: Int = 16
 ) extends OverzoomingCOGValueReader {
+
+  type COGBackendType = HadoopCOGBackend
 
   val readers: Cache[(LayerId, Path), MapFile.Reader] =
     Scaffeine()
@@ -58,102 +54,40 @@ class HadoopCOGValueReader(
 
   def reader[
     K: JsonFormat: SpatialComponent: ClassTag,
-    V <: CellGrid: TiffMethods: ? => TileMergeMethods[V]
+    V <: CellGrid: λ[α => TiffMethods[α] with COGBackendType]: ? => TileMergeMethods[V]
   ](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
-    val header = attributeStore.readHeader[HadoopCOGLayerHeader](layerId)
-    val keyIndex = attributeStore.readKeyIndex[K](layerId)
-    val writerSchema = attributeStore.readSchema(layerId)
 
-    val baseLayerId = layerId.copy(zoom = header.zoomRanges._1)
+    val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
+      attributeStore.read[COGLayerStorageMetadata[K]](LayerId(layerId.name, 0), "cog_metadata")
 
-    val baseHeader = attributeStore.readHeader[HadoopCOGLayerHeader](baseLayerId)
-    val baseMetadata = attributeStore.readMetadata[TileLayerMetadata[K]](baseLayerId)
-    val baseKeyIndex = attributeStore.readKeyIndex[K](baseLayerId)
-
-    val path = header.path
-
-    val tiffMethods = implicitly[TiffMethods[V]]
-    val overviewIndex = header.zoomRanges._2 - layerId.zoom - 1
-
-    val layoutScheme = header.layoutScheme
-
-    val LayoutLevel(_, baseLayout) = layoutScheme.levelForZoom(header.zoomRanges._1)
-    val LayoutLevel(_, layout) = layoutScheme.levelForZoom(layerId.zoom)
+    val tiffMethods: TiffMethods[V] with COGBackendType = implicitly[TiffMethods[V] with COGBackendType]
 
     val ranges: Vector[(Path, BigInt, BigInt)] =
-      FilterMapFileInputFormat.layerRanges(header.path, conf)
-
-    def populateKeys(thisKey: K): Set[K] = {
-      val extent = baseMetadata.extent
-      val sourceRe = RasterExtent(extent, layout.layoutCols, layout.layoutRows)
-      val targetRe = RasterExtent(extent, baseLayout.layoutCols, baseLayout.layoutRows)
-
-      val minSpatialKey = thisKey.getComponent[SpatialKey]
-      val (minCol, minRow) = {
-        val (x, y) = sourceRe.gridToMap(minSpatialKey.col, minSpatialKey.row)
-        targetRe.mapToGrid(x, y)
-      }
-
-      Set(
-        thisKey.setComponent(SpatialKey(math.max(minCol - 1, 0), math.max(minRow - 1, 0))),
-        thisKey.setComponent(SpatialKey(math.max(minCol - 1, 0), minRow)),
-        thisKey.setComponent(SpatialKey(minCol, math.max(minRow - 1, 0))),
-        thisKey.setComponent(SpatialKey(minCol, minRow)),
-        thisKey.setComponent(SpatialKey(minCol + 1, minRow + 1)),
-        thisKey.setComponent(SpatialKey(minCol + 1, minRow)),
-        thisKey.setComponent(SpatialKey(minCol, minRow + 1))
-      )
-    }
-
-    def transformKey(thisKey: K): K = {
-      val extent = thisKey.getComponent[SpatialKey].extent(layout)
-      val spatialKey = baseLayout.mapTransform(extent.center)
-      thisKey.setComponent(spatialKey)
-    }
+      FilterMapFileInputFormat.layerRanges(catalogPath, conf)
 
     def read(key: K): V = {
-      val baseKey = transformKey(key)
-      val neighbourBaseKeys = populateKeys(key)
+      val (zoomRange, spatialKey, overviewIndex, gridBounds) =
+        cogLayerMetadata.getReadDefinition(key.getComponent[SpatialKey], layerId.zoom)
 
-      val tiles =
-        neighbourBaseKeys
-          .flatMap { k =>
-            val index: BigInt = keyIndex.toIndex(k)
-            val valueWritable: BytesWritable =
-              ranges
-                .find(row => predicate(row, index))
-                .map { case (path, _, _) =>
-                  readers.get((layerId, path), _ => new MapFile.Reader(path, conf))
-                }
-                .getOrElse(throw new ValueNotFoundError(key, layerId))
-                .get(new BigIntWritable(index.toByteArray), new BytesWritable())
-                .asInstanceOf[BytesWritable]
+      val baseKeyIndex = keyIndexes(zoomRange)
 
-            if (valueWritable == null) throw new ValueNotFoundError(key, layerId)
-            val bytes = valueWritable.getBytes
-            val tiff = tiffMethods.readTiff(bytes, overviewIndex)
-            val rgb = layout.mapTransform(tiff.extent)
+      val index = baseKeyIndex.toIndex(key.setComponent(spatialKey))
 
-            val gb = tiff.rasterExtent.gridBounds
-            val getGridBounds = tiffMethods.getSegmentGridBounds(bytes, overviewIndex)
-
-            val tiffGridBounds = {
-              val spatialKey = key.getComponent[SpatialKey]
-              val minCol = (spatialKey.col - rgb.colMin) * layout.tileLayout.tileCols
-              val minRow = (spatialKey.row - rgb.rowMin) * layout.tileLayout.tileRows
-
-              if (minCol >= 0 && minRow >= 0 && minCol < tiff.cols && minRow < tiff.rows) {
-                val currentGb = getGridBounds(minCol, minRow)
-                gb.intersection(currentGb)
-              } else None
-            }
-
-            tiffGridBounds.map(tiffMethods.tileTiff(tiff, _))
+      val valueWritable: BytesWritable =
+        ranges
+          .find(row => predicate(row, index))
+          .map { case (path, _, _) =>
+            readers.get((layerId, path), _ => new MapFile.Reader(path, conf))
           }
+          .getOrElse(throw new ValueNotFoundError(key, layerId))
+          .get(new BigIntWritable(index.toByteArray), new BytesWritable())
+          .asInstanceOf[BytesWritable]
 
-      tiles.reduce(_ merge _)
+      if (valueWritable == null) throw new ValueNotFoundError(key, layerId)
+      val bytes = valueWritable.getBytes
+      val tiff = tiffMethods.readTiff(bytes, overviewIndex)
+
+      tiffMethods.cropTiff(tiff, gridBounds)
     }
   }
 }
-
-

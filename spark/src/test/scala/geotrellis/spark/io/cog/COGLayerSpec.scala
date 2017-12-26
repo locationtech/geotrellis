@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.cog
 
+import java.nio.file.Paths
+
 import geotrellis.vector._
 import geotrellis.spark._
 import geotrellis.spark.io._
@@ -32,6 +34,7 @@ import geotrellis.spark.io.index.zcurve.ZSpatialKeyIndex
 import geotrellis.spark.testkit._
 import geotrellis.spark.io.file.FileAttributeStore
 import geotrellis.spark.io.file.cog._
+import geotrellis.spark.io.hadoop.cog._
 import geotrellis.spark.io.index.ZCurveKeyIndexMethod
 import org.apache.hadoop.fs.Path
 import org.scalatest._
@@ -44,11 +47,13 @@ class COGLayerSpec extends FunSpec
   describe("COGLayer") {
 
     it("should write GeoTrellis COGLayer") {
-      val source = sc.hadoopGeoTiffRDD(new Path("file:///Users/daunnc/subversions/git/github/pomadchin/geotrellis/raster/data/geotiff-test-files/reproject/cea.tif"))
+      val source = sc.hadoopGeoTiffRDD(
+        new Path(s"file:///${Paths.get("raster").toAbsolutePath.toString}/data/geotiff-test-files/reproject/cea.tif")
+      )
       val list: ListBuffer[(Int, TileLayerRDD[SpatialKey])] = ListBuffer()
-      val layoutScheme = ZoomedLayoutScheme(LatLng, 256)
+      val layoutScheme = ZoomedLayoutScheme(WebMercator, 256)
 
-      Ingest[ProjectedExtent, SpatialKey](source, LatLng, layoutScheme) { (rdd, zoom) =>
+      Ingest[ProjectedExtent, SpatialKey](source, WebMercator, layoutScheme) { (rdd, zoom) =>
         list += zoom -> rdd
       }
 
@@ -62,7 +67,7 @@ class COGLayerSpec extends FunSpec
       val attributeStore = FileAttributeStore("/data/test-new")
 
       // Create the writer that we will use to store the tiles in the local catalog.
-      val writer = new FileCOGLayerWriter2(attributeStore)
+      val writer = new FileCOGLayerWriter(attributeStore)
 
       /*val f: Iterable[(SpatialKey, Tile)] => GeoTiffSegmentConstructMethods[SpatialKey, Tile] =
         iter => withSinglebandGeoTiffSegmentConstructMethods(iter)*/
@@ -76,7 +81,7 @@ class COGLayerSpec extends FunSpec
       val attributeStore = FileAttributeStore("/data/test-new")
 
       // Create the writer that we will use to store the tiles in the local catalog.
-      val reader = new FileCOGValueReader2(attributeStore, "/data/test-new")
+      val reader = new FileCOGValueReader(attributeStore, "/data/test-new")
 
       /*val f: Iterable[(SpatialKey, Tile)] => GeoTiffSegmentConstructMethods[SpatialKey, Tile] =
         iter => withSinglebandGeoTiffSegmentConstructMethods(iter)*/
@@ -114,7 +119,7 @@ class COGLayerSpec extends FunSpec
       val attributeStore = FileAttributeStore("/data/test-new")
 
       // Create the writer that we will use to store the tiles in the local catalog.
-      val reader = new FileCOGLayerReader2(attributeStore, "/data/test-new")
+      val reader = new FileCOGLayerReader(attributeStore, "/data/test-new")
 
       /*val f: Iterable[(SpatialKey, Tile)] => GeoTiffSegmentConstructMethods[SpatialKey, Tile] =
         iter => withSinglebandGeoTiffSegmentConstructMethods(iter)*/
@@ -127,7 +132,7 @@ class COGLayerSpec extends FunSpec
       tile.renderPng.write("/data/test_layer.png")
 
       val tiff =
-        GeoTiff(layer.stitch, layer.metadata.mapTransform(layer.metadata.gridBounds), LatLng)
+        GeoTiff(layer.stitch, layer.metadata.mapTransform(layer.metadata.gridBounds), WebMercator)
 
       GeoTiffWriter.write(tiff.crop(layer.metadata.extent), "/data/tests123.tif", optimizedOrder = true)
     }

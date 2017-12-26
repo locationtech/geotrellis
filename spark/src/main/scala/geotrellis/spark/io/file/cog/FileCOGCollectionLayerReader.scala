@@ -34,41 +34,46 @@ import scala.reflect.ClassTag
  *
  * @param attributeStore  AttributeStore that contains metadata for corresponding LayerId
  */
-class FileCollectionCOGLayerReader(val attributeStore: AttributeStore, catalogPath: String)
-  extends CollectionCOGLayerReader[LayerId] with LazyLogging {
+class FileCOGCollectionLayerReader(val attributeStore: AttributeStore, catalogPath: String)
+  extends COGCollectionLayerReader[LayerId] with LazyLogging {
+
+  type COGBackendType[V <: CellGrid] = FileCOGCollectionReaderTag[V]
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: ClassTag,
+    V <: CellGrid: λ[α => COGReader[α] with COGBackendType[α]]: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
-  ](id: LayerId, rasterQuery: LayerQuery[K, M], indexFilterOnly: Boolean) = {
-    val collectionReader = FileCOGCollectionReader.fromRegistry[V]
-    if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
+  ](id: LayerId, tileQuery: LayerQuery[K, M], indexFilterOnly: Boolean) = {
+    val collectionReader = implicitly[COGReader[V] with COGBackendType[V]]
 
-    val LayerAttributes(header, metadata, _, _) = try {
-      attributeStore.readLayerAttributes[FileCOGLayerHeader, M, K](id)
-    } catch {
-      case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
-    }
+    // if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
-    val LayerAttributes(_, baseMetadata, baseKeyIndex, _) = try {
-      attributeStore.readLayerAttributes[FileCOGLayerHeader, M, K](id.copy(zoom = header.zoomRanges._1))
-    } catch {
-      case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
-    }
+    val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
+      attributeStore.read[COGLayerStorageMetadata[K]](LayerId(id.name, 0), "cog_metadata")
 
-    val layerPath = header.path
+    val metadata = cogLayerMetadata.tileLayerMetadata(id.zoom)
 
-    val queryKeyBounds: Seq[KeyBounds[K]] = rasterQuery(metadata)
+    val queryKeyBounds: Seq[KeyBounds[K]] = tileQuery(metadata.asInstanceOf[M])
+
+    val readDefinitions: Seq[(ZoomRange, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])])] =
+      queryKeyBounds.map { case KeyBounds(minKey, maxKey) =>
+        cogLayerMetadata.getReadDefinitions(
+          KeyBounds(minKey.getComponent[SpatialKey], maxKey.getComponent[SpatialKey]),
+          id.zoom
+        )
+      }
+
+    val zoomRange = readDefinitions.head._1
+    val baseKeyIndex = keyIndexes(zoomRange)
+
     val maxWidth = Index.digits(baseKeyIndex.toIndex(baseKeyIndex.keyBounds.maxKey))
-    val keyPath = KeyPathGenerator(catalogPath, layerPath, maxWidth)
+    val keyPath = KeyPathGenerator(catalogPath, s"${id.name}/${zoomRange.slug}", maxWidth)
     val decompose = (bounds: KeyBounds[K]) => baseKeyIndex.indexRanges(bounds)
-    val layoutScheme = header.layoutScheme
 
-    val LayoutLevel(_, baseLayout) = layoutScheme.levelForZoom(header.zoomRanges._1)
-    val LayoutLevel(_, layout) = layoutScheme.levelForZoom(id.zoom)
+    val baseLayout = cogLayerMetadata.layoutForZoom(zoomRange.minZoom)
+    val layout = cogLayerMetadata.layoutForZoom(id.zoom)
 
-    val baseKeyBounds = baseMetadata.getComponent[Bounds[K]]
+    val baseKeyBounds = cogLayerMetadata.zoomRangeInfoFor(zoomRange.minZoom)._2
 
     def transformKeyBounds(keyBounds: KeyBounds[K]): KeyBounds[K] = {
       val KeyBounds(minKey, maxKey) = keyBounds
@@ -104,19 +109,14 @@ class FileCollectionCOGLayerReader(val attributeStore: AttributeStore, catalogPa
         }
         .distinct
 
-    // overview index basing on the partial pyramid zoom ranges
-    val overviewIndex = header.zoomRanges._2 - id.zoom - 1
-
     val seq = collectionReader.read[K](
       keyPath            = keyPath,
       baseQueryKeyBounds = baseQueryKeyBounds,
-      realQueryKeyBounds = queryKeyBounds,
       decomposeBounds    = decompose,
-      sourceLayout       = layout,
-      overviewIndex      = overviewIndex
+      readDefinitions    = readDefinitions.flatMap(_._2).groupBy(_._1)
     )
 
-    new ContextCollection(seq, metadata)
+    new ContextCollection(seq, metadata).asInstanceOf[Seq[(K, V)] with Metadata[M]]
   }
 }
 

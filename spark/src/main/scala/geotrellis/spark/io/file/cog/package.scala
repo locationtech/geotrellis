@@ -1,3 +1,8 @@
 package geotrellis.spark.io.file
 
-package object cog extends Implicits with FileTiffMethods
+import geotrellis.spark.io.cog.COGBackend
+
+package object cog extends Implicits {
+  // Type for ValueReader mixin
+  trait FileCOGBackend extends COGBackend
+}

@@ -26,42 +26,36 @@ import geotrellis.spark.io.hadoop.{HdfsRangeReader, HdfsUtils}
 import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
 import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.util._
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import com.typesafe.config.ConfigFactory
-
 import java.io.File
 import java.net.URI
+
+import geotrellis.spark.util.KryoWrapper
+import spray.json.JsonFormat
 
 import scala.reflect._
 
 /**
   * Generate VRTs to use from GDAL
   * */
-trait HadoopCOGRDDReader[V <: CellGrid] extends Serializable {
-  implicit val tileMergeMethods: V => TileMergeMethods[V]
-  implicit val tilePrototypeMethods: V => TilePrototypeMethods[V]
+trait HadoopCOGRDDReader[V <: CellGrid] extends HadoopCOGRDDReaderTag[V] {
+  import tiffMethods._
 
-  def readTiff(uri: URI, index: Int): GeoTiff[V]
-
-  def getSegmentGridBounds(uri: URI, index: Int): (Int, Int) => GridBounds
-
-  def tileTiff[K](tiff: GeoTiff[V], gridBounds: Map[GridBounds, K]): Vector[(K, V)]
-
-  def read[K: SpatialComponent: Boundable: ClassTag](
+  def read[K: SpatialComponent: Boundable: JsonFormat: ClassTag](
     keyPath: BigInt => String,
     baseQueryKeyBounds: Seq[KeyBounds[K]],
-    realQueryKeyBounds: Seq[KeyBounds[K]],
     decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
-    sourceLayout: LayoutDefinition,
-    overviewIndex: Int,
+    readDefinitions: Map[SpatialKey, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])]],
     numPartitions: Option[Int] = None,
-    threads: Int = ConfigFactory.load().getThreads("geotrellis.file.threads.rdd.read")
+    threads: Int = ConfigFactory.load().getThreads("geotrellis.hadoop.threads.rdd.read")
   )(implicit sc: SparkContext): RDD[(K, V)] = {
     if (baseQueryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
+
+    val kwFormat = KryoWrapper(implicitly[JsonFormat[K]])
 
     val ranges = if (baseQueryKeyBounds.length > 1)
       MergeQueue(baseQueryKeyBounds.flatMap(decomposeBounds))
@@ -70,79 +64,34 @@ trait HadoopCOGRDDReader[V <: CellGrid] extends Serializable {
 
     val bins = IndexRanges.bin(ranges, numPartitions.getOrElse(sc.defaultParallelism))
 
-    val realQueryKeyBoundsRange: Vector[K] =
-      realQueryKeyBounds
-        .flatMap { case KeyBounds(minKey, maxKey) =>
-          val SpatialKey(minCol, minRow) = minKey.getComponent[SpatialKey]
-          val SpatialKey(maxCol, maxRow) = maxKey.getComponent[SpatialKey]
-
-          for {
-            c <- minCol to maxCol
-            r <- minRow to maxRow
-          } yield minKey.setComponent[SpatialKey](SpatialKey(c, r))
-        }
-        .toVector
-
     sc.parallelize(bins, bins.size)
       .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
+        val keyFormat = kwFormat.value
+
         partition flatMap { seq =>
           LayerReader.njoin[K, V](seq.toIterator, threads) { index: BigInt =>
+            println(s"${keyPath(index)}.tiff")
             if (!new File(s"${keyPath(index)}.tiff").isFile) Vector()
             else {
               val uri = new URI(s"file://${keyPath(index)}.tiff")
-              val tiff = readTiff(uri, overviewIndex)
-              val rgb = sourceLayout.mapTransform(tiff.extent)
+              val baseKey = getKey[K](uri)(keyFormat)
 
-              val gb = tiff.rasterExtent.gridBounds
-              val getGridBounds = getSegmentGridBounds(uri, overviewIndex)
+              readDefinitions
+                .get(baseKey.getComponent[SpatialKey])
+                .flatMap(_.headOption)
+                .map { case (spatialKey, overviewIndex, _, seq) =>
+                  val key = baseKey.setComponent(spatialKey)
+                  val tiff = readTiff(uri, overviewIndex)
+                  val map = seq.map { case (gb, sk) => gb -> key.setComponent(sk) }.toMap
 
-              val map: Map[GridBounds, K] =
-                realQueryKeyBoundsRange.flatMap { key =>
-                  val spatialKey = key.getComponent[SpatialKey]
-                  val minCol = (spatialKey.col - rgb.colMin) * sourceLayout.tileLayout.tileCols
-                  val minRow = (spatialKey.row - rgb.rowMin) * sourceLayout.tileLayout.tileRows
-
-                  if (minCol >= 0 && minRow >= 0 && minCol < tiff.cols && minRow < tiff.rows) {
-                    val currentGb = getGridBounds(minCol, minRow)
-                    gb.intersection(currentGb).map(gb => gb -> key)
-                  } else None
-                }.toMap
-
-              tileTiff(tiff, map)
+                  tileTiff(tiff, map)
+                }
+                .getOrElse(Vector())
             }
           }
         }
       }
       .groupBy(_._1)
       .map { case (key, (seq: Iterable[(K, V)])) => key -> seq.map(_._2).reduce(_ merge _) }
-  }
-}
-
-object HadoopCOGRDDReader {
-  /** TODO: Think about it in a more generic fasion */
-  private final val HadoopCOGRDDReaderRegistry: Map[String, HadoopCOGRDDReader[_]] =
-    Map(
-      classTag[Tile].runtimeClass.getCanonicalName -> implicitly[HadoopCOGRDDReader[Tile]],
-      classTag[MultibandTile].runtimeClass.getCanonicalName -> implicitly[HadoopCOGRDDReader[MultibandTile]]
-    )
-
-  private [geotrellis] def fromRegistry[V <: CellGrid: ClassTag]: HadoopCOGRDDReader[V] =
-    HadoopCOGRDDReaderRegistry
-      .getOrElse(
-        classTag[V].runtimeClass.getCanonicalName,
-        throw new Exception(s"No HadoopCOGRDDReaderRegistry for the type ${classTag[V].runtimeClass.getCanonicalName}")
-      ).asInstanceOf[HadoopCOGRDDReader[V]]
-
-  def getReaders(uri: URI, conf: Configuration = new Configuration): (ByteReader, Option[ByteReader]) = {
-    val path = new Path(uri)
-    val ovrPath = new Path(s"${uri.toString}.ovr")
-
-    val ovrPathExists = HdfsUtils.pathExists(ovrPath, conf)
-
-    val ovrReader: Option[ByteReader] =
-      if (ovrPathExists) Some(StreamingByteReader(HdfsRangeReader(ovrPath, conf))) else None
-
-    val reader: ByteReader = StreamingByteReader(HdfsRangeReader(path, conf))
-    reader -> ovrReader
   }
 }

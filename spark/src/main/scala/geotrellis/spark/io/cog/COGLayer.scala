@@ -1,13 +1,11 @@
 package geotrellis.spark.io.cog
 
-import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.crop._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
-import geotrellis.raster.resample.NearestNeighbor
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.index.KeyIndex
@@ -15,18 +13,16 @@ import geotrellis.spark.tiling._
 import geotrellis.spark.util._
 import geotrellis.util._
 import geotrellis.vector._
-import geotrellis.vector.io._
+import geotrellis.proj4.CRS
+import geotrellis.spark.pyramid.Pyramid
+
 import org.apache.hadoop.fs.Path
 import org.apache.spark._
 import org.apache.spark.rdd._
+import spray.json._
+
 import java.net.URI
 
-import geotrellis.proj4.CRS
-import geotrellis.spark.pyramid.Pyramid
-import spray.json._
-import spray.json.DefaultJsonProtocol._
-
-import scala.collection.JavaConverters._
 import scala.reflect._
 
 case class COGLayer[K, T <: CellGrid](
@@ -105,7 +101,7 @@ object COGLayer {
               else tiff.tile
             }
 
-            val tmd = cogLayerMetadata.tileLayerMetadata(range.maxZoom + 1)
+            val tmd: TileLayerMetadata[K] = cogLayerMetadata.tileLayerMetadata(range.maxZoom + 1)
             val upsampledPreviousLayer =
               Pyramid.up(ContextRDD(previousLayer, tmd), layoutScheme, range.maxZoom + 1)._2
 
@@ -129,7 +125,11 @@ object COGLayer {
    )(implicit tc: Iterable[(SpatialKey, V)] => GeoTiffSegmentConstructMethods[SpatialKey, V]): RDD[(K, GeoTiff[V])] = {
     val kwFomat = KryoWrapper(implicitly[JsonFormat[K]])
 
-    val (minZoomLayout, maxZoomLayout) = (layoutScheme.levelForZoom(zoomRange.minZoom).layout, layoutScheme.levelForZoom(zoomRange.maxZoom).layout)
+    val (minZoomLayout, maxZoomLayout) = (
+      layoutScheme.levelForZoom(zoomRange.minZoom).layout,
+      layoutScheme.levelForZoom(zoomRange.maxZoom).layout
+    )
+
     val options: GeoTiffOptions =
       GeoTiffOptions(
         storageMethod = Tiled(maxZoomLayout.tileCols, maxZoomLayout.tileRows),
@@ -155,6 +155,10 @@ object COGLayer {
       }
   }
 
+
+  // the max zoom level keys probably dont fill up min zoom level keys
+  // ^^ double check ^^
+  //
   private def createCog[
     K: SpatialComponent: Ordering: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]
@@ -168,6 +172,23 @@ object COGLayer {
      tags: Tags
    )(implicit tc: Iterable[(SpatialKey, V)] => GeoTiffSegmentConstructMethods[SpatialKey, V]): GeoTiff[V] = {
     val spatialTiles = tiles.map { case (key, value) => (key.getComponent[SpatialKey], value) }
+
+    // calculate Extent, should be more accurate rather than getting it out of key ¯\_(ツ)_/¯
+    // LatLon case ONLY!
+
+    /*val gridBounds = GridBounds.envelope(spatialTiles.map(_._1))
+    val layout = layoutScheme.levelForZoom(zoomRange.maxZoom).layout
+    val keyExtent = layout.mapTransform(gridBounds)
+
+    if(keyExtent != extent) {
+      println(s"keyExtent: $keyExtent")
+      println(s"extent: $keyExtent")
+      println(s"equality: ${extent == keyExtent}")
+      println(s"gridBounds: ${gridBounds}")
+      println(s"gridBounds1: ${layout.mapTransform(extent)}")
+      println(s"gridBounds2: ${layout.mapTransform(keyExtent)}")
+    }*/
+
     val accSeed = (List[GeoTiff[V]](), spatialTiles)
     val (overviews, _) =
       ((zoomRange.maxZoom - 1) to zoomRange.minZoom by -1).foldLeft(accSeed) { case ((acc, t), z) =>
@@ -175,7 +196,9 @@ object COGLayer {
         val thisLayout = layoutScheme.levelForZoom(z).layout
         val newTiles =
           t.
-            groupBy { case (k @ SpatialKey(c, r), _) => SpatialKey(c / 2, r / 2) }.
+            groupBy { case (k @ SpatialKey(c, r), _) =>
+              SpatialKey(c / 2, r / 2)
+            }.
             map { case (newKey, parts) =>
               // Make the prototype based on one of the constituent tiles, with same dimensions
               // (as always happens with power of two pyramids)

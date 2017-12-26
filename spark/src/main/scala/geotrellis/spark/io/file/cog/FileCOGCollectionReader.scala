@@ -17,65 +17,29 @@
 package geotrellis.spark.io.file.cog
 
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.GeoTiff
-import geotrellis.raster.merge._
-import geotrellis.raster.prototype._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index.MergeQueue
-import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.util._
-import geotrellis.raster.io.geotiff.reader.GeoTiffReader.readGeoTiffInfo
-import geotrellis.raster.io.geotiff.reader.TiffTagsReader
 
-import org.apache.spark.SparkContext
 import com.typesafe.config.ConfigFactory
 import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 import java.io.File
 import java.net.URI
 
 import scala.reflect._
 
-/**
-  * Generate VRTs to use from GDAL
-  * */
-trait FileCOGCollectionReader[V <: CellGrid] extends Serializable {
-  implicit val tileMergeMethods: V => TileMergeMethods[V]
-  implicit val tilePrototypeMethods: V => TilePrototypeMethods[V]
+trait FileCOGCollectionReader[V <: CellGrid] extends FileCOGCollectionReaderTag[V] {
+  import tiffMethods._
 
-  def readTiff(uri: URI, index: Int): GeoTiff[V]
-
-  def getSegmentGridBounds(uri: URI, index: Int): (Int, Int) => GridBounds
-
-  def getGeoTiffInfo(uri: URI) =
-    readGeoTiffInfo(
-      byteReader = Filesystem.toMappedByteBuffer(uri.getPath),
-      decompress = false,
-      streaming = true,
-      withOverviews = true,
-      byteReaderExternal = None
-    )
-
-  def getKey[K: JsonFormat](uri: URI): K =
-    TiffTagsReader
-      .read(uri.getPath)
-      .tags
-      .headTags("GT_KEY")
-      .parseJson
-      .convertTo[K]
-
-  def tileTiff[K](tiff: GeoTiff[V], gridBounds: Map[GridBounds, K]): Vector[(K, V)]
-
-  def read[K: SpatialComponent: Boundable: ClassTag](
+  def read[K: SpatialComponent: Boundable: JsonFormat: ClassTag](
     keyPath: BigInt => String,
     baseQueryKeyBounds: Seq[KeyBounds[K]],
-    realQueryKeyBounds: Seq[KeyBounds[K]],
     decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
-    sourceLayout: LayoutDefinition,
-    overviewIndex: Int,
-    threads: Int = ConfigFactory.load().getThreads("geotrellis.file.threads.rdd.read")
+    readDefinitions: Map[SpatialKey, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])]],
+    numPartitions: Option[Int] = None,
+    threads: Int = ConfigFactory.load().getThreads("geotrellis.file.threads.collection.read")
   ): Seq[(K, V)] = {
     if (baseQueryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
@@ -84,62 +48,28 @@ trait FileCOGCollectionReader[V <: CellGrid] extends Serializable {
     else
       baseQueryKeyBounds.flatMap(decomposeBounds)
 
-    val realQueryKeyBoundsRange: Vector[K] =
-      realQueryKeyBounds
-        .flatMap { case KeyBounds(minKey, maxKey) =>
-          val SpatialKey(minCol, minRow) = minKey.getComponent[SpatialKey]
-          val SpatialKey(maxCol, maxRow) = maxKey.getComponent[SpatialKey]
-
-          for {
-            c <- minCol to maxCol
-            r <- minRow to maxRow
-          } yield minKey.setComponent[SpatialKey](SpatialKey(c, r))
-        }
-        .toVector
-
     LayerReader.njoin[K, V](ranges.toIterator, threads) { index: BigInt =>
+      println(s"${keyPath(index)}.tiff")
       if (!new File(s"${keyPath(index)}.tiff").isFile) Vector()
       else {
         val uri = new URI(s"file://${keyPath(index)}.tiff")
-        val tiff = readTiff(uri, overviewIndex)
-        val rgb = sourceLayout.mapTransform(tiff.extent)
+        val baseKey = getKey[K](uri)
 
-        val gb = tiff.rasterExtent.gridBounds
-        val getGridBounds = getSegmentGridBounds(uri, overviewIndex)
+        readDefinitions
+          .get(baseKey.getComponent[SpatialKey])
+          .flatMap(_.headOption)
+          .map { case (spatialKey, overviewIndex, _, seq) =>
+            val key = baseKey.setComponent(spatialKey)
+            val tiff = readTiff(uri, overviewIndex)
+            val map = seq.map { case (gb, sk) => gb -> key.setComponent(sk) }.toMap
 
-        val map: Map[GridBounds, K] =
-          realQueryKeyBoundsRange.flatMap { key =>
-            val spatialKey = key.getComponent[SpatialKey]
-            val minCol = (spatialKey.col - rgb.colMin) * sourceLayout.tileLayout.tileCols
-            val minRow = (spatialKey.row - rgb.rowMin) * sourceLayout.tileLayout.tileRows
-
-            if (minCol >= 0 && minRow >= 0 && minCol < tiff.cols && minRow < tiff.rows) {
-              val currentGb = getGridBounds(minCol, minRow)
-              gb.intersection(currentGb).map(gb => gb -> key)
-            } else None
-          }.toMap
-
-        tileTiff(tiff, map)
+            tileTiff(tiff, map)
+          }
+          .getOrElse(Vector())
       }
     }
     .groupBy(_._1)
     .map { case (key, (seq: Iterable[(K, V)])) => key -> seq.map(_._2).reduce(_ merge _) }
     .toSeq
   }
-}
-
-object FileCOGCollectionReader {
-  /** TODO: Think about it in a more generic fasion */
-  private final val FileCOGCollectionReaderRegistry: Map[String, FileCOGCollectionReader[_]] =
-    Map(
-      classTag[Tile].runtimeClass.getCanonicalName -> implicitly[FileCOGCollectionReader[Tile]],
-      classTag[MultibandTile].runtimeClass.getCanonicalName -> implicitly[FileCOGCollectionReader[MultibandTile]]
-    )
-
-  private [geotrellis] def fromRegistry[V <: CellGrid: ClassTag]: FileCOGCollectionReader[V] =
-    FileCOGCollectionReaderRegistry
-      .getOrElse(
-        classTag[V].runtimeClass.getCanonicalName,
-        throw new Exception(s"No FileCOGCollectionReaderRegistry for the type ${classTag[V].runtimeClass.getCanonicalName}")
-      ).asInstanceOf[FileCOGCollectionReader[V]]
 }

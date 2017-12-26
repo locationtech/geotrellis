@@ -28,14 +28,16 @@ import spray.json._
 import scala.reflect._
 
 trait COGValueReader[ID] {
+  type COGBackendType
+
   val attributeStore: AttributeStore
 
   /** Produce a key value reader for a specific layer, prefetching layer metadata once at construction time */
-  def reader[K: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid: TiffMethods: ? => TileMergeMethods[V]](layerId: ID): Reader[K, V]
+  def reader[K: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid: λ[α => TiffMethods[α] with COGBackendType]: ? => TileMergeMethods[V]](layerId: ID): Reader[K, V]
 
   def overzoomingReader[
     K: JsonFormat: SpatialComponent: ClassTag,
-    V <: CellGrid: ? => TileResampleMethods[V]: TiffMethods: ? => TileMergeMethods[V]
+    V <: CellGrid: ? => TileResampleMethods[V]: λ[α => TiffMethods[α] with COGBackendType]: ? => TileMergeMethods[V]
   ](layerId: ID, resampleMethod: ResampleMethod = ResampleMethod.DEFAULT): Reader[K, V]
 }
 

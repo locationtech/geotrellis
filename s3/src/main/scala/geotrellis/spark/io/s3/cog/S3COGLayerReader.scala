@@ -21,12 +21,14 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.s3._
 import geotrellis.spark.io.cog._
+import geotrellis.spark.io.file.cog.FileCOGBackend
+import geotrellis.spark.io.file.cog.FileCOGRDDReader.FileCOGRDDReaderTag
 import geotrellis.spark.io.index._
 import geotrellis.spark.tiling.LayoutLevel
 import geotrellis.util._
-
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
+import supertagged.@@
 
 import scala.reflect.ClassTag
 

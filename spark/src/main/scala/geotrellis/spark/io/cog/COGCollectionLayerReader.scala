@@ -20,20 +20,23 @@ import geotrellis.raster.CellGrid
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.util._
+
 import spray.json._
 
 import scala.reflect._
 
-abstract class CollectionCOGLayerReader[ID] { self =>
+abstract class COGCollectionLayerReader[ID] { self =>
+  type COGBackendType[V <: CellGrid]
+
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: ClassTag,
+    V <: CellGrid: λ[α => COGReader[α] with COGBackendType[α]]: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](id: ID, rasterQuery: LayerQuery[K, M], indexFilterOnly: Boolean): Seq[(K, V)] with Metadata[M]
 
   def reader[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: ClassTag,
+    V <: CellGrid: λ[α => COGReader[α] with COGBackendType[α]]: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ]: Reader[ID, Seq[(K, V)] with Metadata[M]] =
     new Reader[ID, Seq[(K, V)] with Metadata[M]] {
@@ -43,21 +46,21 @@ abstract class CollectionCOGLayerReader[ID] { self =>
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: ClassTag,
+    V <: CellGrid: λ[α => COGReader[α] with COGBackendType[α]]: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](id: ID, rasterQuery: LayerQuery[K, M]): Seq[(K, V)] with Metadata[M] =
     read[K, V, M](id, rasterQuery, false)
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: ClassTag,
+    V <: CellGrid: λ[α => COGReader[α] with COGBackendType[α]]: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](id: ID): Seq[(K, V)] with Metadata[M] =
     read[K, V, M](id, new LayerQuery[K, M])
 
   def query[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: ClassTag,
+    V <: CellGrid: λ[α => COGReader[α] with COGBackendType[α]]: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](layerId: ID): BoundLayerQuery[K, M, Seq[(K, V)] with Metadata[M]] =
     new BoundLayerQuery(new LayerQuery, read[K, V, M](layerId, _))

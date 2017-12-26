@@ -5,4 +5,6 @@ import java.util
 
 package object cog extends Implicits {
   type MetadataAccumulator[M] = AccumulatorV2[(Int, M), util.Map[Int, M]]
+
+  trait COGBackend
 }
