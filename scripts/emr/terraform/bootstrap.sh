@@ -49,7 +49,7 @@ if is_master; then
     cat <<EOF > /tmp/jupyterhub_config.py
 c = get_config()
 
-# Let JupyterHub use sudospawner for spawning notebook instances 
+# Let JupyterHub use sudospawner for spawning notebook instances
 c.JupyterHub.spawner_class='sudospawner.SudoSpawner'
 c.SudoSpawner.sudospawner_path='/usr/local/bin/sudospawner'
 EOF
@@ -63,7 +63,7 @@ c = get_config()
 c.NotebookApp.contents_manager_class = S3ContentsManager
 c.S3ContentsManager.access_key_id = "$S3_ACCESS_KEY"
 c.S3ContentsManager.secret_access_key = "$S3_SECRET_KEY"
-c.S3ContentsManager.bucket_name = "$S3_NOTEBOOK_BUCKET"
+c.S3ContentsManager.bucket = "$S3_NOTEBOOK_BUCKET"
 c.S3ContentsManager.prefix = "$S3_NOTEBOOK_PREFIX"
 EOF
 
@@ -73,7 +73,7 @@ EOF
     # Fix a problem in the Jupyter notebook FileContentsManager (required by S3Contents)
     cat <<EOF > /tmp/manager.patch
 33c33
-< 
+<
 ---
 > import notebook.transutils
 EOF
