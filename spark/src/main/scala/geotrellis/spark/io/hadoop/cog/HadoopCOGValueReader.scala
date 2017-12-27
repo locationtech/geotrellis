@@ -24,6 +24,7 @@ import geotrellis.spark.io.cog._
 import geotrellis.spark.io.hadoop.formats.FilterMapFileInputFormat
 import geotrellis.util._
 
+import java.net.URI
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{BigIntWritable, BytesWritable, MapFile}
@@ -40,7 +41,7 @@ class HadoopCOGValueReader(
   maxOpenFiles: Int = 16
 ) extends OverzoomingCOGValueReader {
 
-  type COGBackendType = HadoopCOGBackend
+  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
 
   val readers: Cache[(LayerId, Path), MapFile.Reader] =
     Scaffeine()
@@ -54,13 +55,13 @@ class HadoopCOGValueReader(
 
   def reader[
     K: JsonFormat: SpatialComponent: ClassTag,
-    V <: CellGrid: λ[α => TiffMethods[α] with COGBackendType]: ? => TileMergeMethods[V]
+    V <: CellGrid: TiffMethods: ? => TileMergeMethods[V]
   ](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
 
     val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
       attributeStore.read[COGLayerStorageMetadata[K]](LayerId(layerId.name, 0), "cog_metadata")
 
-    val tiffMethods: TiffMethods[V] with COGBackendType = implicitly[TiffMethods[V] with COGBackendType]
+    val tiffMethods: TiffMethods[V] = implicitly[TiffMethods[V]]
 
     val ranges: Vector[(Path, BigInt, BigInt)] =
       FilterMapFileInputFormat.layerRanges(catalogPath, conf)

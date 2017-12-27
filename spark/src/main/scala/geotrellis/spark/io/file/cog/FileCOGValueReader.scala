@@ -37,16 +37,16 @@ class FileCOGValueReader(
   catalogPath: String
 ) extends OverzoomingCOGValueReader {
 
-  type COGBackendType = FileCOGBackend
+  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
 
   def reader[
     K: JsonFormat : SpatialComponent : ClassTag,
-    V <: CellGrid: λ[α => TiffMethods[α] with COGBackendType]: ? => TileMergeMethods[V]
+    V <: CellGrid: TiffMethods: ? => TileMergeMethods[V]
   ](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
     val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
       attributeStore.read[COGLayerStorageMetadata[K]](LayerId(layerId.name, 0), "cog_metadata")
 
-    val tiffMethods: TiffMethods[V] with FileCOGBackend = implicitly[TiffMethods[V] with COGBackendType]
+    val tiffMethods: TiffMethods[V] = implicitly[TiffMethods[V]]
 
     def read(key: K): V = {
       val (zoomRange, spatialKey, overviewIndex, gridBounds) =
@@ -55,10 +55,12 @@ class FileCOGValueReader(
       val baseKeyIndex = keyIndexes(zoomRange)
 
       val maxWidth = Index.digits(baseKeyIndex.toIndex(baseKeyIndex.keyBounds.maxKey))
-      val keyPath = KeyPathGenerator(catalogPath, s"${layerId.name}/${zoomRange.slug}", baseKeyIndex, maxWidth)
+      val keyPath =
+        KeyPathGenerator(catalogPath, s"${layerId.name}/${zoomRange.slug}", baseKeyIndex, maxWidth) andThen (_ ++ s".$Extension")
+
       Filesystem.ensureDirectory(new File(catalogPath, s"${layerId.name}/${zoomRange.slug}").getAbsolutePath)
 
-      val uri = new URI(s"${keyPath(key.setComponent(spatialKey))}.tiff")
+      val uri = new URI(keyPath(key.setComponent(spatialKey)))
       val tiff = tiffMethods.readTiff(uri, overviewIndex)
 
       tiffMethods.cropTiff(tiff, gridBounds)

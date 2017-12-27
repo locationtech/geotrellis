@@ -35,26 +35,24 @@ import java.util.ServiceLoader
 import java.net.URI
 
 trait COGLayerReader[ID] {
-  type COGBackendType[V <: CellGrid]
-
   def defaultNumPartitions: Int
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: λ[α => COGReader[α] with COGBackendType[α]]: ClassTag,
+    V <: CellGrid: COGRDDReader: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[M]
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: λ[α => COGReader[α] with COGBackendType[α]]: ClassTag,
+    V <: CellGrid: COGRDDReader: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](id: ID): RDD[(K, V)] with Metadata[M] =
     read(id, defaultNumPartitions)
 
   def reader[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: λ[α => COGReader[α] with COGBackendType[α]]: ClassTag,
+    V <: CellGrid: COGRDDReader: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ]: Reader[ID, RDD[(K, V)] with Metadata[M]] =
     new Reader[ID, RDD[(K, V)] with Metadata[M]] {

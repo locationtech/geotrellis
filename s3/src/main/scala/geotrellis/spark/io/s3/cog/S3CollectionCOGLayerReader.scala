@@ -22,10 +22,11 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.s3._
-import geotrellis.spark.tiling.LayoutLevel
 import geotrellis.util._
 
 import spray.json.JsonFormat
+
+import java.net.URI
 
 import scala.reflect.ClassTag
 
@@ -34,42 +35,48 @@ import scala.reflect.ClassTag
  *
  * @param attributeStore  AttributeStore that contains metadata for corresponding LayerId
  */
-class S3CollectionCOGLayerReader(val attributeStore: AttributeStore)
-  extends CollectionCOGLayerReader[LayerId] with LazyLogging {
+class S3CollectionCOGLayerReader(
+  val attributeStore: AttributeStore,
+  val bucket: String,
+  val prefix: String,
+  val getS3Client: () => S3Client = () => S3Client.DEFAULT
+) extends COGCollectionLayerReader[LayerId] with LazyLogging {
+
+  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, getS3Client())
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: ClassTag,
+    V <: CellGrid: COGCollectionReader: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](id: LayerId, rasterQuery: LayerQuery[K, M], indexFilterOnly: Boolean) = {
-    val collectionReader = S3COGCollectionReader.fromRegistry[V]
-    if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
+    val collectionReader = implicitly[COGCollectionReader[V]]
+    //if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
-    val LayerAttributes(header, metadata, _, _) = try {
-      attributeStore.readLayerAttributes[S3COGLayerHeader, M, K](id)
-    } catch {
-      case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
-    }
+    val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
+      attributeStore.read[COGLayerStorageMetadata[K]](LayerId(id.name, 0), "cog_metadata")
 
-    val LayerAttributes(_, baseMetadata, baseKeyIndex, _) = try {
-      attributeStore.readLayerAttributes[S3COGLayerHeader, M, K](id.copy(zoom = header.zoomRanges._1))
-    } catch {
-      case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
-    }
+    val metadata = cogLayerMetadata.tileLayerMetadata(id.zoom)
 
-    val bucket = header.bucket
-    val prefix = header.key
+    val queryKeyBounds: Seq[KeyBounds[K]] = rasterQuery(metadata.asInstanceOf[M])
 
-    val queryKeyBounds: Seq[KeyBounds[K]] = rasterQuery(metadata)
+    val readDefinitions: Seq[(ZoomRange, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])])] =
+      queryKeyBounds.map { case KeyBounds(minKey, maxKey) =>
+        cogLayerMetadata.getReadDefinitions(
+          KeyBounds(minKey.getComponent[SpatialKey], maxKey.getComponent[SpatialKey]),
+          id.zoom
+        )
+      }
+
+    val zoomRange = readDefinitions.head._1
+    val baseKeyIndex = keyIndexes(zoomRange)
     val maxWidth = Index.digits(baseKeyIndex.toIndex(baseKeyIndex.keyBounds.maxKey))
-    val keyPath = (index: BigInt) => makePath(prefix, Index.encode(index, maxWidth))
+    val keyPath = (index: BigInt) => s"$bucket/${makePath(prefix, Index.encode(index, maxWidth))}.${Extension}"
     val decompose = (bounds: KeyBounds[K]) => baseKeyIndex.indexRanges(bounds)
-    val layoutScheme = header.layoutScheme
 
-    val LayoutLevel(_, baseLayout) = layoutScheme.levelForZoom(header.zoomRanges._1)
-    val LayoutLevel(_, layout) = layoutScheme.levelForZoom(id.zoom)
+    val baseLayout = cogLayerMetadata.layoutForZoom(zoomRange.minZoom)
+    val layout = cogLayerMetadata.layoutForZoom(id.zoom)
 
-    val baseKeyBounds = baseMetadata.getComponent[Bounds[K]]
+    val baseKeyBounds = cogLayerMetadata.zoomRangeInfoFor(zoomRange.minZoom)._2
 
     def transformKeyBounds(keyBounds: KeyBounds[K]): KeyBounds[K] = {
       val KeyBounds(minKey, maxKey) = keyBounds
@@ -105,20 +112,15 @@ class S3CollectionCOGLayerReader(val attributeStore: AttributeStore)
         }
         .distinct
 
-    // overview index basing on the partial pyramid zoom ranges
-    val overviewIndex = header.zoomRanges._2 - id.zoom - 1
-
     val seq = collectionReader.read[K](
-      bucket             = bucket,
       keyPath            = keyPath,
+      pathExists         = { s3PathExists(_, getS3Client()) },
       baseQueryKeyBounds = baseQueryKeyBounds,
-      realQueryKeyBounds = queryKeyBounds,
       decomposeBounds    = decompose,
-      sourceLayout       = layout,
-      overviewIndex      = overviewIndex
+      readDefinitions    = readDefinitions.flatMap(_._2).groupBy(_._1)
     )
 
-    new ContextCollection(seq, metadata)
+    new ContextCollection(seq, metadata).asInstanceOf[Seq[(K, V)] with Metadata[M]]
   }
 }
 

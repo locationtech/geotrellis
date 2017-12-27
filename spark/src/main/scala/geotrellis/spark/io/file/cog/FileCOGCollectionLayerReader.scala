@@ -22,10 +22,11 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.file.KeyPathGenerator
 import geotrellis.spark.io.index._
-import geotrellis.spark.tiling.LayoutLevel
 import geotrellis.util._
-import org.apache.spark.SparkContext
+
 import spray.json.JsonFormat
+import java.net.URI
+import java.io.File
 
 import scala.reflect.ClassTag
 
@@ -37,14 +38,14 @@ import scala.reflect.ClassTag
 class FileCOGCollectionLayerReader(val attributeStore: AttributeStore, catalogPath: String)
   extends COGCollectionLayerReader[LayerId] with LazyLogging {
 
-  type COGBackendType[V <: CellGrid] = FileCOGCollectionReaderTag[V]
+  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: λ[α => COGReader[α] with COGBackendType[α]]: ClassTag,
+    V <: CellGrid: COGCollectionReader: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](id: LayerId, tileQuery: LayerQuery[K, M], indexFilterOnly: Boolean) = {
-    val collectionReader = implicitly[COGReader[V] with COGBackendType[V]]
+    val collectionReader = implicitly[COGCollectionReader[V]]
 
     // if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
@@ -111,6 +112,7 @@ class FileCOGCollectionLayerReader(val attributeStore: AttributeStore, catalogPa
 
     val seq = collectionReader.read[K](
       keyPath            = keyPath,
+      pathExists         = { new File(_).isFile },
       baseQueryKeyBounds = baseQueryKeyBounds,
       decomposeBounds    = decompose,
       readDefinitions    = readDefinitions.flatMap(_._2).groupBy(_._1)

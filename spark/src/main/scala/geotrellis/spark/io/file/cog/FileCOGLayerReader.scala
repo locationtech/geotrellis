@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.file.cog
 
+import java.io.File
+
 import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.io._
@@ -23,10 +25,10 @@ import geotrellis.spark.io.cog._
 import geotrellis.spark.io.file.KeyPathGenerator
 import geotrellis.spark.io.index._
 import geotrellis.util._
-
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
+import java.net.URI
 
 import scala.reflect.ClassTag
 
@@ -35,19 +37,20 @@ import scala.reflect.ClassTag
  *
  * @param attributeStore  AttributeStore that contains metadata for corresponding LayerId
  */
-class FileCOGLayerReader(val attributeStore: AttributeStore, catalogPath: String)(implicit sc: SparkContext)
-  extends FilteringCOGLayerReader[LayerId] with LazyLogging {
+class FileCOGLayerReader(val attributeStore: AttributeStore, catalogPath: String)
+                        (implicit sc: SparkContext) extends FilteringCOGLayerReader[LayerId] with LazyLogging {
 
   val defaultNumPartitions: Int = sc.defaultParallelism
 
-  type COGBackendType[V <: CellGrid] = FileCOGRDDReaderTag[V]
+  implicit def getByteReader(uri: URI): ByteReader =
+    Filesystem.toMappedByteBuffer(uri.getPath)
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: λ[α => COGReader[α] with COGBackendType[α]]: ClassTag,
+    V <: CellGrid: COGRDDReader: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
-    val rddReader = implicitly[COGReader[V] with COGBackendType[V]]
+    val rddReader = implicitly[COGRDDReader[V]]
 
     //if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
@@ -70,7 +73,8 @@ class FileCOGLayerReader(val attributeStore: AttributeStore, catalogPath: String
     val baseKeyIndex = keyIndexes(zoomRange)
 
     val maxWidth = Index.digits(baseKeyIndex.toIndex(baseKeyIndex.keyBounds.maxKey))
-    val keyPath = KeyPathGenerator(catalogPath, s"${id.name}/${zoomRange.slug}", maxWidth)
+    val keyPath =
+      KeyPathGenerator(catalogPath, s"${id.name}/${zoomRange.slug}", maxWidth) andThen (_ ++ s".$Extension")
     val decompose = (bounds: KeyBounds[K]) => baseKeyIndex.indexRanges(bounds)
 
     val baseLayout = cogLayerMetadata.layoutForZoom(zoomRange.minZoom)
@@ -113,11 +117,12 @@ class FileCOGLayerReader(val attributeStore: AttributeStore, catalogPath: String
         .distinct
 
     val rdd = rddReader.read[K](
-      keyPath = keyPath,
+      keyPath            = keyPath,
+      pathExists         = { new File(_).isFile },
       baseQueryKeyBounds = baseQueryKeyBounds,
-      decomposeBounds = decompose,
-      readDefinitions = readDefinitions.flatMap(_._2).groupBy(_._1),
-      numPartitions = Some(numPartitions)
+      decomposeBounds    = decompose,
+      readDefinitions    = readDefinitions.flatMap(_._2).groupBy(_._1),
+      numPartitions      = Some(numPartitions)
     )
 
     new ContextRDD(rdd, metadata).asInstanceOf[RDD[(K, V)] with Metadata[M]]

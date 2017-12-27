@@ -1,8 +1,10 @@
 package geotrellis.spark.io.file
 
-import geotrellis.spark.io.cog.COGBackend
+import geotrellis.util.{ByteReader, Filesystem}
+
+import java.net.URI
 
 package object cog extends Implicits {
-  // Type for ValueReader mixin
-  trait FileCOGBackend extends COGBackend
+  def byteReader(uri: URI): ByteReader =
+    Filesystem.toMappedByteBuffer(uri.getPath)
 }

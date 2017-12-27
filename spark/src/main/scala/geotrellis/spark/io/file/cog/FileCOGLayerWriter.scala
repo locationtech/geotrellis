@@ -34,7 +34,7 @@ class FileCOGLayerWriter(
 
       // Write each cog layer for each zoom range, starting from highest zoom levels.
       cogLayer.layers(zoomRange).foreach { case (key, cog) =>
-        cog.write(s"${keyPath(key)}.tiff", true)
+        cog.write(s"${keyPath(key)}.${Extension}", true)
       }
     }
   }

@@ -34,7 +34,7 @@ import geotrellis.spark.io.index.zcurve.ZSpatialKeyIndex
 import geotrellis.spark.testkit._
 import geotrellis.spark.io.file.FileAttributeStore
 import geotrellis.spark.io.file.cog._
-import geotrellis.spark.io.hadoop.cog._
+//import geotrellis.spark.io.hadoop.cog._
 import geotrellis.spark.io.index.ZCurveKeyIndexMethod
 import org.apache.hadoop.fs.Path
 import org.scalatest._
