@@ -4,6 +4,7 @@ S3_ACCESS_KEY=$1
 S3_SECRET_KEY=$2
 S3_NOTEBOOK_BUCKET=$3
 S3_NOTEBOOK_PREFIX=$4
+EXECUTE_SCRIPT=$5
 
 # Parses a configuration file put in place by EMR to determine the role of this node
 is_master() {
@@ -14,7 +15,7 @@ is_master() {
   fi
 }
 
-if is_master; then
+if is_master && [ "$EXECUTE_SCRIPT" == "true" ] ; then
     echo "Installing system software ..."
     curl -sL https://rpm.nodesource.com/setup_6.x | sudo -E bash -
     sudo yum install -y -q nodejs
@@ -90,6 +91,14 @@ alias launch_hub='sudo -u hublauncher -E env "PATH=/usr/local/bin:$PATH" jupyter
 EOF
     sudo mv /tmp/jupyter_profile.sh /etc/profile.d
     . /etc/profile.d/jupyter_profile.sh
+
+    # Install boilerplate extension
+    cd /tmp
+    mkdir boilerplate
+    mv bp.js boilerplate/main.js
+    sudo npm install requirejs
+    sudo /usr/local/bin/jupyter nbextension install --system boilerplate
+    sudo /usr/local/bin/jupyter nbextension enable --system boilerplate/main
 
     echo "Running at host $AWS_DNS_NAME"
 fi

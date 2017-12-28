@@ -1,6 +1,6 @@
-{ 
+{
   "variable": {
-    "access_key": { 
+    "access_key": {
         "description": "From your `~/.aws/credentials"
     },
     "secret_key": {
@@ -14,6 +14,10 @@
     },
     "s3_notebook_prefix": {
         "description": "The prefix path inside the S3 notebook bucket"
+    },
+    "install_jupyter": {
+        "default": "false",
+        "description": "Install jupyter-scala during cluster creation"
     },
     "region": {
         "default": "us-east-1",
