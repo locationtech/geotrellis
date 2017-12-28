@@ -17,10 +17,10 @@
 package geotrellis.spark.io.cog
 
 import geotrellis.raster.CellGrid
+import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.util._
-
 import spray.json._
 
 import scala.reflect._
@@ -28,12 +28,12 @@ import scala.reflect._
 abstract class COGCollectionLayerReader[ID] { self =>
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGCollectionReader: ClassTag
+    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]], indexFilterOnly: Boolean): Seq[(K, V)] with Metadata[TileLayerMetadata[K]]
 
   def reader[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGCollectionReader: ClassTag
+    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ]: Reader[ID, Seq[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new Reader[ID, Seq[(K, V)] with Metadata[TileLayerMetadata[K]]] {
       def read(id: ID): Seq[(K, V)] with Metadata[TileLayerMetadata[K]] =
@@ -42,19 +42,19 @@ abstract class COGCollectionLayerReader[ID] { self =>
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGCollectionReader: ClassTag
+    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]]): Seq[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read[K, V](id, rasterQuery, false)
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGCollectionReader: ClassTag
+    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](id: ID): Seq[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read[K, V](id, new LayerQuery[K, TileLayerMetadata[K]])
 
   def query[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGCollectionReader: ClassTag
+    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](layerId: ID): BoundLayerQuery[K, TileLayerMetadata[K], Seq[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, read[K, V](layerId, _))
 }

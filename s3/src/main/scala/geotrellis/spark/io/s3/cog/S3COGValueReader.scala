@@ -22,7 +22,6 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.s3.S3Client
-import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.util._
 
 import spray.json._
@@ -43,8 +42,8 @@ class S3COGValueReader(
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, s3Client)
 
   def reader[
-    K: JsonFormat : SpatialComponent : ClassTag,
-    V <: CellGrid : TiffMethods : ? => TileMergeMethods[V]
+    K: JsonFormat: SpatialComponent : ClassTag,
+    V <: CellGrid: TiffMethods
   ](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
     val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
       attributeStore.read[COGLayerStorageMetadata[K]](LayerId(layerId.name, 0), "cog_metadata")

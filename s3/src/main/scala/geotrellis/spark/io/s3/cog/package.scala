@@ -7,7 +7,7 @@ import com.amazonaws.services.s3.AmazonS3URI
 
 import java.net.URI
 
-package object cog extends Implicits {
+package object cog {
   def s3PathExists(str: String, s3Client: S3Client): Boolean = {
     val arr = str.split("/").filterNot(_.isEmpty)
     val bucket = arr.head

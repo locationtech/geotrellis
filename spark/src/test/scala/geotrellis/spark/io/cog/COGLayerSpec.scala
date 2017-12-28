@@ -34,7 +34,7 @@ import geotrellis.spark.io.index.zcurve.ZSpatialKeyIndex
 import geotrellis.spark.testkit._
 import geotrellis.spark.io.file.FileAttributeStore
 import geotrellis.spark.io.file.cog._
-//import geotrellis.spark.io.hadoop.cog._
+import geotrellis.spark.io.hadoop.cog._
 import geotrellis.spark.io.index.ZCurveKeyIndexMethod
 import org.apache.hadoop.fs.Path
 import org.scalatest._
@@ -73,6 +73,8 @@ class COGLayerSpec extends FunSpec
         iter => withSinglebandGeoTiffSegmentConstructMethods(iter)*/
 
 
+      println(s"layer.metadata.bounds: ${layer.metadata.bounds}")
+
       writer.write("landsat_cog", layer, zoom, ZCurveKeyIndexMethod)
     }
 
@@ -91,24 +93,36 @@ class COGLayerSpec extends FunSpec
 
       for {
         c <- 88 to 89
-        r <- 159 to 160
+        r <- 204 to 205
       } yield {
         vreader
           .read(SpatialKey(c, r))
           .renderPng()
-          .write(s"/tmp/${c}_${r}.png")
+          .write(s"/data/lcpng9/${c}_${r}.png")
       }
 
       /*val vreader = reader.reader[SpatialKey, Tile](LayerId("landsat_cog", 10))
 
       for {
         c <- 177 to 178
-        r <- 318 to 321
+        r <- 409 to 410
       } yield {
         vreader
           .read(SpatialKey(c, r))
           .renderPng()
-          .write(s"/tmp/${c}_${r}.png")
+          .write(s"/data/lcpng10/${c}_${r}.png")
+      }*/
+
+      /*val vreader = reader.reader[SpatialKey, Tile](LayerId("landsat_cog", 12))
+
+      for {
+        c <- 709 to 713
+        r <- 1636 to 1640
+      } yield {
+        vreader
+          .read(SpatialKey(c, r))
+          .renderPng()
+          .write(s"/data/lcpng12/${c}_${r}.png")
       }*/
 
       //writer.write("landsat_cog", layer, zoom, ZCurveKeyIndexMethod)

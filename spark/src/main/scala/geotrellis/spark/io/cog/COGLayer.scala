@@ -155,10 +155,6 @@ object COGLayer {
       }
   }
 
-
-  // the max zoom level keys probably dont fill up min zoom level keys
-  // ^^ double check ^^
-  //
   private def createCog[
     K: SpatialComponent: Ordering: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]
@@ -172,22 +168,6 @@ object COGLayer {
      tags: Tags
    )(implicit tc: Iterable[(SpatialKey, V)] => GeoTiffSegmentConstructMethods[SpatialKey, V]): GeoTiff[V] = {
     val spatialTiles = tiles.map { case (key, value) => (key.getComponent[SpatialKey], value) }
-
-    // calculate Extent, should be more accurate rather than getting it out of key ¯\_(ツ)_/¯
-    // LatLon case ONLY!
-
-    /*val gridBounds = GridBounds.envelope(spatialTiles.map(_._1))
-    val layout = layoutScheme.levelForZoom(zoomRange.maxZoom).layout
-    val keyExtent = layout.mapTransform(gridBounds)
-
-    if(keyExtent != extent) {
-      println(s"keyExtent: $keyExtent")
-      println(s"extent: $keyExtent")
-      println(s"equality: ${extent == keyExtent}")
-      println(s"gridBounds: ${gridBounds}")
-      println(s"gridBounds1: ${layout.mapTransform(extent)}")
-      println(s"gridBounds2: ${layout.mapTransform(keyExtent)}")
-    }*/
 
     val accSeed = (List[GeoTiff[V]](), spatialTiles)
     val (overviews, _) =
@@ -225,17 +205,6 @@ object COGLayer {
 
         (gt :: acc, newTiles)
       }
-
-    // {
-    //   val layout = layoutScheme.levelForZoom(zoomRange.maxZoom).layout
-    //   val gridBounds =
-    //     layout.mapTransform.extentToBounds(extent)
-
-    //   val tileLayout =
-    //     TileLayout(gridBounds.width, gridBounds.height, layout.tileCols, layout.tileRows)
-
-    //   sys.error(s"BOOM - ${tileLayout} ${zoomRange} ${spatialTiles.map(_._1).toSet.toSeq} ${extent.reproject(crs, LatLng).toPolygon.toGeoJson}")
-    // }
 
     spatialTiles.toGeoTiff(
       layoutScheme.levelForZoom(zoomRange.maxZoom).layout,

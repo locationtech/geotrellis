@@ -17,6 +17,7 @@
 package geotrellis.spark.io.s3.cog
 
 import geotrellis.raster.{CellGrid, RasterExtent}
+import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
@@ -25,7 +26,6 @@ import geotrellis.spark.io.s3._
 import geotrellis.util._
 
 import spray.json.JsonFormat
-
 import java.net.URI
 
 import scala.reflect.ClassTag
@@ -46,9 +46,9 @@ class S3CollectionCOGLayerReader(
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGCollectionReader: ClassTag
+    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](id: LayerId, rasterQuery: LayerQuery[K, TileLayerMetadata[K]], indexFilterOnly: Boolean) = {
-    val collectionReader = implicitly[COGCollectionReader[V]]
+    val collectionReader = new S3COGCollectionReader[V]
     //if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =

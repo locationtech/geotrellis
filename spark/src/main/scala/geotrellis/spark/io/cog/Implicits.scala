@@ -68,14 +68,7 @@ trait Implicits {
       overviews: List[GeoTiff[Tile]] = Nil
     )(implicit sc: SpatialComponent[K]): SinglebandGeoTiff = {
       val gridBounds =
-        layout.mapTransform.extentToBounds(
-          Extent(
-            extent.xmin + layout.cellwidth / 2,
-            extent.ymin + layout.cellheight / 2,
-            extent.xmax - layout.cellwidth / 2,
-            extent.ymax - layout.cellheight / 2
-          )
-        )
+        layout.mapTransform.extentToBounds(extent.bufferByLayout(layout))
 
       val tileLayout =
         TileLayout(gridBounds.width, gridBounds.height, layout.tileCols, layout.tileRows)
@@ -103,19 +96,18 @@ trait Implicits {
   implicit class withMultibandGeoTiffSegmentConstructMethods[K](val self: Iterable[(K, MultibandTile)]) extends GeoTiffSegmentConstructMethods[K, MultibandTile] {
     def toGeoTiff(
       layout: LayoutDefinition,
-      extent: Extent, // good extent (?)
+      extent: Extent,
       crs: CRS,
       options: GeoTiffOptions,
       tags: Tags = Tags.empty,
       overviews: List[GeoTiff[MultibandTile]] = Nil
     )(implicit sc: SpatialComponent[K]): MultibandGeoTiff = {
       val gridBounds =
-        layout.mapTransform.extentToBounds(extent)
+        layout.mapTransform.extentToBounds(extent.bufferByLayout(layout))
 
       val tileLayout =
         TileLayout(gridBounds.width, gridBounds.height, layout.tileCols, layout.tileRows)
 
-      // wrong relative keys (?) ^^ double check too
       val tile =
         GeoTiffMultibandTile(
           self.map { case (SpatialKey(col, row), tile) => //

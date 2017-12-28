@@ -20,7 +20,6 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.cog.{COGRDDReader, TiffMethods}
 import geotrellis.raster._
 import geotrellis.raster.merge.TileMergeMethods
-import geotrellis.raster.prototype.TilePrototypeMethods
 
 import com.typesafe.config.ConfigFactory
 
@@ -28,7 +27,6 @@ import java.net.URI
 
 class S3COGRDDReader[V <: CellGrid](
   implicit val tileMergeMethods: V => TileMergeMethods[V],
-           val tilePrototypeMethods: V => TilePrototypeMethods[V],
            val tiffMethods: TiffMethods[V]
 ) extends COGRDDReader[V] {
   @transient lazy val defaultThreads: Int = ConfigFactory.load().getThreads("geotrellis.s3.threads.rdd.read")

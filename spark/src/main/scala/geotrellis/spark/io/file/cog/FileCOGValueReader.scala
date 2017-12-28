@@ -17,7 +17,6 @@
 package geotrellis.spark.io.file.cog
 
 import geotrellis.raster._
-import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
@@ -41,7 +40,7 @@ class FileCOGValueReader(
 
   def reader[
     K: JsonFormat : SpatialComponent : ClassTag,
-    V <: CellGrid: TiffMethods: ? => TileMergeMethods[V]
+    V <: CellGrid: TiffMethods
   ](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
     val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
       attributeStore.read[COGLayerStorageMetadata[K]](LayerId(layerId.name, 0), "cog_metadata")

@@ -12,8 +12,6 @@ import java.net.URI
 import scala.reflect.ClassTag
 
 trait COGCollectionReader[V <: CellGrid] extends COGReader[V] {
-  import tiffMethods._
-
   def read[K: SpatialComponent: Boundable: JsonFormat: ClassTag](
     keyPath: BigInt => String,
     pathExists: String => Boolean,
@@ -22,7 +20,7 @@ trait COGCollectionReader[V <: CellGrid] extends COGReader[V] {
     readDefinitions: Map[SpatialKey, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])]],
     numPartitions: Option[Int] = None,
     threads: Int = defaultThreads
-  )(implicit getByteReader: URI => ByteReader): Seq[(K, V)] = {
+  )(implicit getByteReader: URI => ByteReader, tiffMethods: TiffMethods[V]): Seq[(K, V)] = {
     if (baseQueryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
     val ranges = if (baseQueryKeyBounds.length > 1)
@@ -35,23 +33,23 @@ trait COGCollectionReader[V <: CellGrid] extends COGReader[V] {
       if (!pathExists(keyPath(index))) Vector()
       else {
         val uri = fullPath(keyPath(index))
-        val baseKey = getKey[K](uri)
+        val baseKey = tiffMethods.getKey[K](uri)
 
         readDefinitions
           .get(baseKey.getComponent[SpatialKey])
           .flatMap(_.headOption)
           .map { case (spatialKey, overviewIndex, _, seq) =>
             val key = baseKey.setComponent(spatialKey)
-            val tiff = readTiff(uri, overviewIndex)
+            val tiff = tiffMethods.readTiff(uri, overviewIndex)
             val map = seq.map { case (gb, sk) => gb -> key.setComponent(sk) }.toMap
 
-            tileTiff(tiff, map)
+            tiffMethods.tileTiff(tiff, map)
           }
           .getOrElse(Vector())
       }
     }
-      .groupBy(_._1)
-      .map { case (key, (seq: Iterable[(K, V)])) => key -> seq.map(_._2).reduce(_ merge _) }
-      .toSeq
+    .groupBy(_._1)
+    .map { case (key, (seq: Iterable[(K, V)])) => key -> seq.map(_._2).reduce(_ merge _) }
+    .toSeq
   }
 }

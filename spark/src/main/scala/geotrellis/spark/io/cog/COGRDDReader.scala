@@ -17,8 +17,6 @@ import java.net.URI
 import scala.reflect.ClassTag
 
 trait COGRDDReader[V <: CellGrid] extends COGReader[V] {
-  import tiffMethods._
-
   def read[K: SpatialComponent: Boundable: JsonFormat: ClassTag](
     keyPath: BigInt => String,
     pathExists: String => Boolean,
@@ -27,8 +25,7 @@ trait COGRDDReader[V <: CellGrid] extends COGReader[V] {
     readDefinitions: Map[SpatialKey, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])]],
     numPartitions: Option[Int] = None,
     threads: Int = defaultThreads
-  )(implicit sc: SparkContext, getByteReader: URI => ByteReader): RDD[(K, V)] = {
-
+  )(implicit sc: SparkContext, getByteReader: URI => ByteReader, tiffMethods: TiffMethods[V]): RDD[(K, V)] = {
     if (baseQueryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
 
     val kwFormat = KryoWrapper(implicitly[JsonFormat[K]])
@@ -50,17 +47,17 @@ trait COGRDDReader[V <: CellGrid] extends COGReader[V] {
             if (!pathExists(keyPath(index))) Vector()
             else {
               val uri = fullPath(keyPath(index))
-              val baseKey = getKey[K](uri)(keyFormat)
+              val baseKey = tiffMethods.getKey[K](uri)(keyFormat)
 
               readDefinitions
                 .get(baseKey.getComponent[SpatialKey])
                 .flatMap(_.headOption)
                 .map { case (spatialKey, overviewIndex, _, seq) =>
                   val key = baseKey.setComponent(spatialKey)
-                  val tiff = readTiff(uri, overviewIndex)
+                  val tiff = tiffMethods.readTiff(uri, overviewIndex)
                   val map = seq.map { case (gb, sk) => gb -> key.setComponent(sk) }.toMap
 
-                  tileTiff(tiff, map)
+                  tiffMethods.tileTiff(tiff, map)
                 }
                 .getOrElse(Vector())
             }

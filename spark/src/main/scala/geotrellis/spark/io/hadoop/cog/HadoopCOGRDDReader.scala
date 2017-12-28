@@ -28,7 +28,6 @@ import java.net.URI
 
 class HadoopCOGRDDReader[V <: CellGrid](
   implicit val tileMergeMethods: V => TileMergeMethods[V],
-           val tilePrototypeMethods: V => TilePrototypeMethods[V],
            val tiffMethods: TiffMethods[V]
 ) extends COGRDDReader[V] {
   @transient lazy val defaultThreads: Int = ConfigFactory.load().getThreads("geotrellis.hadoop.threads.rdd.read")

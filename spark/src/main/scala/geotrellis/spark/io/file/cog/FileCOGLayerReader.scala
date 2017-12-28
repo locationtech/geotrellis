@@ -17,6 +17,7 @@
 package geotrellis.spark.io.file.cog
 
 import geotrellis.raster._
+import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
@@ -38,18 +39,17 @@ import scala.reflect.ClassTag
  * @param attributeStore  AttributeStore that contains metadata for corresponding LayerId
  */
 class FileCOGLayerReader(val attributeStore: AttributeStore, catalogPath: String)
-                        (implicit sc: SparkContext) extends FilteringCOGLayerReader[LayerId] with LazyLogging {
+                        (@transient implicit val sc: SparkContext) extends FilteringCOGLayerReader[LayerId] with LazyLogging {
 
   val defaultNumPartitions: Int = sc.defaultParallelism
 
-  implicit def getByteReader(uri: URI): ByteReader =
-    Filesystem.toMappedByteBuffer(uri.getPath)
+  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGRDDReader: ClassTag
+    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int, filterIndexOnly: Boolean) = {
-    val rddReader = implicitly[COGRDDReader[V]]
+    val rddReader = new FileCOGRDDReader[V]
 
     //if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 

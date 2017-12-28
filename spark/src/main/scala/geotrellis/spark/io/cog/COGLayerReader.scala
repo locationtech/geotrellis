@@ -34,23 +34,25 @@ import java.util.concurrent.Executors
 import java.util.ServiceLoader
 import java.net.URI
 
-trait COGLayerReader[ID] {
+import geotrellis.raster.merge.TileMergeMethods
+
+trait COGLayerReader[ID] extends Serializable {
   def defaultNumPartitions: Int
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGRDDReader: ClassTag
+    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGRDDReader: ClassTag
+    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](id: ID): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read(id, defaultNumPartitions)
 
   def reader[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGRDDReader: ClassTag
+    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ]: Reader[ID, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new Reader[ID, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
       def read(id: ID): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =

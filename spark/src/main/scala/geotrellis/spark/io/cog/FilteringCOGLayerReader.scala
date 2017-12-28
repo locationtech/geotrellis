@@ -17,6 +17,7 @@
 package geotrellis.spark.io.cog
 
 import geotrellis.raster.CellGrid
+import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.util._
@@ -43,36 +44,36 @@ abstract class FilteringCOGLayerReader[ID] extends COGLayerReader[ID] {
     */
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGRDDReader: ClassTag
+    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int, indexFilterOnly: Boolean): RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGRDDReader: ClassTag
+    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read(id, rasterQuery, numPartitions, false)
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGRDDReader: ClassTag
+    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]]): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read(id, rasterQuery, defaultNumPartitions)
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGRDDReader: ClassTag
+    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read(id, new LayerQuery[K, TileLayerMetadata[K]], numPartitions)
 
   def query[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGRDDReader: ClassTag
+    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](layerId: ID): BoundLayerQuery[K, TileLayerMetadata[K], RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, read(layerId, _))
 
   def query[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGRDDReader: ClassTag
+    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](layerId: ID, numPartitions: Int): BoundLayerQuery[K, TileLayerMetadata[K], RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, read(layerId, _, numPartitions))
 }

@@ -219,10 +219,16 @@ object COGLayerMetadata {
     val baseLayout = layoutScheme.levelForZoom(maxZoom).layout
 
     val pmin =
-      baseLayout.mapTransform.keyToExtent(keyBounds.minKey.getComponent[SpatialKey]).center
+      baseLayout
+        .mapTransform
+        .keyToExtent(keyBounds.minKey.getComponent[SpatialKey])
+        .center
 
     val pmax =
-      baseLayout.mapTransform.keyToExtent(keyBounds.maxKey.getComponent[SpatialKey]).center
+      baseLayout
+        .mapTransform
+        .keyToExtent(keyBounds.maxKey.getComponent[SpatialKey])
+        .center
 
     def getKeyBounds(layout: LayoutDefinition): KeyBounds[K] = {
       val (skMin, skMax) =

@@ -27,7 +27,6 @@ import java.net.URI
 
 class FileCOGCollectionReader[V <: CellGrid](
   implicit val tileMergeMethods: V => TileMergeMethods[V],
-           val tilePrototypeMethods: V => TilePrototypeMethods[V],
            val tiffMethods: TiffMethods[V]
 ) extends COGCollectionReader[V] {
   lazy val defaultThreads: Int = ConfigFactory.load().getThreads("geotrellis.file.threads.collection.read")

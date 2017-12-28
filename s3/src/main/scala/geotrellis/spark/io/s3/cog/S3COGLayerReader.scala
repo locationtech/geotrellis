@@ -18,6 +18,7 @@ package geotrellis.spark.io.s3.cog
 
 
 import geotrellis.raster.{CellGrid, RasterExtent}
+import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.s3._
@@ -45,7 +46,7 @@ class S3COGLayerReader(
   val bucket: String,
   val prefix: String,
   val getS3Client: () => S3Client = () => S3Client.DEFAULT
-)(implicit sc: SparkContext) extends FilteringCOGLayerReader[LayerId] with LazyLogging {
+)(@transient implicit val sc: SparkContext) extends FilteringCOGLayerReader[LayerId] with LazyLogging {
 
   val defaultNumPartitions: Int = sc.defaultParallelism
 
@@ -53,9 +54,9 @@ class S3COGLayerReader(
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGRDDReader: ClassTag
+    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int, filterIndexOnly: Boolean) = {
-    val rddReader = implicitly[COGRDDReader[V]]
+    val rddReader = new S3COGRDDReader[V]
     //if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
