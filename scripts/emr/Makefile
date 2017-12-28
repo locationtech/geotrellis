@@ -27,10 +27,13 @@ terraform-init:
 create-cluster:
 	cd terraform; terraform apply
 
+create-jupyter-cluster:
+	cd terraform ; TF_VAR_install_jupyter="true" terraform apply
+
 destroy-cluster:
 	cd terraform; terraform destroy
 
-proxy: 
+proxy:
 	cd terraform; aws emr socks --cluster-id ${CLUSTER_ID} --key-pair-file ${KEY_PAIR_FILE}
 
 ssh:

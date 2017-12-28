@@ -73,10 +73,21 @@ resource "aws_emr_cluster" "emr-spark-cluster" {
     }
   }
 
+  provisioner "file" {
+    source      = "boilerplate.js"
+    destination = "/tmp/bp.js"
+    connection {
+      type        = "ssh"
+      user        = "hadoop"
+      host        = "${aws_emr_cluster.emr-spark-cluster.master_public_dns}"
+      private_key = "${file("${var.pem_path}")}"
+    }
+  }
+
   provisioner "remote-exec" {
     inline=[
       "chmod +x /tmp/bootstrap.sh",
-      "/tmp/bootstrap.sh ${var.access_key} ${var.secret_key} ${var.s3_notebook_bucket} ${var.s3_notebook_prefix}"
+      "/tmp/bootstrap.sh ${var.access_key} ${var.secret_key} ${var.s3_notebook_bucket} ${var.s3_notebook_prefix} ${var.install_jupyter}"
     ]
     connection {
       type        = "ssh"
