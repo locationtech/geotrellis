@@ -27,8 +27,9 @@ import geotrellis.util._
 
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
-import java.net.URI
+import com.typesafe.config.ConfigFactory
 
+import java.net.URI
 import java.io.File
 
 import scala.reflect.ClassTag
@@ -38,8 +39,11 @@ import scala.reflect.ClassTag
  *
  * @param attributeStore  AttributeStore that contains metadata for corresponding LayerId
  */
-class FileCOGLayerReader(val attributeStore: AttributeStore, catalogPath: String)
-                        (@transient implicit val sc: SparkContext) extends FilteringCOGLayerReader[LayerId] with LazyLogging {
+class FileCOGLayerReader(
+  val attributeStore: AttributeStore,
+  val catalogPath: String,
+  val defaultThreads: Int = ConfigFactory.load().getThreads("geotrellis.file.threads.rdd.read")
+)(@transient implicit val sc: SparkContext) extends FilteringCOGLayerReader[LayerId] with LazyLogging {
 
   val defaultNumPartitions: Int = sc.defaultParallelism
 
@@ -49,8 +53,6 @@ class FileCOGLayerReader(val attributeStore: AttributeStore, catalogPath: String
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int, filterIndexOnly: Boolean) = {
-    val rddReader = new FileCOGRDDReader[V]
-
     //if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
@@ -115,14 +117,18 @@ class FileCOGLayerReader(val attributeStore: AttributeStore, catalogPath: String
         }
         .distinct
 
-    val rdd = rddReader.read[K](
-      keyPath            = keyPath,
-      pathExists         = { new File(_).isFile },
-      baseQueryKeyBounds = baseQueryKeyBounds,
-      decomposeBounds    = decompose,
-      readDefinitions    = readDefinitions.flatMap(_._2).groupBy(_._1),
-      numPartitions      = Some(numPartitions)
-    )
+    val rdd =
+      COGRDDReader
+        .read[K, V](
+          keyPath            = keyPath,
+          pathExists         = { new File(_).isFile },
+          fullPath           = { path => new URI(s"file://$path") },
+          baseQueryKeyBounds = baseQueryKeyBounds,
+          decomposeBounds    = decompose,
+          readDefinitions    = readDefinitions.flatMap(_._2).groupBy(_._1),
+          threads            = defaultThreads,
+          numPartitions      = Some(numPartitions)
+        )
 
     new ContextRDD(rdd, metadata)
   }

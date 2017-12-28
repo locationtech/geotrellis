@@ -1,6 +1,7 @@
 package geotrellis.spark.io.cog
 
 import geotrellis.raster.CellGrid
+import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.util.ByteReader
@@ -16,18 +17,23 @@ import java.net.URI
 
 import scala.reflect.ClassTag
 
-trait COGRDDReader[V <: CellGrid] extends COGReader[V] {
-  def read[K: SpatialComponent: Boundable: JsonFormat: ClassTag](
-    keyPath: BigInt => String,
-    pathExists: String => Boolean,
-    baseQueryKeyBounds: Seq[KeyBounds[K]],
-    decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
-    readDefinitions: Map[SpatialKey, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])]],
-    numPartitions: Option[Int] = None,
-    threads: Int = defaultThreads
-  )(implicit sc: SparkContext, getByteReader: URI => ByteReader, tiffMethods: TiffMethods[V]): RDD[(K, V)] = {
+object COGRDDReader {
+  def read[
+    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V])
+  ](
+     keyPath: BigInt => String, // keyPath
+     pathExists: String => Boolean, // check the path above exists
+     fullPath: String => URI, // add an fs prefix
+     baseQueryKeyBounds: Seq[KeyBounds[K]],
+     decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
+     readDefinitions: Map[SpatialKey, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])]],
+     threads: Int,
+     numPartitions: Option[Int] = None
+   )(implicit sc: SparkContext, getByteReader: URI => ByteReader): RDD[(K, V)] = {
     if (baseQueryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
 
+    val tiffMethods = implicitly[TiffMethods[V]]
     val kwFormat = KryoWrapper(implicitly[JsonFormat[K]])
 
     val ranges = if (baseQueryKeyBounds.length > 1)

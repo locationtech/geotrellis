@@ -25,7 +25,9 @@ import geotrellis.spark.io.index._
 import geotrellis.spark.io.s3._
 import geotrellis.util._
 
+import com.typesafe.config.ConfigFactory
 import spray.json.JsonFormat
+
 import java.net.URI
 
 import scala.reflect.ClassTag
@@ -39,7 +41,8 @@ class S3CollectionCOGLayerReader(
   val attributeStore: AttributeStore,
   val bucket: String,
   val prefix: String,
-  val getS3Client: () => S3Client = () => S3Client.DEFAULT
+  val getS3Client: () => S3Client = () => S3Client.DEFAULT,
+  val defaultThreads: Int = ConfigFactory.load().getThreads("geotrellis.s3.threads.collection.read")
 ) extends COGCollectionLayerReader[LayerId] with LazyLogging {
 
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, getS3Client())
@@ -48,7 +51,6 @@ class S3CollectionCOGLayerReader(
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](id: LayerId, rasterQuery: LayerQuery[K, TileLayerMetadata[K]], indexFilterOnly: Boolean) = {
-    val collectionReader = new S3COGCollectionReader[V]
     //if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
@@ -111,13 +113,17 @@ class S3CollectionCOGLayerReader(
         }
         .distinct
 
-    val seq = collectionReader.read[K](
-      keyPath            = keyPath,
-      pathExists         = { s3PathExists(_, getS3Client()) },
-      baseQueryKeyBounds = baseQueryKeyBounds,
-      decomposeBounds    = decompose,
-      readDefinitions    = readDefinitions.flatMap(_._2).groupBy(_._1)
-    )
+    val seq =
+      COGCollectionReader
+        .read[K, V](
+          keyPath            = keyPath,
+          pathExists         = { s3PathExists(_, getS3Client()) },
+          fullPath           = { path => new URI(s"s3://$path") },
+          baseQueryKeyBounds = baseQueryKeyBounds,
+          decomposeBounds    = decompose,
+          threads            = defaultThreads,
+          readDefinitions    = readDefinitions.flatMap(_._2).groupBy(_._1)
+        )
 
     new ContextCollection(seq, metadata)
   }

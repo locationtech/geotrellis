@@ -26,6 +26,7 @@ import geotrellis.spark.io.index._
 import geotrellis.util._
 
 import spray.json.JsonFormat
+import com.typesafe.config.ConfigFactory
 
 import java.net.URI
 import java.io.File
@@ -37,7 +38,11 @@ import scala.reflect.ClassTag
  *
  * @param attributeStore  AttributeStore that contains metadata for corresponding LayerId
  */
-class FileCOGCollectionLayerReader(val attributeStore: AttributeStore, catalogPath: String)
+class FileCOGCollectionLayerReader(
+  val attributeStore: AttributeStore,
+  val catalogPath: String,
+  val defaultThreads: Int = ConfigFactory.load().getThreads("geotrellis.file.threads.collection.read")
+)
   extends COGCollectionLayerReader[LayerId] with LazyLogging {
 
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
@@ -46,8 +51,6 @@ class FileCOGCollectionLayerReader(val attributeStore: AttributeStore, catalogPa
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], indexFilterOnly: Boolean) = {
-    val collectionReader = new FileCOGCollectionReader[V]
-
     // if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
@@ -111,13 +114,17 @@ class FileCOGCollectionLayerReader(val attributeStore: AttributeStore, catalogPa
         }
         .distinct
 
-    val seq = collectionReader.read[K](
-      keyPath            = keyPath,
-      pathExists         = { new File(_).isFile },
-      baseQueryKeyBounds = baseQueryKeyBounds,
-      decomposeBounds    = decompose,
-      readDefinitions    = readDefinitions.flatMap(_._2).groupBy(_._1)
-    )
+    val seq =
+      COGCollectionReader
+        .read[K, V](
+          keyPath            = keyPath,
+          pathExists         = { new File(_).isFile },
+          fullPath           = { path => new URI(s"file://$path") },
+          baseQueryKeyBounds = baseQueryKeyBounds,
+          decomposeBounds    = decompose,
+          threads            = defaultThreads,
+          readDefinitions    = readDefinitions.flatMap(_._2).groupBy(_._1)
+        )
 
     new ContextCollection(seq, metadata)
   }

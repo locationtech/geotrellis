@@ -16,7 +16,6 @@
 
 package geotrellis.spark.io.s3.cog
 
-
 import geotrellis.raster.{CellGrid, RasterExtent}
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.spark._
@@ -24,15 +23,13 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.s3._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.index._
-import geotrellis.spark.io.s3.util.S3RangeReader
 import geotrellis.util._
 
-import com.amazonaws.services.s3.AmazonS3URI
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
-import org.apache.spark.rdd.RDD
-
 import java.net.URI
+
+import com.typesafe.config.ConfigFactory
 
 import scala.reflect.ClassTag
 
@@ -45,7 +42,8 @@ class S3COGLayerReader(
   val attributeStore: AttributeStore,
   val bucket: String,
   val prefix: String,
-  val getS3Client: () => S3Client = () => S3Client.DEFAULT
+  val getS3Client: () => S3Client = () => S3Client.DEFAULT,
+  val defaultThreads: Int = ConfigFactory.load().getThreads("geotrellis.s3.threads.rdd.read")
 )(@transient implicit val sc: SparkContext) extends FilteringCOGLayerReader[LayerId] with LazyLogging {
 
   val defaultNumPartitions: Int = sc.defaultParallelism
@@ -56,7 +54,6 @@ class S3COGLayerReader(
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int, filterIndexOnly: Boolean) = {
-    val rddReader = new S3COGRDDReader[V]
     //if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
@@ -119,15 +116,20 @@ class S3COGLayerReader(
         }
         .distinct
 
-    val rdd = rddReader.read[K](
-      keyPath            = keyPath,
-      pathExists         = { s3PathExists(_, getS3Client()) },
-      baseQueryKeyBounds = baseQueryKeyBounds,
-      decomposeBounds    = decompose,
-      readDefinitions    = readDefinitions.flatMap(_._2).groupBy(_._1),
-      numPartitions      = Some(numPartitions)
-    )
+    val rdd =
+      COGRDDReader
+        .read[K, V](
+          keyPath            = keyPath,
+          pathExists         = { s3PathExists(_, getS3Client()) },
+          fullPath           = { path => new URI(s"s3://$path") },
+          baseQueryKeyBounds = baseQueryKeyBounds,
+          decomposeBounds    = decompose,
+          readDefinitions    = readDefinitions.flatMap(_._2).groupBy(_._1),
+          threads            = defaultThreads,
+          numPartitions      = Some(numPartitions)
+      )
 
     new ContextRDD(rdd, metadata)
   }
+
 }
