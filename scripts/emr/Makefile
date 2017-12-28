@@ -25,13 +25,13 @@ terraform-init:
 	cd terraform; terraform init
 
 create-cluster:
-	cd terraform; terraform apply
+	cd terraform; TF_VAR_s3_notebook_bucket="blah" TF_VAR_s3_notebook_prefix="blah" terraform apply
 
 create-jupyter-cluster:
 	cd terraform ; TF_VAR_install_jupyter="true" terraform apply
 
 destroy-cluster:
-	cd terraform; terraform destroy
+	cd terraform; TF_VAR_s3_notebook_bucket="blah" TF_VAR_s3_notebook_prefix="blah" terraform destroy
 
 proxy:
 	cd terraform; aws emr socks --cluster-id ${CLUSTER_ID} --key-pair-file ${KEY_PAIR_FILE}

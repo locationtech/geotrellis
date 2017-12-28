@@ -56,11 +56,6 @@ at startup.  The same mechanism can be used to set other variables.
 **Note:** long startup times (10 minutes or more) probably indicates that you have
 chosen a spot price that is too low.
 
-**Note:** Due to the lack of sophistication in Terraform, you will also be
-prompted to set the value of `TF_VAR_s3_notebook_bucket` and
-`TF_VAR_s3_notebook_prefix`.  These variables are only used by Jupyter-enabled
-clusters and can be set arbitrarily for Zeppelin-only clusters.
-
 This basic cluster will have a running Zeppelin interface that can be accessed
 by first creating an SSH tunnel with the command
 
