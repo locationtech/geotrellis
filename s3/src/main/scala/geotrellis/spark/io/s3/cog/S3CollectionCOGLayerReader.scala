@@ -46,9 +46,8 @@ class S3CollectionCOGLayerReader(
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGCollectionReader: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
-  ](id: LayerId, rasterQuery: LayerQuery[K, M], indexFilterOnly: Boolean) = {
+    V <: CellGrid: COGCollectionReader: ClassTag
+  ](id: LayerId, rasterQuery: LayerQuery[K, TileLayerMetadata[K]], indexFilterOnly: Boolean) = {
     val collectionReader = implicitly[COGCollectionReader[V]]
     //if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
@@ -57,7 +56,7 @@ class S3CollectionCOGLayerReader(
 
     val metadata = cogLayerMetadata.tileLayerMetadata(id.zoom)
 
-    val queryKeyBounds: Seq[KeyBounds[K]] = rasterQuery(metadata.asInstanceOf[M])
+    val queryKeyBounds: Seq[KeyBounds[K]] = rasterQuery(metadata)
 
     val readDefinitions: Seq[(ZoomRange, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])])] =
       queryKeyBounds.map { case KeyBounds(minKey, maxKey) =>
@@ -120,7 +119,7 @@ class S3CollectionCOGLayerReader(
       readDefinitions    = readDefinitions.flatMap(_._2).groupBy(_._1)
     )
 
-    new ContextCollection(seq, metadata).asInstanceOf[Seq[(K, V)] with Metadata[M]]
+    new ContextCollection(seq, metadata)
   }
 }
 

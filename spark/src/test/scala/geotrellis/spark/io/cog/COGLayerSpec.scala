@@ -125,7 +125,7 @@ class COGLayerSpec extends FunSpec
         iter => withSinglebandGeoTiffSegmentConstructMethods(iter)*/
 
 
-      val layer = reader.read[SpatialKey, Tile, TileLayerMetadata[SpatialKey]](LayerId("landsat_cog", 12))
+      val layer = reader.read[SpatialKey, Tile](LayerId("landsat_cog", 12))
 
       val tile: Tile = layer.stitch
 

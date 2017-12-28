@@ -53,9 +53,8 @@ class S3COGLayerReader(
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGRDDReader: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
-  ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
+    V <: CellGrid: COGRDDReader: ClassTag
+  ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int, filterIndexOnly: Boolean) = {
     val rddReader = implicitly[COGRDDReader[V]]
     //if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
@@ -64,7 +63,7 @@ class S3COGLayerReader(
 
     val metadata = cogLayerMetadata.tileLayerMetadata(id.zoom)
 
-    val queryKeyBounds: Seq[KeyBounds[K]] = tileQuery(metadata.asInstanceOf[M])
+    val queryKeyBounds: Seq[KeyBounds[K]] = tileQuery(metadata)
 
     val readDefinitions: Seq[(ZoomRange, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])])] =
       queryKeyBounds.map { case KeyBounds(minKey, maxKey) =>
@@ -128,6 +127,6 @@ class S3COGLayerReader(
       numPartitions      = Some(numPartitions)
     )
 
-    new ContextRDD(rdd, metadata).asInstanceOf[RDD[(K, V)] with Metadata[M]]
+    new ContextRDD(rdd, metadata)
   }
 }

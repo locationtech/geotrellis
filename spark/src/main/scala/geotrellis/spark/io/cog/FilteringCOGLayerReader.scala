@@ -40,46 +40,39 @@ abstract class FilteringCOGLayerReader[ID] extends COGLayerReader[ID] {
     *                        are not inside the query key bounds.
     * @tparam K              Type of RDD Key (ex: SpatialKey)
     * @tparam V              Type of RDD Value (ex: Tile or MultibandTile )
-    * @tparam M              Type of Metadata associated with the RDD[(K,V)]
     */
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGRDDReader: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
-  ](id: ID, rasterQuery: LayerQuery[K, M], numPartitions: Int, indexFilterOnly: Boolean): RDD[(K, V)] with Metadata[M]
+    V <: CellGrid: COGRDDReader: ClassTag
+  ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int, indexFilterOnly: Boolean): RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGRDDReader: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
-  ](id: ID, rasterQuery: LayerQuery[K, M], numPartitions: Int): RDD[(K, V)] with Metadata[M] =
+    V <: CellGrid: COGRDDReader: ClassTag
+  ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read(id, rasterQuery, numPartitions, false)
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGRDDReader: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
-  ](id: ID, rasterQuery: LayerQuery[K, M]): RDD[(K, V)] with Metadata[M] =
+    V <: CellGrid: COGRDDReader: ClassTag
+  ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]]): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read(id, rasterQuery, defaultNumPartitions)
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGRDDReader: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
-  ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[M] =
-    read(id, new LayerQuery[K, M], numPartitions)
+    V <: CellGrid: COGRDDReader: ClassTag
+  ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
+    read(id, new LayerQuery[K, TileLayerMetadata[K]], numPartitions)
 
   def query[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGRDDReader: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
-  ](layerId: ID): BoundLayerQuery[K, M, RDD[(K, V)] with Metadata[M]] =
+    V <: CellGrid: COGRDDReader: ClassTag
+  ](layerId: ID): BoundLayerQuery[K, TileLayerMetadata[K], RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, read(layerId, _))
 
   def query[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGRDDReader: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
-  ](layerId: ID, numPartitions: Int): BoundLayerQuery[K, M, RDD[(K, V)] with Metadata[M]] =
+    V <: CellGrid: COGRDDReader: ClassTag
+  ](layerId: ID, numPartitions: Int): BoundLayerQuery[K, TileLayerMetadata[K], RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, read(layerId, _, numPartitions))
 }

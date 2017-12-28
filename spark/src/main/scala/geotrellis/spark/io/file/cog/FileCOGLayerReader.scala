@@ -16,8 +16,6 @@
 
 package geotrellis.spark.io.file.cog
 
-import java.io.File
-
 import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.io._
@@ -25,10 +23,12 @@ import geotrellis.spark.io.cog._
 import geotrellis.spark.io.file.KeyPathGenerator
 import geotrellis.spark.io.index._
 import geotrellis.util._
+
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
 import java.net.URI
+
+import java.io.File
 
 import scala.reflect.ClassTag
 
@@ -47,9 +47,8 @@ class FileCOGLayerReader(val attributeStore: AttributeStore, catalogPath: String
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGRDDReader: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
-  ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
+    V <: CellGrid: COGRDDReader: ClassTag
+  ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int, filterIndexOnly: Boolean) = {
     val rddReader = implicitly[COGRDDReader[V]]
 
     //if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
@@ -59,7 +58,7 @@ class FileCOGLayerReader(val attributeStore: AttributeStore, catalogPath: String
 
     val metadata = cogLayerMetadata.tileLayerMetadata(id.zoom)
 
-    val queryKeyBounds: Seq[KeyBounds[K]] = tileQuery(metadata.asInstanceOf[M])
+    val queryKeyBounds: Seq[KeyBounds[K]] = tileQuery(metadata)
 
     val readDefinitions: Seq[(ZoomRange, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])])] =
       queryKeyBounds.map { case KeyBounds(minKey, maxKey) =>
@@ -125,6 +124,6 @@ class FileCOGLayerReader(val attributeStore: AttributeStore, catalogPath: String
       numPartitions      = Some(numPartitions)
     )
 
-    new ContextRDD(rdd, metadata).asInstanceOf[RDD[(K, V)] with Metadata[M]]
+    new ContextRDD(rdd, metadata)
   }
 }

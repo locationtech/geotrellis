@@ -39,25 +39,22 @@ trait COGLayerReader[ID] {
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGRDDReader: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
-  ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[M]
+    V <: CellGrid: COGRDDReader: ClassTag
+  ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGRDDReader: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
-  ](id: ID): RDD[(K, V)] with Metadata[M] =
+    V <: CellGrid: COGRDDReader: ClassTag
+  ](id: ID): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read(id, defaultNumPartitions)
 
   def reader[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: COGRDDReader: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
-  ]: Reader[ID, RDD[(K, V)] with Metadata[M]] =
-    new Reader[ID, RDD[(K, V)] with Metadata[M]] {
-      def read(id: ID): RDD[(K, V)] with Metadata[M] =
-        COGLayerReader.this.read[K, V, M](id)
+    V <: CellGrid: COGRDDReader: ClassTag
+  ]: Reader[ID, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
+    new Reader[ID, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
+      def read(id: ID): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
+        COGLayerReader.this.read[K, V](id)
     }
 }
 
