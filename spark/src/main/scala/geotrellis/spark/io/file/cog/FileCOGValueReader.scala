@@ -29,7 +29,6 @@ import spray.json._
 import scala.reflect.ClassTag
 
 import java.net.URI
-import java.io.File
 
 class FileCOGValueReader(
   val attributeStore: AttributeStore,
@@ -40,29 +39,11 @@ class FileCOGValueReader(
 
   def reader[
     K: JsonFormat : SpatialComponent : ClassTag,
-    V <: CellGrid: TiffMethods
-  ](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
-    val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
-      attributeStore.read[COGLayerStorageMetadata[K]](LayerId(layerId.name, 0), "cog_metadata")
+    V <: CellGrid : TiffMethods
+  ](layerId: LayerId): Reader[K, V] = {
+    def keyPath(key: K, maxWidth: Int, baseKeyIndex: KeyIndex[K], zoomRange: ZoomRange): String =
+      (KeyPathGenerator(catalogPath, s"${layerId.name}/${zoomRange.slug}", baseKeyIndex, maxWidth) andThen (_ ++ s".$Extension"))(key)
 
-    val tiffMethods: TiffMethods[V] = implicitly[TiffMethods[V]]
-
-    def read(key: K): V = {
-      val (zoomRange, spatialKey, overviewIndex, gridBounds) =
-        cogLayerMetadata.getReadDefinition(key.getComponent[SpatialKey], layerId.zoom)
-
-      val baseKeyIndex = keyIndexes(zoomRange)
-
-      val maxWidth = Index.digits(baseKeyIndex.toIndex(baseKeyIndex.keyBounds.maxKey))
-      val keyPath =
-        KeyPathGenerator(catalogPath, s"${layerId.name}/${zoomRange.slug}", baseKeyIndex, maxWidth) andThen (_ ++ s".$Extension")
-
-      Filesystem.ensureDirectory(new File(catalogPath, s"${layerId.name}/${zoomRange.slug}").getAbsolutePath)
-
-      val uri = new URI(keyPath(key.setComponent(spatialKey)))
-      val tiff = tiffMethods.readTiff(uri, overviewIndex)
-
-      tiffMethods.cropTiff(tiff, gridBounds)
-    }
+    baseReader[K, V](layerId, keyPath, new URI(_))
   }
 }

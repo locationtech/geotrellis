@@ -44,31 +44,19 @@ class S3COGValueReader(
   def reader[
     K: JsonFormat: SpatialComponent : ClassTag,
     V <: CellGrid: TiffMethods
-  ](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
-    val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
-      attributeStore.read[COGLayerStorageMetadata[K]](LayerId(layerId.name, 0), "cog_metadata")
+  ](layerId: LayerId): Reader[K, V] = {
+    def keyPath(key: K, maxWidth: Int, baseKeyIndex: KeyIndex[K], zoomRange: ZoomRange): String =
+      s"$bucket/$prefix/${Index.encode(baseKeyIndex.toIndex(key), maxWidth)}.${Extension}"
 
-    val tiffMethods: TiffMethods[V] = implicitly[TiffMethods[V]]
-
-    def read(key: K): V = {
-      val (zoomRange, spatialKey, overviewIndex, gridBounds) =
-        cogLayerMetadata.getReadDefinition(key.getComponent[SpatialKey], layerId.zoom)
-
-      val baseKeyIndex = keyIndexes(zoomRange)
-
-      val maxWidth = Index.digits(baseKeyIndex.toIndex(baseKeyIndex.keyBounds.maxKey))
-      val path = (k: K) => s"$bucket/$prefix/${Index.encode(baseKeyIndex.toIndex(k), maxWidth)}.${Extension}"
-
-      val uri = new URI(s"s3://${path(key.setComponent(spatialKey))}")
-
-      try {
-        val tiff = tiffMethods.readTiff(uri, overviewIndex)
-        tiffMethods.cropTiff(tiff, gridBounds)
-      } catch {
+    baseReader[K, V](
+      layerId,
+      keyPath,
+      path => new URI(s"s3://${path}"),
+      key => {
         case e: AmazonS3Exception if e.getStatusCode == 404 =>
           throw new ValueNotFoundError(key, layerId)
       }
-    }
+    )
   }
 }
 

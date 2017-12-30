@@ -20,15 +20,57 @@ import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.index._
+import geotrellis.util._
+
 import spray.json._
+import java.net.URI
 
 import scala.reflect._
 
 trait COGValueReader[ID] {
   val attributeStore: AttributeStore
 
+  implicit def getByteReader(uri: URI): ByteReader
+  implicit def idLayerId(id: ID): LayerId
+
+  def reader[
+    K: JsonFormat : SpatialComponent : ClassTag,
+    V <: CellGrid : TiffMethods
+  ](layerId: LayerId): Reader[K, V]
+
   /** Produce a key value reader for a specific layer, prefetching layer metadata once at construction time */
-  def reader[K: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid: TiffMethods](layerId: ID): Reader[K, V]
+  def baseReader[
+    K: JsonFormat: SpatialComponent: ClassTag,
+    V <: CellGrid: TiffMethods
+  ](
+    layerId: ID,
+    keyPath: (K, Int, KeyIndex[K], ZoomRange) => String, // Key, maxWidth, toIndex, zoomRange
+    fullPath: String => URI,
+    exceptionHandler: K => PartialFunction[Throwable, Nothing] = { key: K => { case e: Throwable => throw e }: PartialFunction[Throwable, Nothing] }
+   ): Reader[K, V] = new Reader[K, V] {
+    val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
+      attributeStore.read[COGLayerStorageMetadata[K]](LayerId(layerId.name, 0), "cog_metadata")
+
+    val tiffMethods: TiffMethods[V] = implicitly[TiffMethods[V]]
+
+    def read(key: K): V = {
+      val (zoomRange, spatialKey, overviewIndex, gridBounds) =
+        cogLayerMetadata.getReadDefinition(key.getComponent[SpatialKey], layerId.zoom)
+
+      val baseKeyIndex = keyIndexes(zoomRange)
+
+      val maxWidth = Index.digits(baseKeyIndex.toIndex(baseKeyIndex.keyBounds.maxKey))
+      val uri = fullPath(keyPath(key.setComponent(spatialKey), maxWidth, baseKeyIndex, zoomRange))
+
+      try {
+        val tiff = tiffMethods.readTiff(uri, overviewIndex)
+        tiffMethods.cropTiff(tiff, gridBounds)
+      } catch {
+        case th: Throwable => exceptionHandler(key)(th)
+      }
+    }
+  }
 
   def overzoomingReader[
     K: JsonFormat: SpatialComponent: ClassTag,
