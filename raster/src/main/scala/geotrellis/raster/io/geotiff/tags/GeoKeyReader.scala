@@ -33,6 +33,10 @@ object GeoKeyReader {
     geoKeyDirectory: GeoKeyDirectory, index: Int = 0
   ): GeoKeyDirectory = {
 
+    /**
+      * Attempt to read GeoKey Entry; if tag does not match then assume there are no
+      * more valid geokeys and the header was written incorrectly so return `None`
+      */
     def readGeoKeyEntry(keyMetadata: GeoKeyMetadata,
       geoKeyDirectory: GeoKeyDirectory): Option[GeoKeyDirectory] = keyMetadata.tiffTagLocation match {
       case 0 => Some(readShort(keyMetadata, geoKeyDirectory))
