@@ -18,23 +18,23 @@ package geotrellis.spark.io.cog
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.raster.merge.TileMergeMethods
+import geotrellis.spark.io.index.KeyIndex
 import geotrellis.util._
 import geotrellis.raster.CellGrid
 
-import org.apache.spark.rdd._
-import org.apache.spark.SparkContext
-import spray.json._
 import scalaz.std.vector._
 import scalaz.concurrent.{Strategy, Task}
 import scalaz.stream.{Process, nondeterminism}
+import org.apache.spark.rdd._
+import org.apache.spark.SparkContext
+import spray.json._
 
 import scala.reflect._
 
 import java.util.concurrent.Executors
 import java.util.ServiceLoader
 import java.net.URI
-
-import geotrellis.raster.merge.TileMergeMethods
 
 trait COGLayerReader[ID] extends Serializable {
   def defaultNumPartitions: Int
@@ -43,6 +43,20 @@ trait COGLayerReader[ID] extends Serializable {
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
+
+  def baseRead[
+    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
+  ](
+     id: LayerId,
+     tileQuery: LayerQuery[K, TileLayerMetadata[K]],
+     numPartitions: Int,
+     filterIndexOnly: Boolean,
+     getKeyPath: (ZoomRange, Int) => BigInt => String,
+     pathExists: String => Boolean, // check the path above exists
+     fullPath: String => URI, // add an fs prefix
+     defaultThreads: Int
+   )(implicit sc: SparkContext, getByteReader: URI => ByteReader): RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,

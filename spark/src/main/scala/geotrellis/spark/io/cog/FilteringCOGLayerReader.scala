@@ -16,18 +16,24 @@
 
 package geotrellis.spark.io.cog
 
-import geotrellis.raster.CellGrid
+import geotrellis.raster.{CellGrid, RasterExtent}
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.index.{Index, KeyIndex}
 import geotrellis.util._
 
 import org.apache.spark.rdd._
 import spray.json._
+import org.apache.spark.SparkContext
+
+import java.net.URI
 
 import scala.reflect._
 
 abstract class FilteringCOGLayerReader[ID] extends COGLayerReader[ID] {
+
+  val attributeStore: AttributeStore
 
   /** read
     *
@@ -46,6 +52,98 @@ abstract class FilteringCOGLayerReader[ID] extends COGLayerReader[ID] {
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int, indexFilterOnly: Boolean): RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
+
+  def baseRead[
+    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
+  ](
+    id: LayerId,
+    tileQuery: LayerQuery[K, TileLayerMetadata[K]],
+    numPartitions: Int,
+    filterIndexOnly: Boolean,
+    getKeyPath: (ZoomRange, Int) => BigInt => String,
+    pathExists: String => Boolean, // check the path above exists
+    fullPath: String => URI, // add an fs prefix
+    defaultThreads: Int
+  )(implicit sc: SparkContext, getByteReader: URI => ByteReader): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] = {
+    //if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
+
+    val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
+      attributeStore.read[COGLayerStorageMetadata[K]](LayerId(id.name, 0), "cog_metadata")
+
+    val metadata = cogLayerMetadata.tileLayerMetadata(id.zoom)
+
+    val queryKeyBounds: Seq[KeyBounds[K]] = tileQuery(metadata)
+
+    val readDefinitions: Seq[(ZoomRange, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])])] =
+      queryKeyBounds.map { case KeyBounds(minKey, maxKey) =>
+        cogLayerMetadata.getReadDefinitions(
+          KeyBounds(minKey.getComponent[SpatialKey], maxKey.getComponent[SpatialKey]),
+          id.zoom
+        )
+      }
+
+    val zoomRange = readDefinitions.head._1
+    val baseKeyIndex = keyIndexes(zoomRange)
+
+    val maxWidth = Index.digits(baseKeyIndex.toIndex(baseKeyIndex.keyBounds.maxKey))
+    val keyPath: BigInt => String = getKeyPath(zoomRange, maxWidth)
+    val decompose = (bounds: KeyBounds[K]) => baseKeyIndex.indexRanges(bounds)
+
+    val baseLayout = cogLayerMetadata.layoutForZoom(zoomRange.minZoom)
+    val layout = cogLayerMetadata.layoutForZoom(id.zoom)
+
+    val baseKeyBounds = cogLayerMetadata.zoomRangeInfoFor(zoomRange.minZoom)._2
+
+    def transformKeyBounds(keyBounds: KeyBounds[K]): KeyBounds[K] = {
+      val KeyBounds(minKey, maxKey) = keyBounds
+      val extent = layout.extent
+      val sourceRe = RasterExtent(extent, layout.layoutCols, layout.layoutRows)
+      val targetRe = RasterExtent(extent, baseLayout.layoutCols, baseLayout.layoutRows)
+
+      val minSpatialKey = minKey.getComponent[SpatialKey]
+      val (minCol, minRow) = {
+        val (x, y) = sourceRe.gridToMap(minSpatialKey.col, minSpatialKey.row)
+        targetRe.mapToGrid(x, y)
+      }
+
+      val maxSpatialKey = maxKey.getComponent[SpatialKey]
+      val (maxCol, maxRow) = {
+        val (x, y) = sourceRe.gridToMap(maxSpatialKey.col, maxSpatialKey.row)
+        targetRe.mapToGrid(x, y)
+      }
+
+      KeyBounds(
+        minKey.setComponent(SpatialKey(minCol, minRow)),
+        maxKey.setComponent(SpatialKey(maxCol, maxRow))
+      )
+    }
+
+    val baseQueryKeyBounds: Seq[KeyBounds[K]] =
+      queryKeyBounds
+        .flatMap { qkb =>
+          transformKeyBounds(qkb).intersect(baseKeyBounds) match {
+            case EmptyBounds => None
+            case kb: KeyBounds[K] => Some(kb)
+          }
+        }
+        .distinct
+
+    val rdd =
+      COGRDDReader
+        .read[K, V](
+          keyPath            = keyPath,
+          pathExists         = pathExists,
+          fullPath           = { path => new URI(s"file://$path") },
+          baseQueryKeyBounds = baseQueryKeyBounds,
+          decomposeBounds    = decompose,
+          readDefinitions    = readDefinitions.flatMap(_._2).groupBy(_._1),
+          threads            = defaultThreads,
+          numPartitions      = Some(numPartitions)
+        )
+
+    new ContextRDD(rdd, metadata)
+  }
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
