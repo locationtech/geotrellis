@@ -22,7 +22,6 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.file.KeyPathGenerator
-import geotrellis.spark.io.index._
 import geotrellis.util._
 
 import org.apache.spark.SparkContext

@@ -20,7 +20,7 @@ import geotrellis.raster.{CellGrid, RasterExtent}
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.index.{Index, KeyIndex}
+import geotrellis.spark.io.index.Index
 import geotrellis.util._
 
 import org.apache.spark.rdd._
@@ -65,7 +65,10 @@ abstract class FilteringCOGLayerReader[ID] extends COGLayerReader[ID] {
     pathExists: String => Boolean, // check the path above exists
     fullPath: String => URI, // add an fs prefix
     defaultThreads: Int
-  )(implicit sc: SparkContext, getByteReader: URI => ByteReader): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] = {
+  )(implicit sc: SparkContext,
+             getByteReader: URI => ByteReader,
+             idToLayerId: ID => LayerId
+  ): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] = {
     //if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =

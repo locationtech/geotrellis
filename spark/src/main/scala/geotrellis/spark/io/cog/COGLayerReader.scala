@@ -48,7 +48,7 @@ trait COGLayerReader[ID] extends Serializable {
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](
-     id: LayerId,
+     id: ID,
      tileQuery: LayerQuery[K, TileLayerMetadata[K]],
      numPartitions: Int,
      filterIndexOnly: Boolean,
@@ -56,7 +56,10 @@ trait COGLayerReader[ID] extends Serializable {
      pathExists: String => Boolean, // check the path above exists
      fullPath: String => URI, // add an fs prefix
      defaultThreads: Int
-   )(implicit sc: SparkContext, getByteReader: URI => ByteReader): RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
+   )(implicit sc: SparkContext,
+              getByteReader: URI => ByteReader,
+              idIdentity: ID => LayerId
+   ): RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,

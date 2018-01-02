@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io.s3.cog
 
-import geotrellis.raster.{CellGrid, RasterExtent}
+import geotrellis.raster.CellGrid
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.spark._
 import geotrellis.spark.io._
@@ -51,82 +51,17 @@ class S3CollectionCOGLayerReader(
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](id: LayerId, rasterQuery: LayerQuery[K, TileLayerMetadata[K]], indexFilterOnly: Boolean) = {
-    //if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
+    def getKeyPath(zoomRange: ZoomRange, maxWidth: Int): BigInt => String =
+      (index: BigInt) => s"$bucket/${makePath(prefix, Index.encode(index, maxWidth))}.${Extension}"
 
-    val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
-      attributeStore.read[COGLayerStorageMetadata[K]](LayerId(id.name, 0), "cog_metadata")
-
-    val metadata = cogLayerMetadata.tileLayerMetadata(id.zoom)
-
-    val queryKeyBounds: Seq[KeyBounds[K]] = rasterQuery(metadata)
-
-    val readDefinitions: Seq[(ZoomRange, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])])] =
-      queryKeyBounds.map { case KeyBounds(minKey, maxKey) =>
-        cogLayerMetadata.getReadDefinitions(
-          KeyBounds(minKey.getComponent[SpatialKey], maxKey.getComponent[SpatialKey]),
-          id.zoom
-        )
-      }
-
-    val zoomRange = readDefinitions.head._1
-    val baseKeyIndex = keyIndexes(zoomRange)
-    val maxWidth = Index.digits(baseKeyIndex.toIndex(baseKeyIndex.keyBounds.maxKey))
-    val keyPath = (index: BigInt) => s"$bucket/${makePath(prefix, Index.encode(index, maxWidth))}.${Extension}"
-    val decompose = (bounds: KeyBounds[K]) => baseKeyIndex.indexRanges(bounds)
-
-    val baseLayout = cogLayerMetadata.layoutForZoom(zoomRange.minZoom)
-    val layout = cogLayerMetadata.layoutForZoom(id.zoom)
-
-    val baseKeyBounds = cogLayerMetadata.zoomRangeInfoFor(zoomRange.minZoom)._2
-
-    def transformKeyBounds(keyBounds: KeyBounds[K]): KeyBounds[K] = {
-      val KeyBounds(minKey, maxKey) = keyBounds
-      val extent = layout.extent
-      val sourceRe = RasterExtent(extent, layout.layoutCols, layout.layoutRows)
-      val targetRe = RasterExtent(extent, baseLayout.layoutCols, baseLayout.layoutRows)
-
-      val minSpatialKey = minKey.getComponent[SpatialKey]
-      val (minCol, minRow) = {
-        val (x, y) = sourceRe.gridToMap(minSpatialKey.col, minSpatialKey.row)
-        targetRe.mapToGrid(x, y)
-      }
-
-      val maxSpatialKey = maxKey.getComponent[SpatialKey]
-      val (maxCol, maxRow) = {
-        val (x, y) = sourceRe.gridToMap(maxSpatialKey.col, maxSpatialKey.row)
-        targetRe.mapToGrid(x, y)
-      }
-
-      KeyBounds(
-        minKey.setComponent(SpatialKey(minCol, minRow)),
-        maxKey.setComponent(SpatialKey(maxCol, maxRow))
-      )
-    }
-
-    val baseQueryKeyBounds: Seq[KeyBounds[K]] =
-      queryKeyBounds
-        .flatMap { qkb =>
-          transformKeyBounds(qkb).intersect(baseKeyBounds) match {
-            case EmptyBounds => None
-            case kb: KeyBounds[K] => Some(kb)
-          }
-        }
-        .distinct
-
-    val seq =
-      COGCollectionReader
-        .read[K, V](
-          keyPath            = keyPath,
-          pathExists         = { s3PathExists(_, getS3Client()) },
-          fullPath           = { path => new URI(s"s3://$path") },
-          baseQueryKeyBounds = baseQueryKeyBounds,
-          decomposeBounds    = decompose,
-          threads            = defaultThreads,
-          readDefinitions    = readDefinitions.flatMap(_._2).groupBy(_._1)
-        )
-
-    new ContextCollection(seq, metadata)
+    baseRead[K, V](
+      id              = id,
+      tileQuery       = rasterQuery,
+      indexFilterOnly = indexFilterOnly,
+      getKeyPath      = getKeyPath,
+      pathExists      = { s3PathExists(_, getS3Client()) },
+      fullPath        = { path => new URI(s"s3://$path") },
+      defaultThreads  = defaultThreads
+    )
   }
 }
-
-

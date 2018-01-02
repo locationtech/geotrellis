@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io.s3.cog
 
-import geotrellis.raster.{CellGrid, RasterExtent}
+import geotrellis.raster.CellGrid
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.spark._
 import geotrellis.spark.io._
