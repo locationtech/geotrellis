@@ -339,9 +339,9 @@ ${sortedMeta.map({ case (k,v) => s"            ${k}: ${v}"}).mkString("\n")}
 
     features.foreach { f =>
       f.getType match {
-        case POINT => points.append(f)
-        case LINESTRING => lines.append(f)
-        case POLYGON => polys.append(f)
+        case POINT => points += f
+        case LINESTRING => lines += f
+        case POLYGON => polys += f
         case _ => Unit // `UNKNOWN` or `Unrecognized`.
       }
     }
