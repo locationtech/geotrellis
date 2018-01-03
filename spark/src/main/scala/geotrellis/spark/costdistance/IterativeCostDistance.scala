@@ -65,7 +65,7 @@ object IterativeCostDistance {
       other
     }
     def add(pair: KeyCostPair): Unit = {
-      this.synchronized { list.append(pair) }
+      this.synchronized { list += pair }
     }
     def isZero: Boolean = list.isEmpty
     def merge(other: AccumulatorV2[KeyCostPair, Changes]): Unit =
@@ -96,7 +96,7 @@ object IterativeCostDistance {
 
     var row = bounds.rowMin; while (row <= bounds.rowMax) {
       var col = bounds.colMin; while (col <= bounds.colMax) {
-        keys.append(SpatialKey(col, row))
+        keys += SpatialKey(col, row)
         col += 1
       }
       row += 1
