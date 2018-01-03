@@ -1,6 +1,16 @@
 Changelog
 =========
 
+1.2.1
+_____
+*2018 Jan 3*
+
+Fixes
+^^^^^
+
+- `GeoTiffSegmentLayout.getIntersectingSegments bounds checking <https://github.com/locationtech/geotrellis/pull/2534>`__
+- `Fix for area of vectorizer that can throw topology exceptions <https://github.com/locationtech/geotrellis/pull/2530>`__
+
 1.2.0
 -----
 *2017 Nov 6*
