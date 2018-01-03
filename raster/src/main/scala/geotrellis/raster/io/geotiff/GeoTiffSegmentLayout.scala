@@ -293,15 +293,29 @@ trait GeoTiffSegmentLayoutTransform {
 
   /** Returns all segment indices which intersect given pixel grid bounds */
   private [geotrellis] def getIntersectingSegments(bounds: GridBounds): Array[Int] = {
-    val tc = tileLayout.tileCols
-    val tr = tileLayout.tileRows
-    val ab = mutable.ArrayBuffer[Int]()
-    for (layoutCol <- (bounds.colMin / tc) to (bounds.colMax / tc)) {
-      for (layoutRow <- (bounds.rowMin / tr) to (bounds.rowMax / tr)) {
-        ab += (layoutRow * tileLayout.layoutCols) + layoutCol
+    val colMax = totalCols - 1
+    val rowMax = totalRows - 1
+    val intersects = !(colMax < bounds.colMin || bounds.colMax < 0) && !(rowMax < bounds.rowMin || bounds.rowMax < 0)
+
+    if (intersects) {
+      val tc = tileLayout.tileCols
+      val tr = tileLayout.tileRows
+      val colMin = math.max(0, bounds.colMin)
+      val rowMin = math.max(0, bounds.rowMin)
+      val colMax = math.min(totalCols - 1, bounds.colMax)
+      val rowMax = math.min(totalRows -1, bounds.rowMax)
+      val ab = mutable.ArrayBuilder.make[Int]
+
+      cfor(colMin / tc)(_ <= colMax / tc, _ + 1) { layoutCol =>
+        cfor(rowMin / tr)(_ <= rowMax / tr, _ + 1) { layoutRow =>
+          ab += (layoutRow * tileLayout.layoutCols) + layoutCol
+        }
       }
+
+      ab.result
+    } else {
+      Array.empty[Int]
     }
-    ab.toArray
   }
 
   /** Partition a list of pixel windows to localize required segment reads.

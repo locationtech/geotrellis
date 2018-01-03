@@ -18,14 +18,15 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
+import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.mapalgebra.local._
-
+import geotrellis.util.{ByteReader, Filesystem}
 import geotrellis.vector.Extent
 
 import geotrellis.proj4._
 
 import geotrellis.raster.testkit._
-
+import java.nio.ByteBuffer
 import org.scalatest._
 
 class GeoTiffMultibandTileSpec extends FunSpec
@@ -697,4 +698,19 @@ class GeoTiffMultibandTileSpec extends FunSpec
     }
   }
 
+  describe("GeoTiffMultibandTile streaming read") {
+    it("reads over-buffered windows"){
+      val path = geoTiffPath("3bands/int32/3bands-striped-pixel.tif")
+      val info = GeoTiffReader.readGeoTiffInfo(ByteBuffer.wrap(Filesystem.slurp(path)),
+        decompress = false, streaming = true, withOverviews = false, byteReaderExternal = None)
+      val tiff = GeoTiffReader.geoTiffMultibandTile(info)
+
+      val windows: Array[GridBounds] = info
+        .segmentLayout
+        .listWindows(10)
+        .map(_.buffer(5))
+
+      val tiles = tiff.crop(windows)
+    }
+  }
 }
