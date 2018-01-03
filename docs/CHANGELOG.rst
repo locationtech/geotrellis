@@ -25,7 +25,7 @@ Fixes
 
 - `GeoTiffSegmentLayout.getIntersectingSegments bounds checking <https://github.com/locationtech/geotrellis/pull/2534>`__
 - `Fix for area of vectorizer that can throw topology exceptions <https://github.com/locationtech/geotrellis/pull/2530>`__
-
+- `Fix Tile.flipHorizontal for floating point tiles <https://github.com/locationtech/geotrellis/pull/2535>`__
 
 1.2.0
 -----
