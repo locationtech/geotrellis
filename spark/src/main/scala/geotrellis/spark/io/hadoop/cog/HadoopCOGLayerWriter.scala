@@ -59,11 +59,9 @@ class HadoopCOGLayerWriter(
           }
           .foreach(samplesAccumulator.add)
       }
-    }
 
-    for(zoomRange <- cogLayer.layers.keys.toSeq.sorted(Ordering[ZoomRange].reverse)) {
       val os =
-        VRT(cogLayer.metadata.tileLayerMetadata(zoomRange.minZoom))
+        vrt
           .fromSimpleSources(
             samplesAccumulator
               .value
@@ -78,6 +76,8 @@ class HadoopCOGLayerWriter(
         new Path(s"hdfs://${catalogPath.toString}/${layerName}/${zoomRange.minZoom}_${zoomRange.maxZoom}/vrt.xml"),
         sc.hadoopConfiguration
       ) { _.write(os.toByteArray) }
+
+      samplesAccumulator.reset
     }
   }
 }

@@ -36,6 +36,7 @@ class S3COGLayerWriter(
     val storageMetadata = COGLayerStorageMetadata(cogLayer.metadata, keyIndexes)
     attributeStore.write(LayerId(layerName, 0), "cog_metadata", storageMetadata)
 
+    val s3Client = getS3Client()
     for(zoomRange <- cogLayer.layers.keys.toSeq.sorted(Ordering[ZoomRange].reverse)) {
       val vrt = VRT(cogLayer.metadata.tileLayerMetadata(zoomRange.minZoom))
       val keyIndex = keyIndexes(zoomRange)
@@ -64,12 +65,9 @@ class S3COGLayerWriter(
             .foreach(samplesAccumulator.add)
         }
       }
-    }
 
-    val s3Client = getS3Client()
-    for(zoomRange <- cogLayer.layers.keys.toSeq.sorted(Ordering[ZoomRange].reverse)) {
       val bytes =
-        VRT(cogLayer.metadata.tileLayerMetadata(zoomRange.minZoom))
+        vrt
           .fromSimpleSources(
             samplesAccumulator
               .value
@@ -92,6 +90,8 @@ class S3COGLayerWriter(
         objectMetadata
       )
       s3Client.putObject(request)
+
+      samplesAccumulator.reset
     }
   }
 }

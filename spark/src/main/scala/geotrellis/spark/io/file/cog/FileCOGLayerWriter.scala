@@ -55,10 +55,8 @@ class FileCOGLayerWriter(
           }
           .foreach(samplesAccumulator.add)
       }
-    }
 
-    for(zoomRange <- cogLayer.layers.keys.toSeq.sorted(Ordering[ZoomRange].reverse)) {
-      VRT(cogLayer.metadata.tileLayerMetadata(zoomRange.minZoom))
+      vrt
         .fromSimpleSources(
           samplesAccumulator
             .value
@@ -68,6 +66,8 @@ class FileCOGLayerWriter(
             .map(_._2)
         )
         .write(s"${catalogPath}/${layerName}/${zoomRange.slug}/vrt.xml")
+
+      samplesAccumulator.reset
     }
   }
 }
