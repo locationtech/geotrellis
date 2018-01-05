@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.file.cog
+package geotrellis.spark.io.hadoop.cog
 
 import geotrellis.raster._
 import geotrellis.raster.merge.TileMergeMethods
@@ -22,29 +22,31 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.file.KeyPathGenerator
+import geotrellis.spark.io.hadoop.HdfsUtils
 import geotrellis.util._
 
-import spray.json.JsonFormat
 import com.typesafe.config.ConfigFactory
-
+import spray.json.JsonFormat
 import java.net.URI
-import java.io.File
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.Path
 
 import scala.reflect.ClassTag
 
 /**
- * Handles reading raster RDDs and their metadata from local FS.
+ * Handles reading raster RDDs and their metadata from HDFS.
  *
  * @param attributeStore  AttributeStore that contains metadata for corresponding LayerId
  */
-class FileCOGCollectionLayerReader(
+class HadoopCOGCollectionLayerReader(
   val attributeStore: AttributeStore,
   val catalogPath: String,
-  val defaultThreads: Int = ConfigFactory.load().getThreads("geotrellis.file.threads.collection.read")
+  val conf: Configuration = new Configuration,
+  val defaultThreads: Int = ConfigFactory.load().getThreads("geotrellis.hadoop.threads.collection.read")
 )
   extends COGCollectionLayerReader[LayerId] with LazyLogging {
 
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
+  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, conf)
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
@@ -58,8 +60,8 @@ class FileCOGCollectionLayerReader(
       tileQuery       = tileQuery,
       indexFilterOnly = indexFilterOnly,
       getKeyPath      = getKeyPath,
-      pathExists      = { new File(_).isFile },
-      fullPath        = { path => new URI(s"file://$path") },
+      pathExists      = { str => HdfsUtils.pathExists(new Path(str), conf) },
+      fullPath        = { path => new URI(s"hdfs://$path") },
       defaultThreads  = defaultThreads
     )
   }
