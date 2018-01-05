@@ -16,10 +16,8 @@
 
 package geotrellis.vector
 
+import com.vividsolutions.jts.{geom ⇒ jts}
 import geotrellis.vector.testkit._
-
-import com.vividsolutions.jts.{geom=>jts}
-
 import org.scalatest._
 
 class PolygonSpec extends FunSpec with Matchers {

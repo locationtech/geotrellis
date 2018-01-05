@@ -181,7 +181,7 @@ object GeowaveLayerReader {
 
         GridCoverage2DConverters.getCellType(gc)
       }
-      case s: String => CellType.fromString(s)
+      case s: String => CellType.fromName(s)
     }
 
     val bounds = KeyBounds(

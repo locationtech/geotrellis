@@ -18,7 +18,7 @@ package geotrellis.spark.summary.polygonal
 
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.testkit.testfiles._
+import geotrellis.spark.testkit.testfiles.{TestFiles ⇒ SparkTestFiles, _}
 import geotrellis.raster._
 import geotrellis.raster.summary.polygonal._
 import geotrellis.vector._
@@ -29,7 +29,7 @@ import org.scalatest.FunSpec
 
 import collection.immutable.HashMap
 
-class HistogramSpec extends FunSpec with TestEnvironment with TestFiles {
+class HistogramSpec extends FunSpec with TestEnvironment with SparkTestFiles {
 
   describe("Histogram Zonal Summary Operation") {
     val modHundred = Mod10000TestFile

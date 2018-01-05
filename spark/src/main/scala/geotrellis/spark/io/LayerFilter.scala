@@ -16,17 +16,16 @@
 
 package geotrellis.spark.io
 
+import java.time.ZonedDateTime
+
 import geotrellis.proj4._
-import geotrellis.raster._
-import geotrellis.raster.{GridBounds, RasterExtent, PixelIsArea}
-import geotrellis.raster.rasterize.Rasterizer.Options
+import geotrellis.raster.GridBounds
 import geotrellis.spark._
 import geotrellis.spark.tiling._
-import geotrellis.vector._
 import geotrellis.util._
+import geotrellis.vector._
 
 import scala.annotation.implicitNotFound
-import java.time.ZonedDateTime
 
 @implicitNotFound("Unable to filter ${K} by ${F} given ${M}, Please provide LayerFilter[${K}, ${F}, ${T}, ${M}]")
 trait LayerFilter[K, F, T, M] {
@@ -72,9 +71,6 @@ object LayerFilter {
 
 
 object Intersects {
-  import geotrellis.raster.rasterize.{Rasterizer, Callback}
-  import collection.JavaConverters._
-  import java.util.concurrent.ConcurrentHashMap
 
   def apply[T](value: T) = LayerFilter.Value[Intersects.type, T](value)
 
@@ -253,7 +249,7 @@ object Between {
 object Contains {
   def apply[T](value: T) = LayerFilter.Value[Contains.type, T](value)
 
-  /** Define Intersects filter for Extent */
+  /** Define Contains filter for Point */
   implicit def forPoint[K: SpatialComponent: Boundable, M: (? => MapKeyTransform)] =
     new LayerFilter[K, Contains.type, Point, M] {
     def apply(metadata: M, kb: KeyBounds[K], point: Point) = {
