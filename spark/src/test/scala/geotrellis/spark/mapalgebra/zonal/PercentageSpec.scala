@@ -19,7 +19,7 @@ package geotrellis.spark.mapalgebra.zonal
 import Implicits._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
-import geotrellis.spark.testkit.testfiles._
+import geotrellis.spark.testkit.testfiles.{TestFiles ⇒ SparkTestFiles, _}
 import geotrellis.spark.testkit._
 
 import geotrellis.raster._
@@ -32,7 +32,7 @@ import org.scalatest.FunSpec
 import org.apache.spark.rdd.RDD
 import spire.syntax.cfor._
 
-class PercentageSpec extends FunSpec with TestEnvironment with TestFiles {
+class PercentageSpec extends FunSpec with TestEnvironment with SparkTestFiles {
 
   describe("Percentage Zonal Operation") {
     it("gives correct percentage for example raster rdds") {

@@ -17,9 +17,7 @@
 package geotrellis.spark.summary.polygonal
 
 import geotrellis.spark._
-import geotrellis.spark.io.hadoop._
-import geotrellis.spark.testkit.testfiles._
-import geotrellis.raster.summary.polygonal._
+import geotrellis.spark.testkit.testfiles.{TestFiles ⇒ SparkTestFiles, _}
 import geotrellis.spark.testkit._
 
 import geotrellis.raster._
@@ -29,7 +27,7 @@ import org.scalatest.FunSpec
 
 class SumSpec extends FunSpec
     with TestEnvironment
-    with TestFiles
+    with SparkTestFiles
 {
 
   describe("Sum Zonal Summary Operation") {

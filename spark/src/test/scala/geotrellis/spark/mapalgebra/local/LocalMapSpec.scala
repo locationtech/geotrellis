@@ -20,14 +20,14 @@ import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.TileLayerRDD
-import geotrellis.spark.testkit.testfiles._
+import geotrellis.spark.testkit.testfiles.{TestFiles ⇒ SparkTestFiles, _}
 import geotrellis.spark.testkit._
 
 import java.time.ZonedDateTime
 
 import org.scalatest._
 
-class LocalMapSpec extends FunSpec with TestEnvironment with TestFiles {
+class LocalMapSpec extends FunSpec with TestEnvironment with SparkTestFiles {
 
   describe("Local Map Operations") {
     it("should map an integer function over an integer raster rdd") {

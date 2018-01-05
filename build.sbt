@@ -2,6 +2,8 @@ import Dependencies._
 import sbt.Keys._
 import de.heikoseeberger.sbtheader.license.Apache2_0
 
+addCommandAlias("testCore", ";util/test; ;proj4/test; raster/test; vector/test; spark/test")
+
 lazy val commonSettings = Seq(
   version := Version.geotrellis,
   scalaVersion := Version.scala,
@@ -76,7 +78,8 @@ lazy val commonSettings = Seq(
   headers := Map(
     "scala" -> Apache2_0("2016", "Azavea"),
     "conf" -> Apache2_0("2016", "Azavea", "#")
-  )
+  ),
+  cancelable in Global := true
 )
 
 lazy val root = Project("geotrellis", file(".")).
@@ -128,6 +131,9 @@ lazy val vector = project
   .dependsOn(proj4, util)
   .settings(commonSettings)
   .settings(
+    // This takes care of a pseudo-cyclic dependency between the `vector` test scope, `vector-testkit`,
+    // and `vector` main (compile) scope. sbt is happy with this. IntelliJ requires that `vector-testkit`
+    // be added to the `vector` module dependencies manually (via "Open Module Settings" context menu for "vector" module).
     unmanagedClasspath in Test ++= (fullClasspath in (LocalProject("vector-testkit"), Compile)).value
   )
 
@@ -143,9 +149,10 @@ lazy val raster = project
   .dependsOn(util, macros, vector)
   .settings(commonSettings)
   .settings(
-    unmanagedClasspath in Test ++= (fullClasspath in (LocalProject("raster-testkit"), Compile)).value
-  )
-  .settings(
+    // This takes care of a pseudo-cyclic dependency between the `raster` test scope, `raster-testkit`, `vector-testkit`
+    // and `raster` main (compile) scope. sbt is happy with this. IntelliJ requires that `raster-testkit` & `vector-testkit`
+    // be added to the `raster` module dependencies manually (via "Open Module Settings" context menu for "raster" module).
+    unmanagedClasspath in Test ++= (fullClasspath in (LocalProject("raster-testkit"), Compile)).value,
     unmanagedClasspath in Test ++= (fullClasspath in (LocalProject("vector-testkit"), Compile)).value
   )
 
@@ -178,6 +185,9 @@ lazy val s3 = project
   )
   .settings(commonSettings)
   .settings(
+    // This takes care of a pseudo-cyclic dependency between the `s3` test scope, `s3-testkit`,
+    // and `s3` main (compile) scope. sbt is happy with this. IntelliJ requires that `s3-testkit`
+    // be added to the `s3` module dependencies manually (via "Open Module Settings" context menu for "s3" module).
     unmanagedClasspath in Test ++= (fullClasspath in (LocalProject("s3-testkit"), Compile)).value
   )
 

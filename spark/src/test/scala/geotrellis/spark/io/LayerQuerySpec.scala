@@ -21,7 +21,7 @@ import geotrellis.spark._
 import geotrellis.vector._
 import geotrellis.proj4._
 import geotrellis.spark.tiling._
-import geotrellis.spark.testkit.testfiles._
+import geotrellis.spark.testkit.testfiles.{TestFiles ⇒ SparkTestFiles, _}
 import geotrellis.spark.testkit._
 import geotrellis.vector.io._
 import geotrellis.vector.io.wkt._
@@ -29,7 +29,7 @@ import geotrellis.vector.io.wkt._
 import org.scalatest._
 
 class LayerQuerySpec extends FunSpec
-  with TestEnvironment with TestFiles with Matchers {
+  with TestEnvironment with SparkTestFiles with Matchers {
 
   def spatialKeyBoundsKeys(kb: KeyBounds[SpatialKey]) = {
     for {
