@@ -31,7 +31,7 @@ import scala.reflect._
 trait COGLayerWriter {
   def writeCOGLayer[
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,
-    V <: CellGrid
+    V <: CellGrid: ClassTag
   ](
     layerName: String,
     cogLayer: COGLayer[K, V],

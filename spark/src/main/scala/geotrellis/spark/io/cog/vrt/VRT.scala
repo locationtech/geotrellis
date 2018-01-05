@@ -1,5 +1,7 @@
 package geotrellis.spark.io.cog.vrt
 
+import java.io.{BufferedWriter, ByteArrayOutputStream, OutputStream, OutputStreamWriter}
+
 import geotrellis.raster.{CellType, GridBounds, RasterExtent}
 import geotrellis.spark.{EmptyBounds, KeyBounds, SpatialComponent, TileLayerMetadata}
 import geotrellis.vector.Extent
@@ -117,8 +119,24 @@ case class VRT[K: SpatialComponent](base: TileLayerMetadata[K], bands: List[Elem
 
   def write(path: String): Unit = VRT.write(toXML(this.bands))(path)
 
+  def outputStream: ByteArrayOutputStream = VRT.outputStream(toXML(this.bands))
 }
 
 object VRT {
   def write(elem: Elem)(path: String): Unit = XML.save(path, elem)
+
+  def outputStream(elem: Elem): ByteArrayOutputStream = {
+    val baos = new ByteArrayOutputStream()
+    val writer = new BufferedWriter(new OutputStreamWriter(baos))
+
+    XML.write(
+      writer,
+      elem,
+      XML.encoding,
+      false,
+      null
+    )
+
+    baos
+  }
 }
