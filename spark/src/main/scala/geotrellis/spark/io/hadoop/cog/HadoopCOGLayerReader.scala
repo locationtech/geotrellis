@@ -21,7 +21,7 @@ import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
-import geotrellis.spark.io.file.KeyPathGenerator
+import geotrellis.spark.io.index.Index
 import geotrellis.spark.io.hadoop.HdfsUtils
 import geotrellis.util._
 
@@ -35,7 +35,7 @@ import java.net.URI
 import scala.reflect.ClassTag
 
 /**
- * Handles reading raster RDDs and their metadata from S3.
+ * Handles reading raster RDDs and their metadata from HDFS.
  *
  * @param attributeStore  AttributeStore that contains metadata for corresponding LayerId
  */
@@ -54,7 +54,10 @@ class HadoopCOGLayerReader(
     V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int, filterIndexOnly: Boolean) = {
     def getKeyPath(zoomRange: ZoomRange, maxWidth: Int): BigInt => String =
-      KeyPathGenerator(catalogPath, s"${id.name}/${zoomRange.slug}", maxWidth) andThen (_ ++ s".$Extension")
+      (index: BigInt) =>
+        s"${catalogPath.toString}/${id.name}/" +
+        s"${zoomRange.minZoom}_${zoomRange.maxZoom}/" +
+        s"${Index.encode(index, maxWidth)}.$Extension"
 
     baseRead[K, V](
       id              = id,
@@ -62,7 +65,7 @@ class HadoopCOGLayerReader(
       numPartitions   = numPartitions,
       filterIndexOnly = filterIndexOnly,
       getKeyPath      = getKeyPath,
-      pathExists      = { str => HdfsUtils.pathExists(new Path(str), sc.hadoopConfiguration) },
+      pathExists      = { str => HdfsUtils.pathExists(new Path(s"hdfs://$str"), sc.hadoopConfiguration) },
       fullPath        = { path => new URI(s"hdfs://$path") },
       defaultThreads  = defaultThreads
     )

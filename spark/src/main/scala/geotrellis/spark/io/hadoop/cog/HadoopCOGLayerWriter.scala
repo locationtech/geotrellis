@@ -4,7 +4,6 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.spark._
 import geotrellis.spark.io.cog._
-import geotrellis.spark.io.file._
 import geotrellis.spark.io.hadoop.{HadoopAttributeStore, HdfsUtils}
 import geotrellis.spark.io.index._
 
@@ -29,11 +28,15 @@ class HadoopCOGLayerWriter(
     for(zoomRange <- cogLayer.layers.keys.toSeq.sorted(Ordering[ZoomRange].reverse)) {
       val keyIndex = keyIndexes(zoomRange)
       val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
-      val keyPath = KeyPathGenerator(catalogPath.toString, s"${layerName}/${zoomRange.slug}", keyIndex, maxWidth)
+      val keyPath =
+        (key: K) =>
+          s"hdfs://${catalogPath.toString}/${layerName}/" +
+          s"${zoomRange.minZoom}_${zoomRange.maxZoom}/" +
+          s"${Index.encode(keyIndex.toIndex(key), maxWidth)}"
 
       cogLayer.layers(zoomRange).foreach { case (key, cog) =>
         HdfsUtils.write(
-          new Path(s"hdfs://${keyPath(key)}.${Extension}"),
+          new Path(s"${keyPath(key)}.${Extension}"),
           attributeStore.hadoopConfiguration
         ) { new GeoTiffWriter(cog, _).write(true) }
       }

@@ -23,11 +23,11 @@ import geotrellis.spark.io.cog._
 import geotrellis.spark.io.index.{Index, KeyIndex}
 import geotrellis.util._
 
-import java.net.URI
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import spray.json._
+
+import java.net.URI
 
 import scala.reflect.ClassTag
 
@@ -45,7 +45,9 @@ class HadoopCOGValueReader(
     V <: CellGrid: TiffMethods
   ](layerId: LayerId): Reader[K, V] = {
     def keyPath(key: K, maxWidth: Int, baseKeyIndex: KeyIndex[K], zoomRange: ZoomRange): String =
-      s"$catalogPath/${Index.encode(baseKeyIndex.toIndex(key), maxWidth)}.${Extension}"
+      s"${catalogPath.toString}/${layerId.name}/" +
+      s"${zoomRange.minZoom}_${zoomRange.maxZoom}/" +
+      s"${Index.encode(baseKeyIndex.toIndex(key), maxWidth)}.$Extension"
 
     baseReader[K, V](
       layerId,

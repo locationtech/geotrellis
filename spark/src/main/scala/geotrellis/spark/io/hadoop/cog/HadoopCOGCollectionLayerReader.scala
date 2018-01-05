@@ -21,13 +21,15 @@ import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
-import geotrellis.spark.io.file.KeyPathGenerator
+import geotrellis.spark.io.index.Index
 import geotrellis.spark.io.hadoop.HdfsUtils
 import geotrellis.util._
 
 import com.typesafe.config.ConfigFactory
 import spray.json.JsonFormat
+
 import java.net.URI
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 
@@ -53,14 +55,17 @@ class HadoopCOGCollectionLayerReader(
     V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], indexFilterOnly: Boolean) = {
     def getKeyPath(zoomRange: ZoomRange, maxWidth: Int): BigInt => String =
-      KeyPathGenerator(catalogPath, s"${id.name}/${zoomRange.slug}", maxWidth) andThen (_ ++ s".$Extension")
+      (index: BigInt) =>
+        s"${catalogPath.toString}/${id.name}/" +
+        s"${zoomRange.minZoom}_${zoomRange.maxZoom}/" +
+        s"${Index.encode(index, maxWidth)}.$Extension"
 
     baseRead[K, V](
       id              = id,
       tileQuery       = tileQuery,
       indexFilterOnly = indexFilterOnly,
       getKeyPath      = getKeyPath,
-      pathExists      = { str => HdfsUtils.pathExists(new Path(str), conf) },
+      pathExists      = { str => HdfsUtils.pathExists(new Path(s"hdfs://$str"), conf) },
       fullPath        = { path => new URI(s"hdfs://$path") },
       defaultThreads  = defaultThreads
     )
