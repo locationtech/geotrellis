@@ -79,7 +79,7 @@ case class VRT[K: SpatialComponent](base: TileLayerMetadata[K], bands: List[Elem
     val (dstXOff, dstYOff, dstXSize, dstYSize) = extentToOffsets(extent)
     val elem =
       <SimpleSource>
-        <SourceFilename relativeToVRT="0">{path}</SourceFilename>
+        <SourceFilename relativeToVRT="1">{path}</SourceFilename>
         <SourceBand>{band.toString}</SourceBand>
         <SourceProperties RasterXSize={xSize.toString} RasterYSize={ySize.toString} DataType={cellTypeToString(base.cellType)} BlockXSize={base.layout.tileCols.toString} BlockYSize={base.layout.tileRows.toString}/>
         <SrcRect xOff="0" yOff="0" xSize={xSize.toString} ySize={ySize.toString}/>

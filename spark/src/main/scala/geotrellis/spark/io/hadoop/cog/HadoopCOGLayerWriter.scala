@@ -54,7 +54,8 @@ class HadoopCOGLayerWriter(
         val bands = geoTiffBandsCount(cog)
         (0 until bands)
           .map { b =>
-            (s"${Index.encode(keyIndex.toIndex(key), maxWidth)}", vrt.simpleSource(s"${keyPath(key)}.$Extension", b + 1)(cog.cols, cog.rows)(cog.extent))
+            val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
+            (s"$idx", vrt.simpleSource(s"$idx.$Extension", b + 1)(cog.cols, cog.rows)(cog.extent))
           }
           .foreach(samplesAccumulator.add)
       }
