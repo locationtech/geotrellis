@@ -22,7 +22,11 @@ case class VRT[K: SpatialComponent](base: TileLayerMetadata[K], bands: List[Elem
 
   lazy val re: RasterExtent = RasterExtent(base.extent, layoutCols, layoutRows)
 
-  // TODO: refactor, code style kept to follow GDAL: https://github.com/OSGeo/gdal/blob/9a21e8dcaf36a7e046ee87cd57c8c03812dd20ed/gdal/frmts/sde/sdedataset.cpp
+  /**
+    * Calculates GeoTransform attributes
+    *
+    * TODO: refactor, code style kept to follow GDAL: https://github.com/OSGeo/gdal/blob/9a21e8dcaf36a7e046ee87cd57c8c03812dd20ed/gdal/frmts/sde/sdedataset.cpp
+    */
   def geoTransform: (Double, Double, Double, Double, Double, Double) = {
     val extent = base.extent
     val origin = extent.center
@@ -60,11 +64,13 @@ case class VRT[K: SpatialComponent](base: TileLayerMetadata[K], bands: List[Elem
     (padfTransform0, padfTransform1, padfTransform2, padfTransform3, padfTransform4, padfTransform5)
   }
 
+  /** GeoTransform attribtues as a string */
   def geoTransformString: String = {
     val (padfTransform0, padfTransform1, padfTransform2, padfTransform3, padfTransform4, padfTransform5) = geoTransform
     s"$padfTransform0, $padfTransform1, $padfTransform2, $padfTransform3, $padfTransform4, $padfTransform5"
   }
 
+  /** Generates offsets of extent for the VRT doc */
   def extentToOffsets(extent: Extent): (Double, Double, Double, Double) = {
     val (xoff, yoff) = re.mapToGrid(extent.xmin, extent.ymax)
     val (xmax, ymin)  = re.mapToGrid(extent.xmax, extent.ymin)
@@ -78,6 +84,7 @@ case class VRT[K: SpatialComponent](base: TileLayerMetadata[K], bands: List[Elem
   def cellTypeToString(ct: CellType): String =
     ct.getClass.getName.split("\\$").last.split("CellType").head.split("\\.").last.split("U").last
 
+  /** Generates a tuple of a band and Elem, Elem contains a [[SimpleSource]] XML */
   def simpleSource(path: String, band: Int, xSize: Int, ySize: Int, extent: Extent): SimpleSource = {
     val (dstXOff, dstYOff, dstXSize, dstYSize) = extentToOffsets(extent)
     val elem =
@@ -92,6 +99,7 @@ case class VRT[K: SpatialComponent](base: TileLayerMetadata[K], bands: List[Elem
     band -> elem
   }
 
+  /** Generates a list of [[VRTRasterBand]] (xml Elems) from a given list of [[SimpleSource]] */
   def simpleSourcesToBands(elems: List[SimpleSource]): List[VRTRasterBand] = {
     elems
       .groupBy(_._1)
@@ -103,12 +111,15 @@ case class VRT[K: SpatialComponent](base: TileLayerMetadata[K], bands: List[Elem
       }
   }
 
+  /** Creates a copy of a VRT object with [[SimpleSource]] elements as bands */
   def fromSimpleSources(elems: List[SimpleSource]): VRT[K] =
     this.copy(bands = simpleSourcesToBands(elems))
 
+  /** Creates a copy of a VRT object from a Spark Accumulator */
   def fromAccumulator(acc: CollectionAccumulator[IndexedSimpleSource]): VRT[K] =
     fromSimpleSources(acc.value.asScala.toList.sortBy(_._1).map(_._2))
 
+  /** Represents a list of [[VRTRasterBand]] as a VRTDataset */
   def toXML(bands: List[VRTRasterBand]): Elem = {
     val rasterXSize = layoutCols
     val rasterYSize = layoutRows
@@ -120,6 +131,7 @@ case class VRT[K: SpatialComponent](base: TileLayerMetadata[K], bands: List[Elem
     </VRTDataset>
   }
 
+  /** Represents a list of [[SimpleSource]] as a VRTDataset */
   def toXMLFromBands(elems: List[SimpleSource]): Elem =
     toXML(simpleSourcesToBands(elems))
 
