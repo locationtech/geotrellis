@@ -18,11 +18,11 @@ package geotrellis.spark.io.cog
 
 import geotrellis.raster._
 import geotrellis.raster.crop._
+import geotrellis.raster.io.geotiff.compression.{Compression, NoCompression}
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.spark._
 import geotrellis.spark.io.index._
-
 import spray.json._
 import org.apache.spark.rdd.RDD
 
@@ -45,11 +45,12 @@ trait COGLayerWriter extends Serializable {
     layerName: String,
     tiles: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     tileZoom: Int,
-    keyIndexMethod: KeyIndexMethod[K]
+    keyIndexMethod: KeyIndexMethod[K],
+    compression: Compression = NoCompression
   )(implicit tc: Iterable[(SpatialKey, V)] => GeoTiffSegmentConstructMethods[SpatialKey, V]): Unit =
     tiles.metadata.bounds match {
       case keyBounds: KeyBounds[K] =>
-        val cogLayer = COGLayer(tiles, tileZoom)
+        val cogLayer = COGLayer(tiles, tileZoom, compression = compression)
         println(cogLayer.metadata.toJson.prettyPrint)
         val keyIndexes =
           cogLayer.metadata.zoomRangeInfos.

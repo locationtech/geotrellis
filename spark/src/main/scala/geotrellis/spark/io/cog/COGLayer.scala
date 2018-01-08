@@ -4,6 +4,7 @@ import geotrellis.raster._
 import geotrellis.raster.crop._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
+import geotrellis.raster.io.geotiff.compression.Compression
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.spark._
@@ -50,6 +51,7 @@ object COGLayer {
   ](
      rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
      baseZoom: Int,
+     compression: Compression = Deflate,
      maxCOGTileSize: Int = 4096,
      minZoom: Option[Int] = None
    )(implicit tc: Iterable[(SpatialKey, V)] => GeoTiffSegmentConstructMethods[SpatialKey, V]): COGLayer[K, V] = {
@@ -94,7 +96,7 @@ object COGLayer {
         sorted(Ordering[ZoomRange].reverse).
         foldLeft(List[(ZoomRange, RDD[(K, GeoTiff[V])])]()) { case (acc, range) =>
           if(acc.isEmpty) {
-            List(range -> generateGeoTiffRDD(rdd, range, layoutScheme))
+            List(range -> generateGeoTiffRDD(rdd, range, layoutScheme, compression))
           } else {
             val previousLayer: RDD[(K, V)] = acc.head._2.mapValues { tiff =>
               if(tiff.overviews.nonEmpty) tiff.overviews.last.tile
@@ -105,7 +107,7 @@ object COGLayer {
             val upsampledPreviousLayer =
               Pyramid.up(ContextRDD(previousLayer, tmd), layoutScheme, range.maxZoom + 1)._2
 
-            val rzz = generateGeoTiffRDD(upsampledPreviousLayer, range, layoutScheme)
+            val rzz = generateGeoTiffRDD(upsampledPreviousLayer, range, layoutScheme, compression)
 
             (range -> rzz) :: acc
           }
@@ -121,7 +123,8 @@ object COGLayer {
   ](
      rdd: RDD[(K, V)],
      zoomRange: ZoomRange,
-     layoutScheme: ZoomedLayoutScheme
+     layoutScheme: ZoomedLayoutScheme,
+     compression: Compression
    )(implicit tc: Iterable[(SpatialKey, V)] => GeoTiffSegmentConstructMethods[SpatialKey, V]): RDD[(K, GeoTiff[V])] = {
     val kwFomat = KryoWrapper(implicitly[JsonFormat[K]])
 
@@ -133,7 +136,7 @@ object COGLayer {
     val options: GeoTiffOptions =
       GeoTiffOptions(
         storageMethod = Tiled(maxZoomLayout.tileCols, maxZoomLayout.tileRows),
-        compression = Deflate
+        compression = compression
       )
 
     rdd.
