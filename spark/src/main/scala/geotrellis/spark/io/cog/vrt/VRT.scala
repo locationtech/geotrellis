@@ -4,23 +4,26 @@ import geotrellis.raster.{CellType, GridBounds, RasterExtent}
 import geotrellis.spark.io.cog.vrt.VRT.{IndexedSimpleSource, SimpleSource, VRTRasterBand}
 import geotrellis.spark.{EmptyBounds, KeyBounds, SpatialComponent, TileLayerMetadata}
 import geotrellis.vector.Extent
+import geotrellis.proj4.CRS
+import geotrellis.spark.tiling.LayoutDefinition
 
 import org.apache.spark.util.CollectionAccumulator
-
 import java.io.{BufferedWriter, ByteArrayOutputStream, OutputStreamWriter}
 
 import scala.collection.JavaConverters._
 import scala.xml.{Elem, XML}
 
-case class VRT[K: SpatialComponent](base: TileLayerMetadata[K], bands: List[Elem] = Nil) {
-  lazy val gb: GridBounds = base.bounds match {
-    case kb: KeyBounds[K] => kb.toGridBounds()
-    case EmptyBounds => throw new Exception("Empty iterator, can't generate a COG.")
-  }
+case class VRT(
+  gridBounds: GridBounds,
+  layout: LayoutDefinition,
+  extent: Extent,
+  cellType: CellType,
+  crs: CRS,
+  bands: List[Elem]
+) {
+  lazy val (layoutCols, layoutRows) = gridBounds.width * layout.tileCols -> gridBounds.height * layout.tileRows
 
-  lazy val (layoutCols, layoutRows) = gb.width * base.layout.tileCols -> gb.height * base.layout.tileRows
-
-  lazy val re: RasterExtent = RasterExtent(base.extent, layoutCols, layoutRows)
+  lazy val re: RasterExtent = RasterExtent(extent, layoutCols, layoutRows)
 
   /**
     * Calculates GeoTransform attributes
@@ -28,7 +31,6 @@ case class VRT[K: SpatialComponent](base: TileLayerMetadata[K], bands: List[Elem
     * TODO: refactor, code style kept to follow GDAL: https://github.com/OSGeo/gdal/blob/9a21e8dcaf36a7e046ee87cd57c8c03812dd20ed/gdal/frmts/sde/sdedataset.cpp
     */
   def geoTransform: (Double, Double, Double, Double, Double, Double) = {
-    val extent = base.extent
     val origin = extent.center
 
     val x0 = origin.x
@@ -91,7 +93,7 @@ case class VRT[K: SpatialComponent](base: TileLayerMetadata[K], bands: List[Elem
       <SimpleSource>
         <SourceFilename relativeToVRT="1">{path}</SourceFilename>
         <SourceBand>{band.toString}</SourceBand>
-        <SourceProperties RasterXSize={xSize.toString} RasterYSize={ySize.toString} DataType={cellTypeToString(base.cellType)} BlockXSize={base.layout.tileCols.toString} BlockYSize={base.layout.tileRows.toString}/>
+        <SourceProperties RasterXSize={xSize.toString} RasterYSize={ySize.toString} DataType={cellTypeToString(cellType)} BlockXSize={layout.tileCols.toString} BlockYSize={layout.tileRows.toString}/>
         <SrcRect xOff="0" yOff="0" xSize={xSize.toString} ySize={ySize.toString}/>
         <DstRect xOff={dstXOff.toString} yOff={dstYOff.toString} xSize={dstXSize.toString} ySize={dstYSize.toString}/>
       </SimpleSource>
@@ -105,18 +107,18 @@ case class VRT[K: SpatialComponent](base: TileLayerMetadata[K], bands: List[Elem
       .groupBy(_._1)
       .toList
       .map { case (band, list) =>
-        <VRTRasterBand dataType={cellTypeToString(base.cellType)} band={band.toString}>
+        <VRTRasterBand dataType={cellTypeToString(cellType)} band={band.toString}>
           {list.map(_._2)}
         </VRTRasterBand>
       }
   }
 
   /** Creates a copy of a VRT object with [[SimpleSource]] elements as bands */
-  def fromSimpleSources(elems: List[SimpleSource]): VRT[K] =
+  def fromSimpleSources(elems: List[SimpleSource]): VRT =
     this.copy(bands = simpleSourcesToBands(elems))
 
   /** Creates a copy of a VRT object from a Spark Accumulator */
-  def fromAccumulator(acc: CollectionAccumulator[IndexedSimpleSource]): VRT[K] =
+  def fromAccumulator(acc: CollectionAccumulator[IndexedSimpleSource]): VRT =
     fromSimpleSources(acc.value.asScala.toList.sortBy(_._1).map(_._2))
 
   /** Represents a list of [[VRTRasterBand]] as a VRTDataset */
@@ -125,7 +127,7 @@ case class VRT[K: SpatialComponent](base: TileLayerMetadata[K], bands: List[Elem
     val rasterYSize = layoutRows
 
     <VRTDataset rasterXSize={rasterXSize.toString} rasterYSize={rasterYSize.toString}>
-      <SRS>{xml.Unparsed(base.crs.toWKT.get)}</SRS>
+      <SRS>{xml.Unparsed(crs.toWKT.get)}</SRS>
       <GeoTransform>{geoTransformString}</GeoTransform>
       {bands}
     </VRTDataset>
@@ -161,5 +163,15 @@ object VRT {
     )
 
     baos
+  }
+
+
+  def apply[K: SpatialComponent](metadata: TileLayerMetadata[K]): VRT = {
+    val gridBounds: GridBounds = metadata.bounds match {
+      case kb: KeyBounds[K] => kb.toGridBounds()
+      case EmptyBounds => throw new Exception("Empty iterator, can't generate a COG.")
+    }
+
+    VRT(gridBounds, metadata.layout, metadata.extent, metadata.cellType, metadata.crs, Nil)
   }
 }
