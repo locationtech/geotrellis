@@ -28,7 +28,7 @@ import org.apache.spark.rdd.RDD
 
 import scala.reflect._
 
-trait COGLayerWriter {
+trait COGLayerWriter extends Serializable {
   def writeCOGLayer[
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag

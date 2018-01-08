@@ -7,20 +7,17 @@ import geotrellis.spark.io.index.{Index, KeyIndex}
 import geotrellis.spark.io.s3.{S3AttributeStore, S3Client, S3RDDWriter, makePath}
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.cog.vrt.VRT
+import geotrellis.spark.io.cog.vrt.VRT.IndexedSimpleSource
 
 import spray.json.JsonFormat
 import com.amazonaws.services.s3.model.{ObjectMetadata, PutObjectRequest}
 
 import java.io.ByteArrayInputStream
 
-import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
-import scala.xml.Elem
 
 class S3COGLayerWriter(
   val attributeStore: S3AttributeStore,
-  bucket: String,
-  keyPrefix: String,
   getS3Client: () => S3Client = () => S3Client.DEFAULT,
   threads: Int = S3RDDWriter.DefaultThreadCount
 ) extends COGLayerWriter {
@@ -31,10 +28,12 @@ class S3COGLayerWriter(
   ): Unit = {
     /** Collect VRT into accumulators, to write everything and to collect VRT at the same time */
     val sc = cogLayer.layers.head._2.sparkContext
-    val samplesAccumulator = sc.collectionAccumulator[(String, (Int, Elem))](s"vrt_samples_$layerName")
+    val samplesAccumulator = sc.collectionAccumulator[IndexedSimpleSource](s"vrt_samples_$layerName")
 
     val storageMetadata = COGLayerStorageMetadata(cogLayer.metadata, keyIndexes)
     attributeStore.write(LayerId(layerName, 0), "cog_metadata", storageMetadata)
+
+    val (bucket, keyPrefix) = attributeStore.bucket -> attributeStore.prefix
 
     val s3Client = getS3Client()
     for(zoomRange <- cogLayer.layers.keys.toSeq.sorted(Ordering[ZoomRange].reverse)) {
@@ -56,11 +55,10 @@ class S3COGLayerWriter(
           s3Client.putObject(request)
 
           // collect VRT metadata
-          val bands = geoTiffBandsCount(cog)
-          (0 until bands)
+          (0 until geoTiffBandsCount(cog))
             .map { b =>
               val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
-              (s"$idx", vrt.simpleSource(s"$idx.$Extension", b + 1)(cog.cols, cog.rows)(cog.extent))
+              (idx.toLong, vrt.simpleSource(s"$idx.$Extension", b + 1, cog.cols, cog.rows, cog.extent))
             }
             .foreach(samplesAccumulator.add)
         }
@@ -68,14 +66,7 @@ class S3COGLayerWriter(
 
       val bytes =
         vrt
-          .fromSimpleSources(
-            samplesAccumulator
-              .value
-              .asScala
-              .toList
-              .sortBy(_._1.toLong)
-              .map(_._2)
-          )
+          .fromAccumulator(samplesAccumulator)
           .outputStream
           .toByteArray
 

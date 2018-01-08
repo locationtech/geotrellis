@@ -1,11 +1,15 @@
 package geotrellis.spark.io.cog.vrt
 
-import java.io.{BufferedWriter, ByteArrayOutputStream, OutputStream, OutputStreamWriter}
-
 import geotrellis.raster.{CellType, GridBounds, RasterExtent}
+import geotrellis.spark.io.cog.vrt.VRT.{IndexedSimpleSource, SimpleSource, VRTRasterBand}
 import geotrellis.spark.{EmptyBounds, KeyBounds, SpatialComponent, TileLayerMetadata}
 import geotrellis.vector.Extent
 
+import org.apache.spark.util.CollectionAccumulator
+
+import java.io.{BufferedWriter, ByteArrayOutputStream, OutputStreamWriter}
+
+import scala.collection.JavaConverters._
 import scala.xml.{Elem, XML}
 
 case class VRT[K: SpatialComponent](base: TileLayerMetadata[K], bands: List[Elem] = Nil) {
@@ -74,8 +78,7 @@ case class VRT[K: SpatialComponent](base: TileLayerMetadata[K], bands: List[Elem
   def cellTypeToString(ct: CellType): String =
     ct.getClass.getName.split("\\$").last.split("CellType").head.split("\\.").last.split("U").last
 
-  // absolue path
-  def simpleSource(path: String, band: Int)(xSize: Int, ySize: Int)(extent: Extent): (Int, Elem) = {
+  def simpleSource(path: String, band: Int, xSize: Int, ySize: Int, extent: Extent): SimpleSource = {
     val (dstXOff, dstYOff, dstXSize, dstYSize) = extentToOffsets(extent)
     val elem =
       <SimpleSource>
@@ -89,7 +92,7 @@ case class VRT[K: SpatialComponent](base: TileLayerMetadata[K], bands: List[Elem
     band -> elem
   }
 
-  def simpleSourcesToBands(elems: List[(Int, Elem)]): List[Elem] = {
+  def simpleSourcesToBands(elems: List[SimpleSource]): List[VRTRasterBand] = {
     elems
       .groupBy(_._1)
       .toList
@@ -100,10 +103,13 @@ case class VRT[K: SpatialComponent](base: TileLayerMetadata[K], bands: List[Elem
       }
   }
 
-  def fromSimpleSources(elems: List[(Int, Elem)]): VRT[K] =
+  def fromSimpleSources(elems: List[SimpleSource]): VRT[K] =
     this.copy(bands = simpleSourcesToBands(elems))
 
-  def toXML(bands: List[Elem]): Elem = {
+  def fromAccumulator(acc: CollectionAccumulator[IndexedSimpleSource]): VRT[K] =
+    fromSimpleSources(acc.value.asScala.toList.sortBy(_._1).map(_._2))
+
+  def toXML(bands: List[VRTRasterBand]): Elem = {
     val rasterXSize = layoutCols
     val rasterYSize = layoutRows
 
@@ -114,27 +120,32 @@ case class VRT[K: SpatialComponent](base: TileLayerMetadata[K], bands: List[Elem
     </VRTDataset>
   }
 
-  def toXMLFromBands(elems: List[(Int, Elem)]): Elem =
+  def toXMLFromBands(elems: List[SimpleSource]): Elem =
     toXML(simpleSourcesToBands(elems))
 
-  def write(path: String): Unit = VRT.write(toXML(this.bands))(path)
+  def write(path: String): Unit = XML.save(path, toXML(this.bands))
 
   def outputStream: ByteArrayOutputStream = VRT.outputStream(toXML(this.bands))
 }
 
 object VRT {
-  def write(elem: Elem)(path: String): Unit = XML.save(path, elem)
+  /** SimpleSource is a tuple of band and SimpleSource [[Elem]] */
+  type SimpleSource = (Int, Elem)
+  /** A tuple of Index (long, typically and sfc file name) and a [[SimpleSource]] */
+  type IndexedSimpleSource = (Long, SimpleSource)
+  /** Alias for VRTRasterBand xml type, just a common [[Elem]] */
+  type VRTRasterBand = Elem
 
   def outputStream(elem: Elem): ByteArrayOutputStream = {
     val baos = new ByteArrayOutputStream()
     val writer = new BufferedWriter(new OutputStreamWriter(baos))
 
     XML.write(
-      writer,
-      elem,
-      XML.encoding,
-      false,
-      null
+      w       = writer,
+      node    = elem,
+      enc     = XML.encoding,
+      xmlDecl = false,
+      doctype = null
     )
 
     baos

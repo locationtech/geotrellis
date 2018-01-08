@@ -5,15 +5,12 @@ import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.spark._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.cog.vrt.VRT
+import geotrellis.spark.io.cog.vrt.VRT.IndexedSimpleSource
 import geotrellis.spark.io.hadoop.{HadoopAttributeStore, HdfsUtils}
 import geotrellis.spark.io.index._
 
 import org.apache.hadoop.fs.Path
 import spray.json.JsonFormat
-
-import scala.reflect.ClassTag
-import scala.collection.JavaConverters._
-import scala.xml.Elem
 
 import scala.reflect.ClassTag
 
@@ -27,7 +24,7 @@ class HadoopCOGLayerWriter(
   ): Unit = {
     /** Collect VRT into accumulators, to write everything and to collect VRT at the same time */
     val sc = cogLayer.layers.head._2.sparkContext
-    val samplesAccumulator = sc.collectionAccumulator[(String, (Int, Elem))](s"vrt_samples_$layerName")
+    val samplesAccumulator = sc.collectionAccumulator[IndexedSimpleSource](s"vrt_samples_$layerName")
 
     val catalogPath = attributeStore.rootPath
 
@@ -51,25 +48,17 @@ class HadoopCOGLayerWriter(
         ) { new GeoTiffWriter(cog, _).write(true) }
 
         // collect VRT metadata
-        val bands = geoTiffBandsCount(cog)
-        (0 until bands)
+        (0 until geoTiffBandsCount(cog))
           .map { b =>
             val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
-            (s"$idx", vrt.simpleSource(s"$idx.$Extension", b + 1)(cog.cols, cog.rows)(cog.extent))
+            (idx.toLong, vrt.simpleSource(s"$idx.$Extension", b + 1, cog.cols, cog.rows, cog.extent))
           }
           .foreach(samplesAccumulator.add)
       }
 
       val os =
         vrt
-          .fromSimpleSources(
-            samplesAccumulator
-              .value
-              .asScala
-              .toList
-              .sortBy(_._1.toLong)
-              .map(_._2)
-          )
+          .fromAccumulator(samplesAccumulator)
           .outputStream
 
       HdfsUtils.write(
