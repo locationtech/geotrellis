@@ -55,6 +55,11 @@ object GeomFactory extends LazyLogging {
     case s => throw new IllegalArgumentException(s"""Unrecognized JTS precision model, ${precisionType}; expected "floating", "floating_single", or "fixed" """)
   }
 
+  /** The JTS GeometryFactory used to create new geometries.
+   *
+   *  Use this factory object to create geometries that avoid automatic snapping
+   *  of geometry coordinates to the current precision model.
+   */
   val factory = new geom.GeometryFactory(precisionModel)
 
   // 12 digits is maximum to avoid [[TopologyException]], see https://web.archive.org/web/20160226031453/http://tsusiatsoftware.net/jts/jts-faq/jts-faq.html#D9
