@@ -141,7 +141,7 @@ abstract class FilteringCOGLayerReader[ID] extends COGLayerReader[ID] {
         .read[K, V](
           keyPath            = keyPath,
           pathExists         = pathExists,
-          fullPath           = { path => new URI(s"file://$path") },
+          fullPath           = fullPath,
           baseQueryKeyBounds = baseQueryKeyBounds,
           decomposeBounds    = decompose,
           readDefinitions    = readDefinitions.flatMap(_._2).groupBy(_._1),
