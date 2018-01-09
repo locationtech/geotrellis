@@ -27,7 +27,7 @@ import scala.util.Try
 
 object GeomFactory extends LazyLogging {
 
-  val precisionType = {
+  private[vector] val precisionType = {
     val setting = Try(ConfigFactory.load().getString("geotrellis.jts.precision.type").toLowerCase)
     if (setting.isSuccess)
       setting.get
@@ -37,7 +37,7 @@ object GeomFactory extends LazyLogging {
     }
   }
 
-  lazy val fixedPrecisionScale =
+  private[vector] lazy val fixedPrecisionScale =
     Try(ConfigFactory.load().getDouble("geotrellis.jts.precision.scale"))
 
   private[vector] val precisionModel = precisionType match {
