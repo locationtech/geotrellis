@@ -25,7 +25,7 @@ import com.vividsolutions.jts.precision.GeometryPrecisionReducer
 
 import scala.util.Try
 
-private[vector] object GeomFactory extends LazyLogging {
+object GeomFactory extends LazyLogging {
 
   val precisionType = {
     val setting = Try(ConfigFactory.load().getString("geotrellis.jts.precision.type").toLowerCase)
@@ -37,14 +37,16 @@ private[vector] object GeomFactory extends LazyLogging {
     }
   }
 
-  val precisionModel = precisionType match {
+  lazy val fixedPrecisionScale =
+    Try(ConfigFactory.load().getDouble("geotrellis.jts.precision.scale"))
+
+  private[vector] val precisionModel = precisionType match {
     case "floating" => new PrecisionModel()
     case "floating_single" => new PrecisionModel(PrecisionModel.FLOATING_SINGLE)
     case "fixed" =>
-      val scaleFromConfig = Try(ConfigFactory.load().getDouble("geotrellis.jts.precision.scale"))
       val scale =
-        if (scaleFromConfig.isSuccess)
-          scaleFromConfig.get
+        if (fixedPrecisionScale.isSuccess)
+          fixedPrecisionScale.get
         else {
           logger.warn("No value specified in application.conf for geotrellis.jts.precision.scale; using default")
           1e12
@@ -56,7 +58,7 @@ private[vector] object GeomFactory extends LazyLogging {
   val factory = new geom.GeometryFactory(precisionModel)
 
   // 12 digits is maximum to avoid [[TopologyException]], see https://web.archive.org/web/20160226031453/http://tsusiatsoftware.net/jts/jts-faq/jts-faq.html#D9
-  lazy val simplifier = {
+  private[vector] lazy val simplifier = {
     val simplificationPrecision = Try(ConfigFactory.load().getDouble("geotrellis.jts.simplification.scale"))
     val scale =
       if (simplificationPrecision.isSuccess)

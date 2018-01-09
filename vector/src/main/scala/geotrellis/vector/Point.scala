@@ -21,8 +21,11 @@ import com.vividsolutions.jts.algorithm.CGAlgorithms
 import GeomFactory._
 
 object Point {
-  def apply(x: Double, y: Double): Point =
-    Point(factory.createPoint(new jts.Coordinate(x, y)))
+  def apply(x: Double, y: Double): Point = {
+    val coord = new jts.Coordinate(x, y)
+    factory.getPrecisionModel.makePrecise(coord)
+    Point(factory.createPoint(coord))
+  }
 
   def apply(t: (Double, Double)): Point =
     apply(t._1, t._2)
@@ -40,11 +43,11 @@ case class Point(jtsGeom: jts.Point) extends Geometry
   assert(!jtsGeom.isEmpty)
 
   /** The Point's x-coordinate */
-  val x: Double =
+  def x: Double =
     jtsGeom.getX
 
   /** The Point's y-coordinate */
-  val y: Double =
+  def y: Double =
     jtsGeom.getY
 
   private[vector] def toCoordinate() =
