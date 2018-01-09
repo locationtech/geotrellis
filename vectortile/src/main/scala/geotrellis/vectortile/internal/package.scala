@@ -54,7 +54,7 @@ package object internal {
       case (dx, dy) =>
         val here = (dx + cursor._1, dy + cursor._2)
 
-        points.append(here)
+        points += here
         cursor = here
     })
 
@@ -252,7 +252,7 @@ package object internal {
           val nextCursor: (Int, Int) = points.last
 
           /* Add the starting point to close the Line into a Polygon */
-          points.append(here)
+          points += here
 
           work(rest, lines += points, nextCursor)
         }
@@ -280,10 +280,10 @@ package object internal {
         val area = surveyor(line)
 
         if (area < 0) { /* New Interior Rings */
-          holes.append(tr(line))
+          holes += tr(line)
         } else { /* New Exterior Ring */
           /* Save the current state */
-          polys.append(Polygon(tr(currL), holes))
+          polys += Polygon(tr(currL), holes)
 
           /* Reset the state */
           currL = line
@@ -292,7 +292,7 @@ package object internal {
       })
 
       /* Save the final state */
-      polys.append(Polygon(tr(currL), holes))
+      polys += Polygon(tr(currL), holes)
 
       if (polys.length == 1) Left(polys.head) else Right(MultiPolygon(polys))
     }

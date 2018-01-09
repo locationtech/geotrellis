@@ -2,8 +2,8 @@ import Dependencies._
 
 name := "geotrellis-spark"
 libraryDependencies ++= Seq(
-  sparkCore % "provided",
-  hadoopClient % "provided",
+  sparkCore % Provided,
+  hadoopClient % Provided,
   "com.google.uzaygezen" % "uzaygezen-core" % "0.2",
   "org.scalaj" %% "scalaj-http" % "2.3.0",
   avro,
@@ -11,7 +11,7 @@ libraryDependencies ++= Seq(
   monocleCore, monocleMacro,
   chronoscala,
   scalazStream,
-  scalatest % "test",
+  scalatest % Test,
   logging,
   scaffeine
 )

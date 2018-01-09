@@ -388,6 +388,12 @@ class GeoTiffReaderSpec extends FunSpec
       tile.polygonalMean(extent, extent.toPolygon) should be (mean +- MeanEpsilon)
     }
 
+    it("should read GeoTiff with incorrect GeoKey Directory header correctly (NumberOfKeys is wrong)") {
+      val MultibandGeoTiff(_, extent, _, _, _, _) = MultibandGeoTiff(geoTiffPath("incorrect-geokeydir.tif"))
+
+      extent should be (Extent(0.0, 0.0, 22.0, 49.0))
+    }
+
     it("should read GeoTiff with tags") {
       val tags = SinglebandGeoTiff.compressed(geoTiffPath("tags.tif")).tags.headTags
 

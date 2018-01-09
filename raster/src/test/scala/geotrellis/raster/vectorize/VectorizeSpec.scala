@@ -559,4 +559,15 @@ class VectorizeSpec extends FunSpec
       toVector.length should be (4)
     }
   }
+
+  describe("test case that has thrown topology exceptions in the past") {
+    import geotrellis.raster.io.geotiff._
+
+    val gt = SinglebandGeoTiff("raster/data/vectorize-bug-1.tif")
+    val r = gt.raster
+    val t = r.tile
+
+    val polys = t.toVector(r.extent)
+    polys.size should be (88)
+  }
 }

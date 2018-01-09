@@ -2,34 +2,19 @@ import Dependencies._
 
 name := "geotrellis-raster"
 
-
 libraryDependencies ++= Seq(
   typesafeConfig,
   jts,
   spire,
   monocleCore,
   monocleMacro,
-  scalatest % "test",
-  scalacheck  % "test"
+  scalatest % Test,
+  scalacheck % Test
 )
-
-libraryDependencies := {
-  CrossVersion.partialVersion(scalaVersion.value) match {
-    // if scala 2.11+ is used, add dependency on scala-xml module
-    case Some((2, scalaMajor)) if scalaMajor >= 11 =>
-      libraryDependencies.value ++ Seq(
-        "org.scala-lang.modules" %% "scala-xml" % "1.0.6"
-      )
-    case _ =>
-      libraryDependencies.value
-  }
-}
 
 mimaPreviousArtifacts := Set(
   "org.locationtech.geotrellis" %% "geotrellis-raster" % Version.previousVersion
 )
-
-addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
 
 sourceGenerators in Compile += (sourceManaged in Compile).map(Boilerplate.genRaster).taskValue
 

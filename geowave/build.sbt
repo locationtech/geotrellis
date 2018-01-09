@@ -23,27 +23,28 @@ libraryDependencies ++= Seq(
   "mil.nga.giat" % "geowave-datastore-accumulo" % "0.9.3"
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
-  hadoopClient % "provided"
+  hadoopClient % Provided
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
-  "org.geotools" % "gt-coverage" % Version.geotools % "provided"
+  "org.geotools" % "gt-coverage" % Version.geotools % Provided
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
-  "org.geotools" % "gt-epsg-hsql" % Version.geotools % "provided"
+  "org.geotools" % "gt-epsg-hsql" % Version.geotools % Provided
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
-  "org.geotools" % "gt-main" % Version.geotools % "provided"
+  "org.geotools" % "gt-main" % Version.geotools % Provided
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
-  "org.geotools" % "gt-referencing" % Version.geotools % "provided"
+  "org.geotools" % "gt-referencing" % Version.geotools % Provided
     excludeAll(ExclusionRule(organization = "org.mortbay.jetty"),
       ExclusionRule(organization = "javax.servlet")),
   "com.jsuereth" %% "scala-arm" % "2.0",
   "de.javakaffee" % "kryo-serializers" % "0.38" exclude("com.esotericsoftware", "kryo"),
   "com.esotericsoftware" % "kryo-shaded" % "3.0.3",
-  sparkCore % "provided",
+  sparkCore % Provided,
   spire,
-  scalatest % "test")
+  scalatest % Test
+)
 
 resolvers ++= Seq(
   // Resolver.mavenLocal,

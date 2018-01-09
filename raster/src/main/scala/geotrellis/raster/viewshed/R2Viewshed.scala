@@ -347,7 +347,7 @@ object R2Viewshed extends Serializable {
       val seg = northSegs(i)
       alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
       Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
-      if (!terminated && !seg.isRumpSegment) southRays.append(Ray(seg.theta, alpha))
+      if (!terminated && !seg.isRumpSegment) (southRays += Ray(seg.theta, alpha))
       i += 1
     }
 
@@ -358,7 +358,7 @@ object R2Viewshed extends Serializable {
       val seg = southSegs(i)
       alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
       Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
-      if (!terminated && !seg.isRumpSegment) northRays.append(Ray(seg.theta, alpha))
+      if (!terminated && !seg.isRumpSegment) (northRays += Ray(seg.theta, alpha))
       i += 1
     }
 
@@ -377,7 +377,7 @@ object R2Viewshed extends Serializable {
         val seg = eastSegs(i)
         alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
         Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
-        if (!terminated && !seg.isRumpSegment) westRays.append(Ray(seg.theta, alpha))
+        if (!terminated && !seg.isRumpSegment) (westRays += Ray(seg.theta, alpha))
         i += 1
       }
     }
@@ -397,7 +397,7 @@ object R2Viewshed extends Serializable {
         val seg = westSegs(i)
         alpha = thetaToAlpha(from, rays, seg.theta); terminated = false
         Rasterizer.foreachCellInGridLine(seg.x0, seg.y0, seg.x1, seg.y1, null, re, false)(callback)
-        if (!terminated && !seg.isRumpSegment) eastRays.append(Ray(seg.theta, alpha))
+        if (!terminated && !seg.isRumpSegment) (eastRays += Ray(seg.theta, alpha))
         i += 1
       }
     }

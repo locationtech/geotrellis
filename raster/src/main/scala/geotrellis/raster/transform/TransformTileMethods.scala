@@ -115,8 +115,8 @@ trait TransformTileMethods extends TransformMethods[Tile] {
     } else {
       cfor(0)(_ < cols, _ + 1) { col =>
         cfor(0)(_ < rows, _ + 1) { row =>
-          tile.setDouble(col, rows - 1 - row, tile.getDouble(col, row))
-          tile.setDouble(col, row, tile.getDouble(col, rows - 1 - row))
+          tile.setDouble(col, rows - 1 - row, self.getDouble(col, row))
+          tile.setDouble(col, row, self.getDouble(col, rows - 1 - row))
         }
       }
     }

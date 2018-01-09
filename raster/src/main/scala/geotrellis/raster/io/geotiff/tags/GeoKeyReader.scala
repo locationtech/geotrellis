@@ -33,11 +33,16 @@ object GeoKeyReader {
     geoKeyDirectory: GeoKeyDirectory, index: Int = 0
   ): GeoKeyDirectory = {
 
+    /**
+      * Attempt to read GeoKey Entry; if tag does not match then assume there are no
+      * more valid geokeys and the header was written incorrectly so return `None`
+      */
     def readGeoKeyEntry(keyMetadata: GeoKeyMetadata,
-      geoKeyDirectory: GeoKeyDirectory)  = keyMetadata.tiffTagLocation match {
-      case 0 => readShort(keyMetadata, geoKeyDirectory)
-      case DoublesTag => readDoubles(keyMetadata, geoKeyDirectory)
-      case AsciisTag => readAsciis(keyMetadata, geoKeyDirectory)
+      geoKeyDirectory: GeoKeyDirectory): Option[GeoKeyDirectory] = keyMetadata.tiffTagLocation match {
+      case 0 => Some(readShort(keyMetadata, geoKeyDirectory))
+      case DoublesTag => Some(readDoubles(keyMetadata, geoKeyDirectory))
+      case AsciisTag => Some(readAsciis(keyMetadata, geoKeyDirectory))
+      case _ => None
     }
 
     def readShort(keyMetadata: GeoKeyMetadata,
@@ -245,10 +250,10 @@ object GeoKeyReader {
           byteReader.getUnsignedShort,
           byteReader.getUnsignedShort
         )
-
-        val updatedDirectory = readGeoKeyEntry(keyEntryMetadata, geoKeyDirectory)
-
-        read(byteReader, imageDirectory, updatedDirectory, index + 1)
+        readGeoKeyEntry(keyEntryMetadata, geoKeyDirectory) match {
+          case Some(updatedDirectory) => read(byteReader, imageDirectory, updatedDirectory, index + 1)
+          case None => geoKeyDirectory
+        }
       }
     }
   }

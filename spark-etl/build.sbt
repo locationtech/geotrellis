@@ -3,8 +3,8 @@ import Dependencies._
 name := "geotrellis-spark-etl"
 libraryDependencies ++= Seq(
   jsonSchemaValidator,
-  sparkCore % "provided",
-  scalatest % "test"
+  sparkCore % Provided,
+  scalatest % Test
 )
 
 test in assembly := {}
