@@ -61,3 +61,11 @@ class FileCOGLayerWriter(
     }
   }
 }
+
+object FileCOGLayerWriter {
+  def apply(attributeStore: FileAttributeStore): FileCOGLayerWriter =
+    new FileCOGLayerWriter(attributeStore)
+
+  def apply(catalogPath: String): FileCOGLayerWriter =
+    apply(FileAttributeStore(catalogPath))
+}

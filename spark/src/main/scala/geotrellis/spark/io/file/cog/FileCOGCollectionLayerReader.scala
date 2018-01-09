@@ -21,7 +21,7 @@ import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
-import geotrellis.spark.io.file.KeyPathGenerator
+import geotrellis.spark.io.file.{FileAttributeStore, KeyPathGenerator}
 import geotrellis.util._
 
 import spray.json.JsonFormat
@@ -65,4 +65,13 @@ class FileCOGCollectionLayerReader(
   }
 }
 
+object FileCOGCollectionLayerReader {
+  def apply(attributeStore: AttributeStore, catalogPath: String): FileCOGCollectionLayerReader =
+    new FileCOGCollectionLayerReader(attributeStore, catalogPath)
 
+  def apply(catalogPath: String): FileCOGCollectionLayerReader =
+    apply(new FileAttributeStore(catalogPath), catalogPath)
+
+  def apply(attributeStore: FileAttributeStore): FileCOGCollectionLayerReader =
+    apply(attributeStore, attributeStore.catalogPath)
+}

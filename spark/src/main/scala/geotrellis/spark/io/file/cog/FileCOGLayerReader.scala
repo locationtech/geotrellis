@@ -21,13 +21,11 @@ import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
-import geotrellis.spark.io.file.KeyPathGenerator
+import geotrellis.spark.io.file.{FileAttributeStore, KeyPathGenerator}
 import geotrellis.util._
-
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
 import com.typesafe.config.ConfigFactory
-
 import java.net.URI
 import java.io.File
 
@@ -66,4 +64,15 @@ class FileCOGLayerReader(
       defaultThreads  = defaultThreads
     )
   }
+}
+
+object FileCOGLayerReader {
+  def apply(attributeStore: AttributeStore, catalogPath: String)(implicit sc: SparkContext): FileCOGLayerReader =
+    new FileCOGLayerReader(attributeStore, catalogPath)
+
+  def apply(catalogPath: String)(implicit sc: SparkContext): FileCOGLayerReader =
+    apply(new FileAttributeStore(catalogPath), catalogPath)
+
+  def apply(attributeStore: FileAttributeStore)(implicit sc: SparkContext): FileCOGLayerReader =
+    apply(attributeStore, attributeStore.catalogPath)
 }

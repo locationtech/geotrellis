@@ -49,12 +49,19 @@ abstract class COGCollectionLayerReader[ID] { self =>
     fullPath: String => URI, // add an fs prefix
     defaultThreads: Int
   )(implicit getByteReader: URI => ByteReader, idToLayerId: ID => LayerId): Seq[(K, V)] with Metadata[TileLayerMetadata[K]] = {
-    // if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
-
     val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
-      attributeStore.read[COGLayerStorageMetadata[K]](LayerId(id.name, 0), "cog_metadata")
+      try {
+        attributeStore.read[COGLayerStorageMetadata[K]](LayerId(id.name, 0), "cog_metadata")
+      } catch {
+        // to follow GeoTrellis Layer Readers logic
+        case e: AttributeNotFoundError => throw new LayerNotFoundError(id).initCause(e)
+      }
 
     val metadata = cogLayerMetadata.tileLayerMetadata(id.zoom)
+
+    println(s"========================")
+    println(s"metadata($id): $metadata")
+    println(s"========================")
 
     val queryKeyBounds: Seq[KeyBounds[K]] = tileQuery(metadata)
 

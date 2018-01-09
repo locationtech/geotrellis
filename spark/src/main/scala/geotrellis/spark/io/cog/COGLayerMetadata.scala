@@ -58,6 +58,7 @@ case class COGLayerMetadata[K: SpatialComponent](
             baseLayout
               .mapTransform
               .keyToExtent(baseMinKey)
+              .bufferByLayout(layout)
               .center
           )
 
@@ -68,6 +69,7 @@ case class COGLayerMetadata[K: SpatialComponent](
             baseLayout
               .mapTransform
               .keyToExtent(baseMaxKey)
+              .bufferByLayout(layout)
               .center
           )
 

@@ -69,10 +69,14 @@ abstract class FilteringCOGLayerReader[ID] extends COGLayerReader[ID] {
              getByteReader: URI => ByteReader,
              idToLayerId: ID => LayerId
   ): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] = {
-    //if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
     val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
-      attributeStore.read[COGLayerStorageMetadata[K]](LayerId(id.name, 0), "cog_metadata")
+      try {
+        attributeStore.read[COGLayerStorageMetadata[K]](LayerId(id.name, 0), "cog_metadata")
+      } catch {
+        // to follow GeoTrellis Layer Readers logic
+        case e: AttributeNotFoundError => throw new LayerNotFoundError(id).initCause(e)
+      }
 
     val metadata = cogLayerMetadata.tileLayerMetadata(id.zoom)
 

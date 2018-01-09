@@ -45,11 +45,10 @@ class COGLayerSpec extends FunSpec
   with Matchers
   with TestEnvironment {
   describe("COGLayer") {
+    new Path(inputHome, "cea.tif")
 
     it("should write GeoTrellis COGLayer") {
-      val source = sc.hadoopGeoTiffRDD(
-        new Path(s"file:///${Paths.get("raster").toAbsolutePath.toString}/data/geotiff-test-files/reproject/cea.tif")
-      )
+      val source = sc.hadoopGeoTiffRDD(new Path(inputHome, "cea.tif"))
       val list: ListBuffer[(Int, TileLayerRDD[SpatialKey])] = ListBuffer()
       val layoutScheme = ZoomedLayoutScheme(WebMercator, 256)
 
@@ -58,6 +57,10 @@ class COGLayerSpec extends FunSpec
       }
 
       val (zoom, layer) = list.head
+
+      println(s"layer.metadata.bounds: ${layer.metadata.bounds}")
+      println(s"layer.keys.collect(): ${layer.keys.collect().toList}")
+
       val index: ZSpatialKeyIndex = new ZSpatialKeyIndex(layer.metadata.bounds match {
         case kb: KeyBounds[SpatialKey] => kb
         case _ => null
