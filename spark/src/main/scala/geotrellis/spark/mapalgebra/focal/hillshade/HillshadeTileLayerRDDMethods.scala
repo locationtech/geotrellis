@@ -21,14 +21,23 @@ import geotrellis.spark.mapalgebra.focal._
 import geotrellis.raster.mapalgebra.focal.hillshade._
 import geotrellis.raster.mapalgebra.focal._
 
+import org.apache.spark.Partitioner
+
+
 trait HillshadeTileLayerRDDMethods[K] extends FocalOperation[K] {
   /** Calculates the hillshade of each cell in a raster.
    *
    * @see [[geotrellis.raster.mapalgebra.focal.Hillshade]]
    */
-  def hillshade(azimuth: Double = 315, altitude: Double = 45, zFactor: Double = 1, target: TargetCell = TargetCell.All) = {
+  def hillshade(
+    azimuth: Double = 315,
+    altitude: Double = 45,
+    zFactor: Double = 1,
+    target: TargetCell = TargetCell.All,
+    partitioner: Option[Partitioner] = None
+  ) = {
     val n = Square(1)
-    focalWithCellSize(n) { (tile, bounds, cellSize) =>
+    focalWithCellSize(n, partitioner) { (tile, bounds, cellSize) =>
       Hillshade(tile, n, bounds, cellSize, azimuth, altitude, zFactor, target)
     }.mapContext(_.copy(cellType = DoubleConstantNoDataCellType))
   }
