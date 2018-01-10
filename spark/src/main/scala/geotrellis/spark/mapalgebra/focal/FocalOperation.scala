@@ -23,6 +23,7 @@ import geotrellis.raster.mapalgebra.focal._
 import geotrellis.util.MethodExtensions
 
 import org.apache.spark.rdd.RDD
+import org.apache.spark.Partitioner
 
 import scala.reflect.ClassTag
 
@@ -49,15 +50,21 @@ object FocalOperation {
 
 abstract class FocalOperation[K: SpatialComponent: ClassTag] extends MethodExtensions[TileLayerRDD[K]] {
 
-  def focal(n: Neighborhood)
+  def focal(n: Neighborhood, partitioner: Option[Partitioner])
       (calc: (Tile, Option[GridBounds]) => Tile): TileLayerRDD[K] =
-    FocalOperation(self, n)(calc)
+        partitioner match {
+          case None => FocalOperation(self, n)(calc)
+          case Some(p) => FocalOperation(self.withContext { _.partitionBy(p) }, n)(calc)
+        }
 
-  def focalWithCellSize(n: Neighborhood)
+  def focalWithCellSize(n: Neighborhood, partitioner: Option[Partitioner])
       (calc: (Tile, Option[GridBounds], CellSize) => Tile): TileLayerRDD[K] = {
     val cellSize = self.metadata.layout.cellSize
-    FocalOperation(self, n){ (tile, bounds) =>
-      calc(tile, bounds, cellSize)
+    partitioner match {
+      case None =>
+        FocalOperation(self, n){ (tile, bounds) => calc(tile, bounds, cellSize) }
+      case Some(p) =>
+        FocalOperation(self.withContext { _.partitionBy(p) }, n){ (tile, bounds) => calc(tile, bounds, cellSize) }
     }
   }
 }
