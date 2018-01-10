@@ -1,4 +1,4 @@
-package geotrellis.spark.io.cog
+package geotrellis.spark.testkit.testfiles.cog
 
 import geotrellis.proj4._
 import geotrellis.raster._
@@ -13,11 +13,12 @@ import geotrellis.spark.tiling._
 
 import jp.ne.opt.chronoscala.Imports._
 import org.apache.spark.SparkContext
-import java.time.{ZoneOffset, ZonedDateTime}
 import org.apache.hadoop.fs.Path
 
+import java.time.{ZoneOffset, ZonedDateTime}
+
 trait COGTestFiles { self: TestEnvironment =>
-  lazy val (zoomLevel, spatialCea): (Int, TileLayerRDD[SpatialKey]) = {
+  lazy val (zoomLevelCea, spatialCea): (Int, TileLayerRDD[SpatialKey]) = {
     val sourceTiles = sc.hadoopGeoTiffRDD(new Path(inputHome, "cea.tif"))
     val layoutScheme = ZoomedLayoutScheme(WebMercator, 256)
     val (_, tileLayerMetadata) = sourceTiles.collectMetadata[SpatialKey](FloatingLayoutScheme(256))
@@ -27,8 +28,6 @@ trait COGTestFiles { self: TestEnvironment =>
 
     contextRdd.reproject(WebMercator, layoutScheme, NearestNeighbor)
   }
-
-  println(s"spatialCea.metadata.bounds: ${spatialCea.metadata.bounds}")
 
   lazy val temporalCea: TileLayerRDD[SpaceTimeKey] = {
     val times =
@@ -100,7 +99,8 @@ trait COGTestFiles { self: TestEnvironment =>
 }
 
 object COGTestFiles {
-  val ZOOM_LEVEL = 8
+  val ZOOM_LEVEL = 3
+  val ZOOM_LEVEL_CEA = 12
   val partitionCount = 4
 
   def generateSpatial(layerName: String)(implicit sc: SparkContext): TileLayerRDD[SpatialKey] = {

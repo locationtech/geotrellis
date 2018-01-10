@@ -22,8 +22,8 @@ import geotrellis.spark.io.index._
 trait SpatialKeyIndexMethods {
   def keyIndexMethods: Map[String, KeyIndexMethod[SpatialKey]] =
     Map(
-      //"row major" -> RowMajorKeyIndexMethod,
+      "row major" -> RowMajorKeyIndexMethod,
       "z order" -> ZCurveKeyIndexMethod
-      //"hilbert" -> HilbertKeyIndexMethod
+      "hilbert" -> HilbertKeyIndexMethod
     )
 }

@@ -26,8 +26,8 @@ import geotrellis.spark.io.cog._
 import geotrellis.spark.io.cog.GeoTiffSegmentConstructMethods
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.json._
+import geotrellis.spark.testkit.testfiles.cog.COGTestFiles
 import geotrellis.util._
-
 import org.apache.spark.rdd.RDD
 import org.scalatest._
 import spray.json._
@@ -78,13 +78,12 @@ abstract class COGPersistenceSpec[
   def keyIndexMethods: Map[String, KeyIndexMethod[K]]
 
   def getLayerIds(keyIndexMethod: String): COGPersistenceSpecLayerIds = {
-    val zoomLevel = 3 //12 // 3
     val suffix = keyIndexMethod.replace(" ", "_")
-    val layerId = LayerId(s"COGsample-${getClass.getName}-${suffix}", zoomLevel)
-    val deleteLayerId = LayerId(s"deleteCOGSample-${getClass.getName}-${suffix}", zoomLevel) // second layer to avoid data race
-    val copiedLayerId = LayerId(s"copyCOGSample-${getClass.getName}-${suffix}", zoomLevel)
-    val movedLayerId = LayerId(s"movCOGeSample-${getClass.getName}-${suffix}", zoomLevel)
-    val reindexedLayerId = LayerId(s"reindexedCOGSample-${getClass.getName}-${suffix}", zoomLevel)
+    val layerId = LayerId(s"COGsample-${getClass.getName}-${suffix}", COGTestFiles.ZOOM_LEVEL)
+    val deleteLayerId = LayerId(s"deleteCOGSample-${getClass.getName}-${suffix}", COGTestFiles.ZOOM_LEVEL) // second layer to avoid data race
+    val copiedLayerId = LayerId(s"copyCOGSample-${getClass.getName}-${suffix}", COGTestFiles.ZOOM_LEVEL)
+    val movedLayerId = LayerId(s"movCOGeSample-${getClass.getName}-${suffix}", COGTestFiles.ZOOM_LEVEL)
+    val reindexedLayerId = LayerId(s"reindexedCOGSample-${getClass.getName}-${suffix}", COGTestFiles.ZOOM_LEVEL)
     COGPersistenceSpecLayerIds(layerId, deleteLayerId, copiedLayerId, movedLayerId, reindexedLayerId)
   }
 
@@ -120,10 +119,15 @@ abstract class COGPersistenceSpec[
       }
 
       it("should read a layer back") {
-        val actual = reader.read[K, V](layerId).metadata.bounds
-        val expected = sample.metadata.bounds
+        val actual = reader.read[K, V](layerId).keys.collect()
+        val expected = sample.keys.collect()
 
-        actual should be (expected)
+        if (expected.diff(actual).nonEmpty)
+          info(s"missing: ${(expected diff actual).toList}")
+        if (actual.diff(expected).nonEmpty)
+          info(s"unwanted: ${(actual diff expected).toList}")
+
+        actual should contain theSameElementsAs expected
       }
 
       it("should read a layer back (collections api)") {

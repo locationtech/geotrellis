@@ -59,10 +59,6 @@ abstract class COGCollectionLayerReader[ID] { self =>
 
     val metadata = cogLayerMetadata.tileLayerMetadata(id.zoom)
 
-    println(s"========================")
-    println(s"metadata($id): $metadata")
-    println(s"========================")
-
     val queryKeyBounds: Seq[KeyBounds[K]] = tileQuery(metadata)
 
     val readDefinitions: Seq[(ZoomRange, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])])] =

@@ -232,9 +232,6 @@ object COGLayerMetadata {
 
     val baseLayout = layoutScheme.levelForZoom(maxZoom).layout
 
-    println(s"COGLayerMetadata::keyBounds: $keyBounds")
-    println(s"COGLayerMetadata::baseLayout.mapTransform(extent): ${baseLayout.mapTransform(extent)}")
-
     val pmin =
       baseLayout
         .mapTransform
@@ -255,8 +252,6 @@ object COGLayerMetadata {
         keyBounds.maxKey.setComponent[SpatialKey](skMax)
       )
     }
-
-    println(s"COGLayerMetadata::getKeyBounds(baseLayout): ${getKeyBounds(baseLayout)}")
 
     // List of ranges, the current maximum zoom for the next range, the current tile size
     // for the range, and a flag for whether or not we've gotten to a zoom level that
@@ -294,18 +289,13 @@ object COGLayerMetadata {
         }
       }
 
-    val res = COGLayerMetadata(
+    COGLayerMetadata(
       cellType,
       zoomRanges.toVector,
       layoutScheme,
       extent,
       crs
     )
-
-    println(s"COGLayerMetadata::res.keyBoundsForZoom(maxZoom): ${res.keyBoundsForZoom(maxZoom)}")
-    println(s"zoomRanges: ${zoomRanges.toList}")
-
-    res
   }
 
   implicit def cogLayerMetadataFormat[K: SpatialComponent: JsonFormat] =

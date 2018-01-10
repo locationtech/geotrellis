@@ -16,8 +16,6 @@
 
 package geotrellis.spark.io.cog
 
-import java.nio.file.Paths
-
 import geotrellis.vector._
 import geotrellis.spark._
 import geotrellis.spark.io._
@@ -36,6 +34,7 @@ import geotrellis.spark.io.file.FileAttributeStore
 import geotrellis.spark.io.file.cog._
 import geotrellis.spark.io.hadoop.cog._
 import geotrellis.spark.io.index.ZCurveKeyIndexMethod
+
 import org.apache.hadoop.fs.Path
 import org.scalatest._
 
@@ -44,9 +43,7 @@ import scala.collection.mutable.ListBuffer
 class COGLayerSpec extends FunSpec
   with Matchers
   with TestEnvironment {
-  describe("COGLayer") {
-    new Path(inputHome, "cea.tif")
-
+  ignore("COGLayer CEA test suite") {
     it("should write GeoTrellis COGLayer") {
       val source = sc.hadoopGeoTiffRDD(new Path(inputHome, "cea.tif"))
       val list: ListBuffer[(Int, TileLayerRDD[SpatialKey])] = ListBuffer()

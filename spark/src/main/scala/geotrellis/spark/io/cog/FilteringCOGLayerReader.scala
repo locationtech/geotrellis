@@ -80,8 +80,6 @@ abstract class FilteringCOGLayerReader[ID] extends COGLayerReader[ID] {
 
     val metadata = cogLayerMetadata.tileLayerMetadata(id.zoom)
 
-    println(s"metadata: $metadata")
-
     val queryKeyBounds: Seq[KeyBounds[K]] = tileQuery(metadata)
 
     val readDefinitions: Seq[(ZoomRange, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])])] =
