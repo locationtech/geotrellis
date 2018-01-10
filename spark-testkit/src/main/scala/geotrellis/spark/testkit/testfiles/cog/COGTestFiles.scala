@@ -151,11 +151,11 @@ object COGTestFiles {
     val md = {
       val cellType = FloatConstantNoDataCellType
       val crs = LatLng
-      val tileLayout = TileLayout(8, 8, 3, 4)
+      val tileLayout = TileLayout(8, 8, 4, 4)
       val mapTransform = MapKeyTransform(crs, tileLayout.layoutDimensions)
-      val gridBounds = GridBounds(1, 1, 6, 7)
+      val gridBounds = GridBounds(1, 1, 8, 8)
       val extent = mapTransform(gridBounds)
-      val keyBounds = KeyBounds(SpaceTimeKey(1,1,times.min), SpaceTimeKey(6,7, times.max))
+      val keyBounds = KeyBounds(SpaceTimeKey(1,1,times.min), SpaceTimeKey(8,8, times.max))
       TileLayerMetadata(cellType, LayoutDefinition(crs.worldExtent, tileLayout), extent, crs, keyBounds)
     }
 

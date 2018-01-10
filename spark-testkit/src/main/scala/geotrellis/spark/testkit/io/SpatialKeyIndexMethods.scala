@@ -23,7 +23,7 @@ trait SpatialKeyIndexMethods {
   def keyIndexMethods: Map[String, KeyIndexMethod[SpatialKey]] =
     Map(
       "row major" -> RowMajorKeyIndexMethod,
-      "z order" -> ZCurveKeyIndexMethod
+      "z order" -> ZCurveKeyIndexMethod,
       "hilbert" -> HilbertKeyIndexMethod
     )
 }

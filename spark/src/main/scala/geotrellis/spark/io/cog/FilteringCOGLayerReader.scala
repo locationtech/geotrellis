@@ -22,13 +22,12 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index.Index
 import geotrellis.util._
-
 import org.apache.spark.rdd._
 import spray.json._
 import org.apache.spark.SparkContext
-
 import java.net.URI
 
+import scala.collection.immutable
 import scala.reflect._
 
 abstract class FilteringCOGLayerReader[ID] extends COGLayerReader[ID] {

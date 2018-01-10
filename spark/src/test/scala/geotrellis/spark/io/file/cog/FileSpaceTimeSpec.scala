@@ -26,12 +26,12 @@ import geotrellis.spark.testkit.io._
 import geotrellis.spark.testkit.io.cog._
 import geotrellis.spark.testkit.testfiles.cog.COGTestFiles
 
-class FileSpatialSpec
-  extends COGPersistenceSpec[SpatialKey, Tile]
+class FileSpaceTimeSpec
+  extends COGPersistenceSpec[SpaceTimeKey, Tile]
     with COGTestFiles
-    with SpatialKeyIndexMethods
+    with SpaceTimeKeyIndexMethods
     with TestEnvironment
-    with COGAllOnesTestTileSpec {
+    with COGCoordinateSpaceTimeSpec {
   lazy val reader = FileCOGLayerReader(outputLocalPath)
   lazy val creader = FileCOGCollectionLayerReader(outputLocalPath)
   lazy val writer = FileCOGLayerWriter(outputLocalPath)
@@ -41,16 +41,5 @@ class FileSpatialSpec
   // lazy val reindexer = FileLayerReindexer(outputLocalPath)
   // lazy val updater = FileLayerUpdater(outputLocalPath)
   lazy val tiles = FileCOGValueReader(outputLocalPath)
-  lazy val sample = AllOnesTestFile // spatialCea
-
-  describe("Filesystem layer names") {
-    it("should not throw with bad characters in name") {
-      val layer = AllOnesTestFile
-      val layerId = LayerId("Some!layer:%@~`{}id", COGTestFiles.ZOOM_LEVEL)
-
-      println(outputLocalPath)
-      writer.write[SpatialKey, Tile](layerId.name, layer, layerId.zoom, ZCurveKeyIndexMethod)
-      val backin = reader.read[SpatialKey, Tile](layerId)
-    }
-  }
+  lazy val sample = CoordinateSpaceTime // spatialCea
 }
