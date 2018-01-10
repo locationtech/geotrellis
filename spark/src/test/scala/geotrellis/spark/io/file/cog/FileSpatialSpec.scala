@@ -41,9 +41,9 @@ class FileSpatialSpec
   // lazy val reindexer = FileLayerReindexer(outputLocalPath)
   // lazy val updater = FileLayerUpdater(outputLocalPath)
   lazy val tiles = FileCOGValueReader(outputLocalPath)
-  lazy val sample = AllOnesTestFile
+  lazy val sample = AllOnesTestFile //spatialCea //AllOnesTestFile
 
-  describe("Filesystem layer names") {
+  /*describe("Filesystem layer names") {
     it("should not throw with bad characters in name") {
       val layer = AllOnesTestFile
       val layerId = LayerId("Some!layer:%@~`{}id", 3)
@@ -52,5 +52,5 @@ class FileSpatialSpec
       writer.write[SpatialKey, Tile](layerId.name, layer, layerId.zoom, ZCurveKeyIndexMethod)
       val backin = reader.read[SpatialKey, Tile](layerId)
     }
-  }
+  }*/
 }

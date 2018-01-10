@@ -78,7 +78,7 @@ abstract class COGPersistenceSpec[
   def keyIndexMethods: Map[String, KeyIndexMethod[K]]
 
   def getLayerIds(keyIndexMethod: String): COGPersistenceSpecLayerIds = {
-    val zoomLevel = 3
+    val zoomLevel = 3 //12 // 3
     val suffix = keyIndexMethod.replace(" ", "_")
     val layerId = LayerId(s"COGsample-${getClass.getName}-${suffix}", zoomLevel)
     val deleteLayerId = LayerId(s"deleteCOGSample-${getClass.getName}-${suffix}", zoomLevel) // second layer to avoid data race
@@ -126,7 +126,7 @@ abstract class COGPersistenceSpec[
         actual should be (expected)
       }
 
-      /*it("should read a layer back (collections api)") {
+      it("should read a layer back (collections api)") {
         val actual = creader.read[K, V](layerId).map(_._1)
         val expected = sample.keys.collect()
 
@@ -144,7 +144,7 @@ abstract class COGPersistenceSpec[
         val readV: V = tileReader.read(key)
         val expectedV: V = sample.filter(_._1 == key).values.first()
         readV should be equals expectedV
-      }*/
+      }
 
       /*it("should delete a layer") {
         deleter.delete(deleteLayerId)

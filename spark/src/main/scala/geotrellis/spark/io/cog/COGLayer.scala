@@ -91,6 +91,13 @@ object COGLayer {
         maxCOGTileSize
       )
 
+    println(s"---------------------")
+    println(s"keyBounds: $keyBounds")
+    println(s"rdd.metadata: ${rdd.metadata}")
+    println(s"cogLayerMetadata.tileLayerMetadata($baseZoom): ${cogLayerMetadata.tileLayerMetadata(baseZoom)}")
+    println(s"bounds: ${cogLayerMetadata.tileLayerMetadata(baseZoom).bounds}")
+    println(s"---------------------")
+
     val layers: Map[ZoomRange, RDD[(K, GeoTiff[V])]] =
       cogLayerMetadata.zoomRanges.
         sorted(Ordering[ZoomRange].reverse).

@@ -45,37 +45,39 @@ case class COGLayerMetadata[K: SpatialComponent](
     layoutScheme.levelForZoom(z).layout
 
   def keyBoundsForZoom(zoom: Int): KeyBounds[K] = {
+    /** "Base" in this function means min zoom level and NOT the highest resolution */
     val (ZoomRange(minZoom, _), baseKeyBounds) = zoomRangeInfoFor(zoom)
     if(minZoom == zoom) baseKeyBounds
     else {
       val (baseLayout, layout) = layoutForZoom(minZoom) -> layoutForZoom(zoom)
       val KeyBounds(baseMinKey, baseMaxKey) = baseKeyBounds
 
-      val minKey =
+      val extentGridBounds =
         layout
           .mapTransform
-          .pointToKey(
-            baseLayout
-              .mapTransform
-              .keyToExtent(baseMinKey)
-              .bufferByLayout(layout)
-              .center
-          )
+          .extentToBounds(extent)
 
-      val maxKey =
+      val gridBounds =
         layout
-          .mapTransform
-          .pointToKey(
+          .mapTransform.extentToBounds(
             baseLayout
               .mapTransform
-              .keyToExtent(baseMaxKey)
+              .boundsToExtent(baseKeyBounds.toGridBounds())
               .bufferByLayout(layout)
-              .center
+        )
+
+      val GridBounds(colMin, rowMin, colMax, rowMax) =
+        extentGridBounds
+          .intersection(gridBounds)
+          .getOrElse(
+            throw new Exception(
+              s"Entire layout grid bounds $extentGridBounds have no intersections to layer grid bounds $gridBounds"
+            )
           )
 
       KeyBounds(
-        baseMinKey.setComponent(minKey),
-        baseMaxKey.setComponent(maxKey)
+        baseMinKey.setComponent(SpatialKey(colMin, rowMin)),
+        baseMaxKey.setComponent(SpatialKey(colMax, rowMax))
       )
     }
   }
@@ -94,6 +96,7 @@ case class COGLayerMetadata[K: SpatialComponent](
     * file should be cropped by
     */
   def getReadDefinitions(queryKeyBounds: KeyBounds[SpatialKey], zoom: Int): (ZoomRange, Seq[(SpatialKey, Int, GridBounds, Seq[(GridBounds, SpatialKey)])]) = {
+    /** "Base" in this function means min zoom level and NOT the highest resolution */
     val zoomRange @ ZoomRange(minZoom, maxZoom) = zoomRangeFor(zoom)
     val (baseLayout, layout) = layoutForZoom(minZoom) -> layoutForZoom(zoom)
 
@@ -104,27 +107,33 @@ case class COGLayerMetadata[K: SpatialComponent](
     val baseQueryKeyBounds = {
       val KeyBounds(minKey, maxKey) = queryKeyBounds
 
-      val baseMinKey =
+      val extentGridBounds =
         baseLayout
           .mapTransform
-          .pointToKey(
-            layout
-              .mapTransform
-              .keyToExtent(minKey)
-              .center
-          )
+          .extentToBounds(extent)
 
-      val baseMaxKey =
+      val gridBounds =
         baseLayout
-          .mapTransform
-          .pointToKey(
+          .mapTransform.extentToBounds(
             layout
               .mapTransform
-              .keyToExtent(maxKey)
-              .center
+              .boundsToExtent(queryKeyBounds.toGridBounds())
+              .bufferByLayout(layout)
           )
 
-      KeyBounds(baseMinKey, baseMaxKey)
+      val GridBounds(colMin, rowMin, colMax, rowMax) =
+        extentGridBounds
+          .intersection(gridBounds)
+          .getOrElse(
+            throw new Exception(
+              s"Entire layout grid bounds $extentGridBounds have no intersections to layer grid bounds $gridBounds"
+            )
+          )
+
+      KeyBounds(
+        minKey.setComponent(SpatialKey(colMin, rowMin)),
+        maxKey.setComponent(SpatialKey(colMax, rowMax))
+      )
     }
 
     val GridBounds(colMin, rowMin, colMax, rowMax) = baseQueryKeyBounds.toGridBounds()
@@ -135,7 +144,10 @@ case class COGLayerMetadata[K: SpatialComponent](
         row <- rowMin to rowMax
       } yield {
         val baseKey = SpatialKey(col, row)
-        val layoutGridBounds = layout.mapTransform(baseKey.extent(baseLayout))
+        val layoutGridBounds =
+          layout
+            .mapTransform
+            .extentToBounds(baseKey.extent(baseLayout))
 
         val seq =
           (for {
@@ -180,7 +192,7 @@ case class COGLayerMetadata[K: SpatialComponent](
             .center
         )
 
-    val layoutGridBounds = layout.mapTransform(baseKey.extent(baseLayout))
+    val layoutGridBounds = layout.mapTransform(baseKey.extent(baseLayout).bufferByLayout(layout))
 
     val gridBounds = {
       val gb = layoutGridBounds
@@ -220,6 +232,9 @@ object COGLayerMetadata {
 
     val baseLayout = layoutScheme.levelForZoom(maxZoom).layout
 
+    println(s"COGLayerMetadata::keyBounds: $keyBounds")
+    println(s"COGLayerMetadata::baseLayout.mapTransform(extent): ${baseLayout.mapTransform(extent)}")
+
     val pmin =
       baseLayout
         .mapTransform
@@ -240,6 +255,8 @@ object COGLayerMetadata {
         keyBounds.maxKey.setComponent[SpatialKey](skMax)
       )
     }
+
+    println(s"COGLayerMetadata::getKeyBounds(baseLayout): ${getKeyBounds(baseLayout)}")
 
     // List of ranges, the current maximum zoom for the next range, the current tile size
     // for the range, and a flag for whether or not we've gotten to a zoom level that
@@ -277,13 +294,18 @@ object COGLayerMetadata {
         }
       }
 
-    COGLayerMetadata(
+    val res = COGLayerMetadata(
       cellType,
       zoomRanges.toVector,
       layoutScheme,
       extent,
       crs
     )
+
+    println(s"COGLayerMetadata::res.keyBoundsForZoom(maxZoom): ${res.keyBoundsForZoom(maxZoom)}")
+    println(s"zoomRanges: ${zoomRanges.toList}")
+
+    res
   }
 
   implicit def cogLayerMetadataFormat[K: SpatialComponent: JsonFormat] =
