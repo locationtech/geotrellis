@@ -20,12 +20,11 @@ import geotrellis.raster.{CellGrid, RasterExtent}
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.index.Index
 import geotrellis.util._
 
 import spray.json._
 import java.net.URI
-
-import geotrellis.spark.io.index.Index
 
 import scala.reflect._
 

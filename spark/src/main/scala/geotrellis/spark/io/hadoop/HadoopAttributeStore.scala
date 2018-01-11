@@ -18,6 +18,7 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.util._
 
 import spray.json._
 import DefaultJsonProtocol._
@@ -28,10 +29,16 @@ import org.apache.hadoop.conf.Configuration
 import java.io.PrintWriter
 import scala.util.matching.Regex
 
-class HadoopAttributeStore(val rootPath: Path, val hadoopConfiguration: Configuration) extends BlobLayerAttributeStore {
+class HadoopAttributeStore(
+  val rootPathString: String,
+  val conf: SerializableConfiguration
+) extends BlobLayerAttributeStore {
   import HadoopAttributeStore._
 
-  val (fs, attributePath) = {
+  def rootPath = new Path(rootPathString)
+  def hadoopConfiguration = conf.value
+
+  @transient lazy val fsAndPath = {
     val ap = new Path(rootPath, "_attributes")
     val fs = ap.getFileSystem(hadoopConfiguration)
 
@@ -41,6 +48,9 @@ class HadoopAttributeStore(val rootPath: Path, val hadoopConfiguration: Configur
     // Get the absolute path to attributes
     (fs, fs.getFileStatus(ap).getPath)
   }
+
+  def fs = fsAndPath._1
+  def attributePath = fsAndPath._2
 
   def attributePath(layerId: LayerId, attributeName: String): Path = {
     val fname = s"${layerId.name}${SEP}${layerId.zoom}${SEP}${attributeName}.json"
@@ -160,7 +170,7 @@ object HadoopAttributeStore {
   }
 
   def apply(rootPath: Path, config: Configuration): HadoopAttributeStore =
-    new HadoopAttributeStore(rootPath, config)
+    new HadoopAttributeStore(rootPath.toUri.toString, SerializableConfiguration(config))
 
   def apply(rootPath: Path)(implicit sc: SparkContext): HadoopAttributeStore =
     apply(rootPath, sc.hadoopConfiguration)

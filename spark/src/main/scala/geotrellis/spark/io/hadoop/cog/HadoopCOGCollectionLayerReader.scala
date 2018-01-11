@@ -22,16 +22,16 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.index.Index
-import geotrellis.spark.io.hadoop.HdfsUtils
+import geotrellis.spark.io.hadoop._
 import geotrellis.util._
 
 import com.typesafe.config.ConfigFactory
 import spray.json.JsonFormat
-
-import java.net.URI
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
+import org.apache.spark.SparkContext
+
+import java.net.URI
 
 import scala.reflect.ClassTag
 
@@ -43,12 +43,12 @@ import scala.reflect.ClassTag
 class HadoopCOGCollectionLayerReader(
   val attributeStore: AttributeStore,
   val catalogPath: String,
-  val conf: Configuration = new Configuration,
+  val conf: SerializableConfiguration = SerializableConfiguration(new Configuration),
   val defaultThreads: Int = ConfigFactory.load().getThreads("geotrellis.hadoop.threads.collection.read")
 )
   extends COGCollectionLayerReader[LayerId] with LazyLogging {
 
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, conf)
+  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, conf.value)
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
@@ -65,11 +65,21 @@ class HadoopCOGCollectionLayerReader(
       tileQuery       = tileQuery,
       indexFilterOnly = indexFilterOnly,
       getKeyPath      = getKeyPath,
-      pathExists      = { str => HdfsUtils.pathExists(new Path(s"hdfs://$str"), conf) },
-      fullPath        = { path => new URI(s"hdfs://$path") },
+      pathExists      = { str => HdfsUtils.pathExists(new Path(str), conf.value) },
+      fullPath        = { path => new URI(path) },
       defaultThreads  = defaultThreads
     )
   }
 }
 
+object HadoopCOGCollectionLayerReader {
+  def apply(attributeStore: HadoopAttributeStore): HadoopCOGCollectionLayerReader =
+    new HadoopCOGCollectionLayerReader(attributeStore, attributeStore.rootPath.toString, attributeStore.conf)
+
+  def apply(rootPath: Path)(implicit sc: SparkContext): HadoopCOGCollectionLayerReader =
+    apply(HadoopAttributeStore(rootPath))
+
+  def apply(rootPath: Path, conf: Configuration): HadoopCOGCollectionLayerReader =
+    apply(HadoopAttributeStore(rootPath, conf))
+}
 

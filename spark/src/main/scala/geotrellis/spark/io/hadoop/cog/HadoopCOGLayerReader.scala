@@ -22,7 +22,7 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.index.Index
-import geotrellis.spark.io.hadoop.HdfsUtils
+import geotrellis.spark.io.hadoop._
 import geotrellis.util._
 
 import com.typesafe.config.ConfigFactory
@@ -45,9 +45,11 @@ class HadoopCOGLayerReader(
   val defaultThreads: Int = ConfigFactory.load().getThreads("geotrellis.hadoop.threads.rdd.read")
 )(@transient implicit val sc: SparkContext) extends FilteringCOGLayerReader[LayerId] with LazyLogging {
 
+  val hadoopConfiguration = SerializableConfiguration(sc.hadoopConfiguration)
+
   val defaultNumPartitions: Int = sc.defaultParallelism
 
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, sc.hadoopConfiguration)
+  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, hadoopConfiguration.value)
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
@@ -65,9 +67,17 @@ class HadoopCOGLayerReader(
       numPartitions   = numPartitions,
       filterIndexOnly = filterIndexOnly,
       getKeyPath      = getKeyPath,
-      pathExists      = { str => HdfsUtils.pathExists(new Path(s"hdfs://$str"), sc.hadoopConfiguration) },
-      fullPath        = { path => new URI(s"hdfs://$path") },
+      pathExists      = { str => HdfsUtils.pathExists(new Path(str), hadoopConfiguration.value) },
+      fullPath        = { path => new URI(path) },
       defaultThreads  = defaultThreads
     )
   }
+}
+
+object HadoopCOGLayerReader {
+  def apply(attributeStore: HadoopAttributeStore)(implicit sc: SparkContext): HadoopCOGLayerReader =
+    new HadoopCOGLayerReader(attributeStore, attributeStore.rootPath.toString)
+
+  def apply(rootPath: Path)(implicit sc: SparkContext): HadoopCOGLayerReader =
+    apply(HadoopAttributeStore(rootPath))
 }

@@ -3,13 +3,14 @@ package geotrellis.spark.io.hadoop.cog
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.spark._
+import geotrellis.spark.io.InvalidLayerIdError
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.cog.vrt.VRT
 import geotrellis.spark.io.cog.vrt.VRT.IndexedSimpleSource
 import geotrellis.spark.io.hadoop.{HadoopAttributeStore, HdfsUtils}
 import geotrellis.spark.io.index._
-
 import org.apache.hadoop.fs.Path
+import org.apache.spark.SparkContext
 import spray.json.JsonFormat
 
 import scala.reflect.ClassTag
@@ -26,7 +27,14 @@ class HadoopCOGLayerWriter(
     val sc = cogLayer.layers.head._2.sparkContext
     val samplesAccumulator = sc.collectionAccumulator[IndexedSimpleSource](s"vrt_samples_$layerName")
 
-    val catalogPath = attributeStore.rootPath
+    def catalogPath = attributeStore.rootPath
+
+    try {
+      attributeStore.attributePath(LayerId(layerName, 0), "cog_metadata")
+    } catch {
+      case e: Exception =>
+        throw new InvalidLayerIdError(LayerId(layerName, 0)).initCause(e)
+    }
 
     val storageMetadata = COGLayerStorageMetadata(cogLayer.metadata, keyIndexes)
     attributeStore.write(LayerId(layerName, 0), "cog_metadata", storageMetadata)
@@ -37,7 +45,7 @@ class HadoopCOGLayerWriter(
       val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
       val keyPath =
         (key: K) =>
-          s"hdfs://${catalogPath.toString}/${layerName}/" +
+          s"${catalogPath.toString}/${layerName}/" +
           s"${zoomRange.minZoom}_${zoomRange.maxZoom}/" +
           s"${Index.encode(keyIndex.toIndex(key), maxWidth)}"
 
@@ -62,11 +70,17 @@ class HadoopCOGLayerWriter(
           .outputStream
 
       HdfsUtils.write(
-        new Path(s"hdfs://${catalogPath.toString}/${layerName}/${zoomRange.minZoom}_${zoomRange.maxZoom}/vrt.xml"),
-        sc.hadoopConfiguration
+        new Path(s"${catalogPath.toString}/${layerName}/${zoomRange.minZoom}_${zoomRange.maxZoom}/vrt.xml"),
+        attributeStore.hadoopConfiguration
       ) { _.write(os.toByteArray) }
 
       samplesAccumulator.reset
     }
   }
 }
+
+object HadoopCOGLayerWriter {
+  def apply(rootPath: Path)(implicit sc: SparkContext): HadoopCOGLayerWriter =
+    new HadoopCOGLayerWriter(HadoopAttributeStore(rootPath))
+}
+

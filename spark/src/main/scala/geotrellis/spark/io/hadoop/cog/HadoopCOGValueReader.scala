@@ -21,11 +21,13 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.index.{Index, KeyIndex}
+import geotrellis.spark.io.hadoop.HadoopAttributeStore
 import geotrellis.util._
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import spray.json._
+import org.apache.spark.SparkContext
 
 import java.net.URI
 
@@ -52,7 +54,25 @@ class HadoopCOGValueReader(
     baseReader[K, V](
       layerId,
       keyPath,
-      path => new URI(s"hdfs://${path}")
+      path => new URI(path)
     )
   }
+}
+
+object HadoopCOGValueReader {
+  def apply[
+    K: JsonFormat: SpatialComponent: ClassTag,
+    V <: CellGrid: TiffMethods
+  ](attributeStore: HadoopAttributeStore, layerId: LayerId)(implicit sc: SparkContext): Reader[K, V] =
+    new HadoopCOGValueReader(attributeStore, sc.hadoopConfiguration, attributeStore.rootPath).reader[K, V](layerId)
+
+  def apply(attributeStore: HadoopAttributeStore): HadoopCOGValueReader =
+    new HadoopCOGValueReader(attributeStore, attributeStore.hadoopConfiguration, attributeStore.rootPath)
+
+  def apply(rootPath: Path)
+           (implicit sc: SparkContext): HadoopCOGValueReader =
+    apply(HadoopAttributeStore(rootPath))
+
+  def apply(rootPath: Path, conf: Configuration): HadoopCOGValueReader =
+    apply(HadoopAttributeStore(rootPath, conf))
 }

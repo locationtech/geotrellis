@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.file.cog
+package geotrellis.spark.io.hadoop.cog
 
 import geotrellis.raster.Tile
 import geotrellis.spark._
@@ -26,31 +26,40 @@ import geotrellis.spark.testkit.io._
 import geotrellis.spark.testkit.io.cog._
 import geotrellis.spark.testkit.testfiles.cog.COGTestFiles
 
-class FileSpatialSpec
+class COGHadoopSpatialSpec
   extends COGPersistenceSpec[SpatialKey, Tile]
-    with COGTestFiles
     with SpatialKeyIndexMethods
     with TestEnvironment
+    with COGTestFiles
     with COGAllOnesTestTileSpec {
-  lazy val reader = FileCOGLayerReader(outputLocalPath)
-  lazy val creader = FileCOGCollectionLayerReader(outputLocalPath)
-  lazy val writer = FileCOGLayerWriter(outputLocalPath)
-  // lazy val deleter = FileLayerDeleter(outputLocalPath)
-  // lazy val copier = FileLayerCopier(outputLocalPath)
-  // lazy val mover  = FileLayerMover(outputLocalPath)
-  // lazy val reindexer = FileLayerReindexer(outputLocalPath)
-  // lazy val updater = FileLayerUpdater(outputLocalPath)
-  lazy val tiles = FileCOGValueReader(outputLocalPath)
-  lazy val sample = AllOnesTestFile // spatialCea
 
-  describe("Filesystem layer names") {
-    it("should not throw with bad characters in name") {
+  lazy val reader = HadoopCOGLayerReader(outputLocal)
+  lazy val creader = HadoopCOGCollectionLayerReader(outputLocal)
+  lazy val writer = HadoopCOGLayerWriter(outputLocal)
+  // lazy val deleter = HadoopLayerDeleter(outputLocal)
+  // lazy val copier = HadoopLayerCopier(outputLocal)
+  // lazy val mover  = HadoopLayerMover(outputLocal)
+  // lazy val reindexer = HadoopLayerReindexer(outputLocal)
+  // lazy val updater = HadoopLayerUpdater(outputLocal)
+  lazy val tiles = HadoopCOGValueReader(outputLocal)
+  lazy val sample = AllOnesTestFile
+
+  describe("HDFS layer names") {
+    it("should handle layer names with spaces") {
       val layer = AllOnesTestFile
-      val layerId = LayerId("Some!layer:%@~`{}id", COGTestFiles.ZOOM_LEVEL)
+      val layerId = LayerId("Some layer", COGTestFiles.ZOOM_LEVEL)
 
-      println(outputLocalPath)
       writer.write[SpatialKey, Tile](layerId.name, layer, layerId.zoom, ZCurveKeyIndexMethod)
       val backin = reader.read[SpatialKey, Tile](layerId)
+    }
+
+    it("should fail gracefully with colon in name") {
+      val layer = AllOnesTestFile
+      val layerId = LayerId("Some:layer", COGTestFiles.ZOOM_LEVEL)
+
+      intercept[InvalidLayerIdError] {
+        writer.write[SpatialKey, Tile](layerId.name, layer, layerId.zoom, ZCurveKeyIndexMethod)
+      }
     }
   }
 }

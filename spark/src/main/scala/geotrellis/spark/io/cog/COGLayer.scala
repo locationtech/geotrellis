@@ -220,10 +220,10 @@ object COGLayer {
   }
 
   def write[K: SpatialComponent: ClassTag, V <: CellGrid: ClassTag](cogs: RDD[(K, GeoTiff[V])])(keyIndex: KeyIndex[K], uri: URI): Unit = {
-    val conf = HadoopConfiguration(cogs.sparkContext.hadoopConfiguration)
+    val conf = SerializableConfiguration(cogs.sparkContext.hadoopConfiguration)
     cogs.foreach { case (key, tiff) =>
       println(s"$key: ${uri.toString}/${keyIndex.toIndex(key)}.tiff")
-      HdfsUtils.write(new Path(s"${uri.toString}/${keyIndex.toIndex(key)}.tiff"), conf.get) { new GeoTiffWriter(tiff, _).write(true) }
+      HdfsUtils.write(new Path(s"${uri.toString}/${keyIndex.toIndex(key)}.tiff"), conf.value) { new GeoTiffWriter(tiff, _).write(true) }
     }
   }
 }
