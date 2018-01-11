@@ -28,8 +28,8 @@ object HilbertKeyIndexMethod extends HilbertKeyIndexMethod {
   implicit def spatialKeyIndexIndex(m: HilbertKeyIndexMethod): KeyIndexMethod[SpatialKey] =
     new KeyIndexMethod[SpatialKey] {
       def createIndex(keyBounds: KeyBounds[SpatialKey]) = {
-        val xResolution = math.max(resolution(keyBounds.maxKey.col, keyBounds.minKey.col), 64 - numberOfLeadingZeros(keyBounds.maxKey.col.toLong))
-        val yResolution = math.max(resolution(keyBounds.maxKey.row, keyBounds.minKey.row), 64 - numberOfLeadingZeros(keyBounds.maxKey.row.toLong))
+        val xResolution = resolution(keyBounds.maxKey.col, keyBounds.minKey.col)
+        val yResolution = resolution(keyBounds.maxKey.row, keyBounds.minKey.row)
         HilbertSpatialKeyIndex(keyBounds, xResolution, yResolution)
       }
     }
@@ -37,8 +37,8 @@ object HilbertKeyIndexMethod extends HilbertKeyIndexMethod {
   def apply(temporalResolution: Int): KeyIndexMethod[SpaceTimeKey] =
     new KeyIndexMethod[SpaceTimeKey] {
       def createIndex(keyBounds: KeyBounds[SpaceTimeKey]) = {
-        val xResolution = math.max(resolution(keyBounds.maxKey.col, keyBounds.minKey.col), 64 - numberOfLeadingZeros(keyBounds.maxKey.col.toLong))
-        val yResolution = math.max(resolution(keyBounds.maxKey.row, keyBounds.minKey.row), 64 - numberOfLeadingZeros(keyBounds.maxKey.row.toLong))
+        val xResolution = resolution(keyBounds.maxKey.col, keyBounds.minKey.col)
+        val yResolution = resolution(keyBounds.maxKey.row, keyBounds.minKey.row)
         HilbertSpaceTimeKeyIndex(keyBounds, xResolution, yResolution, temporalResolution)
       }
     }
@@ -51,8 +51,8 @@ object HilbertKeyIndexMethod extends HilbertKeyIndexMethod {
           val maxKey = keyBounds.maxKey
           KeyBounds[SpaceTimeKey](SpaceTimeKey(minKey.col, minKey.row, minDate), SpaceTimeKey(maxKey.col, maxKey.row, maxDate))
         }
-        val xResolution = math.max(resolution(keyBounds.maxKey.col, keyBounds.minKey.col), 64 - numberOfLeadingZeros(keyBounds.maxKey.col.toLong))
-        val yResolution = math.max(resolution(keyBounds.maxKey.row, keyBounds.minKey.row), 64 - numberOfLeadingZeros(keyBounds.maxKey.row.toLong))
+        val xResolution = resolution(keyBounds.maxKey.col, keyBounds.minKey.col)
+        val yResolution = resolution(keyBounds.maxKey.row, keyBounds.minKey.row)
         HilbertSpaceTimeKeyIndex(adjustedKeyBounds, xResolution, yResolution, temporalResolution)
       }
     }
