@@ -29,7 +29,7 @@ import geotrellis.spark.testkit.testfiles.cog.COGTestFiles
 class COGFileSpaceTimeSpec
   extends COGPersistenceSpec[SpaceTimeKey, Tile]
     with COGTestFiles
-    with SpaceTimeKeyIndexMethods
+    with COGSpaceTimeKeyIndexMethods
     with TestEnvironment
     with COGCoordinateSpaceTimeSpec {
   lazy val reader = FileCOGLayerReader(outputLocalPath)

@@ -28,7 +28,7 @@ import geotrellis.spark.testkit.testfiles.cog.COGTestFiles
 
 class COGHadoopSpaceTimeSpec
   extends COGPersistenceSpec[SpaceTimeKey, Tile]
-    with SpaceTimeKeyIndexMethods
+    with COGSpaceTimeKeyIndexMethods
     with TestEnvironment
     with COGTestFiles
     with COGCoordinateSpaceTimeSpec {

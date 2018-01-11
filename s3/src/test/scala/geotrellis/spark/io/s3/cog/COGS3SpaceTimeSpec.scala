@@ -32,7 +32,7 @@ import org.scalatest._
 
 class COGS3SpaceTimeSpec
   extends COGPersistenceSpec[SpaceTimeKey, Tile]
-    with SpaceTimeKeyIndexMethods
+    with COGSpaceTimeKeyIndexMethods
     with TestEnvironment
     with COGTestFiles
     with COGCoordinateSpaceTimeSpec {

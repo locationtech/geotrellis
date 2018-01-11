@@ -36,7 +36,6 @@ object COGCollectionReader {
       baseQueryKeyBounds.flatMap(decomposeBounds)
 
     LayerReader.njoin[K, V](ranges.toIterator, threads) { index: BigInt =>
-      println(keyPath(index))
       if (!pathExists(keyPath(index))) Vector()
       else {
         val uri = fullPath(keyPath(index))

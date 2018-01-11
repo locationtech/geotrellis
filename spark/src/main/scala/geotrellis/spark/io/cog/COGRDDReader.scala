@@ -49,7 +49,6 @@ object COGRDDReader {
 
         partition flatMap { seq =>
           LayerReader.njoin[K, V](seq.toIterator, threads) { index: BigInt =>
-            println(s"${keyPath(index)}")
             if (!pathExists(keyPath(index))) Vector()
             else {
               val uri = fullPath(keyPath(index))
