@@ -13,6 +13,7 @@ API Changes
     been extended from a fixed length of 8 bytes to an arbitrary length.  This change affects not only the
     ``geotrellis.spark`` package, but all backends (excluding ``geotrellis.geowave`` and ``geotrellis.geomesa``).
   - **New:** All focal operations now except an optional ``partitioner`` parameter.
+  - **New:** ``BufferTiles``\s ``apply`` methods and the ``bufferTiles`` methods now except an optional ``partitioner`` parameter.
 
 1.2.0
 -----

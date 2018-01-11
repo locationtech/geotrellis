@@ -23,6 +23,7 @@ import geotrellis.spark._
 import geotrellis.util.MethodExtensions
 
 import org.apache.spark.rdd.RDD
+import org.apache.spark.Partitioner
 
 import scala.reflect.ClassTag
 
@@ -33,8 +34,18 @@ class BufferTilesMethods[
   def bufferTiles(bufferSize: Int): RDD[(K, BufferedTile[V])] =
     BufferTiles(self, bufferSize)
 
+  def bufferTiles(bufferSize: Int, partitioner: Option[Partitioner]): RDD[(K, BufferedTile[V])] =
+    BufferTiles(self, bufferSize, partitioner)
+
   def bufferTiles(bufferSize: Int, layerBounds: GridBounds): RDD[(K, BufferedTile[V])] =
     BufferTiles(self, bufferSize, layerBounds)
+
+  def bufferTiles(
+    bufferSize: Int,
+    layerBounds: GridBounds,
+    partitioner: Option[Partitioner]
+  ): RDD[(K, BufferedTile[V])] =
+    BufferTiles(self, bufferSize, layerBounds, partitioner)
 
   @deprecated("Please specify buffer sizes per key as a function K => BufferSizes", "1.2")
   def bufferTiles(bufferSizesPerKey: RDD[(K, BufferSizes)]): RDD[(K, BufferedTile[V])] =
@@ -42,4 +53,10 @@ class BufferTilesMethods[
 
   def bufferTiles(getBufferSizes: K => BufferSizes): RDD[(K, BufferedTile[V])] =
     BufferTiles(self, getBufferSizes)
+
+  def bufferTiles(
+    getBufferSizes: K => BufferSizes,
+    partitioner: Option[Partitioner]
+  ): RDD[(K, BufferedTile[V])] =
+    BufferTiles(self, getBufferSizes, partitioner)
 }
