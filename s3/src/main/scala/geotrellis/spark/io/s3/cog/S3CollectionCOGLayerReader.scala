@@ -52,7 +52,10 @@ class S3CollectionCOGLayerReader(
     V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](id: LayerId, rasterQuery: LayerQuery[K, TileLayerMetadata[K]], indexFilterOnly: Boolean) = {
     def getKeyPath(zoomRange: ZoomRange, maxWidth: Int): BigInt => String =
-      (index: BigInt) => s"$bucket/${makePath(prefix, Index.encode(index, maxWidth))}.${Extension}"
+      (index: BigInt) =>
+        s"$bucket/$prefix/${id.name}/" +
+        s"${zoomRange.minZoom}_${zoomRange.maxZoom}/" +
+        s"${Index.encode(index, maxWidth)}.${Extension}"
 
     baseRead[K, V](
       id              = id,
@@ -64,4 +67,14 @@ class S3CollectionCOGLayerReader(
       defaultThreads  = defaultThreads
     )
   }
+}
+
+object S3CollectionCOGLayerReader {
+  def apply(attributeStore: S3AttributeStore): S3CollectionCOGLayerReader =
+    new S3CollectionCOGLayerReader(
+      attributeStore,
+      attributeStore.bucket,
+      attributeStore.prefix,
+      () => attributeStore.s3Client
+    )
 }

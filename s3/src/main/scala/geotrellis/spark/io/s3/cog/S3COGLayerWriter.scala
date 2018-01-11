@@ -86,3 +86,8 @@ class S3COGLayerWriter(
     }
   }
 }
+
+object S3COGLayerWriter {
+  def apply(attributeStore: S3AttributeStore): S3COGLayerWriter =
+    new S3COGLayerWriter(attributeStore, () => attributeStore.s3Client)
+}

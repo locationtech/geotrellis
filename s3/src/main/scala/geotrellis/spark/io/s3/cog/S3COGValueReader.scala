@@ -21,14 +21,12 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.index._
-import geotrellis.spark.io.s3.S3Client
+import geotrellis.spark.io.s3.{S3AttributeStore, S3Client}
 import geotrellis.util._
-
 import spray.json._
 import com.amazonaws.services.s3.model.AmazonS3Exception
 
 import scala.reflect.ClassTag
-
 import java.net.URI
 
 class S3COGValueReader(
@@ -46,7 +44,9 @@ class S3COGValueReader(
     V <: CellGrid: TiffMethods
   ](layerId: LayerId): Reader[K, V] = {
     def keyPath(key: K, maxWidth: Int, baseKeyIndex: KeyIndex[K], zoomRange: ZoomRange): String =
-      s"$bucket/$prefix/${Index.encode(baseKeyIndex.toIndex(key), maxWidth)}.${Extension}"
+      s"$bucket/$prefix/${layerId.name}/" +
+      s"${zoomRange.minZoom}_${zoomRange.maxZoom}/" +
+      s"${Index.encode(baseKeyIndex.toIndex(key), maxWidth)}.${Extension}"
 
     baseReader[K, V](
       layerId,
@@ -58,5 +58,12 @@ class S3COGValueReader(
       }
     )
   }
+}
+
+object S3COGValueReader {
+  def apply(s3attributeStore: S3AttributeStore): S3COGValueReader =
+    new S3COGValueReader(s3attributeStore, s3attributeStore.bucket, s3attributeStore.prefix) {
+      override def s3Client: S3Client = s3attributeStore.s3Client
+    }
 }
 

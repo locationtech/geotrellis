@@ -44,15 +44,15 @@ object COGCollectionReader {
 
         readDefinitions
           .get(baseKey.getComponent[SpatialKey])
-          .flatMap(_.headOption)
-          .map { case (spatialKey, overviewIndex, _, seq) =>
+          .toVector
+          .flatten
+          .flatMap { case (spatialKey, overviewIndex, _, seq) =>
             val key = baseKey.setComponent(spatialKey)
             val tiff = tiffMethods.readTiff(uri, overviewIndex)
             val map = seq.map { case (gb, sk) => gb -> key.setComponent(sk) }.toMap
 
             tiffMethods.tileTiff(tiff, map)
           }
-          .getOrElse(Vector())
       }
     }
     .groupBy(_._1)

@@ -27,7 +27,7 @@ import java.io.{InputStream, ByteArrayInputStream}
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 
-trait S3Client extends LazyLogging {
+trait S3Client extends LazyLogging with Serializable {
 
   def doesBucketExist(bucket: String): Boolean
 
