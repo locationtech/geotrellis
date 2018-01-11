@@ -28,7 +28,7 @@ trait COGAllOnesTestTileSpec { self: COGPersistenceSpec[SpatialKey, Tile] =>
   val bounds1 = GridBounds(1, 1, 3, 3)
   val bounds2 = GridBounds(4, 4, 6, 6)
 
-  for(COGPersistenceSpecDefinition(keyIndexMethodName, _, layerIds) <- specLayerIds) {
+  for(PersistenceSpecDefinition(keyIndexMethodName, _, layerIds) <- specLayerIds) {
     val layerId = layerIds.layerId
     val query = reader.query[SpatialKey, Tile](layerId)
 

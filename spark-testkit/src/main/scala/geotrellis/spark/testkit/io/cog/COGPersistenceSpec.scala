@@ -26,28 +26,16 @@ import geotrellis.spark.io.cog._
 import geotrellis.spark.io.cog.GeoTiffSegmentConstructMethods
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.json._
+import geotrellis.spark.testkit.io._
 import geotrellis.spark.testkit.testfiles.cog.COGTestFiles
 import geotrellis.util._
+
 import org.apache.spark.rdd.RDD
 import org.scalatest._
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
 import scala.reflect._
-
-case class COGPersistenceSpecDefinition[K](
-  keyIndexMethodName: String,
-  keyIndexMethod: KeyIndexMethod[K],
-  layerIds: COGPersistenceSpecLayerIds
-)
-
-case class COGPersistenceSpecLayerIds(
-  layerId: LayerId,
-  deleteLayerId: LayerId,
-  copiedLayerId: LayerId,
-  movedLayerId: LayerId,
-  reindexedLayerId: LayerId
-)
 
 abstract class COGPersistenceSpec[
   K: SpatialComponent: Ordering: Boundable: JsonFormat: ClassTag,
@@ -77,22 +65,22 @@ abstract class COGPersistenceSpec[
 
   def keyIndexMethods: Map[String, KeyIndexMethod[K]]
 
-  def getLayerIds(keyIndexMethod: String): COGPersistenceSpecLayerIds = {
+  def getLayerIds(keyIndexMethod: String): PersistenceSpecLayerIds = {
     val suffix = keyIndexMethod.replace(" ", "_")
     val layerId = LayerId(s"COGsample-${getClass.getName}-${suffix}", COGTestFiles.ZOOM_LEVEL)
     val deleteLayerId = LayerId(s"deleteCOGSample-${getClass.getName}-${suffix}", COGTestFiles.ZOOM_LEVEL) // second layer to avoid data race
     val copiedLayerId = LayerId(s"copyCOGSample-${getClass.getName}-${suffix}", COGTestFiles.ZOOM_LEVEL)
     val movedLayerId = LayerId(s"movCOGeSample-${getClass.getName}-${suffix}", COGTestFiles.ZOOM_LEVEL)
     val reindexedLayerId = LayerId(s"reindexedCOGSample-${getClass.getName}-${suffix}", COGTestFiles.ZOOM_LEVEL)
-    COGPersistenceSpecLayerIds(layerId, deleteLayerId, copiedLayerId, movedLayerId, reindexedLayerId)
+    PersistenceSpecLayerIds(layerId, deleteLayerId, copiedLayerId, movedLayerId, reindexedLayerId)
   }
 
   def specLayerIds =
     for((keyIndexMethodName, keyIndexMethod: KeyIndexMethod[K]) <- keyIndexMethods) yield {
-      COGPersistenceSpecDefinition(keyIndexMethodName, keyIndexMethod, getLayerIds(keyIndexMethodName))
+      PersistenceSpecDefinition(keyIndexMethodName, keyIndexMethod, getLayerIds(keyIndexMethodName))
     }
 
-  for(ps @ COGPersistenceSpecDefinition(keyIndexMethodName, keyIndexMethod, COGPersistenceSpecLayerIds(layerId, deleteLayerId, copiedLayerId, movedLayerId, reindexedLayerId)) <- specLayerIds) {
+  for(PersistenceSpecDefinition(keyIndexMethodName, keyIndexMethod, PersistenceSpecLayerIds(layerId, deleteLayerId, copiedLayerId, movedLayerId, reindexedLayerId)) <- specLayerIds) {
     describe(s"using key index method ${keyIndexMethodName}") {
       lazy val query = reader.query[K, V](layerId)
 
