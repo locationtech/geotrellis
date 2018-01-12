@@ -38,7 +38,7 @@ trait COGCoordinateSpaceTimeSpec { self: COGPersistenceSpec[SpaceTimeKey, Tile] 
     val layerId = layerIds.layerId
     val query = reader.query[SpaceTimeKey, Tile](layerId)
     describe(s"CoordinateSpaceTime query tests for $keyIndexMethodName") {
-      ignore("query outside of layer bounds") {
+      it("query outside of layer bounds") {
         query.where(Intersects(GridBounds(10, 10, 15, 15))).result.collect() should be(empty)
       }
 

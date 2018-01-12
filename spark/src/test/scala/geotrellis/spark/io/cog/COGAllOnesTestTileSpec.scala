@@ -50,7 +50,7 @@ trait COGAllOnesTestTileSpec { self: COGPersistenceSpec[SpatialKey, Tile] =>
         actual should contain theSameElementsAs expected
       }
 
-      ignore("query outside of layer bounds") {
+      it("query outside of layer bounds") {
         query.where(Intersects(GridBounds(10, 10, 15, 15))).result.collect() should be(empty)
       }
 

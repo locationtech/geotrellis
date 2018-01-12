@@ -89,66 +89,71 @@ abstract class FilteringCOGLayerReader[ID] extends COGLayerReader[ID] {
         )
       }
 
-    val zoomRange = readDefinitions.head._1
-    val baseKeyIndex = keyIndexes(zoomRange)
+    readDefinitions.headOption.map(_._1) match {
+      case Some(zoomRange) => {
+        val baseKeyIndex = keyIndexes(zoomRange)
 
-    val maxWidth = Index.digits(baseKeyIndex.toIndex(baseKeyIndex.keyBounds.maxKey))
-    val keyPath: BigInt => String = getKeyPath(zoomRange, maxWidth)
-    val decompose = (bounds: KeyBounds[K]) => baseKeyIndex.indexRanges(bounds)
+        val maxWidth = Index.digits(baseKeyIndex.toIndex(baseKeyIndex.keyBounds.maxKey))
+        val keyPath: BigInt => String = getKeyPath(zoomRange, maxWidth)
+        val decompose = (bounds: KeyBounds[K]) => baseKeyIndex.indexRanges(bounds)
 
-    val baseLayout = cogLayerMetadata.layoutForZoom(zoomRange.minZoom)
-    val layout = cogLayerMetadata.layoutForZoom(id.zoom)
+        val baseLayout = cogLayerMetadata.layoutForZoom(zoomRange.minZoom)
+        val layout = cogLayerMetadata.layoutForZoom(id.zoom)
 
-    val baseKeyBounds = cogLayerMetadata.zoomRangeInfoFor(zoomRange.minZoom)._2
+        val baseKeyBounds = cogLayerMetadata.zoomRangeInfoFor(zoomRange.minZoom)._2
 
-    def transformKeyBounds(keyBounds: KeyBounds[K]): KeyBounds[K] = {
-      val KeyBounds(minKey, maxKey) = keyBounds
-      val extent = layout.extent
-      val sourceRe = RasterExtent(extent, layout.layoutCols, layout.layoutRows)
-      val targetRe = RasterExtent(extent, baseLayout.layoutCols, baseLayout.layoutRows)
+        def transformKeyBounds(keyBounds: KeyBounds[K]): KeyBounds[K] = {
+          val KeyBounds(minKey, maxKey) = keyBounds
+          val extent = layout.extent
+          val sourceRe = RasterExtent(extent, layout.layoutCols, layout.layoutRows)
+          val targetRe = RasterExtent(extent, baseLayout.layoutCols, baseLayout.layoutRows)
 
-      val minSpatialKey = minKey.getComponent[SpatialKey]
-      val (minCol, minRow) = {
-        val (x, y) = sourceRe.gridToMap(minSpatialKey.col, minSpatialKey.row)
-        targetRe.mapToGrid(x, y)
-      }
-
-      val maxSpatialKey = maxKey.getComponent[SpatialKey]
-      val (maxCol, maxRow) = {
-        val (x, y) = sourceRe.gridToMap(maxSpatialKey.col, maxSpatialKey.row)
-        targetRe.mapToGrid(x, y)
-      }
-
-      KeyBounds(
-        minKey.setComponent(SpatialKey(minCol, minRow)),
-        maxKey.setComponent(SpatialKey(maxCol, maxRow))
-      )
-    }
-
-    val baseQueryKeyBounds: Seq[KeyBounds[K]] =
-      queryKeyBounds
-        .flatMap { qkb =>
-          transformKeyBounds(qkb).intersect(baseKeyBounds) match {
-            case EmptyBounds => None
-            case kb: KeyBounds[K] => Some(kb)
+          val minSpatialKey = minKey.getComponent[SpatialKey]
+          val (minCol, minRow) = {
+            val (x, y) = sourceRe.gridToMap(minSpatialKey.col, minSpatialKey.row)
+            targetRe.mapToGrid(x, y)
           }
+
+          val maxSpatialKey = maxKey.getComponent[SpatialKey]
+          val (maxCol, maxRow) = {
+            val (x, y) = sourceRe.gridToMap(maxSpatialKey.col, maxSpatialKey.row)
+            targetRe.mapToGrid(x, y)
+          }
+
+          KeyBounds(
+            minKey.setComponent(SpatialKey(minCol, minRow)),
+            maxKey.setComponent(SpatialKey(maxCol, maxRow))
+          )
         }
-        .distinct
 
-    val rdd =
-      COGRDDReader
-        .read[K, V](
-          keyPath            = keyPath,
-          pathExists         = pathExists,
-          fullPath           = fullPath,
-          baseQueryKeyBounds = baseQueryKeyBounds,
-          decomposeBounds    = decompose,
-          readDefinitions    = readDefinitions.flatMap(_._2).groupBy(_._1),
-          threads            = defaultThreads,
-          numPartitions      = Some(numPartitions)
-        )
+        val baseQueryKeyBounds: Seq[KeyBounds[K]] =
+          queryKeyBounds
+            .flatMap { qkb =>
+              transformKeyBounds(qkb).intersect(baseKeyBounds) match {
+                case EmptyBounds => None
+                case kb: KeyBounds[K] => Some(kb)
+              }
+            }
+            .distinct
 
-    new ContextRDD(rdd, metadata)
+        val rdd =
+          COGRDDReader
+            .read[K, V](
+              keyPath = keyPath,
+              pathExists = pathExists,
+              fullPath = fullPath,
+              baseQueryKeyBounds = baseQueryKeyBounds,
+              decomposeBounds = decompose,
+              readDefinitions = readDefinitions.flatMap(_._2).groupBy(_._1),
+              threads = defaultThreads,
+              numPartitions = Some(numPartitions)
+            )
+
+        new ContextRDD(rdd, metadata)
+      }
+      case None =>
+        new ContextRDD(sc.parallelize(Seq()), metadata.setComponent[Bounds[K]](EmptyBounds))
+    }
   }
 
   def read[
