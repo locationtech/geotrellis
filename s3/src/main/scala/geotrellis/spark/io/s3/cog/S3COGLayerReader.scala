@@ -43,7 +43,7 @@ class S3COGLayerReader(
   val bucket: String,
   val prefix: String,
   val getS3Client: () => S3Client = () => S3Client.DEFAULT,
-  val defaultThreads: Int = ConfigFactory.load().getThreads("geotrellis.s3.threads.rdd.read")
+  val defaultThreads: Int = S3COGLayerReader.defaultThreadCount
 )(@transient implicit val sc: SparkContext) extends FilteringCOGLayerReader[LayerId] with LazyLogging {
 
   val defaultNumPartitions: Int = sc.defaultParallelism
@@ -53,7 +53,7 @@ class S3COGLayerReader(
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
-  ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int, filterIndexOnly: Boolean) = {
+  ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int) = {
     def getKeyPath(zoomRange: ZoomRange, maxWidth: Int): BigInt => String =
       (index: BigInt) =>
         s"$bucket/$prefix/${id.name}/" +
@@ -64,7 +64,6 @@ class S3COGLayerReader(
       id              = id,
       tileQuery       = tileQuery,
       numPartitions   = numPartitions,
-      filterIndexOnly = filterIndexOnly,
       getKeyPath      = getKeyPath,
       pathExists      = { s3PathExists(_, getS3Client()) },
       fullPath        = { path => new URI(s"s3://$path") },
@@ -74,6 +73,8 @@ class S3COGLayerReader(
 }
 
 object S3COGLayerReader {
+  lazy val defaultThreadCount: Int = ConfigFactory.load().getThreads("geotrellis.s3.threads.rdd.read")
+
   def apply(attributeStore: S3AttributeStore)(implicit sc: SparkContext): S3COGLayerReader =
     new S3COGLayerReader(
       attributeStore,

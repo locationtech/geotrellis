@@ -37,12 +37,12 @@ import scala.reflect.ClassTag
  *
  * @param attributeStore  AttributeStore that contains metadata for corresponding LayerId
  */
-class S3CollectionCOGLayerReader(
+class S3COGCollectionLayerReader(
   val attributeStore: AttributeStore,
   val bucket: String,
   val prefix: String,
   val getS3Client: () => S3Client = () => S3Client.DEFAULT,
-  val defaultThreads: Int = ConfigFactory.load().getThreads("geotrellis.s3.threads.collection.read")
+  val defaultThreads: Int = S3COGCollectionLayerReader.defaultThreadCount
 ) extends COGCollectionLayerReader[LayerId] with LazyLogging {
 
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, getS3Client())
@@ -50,7 +50,7 @@ class S3CollectionCOGLayerReader(
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
-  ](id: LayerId, rasterQuery: LayerQuery[K, TileLayerMetadata[K]], indexFilterOnly: Boolean) = {
+  ](id: LayerId, rasterQuery: LayerQuery[K, TileLayerMetadata[K]]) = {
     def getKeyPath(zoomRange: ZoomRange, maxWidth: Int): BigInt => String =
       (index: BigInt) =>
         s"$bucket/$prefix/${id.name}/" +
@@ -60,7 +60,6 @@ class S3CollectionCOGLayerReader(
     baseRead[K, V](
       id              = id,
       tileQuery       = rasterQuery,
-      indexFilterOnly = indexFilterOnly,
       getKeyPath      = getKeyPath,
       pathExists      = { s3PathExists(_, getS3Client()) },
       fullPath        = { path => new URI(s"s3://$path") },
@@ -69,9 +68,11 @@ class S3CollectionCOGLayerReader(
   }
 }
 
-object S3CollectionCOGLayerReader {
-  def apply(attributeStore: S3AttributeStore): S3CollectionCOGLayerReader =
-    new S3CollectionCOGLayerReader(
+object S3COGCollectionLayerReader {
+  lazy val defaultThreadCount: Int = ConfigFactory.load().getThreads("geotrellis.s3.threads.collection.read")
+
+  def apply(attributeStore: S3AttributeStore): S3COGCollectionLayerReader =
+    new S3COGCollectionLayerReader(
       attributeStore,
       attributeStore.bucket,
       attributeStore.prefix,

@@ -23,9 +23,11 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.file.{FileAttributeStore, KeyPathGenerator}
 import geotrellis.util._
+
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
 import com.typesafe.config.ConfigFactory
+
 import java.net.URI
 import java.io.File
 
@@ -39,7 +41,7 @@ import scala.reflect.ClassTag
 class FileCOGLayerReader(
   val attributeStore: AttributeStore,
   val catalogPath: String,
-  val defaultThreads: Int = ConfigFactory.load().getThreads("geotrellis.file.threads.rdd.read")
+  val defaultThreads: Int = FileCOGLayerReader.defaultThreadCount
 )(@transient implicit val sc: SparkContext) extends FilteringCOGLayerReader[LayerId] with LazyLogging {
 
   val defaultNumPartitions: Int = sc.defaultParallelism
@@ -49,7 +51,7 @@ class FileCOGLayerReader(
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
-  ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int, filterIndexOnly: Boolean) = {
+  ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int) = {
     def getKeyPath(zoomRange: ZoomRange, maxWidth: Int): BigInt => String =
       KeyPathGenerator(catalogPath, s"${id.name}/${zoomRange.slug}", maxWidth) andThen (_ ++ s".$Extension")
 
@@ -57,7 +59,6 @@ class FileCOGLayerReader(
       id              = id,
       tileQuery       = tileQuery,
       numPartitions   = numPartitions,
-      filterIndexOnly = filterIndexOnly,
       getKeyPath      = getKeyPath,
       pathExists      = { new File(_).isFile },
       fullPath        = { path => new URI(s"file://$path") },
@@ -67,6 +68,8 @@ class FileCOGLayerReader(
 }
 
 object FileCOGLayerReader {
+  val defaultThreadCount: Int = ConfigFactory.load().getThreads("geotrellis.file.threads.rdd.read")
+
   def apply(attributeStore: AttributeStore, catalogPath: String)(implicit sc: SparkContext): FileCOGLayerReader =
     new FileCOGLayerReader(attributeStore, catalogPath)
 

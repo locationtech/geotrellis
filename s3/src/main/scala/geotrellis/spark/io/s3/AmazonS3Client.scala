@@ -20,7 +20,7 @@ import com.amazonaws.ClientConfiguration
 import com.amazonaws.auth._
 import com.amazonaws.services.s3.{AmazonS3Client => AWSAmazonS3Client}
 import com.amazonaws.services.s3.model._
-import sun.misc.IOUtils
+import org.apache.commons.io.IOUtils
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -85,7 +85,7 @@ class AmazonS3Client(s3client: AWSAmazonS3Client) extends S3Client {
     val obj = s3client.getObject(getObjectRequest)
     val inStream = obj.getObjectContent
     try {
-      IOUtils.readFully(inStream, -1, true)
+      IOUtils.toByteArray(inStream)
     } finally {
       inStream.close()
     }
@@ -96,7 +96,7 @@ class AmazonS3Client(s3client: AWSAmazonS3Client) extends S3Client {
     val obj = s3client.getObject(getObjectRequest)
     val stream = obj.getObjectContent
     try {
-      IOUtils.readFully(stream, -1, true)
+      IOUtils.toByteArray(stream)
     } finally {
       stream.close()
     }

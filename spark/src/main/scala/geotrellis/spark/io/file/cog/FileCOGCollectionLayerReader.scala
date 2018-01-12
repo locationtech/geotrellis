@@ -40,7 +40,7 @@ import scala.reflect.ClassTag
 class FileCOGCollectionLayerReader(
   val attributeStore: AttributeStore,
   val catalogPath: String,
-  val defaultThreads: Int = ConfigFactory.load().getThreads("geotrellis.file.threads.collection.read")
+  val defaultThreads: Int = FileCOGCollectionLayerReader.defaultThreadCount
 )
   extends COGCollectionLayerReader[LayerId] with LazyLogging {
 
@@ -49,14 +49,13 @@ class FileCOGCollectionLayerReader(
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
-  ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], indexFilterOnly: Boolean) = {
+  ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]]) = {
     def getKeyPath(zoomRange: ZoomRange, maxWidth: Int): BigInt => String =
       KeyPathGenerator(catalogPath, s"${id.name}/${zoomRange.slug}", maxWidth) andThen (_ ++ s".$Extension")
 
     baseRead[K, V](
       id              = id,
       tileQuery       = tileQuery,
-      indexFilterOnly = indexFilterOnly,
       getKeyPath      = getKeyPath,
       pathExists      = { new File(_).isFile },
       fullPath        = { path => new URI(s"file://$path") },
@@ -66,6 +65,8 @@ class FileCOGCollectionLayerReader(
 }
 
 object FileCOGCollectionLayerReader {
+  val defaultThreadCount: Int = ConfigFactory.load().getThreads("geotrellis.file.threads.collection.read")
+
   def apply(attributeStore: AttributeStore, catalogPath: String): FileCOGCollectionLayerReader =
     new FileCOGCollectionLayerReader(attributeStore, catalogPath)
 

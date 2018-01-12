@@ -51,7 +51,6 @@ trait COGLayerReader[ID] extends Serializable {
      id: ID,
      tileQuery: LayerQuery[K, TileLayerMetadata[K]],
      numPartitions: Int,
-     filterIndexOnly: Boolean,
      getKeyPath: (ZoomRange, Int) => BigInt => String,
      pathExists: String => Boolean, // check the path above exists
      fullPath: String => URI, // add an fs prefix

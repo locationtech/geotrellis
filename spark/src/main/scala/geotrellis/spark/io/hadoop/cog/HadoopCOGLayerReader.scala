@@ -42,7 +42,7 @@ import scala.reflect.ClassTag
 class HadoopCOGLayerReader(
   val attributeStore: AttributeStore,
   val catalogPath: String,
-  val defaultThreads: Int = ConfigFactory.load().getThreads("geotrellis.hadoop.threads.rdd.read")
+  val defaultThreads: Int = HadoopCOGLayerReader.defaultThreadCount
 )(@transient implicit val sc: SparkContext) extends FilteringCOGLayerReader[LayerId] with LazyLogging {
 
   val hadoopConfiguration = SerializableConfiguration(sc.hadoopConfiguration)
@@ -54,7 +54,7 @@ class HadoopCOGLayerReader(
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
-  ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int, filterIndexOnly: Boolean) = {
+  ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int) = {
     def getKeyPath(zoomRange: ZoomRange, maxWidth: Int): BigInt => String =
       (index: BigInt) =>
         s"${catalogPath.toString}/${id.name}/" +
@@ -65,7 +65,6 @@ class HadoopCOGLayerReader(
       id              = id,
       tileQuery       = tileQuery,
       numPartitions   = numPartitions,
-      filterIndexOnly = filterIndexOnly,
       getKeyPath      = getKeyPath,
       pathExists      = { str => HdfsUtils.pathExists(new Path(str), hadoopConfiguration.value) },
       fullPath        = { path => new URI(path) },
@@ -75,6 +74,8 @@ class HadoopCOGLayerReader(
 }
 
 object HadoopCOGLayerReader {
+  val defaultThreadCount: Int = ConfigFactory.load().getThreads("geotrellis.hadoop.threads.rdd.read")
+
   def apply(attributeStore: HadoopAttributeStore)(implicit sc: SparkContext): HadoopCOGLayerReader =
     new HadoopCOGLayerReader(attributeStore, attributeStore.rootPath.toString)
 

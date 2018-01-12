@@ -49,7 +49,7 @@ class COGS3SpaceTimeSpec
   }
 
   lazy val reader = S3COGLayerReader(attributeStore)
-  lazy val creader = S3CollectionCOGLayerReader(attributeStore)
+  lazy val creader = S3COGCollectionLayerReader(attributeStore)
   lazy val writer = S3COGLayerWriter(attributeStore)
   // lazy val updater = new S3LayerUpdater(attributeStore, reader) { override def rddWriter = S3SpaceTimeSpec.this.rddWriter }
   // lazy val deleter = new S3LayerDeleter(attributeStore) { override val getS3Client = () => new MockS3Client }

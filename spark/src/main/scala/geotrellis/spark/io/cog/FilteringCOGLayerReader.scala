@@ -20,14 +20,16 @@ import geotrellis.raster.{CellGrid, RasterExtent}
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.index.Index
+import geotrellis.spark.io.index.{Index, IndexRanges, MergeQueue}
 import geotrellis.util._
+import geotrellis.spark.util.KryoWrapper
+
 import org.apache.spark.rdd._
 import spray.json._
 import org.apache.spark.SparkContext
+
 import java.net.URI
 
-import scala.collection.immutable
 import scala.reflect._
 
 abstract class FilteringCOGLayerReader[ID] extends COGLayerReader[ID] {
@@ -41,16 +43,14 @@ abstract class FilteringCOGLayerReader[ID] extends COGLayerReader[ID] {
     * @param id              The ID of the layer to be read
     * @param rasterQuery     The query that will specify the filter for this read.
     * @param numPartitions   The desired number of partitions in the resulting RDD.
-    * @param indexFilterOnly If true, the reader should only filter out elements who's KeyIndex entries
-    *                        do not match the indexes of the query key bounds. This can include keys that
-    *                        are not inside the query key bounds.
+    *
     * @tparam K              Type of RDD Key (ex: SpatialKey)
     * @tparam V              Type of RDD Value (ex: Tile or MultibandTile )
     */
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
-  ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int, indexFilterOnly: Boolean): RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
+  ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
 
   def baseRead[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
@@ -59,7 +59,6 @@ abstract class FilteringCOGLayerReader[ID] extends COGLayerReader[ID] {
     id: LayerId,
     tileQuery: LayerQuery[K, TileLayerMetadata[K]],
     numPartitions: Int,
-    filterIndexOnly: Boolean,
     getKeyPath: (ZoomRange, Int) => BigInt => String,
     pathExists: String => Boolean, // check the path above exists
     fullPath: String => URI, // add an fs prefix
@@ -137,7 +136,7 @@ abstract class FilteringCOGLayerReader[ID] extends COGLayerReader[ID] {
             .distinct
 
         val rdd =
-          COGRDDReader
+          FilteringCOGLayerReader
             .read[K, V](
               keyPath = keyPath,
               pathExists = pathExists,
@@ -155,12 +154,6 @@ abstract class FilteringCOGLayerReader[ID] extends COGLayerReader[ID] {
         new ContextRDD(sc.parallelize(Seq()), metadata.setComponent[Bounds[K]](EmptyBounds))
     }
   }
-
-  def read[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
-  ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
-    read(id, rasterQuery, numPartitions, false)
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
@@ -185,4 +178,61 @@ abstract class FilteringCOGLayerReader[ID] extends COGLayerReader[ID] {
     V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](layerId: ID, numPartitions: Int): BoundLayerQuery[K, TileLayerMetadata[K], RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, read(layerId, _, numPartitions))
+}
+
+object FilteringCOGLayerReader {
+  def read[
+    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V])
+  ](
+     keyPath: BigInt => String, // keyPath
+     pathExists: String => Boolean, // check the path above exists
+     fullPath: String => URI, // add an fs prefix
+     baseQueryKeyBounds: Seq[KeyBounds[K]], // each key here represents a COG filename
+     decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
+     readDefinitions: Map[SpatialKey, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])]],
+     threads: Int,
+     numPartitions: Option[Int] = None
+   )(implicit sc: SparkContext, getByteReader: URI => ByteReader): RDD[(K, V)] = {
+    if (baseQueryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
+
+    val tiffMethods = implicitly[TiffMethods[V]]
+    val kwFormat = KryoWrapper(implicitly[JsonFormat[K]])
+
+    val ranges = if (baseQueryKeyBounds.length > 1)
+      MergeQueue(baseQueryKeyBounds.flatMap(decomposeBounds))
+    else
+      baseQueryKeyBounds.flatMap(decomposeBounds)
+
+    val bins = IndexRanges.bin(ranges, numPartitions.getOrElse(sc.defaultParallelism))
+
+    sc.parallelize(bins, bins.size)
+      .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
+        val keyFormat = kwFormat.value
+
+        partition flatMap { seq =>
+          LayerReader.njoin[K, V](seq.toIterator, threads) { index: BigInt =>
+            if (!pathExists(keyPath(index))) Vector()
+            else {
+              val uri = fullPath(keyPath(index))
+              val baseKey = tiffMethods.getKey[K](uri)(keyFormat)
+
+              readDefinitions
+                .get(baseKey.getComponent[SpatialKey])
+                .toVector
+                .flatten
+                .flatMap { case (spatialKey, overviewIndex, _, seq) =>
+                  val key = baseKey.setComponent(spatialKey)
+                  val tiff = tiffMethods.readTiff(uri, overviewIndex)
+                  val map = seq.map { case (gb, sk) => gb -> key.setComponent(sk) }.toMap
+
+                  tiffMethods.tileTiff(tiff, map)
+                }
+            }
+          }
+        }
+      }
+      .groupBy(_._1)
+      .map { case (key, (seq: Iterable[(K, V)])) => key -> seq.map(_._2).reduce(_ merge _) }
+  }
 }

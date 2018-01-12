@@ -20,10 +20,11 @@ import geotrellis.raster.{CellGrid, RasterExtent}
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.index.Index
+import geotrellis.spark.io.index.{Index, MergeQueue}
 import geotrellis.util._
 
 import spray.json._
+
 import java.net.URI
 
 import scala.reflect._
@@ -34,7 +35,7 @@ abstract class COGCollectionLayerReader[ID] { self =>
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
-  ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]], indexFilterOnly: Boolean): Seq[(K, V)] with Metadata[TileLayerMetadata[K]]
+  ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]]): Seq[(K, V)] with Metadata[TileLayerMetadata[K]]
 
   def baseRead[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
@@ -42,7 +43,6 @@ abstract class COGCollectionLayerReader[ID] { self =>
   ](
     id: ID,
     tileQuery: LayerQuery[K, TileLayerMetadata[K]],
-    indexFilterOnly: Boolean,
     getKeyPath: (ZoomRange, Int) => BigInt => String,
     pathExists: String => Boolean, // check the path above exists
     fullPath: String => URI, // add an fs prefix
@@ -68,65 +68,70 @@ abstract class COGCollectionLayerReader[ID] { self =>
         )
       }
 
-    val zoomRange = readDefinitions.head._1
-    val baseKeyIndex = keyIndexes(zoomRange)
+    readDefinitions.headOption.map(_._1) match {
+      case Some(zoomRange) => {
+        val baseKeyIndex = keyIndexes(zoomRange)
 
-    val maxWidth = Index.digits(baseKeyIndex.toIndex(baseKeyIndex.keyBounds.maxKey))
-    val keyPath: BigInt => String = getKeyPath(zoomRange, maxWidth)
-    val decompose = (bounds: KeyBounds[K]) => baseKeyIndex.indexRanges(bounds)
+        val maxWidth = Index.digits(baseKeyIndex.toIndex(baseKeyIndex.keyBounds.maxKey))
+        val keyPath: BigInt => String = getKeyPath(zoomRange, maxWidth)
+        val decompose = (bounds: KeyBounds[K]) => baseKeyIndex.indexRanges(bounds)
 
-    val baseLayout = cogLayerMetadata.layoutForZoom(zoomRange.minZoom)
-    val layout = cogLayerMetadata.layoutForZoom(id.zoom)
+        val baseLayout = cogLayerMetadata.layoutForZoom(zoomRange.minZoom)
+        val layout = cogLayerMetadata.layoutForZoom(id.zoom)
 
-    val baseKeyBounds = cogLayerMetadata.zoomRangeInfoFor(zoomRange.minZoom)._2
+        val baseKeyBounds = cogLayerMetadata.zoomRangeInfoFor(zoomRange.minZoom)._2
 
-    def transformKeyBounds(keyBounds: KeyBounds[K]): KeyBounds[K] = {
-      val KeyBounds(minKey, maxKey) = keyBounds
-      val extent = layout.extent
-      val sourceRe = RasterExtent(extent, layout.layoutCols, layout.layoutRows)
-      val targetRe = RasterExtent(extent, baseLayout.layoutCols, baseLayout.layoutRows)
+        def transformKeyBounds(keyBounds: KeyBounds[K]): KeyBounds[K] = {
+          val KeyBounds(minKey, maxKey) = keyBounds
+          val extent = layout.extent
+          val sourceRe = RasterExtent(extent, layout.layoutCols, layout.layoutRows)
+          val targetRe = RasterExtent(extent, baseLayout.layoutCols, baseLayout.layoutRows)
 
-      val minSpatialKey = minKey.getComponent[SpatialKey]
-      val (minCol, minRow) = {
-        val (x, y) = sourceRe.gridToMap(minSpatialKey.col, minSpatialKey.row)
-        targetRe.mapToGrid(x, y)
-      }
-
-      val maxSpatialKey = maxKey.getComponent[SpatialKey]
-      val (maxCol, maxRow) = {
-        val (x, y) = sourceRe.gridToMap(maxSpatialKey.col, maxSpatialKey.row)
-        targetRe.mapToGrid(x, y)
-      }
-
-      KeyBounds(
-        minKey.setComponent(SpatialKey(minCol, minRow)),
-        maxKey.setComponent(SpatialKey(maxCol, maxRow))
-      )
-    }
-
-    val baseQueryKeyBounds: Seq[KeyBounds[K]] =
-      queryKeyBounds
-        .flatMap { qkb =>
-          transformKeyBounds(qkb).intersect(baseKeyBounds) match {
-            case EmptyBounds => None
-            case kb: KeyBounds[K] => Some(kb)
+          val minSpatialKey = minKey.getComponent[SpatialKey]
+          val (minCol, minRow) = {
+            val (x, y) = sourceRe.gridToMap(minSpatialKey.col, minSpatialKey.row)
+            targetRe.mapToGrid(x, y)
           }
+
+          val maxSpatialKey = maxKey.getComponent[SpatialKey]
+          val (maxCol, maxRow) = {
+            val (x, y) = sourceRe.gridToMap(maxSpatialKey.col, maxSpatialKey.row)
+            targetRe.mapToGrid(x, y)
+          }
+
+          KeyBounds(
+            minKey.setComponent(SpatialKey(minCol, minRow)),
+            maxKey.setComponent(SpatialKey(maxCol, maxRow))
+          )
         }
-        .distinct
 
-    val seq =
-      COGCollectionReader
-        .read[K, V](
-          keyPath            = keyPath,
-          pathExists         = pathExists,
-          fullPath           = fullPath,
-          baseQueryKeyBounds = baseQueryKeyBounds,
-          decomposeBounds    = decompose,
-          threads            = defaultThreads,
-          readDefinitions    = readDefinitions.flatMap(_._2).groupBy(_._1)
-        )
+        val baseQueryKeyBounds: Seq[KeyBounds[K]] =
+          queryKeyBounds
+            .flatMap { qkb =>
+              transformKeyBounds(qkb).intersect(baseKeyBounds) match {
+                case EmptyBounds => None
+                case kb: KeyBounds[K] => Some(kb)
+              }
+            }
+            .distinct
 
-    new ContextCollection(seq, metadata)
+        val seq =
+          COGCollectionLayerReader
+            .read[K, V](
+              keyPath = keyPath,
+              pathExists = pathExists,
+              fullPath = fullPath,
+              baseQueryKeyBounds = baseQueryKeyBounds,
+              decomposeBounds = decompose,
+              threads = defaultThreads,
+              readDefinitions = readDefinitions.flatMap(_._2).groupBy(_._1)
+          )
+
+        new ContextCollection(seq, metadata)
+      }
+      case _ =>
+        ContextCollection(Seq(), metadata.setComponent[Bounds[K]](EmptyBounds))
+    }
   }
 
   def reader[
@@ -141,12 +146,6 @@ abstract class COGCollectionLayerReader[ID] { self =>
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
-  ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]]): Seq[(K, V)] with Metadata[TileLayerMetadata[K]] =
-    read[K, V](id, rasterQuery, false)
-
-  def read[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](id: ID): Seq[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read[K, V](id, new LayerQuery[K, TileLayerMetadata[K]])
 
@@ -155,4 +154,52 @@ abstract class COGCollectionLayerReader[ID] { self =>
     V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
   ](layerId: ID): BoundLayerQuery[K, TileLayerMetadata[K], Seq[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, read[K, V](layerId, _))
+}
+
+object COGCollectionLayerReader {
+  def read[
+    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V])
+  ](
+     keyPath: BigInt => String, // keyPath
+     pathExists: String => Boolean, // check the path above exists
+     fullPath: String => URI, // add an fs prefix
+     baseQueryKeyBounds: Seq[KeyBounds[K]], // each key here represents a COG filename
+     decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
+     readDefinitions: Map[SpatialKey, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])]],
+     threads: Int,
+     numPartitions: Option[Int] = None
+   )(implicit getByteReader: URI => ByteReader): Seq[(K, V)] = {
+    if (baseQueryKeyBounds.isEmpty) return Seq.empty[(K, V)]
+
+    val tiffMethods = implicitly[TiffMethods[V]]
+
+    val ranges = if (baseQueryKeyBounds.length > 1)
+      MergeQueue(baseQueryKeyBounds.flatMap(decomposeBounds))
+    else
+      baseQueryKeyBounds.flatMap(decomposeBounds)
+
+    LayerReader.njoin[K, V](ranges.toIterator, threads) { index: BigInt =>
+      if (!pathExists(keyPath(index))) Vector()
+      else {
+        val uri = fullPath(keyPath(index))
+        val baseKey = tiffMethods.getKey[K](uri)
+
+        readDefinitions
+          .get(baseKey.getComponent[SpatialKey])
+          .toVector
+          .flatten
+          .flatMap { case (spatialKey, overviewIndex, _, seq) =>
+            val key = baseKey.setComponent(spatialKey)
+            val tiff = tiffMethods.readTiff(uri, overviewIndex)
+            val map = seq.map { case (gb, sk) => gb -> key.setComponent(sk) }.toMap
+
+            tiffMethods.tileTiff(tiff, map)
+          }
+      }
+    }
+      .groupBy(_._1)
+      .map { case (key, (seq: Iterable[(K, V)])) => key -> seq.map(_._2).reduce(_ merge _) }
+      .toSeq
+  }
 }

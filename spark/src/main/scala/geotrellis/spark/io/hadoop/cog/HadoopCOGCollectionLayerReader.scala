@@ -44,7 +44,7 @@ class HadoopCOGCollectionLayerReader(
   val attributeStore: AttributeStore,
   val catalogPath: String,
   val conf: SerializableConfiguration = SerializableConfiguration(new Configuration),
-  val defaultThreads: Int = ConfigFactory.load().getThreads("geotrellis.hadoop.threads.collection.read")
+  val defaultThreads: Int = HadoopCOGCollectionLayerReader.defaultThreadCount
 )
   extends COGCollectionLayerReader[LayerId] with LazyLogging {
 
@@ -53,7 +53,7 @@ class HadoopCOGCollectionLayerReader(
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
-  ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], indexFilterOnly: Boolean) = {
+  ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]]) = {
     def getKeyPath(zoomRange: ZoomRange, maxWidth: Int): BigInt => String =
       (index: BigInt) =>
         s"${catalogPath.toString}/${id.name}/" +
@@ -63,7 +63,6 @@ class HadoopCOGCollectionLayerReader(
     baseRead[K, V](
       id              = id,
       tileQuery       = tileQuery,
-      indexFilterOnly = indexFilterOnly,
       getKeyPath      = getKeyPath,
       pathExists      = { str => HdfsUtils.pathExists(new Path(str), conf.value) },
       fullPath        = { path => new URI(path) },
@@ -73,6 +72,8 @@ class HadoopCOGCollectionLayerReader(
 }
 
 object HadoopCOGCollectionLayerReader {
+  val defaultThreadCount: Int = ConfigFactory.load().getThreads("geotrellis.hadoop.threads.collection.read")
+
   def apply(attributeStore: HadoopAttributeStore): HadoopCOGCollectionLayerReader =
     new HadoopCOGCollectionLayerReader(attributeStore, attributeStore.rootPath.toString, attributeStore.conf)
 
