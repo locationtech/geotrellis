@@ -35,16 +35,6 @@ object COGLayer {
   private def isPowerOfTwo(x: Int): Boolean =
     x != 0 && ((x & (x - 1)) == 0)
 
-  // TODO: Remove
-  case class ContextGeoTiff[K, T <: CellGrid](
-    geoTiff: GeoTiff[T],
-    metadata: TileLayerMetadata[K],
-    zoom: Int,
-    layoutScheme: ZoomedLayoutScheme,
-    zoomRanges: Option[(Int, Int)],
-    overviews: List[(Int, TileLayerMetadata[K])]
-  )
-
   def apply[
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]
