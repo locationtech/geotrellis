@@ -72,6 +72,8 @@ object TileRDDReproject {
     val passthroughGridExtent = ReprojectRasterExtent(sourceDataGridExtent, metadata.crs, destCrs)
     val targetDataExtent = passthroughGridExtent.extent
 
+    val sourcePartitioner = bufferedTiles.partitioner
+
     // inspect the change in spatial extent to get the pixel counts
     val reprojectSummary = matchReprojectRasterExtent(
       metadata.crs, destCrs,
@@ -160,14 +162,6 @@ object TileRDDReproject {
     val newLayout = newMetadata.layout
     val maptrans = newLayout.mapTransform
 
-    // account for changes due to target layout, may be snapping higher or lower resolution
-    val pixelRatio = reprojectSummary.rescaledPixelRatio(newMetadata.layout.cellSize)
-    val part: Option[Partitioner] = if (pixelRatio > 1.2) {
-      val newPartitionCount = (bufferedTiles.partitions.length * pixelRatio).toInt
-      logger.info(s"Layout change grows potential number of tiles by $pixelRatio times, resizing to $newPartitionCount partitions.")
-      Some(new HashPartitioner(partitions = newPartitionCount))
-    } else None
-
     val rrp = implicitly[RasterRegionReproject[V]]
 
     val stagedTiles: RDD[(K, (Raster[V], RasterExtent, Polygon))] =
@@ -205,7 +199,7 @@ object TileRDDReproject {
     def mergeCombiners(reproj1: V, reproj2: V) = reproj1.merge(reproj2)
 
     val tiled: RDD[(K, V)] =
-      stagedTiles.partitioner match {
+      sourcePartitioner match {
         case Some(part) => stagedTiles.combineByKey(createCombiner, mergeValues, mergeCombiners, partitioner = part)
         case None => stagedTiles.combineByKey(createCombiner, mergeValues, mergeCombiners)
       }
