@@ -61,6 +61,45 @@ object SimpleCostDistance {
   def generateEmptyCostTile(cols: Int, rows: Int): DoubleArrayTile =
     DoubleArrayTile.empty(cols, rows)
 
+  def apply(
+    frictionTile: Tile,
+    points: Seq[(Int, Int)]
+  ): DoubleArrayTile = {
+    apply(
+      MultibandTile(frictionTile),
+      points,
+      Double.PositiveInfinity,
+      1
+    )
+  }
+
+  def apply(
+    frictionTile: Tile,
+    points: Seq[(Int, Int)],
+    maxCost: Double
+  ): DoubleArrayTile = {
+    apply(
+      MultibandTile(frictionTile),
+      points,
+      maxCost,
+      1
+    )
+  }
+
+  def apply(
+    frictionTile: Tile,
+    points: Seq[(Int, Int)],
+    maxCost: Double,
+    resolution: Double
+  ): DoubleArrayTile = {
+    apply(
+      MultibandTile(frictionTile),
+      points,
+      maxCost,
+      resolution
+    )
+  }
+
   /**
     * Generate a cost-distance raster based on a set of starting
     * points and a friction raster.  This is an implementation of the
@@ -76,7 +115,7 @@ object SimpleCostDistance {
     * @param  resolution    The resolution of the tiles (in units of "meters per pixel")
     */
   def apply(
-    frictionTile: Tile,
+    frictionTile: MultibandTile,
     points: Seq[(Int, Int)],
     maxCost: Double = Double.PositiveInfinity,
     resolution: Double = 1
@@ -88,7 +127,15 @@ object SimpleCostDistance {
 
     var i = 0; while (i < points.length) {
       val (col, row) = points(i)
-      val entry = (col, row, frictionTile.getDouble(col, row), 0.0)
+      val friction: Double  = {
+        var f: Double = 0.0
+        var i = 0; while (i < frictionTile.bandCount) {
+          f += frictionTile.band(i).getDouble(col, row)
+          i += 1
+        }
+        f / i
+      }
+      val entry = (col, row, friction, 0.0)
       q.add(entry)
       i += 1
     }
@@ -107,7 +154,7 @@ object SimpleCostDistance {
     * @param  edgeCallback    Called when a pixel on the edge of the tile is updated
     */
   def compute(
-    frictionTile: Tile,
+    frictionTile: MultibandTile,
     costTile: DoubleArrayTile,
     maxCost: Double, resolution: Double,
     q: Q, edgeCallback: EdgeCallback
@@ -116,6 +163,7 @@ object SimpleCostDistance {
     val rows = frictionTile.rows
 
     require(frictionTile.dimensions == costTile.dimensions)
+    require(frictionTile.bandCount == 1 || frictionTile.bandCount == 8)
 
     def inTile(col: Int, row: Int): Boolean =
       ((0 <= col && col < cols) && (0 <= row && row < rows))
@@ -132,21 +180,46 @@ object SimpleCostDistance {
       * location, and the distance from the neighboring pixel to this
       * pixel, enqueue a candidate path to the present pixel.
       *
-      * @param  col           The column of the given location
-      * @param  row           The row of the given location
+      * @param  _col          The column of the given location
+      * @param  _row          The row of the given location
       * @param  friction1     The instantaneous cost (friction) at the neighboring location
       * @param  neighborCost  The cost of the neighbor
       * @param  cost          The length of the best-known path from a source to the neighboring location
       * @param  distance      The distance from the neighboring location to this location
       */
     @inline def enqueueNeighbor(
-      col: Int, row: Int, friction1: Double, neighborCost: Double,
+      _col: Int, _row: Int,
+      colDir: Int, rowDir: Int,
+      friction1: Double, neighborCost: Double,
       distance: Double = 1.0
     ): Unit = {
+      val col=_col+colDir
+      val row=_row+rowDir
+
       // If the location is inside of the tile ...
       if (inTile(col, row)) {
-        val friction2 = frictionTile.getDouble(col, row)
         val currentCost = costTile.getDouble(col, row)
+        val friction2: Double = {
+          val tile =
+            frictionTile.bandCount match {
+              case 1 =>
+                frictionTile.band(0)
+              case 8 =>
+                (colDir, rowDir) match {
+                  case (0, -1) => frictionTile.band(0)
+                  case (1, -1) => frictionTile.band(1)
+                  case (1, 0) => frictionTile.band(2)
+                  case (1, 1) => frictionTile.band(3)
+                  case (0, 1) => frictionTile.band(4)
+                  case (-1,1) => frictionTile.band(5)
+                  case (-1,0) => frictionTile.band(6)
+                  case (-1,-1) => frictionTile.band(7)
+                  case _ => throw new Exception
+                }
+              case _ => throw new Exception
+            }
+          tile.getDouble(col, row)
+        }
 
         // ... and if the location is passable ...
         if (isPassable(friction2)) {
@@ -185,14 +258,14 @@ object SimpleCostDistance {
 
         // Compute candidate costs for neighbors and enqueue them
         if (isPassable(friction1)) {
-          enqueueNeighbor(col-1, row+0, friction1, candidateCost)
-          enqueueNeighbor(col+1, row+0, friction1, candidateCost)
-          enqueueNeighbor(col+0, row+1, friction1, candidateCost)
-          enqueueNeighbor(col+0, row-1, friction1, candidateCost)
-          enqueueNeighbor(col-1, row-1, friction1, candidateCost, math.sqrt(2))
-          enqueueNeighbor(col-1, row+1, friction1, candidateCost, math.sqrt(2))
-          enqueueNeighbor(col+1, row-1, friction1, candidateCost, math.sqrt(2))
-          enqueueNeighbor(col+1, row+1, friction1, candidateCost, math.sqrt(2))
+          enqueueNeighbor(col, row, -1,  0, friction1, candidateCost)
+          enqueueNeighbor(col, row,  1,  0, friction1, candidateCost)
+          enqueueNeighbor(col, row,  0,  1, friction1, candidateCost)
+          enqueueNeighbor(col, row,  0, -1, friction1, candidateCost)
+          enqueueNeighbor(col, row, -1, -1, friction1, candidateCost, math.sqrt(2))
+          enqueueNeighbor(col, row, -1,  1, friction1, candidateCost, math.sqrt(2))
+          enqueueNeighbor(col, row,  1, -1, friction1, candidateCost, math.sqrt(2))
+          enqueueNeighbor(col, row,  1,  1, friction1, candidateCost, math.sqrt(2))
         }
       }
     }

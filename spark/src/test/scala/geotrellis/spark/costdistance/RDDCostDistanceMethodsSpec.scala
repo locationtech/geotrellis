@@ -32,8 +32,8 @@ class RDDCostDistanceMethodsSpec extends FunSpec
     with Matchers
     with TestEnvironment {
 
-  val rdd: RDD[(SpatialKey, Tile)] with Metadata[TileLayerMetadata[SpatialKey]] = {
-    val tile = IntArrayTile(Array.fill[Int](25)(1), 5, 5)
+  val rdd: RDD[(SpatialKey, MultibandTile)] with Metadata[TileLayerMetadata[SpatialKey]] = {
+    val tile = MultibandTile(IntArrayTile(Array.fill[Int](25)(1), 5, 5))
     val extent = Extent(0, 0, 10, 5)
     val gridExtent = GridExtent(extent, 1, 1) // 10×5 pixels
     val layoutDefinition = LayoutDefinition(gridExtent, 10, 5)

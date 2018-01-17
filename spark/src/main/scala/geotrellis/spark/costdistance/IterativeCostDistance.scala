@@ -45,6 +45,8 @@ import scala.collection.mutable
   *    International Journal of Geographical Information Science 24.9 (2010): 1391-1413.
   *
   * 2. https://github.com/ngageoint/mrgeo/blob/0c6ed4a7e66bb0923ec5c570b102862aee9e885e/mrgeo-mapalgebra/mrgeo-mapalgebra-costdistance/src/main/scala/org/mrgeo/mapalgebra/CostDistanceMapOp.scala
+  *
+  * @author James McClain
   */
 object IterativeCostDistance {
 
@@ -74,7 +76,7 @@ object IterativeCostDistance {
     def value: Changes = list
   }
 
-  def computeResolution[K: (? => SpatialKey), V: (? => Tile)](
+  def computeResolution[K: (? => SpatialKey), V: (? => MultibandTile)](
     friction: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
   ) = {
     val md = friction.metadata
@@ -122,7 +124,7 @@ object IterativeCostDistance {
     * @param  geometries  The starting locations from-which to compute the cost of traveling
     * @param  maxCost     The maximum cost before pruning a path (in units of "seconds")
     */
-  def apply[K: (? => SpatialKey), V: (? => Tile)](
+  def apply[K: (? => SpatialKey), V: (? => MultibandTile)](
     friction: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     geometries: Seq[Geometry],
     maxCost: Double = Double.PositiveInfinity
@@ -156,7 +158,7 @@ object IterativeCostDistance {
     // accumulator with the starting values.
     var costs: RDD[(K, V, DoubleArrayTile)] = friction.map({ case (k, v) =>
       val key: SpatialKey = k
-      val tile: Tile = v
+      val tile: MultibandTile = v
       val cols = tile.cols
       val rows = tile.rows
       val extent = mt(key)
@@ -168,7 +170,14 @@ object IterativeCostDistance {
         .foreach({ geometry =>
           Rasterizer
             .foreachCellByGeometry(geometry, rasterExtent, options)({ (col, row) =>
-              val friction = tile.getDouble(col, row)
+              val friction: Double  = {
+                var f: Double = 0.0
+                var i = 0; while (i < tile.bandCount) {
+                  f += tile.band(i).getDouble(col, row)
+                  i += 1
+                }
+                f / i
+              }
               val entry = (col, row, friction, 0.0)
               accumulator.add((key, entry))
             })
@@ -195,7 +204,7 @@ object IterativeCostDistance {
 
       costs = previous.map({ case (k, v, oldCostTile) =>
         val key: SpatialKey = k
-        val frictionTile: Tile = v
+        val frictionTile: MultibandTile = v
         val keyCol = key.col
         val keyRow = key.row
         val frictionTileCols = frictionTile.cols
