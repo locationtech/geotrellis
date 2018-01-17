@@ -17,7 +17,6 @@
 package geotrellis.spark.io.file.cog
 
 import geotrellis.raster._
-import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
@@ -50,7 +49,7 @@ class FileCOGLayerReader(
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
+    V <: CellGrid: TiffMethods: ClassTag
   ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int) = {
     def getKeyPath(zoomRange: ZoomRange, maxWidth: Int): BigInt => String =
       KeyPathGenerator(catalogPath, s"${id.name}/${zoomRange.slug}", maxWidth) andThen (_ ++ s".$Extension")

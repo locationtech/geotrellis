@@ -17,7 +17,6 @@
 package geotrellis.spark.io.s3.cog
 
 import geotrellis.raster.CellGrid
-import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.s3._
@@ -52,7 +51,7 @@ class S3COGLayerReader(
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
+    V <: CellGrid: TiffMethods: ClassTag
   ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int) = {
     def getKeyPath(zoomRange: ZoomRange, maxWidth: Int): BigInt => String =
       (index: BigInt) =>

@@ -16,8 +16,7 @@
 
 package geotrellis.spark.io.cog
 
-import geotrellis.raster.{CellGrid, RasterExtent}
-import geotrellis.raster.merge.TileMergeMethods
+import geotrellis.raster.{CellGrid, GridBounds, RasterExtent}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index.{Index, IndexRanges, MergeQueue}
@@ -49,12 +48,12 @@ abstract class FilteringCOGLayerReader[ID] extends COGLayerReader[ID] {
     */
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
+    V <: CellGrid: TiffMethods: ClassTag
   ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
 
   def baseRead[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
+    V <: CellGrid: TiffMethods: ClassTag
   ](
     id: LayerId,
     tileQuery: LayerQuery[K, TileLayerMetadata[K]],
@@ -81,12 +80,18 @@ abstract class FilteringCOGLayerReader[ID] extends COGLayerReader[ID] {
     val queryKeyBounds: Seq[KeyBounds[K]] = tileQuery(metadata)
 
     val readDefinitions: Seq[(ZoomRange, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])])] =
-      queryKeyBounds.map { case KeyBounds(minKey, maxKey) =>
-        cogLayerMetadata.getReadDefinitions(
-          KeyBounds(minKey.getComponent[SpatialKey], maxKey.getComponent[SpatialKey]),
-          id.zoom
-        )
-      }
+      queryKeyBounds
+        .map { keyBounds =>
+          val GridBounds(minCol, minRow, maxCol, maxRow) = keyBounds.toGridBounds()
+          KeyBounds(SpatialKey(minCol, minRow), SpatialKey(maxCol, maxRow))
+        }
+        .distinct // to avoid duplications because of the temporal component
+        .map { case KeyBounds(minKey, maxKey) =>
+          cogLayerMetadata.getReadDefinitions(
+            KeyBounds(minKey.getComponent[SpatialKey], maxKey.getComponent[SpatialKey]),
+            id.zoom
+          )
+        }
 
     readDefinitions.headOption.map(_._1) match {
       case Some(zoomRange) => {
@@ -157,25 +162,25 @@ abstract class FilteringCOGLayerReader[ID] extends COGLayerReader[ID] {
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
+    V <: CellGrid: TiffMethods: ClassTag
   ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]]): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read(id, rasterQuery, defaultNumPartitions)
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
+    V <: CellGrid: TiffMethods: ClassTag
   ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read(id, new LayerQuery[K, TileLayerMetadata[K]], numPartitions)
 
   def query[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
+    V <: CellGrid: TiffMethods: ClassTag
   ](layerId: ID): BoundLayerQuery[K, TileLayerMetadata[K], RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, read(layerId, _))
 
   def query[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
+    V <: CellGrid: TiffMethods: ClassTag
   ](layerId: ID, numPartitions: Int): BoundLayerQuery[K, TileLayerMetadata[K], RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, read(layerId, _, numPartitions))
 }
@@ -183,7 +188,7 @@ abstract class FilteringCOGLayerReader[ID] extends COGLayerReader[ID] {
 object FilteringCOGLayerReader {
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V])
+    V <: CellGrid: TiffMethods
   ](
      keyPath: BigInt => String, // keyPath
      pathExists: String => Boolean, // check the path above exists
@@ -232,7 +237,5 @@ object FilteringCOGLayerReader {
           }
         }
       }
-      .groupBy(_._1)
-      .map { case (key, (seq: Iterable[(K, V)])) => key -> seq.map(_._2).reduce(_ merge _) }
   }
 }

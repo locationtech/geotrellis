@@ -16,8 +16,7 @@
 
 package geotrellis.spark.io.cog
 
-import geotrellis.raster.{CellGrid, RasterExtent}
-import geotrellis.raster.merge.TileMergeMethods
+import geotrellis.raster.{CellGrid, GridBounds, RasterExtent}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index.{Index, MergeQueue}
@@ -34,12 +33,12 @@ abstract class COGCollectionLayerReader[ID] { self =>
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
+    V <: CellGrid: TiffMethods: ClassTag
   ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]]): Seq[(K, V)] with Metadata[TileLayerMetadata[K]]
 
   def baseRead[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
+    V <: CellGrid: TiffMethods: ClassTag
   ](
     id: ID,
     tileQuery: LayerQuery[K, TileLayerMetadata[K]],
@@ -61,12 +60,18 @@ abstract class COGCollectionLayerReader[ID] { self =>
     val queryKeyBounds: Seq[KeyBounds[K]] = tileQuery(metadata)
 
     val readDefinitions: Seq[(ZoomRange, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])])] =
-      queryKeyBounds.map { case KeyBounds(minKey, maxKey) =>
-        cogLayerMetadata.getReadDefinitions(
-          KeyBounds(minKey.getComponent[SpatialKey], maxKey.getComponent[SpatialKey]),
-          id.zoom
-        )
-      }
+      queryKeyBounds
+        .map { keyBounds =>
+          val GridBounds(minCol, minRow, maxCol, maxRow) = keyBounds.toGridBounds()
+          KeyBounds(SpatialKey(minCol, minRow), SpatialKey(maxCol, maxRow))
+        }
+        .distinct // to avoid duplications because of the temporal component
+        .map { case KeyBounds(minKey, maxKey) =>
+          cogLayerMetadata.getReadDefinitions(
+            KeyBounds(minKey.getComponent[SpatialKey], maxKey.getComponent[SpatialKey]),
+            id.zoom
+          )
+        }
 
     readDefinitions.headOption.map(_._1) match {
       case Some(zoomRange) => {
@@ -136,7 +141,7 @@ abstract class COGCollectionLayerReader[ID] { self =>
 
   def reader[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
+    V <: CellGrid: TiffMethods: ClassTag
   ]: Reader[ID, Seq[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new Reader[ID, Seq[(K, V)] with Metadata[TileLayerMetadata[K]]] {
       def read(id: ID): Seq[(K, V)] with Metadata[TileLayerMetadata[K]] =
@@ -145,13 +150,13 @@ abstract class COGCollectionLayerReader[ID] { self =>
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
+    V <: CellGrid: TiffMethods: ClassTag
   ](id: ID): Seq[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read[K, V](id, new LayerQuery[K, TileLayerMetadata[K]])
 
   def query[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
+    V <: CellGrid: TiffMethods: ClassTag
   ](layerId: ID): BoundLayerQuery[K, TileLayerMetadata[K], Seq[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, read[K, V](layerId, _))
 }
@@ -159,7 +164,7 @@ abstract class COGCollectionLayerReader[ID] { self =>
 object COGCollectionLayerReader {
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V])
+    V <: CellGrid: TiffMethods
   ](
      keyPath: BigInt => String, // keyPath
      pathExists: String => Boolean, // check the path above exists
@@ -198,8 +203,5 @@ object COGCollectionLayerReader {
           }
       }
     }
-      .groupBy(_._1)
-      .map { case (key, (seq: Iterable[(K, V)])) => key -> seq.map(_._2).reduce(_ merge _) }
-      .toSeq
   }
 }

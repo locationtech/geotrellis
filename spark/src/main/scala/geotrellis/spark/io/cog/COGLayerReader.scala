@@ -18,8 +18,6 @@ package geotrellis.spark.io.cog
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.raster.merge.TileMergeMethods
-import geotrellis.spark.io.index.KeyIndex
 import geotrellis.util._
 import geotrellis.raster.CellGrid
 
@@ -41,12 +39,12 @@ trait COGLayerReader[ID] extends Serializable {
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
+    V <: CellGrid: TiffMethods: ClassTag
   ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
 
   def baseRead[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
+    V <: CellGrid: TiffMethods: ClassTag
   ](
      id: ID,
      tileQuery: LayerQuery[K, TileLayerMetadata[K]],
@@ -62,13 +60,13 @@ trait COGLayerReader[ID] extends Serializable {
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
+    V <: CellGrid: TiffMethods: ClassTag
   ](id: ID): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read(id, defaultNumPartitions)
 
   def reader[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: (? => TileMergeMethods[V]): ClassTag
+    V <: CellGrid: TiffMethods: ClassTag
   ]: Reader[ID, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new Reader[ID, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
       def read(id: ID): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
