@@ -27,8 +27,8 @@ import scala.util.Try
 object Implicits extends Implicits
 
 trait Implicits extends LazyLogging {
-  implicit val config: Configuration = Configuration.default.withDefaults.withSnakeCaseKeys
-  val pipelineJsonPrinter: Printer = Printer.spaces2.copy(dropNullKeys = true)
+  implicit val config: Configuration = Configuration.default.withDefaults.withSnakeCaseMemberNames
+  val pipelineJsonPrinter: Printer = Printer.spaces2.copy(dropNullValues = true)
 
   implicit val uriEncoder: Encoder[URI] =
     Encoder.encodeString.contramap[URI] { _.toString }
@@ -80,12 +80,12 @@ trait Implicits extends LazyLogging {
     }
   implicit val layoutSchemeDecoder: Decoder[LayoutScheme] =
     Decoder.decodeJson.emap { json: Json =>
-      ((json.hcursor.downField("tileCols").as[Int] |@| json.hcursor.downField("tileRows").as[Int]) map {
+      ((json.hcursor.downField("tileCols").as[Int], json.hcursor.downField("tileRows").as[Int]) mapN {
         (tileCols, tileRows) => FloatingLayoutScheme(tileCols, tileRows)
       } match {
         case right @ Right(_) => right
         case Left(_) =>
-          (json.hcursor.downField("crs").as[CRS] |@| json.hcursor.downField("tileSize").as[Int] |@| json.hcursor.downField("resolutionThreshold").as[Double]) map {
+          (json.hcursor.downField("crs").as[CRS], json.hcursor.downField("tileSize").as[Int], json.hcursor.downField("resolutionThreshold").as[Double]) mapN {
             (crs, tileSize, resolutionThreshold) => ZoomedLayoutScheme(crs, tileSize, resolutionThreshold)
           }
       }).leftMap(_ => "LayoutScheme")
@@ -138,8 +138,8 @@ trait Implicits extends LazyLogging {
   implicit val cellSizeDecoder: Decoder[CellSize] =
     Decoder.decodeJsonObject.emap { jso: JsonObject =>
       val map = jso.toMap
-      val cellSize = ((map.get("width") |@| map.get("height")) map {
-        (w, h) => (new EitherOps(w.as[Double]).toOption |@| new EitherOps(h.as[Double]).toOption) map {
+      val cellSize = ((map.get("width"), map.get("height")) mapN {
+        (w, h) => (new EitherOps(w.as[Double]).toOption, new EitherOps(h.as[Double]).toOption) mapN {
           (width, height) => CellSize(width, height)
         }
       }).flatten

@@ -54,10 +54,8 @@ object Dependencies {
 
   val scaffeine           = "com.github.blemale"         %% "scaffeine"                % "2.2.0"
 
-  val circeCore           = "io.circe"                   %% "circe-core"               % "0.8.0"
-  val circeGeneric        = "io.circe"                   %% "circe-generic"            % "0.8.0"
-  val circeGenericExtras  = "io.circe"                   %% "circe-generic-extras"     % "0.8.0"
-  val circeParser         = "io.circe"                   %% "circe-parser"             % "0.8.0"
-  
-  val cats                = "org.typelevel"              %% "cats"                     % "0.9.0"
+  val circeCore           = "io.circe"                   %% "circe-core"               % Version.circe
+  val circeGeneric        = "io.circe"                   %% "circe-generic"            % Version.circe
+  val circeGenericExtras  = "io.circe"                   %% "circe-generic-extras"     % Version.circe
+  val circeParser         = "io.circe"                   %% "circe-parser"             % Version.circe
 }

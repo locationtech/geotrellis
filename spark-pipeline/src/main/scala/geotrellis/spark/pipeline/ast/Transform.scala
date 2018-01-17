@@ -4,18 +4,20 @@ import geotrellis.raster.crop.CropMethods
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.prototype.TilePrototypeMethods
 import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
-import geotrellis.raster.reproject.TileReprojectMethods
+import geotrellis.raster.reproject.{TileReprojectMethods, RasterRegionReproject}
 import geotrellis.raster.stitch.Stitcher
 import geotrellis.raster.CellGrid
 import geotrellis.raster.resample.ResampleMethod
 import geotrellis.spark.io.avro.AvroRecordCodec
 import geotrellis.spark.tiling.{FloatingLayoutScheme, LayoutLevel, LocalLayoutScheme, TilerKeyMethods, ZoomedLayoutScheme}
 import geotrellis.spark._
+import geotrellis.spark.io._
 import geotrellis.spark.pipeline.json.transform.{Pyramid => JsonPyramid}
 import geotrellis.spark.pipeline.json.transform._
 import geotrellis.spark.pyramid.Pyramid
 import geotrellis.vector.ProjectedExtent
 import geotrellis.util._
+
 import org.apache.spark.HashPartitioner
 import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
@@ -40,7 +42,7 @@ object Transform {
 
   def bufferedReproject[
     K: SpatialComponent: Boundable: ClassTag,
-    V <: CellGrid: ClassTag: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
+    V <: CellGrid: ClassTag: RasterRegionReproject: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](arg: Reproject)(rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] = {
     (arg.scheme, arg.maxZoom) match {
       case (Left(layoutScheme: ZoomedLayoutScheme), Some(mz)) =>
