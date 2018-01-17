@@ -32,6 +32,9 @@ import geotrellis.vector.io.json._
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import org.apache.spark._
+
+
 class RasterizeRDDSpec extends FunSpec with Matchers
     with TestEnvironment {
 
@@ -160,5 +163,22 @@ class RasterizeRDDSpec extends FunSpec with Matchers
       .collect().head._2
 
     tile.toArray.sum should be (336)
+  }
+
+  it("should retain the given partitioner") {
+    val features = sc.parallelize(List(
+      Feature(polygon0, CellValue(value = 1000, zindex = 0)),
+      Feature(polygon1, CellValue(value = 1, zindex = 3)),
+      Feature(polygon2, CellValue(value = 2, zindex = 2)),
+      Feature(polygon0, CellValue(value = 2000, zindex = 0)),
+      Feature(polygon0, CellValue(value = 3000, zindex = 0))
+    ))
+
+    val partitioner = Some(new HashPartitioner(8))
+
+    val tile = RasterizeRDD
+      .fromFeatureWithZIndex(features, ct, ld, partitioner = partitioner)
+
+    tile.partitioner should be (partitioner)
   }
 }
