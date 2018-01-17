@@ -91,7 +91,14 @@ case class COGLayerMetadata[K: SpatialComponent](
       keyBoundsForZoom(zoom)
     )
 
-  /** Returns the ZoomRange to read, and a Sequence of SpatialKey COGs to read, the total
+  def getReadDefinitions(queryKeyBounds: Seq[KeyBounds[K]], zoom: Int): Seq[(ZoomRange, Seq[(SpatialKey, Int, GridBounds, Seq[(GridBounds, SpatialKey)])])] =
+    queryKeyBounds
+      .map { _.toSpatial }
+      .distinct // to avoid duplications because of the temporal component
+      .map { getReadDefinitions(_, zoom) }
+
+  /**
+    * Returns the ZoomRange to read, and a Sequence of SpatialKey COGs to read, the total
     * GridBounds to read from that COG, and the sequence of GridBounds -> Keys that that
     * file should be cropped by
     */

@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io.cog
 
-import geotrellis.raster.{CellGrid, GridBounds, RasterExtent}
+import geotrellis.raster.{CellGrid, RasterExtent}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index.{Index, MergeQueue}
@@ -60,18 +60,7 @@ abstract class COGCollectionLayerReader[ID] { self =>
     val queryKeyBounds: Seq[KeyBounds[K]] = tileQuery(metadata)
 
     val readDefinitions: Seq[(ZoomRange, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])])] =
-      queryKeyBounds
-        .map { keyBounds =>
-          val GridBounds(minCol, minRow, maxCol, maxRow) = keyBounds.toGridBounds()
-          KeyBounds(SpatialKey(minCol, minRow), SpatialKey(maxCol, maxRow))
-        }
-        .distinct // to avoid duplications because of the temporal component
-        .map { case KeyBounds(minKey, maxKey) =>
-          cogLayerMetadata.getReadDefinitions(
-            KeyBounds(minKey.getComponent[SpatialKey], maxKey.getComponent[SpatialKey]),
-            id.zoom
-          )
-        }
+      cogLayerMetadata.getReadDefinitions(queryKeyBounds, id.zoom)
 
     readDefinitions.headOption.map(_._1) match {
       case Some(zoomRange) => {
