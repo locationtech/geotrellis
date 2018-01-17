@@ -18,3 +18,31 @@ schema](https://github.com/mapbox/vector-tile-spec/blob/master/2.1/vector_tile.p
 
 For more detailed information on VectorTiles, our data types, and usage
 instructions for this library, see the Scaladocs.
+
+### Updating `scalapb`
+
+This codec uses [ScalaPB](https://github.com/scalapb/ScalaPB) to auto-generate
+its `.pbf -> Scala` bridge code. The tool itself offers an SBT plugin to do
+this, but I've found it easier to run their [`spbc` tool directly](https://scalapb.github.io/).
+
+Once you have that, generate the code as follows. From the `vectortile/` directory:
+
+```
+spbc vector_tile.proto --scala_out=.
+```
+
+This will produce some scala sources that will need to override what's present
+in `/vectortile/src/main/scala/geotrellis/vectortile/internal/vector_tile`.
+This should be two files, `Tile.scala` and `VectorTileProto.scala`.
+
+To get everything to compile, you will also have to manually change the package
+names in each of the files to:
+
+```scala
+package geotrellis.vectortile.internal.vector_tile
+```
+
+Please also add the Apache 2 license headers to each file.
+
+You will have to complete this entire process whenever you choose to update the `scalapb`
+dependency line in `vectortile/build.sbt`.

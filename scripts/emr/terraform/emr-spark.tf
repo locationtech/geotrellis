@@ -7,7 +7,7 @@ provider "aws" {
 
 # `aws_emr_cluster` is built-in to Terraform. We name ours `emr-spark-cluster`.
 resource "aws_emr_cluster" "emr-spark-cluster" {
-  name          = "EMR GeoTrellis Zeppelin"
+  name          = "EMR GeoTrellis - ${var.user}"
   release_label = "emr-5.8.0"
 
   # This it will work if only `Spark` is named here, but booting the cluster seems
@@ -54,6 +54,41 @@ resource "aws_emr_cluster" "emr-spark-cluster" {
   # Spark YARN config to S3 for the ECS cluster to grab.
   provisioner "remote-exec" {
     # Necessary to massage settings the way AWS wants them.
+    connection {
+      type        = "ssh"
+      user        = "hadoop"
+      host        = "${aws_emr_cluster.emr-spark-cluster.master_public_dns}"
+      private_key = "${file("${var.pem_path}")}"
+    }
+  }
+
+  provisioner "file" {
+    source      = "bootstrap.sh"
+    destination = "/tmp/bootstrap.sh"
+    connection {
+      type        = "ssh"
+      user        = "hadoop"
+      host        = "${aws_emr_cluster.emr-spark-cluster.master_public_dns}"
+      private_key = "${file("${var.pem_path}")}"
+    }
+  }
+
+  provisioner "file" {
+    source      = "boilerplate.js"
+    destination = "/tmp/bp.js"
+    connection {
+      type        = "ssh"
+      user        = "hadoop"
+      host        = "${aws_emr_cluster.emr-spark-cluster.master_public_dns}"
+      private_key = "${file("${var.pem_path}")}"
+    }
+  }
+
+  provisioner "remote-exec" {
+    inline=[
+      "chmod +x /tmp/bootstrap.sh",
+      "/tmp/bootstrap.sh ${var.access_key} ${var.secret_key} ${var.s3_notebook_bucket} ${var.s3_notebook_prefix} ${var.install_jupyter}"
+    ]
     connection {
       type        = "ssh"
       user        = "hadoop"

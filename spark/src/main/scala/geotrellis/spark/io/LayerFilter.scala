@@ -212,6 +212,12 @@ object Intersects {
       def apply(metadata: M, kb: KeyBounds[K], line: Line) =
         forMultiLine[K, M].apply(metadata, kb, MultiLine(line))
     }
+
+  /** Define Contains filter for Point */
+  implicit def forPoint[K: SpatialComponent: Boundable, M: (? => MapKeyTransform)] =
+    new LayerFilter[K, Intersects.type, Point, M] {
+      def apply(metadata: M, kb: KeyBounds[K], point: Point) = Contains.pointContainment(metadata, kb, point)
+    }
 }
 
 object At {
@@ -253,20 +259,22 @@ object Between {
 object Contains {
   def apply[T](value: T) = LayerFilter.Value[Contains.type, T](value)
 
+  private[spark] def pointContainment[K: SpatialComponent: Boundable, M: (? => MapKeyTransform)](metadata: M, kb: KeyBounds[K], point: Point) = {
+    val spatialKey = (metadata: MapKeyTransform)(point)
+    val queryBounds =
+      KeyBounds(
+        kb.minKey setComponent spatialKey,
+        kb.maxKey setComponent spatialKey
+      )
+    (queryBounds intersect kb) match {
+      case kb: KeyBounds[K] => List(kb)
+      case EmptyBounds => Nil
+    }
+  }
+
   /** Define Intersects filter for Extent */
   implicit def forPoint[K: SpatialComponent: Boundable, M: (? => MapKeyTransform)] =
     new LayerFilter[K, Contains.type, Point, M] {
-    def apply(metadata: M, kb: KeyBounds[K], point: Point) = {
-      val spatialKey = (metadata: MapKeyTransform)(point)
-      val queryBounds =
-        KeyBounds(
-          kb.minKey setComponent spatialKey,
-          kb.maxKey setComponent spatialKey
-        )
-      (queryBounds intersect kb) match {
-        case kb: KeyBounds[K] => List(kb)
-        case EmptyBounds => Nil
-      }
+      def apply(metadata: M, kb: KeyBounds[K], point: Point) = pointContainment(metadata, kb, point)
     }
-  }
 }

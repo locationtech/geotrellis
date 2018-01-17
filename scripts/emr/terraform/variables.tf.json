@@ -1,6 +1,6 @@
-{ 
+{
   "variable": {
-    "access_key": { 
+    "access_key": {
         "description": "From your `~/.aws/credentials"
     },
     "secret_key": {
@@ -8,6 +8,16 @@
     },
     "pem_path": {
         "description": "Path to your EC2 secret key"
+    },
+    "s3_notebook_bucket": {
+        "description": "The bucket name on S3 where notebooks are stored"
+    },
+    "s3_notebook_prefix": {
+        "description": "The prefix path inside the S3 notebook bucket"
+    },
+    "install_jupyter": {
+        "default": "false",
+        "description": "Install jupyter-scala during cluster creation"
     },
     "region": {
         "default": "us-east-1",
@@ -28,6 +38,10 @@
     "worker_count": {
         "default": "2",
         "description": "The number of worker nodes to provision"
-    }
+    },
+    "user": {
+        "default": "anonymous",
+        "description": "User name applied to cluster"
+    },
   }
 }

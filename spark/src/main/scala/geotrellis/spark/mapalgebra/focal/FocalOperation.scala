@@ -23,6 +23,7 @@ import geotrellis.raster.mapalgebra.focal._
 import geotrellis.util.MethodExtensions
 
 import org.apache.spark.rdd.RDD
+import org.apache.spark.Partitioner
 
 import scala.reflect.ClassTag
 
@@ -32,32 +33,37 @@ object FocalOperation {
     bufferedTiles
       .mapValues { case BufferedTile(tile, gridBounds) => calc(tile, Some(gridBounds)) }
 
-  def apply[K: SpatialComponent: ClassTag](rdd: RDD[(K, Tile)], neighborhood: Neighborhood)
-      (calc: (Tile, Option[GridBounds]) => Tile)(implicit d: DummyImplicit): RDD[(K, Tile)] =
-    mapOverBufferedTiles(rdd.bufferTiles(neighborhood.extent), neighborhood)(calc)
+  def apply[K: SpatialComponent: ClassTag](
+    rdd: RDD[(K, Tile)],
+    neighborhood: Neighborhood,
+    partitioner: Option[Partitioner])
+    (calc: (Tile, Option[GridBounds]) => Tile)(implicit d: DummyImplicit): RDD[(K, Tile)] =
+      mapOverBufferedTiles(rdd.bufferTiles(neighborhood.extent, partitioner), neighborhood)(calc)
 
-  def apply[K: SpatialComponent: ClassTag](rdd: RDD[(K, Tile)], neighborhood: Neighborhood, layerBounds: GridBounds)
-      (calc: (Tile, Option[GridBounds]) => Tile): RDD[(K, Tile)] =
-    mapOverBufferedTiles(rdd.bufferTiles(neighborhood.extent, layerBounds), neighborhood)(calc)
+  def apply[K: SpatialComponent: ClassTag](
+    rdd: RDD[(K, Tile)],
+    neighborhood: Neighborhood,
+    layerBounds: GridBounds,
+    partitioner: Option[Partitioner])
+    (calc: (Tile, Option[GridBounds]) => Tile): RDD[(K, Tile)] =
+      mapOverBufferedTiles(rdd.bufferTiles(neighborhood.extent, layerBounds, partitioner), neighborhood)(calc)
 
-  def apply[K: SpatialComponent: ClassTag](rasterRDD: TileLayerRDD[K], neighborhood: Neighborhood)
+  def apply[K: SpatialComponent: ClassTag](rasterRDD: TileLayerRDD[K], neighborhood: Neighborhood, partitioner: Option[Partitioner])
       (calc: (Tile, Option[GridBounds]) => Tile): TileLayerRDD[K] =
     rasterRDD.withContext { rdd =>
-      apply(rdd, neighborhood, rasterRDD.metadata.gridBounds)(calc)
+      apply(rdd, neighborhood, rasterRDD.metadata.gridBounds, partitioner)(calc)
     }
 }
 
 abstract class FocalOperation[K: SpatialComponent: ClassTag] extends MethodExtensions[TileLayerRDD[K]] {
 
-  def focal(n: Neighborhood)
+  def focal(n: Neighborhood, partitioner: Option[Partitioner])
       (calc: (Tile, Option[GridBounds]) => Tile): TileLayerRDD[K] =
-    FocalOperation(self, n)(calc)
+        FocalOperation(self, n, partitioner)(calc)
 
-  def focalWithCellSize(n: Neighborhood)
+  def focalWithCellSize(n: Neighborhood, partitioner: Option[Partitioner])
       (calc: (Tile, Option[GridBounds], CellSize) => Tile): TileLayerRDD[K] = {
     val cellSize = self.metadata.layout.cellSize
-    FocalOperation(self, n){ (tile, bounds) =>
-      calc(tile, bounds, cellSize)
-    }
+    FocalOperation(self, n, partitioner){ (tile, bounds) => calc(tile, bounds, cellSize) }
   }
 }

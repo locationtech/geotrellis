@@ -145,6 +145,9 @@ class TileLayerRDDFilterMethodsSpec extends FunSpec with TestEnvironment {
       val gb = filteredRdd.metadata.bounds.get.toGridBounds
 
       md.mapTransform(gb).center should be (md.extent.center)
+
+      val filteredViaIntersects = rdd.filter().where(Intersects(point)).result
+      filteredViaIntersects.count should be (1)
     }
 
     it("should filter query by point (temporal)") {
@@ -158,6 +161,9 @@ class TileLayerRDDFilterMethodsSpec extends FunSpec with TestEnvironment {
       val gb = filteredRdd.metadata.bounds.get.toGridBounds
 
       md.mapTransform(gb).center should be (md.extent.center)
+
+      val filteredViaIntersects = rdd.filter().where(Intersects(point)).result
+      filteredViaIntersects.count should be (1)
     }
   }
 }

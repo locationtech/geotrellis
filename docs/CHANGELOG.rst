@@ -12,6 +12,8 @@ API Changes
   - **Change:**  The length of the key (the space-filling curve index or address) used for layer reading and writing has
     been extended from a fixed length of 8 bytes to an arbitrary length.  This change affects not only the
     ``geotrellis.spark`` package, but all backends (excluding ``geotrellis.geowave`` and ``geotrellis.geomesa``).
+  - **New:** All focal operations now except an optional ``partitioner`` parameter.
+  - **New:** ``BufferTiles``\s ``apply`` methods and the ``bufferTiles`` methods now except an optional ``partitioner`` parameter.
 
   - **Change:** Reprojection has improved performance due to one less shuffle stage and lower memory usage.
   ``TileRDDReproject`` loses dependency on ``TileReprojectMethods`` in favor of ``RasterRegionReproject``

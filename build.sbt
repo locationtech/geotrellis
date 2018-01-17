@@ -98,6 +98,7 @@ lazy val root = Project("geotrellis", file(".")).
     slick,
     spark,
     `spark-etl`,
+    `spark-pipeline`,
     `spark-testkit`,
     util,
     vector,
@@ -209,6 +210,10 @@ lazy val hbase = project
 
 lazy val `spark-etl` = Project(id = "spark-etl", base = file("spark-etl")).
   dependsOn(spark, s3, accumulo, cassandra, hbase).
+  settings(commonSettings)
+
+lazy val `spark-pipeline` = Project(id = "spark-pipeline", base = file("spark-pipeline")).
+  dependsOn(spark, s3, `spark-testkit` % "test").
   settings(commonSettings)
 
 lazy val geotools = project

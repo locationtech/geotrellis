@@ -53,4 +53,9 @@ object Dependencies {
   val jsonSchemaValidator = "com.networknt"               % "json-schema-validator"    % "0.1.7"
 
   val scaffeine           = "com.github.blemale"         %% "scaffeine"                % "2.2.0"
+
+  val circeCore           = "io.circe"                   %% "circe-core"               % Version.circe
+  val circeGeneric        = "io.circe"                   %% "circe-generic"            % Version.circe
+  val circeGenericExtras  = "io.circe"                   %% "circe-generic-extras"     % Version.circe
+  val circeParser         = "io.circe"                   %% "circe-parser"             % Version.circe
 }

@@ -1,23 +1,24 @@
 #!/bin/bash
 
-./sbt "project accumulo" +publish-m2 \
-      "project cassandra" +publish-m2 \
-      "project geomesa" +publish-m2 \
-      "project geotools" +publish-m2 \
-      "project geowave" +publish-m2 \
-      "project hbase" +publish-m2 \
-      "project macros" +publish-m2 \
-      "project proj4" +publish-m2 \
-      "project raster" +publish-m2 \
-      "project raster-testkit" +publish-m2 \
-      "project s3" +publish-m2 \
-      "project s3-testkit" +publish-m2 \
-      "project shapefile" +publish-m2 \
-      "project slick" +publish-m2 \
-      "project spark" +publish-m2 \
-      "project spark-etl" +publish-m2 \
-      "project spark-testkit" +publish-m2 \
-      "project util" +publish-m2 \
-      "project vector" +publish-m2 \
-      "project vector-testkit" +publish-m2 \
-      "project vectortile" +publish-m2
+./sbt "project accumulo" +publishM2 \
+      "project cassandra" +publishM2 \
+      "project geomesa" +publishM2 \
+      "project geotools" +publishM2 \
+      "project geowave" +publishM2 \
+      "project hbase" +publishM2 \
+      "project macros" +publishM2 \
+      "project proj4" +publishM2 \
+      "project raster" +publishM2 \
+      "project raster-testkit" +publishM2 \
+      "project s3" +publishM2 \
+      "project s3-testkit" +publishM2 \
+      "project shapefile" +publishM2 \
+      "project spark-pipeline" publishM2 \
+      "project slick" +publishM2 \
+      "project spark" +publishM2 \
+      "project spark-etl" +publishM2 \
+      "project spark-testkit" +publishM2 \
+      "project util" +publishM2 \
+      "project vector" +publishM2 \
+      "project vector-testkit" +publishM2 \
+      "project vectortile" +publishM2
