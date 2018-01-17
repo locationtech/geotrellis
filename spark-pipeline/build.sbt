@@ -6,7 +6,6 @@ libraryDependencies ++= Seq(
   circeGeneric,
   circeGenericExtras,
   circeParser,
-  cats,
   sparkCore % Provided,
   scalatest % Test
 )
