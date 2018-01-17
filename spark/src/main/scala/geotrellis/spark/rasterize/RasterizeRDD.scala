@@ -177,7 +177,7 @@ object RasterizeRDD {
         mergeCombiners = mergeTiles,
         partitioner.getOrElse(new HashPartitioner(features.getNumPartitions))
       )
-        .map({ (tup: (SpatialKey, (MutableArrayTile, MutableArrayTile))) => (tup._1, tup._2._1) })
+        .mapValues { tup  => tup._1 }
 
     ContextRDD(tiles.asInstanceOf[RDD[(SpatialKey, Tile)]], layout)
   }
