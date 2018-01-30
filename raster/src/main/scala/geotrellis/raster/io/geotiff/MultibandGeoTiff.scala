@@ -74,6 +74,43 @@ case class MultibandGeoTiff(
     getClosestOverview(cellSize, strategy)
       .raster
       .resample(rasterExtent, resampleMethod)
+
+  def buildOverview(decimationFactor: Int, blockSize: Int, resampleMethod: ResampleMethod): GeoTiffMultibandTile = {
+    val segmentLayout: GeoTiffSegmentLayout = GeoTiffSegmentLayout(
+      totalCols = tile.cols / decimationFactor,
+      totalRows = tile.rows / decimationFactor,
+      storageMethod = Tiled(blockSize, blockSize),
+      interleaveMethod = PixelInterleave,
+      bandType = BandType.forCellType(tile.cellType))
+
+    @inline def padToBlockSize(x: Int, w: Int): Int = math.ceil(x / w.toDouble).toInt * w
+
+    val overviewSegments = rasterExtent
+      .rasterExtentFor(
+        GridBounds(
+          colMin = 0,
+          rowMin = 0,
+          colMax = padToBlockSize(tile.cols, blockSize * decimationFactor),
+          rowMax = padToBlockSize(tile.rows, blockSize * decimationFactor)))
+      .withDimensions(
+        segmentLayout.tileLayout.layoutCols,
+        segmentLayout.tileLayout.layoutRows)
+
+    val segments = for {
+      layoutCol <- Iterator.range(0, segmentLayout.tileLayout.layoutCols)
+      layoutRow <- Iterator.range(0, segmentLayout.tileLayout.layoutRows)
+    } yield {
+      val segmentExtent = overviewSegments.extentFor(GridBounds(layoutCol, layoutRow, layoutCol, layoutRow))
+      val segmentTile = raster.resample(RasterExtent(segmentExtent, blockSize, blockSize), resampleMethod).tile
+
+      ((layoutCol, layoutRow), segmentTile)
+    }
+
+    GeoTiffBuilder[MultibandTile].makeTile(
+      segments, segmentLayout.tileLayout, cellType, Tiled(blockSize, blockSize), options.compression
+    ).asInstanceOf[GeoTiffMultibandTile] // TODO avoid this cast
+  }
+
 }
 
 object MultibandGeoTiff {

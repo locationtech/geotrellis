@@ -16,37 +16,40 @@
 
 package geotrellis.spark.io.cog
 
+import scala.reflect._
+
 import geotrellis.raster._
-import geotrellis.raster.crop._
-import geotrellis.raster.io.geotiff.compression.{Compression, NoCompression}
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
+import geotrellis.raster.crop._
+import geotrellis.raster.io.geotiff._
+import geotrellis.raster.io.geotiff.compression.{Compression, NoCompression}
 import geotrellis.spark._
 import geotrellis.spark.io.index._
-import spray.json._
 import org.apache.spark.rdd.RDD
-
-import scala.reflect._
+import spray.json._
 
 trait COGLayerWriter extends Serializable {
   def writeCOGLayer[
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,
-    V <: CellGrid: ClassTag
+    V <: CellGrid: TiffMethods: ClassTag
   ](
     layerName: String,
     cogLayer: COGLayer[K, V],
-    keyIndexes: Map[ZoomRange, KeyIndex[K]]
+    keyIndexes: Map[ZoomRange, KeyIndex[K]],
+    mergeFunc: Option[(GeoTiff[V], GeoTiff[V]) => GeoTiff[V]] = None
   ): Unit
 
   def write[
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,
-    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]
+    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: TiffMethods
   ](
     layerName: String,
     tiles: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     tileZoom: Int,
     keyIndexMethod: KeyIndexMethod[K],
-    compression: Compression = NoCompression
+    compression: Compression = NoCompression,
+    mergeFunc: Option[(GeoTiff[V], GeoTiff[V]) => GeoTiff[V]] = None
   )(implicit tc: Iterable[(SpatialKey, V)] => GeoTiffSegmentConstructMethods[SpatialKey, V]): Unit =
     tiles.metadata.bounds match {
       case keyBounds: KeyBounds[K] =>

@@ -18,9 +18,10 @@ mimaPreviousArtifacts := Set(
 
 sourceGenerators in Compile += (sourceManaged in Compile).map(Boilerplate.genRaster).taskValue
 
-initialCommands in console :=
-  """
-  import geotrellis.raster._
-  import geotrellis.raster.resample._
-  import geotrellis.vector._
-  """
+initialCommands in console :="""
+import geotrellis.raster._
+import geotrellis.raster.resample._
+import geotrellis.vector._
+import geotrellis.raster.io.geotiff._
+import geotrellis.raster.render._
+"""

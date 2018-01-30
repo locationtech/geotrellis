@@ -283,4 +283,26 @@ object GeoTiffSegment {
 
     bands
   }
+
+  private[raster]
+  def pixelInterleave(tile: MultibandTile): Array[Byte] = {
+    val bandCount = tile.bandCount
+    val byteCount = tile.cellType.bytes
+    val bytes = Array.ofDim[Byte](byteCount * bandCount * tile.cols * tile.rows)
+    val bandBytes: Vector[Array[Byte]] = tile.bands.map(_.toBytes)
+
+    var segIndex = 0
+    cfor(0)(_ < tile.cols * tile.rows, _ + 1) { cellIndex =>
+      cfor(0)(_ < bandCount, _ + 1) { bandIndex =>
+        val bandByteArr = bandBytes(bandIndex)
+        cfor(0)(_ < byteCount, _ + 1) { b =>
+          val bandByteIndex = cellIndex * byteCount + b
+          bytes(segIndex) = bandByteArr(cellIndex * byteCount + b)
+          segIndex += 1
+        }
+      }
+    }
+
+    bytes
+  }
 }

@@ -24,6 +24,8 @@ import geotrellis.proj4.CRS
 import geotrellis.raster.crop.Crop
 import geotrellis.raster.resample.ResampleMethod
 
+import spire.syntax.cfor._
+
 case class SinglebandGeoTiff(
   tile: Tile,
   extent: Extent,
@@ -74,6 +76,42 @@ case class SinglebandGeoTiff(
     getClosestOverview(cellSize, strategy)
       .raster
       .resample(rasterExtent, resampleMethod)
+
+  def buildOverview(decimationFactor: Int, blockSize: Int, resampleMethod: ResampleMethod): GeoTiffTile = {
+    val segmentLayout: GeoTiffSegmentLayout = GeoTiffSegmentLayout(
+      totalCols = tile.cols / decimationFactor,
+      totalRows = tile.rows / decimationFactor,
+      storageMethod = Tiled(blockSize, blockSize),
+      interleaveMethod = PixelInterleave,
+      bandType = BandType.forCellType(tile.cellType))
+
+    @inline def padToBlockSize(x: Int, w: Int): Int = math.ceil(x / w.toDouble).toInt * w
+
+    val overviewSegments = rasterExtent
+      .rasterExtentFor(
+        GridBounds(
+          colMin = 0,
+          rowMin = 0,
+          colMax = padToBlockSize(tile.cols, blockSize * decimationFactor),
+          rowMax = padToBlockSize(tile.rows, blockSize * decimationFactor)))
+      .withDimensions(
+        segmentLayout.tileLayout.layoutCols,
+        segmentLayout.tileLayout.layoutRows)
+
+    val segments = for {
+      layoutCol <- Iterator.range(0, segmentLayout.tileLayout.layoutCols)
+      layoutRow <- Iterator.range(0, segmentLayout.tileLayout.layoutRows)
+    } yield {
+      val segmentExtent = overviewSegments.extentFor(GridBounds(layoutCol, layoutRow, layoutCol, layoutRow))
+      val segmentTile = raster.resample(RasterExtent(segmentExtent, blockSize, blockSize), resampleMethod).tile
+
+      ((layoutCol, layoutRow), segmentTile)
+    }
+
+    GeoTiffBuilder[Tile].makeTile(
+      segments, segmentLayout.tileLayout, cellType, Tiled(blockSize, blockSize), options.compression
+    ).asInstanceOf[GeoTiffTile] // TODO avoid this cast
+  }
 }
 
 object SinglebandGeoTiff {

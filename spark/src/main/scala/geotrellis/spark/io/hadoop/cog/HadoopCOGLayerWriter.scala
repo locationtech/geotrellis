@@ -1,6 +1,7 @@
 package geotrellis.spark.io.hadoop.cog
 
 import geotrellis.raster._
+import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.spark._
 import geotrellis.spark.io.InvalidLayerIdError
@@ -18,10 +19,11 @@ import scala.reflect.ClassTag
 class HadoopCOGLayerWriter(
   val attributeStore: HadoopAttributeStore
 ) extends COGLayerWriter {
-  def writeCOGLayer[K: SpatialComponent: Ordering: JsonFormat: ClassTag, V <: CellGrid: ClassTag](
+  def writeCOGLayer[K: SpatialComponent: Ordering: JsonFormat: ClassTag, V <: CellGrid: TiffMethods: ClassTag](
     layerName: String,
     cogLayer: COGLayer[K, V],
-    keyIndexes: Map[ZoomRange, KeyIndex[K]]
+    keyIndexes: Map[ZoomRange, KeyIndex[K]],
+    mergeFunc: Option[(GeoTiff[V], GeoTiff[V]) => GeoTiff[V]] = None
   ): Unit = {
     /** Collect VRT into accumulators, to write everything and to collect VRT at the same time */
     val sc = cogLayer.layers.head._2.sparkContext
