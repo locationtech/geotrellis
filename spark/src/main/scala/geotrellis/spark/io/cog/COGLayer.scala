@@ -216,4 +216,56 @@ object COGLayer {
       HdfsUtils.write(new Path(s"${uri.toString}/${keyIndex.toIndex(key)}.tiff"), conf.value) { new GeoTiffWriter(tiff, _).write(true) }
     }
   }
+
+  /** Merge two COGs, may be used in COG layer update.
+    * Merge will happen on per-segment basis, avoiding decompressing all segments at once.
+    */
+  def mergeCOGs[V <: CellGrid](
+    previous: GeoTiff[V],
+    update: GeoTiff[V]
+  )(implicit
+    ev0: V => CropMethods[V],
+    ev1: V => TileMergeMethods[V],
+    geoTiffBuilder: GeoTiffBuilder[V]
+  ): GeoTiff[V] = {
+    // require previous layout is the same as current layout
+    val Tiled(segmentCols, segmentRows) = previous.options.storageMethod
+    val pixelCols = previous.tile.cols
+    val pixelRows = previous.tile.rows
+    val layout = TileLayout(
+      layoutRows = math.ceil(pixelRows.toDouble / segmentRows).toInt,
+      layoutCols = math.ceil(pixelCols.toDouble / segmentCols).toInt,
+      tileCols = segmentCols,
+      tileRows = segmentRows)
+
+    // TODO Can we use tile.crop(Seq[GridBounds]) here?
+    // Can we rely on method dispatch to pickup GeoTiffTile implementation?
+    val tiles: Seq[(SpatialKey, V)] = for {
+      layoutRow <- 0 until layout.layoutRows
+      layoutCol <- 0 until layout.layoutCols
+      segmentBounds = GridBounds(
+        colMin = layoutCol * segmentCols,
+        rowMin = layoutRow * segmentRows,
+        colMax = (layoutCol + 1) * segmentCols - 1,
+        rowMax = (layoutRow + 1) * segmentRows - 1)
+    } yield {
+      /* Making the assumption here that the segments are going to be tiled matching the layout tile size.
+       * Otherwise this access pattern, individual crops, may result in a lot of repeated IO.
+       */
+      val key = SpatialKey(layoutCol, layoutRow)
+      val left = previous.tile.crop(segmentBounds)
+      val right = update.tile.crop(segmentBounds)
+      (key, left.merge(right))
+    }
+
+    // NEXT rebuild overviews
+
+    geoTiffBuilder.fromSegments(
+      tiles.toMap,
+      LayoutDefinition(previous.extent, layout).mapTransform.keyToExtent,
+      previous.crs,
+      previous.options,
+      previous.tags
+    )
+  }
 }
