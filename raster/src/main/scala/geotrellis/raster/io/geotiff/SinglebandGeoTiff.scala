@@ -92,8 +92,8 @@ case class SinglebandGeoTiff(
         GridBounds(
           colMin = 0,
           rowMin = 0,
-          colMax = padToBlockSize(tile.cols, blockSize * decimationFactor),
-          rowMax = padToBlockSize(tile.rows, blockSize * decimationFactor)))
+          colMax = padToBlockSize(tile.cols, blockSize * decimationFactor) - 1,
+          rowMax = padToBlockSize(tile.rows, blockSize * decimationFactor) - 1))
       .withDimensions(
         segmentLayout.tileLayout.layoutCols,
         segmentLayout.tileLayout.layoutRows)
@@ -110,7 +110,7 @@ case class SinglebandGeoTiff(
 
     val storageMethod = Tiled(blockSize, blockSize)
     val overviewTile = GeoTiffBuilder[Tile].makeTile(
-      segments, segmentLayout.tileLayout, cellType, storageMethod, options.compression
+      segments, segmentLayout, cellType, options.compression
     )
 
     val overviewOptions = options.copy(

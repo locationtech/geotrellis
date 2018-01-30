@@ -28,6 +28,7 @@ trait GeoTiffBuilder[T <: CellGrid] {
   /** Make GeoTiff Tile from component segments.
     * Missing segments will be substituted with NODATA.
     * Segments must be keyed relative to (0, 0) offset.
+    * Produced GeoTiff will include every pixel of the segment tiles.
     *
     * @param segments keyed by (column, row) in tile layout
     * @param tileLayout of the segments
@@ -41,6 +42,34 @@ trait GeoTiffBuilder[T <: CellGrid] {
     cellType: CellType,
     storageMethod: StorageMethod,
     compression: Compression
+  ): T = {
+    val segmentLayout = GeoTiffSegmentLayout(
+      totalCols = tileLayout.totalCols.toInt,
+      totalRows = tileLayout.totalRows.toInt,
+      storageMethod,
+      PixelInterleave,
+      BandType.forCellType(cellType))
+
+    makeTile(segments, segmentLayout, cellType, compression)
+  }
+
+  /** Make GeoTiff Tile from component segments.
+    * Missing segments will be substituted with NODATA.
+    * Segments must be keyed relative to (0, 0) offset.
+    * Note that [[GeoTiffSegmentLayout]] may specify pixel range
+    *  smaller than covered by all the tiles, introducing a buffer.
+    *
+    * @param segments keyed by (column, row) in tile layout
+    * @param segmentLayout of the GeoTiff segments
+    * @param cellType of desired tile
+    * @param storageMethod for multiband tiles
+    * @param compression method for segments
+    */
+  def makeTile(
+    segments: Iterator[(Product2[Int, Int], T)],
+    segmentLayout: GeoTiffSegmentLayout,
+    cellType: CellType,
+    compression: Compression
   ): T
 
   /** Abstracts over GeoTiff class constructor */
@@ -51,6 +80,7 @@ trait GeoTiffBuilder[T <: CellGrid] {
     tags: Tags,
     options: GeoTiffOptions
   ): GeoTiff[T]
+
 
   def fromSegments(
     segments: Map[Product2[Int, Int], T],
@@ -100,19 +130,11 @@ object GeoTiffBuilder {
   implicit val singlebandGeoTiffBuilder = new GeoTiffBuilder[Tile] {
     def makeTile(
       segments: Iterator[(Product2[Int, Int], Tile)],
-      tileLayout: TileLayout,
+      segmentLayout: GeoTiffSegmentLayout,
       cellType: CellType,
-      storageMethod: StorageMethod,
       compression: Compression
     ) = {
-      val segmentLayout =
-        GeoTiffSegmentLayout(
-          totalCols = tileLayout.totalCols.toInt,
-          totalRows = tileLayout.totalRows.toInt,
-          storageMethod,
-          PixelInterleave,
-          BandType.forCellType(cellType))
-
+      val tileLayout = segmentLayout.tileLayout
       val segmentCount = tileLayout.layoutCols * tileLayout.layoutRows
       val compressor = compression.createCompressor(segmentCount)
 
@@ -155,23 +177,15 @@ object GeoTiffBuilder {
   implicit val multibandGeoTiffBuilder = new GeoTiffBuilder[MultibandTile] {
     def makeTile(
       segments: Iterator[(Product2[Int, Int], MultibandTile)],
-      tileLayout: TileLayout,
+      segmentLayout: GeoTiffSegmentLayout,
       cellType: CellType,
-      storageMethod: StorageMethod,
       compression: Compression
     ) = {
       val buffered = segments.buffered
       val bandCount = buffered.head._2.bandCount
+      val tileLayout = segmentLayout.tileLayout
       val cols = tileLayout.tileCols
       val rows = tileLayout.tileRows
-
-      val segmentLayout =
-        GeoTiffSegmentLayout(
-          totalCols = tileLayout.totalCols.toInt,
-          totalRows = tileLayout.totalRows.toInt,
-          storageMethod,
-          PixelInterleave,
-          BandType.forCellType(cellType))
 
       val segmentCount = tileLayout.layoutCols * tileLayout.layoutRows
       val compressor = compression.createCompressor(segmentCount)

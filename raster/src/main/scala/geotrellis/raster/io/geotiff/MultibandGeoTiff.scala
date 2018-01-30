@@ -108,7 +108,7 @@ case class MultibandGeoTiff(
 
     val storageMethod = Tiled(blockSize, blockSize)
     val overviewTile = GeoTiffBuilder[MultibandTile].makeTile(
-      segments, segmentLayout.tileLayout, cellType, storageMethod, options.compression
+      segments, segmentLayout, cellType, options.compression
     )
 
     val overviewOptions = options.copy(
