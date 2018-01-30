@@ -1,16 +1,22 @@
 package geotrellis.spark.io.s3.cog
 
+import com.amazonaws.services.s3.model.AmazonS3Exception
 import geotrellis.raster._
+import geotrellis.raster.crop._
+import geotrellis.raster.merge._
+import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.spark._
+import geotrellis.spark.io._
 import geotrellis.spark.io.index.{Index, KeyIndex}
 import geotrellis.spark.io.s3.{S3AttributeStore, S3Client, S3RDDWriter, makePath}
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.cog.vrt.VRT
 import geotrellis.spark.io.cog.vrt.VRT.IndexedSimpleSource
+import scala.util.Try
 
 import spray.json.JsonFormat
-import com.amazonaws.services.s3.model.{ObjectMetadata, PutObjectRequest}
+import com.amazonaws.services.s3.model.{AmazonS3Exception, ObjectMetadata, PutObjectRequest}
 
 import java.io.ByteArrayInputStream
 
@@ -21,10 +27,15 @@ class S3COGLayerWriter(
   getS3Client: () => S3Client = () => S3Client.DEFAULT,
   threads: Int = S3RDDWriter.DefaultThreadCount
 ) extends COGLayerWriter {
-  def writeCOGLayer[K: SpatialComponent: Ordering: JsonFormat: ClassTag, V <: CellGrid: ClassTag](
+
+  def writeCOGLayer[
+    K: SpatialComponent: Ordering: JsonFormat: ClassTag,
+    V <: CellGrid: TiffMethods: ClassTag
+  ](
     layerName: String,
     cogLayer: COGLayer[K, V],
-    keyIndexes: Map[ZoomRange, KeyIndex[K]]
+    keyIndexes: Map[ZoomRange, KeyIndex[K]],
+    mergeFunc: Option[(GeoTiff[V], GeoTiff[V]) => GeoTiff[V]] = None
   ): Unit = {
     /** Collect VRT into accumulators, to write everything and to collect VRT at the same time */
     val sc = cogLayer.layers.head._2.sparkContext
@@ -33,37 +44,44 @@ class S3COGLayerWriter(
     val storageMetadata = COGLayerStorageMetadata(cogLayer.metadata, keyIndexes)
     attributeStore.write(LayerId(layerName, 0), "cog_metadata", storageMetadata)
 
-    val (bucket, keyPrefix) = attributeStore.bucket -> attributeStore.prefix
+    val bucket = attributeStore.bucket
+    val layerPrefix = attributeStore.prefix
+    val s3Client = getS3Client() // for saving VRT from Accumulator
 
-    val s3Client = getS3Client()
-    for(zoomRange <- cogLayer.layers.keys.toSeq.sorted(Ordering[ZoomRange].reverse)) {
+    // Make S3COGAsyncWriter
+    val asyncWriter = new S3COGAsyncWriter[V](bucket, 32, p => p)
+
+    val retryCheck: Throwable => Boolean = {
+      case e: AmazonS3Exception if e.getStatusCode == 503 => true
+      case _ => false
+    }
+
+    for { (zoomRange, cogs) <- cogLayer.layers.toSeq.sortBy(_._1)(Ordering[ZoomRange].reverse) } {
       val vrt = VRT(cogLayer.metadata.tileLayerMetadata(zoomRange.minZoom))
+
+      // Make RDD[(String, GeoTiff[T])]
       val keyIndex = keyIndexes(zoomRange)
       val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
-      val prefix = makePath(keyPrefix, s"${layerName}/${zoomRange.minZoom}_${zoomRange.maxZoom}")
-      val keyPath = (key: K) => makePath(prefix, Index.encode(keyIndex.toIndex(key), maxWidth))
+      val prefix   = makePath(layerPrefix, s"${layerName}/${zoomRange.minZoom}_${zoomRange.maxZoom}")
+      val keyPath  = (key: K) => makePath(prefix, Index.encode(keyIndex.toIndex(key), maxWidth))
 
-      // Write each cog layer for each zoom range, starting from highest zoom levels.
-      cogLayer.layers(zoomRange).foreachPartition { partition =>
-        val s3Client = getS3Client()
-        partition.foreach { case (key, cog) =>
-          val bytes = GeoTiffWriter.write(cog, true)
-          val objectMetadata = new ObjectMetadata()
-          objectMetadata.setContentLength(bytes.length)
-          val is = new ByteArrayInputStream(bytes)
-          val request = new PutObjectRequest(bucket, s"${keyPath(key)}.${Extension}", is, objectMetadata)
-          s3Client.putObject(request)
-
+      // Save all partitions
+      cogs
+        .map { case (key, cog) =>
           // collect VRT metadata
-          (0 until geoTiffBandsCount(cog))
-            .map { b =>
-              val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
-              (idx.toLong, vrt.simpleSource(s"$idx.$Extension", b + 1, cog.cols, cog.rows, cog.extent))
-            }
-            .foreach(samplesAccumulator.add)
-        }
-      }
+          (0 until geoTiffBandsCount(cog)).foreach { b =>
+            val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
+            val simpleSource = vrt.simpleSource(s"$idx.$Extension", b + 1, cog.cols, cog.rows, cog.extent)
+            samplesAccumulator.add((idx.toLong, simpleSource))
+          }
 
+          (s"${keyPath(key)}.${Extension}", cog)
+        }
+        .foreachPartition {  partition =>
+          asyncWriter.write(getS3Client(), partition, mergeFunc, Some(retryCheck))
+        }
+
+      // Save Accumulator
       val bytes =
         vrt
           .fromAccumulator(samplesAccumulator)
@@ -71,17 +89,14 @@ class S3COGLayerWriter(
           .toByteArray
 
       val objectMetadata = new ObjectMetadata()
-      objectMetadata.setContentLength(bytes.length)
-      val is = new ByteArrayInputStream(bytes)
+      objectMetadata.setContentLength(bytes.length.toLong)
 
       val request = new PutObjectRequest(
-        bucket,
-        s"${keyPrefix}/${layerName}/${zoomRange.minZoom}_${zoomRange.maxZoom}/vrt.xml",
-        is,
+        bucket, makePath(prefix, "vrt.xml"),
+        new ByteArrayInputStream(bytes),
         objectMetadata
       )
       s3Client.putObject(request)
-
       samplesAccumulator.reset
     }
   }
@@ -90,4 +105,41 @@ class S3COGLayerWriter(
 object S3COGLayerWriter {
   def apply(attributeStore: S3AttributeStore): S3COGLayerWriter =
     new S3COGLayerWriter(attributeStore, () => attributeStore.s3Client)
+}
+
+
+class S3COGAsyncWriter[V <: CellGrid: TiffMethods](
+  bucket: String,
+  threads: Int,
+  putObjectModifier: PutObjectRequest => PutObjectRequest
+) extends  AsyncWriter[S3Client, GeoTiff[V], PutObjectRequest](threads) {
+
+  def readRecord(
+    client: S3Client,
+    key: String
+  ): Try[GeoTiff[V]] = Try {
+    val is = client.getObject(bucket, key).getObjectContent
+    val bytes = sun.misc.IOUtils.readFully(is, Int.MaxValue, true)
+    val tiffMethods = implicitly[TiffMethods[V]]
+    tiffMethods.readTiff(bytes, -1)
+  }
+
+  def encodeRecord(key: String, value: GeoTiff[V]): PutObjectRequest = {
+    val bytes: Array[Byte] = GeoTiffWriter.write(value, true)
+    val is = new ByteArrayInputStream(bytes)
+
+    val metadata = new ObjectMetadata()
+    metadata.setContentLength(bytes.length.toLong)
+    putObjectModifier(new PutObjectRequest(bucket, key, is, metadata))
+  }
+
+  def writeRecord(
+    client: S3Client,
+    key: String,
+    encoded: PutObjectRequest
+  ): Try[Long] = Try {
+    encoded.getInputStream.reset() // required if this is a retry
+    client.putObject(encoded)
+    encoded.getMetadata.getContentLength()
+  }
 }
