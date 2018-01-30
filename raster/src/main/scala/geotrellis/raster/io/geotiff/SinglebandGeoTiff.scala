@@ -77,7 +77,7 @@ case class SinglebandGeoTiff(
       .raster
       .resample(rasterExtent, resampleMethod)
 
-  def buildOverview(decimationFactor: Int, blockSize: Int, resampleMethod: ResampleMethod): GeoTiffTile = {
+  def buildOverview(decimationFactor: Int, blockSize: Int, resampleMethod: ResampleMethod): SinglebandGeoTiff = {
     val segmentLayout: GeoTiffSegmentLayout = GeoTiffSegmentLayout(
       totalCols = tile.cols / decimationFactor,
       totalRows = tile.rows / decimationFactor,
@@ -108,9 +108,16 @@ case class SinglebandGeoTiff(
       ((layoutCol, layoutRow), segmentTile)
     }
 
-    GeoTiffBuilder[Tile].makeTile(
-      segments, segmentLayout.tileLayout, cellType, Tiled(blockSize, blockSize), options.compression
-    ).asInstanceOf[GeoTiffTile] // TODO avoid this cast
+    val storageMethod = Tiled(blockSize, blockSize)
+    val overviewTile = GeoTiffBuilder[Tile].makeTile(
+      segments, segmentLayout.tileLayout, cellType, storageMethod, options.compression
+    )
+
+    val overviewOptions = options.copy(
+      subfileType = Some(ReducedImage),
+      storageMethod = storageMethod)
+
+    SinglebandGeoTiff(overviewTile, extent, crs, Tags.empty, overviewOptions)
   }
 }
 

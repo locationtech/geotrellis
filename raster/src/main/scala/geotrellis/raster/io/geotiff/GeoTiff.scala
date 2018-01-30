@@ -78,6 +78,7 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
   def overviews: List[GeoTiff[T]]
   def getOverviewsCount: Int = overviews.length
   def getOverview(idx: Int): GeoTiff[T] = if(idx < 0) this else overviews(idx)
+  def buildOverview(decimationFactor: Int, blockSize: Int, resampleMethod: ResampleMethod): GeoTiff[T]
 
   /** Chooses the best matching overviews and makes resample */
   def resample(rasterExtent: RasterExtent, resampleMethod: ResampleMethod, strategy: OverviewStrategy): Raster[T]
