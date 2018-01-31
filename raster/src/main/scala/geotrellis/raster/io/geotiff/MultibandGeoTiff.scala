@@ -76,32 +76,34 @@ case class MultibandGeoTiff(
       .resample(rasterExtent, resampleMethod)
 
   def buildOverview(decimationFactor: Int, blockSize: Int, resampleMethod: ResampleMethod): MultibandGeoTiff = {
+    val pixelSourceRaster =
+      Raster(tile, Extent(0, 0, tile.cols.toDouble, tile.rows.toDouble))
+
+    val overviewRasterExtent = pixelSourceRaster
+      .rasterExtent.withResolution(decimationFactor.toDouble, decimationFactor.toDouble)
+
     val segmentLayout: GeoTiffSegmentLayout = GeoTiffSegmentLayout(
-      totalCols = tile.cols / decimationFactor,
-      totalRows = tile.rows / decimationFactor,
+      totalCols = overviewRasterExtent.cols,
+      totalRows = overviewRasterExtent.rows,
       storageMethod = Tiled(blockSize, blockSize),
       interleaveMethod = PixelInterleave,
       bandType = BandType.forCellType(tile.cellType))
-
-    @inline def padToBlockSize(x: Int, w: Int): Int = math.ceil(x / w.toDouble).toInt * w
-
-    val overviewSegments = rasterExtent
-      .rasterExtentFor(
-        GridBounds(
-          colMin = 0,
-          rowMin = 0,
-          colMax = padToBlockSize(tile.cols, blockSize * decimationFactor),
-          rowMax = padToBlockSize(tile.rows, blockSize * decimationFactor)))
-      .withDimensions(
-        segmentLayout.tileLayout.layoutCols,
-        segmentLayout.tileLayout.layoutRows)
 
     val segments = for {
       layoutCol <- Iterator.range(0, segmentLayout.tileLayout.layoutCols)
       layoutRow <- Iterator.range(0, segmentLayout.tileLayout.layoutRows)
     } yield {
-      val segmentExtent = overviewSegments.extentFor(GridBounds(layoutCol, layoutRow, layoutCol, layoutRow))
-      val segmentTile = raster.resample(RasterExtent(segmentExtent, blockSize, blockSize), resampleMethod).tile
+      val segmentBounds = GridBounds(
+        colMin = layoutCol * blockSize,
+        rowMin = layoutRow * blockSize,
+        colMax = (layoutCol + 1) * blockSize - 1,
+        rowMax = (layoutRow + 1) * blockSize - 1)
+      val segmentRasterExtent = RasterExtent(
+        extent = overviewRasterExtent.extentFor(gridBounds = segmentBounds, clamp = false),
+        cols = blockSize,
+        rows = blockSize)
+
+      val segmentTile = pixelSourceRaster.resample(segmentRasterExtent, resampleMethod).tile
 
       ((layoutCol, layoutRow), segmentTile)
     }
