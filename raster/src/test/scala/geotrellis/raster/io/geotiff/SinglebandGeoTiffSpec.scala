@@ -17,20 +17,28 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
-import geotrellis.raster.resample.NearestNeighbor
+import geotrellis.raster.resample._
 import geotrellis.raster.io.geotiff.reader._
+import geotrellis.raster.testkit.RasterMatchers
 
 import spire.syntax.cfor._
 import org.scalatest._
 
-class SinglebandGeoTiffSpec extends FunSpec with Matchers with GeoTiffTestUtils {
+class SinglebandGeoTiffSpec extends FunSpec with Matchers with RasterMatchers with GeoTiffTestUtils {
   describe("Building Overviews") {
     val tiff = SinglebandGeoTiff(geoTiffPath("overviews/singleband.tif"))
-    val ovr = tiff.buildOverview(2, 128, NearestNeighbor)
+    val ovr = tiff.buildOverview(3, 128, NearestNeighbor)
+    val tag = "3-nn"
 
     it("should reduce pixels by decimation factor") {
-      ovr.tile.cols should be (tiff.tile.cols / 2)
-      ovr.tile.rows should be (tiff.tile.rows / 2)
+      ovr.tile.cols should be (tiff.tile.cols / 3)
+      ovr.tile.rows should be (tiff.tile.rows / 3)
+    }
+
+    it("should match tile-wise resample"){
+      val expectedTile = tiff.raster.resample(ovr.rasterExtent, NearestNeighbor).tile
+      val diff = (expectedTile - ovr.tile)
+      assertEqual(expectedTile, ovr.tile)
     }
   }
 

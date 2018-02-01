@@ -19,18 +19,24 @@ package geotrellis.raster.io.geotiff
 import geotrellis.raster._
 import geotrellis.raster.resample.NearestNeighbor
 import geotrellis.raster.io.geotiff.reader._
+import geotrellis.raster.testkit.RasterMatchers
 
 import spire.syntax.cfor._
 import org.scalatest._
 
-class MultibandGeoTiffSpec extends FunSpec with Matchers with GeoTiffTestUtils {
+class MultibandGeoTiffSpec extends FunSpec with Matchers with RasterMatchers with GeoTiffTestUtils {
   describe("Building Overviews") {
     val tiff = MultibandGeoTiff(geoTiffPath("overviews/multiband.tif"))
-    val ovr = tiff.buildOverview(2, 128, NearestNeighbor)
+    val ovr = tiff.buildOverview(3, 128, NearestNeighbor)
 
     it("should reduce pixels by decimation factor") {
-      ovr.tile.cols should be (tiff.tile.cols / 2)
-      ovr.tile.rows should be (tiff.tile.rows / 2)
+      ovr.tile.cols should be (tiff.tile.cols / 3)
+      ovr.tile.rows should be (tiff.tile.rows / 3)
+    }
+
+    it("should match tile-wise resample"){
+      val expectedTile = tiff.raster.resample(ovr.rasterExtent).tile
+      assertEqual(expectedTile, ovr.tile)
     }
   }
 
