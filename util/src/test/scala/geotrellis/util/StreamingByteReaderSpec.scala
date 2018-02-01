@@ -43,6 +43,15 @@ class StreamingByteReaderSpec extends FunSpec with Matchers {
       br.position should be (0)
     }
 
+    it("should not read upon move within current change") {
+      val mockRangeReader = new MockRangeReader(arr)
+      val br = new StreamingByteReader(mockRangeReader, chunkSize = 10)
+      br.position(0)
+      br.position(8)
+
+      mockRangeReader.numberOfReads should be (0)
+    }
+
     it("should read the correct byte after moving position") {
       val br = new StreamingByteReader(new MockRangeReader(arr))
       br.position(5)
