@@ -80,6 +80,7 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
   def getOverview(idx: Int): GeoTiff[T] = if(idx < 0) this else overviews(idx)
   def buildOverview(decimationFactor: Int, resampleMethod: ResampleMethod, blockSize: Int = GeoTiff.DefaultBlockSize): GeoTiff[T]
 
+
   /** Chooses the best matching overviews and makes resample */
   def resample(rasterExtent: RasterExtent, resampleMethod: ResampleMethod, strategy: OverviewStrategy): Raster[T]
 
@@ -96,7 +97,7 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
     crop(gridBounds.colMin, gridBounds.rowMin, gridBounds.colMax, gridBounds.rowMax)
 
   /** Return the best matching overview to the given cellSize, returns "this" if no overviews available. */
-  private [geotrellis] def getClosestOverview(cellSize: CellSize, strategy: OverviewStrategy): GeoTiff[T] = {
+  private[geotrellis] def getClosestOverview(cellSize: CellSize, strategy: OverviewStrategy): GeoTiff[T] = {
     overviews match {
       case Nil => this
       case list =>

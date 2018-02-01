@@ -77,7 +77,7 @@ case class SinglebandGeoTiff(
       .raster
       .resample(rasterExtent, resampleMethod)
 
-  def buildOverview(decimationFactor: Int, resampleMethod: ResampleMethod, blockSize: Int = GeoTiff.DefaultBlockSize): SinglebandGeoTiff = {
+  def buildOverview(decimationFactor: Int, resampleMethod: ResampleMethod, blockSize: Int): SinglebandGeoTiff = {
     // pad overview with extra cells to keep 1 source pixel = d overview pixels alignment
     // this may cause the overview extent to expand to cover the wider pixels as well
     val padCols: Int = if (tile.cols % decimationFactor == 0) 0 else decimationFactor - tile.cols % decimationFactor
