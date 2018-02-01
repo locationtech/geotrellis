@@ -75,7 +75,7 @@ case class MultibandGeoTiff(
       .raster
       .resample(rasterExtent, resampleMethod)
 
-  def buildOverview(decimationFactor: Int, resampleMethod: ResampleMethod, blockSize: Int): MultibandGeoTiff = {
+  def buildOverview(resampleMethod: ResampleMethod, decimationFactor: Int, blockSize: Int): MultibandGeoTiff = {
     // pad overview with extra cells to keep 1 source pixel = d overview pixels alignment
     // this may cause the overview extent to expand to cover the wider pixels as well
     val padCols: Int = if (tile.cols % decimationFactor == 0) 0 else decimationFactor - tile.cols % decimationFactor
@@ -86,8 +86,8 @@ case class MultibandGeoTiff(
         ymin = extent.ymin - padRows * cellSize.height,
         xmax = extent.xmax + padCols * cellSize.width,
         ymax = extent.ymax),
-      cols = tile.cols / decimationFactor,
-      rows = tile.rows / decimationFactor
+      cols = math.ceil(tile.cols.toDouble / decimationFactor).toInt,
+      rows = math.ceil(tile.rows.toDouble / decimationFactor).toInt
     )
 
     val segmentLayout: GeoTiffSegmentLayout = GeoTiffSegmentLayout(
@@ -124,6 +124,10 @@ case class MultibandGeoTiff(
 
     MultibandGeoTiff(overviewTile, overviewRasterExtent.extent, crs, Tags.empty, overviewOptions)
   }
+
+  def copy(tile: MultibandTile, extent: Extent, crs: CRS, tags: Tags, options: GeoTiffOptions, overviews: List[GeoTiff[MultibandTile]]): MultibandGeoTiff =
+    MultibandGeoTiff(tile, extent, crs, tags, options, overviews)
+
 }
 
 object MultibandGeoTiff {

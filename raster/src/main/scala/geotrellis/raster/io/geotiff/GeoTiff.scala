@@ -78,8 +78,29 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
   def overviews: List[GeoTiff[T]]
   def getOverviewsCount: Int = overviews.length
   def getOverview(idx: Int): GeoTiff[T] = if(idx < 0) this else overviews(idx)
-  def buildOverview(decimationFactor: Int, resampleMethod: ResampleMethod, blockSize: Int = GeoTiff.DefaultBlockSize): GeoTiff[T]
+  def buildOverview(resampleMethod: ResampleMethod, decimationFactor: Int, blockSize: Int = GeoTiff.DefaultBlockSize): GeoTiff[T]
 
+  def withOverviews(resampleMethod: ResampleMethod, decimations: List[Int] = Nil, blockSize: Int = GeoTiff.DefaultBlockSize): GeoTiff[T] = {
+    val overviewDecimations: List[Int] =
+      if (decimations.isEmpty) {
+        val overviewLevels: Int = {
+          val pixels = math.max(tile.cols, tile.rows).toDouble
+          val blocks = pixels / blockSize
+          math.ceil(math.log(blocks) / math.log(2)).toInt
+        }
+
+        (0 until overviewLevels).map{ l => math.pow(2, l + 1).toInt }.toList
+      } else {
+        decimations
+      }
+
+    if (overviewDecimations.isEmpty) {
+      this
+    } else {
+      val overviews = overviewDecimations.map { (decimationFactor: Int) => buildOverview(resampleMethod, decimationFactor, blockSize) }
+      this.copy(overviews = overviews)
+    }
+  }
 
   /** Chooses the best matching overviews and makes resample */
   def resample(rasterExtent: RasterExtent, resampleMethod: ResampleMethod, strategy: OverviewStrategy): Raster[T]
@@ -120,6 +141,15 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
         }
     }
   }
+
+  def copy(
+    tile: T = this.tile,
+    extent: Extent = this.extent,
+    crs: CRS = this.crs,
+    tags: Tags = this.tags,
+    options: GeoTiffOptions = this.options,
+    overviews: List[GeoTiff[T]] = this.overviews
+  ): GeoTiff[T]
 }
 
 /**
