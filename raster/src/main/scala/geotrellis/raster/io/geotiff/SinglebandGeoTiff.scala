@@ -80,8 +80,11 @@ case class SinglebandGeoTiff(
   def buildOverview(resampleMethod: ResampleMethod, decimationFactor: Int, blockSize: Int): SinglebandGeoTiff = {
     // pad overview with extra cells to keep 1 source pixel = d overview pixels alignment
     // this may cause the overview extent to expand to cover the wider pixels as well
-    val padCols: Int = if (tile.cols % decimationFactor == 0) 0 else decimationFactor - tile.cols % decimationFactor
-    val padRows: Int = if (tile.rows % decimationFactor == 0) 0 else decimationFactor - tile.rows % decimationFactor
+    // val padCols: Int = if (tile.cols % decimationFactor == 0) 0 else decimationFactor - tile.cols % decimationFactor
+    // val padRows: Int = if (tile.rows % decimationFactor == 0) 0 else decimationFactor - tile.rows % decimationFactor
+    val padCols: Int = decimationFactor
+    val padRows: Int = decimationFactor
+
     val overviewRasterExtent = RasterExtent(
       Extent(
         xmin = extent.xmin,

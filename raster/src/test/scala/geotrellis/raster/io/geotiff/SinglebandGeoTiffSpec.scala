@@ -30,19 +30,19 @@ class SinglebandGeoTiffSpec extends FunSpec with Matchers with RasterMatchers wi
     val ovr = tiff.buildOverview(NearestNeighbor, 2)
 
     it("should reduce pixels by decimation factor") {
-      ovr.tile.cols should be (tiff.tile.cols / 2)
-      ovr.tile.rows should be (tiff.tile.rows / 2)
+      ovr.tile.cols should be (math.ceil(tiff.tile.cols.toDouble / 2))
+      ovr.tile.rows should be (math.ceil(tiff.tile.rows.toDouble / 2))
     }
 
-    it("should match tile-wise resample"){
-      val expectedTile = tiff.raster.resample(ovr.rasterExtent, NearestNeighbor).tile
-      val diff = (expectedTile - ovr.tile)
-      ovr.write(s"/Users/eugene/tmp/oo-actual.tiff")
-      GeoTiff(diff, ovr.extent, ovr.crs).write(s"/Users/eugene/tmp/ooo-diff.tiff")
-      assertEqual(expectedTile, ovr.tile)
+    it("should match tile-wise resample") {
+      for { i <- 1 to 10 } {
+        val ovr = tiff.buildOverview(NearestNeighbor, i)
+        val expectedTile = tiff.raster.resample(ovr.rasterExtent, NearestNeighbor).tile
+        assertEqual(expectedTile, ovr.tile)
+      }
     }
 
-    it("should be withOverviews capable"){
+    it("should be withOverviews capable") {
       val wit = tiff.withOverviews(NearestNeighbor)
       assertEqual(ovr.tile, wit.overviews.head.tile)
       assert(wit.overviews.last.tile.cols <= GeoTiff.DefaultBlockSize)
