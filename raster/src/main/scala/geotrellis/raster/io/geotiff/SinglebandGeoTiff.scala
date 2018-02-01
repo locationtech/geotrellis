@@ -77,7 +77,7 @@ case class SinglebandGeoTiff(
       .raster
       .resample(rasterExtent, resampleMethod)
 
-  def buildOverview(decimationFactor: Int, blockSize: Int, resampleMethod: ResampleMethod): SinglebandGeoTiff = {
+  def buildOverview(decimationFactor: Int, resampleMethod: ResampleMethod, blockSize: Int = GeoTiff.DefaultBlockSize): SinglebandGeoTiff = {
     // pad overview with extra cells to keep 1 source pixel = d overview pixels alignment
     // this may cause the overview extent to expand to cover the wider pixels as well
     val padCols: Int = if (tile.cols % decimationFactor == 0) 0 else decimationFactor - tile.cols % decimationFactor
@@ -119,13 +119,10 @@ case class SinglebandGeoTiff(
     }
 
     val storageMethod = Tiled(blockSize, blockSize)
+    val overviewOptions = options.copy(subfileType = Some(ReducedImage), storageMethod = storageMethod)
     val overviewTile = GeoTiffBuilder[Tile].makeTile(
       segments, segmentLayout, cellType, options.compression
     )
-
-    val overviewOptions = options.copy(
-      subfileType = Some(ReducedImage),
-      storageMethod = storageMethod)
 
     SinglebandGeoTiff(overviewTile, overviewRasterExtent.extent, crs, Tags.empty, overviewOptions)
   }

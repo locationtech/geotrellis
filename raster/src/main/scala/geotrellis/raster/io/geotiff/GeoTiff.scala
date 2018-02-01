@@ -78,7 +78,7 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
   def overviews: List[GeoTiff[T]]
   def getOverviewsCount: Int = overviews.length
   def getOverview(idx: Int): GeoTiff[T] = if(idx < 0) this else overviews(idx)
-  def buildOverview(decimationFactor: Int, blockSize: Int, resampleMethod: ResampleMethod): GeoTiff[T]
+  def buildOverview(decimationFactor: Int, resampleMethod: ResampleMethod, blockSize: Int = GeoTiff.DefaultBlockSize): GeoTiff[T]
 
   /** Chooses the best matching overviews and makes resample */
   def resample(rasterExtent: RasterExtent, resampleMethod: ResampleMethod, strategy: OverviewStrategy): Raster[T]
@@ -125,6 +125,8 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
  * Companion object to GeoTiff
  */
 object GeoTiff {
+  val DefaultBlockSize = 128 // match GDAL default
+
   def readMultiband(path: String): MultibandGeoTiff =
     MultibandGeoTiff(path)
 
