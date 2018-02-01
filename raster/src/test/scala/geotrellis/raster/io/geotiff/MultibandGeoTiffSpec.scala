@@ -35,7 +35,7 @@ class MultibandGeoTiffSpec extends FunSpec with Matchers with RasterMatchers wit
     }
 
     it("should match tile-wise resample") {
-      for { i <- 1 to 10 } {
+      for { i <- 1 to 5 } {
         val ovr = tiff.buildOverview(NearestNeighbor, i)
         val expectedTile = tiff.raster.resample(ovr.rasterExtent, NearestNeighbor).tile
         assertEqual(expectedTile, ovr.tile)
