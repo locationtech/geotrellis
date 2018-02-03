@@ -92,19 +92,14 @@ class LazySegmentBytes(
     }
   }._2.reverse // get segments back in offset order
 
-
   protected def readChunk(segments: List[Segment]): Map[Int, Array[Byte]] = {
-    val chunkStartOffset = segments.minBy(_.startOffset).startOffset
-    val chunkEndOffset = segments.maxBy(_.endOffset).endOffset
-    byteReader.position(chunkStartOffset)
-    logger.debug(s"Fetching segments ${segments.map(_.id).mkString(", ")} at [$chunkStartOffset, $chunkEndOffset]")
-    val chunkBytes = getBytes(chunkStartOffset, chunkEndOffset - chunkStartOffset + 1)
-    for { segment <- segments } yield {
-      val segmentStart = (segment.startOffset - chunkStartOffset).toInt
-      val segmentEnd = (segment.endOffset - chunkStartOffset).toInt
-      segment.id -> java.util.Arrays.copyOfRange(chunkBytes, segmentStart, segmentEnd + 1)
-    }
-  }.toMap
+    segments
+      .map { segment =>
+        logger.debug(s"Fetching segment ${segment.id} at [${segment.startOffset}, ${segment.endOffset}]")
+        segment.id -> getBytes(segment.startOffset, segment.endOffset - segment.startOffset + 1)
+      }
+      .toMap
+  }
 
   def getSegment(i: Int): Array[Byte] = {
     val startOffset = segmentOffsets(i)
@@ -116,7 +111,7 @@ class LazySegmentBytes(
   def getSegments(indices: Traversable[Int]): Iterator[(Int, Array[Byte])] = {
     chunkSegments(indices)
       .toIterator
-      .flatMap( chunk => readChunk(chunk))
+      .flatMap(chunk => readChunk(chunk))
   }
 
   private def getBytes(offset: Long, length: Long): Array[Byte] = {
