@@ -161,15 +161,6 @@ object TileRDDReproject {
           (0, m, options.rasterReprojectOptions.method)
       }
 
-    // account for changes due to target layout, may be snapping higher or lower resolution
-    val pixelRatio = reprojectSummary.rescaledPixelRatio(newMetadata.layout.cellSize)
-
-    val part: Option[Partitioner] = if (pixelRatio > 1.2) {
-      val newPartitionCount = (bufferedTiles.partitions.length * pixelRatio).toInt
-      logger.info(s"Layout change grows potential number of tiles by $pixelRatio times, resizing to $newPartitionCount partitions.")
-      Some(new HashPartitioner(partitions = newPartitionCount))
-    } else None
-
     val tiled = reprojectedTiles.tileToLayout(newMetadata,
       Tiler.Options(resampleMethod = tilerResampleMethod, partitioner = bufferedTiles.partitioner))
 
