@@ -30,7 +30,7 @@ import java.net.URI
  * Layers table name is required to instantiate a [[LayerWriter]]
  */
 class CassandraLayerProvider extends AttributeStoreProvider
-    with LayerReaderProvider with LayerWriterProvider with ValueReaderProvider {
+    with LayerReaderProvider with LayerWriterProvider with ValueReaderProvider with CollectionLayerReaderProvider {
   def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "cassandra"
 
   def attributeStore(uri: URI): AttributeStore = {
@@ -63,4 +63,10 @@ class CassandraLayerProvider extends AttributeStoreProvider
     val instance = CassandraInstance(uri)
     new CassandraValueReader(instance, store)
   }
+
+  def collectionLayerReader(uri: URI, store: AttributeStore): CollectionLayerReader[LayerId] = {
+    val instance = CassandraInstance(uri)
+    new CassandraCollectionLayerReader(store, instance)
+  }
+
 }

@@ -22,9 +22,13 @@ import geotrellis.spark.io.json._
 import geotrellis.util._
 import spray.json._
 
+import java.net.URI
+import java.util.ServiceLoader
 import scala.reflect._
 
 abstract class CollectionLayerReader[ID] { self =>
+  val attributeStore: AttributeStore
+
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
@@ -61,4 +65,34 @@ abstract class CollectionLayerReader[ID] { self =>
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](layerId: ID): BoundLayerQuery[K, M, Seq[(K, V)] with Metadata[M]] =
     new BoundLayerQuery(new LayerQuery, read[K, V, M](layerId, _))
+}
+
+object CollectionLayerReader {
+
+  def apply(attributeStore: AttributeStore, collectionReaderUri: URI): CollectionLayerReader[LayerId] = {
+    import scala.collection.JavaConversions._
+    ServiceLoader.load(classOf[CollectionLayerReaderProvider]).iterator()
+      .find(_.canProcess(collectionReaderUri))
+      .getOrElse(throw new RuntimeException(s"Unable to find CollectionLayerReaderProvider for $collectionReaderUri"))
+      .collectionLayerReader(collectionReaderUri, attributeStore)
+  }
+
+  def apply(attributeStoreUri: URI, collectionReaderUri: URI): CollectionLayerReader[LayerId] =
+    apply(AttributeStore(attributeStoreUri), collectionReaderUri)
+
+  def apply(uri: URI): CollectionLayerReader[LayerId] =
+    apply(attributeStoreUri = uri, collectionReaderUri = uri)
+
+  def apply(attributeStore: AttributeStore, collectionReaderUri: String): CollectionLayerReader[LayerId] =
+    apply(attributeStore, new URI(collectionReaderUri))
+
+
+  def apply(attributeStoreUri: String, collectionReaderUri: String): CollectionLayerReader[LayerId] =
+    apply(AttributeStore(new URI(attributeStoreUri)), new URI(collectionReaderUri))
+
+  def apply(uri: String): CollectionLayerReader[LayerId] = {
+    val _uri = new URI(uri)
+    apply(attributeStoreUri = _uri, collectionReaderUri = _uri)
+  }
+
 }

@@ -31,7 +31,7 @@ import java.net.URI
  * Layers table name is required to instantiate a [[LayerWriter]]
  */
 class HBaseLayerProvider extends AttributeStoreProvider
-    with LayerReaderProvider with LayerWriterProvider with ValueReaderProvider {
+    with LayerReaderProvider with LayerWriterProvider with ValueReaderProvider with CollectionLayerReaderProvider {
   def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "hbase"
 
   def attributeStore(uri: URI): AttributeStore = {
@@ -59,4 +59,10 @@ class HBaseLayerProvider extends AttributeStoreProvider
     val instance = HBaseInstance(uri)
     new HBaseValueReader(instance, store)
   }
+
+  def collectionLayerReader(uri: URI, store: AttributeStore): CollectionLayerReader[LayerId] = {
+    val instance = HBaseInstance(uri)
+    new HBaseCollectionLayerReader(store, instance)
+  }
+
 }

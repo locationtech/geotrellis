@@ -32,7 +32,7 @@ import java.net.URI
  * Layers table name is required to instantiate a [[LayerWriter]]
  */
 class AccumuloLayerProvider extends AttributeStoreProvider
-    with LayerReaderProvider with LayerWriterProvider with ValueReaderProvider {
+    with LayerReaderProvider with LayerWriterProvider with ValueReaderProvider with CollectionLayerReaderProvider {
   def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "accumulo"
 
   def attributeStore(uri: URI): AttributeStore = {
@@ -62,4 +62,10 @@ class AccumuloLayerProvider extends AttributeStoreProvider
     val instance = AccumuloInstance(uri)
     new AccumuloValueReader(instance, store)
   }
+
+  def collectionLayerReader(uri: URI, store: AttributeStore): CollectionLayerReader[LayerId] = {
+    val instance = AccumuloInstance(uri)
+    new AccumuloCollectionLayerReader(store)(instance)
+  }
+
 }
