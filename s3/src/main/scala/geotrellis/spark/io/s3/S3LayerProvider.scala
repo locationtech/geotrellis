@@ -28,7 +28,7 @@ import java.net.URI
  *  ex: `s3://<bucket>/<prefix-to-catalog>`
  */
 class S3LayerProvider extends AttributeStoreProvider
-    with LayerReaderProvider with LayerWriterProvider with ValueReaderProvider {
+    with LayerReaderProvider with LayerWriterProvider with ValueReaderProvider with CollectionLayerReaderProvider {
   def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "s3"
 
   def attributeStore(uri: URI): AttributeStore = {
@@ -54,4 +54,9 @@ class S3LayerProvider extends AttributeStoreProvider
   def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] = {
     new S3ValueReader(store)
   }
+
+  def collectionLayerReader(uri: URI, store: AttributeStore): CollectionLayerReader[LayerId] = {
+    new S3CollectionLayerReader(store)
+  }
+
 }
