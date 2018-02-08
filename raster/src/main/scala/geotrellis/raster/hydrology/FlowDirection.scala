@@ -34,10 +34,9 @@ import scala.math._
  */
 object FlowDirection {
   /** Determine flow direction of the cell at (c, r) in given raster */
-  def flow(c: Int, r: Int, raster: Tile) = {
-    val neighbors = getNeighbors(c, r, raster)
+  def flow(c: Int, r: Int, raster: Tile, neighbors: Map[Int,Double]) = {
     val max = neighbors.values.max
-    neighbors.filter { case(_, v) => v == max }.keys.reduce(_ + _)
+    neighbors.filter { case(_, v) => v == max }.keys.sum
   }
   
   /** Produces a map of available immediate neighbors and their drop in elevation from the provided cell */
@@ -74,12 +73,19 @@ object FlowDirection {
         0 <= col && col < ncols &&
         0 <= row && row < nrows &&
         isData(raster.get(col, row))
-      }.map { case (k, v) => k -> (center - raster.get(v._1, v._2)) / distances(k) }
+    }.map { case (k, v) => k -> (center - raster.get(v._1, v._2)) / distances(k) }
   }
 
   /** Determines whether or not the cell at (c, r) in given raster is a sink */
-  def isSink(c: Int, r: Int, raster: Tile) = {
-    getNeighbors(c, r, raster).values.foldLeft(true)( _ && _ < 0)
+  def isSink(c: Int, r: Int, raster: Tile): Boolean =  {
+    isSink(c, r, raster, getNeighbors(c, r, raster))
+  }
+
+  def isSink(c: Int, r: Int, raster: Tile, neighbors: Map[Int,Double]): Boolean = {
+    val values = neighbors.values
+    // short circuit if anything is less than 0, resulting in many fewer comparisons when the input
+    // raster is large
+    values.takeWhile(_ < 0).size == values.size
   }
 
 
@@ -90,10 +96,11 @@ object FlowDirection {
     while (r < rows) {
       var c = 0
       while (c < cols) {
-        if (isNoData(raster.get(c, r)) || (FlowDirection.isSink(c, r, raster))) {
+        val neighbors = getNeighbors(c, r, raster)
+        if (isNoData(raster.get(c, r)) || FlowDirection.isSink(c, r, raster, neighbors)) {
           tile.set(c, r, NODATA)
         } else {
-          tile.set(c, r, FlowDirection.flow(c, r, raster))
+          tile.set(c, r, FlowDirection.flow(c, r, raster, neighbors))
         }
         c = c + 1
       }
@@ -103,4 +110,3 @@ object FlowDirection {
     tile
   }
 }
-
