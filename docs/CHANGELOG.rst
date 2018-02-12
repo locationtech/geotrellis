@@ -17,6 +17,7 @@ API Changes
 
   - **Change:** Reprojection has improved performance due to one less shuffle stage and lower memory usage.
   ``TileRDDReproject`` loses dependency on ``TileReprojectMethods`` in favor of ``RasterRegionReproject``
+  - **New:** CollectionLayerReader now has an SPI interface.
 
 1.2.1
 _____
