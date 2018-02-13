@@ -20,7 +20,7 @@ import scala.reflect.ClassTag
 class FileCOGLayerWriter(
   val attributeStore: FileAttributeStore
 ) extends COGLayerWriter {
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
+  implicit def getByteReader(uri: String): ByteReader = byteReader(uri)
 
   def writeCOGLayer[K: SpatialComponent: Ordering: JsonFormat: ClassTag, V <: CellGrid: TiffMethods: ClassTag](
     layerName: String,
@@ -50,11 +50,11 @@ class FileCOGLayerWriter(
 
       // Write each cog layer for each zoom range, starting from highest zoom levels.
       cogLayer.layers(zoomRange).foreach { case (key, cog) =>
-        val path: URI = s"${keyPath(key)}.${Extension}"
+        val path = s"${keyPath(key)}.${Extension}"
 
         mergeFunc match {
           case None =>
-            cog.write(path.toString, true)
+            cog.write(path, true)
             // collect VRT metadata
             (0 until geoTiffBandsCount(cog))
               .map { b =>
@@ -65,7 +65,7 @@ class FileCOGLayerWriter(
           case Some(merge) =>
             val old = tiffMethods.readEntireTiff(path)
             val merged = merge(cog, old)
-            merged.write(path.toString, true)
+            merged.write(path, true)
             // collect VRT metadata
             (0 until geoTiffBandsCount(merged))
               .map { b =>
