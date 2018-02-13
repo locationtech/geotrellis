@@ -217,17 +217,15 @@ object COGLayer {
     }
   }
 
-  /** Merge two COGs, may be used in COG layer update.
+  /**
+    * Merge two COGs, may be used in COG layer update.
     * Merge will happen on per-segment basis, avoiding decompressing all segments at once.
     */
-  def mergeCOGs[V <: CellGrid](
+  def mergeCOGs[V <: CellGrid: ? => CropMethods[V]: ? => TileMergeMethods[V]: GeoTiffBuilder](
     previous: GeoTiff[V],
     update: GeoTiff[V]
-  )(implicit
-    ev0: V => CropMethods[V],
-    ev1: V => TileMergeMethods[V],
-    geoTiffBuilder: GeoTiffBuilder[V]
   ): GeoTiff[V] = {
+    val geoTiffBuilder = implicitly[GeoTiffBuilder[V]]
     // require previous layout is the same as current layout
     val Tiled(segmentCols, segmentRows) = previous.options.storageMethod
     val pixelCols = previous.tile.cols

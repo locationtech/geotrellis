@@ -11,6 +11,7 @@ import java.nio.ByteBuffer
 trait TiffMethods[V <: CellGrid] extends Serializable {
   def tileTiff[K](tiff: GeoTiff[V], gridBounds: Map[GridBounds, K]): Vector[(K, V)]
 
+  def readEntireTiff(byteReader: ByteReader): GeoTiff[V]
   def readTiff(byteReader: ByteReader, index: Int): GeoTiff[V]
   def readTiff(bytes: Array[Byte], index: Int): GeoTiff[V] =
     readTiff(ByteBuffer.wrap(bytes), index)
@@ -40,6 +41,10 @@ trait TiffMethods[V <: CellGrid] extends Serializable {
 
 trait TiffMethodsImplicits {
   implicit val singlebandTiffMethods: TiffMethods[Tile] = new TiffMethods[Tile] {
+    def readEntireTiff(byteReader: ByteReader): GeoTiff[Tile] =
+      GeoTiffReader
+        .readSingleband(byteReader, false, true)
+
     def readTiff(byteReader: ByteReader, index: Int): GeoTiff[Tile] =
       GeoTiffReader
         .readSingleband(byteReader, false, true)
@@ -57,6 +62,10 @@ trait TiffMethodsImplicits {
   }
 
   implicit val multibandTiffMethods: TiffMethods[MultibandTile] = new TiffMethods[MultibandTile] {
+    def readEntireTiff(byteReader: ByteReader): GeoTiff[MultibandTile] =
+      GeoTiffReader
+        .readMultiband(byteReader, false, true)
+
     def readTiff(byteReader: ByteReader, index: Int): GeoTiff[MultibandTile] =
       GeoTiffReader
         .readMultiband(byteReader, false, true)

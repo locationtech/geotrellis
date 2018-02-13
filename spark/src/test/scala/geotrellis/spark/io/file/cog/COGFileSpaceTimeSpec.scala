@@ -31,7 +31,8 @@ class COGFileSpaceTimeSpec
     with COGTestFiles
     with COGSpaceTimeKeyIndexMethods
     with TestEnvironment
-    with COGCoordinateSpaceTimeSpec {
+    with COGCoordinateSpaceTimeSpec
+    with COGLayerUpdateSpaceTimeTileSpec {
   lazy val reader = FileCOGLayerReader(outputLocalPath)
   lazy val creader = FileCOGCollectionLayerReader(outputLocalPath)
   lazy val writer = FileCOGLayerWriter(outputLocalPath)
@@ -39,7 +40,6 @@ class COGFileSpaceTimeSpec
   // lazy val copier = FileLayerCopier(outputLocalPath)
   // lazy val mover  = FileLayerMover(outputLocalPath)
   // lazy val reindexer = FileLayerReindexer(outputLocalPath)
-  // lazy val updater = FileLayerUpdater(outputLocalPath)
   lazy val tiles = FileCOGValueReader(outputLocalPath)
   lazy val sample = CoordinateSpaceTime // spaceTimeCea
 }

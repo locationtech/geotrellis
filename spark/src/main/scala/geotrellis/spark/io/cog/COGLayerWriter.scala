@@ -16,8 +16,9 @@
 
 package geotrellis.spark.io.cog
 
-import scala.reflect._
+import java.io.File
 
+import scala.reflect._
 import geotrellis.raster._
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
@@ -25,11 +26,14 @@ import geotrellis.raster.crop._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.compression.{Compression, NoCompression}
 import geotrellis.spark._
+import geotrellis.spark.io.{AttributeNotFoundError, AttributeStore, LayerNotFoundError, LayerOutOfKeyBoundsError}
 import geotrellis.spark.io.index._
 import org.apache.spark.rdd.RDD
 import spray.json._
 
 trait COGLayerWriter extends Serializable {
+  val attributeStore: AttributeStore
+
   def writeCOGLayer[
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,
     V <: CellGrid: TiffMethods: ClassTag
@@ -55,12 +59,47 @@ trait COGLayerWriter extends Serializable {
       case keyBounds: KeyBounds[K] =>
         val cogLayer = COGLayer(tiles, tileZoom, compression = compression)
         // println(cogLayer.metadata.toJson.prettyPrint)
-        val keyIndexes =
+        val keyIndexes: Map[ZoomRange, KeyIndex[K]] =
           cogLayer.metadata.zoomRangeInfos.
             map { case (zr, bounds) => zr -> keyIndexMethod.createIndex(bounds) }.
             toMap
-        writeCOGLayer(layerName, cogLayer, keyIndexes)
+        writeCOGLayer(layerName, cogLayer, keyIndexes, mergeFunc)
       case EmptyBounds =>
         throw new EmptyBoundsError("Cannot write layer with empty bounds.")
     }
+
+  def update[
+    K: SpatialComponent: Boundable: Ordering: JsonFormat: ClassTag,
+    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: TiffMethods
+  ](
+     layerName: String,
+     tiles: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
+     tileZoom: Int,
+     compression: Compression = NoCompression,
+     mergeFunc: (GeoTiff[V], GeoTiff[V]) => GeoTiff[V]
+   )(implicit tc: Iterable[(SpatialKey, V)] => GeoTiffSegmentConstructMethods[SpatialKey, V]): Unit = {
+    tiles.metadata.bounds match {
+      case keyBounds: KeyBounds[K] =>
+        val COGLayerStorageMetadata(metadata, keyIndexes) =
+          try {
+            attributeStore.read[COGLayerStorageMetadata[K]](LayerId(layerName, 0), "cog_metadata")
+          } catch {
+            // to follow GeoTrellis Layer Readers logic
+            case e: AttributeNotFoundError => throw new LayerNotFoundError(LayerId(layerName, 0)).initCause(e)
+          }
+
+        val indexKeyBounds = metadata.keyBoundsForZoom(tileZoom)
+
+        println(s"keyBounds: $keyBounds")
+        println(s"indexKeyBounds: $indexKeyBounds")
+
+        if(!indexKeyBounds.contains(keyBounds))
+          throw new LayerOutOfKeyBoundsError(LayerId(layerName, tileZoom), indexKeyBounds)
+
+        val cogLayer = COGLayer(tiles, tileZoom, compression = compression)
+        writeCOGLayer(layerName, cogLayer, keyIndexes, Some(mergeFunc))
+      case EmptyBounds =>
+        throw new EmptyBoundsError("Cannot write layer with empty bounds.")
+    }
+  }
 }

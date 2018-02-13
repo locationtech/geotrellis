@@ -8,22 +8,28 @@ import geotrellis.spark.io.cog.vrt.VRT
 import geotrellis.spark.io.cog.vrt.VRT.IndexedSimpleSource
 import geotrellis.spark.io.file._
 import geotrellis.spark.io.index._
-import geotrellis.util.Filesystem
+import geotrellis.util.{ByteReader, Filesystem}
 
 import spray.json.JsonFormat
+
 import java.io.File
+import java.net.URI
 
 import scala.reflect.ClassTag
 
 class FileCOGLayerWriter(
   val attributeStore: FileAttributeStore
 ) extends COGLayerWriter {
+  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
+
   def writeCOGLayer[K: SpatialComponent: Ordering: JsonFormat: ClassTag, V <: CellGrid: TiffMethods: ClassTag](
     layerName: String,
     cogLayer: COGLayer[K, V],
     keyIndexes: Map[ZoomRange, KeyIndex[K]],
     mergeFunc: Option[(GeoTiff[V], GeoTiff[V]) => GeoTiff[V]] = None
   ): Unit = {
+    val tiffMethods = implicitly[TiffMethods[V]]
+
     /** Collect VRT into accumulators, to write everything and to collect VRT at the same time */
     val sc = cogLayer.layers.head._2.sparkContext
     val samplesAccumulator = sc.collectionAccumulator[IndexedSimpleSource](s"vrt_samples_$layerName")
@@ -44,15 +50,30 @@ class FileCOGLayerWriter(
 
       // Write each cog layer for each zoom range, starting from highest zoom levels.
       cogLayer.layers(zoomRange).foreach { case (key, cog) =>
-        cog.write(s"${keyPath(key)}.${Extension}", true)
+        val path: URI = s"${keyPath(key)}.${Extension}"
 
-        // collect VRT metadata
-        (0 until geoTiffBandsCount(cog))
-          .map { b =>
-            val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
-            (idx.toLong, vrt.simpleSource(s"$idx.$Extension", b + 1, cog.cols, cog.rows, cog.extent))
-          }
-          .foreach(samplesAccumulator.add)
+        mergeFunc match {
+          case None =>
+            cog.write(path.toString, true)
+            // collect VRT metadata
+            (0 until geoTiffBandsCount(cog))
+              .map { b =>
+                val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
+                (idx.toLong, vrt.simpleSource(s"$idx.$Extension", b + 1, cog.cols, cog.rows, cog.extent))
+              }
+              .foreach(samplesAccumulator.add)
+          case Some(merge) =>
+            val old = tiffMethods.readEntireTiff(path)
+            val merged = merge(cog, old)
+            merged.write(path.toString, true)
+            // collect VRT metadata
+            (0 until geoTiffBandsCount(merged))
+              .map { b =>
+                val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
+                (idx.toLong, vrt.simpleSource(s"$idx.$Extension", b + 1, merged.cols, merged.rows, merged.extent))
+              }
+              .foreach(samplesAccumulator.add)
+        }
       }
 
       vrt

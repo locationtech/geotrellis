@@ -63,7 +63,7 @@ object FileRDDWriter {
           (rows2 ++ rows1)
             .groupBy({ case (k,v) => k })
             .map({ case (k, kvs) =>
-              val vs = kvs.map({ case (k,v) => v }).toSeq
+              val vs = kvs.map({ case (k, v) => v }).toSeq
               val v: V = vs.tail.foldLeft(vs.head)(fn)
               (k, v) })
             .toVector

@@ -39,7 +39,6 @@ class COGFileSpatialSpec
   // lazy val copier = FileLayerCopier(outputLocalPath)
   // lazy val mover  = FileLayerMover(outputLocalPath)
   // lazy val reindexer = FileLayerReindexer(outputLocalPath)
-  // lazy val updater = FileLayerUpdater(outputLocalPath)
   lazy val tiles = FileCOGValueReader(outputLocalPath)
   lazy val sample = AllOnesTestFile // spatialCea
 

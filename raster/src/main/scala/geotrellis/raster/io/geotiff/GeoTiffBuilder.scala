@@ -94,18 +94,13 @@ trait GeoTiffBuilder[T <: CellGrid] {
     val tileCols = sample.cols
     val tileRows = sample.rows
 
-    val firstKey = segments.head._1
-    var colMin: Int = firstKey._1
-    var rowMin: Int = firstKey._2
-    var colMax: Int = firstKey._1
-    var rowMax: Int = firstKey._2
-
-    for ((col, row) <- segments.keys) {
-      colMin = math.min(col, colMin)
-      rowMin = math.min(row, rowMin)
-      colMax = math.max(col, colMax)
-      rowMax = math.max(row, rowMax)
-    }
+    val keys = segments.keys.toList.sortBy { p => (p._1, p._2) }
+    val firstKey = keys.head
+    val lastKey = keys.last
+    val colMin: Int = firstKey._1
+    val rowMin: Int = firstKey._2
+    val colMax: Int = lastKey._1
+    val rowMax: Int = lastKey._2
 
     val opts = options.copy(storageMethod = Tiled(tileCols, tileRows))
 
@@ -113,10 +108,11 @@ trait GeoTiffBuilder[T <: CellGrid] {
       segments.iterator.map { case (key, tile) =>
         ((key._1 - colMin , key._2 - rowMin), tile)
       },
-      TileLayout(0, 0, colMax - colMin, rowMax - rowMin),
+      TileLayout(colMax - colMin + 1, rowMax - rowMin + 1, tileCols, tileRows),
       segments.head._2.cellType,
       options.storageMethod,
-      options.compression)
+      options.compression
+    )
 
     val extent = tileExtent(colMin, rowMin) combine tileExtent(colMax, rowMax)
 
