@@ -165,6 +165,32 @@ package object spark
       }, preservesPartitioning = true)
   }
 
+  implicit class withSpatialContextRDDMethods[V: ClassTag](val self: RDD[(SpatialKey, V)] with Metadata[TileLayerMetadata[SpatialKey]])
+    extends ContextRDDMethods[SpatialKey, V, TileLayerMetadata[SpatialKey]](self) {
+
+    def keyToProjectedExtent: RDD[(ProjectedExtent, V)] = {
+      val mt = self.metadata.layout.mapTransform
+      val crs = self.metadata.crs
+
+      self.mapPartitions { partition =>
+        partition.map { case (k, v) => (ProjectedExtent(mt(k), crs), v) }
+      }
+    }
+  }
+
+  implicit class withTemporalContextRDDMethods[V: ClassTag](val self: RDD[(SpaceTimeKey, V)] with Metadata[TileLayerMetadata[SpaceTimeKey]])
+    extends ContextRDDMethods[SpaceTimeKey, V, TileLayerMetadata[SpaceTimeKey]](self) {
+
+    def keyToTemporalProjectedExtent: RDD[(TemporalProjectedExtent, V)] = {
+      val mt = self.metadata.layout.mapTransform
+      val crs = self.metadata.crs
+
+      self.mapPartitions { partition =>
+        partition.map { case (k, v) => (TemporalProjectedExtent(mt(k), crs, k.instant), v) }
+      }
+    }
+  }
+
   implicit class withCollectionConversionMethods[K, V, M](val rdd: RDD[(K, V)] with Metadata[M]) {
     def toCollection: Seq[(K, V)] with Metadata[M] = ContextCollection(rdd.collect(), rdd.metadata)
   }
