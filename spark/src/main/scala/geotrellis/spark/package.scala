@@ -138,8 +138,22 @@ package object spark
   implicit def tupleToRDDWithMetadata[K, V, M](tup: (RDD[(K, V)], M)): RDD[(K, V)] with Metadata[M] =
     ContextRDD(tup._1, tup._2)
 
-  implicit class withContextRDDMethods[K: ClassTag, V: ClassTag, M](rdd: RDD[(K, V)] with Metadata[M])
-      extends ContextRDDMethods[K, V, M](rdd)
+  implicit class withContextRDDMethods[
+    K: ClassTag: SpatialComponent,
+    V <: CellGrid: ClassTag,
+    M: GetComponent[?, LayoutDefinition]
+  ](rdd: RDD[(K, V)] with Metadata[M]) extends ContextRDDMethods[K, V, M](rdd) {
+
+    def toRasters: RDD[(K, Raster[V])] = {
+      val mt = rdd.metadata.getComponent[LayoutDefinition].mapTransform
+
+      rdd.mapPartitions({ partition =>
+        partition.map { case (k, v) =>
+          (k, Raster(v, mt(k.getComponent[SpatialKey])))
+        }
+      }, preservesPartitioning = true)
+    }
+  }
 
   implicit class withTileLayerRDDMethods[K: SpatialComponent: ClassTag](val self: TileLayerRDD[K])
       extends TileLayerRDDMethods[K]
