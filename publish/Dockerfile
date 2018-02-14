@@ -1,5 +1,7 @@
 FROM java:8
 
+ARG BRANCH
+
 USER root
 
 RUN apt-get install git
@@ -12,13 +14,12 @@ RUN set -x \
     && cd /home/geotrellis \
     && git clone https://github.com/locationtech/geotrellis /home/geotrellis/geotrellis \
     && cd /home/geotrellis/geotrellis \
-    && git checkout 1.1
+    && git checkout $BRANCH
 
 WORKDIR /home/geotrellis/geotrellis
 
 COPY .credentials /home/geotrellis/.ivy2/.credentials
 COPY ./gnupg/ /home/geotrellis/.gnupg/
-COPY local.sbt /home/geotrellis/.sbt/0.13/local.sbt
 COPY plugins.sbt /home/geotrellis/.sbt/0.13/plugins/local.sbt
 
 USER root

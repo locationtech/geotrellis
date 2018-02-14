@@ -3,13 +3,12 @@ TAG  := "latest"
 
 build: Dockerfile
 	@cp ~/.ivy2/.credentials .credentials
-	@cp ~/.sbt/0.13/local.sbt local.sbt
-	@cp ~/.sbt/0.13/plugins/plugins.sbt plugins.sbt
-	@cp -r ~/.gnupg ./gnupg
-	docker build --no-cache -t ${IMG}:${TAG} .
+	@mkdir -p gnupg
+	@cp ~/.gnupg/*.conf gnupg
+	@cp ~/.gnupg/*.gpg gnupg
+	docker build --no-cache -t ${IMG}:${TAG} --env GEOTRELLIS_VERSION_SUFFIX="" --build-arg BRANCH=1.2 .
 	@rm .credentials
 	@rm -r ./gnupg
-	@rm local.sbt
 
 run:
 	docker run -it ${IMG}:${TAG} /bin/bash
