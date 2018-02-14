@@ -17,6 +17,7 @@
 package geotrellis
 
 import geotrellis.raster._
+import geotrellis.raster.io.geotiff._
 import geotrellis.vector._
 import geotrellis.proj4._
 import geotrellis.util._
@@ -156,13 +157,42 @@ package object spark
   }
 
   implicit class withTileLayerRDDMethods[K: SpatialComponent: ClassTag](val self: TileLayerRDD[K])
-      extends TileLayerRDDMethods[K]
+    extends TileLayerRDDMethods[K] {
+    def toGeoTiffs(
+      tags: Tags = Tags.empty,
+      options: GeoTiffOptions = GeoTiffOptions.DEFAULT
+    ): RDD[(K, SinglebandGeoTiff)] = {
+      val mt = self.metadata.layout.mapTransform
+      val crs = self.metadata.crs
+
+      self.mapPartitions({ partition =>
+        partition.map { case (k, v) =>
+          (k, SinglebandGeoTiff(v, mt(k.getComponent[SpatialKey]), crs, tags, options))
+        }
+      }, preservesPartitioning = true)
+    }
+  }
 
   implicit class withTileLayerCollectionMethods[K: SpatialComponent](val self: TileLayerCollection[K])
     extends TileLayerCollectionMethods[K]
 
   implicit class withMultibandTileLayerRDDMethods[K: SpatialComponent: ClassTag](val self: MultibandTileLayerRDD[K])
-      extends MultibandTileLayerRDDMethods[K]
+    extends MultibandTileLayerRDDMethods[K] {
+
+    def toGeoTiffs(
+      tags: Tags = Tags.empty,
+      options: GeoTiffOptions = GeoTiffOptions.DEFAULT
+    ): RDD[(K, MultibandGeoTiff)] = {
+      val mt = self.metadata.layout.mapTransform
+      val crs = self.metadata.crs
+
+      self.mapPartitions({ partition =>
+        partition.map { case (k, v) =>
+          (k, MultibandGeoTiff(v, mt(k.getComponent[SpatialKey]), crs, tags, options))
+        }
+      }, preservesPartitioning = true)
+    }
+  }
 
   implicit class withCellGridLayoutRDDMethods[K: SpatialComponent: ClassTag, V <: CellGrid, M: GetComponent[?, LayoutDefinition]](val self: RDD[(K, V)] with Metadata[M])
       extends CellGridLayoutRDDMethods[K, V, M]
@@ -175,6 +205,30 @@ package object spark
       rdd.mapPartitions({ partition =>
         partition.map { case (key, value) =>
           (key, Raster(value, key.getComponent[ProjectedExtent].extent))
+        }
+      }, preservesPartitioning = true)
+  }
+
+  implicit class withTileProjectedExtentRDDMethods[K: Component[?, ProjectedExtent]: Component[?, CRS]](val rdd: RDD[(K, Tile)]) {
+    def toGeoTiffs(
+      tags: Tags = Tags.empty,
+      options: GeoTiffOptions = GeoTiffOptions.DEFAULT
+    ): RDD[(K, SinglebandGeoTiff)] =
+      rdd.mapPartitions({ partition =>
+        partition.map { case (key, value) =>
+          (key, SinglebandGeoTiff(value, key.getComponent[ProjectedExtent].extent, key.getComponent[CRS], tags, options))
+        }
+      }, preservesPartitioning = true)
+  }
+
+  implicit class withMultibandTileProjectedExtentRDDMethods[K: Component[?, ProjectedExtent]: Component[?, CRS]](val rdd: RDD[(K, MultibandTile)]) {
+    def toGeoTiffs(
+      tags: Tags = Tags.empty,
+      options: GeoTiffOptions = GeoTiffOptions.DEFAULT
+    ): RDD[(K, MultibandGeoTiff)] =
+      rdd.mapPartitions({ partition =>
+        partition.map { case (key, value) =>
+          (key, MultibandGeoTiff(value, key.getComponent[ProjectedExtent].extent, key.getComponent[CRS], tags, options))
         }
       }, preservesPartitioning = true)
   }
