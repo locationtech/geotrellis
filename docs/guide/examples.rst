@@ -143,3 +143,56 @@ This can be accomplished by sub-classing ``S3AttributeStore`` and/or
    val valueReader = new S3ValueReader(attributeStore) {
       override def s3Client = specialS3Client
    }
+
+Saving the Tiles of a Layer as GeoTiffs to S3
+===============================================
+
+**Motivation:** You would like to save the ``Tile``\s of your layer as GeoTiffs
+to a S3.
+
+If the size of your ``Tile``\s are fine and you're to save them:
+
+.. code-block:: scala
+
+   import geotrellis.raster.io.geotiff._
+   import geotrellis.spark.io.s3._
+
+   val rdd: TileLayerRDD[SpatialKey] = ???
+
+   // Convert the values of the layer to SinglebandGeoTiffs
+   val geoTiffRDD: RDD[(K, SinglebandGeoTiff)] = rdd.toGeoTiffs()
+
+   // Convert the GeoTiffs to Array[Byte]]
+   val byteRDD: RDD[(K, Array[Byte])] = geoTiffRDD.mapValues { _.toByteArray }
+
+   // In order to save files to S3, we need a function that converts the
+   // Keys of the layer to URIs of their associated values.
+   val keyToURI = (k: SpatialKey) => s"s3://path/to/geotiffs/${k.col}_${k.row}.tif"
+
+   byteRDD.saveToS3(keyToURI)
+
+If you'd like the size of the ``Tile``\s in the layer to be a different
+size before saving:
+
+.. code-block:: scala
+
+   import geotrellis.raster.io.geotiff._
+   import geotrellis.spark.io.s3._
+   import geotrellis.spark.regrid._
+
+   val rdd: TileLayerRDD[SpatialKey] = ???
+
+   // Regrid the Tiles so that they are 512x512
+   val regridedRDD: TileLayerRDD[SpatialKey] = rdd.regrid(512, 512)
+
+   // Convert the values of the layer to SinglebandGeoTiffs
+   val geoTiffRDD: RDD[(K, SinglebandGeoTiff)] = regridedRDD.toGeoTiffs()
+
+   // Convert the GeoTiffs to Array[Byte]]
+   val byteRDD: RDD[(K, Array[Byte])] = geoTiffRDD.mapValues { _.toByteArray }
+
+   // In order to save files to S3, we need a function that converts the
+   // Keys of the layer to URIs of their associated values.
+   val keyToURI = (k: SpatialKey) => s"s3://path/to/geotiffs/${k.col}_${k.row}.tif"
+
+   byteRDD.saveToS3(keyToURI)
