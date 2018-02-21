@@ -24,7 +24,7 @@ import geotrellis.util._
 import spire.syntax.cfor._
 
 
-trait GeoTiffBuilder[T <: CellGrid] {
+trait GeoTiffBuilder[T <: CellGrid] extends Serializable {
   /** Make GeoTiff Tile from component segments.
     * Missing segments will be substituted with NODATA.
     * Segments must be keyed relative to (0, 0) offset.
@@ -83,7 +83,7 @@ trait GeoTiffBuilder[T <: CellGrid] {
 
 
   def fromSegments(
-    segments: Map[Product2[Int, Int], T],
+    segments: Map[_ <: Product2[Int, Int], T],
     tileExtent: (Int, Int) => Extent,
     crs: CRS,
     options: GeoTiffOptions,
@@ -139,6 +139,8 @@ object GeoTiffBuilder {
       segments.foreach { case (key, tile) =>
         val layoutCol = key._1
         val layoutRow = key._2
+        require(layoutCol < tileLayout.layoutCols, s"col $layoutCol < ${tileLayout.layoutCols}")
+        require(layoutRow < tileLayout.layoutRows, s"row $layoutRow < ${tileLayout.layoutRows}")
         val index = tileLayout.layoutCols * layoutRow + layoutCol
         val bytes = tile.interpretAs(cellType).toBytes
         segmentBytes(index) = compressor.compress(bytes, index)

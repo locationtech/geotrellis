@@ -7,6 +7,7 @@ import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.raster.io.geotiff.compression.Compression
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
+import geotrellis.raster.resample.NearestNeighbor
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.index.KeyIndex
@@ -37,14 +38,14 @@ object COGLayer {
 
   def apply[
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,
-    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]
+    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffBuilder
   ](
      rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
      baseZoom: Int,
      compression: Compression = Deflate,
      maxCOGTileSize: Int = 4096,
      minZoom: Option[Int] = None
-   )(implicit tc: Iterable[(SpatialKey, V)] => GeoTiffSegmentConstructMethods[SpatialKey, V]): COGLayer[K, V] = {
+   ): COGLayer[K, V] = {
     // TODO: Clean up conditional checks, figure out how to bake into type system, or report errors better.
     if(minZoom.getOrElse(Double.NaN) != baseZoom.toDouble) {
       if(rdd.metadata.layout.tileCols != rdd.metadata.layout.tileRows) {
@@ -86,7 +87,7 @@ object COGLayer {
         sorted(Ordering[ZoomRange].reverse).
         foldLeft(List[(ZoomRange, RDD[(K, GeoTiff[V])])]()) { case (acc, range) =>
           if(acc.isEmpty) {
-            List(range -> generateGeoTiffRDD(rdd, range, layoutScheme, compression))
+            List(range -> generateGeoTiffRDD(rdd, range, layoutScheme, cogLayerMetadata.cellType, compression))
           } else {
             val previousLayer: RDD[(K, V)] = acc.head._2.mapValues { tiff =>
               if(tiff.overviews.nonEmpty) tiff.overviews.last.tile
@@ -97,7 +98,7 @@ object COGLayer {
             val upsampledPreviousLayer =
               Pyramid.up(ContextRDD(previousLayer, tmd), layoutScheme, range.maxZoom + 1)._2
 
-            val rzz = generateGeoTiffRDD(upsampledPreviousLayer, range, layoutScheme, compression)
+            val rzz = generateGeoTiffRDD(upsampledPreviousLayer, range, layoutScheme, cogLayerMetadata.cellType, compression)
 
             (range -> rzz) :: acc
           }
@@ -109,14 +110,16 @@ object COGLayer {
 
   private def generateGeoTiffRDD[
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,
-    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]
+    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffBuilder
   ](
      rdd: RDD[(K, V)],
-     zoomRange: ZoomRange,
+     zoomRange: ZoomRange ,
      layoutScheme: ZoomedLayoutScheme,
+     cellType: CellType,
      compression: Compression
-   )(implicit tc: Iterable[(SpatialKey, V)] => GeoTiffSegmentConstructMethods[SpatialKey, V]): RDD[(K, GeoTiff[V])] = {
+   ): RDD[(K, GeoTiff[V])] = {
     val kwFomat = KryoWrapper(implicitly[JsonFormat[K]])
+    val crs = layoutScheme.crs
 
     val (minZoomLayout, maxZoomLayout) = (
       layoutScheme.levelForZoom(zoomRange.minZoom).layout,
@@ -142,71 +145,31 @@ object COGLayer {
       mapPartitions { partition =>
         val keyFormat = kwFomat.value
         partition.map { case (key, tiles) =>
-          val extent = key.getComponent[SpatialKey].extent(minZoomLayout)
-          (key, createCog(tiles, zoomRange, layoutScheme, extent, layoutScheme.crs, options, Tags(Map("GT_KEY" -> keyFormat.write(key).prettyPrint), Nil)))
+          val cogExtent = key.getComponent[SpatialKey].extent(minZoomLayout)
+          val cogTileBounds: GridBounds = maxZoomLayout.mapTransform.extentToBounds(cogExtent)
+          val cogLayout: TileLayout = maxZoomLayout.layoutForBounds(cogTileBounds).tileLayout
+
+          val segments = tiles.map { case (key, value) =>
+            val SpatialKey(col, row) = key.getComponent[SpatialKey]
+            (SpatialKey(col - cogTileBounds.colMin, row - cogTileBounds.rowMin), value)
+          }
+
+          val cogTile = GeoTiffBuilder[V].makeTile(
+            segments.iterator,
+            cogLayout,
+            cellType,
+            Tiled(cogLayout.tileCols, cogLayout.tileRows),
+            compression)
+
+          val cogTiff = GeoTiffBuilder[V].makeGeoTiff(
+            cogTile, cogExtent, crs,
+            Tags(Map("GT_KEY" -> keyFormat.write(key).prettyPrint), Nil),
+            options
+          ).withOverviews(NearestNeighbor)
+
+          (key, cogTiff)
         }
       }
-  }
-
-  private def createCog[
-    K: SpatialComponent: Ordering: ClassTag,
-    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]
-  ](
-     tiles: Iterable[(K, V)],
-     zoomRange: ZoomRange,
-     layoutScheme: ZoomedLayoutScheme,
-     extent: Extent,
-     crs: CRS,
-     options: GeoTiffOptions,
-     tags: Tags
-   )(implicit tc: Iterable[(SpatialKey, V)] => GeoTiffSegmentConstructMethods[SpatialKey, V]): GeoTiff[V] = {
-    val spatialTiles = tiles.map { case (key, value) => (key.getComponent[SpatialKey], value) }
-
-    val accSeed = (List[GeoTiff[V]](), spatialTiles)
-    val (overviews, _) =
-      ((zoomRange.maxZoom - 1) to zoomRange.minZoom by -1).foldLeft(accSeed) { case ((acc, t), z) =>
-        val prevLayout = layoutScheme.levelForZoom(z + 1).layout
-        val thisLayout = layoutScheme.levelForZoom(z).layout
-        val newTiles =
-          t.
-            groupBy { case (k @ SpatialKey(c, r), _) =>
-              SpatialKey(c / 2, r / 2)
-            }.
-            map { case (newKey, parts) =>
-              // Make the prototype based on one of the constituent tiles, with same dimensions
-              // (as always happens with power of two pyramids)
-              val representative = parts.head._2
-              val (cols, rows) = (representative.cols, representative.rows)
-              val t = representative.prototype(cols, rows)
-              val tExt = thisLayout.mapTransform.keyToExtent(newKey)
-              val newTile =
-                parts.foldLeft(t) { case (acc, (k, part)) =>
-                  val partExt = prevLayout.mapTransform.keyToExtent(k)
-                  acc.merge(tExt, partExt, part)
-                }
-              (newKey, newTile)
-            }
-
-        val gt: GeoTiff[V] =
-          newTiles.toSeq.toGeoTiff(
-            thisLayout,
-            extent,
-            crs,
-            options.copy(subfileType = Some(ReducedImage))
-          )
-
-
-        (gt :: acc, newTiles)
-      }
-
-    spatialTiles.toGeoTiff(
-      layoutScheme.levelForZoom(zoomRange.maxZoom).layout,
-      extent,
-      crs,
-      options,
-      overviews = overviews.reverse,
-      tags = tags
-    )
   }
 
   def write[K: SpatialComponent: ClassTag, V <: CellGrid: ClassTag](cogs: RDD[(K, GeoTiff[V])])(keyIndex: KeyIndex[K], uri: URI): Unit = {

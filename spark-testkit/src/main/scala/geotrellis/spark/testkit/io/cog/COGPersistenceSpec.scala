@@ -19,11 +19,11 @@ package geotrellis.spark.testkit.io.cog
 import geotrellis.raster.CellGrid
 import geotrellis.raster.crop.TileCropMethods
 import geotrellis.raster.merge.TileMergeMethods
+import geotrellis.raster.io.geotiff._
 import geotrellis.raster.prototype.TilePrototypeMethods
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
-import geotrellis.spark.io.cog.GeoTiffSegmentConstructMethods
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.json._
 import geotrellis.spark.testkit.io._
@@ -39,8 +39,8 @@ import scala.reflect._
 
 abstract class COGPersistenceSpec[
   K: SpatialComponent: Ordering: Boundable: JsonFormat: ClassTag,
-  V <: CellGrid: TiffMethods: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: ClassTag
-](implicit ev: Iterable[(SpatialKey, V)] => GeoTiffSegmentConstructMethods[SpatialKey, V]) extends FunSpec with Matchers with BeforeAndAfterAll {
+  V <: CellGrid: TiffMethods: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: ClassTag: GeoTiffBuilder
+] extends FunSpec with Matchers with BeforeAndAfterAll {
 
   type TestReader = FilteringCOGLayerReader[LayerId]
   type TestWriter = COGLayerWriter

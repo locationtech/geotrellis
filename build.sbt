@@ -3,6 +3,8 @@ import sbt.Keys._
 
 scalaVersion := Version.scala
 
+scalaVersion in ThisBuild := Version.scala
+
 lazy val commonSettings = Seq(
   version := Version.geotrellis,
   scalaVersion := Version.scala,

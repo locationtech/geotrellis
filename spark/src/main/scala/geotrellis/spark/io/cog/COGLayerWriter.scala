@@ -46,7 +46,7 @@ trait COGLayerWriter extends Serializable {
 
   def write[
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,
-    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: TiffMethods
+    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: TiffMethods: GeoTiffBuilder
   ](
     layerName: String,
     tiles: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
@@ -54,7 +54,7 @@ trait COGLayerWriter extends Serializable {
     keyIndexMethod: KeyIndexMethod[K],
     compression: Compression = NoCompression,
     mergeFunc: Option[(GeoTiff[V], GeoTiff[V]) => GeoTiff[V]] = None
-  )(implicit tc: Iterable[(SpatialKey, V)] => GeoTiffSegmentConstructMethods[SpatialKey, V]): Unit =
+  ): Unit =
     tiles.metadata.bounds match {
       case keyBounds: KeyBounds[K] =>
         val cogLayer = COGLayer(tiles, tileZoom, compression = compression)
@@ -70,14 +70,14 @@ trait COGLayerWriter extends Serializable {
 
   def update[
     K: SpatialComponent: Boundable: Ordering: JsonFormat: ClassTag,
-    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: TiffMethods
+    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: TiffMethods: GeoTiffBuilder
   ](
      layerName: String,
      tiles: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
      tileZoom: Int,
      compression: Compression = NoCompression,
      mergeFunc: (GeoTiff[V], GeoTiff[V]) => GeoTiff[V]
-   )(implicit tc: Iterable[(SpatialKey, V)] => GeoTiffSegmentConstructMethods[SpatialKey, V]): Unit = {
+   ): Unit = {
     tiles.metadata.bounds match {
       case keyBounds: KeyBounds[K] =>
         val COGLayerStorageMetadata(metadata, keyIndexes) =
