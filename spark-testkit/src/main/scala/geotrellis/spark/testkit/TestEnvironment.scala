@@ -53,6 +53,9 @@ trait TestEnvironment extends BeforeAndAfterAll
   with OpAsserter
 { self: Suite with BeforeAndAfterAll =>
 
+  /** Subclasses can override this to change the Spark master specification */
+  def sparkMaster = "local"
+
   private lazy val afterAlls = mutable.ListBuffer[() => Unit]()
   def registerAfterAll(f: () => Unit): Unit =
     afterAlls += f
@@ -67,7 +70,7 @@ trait TestEnvironment extends BeforeAndAfterAll
 
     val conf = new SparkConf()
     conf
-      .setMaster("local")
+      .setMaster(sparkMaster)
       .setAppName("Test Context")
       .set("spark.default.parallelism", "4")
 
