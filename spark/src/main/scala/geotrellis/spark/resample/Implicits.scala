@@ -22,4 +22,5 @@ object Implicits extends Implicits
 
 trait Implicits {
   implicit class withZoomResampleMethods[K: SpatialComponent](self: TileLayerRDD[K]) extends ZoomResampleMethods[K](self)
+  implicit class withZoomResampleMultibandMethods[K: SpatialComponent](self: MultibandTileLayerRDD[K]) extends ZoomResampleMultibandMethods[K](self)
 }
