@@ -19,6 +19,7 @@ API Changes
   ``TileRDDReproject`` loses dependency on ``TileReprojectMethods`` in favor of ``RasterRegionReproject``
   - **New:** CollectionLayerReader now has an SPI interface.
   - **New:** ``ZoomResample`` can now be used on ``MultibandTileLayerRDD``\s.
+  - **New:** A ``Partitioner`` can be specified in the ``reproject`` methods of ``TileLayerRDD``.
 
 1.2.1
 _____
