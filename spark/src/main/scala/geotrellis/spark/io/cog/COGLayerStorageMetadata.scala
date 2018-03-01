@@ -9,7 +9,10 @@ import spray.json.DefaultJsonProtocol._
 
 import scala.reflect._
 
-case class COGLayerStorageMetadata[K](metadata: COGLayerMetadata[K], keyIndexes: Map[ZoomRange, KeyIndex[K]])
+case class COGLayerStorageMetadata[K](metadata: COGLayerMetadata[K], keyIndexes: Map[ZoomRange, KeyIndex[K]]) {
+  def combine(other: COGLayerStorageMetadata[K])(implicit ev: Boundable[K]): COGLayerStorageMetadata[K] =
+    COGLayerStorageMetadata(metadata.combine(other.metadata), other.keyIndexes)
+}
 
 object COGLayerStorageMetadata {
   implicit def cogLayerStorageMetadataFormat[K: SpatialComponent: JsonFormat: ClassTag] =

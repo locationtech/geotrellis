@@ -36,7 +36,7 @@ trait COGLayerUpdateSpaceTimeTileSpec
     with TileBuilders { self: COGPersistenceSpec[SpaceTimeKey, Tile] with TestEnvironment =>
 
   implicit class withLayerIdUtilMethods(val self: LayerId) extends MethodExtensions[LayerId] {
-    def createTemporaryId(): LayerId = self.copy(name = s"${self.name}-${ZonedDateTime.now.toInstant.toEpochMilli}")
+    def createTemporaryId(): LayerId = self.copy(name = s"${self.name}-update-${ZonedDateTime.now.toInstant.toEpochMilli}")
   }
 
   def dummyTileLayerMetadata =
@@ -109,8 +109,15 @@ trait COGLayerUpdateSpaceTimeTileSpec
         }
       }*/
 
-      /*it("should update a layer with preset keybounds, new rdd not intersects already ingested") {
-        val (minKey, _) = sample.sortByKey().first()
+      it("should update a layer with preset keybounds, new rdd not intersects already ingested") {
+        /**
+          * !!IMPORTANT: we need to have keyBounds starting from (0, 0), as COGs are stored in TIFFs and
+          * it can't be sparsed => it is expected to have a significant amount of empty tiles.
+          */
+        val minKey = {
+          val k = sample.sortByKey().first()._1
+          SpaceTimeKey(0, 0, k.instant)
+        }
         val (maxKey, _) = sample.sortByKey(false).first()
         val kb = KeyBounds(minKey, maxKey.setComponent(SpatialKey(maxKey.col + 20, maxKey.row + 20)))
         val updatedLayerId = layerId.createTemporaryId
@@ -118,30 +125,28 @@ trait COGLayerUpdateSpaceTimeTileSpec
 
         val usample = sample.map { case (key, value) => (key.setComponent(SpatialKey(key.col + 10, key.row + 10)), value) }
         val ukb = KeyBounds(usample.sortByKey().first()._1, usample.sortByKey(false).first()._1)
-        val updatedSample = new ContextRDD(usample, sample.metadata.copy(bounds = ukb))
 
-        writer.write[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId, sample, updatedKeyIndex)
-        updater.update[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId, updatedSample)
-        reader.read[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId).count() shouldBe sample.count() * 2
-      }*/
+        val updatedSample = new ContextRDD(
+          usample,
+          sample
+            .metadata
+            .copy(bounds = ukb)
+            .copy(extent = sample.metadata.mapTransform(ukb.toGridBounds).bufferByLayout(sample.metadata.layout))
+        )
 
-      /*it("should overwrite a layer with preset keybounds, new rdd not intersects already ingested") {
-        val (minKey, _) = sample.sortByKey().first()
-        val (maxKey, _) = sample.sortByKey(false).first()
-        val kb = KeyBounds(minKey, maxKey.setComponent(SpatialKey(maxKey.col + 20, maxKey.row + 20)))
-        val updatedLayerId = layerId.createTemporaryId
-        val updatedKeyIndex = keyIndexMethod.createIndex(kb)
+        writer.write[SpaceTimeKey, Tile](updatedLayerId.name, sample, updatedLayerId.zoom, updatedKeyIndex)
+        writer.update[SpaceTimeKey, Tile](updatedLayerId.name, updatedSample, updatedLayerId.zoom, mergeFunc = mergeFunc)
 
-        val usample = sample.map { case (key, value) => (key.setComponent(SpatialKey(key.col + 10, key.row + 10)), value) }
-        val ukb = KeyBounds(usample.sortByKey().first()._1, usample.sortByKey(false).first()._1)
-        val updatedSample = new ContextRDD(usample, sample.metadata.copy(bounds = ukb))
+        /** !!IMPORTANT: the place where empty tiles are filtered out */
+        val resultKeys = reader.read[SpaceTimeKey, Tile](updatedLayerId).filter(!_._2.isNoDataTile).map(_._1).collect.toList
+        val sampleKeys = sample.map(_._1).collect().toList
+        val udpatedSampleKeys = updatedSample.map(_._1).collect.toList
 
-        writer.write[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId, sample, updatedKeyIndex)
-        updater.overwrite[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId, updatedSample)
-        reader.read[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId).count() shouldBe sample.count() * 2
-      }*/
+        resultKeys should contain theSameElementsAs (udpatedSampleKeys ++ sampleKeys)
+        resultKeys.length shouldBe sampleKeys.length * 2
+      }
 
-      /*it("should update correctly inside the bounds of a metatile") {
+      ignore("should update correctly inside the bounds of a metatile") {
         val tileLayout = TileLayout(8, 8, 4, 4)
         val gridBounds = GridBounds(1, 1, 8, 8)
 
@@ -155,10 +160,21 @@ trait COGLayerUpdateSpaceTimeTileSpec
             (createValueTile(4, 4, 4), ZonedDateTime.of(2016, 1, 4, 12, 0, 0, 0, ZoneOffset.UTC))
           )
 
+        println(s"layerId: $layerId")
+        println(s"sample.count(): ${sample.count()}")
+
         val rdd = createSpaceTimeTileLayerRDD(tiles, tileLayout)
         assert(rdd.count == 256)
 
         writer.write(id.name, rdd, id.zoom, keyIndexMethod)
+
+        println(
+          s"rdd.map(_._1.instant).collect().toList.map(_.instant): ${rdd.map(_._1.instant).collect().toList.distinct}"
+        )
+        println(
+          s"reader.read[SpaceTimeKey, Tile](id).map(_._1).collect().toList: ${reader.read[SpaceTimeKey, Tile](id).map(_._1.instant).collect().toList.distinct}"
+        )
+
         assert(reader.read[SpaceTimeKey, Tile](id).count == 64)
 
         val updateRdd = {
@@ -183,15 +199,18 @@ trait COGLayerUpdateSpaceTimeTileSpec
 
         val read: TileLayerRDD[SpaceTimeKey] = reader.read(id)
 
+        println()
+
         val readTiles = read.collect.sortBy { case (k, _) => k.instant }.toArray
         readTiles.size should be (64)
         println(readTiles(0)._2.toArray.toSeq)
-        println(readTiles)
+        //println(readTiles.toList)
+        println(readTiles(1)._2.toArray.toSeq)
         //assertEqual(readTiles(0)._2, Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1))
         assertEqual(readTiles(0)._2, Array(2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2))
-        assertEqual(readTiles(1)._2, Array(3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3))
-        assertEqual(readTiles(2)._2, Array(5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5))
-      }*/
+        //assertEqual(readTiles(1)._2, Array(3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3))
+        //assertEqual(readTiles(2)._2, Array(5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5))
+      }
     }
   }
 }

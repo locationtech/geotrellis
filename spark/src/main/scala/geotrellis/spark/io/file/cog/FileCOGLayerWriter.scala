@@ -13,7 +13,6 @@ import geotrellis.util.{ByteReader, Filesystem}
 import spray.json.JsonFormat
 
 import java.io.File
-import java.net.URI
 
 import scala.reflect.ClassTag
 
@@ -21,6 +20,7 @@ class FileCOGLayerWriter(
   val attributeStore: FileAttributeStore
 ) extends COGLayerWriter {
   implicit def getByteReader(uri: String): ByteReader = byteReader(uri)
+  def uriExists(uri: String): Boolean = { val f = new File(uri); f.exists() && f.isFile }
 
   def writeCOGLayer[K: SpatialComponent: Ordering: JsonFormat: ClassTag, V <: CellGrid: TiffMethods: ClassTag](
     layerName: String,
@@ -62,7 +62,18 @@ class FileCOGLayerWriter(
                 (idx.toLong, vrt.simpleSource(s"$idx.$Extension", b + 1, cog.cols, cog.rows, cog.extent))
               }
               .foreach(samplesAccumulator.add)
-          case Some(merge) =>
+
+          case Some(_) if !uriExists(path) =>
+            cog.write(path, true)
+            // collect VRT metadata
+            (0 until geoTiffBandsCount(cog))
+              .map { b =>
+                val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
+                (idx.toLong, vrt.simpleSource(s"$idx.$Extension", b + 1, cog.cols, cog.rows, cog.extent))
+              }
+              .foreach(samplesAccumulator.add)
+
+          case Some(merge) if uriExists(path) =>
             val old = tiffMethods.readEntireTiff(path)
             val merged = merge(cog, old)
             merged.write(path, true)

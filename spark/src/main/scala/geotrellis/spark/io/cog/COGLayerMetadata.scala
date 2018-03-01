@@ -20,6 +20,24 @@ case class COGLayerMetadata[K: SpatialComponent](
   extent: Extent,
   crs: CRS
 ) {
+  def combine(other: COGLayerMetadata[K])(implicit ev: Boundable[K]): COGLayerMetadata[K] = {
+    val combinedZoomRangeInfos =
+      (zoomRangeInfos ++ other.zoomRangeInfos)
+        .groupBy(_._1)
+        .map { case (key, bounds) => key -> bounds.map(_._2).reduce(_ combine _) }
+        .toVector
+
+    val combinedExtent = extent.combine(other.extent)
+
+    COGLayerMetadata(
+      cellType,
+      combinedZoomRangeInfos,
+      layoutScheme,
+      combinedExtent,
+      crs
+    )
+  }
+
   private val maxZooms =
     zoomRangeInfos.map(_._1.maxZoom).toArray
 
