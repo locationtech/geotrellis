@@ -146,70 +146,42 @@ trait COGLayerUpdateSpaceTimeTileSpec
         resultKeys.length shouldBe sampleKeys.length * 2
       }
 
-      ignore("should update correctly inside the bounds of a metatile") {
+      it("should update correctly inside the bounds of a metatile") {
         val tileLayout = TileLayout(8, 8, 4, 4)
-        val gridBounds = GridBounds(1, 1, 8, 8)
-
         val id = layerId.createTemporaryId
 
         val tiles =
           Seq(
-            (createValueTile(4, 4, 1), ZonedDateTime.of(2016, 1, 1, 12, 0, 0, 0, ZoneOffset.UTC)),
-            (createValueTile(4, 4, 2), ZonedDateTime.of(2016, 1, 2, 12, 0, 0, 0, ZoneOffset.UTC)),
+            (createValueTile(4, 4, 1), ZonedDateTime.of(2014, 1, 1, 12, 0, 0, 0, ZoneOffset.UTC)),
+            (createValueTile(4, 4, 2), ZonedDateTime.of(2015, 1, 2, 12, 0, 0, 0, ZoneOffset.UTC)),
             (createValueTile(4, 4, 3), ZonedDateTime.of(2016, 1, 3, 12, 0, 0, 0, ZoneOffset.UTC)),
-            (createValueTile(4, 4, 4), ZonedDateTime.of(2016, 1, 4, 12, 0, 0, 0, ZoneOffset.UTC))
+            (createValueTile(4, 4, 4), ZonedDateTime.of(2017, 1, 4, 12, 0, 0, 0, ZoneOffset.UTC))
           )
 
-        println(s"layerId: $layerId")
-        println(s"sample.count(): ${sample.count()}")
-
-        val rdd = createSpaceTimeTileLayerRDD(tiles, tileLayout)
-        assert(rdd.count == 256)
+        /** !!IMPORTANT: the place where empty tiles are filtered out, due to the same reason as in previous test */
+        val rdd = createSpaceTimeTileLayerRDD(tiles, tileLayout).withContext { _.filter(!_._2.isNoDataTile) }
+        assert(rdd.count == 4)
 
         writer.write(id.name, rdd, id.zoom, keyIndexMethod)
 
-        println(
-          s"rdd.map(_._1.instant).collect().toList.map(_.instant): ${rdd.map(_._1.instant).collect().toList.distinct}"
-        )
-        println(
-          s"reader.read[SpaceTimeKey, Tile](id).map(_._1).collect().toList: ${reader.read[SpaceTimeKey, Tile](id).map(_._1.instant).collect().toList.distinct}"
-        )
-
-        assert(reader.read[SpaceTimeKey, Tile](id).count == 64)
-
-        val updateRdd = {
-          val rdd = createSpaceTimeTileLayerRDD(
-            Seq((createValueTile(4, 4, 5), ZonedDateTime.of(2016, 1, 4, 12, 0, 0, 0, ZoneOffset.UTC))),
+        val updateRdd =
+          createSpaceTimeTileLayerRDD(
+            Seq((createValueTile(4, 4, 5), ZonedDateTime.of(2017, 1, 4, 12, 0, 0, 0, ZoneOffset.UTC))),
             tileLayout
-          )
+          ).withContext { _.filter(!_._2.isNoDataTile) }
 
-          rdd
-            .withContext { _.filter { case (SpaceTimeKey(c, r, _), _) => c > 0 && r > 0 } }
-            .mapContext { metadata =>
-              val KeyBounds(minKey, maxKey) = metadata.bounds.asInstanceOf[KeyBounds[SpaceTimeKey]]
-              val bounds = KeyBounds(SpaceTimeKey(SpatialKey(1, 1), minKey.time), maxKey)
-              metadata.copy(bounds = bounds)
-            }
-        }
+        assert(updateRdd.count == 1)
 
-        assert(updateRdd.count == 49)
         updateRdd.withContext(_.mapValues { tile => tile + 1 })
-
         writer.update[SpaceTimeKey, Tile](id.name, updateRdd, id.zoom, mergeFunc = mergeFunc)
-
-        val read: TileLayerRDD[SpaceTimeKey] = reader.read(id)
-
-        println()
+        val read: TileLayerRDD[SpaceTimeKey] = reader.read[SpaceTimeKey, Tile](id).withContext { _.filter(!_._2.isNoDataTile) }
 
         val readTiles = read.collect.sortBy { case (k, _) => k.instant }.toArray
-        readTiles.size should be (64)
-        println(readTiles(0)._2.toArray.toSeq)
-        //println(readTiles.toList)
-        println(readTiles(1)._2.toArray.toSeq)
-        //assertEqual(readTiles(0)._2, Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1))
-        assertEqual(readTiles(0)._2, Array(2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2))
-        //assertEqual(readTiles(1)._2, Array(3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3))
-        //assertEqual(readTiles(2)._2, Array(5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5))
+        readTiles.size should be (4)
+        assertEqual(readTiles(0)._2, Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1))
+        assertEqual(readTiles(1)._2, Array(2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2))
+        assertEqual(readTiles(2)._2, Array(3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3))
+        assertEqual(readTiles(3)._2, Array(5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5))
       }
     }
   }

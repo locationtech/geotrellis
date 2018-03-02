@@ -9,10 +9,9 @@ import geotrellis.spark.io.cog.vrt.VRT.IndexedSimpleSource
 import geotrellis.spark.io.file._
 import geotrellis.spark.io.index._
 import geotrellis.util.{ByteReader, Filesystem}
-
 import spray.json.JsonFormat
-
 import java.io.File
+import java.time.{ZoneOffset, ZonedDateTime}
 
 import scala.reflect.ClassTag
 
