@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Azavea
+ * Copyright 2018 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,16 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.resample
+package geotrellis.spark.io
 
-import geotrellis.raster._
-import geotrellis.raster.resample._
 import geotrellis.spark._
-import geotrellis.spark.tiling._
-import geotrellis.util._
-import geotrellis.vector._
+import java.net.URI
 
-import org.apache.spark.rdd._
 
-object Implicits extends Implicits
+trait CollectionLayerReaderProvider {
 
-trait Implicits {
-  implicit class withLayerRDDZoomResampleMethods[
-    K: SpatialComponent,
-    V <: CellGrid: (? => TileResampleMethods[V])
-  ](self: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) extends LayerRDDZoomResampleMethods[K, V](self)
+  def canProcess(uri: URI): Boolean
+
+  def collectionLayerReader(uri: URI, store: AttributeStore): CollectionLayerReader[LayerId]
+
 }

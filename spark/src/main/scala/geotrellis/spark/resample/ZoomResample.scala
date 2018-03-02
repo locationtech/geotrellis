@@ -61,20 +61,23 @@ object ZoomResample {
     * @param       targetGridBounds Optionally, a grid bounds in the target zoom level we want to filter by.
     * @param       method           The resample method to use for resampling.
     */
-  def apply[K: SpatialComponent](
-    rdd: TileLayerRDD[K],
+  def apply[
+    K: SpatialComponent,
+    V <: CellGrid: (? => TileResampleMethods[V])
+  ](
+    rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     sourceZoom: Int,
     targetZoom: Int,
     targetGridBounds: Option[GridBounds] = None,
     method: ResampleMethod = NearestNeighbor
-  ): TileLayerRDD[K] = {
+  ): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] = {
     require(sourceZoom < targetZoom, "This resample call requires that the target zoom level be greater than the source zoom level")
     val tileSize = rdd.metadata.layout.tileLayout.tileCols
     val targetLayoutDefinition =
       ZoomedLayoutScheme.layoutForZoom(targetZoom, rdd.metadata.layout.extent, tileSize)
     val targetMapTransform = targetLayoutDefinition.mapTransform
     val sourceMapTransform = rdd.metadata.mapTransform
-    val (resampledRdd: RDD[(K, Tile)], md) =
+    val (resampledRdd: RDD[(K, V)], md) =
       targetGridBounds match {
         case Some(tgb) =>
           val resampleKeyBounds: KeyBounds[K] =
@@ -82,7 +85,7 @@ object ZoomResample {
 
           resampleKeyBounds.toGridBounds.intersection(tgb) match {
             case Some(resampleGridBounds) => {
-              val resampled: RDD[(K, Tile)] = rdd.flatMap { case (key, tile) =>
+              val resampled: RDD[(K, V)] = rdd.flatMap { case (key, tile) =>
                 val gbaz: Option[GridBounds] =
                   gridBoundsAtZoom(sourceZoom, key.getComponent[SpatialKey], targetZoom)
                     .intersection(resampleGridBounds)
@@ -120,11 +123,11 @@ object ZoomResample {
                 bounds = (EmptyBounds: Bounds[K])
               )
 
-              (rdd.sparkContext.emptyRDD[(K, Tile)], md)
+              (rdd.sparkContext.emptyRDD[(K, V)], md)
             }
           }
         case None => {
-          val resampled: RDD[(K, Tile)] =
+          val resampled: RDD[(K, V)] =
             rdd
               .flatMap { case (key, tile) =>
                 gridBoundsAtZoom(sourceZoom, key.getComponent[SpatialKey], targetZoom)

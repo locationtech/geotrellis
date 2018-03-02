@@ -16,6 +16,9 @@
 
 package geotrellis.util
 
+import spire.math._
+import spire.math.interval.{Overlap, Closed, Open}
+import spire.implicits._
 import java.nio.{ByteOrder, ByteBuffer}
 
 /**
@@ -33,119 +36,144 @@ import java.nio.{ByteOrder, ByteBuffer}
   *
   * @return A new instance of StreamingByteReader
   */
-class StreamingByteReader(rangeReader: RangeReader, chunkSize: Int = 65536) extends ByteReader {
-  class Chunk(val offset: Long, val length: Int, _data: () => Array[Byte]) {
-    private var loadedData: Option[Array[Byte]] = None
-    def data: Array[Byte] = {
-      loadedData match {
-        case Some(d) => d
-        case None =>
-          val d = _data()
-          loadedData = Some(d)
-          d
-      }
-    }
-    lazy val buffer: ByteBuffer = ByteBuffer.wrap(data).order(_byteOrder)
+class StreamingByteReader(rangeReader: RangeReader, chunkSize: Int = 45876) extends ByteReader {
+  import StreamingByteReader._
 
-    def bufferPosition =
-      loadedData match {
-        case Some(d) => buffer.position
-        case None => 0
-      }
+// 1. position change does not trigger any reading action
+// 2. chunks are read in increments
+// 3. if loaded chunk intersects the read range, incorporate it
+// 4. if read is in chunk range, reset position
+
+  private var chunkBytes: Array[Byte] = _
+  private var chunkBuffer: ByteBuffer = _
+  private var chunkInterval: Interval[Long] = Interval.empty
+  private var chunkOffset: Long = 0
+  private var filePosition: Long = 0l
+  private var byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN
+
+  def position: Long = filePosition
+
+  def position(newPosition: Long): ByteReader = {
+    filePosition = newPosition
+    this
   }
 
-  private var _chunk: Option[Chunk] = None
-  private def chunk: Chunk =
-    _chunk match {
-      case Some(c) => c
-      case None => adjustChunk(0)
-    }
+  def order: ByteOrder = byteOrder
 
-  private var _byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN
-  def order = _byteOrder
   def order(byteOrder: ByteOrder): Unit = {
-    _byteOrder = byteOrder
-    _chunk.foreach(_.buffer.order(byteOrder))
+    this.byteOrder = byteOrder
+    if (null != chunkBuffer) chunkBuffer.order(byteOrder)
   }
 
-  def position: Long = chunk.offset + chunk.bufferPosition
+  private def readChunk(newInterval: Interval[Long]): Unit = {
 
-  def position(newPoint: Long): ByteReader = {
-    if (isContained(newPoint)) {
-      chunk.buffer.position((newPoint - chunk.offset).toInt)
-      this
-    } else {
-      adjustChunk(newPoint)
-      this
+    
+
+    def handlePartialOverlap(): Unit = {
+      val missing: List[Interval[Long]] = (newInterval \ chunkInterval)
+      val (posMin, posMax) = intervalBounds(newInterval)
+      val newChunkBytes: Array[Byte] = Array.ofDim[Byte]((posMax - posMin + 1).toInt)
+      intervalCopy(chunkBytes, chunkInterval, newChunkBytes, newInterval)
+      for (interval <- missing) {
+        val bytes = intervalRead(rangeReader, interval)
+        intervalCopy(bytes, interval, newChunkBytes, newInterval)
+      }
+      chunkBytes = newChunkBytes
+      chunkInterval = newInterval
+      chunkBuffer = ByteBuffer.wrap(chunkBytes).order(byteOrder)
+      chunkOffset = posMin
+    }
+
+    def handleDisjoint(): Unit = {
+      val (posMin, posMax) = intervalBounds(newInterval)
+      chunkBytes = intervalRead(rangeReader, newInterval)
+      chunkInterval = newInterval
+      chunkBuffer = ByteBuffer.wrap(chunkBytes).order(byteOrder)
+      chunkOffset = posMin
+    }
+
+    chunkInterval overlap newInterval match {
+      case _: Overlap.Equal[Long] =>
+        return
+
+      case Overlap.Subset(inner, outer) if inner == newInterval =>
+        return
+
+      case Overlap.Subset(inner, outer) if inner == chunkInterval && inner.nonEmpty =>
+        handlePartialOverlap()
+
+      case Overlap.Subset(inner, outer) if inner.isEmpty =>
+        handleDisjoint()
+
+      case _: Overlap.PartialOverlap[Long] =>
+        handlePartialOverlap()
+
+      case _: Overlap.Disjoint[Long] =>
+        handleDisjoint()
     }
   }
 
-  private def adjustChunk: Unit =
-    adjustChunk(position)
+  /** Ensure we can read given number of bytes from current filePosition */
+  private def ensureChunk(length: Int): Unit = {
+    val trimmed = math.min(length, (rangeReader.totalLength - filePosition).toInt)
+    if (chunkInterval.doesNotContain(filePosition) || chunkInterval.doesNotContain(filePosition + trimmed - 1)) {
+      val len = math.min(math.max(length, chunkSize), (rangeReader.totalLength - filePosition).toInt)
+      readChunk(Interval(filePosition, filePosition + len - 1))
+    }
 
-  private def adjustChunk(newPoint: Long): Chunk =
-    adjustChunk(newPoint, chunkSize)
-
-  private def adjustChunk(newPoint: Long, length: Int): Chunk = {
-    val c = new Chunk(newPoint, length, () => rangeReader.readRange(newPoint, length))
-    _chunk = Some(c)
-    c
+    if (filePosition != chunkOffset + chunkBuffer.position)
+      chunkBuffer.position((filePosition - chunkOffset).toInt)
   }
 
   def getBytes(length: Int): Array[Byte] = {
-    if (chunk.bufferPosition + length > chunk.length)
-      adjustChunk(position, length)
-    chunk.data.slice(chunk.bufferPosition, chunk.bufferPosition + length)
+    ensureChunk(length)
+    val bytes = Array.ofDim[Byte](length)
+    chunkBuffer.get(bytes)
+    filePosition += length
+    bytes
   }
 
   def get: Byte = {
-    if (chunk.bufferPosition + 1 > chunk.length)
-      adjustChunk
-    chunk.buffer.get
+    ensureChunk(1)
+    filePosition += 1
+    chunkBuffer.get
   }
 
   def getChar: Char = {
-    if (chunk.bufferPosition + 2 > chunk.length)
-      adjustChunk
-    chunk.buffer.getChar
+    ensureChunk(2)
+    filePosition += 2
+    chunkBuffer.getChar
   }
 
   def getShort: Short = {
-    if (chunk.bufferPosition + 2 > chunk.length)
-      adjustChunk
-    chunk.buffer.getShort
+    ensureChunk(2)
+    filePosition += 2
+    chunkBuffer.getShort
   }
 
   def getInt: Int = {
-    if (chunk.bufferPosition + 4 > chunk.length)
-      adjustChunk
-    chunk.buffer.getInt
+    ensureChunk(4)
+    filePosition += 4
+    chunkBuffer.getInt
   }
 
   def getFloat: Float = {
-    if (chunk.bufferPosition + 4 > chunk.length)
-      adjustChunk
-    chunk.buffer.getFloat
+    ensureChunk(4)
+    filePosition += 4
+    chunkBuffer.getFloat
   }
 
   def getDouble: Double = {
-    if (chunk.bufferPosition + 8 > chunk.length)
-      adjustChunk
-    chunk.buffer.getDouble
+    ensureChunk(8)
+    filePosition += 8
+    chunkBuffer.getDouble
   }
 
   def getLong: Long = {
-    if (chunk.bufferPosition + 8 > chunk.length)
-      adjustChunk
-    chunk.buffer.getLong
+    ensureChunk(8)
+    filePosition += 8
+    chunkBuffer.getLong
   }
-
-  private def isContained(newPosition: Long): Boolean =
-    _chunk match {
-      case Some(c) =>
-        if (newPosition >= c.offset && newPosition <= c.offset + c.length) true else false
-      case None => false
-    }
 }
 
 /** The companion object of [[StreamingByteReader]] */
@@ -161,4 +189,40 @@ object StreamingByteReader {
 
   def apply(rangeReader: RangeReader, chunkSize: Int): StreamingByteReader =
     new StreamingByteReader(rangeReader, chunkSize)
+
+
+  private[util]
+  def intervalBounds(i: Interval[Long]): (Long, Long) = (
+    i.lowerBound match {
+      case Closed(a) => a
+      case Open(a) => a + 1
+      case _ => throw new IllegalArgumentException(s"Unbounded interval: $i")
+    },
+    i.upperBound match {
+      case Closed(a) => a
+      case Open(a) => a - 1
+      case _ => throw new IllegalArgumentException(s"Unbounded interval: $i")
+    })
+
+  private[util]
+  def intervalRead(rangeReader: RangeReader, interval: Interval[Long]): Array[Byte] = {
+    val (posMin, posMax) = intervalBounds(interval)
+    rangeReader.readRange(posMin, (posMax - posMin + 1).toInt)
+  }
+
+  private[util]
+  def intervalCopy(src: Array[Byte], srcInterval: Interval[Long], dst: Array[Byte], dstInterval: Interval[Long]): Unit = {
+    val intersection = srcInterval.intersect(dstInterval)
+
+    val (srcPosMin, _) = intervalBounds(srcInterval)
+    val (dstPosMin, _) = intervalBounds(dstInterval)
+    val (intPosMin, intPosMax) = intervalBounds(intersection)
+
+    System.arraycopy(
+      src,
+      (intPosMin - srcPosMin).toInt,
+      dst, 
+      (intPosMin - dstPosMin).toInt,
+      (intPosMax - intPosMin + 1).toInt)
+  }
 }

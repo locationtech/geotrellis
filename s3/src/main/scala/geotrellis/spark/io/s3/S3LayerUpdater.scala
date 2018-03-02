@@ -38,24 +38,37 @@ class S3LayerUpdater(
 ) extends LayerUpdater[LayerId] with LazyLogging {
 
   def rddWriter: S3RDDWriter = S3RDDWriter
-  def _rddWriter(): S3RDDWriter = rddWriter
 
-  private class InnerS3LayerWriter(
-    attributeStore: AttributeStore,
-    bucket: String,
-    keyPrefix: String
-  ) extends S3LayerWriter(attributeStore, bucket, keyPrefix) {
-    override def rddWriter() = _rddWriter
+  private def layerWriterFor[
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+  ](id: LayerId, bounds: Bounds[K]): LayerWriter[LayerId] = {
+    if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
+
+    val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
+      attributeStore.readLayerAttributes[S3LayerHeader, M, K](id)
+    } catch {
+      case e: AttributeNotFoundError => throw new LayerUpdateError(id).initCause(e)
+    }
+
+    if (!(keyIndex.keyBounds contains bounds))
+      throw new LayerOutOfKeyBoundsError(id, keyIndex.keyBounds)
+
+    val prefix = header.key
+    val bucket = header.bucket
+    val outerRddWriter = rddWriter
+
+    new S3LayerWriter(attributeStore, bucket, prefix) {
+      override def rddWriter() = outerRddWriter
+    }
   }
-
-  private val as = attributeStore.asInstanceOf[S3AttributeStore]
-  private val layerWriter = new InnerS3LayerWriter(as, as.bucket, as.prefix)
 
   protected def _update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K], mergeFunc: (V, V) => V): Unit = {
+    val layerWriter = layerWriterFor[K, M](id, keyBounds)
     layerWriter.update(id, rdd, mergeFunc)
   }
 
@@ -64,6 +77,7 @@ class S3LayerUpdater(
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
+    val layerWriter = layerWriterFor[K, M](id, rdd.metadata.getComponent[Bounds[K]])
     layerWriter.overwrite(id, rdd)
   }
 }

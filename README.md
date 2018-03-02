@@ -290,7 +290,7 @@ This is a list of features contained in the GeoTrellis library. It is broken up 
 
 Feedback and contributions to the project, no matter what kind, are always
 very welcome. A CLA is required for contribution, see
-[Contributing](https://geotrellis.readthedocs.io/en/latest/contributing.html)
+[Contributing](http://geotrellis.readthedocs.io/en/latest/CONTRIBUTING.html)
 for more information. Please refer to the [Scala style
 guide](http://docs.scala-lang.org/style/) for formatting patches to the
 codebase.

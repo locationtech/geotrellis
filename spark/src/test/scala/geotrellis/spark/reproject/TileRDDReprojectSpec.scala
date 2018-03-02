@@ -30,6 +30,8 @@ import geotrellis.vector._
 import geotrellis.proj4._
 
 import spire.syntax.cfor._
+
+import org.apache.spark._
 import org.scalatest.FunSpec
 
 class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
@@ -219,6 +221,15 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
           }
         }
       }
+    }
+
+    it("should retain the source RDD's Partitioner") {
+      val partitioner = new HashPartitioner(8)
+      val expectedPartitioner = Some(partitioner)
+      val repartitioned = rdd.withContext{ _.partitionBy(partitioner) }
+      val actualPartitioner = repartitioned.reproject(ZoomedLayoutScheme(LatLng))._2.partitioner
+
+      actualPartitioner should be (expectedPartitioner)
     }
   }
 
