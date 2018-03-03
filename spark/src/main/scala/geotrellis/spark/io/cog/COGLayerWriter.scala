@@ -25,13 +25,14 @@ import geotrellis.raster.io.geotiff.compression.{Compression, NoCompression}
 import geotrellis.spark._
 import geotrellis.spark.io.{AttributeNotFoundError, AttributeStore, LayerNotFoundError, LayerOutOfKeyBoundsError}
 import geotrellis.spark.io.index._
+import geotrellis.util.LazyLogging
 
 import org.apache.spark.rdd.RDD
 import spray.json._
 
 import scala.reflect._
 
-trait COGLayerWriter extends Serializable {
+trait COGLayerWriter extends LazyLogging with Serializable {
   val attributeStore: AttributeStore
 
   def writeCOGLayer[
@@ -113,6 +114,18 @@ trait COGLayerWriter extends Serializable {
         throw new EmptyBoundsError("Cannot write layer with empty bounds.")
     }
 
+  def overwrite[
+    K: SpatialComponent: Boundable: Ordering: JsonFormat: ClassTag,
+    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: TiffMethods: GeoTiffBuilder
+  ](
+    layerName: String,
+    tiles: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
+    tileZoom: Int,
+    compression: Compression = NoCompression
+  ): Unit = {
+    update[K, V](layerName, tiles, tileZoom, compression, None)
+  }
+
   def update[
     K: SpatialComponent: Boundable: Ordering: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: TiffMethods: GeoTiffBuilder
@@ -121,10 +134,10 @@ trait COGLayerWriter extends Serializable {
      tiles: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
      tileZoom: Int,
      compression: Compression = NoCompression,
-     mergeFunc: (GeoTiff[V], GeoTiff[V]) => GeoTiff[V]
+     mergeFunc: Option[(GeoTiff[V], GeoTiff[V]) => GeoTiff[V]]
    ): Unit = {
-    tiles.metadata.bounds match {
-      case keyBounds: KeyBounds[K] =>
+    (tiles.metadata.bounds, mergeFunc) match {
+      case (keyBounds: KeyBounds[K], Some(_)) =>
         val COGLayerStorageMetadata(metadata, keyIndexes) =
           try {
             attributeStore.read[COGLayerStorageMetadata[K]](LayerId(layerName, 0), "cog_metadata")
@@ -142,8 +155,10 @@ trait COGLayerWriter extends Serializable {
         val cogLayer = COGLayer(tiles, tileZoom, compression = compression)
         val ucogLayer = cogLayer.copy(metadata = cogLayer.metadata.combine(metadata))
 
-        writeCOGLayer(layerName, ucogLayer, keyIndexes, Some(mergeFunc))
-      case EmptyBounds =>
+        writeCOGLayer(layerName, ucogLayer, keyIndexes, mergeFunc)
+      case (EmptyBounds, Some(_)) =>
+        logger.info("Skipping layer update with empty bounds rdd.")
+      case (EmptyBounds, _) =>
         throw new EmptyBoundsError("Cannot write layer with empty bounds.")
     }
   }

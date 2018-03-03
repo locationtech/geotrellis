@@ -57,19 +57,19 @@ trait COGLayerUpdateSpaceTimeTileSpec
       EmptyBounds
     )
 
-  def mergeFunc: (GeoTiff[Tile], GeoTiff[Tile]) => GeoTiff[Tile] = { case (l, r) => COGLayer.mergeCOGs(l, r) }
+  def mergeFunc: Option[(GeoTiff[Tile], GeoTiff[Tile]) => GeoTiff[Tile]] = Some({ case (l, r) => COGLayer.mergeCOGs(l, r) })
 
   for(PersistenceSpecDefinition(keyIndexMethodName, keyIndexMethod, layerIds) <- specLayerIds) {
     val layerId = layerIds.layerId
 
     describe(s"updating for $keyIndexMethodName") {
       it("should update a layer") {
-        this.writer.update(layerId.name, sample, layerId.zoom, mergeFunc = mergeFunc)
+        writer.update(layerId.name, sample, layerId.zoom, mergeFunc = mergeFunc)
       }
 
-      /*it("should overwrite a layer") {
-        updater.overwrite(layerId, sample)
-      }*/
+      it("should overwrite a layer") {
+        writer.overwrite(layerId.name, sample, layerId.zoom)
+      }
 
       it("should not update a layer (empty set)") {
         intercept[EmptyBoundsError] {
@@ -77,9 +77,9 @@ trait COGLayerUpdateSpaceTimeTileSpec
         }
       }
 
-      /*it("should silently not overwrite a layer (empty set)") {
-        updater.overwrite(layerId, new ContextRDD[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](sc.emptyRDD[(SpaceTimeKey, Tile)], emptyTileLayerMetadata))
-      }*/
+      it("should silently not overwrite a layer (empty set)") {
+        writer.overwrite(layerId.name, new ContextRDD[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](sc.emptyRDD[(SpaceTimeKey, Tile)], emptyTileLayerMetadata), layerId.zoom)
+      }
 
       it("should not update a layer (keys out of bounds)") {
         val (minKey, minTile) = sample.sortByKey().first()
@@ -95,19 +95,19 @@ trait COGLayerUpdateSpaceTimeTileSpec
         }
       }
 
-      /*it("should not overwrite a layer (keys out of bounds)") {
+      it("should not overwrite a layer (keys out of bounds)") {
         val (minKey, minTile) = sample.sortByKey().first()
         val (maxKey, maxTile) = sample.sortByKey(false).first()
 
         val update = new ContextRDD(sc.parallelize(
           (minKey.setComponent(SpatialKey(minKey.col - 1, minKey.row - 1)), minTile) ::
-            (minKey.setComponent(SpatialKey(maxKey.col + 1, maxKey.row + 1)), maxTile) :: Nil
+          (minKey.setComponent(SpatialKey(maxKey.col + 1, maxKey.row + 1)), maxTile) :: Nil
         ), dummyTileLayerMetadata)
 
         intercept[LayerOutOfKeyBoundsError] {
-          updater.overwrite(layerId, update)
+          writer.overwrite(layerId.name, update, layerId.zoom)
         }
-      }*/
+      }
 
       it("should update a layer with preset keybounds, new rdd not intersects already ingested") {
         /**
