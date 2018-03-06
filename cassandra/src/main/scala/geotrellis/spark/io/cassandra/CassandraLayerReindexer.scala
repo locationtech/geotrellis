@@ -20,7 +20,9 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
+import geotrellis.spark.tiling._
 import geotrellis.util._
+import geotrellis.vector._
 
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
@@ -62,9 +64,9 @@ class CassandraLayerReindexer(
     id.copy(name = s"${id.name}-${ZonedDateTime.now.toInstant.toEpochMilli}")
 
   def reindex[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
   ](id: LayerId, keyIndex: KeyIndex[K]): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val tmpId = getTmpId(id)
@@ -84,9 +86,9 @@ class CassandraLayerReindexer(
   }
 
   def reindex[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
   ](id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val tmpId = getTmpId(id)

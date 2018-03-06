@@ -89,11 +89,11 @@ object TileLayerMetadata {
   implicit def toLayoutDefinition(md: TileLayerMetadata[_]): LayoutDefinition =
     md.layout
 
-  implicit def extentComponent[K]: GetComponent[TileLayerMetadata[K], Extent] =
-    GetComponent(_.extent)
-
   implicit def crsComponent[K]: GetComponent[TileLayerMetadata[K], CRS] =
     GetComponent(_.crs)
+
+  implicit def extentComponent[K: SpatialComponent]: Component[TileLayerMetadata[K], Extent] =
+    Component(_.extent, (md, extent) => md.copy(extent = extent))
 
   implicit def layoutComponent[K: SpatialComponent]: Component[TileLayerMetadata[K], LayoutDefinition] =
     Component(_.layout, (md, l) => md.copy(layout = l))

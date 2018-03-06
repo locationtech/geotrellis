@@ -20,7 +20,9 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
+import geotrellis.spark.tiling._
 import geotrellis.util._
+import geotrellis.vector._
 
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
@@ -43,9 +45,9 @@ class S3LayerReader(val attributeStore: AttributeStore)(implicit sc: SparkContex
   def rddReader: S3RDDReader = S3RDDReader
 
   def read[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
   ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
@@ -59,12 +61,15 @@ class S3LayerReader(val attributeStore: AttributeStore)(implicit sc: SparkContex
     val prefix = header.key
 
     val queryKeyBounds = tileQuery(metadata)
+
+    val layerMetadata = updateQueriedMetadata[K, M](queryKeyBounds, metadata)
+
     val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
     val keyPath = (index: BigInt) => makePath(prefix, Index.encode(index, maxWidth))
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
     val rdd = rddReader.read[K, V](bucket, keyPath, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema), Some(numPartitions))
 
-    new ContextRDD(rdd, metadata)
+    new ContextRDD(rdd, layerMetadata)
   }
 }
 

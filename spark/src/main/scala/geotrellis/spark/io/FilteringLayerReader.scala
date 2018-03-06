@@ -19,7 +19,9 @@ package geotrellis.spark.io
 import geotrellis.spark._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.json._
+import geotrellis.spark.tiling._
 import geotrellis.util._
+import geotrellis.vector._
 
 import org.apache.spark.rdd._
 import spray.json._
@@ -44,43 +46,43 @@ abstract class FilteringLayerReader[ID] extends LayerReader[ID] {
 
     */
   def read[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
   ](id: ID, rasterQuery: LayerQuery[K, M], numPartitions: Int, indexFilterOnly: Boolean): RDD[(K, V)] with Metadata[M]
 
   def read[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
   ](id: ID, rasterQuery: LayerQuery[K, M], numPartitions: Int): RDD[(K, V)] with Metadata[M] =
     read(id, rasterQuery, numPartitions, false)
 
   def read[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
   ](id: ID, rasterQuery: LayerQuery[K, M]): RDD[(K, V)] with Metadata[M] =
     read(id, rasterQuery, defaultNumPartitions)
 
   def read[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
   ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[M] =
     read(id, new LayerQuery[K, M], numPartitions)
 
   def query[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
   ](layerId: ID): BoundLayerQuery[K, M, RDD[(K, V)] with Metadata[M]] =
     new BoundLayerQuery(new LayerQuery, read(layerId, _))
 
   def query[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
   ](layerId: ID, numPartitions: Int): BoundLayerQuery[K, M, RDD[(K, V)] with Metadata[M]] =
     new BoundLayerQuery(new LayerQuery, read(layerId, _, numPartitions))
 }

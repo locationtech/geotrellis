@@ -20,7 +20,9 @@ import geotrellis.spark._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.json._
+import geotrellis.spark.tiling._
 import geotrellis.util._
+import geotrellis.vector._
 
 import org.apache.avro._
 import spray.json._
@@ -39,9 +41,9 @@ abstract class GenericLayerReindexer[Header:JsonFormat](
   def getTmpId(id: LayerId): LayerId
 
   def reindex[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
   ](id: LayerId, keyIndex: KeyIndex[K]): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val tmpId = getTmpId(id)
@@ -53,9 +55,9 @@ abstract class GenericLayerReindexer[Header:JsonFormat](
   }
 
   def reindex[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
   ](id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val tmpId = getTmpId(id)

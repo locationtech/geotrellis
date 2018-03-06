@@ -19,11 +19,14 @@ package geotrellis.spark.io
 import geotrellis.spark._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.json._
+import geotrellis.spark.tiling._
 import geotrellis.util._
-import org.apache.avro.Schema
+import geotrellis.vector._
 
+import org.apache.avro.Schema
 import org.apache.spark.rdd._
 import org.apache.spark.SparkContext
+
 import spray.json._
 import scalaz.std.vector._
 import scalaz.concurrent.{Strategy, Task}
@@ -38,22 +41,22 @@ trait LayerReader[ID] {
   def defaultNumPartitions: Int
 
   def read[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
   ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[M]
 
   def read[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
   ](id: ID): RDD[(K, V)] with Metadata[M] =
     read(id, defaultNumPartitions)
 
   def reader[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
   ]: Reader[ID, RDD[(K, V)] with Metadata[M]] =
     new Reader[ID, RDD[(K, V)] with Metadata[M]] {
       def read(id: ID): RDD[(K, V)] with Metadata[M] =

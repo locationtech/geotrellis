@@ -21,7 +21,9 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.json._
+import geotrellis.spark.tiling._
 import geotrellis.util._
+import geotrellis.vector._
 
 import org.apache.spark.rdd.RDD
 import org.scalatest._
@@ -45,9 +47,9 @@ case class PersistenceSpecLayerIds(
 )
 
 abstract class PersistenceSpec[
-  K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+  K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
   V: AvroRecordCodec: ClassTag,
-  M: JsonFormat: Component[?, Bounds[K]]
+  M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
 ] extends FunSpec with Matchers with BeforeAndAfterAll {
 
   type TestReader = FilteringLayerReader[LayerId]
