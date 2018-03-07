@@ -16,9 +16,7 @@
 
 package geotrellis.util
 
-import spire.math._
-import spire.math.interval.{Overlap, Closed, Open}
-import spire.implicits._
+import scala.collection.immutable.NumericRange
 import java.nio.{ByteOrder, ByteBuffer}
 
 /**
@@ -37,8 +35,6 @@ import java.nio.{ByteOrder, ByteBuffer}
   * @return A new instance of StreamingByteReader
   */
 class StreamingByteReader(rangeReader: RangeReader, chunkSize: Int = 45876) extends ByteReader {
-  import StreamingByteReader._
-
 // 1. position change does not trigger any reading action
 // 2. chunks are read in increments
 // 3. if loaded chunk intersects the read range, incorporate it
@@ -46,8 +42,7 @@ class StreamingByteReader(rangeReader: RangeReader, chunkSize: Int = 45876) exte
 
   private var chunkBytes: Array[Byte] = _
   private var chunkBuffer: ByteBuffer = _
-  private var chunkInterval: Interval[Long] = Interval.empty
-  private var chunkOffset: Long = 0
+  private var chunkRange: NumericRange[Long] = 1l to 0l // empty
   private var filePosition: Long = 0l
   private var byteOrder: ByteOrder = ByteOrder.BIG_ENDIAN
 
@@ -65,64 +60,58 @@ class StreamingByteReader(rangeReader: RangeReader, chunkSize: Int = 45876) exte
     if (null != chunkBuffer) chunkBuffer.order(byteOrder)
   }
 
-  private def readChunk(newInterval: Interval[Long]): Unit = {
+  private def readChunk(newRange: NumericRange[Long]): Unit = {
+    if (null != chunkBytes && newRange.start >= chunkRange.start && newRange.end <= chunkRange.end)
+      // new range is equal or subset of old range, nothing new to read
+      return
 
-    
+    else if (null != chunkBytes && chunkRange.start <= newRange.end && newRange.start <= chunkRange.end) {
+      // new range overlaps old range
 
-    def handlePartialOverlap(): Unit = {
-      val missing: List[Interval[Long]] = (newInterval \ chunkInterval)
-      val (posMin, posMax) = intervalBounds(newInterval)
-      val newChunkBytes: Array[Byte] = Array.ofDim[Byte]((posMax - posMin + 1).toInt)
-      intervalCopy(chunkBytes, chunkInterval, newChunkBytes, newInterval)
-      for (interval <- missing) {
-        val bytes = intervalRead(rangeReader, interval)
-        intervalCopy(bytes, interval, newChunkBytes, newInterval)
+      val intersection: NumericRange[Long] =
+        math.max(chunkRange.start, newRange.start) to math.min(chunkRange.end, newRange.end)
+
+      // copy intersecting bytes from old to new chunk
+      val newChunkBytes: Array[Byte] = Array.ofDim[Byte](newRange.length)
+      System.arraycopy(chunkBytes, (intersection.start - chunkRange.start).toInt,
+                       newChunkBytes, (intersection.start - newRange.start).toInt, intersection.length)
+
+      // read missing bytes in the front, if any
+      if (newRange.start < chunkRange.start) {
+        val length = (chunkRange.start - newRange.start).toInt
+        val bytes = rangeReader.readRange(newRange.start, length)
+        System.arraycopy(bytes, 0, newChunkBytes, 0, length)
       }
+
+      // read missing bytes on the end, if any
+      if (newRange.end > chunkRange.end) {
+        val length = (newRange.end - chunkRange.end).toInt
+        val bytes = rangeReader.readRange(chunkRange.end + 1, length)
+        System.arraycopy(bytes, 0, newChunkBytes, newRange.length - length, length)
+      }
+
       chunkBytes = newChunkBytes
-      chunkInterval = newInterval
+      chunkRange = newRange
       chunkBuffer = ByteBuffer.wrap(chunkBytes).order(byteOrder)
-      chunkOffset = posMin
-    }
 
-    def handleDisjoint(): Unit = {
-      val (posMin, posMax) = intervalBounds(newInterval)
-      chunkBytes = intervalRead(rangeReader, newInterval)
-      chunkInterval = newInterval
+    } else {
+      // new range does not overlap old range, read it
+      chunkBytes = rangeReader.readRange(newRange.start, newRange.length)
+      chunkRange = newRange
       chunkBuffer = ByteBuffer.wrap(chunkBytes).order(byteOrder)
-      chunkOffset = posMin
-    }
-
-    chunkInterval overlap newInterval match {
-      case _: Overlap.Equal[Long] =>
-        return
-
-      case Overlap.Subset(inner, outer) if inner == newInterval =>
-        return
-
-      case Overlap.Subset(inner, outer) if inner == chunkInterval && inner.nonEmpty =>
-        handlePartialOverlap()
-
-      case Overlap.Subset(inner, outer) if inner.isEmpty =>
-        handleDisjoint()
-
-      case _: Overlap.PartialOverlap[Long] =>
-        handlePartialOverlap()
-
-      case _: Overlap.Disjoint[Long] =>
-        handleDisjoint()
     }
   }
 
   /** Ensure we can read given number of bytes from current filePosition */
   private def ensureChunk(length: Int): Unit = {
     val trimmed = math.min(length, (rangeReader.totalLength - filePosition).toInt)
-    if (chunkInterval.doesNotContain(filePosition) || chunkInterval.doesNotContain(filePosition + trimmed - 1)) {
+    if (!chunkRange.contains(filePosition) || !chunkRange.contains(filePosition + trimmed - 1)) {
       val len = math.min(math.max(length, chunkSize), (rangeReader.totalLength - filePosition).toInt)
-      readChunk(Interval(filePosition, filePosition + len - 1))
+      readChunk(filePosition to (filePosition + len - 1))
     }
 
-    if (filePosition != chunkOffset + chunkBuffer.position)
-      chunkBuffer.position((filePosition - chunkOffset).toInt)
+    if (filePosition != chunkRange.start + chunkBuffer.position)
+      chunkBuffer.position((filePosition - chunkRange.start).toInt)
   }
 
   def getBytes(length: Int): Array[Byte] = {
@@ -189,40 +178,4 @@ object StreamingByteReader {
 
   def apply(rangeReader: RangeReader, chunkSize: Int): StreamingByteReader =
     new StreamingByteReader(rangeReader, chunkSize)
-
-
-  private[util]
-  def intervalBounds(i: Interval[Long]): (Long, Long) = (
-    i.lowerBound match {
-      case Closed(a) => a
-      case Open(a) => a + 1
-      case _ => throw new IllegalArgumentException(s"Unbounded interval: $i")
-    },
-    i.upperBound match {
-      case Closed(a) => a
-      case Open(a) => a - 1
-      case _ => throw new IllegalArgumentException(s"Unbounded interval: $i")
-    })
-
-  private[util]
-  def intervalRead(rangeReader: RangeReader, interval: Interval[Long]): Array[Byte] = {
-    val (posMin, posMax) = intervalBounds(interval)
-    rangeReader.readRange(posMin, (posMax - posMin + 1).toInt)
-  }
-
-  private[util]
-  def intervalCopy(src: Array[Byte], srcInterval: Interval[Long], dst: Array[Byte], dstInterval: Interval[Long]): Unit = {
-    val intersection = srcInterval.intersect(dstInterval)
-
-    val (srcPosMin, _) = intervalBounds(srcInterval)
-    val (dstPosMin, _) = intervalBounds(dstInterval)
-    val (intPosMin, intPosMax) = intervalBounds(intersection)
-
-    System.arraycopy(
-      src,
-      (intPosMin - srcPosMin).toInt,
-      dst, 
-      (intPosMin - dstPosMin).toInt,
-      (intPosMax - intPosMin + 1).toInt)
-  }
 }
