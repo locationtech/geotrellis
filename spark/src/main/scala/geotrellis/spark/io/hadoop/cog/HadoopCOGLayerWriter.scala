@@ -1,5 +1,7 @@
 package geotrellis.spark.io.hadoop.cog
 
+import java.net.URI
+
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
@@ -10,6 +12,8 @@ import geotrellis.spark.io.cog.vrt.VRT
 import geotrellis.spark.io.cog.vrt.VRT.IndexedSimpleSource
 import geotrellis.spark.io.hadoop.{HadoopAttributeStore, HdfsUtils}
 import geotrellis.spark.io.index._
+import geotrellis.util.ByteReader
+
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
@@ -19,6 +23,8 @@ import scala.reflect.ClassTag
 class HadoopCOGLayerWriter(
   val attributeStore: HadoopAttributeStore
 ) extends COGLayerWriter {
+  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, attributeStore.hadoopConfiguration)
+
   def writeCOGLayer[K: SpatialComponent: Ordering: JsonFormat: ClassTag, V <: CellGrid: TiffMethods: ClassTag](
     layerName: String,
     cogLayer: COGLayer[K, V],
@@ -28,6 +34,7 @@ class HadoopCOGLayerWriter(
     /** Collect VRT into accumulators, to write everything and to collect VRT at the same time */
     val sc = cogLayer.layers.head._2.sparkContext
     val samplesAccumulator = sc.collectionAccumulator[IndexedSimpleSource](s"vrt_samples_$layerName")
+    val tiffMethods = implicitly[TiffMethods[V]]
 
     def catalogPath = attributeStore.rootPath
 
@@ -52,18 +59,41 @@ class HadoopCOGLayerWriter(
           s"${Index.encode(keyIndex.toIndex(key), maxWidth)}"
 
       cogLayer.layers(zoomRange).foreach { case (key, cog) =>
-        HdfsUtils.write(
-          new Path(s"${keyPath(key)}.${Extension}"),
-          attributeStore.hadoopConfiguration
-        ) { new GeoTiffWriter(cog, _).write(true) }
+        val path = new Path(s"${keyPath(key)}.${Extension}")
 
-        // collect VRT metadata
-        (0 until geoTiffBandsCount(cog))
-          .map { b =>
-            val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
-            (idx.toLong, vrt.simpleSource(s"$idx.$Extension", b + 1, cog.cols, cog.rows, cog.extent))
-          }
-          .foreach(samplesAccumulator.add)
+        mergeFunc match {
+          case None =>
+            HdfsUtils.write(path, attributeStore.hadoopConfiguration) { new GeoTiffWriter(cog, _).write(true) }
+            // collect VRT metadata
+            (0 until geoTiffBandsCount(cog))
+              .map { b =>
+                val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
+                (idx.toLong, vrt.simpleSource(s"$idx.$Extension", b + 1, cog.cols, cog.rows, cog.extent))
+              }
+              .foreach(samplesAccumulator.add)
+
+          case Some(_) if !HdfsUtils.pathExists(path, attributeStore.hadoopConfiguration) =>
+            HdfsUtils.write(path, attributeStore.hadoopConfiguration) { new GeoTiffWriter(cog, _).write(true) }
+            // collect VRT metadata
+            (0 until geoTiffBandsCount(cog))
+              .map { b =>
+                val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
+                (idx.toLong, vrt.simpleSource(s"$idx.$Extension", b + 1, cog.cols, cog.rows, cog.extent))
+              }
+              .foreach(samplesAccumulator.add)
+
+          case Some(merge) if !HdfsUtils.pathExists(path, attributeStore.hadoopConfiguration) =>
+            val old = tiffMethods.readEntireTiff(path.toUri())
+            val merged = merge(cog, old)
+            HdfsUtils.write(path, attributeStore.hadoopConfiguration) { new GeoTiffWriter(merged, _).write(true) }
+            // collect VRT metadata
+            (0 until geoTiffBandsCount(merged))
+              .map { b =>
+                val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
+                (idx.toLong, vrt.simpleSource(s"$idx.$Extension", b + 1, merged.cols, merged.rows, merged.extent))
+              }
+              .foreach(samplesAccumulator.add)
+        }
       }
 
       val os =

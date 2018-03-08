@@ -31,7 +31,8 @@ class COGHadoopSpaceTimeSpec
     with COGSpaceTimeKeyIndexMethods
     with TestEnvironment
     with COGTestFiles
-    with COGCoordinateSpaceTimeSpec {
+    with COGCoordinateSpaceTimeSpec
+    with COGLayerUpdateSpaceTimeTileSpec {
   lazy val reader = HadoopCOGLayerReader(outputLocal)
   lazy val creader = HadoopCOGCollectionLayerReader(outputLocal)
   lazy val writer = HadoopCOGLayerWriter(outputLocal)
