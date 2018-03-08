@@ -35,7 +35,8 @@ class COGS3SpaceTimeSpec
     with COGSpaceTimeKeyIndexMethods
     with TestEnvironment
     with COGTestFiles
-    with COGCoordinateSpaceTimeSpec {
+    with COGCoordinateSpaceTimeSpec
+    with COGLayerUpdateSpaceTimeTileSpec {
 
   registerAfterAll { () =>
     MockS3Client.reset()

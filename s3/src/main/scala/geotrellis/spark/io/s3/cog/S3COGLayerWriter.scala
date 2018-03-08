@@ -1,9 +1,6 @@
 package geotrellis.spark.io.s3.cog
 
-import com.amazonaws.services.s3.model.AmazonS3Exception
 import geotrellis.raster._
-import geotrellis.raster.crop._
-import geotrellis.raster.merge._
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.spark._
@@ -13,13 +10,13 @@ import geotrellis.spark.io.s3.{S3AttributeStore, S3Client, S3RDDWriter, makePath
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.cog.vrt.VRT
 import geotrellis.spark.io.cog.vrt.VRT.IndexedSimpleSource
-import scala.util.Try
 
 import spray.json.JsonFormat
 import com.amazonaws.services.s3.model.{AmazonS3Exception, ObjectMetadata, PutObjectRequest}
 
 import java.io.ByteArrayInputStream
 
+import scala.util.Try
 import scala.reflect.ClassTag
 
 class S3COGLayerWriter(
@@ -56,7 +53,7 @@ class S3COGLayerWriter(
       case _ => false
     }
 
-    for { (zoomRange, cogs) <- cogLayer.layers.toSeq.sortBy(_._1)(Ordering[ZoomRange].reverse) } {
+    for((zoomRange, cogs) <- cogLayer.layers.toSeq.sortBy(_._1)(Ordering[ZoomRange].reverse)) {
       val vrt = VRT(cogLayer.metadata.tileLayerMetadata(zoomRange.minZoom))
 
       // Make RDD[(String, GeoTiff[T])]
@@ -77,9 +74,7 @@ class S3COGLayerWriter(
 
           (s"${keyPath(key)}.${Extension}", cog)
         }
-        .foreachPartition {  partition =>
-          asyncWriter.write(getS3Client(), partition, mergeFunc, Some(retryCheck))
-        }
+        .foreachPartition { partition => asyncWriter.write(getS3Client(), partition, mergeFunc, Some(retryCheck)) }
 
       // Save Accumulator
       val bytes =

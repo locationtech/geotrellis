@@ -17,7 +17,8 @@
 package geotrellis.spark.io
 
 import java.util.concurrent.Executors
-import scala.util.Try
+
+import scala.util.{Failure, Success, Try}
 import scalaz.concurrent.{Strategy, Task}
 import scalaz.stream.{Process, nondeterminism}
 
@@ -51,11 +52,11 @@ abstract class AsyncWriter[Client, V, E](threads: Int) extends Serializable {
         mergeFunc match {
           case Some(fn) =>
             // TODO: match on this failure to retry reads
-            val oldValue = readRecord(client, key).get
-            (key, fn(oldValue, newValue))
-
-          case None =>
-            newRecord
+            readRecord(client, key) match {
+              case Success(oldValue) => (key, fn(oldValue, newValue))
+              case Failure(_) => newRecord
+            }
+          case None => newRecord
         }
       }
 
