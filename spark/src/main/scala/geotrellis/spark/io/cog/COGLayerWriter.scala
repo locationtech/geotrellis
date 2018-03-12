@@ -122,9 +122,9 @@ trait COGLayerWriter extends LazyLogging with Serializable {
     tiles: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     tileZoom: Int,
     compression: Compression = NoCompression
-  ): Unit = {
-    update[K, V](layerName, tiles, tileZoom, compression, None)
-  }
+  ): Unit =
+    if(tiles.metadata.bounds.nonEmpty) update[K, V](layerName, tiles, tileZoom, compression, None)
+    else logger.info("Skipping layer update with empty bounds rdd.")
 
   def update[
     K: SpatialComponent: Boundable: Ordering: JsonFormat: ClassTag,
@@ -156,8 +156,6 @@ trait COGLayerWriter extends LazyLogging with Serializable {
         val ucogLayer = cogLayer.copy(metadata = cogLayer.metadata.combine(metadata))
 
         writeCOGLayer(layerName, ucogLayer, keyIndexes, mergeFunc)
-      /*case (EmptyBounds, Some(_)) =>
-        logger.info("Skipping layer update with empty bounds rdd.")*/
       case (EmptyBounds, _) =>
         throw new EmptyBoundsError("Cannot write layer with empty bounds.")
     }
