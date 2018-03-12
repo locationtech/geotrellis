@@ -18,7 +18,8 @@ libraryDependencies ++= Seq(
 
 resolvers ++= Seq(
   "geosolutions" at "http://maven.geo-solutions.it/",
-  "osgeo" at "http://download.osgeo.org/webdav/geotools/"
+  "osgeo" at "http://download.osgeo.org/webdav/geotools/",
+  "boundless" at "https://repo.boundlessgeo.com/main/"
 )
 
 fork in Test := false
