@@ -137,7 +137,7 @@ trait COGLayerWriter extends LazyLogging with Serializable {
      mergeFunc: Option[(GeoTiff[V], GeoTiff[V]) => GeoTiff[V]]
    ): Unit = {
     (tiles.metadata.bounds, mergeFunc) match {
-      case (keyBounds: KeyBounds[K], Some(_)) =>
+      case (keyBounds: KeyBounds[K], _) =>
         val COGLayerStorageMetadata(metadata, keyIndexes) =
           try {
             attributeStore.read[COGLayerStorageMetadata[K]](LayerId(layerName, 0), "cog_metadata")
