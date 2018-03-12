@@ -53,7 +53,7 @@ abstract class AsyncWriter[Client, V, E](threads: Int) extends Serializable {
           case Some(fn) =>
             // TODO: match on this failure to retry reads
             readRecord(client, key) match {
-              case Success(oldValue) => (key, fn(oldValue, newValue))
+              case Success(oldValue) => (key, fn(newValue, oldValue))
               case Failure(_) => newRecord
             }
           case None => newRecord
