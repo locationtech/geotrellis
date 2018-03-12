@@ -82,7 +82,7 @@ class HadoopCOGLayerWriter(
               }
               .foreach(samplesAccumulator.add)
 
-          case Some(merge) if !HdfsUtils.pathExists(path, attributeStore.hadoopConfiguration) =>
+          case Some(merge) if HdfsUtils.pathExists(path, attributeStore.hadoopConfiguration) =>
             val old = tiffMethods.readEntireTiff(path.toUri())
             val merged = merge(cog, old)
             HdfsUtils.write(path, attributeStore.hadoopConfiguration) { new GeoTiffWriter(merged, _).write(true) }
