@@ -16,10 +16,11 @@ libraryDependencies ++= Seq(
   "javax.media" % "jai_core" % "1.1.3" % Test from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar"
 )
 
-resolvers ++= Seq(
+externalResolvers := Seq(
   "geosolutions" at "http://maven.geo-solutions.it/",
   "osgeo" at "http://download.osgeo.org/webdav/geotools/",
-  "boundless" at "https://repo.boundlessgeo.com/main/"
+  "boundless" at "https://repo.boundlessgeo.com/main/",
+  DefaultMavenRepository
 )
 
 fork in Test := false
