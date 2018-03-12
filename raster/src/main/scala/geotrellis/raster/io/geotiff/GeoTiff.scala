@@ -114,8 +114,8 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
   def crop(subExtent: Extent): GeoTiff[T]
   def crop(colMax: Int, rowMax: Int): GeoTiff[T]
   def crop(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int): GeoTiff[T]
-  def crop(gridBounds: GridBounds): GeoTiff[T] =
-    crop(gridBounds.colMin, gridBounds.rowMin, gridBounds.colMax, gridBounds.rowMax)
+  def crop(gridBounds: GridBounds): GeoTiff[T]
+  def crop(windows: Seq[GridBounds]): Iterator[(GridBounds, T)]
 
   /** Return the best matching overview to the given cellSize, returns "this" if no overviews available. */
   private[geotrellis] def getClosestOverview(cellSize: CellSize, strategy: OverviewStrategy): GeoTiff[T] = {

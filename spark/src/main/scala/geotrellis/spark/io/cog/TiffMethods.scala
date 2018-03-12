@@ -9,8 +9,6 @@ import spray.json._
 import java.nio.ByteBuffer
 
 trait TiffMethods[V <: CellGrid] extends Serializable {
-  def tileTiff[K](tiff: GeoTiff[V], gridBounds: Map[GridBounds, K]): Vector[(K, V)]
-
   def readEntireTiff(byteReader: ByteReader): GeoTiff[V]
   def readTiff(byteReader: ByteReader, index: Int): GeoTiff[V]
   def readTiff(bytes: Array[Byte], index: Int): GeoTiff[V] =
@@ -49,16 +47,6 @@ trait TiffMethodsImplicits {
       GeoTiffReader
         .readSingleband(byteReader, false, true)
         .getOverview(index)
-
-    def tileTiff[K](tiff: GeoTiff[Tile], gridBounds: Map[GridBounds, K]): Vector[(K, Tile)] =
-      tiff.tile match {
-        case gtTile: GeoTiffTile =>
-          gtTile
-            .crop(gridBounds.keys.toSeq)
-            .flatMap { case (k, v) => gridBounds.get(k).map(i => i -> v) }
-            .toVector
-        case _ => throw new UnsupportedOperationException("Can be applied to a GeoTiffTile only.")
-      }
   }
 
   implicit val multibandTiffMethods: TiffMethods[MultibandTile] = new TiffMethods[MultibandTile] {
@@ -70,15 +58,5 @@ trait TiffMethodsImplicits {
       GeoTiffReader
         .readMultiband(byteReader, false, true)
         .getOverview(index)
-
-    def tileTiff[K](tiff: GeoTiff[MultibandTile], gridBounds: Map[GridBounds, K]): Vector[(K, MultibandTile)] =
-      tiff.tile match {
-        case gtTile: GeoTiffMultibandTile =>
-          gtTile
-            .crop(gridBounds.keys.toSeq)
-            .flatMap { case (k, v) => gridBounds.get(k).map(i => i -> v) }
-            .toVector
-        case _ => throw new UnsupportedOperationException("Can be applied to a GeoTiffTile only.")
-      }
   }
 }

@@ -188,7 +188,10 @@ object COGCollectionLayerReader {
             val tiff = tiffMethods.readTiff(uri, overviewIndex)
             val map = seq.map { case (gb, sk) => gb -> key.setComponent(sk) }.toMap
 
-            tiffMethods.tileTiff(tiff, map)
+            tiff
+              .crop(map.keys.toSeq)
+              .flatMap { case (k, v) => map.get(k).map(i => i -> v) }
+              .toVector 
           }
       }
     }
