@@ -65,7 +65,7 @@ trait COGValueReader[ID] {
 
       try {
         val tiff = tiffMethods.readTiff(uri, overviewIndex)
-        tiffMethods.cropTiff(tiff, gridBounds)
+        tiff.crop(gridBounds).tile
       } catch {
         case th: Throwable => exceptionHandler(key)(th)
       }

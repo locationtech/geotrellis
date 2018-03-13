@@ -14,11 +14,6 @@ trait TiffMethods[V <: CellGrid] extends Serializable {
   def readTiff(bytes: Array[Byte], index: Int): GeoTiff[V] =
     readTiff(ByteBuffer.wrap(bytes), index)
 
-  def cropTiff(tiff: GeoTiff[V], gridBounds: GridBounds): V =
-    tiff
-      .crop(gridBounds.colMin, gridBounds.rowMin, gridBounds.colMax, gridBounds.rowMax)
-      .tile
-
   def getGeoTiffInfo(byteReader: ByteReader): GeoTiffReader.GeoTiffInfo =
     GeoTiffReader.readGeoTiffInfo(
       byteReader         = byteReader,
