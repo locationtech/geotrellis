@@ -235,7 +235,7 @@ case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: Tile
     (cols, rows)
   }
 
-  private [geotrellis] def getGridBounds(segmentIndex: Int, isBit: Boolean = false): GridBounds = {
+  private [geotrellis] def getGridBounds(segmentIndex: Int): GridBounds = {
     val normalizedSegmentIndex = segmentIndex % bandSegmentCount
     val (segmentCols, segmentRows) = getSegmentDimensions(segmentIndex)
 
@@ -326,7 +326,7 @@ trait GeoTiffSegmentLayoutTransform {
   def getSegmentCoordinate(segmentIndex: Int): (Int, Int) =
     (segmentIndex % tileLayout.layoutCols, segmentIndex / tileLayout.layoutCols)
 
-  private [geotrellis] def getGridBounds(segmentIndex: Int, isBit: Boolean = false): GridBounds = {
+  private [geotrellis] def getGridBounds(segmentIndex: Int): GridBounds = {
     val normalizedSegmentIndex = segmentIndex % bandSegmentCount
     val (segmentCols, segmentRows) = getSegmentDimensions(segmentIndex)
 
