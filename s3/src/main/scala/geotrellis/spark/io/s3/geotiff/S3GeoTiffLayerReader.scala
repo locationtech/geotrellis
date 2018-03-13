@@ -1,17 +1,15 @@
 package geotrellis.spark.io.s3.geotiff
 
+import geotrellis.spark.io.s3.cog.byteReader
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
-import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.raster.io.geotiff.{AutoHigherResolution, OverviewStrategy, SinglebandGeoTiff}
+import geotrellis.raster.io.geotiff.{AutoHigherResolution, OverviewStrategy}
 import geotrellis.spark.tiling.ZoomedLayoutScheme
 import geotrellis.spark.io.hadoop.geotiff.{AttributeStore, GeoTiffLayerReader, GeoTiffMetadata}
-import geotrellis.util.StreamingByteReader
+import geotrellis.util.ByteReader
 import geotrellis.spark.io.ThreadConfig
-import geotrellis.spark.io.s3.util.S3RangeReader
 import geotrellis.spark.io.s3.S3Client
 
 import com.typesafe.config.ConfigFactory
-import com.amazonaws.services.s3.AmazonS3URI
 
 import java.net.URI
 
@@ -25,21 +23,7 @@ case class S3GeoTiffLayerReader[M[T] <: Traversable[T]](
   getS3Client: () => S3Client = () => S3Client.DEFAULT,
   defaultThreads: Int = S3GeoTiffLayerReader.defaultThreadCount
 ) extends GeoTiffLayerReader[M] {
-  protected def readSingleband(uri: URI): SinglebandGeoTiff = {
-    val auri = new AmazonS3URI(uri)
-    GeoTiffReader
-      .readSingleband(
-        StreamingByteReader(
-          S3RangeReader(
-            bucket = auri.getBucket,
-            key = auri.getKey,
-            client = getS3Client()
-          )
-        ),
-        false,
-        true
-      )
-  }
+  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, getS3Client())
 }
 
 object S3GeoTiffLayerReader {
