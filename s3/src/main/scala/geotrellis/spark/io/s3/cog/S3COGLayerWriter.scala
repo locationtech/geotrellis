@@ -116,7 +116,7 @@ class S3COGAsyncWriter[V <: CellGrid: GeoTiffReader](
   ): Try[GeoTiff[V]] = Try {
     val is = client.getObject(bucket, key).getObjectContent
     val bytes = sun.misc.IOUtils.readFully(is, Int.MaxValue, true)
-    GeoTiffReader[V].read(bytes, decompress = false).getOverview(-1)
+    GeoTiffReader[V].read(bytes, decompress = false)
   }
 
   def encodeRecord(key: String, value: GeoTiff[V]): PutObjectRequest = {
