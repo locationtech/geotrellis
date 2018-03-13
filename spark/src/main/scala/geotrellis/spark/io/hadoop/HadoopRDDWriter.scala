@@ -100,7 +100,7 @@ object HadoopRDDWriter extends LazyLogging {
     val kwWriterSchema = KryoWrapper(writerSchema)
 
     val conf = rdd.sparkContext.hadoopConfiguration
-    val _conf = new SerializableConfiguration(conf)
+    val _conf = SerializableConfiguration(conf)
 
     val ranges: Vector[(String, BigInt, BigInt)] =
       FilterMapFileInputFormat.layerRanges(header.path, conf)
@@ -112,10 +112,10 @@ object HadoopRDDWriter extends LazyLogging {
     val lastIndex: BigInt = {
       val path = ranges.last._1
       val reader = new MapFile.Reader(path, conf)
-      var k = new BigIntWritable()
-      var v = new BytesWritable()
+      val k = new BigIntWritable()
+      val v = new BytesWritable()
       var index: BigInt = BigInt(-1)
-      while (reader.next(k, v)) { index = BigInt(new java.math.BigInteger(k.get)) }
+      while (reader.next(k, v)) { index = BigInt(new java.math.BigInteger(k.getBytes)) }
       reader.close
       index
     }

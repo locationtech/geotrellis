@@ -33,7 +33,7 @@ trait COGValueReader[ID] {
   val attributeStore: AttributeStore
 
   implicit def getByteReader(uri: URI): ByteReader
-  implicit def idLayerId(id: ID): LayerId
+  implicit def getLayerId(id: ID): LayerId
 
   def reader[
     K: JsonFormat : SpatialComponent : ClassTag,

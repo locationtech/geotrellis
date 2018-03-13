@@ -18,14 +18,14 @@ package geotrellis.spark.io.cog
 
 import geotrellis.raster.{CellGrid, RasterExtent}
 import geotrellis.raster.io.geotiff.reader._
+import geotrellis.raster.io.geotiff.reader.TiffTagsReader
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index.{Index, MergeQueue}
 import geotrellis.util._
+
 import spray.json._
 import java.net.URI
-
-import geotrellis.raster.io.geotiff.reader.TiffTagsReader
 
 import scala.reflect._
 
@@ -177,12 +177,13 @@ object COGCollectionLayerReader {
       else {
         val uri = fullPath(keyPath(index))
         val byteReader: ByteReader = uri
-        val baseKey =TiffTagsReader
-          .read(byteReader)
-          .tags
-          .headTags(GTKey)
-          .parseJson
-          .convertTo[K]
+        val baseKey =
+          TiffTagsReader
+            .read(byteReader)
+            .tags
+            .headTags(GTKey)
+            .parseJson
+            .convertTo[K]
 
         readDefinitions
           .get(baseKey.getComponent[SpatialKey])

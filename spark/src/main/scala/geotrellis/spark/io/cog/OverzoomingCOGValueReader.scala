@@ -28,7 +28,7 @@ import spray.json._
 import scala.reflect._
 
 trait OverzoomingCOGValueReader extends COGValueReader[LayerId] {
-  implicit def idLayerId(id: LayerId): LayerId = id
+  implicit def getLayerId(id: LayerId): LayerId = id
 
   def overzoomingReader[
     K: JsonFormat: SpatialComponent: ClassTag,

@@ -18,17 +18,17 @@ package geotrellis.spark.io.cog
 
 import geotrellis.raster.{CellGrid, RasterExtent}
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
+import geotrellis.raster.io.geotiff.reader.TiffTagsReader
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index.{Index, IndexRanges, MergeQueue}
 import geotrellis.util._
 import geotrellis.spark.util.KryoWrapper
+
 import org.apache.spark.rdd._
 import spray.json._
 import org.apache.spark.SparkContext
 import java.net.URI
-
-import geotrellis.raster.io.geotiff.reader.TiffTagsReader
 
 import scala.reflect._
 
@@ -210,12 +210,13 @@ object FilteringCOGLayerReader {
             else {
               val uri = fullPath(keyPath(index))
               val byteReader: ByteReader = uri
-              val baseKey = TiffTagsReader
-                .read(byteReader)
-                .tags
-                .headTags(GTKey)
-                .parseJson
-                .convertTo[K](keyFormat)
+              val baseKey =
+                TiffTagsReader
+                  .read(byteReader)
+                  .tags
+                  .headTags(GTKey)
+                  .parseJson
+                  .convertTo[K](keyFormat)
 
               readDefinitions
                 .get(baseKey.getComponent[SpatialKey])

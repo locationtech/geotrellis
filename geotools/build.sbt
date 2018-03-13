@@ -20,7 +20,8 @@ externalResolvers := Seq(
   "geosolutions" at "http://maven.geo-solutions.it/",
   "osgeo" at "http://download.osgeo.org/webdav/geotools/",
   "boundless" at "https://repo.boundlessgeo.com/main/",
-  DefaultMavenRepository
+  DefaultMavenRepository,
+  Resolver.file("local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
 )
 
 fork in Test := false
