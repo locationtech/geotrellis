@@ -55,13 +55,14 @@ object TileRDDReproject {
     */
   def apply[
     K: SpatialComponent: Boundable: ClassTag,
-    V <: CellGrid: ClassTag: RasterRegionReproject: Stitcher: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
+    V <: CellGrid: ClassTag: RasterRegionReproject: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
     bufferedTiles: RDD[(K, BufferedTile[V])],
     metadata: TileLayerMetadata[K],
     destCrs: CRS,
     targetLayout: Either[LayoutScheme, LayoutDefinition],
-    options: Options
+    options: Options,
+    partitioner: Option[Partitioner]
   ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
     val crs: CRS = metadata.crs
     val layout = metadata.layout
@@ -72,7 +73,7 @@ object TileRDDReproject {
     val passthroughGridExtent = ReprojectRasterExtent(sourceDataGridExtent, metadata.crs, destCrs)
     val targetDataExtent = passthroughGridExtent.extent
 
-    val sourcePartitioner = bufferedTiles.partitioner
+    val targetPartitioner: Option[Partitioner] = partitioner.orElse(bufferedTiles.partitioner)
 
     // inspect the change in spatial extent to get the pixel counts
     val reprojectSummary = matchReprojectRasterExtent(
@@ -199,7 +200,7 @@ object TileRDDReproject {
     def mergeCombiners(reproj1: V, reproj2: V) = reproj1.merge(reproj2)
 
     val tiled: RDD[(K, V)] =
-      sourcePartitioner match {
+      targetPartitioner match {
         case Some(part) => stagedTiles.combineByKey(createCombiner, mergeValues, mergeCombiners, partitioner = part)
         case None => stagedTiles.combineByKey(createCombiner, mergeValues, mergeCombiners)
       }
@@ -226,7 +227,8 @@ object TileRDDReproject {
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     destCrs: CRS,
     targetLayout: Either[LayoutScheme, LayoutDefinition],
-    options: Options
+    options: Options,
+    partitioner: Option[Partitioner]
   ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
     if(rdd.metadata.crs == destCrs) {
       val layout = rdd.metadata.layout
@@ -247,7 +249,7 @@ object TileRDDReproject {
         // We are tiling against a new layout but we
         // don't need to worry about buffers since the source and target are
         // in the same CRS.
-        apply(rdd, destCrs, targetLayout, bufferSize = 0, options = options)
+        apply(rdd, destCrs, targetLayout, bufferSize = 0, options = options, partitioner = partitioner)
       }
     } else {
       val crs = rdd.metadata.crs
@@ -277,7 +279,7 @@ object TileRDDReproject {
           )
         })
 
-      apply(bufferedTiles, rdd.metadata, destCrs, targetLayout, options)
+      apply(bufferedTiles, rdd.metadata, destCrs, targetLayout, options, partitioner = partitioner)
     }
   }
 
@@ -306,13 +308,14 @@ object TileRDDReproject {
     destCrs: CRS,
     targetLayout: Either[LayoutScheme, LayoutDefinition],
     bufferSize: Int,
-    options: Options
+    options: Options,
+    partitioner: Option[Partitioner]
   ): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
     if(bufferSize == 0) {
       val fakeBuffers: RDD[(K, BufferedTile[V])] = rdd.withContext(_.mapValues { tile: V => BufferedTile(tile, GridBounds(0, 0, tile.cols - 1, tile.rows - 1)) })
-      apply(fakeBuffers, rdd.metadata, destCrs, targetLayout, options)
+      apply(fakeBuffers, rdd.metadata, destCrs, targetLayout, options, partitioner)
     } else
-      apply(rdd.bufferTiles(bufferSize), rdd.metadata, destCrs, targetLayout, options)
+      apply(rdd.bufferTiles(bufferSize), rdd.metadata, destCrs, targetLayout, options, partitioner)
 
 
   /** Match pixel resolution between two layouts in different projections such that
@@ -409,7 +412,5 @@ object TileRDDReproject {
       val CellSize(w1, h1) = target
       pixels * (w0 * h0) / (w1 * h1)
     }
-
-
   }
 }

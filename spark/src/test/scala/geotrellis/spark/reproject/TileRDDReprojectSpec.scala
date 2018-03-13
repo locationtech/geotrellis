@@ -231,6 +231,14 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
 
       actualPartitioner should be (expectedPartitioner)
     }
+
+    it("should have the designated Partitioner") {
+      val partitioner = new HashPartitioner(8)
+      val expectedPartitioner = Some(partitioner)
+      val actualPartitioner = rdd.reproject(ZoomedLayoutScheme(LatLng), expectedPartitioner)._2.partitioner
+
+      actualPartitioner should be (expectedPartitioner)
+    }
   }
 
   describe("Reprojected with the same scheme and CRS") {

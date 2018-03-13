@@ -28,6 +28,7 @@ import geotrellis.spark.ingest._
 import geotrellis.proj4._
 import geotrellis.util.MethodExtensions
 
+import org.apache.spark._
 import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
@@ -39,39 +40,63 @@ class TileRDDReprojectMethods[
 ](val self: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) extends MethodExtensions[RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
   import Reproject.Options
 
+  def reproject(destCrs: CRS, layoutScheme: LayoutScheme, options: Options, partitioner: Option[Partitioner]): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
+    TileRDDReproject(self, destCrs, Left(layoutScheme), options, partitioner)
+
+  def reproject(destCrs: CRS, layoutScheme: LayoutScheme, partitioner: Option[Partitioner]): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
+    TileRDDReproject(self, destCrs, Left(layoutScheme), Options.DEFAULT, partitioner)
+
   def reproject(destCrs: CRS, layoutScheme: LayoutScheme, options: Options): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
-    TileRDDReproject(self, destCrs, Left(layoutScheme), options)
+    TileRDDReproject(self, destCrs, Left(layoutScheme), options, None)
 
   def reproject(destCrs: CRS, layoutScheme: LayoutScheme): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
-    reproject(destCrs, layoutScheme, Options.DEFAULT)
+    reproject(destCrs, layoutScheme, Options.DEFAULT, None)
 
   def reproject(zoomedLayoutScheme: ZoomedLayoutScheme, options: Options): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
-    reproject(zoomedLayoutScheme.crs, zoomedLayoutScheme, options)
+    reproject(zoomedLayoutScheme.crs, zoomedLayoutScheme, options, None)
+
+  def reproject(zoomedLayoutScheme: ZoomedLayoutScheme, partitioner: Option[Partitioner]): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
+    reproject(zoomedLayoutScheme.crs, zoomedLayoutScheme, Options.DEFAULT, partitioner)
 
   def reproject(zoomedLayoutScheme: ZoomedLayoutScheme): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
     reproject(zoomedLayoutScheme, Options.DEFAULT)
 
+  def reproject(zoomedLayoutScheme: ZoomedLayoutScheme, bufferSize: Int, options: Options, partitioner: Option[Partitioner]): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
+    reproject(zoomedLayoutScheme.crs, zoomedLayoutScheme, bufferSize, options, partitioner)
+
   def reproject(zoomedLayoutScheme: ZoomedLayoutScheme, bufferSize: Int, options: Options): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
-    reproject(zoomedLayoutScheme.crs, zoomedLayoutScheme, bufferSize, options)
+    reproject(zoomedLayoutScheme.crs, zoomedLayoutScheme, bufferSize, options, None)
+
+  def reproject(zoomedLayoutScheme: ZoomedLayoutScheme, bufferSize: Int, partitioner: Option[Partitioner]): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
+    reproject(zoomedLayoutScheme.crs, zoomedLayoutScheme, bufferSize, Options.DEFAULT, partitioner)
 
   def reproject(zoomedLayoutScheme: ZoomedLayoutScheme, bufferSize: Int): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
-    reproject(zoomedLayoutScheme, bufferSize, Options.DEFAULT)
+    reproject(zoomedLayoutScheme, bufferSize, Options.DEFAULT, None)
+
+  def reproject(destCrs: CRS, layoutScheme: LayoutScheme, bufferSize: Int, options: Options, partitioner: Option[Partitioner]): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
+    TileRDDReproject(self, destCrs, Left(layoutScheme), bufferSize, options, partitioner)
 
   def reproject(destCrs: CRS, layoutScheme: LayoutScheme, bufferSize: Int, options: Options): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
-    TileRDDReproject(self, destCrs, Left(layoutScheme), bufferSize, options)
+    reproject(destCrs, layoutScheme, bufferSize, options, None)
 
   def reproject(destCrs: CRS, layoutScheme: LayoutScheme, bufferSize: Int): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
-    reproject(destCrs, layoutScheme, bufferSize, Options.DEFAULT)
+    reproject(destCrs, layoutScheme, bufferSize, Options.DEFAULT, None)
+
+  def reproject(destCrs: CRS, layoutDefinition: LayoutDefinition, bufferSize: Int, options: Options, partitioner: Option[Partitioner]): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
+    TileRDDReproject(self, destCrs, Right(layoutDefinition), bufferSize, options, partitioner)
 
   def reproject(destCrs: CRS, layoutDefinition: LayoutDefinition, bufferSize: Int, options: Options): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
-    TileRDDReproject(self, destCrs, Right(layoutDefinition), bufferSize, options)
+    TileRDDReproject(self, destCrs, Right(layoutDefinition), bufferSize, options, None)
 
   def reproject(destCrs: CRS, layoutDefinition: LayoutDefinition, bufferSize: Int): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
-    TileRDDReproject(self, destCrs, Right(layoutDefinition), bufferSize, Options.DEFAULT)
+    TileRDDReproject(self, destCrs, Right(layoutDefinition), bufferSize, Options.DEFAULT, None)
 
   def reproject(destCrs: CRS, layoutDefinition: LayoutDefinition, options: Options): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
-    TileRDDReproject(self, destCrs, Right(layoutDefinition), options)
+    TileRDDReproject(self, destCrs, Right(layoutDefinition), options, None)
+
+  def reproject(destCrs: CRS, layoutDefinition: LayoutDefinition, bufferSize: Int, partitioner: Option[Partitioner]): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
+    TileRDDReproject(self, destCrs, Right(layoutDefinition), bufferSize, Options.DEFAULT, partitioner)
 
   def reproject(destCrs: CRS, layoutDefinition: LayoutDefinition): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
-    TileRDDReproject(self, destCrs, Right(layoutDefinition), Options.DEFAULT)
+    TileRDDReproject(self, destCrs, Right(layoutDefinition), Options.DEFAULT, None)
 }
