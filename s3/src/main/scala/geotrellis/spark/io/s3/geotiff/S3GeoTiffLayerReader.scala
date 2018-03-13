@@ -6,9 +6,11 @@ import geotrellis.raster.io.geotiff.{AutoHigherResolution, OverviewStrategy, Sin
 import geotrellis.spark.tiling.ZoomedLayoutScheme
 import geotrellis.spark.io.hadoop.geotiff.{AttributeStore, GeoTiffLayerReader, GeoTiffMetadata}
 import geotrellis.util.StreamingByteReader
+import geotrellis.spark.io.ThreadConfig
 import geotrellis.spark.io.s3.util.S3RangeReader
 import geotrellis.spark.io.s3.S3Client
 
+import com.typesafe.config.ConfigFactory
 import com.amazonaws.services.s3.AmazonS3URI
 
 import java.net.URI
@@ -20,7 +22,8 @@ case class S3GeoTiffLayerReader[M[T] <: Traversable[T]](
   layoutScheme: ZoomedLayoutScheme,
   resampleMethod: ResampleMethod = NearestNeighbor,
   strategy: OverviewStrategy = AutoHigherResolution,
-  getS3Client: () => S3Client = () => S3Client.DEFAULT
+  getS3Client: () => S3Client = () => S3Client.DEFAULT,
+  defaultThreads: Int = S3GeoTiffLayerReader.defaultThreadCount
 ) extends GeoTiffLayerReader[M] {
   protected def readSingleband(uri: URI): SinglebandGeoTiff = {
     val auri = new AmazonS3URI(uri)
@@ -37,4 +40,8 @@ case class S3GeoTiffLayerReader[M[T] <: Traversable[T]](
         true
       )
   }
+}
+
+object S3GeoTiffLayerReader {
+  val defaultThreadCount: Int = ConfigFactory.load().getThreads("geotrellis.s3.threads.collection.read")
 }

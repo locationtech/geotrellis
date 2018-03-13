@@ -9,13 +9,11 @@ import geotrellis.vector.{Extent, ProjectedExtent}
 import geotrellis.raster.crop.Crop
 import geotrellis.raster.reproject.Reproject.{Options => ReprojectOptions}
 
-import java.net.URI
+import scalaz.concurrent.{Strategy, Task}
+import scalaz.stream.{Process, nondeterminism}
 
-// global context only for test purposes, should be refactored
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.blocking
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future}
+import java.net.URI
+import java.util.concurrent.{ExecutorService, Executors}
 
 /** Approach with TiffTags stored in a DB */
 trait GeoTiffLayerReader[M[T] <: Traversable[T]] {
@@ -23,6 +21,10 @@ trait GeoTiffLayerReader[M[T] <: Traversable[T]] {
   val layoutScheme: ZoomedLayoutScheme
   val resampleMethod: ResampleMethod
   val strategy: OverviewStrategy
+  val defaultThreads: Int
+  lazy val pool: ExecutorService = Executors.newFixedThreadPool(defaultThreads)
+
+  def shutdown: Unit = pool.shutdown()
 
   protected def readSingleband(uri: URI): SinglebandGeoTiff
 
@@ -35,32 +37,39 @@ trait GeoTiffLayerReader[M[T] <: Traversable[T]] {
     val mapTransform = layout.mapTransform
     val keyExtent: Extent = mapTransform(SpatialKey(x, y))
 
-    Await
-      .result(Future.sequence(attributeStore
-        .query(layerId.name, ProjectedExtent(keyExtent, layoutScheme.crs))
-        .map { md =>
-          Future {
-            blocking {
-              val tiff = readSingleband(md.uri)
-              val reprojectedKeyExtent = keyExtent.reproject(layoutScheme.crs, tiff.crs)
-
-              // crop is unsafe, let's double check that we have a correct extent
-              tiff
-                .extent
-                .intersection(reprojectedKeyExtent)
-                .map { ext =>
-                  tiff
-                    .getClosestOverview(layout.cellSize, strategy)
-                    .crop(ext, Crop.Options(clamp = false))
-                    .raster
-                    .reproject(tiff.crs, layoutScheme.crs, ReprojectOptions(targetCellSize = Some(layout.cellSize)))
-                    .resample(RasterExtent(keyExtent, layoutScheme.tileSize, layoutScheme.tileSize))
-                }
-            }
+    val index: Process[Task, GeoTiffMetadata] =
+      Process
+        .unfold(attributeStore.query(layerId.name, ProjectedExtent(keyExtent, layoutScheme.crs)).toIterator) { iter =>
+          if (iter.hasNext) {
+            val index: GeoTiffMetadata = iter.next()
+            Some(index, iter)
           }
+          else None
         }
-      )
-      .map(_.flatten.reduce(_ merge _)), Duration.Inf)
+
+    val readRecord: (GeoTiffMetadata => Process[Task, Option[Raster[Tile]]]) = { md =>
+      Process eval Task {
+        val tiff = readSingleband(md.uri)
+        val reprojectedKeyExtent = keyExtent.reproject(layoutScheme.crs, tiff.crs)
+
+        // crop is unsafe, let's double check that we have a correct extent
+        tiff
+          .extent
+          .intersection(reprojectedKeyExtent)
+          .map { ext =>
+            tiff
+              .getClosestOverview(layout.cellSize, strategy)
+              .crop(ext, Crop.Options(clamp = false))
+              .raster
+              .reproject(tiff.crs, layoutScheme.crs, ReprojectOptions(targetCellSize = Some(layout.cellSize)))
+              .resample(RasterExtent(keyExtent, layoutScheme.tileSize, layoutScheme.tileSize))
+          }
+      }(pool)
+    }
+
+    nondeterminism
+      .njoin(maxOpen = defaultThreads, maxQueued = defaultThreads) { index map readRecord }(Strategy.Executor(pool))
+      .runLog.map(_.flatten.reduce(_ merge _)).unsafePerformSync
   }
 
   def readAll(layerId: LayerId): Traversable[Raster[Tile]] = {
@@ -69,14 +78,28 @@ trait GeoTiffLayerReader[M[T] <: Traversable[T]] {
         .levelForZoom(layerId.zoom)
         .layout
 
-    Await.result(Future.sequence(attributeStore
-      .query(layerId.name)
-      .map { md => Future { blocking {
+    val index: Process[Task, GeoTiffMetadata] =
+      Process
+        .unfold(attributeStore.query(layerId.name).toIterator) { iter =>
+          if (iter.hasNext) {
+            val index: GeoTiffMetadata = iter.next()
+            Some(index, iter)
+          }
+          else None
+        }
+
+    val readRecord: (GeoTiffMetadata => Process[Task, Raster[Tile]]) = { md =>
+      Process eval Task {
         val tiff = readSingleband(md.uri)
         tiff
           .crop(tiff.extent, layout.cellSize)
           .reproject(tiff.crs, layoutScheme.crs)
           .resample(layoutScheme.tileSize, layoutScheme.tileSize)
-      } } }), Duration.Inf)
+      } (pool)
+    }
+
+    nondeterminism
+      .njoin(maxOpen = defaultThreads, maxQueued = defaultThreads) { index map readRecord }(Strategy.Executor(pool))
+      .runLog.unsafePerformSync
   }
 }
