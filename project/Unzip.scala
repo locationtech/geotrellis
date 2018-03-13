@@ -24,7 +24,7 @@ import java.io.OutputStream
 import java.io.File
 
 object Unzip {
- 
+
   val BUFSIZE = 4096
   val buffer = new Array[Byte](BUFSIZE)
  
@@ -68,5 +68,13 @@ object Unzip {
       writeToFile(reader, fos)
     } else
       true
+  }
+
+  def geoTiffTestFiles(): Unit = {
+    val testArchive = "raster/data/geotiff-test-files.zip"
+    val testDirPath = "raster/data/geotiff-test-files"
+    if(!(new File(testDirPath)).exists) {
+      Unzip(testArchive, "raster/data")
+    }
   }
 }

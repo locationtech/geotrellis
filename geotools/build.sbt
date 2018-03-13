@@ -36,3 +36,5 @@ initialCommands in console :=
   import org.geotools.coverage.grid.io._
   import org.geotools.gce.geotiff._
   """
+
+testOptions in Test += Tests.Setup{ () => Unzip.geoTiffTestFiles() }
