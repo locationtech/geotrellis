@@ -35,8 +35,7 @@ import scala.collection.mutable.ListBuffer
 
 class MalformedGeoTiffException(msg: String) extends RuntimeException(msg)
 
-class GeoTiffReaderLimitationException(msg: String)
-    extends RuntimeException(msg)
+class GeoTiffReaderLimitationException(msg: String) extends RuntimeException(msg)
 
 object GeoTiffReader {
 
@@ -490,4 +489,23 @@ object GeoTiffReader {
       byteReader.position(oldPos)
     }
   }
+
+  implicit val singlebandGeoTiffReader: GeoTiffReader[Tile] = new GeoTiffReader[Tile]{
+    def read(byteReader: ByteReader, decompress: Boolean, streaming: Boolean): GeoTiff[Tile] =
+      GeoTiffReader.readSingleband(byteReader, decompress, streaming)
+  }
+
+  implicit val multibandGeoTiffReader: GeoTiffReader[MultibandTile] = new GeoTiffReader[MultibandTile]{
+    def read(byteReader: ByteReader, decompress: Boolean, streaming: Boolean): GeoTiff[MultibandTile] =
+      GeoTiffReader.readMultiband(byteReader, decompress, streaming)
+  }
+
+  def apply[V <: CellGrid](implicit ev: GeoTiffReader[V]): GeoTiffReader[V] = ev
+}
+
+trait GeoTiffReader[V <: CellGrid] extends Serializable {
+  def read(byteReader: ByteReader, decompress: Boolean, streaming: Boolean): GeoTiff[V]
+
+  def read(bytes: Array[Byte], decompress: Boolean): GeoTiff[V] =
+    read(ByteBuffer.wrap(bytes), decompress, streaming = false)
 }

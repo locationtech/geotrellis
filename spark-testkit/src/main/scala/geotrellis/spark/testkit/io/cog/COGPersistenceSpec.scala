@@ -20,6 +20,7 @@ import geotrellis.raster.CellGrid
 import geotrellis.raster.crop.TileCropMethods
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.io.geotiff._
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.prototype.TilePrototypeMethods
 import geotrellis.spark._
 import geotrellis.spark.io._
@@ -39,7 +40,7 @@ import scala.reflect._
 
 abstract class COGPersistenceSpec[
   K: SpatialComponent: Ordering: Boundable: JsonFormat: ClassTag,
-  V <: CellGrid: TiffMethods: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: ClassTag: GeoTiffBuilder
+  V <: CellGrid: GeoTiffReader: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: ClassTag: GeoTiffBuilder
 ] extends FunSpec with Matchers with BeforeAndAfterAll {
 
   type TestReader = FilteringCOGLayerReader[LayerId]

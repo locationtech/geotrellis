@@ -10,7 +10,7 @@ import java.util
 
 import scala.reflect.{ClassTag, classTag}
 
-package object cog extends Implicits with TiffMethodsImplicits {
+package object cog extends Implicits {
   type MetadataAccumulator[M] = AccumulatorV2[(Int, M), util.Map[Int, M]]
 
   val GTKey     = "GT_KEY"

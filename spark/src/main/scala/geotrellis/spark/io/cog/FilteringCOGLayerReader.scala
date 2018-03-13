@@ -17,17 +17,18 @@
 package geotrellis.spark.io.cog
 
 import geotrellis.raster.{CellGrid, RasterExtent}
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index.{Index, IndexRanges, MergeQueue}
 import geotrellis.util._
 import geotrellis.spark.util.KryoWrapper
-
 import org.apache.spark.rdd._
 import spray.json._
 import org.apache.spark.SparkContext
-
 import java.net.URI
+
+import geotrellis.raster.io.geotiff.reader.TiffTagsReader
 
 import scala.reflect._
 
@@ -48,12 +49,12 @@ abstract class FilteringCOGLayerReader[ID] extends COGLayerReader[ID] {
     */
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: ClassTag
+    V <: CellGrid: GeoTiffReader: ClassTag
   ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
 
   def baseRead[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: ClassTag
+    V <: CellGrid: GeoTiffReader: ClassTag
   ](
     id: LayerId,
     tileQuery: LayerQuery[K, TileLayerMetadata[K]],
@@ -151,25 +152,25 @@ abstract class FilteringCOGLayerReader[ID] extends COGLayerReader[ID] {
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: ClassTag
+    V <: CellGrid: GeoTiffReader: ClassTag
   ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]]): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read(id, rasterQuery, defaultNumPartitions)
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: ClassTag
+    V <: CellGrid: GeoTiffReader: ClassTag
   ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read(id, new LayerQuery[K, TileLayerMetadata[K]], numPartitions)
 
   def query[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: ClassTag
+    V <: CellGrid: GeoTiffReader: ClassTag
   ](layerId: ID): BoundLayerQuery[K, TileLayerMetadata[K], RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, read(layerId, _))
 
   def query[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: ClassTag
+    V <: CellGrid: GeoTiffReader: ClassTag
   ](layerId: ID, numPartitions: Int): BoundLayerQuery[K, TileLayerMetadata[K], RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, read(layerId, _, numPartitions))
 }
@@ -177,7 +178,7 @@ abstract class FilteringCOGLayerReader[ID] extends COGLayerReader[ID] {
 object FilteringCOGLayerReader {
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods
+    V <: CellGrid: GeoTiffReader
   ](
      keyPath: BigInt => String, // keyPath
      pathExists: String => Boolean, // check the path above exists
@@ -190,7 +191,6 @@ object FilteringCOGLayerReader {
    )(implicit sc: SparkContext, getByteReader: URI => ByteReader): RDD[(K, V)] = {
     if (baseQueryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
 
-    val tiffMethods = implicitly[TiffMethods[V]]
     val kwFormat = KryoWrapper(implicitly[JsonFormat[K]])
 
     val ranges = if (baseQueryKeyBounds.length > 1)
@@ -209,7 +209,13 @@ object FilteringCOGLayerReader {
             if (!pathExists(keyPath(index))) Vector()
             else {
               val uri = fullPath(keyPath(index))
-              val baseKey = tiffMethods.getKey[K](uri)(keyFormat)
+              val byteReader: ByteReader = uri
+              val baseKey = TiffTagsReader
+                .read(byteReader)
+                .tags
+                .headTags(GTKey)
+                .parseJson
+                .convertTo[K](keyFormat)
 
               readDefinitions
                 .get(baseKey.getComponent[SpatialKey])
@@ -217,14 +223,15 @@ object FilteringCOGLayerReader {
                 .flatten
                 .flatMap { case (spatialKey, overviewIndex, _, seq) =>
                   val key = baseKey.setComponent(spatialKey)
-                  val tiff = tiffMethods.readTiff(uri, overviewIndex)
+                  val tiff = GeoTiffReader[V].read(uri, decompress = false, streaming = true).getOverview(overviewIndex)
                   val map = seq.map { case (gb, sk) => gb -> key.setComponent(sk) }.toMap
 
-                tiff
-                  .crop(map.keys.toSeq)
-                  .flatMap { case (k, v) => map.get(k).map(i => i -> v) }
-                  .toVector 
-              }
+                  tiff
+                    .crop(map.keys.toSeq)
+                    .flatMap { case (k, v) => map.get(k).map(i => i -> v) }
+                    .toVector
+                }
+            }
           }
         }
       }

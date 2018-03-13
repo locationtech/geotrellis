@@ -17,6 +17,7 @@
 package geotrellis.spark.io.cog
 
 import geotrellis.raster._
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.resample._
 import geotrellis.spark._
 import geotrellis.spark.io._
@@ -36,13 +37,13 @@ trait COGValueReader[ID] {
 
   def reader[
     K: JsonFormat : SpatialComponent : ClassTag,
-    V <: CellGrid : TiffMethods
+    V <: CellGrid : GeoTiffReader
   ](layerId: LayerId): Reader[K, V]
 
   /** Produce a key value reader for a specific layer, prefetching layer metadata once at construction time */
   def baseReader[
     K: JsonFormat: SpatialComponent: ClassTag,
-    V <: CellGrid: TiffMethods
+    V <: CellGrid: GeoTiffReader
   ](
     layerId: ID,
     keyPath: (K, Int, KeyIndex[K], ZoomRange) => String, // Key, maxWidth, toIndex, zoomRange
@@ -51,8 +52,6 @@ trait COGValueReader[ID] {
    ): Reader[K, V] = new Reader[K, V] {
     val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
       attributeStore.read[COGLayerStorageMetadata[K]](LayerId(layerId.name, 0), "cog_metadata")
-
-    val tiffMethods: TiffMethods[V] = implicitly[TiffMethods[V]]
 
     def read(key: K): V = {
       val (zoomRange, spatialKey, overviewIndex, gridBounds) =
@@ -64,8 +63,10 @@ trait COGValueReader[ID] {
       val uri = fullPath(keyPath(key.setComponent(spatialKey), maxWidth, baseKeyIndex, zoomRange))
 
       try {
-        val tiff = tiffMethods.readTiff(uri, overviewIndex)
-        tiff.crop(gridBounds).tile
+        GeoTiffReader[V].read(uri, decompress = false, streaming = true)
+          .getOverview(overviewIndex)
+          .crop(gridBounds)
+          .tile
       } catch {
         case th: Throwable => exceptionHandler(key)(th)
       }
@@ -74,7 +75,7 @@ trait COGValueReader[ID] {
 
   def overzoomingReader[
     K: JsonFormat: SpatialComponent: ClassTag,
-    V <: CellGrid: TiffMethods: ? => TileResampleMethods[V]
+    V <: CellGrid: GeoTiffReader: ? => TileResampleMethods[V]
   ](layerId: ID, resampleMethod: ResampleMethod = ResampleMethod.DEFAULT): Reader[K, V]
 }
 

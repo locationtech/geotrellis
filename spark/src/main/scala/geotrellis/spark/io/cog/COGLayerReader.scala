@@ -20,6 +20,7 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.util._
 import geotrellis.raster.CellGrid
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 
 import scalaz.std.vector._
 import scalaz.concurrent.{Strategy, Task}
@@ -39,12 +40,12 @@ trait COGLayerReader[ID] extends Serializable {
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: ClassTag
+    V <: CellGrid: GeoTiffReader: ClassTag
   ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
 
   def baseRead[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: ClassTag
+    V <: CellGrid: GeoTiffReader: ClassTag
   ](
      id: ID,
      tileQuery: LayerQuery[K, TileLayerMetadata[K]],
@@ -60,13 +61,13 @@ trait COGLayerReader[ID] extends Serializable {
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: ClassTag
+    V <: CellGrid: GeoTiffReader: ClassTag
   ](id: ID): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read(id, defaultNumPartitions)
 
   def reader[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: ClassTag
+    V <: CellGrid: GeoTiffReader: ClassTag
   ]: Reader[ID, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new Reader[ID, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
       def read(id: ID): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =

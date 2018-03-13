@@ -17,6 +17,7 @@
 package geotrellis.spark.io.s3.cog
 
 import geotrellis.raster._
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
@@ -41,7 +42,7 @@ class S3COGValueReader(
 
   def reader[
     K: JsonFormat: SpatialComponent : ClassTag,
-    V <: CellGrid: TiffMethods
+    V <: CellGrid: GeoTiffReader
   ](layerId: LayerId): Reader[K, V] = {
     def keyPath(key: K, maxWidth: Int, baseKeyIndex: KeyIndex[K], zoomRange: ZoomRange): String =
       s"$bucket/$prefix/${layerId.name}/" +

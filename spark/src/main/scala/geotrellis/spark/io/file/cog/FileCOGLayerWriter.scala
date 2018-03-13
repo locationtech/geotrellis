@@ -1,6 +1,7 @@
 package geotrellis.spark.io.file.cog
 
 import geotrellis.raster._
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff._
 import geotrellis.spark._
 import geotrellis.spark.io.cog._
@@ -21,14 +22,12 @@ class FileCOGLayerWriter(
   implicit def getByteReader(uri: String): ByteReader = byteReader(uri)
   def uriExists(uri: String): Boolean = { val f = new File(uri); f.exists() && f.isFile }
 
-  def writeCOGLayer[K: SpatialComponent: Ordering: JsonFormat: ClassTag, V <: CellGrid: TiffMethods: ClassTag](
+  def writeCOGLayer[K: SpatialComponent: Ordering: JsonFormat: ClassTag, V <: CellGrid: GeoTiffReader: ClassTag](
     layerName: String,
     cogLayer: COGLayer[K, V],
     keyIndexes: Map[ZoomRange, KeyIndex[K]],
     mergeFunc: Option[(GeoTiff[V], GeoTiff[V]) => GeoTiff[V]] = None
   ): Unit = {
-    val tiffMethods = implicitly[TiffMethods[V]]
-
     /** Collect VRT into accumulators, to write everything and to collect VRT at the same time */
     val sc = cogLayer.layers.head._2.sparkContext
     val samplesAccumulator = sc.collectionAccumulator[IndexedSimpleSource](s"vrt_samples_$layerName")
@@ -73,7 +72,7 @@ class FileCOGLayerWriter(
               .foreach(samplesAccumulator.add)
 
           case Some(merge) if uriExists(path) =>
-            val old = tiffMethods.readEntireTiff(path)
+            val old = GeoTiffReader[V].read(path, decompress = false, streaming = true)
             val merged = merge(cog, old)
             merged.write(path, true)
             // collect VRT metadata

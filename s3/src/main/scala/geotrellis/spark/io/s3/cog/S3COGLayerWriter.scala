@@ -2,6 +2,7 @@ package geotrellis.spark.io.s3.cog
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.GeoTiff
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.spark._
 import geotrellis.spark.io._
@@ -27,7 +28,7 @@ class S3COGLayerWriter(
 
   def writeCOGLayer[
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,
-    V <: CellGrid: TiffMethods: ClassTag
+    V <: CellGrid: GeoTiffReader: ClassTag
   ](
     layerName: String,
     cogLayer: COGLayer[K, V],
@@ -103,7 +104,7 @@ object S3COGLayerWriter {
 }
 
 
-class S3COGAsyncWriter[V <: CellGrid: TiffMethods](
+class S3COGAsyncWriter[V <: CellGrid: GeoTiffReader](
   bucket: String,
   threads: Int,
   putObjectModifier: PutObjectRequest => PutObjectRequest
@@ -115,8 +116,7 @@ class S3COGAsyncWriter[V <: CellGrid: TiffMethods](
   ): Try[GeoTiff[V]] = Try {
     val is = client.getObject(bucket, key).getObjectContent
     val bytes = sun.misc.IOUtils.readFully(is, Int.MaxValue, true)
-    val tiffMethods = implicitly[TiffMethods[V]]
-    tiffMethods.readTiff(bytes, -1)
+    GeoTiffReader[V].read(bytes, decompress = false).getOverview(-1)
   }
 
   def encodeRecord(key: String, value: GeoTiff[V]): PutObjectRequest = {
