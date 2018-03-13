@@ -200,7 +200,7 @@ case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: Tile
     result.result
   }
 
-  private def bandSegmentCount: Int =
+  def bandSegmentCount: Int =
     tileLayout.layoutCols * tileLayout.layoutRows
 
   def getSegmentCoordinate(segmentIndex: Int): (Int, Int) =
