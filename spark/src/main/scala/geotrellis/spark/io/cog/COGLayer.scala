@@ -36,6 +36,18 @@ object COGLayer {
   private def isPowerOfTwo(x: Int): Boolean =
     x != 0 && ((x & (x - 1)) == 0)
 
+  def fromLayerRDD[
+    K: SpatialComponent: Ordering: JsonFormat: ClassTag,
+    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffBuilder
+  ](
+     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
+     baseZoom: Int,
+     compression: Compression = Deflate,
+     maxCOGTileSize: Int = 4096,
+     minZoom: Option[Int] = None
+   ): COGLayer[K, V] =
+    apply[K, V](rdd, baseZoom, compression, maxCOGTileSize, minZoom)
+
   def apply[
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffBuilder
