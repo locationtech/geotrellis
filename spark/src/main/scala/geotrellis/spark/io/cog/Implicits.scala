@@ -1,17 +1,12 @@
 package geotrellis.spark.io.cog
 
-import geotrellis.proj4.CRS
 import geotrellis.raster._
-import geotrellis.raster.crop._
 import geotrellis.raster.io.geotiff._
 import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.tiling._
-import geotrellis.vector.Extent
 import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
-import spire.syntax.cfor._
 
 import java.net.URI
 

@@ -65,7 +65,7 @@ class HadoopCOGLayerWriter(
           case None =>
             HdfsUtils.write(path, attributeStore.hadoopConfiguration) { new GeoTiffWriter(cog, _).write(true) }
             // collect VRT metadata
-            (0 until geoTiffBandsCount(cog))
+            (0 until cog.bandCount)
               .map { b =>
                 val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
                 (idx.toLong, vrt.simpleSource(s"$idx.$Extension", b + 1, cog.cols, cog.rows, cog.extent))
@@ -75,7 +75,7 @@ class HadoopCOGLayerWriter(
           case Some(_) if !HdfsUtils.pathExists(path, attributeStore.hadoopConfiguration) =>
             HdfsUtils.write(path, attributeStore.hadoopConfiguration) { new GeoTiffWriter(cog, _).write(true) }
             // collect VRT metadata
-            (0 until geoTiffBandsCount(cog))
+            (0 until cog.bandCount)
               .map { b =>
                 val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
                 (idx.toLong, vrt.simpleSource(s"$idx.$Extension", b + 1, cog.cols, cog.rows, cog.extent))
@@ -87,7 +87,7 @@ class HadoopCOGLayerWriter(
             val merged = merge(cog, old)
             HdfsUtils.write(path, attributeStore.hadoopConfiguration) { new GeoTiffWriter(merged, _).write(true) }
             // collect VRT metadata
-            (0 until geoTiffBandsCount(merged))
+            (0 until merged.bandCount)
               .map { b =>
                 val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
                 (idx.toLong, vrt.simpleSource(s"$idx.$Extension", b + 1, merged.cols, merged.rows, merged.extent))

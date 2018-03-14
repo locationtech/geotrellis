@@ -67,7 +67,7 @@ class S3COGLayerWriter(
       cogs
         .map { case (key, cog) =>
           // collect VRT metadata
-          (0 until geoTiffBandsCount(cog)).foreach { b =>
+          (0 until cog.bandCount).foreach { b =>
             val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
             val simpleSource = vrt.simpleSource(s"$idx.$Extension", b + 1, cog.cols, cog.rows, cog.extent)
             samplesAccumulator.add((idx.toLong, simpleSource))

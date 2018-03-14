@@ -54,7 +54,7 @@ class FileCOGLayerWriter(
           case None =>
             cog.write(path, true)
             // collect VRT metadata
-            (0 until geoTiffBandsCount(cog))
+            (0 until cog.bandCount)
               .map { b =>
                 val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
                 (idx.toLong, vrt.simpleSource(s"$idx.$Extension", b + 1, cog.cols, cog.rows, cog.extent))
@@ -64,7 +64,7 @@ class FileCOGLayerWriter(
           case Some(_) if !uriExists(path) =>
             cog.write(path, true)
             // collect VRT metadata
-            (0 until geoTiffBandsCount(cog))
+            (0 until cog.bandCount)
               .map { b =>
                 val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
                 (idx.toLong, vrt.simpleSource(s"$idx.$Extension", b + 1, cog.cols, cog.rows, cog.extent))
@@ -76,7 +76,7 @@ class FileCOGLayerWriter(
             val merged = merge(cog, old)
             merged.write(path, true)
             // collect VRT metadata
-            (0 until geoTiffBandsCount(merged))
+            (0 until merged.bandCount)
               .map { b =>
                 val idx = Index.encode(keyIndex.toIndex(key), maxWidth)
                 (idx.toLong, vrt.simpleSource(s"$idx.$Extension", b + 1, merged.cols, merged.rows, merged.extent))

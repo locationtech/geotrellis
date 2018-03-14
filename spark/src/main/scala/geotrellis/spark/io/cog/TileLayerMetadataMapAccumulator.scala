@@ -7,7 +7,7 @@ import scala.collection.JavaConverters._
 import java.util
 import java.util.function.BiFunction
 
-/** Probably should be removed as no needs in ti for now. */
+/** Probably should be removed as no needs in it now. */
 class TileLayerMetadataMapAccumulator[K: Boundable] extends AccumulatorV2[(Int, TileLayerMetadata[K]), util.Map[Int, TileLayerMetadata[K]]] {
   private val _map: util.Map[Int, TileLayerMetadata[K]] = util.Collections.synchronizedMap(new util.HashMap[Int, TileLayerMetadata[K]]())
 

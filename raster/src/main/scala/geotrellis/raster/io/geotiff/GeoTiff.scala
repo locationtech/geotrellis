@@ -61,6 +61,10 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
   def raster: Raster[T] = Raster(tile, extent)
   def rasterExtent: RasterExtent = RasterExtent(extent, tile.cols, tile.rows)
   def cellSize: CellSize = rasterExtent.cellSize
+  def bandCount: Int = tile match {
+    case t: MultibandTile => t.bandCount
+    case _ => 1
+  }
 
   def mapTile(f: T => T): GeoTiff[T]
 
