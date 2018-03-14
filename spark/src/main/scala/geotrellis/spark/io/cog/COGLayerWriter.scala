@@ -69,7 +69,7 @@ trait COGLayerWriter extends LazyLogging with Serializable {
   ): Unit =
     tiles.metadata.bounds match {
       case keyBounds: KeyBounds[K] =>
-        val cogLayer = COGLayer(tiles, tileZoom, compression = compression)
+        val cogLayer = COGLayer.fromLayerRDD(tiles, tileZoom, compression = compression)
         // println(cogLayer.metadata.toJson.prettyPrint)
         val keyIndexes: Map[ZoomRange, KeyIndex[K]] =
           cogLayer.metadata.zoomRangeInfos.
@@ -103,7 +103,7 @@ trait COGLayerWriter extends LazyLogging with Serializable {
    ): Unit =
     tiles.metadata.bounds match {
       case keyBounds: KeyBounds[K] =>
-        val cogLayer = COGLayer(tiles, tileZoom, compression = compression)
+        val cogLayer = COGLayer.fromLayerRDD(tiles, tileZoom, compression = compression)
         // println(cogLayer.metadata.toJson.prettyPrint)
         val keyIndexes: Map[ZoomRange, KeyIndex[K]] =
           cogLayer.metadata.zoomRangeInfos.
@@ -153,7 +153,7 @@ trait COGLayerWriter extends LazyLogging with Serializable {
         if(!indexKeyBounds.contains(keyBounds) && !metadata.keyBoundsForZoom(tileZoom).contains(keyBounds))
           throw new LayerOutOfKeyBoundsError(LayerId(layerName, tileZoom), indexKeyBounds)
 
-        val cogLayer = COGLayer(tiles, tileZoom, compression = compression)
+        val cogLayer = COGLayer.fromLayerRDD(tiles, tileZoom, compression = compression)
         val ucogLayer = cogLayer.copy(metadata = cogLayer.metadata.combine(metadata))
 
         writeCOGLayer(layerName, ucogLayer, keyIndexes, mergeFunc)

@@ -36,6 +36,16 @@ object COGLayer {
   private def isPowerOfTwo(x: Int): Boolean =
     x != 0 && ((x & (x - 1)) == 0)
 
+  /**
+    * Builds [[COGLayer]] pyramid from a base layer.
+    *
+    * @param rdd             Layer layer, at highest resolution
+    * @param baseZoom        Zoom level of the base layer, assumes [[ZoomedLayoutScheme]]
+    * @param compression     Compression method for GeoTiff tiles
+    * @param maxTileSize     The maximum tile size in pixels for any one COG file for this layer.
+    *                        For instance, if 1024, no COG in the layer will have a greater width or height than 1024.
+    * @param minZoom         Zoom level at which to stop the pyramiding.
+    */
   def fromLayerRDD[
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffBuilder
@@ -43,19 +53,7 @@ object COGLayer {
      rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
      baseZoom: Int,
      compression: Compression = Deflate,
-     maxCOGTileSize: Int = 4096,
-     minZoom: Option[Int] = None
-   ): COGLayer[K, V] =
-    apply[K, V](rdd, baseZoom, compression, maxCOGTileSize, minZoom)
-
-  def apply[
-    K: SpatialComponent: Ordering: JsonFormat: ClassTag,
-    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffBuilder
-  ](
-     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
-     baseZoom: Int,
-     compression: Compression = Deflate,
-     maxCOGTileSize: Int = 4096,
+     maxTileSize: Int = 4096,
      minZoom: Option[Int] = None
    ): COGLayer[K, V] = {
     // TODO: Clean up conditional checks, figure out how to bake into type system, or report errors better.
@@ -91,7 +89,7 @@ object COGLayer {
         layoutScheme,
         baseZoom,
         minZoom.getOrElse(0),
-        maxCOGTileSize
+        maxTileSize
       )
 
     val layers: Map[ZoomRange, RDD[(K, GeoTiff[V])]] =
