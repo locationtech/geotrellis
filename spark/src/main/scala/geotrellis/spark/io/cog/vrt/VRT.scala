@@ -174,4 +174,6 @@ object VRT {
 
     VRT(gridBounds, metadata.layout, metadata.extent, metadata.cellType, metadata.crs, Nil)
   }
+
+  def accumulatorName(layerName: String): String = s"vrt_samples_$layerName"
 }

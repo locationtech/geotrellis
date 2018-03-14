@@ -40,8 +40,6 @@ import scala.reflect.ClassTag
  */
 class S3COGLayerReader(
   val attributeStore: AttributeStore,
-  val bucket: String,
-  val prefix: String,
   val getS3Client: () => S3Client = () => S3Client.DEFAULT,
   val defaultThreads: Int = S3COGLayerReader.defaultThreadCount
 )(@transient implicit val sc: SparkContext) extends FilteringCOGLayerReader[LayerId] with LazyLogging {
@@ -54,9 +52,17 @@ class S3COGLayerReader(
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: GeoTiffReader: ClassTag
   ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int) = {
+    val header =
+      try {
+        attributeStore.read[S3LayerHeader](LayerId(id.name, 0), COGAttributeStore.Fields.header)
+      } catch {
+        // to follow GeoTrellis Layer Readers logic
+        case e: AttributeNotFoundError => throw new LayerNotFoundError(id).initCause(e)
+      }
+
     def getKeyPath(zoomRange: ZoomRange, maxWidth: Int): BigInt => String =
       (index: BigInt) =>
-        s"$bucket/$prefix/${id.name}/" +
+        s"${header.bucket}/${header.key}/${id.name}/" +
         s"${zoomRange.minZoom}_${zoomRange.maxZoom}/" +
         s"${Index.encode(index, maxWidth)}.${Extension}"
 
@@ -78,8 +84,6 @@ object S3COGLayerReader {
   def apply(attributeStore: S3AttributeStore)(implicit sc: SparkContext): S3COGLayerReader =
     new S3COGLayerReader(
       attributeStore,
-      attributeStore.bucket,
-      attributeStore.prefix,
       () => attributeStore.s3Client
     )
 }

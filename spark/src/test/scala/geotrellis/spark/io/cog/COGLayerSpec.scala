@@ -67,7 +67,7 @@ class COGLayerSpec extends FunSpec
       val attributeStore = FileAttributeStore("/data/test-new")
 
       // Create the writer that we will use to store the tiles in the local catalog.
-      val writer = new FileCOGLayerWriter(attributeStore)
+      val writer = FileCOGLayerWriter(attributeStore)
 
       /*val f: Iterable[(SpatialKey, Tile)] => GeoTiffSegmentConstructMethods[SpatialKey, Tile] =
         iter => withSinglebandGeoTiffSegmentConstructMethods(iter)*/

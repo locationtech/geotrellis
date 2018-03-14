@@ -11,18 +11,18 @@ import geotrellis.spark.io.InvalidLayerIdError
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.cog.vrt.VRT
 import geotrellis.spark.io.cog.vrt.VRT.IndexedSimpleSource
-import geotrellis.spark.io.hadoop.{HadoopAttributeStore, HdfsUtils}
+import geotrellis.spark.io.hadoop.{HadoopAttributeStore, HadoopLayerHeader, HdfsUtils}
 import geotrellis.spark.io.index._
 import geotrellis.util.ByteReader
-
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
 
-import scala.reflect.ClassTag
+import scala.reflect.{ClassTag, classTag}
 
 class HadoopCOGLayerWriter(
-  val attributeStore: HadoopAttributeStore
+  val attributeStore: HadoopAttributeStore,
+  rootPath: String
 ) extends COGLayerWriter {
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, attributeStore.hadoopConfiguration)
 
@@ -33,20 +33,28 @@ class HadoopCOGLayerWriter(
     mergeFunc: Option[(GeoTiff[V], GeoTiff[V]) => GeoTiff[V]] = None
   ): Unit = {
     /** Collect VRT into accumulators, to write everything and to collect VRT at the same time */
+    val layerId0 = LayerId(layerName, 0)
     val sc = cogLayer.layers.head._2.sparkContext
-    val samplesAccumulator = sc.collectionAccumulator[IndexedSimpleSource](s"vrt_samples_$layerName")
+    val samplesAccumulator = sc.collectionAccumulator[IndexedSimpleSource](VRT.accumulatorName(layerName))
 
-    def catalogPath = attributeStore.rootPath
-
+    def catalogPath = new Path(rootPath)
     try {
-      attributeStore.attributePath(LayerId(layerName, 0), "cog_metadata")
+      attributeStore.attributePath(layerId0, COGAttributeStore.Fields.metadata)
     } catch {
       case e: Exception =>
-        throw new InvalidLayerIdError(LayerId(layerName, 0)).initCause(e)
+        throw new InvalidLayerIdError(layerId0).initCause(e)
     }
 
     val storageMetadata = COGLayerStorageMetadata(cogLayer.metadata, keyIndexes)
-    attributeStore.write(LayerId(layerName, 0), "cog_metadata", storageMetadata)
+    attributeStore.write(layerId0, COGAttributeStore.Fields.metadata, storageMetadata)
+
+    val header =
+      HadoopCOGLayerHeader(
+        keyClass = classTag[K].toString(),
+        valueClass = classTag[V].toString(),
+        path = rootPath
+      )
+    attributeStore.write(layerId0, COGAttributeStore.Fields.header, header)
 
     for(zoomRange <- cogLayer.layers.keys.toSeq.sorted(Ordering[ZoomRange].reverse)) {
       val vrt = VRT(cogLayer.metadata.tileLayerMetadata(zoomRange.minZoom))
@@ -113,6 +121,6 @@ class HadoopCOGLayerWriter(
 
 object HadoopCOGLayerWriter {
   def apply(rootPath: Path)(implicit sc: SparkContext): HadoopCOGLayerWriter =
-    new HadoopCOGLayerWriter(HadoopAttributeStore(rootPath))
+    new HadoopCOGLayerWriter(HadoopAttributeStore(rootPath), rootPath.toString)
 }
 

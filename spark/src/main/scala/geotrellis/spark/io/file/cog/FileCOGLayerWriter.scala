@@ -4,6 +4,7 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff._
 import geotrellis.spark._
+import geotrellis.spark.io.AttributeStore
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.cog.vrt.VRT
 import geotrellis.spark.io.cog.vrt.VRT.IndexedSimpleSource
@@ -14,10 +15,11 @@ import geotrellis.util.{ByteReader, Filesystem}
 import spray.json.JsonFormat
 import java.io.File
 
-import scala.reflect.ClassTag
+import scala.reflect.{ClassTag, classTag}
 
 class FileCOGLayerWriter(
-  val attributeStore: FileAttributeStore
+  val attributeStore: AttributeStore,
+  catalogPath: String
 ) extends COGLayerWriter {
   implicit def getByteReader(uri: String): ByteReader = byteReader(uri)
   def uriExists(uri: String): Boolean = { val f = new File(uri); f.exists() && f.isFile }
@@ -29,20 +31,29 @@ class FileCOGLayerWriter(
     mergeFunc: Option[(GeoTiff[V], GeoTiff[V]) => GeoTiff[V]] = None
   ): Unit = {
     /** Collect VRT into accumulators, to write everything and to collect VRT at the same time */
+    val layerId0 = LayerId(layerName, 0)
     val sc = cogLayer.layers.head._2.sparkContext
-    val samplesAccumulator = sc.collectionAccumulator[IndexedSimpleSource](s"vrt_samples_$layerName")
+    val samplesAccumulator = sc.collectionAccumulator[IndexedSimpleSource](VRT.accumulatorName(layerName))
 
-    val catalogPath = new File(attributeStore.catalogPath).getAbsolutePath
-    Filesystem.ensureDirectory(new File(catalogPath, layerName).getAbsolutePath)
+    val catalogPathFile = new File(catalogPath).getAbsolutePath
+    Filesystem.ensureDirectory(new File(catalogPathFile, layerName).getAbsolutePath)
 
     val storageMetadata = COGLayerStorageMetadata(cogLayer.metadata, keyIndexes)
-    attributeStore.write(LayerId(layerName, 0), "cog_metadata", storageMetadata)
+    attributeStore.write(layerId0, COGAttributeStore.Fields.metadata, storageMetadata)
+
+    val header =
+      FileLayerHeader(
+        keyClass = classTag[K].toString(),
+        valueClass = classTag[V].toString(),
+        path = catalogPath
+      )
+    attributeStore.write(layerId0, COGAttributeStore.Fields.header, header)
 
     for(zoomRange <- cogLayer.layers.keys.toSeq.sorted(Ordering[ZoomRange].reverse)) {
       val keyIndex = keyIndexes(zoomRange)
       val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
-      val keyPath = KeyPathGenerator(catalogPath, s"${layerName}/${zoomRange.slug}", keyIndex, maxWidth)
-      Filesystem.ensureDirectory(new File(catalogPath, s"${layerName}/${zoomRange.slug}").getAbsolutePath)
+      val keyPath = KeyPathGenerator(catalogPathFile, s"${layerName}/${zoomRange.slug}", keyIndex, maxWidth)
+      Filesystem.ensureDirectory(new File(catalogPathFile, s"${layerName}/${zoomRange.slug}").getAbsolutePath)
 
       val vrt = VRT(cogLayer.metadata.tileLayerMetadata(zoomRange.minZoom))
 
@@ -87,7 +98,7 @@ class FileCOGLayerWriter(
 
       vrt
         .fromAccumulator(samplesAccumulator)
-        .write(s"${catalogPath}/${layerName}/${zoomRange.slug}/vrt.xml")
+        .write(s"${catalogPathFile}/${layerName}/${zoomRange.slug}/vrt.xml")
 
       samplesAccumulator.reset
     }
@@ -96,7 +107,7 @@ class FileCOGLayerWriter(
 
 object FileCOGLayerWriter {
   def apply(attributeStore: FileAttributeStore): FileCOGLayerWriter =
-    new FileCOGLayerWriter(attributeStore)
+    new FileCOGLayerWriter(attributeStore, attributeStore.catalogPath)
 
   def apply(catalogPath: String): FileCOGLayerWriter =
     apply(FileAttributeStore(catalogPath))

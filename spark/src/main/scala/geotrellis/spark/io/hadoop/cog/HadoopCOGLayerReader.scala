@@ -41,7 +41,6 @@ import scala.reflect.ClassTag
  */
 class HadoopCOGLayerReader(
   val attributeStore: AttributeStore,
-  val catalogPath: String,
   val defaultThreads: Int = HadoopCOGLayerReader.defaultThreadCount
 )(@transient implicit val sc: SparkContext) extends FilteringCOGLayerReader[LayerId] with LazyLogging {
 
@@ -55,9 +54,17 @@ class HadoopCOGLayerReader(
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: GeoTiffReader: ClassTag
   ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int) = {
+    val header =
+      try {
+        attributeStore.read[HadoopCOGLayerHeader](LayerId(id.name, 0), COGAttributeStore.Fields.header)
+      } catch {
+        // to follow GeoTrellis Layer Readers logic
+        case e: AttributeNotFoundError => throw new LayerNotFoundError(id).initCause(e)
+      }
+
     def getKeyPath(zoomRange: ZoomRange, maxWidth: Int): BigInt => String =
       (index: BigInt) =>
-        s"${catalogPath.toString}/${id.name}/" +
+        s"${header.path}/${id.name}/" +
         s"${zoomRange.minZoom}_${zoomRange.maxZoom}/" +
         s"${Index.encode(index, maxWidth)}.$Extension"
 
@@ -77,7 +84,7 @@ object HadoopCOGLayerReader {
   val defaultThreadCount: Int = ConfigFactory.load().getThreads("geotrellis.hadoop.threads.rdd.read")
 
   def apply(attributeStore: HadoopAttributeStore)(implicit sc: SparkContext): HadoopCOGLayerReader =
-    new HadoopCOGLayerReader(attributeStore, attributeStore.rootPath.toString)
+    new HadoopCOGLayerReader(attributeStore)
 
   def apply(rootPath: Path)(implicit sc: SparkContext): HadoopCOGLayerReader =
     apply(HadoopAttributeStore(rootPath))

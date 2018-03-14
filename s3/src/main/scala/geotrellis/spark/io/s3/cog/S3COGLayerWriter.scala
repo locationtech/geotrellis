@@ -7,21 +7,22 @@ import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index.{Index, KeyIndex}
-import geotrellis.spark.io.s3.{S3AttributeStore, S3Client, S3RDDWriter, makePath}
+import geotrellis.spark.io.s3.{S3AttributeStore, S3Client, S3LayerHeader, S3RDDWriter, makePath}
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.cog.vrt.VRT
 import geotrellis.spark.io.cog.vrt.VRT.IndexedSimpleSource
 
 import spray.json.JsonFormat
 import com.amazonaws.services.s3.model.{AmazonS3Exception, ObjectMetadata, PutObjectRequest}
-
 import java.io.ByteArrayInputStream
 
 import scala.util.Try
-import scala.reflect.ClassTag
+import scala.reflect.{ClassTag, classTag}
 
 class S3COGLayerWriter(
-  val attributeStore: S3AttributeStore,
+  val attributeStore: AttributeStore,
+  bucket: String,
+  keyPrefix: String,
   getS3Client: () => S3Client = () => S3Client.DEFAULT,
   threads: Int = S3RDDWriter.DefaultThreadCount
 ) extends COGLayerWriter {
@@ -36,14 +37,20 @@ class S3COGLayerWriter(
     mergeFunc: Option[(GeoTiff[V], GeoTiff[V]) => GeoTiff[V]] = None
   ): Unit = {
     /** Collect VRT into accumulators, to write everything and to collect VRT at the same time */
+    val layerId0 = LayerId(layerName, 0)
     val sc = cogLayer.layers.head._2.sparkContext
-    val samplesAccumulator = sc.collectionAccumulator[IndexedSimpleSource](s"vrt_samples_$layerName")
-
+    val samplesAccumulator = sc.collectionAccumulator[IndexedSimpleSource](VRT.accumulatorName(layerName))
     val storageMetadata = COGLayerStorageMetadata(cogLayer.metadata, keyIndexes)
-    attributeStore.write(LayerId(layerName, 0), "cog_metadata", storageMetadata)
+    attributeStore.write(layerId0, COGAttributeStore.Fields.metadata, storageMetadata)
 
-    val bucket = attributeStore.bucket
-    val layerPrefix = attributeStore.prefix
+    val header = S3LayerHeader(
+      keyClass = classTag[K].toString(),
+      valueClass = classTag[V].toString(),
+      bucket = bucket,
+      key = keyPrefix
+    )
+    attributeStore.write(layerId0, COGAttributeStore.Fields.header, header)
+
     val s3Client = getS3Client() // for saving VRT from Accumulator
 
     // Make S3COGAsyncWriter
@@ -60,7 +67,7 @@ class S3COGLayerWriter(
       // Make RDD[(String, GeoTiff[T])]
       val keyIndex = keyIndexes(zoomRange)
       val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
-      val prefix   = makePath(layerPrefix, s"${layerName}/${zoomRange.minZoom}_${zoomRange.maxZoom}")
+      val prefix   = makePath(keyPrefix, s"${layerName}/${zoomRange.minZoom}_${zoomRange.maxZoom}")
       val keyPath  = (key: K) => makePath(prefix, Index.encode(keyIndex.toIndex(key), maxWidth))
 
       // Save all partitions
@@ -100,7 +107,7 @@ class S3COGLayerWriter(
 
 object S3COGLayerWriter {
   def apply(attributeStore: S3AttributeStore): S3COGLayerWriter =
-    new S3COGLayerWriter(attributeStore, () => attributeStore.s3Client)
+    new S3COGLayerWriter(attributeStore, attributeStore.bucket, attributeStore.prefix, () => attributeStore.s3Client)
 }
 
 

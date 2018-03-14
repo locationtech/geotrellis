@@ -12,6 +12,13 @@ package object cog extends Implicits {
   val GTKey     = "GT_KEY"
   val Extension = "tiff"
 
+  object COGAttributeStore {
+    object Fields {
+      val metadata = "cog_metadata"
+      val header   = "header"
+    }
+  }
+
   implicit class withExtentMethods(extent: Extent) {
     def bufferByLayout(layout: LayoutDefinition): Extent =
       Extent(
