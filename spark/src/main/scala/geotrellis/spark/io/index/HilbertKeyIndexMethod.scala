@@ -20,7 +20,6 @@ import geotrellis.spark._
 import geotrellis.spark.io.index.hilbert._
 
 import java.time.ZonedDateTime
-import java.lang.Long.numberOfLeadingZeros
 
 private[index] trait HilbertKeyIndexMethod
 

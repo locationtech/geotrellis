@@ -45,6 +45,7 @@ abstract class COGPersistenceSpec[
 
   type TestReader = FilteringCOGLayerReader[LayerId]
   type TestWriter = COGLayerWriter
+  // TODO: implement and test all layer functions
   // type TestDeleter = LayerDeleter[LayerId]
   // type TestCopier = LayerCopier[LayerId]
   // type TestMover = LayerMover[LayerId]

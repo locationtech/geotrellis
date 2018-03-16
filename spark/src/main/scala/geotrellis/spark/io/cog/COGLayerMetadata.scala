@@ -120,7 +120,7 @@ case class COGLayerMetadata[K: SpatialComponent](
     * GridBounds to read from that COG, and the sequence of GridBounds -> Keys that that
     * file should be cropped by
     */
-  def getReadDefinitions(queryKeyBounds: KeyBounds[SpatialKey], zoom: Int): (ZoomRange, Seq[(SpatialKey, Int, GridBounds, Seq[(GridBounds, SpatialKey)])]) = {
+  private [spark] def getReadDefinitions(queryKeyBounds: KeyBounds[SpatialKey], zoom: Int): (ZoomRange, Seq[(SpatialKey, Int, GridBounds, Seq[(GridBounds, SpatialKey)])]) = {
     /** "Base" in this function means min zoom level and NOT the highest resolution */
     val zoomRange @ ZoomRange(minZoom, maxZoom) = zoomRangeFor(zoom)
     val (baseLayout, layout) = layoutForZoom(minZoom) -> layoutForZoom(zoom)
@@ -200,7 +200,7 @@ case class COGLayerMetadata[K: SpatialComponent](
 
   /** Returns the ZoomRange and SpatialKey of the COG to be read for this key, index of overview, as well as the GridBounds to crop
     * that COG to */
-  def getReadDefinition(key: SpatialKey, zoom: Int): (ZoomRange, SpatialKey, Int, GridBounds) = {
+  private [spark] def getReadDefinition(key: SpatialKey, zoom: Int): (ZoomRange, SpatialKey, Int, GridBounds) = {
     val zoomRange @ ZoomRange(minZoom, maxZoom) = zoomRangeFor(zoom)
     val overviewIdx = maxZoom - zoom - 1
 

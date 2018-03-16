@@ -36,6 +36,7 @@ class COGHadoopSpatialSpec
   lazy val reader = HadoopCOGLayerReader(outputLocal)
   lazy val creader = HadoopCOGCollectionLayerReader(outputLocal)
   lazy val writer = HadoopCOGLayerWriter(outputLocal)
+  // TODO: implement and test all layer functions
   // lazy val deleter = HadoopLayerDeleter(outputLocal)
   // lazy val copier = HadoopLayerCopier(outputLocal)
   // lazy val mover  = HadoopLayerMover(outputLocal)

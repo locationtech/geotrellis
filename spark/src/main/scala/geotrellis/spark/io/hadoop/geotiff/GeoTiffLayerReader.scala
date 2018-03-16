@@ -21,7 +21,6 @@ import java.util.concurrent.{ExecutorService, Executors}
 
 import scala.reflect.ClassTag
 
-/** Approach with TiffTags stored in a DB */
 trait GeoTiffLayerReader[M[T] <: Traversable[T]] {
   implicit def getByteReader(uri: URI): ByteReader
 

@@ -35,6 +35,7 @@ class COGFileSpatialSpec
   lazy val reader = FileCOGLayerReader(outputLocalPath)
   lazy val creader = FileCOGCollectionLayerReader(outputLocalPath)
   lazy val writer = FileCOGLayerWriter(outputLocalPath)
+  // TODO: implement and test all layer functions
   // lazy val deleter = FileLayerDeleter(outputLocalPath)
   // lazy val copier = FileLayerCopier(outputLocalPath)
   // lazy val mover  = FileLayerMover(outputLocalPath)

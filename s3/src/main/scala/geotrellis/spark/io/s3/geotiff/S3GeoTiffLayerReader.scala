@@ -13,9 +13,7 @@ import com.typesafe.config.ConfigFactory
 
 import java.net.URI
 
-/** Approach with TiffTags stored in a DB */
 case class S3GeoTiffLayerReader[M[T] <: Traversable[T]](
-  /** This should be done in a separate interface */
   attributeStore: AttributeStore[M, GeoTiffMetadata],
   layoutScheme: ZoomedLayoutScheme,
   resampleMethod: ResampleMethod = NearestNeighbor,

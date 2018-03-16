@@ -65,7 +65,7 @@ abstract class AsyncWriter[Client, V, E](threads: Int) extends Serializable {
 
     def encode(row: (String, V)): Process[Task, (String, E)] = {
       val (key, value) = row
-      val encodeTask = Task((key, encodeRecord(row._1, row._2)))(pool)
+      val encodeTask = Task((key, encodeRecord(key, value)))(pool)
       Process.eval(encodeTask)
     }
 

@@ -12,9 +12,7 @@ import org.apache.hadoop.conf.Configuration
 
 import java.net.URI
 
-/** Approach with TiffTags stored in a DB */
 case class HadoopGeoTiffLayerReader[M[T] <: Traversable[T]](
-  /** This should be done in a separate interface */
   attributeStore: AttributeStore[M, GeoTiffMetadata],
   layoutScheme: ZoomedLayoutScheme,
   resampleMethod: ResampleMethod = NearestNeighbor,

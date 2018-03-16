@@ -230,7 +230,6 @@ object COGLayer {
     }
 
     // NEXT rebuild overviews
-
     geoTiffBuilder.fromSegments(
       tiles.toMap,
       LayoutDefinition(previous.extent, layout).mapTransform.keyToExtent,
