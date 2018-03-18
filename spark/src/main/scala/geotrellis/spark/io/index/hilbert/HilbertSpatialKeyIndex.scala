@@ -70,10 +70,8 @@ class HilbertSpatialKeyIndex(val keyBounds: KeyBounds[SpatialKey], val xResoluti
         BitVectorFactories.OPTIMAL.apply(yResolution)
       )
 
-    val col = key.col - minKey.col
-    val row = key.row - minKey.row
-    bitVectors(0).copyFrom(col.toLong)
-    bitVectors(1).copyFrom(row.toLong)
+    bitVectors(0).copyFrom(key.col.toLong)
+    bitVectors(1).copyFrom(key.row.toLong)
 
     val hilbertBitVector = BitVectorFactories.OPTIMAL.apply(chc.getSpec.sumBitsPerDimension)
 
