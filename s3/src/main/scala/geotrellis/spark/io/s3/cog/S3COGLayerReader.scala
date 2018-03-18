@@ -42,7 +42,7 @@ class S3COGLayerReader(
   val attributeStore: AttributeStore,
   val getS3Client: () => S3Client = () => S3Client.DEFAULT,
   val defaultThreads: Int = S3COGLayerReader.defaultThreadCount
-)(@transient implicit val sc: SparkContext) extends FilteringCOGLayerReader[LayerId] with LazyLogging {
+)(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] with LazyLogging {
 
   val defaultNumPartitions: Int = sc.defaultParallelism
 

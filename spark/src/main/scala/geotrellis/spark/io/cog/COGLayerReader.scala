@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Azavea
+ * Copyright 2017 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,48 +16,153 @@
 
 package geotrellis.spark.io.cog
 
+import geotrellis.raster.{CellGrid, RasterExtent}
+import geotrellis.raster.io.geotiff.reader.GeoTiffReader
+import geotrellis.raster.io.geotiff.reader.TiffTagsReader
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.index.{Index, IndexRanges, MergeQueue}
 import geotrellis.util._
-import geotrellis.raster.CellGrid
-import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-
-import scalaz.std.vector._
-import scalaz.concurrent.{Strategy, Task}
-import scalaz.stream.{Process, nondeterminism}
+import geotrellis.spark.util.KryoWrapper
 import org.apache.spark.rdd._
-import org.apache.spark.SparkContext
 import spray.json._
+import org.apache.spark.SparkContext
+import java.net.URI
+import java.util.ServiceLoader
 
 import scala.reflect._
 
-import java.util.concurrent.Executors
-import java.util.ServiceLoader
-import java.net.URI
+abstract class COGLayerReader[ID] extends Serializable {
 
-trait COGLayerReader[ID] extends Serializable {
+  val attributeStore: AttributeStore
+
   def defaultNumPartitions: Int
 
+  /** read
+    *
+    * This function will read an RDD layer based on a query.
+    *
+    * @param id              The ID of the layer to be read
+    * @param rasterQuery     The query that will specify the filter for this read.
+    * @param numPartitions   The desired number of partitions in the resulting RDD.
+    *
+    * @tparam K              Type of RDD Key (ex: SpatialKey)
+    * @tparam V              Type of RDD Value (ex: Tile or MultibandTile )
+    */
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: GeoTiffReader: ClassTag
-  ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
+  ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
 
   def baseRead[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: GeoTiffReader: ClassTag
   ](
-     id: ID,
-     tileQuery: LayerQuery[K, TileLayerMetadata[K]],
-     numPartitions: Int,
-     getKeyPath: (ZoomRange, Int) => BigInt => String,
-     pathExists: String => Boolean, // check the path above exists
-     fullPath: String => URI, // add an fs prefix
-     defaultThreads: Int
-   )(implicit sc: SparkContext,
-              getByteReader: URI => ByteReader,
-              idIdentity: ID => LayerId
-   ): RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
+    id: LayerId,
+    tileQuery: LayerQuery[K, TileLayerMetadata[K]],
+    numPartitions: Int,
+    getKeyPath: (ZoomRange, Int) => BigInt => String,
+    pathExists: String => Boolean, // check the path above exists
+    fullPath: String => URI, // add an fs prefix
+    defaultThreads: Int
+  )(implicit sc: SparkContext,
+             getByteReader: URI => ByteReader,
+             idToLayerId: ID => LayerId
+  ): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] = {
+
+    val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
+      try {
+        attributeStore.read[COGLayerStorageMetadata[K]](LayerId(id.name, 0), COGAttributeStore.Fields.metadata)
+      } catch {
+        // to follow GeoTrellis Layer Readers logic
+        case e: AttributeNotFoundError => throw new LayerNotFoundError(id).initCause(e)
+      }
+
+    val metadata = cogLayerMetadata.tileLayerMetadata(id.zoom)
+
+    val queryKeyBounds: Seq[KeyBounds[K]] = tileQuery(metadata)
+
+    val readDefinitions: Seq[(ZoomRange, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])])] =
+      cogLayerMetadata.getReadDefinitions(queryKeyBounds, id.zoom)
+
+    readDefinitions.headOption.map(_._1) match {
+      case Some(zoomRange) => {
+        val baseKeyIndex = keyIndexes(zoomRange)
+
+        val maxWidth = Index.digits(baseKeyIndex.toIndex(baseKeyIndex.keyBounds.maxKey))
+        val keyPath: BigInt => String = getKeyPath(zoomRange, maxWidth)
+        val decompose = (bounds: KeyBounds[K]) => baseKeyIndex.indexRanges(bounds)
+
+        val baseLayout = cogLayerMetadata.layoutForZoom(zoomRange.minZoom)
+        val layout = cogLayerMetadata.layoutForZoom(id.zoom)
+
+        val baseKeyBounds = cogLayerMetadata.zoomRangeInfoFor(zoomRange.minZoom)._2
+
+        def transformKeyBounds(keyBounds: KeyBounds[K]): KeyBounds[K] = {
+          val KeyBounds(minKey, maxKey) = keyBounds
+          val extent = layout.extent
+          val sourceRe = RasterExtent(extent, layout.layoutCols, layout.layoutRows)
+          val targetRe = RasterExtent(extent, baseLayout.layoutCols, baseLayout.layoutRows)
+
+          val minSpatialKey = minKey.getComponent[SpatialKey]
+          val (minCol, minRow) = {
+            val (x, y) = sourceRe.gridToMap(minSpatialKey.col, minSpatialKey.row)
+            targetRe.mapToGrid(x, y)
+          }
+
+          val maxSpatialKey = maxKey.getComponent[SpatialKey]
+          val (maxCol, maxRow) = {
+            val (x, y) = sourceRe.gridToMap(maxSpatialKey.col, maxSpatialKey.row)
+            targetRe.mapToGrid(x, y)
+          }
+
+          KeyBounds(
+            minKey.setComponent(SpatialKey(minCol, minRow)),
+            maxKey.setComponent(SpatialKey(maxCol, maxRow))
+          )
+        }
+
+        val baseQueryKeyBounds: Seq[KeyBounds[K]] =
+          queryKeyBounds
+            .flatMap { qkb =>
+              transformKeyBounds(qkb).intersect(baseKeyBounds) match {
+                case EmptyBounds => None
+                case kb: KeyBounds[K] => Some(kb)
+              }
+            }
+            .distinct
+
+        val rdd =
+          COGLayerReader
+            .read[K, V](
+              keyPath = keyPath,
+              pathExists = pathExists,
+              fullPath = fullPath,
+              baseQueryKeyBounds = baseQueryKeyBounds,
+              decomposeBounds = decompose,
+              readDefinitions = readDefinitions.flatMap(_._2).groupBy(_._1),
+              threads = defaultThreads,
+              numPartitions = Some(numPartitions)
+            )
+
+        new ContextRDD(rdd, metadata)
+      }
+      case None =>
+        new ContextRDD(sc.parallelize(Seq()), metadata.setComponent[Bounds[K]](EmptyBounds))
+    }
+  }
+
+  def read[
+    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    V <: CellGrid: GeoTiffReader: ClassTag
+  ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]]): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
+    read(id, rasterQuery, defaultNumPartitions)
+
+  def read[
+    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    V <: CellGrid: GeoTiffReader: ClassTag
+  ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
+    read(id, new LayerQuery[K, TileLayerMetadata[K]], numPartitions)
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
@@ -73,43 +178,117 @@ trait COGLayerReader[ID] extends Serializable {
       def read(id: ID): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
         COGLayerReader.this.read[K, V](id)
     }
+
+  def query[
+    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    V <: CellGrid: GeoTiffReader: ClassTag
+  ](layerId: ID): BoundLayerQuery[K, TileLayerMetadata[K], RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
+    new BoundLayerQuery(new LayerQuery, read(layerId, _))
+
+  def query[
+    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    V <: CellGrid: GeoTiffReader: ClassTag
+  ](layerId: ID, numPartitions: Int): BoundLayerQuery[K, TileLayerMetadata[K], RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
+    new BoundLayerQuery(new LayerQuery, read(layerId, _, numPartitions))
 }
 
 object COGLayerReader {
   /**
-   * Produce FilteringCOGLayerReader instance based on URI description.
-   * Find instances of [[LayerReaderProvider]] through Java SPI.
-   */
-  def apply(attributeStore: AttributeStore, layerReaderUri: URI)(implicit sc: SparkContext): FilteringCOGLayerReader[LayerId] = {
+    * Produce FilteringCOGLayerReader instance based on URI description.
+    * Find instances of [[LayerReaderProvider]] through Java SPI.
+    */
+  def apply(attributeStore: AttributeStore, layerReaderUri: URI)(implicit sc: SparkContext): COGLayerReader[LayerId] = {
     import scala.collection.JavaConversions._
     ServiceLoader.load(classOf[LayerReaderProvider]).iterator()
       .find(_.canProcess(layerReaderUri))
       .getOrElse(throw new RuntimeException(s"Unable to find LayerReaderProvider for $layerReaderUri"))
       .layerReader(layerReaderUri, attributeStore, sc)
-      .asInstanceOf[FilteringCOGLayerReader[LayerId]]
+      .asInstanceOf[COGLayerReader[LayerId]]
   }
 
   /**
-   * Produce FilteringCOGLayerReader instance based on URI description.
-   * Find instances of [[LayerReaderProvider]] through Java SPI.
-   */
-  def apply(attributeStoreUri: URI, layerReaderUri: URI)(implicit sc: SparkContext): FilteringCOGLayerReader[LayerId] =
+    * Produce COGLayerReader instance based on URI description.
+    * Find instances of [[LayerReaderProvider]] through Java SPI.
+    */
+  def apply(attributeStoreUri: URI, layerReaderUri: URI)(implicit sc: SparkContext): COGLayerReader[LayerId] =
     apply(attributeStore = AttributeStore(attributeStoreUri), layerReaderUri)
 
   /**
-   * Produce FilteringCOGLayerReader instance based on URI description.
-   * Find instances of [[LayerReaderProvider]] through Java SPI.
-   * Required [[AttributeStoreProvider]] instance will be found from the same URI.
-   */
-  def apply(uri: URI)(implicit sc: SparkContext): FilteringCOGLayerReader[LayerId] =
+    * Produce FilteringCOGLayerReader instance based on URI description.
+    * Find instances of [[LayerReaderProvider]] through Java SPI.
+    * Required [[AttributeStoreProvider]] instance will be found from the same URI.
+    */
+  def apply(uri: URI)(implicit sc: SparkContext): COGLayerReader[LayerId] =
     apply(attributeStoreUri = uri, layerReaderUri = uri)
 
-  def apply(attributeStore: AttributeStore, layerReaderUri: String)(implicit sc: SparkContext): FilteringCOGLayerReader[LayerId] =
+  def apply(attributeStore: AttributeStore, layerReaderUri: String)(implicit sc: SparkContext): COGLayerReader[LayerId] =
     apply(attributeStore, new URI(layerReaderUri))
 
-  def apply(attributeStoreUri: String, layerReaderUri: String)(implicit sc: SparkContext): FilteringCOGLayerReader[LayerId] =
+  def apply(attributeStoreUri: String, layerReaderUri: String)(implicit sc: SparkContext): COGLayerReader[LayerId] =
     apply(new URI(attributeStoreUri), new URI(layerReaderUri))
 
-  def apply(uri: String)(implicit sc: SparkContext): FilteringCOGLayerReader[LayerId] =
+  def apply(uri: String)(implicit sc: SparkContext): COGLayerReader[LayerId] =
     apply(new URI(uri))
+  
+  private def read[
+    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    V <: CellGrid: GeoTiffReader
+  ](
+     keyPath: BigInt => String, // keyPath
+     pathExists: String => Boolean, // check the path above exists
+     fullPath: String => URI, // add an fs prefix
+     baseQueryKeyBounds: Seq[KeyBounds[K]], // each key here represents a COG filename
+     decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
+     readDefinitions: Map[SpatialKey, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])]],
+     threads: Int,
+     numPartitions: Option[Int] = None
+   )(implicit sc: SparkContext, getByteReader: URI => ByteReader): RDD[(K, V)] = {
+    if (baseQueryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
+
+    val kwFormat = KryoWrapper(implicitly[JsonFormat[K]])
+
+    val ranges = if (baseQueryKeyBounds.length > 1)
+      MergeQueue(baseQueryKeyBounds.flatMap(decomposeBounds))
+    else
+      baseQueryKeyBounds.flatMap(decomposeBounds)
+
+    val bins = IndexRanges.bin(ranges, numPartitions.getOrElse(sc.defaultParallelism))
+
+    sc.parallelize(bins, bins.size)
+      .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
+        val keyFormat = kwFormat.value
+
+        partition flatMap { seq =>
+          LayerReader.njoin[K, V](seq.toIterator, threads) { index: BigInt =>
+            if (!pathExists(keyPath(index))) Vector()
+            else {
+              val uri = fullPath(keyPath(index))
+              val byteReader: ByteReader = uri
+              val baseKey =
+                TiffTagsReader
+                  .read(byteReader)
+                  .tags
+                  .headTags(GTKey)
+                  .parseJson
+                  .convertTo[K](keyFormat)
+
+              readDefinitions
+                .get(baseKey.getComponent[SpatialKey])
+                .toVector
+                .flatten
+                .flatMap { case (spatialKey, overviewIndex, _, seq) =>
+                  val key = baseKey.setComponent(spatialKey)
+                  val tiff = GeoTiffReader[V].read(uri, decompress = false, streaming = true).getOverview(overviewIndex)
+                  val map = seq.map { case (gb, sk) => gb -> key.setComponent(sk) }.toMap
+
+                  tiff
+                    .crop(map.keys.toSeq)
+                    .flatMap { case (k, v) => map.get(k).map(i => i -> v) }
+                    .toVector
+                }
+            }
+          }
+        }
+      }
+  }
 }

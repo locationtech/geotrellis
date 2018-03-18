@@ -42,7 +42,7 @@ import scala.reflect.ClassTag
 class HadoopCOGLayerReader(
   val attributeStore: AttributeStore,
   val defaultThreads: Int = HadoopCOGLayerReader.defaultThreadCount
-)(@transient implicit val sc: SparkContext) extends FilteringCOGLayerReader[LayerId] with LazyLogging {
+)(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] with LazyLogging {
 
   val hadoopConfiguration = SerializableConfiguration(sc.hadoopConfiguration)
 

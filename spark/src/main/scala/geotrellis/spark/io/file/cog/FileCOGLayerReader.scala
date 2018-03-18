@@ -40,7 +40,7 @@ class FileCOGLayerReader(
   val attributeStore: AttributeStore,
   val catalogPath: String,
   val defaultThreads: Int = FileCOGLayerReader.defaultThreadCount
-)(@transient implicit val sc: SparkContext) extends FilteringCOGLayerReader[LayerId] with LazyLogging {
+)(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] with LazyLogging {
 
   val defaultNumPartitions: Int = sc.defaultParallelism
 

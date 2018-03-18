@@ -43,7 +43,7 @@ abstract class COGPersistenceSpec[
   V <: CellGrid: GeoTiffReader: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: ClassTag: GeoTiffBuilder
 ] extends FunSpec with Matchers with BeforeAndAfterAll {
 
-  type TestReader = FilteringCOGLayerReader[LayerId]
+  type TestReader = COGLayerReader[LayerId]
   type TestWriter = COGLayerWriter
   // TODO: implement and test all layer functions
   // type TestDeleter = LayerDeleter[LayerId]
