@@ -56,7 +56,7 @@ class HadoopCOGLayerReader(
   ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int) = {
     val header =
       try {
-        attributeStore.read[HadoopCOGLayerHeader](LayerId(id.name, 0), COGAttributeStore.Fields.header)
+        attributeStore.read[HadoopLayerHeader](LayerId(id.name, 0), COGAttributeStore.Fields.header)
       } catch {
         case e: AttributeNotFoundError => throw new LayerNotFoundError(id).initCause(e)
       }

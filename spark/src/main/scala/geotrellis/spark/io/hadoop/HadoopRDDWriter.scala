@@ -103,7 +103,7 @@ object HadoopRDDWriter extends LazyLogging {
     val _conf = SerializableConfiguration(conf)
 
     val ranges: Vector[(String, BigInt, BigInt)] =
-      FilterMapFileInputFormat.layerRanges(header.path, conf)
+      FilterMapFileInputFormat.layerRanges(new Path(header.path), conf)
         .map({ case (path, start, end) => (path.toString, start, end) })
 
     val layerPathStr = layerPath.toString

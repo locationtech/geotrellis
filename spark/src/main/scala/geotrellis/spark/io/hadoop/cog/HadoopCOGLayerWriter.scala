@@ -49,10 +49,10 @@ class HadoopCOGLayerWriter(
     attributeStore.write(layerId0, COGAttributeStore.Fields.metadata, storageMetadata)
 
     val header =
-      HadoopCOGLayerHeader(
+      HadoopLayerHeader(
         keyClass = classTag[K].toString(),
         valueClass = classTag[V].toString(),
-        path = rootPath
+        path = new URI(rootPath)
       )
     attributeStore.write(layerId0, COGAttributeStore.Fields.header, header)
 

@@ -111,7 +111,7 @@ class HadoopLayerWriter(
       HadoopLayerHeader(
         keyClass = classTag[K].toString(),
         valueClass = classTag[V].toString(),
-        path = layerPath
+        path = layerPath.toUri
       )
     val metadata = rdd.metadata
 

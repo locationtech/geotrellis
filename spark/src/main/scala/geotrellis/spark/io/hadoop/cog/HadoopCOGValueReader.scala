@@ -22,14 +22,12 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.index.{Index, KeyIndex}
-import geotrellis.spark.io.hadoop.HadoopAttributeStore
+import geotrellis.spark.io.hadoop.{HadoopAttributeStore, HadoopLayerHeader}
 import geotrellis.util._
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import spray.json._
 import org.apache.spark.SparkContext
-
 import java.net.URI
 
 import scala.reflect.ClassTag
@@ -49,7 +47,7 @@ class HadoopCOGValueReader(
 
     val header =
       try {
-        attributeStore.read[HadoopCOGLayerHeader](LayerId(layerId.name, 0), COGAttributeStore.Fields.header)
+        attributeStore.read[HadoopLayerHeader](LayerId(layerId.name, 0), COGAttributeStore.Fields.header)
       } catch {
         case e: AttributeNotFoundError => throw new LayerNotFoundError(layerId).initCause(e)
       }

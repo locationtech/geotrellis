@@ -57,7 +57,7 @@ class HadoopValueReader(
     val codec = KeyValueRecordCodec[K, V]
 
     val ranges: Vector[(Path, BigInt, BigInt)] =
-      FilterMapFileInputFormat.layerRanges(header.path, conf)
+      FilterMapFileInputFormat.layerRanges(new Path(header.path), conf)
 
     def read(key: K): V = {
       val index: BigInt = keyIndex.toIndex(key)
