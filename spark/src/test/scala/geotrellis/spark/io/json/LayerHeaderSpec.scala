@@ -23,10 +23,11 @@ import geotrellis.spark.io.hadoop._
 
 import spray.json._
 import spray.json.DefaultJsonProtocol._
+import java.net.URI
 import org.scalatest._
 
 class LayerHeaderSpec extends FunSpec with Matchers {
-  val hadoopHeader = HadoopLayerHeader("key", "value", "hdfs:/path/to")
+  val hadoopHeader = HadoopLayerHeader("key", "value", new URI("hdfs:/path/to"))
   val fileHeader = FileLayerHeader("key", "value", "/path/to")
 
 
