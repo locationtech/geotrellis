@@ -22,7 +22,7 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.index._
-import geotrellis.spark.io.s3.{S3AttributeStore, S3Client}
+import geotrellis.spark.io.s3.{S3AttributeStore, S3Client, S3LayerHeader}
 import geotrellis.util._
 import spray.json._
 import com.amazonaws.services.s3.model.AmazonS3Exception
@@ -31,9 +31,7 @@ import scala.reflect.ClassTag
 import java.net.URI
 
 class S3COGValueReader(
-  val attributeStore: AttributeStore,
-  val bucket: String,
-  val prefix: String
+  val attributeStore: AttributeStore
 ) extends OverzoomingCOGValueReader {
 
   def s3Client: S3Client = S3Client.DEFAULT
@@ -44,8 +42,15 @@ class S3COGValueReader(
     K: JsonFormat: SpatialComponent : ClassTag,
     V <: CellGrid: GeoTiffReader
   ](layerId: LayerId): Reader[K, V] = {
+    val header =
+      try {
+        attributeStore.read[S3LayerHeader](LayerId(layerId.name, 0), COGAttributeStore.Fields.header)
+      } catch {
+        case e: AttributeNotFoundError => throw new LayerNotFoundError(layerId).initCause(e)
+      }
+
     def keyPath(key: K, maxWidth: Int, baseKeyIndex: KeyIndex[K], zoomRange: ZoomRange): String =
-      s"$bucket/$prefix/${layerId.name}/" +
+      s"${header.bucket}/${header.key}/${layerId.name}/" +
       s"${zoomRange.minZoom}_${zoomRange.maxZoom}/" +
       s"${Index.encode(baseKeyIndex.toIndex(key), maxWidth)}.${Extension}"
 
@@ -63,7 +68,7 @@ class S3COGValueReader(
 
 object S3COGValueReader {
   def apply(s3attributeStore: S3AttributeStore): S3COGValueReader =
-    new S3COGValueReader(s3attributeStore, s3attributeStore.bucket, s3attributeStore.prefix) {
+    new S3COGValueReader(s3attributeStore) {
       override def s3Client: S3Client = s3attributeStore.s3Client
     }
 }

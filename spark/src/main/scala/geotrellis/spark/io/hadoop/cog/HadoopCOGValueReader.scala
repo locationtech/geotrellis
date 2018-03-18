@@ -37,7 +37,6 @@ import scala.reflect.ClassTag
 class HadoopCOGValueReader(
   val attributeStore: AttributeStore,
   conf: Configuration,
-  catalogPath: Path,
   maxOpenFiles: Int = 16
 ) extends OverzoomingCOGValueReader {
 
@@ -47,8 +46,16 @@ class HadoopCOGValueReader(
     K: JsonFormat: SpatialComponent: ClassTag,
     V <: CellGrid: GeoTiffReader
   ](layerId: LayerId): Reader[K, V] = {
+
+    val header =
+      try {
+        attributeStore.read[HadoopCOGLayerHeader](LayerId(layerId.name, 0), COGAttributeStore.Fields.header)
+      } catch {
+        case e: AttributeNotFoundError => throw new LayerNotFoundError(layerId).initCause(e)
+      }
+
     def keyPath(key: K, maxWidth: Int, baseKeyIndex: KeyIndex[K], zoomRange: ZoomRange): String =
-      s"${catalogPath.toString}/${layerId.name}/" +
+      s"${header.path}/${layerId.name}/" +
       s"${zoomRange.minZoom}_${zoomRange.maxZoom}/" +
       s"${Index.encode(baseKeyIndex.toIndex(key), maxWidth)}.$Extension"
 
@@ -65,10 +72,10 @@ object HadoopCOGValueReader {
     K: JsonFormat: SpatialComponent: ClassTag,
     V <: CellGrid: GeoTiffReader
   ](attributeStore: HadoopAttributeStore, layerId: LayerId)(implicit sc: SparkContext): Reader[K, V] =
-    new HadoopCOGValueReader(attributeStore, sc.hadoopConfiguration, attributeStore.rootPath).reader[K, V](layerId)
+    new HadoopCOGValueReader(attributeStore, sc.hadoopConfiguration).reader[K, V](layerId)
 
   def apply(attributeStore: HadoopAttributeStore): HadoopCOGValueReader =
-    new HadoopCOGValueReader(attributeStore, attributeStore.hadoopConfiguration, attributeStore.rootPath)
+    new HadoopCOGValueReader(attributeStore, attributeStore.hadoopConfiguration)
 
   def apply(rootPath: Path)
            (implicit sc: SparkContext): HadoopCOGValueReader =

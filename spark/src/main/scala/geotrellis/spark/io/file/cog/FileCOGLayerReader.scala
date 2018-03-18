@@ -21,13 +21,11 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
-import geotrellis.spark.io.file.{FileAttributeStore, KeyPathGenerator}
+import geotrellis.spark.io.file.{FileAttributeStore, FileLayerHeader, KeyPathGenerator}
 import geotrellis.util._
-
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
 import com.typesafe.config.ConfigFactory
-
 import java.net.URI
 import java.io.File
 
@@ -52,8 +50,16 @@ class FileCOGLayerReader(
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: GeoTiffReader: ClassTag
   ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int) = {
+
+    val header =
+      try {
+        attributeStore.read[FileLayerHeader](LayerId(id.name, 0), COGAttributeStore.Fields.header)
+      } catch {
+        case e: AttributeNotFoundError => throw new LayerNotFoundError(id).initCause(e)
+      }
+
     def getKeyPath(zoomRange: ZoomRange, maxWidth: Int): BigInt => String =
-      KeyPathGenerator(catalogPath, s"${id.name}/${zoomRange.slug}", maxWidth) andThen (_ ++ s".$Extension")
+      KeyPathGenerator(header.path, s"${id.name}/${zoomRange.slug}", maxWidth) andThen (_ ++ s".$Extension")
 
     baseRead[K, V](
       id              = id,

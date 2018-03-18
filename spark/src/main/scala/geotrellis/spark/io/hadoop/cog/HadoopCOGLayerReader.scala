@@ -58,7 +58,6 @@ class HadoopCOGLayerReader(
       try {
         attributeStore.read[HadoopCOGLayerHeader](LayerId(id.name, 0), COGAttributeStore.Fields.header)
       } catch {
-        // to follow GeoTrellis Layer Readers logic
         case e: AttributeNotFoundError => throw new LayerNotFoundError(id).initCause(e)
       }
 
