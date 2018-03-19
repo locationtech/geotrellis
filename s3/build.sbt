@@ -5,6 +5,7 @@ libraryDependencies ++= Seq(
   sparkCore % Provided,
   awsSdkS3,
   spire,
+  scaffeine,
   scalatest % Test
 )
 

@@ -233,5 +233,10 @@ object KeyBounds {
       val SpatialKey(maxCol, maxRow) = self.maxKey.getComponent[SpatialKey]
       GridBounds(minCol, minRow, maxCol, maxRow)
     }
+
+    def toSpatial: KeyBounds[SpatialKey] = {
+      val GridBounds(minCol, minRow, maxCol, maxRow) = toGridBounds()
+      KeyBounds(SpatialKey(minCol, minRow), SpatialKey(maxCol, maxRow))
+    }
   }
 }

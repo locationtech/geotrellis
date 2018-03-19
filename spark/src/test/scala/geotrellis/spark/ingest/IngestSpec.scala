@@ -25,6 +25,7 @@ import geotrellis.spark.testkit._
 
 import org.apache.hadoop.fs.Path
 import org.scalatest._
+
 import scala.collection.mutable
 
 class IngestSpec extends FunSpec

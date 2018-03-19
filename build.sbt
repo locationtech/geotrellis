@@ -3,6 +3,8 @@ import sbt.Keys._
 
 scalaVersion := Version.scala
 
+scalaVersion in ThisBuild := Version.scala
+
 lazy val commonSettings = Seq(
   version := Version.geotrellis,
   scalaVersion := Version.scala,
@@ -76,7 +78,8 @@ lazy val commonSettings = Seq(
     "osgeo" at "http://download.osgeo.org/webdav/geotools/"
   ),
   headerLicense := Some(HeaderLicense.ALv2("2017", "Azavea")),
-  scapegoatVersion in ThisBuild := "1.3.3"
+  scapegoatVersion in ThisBuild := "1.3.3",
+  updateOptions := updateOptions.value.withGigahorse(false)
 )
 
 lazy val root = Project("geotrellis", file(".")).

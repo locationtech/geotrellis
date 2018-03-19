@@ -31,7 +31,7 @@ class HadoopLayerDeleter(val attributeStore: AttributeStore, conf: Configuration
   def delete(id: LayerId): Unit = {
     try {
       val header = attributeStore.readHeader[HadoopLayerHeader](id)
-      HdfsUtils.deletePath(header.path, conf)
+      HdfsUtils.deletePath(new Path(header.path), conf)
     } catch {
       case e: AttributeNotFoundError =>
         logger.info(s"Metadata for $id was not found. Any associated layer data (if any) will require manual deletion")

@@ -22,7 +22,6 @@ import geotrellis.raster.io.geotiff.tags.codes._
 import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.io.geotiff.util._
 import geotrellis.util.ByteReader
-import CommonPublicValues._
 import ModelTypes._
 import ProjectionTypesMap.UserDefinedProjectionType
 
@@ -31,9 +30,7 @@ import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
 import geotrellis.proj4.LatLng
 
-import collection.immutable.{HashMap, Map}
-
-import collection.mutable.ListBuffer
+import collection.immutable.Map
 
 import xml._
 
@@ -63,8 +60,57 @@ case class TiffTags(
   colimetryTags: ColimetryTags = ColimetryTags(),
   jpegTags: JpegTags = JpegTags(),
   yCbCrTags: YCbCrTags = YCbCrTags(),
-  nonStandardizedTags: NonStandardizedTags = NonStandardizedTags()
+  nonStandardizedTags: NonStandardizedTags = NonStandardizedTags(),
+  tiffType: TiffType = Tiff,
+  overviews: List[TiffTags] = Nil
 ) {
+  def rasterExtent: RasterExtent = RasterExtent(extent, cols, rows)
+
+  def segmentOffsets: Array[Long] =
+    if (this.hasStripStorage)
+      (this &|->
+        TiffTags._basicTags ^|->
+        BasicTags._stripOffsets get).get
+    else
+      (this &|->
+        TiffTags._tileTags ^|->
+        TileTags._tileOffsets get).get
+
+  def segmentByteCounts: Array[Long] =
+    if (this.hasStripStorage)
+      (this &|->
+        TiffTags._basicTags ^|->
+        BasicTags._stripByteCounts get).get
+    else
+      (this &|->
+        TiffTags._tileTags ^|->
+        TileTags._tileByteCounts get).get
+
+
+  def storageMethod: StorageMethod =
+    if(hasStripStorage) {
+      val rowsPerStrip: Int =
+        (this
+          &|-> TiffTags._basicTags
+          ^|-> BasicTags._rowsPerStrip get).toInt
+
+      Striped(rowsPerStrip)
+    } else {
+      val blockCols =
+        (this
+          &|-> TiffTags._tileTags
+          ^|-> TileTags._tileWidth get).get.toInt
+
+      val blockRows =
+        (this
+          &|-> TiffTags._tileTags
+          ^|-> TileTags._tileLength get).get.toInt
+
+      Tiled(blockCols, blockRows)
+    }
+
+  def geoTiffSegmentLayout: GeoTiffSegmentLayout =
+    GeoTiffSegmentLayout(this.cols, this.rows, this.storageMethod, this.interleaveMethod, this.bandType)
 
   def cellSize =
     CellSize(this.extent.width / this.cols, this.extent.height / this.rows)
@@ -229,6 +275,72 @@ case class TiffTags(
         ^|-> DataSampleFormatTags._sampleFormat get)
 
     BandType(bitsPerSample, sampleFormat)
+  }
+
+  def noDataValue =
+    (this
+      &|-> TiffTags._geoTiffTags
+      ^|-> GeoTiffTags._gdalInternalNoData get)
+
+  def cellType: CellType = (bandType, noDataValue) match {
+    case (BitBandType, _) =>
+      BitCellType
+    // Byte
+    case (ByteBandType, Some(nd)) if (nd.toInt > Byte.MinValue.toInt && nd <= Byte.MaxValue.toInt) =>
+      ByteUserDefinedNoDataCellType(nd.toByte)
+    case (ByteBandType, Some(nd)) if (nd.toInt == Byte.MinValue.toInt) =>
+      ByteConstantNoDataCellType
+    case (ByteBandType, _) =>
+      ByteCellType
+    // UByte
+    case (UByteBandType, Some(nd)) if (nd.toInt > 0 && nd <= 255) =>
+      UByteUserDefinedNoDataCellType(nd.toByte)
+    case (UByteBandType, Some(nd)) if (nd.toInt == 0) =>
+      UByteConstantNoDataCellType
+    case (UByteBandType, _) =>
+      UByteCellType
+    // Int16/Short
+    case (Int16BandType, Some(nd)) if (nd > Short.MinValue.toDouble && nd <= Short.MaxValue.toDouble) =>
+      ShortUserDefinedNoDataCellType(nd.toShort)
+    case (Int16BandType, Some(nd)) if (nd == Short.MinValue.toDouble) =>
+      ShortConstantNoDataCellType
+    case (Int16BandType, _) =>
+      ShortCellType
+    // UInt16/UShort
+    case (UInt16BandType, Some(nd)) if (nd.toInt > 0 && nd <= 65535) =>
+      UShortUserDefinedNoDataCellType(nd.toShort)
+    case (UInt16BandType, Some(nd)) if (nd.toInt == 0) =>
+      UShortConstantNoDataCellType
+    case (UInt16BandType, _) =>
+      UShortCellType
+    // Int32
+    case (Int32BandType, Some(nd)) if (nd.toInt > Int.MinValue && nd.toInt <= Int.MaxValue) =>
+      IntUserDefinedNoDataCellType(nd.toInt)
+    case (Int32BandType, Some(nd)) if (nd.toInt == Int.MinValue) =>
+      IntConstantNoDataCellType
+    case (Int32BandType, _) =>
+      IntCellType
+    // UInt32
+    case (UInt32BandType, Some(nd)) if (nd.toLong > 0L && nd.toLong <= 4294967295L) =>
+      FloatUserDefinedNoDataCellType(nd.toFloat)
+    case (UInt32BandType, Some(nd)) if (nd.toLong == 0L) =>
+      FloatConstantNoDataCellType
+    case (UInt32BandType, _) =>
+      FloatCellType
+    // Float32
+    case (Float32BandType, Some(nd)) if (isData(nd) & Float.MinValue.toDouble <= nd & Float.MaxValue.toDouble >= nd) =>
+      FloatUserDefinedNoDataCellType(nd.toFloat)
+    case (Float32BandType, Some(nd)) =>
+      FloatConstantNoDataCellType
+    case (Float32BandType, _) =>
+      FloatCellType
+    // Float64/Double
+    case (Float64BandType, Some(nd)) if (isData(nd)) =>
+      DoubleUserDefinedNoDataCellType(nd)
+    case (Float64BandType, Some(nd)) =>
+      DoubleConstantNoDataCellType
+    case (Float64BandType, _) =>
+      DoubleCellType
   }
 
   def proj4String: Option[String] =

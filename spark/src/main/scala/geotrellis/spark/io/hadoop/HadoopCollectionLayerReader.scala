@@ -52,7 +52,7 @@ class HadoopCollectionLayerReader(
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
 
-    val layerPath = header.path
+    val layerPath = new Path(header.path)
     val keyBounds = metadata.getComponent[Bounds[K]].getOrElse(throw new LayerEmptyBoundsError(id))
     val queryKeyBounds = rasterQuery(metadata)
 

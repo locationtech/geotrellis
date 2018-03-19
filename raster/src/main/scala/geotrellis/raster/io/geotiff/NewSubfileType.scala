@@ -16,10 +16,17 @@
 
 package geotrellis.raster.io.geotiff
 
+/**
+  * A general indication of the kind of data contained in this subfile.
+  * URL: https://www.awaresystems.be/imaging/tiff/tifftags/newsubfiletype.html
+  */
 abstract sealed class NewSubfileType extends Serializable { val code: Int }
 
+/** Reduced-resolution version of another image in this TIFF file */
 case object ReducedImage extends NewSubfileType { val code = 1 }
+/** Single page of a multi-page image (see the PageNumber field description) */
 case object Page extends NewSubfileType { val code = 2 }
+/** Transparency mask for another image in this TIFF file */
 case object Mask extends NewSubfileType { val code = 4 }
 
 object NewSubfileType {

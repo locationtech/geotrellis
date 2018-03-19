@@ -35,8 +35,7 @@ import scala.collection.mutable.ListBuffer
 
 class MalformedGeoTiffException(msg: String) extends RuntimeException(msg)
 
-class GeoTiffReaderLimitationException(msg: String)
-    extends RuntimeException(msg)
+class GeoTiffReaderLimitationException(msg: String) extends RuntimeException(msg)
 
 object GeoTiffReader {
 
@@ -91,7 +90,7 @@ object GeoTiffReader {
    * If there is more than one band in the GeoTiff, read the first band only.
    */
   def readSingleband(bytes: Array[Byte], decompress: Boolean, streaming: Boolean = false): SinglebandGeoTiff =
-      readSingleband(ByteBuffer.wrap(bytes), decompress, streaming)
+    readSingleband(ByteBuffer.wrap(bytes), decompress, streaming)
 
   def readSingleband(byteReader: ByteReader): SinglebandGeoTiff =
     readSingleband(byteReader, true, false)
@@ -128,7 +127,7 @@ object GeoTiffReader {
     getSingleband(geoTiffTile, info)
   }
 
-  def geoTiffSinglebandTile(info: GeoTiffReader.GeoTiffInfo): GeoTiffTile =
+  def geoTiffSinglebandTile(info: GeoTiffInfo): GeoTiffTile =
     if(info.bandCount == 1) {
       GeoTiffTile(
         info.segmentBytes,
@@ -209,7 +208,7 @@ object GeoTiffReader {
   /* Read a multi band GeoTIFF file.
    */
   def readMultiband(bytes: Array[Byte], decompress: Boolean, streaming: Boolean = false): MultibandGeoTiff =
-      readMultiband(ByteBuffer.wrap(bytes), decompress, streaming)
+    readMultiband(ByteBuffer.wrap(bytes), decompress, streaming)
 
   def readMultiband(byteReader: ByteReader, decompress: Boolean, streaming: Boolean): MultibandGeoTiff =
     readMultiband(byteReader, decompress, streaming, true, None)
@@ -231,18 +230,18 @@ object GeoTiffReader {
     getMultiband(geoTiffTile, info)
   }
 
-  def geoTiffMultibandTile(info: GeoTiffReader.GeoTiffInfo): GeoTiffMultibandTile = {
-    GeoTiffMultibandTile(
-      info.segmentBytes,
-      info.decompressor,
-      info.segmentLayout,
-      info.compression,
-      info.bandCount,
-      info.cellType,
-      Some(info.bandType),
-      info.overviews.map(geoTiffMultibandTile)
-    )
-  }
+    def geoTiffMultibandTile(info: GeoTiffInfo): GeoTiffMultibandTile = {
+      GeoTiffMultibandTile(
+        info.segmentBytes,
+        info.decompressor,
+        info.segmentLayout,
+        info.compression,
+        info.bandCount,
+        info.cellType,
+        Some(info.bandType),
+        info.overviews.map(geoTiffMultibandTile)
+      )
+    }
 
   case class GeoTiffInfo(
     extent: Extent,
@@ -490,4 +489,23 @@ object GeoTiffReader {
       byteReader.position(oldPos)
     }
   }
+
+  implicit val singlebandGeoTiffReader: GeoTiffReader[Tile] = new GeoTiffReader[Tile]{
+    def read(byteReader: ByteReader, decompress: Boolean, streaming: Boolean): GeoTiff[Tile] =
+      GeoTiffReader.readSingleband(byteReader, decompress, streaming)
+  }
+
+  implicit val multibandGeoTiffReader: GeoTiffReader[MultibandTile] = new GeoTiffReader[MultibandTile]{
+    def read(byteReader: ByteReader, decompress: Boolean, streaming: Boolean): GeoTiff[MultibandTile] =
+      GeoTiffReader.readMultiband(byteReader, decompress, streaming)
+  }
+
+  def apply[V <: CellGrid](implicit ev: GeoTiffReader[V]): GeoTiffReader[V] = ev
+}
+
+trait GeoTiffReader[V <: CellGrid] extends Serializable {
+  def read(byteReader: ByteReader, decompress: Boolean, streaming: Boolean): GeoTiff[V]
+
+  def read(bytes: Array[Byte], decompress: Boolean): GeoTiff[V] =
+    read(ByteBuffer.wrap(bytes), decompress, streaming = false)
 }

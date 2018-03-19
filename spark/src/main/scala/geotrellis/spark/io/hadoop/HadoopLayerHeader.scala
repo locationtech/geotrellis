@@ -18,13 +18,13 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.spark.io.LayerHeader
 
-import org.apache.hadoop.fs.Path
+import java.net.URI
 import spray.json._
 
 case class HadoopLayerHeader(
   keyClass: String,
   valueClass: String,
-  path: Path
+  path: URI
 ) extends LayerHeader {
   def format = "hdfs"
 }
@@ -45,7 +45,7 @@ object HadoopLayerHeader {
           HadoopLayerHeader(
             keyClass, 
             valueClass,
-            new Path(path))
+            new URI(path))
         case _ =>
           throw new DeserializationException(s"HadoopLayerMetadata expected, got: $value")
       }

@@ -49,6 +49,8 @@ trait AttributeStore extends  AttributeCaching with LayerAttributeStore {
 }
 
 object AttributeStore {
+  // TODO: Move to LayerAttributeStore, and potentially rename that to
+  // AvroLayerAttributeStore (these things are not needed for COGs)
   object Fields {
     val metadataBlob = "metadata"
     val header = "header"
@@ -75,7 +77,7 @@ object AttributeStore {
 
 case class LayerAttributes[H, M, K](header: H, metadata: M, keyIndex: KeyIndex[K], schema: Schema)
 
-trait LayerAttributeStore {
+trait LayerAttributeStore extends Serializable {
   def readHeader[H: JsonFormat](id: LayerId): H
   def readMetadata[M: JsonFormat](id: LayerId): M
   def readKeyIndex[K: ClassTag](id: LayerId): KeyIndex[K]

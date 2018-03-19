@@ -30,7 +30,7 @@ import java.net.URI
  * `wasb` and `wasbs` provide support for the Hadoop Azure connector. Additional
  * configuration is required for this.
  * This Provider intentinally does not handle the `s3` scheme because the Hadoop implemintation is poor.
- * That support is provided by [[S3Attributestore]]
+ * That support is provided by [[HadoopAttributeStore]]
  */
 class HadoopLayerProvider extends AttributeStoreProvider
     with LayerReaderProvider with LayerWriterProvider with ValueReaderProvider with CollectionLayerReaderProvider {
@@ -46,7 +46,7 @@ class HadoopLayerProvider extends AttributeStoreProvider
   def attributeStore(uri: URI): AttributeStore = {
     val path = new Path(trim(uri))
     val conf = new Configuration()
-    new HadoopAttributeStore(path, conf)
+    HadoopAttributeStore(path, conf)
   }
 
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {

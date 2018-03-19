@@ -18,11 +18,17 @@ package geotrellis
 
 import geotrellis.raster._
 import geotrellis.util._
-import geotrellis.spark.Implicits
 
 import org.apache.spark.rdd._
 
 package object spark extends Implicits {
+  /** GeoTiff Layer */
+  type RasterRDD[M] = RDD[Raster[Tile]] with Metadata[M]
+  type MultibandRasterRDD[M] = RDD[Raster[MultibandTile]] with Metadata[M]
+
+  type RasterCollection[M] = Seq[Raster[Tile]] with Metadata[M]
+  type MultibandRasterCollection[M] = Seq[Raster[MultibandTile]] with Metadata[M]
+  /** ------------- */
 
   type TileLayerRDD[K] = RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]
   object TileLayerRDD {

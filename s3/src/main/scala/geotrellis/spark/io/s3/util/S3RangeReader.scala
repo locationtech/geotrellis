@@ -32,7 +32,6 @@ import java.net.URI
  *
  * @param request: A [[GetObjectRequest]] of the desired GeoTiff.
  * @param client: The [[S3Client]] that retrieves the data.
- * @param chunkSize: An Int that specifies how many bytes should be read in at a time.
  * @return A new instance of S3RangeReader.
  */
 class S3RangeReader(

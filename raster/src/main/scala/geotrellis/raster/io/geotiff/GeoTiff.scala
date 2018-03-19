@@ -17,6 +17,7 @@
 package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
+import geotrellis.raster.crop._
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.vector.{Extent, ProjectedExtent}
@@ -60,6 +61,10 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
   def raster: Raster[T] = Raster(tile, extent)
   def rasterExtent: RasterExtent = RasterExtent(extent, tile.cols, tile.rows)
   def cellSize: CellSize = rasterExtent.cellSize
+  def bandCount: Int = tile match {
+    case t: MultibandTile => t.bandCount
+    case _ => 1
+  }
 
   def mapTile(f: T => T): GeoTiff[T]
 
@@ -76,7 +81,30 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
 
   def overviews: List[GeoTiff[T]]
   def getOverviewsCount: Int = overviews.length
-  def getOverview(idx: Int): GeoTiff[T] = overviews(idx)
+  def getOverview(idx: Int): GeoTiff[T] = if(idx < 0) this else overviews(idx)
+  def buildOverview(resampleMethod: ResampleMethod, decimationFactor: Int, blockSize: Int = GeoTiff.DefaultBlockSize): GeoTiff[T]
+
+  def withOverviews(resampleMethod: ResampleMethod, decimations: List[Int] = Nil, blockSize: Int = GeoTiff.DefaultBlockSize): GeoTiff[T] = {
+    val overviewDecimations: List[Int] =
+      if (decimations.isEmpty) {
+        val overviewLevels: Int = {
+          val pixels = math.max(tile.cols, tile.rows).toDouble
+          val blocks = pixels / blockSize
+          math.ceil(math.log(blocks) / math.log(2)).toInt
+        }
+
+        (0 until overviewLevels).map{ l => math.pow(2, l + 1).toInt }.toList
+      } else {
+        decimations
+      }
+
+    if (overviewDecimations.isEmpty) {
+      this
+    } else {
+      val overviews = overviewDecimations.map { (decimationFactor: Int) => buildOverview(resampleMethod, decimationFactor, blockSize) }
+      this.copy(overviews = overviews)
+    }
+  }
 
   /** Chooses the best matching overviews and makes resample */
   def resample(rasterExtent: RasterExtent, resampleMethod: ResampleMethod, strategy: OverviewStrategy): Raster[T]
@@ -86,12 +114,15 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
   def crop(subExtent: Extent, cellSize: CellSize): Raster[T] = crop(subExtent, cellSize, NearestNeighbor, AutoHigherResolution)
   def crop(rasterExtent: RasterExtent): Raster[T] = crop(rasterExtent.extent, rasterExtent.cellSize)
 
+  def crop(subExtent: Extent, options: Crop.Options): GeoTiff[T]
   def crop(subExtent: Extent): GeoTiff[T]
   def crop(colMax: Int, rowMax: Int): GeoTiff[T]
   def crop(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int): GeoTiff[T]
+  def crop(gridBounds: GridBounds): GeoTiff[T]
+  def crop(windows: Seq[GridBounds]): Iterator[(GridBounds, T)]
 
   /** Return the best matching overview to the given cellSize, returns "this" if no overviews available. */
-  protected def getClosestOverview(cellSize: CellSize, strategy: OverviewStrategy): GeoTiff[T] = {
+  private[geotrellis] def getClosestOverview(cellSize: CellSize, strategy: OverviewStrategy): GeoTiff[T] = {
     overviews match {
       case Nil => this
       case list =>
@@ -114,12 +145,23 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
         }
     }
   }
+
+  def copy(
+    tile: T = this.tile,
+    extent: Extent = this.extent,
+    crs: CRS = this.crs,
+    tags: Tags = this.tags,
+    options: GeoTiffOptions = this.options,
+    overviews: List[GeoTiff[T]] = this.overviews
+  ): GeoTiff[T]
 }
 
 /**
  * Companion object to GeoTiff
  */
 object GeoTiff {
+  val DefaultBlockSize = 128 // match GDAL default
+
   def readMultiband(path: String): MultibandGeoTiff =
     MultibandGeoTiff(path)
 

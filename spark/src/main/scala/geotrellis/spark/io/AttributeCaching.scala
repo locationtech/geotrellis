@@ -24,18 +24,14 @@ import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.duration._
 
-object AttributeCaching {
-  private val config = ConfigFactory.load()
-  val expiration: Int = config.getInt("geotrellis.attribute.caching.expirationMinutes")
-  val maxSize: Int = config.getInt("geotrellis.attribute.caching.maxSize")
-  val enabled: Boolean = config.getBoolean("geotrellis.attribute.caching.enabled")
-}
-
 trait AttributeCaching { self: AttributeStore =>
-  import AttributeCaching._
+  @transient private lazy val (enabled, cache) = {
+    val config = ConfigFactory.load()
+    val expiration = config.getInt("geotrellis.attribute.caching.expirationMinutes")
+    val maxSize = config.getInt("geotrellis.attribute.caching.maxSize")
+    val enabled = config.getBoolean("geotrellis.attribute.caching.enabled")
 
-  private final val cache = {
-    Scaffeine()
+    enabled -> Scaffeine()
       .recordStats()
       .expireAfterWrite(expiration.minutes)
       .maximumSize(maxSize)

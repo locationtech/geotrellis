@@ -17,8 +17,7 @@
 package geotrellis.spark.io.json
 
 import geotrellis.spark._
-import geotrellis.spark.tiling.LayoutDefinition
-import geotrellis.spark.util._
+import geotrellis.spark.tiling._
 import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.raster.io._
@@ -27,8 +26,10 @@ import geotrellis.vector.io._
 
 import org.apache.avro.Schema
 import spray.json._
+import spray.json.DefaultJsonProtocol._
 
 import java.time.{ZoneOffset, ZonedDateTime}
+import java.net.URI
 
 object Implicits extends Implicits
 
@@ -43,6 +44,18 @@ trait Implicits extends KeyFormats with KeyIndexFormats {
         case JsString(proj4String) => CRS.fromString(proj4String)
         case _ =>
           throw new DeserializationException("CRS must be a proj4 string.")
+      }
+  }
+
+  implicit object URIFormat extends RootJsonFormat[URI] {
+    def write(uri: URI) =
+      JsString(uri.toString)
+
+    def read(value: JsValue): URI =
+      value match {
+        case JsString(str) => new URI(str)
+        case _ =>
+          throw new DeserializationException("URI must be a string.")
       }
   }
 
@@ -75,6 +88,65 @@ trait Implicits extends KeyFormats with KeyIndexFormats {
           LayoutDefinition(extent.convertTo[Extent], tileLayout.convertTo[TileLayout])
         case _ =>
           throw new DeserializationException("LayoutDefinition expected")
+      }
+  }
+
+  implicit object ZoomedLayoutSchemeFormat extends RootJsonFormat[ZoomedLayoutScheme] {
+    def write(obj: ZoomedLayoutScheme) =
+      JsObject(
+        "crs"                 -> obj.crs.toJson,
+        "tileSize"            -> obj.tileSize.toJson,
+        "resolutionThreshold" -> obj.resolutionThreshold.toJson
+      )
+
+    def read(json: JsValue) =
+      json.asJsObject.getFields("crs", "tileSize", "resolutionThreshold") match {
+        case Seq(crs, tileSize, resolutionThreshold) =>
+          ZoomedLayoutScheme(crs.convertTo[CRS], tileSize.convertTo[Int], resolutionThreshold.convertTo[Double])
+        case _ =>
+          throw new DeserializationException("ZoomedLayoutScheme expected")
+      }
+  }
+
+  implicit object FloatingLayoutSchemeFormat extends RootJsonFormat[FloatingLayoutScheme] {
+    def write(obj: FloatingLayoutScheme) =
+      JsObject(
+        "tileCols" -> obj.tileCols.toJson,
+        "tileRows" -> obj.tileRows.toJson
+      )
+
+    def read(json: JsValue) =
+      json.asJsObject.getFields("tileCols", "tileRows") match {
+        case Seq(tileCols, tileRows) =>
+          FloatingLayoutScheme(tileCols.convertTo[Int], tileRows.convertTo[Int])
+        case _ =>
+          throw new DeserializationException("FloatingLayoutScheme expected")
+      }
+  }
+
+  /**
+    * LayoutScheme Format
+    */
+  implicit object LayoutSchemeFormat extends RootJsonFormat[LayoutScheme] {
+    def write(obj: LayoutScheme) =
+      obj match {
+        case scheme: ZoomedLayoutScheme => scheme.toJson
+        case scheme: FloatingLayoutScheme => scheme.toJson
+        case _ =>
+          throw new SerializationException("ZoomedLayoutScheme or FloatingLayoutScheme expected")
+      }
+
+    def read(json: JsValue) =
+      try {
+        ZoomedLayoutSchemeFormat.read(json)
+      } catch {
+        case _: DeserializationException =>
+          try {
+            FloatingLayoutSchemeFormat.read(json)
+          } catch {
+            case _: Throwable =>
+              throw new DeserializationException("ZoomedLayoutScheme or FloatingLayoutScheme expected")
+          }
       }
   }
 
@@ -118,5 +190,21 @@ trait Implicits extends KeyFormats with KeyIndexFormats {
   implicit object SchemaFormat extends RootJsonFormat[Schema] {
     def read(json: JsValue) = (new Schema.Parser).parse(json.toString())
     def write(obj: Schema) = obj.toString.parseJson
+  }
+
+  implicit object ProjectedExtentFormat extends RootJsonFormat[ProjectedExtent] {
+    def write(projectedExtent: ProjectedExtent) =
+      JsObject(
+        "extent" -> projectedExtent.extent.toJson,
+        "crs" -> projectedExtent.crs.toJson
+      )
+
+    def read(value: JsValue): ProjectedExtent =
+      value.asJsObject.getFields("xmin", "ymin", "xmax", "ymax") match {
+        case Seq(extent: JsValue, crs: JsValue) =>
+          ProjectedExtent(extent.convertTo[Extent], crs.convertTo[CRS])
+        case _ =>
+          throw new DeserializationException(s"ProjectctionExtent [[xmin,ymin,xmax,ymax], crs] expected: $value")
+      }
   }
 }

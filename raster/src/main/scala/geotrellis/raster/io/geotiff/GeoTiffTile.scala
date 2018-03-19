@@ -735,12 +735,6 @@ abstract class GeoTiffTile(
     else iter.next._2
   }
 
-
-  /**
-   * Crop this tile to given pixel regions.
-   *
-   * @param windows: Pixel bounds specifying the crop areas
-   */
   /**
     * Crop this tile to given pixel regions.
     *

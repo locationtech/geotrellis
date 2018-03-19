@@ -39,6 +39,13 @@ trait CropMethods[T] extends MethodExtensions[T] {
     crop(gb, Options.DEFAULT)
 
   /**
+   * Crop out multiple [[GridBounds]] windows.
+   */
+  def crop(windows: Seq[GridBounds]): Iterator[(GridBounds, T)] = {
+    windows.toIterator.map { gb => (gb, crop(gb))}
+  }
+
+  /**
     * Given a number of columns and rows for the desired output and
     * some cropping options, crop.
     */

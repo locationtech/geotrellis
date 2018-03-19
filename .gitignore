@@ -49,3 +49,4 @@ site/
 
 derby.log
 metastore_db/
+*.log

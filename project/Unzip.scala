@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Azavea
+ * Copyright 2018 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,35 +14,30 @@
  * limitations under the License.
  */
 
-package geotrellis.raster.io.geotiff
-
 import java.util.zip.ZipFile
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import java.util.zip.ZipEntry
 import java.io.InputStream
 import java.io.OutputStream
 import java.io.File
 
+object Unzip {
 
- 
-object ZipArchive {
- 
   val BUFSIZE = 4096
   val buffer = new Array[Byte](BUFSIZE)
  
-  def unZip(source: String, targetFolder: String): Unit = {
-    println(s"$source  -> $targetFolder")
+  def apply(source: String, targetFolder: String): Unit = {
+    println(s"Unzipping: $source  -> $targetFolder")
     val zipFile = new ZipFile(source)
  
-    unzipAllFile(zipFile.entries.toList, getZipEntryInputStream(zipFile)_, new File(targetFolder))
+    unzipAllFile(zipFile.entries.asScala.toList, getZipEntryInputStream(zipFile)_, new File(targetFolder))
   }
  
   def getZipEntryInputStream(zipFile: ZipFile)(entry: ZipEntry) = zipFile.getInputStream(entry)
  
-  def unzipAllFile(entryList: List[ZipEntry], inputGetter: (ZipEntry) => InputStream, targetFolder: File): Boolean = {
-    
+  def unzipAllFile(entryList: List[ZipEntry], inputGetter: (ZipEntry) => InputStream, targetFolder: File): Boolean = {    
     entryList match {
       case entry :: entries =>
  
@@ -73,5 +68,13 @@ object ZipArchive {
       writeToFile(reader, fos)
     } else
       true
+  }
+
+  def geoTiffTestFiles(): Unit = {
+    val testArchive = "raster/data/geotiff-test-files.zip"
+    val testDirPath = "raster/data/geotiff-test-files"
+    if(!(new File(testDirPath)).exists) {
+      Unzip(testArchive, "raster/data")
+    }
   }
 }

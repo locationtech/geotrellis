@@ -20,30 +20,8 @@ import java.io.File
 
 import org.scalatest._
 
-object GenerateGeoTiffTestFiles {
-  def main(args: Array[String]): Unit =
-    GeoTiffTestUtils.initializeTestFiles(true)
-}
-
 object GeoTiffTestUtils {
   val testDirPath = "raster/data/geotiff-test-files"
-
-  def initializeTestFiles(force: Boolean): Unit = {
-    val exists = new File(testDirPath).exists
-    if(force && exists) {
-      val file = new File(testDirPath)
-      def getRecursively(f: File): Seq[File] =
-        (f.listFiles.filter(_.isDirectory).flatMap(getRecursively) ++ f.listFiles) :+ f
-
-      getRecursively(new File(testDirPath)).foreach { f =>
-        if(f.exists) { java.nio.file.Files.delete(f.toPath) }
-      }
-    }
-    if(!(new File(testDirPath)).exists) {
-      println("UNCOMPRESSING TEST FILES")
-      ZipArchive.unZip("raster/data/geotiff-test-files.zip", "raster/data")
-    }
-  }
 }
 
 trait GeoTiffTestUtils extends Matchers {
@@ -51,7 +29,7 @@ trait GeoTiffTestUtils extends Matchers {
 
   def geoTiffPath(name: String): String = {
     val path = s"$testDirPath/$name"
-    GeoTiffTestUtils.initializeTestFiles(!new File(path).exists)
+    require(new File(path).exists, s"$path does not exist, unzip the archive?")
     path
   }
 
@@ -69,5 +47,4 @@ trait GeoTiffTestUtils extends Matchers {
     val file = new File(path)
     if (file.exists()) file.delete()
   }
-
 }

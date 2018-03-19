@@ -43,7 +43,7 @@ class GeoTiffTileSpec extends FunSpec
                                2, 1, 1, 2, 3, 1, 1, 3, 4, 2, 2, 4, 1, 2, 2, 1,
                                2, 2, 1, 2, 3, 3, 1, 3, 4, 4, 2, 4, 1, 1, 2, 1), 16, 9)
 
-      val gt = t.toGeoTiffTile()
+      val gt = t.toGeoTiffTile(GeoTiffOptions(Tiled, NoCompression, interleaveMethod = BandInterleave))
 
       assertEqual(gt, t)
     }

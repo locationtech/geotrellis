@@ -72,14 +72,14 @@ class GeoTiffWriter(geoTiff: GeoTiffData, dos: DataOutputStream) {
 
   // Used to immediately write values to our ultimate destination.
   var index: Int = 0
-  def writeByte(value: Byte) { dos.writeByte(value); index += 1 }
-  def writeBytes(value: Array[Byte]) { dos.write(value, 0, value.length); index += value.length }
+  def writeByte(value: Byte): Unit = { dos.writeByte(value.toInt); index += 1 }
+  def writeBytes(value: Array[Byte]): Unit =  { dos.write(value, 0, value.length); index += value.length }
 
-  def writeShort(value: Int) { writeBytes(toBytes(value.toShort)) }
-  def writeInt(value: Int) { writeBytes(toBytes(value)) }
-  def writeLong(value: Long) { writeBytes(toBytes(value)) }
-  def writeFloat(value: Float) { writeBytes(toBytes(value)) }
-  def writeDouble(value: Double) { writeBytes(toBytes(value)) }
+  def writeShort(value: Int): Unit = { writeBytes(toBytes(value.toShort)) }
+  def writeInt(value: Int): Unit = { writeBytes(toBytes(value)) }
+  def writeLong(value: Long): Unit = { writeBytes(toBytes(value)) }
+  def writeFloat(value: Float): Unit = { writeBytes(toBytes(value)) }
+  def writeDouble(value: Double): Unit = { writeBytes(toBytes(value)) }
 
   private def append(list: List[GeoTiffData]): Unit = {
     val overviewsIter = (geoTiff +: geoTiff.overviews).toIterator
@@ -226,7 +226,7 @@ class GeoTiffWriter(geoTiff: GeoTiffData, dos: DataOutputStream) {
         2 + // Short for number of tags
         4 + // Int for next IFD address
         tagFieldByteCount + tagDataByteCount
-      
+
       (fieldValues -> offsetFieldValueBuilder, tagFieldByteCount -> tagDataByteCount, imageDataStartOffset -> segmentBytesCount)
     }
 
