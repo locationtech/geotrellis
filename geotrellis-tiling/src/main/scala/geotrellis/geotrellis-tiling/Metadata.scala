@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark
+package geotrellis.tiling
 
 trait Metadata[M] {
   val metadata: M

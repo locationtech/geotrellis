@@ -77,6 +77,13 @@ trait Implicits
   /** Necessary for Contains.forPoint query */
   implicit def tileLayerMetadataToMapKeyTransform[K](tm: TileLayerMetadata[K]): MapKeyTransform = tm.mapTransform
 
+  implicit class withBoundsMethods(bounds: Bounds.type) {
+    implicit def frommRDD[K: Boundable, V](rdd: RDD[(K, V)]): Bounds[K] =
+      rdd
+        .map{ case (k, tile) => Bounds(k, k) }
+        .fold(EmptyBounds) { _ combine  _ }
+  }
+
   implicit class WithContextWrapper[K, V, M](val rdd: RDD[(K, V)] with Metadata[M]) {
     def withContext[K2, V2](f: RDD[(K, V)] => RDD[(K2, V2)]) =
       new ContextRDD(f(rdd), rdd.metadata)

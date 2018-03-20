@@ -106,7 +106,8 @@ lazy val root = Project("geotrellis", file(".")).
     util,
     vector,
     `vector-testkit`,
-    vectortile
+    vectortile,
+    `geotrellis-tiling`
   ).
   settings(commonSettings: _*).
   enablePlugins(ScalaUnidocPlugin).
@@ -249,4 +250,8 @@ lazy val `doc-examples` = project
 
 lazy val bench = project
   .dependsOn(spark)
+  .settings(commonSettings)
+
+lazy val `geotrellis-tiling` = project
+  .dependsOn(util, raster, vector, proj4)
   .settings(commonSettings)

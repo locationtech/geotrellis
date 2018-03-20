@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.tiling
+package geotrellis.types.tiling
 
 import geotrellis.raster._
 import geotrellis.vector.Extent

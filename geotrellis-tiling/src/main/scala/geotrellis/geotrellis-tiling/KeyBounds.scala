@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-package geotrellis.spark
+package geotrellis.tiling
 
 import geotrellis.raster.GridBounds
 import geotrellis.util._
-
-import org.apache.spark.rdd.RDD
 
 /** Represents a region of discrete space, bounding it by minimum and maximum points.
  * The bounds maybe [[EmptyBounds]] as result of intersection operation.
@@ -101,11 +99,6 @@ sealed trait Bounds[+A] extends Product with Serializable {
 
 object Bounds {
   def apply[A](min: A, max: A): Bounds[A] = KeyBounds(min, max)
-
-  def fromRdd[K: Boundable, V](rdd: RDD[(K, V)]): Bounds[K] =
-    rdd
-      .map{ case (k, tile) => Bounds(k, k) }
-      .fold(EmptyBounds) { _ combine  _ }
 
   implicit def toIterableKeyBounds[K](b: Bounds[K]): Iterable[KeyBounds[K]] =
     b match {

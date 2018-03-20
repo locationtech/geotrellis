@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark
+package geotrellis.types
 
 import org.scalatest._
 

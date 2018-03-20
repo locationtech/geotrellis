@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark
+package geotrellis.tiling
 
 import geotrellis.proj4._
 import geotrellis.vector._

@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.tiling
+package geotrellis.tiling
 
 import geotrellis.raster._
-import geotrellis.spark._
 import geotrellis.vector._
 
-/** A LayoutScheme is something that provides LayoutLevels based on an integer id or 
+/** A LayoutScheme is something that provides LayoutLevels based on an integer id or
   * an extent and cellsize. The resolution of the tiles for the LayoutLevel returned
   * will not necessarily match the CellSize provided, but an appropriately close
   * selection will be made.
-  * 
+  *
   * It also provides methods for next zoomed out tile layout level.
   */
 trait LayoutScheme extends Serializable {

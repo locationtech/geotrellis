@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.tiling
+package geotrellis.tiling
 
 
 import geotrellis.raster._
-import geotrellis.vector.{Extent, ProjectedExtent}
+import geotrellis.vector.Extent
 
 object FloatingLayoutScheme {
   val DEFAULT_TILE_SIZE = 256

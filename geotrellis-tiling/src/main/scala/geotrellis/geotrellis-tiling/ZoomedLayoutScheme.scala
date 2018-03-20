@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.tiling
+package geotrellis.tiling
 
 import geotrellis.proj4._
 import geotrellis.proj4.util.UTM
 import geotrellis.raster._
-import geotrellis.spark._
 import geotrellis.vector._
 import geotrellis.util.Haversine
 

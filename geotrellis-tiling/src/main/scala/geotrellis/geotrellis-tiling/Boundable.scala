@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package geotrellis.spark
+package geotrellis.tiling
 
 /** This type class marks K as point that can be bounded in space.
   * It is used to construct bounding hypercube for a set of Ks.
