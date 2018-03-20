@@ -50,6 +50,8 @@ object HilbertSpatialKeyIndex {
 }
 
 class HilbertSpatialKeyIndex(val keyBounds: KeyBounds[SpatialKey], val xResolution: Int, val yResolution: Int) extends KeyIndex[SpatialKey] {
+  val minKey = keyBounds.minKey
+
   @transient lazy val chc = {
     val dimensionSpec =
       new MultiDimensionalSpec(
@@ -69,8 +71,10 @@ class HilbertSpatialKeyIndex(val keyBounds: KeyBounds[SpatialKey], val xResoluti
         BitVectorFactories.OPTIMAL.apply(yResolution)
       )
 
-    bitVectors(0).copyFrom(key.col.toLong)
-    bitVectors(1).copyFrom(key.row.toLong)
+    val col = key.col - minKey.col
+    val row = key.row - minKey.row
+    bitVectors(0).copyFrom(col.toLong)
+    bitVectors(1).copyFrom(row.toLong)
 
     val hilbertBitVector = BitVectorFactories.OPTIMAL.apply(chc.getSpec.sumBitsPerDimension)
 
@@ -80,11 +84,13 @@ class HilbertSpatialKeyIndex(val keyBounds: KeyBounds[SpatialKey], val xResoluti
   }
 
   def indexRanges(keyRange: (SpatialKey, SpatialKey)): Seq[(BigInt, BigInt)] = {
+    val minCol = keyBounds.minKey.col
+    val minRow = keyBounds.minKey.row
 
     val ranges: java.util.List[LongRange] =
       List( //LongRange is exclusive on upper bound, adjusting for it here with + 1
-        LongRange.of(keyRange._1.col, keyRange._2.col + 1),
-        LongRange.of(keyRange._1.row, keyRange._2.row + 1)
+        LongRange.of(keyRange._1.col - minCol, keyRange._2.col - minCol + 1),
+        LongRange.of(keyRange._1.row - minRow, keyRange._2.row - minRow + 1)
       )
 
     val  regionInspector: RegionInspector[LongRange, LongContent] =
