@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io.index
 
-import geotrellis.spark._
+import geotrellis.tiling._
 import geotrellis.spark.io.index.zcurve._
 
 private[index] trait ZCurveKeyIndexMethod

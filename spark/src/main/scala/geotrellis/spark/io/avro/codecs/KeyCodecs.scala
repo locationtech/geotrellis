@@ -16,16 +16,15 @@
 
 package geotrellis.spark.io.avro.codecs
 
-import geotrellis.spark._
+import geotrellis.tiling.{SpaceTimeKey, SpatialKey}
 import geotrellis.spark.io.avro._
-import geotrellis.spark.{SpaceTimeKey, SpatialKey}
 import org.apache.avro._
 import org.apache.avro.generic._
 
 trait KeyCodecs {
   implicit def spatialKeyAvroFormat = new AvroRecordCodec[SpatialKey] {
     def schema = SchemaBuilder
-      .record("SpatialKey").namespace("geotrellis.spark")
+      .record("SpatialKey").namespace("geotrellis.tiling")
       .fields()
       .name("col").`type`().intType().noDefault()
       .name("row").`type`().intType().noDefault()
@@ -45,7 +44,7 @@ trait KeyCodecs {
 
   implicit def spaceTimeKeyAvroFormat = new AvroRecordCodec[SpaceTimeKey] {
     def schema = SchemaBuilder
-      .record("SpaceTimeKey").namespace("geotrellis.spark")
+      .record("SpaceTimeKey").namespace("geotrellis.tiling")
       .fields()
       .name("col").`type`().intType().noDefault()
       .name("row").`type`().intType().noDefault()

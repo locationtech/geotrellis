@@ -20,6 +20,7 @@ import geotrellis.raster._
 import geotrellis.raster.testkit._
 import geotrellis.raster.io.geotiff.{SinglebandGeoTiff, MultibandGeoTiff}
 import geotrellis.spark._
+import geotrellis.tiling._
 import geotrellis.spark.testkit._
 import geotrellis.vector.Extent
 import geotrellis.spark.testkit._

@@ -17,7 +17,6 @@
 package geotrellis.spark.matching
 
 import geotrellis.raster._
-import geotrellis.spark._
 
 import org.apache.spark.rdd.RDD
 

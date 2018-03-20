@@ -20,6 +20,7 @@ import geotrellis.proj4.LatLng
 import geotrellis.raster._
 import geotrellis.raster.testkit._
 import geotrellis.raster.io.geotiff.GeoTiff
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.testkit._

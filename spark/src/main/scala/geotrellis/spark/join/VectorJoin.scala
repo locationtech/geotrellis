@@ -16,8 +16,6 @@
 
 package geotrellis.spark.join
 
-import geotrellis.spark._
-import geotrellis.spark.tiling._
 import geotrellis.vector._
 
 import org.apache.spark._

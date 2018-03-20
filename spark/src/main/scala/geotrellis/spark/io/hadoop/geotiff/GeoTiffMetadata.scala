@@ -3,7 +3,7 @@ package geotrellis.spark.io.hadoop.geotiff
 import geotrellis.proj4.CRS
 import geotrellis.vector._
 import geotrellis.vector.io._
-import geotrellis.spark._
+import geotrellis.tiling._
 import geotrellis.spark.io._
 
 import spray.json._

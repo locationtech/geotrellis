@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io.avro
 
-import geotrellis.spark.SpatialKey
+import geotrellis.tiling.SpatialKey
 import geotrellis.spark.io.avro.codecs.{KeyValueRecordCodec, TileCodecs, KeyCodecs}
 import TileCodecs._
 import KeyCodecs._

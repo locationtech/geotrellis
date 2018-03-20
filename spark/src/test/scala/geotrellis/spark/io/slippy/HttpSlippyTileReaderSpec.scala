@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io.slippy
 
-import geotrellis.spark.SpatialKey
+import geotrellis.tiling._
 
 import org.scalatest._
 

@@ -1,6 +1,7 @@
 package geotrellis.spark.timeseries
 
 import geotrellis.spark._
+import geotrellis.tiling._
 
 import org.apache.spark.rdd.RDD
 

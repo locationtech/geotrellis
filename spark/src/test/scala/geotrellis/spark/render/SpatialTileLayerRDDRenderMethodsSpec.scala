@@ -19,6 +19,7 @@ package geotrellis.spark.render
 import geotrellis.raster._
 import geotrellis.raster.testkit._
 import geotrellis.raster.render._
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.render._
 import geotrellis.spark.testkit.testfiles._

@@ -16,7 +16,7 @@
 
 package geotrellis.spark.partition
 
-import geotrellis.spark._
+import geotrellis.tiling._
 import geotrellis.util._
 
 import org.apache.spark.rdd._

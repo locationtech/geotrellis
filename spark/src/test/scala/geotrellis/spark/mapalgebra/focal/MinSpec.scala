@@ -16,6 +16,7 @@
 
 package geotrellis.spark.mapalgebra.focal
 
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.testkit._
 import geotrellis.raster.mapalgebra.focal._

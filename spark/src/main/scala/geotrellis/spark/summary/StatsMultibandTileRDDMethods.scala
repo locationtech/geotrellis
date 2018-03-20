@@ -20,7 +20,6 @@ import geotrellis.raster._
 import geotrellis.raster.histogram._
 import geotrellis.raster.mapalgebra.local._
 import geotrellis.raster.summary._
-import geotrellis.spark._
 import geotrellis.util.MethodExtensions
 
 import org.apache.spark.Partitioner

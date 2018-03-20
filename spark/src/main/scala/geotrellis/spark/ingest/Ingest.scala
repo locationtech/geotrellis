@@ -20,6 +20,7 @@ import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.resample.{ResampleMethod, NearestNeighbor}
 import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.pyramid.Pyramid
 import geotrellis.spark.reproject._

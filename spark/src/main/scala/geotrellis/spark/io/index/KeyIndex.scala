@@ -16,7 +16,8 @@
 
 package geotrellis.spark.io.index
 
-import geotrellis.spark.KeyBounds
+import geotrellis.tiling._
+
 
 trait KeyIndex[K] extends Serializable {
   /** Some(keybounds) if the indexed space is bounded; None if it is unbounded */

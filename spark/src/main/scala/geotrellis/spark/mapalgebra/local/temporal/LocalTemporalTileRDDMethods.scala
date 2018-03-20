@@ -17,7 +17,7 @@
 package geotrellis.spark.mapalgebra.local.temporal
 
 import geotrellis.raster._
-import geotrellis.spark._
+import geotrellis.tiling._
 import org.apache.spark.Partitioner
 import geotrellis.util.MethodExtensions
 

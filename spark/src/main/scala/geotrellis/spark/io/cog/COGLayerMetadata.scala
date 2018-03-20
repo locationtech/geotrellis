@@ -3,9 +3,9 @@ package geotrellis.spark.io.cog
 import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.raster.io._
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.tiling._
 import geotrellis.util._
 import geotrellis.vector.Extent
 import geotrellis.vector.io._

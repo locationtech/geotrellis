@@ -8,10 +8,10 @@ import geotrellis.raster.io.geotiff.compression.Compression
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.raster.resample.NearestNeighbor
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.tiling._
 import geotrellis.spark.util._
 import geotrellis.util._
 import geotrellis.vector._

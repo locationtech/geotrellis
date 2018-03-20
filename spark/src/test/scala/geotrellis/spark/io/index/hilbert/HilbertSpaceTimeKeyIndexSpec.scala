@@ -17,7 +17,7 @@
 package geotrellis.spark.io.index.hilbert
 
 import org.scalatest._
-import geotrellis.spark.SpaceTimeKey
+import geotrellis.tiling._
 
 import jp.ne.opt.chronoscala.Imports._
 

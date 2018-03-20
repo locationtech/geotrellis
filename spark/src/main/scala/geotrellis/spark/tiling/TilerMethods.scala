@@ -21,6 +21,7 @@ import geotrellis.raster._
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.raster.resample._
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.util.MethodExtensions
 
@@ -63,5 +64,4 @@ class TilerMethods[K, V <: CellGrid: ClassTag: (? => TileMergeMethods[V]): (? =>
   def tileToLayout[K2: SpatialComponent: ClassTag](tileLayerMetadata: TileLayerMetadata[K2])
       (implicit ev: K => TilerKeyMethods[K, K2]): RDD[(K2, V)] =
     tileToLayout(tileLayerMetadata, Options.DEFAULT)
-
 }

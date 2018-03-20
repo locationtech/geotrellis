@@ -16,6 +16,7 @@
 
 package geotrellis.spark.knn
 
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.vector._
 import geotrellis.spark.testkit._

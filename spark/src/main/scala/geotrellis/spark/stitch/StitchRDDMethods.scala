@@ -19,8 +19,7 @@ package geotrellis.spark.stitch
 import geotrellis.raster._
 import geotrellis.raster.stitch.Stitcher
 import geotrellis.vector.Extent
-import geotrellis.spark._
-import geotrellis.spark.tiling._
+import geotrellis.tiling._
 import geotrellis.util._
 
 import org.apache.spark.rdd.RDD

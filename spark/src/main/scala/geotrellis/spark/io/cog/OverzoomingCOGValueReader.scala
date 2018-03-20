@@ -19,9 +19,9 @@ package geotrellis.spark.io.cog
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.resample._
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.tiling._
 import geotrellis.util._
 import spray.json._
 

@@ -19,7 +19,6 @@ package geotrellis.spark.split
 import geotrellis.raster._
 import geotrellis.raster.split._
 import geotrellis.raster.split.Split.Options
-import geotrellis.spark._
 import geotrellis.vector.ProjectedExtent
 import geotrellis.util._
 

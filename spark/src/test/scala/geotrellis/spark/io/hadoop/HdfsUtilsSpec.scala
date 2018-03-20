@@ -19,6 +19,7 @@ package geotrellis.spark.io.hadoop
 import java.io.IOException
 
 import geotrellis.util.Filesystem
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.testkit._
 

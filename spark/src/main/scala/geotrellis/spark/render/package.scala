@@ -20,7 +20,7 @@ import geotrellis.proj4.CRS
 import geotrellis.raster.Tile
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.render._
-import geotrellis.spark.tiling.LayoutDefinition
+import geotrellis.tiling._
 import geotrellis.util._
 
 import org.apache.spark.rdd.RDD

@@ -18,6 +18,7 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.raster._
 import geotrellis.raster.resample._
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._

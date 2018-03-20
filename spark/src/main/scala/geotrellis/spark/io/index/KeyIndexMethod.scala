@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io.index
 
-import geotrellis.spark._
+import geotrellis.tiling._
 
 trait KeyIndexMethod[K] extends Serializable {
   /** Helper method to get the resolution of a dimension. Takes the ceiling. */

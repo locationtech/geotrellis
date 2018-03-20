@@ -16,7 +16,7 @@
 
 package geotrellis.spark.buffer
 
-import geotrellis.spark._
+import geotrellis.tiling._
 import geotrellis.util.MethodExtensions
 
 import org.apache.spark.rdd.RDD

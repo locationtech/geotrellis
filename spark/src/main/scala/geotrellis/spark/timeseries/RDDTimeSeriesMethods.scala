@@ -3,6 +3,7 @@ package geotrellis.spark.timeseries
 import geotrellis.raster._
 import geotrellis.raster.histogram._
 import geotrellis.raster.summary.polygonal._
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.mask.Mask.Options
 import geotrellis.util.annotations.experimental

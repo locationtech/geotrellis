@@ -17,6 +17,7 @@
 package geotrellis.spark.join
 
 import geotrellis.spark._
+import geotrellis.tiling._
 import geotrellis.spark.partition._
 import geotrellis.spark.testkit._
 

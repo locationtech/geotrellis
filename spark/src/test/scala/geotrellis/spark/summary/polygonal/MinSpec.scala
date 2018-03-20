@@ -16,6 +16,7 @@
 
 package geotrellis.spark.summary.polygonal
 
+import geotrellis.tiling._
 import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._

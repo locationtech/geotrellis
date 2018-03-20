@@ -16,12 +16,12 @@
 
 package geotrellis.spark.pyramid
 
-import geotrellis.spark._
-import geotrellis.spark.tiling._
+import geotrellis.tiling._
 import geotrellis.raster._
 import geotrellis.raster.merge._
 import geotrellis.raster.resample._
 import geotrellis.raster.prototype._
+import geotrellis.spark._
 import geotrellis.util._
 import geotrellis.vector.Extent
 

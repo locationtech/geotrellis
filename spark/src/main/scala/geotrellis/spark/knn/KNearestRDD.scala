@@ -16,7 +16,6 @@
 
 package geotrellis.spark.knn
 
-import geotrellis.spark._
 import geotrellis.vector._
 
 import org.apache.spark.rdd.RDD

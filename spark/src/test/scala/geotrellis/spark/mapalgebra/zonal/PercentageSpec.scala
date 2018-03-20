@@ -16,7 +16,8 @@
 
 package geotrellis.spark.mapalgebra.zonal
 
-import Implicits._
+//import Implicits._
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testkit.testfiles._

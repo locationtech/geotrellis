@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io.avro.codecs
 
-import geotrellis.spark._
+import geotrellis.tiling._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs.Implicits._
 import org.apache.avro._
@@ -27,7 +27,7 @@ trait TemporalProjectedExtentCodec {
   implicit def temporalProjectedExtentCodec = new AvroRecordCodec[TemporalProjectedExtent] {
     def schema: Schema = {
       val base = SchemaBuilder
-        .record("TemporalProjectedExtent").namespace("geotrellis.spark")
+        .record("TemporalProjectedExtent").namespace("geotrellis.tiling")
         .fields()
         .name("extent").`type`(extentCodec.schema).noDefault()
 

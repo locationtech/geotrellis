@@ -17,7 +17,7 @@
 package geotrellis.spark.mapalgebra.local.temporal
 
 import geotrellis.raster._
-import geotrellis.spark._
+import geotrellis.tiling._
 import geotrellis.util.MethodExtensions
 
 import org.apache.spark.rdd.RDD

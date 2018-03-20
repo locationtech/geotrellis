@@ -20,7 +20,6 @@ import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.reproject._
 import geotrellis.raster.resample._
-import geotrellis.spark._
 import geotrellis.spark.ingest._
 import geotrellis.vector._
 import geotrellis.util._

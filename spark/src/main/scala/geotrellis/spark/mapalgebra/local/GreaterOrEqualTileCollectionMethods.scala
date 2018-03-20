@@ -90,7 +90,7 @@ trait GreaterOrEqualTileCollectionMethods[K] extends MethodExtensions[Seq[(K, Ti
     */
   def localGreaterOrEqual(other: Seq[(K, Tile)]): Seq[(K, Tile)] =
     self.combineValues(other)(GreaterOrEqual.apply)
-  
+
   /**
     * Returns a TileLayerSeq with data of BitCellType, where cell values equal 1 if
     * the corresponding cell valued of the rasters are greater than or equal

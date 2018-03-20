@@ -19,6 +19,7 @@ package geotrellis.spark.io.cog
 import geotrellis.raster.{CellGrid, RasterExtent}
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.reader.TiffTagsReader
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index.{Index, IndexRanges, MergeQueue}

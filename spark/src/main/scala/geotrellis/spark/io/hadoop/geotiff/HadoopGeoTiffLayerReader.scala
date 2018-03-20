@@ -3,7 +3,7 @@ package geotrellis.spark.io.hadoop.geotiff
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.io.geotiff.{AutoHigherResolution, OverviewStrategy}
 import geotrellis.spark.io.hadoop.cog.byteReader
-import geotrellis.spark.tiling.ZoomedLayoutScheme
+import geotrellis.tiling.ZoomedLayoutScheme
 import geotrellis.util.ByteReader
 import geotrellis.spark.io._
 

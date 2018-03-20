@@ -25,20 +25,4 @@ import geotrellis.proj4._
   * the layout that defines that grid space, as well as functionality for cutting tiles into
   * a uniform grid space.
   */
-package object tiling {
-  private final val WORLD_WSG84 = Extent(-180, -89.99999, 179.99999, 89.99999)
-
-  implicit class CRSWorldExtent(crs: CRS) {
-    def worldExtent: Extent =
-      crs match {
-        case LatLng =>
-          WORLD_WSG84
-        case WebMercator =>
-          Extent(-20037508.342789244, -20037508.342789244, 20037508.342789244, 20037508.342789244)
-        case Sinusoidal =>
-          Extent(-2.0015109355797417E7, -1.0007554677898709E7, 2.0015109355797417E7, 1.0007554677898709E7)
-        case _ =>
-          WORLD_WSG84.reproject(LatLng, crs)
-      }
-  }
-}
+package object tiling

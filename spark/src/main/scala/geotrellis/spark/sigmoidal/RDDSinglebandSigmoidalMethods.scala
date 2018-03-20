@@ -17,7 +17,6 @@
 package geotrellis.spark.sigmoidal
 
 import geotrellis.raster._
-import geotrellis.spark._
 import geotrellis.util.MethodExtensions
 
 import org.apache.spark.rdd.RDD

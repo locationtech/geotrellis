@@ -17,7 +17,7 @@
 package geotrellis.spark.join
 
 import geotrellis.raster._
-import geotrellis.spark._
+import geotrellis.tiling._
 import geotrellis.spark.partition._
 import org.apache.spark.rdd._
 import geotrellis.util._

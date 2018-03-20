@@ -19,6 +19,7 @@ package geotrellis.spark.filter
 import geotrellis.proj4.LatLng
 import geotrellis.raster.{GridBounds, TileLayout, FloatConstantNoDataCellType}
 import geotrellis.raster.io.geotiff.SinglebandGeoTiff
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.tiling._

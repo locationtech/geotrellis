@@ -1,6 +1,7 @@
 package geotrellis.spark.timeseries
 
 import geotrellis.raster._
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.mask._
 import geotrellis.util.annotations.experimental

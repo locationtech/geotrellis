@@ -16,7 +16,7 @@
 
 package geotrellis.spark.filter
 
-import geotrellis.spark._
+import geotrellis.tiling._
 import geotrellis.spark.io._
 import geotrellis.util._
 

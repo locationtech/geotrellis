@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io.json
 
-import geotrellis.spark._
+import geotrellis.tiling._
 
 import spray.json._
 import spray.json.DefaultJsonProtocol._

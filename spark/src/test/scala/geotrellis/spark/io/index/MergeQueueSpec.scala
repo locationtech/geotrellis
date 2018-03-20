@@ -4,6 +4,7 @@ import java.time.{ZoneId, ZonedDateTime}
 
 import geotrellis.proj4.{LatLng, Sinusoidal}
 import geotrellis.raster._
+import geotrellis.tiling._
 import geotrellis.spark.io._
 import geotrellis.spark._
 import geotrellis.spark.io.index.hilbert.HilbertSpaceTimeKeyIndex

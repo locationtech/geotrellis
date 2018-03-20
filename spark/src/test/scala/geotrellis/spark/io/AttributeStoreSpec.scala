@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io
 
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.summary._

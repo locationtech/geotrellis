@@ -19,8 +19,8 @@ package geotrellis.spark.merge
 import geotrellis.raster._
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
+import geotrellis.tiling._
 import geotrellis.spark._
-import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.util._
 import geotrellis.vector.Extent
 

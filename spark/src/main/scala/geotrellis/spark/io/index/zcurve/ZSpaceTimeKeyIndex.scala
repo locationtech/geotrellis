@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io.index.zcurve
 
-import geotrellis.spark._
+import geotrellis.tiling._
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.index.zcurve._
 

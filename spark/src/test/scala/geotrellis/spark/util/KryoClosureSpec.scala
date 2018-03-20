@@ -18,6 +18,7 @@ package geotrellis.spark.util
 
 import geotrellis.spark._
 import geotrellis.proj4._
+import geotrellis.tiling._
 import geotrellis.spark.tiling._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.TileLayerRDD

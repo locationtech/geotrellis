@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.index.zcurve
 
+import geotrellis.tiling._
 import geotrellis.spark._
 
 import org.scalatest._

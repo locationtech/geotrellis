@@ -27,5 +27,4 @@ trait PolygonalSummaryFeatureCollectionMethods[G <: Geometry, D] {
 
   def polygonalSummary[T](multiPolygon: MultiPolygon, zeroValue: T)(handler: PolygonalSummaryHandler[G, D, T]): T =
     featureCollection.aggregate(zeroValue)(handler.mergeOp(multiPolygon, zeroValue), handler.combineOp)
-
 }

@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io
 
-import geotrellis.spark._
+import geotrellis.tiling._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.json._
 import geotrellis.util._

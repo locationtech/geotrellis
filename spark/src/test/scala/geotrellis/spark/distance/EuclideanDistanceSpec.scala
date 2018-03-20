@@ -8,6 +8,7 @@ import geotrellis.raster._
 import geotrellis.raster.distance.{EuclideanDistanceTile => RasterEuclideanDistance}
 import geotrellis.raster.render._
 import geotrellis.raster.testkit._
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.buffer.Direction
 import geotrellis.spark.buffer.Direction._

@@ -18,6 +18,7 @@ package geotrellis.spark.crop
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.SinglebandGeoTiff
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.vector.Extent
 import geotrellis.spark.testkit._

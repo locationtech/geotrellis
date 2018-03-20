@@ -17,7 +17,7 @@
 package geotrellis.spark.equalization
 
 import geotrellis.raster._
-import geotrellis.spark._
+import geotrellis.tiling._
 
 import org.apache.spark.rdd.RDD
 

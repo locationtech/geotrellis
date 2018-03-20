@@ -16,19 +16,17 @@
 
 package geotrellis.spark.io.hadoop
 
-import geotrellis.spark._
-
 import org.apache.spark.Partitioner
 
 object KeyPartitioner {
-  def apply[K: Ordering](splits: Array[K]): KeyPartitioner[K] = 
+  def apply[K: Ordering](splits: Array[K]): KeyPartitioner[K] =
     new KeyPartitioner[K](splits)
 }
 
 class KeyPartitioner[K: Ordering](splits: Array[K]) extends Partitioner {
   private val ordering = implicitly[Ordering[K]]
 
-  override def getPartition(key: Any): Int = 
+  override def getPartition(key: Any): Int =
     getPartitionForKey(key.asInstanceOf[K])
 
   def getPartitionForKey(key: K): Int = {

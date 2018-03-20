@@ -1,6 +1,6 @@
 package geotrellis.spark.io
 
-import geotrellis.spark.tiling.LayoutDefinition
+import geotrellis.tiling._
 import geotrellis.vector.Extent
 
 import org.apache.spark.util.AccumulatorV2

@@ -1,8 +1,8 @@
 package geotrellis.spark.io.hadoop.geotiff
 
 import geotrellis.vector.ProjectedExtent
-import geotrellis.spark.tiling._
 import geotrellis.proj4.{CRS, WebMercator}
+import geotrellis.tiling._
 
 import scala.collection.mutable
 import com.vividsolutions.jts.index.strtree.STRtree

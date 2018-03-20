@@ -3,6 +3,7 @@ package geotrellis.spark.io.file.cog
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff._
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io.AttributeStore
 import geotrellis.spark.io.cog._

@@ -19,7 +19,7 @@ package geotrellis.spark.io.index
 package object zcurve {
 
   /**
-   * Implements the the algorithm defined in: Tropf paper to find:   
+   * Implements the the algorithm defined in: Tropf paper to find:
    * LITMAX: maximum z-index in query range smaller than current point, xd
    * BIGMIN: minimum z-index in query range greater than current point, xd
    *
@@ -29,7 +29,7 @@ package object zcurve {
    * @param rmax: maximum z-index of the query range, inclusive
    * @return (LITMAX, BIGMIN)
    */
-  def zdiv(load: (Long, Long, Int, Int) => Long, dims: Int)(xd: Long, rmin: Long, rmax: Long): (Long, Long) = {    
+  def zdiv(load: (Long, Long, Int, Int) => Long, dims: Int)(xd: Long, rmin: Long, rmax: Long): (Long, Long) = {
     require(rmin < rmax, "min ($rmin) must be less than max $(rmax)")
     var zmin: Long = rmin
     var zmax: Long = rmax
@@ -44,20 +44,20 @@ package object zcurve {
 
     var i = 64
     while (i > 0) {
-      i -= 1  
+      i -= 1
 
       val bits = i/dims+1
       val dim  = i%dims
-      
+
       ( bit(xd, i), bit(zmin, i), bit(zmax, i) ) match {
-        case (0, 0, 0) => 
+        case (0, 0, 0) =>
           // continue
 
         case (0, 0, 1) =>
           zmax   = load(zmax, under(bits), bits, dim)
           bigmin = load(zmin, over(bits), bits, dim)
 
-        case (0, 1, 0) =>  
+        case (0, 1, 0) =>
           // sys.error(s"Not possible, MIN <= MAX, (0, 1, 0)  at index $i")
 
         case (0, 1, 1) =>
@@ -68,15 +68,15 @@ package object zcurve {
           litmax = zmax
           return (litmax, bigmin)
 
-        case (1, 0, 1) =>          
+        case (1, 0, 1) =>
           litmax = load(zmax, under(bits), bits, dim)
           zmin = load(zmin, over(bits), bits, dim)
 
         case (1, 1, 0) =>
           // sys.error(s"Not possible, MIN <= MAX, (1, 1, 0) at index $i")
-        
-        case (1, 1, 1) => 
-          // continue          
+
+        case (1, 1, 1) =>
+          // continue
       }
     }
     (litmax, bigmin)

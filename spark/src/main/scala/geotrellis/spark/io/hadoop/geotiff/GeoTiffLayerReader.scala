@@ -3,8 +3,8 @@ package geotrellis.spark.io.hadoop.geotiff
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.{CellGrid, Raster, RasterExtent}
 import geotrellis.raster.resample.{RasterResampleMethods, ResampleMethod}
-import geotrellis.spark.tiling.ZoomedLayoutScheme
-import geotrellis.spark.{LayerId, SpatialKey}
+import geotrellis.tiling.{SpatialKey, ZoomedLayoutScheme}
+import geotrellis.spark.LayerId
 import geotrellis.vector.{Extent, ProjectedExtent}
 import geotrellis.raster.crop.Crop
 import geotrellis.raster.reproject.Reproject.{Options => ReprojectOptions}

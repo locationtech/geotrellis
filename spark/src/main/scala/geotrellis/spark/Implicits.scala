@@ -5,6 +5,7 @@ import geotrellis.raster.io.geotiff._
 import geotrellis.vector._
 import geotrellis.proj4._
 import geotrellis.util._
+import geotrellis.tiling._
 import geotrellis.spark.tiling._
 import geotrellis.spark.ingest._
 import geotrellis.spark.crop._
@@ -13,7 +14,6 @@ import org.apache.spark.{Partitioner, SparkContext}
 import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
-import java.time.Instant
 
 
 object Implicits extends Implicits
@@ -71,8 +71,6 @@ trait Implicits
     */
   implicit def partitionerToOption(partitioner: Partitioner): Option[Partitioner] =
     Some(partitioner)
-
-  implicit def longToInstant(millis: Long): Instant = Instant.ofEpochMilli(millis)
 
   /** Necessary for Contains.forPoint query */
   implicit def tileLayerMetadataToMapKeyTransform[K](tm: TileLayerMetadata[K]): MapKeyTransform = tm.mapTransform

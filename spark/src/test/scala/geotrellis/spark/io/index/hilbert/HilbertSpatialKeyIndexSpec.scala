@@ -19,7 +19,7 @@ package geotrellis.spark.io.index.hilbert
 import geotrellis.spark.io.index.HilbertKeyIndexMethod
 import org.scalatest._
 
-import geotrellis.spark.{KeyBounds, SpatialKey}
+import geotrellis.tiling._
 
 class HilbertSpatialKeyIndexSpec extends FunSpec with Matchers{
 

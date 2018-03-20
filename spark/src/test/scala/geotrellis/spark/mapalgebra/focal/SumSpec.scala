@@ -20,6 +20,7 @@ import geotrellis.vector.Extent
 import geotrellis.raster._
 import geotrellis.raster.mapalgebra.focal._
 
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.mapalgebra.focal._
 import geotrellis.spark.testkit._

@@ -19,8 +19,8 @@ package geotrellis.spark.density
 import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.raster.mapalgebra.focal.Kernel
+import geotrellis.tiling._
 import geotrellis.spark._
-import geotrellis.spark.tiling._
 import geotrellis.util.MethodExtensions
 import geotrellis.vector._
 

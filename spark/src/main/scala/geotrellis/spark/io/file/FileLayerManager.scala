@@ -17,6 +17,7 @@
 package geotrellis.spark.io.file
 
 import geotrellis.spark._
+import geotrellis.tiling._
 import geotrellis.spark.io._
 import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io.avro._

@@ -18,8 +18,7 @@ package geotrellis.spark.rasterize
 
 import geotrellis.raster._
 import geotrellis.raster.rasterize._
-import geotrellis.spark._
-import geotrellis.spark.tiling._
+import geotrellis.tiling._
 import geotrellis.spark.rasterize._
 import geotrellis.util.MethodExtensions
 import geotrellis.vector.{Geometry, Feature}
