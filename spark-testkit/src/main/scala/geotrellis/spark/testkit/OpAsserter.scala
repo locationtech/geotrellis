@@ -16,6 +16,7 @@
 
 package geotrellis.spark.testkit
 
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.raster._
 import geotrellis.raster.stitch._

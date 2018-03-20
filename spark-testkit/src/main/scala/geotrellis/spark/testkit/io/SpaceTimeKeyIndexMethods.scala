@@ -18,6 +18,7 @@ package geotrellis.spark.testkit.io
 
 import java.time.ZonedDateTime
 
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io.index._
 import jp.ne.opt.chronoscala.Imports._

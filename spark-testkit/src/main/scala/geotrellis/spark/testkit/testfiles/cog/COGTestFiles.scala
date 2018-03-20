@@ -3,13 +3,13 @@ package geotrellis.spark.testkit.testfiles.cog
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.resample.NearestNeighbor
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.reproject._
 import geotrellis.spark.io._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.spark.testkit.testfiles._
-import geotrellis.spark.tiling._
 
 import jp.ne.opt.chronoscala.Imports._
 import org.apache.spark.SparkContext

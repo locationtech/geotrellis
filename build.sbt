@@ -173,7 +173,7 @@ lazy val spark = project
   )
 
 lazy val `spark-testkit` = project
-  .dependsOn(`raster-testkit`, spark)
+  .dependsOn(`raster-testkit`, spark, `geotrellis-types`)
   .settings(commonSettings)
 
 lazy val s3 = project
