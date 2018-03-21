@@ -16,6 +16,7 @@
 
 package geotrellis.spark.etl
 
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.raster.Tile
 import geotrellis.spark.util.SparkUtils

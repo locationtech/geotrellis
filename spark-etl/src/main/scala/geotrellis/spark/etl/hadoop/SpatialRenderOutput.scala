@@ -22,6 +22,7 @@ import geotrellis.raster.Tile
 import geotrellis.raster.render._
 import geotrellis.spark.etl.OutputPlugin
 
+import geotrellis.tiling._
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark._
 import geotrellis.spark.etl.Etl

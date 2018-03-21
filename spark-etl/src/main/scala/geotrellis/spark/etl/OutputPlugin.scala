@@ -17,7 +17,8 @@
 package geotrellis.spark.etl
 
 import geotrellis.spark.etl.config.EtlConf
-import geotrellis.spark.{LayerId, Metadata}
+import geotrellis.tiling.Metadata
+import geotrellis.spark.LayerId
 import geotrellis.spark.io.{AttributeStore, Writer}
 
 import org.apache.spark.SparkContext
