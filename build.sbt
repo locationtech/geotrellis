@@ -173,14 +173,13 @@ lazy val spark = project
   )
 
 lazy val `spark-testkit` = project
-  .dependsOn(`raster-testkit`, spark, `geotrellis-types`)
+  .dependsOn(`raster-testkit`, spark)
   .settings(commonSettings)
 
 lazy val s3 = project
   .dependsOn(
     spark % "compile->compile;test->test",  // <-- spark-testkit update should simplify this
-    `spark-testkit` % Test,
-    `geotrellis-tiling`
+    `spark-testkit` % Test
   )
   .settings(commonSettings)
   .settings(
@@ -194,24 +193,21 @@ lazy val `s3-testkit` = project
 lazy val accumulo = project
   .dependsOn(
     spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
-    `spark-testkit` % Test,
-    `geotrellis-tiling`
+    `spark-testkit` % Test
   )
   .settings(commonSettings)
 
 lazy val cassandra = project
   .dependsOn(
     spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
-    `spark-testkit` % Test,
-    `geotrellis-tiling`
+    `spark-testkit` % Test
   )
   .settings(commonSettings)
 
 lazy val hbase = project
   .dependsOn(
     spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
-    `spark-testkit` % Test,
-    `geotrellis-tiling`
+    `spark-testkit` % Test
   )
   .settings(commonSettings) // HBase depends on its own protobuf version
   .settings(projectDependencies := { Seq((projectID in spark).value.exclude("com.google.protobuf", "protobuf-java")) })
