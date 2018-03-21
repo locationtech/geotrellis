@@ -19,6 +19,7 @@ package geotrellis.spark.io.geowave
 import geotrellis.geotools._
 import geotrellis.proj4.LatLng
 import geotrellis.raster._
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.accumulo._
