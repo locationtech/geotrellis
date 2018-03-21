@@ -3,8 +3,8 @@ package geotrellis.doc.examples.distance
 object ClipToGridExamples {
   def `Performing a polygonal sum from an RDD of Polygons to GeoTiffs on S3`: Unit = {
     import geotrellis.raster._
+    import geotrellis.tiling._
     import geotrellis.spark._
-    import geotrellis.spark.tiling._
     import geotrellis.vector._
 
     import org.apache.spark.HashPartitioner
@@ -70,8 +70,8 @@ object ClipToGridExamples {
 
   def `Performing a count of points that lie in regular polygon grid`: Unit = {
     import geotrellis.raster._
+    import geotrellis.tiling._
     import geotrellis.spark._
-    import geotrellis.spark.tiling._
     import geotrellis.vector._
 
     import org.apache.spark.HashPartitioner

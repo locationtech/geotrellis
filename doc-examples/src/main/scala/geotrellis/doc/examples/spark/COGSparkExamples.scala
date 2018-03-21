@@ -5,6 +5,7 @@ object COGSparkExamples {
     import geotrellis.raster._
     import geotrellis.raster.io.geotiff._
     import geotrellis.raster.resample._
+    import geotrellis.tiling._
     import geotrellis.spark._
     import geotrellis.spark.io._
     import geotrellis.spark.io.index.ZCurveKeyIndexMethod
@@ -123,8 +124,8 @@ object COGSparkExamples {
     import geotrellis.raster._
     import geotrellis.raster.resample._
     import geotrellis.raster.io.geotiff.Auto
+    import geotrellis.tiling._
     import geotrellis.spark._
-    import geotrellis.spark.tiling._
     import geotrellis.spark.io.file.geotiff._
     import geotrellis.proj4.WebMercator
     import java.net.URI
