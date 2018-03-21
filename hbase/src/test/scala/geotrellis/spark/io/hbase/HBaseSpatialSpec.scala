@@ -17,6 +17,7 @@
 package geotrellis.spark.io.hbase
 
 import geotrellis.raster.Tile
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.testkit.io._

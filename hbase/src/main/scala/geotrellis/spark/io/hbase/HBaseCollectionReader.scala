@@ -20,7 +20,8 @@ import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.io.index.MergeQueue
 import geotrellis.spark.util.KryoWrapper
-import geotrellis.spark.{Boundable, KeyBounds, LayerId}
+import geotrellis.tiling.{Boundable, KeyBounds}
+import geotrellis.spark.LayerId
 
 import org.apache.hadoop.hbase.client.Scan
 import org.apache.hadoop.hbase.filter.{FilterList, MultiRowRangeFilter, PrefixFilter}

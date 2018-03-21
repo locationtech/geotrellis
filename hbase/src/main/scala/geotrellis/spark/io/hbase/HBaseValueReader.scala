@@ -18,7 +18,8 @@ package geotrellis.spark.io.hbase
 
 import geotrellis.raster._
 import geotrellis.raster.resample._
-import geotrellis.spark.{LayerId, SpatialComponent}
+import geotrellis.tiling.SpatialComponent
+import geotrellis.spark.LayerId
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}

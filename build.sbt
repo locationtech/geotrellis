@@ -209,7 +209,8 @@ lazy val cassandra = project
 lazy val hbase = project
   .dependsOn(
     spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
-    `spark-testkit` % Test
+    `spark-testkit` % Test,
+    `geotrellis-tiling`
   )
   .settings(commonSettings) // HBase depends on its own protobuf version
   .settings(projectDependencies := { Seq((projectID in spark).value.exclude("com.google.protobuf", "protobuf-java")) })
