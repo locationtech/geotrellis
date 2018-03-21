@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.s3
 
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro.AvroRecordCodec

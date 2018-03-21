@@ -17,6 +17,7 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.raster.Tile
+import geotrellis.tiling._
 import geotrellis.spark.io._
 import geotrellis.spark.io.s3.testkit._
 import geotrellis.spark.io.index._

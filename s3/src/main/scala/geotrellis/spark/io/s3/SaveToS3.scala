@@ -16,9 +16,10 @@
 
 package geotrellis.spark.io.s3
 
+import geotrellis.tiling.SpatialKey
 import geotrellis.spark.io._
 import geotrellis.spark.render._
-import geotrellis.spark.{LayerId, SpatialKey}
+import geotrellis.spark.LayerId
 
 import java.io.ByteArrayInputStream
 import java.util.concurrent.Executors

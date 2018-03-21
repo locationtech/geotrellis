@@ -19,6 +19,7 @@ package geotrellis.spark.io.s3
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.tags.TiffTags
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.spark.io.{GeoTiffInfoReader, RasterReader}

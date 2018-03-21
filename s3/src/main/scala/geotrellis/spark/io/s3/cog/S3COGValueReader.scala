@@ -18,6 +18,7 @@ package geotrellis.spark.io.s3.cog
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
