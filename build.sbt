@@ -201,7 +201,8 @@ lazy val accumulo = project
 lazy val cassandra = project
   .dependsOn(
     spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
-    `spark-testkit` % Test
+    `spark-testkit` % Test,
+    `geotrellis-tiling`
   )
   .settings(commonSettings)
 
