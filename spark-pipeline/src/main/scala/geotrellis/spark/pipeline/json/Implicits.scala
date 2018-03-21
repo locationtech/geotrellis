@@ -6,10 +6,10 @@ import geotrellis.spark.pipeline.json.reindex._
 import geotrellis.spark.pipeline.json.update._
 import geotrellis.spark.pipeline.json.transform._
 import geotrellis.proj4.CRS
+import geotrellis.tiling._
 import geotrellis.spark.pipeline._
 import geotrellis.raster._
 import geotrellis.raster.resample._
-import geotrellis.spark.tiling._
 import geotrellis.vector._
 import geotrellis.util.LazyLogging
 

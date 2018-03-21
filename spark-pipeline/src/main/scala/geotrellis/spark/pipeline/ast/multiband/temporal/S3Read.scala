@@ -3,7 +3,7 @@ package geotrellis.spark.pipeline.ast.multiband.temporal
 import io.circe.syntax._
 
 import geotrellis.raster._
-import geotrellis.spark.TemporalProjectedExtent
+import geotrellis.tiling.TemporalProjectedExtent
 import geotrellis.spark.pipeline.ast.Input
 import geotrellis.spark.pipeline.json.read
 

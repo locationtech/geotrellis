@@ -3,7 +3,7 @@ package geotrellis.spark.pipeline.json.transform
 import geotrellis.raster.resample.{NearestNeighbor, PointResampleMethod}
 import geotrellis.raster.CellType
 import geotrellis.spark.pipeline.json._
-import geotrellis.spark.tiling.{LayoutDefinition, LayoutScheme}
+import geotrellis.tiling.{LayoutDefinition, LayoutScheme}
 import io.circe.generic.extras.ConfiguredJsonCodec
 
 trait Transform extends PipelineExpr

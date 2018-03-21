@@ -4,10 +4,10 @@ import geotrellis.spark.pipeline.json.write.{Write => JsonWrite}
 import geotrellis.raster.CellGrid
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.prototype.TilePrototypeMethods
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io.LayerWriter
 import geotrellis.spark.io.avro.AvroRecordCodec
-import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.util.{Component, GetComponent, LazyLogging}
 
 import org.apache.spark.rdd.RDD

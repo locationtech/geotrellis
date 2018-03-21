@@ -1,7 +1,7 @@
 package geotrellis.spark.pipeline.ast
 
 import geotrellis.raster.{MultibandTile, Tile}
-import geotrellis.spark.TemporalProjectedExtent
+import geotrellis.tiling.TemporalProjectedExtent
 import geotrellis.spark.io.hadoop.HadoopGeoTiffRDD
 import geotrellis.spark.io.s3.S3GeoTiffRDD
 import geotrellis.spark.pipeline.json.read._

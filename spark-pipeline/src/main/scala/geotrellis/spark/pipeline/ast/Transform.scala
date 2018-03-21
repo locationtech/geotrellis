@@ -9,12 +9,13 @@ import geotrellis.raster.stitch.Stitcher
 import geotrellis.raster.CellGrid
 import geotrellis.raster.resample.ResampleMethod
 import geotrellis.spark.io.avro.AvroRecordCodec
-import geotrellis.spark.tiling.{FloatingLayoutScheme, LayoutLevel, LocalLayoutScheme, TilerKeyMethods, ZoomedLayoutScheme}
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.pipeline.json.transform.{Pyramid => JsonPyramid}
 import geotrellis.spark.pipeline.json.transform._
 import geotrellis.spark.pyramid.Pyramid
+import geotrellis.spark.tiling._
 import geotrellis.vector.ProjectedExtent
 import geotrellis.util._
 

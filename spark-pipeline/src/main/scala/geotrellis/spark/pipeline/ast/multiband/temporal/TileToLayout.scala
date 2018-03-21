@@ -2,6 +2,7 @@ package geotrellis.spark.pipeline.ast.multiband.temporal
 
 import io.circe.syntax._
 
+import geotrellis.tiling._
 import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.spark.pipeline.ast._

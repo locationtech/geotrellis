@@ -2,6 +2,7 @@ package geotrellis.spark.pipeline.ast.singleband.spatial
 
 import io.circe.syntax._
 import geotrellis.raster._
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.pipeline.ast._
