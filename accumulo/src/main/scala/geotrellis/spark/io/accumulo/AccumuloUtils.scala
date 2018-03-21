@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io.accumulo
 
-import geotrellis.spark.{ Bounds, Boundable, KeyBounds, EmptyBounds }
+import geotrellis.tiling.{ Bounds, Boundable, KeyBounds, EmptyBounds }
 import geotrellis.spark.io.accumulo._
 import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
 

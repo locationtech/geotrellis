@@ -193,7 +193,8 @@ lazy val `s3-testkit` = project
 lazy val accumulo = project
   .dependsOn(
     spark % "compile->compile;test->test", // <-- spark-testkit update should simplify this
-    `spark-testkit` % Test
+    `spark-testkit` % Test,
+    `geotrellis-tiling`
   )
   .settings(commonSettings)
 
