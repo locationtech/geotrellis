@@ -127,7 +127,7 @@ object FractionalRasterizer {
             Point(pixelMaxX, pixelMinY),
             Point(pixelMinX, pixelMinY)
           ).jtsGeom
-          val fraction = (pixel.intersection(localPoly)).getArea / pixel.getArea
+          val fraction = if (localPoly.isEmpty) 0.0 else (util.Intersection.polygonalRegions(pixel, localPoly)).map(_.area).foldLeft(0.0)(_ + _) / pixel.getArea
 
           if (fraction > 0.0) {
             if (!seen.contains(pair)) {
@@ -157,7 +157,7 @@ object FractionalRasterizer {
             Point(pixelMaxX, pixelMinY),
             Point(pixelMinX, pixelMinY)
           ).jtsGeom
-          val fraction = (pixel.intersection(localPoly)).getArea / pixel.getArea
+          val fraction = if (localPoly.isEmpty) 0.0 else (util.Intersection.polygonalRegions(pixel, localPoly)).map(_.area).foldLeft(0.0)(_ + _) / pixel.getArea
 
           if (fraction > 0.0) {
             if (!seen.contains(pair)) {
