@@ -21,6 +21,11 @@ API Changes
   - **New:** ``ZoomResample`` can now be used on ``MultibandTileLayerRDD``\s.
   - **New:** A ``Partitioner`` can be specified in the ``reproject`` methods of ``TileLayerRDD``.
 
+Fixes
+^^^^^
+
+- `StreamingHistogram.binCount now returns non-zero counts <https://github.com/locationtech/geotrellis/pull/2590>`__
+
 1.2.1
 _____
 *2018 Jan 3*
