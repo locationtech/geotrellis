@@ -282,4 +282,11 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
     default.statistics should not be (custom.statistics)
   }
 
+  describe("Bin Count") {
+    it("should report non-zero bin counts") {
+      val tile = DoubleArrayTile(Array[Double](52, 54, 61, 32, 52, 50, 11, 21, 18), 3, 3)
+      val result = tile.histogramDouble(3)
+      result.binCounts.map({ pair => pair._2 > 0.0 }) should be (Array(true, true, true))
+    }
+  }
 }
