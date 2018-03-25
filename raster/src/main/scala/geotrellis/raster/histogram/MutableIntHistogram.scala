@@ -25,6 +25,15 @@ import math.{abs, round, sqrt}
 abstract class MutableIntHistogram extends MutableHistogram[Int] with IntHistogram {
 
   /**
+    * Return sequence of tuples pairing bin label value and to its associated count.
+    */
+  def binCounts(): Seq[(Int, Long)] = {
+    val labels = values()
+    val counts = labels.map(itemCount)
+    labels.zip(counts)
+  }
+
+  /**
     * Note the occurance of 'item'.
     *
     * The optional parameter 'count' allows histograms to be built

@@ -331,6 +331,16 @@ class StreamingHistogram(
   def values(): Array[Double] = buckets.map(_.label).toArray
   def rawValues(): Array[Double] = values()
 
+  def binCounts(): Seq[(Double, Long)] = {
+    _buckets.entrySet.toArray.map({ m: Any =>
+      m match {
+        case m: java.util.Map.Entry[Double, Long] =>
+          (m.getKey, m.getValue)
+        case _ => throw new Exception
+      }
+    })
+  }
+
   /**
     * Execute the given function on each bucket.  The value contained
     * by the bucket is a Double, and the count is an integer (ergo the
