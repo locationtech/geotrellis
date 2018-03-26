@@ -26,6 +26,7 @@ import geotrellis.util._
 
 import spray.json._
 import java.net.URI
+import java.util.ServiceLoader
 
 import scala.reflect._
 
@@ -79,4 +80,29 @@ trait COGValueReader[ID] {
   ](layerId: ID, resampleMethod: ResampleMethod = ResampleMethod.DEFAULT): Reader[K, V]
 }
 
+object COGValueReader {
+  def apply(attributeStore: AttributeStore, valueReaderUri: URI): COGValueReader[LayerId] = {
+    import scala.collection.JavaConversions._
+    ServiceLoader.load(classOf[COGValueReaderProvider]).iterator()
+      .find(_.canProcess(valueReaderUri))
+      .getOrElse(throw new RuntimeException(s"Unable to find COGValueReaderProvider for $valueReaderUri"))
+      .valueReader(valueReaderUri, attributeStore)
+  }
 
+  def apply(attributeStoreUri: URI, valueReaderUri: URI): COGValueReader[LayerId] =
+    apply(AttributeStore(attributeStoreUri), valueReaderUri)
+
+  def apply(uri: URI): COGValueReader[LayerId] =
+    apply(attributeStoreUri = uri, valueReaderUri = uri)
+
+  def apply(attributeStore: AttributeStore, valueReaderUri: String): COGValueReader[LayerId] =
+    apply(attributeStore, new URI(valueReaderUri))
+
+  def apply(attributeStoreUri: String, valueReaderUri: String): COGValueReader[LayerId] =
+    apply(AttributeStore(new URI(attributeStoreUri)), new URI(valueReaderUri))
+
+  def apply(uri: String): COGValueReader[LayerId] = {
+    val _uri = new URI(uri)
+    apply(attributeStoreUri = _uri, valueReaderUri = _uri)
+  }
+}
