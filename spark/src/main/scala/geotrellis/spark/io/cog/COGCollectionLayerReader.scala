@@ -26,6 +26,7 @@ import geotrellis.util._
 
 import spray.json._
 import java.net.URI
+import java.util.ServiceLoader
 
 import scala.reflect._
 
@@ -152,6 +153,32 @@ abstract class COGCollectionLayerReader[ID] { self =>
 }
 
 object COGCollectionLayerReader {
+  def apply(attributeStore: AttributeStore, collectionReaderUri: URI): COGCollectionLayerReader[LayerId] = {
+    import scala.collection.JavaConversions._
+    ServiceLoader.load(classOf[COGCollectionLayerReaderProvider]).iterator()
+      .find(_.canProcess(collectionReaderUri))
+      .getOrElse(throw new RuntimeException(s"Unable to find COGCollectionLayerReaderProvider for $collectionReaderUri"))
+      .collectionLayerReader(collectionReaderUri, attributeStore)
+  }
+
+  def apply(attributeStoreUri: URI, collectionReaderUri: URI): COGCollectionLayerReader[LayerId] =
+    apply(AttributeStore(attributeStoreUri), collectionReaderUri)
+
+  def apply(uri: URI): COGCollectionLayerReader[LayerId] =
+    apply(attributeStoreUri = uri, collectionReaderUri = uri)
+
+  def apply(attributeStore: AttributeStore, collectionReaderUri: String): COGCollectionLayerReader[LayerId] =
+    apply(attributeStore, new URI(collectionReaderUri))
+
+
+  def apply(attributeStoreUri: String, collectionReaderUri: String): COGCollectionLayerReader[LayerId] =
+    apply(AttributeStore(new URI(attributeStoreUri)), new URI(collectionReaderUri))
+
+  def apply(uri: String): COGCollectionLayerReader[LayerId] = {
+    val _uri = new URI(uri)
+    apply(attributeStoreUri = _uri, collectionReaderUri = _uri)
+  }
+
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: GeoTiffReader
@@ -197,7 +224,7 @@ object COGCollectionLayerReader {
             tiff
               .crop(map.keys.toSeq)
               .flatMap { case (k, v) => map.get(k).map(i => i -> v) }
-              .toVector 
+              .toVector
           }
       }
     }
