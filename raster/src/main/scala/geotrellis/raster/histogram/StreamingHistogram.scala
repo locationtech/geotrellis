@@ -285,31 +285,20 @@ class StreamingHistogram(
       val Bucket(item2, count) = buckets().head
       count / exp(abs(7 * (item2 - item))).toInt
     }
+    else if (_buckets.containsKey(item)) {
+      _buckets.get(item)
+    }
     else {
       val lo = _buckets.lowerEntry(item)
       val hi = _buckets.higherEntry(item)
 
-      val raw = {
-        if (lo == null && hi == null) {
-          // If we somehow landed right on a bucket value,
-          // the interpolated value is the count of that bucket.
-          if(_buckets.containsKey(item)) _buckets.get(item)
-          else 0
-        } else if (lo == null) {
-          val x = item / hi.getKey
-          x * hi.getValue
-        }
-        else if (hi == null) {
-          val x = (lo.getKey - item) / lo.getKey
-            (1 - x) * lo.getValue
-        }
-        else {
-          val x = (item - lo.getKey) / (hi.getKey - lo.getKey)
-          x * (hi.getValue - lo.getValue) + lo.getValue
-        }
+      if (lo == null) hi.getValue
+      else if (hi == null) lo.getValue
+      else {
+        val x = ((item-lo.getKey) / (hi.getKey-lo.getKey))
+        val result = ((1.0-x)*lo.getValue) + (x*hi.getValue)
+        result.toLong
       }
-      if (areaUnderCurve != 0) ((raw / areaUnderCurve) * totalCount).toInt
-      else 0
     }
   }
 
@@ -330,16 +319,6 @@ class StreamingHistogram(
     */
   def values(): Array[Double] = buckets.map(_.label).toArray
   def rawValues(): Array[Double] = values()
-
-  def binCounts(): Seq[(Double, Long)] = {
-    _buckets.entrySet.toArray.map({ m: Any =>
-      m match {
-        case m: java.util.Map.Entry[Double, Long] =>
-          (m.getKey, m.getValue)
-        case _ => throw new Exception
-      }
-    })
-  }
 
   /**
     * Execute the given function on each bucket.  The value contained
