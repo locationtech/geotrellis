@@ -7,11 +7,11 @@ import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.spark._
-import geotrellis.spark.io.InvalidLayerIdError
+import geotrellis.spark.io.{InvalidLayerIdError, AttributeStore}
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.cog.vrt.VRT
 import geotrellis.spark.io.cog.vrt.VRT.IndexedSimpleSource
-import geotrellis.spark.io.hadoop.{HadoopAttributeStore, HadoopLayerHeader, HdfsUtils}
+import geotrellis.spark.io.hadoop.{HadoopAttributeStore, HadoopLayerHeader, HdfsUtils, SerializableConfiguration}
 import geotrellis.spark.io.index._
 import geotrellis.util.ByteReader
 import org.apache.hadoop.fs.Path
@@ -21,11 +21,8 @@ import spray.json.JsonFormat
 import scala.reflect.{ClassTag, classTag}
 
 class HadoopCOGLayerWriter(
-  val attributeStore: HadoopAttributeStore,
-  rootPath: String
-) extends COGLayerWriter {
-  implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, attributeStore.hadoopConfiguration)
-
+  rootPath: String,
+  val attributeStore: AttributeStore
   def writeCOGLayer[K: SpatialComponent: Ordering: JsonFormat: ClassTag, V <: CellGrid: GeoTiffReader: ClassTag](
     layerName: String,
     cogLayer: COGLayer[K, V],
@@ -34,12 +31,15 @@ class HadoopCOGLayerWriter(
   ): Unit = {
     /** Collect VRT into accumulators, to write everything and to collect VRT at the same time */
     val layerId0 = LayerId(layerName, 0)
-    val sc = cogLayer.layers.head._2.sparkContext
+    def sc = cogLayer.layers.head._2.sparkContext
+    val config = SerializableConfiguration(sc.hadoopConfiguration)
     val samplesAccumulator = sc.collectionAccumulator[IndexedSimpleSource](VRT.accumulatorName(layerName))
+
+    implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, config.value)
 
     def catalogPath = new Path(rootPath)
     try {
-      attributeStore.attributePath(layerId0, COGAttributeStore.Fields.metadata)
+      new Path(catalogPath, s"${layerId0.name}/${layerId0.zoom}")
     } catch {
       case e: Exception =>
         throw new InvalidLayerIdError(layerId0).initCause(e)
@@ -71,7 +71,7 @@ class HadoopCOGLayerWriter(
 
         mergeFunc match {
           case None =>
-            HdfsUtils.write(path, attributeStore.hadoopConfiguration) { new GeoTiffWriter(cog, _).write(true) }
+            HdfsUtils.write(path, config.value) { new GeoTiffWriter(cog, _).write(true) }
             // collect VRT metadata
             (0 until cog.bandCount)
               .map { b =>
@@ -80,8 +80,8 @@ class HadoopCOGLayerWriter(
               }
               .foreach(samplesAccumulator.add)
 
-          case Some(_) if !HdfsUtils.pathExists(path, attributeStore.hadoopConfiguration) =>
-            HdfsUtils.write(path, attributeStore.hadoopConfiguration) { new GeoTiffWriter(cog, _).write(true) }
+          case Some(_) if !HdfsUtils.pathExists(path, config.value) =>
+            HdfsUtils.write(path, config.value) { new GeoTiffWriter(cog, _).write(true) }
             // collect VRT metadata
             (0 until cog.bandCount)
               .map { b =>
@@ -90,10 +90,10 @@ class HadoopCOGLayerWriter(
               }
               .foreach(samplesAccumulator.add)
 
-          case Some(merge) if HdfsUtils.pathExists(path, attributeStore.hadoopConfiguration) =>
+          case Some(merge) if HdfsUtils.pathExists(path, config.value) =>
             val old = GeoTiffReader[V].read(path.toUri(), decompress = false, streaming = true)
             val merged = merge(cog, old)
-            HdfsUtils.write(path, attributeStore.hadoopConfiguration) { new GeoTiffWriter(merged, _).write(true) }
+            HdfsUtils.write(path, config.value) { new GeoTiffWriter(merged, _).write(true) }
             // collect VRT metadata
             (0 until merged.bandCount)
               .map { b =>
@@ -111,7 +111,7 @@ class HadoopCOGLayerWriter(
 
       HdfsUtils.write(
         new Path(s"${catalogPath.toString}/${layerName}/${zoomRange.minZoom}_${zoomRange.maxZoom}/vrt.xml"),
-        attributeStore.hadoopConfiguration
+        config.value
       ) { _.write(os.toByteArray) }
 
       samplesAccumulator.reset
@@ -120,7 +120,9 @@ class HadoopCOGLayerWriter(
 }
 
 object HadoopCOGLayerWriter {
-  def apply(rootPath: Path)(implicit sc: SparkContext): HadoopCOGLayerWriter =
-    new HadoopCOGLayerWriter(HadoopAttributeStore(rootPath), rootPath.toString)
-}
+  def apply(rootPath: Path, attributeStore: AttributeStore): HadoopCOGLayerWriter =
+    new HadoopCOGLayerWriter(rootPath.toString, attributeStore)
 
+  def apply(rootPath: Path)(implicit sc: SparkContext): HadoopCOGLayerWriter =
+    apply(rootPath, HadoopAttributeStore(rootPath))
+}
