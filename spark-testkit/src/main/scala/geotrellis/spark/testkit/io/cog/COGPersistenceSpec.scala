@@ -44,7 +44,7 @@ abstract class COGPersistenceSpec[
 ] extends FunSpec with Matchers with BeforeAndAfterAll {
 
   type TestReader = COGLayerReader[LayerId]
-  type TestWriter = COGLayerWriter
+  type TestWriter = COGLayerWriter[LayerId]
   // TODO: implement and test all layer functions
   // type TestDeleter = LayerDeleter[LayerId]
   // type TestCopier = LayerCopier[LayerId]
@@ -105,7 +105,7 @@ abstract class COGPersistenceSpec[
       }*/
 
       it("should write a layer") {
-        writer.write[K, V](layerId.name, sample, layerId.zoom, keyIndexMethod)
+        writer.write[K, V](layerId, sample, keyIndexMethod)
       }
 
       it("should read a layer back") {

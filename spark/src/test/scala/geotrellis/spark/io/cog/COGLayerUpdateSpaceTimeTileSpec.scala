@@ -134,7 +134,7 @@ trait COGLayerUpdateSpaceTimeTileSpec
             .copy(extent = sample.metadata.mapTransform(ukb.toGridBounds).bufferByLayout(sample.metadata.layout))
         )
 
-        writer.write[SpaceTimeKey, Tile](updatedLayerId.name, sample, updatedLayerId.zoom, updatedKeyIndex)
+        writer.write[SpaceTimeKey, Tile](updatedLayerId, sample, updatedKeyIndex)
         writer.update[SpaceTimeKey, Tile](updatedLayerId.name, updatedSample, updatedLayerId.zoom, mergeFunc = mergeFunc)
 
         /** !!IMPORTANT: the place where empty tiles are filtered out */
@@ -162,7 +162,7 @@ trait COGLayerUpdateSpaceTimeTileSpec
         val rdd = createSpaceTimeTileLayerRDD(tiles, tileLayout).withContext { _.filter(!_._2.isNoDataTile) }
         assert(rdd.count == 4)
 
-        writer.write(id.name, rdd, id.zoom, keyIndexMethod)
+        writer.write(id, rdd, keyIndexMethod)
 
         val updateRdd =
           createSpaceTimeTileLayerRDD(

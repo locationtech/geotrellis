@@ -49,7 +49,7 @@ class COGFileSpatialSpec
       val layerId = LayerId("Some!layer:%@~`{}id", COGTestFiles.ZOOM_LEVEL)
 
       println(outputLocalPath)
-      writer.write[SpatialKey, Tile](layerId.name, layer, layerId.zoom, ZCurveKeyIndexMethod)
+      writer.write[SpatialKey, Tile](layerId, layer, ZCurveKeyIndexMethod)
       val backin = reader.read[SpatialKey, Tile](layerId)
     }
   }

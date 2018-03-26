@@ -50,7 +50,7 @@ class COGHadoopSpatialSpec
       val layer = AllOnesTestFile
       val layerId = LayerId("Some layer", COGTestFiles.ZOOM_LEVEL)
 
-      writer.write[SpatialKey, Tile](layerId.name, layer, layerId.zoom, ZCurveKeyIndexMethod)
+      writer.write[SpatialKey, Tile](layerId, layer, ZCurveKeyIndexMethod)
       val backin = reader.read[SpatialKey, Tile](layerId)
     }
 
@@ -59,7 +59,7 @@ class COGHadoopSpatialSpec
       val layerId = LayerId("Some:layer", COGTestFiles.ZOOM_LEVEL)
 
       intercept[InvalidLayerIdError] {
-        writer.write[SpatialKey, Tile](layerId.name, layer, layerId.zoom, ZCurveKeyIndexMethod)
+        writer.write[SpatialKey, Tile](layerId, layer, ZCurveKeyIndexMethod)
       }
     }
   }
