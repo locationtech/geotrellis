@@ -74,7 +74,11 @@ abstract trait Histogram[@specialized (Int, Double) T <: AnyVal] extends Seriali
   /**
    * Return sequence of tuples pairing bin label value and to its associated count.
    */
-  def binCounts(): Seq[(T, Long)]
+  def binCounts(): Seq[(T, Long)] = {
+    val labels = values()
+    val counts = labels.map(itemCount)
+    labels.zip(counts)
+  }
 
   /**
     * Return an array containing the values seen by this histogram.
