@@ -25,7 +25,7 @@ class S3COGLayerWriter(
   keyPrefix: String,
   getS3Client: () => S3Client = () => S3Client.DEFAULT,
   threads: Int = S3RDDWriter.DefaultThreadCount
-) extends COGLayerWriter {
+) extends COGLayerWriter[LayerId] {
 
   def writeCOGLayer[
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,

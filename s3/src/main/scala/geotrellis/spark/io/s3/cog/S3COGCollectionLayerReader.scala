@@ -39,8 +39,6 @@ import scala.reflect.ClassTag
  */
 class S3COGCollectionLayerReader(
   val attributeStore: AttributeStore,
-  val bucket: String,
-  val prefix: String,
   val getS3Client: () => S3Client = () => S3Client.DEFAULT,
   val defaultThreads: Int = S3COGCollectionLayerReader.defaultThreadCount
 ) extends COGCollectionLayerReader[LayerId] with LazyLogging {
@@ -51,6 +49,17 @@ class S3COGCollectionLayerReader(
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: GeoTiffReader: ClassTag
   ](id: LayerId, rasterQuery: LayerQuery[K, TileLayerMetadata[K]]) = {
+    val header =
+      try {
+        attributeStore.read[S3LayerHeader](LayerId(id.name, 0), COGAttributeStore.Fields.header)
+      } catch {
+        // to follow GeoTrellis Layer Readers logic
+        case e: AttributeNotFoundError => throw new LayerNotFoundError(id).initCause(e)
+      }
+
+    val bucket = header.bucket
+    val prefix = header.key
+
     def getKeyPath(zoomRange: ZoomRange, maxWidth: Int): BigInt => String =
       (index: BigInt) =>
         s"$bucket/$prefix/${id.name}/" +
@@ -74,8 +83,9 @@ object S3COGCollectionLayerReader {
   def apply(attributeStore: S3AttributeStore): S3COGCollectionLayerReader =
     new S3COGCollectionLayerReader(
       attributeStore,
-      attributeStore.bucket,
-      attributeStore.prefix,
       () => attributeStore.s3Client
     )
+
+  def apply(bucket: String, prefix: String): S3COGCollectionLayerReader =
+    apply(S3AttributeStore(bucket, prefix))
 }
