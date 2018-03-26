@@ -31,9 +31,12 @@ import geotrellis.util.LazyLogging
 import org.apache.spark.rdd.RDD
 import spray.json._
 
+import java.net.URI
+import java.util.ServiceLoader
+
 import scala.reflect._
 
-trait COGLayerWriter extends LazyLogging with Serializable {
+abstract class COGLayerWriter[ID] extends LazyLogging with Serializable {
   val attributeStore: AttributeStore
 
   def writeCOGLayer[
@@ -50,32 +53,30 @@ trait COGLayerWriter extends LazyLogging with Serializable {
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
   ](
-     layerName: String,
+     id: ID,
      tiles: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
-     tileZoom: Int,
      keyIndexMethod: KeyIndexMethod[K]
-   ): Unit = write[K, V](layerName, tiles, tileZoom, keyIndexMethod, NoCompression, None)
+   ): Unit = write[K, V](id, tiles, keyIndexMethod, NoCompression, None)
 
   def write[
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
   ](
-    layerName: String,
+    id: ID,
     tiles: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
-    tileZoom: Int,
     keyIndexMethod: KeyIndexMethod[K],
     compression: Compression,
     mergeFunc: Option[(GeoTiff[V], GeoTiff[V]) => GeoTiff[V]]
   ): Unit =
     tiles.metadata.bounds match {
       case keyBounds: KeyBounds[K] =>
-        val cogLayer = COGLayer.fromLayerRDD(tiles, tileZoom, compression = compression)
+        val cogLayer = COGLayer.fromLayerRDD(tiles, id.asInstanceOf[LayerId].zoom, compression = compression)
         // println(cogLayer.metadata.toJson.prettyPrint)
         val keyIndexes: Map[ZoomRange, KeyIndex[K]] =
           cogLayer.metadata.zoomRangeInfos.
             map { case (zr, bounds) => zr -> keyIndexMethod.createIndex(bounds) }.
             toMap
-        writeCOGLayer(layerName, cogLayer, keyIndexes, mergeFunc)
+        writeCOGLayer(id.asInstanceOf[LayerId].name, cogLayer, keyIndexes, mergeFunc)
       case EmptyBounds =>
         throw new EmptyBoundsError("Cannot write layer with empty bounds.")
     }
@@ -84,33 +85,31 @@ trait COGLayerWriter extends LazyLogging with Serializable {
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
   ](
-     layerName: String,
+     id: ID,
      tiles: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
-     tileZoom: Int,
      keyIndex: KeyIndex[K]
-   ): Unit = write[K, V](layerName, tiles, tileZoom, keyIndex, NoCompression, None)
+   ): Unit = write[K, V](id, tiles, keyIndex, NoCompression, None)
 
   def write[
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
   ](
-     layerName: String,
+     id: ID,
      tiles: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
-     tileZoom: Int,
      keyIndex: KeyIndex[K],
      compression: Compression,
      mergeFunc: Option[(GeoTiff[V], GeoTiff[V]) => GeoTiff[V]]
    ): Unit =
     tiles.metadata.bounds match {
       case keyBounds: KeyBounds[K] =>
-        val cogLayer = COGLayer.fromLayerRDD(tiles, tileZoom, compression = compression)
+        val cogLayer = COGLayer.fromLayerRDD(tiles, id.asInstanceOf[LayerId].zoom, compression = compression)
         // println(cogLayer.metadata.toJson.prettyPrint)
         val keyIndexes: Map[ZoomRange, KeyIndex[K]] =
           cogLayer.metadata.zoomRangeInfos.
             map { case (zr, _) => zr -> keyIndex }.
             toMap
 
-        writeCOGLayer(layerName, cogLayer, keyIndexes, mergeFunc)
+        writeCOGLayer(id.asInstanceOf[LayerId].name, cogLayer, keyIndexes, mergeFunc)
       case EmptyBounds =>
         throw new EmptyBoundsError("Cannot write layer with empty bounds.")
     }
@@ -161,4 +160,29 @@ trait COGLayerWriter extends LazyLogging with Serializable {
         throw new EmptyBoundsError("Cannot write layer with empty bounds.")
     }
   }
+}
+
+object COGLayerWriter {
+  def apply(attributeStore: AttributeStore, layerWriterUri: URI): COGLayerWriter[LayerId] = {
+    import scala.collection.JavaConversions._
+    ServiceLoader.load(classOf[COGLayerWriterProvider]).iterator()
+      .find(_.canProcess(layerWriterUri))
+      .getOrElse(throw new RuntimeException(s"Unable to find a COGLayerWriterProvider for $layerWriterUri"))
+      .layerWriter(layerWriterUri, attributeStore)
+  }
+
+  def apply(attributeStoreUri: URI, layerWriterUri: URI): COGLayerWriter[LayerId] =
+    apply(attributeStore = AttributeStore(attributeStoreUri), layerWriterUri)
+
+  def apply(uri: URI): COGLayerWriter[LayerId] =
+    apply(attributeStoreUri = uri, layerWriterUri = uri)
+
+  def apply(attributeStore: AttributeStore, layerWriterUri: String): COGLayerWriter[LayerId] =
+    apply(attributeStore, new URI(layerWriterUri))
+
+  def apply(attributeStoreUri: String, layerWriterUri: String): COGLayerWriter[LayerId] =
+    apply(new URI(attributeStoreUri), new URI(layerWriterUri))
+
+  def apply(uri: String): COGLayerWriter[LayerId] =
+    apply(new URI(uri))
 }
