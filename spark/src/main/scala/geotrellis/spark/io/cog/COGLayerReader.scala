@@ -199,11 +199,10 @@ object COGLayerReader {
     */
   def apply(attributeStore: AttributeStore, layerReaderUri: URI)(implicit sc: SparkContext): COGLayerReader[LayerId] = {
     import scala.collection.JavaConversions._
-    ServiceLoader.load(classOf[LayerReaderProvider]).iterator()
+    ServiceLoader.load(classOf[COGLayerReaderProvider]).iterator()
       .find(_.canProcess(layerReaderUri))
       .getOrElse(throw new RuntimeException(s"Unable to find LayerReaderProvider for $layerReaderUri"))
       .layerReader(layerReaderUri, attributeStore, sc)
-      .asInstanceOf[COGLayerReader[LayerId]]
   }
 
   /**
@@ -229,7 +228,7 @@ object COGLayerReader {
 
   def apply(uri: String)(implicit sc: SparkContext): COGLayerReader[LayerId] =
     apply(new URI(uri))
-  
+
   private def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: GeoTiffReader
