@@ -23,6 +23,7 @@ import scala.reflect.{ClassTag, classTag}
 class HadoopCOGLayerWriter(
   rootPath: String,
   val attributeStore: AttributeStore
+) extends COGLayerWriter[LayerId] {
   def writeCOGLayer[K: SpatialComponent: Ordering: JsonFormat: ClassTag, V <: CellGrid: GeoTiffReader: ClassTag](
     layerName: String,
     cogLayer: COGLayer[K, V],
