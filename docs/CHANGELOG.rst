@@ -26,8 +26,10 @@ Fixes
 
 - `StreamingHistogram.binCount now returns non-zero counts <https://github.com/locationtech/geotrellis/pull/2590>`__
 - `HilbertSpatialKeyIndex index offset <https://github.com/locationtech/geotrellis/pull/2586>`__
-  - **Note:** Existing spatial layers using Hilbert index will need to be updated, see PR for directions. 
-  
+  - **Note:** Existing spatial layers using Hilbert index will need to be updated, see PR for directions.
+- Fixed ``CastException`` that sometimes occured when reading cached attributes.
+
+
 1.2.1
 _____
 *2018 Jan 3*

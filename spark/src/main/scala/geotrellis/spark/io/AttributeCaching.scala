@@ -16,13 +16,16 @@
 
 package geotrellis.spark.io
 
-import geotrellis.spark.LayerId
+import geotrellis.spark._
+import geotrellis.spark.io.json._
 
 import com.github.blemale.scaffeine.Scaffeine
-import spray.json.JsonFormat
 import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.duration._
+
+import spray.json._
+import spray.json.DefaultJsonProtocol._
 
 trait AttributeCaching { self: AttributeStore =>
   import AttributeCaching._
@@ -32,17 +35,16 @@ trait AttributeCaching { self: AttributeStore =>
       .recordStats()
       .expireAfterWrite(expiration.minutes)
       .maximumSize(maxSize)
-      .build[(LayerId, String), Any]
+      .build[(LayerId, String), JsValue]
 
-  def cacheRead[T: JsonFormat](layerId: LayerId, attributeName: String): T = {
+  def cacheRead[T: JsonFormat](layerId: LayerId, attributeName: String): T =
     if(enabled)
-      cache.get(layerId -> attributeName, { _ => read[T](layerId, attributeName) }).asInstanceOf[T]
+      cache.get(layerId -> attributeName, { _ => read[JsValue](layerId, attributeName) }).convertTo[T]
     else
-      read[T](layerId, attributeName)
-  }
+      read[JsValue](layerId, attributeName).convertTo[T]
 
   def cacheWrite[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
-    if(enabled) cache.put(layerId -> attributeName, value)
+    if(enabled) cache.put(layerId -> attributeName, value.toJson)
     write[T](layerId, attributeName, value)
   }
 
