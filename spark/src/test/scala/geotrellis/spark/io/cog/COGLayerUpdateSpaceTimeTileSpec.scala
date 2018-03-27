@@ -64,21 +64,21 @@ trait COGLayerUpdateSpaceTimeTileSpec
 
     describe(s"updating for $keyIndexMethodName") {
       it("should update a layer") {
-        writer.update(layerId.name, sample, layerId.zoom, mergeFunc = mergeFunc)
+        writer.update(layerId, sample, mergeFunc = mergeFunc)
       }
 
       it("should overwrite a layer") {
-        writer.overwrite(layerId.name, sample, layerId.zoom)
+        writer.overwrite(layerId, sample)
       }
 
       it("should not update a layer (empty set)") {
         intercept[EmptyBoundsError] {
-          writer.update(layerId.name, new ContextRDD[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](sc.emptyRDD[(SpaceTimeKey, Tile)], emptyTileLayerMetadata), layerId.zoom, mergeFunc = mergeFunc)
+          writer.update(layerId, new ContextRDD[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](sc.emptyRDD[(SpaceTimeKey, Tile)], emptyTileLayerMetadata), mergeFunc = mergeFunc)
         }
       }
 
       it("should silently not overwrite a layer (empty set)") {
-        writer.overwrite(layerId.name, new ContextRDD[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](sc.emptyRDD[(SpaceTimeKey, Tile)], emptyTileLayerMetadata), layerId.zoom)
+        writer.overwrite(layerId, new ContextRDD[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](sc.emptyRDD[(SpaceTimeKey, Tile)], emptyTileLayerMetadata))
       }
 
       it("should not update a layer (keys out of bounds)") {
@@ -91,7 +91,7 @@ trait COGLayerUpdateSpaceTimeTileSpec
         ), dummyTileLayerMetadata)
 
         intercept[LayerOutOfKeyBoundsError] {
-          writer.update(layerId.name, update, layerId.zoom, mergeFunc = mergeFunc)
+          writer.update(layerId, update, mergeFunc = mergeFunc)
         }
       }
 
@@ -105,7 +105,7 @@ trait COGLayerUpdateSpaceTimeTileSpec
         ), dummyTileLayerMetadata)
 
         intercept[LayerOutOfKeyBoundsError] {
-          writer.overwrite(layerId.name, update, layerId.zoom)
+          writer.overwrite(layerId, update)
         }
       }
 
@@ -135,7 +135,7 @@ trait COGLayerUpdateSpaceTimeTileSpec
         )
 
         writer.write[SpaceTimeKey, Tile](updatedLayerId, sample, updatedKeyIndex)
-        writer.update[SpaceTimeKey, Tile](updatedLayerId.name, updatedSample, updatedLayerId.zoom, mergeFunc = mergeFunc)
+        writer.update[SpaceTimeKey, Tile](updatedLayerId, updatedSample, mergeFunc = mergeFunc)
 
         /** !!IMPORTANT: the place where empty tiles are filtered out */
         val resultKeys = reader.read[SpaceTimeKey, Tile](updatedLayerId).filter(!_._2.isNoDataTile).map(_._1).collect.toList
@@ -173,7 +173,7 @@ trait COGLayerUpdateSpaceTimeTileSpec
         assert(updateRdd.count == 1)
 
         updateRdd.withContext(_.mapValues { tile => tile + 1 })
-        writer.update[SpaceTimeKey, Tile](id.name, updateRdd, id.zoom, mergeFunc = mergeFunc)
+        writer.update[SpaceTimeKey, Tile](id, updateRdd, mergeFunc = mergeFunc)
         val read: TileLayerRDD[SpaceTimeKey] = reader.read[SpaceTimeKey, Tile](id).withContext { _.filter(!_._2.isNoDataTile) }
 
         val readTiles = read.collect.sortBy { case (k, _) => k.instant }.toArray
