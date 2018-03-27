@@ -24,7 +24,7 @@ import geotrellis.raster.crop._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.compression.{Compression, NoCompression}
 import geotrellis.spark._
-import geotrellis.spark.io.{AttributeNotFoundError, AttributeStore, LayerNotFoundError, LayerOutOfKeyBoundsError}
+import geotrellis.spark.io.{AttributeNotFoundError, AttributeStore, LayerNotFoundError, LayerOutOfKeyBoundsError, Writer}
 import geotrellis.spark.io.index._
 import geotrellis.util.LazyLogging
 
@@ -112,6 +112,24 @@ abstract class COGLayerWriter[ID] extends LazyLogging with Serializable {
         writeCOGLayer(id.asInstanceOf[LayerId].name, cogLayer, keyIndexes, mergeFunc)
       case EmptyBounds =>
         throw new EmptyBoundsError("Cannot write layer with empty bounds.")
+    }
+
+  def writer[
+    K: SpatialComponent: Boundable: Ordering: JsonFormat: ClassTag,
+    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
+  ](keyIndexMethod: KeyIndexMethod[K]):  Writer[ID, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
+    new Writer[ID, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
+      def write(id: ID, layer: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
+        COGLayerWriter.this.write[K, V](id, layer, keyIndexMethod)
+    }
+
+  def writer[
+    K: SpatialComponent: Boundable: Ordering: JsonFormat: ClassTag,
+    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
+  ](keyIndex: KeyIndex[K]):  Writer[ID, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
+    new Writer[ID, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
+      def write(id: ID, layer: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
+        COGLayerWriter.this.write[K, V](id, layer, keyIndex)
     }
 
   def overwrite[
