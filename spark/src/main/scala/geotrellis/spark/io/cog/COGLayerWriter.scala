@@ -53,30 +53,32 @@ abstract class COGLayerWriter[ID] extends LazyLogging with Serializable {
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
   ](
-     id: ID,
+     layerName: String,
      tiles: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
+     tileZoom: Int,
      keyIndexMethod: KeyIndexMethod[K]
-   ): Unit = write[K, V](id, tiles, keyIndexMethod, NoCompression, None)
+   ): Unit = write[K, V](layerName, tiles, tileZoom, keyIndexMethod, NoCompression, None)
 
   def write[
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
   ](
-    id: ID,
+    layerName: String,
     tiles: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
+    tileZoom: Int,
     keyIndexMethod: KeyIndexMethod[K],
     compression: Compression,
     mergeFunc: Option[(GeoTiff[V], GeoTiff[V]) => GeoTiff[V]]
   ): Unit =
     tiles.metadata.bounds match {
       case keyBounds: KeyBounds[K] =>
-        val cogLayer = COGLayer.fromLayerRDD(tiles, id.asInstanceOf[LayerId].zoom, compression = compression)
+        val cogLayer = COGLayer.fromLayerRDD(tiles, tileZoom, compression = compression)
         // println(cogLayer.metadata.toJson.prettyPrint)
         val keyIndexes: Map[ZoomRange, KeyIndex[K]] =
           cogLayer.metadata.zoomRangeInfos.
             map { case (zr, bounds) => zr -> keyIndexMethod.createIndex(bounds) }.
             toMap
-        writeCOGLayer(id.asInstanceOf[LayerId].name, cogLayer, keyIndexes, mergeFunc)
+        writeCOGLayer(layerName, cogLayer, keyIndexes, mergeFunc)
       case EmptyBounds =>
         throw new EmptyBoundsError("Cannot write layer with empty bounds.")
     }
@@ -85,31 +87,33 @@ abstract class COGLayerWriter[ID] extends LazyLogging with Serializable {
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
   ](
-     id: ID,
+     layerName: String,
      tiles: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
+     tileZoom: Int,
      keyIndex: KeyIndex[K]
-   ): Unit = write[K, V](id, tiles, keyIndex, NoCompression, None)
+   ): Unit = write[K, V](layerName, tiles, tileZoom, keyIndex, NoCompression, None)
 
   def write[
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
   ](
-     id: ID,
+     layerName: String,
      tiles: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
+     tileZoom: Int,
      keyIndex: KeyIndex[K],
      compression: Compression,
      mergeFunc: Option[(GeoTiff[V], GeoTiff[V]) => GeoTiff[V]]
    ): Unit =
     tiles.metadata.bounds match {
       case keyBounds: KeyBounds[K] =>
-        val cogLayer = COGLayer.fromLayerRDD(tiles, id.asInstanceOf[LayerId].zoom, compression = compression)
+        val cogLayer = COGLayer.fromLayerRDD(tiles, tileZoom, compression = compression)
         // println(cogLayer.metadata.toJson.prettyPrint)
         val keyIndexes: Map[ZoomRange, KeyIndex[K]] =
           cogLayer.metadata.zoomRangeInfos.
             map { case (zr, _) => zr -> keyIndex }.
             toMap
 
-        writeCOGLayer(id.asInstanceOf[LayerId].name, cogLayer, keyIndexes, mergeFunc)
+        writeCOGLayer(layerName, cogLayer, keyIndexes, mergeFunc)
       case EmptyBounds =>
         throw new EmptyBoundsError("Cannot write layer with empty bounds.")
     }
@@ -117,62 +121,63 @@ abstract class COGLayerWriter[ID] extends LazyLogging with Serializable {
   def writer[
     K: SpatialComponent: Boundable: Ordering: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
-  ](keyIndexMethod: KeyIndexMethod[K]):  Writer[ID, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
-    new Writer[ID, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
-      def write(id: ID, layer: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
-        COGLayerWriter.this.write[K, V](id, layer, keyIndexMethod)
+  ](keyIndexMethod: KeyIndexMethod[K]):  Writer[LayerId, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
+    new Writer[LayerId, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
+      def write(layerId: LayerId, layer: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
+        COGLayerWriter.this.write[K, V](layerId.name, layer, layerId.zoom, keyIndexMethod)
     }
 
   def writer[
     K: SpatialComponent: Boundable: Ordering: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
-  ](keyIndex: KeyIndex[K]):  Writer[ID, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
-    new Writer[ID, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
-      def write(id: ID, layer: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
-        COGLayerWriter.this.write[K, V](id, layer, keyIndex)
+  ](keyIndex: KeyIndex[K]):  Writer[LayerId, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
+    new Writer[LayerId, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
+      def write(layerId: LayerId, layer: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
+        COGLayerWriter.this.write[K, V](layerId.name, layer, layerId.zoom, keyIndex)
     }
 
   def overwrite[
     K: SpatialComponent: Boundable: Ordering: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
   ](
-    id: ID,
+    layerName: String,
     tiles: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
+    tileZoom: Int,
     compression: Compression = NoCompression
   ): Unit =
-    if(tiles.metadata.bounds.nonEmpty) update[K, V](id, tiles, compression, None)
+    if(tiles.metadata.bounds.nonEmpty) update[K, V](layerName, tiles, tileZoom, compression, None)
     else logger.info("Skipping layer update with empty bounds rdd.")
 
   def update[
     K: SpatialComponent: Boundable: Ordering: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
   ](
-     id: ID,
+     layerName: String,
      tiles: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
+     tileZoom: Int,
      compression: Compression = NoCompression,
      mergeFunc: Option[(GeoTiff[V], GeoTiff[V]) => GeoTiff[V]]
    ): Unit = {
-    val layerId = id.asInstanceOf[LayerId]
     (tiles.metadata.bounds, mergeFunc) match {
       case (keyBounds: KeyBounds[K], _) =>
         val COGLayerStorageMetadata(metadata, keyIndexes) =
           try {
-            attributeStore.read[COGLayerStorageMetadata[K]](LayerId(layerId.name, 0), "cog_metadata")
+            attributeStore.read[COGLayerStorageMetadata[K]](LayerId(layerName, 0), "cog_metadata")
           } catch {
             // to follow GeoTrellis Layer Readers logic
-            case e: AttributeNotFoundError => throw new LayerNotFoundError(LayerId(layerId.name, 0)).initCause(e)
+            case e: AttributeNotFoundError => throw new LayerNotFoundError(LayerId(layerName, 0)).initCause(e)
           }
 
-        val indexKeyBounds = keyIndexes(metadata.zoomRangeFor(layerId.zoom)).keyBounds
+        val indexKeyBounds = keyIndexes(metadata.zoomRangeFor(tileZoom)).keyBounds
 
         // TODO: doublecheck this condition, it's more a workaround at the moment
-        if(!indexKeyBounds.contains(keyBounds) && !metadata.keyBoundsForZoom(layerId.zoom).contains(keyBounds))
-          throw new LayerOutOfKeyBoundsError(layerId, indexKeyBounds)
+        if(!indexKeyBounds.contains(keyBounds) && !metadata.keyBoundsForZoom(tileZoom).contains(keyBounds))
+          throw new LayerOutOfKeyBoundsError(LayerId(layerName, tileZoom), indexKeyBounds)
 
-        val cogLayer = COGLayer.fromLayerRDD(tiles, layerId.zoom, compression = compression)
+        val cogLayer = COGLayer.fromLayerRDD(tiles, tileZoom, compression = compression)
         val ucogLayer = cogLayer.copy(metadata = cogLayer.metadata.combine(metadata))
 
-        writeCOGLayer(layerId.name, ucogLayer, keyIndexes, mergeFunc)
+        writeCOGLayer(layerName, ucogLayer, keyIndexes, mergeFunc)
       case (EmptyBounds, _) =>
         throw new EmptyBoundsError("Cannot write layer with empty bounds.")
     }

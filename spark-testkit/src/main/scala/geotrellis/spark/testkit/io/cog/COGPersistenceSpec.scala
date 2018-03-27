@@ -105,7 +105,7 @@ abstract class COGPersistenceSpec[
       }*/
 
       it("should write a layer") {
-        writer.write[K, V](layerId, sample, keyIndexMethod)
+        writer.write[K, V](layerId.name, sample, layerId.zoom, keyIndexMethod)
       }
 
       it("should read a layer back") {

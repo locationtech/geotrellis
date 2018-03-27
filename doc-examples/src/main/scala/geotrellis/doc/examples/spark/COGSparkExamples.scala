@@ -64,8 +64,9 @@ object COGSparkExamples {
     val writer = FileCOGLayerWriter(attributeStore)
 
     writer.write(
-      id = LayerId("example_cog_layer", zoom), // actually the max desireable zoom, usually a current `layerRdd` zoom
+      layerName = "example_cog_layer",
       tiles = layerRdd,
+      tileZoom = zoom, // actually the max desireable zoom, usually a current `layerRdd` zoom
       keyIndexMethod = ZCurveKeyIndexMethod // keyIndex to index these tiles
     )
 
