@@ -194,8 +194,8 @@ abstract class COGLayerReader[ID] extends Serializable {
 
 object COGLayerReader {
   /**
-    * Produce FilteringCOGLayerReader instance based on URI description.
-    * Find instances of [[LayerReaderProvider]] through Java SPI.
+    * Produce COGLayerReader instance based on URI description.
+    * Find instances of [[COGLayerReaderProvider]] through Java SPI.
     */
   def apply(attributeStore: AttributeStore, layerReaderUri: URI)(implicit sc: SparkContext): COGLayerReader[LayerId] = {
     import scala.collection.JavaConversions._
@@ -207,14 +207,14 @@ object COGLayerReader {
 
   /**
     * Produce COGLayerReader instance based on URI description.
-    * Find instances of [[LayerReaderProvider]] through Java SPI.
+    * Find instances of [[COGLayerReaderProvider]] through Java SPI.
     */
   def apply(attributeStoreUri: URI, layerReaderUri: URI)(implicit sc: SparkContext): COGLayerReader[LayerId] =
     apply(attributeStore = AttributeStore(attributeStoreUri), layerReaderUri)
 
   /**
-    * Produce FilteringCOGLayerReader instance based on URI description.
-    * Find instances of [[LayerReaderProvider]] through Java SPI.
+    * Produce COGLayerReader instance based on URI description.
+    * Find instances of [[COGLayerReaderProvider]] through Java SPI.
     * Required [[AttributeStoreProvider]] instance will be found from the same URI.
     */
   def apply(uri: URI)(implicit sc: SparkContext): COGLayerReader[LayerId] =

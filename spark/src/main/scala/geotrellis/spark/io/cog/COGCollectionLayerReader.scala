@@ -153,6 +153,11 @@ abstract class COGCollectionLayerReader[ID] { self =>
 }
 
 object COGCollectionLayerReader {
+
+  /**
+   * Produce COGCollectionLayerReader instance based on URI description.
+   * Find instances of [[COGCollectionLayerReaderProvider]] through Java SPI.
+   */
   def apply(attributeStore: AttributeStore, collectionReaderUri: URI): COGCollectionLayerReader[LayerId] = {
     import scala.collection.JavaConversions._
     ServiceLoader.load(classOf[COGCollectionLayerReaderProvider]).iterator()
@@ -161,9 +166,18 @@ object COGCollectionLayerReader {
       .collectionLayerReader(collectionReaderUri, attributeStore)
   }
 
+  /**
+   * Produce COGCollectionLayerReader instance based on URI description.
+   * Find instances of [[COGCollectionLayerReaderProvider]] through Java SPI.
+   */
   def apply(attributeStoreUri: URI, collectionReaderUri: URI): COGCollectionLayerReader[LayerId] =
     apply(AttributeStore(attributeStoreUri), collectionReaderUri)
 
+  /**
+   * Produce COGCollectionLayerReader instance based on URI description.
+   * Find instances of [[COGCollectionLayerReaderProvider]] through Java SPI.
+   * Required [[AttributeStoreProvider]] instance will be found from the same URI.
+   */
   def apply(uri: URI): COGCollectionLayerReader[LayerId] =
     apply(attributeStoreUri = uri, collectionReaderUri = uri)
 

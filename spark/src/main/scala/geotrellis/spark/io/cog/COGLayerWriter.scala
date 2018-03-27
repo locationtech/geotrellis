@@ -180,6 +180,11 @@ abstract class COGLayerWriter[ID] extends LazyLogging with Serializable {
 }
 
 object COGLayerWriter {
+
+  /**
+   * Produce COGLayerWriter instance based on URI description.
+   * Find instances of [[COGLayerWriterProvider]] through Java SPI.
+   */
   def apply(attributeStore: AttributeStore, layerWriterUri: URI): COGLayerWriter[LayerId] = {
     import scala.collection.JavaConversions._
     ServiceLoader.load(classOf[COGLayerWriterProvider]).iterator()
@@ -188,9 +193,18 @@ object COGLayerWriter {
       .layerWriter(layerWriterUri, attributeStore)
   }
 
+  /**
+   * Produce COGLayerWriter instance based on URI description.
+   * Find instances of [[COGLayerWriterProvider]] through Java SPI.
+   */
   def apply(attributeStoreUri: URI, layerWriterUri: URI): COGLayerWriter[LayerId] =
     apply(attributeStore = AttributeStore(attributeStoreUri), layerWriterUri)
 
+  /**
+   * Produce COGLayerWriter instance based on URI description.
+   * Find instances of [[COGLayerWriterProvider]] through Java SPI.
+   * Required [[AttributeStoreProvider]] instance will be found from the same URI.
+   */
   def apply(uri: URI): COGLayerWriter[LayerId] =
     apply(attributeStoreUri = uri, layerWriterUri = uri)
 

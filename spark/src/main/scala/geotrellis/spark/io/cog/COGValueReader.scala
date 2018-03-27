@@ -81,6 +81,11 @@ trait COGValueReader[ID] {
 }
 
 object COGValueReader {
+
+  /**
+   * Produce COGValueReader instance based on URI description.
+   * Find instances of [[COGValueReaderProvider]] through Java SPI.
+   */
   def apply(attributeStore: AttributeStore, valueReaderUri: URI): COGValueReader[LayerId] = {
     import scala.collection.JavaConversions._
     ServiceLoader.load(classOf[COGValueReaderProvider]).iterator()
@@ -89,9 +94,18 @@ object COGValueReader {
       .valueReader(valueReaderUri, attributeStore)
   }
 
+  /**
+   * Produce COGValueReader instance based on URI description.
+   * Find instances of [[COGValueReaderProvider]] through Java SPI.
+   */
   def apply(attributeStoreUri: URI, valueReaderUri: URI): COGValueReader[LayerId] =
     apply(AttributeStore(attributeStoreUri), valueReaderUri)
 
+  /**
+   * Produce COGValueReader instance based on URI description.
+   * Find instances of [[COGValueReaderProvider]] through Java SPI.
+   * Required [[AttributeStoreProvider]] instance will be found from the same URI.
+   */
   def apply(uri: URI): COGValueReader[LayerId] =
     apply(attributeStoreUri = uri, valueReaderUri = uri)
 
