@@ -44,7 +44,7 @@ class FileCOGLayerProvider extends AttributeStoreProvider
     new FileCOGLayerReader(store, file.getCanonicalPath)(sc)
   }
 
-  def layerWriter(uri: URI, store: AttributeStore): COGLayerWriter[LayerId] = {
+  def layerWriter(uri: URI, store: AttributeStore): COGLayerWriter = {
     val file = new File(uri)
     new FileCOGLayerWriter(store, file.getCanonicalPath)
   }

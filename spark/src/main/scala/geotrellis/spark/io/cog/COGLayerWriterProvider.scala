@@ -24,5 +24,5 @@ import java.net.URI
 trait COGLayerWriterProvider {
   def canProcess(uri: URI): Boolean
 
-  def layerWriter(uri: URI, store: AttributeStore): COGLayerWriter[LayerId]
+  def layerWriter(uri: URI, store: AttributeStore): COGLayerWriter
 }

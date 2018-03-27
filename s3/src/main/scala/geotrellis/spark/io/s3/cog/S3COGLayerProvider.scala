@@ -47,7 +47,7 @@ class S3COGLayerProvider extends AttributeStoreProvider
     new S3COGLayerReader(store)(sc)
   }
 
-  def layerWriter(uri: URI, store: AttributeStore): COGLayerWriter[LayerId] = {
+  def layerWriter(uri: URI, store: AttributeStore): COGLayerWriter = {
     // TODO: encoder ACL changes in putObjectModifier
     val s3Uri = new AmazonS3URI(uri)
     new S3COGLayerWriter(store, bucket = s3Uri.getBucket, keyPrefix = s3Uri.getKey)

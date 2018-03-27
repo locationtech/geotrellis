@@ -56,7 +56,7 @@ class HadoopCOGLayerProvider extends AttributeStoreProvider
     new HadoopCOGLayerReader(store)(sc)
   }
 
-  def layerWriter(uri: URI, store: AttributeStore): COGLayerWriter[LayerId] = {
+  def layerWriter(uri: URI, store: AttributeStore): COGLayerWriter = {
     val _uri = trim(uri)
     val path = new Path(_uri)
     new HadoopCOGLayerWriter(path.toString, store)
@@ -67,8 +67,7 @@ class HadoopCOGLayerProvider extends AttributeStoreProvider
     val path = new Path(_uri)
     val params = UriUtils.getParams(_uri)
     val conf = new Configuration()
-    val maxOpenFiles = params.getOrElse("maxOpenFiles", "16").toInt
-    new HadoopCOGValueReader(store, conf, maxOpenFiles)
+    new HadoopCOGValueReader(store, conf)
   }
 
   def collectionLayerReader(uri: URI, store: AttributeStore) = {

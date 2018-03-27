@@ -36,7 +36,7 @@ import java.util.ServiceLoader
 
 import scala.reflect._
 
-abstract class COGLayerWriter[ID] extends LazyLogging with Serializable {
+trait COGLayerWriter extends LazyLogging with Serializable {
   val attributeStore: AttributeStore
 
   def writeCOGLayer[
@@ -190,7 +190,7 @@ object COGLayerWriter {
    * Produce COGLayerWriter instance based on URI description.
    * Find instances of [[COGLayerWriterProvider]] through Java SPI.
    */
-  def apply(attributeStore: AttributeStore, layerWriterUri: URI): COGLayerWriter[LayerId] = {
+  def apply(attributeStore: AttributeStore, layerWriterUri: URI): COGLayerWriter = {
     import scala.collection.JavaConversions._
     ServiceLoader.load(classOf[COGLayerWriterProvider]).iterator()
       .find(_.canProcess(layerWriterUri))
@@ -202,7 +202,7 @@ object COGLayerWriter {
    * Produce COGLayerWriter instance based on URI description.
    * Find instances of [[COGLayerWriterProvider]] through Java SPI.
    */
-  def apply(attributeStoreUri: URI, layerWriterUri: URI): COGLayerWriter[LayerId] =
+  def apply(attributeStoreUri: URI, layerWriterUri: URI): COGLayerWriter =
     apply(attributeStore = AttributeStore(attributeStoreUri), layerWriterUri)
 
   /**
@@ -210,15 +210,15 @@ object COGLayerWriter {
    * Find instances of [[COGLayerWriterProvider]] through Java SPI.
    * Required [[AttributeStoreProvider]] instance will be found from the same URI.
    */
-  def apply(uri: URI): COGLayerWriter[LayerId] =
+  def apply(uri: URI): COGLayerWriter =
     apply(attributeStoreUri = uri, layerWriterUri = uri)
 
-  def apply(attributeStore: AttributeStore, layerWriterUri: String): COGLayerWriter[LayerId] =
+  def apply(attributeStore: AttributeStore, layerWriterUri: String): COGLayerWriter =
     apply(attributeStore, new URI(layerWriterUri))
 
-  def apply(attributeStoreUri: String, layerWriterUri: String): COGLayerWriter[LayerId] =
+  def apply(attributeStoreUri: String, layerWriterUri: String): COGLayerWriter =
     apply(new URI(attributeStoreUri), new URI(layerWriterUri))
 
-  def apply(uri: String): COGLayerWriter[LayerId] =
+  def apply(uri: String): COGLayerWriter =
     apply(new URI(uri))
 }

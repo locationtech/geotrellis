@@ -20,7 +20,7 @@ import scala.reflect.{ClassTag, classTag}
 class FileCOGLayerWriter(
   val attributeStore: AttributeStore,
   catalogPath: String
-) extends COGLayerWriter[LayerId] {
+) extends COGLayerWriter {
   implicit def getByteReader(uri: String): ByteReader = byteReader(uri)
   def uriExists(uri: String): Boolean = { val f = new File(uri); f.exists() && f.isFile }
 
