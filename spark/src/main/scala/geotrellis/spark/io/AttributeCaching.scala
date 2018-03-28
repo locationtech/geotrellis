@@ -25,18 +25,14 @@ import com.typesafe.config.ConfigFactory
 import scala.concurrent.duration._
 
 trait AttributeCaching { self: AttributeStore =>
-  @transient private lazy val (enabled, cache) = {
-    val config = ConfigFactory.load()
-    val expiration = config.getInt("geotrellis.attribute.caching.expirationMinutes")
-    val maxSize = config.getInt("geotrellis.attribute.caching.maxSize")
-    val enabled = config.getBoolean("geotrellis.attribute.caching.enabled")
+  import AttributeCaching._
 
-    enabled -> Scaffeine()
+  @transient private lazy val cache =
+    Scaffeine()
       .recordStats()
       .expireAfterWrite(expiration.minutes)
       .maximumSize(maxSize)
       .build[(LayerId, String), Any]
-  }
 
   def cacheRead[T: JsonFormat](layerId: LayerId, attributeName: String): T = {
     if(enabled)
@@ -64,4 +60,11 @@ trait AttributeCaching { self: AttributeStore =>
   def clearCache(id: LayerId, attribute: String): Unit = {
     if(enabled) cache.invalidate(id -> attribute)
   }
+}
+
+object AttributeCaching extends Serializable {
+  lazy val config     = ConfigFactory.load()
+  lazy val expiration = config.getInt("geotrellis.attribute.caching.expirationMinutes")
+  lazy val maxSize    = config.getInt("geotrellis.attribute.caching.maxSize")
+  lazy val enabled    = config.getBoolean("geotrellis.attribute.caching.enabled")
 }
