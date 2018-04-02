@@ -83,10 +83,10 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
     jtsGeom.getBoundary
 
   /* The first [[Point]] in this Line, which we know to exist. */
-  def head: Point = jtsGeom.getPointN(0)
+  def head: Point = jtsGeom.getStartPoint
 
   /* The last [[Point]] in this Line, which we know to exist. */
-  def last: Point = jtsGeom.getPointN(jtsGeom.getNumPoints - 1)
+  def last: Point = jtsGeom.getEndPoint
 
   /** Returns the points which determine this line (i.e. its vertices */
   def points: Array[Point] = vertices
