@@ -27,27 +27,40 @@ import org.scalatest._
 class SinglebandGeoTiffSpec extends FunSpec with Matchers with RasterMatchers with GeoTiffTestUtils {
   describe("Building Overviews") {
     val tiff = SinglebandGeoTiff(geoTiffPath("overviews/singleband.tif"), false, true)
-    val ovr = tiff.buildOverview(NearestNeighbor, 2)
 
     it("should reduce pixels by decimation factor") {
+      val ovr = tiff.buildOverview(NearestNeighbor, 2)
       ovr.tile.cols should be (math.ceil(tiff.tile.cols.toDouble / 2))
       ovr.tile.rows should be (math.ceil(tiff.tile.rows.toDouble / 2))
+    }
+
+    it("should be withOverviews capable") {
+      val ovr = tiff.buildOverview(NearestNeighbor, 2)
+      val wit = tiff.withOverviews(NearestNeighbor)
+      assertEqual(ovr.tile, wit.overviews.head.tile)
+      assert(wit.overviews.last.tile.cols <= GeoTiff.DefaultBlockSize)
+      assert(wit.overviews.last.tile.rows <= GeoTiff.DefaultBlockSize)
+    }
+
+    it("should default to power of 2 overviews") {
+      val blockSize = 64
+      val pixels = 512
+      val overviews = GeoTiff.defaultOverviewDecimations(pixels, pixels, blockSize)
+      overviews should be (List(2, 4, 8))
+
+      // final overview should be a single tile
+      (pixels / overviews.last) should be <= (blockSize)
+      (pixels % overviews.last) should be (0)
+
     }
 
     it("should match tile-wise resample") {
       for { i <- 1 to 10 } {
         val ovr = tiff.buildOverview(NearestNeighbor, i)
         val expectedTile = tiff.raster.resample(ovr.rasterExtent, NearestNeighbor).tile
+
         assertEqual(expectedTile, ovr.tile)
       }
     }
-
-    it("should be withOverviews capable") {
-      val wit = tiff.withOverviews(NearestNeighbor)
-      assertEqual(ovr.tile, wit.overviews.head.tile)
-      assert(wit.overviews.last.tile.cols <= GeoTiff.DefaultBlockSize)
-      assert(wit.overviews.last.tile.rows <= GeoTiff.DefaultBlockSize)
-    }
   }
-
 }
