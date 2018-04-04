@@ -131,10 +131,8 @@ object COGLayer {
     val kwFomat = KryoWrapper(implicitly[JsonFormat[K]])
     val crs = layoutScheme.crs
 
-    val (minZoomLayout, maxZoomLayout) = (
-      layoutScheme.levelForZoom(zoomRange.minZoom).layout,
-      layoutScheme.levelForZoom(zoomRange.maxZoom).layout
-    )
+    val minZoomLayout = layoutScheme.levelForZoom(zoomRange.minZoom).layout
+    val maxZoomLayout = layoutScheme.levelForZoom(zoomRange.maxZoom).layout
 
     val options: GeoTiffOptions =
       GeoTiffOptions(
@@ -156,7 +154,16 @@ object COGLayer {
         val keyFormat = kwFomat.value
         partition.map { case (key, tiles) =>
           val cogExtent = key.getComponent[SpatialKey].extent(minZoomLayout)
-          val cogTileBounds: GridBounds = maxZoomLayout.mapTransform.extentToBounds(cogExtent)
+          val centerToCenter: Extent = {
+            val h = maxZoomLayout.cellheight / 2
+            val w = maxZoomLayout.cellwidth / 2
+            Extent(
+              xmin = cogExtent.xmin + w,
+              ymin = cogExtent.ymin + h,
+              xmax = cogExtent.xmax - w,
+              ymax = cogExtent.ymax - h)
+          }
+          val cogTileBounds: GridBounds = maxZoomLayout.mapTransform.extentToBounds(centerToCenter)
           val cogLayout: TileLayout = maxZoomLayout.layoutForBounds(cogTileBounds).tileLayout
 
           val segments = tiles.map { case (key, value) =>
