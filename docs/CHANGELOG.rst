@@ -28,6 +28,7 @@ Fixes
 - `HilbertSpatialKeyIndex index offset <https://github.com/locationtech/geotrellis/pull/2586>`__
   - **Note:** Existing spatial layers using Hilbert index will need to be updated, see PR for directions.
 - Fixed ``CastException`` that sometimes occured when reading cached attributes.
+- Uncompressed GeoTiffMultibandTiles will now convert to the correct CellType
 
 
 1.2.1

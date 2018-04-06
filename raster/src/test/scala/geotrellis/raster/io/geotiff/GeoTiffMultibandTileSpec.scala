@@ -127,6 +127,28 @@ class GeoTiffMultibandTileSpec extends FunSpec
     }
   }
 
+  describe("Multiband cellType conversion") {
+    it("should convert the cellType with convert") {
+      val actual =
+        MultibandGeoTiff.compressed(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.convert(UShortCellType)
+
+      val expected =
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.convert(UShortCellType)
+
+      assertEqual(expected, actual)
+    }
+
+    it("should convert the cellType with interpretAs") {
+      val actual =
+        MultibandGeoTiff.compressed(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.interpretAs(UShortCellType)
+
+      val expected =
+        MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.interpretAs(UShortCellType)
+
+      assertEqual(expected, actual)
+    }
+  }
+
   describe("Multiband subset combine methods") {
     it("should work the same on integer-valued GeoTiff tiles as Array tiles") {
       val actual = {
