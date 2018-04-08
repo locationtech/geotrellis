@@ -16,18 +16,18 @@
 
 package geotrellis.vector
 
-import geotrellis.util.LazyLogging
-
 import com.typesafe.config.ConfigFactory
 import com.vividsolutions.jts.geom
-import com.vividsolutions.jts.geom.PrecisionModel
+import com.vividsolutions.jts.geom.impl.CoordinateArraySequenceFactory
+import com.vividsolutions.jts.geom.{CoordinateSequenceFactory, GeometryFactory, PrecisionModel}
 import com.vividsolutions.jts.precision.GeometryPrecisionReducer
+import geotrellis.util.LazyLogging
 
 import scala.util.Try
 
-private[vector] object GeomFactory extends LazyLogging {
+object GeomFactory extends LazyLogging {
 
-  val precisionType = {
+  private[vector] val precisionType = {
     val setting = Try(ConfigFactory.load().getString("geotrellis.jts.precision.type").toLowerCase)
     if (setting.isSuccess)
       setting.get
@@ -37,7 +37,7 @@ private[vector] object GeomFactory extends LazyLogging {
     }
   }
 
-  val precisionModel = precisionType match {
+  private[vector] val precisionModel = precisionType match {
     case "floating" => new PrecisionModel()
     case "floating_single" => new PrecisionModel(PrecisionModel.FLOATING_SINGLE)
     case "fixed" =>
@@ -53,10 +53,11 @@ private[vector] object GeomFactory extends LazyLogging {
     case s => throw new IllegalArgumentException(s"""Unrecognized JTS precision model, ${precisionType}; expected "floating", "floating_single", or "fixed" """)
   }
 
-  val factory = new geom.GeometryFactory(precisionModel)
+  val coordinateSequenceFactory: CoordinateSequenceFactory = CoordinateArraySequenceFactory.instance
+  val factory: GeometryFactory = new geom.GeometryFactory(precisionModel, 0, coordinateSequenceFactory)
 
   // 12 digits is maximum to avoid [[TopologyException]], see https://web.archive.org/web/20160226031453/http://tsusiatsoftware.net/jts/jts-faq/jts-faq.html#D9
-  lazy val simplifier = {
+  private[vector] lazy val simplifier = {
     val simplificationPrecision = Try(ConfigFactory.load().getDouble("geotrellis.jts.simplification.scale"))
     val scale =
       if (simplificationPrecision.isSuccess)
