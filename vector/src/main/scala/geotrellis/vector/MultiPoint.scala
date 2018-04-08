@@ -61,19 +61,6 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
   /** Returns the Points contained in MultiPoint. */
   lazy val points: Array[Point] = vertices
 
-  lazy val vertices: Array[Point] = {
-    val coords = jtsGeom.getCoordinates
-    val arr = Array.ofDim[Point](coords.size)
-    cfor(0)(_ < arr.size, _ + 1) { i =>
-      val coord = coords(i)
-      arr(i) = Point(coord.x, coord.y)
-    }
-    arr
-  }
-
-  /** Get the number of vertices in this geometry */
-  lazy val vertexCount: Int = jtsGeom.getNumPoints
-
   // -- Intersection
 
   /** Computes a Result that represents a Geometry made up of the points shared

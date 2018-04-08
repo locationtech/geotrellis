@@ -16,13 +16,12 @@
 
 package geotrellis.vector
 
-import com.vividsolutions.jts.geom.TopologyException
-import com.vividsolutions.jts.{geom => jts}
+import com.vividsolutions.jts.geom.{CoordinateSequence, LinearRing, TopologyException}
 import com.vividsolutions.jts.operation.union._
-import GeomFactory._
-import geotrellis.vector._
+import com.vividsolutions.jts.{geom => jts}
+import geotrellis.vector.GeomFactory._
 
-import spire.syntax.cfor._
+import scala.collection.GenTraversable
 import scala.collection.JavaConversions._
 
 object Polygon {
@@ -38,10 +37,16 @@ object Polygon {
   def apply(exterior: Line): Polygon =
     apply(exterior, Set())
 
+  def apply(exterior: CoordinateSequence): Polygon =
+    Polygon(factory.createPolygon(exterior))
+
   def apply(exterior: Line, holes:Line*): Polygon =
     apply(exterior, holes)
 
-  def apply(exterior: Line, holes:Traversable[Line]): Polygon = {
+  def apply(exterior: CoordinateSequence, holes: GenTraversable[CoordinateSequence]): Polygon =
+    apply(factory.createLinearRing(exterior), holes.map(factory.createLinearRing))
+
+  def apply(exterior: Line, holes: GenTraversable[Line]): Polygon = {
     if(!exterior.isClosed) {
       sys.error(s"Cannot create a polygon with unclosed exterior: $exterior")
     }
@@ -50,7 +55,7 @@ object Polygon {
       sys.error(s"Cannot create a polygon with exterior with fewer than 4 points: $exterior")
     }
 
-    val extGeom = factory.createLinearRing(exterior.jtsGeom.getCoordinates)
+    val extGeom = factory.createLinearRing(exterior.jtsGeom.getCoordinateSequence)
 
     val holeGeoms = (
       for (hole <- holes) yield {
@@ -60,13 +65,16 @@ object Polygon {
           if (hole.vertices.length < 4) {
             sys.error(s"Cannot create a polygon with a hole with fewer than 4 points: $hole")
           } else {
-            factory.createLinearRing(hole.jtsGeom.getCoordinates)
+            factory.createLinearRing(hole.jtsGeom.getCoordinateSequence)
           }
         }
       }).toArray
 
-    Polygon(factory.createPolygon(extGeom, holeGeoms))
+    apply(extGeom, holeGeoms)
   }
+
+  def apply(exterior: LinearRing, holes: GenTraversable[LinearRing]): Polygon =
+    Polygon(factory.createPolygon(exterior, holes.toArray))
 }
 
 /** Class representing a polygon */
@@ -117,18 +125,17 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
     jtsGeom.getBoundary
 
   /** Returns this Polygon's vertices. */
-  lazy val vertices: Array[Point] = {
-    val coords = jtsGeom.getCoordinates
-    val arr = Array.ofDim[Point](coords.size)
-    cfor(0)(_ < arr.size, _ + 1) { i =>
-      val coord = coords(i)
-      arr(i) = Point(coord.x, coord.y)
-    }
+  override lazy val vertices: Array[Point] = {
+    val arr = Array.ofDim[Point](jtsGeom.getNumPoints)
+
+    val sequences = jtsGeom.getExteriorRing.getCoordinateSequence +: (0 until jtsGeom.getNumInteriorRing).map(jtsGeom
+      .getInteriorRingN(_).getCoordinateSequence)
+    val offsets = sequences.map(_.size).scanLeft(0)(_ + _).dropRight(1)
+
+    sequences.zip(offsets).foreach { case (seq, offset) => populatePoints(seq, arr, offset) }
+
     arr
   }
-
-  /** Get the number of vertices in this geometry */
-  lazy val vertexCount: Int = jtsGeom.getNumPoints
 
   /**
    * Returns this Polygon's perimeter.

@@ -17,11 +17,8 @@
 package geotrellis.vector.check.jts
 
 import com.vividsolutions.jts.geom._
-
+import org.scalacheck.Gen._
 import org.scalacheck._
-import Prop._
-import Gen._
-import Arbitrary._
 
 object Generators {
   val factory = new GeometryFactory()
@@ -61,7 +58,7 @@ object Generators {
 
   lazy val genLinearRing:Gen[LinearRing] =
     genPolygon.map { p =>
-      factory.createLinearRing(p.getExteriorRing.getCoordinates)//.asInstanceOf[LinearRing]
+      factory.createLinearRing(p.getExteriorRing.getCoordinateSequence)//.asInstanceOf[LinearRing]
     }
 
   lazy val genLineString:Gen[LineString] = 
