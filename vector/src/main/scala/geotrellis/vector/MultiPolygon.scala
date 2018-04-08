@@ -56,7 +56,7 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
     MultiPolygon(geom)
   }
 
-  /** Returns the Polygons contained in MultiPolygon. */
+  /** Returns the Polygons contained in this MultiPolygon. */
   lazy val polygons: Array[Polygon] = {
     for (i <- 0 until jtsGeom.getNumGeometries) yield {
       Polygon(jtsGeom.getGeometryN(i).clone.asInstanceOf[jts.Polygon])
@@ -69,7 +69,7 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
   lazy val boundary: MultiLineResult =
     jtsGeom.getBoundary
 
-  /** Returns this MulitPolygon's vertices. */
+  /** Returns this MultiPolygon's vertices. */
   lazy val vertices: Array[Point] = {
     val coords = jtsGeom.getCoordinates
     val arr = Array.ofDim[Point](coords.size)

@@ -47,7 +47,7 @@ object Polygon {
     }
 
     if(exterior.vertices.length < 4) {
-      sys.error(s"Cannot create a polygon with exterior with less that 4 points: $exterior")
+      sys.error(s"Cannot create a polygon with exterior with fewer than 4 points: $exterior")
     }
 
     val extGeom = factory.createLinearRing(exterior.jtsGeom.getCoordinates)
@@ -57,10 +57,11 @@ object Polygon {
         if (!hole.isClosed) {
           sys.error(s"Cannot create a polygon with an unclosed hole: $hole")
         } else {
-          if (hole.vertices.length < 4)
-            sys.error(s"Cannot create a polygon with a hole with less that 4 points: $hole")
-          else
+          if (hole.vertices.length < 4) {
+            sys.error(s"Cannot create a polygon with a hole with fewer than 4 points: $hole")
+          } else {
             factory.createLinearRing(hole.jtsGeom.getCoordinates)
+          }
         }
       }).toArray
 

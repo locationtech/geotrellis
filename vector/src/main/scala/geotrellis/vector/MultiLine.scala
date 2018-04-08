@@ -77,7 +77,7 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
   lazy val boundary: OneDimensionBoundaryResult =
     jtsGeom.getBoundary
 
-  /** Returns this MulitLine's vertices. */
+  /** Returns this MultiLine's vertices. */
   lazy val vertices: Array[Point] = {
     val coords = jtsGeom.getCoordinates
     val arr = Array.ofDim[Point](coords.size)
