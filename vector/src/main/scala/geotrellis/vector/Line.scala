@@ -96,7 +96,7 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
     val size = jtsGeom.getNumPoints
     val arr = Array.ofDim[Point](size)
     cfor(0)(_ < arr.size, _ + 1) { i =>
-      arr(i) = Point(jtsGeom.getPointN(i))
+      arr(i) = Point(jtsGeom.getPointN(i).clone.asInstanceOf[jts.Point])
     }
     arr
   }
