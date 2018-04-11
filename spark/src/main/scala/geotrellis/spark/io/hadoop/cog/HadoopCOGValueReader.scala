@@ -34,8 +34,7 @@ import scala.reflect.ClassTag
 
 class HadoopCOGValueReader(
   val attributeStore: AttributeStore,
-  conf: Configuration,
-  maxOpenFiles: Int = 16
+  conf: Configuration
 ) extends OverzoomingCOGValueReader {
 
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
