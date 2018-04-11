@@ -51,7 +51,7 @@ object Polygon {
       sys.error(s"Cannot create a polygon with unclosed exterior: $exterior")
     }
 
-    if(exterior.vertices.length < 4) {
+    if(exterior.vertexCount < 4) {
       sys.error(s"Cannot create a polygon with exterior with fewer than 4 points: $exterior")
     }
 
@@ -62,7 +62,7 @@ object Polygon {
         if (!hole.isClosed) {
           sys.error(s"Cannot create a polygon with an unclosed hole: $hole")
         } else {
-          if (hole.vertices.length < 4) {
+          if (hole.vertexCount < 4) {
             sys.error(s"Cannot create a polygon with a hole with fewer than 4 points: $hole")
           } else {
             factory.createLinearRing(hole.jtsGeom.getCoordinateSequence)
