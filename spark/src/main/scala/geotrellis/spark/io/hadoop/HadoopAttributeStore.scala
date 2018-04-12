@@ -168,7 +168,7 @@ object HadoopAttributeStore {
   final val SEP = "___"
 
   val attributeRx = {
-    val slug = "[a-zA-Z0-9-]+"
+    val slug = "[a-zA-Z0-9-_.]+"
     new Regex(s"""($slug)$SEP($slug)${SEP}($slug).json""", "layer", "zoom", "attribute")
   }
 
