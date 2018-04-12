@@ -83,28 +83,7 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
   def getOverviewsCount: Int = overviews.length
   def getOverview(idx: Int): GeoTiff[T] = if(idx < 0) this else overviews(idx)
   def buildOverview(resampleMethod: ResampleMethod, decimationFactor: Int, blockSize: Int = GeoTiff.DefaultBlockSize): GeoTiff[T]
-
-  def withOverviews(resampleMethod: ResampleMethod, decimations: List[Int] = Nil, blockSize: Int = GeoTiff.DefaultBlockSize): GeoTiff[T] = {
-    val overviewDecimations: List[Int] =
-      if (decimations.isEmpty) {
-        val overviewLevels: Int = {
-          val pixels = math.max(tile.cols, tile.rows).toDouble
-          val blocks = pixels / blockSize
-          math.ceil(math.log(blocks) / math.log(2)).toInt
-        }
-
-        (0 until overviewLevels).map{ l => math.pow(2, l + 1).toInt }.toList
-      } else {
-        decimations
-      }
-
-    if (overviewDecimations.isEmpty) {
-      this
-    } else {
-      val overviews = overviewDecimations.map { (decimationFactor: Int) => buildOverview(resampleMethod, decimationFactor, blockSize) }
-      this.copy(overviews = overviews)
-    }
-  }
+  def withOverviews(resampleMethod: ResampleMethod, decimations: List[Int] = Nil, blockSize: Int = GeoTiff.DefaultBlockSize): GeoTiff[T]
 
   /** Chooses the best matching overviews and makes resample */
   def resample(rasterExtent: RasterExtent, resampleMethod: ResampleMethod, strategy: OverviewStrategy): Raster[T]
@@ -176,6 +155,17 @@ object GeoTiff {
     } else {
       Right(multiband)
     }
+  }
+
+  private[raster]
+  def defaultOverviewDecimations(cols: Int, rows: Int, blockSize: Int): List[Int] = {
+      val overviewLevels: Int = {
+        val pixels = math.max(cols, rows).toDouble
+        val blocks = pixels / blockSize
+        math.ceil(math.log(blocks) / math.log(2)).toInt
+      }
+
+      (0 until overviewLevels).map{ l => math.pow(2, l + 1).toInt }.toList
   }
 
   def apply(tile: Tile, extent: Extent, crs: CRS): SinglebandGeoTiff =

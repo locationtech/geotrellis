@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.accumulo
 
+import geotrellis.spark._
 import geotrellis.spark.io._
 import org.apache.accumulo.core.client.security.tokens.PasswordToken
 
@@ -28,4 +29,13 @@ class AccumuloAttributeStoreSpec extends AttributeStoreSpec {
   )
 
   lazy val attributeStore = new AccumuloAttributeStore(accumulo.connector, "attributes")
+
+  it("should read the Layer's Header as a LayerHeader and then an as an AccumuloLayerHeader") {
+    val header = AccumuloLayerHeader("SpatialKey", "Tile", attributeStore.attributeTable)
+
+    attributeStore.write[AccumuloLayerHeader](LayerId("test1", 1), "header", header)
+
+    attributeStore.readHeader[LayerHeader](LayerId("test1", 1))
+    attributeStore.readHeader[AccumuloLayerHeader](LayerId("test1", 1))
+  }
 }

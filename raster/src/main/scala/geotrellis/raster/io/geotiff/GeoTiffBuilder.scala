@@ -62,7 +62,6 @@ trait GeoTiffBuilder[T <: CellGrid] extends Serializable {
     * @param segments keyed by (column, row) in tile layout
     * @param segmentLayout of the GeoTiff segments
     * @param cellType of desired tile
-    * @param storageMethod for multiband tiles
     * @param compression method for segments
     */
   def makeTile(

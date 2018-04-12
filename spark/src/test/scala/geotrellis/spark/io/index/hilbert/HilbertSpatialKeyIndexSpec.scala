@@ -89,4 +89,10 @@ class HilbertSpatialKeyIndexSpec extends FunSpec with Matchers{
         idx.toSet should be (Set(1->2, 7->8, 11->15))
      }
   }
+
+  it("Generates a Correct index given a 4x4 square on a 10th zoom level") {
+    val keyBounds = KeyBounds(SpatialKey(177, 409), SpatialKey(178, 410))
+    val index = HilbertKeyIndexMethod.createIndex(keyBounds)
+    index.toIndex(SpatialKey(178, 410)) should be (2)
+  }
 }

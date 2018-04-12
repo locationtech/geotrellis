@@ -16,37 +16,35 @@
 
 package geotrellis.spark.io
 
-import geotrellis.spark.LayerId
+import geotrellis.spark._
+import geotrellis.spark.io.json._
 
 import com.github.blemale.scaffeine.Scaffeine
-import spray.json.JsonFormat
 import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.duration._
 
-trait AttributeCaching { self: AttributeStore =>
-  @transient private lazy val (enabled, cache) = {
-    val config = ConfigFactory.load()
-    val expiration = config.getInt("geotrellis.attribute.caching.expirationMinutes")
-    val maxSize = config.getInt("geotrellis.attribute.caching.maxSize")
-    val enabled = config.getBoolean("geotrellis.attribute.caching.enabled")
+import spray.json._
+import spray.json.DefaultJsonProtocol._
 
-    enabled -> Scaffeine()
+trait AttributeCaching { self: AttributeStore =>
+  import AttributeCaching._
+
+  @transient private lazy val cache =
+    Scaffeine()
       .recordStats()
       .expireAfterWrite(expiration.minutes)
       .maximumSize(maxSize)
-      .build[(LayerId, String), Any]
-  }
+      .build[(LayerId, String), JsValue]
 
-  def cacheRead[T: JsonFormat](layerId: LayerId, attributeName: String): T = {
+  def cacheRead[T: JsonFormat](layerId: LayerId, attributeName: String): T =
     if(enabled)
-      cache.get(layerId -> attributeName, { _ => read[T](layerId, attributeName) }).asInstanceOf[T]
+      cache.get(layerId -> attributeName, { _ => read[JsValue](layerId, attributeName) }).convertTo[T]
     else
-      read[T](layerId, attributeName)
-  }
+      read[JsValue](layerId, attributeName).convertTo[T]
 
   def cacheWrite[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
-    if(enabled) cache.put(layerId -> attributeName, value)
+    if(enabled) cache.put(layerId -> attributeName, value.toJson)
     write[T](layerId, attributeName, value)
   }
 
@@ -64,4 +62,11 @@ trait AttributeCaching { self: AttributeStore =>
   def clearCache(id: LayerId, attribute: String): Unit = {
     if(enabled) cache.invalidate(id -> attribute)
   }
+}
+
+object AttributeCaching extends Serializable {
+  lazy val config     = ConfigFactory.load()
+  lazy val expiration = config.getInt("geotrellis.attribute.caching.expirationMinutes")
+  lazy val maxSize    = config.getInt("geotrellis.attribute.caching.maxSize")
+  lazy val enabled    = config.getBoolean("geotrellis.attribute.caching.enabled")
 }

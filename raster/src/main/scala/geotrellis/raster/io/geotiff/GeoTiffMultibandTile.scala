@@ -699,7 +699,7 @@ abstract class GeoTiffMultibandTile(
       segmentLayout,
       compression,
       bandCount,
-      cellType,
+      newCellType,
       Some(bandType),
       overviews = overviews.map(_.convert(newCellType))
     )

@@ -24,12 +24,15 @@ import geotrellis.raster.crop._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.compression.{Compression, NoCompression}
 import geotrellis.spark._
-import geotrellis.spark.io.{AttributeNotFoundError, AttributeStore, LayerNotFoundError, LayerOutOfKeyBoundsError}
+import geotrellis.spark.io.{AttributeNotFoundError, AttributeStore, LayerNotFoundError, LayerOutOfKeyBoundsError, Writer}
 import geotrellis.spark.io.index._
 import geotrellis.util.LazyLogging
 
 import org.apache.spark.rdd.RDD
 import spray.json._
+
+import java.net.URI
+import java.util.ServiceLoader
 
 import scala.reflect._
 
@@ -115,6 +118,24 @@ trait COGLayerWriter extends LazyLogging with Serializable {
         throw new EmptyBoundsError("Cannot write layer with empty bounds.")
     }
 
+  def writer[
+    K: SpatialComponent: Boundable: Ordering: JsonFormat: ClassTag,
+    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
+  ](keyIndexMethod: KeyIndexMethod[K]):  Writer[LayerId, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
+    new Writer[LayerId, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
+      def write(layerId: LayerId, layer: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
+        COGLayerWriter.this.write[K, V](layerId.name, layer, layerId.zoom, keyIndexMethod)
+    }
+
+  def writer[
+    K: SpatialComponent: Boundable: Ordering: JsonFormat: ClassTag,
+    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
+  ](keyIndex: KeyIndex[K]):  Writer[LayerId, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
+    new Writer[LayerId, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
+      def write(layerId: LayerId, layer: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) =
+        COGLayerWriter.this.write[K, V](layerId.name, layer, layerId.zoom, keyIndex)
+    }
+
   def overwrite[
     K: SpatialComponent: Boundable: Ordering: JsonFormat: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
@@ -161,4 +182,43 @@ trait COGLayerWriter extends LazyLogging with Serializable {
         throw new EmptyBoundsError("Cannot write layer with empty bounds.")
     }
   }
+}
+
+object COGLayerWriter {
+
+  /**
+   * Produce COGLayerWriter instance based on URI description.
+   * Find instances of [[COGLayerWriterProvider]] through Java SPI.
+   */
+  def apply(attributeStore: AttributeStore, layerWriterUri: URI): COGLayerWriter = {
+    import scala.collection.JavaConversions._
+    ServiceLoader.load(classOf[COGLayerWriterProvider]).iterator()
+      .find(_.canProcess(layerWriterUri))
+      .getOrElse(throw new RuntimeException(s"Unable to find a COGLayerWriterProvider for $layerWriterUri"))
+      .layerWriter(layerWriterUri, attributeStore)
+  }
+
+  /**
+   * Produce COGLayerWriter instance based on URI description.
+   * Find instances of [[COGLayerWriterProvider]] through Java SPI.
+   */
+  def apply(attributeStoreUri: URI, layerWriterUri: URI): COGLayerWriter =
+    apply(attributeStore = AttributeStore(attributeStoreUri), layerWriterUri)
+
+  /**
+   * Produce COGLayerWriter instance based on URI description.
+   * Find instances of [[COGLayerWriterProvider]] through Java SPI.
+   * Required [[AttributeStoreProvider]] instance will be found from the same URI.
+   */
+  def apply(uri: URI): COGLayerWriter =
+    apply(attributeStoreUri = uri, layerWriterUri = uri)
+
+  def apply(attributeStore: AttributeStore, layerWriterUri: String): COGLayerWriter =
+    apply(attributeStore, new URI(layerWriterUri))
+
+  def apply(attributeStoreUri: String, layerWriterUri: String): COGLayerWriter =
+    apply(new URI(attributeStoreUri), new URI(layerWriterUri))
+
+  def apply(uri: String): COGLayerWriter =
+    apply(new URI(uri))
 }
