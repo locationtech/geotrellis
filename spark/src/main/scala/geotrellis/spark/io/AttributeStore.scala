@@ -91,6 +91,7 @@ object AttributeStore {
 }
 
 case class LayerAttributes[H, M, K](header: H, metadata: M, keyIndex: KeyIndex[K], schema: Schema)
+case class COGLayerAttributes[H, M](header: H, metadata: M)
 
 trait LayerAttributeStore extends Serializable {
   def readHeader[H: JsonFormat](id: LayerId): H
@@ -99,6 +100,8 @@ trait LayerAttributeStore extends Serializable {
   def readSchema(id: LayerId): Schema
   def readLayerAttributes[H: JsonFormat, M: JsonFormat, K: ClassTag](id: LayerId): LayerAttributes[H, M, K]
   def writeLayerAttributes[H: JsonFormat, M: JsonFormat, K: ClassTag](id: LayerId, header: H, metadata: M, keyIndex: KeyIndex[K], schema: Schema): Unit
+  def readCOGLayerAttributes[H: JsonFormat, M: JsonFormat](id: LayerId): COGLayerAttributes[H, M]
+  def writeCOGLayerAttributes[H: JsonFormat, M: JsonFormat](id: LayerId, header: H, metadata: M): Unit
 }
 
 
@@ -138,6 +141,22 @@ trait BlobLayerAttributeStore extends AttributeStore {
       )
     )
   }
+
+  def readCOGLayerAttributes[H: JsonFormat, M: JsonFormat](id: LayerId): COGLayerAttributes[H, M] = {
+    val blob = cacheRead[JsValue](id, Fields.metadataBlob).asJsObject
+    COGLayerAttributes(
+      blob.fields(Fields.header).convertTo[H],
+      blob.fields(Fields.metadata).convertTo[M]
+    )
+  }
+
+  def writeCOGLayerAttributes[H: JsonFormat, M: JsonFormat](id: LayerId, header: H, metadata: M): Unit =
+    cacheWrite(id, Fields.metadataBlob,
+      JsObject(
+        Fields.header -> header.toJson,
+        Fields.metadata -> metadata.toJson
+      )
+    )
 }
 
 trait DiscreteLayerAttributeStore extends AttributeStore {
@@ -170,4 +189,10 @@ trait DiscreteLayerAttributeStore extends AttributeStore {
     cacheWrite(id, Fields.keyIndex, keyIndex)
     cacheWrite(id, Fields.schema, schema)
   }
+
+  def readCOGLayerAttributes[H: JsonFormat, M: JsonFormat](id: LayerId): COGLayerAttributes[H, M] =
+    throw new AvroLayerAttributeError("COGLayerAttributes", id)
+
+  def writeCOGLayerAttributes[H: JsonFormat, M: JsonFormat](id: LayerId, header: H, metadata: M): Unit =
+    throw new AvroLayerAttributeError("COGLayerAttributes", id)
 }
