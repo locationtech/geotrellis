@@ -66,8 +66,11 @@ object AttributeStore {
   object Fields {
     val metadataBlob = "metadata"
     val header = "header"
-    val keyIndex = "keyIndex"
     val metadata = "metadata"
+  }
+
+  object AvroLayerFields {
+    val keyIndex = "keyIndex"
     val schema = "schema"
   }
 
