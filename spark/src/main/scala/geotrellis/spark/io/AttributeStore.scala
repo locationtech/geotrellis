@@ -28,7 +28,7 @@ import scala.reflect._
 import java.net.URI
 import java.util.ServiceLoader
 
-trait AttributeStore extends  AttributeCaching with LayerAttributeStore {
+trait AttributeStore extends AttributeCaching with LayerAttributeStore {
   def read[T: JsonFormat](layerId: LayerId, attributeName: String): T
   def readAll[T: JsonFormat](attributeName: String): Map[LayerId, T]
   def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit
@@ -113,21 +113,32 @@ trait BlobLayerAttributeStore extends AttributeStore {
     cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(Fields.header).convertTo[H]
 
   def readMetadata[M: JsonFormat](id: LayerId): M =
-    cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(Fields.metadata).convertTo[M]
+      cacheRead[JsValue](id, Fields.metadata).asJsObject.fields(Fields.metadata).convertTo[M]
 
-  def readKeyIndex[K: ClassTag](id: LayerId): KeyIndex[K] =
-    cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(Fields.keyIndex).convertTo[KeyIndex[K]]
+  def readKeyIndex[K: ClassTag](id: LayerId): KeyIndex[K] = {
+    layerType(id) match {
+      // TODO: Find a way to read a single KeyIndex from the COGMetadata
+      case COGLayerType => throw new UnsupportedOperationException(s"The readKeyIndex cannot be performed on COGLayer: $id")
+      case AvroLayerType =>
+        cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(AvroLayerFields.keyIndex).convertTo[KeyIndex[K]]
+    }
+  }
+
 
   def readSchema(id: LayerId): Schema =
-    cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(Fields.schema).convertTo[Schema]
+    layerType(id) match {
+      case COGLayerType => throw new COGLayerAttributeError("schema", id)
+      case AvroLayerType =>
+        cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(AvroLayerFields.schema).convertTo[Schema]
+    }
 
   def readLayerAttributes[H: JsonFormat, M: JsonFormat, K: ClassTag](id: LayerId): LayerAttributes[H, M, K] = {
     val blob = cacheRead[JsValue](id, Fields.metadataBlob).asJsObject
     LayerAttributes(
       blob.fields(Fields.header).convertTo[H],
       blob.fields(Fields.metadata).convertTo[M],
-      blob.fields(Fields.keyIndex).convertTo[KeyIndex[K]],
-      blob.fields(Fields.schema).convertTo[Schema]
+      blob.fields(AvroLayerFields.keyIndex).convertTo[KeyIndex[K]],
+      blob.fields(AvroLayerFields.schema).convertTo[Schema]
     )
   }
 
@@ -136,8 +147,8 @@ trait BlobLayerAttributeStore extends AttributeStore {
       JsObject(
         Fields.header -> header.toJson,
         Fields.metadata -> metadata.toJson,
-        Fields.keyIndex -> keyIndex.toJson,
-        Fields.schema -> schema.toJson
+        AvroLayerFields.keyIndex -> keyIndex.toJson,
+        AvroLayerFields.schema -> schema.toJson
       )
     )
   }
@@ -169,10 +180,10 @@ trait DiscreteLayerAttributeStore extends AttributeStore {
     cacheRead[M](id, Fields.metadata)
 
   def readKeyIndex[K: ClassTag](id: LayerId): KeyIndex[K] =
-    cacheRead[KeyIndex[K]](id, Fields.keyIndex)
+    cacheRead[KeyIndex[K]](id, AvroLayerFields.keyIndex)
 
   def readSchema(id: LayerId): Schema =
-    cacheRead[Schema](id, Fields.schema)
+    cacheRead[Schema](id, AvroLayerFields.schema)
 
   def readLayerAttributes[H: JsonFormat, M: JsonFormat, K: ClassTag](id: LayerId): LayerAttributes[H, M, K] = {
     LayerAttributes(
@@ -186,8 +197,8 @@ trait DiscreteLayerAttributeStore extends AttributeStore {
   def writeLayerAttributes[H: JsonFormat, M: JsonFormat, K: ClassTag](id: LayerId, header: H, metadata: M, keyIndex: KeyIndex[K], schema: Schema) = {
     cacheWrite(id, Fields.header, header)
     cacheWrite(id, Fields.metadata, metadata)
-    cacheWrite(id, Fields.keyIndex, keyIndex)
-    cacheWrite(id, Fields.schema, schema)
+    cacheWrite(id, AvroLayerFields.keyIndex, keyIndex)
+    cacheWrite(id, AvroLayerFields.schema, schema)
   }
 
   def readCOGLayerAttributes[H: JsonFormat, M: JsonFormat](id: LayerId): COGLayerAttributes[H, M] =

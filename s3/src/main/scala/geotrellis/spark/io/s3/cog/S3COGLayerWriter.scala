@@ -41,15 +41,16 @@ class S3COGLayerWriter(
     val sc = cogLayer.layers.head._2.sparkContext
     val samplesAccumulator = sc.collectionAccumulator[IndexedSimpleSource](VRT.accumulatorName(layerName))
     val storageMetadata = COGLayerStorageMetadata(cogLayer.metadata, keyIndexes)
-    attributeStore.write(layerId0, COGAttributeStore.Fields.metadata, storageMetadata)
 
     val header = S3LayerHeader(
       keyClass = classTag[K].toString(),
       valueClass = classTag[V].toString(),
       bucket = bucket,
-      key = keyPrefix
+      key = keyPrefix,
+      layerType = COGLayerType
     )
-    attributeStore.write(layerId0, COGAttributeStore.Fields.header, header)
+
+    attributeStore.writeCOGLayerAttributes(layerId0, header, storageMetadata)
 
     val s3Client = getS3Client() // for saving VRT from Accumulator
 
