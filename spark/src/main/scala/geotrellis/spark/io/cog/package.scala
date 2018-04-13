@@ -12,7 +12,8 @@ package object cog extends Implicits {
 
   object COGAttributeStore {
     object Fields {
-      val metadata = "cog_metadata"
+      val metadataBlob = "metadata"
+      val metadata = "metadata"
       val header   = "header"
     }
   }
