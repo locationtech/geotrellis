@@ -1,5 +1,6 @@
 package geotrellis.spark.io
 
+import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.vector.Extent
 
@@ -26,5 +27,13 @@ package object cog extends Implicits {
         extent.xmax - layout.cellwidth / 2,
         extent.ymax - layout.cellheight / 2
       )
+  }
+
+  implicit class withMappedKeyIndexesMethods[K](mappedKeyIndexes: Map[ZoomRange, KeyIndex[K]]) {
+    def keyIndexFromZoom(zoom: Int): Option[KeyIndex[K]] = {
+      val filteredIndexes = mappedKeyIndexes.filterKeys { _.zoomInRange(zoom) }
+
+      if (filteredIndexes.isEmpty) None else Some(filteredIndexes.head._2)
+    }
   }
 }
