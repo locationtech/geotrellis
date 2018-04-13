@@ -43,6 +43,12 @@ trait AttributeCaching { self: AttributeStore =>
     else
       read[JsValue](layerId, attributeName).convertTo[T]
 
+  def cacheLayerType(layerId: LayerId, layerType: LayerType): LayerType =
+    if (enabled)
+      LayerType.fromString(cache.get(layerId -> "layerType", { _ => JsString(layerType.toString) }).convertTo[String])
+    else
+      layerType
+
   def cacheWrite[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
     if(enabled) cache.put(layerId -> attributeName, value.toJson)
     write[T](layerId, attributeName, value)

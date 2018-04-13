@@ -38,6 +38,11 @@ trait AttributeStore extends  AttributeCaching with LayerAttributeStore {
   def layerIds: Seq[LayerId]
   def availableAttributes(id: LayerId): Seq[String]
 
+  def layerType(id: LayerId): LayerType = {
+    lazy val layerType = readHeader[LayerHeader](id).layerType
+    cacheLayerType(id, layerType)
+  }
+
   def copy(from: LayerId, to: LayerId): Unit =
     copy(from, to, availableAttributes(from))
 
