@@ -17,6 +17,7 @@
 package geotrellis.spark.io
 
 import geotrellis.spark._
+import geotrellis.spark.io.cog.ZoomRange
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.json.Implicits._
 
@@ -37,6 +38,7 @@ trait AttributeStore extends AttributeCaching with LayerAttributeStore {
   def delete(layerId: LayerId, attributeName: String): Unit
   def layerIds: Seq[LayerId]
   def availableAttributes(id: LayerId): Seq[String]
+  def readKeyIndexes[K: ClassTag](id: LayerId): Map[ZoomRange, KeyIndex[K]]
 
   def isCOGLayer(id: LayerId): Boolean = {
     layerType(id) match {
@@ -124,6 +126,14 @@ trait BlobLayerAttributeStore extends AttributeStore {
     }
   }
 
+  def readKeyIndexes[K: ClassTag](id: LayerId): Map[ZoomRange, KeyIndex[K]] =
+    layerType(id) match {
+      case COGLayerType =>
+        cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(Fields.metadata).asJsObject.fields("keyIndexes") match {
+          case JsArray(keyIndexes) => keyIndexes.map { _.convertTo[(ZoomRange, KeyIndex[K])] }.toMap
+        }
+      case AvroLayerType => throw new AvroLayerAttributeError("keyIndexes", id)
+    }
 
   def readSchema(id: LayerId): Schema =
     layerType(id) match {
@@ -172,6 +182,9 @@ trait BlobLayerAttributeStore extends AttributeStore {
 
 trait DiscreteLayerAttributeStore extends AttributeStore {
   import AttributeStore._
+
+  def readKeyIndexes[K: ClassTag](id: LayerId): Map[ZoomRange, KeyIndex[K]] =
+    throw new AvroLayerAttributeError("keyIndexes", id)
 
   def readHeader[H: JsonFormat](id: LayerId): H =
     cacheRead[H](id, Fields.header)
