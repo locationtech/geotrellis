@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io.cassandra
 
-import geotrellis.spark.io.LayerHeader
+import geotrellis.spark.io.{LayerHeader, LayerType, AvroLayerType}
 
 import spray.json._
 
@@ -24,7 +24,8 @@ case class CassandraLayerHeader(
   keyClass: String,
   valueClass: String,
   keyspace: String,
-  tileTable: String
+  tileTable: String,
+  layerType: LayerType = AvroLayerType
 ) extends LayerHeader {
   def format = "cassandra"
 }
@@ -37,17 +38,28 @@ object CassandraLayerHeader {
         "keyClass" -> JsString(md.keyClass),
         "valueClass" -> JsString(md.valueClass),
         "keyspace" -> JsString(md.keyspace),
-        "tileTable" -> JsString(md.tileTable)
+        "tileTable" -> JsString(md.tileTable),
+        "layerType" -> md.layerType.toJson
       )
 
     def read(value: JsValue): CassandraLayerHeader =
-      value.asJsObject.getFields("keyClass", "valueClass", "keyspace", "tileTable") match {
+      value.asJsObject.getFields("keyClass", "valueClass", "keyspace", "tileTable", "layerType") match {
+        case Seq(JsString(keyClass), JsString(valueClass), JsString(keyspace), JsString(tileTable), layerType) =>
+          CassandraLayerHeader(
+            keyClass,
+            valueClass,
+            keyspace,
+            tileTable,
+            layerType.convertTo[LayerType]
+          )
         case Seq(JsString(keyClass), JsString(valueClass), JsString(keyspace), JsString(tileTable)) =>
           CassandraLayerHeader(
             keyClass,
             valueClass,
             keyspace,
-            tileTable)
+            tileTable,
+            AvroLayerType
+          )
         case _ =>
           throw new DeserializationException(s"CassandraLayerHeader expected, got: $value")
       }

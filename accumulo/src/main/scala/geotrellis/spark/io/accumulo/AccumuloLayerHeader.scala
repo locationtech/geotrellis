@@ -16,14 +16,15 @@
 
 package geotrellis.spark.io.accumulo
 
-import geotrellis.spark.io.LayerHeader
+import geotrellis.spark.io.{LayerHeader, LayerType, AvroLayerType}
 
 import spray.json._
 
 case class AccumuloLayerHeader(
   keyClass: String,
   valueClass: String,
-  tileTable: String
+  tileTable: String,
+  layerType: LayerType = AvroLayerType
 ) extends LayerHeader {
   def format = "accumulo"
 }
@@ -35,16 +36,26 @@ object AccumuloLayerHeader {
         "format" -> JsString(md.format),
         "keyClass" -> JsString(md.keyClass),
         "valueClass" -> JsString(md.valueClass),
-        "tileTable" -> JsString(md.tileTable)
+        "tileTable" -> JsString(md.tileTable),
+        "layerType" -> md.layerType.toJson
       )
 
     def read(value: JsValue): AccumuloLayerHeader =
-      value.asJsObject.getFields("keyClass", "valueClass", "tileTable") match {
+      value.asJsObject.getFields("keyClass", "valueClass", "tileTable", "layerType") match {
+        case Seq(JsString(keyClass), JsString(valueClass), JsString(tileTable), layerType) =>
+          AccumuloLayerHeader(
+            keyClass,
+            valueClass,
+            tileTable,
+            layerType.convertTo[LayerType]
+          )
         case Seq(JsString(keyClass), JsString(valueClass), JsString(tileTable)) =>
           AccumuloLayerHeader(
             keyClass,
             valueClass,
-            tileTable)
+            tileTable,
+            AvroLayerType
+          )
         case _ =>
           throw new DeserializationException(s"AccumuloLayerHeader expected, got: $value")
       }
