@@ -31,7 +31,11 @@ import java.net.URI
  */
 class CassandraLayerProvider extends AttributeStoreProvider
     with LayerReaderProvider with LayerWriterProvider with ValueReaderProvider with CollectionLayerReaderProvider {
-  def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "cassandra"
+
+  def canProcess(uri: URI): Boolean = uri.getScheme match {
+    case str: String => if (str.toLowerCase == "cassandra") true else false
+    case null => false
+  }
 
   def attributeStore(uri: URI): AttributeStore = {
     val params = UriUtils.getParams(uri)

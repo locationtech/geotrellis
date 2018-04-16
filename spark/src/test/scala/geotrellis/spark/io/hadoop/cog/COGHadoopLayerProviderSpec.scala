@@ -21,7 +21,7 @@ import geotrellis.spark.io.cog._
 import geotrellis.spark.testkit.TestEnvironment
 import org.scalatest._
 
-class HadoopLayerProviderSpec extends FunSpec with TestEnvironment {
+class COGHadoopLayerProviderSpec extends FunSpec with TestEnvironment {
   val uri = new java.net.URI("hdfs+file:/tmp/catalog")
 
   it("construct HadoopCOGLayerReader from URI") {
@@ -37,5 +37,12 @@ class HadoopLayerProviderSpec extends FunSpec with TestEnvironment {
   it("construct HadoopCOGValueReader from URI") {
     val reader = COGValueReader(uri)
     assert(reader.isInstanceOf[HadoopCOGValueReader])
+  }
+
+  it("should not be able to process a URI without a scheme") {
+    val badURI = new java.net.URI("/tmp/catalog")
+    val provider = new HadoopCOGLayerProvider
+
+    provider.canProcess(badURI) should be (false)
   }
 }

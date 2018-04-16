@@ -39,4 +39,11 @@ class FileCOGLayerProviderSpec extends FunSpec with TestEnvironment {
     val reader = COGValueReader(uri)
     assert(reader.isInstanceOf[FileCOGValueReader])
   }
+
+  it("should be able to process a URI without a scheme") {
+    val badURI = new java.net.URI("/tmp/catalog")
+    val provider = new FileCOGLayerProvider
+
+    provider.canProcess(badURI) should be (true)
+  }
 }
