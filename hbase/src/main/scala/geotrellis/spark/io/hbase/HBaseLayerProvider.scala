@@ -32,7 +32,11 @@ import java.net.URI
  */
 class HBaseLayerProvider extends AttributeStoreProvider
     with LayerReaderProvider with LayerWriterProvider with ValueReaderProvider with CollectionLayerReaderProvider {
-  def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "hbase"
+
+  def canProcess(uri: URI): Boolean = uri.getScheme match {
+    case str: String => if (str.toLowerCase == "hbase") true else false
+    case null => false
+  }
 
   def attributeStore(uri: URI): AttributeStore = {
     val instance = HBaseInstance(uri)

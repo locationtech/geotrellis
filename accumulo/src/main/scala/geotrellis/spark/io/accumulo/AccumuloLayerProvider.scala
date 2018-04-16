@@ -33,7 +33,11 @@ import java.net.URI
  */
 class AccumuloLayerProvider extends AttributeStoreProvider
     with LayerReaderProvider with LayerWriterProvider with ValueReaderProvider with CollectionLayerReaderProvider {
-  def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "accumulo"
+
+  def canProcess(uri: URI): Boolean = uri.getScheme match {
+    case str: String => if (str.toLowerCase == "accumulo") true else false
+    case null => false
+  }
 
   def attributeStore(uri: URI): AttributeStore = {
     val instance = AccumuloInstance(uri)

@@ -32,7 +32,10 @@ import java.io.File
 class FileCOGLayerProvider extends AttributeStoreProvider
     with COGLayerReaderProvider with COGLayerWriterProvider with COGValueReaderProvider with COGCollectionLayerReaderProvider {
 
-  def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "file"
+  def canProcess(uri: URI): Boolean = uri.getScheme match {
+    case str: String => if (str.toLowerCase == "file") true else false
+    case null => true // assume that the user is passing in the path to the catalog
+  }
 
   def attributeStore(uri: URI): AttributeStore = {
     val file = new File(uri)
