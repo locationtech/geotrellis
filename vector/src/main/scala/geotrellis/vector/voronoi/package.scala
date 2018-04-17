@@ -18,7 +18,7 @@ package geotrellis.vector
 
 import geotrellis.vector._
 
-import com.vividsolutions.jts.{ geom => jts }
+import org.locationtech.jts.{ geom => jts }
 
 
 package object voronoi {

@@ -26,7 +26,7 @@ import geotrellis.spark.tiling._
 import geotrellis.util._
 import geotrellis.vector._
 
-import com.vividsolutions.jts.{ geom => jts }
+import org.locationtech.jts.{ geom => jts }
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext

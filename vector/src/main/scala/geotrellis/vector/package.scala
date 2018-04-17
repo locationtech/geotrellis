@@ -18,7 +18,7 @@ package geotrellis
 
 import geotrellis.util.MethodExtensions
 
-import com.vividsolutions.jts.{geom => jts}
+import org.locationtech.jts.{geom => jts}
 
 import scala.collection.mutable
 import scala.collection.JavaConversions._

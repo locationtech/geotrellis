@@ -19,7 +19,7 @@ package geotrellis.raster.vectorize
 import geotrellis.raster._
 import geotrellis.vector._
 
-import com.vividsolutions.jts.geom
+import org.locationtech.jts.geom
 import scala.collection.mutable
 
 /**

@@ -1,6 +1,6 @@
 package geotrellis.spark.distance
 
-import com.vividsolutions.jts.geom.Coordinate
+import org.locationtech.jts.geom.Coordinate
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 

@@ -16,9 +16,9 @@
 
 package geotrellis.vector
 
-import com.vividsolutions.jts.geom.TopologyException
-import com.vividsolutions.jts.{geom => jts}
-import com.vividsolutions.jts.operation.union._
+import org.locationtech.jts.geom.TopologyException
+import org.locationtech.jts.{geom => jts}
+import org.locationtech.jts.operation.union._
 import GeomFactory._
 import geotrellis.vector._
 
@@ -76,7 +76,7 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
 
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */
   def normalized(): Polygon = {
-    val geom = jtsGeom.clone.asInstanceOf[jts.Polygon]
+    val geom = jtsGeom.copy.asInstanceOf[jts.Polygon]
     geom.normalize
     Polygon(geom)
   }
@@ -91,12 +91,12 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
 
   /** Returns the exterior ring of this Polygon. */
   lazy val exterior: Line =
-    Line(jtsGeom.getExteriorRing.clone.asInstanceOf[jts.LineString])
+    Line(jtsGeom.getExteriorRing.copy.asInstanceOf[jts.LineString])
 
   /** Returns the hole rings of this Polygon. */
   lazy val holes: Array[Line] = {
     for (i <- 0 until numberOfHoles) yield
-      Line(jtsGeom.getInteriorRingN(i).clone.asInstanceOf[jts.LineString])
+      Line(jtsGeom.getInteriorRingN(i).copy.asInstanceOf[jts.LineString])
   }.toArray
 
   /** Returns true if this Polygon contains holes */

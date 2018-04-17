@@ -18,8 +18,8 @@ package geotrellis.vector
 
 import geotrellis.proj4.CRS
 
-import com.vividsolutions.jts.{geom => jts}
-import com.vividsolutions.jts.geom.TopologyException
+import org.locationtech.jts.{geom => jts}
+import org.locationtech.jts.geom.TopologyException
 import GeomFactory._
 
 import scala.reflect.{ ClassTag, classTag }

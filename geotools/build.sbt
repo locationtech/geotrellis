@@ -32,7 +32,7 @@ initialCommands in console :=
   import geotrellis.geotools._
   import geotrellis.raster._
   import geotrellis.vector._
-  import com.vividsolutions.jts.{geom => jts}
+  import org.locationtech.jts.{geom => jts}
   import org.geotools.coverage.grid._
   import org.geotools.coverage.grid.io._
   import org.geotools.gce.geotiff._

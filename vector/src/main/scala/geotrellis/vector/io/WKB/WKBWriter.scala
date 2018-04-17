@@ -18,10 +18,10 @@ package geotrellis.vector.io.wkb
 
 import java.io.ByteArrayOutputStream
 import java.util.Locale
-import com.vividsolutions.jts.io.{ByteOrderValues, OutStream, OutputStreamOutStream}
+import org.locationtech.jts.io.{ByteOrderValues, OutStream, OutputStreamOutStream}
 import geotrellis.vector._
-import com.vividsolutions.jts.{geom => jts}
-import com.vividsolutions.jts.geom.{Coordinate, CoordinateSequence}
+import org.locationtech.jts.{geom => jts}
+import org.locationtech.jts.geom.{Coordinate, CoordinateSequence}
 
 /** Constant values used by the WKB format */
 object WKBConstants {
@@ -48,7 +48,7 @@ object WKBWriter {
   def toHex(bytes: Array[Byte]): String  =  bytes.map(b => "%02x".formatLocal(Locale.ENGLISH, b)).mkString
 }
 
-/** Ported from JTS WKBWriter [[package com.vividsolutions.jts.io.WKBWriter]]
+/** Ported from JTS WKBWriter [[package org.locationtech.jts.io.WKBWriter]]
   *
   * @author Martin Davis
   */

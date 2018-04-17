@@ -5,7 +5,7 @@ import geotrellis.spark.tiling._
 import geotrellis.proj4.{CRS, WebMercator}
 
 import scala.collection.mutable
-import com.vividsolutions.jts.index.strtree.STRtree
+import org.locationtech.jts.index.strtree.STRtree
 import java.io._
 
 import collection.JavaConverters._

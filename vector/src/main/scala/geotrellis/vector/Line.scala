@@ -16,7 +16,7 @@
 
 package geotrellis.vector
 
-import com.vividsolutions.jts.{geom => jts}
+import org.locationtech.jts.{geom => jts}
 import GeomFactory._
 
 import spire.syntax.cfor._
@@ -57,7 +57,7 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
 
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */
   def normalized(): Line = {
-    val geom = jtsGeom.clone.asInstanceOf[jts.LineString]
+    val geom = jtsGeom.copy.asInstanceOf[jts.LineString]
     geom.normalize
     Line(geom)
   }
@@ -96,7 +96,7 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
     val size = jtsGeom.getNumPoints
     val arr = Array.ofDim[Point](size)
     cfor(0)(_ < arr.size, _ + 1) { i =>
-      arr(i) = Point(jtsGeom.getPointN(i).clone.asInstanceOf[jts.Point])
+      arr(i) = Point(jtsGeom.getPointN(i).copy.asInstanceOf[jts.Point])
     }
     arr
   }

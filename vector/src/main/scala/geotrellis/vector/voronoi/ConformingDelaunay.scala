@@ -18,8 +18,8 @@ package geotrellis.vector.voronoi
 
 import geotrellis.vector._
 
-import com.vividsolutions.jts.{ geom => jts }
-import com.vividsolutions.jts.triangulate.ConformingDelaunayTriangulationBuilder
+import org.locationtech.jts.{ geom => jts }
+import org.locationtech.jts.triangulate.ConformingDelaunayTriangulationBuilder
 
 import spire.syntax.cfor._
 

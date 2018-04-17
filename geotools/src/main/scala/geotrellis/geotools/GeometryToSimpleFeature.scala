@@ -19,7 +19,7 @@ package geotrellis.geotools
 import geotrellis.vector._
 import geotrellis.proj4.CRS
 
-import com.vividsolutions.jts.{geom => jts}
+import org.locationtech.jts.{geom => jts}
 import org.geotools.feature.simple.{SimpleFeatureTypeBuilder, SimpleFeatureBuilder}
 import org.opengis.feature.simple.{SimpleFeatureType, SimpleFeature}
 

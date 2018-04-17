@@ -19,7 +19,7 @@ package geotrellis.vector.densify
 import geotrellis.util.MethodExtensions
 import geotrellis.vector._
 
-import com.vividsolutions.jts.{geom => jts}
+import org.locationtech.jts.{geom => jts}
 
 /** Trait used to implicitly extend [[Geometry]] instances with densifying methods */
 trait DensifyMethods[G <: Geometry] extends MethodExtensions[G] {
@@ -29,7 +29,7 @@ trait DensifyMethods[G <: Geometry] extends MethodExtensions[G] {
     * @param tolerance  the upper bound on line segment lengths after densification
     */
   def densify(tolerance: Double): G =
-    com.vividsolutions.jts.densify.Densifier.densify(self.jtsGeom, tolerance) match {
+    org.locationtech.jts.densify.Densifier.densify(self.jtsGeom, tolerance) match {
       case g: jts.Geometry if g.isEmpty => self
       case g => Geometry(g).asInstanceOf[G]
     }
