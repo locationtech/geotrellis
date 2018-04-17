@@ -186,6 +186,16 @@ trait COGLayerWriter extends LazyLogging with Serializable {
 
 object COGLayerWriter {
 
+  case class Options(maxTileSize: Int = DefaultMaxTileSize)
+
+  object Options {
+    def DEFAULT = Options()
+
+    implicit def maxTileSizeToOptions(maxTileSize: Int): Options = Options(maxTileSize = maxTileSize)
+  }
+
+  private val DefaultMaxTileSize = 4096
+
   /**
    * Produce COGLayerWriter instance based on URI description.
    * Find instances of [[COGLayerWriterProvider]] through Java SPI.
