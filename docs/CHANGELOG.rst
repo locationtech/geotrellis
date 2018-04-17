@@ -20,6 +20,7 @@ API Changes
   - **New:** CollectionLayerReader now has an SPI interface.
   - **New:** ``ZoomResample`` can now be used on ``MultibandTileLayerRDD``\s.
   - **New:** A ``Partitioner`` can be specified in the ``reproject`` methods of ``TileLayerRDD``.
+  - **New:** Compression ``level`` of GeoTiffs can be specified in the ``DeflateCompression`` constructor.
 
 Fixes
 ^^^^^

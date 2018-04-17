@@ -16,24 +16,19 @@
 
 package geotrellis.raster.io.geotiff.compression
 
-import java.util.zip.{ Inflater, Deflater }
-
-import geotrellis.raster.io.geotiff.reader._
-import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.raster.io.geotiff.tags.codes.CompressionType._
 
-import scala.collection.mutable
+import java.util.zip.{Inflater, Deflater}
 
-import spire.syntax.cfor._
-
-object DeflateCompression extends Compression {
+/** Compression level: 0 - 9lvl, default is -1, see [[Deflater]] docs for more information */
+case class DeflateCompression(level: Int = Deflater.DEFAULT_COMPRESSION) extends Compression {
   def createCompressor(segmentCount: Int): Compressor =
     new Compressor {
       private val segmentSizes = Array.ofDim[Int](segmentCount)
       def compress(segment: Array[Byte], segmentIndex: Int): Array[Byte] = {
         segmentSizes(segmentIndex) = segment.size
 
-        val deflater = new Deflater()
+        val deflater = new Deflater(level)
         val tmp = segment.clone
         deflater.setInput(segment, 0, segment.length)
         deflater.finish()
@@ -51,11 +46,13 @@ object DeflateCompression extends Compression {
     new DeflateDecompressor(segmentSizes)
 }
 
+object DeflateCompression extends DeflateCompression(Deflater.DEFAULT_COMPRESSION)
+
 class DeflateDecompressor(segmentSizes: Array[Int]) extends Decompressor {
   def code = ZLibCoded
 
-  def compress(segment: Array[Byte]): Array[Byte] = {
-    val deflater = new Deflater()
+  def compress(segment: Array[Byte], level: Int = Deflater.DEFAULT_COMPRESSION): Array[Byte] = {
+    val deflater = new Deflater(level)
     val tmp = segment.clone
     deflater.setInput(segment, 0, segment.length)
     val compressedDataLength = deflater.deflate(tmp)
