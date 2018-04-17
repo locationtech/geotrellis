@@ -23,6 +23,8 @@ API Changes
   - **New:** Compression ``level`` of GeoTiffs can be specified in the ``DeflateCompression`` constructor.
   - **Change:**: The Ascii draw methods are now method extensions of ``Tile``.
   - **Change:** Replace `geotrellis.util.Functor` with `cats.Functor`
+  - **Change:** Specifying the ``maxTileSize`` for a COGLayer that's to be written is now done via ``COGLayerWriter.Options``
+    which can be passed directly to the ``write`` methods.
 
 Fixes
 ^^^^^
