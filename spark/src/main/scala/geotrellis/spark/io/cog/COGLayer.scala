@@ -92,6 +92,8 @@ object COGLayer {
         options.maxTileSize
       )
 
+    val pyramidOptions = Pyramid.Options(resampleMethod = options.resampleMethod)
+
     val layers: Map[ZoomRange, RDD[(K, GeoTiff[V])]] =
       cogLayerMetadata.zoomRanges.
         sorted(Ordering[ZoomRange].reverse).
@@ -106,7 +108,7 @@ object COGLayer {
 
             val tmd: TileLayerMetadata[K] = cogLayerMetadata.tileLayerMetadata(range.maxZoom + 1)
             val upsampledPreviousLayer =
-              Pyramid.up(ContextRDD(previousLayer, tmd), layoutScheme, range.maxZoom + 1)._2
+              Pyramid.up(ContextRDD(previousLayer, tmd), layoutScheme, range.maxZoom + 1, pyramidOptions)._2
 
             val rzz = generateGeoTiffRDD(upsampledPreviousLayer, range, layoutScheme, cogLayerMetadata.cellType, compression)
 

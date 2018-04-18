@@ -20,6 +20,7 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
+import geotrellis.raster.resample._
 import geotrellis.raster.crop._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.compression.{Compression, NoCompression}
@@ -213,12 +214,16 @@ trait COGLayerWriter extends LazyLogging with Serializable {
 
 object COGLayerWriter {
 
-  case class Options(maxTileSize: Int = DefaultMaxTileSize)
+  case class Options(
+    maxTileSize: Int = DefaultMaxTileSize,
+    resampleMethod: ResampleMethod = NearestNeighbor
+  )
 
   object Options {
     def DEFAULT = Options()
 
     implicit def maxTileSizeToOptions(maxTileSize: Int): Options = Options(maxTileSize = maxTileSize)
+    implicit def resampleMethodToOptions(resampleMethod: ResampleMethod): Options = Options(resampleMethod = resampleMethod)
   }
 
   private val DefaultMaxTileSize = 4096
