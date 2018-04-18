@@ -59,7 +59,8 @@ class HadoopCOGValueReader(
     baseReader[K, V](
       layerId,
       keyPath,
-      path => new URI(path)
+      path => new URI(path),
+      key => { case e: java.io.FileNotFoundException => throw new ValueNotFoundError(key, layerId) }
     )
   }
 }
