@@ -20,7 +20,9 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
+import geotrellis.spark.tiling._
 import geotrellis.util._
+import geotrellis.vector._
 import AttributeStore.Fields
 
 import spray.json.JsonFormat
@@ -33,9 +35,9 @@ object FileLayerCopier {
   def apply(sourceAttributeStore: FileAttributeStore, targetAttributeStore: FileAttributeStore): LayerCopier[LayerId] =
     new LayerCopier[LayerId] {
       def copy[
-        K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+        K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
         V: AvroRecordCodec: ClassTag,
-        M: JsonFormat: GetComponent[?, Bounds[K]]
+        M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
       ](from: LayerId, to: LayerId): Unit = {
         if(targetAttributeStore.layerExists(to))
           throw new LayerExistsError(to)

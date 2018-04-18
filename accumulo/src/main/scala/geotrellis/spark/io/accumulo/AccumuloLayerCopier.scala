@@ -22,7 +22,9 @@ import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.json._
+import geotrellis.spark.tiling._
 import geotrellis.util._
+import geotrellis.vector._
 
 import org.apache.avro._
 import org.apache.spark.SparkContext
@@ -37,9 +39,9 @@ class AccumuloLayerCopier(
   getLayerWriter: LayerId => AccumuloLayerWriter
 ) extends LayerCopier[LayerId] {
   def copy[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
   ](from: LayerId, to: LayerId): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)

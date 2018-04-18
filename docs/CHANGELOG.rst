@@ -20,6 +20,8 @@ API Changes
   - **New:** CollectionLayerReader now has an SPI interface.
   - **New:** ``ZoomResample`` can now be used on ``MultibandTileLayerRDD``\s.
   - **New:** A ``Partitioner`` can be specified in the ``reproject`` methods of ``TileLayerRDD``.
+  - **Change:** Querying a layer will now produce a result whose metadata will have an ``Extent`` and
+    ``KeyBounds`` of the queried region and not of the whole layer.
 
 Fixes
 ^^^^^

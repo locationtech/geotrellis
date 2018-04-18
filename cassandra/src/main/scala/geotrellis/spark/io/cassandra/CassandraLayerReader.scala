@@ -19,7 +19,9 @@ package geotrellis.spark.io.cassandra
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
+import geotrellis.spark.tiling._
 import geotrellis.util._
+import geotrellis.vector._
 
 import org.apache.spark.SparkContext
 import spray.json._
@@ -32,9 +34,9 @@ class CassandraLayerReader(val attributeStore: AttributeStore, instance: Cassand
   val defaultNumPartitions = sc.defaultParallelism
 
   def read[
-  K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
-  V: AvroRecordCodec: ClassTag,
-  M: JsonFormat: GetComponent[?, Bounds[K]]
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
+    V: AvroRecordCodec: ClassTag,
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
   ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
@@ -46,10 +48,13 @@ class CassandraLayerReader(val attributeStore: AttributeStore, instance: Cassand
 
     val queryKeyBounds = tileQuery(metadata)
 
+    val layerMetadata = updateQueriedMetadata[K, M](queryKeyBounds, metadata)
+
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
 
     val rdd = CassandraRDDReader.read[K, V](instance, header.keyspace, header.tileTable, id, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema))
-    new ContextRDD(rdd, metadata)
+
+    new ContextRDD(rdd, layerMetadata)
   }
 }
 

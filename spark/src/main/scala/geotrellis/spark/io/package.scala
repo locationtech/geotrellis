@@ -17,7 +17,9 @@
 package geotrellis.spark
 
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.spark.tiling.MapKeyTransform
+import geotrellis.spark.tiling.{MapKeyTransform, LayoutDefinition}
+import geotrellis.vector.Extent
+import geotrellis.util._
 
 import com.typesafe.config.Config
 
@@ -48,6 +50,25 @@ package object io
         extent = that.extent,
         layoutCols = that.segmentLayout.tileLayout.layoutCols,
         layoutRows = that.segmentLayout.tileLayout.layoutRows)
+  }
+
+  private[io] def updateQueriedMetadata[
+    K: SpatialComponent: Boundable,
+    M: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
+  ](
+    keyBounds: Seq[KeyBounds[K]],
+    sourceMetadata: M
+  ): M = {
+    val mapTransform = sourceMetadata.getComponent[LayoutDefinition].mapTransform
+
+    if (keyBounds.isEmpty)
+      sourceMetadata.setComponent[Bounds[K]](EmptyBounds).setComponent[Extent](Extent(0, 0, 0, 0))
+    else {
+      val layerBounds: KeyBounds[K] = keyBounds.reduce { _.combine(_) }
+      val layerExtent: Extent = mapTransform(layerBounds.minKey).combine(mapTransform(layerBounds.maxKey))
+
+      sourceMetadata.setComponent[Bounds[K]](layerBounds).setComponent[Extent](layerExtent)
+    }
   }
 
   // Custom exceptions

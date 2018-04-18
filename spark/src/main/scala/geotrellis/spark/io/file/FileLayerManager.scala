@@ -22,7 +22,9 @@ import geotrellis.spark.io.AttributeStore.Fields
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.json._
+import geotrellis.spark.tiling._
 import geotrellis.util._
+import geotrellis.vector._
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd._
@@ -36,30 +38,30 @@ class FileLayerManager(attributeStore: FileAttributeStore)(implicit sc: SparkCon
     FileLayerDeleter(attributeStore).delete(id)
 
   def copy[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
   ](from: LayerId, to: LayerId): Unit =
     FileLayerCopier(attributeStore).copy[K, V, M](from, to)
 
   def move[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
   ](from: LayerId, to: LayerId): Unit =
     FileLayerMover(attributeStore).move[K, V, M](from, to)
 
   def reindex[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
   ](id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit =
     FileLayerReindexer(attributeStore).reindex[K, V, M](id, keyIndexMethod)
 
   def reindex[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
   ](id: LayerId, keyIndex: KeyIndex[K]): Unit =
     FileLayerReindexer(attributeStore).reindex[K, V, M](id, keyIndex)
 }

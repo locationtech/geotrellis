@@ -19,7 +19,9 @@ package geotrellis.spark.io.accumulo
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
+import geotrellis.spark.tiling._
 import geotrellis.util._
+import geotrellis.vector._
 
 import org.apache.hadoop.io.Text
 import org.apache.spark.SparkContext
@@ -34,9 +36,9 @@ class AccumuloLayerReader(val attributeStore: AttributeStore)(implicit sc: Spark
   val defaultNumPartitions = sc.defaultParallelism
 
   def read[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
   ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
@@ -46,8 +48,10 @@ class AccumuloLayerReader(val attributeStore: AttributeStore)(implicit sc: Spark
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
     }
 
-    val queryKeyBounds = tileQuery(metadata)
     val layerBounds = metadata.getComponent[Bounds[K]]
+    val queryKeyBounds = tileQuery(metadata)
+
+    val layerMetadata = updateQueriedMetadata[K, M](queryKeyBounds, metadata)
 
     val decompose: KeyBounds[K] => Seq[AccumuloRange] =
       if(queryKeyBounds.size == 1 && queryKeyBounds.head.contains(layerBounds)) {
@@ -64,7 +68,8 @@ class AccumuloLayerReader(val attributeStore: AttributeStore)(implicit sc: Spark
       }
 
     val rdd = AccumuloRDDReader.read[K, V](header.tileTable, columnFamily(id), queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema))
-    new ContextRDD(rdd, metadata)
+
+    new ContextRDD(rdd, layerMetadata)
   }
 }
 

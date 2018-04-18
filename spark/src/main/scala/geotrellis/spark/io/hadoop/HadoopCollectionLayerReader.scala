@@ -19,7 +19,9 @@ package geotrellis.spark.io.hadoop
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
+import geotrellis.spark.tiling._
 import geotrellis.util._
+import geotrellis.vector._
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -41,9 +43,9 @@ class HadoopCollectionLayerReader(
   extends CollectionLayerReader[LayerId] with LazyLogging {
 
   def read[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
   ](id: LayerId, rasterQuery: LayerQuery[K, M], indexFilterOnly: Boolean): Seq[(K, V)] with Metadata[M] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
@@ -56,11 +58,13 @@ class HadoopCollectionLayerReader(
     val keyBounds = metadata.getComponent[Bounds[K]].getOrElse(throw new LayerEmptyBoundsError(id))
     val queryKeyBounds = rasterQuery(metadata)
 
+    val layerMetadata = updateQueriedMetadata[K, M](queryKeyBounds, metadata)
+
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
 
     val seq = HadoopCollectionReader(maxOpenFiles).read[K, V](layerPath, conf, queryKeyBounds, decompose, indexFilterOnly, Some(writerSchema))
 
-    new ContextCollection[K, V, M](seq, metadata)
+    new ContextCollection(seq, layerMetadata)
   }
 }
 

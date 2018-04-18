@@ -20,7 +20,9 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
+import geotrellis.spark.tiling._
 import geotrellis.util._
+import geotrellis.vector._
 
 import spray.json.JsonFormat
 
@@ -40,9 +42,9 @@ class FileCollectionLayerReader(
 ) extends CollectionLayerReader[LayerId] with LazyLogging {
 
   def read[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
   ](id: LayerId, rasterQuery: LayerQuery[K, M], filterIndexOnly: Boolean) = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
@@ -55,12 +57,15 @@ class FileCollectionLayerReader(
     val layerPath = header.path
 
     val queryKeyBounds = rasterQuery(metadata)
+
+    val layerMetadata = updateQueriedMetadata[K, M](queryKeyBounds, metadata)
+
     val maxWidth = Index.digits(keyIndex.toIndex(keyIndex.keyBounds.maxKey))
     val keyPath = KeyPathGenerator(catalogPath, layerPath, maxWidth)
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
     val seq = FileCollectionReader.read[K, V](keyPath, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema))
 
-    new ContextCollection(seq, metadata)
+    new ContextCollection(seq, layerMetadata)
   }
 }
 
@@ -74,5 +79,3 @@ object FileCollectionLayerReader {
   def apply(attributeStore: FileAttributeStore): FileCollectionLayerReader =
     apply(attributeStore, attributeStore.catalogPath)
 }
-
-

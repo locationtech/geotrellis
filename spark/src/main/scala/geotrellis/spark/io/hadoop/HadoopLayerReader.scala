@@ -23,7 +23,9 @@ import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.json._
+import geotrellis.spark.tiling._
 import geotrellis.util._
+import geotrellis.vector._
 
 import org.apache.avro.Schema
 import org.apache.hadoop.fs.Path
@@ -49,9 +51,9 @@ class HadoopLayerReader(
   val defaultNumPartitions = sc.defaultParallelism
 
   def read[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]: Component[?, Extent]
   ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, indexFilterOnly: Boolean): RDD[(K, V)] with Metadata[M] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
@@ -64,6 +66,8 @@ class HadoopLayerReader(
     val keyBounds = metadata.getComponent[Bounds[K]].getOrElse(throw new LayerEmptyBoundsError(id))
     val queryKeyBounds = tileQuery(metadata)
 
+    val layerMetadata = updateQueriedMetadata[K, M](queryKeyBounds, metadata)
+
     val rdd: RDD[(K, V)] =
       if (queryKeyBounds == Seq(keyBounds)) {
         HadoopRDDReader.readFully(layerPath, Some(writerSchema))
@@ -72,7 +76,7 @@ class HadoopLayerReader(
         HadoopRDDReader.readFiltered(layerPath, queryKeyBounds, decompose, indexFilterOnly, Some(writerSchema))
       }
 
-    new ContextRDD[K, V, M](rdd, metadata)
+    new ContextRDD(rdd, layerMetadata)
   }
 }
 
