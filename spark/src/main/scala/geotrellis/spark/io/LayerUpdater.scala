@@ -36,13 +36,13 @@ abstract class LayerUpdater[ID] {
   protected def _update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+    M: JsonFormat: Component[?, Bounds[K]]: Mergable
   ](id: ID, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K], mergeFunc: (V, V) => V): Unit
 
   def overwrite[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+    M: JsonFormat: Component[?, Bounds[K]]: Mergable
   ](id: ID, rdd: RDD[(K, V)] with Metadata[M]): Unit
 
 
@@ -56,7 +56,7 @@ abstract class LayerUpdater[ID] {
   def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+    M: JsonFormat: Component[?, Bounds[K]]: Mergable
   ](id: ID, rdd: RDD[(K, V)] with Metadata[M], mergeFunc: (V, V) => V): Unit =
     rdd.metadata.getComponent[Bounds[K]] match {
       case keyBounds: KeyBounds[K] =>
@@ -69,7 +69,7 @@ abstract class LayerUpdater[ID] {
   def update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+    M: JsonFormat: Component[?, Bounds[K]]: Mergable
   ](id: ID, rdd: RDD[(K, V)] with Metadata[M]): Unit =
     rdd.metadata.getComponent[Bounds[K]] match {
       case keyBounds: KeyBounds[K] =>

@@ -34,7 +34,7 @@ class HBaseLayerReader(val attributeStore: AttributeStore, instance: HBaseInstan
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]
   ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
@@ -45,11 +45,12 @@ class HBaseLayerReader(val attributeStore: AttributeStore, instance: HBaseInstan
     }
 
     val queryKeyBounds = tileQuery(metadata)
+    val layerMetadata = metadata.setComponent[Bounds[K]](queryKeyBounds.foldLeft(EmptyBounds: Bounds[K])(_ combine _))
 
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
 
     val rdd = HBaseRDDReader.read[K, V](instance, header.tileTable, id, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema))
-    new ContextRDD(rdd, metadata)
+    new ContextRDD(rdd, layerMetadata)
   }
 }
 

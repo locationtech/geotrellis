@@ -36,7 +36,7 @@ class AccumuloLayerReader(val attributeStore: AttributeStore)(implicit sc: Spark
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]
   ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
@@ -48,6 +48,7 @@ class AccumuloLayerReader(val attributeStore: AttributeStore)(implicit sc: Spark
 
     val queryKeyBounds = tileQuery(metadata)
     val layerBounds = metadata.getComponent[Bounds[K]]
+    val layerMetadata = metadata.setComponent[Bounds[K]](queryKeyBounds.foldLeft(EmptyBounds: Bounds[K])(_ combine _))
 
     val decompose: KeyBounds[K] => Seq[AccumuloRange] =
       if(queryKeyBounds.size == 1 && queryKeyBounds.head.contains(layerBounds)) {
@@ -64,7 +65,7 @@ class AccumuloLayerReader(val attributeStore: AttributeStore)(implicit sc: Spark
       }
 
     val rdd = AccumuloRDDReader.read[K, V](header.tileTable, columnFamily(id), queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema))
-    new ContextRDD(rdd, metadata)
+    new ContextRDD(rdd, layerMetadata)
   }
 }
 

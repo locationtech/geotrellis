@@ -41,7 +41,7 @@ class AccumuloLayerUpdater(
   protected def _update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+    M: JsonFormat: Component[?, Bounds[K]]: Mergable
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K], mergeFunc: (V, V) => V): Unit = {
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
       attributeStore.readLayerAttributes[AccumuloLayerHeader, M, K](id)
@@ -55,7 +55,7 @@ class AccumuloLayerUpdater(
   def overwrite[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+    M: JsonFormat: Component[?, Bounds[K]]: Mergable
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
       attributeStore.readLayerAttributes[AccumuloLayerHeader, M, K](id)

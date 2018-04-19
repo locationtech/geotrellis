@@ -38,7 +38,7 @@ class CassandraLayerUpdater(
   protected def _update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+    M: JsonFormat: Component[?, Bounds[K]]: Mergable
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K], mergeFunc: (V, V) => V): Unit = {
     val CassandraLayerHeader(_, _, keyspace, table) = attributeStore.readHeader[CassandraLayerHeader](id)
     val layerWriter = new CassandraLayerWriter(attributeStore, instance, keyspace, table)
@@ -48,7 +48,7 @@ class CassandraLayerUpdater(
   def overwrite[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+    M: JsonFormat: Component[?, Bounds[K]]: Mergable
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
     val CassandraLayerHeader(_, _, keyspace, table) = attributeStore.readHeader[CassandraLayerHeader](id)
     val layerWriter = new CassandraLayerWriter(attributeStore, instance, keyspace, table)

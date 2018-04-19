@@ -89,6 +89,8 @@ API Changes
     folding of 3D tile layers into 2D tile layers.
   - The often-used ``apply`` method overloads in ``MapKeyTransform`` have been given
     more descriptive aliases.
+  - **Change:** Querying a layer will now produce a result whose metadata will have an ``Extent`` and
+    ``KeyBounds`` of the queried region and not of the whole layer.
 
 - ``geotrellis.vectortile`` (experimental)
 

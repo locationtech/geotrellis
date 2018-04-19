@@ -39,7 +39,7 @@ class HBaseLayerUpdater(
   protected def _update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+    M: JsonFormat: Component[?, Bounds[K]]: Mergable
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K], mergeFunc: (V, V) => V): Unit = {
     val table = attributeStore.readHeader[HBaseLayerHeader](id).tileTable
     val layerWriter = new HBaseLayerWriter(attributeStore, instance, table)
@@ -49,7 +49,7 @@ class HBaseLayerUpdater(
   def overwrite[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+    M: JsonFormat: Component[?, Bounds[K]]: Mergable
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
     val table = attributeStore.readHeader[HBaseLayerHeader](id).tileTable
     val layerWriter = new HBaseLayerWriter(attributeStore, instance, table)

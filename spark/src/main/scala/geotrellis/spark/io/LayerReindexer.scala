@@ -30,12 +30,12 @@ trait LayerReindexer[ID] {
   def reindex[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]
   ](id: ID, keyIndex: KeyIndex[K]): Unit
 
   def reindex[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]
   ](id: ID, keyIndexMethod: KeyIndexMethod[K]): Unit
 }
