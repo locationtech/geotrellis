@@ -41,7 +41,7 @@ class S3LayerUpdater(
 
   private def layerWriterFor[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+    M: JsonFormat: Component[?, Bounds[K]]: Mergable
   ](id: LayerId, bounds: Bounds[K]): LayerWriter[LayerId] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
@@ -66,7 +66,7 @@ class S3LayerUpdater(
   protected def _update[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+    M: JsonFormat: Component[?, Bounds[K]]: Mergable
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyBounds: KeyBounds[K], mergeFunc: (V, V) => V): Unit = {
     val layerWriter = layerWriterFor[K, M](id, keyBounds)
     layerWriter.update(id, rdd, mergeFunc)
@@ -75,7 +75,7 @@ class S3LayerUpdater(
   def overwrite[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]: Mergable
+    M: JsonFormat: Component[?, Bounds[K]]: Mergable
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
     val layerWriter = layerWriterFor[K, M](id, rdd.metadata.getComponent[Bounds[K]])
     layerWriter.overwrite(id, rdd)

@@ -51,7 +51,7 @@ class HadoopLayerReader(
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]
   ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, indexFilterOnly: Boolean): RDD[(K, V)] with Metadata[M] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
@@ -63,6 +63,7 @@ class HadoopLayerReader(
     val layerPath = new Path(header.path)
     val keyBounds = metadata.getComponent[Bounds[K]].getOrElse(throw new LayerEmptyBoundsError(id))
     val queryKeyBounds = tileQuery(metadata)
+    val layerMetadata = metadata.setComponent[Bounds[K]](queryKeyBounds.foldLeft(EmptyBounds: Bounds[K])(_ combine _))
 
     val rdd: RDD[(K, V)] =
       if (queryKeyBounds == Seq(keyBounds)) {
@@ -72,7 +73,7 @@ class HadoopLayerReader(
         HadoopRDDReader.readFiltered(layerPath, queryKeyBounds, decompose, indexFilterOnly, Some(writerSchema))
       }
 
-    new ContextRDD[K, V, M](rdd, metadata)
+    new ContextRDD[K, V, M](rdd, layerMetadata)
   }
 }
 

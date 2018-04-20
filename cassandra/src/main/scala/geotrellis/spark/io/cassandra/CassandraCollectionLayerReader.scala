@@ -30,7 +30,7 @@ class CassandraCollectionLayerReader(val attributeStore: AttributeStore, instanc
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]
   ](id: LayerId, rasterQuery: LayerQuery[K, M], filterIndexOnly: Boolean) = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
@@ -41,11 +41,12 @@ class CassandraCollectionLayerReader(val attributeStore: AttributeStore, instanc
     }
 
     val queryKeyBounds = rasterQuery(metadata)
+    val layerMetadata = metadata.setComponent[Bounds[K]](queryKeyBounds.foldLeft(EmptyBounds: Bounds[K])(_ combine _))
 
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
 
     val seq = CassandraCollectionReader.read[K, V](instance, header.keyspace, header.tileTable, id, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema))
-    new ContextCollection(seq, metadata)
+    new ContextCollection(seq, layerMetadata)
   }
 }
 

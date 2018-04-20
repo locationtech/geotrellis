@@ -43,7 +43,7 @@ class HadoopCollectionLayerReader(
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]
   ](id: LayerId, rasterQuery: LayerQuery[K, M], indexFilterOnly: Boolean): Seq[(K, V)] with Metadata[M] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
@@ -55,12 +55,12 @@ class HadoopCollectionLayerReader(
     val layerPath = new Path(header.path)
     val keyBounds = metadata.getComponent[Bounds[K]].getOrElse(throw new LayerEmptyBoundsError(id))
     val queryKeyBounds = rasterQuery(metadata)
-
+    val layerMetadata = metadata.setComponent[Bounds[K]](queryKeyBounds.foldLeft(EmptyBounds: Bounds[K])(_ combine _))
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
 
     val seq = HadoopCollectionReader(maxOpenFiles).read[K, V](layerPath, conf, queryKeyBounds, decompose, indexFilterOnly, Some(writerSchema))
 
-    new ContextCollection[K, V, M](seq, metadata)
+    new ContextCollection[K, V, M](seq, layerMetadata)
   }
 }
 
