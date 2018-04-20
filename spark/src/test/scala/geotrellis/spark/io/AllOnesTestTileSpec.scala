@@ -73,6 +73,12 @@ trait AllOnesTestTileSpec { self: PersistenceSpec[SpatialKey, Tile, TileLayerMet
           for ((col, row) <- GridBounds(3, 3, 4, 4).coordsIter.toSeq) yield SpatialKey(col, row)
         }
       }
+
+      it("layer should have a proper extent after query") {
+        val extent = Extent(-10, -10, 10, 10) // this should intersect the four central tiles in 8x8 layout
+        val metadata = query.where(Intersects(extent)).result.metadata
+        metadata.extent should be (metadata.mapTransform(GridBounds(3, 3, 4, 4)))
+      }
     }
   }
 }
