@@ -16,25 +16,21 @@
 
 package geotrellis.raster.io.geotiff.compression
 
-import java.util.zip.{ Inflater, Deflater }
-
-import geotrellis.raster.io.geotiff.reader._
-import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.raster.io.geotiff.tags.codes.CompressionType._
 
-import scala.collection.mutable
+import java.util.zip.{Inflater, Deflater}
 
-import spire.syntax.cfor._
-
-object DeflateCompression extends Compression {
+/** Compression level: 0 - 9lvl, default is -1, see [[Deflater]] docs for more information */
+case class DeflateCompression(level: Int = Deflater.DEFAULT_COMPRESSION) extends Compression {
   def createCompressor(segmentCount: Int): Compressor =
     new Compressor {
       private val segmentSizes = Array.ofDim[Int](segmentCount)
       def compress(segment: Array[Byte], segmentIndex: Int): Array[Byte] = {
         segmentSizes(segmentIndex) = segment.size
 
-        val deflater = new Deflater()
-        val tmp = segment.clone
+        val deflater = new Deflater(level)
+        // take into account extra 10 leading bytes header, in case of 0 compression level it is important
+        val tmp = Array.ofDim[Byte](segment.length + 10)
         deflater.setInput(segment, 0, segment.length)
         deflater.finish()
         val compressedSize = deflater.deflate(tmp)
@@ -51,12 +47,15 @@ object DeflateCompression extends Compression {
     new DeflateDecompressor(segmentSizes)
 }
 
+object DeflateCompression extends DeflateCompression(Deflater.DEFAULT_COMPRESSION)
+
 class DeflateDecompressor(segmentSizes: Array[Int]) extends Decompressor {
   def code = ZLibCoded
 
-  def compress(segment: Array[Byte]): Array[Byte] = {
-    val deflater = new Deflater()
-    val tmp = segment.clone
+  def compress(segment: Array[Byte], level: Int = Deflater.DEFAULT_COMPRESSION): Array[Byte] = {
+    val deflater = new Deflater(level)
+    // take into account extra 10 leading bytes header, in case of 0 compression level it is important
+    val tmp = Array.ofDim[Byte](segment.length + 10)
     deflater.setInput(segment, 0, segment.length)
     val compressedDataLength = deflater.deflate(tmp)
     java.util.Arrays.copyOf(tmp, compressedDataLength)
