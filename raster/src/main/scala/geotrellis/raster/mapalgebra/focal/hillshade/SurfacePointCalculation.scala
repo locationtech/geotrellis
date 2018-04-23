@@ -282,6 +282,7 @@ abstract class SurfacePointCalculation[T](r: Tile, n: Neighborhood, analysisArea
       col = colMin + 1
       while (col < colMax) {
         moveRight()
+        focalValue = r.getDouble(col, row)
         east(0) = r.getDouble(col+1, row-1)
         east(1) = r.getDouble(col+1, row)
         east(2) = r.getDouble(col+1, row+1)
