@@ -27,7 +27,7 @@ import geotrellis.vector._
 trait DissolveMethods[G <: Geometry] extends MethodExtensions[G] {
   def dissolve: MultiLineMultiLineUnionResult =
     try {
-      com.vividsolutions.jts.dissolve.LineDissolver.dissolve(self.jtsGeom)
+      org.locationtech.jts.dissolve.LineDissolver.dissolve(self.jtsGeom)
     } catch {
       case _: java.lang.NullPointerException =>
         // If this is an empty multiline or multipolygon, the JTS code throws this exception.

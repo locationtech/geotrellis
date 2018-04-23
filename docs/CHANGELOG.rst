@@ -9,6 +9,10 @@ API Changes
 
 - ``geotrellis.spark``
 
+  - **Change:** JTS has been updated to version 1.15.  Deprecated methods have
+    been changed, and all references to ``com.vividsolutions`` have been
+    updated to point to ``org.locationtech``.
+
   - **Change:**  The length of the key (the space-filling curve index or address) used for layer reading and writing has
     been extended from a fixed length of 8 bytes to an arbitrary length.  This change affects not only the
     ``geotrellis.spark`` package, but all backends (excluding ``geotrellis.geowave`` and ``geotrellis.geomesa``).
@@ -31,6 +35,7 @@ Fixes
 - Fixed ``CastException`` that sometimes occured when reading cached attributes.
 - Uncompressed GeoTiffMultibandTiles will now convert to the correct CellType
 - Calculating the Slope of a ``Tile`` when ``targetCell`` is ``Data`` will now produce the correct result.
+
 
 
 1.2.1

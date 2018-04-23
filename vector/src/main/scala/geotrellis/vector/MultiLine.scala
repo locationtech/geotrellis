@@ -18,7 +18,7 @@ package geotrellis.vector
 
 import GeomFactory._
 
-import com.vividsolutions.jts.{geom=>jts}
+import org.locationtech.jts.{geom=>jts}
 
 import scala.collection.JavaConversions._
 
@@ -53,7 +53,7 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
 
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */
   def normalized(): MultiLine = {
-    val geom = jtsGeom.clone.asInstanceOf[jts.MultiLineString]
+    val geom = jtsGeom.copy.asInstanceOf[jts.MultiLineString]
     geom.normalize
     MultiLine(geom)
   }
@@ -61,7 +61,7 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
   /** Returns the Lines contained in this MultiLine. */
   lazy val lines: Array[Line] = {
     for (i <- 0 until jtsGeom.getNumGeometries) yield {
-      Line(jtsGeom.getGeometryN(i).clone.asInstanceOf[jts.LineString])
+      Line(jtsGeom.getGeometryN(i).copy.asInstanceOf[jts.LineString])
     }
   }.toArray
 

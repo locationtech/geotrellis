@@ -26,7 +26,7 @@ import geotrellis.util._
 import geotrellis.util.annotations.experimental
 import geotrellis.vector.Extent
 
-import com.vividsolutions.jts.geom._
+import org.locationtech.jts.geom._
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
 import mil.nga.giat.geowave.core.geotime.ingest._
 import mil.nga.giat.geowave.core.geotime.store.statistics.BoundingBoxDataStatistics

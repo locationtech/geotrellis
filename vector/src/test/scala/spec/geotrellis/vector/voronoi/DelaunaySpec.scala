@@ -22,7 +22,7 @@ import geotrellis.raster.render._
 import geotrellis.util.Constants.{ FLOAT_EPSILON => EPSILON }
 import geotrellis.vector._
 
-import com.vividsolutions.jts.triangulate.quadedge.QuadEdge
+import org.locationtech.jts.triangulate.quadedge.QuadEdge
 import org.apache.commons.math3.linear._
 import org.scalatest.{FunSpec, Matchers}
 

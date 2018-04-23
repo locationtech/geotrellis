@@ -18,8 +18,8 @@ package geotrellis.vector
 
 import scala.collection.JavaConversions._
 
-import com.vividsolutions.jts.{geom => jts}
-import com.vividsolutions.jts.operation.union.CascadedPolygonUnion
+import org.locationtech.jts.{geom => jts}
+import org.locationtech.jts.operation.union.CascadedPolygonUnion
 
 import geotrellis.vector._
 

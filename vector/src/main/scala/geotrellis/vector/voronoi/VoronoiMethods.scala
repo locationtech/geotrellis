@@ -16,7 +16,7 @@
 
 package geotrellis.vector.voronoi
 
-import com.vividsolutions.jts.geom.Coordinate
+import org.locationtech.jts.geom.Coordinate
 
 import geotrellis.util.MethodExtensions
 import geotrellis.vector.{Extent, MultiPoint, Point}

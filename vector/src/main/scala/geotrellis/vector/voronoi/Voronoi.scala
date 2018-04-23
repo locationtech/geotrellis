@@ -18,7 +18,7 @@ package geotrellis.vector.voronoi
 
 import geotrellis.vector._
 
-import com.vividsolutions.jts.geom.{GeometryCollection, Coordinate, Point => JTSPoint, Polygon => JTSPolygon}
+import org.locationtech.jts.geom.{GeometryCollection, Coordinate, Point => JTSPoint, Polygon => JTSPolygon}
 
 /**
  * A class to compute the Voronoi diagram of a collection of points.  The Voronoi

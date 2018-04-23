@@ -1,6 +1,6 @@
 package geotrellis.vector.triangulation
 
-import com.vividsolutions.jts.geom.Coordinate
+import org.locationtech.jts.geom.Coordinate
 import geotrellis.util.Direction
 import geotrellis.util.Direction._
 import geotrellis.vector._

@@ -18,7 +18,7 @@ package geotrellis.vector.io.wkt
 
 import geotrellis.vector._
 
-import com.vividsolutions.jts.io.{WKTReader, WKTWriter}
+import org.locationtech.jts.io.{WKTReader, WKTWriter}
 import com.typesafe.scalalogging.LazyLogging
 
 /** A thread-safe wrapper for the WKT Writer and Reader */

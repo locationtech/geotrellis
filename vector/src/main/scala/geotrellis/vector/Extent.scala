@@ -19,7 +19,7 @@ package geotrellis.vector
 import GeomFactory._
 import geotrellis.proj4.{CRS, Transform}
 
-import com.vividsolutions.jts.{geom => jts}
+import org.locationtech.jts.{geom => jts}
 
 case class ExtentRangeError(msg:String) extends Exception(msg)
 
@@ -117,8 +117,8 @@ case class Extent(
   if (xmin > xmax) { throw ExtentRangeError(s"Invalid Extent: xmin must be less than xmax (xmin=$xmin, xmax=$xmax)") }
   if (ymin > ymax) { throw ExtentRangeError(s"Invalid Extent: ymin must be less than ymax (ymin=$ymin, ymax=$ymax)") }
 
-  def jtsEnvelope: com.vividsolutions.jts.geom.Envelope =
-    new com.vividsolutions.jts.geom.Envelope(xmin, xmax, ymin, ymax)
+  def jtsEnvelope: org.locationtech.jts.geom.Envelope =
+    new org.locationtech.jts.geom.Envelope(xmin, xmax, ymin, ymax)
 
   val width: Double = xmax - xmin
   val height: Double = ymax - ymin

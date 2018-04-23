@@ -19,9 +19,9 @@ package geotrellis.vector
 import geotrellis.util.LazyLogging
 
 import com.typesafe.config.ConfigFactory
-import com.vividsolutions.jts.geom
-import com.vividsolutions.jts.geom.PrecisionModel
-import com.vividsolutions.jts.precision.GeometryPrecisionReducer
+import org.locationtech.jts.geom
+import org.locationtech.jts.geom.PrecisionModel
+import org.locationtech.jts.precision.GeometryPrecisionReducer
 
 import scala.util.Try
 

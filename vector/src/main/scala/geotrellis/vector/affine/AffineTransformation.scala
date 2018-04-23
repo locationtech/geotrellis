@@ -17,8 +17,8 @@
 package geotrellis.vector.affine
 
 import geotrellis.vector._
-import com.vividsolutions.jts.{geom => jts}
-import com.vividsolutions.jts.geom.{util => jtsutil}
+import org.locationtech.jts.{geom => jts}
+import org.locationtech.jts.geom.{util => jtsutil}
 
 object AffineTransformation {
   def apply(): AffineTransformation =

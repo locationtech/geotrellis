@@ -16,12 +16,12 @@
 
 package geotrellis.vector
 
-import com.vividsolutions.jts.index.strtree.{STRtree, ItemDistance, ItemBoundable, AbstractNode}
-import com.vividsolutions.jts.index.strtree.ItemDistance
-import com.vividsolutions.jts.geom.Coordinate
-import com.vividsolutions.jts.geom.GeometryFactory
-import com.vividsolutions.jts.geom.Envelope
-import com.vividsolutions.jts.operation.distance.DistanceOp
+import org.locationtech.jts.index.strtree.{STRtree, ItemDistance, ItemBoundable, AbstractNode}
+import org.locationtech.jts.index.strtree.ItemDistance
+import org.locationtech.jts.geom.Coordinate
+import org.locationtech.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.Envelope
+import org.locationtech.jts.operation.distance.DistanceOp
 
 import scala.collection.mutable
 import scala.collection.JavaConversions._
@@ -79,7 +79,7 @@ class SpatialIndex[T](val measure: Measure = Measure.Euclidean) extends Serializ
   def traversePointsInExtent(extent: Extent): Traversable[T] =
     new Traversable[T] {
       override def foreach[U](f: T => U): Unit = {
-        val visitor = new com.vividsolutions.jts.index.ItemVisitor {
+        val visitor = new org.locationtech.jts.index.ItemVisitor {
           override def visitItem(obj: AnyRef): Unit = f(obj.asInstanceOf[T])
         }
         rtree.query(extent.jtsEnvelope, visitor)

@@ -19,7 +19,7 @@ package geotrellis.vector.simplify
 import geotrellis.util.MethodExtensions
 import geotrellis.vector._
 
-import com.vividsolutions.jts.{geom => jts}
+import org.locationtech.jts.{geom => jts}
 
 trait SimplifyMethods[G <: Geometry] extends MethodExtensions[G] {
   /** Simplify the given geometry
@@ -29,7 +29,7 @@ trait SimplifyMethods[G <: Geometry] extends MethodExtensions[G] {
     * @note Does not preserve topology: polygons may be split and holes may be created
     */
   def simplify(tolerance: Double): G =
-    com.vividsolutions.jts.simplify.VWSimplifier.simplify(self.jtsGeom, tolerance) match {
+    org.locationtech.jts.simplify.VWSimplifier.simplify(self.jtsGeom, tolerance) match {
       case g: jts.Geometry if g.isEmpty => self
       case g => Geometry(g).asInstanceOf[G]
     }
