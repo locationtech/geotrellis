@@ -34,6 +34,8 @@ Fixes
 - Uncompressed GeoTiffMultibandTiles will now convert to the correct CellType
 - Calculating the Slope of a ``Tile`` when ``targetCell`` is ``Data`` will now produce the correct result.
 - ``GeoTiffReader`` can now read tiffs that are missing the ``NewSubfileType`` tag.
+- Pyramiding code will once again respect resampling method and will now actually reduce shuffle volume by resampling
+  tiles on map side of pyramid operation
 
 
 1.2.1
