@@ -27,9 +27,9 @@ import org.apache.accumulo.core.data.{Key, Mutation, Value}
 import org.apache.accumulo.core.client.mapreduce.AccumuloFileOutputFormat
 import org.apache.accumulo.core.client.BatchWriterConfig
 import com.typesafe.config.ConfigFactory
-import scalaz.concurrent.{Strategy, Task}
-import scalaz.stream._
+import cats.effect.IO
 
+import scala.concurrent.ExecutionContext
 import java.util.UUID
 import java.util.concurrent.Executors
 
@@ -119,13 +119,13 @@ case class SocketWriteStrategy(
       if(partition.nonEmpty) {
         val poolSize = kwThreads.value
         val pool = Executors.newFixedThreadPool(poolSize)
+        implicit val ec = ExecutionContext.fromExecutor(pool)
         val config = serializeWrapper.value
         val writer = instance.connector.createBatchWriter(table, config)
 
         try {
-
-          val mutations: Process[Task, Mutation] =
-            Process.unfold(partition){ iter =>
+          val mutations: fs2.Stream[IO, Mutation] =
+            fs2.Stream.unfold(partition){ iter =>
               if (iter.hasNext) {
                 val (key, value) = iter.next()
                 val mutation = new Mutation(key.getRow)
@@ -136,16 +136,9 @@ case class SocketWriteStrategy(
               }
             }
 
-          val writeChannel =
-            channel.lift { (mutation: Mutation) =>
-              Task { writer.addMutation(mutation) } (pool)
-            }
+          val write = { (mutation: Mutation) => fs2.Stream eval IO { writer.addMutation(mutation) } }
 
-          val writes = mutations.tee(writeChannel)(tee.zipApply).map(Process.eval)
-
-          val joined =
-            nondeterminism.njoin(maxOpen = poolSize, maxQueued = poolSize)(writes)(Strategy.Executor(pool))
-          joined.run.unsafePerformSync
+          (mutations map write).join(threads).compile.toVector.unsafeRunSync()
         } finally {
           writer.close(); pool.shutdown()
         }

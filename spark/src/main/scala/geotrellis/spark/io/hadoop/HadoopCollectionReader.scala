@@ -26,13 +26,9 @@ import org.apache.avro.Schema
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io._
 import org.apache.hadoop.fs.Path
-import scalaz.std.vector._
-import scalaz.concurrent.{Strategy, Task}
-import scalaz.stream.{Process, nondeterminism}
+
 import com.typesafe.config.ConfigFactory
 import com.github.blemale.scaffeine.{Cache, Scaffeine}
-
-import java.util.concurrent.Executors
 
 class HadoopCollectionReader(maxOpenFiles: Int) {
 

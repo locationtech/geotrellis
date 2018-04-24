@@ -21,17 +21,17 @@ import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.{Boundable, KeyBounds}
 
-import scalaz.std.vector._
-import scalaz.concurrent.{Strategy, Task}
-import scalaz.stream.{Process, channel, nondeterminism, tee}
 import org.apache.accumulo.core.data.{Range => AccumuloRange}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
 import com.typesafe.config.ConfigFactory
+import cats.effect.IO
 
+import scala.concurrent.ExecutionContext
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
+
 import java.util.concurrent.Executors
 
 object AccumuloCollectionReader {
@@ -52,34 +52,37 @@ object AccumuloCollectionReader {
     val ranges = queryKeyBounds.flatMap(decomposeBounds).toIterator
 
     val pool = Executors.newFixedThreadPool(threads)
+    implicit val ec = ExecutionContext.fromExecutor(pool)
 
-    val range: Process[Task, AccumuloRange] = Process.unfold(ranges) { iter =>
+    val range: fs2.Stream[IO, AccumuloRange] = fs2.Stream.unfold(ranges) { iter =>
       if (iter.hasNext) Some(iter.next(), iter)
       else None
     }
 
-    val readChannel = channel.lift { (range: AccumuloRange) => Task {
+    val read = { (range: AccumuloRange) => fs2.Stream eval IO {
       val scanner = instance.connector.createScanner(table, new Authorizations())
       scanner.setRange(range)
       scanner.fetchColumnFamily(columnFamily)
-      val result = scanner.iterator
-        .map({ case entry =>
-          AvroEncoder.fromBinary(writerSchema.getOrElse(codec.schema), entry.getValue.get)(codec) })
-        .flatMap({ pairs: Vector[(K, V)] =>
-          if(filterIndexOnly) pairs
-          else pairs.filter { pair => includeKey(pair._1) } })
-        .toVector
-      scanner.close()
-      result
-    }(pool) }
-
-    val read = range.tee(readChannel)(tee.zipApply).map(Process.eval)
-
+      val result =
+        scanner
+          .iterator
+          .map({ entry => AvroEncoder.fromBinary(writerSchema.getOrElse(codec.schema), entry.getValue.get)(codec) })
+          .flatMap({ pairs: Vector[(K, V)] =>
+            if (filterIndexOnly) pairs
+            else pairs.filter { pair => includeKey(pair._1) }
+          }).toVector
+        scanner.close()
+        result
+      }
+    }
 
     try {
-      nondeterminism
-        .njoin(maxOpen = threads, maxQueued = threads) { read }(Strategy.Executor(pool))
-        .runFoldMap(identity).unsafePerformSync: Seq[(K, V)]
+      (range map read)
+        .join(threads)
+        .compile
+        .toVector
+        .map(_.flatten)
+        .unsafeRunSync
     } finally pool.shutdown()
   }
 }
