@@ -31,7 +31,7 @@ Fixes
 - Fixed ``CastException`` that sometimes occured when reading cached attributes.
 - Uncompressed GeoTiffMultibandTiles will now convert to the correct CellType
 - Calculating the Slope of a ``Tile`` when ``targetCell`` is ``Data`` will now produce the correct result.
-
+- Introduce new hooks into AttributeStore API to allow for better performance in certain queries against catalogs with many layers
 
 1.2.1
 _____
