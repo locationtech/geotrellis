@@ -29,6 +29,8 @@ API Changes
   - **New:** ``AttributeStore`` now has four new methods: ``layerType``, ``isCOGLayer``, ``readCOGLayerAttributes``,
     and ``writeCOGLayerAttributes``.
 
+  - **New:** Kryo serialization of geometry now uses a compressed binary format to reduce network usage
+
 Fixes
 ^^^^^
 
