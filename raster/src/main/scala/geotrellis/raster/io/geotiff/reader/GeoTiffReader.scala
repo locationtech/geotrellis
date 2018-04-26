@@ -437,7 +437,7 @@ object GeoTiffReader {
         val subfileType =
           (tiffTags
             &|-> TiffTags._nonBasicTags ^|->
-            NonBasicTags._newSubfileType get).map(NewSubfileType.fromCode)
+            NonBasicTags._newSubfileType get).flatMap(code => NewSubfileType.fromCode(code))
 
         // If the GeoTiff is coming is as uncompressed, leave it as uncompressed.
         // If it's any sort of compression, move forward with ZLib compression.

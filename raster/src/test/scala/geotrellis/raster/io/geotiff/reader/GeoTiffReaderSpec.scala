@@ -497,6 +497,12 @@ class GeoTiffReaderSpec extends FunSpec
       cmap.map(95) should be (RGB(112, 163, 186))
       cmap.map(255) should be (RGB(0, 0, 0))
     }
+
+    it("should read in a GeoTiff that doesn't have a NewSubfileType tag") {
+      val geoTiff = GeoTiffReader.readSingleband(geoTiffPath("alaska-polar-3572.tif"))
+
+      geoTiff.options.subfileType should be (None)
+    }
   }
 
   describe("Reading and writing special metadata tags ") {
