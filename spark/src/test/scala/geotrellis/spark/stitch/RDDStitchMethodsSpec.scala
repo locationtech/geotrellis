@@ -127,7 +127,7 @@ class RDDStitchMethodsSpec extends FunSpec
 
       assert(restitched.toArray() === tile.toArray(),
         s"""Expected:
-           |${raster.asciiDraw()}
+           |${raster.tile.asciiDraw()}
            |
            |Stitched:
            |${restitched.asciiDraw()}
