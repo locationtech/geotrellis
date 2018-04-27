@@ -42,9 +42,8 @@ object COGLayer {
     * @param rdd             Layer layer, at highest resolution
     * @param baseZoom        Zoom level of the base layer, assumes [[ZoomedLayoutScheme]]
     * @param compression     Compression method for GeoTiff tiles
-    * @param maxTileSize     The maximum tile size in pixels for any one COG file for this layer.
-    *                        For instance, if 1024, no COG in the layer will have a greater width or height than 1024.
     * @param minZoom         Zoom level at which to stop the pyramiding.
+    * @param options         [[COGLayerWriter.Options]] that contains information on the maxTileSize of the layer.
     */
   def fromLayerRDD[
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,
@@ -53,10 +52,11 @@ object COGLayer {
      rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
      baseZoom: Int,
      compression: Compression = Deflate,
-     maxTileSize: Int = 4096,
-     minZoom: Option[Int] = None
+     minZoom: Option[Int] = None,
+     options: COGLayerWriter.Options
    ): COGLayer[K, V] = {
     // TODO: Clean up conditional checks, figure out how to bake into type system, or report errors better.
+
     if(minZoom.getOrElse(Double.NaN) != baseZoom.toDouble) {
       if(rdd.metadata.layout.tileCols != rdd.metadata.layout.tileRows) {
         sys.error("Cannot create Pyramided COG layer for non-square tiles.")
@@ -89,7 +89,7 @@ object COGLayer {
         layoutScheme,
         baseZoom,
         minZoom.getOrElse(0),
-        maxTileSize
+        options.maxTileSize
       )
 
     val layers: Map[ZoomRange, RDD[(K, GeoTiff[V])]] =
