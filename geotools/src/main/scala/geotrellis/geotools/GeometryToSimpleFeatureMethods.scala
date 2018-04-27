@@ -36,4 +36,16 @@ trait GeometryToSimpleFeatureMethods[G <: Geometry] extends MethodExtensions[G] 
 
   def toSimpleFeature(crs: CRS, map: Map[String, Any]): SimpleFeature =
     GeometryToSimpleFeature(self, Some(crs), map.toList)
+
+  def toSimpleFeature(featureId: String): SimpleFeature =
+    GeometryToSimpleFeature(self, None, Seq.empty[(String, Any)], featureId)
+
+  def toSimpleFeature(crs: CRS, featureId: String): SimpleFeature =
+    GeometryToSimpleFeature(self, Some(crs), Seq.empty[(String, Any)], featureId)
+
+  def toSimpleFeature(map: Map[String, Any], featureId: String): SimpleFeature =
+    GeometryToSimpleFeature(self, None, map.toList, featureId)
+
+  def toSimpleFeature(crs: CRS, map: Map[String, Any], featureId: String): SimpleFeature =
+    GeometryToSimpleFeature(self, Some(crs), map.toList, featureId)
 }
