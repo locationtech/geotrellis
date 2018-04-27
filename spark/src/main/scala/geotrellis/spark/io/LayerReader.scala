@@ -23,6 +23,7 @@ import geotrellis.util._
 import org.apache.spark.rdd._
 import org.apache.spark.SparkContext
 import cats.effect.IO
+import cats.syntax.apply._
 import spray.json._
 
 import scala.reflect._
@@ -107,16 +108,10 @@ object LayerReader {
       (start to end).toIterator
     }
 
-    val index: fs2.Stream[IO, BigInt] = fs2.Stream.unfold(indices) { iter =>
-      if (iter.hasNext) {
-        val index: BigInt = iter.next()
-        Some(index, iter)
-      }
-      else None
-    }
+    val index: fs2.Stream[IO, BigInt] = fs2.Stream.fromIterator[IO, BigInt](indices)
 
     val readRecord: (BigInt => fs2.Stream[IO, Vector[(K, V)]]) = { index =>
-      fs2.Stream eval IO.pure { readFunc(index) }
+      fs2.Stream eval IO.shift(ec) *> IO { readFunc(index) }
     }
 
     try {
@@ -124,8 +119,7 @@ object LayerReader {
         .join(threads)
         .compile
         .toVector
-        .map(_.flatten)
-        .unsafeRunSync
+        .unsafeRunSync.flatten
     } finally pool.shutdown()
   }
 }

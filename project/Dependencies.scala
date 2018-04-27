@@ -40,6 +40,8 @@ object Dependencies {
 
   val awsSdkS3            = "com.amazonaws"               % "aws-java-sdk-s3"          % "1.11.143"
 
+  val catsEffect          = "org.typelevel"              %% "cats-effect"              % "0.10.1"
+
   val fs2Core             = "co.fs2"                     %% "fs2-core"                 % "0.10.3"
   val fs2Io               = "co.fs2"                     %% "fs2-io"                   % "0.10.3"
 

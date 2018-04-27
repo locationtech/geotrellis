@@ -11,6 +11,7 @@ libraryDependencies ++= Seq(
   spire,
   monocleCore, monocleMacro,
   chronoscala,
+  catsEffect,
   fs2Core,
   fs2Io,
   scalatest % Test,

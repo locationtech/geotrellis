@@ -27,6 +27,7 @@ import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
 import com.typesafe.config.ConfigFactory
 import cats.effect.IO
+import cats.syntax.apply._
 
 import scala.concurrent.ExecutionContext
 import scala.collection.JavaConversions._
@@ -54,12 +55,9 @@ object AccumuloCollectionReader {
     val pool = Executors.newFixedThreadPool(threads)
     implicit val ec = ExecutionContext.fromExecutor(pool)
 
-    val range: fs2.Stream[IO, AccumuloRange] = fs2.Stream.unfold(ranges) { iter =>
-      if (iter.hasNext) Some(iter.next(), iter)
-      else None
-    }
+    val range: fs2.Stream[IO, AccumuloRange] = fs2.Stream.fromIterator[IO, AccumuloRange](ranges)
 
-    val read = { (range: AccumuloRange) => fs2.Stream eval IO {
+    val read = { (range: AccumuloRange) => fs2.Stream eval IO.shift(ec) *> IO {
       val scanner = instance.connector.createScanner(table, new Authorizations())
       scanner.setRange(range)
       scanner.fetchColumnFamily(columnFamily)

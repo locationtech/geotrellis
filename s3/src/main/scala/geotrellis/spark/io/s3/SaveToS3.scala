@@ -24,6 +24,7 @@ import com.amazonaws.services.s3.model.{ObjectMetadata, PutObjectRequest, PutObj
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.apache.spark.rdd.RDD
 import cats.effect.IO
+import cats.syntax.apply._
 import com.typesafe.config.ConfigFactory
 
 import java.io.ByteArrayInputStream
@@ -76,26 +77,22 @@ object SaveToS3 {
     rdd.foreachPartition { partition =>
       val s3Client = s3Maker()
       val requests: fs2.Stream[IO, PutObjectRequest] =
-        fs2.Stream.unfold(partition) { iter =>
-          if (iter.hasNext) {
-            val (key, bytes) = iter.next()
+        fs2.Stream.fromIterator[IO, PutObjectRequest](
+          partition.map { case (key, bytes) =>
             val metadata = new ObjectMetadata()
             metadata.setContentLength(bytes.length)
             val is = new ByteArrayInputStream(bytes)
             val (bucket, path) = keyToPrefix(key)
-            val request = putObjectModifier(new PutObjectRequest(bucket, path, is, metadata))
-            Some(request, iter)
-          } else {
-            None
+            putObjectModifier(new PutObjectRequest(bucket, path, is, metadata))
           }
-        }
+        )
 
       val pool = Executors.newFixedThreadPool(threads)
       implicit val ec = ExecutionContext.fromExecutor(pool)
 
       import geotrellis.spark.util.TaskUtils._
       val write: PutObjectRequest => fs2.Stream[IO, PutObjectResult] = { request =>
-        fs2.Stream eval IO {
+        fs2.Stream eval IO.shift(ec) *> IO {
           request.getInputStream.reset() // reset in case of retransmission to avoid 400 error
           s3Client.putObject(request)
         }.retryEBO {

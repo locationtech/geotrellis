@@ -28,6 +28,7 @@ import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
 import com.datastax.driver.core.ResultSet
 import com.datastax.driver.core.schemabuilder.SchemaBuilder
 import cats.effect.IO
+import cats.syntax.apply._
 import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
 import com.typesafe.config.ConfigFactory
@@ -103,25 +104,22 @@ object CassandraRDDWriter {
     // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
     // on a key type that may no longer by valid for the key type of the resulting RDD.
       raster.groupBy({ row => decomposeKey(row._1) }, numPartitions = raster.partitions.length)
-        .foreachPartition { partition =>
+        .foreachPartition { partition: Iterator[(BigInt, Iterable[(K, V)])] =>
           if(partition.nonEmpty) {
             instance.withSession { session =>
               val readStatement = session.prepare(readQuery)
               val writeStatement = session.prepare(writeQuery)
 
               val rows: fs2.Stream[IO, (BigInt, Vector[(K,V)])] =
-                fs2.Stream.unfold(partition)({ iter =>
-                  if (iter.hasNext) {
-                    val record = iter.next()
-                    Some((record._1, record._2.toVector), iter)
-                  } else None
-                })
+                fs2.Stream.fromIterator[IO, (BigInt, Vector[(K, V)])](
+                  partition.map { case (key, value) => (key, value.toVector) }
+                )
 
               val pool = Executors.newFixedThreadPool(threads)
               implicit val ec = ExecutionContext.fromExecutor(pool)
 
               def elaborateRow(row: (BigInt, Vector[(K,V)])): fs2.Stream[IO, (BigInt, Vector[(K,V)])] = {
-                fs2.Stream eval IO ({
+                fs2.Stream eval IO.shift(ec) *> IO ({
                   val (key, kvs1) = row
                   val kvs2 =
                     if (mergeFunc.nonEmpty) {
@@ -147,7 +145,7 @@ object CassandraRDDWriter {
               }
 
               def rowToBytes(row: (BigInt, Vector[(K,V)])): fs2.Stream[IO, (BigInt, ByteBuffer)] = {
-                fs2.Stream eval IO ({
+                fs2.Stream eval IO.shift(ec) *> IO ({
                   val (key, kvs) = row
                   val bytes = ByteBuffer.wrap(AvroEncoder.toBinary(kvs)(codec))
                   (key, bytes)
@@ -156,7 +154,7 @@ object CassandraRDDWriter {
 
               def retire(row: (BigInt, ByteBuffer)): fs2.Stream[IO, ResultSet] = {
                 val (id, value) = row
-                fs2.Stream eval IO ({
+                fs2.Stream eval IO.shift(ec) *> IO ({
                   session.execute(writeStatement.bind(id: BigInteger, value))
                 })
               }
@@ -164,13 +162,13 @@ object CassandraRDDWriter {
               val results = (rows flatMap elaborateRow flatMap rowToBytes map retire)
                 .join(threads)
                 .onComplete {
-                  fs2.Stream eval IO {
+                  fs2.Stream eval IO.shift(ec) *> IO {
                     session.closeAsync()
                     session.getCluster.closeAsync()
                   }
                 }
 
-              results.compile.toVector.unsafeRunSync()
+              results.compile.drain.unsafeRunSync()
               pool.shutdown()
             }
           }

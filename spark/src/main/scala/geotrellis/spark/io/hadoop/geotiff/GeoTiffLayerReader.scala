@@ -14,6 +14,7 @@ import geotrellis.raster.merge.RasterMergeMethods
 import geotrellis.util.ByteReader
 
 import cats.effect.IO
+import cats.syntax.apply._
 
 import java.net.URI
 import java.util.concurrent.{ExecutorService, Executors}
@@ -48,17 +49,10 @@ trait GeoTiffLayerReader[M[T] <: Traversable[T]] {
     val keyExtent: Extent = mapTransform(SpatialKey(x, y))
 
     val index: fs2.Stream[IO, GeoTiffMetadata] =
-      fs2.Stream
-        .unfold(attributeStore.query(layerId.name, ProjectedExtent(keyExtent, layoutScheme.crs)).toIterator) { iter =>
-          if (iter.hasNext) {
-            val index: GeoTiffMetadata = iter.next()
-            Some(index, iter)
-          }
-          else None
-        }
+      fs2.Stream.fromIterator[IO, GeoTiffMetadata](attributeStore.query(layerId.name, ProjectedExtent(keyExtent, layoutScheme.crs)).toIterator)
 
     val readRecord: (GeoTiffMetadata => fs2.Stream[IO, Option[Raster[V]]]) = { md =>
-      fs2.Stream eval IO {
+      fs2.Stream eval IO.shift(ec) *> IO {
         val tiff = GeoTiffReader[V].read(md.uri, decompress = false, streaming = true)
         val reprojectedKeyExtent = keyExtent.reproject(layoutScheme.crs, tiff.crs)
 
@@ -94,17 +88,10 @@ trait GeoTiffLayerReader[M[T] <: Traversable[T]] {
         .layout
 
     val index: fs2.Stream[IO, GeoTiffMetadata] =
-      fs2.Stream
-        .unfold(attributeStore.query(layerId.name).toIterator) { iter =>
-          if (iter.hasNext) {
-            val index: GeoTiffMetadata = iter.next()
-            Some(index, iter)
-          }
-          else None
-        }
+      fs2.Stream.fromIterator[IO, GeoTiffMetadata](attributeStore.query(layerId.name).toIterator)
 
     val readRecord: (GeoTiffMetadata => fs2.Stream[IO, Raster[V]]) = { md =>
-      fs2.Stream eval IO {
+      fs2.Stream eval IO.shift(ec) *> IO {
         val tiff = GeoTiffReader[V].read(md.uri, decompress = false, streaming = true)
         tiff
           .crop(tiff.extent, layout.cellSize)
