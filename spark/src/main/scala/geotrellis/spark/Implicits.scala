@@ -12,6 +12,7 @@ import geotrellis.spark.filter._
 import org.apache.spark.{Partitioner, SparkContext}
 import org.apache.spark.rdd._
 
+import cats.Functor
 import scala.reflect.ClassTag
 import java.time.Instant
 
@@ -52,19 +53,6 @@ trait Implicits
     with timeseries.Implicits
     with viewshed.Implicits
     with Serializable {
-
-  /**
-    * This is a type class required by the [[geotrellis.spark.filter.ToSpatial]] function.
-    * `map` applies a function `A => B` on the keys from this Metadata's [[KeyBounds]],
-    * which allows for the transformation:
-    * {{{TileLayerMetadata[A] => TileLayerMetadata[B]}}}
-    */
-  implicit class TileLayerMetadataFunctor[A](val self: TileLayerMetadata[A]) extends Functor[TileLayerMetadata, A] {
-    def map[B](f: A => B): TileLayerMetadata[B] = self.bounds match {
-      case KeyBounds(minKey, maxKey) => self.copy(bounds = KeyBounds(f(minKey), f(maxKey)))
-      case EmptyBounds => self.copy(bounds = EmptyBounds)
-    }
-  }
 
   /** Auto wrap a partitioner when something is requestion an Option[Partitioner];
     * useful for Options that take an Option[Partitioner]

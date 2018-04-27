@@ -19,6 +19,7 @@ package geotrellis.spark.filter
 import geotrellis.spark._
 import geotrellis.util._
 
+import cats.Functor
 import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
@@ -35,14 +36,14 @@ trait Implicits {
       extends TileLayerRDDFilterMethods[K, V, M]
 
   implicit class withSpaceTimeToSpatialMethods[
-    K: SpatialComponent: TemporalComponent: λ[α => M[α] => Functor[M, α]]: λ[α => Component[M[α], Bounds[α]]],
+    K: SpatialComponent: TemporalComponent: λ[α => Component[M[α], Bounds[α]]],
     V,
-    M[_]
+    M[_]: Functor
   ](val self: RDD[(K, V)] with Metadata[M[K]]) extends SpaceTimeToSpatialMethods[K, V, M]
 
   implicit class withSpaceTimeToSpatialReduceMethods[
-    K: ClassTag: SpatialComponent: TemporalComponent: λ[α => M[α] => Functor[M, α]]: λ[α => Component[M[α], Bounds[α]]],
+    K: ClassTag: SpatialComponent: TemporalComponent: λ[α => Component[M[α], Bounds[α]]],
     V: ClassTag,
-    M[_]
+    M[_]: Functor
   ](val self: RDD[(K, V)] with Metadata[M[K]]) extends SpaceTimeToSpatialReduceMethods[K, V, M]
 }

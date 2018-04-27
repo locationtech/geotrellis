@@ -25,6 +25,7 @@ lazy val commonSettings = Seq(
     "-language:postfixOps",
     "-language:existentials",
     "-language:experimental.macros",
+    "-Ypartial-unification",    // Required by Cats
     "-feature"
   ),
   publishMavenStyle := true,
