@@ -108,9 +108,9 @@ object TileLayerMetadata {
         t1.combine(t2)
     }
 
-  implicit val catsFunctorImpl: Functor[TileLayerMetadata] = new Functor[TileLayerMetadata] {
-    override def map[A, B](fa: TileLayerMetadata[A])(f: A => B): TileLayerMetadata[B] =
-      fa.copy(bounds=fa.bounds.map(f))
+  implicit val tileLayerMetadataFunctor: Functor[TileLayerMetadata] = new Functor[TileLayerMetadata] {
+    def map[A, B](fa: TileLayerMetadata[A])(f: A => B): TileLayerMetadata[B] =
+      fa.copy(bounds = fa.bounds.map(f))
   }
 
   private def collectMetadata[

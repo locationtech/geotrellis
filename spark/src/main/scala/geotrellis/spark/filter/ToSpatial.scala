@@ -36,16 +36,15 @@ object ToSpatial {
     * to define additional constraints on Metadata. M should
     * depend on a K type (M[K]), and two type classes should
     * be provided: [[geotrellis.util.Component]], to extract key bounds
-    * from M[K], and cats.Functor to map M[K] to M[SpatialKey].
+    * from M[K], and [[cats.Functor]] to map M[K] to M[SpatialKey].
     *
     * For those reading the source code directly,
-    * {{{K: λ[α => M[α] => Functor[M]]: λ[α => Component[M[α], Bounds[α]]}}}
+    * {{{K: λ[α => Component[M[α], Bounds[α]]}}}
     * is further syntax sugar on top of the usual {{{K: ...}}} pattern.
     * It expands into the following Scala implicit evidences:
     *
     * {{{
-    *   ev0: Component[M[K], Bounds[K]],
-    *   ev1: M[K] => Functor[M]
+    *   ev0: Component[M[K], Bounds[K]]
     * }}}
     *
     * @param rdd

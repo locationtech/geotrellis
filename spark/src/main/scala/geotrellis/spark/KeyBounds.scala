@@ -96,8 +96,8 @@ object Bounds {
       .map{ case (k, tile) => Bounds(k, k) }
       .fold(EmptyBounds) { _ combine  _ }
 
-  implicit val catsFunctorImpl: Functor[Bounds] = new Functor[Bounds] {
-    override def map[A, B](functor: Bounds[A])(f: A => B): Bounds[B] = functor match {
+  implicit val boundsFunctor: Functor[Bounds] = new Functor[Bounds] {
+    override def map[A, B](fa: Bounds[A])(f: A => B): Bounds[B] = fa match {
       case EmptyBounds => EmptyBounds
       case KeyBounds(min, max) => KeyBounds(f(min), f(max))
     }
