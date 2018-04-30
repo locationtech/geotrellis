@@ -605,7 +605,7 @@ case class CompositeTile(tiles: Seq[Tile],
     *
     * @return  A string containing the ascii art
     */
-  override def asciiDraw(): String = {
+  def asciiDraw(): String = {
     val sb = new StringBuilder
     for(layoutRow <- 0 until tileLayout.layoutRows) {
       for(row <- 0 until tileLayout.tileRows) {

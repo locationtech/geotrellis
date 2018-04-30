@@ -21,8 +21,8 @@ API Changes
   - **New:** ``ZoomResample`` can now be used on ``MultibandTileLayerRDD``\s.
   - **New:** A ``Partitioner`` can be specified in the ``reproject`` methods of ``TileLayerRDD``.
   - **New:** Compression ``level`` of GeoTiffs can be specified in the ``DeflateCompression`` constructor.
+  - **Change:**: The Ascii draw methods are now method extensions of ``Tile``.
   - **Change:** Replace `geotrellis.util.Functor` with `cats.Functor`
-
 
 Fixes
 ^^^^^

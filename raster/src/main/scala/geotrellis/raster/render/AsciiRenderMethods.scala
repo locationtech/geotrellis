@@ -17,7 +17,7 @@
 package geotrellis.raster.render
 
 import geotrellis.raster.Tile
-import geotrellis.raster.render.ascii.AsciiArtEncoder
+import geotrellis.raster.render.ascii.{AsciiArtEncoder, NumericEncoder}
 import geotrellis.util.MethodExtensions
 
 /**
@@ -30,4 +30,21 @@ trait AsciiRenderMethods extends MethodExtensions[Tile] {
   def renderAscii(palette: AsciiArtEncoder.Palette = AsciiArtEncoder.Palette.WIDE): String =
     AsciiArtEncoder.encode(self, palette)
 
+  /**
+    * Return ascii art of this raster.
+    */
+  def asciiDraw(): String = NumericEncoder.encodeIntegrals(self)
+
+  /**
+    * Return ascii art of this raster. The single int parameter
+    * indicates the number of significant digits to be printed.
+    */
+  def asciiDrawDouble(significantDigits: Int = Int.MaxValue): String =
+    NumericEncoder.encodeDecimals(self, significantDigits)
+
+  /**
+    * Return ascii art of a range from this raster.
+    */
+  def asciiDrawRange(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int): String =
+    NumericEncoder.encodeRange(self, colMin, rowMin, colMax, rowMax)
 }
