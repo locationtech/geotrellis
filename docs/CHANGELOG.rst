@@ -36,6 +36,14 @@ Fixes
 - ``GeoTiffReader`` can now read tiffs that are missing the ``NewSubfileType`` tag.
 
 
+- ``geotrellis.vector``
+
+  - **Fix:** Allow a ``geotrellis.jts.precision.type = floating`` in ``application.conf`` to actually snap vertices of
+    GT geometries to the desired grid.
+
+  - **Change:** Exposed ``GeomFactory.factory`` to allow direct creation of JTS geometries, circumventing the snapping
+    of vertices to a fixed precision model.
+
 1.2.1
 _____
 *2018 Jan 3*

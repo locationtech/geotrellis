@@ -42,7 +42,16 @@ object MultiPoint {
   }
 
   def apply(ps: Traversable[(Double, Double)])(implicit d: DummyImplicit): MultiPoint =
-    MultiPoint(factory.createMultiPoint(ps.map { p => new jts.Coordinate(p._1, p._2) }.toArray))
+    MultiPoint(
+      factory.createMultiPoint(
+        ps.map {
+          p => {
+            val c = new jts.Coordinate(p._1, p._2)
+            factory.getPrecisionModel.makePrecise(c)
+            c
+          }}.toArray
+      )
+    )
 
   implicit def jts2MultiPoint(jtsGeom: jts.MultiPoint): MultiPoint = apply(jtsGeom)
 }
