@@ -21,6 +21,8 @@ API Changes
   - **New:** ``ZoomResample`` can now be used on ``MultibandTileLayerRDD``\s.
   - **New:** A ``Partitioner`` can be specified in the ``reproject`` methods of ``TileLayerRDD``.
   - **New:** Compression ``level`` of GeoTiffs can be specified in the ``DeflateCompression`` constructor.
+  - **Change:** Replace `geotrellis.util.Functor` with `cats.Functor`
+
 
 Fixes
 ^^^^^
@@ -32,6 +34,7 @@ Fixes
 - Uncompressed GeoTiffMultibandTiles will now convert to the correct CellType
 - Calculating the Slope of a ``Tile`` when ``targetCell`` is ``Data`` will now produce the correct result.
 - Introduce new hooks into AttributeStore API to allow for better performance in certain queries against catalogs with many layers
+- ``GeoTiffReader`` can now read tiffs that are missing the ``NewSubfileType`` tag.
 
 1.2.1
 _____

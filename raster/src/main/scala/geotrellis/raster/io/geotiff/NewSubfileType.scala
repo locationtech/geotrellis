@@ -30,10 +30,11 @@ case object Page extends NewSubfileType { val code = 2 }
 case object Mask extends NewSubfileType { val code = 4 }
 
 object NewSubfileType {
-  def fromCode(code: Long): NewSubfileType = fromCode(code.toInt)
-  def fromCode(code: Int): NewSubfileType = code match {
-    case ReducedImage.code => ReducedImage
-    case Page.code => Page
-    case Mask.code => Mask
+  def fromCode(code: Long): Option[NewSubfileType] = fromCode(code.toInt)
+  def fromCode(code: Int): Option[NewSubfileType] = code match {
+    case ReducedImage.code => Some(ReducedImage)
+    case Page.code => Some(Page)
+    case Mask.code => Some(Mask)
+    case _ => None
   }
 }
