@@ -3,6 +3,7 @@ import Dependencies._
 name := "geotrellis-raster"
 
 libraryDependencies ++= Seq(
+  "org.scalaj" %% "scalaj-http" % "2.4.0",
   typesafeConfig,
   jts,
   spire,
