@@ -35,7 +35,7 @@ import com.typesafe.config.ConfigFactory
 object GeometryToGeoMesaSimpleFeature {
 
   val whenField  = "when"
-  val whereField = "where"
+  val whereField = "the_geom"
 
   lazy val featureTypeCache =
     Scaffeine()
