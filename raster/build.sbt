@@ -5,7 +5,7 @@ name := "geotrellis-raster"
 libraryDependencies ++= Seq(
   typesafeConfig,
   jts,
-  scalaz,
+  cats,
   spire,
   monocleCore,
   monocleMacro,
@@ -27,7 +27,7 @@ import geotrellis.raster.io.geotiff._
 import geotrellis.raster.render._
 """
 
-testOptions in Test += Tests.Setup{ () => 
+testOptions in Test += Tests.Setup{ () =>
   val testArchive = "raster/data/geotiff-test-files.zip"
   val testDirPath = "raster/data/geotiff-test-files"
   if(!(new File(testDirPath)).exists) {
