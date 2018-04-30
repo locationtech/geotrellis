@@ -71,7 +71,7 @@ object Pyramid extends LazyLogging {
   ): (Int, RDD[(K, V)] with Metadata[M]) = {
     val Options(resampleMethod, partitioner) = options
 
-    assert(! Seq(CubicConvolution, CubicSpline, Lanczos).map(_ canEqual resampleMethod).reduce(_||_),
+    assert(!Seq(CubicConvolution, CubicSpline, Lanczos).contains(resampleMethod),
            s"${resampleMethod} resample method is not supported for pyramid construction")
 
     val sourceLayout = rdd.metadata.getComponent[LayoutDefinition]
