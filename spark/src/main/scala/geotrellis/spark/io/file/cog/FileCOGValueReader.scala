@@ -43,7 +43,12 @@ class FileCOGValueReader(
     def keyPath(key: K, maxWidth: Int, baseKeyIndex: KeyIndex[K], zoomRange: ZoomRange): String =
       (KeyPathGenerator(catalogPath, s"${layerId.name}/${zoomRange.slug}", baseKeyIndex, maxWidth) andThen (_ ++ s".$Extension"))(key)
 
-    baseReader[K, V](layerId, keyPath, new URI(_))
+    baseReader[K, V](
+      layerId,
+      keyPath,
+      new URI(_),
+      key => { case e: java.io.FileNotFoundException => throw new ValueNotFoundError(key, layerId) }
+    )
   }
 }
 

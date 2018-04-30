@@ -29,6 +29,6 @@ trait LayerMover[ID] {
   def move[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: JsonFormat: Component[?, Bounds[K]]
   ](from: ID, to: ID): Unit
 }

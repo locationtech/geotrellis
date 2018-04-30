@@ -20,6 +20,9 @@ API Changes
   - **New:** CollectionLayerReader now has an SPI interface.
   - **New:** ``ZoomResample`` can now be used on ``MultibandTileLayerRDD``\s.
   - **New:** A ``Partitioner`` can be specified in the ``reproject`` methods of ``TileLayerRDD``.
+  - **New:** Compression ``level`` of GeoTiffs can be specified in the ``DeflateCompression`` constructor.
+  - **Change:** Replace `geotrellis.util.Functor` with `cats.Functor`
+
 
 Fixes
 ^^^^^
@@ -28,6 +31,9 @@ Fixes
 - `HilbertSpatialKeyIndex index offset <https://github.com/locationtech/geotrellis/pull/2586>`__
   - **Note:** Existing spatial layers using Hilbert index will need to be updated, see PR for directions.
 - Fixed ``CastException`` that sometimes occured when reading cached attributes.
+- Uncompressed GeoTiffMultibandTiles will now convert to the correct CellType
+- Calculating the Slope of a ``Tile`` when ``targetCell`` is ``Data`` will now produce the correct result.
+- ``GeoTiffReader`` can now read tiffs that are missing the ``NewSubfileType`` tag.
 
 
 1.2.1
@@ -88,6 +94,8 @@ API Changes
     folding of 3D tile layers into 2D tile layers.
   - The often-used ``apply`` method overloads in ``MapKeyTransform`` have been given
     more descriptive aliases.
+  - **Change:** Querying a layer will now produce a result whose metadata will have an ``Extent`` and
+    ``KeyBounds`` of the queried region and not of the whole layer.
 
 - ``geotrellis.vectortile`` (experimental)
 

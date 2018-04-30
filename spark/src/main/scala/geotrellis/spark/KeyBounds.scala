@@ -19,6 +19,7 @@ package geotrellis.spark
 import geotrellis.raster.GridBounds
 import geotrellis.util._
 
+import cats.Functor
 import org.apache.spark.rdd.RDD
 
 /** Represents a region of discrete space, bounding it by minimum and maximum points.
@@ -68,18 +69,6 @@ sealed trait Bounds[+A] extends Product with Serializable {
     if (isEmpty) default else this.get
 
   /** Returns the result of applying f to this [[Bounds]] minKey and maxKey if this it is nonempty.
-   * The minKey and maxKey are given as instance of [[KeyBounds]] instead of a tuple.
-   * If this [[Bounds]] is [[EmptyBounds]] it is returned unchanged.
-   */
- @inline
- final def map[B](f: KeyBounds[A] => KeyBounds[B]): Bounds[B] =
-   if (isEmpty)
-     EmptyBounds
-   else {
-     f(get)
-   }
-
-  /** Returns the result of applying f to this [[Bounds]] minKey and maxKey if this it is nonempty.
    * The minKey and maxKeys are given as instance of [[KeyBounds]] instead of a tuple.
    * If this [[Bounds]] is [[EmptyBounds]] it is returned unchanged.
    */
@@ -106,6 +95,13 @@ object Bounds {
     rdd
       .map{ case (k, tile) => Bounds(k, k) }
       .fold(EmptyBounds) { _ combine  _ }
+
+  implicit val boundsFunctor: Functor[Bounds] = new Functor[Bounds] {
+    override def map[A, B](fa: Bounds[A])(f: A => B): Bounds[B] = fa match {
+      case EmptyBounds => EmptyBounds
+      case KeyBounds(min, max) => KeyBounds(f(min), f(max))
+    }
+  }
 
   implicit def toIterableKeyBounds[K](b: Bounds[K]): Iterable[KeyBounds[K]] =
     b match {
