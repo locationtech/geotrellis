@@ -469,7 +469,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read photometric interpretation code") {
-      val expected = Map(
+      val expected = List(
         "colormap.tif" -> ColorSpace.Palette,
         "multi-tag.tif" -> ColorSpace.RGB,
         "alaska-polar-3572.tif" -> ColorSpace.BlackIsZero,
@@ -496,6 +496,12 @@ class GeoTiffReaderSpec extends FunSpec
       cmap.map(12) should be (RGB(209, 221, 249))
       cmap.map(95) should be (RGB(112, 163, 186))
       cmap.map(255) should be (RGB(0, 0, 0))
+    }
+
+    it("should read in a GeoTiff that doesn't have a NewSubfileType tag") {
+      val geoTiff = GeoTiffReader.readSingleband(geoTiffPath("alaska-polar-3572.tif"))
+
+      geoTiff.options.subfileType should be (None)
     }
   }
 

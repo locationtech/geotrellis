@@ -16,14 +16,15 @@
 
 package geotrellis.spark
 
+import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.spark.tiling._
 import geotrellis.spark.ingest._
-import geotrellis.vector.{ProjectedExtent, Extent}
 import geotrellis.util._
+import geotrellis.vector.{ProjectedExtent, Extent}
 
-import geotrellis.proj4.CRS
-
+import cats.Functor
+import cats.implicits._
 import org.apache.spark.rdd._
 
 /**
@@ -106,6 +107,11 @@ object TileLayerMetadata {
       def merge(t1: TileLayerMetadata[K], t2: TileLayerMetadata[K]): TileLayerMetadata[K] =
         t1.combine(t2)
     }
+
+  implicit val tileLayerMetadataFunctor: Functor[TileLayerMetadata] = new Functor[TileLayerMetadata] {
+    def map[A, B](fa: TileLayerMetadata[A])(f: A => B): TileLayerMetadata[B] =
+      fa.copy(bounds = fa.bounds.map(f))
+  }
 
   private def collectMetadata[
     K: (? => TilerKeyMethods[K, K2]),

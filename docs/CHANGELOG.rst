@@ -22,6 +22,7 @@ API Changes
   - **New:** A ``Partitioner`` can be specified in the ``reproject`` methods of ``TileLayerRDD``.
   - **New:** Compression ``level`` of GeoTiffs can be specified in the ``DeflateCompression`` constructor.
   - **Change:**: The Ascii draw methods are now method extensions of ``Tile``.
+  - **Change:** Replace `geotrellis.util.Functor` with `cats.Functor`
 
 Fixes
 ^^^^^
@@ -32,6 +33,7 @@ Fixes
 - Fixed ``CastException`` that sometimes occured when reading cached attributes.
 - Uncompressed GeoTiffMultibandTiles will now convert to the correct CellType
 - Calculating the Slope of a ``Tile`` when ``targetCell`` is ``Data`` will now produce the correct result.
+- ``GeoTiffReader`` can now read tiffs that are missing the ``NewSubfileType`` tag.
 
 
 1.2.1

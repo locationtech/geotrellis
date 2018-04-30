@@ -1686,36 +1686,17 @@ provide are as follows:
 -  ``TemporalComponent[T]`` - read a ``TemporalKey`` of some ``T``
    (usually ``SpaceTimeKey``)
 
-Functor
--------
+Cats
+----
 
-A *Functor* is anything that maintains its shape and semantics when
-``map``'d over. Things like ``List``, ``Map``, ``Option`` and even
-``Future`` are Functors. ``Set`` and binary trees are not, since ``map``
-could change the size of a ``Set`` and the semantics of ``BTree``.
-
-Vanilla Scala does not have a ``Functor`` typeclass, but implements its
-functionality anyway. Libraries like
-`Cats <http://typelevel.org/cats/>`__ and
-`ScalaZ <https://github.com/scalaz/scalaz>`__ provide a proper
-``Functor``, but their definitions don't allow further constraints on
-your inner type. We have:
-
-.. code-block:: scala
-
-    trait Functor[F[_], A] extends MethodExtensions[F[A]]{
-      /** Lift `f` into `F` and apply to `F[A]`. */
-      def map[B](f: A => B): F[B]
-    }
-
-which allows us to do:
-
-.. code-block:: scala
-
-    def foo[M[_], K: SpatialComponent: λ[α => M[α] => Functor[M, α]]](mk: M[K]) { ... }
-
-which says "``M`` can be mapped into, and the ``K`` you find is
-guaranteed to have a ``SpatialComponent`` as well".
+There is a wide variety of standard typeclasses employed by the functional
+programming community.  Rather than implement them ourselves, we have elected
+to depend on the `Cats project <http://typelevel.org/cats/>`__ to provide this
+extra functionality.  We intend to provide as much compatibility with Cats as
+is reasonable without sacrificing readability for users who are not functional
+programming mavens.  Initially, we rely on `Functor`s, `Semigroup`s, and
+`Monoid`s, but there is some use of the `IO` monad in limited parts of the
+code base.  Please see the documentation for Cats for more information.
 
 More Core Concepts
 ==================

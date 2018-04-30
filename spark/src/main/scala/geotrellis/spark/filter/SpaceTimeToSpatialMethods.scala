@@ -19,6 +19,7 @@ package geotrellis.spark.filter
 import geotrellis.spark._
 import geotrellis.util._
 
+import cats.Functor
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd._
 
@@ -29,9 +30,9 @@ import scala.reflect.ClassTag
 
 /** See [[geotrellis.spark.filter.ToSpatial]] to get explanations about Metadata (M[K]) constrains */
 abstract class SpaceTimeToSpatialMethods[
-  K: SpatialComponent: TemporalComponent: λ[α => M[α] => Functor[M, α]]: λ[α => Component[M[α], Bounds[α]]],
+  K: SpatialComponent: TemporalComponent: λ[α => Component[M[α], Bounds[α]]],
   V,
-  M[_]
+  M[_]: Functor
 ] extends MethodExtensions[RDD[(K, V)] with Metadata[M[K]]] {
   def toSpatial(instant: Long): RDD[(SpatialKey, V)] with Metadata[M[SpatialKey]] =
     ToSpatial(self, instant)
@@ -51,9 +52,9 @@ abstract class SpaceTimeToSpatialMethods[
   * by the class above.
   */
 abstract class SpaceTimeToSpatialReduceMethods[
-  K: ClassTag: SpatialComponent: TemporalComponent: λ[α => M[α] => Functor[M, α]]: λ[α => Component[M[α], Bounds[α]]],
+  K: ClassTag: SpatialComponent: TemporalComponent: λ[α => Component[M[α], Bounds[α]]],
   V: ClassTag,
-  M[_]
+  M[_]: Functor
 ] extends MethodExtensions[RDD[(K, V)] with Metadata[M[K]]] {
 
   def toSpatialReduce(
