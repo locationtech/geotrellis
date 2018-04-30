@@ -5,6 +5,7 @@ import geotrellis.vector.io.wkb.WKB
 
 import com.esotericsoftware.kryo.{Kryo, Serializer}
 import com.esotericsoftware.kryo.io.{Input, Output}
+import com.typesafe.config.ConfigFactory
 
 import java.io.ByteArrayOutputStream
 import java.util.zip.{Deflater, Inflater}
@@ -16,7 +17,8 @@ class GeometrySerializer[G <: Geometry] extends Serializer[G] {
     val (data, compressed) =
       if (wkb.length > 1400) {
         // Only bother deflating data larger than about 1 packet worth
-        val deflater = new Deflater
+        val config = ConfigFactory.load
+        val deflater = new Deflater(config.getInt("geotrellis.serialization.vector.compression.level"))
         deflater.setInput(wkb)
         deflater.finish
         val baos = new ByteArrayOutputStream
