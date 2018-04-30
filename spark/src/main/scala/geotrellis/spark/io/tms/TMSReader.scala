@@ -1,6 +1,8 @@
-package geotrellis.raster.io
+package geotrellis.spark.io.tms
 
 import geotrellis.raster._
+import geotrellis.raster.render._
+import geotrellis.spark.SpatialKey
 import geotrellis.vector.{Point, Extent}
 import geotrellis.spark.tiling.ZoomedLayoutScheme
 
@@ -11,10 +13,10 @@ import scala.collection.mutable._
 import java.net.{URI, URL}
 import javax.imageio._
 
+
 class TMSReader[T](
   uriTemplate: String,
-  f: URI => T = TMSReader.decodeTile _,
-  tileSize: Int = ZoomedLayoutScheme.DEFAULT_TILE_SIZE
+  f: URI => T = TMSReader.decodeTile _
 ) extends Serializable {
   def uri(z: Int, x: Int, y: Int): URI = new URI(
     uriTemplate.replace("{z}", z.toString)
@@ -22,19 +24,25 @@ class TMSReader[T](
       .replace("{y}", y.toString)
   )
 
-  def read(zoom: Int, extent: Extent): Iterator[((Int, Int), T)] = {
-    val layoutDefinition = ZoomedLayoutScheme.layoutForZoom(zoom, extent, tileSize)
-    val bounds = layoutDefinition.mapTransform.extentToBounds(extent)
+  def read(zoom: Int, bounds: GridBounds): Iterator[(SpatialKey, T)] = {
     // construct bounds from zoom + extent
     for ((x, y) <- bounds.coordsIter)
-    yield (x, y) -> f(uri(zoom, x, y))
+    yield SpatialKey(x, y) -> f(uri(zoom, x, y))
+  }
+
+  def read(zoom: Int, extent: Extent, tileSize: Int = ZoomedLayoutScheme.DEFAULT_TILE_SIZE): Iterator[(SpatialKey, T)] = {
+    val layoutDefinition = ZoomedLayoutScheme.layoutForZoom(zoom, extent, tileSize)
+    val bounds = layoutDefinition.mapTransform.extentToBounds(extent)
+    read(zoom, bounds)
   }
 
   def read(zoom: Int, x: Int, y: Int): T = f(uri(zoom, x, y))
 }
 
 object TMSReader {
-  import geotrellis.raster.render._
+
+  def apply[T](uriTemplate: String, f: URI => T = TMSReader.decodeTile _): TMSReader[T] =
+    new TMSReader(uriTemplate, f)
 
   // ImageIO use here to deal with different decoding behaviors (png vs jpg)
   def decodeTile(uri: URI): Tile = {
