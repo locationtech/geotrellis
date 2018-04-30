@@ -113,7 +113,8 @@ object GeoTiffReader {
   def readSingleband(byteReader: ByteReader, decompress: Boolean, streaming: Boolean, withOverviews: Boolean, byteReaderExternal: Option[ByteReader]): SinglebandGeoTiff = {
     def getSingleband(geoTiffTile: GeoTiffTile, info: GeoTiffInfo): SinglebandGeoTiff =
       SinglebandGeoTiff(
-        if (decompress) geoTiffTile.toArrayTile else geoTiffTile,
+        // it's not possible to decompress and still perform a streaming read
+        if (decompress && !streaming) geoTiffTile.toArrayTile else geoTiffTile,
         info.extent,
         info.crs,
         info.tags,
@@ -121,7 +122,7 @@ object GeoTiffReader {
         info.overviews.map { i => getSingleband(geoTiffSinglebandTile(i), i) }
       )
 
-    val info = readGeoTiffInfo(byteReader, decompress, streaming, withOverviews, byteReaderExternal)
+    val info = readGeoTiffInfo(byteReader, streaming, withOverviews, byteReaderExternal)
     val geoTiffTile = geoTiffSinglebandTile(info)
 
     getSingleband(geoTiffTile, info)
@@ -216,7 +217,8 @@ object GeoTiffReader {
   def readMultiband(byteReader: ByteReader, decompress: Boolean, streaming: Boolean, withOverviews: Boolean, byteReaderExternal: Option[ByteReader]): MultibandGeoTiff = {
     def getMultiband(geoTiffTile: GeoTiffMultibandTile, info: GeoTiffInfo): MultibandGeoTiff =
       new MultibandGeoTiff(
-        if (decompress) geoTiffTile.toArrayTile else geoTiffTile,
+        // it's not possible to decompress and still perform a streaming read
+        if (decompress && !streaming) geoTiffTile.toArrayTile else geoTiffTile,
         info.extent,
         info.crs,
         info.tags,
@@ -224,7 +226,7 @@ object GeoTiffReader {
         info.overviews.map { i => getMultiband(geoTiffMultibandTile(i), i) }
       )
 
-    val info = readGeoTiffInfo(byteReader, decompress, streaming, withOverviews, byteReaderExternal)
+    val info = readGeoTiffInfo(byteReader, streaming, withOverviews, byteReaderExternal)
     val geoTiffTile = geoTiffMultibandTile(info)
 
     getMultiband(geoTiffTile, info)
@@ -330,7 +332,6 @@ object GeoTiffReader {
 
   def readGeoTiffInfo(
     byteReader: ByteReader,
-    decompress: Boolean,
     streaming: Boolean,
     withOverviews: Boolean,
     byteReaderExternal: Option[ByteReader]
@@ -476,7 +477,7 @@ object GeoTiffReader {
         if(tiffTagsList.isEmpty && withOverviews)
           byteReaderExternal
             .map { reader =>
-              readGeoTiffInfo(reader, decompress, streaming, withOverviews, None)
+              readGeoTiffInfo(reader, streaming, withOverviews, None)
                 .toList // overviews can have no extent and crs, but it's required for most of our operations
                 .map { _.copy(extent = baseTiffTags.extent, crs = baseTiffTags.crs) }
             }

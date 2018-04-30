@@ -723,8 +723,11 @@ class GeoTiffMultibandTileSpec extends FunSpec
   describe("GeoTiffMultibandTile streaming read") {
     it("reads over-buffered windows"){
       val path = geoTiffPath("3bands/int32/3bands-striped-pixel.tif")
-      val info = GeoTiffReader.readGeoTiffInfo(ByteBuffer.wrap(Filesystem.slurp(path)),
-        decompress = false, streaming = true, withOverviews = false, byteReaderExternal = None)
+      val info = GeoTiffReader.readGeoTiffInfo(
+        ByteBuffer.wrap(Filesystem.slurp(path)),
+        streaming = true, withOverviews = false,
+        byteReaderExternal = None
+      )
       val tiff = GeoTiffReader.geoTiffMultibandTile(info)
 
       val windows: Array[GridBounds] = info
