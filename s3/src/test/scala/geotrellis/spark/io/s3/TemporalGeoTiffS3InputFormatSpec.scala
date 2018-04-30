@@ -23,17 +23,15 @@ import geotrellis.spark.tiling._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.ingest._
 import geotrellis.util.Filesystem
-import geotrellis.spark.io.json._
 import geotrellis.spark.io.s3.testkit._
 import geotrellis.spark.testkit.TestEnvironment
 
-import com.amazonaws.auth.AWSCredentials
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.task._
 
-import java.time.{ZoneOffset, ZonedDateTime}
-import java.nio.file.{Files, Path, Paths}
+import java.time.ZoneOffset
+import java.nio.file.{Files,Paths}
 import java.time.format.DateTimeFormatter
 
 import org.scalatest._
@@ -48,6 +46,7 @@ class TemporalGeoTiffS3InputFormatSpec extends FunSpec with Matchers with TestEn
       val format = new TemporalGeoTiffS3InputFormat
       val conf = new Configuration(false)
 
+      S3InputFormat.setCreateS3Client(conf, () => new MockS3Client)
       TemporalGeoTiffS3InputFormat.setTimeTag(conf, "TIFFTAG_DATETIME")
       TemporalGeoTiffS3InputFormat.setTimeFormat(conf, "yyyy:MM:dd HH:mm:ss")
 

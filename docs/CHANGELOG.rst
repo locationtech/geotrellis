@@ -31,9 +31,10 @@ Fixes
 - `HilbertSpatialKeyIndex index offset <https://github.com/locationtech/geotrellis/pull/2586>`__
   - **Note:** Existing spatial layers using Hilbert index will need to be updated, see PR for directions.
 - Fixed ``CastException`` that sometimes occured when reading cached attributes.
-- Uncompressed GeoTiffMultibandTiles will now convert to the correct CellType
+- Uncompressed GeoTiffMultibandTiles will now convert to the correct CellType.
 - Calculating the Slope of a ``Tile`` when ``targetCell`` is ``Data`` will now produce the correct result.
 - ``GeoTiffReader`` can now read tiffs that are missing the ``NewSubfileType`` tag.
+- Use a new Amazon SDK API to remove deprecation warnings.
 
 
 1.2.1

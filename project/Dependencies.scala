@@ -38,7 +38,7 @@ object Dependencies {
 
   val chronoscala         = "jp.ne.opt"                  %% "chronoscala"              % "0.1.3"
 
-  val awsSdkS3            = "com.amazonaws"               % "aws-java-sdk-s3"          % "1.11.143"
+  val awsSdkS3            = "com.amazonaws"               % "aws-java-sdk-s3"          % "1.11.319"
 
   val scalazStream        = "org.scalaz.stream"          %% "scalaz-stream"            % "0.8.6a"
 

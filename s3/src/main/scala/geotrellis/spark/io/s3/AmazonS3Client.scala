@@ -18,7 +18,7 @@ package geotrellis.spark.io.s3
 
 import com.amazonaws.ClientConfiguration
 import com.amazonaws.auth._
-import com.amazonaws.services.s3.{AmazonS3Client => AWSAmazonS3Client}
+import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import com.amazonaws.services.s3.model._
 import org.apache.commons.io.IOUtils
 
@@ -26,23 +26,34 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable
 
 object AmazonS3Client {
-  def apply(s3client: AWSAmazonS3Client): AmazonS3Client =
+  def apply(): AmazonS3Client =
+    new AmazonS3Client(AmazonS3ClientBuilder.defaultClient())
+
+  def apply(s3client: AmazonS3): AmazonS3Client =
     new AmazonS3Client(s3client)
 
+  def apply(s3builder: AmazonS3ClientBuilder): AmazonS3Client =
+    apply(s3builder.build())
+
   def apply(credentials: AWSCredentials, config: ClientConfiguration): AmazonS3Client =
-    apply(new AWSAmazonS3Client(credentials, config))
+    apply(new AWSStaticCredentialsProvider(credentials), config)
 
   def apply(provider: AWSCredentialsProvider, config: ClientConfiguration): AmazonS3Client =
-    apply(new AWSAmazonS3Client(provider, config))
+    apply(
+      AmazonS3ClientBuilder.standard()
+        .withCredentials(provider)
+        .withClientConfiguration(config)
+        .build()
+    )
 
   def apply(provider: AWSCredentialsProvider): AmazonS3Client =
     apply(provider, new ClientConfiguration())
 
 }
 
-class AmazonS3Client(s3client: AWSAmazonS3Client) extends S3Client {
+class AmazonS3Client(s3client: AmazonS3) extends S3Client {
   def doesBucketExist(bucket: String): Boolean =
-    s3client.doesBucketExist(bucket)
+    s3client.doesBucketExistV2(bucket)
 
   def doesObjectExist(bucket: String, key: String): Boolean =
     s3client.doesObjectExist(bucket, key)
