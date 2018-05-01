@@ -9,6 +9,9 @@ API Changes
 
 - ``geotrellis.spark``
 
+
+  - **Deprecation:**  ``geotrellis.slick`` is being deprecated and will likely be moved to an external repo
+  - **Change:**  ``geotrellis.slick.Projected`` has been moved to ``geotrellis.vector.Projected``
   - **Change:**  The length of the key (the space-filling curve index or address) used for layer reading and writing has
     been extended from a fixed length of 8 bytes to an arbitrary length.  This change affects not only the
     ``geotrellis.spark`` package, but all backends (excluding ``geotrellis.geowave`` and ``geotrellis.geomesa``).
