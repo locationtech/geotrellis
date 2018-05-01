@@ -16,8 +16,12 @@
 
 package geotrellis.spark.io.hbase
 
+import geotrellis.spark.io.hadoop.SerializableConfiguration
+
 import org.apache.hadoop.hbase.{HBaseConfiguration, TableName}
 import org.apache.hadoop.hbase.client._
+import org.apache.hadoop.conf.Configuration
+
 import java.net.URI
 
 object HBaseInstance {
@@ -27,23 +31,32 @@ object HBaseInstance {
     val zookeeper = uri.getHost
     val port = if (uri.getPort < 0) 2181 else uri.getPort
     val params = getParams(uri)
-    HBaseInstance(
-      List(zookeeper),
-      params.getOrElse("master", ""),
-      port.toString)
+
+    HBaseInstance(List(zookeeper), params.getOrElse("master", ""), port.toString)
   }
+
+  def apply(zookeepers: Seq[String], master: String): HBaseInstance =
+    apply(zookeepers, master, "2181")
+
+  def apply(zookeepers: Seq[String], master: String, clientPort: String): HBaseInstance = {
+    val conf = {
+      val c = HBaseConfiguration.create
+      c.set("hbase.zookeeper.quorum", zookeepers.mkString(","))
+      c.set("hbase.zookeeper.property.clientPort", clientPort)
+      c.set("hbase.master", master)
+      c
+    }
+
+    HBaseInstance(conf)
+  }
+
+  def apply(configuration: Configuration): HBaseInstance =
+    HBaseInstance(SerializableConfiguration(configuration))
 }
 
-case class HBaseInstance(zookeepers: Seq[String], master: String, clientPort: String = "2181") extends Serializable {
-  @transient lazy val conf = {
-    val c = HBaseConfiguration.create
-    c.set("hbase.zookeeper.quorum", zookeepers.mkString(","))
-    c.set("hbase.zookeeper.property.clientPort", clientPort)
-    c.set("hbase.master", master)
-    c
-  }
-
-  def getConnection: Connection = ConnectionFactory.createConnection(conf)
+case class HBaseInstance(configuration: SerializableConfiguration) extends Serializable {
+  def hadoopConfiguration = configuration.value
+  def getConnection: Connection = ConnectionFactory.createConnection(hadoopConfiguration)
   def getAdmin: Admin = getConnection.getAdmin
 
   @transient lazy val connection: Connection = getConnection

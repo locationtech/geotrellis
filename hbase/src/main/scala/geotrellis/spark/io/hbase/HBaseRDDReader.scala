@@ -76,7 +76,7 @@ object HBaseRDDReader {
     )
 
     val conf = sc.hadoopConfiguration
-    HBaseConfiguration.merge(conf, instance.conf)
+    HBaseConfiguration.merge(conf, instance.hadoopConfiguration)
 
     val job = Job.getInstance(conf)
     TableMapReduceUtil.initCredentials(job)
