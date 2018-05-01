@@ -23,6 +23,11 @@ API Changes
   - **New:** Compression ``level`` of GeoTiffs can be specified in the ``DeflateCompression`` constructor.
   - **Change:**: The Ascii draw methods are now method extensions of ``Tile``.
   - **Change:** Replace `geotrellis.util.Functor` with `cats.Functor`
+  - **New:** A new type called ``LayerType`` has been created to help identify the nature of a layer (either Avro or COG).
+  - **New:** ``LayerHeader``\s now have an additional parameter: ``layerType``.
+  - **Change:** The attribute name for ``COGLayerStorageMetadata`` is now ``metadata`` instead of ``cog_metadata``.
+  - **New:** ``AttributeStore`` now has four new methods: ``layerType``, ``isCOGLayer``, ``readCOGLayerAttributes``,
+    and ``writeCOGLayerAttributes``.
 
 Fixes
 ^^^^^
@@ -36,6 +41,12 @@ Fixes
 - ``GeoTiffReader`` can now read tiffs that are missing the ``NewSubfileType`` tag.
 - Pyramiding code will once again respect resampling method and will now actually reduce shuffle volume by resampling
   tiles on map side of pyramid operation
+- Uncompressed GeoTiffMultibandTiles will now convert to the correct CellType.
+- COGLayer attributes can be accessed via the various read attribute methods in
+  ``AttributeStore`` (ie ``readMetadata``, ``readHeader``, etc)
+- The regex used to match files for the ``HadoopLayerAttributeStore`` and ``FileLayerAttributeStore`` has been
+  expanded to include more characters.
+- ``HadoopAttributeStore.availableAttributes`` has been fixed so that it'll now list all attribute files.
 
 
 1.2.1

@@ -68,7 +68,7 @@ class HadoopAttributeStore(
     new Path(s"*${SEP}${attributeName}.json")
 
   def layerWildcard(layerId: LayerId): Path =
-    new Path(s"${layerId.name}${SEP}${layerId.name}${SEP}*.json")
+    new Path(s"${layerId.name}${SEP}${layerId.zoom}*.json")
 
   private def readFile[T: JsonFormat](path: Path): Option[(LayerId, T)] = {
     HdfsUtils
@@ -151,8 +151,11 @@ class HadoopAttributeStore(
       .distinct
 
   def availableAttributes(layerId: LayerId): Seq[String] = {
+    val metadataRelativeParentPath =
+      attributePath(layerId, AttributeStore.Fields.metadata).toUri.getPath.getParent()
+
     HdfsUtils
-      .listFiles(layerWildcard(layerId), hadoopConfiguration)
+      .listFiles(new Path(metadataRelativeParentPath, layerWildcard(layerId)), hadoopConfiguration)
       .map { path: Path =>
         val attributeRx(name, zoom, attribute) = path.getName
         attribute
@@ -165,7 +168,7 @@ object HadoopAttributeStore {
   final val SEP = "___"
 
   val attributeRx = {
-    val slug = "[a-zA-Z0-9-]+"
+    val slug = "[a-zA-Z0-9-_.]+"
     new Regex(s"""($slug)$SEP($slug)${SEP}($slug).json""", "layer", "zoom", "attribute")
   }
 

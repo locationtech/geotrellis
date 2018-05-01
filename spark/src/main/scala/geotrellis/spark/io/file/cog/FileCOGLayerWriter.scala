@@ -4,7 +4,7 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff._
 import geotrellis.spark._
-import geotrellis.spark.io.AttributeStore
+import geotrellis.spark.io.{AttributeStore, COGLayerType}
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.cog.vrt.VRT
 import geotrellis.spark.io.cog.vrt.VRT.IndexedSimpleSource
@@ -39,15 +39,16 @@ class FileCOGLayerWriter(
     Filesystem.ensureDirectory(new File(catalogPathFile, layerName).getAbsolutePath)
 
     val storageMetadata = COGLayerStorageMetadata(cogLayer.metadata, keyIndexes)
-    attributeStore.write(layerId0, COGAttributeStore.Fields.metadata, storageMetadata)
 
     val header =
       FileLayerHeader(
         keyClass = classTag[K].toString(),
         valueClass = classTag[V].toString(),
-        path = catalogPath
+        path = catalogPath,
+        layerType = COGLayerType
       )
-    attributeStore.write(layerId0, COGAttributeStore.Fields.header, header)
+
+    attributeStore.writeCOGLayerAttributes(layerId0, header, storageMetadata)
 
     for(zoomRange <- cogLayer.layers.keys.toSeq.sorted(Ordering[ZoomRange].reverse)) {
       val keyIndex = keyIndexes(zoomRange)

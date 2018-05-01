@@ -1,5 +1,6 @@
 package geotrellis.spark.io
 
+import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.vector.Extent
 
@@ -12,7 +13,8 @@ package object cog extends Implicits {
 
   object COGAttributeStore {
     object Fields {
-      val metadata = "cog_metadata"
+      val metadataBlob = "metadata"
+      val metadata = "metadata"
       val header   = "header"
     }
   }
