@@ -47,6 +47,7 @@ import scala.reflect.ClassTag
  *
  * based on [[package com.github.tminglei.slickpg.PgPostGISSupport]]
  */
+@deprecated("We no longer recommend the use of Slick for scala JDBC access: try Doobie instead", "2.0.0")
 trait PostGisProjectionSupport extends PgPostGISExtensions { driver: PostgresDriver =>
   import PostGisProjectionSupportUtils._
   import driver.api._
@@ -100,6 +101,7 @@ trait PostGISProjectionImplicits {
   }
 }
 
+@deprecated("We no longer recommend the use of Slick for scala JDBC access: try Doobie instead", "2.0.0")
 object PostGisProjectionSupportUtils {
   lazy val WITH_SRID = """^SRID=([\d]+);(.*)""".r
 
