@@ -23,6 +23,11 @@ API Changes
   - **New:** Compression ``level`` of GeoTiffs can be specified in the ``DeflateCompression`` constructor.
   - **Change:**: The Ascii draw methods are now method extensions of ``Tile``.
   - **Change:** Replace `geotrellis.util.Functor` with `cats.Functor`
+  - **Change:** Specifying the ``maxTileSize`` for a COGLayer that's to be written is now done via ``COGLayerWriter.Options``
+    which can be passed directly to the ``write`` methods.
+  - **New:** The ``resampleMethod`` parameter has been added to ``COGLayerWriter.Options``.
+  - **Change:** Specifying the ``compression`` for a COGLayer that's to be written is now done via ``COGLayerWriter.Options``
+    which can be passed directly to the ``write`` methods.
   - **New:** A new type called ``LayerType`` has been created to help identify the nature of a layer (either Avro or COG).
   - **New:** ``LayerHeader``\s now have an additional parameter: ``layerType``.
   - **Change:** The attribute name for ``COGLayerStorageMetadata`` is now ``metadata`` instead of ``cog_metadata``.
