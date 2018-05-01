@@ -54,6 +54,8 @@ Fixes
 - The regex used to match files for the ``HadoopLayerAttributeStore`` and ``FileLayerAttributeStore`` has been
   expanded to include more characters.
 - ``HadoopAttributeStore.availableAttributes`` has been fixed so that it'll now list all attribute files.
+- Allow for simple features to be generated with a specified or random id with geometry stored in the standard
+  field, "the_geom"
 
 1.2.1
 _____

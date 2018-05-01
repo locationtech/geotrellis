@@ -30,4 +30,10 @@ trait FeatureToSimpleFeatureMethods[G <: Geometry, T] extends MethodExtensions[F
 
   def toSimpleFeature(crs: CRS)(implicit transmute: T => Seq[(String, Any)]): SimpleFeature =
     GeometryToSimpleFeature(self.geom, Some(crs), self.data)
+
+  def toSimpleFeature(featureId: String)(implicit transmute: T => Seq[(String, Any)]): SimpleFeature =
+    GeometryToSimpleFeature(self.geom, None, self.data, featureId)
+
+  def toSimpleFeature(crs: CRS, featureId: String)(implicit transmute: T => Seq[(String, Any)]): SimpleFeature =
+    GeometryToSimpleFeature(self.geom, Some(crs), self.data, featureId)
 }
