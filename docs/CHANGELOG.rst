@@ -33,6 +33,7 @@ API Changes
   - **Change:** The attribute name for ``COGLayerStorageMetadata`` is now ``metadata`` instead of ``cog_metadata``.
   - **New:** ``AttributeStore`` now has four new methods: ``layerType``, ``isCOGLayer``, ``readCOGLayerAttributes``,
     and ``writeCOGLayerAttributes``.
+  - **New:** Kryo serialization of geometry now uses a binary format to reduce shuffle block size
 
 Fixes
 ^^^^^
