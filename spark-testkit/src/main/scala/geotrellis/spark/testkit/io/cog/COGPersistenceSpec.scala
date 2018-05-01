@@ -149,7 +149,11 @@ abstract class COGPersistenceSpec[
       }
 
       it("should create a COGLayer with the resample method set") {
-        COGLayer.fromLayerRDD(sample, layerId.zoom, NoCompression, options = Sum)
+        COGLayer.fromLayerRDD(sample, layerId.zoom, options = Sum)
+      }
+
+      it("should create a COGLayer with the compression set") {
+        COGLayer.fromLayerRDD(sample, layerId.zoom, options = NoCompression)
       }
 
       /*it("should delete a layer") {

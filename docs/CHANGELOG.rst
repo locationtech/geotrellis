@@ -26,6 +26,8 @@ API Changes
   - **Change:** Specifying the ``maxTileSize`` for a COGLayer that's to be written is now done via ``COGLayerWriter.Options``
     which can be passed directly to the ``write`` methods.
   - **New:** The ``resampleMethod`` parameter has been added to ``COGLayerWriter.Options``.
+  - **Change:** Specifying the ``compression`` for a COGLayer that's to be written is now done via ``COGLayerWriter.Options``
+    which can be passed directly to the ``write`` methods.
 
 Fixes
 ^^^^^
