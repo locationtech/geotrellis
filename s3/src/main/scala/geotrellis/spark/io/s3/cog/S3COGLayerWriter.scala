@@ -24,7 +24,7 @@ class S3COGLayerWriter(
   bucket: String,
   keyPrefix: String,
   getS3Client: () => S3Client = () => S3Client.DEFAULT,
-  threads: Int = S3RDDWriter.DefaultThreadCount
+  threads: Int = S3RDDWriter.defaultThreadCount
 ) extends COGLayerWriter {
 
   def writeCOGLayer[

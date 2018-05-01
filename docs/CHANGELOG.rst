@@ -38,6 +38,9 @@ API Changes
     and ``writeCOGLayerAttributes``.
   - **New:** Kryo serialization of geometry now uses a binary format to reduce shuffle block size
   - **Change:** Scalaz streams were replaced by fs2 streams
+  - **Change:** Refactored HBaseInstance, now accepts a plain Hadoop Configuration object
+  - **Change:** Refactored CassandraInstance, now accepts a getCluster function
+  - **Change:** Use pureconfig to handle all work with configuration files
 
 Fixes
 ^^^^^

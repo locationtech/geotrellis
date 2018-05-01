@@ -16,10 +16,13 @@
 
 package geotrellis.spark.io.cassandra
 
+import geotrellis.spark.io.cassandra.conf.CassandraConfig
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.util.UriUtils
+
 import org.apache.spark.SparkContext
+
 import java.net.URI
 
 /**
@@ -40,10 +43,8 @@ class CassandraLayerProvider extends AttributeStoreProvider
   def attributeStore(uri: URI): AttributeStore = {
     val params = UriUtils.getParams(uri)
     val instance = CassandraInstance(uri)
-    val attributeTable = params.getOrElse("attributes",
-      Cassandra.cfg.getString("catalog"))
-    val keyspace = Option(uri.getPath.drop(1)).getOrElse(
-      Cassandra.cfg.getString("keyspace"))
+    val attributeTable = params.getOrElse("attributes", CassandraConfig.catalog)
+    val keyspace = Option(uri.getPath.drop(1)).getOrElse(CassandraConfig.keyspace)
     CassandraAttributeStore(instance, keyspace, attributeTable)
   }
 
@@ -54,8 +55,7 @@ class CassandraLayerProvider extends AttributeStoreProvider
 
   def layerWriter(uri: URI, store: AttributeStore): LayerWriter[LayerId] = {
     val instance = CassandraInstance(uri)
-    val keyspace = Option(uri.getPath.drop(1))
-      .getOrElse(Cassandra.cfg.getString("keyspace"))
+    val keyspace = Option(uri.getPath.drop(1)).getOrElse(CassandraConfig.keyspace)
     val params = UriUtils.getParams(uri)
     val table = params.getOrElse("layers",
       throw new IllegalArgumentException("Missing required URI parameter: layers"))
@@ -72,5 +72,4 @@ class CassandraLayerProvider extends AttributeStoreProvider
     val instance = CassandraInstance(uri)
     new CassandraCollectionLayerReader(store, instance)
   }
-
 }

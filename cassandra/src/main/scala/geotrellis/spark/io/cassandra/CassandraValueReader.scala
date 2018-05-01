@@ -32,7 +32,6 @@ import scala.reflect.ClassTag
 
 import java.math.BigInteger
 
-
 class CassandraValueReader(
   instance: CassandraInstance,
   val attributeStore: AttributeStore

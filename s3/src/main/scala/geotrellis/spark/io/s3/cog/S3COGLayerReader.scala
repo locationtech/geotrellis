@@ -21,6 +21,7 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.s3._
+import geotrellis.spark.io.s3.conf.S3Config
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.index._
 import geotrellis.util._
@@ -79,7 +80,7 @@ class S3COGLayerReader(
 }
 
 object S3COGLayerReader {
-  lazy val defaultThreadCount: Int = ConfigFactory.load().getThreads("geotrellis.s3.threads.rdd.read")
+  lazy val defaultThreadCount: Int = S3Config.threads.rdd.readThreads
 
   def apply(attributeStore: S3AttributeStore)(implicit sc: SparkContext): S3COGLayerReader =
     new S3COGLayerReader(
