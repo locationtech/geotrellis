@@ -23,21 +23,12 @@ import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.util.KryoWrapper
 
-import scalaz.concurrent.{Strategy, Task}
-import scalaz.std.vector._
-import scalaz.stream.{Process, nondeterminism}
-
+import com.typesafe.config.ConfigFactory
 import com.amazonaws.services.s3.model.AmazonS3Exception
-
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-
-import com.typesafe.config.ConfigFactory
-
-import java.util.concurrent.Executors
-
 
 trait S3RDDReader {
   final val DefaultThreadCount =

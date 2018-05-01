@@ -18,18 +18,17 @@ package geotrellis.spark.io
 
 import geotrellis.spark._
 import geotrellis.spark.io.avro._
-import geotrellis.spark.io.json._
 import geotrellis.util._
-import org.apache.avro.Schema
 
 import org.apache.spark.rdd._
 import org.apache.spark.SparkContext
+import cats.effect.IO
+import cats.syntax.apply._
 import spray.json._
-import scalaz.std.vector._
-import scalaz.concurrent.{Strategy, Task}
-import scalaz.stream.{Process, nondeterminism}
 
 import scala.reflect._
+import scala.concurrent.ExecutionContext
+
 import java.util.concurrent.Executors
 import java.util.ServiceLoader
 import java.net.URI
@@ -103,27 +102,24 @@ object LayerReader {
     threads: Int
    )(readFunc: BigInt => Vector[(K, V)]): Vector[(K, V)] = {
     val pool = Executors.newFixedThreadPool(threads)
+    implicit val ec = ExecutionContext.fromExecutor(pool)
 
     val indices: Iterator[BigInt] = ranges.flatMap { case (start, end) =>
       (start to end).toIterator
     }
 
-    val index: Process[Task, BigInt] = Process.unfold(indices) { iter =>
-      if (iter.hasNext) {
-        val index: BigInt = iter.next()
-        Some(index, iter)
-      }
-      else None
-    }
+    val index: fs2.Stream[IO, BigInt] = fs2.Stream.fromIterator[IO, BigInt](indices)
 
-    val readRecord: (BigInt => Process[Task, Vector[(K, V)]]) = { index =>
-      Process eval Task { readFunc(index) } (pool)
+    val readRecord: (BigInt => fs2.Stream[IO, Vector[(K, V)]]) = { index =>
+      fs2.Stream eval IO.shift(ec) *> IO { readFunc(index) }
     }
 
     try {
-      nondeterminism
-        .njoin(maxOpen = threads, maxQueued = threads) { index map readRecord }(Strategy.Executor(pool))
-        .runFoldMap(identity).unsafePerformSync
+      (index map readRecord)
+        .join(threads)
+        .compile
+        .toVector
+        .unsafeRunSync.flatten
     } finally pool.shutdown()
   }
 }

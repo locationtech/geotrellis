@@ -42,10 +42,11 @@ class LayerQuery[K: Boundable, M: GetComponent[?, Bounds[K]]](
     }
 
   // Allows us to treat Function1 as an instance of a Functor
-  import scalaz.Scalaz._
+  import cats.instances.function._
+  import cats.syntax.functor._
 
   def where[F, T](exp: LayerFilter.Expression[F, T])(implicit filter: LayerFilter[K, F, T, M]): LayerQuery[K, M] = {
-    new LayerQuery( {
+    new LayerQuery({
       filterChain map { case (metadata, keyBoundsList) =>
         val filteredKeyBounds =
           for (keyBound <- keyBoundsList) yield {

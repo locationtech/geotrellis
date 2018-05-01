@@ -34,6 +34,7 @@ API Changes
   - **New:** ``AttributeStore`` now has four new methods: ``layerType``, ``isCOGLayer``, ``readCOGLayerAttributes``,
     and ``writeCOGLayerAttributes``.
   - **New:** Kryo serialization of geometry now uses a binary format to reduce shuffle block size
+  - **Change:** Scalaz streams were replaced by fs2 streams
 
 Fixes
 ^^^^^

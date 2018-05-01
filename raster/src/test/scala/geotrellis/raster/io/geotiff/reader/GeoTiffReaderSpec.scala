@@ -477,8 +477,7 @@ class GeoTiffReaderSpec extends FunSpec
       )
 
       Inspectors.forEvery(expected) {
-        case (file, space) ⇒
-          MultibandGeoTiff(geoTiffPath(file)).options.colorSpace should be (space)
+        case (file, space) => MultibandGeoTiff(geoTiffPath(file)).options.colorSpace should be (space)
       }
     }
 

@@ -16,11 +16,13 @@
 
 package geotrellis.spark.io
 
-import java.util.concurrent.Executors
+import cats.effect.IO
+import cats.syntax.apply._
 
 import scala.util.{Failure, Success, Try}
-import scalaz.concurrent.{Strategy, Task}
-import scalaz.stream.{Process, nondeterminism}
+import scala.concurrent.ExecutionContext
+
+import java.util.concurrent.Executors
 
 abstract class AsyncWriter[Client, V, E](threads: Int) extends Serializable {
 
@@ -39,15 +41,11 @@ abstract class AsyncWriter[Client, V, E](threads: Int) extends Serializable {
     if (partition.isEmpty) return
 
     val pool = Executors.newFixedThreadPool(threads)
+    implicit val ec = ExecutionContext.fromExecutor(pool)
 
-    val rows: Process[Task, (String, V)] =
-      Process.unfold(partition){ iter =>
-        if (iter.hasNext) {
-          Some((iter.next, iter))
-        } else None
-      }
+    val rows: fs2.Stream[IO, (String, V)] = fs2.Stream.fromIterator[IO, (String, V)](partition)
 
-    def elaborateRow(row: (String, V)): Process[Task, (String, V)] = {
+    def elaborateRow(row: (String, V)): fs2.Stream[IO, (String, V)] = {
       val foldUpdate: ((String, V)) => (String, V) = { case newRecord @ (key, newValue) =>
         mergeFunc match {
           case Some(fn) =>
@@ -60,27 +58,28 @@ abstract class AsyncWriter[Client, V, E](threads: Int) extends Serializable {
         }
       }
 
-      Process eval Task(foldUpdate(row))(pool)
+      fs2.Stream eval IO.shift(ec) *> IO(foldUpdate(row))
     }
 
-    def encode(row: (String, V)): Process[Task, (String, E)] = {
+    def encode(row: (String, V)): fs2.Stream[IO, (String, E)] = {
       val (key, value) = row
-      val encodeTask = Task((key, encodeRecord(key, value)))(pool)
-      Process.eval(encodeTask)
+      val encodeTask = IO((key, encodeRecord(key, value)))
+      fs2.Stream eval IO.shift(ec) *> encodeTask
     }
 
 
-    def retire(row: (String, E)): Process[Task, Try[Long]] = {
-      val writeTask = Task(writeRecord(client, row._1, row._2))(pool)
+    def retire(row: (String, E)): fs2.Stream[IO, Try[Long]] = {
+      val writeTask = IO(writeRecord(client, row._1, row._2))
       import geotrellis.spark.util.TaskUtils._
-      Process.eval(retryFunc.fold(writeTask)(writeTask.retryEBO(_)))
+      fs2.Stream eval IO.shift(ec) *> retryFunc.fold(writeTask)(writeTask.retryEBO(_))
     }
 
-    val results = nondeterminism.njoin(maxOpen = threads, maxQueued = threads) {
-      rows flatMap elaborateRow flatMap encode map retire
-    }(Strategy.Executor(pool))
+    (rows flatMap elaborateRow flatMap encode map retire)
+      .join(threads)
+      .compile
+      .toVector
+      .unsafeRunSync()
 
-    results.run.unsafePerformSync
     pool.shutdown()
   }
 }

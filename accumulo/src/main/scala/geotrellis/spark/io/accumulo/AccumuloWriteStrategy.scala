@@ -27,9 +27,10 @@ import org.apache.accumulo.core.data.{Key, Mutation, Value}
 import org.apache.accumulo.core.client.mapreduce.AccumuloFileOutputFormat
 import org.apache.accumulo.core.client.BatchWriterConfig
 import com.typesafe.config.ConfigFactory
-import scalaz.concurrent.{Strategy, Task}
-import scalaz.stream._
+import cats.effect.IO
+import cats.syntax.apply._
 
+import scala.concurrent.ExecutionContext
 import java.util.UUID
 import java.util.concurrent.Executors
 
@@ -109,43 +110,30 @@ object HdfsWriteStrategy {
  * @param config Configuration for the BatchWriters
  */
 case class SocketWriteStrategy(
-  config: BatchWriterConfig = new BatchWriterConfig().setMaxMemory(128*1024*1024).setMaxWriteThreads(AccumuloWriteStrategy.threads),
+  @transient config: BatchWriterConfig = new BatchWriterConfig().setMaxMemory(128*1024*1024).setMaxWriteThreads(AccumuloWriteStrategy.threads),
   threads: Int = AccumuloWriteStrategy.threads
 ) extends AccumuloWriteStrategy {
+  val kwConfig = KryoWrapper(config) // BatchWriterConfig is not java serializable
+
   def write(kvPairs: RDD[(Key, Value)], instance: AccumuloInstance, table: String): Unit = {
-    val serializeWrapper = KryoWrapper(config) // BatchWriterConfig is not java serializable
-    val kwThreads = KryoWrapper(threads)
     kvPairs.foreachPartition { partition =>
       if(partition.nonEmpty) {
-        val poolSize = kwThreads.value
-        val pool = Executors.newFixedThreadPool(poolSize)
-        val config = serializeWrapper.value
-        val writer = instance.connector.createBatchWriter(table, config)
+        val pool = Executors.newFixedThreadPool(threads)
+        implicit val ec = ExecutionContext.fromExecutor(pool)
+        val writer = instance.connector.createBatchWriter(table, kwConfig.value)
 
         try {
-
-          val mutations: Process[Task, Mutation] =
-            Process.unfold(partition){ iter =>
-              if (iter.hasNext) {
-                val (key, value) = iter.next()
-                val mutation = new Mutation(key.getRow)
-                mutation.put(key.getColumnFamily, key.getColumnQualifier, System.currentTimeMillis(), value)
-                Some(mutation, iter)
-              } else {
-                None
-              }
+          val mutations: fs2.Stream[IO, Mutation] = fs2.Stream.fromIterator[IO, Mutation](
+            partition.map { case (key, value) =>
+              val mutation = new Mutation(key.getRow)
+              mutation.put(key.getColumnFamily, key.getColumnQualifier, System.currentTimeMillis(), value)
+             mutation
             }
+          )
 
-          val writeChannel =
-            channel.lift { (mutation: Mutation) =>
-              Task { writer.addMutation(mutation) } (pool)
-            }
+          val write = { (mutation: Mutation) => fs2.Stream eval IO.shift(ec) *> IO { writer.addMutation(mutation) } }
 
-          val writes = mutations.tee(writeChannel)(tee.zipApply).map(Process.eval)
-
-          val joined =
-            nondeterminism.njoin(maxOpen = poolSize, maxQueued = poolSize)(writes)(Strategy.Executor(pool))
-          joined.run.unsafePerformSync
+          (mutations map write).join(threads).compile.drain.unsafeRunSync()
         } finally {
           writer.close(); pool.shutdown()
         }

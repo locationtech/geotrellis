@@ -33,7 +33,6 @@ import scala.reflect.ClassTag
 
 import java.math.BigInteger
 
-
 object CassandraCollectionReader {
   def read[K: Boundable : AvroRecordCodec : ClassTag, V: AvroRecordCodec : ClassTag](
     instance: CassandraInstance,

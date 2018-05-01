@@ -13,12 +13,13 @@ import geotrellis.raster.reproject.RasterReprojectMethods
 import geotrellis.raster.merge.RasterMergeMethods
 import geotrellis.util.ByteReader
 
-import scalaz.concurrent.{Strategy, Task}
-import scalaz.stream.{Process, nondeterminism}
+import cats.effect.IO
+import cats.syntax.apply._
 
 import java.net.URI
 import java.util.concurrent.{ExecutorService, Executors}
 
+import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 
 trait GeoTiffLayerReader[M[T] <: Traversable[T]] {
@@ -30,6 +31,7 @@ trait GeoTiffLayerReader[M[T] <: Traversable[T]] {
   val strategy: OverviewStrategy
   val defaultThreads: Int
   lazy val pool: ExecutorService = Executors.newFixedThreadPool(defaultThreads)
+  implicit lazy val ec = ExecutionContext.fromExecutor(pool)
 
   def shutdown: Unit = pool.shutdown()
 
@@ -46,18 +48,11 @@ trait GeoTiffLayerReader[M[T] <: Traversable[T]] {
     val mapTransform = layout.mapTransform
     val keyExtent: Extent = mapTransform(SpatialKey(x, y))
 
-    val index: Process[Task, GeoTiffMetadata] =
-      Process
-        .unfold(attributeStore.query(layerId.name, ProjectedExtent(keyExtent, layoutScheme.crs)).toIterator) { iter =>
-          if (iter.hasNext) {
-            val index: GeoTiffMetadata = iter.next()
-            Some(index, iter)
-          }
-          else None
-        }
+    val index: fs2.Stream[IO, GeoTiffMetadata] =
+      fs2.Stream.fromIterator[IO, GeoTiffMetadata](attributeStore.query(layerId.name, ProjectedExtent(keyExtent, layoutScheme.crs)).toIterator)
 
-    val readRecord: (GeoTiffMetadata => Process[Task, Option[Raster[V]]]) = { md =>
-      Process eval Task {
+    val readRecord: (GeoTiffMetadata => fs2.Stream[IO, Option[Raster[V]]]) = { md =>
+      fs2.Stream eval IO.shift(ec) *> IO {
         val tiff = GeoTiffReader[V].read(md.uri, decompress = false, streaming = true)
         val reprojectedKeyExtent = keyExtent.reproject(layoutScheme.crs, tiff.crs)
 
@@ -73,12 +68,14 @@ trait GeoTiffLayerReader[M[T] <: Traversable[T]] {
               .reproject(tiff.crs, layoutScheme.crs, ReprojectOptions(targetCellSize = Some(layout.cellSize)))
               .resample(RasterExtent(keyExtent, layoutScheme.tileSize, layoutScheme.tileSize))
           }
-      }(pool)
+      }
     }
 
-    nondeterminism
-      .njoin(maxOpen = defaultThreads, maxQueued = defaultThreads) { index map readRecord }(Strategy.Executor(pool))
-      .runLog.map(_.flatten.reduce(_ merge _)).unsafePerformSync
+    (index map readRecord)
+      .join(defaultThreads)
+      .compile
+      .toVector.map(_.flatten.reduce(_ merge _))
+      .unsafeRunSync()
   }
 
   def readAll[
@@ -90,28 +87,23 @@ trait GeoTiffLayerReader[M[T] <: Traversable[T]] {
         .levelForZoom(layerId.zoom)
         .layout
 
-    val index: Process[Task, GeoTiffMetadata] =
-      Process
-        .unfold(attributeStore.query(layerId.name).toIterator) { iter =>
-          if (iter.hasNext) {
-            val index: GeoTiffMetadata = iter.next()
-            Some(index, iter)
-          }
-          else None
-        }
+    val index: fs2.Stream[IO, GeoTiffMetadata] =
+      fs2.Stream.fromIterator[IO, GeoTiffMetadata](attributeStore.query(layerId.name).toIterator)
 
-    val readRecord: (GeoTiffMetadata => Process[Task, Raster[V]]) = { md =>
-      Process eval Task {
+    val readRecord: (GeoTiffMetadata => fs2.Stream[IO, Raster[V]]) = { md =>
+      fs2.Stream eval IO.shift(ec) *> IO {
         val tiff = GeoTiffReader[V].read(md.uri, decompress = false, streaming = true)
         tiff
           .crop(tiff.extent, layout.cellSize)
           .reproject(tiff.crs, layoutScheme.crs)
           .resample(layoutScheme.tileSize, layoutScheme.tileSize)
-      }(pool)
+      }
     }
 
-    nondeterminism
-      .njoin(maxOpen = defaultThreads, maxQueued = defaultThreads) { index map readRecord }(Strategy.Executor(pool))
-      .runLog.unsafePerformSync
+    (index map readRecord)
+      .join(defaultThreads)
+      .compile
+      .toVector
+      .unsafeRunSync()
   }
 }
