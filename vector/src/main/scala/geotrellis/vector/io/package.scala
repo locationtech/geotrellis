@@ -16,6 +16,21 @@
 
 package geotrellis.vector
 
+import geotrellis.vector.io.wkb.WKB
+import geotrellis.vector.io.wkt.WKT
+
 package object io extends io.json.Implicits
     with io.wkb.Implicits
-    with io.wkt.Implicits
+    with io.wkt.Implicits {
+
+  /** Read any WKT or WKB and return the corresponding geometry */
+  def readWktOrWkb(s: String): Geometry = {
+    if (s.startsWith("\\x"))
+      WKB.read(s.drop(2))
+    else if (s.startsWith("00") || s.startsWith("01"))
+      WKB.read(s)
+    else
+      WKT.read(s)
+  }
+}
+
