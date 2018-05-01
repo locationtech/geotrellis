@@ -46,27 +46,15 @@ object CassandraInstance {
 }
 
 trait CassandraInstance extends Serializable {
-  val hosts: Seq[String]
-
-  val username: String
-  val password: String
-
   val replicationStrategy: String
   val replicationFactor: Int
 
-  val localDc: String
-  val usedHostsPerRemoteDc: Int
-  val allowRemoteDCsForLocalConsistencyLevel: Boolean
-
-  // TODO: remove during https://github.com/locationtech/geotrellis/issues/2077
-  final val port: Int = Try(Cassandra.cfg.getInt("port")).toOption.getOrElse(9042)
-
   /** Functions to get cluster / session for custom logic, where function wrapping can have an impact on speed */
-  def getCluster = Cluster.builder().withLoadBalancingPolicy(getLoadBalancingPolicy).addContactPoints(hosts: _*).withPort(port).build()
-  def getSession = getCluster.connect()
+  def getCluster: Cluster
+  def getSession: Session = getCluster.connect()
 
-  @transient lazy val cluster = getCluster
-  @transient lazy val session = cluster.connect()
+  @transient lazy val cluster: Cluster = getCluster
+  @transient lazy val session: Session = cluster.connect()
 
   def registerBigInteger(): Unit = {
     if (!CassandraInstance.bigIntegerRegistered) {
@@ -96,31 +84,41 @@ trait CassandraInstance extends Serializable {
     }
   }
 
-  def getLoadBalancingPolicy = {
-    val builder = DCAwareRoundRobinPolicy.builder()
-    if(localDc.nonEmpty) builder.withLocalDc(localDc)
-    if(usedHostsPerRemoteDc > 0) builder.withUsedHostsPerRemoteDc(0)
-    if(allowRemoteDCsForLocalConsistencyLevel) builder.allowRemoteDCsForLocalConsistencyLevel()
-
-    new TokenAwarePolicy(builder.build())
-  }
-
   def closeAsync = {
     session.closeAsync()
     session.getCluster.closeAsync()
   }
 }
 
-case class BaseCassandraInstance(
-  hosts: Seq[String],
-  username: String = "",
-  password: String = "",
-  replicationStrategy: String = Cassandra.cfg.getString("replicationStrategy"),
-  replicationFactor: Int = Cassandra.cfg.getInt("replicationFactor"),
-  localDc: String = Cassandra.cfg.getString("localDc"),
-  usedHostsPerRemoteDc: Int = Cassandra.cfg.getInt("usedHostsPerRemoteDc"),
-  allowRemoteDCsForLocalConsistencyLevel: Boolean = Cassandra.cfg.getBoolean("allowRemoteDCsForLocalConsistencyLevel")) extends CassandraInstance {
-  registerBigInteger()
+object BaseCassandraInstance {
+  def apply(
+    hosts: Seq[String],
+    username: String = "",
+    password: String = "",
+    port: Int = Try(Cassandra.cfg.getInt("port")).toOption.getOrElse(9042),
+    replicationStrategyParam: String = Cassandra.cfg.getString("replicationStrategy"),
+    replicationFactorParam: Int = Cassandra.cfg.getInt("replicationFactor"),
+    localDc: String = Cassandra.cfg.getString("localDc"),
+    usedHostsPerRemoteDc: Int = Cassandra.cfg.getInt("usedHostsPerRemoteDc"),
+    allowRemoteDCsForLocalConsistencyLevel: Boolean = Cassandra.cfg.getBoolean("allowRemoteDCsForLocalConsistencyLevel")) = {
+    new CassandraInstance {
+      val replicationStrategy: String = replicationStrategyParam
+      val replicationFactor: Int = replicationFactorParam
+
+      /** Functions to get cluster / session for custom logic, where function wrapping can have an impact on speed */
+      def getCluster: Cluster =
+        Cluster.builder().withLoadBalancingPolicy(getLoadBalancingPolicy).addContactPoints(hosts: _*).withPort(port).build()
+
+      def getLoadBalancingPolicy = {
+        val builder = DCAwareRoundRobinPolicy.builder()
+        if(localDc.nonEmpty) builder.withLocalDc(localDc)
+        if(usedHostsPerRemoteDc > 0) builder.withUsedHostsPerRemoteDc(0)
+        if(allowRemoteDCsForLocalConsistencyLevel) builder.allowRemoteDCsForLocalConsistencyLevel()
+
+        new TokenAwarePolicy(builder.build())
+      }
+    }
+  }
 }
 
 object Cassandra {
@@ -133,21 +131,23 @@ object Cassandra {
   def withBaseCassandraInstance[K](hosts: Seq[String],
                                    username: String = "",
                                    password: String = "",
+                                   port: Int = Try(Cassandra.cfg.getInt("port")).toOption.getOrElse(9042),
                                    replicationStrategy: String = Cassandra.cfg.getString("replicationStrategy"),
                                    replicationFactor: Int = Cassandra.cfg.getInt("replicationFactor"),
                                    localDc: String = Cassandra.cfg.getString("localDc"),
                                    usedHostsPerRemoteDc: Int = Cassandra.cfg.getInt("usedHostsPerRemoteDc"),
-                                   allowRemoteDCsForLocalConsistencyLevel: Boolean = Cassandra.cfg.getBoolean("allowRemoteDCsForLocalConsistencyLevel"))(block: BaseCassandraInstance => K): K =
-    block(BaseCassandraInstance(hosts, username, password, replicationStrategy, replicationFactor, localDc, usedHostsPerRemoteDc, allowRemoteDCsForLocalConsistencyLevel))
+                                   allowRemoteDCsForLocalConsistencyLevel: Boolean = Cassandra.cfg.getBoolean("allowRemoteDCsForLocalConsistencyLevel"))(block: CassandraInstance => K): K =
+    block(BaseCassandraInstance(hosts, username, password, port, replicationStrategy, replicationFactor, localDc, usedHostsPerRemoteDc, allowRemoteDCsForLocalConsistencyLevel))
   def withBaseCassandraInstanceDo[K](hosts: Seq[String],
                                      username: String = "",
                                      password: String = "",
+                                     port: Int = Try(Cassandra.cfg.getInt("port")).toOption.getOrElse(9042),
                                      replicationStrategy: String = Cassandra.cfg.getString("replicationStrategy"),
                                      replicationFactor: Int = Cassandra.cfg.getInt("replicationFactor"),
                                      localDc: String = Cassandra.cfg.getString("localDc"),
                                      usedHostsPerRemoteDc: Int = Cassandra.cfg.getInt("usedHostsPerRemoteDc"),
-                                     allowRemoteDCsForLocalConsistencyLevel: Boolean = Cassandra.cfg.getBoolean("allowRemoteDCsForLocalConsistencyLevel"))(block: BaseCassandraInstance => K): K = {
-    val instance = BaseCassandraInstance(hosts, username, password, replicationStrategy, replicationFactor, localDc, usedHostsPerRemoteDc, allowRemoteDCsForLocalConsistencyLevel)
+                                     allowRemoteDCsForLocalConsistencyLevel: Boolean = Cassandra.cfg.getBoolean("allowRemoteDCsForLocalConsistencyLevel"))(block: CassandraInstance => K): K = {
+    val instance = BaseCassandraInstance(hosts, username, password, port, replicationStrategy, replicationFactor, localDc, usedHostsPerRemoteDc, allowRemoteDCsForLocalConsistencyLevel)
     try block(instance) finally instance.closeAsync
   }
 }

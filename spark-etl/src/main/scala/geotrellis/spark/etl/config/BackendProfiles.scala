@@ -41,11 +41,11 @@ case class CassandraProfile(name: String, hosts: String, user: String, password:
     hosts.split(","),
     user,
     password,
-    replicationStrategy,
-    replicationFactor,
-    localDc,
-    usedHostsPerRemoteDc,
-    allowRemoteDCsForLocalConsistencyLevel
+    replicationStrategyParam = replicationStrategy,
+    replicationFactorParam = replicationFactor,
+    localDc = localDc,
+    usedHostsPerRemoteDc = usedHostsPerRemoteDc,
+    allowRemoteDCsForLocalConsistencyLevel = allowRemoteDCsForLocalConsistencyLevel
   )
 }
 case class AccumuloProfile(name: String, instance: String, zookeepers: String, user: String, password: String, strategy: Option[String] = None, ingestPath: Option[String] = None) extends BackendProfile {
