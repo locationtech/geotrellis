@@ -14,8 +14,24 @@
  * limitations under the License.
  */
 
-package geotrellis.vector
+package geotrellis
 
-package object io extends io.json.Implicits
-    with io.wkb.Implicits
-    with io.wkt.Implicits
+import geotrellis.vector._
+
+/**
+  * Implicit conversion for geotrellis.vector.Geometry instances.
+  *
+  * @example {{{
+  * import geotrellis.vector._
+  * import geotrellis.slick._
+  *
+  * // create a web mercator projected point with the ExtendGeometry implicit class
+  * val projectedPoint = Point(1.0, 2.0).withSRID(3274)
+  * }}}
+  */
+package object slick {
+  implicit class ExtendGeometry[G <: Geometry](g: G) {
+    /** Upgrade Geometry to Projected[Geometry] */
+    def withSRID(srid: Int) = Projected(g, srid)
+  }
+}

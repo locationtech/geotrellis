@@ -132,9 +132,4 @@ package object vector extends SeqMethods
 
   implicit def seqGeometryToGeometryCollection(gs: Seq[Geometry]): GeometryCollection =
     GeometryCollection(gs)
-
-  implicit class ProjectGeometry[G <: Geometry](g: G) {
-    /** Upgrade Geometry to Projected[Geometry] */
-    def withSRID(srid: Int) = Projected(g, srid)
-  }
 }

@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package geotrellis.vector
+package geotrellis.slick
 
 import geotrellis.proj4.CRS
+import geotrellis.vector._
 import geotrellis.vector.reproject.Reproject
 
 
