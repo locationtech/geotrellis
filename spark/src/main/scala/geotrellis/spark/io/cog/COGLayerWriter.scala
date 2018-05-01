@@ -186,7 +186,7 @@ trait COGLayerWriter extends LazyLogging with Serializable {
       case (keyBounds: KeyBounds[K], _) =>
         val COGLayerStorageMetadata(metadata, keyIndexes) =
           try {
-            attributeStore.read[COGLayerStorageMetadata[K]](LayerId(layerName, 0), "cog_metadata")
+            attributeStore.readMetadata[COGLayerStorageMetadata[K]](LayerId(layerName, 0))
           } catch {
             // to follow GeoTrellis Layer Readers logic
             case e: AttributeNotFoundError => throw new LayerNotFoundError(LayerId(layerName, 0)).initCause(e)

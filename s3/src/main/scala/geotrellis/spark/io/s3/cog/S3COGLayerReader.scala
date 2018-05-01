@@ -54,7 +54,7 @@ class S3COGLayerReader(
   ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int) = {
     val header =
       try {
-        attributeStore.read[S3LayerHeader](LayerId(id.name, 0), COGAttributeStore.Fields.header)
+        attributeStore.readHeader[S3LayerHeader](LayerId(id.name, 0))
       } catch {
         // to follow GeoTrellis Layer Readers logic
         case e: AttributeNotFoundError => throw new LayerNotFoundError(id).initCause(e)

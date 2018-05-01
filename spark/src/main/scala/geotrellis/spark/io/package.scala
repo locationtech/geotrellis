@@ -53,6 +53,12 @@ package object io
   // Custom exceptions
   class LayerIOError(val message: String) extends Exception(message)
 
+  class AvroLayerAttributeError(attributeName: String, layerId: LayerId)
+    extends LayerIOError(s"AvroLayer: $layerId does not have the attribute: $attributeName")
+
+  class COGLayerAttributeError(attributeName: String, layerId: LayerId)
+    extends LayerIOError(s"COGLayer: $layerId does not have the attribute: $attributeName")
+
   class LayerReadError(layerId: LayerId)
     extends LayerIOError(s"LayerMetadata not found for layer $layerId")
 

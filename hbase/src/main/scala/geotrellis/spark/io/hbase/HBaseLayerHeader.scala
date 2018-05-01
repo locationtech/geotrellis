@@ -16,14 +16,15 @@
 
 package geotrellis.spark.io.hbase
 
-import geotrellis.spark.io.LayerHeader
+import geotrellis.spark.io.{LayerHeader, LayerType, AvroLayerType}
 
 import spray.json._
 
 case class HBaseLayerHeader(
   keyClass: String,
   valueClass: String,
-  tileTable: String
+  tileTable: String,
+  layerType: LayerType = AvroLayerType
 ) extends LayerHeader {
   def format = "hbase"
 }
@@ -35,16 +36,26 @@ object HBaseLayerHeader {
         "format" -> JsString(md.format),
         "keyClass" -> JsString(md.keyClass),
         "valueClass" -> JsString(md.valueClass),
-        "tileTable" -> JsString(md.tileTable)
+        "tileTable" -> JsString(md.tileTable),
+        "layerType" -> md.layerType.toJson
       )
 
     def read(value: JsValue): HBaseLayerHeader =
-      value.asJsObject.getFields("keyClass", "valueClass", "tileTable") match {
+      value.asJsObject.getFields("keyClass", "valueClass", "tileTable", "layerType") match {
+        case Seq(JsString(keyClass), JsString(valueClass), JsString(tileTable), layerType) =>
+          HBaseLayerHeader(
+            keyClass,
+            valueClass,
+            tileTable,
+            layerType.convertTo[LayerType]
+          )
         case Seq(JsString(keyClass), JsString(valueClass), JsString(tileTable)) =>
           HBaseLayerHeader(
             keyClass,
             valueClass,
-            tileTable)
+            tileTable,
+            AvroLayerType
+          )
         case _ =>
           throw new DeserializationException(s"HBaseLayerHeader expected, got: $value")
       }

@@ -52,7 +52,7 @@ trait COGValueReader[ID] {
     exceptionHandler: K => PartialFunction[Throwable, Nothing] = { key: K => { case e: Throwable => throw e }: PartialFunction[Throwable, Nothing] }
    ): Reader[K, V] = new Reader[K, V] {
     val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
-      attributeStore.read[COGLayerStorageMetadata[K]](LayerId(layerId.name, 0), "cog_metadata")
+      attributeStore.readMetadata[COGLayerStorageMetadata[K]](LayerId(layerId.name, 0))
 
     def read(key: K): V = {
       val (zoomRange, spatialKey, overviewIndex, gridBounds) =

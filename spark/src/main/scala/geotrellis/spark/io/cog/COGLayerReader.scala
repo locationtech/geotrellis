@@ -72,7 +72,7 @@ abstract class COGLayerReader[ID] extends Serializable {
 
     val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
       try {
-        attributeStore.read[COGLayerStorageMetadata[K]](LayerId(id.name, 0), COGAttributeStore.Fields.metadata)
+        attributeStore.readMetadata[COGLayerStorageMetadata[K]](LayerId(id.name, 0))
       } catch {
         // to follow GeoTrellis Layer Readers logic
         case e: AttributeNotFoundError => throw new LayerNotFoundError(id).initCause(e)

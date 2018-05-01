@@ -6,6 +6,9 @@ case class ZoomRange(minZoom: Int, maxZoom: Int) {
   def isSingleZoom: Boolean = minZoom == maxZoom
 
   def slug: String = s"${minZoom}_${maxZoom}"
+
+  def zoomInRange(zoom: Int): Boolean =
+    zoom >= minZoom && zoom <= maxZoom
 }
 
 object ZoomRange {

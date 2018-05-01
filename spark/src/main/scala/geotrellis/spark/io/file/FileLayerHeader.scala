@@ -16,13 +16,14 @@
 
 package geotrellis.spark.io.file
 
-import geotrellis.spark.io.LayerHeader
+import geotrellis.spark.io.{LayerHeader, LayerType, AvroLayerType}
 import spray.json._
 
 case class FileLayerHeader(
   keyClass: String,
   valueClass: String,
-  path: String
+  path: String,
+  layerType: LayerType = AvroLayerType
 ) extends LayerHeader {
   def format = "file"
 }
@@ -34,16 +35,26 @@ object FileLayerHeader {
         "format" -> JsString(md.format),
         "keyClass" -> JsString(md.keyClass),
         "valueClass" -> JsString(md.valueClass),
-        "path" -> JsString(md.path)
+        "path" -> JsString(md.path),
+        "layerType" -> md.layerType.toJson
       )
 
     def read(value: JsValue): FileLayerHeader =
-      value.asJsObject.getFields("keyClass", "valueClass", "path") match {
+      value.asJsObject.getFields("keyClass", "valueClass", "path", "layerType") match {
+        case Seq(JsString(keyClass), JsString(valueClass), JsString(path), layerType) =>
+          FileLayerHeader(
+            keyClass,
+            valueClass,
+            path,
+            layerType.convertTo[LayerType]
+          )
+
         case Seq(JsString(keyClass), JsString(valueClass), JsString(path)) =>
           FileLayerHeader(
             keyClass,
             valueClass,
-            path
+            path,
+            AvroLayerType
           )
 
         case _ =>

@@ -46,7 +46,7 @@ class HadoopCOGValueReader(
 
     val header =
       try {
-        attributeStore.read[HadoopLayerHeader](LayerId(layerId.name, 0), COGAttributeStore.Fields.header)
+        attributeStore.readHeader[HadoopLayerHeader](LayerId(layerId.name, 0))
       } catch {
         case e: AttributeNotFoundError => throw new LayerNotFoundError(layerId).initCause(e)
       }

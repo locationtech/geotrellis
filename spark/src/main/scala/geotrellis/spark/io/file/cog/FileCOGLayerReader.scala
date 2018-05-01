@@ -53,7 +53,7 @@ class FileCOGLayerReader(
 
     val header =
       try {
-        attributeStore.read[FileLayerHeader](LayerId(id.name, 0), COGAttributeStore.Fields.header)
+        attributeStore.readHeader[FileLayerHeader](LayerId(id.name, 0))
       } catch {
         case e: AttributeNotFoundError => throw new LayerNotFoundError(id).initCause(e)
       }
