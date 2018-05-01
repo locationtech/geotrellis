@@ -3,7 +3,7 @@ package geotrellis.spark.io.hadoop.geotiff
 import geotrellis.vector.ProjectedExtent
 import java.net.URI
 
-case class InMemoryGeoTiffAttributeStore(getData: () => GeoTiffMetadataTree[GeoTiffMetadata]) extends CollectionAttributeStore[GeoTiffMetadata] {
+abstract class InMemoryGeoTiffAttributeStore(getData: () => GeoTiffMetadataTree[GeoTiffMetadata]) extends CollectionAttributeStore[GeoTiffMetadata] {
   lazy val data = getData()
   def query(layerName: Option[String] = None, extent: Option[ProjectedExtent] = None): Seq[GeoTiffMetadata] = {
     (layerName, extent) match {
@@ -16,5 +16,5 @@ case class InMemoryGeoTiffAttributeStore(getData: () => GeoTiffMetadataTree[GeoT
     }
   }
 
-  def persist(uri: URI): Unit = { }
+  def persist(uri: URI): Unit
 }
