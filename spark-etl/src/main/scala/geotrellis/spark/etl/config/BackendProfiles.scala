@@ -41,8 +41,8 @@ case class CassandraProfile(name: String, hosts: String, user: String, password:
     hosts.split(","),
     user,
     password,
-    replicationStrategyParam = replicationStrategy,
-    replicationFactorParam = replicationFactor,
+    replicationStrategy = replicationStrategy,
+    replicationFactor = replicationFactor,
     localDc = localDc,
     usedHostsPerRemoteDc = usedHostsPerRemoteDc,
     allowRemoteDCsForLocalConsistencyLevel = allowRemoteDCsForLocalConsistencyLevel

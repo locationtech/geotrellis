@@ -24,18 +24,13 @@ import scala.util.Try
 import java.net.URI
 
 object CassandraInstance {
-  var bigIntegerRegistered: Boolean = false
+  @volatile private var bigIntegerRegistered: Boolean = false
 
   def apply(uri: URI): CassandraInstance = {
     import geotrellis.util.UriUtils._
 
     val zookeeper = uri.getHost
-    val port = if (uri.getPort < 0) 9042 else uri.getPort
     val (user, pass) = getUserInfo(uri)
-    val keyspace = Option(uri.getPath.drop(1))
-      .getOrElse(Cassandra.cfg.getString("keyspace"))
-    val attributeTable = Option(uri.getFragment)
-      .getOrElse(Cassandra.cfg.getString("catalog"))
 
     BaseCassandraInstance(
       List(zookeeper),
@@ -50,10 +45,10 @@ trait CassandraInstance extends Serializable {
   val replicationFactor: Int
 
   /** Functions to get cluster / session for custom logic, where function wrapping can have an impact on speed */
-  def getCluster: Cluster
-  def getSession: Session = getCluster.connect()
+  def getCluster: () => Cluster
+  def getSession: Session = getCluster().connect()
 
-  @transient lazy val cluster: Cluster = getCluster
+  @transient lazy val cluster: Cluster = getCluster()
   @transient lazy val session: Session = cluster.connect()
 
   def registerBigInteger(): Unit = {
@@ -90,34 +85,36 @@ trait CassandraInstance extends Serializable {
   }
 }
 
+case class BaseCassandraInstance(
+  getCluster: () => Cluster,
+  replicationStrategy: String = Cassandra.cfg.getString("replicationStrategy"),
+  replicationFactor: Int = Cassandra.cfg.getInt("replicationFactor")
+) extends CassandraInstance
+
 object BaseCassandraInstance {
   def apply(
     hosts: Seq[String],
     username: String = "",
     password: String = "",
     port: Int = Try(Cassandra.cfg.getInt("port")).toOption.getOrElse(9042),
-    replicationStrategyParam: String = Cassandra.cfg.getString("replicationStrategy"),
-    replicationFactorParam: Int = Cassandra.cfg.getInt("replicationFactor"),
+    replicationStrategy: String = Cassandra.cfg.getString("replicationStrategy"),
+    replicationFactor: Int = Cassandra.cfg.getInt("replicationFactor"),
     localDc: String = Cassandra.cfg.getString("localDc"),
     usedHostsPerRemoteDc: Int = Cassandra.cfg.getInt("usedHostsPerRemoteDc"),
-    allowRemoteDCsForLocalConsistencyLevel: Boolean = Cassandra.cfg.getBoolean("allowRemoteDCsForLocalConsistencyLevel")) = {
-    new CassandraInstance {
-      val replicationStrategy: String = replicationStrategyParam
-      val replicationFactor: Int = replicationFactorParam
+    allowRemoteDCsForLocalConsistencyLevel: Boolean = Cassandra.cfg.getBoolean("allowRemoteDCsForLocalConsistencyLevel")): BaseCassandraInstance = {
 
-      /** Functions to get cluster / session for custom logic, where function wrapping can have an impact on speed */
-      def getCluster: Cluster =
-        Cluster.builder().withLoadBalancingPolicy(getLoadBalancingPolicy).addContactPoints(hosts: _*).withPort(port).build()
+    def getLoadBalancingPolicy = {
+      val builder = DCAwareRoundRobinPolicy.builder()
+      if(localDc.nonEmpty) builder.withLocalDc(localDc)
+      if(usedHostsPerRemoteDc > 0) builder.withUsedHostsPerRemoteDc(0)
+      if(allowRemoteDCsForLocalConsistencyLevel) builder.allowRemoteDCsForLocalConsistencyLevel()
 
-      def getLoadBalancingPolicy = {
-        val builder = DCAwareRoundRobinPolicy.builder()
-        if(localDc.nonEmpty) builder.withLocalDc(localDc)
-        if(usedHostsPerRemoteDc > 0) builder.withUsedHostsPerRemoteDc(0)
-        if(allowRemoteDCsForLocalConsistencyLevel) builder.allowRemoteDCsForLocalConsistencyLevel()
-
-        new TokenAwarePolicy(builder.build())
-      }
+      new TokenAwarePolicy(builder.build())
     }
+
+    val getCluster = () => Cluster.builder().withLoadBalancingPolicy(getLoadBalancingPolicy).addContactPoints(hosts: _*).withPort(port).build()
+
+    BaseCassandraInstance(getCluster, replicationStrategy, replicationFactor)
   }
 }
 
