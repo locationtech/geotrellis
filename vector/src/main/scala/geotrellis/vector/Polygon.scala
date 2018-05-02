@@ -164,6 +164,7 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(p.jtsGeom))
     }
 
+  /**
    * Computes a Result that represents a Geometry made up of the points shared
    * by this Polygon and mp.
    */
