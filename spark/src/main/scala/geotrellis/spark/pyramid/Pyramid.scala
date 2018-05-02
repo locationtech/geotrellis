@@ -17,6 +17,10 @@
 package geotrellis.spark.pyramid
 
 import geotrellis.spark._
+import geotrellis.spark.io._
+import geotrellis.spark.io.avro._
+import geotrellis.spark.io.index.KeyIndexMethod
+import geotrellis.spark.io.json._
 import geotrellis.spark.tiling._
 import geotrellis.raster._
 import geotrellis.raster.merge._
@@ -27,8 +31,27 @@ import geotrellis.vector.Extent
 
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd._
+import org.apache.spark.storage.StorageLevel
+import spray.json._
 
 import scala.reflect.ClassTag
+
+case class Pyramid[
+    K: SpatialComponent: ClassTag,
+    V <: CellGrid: ClassTag: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V],
+    M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
+](levels: Map[Int, RDD[(K, V)] with Metadata[M]]) {
+  def apply(level: Int): RDD[(K, V)] with Metadata[M] = levels(level)
+
+  def level(l: Int): RDD[(K, V)] with Metadata[M] = levels(l)
+
+  def lookup(zoom: Int, key: K): Seq[V] = levels(zoom).lookup(key)
+
+  def minZoom = levels.keys.min
+  def maxZoom = levels.keys.max
+
+  def persist(storageLevel: StorageLevel) = levels.mapValues{ _.persist(storageLevel) }
+}
 
 object Pyramid extends LazyLogging {
   case class Options(
@@ -41,6 +64,69 @@ object Pyramid extends LazyLogging {
     implicit def optPartitionerToOptions(p: Option[Partitioner]): Options = Options(partitioner = p)
     implicit def methodToOptions(m: ResampleMethod): Options = Options(resampleMethod = m)
   }
+
+  def read[
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
+    V <: CellGrid: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V]: AvroRecordCodec: ClassTag,
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]
+  ](layerName: String, maxZoom: Int, minZoom: Int, layerReader: LayerReader[LayerId]): Pyramid[K, V, M] = {
+    val seq = for (z <- maxZoom to minZoom by -1) yield {
+      (z, layerReader.read[K, V, M](LayerId(layerName, z)))
+    }
+    Pyramid[K, V, M](seq.toMap)
+  }
+
+  def write[
+    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
+    V <: CellGrid: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V]: AvroRecordCodec: ClassTag,
+    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]
+  ](pyramid: Pyramid[K, V, M], layerName: String, writer: LayerWriter[LayerId], keyIndexMethod: KeyIndexMethod[K]) = {
+    for (z <- pyramid.maxZoom to pyramid.minZoom by -1) {
+      writer.write[K, V, M](LayerId(layerName, z), pyramid(z), keyIndexMethod)
+    }
+  }
+
+  def apply[
+    K: SpatialComponent: ClassTag,
+    V <: CellGrid: ClassTag: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V],
+    M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
+  ](rdd: RDD[(K, V)] with Metadata[M],
+    startZoom: Int,
+    endZoom: Int,
+    options: Options
+  ): Pyramid[K, V, M] = {
+    Pyramid(levelStream(rdd, new LocalLayoutScheme, startZoom, endZoom, options).toMap)
+  }
+
+  def apply[
+    K: SpatialComponent: ClassTag,
+    V <: CellGrid: ClassTag: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V],
+    M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
+  ](rdd: RDD[(K, V)] with Metadata[M],
+    startZoom: Int,
+    endZoom: Int
+  ): Pyramid[K, V, M] =
+    apply(rdd, startZoom, endZoom, Options.DEFAULT)
+
+  def apply[
+    K: SpatialComponent: ClassTag,
+    V <: CellGrid: ClassTag: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V],
+    M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
+  ](rdd: RDD[(K, V)] with Metadata[M],
+    options: Options
+  ): Pyramid[K, V, M] = {
+    val gridBounds = rdd.metadata.getComponent[Bounds[K]].asInstanceOf[KeyBounds[K]].toGridBounds
+    val maxDim = math.max(gridBounds.width, gridBounds.height).toDouble
+    val levels = math.ceil(math.log(maxDim)/math.log(2)).toInt
+
+    apply(rdd, 0, levels, options)
+  }
+
+  def apply[
+    K: SpatialComponent: ClassTag,
+    V <: CellGrid: ClassTag: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V],
+    M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
+  ](rdd: RDD[(K, V)] with Metadata[M]): Pyramid[K, V, M] = apply(rdd, Options.DEFAULT)
 
   /** Resample base layer to generate the next level "up" in the pyramid.
     *
