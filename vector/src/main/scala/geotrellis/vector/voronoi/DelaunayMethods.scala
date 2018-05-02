@@ -16,13 +16,31 @@
 
 package geotrellis.vector.voronoi
 
+import geotrellis.vector.triangulation._
+import geotrellis.vector.mesh._
 import geotrellis.vector.Point
 import geotrellis.util.MethodExtensions
 
-trait DelaunayTriangulationMethods extends MethodExtensions[Traversable[Point]] {
-  def delaunayTriangulation(): Delaunay = { new Delaunay(self.toArray) }
+import com.vividsolutions.jts.geom.Coordinate
+
+
+trait DelaunayTriangulationPointMethods extends MethodExtensions[Traversable[Point]] {
+  def delaunayTriangulation(): DelaunayTriangulation = {
+    val ips = IndexedPointSet(self.map({ _.jtsGeom.getCoordinate }).toArray)
+    DelaunayTriangulation(ips)
+  }
+}
+
+trait DelaunayTriangulationCoordinateMethods extends MethodExtensions[Traversable[Coordinate]] {
+  def delaunayTriangulation(): DelaunayTriangulation = {
+    val ips = IndexedPointSet(self.toArray)
+    DelaunayTriangulation(ips)
+  }
 }
 
 trait DelaunayTriangulationArrayMethods extends MethodExtensions[Array[Point]] {
-  def delaunayTriangulation(): Delaunay = { new Delaunay(self) }
+  def delaunayTriangulation(): DelaunayTriangulation = {
+    val ips = IndexedPointSet(self.map({ _.jtsGeom.getCoordinate }))
+    DelaunayTriangulation(ips)
+  }
 }
