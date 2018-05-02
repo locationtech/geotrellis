@@ -219,18 +219,6 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
       result
     }
 
-  @deprecated("Use `coordsIter` instead.", "1.2")
-  def coords: Array[(Int, Int)] = {
-    val arr = Array.ofDim[(Int, Int)](width*height)
-    cfor(0)(_ < height, _ + 1) { row =>
-      cfor(0)(_ < width, _ + 1) { col =>
-        arr(row * width + col) =
-          (col + colMin, row + rowMin)
-      }
-    }
-    arr
-  }
-
   /**
     * Return the coordinates covered by the present [[GridBounds]].
     */
