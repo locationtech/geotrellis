@@ -76,11 +76,7 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
   def width = colMax - colMin + 1
   def height = rowMax - rowMin + 1
 
-  @deprecated("This will return a `Long` in 2.0. Until then, sizeLong may be more accurate.", "1.2")
-  def size: Int = width * height
-
-  // TODO Mark for deprecation in 3.0 when 2.0 comes out!
-  def sizeLong: Long = width.toLong * height.toLong
+  def size: Long = width * height
 
   def isEmpty = sizeLong == 0
 
@@ -219,18 +215,6 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
       }
       result
     }
-
-  @deprecated("Use `coordsIter` instead.", "1.2")
-  def coords: Array[(Int, Int)] = {
-    val arr = Array.ofDim[(Int, Int)](width*height)
-    cfor(0)(_ < height, _ + 1) { row =>
-      cfor(0)(_ < width, _ + 1) { col =>
-        arr(row * width + col) =
-          (col + colMin, row + rowMin)
-      }
-    }
-    arr
-  }
 
   /**
     * Return the coordinates covered by the present [[GridBounds]].
