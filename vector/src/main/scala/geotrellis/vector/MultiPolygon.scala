@@ -100,10 +100,6 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(p.jtsGeom))
     }
 
-  @deprecated("This will be removed in 2.0 - use intersectionSafe instead", "1.2")
-  def safeIntersection(p: Point): PointOrNoResult =
-    intersectionSafe(p)
-
   def &(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
     intersection(l)
   def intersection(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
@@ -113,10 +109,6 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
     catch {
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(l.jtsGeom))
     }
-
-  @deprecated("This will be removed in 2.0 - use intersectionSafe instead", "1.2")
-  def safeIntersection(l: Line): OneDimensionAtLeastOneDimensionIntersectionResult =
-    intersectionSafe(l)
 
   def &(g: TwoDimensions): TwoDimensionsTwoDimensionsIntersectionResult =
     intersection(g)
@@ -128,10 +120,6 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(g.jtsGeom))
     }
 
-  @deprecated("This will be removed in 2.0 - use intersectionSafe instead", "1.2")
-  def safeIntersection(g: TwoDimensions): TwoDimensionsTwoDimensionsIntersectionResult =
-    intersectionSafe(g)
-
   def &(ls: MultiLine): OneDimensionAtLeastOneDimensionIntersectionResult =
     intersection(ls)
   def intersection(ls: MultiLine): OneDimensionAtLeastOneDimensionIntersectionResult =
@@ -141,10 +129,6 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
     catch {
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(ls.jtsGeom))
     }
-
-  @deprecated("This will be removed in 2.0 - use intersectionSafe instead", "1.2")
-  def safeIntersection(ls: MultiLine): OneDimensionAtLeastOneDimensionIntersectionResult =
-    intersectionSafe(ls)
 
   // -- Union
 

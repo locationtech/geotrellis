@@ -89,10 +89,6 @@ trait Geometry extends Serializable {
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(g.jtsGeom))
     }
 
-  @deprecated("This will be removed in 2.0 - use intersectionSafe instead", "1.2")
-  def safeIntersection(g: Geometry): TwoDimensionsTwoDimensionsIntersectionResult =
-    intersectionSafe(g)
-
   def intersects(other: Geometry): Boolean =
     jtsGeom.intersects(other.jtsGeom)
 
