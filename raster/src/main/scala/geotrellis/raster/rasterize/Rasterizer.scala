@@ -332,7 +332,7 @@ object Rasterizer {
     * LineString.  The iteration happens in the direction from the
     * first point to the last point.
     */
-  @deprecated("This function will be deprecated in 2.0 in favor of richer options on foreachCellByGeometry", "1.2")
+  @deprecated("This function will be deprecated in 3.0 in favor of richer options on foreachCellByGeometry", "1.2")
   def foreachCellByLineStringDouble(line: Line, re: RasterExtent)(f: (Int, Int) => Unit) {
     val coords = line.jtsGeom.getCoordinates()
     var i = 1; while (i < coords.size) {
