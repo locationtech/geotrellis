@@ -47,10 +47,6 @@ class BufferTilesMethods[
   ): RDD[(K, BufferedTile[V])] =
     BufferTiles(self, bufferSize, layerBounds, partitioner)
 
-  @deprecated("Please specify buffer sizes per key as a function K => BufferSizes", "1.2")
-  def bufferTiles(bufferSizesPerKey: RDD[(K, BufferSizes)]): RDD[(K, BufferedTile[V])] =
-    BufferTiles(self, bufferSizesPerKey)
-
   def bufferTiles(getBufferSizes: K => BufferSizes): RDD[(K, BufferedTile[V])] =
     BufferTiles(self, getBufferSizes)
 
