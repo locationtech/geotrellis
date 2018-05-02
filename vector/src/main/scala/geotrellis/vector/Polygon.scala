@@ -164,10 +164,6 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(p.jtsGeom))
     }
 
-  @deprecated("This will be removed in 2.0 - use intersectionSafe instead", "1.2")
-  def safeIntersection(p: Point): PointOrNoResult = intersectionSafe(p)
-
-  /**
    * Computes a Result that represents a Geometry made up of the points shared
    * by this Polygon and mp.
    */
@@ -191,10 +187,6 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
     catch {
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(mp.jtsGeom))
     }
-
-  @deprecated("This will be removed in 2.0 - use intersectionSafe instead", "1.2")
-  def safeIntersection(mp: MultiPoint): MultiPointAtLeastOneDimensionIntersectionResult =
-    intersectionSafe(mp)
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
@@ -221,10 +213,6 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(g.jtsGeom))
     }
 
-  @deprecated("This will be removed in 2.0 - use intersectionSafe instead", "1.2")
-  def safeIntersection(g: OneDimension): OneDimensionAtLeastOneDimensionIntersectionResult =
-    intersectionSafe(g)
-
   /**
    * Computes a Result that represents a Geometry made up of the points shared
    * by this Polygon and g.
@@ -249,10 +237,6 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
     catch {
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(g.jtsGeom))
     }
-
-  @deprecated("This will be removed in 2.0 - use intersectionSafe instead", "1.2")
-  def safeIntersection(g: TwoDimensions): TwoDimensionsTwoDimensionsIntersectionResult =
-    intersectionSafe(g)
 
   // -- Union
 
