@@ -28,14 +28,12 @@ import com.amazonaws.services.s3.model.{AmazonS3Exception, ObjectMetadata, PutOb
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.rdd.RDD
-import com.typesafe.config.ConfigFactory
 
 import java.io.ByteArrayInputStream
 import java.util.concurrent.Executors
 
 import scala.concurrent.ExecutionContext
 import scala.reflect._
-
 
 trait S3RDDWriter {
   final val defaultThreadCount = S3Config.threads.rdd.writeThreads

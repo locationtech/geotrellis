@@ -26,7 +26,6 @@ import geotrellis.spark.io.s3._
 import geotrellis.spark.io.s3.conf.S3Config
 import geotrellis.util._
 
-import com.typesafe.config.ConfigFactory
 import spray.json.JsonFormat
 
 import java.net.URI

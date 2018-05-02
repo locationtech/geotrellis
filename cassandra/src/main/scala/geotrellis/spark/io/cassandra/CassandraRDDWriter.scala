@@ -35,9 +35,10 @@ import org.apache.spark.rdd.RDD
 
 import java.nio.ByteBuffer
 import java.util.concurrent.Executors
-
-import scala.collection.JavaConversions._
 import java.math.BigInteger
+
+import scala.concurrent.ExecutionContext
+import scala.collection.JavaConversions._
 
 object CassandraRDDWriter {
   final val defaultThreadCount = CassandraConfig.threads.rdd.writeThreads

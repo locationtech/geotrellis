@@ -30,8 +30,6 @@ import org.apache.spark.SparkContext
 import spray.json.JsonFormat
 import java.net.URI
 
-import com.typesafe.config.ConfigFactory
-
 import scala.reflect.ClassTag
 
 /**

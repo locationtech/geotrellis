@@ -22,7 +22,6 @@ import geotrellis.util.LazyLogging
 
 import org.apache.hadoop.hbase.client._
 import org.apache.hadoop.hbase.filter.PrefixFilter
-import com.typesafe.config.ConfigFactory
 
 import scala.collection.JavaConversions._
 

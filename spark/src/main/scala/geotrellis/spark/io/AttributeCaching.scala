@@ -39,7 +39,7 @@ trait AttributeCaching { self: AttributeStore =>
       read[JsValue](layerId, attributeName).convertTo[T]
 
   def cacheLayerType(layerId: LayerId, layerType: LayerType): LayerType =
-    if (enabled)
+    if (AttributeConfig.caching.enabled)
       cache.get(layerId -> "layerType", { _ => layerType.toJson }).convertTo[LayerType]
     else
       layerType

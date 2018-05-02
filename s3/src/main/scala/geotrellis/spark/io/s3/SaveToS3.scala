@@ -25,6 +25,8 @@ import org.apache.spark.rdd.RDD
 import cats.effect.IO
 import cats.syntax.apply._
 
+import scala.concurrent.ExecutionContext
+
 import java.io.ByteArrayInputStream
 import java.util.concurrent.Executors
 import java.net.URI
