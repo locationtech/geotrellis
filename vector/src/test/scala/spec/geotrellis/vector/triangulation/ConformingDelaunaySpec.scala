@@ -17,6 +17,7 @@
 package geotrellis.vector.voronoi
 
 import geotrellis.vector._
+import geotrellis.vector.triangulation._
 
 import com.vividsolutions.jts.{ geom => jts }
 import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, MultiPoint, Polygon => JTSPolygon}
@@ -50,13 +51,13 @@ class ConformingDelaunaySpec extends FunSpec with Matchers {
 
     it("should be the same as standard Delaunay when no constraints are given") {
       val conformingDelaunay = ConformingDelaunay(points, emptyCollection)
-      val delaunay = Delaunay(points)
+      val delaunay = DelaunayTriangulation(points.map(_.jtsGeom.getCoordinate))
       conformingDelaunay.triangles.toSet should be (delaunayTriangles.toSet)
     }
 
     it("should produce same results with redundant constraints as without any") {
       val conformingDelaunay = ConformingDelaunay(points, List(polygon))
-      val delaunay = Delaunay(points)
+      val delaunay = DelaunayTriangulation(points.map(_.jtsGeom.getCoordinate))
       conformingDelaunay.triangles.toSet should be (delaunayTriangles.toSet)
     }
 
