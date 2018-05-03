@@ -13,14 +13,12 @@ object FileIMGeoTiffAttributeStore {
   def apply(
     name: String,
     uri: URI
-  ): InMemoryGeoTiffAttributeStore = {
-    def getDataFunction = () => HadoopGeoTiffInput.list(name, uri, new Configuration())
-    new InMemoryGeoTiffAttributeStore(() => GeoTiffMetadataTree.fromGeoTiffMetadataList(getDataFunction())) {
+  ): InMemoryGeoTiffAttributeStore =
+    new InMemoryGeoTiffAttributeStore {
+      lazy val metadataList = HadoopGeoTiffInput.list(name, uri, new Configuration())
       def persist(uri: URI): Unit = {
-        val data = getDataFunction()
-        val str = data.toJson.compactPrint
+        val str = metadataList.toJson.compactPrint
         new PrintWriter(uri.toString) { write(str); close }
       }
     }
-  }
 }

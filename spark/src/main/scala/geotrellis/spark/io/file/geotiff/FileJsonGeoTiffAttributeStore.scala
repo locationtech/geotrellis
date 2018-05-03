@@ -12,7 +12,7 @@ import java.io.PrintWriter
 
 object FileJsonGeoTiffAttributeStore {
   def readDataAsTree(uri: URI): GeoTiffMetadataTree[GeoTiffMetadata] =
-    GeoTiffMetadataTree.fromGeoTiffMetadataList(HadoopJsonGeoTiffAttributeStore.readData(uri, new Configuration))
+    GeoTiffMetadataTree.fromGeoTiffMetadataSeq(HadoopJsonGeoTiffAttributeStore.readData(uri, new Configuration))
 
   def apply(uri: URI): JsonGeoTiffAttributeStore =
     JsonGeoTiffAttributeStore(uri, readDataAsTree)

@@ -15,14 +15,12 @@ object HadoopIMGeoTiffAttributeStore {
     name: String,
     uri: URI,
     conf: Configuration = new Configuration()
-  ): InMemoryGeoTiffAttributeStore = {
-    def getDataFunction = () => HadoopGeoTiffInput.list(name, uri, conf)
-    new InMemoryGeoTiffAttributeStore(() => GeoTiffMetadataTree.fromGeoTiffMetadataList(getDataFunction())) {
+  ): InMemoryGeoTiffAttributeStore =
+    new InMemoryGeoTiffAttributeStore {
+      lazy val metadataList = HadoopGeoTiffInput.list(name, uri, conf)
       def persist(uri: URI): Unit = {
-        val data = getDataFunction()
-        val str = data.toJson.compactPrint
+        val str = metadataList.toJson.compactPrint
         HdfsUtils.write(new Path(uri), conf) { IOUtils.write(str, _, "UTF-8") }
       }
     }
-  }
 }

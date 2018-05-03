@@ -34,11 +34,12 @@ object S3IMGeoTiffAttributeStore {
     getDataFunction: () => List[GeoTiffMetadata],
     getS3Client: () => S3Client
   ): InMemoryGeoTiffAttributeStore =
-    new InMemoryGeoTiffAttributeStore(() => GeoTiffMetadataTree.fromGeoTiffMetadataList(getDataFunction())) {
+    new InMemoryGeoTiffAttributeStore {
+      lazy val metadataList = getDataFunction()
       def persist(uri: URI): Unit = {
         val s3Client = getS3Client()
         val s3Path = new AmazonS3URI(uri)
-        val data = getDataFunction()
+        val data = metadataList
 
         val str = data.toJson.compactPrint
         val is = new ByteArrayInputStream(str.getBytes("UTF-8"))

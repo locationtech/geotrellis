@@ -3,7 +3,9 @@ package geotrellis.spark.io.hadoop.geotiff
 import geotrellis.vector.ProjectedExtent
 import java.net.URI
 
-abstract class InMemoryGeoTiffAttributeStore(getData: () => GeoTiffMetadataTree[GeoTiffMetadata]) extends CollectionAttributeStore[GeoTiffMetadata] {
+abstract class InMemoryGeoTiffAttributeStore extends CollectionAttributeStore[GeoTiffMetadata] {
+  val metadataList: List[GeoTiffMetadata]
+  lazy val getData: () => GeoTiffMetadataTree[GeoTiffMetadata] = () => GeoTiffMetadataTree.fromGeoTiffMetadataSeq(metadataList)
   lazy val data = getData()
   def query(layerName: Option[String] = None, extent: Option[ProjectedExtent] = None): Seq[GeoTiffMetadata] = {
     (layerName, extent) match {
