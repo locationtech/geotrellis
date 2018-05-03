@@ -93,7 +93,7 @@ class HadoopCOGLayerWriter(
               .foreach(samplesAccumulator.add)
 
           case Some(merge) if HdfsUtils.pathExists(path, config.value) =>
-            val old = GeoTiffReader[V].read(path.toUri(), decompress = false, streaming = true)
+            val old = GeoTiffReader[V].read(path.toUri(), streaming = true)
             val merged = merge(cog, old)
             HdfsUtils.write(path, config.value) { new GeoTiffWriter(merged, _).write(true) }
             // collect VRT metadata

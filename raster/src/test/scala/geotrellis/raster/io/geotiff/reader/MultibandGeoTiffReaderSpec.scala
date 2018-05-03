@@ -245,7 +245,6 @@ class MultibandGeoTiffReaderSpec extends FunSpec
       val tile: GeoTiffMultibandTile =
         MultibandGeoTiff(
           path = p("striped", "pixel"),
-          decompress = false,
           streaming = false
         ).tile.asInstanceOf[GeoTiffMultibandTile]
 

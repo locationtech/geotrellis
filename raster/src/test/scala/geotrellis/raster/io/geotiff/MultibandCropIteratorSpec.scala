@@ -88,7 +88,7 @@ class MultibandCropIteratorSpec extends FunSpec
     it("should return the whole thing if the inputted dimensions are larger than the cols and rows") {
       val windowedCols = 25
       val windowedRows = 50
-      val multibandIterator = MultibandCropIterator(geoTiff, windowedCols, windowedRows)
+      val multibandIterator = MultibandCropIterator(geoTiff.copy(tile = geoTiff.tile.toArrayTile), windowedCols, windowedRows)
 
       val expected = geoTiff.tile
       val actual = multibandIterator.next.tile
@@ -100,7 +100,7 @@ class MultibandCropIteratorSpec extends FunSpec
       val windowedCols = 15
       val windowedRows = 25
       val multibandIterator =
-        new MultibandCropIterator(geoTiff, windowedCols, windowedRows)
+        new MultibandCropIterator(geoTiff.copy(tile = geoTiff.tile.toArrayTile), windowedCols, windowedRows)
 
       val expected: Array[MultibandTile] =
         Array(geoTiff.raster.crop(0, 0, 15, 25),

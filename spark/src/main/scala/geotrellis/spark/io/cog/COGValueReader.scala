@@ -64,7 +64,7 @@ trait COGValueReader[ID] {
       val uri = fullPath(keyPath(key.setComponent(spatialKey), maxWidth, baseKeyIndex, zoomRange))
 
       try {
-        GeoTiffReader[V].read(uri, decompress = false, streaming = true)
+        GeoTiffReader[V].read(uri, streaming = true)
           .getOverview(overviewIndex)
           .crop(gridBounds)
           .tile

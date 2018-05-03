@@ -38,6 +38,11 @@ API Changes
     and ``writeCOGLayerAttributes``.
   - **New:** Kryo serialization of geometry now uses a binary format to reduce shuffle block size
   - **Change:** Scalaz streams were replaced by fs2 streams
+  - **Change:** Replace `geotrellis.util.Functor` with `cats.Functor`.
+
+- ``geotrellis.raster``
+
+  - **Change:** Removed ``decompress`` option from `GeoTiffReader` functions.
 
 Fixes
 ^^^^^

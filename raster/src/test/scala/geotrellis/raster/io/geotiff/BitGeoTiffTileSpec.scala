@@ -36,7 +36,7 @@ class BitGeoTiffTileSpec extends FunSpec
     with TileBuilders {
   describe("BitGeoTiffTile") {
     it("should map same") {
-      val tile = SinglebandGeoTiff.compressed(geoTiffPath("bilevel.tif")).tile
+      val tile = SinglebandGeoTiff(geoTiffPath("bilevel.tif")).tile
 
       val res = tile.map { z => z }
 
@@ -44,7 +44,7 @@ class BitGeoTiffTileSpec extends FunSpec
     }
 
     it("should map inverse") {
-      val tile = SinglebandGeoTiff.compressed(geoTiffPath("bilevel.tif")).tile
+      val tile = SinglebandGeoTiff(geoTiffPath("bilevel.tif")).tile
 
       val res = tile.map { z => z ^ 1 }.map { z => z ^ 1 }
 
@@ -52,7 +52,7 @@ class BitGeoTiffTileSpec extends FunSpec
     }
 
     it("should map with index") {
-      val tile = SinglebandGeoTiff.compressed(geoTiffPath("bilevel.tif")).tile
+      val tile = SinglebandGeoTiff(geoTiffPath("bilevel.tif")).tile
 
       val res = tile.map { (col, row, z) => z }
 
@@ -60,7 +60,7 @@ class BitGeoTiffTileSpec extends FunSpec
     }
 
     it("should map with index double") {
-      val tile = SinglebandGeoTiff.compressed(geoTiffPath("bilevel.tif")).tile
+      val tile = SinglebandGeoTiff(geoTiffPath("bilevel.tif")).tile
 
       val res = tile.mapDouble { (col, row, z) => z }
 
@@ -68,7 +68,7 @@ class BitGeoTiffTileSpec extends FunSpec
     }
 
     it("should map with index - tiled") {
-      val tile = SinglebandGeoTiff.compressed(geoTiffPath("bilevel_tiled.tif")).tile
+      val tile = SinglebandGeoTiff(geoTiffPath("bilevel_tiled.tif")).tile
 
       val res = tile.map { (col, row, z) => z }
 
@@ -76,7 +76,7 @@ class BitGeoTiffTileSpec extends FunSpec
     }
 
     it("should map with index double - tiled") {
-      val tile = SinglebandGeoTiff.compressed(geoTiffPath("bilevel_tiled.tif")).tile
+      val tile = SinglebandGeoTiff(geoTiffPath("bilevel_tiled.tif")).tile
 
       val res = tile.mapDouble { (col, row, z) => z }
 

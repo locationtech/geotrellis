@@ -49,9 +49,12 @@ class GeoTiffWriterTests extends FunSuite
     val rr = FileRangeReader(p)
     val reader = StreamingByteReader(rr)
 
-    val gt1 = MultibandGeoTiff(reader)
+    val gt1 = {
+      val t = MultibandGeoTiff(reader)
+      t.copy(tile = t.tile.toArrayTile)
+    }
     val gt2 = MultibandGeoTiff.streaming(reader)
-    val gt3 = MultibandGeoTiff.compressed(p)
+    val gt3 = MultibandGeoTiff(p)
 
     withClue("Assumption failed: Reading GeoTiff two ways didn't match") {
       assertEqual(gt2.tile, gt1.tile)

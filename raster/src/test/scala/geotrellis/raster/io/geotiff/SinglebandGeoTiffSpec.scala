@@ -26,7 +26,7 @@ import org.scalatest._
 
 class SinglebandGeoTiffSpec extends FunSpec with Matchers with RasterMatchers with GeoTiffTestUtils {
   describe("Building Overviews") {
-    val tiff = SinglebandGeoTiff(geoTiffPath("overviews/singleband.tif"), false, true)
+    val tiff = SinglebandGeoTiff(geoTiffPath("overviews/singleband.tif"), true)
 
     it("should reduce pixels by decimation factor") {
       val ovr = tiff.buildOverview(NearestNeighbor, 2)
