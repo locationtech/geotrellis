@@ -61,7 +61,7 @@ class ConfigSpec extends FunSuite {
     """.stripMargin
 
   test("Output config with TileLayout passes schema checks") {
-    val schemaFactory = new JsonSchemaFactory()
+    val schemaFactory = JsonSchemaFactory.getInstance()
     val outputSchema = schemaFactory.getSchema(getClass.getResourceAsStream("/output-schema.json"))
     val report = outputSchema.validate(jsonNodeFromString(outJson))
     println(report)
