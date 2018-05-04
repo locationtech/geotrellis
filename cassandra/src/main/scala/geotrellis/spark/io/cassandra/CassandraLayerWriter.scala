@@ -82,7 +82,7 @@ class CassandraLayerWriter(
         CassandraRDDWriter.update(rdd, instance, id, encodeKey, keyspace, table, Some(writerSchema), mergeFunc)
 
       case None =>
-        logger.warn(s"Skipping update with empty bounds for layer $id.")
+        logger.warn(s"Skipping update with empty bounds for $id.")
     }
   }
 

@@ -89,7 +89,7 @@ class HadoopLayerWriter(
         HadoopRDDWriter.update(rdd, layerPath, id, attributeStore, mergeFunc)
 
       case None =>
-        logger.warn(s"Skipping update with empty bounds for layer $id.")
+        logger.warn(s"Skipping update with empty bounds for $id.")
     }
   }
 

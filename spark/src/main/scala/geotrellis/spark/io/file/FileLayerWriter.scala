@@ -97,7 +97,7 @@ class FileLayerWriter(
         FileRDDWriter.update[K, V](rdd, layerPath, keyPath, Some(writerSchema), mergeFunc)
         
       case None =>
-        logger.warn(s"Skipping update with empty bounds for layer $id.")
+        logger.warn(s"Skipping update with empty bounds for $id.")
     }
   }
 
