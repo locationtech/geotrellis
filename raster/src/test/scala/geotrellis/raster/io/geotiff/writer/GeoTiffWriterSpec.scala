@@ -223,7 +223,7 @@ class GeoTiffWriterSpec extends FunSpec
         val actualBand = gt.tile.band(i)
         val expectedBand = geoTiff.tile.band(i)
 
-        assertEqual(actualBand.toArrayTile, expectedBand)
+        assertEqual(actualBand, expectedBand)
       }
     }
 

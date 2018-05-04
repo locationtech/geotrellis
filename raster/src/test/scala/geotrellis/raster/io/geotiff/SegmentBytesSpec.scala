@@ -36,10 +36,13 @@ trait Tester {
       LazySegmentBytes(byteBuffer, tiffTags)
 
     val geoTiff =
-      if (tiffTags.bandCount == 1)
-        SinglebandGeoTiff(path)
-      else
-        MultibandGeoTiff(path)
+      if (tiffTags.bandCount == 1) {
+        val tiff = SinglebandGeoTiff(path)
+        tiff.copy(tile = tiff.tile.toArrayTile)
+      } else {
+        val tiff = MultibandGeoTiff(path)
+        tiff.copy(tile = tiff.tile.toArrayTile)
+      }
 
     val actual = geoTiff.imageData.segmentBytes
   }
