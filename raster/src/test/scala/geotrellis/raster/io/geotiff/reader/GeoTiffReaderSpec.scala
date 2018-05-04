@@ -39,7 +39,7 @@ class GeoTiffReaderSpec extends FunSpec
 
   describe("reading an ESRI generated Float32 geotiff with 0 NoData value") {
     it("matches an arg produced from geotrellis.gdal reader of that tif") {
-      val tile = SinglebandGeoTiff.compressed(geoTiffPath("us_ext_clip_esri.tif")).tile.convert(FloatConstantNoDataCellType)
+      val tile = SinglebandGeoTiff(geoTiffPath("us_ext_clip_esri.tif")).tile.convert(FloatConstantNoDataCellType)
 
       val expectedTile =
         ArgReader.read(geoTiffPath("us_ext_clip_esri.json")).tile
@@ -55,7 +55,7 @@ class GeoTiffReaderSpec extends FunSpec
       val path = "slope.tif"
       val argPath = s"$baseDataPath/data/slope.json"
 
-      val tile = SinglebandGeoTiff.compressed(s"$baseDataPath/$path").tile.convert(FloatConstantNoDataCellType)
+      val tile = SinglebandGeoTiff(s"$baseDataPath/$path").tile.toArrayTile.convert(FloatConstantNoDataCellType)
 
       val expectedTile =
         ArgReader.read(argPath).tile
@@ -67,7 +67,7 @@ class GeoTiffReaderSpec extends FunSpec
 
   describe("reading modelTransformation.tiff") {
     val path = "modelTransformation.tiff"
-    val compressed: SinglebandGeoTiff = SinglebandGeoTiff.compressed(geoTiffPath(path))
+    val compressed: SinglebandGeoTiff = SinglebandGeoTiff(geoTiffPath(path))
     val tile = compressed.tile
     val bounds = tile.gridBounds
     bounds.width should be (1121)
@@ -85,36 +85,36 @@ class GeoTiffReaderSpec extends FunSpec
   describe("reading compressed file must yield same image array as uncompressed file") {
 
     it("must read econic_lzw.tif and match uncompressed file") {
-      val decomp = SinglebandGeoTiff.compressed(geoTiffPath("econic_lzw.tif"))
-      val uncomp = SinglebandGeoTiff.compressed(s"$baseDataPath/econic.tif")
+      val decomp = SinglebandGeoTiff(geoTiffPath("econic_lzw.tif"))
+      val uncomp = SinglebandGeoTiff(s"$baseDataPath/econic.tif")
 
       assertEqual(decomp.tile, uncomp.tile)
     }
 
     it("must read econic_zlib.tif and match uncompressed file") {
-      val decomp = SinglebandGeoTiff.compressed(geoTiffPath("econic_zlib.tif"))
-      val uncomp = SinglebandGeoTiff.compressed(s"$baseDataPath/econic.tif")
+      val decomp = SinglebandGeoTiff(geoTiffPath("econic_zlib.tif"))
+      val uncomp = SinglebandGeoTiff(s"$baseDataPath/econic.tif")
 
       assertEqual(decomp.tile, uncomp.tile)
     }
 
     it("must read econic_zlib_tiled.tif and match uncompressed file") {
-      val decomp = SinglebandGeoTiff.compressed(geoTiffPath("econic_zlib_tiled.tif"))
-      val uncomp = SinglebandGeoTiff.compressed(s"$baseDataPath/econic.tif")
+      val decomp = SinglebandGeoTiff(geoTiffPath("econic_zlib_tiled.tif"))
+      val uncomp = SinglebandGeoTiff(s"$baseDataPath/econic.tif")
 
       assertEqual(decomp.tile, uncomp.tile)
     }
 
     it("must read econic_zlib_tiled_bandint.tif and match uncompressed file") {
-      val decomp = SinglebandGeoTiff.compressed(geoTiffPath("econic_zlib_tiled_bandint.tif"))
-      val uncomp = SinglebandGeoTiff.compressed(s"$baseDataPath/econic.tif")
+      val decomp = SinglebandGeoTiff(geoTiffPath("econic_zlib_tiled_bandint.tif"))
+      val uncomp = SinglebandGeoTiff(s"$baseDataPath/econic.tif")
 
       assertEqual(decomp.tile, uncomp.tile)
     }
 
     it("must read all-ones.tif and match uncompressed file") {
-      val decomp = SinglebandGeoTiff.compressed(geoTiffPath("all-ones.tif"))
-      val uncomp = SinglebandGeoTiff.compressed(geoTiffPath("all-ones-no-comp.tif"))
+      val decomp = SinglebandGeoTiff(geoTiffPath("all-ones.tif"))
+      val uncomp = SinglebandGeoTiff(geoTiffPath("all-ones-no-comp.tif"))
 
       assertEqual(decomp.tile, uncomp.tile)
     }
@@ -123,8 +123,8 @@ class GeoTiffReaderSpec extends FunSpec
   describe("reading tiled file must yield same image as strip files") {
 
     it("must read us_ext_clip_esri.tif and match strip file") {
-      val tiled = SinglebandGeoTiff.compressed(geoTiffPath("us_ext_clip_esri.tif"))
-      val striped = SinglebandGeoTiff.compressed(geoTiffPath("us_ext_clip_esri_stripes.tif"))
+      val tiled = SinglebandGeoTiff(geoTiffPath("us_ext_clip_esri.tif"))
+      val striped = SinglebandGeoTiff(geoTiffPath("us_ext_clip_esri_stripes.tif"))
 
       assertEqual(tiled.tile, striped.tile)
     }
@@ -133,28 +133,26 @@ class GeoTiffReaderSpec extends FunSpec
 
   describe("reading bit rasters") {
     it("should match bit tile the ArrayTile pulled out of the resulting GeoTiffTile") {
-      val expected = SinglebandGeoTiff.compressed(geoTiffPath("uncompressed/tiled/bit.tif")).tile
-      val actual = SinglebandGeoTiff.compressed(geoTiffPath("uncompressed/tiled/bit.tif")).tile.toArrayTile
+      val expected = SinglebandGeoTiff(geoTiffPath("uncompressed/tiled/bit.tif")).tile
+      val actual = SinglebandGeoTiff(geoTiffPath("uncompressed/tiled/bit.tif")).tile.toArrayTile
 
       assertEqual(actual, expected)
       assertEqual(expected, actual)
     }
 
     it("must read bilevel_tiled.tif and match strip file") {
-      val tiled = SinglebandGeoTiff.compressed(geoTiffPath("bilevel_tiled.tif"))
-      val striped = SinglebandGeoTiff.compressed(geoTiffPath("bilevel.tif"))
+      val tiled = SinglebandGeoTiff(geoTiffPath("bilevel_tiled.tif"))
+      val striped = SinglebandGeoTiff(geoTiffPath("bilevel.tif"))
 
       assertEqual(tiled.tile, striped.tile)
     }
 
     it("should match bit and byte-converted rasters") {
-      val actual = SinglebandGeoTiff.compressed(geoTiffPath("bilevel.tif")).tile
-      val expected = SinglebandGeoTiff(geoTiffPath("bilevel.tif")).tile.tile.convert(BitCellType)
+      val actual = SinglebandGeoTiff(geoTiffPath("bilevel.tif")).tile
+      val expected = SinglebandGeoTiff(geoTiffPath("bilevel.tif")).tile.toArrayTile.convert(BitCellType)
 
       assertEqual(actual, expected)
     }
-
-
   }
 
   describe("match tiff tags and geokeys correctly") {
@@ -260,7 +258,7 @@ class GeoTiffReaderSpec extends FunSpec
   describe("reads GeoTiff CRS correctly") {
 
     it("should read slope.tif CS correctly") {
-      val crs = SinglebandGeoTiff.compressed(s"$baseDataPath/slope.tif")crs
+      val crs = SinglebandGeoTiff(s"$baseDataPath/slope.tif", streaming = true).crs
 
       val correctCRS = CRS.fromString("+proj=utm +zone=10 +datum=NAD27 +units=m +no_defs")
 
@@ -268,7 +266,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read aspect.tif CS correctly") {
-      val crs = SinglebandGeoTiff.compressed(s"$baseDataPath/aspect.tif").crs
+      val crs = SinglebandGeoTiff(s"$baseDataPath/aspect.tif", streaming = true).crs
 
       val correctProj4String = "+proj=lcc +lat_1=36.16666666666666 +lat_2=34.33333333333334 +lat_0=33.75 +lon_0=-79 +x_0=609601.22 +y_0=0 +datum=NAD83 +units=m +no_defs"
 
@@ -278,7 +276,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read econic.tif CS correctly") {
-      val crs = SinglebandGeoTiff.compressed(s"$baseDataPath/econic.tif").crs
+      val crs = SinglebandGeoTiff(s"$baseDataPath/econic.tif", streaming = true).crs
 
       val correctProj4String = "+proj=eqdc +lat_0=33.76446202777777 +lon_0=-117.4745428888889 +lat_1=33.90363402777778 +lat_2=33.62529002777778 +x_0=0 +y_0=0 +datum=NAD27 +units=m +no_defs"
 
@@ -288,7 +286,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read bilevel.tif CS correctly") {
-      val crs = SinglebandGeoTiff.compressed(geoTiffPath("bilevel.tif")).crs
+      val crs = SinglebandGeoTiff(geoTiffPath("bilevel.tif"), streaming = true).crs
 
       val correctProj4String = "+proj=tmerc +lat_0=0 +lon_0=-3.45233333 +k=0.9996 +x_0=1500000 +y_0=0 +ellps=intl +units=m +no_defs"
 
@@ -298,7 +296,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read all-ones.tif CS correctly") {
-      val crs = SinglebandGeoTiff.compressed(geoTiffPath("all-ones.tif")).crs
+      val crs = SinglebandGeoTiff(geoTiffPath("all-ones.tif"), streaming = true).crs
 
       val correctCRS = CRS.fromString("+proj=longlat +datum=WGS84 +no_defs")
 
@@ -306,14 +304,14 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read colormap.tif CS correctly") {
-      val crs = SinglebandGeoTiff.compressed(geoTiffPath("colormap.tif")).crs
+      val crs = SinglebandGeoTiff(geoTiffPath("colormap.tif"), streaming = true).crs
 
       val correctCRS = CRS.fromString("+proj=longlat +datum=WGS84 +no_defs")
       crs should equal(correctCRS)
     }
 
     it("should read us_ext_clip_esri.tif CS correctly") {
-      val crs = SinglebandGeoTiff.compressed(geoTiffPath("us_ext_clip_esri.tif")).crs
+      val crs = SinglebandGeoTiff(geoTiffPath("us_ext_clip_esri.tif")).crs
 
       val correctCRS = CRS.fromString("+proj=longlat +datum=WGS84 +no_defs")
 
@@ -321,7 +319,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read ndvi-web-mercator.tif CS correctly") {
-      val crs = SinglebandGeoTiff.compressed(geoTiffPath("ndvi-web-mercator.tif")).crs
+      val crs = SinglebandGeoTiff(geoTiffPath("ndvi-web-mercator.tif"), streaming = true).crs
 
       val correctCRS = CRS.fromString("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs")
 
@@ -329,7 +327,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read ny-state-plane.tif CS correctly") {
-      val crs = SinglebandGeoTiff.compressed(geoTiffPath("ny-state-plane.tif")).crs
+      val crs = SinglebandGeoTiff(geoTiffPath("ny-state-plane.tif"), streaming = true).crs
 
       val correctCRS = CRS.fromString("+proj=tmerc +lat_0=40 +lon_0=-74.33333333333333 +k=0.999966667 +x_0=152400.3048006096 +y_0=0 +datum=NAD27 +units=us-ft +no_defs ")
 
@@ -337,7 +335,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read alaska-polar-3572.tif CS correctly") {
-      val crs = SinglebandGeoTiff.compressed(geoTiffPath("alaska-polar-3572.tif")).crs
+      val crs = SinglebandGeoTiff(geoTiffPath("alaska-polar-3572.tif"), streaming =true).crs
 
       val correctCRS = CRS.fromString("+proj=laea +lat_0=90 +lon_0=-150 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs ")
       crs.toProj4String should equal(correctCRS.toProj4String)
@@ -350,7 +348,7 @@ class GeoTiffReaderSpec extends FunSpec
     val MeanEpsilon = 1e-8
 
     def testMinMaxAndMean(min: Double, max: Double, mean: Double, file: String) {
-      val SinglebandGeoTiff(tile, extent, _, _, _, _) = SinglebandGeoTiff.compressed(file)
+      val SinglebandGeoTiff(tile, extent, _, _, _, _) = SinglebandGeoTiff(file)
 
       tile.polygonalMax(extent, extent.toPolygon) should be (max)
       tile.polygonalMin(extent, extent.toPolygon) should be (min)
@@ -376,7 +374,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read GeoTiff without GeoKey Directory correctly") {
-      val SinglebandGeoTiff(tile, extent, crs, _, _, _) = SinglebandGeoTiff.compressed(geoTiffPath("no-geokey-dir.tif"))
+      val SinglebandGeoTiff(tile, extent, crs, _, _, _) = SinglebandGeoTiff(geoTiffPath("no-geokey-dir.tif"))
 
       crs should be (LatLng)
       extent should be (Extent(307485, 3911490, 332505, 3936510))
@@ -395,7 +393,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read GeoTiff with tags") {
-      val tags = SinglebandGeoTiff.compressed(geoTiffPath("tags.tif")).tags.headTags
+      val tags = SinglebandGeoTiff(geoTiffPath("tags.tif")).tags.headTags
 
       tags("TILE_COL") should be ("6")
       tags("units") should be ("kg m-2 s-1")
@@ -405,7 +403,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read GeoTiff with no extent data correctly") {
-      val Raster(tile, extent) = SinglebandGeoTiff.compressed(geoTiffPath("tags.tif")).raster
+      val Raster(tile, extent) = SinglebandGeoTiff(geoTiffPath("tags.tif")).raster
 
       extent should be (Extent(0, 0, tile.cols, tile.rows))
     }
@@ -446,7 +444,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
 
     it("should read GeoTiff with ZLIB compression and needs exact segment sizes") {
-      val geoTiff = SinglebandGeoTiff.compressed(geoTiffPath("nex-pr-tile.tif"))
+      val geoTiff = SinglebandGeoTiff(geoTiffPath("nex-pr-tile.tif"))
 
       val tile = geoTiff.tile
       cfor(0)(_ < tile.rows, _ + 1) { row =>
@@ -458,13 +456,13 @@ class GeoTiffReaderSpec extends FunSpec
 
     it("should read clipped GeoTiff with byte NODATA value") {
       // Conversions carried out for both of these; first for byte -> float, second for user defined no data to constant
-      val geoTiff = SinglebandGeoTiff.compressed(geoTiffPath("nodata-tag-byte.tif")).tile.convert(FloatConstantNoDataCellType)
-      val geoTiff2 = SinglebandGeoTiff.compressed(geoTiffPath("nodata-tag-float.tif")).tile.convert(FloatConstantNoDataCellType)
+      val geoTiff = SinglebandGeoTiff(geoTiffPath("nodata-tag-byte.tif")).tile.convert(FloatConstantNoDataCellType)
+      val geoTiff2 = SinglebandGeoTiff(geoTiffPath("nodata-tag-float.tif")).tile.convert(FloatConstantNoDataCellType)
       assertEqual(geoTiff.toArrayTile, geoTiff2)
     }
 
     it("should read NODATA string with length = 4") {
-      val geoTiff = SinglebandGeoTiff.compressed(s"$baseDataPath/sbn/SBN_inc_percap-nodata-clip.tif")
+      val geoTiff = SinglebandGeoTiff(s"$baseDataPath/sbn/SBN_inc_percap-nodata-clip.tif")
       geoTiff.tile.cellType should be (ByteConstantNoDataCellType)
     }
 
@@ -483,7 +481,7 @@ class GeoTiffReaderSpec extends FunSpec
 
 
     it("should read and convert color table") {
-      val geoTiff = SinglebandGeoTiff.compressed(geoTiffPath("colormap.tif"))
+      val geoTiff = SinglebandGeoTiff(geoTiffPath("colormap.tif"))
 
       geoTiff.options.colorMap should be ('defined)
 
@@ -509,7 +507,7 @@ class GeoTiffReaderSpec extends FunSpec
     val path = temp.getPath()
 
     it("must read a tif, change the pixel sample type, write it out, and then read the correct in") {
-      val gt = SinglebandGeoTiff.compressed(s"$baseDataPath/slope.tif")
+      val gt = SinglebandGeoTiff(s"$baseDataPath/slope.tif")
       var headTags = gt.tags.headTags
       assert(headTags(Tags.AREA_OR_POINT) == "AREA")
       headTags -= Tags.AREA_OR_POINT
@@ -518,20 +516,20 @@ class GeoTiffReaderSpec extends FunSpec
       val gt2 = gt.copy(tags = tags)
       writer.GeoTiffWriter.write(gt2, path)
       addToPurge(path)
-      val gt3 = SinglebandGeoTiff.compressed(path)
+      val gt3 = SinglebandGeoTiff(path)
 
       gt3.tags.headTags.get(Tags.AREA_OR_POINT) should be (Some("POINT"))
     }
 
     it("must read a tif, set a datetime, write it out, and then read the correct in") {
-      val gt = SinglebandGeoTiff.compressed(geoTiffPath("reproject/nlcd_tile_wsg84.tif"))
+      val gt = SinglebandGeoTiff(geoTiffPath("reproject/nlcd_tile_wsg84.tif"))
       var headTags = gt.tags.headTags
       headTags += ((Tags.TIFFTAG_DATETIME, "1988:02:18 13:59:59"))
       val tags = Tags(headTags, gt.tags.bandTags)
       val gt2 = gt.copy(tags = tags)
       writer.GeoTiffWriter.write(gt2, path)
       addToPurge(path)
-      val gt3 = SinglebandGeoTiff.compressed(path)
+      val gt3 = SinglebandGeoTiff(path)
       assert(gt3.crs == LatLng)
 
       gt3.tags.headTags.get(Tags.TIFFTAG_DATETIME) should be (Some("1988:02:18 13:59:59"))
@@ -549,7 +547,7 @@ class GeoTiffReaderSpec extends FunSpec
 
   describe("handling special CRS cases") {
     it("can handle an ESRI written GeoTiff in WebMercator") {
-      val tif = SinglebandGeoTiff.compressed(s"$baseDataPath/propval_bg_01_01.tif")
+      val tif = SinglebandGeoTiff(s"$baseDataPath/propval_bg_01_01.tif")
       tif.crs should be (WebMercator)
     }
   }
@@ -567,15 +565,15 @@ class PackBitsGeoTiffReaderSpec extends FunSpec
     }
 
     it("must read econic_packbits.tif and match uncompressed file") {
-      val actual = SinglebandGeoTiff.compressed(geoTiffPath("econic_packbits.tif")).tile
-      val expected = SinglebandGeoTiff.compressed(s"$baseDataPath/econic.tif").tile
+      val actual = SinglebandGeoTiff(geoTiffPath("econic_packbits.tif")).tile
+      val expected = SinglebandGeoTiff(s"$baseDataPath/econic.tif").tile
 
       assertEqual(actual, expected)
     }
 
     it("must read previously erroring packbits compression .tif and match uncompressed file") {
-      val expected = SinglebandGeoTiff.compressed(geoTiffPath("packbits-error-uncompressed.tif")).tile
-      val actual = SinglebandGeoTiff.compressed(geoTiffPath("packbits-error.tif")).tile
+      val expected = SinglebandGeoTiff(geoTiffPath("packbits-error-uncompressed.tif")).tile
+      val actual = SinglebandGeoTiff(geoTiffPath("packbits-error.tif")).tile
 
       assertEqual(actual, expected)
     }
@@ -587,7 +585,7 @@ class TiePointsTests extends FunSuite
     with GeoTiffTestUtils {
 
   test("Reads correct extent for tie points and PixelIsPoint") {
-    val actual = SinglebandGeoTiff.compressed(geoTiffPath("tie-points.tif")).extent
+    val actual = SinglebandGeoTiff(geoTiffPath("tie-points.tif")).extent
     // The expected Extent is read in from gdalinfo
     val expected = Extent( 0.5000000,   0.5000000,
       10.5000000,  10.5000000)

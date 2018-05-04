@@ -277,7 +277,7 @@ object COGLayerReader {
                 .flatten
                 .flatMap { case (spatialKey, overviewIndex, _, seq) =>
                   val key = baseKey.setComponent(spatialKey)
-                  val tiff = GeoTiffReader[V].read(uri, decompress = false, streaming = true).getOverview(overviewIndex)
+                  val tiff = GeoTiffReader[V].read(uri, streaming = true).getOverview(overviewIndex)
                   val map = seq.map { case (gb, sk) => gb -> key.setComponent(sk) }.toMap
 
                   tiff

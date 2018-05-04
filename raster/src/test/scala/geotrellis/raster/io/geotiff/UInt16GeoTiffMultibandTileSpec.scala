@@ -29,12 +29,12 @@ import geotrellis.raster.testkit._
 import org.scalatest._
 
 class UInt16GeoTiffMultibandTileSpec extends FunSpec
-    with Matchers
-    with BeforeAndAfterAll
-    with RasterMatchers
-    with GeoTiffTestUtils 
-    with TileBuilders {
-  def p(s: String, i: String): String = 
+  with Matchers
+  with BeforeAndAfterAll
+  with RasterMatchers
+  with GeoTiffTestUtils
+  with TileBuilders {
+  def p(s: String, i: String): String =
     geoTiffPath(s"3bands/uint16/3bands-${s}-${i}.tif")
 
   describe("UInt16GeoTiffMultibandTile") {
@@ -43,7 +43,7 @@ class UInt16GeoTiffMultibandTileSpec extends FunSpec
 
     it("should combine all bands with pixel interleave, striped") {
       val tile =
-        MultibandGeoTiff(p("striped", "pixel")).tile
+        MultibandGeoTiff(p("striped", "pixel")).tile.toArrayTile
 
       val actual = tile.combineDouble(_.sum)
       val expected = new UShortRawArrayTile(Array.ofDim[Short](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
@@ -53,7 +53,7 @@ class UInt16GeoTiffMultibandTileSpec extends FunSpec
 
     it("should combine all bands with pixel interleave, tiled") {
       val tile =
-        MultibandGeoTiff(p("tiled", "pixel")).tile
+        MultibandGeoTiff(p("tiled", "pixel")).tile.toArrayTile
 
       val actual = tile.combineDouble(_.sum)
       val expected = new UShortRawArrayTile(Array.ofDim[Short](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
@@ -63,7 +63,7 @@ class UInt16GeoTiffMultibandTileSpec extends FunSpec
 
     it("should combine all bands with band interleave, striped") {
       val tile =
-        MultibandGeoTiff(p("striped", "band")).tile
+        MultibandGeoTiff(p("striped", "band")).tile.toArrayTile
 
       val actual = tile.combineDouble(_.sum)
       val expected = new UShortRawArrayTile(Array.ofDim[Short](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)
@@ -73,7 +73,7 @@ class UInt16GeoTiffMultibandTileSpec extends FunSpec
 
     it("should combine all bands with band interleave, tiled") {
       val tile =
-        MultibandGeoTiff(p("tiled", "band")).tile
+        MultibandGeoTiff(p("tiled", "band")).tile.toArrayTile
 
       val actual = tile.combineDouble(_.sum)
       val expected = new UShortRawArrayTile(Array.ofDim[Short](tile.cols * tile.rows).fill(6), tile.cols, tile.rows)

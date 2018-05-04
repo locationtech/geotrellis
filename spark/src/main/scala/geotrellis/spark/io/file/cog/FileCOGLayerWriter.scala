@@ -84,7 +84,7 @@ class FileCOGLayerWriter(
               .foreach(samplesAccumulator.add)
 
           case Some(merge) if uriExists(path) =>
-            val old = GeoTiffReader[V].read(path, decompress = false, streaming = true)
+            val old = GeoTiffReader[V].read(path, streaming = true)
             val merged = merge(cog, old)
             merged.write(path, true)
             // collect VRT metadata
