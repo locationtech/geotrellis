@@ -82,7 +82,7 @@ class GeoTiffReaderSpec extends FunSpec
 
   }
 
-  ignore("reading compressed file must yield same image array as uncompressed file") {
+  describe("reading compressed file must yield same image array as uncompressed file") {
 
     it("must read econic_lzw.tif and match uncompressed file") {
       val decomp = SinglebandGeoTiff(geoTiffPath("econic_lzw.tif"))
@@ -131,7 +131,7 @@ class GeoTiffReaderSpec extends FunSpec
 
   }
 
-  ignore("reading bit rasters") {
+  describe("reading bit rasters") {
     it("should match bit tile the ArrayTile pulled out of the resulting GeoTiffTile") {
       val expected = SinglebandGeoTiff(geoTiffPath("uncompressed/tiled/bit.tif")).tile
       val actual = SinglebandGeoTiff(geoTiffPath("uncompressed/tiled/bit.tif")).tile.toArrayTile
@@ -255,7 +255,7 @@ class GeoTiffReaderSpec extends FunSpec
    The listgeo command sometimes drops precision compared to our generator,
    therefore we sometimes increase the epsilon double comparison value.
    */
-  ignore("reads GeoTiff CRS correctly") {
+  describe("reads GeoTiff CRS correctly") {
 
     it("should read slope.tif CS correctly") {
       val crs = SinglebandGeoTiff(s"$baseDataPath/slope.tif", streaming = true).crs
@@ -343,7 +343,7 @@ class GeoTiffReaderSpec extends FunSpec
 
   }
 
-  ignore("reads file data correctly") {
+  describe("reads file data correctly") {
 
     val MeanEpsilon = 1e-8
 
@@ -502,7 +502,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
   }
 
-  ignore("Reading and writing special metadata tags ") {
+  describe("Reading and writing special metadata tags ") {
     val temp = java.io.File.createTempFile("geotiff-writer", ".tif");
     val path = temp.getPath()
 
@@ -545,7 +545,7 @@ class GeoTiffReaderSpec extends FunSpec
     }
   }
 
-  ignore("handling special CRS cases") {
+  describe("handling special CRS cases") {
     it("can handle an ESRI written GeoTiff in WebMercator") {
       val tif = SinglebandGeoTiff(s"$baseDataPath/propval_bg_01_01.tif")
       tif.crs should be (WebMercator)
