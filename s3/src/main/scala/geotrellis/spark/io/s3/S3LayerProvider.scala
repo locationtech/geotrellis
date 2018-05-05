@@ -29,7 +29,11 @@ import java.net.URI
  */
 class S3LayerProvider extends AttributeStoreProvider
     with LayerReaderProvider with LayerWriterProvider with ValueReaderProvider with CollectionLayerReaderProvider {
-  def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "s3"
+
+  def canProcess(uri: URI): Boolean = uri.getScheme match {
+    case str: String => if (str.toLowerCase == "s3") true else false
+    case null => false
+  }
 
   def attributeStore(uri: URI): AttributeStore = {
     val s3Uri = new AmazonS3URI(uri)

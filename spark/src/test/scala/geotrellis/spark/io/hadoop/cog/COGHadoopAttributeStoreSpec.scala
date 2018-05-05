@@ -14,23 +14,16 @@
  * limitations under the License.
  */
 
-package geotrellis.vector
+package geotrellis.spark.io.hadoop.cog
 
-import geotrellis.vector.io.wkb.WKB
-import geotrellis.vector.io.wkt.WKT
+import geotrellis.spark._
+import geotrellis.spark.io.{LayerHeader, COGLayerType}
+import geotrellis.spark.io.cog._
+import geotrellis.spark.io.hadoop._
 
-package object io extends io.json.Implicits
-    with io.wkb.Implicits
-    with io.wkt.Implicits {
+import java.net.URI
 
-  /** Read any WKT or WKB and return the corresponding geometry */
-  def readWktOrWkb(s: String): Geometry = {
-    if (s.startsWith("\\x"))
-      WKB.read(s.drop(2))
-    else if (s.startsWith("00") || s.startsWith("01"))
-      WKB.read(s)
-    else
-      WKT.read(s)
-  }
+class COGHadoopAttributeStoreSpec extends COGAttributeStoreSpec {
+  lazy val attributeStore = HadoopAttributeStore(outputLocalPath)
+  lazy val header = HadoopLayerHeader("geotrellis.spark.SpatialKey", "geotrellis.raster.Tile", new URI(outputLocalPath), COGLayerType)
 }
-

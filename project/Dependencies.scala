@@ -17,7 +17,6 @@
 import sbt._
 
 object Dependencies {
-  val cats                = "org.typelevel"              %% "cats-core"                % "1.0.1"
   val typesafeConfig      = "com.typesafe"                %  "config"                  % "1.3.1"
   val logging             = "com.typesafe.scala-logging" %% "scala-logging"            % "3.5.0"
   val scalatest           = "org.scalatest"              %%  "scalatest"               % "3.0.4"
@@ -40,7 +39,11 @@ object Dependencies {
 
   val awsSdkS3            = "com.amazonaws"               % "aws-java-sdk-s3"          % "1.11.319"
 
-  val scalazStream        = "org.scalaz.stream"          %% "scalaz-stream"            % "0.8.6a"
+  val catsCore            = "org.typelevel"              %% "cats-core"                % "1.0.1"
+  val catsEffect          = "org.typelevel"              %% "cats-effect"              % "0.10.1"
+
+  val fs2Core             = "co.fs2"                     %% "fs2-core"                 % "0.10.3"
+  val fs2Io               = "co.fs2"                     %% "fs2-io"                   % "0.10.3"
 
   val sparkCore           = "org.apache.spark"           %% "spark-core"               % Version.spark
   val hadoopClient        = "org.apache.hadoop"           % "hadoop-client"            % Version.hadoop

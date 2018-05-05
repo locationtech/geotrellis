@@ -14,23 +14,20 @@
  * limitations under the License.
  */
 
-package geotrellis.vector
+package geotrellis.spark.io.s3.cog
 
-import geotrellis.vector.io.wkb.WKB
-import geotrellis.vector.io.wkt.WKT
+import geotrellis.spark._
+import geotrellis.spark.io._
+import geotrellis.spark.io.cog._
+import geotrellis.spark.io.s3._
+import geotrellis.spark.io.s3.testkit._
 
-package object io extends io.json.Implicits
-    with io.wkb.Implicits
-    with io.wkt.Implicits {
+class COGS3AttributeStoreSpec extends COGAttributeStoreSpec {
+  val bucket = "attribute-store-test-mock-bucket"
+  val prefix = "catalog"
 
-  /** Read any WKT or WKB and return the corresponding geometry */
-  def readWktOrWkb(s: String): Geometry = {
-    if (s.startsWith("\\x"))
-      WKB.read(s.drop(2))
-    else if (s.startsWith("00") || s.startsWith("01"))
-      WKB.read(s)
-    else
-      WKT.read(s)
+  lazy val header = S3LayerHeader("geotrellis.spark.SpatialKey", "geotrellis.raster.Tile", bucket, prefix, COGLayerType)
+  lazy val attributeStore: AttributeStore = new S3AttributeStore(bucket, prefix) {
+    override val s3Client = new MockS3Client()
   }
 }
-

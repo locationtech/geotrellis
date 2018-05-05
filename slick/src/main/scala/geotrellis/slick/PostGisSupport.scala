@@ -46,6 +46,7 @@ import java.sql.{PreparedStatement, ResultSet}
  *
  * based on [[package com.github.tminglei.slickpg.PgPostGISSupport]]
  */
+@deprecated("We no longer recommend the use of Slick for scala JDBC access: try Doobie instead", "2.0.0")
 trait PostGisSupport extends PgPostGISExtensions { driver: PostgresDriver =>
   import PostGisSupportUtils._
   import driver.api._

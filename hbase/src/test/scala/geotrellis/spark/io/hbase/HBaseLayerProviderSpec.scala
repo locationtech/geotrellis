@@ -43,4 +43,10 @@ class HBaseLayerProviderSpec extends FunSpec with HBaseTestEnvironment {
     assert(reader.isInstanceOf[HBaseValueReader])
   }
 
+  it("should not be able to process a URI without a scheme") {
+    val badURI = new java.net.URI("//localhost?master=localhost&attributes=attributes&layers=tiles")
+    val provider = new HBaseLayerProvider
+
+    provider.canProcess(badURI) should be (false)
+  }
 }

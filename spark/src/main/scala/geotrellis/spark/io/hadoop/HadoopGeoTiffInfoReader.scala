@@ -31,7 +31,6 @@ case class HadoopGeoTiffInfoReader(
   path: String,
   config: SerializableConfiguration,
   tiffExtensions: Seq[String] = HadoopGeoTiffRDD.Options.DEFAULT.tiffExtensions,
-  decompress: Boolean = false,
   streaming: Boolean = true
 ) extends GeoTiffInfoReader {
 
@@ -51,7 +50,7 @@ case class HadoopGeoTiffInfoReader(
     val ovrReader: Option[ByteReader] =
       if (HdfsUtils.pathExists(ovrPath, config.value)) Some(HdfsRangeReader(ovrPath, config.value)) else None
 
-    GeoTiffReader.readGeoTiffInfo(rr, decompress, streaming, true, ovrReader) 
+    GeoTiffReader.readGeoTiffInfo(rr, streaming, true, ovrReader)
   }
 
   def getGeoTiffTags(uri: String): TiffTags = {

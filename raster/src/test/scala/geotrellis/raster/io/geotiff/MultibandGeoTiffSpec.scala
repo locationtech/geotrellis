@@ -26,7 +26,10 @@ import org.scalatest._
 
 class MultibandGeoTiffSpec extends FunSpec with Matchers with RasterMatchers with GeoTiffTestUtils {
   describe("Building Overviews") {
-    val tiff = MultibandGeoTiff(geoTiffPath("overviews/multiband.tif"))
+    val tiff = {
+      val t = MultibandGeoTiff(geoTiffPath("overviews/multiband.tif"))
+      t.copy(tile = t.tile.toArrayTile)
+    }
     val ovr = tiff.buildOverview(NearestNeighbor, 3, 128)
 
     it("should reduce pixels by decimation factor") {

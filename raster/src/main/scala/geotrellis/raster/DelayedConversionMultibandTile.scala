@@ -326,4 +326,6 @@ class DelayedConversionMultibandTile(inner: MultibandTile, override val targetCe
     }
     result
   }
+
+  def toArrayTile: ArrayMultibandTile = inner.toArrayTile
 }

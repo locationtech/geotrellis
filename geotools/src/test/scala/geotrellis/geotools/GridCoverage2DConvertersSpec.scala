@@ -35,11 +35,15 @@ class GridCoverage2DConvertersSpec extends FunSpec with Matchers with GeoTiffTes
     def gridCoverage2D: GridCoverage2D =
       new GeoTiffReader(new java.io.File(path)).read(null)
 
-    def singlebandRaster: ProjectedRaster[Tile] =
-      SinglebandGeoTiff(path).projectedRaster
+    def singlebandRaster: ProjectedRaster[Tile] = {
+      val tiff = SinglebandGeoTiff(path)
+      tiff.projectedRaster.copy(raster = Raster(tiff.tile.toArrayTile, tiff.extent))
+    }
 
-    def multibandRaster: ProjectedRaster[MultibandTile] =
-      MultibandGeoTiff(path).projectedRaster
+    def multibandRaster: ProjectedRaster[MultibandTile] = {
+      val tiff = MultibandGeoTiff(path)
+      tiff.projectedRaster.copy(raster = Raster(tiff.tile.toArrayTile, tiff.extent))
+    }
   }
 
   val testFilesWithProjections: List[TestFile] =

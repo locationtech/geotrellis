@@ -43,4 +43,10 @@ class CassandraLayerProviderSpec extends FunSpec with CassandraTestEnvironment {
     assert(reader.isInstanceOf[CassandraValueReader])
   }
 
+  it("should not be able to process a URI without a scheme") {
+    val badURI = new java.net.URI("//127.0.0.1/geotrellis?attributes=attributes&layers=tiles")
+    val provider = new CassandraLayerProvider
+
+    provider.canProcess(badURI) should be (false)
+  }
 }

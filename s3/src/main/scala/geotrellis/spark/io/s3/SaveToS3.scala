@@ -20,19 +20,18 @@ import geotrellis.spark.io._
 import geotrellis.spark.render._
 import geotrellis.spark.{LayerId, SpatialKey}
 
+import com.amazonaws.services.s3.model.{ObjectMetadata, PutObjectRequest, PutObjectResult}
+import com.amazonaws.services.s3.model.AmazonS3Exception
+import org.apache.spark.rdd.RDD
+import cats.effect.IO
+import cats.syntax.apply._
+import com.typesafe.config.ConfigFactory
+
 import java.io.ByteArrayInputStream
 import java.util.concurrent.Executors
 import java.net.URI
 
-import com.amazonaws.services.s3.model.{PutObjectRequest, PutObjectResult, ObjectMetadata}
-import com.amazonaws.services.s3.model.AmazonS3Exception
-
-import org.apache.spark.rdd.RDD
-
-import scalaz.stream._
-import scalaz.concurrent.Task
-
-import com.typesafe.config.ConfigFactory
+import scala.concurrent.ExecutionContext
 
 object SaveToS3 {
   final val DefaultThreadCount = ConfigFactory.load().getThreads("geotrellis.s3.threads.rdd.write")
@@ -77,39 +76,32 @@ object SaveToS3 {
 
     rdd.foreachPartition { partition =>
       val s3Client = s3Maker()
-      val requests: Process[Task, PutObjectRequest] =
-        Process.unfold(partition) { iter =>
-          if (iter.hasNext) {
-            val (key, bytes) = iter.next()
+      val requests: fs2.Stream[IO, PutObjectRequest] =
+        fs2.Stream.fromIterator[IO, PutObjectRequest](
+          partition.map { case (key, bytes) =>
             val metadata = new ObjectMetadata()
             metadata.setContentLength(bytes.length)
             val is = new ByteArrayInputStream(bytes)
             val (bucket, path) = keyToPrefix(key)
-            val request = putObjectModifier(new PutObjectRequest(bucket, path, is, metadata))
-            Some(request, iter)
-          } else {
-            None
+            putObjectModifier(new PutObjectRequest(bucket, path, is, metadata))
           }
-        }
+        )
 
       val pool = Executors.newFixedThreadPool(threads)
+      implicit val ec = ExecutionContext.fromExecutor(pool)
 
       import geotrellis.spark.util.TaskUtils._
-      val write: PutObjectRequest => Process[Task, PutObjectResult] = { request =>
-        Process eval Task {
+      val write: PutObjectRequest => fs2.Stream[IO, PutObjectResult] = { request =>
+        fs2.Stream eval IO.shift(ec) *> IO {
           request.getInputStream.reset() // reset in case of retransmission to avoid 400 error
           s3Client.putObject(request)
-        }(pool).retryEBO {
+        }.retryEBO {
           case e: AmazonS3Exception if e.getStatusCode == 503 => true
           case _ => false
         }
       }
 
-      val results = nondeterminism.njoin(maxOpen = threads, maxQueued = threads) {
-        requests map write
-      }
-
-      results.run.unsafePerformSync
+      (requests map write).join(threads).compile.toVector.unsafeRunSync()
       pool.shutdown()
     }
   }

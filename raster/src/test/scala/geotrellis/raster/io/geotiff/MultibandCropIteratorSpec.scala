@@ -30,7 +30,10 @@ class MultibandCropIteratorSpec extends FunSpec
 
   describe("Doing a crop iteration on a MultibandGeoTiff") {
     val path = geoTiffPath("3bands/3bands-striped-band.tif")
-    val geoTiff = MultibandGeoTiff(path)
+    val geoTiff = {
+      val tiff = MultibandGeoTiff(path)
+      tiff.copy(tile = tiff.tile.toArrayTile)
+    }
     val cols = geoTiff.imageData.cols
     val rows = geoTiff.imageData.rows
 

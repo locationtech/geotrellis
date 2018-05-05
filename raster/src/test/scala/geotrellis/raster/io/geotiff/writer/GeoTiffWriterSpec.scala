@@ -165,7 +165,7 @@ class GeoTiffWriterSpec extends FunSpec
     }
 
     it ("should read write raster correctly") {
-      val geoTiff = SinglebandGeoTiff.compressed(geoTiffPath("econic_zlib_tiled_bandint_wm.tif"))
+      val geoTiff = SinglebandGeoTiff(geoTiffPath("econic_zlib_tiled_bandint_wm.tif"))
       val projectedRaster = geoTiff.projectedRaster
       val ProjectedRaster(Raster(tile, extent), crs) = projectedRaster.reproject(LatLng)
       val reprojGeoTiff = SinglebandGeoTiff(tile, extent, crs, geoTiff.tags, geoTiff.options)
@@ -204,7 +204,7 @@ class GeoTiffWriterSpec extends FunSpec
     it ("should read write multibandraster with compression correctly") {
       val geoTiff = {
         val gt = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif"))
-        MultibandGeoTiff(gt.raster, gt.crs, options = GeoTiffOptions(compression.DeflateCompression))
+        MultibandGeoTiff(Raster(gt.raster.tile.toArrayTile, gt.raster.extent), gt.crs, options = GeoTiffOptions(compression.DeflateCompression))
       }
 
       GeoTiffWriter.write(geoTiff, path)

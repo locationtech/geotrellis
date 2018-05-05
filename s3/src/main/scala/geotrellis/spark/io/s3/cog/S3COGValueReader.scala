@@ -44,7 +44,7 @@ class S3COGValueReader(
   ](layerId: LayerId): Reader[K, V] = {
     val header =
       try {
-        attributeStore.read[S3LayerHeader](LayerId(layerId.name, 0), COGAttributeStore.Fields.header)
+        attributeStore.readHeader[S3LayerHeader](LayerId(layerId.name, 0))
       } catch {
         case e: AttributeNotFoundError => throw new LayerNotFoundError(layerId).initCause(e)
       }

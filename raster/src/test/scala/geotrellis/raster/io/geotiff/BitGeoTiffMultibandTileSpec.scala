@@ -43,50 +43,6 @@ class BitGeoTiffMultibandTileSpec extends FunSpec
 
     it("should combine all bands with pixel interleave, striped") {
       val tile =
-        MultibandGeoTiff.compressed(p("striped", "pixel")).tile
-
-      val actual = tile.combine(_.sum % 2)
-      val expected = BitConstantTile(0, tile.cols, tile.rows)
-
-      assertEqual(actual, expected)
-    }
-
-    it("should combine all bands with pixel interleave, tiled") {
-      val tile =
-        MultibandGeoTiff.compressed(p("tiled", "pixel")).tile
-
-      val actual = tile.combine(_.sum % 2)
-      val expected = BitConstantTile(0, tile.cols, tile.rows)
-
-      assertEqual(actual, expected)
-    }
-
-    it("should combine all bands with band interleave, striped") {
-      val tile =
-        MultibandGeoTiff.compressed(p("striped", "band")).tile
-
-      val actual = tile.combine(_.sum % 2)
-      val expected = BitConstantTile(0, tile.cols, tile.rows)
-
-      assertEqual(actual, expected)
-    }
-
-    it("should combine all bands with band interleave, tiled") {
-      val tile =
-        MultibandGeoTiff.compressed(p("tiled", "band")).tile
-
-      val actual = tile.combine(_.sum % 2)
-      val expected = BitConstantTile(0, tile.cols, tile.rows)
-
-      assertEqual(actual, expected)
-    }
-
-  }
-
-  describe("BitGeoTiffMultibandTile, decompressed") {
-
-    it("should combine all bands with pixel interleave, striped") {
-      val tile =
         MultibandGeoTiff(p("striped", "pixel")).tile
 
       val actual = tile.combine(_.sum % 2)
@@ -118,6 +74,50 @@ class BitGeoTiffMultibandTileSpec extends FunSpec
     it("should combine all bands with band interleave, tiled") {
       val tile =
         MultibandGeoTiff(p("tiled", "band")).tile
+
+      val actual = tile.combine(_.sum % 2)
+      val expected = BitConstantTile(0, tile.cols, tile.rows)
+
+      assertEqual(actual, expected)
+    }
+
+  }
+
+  describe("BitGeoTiffMultibandTile, decompressed") {
+
+    it("should combine all bands with pixel interleave, striped") {
+      val tile =
+        MultibandGeoTiff(p("striped", "pixel")).tile.toArrayTile
+
+      val actual = tile.combine(_.sum % 2)
+      val expected = BitConstantTile(0, tile.cols, tile.rows)
+
+      assertEqual(actual, expected)
+    }
+
+    it("should combine all bands with pixel interleave, tiled") {
+      val tile =
+        MultibandGeoTiff(p("tiled", "pixel")).tile.toArrayTile
+
+      val actual = tile.combine(_.sum % 2)
+      val expected = BitConstantTile(0, tile.cols, tile.rows)
+
+      assertEqual(actual, expected)
+    }
+
+    it("should combine all bands with band interleave, striped") {
+      val tile =
+        MultibandGeoTiff(p("striped", "band")).tile.toArrayTile
+
+      val actual = tile.combine(_.sum % 2)
+      val expected = BitConstantTile(0, tile.cols, tile.rows)
+
+      assertEqual(actual, expected)
+    }
+
+    it("should combine all bands with band interleave, tiled") {
+      val tile =
+        MultibandGeoTiff(p("tiled", "band")).tile.toArrayTile
 
       val actual = tile.combine(_.sum % 2)
       val expected = BitConstantTile(0, tile.cols, tile.rows)

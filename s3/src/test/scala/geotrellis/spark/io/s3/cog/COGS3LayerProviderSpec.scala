@@ -38,4 +38,11 @@ class COGS3LayerProviderSpec extends FunSpec with TestEnvironment {
     val reader = COGValueReader(uri)
     assert(reader.isInstanceOf[S3COGValueReader])
   }
+
+  it("should not be able to process a URI without a scheme") {
+    val badURI = new java.net.URI("//fake-bucket/some-prefix")
+    val provider = new S3COGLayerProvider
+
+    provider.canProcess(badURI) should be (false)
+  }
 }

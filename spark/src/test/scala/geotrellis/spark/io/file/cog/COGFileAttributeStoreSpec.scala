@@ -14,24 +14,14 @@
  * limitations under the License.
  */
 
-package geotrellis
+package geotrellis.spark.io.file.cog
 
-import geotrellis.vector._
+import geotrellis.spark._
+import geotrellis.spark.io.{LayerHeader, COGLayerType}
+import geotrellis.spark.io.cog._
+import geotrellis.spark.io.file._
 
-/**
-  * Implicit conversion for geotrellis.vector.Geometry instances.
-  *
-  * @example {{{
-  * import geotrellis.vector._
-  * import geotrellis.slick._
-  *
-  * // create a web mercator projected point with the ExtendGeometry implicit class
-  * val projectedPoint = Point(1.0, 2.0).withSRID(3274)
-  * }}}
-  */
-package object slick {
-  implicit class ExtendGeometry[G <: Geometry](g: G) {
-    /** Upgrade Geometry to Projected[Geometry] */
-    def withSRID(srid: Int) = Projected(g, srid)
-  }
+class COGFileAttributeStoreSpec extends COGAttributeStoreSpec {
+  lazy val attributeStore = FileAttributeStore(outputLocalPath)
+  lazy val header = FileLayerHeader("geotrellis.spark.SpatialKey", "geotrellis.raster.Tile", outputLocalPath, COGLayerType)
 }
