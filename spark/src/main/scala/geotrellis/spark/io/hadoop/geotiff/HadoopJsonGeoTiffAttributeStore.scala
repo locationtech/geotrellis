@@ -28,8 +28,7 @@ object HadoopJsonGeoTiffAttributeStore {
   }
 
   def readDataAsTree(uri: URI, conf: Configuration): GeoTiffMetadataTree[GeoTiffMetadata] =
-    GeoTiffMetadataTree.fromGeoTiffMetadataList(readData(uri, conf))
-
+    GeoTiffMetadataTree.fromGeoTiffMetadataSeq(readData(uri, conf))
 
   def apply(uri: URI): JsonGeoTiffAttributeStore =
     JsonGeoTiffAttributeStore(uri, readDataAsTree(_, new Configuration))
