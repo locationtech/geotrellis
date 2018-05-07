@@ -51,6 +51,22 @@ case class Pyramid[
   def maxZoom = levels.keys.max
 
   def persist(storageLevel: StorageLevel) = levels.mapValues{ _.persist(storageLevel) }
+
+  def write(
+    layerName: String,
+    writer: LayerWriter[LayerId],
+    keyIndexMethod: KeyIndexMethod[K]
+  )(
+    implicit arcK: AvroRecordCodec[K],
+    jsfK: JsonFormat[K],
+    arcV: AvroRecordCodec[V],
+    jsfM: JsonFormat[M]
+  ) = {
+    for (z <- maxZoom to minZoom by -1) {
+      writer.write[K, V, M](LayerId(layerName, z), levels(z), keyIndexMethod)
+    }
+  }
+
 }
 
 object Pyramid extends LazyLogging {
@@ -65,7 +81,7 @@ object Pyramid extends LazyLogging {
     implicit def methodToOptions(m: ResampleMethod): Options = Options(resampleMethod = m)
   }
 
-  def read[
+  def fromLayerReader[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
     V <: CellGrid: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V]: AvroRecordCodec: ClassTag,
     M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]
@@ -76,57 +92,28 @@ object Pyramid extends LazyLogging {
     Pyramid[K, V, M](seq.toMap)
   }
 
-  def write[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
-    V <: CellGrid: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V]: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]
-  ](pyramid: Pyramid[K, V, M], layerName: String, writer: LayerWriter[LayerId], keyIndexMethod: KeyIndexMethod[K]) = {
-    for (z <- pyramid.maxZoom to pyramid.minZoom by -1) {
-      writer.write[K, V, M](LayerId(layerName, z), pyramid(z), keyIndexMethod)
-    }
-  }
-
-  def apply[
+  def fromLayerRdd[
     K: SpatialComponent: ClassTag,
     V <: CellGrid: ClassTag: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V],
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
   ](rdd: RDD[(K, V)] with Metadata[M],
-    startZoom: Int,
-    endZoom: Int,
-    options: Options
+    thisZoom: Option[Int] = None,
+    endZoom: Option[Int] = None,
+    resampleMethod: ResampleMethod = Average,
+    partitioner: Option[Partitioner] = None
   ): Pyramid[K, V, M] = {
-    Pyramid(levelStream(rdd, new LocalLayoutScheme, startZoom, endZoom, options).toMap)
-  }
-
-  def apply[
-    K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V],
-    M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
-  ](rdd: RDD[(K, V)] with Metadata[M],
-    startZoom: Int,
-    endZoom: Int
-  ): Pyramid[K, V, M] =
-    apply(rdd, startZoom, endZoom, Options.DEFAULT)
-
-  def apply[
-    K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V],
-    M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
-  ](rdd: RDD[(K, V)] with Metadata[M],
-    options: Options
-  ): Pyramid[K, V, M] = {
+    val opts = Options(resampleMethod, partitioner)
     val gridBounds = rdd.metadata.getComponent[Bounds[K]].asInstanceOf[KeyBounds[K]].toGridBounds
     val maxDim = math.max(gridBounds.width, gridBounds.height).toDouble
     val levels = math.ceil(math.log(maxDim)/math.log(2)).toInt
 
-    apply(rdd, 0, levels, options)
+    (thisZoom, endZoom) match {
+      case (None, None) => Pyramid(levelStream(rdd, new LocalLayoutScheme, levels, 0, opts).toMap)
+      case (Some(start), None) => Pyramid(levelStream(rdd, new LocalLayoutScheme, start, math.max(0, start - levels), opts).toMap)
+      case (None, Some(end)) => Pyramid(levelStream(rdd, new LocalLayoutScheme, end + levels, end, opts).toMap)
+      case (Some(start), Some(end)) => Pyramid(levelStream(rdd, new LocalLayoutScheme, start, end, opts).toMap)
+    }
   }
-
-  def apply[
-    K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V],
-    M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
-  ](rdd: RDD[(K, V)] with Metadata[M]): Pyramid[K, V, M] = apply(rdd, Options.DEFAULT)
 
   /** Resample base layer to generate the next level "up" in the pyramid.
     *
