@@ -18,22 +18,18 @@ package geotrellis.spark.io.s3
 
 import geotrellis.proj4._
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.spark._
-import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.spark.io.{GeoTiffInfoReader, RasterReader}
-import geotrellis.spark.io.s3.util.S3RangeReader
-import geotrellis.util.{LazyLogging, StreamingByteReader}
+import geotrellis.util.LazyLogging
 import geotrellis.vector._
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.storage.StorageLevel
 import com.amazonaws.services.s3.model._
+
 import java.net.URI
 import java.nio.ByteBuffer
-
-import com.typesafe.config.ConfigFactory
 
 /**
  * The S3GeoTiffRDD object allows for the creation of whole or windowed RDD[(K, V)]s from files on S3.
