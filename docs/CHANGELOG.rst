@@ -42,6 +42,7 @@ API Changes
   - **Change:** Refactored CassandraInstance, now accepts a getCluster function
   - **Change:** Use pureconfig to handle all work with configuration files
   - **Change:** Replace `geotrellis.util.Functor` with `cats.Functor`.
+  - **Remove:** ``LayerUpdater`` with its functionality covered by ``LayerWriter`` <https://github.com/locationtech/geotrellis/pull/2663>__ 
 
 - ``geotrellis.raster``
 
