@@ -82,7 +82,7 @@ object TileRDDReproject {
       metadata.bounds.toOption.map { case KeyBounds(s, e) =>
         KeyBounds(s.getComponent[SpatialKey], e.getComponent[SpatialKey])
       })
-    logger.info(s"$reprojectSummary")
+    logger.debug(s"$reprojectSummary")
 
     // First figure out where we're going through option yoga
     // You'll want to read [[ReprojectRasterExtent]] to grok this
