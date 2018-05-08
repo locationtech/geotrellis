@@ -119,27 +119,17 @@ object CassandraRDDWriter {
 
               def elaborateRow(row: (BigInt, Vector[(K,V)])): fs2.Stream[IO, (BigInt, Vector[(K,V)])] = {
                 fs2.Stream eval IO.shift(ec) *> IO ({
-                  val (key, kvs1) = row
-                  val kvs2 =
-                    if (mergeFunc.nonEmpty) {
-                      val oldRow = session.execute(readStatement.bind(key: BigInteger))
-                      if (oldRow.nonEmpty) {
-                        val bytes = oldRow.one().getBytes("value").array()
-                        AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
-                      } else Vector.empty
+                  val (key, current) = row
+                  val updated = LayerWriter.updateRecords(mergeFunc, current, existing = {
+                    val oldRow = session.execute(readStatement.bind(key: BigInteger))
+                    if (oldRow.nonEmpty) {
+                      val bytes = oldRow.one().getBytes("value").array()
+                      val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
+                      AvroEncoder.fromBinary(schema, bytes)(_recordCodec)
                     } else Vector.empty
-                  val kvs = mergeFunc match {
-                    case Some(fn) =>
-                      (kvs2 ++ kvs1)
-                        .groupBy({ case (k, v) => k })
-                        .map({ case (k, kvs) =>
-                          val vs = kvs.map({ case (_, v) => v })
-                          val v: V = vs.tail.foldLeft(vs.head)(fn)
-                          (k, v) })
-                        .toVector
-                    case None => kvs1
-                  }
-                  (key, kvs)
+                  })
+
+                  (key, updated)
                 })
               }
 
