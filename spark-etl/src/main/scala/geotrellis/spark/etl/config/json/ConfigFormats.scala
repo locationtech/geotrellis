@@ -21,7 +21,9 @@ import geotrellis.raster.{CellSize, CellType, TileLayout}
 import geotrellis.raster.io._
 import geotrellis.raster.resample._
 import geotrellis.spark.etl.config._
+import geotrellis.spark.io.cassandra.conf._
 import geotrellis.vector.Extent
+
 import org.apache.spark.storage.StorageLevel
 import spray.json._
 import spray.json.DefaultJsonProtocol._
@@ -126,9 +128,14 @@ trait ConfigFormats {
       }
   }
 
+  implicit val cassandraCollectionConfigFormat = jsonFormat1(CassandraCollectionConfig)
+  implicit val cassandraRDDConfigFormat        = jsonFormat2(CassandraRDDConfig)
+  implicit val cassandraThreadsConfigFormat    = jsonFormat2(CassandraThreadsConfig)
+  implicit val cassandraConfigFormat           = jsonFormat9(CassandraConfig.apply)
+
   implicit val accumuloProfileFormat  = jsonFormat7(AccumuloProfile)
   implicit val hbaseProfileFormat     = jsonFormat3(HBaseProfile)
-  implicit val cassandraProfileFormat = jsonFormat9(CassandraProfile)
+  implicit val cassandraProfileFormat = jsonFormat5(CassandraProfile)
   implicit val hadoopProfileFormat    = jsonFormat1(HadoopProfile)
   implicit val s3ProfileFormat        = jsonFormat3(S3Profile)
   implicit val ingestKeyIndexFormat   = jsonFormat4(IngestKeyIndexMethod)

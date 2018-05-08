@@ -23,12 +23,11 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.file.{FileAttributeStore, KeyPathGenerator}
 import geotrellis.util._
-
 import spray.json.JsonFormat
-import com.typesafe.config.ConfigFactory
-
 import java.net.URI
 import java.io.File
+
+import geotrellis.spark.io.file.conf.FileConfig
 
 import scala.reflect.ClassTag
 
@@ -65,7 +64,7 @@ class FileCOGCollectionLayerReader(
 }
 
 object FileCOGCollectionLayerReader {
-  val defaultThreadCount: Int = ConfigFactory.load().getThreads("geotrellis.file.threads.collection.read")
+  val defaultThreadCount: Int = FileConfig.threads.collection.readThreads
 
   def apply(attributeStore: AttributeStore, catalogPath: String): FileCOGCollectionLayerReader =
     new FileCOGCollectionLayerReader(attributeStore, catalogPath)

@@ -16,25 +16,23 @@
 
 package geotrellis.spark.io.s3
 
-import geotrellis.spark.io._
-import geotrellis.spark.render._
 import geotrellis.spark.{LayerId, SpatialKey}
+import geotrellis.spark.io.s3.conf.S3Config
 
 import com.amazonaws.services.s3.model.{ObjectMetadata, PutObjectRequest, PutObjectResult}
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.apache.spark.rdd.RDD
 import cats.effect.IO
 import cats.syntax.apply._
-import com.typesafe.config.ConfigFactory
+
+import scala.concurrent.ExecutionContext
 
 import java.io.ByteArrayInputStream
 import java.util.concurrent.Executors
 import java.net.URI
 
-import scala.concurrent.ExecutionContext
-
 object SaveToS3 {
-  final val DefaultThreadCount = ConfigFactory.load().getThreads("geotrellis.s3.threads.rdd.write")
+  final val defaultThreadCount = S3Config.threads.rdd.writeThreads
 
   /**
     * @param id           A Layer ID
@@ -64,7 +62,7 @@ object SaveToS3 {
     keyToUri: K => String,
     putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p },
     s3Maker: () => S3Client = () => S3Client.DEFAULT,
-    threads: Int = DefaultThreadCount
+    threads: Int = defaultThreadCount
   ): Unit = {
     val keyToPrefix: K => (String, String) = key => {
       val uri = new URI(keyToUri(key))

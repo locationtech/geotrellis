@@ -18,8 +18,8 @@ package geotrellis.spark
 
 import geotrellis.util._
 
+import scala.util.{Failure, Success, Try}
 import java.time.ZonedDateTime
-import scala.util.{Failure, Success}
 
 package object util {
   implicit class TryOption[T](option: Option[T]) {
@@ -32,4 +32,10 @@ package object util {
   implicit class withLayerIdUtilMethods(val self: LayerId) extends MethodExtensions[LayerId] {
     def createTemporaryId(): LayerId = self.copy(name = s"${self.name}-${ZonedDateTime.now.toInstant.toEpochMilli}")
   }
+
+  def threadsFromString(str: String): Int =
+    str match {
+      case "default" => Runtime.getRuntime.availableProcessors
+      case s         => Try(s.toInt).getOrElse(Runtime.getRuntime.availableProcessors)
+    }
 }

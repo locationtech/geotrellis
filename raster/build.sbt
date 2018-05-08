@@ -3,7 +3,7 @@ import Dependencies._
 name := "geotrellis-raster"
 
 libraryDependencies ++= Seq(
-  typesafeConfig,
+  pureconfig,
   jts,
   spire,
   monocleCore,

@@ -16,9 +16,9 @@
 
 package geotrellis.spark.io.hbase
 
-import com.typesafe.config.ConfigFactory
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.hbase.conf.HBaseConfig
 
 import org.apache.hadoop.hbase._
 import org.apache.hadoop.hbase.client._
@@ -30,7 +30,7 @@ import scala.collection.JavaConversions._
 
 object HBaseAttributeStore {
   def apply(instance: HBaseInstance): HBaseAttributeStore =
-    new HBaseAttributeStore(instance, ConfigFactory.load().getString("geotrellis.hbase.catalog"))
+    new HBaseAttributeStore(instance, HBaseConfig.catalog)
   def apply(instance: HBaseInstance, attributeTable: String): HBaseAttributeStore =
     new HBaseAttributeStore(instance, attributeTable)
 }

@@ -19,6 +19,7 @@ package geotrellis.spark.io.accumulo
 import geotrellis.spark.util._
 import geotrellis.spark.io._
 import geotrellis.spark.io.hadoop._
+import geotrellis.spark.io.accumulo.conf.AccumuloConfig
 
 import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.fs.Path
@@ -26,7 +27,6 @@ import org.apache.spark.rdd.RDD
 import org.apache.accumulo.core.data.{Key, Mutation, Value}
 import org.apache.accumulo.core.client.mapreduce.AccumuloFileOutputFormat
 import org.apache.accumulo.core.client.BatchWriterConfig
-import com.typesafe.config.ConfigFactory
 import cats.effect.IO
 import cats.syntax.apply._
 
@@ -35,7 +35,7 @@ import java.util.UUID
 import java.util.concurrent.Executors
 
 object AccumuloWriteStrategy {
-  val threads = ConfigFactory.load().getThreads("geotrellis.accumulo.threads.rdd.write")
+  val defaultThreadCount = AccumuloConfig.threads.rdd.writeThreads
 
   def DEFAULT = HdfsWriteStrategy("/geotrellis-ingest")
 }
@@ -110,8 +110,8 @@ object HdfsWriteStrategy {
  * @param config Configuration for the BatchWriters
  */
 case class SocketWriteStrategy(
-  @transient config: BatchWriterConfig = new BatchWriterConfig().setMaxMemory(128*1024*1024).setMaxWriteThreads(AccumuloWriteStrategy.threads),
-  threads: Int = AccumuloWriteStrategy.threads
+  @transient config: BatchWriterConfig = new BatchWriterConfig().setMaxMemory(128*1024*1024).setMaxWriteThreads(AccumuloWriteStrategy.defaultThreadCount),
+  threads: Int = AccumuloWriteStrategy.defaultThreadCount
 ) extends AccumuloWriteStrategy {
   val kwConfig = KryoWrapper(config) // BatchWriterConfig is not java serializable
 

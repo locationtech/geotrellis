@@ -20,6 +20,7 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.util.KryoWrapper
+import geotrellis.spark.io.s3.conf.S3Config
 
 import cats.effect.IO
 import cats.syntax.apply._
@@ -27,7 +28,6 @@ import com.amazonaws.services.s3.model.{AmazonS3Exception, ObjectMetadata, PutOb
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.rdd.RDD
-import com.typesafe.config.ConfigFactory
 
 import java.io.ByteArrayInputStream
 import java.util.concurrent.Executors
@@ -35,10 +35,8 @@ import java.util.concurrent.Executors
 import scala.concurrent.ExecutionContext
 import scala.reflect._
 
-
 trait S3RDDWriter {
-  final val DefaultThreadCount =
-    ConfigFactory.load().getThreads("geotrellis.s3.threads.rdd.write")
+  final val defaultThreadCount = S3Config.threads.rdd.writeThreads
 
   def getS3Client: () => S3Client
 
@@ -47,7 +45,7 @@ trait S3RDDWriter {
     bucket: String,
     keyPath: K => String,
     putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p },
-    threads: Int = DefaultThreadCount
+    threads: Int = defaultThreadCount
   ): Unit = {
     update(rdd, bucket, keyPath, None, None, putObjectModifier, threads)
   }
@@ -59,7 +57,7 @@ trait S3RDDWriter {
     writerSchema: Option[Schema],
     mergeFunc: Option[(V, V) => V],
     putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p },
-    threads: Int = DefaultThreadCount
+    threads: Int = defaultThreadCount
   ): Unit = {
     val codec  = KeyValueRecordCodec[K, V]
     val schema = codec.schema

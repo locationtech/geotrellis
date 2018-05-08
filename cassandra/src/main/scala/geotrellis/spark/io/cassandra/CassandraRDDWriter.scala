@@ -19,6 +19,7 @@ package geotrellis.spark.io.cassandra
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
+import geotrellis.spark.io.cassandra.conf.CassandraConfig
 import geotrellis.spark.LayerId
 import geotrellis.spark.util.KryoWrapper
 
@@ -31,18 +32,16 @@ import cats.effect.IO
 import cats.syntax.apply._
 import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
-import com.typesafe.config.ConfigFactory
 
 import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 import java.math.BigInteger
 
-import scala.collection.JavaConversions._
 import scala.concurrent.ExecutionContext
+import scala.collection.JavaConversions._
 
 object CassandraRDDWriter {
-  final val DefaultThreadCount =
-    ConfigFactory.load().getThreads("geotrellis.cassandra.threads.rdd.write")
+  final val defaultThreadCount = CassandraConfig.threads.rdd.writeThreads
 
   def write[K: AvroRecordCodec, V: AvroRecordCodec](
     rdd: RDD[(K, V)],
@@ -51,7 +50,7 @@ object CassandraRDDWriter {
     decomposeKey: K => BigInt,
     keyspace: String,
     table: String,
-    threads: Int = DefaultThreadCount
+    threads: Int = defaultThreadCount
   ): Unit = update(rdd, instance, layerId, decomposeKey, keyspace, table, None, None, threads)
 
   private[cassandra] def update[K: AvroRecordCodec, V: AvroRecordCodec](
@@ -63,7 +62,7 @@ object CassandraRDDWriter {
     table: String,
     writerSchema: Option[Schema],
     mergeFunc: Option[(V,V) => V],
-    threads: Int = DefaultThreadCount
+    threads: Int = defaultThreadCount
   ): Unit = {
     implicit val sc = raster.sparkContext
 

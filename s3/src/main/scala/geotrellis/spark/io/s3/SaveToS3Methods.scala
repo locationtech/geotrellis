@@ -31,6 +31,6 @@ class SaveToS3Methods[K](val self: RDD[(K, Array[Byte])]) extends MethodExtensio
     * @param putObjectModifier  Function that will be applied ot S3 PutObjectRequests, so that they can be modified (e.g. to change the ACL settings)
     * @param threads   Number of threads dedicated for the IO
     */
-  def saveToS3(keyToUri: K => String, putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p }, threads: Int = SaveToS3.DefaultThreadCount): Unit =
+  def saveToS3(keyToUri: K => String, putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p }, threads: Int = SaveToS3.defaultThreadCount): Unit =
     SaveToS3(self, keyToUri, putObjectModifier)
 }

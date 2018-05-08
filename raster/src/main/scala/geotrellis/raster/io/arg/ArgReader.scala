@@ -25,8 +25,6 @@ import com.typesafe.config.ConfigFactory
 
 import java.io.File
 import java.nio.ByteBuffer
-import java.lang.IllegalArgumentException
-
 
 object ArgReader {
   /** Reads an arg from the json metadata file. */

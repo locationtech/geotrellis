@@ -26,14 +26,6 @@ import scala.util.{Failure, Success, Try}
 package object io
     extends avro.codecs.Implicits
     with json.Implicits {
-  implicit class ThreadConfig(config: Config) {
-    def getThreads(path: String): Int =
-      config.getString(path) match {
-        case "default" => Runtime.getRuntime.availableProcessors
-        case s => s.toInt
-      }
-  }
-
   implicit class TryOption[T](option: Option[T]) {
     def toTry(exception: => Throwable): Try[T] =
       option match {

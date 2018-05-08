@@ -17,6 +17,7 @@
 package geotrellis.spark.io.accumulo
 
 import geotrellis.spark.io._
+import geotrellis.spark.io.accumulo.conf.AccumuloConfig
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.{Boundable, KeyBounds}
@@ -25,7 +26,6 @@ import org.apache.accumulo.core.data.{Range => AccumuloRange}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
-import com.typesafe.config.ConfigFactory
 import cats.effect.IO
 import cats.syntax.apply._
 
@@ -36,6 +36,8 @@ import scala.reflect.ClassTag
 import java.util.concurrent.Executors
 
 object AccumuloCollectionReader {
+  val defaultThreadCount: Int = AccumuloConfig.threads.collection.readThreads
+
   def read[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
     table: String,
     columnFamily: Text,
@@ -43,7 +45,7 @@ object AccumuloCollectionReader {
     decomposeBounds: KeyBounds[K] => Seq[AccumuloRange],
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
-    threads: Int = ConfigFactory.load().getThreads("geotrellis.accumulo.threads.collection.read")
+    threads: Int = defaultThreadCount
   )(implicit instance: AccumuloInstance): Seq[(K, V)] = {
     if(queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 

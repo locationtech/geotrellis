@@ -20,13 +20,13 @@ import geotrellis.spark.{Boundable, KeyBounds, LayerId}
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
+import geotrellis.spark.io.cassandra.conf.CassandraConfig
 import geotrellis.spark.io.index.MergeQueue
 import geotrellis.spark.util.KryoWrapper
 
 import org.apache.avro.Schema
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
-import com.typesafe.config.ConfigFactory
 
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
@@ -34,6 +34,8 @@ import scala.reflect.ClassTag
 import java.math.BigInteger
 
 object CassandraCollectionReader {
+  final val defaultThreadCount = CassandraConfig.threads.collection.readThreads
+
   def read[K: Boundable : AvroRecordCodec : ClassTag, V: AvroRecordCodec : ClassTag](
     instance: CassandraInstance,
     keyspace: String,
@@ -43,7 +45,7 @@ object CassandraCollectionReader {
     decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
-    threads: Int = ConfigFactory.load().getThreads("geotrellis.cassandra.threads.collection.read")
+    threads: Int = defaultThreadCount
   ): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
