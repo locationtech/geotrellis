@@ -102,7 +102,7 @@ trait LayerUpdateSpaceTimeTileSpec
         ), dummyTileLayerMetadata)
 
         intercept[LayerOutOfKeyBoundsError] {
-          updater.overwrite(layerId, update)
+          writer.overwrite(layerId, update)
         }
       }
 
@@ -134,7 +134,7 @@ trait LayerUpdateSpaceTimeTileSpec
         val updatedSample = new ContextRDD(usample, sample.metadata.copy(bounds = ukb))
 
         writer.write[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId, sample, updatedKeyIndex)
-        updater.overwrite[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId, updatedSample)
+        writer.overwrite[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId, updatedSample)
         reader.read[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId).count() shouldBe sample.count() * 2
       }
 

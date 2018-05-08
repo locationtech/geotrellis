@@ -50,7 +50,6 @@ class COGS3SpatialSpec
   lazy val creader = S3COGCollectionLayerReader(attributeStore)
   lazy val writer = S3COGLayerWriter(attributeStore)
   // TODO: implement and test all layer functions
-  // lazy val updater = new S3LayerUpdater(attributeStore, reader) { override def rddWriter = S3SpatialSpec.this.rddWriter }
   // lazy val deleter = new S3LayerDeleter(attributeStore) { override val getS3Client = () => new MockS3Client() }
   // lazy val copier  = new S3LayerCopier(attributeStore, bucket, prefix) { override val getS3Client = () => new MockS3Client }
   // lazy val reindexer = GenericLayerReindexer[S3LayerHeader](attributeStore, reader, writer, deleter, copier)

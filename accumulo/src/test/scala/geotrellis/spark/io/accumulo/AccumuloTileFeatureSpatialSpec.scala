@@ -39,7 +39,6 @@ class AccumuloTileFeatureSpatialSpec
   lazy val writer    = AccumuloLayerWriter(instance, "tiles", SocketWriteStrategy())
   lazy val deleter   = AccumuloLayerDeleter(instance)
   lazy val reindexer = AccumuloLayerReindexer(instance, SocketWriteStrategy())
-  lazy val updater   = AccumuloLayerUpdater(instance, SocketWriteStrategy())
   lazy val tiles     = AccumuloValueReader(instance)
   lazy val sample    = AllOnesTestFile
   lazy val copier    = AccumuloLayerCopier(instance, reader, writer)

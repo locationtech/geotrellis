@@ -81,7 +81,7 @@ object AccumuloRDDWriter {
             (key, new Value(AvroEncoder.toBinary(updated)(codec)))
           } ++ { // closing hook for when the iterator reaches the end
             scanner.close()
-            Iterator.empty()
+            Iterator.empty
           }
         }
 
