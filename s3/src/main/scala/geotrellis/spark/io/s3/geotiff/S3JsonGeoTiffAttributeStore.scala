@@ -36,7 +36,7 @@ object S3JsonGeoTiffAttributeStore {
   }
 
   def readDataAsTree(uri: URI, getS3Client: () => S3Client): GeoTiffMetadataTree[GeoTiffMetadata] =
-    GeoTiffMetadataTree.fromGeoTiffMetadataList(readData(uri, getS3Client))
+    GeoTiffMetadataTree.fromGeoTiffMetadataSeq(readData(uri, getS3Client))
 
   def apply(uri: URI): JsonGeoTiffAttributeStore =
     JsonGeoTiffAttributeStore(uri, readDataAsTree(_, () => S3Client.DEFAULT))

@@ -30,7 +30,10 @@ class SinglebandCropIteratorSpec extends FunSpec
 
   describe("Doing a crop iteration on a SinglebandGeoTiff") {
     val path = geoTiffPath("ls8_int32.tif")
-    val geoTiff = SinglebandGeoTiff(path)
+    val geoTiff = {
+      val tiff = SinglebandGeoTiff(path)
+      tiff.copy(tile = tiff.tile.toArrayTile)
+    }
     val cols = geoTiff.imageData.cols
     val rows = geoTiff.imageData.rows
 

@@ -52,9 +52,9 @@ class DelayedConversionTile(inner: Tile, targetCellType: CellType)
   def interpretAs(newCellType: CellType): Tile =
     withNoData(None).convert(newCellType)
 
-  override def toArray = inner.toArray
+  def toArray = inner.toArray
 
-  override def toArrayDouble = inner.toArrayDouble
+  def toArrayDouble = inner.toArrayDouble
 
   def toArrayTile: ArrayTile = mutable
 

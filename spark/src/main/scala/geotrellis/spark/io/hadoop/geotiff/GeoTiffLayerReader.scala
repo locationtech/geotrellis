@@ -53,7 +53,7 @@ trait GeoTiffLayerReader[M[T] <: Traversable[T]] {
 
     val readRecord: (GeoTiffMetadata => fs2.Stream[IO, Option[Raster[V]]]) = { md =>
       fs2.Stream eval IO.shift(ec) *> IO {
-        val tiff = GeoTiffReader[V].read(md.uri, decompress = false, streaming = true)
+        val tiff = GeoTiffReader[V].read(md.uri, streaming = true)
         val reprojectedKeyExtent = keyExtent.reproject(layoutScheme.crs, tiff.crs)
 
         // crop is unsafe, let's double check that we have a correct extent
@@ -92,7 +92,7 @@ trait GeoTiffLayerReader[M[T] <: Traversable[T]] {
 
     val readRecord: (GeoTiffMetadata => fs2.Stream[IO, Raster[V]]) = { md =>
       fs2.Stream eval IO.shift(ec) *> IO {
-        val tiff = GeoTiffReader[V].read(md.uri, decompress = false, streaming = true)
+        val tiff = GeoTiffReader[V].read(md.uri, streaming = true)
         tiff
           .crop(tiff.extent, layout.cellSize)
           .reproject(tiff.crs, layoutScheme.crs)

@@ -41,6 +41,11 @@ API Changes
   - **Change:** Refactored HBaseInstance, now accepts a plain Hadoop Configuration object
   - **Change:** Refactored CassandraInstance, now accepts a getCluster function
   - **Change:** Use pureconfig to handle all work with configuration files
+  - **Change:** Replace `geotrellis.util.Functor` with `cats.Functor`.
+
+- ``geotrellis.raster``
+
+  - **Change:** Removed ``decompress`` option from `GeoTiffReader` functions.
 
 Fixes
 ^^^^^
@@ -49,7 +54,7 @@ Fixes
 - `HilbertSpatialKeyIndex index offset <https://github.com/locationtech/geotrellis/pull/2586>`__
   - **Note:** Existing spatial layers using Hilbert index will need to be updated, see PR for directions.
 - Fixed ``CastException`` that sometimes occured when reading cached attributes.
-- Uncompressed GeoTiffMultibandTiles will now convert to the correct CellType
+- Uncompressed GeoTiffMultibandTiles will now convert to the correct CellType.
 - Calculating the Slope of a ``Tile`` when ``targetCell`` is ``Data`` will now produce the correct result.
 - Introduce new hooks into AttributeStore API to allow for better performance in certain queries against catalogs with many layers
 - ``GeoTiffReader`` can now read tiffs that are missing the ``NewSubfileType`` tag.
@@ -63,6 +68,7 @@ Fixes
 - ``HadoopAttributeStore.availableAttributes`` has been fixed so that it'll now list all attribute files.
 - Allow for simple features to be generated with a specified or random id with geometry stored in the standard
   field, "the_geom"
+- Use a new Amazon SDK API to remove deprecation warnings.
 
 1.2.1
 _____

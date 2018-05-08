@@ -31,8 +31,15 @@ import monocle.syntax.apply._
 
 object Reader {
   def singleBand(path: String, extent: Extent): (Raster[Tile], Raster[Tile]) = {
-    val expected = SinglebandGeoTiff(path, extent).raster
-    val actual = SinglebandGeoTiff(path).raster.crop(extent)
+    val expected = {
+      val tiff = SinglebandGeoTiff(path, extent)
+      tiff.copy(tile = tiff.tile.toArrayTile)
+    }.raster
+
+    val actual = {
+      val tiff = SinglebandGeoTiff(path)
+      tiff.copy(tile = tiff.tile.toArrayTile)
+    }.raster.crop(extent)
     (expected, actual)
   }
   def multiBand(path: String, extent: Extent): (Raster[MultibandTile], Raster[MultibandTile]) = {
