@@ -94,6 +94,57 @@ trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
     mutableTile
   }
 
+  def merge(other: Tile, baseCol: Int, baseRow: Int): Tile = {
+    val mutableTile = self.mutable
+    Seq(self, other).assertEqualDimensions()
+    self.cellType match {
+      case BitCellType =>
+        cfor(0)(_ < other.rows, _ + 1) { row =>
+          cfor(0)(_ < other.cols, _ + 1) { col =>
+            if (other.get(col, row) == 1) {
+              mutableTile.set(col + baseCol, row + baseRow, 1)
+            }
+          }
+        }
+      case ByteCellType | UByteCellType | ShortCellType | UShortCellType | IntCellType  =>
+        // Assume 0 as the transparent value
+        cfor(0)(_ < other.rows, _ + 1) { row =>
+          cfor(0)(_ < other.cols, _ + 1) { col =>
+            if (self.get(col + baseCol, row + baseRow) == 0) {
+              mutableTile.set(col + baseCol, row + baseRow, other.get(col, row))
+            }
+          }
+        }
+      case FloatCellType | DoubleCellType =>
+        // Assume 0.0 as the transparent value
+        cfor(0)(_ < other.rows, _ + 1) { row =>
+          cfor(0)(_ < other.cols, _ + 1) { col =>
+            if (self.getDouble(col + baseCol, row + baseRow) == 0.0) {
+              mutableTile.setDouble(col + baseCol, row + baseRow, other.getDouble(col, row))
+            }
+          }
+        }
+      case x if x.isFloatingPoint =>
+        cfor(0)(_ < other.rows, _ + 1) { row =>
+          cfor(0)(_ < other.cols, _ + 1) { col =>
+            if (isNoData(self.getDouble(col + baseCol, row + baseRow))) {
+              mutableTile.setDouble(col + baseCol, row + baseRow, other.getDouble(col, row))
+            }
+          }
+        }
+      case _ =>
+        cfor(0)(_ < other.rows, _ + 1) { row =>
+          cfor(0)(_ < other.cols, _ + 1) { col =>
+            if (isNoData(self.get(col + baseCol, row + baseRow))) {
+              mutableTile.set(col + baseCol, row + baseRow, other.get(col, row))
+            }
+          }
+        }
+    }
+
+    mutableTile
+  }
+
   /** Merges this tile with another tile, given the extents both tiles.
     *
     * This method will replace the values of these cells with a

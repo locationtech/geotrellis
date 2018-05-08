@@ -43,6 +43,19 @@ trait MultibandTileMergeMethods extends TileMergeMethods[MultibandTile] {
     ArrayMultibandTile(bands)
   }
 
+  def merge(other: MultibandTile, baseCol: Int, baseRow: Int): MultibandTile = {
+    val bands: Seq[Tile] =
+      for {
+        bandIndex <- 0 until self.bandCount
+      } yield {
+        val thisBand = self.band(bandIndex)
+        val thatBand = other.band(bandIndex)
+        thisBand.merge(thatBand, baseCol, baseRow)
+      }
+
+    ArrayMultibandTile(bands)
+  }
+
   /**
     * Merge this [[MultibandTile]] with the other one.  All places in
     * the present tile that contain NODATA and are in the intersection

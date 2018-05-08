@@ -17,6 +17,8 @@
 package geotrellis.spark.stitch
 
 import geotrellis.raster._
+import geotrellis.raster.prototype._
+import geotrellis.raster.merge._
 import geotrellis.raster.stitch.Stitcher
 import geotrellis.vector.Extent
 import geotrellis.spark._
@@ -39,4 +41,7 @@ abstract class SpatialTileCollectionStitchMethods[V <: CellGrid: Stitcher]
   extends MethodExtensions[Seq[(SpatialKey, V)]] {
 
   def stitch(): V = TileLayoutStitcher.stitch(self)._1
+
+  def genericStitch()(implicit proto: V => TilePrototypeMethods[V], merge: V => TileMergeMethods[V]): V =
+    TileLayoutStitcher.genericStitch(self)
 }
