@@ -63,7 +63,7 @@ class EtlSpec extends FunSuite {
       crs = Some("EPSG:3857"),
       resolutionThreshold = Some(0.1),
       cellSize = Some(CellSize(256.2, 256.1)),
-      cellType = Some(CellType.fromString("int8")),
+      cellType = Some(CellType.fromName("int8")),
       encoding = Some("geotiff"),
       breaks = Some("0:ffffe5ff;0.1:f7fcb9ff;0.2:d9f0a3ff;0.3:addd8eff;0.4:78c679ff;0.5:41ab5dff;0.6:238443ff;0.7:006837ff;1:004529ff"),
       maxZoom = Some(13)
