@@ -92,7 +92,7 @@ trait LayerWriter[ID] {
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
     V: AvroRecordCodec: ClassTag,
     M: JsonFormat: Component[?, Bounds[K]]: Mergable
-  ](id: ID, rdd: RDD[(K, V)] with Metadata[M], mergeFunc: (V, V) => V): Unit
+  ](id: ID, rdd: RDD[(K, V)] with Metadata[M], mergeFunc: (V, V) => V = { (existing: V, updating: V) => updating }): Unit
 
   /** Update persisted layer without checking for possible.
     *
