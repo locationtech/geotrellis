@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.hbase
 
+import geotrellis.spark.io.LayerWriter
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.LayerId
@@ -83,38 +84,25 @@ object HBaseRDDWriter {
 
             partition.foreach { recs =>
               val id = recs._1
-              val kvs1 = recs._2.toVector
-              val kvs2: Vector[(K,V)] =
-                if (mergeFunc.isDefined) {
-                  val scan = new Scan()
-                  scan.addFamily(tilesCF)
-                  scan.setFilter(
-                    new FilterList(
-                      new PrefixFilter(HBaseRDDWriter.layerIdString(layerId)),
-                      new RowFilter(CompareOp.EQUAL, new BinaryComparator(HBaseKeyEncoder.encode(layerId, id)))
-                    )
-                  )
-                  val scanner = tableConnection.getScanner(scan)
-                  val results: Vector[(K,V)] = scanner.iterator.asScala.toVector.flatMap{ result =>
-                    val bytes = result.getValue(tilesCF, "")
-                    AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
-                  }
-                  scanner.close()
-                  results
-                } else Vector.empty
-              val kvs: Vector[(K, V)] = mergeFunc match {
-                case Some(fn) =>
-                  (kvs2 ++ kvs1)
-                    .groupBy(_._1)
-                    .map({ case (k, kvs) =>
-                           val vs = kvs.map(_._2)
-                           val v: V = vs.tail.foldLeft(vs.head)(fn)
-                           (k, v)
-                         })
-                    .toVector
-                case None => kvs1
-              }
-              val bytes = AvroEncoder.toBinary(kvs)(codec)
+              val current = recs._2.toVector
+              val updated = LayerWriter.updateRecords(mergeFunc, current, existing = {
+                val scan = new Scan()
+                scan.addFamily(tilesCF)
+                val filter = new FilterList(
+                  new PrefixFilter(HBaseRDDWriter.layerIdString(layerId)),
+                  new RowFilter(CompareOp.EQUAL, new BinaryComparator(HBaseKeyEncoder.encode(layerId, id))))
+                scan.setFilter(filter)
+                val scanner = tableConnection.getScanner(scan)
+                val results: Vector[(K,V)] = scanner.iterator.asScala.toVector.flatMap{ result =>
+                  val bytes = result.getValue(tilesCF, "")
+                  val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
+                  AvroEncoder.fromBinary(schema, bytes)(_recordCodec)
+                }
+                scanner.close()
+                results
+              })
+              
+              val bytes = AvroEncoder.toBinary(updated)(codec)
               val put = new Put(HBaseKeyEncoder.encode(layerId, id))
               put.addColumn(tilesCF, "", System.currentTimeMillis(), bytes)
               mutator.mutate(put)

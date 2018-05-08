@@ -70,7 +70,7 @@ class FileLayerWriter(
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
-      mergeFunc: (V, V) => V
+    mergeFunc: (V, V) => V
   ): Unit = {
     update(id, rdd, Some(mergeFunc))
   }

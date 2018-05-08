@@ -93,29 +93,16 @@ trait S3RDDWriter {
 
         def elaborateRow(row: (String, Vector[(K,V)])): fs2.Stream[IO, (String, Vector[(K,V)])] = {
           fs2.Stream eval IO.shift(ec) *> IO ({
-            val (key, kvs1) = row
-            val kvs2: Vector[(K,V)] =
-              if (mergeFunc.nonEmpty) {
-                try {
-                  val bytes = IOUtils.toByteArray(s3client.getObject(bucket, key).getObjectContent)
-                  AvroEncoder.fromBinary(schema, bytes)(_recordCodec)
-                } catch {
-                  case e: AmazonS3Exception if e.getStatusCode == 404 => Vector.empty
-                }
-              } else Vector.empty
-            val kvs =
-              mergeFunc match {
-                case Some(fn) =>
-                  (kvs2 ++ kvs1)
-                    .groupBy({ case (k, _) => k })
-                    .map({ case (k, kvs) =>
-                      val vs = kvs.map({ case (_, v) => v })
-                      val v: V = vs.tail.foldLeft(vs.head)(fn)
-                      (k, v) })
-                    .toVector
-                case None => kvs1
+            val (key, current) = row
+            val updated = LayerWriter.updateRecords(mergeFunc, current, existing = {
+              try {
+                val bytes = IOUtils.toByteArray(s3client.getObject(bucket, key).getObjectContent)
+                AvroEncoder.fromBinary(schema, bytes)(_recordCodec)
+              } catch {
+                case e: AmazonS3Exception if e.getStatusCode == 404 => Vector.empty
               }
-            (key, kvs)
+            })
+            (key, updated)
           })
         }
 

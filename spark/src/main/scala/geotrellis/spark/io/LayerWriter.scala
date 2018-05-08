@@ -20,14 +20,11 @@ import geotrellis.spark._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.index._
-import geotrellis.spark.io.json._
 import geotrellis.spark.merge._
 import geotrellis.util._
 
 import org.apache.avro._
-import org.apache.spark.rdd._
 import org.apache.spark.rdd.RDD
-import org.apache.spark.SparkContext
 
 import spray.json._
 
@@ -35,7 +32,6 @@ import scala.reflect.ClassTag
 
 import java.util.ServiceLoader
 import java.net.URI
-
 
 trait LayerWriter[ID] {
   val attributeStore: AttributeStore
@@ -214,4 +210,21 @@ object LayerWriter extends LazyLogging {
   def apply(uri: String): LayerWriter[LayerId] =
     apply(new URI(uri))
 
+  private[geotrellis]
+  def updateRecords[K, V](mergeFunc: Option[(V, V) => V], updating: Vector[(K, V)], existing: => Vector[(K, V)]): Vector[(K, V)] = {
+    mergeFunc match {
+      case None =>
+        updating
+      case Some(_) if existing.isEmpty =>
+        updating
+      case Some(fn) =>
+        (existing ++ updating)
+          .groupBy(_._1)
+          .mapValues { row =>
+            val vs = row.map(_._2)
+            vs.foldLeft(vs.head)(fn)
+          }
+          .toVector
+    }
+  }
 }
