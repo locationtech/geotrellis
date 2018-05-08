@@ -169,7 +169,7 @@ but when we read or update, we don't:
 
     S3LayerReader.read[K, V, M]: LayerId => RDD[(K, V)] with Metadata[M]
 
-    S3LayerUpdater.update[K, V, M]: (LayerId, RDD[(K, V)] with Metadata[M]) => Unit
+    S3LayerWriter.update[K, V, M]: (LayerId, RDD[(K, V)] with Metadata[M]) => Unit
 
 Luckily for the end user of GeoTrellis, this means they don't need to
 keep track of which ``KeyIndex`` subclass they used when they initially

@@ -53,7 +53,6 @@ abstract class COGPersistenceSpec[
   // type TestMover = LayerMover[LayerId]
   // type TestReindexer = LayerReindexer[LayerId]
   type TestTileReader = COGValueReader[LayerId]
-  // type TestUpdater = LayerUpdater[LayerId]
   type TestCollectionReader = COGCollectionLayerReader[LayerId]
 
   def sample: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]

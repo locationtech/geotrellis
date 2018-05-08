@@ -41,7 +41,6 @@ class COGHadoopSpaceTimeSpec
   // lazy val copier = HadoopLayerCopier(outputLocal)
   // lazy val mover  = HadoopLayerMover(outputLocal)
   // lazy val reindexer = HadoopLayerReindexer(outputLocal)
-  // lazy val updater = HadoopLayerUpdater(outputLocal)
   lazy val tiles = HadoopCOGValueReader(outputLocal)
   lazy val sample = CoordinateSpaceTime
 }

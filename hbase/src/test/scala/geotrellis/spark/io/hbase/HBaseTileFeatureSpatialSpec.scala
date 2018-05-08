@@ -45,7 +45,6 @@ class HBaseTileFeatureSpatialSpec
   lazy val creader   = HBaseCollectionLayerReader(attributeStore)
   lazy val writer    = HBaseLayerWriter(attributeStore, "tiles")
   lazy val deleter   = HBaseLayerDeleter(attributeStore)
-  lazy val updater   = HBaseLayerUpdater(attributeStore)
   lazy val tiles     = HBaseValueReader(attributeStore)
   lazy val sample    = AllOnesTestFile
   lazy val copier    = HBaseLayerCopier(attributeStore, reader, writer)
