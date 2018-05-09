@@ -27,7 +27,7 @@ import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
 
-import scala.collection.mutable.{Map => MuMap}
+import scala.collection.mutable
 
 object TileLayoutStitcher {
   /**
@@ -65,8 +65,8 @@ object TileLayoutStitcher {
   ](tiles: Traversable[(Product2[Int, Int], V)]) = {
     assert(tiles.size > 0, "Cannot stitch empty collection")
 
-    val colWidths = MuMap.empty[Int, Int]
-    val rowHeights = MuMap.empty[Int, Int]
+    val colWidths = mutable.Map.empty[Int, Int]
+    val rowHeights = mutable.Map.empty[Int, Int]
     tiles.foreach{ case (key, tile) =>
       val curWidth = colWidths.getOrElseUpdate(key._1, tile.cols)
       assert(curWidth == tile.cols, "Tiles in a layout column must have the same width")
