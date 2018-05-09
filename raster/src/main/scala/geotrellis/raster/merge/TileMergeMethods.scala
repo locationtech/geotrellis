@@ -35,7 +35,7 @@ trait TileMergeMethods[T] extends MethodExtensions[T] {
     * @param   other        The other Tile
     * @return               A new Tile, the result of the merge
     */
-  def merge(other: T): T
+  def merge(other: T): T = merge(other, 0, 0)
 
   /**
     * Merge this [[Tile]] with the other.  Places the content of the (i, j)th pixel

@@ -26,23 +26,6 @@ import geotrellis.vector.Extent
   */
 trait MultibandTileMergeMethods extends TileMergeMethods[MultibandTile] {
 
-  /**
-    * Merge the respective bands of this MultibandTile and the other
-    * one.
-    */
-  def merge(other: MultibandTile): MultibandTile = {
-    val bands: Seq[Tile] =
-      for {
-        bandIndex <- 0 until self.bandCount
-      } yield {
-        val thisBand = self.band(bandIndex)
-        val thatBand = other.band(bandIndex)
-        thisBand.merge(thatBand)
-      }
-
-    ArrayMultibandTile(bands)
-  }
-
   def merge(other: MultibandTile, baseCol: Int, baseRow: Int): MultibandTile = {
     val bands: Seq[Tile] =
       for {

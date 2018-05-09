@@ -25,9 +25,6 @@ class TileFeatureMergeMethods[
   T <: CellGrid : (? => TileMergeMethods[T]),
   D : Semigroup
 ](val self: TileFeature[T, D]) extends TileMergeMethods[TileFeature[T, D]] {
-  def merge(other: TileFeature[T, D]): TileFeature[T, D] =
-    TileFeature(self.tile.merge(other.tile), Semigroup[D].combine(self.data, other.data))
-
   def merge(other: TileFeature[T, D], baseCol: Int, baseRow: Int): TileFeature[T, D] =
     TileFeature(self.tile.merge(other.tile, baseCol, baseRow), Semigroup[D].combine(self.data, other.data))
 
