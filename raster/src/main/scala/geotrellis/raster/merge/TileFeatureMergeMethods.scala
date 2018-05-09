@@ -28,6 +28,9 @@ class TileFeatureMergeMethods[
   def merge(other: TileFeature[T, D]): TileFeature[T, D] =
     TileFeature(self.tile.merge(other.tile), Semigroup[D].combine(self.data, other.data))
 
+  def merge(other: TileFeature[T, D], baseCol: Int, baseRow: Int): TileFeature[T, D] =
+    TileFeature(self.tile.merge(other.tile, baseCol, baseRow), Semigroup[D].combine(self.data, other.data))
+
   def merge(extent: Extent, otherExtent: Extent, other: TileFeature[T, D], method: ResampleMethod): TileFeature[T, D] =
     TileFeature(self.tile.merge(extent, otherExtent, other.tile, method), Semigroup[D].combine(self.data, other.data))
 }
