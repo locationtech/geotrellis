@@ -42,6 +42,8 @@ API Changes
   - **Change:** Refactored CassandraInstance, now accepts a getCluster function
   - **Change:** Use pureconfig to handle all work with configuration files
   - **Change:** Replace `geotrellis.util.Functor` with `cats.Functor`.
+  - **New:** Added `genericStitch()` method to `geotrellis.spark.stitch.StitchRDDMethods` allowing `RDD[(K, V)]` to be
+    stitched when not all tiles are of the same dimension.
 
 - ``geotrellis.raster``
 
