@@ -60,29 +60,6 @@ object RasterReader {
     }
   }
 
-  /** List all pixel windows that cover a grid of given size */
-  @deprecated("use GeoTiffSegmentLayout.listWindows instead", "1.2")
-  def listWindows(cols: Int, rows: Int, maxTileSize: Option[Int]): Array[GridBounds] = {
-    val result = scala.collection.mutable.ArrayBuffer[GridBounds]()
-    maxTileSize match {
-      case Some(tileSize) =>
-        cfor(0)(_ < cols, _ + tileSize) { col =>
-          cfor(0)(_ < rows, _ + tileSize) { row =>
-            result +=
-              GridBounds(
-                col,
-                row,
-                math.min(col + tileSize - 1, cols - 1),
-                math.min(row + tileSize - 1, rows - 1)
-              )
-          }
-        }
-      case None =>
-        result += GridBounds(0, 0, cols - 1, rows - 1)
-    }
-    result.toArray
-  }
-
   implicit def singlebandGeoTiffReader = new RasterReader[Options, (ProjectedExtent, Tile)] {
     def readFully(byteReader: ByteReader, options: Options) = {
       val geotiff = SinglebandGeoTiff(byteReader)
