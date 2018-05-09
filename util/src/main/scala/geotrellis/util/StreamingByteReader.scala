@@ -104,9 +104,9 @@ class StreamingByteReader(rangeReader: RangeReader, chunkSize: Int = 45876) exte
 
   /** Ensure we can read given number of bytes from current filePosition */
   private def ensureChunk(length: Int): Unit = {
-    val trimmed = math.min(length, (rangeReader.totalLength - filePosition).toInt)
+    val trimmed: Long = math.min(length.toLong, rangeReader.totalLength - filePosition)
     if (!chunkRange.contains(filePosition) || !chunkRange.contains(filePosition + trimmed - 1)) {
-      val len = math.min(math.max(length, chunkSize), (rangeReader.totalLength - filePosition).toInt)
+      val len: Long = math.min(math.max(length, chunkSize), rangeReader.totalLength - filePosition)
       readChunk(filePosition to (filePosition + len - 1))
     }
 
