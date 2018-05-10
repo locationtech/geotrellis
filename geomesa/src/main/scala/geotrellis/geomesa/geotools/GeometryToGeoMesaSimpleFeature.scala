@@ -17,7 +17,6 @@
 package geotrellis.geomesa.geotools
 
 import geotrellis.proj4.{CRS => GCRS}
-import geotrellis.spark.util.cache.LRUCache
 import geotrellis.util.annotations.experimental
 import geotrellis.vector.{Geometry, Line, MultiLine, MultiPoint, MultiPolygon, Point, Polygon}
 
