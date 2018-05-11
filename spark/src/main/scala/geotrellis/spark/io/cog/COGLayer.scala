@@ -41,10 +41,9 @@ object COGLayer {
     *
     * @param rdd             Layer layer, at highest resolution
     * @param baseZoom        Zoom level of the base layer, assumes [[ZoomedLayoutScheme]]
-    * @param compression     Compression method for GeoTiff tiles
-    * @param maxTileSize     The maximum tile size in pixels for any one COG file for this layer.
-    *                        For instance, if 1024, no COG in the layer will have a greater width or height than 1024.
     * @param minZoom         Zoom level at which to stop the pyramiding.
+    * @param options         [[COGLayerWriter.Options]] that contains information on the maxTileSize,
+    *                        resampleMethod, and compression of the written layer.
     */
   def fromLayerRDD[
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,
@@ -52,11 +51,11 @@ object COGLayer {
   ](
      rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
      baseZoom: Int,
-     compression: Compression = Deflate,
-     maxTileSize: Int = 4096,
-     minZoom: Option[Int] = None
+     minZoom: Option[Int] = None,
+     options: COGLayerWriter.Options = COGLayerWriter.Options.DEFAULT
    ): COGLayer[K, V] = {
     // TODO: Clean up conditional checks, figure out how to bake into type system, or report errors better.
+
     if(minZoom.getOrElse(Double.NaN) != baseZoom.toDouble) {
       if(rdd.metadata.layout.tileCols != rdd.metadata.layout.tileRows) {
         sys.error("Cannot create Pyramided COG layer for non-square tiles.")
@@ -66,6 +65,8 @@ object COGLayer {
         sys.error("Cannot create Pyramided COG layer for tile sizes that are not power-of-two.")
       }
     }
+
+    val compression = options.compression
 
     val layoutScheme =
       ZoomedLayoutScheme(rdd.metadata.crs, rdd.metadata.layout.tileCols)
@@ -89,8 +90,10 @@ object COGLayer {
         layoutScheme,
         baseZoom,
         minZoom.getOrElse(0),
-        maxTileSize
+        options.maxTileSize
       )
+
+    val pyramidOptions = Pyramid.Options(resampleMethod = options.resampleMethod)
 
     val layers: Map[ZoomRange, RDD[(K, GeoTiff[V])]] =
       cogLayerMetadata.zoomRanges.
@@ -106,7 +109,7 @@ object COGLayer {
 
             val tmd: TileLayerMetadata[K] = cogLayerMetadata.tileLayerMetadata(range.maxZoom + 1)
             val upsampledPreviousLayer =
-              Pyramid.up(ContextRDD(previousLayer, tmd), layoutScheme, range.maxZoom + 1)._2
+              Pyramid.up(ContextRDD(previousLayer, tmd), layoutScheme, range.maxZoom + 1, pyramidOptions)._2
 
             val rzz = generateGeoTiffRDD(upsampledPreviousLayer, range, layoutScheme, cogLayerMetadata.cellType, compression)
 

@@ -23,9 +23,9 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.s3._
+import geotrellis.spark.io.s3.conf.S3Config
 import geotrellis.util._
 
-import com.typesafe.config.ConfigFactory
 import spray.json.JsonFormat
 
 import java.net.URI
@@ -51,7 +51,7 @@ class S3COGCollectionLayerReader(
   ](id: LayerId, rasterQuery: LayerQuery[K, TileLayerMetadata[K]]) = {
     val header =
       try {
-        attributeStore.read[S3LayerHeader](LayerId(id.name, 0), COGAttributeStore.Fields.header)
+        attributeStore.readHeader[S3LayerHeader](LayerId(id.name, 0))
       } catch {
         // to follow GeoTrellis Layer Readers logic
         case e: AttributeNotFoundError => throw new LayerNotFoundError(id).initCause(e)
@@ -78,7 +78,7 @@ class S3COGCollectionLayerReader(
 }
 
 object S3COGCollectionLayerReader {
-  lazy val defaultThreadCount: Int = ConfigFactory.load().getThreads("geotrellis.s3.threads.collection.read")
+  lazy val defaultThreadCount: Int = S3Config.threads.collection.readThreads
 
   def apply(attributeStore: S3AttributeStore): S3COGCollectionLayerReader =
     new S3COGCollectionLayerReader(

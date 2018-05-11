@@ -62,22 +62,20 @@ trait LayerUpdateSpaceTimeTileSpec
 
     describe(s"updating for $keyIndexMethodName") {
       it("should update a layer") {
-        updater.update(layerId, sample)
+        writer.update(layerId, sample)
       }
 
       it("should overwrite a layer") {
-        updater.overwrite(layerId, sample)
+        writer.overwrite(layerId, sample)
       }
 
       it("should not update a layer (empty set)") {
-        intercept[EmptyBoundsError] {
-          updater.update(layerId, new ContextRDD[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](sc.emptyRDD[(SpaceTimeKey, Tile)], emptyTileLayerMetadata))
-        }
+        // expect log.warn and no exception
+        writer.update(layerId, new ContextRDD[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](sc.emptyRDD[(SpaceTimeKey, Tile)], emptyTileLayerMetadata))
       }
 
       it("should silently not overwrite a layer (empty set)") {
-        updater.overwrite(layerId, new ContextRDD[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](sc.emptyRDD[(SpaceTimeKey, Tile)], emptyTileLayerMetadata))
-
+        writer.overwrite(layerId, new ContextRDD[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](sc.emptyRDD[(SpaceTimeKey, Tile)], emptyTileLayerMetadata))
       }
 
       it("should not update a layer (keys out of bounds)") {
@@ -90,7 +88,7 @@ trait LayerUpdateSpaceTimeTileSpec
         ), dummyTileLayerMetadata)
 
         intercept[LayerOutOfKeyBoundsError] {
-          updater.update(layerId, update)
+          writer.update(layerId, update)
         }
       }
 
@@ -104,7 +102,7 @@ trait LayerUpdateSpaceTimeTileSpec
         ), dummyTileLayerMetadata)
 
         intercept[LayerOutOfKeyBoundsError] {
-          updater.overwrite(layerId, update)
+          writer.overwrite(layerId, update)
         }
       }
 
@@ -120,7 +118,7 @@ trait LayerUpdateSpaceTimeTileSpec
         val updatedSample = new ContextRDD(usample, sample.metadata.copy(bounds = ukb))
 
         writer.write[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId, sample, updatedKeyIndex)
-        updater.update[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId, updatedSample)
+        writer.update[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId, updatedSample)
         reader.read[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId).count() shouldBe sample.count() * 2
       }
 
@@ -136,7 +134,7 @@ trait LayerUpdateSpaceTimeTileSpec
         val updatedSample = new ContextRDD(usample, sample.metadata.copy(bounds = ukb))
 
         writer.write[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId, sample, updatedKeyIndex)
-        updater.overwrite[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId, updatedSample)
+        writer.overwrite[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId, updatedSample)
         reader.read[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](updatedLayerId).count() shouldBe sample.count() * 2
       }
 
@@ -169,15 +167,13 @@ trait LayerUpdateSpaceTimeTileSpec
           )
 
         assert(updateRdd.count == 1)
-        updateRdd.withContext(_.mapValues { tile => tile + 1 })
 
-        updater.update[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](id, updateRdd)
+        writer.update[SpaceTimeKey, Tile, TileLayerMetadata[SpaceTimeKey]](id, updateRdd)
 
         val read: TileLayerRDD[SpaceTimeKey] = reader.read(id)
 
         val readTiles = read.collect.sortBy { case (k, _) => k.instant }.toArray
         readTiles.size should be (4)
-        println(readTiles(0)._2.toArray.toSeq)
         assertEqual(readTiles(0)._2, Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1))
         assertEqual(readTiles(1)._2, Array(2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2))
         assertEqual(readTiles(2)._2, Array(3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3))

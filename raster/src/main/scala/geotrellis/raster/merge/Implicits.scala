@@ -17,6 +17,7 @@
 package geotrellis.raster.merge
 
 import geotrellis.raster._
+import cats.Semigroup
 
 object Implicits extends Implicits
 
@@ -26,4 +27,14 @@ object Implicits extends Implicits
   */
 trait Implicits {
   implicit class withRasterMergeMethods[T <: CellGrid: ? => TileMergeMethods[T]](self: Raster[T]) extends RasterMergeMethods[T](self)
+
+  implicit class withTileFeatureMergeMethods[
+    T <: CellGrid: ? => TileMergeMethods[T],
+    D: Semigroup
+  ](self: TileFeature[T, D]) extends TileFeatureMergeMethods[T,D](self)
+
+  implicit class withRasterTileFeatureMergeMethods[
+    T <: CellGrid: ? => TileMergeMethods[T],
+    D: Semigroup
+  ](self: TileFeature[Raster[T], D]) extends RasterTileFeatureMergeMethods[T,D](self)
 }

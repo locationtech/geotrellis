@@ -49,30 +49,30 @@ class GeoTiffWriterTests extends FunSuite
     val rr = FileRangeReader(p)
     val reader = StreamingByteReader(rr)
 
-    val gt1 = MultibandGeoTiff(reader)
     val gt2 = MultibandGeoTiff.streaming(reader)
-    val gt3 = MultibandGeoTiff.compressed(p)
+    val gt3 = MultibandGeoTiff(p)
+    val gt1 = gt3.tile.toArrayTile
 
-    withClue("Assumption failed: Reading GeoTiff two ways didn't match") {
-      assertEqual(gt2.tile, gt1.tile)
+      withClue("Assumption failed: Reading GeoTiff two ways didn't match") {
+      assertEqual(gt2.tile, gt1)
     }
 
     withClue("Assumption failed: Reading GeoTiff compressed doesn't work") {
-      assertEqual(gt3.tile, gt1.tile)
+      assertEqual(gt3.tile, gt1)
     }
 
     gt3.write(path)
 
     val resultComp = MultibandGeoTiff(path)
     withClue("Writing from a compressed read produced incorrect GeoTiff.") {
-      assertEqual(resultComp.tile, gt1.tile)
+      assertEqual(resultComp.tile, gt1)
     }
 
     gt2.write(path)
 
     val result = MultibandGeoTiff(path)
     withClue("Writing from a streaming read produced incorrect GeoTiff.") {
-      assertEqual(result.tile, gt1.tile)
+      assertEqual(result.tile, gt1)
     }
   }
 

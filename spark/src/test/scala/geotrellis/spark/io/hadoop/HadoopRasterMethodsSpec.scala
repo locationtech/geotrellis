@@ -68,7 +68,7 @@ class HadoopRasterMethodsSpec extends FunSpec
       val actual = actualTiff.tile
       val actualTags = actualTiff.tags
 
-      actual should be (expected)
+      actual.toArrayTile should be (expected.toArrayTile)
       actualTags should be (expectedTags)
     }
 
@@ -84,7 +84,7 @@ class HadoopRasterMethodsSpec extends FunSpec
       val actual = actualTiff.tile
       val actualTags = actualTiff.tags
 
-      actual should be (expected)
+      actual.toArrayTile should be (expected.toArrayTile)
       actualTags should be (expectedTags)
     }
 

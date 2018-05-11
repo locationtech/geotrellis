@@ -197,68 +197,6 @@ object BufferTiles {
       }
   }
 
-  /** Buffer the tiles of type V by a dynamic buffer size.
-    *
-    * This function will return each of the tiles with a buffer added to them by the contributions of adjacent, abutting tiles.
-    *
-    * @tparam         K                        The key of this tile set RDD, requiring a spatial component.
-    * @tparam         V                        The tile type, requires a Stitcher[V] and implicit conversion to CropMethods[V]
-    *
-    * @param          rdd                      The keyed tile rdd.
-    * @param          bufferSizesPerKey        An RDD that holds the BufferSizes to use for each key.
-    */
-  @deprecated("Please prefer specifying buffer sizes using a function, K => BufferSizes", "1.2")
-  def apply[
-    K: SpatialComponent: ClassTag,
-    V <: CellGrid: Stitcher: ClassTag: (? => CropMethods[V])
-  ](rdd: RDD[(K, V)], bufferSizesPerKey: RDD[(K, BufferSizes)]): RDD[(K, BufferedTile[V])] = {
-    val surroundingBufferSizes: RDD[(K, Map[SpatialKey, BufferSizes])] = {
-      val contributingKeys: RDD[(K, (SpatialKey, BufferSizes))] =
-        bufferSizesPerKey
-          .flatMap { case (key, bufferSizes) =>
-            val spatialKey @ SpatialKey(col, row) = key.getComponent[SpatialKey]
-            Seq(
-              (key, (spatialKey, bufferSizes)),
-
-              (key.setComponent(SpatialKey(col-1, row)), (spatialKey, bufferSizes)),
-              (key.setComponent(SpatialKey(col+1, row)), (spatialKey, bufferSizes)),
-              (key.setComponent(SpatialKey(col, row-1)), (spatialKey, bufferSizes)),
-              (key.setComponent(SpatialKey(col, row+1)), (spatialKey, bufferSizes)),
-
-              (key.setComponent(SpatialKey(col-1, row-1)), (spatialKey, bufferSizes)),
-              (key.setComponent(SpatialKey(col+1, row-1)), (spatialKey, bufferSizes)),
-              (key.setComponent(SpatialKey(col+1, row+1)), (spatialKey, bufferSizes)),
-              (key.setComponent(SpatialKey(col-1, row+1)), (spatialKey, bufferSizes))
-            )
-
-          }
-
-      val grouped: RDD[(K, Iterable[(SpatialKey, BufferSizes)])] =
-        rdd.partitioner match {
-          case Some(partitioner) => contributingKeys.groupByKey(partitioner)
-          case None => contributingKeys.groupByKey
-        }
-
-      grouped
-        .mapValues { _.toMap }
-    }
-
-    val tilesAndSlivers =
-      rdd
-        .join(surroundingBufferSizes)
-        .flatMap { case (key, (tile, bufferSizesMap)) =>
-          collectWithTileNeighbors(key, tile, bufferSizesMap.contains _, bufferSizesMap)
-        }
-
-    val grouped =
-      rdd.partitioner match {
-        case Some(partitioner) => tilesAndSlivers.groupByKey(partitioner)
-        case None => tilesAndSlivers.groupByKey
-      }
-
-    bufferWithNeighbors(grouped)
-  }
-
   /** Buffer the tiles of type V by a constant buffer size.
     *
     * This function will return each of the tiles with a buffer added to them by the contributions of adjacent, abutting tiles.

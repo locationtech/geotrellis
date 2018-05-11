@@ -17,7 +17,7 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.raster.Tile
-import geotrellis.spark.io.LayerHeader
+import geotrellis.spark.io.{LayerHeader, LayerType, AvroLayerType}
 
 import spray.json._
 
@@ -25,7 +25,8 @@ case class S3LayerHeader(
   keyClass: String,
   valueClass: String,
   bucket: String,
-  key: String
+  key: String,
+  layerType: LayerType = AvroLayerType
 ) extends LayerHeader {
   def format = "s3"
 }
@@ -38,21 +39,28 @@ object S3LayerHeader {
         "keyClass" -> JsString(md.keyClass),
         "valueClass" -> JsString(md.valueClass),
         "bucket" -> JsString(md.bucket.toString),
-        "key" -> JsString(md.key.toString)
+        "key" -> JsString(md.key.toString),
+        "layerType" -> md.layerType.toJson
       )
 
     def read(value: JsValue): S3LayerHeader =
-      value.asJsObject.getFields("keyClass", "valueClass", "bucket", "key") match {
-        case Seq(JsString(keyClass), JsString(valueClass), JsString(bucket), JsString(key)) =>
+      value.asJsObject.getFields("keyClass", "valueClass", "bucket", "key", "layerType") match {
+        case Seq(JsString(keyClass), JsString(valueClass), JsString(bucket), JsString(key), layerType) =>
           S3LayerHeader(
             keyClass,
             valueClass,
-            bucket, key)
-        case Seq(JsString(keyClass), JsString(bucket), JsString(key)) =>
+            bucket,
+            key,
+            layerType.convertTo[LayerType]
+          )
+        case Seq(JsString(keyClass), JsString(bucket), JsString(key), JsString(layerType)) =>
           S3LayerHeader(
             keyClass,
             classOf[Tile].getCanonicalName,
-            bucket, key)
+            bucket,
+            key,
+            AvroLayerType
+          )
 
         case other =>
           throw new DeserializationException(s"S3LayerHeader expected, got: $other")

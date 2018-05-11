@@ -21,5 +21,16 @@ import geotrellis.raster._
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withProjectedRasterReprojectMethods[T <: CellGrid](self: ProjectedRaster[T]) extends ProjectedRasterReprojectMethods[T](self)
+  implicit class withProjectedRasterReprojectMethods[T <: CellGrid](self: ProjectedRaster[T])(implicit ev: Raster[T] => RasterReprojectMethods[Raster[T]])
+    extends ProjectedRasterReprojectMethods[T](self)
+
+  implicit class withTileFeatureReprojectMethods[
+    T <: CellGrid : (? => TileReprojectMethods[T]),
+    D
+  ](self: TileFeature[T,D]) extends TileFeatureReprojectMethods[T, D](self)
+
+  implicit class withRasterTileFeatureReprojectMethods[
+    T <: CellGrid : (? => TileReprojectMethods[T]),
+    D
+  ](self: TileFeature[Raster[T], D]) extends RasterTileFeatureReprojectMethods[T, D](self)
 }

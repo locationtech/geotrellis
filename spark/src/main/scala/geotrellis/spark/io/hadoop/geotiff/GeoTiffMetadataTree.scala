@@ -62,7 +62,7 @@ case class GeoTiffMetadataTree[T](index: mutable.Map[String, STRtree], crs: CRS)
 }
 
 object GeoTiffMetadataTree {
-  def fromGeoTiffMetadataList(list: List[GeoTiffMetadata], crs: CRS = WebMercator): GeoTiffMetadataTree[GeoTiffMetadata] = {
+  def fromGeoTiffMetadataSeq(list: Seq[GeoTiffMetadata], crs: CRS = WebMercator): GeoTiffMetadataTree[GeoTiffMetadata] = {
     val map = mutable.Map[String, STRtree]()
     list.foreach { md =>
       val index = map.getOrElseUpdate(md.name, new STRtree())

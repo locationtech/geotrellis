@@ -15,7 +15,6 @@ group of traits, meaning they agree on behaviour:
    etc.)
 -  ``LayerReader`` - read ``RDD[(K, V)] with Metadata[M]``
 -  ``LayerWriter`` - write ``RDD[(K, V)] with Metadata[M]``
--  ``LayerUpdater``
 -  ``LayerReindexer``
 -  ``LayerCopier``
 -  ``LayerDeleter``
@@ -165,7 +164,7 @@ documentation. Notably you will need to:
 **CONs**
 
 -  Slower read speed than alternatives
--  Inefficient ``LayerUpdater`` functionality
+-  Inefficient layer update functionality
 
 S3
 ==

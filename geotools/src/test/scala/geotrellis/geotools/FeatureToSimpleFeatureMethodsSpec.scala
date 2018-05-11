@@ -47,50 +47,50 @@ class FeatureToSimpleFeatureMethodsSpec
 
     it("should work with Points") {
       val feature = Feature(point, Foo(42, "72"))
-      val actual = feature.toSimpleFeature
-      val expected = GeometryToSimpleFeature(feature.geom, None, nonEmptyList)
+      val actual = feature.toSimpleFeature("test_id")
+      val expected = GeometryToSimpleFeature(feature.geom, None, nonEmptyList, "test_id")
       actual should be (expected)
     }
 
     it("should work with Lines") {
       val feature = Feature(line, Foo(42, "72"))
-      val actual = feature.toSimpleFeature
-      val expected = GeometryToSimpleFeature(feature.geom, None, nonEmptyList)
+      val actual = feature.toSimpleFeature("test_id")
+      val expected = GeometryToSimpleFeature(feature.geom, None, nonEmptyList, "test_id")
       actual should be (expected)
     }
 
     it("should work with Polygons") {
       val feature = Feature(polygon, Foo(42, "72"))
-      val actual = feature.toSimpleFeature
-      val expected = GeometryToSimpleFeature(feature.geom, None, nonEmptyList)
+      val actual = feature.toSimpleFeature("test_id")
+      val expected = GeometryToSimpleFeature(feature.geom, None, nonEmptyList, "test_id")
       actual should be (expected)
     }
 
     it("should work with MultiPoints") {
       val feature = Feature(multiPoint, Foo(42, "72"))
-      val actual = feature.toSimpleFeature
-      val expected = GeometryToSimpleFeature(feature.geom, None, nonEmptyList)
+      val actual = feature.toSimpleFeature("test_id")
+      val expected = GeometryToSimpleFeature(feature.geom, None, nonEmptyList, "test_id")
       actual should be (expected)
     }
 
     it("should work with MultiLines") {
       val feature = Feature(multiLine, Foo(42, "72"))
-      val actual = feature.toSimpleFeature
-      val expected = GeometryToSimpleFeature(feature.geom, None, nonEmptyList)
+      val actual = feature.toSimpleFeature("test_id")
+      val expected = GeometryToSimpleFeature(feature.geom, None, nonEmptyList, "test_id")
       actual should be (expected)
     }
 
     it("should work with MultiPolygons") {
       val feature = Feature(multiPolygon, Foo(42, "72"))
-      val actual = feature.toSimpleFeature
-      val expected = GeometryToSimpleFeature(feature.geom, None, nonEmptyList)
+      val actual = feature.toSimpleFeature("test_id")
+      val expected = GeometryToSimpleFeature(feature.geom, None, nonEmptyList, "test_id")
       actual should be (expected)
     }
 
     it("should work with supplied CRS") {
       val feature = Feature(multiPolygon, Foo(42, "72"))
-      val actual = feature.toSimpleFeature(crs)
-      val expected = GeometryToSimpleFeature(feature.geom, Some(crs), nonEmptyList)
+      val actual = feature.toSimpleFeature(crs, "test_id")
+      val expected = GeometryToSimpleFeature(feature.geom, Some(crs), nonEmptyList, "test_id")
       actual should be (expected)
     }
 

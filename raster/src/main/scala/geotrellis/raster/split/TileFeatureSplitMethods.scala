@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Azavea
+ * Copyright 2017 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,19 @@
  * limitations under the License.
  */
 
-package geotrellis
+package geotrellis.raster.split
 
-import geotrellis.vector._
+import geotrellis.raster._
 
-/**
-  * Implicit conversion for geotrellis.vector.Geometry instances.
-  *
-  * @example {{{
-  * import geotrellis.vector._
-  * import geotrellis.slick._
-  *
-  * // create a web mercator projected point with the ExtendGeometry implicit class
-  * val projectedPoint = Point(1.0, 2.0).withSRID(3274)
-  * }}}
-  */
-package object slick {
-  implicit class ExtendGeometry[G <: Geometry](g: G) {
-    /** Upgrade Geometry to Projected[Geometry] */
-    def withSRID(srid: Int) = Projected(g, srid)
+class TileFeatureSplitMethods[
+  T <: CellGrid : (? => SplitMethods[T]), 
+  D
+](val self: TileFeature[T, D]) extends SplitMethods[TileFeature[T, D]] {
+  import Split.Options
+
+  def split(tileLayout: TileLayout, options: Options): Array[TileFeature[T, D]] = {
+    val results = self.tile.split(tileLayout, options)
+    results.map(t ⇒ TileFeature(t, self.data))
   }
 }
+

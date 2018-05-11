@@ -33,7 +33,6 @@ case class S3GeoTiffInfoReader(
   prefix: String,
   getS3Client: () => S3Client = () => S3Client.DEFAULT,
   delimiter: Option[String] = None,
-  decompress: Boolean = false,
   streaming: Boolean = true,
   tiffExtensions: Seq[String] = S3GeoTiffRDD.Options.DEFAULT.tiffExtensions
 ) extends GeoTiffInfoReader {
@@ -54,7 +53,7 @@ case class S3GeoTiffInfoReader(
     val ovrReader: Option[ByteReader] =
       if (getS3Client().doesObjectExist(bucket, ovrKey)) Some(S3RangeReader(bucket, ovrKey, getS3Client())) else None
 
-    GeoTiffReader.readGeoTiffInfo(S3RangeReader(s3Uri.getBucket, s3Uri.getKey, getS3Client()), decompress, streaming, true, ovrReader)
+    GeoTiffReader.readGeoTiffInfo(S3RangeReader(s3Uri.getBucket, s3Uri.getKey, getS3Client()), streaming, true, ovrReader)
   }
 
   def getGeoTiffTags(uri: String): TiffTags = {

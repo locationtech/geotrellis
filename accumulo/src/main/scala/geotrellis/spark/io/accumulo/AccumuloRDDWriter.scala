@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.accumulo
 
+import geotrellis.spark.io.LayerWriter
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.util.KryoWrapper
@@ -63,33 +64,25 @@ object AccumuloRDDWriter {
         // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
         // on a key type that may no longer by valid for the key type of the resulting RDD.
         .groupBy({ row => encodeKey(row._1) }, numPartitions = raster.partitions.length)
-        .map { case (key, _kvs1) =>
-          val kvs1: Vector[(K,V)] = _kvs1.toVector
-          val kvs2: Vector[(K,V)] =
-            if (mergeFunc.nonEmpty) {
-              val scanner = instance.connector.createScanner(table, Authorizations.EMPTY)
+        .mapPartitions { it => 
+          val scanner = instance.connector.createScanner(table, Authorizations.EMPTY)
+
+          it.map { case (key, _kvs1) =>
+            val current: Vector[(K,V)] = _kvs1.toVector
+            val updated = LayerWriter.updateRecords(mergeFunc, current, existing = {
               scanner.setRange(new Range(key.getRow))
               scanner.fetchColumnFamily(key.getColumnFamily)
-              val result: Vector[(K,V)] = scanner.iterator().asScala.toVector.flatMap({ entry =>
+              scanner.iterator().asScala.toVector.flatMap({ entry =>
                 val value = entry.getValue
                 AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(codec.schema), value.get)(codec)
               })
-              scanner.close
-              result
-            } else Vector.empty
-          val kvs: Vector[(K, V)] = mergeFunc match {
-            case Some(fn) =>
-              (kvs2 ++ kvs1)
-                .groupBy({ case (k,v) => k })
-                .map({ case (k, kvs) =>
-                  val vs = kvs.map({ case (k,v) => v }).toSeq
-                  val v: V = vs.tail.foldLeft(vs.head)(fn)
-                  (k, v) })
-                .toVector
-            case None => kvs1
-          }
+            })
 
-          (key, new Value(AvroEncoder.toBinary(kvs)(codec)))
+            (key, new Value(AvroEncoder.toBinary(updated)(codec)))
+          } ++ { // closing hook for when the iterator reaches the end
+            scanner.close()
+            Iterator.empty
+          }
         }
 
     writeStrategy.write(kvPairs, instance, table)

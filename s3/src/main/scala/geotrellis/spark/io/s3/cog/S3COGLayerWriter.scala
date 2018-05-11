@@ -24,7 +24,7 @@ class S3COGLayerWriter(
   bucket: String,
   keyPrefix: String,
   getS3Client: () => S3Client = () => S3Client.DEFAULT,
-  threads: Int = S3RDDWriter.DefaultThreadCount
+  threads: Int = S3RDDWriter.defaultThreadCount
 ) extends COGLayerWriter {
 
   def writeCOGLayer[
@@ -41,15 +41,16 @@ class S3COGLayerWriter(
     val sc = cogLayer.layers.head._2.sparkContext
     val samplesAccumulator = sc.collectionAccumulator[IndexedSimpleSource](VRT.accumulatorName(layerName))
     val storageMetadata = COGLayerStorageMetadata(cogLayer.metadata, keyIndexes)
-    attributeStore.write(layerId0, COGAttributeStore.Fields.metadata, storageMetadata)
 
     val header = S3LayerHeader(
       keyClass = classTag[K].toString(),
       valueClass = classTag[V].toString(),
       bucket = bucket,
-      key = keyPrefix
+      key = keyPrefix,
+      layerType = COGLayerType
     )
-    attributeStore.write(layerId0, COGAttributeStore.Fields.header, header)
+
+    attributeStore.writeCOGLayerAttributes(layerId0, header, storageMetadata)
 
     val s3Client = getS3Client() // for saving VRT from Accumulator
 
@@ -123,7 +124,7 @@ class S3COGAsyncWriter[V <: CellGrid: GeoTiffReader](
   ): Try[GeoTiff[V]] = Try {
     val is = client.getObject(bucket, key).getObjectContent
     val bytes = sun.misc.IOUtils.readFully(is, Int.MaxValue, true)
-    GeoTiffReader[V].read(bytes, decompress = false)
+    GeoTiffReader[V].read(bytes)
   }
 
   def encodeRecord(key: String, value: GeoTiff[V]): PutObjectRequest = {

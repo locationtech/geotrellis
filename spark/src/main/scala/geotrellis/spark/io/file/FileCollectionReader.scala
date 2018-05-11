@@ -22,20 +22,21 @@ import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index.MergeQueue
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.util.Filesystem
-
 import org.apache.avro.Schema
-import com.typesafe.config.ConfigFactory
-
 import java.io.File
 
+import geotrellis.spark.io.file.conf.FileConfig
+
 object FileCollectionReader {
+  val defaultThreadCount: Int = FileConfig.threads.collection.readThreads
+
   def read[K: AvroRecordCodec : Boundable, V: AvroRecordCodec](
     keyPath: BigInt => String,
     queryKeyBounds: Seq[KeyBounds[K]],
     decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
-    threads: Int = ConfigFactory.load().getThreads("geotrellis.file.threads.collection.read")): Seq[(K, V)] = {
+    threads: Int = defaultThreadCount): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
     val ranges = if (queryKeyBounds.length > 1)

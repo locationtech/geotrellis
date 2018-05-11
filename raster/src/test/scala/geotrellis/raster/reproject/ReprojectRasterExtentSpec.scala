@@ -40,7 +40,7 @@ class ReprojectRasterExtentSpec extends FunSpec
     }
 
     it("should (approximately) match a GDAL for EPSG:4326 to EPSG:3857") {
-      val sourceGt = SinglebandGeoTiff.compressed(geoTiffPath("reproject/nlcd_tile_wsg84.tif"))
+      val sourceGt = SinglebandGeoTiff(geoTiffPath("reproject/nlcd_tile_wsg84.tif"))
       val sourceRaster = sourceGt.raster
 
       val rea @ RasterExtent(actualExtent, actualCellWidth, actualCellHeight, actualCols, actualRows) =

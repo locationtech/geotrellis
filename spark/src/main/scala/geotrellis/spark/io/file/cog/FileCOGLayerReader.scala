@@ -25,9 +25,10 @@ import geotrellis.spark.io.file.{FileAttributeStore, FileLayerHeader, KeyPathGen
 import geotrellis.util._
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
-import com.typesafe.config.ConfigFactory
 import java.net.URI
 import java.io.File
+
+import geotrellis.spark.io.file.conf.FileConfig
 
 import scala.reflect.ClassTag
 
@@ -53,7 +54,7 @@ class FileCOGLayerReader(
 
     val header =
       try {
-        attributeStore.read[FileLayerHeader](LayerId(id.name, 0), COGAttributeStore.Fields.header)
+        attributeStore.readHeader[FileLayerHeader](LayerId(id.name, 0))
       } catch {
         case e: AttributeNotFoundError => throw new LayerNotFoundError(id).initCause(e)
       }
@@ -74,7 +75,7 @@ class FileCOGLayerReader(
 }
 
 object FileCOGLayerReader {
-  val defaultThreadCount: Int = ConfigFactory.load().getThreads("geotrellis.file.threads.rdd.read")
+  val defaultThreadCount: Int = FileConfig.threads.rdd.readThreads
 
   def apply(attributeStore: AttributeStore, catalogPath: String)(implicit sc: SparkContext): FileCOGLayerReader =
     new FileCOGLayerReader(attributeStore, catalogPath)

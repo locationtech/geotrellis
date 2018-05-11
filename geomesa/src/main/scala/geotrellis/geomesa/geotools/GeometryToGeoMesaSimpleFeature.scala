@@ -17,7 +17,6 @@
 package geotrellis.geomesa.geotools
 
 import geotrellis.proj4.{CRS => GCRS}
-import geotrellis.spark.util.cache.LRUCache
 import geotrellis.util.annotations.experimental
 import geotrellis.vector.{Geometry, Line, MultiLine, MultiPoint, MultiPolygon, Point, Polygon}
 
@@ -35,7 +34,7 @@ import com.typesafe.config.ConfigFactory
 object GeometryToGeoMesaSimpleFeature {
 
   val whenField  = "when"
-  val whereField = "where"
+  val whereField = "the_geom"
 
   lazy val featureTypeCache =
     Scaffeine()

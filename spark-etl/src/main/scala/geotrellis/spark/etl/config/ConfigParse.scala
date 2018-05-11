@@ -27,7 +27,7 @@ trait ConfigParse {
   val help: String
   val requiredFields: Set[Symbol]
 
-  val schemaFactory = new JsonSchemaFactory()
+  val schemaFactory = JsonSchemaFactory.getInstance()
 
   def getJson(filePath: String, conf: Configuration): String = {
     val path = new Path(filePath)

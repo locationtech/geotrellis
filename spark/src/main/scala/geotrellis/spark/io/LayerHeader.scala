@@ -24,6 +24,7 @@ trait LayerHeader {
   def format: String
   def keyClass: String
   def valueClass: String
+  def layerType: LayerType
 }
 
 object LayerHeader {
@@ -32,16 +33,25 @@ object LayerHeader {
       JsObject(
         "format" -> JsString(md.format),
         "keyClass" -> JsString(md.keyClass),
-        "valueClass" -> JsString(md.valueClass)
+        "valueClass" -> JsString(md.valueClass),
+        "layerType" -> md.layerType.toJson
       )
 
     def read(value: JsValue): LayerHeader =
-      value.asJsObject.getFields("format", "keyClass", "valueClass") match {
+      value.asJsObject.getFields("format", "keyClass", "valueClass", "layerType") match {
+        case Seq(JsString(_format), JsString(_keyClass), JsString(_valueClass), _layerType) =>
+          new LayerHeader {
+            val format = _format
+            val keyClass = _keyClass
+            val valueClass = _valueClass
+            def layerType = _layerType.convertTo[LayerType]
+          }
         case Seq(JsString(_format), JsString(_keyClass), JsString(_valueClass)) =>
           new LayerHeader {
             val format = _format
             val keyClass = _keyClass
             val valueClass = _valueClass
+            def layerType = AvroLayerType
           }
         case _ =>
           throw new DeserializationException(s"LayerHeader expected, got: $value")

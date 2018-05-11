@@ -22,10 +22,10 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.index.Index
+import geotrellis.spark.io.hadoop.conf.HadoopConfig
 import geotrellis.spark.io.hadoop._
 import geotrellis.util._
 
-import com.typesafe.config.ConfigFactory
 import spray.json.JsonFormat
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -72,7 +72,7 @@ class HadoopCOGCollectionLayerReader(
 }
 
 object HadoopCOGCollectionLayerReader {
-  val defaultThreadCount: Int = ConfigFactory.load().getThreads("geotrellis.hadoop.threads.collection.read")
+  val defaultThreadCount: Int = HadoopConfig.threads.collection.readThreads
 
   def apply(attributeStore: HadoopAttributeStore): HadoopCOGCollectionLayerReader =
     new HadoopCOGCollectionLayerReader(attributeStore, attributeStore.rootPath.toString, attributeStore.conf)

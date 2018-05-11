@@ -20,19 +20,14 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
+import geotrellis.spark.io.hadoop.conf.HadoopConfig
 import geotrellis.spark.io.hadoop.formats.FilterMapFileInputFormat
 
 import org.apache.avro.Schema
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io._
 import org.apache.hadoop.fs.Path
-import scalaz.std.vector._
-import scalaz.concurrent.{Strategy, Task}
-import scalaz.stream.{Process, nondeterminism}
-import com.typesafe.config.ConfigFactory
 import com.github.blemale.scaffeine.{Cache, Scaffeine}
-
-import java.util.concurrent.Executors
 
 class HadoopCollectionReader(maxOpenFiles: Int) {
 
@@ -55,7 +50,7 @@ class HadoopCollectionReader(maxOpenFiles: Int) {
     decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
     indexFilterOnly: Boolean,
     writerSchema: Option[Schema] = None,
-    threads: Int = ConfigFactory.load().getThreads("geotrellis.hadoop.threads.collection.read")
+    threads: Int = HadoopCollectionReader.defaultThreads
   ): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
@@ -87,5 +82,6 @@ class HadoopCollectionReader(maxOpenFiles: Int) {
 }
 
 object HadoopCollectionReader {
+  val defaultThreads: Int = HadoopConfig.threads.collection.readThreads
   def apply(maxOpenFiles: Int = 16) = new HadoopCollectionReader(maxOpenFiles)
 }

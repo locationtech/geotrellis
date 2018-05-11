@@ -100,15 +100,6 @@ class GridBoundsSpec extends FunSpec with Matchers{
     }
   }
 
-  describe("GridBounds.coords") {
-    // TODO This test can be removed in 2.0
-    it("should match the output of coordsIter") {
-      val gbs = GridBounds(0, 0, 10, 10)
-
-      gbs.coordsIter.toSeq shouldBe gbs.coords.toSeq
-    }
-  }
-
   describe("GridBounds.buffer") {
     it("should not produce a GridBounds with negative values") {
       val gps = GridBounds(0, 0, 10, 10)

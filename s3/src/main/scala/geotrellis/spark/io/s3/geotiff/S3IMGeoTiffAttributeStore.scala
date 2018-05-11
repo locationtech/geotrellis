@@ -19,61 +19,27 @@ object S3IMGeoTiffAttributeStore {
     recursive: Boolean,
     getS3Client: () => S3Client
   ): InMemoryGeoTiffAttributeStore =
-    new InMemoryGeoTiffAttributeStore(
-      () => GeoTiffMetadataTree.fromGeoTiffMetadataList(S3GeoTiffInput.list(name, uri, pattern, recursive, getS3Client))
-    ) {
-      override def persist(uri: URI): Unit = {
-        val s3Client = getS3Client()
-        val s3Path = new AmazonS3URI(uri)
-        val data = S3GeoTiffInput.list(name, uri, pattern, recursive, getS3Client)
-
-        val str = data.toJson.compactPrint
-        val is = new ByteArrayInputStream(str.getBytes("UTF-8"))
-        s3Client.putObject(s3Path.getBucket, s3Path.getKey, is, new ObjectMetadata())
-      }
-    }
+    apply(() => S3GeoTiffInput.list(name, uri, pattern, recursive, getS3Client), getS3Client)
 
   def apply(
     name: String,
     uri: URI,
     pattern: String
-  ): InMemoryGeoTiffAttributeStore =
-    new InMemoryGeoTiffAttributeStore(
-      () => GeoTiffMetadataTree.fromGeoTiffMetadataList(S3GeoTiffInput.list(name, uri, pattern, true))
-    ) {
-      override def persist(uri: URI): Unit = {
-        val s3Client = S3Client.DEFAULT
-        val s3Path = new AmazonS3URI(uri)
-        val data = S3GeoTiffInput.list(name, uri, pattern)
+  ): InMemoryGeoTiffAttributeStore = apply(name, uri, pattern, true, () => S3Client.DEFAULT)
 
-        val str = data.toJson.compactPrint
-        val is = new ByteArrayInputStream(str.getBytes("UTF-8"))
-        s3Client.putObject(s3Path.getBucket, s3Path.getKey, is, new ObjectMetadata())
-      }
-    }
+  def apply(getDataFunction: () => List[GeoTiffMetadata]): InMemoryGeoTiffAttributeStore =
+    apply(getDataFunction, () => S3Client.DEFAULT)
 
   def apply(
     getDataFunction: () => List[GeoTiffMetadata],
     getS3Client: () => S3Client
   ): InMemoryGeoTiffAttributeStore =
-    new InMemoryGeoTiffAttributeStore(() => GeoTiffMetadataTree.fromGeoTiffMetadataList(getDataFunction())) {
-      override def persist(uri: URI): Unit = {
+    new InMemoryGeoTiffAttributeStore {
+      lazy val metadataList = getDataFunction()
+      def persist(uri: URI): Unit = {
         val s3Client = getS3Client()
         val s3Path = new AmazonS3URI(uri)
-        val data = getDataFunction()
-
-        val str = data.toJson.compactPrint
-        val is = new ByteArrayInputStream(str.getBytes("UTF-8"))
-        s3Client.putObject(s3Path.getBucket, s3Path.getKey, is, new ObjectMetadata())
-      }
-    }
-
-  def apply(getDataFunction: () => List[GeoTiffMetadata]): InMemoryGeoTiffAttributeStore =
-    new InMemoryGeoTiffAttributeStore(() => GeoTiffMetadataTree.fromGeoTiffMetadataList(getDataFunction())) {
-      override def persist(uri: URI): Unit = {
-        val s3Client = S3Client.DEFAULT
-        val s3Path = new AmazonS3URI(uri)
-        val data = getDataFunction()
+        val data = metadataList
 
         val str = data.toJson.compactPrint
         val is = new ByteArrayInputStream(str.getBytes("UTF-8"))

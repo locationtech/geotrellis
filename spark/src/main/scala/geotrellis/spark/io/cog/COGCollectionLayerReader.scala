@@ -51,7 +51,7 @@ abstract class COGCollectionLayerReader[ID] { self =>
   )(implicit getByteReader: URI => ByteReader, idToLayerId: ID => LayerId): Seq[(K, V)] with Metadata[TileLayerMetadata[K]] = {
     val COGLayerStorageMetadata(cogLayerMetadata, keyIndexes) =
       try {
-        attributeStore.read[COGLayerStorageMetadata[K]](LayerId(id.name, 0), "cog_metadata")
+        attributeStore.readMetadata[COGLayerStorageMetadata[K]](LayerId(id.name, 0))
       } catch {
         // to follow GeoTrellis Layer Readers logic
         case e: AttributeNotFoundError => throw new LayerNotFoundError(id).initCause(e)
@@ -232,7 +232,7 @@ object COGCollectionLayerReader {
           .flatten
           .flatMap { case (spatialKey, overviewIndex, _, seq) =>
             val key = baseKey.setComponent(spatialKey)
-            val tiff = GeoTiffReader[V].read(uri, decompress = false, streaming = true).getOverview(overviewIndex)
+            val tiff = GeoTiffReader[V].read(uri, streaming = true).getOverview(overviewIndex)
             val map = seq.map { case (gb, sk) => gb -> key.setComponent(sk) }.toMap
 
             tiff

@@ -19,6 +19,8 @@ package geotrellis.spark.testkit.io.cog
 import geotrellis.raster.CellGrid
 import geotrellis.raster.crop.TileCropMethods
 import geotrellis.raster.merge.TileMergeMethods
+import geotrellis.raster.resample._
+import geotrellis.raster.io.geotiff.compression.NoCompression
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.prototype.TilePrototypeMethods
@@ -51,7 +53,6 @@ abstract class COGPersistenceSpec[
   // type TestMover = LayerMover[LayerId]
   // type TestReindexer = LayerReindexer[LayerId]
   type TestTileReader = COGValueReader[LayerId]
-  // type TestUpdater = LayerUpdater[LayerId]
   type TestCollectionReader = COGCollectionLayerReader[LayerId]
 
   def sample: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
@@ -138,6 +139,20 @@ abstract class COGPersistenceSpec[
         val readV: V = tileReader.read(key)
         val expectedV: V = sample.filter(_._1 == key).values.first()
         readV should be equals expectedV
+      }
+
+      it("should write a layer with maxTileSize set") {
+        val tileSize = 1024
+
+        writer.write[K, V](s"${layerId.name}-2", sample, layerId.zoom, keyIndexMethod, tileSize)
+      }
+
+      it("should create a COGLayer with the resample method set") {
+        COGLayer.fromLayerRDD(sample, layerId.zoom, options = Sum)
+      }
+
+      it("should create a COGLayer with the compression set") {
+        COGLayer.fromLayerRDD(sample, layerId.zoom, options = NoCompression)
       }
 
       /*it("should delete a layer") {

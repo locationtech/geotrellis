@@ -33,7 +33,7 @@ trait OverzoomingValueReader extends ValueReader[LayerId] {
     V <: CellGrid: AvroRecordCodec: ? => TileResampleMethods[V]
   ](layerId: LayerId, resampleMethod: ResampleMethod): Reader[K, V] = new Reader[K, V] {
     val LayerId(layerName, requestedZoom) = layerId
-    val maxAvailableZoom = attributeStore.layerIds.filter { case LayerId(name, _) => name == layerName }.map(_.zoom).max
+    val maxAvailableZoom = attributeStore.availableZoomLevels(layerName).max
     val metadata = attributeStore.readMetadata[TileLayerMetadata[K]](LayerId(layerName, maxAvailableZoom))
 
     val layoutScheme = ZoomedLayoutScheme(metadata.crs, metadata.tileRows)

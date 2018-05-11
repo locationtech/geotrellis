@@ -21,11 +21,11 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index.MergeQueue
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
+import geotrellis.spark.io.s3.conf.S3Config
 
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
-import com.typesafe.config.ConfigFactory
 
 trait S3CollectionReader {
 
@@ -41,7 +41,7 @@ trait S3CollectionReader {
      decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
      filterIndexOnly: Boolean,
      writerSchema: Option[Schema] = None,
-     threads: Int = ConfigFactory.load().getThreads("geotrellis.s3.threads.collection.read")
+     threads: Int = S3CollectionReader.defaultThreadCount
    ): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
 
@@ -67,5 +67,6 @@ trait S3CollectionReader {
 }
 
 object S3CollectionReader extends S3CollectionReader {
+  val defaultThreadCount = S3Config.threads.collection.readThreads
   def getS3Client: () => S3Client = () => S3Client.DEFAULT
 }

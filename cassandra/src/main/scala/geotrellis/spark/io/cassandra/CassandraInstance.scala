@@ -16,26 +16,21 @@
 
 package geotrellis.spark.io.cassandra
 
+import geotrellis.spark.io.cassandra.conf.CassandraConfig
+
 import com.datastax.driver.core.policies.{DCAwareRoundRobinPolicy, TokenAwarePolicy}
 import com.datastax.driver.core.{Cluster, Session}
-import com.typesafe.config.ConfigFactory
 
-import scala.util.Try
 import java.net.URI
 
 object CassandraInstance {
-  var bigIntegerRegistered: Boolean = false
+  @volatile private var bigIntegerRegistered: Boolean = false
 
   def apply(uri: URI): CassandraInstance = {
     import geotrellis.util.UriUtils._
 
     val zookeeper = uri.getHost
-    val port = if (uri.getPort < 0) 9042 else uri.getPort
     val (user, pass) = getUserInfo(uri)
-    val keyspace = Option(uri.getPath.drop(1))
-      .getOrElse(Cassandra.cfg.getString("keyspace"))
-    val attributeTable = Option(uri.getFragment)
-      .getOrElse(Cassandra.cfg.getString("catalog"))
 
     BaseCassandraInstance(
       List(zookeeper),
@@ -46,27 +41,14 @@ object CassandraInstance {
 }
 
 trait CassandraInstance extends Serializable {
-  val hosts: Seq[String]
-
-  val username: String
-  val password: String
-
-  val replicationStrategy: String
-  val replicationFactor: Int
-
-  val localDc: String
-  val usedHostsPerRemoteDc: Int
-  val allowRemoteDCsForLocalConsistencyLevel: Boolean
-
-  // TODO: remove during https://github.com/locationtech/geotrellis/issues/2077
-  final val port: Int = Try(Cassandra.cfg.getInt("port")).toOption.getOrElse(9042)
+  val cassandraConfig: CassandraConfig
 
   /** Functions to get cluster / session for custom logic, where function wrapping can have an impact on speed */
-  def getCluster = Cluster.builder().withLoadBalancingPolicy(getLoadBalancingPolicy).addContactPoints(hosts: _*).withPort(port).build()
-  def getSession = getCluster.connect()
+  def getCluster: () => Cluster
+  def getSession: Session = getCluster().connect()
 
-  @transient lazy val cluster = getCluster
-  @transient lazy val session = cluster.connect()
+  @transient lazy val cluster: Cluster = getCluster()
+  @transient lazy val session: Session = cluster.connect()
 
   def registerBigInteger(): Unit = {
     if (!CassandraInstance.bigIntegerRegistered) {
@@ -79,7 +61,10 @@ trait CassandraInstance extends Serializable {
   }
 
   def ensureKeyspaceExists(keyspace: String, session: Session): Unit =
-    session.execute(s"create keyspace if not exists ${keyspace} with replication = {'class': '${replicationStrategy}', 'replication_factor': ${replicationFactor} }")
+    session.execute(
+      s"create keyspace if not exists ${keyspace} with replication = {'class': '${cassandraConfig.replicationStrategy}', " +
+      s"'replication_factor': ${cassandraConfig.replicationFactor} }"
+    )
 
   def dropKeyspace(keyspace: String, session: Session): Unit =
     session.execute(s"drop keyspace if exists $keyspace;")
@@ -96,15 +81,6 @@ trait CassandraInstance extends Serializable {
     }
   }
 
-  def getLoadBalancingPolicy = {
-    val builder = DCAwareRoundRobinPolicy.builder()
-    if(localDc.nonEmpty) builder.withLocalDc(localDc)
-    if(usedHostsPerRemoteDc > 0) builder.withUsedHostsPerRemoteDc(0)
-    if(allowRemoteDCsForLocalConsistencyLevel) builder.allowRemoteDCsForLocalConsistencyLevel()
-
-    new TokenAwarePolicy(builder.build())
-  }
-
   def closeAsync = {
     session.closeAsync()
     session.getCluster.closeAsync()
@@ -112,42 +88,98 @@ trait CassandraInstance extends Serializable {
 }
 
 case class BaseCassandraInstance(
-  hosts: Seq[String],
-  username: String = "",
-  password: String = "",
-  replicationStrategy: String = Cassandra.cfg.getString("replicationStrategy"),
-  replicationFactor: Int = Cassandra.cfg.getInt("replicationFactor"),
-  localDc: String = Cassandra.cfg.getString("localDc"),
-  usedHostsPerRemoteDc: Int = Cassandra.cfg.getInt("usedHostsPerRemoteDc"),
-  allowRemoteDCsForLocalConsistencyLevel: Boolean = Cassandra.cfg.getBoolean("allowRemoteDCsForLocalConsistencyLevel")) extends CassandraInstance {
-  registerBigInteger()
+  getCluster: () => Cluster,
+  cassandraConfig: CassandraConfig
+) extends CassandraInstance
+
+object BaseCassandraInstance {
+  def apply(getCluster: () => Cluster): BaseCassandraInstance =
+    BaseCassandraInstance(getCluster, CassandraConfig)
+
+  def apply(
+    hosts: Seq[String],
+    username: String,
+    password: String,
+    cassandraConfig: CassandraConfig
+  ): BaseCassandraInstance = {
+    def getLoadBalancingPolicy = {
+      val builder = DCAwareRoundRobinPolicy.builder()
+      if(cassandraConfig.localDc.nonEmpty) builder.withLocalDc(cassandraConfig.localDc)
+      if(cassandraConfig.usedHostsPerRemoteDc > 0) builder.withUsedHostsPerRemoteDc(cassandraConfig.usedHostsPerRemoteDc)
+      if(cassandraConfig.allowRemoteDCsForLocalConsistencyLevel) builder.allowRemoteDCsForLocalConsistencyLevel()
+
+      new TokenAwarePolicy(builder.build())
+    }
+
+    def getCluster = () => {
+      val builder =
+        Cluster
+          .builder()
+          .withLoadBalancingPolicy(getLoadBalancingPolicy)
+          .addContactPoints(hosts: _*)
+          .withPort(cassandraConfig.port)
+          .withCredentials(username, password)
+
+      val authedBuilder =
+        if(username.nonEmpty && password.nonEmpty) builder.withCredentials(username, password)
+        else builder
+
+      authedBuilder.build()
+    }
+
+
+    BaseCassandraInstance(getCluster, cassandraConfig)
+  }
+
+  def apply(
+    hosts: Seq[String],
+    username: String,
+    password: String
+  ): BaseCassandraInstance = apply(hosts, username, password, CassandraConfig)
+
+  def apply(
+    hosts: Seq[String],
+    cassandraConfig: CassandraConfig
+  ): BaseCassandraInstance = apply(hosts, "", "", cassandraConfig)
+
+  def apply(hosts: Seq[String]): BaseCassandraInstance = apply(hosts, CassandraConfig)
 }
 
 object Cassandra {
-  lazy val cfg = ConfigFactory.load().getConfig("geotrellis.cassandra")
-
   implicit def instanceToSession[T <: CassandraInstance](instance: T): Session = instance.session
 
   def withCassandraInstance[T <: CassandraInstance, K](instance: T)(block: T => K): K = block(instance)
   def withCassandraInstanceDo[T <: CassandraInstance, K](instance: T)(block: T => K): K = try block(instance) finally instance.closeAsync
+
   def withBaseCassandraInstance[K](hosts: Seq[String],
-                                   username: String = "",
-                                   password: String = "",
-                                   replicationStrategy: String = Cassandra.cfg.getString("replicationStrategy"),
-                                   replicationFactor: Int = Cassandra.cfg.getInt("replicationFactor"),
-                                   localDc: String = Cassandra.cfg.getString("localDc"),
-                                   usedHostsPerRemoteDc: Int = Cassandra.cfg.getInt("usedHostsPerRemoteDc"),
-                                   allowRemoteDCsForLocalConsistencyLevel: Boolean = Cassandra.cfg.getBoolean("allowRemoteDCsForLocalConsistencyLevel"))(block: BaseCassandraInstance => K): K =
-    block(BaseCassandraInstance(hosts, username, password, replicationStrategy, replicationFactor, localDc, usedHostsPerRemoteDc, allowRemoteDCsForLocalConsistencyLevel))
+                                   username: String,
+                                   password: String,
+                                   cassandraConfig: CassandraConfig)(block: CassandraInstance => K): K =
+    block(BaseCassandraInstance(hosts, username, password, cassandraConfig))
+  def withBaseCassandraInstance[K](hosts: Seq[String], cassandraConfig: CassandraConfig)(block: CassandraInstance => K): K =
+    withBaseCassandraInstance(hosts, "", "", cassandraConfig)(block)
+  def withBaseCassandraInstance[K](hosts: Seq[String],
+                                   username: String,
+                                   password: String)(block: CassandraInstance => K): K =
+    withBaseCassandraInstance(hosts, username, password, CassandraConfig)(block)
+  def withBaseCassandraInstance[K](hosts: Seq[String])(block: CassandraInstance => K): K =
+    withBaseCassandraInstance(hosts, "", "", CassandraConfig)(block)
+
   def withBaseCassandraInstanceDo[K](hosts: Seq[String],
-                                     username: String = "",
-                                     password: String = "",
-                                     replicationStrategy: String = Cassandra.cfg.getString("replicationStrategy"),
-                                     replicationFactor: Int = Cassandra.cfg.getInt("replicationFactor"),
-                                     localDc: String = Cassandra.cfg.getString("localDc"),
-                                     usedHostsPerRemoteDc: Int = Cassandra.cfg.getInt("usedHostsPerRemoteDc"),
-                                     allowRemoteDCsForLocalConsistencyLevel: Boolean = Cassandra.cfg.getBoolean("allowRemoteDCsForLocalConsistencyLevel"))(block: BaseCassandraInstance => K): K = {
-    val instance = BaseCassandraInstance(hosts, username, password, replicationStrategy, replicationFactor, localDc, usedHostsPerRemoteDc, allowRemoteDCsForLocalConsistencyLevel)
+                                     username: String,
+                                     password: String,
+                                     cassandraConfig: CassandraConfig)(block: CassandraInstance => K): K = {
+    val instance = BaseCassandraInstance(hosts, username, password, cassandraConfig)
     try block(instance) finally instance.closeAsync
+  }
+  def withBaseCassandraInstanceDo[K](hosts: Seq[String],
+                                     username: String,
+                                     password: String)(block: CassandraInstance => K): K =
+    withBaseCassandraInstanceDo(hosts, username, password, CassandraConfig)(block)
+  def withBaseCassandraInstanceDo[K](hosts: Seq[String])(block: CassandraInstance => K): K =
+    withBaseCassandraInstanceDo(hosts, "", "", CassandraConfig)(block)
+  def withBaseCassandraInstanceDo[K](hosts: Seq[String],
+                                     cassandraConfig: CassandraConfig)(block: CassandraInstance => K): K = {
+    withBaseCassandraInstanceDo(hosts, "", "", cassandraConfig)(block)
   }
 }

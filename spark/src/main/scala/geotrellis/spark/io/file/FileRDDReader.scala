@@ -23,15 +23,16 @@ import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.util.KryoWrapper
 import geotrellis.util.Filesystem
-
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import com.typesafe.config.ConfigFactory
-
 import java.io.File
 
+import geotrellis.spark.io.file.conf.FileConfig
+
 object FileRDDReader {
+  val defaultThreadCount: Int = FileConfig.threads.rdd.readThreads
+
   def read[K: AvroRecordCodec: Boundable, V: AvroRecordCodec](
     keyPath: BigInt => String,
     queryKeyBounds: Seq[KeyBounds[K]],
@@ -39,7 +40,7 @@ object FileRDDReader {
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
     numPartitions: Option[Int] = None,
-    threads: Int = ConfigFactory.load().getThreads("geotrellis.file.threads.rdd.read")
+    threads: Int = defaultThreadCount
   )(implicit sc: SparkContext): RDD[(K, V)] = {
     if(queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
 

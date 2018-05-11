@@ -38,7 +38,6 @@ class CassandraTileFeatureSpatialSpec
   lazy val creader   = CassandraCollectionLayerReader(attributeStore)
   lazy val writer    = CassandraLayerWriter(attributeStore, "geotrellis_tf", "tiles")
   lazy val deleter   = CassandraLayerDeleter(attributeStore)
-  lazy val updater   = CassandraLayerUpdater(attributeStore)
   lazy val tiles     = CassandraValueReader(attributeStore)
   lazy val sample    = AllOnesTestFile
   lazy val copier    = CassandraLayerCopier(attributeStore, reader, writer)

@@ -42,4 +42,10 @@ class FileLayerProviderSpec extends FunSpec with TestEnvironment {
     assert(reader.isInstanceOf[FileValueReader])
   }
 
+  it("should be able to process a URI without a scheme") {
+    val badURI = new java.net.URI("/tmp/catalog")
+    val provider = new FileLayerProvider
+
+    provider.canProcess(badURI) should be (true)
+  }
 }

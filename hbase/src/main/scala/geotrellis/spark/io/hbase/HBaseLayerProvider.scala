@@ -18,8 +18,9 @@ package geotrellis.spark.io.hbase
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.hbase.conf.HBaseConfig
 import geotrellis.util.UriUtils
-import com.typesafe.config.ConfigFactory
+
 import org.apache.spark.SparkContext
 import java.net.URI
 
@@ -32,13 +33,16 @@ import java.net.URI
  */
 class HBaseLayerProvider extends AttributeStoreProvider
     with LayerReaderProvider with LayerWriterProvider with ValueReaderProvider with CollectionLayerReaderProvider {
-  def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "hbase"
+
+  def canProcess(uri: URI): Boolean = uri.getScheme match {
+    case str: String => if (str.toLowerCase == "hbase") true else false
+    case null => false
+  }
 
   def attributeStore(uri: URI): AttributeStore = {
     val instance = HBaseInstance(uri)
     val params = UriUtils.getParams(uri)
-    val attributeTable = params.getOrElse("attributes",
-      ConfigFactory.load().getString("geotrellis.hbase.catalog"))
+    val attributeTable = params.getOrElse("attributes", HBaseConfig.catalog)
     HBaseAttributeStore(instance, attributeTable)
   }
 

@@ -48,4 +48,11 @@ class S3LayerProviderSpec extends FunSpec with TestEnvironment {
     val reader = ValueReader(uri)
     assert(reader.isInstanceOf[S3ValueReader])
   }
+
+  it("should not be able to process a URI without a scheme") {
+    val badURI = new java.net.URI("//fake-bucket/some-prefix")
+    val provider = new S3LayerProvider
+
+    provider.canProcess(badURI) should be (false)
+  }
 }

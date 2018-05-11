@@ -42,4 +42,10 @@ class AccumuloLayerProviderSpec extends FunSpec with TestEnvironment {
     assert(reader.isInstanceOf[AccumuloValueReader])
   }
 
+  it("should not be able to process a URI without a scheme") {
+    val badURI = new java.net.URI("//root:@localhost/fake?attributes=attributes&layers=tiles")
+    val provider = new AccumuloLayerProvider
+
+    provider.canProcess(badURI) should be (false)
+  }
 }

@@ -18,10 +18,10 @@ package geotrellis.spark.io.accumulo
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.accumulo.conf.AccumuloConfig
 import geotrellis.util.UriUtils
 import org.apache.spark.SparkContext
-import org.apache.accumulo.core.client.security.tokens.PasswordToken
-import com.typesafe.config.ConfigFactory
+
 import java.net.URI
 
 /**
@@ -33,13 +33,16 @@ import java.net.URI
  */
 class AccumuloLayerProvider extends AttributeStoreProvider
     with LayerReaderProvider with LayerWriterProvider with ValueReaderProvider with CollectionLayerReaderProvider {
-  def canProcess(uri: URI): Boolean = uri.getScheme.toLowerCase == "accumulo"
+
+  def canProcess(uri: URI): Boolean = uri.getScheme match {
+    case str: String => if (str.toLowerCase == "accumulo") true else false
+    case null => false
+  }
 
   def attributeStore(uri: URI): AttributeStore = {
     val instance = AccumuloInstance(uri)
     val params = UriUtils.getParams(uri)
-    val attributeTable = params.getOrElse("attributes",
-      ConfigFactory.load().getString("geotrellis.accumulo.catalog"))
+    val attributeTable = params.getOrElse("attributes", AccumuloConfig.catalog)
     AccumuloAttributeStore(instance, attributeTable)
   }
 

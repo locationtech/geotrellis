@@ -26,14 +26,6 @@ import scala.util.{Failure, Success, Try}
 package object io
     extends avro.codecs.Implicits
     with json.Implicits {
-  implicit class ThreadConfig(config: Config) {
-    def getThreads(path: String): Int =
-      config.getString(path) match {
-        case "default" => Runtime.getRuntime.availableProcessors
-        case s => s.toInt
-      }
-  }
-
   implicit class TryOption[T](option: Option[T]) {
     def toTry(exception: => Throwable): Try[T] =
       option match {
@@ -52,6 +44,12 @@ package object io
 
   // Custom exceptions
   class LayerIOError(val message: String) extends Exception(message)
+
+  class AvroLayerAttributeError(attributeName: String, layerId: LayerId)
+    extends LayerIOError(s"AvroLayer: $layerId does not have the attribute: $attributeName")
+
+  class COGLayerAttributeError(attributeName: String, layerId: LayerId)
+    extends LayerIOError(s"COGLayer: $layerId does not have the attribute: $attributeName")
 
   class LayerReadError(layerId: LayerId)
     extends LayerIOError(s"LayerMetadata not found for layer $layerId")

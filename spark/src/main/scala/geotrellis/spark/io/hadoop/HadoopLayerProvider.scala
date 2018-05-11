@@ -41,7 +41,10 @@ class HadoopLayerProvider extends AttributeStoreProvider
       new URI(uri.toString.stripPrefix("hdfs+"))
     else uri
 
-  def canProcess(uri: URI): Boolean = schemes contains uri.getScheme.toLowerCase
+  def canProcess(uri: URI): Boolean = uri.getScheme match {
+    case str: String => schemes contains str.toLowerCase
+    case null => false
+  }
 
   def attributeStore(uri: URI): AttributeStore = {
     val path = new Path(trim(uri))

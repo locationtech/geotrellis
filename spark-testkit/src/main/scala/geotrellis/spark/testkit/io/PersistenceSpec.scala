@@ -57,7 +57,6 @@ abstract class PersistenceSpec[
   type TestMover = LayerMover[LayerId]
   type TestReindexer = LayerReindexer[LayerId]
   type TestTileReader = ValueReader[LayerId]
-  type TestUpdater = LayerUpdater[LayerId]
   type TestCollectionReader = CollectionLayerReader[LayerId]
 
   def sample: RDD[(K, V)] with Metadata[M]
@@ -67,7 +66,6 @@ abstract class PersistenceSpec[
   def copier: TestCopier
   def mover: TestMover
   def reindexer: TestReindexer
-  def updater: TestUpdater
   def tiles: TestTileReader
   def creader: TestCollectionReader
 

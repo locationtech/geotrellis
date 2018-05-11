@@ -7,7 +7,7 @@ import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.spark._
-import geotrellis.spark.io.{InvalidLayerIdError, AttributeStore}
+import geotrellis.spark.io.{InvalidLayerIdError, AttributeStore, COGLayerType}
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.cog.vrt.VRT
 import geotrellis.spark.io.cog.vrt.VRT.IndexedSimpleSource
@@ -47,15 +47,16 @@ class HadoopCOGLayerWriter(
     }
 
     val storageMetadata = COGLayerStorageMetadata(cogLayer.metadata, keyIndexes)
-    attributeStore.write(layerId0, COGAttributeStore.Fields.metadata, storageMetadata)
 
     val header =
       HadoopLayerHeader(
         keyClass = classTag[K].toString(),
         valueClass = classTag[V].toString(),
-        path = new URI(rootPath)
+        path = new URI(rootPath),
+        layerType = COGLayerType
       )
-    attributeStore.write(layerId0, COGAttributeStore.Fields.header, header)
+
+    attributeStore.writeCOGLayerAttributes(layerId0, header, storageMetadata)
 
     for(zoomRange <- cogLayer.layers.keys.toSeq.sorted(Ordering[ZoomRange].reverse)) {
       val vrt = VRT(cogLayer.metadata.tileLayerMetadata(zoomRange.minZoom))
@@ -92,7 +93,7 @@ class HadoopCOGLayerWriter(
               .foreach(samplesAccumulator.add)
 
           case Some(merge) if HdfsUtils.pathExists(path, config.value) =>
-            val old = GeoTiffReader[V].read(path.toUri(), decompress = false, streaming = true)
+            val old = GeoTiffReader[V].read(path.toUri(), streaming = true)
             val merged = merge(cog, old)
             HdfsUtils.write(path, config.value) { new GeoTiffWriter(merged, _).write(true) }
             // collect VRT metadata

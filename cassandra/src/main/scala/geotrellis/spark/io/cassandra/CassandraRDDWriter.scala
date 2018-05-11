@@ -19,6 +19,7 @@ package geotrellis.spark.io.cassandra
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
+import geotrellis.spark.io.cassandra.conf.CassandraConfig
 import geotrellis.spark.LayerId
 import geotrellis.spark.util.KryoWrapper
 
@@ -27,26 +28,20 @@ import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
 import com.datastax.driver.core.ResultSet
 import com.datastax.driver.core.schemabuilder.SchemaBuilder
-
+import cats.effect.IO
+import cats.syntax.apply._
 import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
 
-import com.typesafe.config.ConfigFactory
-
-import scalaz.concurrent.{Strategy, Task}
-import scalaz.stream.{Process, nondeterminism}
-
 import java.nio.ByteBuffer
 import java.util.concurrent.Executors
-
-import scala.collection.JavaConversions._
-
 import java.math.BigInteger
 
+import scala.concurrent.ExecutionContext
+import scala.collection.JavaConversions._
 
 object CassandraRDDWriter {
-  final val DefaultThreadCount =
-    ConfigFactory.load().getThreads("geotrellis.cassandra.threads.rdd.write")
+  final val defaultThreadCount = CassandraConfig.threads.rdd.writeThreads
 
   def write[K: AvroRecordCodec, V: AvroRecordCodec](
     rdd: RDD[(K, V)],
@@ -55,7 +50,7 @@ object CassandraRDDWriter {
     decomposeKey: K => BigInt,
     keyspace: String,
     table: String,
-    threads: Int = DefaultThreadCount
+    threads: Int = defaultThreadCount
   ): Unit = update(rdd, instance, layerId, decomposeKey, keyspace, table, None, None, threads)
 
   private[cassandra] def update[K: AvroRecordCodec, V: AvroRecordCodec](
@@ -67,7 +62,7 @@ object CassandraRDDWriter {
     table: String,
     writerSchema: Option[Schema],
     mergeFunc: Option[(V,V) => V],
-    threads: Int = DefaultThreadCount
+    threads: Int = defaultThreadCount
   ): Unit = {
     implicit val sc = raster.sparkContext
 
@@ -108,73 +103,61 @@ object CassandraRDDWriter {
     // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
     // on a key type that may no longer by valid for the key type of the resulting RDD.
       raster.groupBy({ row => decomposeKey(row._1) }, numPartitions = raster.partitions.length)
-        .foreachPartition { partition =>
+        .foreachPartition { partition: Iterator[(BigInt, Iterable[(K, V)])] =>
           if(partition.nonEmpty) {
             instance.withSession { session =>
               val readStatement = session.prepare(readQuery)
               val writeStatement = session.prepare(writeQuery)
 
-              val rows: Process[Task, (BigInt, Vector[(K,V)])] =
-                Process.unfold(partition)({ iter =>
-                  if (iter.hasNext) {
-                    val record = iter.next()
-                    Some((record._1, record._2.toVector), iter)
-                  } else None
-                })
+              val rows: fs2.Stream[IO, (BigInt, Vector[(K,V)])] =
+                fs2.Stream.fromIterator[IO, (BigInt, Vector[(K, V)])](
+                  partition.map { case (key, value) => (key, value.toVector) }
+                )
 
               val pool = Executors.newFixedThreadPool(threads)
+              implicit val ec = ExecutionContext.fromExecutor(pool)
 
-              def elaborateRow(row: (BigInt, Vector[(K,V)])): Process[Task, (BigInt, Vector[(K,V)])] = {
-                Process eval Task ({
-                  val (key, kvs1) = row
-                  val kvs2 =
-                    if (mergeFunc.nonEmpty) {
-                      val oldRow = session.execute(readStatement.bind(key: BigInteger))
-                      if (oldRow.nonEmpty) {
-                        val bytes = oldRow.one().getBytes("value").array()
-                        AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
-                      } else Vector.empty
+              def elaborateRow(row: (BigInt, Vector[(K,V)])): fs2.Stream[IO, (BigInt, Vector[(K,V)])] = {
+                fs2.Stream eval IO.shift(ec) *> IO ({
+                  val (key, current) = row
+                  val updated = LayerWriter.updateRecords(mergeFunc, current, existing = {
+                    val oldRow = session.execute(readStatement.bind(key: BigInteger))
+                    if (oldRow.nonEmpty) {
+                      val bytes = oldRow.one().getBytes("value").array()
+                      val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
+                      AvroEncoder.fromBinary(schema, bytes)(_recordCodec)
                     } else Vector.empty
-                  val kvs = mergeFunc match {
-                    case Some(fn) =>
-                      (kvs2 ++ kvs1)
-                        .groupBy({ case (k,v) => k })
-                        .map({ case (k, kvs) =>
-                          val vs = kvs.map({ case (k,v) => v }).toSeq
-                          val v: V = vs.tail.foldLeft(vs.head)(fn)
-                          (k, v) })
-                        .toVector
-                    case None => kvs1
-                  }
-                  (key, kvs)
-                })(pool)
+                  })
+
+                  (key, updated)
+                })
               }
 
-              def rowToBytes(row: (BigInt, Vector[(K,V)])): Process[Task, (BigInt, ByteBuffer)] = {
-                Process eval Task({
+              def rowToBytes(row: (BigInt, Vector[(K,V)])): fs2.Stream[IO, (BigInt, ByteBuffer)] = {
+                fs2.Stream eval IO.shift(ec) *> IO ({
                   val (key, kvs) = row
                   val bytes = ByteBuffer.wrap(AvroEncoder.toBinary(kvs)(codec))
                   (key, bytes)
-                })(pool)
+                })
               }
 
-              def retire(row: (BigInt, ByteBuffer)): Process[Task, ResultSet] = {
+              def retire(row: (BigInt, ByteBuffer)): fs2.Stream[IO, ResultSet] = {
                 val (id, value) = row
-                Process eval Task({
+                fs2.Stream eval IO.shift(ec) *> IO ({
                   session.execute(writeStatement.bind(id: BigInteger, value))
-                })(pool)
+                })
               }
 
-              val results = nondeterminism.njoin(maxOpen = threads, maxQueued = threads) {
-                rows flatMap elaborateRow flatMap rowToBytes map retire
-              }(Strategy.Executor(pool)) onComplete {
-                Process eval Task {
-                  session.closeAsync()
-                  session.getCluster.closeAsync()
-                }(pool)
-              }
+              val results = (rows flatMap elaborateRow flatMap rowToBytes map retire)
+                .join(threads)
+                .onComplete {
+                  fs2.Stream eval IO.shift(ec) *> IO {
+                    session.closeAsync()
+                    session.getCluster.closeAsync()
+                  }
+                }
 
-              results.run.unsafePerformSync
+              results.compile.drain.unsafeRunSync()
               pool.shutdown()
             }
           }

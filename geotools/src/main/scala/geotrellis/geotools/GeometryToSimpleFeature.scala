@@ -27,17 +27,18 @@ import scala.collection.JavaConverters._
 
 
 object GeometryToSimpleFeature {
-  val geometryField = "geometry"
+  val geometryField = "the_geom"
 
   /**
     * Given a Geotrellis geometry, a CRS, and a sequence of ancillary
     * data, produce a GeoTools SimpleFeature.
     *
-    * @param  geom  The Geotrellis geometry
-    * @param  crs   The CRS of the geometry
-    * @param  data  A sequence of (String, Any) pairs
+    * @param  geom       The Geotrellis geometry
+    * @param  crs        The CRS of the geometry
+    * @param  data       A sequence of (String, Any) pairs
+    * @param  featureId  A identifier for the output simple feature (null for a randomly generated id)
     */
-  def apply(geom: Geometry, crs: Option[CRS], data: Seq[(String, Any)]): SimpleFeature = {
+  def apply(geom: Geometry, crs: Option[CRS], data: Seq[(String, Any)], featureId: String = null): SimpleFeature = {
     val sftb = (new SimpleFeatureTypeBuilder).minOccurs(1).maxOccurs(1).nillable(false)
 
     sftb.setName("Bespoke Type")
@@ -74,6 +75,6 @@ object GeometryToSimpleFeature {
     }
     data.foreach({ case (key, value) => sfb.add(value) })
 
-    sfb.buildFeature("SimpleFeature")
+    sfb.buildFeature(featureId)
   }
 }

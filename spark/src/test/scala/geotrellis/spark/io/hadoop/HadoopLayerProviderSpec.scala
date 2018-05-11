@@ -42,4 +42,11 @@ class HadoopLayerProviderSpec extends FunSpec with TestEnvironment {
     assert(reader.isInstanceOf[HadoopValueReader])
   }
 
+  it("should not be able to process a URI without a scheme") {
+    val badURI = new java.net.URI("/tmp/catalog")
+    val provider = new HadoopLayerProvider
+
+    provider.canProcess(badURI) should be (false)
+  }
+
 }

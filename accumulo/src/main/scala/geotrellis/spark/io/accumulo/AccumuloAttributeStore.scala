@@ -18,8 +18,8 @@ package geotrellis.spark.io.accumulo
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+import geotrellis.spark.io.accumulo.conf.AccumuloConfig
 
-import com.typesafe.config.ConfigFactory
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 import org.apache.accumulo.core.client.{BatchWriterConfig, Connector}
@@ -34,7 +34,7 @@ object AccumuloAttributeStore {
     new AccumuloAttributeStore(connector, attributeTable)
 
   def apply(connector: Connector): AccumuloAttributeStore =
-    apply(connector, ConfigFactory.load().getString("geotrellis.accumulo.catalog"))
+    apply(connector, AccumuloConfig.catalog)
 
   def apply(instance: AccumuloInstance, attributeTable: String): AccumuloAttributeStore =
     apply(instance.connector, attributeTable)

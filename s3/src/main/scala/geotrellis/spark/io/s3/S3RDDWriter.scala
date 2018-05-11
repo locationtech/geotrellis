@@ -20,27 +20,23 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.util.KryoWrapper
+import geotrellis.spark.io.s3.conf.S3Config
 
+import cats.effect.IO
+import cats.syntax.apply._
 import com.amazonaws.services.s3.model.{AmazonS3Exception, ObjectMetadata, PutObjectRequest, PutObjectResult}
-
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.rdd.RDD
 
-import com.typesafe.config.ConfigFactory
-
-import scalaz.concurrent.{Strategy, Task}
-import scalaz.stream.{Process, nondeterminism}
-
 import java.io.ByteArrayInputStream
 import java.util.concurrent.Executors
 
+import scala.concurrent.ExecutionContext
 import scala.reflect._
 
-
 trait S3RDDWriter {
-  final val DefaultThreadCount =
-    ConfigFactory.load().getThreads("geotrellis.s3.threads.rdd.write")
+  final val defaultThreadCount = S3Config.threads.rdd.writeThreads
 
   def getS3Client: () => S3Client
 
@@ -49,7 +45,7 @@ trait S3RDDWriter {
     bucket: String,
     keyPath: K => String,
     putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p },
-    threads: Int = DefaultThreadCount
+    threads: Int = defaultThreadCount
   ): Unit = {
     update(rdd, bucket, keyPath, None, None, putObjectModifier, threads)
   }
@@ -61,7 +57,7 @@ trait S3RDDWriter {
     writerSchema: Option[Schema],
     mergeFunc: Option[(V, V) => V],
     putObjectModifier: PutObjectRequest => PutObjectRequest = { p => p },
-    threads: Int = DefaultThreadCount
+    threads: Int = defaultThreadCount
   ): Unit = {
     val codec  = KeyValueRecordCodec[K, V]
     val schema = codec.schema
@@ -80,7 +76,7 @@ trait S3RDDWriter {
     val _recordCodec = KeyValueRecordCodec[K, V]
     val kwWriterSchema = KryoWrapper(writerSchema)
 
-    pathsToTiles.foreachPartition { partition =>
+    pathsToTiles.foreachPartition { partition: Iterator[(String, Iterable[(K, V)])] =>
       if(partition.nonEmpty) {
         import geotrellis.spark.util.TaskUtils._
         val getS3Client = _getS3Client
@@ -88,70 +84,55 @@ trait S3RDDWriter {
         val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
 
         val pool = Executors.newFixedThreadPool(threads)
+        implicit val ec = ExecutionContext.fromExecutor(pool)
 
-        val rows: Process[Task, (String, Vector[(K,V)])] =
-          Process.unfold(partition)({ iter =>
-            if (iter.hasNext) {
-              val record = iter.next()
-              val key = record._1
-              val kvs = record._2.toVector
-              Some(((key, kvs), iter))
-            } else None
-          })
+        val rows: fs2.Stream[IO, (String, Vector[(K, V)])] =
+          fs2.Stream.fromIterator[IO, (String, Vector[(K, V)])](
+            partition.map { case (key, value) => (key, value.toVector) }
+          )
 
-        def elaborateRow(row: (String, Vector[(K,V)])): Process[Task, (String, Vector[(K,V)])] = {
-          Process eval Task({
-            val (key, kvs1) = row
-            val kvs2: Vector[(K,V)] =
-              if (mergeFunc.nonEmpty) {
-                try {
-                  val bytes = IOUtils.toByteArray(s3client.getObject(bucket, key).getObjectContent)
-                  AvroEncoder.fromBinary(schema, bytes)(_recordCodec)
-                } catch {
-                  case e: AmazonS3Exception if e.getStatusCode == 404 => Vector.empty
-                }
-              } else Vector.empty
-            val kvs =
-              mergeFunc match {
-                case Some(fn) =>
-                  (kvs2 ++ kvs1)
-                    .groupBy({ case (k,v) => k })
-                    .map({ case (k, kvs) =>
-                      val vs = kvs.map({ case (k,v) => v }).toSeq
-                      val v: V = vs.tail.foldLeft(vs.head)(fn)
-                      (k, v) })
-                    .toVector
-                case None => kvs1
+        def elaborateRow(row: (String, Vector[(K,V)])): fs2.Stream[IO, (String, Vector[(K,V)])] = {
+          fs2.Stream eval IO.shift(ec) *> IO ({
+            val (key, current) = row
+            val updated = LayerWriter.updateRecords(mergeFunc, current, existing = {
+              try {
+                val bytes = IOUtils.toByteArray(s3client.getObject(bucket, key).getObjectContent)
+                AvroEncoder.fromBinary(schema, bytes)(_recordCodec)
+              } catch {
+                case e: AmazonS3Exception if e.getStatusCode == 404 => Vector.empty
               }
-            (key, kvs)
-          })(pool)
+            })
+            (key, updated)
+          })
         }
 
-        def rowToRequest(row: (String, Vector[(K,V)])): Process[Task, PutObjectRequest] = {
-          Process eval Task({
+        def rowToRequest(row: (String, Vector[(K,V)])): fs2.Stream[IO, PutObjectRequest] = {
+          fs2.Stream eval IO.shift(ec) *> IO ({
             val (key, kvs) = row
             val bytes = AvroEncoder.toBinary(kvs)(_codec)
             val metadata = new ObjectMetadata()
             metadata.setContentLength(bytes.length)
             val is = new ByteArrayInputStream(bytes)
             putObjectModifier(new PutObjectRequest(bucket, key, is, metadata))
-          })(pool)
+          })
         }
 
-        def retire(request: PutObjectRequest): Process[Task, PutObjectResult] = {
-          Process eval Task({
+        def retire(request: PutObjectRequest): fs2.Stream[IO, PutObjectResult] = {
+          fs2.Stream eval IO.shift(ec) *> IO ({
             request.getInputStream.reset() // reset in case of retransmission to avoid 400 error
             s3client.putObject(request)
-          })(pool).retryEBO {
+          }).retryEBO {
             case e: AmazonS3Exception if e.getStatusCode == 503 => true
             case _ => false
           }
         }
 
-        val results = nondeterminism.njoin(maxOpen = threads, maxQueued = threads) {
-          rows flatMap elaborateRow flatMap rowToRequest map retire
-        }(Strategy.Executor(pool))
-        results.run.unsafePerformSync
+        (rows flatMap elaborateRow flatMap rowToRequest map retire)
+          .join(threads)
+          .compile
+          .drain
+          .unsafeRunSync()
+
         pool.shutdown()
       }
     }

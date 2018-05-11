@@ -17,6 +17,7 @@
 package geotrellis.spark.io
 
 import geotrellis.spark._
+import geotrellis.spark.io.cog.ZoomRange
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.json.Implicits._
 
@@ -28,7 +29,7 @@ import scala.reflect._
 import java.net.URI
 import java.util.ServiceLoader
 
-trait AttributeStore extends  AttributeCaching with LayerAttributeStore {
+trait AttributeStore extends AttributeCaching with LayerAttributeStore {
   def read[T: JsonFormat](layerId: LayerId, attributeName: String): T
   def readAll[T: JsonFormat](attributeName: String): Map[LayerId, T]
   def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit
@@ -37,6 +38,33 @@ trait AttributeStore extends  AttributeCaching with LayerAttributeStore {
   def delete(layerId: LayerId, attributeName: String): Unit
   def layerIds: Seq[LayerId]
   def availableAttributes(id: LayerId): Seq[String]
+  def readKeyIndexes[K: ClassTag](id: LayerId): Map[ZoomRange, KeyIndex[K]]
+
+  def isCOGLayer(id: LayerId): Boolean = {
+    layerType(id) match {
+      case COGLayerType => true
+      case _ => false
+    }
+  }
+
+  def layerType(id: LayerId): LayerType = {
+    lazy val layerType = readHeader[LayerHeader](id).layerType
+    cacheLayerType(id, layerType)
+  }
+
+  /** Return a map with layer names and the list of available zoom levels for each.
+   *
+   * This function should be re-implemented by AttributeStore subclasses so that
+   * catalogs with large numbers of layers can be queried efficiently.
+   */
+  def layersWithZoomLevels: Map[String, Seq[Int]] = layerIds.groupBy(_.name).mapValues(_.map(_.zoom))
+
+  /** Return a sequence of available zoom levels for a named layer.
+   *
+   * This function should be re-implemented by AttributeStore subclasses so that
+   * catalogs with large numbers of layers can be queried efficiently.
+   */
+  def availableZoomLevels(layerName: String): Seq[Int] = layersWithZoomLevels(layerName)
 
   def copy(from: LayerId, to: LayerId): Unit =
     copy(from, to, availableAttributes(from))
@@ -54,8 +82,11 @@ object AttributeStore {
   object Fields {
     val metadataBlob = "metadata"
     val header = "header"
-    val keyIndex = "keyIndex"
     val metadata = "metadata"
+  }
+
+  object AvroLayerFields {
+    val keyIndex = "keyIndex"
     val schema = "schema"
   }
 
@@ -76,6 +107,7 @@ object AttributeStore {
 }
 
 case class LayerAttributes[H, M, K](header: H, metadata: M, keyIndex: KeyIndex[K], schema: Schema)
+case class COGLayerAttributes[H, M](header: H, metadata: M)
 
 trait LayerAttributeStore extends Serializable {
   def readHeader[H: JsonFormat](id: LayerId): H
@@ -84,6 +116,8 @@ trait LayerAttributeStore extends Serializable {
   def readSchema(id: LayerId): Schema
   def readLayerAttributes[H: JsonFormat, M: JsonFormat, K: ClassTag](id: LayerId): LayerAttributes[H, M, K]
   def writeLayerAttributes[H: JsonFormat, M: JsonFormat, K: ClassTag](id: LayerId, header: H, metadata: M, keyIndex: KeyIndex[K], schema: Schema): Unit
+  def readCOGLayerAttributes[H: JsonFormat, M: JsonFormat](id: LayerId): COGLayerAttributes[H, M]
+  def writeCOGLayerAttributes[H: JsonFormat, M: JsonFormat](id: LayerId, header: H, metadata: M): Unit
 }
 
 
@@ -95,21 +129,40 @@ trait BlobLayerAttributeStore extends AttributeStore {
     cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(Fields.header).convertTo[H]
 
   def readMetadata[M: JsonFormat](id: LayerId): M =
-    cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(Fields.metadata).convertTo[M]
+      cacheRead[JsValue](id, Fields.metadata).asJsObject.fields(Fields.metadata).convertTo[M]
 
-  def readKeyIndex[K: ClassTag](id: LayerId): KeyIndex[K] =
-    cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(Fields.keyIndex).convertTo[KeyIndex[K]]
+  def readKeyIndex[K: ClassTag](id: LayerId): KeyIndex[K] = {
+    layerType(id) match {
+      // TODO: Find a way to read a single KeyIndex from the COGMetadata
+      case COGLayerType => throw new UnsupportedOperationException(s"The readKeyIndex cannot be performed on COGLayer: $id")
+      case AvroLayerType =>
+        cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(AvroLayerFields.keyIndex).convertTo[KeyIndex[K]]
+    }
+  }
+
+  def readKeyIndexes[K: ClassTag](id: LayerId): Map[ZoomRange, KeyIndex[K]] =
+    layerType(id) match {
+      case COGLayerType =>
+        cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(Fields.metadata).asJsObject.fields("keyIndexes") match {
+          case JsArray(keyIndexes) => keyIndexes.map { _.convertTo[(ZoomRange, KeyIndex[K])] }.toMap
+        }
+      case AvroLayerType => throw new AvroLayerAttributeError("keyIndexes", id)
+    }
 
   def readSchema(id: LayerId): Schema =
-    cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(Fields.schema).convertTo[Schema]
+    layerType(id) match {
+      case COGLayerType => throw new COGLayerAttributeError("schema", id)
+      case AvroLayerType =>
+        cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(AvroLayerFields.schema).convertTo[Schema]
+    }
 
   def readLayerAttributes[H: JsonFormat, M: JsonFormat, K: ClassTag](id: LayerId): LayerAttributes[H, M, K] = {
     val blob = cacheRead[JsValue](id, Fields.metadataBlob).asJsObject
     LayerAttributes(
       blob.fields(Fields.header).convertTo[H],
       blob.fields(Fields.metadata).convertTo[M],
-      blob.fields(Fields.keyIndex).convertTo[KeyIndex[K]],
-      blob.fields(Fields.schema).convertTo[Schema]
+      blob.fields(AvroLayerFields.keyIndex).convertTo[KeyIndex[K]],
+      blob.fields(AvroLayerFields.schema).convertTo[Schema]
     )
   }
 
@@ -118,15 +171,34 @@ trait BlobLayerAttributeStore extends AttributeStore {
       JsObject(
         Fields.header -> header.toJson,
         Fields.metadata -> metadata.toJson,
-        Fields.keyIndex -> keyIndex.toJson,
-        Fields.schema -> schema.toJson
+        AvroLayerFields.keyIndex -> keyIndex.toJson,
+        AvroLayerFields.schema -> schema.toJson
       )
     )
   }
+
+  def readCOGLayerAttributes[H: JsonFormat, M: JsonFormat](id: LayerId): COGLayerAttributes[H, M] = {
+    val blob = cacheRead[JsValue](id, Fields.metadataBlob).asJsObject
+    COGLayerAttributes(
+      blob.fields(Fields.header).convertTo[H],
+      blob.fields(Fields.metadata).convertTo[M]
+    )
+  }
+
+  def writeCOGLayerAttributes[H: JsonFormat, M: JsonFormat](id: LayerId, header: H, metadata: M): Unit =
+    cacheWrite(id, Fields.metadataBlob,
+      JsObject(
+        Fields.header -> header.toJson,
+        Fields.metadata -> metadata.toJson
+      )
+    )
 }
 
 trait DiscreteLayerAttributeStore extends AttributeStore {
   import AttributeStore._
+
+  def readKeyIndexes[K: ClassTag](id: LayerId): Map[ZoomRange, KeyIndex[K]] =
+    throw new AvroLayerAttributeError("keyIndexes", id)
 
   def readHeader[H: JsonFormat](id: LayerId): H =
     cacheRead[H](id, Fields.header)
@@ -135,10 +207,10 @@ trait DiscreteLayerAttributeStore extends AttributeStore {
     cacheRead[M](id, Fields.metadata)
 
   def readKeyIndex[K: ClassTag](id: LayerId): KeyIndex[K] =
-    cacheRead[KeyIndex[K]](id, Fields.keyIndex)
+    cacheRead[KeyIndex[K]](id, AvroLayerFields.keyIndex)
 
   def readSchema(id: LayerId): Schema =
-    cacheRead[Schema](id, Fields.schema)
+    cacheRead[Schema](id, AvroLayerFields.schema)
 
   def readLayerAttributes[H: JsonFormat, M: JsonFormat, K: ClassTag](id: LayerId): LayerAttributes[H, M, K] = {
     LayerAttributes(
@@ -152,7 +224,13 @@ trait DiscreteLayerAttributeStore extends AttributeStore {
   def writeLayerAttributes[H: JsonFormat, M: JsonFormat, K: ClassTag](id: LayerId, header: H, metadata: M, keyIndex: KeyIndex[K], schema: Schema) = {
     cacheWrite(id, Fields.header, header)
     cacheWrite(id, Fields.metadata, metadata)
-    cacheWrite(id, Fields.keyIndex, keyIndex)
-    cacheWrite(id, Fields.schema, schema)
+    cacheWrite(id, AvroLayerFields.keyIndex, keyIndex)
+    cacheWrite(id, AvroLayerFields.schema, schema)
   }
+
+  def readCOGLayerAttributes[H: JsonFormat, M: JsonFormat](id: LayerId): COGLayerAttributes[H, M] =
+    throw new AvroLayerAttributeError("COGLayerAttributes", id)
+
+  def writeCOGLayerAttributes[H: JsonFormat, M: JsonFormat](id: LayerId, header: H, metadata: M): Unit =
+    throw new AvroLayerAttributeError("COGLayerAttributes", id)
 }

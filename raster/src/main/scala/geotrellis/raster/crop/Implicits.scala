@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Azavea
+ * Copyright 2016-2017 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,4 +28,12 @@ object Implicits extends Implicits
 trait Implicits {
   implicit class withExtentCropMethods[T <: CellGrid: (? => CropMethods[T])](self: Raster[T])
       extends RasterCropMethods[T](self)
+
+  implicit class withTileFeatureCropMethods[
+    T <: CellGrid: (? => TileCropMethods[T]), D
+  ](self: TileFeature[T, D]) extends TileFeatureCropMethods[T, D](self)
+
+  implicit class withRasterTileFeatureCropMethods[
+    T <: CellGrid : (? => TileCropMethods[T]), D
+  ](self: TileFeature[Raster[T], D]) extends RasterTileFeatureCropMethods[T, D](self)
 }
