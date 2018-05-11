@@ -16,12 +16,8 @@
 
 package geotrellis.vector
 
-import GeomFactory._
-
-import com.vividsolutions.jts.{geom=>jts}
-
-import scala.collection.JavaConversions._
-
+import com.vividsolutions.jts.{geom => jts}
+import geotrellis.vector.GeomFactory._
 import spire.syntax.cfor._
 
 /** Companion object to [[MultiLine]] */
@@ -76,21 +72,6 @@ case class MultiLine(jtsGeom: jts.MultiLineString) extends MultiGeometry
     */
   lazy val boundary: OneDimensionBoundaryResult =
     jtsGeom.getBoundary
-
-  /** Returns this MulitLine's vertices. */
-  lazy val vertices: Array[Point] = {
-    val coords = jtsGeom.getCoordinates
-    val arr = Array.ofDim[Point](coords.size)
-    cfor(0)(_ < arr.size, _ + 1) { i =>
-      val coord = coords(i)
-      arr(i) = Point(coord.x, coord.y)
-    }
-    arr
-  }
-
-  /** Get the number of vertices in this geometry */
-  lazy val vertexCount: Int = jtsGeom.getNumPoints
-
 
   // -- Intersection
 
