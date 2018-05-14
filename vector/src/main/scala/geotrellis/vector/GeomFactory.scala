@@ -29,6 +29,5 @@ object GeomFactory extends LazyLogging {
   val precisionModel: PrecisionModel = JtsConfig.precisionModel
   lazy val simplifier: GeometryPrecisionReducer = JtsConfig.simplifier
 
-  val coordinateSequenceFactory: CoordinateSequenceFactory = CoordinateArraySequenceFactory.instance
-  val factory: GeometryFactory = new geom.GeometryFactory(precisionModel, 0, coordinateSequenceFactory)
+  val factory: GeometryFactory = new geom.GeometryFactory(precisionModel)
 }
