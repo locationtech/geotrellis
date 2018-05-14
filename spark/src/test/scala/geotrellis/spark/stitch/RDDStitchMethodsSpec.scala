@@ -135,7 +135,7 @@ class RDDStitchMethodsSpec extends FunSpec
       )
     }
 
-    it("should allow genericStitch to join RDDs of unequal dimensioned tiles") {
+    it("should allow stitch RDD of unequally-dimensioned tiles") {
       val tiles = sc.parallelize(Array(
         (SpatialKey(10,31), IntArrayTile.ofDim( 5, 5).map{ (x, y, _) => math.max(x,    y) }),
         (SpatialKey(11,31), IntArrayTile.ofDim(15, 5).map{ (x, y, _) => math.max(x+5,  y) }),
@@ -149,7 +149,7 @@ class RDDStitchMethodsSpec extends FunSpec
       ))
       val reference = IntArrayTile.ofDim(27,27).map{ (x, y, _) => math.max(x, y) }
 
-      assertEqual(tiles.genericStitch, reference)
+      assertEqual(tiles.stitch, reference)
     }
   }
 }

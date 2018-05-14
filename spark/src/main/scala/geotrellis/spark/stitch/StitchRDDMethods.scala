@@ -31,38 +31,16 @@ import scala.collection.mutable
 
 object TileLayoutStitcher {
   /**
-   * Stitches a collection of tiles keyed by (col, row) tuple into a single tile.
-   * Makes the assumption that all tiles are of equal size such that they can be placed in a grid layout.
-   * @return A tuple of the stitched tile and the GridBounds of keys used to construct it.
-   */
-  def stitch[V <: CellGrid](tiles: Iterable[(Product2[Int, Int], V)])
-  (implicit stitcher: Stitcher[V]): (V, GridBounds) = {
-    require(tiles.nonEmpty, "nonEmpty input")
-    val sample = tiles.head._2
-    val te = GridBounds.envelope(tiles.map(_._1))
-    val tileCols = sample.cols
-    val tileRows = sample.rows
-
-    val pieces =
-      for ((SpatialKey(col, row), v) <- tiles) yield {
-        val updateCol = (col - te.colMin) * tileCols
-        val updateRow = (row - te.rowMin) * tileRows
-        (v, (updateCol, updateRow))
-      }
-    val tile: V = stitcher.stitch(pieces, te.width * tileCols, te.height * tileRows)
-    (tile, te)
-  }
-
-  /**
     * Stitches a collection of spatially-keyed tiles into a single tile.  Assumes that all
     * tiles in a given column (row) have the same width (height).
     *
     * @param    tiles       A traversable collection of (key, tile) pairs
-    * @return               The stitched tile
+    * @return               A tuple with the stitched tile, the key of the upper left tile
+    *                       of the layout, and the width and height of that spatial key
     */
-  def genericStitch[
+  def stitch[
     V <: CellGrid: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V]
-  ](tiles: Traversable[(Product2[Int, Int], V)]) = {
+  ](tiles: Traversable[(Product2[Int, Int], V)]): (V, (Int, Int), (Int, Int)) = {
     assert(tiles.size > 0, "Cannot stitch empty collection")
 
     val colWidths = mutable.Map.empty[Int, Int]
@@ -86,28 +64,31 @@ object TileLayoutStitcher {
       result.merge(tile, colPos(key._1), rowPos(key._2))
     }}
 
-    result
+    val (minx, miny) = (colWidths.keys.min, rowHeights.keys.min)
+    (result, (minx, miny), (colWidths(minx), rowHeights(miny)))
   }
 }
 
-abstract class SpatialTileLayoutRDDStitchMethods[V <: CellGrid: Stitcher, M: GetComponent[?, LayoutDefinition]]
-  extends MethodExtensions[RDD[(SpatialKey, V)] with Metadata[M]] {
+abstract class SpatialTileLayoutRDDStitchMethods[
+  V <: CellGrid: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V],
+  M: GetComponent[?, LayoutDefinition]
+] extends MethodExtensions[RDD[(SpatialKey, V)] with Metadata[M]] {
 
   def stitch(): Raster[V] = {
-    val (tile, bounds) = TileLayoutStitcher.stitch(self.collect())
-    val mapTransform = self.metadata.getComponent[LayoutDefinition].mapTransform
-    Raster(tile, mapTransform(bounds))
+    val (tile, (kx, ky), (offsx, offsy)) = TileLayoutStitcher.stitch(self.collect())
+    val layout = self.metadata.getComponent[LayoutDefinition]
+    val mapTransform = layout.mapTransform
+    val nwTileEx = mapTransform(kx, ky)
+    val base = nwTileEx.southEast
+    val (ulx, uly) = (base.x - offsx.toDouble * layout.cellwidth, base.y + offsy * layout.cellheight)
+    Raster(tile, Extent(ulx, uly - tile.rows * layout.cellheight, ulx + tile.cols * layout.cellwidth, uly))
   }
 }
 
-abstract class SpatialTileRDDStitchMethods[V <: CellGrid: Stitcher]
+abstract class SpatialTileRDDStitchMethods[V <: CellGrid: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V]]
   extends MethodExtensions[RDD[(SpatialKey, V)]] {
 
   def stitch(): V = {
     TileLayoutStitcher.stitch(self.collect())._1
-  }
-
-  def genericStitch()(implicit proto: V => TilePrototypeMethods[V], merge: V => TileMergeMethods[V]): V = {
-    TileLayoutStitcher.genericStitch(self.collect)
   }
 }
