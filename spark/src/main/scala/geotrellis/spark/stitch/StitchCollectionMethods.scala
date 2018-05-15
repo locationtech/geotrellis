@@ -40,10 +40,6 @@ abstract class SpatialTileLayoutCollectionStitchMethods[
     val base = nwTileEx.southEast
     val (ulx, uly) = (base.x - offsx.toDouble * layout.cellwidth, base.y + offsy * layout.cellheight)
     Raster(tile, Extent(ulx, uly - tile.rows * layout.cellheight, ulx + tile.cols * layout.cellwidth, uly))
-
-    // val (tile, bounds) = TileLayoutStitcher.stitch(self)
-    // val mapTransform = self.metadata.getComponent[LayoutDefinition].mapTransform
-    // Raster(tile, mapTransform(bounds))
   }
 }
 
