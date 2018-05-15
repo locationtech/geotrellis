@@ -39,7 +39,7 @@ object TileLayoutStitcher {
     *                       of the layout, and the width and height of that spatial key
     */
   def stitch[
-    V <: CellGrid: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V]
+    V <: CellGrid: Stitcher
   ](tiles: Traversable[(Product2[Int, Int], V)]): (V, (Int, Int), (Int, Int)) = {
     assert(tiles.size > 0, "Cannot stitch empty collection")
 
@@ -59,10 +59,13 @@ object TileLayoutStitcher {
       case ((positions, acc), (row, h)) => (positions + (row -> acc), acc + h)
     }
 
-    val result = tiles.head._2.prototype(width, height)
-    tiles.foreach{ case (key, tile) => {
-      result.merge(tile, colPos(key._1), rowPos(key._2))
-    }}
+    // val result = tiles.head._2.prototype(width, height)
+    // tiles.foreach{ case (key, tile) => {
+    //   result.merge(tile, colPos(key._1), rowPos(key._2))
+    // }}
+
+    val stitcher = implicitly[Stitcher[V]]
+    val result = stitcher.stitch(tiles.map{ case (key, tile) => tile -> (colPos(key._1), rowPos(key._2)) }.toIterable, width, height)
 
     val (minx, miny) = (colWidths.keys.min, rowHeights.keys.min)
     (result, (minx, miny), (colWidths(minx), rowHeights(miny)))
@@ -70,7 +73,7 @@ object TileLayoutStitcher {
 }
 
 abstract class SpatialTileLayoutRDDStitchMethods[
-  V <: CellGrid: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V],
+  V <: CellGrid: Stitcher,
   M: GetComponent[?, LayoutDefinition]
 ] extends MethodExtensions[RDD[(SpatialKey, V)] with Metadata[M]] {
 
@@ -85,7 +88,7 @@ abstract class SpatialTileLayoutRDDStitchMethods[
   }
 }
 
-abstract class SpatialTileRDDStitchMethods[V <: CellGrid: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V]]
+abstract class SpatialTileRDDStitchMethods[V <: CellGrid: Stitcher]
   extends MethodExtensions[RDD[(SpatialKey, V)]] {
 
   def stitch(): V = {
