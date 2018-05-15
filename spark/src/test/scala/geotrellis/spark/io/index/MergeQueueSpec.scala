@@ -67,9 +67,9 @@ class MergeQueueSpec extends FunSpec {
     val kbs = query(md)
     val ranges = kbs.flatMap(kb => index.indexRanges(kb))
     val cnt = ranges.size
-    println(s"ZIndex cnt: $cnt")
+    info(s"ZIndex Count: $cnt")
 
     val mq = MergeQueue(ranges)
-    println(s"mq cnt: ${mq.size}")
+    info(s"MergeQueue Count: ${mq.size}")
   }
 }

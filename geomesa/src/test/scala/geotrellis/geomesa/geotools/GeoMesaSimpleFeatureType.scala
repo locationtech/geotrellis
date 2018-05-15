@@ -16,27 +16,26 @@
 
 package geotrellis.geomesa.geotools
 
+import geotrellis.spark.io.geomesa.conf.GeoMesaConfig
 import geotrellis.vector.Geometry
 import geotrellis.proj4.{WebMercator, CRS => GCRS}
-
-import com.github.blemale.scaffeine.Scaffeine
+import com.github.blemale.scaffeine.{Cache, Scaffeine}
 import com.vividsolutions.jts.{geom => jts}
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder
 import org.locationtech.geomesa.accumulo.index.Constants
 import org.opengis.feature.simple.SimpleFeatureType
-import com.typesafe.config.ConfigFactory
 
 import scala.reflect._
 
 object GeoMesaSimpleFeatureType {
 
-  val whenField  = GeometryToGeoMesaSimpleFeature.whenField
-  val whereField = GeometryToGeoMesaSimpleFeature.whereField
+  val whenField: String = GeometryToGeoMesaSimpleFeature.whenField
+  val whereField: String = GeometryToGeoMesaSimpleFeature.whereField
 
-  lazy val featureTypeCache =
+  lazy val featureTypeCache: Cache[String, SimpleFeatureType] =
     Scaffeine()
       .recordStats()
-      .maximumSize(ConfigFactory.load().getInt("geotrellis.geomesa.featureTypeCacheSize"))
+      .maximumSize(GeoMesaConfig.featureTypeCacheSize)
       .build[String, SimpleFeatureType]()
 
   def apply[G <: Geometry: ClassTag](featureName: String, crs: Option[GCRS] = Some(WebMercator), temporal: Boolean = false): SimpleFeatureType = {

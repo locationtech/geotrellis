@@ -96,7 +96,7 @@ class S3LayerWriter(
         rddWriter.update(rdd, bucket, keyPath, Some(writerSchema), mergeFunc)
 
       case None =>
-        logger.warn(s"Skipping update with empty bounds for layer $id.")
+        logger.warn(s"Skipping update with empty bounds for $id.")
     }
   }
 

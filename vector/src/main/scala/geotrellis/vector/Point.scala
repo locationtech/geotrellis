@@ -47,6 +47,8 @@ case class Point(jtsGeom: jts.Point) extends Geometry
   val y: Double =
     jtsGeom.getY
 
+  override lazy val vertices: Array[Point] = Array(this)
+
   private[vector] def toCoordinate() =
     new jts.Coordinate(x, y)
 

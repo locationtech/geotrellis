@@ -16,13 +16,12 @@
 
 package geotrellis.vector
 
-import geotrellis.proj4.CRS
-
+import com.vividsolutions.jts.geom.{CoordinateSequence, TopologyException}
 import com.vividsolutions.jts.{geom => jts}
-import com.vividsolutions.jts.geom.TopologyException
-import GeomFactory._
+import geotrellis.vector.GeomFactory._
+import spire.syntax.cfor._
 
-import scala.reflect.{ ClassTag, classTag }
+import scala.reflect.{ClassTag, classTag}
 
 /** A trait inherited by classes which wrap a jts.Geometry */
 trait Geometry extends Serializable {
@@ -69,6 +68,19 @@ trait Geometry extends Serializable {
     if(jtsGeom.isEmpty) Extent(0.0, 0.0, 0.0, 0.0)
     else jtsGeom.getEnvelopeInternal
 
+  /** Get the number of vertices in this geometry */
+  lazy val vertexCount: Int = jtsGeom.getNumPoints
+
+  /** Returns this Geometry's vertices. */
+  lazy val vertices: Array[Point] = {
+    val vertices = for (i <- 0 until jtsGeom.getNumGeometries) yield {
+      Geometry(jtsGeom.getGeometryN(i).clone().asInstanceOf[jts.Geometry]).vertices
+    }
+
+    vertices.reduce(_ ++ _)
+  }
+
+
   def &(g: Geometry): TwoDimensionsTwoDimensionsIntersectionResult =
     intersection(g)
 
@@ -89,10 +101,6 @@ trait Geometry extends Serializable {
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(g.jtsGeom))
     }
 
-  @deprecated("This will be removed in 2.0 - use intersectionSafe instead", "1.2")
-  def safeIntersection(g: Geometry): TwoDimensionsTwoDimensionsIntersectionResult =
-    intersectionSafe(g)
-
   def intersects(other: Geometry): Boolean =
     jtsGeom.intersects(other.jtsGeom)
 
@@ -105,6 +113,14 @@ trait Geometry extends Serializable {
       Some(this.asInstanceOf[G])
     else
       None
+  }
+
+  protected def populatePoints(sequence: CoordinateSequence, arr: Array[Point], offset: Int = 0): Array[Point] = {
+    cfor(0)(_ < sequence.size, _ + 1) { i =>
+      arr(i + offset) = Point(sequence.getX(i), sequence.getY(i))
+    }
+
+    arr
   }
 
   override

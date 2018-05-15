@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.file
 
+import geotrellis.spark.io.LayerWriter
 import geotrellis.spark.io.avro.{AvroRecordCodec, AvroEncoder}
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.util.KryoWrapper
@@ -51,25 +52,15 @@ object FileRDDWriter {
     val kwWriterSchema = KryoWrapper(writerSchema)
 
     pathsToTiles.foreach { case (path, rows) =>
-      val rows1: Vector[(K,V)] = rows.toVector
-      val rows2: Vector[(K,V)] =
-        if (mergeFunc.nonEmpty && Filesystem.exists(path)) {
+      val updated = LayerWriter.updateRecords(mergeFunc, rows.toVector, existing = {
+        if (Filesystem.exists(path)) {
           val inBytes = Filesystem.slurp(path)
-          AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), inBytes)(_recordCodec)
-        }
-        else Vector.empty
-      val outRows: Vector[(K, V)] = mergeFunc match {
-        case Some(fn) =>
-          (rows2 ++ rows1)
-            .groupBy({ case (k,v) => k })
-            .map({ case (k, kvs) =>
-              val vs = kvs.map({ case (k, v) => v }).toSeq
-              val v: V = vs.tail.foldLeft(vs.head)(fn)
-              (k, v) })
-            .toVector
-        case None => rows1
-      }
-      val outBytes: Array[Byte] = AvroEncoder.toBinary(outRows)(codec)
+          val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
+          AvroEncoder.fromBinary(schema, inBytes)(_recordCodec)
+        } else Vector.empty
+      })
+
+      val outBytes: Array[Byte] = AvroEncoder.toBinary(updated)(codec)
       Filesystem.writeBytes(path, outBytes)
     }
   }

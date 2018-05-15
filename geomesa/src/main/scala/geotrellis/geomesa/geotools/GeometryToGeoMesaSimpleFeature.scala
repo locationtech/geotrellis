@@ -16,17 +16,15 @@
 
 package geotrellis.geomesa.geotools
 
+import geotrellis.spark.io.geomesa.conf.GeoMesaConfig
 import geotrellis.proj4.{CRS => GCRS}
-import geotrellis.spark.util.cache.LRUCache
 import geotrellis.util.annotations.experimental
 import geotrellis.vector.{Geometry, Line, MultiLine, MultiPoint, MultiPolygon, Point, Polygon}
-
-import com.github.blemale.scaffeine.Scaffeine
+import com.github.blemale.scaffeine.{Cache, Scaffeine}
 import com.vividsolutions.jts.{geom => jts}
 import org.geotools.feature.simple.{SimpleFeatureBuilder, SimpleFeatureTypeBuilder}
 import org.opengis.feature.simple.{SimpleFeature, SimpleFeatureType}
 import org.locationtech.geomesa.accumulo.index.Constants
-import com.typesafe.config.ConfigFactory
 
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
@@ -34,13 +32,13 @@ import com.typesafe.config.ConfigFactory
 @experimental
 object GeometryToGeoMesaSimpleFeature {
 
-  val whenField  = "when"
-  val whereField = "the_geom"
+  val whenField: String = "when"
+  val whereField: String = "the_geom"
 
-  lazy val featureTypeCache =
+  lazy val featureTypeCache: Cache[String, SimpleFeatureType] =
     Scaffeine()
       .recordStats()
-      .maximumSize(ConfigFactory.load().getInt("geotrellis.geomesa.featureTypeCacheSize"))
+      .maximumSize(GeoMesaConfig.featureTypeCacheSize)
       .build[String, SimpleFeatureType]()
 
   /** $experimental */

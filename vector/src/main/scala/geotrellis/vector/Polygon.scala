@@ -16,13 +16,12 @@
 
 package geotrellis.vector
 
-import com.vividsolutions.jts.geom.TopologyException
-import com.vividsolutions.jts.{geom => jts}
+import com.vividsolutions.jts.geom.{CoordinateSequence, LinearRing, TopologyException}
 import com.vividsolutions.jts.operation.union._
-import GeomFactory._
-import geotrellis.vector._
+import com.vividsolutions.jts.{geom => jts}
+import geotrellis.vector.GeomFactory._
 
-import spire.syntax.cfor._
+import scala.collection.GenTraversable
 import scala.collection.JavaConversions._
 
 object Polygon {
@@ -38,34 +37,44 @@ object Polygon {
   def apply(exterior: Line): Polygon =
     apply(exterior, Set())
 
+  def apply(exterior: CoordinateSequence): Polygon =
+    Polygon(factory.createPolygon(exterior))
+
   def apply(exterior: Line, holes:Line*): Polygon =
     apply(exterior, holes)
 
-  def apply(exterior: Line, holes:Traversable[Line]): Polygon = {
+  def apply(exterior: CoordinateSequence, holes: GenTraversable[CoordinateSequence]): Polygon =
+    apply(factory.createLinearRing(exterior), holes.map(factory.createLinearRing))
+
+  def apply(exterior: Line, holes: GenTraversable[Line]): Polygon = {
     if(!exterior.isClosed) {
       sys.error(s"Cannot create a polygon with unclosed exterior: $exterior")
     }
 
-    if(exterior.vertices.length < 4) {
-      sys.error(s"Cannot create a polygon with exterior with less that 4 points: $exterior")
+    if(exterior.vertexCount < 4) {
+      sys.error(s"Cannot create a polygon with exterior with fewer than 4 points: $exterior")
     }
 
-    val extGeom = factory.createLinearRing(exterior.jtsGeom.getCoordinates)
+    val extGeom = factory.createLinearRing(exterior.jtsGeom.getCoordinateSequence)
 
     val holeGeoms = (
       for (hole <- holes) yield {
         if (!hole.isClosed) {
           sys.error(s"Cannot create a polygon with an unclosed hole: $hole")
         } else {
-          if (hole.vertices.length < 4)
-            sys.error(s"Cannot create a polygon with a hole with less that 4 points: $hole")
-          else
-            factory.createLinearRing(hole.jtsGeom.getCoordinates)
+          if (hole.vertexCount < 4) {
+            sys.error(s"Cannot create a polygon with a hole with fewer than 4 points: $hole")
+          } else {
+            factory.createLinearRing(hole.jtsGeom.getCoordinateSequence)
+          }
         }
       }).toArray
 
-    Polygon(factory.createPolygon(extGeom, holeGeoms))
+    apply(extGeom, holeGeoms)
   }
+
+  def apply(exterior: LinearRing, holes: GenTraversable[LinearRing]): Polygon =
+    Polygon(factory.createPolygon(exterior, holes.toArray))
 }
 
 /** Class representing a polygon */
@@ -116,18 +125,17 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
     jtsGeom.getBoundary
 
   /** Returns this Polygon's vertices. */
-  lazy val vertices: Array[Point] = {
-    val coords = jtsGeom.getCoordinates
-    val arr = Array.ofDim[Point](coords.size)
-    cfor(0)(_ < arr.size, _ + 1) { i =>
-      val coord = coords(i)
-      arr(i) = Point(coord.x, coord.y)
-    }
+  override lazy val vertices: Array[Point] = {
+    val arr = Array.ofDim[Point](jtsGeom.getNumPoints)
+
+    val sequences = jtsGeom.getExteriorRing.getCoordinateSequence +: (0 until jtsGeom.getNumInteriorRing).map(jtsGeom
+      .getInteriorRingN(_).getCoordinateSequence)
+    val offsets = sequences.map(_.size).scanLeft(0)(_ + _).dropRight(1)
+
+    sequences.zip(offsets).foreach { case (seq, offset) => populatePoints(seq, arr, offset) }
+
     arr
   }
-
-  /** Get the number of vertices in this geometry */
-  lazy val vertexCount: Int = jtsGeom.getNumPoints
 
   /**
    * Returns this Polygon's perimeter.
@@ -164,9 +172,6 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(p.jtsGeom))
     }
 
-  @deprecated("This will be removed in 2.0 - use intersectionSafe instead", "1.2")
-  def safeIntersection(p: Point): PointOrNoResult = intersectionSafe(p)
-
   /**
    * Computes a Result that represents a Geometry made up of the points shared
    * by this Polygon and mp.
@@ -191,10 +196,6 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
     catch {
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(mp.jtsGeom))
     }
-
-  @deprecated("This will be removed in 2.0 - use intersectionSafe instead", "1.2")
-  def safeIntersection(mp: MultiPoint): MultiPointAtLeastOneDimensionIntersectionResult =
-    intersectionSafe(mp)
 
   /**
    * Computes a Result that represents a Geometry made up of the points shared
@@ -221,10 +222,6 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(g.jtsGeom))
     }
 
-  @deprecated("This will be removed in 2.0 - use intersectionSafe instead", "1.2")
-  def safeIntersection(g: OneDimension): OneDimensionAtLeastOneDimensionIntersectionResult =
-    intersectionSafe(g)
-
   /**
    * Computes a Result that represents a Geometry made up of the points shared
    * by this Polygon and g.
@@ -249,10 +246,6 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
     catch {
       case _: TopologyException => simplifier.reduce(jtsGeom).intersection(simplifier.reduce(g.jtsGeom))
     }
-
-  @deprecated("This will be removed in 2.0 - use intersectionSafe instead", "1.2")
-  def safeIntersection(g: TwoDimensions): TwoDimensionsTwoDimensionsIntersectionResult =
-    intersectionSafe(g)
 
   // -- Union
 

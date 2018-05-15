@@ -18,7 +18,7 @@ package geotrellis.vector
 
 import com.vividsolutions.jts.{geom => jts}
 import GeomFactory._
-
+import com.vividsolutions.jts.geom.CoordinateSequence
 import spire.syntax.cfor._
 
 object Line {
@@ -34,6 +34,9 @@ object Line {
 
   def apply(points: Point*): Line =
     apply(points.toList)
+
+  def apply(coords: CoordinateSequence): Line =
+    Line(factory.createLineString(coords))
 
   def apply(points: Traversable[Point]): Line = {
     if (points.size < 2) {
@@ -92,17 +95,16 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
   def points: Array[Point] = vertices
 
   /** Returns the points which determine this line (i.e. its vertices */
-  def vertices: Array[Point] = {
-    val size = jtsGeom.getNumPoints
-    val arr = Array.ofDim[Point](size)
-    cfor(0)(_ < arr.size, _ + 1) { i =>
-      arr(i) = Point(jtsGeom.getPointN(i).clone.asInstanceOf[jts.Point])
+  override lazy val vertices: Array[Point] = {
+    val arr = Array.ofDim[Point](jtsGeom.getNumPoints)
+    val sequence = jtsGeom.getCoordinateSequence
+
+    cfor(0)(_ < arr.length, _ + 1) { i =>
+      arr(i) = Point(sequence.getX(i), sequence.getY(i))
     }
+
     arr
   }
-
-  /** Returns the number of vertices in this geometry */
-  lazy val vertexCount: Int = jtsGeom.getNumPoints
 
   /** Returns the length of this Line. */
   lazy val length: Double =

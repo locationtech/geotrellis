@@ -22,17 +22,19 @@ import geotrellis.vector.{MultiPoint, Point}
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withDelaunayTriangulationMethods(val self: Traversable[Point]) extends DelaunayTriangulationMethods
+  implicit class withDelaunayTriangulationPointMethods(val self: Traversable[Point]) extends DelaunayTriangulationPointMethods
 
-  implicit class withDelaunayTriangulationArrayMethods(val self: Array[Point]) extends DelaunayTriangulationArrayMethods
+  implicit class withDelaunayTriangulationCoordinateMethods(val self: Traversable[Coordinate]) extends DelaunayTriangulationCoordinateMethods
 
-  implicit class withVoronoiDiagramMethods(val self: Traversable[Point]) extends VoronoiDiagramMethods
+  implicit class withDelaunayTriangulationPointArrayMethods(val self: Array[Point]) extends DelaunayTriangulationArrayMethods
 
-  implicit class withVoronoiDiagramArrayMethods(val self: Array[Point]) extends VoronoiDiagramArrayMethods
+  implicit class withVoronoiDiagramPointMethods(val self: Traversable[Point]) extends VoronoiDiagramPointMethods
 
-  implicit class withFastVoronoiDiagramMethods(val self: Traversable[Coordinate]) extends FastVoronoiDiagramMethods
+  implicit class withVoronoiDiagramPointArrayMethods(val self: Array[Point]) extends VoronoiDiagramPointArrayMethods
 
-  implicit class withFastVoronoiDiagramArrayMethods(val self: Array[Coordinate]) extends FastVoronoiDiagramArrayMethods
+  implicit class withVoronoiDiagramCoordinateMethods(val self: Traversable[Coordinate]) extends VoronoiDiagramCoordinateMethods
 
-  implicit class withFastVoronoiDiagramMultiPointMethods(val self: MultiPoint) extends FastVoronoiDiagramMultiPointMethods
+  implicit class withVoronoiDiagramCoordinateArrayMethods(val self: Array[Coordinate]) extends VoronoiDiagramCoordinateArrayMethods
+
+  implicit class withVoronoiDiagramMultiPointMethods(val self: MultiPoint) extends VoronoiDiagramMultiPointMethods
 }
