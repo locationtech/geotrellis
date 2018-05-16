@@ -125,11 +125,10 @@ case class COGLayerMetadata[K: SpatialComponent](
     val zoomRange @ ZoomRange(minZoom, maxZoom) = zoomRangeFor(zoom)
     val (baseLayout, layout) = layoutForZoom(minZoom) -> layoutForZoom(zoom)
     val overviewIdx = maxZoom - zoom - 1
+    val queryGridBounds = queryKeyBounds.toGridBounds()
 
-    // queryKeyBounds converted on a base zoom level
-    val baseQueryKeyBounds = {
-      val KeyBounds(minKey, maxKey) = queryKeyBounds
-
+    // queryGridBounds converted on a base zoom level
+    val baseQueryGridBounds = {
       val extentGridBounds =
         baseLayout
           .mapTransform
@@ -140,26 +139,20 @@ case class COGLayerMetadata[K: SpatialComponent](
           .mapTransform.extentToBounds(
             layout
               .mapTransform
-              .boundsToExtent(queryKeyBounds.toGridBounds())
+              .boundsToExtent(queryGridBounds)
               .bufferByLayout(layout)
           )
 
-      val GridBounds(colMin, rowMin, colMax, rowMax) =
-        extentGridBounds
-          .intersection(gridBounds)
-          .getOrElse(
-            throw new Exception(
-              s"Entire layout grid bounds $extentGridBounds have no intersections to layer grid bounds $gridBounds"
-            )
+      extentGridBounds
+        .intersection(gridBounds)
+        .getOrElse(
+          throw new Exception(
+            s"Entire layout grid bounds $extentGridBounds have no intersections to layer grid bounds $gridBounds"
           )
-
-      KeyBounds(
-        minKey.setComponent(SpatialKey(colMin, rowMin)),
-        maxKey.setComponent(SpatialKey(colMax, rowMax))
-      )
+        )
     }
 
-    val GridBounds(colMin, rowMin, colMax, rowMax) = baseQueryKeyBounds.toGridBounds()
+    val GridBounds(colMin, rowMin, colMax, rowMax) = baseQueryGridBounds
 
     val seq =
       for {
@@ -172,8 +165,8 @@ case class COGLayerMetadata[K: SpatialComponent](
             .mapTransform
             .extentToBounds(queryKey.extent(baseLayout).bufferByLayout(layout))
 
-        val seq = queryKeyBounds.toGridBounds().intersection(layoutGridBounds) match {
-          case Some(GridBounds(queryMinKeyCol, queryMinKeyRow, queryMaxKeyCol, queryMaxKeyRow)) => {
+        val seq = queryGridBounds.intersection(layoutGridBounds) match {
+          case Some(GridBounds(queryMinKeyCol, queryMinKeyRow, queryMaxKeyCol, queryMaxKeyRow)) =>
             for {
               qcol <- queryMinKeyCol to queryMaxKeyCol
               qrow <- queryMinKeyRow to queryMaxKeyRow
@@ -182,9 +175,8 @@ case class COGLayerMetadata[K: SpatialComponent](
 
               val (minCol, minRow) = ((key.col - layoutGridBounds.colMin) * layout.tileCols, (key.row - layoutGridBounds.rowMin) * layout.tileRows)
               val (maxCol, maxRow) = (minCol + layout.tileCols - 1, minRow + layout.tileRows - 1)
-              GridBounds(minCol, minRow, maxCol, maxRow) -> key
+              (GridBounds(minCol, minRow, maxCol, maxRow), key)
             }
-          }
           case _ => Nil
         }
 
