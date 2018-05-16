@@ -170,37 +170,23 @@ case class COGLayerMetadata[K: SpatialComponent](
         val layoutGridBounds =
           layout
             .mapTransform
-            .extentToBounds(queryKey.extent(baseLayout))
+            .extentToBounds(queryKey.extent(baseLayout).bufferByLayout(layout))
 
-        val seq = queryKeyBounds.toGridBounds().intersection(layoutGridBounds).toList.flatMap {
-          case GridBounds(queryMinKeyCol, queryMinKeyRow, queryMaxKeyCol, queryMaxKeyRow) =>
+        val seq = queryKeyBounds.toGridBounds().intersection(layoutGridBounds) match {
+          case Some(GridBounds(queryMinKeyCol, queryMinKeyRow, queryMaxKeyCol, queryMaxKeyRow)) => {
             for {
               qcol <- queryMinKeyCol to queryMaxKeyCol
               qrow <- queryMinKeyRow to queryMaxKeyRow
             } yield {
               val key = SpatialKey(qcol, qrow)
 
-              val baseKey =
-                baseLayout
-                  .mapTransform
-                  .pointToKey(
-                    layout
-                      .mapTransform
-                      .keyToExtent(key)
-                      .center
-                  )
-
-              val keyLayoutGridBounds = layout.mapTransform(baseKey.extent(baseLayout).bufferByLayout(layout))
-
-              if (layoutGridBounds.contains(keyLayoutGridBounds)) {
-                val gb = keyLayoutGridBounds
-                val (minCol, minRow) = ((key.col - gb.colMin) * layout.tileCols, (key.row - gb.rowMin) * layout.tileRows)
-                val (maxCol, maxRow) = (minCol + layout.tileCols - 1, minRow + layout.tileRows - 1)
-                Some(GridBounds(minCol, minRow, maxCol, maxRow) -> key)
-              } else None
+              val (minCol, minRow) = ((key.col - layoutGridBounds.colMin) * layout.tileCols, (key.row - layoutGridBounds.rowMin) * layout.tileRows)
+              val (maxCol, maxRow) = (minCol + layout.tileCols - 1, minRow + layout.tileRows - 1)
+              GridBounds(minCol, minRow, maxCol, maxRow) -> key
             }
-          case _ => None
-        }.flatten
+          }
+          case _ => Nil
+        }
 
         if(seq.nonEmpty) {
           val combinedGridBounds = seq.map(_._1).reduce(_ combine _)
@@ -233,8 +219,7 @@ case class COGLayerMetadata[K: SpatialComponent](
     val layoutGridBounds = layout.mapTransform(baseKey.extent(baseLayout).bufferByLayout(layout))
 
     val gridBounds = {
-      val gb = layoutGridBounds
-      val (minCol, minRow) = ((key.col - gb.colMin) * layout.tileCols, (key.row - gb.rowMin) * layout.tileRows)
+      val (minCol, minRow) = ((key.col - layoutGridBounds.colMin) * layout.tileCols, (key.row - layoutGridBounds.rowMin) * layout.tileRows)
       val (maxCol, maxRow) = (minCol + layout.tileCols - 1, minRow + layout.tileRows - 1)
       GridBounds(minCol, minRow, maxCol, maxRow)
     }
