@@ -124,9 +124,7 @@ case class COGLayerMetadata[K: SpatialComponent](
     /** "Base" in this function means min zoom level and NOT the highest resolution */
     val zoomRange @ ZoomRange(minZoom, maxZoom) = zoomRangeFor(zoom)
     val (baseLayout, layout) = layoutForZoom(minZoom) -> layoutForZoom(zoom)
-
     val overviewIdx = maxZoom - zoom - 1
-    val KeyBounds(queryMinKey, queryMaxKey) = queryKeyBounds
 
     // queryKeyBounds converted on a base zoom level
     val baseQueryKeyBounds = {
@@ -168,30 +166,45 @@ case class COGLayerMetadata[K: SpatialComponent](
         col <- colMin to colMax
         row <- rowMin to rowMax
       } yield {
-        val baseKey = SpatialKey(col, row)
+        val queryKey = SpatialKey(col, row)
         val layoutGridBounds =
           layout
             .mapTransform
-            .extentToBounds(baseKey.extent(baseLayout))
+            .extentToBounds(queryKey.extent(baseLayout))
 
-        val seq =
-          (for {
-            qcol <- queryMinKey.col to queryMaxKey.col
-            qrow <- queryMinKey.row to queryMaxKey.row
-          } yield {
-            val key = SpatialKey(qcol, qrow)
-            val keyLayoutGridBounds = layout.mapTransform(key.extent(layout))
+        val seq = queryKeyBounds.toGridBounds().intersection(layoutGridBounds).toList.flatMap {
+          case GridBounds(queryMinKeyCol, queryMinKeyRow, queryMaxKeyCol, queryMaxKeyRow) =>
+            for {
+              qcol <- queryMinKeyCol to queryMaxKeyCol
+              qrow <- queryMinKeyRow to queryMaxKeyRow
+            } yield {
+              val key = SpatialKey(qcol, qrow)
 
-            if(layoutGridBounds.contains(keyLayoutGridBounds)) {
-              val (minCol, minRow) = ((qcol - layoutGridBounds.colMin) * baseLayout.tileCols, (qrow - layoutGridBounds.rowMin) * baseLayout.tileRows)
-              val (maxCol, maxRow) = (minCol + layout.tileCols - 1, minRow + layout.tileRows - 1)
-              Some((GridBounds(minCol, minRow, maxCol, maxRow), key))
-            } else None
-          }).flatten
+              val baseKey =
+                baseLayout
+                  .mapTransform
+                  .pointToKey(
+                    layout
+                      .mapTransform
+                      .keyToExtent(key)
+                      .center
+                  )
+
+              val keyLayoutGridBounds = layout.mapTransform(baseKey.extent(baseLayout).bufferByLayout(layout))
+
+              if (layoutGridBounds.contains(keyLayoutGridBounds)) {
+                val gb = keyLayoutGridBounds
+                val (minCol, minRow) = ((key.col - gb.colMin) * layout.tileCols, (key.row - gb.rowMin) * layout.tileRows)
+                val (maxCol, maxRow) = (minCol + layout.tileCols - 1, minRow + layout.tileRows - 1)
+                Some(GridBounds(minCol, minRow, maxCol, maxRow) -> key)
+              } else None
+            }
+          case _ => None
+        }.flatten
 
         if(seq.nonEmpty) {
           val combinedGridBounds = seq.map(_._1).reduce(_ combine _)
-          Some((baseKey, overviewIdx, combinedGridBounds, seq))
+          Some((queryKey, overviewIdx, combinedGridBounds, seq))
         } else None
       }
 
