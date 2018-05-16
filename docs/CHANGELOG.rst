@@ -42,7 +42,9 @@ API Changes
   - **Change:** Refactored CassandraInstance, now accepts a getCluster function
   - **Change:** Use pureconfig to handle all work with configuration files
   - **Change:** Replace `geotrellis.util.Functor` with `cats.Functor`.
-  - **Remove:** ``LayerUpdater`` with its functionality covered by ``LayerWriter`` <https://github.com/locationtech/geotrellis/pull/2663>__ 
+  - **Remove:** ``LayerUpdater`` with its functionality covered by ``LayerWriter`` <https://github.com/locationtech/geotrellis/pull/2663>__
+  - **New:** Alter `geotrellis.spark.stitch.StitchRDDMethods` to allow `RDD[(K, V)]` to be stitched when not all tiles are
+    of the same dimension.
 
 - ``geotrellis.raster``
 

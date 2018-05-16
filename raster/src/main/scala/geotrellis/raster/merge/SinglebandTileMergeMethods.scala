@@ -27,65 +27,49 @@ import spire.syntax.cfor._
   * single-band [[Tile]]s.
   */
 trait SinglebandTileMergeMethods extends TileMergeMethods[Tile] {
-  /** Merges this tile with another tile.
-    *
-    * This method will replace the values of these cells with the
-    * values of the other tile's corresponding cells, if the source
-    * cell is of the transparent value.  The transparent value is
-    * determined by the tile's cell type; if the cell type has a
-    * NoData value, then that is considered the transparent value.  If
-    * there is no NoData value associated with the cell type, then a 0
-    * value is considered the transparent value. If this is not the
-    * desired effect, the caller is required to change the cell type
-    * before using this method to an appropriate cell type that has
-    * the desired NoData value.
-    *
-    * @note                         This method requires that the dimensions be the same between the tiles, and assumes
-    *                               equal extents.
-    */
-  def merge(other: Tile): Tile = {
+  def merge(other: Tile, baseCol: Int, baseRow: Int): Tile = {
     val mutableTile = self.mutable
     Seq(self, other).assertEqualDimensions()
     self.cellType match {
       case BitCellType =>
-        cfor(0)(_ < self.rows, _ + 1) { row =>
-          cfor(0)(_ < self.cols, _ + 1) { col =>
+        cfor(0)(_ < other.rows, _ + 1) { row =>
+          cfor(0)(_ < other.cols, _ + 1) { col =>
             if (other.get(col, row) == 1) {
-              mutableTile.set(col, row, 1)
+              mutableTile.set(col + baseCol, row + baseRow, 1)
             }
           }
         }
       case ByteCellType | UByteCellType | ShortCellType | UShortCellType | IntCellType  =>
         // Assume 0 as the transparent value
-        cfor(0)(_ < self.rows, _ + 1) { row =>
-          cfor(0)(_ < self.cols, _ + 1) { col =>
-            if (self.get(col, row) == 0) {
-              mutableTile.set(col, row, other.get(col, row))
+        cfor(0)(_ < other.rows, _ + 1) { row =>
+          cfor(0)(_ < other.cols, _ + 1) { col =>
+            if (self.get(col + baseCol, row + baseRow) == 0) {
+              mutableTile.set(col + baseCol, row + baseRow, other.get(col, row))
             }
           }
         }
       case FloatCellType | DoubleCellType =>
         // Assume 0.0 as the transparent value
-        cfor(0)(_ < self.rows, _ + 1) { row =>
-          cfor(0)(_ < self.cols, _ + 1) { col =>
-            if (self.getDouble(col, row) == 0.0) {
-              mutableTile.setDouble(col, row, other.getDouble(col, row))
+        cfor(0)(_ < other.rows, _ + 1) { row =>
+          cfor(0)(_ < other.cols, _ + 1) { col =>
+            if (self.getDouble(col + baseCol, row + baseRow) == 0.0) {
+              mutableTile.setDouble(col + baseCol, row + baseRow, other.getDouble(col, row))
             }
           }
         }
       case x if x.isFloatingPoint =>
-        cfor(0)(_ < self.rows, _ + 1) { row =>
-          cfor(0)(_ < self.cols, _ + 1) { col =>
-            if (isNoData(self.getDouble(col, row))) {
-              mutableTile.setDouble(col, row, other.getDouble(col, row))
+        cfor(0)(_ < other.rows, _ + 1) { row =>
+          cfor(0)(_ < other.cols, _ + 1) { col =>
+            if (isNoData(self.getDouble(col + baseCol, row + baseRow))) {
+              mutableTile.setDouble(col + baseCol, row + baseRow, other.getDouble(col, row))
             }
           }
         }
       case _ =>
-        cfor(0)(_ < self.rows, _ + 1) { row =>
-          cfor(0)(_ < self.cols, _ + 1) { col =>
-            if (isNoData(self.get(col, row))) {
-              mutableTile.set(col, row, other.get(col, row))
+        cfor(0)(_ < other.rows, _ + 1) { row =>
+          cfor(0)(_ < other.cols, _ + 1) { col =>
+            if (isNoData(self.get(col + baseCol, row + baseRow))) {
+              mutableTile.set(col + baseCol, row + baseRow, other.get(col, row))
             }
           }
         }

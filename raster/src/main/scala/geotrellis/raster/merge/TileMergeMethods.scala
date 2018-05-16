@@ -35,7 +35,20 @@ trait TileMergeMethods[T] extends MethodExtensions[T] {
     * @param   other        The other Tile
     * @return               A new Tile, the result of the merge
     */
-  def merge(other: T): T
+  def merge(other: T): T = merge(other, 0, 0)
+
+  /**
+    * Merge this [[Tile]] with the other.  Places the content of the (i, j)th pixel
+    * of other into the (col + i, row + j)th pixel of the result.
+    *
+    * @param   other        The other Tile
+    * @param   col          The column in the output tile corresponding to the left
+    *                       edge of the merged data
+    * @param   row          The row in the output tile corresponding to the top edge
+    *                       of the merged data
+    * @return               The result of the merge
+    */
+  def merge(other: T, col: Int, row: Int): T
 
   /**
     * Merge this [[Tile]] with the other one.  All places in the
@@ -64,4 +77,5 @@ trait TileMergeMethods[T] extends MethodExtensions[T] {
     */
   def merge(extent: Extent, otherExtent: Extent, other: T): T =
     merge(extent, otherExtent, other, NearestNeighbor)
+
 }

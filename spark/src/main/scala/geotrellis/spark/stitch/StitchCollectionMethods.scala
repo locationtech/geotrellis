@@ -17,6 +17,8 @@
 package geotrellis.spark.stitch
 
 import geotrellis.raster._
+import geotrellis.raster.prototype._
+import geotrellis.raster.merge._
 import geotrellis.raster.stitch.Stitcher
 import geotrellis.vector.Extent
 import geotrellis.spark._
@@ -25,13 +27,19 @@ import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
 
-abstract class SpatialTileLayoutCollectionStitchMethods[V <: CellGrid: Stitcher, M: GetComponent[?, LayoutDefinition]]
-  extends MethodExtensions[Seq[(SpatialKey, V)] with Metadata[M]] {
+abstract class SpatialTileLayoutCollectionStitchMethods[
+  V <: CellGrid: Stitcher,
+  M: GetComponent[?, LayoutDefinition]
+] extends MethodExtensions[Seq[(SpatialKey, V)] with Metadata[M]] {
 
   def stitch(): Raster[V] = {
-    val (tile, bounds) = TileLayoutStitcher.stitch(self)
-    val mapTransform = self.metadata.getComponent[LayoutDefinition].mapTransform
-    Raster(tile, mapTransform(bounds))
+    val (tile, (kx, ky), (offsx, offsy)) = TileLayoutStitcher.stitch(self)
+    val layout = self.metadata.getComponent[LayoutDefinition]
+    val mapTransform = layout.mapTransform
+    val nwTileEx = mapTransform(kx, ky)
+    val base = nwTileEx.southEast
+    val (ulx, uly) = (base.x - offsx.toDouble * layout.cellwidth, base.y + offsy * layout.cellheight)
+    Raster(tile, Extent(ulx, uly - tile.rows * layout.cellheight, ulx + tile.cols * layout.cellwidth, uly))
   }
 }
 

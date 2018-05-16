@@ -17,6 +17,8 @@
 package geotrellis.spark.stitch
 
 import geotrellis.raster._
+import geotrellis.raster.merge._
+import geotrellis.raster.prototype._
 import geotrellis.raster.stitch._
 import geotrellis.vector.Extent
 import geotrellis.spark.tiling._
@@ -28,7 +30,10 @@ import org.apache.spark.rdd.RDD
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withSpatialTileLayoutRDDMethods[V <: CellGrid: Stitcher, M: GetComponent[?, LayoutDefinition]](
+  implicit class withSpatialTileLayoutRDDMethods[
+    V <: CellGrid: Stitcher,
+    M: GetComponent[?, LayoutDefinition]
+  ](
     val self: RDD[(SpatialKey, V)] with Metadata[M]
   ) extends SpatialTileLayoutRDDStitchMethods[V, M]
 
@@ -36,7 +41,10 @@ trait Implicits {
     val self: RDD[(SpatialKey, V)]
   ) extends SpatialTileRDDStitchMethods[V]
 
-  implicit class withSpatialTileLayoutCollectionMethods[V <: CellGrid: Stitcher, M: GetComponent[?, LayoutDefinition]](
+  implicit class withSpatialTileLayoutCollectionMethods[
+    V <: CellGrid: Stitcher,
+    M: GetComponent[?, LayoutDefinition]
+  ](
     val self: Seq[(SpatialKey, V)] with Metadata[M]
   ) extends SpatialTileLayoutCollectionStitchMethods[V, M]
 

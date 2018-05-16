@@ -134,5 +134,22 @@ class RDDStitchMethodsSpec extends FunSpec
           """.stripMargin
       )
     }
+
+    it("should allow stitch RDD of unequally-dimensioned tiles") {
+      val tiles = sc.parallelize(Array(
+        (SpatialKey(10,31), IntArrayTile.ofDim( 5, 5).map{ (x, y, _) => math.max(x,    y) }),
+        (SpatialKey(11,31), IntArrayTile.ofDim(15, 5).map{ (x, y, _) => math.max(x+5,  y) }),
+        (SpatialKey(12,31), IntArrayTile.ofDim( 7, 5).map{ (x, y, _) => math.max(x+20, y) }),
+        (SpatialKey(10,32), IntArrayTile.ofDim( 5,15).map{ (x, y, _) => math.max(x,    y+5) }),
+        (SpatialKey(11,32), IntArrayTile.ofDim(15,15).map{ (x, y, _) => math.max(x+5,  y+5) }),
+        (SpatialKey(12,32), IntArrayTile.ofDim( 7,15).map{ (x, y, _) => math.max(x+20, y+5) }),
+        (SpatialKey(10,33), IntArrayTile.ofDim( 5, 7).map{ (x, y, _) => math.max(x,    y+20) }),
+        (SpatialKey(11,33), IntArrayTile.ofDim(15, 7).map{ (x, y, _) => math.max(x+5,  y+20) }),
+        (SpatialKey(12,33), IntArrayTile.ofDim( 7, 7).map{ (x, y, _) => math.max(x+20, y+20) })
+      ))
+      val reference = IntArrayTile.ofDim(27,27).map{ (x, y, _) => math.max(x, y) }
+
+      assertEqual(tiles.stitch, reference)
+    }
   }
 }
