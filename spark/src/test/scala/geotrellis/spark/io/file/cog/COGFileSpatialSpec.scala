@@ -16,21 +16,25 @@
 
 package geotrellis.spark.io.file.cog
 
-import geotrellis.raster.Tile
+import geotrellis.raster.{MultibandTile, Tile}
+import geotrellis.raster.io.geotiff._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.index._
 import geotrellis.spark.testkit._
+import geotrellis.raster.testkit._
 import geotrellis.spark.testkit.io._
 import geotrellis.spark.testkit.io.cog._
 import geotrellis.spark.testkit.testfiles.cog.COGTestFiles
+import geotrellis.vector.Extent
 
 class COGFileSpatialSpec
   extends COGPersistenceSpec[SpatialKey, Tile]
     with COGTestFiles
     with SpatialKeyIndexMethods
     with TestEnvironment
+    with RasterMatchers
     with COGAllOnesTestTileSpec {
   lazy val reader = FileCOGLayerReader(outputLocalPath)
   lazy val creader = FileCOGCollectionLayerReader(outputLocalPath)
@@ -51,6 +55,17 @@ class COGFileSpatialSpec
       println(outputLocalPath)
       writer.write[SpatialKey, Tile](layerId.name, layer, layerId.zoom, ZCurveKeyIndexMethod)
       val backin = reader.read[SpatialKey, Tile](layerId)
+    }
+  }
+
+  describe("COGLayerReader and stitch") {
+    it("should properly read and stitch tiles") {
+      val reader = FileCOGLayerReader("spark/src/test/resources/cog-layer")
+      val layer = reader.read[SpatialKey, MultibandTile](LayerId("stitch-layer", 11))
+      val ext = Extent(14990677.113, 6143014.652, 15068031.386, 6198584.372)
+      val actual = layer.stitch.crop(ext).tile
+      val expected = GeoTiff.readMultiband("spark/src/test/resources/cog-layer/stitched.tiff").crop(ext).tile.toArrayTile
+      assertEqual(actual.tile, expected)
     }
   }
 }

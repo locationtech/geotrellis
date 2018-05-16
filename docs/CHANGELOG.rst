@@ -72,6 +72,7 @@ Fixes
 - Allow for simple features to be generated with a specified or random id with geometry stored in the standard
   field, "the_geom"
 - Use a new Amazon SDK API to remove deprecation warnings.
+- Fixed a bug in incorrect metadata fetch by COGLayerReaders that could lead to an incorrect data querying.
 
 1.2.1
 _____
