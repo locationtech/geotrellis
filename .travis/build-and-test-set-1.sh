@@ -5,8 +5,6 @@
   "project geotools" test \
   "project shapefile" test \
   "project spark" test \
-  "project spark-pipeline" test \
-  "project spark-etl" test \
   "project accumulo" test \
   "project cassandra" test \
   "project doc-examples" compile || { exit 1; }

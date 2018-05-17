@@ -5,6 +5,8 @@
   "project raster" test \
   "project slick" test \
   "project vectortile" test \
+  "project spark-pipeline" test \
+  "project spark-etl" test \
   "project geowave" compile test:compile \
   "project hbase" test \
   "project s3" test \
