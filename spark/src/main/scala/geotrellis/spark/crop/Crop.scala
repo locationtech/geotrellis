@@ -47,7 +47,7 @@ object Crop {
                     if (extent.contains(srcExtent)) {
                       Some((key, tile))
                     } else if (extent.interiorIntersects(srcExtent)) {
-                      val newTile = tile.crop(srcExtent, extent, options)
+                      val newTile = tile.crop(srcExtent, extent.intersection(srcExtent).get, options)
                       Some((key, newTile))
                     } else {
                       None

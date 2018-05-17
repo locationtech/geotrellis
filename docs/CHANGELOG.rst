@@ -73,6 +73,7 @@ Fixes
   field, "the_geom"
 - Use a new Amazon SDK API to remove deprecation warnings.
 - Fixed a bug in incorrect metadata fetch by COGLayerReaders that could lead to an incorrect data querying.
+- Cropping RDDs with clamp=false now produces correct result
 
 1.2.1
 _____

@@ -31,7 +31,7 @@ class RasterCropMethods[T <: CellGrid: (? => CropMethods[T])](val self: Raster[T
     * [[Raster]].
     */
   def crop(extent: Extent, options: Options): Raster[T] = {
-    val re = RasterExtent(self._2, self._1)
+    val re = RasterExtent(self.tile, self.extent)
     val gridBounds = re.gridBoundsFor(extent, clamp = options.clamp)
     val croppedExtent = re.extentFor(gridBounds, clamp = options.clamp)
     val croppedTile = self._1.crop(gridBounds, options)
