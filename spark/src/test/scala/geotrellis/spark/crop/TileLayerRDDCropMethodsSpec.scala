@@ -17,6 +17,7 @@
 package geotrellis.spark.crop
 
 import geotrellis.raster._
+import geotrellis.raster.crop.Crop.{Options => CropOptions}
 import geotrellis.raster.io.geotiff.SinglebandGeoTiff
 import geotrellis.spark._
 import geotrellis.vector.Extent
@@ -36,6 +37,7 @@ class TileLayerRDDCropMethodsSpec extends FunSpec with TestEnvironment {
     val Extent(xmin, ymin, xmax, ymax) = overall
     val half = Extent(xmin, ymin, xmin + (xmax - xmin) / 2, ymin + (ymax - ymin) / 2)
     val small = Extent(xmin, ymin, xmin + (xmax - xmin) / 5, ymin + (ymax - ymin) / 5)
+    val shifted = Extent(xmin + overall.width / 2, ymin + overall.height / 2, xmax + overall.width / 2, ymax + overall.height / 2)
 
     it("should correctly crop by the rdd extent") {
       val count = rdd.crop(overall).count
@@ -58,6 +60,25 @@ class TileLayerRDDCropMethodsSpec extends FunSpec with TestEnvironment {
 
       val gb = cropped.metadata.bounds.get.toGridBounds
       gb.width * gb.height should be (1)
+    }
+
+    it("should correctly crop by a shifted extent") {
+      val cropped = rdd.crop(shifted)
+      val count = cropped.count
+      count should be (9)
+
+      val gb = cropped.metadata.bounds.get.toGridBounds
+      gb.width * gb.height should be (9)
+    }
+
+    it("should correctly crop by a shifted extent (clamp = false)") {
+      val cropped = rdd.crop(shifted)
+      val stitched = cropped.stitch.tile
+
+      val croppednc = rdd.crop(shifted, CropOptions(clamp = false))
+      val stitchednc = croppednc.stitch.tile
+
+      assertEqual(stitched, stitchednc)
     }
   }
 }
