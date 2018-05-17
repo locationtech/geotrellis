@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Astraea, Inc.
+ * Copyright 2017 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package geotrellis.raster
 
 import scala.util.Try

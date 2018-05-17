@@ -1,4 +1,5 @@
 import Dependencies._
+import de.heikoseeberger.sbtheader._
 import sbt.Keys._
 
 scalaVersion := Version.scala
@@ -78,7 +79,22 @@ lazy val commonSettings = Seq(
     "geosolutions" at "http://maven.geo-solutions.it/",
     "osgeo" at "http://download.osgeo.org/webdav/geotools/"
   ),
-  headerLicense := Some(HeaderLicense.ALv2("2017", "Azavea")),
+  headerLicense := Some(HeaderLicense.ALv2("2018", "Azavea")),
+  // preserve year of old headers
+  headerMappings :=
+    Map(FileType.scala -> CommentStyle.cStyleBlockComment.copy(commentCreator = new CommentCreator() {
+      val Pattern = "(?s).*?(\\d{4}(-\\d{4})?).*".r
+      def findYear(header: String): Option[String] = header match {
+        case Pattern(years, _) => Some(years)
+        case _                 => None
+      }
+      override def apply(text: String, existingText: Option[String]): String = {
+        val newText = CommentStyle.cStyleBlockComment.commentCreator.apply(text, existingText)
+        existingText
+          .flatMap(findYear)
+          .map(year => newText.replace("2018", year))
+          .getOrElse(newText)
+      } } )),
   scapegoatVersion in ThisBuild := "1.3.3",
   updateOptions := updateOptions.value.withGigahorse(false)
 )
