@@ -1,11 +1,14 @@
 #!/bin/bash
 
-./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" "project geowave" compile test:compile || { exit 1; }
-./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" "project cassandra" test  || { exit 1; }
-./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" "project vector" test || { exit 1; }
-./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" "project raster" test || { exit 1; }
-./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" "project s3" test  || { exit 1; }
-./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" "project s3-testkit" test  || { exit 1; }
-./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" "project spark-etl" test  || { exit 1; }
-./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" "project slick" test || { exit 1; }
-./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" "project vectortile" test || { exit 1; }
+./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" \
+  "project vector" test \
+  "project raster" test \
+  "project slick" test \
+  "project vectortile" test \
+  "project spark-pipeline" test \
+  "project spark-etl" test \
+  "project geowave" compile test:compile \
+  "project hbase" test \
+  "project s3" test \
+  "project s3-testkit" test \
+  "project geomesa" test || { exit 1; }
