@@ -84,7 +84,7 @@ case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: Tile
 
     def addToPartition(window: GridBounds) {
       partition += window
-      partitionSize += window.sizeLong
+      partitionSize += window.size
       partitionCount += 1
     }
 
@@ -99,7 +99,7 @@ case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: Tile
       }.sortBy(_._2)
 
     for ((window, _) <- sorted) {
-      if ((partitionCount == 0) || (partitionSize + window.sizeLong) < maxPartitionSize) {
+      if ((partitionCount == 0) || (partitionSize + window.size) < maxPartitionSize) {
         addToPartition(window)
       } else {
         finalizePartition()

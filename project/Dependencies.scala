@@ -62,4 +62,47 @@ object Dependencies {
   val circeGeneric        = "io.circe"                   %% "circe-generic"            % Version.circe
   val circeGenericExtras  = "io.circe"                   %% "circe-generic-extras"     % Version.circe
   val circeParser         = "io.circe"                   %% "circe-parser"             % Version.circe
+
+  val accumuloCore        = "org.apache.accumulo"          % "accumulo-core"           % Version.accumulo
+
+  val sl4jnop             = "org.slf4j"                    % "slf4j-nop"               % "1.7.25"
+
+  val cassandraDriverCore = "com.datastax.cassandra"       % "cassandra-driver-core"   % Version.cassandra
+
+  val geomesaJobs         = "org.locationtech.geomesa"     % "geomesa-jobs"               % Version.geomesa
+  val geomesaAccumulo     = "org.locationtech.geomesa"     % "geomesa-accumulo-datastore" % Version.geomesa
+  val geomesaUtils        = "org.locationtech.geomesa"     % "geomesa-utils"              % Version.geomesa
+
+  val geotoolsCoverage    = "org.geotools"                 % "gt-coverage"             % Version.geotools
+  val geotoolsHsql        = "org.geotools"                 % "gt-epsg-hsql"            % Version.geotools
+  val geotoolsMain        = "org.geotools"                 % "gt-main"                 % Version.geotools
+  val geotoolsReferencing = "org.geotools"                 % "gt-referencing"          % Version.geotools
+  val geotoolsGeoTiff     = "org.geotools"                 % "gt-geotiff"              % Version.geotools
+  val geotoolsShapefile   = "org.geotools"                 % "gt-shapefile"            % Version.geotools
+
+  val jaiCore             = "javax.media"                  % "jai_core"                % "1.1.3"
+
+  val geowaveRaster       = "mil.nga.giat"                 % "geowave-adapter-raster"     % Version.geowave
+  val geowaveVector       = "mil.nga.giat"                 % "geowave-adapter-vector"     % Version.geowave
+  val geowaveStore        = "mil.nga.giat"                 % "geowave-core-store"         % Version.geowave
+  val geowaveGeotime      = "mil.nga.giat"                 % "geowave-core-geotime"       % Version.geowave
+  val geowaveAccumulo     = "mil.nga.giat"                 % "geowave-datastore-accumulo" % Version.geowave
+
+  val scalaArm            = "com.jsuereth"                %% "scala-arm"               % "2.0"
+
+  val kryoSerializers     = "de.javakaffee"                % "kryo-serializers"        % "0.38"
+  val kryoShaded          = "com.esotericsoftware"         % "kryo-shaded"             % "3.0.3"
+
+  val hbaseCommon         = "org.apache.hbase"             % "hbase-common"            % Version.hbase
+  val hbaseClient         = "org.apache.hbase"             % "hbase-client"            % Version.hbase
+  val hbaseServer         = "org.apache.hbase"             % "hbase-server"            % Version.hbase
+  val hbaseHadoopCompact  = "org.apache.hbase"             % "hbase-hadoop-compat"     % Version.hbase
+
+  val jacksonCoreAsl      = "org.codehaus.jackson"         % "jackson-core-asl"        % "1.9.13"
+
+  val uzaygezenCore       = "com.google.uzaygezen"         % "uzaygezen-core"          % "0.2"
+
+  val scalaj              = "org.scalaj"                  %% "scalaj-http"             % "2.4.0"
+
+  val scalapb             = "com.trueaccord.scalapb"      %% "scalapb-runtime"         % "0.6.0-pre4"
 }

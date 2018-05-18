@@ -81,7 +81,7 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
   @deprecated("Use `size` instead.", "2.0")
   def sizeLong: Long = width.toLong * height.toLong
 
-  def isEmpty = sizeLong == 0
+  def isEmpty = size == 0
 
   /**
     * Return true if the present [[GridBounds]] contains the position
