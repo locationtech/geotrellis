@@ -165,8 +165,7 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
         partitioner = new HashPartitioner(
           partitions = (math.pow(2, (resolutionRatio - 1) * 2) * rdd.partitions.length).toInt))
 
-      val tiledRDD = rdd.tileToLayout[K](tiledMD, tilerOptions)
-      ContextRDD(tiledRDD, tiledMD)
+      rdd.tileToLayout[K](tiledMD, tilerOptions)
     }
 
     output.reprojectMethod match {

@@ -82,7 +82,7 @@ object Transform {
       val (_, md) = rdd.collectMetadata(FloatingLayoutScheme(arg.tileSize.getOrElse(256)))
       md.copy(cellType = arg.cellType.getOrElse(md.cellType))
     }
-    ContextRDD(withTilerMethods(rdd).tileToLayout[K](md, arg.resampleMethod), md)
+    withTilerMethods(rdd).tileToLayout[K](md, arg.resampleMethod)
   }
 
   def retileToLayoutSpatial[
@@ -101,7 +101,7 @@ object Transform {
       )
     )
 
-    ContextRDD(projectedRDD.tileToLayout(retiledLayerMetadata, arg.resampleMethod), retiledLayerMetadata)
+    projectedRDD.tileToLayout(retiledLayerMetadata, arg.resampleMethod)
   }
 
   def retileToLayoutTemporal[
@@ -120,7 +120,7 @@ object Transform {
       )
     )
 
-    ContextRDD(projectedRDD.tileToLayout(retiledLayerMetadata, arg.resampleMethod), retiledLayerMetadata)
+    projectedRDD.tileToLayout(retiledLayerMetadata, arg.resampleMethod)
   }
 
   def pyramid[

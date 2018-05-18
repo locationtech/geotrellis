@@ -25,7 +25,7 @@ API Changes
   - **New:** A ``Partitioner`` can be specified in the ``reproject`` methods of ``TileLayerRDD``.
   - **New:** Compression ``level`` of GeoTiffs can be specified in the ``DeflateCompression`` constructor.
   - **Change:**: The Ascii draw methods are now method extensions of ``Tile``.
-  - **Change:** Replace `geotrellis.util.Functor` with `cats.Functor`
+  - **Change:** Replace `geotrellis.util.Functor` with `cats.Functor`.
   - **Change:** Specifying the ``maxTileSize`` for a COGLayer that's to be written is now done via ``COGLayerWriter.Options``
     which can be passed directly to the ``write`` methods.
   - **New:** The ``resampleMethod`` parameter has been added to ``COGLayerWriter.Options``.
@@ -36,15 +36,17 @@ API Changes
   - **Change:** The attribute name for ``COGLayerStorageMetadata`` is now ``metadata`` instead of ``cog_metadata``.
   - **New:** ``AttributeStore`` now has four new methods: ``layerType``, ``isCOGLayer``, ``readCOGLayerAttributes``,
     and ``writeCOGLayerAttributes``.
-  - **New:** Kryo serialization of geometry now uses a binary format to reduce shuffle block size
-  - **Change:** Scalaz streams were replaced by fs2 streams
-  - **Change:** Refactored HBaseInstance, now accepts a plain Hadoop Configuration object
-  - **Change:** Refactored CassandraInstance, now accepts a getCluster function
-  - **Change:** Use pureconfig to handle all work with configuration files
+  - **New:** Kryo serialization of geometry now uses a binary format to reduce shuffle block size.
+  - **Change:** Scalaz streams were replaced by fs2 streams.
+  - **Change:** Refactored HBaseInstance, now accepts a plain Hadoop Configuration object.
+  - **Change:** Refactored CassandraInstance, now accepts a getCluster function.
+  - **Change:** Use pureconfig to handle all work with configuration files.
   - **Change:** Replace `geotrellis.util.Functor` with `cats.Functor`.
   - **Remove:** ``LayerUpdater`` with its functionality covered by ``LayerWriter`` <https://github.com/locationtech/geotrellis/pull/2663>__
   - **New:** Alter `geotrellis.spark.stitch.StitchRDDMethods` to allow `RDD[(K, V)]` to be stitched when not all tiles are
     of the same dimension.
+  - **Change:** Change `TilerMethods.tileToLayout` functions that accept `TileLayerMetadata` as an argument to return `RDD[(K, V)] with Metadata[M]`
+    instead of `RDD[(K, V)]`
 
 - ``geotrellis.raster``
 
