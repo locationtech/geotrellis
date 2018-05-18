@@ -1,6 +1,5 @@
 import Dependencies._
 import de.heikoseeberger.sbtheader._
-import sbt.Keys._
 
 scalaVersion := Version.scala
 
@@ -140,10 +139,12 @@ lazy val root = Project("geotrellis", file(".")).
 
 lazy val macros = project
   .settings(commonSettings)
+  .settings(Settings.macros)
 
 lazy val vectortile = project
   .dependsOn(vector)
   .settings(commonSettings)
+  .settings(Settings.vectortile)
 
 lazy val vector = project
   .dependsOn(proj4, util)
@@ -151,14 +152,17 @@ lazy val vector = project
   .settings(
     unmanagedClasspath in Test ++= (fullClasspath in (LocalProject("vector-testkit"), Compile)).value
   )
+  .settings(Settings.vector)
 
 lazy val `vector-testkit` = project
   .dependsOn(raster % Provided, vector % Provided)
   .settings(commonSettings)
+  .settings(Settings.`vector-testkit`)
 
 lazy val proj4 = project
   .settings(commonSettings)
   .settings(javacOptions ++= Seq("-encoding", "UTF-8"))
+  .settings(Settings.proj4)
 
 lazy val raster = project
   .dependsOn(util, macros, vector)
@@ -169,14 +173,17 @@ lazy val raster = project
   .settings(
     unmanagedClasspath in Test ++= (fullClasspath in (LocalProject("vector-testkit"), Compile)).value
   )
+  .settings(Settings.raster)
 
 lazy val `raster-testkit` = project
   .dependsOn(raster % Provided, vector % Provided)
   .settings(commonSettings)
+  .settings(Settings.`raster-testkit`)
 
 lazy val slick = project
   .dependsOn(vector)
   .settings(commonSettings)
+  .settings(Settings.slick)
 
 lazy val spark = project
   .dependsOn(util, raster, `raster-testkit` % Test, `vector-testkit` % Test)
@@ -187,10 +194,12 @@ lazy val spark = project
     // be added to the `spark` module dependencies manually (via "Open Module Settings" context menu for "spark" module).
     unmanagedClasspath in Test ++= (fullClasspath in (LocalProject("spark-testkit"), Compile)).value
   )
+  .settings(Settings.spark)
 
 lazy val `spark-testkit` = project
   .dependsOn(`raster-testkit`, spark)
   .settings(commonSettings)
+  .settings(Settings.`spark-testkit`)
 
 lazy val s3 = project
   .dependsOn(
@@ -201,10 +210,12 @@ lazy val s3 = project
   .settings(
     unmanagedClasspath in Test ++= (fullClasspath in (LocalProject("s3-testkit"), Compile)).value
   )
+  .settings(Settings.s3)
 
 lazy val `s3-testkit` = project
   .dependsOn(s3, spark)
   .settings(commonSettings)
+  .settings(Settings.`s3-testkit`)
 
 lazy val accumulo = project
   .dependsOn(
@@ -212,6 +223,7 @@ lazy val accumulo = project
     `spark-testkit` % Test
   )
   .settings(commonSettings)
+  .settings(Settings.accumulo)
 
 lazy val cassandra = project
   .dependsOn(
@@ -219,6 +231,7 @@ lazy val cassandra = project
     `spark-testkit` % Test
   )
   .settings(commonSettings)
+  .settings(Settings.cassandra)
 
 lazy val hbase = project
   .dependsOn(
@@ -226,25 +239,30 @@ lazy val hbase = project
     `spark-testkit` % Test
   )
   .settings(commonSettings) // HBase depends on its own protobuf version
+  .settings(Settings.hbase)
   .settings(projectDependencies := { Seq((projectID in spark).value.exclude("com.google.protobuf", "protobuf-java")) })
 
-lazy val `spark-etl` = Project(id = "spark-etl", base = file("spark-etl")).
-  dependsOn(spark, s3, accumulo, cassandra, hbase).
-  settings(commonSettings)
+lazy val `spark-etl` = Project(id = "spark-etl", base = file("spark-etl"))
+  .dependsOn(spark, s3, accumulo, cassandra, hbase)
+  .settings(commonSettings)
+  .settings(Settings.`spark-etl`)
 
-lazy val `spark-pipeline` = Project(id = "spark-pipeline", base = file("spark-pipeline")).
-  dependsOn(spark, s3, `spark-testkit` % "test").
-  settings(commonSettings)
+lazy val `spark-pipeline` = Project(id = "spark-pipeline", base = file("spark-pipeline"))
+  .dependsOn(spark, s3, `spark-testkit` % "test")
+  .settings(commonSettings)
+  .settings(Settings.`spark-pipeline`)
 
 lazy val geotools = project
   .dependsOn(raster, vector, proj4, `vector-testkit` % Test, `raster-testkit` % Test,
     `raster` % "test->test" // <-- to get rid  of this, move `GeoTiffTestUtils` to the testkit.
   )
   .settings(commonSettings)
+  .settings(Settings.geotools)
 
 lazy val geomesa = project
   .dependsOn(`spark-testkit` % Test, spark, geotools, accumulo)
   .settings(commonSettings)
+  .settings(Settings.geomesa)
 
 lazy val geowave = project
   .dependsOn(
@@ -252,18 +270,24 @@ lazy val geowave = project
     `spark-testkit` % Test, geotools, accumulo
   )
   .settings(commonSettings)
+  .settings(Settings.geowave)
 
 lazy val shapefile = project
   .dependsOn(raster, `raster-testkit` % Test)
   .settings(commonSettings)
+  .settings(Settings.shapefile)
 
 lazy val util = project
   .settings(commonSettings)
+  .settings(Settings.util)
 
 lazy val `doc-examples` = project
   .dependsOn(spark, s3, accumulo, cassandra, hbase, spark, `spark-testkit`)
   .settings(commonSettings)
+  .settings(Settings.`doc-examples`)
 
 lazy val bench = project
   .dependsOn(spark)
   .settings(commonSettings)
+  .settings(Settings.bench)
+  .enablePlugins(GTBenchmarkPlugin)

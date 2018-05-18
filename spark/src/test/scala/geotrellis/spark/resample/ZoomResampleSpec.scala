@@ -56,7 +56,7 @@ class ZoomResampleMethodsSpec extends FunSpec
       val gridBounds = rdd.metadata.bounds.get.toGridBounds
       val resampledGridBounds = resampled.metadata.bounds.get.toGridBounds
 
-      resampledGridBounds.sizeLong should be (gridBounds.sizeLong * 4)
+      resampledGridBounds.size should be (gridBounds.size * 4)
     }
   }
 
@@ -84,7 +84,7 @@ class ZoomResampleMethodsSpec extends FunSpec
       val gridBounds = rdd.metadata.bounds.get.toGridBounds
       val resampledGridBounds = resampled.metadata.bounds.get.toGridBounds
 
-      resampledGridBounds.sizeLong should be (gridBounds.sizeLong * 4)
+      resampledGridBounds.size should be (gridBounds.size * 4)
     }
   }
 
