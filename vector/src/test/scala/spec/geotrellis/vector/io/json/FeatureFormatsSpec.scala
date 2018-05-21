@@ -20,8 +20,8 @@ import io.circe._
 import io.circe.generic._
 import io.circe.syntax._
 import cats.syntax.either._
-
 import org.scalatest._
+
 import geotrellis.vector._
 
 

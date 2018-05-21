@@ -18,7 +18,7 @@ package geotrellis.raster.io.json
 
 import io.circe._
 import io.circe.syntax._
-import cats.syntax.either._
+import cats.implicits._
 
 import geotrellis.raster.histogram._
 
@@ -74,26 +74,24 @@ trait HistogramJsonFormats {
 
   implicit val histogramDoubleDecoder: Decoder[Histogram[Double]] =
     Decoder.decodeHCursor.emap { hcursor: HCursor =>
-      hcursor.downField("maxBucketCount").as[Int].flatMap {
-        case maxBucketCount =>
-          val buckets = hcursor.downField("buckets").values.toList.flatten.map(_.as[Vector[Double]])
-          val min = hcursor.downField("minimum").as[Double]
-          val max = hcursor.downField("maximum").as[Double]
+      hcursor.downField("maxBucketCount").as[Int] match {
+        case Right(maxBucketCount) =>
+          val min: Double = hcursor.downField("minBucketCount").as[Double].getOrElse(Double.NegativeInfinity)
+          val max: Double = hcursor.downField("maxBucketCount").as[Double].getOrElse(Double.PositiveInfinity)
+          val buckets = hcursor.downField("buckets").values.get.map(_.as[(Double, Double)].toOption).toList.sequence.getOrElse(List())
 
-          Right((buckets, min, max) match {
-            case (bucketArray, Right(min), Right(max)) =>
-              val histogram = StreamingHistogram(maxBucketCount, min, max)
-              bucketArray.foreach {
-                case Right(Vector(label, count)) => histogram.countItem(label, count.toLong)
-                case Left(_) => throw new Exception("Array of [label, count] pairs expected")
-              }
-
-              histogram
-
-            case _ => StreamingHistogram(maxBucketCount)
-          })
-
-        case _ => throw new Exception("Histogram[Double] expected")
-      }.leftMap(_ => "Unable to parse Histogram[Double]")
+          val histogram = StreamingHistogram(maxBucketCount, min, max)
+          buckets.foreach({ case (label, count) => histogram.countItem(label, count.toLong) })
+          Right(histogram)
+        case Left(err) =>
+          Left(err.toString)
+      }
     }
+
+  implicit val streamingHistogramEncoder: Encoder[StreamingHistogram] =
+    Encoder[Histogram[Double]].contramap[StreamingHistogram](_.asInstanceOf[Histogram[Double]])
+
+  implicit val streamingHistogramDecoder: Decoder[StreamingHistogram] =
+    Decoder[Histogram[Double]].map[StreamingHistogram](_.asInstanceOf[StreamingHistogram])
+
 }
