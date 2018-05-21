@@ -57,11 +57,11 @@ class TilerMethods[K, V <: CellGrid: ClassTag: (? => TileMergeMethods[V]): (? =>
     tileToLayout(cellType, layoutDefinition, Options.DEFAULT)
 
   def tileToLayout[K2: SpatialComponent: ClassTag](tileLayerMetadata: TileLayerMetadata[K2], options: Options)
-      (implicit ev: K => TilerKeyMethods[K, K2]): RDD[(K2, V)] =
-    tileToLayout(tileLayerMetadata.cellType, tileLayerMetadata.layout, options)
+      (implicit ev: K => TilerKeyMethods[K, K2]): RDD[(K2, V)] with Metadata[TileLayerMetadata[K2]] =
+    ContextRDD(tileToLayout(tileLayerMetadata.cellType, tileLayerMetadata.layout, options), tileLayerMetadata)
 
   def tileToLayout[K2: SpatialComponent: ClassTag](tileLayerMetadata: TileLayerMetadata[K2])
-      (implicit ev: K => TilerKeyMethods[K, K2]): RDD[(K2, V)] =
+      (implicit ev: K => TilerKeyMethods[K, K2]): RDD[(K2, V)] with Metadata[TileLayerMetadata[K2]] =
     tileToLayout(tileLayerMetadata, Options.DEFAULT)
 
 }
