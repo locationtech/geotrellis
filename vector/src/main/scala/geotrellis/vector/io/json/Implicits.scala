@@ -81,7 +81,7 @@ trait Implicits extends GeoJsonSupport {
           Try(s.parseGeoJson[JsonFeatureCollection]) match {
             case Success(featureCollection) =>
               featureCollection.getAll[G]
-            case Failure(__) =>
+            case Failure(_) =>
               Try(s.parseGeoJson[GeometryCollection]) match {
                 case Success(gc) => gc.getAll[G]
                 case Failure(e) => throw e

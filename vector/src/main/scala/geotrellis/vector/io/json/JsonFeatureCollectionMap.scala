@@ -76,13 +76,14 @@ class JsonFeatureCollectionMap(features: List[Json] = Nil) {
 
   // This helper function is called below to grab the ID field for Map keys
   private def getFeatureID(js: Json): String = {
-    val id = js.hcursor.downField("id")
+    val cursor = js.hcursor
+    val id = cursor.downField("id")
     id.as[String] match {
       case Right(i) => i
       case _ => {
         id.as[Int] match {
           case Right(i) => i.toString
-          case _ => throw new Exception("Feature expected to have \"ID\" field")
+          case _ => throw DecodingFailure("Feature expected to have \"ID\" field", cursor.history)
         }
       }
     }
