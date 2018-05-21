@@ -68,8 +68,6 @@ class JsonCrsSpec extends FlatSpec with Matchers with GeoJsonSupport {
 
     val gc = GeometryCollection(List(point, line))
 
-    println(WithCrs(gc, crs).asJson)
-
     WithCrs(gc, crs).asJson should equal (body)
     body.as[WithCrs[GeometryCollection]].valueOr(throw _) should equal (WithCrs(gc, crs))
   }

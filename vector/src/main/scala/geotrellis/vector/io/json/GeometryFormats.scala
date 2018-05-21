@@ -136,7 +136,7 @@ trait GeometryFormats {
   implicit lazy val multiPointEncoder: Encoder[MultiPoint] =
     Encoder.encodeJson.contramap[MultiPoint] { obj =>
       Json.obj(
-        "type" -> "MultiPolygon".asJson,
+        "type" -> "MultiPoint".asJson,
         "coordinates" -> obj.points.map(writePointCoords).asJson
       )
     }
@@ -158,7 +158,7 @@ trait GeometryFormats {
   implicit lazy val multiLineEncoder: Encoder[MultiLine] =
     Encoder.encodeJson.contramap[MultiLine] { obj =>
       Json.obj(
-        "type" -> "MultiLine".asJson,
+        "type" -> "MultiLineString".asJson,
         "coordinates" -> obj.lines.map(writeLineCoords).toVector.asJson
       )
     }
@@ -204,7 +204,7 @@ trait GeometryFormats {
           obj.multiLines.map(_.asJson),
           obj.multiPolygons.map(_.asJson),
           obj.geometryCollections.map(_.asJson)
-        ).asJson
+        ).flatten.asJson
       )
     }
 
