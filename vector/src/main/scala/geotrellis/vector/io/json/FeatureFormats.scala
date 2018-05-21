@@ -16,90 +16,98 @@
 
 package geotrellis.vector.io.json
 
+import io.circe._
+import io.circe.syntax._
+import cats.syntax.either._
 import geotrellis.vector._
-import spray.json._
 
-/** A trait for providing the Spray.json formats necessary to serialize [[Feature]] instances */
+import scala.util.{Try, Success, Failure}
+
+/** A trait for providing the Circe json encoders and decoders necessary to serialize [[Feature]] instances */
 trait FeatureFormats {
 
   /** Serializes a feature object to a GeoJSON feature
     *
     * @param A Feature object
     * @tparam The type (which must have an implicit method to resolve the transformation from json)
-    * @return The GeoJson compliant spray.JsValue
+    * @return The GeoJson compliant circe Json
     */
-  def writeFeatureJson[G <: Geometry, D: JsonWriter](obj: Feature[G, D]): JsValue = {
-    JsObject(
-      "type" -> JsString("Feature"),
-      "geometry" -> GeometryFormat.write(obj.geom),
-      "bbox" -> ExtentListWriter.write(obj.envelope),
-      "properties" -> obj.data.toJson
+  def writeFeatureJson[G <: Geometry, D: Encoder](obj: Feature[G, D]): Json = {
+    Json.obj(
+      "type" -> "Feature".asJson,
+      "geometry"   -> GeometryFormats.geometryEncoder(obj.geom),
+      "bbox"       -> extentListEncoder.write(obj.envelope),
+      "properties" -> obj.data.asJson
     )
   }
 
-  def writeFeatureJsonWithID[G <: Geometry, D: JsonWriter](idFeature: (String, Feature[G, D])): JsValue = {
-    JsObject(
-      "type" -> JsString("Feature"),
-      "geometry" -> GeometryFormat.write(idFeature._2.geom),
-      "bbox" -> ExtentListWriter.write(idFeature._2.geom.envelope),
-      "properties" -> idFeature._2.data.toJson,
-      "id" -> JsString(idFeature._1)
+  def writeFeatureJsonWithID[G <: Geometry, D: Encoder](idFeature: (String, Feature[G, D])): Json = {
+    Json.obj(
+      "type"       -> "Feature".asJson,
+      "geometry"   -> GeometryFormats.geometryEncoder(idFeature._2.geom),
+      "bbox"       -> extentListEncoder.write(idFeature._2.geom.envelope),
+      "properties" -> idFeature._2.data.asJson,
+      "id"         -> idFeature._1.asJson
     )
   }
 
-  def readFeatureJson[D: JsonReader, G <: Geometry: JsonReader](value: JsValue): Feature[G, D] = {
-    value.asJsObject.getFields("type", "geometry", "properties") match {
-      case Seq(JsString("Feature"), geom, data) =>
-        val g = geom.convertTo[G]
-        val d = data.convertTo[D]
-        Feature(g, d)
-      case _ => throw new DeserializationException("Feature expected")
+  def readFeatureJson[D: Decoder, G <: Geometry: Decoder](value: Json): Feature[G, D] = {
+    val c = value.hcursor
+    (c.downField("type").as[String], c.downField("geometry").focus, c.downField("properties").focus) match {
+      case (Right("Feature"), Some(geom), Some(data)) =>
+        (geom.as[G].toOption, data.as[D].toOption) match {
+          case (Some(g), Some(d)) => Feature(g, d)
+          case _ => throw new Exception("Feature expected")
+        }
+
+      case _ => throw new Exception("Feature expected")
     }
   }
 
-  def readFeatureJsonWithID[D: JsonReader, G <: Geometry: JsonReader](value: JsValue): (String, Feature[G, D]) = {
-    value.asJsObject.getFields("type", "geometry", "properties", "id") match {
-      case Seq(JsString("Feature"), geom, data, id) =>
-        val g = geom.convertTo[G]
-        val d = data.convertTo[D]
-        val i = id.toString
-        (i, Feature(g, d))
-      case _ => throw new DeserializationException("Feature expected")
+  def readFeatureJsonWithID[D: Decoder, G <: Geometry: Decoder](value: Json): (String, Feature[G, D]) = {
+    val c = value.hcursor
+    (c.downField("type").as[String], c.downField("geometry").focus, c.downField("properties").focus, c.downField("id").focus) match {
+      case (Right("Feature"), Some(geom), Some(data), Some(id)) =>
+        (geom.as[G].toOption, data.as[D].toOption, id.as[String].toOption) match {
+          case (Some(g), Some(d), Some(i)) => (i, Feature(g, d))
+          case _ => throw new Exception("Feature expected")
+        }
+
+      case _ => throw new Exception("Feature expected")
     }
   }
 
-  implicit def featureReader[G <: Geometry: JsonReader, D: JsonReader] = new RootJsonReader[Feature[G, D]] {
-    override def read(json: JsValue): Feature[G, D] =
-      readFeatureJson[D, G](json)
-  }
+  implicit def featureDecoder[G <: Geometry: Decoder, D: Decoder]: Decoder[Feature[G, D]] =
+    Decoder.decodeJson.emap { json: Json =>
+      Try(readFeatureJson[D, G](json)) match {
+        case Success(f) => Right(f)
+        case Failure(e) => Left(e.getMessage)
+      } }
 
-  implicit def featureWriter[G <: Geometry: JsonWriter, D: JsonWriter] = new RootJsonWriter[Feature[G, D]] {
-    override def write(obj: Feature[G, D]): JsValue =
-      writeFeatureJson(obj)
-  }
+  implicit def featureEncoder[G <: Geometry: Encoder, D: Encoder]: Encoder[Feature[G, D]] =
+    Encoder.encodeJson.contramap[Feature[G, D]] { writeFeatureJson }
 
-  implicit def featureFormat[G <: Geometry: JsonFormat, D: JsonFormat] = new RootJsonFormat[Feature[G, D]] {
-    override def read(json: JsValue): Feature[G, D] =
-      readFeatureJson[D, G](json)
-    override def write(obj: Feature[G, D]): JsValue =
-      writeFeatureJson(obj)
-  }
+  implicit val featureCollectionEncoder: Encoder[JsonFeatureCollection] =
+    Encoder.encodeJson.contramap[JsonFeatureCollection] { _.asJson }
 
-  implicit object featureCollectionFormat extends RootJsonFormat[JsonFeatureCollection] {
-    override def read(json: JsValue): JsonFeatureCollection = json.asJsObject.getFields("type", "features") match {
-      case Seq(JsString("FeatureCollection"), JsArray(features)) => JsonFeatureCollection(features)
-      case _ => throw new DeserializationException("FeatureCollection expected")
+  implicit val featureCollectionDecoder: Decoder[JsonFeatureCollection] =
+    Decoder.decodeHCursor.emap { c: HCursor =>
+      (c.downField("type").as[String], c.downField("features").focus) match {
+        case (Right("FeatureCollection"), Some(features)) => Right(JsonFeatureCollection(features.asArray.toVector.flatten))
+        case _ => Left("FeatureCollection expected")
+      }
     }
-    override def write(obj: JsonFeatureCollection): JsValue = obj.toJson
-  }
 
-  implicit object featureCollectionMapFormat extends RootJsonFormat[JsonFeatureCollectionMap] {
-    override def read(json: JsValue): JsonFeatureCollectionMap = json.asJsObject.getFields("type", "features") match {
-      case Seq(JsString("FeatureCollection"), JsArray(features)) => JsonFeatureCollectionMap(features)
-      case _ => throw new DeserializationException("FeatureCollection expected")
+  implicit val featureCollectionMapEncoder: Encoder[JsonFeatureCollectionMap] =
+    Encoder.encodeJson.contramap[JsonFeatureCollectionMap] { _.asJson }
+
+  implicit val featureCollectionMapDecoder: Decoder[JsonFeatureCollectionMap] =
+    Decoder.decodeHCursor.emap { c: HCursor =>
+      (c.downField("type").as[String], c.downField("features").focus) match {
+        case (Right("FeatureCollection"), Some(features)) => Right(JsonFeatureCollectionMap(features.asArray.toVector.flatten))
+        case _ => Left("FeatureCollection expected")
+      }
     }
-    override def write(obj: JsonFeatureCollectionMap): JsValue = obj.toJson
-  }
 }
 
 object FeatureFormats extends FeatureFormats

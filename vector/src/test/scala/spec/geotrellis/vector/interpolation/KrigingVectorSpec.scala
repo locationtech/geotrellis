@@ -18,10 +18,9 @@ package geotrellis.vector.interpolation
 
 import geotrellis.vector._
 import geotrellis.vector.io.json.JsonFeatureCollection
-import geotrellis.vector.testkit._
 import geotrellis.vector._
+
 import spire.syntax.cfor._
-import spray.json.DefaultJsonProtocol._
 import org.scalatest._
 
 class KrigingVectorSpec extends FunSpec with Matchers {

@@ -16,80 +16,108 @@
 
 package geotrellis.raster.io.json
 
-import geotrellis.raster._
-import geotrellis.raster.histogram.{FastMapHistogram, Histogram}
-import geotrellis.vector._
-import geotrellis.vector.io._
+import io.circe._
+import io.circe.syntax._
+import cats.syntax.either._
 
-import spray.json._
+import geotrellis.raster._
+import geotrellis.vector._
 
 object Implicits extends Implicits
 
 trait Implicits extends HistogramJsonFormats {
 
-  implicit object CellTypeFormat extends RootJsonFormat[CellType] {
-    def write(cellType: CellType) =
-      JsString(cellType.name)
+  implicit val cellTypeEncoder: Encoder[CellType] =
+    Encoder.encodeString.contramap[CellType] { _.toString }
+  implicit val cellTypeDecoder: Decoder[CellType] =
+    Decoder.decodeString.emap { str =>
+      Either.catchNonFatal(CellType.fromName(str)).leftMap(_ => "CellType")
+    }
 
-    def read(value: JsValue): CellType =
-      value match {
-        case JsString(name) => CellType.fromName(name)
-        case _ =>
-          throw new DeserializationException("CellType must be a string")
-      }
-  }
+  implicit val cellSizeEncoder: Encoder[CellSize] =
+    Encoder.encodeString.contramap[CellSize] { sz =>
+      JsonObject.fromMap(
+        Map(
+          "width" -> sz.width.asJson,
+          "height" -> sz.height.asJson
+        )
+      ).asJson.noSpaces
+    }
 
-  implicit object CellSizeFormat extends RootJsonFormat[CellSize] {
-    def write(cs: CellSize): JsValue = JsObject(
-      "width"  -> JsNumber(cs.width),
-      "height" -> JsNumber(cs.height)
-    )
-    def read(value: JsValue): CellSize =
-      value.asJsObject.getFields("width", "height") match {
-        case Seq(JsNumber(width), JsNumber(height)) => CellSize(width.toDouble, height.toDouble)
-        case _ =>
-          throw new DeserializationException("BackendType must be a valid object.")
-      }
-  }
+  implicit val cellSizeDecoder: Decoder[CellSize] =
+    Decoder[Json] emap { js =>
+      js.as[JsonObject].map { jso =>
+        val map = jso.toMap
+        (map.get("width"), map.get("height")) match {
+          case (Some(width), Some(height)) => {
+            (width.as[Double].toOption, height.as[Double].toOption) match {
+              case (Some(width), Some(height)) => CellSize(width, height)
+              case value => throw new Exception(s"Can't decode CellSize: $value")
+            }
+          }
+          case value => throw new Exception(s"Can't decode CellSize: $value")
+        }
+      } leftMap (_ => "CellSize")
+    }
 
-  implicit object RasterExtentFormat extends RootJsonFormat[RasterExtent] {
-    def write(rasterExtent: RasterExtent) =
-      JsObject(
-        "extent" -> rasterExtent.extent.toJson,
-        "cols" -> JsNumber(rasterExtent.cols),
-        "rows" -> JsNumber(rasterExtent.rows),
-        "cellwidth" -> JsNumber(rasterExtent.cellwidth),
-        "cellheight" -> JsNumber(rasterExtent.cellheight)
+  implicit val extentEncoder: Encoder[Extent] =
+    new Encoder[Extent] {
+      def apply(extent: Extent): Json =
+        List(extent.xmin, extent.ymin, extent.xmax, extent.ymax).asJson
+    }
+  implicit val extentDecoder: Decoder[Extent] =
+    Decoder[Json] emap { js =>
+      js.as[List[Double]].map { case List(xmin, ymin, xmax, ymax) =>
+        Extent(xmin, ymin, xmax, ymax)
+      }.leftMap(_ => "Extent")
+    }
+
+  implicit val rasterExtentEncoder: Encoder[RasterExtent] =
+    Encoder.encodeJson.contramap[RasterExtent] { rasterExtent =>
+      Json.obj(
+        "extent" -> rasterExtent.extent.asJson,
+        "cols" -> rasterExtent.cols.asJson,
+        "rows" -> rasterExtent.rows.asJson,
+        "cellwidth" -> rasterExtent.cellwidth.asJson,
+        "cellheight" -> rasterExtent.cellheight.asJson
       )
+    }
 
-    def read(value: JsValue): RasterExtent =
-      value.asJsObject.getFields("extent", "cols", "rows", "cellwidth", "cellheight") match {
-        case Seq(extent, JsNumber(cols), JsNumber(rows), JsNumber(cellwidth), JsNumber(cellheight)) =>
-          val ext = extent.convertTo[Extent]
-          RasterExtent(ext, cellwidth.toDouble, cellheight.toDouble, cols.toInt, rows.toInt)
-        case _ =>
-          throw new DeserializationException("RasterExtent expected.")
+  implicit val rasterExtentDecoder: Decoder[RasterExtent] =
+    Decoder.decodeHCursor.emap { c: HCursor =>
+      (c.downField("extent").as[Extent],
+      c.downField("cols").as[Int],
+      c.downField("rows").as[Int],
+      c.downField("cellwidth").as[Double],
+      c.downField("cellheight").as[Double]) match {
+        case (Right(ext), Right(cols), Right(rows), Right(cw), Right(ch)) => Right(RasterExtent(ext, cw, ch, cols, rows))
+        case _ => throw new Exception("RasterExtent expected.")
       }
-  }
+    }
 
-  implicit object TileLayoutFormat extends RootJsonFormat[TileLayout] {
-    def write(tileLayout: TileLayout) =
-      JsObject(
-        "layoutCols" -> JsNumber(tileLayout.layoutCols),
-        "layoutRows" -> JsNumber(tileLayout.layoutRows),
-        "tileCols" -> JsNumber(tileLayout.tileCols),
-        "tileRows" -> JsNumber(tileLayout.tileRows)
+  implicit val tileLayoutEncoder: Encoder[TileLayout] =
+    Encoder.encodeJson.contramap[TileLayout] { tileLayout =>
+      Json.obj(
+        "layoutCols" -> tileLayout.layoutCols.asJson,
+        "layoutRows" -> tileLayout.layoutRows.asJson,
+        "tileCols" -> tileLayout.tileCols.asJson,
+        "tileRows" -> tileLayout.tileRows.asJson
       )
+    }
 
-    def read(value: JsValue): TileLayout =
-      value.asJsObject.getFields("layoutCols", "layoutRows", "tileCols", "tileRows") match {
-        case Seq(JsNumber(layoutCols), JsNumber(layoutRows), JsNumber(tileCols), JsNumber(tileRows)) =>
-          TileLayout(layoutCols.toInt, layoutRows.toInt, tileCols.toInt, tileRows.toInt)
-        case _ =>
-          throw new DeserializationException("TileLayout expected.")
+  implicit val tileLayoutDecoder: Decoder[TileLayout] =
+    Decoder.decodeHCursor.emap { c: HCursor =>
+      (c.downField("layoutCols").as[Int],
+        c.downField("layoutRows").as[Int],
+        c.downField("tileCols").as[Int],
+        c.downField("tileRows").as[Int]) match {
+        case (Right(layoutCols), Right(layoutRows), Right(tileCols), Right(tileRows)) =>
+          Right(TileLayout(layoutCols, layoutRows, tileCols, tileRows))
+        case _ => throw new Exception("TileLayout expected.")
       }
-  }
+    }
 
+<<<<<<< HEAD
   implicit def GridBoundsIntFormat = new RootJsonFormat[GridBounds[Int]] {
     def write(gridBounds: GridBounds[Int]) =
       JsObject(
@@ -97,8 +125,19 @@ trait Implicits extends HistogramJsonFormats {
         "rowMin" -> JsNumber(gridBounds.rowMin),
         "colMax" -> JsNumber(gridBounds.colMax),
         "rowMax" -> JsNumber(gridBounds.rowMax)
+=======
+  implicit val gridBoundsEncoder: Encoder[GridBounds] =
+    Encoder.encodeJson.contramap[GridBounds] { gridBounds =>
+      Json.obj(
+        "colMin" -> gridBounds.colMin.asJson,
+        "rowMin" -> gridBounds.rowMin.asJson,
+        "colMax" -> gridBounds.colMax.asJson,
+        "rowMax" -> gridBounds.rowMax.asJson
+>>>>>>> f26b88797... Init circe migration
       )
+    }
 
+<<<<<<< HEAD
     def read(value: JsValue): GridBounds[Int] =
       value.asJsObject.getFields("colMin", "rowMin", "colMax", "rowMax") match {
         case Seq(JsNumber(colMin), JsNumber(rowMin), JsNumber(colMax), JsNumber(rowMax)) =>
@@ -125,4 +164,17 @@ trait Implicits extends HistogramJsonFormats {
           throw new DeserializationException("GridBounds expected.")
       }
   }
+=======
+  implicit val gridBoundsDecoder: Decoder[GridBounds] =
+    Decoder.decodeHCursor.emap { c: HCursor =>
+      (c.downField("colMin").as[Int],
+        c.downField("rowMin").as[Int],
+        c.downField("colMax").as[Int],
+        c.downField("rowMax").as[Int]) match {
+        case (Right(colMin), Right(rowMin), Right(colMax), Right(rowMax)) =>
+          Right(GridBounds(colMin, rowMin, colMax, rowMax))
+        case _ => throw new Exception("GridBounds expected.")
+      }
+    }
+>>>>>>> f26b88797... Init circe migration
 }

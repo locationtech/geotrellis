@@ -21,7 +21,6 @@ import scala.io.Source
 import scala.util.Try
 import java.net.URI
 
-
 /** Abstract trait for various implementations of Coordinate Reference System values
   * @note Reference: http://geojson.org/geojson-spec.html#coordinate-reference-system-objects
   */
