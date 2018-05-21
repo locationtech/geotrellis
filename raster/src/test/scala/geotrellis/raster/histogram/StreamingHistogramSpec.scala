@@ -18,10 +18,14 @@ package geotrellis.raster.histogram
 
 import geotrellis.raster._
 import geotrellis.raster.io._
-import spray.json._
 
+import _root_.io.circe._
+import _root_.io.circe.syntax._
+import _root_.io.circe.parser._
+import cats.syntax.either._
 import org.scalatest._
-import math.abs
+
+import scala.math.abs
 import scala.util.Random
 
 class StreamingHistogramSpec extends FunSpec with Matchers {
@@ -187,7 +191,9 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
   describe("Json Serialization") {
     it("should successfully round-trip a trivial histogram") {
       val h1 = StreamingHistogram()
-      val h2 = (h1: Histogram[Double]).toJson.prettyPrint.parseJson.convertTo[Histogram[Double]]
+      println(h1.asJson.noSpaces)
+      val h2 = decode[StreamingHistogram](h1.asJson.noSpaces).valueOr(throw _)
+      println(h2)
 
       h1.statistics should equal (h2.statistics)
       h1.quantileBreaks(42) should equal (h2.quantileBreaks(42))
@@ -203,8 +209,9 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
         .flatten
         .take(10000)
         .foreach({ i => h1.countItem(i.toDouble) })
+      println("check it", h1.asJson.noSpaces)
 
-      val h2 = (h1: Histogram[Double]).toJson.prettyPrint.parseJson.convertTo[Histogram[Double]]
+      val h2 = decode[StreamingHistogram](h1.asJson.noSpaces).valueOr(throw _)
 
       h1.statistics should equal (h2.statistics)
       h1.quantileBreaks(42) should equal (h2.quantileBreaks(42))
@@ -221,7 +228,7 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
         .take(10000)
         .foreach({ i => h1.countItem(i.toDouble) })
 
-      val h2 = StreamingHistogram((h1: Histogram[Double]).toJson.prettyPrint.parseJson.convertTo[Histogram[Double]])
+      val h2 = decode[StreamingHistogram](h1.asJson.noSpaces).valueOr(throw _)
 
       Iterator
         .continually(list2)
@@ -250,7 +257,7 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
       val h2 = {
         var h: Histogram[Double] = h1
         var i = 0; while (i < 107) {
-          h = (h: Histogram[Double]).toJson.prettyPrint.parseJson.convertTo[Histogram[Double]]
+          h = decode[Histogram[Double]](h1.asJson.noSpaces).valueOr(throw _)
           i += 1
         }
         StreamingHistogram(h)

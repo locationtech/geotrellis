@@ -16,8 +16,9 @@
 
 package geotrellis.raster.io.json
 
-import io.circe._
-import io.circe.syntax._
+import _root_.io.circe._
+import _root_.io.circe.syntax._
+import _root_.io.circe.generic.semiauto._
 import cats.syntax.either._
 
 import geotrellis.raster._
@@ -34,31 +35,9 @@ trait Implicits extends HistogramJsonFormats {
       Either.catchNonFatal(CellType.fromName(str)).leftMap(_ => "CellType")
     }
 
-  implicit val cellSizeEncoder: Encoder[CellSize] =
-    Encoder.encodeString.contramap[CellSize] { sz =>
-      JsonObject.fromMap(
-        Map(
-          "width" -> sz.width.asJson,
-          "height" -> sz.height.asJson
-        )
-      ).asJson.noSpaces
-    }
+  implicit val cellSizeEncoder: Encoder[CellSize] = deriveEncoder
 
-  implicit val cellSizeDecoder: Decoder[CellSize] =
-    Decoder[Json] emap { js =>
-      js.as[JsonObject].map { jso =>
-        val map = jso.toMap
-        (map.get("width"), map.get("height")) match {
-          case (Some(width), Some(height)) => {
-            (width.as[Double].toOption, height.as[Double].toOption) match {
-              case (Some(width), Some(height)) => CellSize(width, height)
-              case value => throw new Exception(s"Can't decode CellSize: $value")
-            }
-          }
-          case value => throw new Exception(s"Can't decode CellSize: $value")
-        }
-      } leftMap (_ => "CellSize")
-    }
+  implicit val cellSizeDecoder: Decoder[CellSize] = deriveDecoder
 
   implicit val extentEncoder: Encoder[Extent] =
     new Encoder[Extent] {
