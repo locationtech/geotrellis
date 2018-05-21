@@ -44,15 +44,15 @@ import mil.nga.giat.geowave.datastore.accumulo._
 import mil.nga.giat.geowave.datastore.accumulo.metadata._
 import mil.nga.giat.geowave.mapreduce.input.{GeoWaveInputFormat, GeoWaveInputKey}
 
-import org.apache.avro.Schema
-import org.apache.hadoop.io.Text
+import io.circe._
+
 import org.apache.hadoop.mapreduce.Job
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
+import org.apache.avro.Schema
+import org.apache.hadoop.io.Text
 
 import org.geotools.coverage.grid._
-
-import spray.json._
 
 import scala.reflect._
 
@@ -210,7 +210,7 @@ object GeoWaveLayerReader {
   @experimental def read[
     K <: SpatialKey,
     V: TileOrMultibandTile: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: Decoder: GetComponent[?, Bounds[K]]
   ](id: LayerId, rasterQuery: LayerQuery[K, M]) = {
     import GeoWaveLayerReader._
 
@@ -277,7 +277,7 @@ object GeoWaveLayerReader {
   @experimental def read[
     K <: SpatialKey: Boundable,
     V: TileOrMultibandTile: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: Decoder: GetComponent[?, Bounds[K]]
   ](id: LayerId): RDD[(K, V)] with Metadata[M] =
     read(id, new LayerQuery[K, M])
 
@@ -285,7 +285,7 @@ object GeoWaveLayerReader {
   @experimental def query[
     K <: SpatialKey: Boundable,
     V: TileOrMultibandTile: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: Decoder: GetComponent[?, Bounds[K]]
   ](layerId: LayerId): BoundLayerQuery[K, M, RDD[(K, V)] with Metadata[M]] =
     new BoundLayerQuery(new LayerQuery, read(layerId, _))
 }

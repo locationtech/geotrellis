@@ -16,13 +16,15 @@
 
 package geotrellis.vector.io.json
 
-import spray.json._
+import io.circe._
+import io.circe.syntax._
+import cats.syntax.either._
 
 import geotrellis.vector._
-import scala.util.{Try, Success, Failure}
+import geotrellis.vector.io._
+
 import scala.collection.mutable
 import scala.collection.immutable.VectorBuilder
-import DefaultJsonProtocol._
 
 /** Accumulates GeoJson from Feature class instances.
   *
@@ -38,50 +40,49 @@ import DefaultJsonProtocol._
   *
   * It aggregates feature objects with data member still encoded in json
   */
-class JsonFeatureCollection(features: List[JsValue] = Nil) {
+class JsonFeatureCollection(features: List[Json] = Nil) {
   private val buffer = mutable.ListBuffer(features:_*)
 
   /**
     * Add a JsValue to the buffer, pending an ultimate call of toJson.
     */
-  def add[G <: Geometry, D: JsonWriter](feature: Feature[G, D]) =
-
+  def add[G <: Geometry, D: Encoder](feature: Feature[G, D]) =
     buffer += writeFeatureJson(feature)
 
   /**
     * Add a JsValue to the buffer, pending an ultimate call of toJson.
     */
-  def +=[G <: Geometry, D: JsonWriter](feature: Feature[G, D]) = add(feature)
+  def +=[G <: Geometry, D: Encoder](feature: Feature[G, D]) = add(feature)
 
   /**
     * Add a Seq of JsValue to the buffer, pending an ultimate call of
     * toJson.
     */
-  def addAll[G <: Geometry, D: JsonWriter](features: Seq[Feature[G, D]]) =
+  def addAll[G <: Geometry, D: Encoder](features: Seq[Feature[G, D]]) =
     features.foreach{ f => buffer += writeFeatureJson(f) }
 
   /**
     * Add a Seq of JsValue to the buffer, pending an ultimate call of
     * toJson.
     */
-  def ++=[G <: Geometry, D: JsonWriter](features: Seq[Feature[G, D]]) = addAll(features)
+  def ++=[G <: Geometry, D: Encoder](features: Seq[Feature[G, D]]) = addAll(features)
 
   /**
     * Carry out serialization on all buffered JsValue objects.
     */
-  def toJson: JsValue = {
+  def asJson: Json = {
     val bboxOption = getAllGeometries().map(_.envelope).reduceOption(_ combine _)
     bboxOption match {
       case Some(bbox) =>
-        JsObject(
-          "type" -> JsString("FeatureCollection"),
-          "bbox" -> ExtentListWriter.write(bbox),
-          "features" -> JsArray(buffer.toVector)
+        Json.obj(
+          "type" -> "FeatureCollection".asJson,
+          "bbox" -> Extent.listEncoder(bbox),
+          "features" -> buffer.toVector.asJson
         )
       case _ =>
-        JsObject(
-          "type" -> JsString("FeatureCollection"),
-          "features" -> JsArray(buffer.toVector)
+        Json.obj(
+          "type" -> "FeatureCollection".asJson,
+          "features" -> buffer.toVector.asJson
         )
     }
   }
@@ -92,28 +93,21 @@ class JsonFeatureCollection(features: List[JsValue] = Nil) {
     * @tparam F type of Feature to return
     * @return Vector of Feature objects (type F) that were successfully parsed
     */
-  def getAll[F: JsonReader]: Vector[F] = {
+  def getAll[F: Decoder]: Vector[F] = {
     val ret = new VectorBuilder[F]()
-    features.foreach{ f =>
-      Try(f.convertTo[F]) match {
-        case Success(feature) =>
-          ret += feature
-        case Failure(_: spray.json.DeserializationException) =>  //didn't match, live to fight another match
-        case Failure(e) => throw e // but bubble up other exceptions
-      }
-    }
+    features.foreach { _.as[F].foreach(ret += _) }
     ret.result()
   }
 
-  def getAllFeatures[F <: Feature[_, _] :JsonReader]: Vector[F] =
+  def getAllFeatures[F <: Feature[_, _] :Decoder]: Vector[F] =
     getAll[F]
 
-  def getAllPointFeatures[D: JsonReader]()         = getAll[PointFeature[D]]
-  def getAllLineFeatures[D: JsonReader]()          = getAll[LineFeature[D]]
-  def getAllPolygonFeatures[D: JsonReader]()       = getAll[PolygonFeature[D]]
-  def getAllMultiPointFeatures[D: JsonReader]()    = getAll[MultiPointFeature[D]]
-  def getAllMultiLineFeatures[D: JsonReader]()     = getAll[MultiLineFeature[D]]
-  def getAllMultiPolygonFeatures[D: JsonReader]()  = getAll[MultiPolygonFeature[D]]
+  def getAllPointFeatures[D: Decoder]()         = getAll[PointFeature[D]]
+  def getAllLineFeatures[D: Decoder]()          = getAll[LineFeature[D]]
+  def getAllPolygonFeatures[D: Decoder]()       = getAll[PolygonFeature[D]]
+  def getAllMultiPointFeatures[D: Decoder]()    = getAll[MultiPointFeature[D]]
+  def getAllMultiLineFeatures[D: Decoder]()     = getAll[MultiLineFeature[D]]
+  def getAllMultiPolygonFeatures[D: Decoder]()  = getAll[MultiPolygonFeature[D]]
 
   def getAllPoints()         = getAll[Point]
   def getAllLines()          = getAll[Line]
@@ -134,12 +128,12 @@ class JsonFeatureCollection(features: List[JsValue] = Nil) {
 object JsonFeatureCollection{
   def apply() = new JsonFeatureCollection()
 
-  def apply[G <: Geometry, D: JsonWriter](features: Traversable[Feature[G, D]]) = {
+  def apply[G <: Geometry, D: Encoder](features: Traversable[Feature[G, D]]) = {
     val fc = new JsonFeatureCollection()
     fc ++= features.toList
     fc
   }
 
-  def apply(features: Traversable[JsValue])(implicit d: DummyImplicit): JsonFeatureCollection =
+  def apply(features: Traversable[Json])(implicit d: DummyImplicit): JsonFeatureCollection =
     new JsonFeatureCollection(features.toList)
 }

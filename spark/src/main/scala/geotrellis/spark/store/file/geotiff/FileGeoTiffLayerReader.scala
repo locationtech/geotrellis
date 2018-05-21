@@ -28,7 +28,6 @@ import geotrellis.util.annotations.experimental
 
 import java.net.URI
 
-
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */

@@ -18,7 +18,6 @@ package geotrellis.store
 
 import java.net.URI
 
-
 trait CollectionLayerReaderProvider {
 
   def canProcess(uri: URI): Boolean

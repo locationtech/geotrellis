@@ -21,8 +21,6 @@ import geotrellis.spark._
 import geotrellis.store.index._
 
 import org.scalatest._
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 // --- //
 

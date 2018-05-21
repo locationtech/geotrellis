@@ -18,6 +18,7 @@ package geotrellis.spark
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
+import geotrellis.vector.io.json.CrsFormats
 import geotrellis.vector._
 import geotrellis.proj4._
 import geotrellis.util._
@@ -26,6 +27,8 @@ import geotrellis.spark.ingest._
 import geotrellis.spark.crop._
 import geotrellis.spark.filter._
 import geotrellis.spark.tiling._
+import geotrellis.store.json.{Implicits => StoreCodecs}
+
 import org.apache.spark.{Partitioner, SparkContext}
 import org.apache.spark.rdd._
 import cats.Functor
@@ -38,6 +41,8 @@ object Implicits extends Implicits
 
 trait Implicits
     extends buffer.Implicits
+    with CrsFormats
+    with StoreCodecs
     with clip.Implicits
     with costdistance.Implicits
     with crop.Implicits

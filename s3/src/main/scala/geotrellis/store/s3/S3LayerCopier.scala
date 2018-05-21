@@ -25,10 +25,8 @@ import geotrellis.util._
 
 import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.services.s3.S3Client
-
 import org.apache.avro.Schema
-
-import spray.json.JsonFormat
+import io.circe._
 
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
@@ -59,9 +57,9 @@ class S3LayerCopier(
   }
 
   def copy[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[?, Bounds[K]]
   ](from: LayerId, to: LayerId): Unit = {
     if (!attributeStore.layerExists(from)) throw new LayerNotFoundError(from)
     if (attributeStore.layerExists(to)) throw new LayerExistsError(to)

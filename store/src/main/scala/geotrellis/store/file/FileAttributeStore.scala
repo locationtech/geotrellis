@@ -19,13 +19,13 @@ package geotrellis.store.file
 import geotrellis.store._
 import geotrellis.util.Filesystem
 
+import io.circe._
+import io.circe.parser._
+import io.circe.syntax._
+import cats.syntax.either._
 import org.apache.commons.io.filefilter.WildcardFileFilter
 
 import scala.util.matching.Regex
-
-import spray.json._
-import spray.json.DefaultJsonProtocol._
-
 import java.io._
 
 /**
@@ -50,12 +50,12 @@ class FileAttributeStore(val catalogPath: String) extends BlobLayerAttributeStor
         (att.substring(0, att.length - 5), f)
       }
 
-  def read[T: JsonFormat](file: File): (LayerId, T) =
-    Filesystem.readText(file)
-      .parseJson
-      .convertTo[(LayerId, T)]
+  def read[T: Decoder](file: File): (LayerId, T) =
+    parse(Filesystem.readText(file))
+      .flatMap(_.as[(LayerId, T)])
+      .valueOr(throw _)
 
-  def read[T: JsonFormat](layerId: LayerId, attributeName: String): T = {
+  def read[T: Decoder](layerId: LayerId, attributeName: String): T = {
     val file = attributeFile(layerId, attributeName)
 
     if(!file.exists)
@@ -64,15 +64,15 @@ class FileAttributeStore(val catalogPath: String) extends BlobLayerAttributeStor
     read[T](attributeFile(layerId, attributeName))._2
   }
 
-  def readAll[T: JsonFormat](attributeName: String): Map[LayerId, T] =
+  def readAll[T: Decoder](attributeName: String): Map[LayerId, T] =
     attributeDirectory
       .listFiles(new WildcardFileFilter(s"*${SEP}${attributeName}.json"): FileFilter)
       .map(read[T])
       .toMap
 
-  def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
+  def write[T: Encoder](layerId: LayerId, attributeName: String, value: T): Unit = {
     val f = attributeFile(layerId, attributeName)
-    val text = (layerId, value).toJson.compactPrint
+    val text = (layerId, value).asJson.noSpaces
     Filesystem.writeText(f.getAbsolutePath, text)
   }
 

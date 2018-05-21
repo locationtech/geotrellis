@@ -23,14 +23,13 @@ import geotrellis.store.avro._
 import geotrellis.store.index._
 import geotrellis.layer.json._
 import geotrellis.store.s3._
+import geotrellis.util._
 import geotrellis.spark._
 import geotrellis.spark.store._
-import geotrellis.util._
 
 import software.amazon.awssdk.services.s3.S3Client
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd._
-import spray.json.JsonFormat
+import io.circe._
 
 import scala.reflect.ClassTag
 
@@ -40,30 +39,30 @@ class S3LayerManager(attributeStore: S3AttributeStore, getClient: () => S3Client
     S3LayerDeleter(attributeStore, getClient).delete(id)
 
   def copy[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[?, Bounds[K]]
   ](from: LayerId, to: LayerId): Unit =
     S3LayerCopier(attributeStore).copy[K, V, M](from, to)
 
   def move[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[?, Bounds[K]]
   ](from: LayerId, to: LayerId): Unit =
     S3LayerMover(attributeStore).move[K, V, M](from, to)
 
   def reindex[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[?, Bounds[K]]
   ](id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit =
     S3LayerReindexer(attributeStore).reindex[K, V, M](id, keyIndexMethod)
 
   def reindex[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[?, Bounds[K]]
   ](id: LayerId, keyIndex: KeyIndex[K]): Unit =
     S3LayerReindexer(attributeStore).reindex[K, V, M](id, keyIndex)
 }

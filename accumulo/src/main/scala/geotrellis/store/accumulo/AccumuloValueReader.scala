@@ -26,8 +26,7 @@ import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import org.apache.accumulo.core.data.{Range => ARange}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.hadoop.io.Text
-
-import spray.json._
+import io.circe._
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
@@ -39,7 +38,7 @@ class AccumuloValueReader(
 
   val rowId = (index: BigInt) => new Text(AccumuloKeyEncoder.long2Bytes(index))
 
-  def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
+  def reader[K: AvroRecordCodec: Decoder: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
     val header = attributeStore.readHeader[AccumuloLayerHeader](layerId)
     val keyIndex = attributeStore.readKeyIndex[K](layerId)
     val writerSchema = attributeStore.readSchema(layerId)
@@ -66,14 +65,14 @@ class AccumuloValueReader(
 }
 
 object AccumuloValueReader {
-  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
+  def apply[K: AvroRecordCodec: Decoder: ClassTag, V: AvroRecordCodec](
     instance: AccumuloInstance,
     attributeStore: AttributeStore,
     layerId: LayerId
   ): Reader[K, V] =
     new AccumuloValueReader(instance, attributeStore).reader[K, V](layerId)
 
-  def apply[K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]](
+  def apply[K: AvroRecordCodec: Decoder: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]](
     instance: AccumuloInstance,
     attributeStore: AttributeStore,
     layerId: LayerId,

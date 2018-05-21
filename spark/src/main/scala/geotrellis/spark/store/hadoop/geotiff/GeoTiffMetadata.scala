@@ -23,9 +23,10 @@ import geotrellis.layer._
 import geotrellis.spark._
 import geotrellis.spark.store._
 import geotrellis.util.annotations.experimental
+import geotrellis.spark.{Implicits => SparkImplicits}
 
-import spray.json._
-import spray.json.DefaultJsonProtocol._
+import _root_.io.circe._
+import _root_.io.circe.generic.semiauto._
 
 import java.net.URI
 
@@ -33,7 +34,8 @@ import java.net.URI
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   * Row in a table
   */
-@experimental case class GeoTiffMetadata(
+@experimental
+case class GeoTiffMetadata(
   extent: Extent,
   crs: CRS,
   name: String, // name of the ingest data set, by default each tile a separate layer
@@ -42,17 +44,16 @@ import java.net.URI
   @experimental def projectedExtent: ProjectedExtent = ProjectedExtent(extent, crs)
 }
 
-/**
-  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
-  */
-@experimental object GeoTiffMetadata {
-  implicit val geoTiffMetadataFormat  = jsonFormat4(GeoTiffMetadata.apply)
+object GeoTiffMetadata extends SparkImplicits {
+  implicit val GeoTiffMetadataEncoder: Encoder[GeoTiffMetadata] = deriveEncoder
+  implicit val GeoTiffMetadataDecoder: Decoder[GeoTiffMetadata] = deriveDecoder
 }
 
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
-@experimental case class TemporalGeoTiffMetadata(
+@experimental
+case class TemporalGeoTiffMetadata(
   extent: Extent,
   time: Long,
   crs: CRS,
@@ -63,9 +64,7 @@ import java.net.URI
   @experimental def temporalProjectedExtent: TemporalProjectedExtent = TemporalProjectedExtent(extent, crs, time)
 }
 
-/**
-  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
-  */
-@experimental object TemporalGeoTiffMetadata {
-  implicit val temporalGeoTiffMetadataFormat  = jsonFormat5(TemporalGeoTiffMetadata.apply)
+object TemporalGeoTiffMetadata extends SparkImplicits {
+  implicit val TemporalGeoTiffMetadataEncoder: Encoder[TemporalGeoTiffMetadata] = deriveEncoder
+  implicit val TemporalGeoTiffMetadataDecoder: Decoder[TemporalGeoTiffMetadata] = deriveDecoder
 }

@@ -7,13 +7,14 @@ import geotrellis.store._
 import geotrellis.store.avro.AvroRecordCodec
 import geotrellis.util._
 
-import spray.json.JsonFormat
+import io.circe._
 
 import scala.reflect.ClassTag
+import java.net.URI
 
 trait OverzoomingValueReader extends ValueReader[LayerId] {
   def overzoomingReader[
-    K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag,
+    K: AvroRecordCodec: Decoder: SpatialComponent: ClassTag,
     V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]
   ](layerId: LayerId, resampleMethod: ResampleMethod): Reader[K, V] = new Reader[K, V] {
     val LayerId(layerName, requestedZoom) = layerId

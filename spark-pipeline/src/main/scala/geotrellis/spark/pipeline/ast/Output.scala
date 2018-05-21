@@ -16,6 +16,8 @@
 
 package geotrellis.spark.pipeline.ast
 
+import io.circe._
+
 import geotrellis.spark.pipeline.json.write.{Write => JsonWrite}
 import geotrellis.raster.CellGrid
 import geotrellis.raster.merge.TileMergeMethods
@@ -28,7 +30,6 @@ import geotrellis.util.{Component, GetComponent}
 import com.typesafe.scalalogging.LazyLogging
 import geotrellis.store.LayerId
 import org.apache.spark.rdd.RDD
-import spray.json.JsonFormat
 
 import scala.reflect.ClassTag
 
@@ -36,9 +37,9 @@ trait Output[T] extends Node[T]
 
 object Output extends LazyLogging {
   def write[
-    K: SpatialComponent : AvroRecordCodec : JsonFormat : ClassTag,
+    K: SpatialComponent : AvroRecordCodec : Encoder : ClassTag,
     V <: CellGrid[Int] : AvroRecordCodec : ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
-    M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]: JsonFormat : GetComponent[?, Bounds[K]]
+    M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]: Encoder : GetComponent[?, Bounds[K]]
   ](arg: JsonWrite)(tuples: Stream[(Int, RDD[(K, V)] with Metadata[M])]): Stream[(Int, RDD[(K, V)] with Metadata[M])] = {
     lazy val writer = LayerWriter(arg.uri)
     tuples.foreach { tuple =>

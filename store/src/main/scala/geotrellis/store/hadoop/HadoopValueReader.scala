@@ -24,13 +24,11 @@ import geotrellis.store.avro._
 import geotrellis.store.avro.codecs._
 import geotrellis.store.hadoop.formats.FilterMapFileInputFormat
 
-import spray.json._
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._
 import org.apache.hadoop.io._
-
 import com.github.blemale.scaffeine.{Cache, Scaffeine}
+import _root_.io.circe._
 
 import scala.collection.immutable._
 import scala.reflect.ClassTag
@@ -52,7 +50,7 @@ class HadoopValueReader(
   private def predicate(row: (Path, BigInt, BigInt), index: BigInt): Boolean =
     (index >= row._2) && ((index <= row._3) || (row._3 == -1))
 
-  def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
+  def reader[K: AvroRecordCodec: Decoder: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
     val header = attributeStore.readHeader[HadoopLayerHeader](layerId)
     val keyIndex = attributeStore.readKeyIndex[K](layerId)
     val writerSchema = attributeStore.readSchema(layerId)

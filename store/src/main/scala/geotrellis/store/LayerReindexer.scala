@@ -20,23 +20,22 @@ import geotrellis.layer.{Bounds, Boundable}
 import geotrellis.store._
 import geotrellis.store.avro.AvroRecordCodec
 import geotrellis.store.index.{KeyIndex, KeyIndexMethod}
-import geotrellis.layer.json._
 import geotrellis.util._
 
-import scala.reflect.ClassTag
-import spray.json._
+import io.circe._
 
+import scala.reflect.ClassTag
 
 trait LayerReindexer[ID] {
   def reindex[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[?, Bounds[K]]
   ](id: ID, keyIndex: KeyIndex[K]): Unit
 
   def reindex[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[?, Bounds[K]]
   ](id: ID, keyIndexMethod: KeyIndexMethod[K]): Unit
 }

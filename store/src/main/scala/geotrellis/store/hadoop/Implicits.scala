@@ -6,6 +6,7 @@ import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.raster.render.{Jpg, Png}
 import geotrellis.store.hadoop.util._
 import geotrellis.util.MethodExtensions
+import geotrellis.vector.io.json.CrsFormats
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -16,7 +17,7 @@ import java.io.{ByteArrayOutputStream, ObjectOutputStream, ByteArrayInputStream,
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
-object Implicits extends Implicits
+object Implicits extends Implicits with CrsFormats
 
 trait Implicits {
   implicit class withJpgHadoopWriteMethods(val self: Jpg) extends JpgHadoopWriteMethods(self)

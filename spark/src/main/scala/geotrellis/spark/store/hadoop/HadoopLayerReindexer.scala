@@ -25,13 +25,10 @@ import geotrellis.util._
 import org.apache.spark.SparkContext
 import org.apache.hadoop.fs.Path
 
-import spray.json.JsonFormat
-import spray.json.DefaultJsonProtocol._
-
 
 object HadoopLayerReindexer {
   def apply(rootPath: Path, attributeStore: HadoopAttributeStore)(implicit sc: SparkContext): LayerReindexer[LayerId] =
-    GenericLayerReindexer[HadoopLayerHeader](
+    GenericLayerReindexer(
       attributeStore = attributeStore,
       layerReader    = HadoopLayerReader(rootPath),
       layerWriter    = HadoopLayerWriter(rootPath),

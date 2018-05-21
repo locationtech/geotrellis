@@ -16,6 +16,8 @@
 
 package geotrellis.store.s3.cog
 
+import io.circe._
+
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.layer._
@@ -27,11 +29,9 @@ import geotrellis.util._
 
 import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.services.s3.S3Client
-import spray.json._
 
 import scala.reflect.ClassTag
 import java.net.URI
-
 
 class S3COGValueReader(
   val attributeStore: AttributeStore,
@@ -41,7 +41,7 @@ class S3COGValueReader(
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, getClient())
 
   def reader[
-    K: JsonFormat: SpatialComponent : ClassTag,
+    K: Decoder: SpatialComponent : ClassTag,
     V <: CellGrid[Int]: GeoTiffReader
   ](layerId: LayerId): COGReader[K, V] = {
     val header =

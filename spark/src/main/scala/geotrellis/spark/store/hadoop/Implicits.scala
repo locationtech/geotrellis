@@ -28,13 +28,11 @@ import geotrellis.spark.store._
 import geotrellis.spark.util.KryoSerializer
 import geotrellis.util.MethodExtensions
 
-import spray.json._
-import spray.json.DefaultJsonProtocol._
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark._
 import org.apache.spark.rdd._
+import _root_.io.circe._
 
 import scala.reflect.ClassTag
 
@@ -82,13 +80,13 @@ trait Implicits {
   }
 
   implicit class withHadoopValueReaderMethods(val self: HadoopValueReader.type) extends MethodExtensions[HadoopValueReader.type] {
-    def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
+    def apply[K: AvroRecordCodec: Decoder: ClassTag, V: AvroRecordCodec](
       attributeStore: AttributeStore,
       layerId: LayerId
     )(implicit sc: SparkContext): Reader[K, V] =
       new HadoopValueReader(attributeStore, sc.hadoopConfiguration).reader[K, V](layerId)
 
-    def apply[K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]](
+    def apply[K: AvroRecordCodec: Decoder: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]](
       attributeStore: AttributeStore,
       layerId: LayerId,
       resampleMethod: ResampleMethod

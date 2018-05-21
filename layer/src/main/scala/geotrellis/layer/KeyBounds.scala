@@ -19,7 +19,12 @@ package geotrellis.layer
 import geotrellis.raster.{GridBounds, RasterExtent}
 import geotrellis.util._
 
+import _root_.io.circe._
+import _root_.io.circe.syntax._
+import _root_.io.circe.generic.semiauto._
+import _root_.io.circe.generic.JsonCodec
 import cats.Functor
+import cats.syntax.either._
 
 /** Represents a region of discrete space, bounding it by minimum and maximum points.
  * The bounds maybe [[EmptyBounds]] as result of intersection operation.
@@ -88,6 +93,20 @@ sealed trait Bounds[+A] extends Product with Serializable {
 }
 
 object Bounds {
+  implicit val encodeEmptyBounds: Encoder[EmptyBounds.type] = deriveEncoder
+  implicit val decodeEmptyBounds: Decoder[EmptyBounds.type] = deriveDecoder
+
+  implicit def boundsEncoder[K: Encoder]: Encoder[Bounds[K]] =
+    Encoder.encodeJson.contramap[Bounds[K]] {
+      case bounds: KeyBounds[K] => bounds.asJson
+      case EmptyBounds => EmptyBounds.asJson
+    }
+
+  implicit def boundsDecoder[K: Decoder]: Decoder[Bounds[K]] =
+    Decoder.decodeHCursor.emap { c: HCursor =>
+      c.as[KeyBounds[K]].leftFlatMap(_ => c.as[EmptyBounds.type]).leftMap(_ => "Bounds[K] expected.")
+    }
+
   def apply[A](min: A, max: A): Bounds[A] = KeyBounds(min, max)
 
   implicit val boundsFunctor: Functor[Bounds] = new Functor[Bounds] {
@@ -221,6 +240,9 @@ case class KeyBounds[+K](
 }
 
 object KeyBounds {
+  implicit def keyBoundsEncoder[K: Encoder]: Encoder[KeyBounds[K]] = deriveEncoder
+  implicit def keyBoundsDecoder[K: Decoder]: Decoder[KeyBounds[K]] = deriveDecoder
+
   def apply(gridBounds: TileBounds): KeyBounds[SpatialKey] =
     KeyBounds(SpatialKey(gridBounds.colMin, gridBounds.rowMin), SpatialKey(gridBounds.colMax, gridBounds.rowMax))
 

@@ -23,7 +23,6 @@ import geotrellis.vector.io.json.JsonFeatureCollection
 import geotrellis.raster.testkit._
 
 import spire.syntax.cfor._
-import spray.json.DefaultJsonProtocol._
 import org.scalatest._
 
 class KrigingSpec extends FunSpec with Matchers {

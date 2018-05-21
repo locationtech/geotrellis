@@ -24,7 +24,7 @@ import geotrellis.util._
 
 import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.services.s3.S3Client
-import spray.json.JsonFormat
+import io.circe._
 
 import scala.reflect.ClassTag
 
@@ -44,9 +44,9 @@ class S3CollectionLayerReader(
   def collectionReader: S3CollectionReader = new S3CollectionReader(getClient)
 
   def read[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Decoder: Component[?, Bounds[K]]
   ](id: LayerId, rasterQuery: LayerQuery[K, M], filterIndexOnly: Boolean) = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 

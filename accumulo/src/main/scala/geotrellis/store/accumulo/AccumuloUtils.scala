@@ -25,7 +25,6 @@ import org.apache.hadoop.io.Text
 
 import scala.collection.JavaConverters._
 
-
 object AccumuloUtils {
   /**
    * Mapping KeyBounds of Extent to SFC ranges will often result in a set of non-contigrious ranges.
@@ -40,7 +39,7 @@ object AccumuloUtils {
     * more than one tablet server to participate in the ingestion.
     *
     * @param  tableName         The name of the table to be split
-    * @param  accumuloInstnace  The Accumulo instance associated with the ingest
+    * @param  accumuloInstance  The Accumulo instance associated with the ingest
     * @param  keyBounds         The KeyBounds of the RDD that is being stored in the table
     * @param  keyIndexer        The indexing scheme used to turn keys K into Accumulo keys
     * @param  count             The number of tablets to split the table into
@@ -60,5 +59,4 @@ object AccumuloUtils {
 
     ops.addSplits(tableName, new java.util.TreeSet(splits.asJava))
   }
-
 }

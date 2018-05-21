@@ -16,12 +16,15 @@
 
 package geotrellis.spark.store.hadoop.geotiff
 
+import io.circe._
+import io.circe.parser._
+import io.circe.syntax._
+import cats.syntax.either._
+
 import geotrellis.util.annotations.experimental
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 import java.net.URI
 import java.io.PrintWriter
@@ -43,9 +46,7 @@ import scala.io.Source
         .mkString(" ")
     } finally stream.close()
 
-    json
-      .parseJson
-      .convertTo[List[GeoTiffMetadata]]
+    parse(json).flatMap(_.as[List[GeoTiffMetadata]]).valueOr(throw _)
   }
 
   @experimental def readDataAsTree(uri: URI, conf: Configuration): GeoTiffMetadataTree[GeoTiffMetadata] =
@@ -65,7 +66,7 @@ import scala.io.Source
       val fdos = fs.create(path)
       val out = new PrintWriter(fdos)
       try {
-        val s = data.toJson.prettyPrint
+        val s = data.asJson.noSpaces
         out.println(s)
       } finally {
         out.close()

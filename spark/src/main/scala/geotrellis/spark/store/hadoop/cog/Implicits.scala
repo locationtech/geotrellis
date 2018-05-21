@@ -26,12 +26,10 @@ import geotrellis.store.hadoop.cog._
 import geotrellis.spark.store.hadoop._
 import geotrellis.util.MethodExtensions
 
-import spray.json._
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-
 import org.apache.spark.SparkContext
+import _root_.io.circe.Decoder
 
 import scala.reflect.ClassTag
 
@@ -46,7 +44,7 @@ trait Implicits {
 
   implicit class withHadoopCOGValueReaderMethods(val self: HadoopCOGValueReader.type) extends MethodExtensions[HadoopCOGValueReader.type] {
     def apply[
-      K: JsonFormat: SpatialComponent: ClassTag,
+      K: Decoder: SpatialComponent: ClassTag,
       V <: CellGrid[Int]: GeoTiffReader
     ](attributeStore: HadoopAttributeStore, layerId: LayerId)(implicit sc: SparkContext): Reader[K, V] =
       new HadoopCOGValueReader(attributeStore, sc.hadoopConfiguration).reader[K, V](layerId)

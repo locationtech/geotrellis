@@ -6,18 +6,18 @@ import geotrellis.store.AttributeStore.Fields
 import geotrellis.store.avro.AvroRecordCodec
 import geotrellis.util.{Component, Filesystem}
 
-import spray.json.JsonFormat
+import _root_.io.circe._
 
-import java.io.File
 import scala.reflect.ClassTag
+import java.io.File
 
 object FileLayerCopier {
   def apply(sourceAttributeStore: FileAttributeStore, targetAttributeStore: FileAttributeStore): LayerCopier[LayerId] =
     new LayerCopier[LayerId] {
       def copy[
-        K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+        K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
         V: AvroRecordCodec: ClassTag,
-        M: JsonFormat: Component[?, Bounds[K]]
+        M: Encoder: Decoder: Component[?, Bounds[K]]
       ](from: LayerId, to: LayerId): Unit = {
         if(targetAttributeStore.layerExists(to))
           throw new LayerExistsError(to)

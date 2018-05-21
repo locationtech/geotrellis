@@ -16,7 +16,6 @@
 
 package geotrellis.spark.store.hadoop.cog
 
-
 import geotrellis.layer.SpatialComponent
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.GeoTiff
@@ -36,17 +35,16 @@ import geotrellis.util.ByteReader
 
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
-import spray.json.JsonFormat
-
-import java.net.URI
+import _root_.io.circe._
 
 import scala.reflect.{ClassTag, classTag}
+import java.net.URI
 
 class HadoopCOGLayerWriter(
   rootPath: String,
   val attributeStore: AttributeStore
 ) extends COGLayerWriter {
-  def writeCOGLayer[K: SpatialComponent: Ordering: JsonFormat: ClassTag, V <: CellGrid[Int]: GeoTiffReader: ClassTag](
+  def writeCOGLayer[K: SpatialComponent: Ordering: Encoder: ClassTag, V <: CellGrid[Int]: GeoTiffReader: ClassTag](
     layerName: String,
     cogLayer: COGLayer[K, V],
     keyIndexes: Map[ZoomRange, KeyIndex[K]],

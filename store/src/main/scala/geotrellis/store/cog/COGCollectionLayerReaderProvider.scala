@@ -16,11 +16,10 @@
 
 package geotrellis.store.cog
 
-import java.net.URI
-
 import geotrellis.store.LayerId
 import geotrellis.store.AttributeStore
 
+import java.net.URI
 
 trait COGCollectionLayerReaderProvider {
   def canProcess(uri: URI): Boolean

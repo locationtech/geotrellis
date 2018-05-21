@@ -25,8 +25,7 @@ import geotrellis.store.avro.codecs.KeyValueRecordCodec
 import geotrellis.store.avro.{AvroEncoder, AvroRecordCodec}
 
 import org.apache.hadoop.hbase.client.Get
-
-import spray.json._
+import io.circe._
 
 import scala.reflect.ClassTag
 
@@ -35,7 +34,7 @@ class HBaseValueReader(
   val attributeStore: AttributeStore
 ) extends OverzoomingValueReader {
 
-  def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
+  def reader[K: AvroRecordCodec: Decoder: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
     val header = attributeStore.readHeader[HBaseLayerHeader](layerId)
     val keyIndex = attributeStore.readKeyIndex[K](layerId)
     val writerSchema = attributeStore.readSchema(layerId)
@@ -62,14 +61,14 @@ class HBaseValueReader(
 }
 
 object HBaseValueReader {
-  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
+  def apply[K: AvroRecordCodec: Decoder: ClassTag, V: AvroRecordCodec](
     instance: HBaseInstance,
     attributeStore: AttributeStore,
     layerId: LayerId
   ): Reader[K, V] =
     new HBaseValueReader(instance, attributeStore).reader[K, V](layerId)
 
-  def apply[K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]](
+  def apply[K: AvroRecordCodec: Decoder: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]](
     instance: HBaseInstance,
     attributeStore: AttributeStore,
     layerId: LayerId,

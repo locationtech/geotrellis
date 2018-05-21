@@ -16,8 +16,8 @@
 
 package geotrellis.store
 
-import spray.json._
-import spray.json.DefaultJsonProtocol._
+import io.circe._
+import io.circe.syntax._
 
 /** Base trait for layer headers that store location information for a saved layer */
 trait LayerHeader {
@@ -28,33 +28,39 @@ trait LayerHeader {
 }
 
 object LayerHeader {
-  implicit object LayeHeaderFormat extends RootJsonFormat[LayerHeader] {
-    def write(md: LayerHeader) =
-      JsObject(
-        "format" -> JsString(md.format),
-        "keyClass" -> JsString(md.keyClass),
-        "valueClass" -> JsString(md.valueClass),
-        "layerType" -> md.layerType.toJson
+  implicit val layerHeaderEncoder: Encoder[LayerHeader] =
+    Encoder.encodeJson.contramap[LayerHeader] { md =>
+      Json.obj(
+        "format" -> md.format.asJson,
+        "keyClass" -> md.keyClass.asJson,
+        "valueClass" -> md.valueClass.asJson,
+        "layerType" -> md.layerType.asJson
       )
+    }
 
-    def read(value: JsValue): LayerHeader =
-      value.asJsObject.getFields("format", "keyClass", "valueClass", "layerType") match {
-        case Seq(JsString(_format), JsString(_keyClass), JsString(_valueClass), _layerType) =>
-          new LayerHeader {
-            val format = _format
-            val keyClass = _keyClass
-            val valueClass = _valueClass
-            def layerType = _layerType.convertTo[LayerType]
-          }
-        case Seq(JsString(_format), JsString(_keyClass), JsString(_valueClass)) =>
-          new LayerHeader {
-            val format = _format
-            val keyClass = _keyClass
-            val valueClass = _valueClass
-            def layerType = AvroLayerType
-          }
-        case _ =>
-          throw new DeserializationException(s"LayerHeader expected, got: $value")
+  implicit val layerHeaderDecoder: Decoder[LayerHeader] =
+    Decoder.decodeHCursor.emap { c =>
+      (c.downField("format").as[String],
+      c.downField("keyClass").as[String],
+      c.downField("valueClass").as[String],
+      c.downField("layerType").as[LayerType]) match {
+        case (Right(f), Right(kc), Right(vc), Right(lt)) =>
+          Right(new LayerHeader {
+            val format = f
+            val keyClass = kc
+            val valueClass = vc
+            val layerType = lt
+          })
+
+        case (Right(f), Right(kc), Right(vc), _) =>
+          Right(new LayerHeader {
+            val format = f
+            val keyClass = kc
+            val valueClass = vc
+            val layerType = AvroLayerType
+          })
+
+        case _ => Left(s"LayerHeader expected, got: ${c.focus}")
       }
-  }
+    }
 }

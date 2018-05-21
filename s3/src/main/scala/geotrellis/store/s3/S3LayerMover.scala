@@ -21,9 +21,7 @@ import geotrellis.store._
 import geotrellis.util._
 
 import software.amazon.awssdk.services.s3.S3Client
-
-import spray.json.JsonFormat
-
+k
 import scala.reflect.ClassTag
 
 object S3LayerMover {

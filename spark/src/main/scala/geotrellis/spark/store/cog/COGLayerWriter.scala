@@ -31,10 +31,8 @@ import geotrellis.store.index._
 import geotrellis.spark._
 
 import com.typesafe.scalalogging.LazyLogging
-
 import org.apache.spark.rdd.RDD
-
-import spray.json._
+import _root_.io.circe._
 
 import java.net.URI
 import java.util.ServiceLoader
@@ -48,7 +46,7 @@ trait COGLayerWriter extends LazyLogging with Serializable {
   val attributeStore: AttributeStore
 
   def writeCOGLayer[
-    K: SpatialComponent: Ordering: JsonFormat: ClassTag,
+    K: SpatialComponent: Ordering: Encoder: ClassTag,
     V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](
     layerName: String,
@@ -58,7 +56,7 @@ trait COGLayerWriter extends LazyLogging with Serializable {
   ): Unit
 
   def write[
-    K: SpatialComponent: Ordering: JsonFormat: ClassTag,
+    K: SpatialComponent: Ordering: Encoder: ClassTag,
     V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
   ](
      layerName: String,
@@ -68,7 +66,7 @@ trait COGLayerWriter extends LazyLogging with Serializable {
    ): Unit = write[K, V](layerName, tiles, tileZoom, keyIndexMethod, None, Options.DEFAULT)
 
   def write[
-    K: SpatialComponent: Ordering: JsonFormat: ClassTag,
+    K: SpatialComponent: Ordering: Encoder: ClassTag,
     V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
   ](
      layerName: String,
@@ -79,7 +77,7 @@ trait COGLayerWriter extends LazyLogging with Serializable {
    ): Unit = write[K, V](layerName, tiles, tileZoom, keyIndexMethod, None, options)
 
   def write[
-    K: SpatialComponent: Ordering: JsonFormat: ClassTag,
+    K: SpatialComponent: Ordering: Encoder: ClassTag,
     V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
   ](
     layerName: String,
@@ -103,7 +101,7 @@ trait COGLayerWriter extends LazyLogging with Serializable {
     }
 
   def write[
-    K: SpatialComponent: Ordering: JsonFormat: ClassTag,
+    K: SpatialComponent: Ordering: Encoder:  ClassTag,
     V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
   ](
      layerName: String,
@@ -113,7 +111,7 @@ trait COGLayerWriter extends LazyLogging with Serializable {
    ): Unit = write[K, V](layerName, tiles, tileZoom, keyIndex, None, Options.DEFAULT)
 
   def write[
-    K: SpatialComponent: Ordering: JsonFormat: ClassTag,
+    K: SpatialComponent: Ordering: Encoder: ClassTag,
     V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
   ](
      layerName: String,
@@ -124,7 +122,7 @@ trait COGLayerWriter extends LazyLogging with Serializable {
    ): Unit = write[K, V](layerName, tiles, tileZoom, keyIndex, None, options)
 
   def write[
-    K: SpatialComponent: Ordering: JsonFormat: ClassTag,
+    K: SpatialComponent: Ordering: Encoder: ClassTag,
     V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
   ](
      layerName: String,
@@ -148,7 +146,7 @@ trait COGLayerWriter extends LazyLogging with Serializable {
     }
 
   def writer[
-    K: SpatialComponent: Boundable: Ordering: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Ordering: Encoder: ClassTag,
     V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
   ](keyIndexMethod: KeyIndexMethod[K]):  Writer[LayerId, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new Writer[LayerId, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
@@ -157,7 +155,7 @@ trait COGLayerWriter extends LazyLogging with Serializable {
     }
 
   def writer[
-    K: SpatialComponent: Boundable: Ordering: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Ordering: Encoder: ClassTag,
     V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
   ](keyIndex: KeyIndex[K]):  Writer[LayerId, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new Writer[LayerId, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
@@ -166,7 +164,7 @@ trait COGLayerWriter extends LazyLogging with Serializable {
     }
 
   def overwrite[
-    K: SpatialComponent: Boundable: Ordering: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Ordering: Encoder: Decoder: ClassTag,
     V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
   ](
     layerName: String,
@@ -178,7 +176,7 @@ trait COGLayerWriter extends LazyLogging with Serializable {
     else logger.info("Skipping layer update with empty bounds rdd.")
 
   def update[
-    K: SpatialComponent: Boundable: Ordering: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Ordering: Encoder: Decoder: ClassTag,
     V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
   ](
      layerName: String,

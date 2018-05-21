@@ -16,113 +16,28 @@
 
 package geotrellis.raster.io.json
 
-import geotrellis.raster._
-import geotrellis.raster.histogram.{FastMapHistogram, Histogram}
-import geotrellis.vector._
-import geotrellis.vector.io._
+import _root_.io.circe._
+import _root_.io.circe.generic.semiauto._
+import cats.syntax.either._
 
-import spray.json._
+import geotrellis.raster._
 
 object Implicits extends Implicits
 
 trait Implicits extends HistogramJsonFormats {
 
-  implicit object CellTypeFormat extends RootJsonFormat[CellType] {
-    def write(cellType: CellType) =
-      JsString(cellType.name)
+  implicit val cellTypeEncoder: Encoder[CellType] =
+    Encoder.encodeString.contramap[CellType] { _.toString }
+  implicit val cellTypeDecoder: Decoder[CellType] =
+    Decoder.decodeString.emap { str =>
+      Either.catchNonFatal(CellType.fromName(str)).leftMap(_ => "Expected CellType")
+    }
 
-    def read(value: JsValue): CellType =
-      value match {
-        case JsString(name) => CellType.fromName(name)
-        case _ =>
-          throw new DeserializationException("CellType must be a string")
-      }
-  }
+  implicit val tileLayoutEncoder: Encoder[TileLayout] = deriveEncoder
+  implicit val tileLayoutDecoder: Decoder[TileLayout] = deriveDecoder
 
-  implicit object CellSizeFormat extends RootJsonFormat[CellSize] {
-    def write(cs: CellSize): JsValue = JsObject(
-      "width"  -> JsNumber(cs.width),
-      "height" -> JsNumber(cs.height)
-    )
-    def read(value: JsValue): CellSize =
-      value.asJsObject.getFields("width", "height") match {
-        case Seq(JsNumber(width), JsNumber(height)) => CellSize(width.toDouble, height.toDouble)
-        case _ =>
-          throw new DeserializationException("BackendType must be a valid object.")
-      }
-  }
-
-  implicit object RasterExtentFormat extends RootJsonFormat[RasterExtent] {
-    def write(rasterExtent: RasterExtent) =
-      JsObject(
-        "extent" -> rasterExtent.extent.toJson,
-        "cols" -> JsNumber(rasterExtent.cols),
-        "rows" -> JsNumber(rasterExtent.rows),
-        "cellwidth" -> JsNumber(rasterExtent.cellwidth),
-        "cellheight" -> JsNumber(rasterExtent.cellheight)
-      )
-
-    def read(value: JsValue): RasterExtent =
-      value.asJsObject.getFields("extent", "cols", "rows", "cellwidth", "cellheight") match {
-        case Seq(extent, JsNumber(cols), JsNumber(rows), JsNumber(cellwidth), JsNumber(cellheight)) =>
-          val ext = extent.convertTo[Extent]
-          RasterExtent(ext, cellwidth.toDouble, cellheight.toDouble, cols.toInt, rows.toInt)
-        case _ =>
-          throw new DeserializationException("RasterExtent expected.")
-      }
-  }
-
-  implicit object TileLayoutFormat extends RootJsonFormat[TileLayout] {
-    def write(tileLayout: TileLayout) =
-      JsObject(
-        "layoutCols" -> JsNumber(tileLayout.layoutCols),
-        "layoutRows" -> JsNumber(tileLayout.layoutRows),
-        "tileCols" -> JsNumber(tileLayout.tileCols),
-        "tileRows" -> JsNumber(tileLayout.tileRows)
-      )
-
-    def read(value: JsValue): TileLayout =
-      value.asJsObject.getFields("layoutCols", "layoutRows", "tileCols", "tileRows") match {
-        case Seq(JsNumber(layoutCols), JsNumber(layoutRows), JsNumber(tileCols), JsNumber(tileRows)) =>
-          TileLayout(layoutCols.toInt, layoutRows.toInt, tileCols.toInt, tileRows.toInt)
-        case _ =>
-          throw new DeserializationException("TileLayout expected.")
-      }
-  }
-
-  implicit def GridBoundsIntFormat = new RootJsonFormat[GridBounds[Int]] {
-    def write(gridBounds: GridBounds[Int]) =
-      JsObject(
-        "colMin" -> JsNumber(gridBounds.colMin),
-        "rowMin" -> JsNumber(gridBounds.rowMin),
-        "colMax" -> JsNumber(gridBounds.colMax),
-        "rowMax" -> JsNumber(gridBounds.rowMax)
-      )
-
-    def read(value: JsValue): GridBounds[Int] =
-      value.asJsObject.getFields("colMin", "rowMin", "colMax", "rowMax") match {
-        case Seq(JsNumber(colMin), JsNumber(rowMin), JsNumber(colMax), JsNumber(rowMax)) =>
-          GridBounds(colMin.toInt, rowMin.toInt, colMax.toInt, rowMax.toInt)
-        case _ =>
-          throw new DeserializationException("GridBounds expected.")
-      }
-  }
-
-  implicit def GridBoundsLongFormat = new RootJsonFormat[GridBounds[Long]] {
-    def write(gridBounds: GridBounds[Long]) =
-      JsObject(
-        "colMin" -> JsNumber(gridBounds.colMin),
-        "rowMin" -> JsNumber(gridBounds.rowMin),
-        "colMax" -> JsNumber(gridBounds.colMax),
-        "rowMax" -> JsNumber(gridBounds.rowMax)
-      )
-
-    def read(value: JsValue): GridBounds[Long] =
-      value.asJsObject.getFields("colMin", "rowMin", "colMax", "rowMax") match {
-        case Seq(JsNumber(colMin), JsNumber(rowMin), JsNumber(colMax), JsNumber(rowMax)) =>
-          GridBounds(colMin.toLong, rowMin.toLong, colMax.toLong, rowMax.toLong)
-        case _ =>
-          throw new DeserializationException("GridBounds expected.")
-      }
-  }
+  implicit val gridBoundsIntEncoder: Encoder[GridBounds[Int]] = deriveEncoder
+  implicit val gridBoundsIntDecoder: Decoder[GridBounds[Int]] = deriveDecoder
+  implicit val gridBoundsLongEncoder: Encoder[GridBounds[Long]] = deriveEncoder
+  implicit val gridBoundsLongDecoder: Decoder[GridBounds[Long]] = deriveDecoder
 }

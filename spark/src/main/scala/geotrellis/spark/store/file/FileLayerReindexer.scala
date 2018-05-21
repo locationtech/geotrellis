@@ -24,10 +24,6 @@ import geotrellis.spark.store.GenericLayerReindexer
 
 import org.apache.spark.SparkContext
 
-import spray.json.JsonFormat
-
-import scala.reflect.ClassTag
-
 object FileLayerReindexer {
   def apply(attributeStore: FileAttributeStore)(implicit sc: SparkContext): LayerReindexer[LayerId] = {
     val layerReader  = FileLayerReader(attributeStore)
@@ -35,10 +31,9 @@ object FileLayerReindexer {
     val layerDeleter = FileLayerDeleter(attributeStore)
     val layerCopier  = FileLayerCopier(attributeStore)
 
-    GenericLayerReindexer[FileLayerHeader](attributeStore, layerReader, layerWriter, layerDeleter, layerCopier)
+    GenericLayerReindexer(attributeStore, layerReader, layerWriter, layerDeleter, layerCopier)
   }
 
   def apply(catalogPath: String)(implicit sc: SparkContext): LayerReindexer[LayerId] =
     apply(FileAttributeStore(catalogPath))
-
 }

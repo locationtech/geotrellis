@@ -19,18 +19,17 @@ package geotrellis.store
 import geotrellis.layer._
 import geotrellis.store._
 import geotrellis.store.avro._
-import geotrellis.layer.json._
 import geotrellis.util._
 
-import spray.json._
+import _root_.io.circe._
 
 import scala.reflect.ClassTag
 
 class GenericLayerMover[ID](layerCopier: LayerCopier[ID], layerDeleter: LayerDeleter[ID]) extends LayerMover[ID] {
   def move[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[?, Bounds[K]]
   ](from: ID, to: ID): Unit = {
     layerCopier.copy[K, V, M](from, to)
     layerDeleter.delete(from)

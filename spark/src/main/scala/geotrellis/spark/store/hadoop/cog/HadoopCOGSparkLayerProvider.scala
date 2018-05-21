@@ -27,6 +27,7 @@ import geotrellis.spark.store.cog._
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 
+import java.net.URI
 
 /**
  * Provides [[HadoopAttributeStore]] instance for URI with `hdfs`, `hdfs+file`, `s3n`, `s3a`, `wasb` and `wasbs` schemes.

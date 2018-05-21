@@ -30,6 +30,8 @@ import geotrellis.spark.store.accumulo.AccumuloWriteStrategy
 import geotrellis.util._
 import geotrellis.util.annotations.experimental
 
+import io.circe._
+
 import com.typesafe.scalalogging.LazyLogging
 
 import mil.nga.giat.geowave.adapter.raster.adapter.merge.RasterTileRowTransform
@@ -74,9 +76,6 @@ import scala.reflect._
 
 import resource._
 
-import spray.json._
-
-
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
@@ -86,7 +85,7 @@ import spray.json._
   @experimental def write[
     K <: SpatialKey: ClassTag,
     V: TileOrMultibandTile: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: Encoder: GetComponent[?, Bounds[K]]
   ](
     coverageName: String,
     bits: Int,
@@ -266,7 +265,7 @@ import spray.json._
   @experimental def write[
     K <: SpatialKey: ClassTag,
     V: TileOrMultibandTile: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: Encoder: GetComponent[?, Bounds[K]]
   ](id: LayerId, layer: RDD[(K, V)] with Metadata[M], bits: Int = 0): Unit =
     layer.metadata.getComponent[Bounds[K]] match {
       case keyBounds: KeyBounds[K] =>
@@ -279,7 +278,7 @@ import spray.json._
   @experimental protected def _write[
     K <: SpatialKey: ClassTag,
     V: TileOrMultibandTile: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: Encoder: GetComponent[?, Bounds[K]]
   ](
     layerId: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],

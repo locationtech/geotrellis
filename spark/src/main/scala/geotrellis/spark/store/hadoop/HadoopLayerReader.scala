@@ -17,6 +17,7 @@
 package geotrellis.spark.store.hadoop
 
 import geotrellis.layer._
+
 import geotrellis.spark._
 import geotrellis.spark.store._
 import geotrellis.store._
@@ -25,11 +26,10 @@ import geotrellis.store.hadoop.{HadoopAttributeStore, HadoopLayerHeader}
 import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging
-
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import spray.json._
+import io.circe._
 
 import scala.reflect.ClassTag
 
@@ -49,9 +49,9 @@ class HadoopLayerReader(
   val defaultNumPartitions = sc.defaultParallelism
 
   def read[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Decoder: Component[?, Bounds[K]]
   ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, indexFilterOnly: Boolean): RDD[(K, V)] with Metadata[M] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {
