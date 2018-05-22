@@ -35,6 +35,7 @@ import java.net.URI
 
 trait LayerReader[ID] {
   def defaultNumPartitions: Int
+  val attributeStore: AttributeStore
 
   def read[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
