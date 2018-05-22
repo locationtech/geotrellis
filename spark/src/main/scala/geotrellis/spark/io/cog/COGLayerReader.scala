@@ -16,9 +16,15 @@
 
 package geotrellis.spark.io.cog
 
+import io.circe._
+import io.circe.parser._
+import io.circe.syntax._
+import cats.syntax.either._
+
 import geotrellis.raster.{CellGrid, RasterExtent, GridBounds, MultibandTile, Tile}
 import geotrellis.raster.crop._
 import geotrellis.raster.io.geotiff._
+
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.reader.TiffTagsReader
 import geotrellis.spark._
@@ -28,7 +34,6 @@ import geotrellis.util._
 import geotrellis.spark.util.KryoWrapper
 
 import org.apache.spark.rdd._
-import spray.json._
 import org.apache.spark.SparkContext
 
 import java.net.URI
@@ -62,24 +67,24 @@ abstract class COGLayerReader[ID] extends Serializable {
     * @tparam V              Type of RDD Value (ex: Tile or MultibandTile )
     */
   def read[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
 
   def read[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]]): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read(id, rasterQuery, defaultNumPartitions)
 
   def read[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read(id, new LayerQuery[K, TileLayerMetadata[K]], numPartitions)
 
   def read[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](id: ID): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read(id, defaultNumPartitions)
@@ -99,7 +104,7 @@ abstract class COGLayerReader[ID] extends Serializable {
     * @tparam K              Type of RDD Key (ex: SpatialKey)
     */
   def readSubsetBands[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag
+    K: SpatialComponent: Boundable: Decoder: ClassTag
   ](
     id: ID,
     targetBands: Seq[Int],
@@ -108,7 +113,7 @@ abstract class COGLayerReader[ID] extends Serializable {
   ): RDD[(K, Array[Option[Tile]])] with Metadata[TileLayerMetadata[K]]
 
   def readSubsetBands[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag
+    K: SpatialComponent: Boundable: Decoder: ClassTag
   ](
     id: ID,
     targetBands: Seq[Int],
@@ -117,18 +122,18 @@ abstract class COGLayerReader[ID] extends Serializable {
     readSubsetBands(id, targetBands, rasterQuery, defaultNumPartitions)
 
   def readSubsetBands[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag
+    K: SpatialComponent: Boundable: Decoder: ClassTag
   ](id: ID, targetBands: Seq[Int], numPartitions: Int): RDD[(K, Array[Option[Tile]])] with Metadata[TileLayerMetadata[K]] =
     readSubsetBands(id, targetBands, new LayerQuery[K, TileLayerMetadata[K]], numPartitions)
 
   def readSubsetBands[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag
+    K: SpatialComponent: Boundable: Decoder: ClassTag
   ](id: ID, targetBands: Seq[Int]): RDD[(K, Array[Option[Tile]])] with Metadata[TileLayerMetadata[K]] =
     readSubsetBands(id, targetBands, defaultNumPartitions)
 
   // TODO: Have this return a COGLayerReader
   def reader[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ]: Reader[ID, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new Reader[ID, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
@@ -137,24 +142,24 @@ abstract class COGLayerReader[ID] extends Serializable {
     }
 
   def query[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](layerId: ID): BoundLayerQuery[K, TileLayerMetadata[K], RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, read(layerId, _))
 
   def query[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](layerId: ID, numPartitions: Int): BoundLayerQuery[K, TileLayerMetadata[K], RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, read(layerId, _, numPartitions))
 
   def querySubsetBands[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag
+    K: SpatialComponent: Boundable: Decoder: ClassTag
   ](layerId: ID, targetBands: Seq[Int]): BoundLayerQuery[K, TileLayerMetadata[K], RDD[(K, Array[Option[Tile]])] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, readSubsetBands(layerId, targetBands, _))
 
   def querySubsetBands[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag
+    K: SpatialComponent: Boundable: Decoder: ClassTag
   ](layerId: ID, targetBands: Seq[Int], numPartitions: Int): BoundLayerQuery[K, TileLayerMetadata[K], RDD[(K, Array[Option[Tile]])] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, readSubsetBands(layerId, targetBands, _, numPartitions))
 
@@ -208,7 +213,7 @@ abstract class COGLayerReader[ID] extends Serializable {
   }
 
   def baseReadAllBands[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](
     id: LayerId,
@@ -258,7 +263,7 @@ abstract class COGLayerReader[ID] extends Serializable {
   }
 
   def baseReadSubsetBands[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag
+    K: SpatialComponent: Boundable: Decoder: ClassTag
   ](
     id: LayerId,
     targetBands: Seq[Int],
@@ -311,7 +316,7 @@ abstract class COGLayerReader[ID] extends Serializable {
   }
 
   private def baseRead[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid[Int]: GeoTiffReader: ClassTag,
     R
   ](
@@ -373,7 +378,7 @@ abstract class COGLayerReader[ID] extends Serializable {
   }
 
   private def readLayer[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid[Int]: GeoTiffReader,
     R
   ](
@@ -383,11 +388,11 @@ abstract class COGLayerReader[ID] extends Serializable {
      readGeoTiff: (GeoTiff[V], Seq[GridBounds[Int]]) => Iterator[(GridBounds[Int], R)],
      threads: Int
    )(implicit sc: SparkContext, getByteReader: URI => ByteReader): RDD[(K, R)] = {
-    val kwFormat = KryoWrapper(implicitly[JsonFormat[K]])
+    val kwDecoder = KryoWrapper(implicitly[Decoder[K]])
 
     sc.parallelize(bins, bins.size)
       .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
-        val keyFormat = kwFormat.value
+        val keyDecoder = kwDecoder.value
 
         partition flatMap { seq =>
           LayerReader.njoin[K, R](seq.toIterator, threads) { index: BigInt =>
@@ -395,13 +400,13 @@ abstract class COGLayerReader[ID] extends Serializable {
             else {
               val uri = fullPath(keyPath(index))
               val byteReader: ByteReader = uri
-              val baseKey = {
-                val keyTag = TiffTagsReader.read(byteReader).tags.headTags(GTKey)
-                val decoded = if (keyTag.contains('&')) {
-                  org.apache.commons.lang.StringEscapeUtils.unescapeHtml(keyTag)
-                } else keyTag
-                decoded.parseJson.convertTo[K](keyFormat)
-              }
+              val baseKey =
+                parse(
+                  TiffTagsReader
+                    .read(byteReader)
+                    .tags
+                    .headTags(GTKey)
+                ).flatMap(_.as[K](keyDecoder)).valueOr(throw _)
 
               readDefinitions
                 .get(baseKey.getComponent[SpatialKey])

@@ -16,13 +16,13 @@
 
 package geotrellis.spark.io.file.geotiff
 
+import io.circe.syntax._
+
 import geotrellis.spark.io.hadoop.geotiff._
 import geotrellis.util.annotations.experimental
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 import java.net.URI
 import java.io.PrintWriter
@@ -49,7 +49,7 @@ import java.io.PrintWriter
       val fdos = fs.create(path)
       val out = new PrintWriter(fdos)
       try {
-        val s = data.toJson.prettyPrint
+        val s = data.asJson.noSpaces
         out.println(s)
       } finally {
         out.close()

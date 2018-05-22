@@ -16,17 +16,17 @@
 
 package geotrellis.spark.io.json
 
+import io.circe._
+import io.circe.generic.semiauto._
+import io.circe.syntax._
+import cats.syntax.either._
+
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.proj4.CRS
-import geotrellis.raster._
-import geotrellis.raster.io._
 import geotrellis.vector._
-import geotrellis.vector.io._
 
 import org.apache.avro.Schema
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 import java.time.{ZoneOffset, ZonedDateTime}
 import java.net.URI
@@ -35,176 +35,96 @@ object Implicits extends Implicits
 
 trait Implicits extends KeyFormats with KeyIndexFormats {
 
-  implicit object CRSFormat extends RootJsonFormat[CRS] {
-    def write(crs: CRS) =
-      JsString(crs.toProj4String)
+  implicit val crsEncoder: Encoder[CRS] =
+    Encoder.encodeString.contramap[CRS] { _.toProj4String }
 
-    def read(value: JsValue): CRS =
-      value match {
-        case JsString(proj4String) => CRS.fromString(proj4String)
-        case _ =>
-          throw new DeserializationException("CRS must be a proj4 string.")
-      }
-  }
+  implicit val crsDecoder: Decoder[CRS] =
+    Decoder.decodeString.emap { str =>
+      Either.catchNonFatal(CRS.fromString(str)).leftMap(_ => "CRS must be a proj4 string.")
+    }
 
-  implicit object URIFormat extends RootJsonFormat[URI] {
-    def write(uri: URI) =
-      JsString(uri.toString)
+  implicit val uriEncoder: Encoder[URI] =
+    Encoder.encodeString.contramap[URI] { _.toString }
+  implicit val uriDecoder: Decoder[URI] =
+    Decoder.decodeString.emap { str =>
+      Either.catchNonFatal(URI.create(str)).leftMap(_ => "URI must be a string.")
+    }
 
-    def read(value: JsValue): URI =
-      value match {
-        case JsString(str) => new URI(str)
-        case _ =>
-          throw new DeserializationException("URI must be a string.")
-      }
-  }
 
-  implicit object LayerIdFormat extends RootJsonFormat[LayerId] {
-    def write(id: LayerId) =
-      JsObject(
-        "name" -> JsString(id.name),
-        "zoom" -> JsNumber(id.zoom)
+  implicit val layerIdEncoder: Encoder[LayerId] = deriveEncoder
+  implicit val layerIdDecoder: Decoder[LayerId] = deriveDecoder
+
+  implicit val layoutDefinitionEncoder: Encoder[LayoutDefinition] = deriveEncoder
+  implicit val layoutDefinitionDecoder: Decoder[LayoutDefinition] = deriveDecoder
+
+  implicit val zoomedLayoutSchemeEncoder: Encoder[ZoomedLayoutScheme] =
+    Encoder.encodeJson.contramap[ZoomedLayoutScheme] { obj =>
+      Json.obj(
+        "crs"                 -> obj.crs.asJson,
+        "tileSize"            -> obj.tileSize.asJson,
+        "resolutionThreshold" -> obj.resolutionThreshold.asJson
       )
+    }
 
-    def read(value: JsValue): LayerId =
-      value.asJsObject.getFields("name", "zoom") match {
-        case Seq(JsString(name), JsNumber(zoom)) =>
-          LayerId(name, zoom.toInt)
-        case _ =>
-          throw new DeserializationException("LayerId expected")
+  implicit val zoomedLayoutSchemeDecoder: Decoder[ZoomedLayoutScheme] =
+    Decoder.decodeHCursor.emap { c: HCursor =>
+      (c.downField("crs").as[CRS], c.downField("tileSize").as[Int], c.downField("resolutionThreshold").as[Double]) match {
+        case (Right(crs), Right(tileSize), Right(resolutionThreshold)) => Right(ZoomedLayoutScheme(crs, tileSize, resolutionThreshold))
+        case _ => Left("ZoomedLayoutScheme expected")
       }
-  }
+    }
 
-  implicit object LayoutDefinitionFormat extends RootJsonFormat[LayoutDefinition] {
-    def write(obj: LayoutDefinition) =
-      JsObject(
-        "extent" -> obj.extent.toJson,
-        "tileLayout" -> obj.tileLayout.toJson
+  implicit val floatingLayoutSchemeEncoder: Encoder[FloatingLayoutScheme] =
+    Encoder.encodeJson.contramap[FloatingLayoutScheme] { obj =>
+      Json.obj(
+        "tileCols" -> obj.tileCols.asJson,
+        "tileRows" -> obj.tileRows.asJson
       )
+    }
 
-    def read(json: JsValue) =
-      json.asJsObject.getFields("extent", "tileLayout") match {
-        case Seq(extent, tileLayout) =>
-          LayoutDefinition(extent.convertTo[Extent], tileLayout.convertTo[TileLayout])
-        case _ =>
-          throw new DeserializationException("LayoutDefinition expected")
+  implicit val floatingSchemeDecoder: Decoder[FloatingLayoutScheme] =
+    Decoder.decodeHCursor.emap { c: HCursor =>
+      (c.downField("tileCols").as[Int], c.downField("tileRows").as[Int]) match {
+        case (Right(tileCols), Right(tileRows)) => Right(FloatingLayoutScheme(tileCols, tileRows))
+        case _ => Left("FloatingLayoutScheme expected")
       }
+    }
+
+  implicit val layoutSchemeEncoder: Encoder[LayoutScheme] =
+    Encoder.encodeJson.contramap[LayoutScheme] {
+      case scheme: ZoomedLayoutScheme => scheme.asJson
+      case scheme: FloatingLayoutScheme => scheme.asJson
+      case _ => throw new Exception("ZoomedLayoutScheme or FloatingLayoutScheme expected")
+    }
+
+  implicit val layoutSchemeDecoder: Decoder[LayoutScheme] = {
+    Decoder.decodeHCursor.emap { c: HCursor =>
+      zoomedLayoutSchemeDecoder(c) match {
+        case Right(r) => Right(r)
+        case _ => floatingSchemeDecoder(c) match {
+          case Right(r) => Right(r)
+          case _ => Left("ZoomedLayoutScheme or FloatingLayoutScheme expected")
+        }
+      }
+    }
   }
 
-  implicit object ZoomedLayoutSchemeFormat extends RootJsonFormat[ZoomedLayoutScheme] {
-    def write(obj: ZoomedLayoutScheme) =
-      JsObject(
-        "crs"                 -> obj.crs.toJson,
-        "tileSize"            -> obj.tileSize.toJson,
-        "resolutionThreshold" -> obj.resolutionThreshold.toJson
-      )
+  implicit def tileLayerMetadataEncoder[K: SpatialComponent: Encoder]: Encoder[TileLayerMetadata[K]] = deriveEncoder
+  implicit def tileLayerMetadataDecoder[K: SpatialComponent: Decoder]: Decoder[TileLayerMetadata[K]] = deriveDecoder
 
-    def read(json: JsValue) =
-      json.asJsObject.getFields("crs", "tileSize", "resolutionThreshold") match {
-        case Seq(crs, tileSize, resolutionThreshold) =>
-          ZoomedLayoutScheme(crs.convertTo[CRS], tileSize.convertTo[Int], resolutionThreshold.convertTo[Double])
-        case _ =>
-          throw new DeserializationException("ZoomedLayoutScheme expected")
-      }
-  }
+  implicit val zonedDateTimeEncoder: Encoder[ZonedDateTime] =
+    Encoder.encodeString.contramap[ZonedDateTime] { _.withZoneSameLocal(ZoneOffset.UTC).toString }
+  implicit val zomedDateTimeDecoder: Decoder[ZonedDateTime] =
+    Decoder.decodeString.emap { str =>
+      Either.catchNonFatal(ZonedDateTime.parse(str)).leftMap(_ => "DateTime expected")
+    }
 
-  implicit object FloatingLayoutSchemeFormat extends RootJsonFormat[FloatingLayoutScheme] {
-    def write(obj: FloatingLayoutScheme) =
-      JsObject(
-        "tileCols" -> obj.tileCols.toJson,
-        "tileRows" -> obj.tileRows.toJson
-      )
+  implicit val schemaEncoder: Encoder[Schema] = Encoder.encodeString.contramap[Schema] { _.toString }
+  implicit val schemaDecoder: Decoder[Schema] =
+    Decoder.decodeString.emap { str =>
+      Either.catchNonFatal((new Schema.Parser).parse(str)).leftMap(_ => "Schema expected")
+    }
 
-    def read(json: JsValue) =
-      json.asJsObject.getFields("tileCols", "tileRows") match {
-        case Seq(tileCols, tileRows) =>
-          FloatingLayoutScheme(tileCols.convertTo[Int], tileRows.convertTo[Int])
-        case _ =>
-          throw new DeserializationException("FloatingLayoutScheme expected")
-      }
-  }
-
-  /**
-    * LayoutScheme Format
-    */
-  implicit object LayoutSchemeFormat extends RootJsonFormat[LayoutScheme] {
-    def write(obj: LayoutScheme) =
-      obj match {
-        case scheme: ZoomedLayoutScheme => scheme.toJson
-        case scheme: FloatingLayoutScheme => scheme.toJson
-        case _ =>
-          throw new SerializationException("ZoomedLayoutScheme or FloatingLayoutScheme expected")
-      }
-
-    def read(json: JsValue) =
-      try {
-        ZoomedLayoutSchemeFormat.read(json)
-      } catch {
-        case _: DeserializationException =>
-          try {
-            FloatingLayoutSchemeFormat.read(json)
-          } catch {
-            case _: Throwable =>
-              throw new DeserializationException("ZoomedLayoutScheme or FloatingLayoutScheme expected")
-          }
-      }
-  }
-
-  implicit def tileLayerMetadataFormat[K: SpatialComponent: JsonFormat] = new RootJsonFormat[TileLayerMetadata[K]] {
-    def write(metadata: TileLayerMetadata[K]) =
-      JsObject(
-        "cellType" -> metadata.cellType.toJson,
-        "extent" -> metadata.extent.toJson,
-        "layoutDefinition" -> metadata.layout.toJson,
-        "crs" -> metadata.crs.toJson,
-        "bounds" -> metadata.bounds.get.toJson // we will only store non-empty bounds
-      )
-
-    def read(value: JsValue): TileLayerMetadata[K] =
-      value.asJsObject.getFields("cellType", "extent", "layoutDefinition", "crs", "bounds") match {
-        case Seq(cellType, extent, layoutDefinition, crs, bounds) =>
-          TileLayerMetadata(
-            cellType.convertTo[CellType],
-            layoutDefinition.convertTo[LayoutDefinition],
-            extent.convertTo[Extent],
-            crs.convertTo[CRS],
-            bounds.convertTo[KeyBounds[K]]
-          )
-        case _ =>
-          throw new DeserializationException("TileLayerMetadata expected")
-      }
-  }
-
-  implicit object RootDateTimeFormat extends RootJsonFormat[ZonedDateTime] {
-    def write(dt: ZonedDateTime) = JsString(dt.withZoneSameLocal(ZoneOffset.UTC).toString)
-
-    def read(value: JsValue) =
-      value match {
-        case JsString(dateStr) =>
-          ZonedDateTime.parse(dateStr)
-        case _ =>
-          throw new DeserializationException("DateTime expected")
-      }
-  }
-
-  implicit object SchemaFormat extends RootJsonFormat[Schema] {
-    def read(json: JsValue) = (new Schema.Parser).parse(json.toString())
-    def write(obj: Schema) = obj.toString.parseJson
-  }
-
-  implicit object ProjectedExtentFormat extends RootJsonFormat[ProjectedExtent] {
-    def write(projectedExtent: ProjectedExtent) =
-      JsObject(
-        "extent" -> projectedExtent.extent.toJson,
-        "crs" -> projectedExtent.crs.toJson
-      )
-
-    def read(value: JsValue): ProjectedExtent =
-      value.asJsObject.getFields("xmin", "ymin", "xmax", "ymax") match {
-        case Seq(extent: JsValue, crs: JsValue) =>
-          ProjectedExtent(extent.convertTo[Extent], crs.convertTo[CRS])
-        case _ =>
-          throw new DeserializationException(s"ProjectctionExtent [[xmin,ymin,xmax,ymax], crs] expected: $value")
-      }
-  }
+  implicit val projectedExtentEncoder: Encoder[ProjectedExtent] = deriveEncoder
+  implicit val projectedExtentDecoder: Decoder[ProjectedExtent] = deriveDecoder
 }

@@ -16,19 +16,19 @@
 
 package geotrellis.spark.io
 
+import io.circe._
+
 import geotrellis.spark._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.json._
 import geotrellis.util._
 
-import spray.json._
-
 import scala.reflect.ClassTag
 
 trait LayerMover[ID] {
   def move[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[?, Bounds[K]]
   ](from: ID, to: ID): Unit
 }

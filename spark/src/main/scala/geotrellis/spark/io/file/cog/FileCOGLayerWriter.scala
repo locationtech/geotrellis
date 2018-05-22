@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.file.cog
 
+import io.circe._
+
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff._
@@ -28,7 +30,6 @@ import geotrellis.spark.io.file._
 import geotrellis.spark.io.index._
 import geotrellis.util.{ByteReader, Filesystem}
 
-import spray.json.JsonFormat
 import java.io.File
 
 import scala.reflect.{ClassTag, classTag}
@@ -40,7 +41,7 @@ class FileCOGLayerWriter(
   implicit def getByteReader(uri: String): ByteReader = byteReader(uri)
   def uriExists(uri: String): Boolean = { val f = new File(uri); f.exists() && f.isFile }
 
-  def writeCOGLayer[K: SpatialComponent: Ordering: JsonFormat: ClassTag, V <: CellGrid[Int]: GeoTiffReader: ClassTag](
+  def writeCOGLayer[K: SpatialComponent: Ordering: Encoder: ClassTag, V <: CellGrid[Int]: GeoTiffReader: ClassTag](
     layerName: String,
     cogLayer: COGLayer[K, V],
     keyIndexes: Map[ZoomRange, KeyIndex[K]],

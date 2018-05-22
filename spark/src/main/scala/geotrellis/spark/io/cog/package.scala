@@ -16,12 +16,8 @@
 
 package geotrellis.spark.io
 
-import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.vector.Extent
-
-import org.apache.spark.util.AccumulatorV2
-import java.util
 
 package object cog extends Implicits {
   val GTKey     = "GT_KEY"

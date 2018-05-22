@@ -16,14 +16,15 @@
 
 package geotrellis.spark.io.hadoop.geotiff
 
+import io.circe.syntax._
+
 import geotrellis.spark.io.hadoop.HdfsUtils
 import geotrellis.util.annotations.experimental
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.fs.Path
-import spray.json._
-import spray.json.DefaultJsonProtocol._
+
 
 import java.net.URI
 
@@ -39,7 +40,7 @@ import java.net.URI
     new InMemoryGeoTiffAttributeStore {
       lazy val metadataList = HadoopGeoTiffInput.list(name, uri, conf)
       def persist(uri: URI): Unit = {
-        val str = metadataList.toJson.compactPrint
+        val str = metadataList.asJson.noSpaces
         HdfsUtils.write(new Path(uri), conf) { IOUtils.write(str, _, "UTF-8") }
       }
     }

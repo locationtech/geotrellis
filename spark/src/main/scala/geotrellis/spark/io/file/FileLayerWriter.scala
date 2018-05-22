@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.file
 
+import io.circe._
+
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
@@ -26,7 +28,6 @@ import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.rdd.RDD
-import spray.json._
 
 import scala.reflect._
 
@@ -51,9 +52,9 @@ class FileLayerWriter(
 
   // Layer Updating
   def overwrite[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]: Mergable
+    M: Encoder: Decoder: Component[?, Bounds[K]]: Mergable
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M]
@@ -62,9 +63,9 @@ class FileLayerWriter(
   }
 
   def update[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]: Mergable
+    M: Encoder: Decoder: Component[?, Bounds[K]]: Mergable
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
@@ -74,9 +75,9 @@ class FileLayerWriter(
   }
 
   private def update[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]: Mergable
+    M: Encoder: Decoder: Component[?, Bounds[K]]: Mergable
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
@@ -101,9 +102,9 @@ class FileLayerWriter(
 
   // Layer Writing
   protected def _write[
-    K: AvroRecordCodec: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[?, Bounds[K]]
   ](layerId: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit = {
     val catalogPathFile = new File(catalogPath)
 

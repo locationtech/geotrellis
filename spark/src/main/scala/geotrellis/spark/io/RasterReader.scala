@@ -24,11 +24,8 @@ import geotrellis.spark._
 import geotrellis.util.{ByteReader, StreamingByteReader}
 import geotrellis.vector._
 
-import spire.syntax.cfor._
-
 import java.time.format.DateTimeFormatter
 import java.time.{ZoneOffset, ZonedDateTime}
-
 
 /**
   * Type class to read a raster either fully or partially from a ByteReader.

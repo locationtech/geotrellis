@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.cog
 
+import io.circe._
+
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.resample._
@@ -24,15 +26,13 @@ import geotrellis.spark.io._
 import geotrellis.spark.tiling._
 import geotrellis.util._
 
-import spray.json._
-
 import scala.reflect._
 
 trait OverzoomingCOGValueReader extends COGValueReader[LayerId] {
   implicit def getLayerId(id: LayerId): LayerId = id
 
   def overzoomingReader[
-    K: JsonFormat: SpatialComponent: ClassTag,
+    K: Decoder: SpatialComponent: ClassTag,
     V <: CellGrid[Int]: GeoTiffReader: ? => TileResampleMethods[V]
   ](layerId: LayerId, resampleMethod: ResampleMethod): COGReader[K, V] = new COGReader[K, V] {
     val LayerId(layerName, requestedZoom) = layerId

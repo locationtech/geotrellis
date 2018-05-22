@@ -16,12 +16,14 @@
 
 package geotrellis.spark.io.hadoop
 
+import io.circe._
+import io.circe.parser._
+import io.circe.syntax._
+import cats.syntax.either._
+
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.util._
 
-import spray.json._
-import DefaultJsonProtocol._
 import org.apache.hadoop.fs.Path
 import org.apache.spark._
 import org.apache.hadoop.conf.Configuration
@@ -70,7 +72,7 @@ class HadoopAttributeStore(
   def layerWildcard(layerId: LayerId): Path =
     new Path(s"${layerId.name}${SEP}${layerId.zoom}*.json")
 
-  private def readFile[T: JsonFormat](path: Path): Option[(LayerId, T)] = {
+  private def readFile[T: Decoder](path: Path): Option[(LayerId, T)] = {
     HdfsUtils
       .getLineScanner(path, hadoopConfiguration)
       .map{ in =>
@@ -81,17 +83,17 @@ class HadoopAttributeStore(
           finally {
             in.close()
           }
-        txt.parseJson.convertTo[(LayerId, T)]
+        parse(txt).flatMap(_.as[(LayerId, T)]).valueOr(throw _)
       }
   }
 
-  def read[T: JsonFormat](layerId: LayerId, attributeName: String): T =
+  def read[T: Decoder](layerId: LayerId, attributeName: String): T =
     readFile[T](attributePath(layerId, attributeName)) match {
       case Some((id, value)) => value
       case None => throw new AttributeNotFoundError(attributeName, layerId)
     }
 
-  def readAll[T: JsonFormat](attributeName: String): Map[LayerId,T] = {
+  def readAll[T: Decoder](attributeName: String): Map[LayerId,T] = {
     HdfsUtils
       .listFiles(attributeWildcard(attributeName), hadoopConfiguration)
       .map{ path: Path =>
@@ -103,7 +105,7 @@ class HadoopAttributeStore(
       .toMap
   }
 
-  def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
+  def write[T: Encoder](layerId: LayerId, attributeName: String, value: T): Unit = {
     val path = attributePath(layerId, attributeName)
 
     if(fs.exists(path)) {
@@ -113,7 +115,7 @@ class HadoopAttributeStore(
     val fdos = fs.create(path)
     val out = new PrintWriter(fdos)
     try {
-      val s = (layerId, value).toJson.toString()
+      val s = (layerId, value).asJson.noSpaces
       out.println(s)
     } finally {
       out.close()

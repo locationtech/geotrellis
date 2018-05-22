@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.hadoop.cog
 
+import io.circe._
+
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.spark._
@@ -26,8 +28,6 @@ import geotrellis.spark.io.hadoop.conf.HadoopConfig
 import geotrellis.spark.io.hadoop._
 import geotrellis.util._
 
-import com.typesafe.scalalogging.LazyLogging
-import spray.json.JsonFormat
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
@@ -52,7 +52,7 @@ class HadoopCOGCollectionLayerReader(
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, conf.value)
 
   def read[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]]) = {
     def getKeyPath(zoomRange: ZoomRange, maxWidth: Int): BigInt => String =

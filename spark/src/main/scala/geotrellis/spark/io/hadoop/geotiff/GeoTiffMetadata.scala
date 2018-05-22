@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.hadoop.geotiff
 
+import io.circe.generic.JsonCodec
+
 import geotrellis.proj4.CRS
 import geotrellis.vector._
 import geotrellis.vector.io._
@@ -23,16 +25,15 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.util.annotations.experimental
 
-import spray.json._
-import spray.json.DefaultJsonProtocol._
-
 import java.net.URI
 
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   * Row in a table
   */
-@experimental case class GeoTiffMetadata(
+@experimental
+@JsonCodec
+case class GeoTiffMetadata(
   extent: Extent,
   crs: CRS,
   name: String, // name of the ingest data set, by default each tile a separate layer
@@ -44,13 +45,7 @@ import java.net.URI
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
-@experimental object GeoTiffMetadata {
-  implicit val geoTiffMetadataFormat  = jsonFormat4(GeoTiffMetadata.apply)
-}
-
-/**
-  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
-  */
+@JsonCodec
 @experimental case class TemporalGeoTiffMetadata(
   extent: Extent,
   time: Long,
@@ -60,11 +55,4 @@ import java.net.URI
 ) {
   @experimental def projectedExtent: ProjectedExtent = ProjectedExtent(extent, crs)
   @experimental def temporalProjectedExtent: TemporalProjectedExtent = TemporalProjectedExtent(extent, crs, time)
-}
-
-/**
-  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
-  */
-@experimental object TemporalGeoTiffMetadata {
-  implicit val temporalGeoTiffMetadataFormat  = jsonFormat5(TemporalGeoTiffMetadata.apply)
 }

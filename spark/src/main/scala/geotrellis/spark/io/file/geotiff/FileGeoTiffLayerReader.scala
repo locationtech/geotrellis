@@ -21,11 +21,11 @@ import geotrellis.raster.io.geotiff.{AutoHigherResolution, OverviewStrategy}
 import geotrellis.spark.tiling.ZoomedLayoutScheme
 import geotrellis.spark.io.hadoop.geotiff._
 import geotrellis.spark.io.file.cog.byteReader
+import geotrellis.spark.io.file.conf.FileConfig
 import geotrellis.util.ByteReader
 import geotrellis.util.annotations.experimental
-import java.net.URI
 
-import geotrellis.spark.io.file.conf.FileConfig
+import java.net.URI
 
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental

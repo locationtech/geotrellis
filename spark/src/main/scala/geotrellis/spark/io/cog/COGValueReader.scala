@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.cog
 
+import io.circe._
+
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.crop._
@@ -25,7 +27,6 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.index._
 import geotrellis.util._
 
-import spray.json._
 import java.net.URI
 import java.util.ServiceLoader
 
@@ -38,13 +39,13 @@ trait COGValueReader[ID] {
   implicit def getLayerId(id: ID): LayerId
 
   def reader[
-    K: JsonFormat : SpatialComponent : ClassTag,
+    K: Decoder : SpatialComponent : ClassTag,
     V <: CellGrid[Int] : GeoTiffReader
   ](layerId: LayerId): COGReader[K, V]
 
   /** Produce a key value reader for a specific layer, prefetching layer metadata once at construction time */
   def baseReader[
-    K: JsonFormat: SpatialComponent: ClassTag,
+    K: Decoder: SpatialComponent: ClassTag,
     V <: CellGrid[Int]: GeoTiffReader
   ](
     layerId: ID,
@@ -120,7 +121,7 @@ trait COGValueReader[ID] {
   }
 
   def overzoomingReader[
-    K: JsonFormat: SpatialComponent: ClassTag,
+    K: Decoder: SpatialComponent: ClassTag,
     V <: CellGrid[Int]: GeoTiffReader: ? => TileResampleMethods[V]
   ](layerId: ID, resampleMethod: ResampleMethod = ResampleMethod.DEFAULT): COGReader[K, V]
 }

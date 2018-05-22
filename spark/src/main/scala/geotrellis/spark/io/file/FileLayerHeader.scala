@@ -17,7 +17,9 @@
 package geotrellis.spark.io.file
 
 import geotrellis.spark.io.{LayerHeader, LayerType, AvroLayerType}
-import spray.json._
+
+import io.circe._
+import io.circe.generic.semiauto._
 
 case class FileLayerHeader(
   keyClass: String,
@@ -29,36 +31,16 @@ case class FileLayerHeader(
 }
 
 object FileLayerHeader {
-  implicit object FileLayerHeaderFormat extends RootJsonFormat[FileLayerHeader] {
-    def write(md: FileLayerHeader) =
-      JsObject(
-        "format" -> JsString(md.format),
-        "keyClass" -> JsString(md.keyClass),
-        "valueClass" -> JsString(md.valueClass),
-        "path" -> JsString(md.path),
-        "layerType" -> md.layerType.toJson
-      )
-
-    def read(value: JsValue): FileLayerHeader =
-      value.asJsObject.getFields("keyClass", "valueClass", "path", "layerType") match {
-        case Seq(JsString(keyClass), JsString(valueClass), JsString(path), layerType) =>
-          FileLayerHeader(
-            keyClass,
-            valueClass,
-            path,
-            layerType.convertTo[LayerType]
-          )
-
-        case Seq(JsString(keyClass), JsString(valueClass), JsString(path)) =>
-          FileLayerHeader(
-            keyClass,
-            valueClass,
-            path,
-            AvroLayerType
-          )
-
-        case _ =>
-          throw new DeserializationException(s"FileLayerHeader expected, got: $value")
+  implicit val fileLayerHeaderEncoder: Encoder[FileLayerHeader] = deriveEncoder
+  implicit val fileLayerHeaderDecoder: Decoder[LayerHeader] =
+    Decoder.decodeHCursor.emap { c =>
+      (c.downField("keyClass").as[String],
+        c.downField("valueClass").as[String],
+        c.downField("path").as[String],
+        c.downField("layerType").as[LayerType]) match {
+        case (Right(f), Right(kc), Right(p), Right(lt)) => Right(FileLayerHeader(f, kc, p, lt))
+        case (Right(f), Right(kc), Right(p), _) => Right(FileLayerHeader(f, kc, p, AvroLayerType))
+        case _ => Left(s"FileLayerHeader expected, got: ${c.focus}")
       }
-  }
+    }
 }

@@ -86,9 +86,7 @@ trait Implicits extends GeoJsonSupport {
                 case Success(gc) => gc.getAll[G]
                 case Failure(e) => throw e
               }
-            case Failure(e) => throw e
           }
-        case Left(e) => throw e
       }
 
     /** Extracts features from json string if type matches type F
