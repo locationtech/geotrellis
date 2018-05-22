@@ -85,8 +85,25 @@ object Pyramid extends LazyLogging {
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
     V <: CellGrid: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V]: AvroRecordCodec: ClassTag,
     M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]
-  ](layerName: String, maxZoom: Int, minZoom: Int, layerReader: LayerReader[LayerId]): Pyramid[K, V, M] = {
-    val seq = for (z <- maxZoom to minZoom by -1) yield {
+  ](layerName: String, layerReader: LayerReader[LayerId], maxZoom: Option[Int] = None, minZoom: Option[Int] = None): Pyramid[K, V, M] = {
+    val zooms = layerReader.attributeStore.availableZoomLevels(layerName)
+
+    val maxZoomLevel = maxZoom match {
+      case Some(z) =>
+        if (z > zooms.max)
+          throw new IllegalArgumentException(s"Requested max zoom of $z is greater than max available zoom of ${zooms.max}")
+        else z
+      case None => zooms.max
+    }
+    val minZoomLevel = maxZoom match {
+      case Some(z) =>
+        if (z < zooms.min)
+          throw new IllegalArgumentException(s"Requested min zoom of $z is greater than min available zoom of ${zooms.min}")
+        else z
+      case None => zooms.min
+    }
+
+    val seq = for (z <- maxZoomLevel to minZoomLevel by -1) yield {
       (z, layerReader.read[K, V, M](LayerId(layerName, z)))
     }
     Pyramid[K, V, M](seq.toMap)
