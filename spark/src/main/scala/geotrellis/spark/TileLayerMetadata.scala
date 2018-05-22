@@ -16,15 +16,21 @@
 
 package geotrellis.spark
 
+
 import geotrellis.proj4.CRS
 import geotrellis.raster._
+import geotrellis.raster.io._
+import geotrellis.spark.io._
 import geotrellis.spark.tiling._
 import geotrellis.spark.ingest._
 import geotrellis.util._
-import geotrellis.vector.{ProjectedExtent, Extent}
-
+import geotrellis.vector._
+import geotrellis.vector.io._
 import cats.Functor
 import cats.implicits._
+import _root_.io.circe._
+import _root_.io.circe.generic.semiauto._
+
 import org.apache.spark.rdd._
 
 /**
@@ -112,6 +118,9 @@ object TileLayerMetadata {
     def map[A, B](fa: TileLayerMetadata[A])(f: A => B): TileLayerMetadata[B] =
       fa.copy(bounds = fa.bounds.map(f))
   }
+
+  implicit def tileLayerMetadataEncoder[K: SpatialComponent: Encoder]: Encoder[TileLayerMetadata[K]] = deriveEncoder
+  implicit def tileLayerMetadataDecoder[K: SpatialComponent: Decoder]: Decoder[TileLayerMetadata[K]] = deriveDecoder
 
   private def collectMetadata[
     K: (? => TilerKeyMethods[K, K2]),

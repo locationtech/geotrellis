@@ -117,22 +117,6 @@ trait GeometryFormats {
       }.leftMap(_ => "Polygon geometry expected")
     }
 
-  /** Extent gets it's own non-GeoJson JSON representation.
-    * If you're using the Extent as a geometry, however, it gets converted
-    * to a Polygon and written out in GeoJson as a Polygon
-    */
-  implicit lazy val extentEncoder: Encoder[Extent] =
-    new Encoder[Extent] {
-      final def apply(extent: Extent): Json =
-        List(extent.xmin, extent.ymin, extent.xmax, extent.ymax).asJson
-    }
-  implicit lazy val extentDecoder: Decoder[Extent] =
-    Decoder[Json] emap { value =>
-      value.as[List[Double]].map { case List(xmin, ymin, xmax, ymax) =>
-        Extent(xmin, ymin, xmax, ymax)
-      }.leftMap(_ => s"Extent [xmin,ymin,xmax,ymax] expected: $value")
-    }
-
   implicit lazy val multiPointEncoder: Encoder[MultiPoint] =
     Encoder.encodeJson.contramap[MultiPoint] { obj =>
       Json.obj(

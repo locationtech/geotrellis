@@ -24,15 +24,5 @@ import geotrellis.spark._
 object KeyFormats extends KeyFormats
 
 trait KeyFormats extends Serializable {
-  implicit val spatialKeyEncoder: Encoder[SpatialKey] = deriveEncoder
-  implicit val spatialKeyDecoder: Decoder[SpatialKey] = deriveDecoder
 
-  implicit val spaceTimeKeyEncoder: Encoder[SpaceTimeKey] = deriveEncoder
-  implicit val spaceTimeDecoder: Decoder[SpaceTimeKey] = deriveDecoder
-
-  implicit val temporalKeyEncoder: Encoder[TemporalKey] = deriveEncoder
-  implicit val temporalKeyDecoder: Decoder[TemporalKey] = deriveDecoder
-
-  implicit def keyBoundsEncoder[K: Encoder]: Encoder[KeyBounds[K]] = deriveEncoder
-  implicit def keyBoundsDecoder[K: Decoder]: Decoder[KeyBounds[K]] = deriveDecoder
 }

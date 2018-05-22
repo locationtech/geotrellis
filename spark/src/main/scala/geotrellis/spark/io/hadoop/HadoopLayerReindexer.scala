@@ -24,7 +24,7 @@ import org.apache.hadoop.fs.Path
 
 object HadoopLayerReindexer {
   def apply(rootPath: Path, attributeStore: AttributeStore)(implicit sc: SparkContext): LayerReindexer[LayerId] =
-    GenericLayerReindexer[HadoopLayerHeader](
+    GenericLayerReindexer(
       attributeStore = attributeStore,
       layerReader    = HadoopLayerReader(rootPath),
       layerWriter    = HadoopLayerWriter(rootPath),

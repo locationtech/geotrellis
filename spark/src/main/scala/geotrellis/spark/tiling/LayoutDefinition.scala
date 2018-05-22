@@ -20,14 +20,17 @@ import geotrellis.raster._
 import geotrellis.raster.rasterize._
 import geotrellis.vector._
 import geotrellis.spark.SpatialKey
+
 import spire.math.Integral
 import spire.implicits._
+import _root_.io.circe.generic.JsonCodec
 
 /**
  * Defines tiled raster layout
  * @param extent      extent covered by the layout tiles, could be greater than extent of data in the layer
  * @param tileLayout  tile layout (tile cols, tile rows, tile pixel size)
  */
+@JsonCodec
 case class LayoutDefinition(override val extent: Extent, tileLayout: TileLayout) extends GridExtent[Long](extent, tileLayout.cellSize(extent)) {
   lazy val mapTransform = MapKeyTransform(extent, tileLayout.layoutDimensions)
 

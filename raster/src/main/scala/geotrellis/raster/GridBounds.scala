@@ -16,6 +16,11 @@
 
 package geotrellis.raster
 
+import _root_.io.circe._
+import _root_.io.circe.syntax._
+import _root_.io.circe.generic.semiauto._
+import cats.syntax.either._
+
 import scala.collection.mutable
 import spire.syntax.cfor._
 import spire.math._
@@ -233,6 +238,11 @@ case class GridBounds[@specialized(Int, Long) N: Integral](
   * The companion object for the [[GridBounds]] type.
   */
   object GridBounds {
+    implicit val gridBoundsIntEncoder: Encoder[GridBounds[Int]] = deriveEncoder
+    implicit val gridBoundsIntDecoder: Decoder[GridBounds[Int]] = deriveDecoder
+    implicit val gridBoundsLongEncoder: Encoder[GridBounds[Long]] = deriveEncoder
+    implicit val gridBoundsLongDecoder: Decoder[GridBounds[Long]] = deriveDecoder
+
     /**
       * Given a [[Grid]], produce the corresponding [[GridBounds]].
       *

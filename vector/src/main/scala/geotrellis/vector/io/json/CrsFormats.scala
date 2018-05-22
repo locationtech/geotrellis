@@ -19,11 +19,20 @@ package geotrellis.vector.io.json
 import io.circe._
 import io.circe.syntax._
 import cats.syntax.either._
-
 import java.net.URI
+
+import geotrellis.proj4.CRS
 
 /** A trait specifying CRS/JSON conversion */
 trait CrsFormats {
+  implicit val crsEncoder: Encoder[CRS] =
+    Encoder.encodeString.contramap[CRS] { _.toProj4String }
+
+  implicit val crsDecoder: Decoder[CRS] =
+    Decoder.decodeString.emap { str =>
+      Either.catchNonFatal(CRS.fromString(str)).leftMap(_ => "CRS must be a proj4 string.")
+    }
+
   implicit val linkedCRSEncoder: Encoder[LinkedCRS] =
     Encoder.encodeJson.contramap[LinkedCRS] { obj =>
       Json.obj(
@@ -73,13 +82,13 @@ trait CrsFormats {
       }.leftMap(_ => "Unable to parse NamedCRS")
     }
 
-  implicit val crsEncoder: Encoder[JsonCRS] =
+  implicit val jsonCrsEncoder: Encoder[JsonCRS] =
     Encoder.encodeJson.contramap[JsonCRS] {
       case crs: NamedCRS => crs.asJson
       case crs: LinkedCRS => crs.asJson
     }
 
-  implicit val crsDecoder: Decoder[JsonCRS] = {
+  implicit val jsonCrsDecoder: Decoder[JsonCRS] = {
     Decoder.decodeHCursor.emap { c: HCursor =>
       c.downField("type").as[String].flatMap {
         case "name" => c.as[NamedCRS]

@@ -16,14 +16,35 @@
 
 package geotrellis.vector
 
-import GeomFactory._
+import geotrellis.vector.io._
 import geotrellis.proj4.{CRS, Transform}
 
 import org.locationtech.jts.{geom => jts}
 
+import cats.syntax.either._
+import _root_.io.circe._
+import _root_.io.circe.syntax._
+import _root_.io.circe.generic.JsonCodec
+
 case class ExtentRangeError(msg:String) extends Exception(msg)
 
 object Extent {
+  /** Extent gets it's own non-GeoJson JSON representation.
+    * If you're using the Extent as a geometry, however, it gets converted
+    * to a Polygon and written out in GeoJson as a Polygon
+    */
+  implicit lazy val extentEncoder: Encoder[Extent] =
+    new Encoder[Extent] {
+      final def apply(extent: Extent): Json =
+        List(extent.xmin, extent.ymin, extent.xmax, extent.ymax).asJson
+    }
+  implicit lazy val extentDecoder: Decoder[Extent] =
+    Decoder[Json] emap { value =>
+      value.as[List[Double]].map { case List(xmin, ymin, xmax, ymax) =>
+        Extent(xmin, ymin, xmax, ymax)
+      }.leftMap(_ => s"Extent [xmin,ymin,xmax,ymax] expected: $value")
+    }
+
   def apply(env: jts.Envelope): Extent =
     Extent(env.getMinX, env.getMinY, env.getMaxX, env.getMaxY)
 
@@ -48,6 +69,7 @@ object Extent {
   * @param extent The Extent which is projected
   * @param crs    The CRS projection of this extent
   */
+@JsonCodec
 case class ProjectedExtent(extent: Extent, crs: CRS) {
   def reproject(dest: CRS): Extent =
     extent.reproject(crs, dest)
