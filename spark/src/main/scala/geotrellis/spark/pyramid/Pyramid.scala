@@ -103,7 +103,10 @@ object Pyramid extends LazyLogging {
     partitioner: Option[Partitioner] = None
   ): Pyramid[K, V, M] = {
     val opts = Options(resampleMethod, partitioner)
-    val gridBounds = rdd.metadata.getComponent[Bounds[K]].asInstanceOf[KeyBounds[K]].toGridBounds
+    val gridBounds = rdd.metadata.getComponent[Bounds[K]] match {
+      case kb: KeyBounds[K] => kb.toGridBounds
+      case _ => throw new IllegalArgumentException("Cannot construct a pyramid for an empty layer")
+    }
     val maxDim = math.max(gridBounds.width, gridBounds.height).toDouble
     val levels = math.ceil(math.log(maxDim)/math.log(2)).toInt
 
