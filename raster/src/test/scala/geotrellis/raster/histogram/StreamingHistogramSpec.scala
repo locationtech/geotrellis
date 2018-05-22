@@ -191,9 +191,7 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
   describe("Json Serialization") {
     it("should successfully round-trip a trivial histogram") {
       val h1 = StreamingHistogram()
-      println(h1.asJson.noSpaces)
       val h2 = decode[StreamingHistogram](h1.asJson.noSpaces).valueOr(throw _)
-      println(h2)
 
       h1.statistics should equal (h2.statistics)
       h1.quantileBreaks(42) should equal (h2.quantileBreaks(42))
@@ -209,10 +207,8 @@ class StreamingHistogramSpec extends FunSpec with Matchers {
         .flatten
         .take(10000)
         .foreach({ i => h1.countItem(i.toDouble) })
-      println("check it", h1.asJson.noSpaces)
 
       val h2 = decode[StreamingHistogram](h1.asJson.noSpaces).valueOr(throw _)
-
       h1.statistics should equal (h2.statistics)
       h1.quantileBreaks(42) should equal (h2.quantileBreaks(42))
       h1.bucketCount should equal (h2.bucketCount)

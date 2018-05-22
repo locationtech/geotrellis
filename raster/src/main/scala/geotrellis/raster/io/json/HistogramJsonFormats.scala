@@ -34,20 +34,19 @@ trait HistogramJsonFormats {
 
   implicit val histogramIntDecoder: Decoder[Histogram[Int]] =
     Decoder.decodeJson.emap { json: Json =>
-      Right(json.asArray match {
+      json.asArray match {
         case Some(pairs) =>
           val hist = FastMapHistogram()
           for(pair <- pairs) {
             pair.as[Vector[Int]] match {
-              case Right(Vector(item, count)) =>
-                hist.countItem(item, count)
+              case Right(Vector(item, count)) => hist.countItem(item, count)
               case Left(e) => throw e
             }
           }
-          hist
+          Right(hist)
 
-        case _ => throw new Exception("Array of [label, count] pairs expected")
-      })
+        case _ => Left("Array of [label, count] pairs expected")
+      }
     }
 
   implicit val histogramDoubleEncoder: Encoder[Histogram[Double]] =
@@ -72,20 +71,25 @@ trait HistogramJsonFormats {
       }
     }
 
+
   implicit val histogramDoubleDecoder: Decoder[Histogram[Double]] =
     Decoder.decodeHCursor.emap { hcursor: HCursor =>
-      hcursor.downField("maxBucketCount").as[Int] match {
-        case Right(maxBucketCount) =>
-          val min: Double = hcursor.downField("minBucketCount").as[Double].getOrElse(Double.NegativeInfinity)
-          val max: Double = hcursor.downField("maxBucketCount").as[Double].getOrElse(Double.PositiveInfinity)
-          val buckets = hcursor.downField("buckets").values.get.map(_.as[(Double, Double)].toOption).toList.sequence.getOrElse(List())
+      hcursor.downField("maxBucketCount").as[Int].flatMap { maxBucketCount =>
+          val buckets = hcursor.downField("buckets").values.toList.flatten.map(_.as[Vector[Double]])
+          val min = hcursor.downField("minimum").as[Double]
+          val max = hcursor.downField("maximum").as[Double]
 
-          val histogram = StreamingHistogram(maxBucketCount, min, max)
-          buckets.foreach({ case (label, count) => histogram.countItem(label, count.toLong) })
-          Right(histogram)
-        case Left(err) =>
-          Left(err.toString)
-      }
+          Right((buckets, min, max) match {
+            case (bucketArray, Right(min), Right(max)) =>
+              val histogram = StreamingHistogram(maxBucketCount, min, max)
+              bucketArray.foreach {
+                case Right(Vector(label, count)) => histogram.countItem(label, count.toLong)
+                case _ => throw new Exception("Array of [label, count] pairs expected")
+              }
+              histogram
+            case _ => StreamingHistogram(maxBucketCount)
+          })
+      }.leftMap(_ => "Unable to parse Histogram[Double]")
     }
 
   implicit val streamingHistogramEncoder: Encoder[StreamingHistogram] =
