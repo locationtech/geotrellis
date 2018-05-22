@@ -19,10 +19,12 @@ package geotrellis.raster
 import geotrellis.vector.{Extent, Point}
 import scala.math.{min, max, ceil}
 
+import _root_.io.circe.generic.JsonCodec
 
 /**
   * [[GeoAttrsError]] exception.
   */
+@JsonCodec
 case class GeoAttrsError(msg: String) extends Exception(msg)
 
 /**

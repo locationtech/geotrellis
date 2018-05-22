@@ -18,7 +18,6 @@ package geotrellis.spark.io.cog
 
 import io.circe._
 import io.circe.generic.semiauto._
-
 import geotrellis.proj4.CRS
 import geotrellis.raster._
 import geotrellis.raster.io._
@@ -28,6 +27,8 @@ import geotrellis.spark.tiling._
 import geotrellis.util._
 import geotrellis.vector.Extent
 import geotrellis.vector.io._
+
+import scala.reflect.ClassTag
 
 case class COGLayerMetadata[K: SpatialComponent](
   cellType: CellType,
@@ -329,6 +330,6 @@ object COGLayerMetadata {
     )
   }
 
-  implicit def cogLayerMetadataEncoder[K: SpatialComponent: Encoder]: Encoder[COGLayerMetadata[K]] = deriveEncoder
-  implicit def cogLayerMetadataDecoder[K: SpatialComponent: Decoder]: Decoder[COGLayerMetadata[K]] = deriveDecoder
+  implicit def cogLayerMetadataEncoder[K: SpatialComponent: Encoder: ClassTag]: Encoder[COGLayerMetadata[K]] = deriveEncoder
+  implicit def cogLayerMetadataDecoder[K: SpatialComponent: Decoder: ClassTag]: Decoder[COGLayerMetadata[K]] = deriveDecoder
 }

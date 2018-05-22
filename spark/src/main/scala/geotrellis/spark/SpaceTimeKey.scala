@@ -16,11 +16,14 @@
 
 package geotrellis.spark
 
+import _root_.io.circe.generic.JsonCodec
+
 import geotrellis.util._
 
 import jp.ne.opt.chronoscala.Imports._
 import java.time.{ZoneOffset, ZonedDateTime}
 
+@JsonCodec
 case class SpaceTimeKey(col: Int, row: Int, instant: Long) {
   def spatialKey: SpatialKey = SpatialKey(col, row)
   def temporalKey: TemporalKey = TemporalKey(time)

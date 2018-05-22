@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io.hadoop
 
-import geotrellis.spark.io.{LayerHeader, LayerType, AvroLayerType}
+import geotrellis.spark.io._
 
 import io.circe._
 import io.circe.generic.semiauto._

@@ -32,11 +32,8 @@ trait Implicits extends HistogramJsonFormats {
     Encoder.encodeString.contramap[CellType] { _.toString }
   implicit val cellTypeDecoder: Decoder[CellType] =
     Decoder.decodeString.emap { str =>
-      Either.catchNonFatal(CellType.fromName(str)).leftMap(_ => "CellType")
+      Either.catchNonFatal(CellType.fromName(str)).leftMap(_ => "Expected CellType")
     }
-
-  implicit val cellSizeEncoder: Encoder[CellSize] = deriveEncoder
-  implicit val cellSizeDecoder: Decoder[CellSize] = deriveDecoder
 
   implicit val extentEncoder: Encoder[Extent] =
     new Encoder[Extent] {
@@ -47,15 +44,6 @@ trait Implicits extends HistogramJsonFormats {
     Decoder[Json] emap { js =>
       js.as[List[Double]].map { case List(xmin, ymin, xmax, ymax) =>
         Extent(xmin, ymin, xmax, ymax)
-      }.leftMap(_ => "Extent")
+      }.leftMap(_ => "Expected Extent")
     }
-
-  implicit val rasterExtentEncoder: Encoder[RasterExtent] = deriveEncoder
-  implicit val rasterExtentDecoder: Decoder[RasterExtent] = deriveDecoder
-
-  implicit val tileLayoutEncoder: Encoder[TileLayout] = deriveEncoder
-  implicit val tileLayoutDecoder: Decoder[TileLayout] = deriveDecoder
-
-  implicit val gridBoundsEncoder: Encoder[GridBounds] = deriveEncoder
-  implicit val gridBoundsDecoder: Decoder[GridBounds] = deriveDecoder
 }

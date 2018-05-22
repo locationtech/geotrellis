@@ -17,14 +17,11 @@
 package geotrellis.spark.io.json
 
 import io.circe._
-import io.circe.generic.semiauto._
 import io.circe.syntax._
 import cats.syntax.either._
 
-import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.proj4.CRS
-import geotrellis.vector._
 
 import org.apache.avro.Schema
 
@@ -34,28 +31,12 @@ import java.net.URI
 object Implicits extends Implicits
 
 trait Implicits extends KeyFormats with KeyIndexFormats {
-
-  implicit val crsEncoder: Encoder[CRS] =
-    Encoder.encodeString.contramap[CRS] { _.toProj4String }
-
-  implicit val crsDecoder: Decoder[CRS] =
-    Decoder.decodeString.emap { str =>
-      Either.catchNonFatal(CRS.fromString(str)).leftMap(_ => "CRS must be a proj4 string.")
-    }
-
   implicit val uriEncoder: Encoder[URI] =
     Encoder.encodeString.contramap[URI] { _.toString }
   implicit val uriDecoder: Decoder[URI] =
     Decoder.decodeString.emap { str =>
       Either.catchNonFatal(URI.create(str)).leftMap(_ => "URI must be a string.")
     }
-
-
-  implicit val layerIdEncoder: Encoder[LayerId] = deriveEncoder
-  implicit val layerIdDecoder: Decoder[LayerId] = deriveDecoder
-
-  implicit val layoutDefinitionEncoder: Encoder[LayoutDefinition] = deriveEncoder
-  implicit val layoutDefinitionDecoder: Decoder[LayoutDefinition] = deriveDecoder
 
   implicit val zoomedLayoutSchemeEncoder: Encoder[ZoomedLayoutScheme] =
     Encoder.encodeJson.contramap[ZoomedLayoutScheme] { obj =>
@@ -109,9 +90,6 @@ trait Implicits extends KeyFormats with KeyIndexFormats {
     }
   }
 
-  implicit def tileLayerMetadataEncoder[K: SpatialComponent: Encoder]: Encoder[TileLayerMetadata[K]] = deriveEncoder
-  implicit def tileLayerMetadataDecoder[K: SpatialComponent: Decoder]: Decoder[TileLayerMetadata[K]] = deriveDecoder
-
   implicit val zonedDateTimeEncoder: Encoder[ZonedDateTime] =
     Encoder.encodeString.contramap[ZonedDateTime] { _.withZoneSameLocal(ZoneOffset.UTC).toString }
   implicit val zomedDateTimeDecoder: Decoder[ZonedDateTime] =
@@ -124,7 +102,4 @@ trait Implicits extends KeyFormats with KeyIndexFormats {
     Decoder.decodeString.emap { str =>
       Either.catchNonFatal((new Schema.Parser).parse(str)).leftMap(_ => "Schema expected")
     }
-
-  implicit val projectedExtentEncoder: Encoder[ProjectedExtent] = deriveEncoder
-  implicit val projectedExtentDecoder: Decoder[ProjectedExtent] = deriveDecoder
 }

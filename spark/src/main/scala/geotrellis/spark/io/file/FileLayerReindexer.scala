@@ -30,7 +30,7 @@ object FileLayerReindexer {
     val layerDeleter = FileLayerDeleter(attributeStore)
     val layerCopier  = FileLayerCopier(attributeStore)
 
-    GenericLayerReindexer[FileLayerHeader](attributeStore, layerReader, layerWriter, layerDeleter, layerCopier)
+    GenericLayerReindexer(attributeStore, layerReader, layerWriter, layerDeleter, layerCopier)
   }
 
   def apply(catalogPath: String)(implicit sc: SparkContext): LayerReindexer[LayerId] =
