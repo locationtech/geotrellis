@@ -143,9 +143,12 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayer
     s3Client
       .listObjectsIterator(bucket, path(prefix, s"_attributes/metadata${SEP}${layerName}"))
       .toList
-      .map { os =>
-        val List(zoomStr, _) = new java.io.File(os.getKey).getName.split(SEP).reverse.take(2).toList
-        zoomStr.replace(".json", "").toInt
+      .flatMap { os =>
+        val List(zoomStr, foundName) = new java.io.File(os.getKey).getName.split(SEP).reverse.take(2).toList
+        if (foundName == layerName)
+          Some(zoomStr.replace(".json", "").toInt)
+        else
+          None
       }
       .distinct
   }
