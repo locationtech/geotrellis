@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.file.cog
 
+import io.circe._
+
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.spark._
@@ -24,7 +26,6 @@ import geotrellis.spark.io.cog._
 import geotrellis.spark.io.file.{FileAttributeStore, KeyPathGenerator}
 import geotrellis.spark.io.index._
 import geotrellis.util._
-import spray.json._
 
 import scala.reflect.ClassTag
 import java.net.URI
@@ -37,7 +38,7 @@ class FileCOGValueReader(
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
 
   def reader[
-    K: JsonFormat : SpatialComponent : ClassTag,
+    K: Decoder: SpatialComponent : ClassTag,
     V <: CellGrid : GeoTiffReader
   ](layerId: LayerId): Reader[K, V] = {
     def keyPath(key: K, maxWidth: Int, baseKeyIndex: KeyIndex[K], zoomRange: ZoomRange): String =
@@ -54,7 +55,7 @@ class FileCOGValueReader(
 
 object FileCOGValueReader {
   def apply[
-    K: JsonFormat : SpatialComponent : ClassTag,
+    K: Decoder: SpatialComponent : ClassTag,
     V <: CellGrid : GeoTiffReader
   ](attributeStore: AttributeStore, catalogPath: String, layerId: LayerId): Reader[K, V] =
     new FileCOGValueReader(attributeStore, catalogPath).reader(layerId)

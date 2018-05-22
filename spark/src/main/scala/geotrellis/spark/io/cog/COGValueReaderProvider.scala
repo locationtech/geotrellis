@@ -18,8 +18,8 @@ package geotrellis.spark.io.cog
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-import java.net.URI
 
+import java.net.URI
 
 trait COGValueReaderProvider {
   def canProcess(uri: URI): Boolean

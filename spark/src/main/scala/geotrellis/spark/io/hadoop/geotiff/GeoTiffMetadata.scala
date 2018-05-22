@@ -16,18 +16,17 @@
 
 package geotrellis.spark.io.hadoop.geotiff
 
+import io.circe.generic.JsonCodec
+
 import geotrellis.proj4.CRS
 import geotrellis.vector._
 import geotrellis.vector.io._
 import geotrellis.spark._
 import geotrellis.spark.io._
-
-import spray.json._
-import spray.json.DefaultJsonProtocol._
-
 import java.net.URI
 
 // Row in a table
+@JsonCodec
 case class GeoTiffMetadata(
   extent: Extent,
   crs: CRS,
@@ -37,10 +36,7 @@ case class GeoTiffMetadata(
   def projectedExtent: ProjectedExtent = ProjectedExtent(extent, crs)
 }
 
-object GeoTiffMetadata {
-  implicit val geoTiffMetadataFormat  = jsonFormat4(GeoTiffMetadata.apply)
-}
-
+@JsonCodec
 case class TemporalGeoTiffMetadata(
   extent: Extent,
   time: Long,
@@ -50,8 +46,4 @@ case class TemporalGeoTiffMetadata(
 ) {
   def projectedExtent: ProjectedExtent = ProjectedExtent(extent, crs)
   def temporalProjectedExtent: TemporalProjectedExtent = TemporalProjectedExtent(extent, crs, time)
-}
-
-object TemporalGeoTiffMetadata {
-  implicit val temporalGeoTiffMetadataFormat  = jsonFormat5(TemporalGeoTiffMetadata.apply)
 }

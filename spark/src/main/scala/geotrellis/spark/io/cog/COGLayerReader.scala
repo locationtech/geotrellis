@@ -16,6 +16,11 @@
 
 package geotrellis.spark.io.cog
 
+import io.circe._
+import io.circe.parser._
+import io.circe.syntax._
+import cats.syntax.either._
+
 import geotrellis.raster.{CellGrid, RasterExtent}
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.reader.TiffTagsReader
@@ -25,8 +30,9 @@ import geotrellis.spark.io.index.{Index, IndexRanges, MergeQueue}
 import geotrellis.util._
 import geotrellis.spark.util.KryoWrapper
 import org.apache.spark.rdd._
-import spray.json._
+
 import org.apache.spark.SparkContext
+
 import java.net.URI
 import java.util.ServiceLoader
 
@@ -50,12 +56,12 @@ abstract class COGLayerReader[ID] extends Serializable {
     * @tparam V              Type of RDD Value (ex: Tile or MultibandTile )
     */
   def read[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid: GeoTiffReader: ClassTag
   ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
 
   def baseRead[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid: GeoTiffReader: ClassTag
   ](
     id: LayerId,
@@ -153,25 +159,25 @@ abstract class COGLayerReader[ID] extends Serializable {
   }
 
   def read[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid: GeoTiffReader: ClassTag
   ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]]): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read(id, rasterQuery, defaultNumPartitions)
 
   def read[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid: GeoTiffReader: ClassTag
   ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read(id, new LayerQuery[K, TileLayerMetadata[K]], numPartitions)
 
   def read[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid: GeoTiffReader: ClassTag
   ](id: ID): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read(id, defaultNumPartitions)
 
   def reader[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid: GeoTiffReader: ClassTag
   ]: Reader[ID, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new Reader[ID, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
@@ -180,13 +186,13 @@ abstract class COGLayerReader[ID] extends Serializable {
     }
 
   def query[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid: GeoTiffReader: ClassTag
   ](layerId: ID): BoundLayerQuery[K, TileLayerMetadata[K], RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, read(layerId, _))
 
   def query[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid: GeoTiffReader: ClassTag
   ](layerId: ID, numPartitions: Int): BoundLayerQuery[K, TileLayerMetadata[K], RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, read(layerId, _, numPartitions))
@@ -230,7 +236,7 @@ object COGLayerReader {
     apply(new URI(uri))
 
   private def read[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid: GeoTiffReader
   ](
      keyPath: BigInt => String, // keyPath
@@ -244,7 +250,7 @@ object COGLayerReader {
    )(implicit sc: SparkContext, getByteReader: URI => ByteReader): RDD[(K, V)] = {
     if (baseQueryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
 
-    val kwFormat = KryoWrapper(implicitly[JsonFormat[K]])
+    val kwDecoder = KryoWrapper(implicitly[Decoder[K]])
 
     val ranges = if (baseQueryKeyBounds.length > 1)
       MergeQueue(baseQueryKeyBounds.flatMap(decomposeBounds))
@@ -255,7 +261,7 @@ object COGLayerReader {
 
     sc.parallelize(bins, bins.size)
       .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
-        val keyFormat = kwFormat.value
+        val keyDecoder = kwDecoder.value
 
         partition flatMap { seq =>
           LayerReader.njoin[K, V](seq.toIterator, threads) { index: BigInt =>
@@ -264,12 +270,12 @@ object COGLayerReader {
               val uri = fullPath(keyPath(index))
               val byteReader: ByteReader = uri
               val baseKey =
-                TiffTagsReader
-                  .read(byteReader)
-                  .tags
-                  .headTags(GTKey)
-                  .parseJson
-                  .convertTo[K](keyFormat)
+                parse(
+                  TiffTagsReader
+                    .read(byteReader)
+                    .tags
+                    .headTags(GTKey)
+                ).flatMap(_.as[K](keyDecoder)).valueOr(throw _)
 
               readDefinitions
                 .get(baseKey.getComponent[SpatialKey])

@@ -22,6 +22,7 @@ import geotrellis.spark.tiling.ZoomedLayoutScheme
 import geotrellis.spark.io.hadoop.geotiff._
 import geotrellis.spark.io.file.cog.byteReader
 import geotrellis.util.ByteReader
+
 import java.net.URI
 
 import geotrellis.spark.io.file.conf.FileConfig

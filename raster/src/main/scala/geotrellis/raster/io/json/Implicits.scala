@@ -36,7 +36,6 @@ trait Implicits extends HistogramJsonFormats {
     }
 
   implicit val cellSizeEncoder: Encoder[CellSize] = deriveEncoder
-
   implicit val cellSizeDecoder: Decoder[CellSize] = deriveDecoder
 
   implicit val extentEncoder: Encoder[Extent] =
@@ -51,70 +50,12 @@ trait Implicits extends HistogramJsonFormats {
       }.leftMap(_ => "Extent")
     }
 
-  implicit val rasterExtentEncoder: Encoder[RasterExtent] =
-    Encoder.encodeJson.contramap[RasterExtent] { rasterExtent =>
-      Json.obj(
-        "extent" -> rasterExtent.extent.asJson,
-        "cols" -> rasterExtent.cols.asJson,
-        "rows" -> rasterExtent.rows.asJson,
-        "cellwidth" -> rasterExtent.cellwidth.asJson,
-        "cellheight" -> rasterExtent.cellheight.asJson
-      )
-    }
+  implicit val rasterExtentEncoder: Encoder[RasterExtent] = deriveEncoder
+  implicit val rasterExtentDecoder: Decoder[RasterExtent] = deriveDecoder
 
-  implicit val rasterExtentDecoder: Decoder[RasterExtent] =
-    Decoder.decodeHCursor.emap { c: HCursor =>
-      (c.downField("extent").as[Extent],
-      c.downField("cols").as[Int],
-      c.downField("rows").as[Int],
-      c.downField("cellwidth").as[Double],
-      c.downField("cellheight").as[Double]) match {
-        case (Right(ext), Right(cols), Right(rows), Right(cw), Right(ch)) => Right(RasterExtent(ext, cw, ch, cols, rows))
-        case _ => throw new Exception("RasterExtent expected.")
-      }
-    }
+  implicit val tileLayoutEncoder: Encoder[TileLayout] = deriveEncoder
+  implicit val tileLayoutDecoder: Decoder[TileLayout] = deriveDecoder
 
-  implicit val tileLayoutEncoder: Encoder[TileLayout] =
-    Encoder.encodeJson.contramap[TileLayout] { tileLayout =>
-      Json.obj(
-        "layoutCols" -> tileLayout.layoutCols.asJson,
-        "layoutRows" -> tileLayout.layoutRows.asJson,
-        "tileCols" -> tileLayout.tileCols.asJson,
-        "tileRows" -> tileLayout.tileRows.asJson
-      )
-    }
-
-  implicit val tileLayoutDecoder: Decoder[TileLayout] =
-    Decoder.decodeHCursor.emap { c: HCursor =>
-      (c.downField("layoutCols").as[Int],
-        c.downField("layoutRows").as[Int],
-        c.downField("tileCols").as[Int],
-        c.downField("tileRows").as[Int]) match {
-        case (Right(layoutCols), Right(layoutRows), Right(tileCols), Right(tileRows)) =>
-          Right(TileLayout(layoutCols, layoutRows, tileCols, tileRows))
-        case _ => throw new Exception("TileLayout expected.")
-      }
-    }
-
-  implicit val gridBoundsEncoder: Encoder[GridBounds] =
-    Encoder.encodeJson.contramap[GridBounds] { gridBounds =>
-      Json.obj(
-        "colMin" -> gridBounds.colMin.asJson,
-        "rowMin" -> gridBounds.rowMin.asJson,
-        "colMax" -> gridBounds.colMax.asJson,
-        "rowMax" -> gridBounds.rowMax.asJson
-      )
-    }
-
-  implicit val gridBoundsDecoder: Decoder[GridBounds] =
-    Decoder.decodeHCursor.emap { c: HCursor =>
-      (c.downField("colMin").as[Int],
-        c.downField("rowMin").as[Int],
-        c.downField("colMax").as[Int],
-        c.downField("rowMax").as[Int]) match {
-        case (Right(colMin), Right(rowMin), Right(colMax), Right(rowMax)) =>
-          Right(GridBounds(colMin, rowMin, colMax, rowMax))
-        case _ => throw new Exception("GridBounds expected.")
-      }
-    }
+  implicit val gridBoundsEncoder: Encoder[GridBounds] = deriveEncoder
+  implicit val gridBoundsDecoder: Decoder[GridBounds] = deriveDecoder
 }

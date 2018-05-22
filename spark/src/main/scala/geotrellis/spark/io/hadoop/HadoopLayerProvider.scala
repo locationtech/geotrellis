@@ -19,9 +19,11 @@ package geotrellis.spark.io.hadoop
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.util.UriUtils
+
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
+
 import java.net.URI
 
 /**

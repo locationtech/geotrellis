@@ -22,9 +22,6 @@ import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
 
 import org.apache.spark.SparkContext
-import spray.json.JsonFormat
-
-import scala.reflect.ClassTag
 
 object FileLayerReindexer {
   def apply(attributeStore: FileAttributeStore)(implicit sc: SparkContext): LayerReindexer[LayerId] = {

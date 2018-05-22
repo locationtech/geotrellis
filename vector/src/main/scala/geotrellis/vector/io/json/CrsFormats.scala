@@ -44,9 +44,9 @@ trait CrsFormats {
           val typeDecoded = properties.downField("type").as[String]
           (hrefDecoded, typeDecoded) match {
             case (Right(href), Right(linkType)) => Right(LinkedCRS(new URI(href), linkType))
-            case _ => throw new Exception("Unable to read 'crs.properties'")
+            case _ => Left("Unable to read 'crs.properties'")
           }
-        case crsType => throw new Exception(s"Unable to read CRS of type $crsType")
+        case crsType => Left(s"Unable to read CRS of type $crsType")
       }.leftMap(_ => "Unable to parse LinkedCRS")
     }
 
@@ -67,9 +67,9 @@ trait CrsFormats {
 
           nameDecoded match {
             case (Right(name)) => Right(NamedCRS(name))
-            case _ => throw new Exception("Unable to read 'crs.properties'")
+            case _ => Left("Unable to read 'crs.properties'")
           }
-        case crsType => throw new Exception(s"Unable to read CRS of type $crsType")
+        case crsType => Left(s"Unable to read CRS of type $crsType")
       }.leftMap(_ => "Unable to parse NamedCRS")
     }
 
@@ -84,7 +84,7 @@ trait CrsFormats {
       c.downField("type").as[String].flatMap {
         case "name" => c.as[NamedCRS]
         case "link" => c.as[LinkedCRS]
-        case crsType => throw new Exception(s"Unable to read CRS of type $crsType")
+        case crsType => Left(s"Unable to read CRS of type $crsType")
       }.leftMap(_ => "Unable to parse CRS")
     }
   }
@@ -98,7 +98,7 @@ trait CrsFormats {
     Decoder.decodeHCursor.emap { c: HCursor =>
       (c.as[T], c.downField("crs").as[JsonCRS]) match {
         case (Right(obj), Right(crs)) => Right(WithCrs[T](obj, crs))
-        case _ => throw new Exception(s"Unable to parse CRS")
+        case _ => Left(s"Unable to parse CRS")
       }
     }
 }

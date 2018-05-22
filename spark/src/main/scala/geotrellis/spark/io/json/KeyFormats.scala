@@ -16,77 +16,23 @@
 
 package geotrellis.spark.io.json
 
-import geotrellis.spark._
+import io.circe._
+import io.circe.generic.semiauto._
 
-import spray.json._
-import spray.json.DefaultJsonProtocol._
+import geotrellis.spark._
 
 object KeyFormats extends KeyFormats
 
 trait KeyFormats extends Serializable {
-  implicit object SpatialKeyFormat extends RootJsonFormat[SpatialKey] {
-    def write(key: SpatialKey) =
-      JsObject(
-        "col" -> JsNumber(key.col),
-        "row" -> JsNumber(key.row)
-      )
+  implicit val spatialKeyEncoder: Encoder[SpatialKey] = deriveEncoder
+  implicit val spatialKeyDecoder: Decoder[SpatialKey] = deriveDecoder
 
-    def read(value: JsValue): SpatialKey =
-      value.asJsObject.getFields("col", "row") match {
-        case Seq(JsNumber(col), JsNumber(row)) =>
-          SpatialKey(col.toInt, row.toInt)
-        case _ =>
-          throw new DeserializationException("SpatialKey expected")
-      }
-  }
+  implicit val spaceTimeKeyEncoder: Encoder[SpaceTimeKey] = deriveEncoder
+  implicit val spaceTimeDecoder: Decoder[SpaceTimeKey] = deriveDecoder
 
-  implicit object SpaceTimeKeyFormat extends RootJsonFormat[SpaceTimeKey] {
-    def write(key: SpaceTimeKey) =
-      JsObject(
-        "col" -> JsNumber(key.col),
-        "row" -> JsNumber(key.row),
-        "instant" -> JsNumber(key.instant)
-      )
+  implicit val temporalKeyEncoder: Encoder[TemporalKey] = deriveEncoder
+  implicit val temporalKeyDecoder: Decoder[TemporalKey] = deriveDecoder
 
-    def read(value: JsValue): SpaceTimeKey =
-      value.asJsObject.getFields("col", "row", "instant") match {
-        case Seq(JsNumber(col), JsNumber(row), JsNumber(time)) =>
-          SpaceTimeKey(col.toInt, row.toInt, time.toLong)
-        case _ =>
-          throw new DeserializationException("SpaceTimeKey expected")
-      }
-  }
-
-
-  implicit object TemporalKeyFormat extends RootJsonFormat[TemporalKey] {
-    def write(key: TemporalKey) =
-      JsObject(
-        "instant" -> JsNumber(key.instant)
-      )
-
-    def read(value: JsValue): TemporalKey =
-      value.asJsObject.getFields("instant") match {
-        case Seq(JsNumber(time)) =>
-          TemporalKey(time.toLong)
-        case _ =>
-          throw new DeserializationException("TemporalKey expected")
-      }
-  }
-
-  implicit def keyBoundsFormat[K: JsonFormat]: RootJsonFormat[KeyBounds[K]] =
-    new RootJsonFormat[KeyBounds[K]] {
-      def write(keyBounds: KeyBounds[K]) =
-        JsObject(
-          "minKey" -> keyBounds.minKey.toJson,
-          "maxKey" -> keyBounds.maxKey.toJson
-        )
-
-      def read(value: JsValue): KeyBounds[K] =
-        value.asJsObject.getFields("minKey", "maxKey") match {
-          case Seq(minKey, maxKey) =>
-            KeyBounds(minKey.convertTo[K], maxKey.convertTo[K])
-          case _ =>
-            throw new DeserializationException("${classOf[KeyBounds[K]] expected")
-        }
-    }
+  implicit def keyBoundsEncoder[K: Encoder]: Encoder[KeyBounds[K]] = deriveEncoder
+  implicit def keyBoundsDecoder[K: Decoder]: Decoder[KeyBounds[K]] = deriveDecoder
 }

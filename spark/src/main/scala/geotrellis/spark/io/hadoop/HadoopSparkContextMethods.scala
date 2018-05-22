@@ -26,7 +26,6 @@ import org.apache.spark._
 import org.apache.spark.rdd._
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.Job
-import org.apache.hadoop.conf.Configuration
 
 trait HadoopSparkContextMethods {
   implicit val sc: SparkContext

@@ -16,23 +16,25 @@
 
 package geotrellis.spark.io
 
+import io.circe._
+import io.circe.syntax._
+import cats.syntax.either._
+
 import geotrellis.spark._
 import geotrellis.spark.io.cog.ZoomRange
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.json.Implicits._
 
 import org.apache.avro.Schema
-import spray.json._
-import spray.json.DefaultJsonProtocol.JsValueFormat
 
 import scala.reflect._
 import java.net.URI
 import java.util.ServiceLoader
 
 trait AttributeStore extends AttributeCaching with LayerAttributeStore {
-  def read[T: JsonFormat](layerId: LayerId, attributeName: String): T
-  def readAll[T: JsonFormat](attributeName: String): Map[LayerId, T]
-  def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit
+  def read[T: Decoder](layerId: LayerId, attributeName: String): T
+  def readAll[T: Decoder](attributeName: String): Map[LayerId, T]
+  def write[T: Encoder](layerId: LayerId, attributeName: String, value: T): Unit
   def layerExists(layerId: LayerId): Boolean
   def delete(layerId: LayerId): Unit
   def delete(layerId: LayerId, attributeName: String): Unit
@@ -71,7 +73,7 @@ trait AttributeStore extends AttributeCaching with LayerAttributeStore {
 
   def copy(from: LayerId, to: LayerId, attributes: Seq[String]): Unit = {
     for (attribute <- attributes) {
-      write(to, attribute, read[JsValue](from, attribute))
+      write(to, attribute, read[Json](from, attribute))
     }
   }
 }
@@ -110,41 +112,40 @@ case class LayerAttributes[H, M, K](header: H, metadata: M, keyIndex: KeyIndex[K
 case class COGLayerAttributes[H, M](header: H, metadata: M)
 
 trait LayerAttributeStore extends Serializable {
-  def readHeader[H: JsonFormat](id: LayerId): H
-  def readMetadata[M: JsonFormat](id: LayerId): M
+  def readHeader[H: Decoder](id: LayerId): H
+  def readMetadata[M: Decoder](id: LayerId): M
   def readKeyIndex[K: ClassTag](id: LayerId): KeyIndex[K]
   def readSchema(id: LayerId): Schema
-  def readLayerAttributes[H: JsonFormat, M: JsonFormat, K: ClassTag](id: LayerId): LayerAttributes[H, M, K]
-  def writeLayerAttributes[H: JsonFormat, M: JsonFormat, K: ClassTag](id: LayerId, header: H, metadata: M, keyIndex: KeyIndex[K], schema: Schema): Unit
-  def readCOGLayerAttributes[H: JsonFormat, M: JsonFormat](id: LayerId): COGLayerAttributes[H, M]
-  def writeCOGLayerAttributes[H: JsonFormat, M: JsonFormat](id: LayerId, header: H, metadata: M): Unit
+  def readLayerAttributes[H: Decoder, M: Decoder, K: ClassTag](id: LayerId): LayerAttributes[H, M, K]
+  def writeLayerAttributes[H: Encoder, M: Encoder, K: ClassTag](id: LayerId, header: H, metadata: M, keyIndex: KeyIndex[K], schema: Schema): Unit
+  def readCOGLayerAttributes[H: Decoder, M: Decoder](id: LayerId): COGLayerAttributes[H, M]
+  def writeCOGLayerAttributes[H: Encoder, M: Encoder](id: LayerId, header: H, metadata: M): Unit
 }
 
 
 trait BlobLayerAttributeStore extends AttributeStore {
   import AttributeStore._
-  import DefaultJsonProtocol._
 
-  def readHeader[H: JsonFormat](id: LayerId): H =
-    cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(Fields.header).convertTo[H]
+  def readHeader[H: Decoder](id: LayerId): H =
+    cacheRead[Json](id, Fields.metadataBlob).hcursor.downField(Fields.header).as[H].valueOr(throw _)
 
-  def readMetadata[M: JsonFormat](id: LayerId): M =
-      cacheRead[JsValue](id, Fields.metadata).asJsObject.fields(Fields.metadata).convertTo[M]
+  def readMetadata[M: Decoder](id: LayerId): M =
+      cacheRead[Json](id, Fields.metadata).hcursor.downField(Fields.metadata).as[M].valueOr(throw _)
 
   def readKeyIndex[K: ClassTag](id: LayerId): KeyIndex[K] = {
     layerType(id) match {
       // TODO: Find a way to read a single KeyIndex from the COGMetadata
       case COGLayerType => throw new UnsupportedOperationException(s"The readKeyIndex cannot be performed on COGLayer: $id")
       case AvroLayerType =>
-        cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(AvroLayerFields.keyIndex).convertTo[KeyIndex[K]]
+        cacheRead[Json](id, Fields.metadataBlob).hcursor.downField(AvroLayerFields.keyIndex).as[KeyIndex[K]].valueOr(throw _)
     }
   }
 
   def readKeyIndexes[K: ClassTag](id: LayerId): Map[ZoomRange, KeyIndex[K]] =
     layerType(id) match {
       case COGLayerType =>
-        cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(Fields.metadata).asJsObject.fields("keyIndexes") match {
-          case JsArray(keyIndexes) => keyIndexes.map { _.convertTo[(ZoomRange, KeyIndex[K])] }.toMap
+        cacheRead[Json](id, Fields.metadataBlob).hcursor.downField(Fields.metadata).downField("keyIndexes").values match {
+          case Some(keyIndexes) => keyIndexes.map { _.as[(ZoomRange, KeyIndex[K])].valueOr(throw _) }.toMap
         }
       case AvroLayerType => throw new AvroLayerAttributeError("keyIndexes", id)
     }
@@ -153,43 +154,43 @@ trait BlobLayerAttributeStore extends AttributeStore {
     layerType(id) match {
       case COGLayerType => throw new COGLayerAttributeError("schema", id)
       case AvroLayerType =>
-        cacheRead[JsValue](id, Fields.metadataBlob).asJsObject.fields(AvroLayerFields.schema).convertTo[Schema]
+        cacheRead[Json](id, Fields.metadataBlob).hcursor.downField(AvroLayerFields.schema).as[Schema].valueOr(throw _)
     }
 
-  def readLayerAttributes[H: JsonFormat, M: JsonFormat, K: ClassTag](id: LayerId): LayerAttributes[H, M, K] = {
-    val blob = cacheRead[JsValue](id, Fields.metadataBlob).asJsObject
+  def readLayerAttributes[H: Decoder, M: Decoder, K: ClassTag](id: LayerId): LayerAttributes[H, M, K] = {
+    val blob = cacheRead[Json](id, Fields.metadataBlob).hcursor
     LayerAttributes(
-      blob.fields(Fields.header).convertTo[H],
-      blob.fields(Fields.metadata).convertTo[M],
-      blob.fields(AvroLayerFields.keyIndex).convertTo[KeyIndex[K]],
-      blob.fields(AvroLayerFields.schema).convertTo[Schema]
+      blob.downField(Fields.header).as[H].valueOr(throw _),
+      blob.downField(Fields.metadata).as[M].valueOr(throw _),
+      blob.downField(AvroLayerFields.keyIndex).as[KeyIndex[K]].valueOr(throw _),
+      blob.downField(AvroLayerFields.schema).as[Schema].valueOr(throw _)
     )
   }
 
-  def writeLayerAttributes[H: JsonFormat, M: JsonFormat, K: ClassTag](id: LayerId, header: H, metadata: M, keyIndex: KeyIndex[K], schema: Schema): Unit = {
+  def writeLayerAttributes[H: Encoder, M: Encoder, K: ClassTag](id: LayerId, header: H, metadata: M, keyIndex: KeyIndex[K], schema: Schema): Unit = {
     cacheWrite(id, Fields.metadataBlob,
-      JsObject(
-        Fields.header -> header.toJson,
-        Fields.metadata -> metadata.toJson,
-        AvroLayerFields.keyIndex -> keyIndex.toJson,
-        AvroLayerFields.schema -> schema.toJson
+      Json.obj(
+        Fields.header -> header.asJson,
+        Fields.metadata -> metadata.asJson,
+        AvroLayerFields.keyIndex -> keyIndex.asJson,
+        AvroLayerFields.schema -> schema.asJson
       )
     )
   }
 
-  def readCOGLayerAttributes[H: JsonFormat, M: JsonFormat](id: LayerId): COGLayerAttributes[H, M] = {
-    val blob = cacheRead[JsValue](id, Fields.metadataBlob).asJsObject
+  def readCOGLayerAttributes[H: Decoder, M: Decoder](id: LayerId): COGLayerAttributes[H, M] = {
+    val blob = cacheRead[Json](id, Fields.metadataBlob).hcursor
     COGLayerAttributes(
-      blob.fields(Fields.header).convertTo[H],
-      blob.fields(Fields.metadata).convertTo[M]
+      blob.downField(Fields.header).as[H].valueOr(throw _),
+      blob.downField(Fields.metadata).as[M].valueOr(throw _)
     )
   }
 
-  def writeCOGLayerAttributes[H: JsonFormat, M: JsonFormat](id: LayerId, header: H, metadata: M): Unit =
+  def writeCOGLayerAttributes[H: Encoder, M: Encoder](id: LayerId, header: H, metadata: M): Unit =
     cacheWrite(id, Fields.metadataBlob,
-      JsObject(
-        Fields.header -> header.toJson,
-        Fields.metadata -> metadata.toJson
+      Json.obj(
+        Fields.header -> header.asJson,
+        Fields.metadata -> metadata.asJson
       )
     )
 }
@@ -200,10 +201,10 @@ trait DiscreteLayerAttributeStore extends AttributeStore {
   def readKeyIndexes[K: ClassTag](id: LayerId): Map[ZoomRange, KeyIndex[K]] =
     throw new AvroLayerAttributeError("keyIndexes", id)
 
-  def readHeader[H: JsonFormat](id: LayerId): H =
+  def readHeader[H: Decoder](id: LayerId): H =
     cacheRead[H](id, Fields.header)
 
-  def readMetadata[M: JsonFormat](id: LayerId): M =
+  def readMetadata[M: Decoder](id: LayerId): M =
     cacheRead[M](id, Fields.metadata)
 
   def readKeyIndex[K: ClassTag](id: LayerId): KeyIndex[K] =
@@ -212,7 +213,7 @@ trait DiscreteLayerAttributeStore extends AttributeStore {
   def readSchema(id: LayerId): Schema =
     cacheRead[Schema](id, AvroLayerFields.schema)
 
-  def readLayerAttributes[H: JsonFormat, M: JsonFormat, K: ClassTag](id: LayerId): LayerAttributes[H, M, K] = {
+  def readLayerAttributes[H: Decoder, M: Decoder, K: ClassTag](id: LayerId): LayerAttributes[H, M, K] = {
     LayerAttributes(
       readHeader[H](id),
       readMetadata[M](id),
@@ -221,16 +222,16 @@ trait DiscreteLayerAttributeStore extends AttributeStore {
     )
   }
 
-  def writeLayerAttributes[H: JsonFormat, M: JsonFormat, K: ClassTag](id: LayerId, header: H, metadata: M, keyIndex: KeyIndex[K], schema: Schema) = {
+  def writeLayerAttributes[H: Encoder, M: Encoder, K: ClassTag](id: LayerId, header: H, metadata: M, keyIndex: KeyIndex[K], schema: Schema) = {
     cacheWrite(id, Fields.header, header)
     cacheWrite(id, Fields.metadata, metadata)
     cacheWrite(id, AvroLayerFields.keyIndex, keyIndex)
     cacheWrite(id, AvroLayerFields.schema, schema)
   }
 
-  def readCOGLayerAttributes[H: JsonFormat, M: JsonFormat](id: LayerId): COGLayerAttributes[H, M] =
+  def readCOGLayerAttributes[H: Decoder, M: Decoder](id: LayerId): COGLayerAttributes[H, M] =
     throw new AvroLayerAttributeError("COGLayerAttributes", id)
 
-  def writeCOGLayerAttributes[H: JsonFormat, M: JsonFormat](id: LayerId, header: H, metadata: M): Unit =
+  def writeCOGLayerAttributes[H: Encoder, M: Encoder](id: LayerId, header: H, metadata: M): Unit =
     throw new AvroLayerAttributeError("COGLayerAttributes", id)
 }

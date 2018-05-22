@@ -22,6 +22,7 @@ import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index.MergeQueue
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.util.Filesystem
+
 import org.apache.avro.Schema
 import java.io.File
 

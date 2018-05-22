@@ -16,8 +16,8 @@
 
 package geotrellis.spark.io
 
-import spray.json._
-
+import io.circe._
+import cats.syntax.either._
 
 trait LayerType {
   lazy val name = this.getClass.getName.split("\\$").last.split("\\.").last
@@ -32,17 +32,10 @@ object LayerType {
       case _ => throw new Exception(s"Could not derive LayerType from given string: $str")
     }
 
-  implicit object LayerTypeFormat extends RootJsonFormat[LayerType] {
-      def write(layerType: LayerType) = JsString(layerType.name)
-
-      def read(value: JsValue): LayerType =
-        value match {
-          case JsString(layerType) =>
-            LayerType.fromString(layerType)
-          case v =>
-            throw new DeserializationException(s"LayerType expected, got $v")
-        }
-    }
+  implicit val layerTypeEncoder: Encoder[LayerType] = Encoder.encodeString.contramap[LayerType] { _.toString }
+  implicit val layerTypeDecoder: Decoder[LayerType] = Decoder.decodeString.emap { str =>
+    Either.catchNonFatal(LayerType.fromString(str)).leftMap(_ => s"LayerType expected, got $str")
+  }
 }
 
 case object AvroLayerType extends LayerType

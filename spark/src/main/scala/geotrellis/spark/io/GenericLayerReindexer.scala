@@ -16,19 +16,18 @@
 
 package geotrellis.spark.io
 
+import io.circe._
+
 import geotrellis.spark._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
 import geotrellis.spark.io.json._
 import geotrellis.util._
 
-import org.apache.avro._
-import spray.json._
-
 import java.time.ZonedDateTime
 import scala.reflect.ClassTag
 
-abstract class GenericLayerReindexer[Header:JsonFormat](
+abstract class GenericLayerReindexer(
   attributeStore: AttributeStore,
   layerReader: LayerReader[LayerId],
   layerWriter: LayerWriter[LayerId],
@@ -39,9 +38,9 @@ abstract class GenericLayerReindexer[Header:JsonFormat](
   def getTmpId(id: LayerId): LayerId
 
   def reindex[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[?, Bounds[K]]
   ](id: LayerId, keyIndex: KeyIndex[K]): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val tmpId = getTmpId(id)
@@ -53,9 +52,9 @@ abstract class GenericLayerReindexer[Header:JsonFormat](
   }
 
   def reindex[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[?, Bounds[K]]
   ](id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val tmpId = getTmpId(id)
@@ -69,14 +68,14 @@ abstract class GenericLayerReindexer[Header:JsonFormat](
 }
 
 object GenericLayerReindexer {
-  def apply[Header: JsonFormat](
+  def apply(
     attributeStore: AttributeStore,
     layerReader: LayerReader[LayerId],
     layerWriter: LayerWriter[LayerId],
     layerDeleter: LayerDeleter[LayerId],
     layerCopier: LayerCopier[LayerId]
   ): LayerReindexer[LayerId] =
-    new GenericLayerReindexer[Header](attributeStore, layerReader, layerWriter, layerDeleter, layerCopier) {
+    new GenericLayerReindexer(attributeStore, layerReader, layerWriter, layerDeleter, layerCopier) {
       def getTmpId(id: LayerId): LayerId = id.copy(name = s"${id.name}-${ZonedDateTime.now.toInstant.toEpochMilli}")
     }
 }

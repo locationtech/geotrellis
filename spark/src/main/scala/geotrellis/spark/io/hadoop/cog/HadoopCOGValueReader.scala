@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.hadoop.cog
 
+import io.circe._
+
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.spark._
@@ -24,10 +26,12 @@ import geotrellis.spark.io.cog._
 import geotrellis.spark.io.index.{Index, KeyIndex}
 import geotrellis.spark.io.hadoop.{HadoopAttributeStore, HadoopLayerHeader}
 import geotrellis.util._
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-import spray.json._
+
 import org.apache.spark.SparkContext
+
 import java.net.URI
 
 import scala.reflect.ClassTag
@@ -40,7 +44,7 @@ class HadoopCOGValueReader(
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
 
   def reader[
-    K: JsonFormat: SpatialComponent: ClassTag,
+    K: Decoder: SpatialComponent: ClassTag,
     V <: CellGrid: GeoTiffReader
   ](layerId: LayerId): Reader[K, V] = {
 
@@ -67,7 +71,7 @@ class HadoopCOGValueReader(
 
 object HadoopCOGValueReader {
   def apply[
-    K: JsonFormat: SpatialComponent: ClassTag,
+    K: Decoder: SpatialComponent: ClassTag,
     V <: CellGrid: GeoTiffReader
   ](attributeStore: HadoopAttributeStore, layerId: LayerId)(implicit sc: SparkContext): Reader[K, V] =
     new HadoopCOGValueReader(attributeStore, sc.hadoopConfiguration).reader[K, V](layerId)
