@@ -53,10 +53,10 @@ object S3LayerHeader {
             key,
             layerType.convertTo[LayerType]
           )
-        case Seq(JsString(keyClass), JsString(bucket), JsString(key), JsString(layerType)) =>
+        case Seq(JsString(keyClass), JsString(valueClass), JsString(bucket), JsString(key)) =>
           S3LayerHeader(
             keyClass,
-            classOf[Tile].getCanonicalName,
+            valueClass,
             bucket,
             key,
             AvroLayerType
