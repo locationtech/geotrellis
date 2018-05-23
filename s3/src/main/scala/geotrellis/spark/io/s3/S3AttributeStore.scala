@@ -16,15 +16,17 @@
 
 package geotrellis.spark.io.s3
 
+import io.circe._
+import io.circe.syntax._
+import io.circe.parser._
+import cats.syntax.either._
+
 import geotrellis.spark._
 import geotrellis.spark.io._
 
-import spray.json._
-import DefaultJsonProtocol._
 import com.amazonaws.services.s3.model.{ObjectMetadata, AmazonS3Exception}
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion
 
-import scala.util.matching.Regex
 import scala.io.Source
 import java.nio.charset.Charset
 import java.io.ByteArrayInputStream
@@ -58,7 +60,7 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayer
   def attributePrefix(attributeName: String): String =
     path(prefix, "_attributes", s"${attributeName}${SEP}")
 
-  private def readKey[T: JsonFormat](key: String): (LayerId, T) = {
+  private def readKey[T: Decoder](key: String): (LayerId, T) = {
     val is = s3Client.getObject(bucket, key).getObjectContent
     val json =
       try {
@@ -67,10 +69,10 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayer
         is.close()
       }
 
-    json.parseJson.convertTo[(LayerId, T)]
+    parse(json).flatMap(_.as[(LayerId, T)]).valueOr(throw _)
   }
 
-  def read[T: JsonFormat](layerId: LayerId, attributeName: String): T =
+  def read[T: Decoder](layerId: LayerId, attributeName: String): T =
     try {
       readKey[T](attributePath(layerId, attributeName))._2
     } catch {
@@ -78,7 +80,7 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayer
         throw new AttributeNotFoundError(attributeName, layerId).initCause(e)
     }
 
-  def readAll[T: JsonFormat](attributeName: String): Map[LayerId, T] =
+  def readAll[T: Decoder](attributeName: String): Map[LayerId, T] =
     s3Client
       .listObjectsIterator(bucket, attributePrefix(attributeName))
       .map{ os =>
@@ -91,9 +93,9 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayer
       }
       .toMap
 
-  def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
+  def write[T: Encoder](layerId: LayerId, attributeName: String, value: T): Unit = {
     val key = attributePath(layerId, attributeName)
-    val str = (layerId, value).toJson.compactPrint
+    val str = (layerId, value).asJson.noSpaces
     val is = new ByteArrayInputStream(str.getBytes("UTF-8"))
     s3Client.putObject(bucket, key, is, new ObjectMetadata())
     //AmazonServiceException possible

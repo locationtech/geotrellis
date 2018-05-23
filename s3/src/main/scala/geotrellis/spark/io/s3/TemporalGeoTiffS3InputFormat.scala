@@ -19,13 +19,11 @@ package geotrellis.spark.io.s3
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.spark._
-import geotrellis.proj4.CRS
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce._
 import java.time.{ZoneOffset, ZonedDateTime}
 import java.time.format.DateTimeFormatter
-
 
 @deprecated("TemporalGeoTiffS3InputFormat is deprecated, use S3GeoTiffRDD instead", "1.0.0")
 object TemporalGeoTiffS3InputFormat {

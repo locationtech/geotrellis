@@ -19,8 +19,7 @@ package geotrellis.spark.io.s3.geotiff
 import geotrellis.spark.io.hadoop.geotiff._
 import geotrellis.spark.io.s3.S3Client
 
-import spray.json._
-import spray.json.DefaultJsonProtocol._
+import io.circe.syntax._
 import com.amazonaws.services.s3.AmazonS3URI
 import com.amazonaws.services.s3.model.ObjectMetadata
 
@@ -57,7 +56,7 @@ object S3IMGeoTiffAttributeStore {
         val s3Path = new AmazonS3URI(uri)
         val data = metadataList
 
-        val str = data.toJson.compactPrint
+        val str = data.asJson.noSpaces
         val is = new ByteArrayInputStream(str.getBytes("UTF-8"))
         s3Client.putObject(s3Path.getBucket, s3Path.getKey, is, new ObjectMetadata())
       }

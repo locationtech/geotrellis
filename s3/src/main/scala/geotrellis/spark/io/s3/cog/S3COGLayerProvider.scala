@@ -20,8 +20,10 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.s3._
+
 import org.apache.spark._
 import com.amazonaws.services.s3.AmazonS3URI
+
 import java.net.URI
 
 /**

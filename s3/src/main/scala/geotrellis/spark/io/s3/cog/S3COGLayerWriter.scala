@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.s3.cog
 
+import io.circe._
+
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
@@ -28,7 +30,6 @@ import geotrellis.spark.io.cog._
 import geotrellis.spark.io.cog.vrt.VRT
 import geotrellis.spark.io.cog.vrt.VRT.IndexedSimpleSource
 
-import spray.json.JsonFormat
 import com.amazonaws.services.s3.model.{AmazonS3Exception, ObjectMetadata, PutObjectRequest}
 import java.io.ByteArrayInputStream
 
@@ -44,7 +45,7 @@ class S3COGLayerWriter(
 ) extends COGLayerWriter {
 
   def writeCOGLayer[
-    K: SpatialComponent: Ordering: JsonFormat: ClassTag,
+    K: SpatialComponent: Ordering: Encoder: ClassTag,
     V <: CellGrid: GeoTiffReader: ClassTag
   ](
     layerName: String,

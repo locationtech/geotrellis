@@ -20,9 +20,6 @@ import geotrellis.spark.LayerId
 import geotrellis.spark.io._
 import geotrellis.util.LazyLogging
 
-import spray.json.JsonFormat
-import spray.json.DefaultJsonProtocol._
-
 class S3LayerDeleter(val attributeStore: AttributeStore) extends LazyLogging with LayerDeleter[LayerId] {
 
   def getS3Client: () => S3Client = () => S3Client.DEFAULT

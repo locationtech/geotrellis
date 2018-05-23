@@ -59,7 +59,7 @@ class S3TileFeatureSpatialSpec
   lazy val writer = new MockS3LayerWriter(attributeStore, bucket, prefix)
   lazy val deleter = new S3LayerDeleter(attributeStore) { override val getS3Client = () => new MockS3Client() }
   lazy val copier  = new S3LayerCopier(attributeStore, bucket, prefix) { override val getS3Client = () => new MockS3Client }
-  lazy val reindexer = GenericLayerReindexer[S3LayerHeader](attributeStore, reader, writer, deleter, copier)
+  lazy val reindexer = GenericLayerReindexer(attributeStore, reader, writer, deleter, copier)
   lazy val mover = GenericLayerMover(copier, deleter)
   lazy val tiles = new S3ValueReader(attributeStore) { override val s3Client = new MockS3Client()  }
   lazy val sample = AllOnesTestFile
