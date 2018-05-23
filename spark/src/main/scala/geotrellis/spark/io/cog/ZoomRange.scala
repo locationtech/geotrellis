@@ -16,12 +16,7 @@
 
 package geotrellis.spark.io.cog
 
-import io.circe.{KeyDecoder, KeyEncoder}
-import io.circe.syntax._
 import io.circe.generic.JsonCodec
-import io.circe.parser.parse
-
-import cats.syntax.either._
 
 @JsonCodec
 case class ZoomRange(minZoom: Int, maxZoom: Int) {
@@ -35,12 +30,4 @@ case class ZoomRange(minZoom: Int, maxZoom: Int) {
 
 object ZoomRange {
   implicit def ordering[A <: ZoomRange]: Ordering[A] = Ordering.by(_.maxZoom)
-
-  implicit val zoomRangeKeyDecoder: KeyDecoder[ZoomRange] = new KeyDecoder[ZoomRange] {
-    override def apply(key: String): Option[ZoomRange] = parse(key).flatMap(_.as[ZoomRange]).toOption
-  }
-
-  implicit val zoomRangeKeyEncoder: KeyEncoder[ZoomRange] = new KeyEncoder[ZoomRange] {
-    override def apply(key: ZoomRange): String = key.asJson.noSpaces
-  }
 }

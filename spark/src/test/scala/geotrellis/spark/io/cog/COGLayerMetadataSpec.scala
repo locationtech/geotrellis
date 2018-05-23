@@ -1,5 +1,7 @@
 package geotrellis.spark.io.cog
 
+import io.circe.syntax._
+
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.spark._
@@ -8,7 +10,6 @@ import geotrellis.spark.tiling._
 import geotrellis.vector._
 
 import org.scalatest._
-import spray.json._
 
 class COGLayerMetadataSpec extends FunSpec
   with Matchers {
@@ -26,7 +27,7 @@ class COGLayerMetadataSpec extends FunSpec
       val maxTileSize = 4096
 
       val md = COGLayerMetadata(cellType, extent, crs, keyBounds, layoutScheme, maxZoom, minZoom, maxTileSize)
-      println(md.toJson.prettyPrint)
+      println(md.asJson.noSpaces)
       md.zoomRanges.isEmpty should be (false)
     }
   }

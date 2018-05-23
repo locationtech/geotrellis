@@ -85,7 +85,7 @@ class KeyIndexRegistry {
 trait KeyIndexFormats {
   val hilbert: String = "hilbert"
   val zorder: String = "zorder"
-  val rowmajor: String = "zorder"
+  val rowmajor: String = "rowmajor"
 
   object KeyIndexJsonFormatFactory {
     private val REG_SETTING_NAME = "geotrellis.spark.io.index.registrator"

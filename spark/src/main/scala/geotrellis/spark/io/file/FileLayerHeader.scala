@@ -19,7 +19,8 @@ package geotrellis.spark.io.file
 import geotrellis.spark.io.{LayerHeader, LayerType, AvroLayerType}
 
 import io.circe._
-import io.circe.generic.semiauto._
+import io.circe.syntax._
+import cats.syntax.either._
 
 case class FileLayerHeader(
   keyClass: String,
@@ -31,16 +32,29 @@ case class FileLayerHeader(
 }
 
 object FileLayerHeader {
-  implicit val fileLayerHeaderEncoder: Encoder[FileLayerHeader] = deriveEncoder
+  implicit val fileLayerHeaderEncoder: Encoder[FileLayerHeader] =
+    Encoder.encodeJson.contramap[FileLayerHeader] { obj =>
+      Json.obj(
+        "keyClass" -> obj.keyClass.asJson,
+        "valueClass" -> obj.valueClass.asJson,
+        "path" -> obj.path.asJson,
+        "layerType" -> obj.layerType.asJson,
+        "format" -> obj.format.asJson
+      )
+    }
   implicit val fileLayerHeaderDecoder: Decoder[FileLayerHeader] =
     Decoder.decodeHCursor.emap { c =>
-      (c.downField("keyClass").as[String],
-        c.downField("valueClass").as[String],
-        c.downField("path").as[String],
-        c.downField("layerType").as[LayerType]) match {
-        case (Right(f), Right(kc), Right(p), Right(lt)) => Right(FileLayerHeader(f, kc, p, lt))
-        case (Right(f), Right(kc), Right(p), _) => Right(FileLayerHeader(f, kc, p, AvroLayerType))
+      c.downField("format").as[String].flatMap {
+        case "file" =>
+          (c.downField("keyClass").as[String],
+            c.downField("valueClass").as[String],
+            c.downField("path").as[String],
+            c.downField("layerType").as[LayerType]) match {
+            case (Right(f), Right(kc), Right(p), Right(lt)) => Right(FileLayerHeader(f, kc, p, lt))
+            case (Right(f), Right(kc), Right(p), _) => Right(FileLayerHeader(f, kc, p, AvroLayerType))
+            case _ => Left(s"FileLayerHeader expected, got: ${c.focus}")
+          }
         case _ => Left(s"FileLayerHeader expected, got: ${c.focus}")
-      }
+      }.leftMap(_ => s"FileLayerHeader expected, got: ${c.focus}")
     }
 }
