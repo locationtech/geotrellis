@@ -16,6 +16,10 @@
 
 package geotrellis.spark.etl.config
 
+import io.circe._
+import io.circe.syntax._
+import cats.syntax.either._
+
 sealed trait ReprojectMethod {
   val name: String
 
@@ -49,4 +53,13 @@ object ReprojectMethod {
     case PerTileReproject.name  => PerTileReproject
     case _ => throw new Exception(s"unsupported repreoject method: $s")
   }
+
+  implicit val reprojectMethodEncoder: Encoder[ReprojectMethod] =
+    Encoder.encodeString.contramap[ReprojectMethod](_.name)
+
+  implicit val reprojectMethodDecoder: Decoder[ReprojectMethod] =
+    Decoder.decodeString.emap { str =>
+      Either.catchNonFatal(fromString(str)).leftMap(_ => "ReprojectMethod must be a valid string.")
+    }
+
 }

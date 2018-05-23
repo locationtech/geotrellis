@@ -16,6 +16,10 @@
 
 package geotrellis.spark.etl.config
 
+import io.circe._
+import io.circe.syntax._
+import cats.syntax.either._
+
 sealed trait BackendType {
   val name: String
 
@@ -62,6 +66,14 @@ object BackendType {
     case FileType.name      => FileType
     case s                  => UserDefinedBackendType(s)
   }
+
+  implicit val backendTypeEncoder: Encoder[BackendType] =
+    Encoder.encodeString.contramap[BackendType](_.name)
+
+  implicit val backendTypeDecoder: Decoder[BackendType] =
+    Decoder.decodeString.emap { str =>
+      Either.catchNonFatal(fromString(str)).leftMap(_ => "BackendType must be a valid string.")
+    }
 }
 
 object BackendInputType {
@@ -70,5 +82,13 @@ object BackendInputType {
     case HadoopType.name => HadoopType
     case s               => UserDefinedBackendInputType(s)
   }
+
+  implicit val backendInputTypeEncoder: Encoder[BackendInputType] =
+    Encoder.encodeString.contramap[BackendInputType](_.name)
+
+  implicit val backendInputTypeDecoder: Decoder[BackendInputType] =
+    Decoder.decodeString.emap { str =>
+      Either.catchNonFatal(fromString(str)).leftMap(_ => "BackendInputType must be a valid string.")
+    }
 }
 

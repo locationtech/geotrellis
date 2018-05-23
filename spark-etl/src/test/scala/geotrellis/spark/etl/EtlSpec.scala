@@ -24,7 +24,6 @@ import geotrellis.vector.Extent
 import org.apache.spark.storage.StorageLevel
 import org.scalatest._
 
-
 class EtlSpec extends FunSuite {
   // Test that ETL module can be instantiated in convenient ways
   val profiles = List(
