@@ -16,11 +16,6 @@
 
 package geotrellis.spark.io.json
 
-import io.circe._
-import io.circe.generic.semiauto._
-
-import geotrellis.spark._
-
 object KeyFormats extends KeyFormats
 
 trait KeyFormats extends Serializable {

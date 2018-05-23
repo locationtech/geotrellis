@@ -22,6 +22,7 @@ import cats.syntax.either._
 
 import geotrellis.spark.tiling._
 import geotrellis.proj4.CRS
+import geotrellis.vector.io._
 
 import org.apache.avro.Schema
 
