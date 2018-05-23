@@ -16,6 +16,11 @@
 
 package geotrellis.spark.io.cassandra
 
+import io.circe._
+import io.circe.syntax._
+import io.circe.parser._
+import cats.syntax.either._
+
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cassandra.conf.CassandraConfig
@@ -25,9 +30,6 @@ import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{set, eq => eqs}
 import com.datastax.driver.core.schemabuilder.SchemaBuilder
 import com.datastax.driver.core.DataType._
-
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 import scala.collection.JavaConverters._
 
@@ -95,7 +97,7 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeKeys
     }
   }
 
-  def read[T: JsonFormat](layerId: LayerId, attributeName: String): T = instance.withSessionDo { session =>
+  def read[T: Decoder](layerId: LayerId, attributeName: String): T = instance.withSessionDo { session =>
     val query =
       QueryBuilder.select.column("value")
         .from(attributeKeyspace, attributeTable)
@@ -111,12 +113,12 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeKeys
     } else if (size > 1) {
       throw new LayerIOError(s"Multiple attributes found for $attributeName for layer $layerId")
     } else {
-      val (_, result) = values.one.getString("value").parseJson.convertTo[(LayerId, T)]
+      val (_, result) = parse(values.one.getString("value")).flatMap(_.as[(LayerId, T)]).valueOr(throw _)
       result
     }
   }
 
-  def readAll[T: JsonFormat](attributeName: String): Map[LayerId, T] = instance.withSessionDo { session =>
+  def readAll[T: Decoder](attributeName: String): Map[LayerId, T] = instance.withSessionDo { session =>
     val query = QueryBuilder.select.column("value")
       .from(attributeKeyspace, attributeTable).allowFiltering()
       .where(eqs("name", QueryBuilder.bindMarker()))
@@ -125,14 +127,16 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeKeys
     session.execute(preparedStatement.bind(attributeName))
       .all
       .asScala
-      .map { _.getString("value").parseJson.convertTo[(LayerId, T)] }
+      .map { row =>
+        parse(row.getString("value")).flatMap(_.as[(LayerId, T)]).valueOr(throw _)
+      }
       .toMap
   }
 
-  def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = instance.withSessionDo { session =>
+  def write[T: Encoder](layerId: LayerId, attributeName: String, value: T): Unit = instance.withSessionDo { session =>
     val update =
       QueryBuilder.update(attributeKeyspace, attributeTable)
-        .`with`(set("value", (layerId, value).toJson.compactPrint))
+        .`with`(set("value", (layerId, value).asJson.noSpaces))
         .where(eqs("layerName", layerId.name))
         .and(eqs("layerZoom", layerId.zoom))
         .and(eqs("name", attributeName))
