@@ -16,6 +16,11 @@
 
 package geotrellis.spark.io.hbase
 
+import io.circe._
+import io.circe.syntax._
+import io.circe.parser._
+import cats.syntax.either._
+
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.hbase.conf.HBaseConfig
@@ -23,8 +28,6 @@ import geotrellis.spark.io.hbase.conf.HBaseConfig
 import org.apache.hadoop.hbase._
 import org.apache.hadoop.hbase.client._
 import org.apache.hadoop.hbase.util.Bytes
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 import scala.collection.JavaConversions._
 
@@ -86,7 +89,7 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
       }
     }
 
-  def read[T: JsonFormat](layerId: LayerId, attributeName: String): T = {
+  def read[T: Decoder](layerId: LayerId, attributeName: String): T = {
       val values = fetch(Some(layerId), attributeName)
 
       if (values.isEmpty) {
@@ -94,24 +97,25 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
       } else if (values.size > 1) {
         throw new LayerIOError(s"Multiple attributes found for $attributeName for layer $layerId")
       } else {
-        Bytes.toString(values.head.getValue(attributeName, "")).parseJson.convertTo[(LayerId, T)]._2
+        parse(Bytes.toString(values.head.getValue(attributeName, ""))).flatMap(_.as[(LayerId, T)]).valueOr(throw _)._2
       }
     }
 
-  def readAll[T: JsonFormat](attributeName: String): Map[LayerId, T] = {
+  def readAll[T: Decoder](attributeName: String): Map[LayerId, T] = {
       fetch(None, attributeName)
-        .map { row => Bytes.toString(row.getValue(attributeName, "")).parseJson.convertTo[(LayerId, T)] }
+        .map { row =>
+          parse(Bytes.toString(row.getValue(attributeName, ""))).flatMap(_.as[(LayerId, T)]).valueOr(throw _) }
         .toMap
     }
 
-  def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit =
+  def write[T: Encoder](layerId: LayerId, attributeName: String, value: T): Unit =
     instance.withTableConnectionDo(attributeTableName) { table =>
       addColumn(table)(attributeName)
 
       val put = new Put(layerIdString(layerId))
       put.addColumn(
         attributeName, "", System.currentTimeMillis(),
-        (layerId, value).toJson.compactPrint.getBytes
+        (layerId, value).asJson.noSpaces.getBytes
       )
 
       table.put(put)
