@@ -18,9 +18,6 @@ package geotrellis.spark.io.s3.testkit
 
 import geotrellis.spark.io._
 import geotrellis.spark.io.s3._
-import geotrellis.spark.io.json._
-
-import spray.json._
 
 class MockS3LayerWriter(
   attributeStore: AttributeStore,

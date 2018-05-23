@@ -16,13 +16,10 @@
 
 package geotrellis.spark.io.s3.testkit
 
-import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.s3._
-import geotrellis.spark.io.json._
 
 import org.apache.spark._
-import spray.json._
 
 class MockS3LayerReader(
   attributeStore: AttributeStore
