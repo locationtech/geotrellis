@@ -16,16 +16,10 @@
 
 package geotrellis.spark.io.accumulo
 
-import geotrellis.spark.{ Bounds, Boundable, KeyBounds, EmptyBounds }
-import geotrellis.spark.io.accumulo._
-import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
-
-import org.apache.accumulo.core.data.Key
-import org.apache.hadoop.io.Text
-import org.apache.spark.rdd.RDD
+import geotrellis.spark.KeyBounds
+import geotrellis.spark.io.index.KeyIndex
 
 import scala.collection.JavaConverters._
-
 
 object AccumuloUtils {
   /**
@@ -41,7 +35,7 @@ object AccumuloUtils {
     * more than one tablet server to participate in the ingestion.
     *
     * @param  tableName         The name of the table to be split
-    * @param  accumuloInstnace  The Accumulo instance associated with the ingest
+    * @param  accumuloInstance  The Accumulo instance associated with the ingest
     * @param  keyBounds         The KeyBounds of the RDD that is being stored in the table
     * @param  keyIndexer        The indexing scheme used to turn keys K into Accumulo keys
     * @param  count             The number of tablets to split the table into

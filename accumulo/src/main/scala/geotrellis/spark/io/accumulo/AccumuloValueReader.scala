@@ -16,20 +16,18 @@
 
 package geotrellis.spark.io.accumulo
 
+import io.circe._
+
 import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.spark.{LayerId, SpatialComponent}
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.spark.io.index.KeyIndex
 
 import org.apache.accumulo.core.data.{Range => ARange}
 import org.apache.accumulo.core.security.Authorizations
-import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
@@ -41,7 +39,7 @@ class AccumuloValueReader(
 
   val rowId = (index: BigInt) => new Text(AccumuloKeyEncoder.long2Bytes(index))
 
-  def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
+  def reader[K: AvroRecordCodec: Decoder: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
     val header = attributeStore.readHeader[AccumuloLayerHeader](layerId)
     val keyIndex = attributeStore.readKeyIndex[K](layerId)
     val writerSchema = attributeStore.readSchema(layerId)
@@ -73,14 +71,14 @@ class AccumuloValueReader(
 }
 
 object AccumuloValueReader {
-  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
+  def apply[K: AvroRecordCodec: Decoder: ClassTag, V: AvroRecordCodec](
     instance: AccumuloInstance,
     attributeStore: AttributeStore,
     layerId: LayerId
   ): Reader[K, V] =
     new AccumuloValueReader(instance, attributeStore).reader[K, V](layerId)
 
-  def apply[K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid: AvroRecordCodec: ? => TileResampleMethods[V]](
+  def apply[K: AvroRecordCodec: Decoder: SpatialComponent: ClassTag, V <: CellGrid: AvroRecordCodec: ? => TileResampleMethods[V]](
     instance: AccumuloInstance,
     attributeStore: AttributeStore,
     layerId: LayerId,

@@ -33,7 +33,6 @@ import org.apache.spark.SparkContext
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
-
 object AccumuloRDDReader {
   def read[K: Boundable: AvroRecordCodec: ClassTag, V: AvroRecordCodec: ClassTag](
     table: String,

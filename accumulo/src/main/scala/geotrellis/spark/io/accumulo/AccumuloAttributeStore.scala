@@ -16,12 +16,15 @@
 
 package geotrellis.spark.io.accumulo
 
+import io.circe._
+import io.circe.syntax._
+import io.circe.parser._
+import cats.syntax.either._
+
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.accumulo.conf.AccumuloConfig
 
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 import org.apache.accumulo.core.client.{BatchWriterConfig, Connector}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.accumulo.core.data._
@@ -90,7 +93,7 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
     }
   }
 
-  def read[T: JsonFormat](layerId: LayerId, attributeName: String): T = {
+  def read[T: Decoder](layerId: LayerId, attributeName: String): T = {
     val values = fetch(Some(layerId), attributeName).toVector
 
     if(values.isEmpty) {
@@ -98,21 +101,21 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
     } else if(values.size > 1) {
       throw new LayerIOError(s"Multiple attributes found for $attributeName for layer $layerId")
     } else {
-      values.head.toString.parseJson.convertTo[(LayerId, T)]._2
+      parse(values.head.toString).flatMap(_.as[(LayerId, T)]).valueOr(throw _)._2
     }
   }
 
-  def readAll[T: JsonFormat](attributeName: String): Map[LayerId,T] = {
+  def readAll[T: Decoder](attributeName: String): Map[LayerId,T] = {
     fetch(None, attributeName)
-      .map { _.toString.parseJson.convertTo[(LayerId, T)] }
+      .map { r => parse(r.toString).flatMap(_.as[(LayerId, T)]).valueOr(throw _) }
       .toMap
   }
 
-  def write[T: JsonFormat](layerId: LayerId, attributeName: String, value: T): Unit = {
+  def write[T: Encoder](layerId: LayerId, attributeName: String, value: T): Unit = {
     val mutation = new Mutation(layerIdText(layerId))
     mutation.put(
       new Text(attributeName), new Text(), System.currentTimeMillis(),
-      new Value((layerId, value).toJson.compactPrint.getBytes)
+      new Value((layerId, value).asJson.noSpaces.getBytes)
     )
 
     connector.write(attributeTable, mutation)
