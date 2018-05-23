@@ -16,19 +16,13 @@
 
 package geotrellis.spark.io.slippy
 
-import geotrellis.vector._
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
 import geotrellis.spark._
 import geotrellis.spark.io.s3._
-import geotrellis.util.Filesystem
 
-import org.apache.commons.io.FileUtils
-import org.apache.commons.io.filefilter._
 import org.apache.spark._
 import org.apache.spark.rdd._
-import java.io.File
 
+import java.io.File
 
 class S3SlippyTileReader[T](uri: String)(fromBytes: (SpatialKey, Array[Byte]) => T) extends SlippyTileReader[T] {
   import SlippyTileReader.TilePath

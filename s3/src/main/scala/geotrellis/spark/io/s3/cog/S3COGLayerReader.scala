@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.s3.cog
 
+import io.circe._
+
 import geotrellis.raster.CellGrid
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.spark._
@@ -28,7 +30,6 @@ import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.SparkContext
-import spray.json.JsonFormat
 import java.net.URI
 
 import scala.reflect.ClassTag
@@ -73,7 +74,7 @@ class S3COGLayerReader(
   }
 
   def read[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int) =
     baseReadAllBands[K, V](
@@ -84,7 +85,7 @@ class S3COGLayerReader(
     )
 
   def readSubsetBands[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag
+    K: SpatialComponent: Boundable: Decoder: ClassTag
   ](
     id: LayerId,
     targetBands: Seq[Int],

@@ -20,10 +20,11 @@ import geotrellis.spark.io.s3.S3Client
 import geotrellis.spark.io.hadoop.geotiff._
 import geotrellis.util.annotations.experimental
 
+import io.circe.syntax._
+import io.circe.parser._
+import cats.syntax.either._
 import com.amazonaws.services.s3.AmazonS3URI
 import com.amazonaws.services.s3.model.ObjectMetadata
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 import java.io.ByteArrayInputStream
 import java.net.URI
@@ -50,9 +51,7 @@ import scala.io.Source
         .mkString(" ")
     } finally stream.close()
 
-    json
-      .parseJson
-      .convertTo[List[GeoTiffMetadata]]
+    parse(json).flatMap(_.as[List[GeoTiffMetadata]]).valueOr(throw _)
   }
 
   @experimental def readDataAsTree(uri: URI, getS3Client: () => S3Client): GeoTiffMetadataTree[GeoTiffMetadata] =
@@ -74,7 +73,7 @@ import scala.io.Source
     val data = S3GeoTiffInput.list(name, uri, pattern, recursive)
     val attributeStore = JsonGeoTiffAttributeStore(path, readDataAsTree(_, () => S3Client.DEFAULT))
 
-    val str = data.toJson.compactPrint
+    val str = data.asJson.noSpaces
     val is = new ByteArrayInputStream(str.getBytes("UTF-8"))
     s3Client.putObject(s3Path.getBucket, s3Path.getKey, is, new ObjectMetadata())
 

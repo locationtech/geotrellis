@@ -36,7 +36,6 @@ import geotrellis.util._
 
 import org.apache.spark.HashPartitioner
 import org.apache.spark.rdd.RDD
-import spray.json.JsonFormat
 
 import scala.reflect.ClassTag
 
@@ -124,8 +123,8 @@ object Transform {
   }
 
   def pyramid[
-    K: SpatialComponent : AvroRecordCodec : JsonFormat : ClassTag,
-    V <: CellGrid[Int] : AvroRecordCodec : ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
+    K: SpatialComponent: AvroRecordCodec: ClassTag,
+    V <: CellGrid[Int]: AvroRecordCodec: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
   ](arg: JsonPyramid)(rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]): Stream[(Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]])] = {
     def pyramid(resampleMethod: ResampleMethod): Stream[(Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]])] = {
       require(!rdd.metadata.bounds.isEmpty, "Can not pyramid an empty RDD")

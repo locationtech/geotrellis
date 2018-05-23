@@ -16,10 +16,11 @@
 
 package geotrellis.spark.io.s3
 
-import geotrellis.raster.Tile
 import geotrellis.spark.io.{LayerHeader, LayerType, AvroLayerType}
 
-import spray.json._
+import io.circe._
+import io.circe.syntax._
+import cats.syntax.either._
 
 case class S3LayerHeader(
   keyClass: String,
@@ -32,38 +33,31 @@ case class S3LayerHeader(
 }
 
 object S3LayerHeader {
-  implicit object S3LayerHeaderFormat extends RootJsonFormat[S3LayerHeader] {
-    def write(md: S3LayerHeader) =
-      JsObject(
-        "format" -> JsString(md.format),
-        "keyClass" -> JsString(md.keyClass),
-        "valueClass" -> JsString(md.valueClass),
-        "bucket" -> JsString(md.bucket.toString),
-        "key" -> JsString(md.key.toString),
-        "layerType" -> md.layerType.toJson
+  implicit val s3LayerHeaderEncoder: Encoder[S3LayerHeader] =
+    Encoder.encodeJson.contramap[S3LayerHeader] { md =>
+      Json.obj(
+        "keyClass" -> md.keyClass.asJson,
+        "valueClass" -> md.valueClass.asJson,
+        "bucket" -> md.bucket.asJson,
+        "key" -> md.key.asJson,
+        "layerType" -> md.layerType.asJson,
+        "format" -> md.format.asJson
       )
-
-    def read(value: JsValue): S3LayerHeader =
-      value.asJsObject.getFields("keyClass", "valueClass", "bucket", "key", "layerType") match {
-        case Seq(JsString(keyClass), JsString(valueClass), JsString(bucket), JsString(key), layerType) =>
-          S3LayerHeader(
-            keyClass,
-            valueClass,
-            bucket,
-            key,
-            layerType.convertTo[LayerType]
-          )
-        case Seq(JsString(keyClass), JsString(valueClass), JsString(bucket), JsString(key)) =>
-          S3LayerHeader(
-            keyClass,
-            valueClass,
-            bucket,
-            key,
-            AvroLayerType
-          )
-
-        case other =>
-          throw new DeserializationException(s"S3LayerHeader expected, got: $other")
-      }
-  }
+    }
+  implicit val s3LayerHeaderDecoder: Decoder[S3LayerHeader] =
+    Decoder.decodeHCursor.emap { c =>
+      c.downField("format").as[String].flatMap {
+        case "s3" =>
+          (c.downField("keyClass").as[String],
+            c.downField("valueClass").as[String],
+            c.downField("bucket").as[String],
+            c.downField("key").as[String],
+            c.downField("layerType").as[LayerType]) match {
+            case (Right(f), Right(kc), Right(b), Right(k), Right(lt)) => Right(S3LayerHeader(f, kc, b, k, lt))
+            case (Right(f), Right(kc), Right(b), Right(k), _) => Right(S3LayerHeader(f, kc, b, k, AvroLayerType))
+            case _ => Left(s"S3LayerHeader expected, got: ${c.focus}")
+          }
+        case _ => Left(s"S3LayerHeader expected, got: ${c.focus}")
+      }.leftMap(_ => s"S3LayerHeader expected, got: ${c.focus}")
+    }
 }
