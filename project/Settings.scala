@@ -521,7 +521,6 @@ object Settings {
     libraryDependencies ++= Seq(
       jts,
       pureconfig,
-      sprayJson,
       circeCore,
       circeGeneric,
       circeGenericExtras,

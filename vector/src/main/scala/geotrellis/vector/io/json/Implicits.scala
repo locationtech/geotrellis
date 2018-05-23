@@ -84,7 +84,7 @@ trait Implicits extends GeoJsonSupport {
             case Failure(_) =>
               Try(s.parseGeoJson[GeometryCollection]) match {
                 case Success(gc) => gc.getAll[G]
-                case Failure(e) => throw e
+                case Failure(e) => Seq() // throw e
               }
           }
       }
@@ -99,7 +99,7 @@ trait Implicits extends GeoJsonSupport {
         case Left(_) =>
           Try(s.parseGeoJson[JsonFeatureCollection]) match {
             case Success(featureCollection) => featureCollection.getAll[F]
-            case Failure(e) => throw e
+            case Failure(e) => Seq() // throw e
           }
       }
   }
