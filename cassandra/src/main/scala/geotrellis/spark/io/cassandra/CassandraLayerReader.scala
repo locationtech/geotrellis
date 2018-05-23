@@ -24,7 +24,6 @@ import geotrellis.spark.io.avro._
 import geotrellis.util._
 
 import org.apache.spark.SparkContext
-import spray.json._
 
 import scala.reflect._
 
