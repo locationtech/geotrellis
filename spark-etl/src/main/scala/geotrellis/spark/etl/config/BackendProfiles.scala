@@ -16,6 +16,9 @@
 
 package geotrellis.spark.etl.config
 
+import io.circe.generic.JsonCodec
+
+import geotrellis.spark.etl.config.json._
 import geotrellis.spark.io.accumulo.AccumuloInstance
 import geotrellis.spark.io.cassandra.conf.CassandraConfig
 import geotrellis.spark.io.hbase.HBaseInstance
@@ -27,8 +30,11 @@ sealed trait BackendProfile {
   def `type`: BackendType
 }
 
+@JsonCodec
 case class HadoopProfile(name: String) extends BackendProfile { def `type` = HadoopType }
+@JsonCodec
 case class S3Profile(name: String, partitionsCount: Option[Int] = None, partitionsBytes: Option[Int] = None) extends BackendProfile { def `type` = S3Type }
+@JsonCodec
 case class CassandraProfile(name: String, hosts: String, user: String, password: String, cassandraConfig: CassandraConfig = CassandraConfig) extends BackendProfile {
   def `type` = CassandraType
 
@@ -39,12 +45,14 @@ case class CassandraProfile(name: String, hosts: String, user: String, password:
     cassandraConfig
   )
 }
+@JsonCodec
 case class AccumuloProfile(name: String, instance: String, zookeepers: String, user: String, password: String, strategy: Option[String] = None, ingestPath: Option[String] = None) extends BackendProfile {
   def `type` = AccumuloType
   def token = new PasswordToken(password)
 
   def getInstance = AccumuloInstance(instance, zookeepers, user, token)
 }
+@JsonCodec
 case class HBaseProfile(name: String, master: String, zookeepers: String) extends BackendProfile {
   def `type` = HBaseType
 

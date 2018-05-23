@@ -1,9 +1,12 @@
 package geotrellis.spark.etl.config
 
+import io.circe._
+import io.circe.parser._
+import cats.syntax.either._
+
 import geotrellis.raster.TileLayout
 import geotrellis.spark.etl.config.json._
 
-import spray.json._
 import com.networknt.schema.JsonSchemaFactory
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -68,8 +71,8 @@ class ConfigSpec extends FunSuite {
     assert(report.isEmpty)
   }
   test("Output config with TileLayout parses correctly") {
-    val backendProfilesParsed = bpJson.parseJson.convertTo[Map[String, BackendProfile]]
-    val outputParsed = OutputFormat(backendProfilesParsed).read(outJson.parseJson)
+    val backendProfilesParsed = parse(bpJson).flatMap(_.as[Map[String, BackendProfile]]).valueOr(throw _)
+    val outputParsed = Output.OutputDecoder(backendProfilesParsed)(parse(outJson).map(_.hcursor).valueOr(throw _)).valueOr(throw _)
     assert(outputParsed.tileLayout.contains(TileLayout(360, 180, 240, 240)))
   }
 }

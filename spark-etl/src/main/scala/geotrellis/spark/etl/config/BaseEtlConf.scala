@@ -19,8 +19,11 @@ package geotrellis.spark.etl.config
 import geotrellis.spark.etl.config.json._
 import geotrellis.util.LazyLogging
 
+import io.circe._
+import io.circe.parser.{parse => circeParse}
+import cats.syntax.either._
+
 import org.apache.spark.SparkContext
-import spray.json._
 
 import scala.collection.JavaConverters._
 
@@ -98,9 +101,9 @@ trait BaseEtlConf extends ConfigParse with LazyLogging {
       sys.exit(1)
     }
 
-    val backendProfilesParsed = backendProfiles.parseJson.convertTo[Map[String, BackendProfile]]
-    val inputsParsed = InputsFormat(backendProfilesParsed).read(input.parseJson)
-    val outputParsed = OutputFormat(backendProfilesParsed).read(output.parseJson)
+    val backendProfilesParsed = circeParse(backendProfiles).flatMap(_.as[Map[String, BackendProfile]]).valueOr(throw _)
+    val inputsParsed = Input.InputsDecoder(backendProfilesParsed)(circeParse(input).map(_.hcursor).valueOr(throw _)).valueOr(throw _)
+    val outputParsed = Output.OutputDecoder(backendProfilesParsed)(circeParse(output).map(_.hcursor).valueOr(throw _)).valueOr(throw _)
 
     inputsParsed.map(new EtlConf(_, outputParsed))
   }
