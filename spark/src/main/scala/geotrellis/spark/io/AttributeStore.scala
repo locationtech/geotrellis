@@ -146,6 +146,7 @@ trait BlobLayerAttributeStore extends AttributeStore {
       case COGLayerType =>
         cacheRead[Json](id, Fields.metadataBlob).hcursor.downField(Fields.metadata).downField("keyIndexes").values match {
           case Some(keyIndexes) => keyIndexes.map { _.as[(ZoomRange, KeyIndex[K])].valueOr(throw _) }.toMap
+          case _ => Map()
         }
       case AvroLayerType => throw new AvroLayerAttributeError("keyIndexes", id)
     }

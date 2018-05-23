@@ -122,16 +122,18 @@ trait KeyIndexFormats {
       for((key, entries) <- registry) {
         if(key == classTag[K]) {
           return new KeyIndexEncoder[K](entries.map(_.asInstanceOf[KeyIndexFormatEntry[K, _]]))
-        } else throw DecodingFailure(s"Cannot deserialize key index for key type ${classTag[K]}. You need to register this key type using the config item $REG_SETTING_NAME", Nil)
+        }
       }
+      throw DecodingFailure(s"Cannot deserialize key index for key type ${classTag[K]}. You need to register this key type using the config item $REG_SETTING_NAME", Nil)
     }
 
     def getKeyIndexDecoder[K: ClassTag](): Decoder[KeyIndex[K]] = {
       for((key, entries) <- registry) {
         if(key == classTag[K]) {
           return new KeyIndexDecoder[K](entries.map(_.asInstanceOf[KeyIndexFormatEntry[K, _]]))
-        } else throw DecodingFailure(s"Cannot deserialize key index for key type ${classTag[K]}. You need to register this key type using the config item $REG_SETTING_NAME", Nil)
+        }
       }
+      throw DecodingFailure(s"Cannot deserialize key index for key type ${classTag[K]}. You need to register this key type using the config item $REG_SETTING_NAME", Nil)
     }
   }
 

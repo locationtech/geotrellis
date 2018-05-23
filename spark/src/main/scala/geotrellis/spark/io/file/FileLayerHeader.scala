@@ -32,7 +32,7 @@ case class FileLayerHeader(
 
 object FileLayerHeader {
   implicit val fileLayerHeaderEncoder: Encoder[FileLayerHeader] = deriveEncoder
-  implicit val fileLayerHeaderDecoder: Decoder[LayerHeader] =
+  implicit val fileLayerHeaderDecoder: Decoder[FileLayerHeader] =
     Decoder.decodeHCursor.emap { c =>
       (c.downField("keyClass").as[String],
         c.downField("valueClass").as[String],

@@ -20,10 +20,7 @@ import io.circe._
 import io.circe.generic.semiauto._
 
 import geotrellis.spark._
-import geotrellis.spark.io._
 import geotrellis.spark.io.index._
-import geotrellis.raster.io._
-import geotrellis.vector.io._
 
 import scala.reflect._
 
@@ -35,15 +32,4 @@ case class COGLayerStorageMetadata[K](metadata: COGLayerMetadata[K], keyIndexes:
 object COGLayerStorageMetadata {
   implicit def cogLayerStorageMetadataEncoder[K: SpatialComponent: Encoder: ClassTag]: Encoder[COGLayerStorageMetadata[K]] = deriveEncoder
   implicit def cogLayerStorageMetadataDecoder[K: SpatialComponent: Decoder: ClassTag]: Decoder[COGLayerStorageMetadata[K]] = deriveDecoder
-}
-
-
-case class Lol[K](metadata: COGLayerMetadata[K], keyIndexes: Map[ZoomRange, KeyIndex[K]]) {
-  def combine(other: COGLayerStorageMetadata[K])(implicit ev: Boundable[K]): COGLayerStorageMetadata[K] =
-    COGLayerStorageMetadata(metadata.combine(other.metadata), other.keyIndexes)
-}
-
-object Lol {
-  implicit def lolEncoder[K: SpatialComponent: Encoder: ClassTag]: Encoder[Lol[K]] = deriveEncoder
-  implicit def lolDecoder[K: SpatialComponent: Decoder: ClassTag]: Decoder[Lol[K]] = deriveDecoder
 }
