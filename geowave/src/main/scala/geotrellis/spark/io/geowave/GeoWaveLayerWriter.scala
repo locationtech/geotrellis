@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.geowave
 
+import io.circe._
+
 import geotrellis.geotools._
 import geotrellis.proj4.LatLng
 import geotrellis.raster._
@@ -62,7 +64,6 @@ import scala.reflect._
 import mil.nga.giat.geowave.core.store.util.DataStoreUtils
 
 import resource._
-import spray.json._
 import mil.nga.giat.geowave.core.store.operations.remote.options.DataStorePluginOptions
 import mil.nga.giat.geowave.core.store.adapter.statistics.StatsCompositionTool
 import mil.nga.giat.geowave.core.store.data.VisibilityWriter
@@ -76,7 +77,7 @@ import mil.nga.giat.geowave.core.store.data.VisibilityWriter
   @experimental def write[
     K <: SpatialKey: ClassTag,
     V: TileOrMultibandTile: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: Encoder: GetComponent[?, Bounds[K]]
   ](
     coverageName: String,
     bits: Int,
@@ -256,7 +257,7 @@ import mil.nga.giat.geowave.core.store.data.VisibilityWriter
   @experimental def write[
     K <: SpatialKey: ClassTag,
     V: TileOrMultibandTile: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: Encoder: GetComponent[?, Bounds[K]]
   ](id: LayerId, layer: RDD[(K, V)] with Metadata[M], bits: Int = 0): Unit =
     layer.metadata.getComponent[Bounds[K]] match {
       case keyBounds: KeyBounds[K] =>
@@ -269,7 +270,7 @@ import mil.nga.giat.geowave.core.store.data.VisibilityWriter
   @experimental protected def _write[
     K <: SpatialKey: ClassTag,
     V: TileOrMultibandTile: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: Encoder: GetComponent[?, Bounds[K]]
   ](
     layerId: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
