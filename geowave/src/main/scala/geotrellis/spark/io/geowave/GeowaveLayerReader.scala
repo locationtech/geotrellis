@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.geowave
 
+import io.circe._
+
 import geotrellis.geotools._
 import geotrellis.proj4.LatLng
 import geotrellis.raster._
@@ -40,14 +42,10 @@ import mil.nga.giat.geowave.core.store.query.QueryOptions
 import mil.nga.giat.geowave.datastore.accumulo._
 import mil.nga.giat.geowave.datastore.accumulo.metadata._
 import mil.nga.giat.geowave.mapreduce.input.{ GeoWaveInputKey, GeoWaveInputFormat }
-import org.apache.avro.Schema
-import org.apache.hadoop.io.Text
 import org.apache.hadoop.mapreduce.Job
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 import org.geotools.coverage.grid._
-
-import spray.json._
 
 import scala.reflect._
 
@@ -205,7 +203,7 @@ object GeowaveLayerReader {
   @experimental def read[
     K <: SpatialKey,
     V: TileOrMultibandTile: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: Decoder: GetComponent[?, Bounds[K]]
   ](id: LayerId, rasterQuery: LayerQuery[K, M]) = {
     import GeowaveLayerReader._
 
@@ -272,7 +270,7 @@ object GeowaveLayerReader {
   @experimental def read[
     K <: SpatialKey: Boundable,
     V: TileOrMultibandTile: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: Decoder: GetComponent[?, Bounds[K]]
   ](id: LayerId): RDD[(K, V)] with Metadata[M] =
     read(id, new LayerQuery[K, M])
 
@@ -280,7 +278,7 @@ object GeowaveLayerReader {
   @experimental def query[
     K <: SpatialKey: Boundable,
     V: TileOrMultibandTile: ClassTag,
-    M: JsonFormat: GetComponent[?, Bounds[K]]
+    M: Decoder: GetComponent[?, Bounds[K]]
   ](layerId: LayerId): BoundLayerQuery[K, M, RDD[(K, V)] with Metadata[M]] =
     new BoundLayerQuery(new LayerQuery, read(layerId, _))
 }
