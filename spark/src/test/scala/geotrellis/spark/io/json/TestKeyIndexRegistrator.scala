@@ -16,12 +16,13 @@
 
 package geotrellis.spark.io.json
 
+import io.circe._
+import io.circe.syntax._
+import cats.syntax.either._
+
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index._
-
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 class TestKeyIndex(val keyBounds: KeyBounds[SpatialKey]) extends KeyIndex[SpatialKey] {
   def toIndex(key: SpatialKey): BigInt = BigInt(1)
@@ -31,35 +32,33 @@ class TestKeyIndex(val keyBounds: KeyBounds[SpatialKey]) extends KeyIndex[Spatia
 }
 
 class TestKeyIndexRegistrator extends KeyIndexRegistrator {
-  implicit object TestKeyIndexFormat extends RootJsonFormat[TestKeyIndex] {
-    final def TYPE_NAME = "test"
+  val test = "test"
 
-    def write(obj: TestKeyIndex): JsValue =
-      JsObject(
-        "type"   -> JsString(TYPE_NAME),
-        "properties" -> JsObject("keyBounds" -> obj.keyBounds.toJson)
+  implicit val testKeyIndexEncoder: Encoder[TestKeyIndex] =
+    Encoder.encodeJson.contramap[TestKeyIndex] { obj =>
+      Json.obj(
+        "type"   -> test.asJson,
+        "properties" -> Json.obj("keyBounds" -> obj.keyBounds.asJson)
       )
+    }
 
-    def read(value: JsValue): TestKeyIndex =
-      value.asJsObject.getFields("type", "properties") match {
-        case Seq(JsString(typeName), properties) => {
-          if (typeName != TYPE_NAME)
-            throw new DeserializationException(s"Wrong KeyIndex type: ${TYPE_NAME} expected.")
+  implicit val testKeyIndexDecoder: Decoder[TestKeyIndex] =
+    Decoder.decodeHCursor.emap { c: HCursor =>
+      (c.downField("type").as[String], c.downField("properties")) match {
+        case (Right(typeName), properties) =>
+          if(typeName != test) Left(s"Wrong KeyIndex type: $test expected.")
+          else
+            properties
+              .downField("keyBounds")
+              .as[KeyBounds[SpatialKey]]
+              .map(new TestKeyIndex(_))
+              .leftMap(_ => "Couldn't deserialize test key index.")
 
-          properties.convertTo[JsObject].getFields("keyBounds") match {
-            case Seq(kb) =>
-              new TestKeyIndex(kb.convertTo[KeyBounds[SpatialKey]])
-            case _ =>
-              throw new DeserializationException(
-                "Couldn't deserialize test key index.")
-          }
-        }
-        case _ =>
-          throw new DeserializationException("Wrong KeyIndex type: test key index expected.")
+        case _ => Left("Wrong KeyIndex type: test key index expected.")
       }
-  }
+    }
 
   def register(keyIndexRegistry: KeyIndexRegistry): Unit = {
-    keyIndexRegistry register KeyIndexFormatEntry[SpatialKey, TestKeyIndex](TestKeyIndexFormat.TYPE_NAME)
+    keyIndexRegistry register KeyIndexFormatEntry[SpatialKey, TestKeyIndex](test)
   }
 }

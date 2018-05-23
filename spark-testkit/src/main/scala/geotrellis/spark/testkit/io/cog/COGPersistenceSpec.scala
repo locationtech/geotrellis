@@ -33,15 +33,14 @@ import geotrellis.spark.testkit.io._
 import geotrellis.spark.testkit.testfiles.cog.COGTestFiles
 import geotrellis.util._
 
+import _root_.io.circe._
 import org.apache.spark.rdd.RDD
 import org.scalatest._
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 import scala.reflect._
 
 abstract class COGPersistenceSpec[
-  K: SpatialComponent: Ordering: Boundable: JsonFormat: ClassTag,
+  K: SpatialComponent: Ordering: Boundable: Encoder: Decoder: ClassTag,
   V <: CellGrid[Int]: GeoTiffReader: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: ClassTag: GeoTiffBuilder
 ] extends FunSpec with Matchers with BeforeAndAfterAll {
 

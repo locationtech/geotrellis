@@ -24,6 +24,8 @@ import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
 import geotrellis.util._
 
+import com.typesafe.scalalogging.LazyLogging
+
 import scala.reflect.ClassTag
 
 /**

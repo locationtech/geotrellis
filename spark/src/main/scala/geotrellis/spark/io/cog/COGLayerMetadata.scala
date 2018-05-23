@@ -25,7 +25,7 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.tiling._
 import geotrellis.util._
-import geotrellis.vector.Extent
+import geotrellis.vector._
 import geotrellis.vector.io._
 
 import cats.syntax.foldable._

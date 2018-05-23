@@ -17,7 +17,8 @@
 package geotrellis.spark.io.cog
 
 import io.circe._
-import io.circe.generic.semiauto._
+import io.circe.syntax._
+import cats.syntax.either._
 
 import geotrellis.spark._
 import geotrellis.spark.io.index._
@@ -30,6 +31,19 @@ case class COGLayerStorageMetadata[K](metadata: COGLayerMetadata[K], keyIndexes:
 }
 
 object COGLayerStorageMetadata {
-  implicit def cogLayerStorageMetadataEncoder[K: SpatialComponent: Encoder: ClassTag]: Encoder[COGLayerStorageMetadata[K]] = deriveEncoder
-  implicit def cogLayerStorageMetadataDecoder[K: SpatialComponent: Decoder: ClassTag]: Decoder[COGLayerStorageMetadata[K]] = deriveDecoder
+  implicit def cogLayerStorageMetadataEncoder[K: SpatialComponent: Encoder: ClassTag]: Encoder[COGLayerStorageMetadata[K]] =
+    Encoder.encodeJson.contramap[COGLayerStorageMetadata[K]] { obj =>
+      Json.obj(
+        "metadata" -> obj.metadata.asJson,
+        "keyIndexes" -> obj.keyIndexes.toVector.asJson
+      )
+    }
+  implicit def cogLayerStorageMetadataDecoder[K: SpatialComponent: Decoder: ClassTag]: Decoder[COGLayerStorageMetadata[K]] =
+    Decoder.decodeHCursor.emap { c: HCursor =>
+      (c.downField("metadata").as[COGLayerMetadata[K]],
+        c.downField("keyIndexes").as[Vector[(ZoomRange, KeyIndex[K])]].map(_.toMap)) match {
+        case (Right(md), Right(ki)) => Right(COGLayerStorageMetadata(md, ki))
+        case _ => Left("COGLayerStorageMetadata expected.")
+      }
+    }
 }

@@ -27,6 +27,8 @@ import geotrellis.spark.io.file.{FileAttributeStore, KeyPathGenerator}
 import geotrellis.spark.io.file.conf.FileConfig
 import geotrellis.util._
 
+import com.typesafe.scalalogging.LazyLogging
+
 import java.net.URI
 import java.io.File
 

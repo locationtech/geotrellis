@@ -99,7 +99,7 @@ trait COGLayerWriter extends LazyLogging with Serializable {
     }
 
   def write[
-    K: SpatialComponent: Ordering: Encoder: ClassTag,
+    K: SpatialComponent: Ordering: Encoder:  ClassTag,
     V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
   ](
      layerName: String,
@@ -162,7 +162,7 @@ trait COGLayerWriter extends LazyLogging with Serializable {
     }
 
   def overwrite[
-    K: SpatialComponent: Boundable: Ordering: Encoder: ClassTag,
+    K: SpatialComponent: Boundable: Ordering: Encoder: Decoder: ClassTag,
     V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
   ](
     layerName: String,
@@ -174,7 +174,7 @@ trait COGLayerWriter extends LazyLogging with Serializable {
     else logger.info("Skipping layer update with empty bounds rdd.")
 
   def update[
-    K: SpatialComponent: Boundable: Ordering: Encoder: ClassTag,
+    K: SpatialComponent: Boundable: Ordering: Encoder: Decoder: ClassTag,
     V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffReader: GeoTiffBuilder
   ](
      layerName: String,

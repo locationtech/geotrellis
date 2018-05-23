@@ -19,7 +19,8 @@ package geotrellis.spark.io.hadoop
 import geotrellis.spark.io._
 
 import io.circe._
-import io.circe.generic.semiauto._
+import io.circe.syntax._
+import cats.syntax.either._
 
 import java.net.URI
 
@@ -33,16 +34,29 @@ case class HadoopLayerHeader(
 }
 
 object HadoopLayerHeader {
-  implicit val hadoopLayerHeaderEncoder: Encoder[HadoopLayerHeader] = deriveEncoder
-  implicit val hadoopLayerHeaderDecoder: Decoder[HadoopLayerHeader] =
+  implicit val fileLayerHeaderEncoder: Encoder[HadoopLayerHeader] =
+    Encoder.encodeJson.contramap[HadoopLayerHeader] { obj =>
+      Json.obj(
+        "keyClass" -> obj.keyClass.asJson,
+        "valueClass" -> obj.valueClass.asJson,
+        "path" -> obj.path.asJson,
+        "layerType" -> obj.layerType.asJson,
+        "format" -> obj.format.asJson
+      )
+    }
+  implicit val fileLayerHeaderDecoder: Decoder[HadoopLayerHeader] =
     Decoder.decodeHCursor.emap { c =>
-      (c.downField("keyClass").as[String],
-        c.downField("valueClass").as[String],
-        c.downField("path").as[URI],
-        c.downField("layerType").as[LayerType]) match {
-        case (Right(f), Right(kc), Right(p), Right(lt)) => Right(HadoopLayerHeader(f, kc, p, lt))
-        case (Right(f), Right(kc), Right(p), _) => Right(HadoopLayerHeader(f, kc, p, AvroLayerType))
+      c.downField("format").as[String].flatMap {
+        case "hdfs" =>
+          (c.downField("keyClass").as[String],
+            c.downField("valueClass").as[String],
+            c.downField("path").as[URI],
+            c.downField("layerType").as[LayerType]) match {
+            case (Right(f), Right(kc), Right(p), Right(lt)) => Right(HadoopLayerHeader(f, kc, p, lt))
+            case (Right(f), Right(kc), Right(p), _) => Right(HadoopLayerHeader(f, kc, p, AvroLayerType))
+            case _ => Left(s"HadoopLayerHeader expected, got: ${c.focus}")
+          }
         case _ => Left(s"HadoopLayerHeader expected, got: ${c.focus}")
-      }
+      }.leftMap(_ => s"HadoopLayerHeader expected, got: ${c.focus}")
     }
 }

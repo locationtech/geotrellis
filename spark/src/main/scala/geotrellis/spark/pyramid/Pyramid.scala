@@ -16,6 +16,8 @@
 
 package geotrellis.spark.pyramid
 
+import io.circe._
+
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
@@ -33,7 +35,6 @@ import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd._
 import org.apache.spark.storage.StorageLevel
-import spray.json._
 
 import scala.reflect.ClassTag
 
@@ -59,9 +60,9 @@ case class Pyramid[
     keyIndexMethod: KeyIndexMethod[K]
   )(
     implicit arcK: AvroRecordCodec[K],
-    jsfK: JsonFormat[K],
+    jsfK: Encoder[K],
     arcV: AvroRecordCodec[V],
-    jsfM: JsonFormat[M]
+    jsfM: Encoder[M]
   ) = {
     for (z <- maxZoom to minZoom by -1) {
       writer.write[K, V, M](LayerId(layerName, z), levels(z), keyIndexMethod)
@@ -83,9 +84,9 @@ object Pyramid extends LazyLogging {
   }
 
   def fromLayerReader[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag: SpatialComponent,
     V <: CellGrid[Int]: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V]: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]
+    M: Encoder: Decoder: Component[?, Bounds[K]]: Component[?, LayoutDefinition]
   ](layerName: String, layerReader: LayerReader[LayerId], maxZoom: Option[Int] = None, minZoom: Option[Int] = None): Pyramid[K, V, M] = {
     val zooms = layerReader.attributeStore.availableZoomLevels(layerName)
 
