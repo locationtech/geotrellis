@@ -18,16 +18,8 @@ package geotrellis.spark.io.accumulo
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.avro._
-import geotrellis.spark.io.index._
-import geotrellis.spark.io.json._
-import geotrellis.util._
 
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
-import spray.json.JsonFormat
-
-import scala.reflect.ClassTag
 
 object AccumuloLayerMover {
   def apply(
