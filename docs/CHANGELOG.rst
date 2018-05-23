@@ -47,10 +47,14 @@ API Changes
     of the same dimension.
   - **Change:** Change `TilerMethods.tileToLayout` functions that accept `TileLayerMetadata` as an argument to return `RDD[(K, V)] with Metadata[M]`
     instead of `RDD[(K, V)]`
+  - **New:** Introduce ``Pyramid`` class to provide a convenience wrapper for building raster pyramids
+  - **Change:** Expose ``attributeStore`` parameter to LayerReader interface
 
 - ``geotrellis.raster``
 
   - **Change:** Removed ``decompress`` option from `GeoTiffReader` functions.
+  - **New:** Kryo serialization of geometry now uses a binary format to reduce shuffle block size
+  - **Change:** Scalaz streams were replaced by fs2 streams
 
 Fixes
 ^^^^^

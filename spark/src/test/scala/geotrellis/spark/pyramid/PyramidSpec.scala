@@ -17,6 +17,7 @@
 package geotrellis.spark.pyramid
 
 import geotrellis.spark._
+import geotrellis.spark.stitch._
 import geotrellis.spark.tiling._
 import geotrellis.proj4._
 import geotrellis.raster._
@@ -199,6 +200,40 @@ class PyramidSpec extends FunSpec with Matchers with TestEnvironment {
             tile.toArray.distinct should be (Array(4 * multi))
         }
       }
+    }
+
+    it("should produce the expected result for pyramid levels") {
+      val tileLayout = TileLayout(4, 4, 2, 2)
+      val tile =
+        ArrayTile(Array(
+          1, 1,  1, 1,   2, 2,  2, 2,
+          1, 1,  1, 1,   2, 2,  2, 2,
+
+          1, 1,  1, 1,   2, 2,  2, 2,
+          1, 1,  1, 1,   2, 2,  2, 2,
+
+
+          3, 3,  3, 3,   4, 4,  4, 4,
+          3, 3,  3, 3,   4, 4,  4, 4,
+
+          3, 3,  3, 3,   4, 4,  4, 4,
+          3, 3,  3, 3,   4, 4,  4, 4
+        ) , 8, 8)
+
+      val baseLayer = createTileLayerRDD(tile, tileLayout)
+
+      // Build pyramid using Average resampling
+      val pyramid = Pyramid.fromLayerRdd(baseLayer)
+
+      // The 1 tile top of the pyramid should be set to zoom 0, base layer numbered accordingly
+      assert(pyramid.minZoom == 0)
+      assert(pyramid.maxZoom == 2)
+
+      val tile2x2 = pyramid(0).stitch
+
+      // should end up with the proper top-level tile
+      assert(tile2x2.dimensions == (2, 2))
+      assertEqual(tile2x2, Array(1,2,3,4))
     }
   }
 }
