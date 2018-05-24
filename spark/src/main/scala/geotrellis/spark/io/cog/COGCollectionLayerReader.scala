@@ -16,6 +16,10 @@
 
 package geotrellis.spark.io.cog
 
+import io.circe._
+import io.circe.parser._
+import cats.syntax.either._
+
 import geotrellis.raster.{CellGrid, RasterExtent}
 import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.io.geotiff.reader.TiffTagsReader
@@ -24,7 +28,6 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.index.{Index, MergeQueue}
 import geotrellis.util._
 
-import spray.json._
 import java.net.URI
 import java.util.ServiceLoader
 
@@ -34,12 +37,12 @@ abstract class COGCollectionLayerReader[ID] { self =>
   val attributeStore: AttributeStore
 
   def read[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid: GeoTiffReader: ClassTag
   ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]]): Seq[(K, V)] with Metadata[TileLayerMetadata[K]]
 
   def baseRead[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid: GeoTiffReader: ClassTag
   ](
     id: ID,
@@ -131,7 +134,7 @@ abstract class COGCollectionLayerReader[ID] { self =>
   }
 
   def reader[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid: GeoTiffReader: ClassTag
   ]: Reader[ID, Seq[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new Reader[ID, Seq[(K, V)] with Metadata[TileLayerMetadata[K]]] {
@@ -140,13 +143,13 @@ abstract class COGCollectionLayerReader[ID] { self =>
     }
 
   def read[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid: GeoTiffReader: ClassTag
   ](id: ID): Seq[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read[K, V](id, new LayerQuery[K, TileLayerMetadata[K]])
 
   def query[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid: GeoTiffReader: ClassTag
   ](layerId: ID): BoundLayerQuery[K, TileLayerMetadata[K], Seq[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, read[K, V](layerId, _))
@@ -194,7 +197,7 @@ object COGCollectionLayerReader {
   }
 
   def read[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    K: SpatialComponent: Boundable: Decoder: ClassTag,
     V <: CellGrid: GeoTiffReader
   ](
      keyPath: BigInt => String, // keyPath
@@ -219,12 +222,12 @@ object COGCollectionLayerReader {
         val uri = fullPath(keyPath(index))
         val byteReader: ByteReader = uri
         val baseKey =
-          TiffTagsReader
-            .read(byteReader)
-            .tags
-            .headTags(GTKey)
-            .parseJson
-            .convertTo[K]
+          parse(
+            TiffTagsReader
+              .read(byteReader)
+              .tags
+              .headTags(GTKey)
+          ).flatMap(_.as[K]).valueOr(throw _)
 
         readDefinitions
           .get(baseKey.getComponent[SpatialKey])

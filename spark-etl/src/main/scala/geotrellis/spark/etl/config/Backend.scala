@@ -16,4 +16,32 @@
 
 package geotrellis.spark.etl.config
 
+import io.circe._
+import io.circe.Decoder.Result
+import io.circe.syntax._
+import cats.syntax.either._
+
 case class Backend(`type`: BackendType, path: BackendPath, profile: Option[BackendProfile] = None)
+
+object Backend {
+  implicit val backendEncoder: Encoder[Backend] =
+    Encoder.encodeJson.contramap[Backend] { b =>
+      Json.obj(
+        "type"    -> b.`type`.name.asJson,
+        "path"    -> BackendPath.backendPathEncoder(b.path),
+        "profile" -> b.profile.map(_.name).asJson
+      )
+    }
+
+  case class BackendDecoder(bp: Map[String, BackendProfile]) extends Decoder[Backend] {
+    def apply(c: HCursor): Result[Backend] = {
+      c.downField("type").as[BackendType].map { bt =>
+        Backend(
+          `type` = bt,
+          path = BackendPath.BackendPathDecoder(bt)(c.downField("path").focus.map(_.hcursor).get).valueOr(throw _),
+          profile = c.downField("profile").as[String].fold(_ => Option.empty[BackendProfile], bp.get)
+        )
+      }
+    }
+  }
+}

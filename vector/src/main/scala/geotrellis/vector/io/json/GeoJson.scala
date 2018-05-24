@@ -16,18 +16,19 @@
 
 package geotrellis.vector.io.json
 
-import spray.json._
-import spray.json.JsonFormat
+import io.circe._
+import io.circe.parser.{parse => circeParse}
+import cats.syntax.either._
 
 /** An object whose methods parse string representations as GeoJson */
 object GeoJson {
 
   /** Parse a string as Json */
-  def parse[T: JsonReader](json: String) =
-    json.parseJson.convertTo[T]
+  def parse[T: Decoder](json: String) =
+    circeParse(json).valueOr(throw _).as[T].valueOr(throw _)
 
   /** Parse a file's contents as Json */
-  def fromFile[T: JsonReader](path: String) = {
+  def fromFile[T: Decoder](path: String) = {
     val src = scala.io.Source.fromFile(path)
     val txt =
       try {

@@ -16,13 +16,15 @@
 
 package geotrellis.spark.io.json
 
+import io.circe._
+import io.circe.syntax._
+import cats.syntax.either._
+
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.file._
 import geotrellis.spark.io.hadoop._
 
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 import java.net.URI
 import org.scalatest._
 
@@ -31,15 +33,15 @@ class LayerHeaderSpec extends FunSpec with Matchers {
   val fileHeader = FileLayerHeader("key", "value", "/path/to")
 
 
-  def roundTrip[T: JsonFormat](thing: T): Unit = {
-    val json = thing.toJson
-    val out = json.convertTo[T]
+  def roundTrip[T: Encoder: Decoder](thing: T): Unit = {
+    val json = thing.asJson
+    val out = json.as[T].valueOr(throw _)
     out should be equals (thing)
   }
 
-  def readAsLayerHeader[T: JsonFormat](thing: T, format: String, key: String, value: String) {
-    val json = thing.toJson
-    val layerHeader = json.convertTo[LayerHeader]
+  def readAsLayerHeader[T: Encoder: Decoder](thing: T, format: String, key: String, value: String) {
+    val json = thing.asJson
+    val layerHeader = json.as[LayerHeader].valueOr(throw _)
     layerHeader.format should be (format)
     layerHeader.keyClass should be (key)
     layerHeader.valueClass should be (value)

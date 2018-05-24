@@ -19,7 +19,6 @@ package geotrellis.spark.io
 import geotrellis.spark._
 import java.net.URI
 
-
 trait AttributeStoreProvider {
   def canProcess(uri: URI): Boolean
 

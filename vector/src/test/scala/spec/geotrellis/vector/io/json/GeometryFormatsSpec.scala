@@ -16,11 +16,13 @@
 
 package geotrellis.vector.io.json
 
+import io.circe.syntax._
+import cats.syntax.either._
+
 import geotrellis.vector._
+import geotrellis.vector.io._
 
 import org.scalatest._
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 class GeometryFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
 
@@ -28,14 +30,14 @@ class GeometryFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
   val line = Line(Point(1,2) :: Point(1,3) :: Nil)
 
   "GeometryFormats" should "know about Points" in {
-    val body: JsValue =
+    val body =
       """{
         |  "type": "Point",
         |  "coordinates": [6.0, 1.2]
         |}""".stripMargin.parseJson
 
-    point.toJson should equal (body)
-    body.convertTo[Point] should equal (point)
+    point.asJson should equal (body)
+    body.as[Point].valueOr(throw _) should equal (point)
   }
 
   it should "know about MultiPoints" in {
@@ -48,8 +50,8 @@ class GeometryFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
         |  "coordinates": [[0.0, 0.0], [0.0, 1.0]]
         |}""".stripMargin.parseJson
 
-    mp.toJson should equal (body)
-    body.convertTo[MultiPoint] should equal (mp)
+    mp.asJson should equal (body)
+    body.as[MultiPoint].valueOr(throw _) should equal (mp)
   }
 
   it should "handle 3d points by discarding the z-coordinate" in {
@@ -69,8 +71,8 @@ class GeometryFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
         |  "coordinates": [[[0.0, 0.0, 1.0], [0.0, 1.0, 0.0]], [[1.0, 0.0, 2.0], [1.0, 1.0, -1.0]]]
         |}""".stripMargin.parseJson
 
-    mlGJ.convertTo[MultiLine] should equal (ml)
-    mpGJ.convertTo[MultiPoint] should equal (mp)
+    mlGJ.as[MultiLine].valueOr(throw _) should equal (ml)
+    mpGJ.as[MultiPoint].valueOr(throw _) should equal (mp)
   }
 
   it should "know about Lines" in {
@@ -80,8 +82,8 @@ class GeometryFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
         |  "coordinates": [[1.0, 2.0], [1.0, 3.0]]
         |}""".stripMargin.parseJson
 
-    line.toJson should equal (body)
-    body.convertTo[Line] should equal (line)
+    line.asJson should equal (body)
+    body.as[Line].valueOr(throw _) should equal (line)
   }
 
   it should "know about MultiLines" in {
@@ -93,8 +95,8 @@ class GeometryFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
         |  "coordinates": [[[0.0, 0.0], [0.0, 1.0]], [[1.0, 0.0], [1.0, 1.0]]]
         |}""".stripMargin.parseJson
 
-    ml.toJson should equal (body)
-    body.convertTo[MultiLine] should equal (ml)
+    ml.asJson should equal (body)
+    body.as[MultiLine].valueOr(throw _) should equal (ml)
   }
 
   it should "know about Polygons" in {
@@ -108,8 +110,8 @@ class GeometryFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
         |  "coordinates": [[[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [0.0, 0.0]]]
         |}""".stripMargin.parseJson
 
-    polygon.toJson should equal (body)
-    body.convertTo[Polygon] should equal (polygon)
+    polygon.asJson should equal (body)
+    body.as[Polygon].valueOr(throw _) should equal (polygon)
   }
 
   it should "know about MultiPolygons" in {
@@ -128,8 +130,8 @@ class GeometryFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
         |  "coordinates": [[[[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [0.0, 0.0]]], [[[1.0, 1.0], [1.0, 2.0], [2.0, 2.0], [1.0, 1.0]]]]
         |}""".stripMargin.parseJson
 
-    mp.toJson should equal (body)
-    body.convertTo[MultiPolygon] should equal (mp)
+    mp.asJson should equal (body)
+    body.as[MultiPolygon].valueOr(throw _) should equal (mp)
   }
 
 
@@ -147,8 +149,8 @@ class GeometryFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
         |}""".stripMargin.parseJson
 
     val gc: GeometryCollection = GeometryCollection(List(point, line))
-    gc.toJson should equal (body)
-    body.convertTo[GeometryCollection] should equal (gc)
+    gc.asJson should equal (body)
+    body.as[GeometryCollection].valueOr(throw _) should equal (gc)
   }
 
   it should "read a Feature as if it was a Geometry" in {
@@ -164,6 +166,6 @@ class GeometryFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
         |}""".stripMargin.parseJson
 
     //I test it only for a Line, but the logic works for all Geomtries
-    body.convertTo[Line] should equal(line)
+    body.as[Line].valueOr(throw _) should equal(line)
   }
 }

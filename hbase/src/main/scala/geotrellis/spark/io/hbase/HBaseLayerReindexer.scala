@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.hbase
 
+import io.circe._
+
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
@@ -23,7 +25,6 @@ import geotrellis.spark.io.index._
 import geotrellis.util._
 
 import org.apache.spark.SparkContext
-import spray.json.JsonFormat
 
 import scala.reflect.ClassTag
 import java.time.ZonedDateTime
@@ -34,7 +35,7 @@ object HBaseLayerReindexer {
             layerWriter : LayerWriter[LayerId],
             layerDeleter: LayerDeleter[LayerId],
             layerCopier : LayerCopier[LayerId])(implicit sc: SparkContext): LayerReindexer[LayerId] =
-    GenericLayerReindexer[HBaseLayerHeader](attributeStore, layerReader, layerWriter, layerDeleter, layerCopier)
+    GenericLayerReindexer(attributeStore, layerReader, layerWriter, layerDeleter, layerCopier)
 
   def apply(
     attributeStore: HBaseAttributeStore
@@ -62,9 +63,9 @@ class HBaseLayerReindexer(
     id.copy(name = s"${id.name}-${ZonedDateTime.now.toInstant.toEpochMilli}")
 
   def reindex[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[?, Bounds[K]]
   ](id: LayerId, keyIndex: KeyIndex[K]): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val tmpId = getTmpId(id)
@@ -83,9 +84,9 @@ class HBaseLayerReindexer(
   }
 
   def reindex[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Decoder: Component[?, Bounds[K]]
   ](id: LayerId, keyIndexMethod: KeyIndexMethod[K]): Unit = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val tmpId = getTmpId(id)

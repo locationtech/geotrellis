@@ -16,10 +16,13 @@
 
 package geotrellis.spark.io.hadoop
 
-import geotrellis.spark.io.{LayerHeader, LayerType, AvroLayerType}
+import geotrellis.spark.io._
+
+import io.circe._
+import io.circe.syntax._
+import cats.syntax.either._
 
 import java.net.URI
-import spray.json._
 
 case class HadoopLayerHeader(
   keyClass: String,
@@ -31,35 +34,29 @@ case class HadoopLayerHeader(
 }
 
 object HadoopLayerHeader {
-  implicit object HadoopLayerMetadataFormat extends RootJsonFormat[HadoopLayerHeader] {
-    def write(md: HadoopLayerHeader) =
-      JsObject(
-        "format" -> JsString(md.format),
-        "keyClass" -> JsString(md.keyClass),
-        "valueClass" -> JsString(md.valueClass),
-        "path" -> JsString(md.path.toString),
-        "layerType" -> md.layerType.toJson
+  implicit val fileLayerHeaderEncoder: Encoder[HadoopLayerHeader] =
+    Encoder.encodeJson.contramap[HadoopLayerHeader] { obj =>
+      Json.obj(
+        "keyClass" -> obj.keyClass.asJson,
+        "valueClass" -> obj.valueClass.asJson,
+        "path" -> obj.path.asJson,
+        "layerType" -> obj.layerType.asJson,
+        "format" -> obj.format.asJson
       )
-
-    def read(value: JsValue): HadoopLayerHeader =
-      value.asJsObject.getFields("keyClass", "valueClass", "path", "layerType") match {
-        case Seq(JsString(keyClass), JsString(valueClass), JsString(path), layerType) =>
-          HadoopLayerHeader(
-            keyClass,
-            valueClass,
-            new URI(path),
-            layerType.convertTo[LayerType]
-          )
-
-        case Seq(JsString(keyClass), JsString(valueClass), JsString(path)) =>
-          HadoopLayerHeader(
-            keyClass,
-            valueClass,
-            new URI(path),
-            AvroLayerType
-          )
-        case _ =>
-          throw new DeserializationException(s"HadoopLayerMetadata expected, got: $value")
-      }
-  }
+    }
+  implicit val fileLayerHeaderDecoder: Decoder[HadoopLayerHeader] =
+    Decoder.decodeHCursor.emap { c =>
+      c.downField("format").as[String].flatMap {
+        case "hdfs" =>
+          (c.downField("keyClass").as[String],
+            c.downField("valueClass").as[String],
+            c.downField("path").as[URI],
+            c.downField("layerType").as[LayerType]) match {
+            case (Right(f), Right(kc), Right(p), Right(lt)) => Right(HadoopLayerHeader(f, kc, p, lt))
+            case (Right(f), Right(kc), Right(p), _) => Right(HadoopLayerHeader(f, kc, p, AvroLayerType))
+            case _ => Left(s"HadoopLayerHeader expected, got: ${c.focus}")
+          }
+        case _ => Left(s"HadoopLayerHeader expected, got: ${c.focus}")
+      }.leftMap(_ => s"HadoopLayerHeader expected, got: ${c.focus}")
+    }
 }

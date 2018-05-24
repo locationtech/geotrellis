@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.cassandra
 
+import io.circe._
+
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
@@ -25,9 +27,6 @@ import geotrellis.spark.merge._
 import geotrellis.util._
 
 import org.apache.spark.rdd.RDD
-import org.apache.spark.SparkContext
-
-import spray.json._
 
 import scala.reflect._
 
@@ -40,9 +39,9 @@ class CassandraLayerWriter(
 
   // Layer updating
   def overwrite[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]: Mergable
+    M: Encoder: Decoder: Component[?, Bounds[K]]: Mergable
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M]
@@ -51,9 +50,9 @@ class CassandraLayerWriter(
   }
 
   def update[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]: Mergable
+    M: Encoder: Decoder: Component[?, Bounds[K]]: Mergable
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
@@ -63,9 +62,9 @@ class CassandraLayerWriter(
   }
 
   private def update[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]: Mergable
+    M: Encoder: Decoder: Component[?, Bounds[K]]: Mergable
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
@@ -88,9 +87,9 @@ class CassandraLayerWriter(
 
   // Layer writing
   protected def _write[
-    K: AvroRecordCodec: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Encoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Component[?, Bounds[K]]
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit = {
     val codec  = KeyValueRecordCodec[K, V]
     val schema = codec.schema

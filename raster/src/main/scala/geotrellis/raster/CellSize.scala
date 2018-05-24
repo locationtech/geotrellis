@@ -18,6 +18,7 @@ package geotrellis.raster
 
 import geotrellis.vector.Extent
 
+import _root_.io.circe.generic.JsonCodec
 
 /**
   * A case class containing the width and height of a cell.
@@ -25,6 +26,7 @@ import geotrellis.vector.Extent
   * @param  width   The width of a cell
   * @param  height  The height of a cell
   */
+@JsonCodec
 case class CellSize(width: Double, height: Double) {
   def resolution: Double = math.sqrt(width*height)
 }

@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io
 
+import io.circe._
+
 import geotrellis.spark._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
@@ -25,9 +27,6 @@ import geotrellis.util._
 
 import org.apache.avro._
 import org.apache.spark.rdd.RDD
-
-import spray.json._
-
 import scala.reflect.ClassTag
 
 import java.util.ServiceLoader
@@ -43,10 +42,10 @@ trait LayerWriter[ID] {
     */
   protected[geotrellis]
   def validateUpdate[
-    H: JsonFormat,
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    H: Encoder: Decoder,
+    K: AvroRecordCodec: Boundable: Encoder: ClassTag,
     V: AvroRecordCodec,
-    M: Component[?, Bounds[K]]: Mergable: JsonFormat
+    M: Component[?, Bounds[K]]: Mergable: Encoder: Decoder
   ](id: LayerId, updateMetadata: M): Option[LayerAttributes[H, M, K]] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 
@@ -89,9 +88,9 @@ trait LayerWriter[ID] {
     * Updates with empty [[Bounds]] will be ignored.
     */
   def update[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]: Mergable
+    M: Encoder: Decoder: Component[?, Bounds[K]]: Mergable
   ](id: ID, rdd: RDD[(K, V)] with Metadata[M], mergeFunc: (V, V) => V = { (existing: V, updating: V) => updating }): Unit
 
   /** Update persisted layer without checking for possible.
@@ -114,22 +113,22 @@ trait LayerWriter[ID] {
     * Updates with empty [[Bounds]] will be ignored.
     */
   def overwrite[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]: Mergable
+    M: Encoder: Decoder: Component[?, Bounds[K]]: Mergable
   ](id: ID, rdd: RDD[(K, V)] with Metadata[M]): Unit
 
   // Layer Writing
   protected def _write[
-    K: AvroRecordCodec: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Encoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Component[?, Bounds[K]]
   ](id: ID, layer: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit
 
   def write[
-    K: AvroRecordCodec: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Encoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder:  Component[?, Bounds[K]]
   ](id: ID, layer: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit =
     layer.metadata.getComponent[Bounds[K]] match {
       case keyBounds: KeyBounds[K] =>
@@ -139,9 +138,9 @@ trait LayerWriter[ID] {
     }
 
   def write[
-    K: AvroRecordCodec: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Encoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Component[?, Bounds[K]]
   ](id: ID, layer: RDD[(K, V)] with Metadata[M], keyIndexMethod: KeyIndexMethod[K]): Unit =
     layer.metadata.getComponent[Bounds[K]] match {
       case keyBounds: KeyBounds[K] =>
@@ -152,9 +151,9 @@ trait LayerWriter[ID] {
     }
 
   def writer[
-    K: AvroRecordCodec: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Encoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Component[?, Bounds[K]]
   ](keyIndexMethod: KeyIndexMethod[K]):  Writer[ID, RDD[(K, V)] with Metadata[M]] =
     new Writer[ID, RDD[(K, V)] with Metadata[M]] {
       def write(id: ID, layer: RDD[(K, V)] with Metadata[M]) =
@@ -162,9 +161,9 @@ trait LayerWriter[ID] {
     }
 
   def writer[
-    K: AvroRecordCodec: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Encoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Component[?, Bounds[K]]
   ](keyIndex: KeyIndex[K]):  Writer[ID, RDD[(K, V)] with Metadata[M]] =
     new Writer[ID, RDD[(K, V)] with Metadata[M]] {
       def write(id: ID, layer: RDD[(K, V)] with Metadata[M]) =

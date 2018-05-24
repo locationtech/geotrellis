@@ -18,10 +18,9 @@ package geotrellis.spark.io.s3
 
 import geotrellis.util.LazyLogging
 
-import com.amazonaws.services.s3.model.{S3ObjectSummary, ObjectListing}
+import com.amazonaws.services.s3.model.S3ObjectSummary
 import org.apache.hadoop.io.Writable
 import org.apache.hadoop.mapreduce.InputSplit
-import com.amazonaws.auth.{AWSCredentials, BasicAWSCredentials, AnonymousAWSCredentials, BasicSessionCredentials}
 
 import java.io.{DataOutput, DataInput}
 

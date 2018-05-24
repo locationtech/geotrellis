@@ -31,8 +31,6 @@ object Dependencies {
   val spire               = "org.spire-math"             %% "spire"                    % Version.spire
   val spireMacro          = "org.spire-math"             %% "spire-macros"             % Version.spire
 
-  val sprayJson           = "io.spray"                   %% "spray-json"               % Version.sprayJson
-
   val apacheMath          = "org.apache.commons"          % "commons-math3"            % "3.6.1"
 
   val chronoscala         = "jp.ne.opt"                  %% "chronoscala"              % "0.1.6"

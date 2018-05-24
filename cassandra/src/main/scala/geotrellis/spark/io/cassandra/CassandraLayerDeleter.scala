@@ -25,9 +25,6 @@ import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
 
 import scala.collection.JavaConversions._
 
-import java.math.BigInteger
-
-
 class CassandraLayerDeleter(val attributeStore: AttributeStore, instance: CassandraInstance) extends LazyLogging with LayerDeleter[LayerId] {
 
   def delete(id: LayerId): Unit = {

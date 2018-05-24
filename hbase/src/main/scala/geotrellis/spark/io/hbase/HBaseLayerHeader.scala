@@ -18,7 +18,9 @@ package geotrellis.spark.io.hbase
 
 import geotrellis.spark.io.{LayerHeader, LayerType, AvroLayerType}
 
-import spray.json._
+import io.circe._
+import io.circe.syntax._
+import cats.syntax.either._
 
 case class HBaseLayerHeader(
   keyClass: String,
@@ -30,34 +32,30 @@ case class HBaseLayerHeader(
 }
 
 object HBaseLayerHeader {
-  implicit object CassandraLayerMetadataFormat extends RootJsonFormat[HBaseLayerHeader] {
-    def write(md: HBaseLayerHeader) =
-      JsObject(
-        "format" -> JsString(md.format),
-        "keyClass" -> JsString(md.keyClass),
-        "valueClass" -> JsString(md.valueClass),
-        "tileTable" -> JsString(md.tileTable),
-        "layerType" -> md.layerType.toJson
+  implicit val hbaseLayerHeaderEncoder: Encoder[HBaseLayerHeader] =
+    Encoder.encodeJson.contramap[HBaseLayerHeader] { obj =>
+      Json.obj(
+        "keyClass" -> obj.keyClass.asJson,
+        "valueClass" -> obj.valueClass.asJson,
+        "tileTable" -> obj.tileTable.asJson,
+        "layerType" -> obj.layerType.asJson,
+        "format" -> obj.format.asJson
       )
+    }
 
-    def read(value: JsValue): HBaseLayerHeader =
-      value.asJsObject.getFields("keyClass", "valueClass", "tileTable", "layerType") match {
-        case Seq(JsString(keyClass), JsString(valueClass), JsString(tileTable), layerType) =>
-          HBaseLayerHeader(
-            keyClass,
-            valueClass,
-            tileTable,
-            layerType.convertTo[LayerType]
-          )
-        case Seq(JsString(keyClass), JsString(valueClass), JsString(tileTable)) =>
-          HBaseLayerHeader(
-            keyClass,
-            valueClass,
-            tileTable,
-            AvroLayerType
-          )
-        case _ =>
-          throw new DeserializationException(s"HBaseLayerHeader expected, got: $value")
-      }
-  }
+  implicit val hbaseLayerHeaderDecoder: Decoder[HBaseLayerHeader] =
+    Decoder.decodeHCursor.emap { c =>
+      c.downField("format").as[String].flatMap {
+        case "hbase" =>
+          (c.downField("keyClass").as[String],
+            c.downField("valueClass").as[String],
+            c.downField("tileTable").as[String],
+            c.downField("layerType").as[LayerType]) match {
+            case (Right(f), Right(kc),  Right(t), Right(lt)) => Right(HBaseLayerHeader(f, kc, t, lt))
+            case (Right(f), Right(kc), Right(t), _) => Right(HBaseLayerHeader(f, kc, t, AvroLayerType))
+            case _ => Left(s"HBaseLayerHeader expected, got: ${c.focus}")
+          }
+        case _ => Left(s"HBaseLayerHeader expected, got: ${c.focus}")
+      }.leftMap(_ => s"HBaseLayerHeader expected, got: ${c.focus}")
+    }
 }

@@ -20,8 +20,6 @@ import geotrellis.spark._
 import geotrellis.spark.io.index._
 
 import org.scalatest._
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 // --- //
 

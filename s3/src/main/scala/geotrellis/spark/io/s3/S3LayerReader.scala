@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.s3
 
+import io.circe._
+
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
@@ -23,7 +25,6 @@ import geotrellis.spark.io.index._
 import geotrellis.util._
 
 import org.apache.spark.SparkContext
-import spray.json.JsonFormat
 
 import scala.reflect.ClassTag
 
@@ -43,9 +44,9 @@ class S3LayerReader(val attributeStore: AttributeStore)(implicit sc: SparkContex
   def rddReader: S3RDDReader = S3RDDReader
 
   def read[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Decoder: Component[?, Bounds[K]]
   ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, filterIndexOnly: Boolean) = {
     if(!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
 

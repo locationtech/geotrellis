@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.hadoop
 
+import io.circe._
+
 import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.spark._
@@ -28,7 +30,6 @@ import org.apache.hadoop.fs._
 import org.apache.hadoop.io._
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
-import spray.json._
 import com.github.blemale.scaffeine.{Cache, Scaffeine}
 
 import scala.collection.immutable._
@@ -50,7 +51,7 @@ class HadoopValueReader(
   private def predicate(row: (Path, BigInt, BigInt), index: BigInt): Boolean =
     (index >= row._2) && ((index <= row._3) || (row._3 == -1))
 
-  def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
+  def reader[K: AvroRecordCodec: Decoder: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
     val header = attributeStore.readHeader[HadoopLayerHeader](layerId)
     val keyIndex = attributeStore.readKeyIndex[K](layerId)
     val writerSchema = attributeStore.readSchema(layerId)
@@ -82,13 +83,13 @@ class HadoopValueReader(
 }
 
 object HadoopValueReader {
-  def apply[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](
+  def apply[K: AvroRecordCodec: Decoder: ClassTag, V: AvroRecordCodec](
     attributeStore: AttributeStore,
     layerId: LayerId
   )(implicit sc: SparkContext): Reader[K, V] =
     new HadoopValueReader(attributeStore, sc.hadoopConfiguration).reader[K, V](layerId)
 
-  def apply[K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid: AvroRecordCodec: ? => TileResampleMethods[V]](
+  def apply[K: AvroRecordCodec: Decoder: SpatialComponent: ClassTag, V <: CellGrid: AvroRecordCodec: ? => TileResampleMethods[V]](
     attributeStore: AttributeStore,
     layerId: LayerId,
     resampleMethod: ResampleMethod

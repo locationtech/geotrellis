@@ -18,7 +18,9 @@ package geotrellis.spark.io.accumulo
 
 import geotrellis.spark.io.{LayerHeader, LayerType, AvroLayerType}
 
-import spray.json._
+import io.circe._
+import io.circe.syntax._
+import cats.syntax.either._
 
 case class AccumuloLayerHeader(
   keyClass: String,
@@ -30,34 +32,29 @@ case class AccumuloLayerHeader(
 }
 
 object AccumuloLayerHeader {
-  implicit object AccumuloLayerMetadataFormat extends RootJsonFormat[AccumuloLayerHeader] {
-    def write(md: AccumuloLayerHeader) =
-      JsObject(
-        "format" -> JsString(md.format),
-        "keyClass" -> JsString(md.keyClass),
-        "valueClass" -> JsString(md.valueClass),
-        "tileTable" -> JsString(md.tileTable),
-        "layerType" -> md.layerType.toJson
+  implicit val accumuloLayerHeaderEncoder: Encoder[AccumuloLayerHeader] =
+    Encoder.encodeJson.contramap[AccumuloLayerHeader] { obj =>
+      Json.obj(
+        "keyClass" -> obj.keyClass.asJson,
+        "valueClass" -> obj.valueClass.asJson,
+        "tileTable" -> obj.tileTable.asJson,
+        "layerType" -> obj.layerType.asJson,
+        "format" -> obj.format.asJson
       )
-
-    def read(value: JsValue): AccumuloLayerHeader =
-      value.asJsObject.getFields("keyClass", "valueClass", "tileTable", "layerType") match {
-        case Seq(JsString(keyClass), JsString(valueClass), JsString(tileTable), layerType) =>
-          AccumuloLayerHeader(
-            keyClass,
-            valueClass,
-            tileTable,
-            layerType.convertTo[LayerType]
-          )
-        case Seq(JsString(keyClass), JsString(valueClass), JsString(tileTable)) =>
-          AccumuloLayerHeader(
-            keyClass,
-            valueClass,
-            tileTable,
-            AvroLayerType
-          )
-        case _ =>
-          throw new DeserializationException(s"AccumuloLayerHeader expected, got: $value")
-      }
-  }
+    }
+  implicit val accumuloLayerHeaderDecoder: Decoder[AccumuloLayerHeader] =
+    Decoder.decodeHCursor.emap { c =>
+      c.downField("format").as[String].flatMap {
+        case "accumulo" =>
+          (c.downField("keyClass").as[String],
+            c.downField("valueClass").as[String],
+            c.downField("tileTable").as[String],
+            c.downField("layerType").as[LayerType]) match {
+            case (Right(f), Right(kc), Right(t), Right(lt)) => Right(AccumuloLayerHeader(f, kc, t, lt))
+            case (Right(f), Right(kc), Right(t), _) => Right(AccumuloLayerHeader(f, kc, t, AvroLayerType))
+            case _ => Left(s"AccumuloLayerHeader expected, got: ${c.focus}")
+          }
+        case _ => Left(s"AccumuloLayerHeader expected, got: ${c.focus}")
+      }.leftMap(_ => s"AccumuloLayerHeader expected, got: ${c.focus}")
+    }
 }

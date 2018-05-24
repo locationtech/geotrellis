@@ -16,12 +16,12 @@
 
 package geotrellis.spark.io.cog
 
-import geotrellis.spark._
-import geotrellis.spark.io._
-import geotrellis.spark.io.index._
+import io.circe._
+import io.circe.syntax._
+import cats.syntax.either._
 
-import spray.json._
-import spray.json.DefaultJsonProtocol._
+import geotrellis.spark._
+import geotrellis.spark.io.index._
 
 import scala.reflect._
 
@@ -31,23 +31,19 @@ case class COGLayerStorageMetadata[K](metadata: COGLayerMetadata[K], keyIndexes:
 }
 
 object COGLayerStorageMetadata {
-  implicit def cogLayerStorageMetadataFormat[K: SpatialComponent: JsonFormat: ClassTag] =
-    new RootJsonFormat[COGLayerStorageMetadata[K]] {
-      def write(sm: COGLayerStorageMetadata[K]) =
-        JsObject(
-          "metadata" -> sm.metadata.toJson,
-          "keyIndexes" -> JsArray(sm.keyIndexes.map(_.toJson).toVector)
-        )
-
-      def read(value: JsValue): COGLayerStorageMetadata[K] =
-        value.asJsObject.getFields("metadata", "keyIndexes") match {
-          case Seq(metadata, JsArray(keyIndexes)) =>
-            COGLayerStorageMetadata(
-              metadata.convertTo[COGLayerMetadata[K]],
-              keyIndexes.map(_.convertTo[(ZoomRange, KeyIndex[K])]).toMap
-            )
-          case v =>
-            throw new DeserializationException(s"COGLayerStorageMetadata expected, got: $v")
-        }
+  implicit def cogLayerStorageMetadataEncoder[K: SpatialComponent: Encoder: ClassTag]: Encoder[COGLayerStorageMetadata[K]] =
+    Encoder.encodeJson.contramap[COGLayerStorageMetadata[K]] { obj =>
+      Json.obj(
+        "metadata" -> obj.metadata.asJson,
+        "keyIndexes" -> obj.keyIndexes.toVector.asJson
+      )
+    }
+  implicit def cogLayerStorageMetadataDecoder[K: SpatialComponent: Decoder: ClassTag]: Decoder[COGLayerStorageMetadata[K]] =
+    Decoder.decodeHCursor.emap { c: HCursor =>
+      (c.downField("metadata").as[COGLayerMetadata[K]],
+        c.downField("keyIndexes").as[Vector[(ZoomRange, KeyIndex[K])]].map(_.toMap)) match {
+        case (Right(md), Right(ki)) => Right(COGLayerStorageMetadata(md, ki))
+        case _ => Left("COGLayerStorageMetadata expected.")
+      }
     }
 }

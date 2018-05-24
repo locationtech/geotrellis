@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io
 
+import io.circe._
+
 import geotrellis.spark._
 import geotrellis.spark.io.avro._
 import geotrellis.util._
@@ -24,7 +26,6 @@ import org.apache.spark.rdd._
 import org.apache.spark.SparkContext
 import cats.effect.IO
 import cats.syntax.apply._
-import spray.json._
 
 import scala.reflect._
 import scala.concurrent.ExecutionContext
@@ -38,22 +39,22 @@ trait LayerReader[ID] {
   val attributeStore: AttributeStore
 
   def read[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Decoder: Component[?, Bounds[K]]
   ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[M]
 
   def read[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Decoder: Component[?, Bounds[K]]
   ](id: ID): RDD[(K, V)] with Metadata[M] =
     read(id, defaultNumPartitions)
 
   def reader[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Decoder: Component[?, Bounds[K]]
   ]: Reader[ID, RDD[(K, V)] with Metadata[M]] =
     new Reader[ID, RDD[(K, V)] with Metadata[M]] {
       def read(id: ID): RDD[(K, V)] with Metadata[M] =

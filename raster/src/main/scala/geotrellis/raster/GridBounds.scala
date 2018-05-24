@@ -17,7 +17,7 @@
 package geotrellis.raster
 
 import scala.collection.mutable
-import spire.syntax.cfor._
+import _root_.io.circe.generic.JsonCodec
 
 /**
   * The companion object for the [[GridBounds]] type.
@@ -72,6 +72,7 @@ object GridBounds {
   * Represents grid coordinates of a subsection of a RasterExtent.
   * These coordinates are inclusive.
   */
+@JsonCodec
 case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
   def width = colMax - colMin + 1
   def height = rowMax - rowMin + 1

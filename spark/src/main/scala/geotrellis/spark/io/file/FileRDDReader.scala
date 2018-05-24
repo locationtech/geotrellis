@@ -23,6 +23,7 @@ import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.util.KryoWrapper
 import geotrellis.util.Filesystem
+
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD

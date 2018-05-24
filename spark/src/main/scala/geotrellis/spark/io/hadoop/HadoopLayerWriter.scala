@@ -16,23 +16,19 @@
 
 package geotrellis.spark.io.hadoop
 
-import geotrellis.raster.{MultibandTile, Tile}
+import io.circe._
+
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._
-import geotrellis.spark.io.index.{KeyIndexMethod, KeyIndex}
+import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.merge._
-import geotrellis.spark.util._
 import geotrellis.util._
 
-import org.apache.avro.Schema
 import org.apache.hadoop.fs.Path
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
-
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 
 import scala.reflect._
 
@@ -44,25 +40,25 @@ class HadoopLayerWriter(
 
   // Layer Updating
   def overwrite[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]: Mergable
+    M: Encoder: Decoder: Component[?, Bounds[K]]: Mergable
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M]): Unit = {
     update(id, rdd, None)
   }
 
   def update[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]: Mergable
+    M: Encoder: Decoder: Component[?, Bounds[K]]: Mergable
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], mergeFunc: (V, V) => V): Unit = {
     update(id, rdd, Some(mergeFunc))
   }
 
   private def update[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Encoder: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]: Mergable
+    M: Encoder: Decoder: Component[?, Bounds[K]]: Mergable
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[M],
@@ -95,9 +91,9 @@ class HadoopLayerWriter(
 
   // Layer Writing
   protected def _write[
-    K: AvroRecordCodec: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Encoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Encoder: Component[?, Bounds[K]]
   ](id: LayerId, rdd: RDD[(K, V)] with Metadata[M], keyIndex: KeyIndex[K]): Unit = {
     val layerPath =
       try {

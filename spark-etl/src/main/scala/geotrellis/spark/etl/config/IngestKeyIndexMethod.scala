@@ -16,6 +16,9 @@
 
 package geotrellis.spark.etl.config
 
+import io.circe.generic.JsonCodec
+
+@JsonCodec
 case class IngestKeyIndexMethod(
   `type`: String,
   timeTag: Option[String] = None,

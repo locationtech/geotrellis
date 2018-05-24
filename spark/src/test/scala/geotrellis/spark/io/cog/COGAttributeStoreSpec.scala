@@ -26,9 +26,6 @@ import geotrellis.raster.histogram._
 import geotrellis.spark.testkit._
 
 import org.scalatest._
-import spray.json._
-import spray.json.DefaultJsonProtocol._
-
 abstract class COGAttributeStoreSpec
     extends FunSpec
     with Matchers

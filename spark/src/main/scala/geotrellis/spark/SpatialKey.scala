@@ -16,11 +16,13 @@
 
 package geotrellis.spark
 
+import _root_.io.circe.generic.JsonCodec
+
 import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.vector.Extent
-import org.apache.spark.rdd.RDD
 
 /** A SpatialKey designates the spatial positioning of a layer's tile. */
+@JsonCodec
 case class SpatialKey(col: Int, row: Int) extends Product2[Int, Int] {
   def _1 = col
   def _2 = row

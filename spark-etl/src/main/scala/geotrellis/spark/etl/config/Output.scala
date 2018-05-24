@@ -16,9 +16,16 @@
 
 package geotrellis.spark.etl.config
 
+import io.circe._
+import io.circe.syntax._
+import io.circe.generic.semiauto._
+import cats.syntax.either._
+
+import geotrellis.spark.etl.config.json._
 import geotrellis.proj4.CRS
 import geotrellis.raster.resample.PointResampleMethod
 import geotrellis.raster.{CellSize, CellType, RasterExtent, TileLayout}
+import geotrellis.raster.io._
 import geotrellis.spark.io.index.{HilbertKeyIndexMethod, KeyIndexMethod, RowMajorKeyIndexMethod, ZCurveKeyIndexMethod}
 import geotrellis.spark.pyramid.Pyramid
 import geotrellis.spark.tiling._
@@ -76,4 +83,36 @@ case class Output(
   }): KeyIndexMethod[_]).asInstanceOf[KeyIndexMethod[K]]
 
   def getPyramidOptions = Pyramid.Options(resampleMethod, partitions.map(new HashPartitioner(_)))
+}
+
+object Output {
+  implicit val outputEncoder: Encoder[Output] = deriveEncoder
+
+  case class OutputDecoder(bp: Map[String, BackendProfile]) extends Decoder[Output] {
+    val bd = Backend.BackendDecoder(bp)
+
+    def apply(c: HCursor): Decoder.Result[Output] = {
+      Right(
+        Output(
+          backend             = bd(c.downField("backend").focus.map(_.hcursor).get).valueOr(throw _),
+          resampleMethod      = c.downField("resampleMethod").as[PointResampleMethod].valueOr(throw _),
+          reprojectMethod     = c.downField("reprojectMethod").as[ReprojectMethod].valueOr(throw _),
+          keyIndexMethod      = c.downField("keyIndexMethod").as[IngestKeyIndexMethod].valueOr(throw _),
+          tileSize            = c.downField("tileSize").as[Int].toOption.fold(256)(identity),
+          pyramid             = c.downField("pyramid").as[Boolean].toOption.fold(true)(identity),
+          partitions          = c.downField("partitions").as[Int].toOption,
+          layoutScheme        = c.downField("layoutScheme").as[String].toOption,
+          layoutExtent        = c.downField("layoutExtent").as[Extent].toOption,
+          crs                 = c.downField("crs").as[String].toOption,
+          resolutionThreshold = c.downField("resolutionThreshold").as[Double].toOption,
+          cellSize            = c.downField("cellSize").as[CellSize].toOption,
+          cellType            = c.downField("cellType").as[CellType].toOption,
+          encoding            = c.downField("encoding").as[String].toOption,
+          breaks              = c.downField("breaks").as[String].toOption,
+          maxZoom             = c.downField("maxZoom").as[Int].toOption,
+          tileLayout          = c.downField("tileLayout").as[TileLayout].toOption
+        )
+      )
+    }
+  }
 }

@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.cog
 
+import io.circe._
+
 import geotrellis.raster._
 import geotrellis.raster.crop._
 import geotrellis.raster.io.geotiff._
@@ -31,13 +33,11 @@ import geotrellis.spark.tiling._
 import geotrellis.spark.util._
 import geotrellis.util._
 import geotrellis.vector._
-import geotrellis.proj4.CRS
 import geotrellis.spark.pyramid.Pyramid
 
 import org.apache.hadoop.fs.Path
 import org.apache.spark._
 import org.apache.spark.rdd._
-import spray.json._
 
 import java.net.URI
 
@@ -62,7 +62,7 @@ object COGLayer {
     *                        resampleMethod, and compression of the written layer.
     */
   def fromLayerRDD[
-    K: SpatialComponent: Ordering: JsonFormat: ClassTag,
+    K: SpatialComponent: Ordering: Encoder: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffBuilder
   ](
      rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
@@ -138,7 +138,7 @@ object COGLayer {
   }
 
   private def generateGeoTiffRDD[
-    K: SpatialComponent: Ordering: JsonFormat: ClassTag,
+    K: SpatialComponent: Ordering: Encoder: ClassTag,
     V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffBuilder
   ](
      rdd: RDD[(K, V)],
@@ -147,7 +147,7 @@ object COGLayer {
      cellType: CellType,
      compression: Compression
    ): RDD[(K, GeoTiff[V])] = {
-    val kwFomat = KryoWrapper(implicitly[JsonFormat[K]])
+    val kwEncoder = KryoWrapper(implicitly[Encoder[K]])
     val crs = layoutScheme.crs
 
     val minZoomLayout = layoutScheme.levelForZoom(zoomRange.minZoom).layout
@@ -170,7 +170,7 @@ object COGLayer {
       }.
       groupByKey(new HashPartitioner(rdd.partitions.length)).
       mapPartitions { partition =>
-        val keyFormat = kwFomat.value
+        val keyEncoder = kwEncoder.value
         partition.map { case (key, tiles) =>
           val cogExtent = key.getComponent[SpatialKey].extent(minZoomLayout)
           val centerToCenter: Extent = {
@@ -199,7 +199,7 @@ object COGLayer {
 
           val cogTiff = GeoTiffBuilder[V].makeGeoTiff(
             cogTile, cogExtent, crs,
-            Tags(Map("GT_KEY" -> keyFormat.write(key).prettyPrint), Nil),
+            Tags(Map("GT_KEY" -> keyEncoder(key).noSpaces), Nil),
             options
           ).withOverviews(NearestNeighbor)
 

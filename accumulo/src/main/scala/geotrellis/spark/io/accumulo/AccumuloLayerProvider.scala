@@ -20,6 +20,7 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.accumulo.conf.AccumuloConfig
 import geotrellis.util.UriUtils
+
 import org.apache.spark.SparkContext
 
 import java.net.URI

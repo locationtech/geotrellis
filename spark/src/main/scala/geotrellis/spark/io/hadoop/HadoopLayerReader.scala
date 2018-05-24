@@ -16,20 +16,16 @@
 
 package geotrellis.spark.io.hadoop
 
-import geotrellis.raster.{MultibandTile, Tile}
+import io.circe._
+
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
-import geotrellis.spark.io.avro.codecs._
-import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.io.json._
 import geotrellis.util._
 
-import org.apache.avro.Schema
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import spray.json._
 
 import scala.reflect.ClassTag
 
@@ -49,9 +45,9 @@ class HadoopLayerReader(
   val defaultNumPartitions = sc.defaultParallelism
 
   def read[
-    K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,
+    K: AvroRecordCodec: Boundable: Decoder: ClassTag,
     V: AvroRecordCodec: ClassTag,
-    M: JsonFormat: Component[?, Bounds[K]]
+    M: Decoder: Component[?, Bounds[K]]
   ](id: LayerId, tileQuery: LayerQuery[K, M], numPartitions: Int, indexFilterOnly: Boolean): RDD[(K, V)] with Metadata[M] = {
     if (!attributeStore.layerExists(id)) throw new LayerNotFoundError(id)
     val LayerAttributes(header, metadata, keyIndex, writerSchema) = try {

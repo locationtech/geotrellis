@@ -18,7 +18,9 @@ package geotrellis.spark.io.file
 
 import geotrellis.spark._
 import geotrellis.spark.io._
+
 import org.apache.spark.SparkContext
+
 import java.net.URI
 import java.io.File
 
