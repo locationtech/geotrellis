@@ -110,7 +110,7 @@ object TiffTagsReader extends LazyLogging {
             &|-> TiffTags._basicTags
             ^|-> BasicTags._rowsPerStrip get).toInt
         if (rowsPerStrip < 0) {
-          logger.warn("RowsPerStrip tag is not not defined, interpreting TIFF as a single strip.")
+          logger.debug("RowsPerStrip tag is not not defined, interpreting TIFF as a single strip.")
           (tiffTags
             &|-> TiffTags._basicTags
             ^|-> BasicTags._rowsPerStrip set(tiffTags.rows))
