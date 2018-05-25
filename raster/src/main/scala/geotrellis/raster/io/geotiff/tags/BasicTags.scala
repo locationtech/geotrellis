@@ -27,7 +27,7 @@ case class BasicTags(
   compression: Int = 1,
   photometricInterp: Int = -1,
   resolutionUnit: Option[Int] = None,
-  rowsPerStrip: Long = 1,
+  rowsPerStrip: Long = -1, // If it's undefined GDAL interprets the entire TIFF as a single strip
   samplesPerPixel: Int = 1,
   stripByteCounts: Option[Array[Long]] = None,
   stripOffsets: Option[Array[Long]] = None,

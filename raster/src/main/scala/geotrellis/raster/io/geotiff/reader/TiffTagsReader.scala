@@ -20,15 +20,13 @@ import geotrellis.raster.io.geotiff.tags._
 import geotrellis.raster.io.geotiff.tags.codes._
 import TagCodes._
 import TiffFieldType._
-import geotrellis.util.{Filesystem, ByteReader}
-
+import geotrellis.util.{ByteReader, Filesystem, LazyLogging}
 import geotrellis.raster.io.geotiff.util._
 import spire.syntax.cfor._
 import monocle.syntax.apply._
+import java.nio.{ByteBuffer, ByteOrder}
 
-import java.nio.{ ByteBuffer, ByteOrder }
-
-object TiffTagsReader {
+object TiffTagsReader extends LazyLogging {
   def read(path: String): TiffTags =
     read(Filesystem.toMappedByteBuffer(path))
 
@@ -105,7 +103,19 @@ object TiffTagsReader {
       case None =>
     }
 
-    tiffTags
+    // If it's undefined GDAL interprets the entire TIFF as a single strip
+    if(tiffTags.hasStripStorage) {
+        val rowsPerStrip =
+          (tiffTags
+            &|-> TiffTags._basicTags
+            ^|-> BasicTags._rowsPerStrip get).toInt
+        if (rowsPerStrip < 0) {
+          logger.warn("RowsPerStrip tag is not not defined, interpreting TIFF as a single strip.")
+          (tiffTags
+            &|-> TiffTags._basicTags
+            ^|-> BasicTags._rowsPerStrip set(tiffTags.rows))
+        } else tiffTags
+    } else tiffTags
   }
 
   def readTag(byteReader: ByteReader, tiffTags: TiffTags, tagMetadata: TiffTagMetadata)(implicit ttos: TiffTagOffsetSize): TiffTags =

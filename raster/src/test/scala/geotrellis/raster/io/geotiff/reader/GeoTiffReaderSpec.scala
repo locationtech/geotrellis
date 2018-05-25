@@ -66,20 +66,21 @@ class GeoTiffReaderSpec extends FunSpec
   }
 
   describe("reading modelTransformation.tiff") {
-    val path = "modelTransformation.tiff"
-    val compressed: SinglebandGeoTiff = SinglebandGeoTiff(geoTiffPath(path))
-    val tile = compressed.tile
-    val bounds = tile.gridBounds
-    bounds.width should be (1121)
-    compressed.crs should be (CRS.fromName("EPSG:4326"))
-    if(compressed.extent.min.distance(Point(59.9955397,  30.0044603))>0.0001) {
-      compressed.extent.min should be (Point(59.9955397,  30.0044603))
-    }
+    it("should read it correct") {
+      val path = "modelTransformation.tiff"
+      val compressed: SinglebandGeoTiff = SinglebandGeoTiff(geoTiffPath(path))
+      val tile = compressed.tile
+      val bounds = tile.gridBounds
+      bounds.width should be(1121)
+      compressed.crs should be(CRS.fromName("EPSG:4326"))
+      if (compressed.extent.min.distance(Point(59.9955397, 30.0044603)) > 0.0001) {
+        compressed.extent.min should be(Point(59.9955397, 30.0044603))
+      }
 
-    if(compressed.extent.max.distance(Point(69.9955397,  40.0044603))>0.0001) {
-      compressed.extent.max should be (Point(69.9955397,  40.0044603))
+      if (compressed.extent.max.distance(Point(69.9955397, 40.0044603)) > 0.0001) {
+        compressed.extent.max should be(Point(69.9955397, 40.0044603))
+      }
     }
-
   }
 
   describe("reading compressed file must yield same image array as uncompressed file") {
@@ -541,6 +542,17 @@ class GeoTiffReaderSpec extends FunSpec
       GeoTiff(expected, extent, LatLng).write(path)
       addToPurge(path)
       val actual = SinglebandGeoTiff(path).tile
+      assertEqual(actual, expected)
+    }
+
+    // https://github.com/locationtech/geotrellis/issues/2577
+    // GDAL: Warning 1: RowsPerStrip not defined ... assuming all one strip.
+    // https://github.com/OSGeo/gdal/blob/f6833aea93b09852c9e25fb54abbb6f019524d37/gdal/frmts/gtiff/gt_jpeg_copy.cpp#L883-L885
+    it("should read a tile without preset RowsPerStrip tag as a single strip") {
+      val geotiff = GeoTiffReader.readMultiband(geoTiffPath("single-strip.tif"))
+      assert(geotiff.bandCount == 2)
+      val actual = geotiff.tile.toArrayTile
+      val expected = MultibandTile(geotiff.tile.band(0).toArrayTile :: geotiff.tile.band(1).toArrayTile :: Nil)
       assertEqual(actual, expected)
     }
   }
