@@ -67,7 +67,7 @@ trait S3RDDReader {
         val s3client = _getS3Client()
         val writerSchema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
         partition flatMap { seq =>
-          LayerReader.njoin[K, V](seq.toIterator, threads){ index: BigInt =>
+          LayerReader.njoinEBO[K, V](seq.toIterator, threads)({ index: BigInt =>
             try {
               val bytes = IOUtils.toByteArray(s3client.getObject(bucket, keyPath(index)).getObjectContent)
               val recs = AvroEncoder.fromBinary(writerSchema, bytes)(_recordCodec)
@@ -76,7 +76,10 @@ trait S3RDDReader {
             } catch {
               case e: AmazonS3Exception if e.getStatusCode == 404 => Vector.empty
             }
-          }
+          }) (backOffPredicate = {
+            case e: AmazonS3Exception if e.getStatusCode == 503 => true
+            case _ => false
+          })
         }
       }
   }

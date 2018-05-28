@@ -101,7 +101,15 @@ object LayerReader {
   def njoin[K, V](
     ranges: Iterator[(BigInt, BigInt)],
     threads: Int
-   )(readFunc: BigInt => Vector[(K, V)]): Vector[(K, V)] = {
+   )(readFunc: BigInt => Vector[(K, V)]): Vector[(K, V)] =
+    njoinEBO[K, V](ranges, threads)(readFunc)(_ => false)
+
+  def njoinEBO[K, V](
+    ranges: Iterator[(BigInt, BigInt)],
+    threads: Int
+  )(readFunc: BigInt => Vector[(K, V)])(backOffPredicate: Throwable => Boolean): Vector[(K, V)] = {
+    import geotrellis.spark.util.TaskUtils._
+
     val pool = Executors.newFixedThreadPool(threads)
     implicit val ec = ExecutionContext.fromExecutor(pool)
 
@@ -112,7 +120,7 @@ object LayerReader {
     val index: fs2.Stream[IO, BigInt] = fs2.Stream.fromIterator[IO, BigInt](indices)
 
     val readRecord: (BigInt => fs2.Stream[IO, Vector[(K, V)]]) = { index =>
-      fs2.Stream eval IO.shift(ec) *> IO { readFunc(index) }
+      fs2.Stream eval IO.shift(ec) *> IO { readFunc(index) }.retryEBO { backOffPredicate }
     }
 
     try {
