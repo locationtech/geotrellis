@@ -49,6 +49,7 @@ API Changes
     instead of `RDD[(K, V)]`
   - **New:** Introduce ``Pyramid`` class to provide a convenience wrapper for building raster pyramids
   - **Change:** Expose ``attributeStore`` parameter to LayerReader interface
+  - **Change:** Added exponential backoffs in ``S3RDDReader``
 
 - ``geotrellis.raster``
 
