@@ -204,7 +204,8 @@ trait ConfigFormats {
       "clip"    -> i.clip.toJson,
       "crs"   -> i.crs.toJson,
       "maxTileSize"   -> i.crs.toJson,
-      "numPartitions" -> i.numPartitions.toJson
+      "numPartitions" -> i.numPartitions.toJson,
+      "partitionBytes" -> i.partitionBytes.toJson
     )
     def read(value: JsValue): Input =
       value match {
@@ -218,7 +219,8 @@ trait ConfigFormats {
             clip    = fields.get("clip").map(_.convertTo[Extent]),
             crs     = fields.get("crs").map(_.convertTo[String]),
             maxTileSize = fields.get("maxTileSize").map(_.convertTo[Int]),
-            numPartitions = fields.get("numPartitions").map(_.convertTo[Int])
+            numPartitions = fields.get("numPartitions").map(_.convertTo[Int]),
+            partitionBytes = fields.get("partitionBytes").map(_.convertTo[Long])
           )
         case _ =>
           throw new DeserializationException("Input must be a valid json object.")
@@ -255,7 +257,8 @@ trait ConfigFormats {
       "encoding"            -> o.encoding.toJson,
       "breaks"              -> o.breaks.toJson,
       "maxZoom"             -> o.maxZoom.toJson,
-      "tileLayout"          -> o.tileLayout.toJson
+      "tileLayout"          -> o.tileLayout.toJson,
+      "bufferSize"          -> o.bufferSize.toJson
     )
 
     def read(value: JsValue): Output =
@@ -278,7 +281,8 @@ trait ConfigFormats {
             encoding            = fields.get("encoding").map(_.convertTo[String]),
             breaks              = fields.get("breaks").map(_.convertTo[String]),
             maxZoom             = fields.get("maxZoom").map(_.convertTo[Int]),
-            tileLayout          = fields.get("tileLayout").map(_.convertTo[TileLayout])
+            tileLayout          = fields.get("tileLayout").map(_.convertTo[TileLayout]),
+            bufferSize          = fields.get("bufferSize").map(_.convertTo[Int])
           )
         case _ =>
           throw new DeserializationException("Output must be a valid json object.")

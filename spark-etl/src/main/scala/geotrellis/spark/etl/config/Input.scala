@@ -17,6 +17,7 @@
 package geotrellis.spark.etl.config
 
 import geotrellis.proj4.CRS
+import geotrellis.spark.io.hadoop.HadoopGeoTiffRDD
 import geotrellis.vector.Extent
 
 import org.apache.spark.storage.StorageLevel
@@ -29,8 +30,9 @@ case class Input(
   noData: Option[Double] = None,
   clip: Option[Extent] = None,
   crs: Option[String] = None,
-  maxTileSize: Option[Int] = None,
-  numPartitions: Option[Int] = None
+  maxTileSize: Option[Int] = HadoopGeoTiffRDD.Options.DEFAULT.maxTileSize,
+  numPartitions: Option[Int] = None,
+  partitionBytes: Option[Long] = HadoopGeoTiffRDD.Options.DEFAULT.partitionBytes
 ) extends Serializable {
   def getCrs = crs.map(CRS.fromName)
 }

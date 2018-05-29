@@ -25,6 +25,9 @@
       "numPartitions": {
         "type": "integer"
       },
+      "partitionBytes": {
+        "type": "integer"
+      },
       "clip": {
         "type": "object",
         "properties": {
