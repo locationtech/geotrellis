@@ -533,7 +533,7 @@ abstract class GeoTiffMultibandTile(
    */
  def crop(bounds: GridBounds): ArrayMultibandTile = {
    val iter = crop(List(bounds))
-   if (iter.isEmpty) throw new reader.MalformedGeoTiffException(s"No intersections of ${bounds} vs ${gridBounds}")
+   if (iter.isEmpty) throw GeoAttrsError(s"No intersections of ${bounds} vs ${gridBounds}")
    else iter.next._2
  }
 
