@@ -31,22 +31,15 @@ trait SinglebandTileCropMethods extends TileCropMethods[Tile] {
     * [[Tile]].
     */
   def crop(gb: GridBounds, options: Options): Tile = {
+    if (!gb.intersects(self.gridBounds)) throw GeoAttrsError(s"Grid bounds do not intersect: ${self.gridBounds} crop $gb")
     val cropBounds =
-      if(options.clamp)
-        gb.intersection(self) match {
-          case Some(intersection) => intersection
-          case None =>
-            throw new GeoAttrsError(s"Grid bounds do not intersect: $self crop $gb")
-        }
-      else
-        gb
+      if(options.clamp) gb.intersection(self).get
+      else gb
 
     val res =
       self match {
-        case gtTile: GeoTiffTile =>
-          gtTile.crop(gb)
-        case _ =>
-          CroppedTile(self, cropBounds)
+        case gtTile: GeoTiffTile => gtTile.crop(gb)
+        case _ => CroppedTile(self, cropBounds)
       }
 
     if(options.force) res.toArrayTile else res
