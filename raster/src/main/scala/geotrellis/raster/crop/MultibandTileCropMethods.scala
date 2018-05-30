@@ -32,23 +32,22 @@ trait MultibandTileCropMethods extends TileCropMethods[MultibandTile] {
     * [[MultibandTile]] and return a new MultibandTile.
     */
   def crop(gb: GridBounds, options: Options): MultibandTile = {
+    if (!gb.intersects(self.gridBounds)) throw GeoAttrsError(s"Grid bounds do not intersect: ${self.gridBounds} crop $gb")
     self match {
       case geotiffTile: GeoTiffMultibandTile =>
         val cropBounds =
-          if(options.clamp)
-            gb.intersection(self)
-              .getOrElse(throw new GeoAttrsError(s"Grid bounds do not intersect: $self crop $gb"))
-          else
-            gb
+          if (options.clamp) gb.intersection(self).get
+          else gb
         geotiffTile.crop(cropBounds)
       case _ =>
         val croppedBands = Array.ofDim[Tile](self.bandCount)
-        for(b <- 0 until self.bandCount) {
+        for (b <- 0 until self.bandCount) {
           croppedBands(b) = self.band(b).crop(gb, options)
         }
         ArrayMultibandTile(croppedBands)
     }
   }
+
 
   /**
     * Given a source Extent (the extent of the present

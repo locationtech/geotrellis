@@ -73,7 +73,7 @@ class MultibandGeoTiffSpec extends FunSpec with Matchers with RasterMatchers wit
         ymax = extent.ymax + 2 * extent.height
       )
 
-      intercept[IllegalArgumentException] {
+      intercept[GeoAttrsError] {
         tiff.crop(subExtent)
       }
     }

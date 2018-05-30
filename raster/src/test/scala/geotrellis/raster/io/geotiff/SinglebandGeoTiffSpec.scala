@@ -91,7 +91,7 @@ class SinglebandGeoTiffSpec extends FunSpec with Matchers with RasterMatchers wi
         ymax = extent.ymax + 2 * extent.height
       )
 
-      intercept[IllegalArgumentException] {
+      intercept[GeoAttrsError] {
         tiff.crop(subExtent)
       }
     }

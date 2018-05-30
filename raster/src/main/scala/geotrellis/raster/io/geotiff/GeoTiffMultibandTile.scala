@@ -529,10 +529,13 @@ abstract class GeoTiffMultibandTile(
   /**
    * Crop this tile to given pixel region.
    *
-   * @param gridBounds Pixel bounds specifying the crop area.
+   * @param bounds Pixel bounds specifying the crop area.
    */
- def crop(gridBounds: GridBounds): ArrayMultibandTile =
-  crop(List(gridBounds)).next._2
+ def crop(bounds: GridBounds): ArrayMultibandTile = {
+   val iter = crop(List(bounds))
+   if (iter.isEmpty) throw new reader.MalformedGeoTiffException(s"No intersections of ${bounds} vs ${gridBounds}")
+   else iter.next._2
+ }
 
   /**
     * Performs a crop  operaiton.

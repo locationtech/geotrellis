@@ -54,7 +54,7 @@ case class SinglebandGeoTiff(
       case Some(ext) =>
         val raster: Raster[Tile] = this.raster.crop(ext, options)
         SinglebandGeoTiff(raster, ext, this.crs, this.tags, this.options, this.overviews)
-      case _ => throw new IllegalArgumentException(s"Extent to crop by ($subExtent) should intersect the imagery extent ($extent).")
+      case _ => throw GeoAttrsError(s"Extent to crop by ($subExtent) should intersect the imagery extent ($extent).")
     }
   }
 
