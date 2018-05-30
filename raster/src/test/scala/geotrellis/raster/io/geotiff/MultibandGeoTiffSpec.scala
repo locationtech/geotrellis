@@ -46,4 +46,36 @@ class MultibandGeoTiffSpec extends FunSpec with Matchers with RasterMatchers wit
     }
   }
 
+  describe("Crop function test") {
+    val tiff = MultibandGeoTiff(geoTiffPath("overviews/multiband.tif"))
+    val extent = tiff.extent
+    it("should crop as expected by an intersecting extent") {
+      val subExtent = extent.copy(
+        xmin = extent.xmin + extent.width / 2,
+        ymin = extent.ymin + extent.height / 2,
+        xmax = extent.xmax + extent.width / 2,
+        ymax = extent.ymax + extent.height / 2
+      )
+
+      val expectedExtent = subExtent.copy(
+        xmax = extent.xmax,
+        ymax = extent.ymax
+      )
+
+     tiff.crop(subExtent).extent shouldBe expectedExtent
+    }
+
+    it("should throw an exception calling a crop on a non intersecting extent") {
+      val subExtent = extent.copy(
+        xmin = extent.xmax + extent.width,
+        ymin = extent.ymax + extent.height,
+        xmax = extent.xmax + 2 * extent.width,
+        ymax = extent.ymax + 2 * extent.height
+      )
+
+      intercept[GeoAttrsError] {
+        tiff.crop(subExtent)
+      }
+    }
+  }
 }

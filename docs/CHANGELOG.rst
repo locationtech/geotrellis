@@ -50,6 +50,7 @@ API Changes
   - **New:** Introduce ``Pyramid`` class to provide a convenience wrapper for building raster pyramids.
   - **Change:** Expose ``attributeStore`` parameter to LayerReader interface.
   - **Change:** Added exponential backoffs in ``S3RDDReader``.
+  - **Change:** Changed SinglebandGeoTiff and MultibandGeoTiff crop function behaviour to work properly with cases when extent to crop by doesn't intersect tiff extent.
 
 - ``geotrellis.raster``
 
