@@ -46,17 +46,24 @@ API Changes
   - **New:** Alter `geotrellis.spark.stitch.StitchRDDMethods` to allow `RDD[(K, V)]` to be stitched when not all tiles are
     of the same dimension.
   - **Change:** Change `TilerMethods.tileToLayout` functions that accept `TileLayerMetadata` as an argument to return `RDD[(K, V)] with Metadata[M]`
-    instead of `RDD[(K, V)]`
-  - **New:** Introduce ``Pyramid`` class to provide a convenience wrapper for building raster pyramids
-  - **Change:** Expose ``attributeStore`` parameter to LayerReader interface
-  - **Change:** Added exponential backoffs in ``S3RDDReader``
-  - **Change:** Changed SinglebandGeoTiff and MultibandGeoTiff crop function behaviour to work properly with cases when extent to crop by doesn't intersect tiff extent
+    instead of `RDD[(K, V)]`.
+  - **New:** Introduce ``Pyramid`` class to provide a convenience wrapper for building raster pyramids.
+  - **Change:** Expose ``attributeStore`` parameter to LayerReader interface.
+  - **Change:** Added exponential backoffs in ``S3RDDReader``.
+  - **Change:** Changed SinglebandGeoTiff and MultibandGeoTiff crop function behaviour to work properly with cases when extent to crop by doesn't intersect tiff extent.
 
 - ``geotrellis.raster``
 
   - **Change:** Removed ``decompress`` option from `GeoTiffReader` functions.
-  - **New:** Kryo serialization of geometry now uses a binary format to reduce shuffle block size
-  - **Change:** Scalaz streams were replaced by fs2 streams
+  - **New:** Kryo serialization of geometry now uses a binary format to reduce shuffle block size.
+  - **Change:** Scalaz streams were replaced by fs2 streams.
+
+- ``geotrellis.spark-etl``
+
+  - **Change**: Package is deprecated since GeoTrellis 2.0.
+  - **Change**: ``Input.maxTileSize`` is ``256`` by default to correspond ``HadoopGeoTiffRDD default behaviour``.
+                Added ``Input.partitionBytes`` and it is set to ``134217728`` by default to correspond ``HadoopGeoTiffRDD default behaviour``.
+                Added ``Output.bufferSize`` option to set up a custom buffer size for the buffered reprojection.
 
 Fixes
 ^^^^^

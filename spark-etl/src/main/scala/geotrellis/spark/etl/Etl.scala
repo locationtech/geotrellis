@@ -208,13 +208,22 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
         scheme match {
           case Left(layoutScheme: ZoomedLayoutScheme) if output.maxZoom.isDefined =>
             val LayoutLevel(zoom, layoutDefinition) = layoutScheme.levelForZoom(output.maxZoom.get)
-            zoom -> tiled.reproject(destCrs, layoutDefinition, RasterReprojectOptions(method = method, targetCellSize = Some(layoutDefinition.cellSize)))._2
+            (zoom, output.bufferSize match {
+              case Some(bs) => tiled.reproject(destCrs, layoutDefinition, bs, RasterReprojectOptions(method = method, targetCellSize = Some(layoutDefinition.cellSize)))._2
+              case _ => tiled.reproject(destCrs, layoutDefinition, RasterReprojectOptions(method = method, targetCellSize = Some(layoutDefinition.cellSize)))._2
+            })
 
           case Left(layoutScheme) =>
-            tiled.reproject(destCrs, layoutScheme, method)
+            output.bufferSize match {
+              case Some(bs) => tiled.reproject(destCrs, layoutScheme, bs, method)
+              case _ => tiled.reproject(destCrs, layoutScheme, method)
+            }
 
           case Right(layoutDefinition) =>
-            tiled.reproject(destCrs, layoutDefinition, method)
+            output.bufferSize match {
+              case Some(bs) => tiled.reproject(destCrs, layoutDefinition, bs, method)
+              case _ => tiled.reproject(destCrs, layoutDefinition, method)
+            }
         }
     }
   }
