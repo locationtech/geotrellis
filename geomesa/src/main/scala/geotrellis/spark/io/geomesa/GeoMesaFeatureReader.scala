@@ -28,10 +28,10 @@ import org.apache.hadoop.mapreduce.Job
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 import org.geotools.data._
-import org.locationtech.geomesa.jobs.mapreduce.GeoMesaInputFormat
-import org.locationtech.geomesa.jobs.GeoMesaConfigurator
+import org.locationtech.geomesa.jobs.interop.mapreduce.GeoMesaAccumuloInputFormat
 import org.opengis.feature.simple.{SimpleFeature, SimpleFeatureType}
 
+import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
 /**
@@ -55,14 +55,13 @@ import scala.reflect.ClassTag
     } finally dataStore.dispose()
 
     val job = Job.getInstance(sc.hadoopConfiguration)
-    GeoMesaInputFormat.configure(job, instance.conf, query)
+    GeoMesaAccumuloInputFormat.configure(job, instance.conf.asJava, query)
 
     if (numPartitions.isDefined) {
-      GeoMesaConfigurator.setDesiredSplits(job.getConfiguration, numPartitions.get * sc.getExecutorStorageStatus.length)
+      System.setProperty("geomesa.mapreduce.splits.max", numPartitions.get.toString)
       InputFormatBase.setAutoAdjustRanges(job, false)
     }
-
-    sc.newAPIHadoopRDD(job.getConfiguration, classOf[GeoMesaInputFormat], classOf[Text], classOf[SimpleFeature]).map(U => U._2)
+    sc.newAPIHadoopRDD(job.getConfiguration, classOf[GeoMesaAccumuloInputFormat], classOf[Text], classOf[SimpleFeature]).map(U => U._2)
   }
 
   /** $experimental */

@@ -46,14 +46,14 @@ import scala.collection.JavaConverters._
 @experimental object GeoMesaInstance {
 
   /** $experimental */
-  @experimental def apply(tableName: String, instanceName: String, zookeepers: String, user: String, password: String, useMock: Boolean = false): GeoMesaInstance = {
+  @experimental def apply(tableName: String, instanceName: String, zookeepers: String, user: String, password: String, mock: Boolean = false): GeoMesaInstance = {
     new GeoMesaInstance(Map(
-      "instanceId" -> instanceName,
-      "zookeepers" -> zookeepers,
-      "user"       -> user,
-      "password"   -> password,
-      "tableName"  -> tableName,
-      "useMock"    -> s"$useMock"
+      "accumulo.instance.id" -> instanceName,
+      "accumulo.zookeepers"  -> zookeepers,
+      "accumulo.user"        -> user,
+      "accumulo.password"    -> password,
+      "accumulo.catalog"     -> tableName,
+      "accumulo.mock"        -> mock.toString
     ))
   }
 }
