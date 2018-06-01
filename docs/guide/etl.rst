@@ -1,5 +1,5 @@
-The ETL Tool
-============
+The ETL Tool (Deprecated)
+=========================
 
 When working with GeoTrellis, often the first task is to load a set of
 rasters to perform reprojection, mosaicing and pyramiding before saving
