@@ -23,8 +23,8 @@ import geotrellis.vector.{Geometry, Line, MultiLine, MultiPoint, MultiPolygon, P
 import com.github.blemale.scaffeine.{Cache, Scaffeine}
 import com.vividsolutions.jts.{geom => jts}
 import org.geotools.feature.simple.{SimpleFeatureBuilder, SimpleFeatureTypeBuilder}
+import org.locationtech.geomesa.utils.geotools.SimpleFeatureTypes
 import org.opengis.feature.simple.{SimpleFeature, SimpleFeatureType}
-import org.locationtech.geomesa.accumulo.index.Constants
 
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
@@ -34,6 +34,7 @@ object GeometryToGeoMesaSimpleFeature {
 
   val whenField: String = "when"
   val whereField: String = "the_geom"
+  val indexDtg: String = SimpleFeatureTypes.Configs.DEFAULT_DATE_KEY
 
   lazy val featureTypeCache: Cache[String, SimpleFeatureType] =
     Scaffeine()
@@ -69,7 +70,7 @@ object GeometryToGeoMesaSimpleFeature {
       sftb.buildFeatureType
     })
 
-    if(data.map(_._1).contains(whenField)) sft.getUserData.put(Constants.SF_PROPERTY_START_TIME, whenField) // when field is date
+    if(data.map(_._1).contains(whenField)) sft.getUserData.put(indexDtg, whenField) // when field is date
     val sfb = new SimpleFeatureBuilder(sft)
 
     geom match {
@@ -79,7 +80,7 @@ object GeometryToGeoMesaSimpleFeature {
       case MultiPoint(mp) => sfb.add(mp)
       case MultiLine(ml) => sfb.add(ml)
       case MultiPolygon(mp) => sfb.add(mp)
-      case g: Geometry => throw new Exception(s"Unhandled Geotrellis Geometry $g")
+      case g: Geometry => throw new Exception(s"Unhandled GeoTrellis Geometry $g")
     }
     data.foreach({ case (key, value) => sfb.add(value) })
 
