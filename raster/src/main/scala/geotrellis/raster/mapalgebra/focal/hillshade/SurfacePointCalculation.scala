@@ -36,6 +36,18 @@ class SurfacePoint() {
   /** Partial derivative of z with respect to y */
   var `dz/dy` = Double.NaN
 
+  def aspectAzimuth() = {
+    if (`dz/dx` == 0 && `dz/dy` == 0) {
+      /* Flat area */
+      -1.0
+    } else {
+      var aAzimuth = toDegrees(atan2(`dz/dy`, `dz/dx`) - Pi * 0.5)
+      if (aAzimuth < 0) { aAzimuth += 360.0 }
+      if (aAzimuth == 360.0) { aAzimuth = 0.0 }
+      aAzimuth
+    }
+  }
+
   def aspect() = {
     var a = atan2(`dz/dy`, -`dz/dx`)
 
@@ -208,7 +220,7 @@ abstract class SurfacePointCalculation[T](r: Tile, n: Neighborhood, analysisArea
     cellWidth = cellSize.width
     cellHeight = cellSize.height
 
-    if(colBorderMax < 3 || rowBorderMax < 3) {
+    if(colBorderMax < 2 || rowBorderMax < 2) {
       sys.error(s"Tile is too small to get surface values. ($colBorderMax, $rowBorderMax)")
     }
 
