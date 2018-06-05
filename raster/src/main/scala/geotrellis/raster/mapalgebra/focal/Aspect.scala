@@ -36,7 +36,7 @@ import geotrellis.raster.mapalgebra.focal.Angles._
   * Aspect is computed in degrees from due north, i.e. as an azimuth in degrees not radians.
   * The expression for aspect is:
   * {{{
-  * val aspect = 270 - 360 / (2 * Pi) * atan2(`dz / dy`, - `dz / dx`)
+  * val aspect = 360 / (2 * Pi) * atan2(`dz / dy`, `dz / dx`) - 90
   * }}}
   *
   */
@@ -47,7 +47,7 @@ object Aspect {
       with DoubleArrayTileResult
     {
       def setValue(x: Int, y: Int, s: SurfacePoint) {
-        resultTile.setDouble(x, y, degrees(s.aspect))
+        resultTile.setDouble(x, y, s.aspectAzimuth)
       }
     }
   }.execute()

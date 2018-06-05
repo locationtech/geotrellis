@@ -69,8 +69,9 @@ class AspectSpec extends FunSpec with Matchers with RasterMatchers with TileBuil
       var dx = ((0 - 1) + 2 * (2 - 1) + (2 - 1)) / 8.0
       var dy = ((1 - 1) + 2 * (1 - (-1)) + (2 - 0)) / 8.0
 
-      var aspect = atan2(dy, -dx) / (Pi / 180.0)
-      value should equal (aspect)
+      var aspect = atan2(dy, dx) / (Pi / 180.0) - 90.0
+      if(aspect < 0.0) { aspect += 360 }
+      (value - aspect) should be < 0.0000001
 
       //Check right edge
       value = aR.getDouble(4, 1)
@@ -78,7 +79,8 @@ class AspectSpec extends FunSpec with Matchers with RasterMatchers with TileBuil
       dx = ((2 - 1) + 2 * (2 - 2) + (2 - 2)) / 8.0
       dy = ((2 - 1) + 2 * (2 - 1) + (2 - 2)) / 8.0
 
-      aspect = atan2(dy, -dx) / (Pi / 180.0)
+      aspect = atan2(dy, dx) / (Pi / 180.0) - 90.0
+      if(aspect < 0.0) { aspect += 360 }
       (value - aspect) should be < 0.0000001
 
       //Check bottom edge
@@ -87,7 +89,8 @@ class AspectSpec extends FunSpec with Matchers with RasterMatchers with TileBuil
       dx = ((2 - 1) + 2 * (2 - 1) + (2 - 2)) / 8.0
       dy = ((2 - 1) + 2 * (2 - 2) + (2 - 2)) / 8.0
 
-      aspect = atan2(dy, -dx) / (Pi / 180.0)
+      aspect = atan2(dy, dx) / (Pi / 180.0) - 90.0
+      if(aspect < 0.0) { aspect += 360 }
       (value - aspect) should be < 0.0000001
 
       //Check top edge
@@ -96,7 +99,7 @@ class AspectSpec extends FunSpec with Matchers with RasterMatchers with TileBuil
       dx = ((1 - 1) + 2 * (1 - 1) + (2 - 2)) / 8.0
       dy = ((2 - 1) + 2 * (2 - 1) + (2 - 1)) / 8.0
 
-      aspect = atan2(dy, -dx) / (Pi / 180.0)
+      aspect = atan2(dy, dx) / (Pi / 180.0) - 90.0
       (value - aspect) should be < 0.0000001
 
       //Check top right corner 
@@ -105,7 +108,7 @@ class AspectSpec extends FunSpec with Matchers with RasterMatchers with TileBuil
       dx = ((1 - 1) + 2 * (1 - 1) + (1 - 2)) / 8.0
       dy = ((2 - 1) + 2 * (2 - 1) + (1 - 1)) / 8.0
 
-      aspect = atan2(dy, -dx) / (Pi / 180.0)
+      aspect = atan2(dy, dx) / (Pi / 180.0) - 90.0
       (value - aspect) should be < 0.0000001
 
       //Check top left corner
@@ -114,7 +117,8 @@ class AspectSpec extends FunSpec with Matchers with RasterMatchers with TileBuil
       dx = (((-1) - (-1)) + 2 * (0 - (-1)) + (2 - (-1))) / 8.0
       dy = (((-1) - (-1)) + 2 * (1 - (-1)) + (2 - (-1))) / 8.0
 
-      aspect = atan2(dy, -dx) / (Pi / 180.0)
+      aspect = atan2(dy, dx) / (Pi / 180.0) - 90.0
+      if(aspect < 0.0) { aspect += 360 }
       (value - aspect) should be < 0.0000001
 
       //Check bottom left corner
@@ -123,7 +127,7 @@ class AspectSpec extends FunSpec with Matchers with RasterMatchers with TileBuil
       dx = ((2 - 1) + 2 * (2 - 1) + (1 - 1)) / 8.0
       dy = ((1 - 1) + 2 * (1 - 1) + (1 - 2)) / 8.0
 
-      aspect = atan2(dy, -dx) / (Pi / 180.0)
+      aspect = atan2(dy, dx) / (Pi / 180.0) - 90.0
       if(aspect < 0.0) { aspect += 360 }
       (value - aspect) should be < 0.000001
 
@@ -131,11 +135,48 @@ class AspectSpec extends FunSpec with Matchers with RasterMatchers with TileBuil
       value = aR.getDouble(4, 4)
 
       dx = ((2 - 2) + 2 * (2 - 1) + (2 - 2)) / 8.0
-      dy = ((2 - 12) + 2 * (2 - 2) + (2 - 2)) / 8.0
+      dy = ((2 - 2) + 2 * (2 - 2) + (2 - 2)) / 8.0
 
-      aspect = atan2(dy, -dx) / (Pi / 180.0)
+      aspect = atan2(dy, dx) / (Pi / 180.0) - 90.0
       if(aspect < 0.0) { aspect += 360 }
       (value - aspect) should be < 0.0000001
+    }
+
+    it("should start from due north and be clockwise") {
+      val r = createTile(
+        Array[Int](
+          1, 2, 3, 2, 1,
+          2, 3, 4, 3, 2,
+          3, 4, 5, 4, 3,
+          2, 3, 4, 3, 2,
+          1, 2, 3, 2, 1), 5, 5)
+
+      val aR = r.aspect(CellSize(5, 5))
+
+      var value = aR.getDouble(3, 1)
+      (value - 45.0) should be < 0.000001
+
+      value = aR.getDouble(3, 3)
+      (value - 135.0) should be < 0.000001
+
+      value = aR.getDouble(1, 3)
+      (value - 225.0) should be < 0.000001
+
+      value = aR.getDouble(1, 1)
+      (value - 315.0) should be < 0.000001
+    }
+
+    it("should assign flat area to -1") {
+      val r = createTile(
+        Array[Int](
+          1, 1, 1,
+          1, 1, 1,
+          1, 1, 1), 3, 3)
+
+      val aR = r.aspect(CellSize(5, 5))
+
+      var value = aR.getDouble(1, 1)
+      (value - (-1.0)) should be < 0.000001
     }
   }
 }
