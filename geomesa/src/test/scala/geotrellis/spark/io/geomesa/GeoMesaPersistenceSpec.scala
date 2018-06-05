@@ -39,7 +39,7 @@ class GeoMesaPersistenceSpec extends FunSpec with Suite with BeforeAndAfterAll w
       zookeepers   = "localhost",
       user         = "root",
       password     = "",
-      useMock      = true
+      mock         = true
     )
 
     val featuresTemporalInstance = GeoMesaInstance(
@@ -48,7 +48,7 @@ class GeoMesaPersistenceSpec extends FunSpec with Suite with BeforeAndAfterAll w
       zookeepers   = "localhost",
       user         = "root",
       password     = "",
-      useMock      = true
+      mock         = true
     )
 
     val layerWriter = new GeoMesaFeatureWriter(featuresInstance)
