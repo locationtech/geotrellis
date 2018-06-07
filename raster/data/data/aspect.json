@@ -1,1 +1,1 @@
-{ "layer": "aspect", "type": "arg", "datatype": "float32", "rows": 1400, "cols": 979, "xmin": 557815.0, "ymax": 5121985.0, "cellwidth": 10.0, "cellheight": 10.0, "xmax": 567605.0, "ymin": 5107985.0, "xskew": 0.0, "yskew": 0.0, "epsg": 26710 }
+{"layer":"aspect","type":"arg","datatype":"float32","rows":1400,"cols":979,"xmin":557815.000000,"ymax":5121985.000000,"cellwidth":10.000000,"cellheight":10.000000,"xmax":567605.000000,"ymin":5107985.000000,"xskew":0.000000,"yskew":0.000000,"epsg":26710}
