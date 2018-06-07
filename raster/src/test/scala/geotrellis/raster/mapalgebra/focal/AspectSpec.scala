@@ -48,9 +48,9 @@ class AspectSpec extends FunSpec with Matchers with RasterMatchers with TileBuil
       val rgc = rg.convert(DoubleConstantNoDataCellType).crop(rasterExtent.extent, cropExtent)
       val rc = aspectComputed.crop(rasterExtentElevation.extent, cropExtent)
 
-      assertEqual(rgc, rc, 0.1)
+      // '1.1' is because gdal's flat area is 0, and our flat area is -1
+      assertEqual(rgc, rc, 1.1)
     }
-
 
     it("should calculate edge cases correctly") {
       val r = createTile(
