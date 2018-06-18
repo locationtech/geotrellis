@@ -9,6 +9,7 @@
   "project spark-etl" test \
   "project geowave" compile test:compile \
   "project hbase" test \
+  "project accumulo" test \
   "project s3" test \
   "project s3-testkit" test \
   "project geomesa" test || { exit 1; }
