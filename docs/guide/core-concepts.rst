@@ -13,8 +13,8 @@ alike. If GIS is brand, brand new to you, `this
 document <https://www.gislounge.com/what-is-gis/>`__ is a useful high
 level overview.
 
-Basic Terms
-===========
+Glossary
+========
 
 -  **Tile:** A grid of numeric *cells* that represent some data on the
    Earth.
@@ -43,13 +43,701 @@ These definitions are expanded upon in other sections of this document.
 
    <hr>
 
-Tile Layers
+System Organization
+===================
+
+Core
+----
+
+The fundamental components of the Geotrellis system are *rasters* and
+*vectors*.  Rasters are 2-dimensional, discrete grids of numerical data,
+much like matrices.  Vectors are 2- (or sometimes 3-) dimensional collections
+of points that are connected together to form piecewise linear linestrings,
+polygons, and other compound structures.
+
+Geotrellis is also tied to geographical application domains, and so these
+fundamental objects can be placed in a geographical context.  Specifically, we
+can ascribe *projections* to the points in a geometry, and we can apply an
+*extent* to raster data to indicate the position and scope of the raster data.
+
+Geotrellis provides a number of operations on these basic data types.  One may
+reproject, resample, crop, merge, combine, and render raster data; vector data
+may be manipulated in some limited ways, but is mostly used to generate raster
+data.
+
+The following packages contain the relevant code:
+
+- ``geotrellis.proj4``
+- ``geotrellis.raster``
+- ``geotrellis.vector``
+
+Distributed Processing
+----------------------
+
+High resolution imagery on global, national, regional, or even local levels
+(depending on just how high of a resolution is used) is big.  It's too big to
+work with effectively on a single machine.  Thus, Geotrellis provides the
+means to use rasters and vectors in a distributed context using `Apache Spark
+<http://spark.apache.org/>`__.
+
+To distribute data, it is necessary to supply some structure over which we can
+organize smaller units of raster or vector data.  Geotrellis leans on the
+``LayoutDefinition`` class to provide this structure.  The idea is that a
+region on the globe is specified (along with a projection), and a regular,
+rectangular grid is overlaid on that region.  Each grid cell is given a
+spatial key, and so it is possible to associate a raster or vector to a given
+grid cell.  (Note that we may also use keys with a temporal component.)  This
+induces a tiled representation of an arbitrarily large layer of data.
+
+Geotrellis provides utilities for coercing data into this gridded
+representation, for manipulating data within a tiled layer, and for storing
+processed layers to a variety of backends.  Find implementations of these
+features in this package:
+
+- ``geotrellis.spark``
+
+Storage Backends
+^^^^^^^^^^^^^^^^
+
+Computations over large data are time consuming, so storage of results is
+important.  Geotrellis mostly relies on distributed key-value stores.  Once a
+layer is built (a set of uniform chunks of raster data keyed to a layout, with
+some additional metadata), it is possible to write these tiles out to a
+*catalog*.  These preprocessed layers can then be read back rapidly, and used
+to support any number of applications.
+
+The necessary componenents for storing and reading layers can be found in the
+following packages:
+
+- ``geotrellis.spark.io``
+- ``geotrellis.accumulo``
+- ``geotrellis.cassandra``
+- ``geotrellis.geomesa``
+- ``geotrellis.hbase``
+- ``geotrellis.s3``
+
+Method Extensions
+-----------------
+
+Geotrellis utilizes a design pattern called *method extensions* wherein
+Scala's implicits system is used to patch additional functionality onto
+existing classes.  For example, for a raster value ``r``, one may call
+``r.reproject(srcCRS, destCRS)``, even though the ``Raster`` class does not
+define ``reproject`` directly.
+
+Files in the source tree that have names of the form ``XxxxxMethods.scala``
+define capabilities that should be implemented by an implicit class, usually
+found in the ``Implicits.scala`` file in the same directory.  For a
+``MethodExtension[T]`` subclass implementing the ``foo()`` method, an object of type
+``T`` should have be able to have ``foo()`` called on it.
+
+Unfortunately, discoverability of valid method extensions is an ongoing
+problem for Geotrellis as a whole.  We are currently seeking better means for
+documenting these features.  In the meantime, perusing the source tree, and
+using tab-completion in the REPL are workable solutions.  Bear in mind,
+however, that availability of method extensions is contingent on having
+types that match the ``T`` parameter of the desired ``MethodExtension[T]``
+implementation.
+
+.. raw:: html
+
+   <hr>
+
+Projections and Coordinate Systems
+==================================
+
+A fundamental component of a GIS system is the ability to specify projections
+and perform transformations of points between various coordinate systems.
+Contained in the ``geotrellis.proj4`` package are the means to perform these
+tasks.
+
+Coordinate Reference Systems
+----------------------------
+
+As a means of describing geodetic coordinate systems, the
+``geotrellis.proj4.CRS`` class is provided.  CRSs can be constructed by either
+indicating the EPSG code using the ``CRS.fromEpsgCode`` object method, or by the
+``proj4`` string using the ``CRS.fromString`` object method.
+
+There are also a set of predefined CRS objects provided in
+``geotrellis.proj4``.  These include the standard ``WebMercator`` and
+``LatLng`` CRSs.  Also included is ``ConusAlbers``, giving the Albers equal
+area projection for the continental United States (EPSG code 5070).  Finally,
+UTM zone CRS objects can be produced using the
+``geotrellis.proj4.util.UTM.getZoneCrs`` method.
+
+Transformations
+---------------
+
+To move coordinates between coordinate systems, it is necessary to build a
+``geotrellis.proj4.Transform`` object.  These are built simply by supplying
+the source CRS and the destination CRS.  The result is a transformation
+function with type ``(Double, Double) => (Double, Double)``.
+
+.. raw:: html
+
+   <hr>
+
+
+Vector Data
 ===========
 
-Tile layers (of Rasters or otherwise) are represented in GeoTrellis with
-the type ``RDD[(K, V)] with Metadata[M]``. This type is used extensively
-across the code base, and its contents form the deepest compositional
-hierarchy we have:
+Data in GIS applications often come in a geometric form.  That is, one might
+encounter data describing, say, population by census region, or road networks.
+These are termed *vector* data sources.  Geotrellis wraps `JTS
+<http://github.com/locationtech/jts>`__ geometries in a Scala interface and
+then provides the tools to produce raster data from that vector data, or
+simply to work directly with the vector data itself.  Vector data comes either
+as raw geometry, or as *feature data*—that is, geometry with associated
+data—and can be read from a variety of sources.
+
+Geometries
+----------
+
+Geometries in Geotrellis are exclusively point sets and piecewise linear
+representations.  A collection of points may be connected by a chain of linear
+segments into more complex shapes, and then aggregated into collections.  All
+such classes derive from the base ``geotrellis.vector.Geometry`` class.  The
+geometry subclasses are as follows:
+
+- ``geotrellis.vector.Point``
+
+  Representation of a 2-dimensional point in space.
+
+- ``geotrellis.vector.Line``
+
+  More appropriately termed a *polyline*.  A sequence of linear segments
+  formed from a sequence of points, :math:`[p_1, p_2, ..., p_n]`, where the
+  :math:`i^\mathrm{th}` line segment is the segment between :math:`p_i` and
+  :math:`p_{i+1}`.  May be self-intersecting.  May be open or closed (the
+  latter meaning that :math:`p_1 = p_n`).
+
+- ``geotrellis.vector.Polygon``
+
+  A polygonal shape, possibly with holes.  Formed from a single closed, simple
+  (non-self-intersecting) polyline exterior, and zero or more closed, simple,
+  mutually non-intersecting interior rings.  Proper construction can be
+  verified through the use of the ``isValid()`` method.
+
+- ``geotrellis.vector.MultiPoint``
+- ``geotrellis.vector.MultiLine``
+- ``geotrellis.vector.MultiPolygon``
+
+  The three preceding classes aggregate points, lines, and polygons, respectively.
+
+- ``geotrellis.vector.GeometryCollection``
+
+  A container class for aggregating dissimilar geometries.
+
+Geometries have a standard interface for typical operations such as
+finding the convex hull, affine transformation (rotation, scaling,
+translating, and shearing), determining if one geometry is contained within
+another, and finding intersections.
+
+The following is a simple example of working with intersections:
+
+.. code-block:: scala
+
+    import geotrellis.vector._
+
+    /** First, let's create a Point. Then, we'll use its intersection method.
+      * Note: we are also using intersection's alias '&'.
+      */
+    val myPoint = Point(1.0, 1.1) // Create a point
+    // Intersection method
+    val selfIntersection = myPoint intersection Point(1.0, 1.1)
+    // Intersection alias
+    val nonIntersection = myPoint & Point(200, 300)
+
+Upon execution, the values ``selfIntersection`` and ``nonIntersection`` are
+``GeometryResult`` containers, which is a common return type for geometric
+operations.  To extract results from these wrappers, use the ``as[G <:
+Geometry]`` function which either returns ``Some(G)`` or ``None``:
+
+.. code-block:: scala
+
+    val pointIntersection = (Point(1.0, 2.0) & Point(1.0, 2.0)).as[Point]
+    val pointNonIntersection = (Point(1.0, 2.0) & Point(12.0, 4.0)).as[Point]
+
+    assert(pointIntersection == Some(Point(1.0, 2.0)))  // Either some point
+    assert(pointNonIntersection == None)                // Or nothing at all
+
+When using ``as[G <: Geometry]``, be aware that it isn't necessarily the case
+that the ``GeometryResult`` object may not be convertable to the chosen
+``G``. For example, a ``PointGeometryIntersectionResult.as[Polygon]`` will
+*always* return ``None``.
+
+Alternatively, one may use pattern matching to check intersection
+results. ``geotrellis.vector.Results`` contains a large `ADT
+<https://en.wikipedia.org/wiki/Algebraic_data_type>`__ which encodes the
+possible outcomes for different types of outcomes. The result type of a
+JTS-dependent vector operation can be found somewhere on this tree to the
+effect that an exhaustive match can be carried out to determine the
+``Geometry`` (excepting cases of ``NoResult``, for which there is no
+``Geometry``).
+
+For example, we note that a ``Point``/``Point`` intersection has the
+type ``PointOrNoResult``. From this we can deduce that it is either a
+``Point`` underneath or else nothing:
+
+.. code::
+
+    val p1: Point = Point(0, 0)
+    val p2: Point = p1
+    p1 & p2 match {
+      case PointResult(_) => println("A Point!")
+      case NoResult => println("Sorry, no result.")
+    }
+
+yields "A Point!"
+
+There are also implicits in many geotrellis modules which will extend Geometry
+capabilities. For instance, after importing ``geotrellis.vector.io._``, it
+becomes possible to call the ``toGeoJson`` method on any ``Geometry``:
+
+.. code-block:: scala
+
+    import geotrellis.vector.io._
+    assert(Point(1,1).toGeoJson == """{"type":"Point","coordinates":[1.0,1.0]}""")
+
+If you need to move from a geometry to a serialized representation or
+vice-versa, take a look at the ``io`` directory's contents. This naming
+convention for input and output is common throughout Geotrellis. So if
+you're trying to get spatial representations in or out of your program,
+spend some time seeing if the problem has already been solved.
+
+Methods which are specific to certain subclasses of ``Geometry`` exist
+too. For example, ``geotrellis.vector.MultiLine`` is implicitly extended
+by ``geotrellis.vector.op`` such that this becomes possible:
+
+.. code-block:: scala
+
+    import geotrellis.vector.op._
+    val myML = MultiLine.EMPTY
+    myML.unionGeometries
+
+The following packages extend ``Geometry`` capabilities:
+
+-  `geotrellis.vector.io.json <io/json/>`__
+-  `geotrellis.vector.io.WKT <io/WKT/>`__
+-  `geotrellis.vector.io.WKB <io/WKB/>`__
+-  `geotrellis.vector.op <op/>`__
+-  `geotrellis.vector.op.affine <op/affine/>`__
+-  `geotrellis.vector.reproject <reproject/>`__
+
+Extents
+^^^^^^^
+
+Geotrellis makes common use of the ``Extent`` class.  This class represents an
+axis-aligned bounding box, where the extreme values are given as
+``Extent(min_x, min_y, max_x, max_y)``.  Note that ``Extent``\ s *are not*
+``Geometry`` instances.  They can be coerced to a ``Polygon`` using the
+``toPolygon`` method, and they can often be used as arguments to geometric
+operations such as ``intersection``.
+
+Projected Geometries
+^^^^^^^^^^^^^^^^^^^^
+
+Note that there is no generally-accepted means to mark the projection of a
+geometry, so it is incumbent on the user to keep track of and properly coerce
+geometries into the correct projections.  However, the
+``geotrellis.vector.reproject`` package provides the ``reproject`` method
+extension for performing this task.
+
+``Extent``\ s, on the other hand, can be wrapped in a ``ProjectedExtent``
+instance.  These are useful for designating the geographical scope of a
+raster, for example.
+
+Features
+--------
+
+To associate some arbitrary data with a vector object, often for use in tasks
+such as rasterization, use the ``Feature[G <: Geometry, D]`` container class,
+or one of its subclasses.  For example:
+
+.. code-block:: scala
+
+    abstract class Feature[D] {
+      type G <: Geometry
+      val geom: G ; val data: D
+    }
+
+    case class PointFeature[D](geom: Point, data: D) extends Feature[D] {type G = Point}
+
+Implicit method extensions exist that will allow, for instance, ``rasterize``
+to be called on a ``Feature`` to create a raster where the pixels covered by
+the geometry are assigned the value of of the feature's ``data``.
+
+Further Information
+-------------------
+
+These submodules define useful methods for dealing with vector entities:
+
+-  ``geotrellis.vector.io`` defines input/output (serialization) of
+   geometries
+-  ``geotrellis.vector.op`` defines common operations on geometries
+-  ``geotrellis.vector.reproject`` defines methods for translating
+   between projections
+
+Also, please refer to the `vector documentation <./vectors.rst>`__ for more
+detailed information.
+
+.. raw:: html
+
+   <hr>
+
+Raster Data
+===========
+
+Tiles and Rasters
+-----------------
+
+The ``geotrellis.raster`` module provides primitive datatypes to represent two
+dimensional, gridded numerical data structures, and the methods to manipulate
+them in a GIS context.  These raster objects resemble sequences of numerical
+sequences like the following (this array of arrays is like a 3x3 tile):
+
+.. code::
+
+    // not real syntax
+    val myFirstTile = [[1,1,1],[1,2,2],[1,2,3]]
+    /** It probably looks more like your mental model if we stack them up:
+      * [[1,1,1],
+      *  [1,2,2],
+      *  [1,2,3]]
+      */
+
+In the ``raster`` module of GeoTrellis, raster data is not represented by
+simple arrays, but rather as subclasses of ``Tile``. That class is more
+powerful than a simple array representation, providing many useful
+operators. Here's an incomplete list of the types of things on offer:
+
+-  Mapping transformations of arbitrary complexity over the constituent
+   cells
+-  Carrying out operations (side-effects) for each cell
+-  Querying a specific tile value
+-  Rescaling, resampling, cropping
+
+Working with Cell Values
+------------------------
+
+Tiles contain numerical data.  These can be of the form of integers, floats,
+doubles, and so forth.  And even though Scala has generic types, Geotrellis
+does not implement ``Tile[V]`` for performance reasons, since the Java
+compiler will liberally sprinkle box/unbox commands all through the code to
+support the genericity, which greatly increase runtime and space usage.
+
+Instead, Geotrellis uses macros to implement a different system of cell types.
+This preserves speed while maintaining flexibility of data types, with only
+small compromises in the API.  These cell types may also represent *no data*,
+that is, a special value can be assigned to represent a missing value.  This
+does require sacrificing a value from the range of possible inputs, but
+eliminates the problems of boxed types, such as `Option`.  (Note, this means
+that bit-valued cells cannot have no data values.)
+
+The various cell types are defined as follows:
+
++-------------+--------------------+----------------------------------+-------------------------------------+
+|             | No NoData          | Constant NoData                  | User Defined NoData                 |
++=============+====================+==================================+=====================================+
+| BitCells    | ``BitCellType``    | N/A                              | N/A                                 |
++-------------+--------------------+----------------------------------+-------------------------------------+
+| ByteCells   | ``ByteCellType``   | ``ByteConstantNoDataCellType``   | ``ByteUserDefinedNoDataCellType``   |
++-------------+--------------------+----------------------------------+-------------------------------------+
+| UbyteCells  | ``UByteCellType``  | ``UByteConstantNoDataCellType``  | ``UByteUserDefinedNoDataCellType``  |
++-------------+--------------------+----------------------------------+-------------------------------------+
+| ShortCells  | ``ShortCellType``  | ``ShortConstantNoDataCellType``  | ``ShortUserDefinedNoDataCellType``  |
++-------------+--------------------+----------------------------------+-------------------------------------+
+| UShortCells | ``UShortCellType`` | ``UShortConstantNoDataCellType`` | ``UShortUserDefinedNoDataCellType`` |
++-------------+--------------------+----------------------------------+-------------------------------------+
+| IntCells    | ``IntCellType``    | ``IntConstantNoDataCellType``    | ``IntUserDefinedNoDataCellType``    |
++-------------+--------------------+----------------------------------+-------------------------------------+
+| FloatCells  | ``FloatCellType``  | ``FloatConstantNoDataCellType``  | ``FloatUserDefinedNoDataCellType``  |
++-------------+--------------------+----------------------------------+-------------------------------------+
+| DoubleCells | ``DoubleCellType`` | ``DoubleConstantNoDataCellType`` | ``DoubleUserDefinedNoDataCellType`` |
++-------------+--------------------+----------------------------------+-------------------------------------+
+
+The three rightmost columns give the ``CellType``s that would be used to
+represent (1) data without a ``NoData`` value, (2) data using a default
+``NoData`` value, and (3) data where the user specifies the value used for the
+``NoData`` value.  User defined NoData CellTypes require a constructor to
+provide the NoData value.
+
+**A caveat:** The single most noticeable compromise of this system is that
+float- and double-valued cell types must be treated differently using
+functions such as ``getDouble``, ``setDouble``, and ``mapDouble``, provided by
+the tile classes.
+
+Now, some examples:
+
+.. code-block:: scala
+
+    /** Here's an array we'll use to construct tiles */
+    val myData = Array(42, 1, 2, 3)
+
+    /** The GeoTrellis-default integer CellType
+     *   Note that it represents `NoData` values with the smallest signed
+     *   integer possible with 32 bits (Int.MinValue or -2147483648).
+     */
+    val defaultCT = IntConstantNoDataCellType
+    val normalTile = IntArrayTile(myData, 2, 2, defaultCT)
+
+    /** A custom, 'user defined' NoData CellType for comparison; we will
+     *   treat 42 as NoData for this one rather than Int.MinValue
+     */
+    val customCellType = IntUserDefinedNoDataValue(42)
+    val customTile = IntArrayTile(myData, 2, 2, customCellType)
+
+    /** We should expect that the first (default celltype) tile has the value 42 at (0, 0)
+     *   This is because 42 is just a regular value (as opposed to NoData)
+     *   which means that the first value will be delivered without surprise
+     */
+    assert(normalTile.get(0, 0) == 42)
+    assert(normalTile.getDouble(0, 0) == 42.0)
+
+    /** Here, the result is less obvious. Under the hood, GeoTrellis is
+     *   inspecting the value to be returned at (0, 0) to see if it matches our
+     *   `NoData` policy and, if it matches (it does, we defined NoData as
+     *   42 above), return Int.MinValue (no matter your underlying type, `get`
+     *   on a tile will return an `Int` and `getDouble` will return a `Double`).
+     *
+     *   The use of Int.MinValue and Double.NaN is a result of those being the
+     *   GeoTrellis-blessed values for NoData - below, you'll find a chart that
+     *   lists all such values in the rightmost column
+     */
+    assert(customTile.get(0, 0) == Int.MinValue)
+    assert(customTile.getDouble(0, 0) == Double.NaN)
+
+One final point is worth making in the context of ``CellType``
+performance: the ``Constant`` types are able to depend upon macros which
+inline comparisons and conversions. This minor difference can certainly
+be felt while iterating through millions and millions of cells. If
+possible, Constant ``NoData`` values are to be preferred. For
+convenience' sake, we've attempted to make the GeoTrellis-blessed
+``NoData`` values as unobtrusive as possible a priori.
+
+Notes:
+  - If attempting to convert between ``CellTypes``, see `this note
+    <./faq/#how-do-i-convert-a-tiles-celltype>`__ on ``CellType``
+    conversions.)
+
+  - Lower-precision cell types will translate into smaller tiles.  Consider
+    the following:
+
+    +---------------+---------------+-----------------------+-----------------------------+----------------------------------+
+    |               | Bits / Cell   | 512x512 Raster (mb)   | Range (inclusive)           | GeoTrellis NoData Value          |
+    +===============+===============+=======================+=============================+==================================+
+    | BitCells      | 1             | 0.032768              | [0, 1]                      | N/A                              |
+    +---------------+---------------+-----------------------+-----------------------------+----------------------------------+
+    | ByteCells     | 8             | 0.262144              | [-128, 128]                 | -128 (``Byte.MinValue``)         |
+    +---------------+---------------+-----------------------+-----------------------------+----------------------------------+
+    | UbyteCells    | 8             | 0.262144              | [0, 255]                    | 0                                |
+    +---------------+---------------+-----------------------+-----------------------------+----------------------------------+
+    | ShortCells    | 16            | 0.524288              | [-32768, 32767]             | -32768 (``Short.MinValue``)      |
+    +---------------+---------------+-----------------------+-----------------------------+----------------------------------+
+    | UShortCells   | 16            | 0.524288              | [0, 65535]                  | 0                                |
+    +---------------+---------------+-----------------------+-----------------------------+----------------------------------+
+    | IntCells      | 32            | 1.048576              | [-2147483648, 2147483647]   | -2147483648 (``Int.MinValue``)   |
+    +---------------+---------------+-----------------------+-----------------------------+----------------------------------+
+    | FloatCells    | 32            | 1.048576              | [-3.40E38, 3.40E38]         | Float.NaN                        |
+    +---------------+---------------+-----------------------+-----------------------------+----------------------------------+
+    | DoubleCells   | 64            | 2.097152              | [-1.79E308, 1.79E308]       | Double.NaN                       |
+    +---------------+---------------+-----------------------+-----------------------------+----------------------------------+
+
+    Also note the range and default no data values (``ConstantNoDataCellType``\ s).
+
+  - The limits of expected return types (see above table) are used by macros
+    to squeeze as much speed out of the JVM as possible.  Check out `our
+    macros docs <../architecture/high-performance-scala/#macros>`__ for more
+    on our use of macros like ``isData`` and ``isNoData``.
+
+Building Your Own Tiles
+-----------------------
+
+An easy place to begin with building a tile is through one of the following
+two classes:
+
+.. code-block:: scala
+
+    abstract class IntArrayTile(
+      val array: Array[Int],
+      cols: Int,
+      rows: Int
+    ) extends MutableArrayTile { ... }
+
+    abstract class DoubleArrayTile(
+      val array: Array[Double],
+      cols: Int,
+      rows: Int
+    ) extends MutableArrayTile { ... }
+
+These constructors allow for an ``Int``- or ``Double``-valued tile to be
+created with specific content.  However, the object methods associated with
+these classes contain most of the useful constructors.  Notably, the ``apply``
+method One may also enjoy using the ``empty``, ``fill``, and ``ofDim`` object
+methods to create new tiles.  For these methods,
+
+Tile Inheritance Structure
+--------------------------
+
+We can consider the inheritance pathway of ``IntArrayTile`` to get a feel for
+the class structure.  Note that each listed class is a descendant of the
+previous class.
+
+- ``Grid``:
+
+  A ``Serializable`` instance giving row and column dimensions.
+
+- ``CellGrid``:
+
+  Adds ``cellType`` to Grid.  ``CellGrid`` forms the minimum requirement for
+  many algorithms.
+
+- ``Tile``:
+
+  Provides the basic infrastructure for accessing the content of a tile
+  (``get`` and ``getDouble``).
+
+- ``ArrayTile``
+
+  Allows conversion from tiles to arrays.
+
+- ``MutableArrayTile``
+
+  Provides the means to change the values in a tile (``set`` and
+  ``setDouble``).
+
+- ``IntArrayTile``
+
+  The implementation of ``MutableArrayTile`` for discrete data types.
+
+    **NOTE** There is a long-standing bug in the Tile hierarchy where calling
+    ``mutable`` on an ArrayTile instance does not create a copy of the
+    original immutable tile, but simply creates a mutable version from the
+    same underlying buffer.  Changes to the result of a call to ``mutable``
+    will change the original as well.
+
+Rasters
+-------
+
+A raster is a general category of data, consisting of values laid out on a
+regular grid, but in GIS, it carries the double meaning of a tile with
+location information.  The location information is represented by an Extent.
+This is almost always meant when we use the proper term ``Raster`` in the
+context of Geotrellis code.
+
+The following REPL session constructs a simple ``Raster``:
+
+.. code::
+
+    import geotrellis.raster._
+    import geotrellis.vector._
+
+    scala> IntArrayTile(Array(1,2,3),1,3)
+    res0: geotrellis.raster.IntArrayTile = IntArrayTile([S@338514ad,1,3)
+
+    scala> IntArrayTile(Array(1,2,3),3,1)
+    res1: geotrellis.raster.IntArrayTile = IntArrayTile([S@736a81de,3,1)
+
+    scala> IntArrayTile(Array(1,2,3,4,5,6,7,8,9),3,3)
+    res2: geotrellis.raster.IntArrayTile = IntArrayTile([I@5466441b,3,3)
+
+    scala> Extent(0, 0, 1, 1)
+    res4: geotrellis.vector.Extent = Extent(0.0,0.0,1.0,1.0)
+
+    scala> Raster(res2, res4)
+    res5: geotrellis.raster.Raster = Raster(IntArrayTile([I@7b47ab7,1,3),Extent(0.0,0.0,1.0,1.0))
+
+    scala> res0.asciiDraw()
+    res3: String =
+    "    1
+         2
+         3
+    "
+
+    scala> res2.asciiDraw()
+    res4: String =
+    "    1     2     3
+         4     5     6
+         7     8     9
+    "
+
+Tile Hierarchy
+--------------
+
+For the sake of completeness, the following tile hierarchy is presented:
+
+.. figure:: ./images/tile-hierarchy.png
+   :alt:
+
+The ``Tile`` trait has operations you'd expect for traversing and
+transforming the contents of the tiles, like:
+
+-  ``map: (Int => Int) => Tile``
+-  ``foreach: (Int => Unit) => Unit``
+-  ``combine: Tile => ((Int, Int) => Int) => Tile``
+-  ``color: ColorMap => Tile``
+
+As discussed above, the ``Tile`` interface carries information about how big
+it is and what its underlying `Cell Type <#cell-types>`__ is:
+
+-  ``cols: Int``
+-  ``rows: Int``
+-  ``cellType: CellType``
+
+.. raw:: html
+
+   <hr>
+
+
+Layouts and Tile Layers
+=======================
+
+The core vector and raster functionality thus far described stands on its own
+for small scale applications.  But, as mentioned, Geotrellis is intended to
+work with big data in a distributed context.  For this, we rely on Apache
+Spark's resilient distributed dataset (RDD).  RDDs of both raster and vector
+data are naturally supported by Geotrellis, but some new concepts are required
+to integrate this abstraction for distributed processing.
+
+For most applications, the data of interest must be keyed to a layout to give
+the content of an RDD—which is usually a collection of key-value pairs (i.e.,
+``RDD[(K, V)]``)—a consistent interpretation as a cohesive raster.  In such an
+RDD, the key type, ``K``, is one of ``TemporalKey``, ``SpatialKey``, or
+``SpaceTimeKey``.  The latter two key types obviously contain spatial data
+(declared in context bounds as ``[K: SpatialComponent]``, where values of such
+a type ``K`` can have their spatial component extracted using the
+``getComponent[SpatialKey]`` extension method), which is used to identify a
+region in space.
+
+The ``geotrellis.spark.tiling.LayoutDefinition`` class is used to describe how
+``SpatialKey``\ s map to regions in space.  The ``LayoutDefinition`` is a
+``GridExtent`` subclass defined with an ``Extent`` and ``CellSize``.  The
+``Extent`` is subdivided into a grid of uniform, rectangular regions.  The
+size and number of the sub-regions is determined using the ``CellSize`` of the
+``LayoutDefinition``, and then the pixel dimensions of the constituent tiles.
+The sub-regions are then assigned a ``SpatialKey`` with the ``(0, 0)``
+position corresponding to the upper-left corner of the extent; the `x`
+coordinate increases toward the right, and the `y` coordinate increases moving
+down (into lower latitude values, say).
+
+Thus far, we've described how an ``RDD[(K, V)]`` plus a ``LayoutDefinition``
+can be used to represent a large, distributed raster (when ``[K:
+SpatialComponent]``).  To solidify this notion, Geotrellis has a notion of a
+*Tile Layer*, which is defined as ``RDD[(K, V)] with Metadata[M]``.  The ``M``
+type is usually represented by a ``TileLayerMetadata[K]`` object.  These
+metadata, provide a ``LayoutDefinition`` plus a ``CRS``, ``CellType``, and
+bounds for the keys found in the ``RDD``.
+
+    Note: The easiest means to represent a tile layer is with a
+    ``ContextRDD`` object.
+
+    Note: Geotrellis offers many method extensions that operate on tile layers, but it
+    is occasionally necessary to explicitly declare the types of ``V``, ``K``, and
+    ``M`` to access those methods.
+
+The following figure summarizes the structure of a tile layer and its
+constituent parts:
 
 .. figure:: images/type-composition.png
    :alt:
@@ -64,7 +752,7 @@ In this diagram:
    Type*. In this case, it means ``RDD`` from Apache Spark with extra
    methods injected from the ``Metadata`` trait. This type is sometimes
    aliased in GeoTrellis as ``ContextRDD``.
--  ``RDD[(K, V)]`` resembles a Scala ``Map[K, V]``, and in fact has
+-  ``RDD[(K, V)]`` resembles a Scala ``Seq[(K, V)]``, but also has
    further ``Map``-like methods injected by Spark when it takes this
    shape. See Spark's
    `PairRDDFunctions <http://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.rdd.PairRDDFunctions>`__
@@ -74,8 +762,8 @@ In this diagram:
 TileLayerRDD
 ------------
 
-A common specification of ``RDD[(K, V)] with Metadata[M]`` in GeoTrellis
-is as follows:
+Geotrellis defines a type alias for a common variant of a tile layer,
+``RDD[(K, V)] with Metadata[M]``, as follows:
 
 .. code-block:: scala
 
@@ -88,62 +776,6 @@ arranged according to some ``K``. Features of this grid are:
 -  The ``Tile``\ s exist in *some* CRS. In ``TileLayerMetadata``, this
    is kept track of with an actual ``CRS`` field.
 -  In applications, ``K`` is mostly ``SpatialKey`` or ``SpaceTimeKey``.
-
-Tile Layer IO
--------------
-
-Layer IO requires a `Tile Layer Backend <./tile-backends.html>`__. Each
-backend has an ``AttributeStore``, a ``LayerReader``, and a
-``LayerWriter``.
-
-Example setup (with our ``File`` system backend):
-
-.. code-block:: scala
-
-    import geotrellis.spark._
-    import geotrellis.spark.io._
-    import geotrellis.spark.io.file._
-
-    val catalogPath: String = ...  /* Some location on your computer */
-
-    val store: AttributeStore = FileAttributeStore(catalogPath)
-
-    val reader = FileLayerReader(store)
-    val writer = FileLayerWriter(store)
-
-Writing an entire layer:
-
-.. code-block:: scala
-
-    /* Zoom level 13 */
-    val layerId = LayerId("myLayer", 13)
-
-    /* Produced from an ingest, etc. */
-    val rdd: TileLayerRDD[SpatialKey] = ...
-
-    /* Order your Tiles according to the Z-Curve Space Filling Curve */
-    val index: KeyIndex[SpatialKey] = ZCurveKeyIndexMethod.createIndex(rdd.metadata.bounds)
-
-    /* Returns `Unit` */
-    writer.write(layerId, rdd, index)
-
-Reading an entire layer:
-
-.. code-block:: scala
-
-    /* `.read` has many overloads, but this is the simplest */
-    val sameLayer: TileLayerRDD[SpatialKey] = reader.read(layerId)
-
-Querying a layer (a "filtered" read):
-
-.. code-block:: scala
-
-    /* Some area on the earth to constrain your query to */
-    val extent: Extent = ...
-
-    /* There are more types that can go into `where` */
-    val filteredLayer: TileLayerRDD[SpatialKey] =
-      reader.query(layerId).where(Intersects(extent)).result
 
 .. raw:: html
 
@@ -166,11 +798,11 @@ a ``SpaceTimeKey``:
 
     case class SpaceTimeKey(col: Int, row: Int, instant: Long)
 
-although there is nothing stopping you from `defining your own key type
+It is also possible to `define custom key types
 <extending-geotrellis.html#custom-keys>`__.
 
-Assuming some tile layer ``Extent`` on the earth, ``SpatialKey(0, 0)``
-would index the top-leftmost ``Tile`` in the Tile grid.
+    Reminder: Given a layout over some ``Extent``, ``SpatialKey(0, 0)`` would
+    index the top-leftmost ``Tile`` in the grid covering that extent.
 
 When doing Layer IO, certain optimizations can be performed if we know
 that ``Tile``\ s stored near each other in a filesystem or database
@@ -191,7 +823,7 @@ Although ``KeyIndex`` is often used in its generic ``trait`` form, we
 supply three underlying implementations.
 
 Z-Curve
-~~~~~~~
+^^^^^^^
 
 .. figure:: https://upload.wikimedia.org/wikipedia/commons/c/cd/Four-level_Z.svg
    :alt:
@@ -302,691 +934,143 @@ important to your application.
 
    <hr>
 
-Tiles
-=====
 
-``Tile`` is a core GeoTrellis primitive. As mentioned in `Tile
-Layers <#tile-layers>`__, a common specification of
-``RDD[(K, V)] with Metadata[M]`` is:
-
-.. code-block:: scala
-
-    type TileLayerRDD[K] = RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]]
-
-What is a ``Tile`` exactly? Below is a diagram of our ``Tile`` type
-hierarchy. As you can see, any ``Tile`` (via ``CellGrid``) is
-effectively a grid of data cells:
-
-.. figure:: ./images/tile-hierarchy.png
-   :alt:
-
-The ``Tile`` trait has operations you'd expect for traversing and
-transforming this grid, like:
-
--  ``map: (Int => Int) => Tile``
--  ``foreach: (Int => Unit) => Unit``
--  ``combine: Tile => ((Int, Int) => Int) => Tile``
--  ``color: ColorMap => Tile``
-
-Critically, a ``Tile`` must know how big it is, and what its underlying
-`Cell Type <#cell-types>`__ is:
-
--  ``cols: Int``
--  ``rows: Int``
--  ``cellType: CellType``
-
-Fundamentally, the union of a ``Tile`` and ``Extent`` is how GeoTrellis
-defines a ``Raster``:
-
-.. code-block:: scala
-
-    case class Raster[+T <: CellGrid](tile: T, extent: Extent) extends CellGrid
-
-For performance reasons, we have opted for ``Tile`` to hold its
-``CellType`` as opposed to making ``Tile`` polymorphic on its underlying
-numeric type, for example like ``trait Tile[T]``. The large type
-hierarchy above is what results from this decision. For more
-information, see `our notes on Tile
-performance <../architecture/high-performance-scala.html#the-tile-hierarchy>`__.
-
-.. raw:: html
-
-   <hr>
-
-Cell Types
-==========
-
-What is a Cell Type?
---------------------
-
--  A ``CellType`` is a data type plus a policy for handling cell values
-   that may contain no data.
--  By 'data type' we shall mean the underlying numerical representation
-   of a ``Tile``'s cells.
--  ``NoData``, for performance reasons, is not represented as a value
-   outside the range of the underlying data type (as, e.g., ``None``) -
-   if each cell in some tile is a ``Byte``, the ``NoData`` value of that
-   tile will exist within the range [``Byte.MinValue`` (-128),
-   ``Byte.MaxValue`` (127)].
--  If attempting to convert between ``CellTypes``, see `this
-   note <./faq/#how-do-i-convert-a-tiles-celltype>`__ on ``CellType``
-   conversions.
-
-+-------------+--------------------+----------------------------------+-------------------------------------+
-|             | No NoData          | Constant NoData                  | User Defined NoData                 |
-+=============+====================+==================================+=====================================+
-| BitCells    | ``BitCellType``    | N/A                              | N/A                                 |
-+-------------+--------------------+----------------------------------+-------------------------------------+
-| ByteCells   | ``ByteCellType``   | ``ByteConstantNoDataCellType``   | ``ByteUserDefinedNoDataCellType``   |
-+-------------+--------------------+----------------------------------+-------------------------------------+
-| UbyteCells  | ``UByteCellType``  | ``UByteConstantNoDataCellType``  | ``UByteUserDefinedNoDataCellType``  |
-+-------------+--------------------+----------------------------------+-------------------------------------+
-| ShortCells  | ``ShortCellType``  | ``ShortConstantNoDataCellType``  | ``ShortUserDefinedNoDataCellType``  |
-+-------------+--------------------+----------------------------------+-------------------------------------+
-| UShortCells | ``UShortCellType`` | ``UShortConstantNoDataCellType`` | ``UShortUserDefinedNoDataCellType`` |
-+-------------+--------------------+----------------------------------+-------------------------------------+
-| IntCells    | ``IntCellType``    | ``IntConstantNoDataCellType``    | ``IntUserDefinedNoDataCellType``    |
-+-------------+--------------------+----------------------------------+-------------------------------------+
-| FloatCells  | ``FloatCellType``  | ``FloatConstantNoDataCellType``  | ``FloatUserDefinedNoDataCellType``  |
-+-------------+--------------------+----------------------------------+-------------------------------------+
-| DoubleCells | ``DoubleCellType`` | ``DoubleConstantNoDataCellType`` | ``DoubleUserDefinedNoDataCellType`` |
-+-------------+--------------------+----------------------------------+-------------------------------------+
-
-The above table lists ``CellType`` ``DataType``\ s in the leftmost
-column and ``NoData`` policies along the top row. A couple of points are
-worth making here:
-
-1. Bits are incapable of representing on, off, *and* some ``NoData``
-   value. As a consequence, there is no such thing as a Bit-backed tile
-   which recognizes ``NoData``.
-2. While the types in the 'No NoData' and 'Constant NoData' are simply
-   singleton objects that are passed around alongside tiles, the greater
-   configurability of 'User Defined NoData' ``CellType``\ s means that
-   they require a constructor specifying the value which will count as
-   ``NoData``.
-
-Let's look to how this information can be used:
-
-.. code-block:: scala
-
-    /** Here's an array we'll use to construct tiles */
-    val myData = Array(42, 1, 2, 3)
-
-    /** The GeoTrellis-default integer CellType
-     *   Note that it represents `NoData` values with the smallest signed
-     *   integer possible with 32 bits (Int.MinValue or -2147483648).
-     */
-    val defaultCT = IntConstantNoDataCellType
-    val normalTile = IntArrayTile(myData, 2, 2, defaultCT)
-
-    /** A custom, 'user defined' NoData CellType for comparison; we will
-     *   treat 42 as NoData for this one rather than Int.MinValue
-     */
-    val customCellType = IntUserDefinedNoDataValue(42)
-    val customTile = IntArrayTile(myData, 2, 2, customCellType)
-
-    /** We should expect that the first (default celltype) tile has the value 42 at (0, 0)
-     *   This is because 42 is just a regular value (as opposed to NoData)
-     *   which means that the first value will be delivered without surprise
-     */
-    assert(normalTile.get(0, 0) == 42)
-    assert(normalTile.getDouble(0, 0) == 42.0)
-
-    /** Here, the result is less obvious. Under the hood, GeoTrellis is
-     *   inspecting the value to be returned at (0, 0) to see if it matches our
-     *   `NoData` policy and, if it matches (it does, we defined NoData as
-     *   42 above), return Int.MinValue (no matter your underlying type, `get`
-     *   on a tile will return an `Int` and `getDouble` will return a `Double`).
-     *
-     *   The use of Int.MinValue and Double.NaN is a result of those being the
-     *   GeoTrellis-blessed values for NoData - below, you'll find a chart that
-     *   lists all such values in the rightmost column
-     */
-    assert(customTile.get(0, 0) == Int.MinValue)
-    assert(customTile.getDouble(0, 0) == Double.NaN)
-
-A point which is perhaps not intuitive is that ``get`` will *always*
-return an ``Int`` and ``getDouble`` will *always* return a ``Double``.
-Representing NoData demands, therefore, that we map other celltypes'
-``NoData`` values to the native, default ``Int`` and ``Double``
-``NoData`` values. ``NoData`` will be represented as ``Int.MinValue`` or
-``Double.Nan``.
-
-Why you should care
--------------------
-
-In most programming contexts, it isn't all that useful to think
-carefully about the number of bits necessary to represent the data
-passed around by a program. A program tasked with keeping track of all
-the birthdays in an office or all the accidents on the New Jersey
-turnpike simply doesn't benefit from carefully considering whether the
-allocation of those extra few bits is *really* worth it. The costs for
-any lack of efficiency are more than offset by the savings in
-development time and effort. This insight - that computers have become
-fast enough for us to be forgiven for many of our programming sins - is,
-by now, truism.
-
-An exception to this freedom from thinking too hard about implementation
-details is any software that tries, in earnest, to provide the tools for
-reading, writing, and working with large arrays of data. Rasters
-certainly fit the bill. Even relatively modest rasters can be made up of
-millions of underlying cells. Additionally, the semantics of a raster
-imply that each of these cells shares an underlying data type. These
-points - that rasters are made up of a great many cells and that they
-all share a backing data type - jointly suggest that a decision
-regarding the underlying data type could have profound consequences.
-More on these consequences `below <#cell-type-performance>`__.
-
-Compliance with the GeoTIFF standard is another reason that management
-of cell types is important for GeoTrellis. The most common format for
-persisting a raster is the
-`GeoTIFF <https://trac.osgeo.org/geotiff/>`__. A GeoTIFF is simply an
-array of data along with some useful tags (hence the 'tagged' of 'tagged
-image file format'). One of these tags specifies the size of each cell
-and how those bytes should be interpreted (i.e. whether the data for a
-byte includes its sign - positive or negative - or whether it counts up
-from 0 - and is therefore said to be 'unsigned').
-
-In addition to keeping track of the memory used by each cell in a
-``Tile``, the cell type is where decisions about which values count as
-data (and which, if any, are treated as ``NoData``). A value recognized
-as ``NoData`` will be ignored while mapping over tiles, carrying out
-focal operations on them, interpolating for values in their region, and
-just about all of the operations provided by GeoTrellis for working with
-``Tile``\ s.
-
-Cell Type Performance
----------------------
-
-There are at least two major reasons for giving some thought to the
-types of data you'll be working with in a raster: persistence and
-performance.
-
-Persistence is simple enough: smaller datatypes end up taking less space
-on disk. If you're going to represent a region with only
-``true``/``false`` values on a raster whose values are ``Double``\ s,
-63/64 bits will be wasted. Naively, this means somewhere around 63 times
-less data than if the most compact form possible had been chosen (the
-use of ``BitCells`` would be maximally efficient for representing the
-bivalent nature of boolean values). See the chart below for a sense of
-the relative sizes of these cell types.
-
-The performance impacts of cell type selection matter in both a local
-and a distributed (spark) context. Locally, the memory footprint will
-mean that as larger cell types are used, smaller amounts of data can be
-held in memory and worked on at a given time and that more CPU cache
-misses are to be expected. This latter point - that CPU cache misses
-will increase - means that more time spent shuffling data from the
-memory to the processor (which is often a performance bottleneck). When
-running programs that leverage spark for compute distribution, larger
-data types mean more data to serialize and more data send over the (very
-slow, relatively speaking) network.
-
-In the chart below, ``DataType``\ s are listed in the leftmost column
-and important characteristics for deciding between them can be found to
-the right. As you can see, the difference in size can be quite stark
-depending on the cell type that a tile is backed by. That extra space is
-the price paid for representing a larger range of values. Note that bit
-cells lack the sufficient representational resources to have a
-``NoData`` value.
-
-+---------------+---------------+-----------------------+-----------------------------+----------------------------------+
-|               | Bits / Cell   | 512x512 Raster (mb)   | Range (inclusive)           | GeoTrellis NoData Value          |
-+===============+===============+=======================+=============================+==================================+
-| BitCells      | 1             | 0.032768              | [0, 1]                      | N/A                              |
-+---------------+---------------+-----------------------+-----------------------------+----------------------------------+
-| ByteCells     | 8             | 0.262144              | [-128, 128]                 | -128 (``Byte.MinValue``)         |
-+---------------+---------------+-----------------------+-----------------------------+----------------------------------+
-| UbyteCells    | 8             | 0.262144              | [0, 255]                    | 0                                |
-+---------------+---------------+-----------------------+-----------------------------+----------------------------------+
-| ShortCells    | 16            | 0.524288              | [-32768, 32767]             | -32768 (``Short.MinValue``)      |
-+---------------+---------------+-----------------------+-----------------------------+----------------------------------+
-| UShortCells   | 16            | 0.524288              | [0, 65535]                  | 0                                |
-+---------------+---------------+-----------------------+-----------------------------+----------------------------------+
-| IntCells      | 32            | 1.048576              | [-2147483648, 2147483647]   | -2147483648 (``Int.MinValue``)   |
-+---------------+---------------+-----------------------+-----------------------------+----------------------------------+
-| FloatCells    | 32            | 1.048576              | [-3.40E38, 3.40E38]         | Float.NaN                        |
-+---------------+---------------+-----------------------+-----------------------------+----------------------------------+
-| DoubleCells   | 64            | 2.097152              | [-1.79E308, 1.79E308]       | Double.NaN                       |
-+---------------+---------------+-----------------------+-----------------------------+----------------------------------+
-
-One final point is worth making in the context of ``CellType``
-performance: the ``Constant`` types are able to depend upon macros which
-inline comparisons and conversions. This minor difference can certainly
-be felt while iterating through millions and millions of cells. If
-possible, Constant ``NoData`` values are to be preferred. For
-convenience' sake, we've attempted to make the GeoTrellis-blessed
-``NoData`` values as unobtrusive as possible a priori.
-
-The limits of expected return types (discussed in the previous section)
-is used by macros to squeeze as much speed out of the JVM as possible.
-Check out `our macros
-docs <../architecture/high-performance-scala/#macros>`__ for more on our
-use of macros like ``isData`` and ``isNoData``.
-
-.. raw:: html
-
-   <hr>
-
-Raster Data
-===========
-
-    “Yes raster is faster, but raster is vaster and vector just SEEMS
-    more corrector.” — `C. Dana
-    Tomlin <http://uregina.ca/piwowarj/NotableQuotables.html>`__
-
-Rasters and Tiles
------------------
-
-The entire purpose of ``geotrellis.raster`` is to provide primitive
-datatypes which implement, modify, and utilize rasters. In GeoTrellis, a
-raster is just a ``Tile`` with an associated ``Extent``. A tile is just
-a two-dimensional collection of evenly spaced data. Tiles are a lot like
-certain sequences of sequences (this array of arrays is like a 3x3
-tile):
-
-.. code::
-
-    // not real syntax
-    val myFirstTile = [[1,1,1],[1,2,2],[1,2,3]]
-    /** It probably looks more like your mental model if we stack them up:
-      * [[1,1,1],
-      *  [1,2,2],
-      *  [1,2,3]]
-      */
-
-In the ``raster`` module of GeoTrellis, the base type of tile is just
-``Tile``. All GeoTrellis compatible tiles will have inherited from that
-base class, so if you find yourself wondering what a given type of
-tile's powers are, that's a decent place to start your search. Here's an
-incomplete list of the types of things on offer:
-
--  Mapping transformations of arbitrary complexity over the constituent
-   cells
--  Carrying out operations (side-effects) for each cell
--  Querying a specific tile value
--  Rescaling, resampling, cropping
-
-As we've already discussed, tiles are made up of squares which contain
-values. We'll sometimes refer to these value-boxes as *cells*. And, just
-like cells in the body, though they are discrete units, they're most
-interesting when looked at from a more holistic perspective - rasters
-encode relations between values in a uniform space and it is usually
-these relations which most interest us. The code found in the
-``mapalgebra`` submodule — discussed later in this document — is all
-about exploiting these spatial relations.
-
-Working with Cell Values
-------------------------
-
-One of the first questions you'll ask yourself when working with
-GeoTrellis is what kinds of representation best models the domain you're
-dealing with. What types of value do you need your raster to hold? This
-question is the province of GeoTrellis ``CellType``\ s.
-
-Building Your Own Tiles
------------------------
-
-With a grasp of tiles and ``CellType``\ s, we've got all the conceptual
-tools necessary to construct our own tiles. Now, since a tile is a
-combination of a ``CellType`` with which its cells are encoded and their
-spatial arrangement, we will have to somehow combine ``Tile`` (which
-encodes our expectations about how cells sit with respect to one
-another) and the datatype of our choosing. Luckily, GeoTrellis has done
-this for us. To keep its users sane, the wise maintainers of GeoTrellis
-have organized ``geotrellis.raster`` such that fully reified tiles sit
-at the bottom of an pretty simple inheritance chain. Let's explore that
-inheritance so that you will know where to look when your intuitions
-lead you astray:
-
-From ``IntArrayTile.scala``:
-
-.. code-block:: scala
-
-    abstract class IntArrayTile(
-      val array: Array[Int],
-      cols: Int,
-      rows: Int
-    ) extends MutableArrayTile { ... }
-
-From ``DoubleArrayTile.scala``:
-
-.. code-block:: scala
-
-    abstract class DoubleArrayTile(
-      val array: Array[Double],
-      cols: Int,
-      rows: Int
-    ) extends MutableArrayTile { ... }
-
-Tile Inheritance Structure
---------------------------
-
-Both ``IntArrayTile`` and ``DoubleArrayTile`` are themselves extended by
-other child classes, but they are a good place to start. Critically,
-they are both ``MutableArrayTile``\ s, which adds some nifty methods for
-in-place manipulation of cells (GeoTrellis is about performance, so this
-minor affront to the gods of immutability can be forgiven). From
-MutableArrayTile.scala:
-
-.. code-block:: scala
-
-    trait MutableArrayTile extends ArrayTile { ... }
-
-One level up is ``ArrayTile``. It's handy because it implements the
-behavior which largely allows us to treat our tiles like big, long
-arrays of (arrays of) data. They also have the trait ``Serializable``,
-which is neat any time you can't completely conduct your business within
-the neatly defined space-time of the JVM processes which are running on
-a single machine (this is the point of GeoTrellis' Spark integration).
-From ArrayTile.scala:
-
-.. code-block:: scala
-
-    trait ArrayTile extends Tile with Serializable { ... }
-
-At the top rung in our abstraction ladder we have ``Tile``. You might be
-surprised how much we can say about tile behavior from the base of its
-inheritance tree, so the source is worth reading directly. From
-Tile.scala:
-
-.. code-block:: scala
-
-    trait Tile extends CellGrid with ... { ... }
-
-Where ``CellGrid`` and its parent ``Grid`` just declare something to be
-- you guessed it - a grid of numbers with an explicit ``CellType``.
-
-As it turns out, ``CellType`` is one of those things that we can
-*mostly* ignore once we've settled on which one is proper for our
-domain. After all, it appears as though there's very little difference
-between tiles that prefer int-like things and tiles that prefer
-double-like things.
-
-    **CAUTION**: While it is true, in general, that operations are
-    ``CellType`` agnostic, both ``get`` and ``getDouble`` are methods
-    implemented on ``Tile``. In effect, this means that you'll want to
-    be careful when querying values. If you're working with int-like
-    ``CellType``\ s, probably use ``get``. If you're working with
-    float-like ``CellType``\ s, usually you'll want ``getDouble``.
-
-Raster Examples
----------------
-
-In the repl, you can try this out to construct a simple ``Raster``:
-
-.. code::
-
-    import geotrellis.raster._
-    import geotrellis.vector._
-
-    scala> IntArrayTile(Array(1,2,3),1,3)
-    res0: geotrellis.raster.IntArrayTile = IntArrayTile([S@338514ad,1,3)
-
-    scala> IntArrayTile(Array(1,2,3),3,1)
-    res1: geotrellis.raster.IntArrayTile = IntArrayTile([S@736a81de,3,1)
-
-    scala> IntArrayTile(Array(1,2,3,4,5,6,7,8,9),3,3)
-    res2: geotrellis.raster.IntArrayTile = IntArrayTile([I@5466441b,3,3)
-
-    scala> Extent(0, 0, 1, 1)
-    res4: geotrellis.vector.Extent = Extent(0.0,0.0,1.0,1.0)
-
-    scala> Raster(res2, res4)
-    res5: geotrellis.raster.Raster = Raster(IntArrayTile([I@7b47ab7,1,3),Extent(0.0,0.0,1.0,1.0))
-
-Here's a fun method for exploring your tiles:
-
-.. code-block:: scala
-
-    scala> res0.asciiDraw()
-    res3: String =
-    "    1
-         2
-         3
-    "
-
-    scala> res2.asciiDraw()
-    res4: String =
-    "    1     2     3
-         4     5     6
-         7     8     9
-    "
-
-That's probably enough to get started. ``geotrellis.raster`` is a pretty
-big place, so you'll benefit from spending a few hours playing with the
-tools it provides.
-
-.. raw:: html
-
-   <hr>
-
-Vector Data
-===========
-
-    “Raster is faster but vector is correcter.” — Somebody
-
-Features and Geometries
------------------------
-
-In addition to working with raster data, Geotrellis provides a number of
-tools for the creation, representation, and modification of vector data.
-The data types central to this functionality
-(``geotrellis.vector.Feature`` and ``geotrellis.vector.Geometry``)
-correspond - and not by accident - to certain objects found in `the
-GeoJson spec <http://geojson.org/geojson-spec.html>`__. ``Feature``\ s
-correspond to the objects listed under ``features`` in a geojson
-``FeatureCollection``. ``Geometry``\ s, to ``geometries`` in a geojson
-``Feature``.
-
-Geometries
-----------
-
-The base ``Geometry`` class can be found in ``Geometry.scala``. Concrete
-geometries include:
-
--  ``geotrellis.vector.Point``
--  ``geotrellis.vector.MultiPoint``
--  ``geotrellis.vector.Line``
--  ``geotrellis.vector.MultiLine``
--  ``geotrellis.vector.Polygon``
--  ``geotrellis.vector.MultiPolygon``
--  ``geotrellis.vector.GeometryCollection``
-
-Working with these geometries is a relatively straightforward affair.
-Let's take a look:
-
-.. code-block:: scala
-
-    import geotrellis.vector._
-
-    /** First, let's create a Point. Then, we'll use its intersection method.
-      * Note: we are also using intersection's alias '&'.
-      */
-    val myPoint = Point(1.0, 1.1) // Create a point
-    // Intersection method
-    val selfIntersection = myPoint intersection Point(1.0, 1.1)
-    // Intersection alias
-    val nonIntersection = myPoint & Point(200, 300)
-
-At this point, the values ``selfIntersection`` and ``nonIntersection``
-are ``GeometryResult`` containers. These containers are what many JTS
-operations on ``Geometry`` objects will wrap their results in. To
-idiomatically destructure these wrappers, we can use the
-``as[G <: Geometry]`` function which either returns ``Some(G)`` or
-``None``.
-
-.. code-block:: scala
-
-    val pointIntersection = (Point(1.0, 2.0) & Point(1.0, 2.0)).as[Point]
-    val pointNonIntersection = (Point(1.0, 2.0) & Point(12.0, 4.0)).as[Point]
-
-    assert(pointIntersection == Some(Point(1.0, 2.0)))  // Either some point
-    assert(pointNonIntersection == None)                // Or nothing at all
-
-As convenient as ``as[G <: Geometry]`` is, it offers no guarantees about
-the domain over which it ranges. So, while you can expect a neatly
-packaged ``Option[G <: Geometry]``, it isn't necessarily the case that
-the ``GeometryResult`` object produced by a given set of operations is
-possibly convertable to the ``Geometry`` subtype you choose. For
-example, a ``PointGeometryIntersectionResult.as[Polygon]`` will *always*
-return ``None``.
-
-An alternative approach uses pattern matching and ensures an exhaustive
-check of the results. ``geotrellis.vector.Results`` contains a
-large `ADT <https://en.wikipedia.org/wiki/Algebraic_data_type>`__ which
-encodes the possible outcomes for different types of outcomes. The result
-type of a JTS-dependent vector operation can be found somewhere on this tree
-to the effect that an exhaustive match can be carried out to determine the
-``Geometry`` (excepting cases of ``NoResult``, for which there is no
-``Geometry``).
-
-For example, we note that a ``Point``/``Point`` intersection has the
-type ``PointOrNoResult``. From this we can deduce that it is either a
-``Point`` underneath or else nothing:
-
-.. code::
-
-    scala> import geotrellis.vector._
-    scala> p1 & p2 match {
-         |   case PointResult(_) => println("A Point!)
-         |   case NoResult => println("Sorry, no result.")
-         | }
-    A Point!
-
-Beyond the methods which come with any ``Geometry`` object there are
-implicits in many geotrellis modules which will extend Geometry
-capabilities. For instance, after importing ``geotrellis.vector.io._``,
-it becomes possible to call the ``toGeoJson`` method on any
-``Geometry``:
-
-.. code-block:: scala
-
-    import geotrellis.vector.io._
-    assert(Point(1,1).toGeoJson == """{"type":"Point","coordinates":[1.0,1.0]}""")
-
-If you need to move from a geometry to a serialized representation or
-vice-versa, take a look at the ``io`` directory's contents. This naming
-convention for input and output is common throughout Geotrellis. So if
-you're trying to get spatial representations in or out of your program,
-spend some time seeing if the problem has already been solved.
-
-Methods which are specific to certain subclasses of ``Geometry`` exist
-too. For example, ``geotrellis.vector.MultiLine`` is implicitly extended
-by ``geotrellis.vector.op`` such that this becomes possible:
-
-.. code-block:: scala
-
-    import geotrellis.vector.op._
-    val myML = MultiLine.EMPTY
-    myML.unionGeometries
-
-The following packages extend ``Geometry`` capabilities:
-
--  `geotrellis.vector.io.json <io/json/>`__
--  `geotrellis.vector.io.WKT <io/WKT/>`__
--  `geotrellis.vector.io.WKB <io/WKB/>`__
--  `geotrellis.vector.op <op/>`__
--  `geotrellis.vector.op.affine <op/affine/>`__
--  `geotrellis.vector.reproject <reproject/>`__
-
-Features
---------
-
-The ``Feature`` class is odd at first glance; it thinly wraps one of the
-afforementioned ``Geometry`` objects along with some type of data. Its
-purpose will be clear if you can keep in mind the importance of the
-geojson format of serialization which is now ubiquitous in the GIS
-software space. It can be found in ``Feature.scala``.
-
-Let's examine some source code so that this is all a bit clearer. From
-``geotrellis.vector.Feature.scala``:
-
-.. code-block:: scala
-
-    abstract class Feature[D] {
-      type G <: Geometry
-      val geom: G ; val data: D
-    }
-
-    case class PointFeature[D](geom: Point, data: D) extends Feature[D] {type G = Point}
-
-These type signatures tell us a good deal. Let's make this easy on
-ourselves and put our findings into a list. - The type ``G`` is `some
-instance or
-other <http://docs.scala-lang.org/tutorials/tour/upper-type-bounds.html>`__
-of ``Geometry`` (which we explored just above).
-
--  The value, ``geom``, which anything the compiler recognizes as a
-   ``Feature`` must make available in its immediate closure must be of
-   type ``G``.
--  As with ``geom`` the compiler will not be happy unless a ``Feature``
-   provides ``data``.
--  Whereas, with ``geom``, we could say a good deal about the types of
-   stuff (only things we call geometries) that would satisfy the
-   compiler, we have nothing in particular to say about ``D``.
-
-Our difficulty with ``D`` is shared by the ``Point``-focused feature,
-``PointFeature``. ``PointFeature`` uses ``Point`` (which is one of the
-concrete instances of ``Geometry`` introduced above) while telling us
-nothing at all about ``data``'s type. This is just sugar for passing
-around a ``Point`` and some associated metadata.
-
-Let's look at some code which does something with D (code which calls
-one of D's methods) so that we know what to expect. Remember: types are
-just contracts which the compiler is kind enough to enforce. In
-well-written code, types (and type variables) can tell us a great deal
-about what was in the head of the author.
-
-There's only one ``package`` which does anything with ``D``, so the
-constraints (and our job) should be relatively easy. In
-``geotrellis.vector.io.json.FeatureFormats`` there are
-``ContextBound``\ s on ``D`` which ensure that they have JsonReader,
-JsonWriter, and JsonFormat implicits available (this is a `typeclass
-<http://danielwestheide.com/blog/2013/02/06/the-neophytes-guide-to-scala-part-12-type-classes.html>`__,
-and it allows for something like type-safe duck-typing).
-
-``D``'s purpose is clear enough: any ``D`` which comes with the tools
-necessary for json serialization and deserialization will suffice. In
-effect, ``data`` corresponds to the "properties" member of the geojson
-spec's ``Feature`` object.
-
-If you can provide the serialization tools (that is, implicit
-conversions between some type (your ``D``) and `spray
-json <https://github.com/spray/spray-json>`__), the ``Feature`` object
-in ``geotrellis.vector`` does the heavy lifting of embedding your (thus
-serializable) data into the larger structure which includes a
-``Geometry``. There's even support for geojson IDs: the "ID" member of a
-geojson Feature is represented by the keys of a ``Map`` from ``String``
-to ``Feature[D]``. Data in both the ID and non-ID variants of geojson
-Feature formats is easily transformed.
-
-Submodules
-----------
-
-These submodules define useful methods for dealing with the entities
-that call ``geotrellis.vector`` home:
-
--  ``geotrellis.vector.io`` defines input/output (serialization) of
-   geometries
--  ``geotrellis.vector.op`` defines common operations on geometries
--  ``geotrellis.vector.reproject`` defines methods for translating
-   between projections
-
-Catalogs
+Pyramids
 ========
 
-We call the basic output of an ingest a **Layer**, and many GeoTrellis
-operations `follow this idea <#tile-layers>`__. Layers may be written in
-related groups we call **Pyramids**, which are made up of
-interpolations/extrapolations of some base Layer (i.e. different zoom
-levels). Finally, collections of Pyramids (or just single Layers) can be
-grouped in a **Catalog** in an organized fashion that allows for logical
-querying later.
+In practice, many map applications have an interactive component.  Interaction
+often takes the form of scrolling around the map to a desired location and
+"zooming in".  This usage pattern implies a need for *levels of detail*.  That
+is, if we start with a layer with a cell size of 10 meters on a side, say,
+then viewing the whole continental US would require a raster in the
+neighborhood of 400,000 x 250,000 pixels, and most of that information would
+never be seen.
 
-While the term "Catalog" is not as pervasive as "Layer" in the GeoTrellis
-API, it deserves mention nonetheless as Catalogs are the result of normal
-GeoTrellis usage.
+The common solution for this problem is to build a *level of detail pyramid*,
+that is, we generate from the base layer a series of less resolute layers,
+with larger cell size, but a smaller number of pixels.  Each layer of the
+pyramid is called a *zoom level*.
+
+It is typical for web maps to employ *power of two zoom levels*, which is to
+say that the map should double its cell size (halve its resolution) at each
+successive zoom level.  In terms of tile layers, this means that we will end
+up grouping each layer's tiles into 2x2 clusters, and merge these chunks into
+a single tile in the successive layer.  In short, we are creating a quad tree
+where each interior node has an associated tile formed from the resampled and
+merged tiles of its children.
+
+    Note: In a Geotrellis pyramid, each level of the pyramid is a layer with
+    its associated metadata.
+
+To build a pyramid, Geotrellis provides the
+``geotrellis.spark.pyramid.Pyramid`` class.  Consult that documentation for
+usage.
+
+Zoom Levels and Layout Schemes
+------------------------------
+
+The generation of a pyramid is the generation of a quadtree, but that is not
+entirely sufficient, because it is necessary to "contextualize" a tree level.
+In some cases, the layer on which the pyramid is based has a well-defined
+``LayoutDefinition`` that is significant to the application.  In those cases,
+we simply build the pyramid.  In other cases, we need to generate
+``LayoutDefinition``\ s that conform to the application's demand.  This is the
+job of ``LayoutScheme``\ s.
+
+A ``LayoutScheme`` sets the definition of a zoom level.  Given an extent and a
+cell size, the ``LayoutScheme`` will provide an integer zoom level and the
+layout definition for that canonical zoom level (the ``levelFor()`` method).
+Above and beyond that, a ``LayoutScheme`` allows for the navigation between
+adjacent zoom levels with the ``zoomIn()`` and ``zoomOut()`` methods.
+
+There are two primary modes of setting zoom levels, which can be thought of as
+local and global.  A local method is akin to starting with a
+``LayoutDefinition`` and assigning an arbitrary zoom number to it.  The leaf
+nodes of the pyramid's quad tree are rooted at this level, and subsequent zoom
+levels (lower resolution levels) are generated through power of two
+reductions.  Use the ``LocalLayoutScheme`` class for this purpose.
+
+    Note: The user must specify the numerical value of the initial zoom level
+    when using a ``LocalLayoutScheme``.
+
+Global layout schemes, on the other hand, have a predefined structure.  These
+schemes start with a global extent, which each ``CRS`` defines.  A tile
+resolution is set, which defines the cell size at zoom level 0—that is, global
+layout schemes are defined by having one tile which covers the world extent
+completely at zoom 0.  That cell size is then halved at the next highest (more
+resolute) zoom level.
+
+    Note: the global layout scheme defined here establishes a zoom and spatial
+    key layout that is used by many prevalent web map tile serving standards
+    such as TMS.
+
+.. raw:: html
+
+   <hr>
+
+Catalogs & Tile Layer IO
+========================
+
+There is a significant amount of embodied effort in any given layer or
+pyramid, thus it is a common use case to want to persist these layers to some
+storage back end.  A set of saved layers under a common location with some
+metadata store is called a *catalog* in Geotrellis parlance.  There can be
+multiple different pyramids in a catalog, and the metadata can be extended for
+a particular use case.  This section explains the components of a catalog and
+how to perform IO between an application and a catalog.
+
+Layer IO requires a `Tile Layer Backend <./tile-backends.html>`__. Each
+backend has an ``AttributeStore``, a ``LayerReader``, and a
+``LayerWriter``.
+
+An example using the file system backend:
+
+.. code-block:: scala
+
+    import geotrellis.spark._
+    import geotrellis.spark.io._
+    import geotrellis.spark.io.file._
+
+    val catalogPath: String = ...  /* Some location on your computer */
+
+    val store: AttributeStore = FileAttributeStore(catalogPath)
+
+    val reader = FileLayerReader(store)
+    val writer = FileLayerWriter(store)
+
+Writing an entire layer:
+
+.. code-block:: scala
+
+    /* Zoom level 13 */
+    val layerId = LayerId("myLayer", 13)
+
+    /* Produced from an ingest, etc. */
+    val rdd: TileLayerRDD[SpatialKey] = ...
+
+    /* Order your Tiles according to the Z-Curve Space Filling Curve */
+    val index: KeyIndex[SpatialKey] = ZCurveKeyIndexMethod.createIndex(rdd.metadata.bounds)
+
+    /* Returns `Unit` */
+    writer.write(layerId, rdd, index)
+
+Reading an entire layer:
+
+.. code-block:: scala
+
+    /* `.read` has many overloads, but this is the simplest */
+    val sameLayer: TileLayerRDD[SpatialKey] = reader.read(layerId)
+
+Querying a layer (a "filtered" read):
+
+.. code-block:: scala
+
+    /* Some area on the earth to constrain your query to */
+    val extent: Extent = ...
+
+    /* There are more types that can go into `where` */
+    val filteredLayer: TileLayerRDD[SpatialKey] =
+      reader.query(layerId).where(Intersects(extent)).result
 
 Catalog Organization
 --------------------
@@ -1152,66 +1236,7 @@ depending on your architecture.
 
    <hr>
 
-Layout Definitions and Layout Schemes
-=====================================
 
-**Data structures:** ``LayoutDefinition``, ``TileLayout``, ``CellSize``
-
-A Layout Definition describes the location, dimensions of, and
-organization of a tiled area of a map. Conceptually, the tiled area
-forms a grid, and the Layout Definitions describes that grid's area and
-cell width/height. These definitions can be used to chop a bundle of
-imagery into tiles suitable for being served out on a web map.
-
-Within the context of GeoTrellis, the ``LayoutDefinition`` class extends
-``GridExtent``, and exposes methods for querying the sizes of the grid
-and grid cells. Those values are stored in the ``TileLayout`` (the grid
-description) and ``CellSize`` classes respectively.
-``LayoutDefinition``\ s are used heavily during the raster reprojection
-process. Within the context of Geotrellis, the ``LayoutDefinition``
-class extends ``GridExtent``, and exposes methods for querying the sizes
-of the grid and grid cells. Those values are stored in the
-``TileLayout`` (the grid description) and ``CellSize`` classes
-respectively. ``LayoutDefinition``\ s are used heavily during the raster
-reprojection process.
-
-**What is a Layout Scheme?**
-
-The language here can be vexing, but a ``LayoutScheme`` can be thought
-of as a factory which produces ``LayoutDefinition``\ s. It is the scheme
-according to which some layout definition must be defined - a layout
-definition definition, if you will. The most commonly used
-``LayoutScheme`` is the ``ZoomedLayoutScheme``, which provides the
-ability to generate ``LayoutDefinitions`` for the different zoom levels
-of a web-based map (e.g. `Leaflet <http://leafletjs.com>`__).
-
-| **How are Layout Definitions used throughout Geotrellis?**
-| Suppose that we've got a distributed collection of
-  ``ProjectedExtent``\ s and ``Tile``\ s which cover some contiguous
-  area but which were derived from GeoTIFFs of varying sizes. We will
-  sometimes describe operations like this as 'tiling'. The method which
-  tiles a collection of imagery provided a ``LayoutDefinition``, the
-  underlying ``CellType`` of the produced tiles, and the
-  ``ResampleMethod`` to use for generating data at new resolutions is
-  ``tileToLayout``. Let's take a look at its use:
-
-.. code-block:: scala
-
-    val sourceTiles: RDD[(ProjectedExtent, Tile)] = ??? // Tiles from GeoTIFF
-    val cellType: CellType = IntCellType
-    val layout: LayoutDefinition = ???
-    val resamp: ResampleMethod = NearestNeighbor
-
-    val tiled: RDD[(SpatialKey, Tile)] =
-      tiles.tileToLayout[SpatialKey](cellType, layout, resamp)
-
-In essence, a ``LayoutDefinition`` is the minimum information required
-to describe the tiling of some map's area in Geotrellis. The
-``LayoutDefinition`` class extends ``GridExtent``, and exposes methods
-for querying the sizes of the grid and grid cells. Those values are
-stored in the ``TileLayout`` (the grid description) and ``CellSize``
-classes respectively. ``LayoutDefinition``\ s are most often encountered
-in raster reprojection processes.
 
 Map Algebra
 ===========
@@ -1497,7 +1522,7 @@ that there are two ways in which the actual image data is formatted
 within the file. The two methods are: Striped and Tiled.
 
 Striped
-~~~~~~~
+^^^^^^^
 
 Striped storage breaks the image into segments of long, vertical bands
 that stretch the entire width of the picture. Contained within them are
@@ -1698,68 +1723,31 @@ programming mavens.  Initially, we rely on `Functor`s, `Semigroup`s, and
 `Monoid`s, but there is some use of the `IO` monad in limited parts of the
 code base.  Please see the documentation for Cats for more information.
 
-More Core Concepts
-==================
 
-CRS
----
-
-**Data Structures:** ``CRS``, ``LatLng``, ``WebMercator``,
-``ConusAlbers``
-
-In GIS, a *projection* is a mathematical transformation of
-Latitude/Longitude coordinates on a sphere onto some other flat plane.
-Such a plane is naturally useful for representing a map of the earth in
-2D. A projection is defined by a *Coordinate Reference System* (CRS),
-which holds some extra information useful for reprojection. CRSs
-themselves have static definitions, have agreed-upon string
-representations, and are usually made public by standards bodies or
-companies. They can be looked up at
-`SpatialReference.org <http://spatialreference.org/>`__.
-
-A *reprojection* is the transformation of coorindates in one CRS to
-another. To do so, coordinates are first converted to those of a sphere.
-Every CRS knows how to convert between its coordinates and a sphere's,
-so a transformation ``CRS.A -> CRS.B -> CRS.A`` is actually
-``CRS.A -> Sphere -> CRS.B -> Sphere -> CRS.A``. Naturally some floating
-point error does accumulate during this process.
-
-Within the context of GeoTrellis, the main projection-related object is
-the ``CRS`` trait. It stores related ``CRS`` objects from underlying
-libraries, and also provides the means for defining custom reprojection
-methods, should the need arise.
-
-Here is an example of using a ``CRS`` to reproject a ``Line``:
+| **How are Layout Definitions used throughout Geotrellis?**
+| Suppose that we've got a distributed collection of
+  ``ProjectedExtent``\ s and ``Tile``\ s which cover some contiguous
+  area but which were derived from GeoTIFFs of varying sizes. We will
+  sometimes describe operations like this as 'tiling'. The method which
+  tiles a collection of imagery provided a ``LayoutDefinition``, the
+  underlying ``CellType`` of the produced tiles, and the
+  ``ResampleMethod`` to use for generating data at new resolutions is
+  ``tileToLayout``. Let's take a look at its use:
 
 .. code-block:: scala
 
-    val wm = Line(...)  // A `LineString` vector object in WebMercator.
-    val ll: Line = wm.reproject(WebMercator, LatLng)  // The Line reprojected into LatLng.
+    val sourceTiles: RDD[(ProjectedExtent, Tile)] = ??? // Tiles from GeoTIFF
+    val cellType: CellType = IntCellType
+    val layout: LayoutDefinition = ???
+    val resamp: ResampleMethod = NearestNeighbor
 
-Extents
--------
+    val tiled: RDD[(SpatialKey, Tile)] =
+      tiles.tileToLayout[SpatialKey](cellType, layout, resamp)
 
-**Data structures:** ``Extent``, ``ProjectedExtent``,
-``TemporalProjectedExtent``, ``GridExtent``, ``RasterExtent``
-
-An ``Extent`` is a rectangular section of a 2D projection of the Earth.
-It is represented by two coordinate pairs that are its "min" and "max"
-corners in some Coorindate Reference System. "min" and "max" here are
-CRS specific, as the location of the point ``(0,0)`` varies between
-different CRS. An Extent can also be referred to as a *Bounding Box*.
-
-Within the context of GeoTrellis, the points within an ``Extent`` always
-implicitely belong to some ``CRS``, while a ``ProjectedExtent`` holds
-both the original ``Extent`` and its current ``CRS``.
-
-Here are some useful ``Extent`` operations, among many more:
-
--  ``Extent.translate: (Double, Double) => Extent``
--  ``Extent.distance: Extent => Double``
--  ``Extent.contains: Extent => Boolean``
--  ``Extent.intersection: Extent => Option[Extent]``
--  ``ProjectedExtent.reproject: CRS => Extent``
-
-``Extent``\ s are most often used to represent the area of an entire
-Tile layer, and also the individual ``Tile``\ s themselves (especially
-in the case of ``Raster``\ s).
+In essence, a ``LayoutDefinition`` is the minimum information required
+to describe the tiling of some map's area in Geotrellis. The
+``LayoutDefinition`` class extends ``GridExtent``, and exposes methods
+for querying the sizes of the grid and grid cells. Those values are
+stored in the ``TileLayout`` (the grid description) and ``CellSize``
+classes respectively. ``LayoutDefinition``\ s are most often encountered
+in raster reprojection processes.
