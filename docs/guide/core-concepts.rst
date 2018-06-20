@@ -1722,32 +1722,3 @@ is reasonable without sacrificing readability for users who are not functional
 programming mavens.  Initially, we rely on `Functor`s, `Semigroup`s, and
 `Monoid`s, but there is some use of the `IO` monad in limited parts of the
 code base.  Please see the documentation for Cats for more information.
-
-
-| **How are Layout Definitions used throughout Geotrellis?**
-| Suppose that we've got a distributed collection of
-  ``ProjectedExtent``\ s and ``Tile``\ s which cover some contiguous
-  area but which were derived from GeoTIFFs of varying sizes. We will
-  sometimes describe operations like this as 'tiling'. The method which
-  tiles a collection of imagery provided a ``LayoutDefinition``, the
-  underlying ``CellType`` of the produced tiles, and the
-  ``ResampleMethod`` to use for generating data at new resolutions is
-  ``tileToLayout``. Let's take a look at its use:
-
-.. code-block:: scala
-
-    val sourceTiles: RDD[(ProjectedExtent, Tile)] = ??? // Tiles from GeoTIFF
-    val cellType: CellType = IntCellType
-    val layout: LayoutDefinition = ???
-    val resamp: ResampleMethod = NearestNeighbor
-
-    val tiled: RDD[(SpatialKey, Tile)] =
-      tiles.tileToLayout[SpatialKey](cellType, layout, resamp)
-
-In essence, a ``LayoutDefinition`` is the minimum information required
-to describe the tiling of some map's area in Geotrellis. The
-``LayoutDefinition`` class extends ``GridExtent``, and exposes methods
-for querying the sizes of the grid and grid cells. Those values are
-stored in the ``TileLayout`` (the grid description) and ``CellSize``
-classes respectively. ``LayoutDefinition``\ s are most often encountered
-in raster reprojection processes.
