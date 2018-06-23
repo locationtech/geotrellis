@@ -323,6 +323,12 @@ object GeoTiffReader {
   def readGeoTiffInfo(
     byteReader: ByteReader,
     streaming: Boolean,
+    withOverviews: Boolean
+  ): GeoTiffInfo = readGeoTiffInfo(byteReader, streaming, withOverviews, None)
+
+  def readGeoTiffInfo(
+    byteReader: ByteReader,
+    streaming: Boolean,
     withOverviews: Boolean,
     byteReaderExternal: Option[ByteReader]
   ): GeoTiffInfo = {
