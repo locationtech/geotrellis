@@ -50,7 +50,7 @@ class HadoopSlippyTileWriterSpec
 
       val reader =
         new FileSlippyTileReader[Tile](testPath)({ (key, bytes) =>
-          SinglebandGeoTiff(bytes).tile
+          SinglebandGeoTiff(bytes).tile.toArrayTile
         })
 
       rastersEqual(reader.read(TestFiles.ZOOM_LEVEL), AllOnesTestFile)

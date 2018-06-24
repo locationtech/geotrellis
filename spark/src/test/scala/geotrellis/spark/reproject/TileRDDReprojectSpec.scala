@@ -244,7 +244,7 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
   describe("Reprojected with the same scheme and CRS") {
     it("should tile with minimum number of tiles") {
       val tiff = SinglebandGeoTiff(new java.io.File(inputHomeLocalPath, "aspect.tif").getAbsolutePath)
-      val rdd = sc.parallelize(Seq( (tiff.projectedExtent, tiff.tile) ))
+      val rdd = sc.parallelize(Seq( (tiff.projectedExtent, tiff.tile.toArrayTile: Tile) ))
       val scheme = FloatingLayoutScheme(256)
       val extent = Extent(-31.4569758,  27.6350020, 40.2053192,  80.7984255)
       val cellSize = CellSize(0.083328250000000, 0.083328250000000)
