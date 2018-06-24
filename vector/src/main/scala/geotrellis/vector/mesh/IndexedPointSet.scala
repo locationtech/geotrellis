@@ -24,7 +24,7 @@ import geotrellis.vector.Point
  * Provides an interface to a collection of Coordinates that have integer
  * indices.  The wrapped collection may be sparsely indexed.
  */
-trait IndexedPointSet {
+trait IndexedPointSet extends Serializable {
   /**
    * Returns the number of points in the collection.
    */
