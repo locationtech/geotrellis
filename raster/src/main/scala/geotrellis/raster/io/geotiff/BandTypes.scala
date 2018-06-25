@@ -19,7 +19,7 @@ package geotrellis.raster.io.geotiff
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.tags.codes.SampleFormat._
 
-sealed abstract trait BandType {
+sealed abstract trait BandType extends Serializable {
   def bytesPerSample: Int = (bitsPerSample + 7) / 8
   def bitsPerSample: Int
 
