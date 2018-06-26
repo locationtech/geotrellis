@@ -28,7 +28,7 @@ object RasterExamples {
         val x = point.x
         val y = point.y
         if(rasterExtent.extent.intersects(x,y)) {
-          val index = rasterExtent.mapXToGrid(x) * cols + rasterExtent.mapYToGrid(y)
+          val index = rasterExtent.mapXToGrid(x) + rasterExtent.mapYToGrid(y) * cols
           array(index) = array(index) + 1
         }
       }
