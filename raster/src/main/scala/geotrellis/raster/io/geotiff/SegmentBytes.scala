@@ -22,7 +22,7 @@ package geotrellis.raster.io.geotiff
   * The base trait of SegmentBytes. It can be implemented either as
   * an Array[Array[Byte]] or as a ByteBuffer that is lazily read in.
   */
-trait SegmentBytes extends Seq[Array[Byte]] {
+trait SegmentBytes extends Seq[Array[Byte]] with Serializable {
   def getSegment(i: Int): Array[Byte]
 
   def getSegments(indices: Traversable[Int]): Iterator[(Int, Array[Byte])]

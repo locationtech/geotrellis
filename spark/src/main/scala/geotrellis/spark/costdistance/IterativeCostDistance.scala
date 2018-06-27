@@ -112,7 +112,7 @@ object IterativeCostDistance {
     gs
       .flatMap({ g => geometryToKeys(md, g).map({ k => (k, g) }) })
       .groupBy(_._1)
-      .mapValues({ list => list.map({ case (_, v) => v }) })
+      .map({ case (key, list) => (key, list.map({ case (_, v) => v })) })
   }
 
   /**

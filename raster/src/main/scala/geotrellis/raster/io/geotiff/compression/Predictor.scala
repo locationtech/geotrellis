@@ -46,7 +46,7 @@ object Predictor {
   }
 }
 
-trait Predictor {
+trait Predictor extends Serializable {
   /** True if this predictor needs to check if the endian requires flipping */
   def checkEndian: Boolean
   /** GeoTiff tag value for this predictor */
