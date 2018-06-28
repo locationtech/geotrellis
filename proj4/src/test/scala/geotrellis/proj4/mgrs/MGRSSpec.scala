@@ -13,7 +13,9 @@ class MGRSSpec extends FunSpec with Matchers {
         val bbox = MGRS.mgrsToBBox(mgrsString)
         bbox._1 <= long && long <= bbox._3 && bbox._2 <= lat && lat <= bbox._4
       }
-      
+
+      println(s"MGRS: Tested against long/lat ($long, $lat)")
+
       val testStat = results.reduce(_ && _)
       testStat should be (true)
     }

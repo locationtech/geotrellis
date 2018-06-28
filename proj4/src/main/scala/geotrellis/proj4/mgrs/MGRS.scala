@@ -67,7 +67,7 @@ object MGRS {
     val latRad = degToRad(lat)
     val longRad = degToRad(long)
 
-    val zoneNumber = 
+    val zoneNumber =
       if (long == 180) {
         //Make sure the longitude 180.00 is in Zone 60
         60
@@ -99,15 +99,15 @@ object MGRS {
     val _T = tan(latRad) * tan(latRad)
     val _C = eccPrimeSquared * cos(latRad) * cos(latRad)
     val _A = cos(latRad) * (longRad - longOriginRad)
-    val _M = a * ((1 - eccSquared / 4 - 3 * eccSquared * eccSquared / 64 - 5 * eccSquared * eccSquared * eccSquared / 256) * latRad 
-                  - (3 * eccSquared / 8 + 3 * eccSquared * eccSquared / 32 + 45 * eccSquared * eccSquared * eccSquared / 1024) * sin(2 * latRad) 
-                  + (15 * eccSquared * eccSquared / 256 + 45 * eccSquared * eccSquared * eccSquared / 1024) * sin(4 * latRad) 
+    val _M = a * ((1 - eccSquared / 4 - 3 * eccSquared * eccSquared / 64 - 5 * eccSquared * eccSquared * eccSquared / 256) * latRad
+                  - (3 * eccSquared / 8 + 3 * eccSquared * eccSquared / 32 + 45 * eccSquared * eccSquared * eccSquared / 1024) * sin(2 * latRad)
+                  + (15 * eccSquared * eccSquared / 256 + 45 * eccSquared * eccSquared * eccSquared / 1024) * sin(4 * latRad)
                   - (35 * eccSquared * eccSquared * eccSquared / 3072) * sin(6 * latRad))
 
-    val utmEasting = k0 * _N * (_A + (1 - _T + _C) * pow(_A, 3) / 6.0 
+    val utmEasting = k0 * _N * (_A + (1 - _T + _C) * pow(_A, 3) / 6.0
                                 + (5 - 18 * _T + _T * _T + 72 * _C - 58 * eccPrimeSquared) * pow(_A, 5) / 120.0) + 500000.0
 
-    val northingOffset = 
+    val northingOffset =
       if (lat < 0.0)
         10000000.0 //10000000 meter offset for southern hemisphere
       else
@@ -118,7 +118,7 @@ object MGRS {
   }
 
   /**
-   * Converts UTM coords to long/lat, using the WGS84 ellipsoid. 
+   * Converts UTM coords to long/lat, using the WGS84 ellipsoid.
    */
   private def UTMtoLL(decoded: (Int, Int, Int, Char)): (Double, Double) = {
     val (utmEasting, utmNorthing, zoneNumber, zoneLetter) = decoded
@@ -184,8 +184,9 @@ object MGRS {
    */
   private def encode(utm: (Int, Int, Int, Char), accuracy: Int): String = {
     val (northing, easting, zoneNumber, zoneLetter) = utm
-    val seasting = easting.toString
-    val snorthing = northing.toString
+    val formatString = "%0" + accuracy.toString + "d"
+    val seasting = easting.formatted(formatString)
+    val snorthing = northing.formatted(formatString)
 
     s"${zoneNumber}${zoneLetter}${get100kID(easting, northing, zoneNumber)}${seasting.drop(seasting.length - 5).take(accuracy)}${snorthing.drop(snorthing.length - 5).take(accuracy)}"
   }
@@ -215,7 +216,7 @@ object MGRS {
   /**
    * Get the two-letter MGRS 100k designator given information
    * translated from the UTM northing, easting and zone number.
-   * 
+   *
    * column : the column index as it relates to the MGRS
    *          100k set spreadsheet, created from the UTM easting.
    *          Values are 1-8.
@@ -285,7 +286,7 @@ object MGRS {
    * Decode the UTM parameters from a MGRS string.
    *
    * mgrsString : an UPPERCASE coordinate string
-   * 
+   *
    * Returns a pair of a 4-tuple giving (easting, northing, zoneLetter, zoneNumber) and and an integer accuracy (in meters)
    */
   private def decode(mgrsString: String): ((Int, Int, Int, Char), Double) = {
@@ -345,7 +346,7 @@ object MGRS {
 
     val sep = remainder / 2
 
-    val (sepEasting, sepNorthing, accuracyBonus) = 
+    val (sepEasting, sepNorthing, accuracyBonus) =
       if (sep > 0) {
         val aB = 100000.0 / pow(10, sep)
         val sepEastingString = mgrsString.substring(i, i + sep)
@@ -369,7 +370,7 @@ object MGRS {
    *
    * e   : The first letter from a two-letter MGRS 100´k zone.
    * set : The MGRS table set for the zone number.
-   * 
+   *
    * Returns the easting value for the given letter and set.
    */
   private def getEastingFromChar(e: Char, set: Int): Double = {
@@ -411,7 +412,7 @@ object MGRS {
    *
    * n   : Second letter of the MGRS 100k zone
    * set : The MGRS table set number, which is dependent on the UTM zone number.
-   * 
+   *
    * Returns the northing value for the given letter and set.
    */
   private def getNorthingFromChar(n: Char, set: Int): Double = {
