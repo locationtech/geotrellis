@@ -45,7 +45,7 @@ object Dependencies {
   val fs2Core             = "co.fs2"                     %% "fs2-core"                 % "0.10.4"
   val fs2Io               = "co.fs2"                     %% "fs2-io"                   % "0.10.4"
 
-  val sparkCore           = "org.apache.spark"           %% "spark-core"               % Version.spark
+  val sparkCore           = "org.apache.spark"            % "spark-core_2.11"          % Version.spark
   val hadoopClient        = "org.apache.hadoop"           % "hadoop-client"            % Version.hadoop
 
   val avro                = "org.apache.avro"             % "avro"                     % "1.8.2"
