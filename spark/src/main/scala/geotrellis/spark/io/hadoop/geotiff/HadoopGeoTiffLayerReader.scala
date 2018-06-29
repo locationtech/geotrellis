@@ -22,12 +22,16 @@ import geotrellis.spark.io.hadoop.cog.byteReader
 import geotrellis.spark.io.hadoop.conf.HadoopConfig
 import geotrellis.spark.tiling.ZoomedLayoutScheme
 import geotrellis.util.ByteReader
+import geotrellis.util.annotations.experimental
 
 import org.apache.hadoop.conf.Configuration
 
 import java.net.URI
 
-case class HadoopGeoTiffLayerReader[M[T] <: Traversable[T]](
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental case class HadoopGeoTiffLayerReader[M[T] <: Traversable[T]](
   attributeStore: AttributeStore[M, GeoTiffMetadata],
   layoutScheme: ZoomedLayoutScheme,
   resampleMethod: ResampleMethod = NearestNeighbor,
@@ -38,6 +42,9 @@ case class HadoopGeoTiffLayerReader[M[T] <: Traversable[T]](
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, conf)
 }
 
-object HadoopGeoTiffLayerReader {
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental object HadoopGeoTiffLayerReader {
   val defaultThreadCount: Int = HadoopConfig.threads.collection.readThreads
 }
