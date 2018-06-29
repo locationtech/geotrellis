@@ -55,7 +55,7 @@ import scala.reflect._
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
-object GeowaveLayerReader {
+object GeoWaveLayerReader {
   private val geometryFactory = new GeometryFactory
   private val tileClassTag = classTag[Tile]
   private val mbtClassTag = classTag[MultibandTile]
@@ -92,14 +92,14 @@ object GeowaveLayerReader {
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
-@experimental class GeowaveLayerReader(val attributeStore: AttributeStore)
+@experimental class GeoWaveLayerReader(val attributeStore: AttributeStore)
   (implicit sc: SparkContext) extends LazyLogging {
 
   logger.error("GeoWave support is experimental")
 
   val defaultNumPartitions = sc.defaultParallelism
 
-  val gas = attributeStore.asInstanceOf[GeowaveAttributeStore]
+  val gas = attributeStore.asInstanceOf[GeoWaveAttributeStore]
 
   @experimental private def adapters = gas.adapters
   @experimental private def basicOperations = gas.basicAccumuloOperations
@@ -207,7 +207,7 @@ object GeowaveLayerReader {
     V: TileOrMultibandTile: ClassTag,
     M: JsonFormat: GetComponent[?, Bounds[K]]
   ](id: LayerId, rasterQuery: LayerQuery[K, M]) = {
-    import GeowaveLayerReader._
+    import GeoWaveLayerReader._
 
     /* Perform checks */
     if (!attributeStore.layerExists(id))

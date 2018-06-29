@@ -14,28 +14,18 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.io.geowave
+package geotrellis.spark
 
-import geotrellis.spark.io.AttributeStoreSpec
-import org.scalatest.BeforeAndAfter
+import geotrellis.spark.io.kryo.GeoWaveKryoRegistrator
+import geotrellis.spark.testkit.TestEnvironment
 
-class GeowaveAttributeStoreSpec
-    extends AttributeStoreSpec {
+import org.apache.spark.SparkConf
+import org.scalatest._
 
-  private def clear: Unit =
-    attributeStore
-      .layerIds
-      .foreach(attributeStore.delete(_))
-
-  lazy val attributeStore = new GeowaveAttributeStore(
-    "leader:21810",
-    "instance",
-    "root",
-    "password",
-    "TEST"
-  )
-
-  it("should clean up after itself") {
-    clear
+trait GeoWaveTestEnvironment extends TestEnvironment { self: Suite =>
+  override def setKryoRegistrator(conf: SparkConf) = {
+    conf
+      .set("spark.kryo.registrator", classOf[GeoWaveKryoRegistrator].getName)
+      .set("spark.kryo.registrationRequired", "false")
   }
 }

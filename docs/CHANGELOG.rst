@@ -51,6 +51,7 @@ API Changes
   - **Change:** Expose ``attributeStore`` parameter to LayerReader interface.
   - **Change:** Added exponential backoffs in ``S3RDDReader``.
   - **Change:** Changed SinglebandGeoTiff and MultibandGeoTiff crop function behaviour to work properly with cases when extent to crop by doesn't intersect tiff extent.
+  - **Change:** All classes and objects in the ``geowave`` package now use the spelling: ``GeoWave`` in their names.
 
 - ``geotrellis.raster``
 
