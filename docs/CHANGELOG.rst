@@ -91,6 +91,7 @@ Fixes
 - Cropping RDDs with clamp=false now produces correct result.
 - Fixed tiff reads in case RowsPerStrip tiff tag is not defined.
 - Change aspect result to azimuth, i.e. start from due north and be clockwise.
+- COG overviews generated in the ``COGLayer.fromLayerRDD`` method will now use the passed in ``ResampleMethod``.
 
 1.2.1
 _____

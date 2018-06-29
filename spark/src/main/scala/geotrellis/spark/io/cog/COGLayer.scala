@@ -23,7 +23,7 @@ import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
 import geotrellis.raster.io.geotiff.compression.Compression
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
-import geotrellis.raster.resample.NearestNeighbor
+import geotrellis.raster.resample.ResampleMethod
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.index.KeyIndex
@@ -82,8 +82,6 @@ object COGLayer {
       }
     }
 
-    val compression = options.compression
-
     val layoutScheme =
       ZoomedLayoutScheme(rdd.metadata.crs, rdd.metadata.layout.tileCols)
 
@@ -109,14 +107,17 @@ object COGLayer {
         options.maxTileSize
       )
 
-    val pyramidOptions = Pyramid.Options(resampleMethod = options.resampleMethod)
+    val compression = options.compression
+    val resampleMethod = options.resampleMethod
+
+    val pyramidOptions = Pyramid.Options(resampleMethod = resampleMethod)
 
     val layers: Map[ZoomRange, RDD[(K, GeoTiff[V])]] =
       cogLayerMetadata.zoomRanges.
         sorted(Ordering[ZoomRange].reverse).
         foldLeft(List[(ZoomRange, RDD[(K, GeoTiff[V])])]()) { case (acc, range) =>
           if(acc.isEmpty) {
-            List(range -> generateGeoTiffRDD(rdd, range, layoutScheme, cogLayerMetadata.cellType, compression))
+            List(range -> generateGeoTiffRDD(rdd, range, layoutScheme, cogLayerMetadata.cellType, compression, resampleMethod))
           } else {
             val previousLayer: RDD[(K, V)] = acc.head._2.mapValues { tiff =>
               if(tiff.overviews.nonEmpty) tiff.overviews.last.tile
@@ -127,7 +128,7 @@ object COGLayer {
             val upsampledPreviousLayer =
               Pyramid.up(ContextRDD(previousLayer, tmd), layoutScheme, range.maxZoom + 1, pyramidOptions)._2
 
-            val rzz = generateGeoTiffRDD(upsampledPreviousLayer, range, layoutScheme, cogLayerMetadata.cellType, compression)
+            val rzz = generateGeoTiffRDD(upsampledPreviousLayer, range, layoutScheme, cogLayerMetadata.cellType, compression, resampleMethod)
 
             (range -> rzz) :: acc
           }
@@ -145,7 +146,8 @@ object COGLayer {
      zoomRange: ZoomRange ,
      layoutScheme: ZoomedLayoutScheme,
      cellType: CellType,
-     compression: Compression
+     compression: Compression,
+     resampleMethod: ResampleMethod
    ): RDD[(K, GeoTiff[V])] = {
     val kwFomat = KryoWrapper(implicitly[JsonFormat[K]])
     val crs = layoutScheme.crs
@@ -201,7 +203,7 @@ object COGLayer {
             cogTile, cogExtent, crs,
             Tags(Map("GT_KEY" -> keyFormat.write(key).prettyPrint), Nil),
             options
-          ).withOverviews(NearestNeighbor)
+          ).withOverviews(resampleMethod)
 
           (key, cogTiff)
         }
