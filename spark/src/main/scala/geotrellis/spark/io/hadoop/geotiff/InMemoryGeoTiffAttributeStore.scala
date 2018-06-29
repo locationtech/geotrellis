@@ -17,13 +17,17 @@
 package geotrellis.spark.io.hadoop.geotiff
 
 import geotrellis.vector.ProjectedExtent
+import geotrellis.util.annotations.experimental
 import java.net.URI
 
-abstract class InMemoryGeoTiffAttributeStore extends CollectionAttributeStore[GeoTiffMetadata] {
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental abstract class InMemoryGeoTiffAttributeStore extends CollectionAttributeStore[GeoTiffMetadata] {
   val metadataList: List[GeoTiffMetadata]
   lazy val getData: () => GeoTiffMetadataTree[GeoTiffMetadata] = () => GeoTiffMetadataTree.fromGeoTiffMetadataSeq(metadataList)
   lazy val data = getData()
-  def query(layerName: Option[String] = None, extent: Option[ProjectedExtent] = None): Seq[GeoTiffMetadata] = {
+  @experimental def query(layerName: Option[String] = None, extent: Option[ProjectedExtent] = None): Seq[GeoTiffMetadata] = {
     (layerName, extent) match {
       case (Some(name), Some(projectedExtent)) =>
         data.query(name, projectedExtent).filter { md => md.name == name }
@@ -34,5 +38,5 @@ abstract class InMemoryGeoTiffAttributeStore extends CollectionAttributeStore[Ge
     }
   }
 
-  def persist(uri: URI): Unit
+  @experimental def persist(uri: URI): Unit
 }

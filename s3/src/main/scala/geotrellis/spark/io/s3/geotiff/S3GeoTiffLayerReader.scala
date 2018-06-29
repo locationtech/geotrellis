@@ -23,11 +23,15 @@ import geotrellis.raster.io.geotiff.{AutoHigherResolution, OverviewStrategy}
 import geotrellis.spark.tiling.ZoomedLayoutScheme
 import geotrellis.spark.io.hadoop.geotiff.{AttributeStore, GeoTiffLayerReader, GeoTiffMetadata}
 import geotrellis.util.ByteReader
+import geotrellis.util.annotations.experimental
 import geotrellis.spark.io.s3.S3Client
 
 import java.net.URI
 
-case class S3GeoTiffLayerReader[M[T] <: Traversable[T]](
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental case class S3GeoTiffLayerReader[M[T] <: Traversable[T]](
   attributeStore: AttributeStore[M, GeoTiffMetadata],
   layoutScheme: ZoomedLayoutScheme,
   resampleMethod: ResampleMethod = NearestNeighbor,
@@ -38,6 +42,9 @@ case class S3GeoTiffLayerReader[M[T] <: Traversable[T]](
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, getS3Client())
 }
 
-object S3GeoTiffLayerReader {
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental object S3GeoTiffLayerReader {
   val defaultThreadCount: Int = S3Config.threads.collection.readThreads
 }

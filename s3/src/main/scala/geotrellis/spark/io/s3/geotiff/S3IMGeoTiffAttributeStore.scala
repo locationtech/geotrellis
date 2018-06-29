@@ -18,6 +18,7 @@ package geotrellis.spark.io.s3.geotiff
 
 import geotrellis.spark.io.hadoop.geotiff._
 import geotrellis.spark.io.s3.S3Client
+import geotrellis.util.annotations.experimental
 
 import spray.json._
 import spray.json.DefaultJsonProtocol._
@@ -27,7 +28,10 @@ import com.amazonaws.services.s3.model.ObjectMetadata
 import java.io.ByteArrayInputStream
 import java.net.URI
 
-object S3IMGeoTiffAttributeStore {
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental object S3IMGeoTiffAttributeStore {
   def apply(
     name: String,
     uri: URI,

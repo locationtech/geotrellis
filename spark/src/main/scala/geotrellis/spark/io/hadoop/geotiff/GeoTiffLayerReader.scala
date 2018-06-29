@@ -28,6 +28,7 @@ import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.reproject.RasterReprojectMethods
 import geotrellis.raster.merge.RasterMergeMethods
 import geotrellis.util.ByteReader
+import geotrellis.util.annotations.experimental
 
 import cats.effect.IO
 import cats.syntax.apply._
@@ -38,7 +39,10 @@ import java.util.concurrent.{ExecutorService, Executors}
 import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 
-trait GeoTiffLayerReader[M[T] <: Traversable[T]] {
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental trait GeoTiffLayerReader[M[T] <: Traversable[T]] {
   implicit def getByteReader(uri: URI): ByteReader
 
   val attributeStore: AttributeStore[M, GeoTiffMetadata]
@@ -49,9 +53,9 @@ trait GeoTiffLayerReader[M[T] <: Traversable[T]] {
   lazy val pool: ExecutorService = Executors.newFixedThreadPool(defaultThreads)
   implicit lazy val ec = ExecutionContext.fromExecutor(pool)
 
-  def shutdown: Unit = pool.shutdown()
+  @experimental def shutdown: Unit = pool.shutdown()
 
-  def read[
+  @experimental def read[
     V <: CellGrid: GeoTiffReader: ClassTag
   ](layerId: LayerId)(x: Int, y: Int)(implicit rep: Raster[V] => RasterReprojectMethods[Raster[V]],
                                                res: Raster[V] => RasterResampleMethods[Raster[V]],
@@ -94,7 +98,7 @@ trait GeoTiffLayerReader[M[T] <: Traversable[T]] {
       .unsafeRunSync()
   }
 
-  def readAll[
+  @experimental def readAll[
     V <: CellGrid: GeoTiffReader: ClassTag
   ](layerId: LayerId)(implicit rep: Raster[V] => RasterReprojectMethods[Raster[V]],
                                res: Raster[V] => RasterResampleMethods[Raster[V]]): Traversable[Raster[V]] = {
