@@ -34,16 +34,16 @@ import org.opengis.parameter.GeneralParameterValue
 
 import org.scalatest._
 
-class GeowaveSpatialSpec
+class GeoWaveSpatialSpec
     extends FunSpec
     with Matchers
     with BeforeAndAfterAll
-    with GeowaveTestEnvironment
+    with GeoWaveTestEnvironment
 {
 
   val gwNamespace = "TEST"
 
-  val attributeStore = new GeowaveAttributeStore(
+  val attributeStore = new GeoWaveAttributeStore(
     "leader:21810",
     "instance",
     "root",
@@ -51,8 +51,8 @@ class GeowaveSpatialSpec
     gwNamespace
   )
 
-  val reader = new GeowaveLayerReader(attributeStore)
-  val writer = new GeowaveLayerWriter(attributeStore, SocketWriteStrategy())
+  val reader = new GeoWaveLayerReader(attributeStore)
+  val writer = new GeoWaveLayerWriter(attributeStore, SocketWriteStrategy())
   val coverageName = "Sample Elevation 1"
   val id1 = LayerId(coverageName, 11)
   val id2 = LayerId("Sample Elevation 2", 11)
