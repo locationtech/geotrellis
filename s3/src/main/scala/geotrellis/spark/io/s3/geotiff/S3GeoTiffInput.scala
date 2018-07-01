@@ -21,18 +21,22 @@ import geotrellis.spark.io.hadoop.geotiff.GeoTiffMetadata
 import geotrellis.spark.io.s3.S3Client
 import geotrellis.spark.io.s3.util.S3RangeReader
 import geotrellis.util.StreamingByteReader
+import geotrellis.util.annotations.experimental
 
 import com.amazonaws.services.s3.AmazonS3URI
 import com.amazonaws.services.s3.model.ListObjectsRequest
 
 import java.net.URI
 
-object S3GeoTiffInput {
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental object S3GeoTiffInput {
 
   /**
     * Returns a list of URIs matching given regexp
     */
-  def list(
+  @experimental def list(
     name: String,
     uri: URI,
     pattern: String,

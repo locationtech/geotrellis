@@ -17,6 +17,7 @@
 package geotrellis.spark.io.hadoop.geotiff
 
 import geotrellis.spark.io.hadoop.HdfsUtils
+import geotrellis.util.annotations.experimental
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.commons.io.IOUtils
@@ -26,7 +27,10 @@ import spray.json.DefaultJsonProtocol._
 
 import java.net.URI
 
-object HadoopIMGeoTiffAttributeStore {
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental object HadoopIMGeoTiffAttributeStore {
   def apply(
     name: String,
     uri: URI,

@@ -17,14 +17,18 @@
 package geotrellis.spark.io.hadoop.geotiff
 
 import geotrellis.vector._
+import geotrellis.util.annotations.experimental
 import java.net.URI
 
-case class JsonGeoTiffAttributeStore(
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental case class JsonGeoTiffAttributeStore(
   uri: URI,
   readData: URI => GeoTiffMetadataTree[GeoTiffMetadata]
 ) extends CollectionAttributeStore[GeoTiffMetadata] {
   lazy val data: GeoTiffMetadataTree[GeoTiffMetadata] = readData(uri)
-  def query(layerName: Option[String] = None, extent: Option[ProjectedExtent] = None): Seq[GeoTiffMetadata] = {
+  @experimental def query(layerName: Option[String] = None, extent: Option[ProjectedExtent] = None): Seq[GeoTiffMetadata] = {
     (layerName, extent) match {
       case (Some(name), Some(projectedExtent)) =>
         data.query(projectedExtent).filter { md => md.name == name }
