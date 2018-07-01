@@ -26,6 +26,9 @@ import geotrellis.util._
 import geotrellis.vector.Extent
 import geotrellis.vector.io._
 
+import cats.syntax.foldable._
+import cats.instances.stream._
+import cats.instances.either._
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
@@ -284,41 +287,60 @@ object COGLayerMetadata {
       )
     }
 
-    // List of ranges, the current maximum zoom for the next range, the current tile size
-    // for the range, and a flag for whether or not we've gotten to a zoom level that
-    // has 4 or less tiles contain the extent.
-    val accSeed = (List[(ZoomRange, KeyBounds[K])](), maxZoom, baseLayout.tileRows, false)
+    /**
+      * List of ranges, the current maximum zoom for the next range, the current tile size, isLowLevel, fitsZoomRange.
+      * - fitsZoomRange is required for the case when the min zoom level is not the low zoom level of the partial pyramid
+      *   but fits some partial pyramid.
+      * - for the range, and a flag for whether or not we've gotten to a zoom level that
+      *   has 4 or less tiles contain the extent.
+      */
+    val accSeed = (List[(ZoomRange, KeyBounds[K])](), maxZoom, baseLayout.tileRows, false, true)
+    def validZoomRange(zr: ZoomRange): Boolean = zr.zoomInRange(minZoom) || (zr.minZoom >= minZoom)
 
-    val (zoomRanges, _, _, _) =
-      (maxZoom to minZoom by -1).foldLeft(accSeed) { case ((acc, currMaxZoom, currTileSize, isLowLevel), z) =>
-        if(isLowLevel) {
-          val thisLayout = layoutScheme.levelForZoom(z).layout
-
-          ((ZoomRange(z, currMaxZoom), getKeyBounds(thisLayout)) :: acc, z - 1, currTileSize, isLowLevel)
-        } else {
-          val thisLayout = layoutScheme.levelForZoom(z).layout
-          val thisTileSize =
-            if(currMaxZoom == z) {
-              // Starting a fresh range
-              thisLayout.tileRows
-            } else {
-              currTileSize * 2
-            }
-
-          val thisIsLowLevel = {
-            val SpatialKey(colMin, rowMin) = thisLayout.mapTransform.pointToKey(extent.xmin, extent.ymax)
-            val SpatialKey(colMax, rowMax) = thisLayout.mapTransform.pointToKey(extent.xmax, extent.ymin)
-            rowMax - rowMin < 2 || colMax - colMin < 2
-          }
-
-          if(thisIsLowLevel || thisTileSize >= maxTileSize) {
-            // thisTileSize is ignored next round
-            ((ZoomRange(z, currMaxZoom), getKeyBounds(thisLayout)) :: acc, z - 1, thisTileSize, thisIsLowLevel)
+    val (zoomRanges, _, _, _, _) = {
+      // generate a stream from the max zoom level by -1, we want to perform a lazy fold with a conditional break
+      val Left(res) =
+        Stream.from(maxZoom, -1).foldLeftM(accSeed) { case (prod@(acc, currMaxZoom, currTileSize, isLowLevel, fitsZoomRange), z) =>
+          // TMS doesn't support zoom levels below 0
+          if (z < 0 || !fitsZoomRange) {
+            Left(prod)
           } else {
-            (acc, currMaxZoom, thisTileSize, thisIsLowLevel)
+            if (isLowLevel) {
+              val thisLayout = layoutScheme.levelForZoom(z).layout
+              val zr = ZoomRange(z, currMaxZoom)
+              val fits = validZoomRange(zr)
+              // a border case where we need to stop and not to push data to the next fold step
+              if (fits) Right(((zr, getKeyBounds(thisLayout)) :: acc, z - 1, currTileSize, isLowLevel, fits))
+              else Left(prod)
+            } else {
+              val thisLayout = layoutScheme.levelForZoom(z).layout
+              val thisTileSize =
+                if (currMaxZoom == z) {
+                  // Starting a fresh range
+                  thisLayout.tileRows
+                } else {
+                  currTileSize * 2
+                }
+
+              val thisIsLowLevel = {
+                val SpatialKey(colMin, rowMin) = thisLayout.mapTransform.pointToKey(extent.xmin, extent.ymax)
+                val SpatialKey(colMax, rowMax) = thisLayout.mapTransform.pointToKey(extent.xmax, extent.ymin)
+                rowMax - rowMin < 2 || colMax - colMin < 2
+              }
+
+              if (thisIsLowLevel || thisTileSize >= maxTileSize) {
+                val zr = ZoomRange(z, currMaxZoom)
+                // thisTileSize is ignored next round
+                Right(((zr, getKeyBounds(thisLayout)) :: acc, z - 1, thisTileSize, thisIsLowLevel, validZoomRange(zr)))
+              } else {
+                Right((acc, currMaxZoom, thisTileSize, thisIsLowLevel, fitsZoomRange))
+              }
+            }
           }
         }
-      }
+
+      res
+    }
 
     COGLayerMetadata(
       cellType,
