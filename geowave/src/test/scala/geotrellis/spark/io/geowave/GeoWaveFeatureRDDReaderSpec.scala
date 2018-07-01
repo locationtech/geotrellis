@@ -60,7 +60,7 @@ object GeoWaveFeatureRDDReaderSpec {
   */
 class GeoWaveFeatureRDDReaderSpec
     extends FunSpec
-    with GeowaveTestEnvironment
+    with GeoWaveTestEnvironment
 {
 
   import GeoWaveFeatureRDDReaderSpec.id

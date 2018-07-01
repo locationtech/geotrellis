@@ -70,7 +70,7 @@ import mil.nga.giat.geowave.core.store.data.VisibilityWriter
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
-@experimental object GeowaveLayerWriter extends LazyLogging {
+@experimental object GeoWaveLayerWriter extends LazyLogging {
 
   /** $experimental */
   @experimental def write[
@@ -81,7 +81,7 @@ import mil.nga.giat.geowave.core.store.data.VisibilityWriter
     coverageName: String,
     bits: Int,
     rdd: RDD[(K, V)] with Metadata[M],
-    as: GeowaveAttributeStore,
+    as: GeoWaveAttributeStore,
     accumuloWriter: AccumuloWriteStrategy
   ): Unit = {
     val metadata = rdd.metadata.asInstanceOf[TileLayerMetadata[SpatialKey]]
@@ -92,7 +92,7 @@ import mil.nga.giat.geowave.core.store.data.VisibilityWriter
     val specimen = rdd.first
 
     /* Construct (Multiband|)Tile to GridCoverage2D conversion function */
-    val rectify = GeowaveUtil.rectify(bits)_
+    val rectify = GeoWaveUtil.rectify(bits)_
     val geotrellisKvToGeotools: ((K, V)) => GridCoverage2D = {
       case (k: SpatialKey, _tile: V) =>
         val Extent(minX, minY, maxX, maxY) = mt(k.asInstanceOf[SpatialKey]).reproject(crs, LatLng)
@@ -244,8 +244,8 @@ import mil.nga.giat.geowave.core.store.data.VisibilityWriter
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
-@experimental class GeowaveLayerWriter(
-  val attributeStore: GeowaveAttributeStore,
+@experimental class GeoWaveLayerWriter(
+  val attributeStore: GeoWaveAttributeStore,
   val accumuloWriter: AccumuloWriteStrategy
 )(implicit sc: SparkContext)
     extends LazyLogging {
@@ -284,7 +284,7 @@ import mil.nga.giat.geowave.core.store.data.VisibilityWriter
     if (bits <= 0)
       logger.warn("It is highly recommended that you specify a bit precision when writing into GeoWave")
 
-    GeowaveLayerWriter.write(
+    GeoWaveLayerWriter.write(
       coverageName,
       (if (bits <= 0) 0; else bits),
       rdd,

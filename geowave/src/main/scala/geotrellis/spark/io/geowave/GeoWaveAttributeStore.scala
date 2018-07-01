@@ -62,7 +62,7 @@ import spray.json.DefaultJsonProtocol._
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
-@experimental object GeowaveAttributeStore {
+@experimental object GeoWaveAttributeStore {
 
   /** $experimental */
   @experimental def accumuloRequiredOptions(
@@ -121,7 +121,7 @@ import spray.json.DefaultJsonProtocol._
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
-@experimental class GeowaveAttributeStore(
+@experimental class GeoWaveAttributeStore(
   val zookeepers: String,
   val accumuloInstance: String,
   val accumuloUser: String,
@@ -136,14 +136,14 @@ import spray.json.DefaultJsonProtocol._
   val connector = zkInstance.getConnector(accumuloUser, token)
   val delegate = AccumuloAttributeStore(connector, s"${geowaveNamespace}_ATTR")
 
-  val basicAccumuloOperations = GeowaveAttributeStore.basicOperations(
+  val basicAccumuloOperations = GeoWaveAttributeStore.basicOperations(
     zookeepers,
     accumuloInstance,
     accumuloUser,
     accumuloPass,
     geowaveNamespace: String
   )
-  val accumuloRequiredOptions = GeowaveAttributeStore.accumuloRequiredOptions(
+  val accumuloRequiredOptions = GeoWaveAttributeStore.accumuloRequiredOptions(
     zookeepers,
     accumuloInstance,
     accumuloUser,
@@ -199,13 +199,13 @@ import spray.json.DefaultJsonProtocol._
   }
 
   /** $experimental */
-  @experimental def primaryIndex = GeowaveAttributeStore.primaryIndex
+  @experimental def primaryIndex = GeoWaveAttributeStore.primaryIndex
 
   /** $experimental */
-  @experimental def adapters = GeowaveAttributeStore.adapters(basicAccumuloOperations)
+  @experimental def adapters = GeoWaveAttributeStore.adapters(basicAccumuloOperations)
 
   /** $experimental */
-  @experimental def subStrategies = GeowaveAttributeStore.subStrategies(primaryIndex)
+  @experimental def subStrategies = GeoWaveAttributeStore.subStrategies(primaryIndex)
 
   /** $experimental */
   @experimental def delete(layerId: LayerId, attributeName: String): Unit =

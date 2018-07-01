@@ -38,7 +38,7 @@ import java.io.{ ObjectInputStream, ObjectOutputStream }
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
-@experimental class GeowaveKryoRegistrator extends KryoRegistrator {
+@experimental class GeoWaveKryoRegistrator extends KryoRegistrator {
 
   /** $experimental */
   @experimental override def registerClasses(kryo: Kryo) = {
