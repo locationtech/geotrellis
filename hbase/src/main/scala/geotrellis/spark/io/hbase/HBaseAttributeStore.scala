@@ -62,8 +62,8 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
       if (table.getTableDescriptor.hasFamily(attributeName)) {
         val scan = new Scan()
         layerId.foreach { id =>
-          scan.setStartRow(layerIdString(id))
-          scan.setStopRow(stringToBytes(layerIdString(id)) :+ 0.toByte) // add trailing byte, to include stop row
+          scan.withStartRow(layerIdString(id), true)
+          scan.withStopRow(stringToBytes(layerIdString(id)), true)
         }
         scan.addFamily(attributeName)
         val scanner = table.getScanner(scan)

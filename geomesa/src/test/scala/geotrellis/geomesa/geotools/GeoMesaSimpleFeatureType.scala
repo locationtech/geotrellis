@@ -22,7 +22,6 @@ import geotrellis.proj4.{WebMercator, CRS => GCRS}
 import com.github.blemale.scaffeine.{Cache, Scaffeine}
 import com.vividsolutions.jts.{geom => jts}
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder
-import org.locationtech.geomesa.accumulo.index.Constants
 import org.opengis.feature.simple.SimpleFeatureType
 
 import scala.reflect._
@@ -31,6 +30,7 @@ object GeoMesaSimpleFeatureType {
 
   val whenField: String = GeometryToGeoMesaSimpleFeature.whenField
   val whereField: String = GeometryToGeoMesaSimpleFeature.whereField
+  val indexDtg: String = GeometryToGeoMesaSimpleFeature.indexDtg
 
   lazy val featureTypeCache: Cache[String, SimpleFeatureType] =
     Scaffeine()
@@ -56,7 +56,7 @@ object GeoMesaSimpleFeatureType {
       sftb.setDefaultGeometry(whereField)
       if (temporal) sftb.add(whenField, classOf[java.util.Date])
       val sft = sftb.buildFeatureType
-      if (temporal) sft.getUserData.put(Constants.SF_PROPERTY_START_TIME, whenField) // when field is date
+      if (temporal) sft.getUserData.put(indexDtg, whenField) // when field is date
       sft
     })
   }
