@@ -24,7 +24,7 @@ import scala.math.{ abs, pow, round }
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
   */
-@experimental object GeowaveUtil {
+@experimental object GeoWaveUtil {
 
   /**
     * $experimental If an edge or corner of an extent is very close to a split in
