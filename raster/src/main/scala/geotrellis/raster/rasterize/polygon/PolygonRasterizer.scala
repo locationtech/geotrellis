@@ -178,7 +178,7 @@ object PolygonRasterizer {
     * @param y      The y-value of the vertical scanline
     * @param maxX   The maximum-possible x-coordinate
     */
-  private def runsPoint(rtree: STRtree, y: Int, maxX: Int) = {
+  private def runsPoint(rtree: STRtree, y: Int, maxX: Int): Array[Double] = {
     val row = y + 0.5
     val xcoordsMap = mutable.Map[Double, Int]()
     val xcoordsList = mutable.ListBuffer[Double]()
@@ -236,7 +236,7 @@ object PolygonRasterizer {
 
     xcoordsMap.foreach({ case (xcoord, parity) =>
       /**
-        * This is where the  ASSUMPTION is used.  Given the assumption,
+        * This is where the ASSUMPTION is used.  Given the assumption,
         * this intersection  should be used as  the open or close  of a
         * run of  turned-on pixels  if and only  if the  sum associated
         * with that intersection is -1, 0, or 1.
@@ -266,7 +266,7 @@ object PolygonRasterizer {
     * @param maxX     The maximum-possible x-coordinate
     * @param partial  True if all intersected cells are to be reported, otherwise only those on the interior of the polygon
     */
-  private def runsArea(rtree: STRtree, y: Int, maxX: Int, partial: Boolean) = {
+  private def runsArea(rtree: STRtree, y: Int, maxX: Int, partial: Boolean): Array[Double] = {
     val (top, bot) = (y + 1, y + 0)
     val interactions = mutable.ListBuffer[Segment]()
     val intervals = mutable.ListBuffer[Interval]()
@@ -422,6 +422,18 @@ object PolygonRasterizer {
       val rowRuns =
         if (sampleType == PixelIsPoint) runsPoint(edges, y, re.cols)
         else runsArea(edges, y, re.cols, partial)
+
+      if(rowRuns.length % 2 != 0) {
+        // This is an unacceptable state - most likely due to invalid input
+        if(!poly.isValid) {
+          throw new IllegalArgumentException("Cannot rasterize an invalid polygon")
+        } else {
+          throw new IllegalStateException(
+            s"Rasterizer encountered an error: an odd number of X axis intersections encountered via a horizontal line across the raster at y = $y."
+          )
+        }
+      }
+
 
       var i = 0
       while (i < rowRuns.length) {
