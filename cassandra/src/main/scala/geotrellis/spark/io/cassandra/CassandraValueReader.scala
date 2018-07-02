@@ -43,15 +43,17 @@ class CassandraValueReader(
     val writerSchema = attributeStore.readSchema(layerId)
     val codec = KeyValueRecordCodec[K, V]
 
-    def read(key: K): V = instance.withSession { session =>
-      val statement = session.prepare(
+    private lazy val statement = instance.withSession{ session =>
+      session.prepare(
         QueryBuilder.select("value")
           .from(header.keyspace, header.tileTable)
           .where(eqs("key", QueryBuilder.bindMarker()))
           .and(eqs("name", layerId.name))
           .and(eqs("zoom", layerId.zoom))
       )
+    }
 
+    def read(key: K): V = instance.withSession { session =>
       val row = session.execute(statement.bind(keyIndex.toIndex(key): BigInteger)).all()
       val tiles = row.map { entry =>
           AvroEncoder.fromBinary(writerSchema, entry.getBytes("value").array())(codec)
