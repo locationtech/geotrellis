@@ -93,6 +93,7 @@ Fixes
 - Fixed tiff reads in case RowsPerStrip tiff tag is not defined.
 - Change aspect result to azimuth, i.e. start from due north and be clockwise.
 - COG overviews generated in the ``COGLayer.fromLayerRDD`` method will now use the passed in ``ResampleMethod``.
+- Reading a GeoTiff with ``streaming`` will now work with files that are larger than ``java.lang.Integer.MAX_VALUE``.
 
 1.2.1
 _____
