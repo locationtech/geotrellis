@@ -18,6 +18,7 @@ package geotrellis.spark.io.s3.geotiff
 
 import geotrellis.spark.io.s3.S3Client
 import geotrellis.spark.io.hadoop.geotiff._
+import geotrellis.util.annotations.experimental
 
 import com.amazonaws.services.s3.AmazonS3URI
 import com.amazonaws.services.s3.model.ObjectMetadata
@@ -29,8 +30,11 @@ import java.net.URI
 
 import scala.io.Source
 
-object S3JsonGeoTiffAttributeStore {
-  def readData(uri: URI, getS3Client: () => S3Client = () => S3Client.DEFAULT): List[GeoTiffMetadata] = {
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental object S3JsonGeoTiffAttributeStore {
+  @experimental def readData(uri: URI, getS3Client: () => S3Client = () => S3Client.DEFAULT): List[GeoTiffMetadata] = {
     val s3Client = getS3Client()
     val s3Uri = new AmazonS3URI(uri)
 
@@ -51,7 +55,7 @@ object S3JsonGeoTiffAttributeStore {
       .convertTo[List[GeoTiffMetadata]]
   }
 
-  def readDataAsTree(uri: URI, getS3Client: () => S3Client): GeoTiffMetadataTree[GeoTiffMetadata] =
+  @experimental def readDataAsTree(uri: URI, getS3Client: () => S3Client): GeoTiffMetadataTree[GeoTiffMetadata] =
     GeoTiffMetadataTree.fromGeoTiffMetadataSeq(readData(uri, getS3Client))
 
   def apply(uri: URI): JsonGeoTiffAttributeStore =
@@ -76,6 +80,4 @@ object S3JsonGeoTiffAttributeStore {
 
     attributeStore
   }
-
-
 }

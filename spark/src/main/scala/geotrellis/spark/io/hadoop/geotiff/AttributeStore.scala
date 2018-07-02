@@ -17,26 +17,30 @@
 package geotrellis.spark.io.hadoop.geotiff
 
 import geotrellis.vector.ProjectedExtent
+import geotrellis.util.annotations.experimental
 
-trait CollectionAttributeStore[T] extends AttributeStore[Seq, T]
-trait IteratorAttributeStore[T] extends AttributeStore[Iterator, T]
+@experimental trait CollectionAttributeStore[T] extends AttributeStore[Seq, T]
+@experimental trait IteratorAttributeStore[T] extends AttributeStore[Iterator, T]
 
-/** Layer that works with Metadata Index ?? */
-trait AttributeStore[M[_], T] {
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  * Layer that works with Metadata Index ??
+  */
+@experimental trait AttributeStore[M[_], T] {
   /**
     * The only one query that has to be implemented with this interface
     * We are going to check this theory by implementing PSQL AttributeStore
     * */
-  def query(layerName: Option[String], extent: Option[ProjectedExtent]): M[T]
+  @experimental def query(layerName: Option[String], extent: Option[ProjectedExtent]): M[T]
 
-  def query(layerName: String, extent: ProjectedExtent): M[T] =
+  @experimental def query(layerName: String, extent: ProjectedExtent): M[T] =
     query(Some(layerName), Some(extent))
 
-  def query(layerName: String): M[T] =
+  @experimental def query(layerName: String): M[T] =
     query(Some(layerName), None)
 
-  def query(extent: ProjectedExtent): M[T] =
+  @experimental def query(extent: ProjectedExtent): M[T] =
     query(None, Some(extent))
 
-  def query: M[T] = query(None, None)
+  @experimental def query: M[T] = query(None, None)
 }

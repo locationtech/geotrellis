@@ -17,6 +17,7 @@
 package geotrellis.spark.io.file.geotiff
 
 import geotrellis.spark.io.hadoop.geotiff._
+import geotrellis.util.annotations.experimental
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -26,8 +27,11 @@ import spray.json.DefaultJsonProtocol._
 import java.net.URI
 import java.io.PrintWriter
 
-object FileJsonGeoTiffAttributeStore {
-  def readDataAsTree(uri: URI): GeoTiffMetadataTree[GeoTiffMetadata] =
+/**
+  * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental
+  */
+@experimental object FileJsonGeoTiffAttributeStore {
+  @experimental def readDataAsTree(uri: URI): GeoTiffMetadataTree[GeoTiffMetadata] =
     GeoTiffMetadataTree.fromGeoTiffMetadataSeq(HadoopJsonGeoTiffAttributeStore.readData(uri, new Configuration))
 
   def apply(uri: URI): JsonGeoTiffAttributeStore =
