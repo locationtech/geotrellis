@@ -9,4 +9,5 @@
   "project slick" test \
   "project vectortile" test \
   "project geowave" compile test:compile \
-  "project hbase" test || { exit 1; }
+  "project hbase" test \
+  "project geomesa" test || { exit 1; }

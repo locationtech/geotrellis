@@ -43,7 +43,7 @@ cache:
   - $HOME/downloads
 
 script:
-  - .travis/build-and-test.sh
+  - travis_wait 60 .travis/build-and-test.sh
 
 notifications:
   email:
