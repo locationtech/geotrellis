@@ -10,4 +10,5 @@
   "project vectortile" test \
   "project geowave" compile test:compile \
   "project hbase" test \
-  "project geomesa" test || { exit 1; }
+  "project geomesa" test \
+  "project cassandra" test || { exit 1; }
