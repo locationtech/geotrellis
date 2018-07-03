@@ -1657,14 +1657,14 @@ the specified tile. As with striped, ``TileOffsets`` and
 ``TileByteCounts`` are arrays that contain the begining offset and the
 byte count of each tile in the image, respectively.
 
-Layout of Columns and Rows
+Layout: Columns and Rows
 --------------------------
 
-There exists two ways in which to describe a location in GeoTiffs. One
-is in Map coordinates which use X and Y values. X's are oriented along
-the horizontal axis and run from west to east while Y's are on the
+At a high level, there exist two ways to refer to a location within GeoTiffs.
+One is to use Map coordinates which are X and Y values. X's are oriented
+along the horizontal axis and run from west to east while Y's are on the
 vertical axis and run from south to north. Thus the further east you
-are, the larger your X value ; and the more north you are the larger
+are, the larger your X value; and the more north you are the larger
 your Y value.
 
 The other method is to use the grid coordinate system. This technique of
@@ -1673,18 +1673,65 @@ things. Cols run east to west whereas Rows run north to south. This then
 means that Cols increase as you go east to west, and rows increase as
 you go north to south.
 
+Each (X, Y) pair corresponds to some real location on the planet. Cols and
+rows, on the other hand, are ways of specifying location *within the image*
+rather than by reference to any actual location. For more on coordinate
+systems supported by GeoTiffs, check out the relevant parts of the
+`spec <http://geotiff.maptools.org/spec/geotiff2.5.html#2.5/>`_.
+
 Big Tiffs
 ---------
 
-In some instances, your GeoTiff may contain an amount of data so large
-that it can no longer be described as a Tiff, but rather by a new name,
-BigTiff. In order to qualify as a BigTiff, your file needs to be **at
-least 4gb in size or larger**. At this point, the methods used to store
-and find data need to be changed. The accommodation that is made is to
+In order to qualify as a BigTiff, your file needs to be **at least 4gb
+in size or larger**. At this size, the methods used to store
+and find data are different. The accommodation that is made is to
 change the size of the various offsets and byte counts of each segment.
 For a normal Tiff, this size is 32-bits, but BigTiffs have these sizes
-at 64-bit. GeoTrellis supports BigTiffs without any issue, so one need
-not worry about size when working with their files.
+at 64-bit. GeoTrellis transparently supports BigTiffs, so
+so you shouldn't need to worry about size.
+
+Cloud Optimized GeoTiffs
+------------------------
+
+Just as the GeoTiff is a subset of Tiff meant to convey information not
+only about image values but also the spatial extent of that imagery,
+Cloud Optimized GeoTiffs are a nascent subset of GeoTiff meant to increase
+their expressiveness, ease of use, and portability through further
+standardization. We call these GeoTiff "cloud optimized" because the
+features they add allow for remote access to GeoTiff that, with the help
+of HTTP GET range requests, access the parts of a tiff you're interested
+without consuming large portions of the image which are irrelevant to your
+computation.
+
+COGs are thus capable of serving as a self-describing backing for raster
+layers. The only cost associated with the use of COGs over GeoTrellis'
+Avro-based layers layers is the extra effort related to metadata retrieval
+and munging (metadata for each individual GeoTiff will need to be collected
+as opposed to the monolithic metadata of Avro layers, which is read and
+handled once for the entire layer).
+
+Structured vs Unstructured
+--------------------------
+
+Historically, Geotrellis layers have been backed by specially encoded Avro
+layers which are were designed to maximize the performance of distributed
+reading and querying. With the advent of the COG and the development of
+tooling to support this subset of the GeoTiff spec, however, the advantages
+of depending upon a bespoke raster format are less obvious than they once were.
+Avro support is likely to continue, but support for applications backed by
+COGs are a priority for continued GeoTrellis development.
+
+To this end, GeoTrellis is introducing the notion of a 'structured' COG layer.
+Structured COG layers are actually a collection of COGs tiled out in a
+consistent manner and described through common (GeoTrellis-specific) metadata
+which is designed to enhance query performance for larger layers by allowing
+GeoTrellis programs to infer information about underlying, individual COG files
+without having to read multiple of them.
+
+
+
+
+
 
 Further Readings
 ----------------
@@ -1693,6 +1740,8 @@ Further Readings
    format <http://www.fileformat.info/format/tiff/egff.htm>`__
 -  `For more information on the GeoTiff file
    format <http://www.gdal.org/frmt_gtiff.html>`__
+-  `For more information on the Cloud Optimized GeoTiff file
+   format <http://www.cogeo.org/>`__
 
 .. raw:: html
 

@@ -1,4 +1,6 @@
-sudo: false
+# See https://docs.travis-ci.com/user/reference/overview/#Virtualisation-Environment-vs-Operating-System
+sudo: required
+dist: trusty
 
 env:
   global:
