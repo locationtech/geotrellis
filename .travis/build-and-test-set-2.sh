@@ -4,5 +4,4 @@
   "project raster" test \
   "project accumulo" test \
   "project s3" test \
-  "project s3-testkit" test \
-  "project geomesa" test || { exit 1; }
+  "project s3-testkit" test || { exit 1; }
