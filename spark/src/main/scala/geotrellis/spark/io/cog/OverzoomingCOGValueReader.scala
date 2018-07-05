@@ -33,7 +33,7 @@ trait OverzoomingCOGValueReader extends COGValueReader[LayerId] {
   def overzoomingReader[
     K: JsonFormat: SpatialComponent: ClassTag,
     V <: CellGrid: GeoTiffReader: ? => TileResampleMethods[V]
-  ](layerId: LayerId, resampleMethod: ResampleMethod): Reader[K, V] = new Reader[K, V] {
+  ](layerId: LayerId, resampleMethod: ResampleMethod): COGReader[K, V] = new COGReader[K, V] {
     val LayerId(layerName, requestedZoom) = layerId
     val maxAvailableZoom = attributeStore.layerIds.filter { case LayerId(name, _) => name == layerName }.map(_.zoom).max
     val metadata = attributeStore.readMetadata[TileLayerMetadata[K]](LayerId(layerName, maxAvailableZoom))
@@ -45,16 +45,39 @@ trait OverzoomingCOGValueReader extends COGValueReader[LayerId] {
     lazy val baseReader = reader[K, V](layerId)
     lazy val maxReader = reader[K, V](LayerId(layerName, maxAvailableZoom))
 
+    def deriveMaxKey(key: K): K = {
+      val srcSK = key.getComponent[SpatialKey]
+      val denom = math.pow(2, requestedZoom - maxAvailableZoom).toInt
+      key.setComponent[SpatialKey](SpatialKey(srcSK._1 / denom, srcSK._2 / denom))
+    }
+
+    def readSubsetBands(key: K, bands: Seq[Int]): Array[Option[Tile]] =
+      if (requestedZoom <= maxAvailableZoom) {
+        baseReader.readSubsetBands(key, bands)
+      } else {
+        val maxKey = deriveMaxKey(key)
+        val toResamples = maxReader.readSubsetBands(maxKey, bands)
+
+        toResamples.map { toResample =>
+          toResample match {
+            case None => None
+            case Some(tile) =>
+              Some(
+                tile.resample(
+                  maxMaptrans.keyToExtent(maxKey.getComponent[SpatialKey]),
+                  RasterExtent(requestedMaptrans.keyToExtent(key.getComponent[SpatialKey]), tile.cols, tile.rows),
+                  resampleMethod
+                )
+              )
+          }
+        }
+      }
+
     def read(key: K): V =
       if (requestedZoom <= maxAvailableZoom) {
         baseReader.read(key)
       } else {
-        val maxKey = {
-          val srcSK = key.getComponent[SpatialKey]
-          val denom = math.pow(2, requestedZoom - maxAvailableZoom).toInt
-          key.setComponent[SpatialKey](SpatialKey(srcSK._1 / denom, srcSK._2 / denom))
-        }
-
+        val maxKey = deriveMaxKey(key)
         val toResample = maxReader.read(maxKey)
 
         toResample.resample(
