@@ -531,8 +531,19 @@ abstract class GeoTiffMultibandTile(
    *
    * @param bounds Pixel bounds specifying the crop area.
    */
- def crop(bounds: GridBounds): ArrayMultibandTile = {
-   val iter = crop(List(bounds))
+ def crop(bounds: GridBounds): ArrayMultibandTile =
+   crop(bounds, (0 until bandCount).toArray)
+
+  /**
+   * Crop this tile to given pixel region of the given bands. The returned MultibandGeoTiffTile
+   * will contain a subset of bands that have the same area as the input GridBounds.
+   *
+   * @param bounds Pixel bounds specifying the crop area.
+   * @param  bandIndices       An array of band indexes.
+   *
+   */
+ def crop(bounds: GridBounds, bandIndices: Array[Int]): ArrayMultibandTile = {
+   val iter = crop(List(bounds), bandIndices)
    if (iter.isEmpty) throw GeoAttrsError(s"No intersections of ${bounds} vs ${gridBounds}")
    else iter.next._2
  }

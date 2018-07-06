@@ -52,12 +52,15 @@ API Changes
   - **Change:** Added exponential backoffs in ``S3RDDReader``.
   - **Change:** Changed SinglebandGeoTiff and MultibandGeoTiff crop function behaviour to work properly with cases when extent to crop by doesn't intersect tiff extent.
   - **Change:** All classes and objects in the ``geowave`` package now use the spelling: ``GeoWave`` in their names.
+  - **New:** Both ``COGValueReader`` and ``OverzoomingCOGValueReader`` now have the ``readSubsetBands`` method which allows users to read in a select number
+    of bands in any order they choose.
 
 - ``geotrellis.raster``
 
   - **Change:** Removed ``decompress`` option from `GeoTiffReader` functions.
   - **New:** Kryo serialization of geometry now uses a binary format to reduce shuffle block size.
   - **Change:** Scalaz streams were replaced by fs2 streams.
+  - **New:** ``GeoTiffMultibandTile`` now has another ``crop`` method that takes a ``GridBounds`` and an ``Array[Int]`` that represents the band indices.
 
 - ``geotrellis.spark-etl``
 
