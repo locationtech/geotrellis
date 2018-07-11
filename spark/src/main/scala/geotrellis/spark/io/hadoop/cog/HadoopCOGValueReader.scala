@@ -42,7 +42,7 @@ class HadoopCOGValueReader(
   def reader[
     K: JsonFormat: SpatialComponent: ClassTag,
     V <: CellGrid: GeoTiffReader
-  ](layerId: LayerId): Reader[K, V] = {
+  ](layerId: LayerId): COGReader[K, V] = {
 
     val header =
       try {

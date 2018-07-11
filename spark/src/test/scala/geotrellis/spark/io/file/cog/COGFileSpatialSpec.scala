@@ -68,4 +68,27 @@ class COGFileSpatialSpec
       assertEqual(actual.tile, expected)
     }
   }
+
+  describe("COGValueReader and readSubsetBands") {
+    it("should read in only the needed bands") {
+      val id = LayerId("multiband-cog-layer", 11)
+      val path = "spark/src/test/resources/cog-layer"
+
+      val valueReader = FileCOGValueReader(path).reader[SpatialKey, MultibandTile](id)
+      val layerReader = FileCOGLayerReader(path)
+
+      val layer = layerReader.read[SpatialKey, MultibandTile](id)
+      val key = layer.first()._1
+
+      val actual = valueReader.readSubsetBands(key, 1, 0, 4, 99)
+      val expected = {
+        val tile = valueReader.read(key)
+        Array(Some(tile.band(1)), Some(tile.band(0)), None, None)
+      }
+
+      for ((exp, act) <- expected.zip(actual)) {
+        exp should be (act)
+      }
+    }
+  }
 }

@@ -1,0 +1,47 @@
+<VRTDataset rasterXSize="256" rasterYSize="512">
+      <SRS>GEOGCS["WGS 84", DATUM["World Geodetic System 1984", SPHEROID["WGS 84", 6378137.0, 298.257223563, AUTHORITY["EPSG","7030"]], AUTHORITY["EPSG","6326"]], PRIMEM["Greenwich", 0.0, AUTHORITY["EPSG","8901"]], UNIT["degree", 0.017453292519943295], AXIS["Geodetic longitude", EAST], AXIS["Geodetic latitude", NORTH], AUTHORITY["EPSG","4326"]]</SRS>
+      <GeoTransform>79.99705882352941, 0.0058823529411764705, 0.0, 7.00293542074364, 0.0, -0.005870841487279843</GeoTransform>
+      <VRTRasterBand dataType="ShortConstantNoData" band="2">
+          <SimpleSource>
+        <SourceFilename relativeToVRT="1">445.tiff</SourceFilename>
+        <SourceBand>2</SourceBand>
+        <SourceProperties RasterXSize="256" RasterYSize="256" DataType="ShortConstantNoData" BlockXSize="256" BlockYSize="256"/>
+        <SrcRect xOff="0" yOff="0" xSize="256" ySize="256"/>
+        <DstRect xOff="-321.0" yOff="-1088.0" xSize="2880.0" ySize="1440.0"/>
+      </SimpleSource><SimpleSource>
+        <SourceFilename relativeToVRT="1">447.tiff</SourceFilename>
+        <SourceBand>2</SourceBand>
+        <SourceProperties RasterXSize="256" RasterYSize="256" DataType="ShortConstantNoData" BlockXSize="256" BlockYSize="256"/>
+        <SrcRect xOff="0" yOff="0" xSize="256" ySize="256"/>
+        <DstRect xOff="-321.0" yOff="352.0" xSize="2880.0" ySize="1440.0"/>
+      </SimpleSource>
+        </VRTRasterBand><VRTRasterBand dataType="ShortConstantNoData" band="1">
+          <SimpleSource>
+        <SourceFilename relativeToVRT="1">445.tiff</SourceFilename>
+        <SourceBand>1</SourceBand>
+        <SourceProperties RasterXSize="256" RasterYSize="256" DataType="ShortConstantNoData" BlockXSize="256" BlockYSize="256"/>
+        <SrcRect xOff="0" yOff="0" xSize="256" ySize="256"/>
+        <DstRect xOff="-321.0" yOff="-1088.0" xSize="2880.0" ySize="1440.0"/>
+      </SimpleSource><SimpleSource>
+        <SourceFilename relativeToVRT="1">447.tiff</SourceFilename>
+        <SourceBand>1</SourceBand>
+        <SourceProperties RasterXSize="256" RasterYSize="256" DataType="ShortConstantNoData" BlockXSize="256" BlockYSize="256"/>
+        <SrcRect xOff="0" yOff="0" xSize="256" ySize="256"/>
+        <DstRect xOff="-321.0" yOff="352.0" xSize="2880.0" ySize="1440.0"/>
+      </SimpleSource>
+        </VRTRasterBand><VRTRasterBand dataType="ShortConstantNoData" band="3">
+          <SimpleSource>
+        <SourceFilename relativeToVRT="1">445.tiff</SourceFilename>
+        <SourceBand>3</SourceBand>
+        <SourceProperties RasterXSize="256" RasterYSize="256" DataType="ShortConstantNoData" BlockXSize="256" BlockYSize="256"/>
+        <SrcRect xOff="0" yOff="0" xSize="256" ySize="256"/>
+        <DstRect xOff="-321.0" yOff="-1088.0" xSize="2880.0" ySize="1440.0"/>
+      </SimpleSource><SimpleSource>
+        <SourceFilename relativeToVRT="1">447.tiff</SourceFilename>
+        <SourceBand>3</SourceBand>
+        <SourceProperties RasterXSize="256" RasterYSize="256" DataType="ShortConstantNoData" BlockXSize="256" BlockYSize="256"/>
+        <SrcRect xOff="0" yOff="0" xSize="256" ySize="256"/>
+        <DstRect xOff="-321.0" yOff="352.0" xSize="2880.0" ySize="1440.0"/>
+      </SimpleSource>
+        </VRTRasterBand>
+    </VRTDataset>
