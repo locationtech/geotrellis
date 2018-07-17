@@ -16,26 +16,28 @@ level overview.
 Glossary
 ========
 
--  **Tile:** A grid of numeric *cells* that represent some data on the
-   Earth.
--  **Cell:** A single unit of data in some grid, also called a
-   *Location* in GIS.
--  **Layer:** or "Tile Layer", this is a grid (or cube) of *Tiles*.
--  **Zoom Layer:** a *Tile Layer* at some zoom level.
--  **Key:** Used to index a *Tile* in a grid (or cube) of them.
--  **Key Index:** Used to transform higher-dimensional *Keys* into one
-   dimension.
--  **Metadata:** or "Layer Metadata", stores information critical to
-   Tile Layer IO.
--  **Layout Definition:** A description of a Tile grid (its dimensions,
-   etc).
--  **Extent:** or "Bounding Box", represents some area on the Earth.
--  **Raster:** A *Tile* with an *Extent*.
--  **Vector:** or "Geometry", these are Point, Line, and Polygon data.
--  **Feature:** A *Geometry* with some associated metadata.
--  **RDD:** "Resilient Distributed Datasets" from `Apache
-   Spark <http://spark.apache.org/>`__. Can be thought of as a highly
-   distributed Scala ``Seq``.
+- `Vector <#geometries>`_ or **Geometry**: Structures built up by
+  connecting Points in space; includes ``Point``\s, ``Line``\s,
+  ``Polygon``\s.
+- `Extent <#extents>`_ or **Bounding Box**: An axis aligned, rectangular
+  region.
+- `Feature <#features>`_: A *Geometry* with some associated metadata.
+- `Cell <#working-with-cell-values>`_: A single unit of data in some
+  grid.
+- `Tile <#tiles-and-rasters>`_: A grid of numeric *cells* that represent
+  some data on the Earth.
+- `Raster <#rasters>`_: A *Tile* with an *Extent*.
+- **RDD:** "Resilient Distributed Datasets" from `Apache Spark <http://spark.apache.org/>`__. Can be thought of as a distributed Scala ``Seq``.
+- `Key <#keys>`_: Used to index a *Tile* in a grid (or cube) of them.
+- `Key Index <#key-indexes>`_: A means to transform higher-dimensional
+  *Keys* into a unique one-dimensional identifier.
+- `Layer <#layouts-and-tile-layers>`_ or **Tile Layer**: This is a grid
+  (or cube) of *Tiles*.
+- `Metadata <#layouts-and-tile-layers>`_ or **Layer Metadata**: A
+  descriptive structure that defines how to interpret a key-value store as a
+  *Layer*.
+- `Layout Definition <#layouts-and-tile-layers>`_: A structure that
+  relates *Keys* to geographic locations and vice versa.
 
 These definitions are expanded upon in other sections of this document.
 
@@ -67,9 +69,16 @@ data.
 
 The following packages contain the relevant code:
 
-- ``geotrellis.proj4``
-- ``geotrellis.raster``
-- ``geotrellis.vector``
+- |geotrellis.proj4|_
+- |geotrellis.raster|_
+- |geotrellis.vector|_
+
+.. |geotrellis.proj4| replace:: ``geotrellis.proj4``
+.. _geotrellis.proj4: https://geotrellis.github.io/scaladocs/latest/#geotrellis.proj4.package
+.. |geotrellis.raster| replace:: ``geotrellis.raster``
+.. _geotrellis.raster: https://geotrellis.github.io/scaladocs/latest/#geotrellis.raster.package
+.. |geotrellis.vector| replace:: ``geotrellis.vector``
+.. _geotrellis.vector: https://geotrellis.github.io/scaladocs/latest/#geotrellis.vector.package
 
 Distributed Processing
 ----------------------
@@ -94,7 +103,10 @@ representation, for manipulating data within a tiled layer, and for storing
 processed layers to a variety of backends.  Find implementations of these
 features in this package:
 
-- ``geotrellis.spark``
+- |geotrellis.spark|_
+
+.. |geotrellis.spark| replace:: ``geotrellis.spark``
+.. _geotrellis.spark: https://geotrellis.github.io/scaladocs/latest/#geotrellis.spark.package
 
 Storage Backends
 ^^^^^^^^^^^^^^^^
@@ -109,12 +121,25 @@ to support any number of applications.
 The necessary componenents for storing and reading layers can be found in the
 following packages:
 
-- ``geotrellis.spark.io``
-- ``geotrellis.accumulo``
-- ``geotrellis.cassandra``
-- ``geotrellis.geomesa``
-- ``geotrellis.hbase``
-- ``geotrellis.s3``
+- |geotrellis.spark.io|_
+- |geotrellis.accumulo|_
+- |geotrellis.cassandra|_
+- |geotrellis.geomesa|_
+- |geotrellis.hbase|_
+- |geotrellis.s3|_
+
+.. |geotrellis.spark.io| replace:: ``geotrellis.spark.io``
+.. _geotrellis.spark.io: https://geotrellis.github.io/scaladocs/latest/#geotrellis.spark.io.package
+.. |geotrellis.accumulo| replace:: ``geotrellis.accumulo``
+.. _geotrellis.accumulo: https://geotrellis.github.io/scaladocs/latest/#geotrellis.accumulo.package
+.. |geotrellis.cassandra| replace:: ``geotrellis.cassandra``
+.. _geotrellis.cassandra: https://geotrellis.github.io/scaladocs/latest/#geotrellis.cassandra.package
+.. |geotrellis.geomesa| replace:: ``geotrellis.geomesa``
+.. _geotrellis.geomesa: https://geotrellis.github.io/scaladocs/latest/#geotrellis.geomesa.package
+.. |geotrellis.hbase| replace:: ``geotrellis.hbase``
+.. _geotrellis.hbase: https://geotrellis.github.io/scaladocs/latest/#geotrellis.hbase.package
+.. |geotrellis.s3| replace:: ``geotrellis.s3``
+.. _geotrellis.s3: https://geotrellis.github.io/scaladocs/latest/#geotrellis.s3.package
 
 Method Extensions
 -----------------
@@ -155,22 +180,32 @@ Coordinate Reference Systems
 ----------------------------
 
 As a means of describing geodetic coordinate systems, the
-``geotrellis.proj4.CRS`` class is provided.  CRSs can be constructed by either
+|geotrellis.proj4.CRS|_ class is provided.  CRSs can be constructed by either
 indicating the EPSG code using the ``CRS.fromEpsgCode`` object method, or by the
 ``proj4`` string using the ``CRS.fromString`` object method.
 
 There are also a set of predefined CRS objects provided in
-``geotrellis.proj4``.  These include the standard ``WebMercator`` and
-``LatLng`` CRSs.  Also included is ``ConusAlbers``, giving the Albers equal
-area projection for the continental United States (EPSG code 5070).  Finally,
-UTM zone CRS objects can be produced using the
-``geotrellis.proj4.util.UTM.getZoneCrs`` method.
+``geotrellis.proj4``.  These include the standard |WebMercator|_ and |LatLng|_
+CRSs.  Also included is |ConusAlbers|_, giving the Albers equal area
+projection for the continental United States (EPSG code 5070).  Finally, UTM
+zone CRS objects can be produced using the |getZoneCrs|_ method.
+
+.. |geotrellis.proj4.CRS| replace:: ``geotrellis.proj4.CRS``
+.. _geotrellis.proj4.CRS: https://geotrellis.github.io/scaladocs/latest/#geotrellis.proj4.CRS
+.. |WebMercator| replace:: ``WebMercator``
+.. _WebMercator: https://geotrellis.github.io/scaladocs/latest/#geotrellis.proj4.WebMercator$
+.. |LatLng| replace:: ``LatLng``
+.. _LatLng: https://geotrellis.github.io/scaladocs/latest/#geotrellis.proj4.LatLng$
+.. |ConusAlbers| replace:: ``ConusAlbers``
+.. _ConusAlbers: https://geotrellis.github.io/scaladocs/latest/#geotrellis.proj4.ConusAlbers$
+.. |getZoneCrs| replace:: ``geotrellis.proj4.util.UTM.getZoneCrs``
+.. _getZoneCrs: https://geotrellis.github.io/scaladocs/latest/#geotrellis.proj4.util.UTM$
 
 Transformations
 ---------------
 
 To move coordinates between coordinate systems, it is necessary to build a
-``geotrellis.proj4.Transform`` object.  These are built simply by supplying
+|geotrellis.proj4.Transform|_ object.  These are built simply by supplying
 the source CRS and the destination CRS.  The result is a transformation
 function with type ``(Double, Double) => (Double, Double)``.
 
@@ -178,6 +213,8 @@ function with type ``(Double, Double) => (Double, Double)``.
 
    <hr>
 
+.. |geotrellis.proj4.Transform| replace:: ``geotrellis.proj4.Transform``
+.. _geotrellis.proj4.Transform: https://geotrellis.github.io/scaladocs/latest/#geotrellis.proj4.Transform$
 
 Vector Data
 ===========
@@ -197,14 +234,14 @@ Geometries
 Geometries in Geotrellis are exclusively point sets and piecewise linear
 representations.  A collection of points may be connected by a chain of linear
 segments into more complex shapes, and then aggregated into collections.  All
-such classes derive from the base ``geotrellis.vector.Geometry`` class.  The
+such classes derive from the base |geotrellis.vector.Geometry|_ class.  The
 geometry subclasses are as follows:
 
-- ``geotrellis.vector.Point``
+- |geotrellis.vector.Point|_
 
   Representation of a 2-dimensional point in space.
 
-- ``geotrellis.vector.Line``
+- |geotrellis.vector.Line|_
 
   More appropriately termed a *polyline*.  A sequence of linear segments
   formed from a sequence of points, :math:`[p_1, p_2, ..., p_n]`, where the
@@ -212,20 +249,20 @@ geometry subclasses are as follows:
   :math:`p_{i+1}`.  May be self-intersecting.  May be open or closed (the
   latter meaning that :math:`p_1 = p_n`).
 
-- ``geotrellis.vector.Polygon``
+- |geotrellis.vector.Polygon|_
 
   A polygonal shape, possibly with holes.  Formed from a single closed, simple
   (non-self-intersecting) polyline exterior, and zero or more closed, simple,
   mutually non-intersecting interior rings.  Proper construction can be
   verified through the use of the ``isValid()`` method.
 
-- ``geotrellis.vector.MultiPoint``
-- ``geotrellis.vector.MultiLine``
-- ``geotrellis.vector.MultiPolygon``
+- |geotrellis.vector.MultiPoint|_
+- |geotrellis.vector.MultiLine|_
+- |geotrellis.vector.MultiPolygon|_
 
   The three preceding classes aggregate points, lines, and polygons, respectively.
 
-- ``geotrellis.vector.GeometryCollection``
+- |geotrellis.vector.GeometryCollection|_
 
   A container class for aggregating dissimilar geometries.
 
@@ -233,6 +270,24 @@ Geometries have a standard interface for typical operations such as
 finding the convex hull, affine transformation (rotation, scaling,
 translating, and shearing), determining if one geometry is contained within
 another, and finding intersections.
+
+.. |geotrellis.vector.Geometry| replace:: ``geotrellis.vector.Geometry``
+.. _geotrellis.vector.Geometry: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/Geometry.html
+.. |geotrellis.vector.Point| replace:: ``geotrellis.vector.Point``
+.. _geotrellis.vector.Point: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/Point.html
+.. |geotrellis.vector.Line| replace:: ``geotrellis.vector.Line``
+.. _geotrellis.vector.Line: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/Line.html
+.. |geotrellis.vector.Polygon| replace:: ``geotrellis.vector.Polygon``
+.. _geotrellis.vector.Polygon: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/Polygon.html
+.. |geotrellis.vector.MultiPoint| replace:: ``geotrellis.vector.MultiPoint``
+.. _geotrellis.vector.MultiPoint: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/MultiPoint.html
+.. |geotrellis.vector.MultiLine| replace:: ``geotrellis.vector.MultiLine``
+.. _geotrellis.vector.MultiLine: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/MultiLine.html
+.. |geotrellis.vector.MultiPolygon| replace::
+                                    ``geotrellis.vector.MultiPolygon``
+.. _geotrellis.vector.MultiPolygon: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/MultiPolygon.html
+.. |geotrellis.vector.GeometryCollection| replace:: ``geotrellis.vector.GeometryCollection``
+.. _geotrellis.vector.GeometryCollection: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/GeometryCollection.html
 
 The following is a simple example of working with intersections:
 
@@ -268,13 +323,16 @@ that the ``GeometryResult`` object may not be convertable to the chosen
 *always* return ``None``.
 
 Alternatively, one may use pattern matching to check intersection
-results. ``geotrellis.vector.Results`` contains a large `ADT
+results. |geotrellis.vector.GeometryResult|_ contains a large `ADT
 <https://en.wikipedia.org/wiki/Algebraic_data_type>`__ which encodes the
 possible outcomes for different types of outcomes. The result type of a
 JTS-dependent vector operation can be found somewhere on this tree to the
 effect that an exhaustive match can be carried out to determine the
 ``Geometry`` (excepting cases of ``NoResult``, for which there is no
 ``Geometry``).
+
+.. |geotrellis.vector.GeometryResult| replace:: ``geotrellis.vector.GeometryResult``
+.. _geotrellis.vector.GeometryResult: https://geotrellis.github.io/scaladocs/latest/geotrellis/vector/GeometryResult.html
 
 For example, we note that a ``Point``/``Point`` intersection has the
 type ``PointOrNoResult``. From this we can deduce that it is either a
@@ -318,12 +376,22 @@ by ``geotrellis.vector.op`` such that this becomes possible:
 
 The following packages extend ``Geometry`` capabilities:
 
--  `geotrellis.vector.io.json <io/json/>`__
--  `geotrellis.vector.io.WKT <io/WKT/>`__
--  `geotrellis.vector.io.WKB <io/WKB/>`__
--  `geotrellis.vector.op <op/>`__
--  `geotrellis.vector.op.affine <op/affine/>`__
--  `geotrellis.vector.reproject <reproject/>`__
+- |geotrellis.vector.io.json|_
+- |geotrellis.vector.io.WKT|_
+- |geotrellis.vector.io.WKB|_
+- |geotrellis.vector.affine|_
+- |geotrellis.vector.reproject|_
+
+.. |geotrellis.vector.io.json| replace:: ``geotrellis.vector.io.json``
+.. _geotrellis.vector.io.json: https://geotrellis.github.io/scaladocs/latest/#geotrellis.vector.io.json.package
+.. |geotrellis.vector.io.wkt| replace:: ``geotrellis.vector.io.wkt``
+.. _geotrellis.vector.io.wkt: https://geotrellis.github.io/scaladocs/latest/#geotrellis.vector.io.wkt.package
+.. |geotrellis.vector.io.wkb| replace:: ``geotrellis.vector.io.wkb``
+.. _geotrellis.vector.io.wkb: https://geotrellis.github.io/scaladocs/latest/#geotrellis.vector.io.wkb.package
+.. |geotrellis.vector.affine| replace:: ``geotrellis.vector.affine``
+.. _geotrellis.vector.affine: https://geotrellis.github.io/scaladocs/latest/#geotrellis.vector.affine.package
+.. |geotrellis.vector.reproject| replace:: ``geotrellis.vector.reproject``
+.. _geotrellis.vector.reproject: https://geotrellis.github.io/scaladocs/latest/#geotrellis.vector.reproject.package
 
 Extents
 ^^^^^^^
@@ -371,15 +439,7 @@ the geometry are assigned the value of of the feature's ``data``.
 Further Information
 -------------------
 
-These submodules define useful methods for dealing with vector entities:
-
--  ``geotrellis.vector.io`` defines input/output (serialization) of
-   geometries
--  ``geotrellis.vector.op`` defines common operations on geometries
--  ``geotrellis.vector.reproject`` defines methods for translating
-   between projections
-
-Also, please refer to the `vector documentation <./vectors.rst>`__ for more
+Please refer to the `vector documentation <./vectors.rst>`__ for more
 detailed information.
 
 .. raw:: html
@@ -421,11 +481,11 @@ operators. Here's an incomplete list of the types of things on offer:
 Working with Cell Values
 ------------------------
 
-Tiles contain numerical data.  These can be of the form of integers, floats,
-doubles, and so forth.  And even though Scala has generic types, Geotrellis
-does not implement ``Tile[V]`` for performance reasons, since the Java
-compiler will liberally sprinkle box/unbox commands all through the code to
-support the genericity, which greatly increase runtime and space usage.
+``Tile``\s contain numerical data.  These can be of the form of integers,
+floats, doubles, and so forth.  And even though Scala has generic types,
+Geotrellis does not implement ``Tile[V]`` for performance reasons, since the
+Java compiler will liberally sprinkle box/unbox commands all through the code
+to support the genericity, which greatly increase runtime and space usage.
 
 Instead, Geotrellis uses macros to implement a different system of cell types.
 This preserves speed while maintaining flexibility of data types, with only
@@ -457,7 +517,7 @@ The various cell types are defined as follows:
 | DoubleCells | ``DoubleCellType`` | ``DoubleConstantNoDataCellType`` | ``DoubleUserDefinedNoDataCellType`` |
 +-------------+--------------------+----------------------------------+-------------------------------------+
 
-The three rightmost columns give the ``CellType``s that would be used to
+The three rightmost columns give the ``CellType``\s that would be used to
 represent (1) data without a ``NoData`` value, (2) data using a default
 ``NoData`` value, and (3) data where the user specifies the value used for the
 ``NoData`` value.  User defined NoData CellTypes require a constructor to
@@ -584,30 +644,30 @@ We can consider the inheritance pathway of ``IntArrayTile`` to get a feel for
 the class structure.  Note that each listed class is a descendant of the
 previous class.
 
-- ``Grid``:
+- |Grid|_
 
   A ``Serializable`` instance giving row and column dimensions.
 
-- ``CellGrid``:
+- |CellGrid|_
 
   Adds ``cellType`` to Grid.  ``CellGrid`` forms the minimum requirement for
   many algorithms.
 
-- ``Tile``:
+- |TileRef|_
 
   Provides the basic infrastructure for accessing the content of a tile
   (``get`` and ``getDouble``).
 
-- ``ArrayTile``
+- |ArrayTile|_
 
   Allows conversion from tiles to arrays.
 
-- ``MutableArrayTile``
+- |MutableArrayTile|_
 
   Provides the means to change the values in a tile (``set`` and
   ``setDouble``).
 
-- ``IntArrayTile``
+- |IntArrayTile|_
 
   The implementation of ``MutableArrayTile`` for discrete data types.
 
@@ -616,6 +676,19 @@ previous class.
     original immutable tile, but simply creates a mutable version from the
     same underlying buffer.  Changes to the result of a call to ``mutable``
     will change the original as well.
+
+.. |Grid| replace:: ``Grid``
+.. _Grid: https://geotrellis.github.io/scaladocs/latest/#geotrellis.raster.Grid
+.. |CellGrid| replace:: ``CellGrid``
+.. _CellGrid: https://geotrellis.github.io/scaladocs/latest/#geotrellis.raster.CellGrid
+.. |TileRef| replace:: ``Tile``
+.. _TileRef: https://geotrellis.github.io/scaladocs/latest/#geotrellis.raster.Tile
+.. |ArrayTile| replace:: ``ArrayTile``
+.. _ArrayTile: https://geotrellis.github.io/scaladocs/latest/#geotrellis.raster.ArrayTile
+.. |MutableArrayTile| replace:: ``MutableArrayTile``
+.. _MutableArrayTile: https://geotrellis.github.io/scaladocs/latest/#geotrellis.raster.MutableArrayTile
+.. |IntArrayTile| replace:: ``IntArrayTile``
+.. _IntArrayTile: https://geotrellis.github.io/scaladocs/latest/#geotrellis.raster.IntArrayTile
 
 Rasters
 -------
@@ -710,7 +783,7 @@ a type ``K`` can have their spatial component extracted using the
 ``getComponent[SpatialKey]`` extension method), which is used to identify a
 region in space.
 
-The ``geotrellis.spark.tiling.LayoutDefinition`` class is used to describe how
+The |LayoutDefinition|_ class is used to describe how
 ``SpatialKey``\ s map to regions in space.  The ``LayoutDefinition`` is a
 ``GridExtent`` subclass defined with an ``Extent`` and ``CellSize``.  The
 ``Extent`` is subdivided into a grid of uniform, rectangular regions.  The
@@ -721,13 +794,19 @@ position corresponding to the upper-left corner of the extent; the `x`
 coordinate increases toward the right, and the `y` coordinate increases moving
 down (into lower latitude values, say).
 
+.. |LayoutDefinition| replace:: ``geotrellis.spark.tiling.LayoutDefinition``
+.. _LayoutDefinition: https://geotrellis.github.io/scaladocs/latest/#geotrellis.spark.tiling.LayoutDefinition
+
 Thus far, we've described how an ``RDD[(K, V)]`` plus a ``LayoutDefinition``
 can be used to represent a large, distributed raster (when ``[K:
 SpatialComponent]``).  To solidify this notion, Geotrellis has a notion of a
 *Tile Layer*, which is defined as ``RDD[(K, V)] with Metadata[M]``.  The ``M``
-type is usually represented by a ``TileLayerMetadata[K]`` object.  These
+type is usually represented by a |TileLayerMetadata|_ object.  These
 metadata, provide a ``LayoutDefinition`` plus a ``CRS``, ``CellType``, and
 bounds for the keys found in the ``RDD``.
+
+.. |TileLayerMetadata| replace:: ``TileLayerMetadata[K]``
+.. _TileLayerMetadata: https://geotrellis.github.io/scaladocs/latest/#geotrellis.spark.TileLayerMetadata
 
     Note: The easiest means to represent a tile layer is with a
     ``ContextRDD`` object.
@@ -787,7 +866,7 @@ Keys and Key Indexes
 Keys
 ----
 
-As mentioned in the `Tile Layers <#tile-layers>`__ section, grids (or
+As mentioned in the `Tile Layers <#layouts-and-tile-layers>`__ section, grids (or
 cubes) of ``Tile``\ s on the earth are organized by keys. This key,
 often refered to generically as ``K``, is typically a ``SpatialKey`` or
 a ``SpaceTimeKey``:
@@ -963,8 +1042,11 @@ merged tiles of its children.
     its associated metadata.
 
 To build a pyramid, Geotrellis provides the
-``geotrellis.spark.pyramid.Pyramid`` class.  Consult that documentation for
+|geotrellis.spark.pyramid.Pyramid|_ class.  Consult that documentation for
 usage.
+
+.. |geotrellis.spark.pyramid.Pyramid| replace:: ``geotrellis.spark.pyramid.Pyramid``
+.. _geotrellis.spark.pyramid.Pyramid: https://geotrellis.github.io/scaladocs/latest/#geotrellis.spark.pyramid.Pyramid
 
 Zoom Levels and Layout Schemes
 ------------------------------
@@ -975,7 +1057,10 @@ In some cases, the layer on which the pyramid is based has a well-defined
 ``LayoutDefinition`` that is significant to the application.  In those cases,
 we simply build the pyramid.  In other cases, we need to generate
 ``LayoutDefinition``\ s that conform to the application's demand.  This is the
-job of ``LayoutScheme``\ s.
+job of a |LayoutScheme|_\.
+
+.. |LayoutScheme| replace:: ``geotrellis.spark.tiling.LayoutScheme``
+.. _LayoutScheme: https://geotrellis.github.io/scaladocs/latest/#geotrellis.spark.tiling.LayoutScheme
 
 A ``LayoutScheme`` sets the definition of a zoom level.  Given an extent and a
 cell size, the ``LayoutScheme`` will provide an integer zoom level and the
@@ -988,7 +1073,10 @@ local and global.  A local method is akin to starting with a
 ``LayoutDefinition`` and assigning an arbitrary zoom number to it.  The leaf
 nodes of the pyramid's quad tree are rooted at this level, and subsequent zoom
 levels (lower resolution levels) are generated through power of two
-reductions.  Use the ``LocalLayoutScheme`` class for this purpose.
+reductions.  Use the |LocalLayoutScheme|_ class for this purpose.
+
+.. |LocalLayoutScheme| replace:: ``geotrellis.spark.tiling.LocalLayoutScheme``
+.. _LocalLayoutScheme: https://geotrellis.github.io/scaladocs/latest/#geotrellis.spark.tiling.LocalLayoutScheme
 
     Note: The user must specify the numerical value of the initial zoom level
     when using a ``LocalLayoutScheme``.
@@ -998,11 +1086,14 @@ schemes start with a global extent, which each ``CRS`` defines.  A tile
 resolution is set, which defines the cell size at zoom level 0—that is, global
 layout schemes are defined by having one tile which covers the world extent
 completely at zoom 0.  That cell size is then halved at the next highest (more
-resolute) zoom level.
+resolute) zoom level.  For historical reasons, global schemes are called |ZoomedLayoutScheme|_\s
 
     Note: the global layout scheme defined here establishes a zoom and spatial
     key layout that is used by many prevalent web map tile serving standards
     such as TMS.
+
+.. |ZoomedLayoutScheme| replace:: ``geotrellis.spark.tiling.ZoomedLayoutScheme``
+.. _ZoomedLayoutScheme: https://geotrellis.github.io/scaladocs/latest/#geotrellis.spark.tiling.ZoomedLayoutScheme
 
 .. raw:: html
 
@@ -1241,13 +1332,13 @@ depending on your architecture.
 Map Algebra
 ===========
 
-Map Algebra is a name given by Dr. Dana Tomlin in the 1980's to a way of
-manipulating and transforming raster data. There is a lot of literature out
-there, not least `the book by the guy who "wrote the book" on map algebra
+Map Algebra is the name given by Dana Tomlin to a method of manipulating and
+transforming raster data.  There are many references on map algebra, including
+`Tomlin's book
 <http://esripress.esri.com/display/index.cfm?fuseaction=display&websiteID=228&moduleID=0>`__,
-so we will only give a brief introduction here. GeoTrellis follows Dana's
-vision of map algebra operations, although there are many operations that
-fall outside of the realm of Map Algebra that it also supports.
+so we will only give a brief introduction here. GeoTrellis follows Tomlin's
+vision of map algebra operations, although there are many operations that fall
+outside of the realm of Map Algebra that it also supports.
 
 Map Algebra operations fall into 3 general categories:
 
