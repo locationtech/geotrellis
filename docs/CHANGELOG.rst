@@ -62,6 +62,8 @@ API Changes
   - **Change:** Scalaz streams were replaced by fs2 streams.
   - **New:** ``GeoTiffMultibandTile`` now has another ``crop`` method that takes a ``GridBounds`` and an ``Array[Int]`` that represents the band indices.
   - **New:** ``GeoTiff[MultibandTile]`` can be written with ``BandInterleave``, only ``PixelInterleave`` previously supported.  <https://github.com/locationtech/geotrellis/pull/2767>
+  - **New:** ``MultibandTile`` now has a new method, ``cropBands`` that takes an Array of band indices and returns a cropped ``MultibandTile`` with the chosen
+    bands.
 
 - ``geotrellis.spark-etl``
 
