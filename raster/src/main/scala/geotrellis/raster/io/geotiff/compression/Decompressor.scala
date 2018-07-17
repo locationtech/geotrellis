@@ -115,11 +115,10 @@ object Decompressor {
         checkPredictor(DeflateCompression.createDecompressor(segmentSizes))
       case PackBitsCoded =>
         checkEndian(PackBitsDecompressor(segmentSizes))
+      case JpegCoded =>
+        checkEndian(JpegDecompressor(tiffTags))
 
       // Unsupported compression types
-      case JpegCoded =>
-        val msg = "compression type JPEG is not supported by this reader."
-        throw new GeoTiffReaderLimitationException(msg)
       case HuffmanCoded =>
         val msg = "compression type CCITTRLE is not supported by this reader."
         throw new GeoTiffReaderLimitationException(msg)
