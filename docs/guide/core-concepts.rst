@@ -16,6 +16,10 @@ level overview.
 Glossary
 ========
 
+The following is a non-exhaustive list of fundamental terms and their
+definitions that are important to understanding the function of Geotrellis.
+These definitions will be expanded upon in other sections of this document.
+
 - `Vector <#geometries>`_ or **Geometry**: Structures built up by
   connecting Points in space; includes ``Point``\s, ``Line``\s,
   ``Polygon``\s.
@@ -24,22 +28,26 @@ Glossary
 - `Feature <#features>`_: A *Geometry* with some associated metadata.
 - `Cell <#working-with-cell-values>`_: A single unit of data in some
   grid.
-- `Tile <#tiles-and-rasters>`_: A grid of numeric *cells* that represent
+- `Tile <#tiles-and-rasters>`_: A grid of numeric *cell*\s that represent
   some data on the Earth.
-- `Raster <#rasters>`_: A *Tile* with an *Extent*.
+- `Raster <#rasters>`_: A *Tile* with an *Extent*; places data over a specific
+  region of the Earth.
 - **RDD:** "Resilient Distributed Datasets" from `Apache Spark <http://spark.apache.org/>`__. Can be thought of as a distributed Scala ``Seq``.
-- `Key <#keys>`_: Used to index a *Tile* in a grid (or cube) of them.
-- `Key Index <#key-indexes>`_: A means to transform higher-dimensional
-  *Keys* into a unique one-dimensional identifier.
-- `Layer <#layouts-and-tile-layers>`_ or **Tile Layer**: This is a grid
-  (or cube) of *Tiles*.
+- `Key <#keys>`_: Used to index into a grid of *tiles*.
+- `Layout Definition <#layouts-and-tile-layers>`_ or **Layout**: A structure that
+  relates *keys* to geographic locations and vice versa.
 - `Metadata <#layouts-and-tile-layers>`_ or **Layer Metadata**: A
   descriptive structure that defines how to interpret a key-value store as a
-  *Layer*.
-- `Layout Definition <#layouts-and-tile-layers>`_: A structure that
-  relates *Keys* to geographic locations and vice versa.
-
-These definitions are expanded upon in other sections of this document.
+  coherent single raster.
+- `Layer <#layouts-and-tile-layers>`_ or **Tile Layer**: A combined structure
+  of *tiles* and *keys* in an ``RDD`` with *metadata*.  Represents a very
+  large *raster* in a distributed computing context.
+- `Pyramid <#pyramids>`_: A collection of layers, indexed by a `zoom level
+  <#zoom-levels-and-layout-schemes>`_, where each layer represents the same
+  raster data at a different resolution.  Essentially a quad tree of raster
+  data where child nodes cover the same area at higher resolution as their parents.
+- `Catalog <#catalogs-tile-layer-io>`_: A persistent store for *tile layers*
+  and/or *pyramids*, storing both *tiles* and *metadata*.
 
 .. raw:: html
 
