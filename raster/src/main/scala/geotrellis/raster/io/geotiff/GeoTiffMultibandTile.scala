@@ -584,7 +584,7 @@ abstract class GeoTiffMultibandTile(
         else
           getIntersectingSegments(window, bandIndices)
 
-      val bands = Array.fill(bandCount)(ArrayTile.empty(cellType, window.width, window.height))
+      val bands = Array.fill(bandSubsetLength)(ArrayTile.empty(cellType, window.width, window.height))
       val chip = Chip(window, bands, segments.length)
       for (segment <- segments.map(_._2)) {
         val tail = chipsBySegment.getOrElse(segment, Nil)
@@ -632,10 +632,10 @@ abstract class GeoTiffMultibandTile(
     }
 
 
-    def burnBandInterleave(segmentId: Int, offsetId: Int, subsetBandIndex: Int, segment: GeoTiffSegment): List[Chip] = {
+    def burnBandInterleave(segmentId: Int, subsetBandIndex: Int, segment: GeoTiffSegment): List[Chip] = {
       var finished: List[Chip] = Nil
-      val segmentBounds = getGridBounds(offsetId)
-      val segmentTransform = getSegmentTransform(offsetId)
+      val segmentBounds = getGridBounds(segmentId)
+      val segmentTransform = getSegmentTransform(segmentId)
 
       for (chip <- chipsBySegment(segmentId)) {
         val gridBounds = chip.window
@@ -681,10 +681,8 @@ abstract class GeoTiffMultibandTile(
         getSegments(intersectingSegments.map(_._2)).flatMap { case (segmentId, segment) =>
           val bandIndex = segmentBandMap(segmentId)
           val subsetBandIndex = bandIndexToSubsetIndex(bandIndex)
-          val segmentOffset = bandSegmentCount * subsetBandIndex
-          val offsetId = segmentId - segmentOffset
 
-          burnBandInterleave(segmentId, offsetId, subsetBandIndex, segment)
+          burnBandInterleave(segmentId, subsetBandIndex, segment)
         }
       }
 

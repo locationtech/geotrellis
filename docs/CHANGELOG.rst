@@ -61,6 +61,9 @@ API Changes
   - **New:** Kryo serialization of geometry now uses a binary format to reduce shuffle block size.
   - **Change:** Scalaz streams were replaced by fs2 streams.
   - **New:** ``GeoTiffMultibandTile`` now has another ``crop`` method that takes a ``GridBounds`` and an ``Array[Int]`` that represents the band indices.
+  - **New:** ``GeoTiff[MultibandTile]`` can be written with ``BandInterleave``, only ``PixelInterleave`` previously supported.  <https://github.com/locationtech/geotrellis/pull/2767>
+  - **New:** ``MultibandTile`` now has a new method, ``cropBands`` that takes an Array of band indices and returns a cropped ``MultibandTile`` with the chosen
+    bands.
 
 - ``geotrellis.spark-etl``
 
@@ -97,6 +100,9 @@ Fixes
 - Change aspect result to azimuth, i.e. start from due north and be clockwise.
 - COG overviews generated in the ``COGLayer.fromLayerRDD`` method will now use the passed in ``ResampleMethod``.
 - Reading a GeoTiff with ``streaming`` will now work with files that are larger than ``java.lang.Integer.MAX_VALUE``.
+- ``GeoTiffMultibandTile.crop`` will now work with GeoTiffs that have tiled segments and band interleave.
+- ``GeoTiffMultibandTile.crop`` will now return ``ArrayMultibandTile``\(s) with the correct number of bands.
+- Imroved performance of ``COGValueReader.readSubsetBands`` when reading from S3.
 
 1.2.1
 _____

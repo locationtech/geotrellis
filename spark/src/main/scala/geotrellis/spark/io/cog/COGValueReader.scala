@@ -19,6 +19,7 @@ package geotrellis.spark.io.cog
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.GeoTiffMultibandTile
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
+import geotrellis.raster.crop._
 import geotrellis.raster.resample._
 import geotrellis.spark._
 import geotrellis.spark.io._
@@ -84,16 +85,8 @@ trait COGValueReader[ID] {
       val maxWidth = Index.digits(baseKeyIndex.toIndex(baseKeyIndex.keyBounds.maxKey))
       val uri = fullPath(keyPath(key.setComponent(spatialKey), maxWidth, baseKeyIndex, zoomRange))
 
-      val sourceGeoTiff =
-        GeoTiffReader.readMultiband(uri, streaming = true)
-
-      // Have to convert the sourceGeoTiff to a GeoTiffMultibandTile
-      // in order to access the desired crop method.
-      val sourceMultibandTile =
-        GeoTiffMultibandTile(
-          sourceGeoTiff.getOverview(overviewIndex).tile,
-          sourceGeoTiff.options
-        )
+      val sourceGeoTiff = GeoTiffReader.readMultiband(uri, streaming = true)
+      val sourceTile = sourceGeoTiff.getOverview(overviewIndex).tile
 
       // We first must determine which bands are valid and which are not
       // before doing the crop in order to avoid band subsetting errors
@@ -102,7 +95,7 @@ trait COGValueReader[ID] {
         bands
           .zipWithIndex
           .filter { case (band, _) =>
-            band >= 0 && band < sourceMultibandTile.bandCount
+            band >= 0 && band < sourceGeoTiff.bandCount
           }
           .toArray
 
@@ -110,10 +103,7 @@ trait COGValueReader[ID] {
 
       val croppedTiles: Array[Tile] =
         try {
-          sourceMultibandTile
-            .crop(gridBounds, targetBands)
-            .bands
-            .toArray
+          sourceTile.cropBands(gridBounds, targetBands).bands.toArray
         } catch {
           case th: Throwable => exceptionHandler(key)(th)
         }
