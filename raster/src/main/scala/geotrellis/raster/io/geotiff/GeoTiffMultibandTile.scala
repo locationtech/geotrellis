@@ -551,7 +551,7 @@ abstract class GeoTiffMultibandTile(
         else
           getIntersectingSegments(window, bandIndices)
 
-      val bands = Array.fill(bandCount)(ArrayTile.empty(cellType, window.width, window.height))
+      val bands = Array.fill(bandSubsetLength)(ArrayTile.empty(cellType, window.width, window.height))
       val chip = Chip(window, bands, segments.length)
       for (segment <- segments.map(_._2)) {
         val tail = chipsBySegment.getOrElse(segment, Nil)
