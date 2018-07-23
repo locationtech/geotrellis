@@ -184,14 +184,11 @@ object GeoTiffBuilder {
       val cols = tileLayout.tileCols
       val rows = tileLayout.tileRows
 
-      val segmentCount = tileLayout.layoutCols * tileLayout.layoutRows
-      val compressor = compression.createCompressor(segmentCount)
-
-      val segmentBytes = Array.ofDim[Array[Byte]](segmentCount)
-
-      segmentLayout.interleaveMethod match {
+      val (segmentBytes, compressor) = segmentLayout.interleaveMethod match {
         case PixelInterleave =>
-          val byteCount = cellType.bytes
+          val segmentCount = tileLayout.layoutCols * tileLayout.layoutRows
+          val compressor = compression.createCompressor(segmentCount)
+          val segmentBytes = Array.ofDim[Array[Byte]](segmentCount)
 
           buffered.foreach { case (key, tile) =>
             val layoutCol = key._1
@@ -211,8 +208,26 @@ object GeoTiffBuilder {
               segmentBytes(index) = compressor.compress(emptySegment, index)
           }
 
+          (segmentBytes, compressor)
+
         case BandInterleave =>
-          throw new Exception("Band interleave construction is not supported yet.")
+          val bandSegmentCount = tileLayout.layoutCols * tileLayout.layoutRows
+          val segmentCount = bandSegmentCount * bandCount
+          val compressor = compression.createCompressor(segmentCount)
+          val segmentBytes = Array.ofDim[Array[Byte]](segmentCount)
+
+          buffered.foreach { case (key, tile)  =>
+            cfor(0)( _ < tile.bandCount, _ + 1) { bandIndex =>
+              val layoutCol = key._1
+              val layoutRow = key._2
+              val bandSegmentOffset = bandSegmentCount * bandIndex
+              val index = tileLayout.layoutCols * layoutRow + layoutCol + bandSegmentOffset
+              val bytes = tile.band(bandIndex).interpretAs(cellType).toBytes
+              segmentBytes(index) = compressor.compress(bytes, index)
+            }
+          }
+
+          (segmentBytes, compressor)
       }
 
       GeoTiffMultibandTile(

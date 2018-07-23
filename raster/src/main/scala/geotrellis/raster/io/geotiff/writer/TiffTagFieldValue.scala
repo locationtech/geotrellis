@@ -92,8 +92,14 @@ object TiffTagFieldValue {
     fieldValues += TiffTagFieldValue(PredictorTag, ShortsFieldType, 1, imageData.decompressor.predictorCode)
     fieldValues += TiffTagFieldValue(PhotometricInterpTag, ShortsFieldType, 1, geoTiff.options.colorSpace)
     fieldValues += TiffTagFieldValue(SamplesPerPixelTag, ShortsFieldType, 1, imageData.bandCount)
-    fieldValues += TiffTagFieldValue(PlanarConfigurationTag, ShortsFieldType, 1, PlanarConfigurations.PixelInterleave)
     fieldValues += TiffTagFieldValue(SampleFormatTag, ShortsFieldType, 1, imageData.bandType.sampleFormat)
+
+    imageData.segmentLayout.interleaveMethod match {
+      case PixelInterleave =>
+        fieldValues += TiffTagFieldValue(PlanarConfigurationTag, ShortsFieldType, 1, PlanarConfigurations.PixelInterleave)
+      case BandInterleave =>
+        fieldValues += TiffTagFieldValue(PlanarConfigurationTag, ShortsFieldType, 1, PlanarConfigurations.BandInterleave)
+    }
 
     geoTiff.options.subfileType.foreach { sft =>
       fieldValues += TiffTagFieldValue(NewSubfileTypeTag, IntsFieldType, 1, toBytes(sft.code))
