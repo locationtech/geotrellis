@@ -162,7 +162,7 @@ Files in the source tree that have names of the form ``XxxxxMethods.scala``
 define capabilities that should be implemented by an implicit class, usually
 found in the ``Implicits.scala`` file in the same directory.  For a
 ``MethodExtension[T]`` subclass implementing the ``foo()`` method, an object of type
-``T`` should have be able to have ``foo()`` called on it.
+``T`` should be able to have ``foo()`` called on it.
 
 Unfortunately, discoverability of valid method extensions is an ongoing
 problem for Geotrellis as a whole.  We are currently seeking better means for
