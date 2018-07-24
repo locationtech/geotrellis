@@ -113,8 +113,9 @@ class GeoTiffMultibandTileSpec extends FunSpec
           band3
         )
 
-      val gtm = GeoTiffMultibandTile(original, GeoTiffOptions(Tiled(16, 16)))
-      val geoTiff = MultibandGeoTiff(gtm, Extent(100.0, 40.0, 120.0, 42.0), LatLng)
+      val options = GeoTiffOptions(Tiled(16, 16))
+      val gtm = GeoTiffMultibandTile(original, options)
+      val geoTiff = MultibandGeoTiff(gtm, Extent(100.0, 40.0, 120.0, 42.0), LatLng, options = options)
       geoTiff.write(path)
 
       addToPurge(path)
