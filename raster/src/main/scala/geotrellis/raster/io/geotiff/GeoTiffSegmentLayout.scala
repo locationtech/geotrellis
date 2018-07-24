@@ -32,7 +32,13 @@ import scala.collection.mutable
   * @param storageMethod      Storage method used for the segments (tiled or striped)
   * @param interleaveMethod   The interleave method used for segments (pixel or band)
   */
-case class GeoTiffSegmentLayout(totalCols: Int, totalRows: Int, tileLayout: TileLayout, storageMethod: StorageMethod, interleaveMethod: InterleaveMethod) {
+case class GeoTiffSegmentLayout(
+  totalCols: Int, 
+  totalRows: Int, 
+  tileLayout: TileLayout, 
+  storageMethod: StorageMethod, 
+  interleaveMethod: InterleaveMethod
+) {
   def isTiled: Boolean =
     storageMethod match {
       case _: Tiled => true
