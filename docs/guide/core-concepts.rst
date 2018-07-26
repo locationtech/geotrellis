@@ -1697,7 +1697,7 @@ Just as the GeoTiff is a subset of Tiff meant to convey information not
 only about image values but also the spatial extent of that imagery,
 Cloud Optimized GeoTiffs are a nascent subset of GeoTiff meant to increase
 their expressiveness, ease of use, and portability through further
-standardization. We call these GeoTiff "cloud optimized" because the
+standardization. We call these GeoTiffs "cloud optimized" because the
 features they add allow for remote access to GeoTiff that, with the help
 of HTTP GET range requests, access the parts of a tiff you're interested
 without consuming large portions of the image which are irrelevant to your
@@ -1705,13 +1705,50 @@ computation.
 
 COGs are thus capable of serving as a self-describing backing for raster
 layers. The only cost associated with the use of COGs over GeoTrellis'
-Avro-based layers layers is the extra effort related to metadata retrieval
+Avro-based layers is the extra effort related to metadata retrieval
 and munging (metadata for each individual GeoTiff will need to be collected
 as opposed to the monolithic metadata of Avro layers, which is read and
 handled once for the entire layer).
 
-Structured vs Unstructured
---------------------------
+The `COG specification <http://www.cogeo.org/>`_ (which is not a 100%
+complete as of the writing of this documentation) defines required
+tags and means of access (a server accepting GET range requests). These
+required features are necessary to even support remotely reading
+subsets of the overall image data from some remote Tiff.
+
+COG requirements:
+- Tiled storage of image data
+- Overviews at different levels of resolution
+- Infrastructure capable of handling GET Range requests
+
+.. code-block:: scala
+
+    // Constructing a COG from a non-COG tiff
+    val nonCog = SinglebandGeoTiff(path = file:///path/to/my/tiff.tif)
+    val almostCog = nonCog.withStorageMethod(Tiled)
+
+    // most likely either NearestNeighbor or BilinearInterpolation; depends on context
+    val resampleMethod: ResampleMethod = ???
+    val fullCog = almostCog.withOverviews(resampleMethod)
+
+> A note on sidecar files
+> The spec seems to indicate that overviews be part of the GeoTiff itself to
+> count as a COG. In practice, things are messier than that. Content providers
+> aren't always going to want to rewrite their tiffs to stuff generated
+> overviews into them. The practical upshot of this is that separate overview
+> files should be supported (GDAL will actually inspect some canonical relative
+> paths within the directory of the Tiff being read).
+
+.. code-block:: scala
+
+    // Constructing a COG with sidecar overviews
+    val mainTile = SinglebandGeoTiff(path = file:///path/to/my/file.tif)
+    val overview1 = SinglebandGeoTiff(path = file:///path/to/my/file.tif.ovr1)
+    val overview2 = SinglebandGeoTiff(path = file:///path/to/my/file.tif.ovr2)
+    val tileWithOverview = mainTile.withOverviews(List(overview1, overview2))
+
+Structured vs Unstructured COGs
+-------------------------------
 
 Historically, Geotrellis layers have been backed by specially encoded Avro
 layers which are were designed to maximize the performance of distributed
@@ -1728,10 +1765,22 @@ which is designed to enhance query performance for larger layers by allowing
 GeoTrellis programs to infer information about underlying, individual COG files
 without having to read multiple of them.
 
+Structured COG metadata:
+- cellType: Underlying Tiff celltype (width of cell representation and NoData strategy)
+- zoomRangeInfos: A map from some range of supported zoom levels to a collection of key extents
+- layoutScheme: The scheme by which individual COG tiles are cut for this layer
+- extent: The overall extent of all underlying COGs
+- crs: The projection of all underlying COGs
 
+.. code-block:: scala
 
+  // We'll need to get a layer from somewhere
+  val layer: RDD[(K, V)] with Metadata[TileLayerMetadata[K]] = ???
+  // The native resolution for this layer (assumes standard TMS zoom levels)
+  val baseZoom = 8
 
-
+  // With that, we should be able to construct a 'structured' COG layer
+  val structured: CogLayer[K, V] = CogLayer.fromLayerRDD(layer, baseZoom)
 
 Further Readings
 ----------------
