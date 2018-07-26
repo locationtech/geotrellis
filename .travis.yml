@@ -1,4 +1,6 @@
-sudo: false
+# See https://docs.travis-ci.com/user/reference/overview/#Virtualisation-Environment-vs-Operating-System
+sudo: required
+dist: trusty
 
 env:
   global:
@@ -6,6 +8,10 @@ env:
     - secure: "UwH3B4k5Nqt2THYYTY7uRxTPaJXZbK1hHrVsyJjZp/H2uFTYtQTxXpNb9aR7wuHuhLjXwKkq3gEXxEqhfy6V8+ZPbee6MUNvoYe/HhaPjsmTzcVihTBbO9e7g0bIQFc9bzwY15Y1ImshLcDAYvaXwXapy4Z/KadLiBheyqMk8Cs="
     # Scaladocs
     - secure: "FPfJbtXmhyMTh/eh9B/f6JZIv6aw+XZMipYlJsdgMEv+XKzL1tdYbKQv8G4C13lhyBZmOlQAbOhl4mRUBmq0FqG3361Y9SS4o5KfDRkZNErBTb8tveoRgKLkdLPwooAOUmRUeygKmhO4ehdQsMXCZmCk33nDq/ZrNallfnCRdm8="
+  matrix:
+    - RUN_SET=1
+    - RUN_SET=2
+    - RUN_SET=3
 
 language: scala
 
@@ -23,6 +29,7 @@ before_script:
   - docker run -d --restart=always --net=host -m 1G --memory-swap -1 --env="MAX_HEAP_SIZE=500M" --env="HEAP_NEWSIZE=100M" --env="CASSANDRA_LISTEN_ADDRESS=127.0.0.1" cassandra:latest
   - docker run -d --restart=always -p 8081:80 -v $(pwd)/spark/src/test/resources:/usr/share/nginx/html:ro nginx:stable
   - .travis/hbase-install.sh
+  - .travis/unzip-rasters.sh
 
 jdk:
   - openjdk8
@@ -33,9 +40,9 @@ scala:
 
 cache:
   directories:
-  - "$HOME/.ivy2"
-  - "$HOME/.sbt"
-  - "$HOME/downloads"
+  - $HOME/.ivy2
+  - $HOME/.sbt
+  - $HOME/downloads
 
 script:
   - .travis/build-and-test.sh
