@@ -76,9 +76,9 @@ class HistogramSpec extends FunSpec with TestEnvironment with TestFiles {
 
       for(row <- 0 until rows) {
         for(col <- 0 until cols) {
-          val z = zones.get(col, row)
+          val z = zones.tile.get(col, row)
           if(!zoneValues.contains(z)) zoneValues(z) = mutable.ListBuffer[Int]()
-          zoneValues(z) += r.get(col, row)
+          zoneValues(z) += r.tile.get(col, row)
         }
       }
 

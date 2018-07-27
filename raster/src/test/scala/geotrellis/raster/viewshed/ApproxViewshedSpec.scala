@@ -105,7 +105,7 @@ class ApproxViewshedSpec extends FunSpec
 
       val (x, y) = (-93.63300872055451407, 30.54649743277299123) // create overload
       val (col, row) = re.mapToGrid(x, y)
-      val actual = ApproxViewshed(elevation, col, row)
+      val actual = ApproxViewshed(elevation.tile, col, row)
 
       def countDiff(a: Tile, b: Tile): Int = {
         var ans = 0

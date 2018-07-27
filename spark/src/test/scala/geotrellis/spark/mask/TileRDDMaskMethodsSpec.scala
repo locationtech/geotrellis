@@ -158,7 +158,7 @@ class TileRDDMaskMethodsSpec extends FunSpec
         if(poly.isValid) {
           val masked = rdd.mask(poly, options = opts).stitch
           val expected = tile.mask(worldExt, poly)
-          masked.toArray() shouldEqual expected.toArray()
+          masked.tile.toArray() shouldEqual expected.toArray()
         }
       }
     }
@@ -172,7 +172,7 @@ class TileRDDMaskMethodsSpec extends FunSpec
       cases foreach { poly =>
         val masked = rdd.mask(poly, options = opts).stitch
         val expected = tile.mask(worldExt, poly)
-        masked.toArray() shouldEqual expected.toArray()
+        masked.tile.toArray() shouldEqual expected.toArray()
       }
     }
 
@@ -185,7 +185,7 @@ class TileRDDMaskMethodsSpec extends FunSpec
         if(multipoly.isValid) {
           val masked = rdd.mask(multipoly, options = opts).stitch
           val expected = tile.mask(worldExt, multipoly)
-          masked.toArray() shouldEqual expected.toArray()
+          masked.tile.toArray() shouldEqual expected.toArray()
         }
       }
     }
@@ -200,7 +200,7 @@ class TileRDDMaskMethodsSpec extends FunSpec
       cases foreach { multipoly =>
         val masked = rdd.mask(multipoly, options = opts).stitch
         val expected = tile.mask(worldExt, multipoly)
-        masked.toArray() shouldEqual expected.toArray()
+        masked.tile.toArray() shouldEqual expected.toArray()
       }
     }
 
@@ -209,7 +209,7 @@ class TileRDDMaskMethodsSpec extends FunSpec
       extents foreach { extent =>
         val masked = rdd.mask(extent, options = opts).stitch
         val expected = tile.mask(worldExt, extent)
-        masked.toArray() shouldEqual expected.toArray()
+        masked.tile.toArray() shouldEqual expected.toArray()
       }
     }
   }

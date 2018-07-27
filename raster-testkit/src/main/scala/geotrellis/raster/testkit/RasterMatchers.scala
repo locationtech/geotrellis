@@ -63,6 +63,16 @@ trait RasterMatchers extends Matchers {
     }
   }
 
+  def assertEqual(r1: Raster[Tile], r2: Raster[Tile])(implicit di: DummyImplicit): Unit = {
+    assertEqual(r1.tile, r2.tile)
+    assert(r1.extent == r2.extent, s"${r1.extent} != ${r2.extent}")
+  }
+
+  def assertEqual(r1: Raster[MultibandTile], r2: Raster[MultibandTile]): Unit = {
+    assertEqual(r1.tile, r2.tile)
+    assert(r1.extent == r2.extent, s"${r1.extent} != ${r2.extent}")
+  }
+
   def assertEqual(ta: Tile, tb: Tile): Unit = tilesEqual(ta, tb)
 
   def assertEqual(ta: Tile, tb: Tile, threshold: Double): Unit = tilesEqual(ta, tb, threshold)

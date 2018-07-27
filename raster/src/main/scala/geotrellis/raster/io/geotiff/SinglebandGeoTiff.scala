@@ -53,7 +53,7 @@ case class SinglebandGeoTiff(
     extent.intersection(subExtent) match {
       case Some(ext) =>
         val raster: Raster[Tile] = this.raster.crop(ext, options)
-        SinglebandGeoTiff(raster, ext, this.crs, this.tags, this.options, this.overviews)
+        SinglebandGeoTiff(raster.tile, raster.extent, this.crs, this.tags, this.options, this.overviews)
       case _ => throw GeoAttrsError(s"Extent to crop by ($subExtent) should intersect the imagery extent ($extent).")
     }
   }
@@ -65,12 +65,12 @@ case class SinglebandGeoTiff(
     val raster: Raster[Tile] =
       this.raster.crop(colMin, rowMin, colMax, rowMax)
 
-    SinglebandGeoTiff(raster, raster._2, this.crs, this.tags, this.options, this.overviews)
+    SinglebandGeoTiff(raster.tile, raster.extent, this.crs, this.tags, this.options, this.overviews)
   }
 
   def crop(gridBounds: GridBounds): SinglebandGeoTiff =
     crop(gridBounds.colMin, gridBounds.rowMin, gridBounds.colMax, gridBounds.rowMax)
-  
+
   def crop(subExtent: Extent): SinglebandGeoTiff = crop(subExtent, Crop.Options.DEFAULT)
 
   def crop(subExtent: Extent, cellSize: CellSize, resampleMethod: ResampleMethod, strategy: OverviewStrategy): SinglebandRaster =

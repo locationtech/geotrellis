@@ -80,7 +80,7 @@ trait OpAsserter { self: TestEnvironment =>
     val rasterResult = rasterOp(tile, rasterRDD.metadata.layout.toRasterExtent)
     val sparkResult = sparkOp(rasterRDD).stitch
 
-    asserter(rasterResult, sparkResult)
+    asserter(rasterResult, sparkResult.tile)
   }
 
   def testTileCollection(sc: SparkContext,
@@ -104,6 +104,6 @@ trait OpAsserter { self: TestEnvironment =>
     val rasterResult = rasterOp(tile, rasterCollection.metadata.layout.toRasterExtent)
     val sparkResult = sparkOp(rasterCollection).stitch
 
-    asserter(rasterResult, sparkResult)
+    asserter(rasterResult, sparkResult.tile)
   }
 }

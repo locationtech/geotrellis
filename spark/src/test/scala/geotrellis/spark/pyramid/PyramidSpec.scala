@@ -229,7 +229,7 @@ class PyramidSpec extends FunSpec with Matchers with TestEnvironment {
       assert(pyramid.minZoom == 0)
       assert(pyramid.maxZoom == 2)
 
-      val tile2x2 = pyramid(0).stitch
+      val tile2x2 = pyramid(0).stitch.tile
 
       // should end up with the proper top-level tile
       assert(tile2x2.dimensions == (2, 2))

@@ -479,7 +479,7 @@ class R2ViewshedSpec extends FunSpec
       val rs = loadTestArg("data/viewshed-elevation")
       val elevation = rs.tile
       val rasterExtent = rs.rasterExtent
-      val expected = loadTestArg("data/viewshed-expected")
+      val expected = loadTestArg("data/viewshed-expected").tile
 
       val (x, y) = (-93.63300872055451407, 30.54649743277299123) // create overload
       val (col, row) = rasterExtent.mapToGrid(x, y)
@@ -507,7 +507,7 @@ class R2ViewshedSpec extends FunSpec
       val rs = loadTestArg("data/viewshed-elevation")
       val elevation = rs.tile
       val rasterExtent = rs.rasterExtent
-      val expected = loadTestArg("data/viewshed-expected")
+      val expected = loadTestArg("data/viewshed-expected").tile
 
       val (x, y) = (-93.63300872055451407, 30.54649743277299123) // create overload
       val (col, row) = rasterExtent.mapToGrid(x, y)

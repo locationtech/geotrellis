@@ -88,8 +88,8 @@ class S3GeoTiffRDDSpec
 
       val (_, md) = source1.collectMetadata[SpatialKey](FloatingLayoutScheme(256))
 
-      val stitched1: Tile = source1.tileToLayout(md).stitch
-      val stitched2: Tile = source2.tileToLayout(md).stitch
+      val stitched1: Tile = source1.tileToLayout(md).stitch.tile
+      val stitched2: Tile = source2.tileToLayout(md).stitch.tile
 
       assertEqual(stitched1, stitched2)
     }

@@ -140,7 +140,7 @@ object RasterRegionReproject {
     def regionReproject(raster: Raster[MultibandTile], src: CRS, dest: CRS, rasterExtent: RasterExtent, region: Polygon, resampleMethod: ResampleMethod): Raster[MultibandTile] = {
       val bands = Array.ofDim[MutableArrayTile](raster.tile.bandCount)
       cfor(0)(_ < bands.length, _ + 1) { i =>
-        bands(i) = raster.band(i).prototype(rasterExtent.cols, rasterExtent.rows).mutable
+        bands(i) = raster.tile.band(i).prototype(rasterExtent.cols, rasterExtent.rows).mutable
       }
       mutableRegionReproject(MultibandTile(bands), raster, src, dest, rasterExtent, region, resampleMethod)
       Raster(MultibandTile(bands), rasterExtent.extent)
@@ -154,8 +154,8 @@ object RasterRegionReproject {
         bands(i) = target.band(i).mutable
       }
 
-      val resampler = (0 until raster.bandCount).map { i =>
-        Resample(resampleMethod, raster.band(i), raster.extent, raster.rasterExtent.cellSize)
+      val resampler = (0 until raster.tile.bandCount).map { i =>
+        Resample(resampleMethod, raster.tile.band(i), raster.extent, raster.rasterExtent.cellSize)
       }
 
       if (raster.cellType.isFloatingPoint) {
