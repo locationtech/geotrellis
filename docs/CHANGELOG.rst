@@ -58,6 +58,7 @@ API Changes
     in the order they choose.
   - **Change:** ``COGLayerReader.baseRead`` has been removed and has been replaced with ``COGLayerReader.baseReadAllBands`` and ``COGLayerReader.baseReadSubsetBands``.
   - **New:** ``KeyBounds`` now has the ``rekey`` method that will rekey the bounds from a source layout to a target layout.
+  - **Change:** The ``TileLayerMetadata.fromRdd`` method has been renamed to ``TileLayerMetadata.fromRDD``.
 
 - ``geotrellis.raster``
 
