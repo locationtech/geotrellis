@@ -44,12 +44,6 @@ object Raster {
     Raster(tup._2, tup._1)
 
   /**
-    * Implicit conversion from a [[Raster]] to a [[CellGrid]].
-    */
-  implicit def rasterToTile[T <: CellGrid](r: Raster[T]): T =
-    r.tile
-
-  /**
     * Implicit conversion from a [[Raster]] to a PolygonFeature.
     */
   implicit def rasterToFeature[T <: CellGrid](r: Raster[T]): PolygonFeature[T] =
