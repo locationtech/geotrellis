@@ -52,7 +52,7 @@ case class MultibandGeoTiff(
     extent.intersection(subExtent) match {
       case Some(ext) =>
         val raster: Raster[MultibandTile] = this.raster.crop(ext, options)
-        MultibandGeoTiff(raster.tile, ext, this.crs, this.tags, this.options, this.overviews)
+        MultibandGeoTiff(raster.tile, raster.extent, this.crs, this.tags, this.options, this.overviews)
       case _ => throw GeoAttrsError(s"Extent to crop by ($subExtent) should intersect the imagery extent ($extent).")
     }
   }
