@@ -169,7 +169,7 @@ object TileLayerMetadata {
     * Compose Extents from given raster tiles and fit it on given
     * TileLayout.
     */
-  def fromRdd[
+  def fromRDD[
     K: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
     K2: SpatialComponent: Boundable
@@ -183,7 +183,7 @@ object TileLayerMetadata {
     * Compose Extents from given raster tiles and use LayoutScheme to
     * create the LayoutDefinition.
     */
-  def fromRdd[
+  def fromRDD[
     K: (? => TilerKeyMethods[K, K2]) ,
     V <: CellGrid,
     K2: SpatialComponent: Boundable
@@ -199,28 +199,28 @@ object TileLayerMetadata {
     * [[geotrellis.spark.tiling.ZoomedLayoutScheme]] to create the
     * [[geotrellis.spark.tiling.LayoutDefinition]].
     */
-  def fromRdd[
+  def fromRDD[
     K: (? => TilerKeyMethods[K, K2]) ,
     V <: CellGrid,
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], crs: CRS, scheme: ZoomedLayoutScheme):
     (Int, TileLayerMetadata[K2]) =
-      _fromRdd[K, V, K2](rdd, crs, scheme, None)
+      _fromRDD[K, V, K2](rdd, crs, scheme, None)
 
   /**
     * Compose Extents from given raster tiles using
     * [[geotrellis.spark.tiling.ZoomedLayoutScheme]] and a maximum
     * zoom value.
     */
-  def fromRdd[
+  def fromRDD[
     K: (? => TilerKeyMethods[K, K2]) ,
     V <: CellGrid,
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], crs: CRS, scheme: ZoomedLayoutScheme, maxZoom: Int):
     (Int, TileLayerMetadata[K2]) =
-      _fromRdd[K, V, K2](rdd, crs, scheme, Some(maxZoom))
+      _fromRDD[K, V, K2](rdd, crs, scheme, Some(maxZoom))
 
-  private def _fromRdd[
+  private def _fromRDD[
     K: (? => TilerKeyMethods[K, K2]) ,
     V <: CellGrid,
     K2: SpatialComponent: Boundable
@@ -235,7 +235,7 @@ object TileLayerMetadata {
     (zoom, TileLayerMetadata(cellType, layout, extent, crs, kb))
   }
 
-  def fromRdd[
+  def fromRDD[
     K: GetComponent[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
     K2: SpatialComponent: Boundable
@@ -247,23 +247,23 @@ object TileLayerMetadata {
     (zoom, TileLayerMetadata(cellType, layout, extent, crs, kb))
   }
 
-  def fromRdd[
+  def fromRDD[
     K: GetComponent[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)],  scheme: ZoomedLayoutScheme):
     (Int, TileLayerMetadata[K2]) =
-      _fromRdd[K, V, K2](rdd, scheme, None)
+      _fromRDD[K, V, K2](rdd, scheme, None)
 
-  def fromRdd[
+  def fromRDD[
     K: GetComponent[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], scheme: ZoomedLayoutScheme, maxZoom: Int):
     (Int, TileLayerMetadata[K2]) =
-      _fromRdd[K, V, K2](rdd, scheme, Some(maxZoom))
+      _fromRDD[K, V, K2](rdd, scheme, Some(maxZoom))
 
-  private def _fromRdd[
+  private def _fromRDD[
     K: GetComponent[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
     K2: SpatialComponent: Boundable
@@ -279,7 +279,7 @@ object TileLayerMetadata {
     (zoom, TileLayerMetadata(cellType, layout, extent, crs, kb))
   }
 
-  def fromRdd[
+  def fromRDD[
     K: GetComponent[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
     V <: CellGrid,
     K2: SpatialComponent: Boundable
