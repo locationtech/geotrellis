@@ -99,7 +99,7 @@ class BufferTilesSpec extends FunSpec with TestEnvironment with RasterMatchers {
       val buffers = BufferTiles(ContextRDD(wholeRdd, metadata), { _: SpatialKey => BufferSizes(2,2,2,2) }).collect
       val tile11 = buffers.find{ case (key, _) => key == SpatialKey(1, 1) }.get._2.tile
       val baseline = originalRaster.crop(98, 98, 201, 201, Crop.Options.DEFAULT)
-      assertEqual(baseline, tile11)
+      assertEqual(baseline.tile, tile11)
     }
 
     it("the lightweight RDD version should work with the main diagonal missing") {

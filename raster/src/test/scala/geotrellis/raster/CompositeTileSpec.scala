@@ -79,7 +79,7 @@ class CompositeTileSpec extends FunSpec
           256,
           256
         )
-      val tiled = CompositeTile.wrap(r, tileLayout, cropped = true)
+      val tiled = CompositeTile.wrap(r.tile, tileLayout, cropped = true)
       tiled.tiles.map( t => t.asInstanceOf[CroppedTile])
     }
 
@@ -91,7 +91,7 @@ class CompositeTileSpec extends FunSpec
           256,
           256
         )
-      val tiled = CompositeTile.wrap(r, tileLayout, cropped = false)
+      val tiled = CompositeTile.wrap(r.tile, tileLayout, cropped = false)
       tiled.tiles.map( t => t.asInstanceOf[ArrayTile])
     }
 
@@ -103,7 +103,7 @@ class CompositeTileSpec extends FunSpec
           256,
           256
         )
-      val tiled = CompositeTile.wrap(r, tileLayout, cropped = false)
+      val tiled = CompositeTile.wrap(r.tile, tileLayout, cropped = false)
       val backToArray = tiled.toArrayTile
 
       cfor(0)(_ < backToArray.rows, _ + 1) { row =>
@@ -114,7 +114,7 @@ class CompositeTileSpec extends FunSpec
             }
           } else {
             withClue (s"Value different at $col, $row: ") {
-              backToArray.get(col, row) should be (r.get(col, row))
+              backToArray.get(col, row) should be (r.tile.get(col, row))
             }
           }
         }

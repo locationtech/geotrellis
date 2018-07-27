@@ -64,14 +64,14 @@ class MultibandCropIteratorSpec extends FunSpec
         MultibandCropIterator(geoTiff, windowedCols, windowedRows)
 
       val expected: Array[MultibandTile] =
-        Array(geoTiff.raster.crop(0, 0, 10, 10),
-          geoTiff.raster.crop(10, 0, 20, 10),
-          geoTiff.raster.crop(0, 10, 10, 20),
-          geoTiff.raster.crop(10, 10, 20, 20),
-          geoTiff.raster.crop(0, 20, 10, 30),
-          geoTiff.raster.crop(10, 20, 20, 30),
-          geoTiff.raster.crop(0, 30, 10, 40),
-          geoTiff.raster.crop(10, 30, 20, 40))
+        Array(geoTiff.raster.tile.crop(0, 0, 10, 10),
+          geoTiff.raster.tile.crop(10, 0, 20, 10),
+          geoTiff.raster.tile.crop(0, 10, 10, 20),
+          geoTiff.raster.tile.crop(10, 10, 20, 20),
+          geoTiff.raster.tile.crop(0, 20, 10, 30),
+          geoTiff.raster.tile.crop(10, 20, 20, 30),
+          geoTiff.raster.tile.crop(0, 30, 10, 40),
+          geoTiff.raster.tile.crop(10, 30, 20, 40))
 
       val actual: Array[MultibandTile] =
         Array(multibandIterator.next.tile,
@@ -106,10 +106,10 @@ class MultibandCropIteratorSpec extends FunSpec
         new MultibandCropIterator(geoTiff, windowedCols, windowedRows)
 
       val expected: Array[MultibandTile] =
-        Array(geoTiff.raster.crop(0, 0, 15, 25),
-          geoTiff.raster.crop(15, 0, 20, 25),
-          geoTiff.raster.crop(0, 25, 15, 40),
-          geoTiff.raster.crop(15, 25, 20, 40))
+        Array(geoTiff.raster.tile.crop(0, 0, 15, 25),
+          geoTiff.raster.tile.crop(15, 0, 20, 25),
+          geoTiff.raster.tile.crop(0, 25, 15, 40),
+          geoTiff.raster.tile.crop(15, 25, 20, 40))
 
       val actual: Array[MultibandTile] =
         Array(multibandIterator.next.tile,

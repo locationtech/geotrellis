@@ -44,7 +44,7 @@ class MinSpec extends FunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       )
 
-      val res = rasterRDD.focalMin(Square(1)).stitch.toArray
+      val res = rasterRDD.focalMin(Square(1)).stitch.tile.toArray
 
       val expected = Array(
         1, 1, 1,    1, 1, 2,    2, 2, 2,
@@ -70,8 +70,8 @@ class MinSpec extends FunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       )
 
-      val res = rasterRDD.focalMin(Square(1), TargetCell.NoData).stitch.toArray
-      val res2 = rasterRDD.focalMin(Square(1), TargetCell.Data).stitch.toArray
+      val res = rasterRDD.focalMin(Square(1), TargetCell.NoData).stitch.tile.toArray
+      val res2 = rasterRDD.focalMin(Square(1), TargetCell.Data).stitch.tile.toArray
       println(res2.toSeq)
 
       val expected = Array(
@@ -98,7 +98,7 @@ class MinSpec extends FunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       )
 
-      val res = rasterRDD.focalMin(Square(1)).stitch.toArrayDouble
+      val res = rasterRDD.focalMin(Square(1)).stitch.tile.toArrayDouble
 
       val expected = Array(
         1.1, 1.1, 1.1,    1.2, 1.4, 2.2,    2.9, 2.2, 2.2,
@@ -124,7 +124,7 @@ class MinSpec extends FunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       )
 
-      val res = rasterRDD.focalMin(Square(2)).stitch.toArray
+      val res = rasterRDD.focalMin(Square(2)).stitch.tile.toArray
 
       val expected = Array(
         3, 2, 2,    2, 2, 2,    2, 2, 2,
@@ -150,7 +150,7 @@ class MinSpec extends FunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       )
 
-      val res = rasterRDD.focalMin(Circle(1)).stitch.toArray
+      val res = rasterRDD.focalMin(Circle(1)).stitch.tile.toArray
 
       val expected = Array(
         7, 4, 2,    2, 2, 2,    2, 3, nd,
@@ -176,7 +176,7 @@ class MinSpec extends FunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       ).toCollection
 
-      val res = rasterCollection.focalMin(Square(1)).stitch.toArray
+      val res = rasterCollection.focalMin(Square(1)).stitch.tile.toArray
 
       val expected = Array(
         1, 1, 1,    1, 1, 2,    2, 2, 2,
@@ -202,7 +202,7 @@ class MinSpec extends FunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       ).toCollection
 
-      val res = rasterCollection.focalMin(Square(1)).stitch.toArrayDouble
+      val res = rasterCollection.focalMin(Square(1)).stitch.tile.toArrayDouble
 
       val expected = Array(
         1.1, 1.1, 1.1,    1.2, 1.4, 2.2,    2.9, 2.2, 2.2,
@@ -228,7 +228,7 @@ class MinSpec extends FunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       ).toCollection
 
-      val res = rasterCollection.focalMin(Square(2)).stitch.toArray
+      val res = rasterCollection.focalMin(Square(2)).stitch.tile.toArray
 
       val expected = Array(
         3, 2, 2,    2, 2, 2,    2, 2, 2,
@@ -254,7 +254,7 @@ class MinSpec extends FunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       ).toCollection
 
-      val res = rasterCollection.focalMin(Circle(1)).stitch.toArray
+      val res = rasterCollection.focalMin(Circle(1)).stitch.tile.toArray
 
       val expected = Array(
         7, 4, 2,    2, 2, 2,    2, 3, nd,

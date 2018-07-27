@@ -43,7 +43,7 @@ class ModeSpec extends FunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       )
 
-      val res = rasterRDD.focalMode(Square(1)).stitch.toArray
+      val res = rasterRDD.focalMode(Square(1)).stitch.tile.toArray
 
       val expected = Array(
         nd, 1, 1,    1, 2, 2,   nd,nd,nd,
@@ -69,7 +69,7 @@ class ModeSpec extends FunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       ).toCollection
 
-      val res = rasterCollection.focalMode(Square(1)).stitch.toArray
+      val res = rasterCollection.focalMode(Square(1)).stitch.tile.toArray
 
       val expected = Array(
         nd, 1, 1,    1, 2, 2,   nd,nd,nd,
@@ -95,7 +95,7 @@ class ModeSpec extends FunSpec with TestEnvironment {
         TileLayout(3, 2, 3, 2)
       )
 
-      val res = rasterRDD.focalMode(Square(1), TargetCell.NoData).stitch.toArray
+      val res = rasterRDD.focalMode(Square(1), TargetCell.NoData).stitch.tile.toArray
 
       val expected = Array(
         nd,7, 1,   1, 3, 5,   9, 8, 2,
