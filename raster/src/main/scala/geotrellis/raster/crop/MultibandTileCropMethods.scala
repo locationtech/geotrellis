@@ -48,6 +48,22 @@ trait MultibandTileCropMethods extends TileCropMethods[MultibandTile] {
     }
   }
 
+  def cropBands(gridBounds: Seq[GridBounds], targetBands: Seq[Int], options: Options): Iterator[(GridBounds, MultibandTile)] =
+    self match {
+      case geotiffTile: GeoTiffMultibandTile =>
+        val cropBounds: Seq[GridBounds] = gridBounds.map { gb =>
+            if (!gb.intersects(self.gridBounds))
+              throw GeoAttrsError(s"Grid bounds do not intersect: ${self.gridBounds} crop $gb")
+
+            if (options.clamp) gb.intersection(self).get
+            else gb
+        }
+        geotiffTile.crop(cropBounds, targetBands.toArray)
+    }
+
+  def cropBands(gridBounds: Seq[GridBounds], targetBands: Seq[Int]): Iterator[(GridBounds, MultibandTile)] =
+    cropBands(gridBounds, targetBands, Options.DEFAULT)
+
   /**
    * Crops this [[MultibandTile]] to the given region using methods
    * specified in the cropping options.

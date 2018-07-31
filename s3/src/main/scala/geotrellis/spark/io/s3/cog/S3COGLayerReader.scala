@@ -47,34 +47,50 @@ class S3COGLayerReader(
 
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, getS3Client())
 
-  def read[
-    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag
-  ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int) = {
-    val header =
-      try {
-        attributeStore.readHeader[S3LayerHeader](LayerId(id.name, 0))
-      } catch {
-        // to follow GeoTrellis Layer Readers logic
-        case e: AttributeNotFoundError => throw new LayerNotFoundError(id).initCause(e)
-      }
+  def pathExists(path: String): Boolean =
+    s3PathExists(path, getS3Client())
 
-    def getKeyPath(zoomRange: ZoomRange, maxWidth: Int): BigInt => String =
+  def fullPath(path: String): URI =
+    new URI(s"s3://$path")
+
+  def getHeader(id: LayerId): S3LayerHeader =
+    try {
+      attributeStore.readHeader[S3LayerHeader](LayerId(id.name, 0))
+    } catch {
+      // to follow GeoTrellis Layer Readers logic
+      case e: AttributeNotFoundError => throw new LayerNotFoundError(id).initCause(e)
+    }
+
+  def produceGetKeyPath(id: LayerId): (ZoomRange, Int) => BigInt => String = {
+    val header = getHeader(id)
+
+    (zoomRange: ZoomRange, maxWidth: Int) =>
       (index: BigInt) =>
         s"${header.bucket}/${header.key}/${id.name}/" +
         s"${zoomRange.minZoom}_${zoomRange.maxZoom}/" +
         s"${Index.encode(index, maxWidth)}.${Extension}"
+  }
 
-    baseRead[K, V](
+  def read[
+    K: SpatialComponent: Boundable: JsonFormat: ClassTag,
+    V <: CellGrid: GeoTiffReader: ClassTag
+  ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int) =
+    baseReadAllBands[K, V](
       id              = id,
       tileQuery       = tileQuery,
       numPartitions   = numPartitions,
-      getKeyPath      = getKeyPath,
-      pathExists      = { s3PathExists(_, getS3Client()) },
-      fullPath        = { path => new URI(s"s3://$path") },
       defaultThreads  = defaultThreads
     )
-  }
+
+  def readSubsetBands[
+    K: SpatialComponent: Boundable: JsonFormat: ClassTag
+  ](
+    id: LayerId,
+    targetBands: Seq[Int],
+    rasterQuery: LayerQuery[K, TileLayerMetadata[K]],
+    numPartitions: Int
+  ) =
+    baseReadSubsetBands[K](id, targetBands, rasterQuery, numPartitions, defaultThreads)
 }
 
 object S3COGLayerReader {

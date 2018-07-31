@@ -54,6 +54,10 @@ API Changes
   - **Change:** All classes and objects in the ``geowave`` package now use the spelling: ``GeoWave`` in their names.
   - **New:** Both ``COGValueReader`` and ``OverzoomingCOGValueReader`` now have the ``readSubsetBands`` method which allows users to read in a select number
     of bands in any order they choose.
+  - **New:** ``COGLayerReader`` now has the ``readSubsetBands`` and ``querySubsetBands`` methods which allow users to read in layers with the desired bands
+    in the order they choose.
+  - **Change:** ``COGLayerReader.baseRead`` has been removed and has been replaced with ``COGLayerReader.baseReadAllBands`` and ``COGLayerReader.baseReadSubsetBands``.
+  - **New:** ``KeyBounds`` now has the ``rekey`` method that will rekey the bounds from a source layout to a target layout.
 
 - ``geotrellis.raster``
 

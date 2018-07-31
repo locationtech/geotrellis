@@ -47,31 +47,45 @@ class FileCOGLayerReader(
 
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri)
 
+  def pathExists(path: String): Boolean =
+    new File(path).isFile
+
+  def fullPath(path: String): URI =
+    new URI(s"file://$path")
+
+  def getHeader(id: LayerId): FileLayerHeader =
+    try {
+      attributeStore.readHeader[FileLayerHeader](LayerId(id.name, 0))
+    } catch {
+      case e: AttributeNotFoundError => throw new LayerNotFoundError(id).initCause(e)
+    }
+
+  def produceGetKeyPath(id: LayerId): (ZoomRange, Int) => BigInt => String = {
+    val header = getHeader(id)
+    (zoomRange: ZoomRange, maxWidth: Int) =>
+      KeyPathGenerator(header.path, s"${id.name}/${zoomRange.slug}", maxWidth) andThen (_ ++ s".$Extension")
+  }
+
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
     V <: CellGrid: GeoTiffReader: ClassTag
-  ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int) = {
-
-    val header =
-      try {
-        attributeStore.readHeader[FileLayerHeader](LayerId(id.name, 0))
-      } catch {
-        case e: AttributeNotFoundError => throw new LayerNotFoundError(id).initCause(e)
-      }
-
-    def getKeyPath(zoomRange: ZoomRange, maxWidth: Int): BigInt => String =
-      KeyPathGenerator(header.path, s"${id.name}/${zoomRange.slug}", maxWidth) andThen (_ ++ s".$Extension")
-
-    baseRead[K, V](
+  ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int) =
+    baseReadAllBands[K, V](
       id              = id,
       tileQuery       = tileQuery,
       numPartitions   = numPartitions,
-      getKeyPath      = getKeyPath,
-      pathExists      = { new File(_).isFile },
-      fullPath        = { path => new URI(s"file://$path") },
       defaultThreads  = defaultThreads
     )
-  }
+
+  def readSubsetBands[
+    K: SpatialComponent: Boundable: JsonFormat: ClassTag
+  ](
+    id: LayerId,
+    targetBands: Seq[Int],
+    rasterQuery: LayerQuery[K, TileLayerMetadata[K]],
+    numPartitions: Int
+  ) =
+    baseReadSubsetBands[K](id, targetBands, rasterQuery, numPartitions, defaultThreads)
 }
 
 object FileCOGLayerReader {
