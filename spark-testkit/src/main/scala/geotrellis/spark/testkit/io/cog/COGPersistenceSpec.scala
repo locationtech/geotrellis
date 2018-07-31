@@ -16,7 +16,7 @@
 
 package geotrellis.spark.testkit.io.cog
 
-import geotrellis.raster.CellGrid
+import geotrellis.raster.{CellGrid, MultibandTile}
 import geotrellis.raster.crop.TileCropMethods
 import geotrellis.raster.merge.TileMergeMethods
 import geotrellis.raster.resample._
@@ -119,6 +119,19 @@ abstract class COGPersistenceSpec[
           info(s"unwanted: ${(actual diff expected).toList}")
 
         actual should contain theSameElementsAs expected
+      }
+
+      it("should read a subset of bands from the layer") {
+        val result =
+          reader
+            .readSubsetBands[K](layerId, Seq(12, 0, -1))
+            .mapValues { v => MultibandTile(v.flatten) }
+            .values
+            .collect()
+
+        for (band <- result) {
+          band.bandCount should be (1)
+        }
       }
 
       it("should read a layer back (collections api)") {
