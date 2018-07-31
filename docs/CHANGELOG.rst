@@ -61,6 +61,7 @@ API Changes
   - **New:** Kryo serialization of geometry now uses a binary format to reduce shuffle block size.
   - **Change:** Scalaz streams were replaced by fs2 streams.
   - **New:** ``GeoTiffMultibandTile`` now has another ``crop`` method that takes a ``GridBounds`` and an ``Array[Int]`` that represents the band indices.
+  - **Change:** Removed implicit conversion from ``Raster[T]`` to ``T`` <https://github.com/locationtech/geotrellis/pull/2771>__ .
 
 - ``geotrellis.spark-etl``
 
