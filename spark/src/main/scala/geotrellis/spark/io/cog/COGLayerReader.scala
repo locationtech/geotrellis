@@ -263,13 +263,13 @@ object COGLayerReader {
             else {
               val uri = fullPath(keyPath(index))
               val byteReader: ByteReader = uri
-              val baseKey =
-                TiffTagsReader
-                  .read(byteReader)
-                  .tags
-                  .headTags(GTKey)
-                  .parseJson
-                  .convertTo[K](keyFormat)
+              val baseKey = {
+                val keyTag = TiffTagsReader.read(byteReader).tags.headTags(GTKey)
+                val decoded = if (keyTag.contains('&')) {
+                  org.apache.commons.lang.StringEscapeUtils.unescapeHtml(keyTag)
+                } else keyTag
+                decoded.parseJson.convertTo[K](keyFormat)
+              }
 
               readDefinitions
                 .get(baseKey.getComponent[SpatialKey])
