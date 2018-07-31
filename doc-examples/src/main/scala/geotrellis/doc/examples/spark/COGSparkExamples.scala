@@ -78,8 +78,7 @@ object COGSparkExamples {
     val layer: TileLayerRDD[SpatialKey] = reader.read[SpatialKey, Tile](LayerId("example_cog_layer", zoom))
 
     // Let's stitch the layer into tile
-    val tile: Tile = layer.stitch
-    val raster: Raster[Tile] = Raster(tile, layer.metadata.mapTransform(layer.metadata.gridBounds))
+    val raster: Raster[Tile] = layer.stitch
 
     // Create a tiff
     val tiff = GeoTiff(raster.reproject(layer.metadata.crs, WebMercator), WebMercator)

@@ -53,26 +53,26 @@ class ArgTest extends FunSuite
   }
 
   test("check int8") {
-    assert(loadRaster("/tmp/foo-int8.json").toArray === array)
+    assert(loadRaster("/tmp/foo-int8.json").tile.toArray === array)
   }
 
   test("check int16") {
-    assert(loadRaster("/tmp/foo-int16.json").toArray === array)
+    assert(loadRaster("/tmp/foo-int16.json").tile.toArray === array)
   }
 
   test("check int32") {
-    assert(loadRaster("/tmp/foo-int32.json").toArray === array)
+    assert(loadRaster("/tmp/foo-int32.json").tile.toArray === array)
   }
 
   test("check float32") {
-    val d = loadRaster("/tmp/foo-float32.json").toArrayTile
+    val d = loadRaster("/tmp/foo-float32.json").tile.toArrayTile
     assert(isNoData(d.applyDouble(0)))
     assert(d.applyDouble(1) === -1.0)
     assert(d.applyDouble(2) === 2.0)
   }
 
   test("check float64") {
-    val d = loadRaster("/tmp/foo-float64.json").toArrayTile
+    val d = loadRaster("/tmp/foo-float64.json").tile.toArrayTile
     assert(isNoData(d.applyDouble(0)))
     assert(d.applyDouble(1) === -1.0)
     assert(d.applyDouble(2) === 2.0)
@@ -101,7 +101,7 @@ class ArgTest extends FunSuite
     ArgWriter(ByteConstantNoDataCellType).write("/tmp/fooc-int8.arg", tile, extent, "fooc-int8")
     val r2 = loadRaster("/tmp/fooc-int8.json")
 
-    assert(r2.toArrayTile === tile.toArrayTile)
+    assert(r2.tile.toArrayTile === tile.toArrayTile)
   }
 
   test("make sure it contains 100 cells") {

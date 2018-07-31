@@ -47,7 +47,7 @@ class InverseDistanceWeightedSpec extends FunSpec
 
       for(col <- 0 until re.cols) {
         for(row <- 0 until re.rows) {
-          val actual = result.get(col,row)
+          val actual = result.tile.get(col,row)
           val expected = r.get(col,row)
 
           actual should be (expected +- 1)
@@ -65,7 +65,7 @@ class InverseDistanceWeightedSpec extends FunSpec
       )
       val result = points.inverseDistanceWeighted(re)
 
-      assert(result.get(0, 0) === value)
+      assert(result.tile.get(0, 0) === value)
     }
 
     it("keeps sampled values closer than sample radius") {
@@ -79,7 +79,7 @@ class InverseDistanceWeightedSpec extends FunSpec
       )
       val result = points.inverseDistanceWeighted(re, InverseDistanceWeighted.Options(equalWeightRadius = 3, onSet = x => Math.round(x)))
 
-      assert(result.get(0, 0) === Math.round((sampleValue1+sampleValue2)/2.0))
+      assert(result.tile.get(0, 0) === Math.round((sampleValue1+sampleValue2)/2.0))
     }
 
     it("uses points closer than radius in raster units") {
@@ -93,8 +93,8 @@ class InverseDistanceWeightedSpec extends FunSpec
 
       val result = points.inverseDistanceWeighted(re, InverseDistanceWeighted.Options(radiusX = 0.05, radiusY = 0.05))
 
-      assert(result.get(0, 0) === 15)
-      assert(result.get(3, 0) === 500)
+      assert(result.tile.get(0, 0) === 15)
+      assert(result.tile.get(3, 0) === 500)
     }
   }
 
@@ -108,7 +108,7 @@ class InverseDistanceWeightedSpec extends FunSpec
       )
       val result = points.inverseDistanceWeighted(re, InverseDistanceWeighted.Options(cellType = DoubleConstantNoDataCellType))
 
-      value should be (result.getDouble(0, 0) +- 0.001)
+      value should be (result.tile.getDouble(0, 0) +- 0.001)
     }
 
     it("keeps sampled values closer than sample radius") {
@@ -122,7 +122,7 @@ class InverseDistanceWeightedSpec extends FunSpec
       )
       val result = points.inverseDistanceWeighted(re, InverseDistanceWeighted.Options(equalWeightRadius = 3, cellType = DoubleConstantNoDataCellType))
 
-      assert(result.getDouble(0, 0) === (sampleValue1+sampleValue2)/2.0)
+      assert(result.tile.getDouble(0, 0) === (sampleValue1+sampleValue2)/2.0)
     }
 
     it("uses points closer than radius in raster units") {
@@ -141,8 +141,8 @@ class InverseDistanceWeightedSpec extends FunSpec
 
       val result = points.inverseDistanceWeighted(re, InverseDistanceWeighted.Options(radiusX = 0.05, radiusY = 0.05, cellType = DoubleConstantNoDataCellType))
 
-      expected should be (result.getDouble(0, 0) +- 0.001)
-      c should be (result.getDouble(3, 0) +- 0.001)
+      expected should be (result.tile.getDouble(0, 0) +- 0.001)
+      c should be (result.tile.getDouble(3, 0) +- 0.001)
     }
   }
 }

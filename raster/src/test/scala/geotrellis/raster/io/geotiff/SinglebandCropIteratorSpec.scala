@@ -64,10 +64,10 @@ class SinglebandCropIteratorSpec extends FunSpec
         new SinglebandCropIterator(geoTiff, windowedCols, windowedRows)
 
       val expected: Array[Tile] =
-        Array(geoTiff.raster.crop(0, 0, 256, 256),
-          geoTiff.raster.crop(256, 0, 512, 256),
-          geoTiff.raster.crop(0, 256, 256, 512),
-          geoTiff.raster.crop(256, 256, 512, 512))
+        Array(geoTiff.raster.tile.crop(0, 0, 256, 256),
+          geoTiff.raster.tile.crop(256, 0, 512, 256),
+          geoTiff.raster.tile.crop(0, 256, 256, 512),
+          geoTiff.raster.tile.crop(256, 256, 512, 512))
 
       val actual: Array[Tile] =
         Array(singlebandIterator.next.tile,
@@ -99,12 +99,12 @@ class SinglebandCropIteratorSpec extends FunSpec
         new SinglebandCropIterator(geoTiff, windowedCols, windowedRows)
 
       val expected: Array[Tile] =
-        Array(geoTiff.raster.crop(0, 0, 250, 450),
-          geoTiff.raster.crop(250, 0, 500, 450),
-          geoTiff.raster.crop(500, 0, 512, 450),
-          geoTiff.raster.crop(0, 450, 250, 512),
-          geoTiff.raster.crop(250, 450, 500, 512),
-          geoTiff.raster.crop(500, 450, 512, 512))
+        Array(geoTiff.raster.tile.crop(0, 0, 250, 450),
+          geoTiff.raster.tile.crop(250, 0, 500, 450),
+          geoTiff.raster.tile.crop(500, 0, 512, 450),
+          geoTiff.raster.tile.crop(0, 450, 250, 512),
+          geoTiff.raster.tile.crop(250, 450, 500, 512),
+          geoTiff.raster.tile.crop(500, 450, 512, 512))
 
       val actual: Array[Tile] =
         Array(singlebandIterator.next.tile,

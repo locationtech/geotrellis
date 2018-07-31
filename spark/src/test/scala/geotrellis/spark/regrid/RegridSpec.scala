@@ -29,7 +29,7 @@ import org.scalatest._
 class RegridSpec extends FunSpec with TestEnvironment with RasterMatchers {
 
   val simpleLayer = {
-    val tiles = 
+    val tiles =
       for ( x <- 0 to 3 ;
             y <- 0 to 2
       ) yield {
@@ -48,7 +48,7 @@ class RegridSpec extends FunSpec with TestEnvironment with RasterMatchers {
   }
 
   val temporalLayer = {
-    val tiles = 
+    val tiles =
       for ( x <- 0 to 3 ;
             y <- 0 to 2
       ) yield {
@@ -79,21 +79,21 @@ class RegridSpec extends FunSpec with TestEnvironment with RasterMatchers {
       val newLayer = simpleLayer.regrid(64)
 
       assert(newLayer.stitch.dimensions == (128, 128))
-      assertEqual(simpleLayer.stitch, newLayer.stitch.tile.crop(0,0,127,95))
+      assertEqual(simpleLayer.stitch.tile, newLayer.stitch.tile.crop(0,0,127,95))
     }
 
     it("should allow breaking into non-square tiles") {
       val newLayer = simpleLayer.regrid(50, 25)
 
       assert(newLayer.stitch.dimensions == (150, 100))
-      assertEqual(simpleLayer.stitch, newLayer.stitch.tile.crop(0,0,127,95))
+      assertEqual(simpleLayer.stitch.tile, newLayer.stitch.tile.crop(0,0,127,95))
     }
 
     it("should work for spatiotemporal data") {
       val newLayer = temporalLayer.regrid(50, 25)
 
       assert(newLayer.toSpatial(0L).stitch.dimensions == (150, 100))
-      assertEqual(temporalLayer.toSpatial(0L).stitch, newLayer.toSpatial(0L).stitch.tile.crop(0,0,127,95))
+      assertEqual(temporalLayer.toSpatial(0L).stitch.tile, newLayer.toSpatial(0L).stitch.tile.crop(0,0,127,95))
     }
   }
 
