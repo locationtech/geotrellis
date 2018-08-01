@@ -1695,10 +1695,10 @@ Cloud Optimized GeoTiffs
 
 Just as the GeoTiff is a subset of Tiff meant to convey information not
 only about image values but also the spatial extent of that imagery,
-Cloud Optimized GeoTiffs are a nascent subset of GeoTiff meant to increase
-their expressiveness, ease of use, and portability through further
-standardization. We call these GeoTiffs "cloud optimized" because the
-features they add allow for remote access to GeoTiff that, with the help
+Cloud Optimized GeoTiffs (COGs for short) are a nascent subset of GeoTiff
+meant to increase their expressiveness, ease of use, and portability through
+further standardization. We call these GeoTiffs "cloud optimized" because
+the features they add allow for remote access to GeoTiff that, with the help
 of HTTP GET range requests, access the parts of a tiff you're interested
 without consuming large portions of the image which are irrelevant to your
 computation.
