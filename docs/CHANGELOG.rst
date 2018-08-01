@@ -56,7 +56,8 @@ API Changes
     of bands in any order they choose.
   - **New:** ``COGLayerReader`` now has the ``readSubsetBands`` and ``querySubsetBands`` methods which allow users to read in layers with the desired bands
     in the order they choose.
-  - **Change:** ``COGLayerReader.baseRead`` has been removed and has been replaced with ``COGLayerReader.baseReadAllBands`` and ``COGLayerReader.baseReadSubsetBands`.
+  - **Change:** ``COGLayerReader.baseRead`` has been removed and has been replaced with ``COGLayerReader.baseReadAllBands`` and ``COGLayerReader.baseReadSubsetBands``.
+  - **New:** ``KeyBounds`` now has the ``rekey`` method that will rekey the bounds from a source layout to a target layout.
 
 - ``geotrellis.raster``
 

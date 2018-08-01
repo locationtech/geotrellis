@@ -342,7 +342,7 @@ abstract class COGLayerReader[ID] extends Serializable {
     val baseQueryKeyBounds: Seq[KeyBounds[K]] =
       queryKeyBounds
         .flatMap { qkb =>
-          qkb.redraw(sourceLayout, targetLayout).intersect(baseKeyBounds) match {
+          qkb.rekey(sourceLayout, targetLayout).intersect(baseKeyBounds) match {
             case EmptyBounds => None
             case kb: KeyBounds[K] => Some(kb)
           }
