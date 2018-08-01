@@ -16,7 +16,8 @@
 
 package geotrellis.spark
 
-import geotrellis.raster.GridBounds
+import geotrellis.raster.{GridBounds, RasterExtent}
+import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.util._
 
 import cats.Functor
@@ -201,6 +202,29 @@ case class KeyBounds[+K](
     setSpatialBounds[B](KeyBounds(SpatialKey(gb.colMin, gb.rowMin), SpatialKey(gb.colMax, gb.rowMax)))
 
   def toOption: Option[KeyBounds[K]] = Some(this)
+
+  def rekey[B >: K: SpatialComponent](sourceLayout: LayoutDefinition, targetLayout: LayoutDefinition): KeyBounds[B] = {
+    val extent = sourceLayout.extent
+    val sourceRe = RasterExtent(extent, sourceLayout.layoutCols, sourceLayout.layoutRows)
+    val targetRe = RasterExtent(extent, targetLayout.layoutCols, targetLayout.layoutRows)
+
+    val minSpatialKey = (minKey: B).getComponent[SpatialKey]
+    val (minCol, minRow) = {
+      val (x, y) = sourceRe.gridToMap(minSpatialKey.col, minSpatialKey.row)
+      targetRe.mapToGrid(x, y)
+    }
+
+    val maxSpatialKey = (maxKey: B).getComponent[SpatialKey]
+    val (maxCol, maxRow) = {
+      val (x, y) = sourceRe.gridToMap(maxSpatialKey.col, maxSpatialKey.row)
+      targetRe.mapToGrid(x, y)
+    }
+
+    KeyBounds(
+      (minKey: B).setComponent(SpatialKey(minCol, minRow)),
+      (maxKey: B).setComponent(SpatialKey(maxCol, maxRow))
+    )
+  }
 }
 
 object KeyBounds {
