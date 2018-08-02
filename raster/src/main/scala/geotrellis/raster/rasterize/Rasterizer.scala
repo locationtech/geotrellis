@@ -332,7 +332,6 @@ object Rasterizer {
     * LineString.  The iteration happens in the direction from the
     * first point to the last point.
     */
-  @deprecated("This function will be deprecated in 3.0 in favor of richer options on foreachCellByGeometry", "1.2")
   def foreachCellByLineStringDouble(line: Line, re: RasterExtent)(f: (Int, Int) => Unit) {
     val coords = line.jtsGeom.getCoordinates()
     var i = 1; while (i < coords.size) {
@@ -340,6 +339,7 @@ object Rasterizer {
       i += 1
     }
   }
+
   /**
     * Implementation drawn from ``A Fast Voxel Traversal Algorithm for Ray
     * Tracing'' by John Amanatides and Andrew Woo.  Dept. of Computer Science,
@@ -430,7 +430,7 @@ object Rasterizer {
           case ( 1, -1) =>
             cellX += stepX
             tMaxX += tDeltaX
-          case ( 1,  1) => 
+          case ( 1,  1) =>
             cellX += stepX
             cellY += stepY
             tMaxX += tDeltaX
