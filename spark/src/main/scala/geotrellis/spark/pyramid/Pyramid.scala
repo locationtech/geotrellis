@@ -109,7 +109,7 @@ object Pyramid extends LazyLogging {
     Pyramid[K, V, M](seq.toMap)
   }
 
-  def fromLayerRdd[
+  def fromLayerRDD[
     K: SpatialComponent: ClassTag,
     V <: CellGrid: ClassTag: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V],
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]

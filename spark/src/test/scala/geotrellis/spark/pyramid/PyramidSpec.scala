@@ -223,7 +223,7 @@ class PyramidSpec extends FunSpec with Matchers with TestEnvironment {
       val baseLayer = createTileLayerRDD(tile, tileLayout)
 
       // Build pyramid using Average resampling
-      val pyramid = Pyramid.fromLayerRdd(baseLayer)
+      val pyramid = Pyramid.fromLayerRDD(baseLayer)
 
       // The 1 tile top of the pyramid should be set to zoom 0, base layer numbered accordingly
       assert(pyramid.minZoom == 0)
