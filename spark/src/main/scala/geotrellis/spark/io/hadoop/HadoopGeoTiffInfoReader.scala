@@ -35,7 +35,7 @@ case class HadoopGeoTiffInfoReader(
 ) extends GeoTiffInfoReader {
 
   /** Returns RDD of URIs to tiffs as GeoTiffInfo is not serializable. */
-  def geoTiffInfoRdd(implicit sc: SparkContext): RDD[String] = {
+  def geoTiffInfoRDD(implicit sc: SparkContext): RDD[String] = {
     sc.parallelize(
       HdfsUtils
         .listFiles(new Path(path), config.value)

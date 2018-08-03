@@ -38,7 +38,7 @@ case class S3GeoTiffInfoReader(
 ) extends GeoTiffInfoReader {
 
   /** Returns RDD of URIs to tiffs as GeoTiffInfo is not serializable. */
-  def geoTiffInfoRdd(implicit sc: SparkContext): RDD[String] = {
+  def geoTiffInfoRDD(implicit sc: SparkContext): RDD[String] = {
     val listObjectsRequest =
       delimiter
         .fold(new ListObjectsRequest(bucket, prefix, null, null, null))(new ListObjectsRequest(bucket, prefix, null, _, null))
