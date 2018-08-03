@@ -33,10 +33,10 @@ import scala.collection.mutable
   * @param interleaveMethod   The interleave method used for segments (pixel or band)
   */
 case class GeoTiffSegmentLayout(
-  totalCols: Int, 
-  totalRows: Int, 
-  tileLayout: TileLayout, 
-  storageMethod: StorageMethod, 
+  totalCols: Int,
+  totalRows: Int,
+  tileLayout: TileLayout,
+  storageMethod: StorageMethod,
   interleaveMethod: InterleaveMethod
 ) {
   def isTiled: Boolean =
@@ -90,7 +90,7 @@ case class GeoTiffSegmentLayout(
 
     def addToPartition(window: GridBounds) {
       partition += window
-      partitionSize += window.sizeLong
+      partitionSize += window.size
       partitionCount += 1
     }
 
@@ -105,7 +105,7 @@ case class GeoTiffSegmentLayout(
       }.sortBy(_._2)
 
     for ((window, _) <- sorted) {
-      if ((partitionCount == 0) || (partitionSize + window.sizeLong) < maxPartitionSize) {
+      if ((partitionCount == 0) || (partitionSize + window.size) < maxPartitionSize) {
         addToPartition(window)
       } else {
         finalizePartition()

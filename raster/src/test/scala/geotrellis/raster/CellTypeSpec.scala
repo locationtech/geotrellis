@@ -33,13 +33,6 @@ class CellTypeSpec extends FunSpec with Matchers with Inspectors {
       val ctp = CellType.fromName(str)
       ctp should be (ct)
     }
-    withClue("fromString"){
-      // Tests backward compatibility.
-      val str = ct.toString
-      //noinspection ScalaDeprecation
-      val ctp = CellType.fromString(str)
-      ctp should be (ct)
-    }
   }
 
   def roundTripTiff(ct: CellType): Unit = {
