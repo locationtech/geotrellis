@@ -27,7 +27,7 @@ encompasses your desired work-flow:
 
     /* Our layer will need metadata. Luckily, this can be derived mostly for free. */
     val (zoom, meta): (Int, TileLayerMetadata[SpatialKey]) =
-      TileLayerMetadata.fromRdd(reprojected, ZoomedLayoutScheme(ConusAlbers))
+      TileLayerMetadata.fromRDD(reprojected, ZoomedLayoutScheme(ConusAlbers))
 
     /* Recut our Tiles to form a proper gridded "layer". */
     val gridded: RDD[(SpatialKey, Tile)] = reprojected.tileToLayout(meta)

@@ -92,7 +92,7 @@ sealed trait Bounds[+A] extends Product with Serializable {
 object Bounds {
   def apply[A](min: A, max: A): Bounds[A] = KeyBounds(min, max)
 
-  def fromRdd[K: Boundable, V](rdd: RDD[(K, V)]): Bounds[K] =
+  def fromRDD[K: Boundable, V](rdd: RDD[(K, V)]): Bounds[K] =
     rdd
       .map{ case (k, tile) => Bounds(k, k) }
       .fold(EmptyBounds) { _ combine  _ }
