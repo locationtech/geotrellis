@@ -42,6 +42,12 @@ class SinglebandGeoTiffSpec extends FunSpec with Matchers with RasterMatchers wi
       assert(wit.overviews.last.tile.rows <= GeoTiff.DefaultBlockSize)
     }
 
+    it("should be able to attach overviews manually") {
+      val ovr = tiff.buildOverview(NearestNeighbor, 2)
+      val withOvr = tiff.withOverviews(Seq(ovr))
+      withOvr.overviews should be (List(ovr))
+    }
+
     it("should default to power of 2 overviews") {
       val blockSize = 64
       val pixels = 512
