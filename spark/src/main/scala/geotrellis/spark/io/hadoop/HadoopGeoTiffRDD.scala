@@ -130,7 +130,7 @@ object HadoopGeoTiffRDD extends LazyLogging {
         val infoReader = HadoopGeoTiffInfoReader(pathString, conf, options.tiffExtensions)
 
         infoReader.readWindows(
-          infoReader.geoTiffInfoRdd.map(new URI(_)),
+          infoReader.geoTiffInfoRDD.map(new URI(_)),
           uriToKey,
           maxTileSize,
           options.partitionBytes.getOrElse(DefaultPartitionBytes),

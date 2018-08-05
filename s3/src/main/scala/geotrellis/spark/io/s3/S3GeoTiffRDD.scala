@@ -146,7 +146,7 @@ object S3GeoTiffRDD extends LazyLogging {
         val infoReader = S3GeoTiffInfoReader(bucket, prefix, options)
 
         infoReader.readWindows(
-          infoReader.geoTiffInfoRdd.map(new URI(_)),
+          infoReader.geoTiffInfoRDD.map(new URI(_)),
           uriToKey,
           maxTileSize,
           options.partitionBytes.getOrElse(DefaultPartitionBytes),
