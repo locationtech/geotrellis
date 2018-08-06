@@ -28,13 +28,13 @@ package object vector extends SeqMethods
     with triangulation.Implicits
     with voronoi.Implicits {
 
-  type PointFeature[D] = Feature[Point, D]
-  type LineFeature[D] = Feature[Line, D]
-  type PolygonFeature[D] = Feature[Polygon, D]
-  type MultiPointFeature[D] = Feature[MultiPoint, D]
-  type MultiLineFeature[D] = Feature[MultiLine, D]
-  type MultiPolygonFeature[D] = Feature[MultiPolygon, D]
-  type GeometryCollectionFeature[D] = Feature[GeometryCollection, D]
+  type PointFeature[+D] = Feature[Point, D]
+  type LineFeature[+D] = Feature[Line, D]
+  type PolygonFeature[+D] = Feature[Polygon, D]
+  type MultiPointFeature[+D] = Feature[MultiPoint, D]
+  type MultiLineFeature[+D] = Feature[MultiLine, D]
+  type MultiPolygonFeature[+D] = Feature[MultiPolygon, D]
+  type GeometryCollectionFeature[+D] = Feature[GeometryCollection, D]
 
   // MethodExtensions
 
