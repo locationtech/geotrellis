@@ -2,14 +2,15 @@
 #
 # A more capable sbt runner, coincidentally also called sbt.
 # Author: Paul Phillips <paulp@improving.org>
+# https://github.com/paulp/sbt-extras
 
 set -o pipefail
 
-declare -r sbt_release_version="0.13.16"
-declare -r sbt_unreleased_version="0.13.16"
+declare -r sbt_release_version="0.13.17"
+declare -r sbt_unreleased_version="0.13.17"
 
-declare -r latest_213="2.13.0-M2"
-declare -r latest_212="2.12.4"
+declare -r latest_213="2.13.0-M4"
+declare -r latest_212="2.12.6"
 declare -r latest_211="2.11.12"
 declare -r latest_210="2.10.7"
 declare -r latest_29="2.9.3"
@@ -22,7 +23,7 @@ declare -r sbt_launch_ivy_snapshot_repo="https://repo.scala-sbt.org/scalasbt/ivy
 declare -r sbt_launch_mvn_release_repo="http://repo.scala-sbt.org/scalasbt/maven-releases"
 declare -r sbt_launch_mvn_snapshot_repo="http://repo.scala-sbt.org/scalasbt/maven-snapshots"
 
-declare -r default_jvm_opts_common="-Xms512m -Xmx1536m -Xss2m"
+declare -r default_jvm_opts_common="-Xms512m -Xss2m"
 declare -r noshare_opts="-Dsbt.global.base=project/.sbtboot -Dsbt.boot.directory=project/.boot -Dsbt.ivy.home=project/.ivy"
 
 declare sbt_jar sbt_dir sbt_create sbt_version sbt_script sbt_new
@@ -97,21 +98,6 @@ build_props_sbt () {
     grep '^sbt\.version' "$buildProps" | tr '=\r' ' ' | awk '{ print $2; }'
 }
 
-update_build_props_sbt () {
-  local ver="$1"
-  local old="$(build_props_sbt)"
-
-  [[ -r "$buildProps" ]] && [[ "$ver" != "$old" ]] && {
-    perl -pi -e "s/^sbt\.version\b.*\$/sbt.version=${ver}/" "$buildProps"
-    grep -q '^sbt.version[ =]' "$buildProps" || printf "\nsbt.version=%s\n" "$ver" >> "$buildProps"
-
-    vlog "!!!"
-    vlog "!!! Updated file $buildProps setting sbt.version to: $ver"
-    vlog "!!! Previous value was: $old"
-    vlog "!!!"
-  }
-}
-
 set_sbt_version () {
   sbt_version="${sbt_explicit_version:-$(build_props_sbt)}"
   [[ -n "$sbt_version" ]] || sbt_version=$sbt_release_version
@@ -172,7 +158,19 @@ setJavaHome () {
   export PATH="$JAVA_HOME/bin:$PATH"
 }
 
-getJavaVersion() { "$1" -version 2>&1 | grep -E -e '(java|openjdk) version' | awk '{ print $3 }' | tr -d \"; }
+getJavaVersion() {
+  local str=$("$1" -version 2>&1 | grep -E -e '(java|openjdk) version' | awk '{ print $3 }' | tr -d '"')
+
+  # java -version on java8 says 1.8.x
+  # but on 9 and 10 it's 9.x.y and 10.x.y.
+  if [[ "$str" =~ ^1\.([0-9]+)\..*$ ]]; then
+    echo "${BASH_REMATCH[1]}"
+  elif [[ "$str" =~ ^([0-9]+)\..*$ ]]; then
+    echo "${BASH_REMATCH[1]}"
+  elif [[ -n "$str" ]]; then
+    echoerr "Can't parse java version from: $str"
+  fi
+}
 
 checkJava() {
   # Warn if there is a Java version mismatch between PATH and JAVA_HOME/JDK_HOME
@@ -195,7 +193,7 @@ checkJava() {
 java_version () {
   local version=$(getJavaVersion "$java_cmd")
   vlog "Detected Java version: $version"
-  echo "${version:2:1}"
+  echo "$version"
 }
 
 # MaxPermSize critical on pre-8 JVMs but incurs noisy warning on 8+
@@ -259,9 +257,9 @@ download_url () {
   echoerr "    To  $jar"
 
   mkdir -p "${jar%/*}" && {
-    if which curl >/dev/null; then
+    if command -v curl > /dev/null 2>&1; then
       curl --fail --silent --location "$url" --output "$jar"
-    elif which wget >/dev/null; then
+    elif command -v wget > /dev/null 2>&1; then
       wget -q -O "$jar" "$url"
     fi
   } && [[ -r "$jar" ]]
@@ -461,8 +459,7 @@ setTraceLevel() {
 # set scalacOptions if we were given any -S opts
 [[ ${#scalac_args[@]} -eq 0 ]] || addSbt "set scalacOptions in ThisBuild += \"${scalac_args[@]}\""
 
-# Update build.properties on disk to set explicit version - sbt gives us no choice
-[[ -n "$sbt_explicit_version" && -z "$sbt_new" ]] && update_build_props_sbt "$sbt_explicit_version"
+[[ -n "$sbt_explicit_version" && -z "$sbt_new" ]] && addJava "-Dsbt.version=$sbt_explicit_version"
 vlog "Detected sbt version $sbt_version"
 
 if [[ -n "$sbt_script" ]]; then
