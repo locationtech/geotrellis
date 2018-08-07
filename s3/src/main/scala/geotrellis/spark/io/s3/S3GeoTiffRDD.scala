@@ -198,30 +198,6 @@ object S3GeoTiffRDD extends LazyLogging {
     apply[K, K, V](bucket, prefix, (_: URI, key: K) => key, options)
 
   /**
-    * Creates a RDD[(K, V)] whose K and V depends on the type of the GeoTiff that is going to be read in.
-    *
-    * @param objectRequestsToDimensions A RDD of GetObjectRequest of a given GeoTiff and its cols and rows as a (Int, Int).
-    * @param uriToKey function to transform input key basing on the URI information.
-    * @param options An instance of [[Options]] that contains any user defined or default settings.
-    */
-  def apply[I, K, V](objectRequestsToDimensions: RDD[(GetObjectRequest, (Int, Int))], uriToKey: (URI, I) => K, options: Options, sourceGeoTiffInfo: => GeoTiffInfoReader)
-    (implicit rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
-    if (options.numPartitions.isDefined) logger.warn("numPartitions option is ignored")
-    if (options.maxTileSize.isEmpty) logger.info(s"Using default maxTileSize=$DefaultMaxTileSize")
-
-    implicit val sc = objectRequestsToDimensions.sparkContext
-    sourceGeoTiffInfo.readWindows(
-      objectRequestsToDimensions.map({ case (objectRequest, _) =>
-        new URI(s"s3://${objectRequest.getBucketName}/${objectRequest.getKey}")
-      }),
-      uriToKey,
-      options.maxTileSize.getOrElse(DefaultMaxTileSize),
-      options.partitionBytes.getOrElse(DefaultPartitionBytes),
-      options,
-      None)
-  }
-
-  /**
     * Creates RDD that will read all GeoTiffs in the given bucket and prefix as singleband GeoTiffs.
     * If a GeoTiff contains multiple bands, only the first will be read.
     *
