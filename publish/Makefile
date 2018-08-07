@@ -1,18 +1,17 @@
 IMG  := geotrellis/publish-geotrellis-container
-TAG  := "latest"
+TAG  := latest
+RELEASE_TAG := 2.0
 
 build: Dockerfile
-	@cp ~/.ivy2/.credentials .credentials
-	@cp ~/.sbt/0.13/local.sbt local.sbt
-	@cp ~/.sbt/0.13/plugins/plugins.sbt plugins.sbt
-	@cp -r ~/.gnupg ./gnupg
-	docker build --no-cache -t ${IMG}:${TAG} .
-	@rm .credentials
-	@rm -r ./gnupg
-	@rm local.sbt
+	docker build \
+	--build-arg RELEASE_TAG=$(RELEASE_TAG) \
+	--no-cache -t ${IMG}:${TAG} .
 
 run:
-	docker run -it ${IMG}:${TAG} /bin/bash
+	docker run -it --rm \
+	-v ~/.ivy2/.credentials:/home/geotrellis/.ivy2/.credentials \
+	-v ~/.gnupg:/home/geotrellis/.gnupg \
+	$(IMG):$(TAG) /bin/bash
 
 publish:
-	docker run -it ${IMG}:${TAG} publish/publish-to-sonatype.sh
+	docker run -it $(IMG):$(TAG) publish/publish-to-sonatype.sh
