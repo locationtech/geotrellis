@@ -9,44 +9,38 @@ API Changes
 
 - ``geotrellis.spark``
 
-
-  - **Deprecation:**  ``geotrellis.slick`` is being deprecated and will likely be moved to an external repo
-  - **Change:**  ``geotrellis.slick.Projected`` has been moved to ``geotrellis.vector.Projected``
   - **Change:**  The length of the key (the space-filling curve index or address) used for layer reading and writing has
     been extended from a fixed length of 8 bytes to an arbitrary length.  This change affects not only the
     ``geotrellis.spark`` package, but all backends (excluding ``geotrellis.geowave`` and ``geotrellis.geomesa``).
   - **New:** All focal operations now except an optional ``partitioner`` parameter.
-  - **New:** ``BufferTiles``\s ``apply`` methods and the ``bufferTiles`` methods now except an optional ``partitioner`` parameter.
-
-  - **Change:** Reprojection has improved performance due to one less shuffle stage and lower memory usage.
-  ``TileRDDReproject`` loses dependency on ``TileReprojectMethods`` in favor of ``RasterRegionReproject``
-  - **New:** CollectionLayerReader now has an SPI interface.
-  - **New:** ``ZoomResample`` can now be used on ``MultibandTileLayerRDD``\s.
-  - **New:** A ``Partitioner`` can be specified in the ``reproject`` methods of ``TileLayerRDD``.
+  - **New:** ``BufferTiles.apply`` methods and the ``bufferTiles`` methods now except an optional ``partitioner`` parameter.
+  - **Change:** Reprojection has improved performance due to one less shuffle stage and lower memory usage. ``TileRDDReproject`` loses dependency on ``TileReprojectMethods`` in favor of ``RasterRegionReproject``
+  - **New:** ``CollectionLayerReader`` now has an SPI interface.
+  - **New:** ``ZoomResample`` can now be used on ``MultibandTileLayerRDD``.
+  - **New:** ``Partitioner`` can be specified in the ``reproject`` methods of ``TileLayerRDD``.
   - **New:** Compression ``level`` of GeoTiffs can be specified in the ``DeflateCompression`` constructor.
-  - **Change:**: The Ascii draw methods are now method extensions of ``Tile``.
-  - **Change:** Replace `geotrellis.util.Functor` with `cats.Functor`.
+  - **Change:** The Ascii draw methods are now method extensions of ``Tile``.
+  - **Change:** Replace ``geotrellis.util.Functor`` with ``cats.Functor``.
   - **Change:** Specifying the ``maxTileSize`` for a COGLayer that's to be written is now done via ``COGLayerWriter.Options``
     which can be passed directly to the ``write`` methods.
-  - **New:** The ``resampleMethod`` parameter has been added to ``COGLayerWriter.Options``.
+  - **New:** ``resampleMethod`` parameter has been added to ``COGLayerWriter.Options``.
   - **Change:** Specifying the ``compression`` for a COGLayer that's to be written is now done via ``COGLayerWriter.Options``
     which can be passed directly to the ``write`` methods.
   - **New:** A new type called ``LayerType`` has been created to help identify the nature of a layer (either Avro or COG).
-  - **New:** ``LayerHeader``\s now have an additional parameter: ``layerType``.
+  - **New:** ``LayerHeader`` now have an additional parameter: ``layerType``.
   - **Change:** The attribute name for ``COGLayerStorageMetadata`` is now ``metadata`` instead of ``cog_metadata``.
   - **New:** ``AttributeStore`` now has four new methods: ``layerType``, ``isCOGLayer``, ``readCOGLayerAttributes``,
     and ``writeCOGLayerAttributes``.
   - **New:** Kryo serialization of geometry now uses a binary format to reduce shuffle block size.
   - **Change:** Scalaz streams were replaced by fs2 streams.
-  - **Change:** Refactored HBaseInstance, now accepts a plain Hadoop Configuration object.
-  - **Change:** Refactored CassandraInstance, now accepts a getCluster function.
+  - **Change:** Refactored ``HBaseInstance``, now accepts a plain Hadoop ``Configuration`` object.
+  - **Change:** Refactored ``CassandraInstance``, now accepts a ``getCluster`` function.
   - **Change:** Use pureconfig to handle all work with configuration files.
-  - **Change:** Replace `geotrellis.util.Functor` with `cats.Functor`.
-  - **Remove:** ``LayerUpdater`` with its functionality covered by ``LayerWriter`` <https://github.com/locationtech/geotrellis/pull/2663>__
-  - **New:** Alter `geotrellis.spark.stitch.StitchRDDMethods` to allow `RDD[(K, V)]` to be stitched when not all tiles are
+  - **Remove:** ``LayerUpdater`` with its functionality covered by ``LayerWriter`` (`#2663 <https://github.com/locationtech/geotrellis/pull/2663>`_).
+  - **New:** Alter ``geotrellis.spark.stitch.StitchRDDMethods`` to allow ``RDD[(K, V)]`` to be stitched when not all tiles are
     of the same dimension.
-  - **Change:** Change `TilerMethods.tileToLayout` functions that accept `TileLayerMetadata` as an argument to return `RDD[(K, V)] with Metadata[M]`
-    instead of `RDD[(K, V)]`.
+  - **Change:** Change ``TilerMethods.tileToLayout`` functions that accept ``TileLayerMetadata`` as an argument to return ``RDD[(K, V)] with Metadata[M]``
+    instead of ``RDD[(K, V)]``.
   - **New:** Introduce ``Pyramid`` class to provide a convenience wrapper for building raster pyramids.
   - **Change:** Expose ``attributeStore`` parameter to LayerReader interface.
   - **Change:** Added exponential backoffs in ``S3RDDReader``.
@@ -56,54 +50,56 @@ API Changes
     of bands in any order they choose.
   - **New:** ``COGLayerReader`` now has the ``readSubsetBands`` and ``querySubsetBands`` methods which allow users to read in layers with the desired bands
     in the order they choose.
-  - **Change:** ``COGLayerReader.baseRead`` has been removed and has been replaced with ``COGLayerReader.baseReadAllBands`` and ``COGLayerReader.baseReadSubsetBands``.
   - **New:** ``KeyBounds`` now has the ``rekey`` method that will rekey the bounds from a source layout to a target layout.
-  - **Change:** The ``TileLayerMetadata.fromRdd`` method has been renamed to ``TileLayerMetadata.fromRDD``.
-  - **Change:** The ``KeyBounds.fromRdd`` method has been renamed to ``KeyBounds.fromRDD``.
+  - **Change:** ``TileLayerMetadata.fromRdd`` method has been renamed to ``TileLayerMetadata.fromRDD``.
+  - **Change:** ``KeyBounds.fromRdd`` method has been renamed to ``KeyBounds.fromRDD``.
 
 - ``geotrellis.raster``
 
-  - **Change:** Removed ``decompress`` option from `GeoTiffReader` functions.
+  - **Change:** Removed implicit conversion from ``Raster[T]`` to ``T`` (`#2771 <https://github.com/locationtech/geotrellis/pull/2771>`_).
+  - **Change:** Removed ``decompress`` option from ``GeoTiffReader`` functions.
   - **New:** Kryo serialization of geometry now uses a binary format to reduce shuffle block size.
   - **Change:** Scalaz streams were replaced by fs2 streams.
   - **New:** ``GeoTiffMultibandTile`` now has another ``crop`` method that takes a ``GridBounds`` and an ``Array[Int]`` that represents the band indices.
-  - **Change:** Removed implicit conversion from ``Raster[T]`` to ``T`` <https://github.com/locationtech/geotrellis/pull/2771>__ .
-  - **New:** ``GeoTiff[MultibandTile]`` can be written with ``BandInterleave``, only ``PixelInterleave`` previously supported.  <https://github.com/locationtech/geotrellis/pull/2767>
+  - **New:** ``GeoTiff[MultibandTile]`` can be written with ``BandInterleave``, only ``PixelInterleave`` previously supported.  (`#2767 <https://github.com/locationtech/geotrellis/pull/2767>`_)
   - **New:** ``MultibandTile`` now has a new method, ``cropBands`` that takes an Array of band indices and returns a cropped ``MultibandTile`` with the chosen
     bands.
 
 - ``geotrellis.spark-etl``
 
-  - **Change**: Package is deprecated since GeoTrellis 2.0.
-  - **Change**: ``Input.maxTileSize`` is ``256`` by default to correspond ``HadoopGeoTiffRDD default behaviour``.
-                Added ``Input.partitionBytes`` and it is set to ``134217728`` by default to correspond ``HadoopGeoTiffRDD default behaviour``.
-                Added ``Output.bufferSize`` option to set up a custom buffer size for the buffered reprojection.
+  - **Change:** Package is deprecated since GeoTrellis 2.0.
+  - **Change:** ``Input.maxTileSize`` is ``256`` by default to correspond ``HadoopGeoTiffRDD default behaviour``.
+  - **New:** ``Input.partitionBytes`` and it is set to ``134217728`` by default to correspond ``HadoopGeoTiffRDD default behaviour``.
+  - **New:** ``Output.bufferSize`` option to set up a custom buffer size for the buffered reprojection.
+
+- ``geotrellis.slick``
+
+  - **Change:**  ``geotrellis.slick.Projected`` has been moved to ``geotrellis.vector.Projected``
+
 
 Fixes
 ^^^^^
 
-- `StreamingHistogram.binCount now returns non-zero counts <https://github.com/locationtech/geotrellis/pull/2590>`__
-- `HilbertSpatialKeyIndex index offset <https://github.com/locationtech/geotrellis/pull/2586>`__
-  - **Note:** Existing spatial layers using Hilbert index will need to be updated, see PR for directions.
+- StreamingHistogram.binCount now returns non-zero counts (`#2590 <https://github.com/locationtech/geotrellis/pull/2590>`_)
+- HilbertSpatialKeyIndex index offset. Existing spatial layers using Hilbert index will need to be updated (`#2586 <https://github.com/locationtech/geotrellis/pull/2586>`_)
 - Fixed ``CastException`` that sometimes occured when reading cached attributes.
-- Uncompressed GeoTiffMultibandTiles will now convert to the correct CellType.
+- Uncompressed ``GeoTiffMultibandTiles`` will now convert to the correct ``CellType``.
 - Calculating the Slope of a ``Tile`` when ``targetCell`` is ``Data`` will now produce the correct result.
-- Introduce new hooks into AttributeStore API to allow for better performance in certain queries against catalogs with many layers
+- Introduce new hooks into ``AttributeStore`` trait to allow for better performance in certain queries against catalogs with many layers.
 - ``GeoTiffReader`` can now read tiffs that are missing the ``NewSubfileType`` tag.
 - Pyramiding code will once again respect resampling method and will now actually reduce shuffle volume by resampling
-  tiles on map side of pyramid operation
-- Uncompressed GeoTiffMultibandTiles will now convert to the correct CellType.
-- COGLayer attributes can be accessed via the various read attribute methods in
+  tiles on map side of pyramid operation.
+- ``COGLayer`` attributes can be accessed via the various read attribute methods in
   ``AttributeStore`` (ie ``readMetadata``, ``readHeader``, etc)
 - The regex used to match files for the ``HadoopLayerAttributeStore`` and ``FileLayerAttributeStore`` has been
   expanded to include more characters.
 - ``HadoopAttributeStore.availableAttributes`` has been fixed so that it'll now list all attribute files.
 - Allow for simple features to be generated with a specified or random id with geometry stored in the standard
   field, "the_geom"
-- Use a new Amazon SDK API to remove deprecation warnings.
-- Fixed a bug in incorrect metadata fetch by COGLayerReaders that could lead to an incorrect data querying.
-- Cropping RDDs with clamp=false now produces correct result.
-- Fixed tiff reads in case RowsPerStrip tiff tag is not defined.
+- Update version of Amazon SDK API to remove deprecation warnings.
+- Fixed a bug in incorrect metadata fetch by ``COGLayerReader`` that could lead to an incorrect data querying.
+- Cropping RDDs with ``clamp=false`` now produces correct result.
+- Fixed tiff reads in case ``RowsPerStrip`` tiff tag is not defined.
 - Change aspect result to azimuth, i.e. start from due north and be clockwise.
 - COG overviews generated in the ``COGLayer.fromLayerRDD`` method will now use the passed in ``ResampleMethod``.
 - Reading a GeoTiff with ``streaming`` will now work with files that are larger than ``java.lang.Integer.MAX_VALUE``.
