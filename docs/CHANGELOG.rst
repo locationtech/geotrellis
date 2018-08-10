@@ -107,8 +107,9 @@ Fixes
 - ``GeoTiffMultibandTile.crop`` will now return ``ArrayMultibandTile``\(s) with the correct number of bands.
 - Imroved performance of ``COGValueReader.readSubsetBands`` when reading from S3.
 
+
 1.2.1
-_____
+-----
 *2018 Jan 3*
 
 Fixes
