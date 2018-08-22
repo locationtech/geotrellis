@@ -629,4 +629,19 @@ class WKTParserTest extends FunSpec {
     assert(contains(expected))
   }
 
+  it("Should parse GCS_WGS_1984") {
+    // this is a small hack to show how it is possible to handle multiline strings
+    val strip = WKTParser("""|GEOGCS["GCS_WGS_1984",
+                             |DATUM["D_WGS_1984", SPHEROID["WGS_1984", 6378137.0, 298.257223563]],
+                             |PRIMEM["Greenwich", 0.0],
+                             |UNIT["degree", 0.017453292519943295],
+                             |AXIS["Longitude", "EAST"],
+                             |AXIS["Latitude", "NORTH"]]""".stripMargin.replaceAll("\n",""))
+
+    // sinlge line equivalent
+    val single = WKTParser("""GEOGCS["GCS_WGS_1984", DATUM["D_WGS_1984", SPHEROID["WGS_1984", 6378137.0, 298.257223563]],PRIMEM["Greenwich", 0.0],UNIT["degree", 0.017453292519943295],AXIS["Longitude", "EAST"],AXIS["Latitude", "NORTH"]]""")
+
+    assert(strip == single)
+  }
+
 }
