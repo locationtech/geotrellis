@@ -231,6 +231,8 @@ trait ArrayTile extends Tile with Serializable {
         ct.combine(this)((z1, z2) => f(z2, z1))
       case ct: CroppedTile =>
         ct.combine(this)((z1, z2) => f(z2, z1))
+      case t =>
+        this.map((col, row, z) => f(z, t.get(col, row)))
   }
 
   /**
@@ -274,6 +276,8 @@ trait ArrayTile extends Tile with Serializable {
         ct.combineDouble(this)(f)
       case ct: CompositeTile =>
         ct.combineDouble(this)((z1, z2) => f(z2, z1))
+      case t =>
+        this.mapDouble((col, row, z) => f(z, t.get(col, row)))
     }
   }
 

@@ -273,6 +273,7 @@ class CellTypeSpec extends FunSpec with Matchers with Inspectors {
           case n: Float ⇒ assert(n === noData.toFloat)
           case n: Double ⇒ assert(n === noData.toDouble)
         }
+        case _ => ???
       }
     }
     it("should report nodata value for ConstantNoData") {
