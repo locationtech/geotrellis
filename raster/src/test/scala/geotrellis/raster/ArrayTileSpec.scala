@@ -186,7 +186,3 @@ class ArrayTileSpec extends FunSpec
     }
   }
 }
-
-object ArrayTileSpec {
-
-}
