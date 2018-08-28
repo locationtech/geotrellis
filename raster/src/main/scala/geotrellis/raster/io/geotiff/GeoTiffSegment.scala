@@ -51,13 +51,21 @@ trait GeoTiffSegment {
         val bs = new BitSet(size)
         cfor(0)(_ < size, _ + 1) { i => if ((getInt(i) & 1) == 0) { bs.set(i) } }
         bs.toByteArray()
-      case ByteCellType | UByteCellType =>
+      case ByteCellType =>
         val arr = Array.ofDim[Byte](size)
         cfor(0)(_ < size, _ + 1) { i => getInt(i).toByte }
         arr
-      case ShortCellType | UShortCellType =>
+      case UByteCellType =>
+        val arr = Array.ofDim[Byte](size)
+        cfor(0)(_ < size, _ + 1) { i => i2ub(getInt(i)) }
+        arr
+      case ShortCellType =>
         val arr = Array.ofDim[Short](size)
         cfor(0)(_ < size, _ + 1) { i => arr(i) = getInt(i).toShort }
+        arr.toArrayByte()
+      case UShortCellType =>
+        val arr = Array.ofDim[Short](size)
+        cfor(0)(_ < size, _ + 1) { i => arr(i) = i2us(getInt(i)) }
         arr.toArrayByte()
       case IntCellType =>
         val arr = Array.ofDim[Int](size)
