@@ -129,6 +129,8 @@ class GeoTiffMultibandTileSpec extends FunSpec
   }
 
   describe("Multiband cellType conversion") {
+    val tiff = MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-tiled-pixel.tif"))
+
     it("should convert the cellType with convert") {
       val actual =
         MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.convert(UShortCellType)
@@ -137,6 +139,20 @@ class GeoTiffMultibandTileSpec extends FunSpec
         MultibandGeoTiff(geoTiffPath("3bands/int32/3bands-striped-pixel.tif")).tile.toArrayTile.convert(UShortCellType)
 
       assertEqual(expected, actual)
+    }
+
+    it("should convert to the ShortCellType correctly") {
+      val expected = MultibandGeoTiff(geoTiffPath("3bands/int16/3bands-tiled-pixel.tif"))
+      val actual = tiff.tile.convert(ShortCellType)
+
+      assertEqual(expected.tile, actual.tile)
+    }
+
+    it("should convert to the UShortCellType correctly") {
+      val expected = MultibandGeoTiff(geoTiffPath("3bands/uint16/3bands-tiled-pixel.tif"))
+      val actual = tiff.tile.convert(UShortCellType)
+
+      assertEqual(expected.tile, actual.tile)
     }
 
     it("should convert the cellType with interpretAs") {
