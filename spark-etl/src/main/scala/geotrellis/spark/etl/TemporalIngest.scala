@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.etl.s3
+package geotrellis.spark.etl
 
-import geotrellis.spark.etl.TypedModule
+import geotrellis.spark._
+import geotrellis.raster.Tile
+import geotrellis.spark.util.SparkUtils
+import geotrellis.spark.TemporalProjectedExtent
+import org.apache.spark.SparkConf
 
-object S3Module extends TypedModule {
-  register(new GeoTiffS3Input)
-  register(new TemporalGeoTiffS3Input)
-  register(new SpaceTimeS3Output)
-  register(new SpatialS3Output)
-  register(new MultibandGeoTiffS3Input)
-  register(new TemporalMultibandGeoTiffS3Input)
-  register(new SpaceTimeMultibandS3Output)
-  register(new SpatialMultibandS3Output)
+object TemporalIngest {
+  def main(args: Array[String]): Unit = {
+    implicit val sc = SparkUtils.createSparkContext("GeoTrellis ETL Singleband Temporal Ingest", new SparkConf(true))
+    try {
+      Etl.ingest[TemporalProjectedExtent, SpaceTimeKey, Tile](args)
+    } finally {
+      sc.stop()
+    }
+  }
 }
