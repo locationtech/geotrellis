@@ -52,9 +52,4 @@ case class HadoopGeoTiffInfoReader(
 
     GeoTiffReader.readGeoTiffInfo(rr, streaming, true, ovrReader)
   }
-
-  def getGeoTiffTags(uri: String): TiffTags = {
-    val rr = HdfsRangeReader(new Path(uri), config.value)
-    TiffTags(rr)
-  }
 }

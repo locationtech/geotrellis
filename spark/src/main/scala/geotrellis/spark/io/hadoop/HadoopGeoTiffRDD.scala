@@ -93,10 +93,8 @@ object HadoopGeoTiffRDD extends LazyLogging {
     * @param path     Hdfs GeoTiff path.
     * @param options  An instance of [[Options]] that contains any user defined or default settings.
     */
-  private def configuration(path: Path, options: Options)(implicit sc: SparkContext): Configuration = {
-    val conf = sc.hadoopConfiguration.withInputDirectory(path, options.tiffExtensions)
-    conf
-  }
+  private def configuration(path: Path, options: Options)(implicit sc: SparkContext): Configuration =
+    sc.hadoopConfiguration.withInputDirectory(path, options.tiffExtensions)
 
   /**
     * Creates a RDD[(K, V)] whose K and V depends on the type of the GeoTiff that is going to be read in.
@@ -161,33 +159,6 @@ object HadoopGeoTiffRDD extends LazyLogging {
     */
   def apply[K, V](path: Path, options: Options)(implicit sc: SparkContext, rr: RasterReader[Options, (K, V)]): RDD[(K, V)] =
     apply[K, K, V](path, (_: URI, key: K) => key, options)
-
-  /**
-    * Creates a RDD[(K, V)] whose K and V depends on the type of the GeoTiff that is going to be read in.
-    *
-    * @param pathsToDimensions  RDD keyed by GeoTiff path with (cols, rows) tuple as value.
-    * @param uriToKey           A function to transform input key basing on the URI information.
-    * @param options            An instance of [[Options]] that contains any user defined or default settings.
-    */
-  def apply[I, K, V](
-    pathsToDimensions: RDD[(Path, (Int, Int))],
-    uriToKey: (URI, I) => K,
-    options: Options
-  )(implicit rr: RasterReader[Options, (I, V)]): RDD[(K, V)] = {
-    if (options.numPartitions.isDefined) logger.warn("numPartitions option is ignored")
-    if (options.maxTileSize.isEmpty) logger.info(s"Using default maxTileSize=$DefaultMaxTileSize")
-
-    implicit val sc = pathsToDimensions.sparkContext
-    val conf = new SerializableConfiguration(pathsToDimensions.sparkContext.hadoopConfiguration)
-    val infoReader = HadoopGeoTiffInfoReader(null, conf, options.tiffExtensions)
-    infoReader.readWindows(
-      pathsToDimensions.map({ case (path, _) => path.toUri}),
-      uriToKey,
-      options.maxTileSize.getOrElse(DefaultMaxTileSize),
-      options.partitionBytes.getOrElse(DefaultPartitionBytes),
-      options,
-      None)
-  }
 
   /**
     * Creates RDDs with the [(K, V)] values where V is a [[Tile]].

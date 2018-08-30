@@ -55,12 +55,6 @@ case class S3GeoTiffInfoReader(
 
     GeoTiffReader.readGeoTiffInfo(S3RangeReader(s3Uri.getBucket, s3Uri.getKey, getS3Client()), streaming, true, ovrReader)
   }
-
-  def getGeoTiffTags(uri: String): TiffTags = {
-    val s3Uri = new AmazonS3URI(uri)
-    val rr = S3RangeReader(s3Uri.getBucket, s3Uri.getKey, getS3Client())
-    TiffTags(rr)
-  }
 }
 
 object S3GeoTiffInfoReader {
