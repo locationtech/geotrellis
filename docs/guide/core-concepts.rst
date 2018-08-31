@@ -553,7 +553,7 @@ Now, some examples:
     /** A custom, 'user defined' NoData CellType for comparison; we will
      *   treat 42 as NoData for this one rather than Int.MinValue
      */
-    val customCellType = IntUserDefinedNoDataValue(42)
+    val customCellType = IntUserDefinedNoDataCellType(42)
     val customTile = IntArrayTile(myData, 2, 2, customCellType)
 
     /** We should expect that the first (default celltype) tile has the value 42 at (0, 0)
