@@ -223,6 +223,88 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
       }
     }
 
+    it("should function correctly for TileFeature tiles") {
+      val expected =
+        ProjectedRaster(raster, gt.crs).reproject(
+          LatLng,
+          RasterReprojectOptions(NearestNeighbor, errorThreshold = 0)
+        )
+
+      val mbrdd = ContextRDD(rdd.mapValues { tile => TileFeature(tile, 1) }, rdd.metadata)
+      // Must define a way to combine tile feature data when reprojecting from multiple tiles to one
+      import cats.Monoid
+      implicit val intAdditionMonoid: Monoid[Int] = new Monoid[Int] {
+        def empty: Int = 0
+        def combine(x: Int, y: Int): Int = x + y
+      }
+
+      //// If method .reproject could not be found we would need to look for implicit paramter to TileRDDReprojectMethods constructor
+      // import geotrellis.raster.stitch._
+      // import geotrellis.raster.crop._
+      // import geotrellis.raster.merge._
+      // import geotrellis.raster.prototype._
+       
+      // val st1 = implicitly[Stitcher[Tile]]
+      // val st2 = implicitly[Stitcher[TileFeature[Tile, Int]]]
+      // val st3 = implicitly[RasterRegionReproject[TileFeature[Tile, Int]]]
+      // val st4 = implicitly[TileFeature[Tile, Int] => CropMethods[TileFeature[Tile, Int]]]
+      // val st5 = implicitly[TileFeature[Tile, Int] => TileMergeMethods[TileFeature[Tile, Int]]]
+      // val st6 = implicitly[TileFeature[Tile, Int] => TilePrototypeMethods[TileFeature[Tile, Int]]]
+
+      val (_, actualRdd) =
+        mbrdd.reproject(
+          LatLng,
+          FloatingLayoutScheme(25),
+          Options(
+            rasterReprojectOptions = RasterReprojectOptions(NearestNeighbor, errorThreshold = 0),
+            matchLayerExtent = true
+          )
+        )
+
+      val actual: Raster[TileFeature[Tile, Int]] =
+        actualRdd.stitch
+
+      // Account for tiles being a bit bigger then the actual result
+      actual.extent.covers(expected.extent) should be (true)
+      actual.rasterExtent.extent.xmin should be (expected.rasterExtent.extent.xmin +- 0.00001)
+      actual.rasterExtent.extent.ymax should be (expected.rasterExtent.extent.ymax +- 0.00001)
+      actual.rasterExtent.cellwidth should be (expected.rasterExtent.cellwidth +- 0.00001)
+      actual.rasterExtent.cellheight should be (expected.rasterExtent.cellheight +- 0.00001)
+
+      val expectedTile = expected.tile
+      val actualTile = actual.tile
+
+      actualTile.cols should be >= (expectedTile.cols)
+      actualTile.rows should be >= (expectedTile.rows)
+
+      val tile = actual.tile.tile
+
+      cfor(0)(_ < actual.rows, _ + 1) { row =>
+        cfor(0)(_ < actual.cols, _ + 1) { col =>
+          val a = tile.getDouble(col, row)
+          if(row >= expectedTile.rows || col >= expectedTile.cols) {
+            isNoData(a) should be (true)
+          } else if(row != 1){
+            val expected = expectedTile.getDouble(col, row)
+            if (a.isNaN) {
+              withClue(s"Failed at col: $col and row: $row, $a != $expected") {
+                expected.isNaN should be (true)
+              }
+            } else if (expected.isNaN) {
+              withClue(s"Failed at col: $col and row: $row, $a != $expected") {
+                a.isNaN should be (true)
+              }
+            } else {
+              withClue(s"Failed at col: $col and row: $row, $a != $expected") {
+                a should be (expected +- 0.001)
+              }
+            }
+          }
+        }
+      }
+    }
+
+
     it("should retain the source RDD's Partitioner") {
       val partitioner = new HashPartitioner(8)
       val expectedPartitioner = Some(partitioner)
