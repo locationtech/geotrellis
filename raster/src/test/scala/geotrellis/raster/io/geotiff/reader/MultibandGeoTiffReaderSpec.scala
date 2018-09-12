@@ -108,6 +108,53 @@ class MultibandGeoTiffReaderSpec extends FunSpec
       }
     }
 
+    it("should pick up the tiff overview correct (AutoHigherResolution test)") {
+      def cellSizesSequence(cellSize: CellSize): List[CellSize] = {
+        val CellSize(w, h) = cellSize
+
+        val seq = for {
+          wp <- (w / 2 + w / 4) until (w - w / 100) by 100
+          hp <- (h / 2 + h / 4) until (h - h / 100) by 100
+        } yield CellSize(wp, hp)
+
+        seq.toList
+      }
+
+      val tiff = MultibandGeoTiff(geoTiffPath("overviews/multiband.tif"))
+
+      val overviews = tiff :: tiff.overviews
+
+      // cell sizes of overviews, starting with the base ifd
+      val cellSizes = ({
+        // an extra check for the base level overview
+        val CellSize(w, h) = overviews.head.cellSize
+        CellSize(w / 2, h / 2) -> -1
+      } :: overviews.map(_.cellSize).zipWithIndex) :+ {
+        // an extra check for the last overview
+        val CellSize(w, h) = overviews.last.cellSize
+        CellSize(w * 2, h * 2) -> overviews.length
+      }
+
+      // check all overviews
+      cellSizes.foreach { case (cz, i) =>
+        cellSizesSequence(cz).foreach { scz =>
+          if(i == -1) {
+            val closestOvr = tiff.getClosestOverview(scz, AutoHigherResolution)
+            val ovr = overviews(0)
+            closestOvr.raster.cellSize should be(ovr.raster.cellSize)
+          } else if(i == 0) {
+            val closestOvr = tiff.getClosestOverview(scz, AutoHigherResolution)
+            val ovr = overviews(i)
+            closestOvr.raster.cellSize should be(ovr.raster.cellSize)
+          } else {
+            val closestOvr = tiff.getClosestOverview(scz, AutoHigherResolution)
+            val ovr = overviews(i - 1)
+            closestOvr.raster.cellSize should be(ovr.raster.cellSize)
+          }
+        }
+      }
+    }
+
     it("should read tiff with external overviews correct") {
       // sizes of overviews, starting with the base ifd
       val sizes = List(1056 -> 1052, 528 -> 526, 264 -> 263, 132 -> 132, 66 -> 66, 33 -> 33)
