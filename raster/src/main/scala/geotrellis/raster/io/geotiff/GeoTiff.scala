@@ -102,7 +102,7 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
   def crop(windows: Seq[GridBounds]): Iterator[(GridBounds, T)]
 
   /** Return the best matching overview to the given cellSize, returns "this" if no overviews available. */
-  private[geotrellis] def getClosestOverview(cellSize: CellSize, strategy: OverviewStrategy): GeoTiff[T] = {
+  def getClosestOverview(cellSize: CellSize, strategy: OverviewStrategy = AutoHigherResolution): GeoTiff[T] = {
     overviews match {
       case Nil => this
       case list =>
