@@ -190,14 +190,14 @@ object TileRDDReproject {
 
     def createCombiner(tup: (Raster[V], RasterExtent, Polygon)) = {
         val (raster, destRE, destRegion) = tup
-        rrp.regionReproject(raster, crs, destCrs, destRE, destRegion, rasterReprojectOptions.method).tile
+        rrp.regionReproject(raster, crs, destCrs, destRE, destRegion, rasterReprojectOptions.method, rasterReprojectOptions.errorThreshold).tile
       }
     
     def mergeValues(reprojectedTile: V, toReproject: (Raster[V], RasterExtent, Polygon)) = {
       val (raster, destRE, destRegion) = toReproject
       val destRaster = Raster(reprojectedTile, destRE.extent)
       // RDD.combineByKey contract allows us to safely re-use and mutate the accumulator, reprojectedTile
-      rrp.regionReprojectMutable(raster, crs, destCrs, destRaster, destRegion, rasterReprojectOptions.method).tile
+      rrp.regionReprojectMutable(raster, crs, destCrs, destRaster, destRegion, rasterReprojectOptions.method, rasterReprojectOptions.errorThreshold).tile
     }
 
     def mergeCombiners(reproj1: V, reproj2: V) = reproj1.merge(reproj2)
