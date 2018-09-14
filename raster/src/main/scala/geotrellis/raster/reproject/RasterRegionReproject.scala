@@ -222,8 +222,8 @@ object RasterRegionReproject {
         cfor(0)(_ < rasterExtent.rows, _ + 1){ i =>
           val (pxs, xs, ys) = rowcoords(i)
           cfor(0)(_ < xs.size, _ + 1) { s =>
-            cfor(0)(_ < buffer.length, _ + 1) { i =>
-              buffer(i).setDouble(pxs(s), i, resampler(i).resampleDouble(xs(s), ys(s)))
+            cfor(0)(_ < buffer.length, _ + 1) { b =>
+              buffer(b).setDouble(pxs(s), i, resampler(b).resampleDouble(xs(s), ys(s)))
             }
           }
         }
@@ -231,8 +231,8 @@ object RasterRegionReproject {
         cfor(0)(_ < rasterExtent.rows, _ + 1){ i =>
           val (pxs, xs, ys) = rowcoords(i)
           cfor(0)(_ < xs.size, _ + 1) { s =>
-            cfor(0)(_ < buffer.length, _ + 1) { i =>
-              buffer(i).set(pxs(s), i, resampler(i).resample(xs(s), ys(s)))
+            cfor(0)(_ < buffer.length, _ + 1) { b =>
+              buffer(b).set(pxs(s), i, resampler(b).resample(xs(s), ys(s)))
             }
           }
         }
