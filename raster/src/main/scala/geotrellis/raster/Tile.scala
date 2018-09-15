@@ -101,7 +101,10 @@ trait Tile extends CellGrid with IterableTile with MappableTile[Tile] with LazyL
     if (cellType.union(r2.cellType).isFloatingPoint) combineDouble(r2)(g) else combine(r2)(f)
 
   /**
-    * Create a mutable copy of this tile
+    * Returns a mutable instance of this tile.
+    * 
+    * @note When the underlying class is an instance of [[MutableArrayTile]] it will return itself without performing a copy.
+    *       This is used internally as a performance optimization when the ownership of the tile is controlled.
     */
   def mutable: MutableArrayTile
 

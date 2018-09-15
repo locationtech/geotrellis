@@ -107,6 +107,17 @@ object Stitcher {
     }
   }
 
+  implicit def tileFeatureStitcher[
+    T <: CellGrid: Stitcher, 
+    D: Semigroup
+  ]: Stitcher[TileFeature[T, D]] = new Stitcher[TileFeature[T, D]] {
+    def stitch(pieces: Iterable[(TileFeature[T, D], (Int, Int))], cols: Int, rows: Int): TileFeature[T, D] = {
+      val newPieces = pieces.map{ piece ⇒ (piece._1.tile, piece._2) }
+      val newData = pieces.map(_._1.data).reduce(Semigroup[D].combine)
+      TileFeature(implicitly[Stitcher[T]].stitch(newPieces, cols, rows), newData)
+    }
+  }
+
   implicit class TileFeatureStitcher[
     T <: CellGrid: Stitcher,
     D : Semigroup

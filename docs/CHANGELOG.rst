@@ -1,6 +1,14 @@
 Changelog
 =========
 
+2.1.0
+-----
+
+Fixes
+^^^^^
+  - ``TileRDDReproject`` now works on RDD of ``TileFeature[T, D]`` (`#2803 <https://github.com/locationtech/geotrellis/pull/2803>`_).
+
+
 2.0.0
 -----
 
