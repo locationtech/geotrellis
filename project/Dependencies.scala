@@ -45,8 +45,10 @@ object Dependencies {
   val fs2Core             = "co.fs2"                     %% "fs2-core"                 % "1.0.0"
   val fs2Io               = "co.fs2"                     %% "fs2-io"                   % "1.0.0"
 
-  val sparkCore           = "org.apache.spark"           %% "spark-core"               % Version.spark
-  val sparkSQL            = "org.apache.spark"           %% "spark-sql"                % Version.spark
+  // TODO: make it through %% once Spark 2.4 artifacts would be published
+  val sparkCore           = "org.apache.spark"            % "spark-core_2.11"          % Version.spark
+  val sparkSQL            = "org.apache.spark"            % "spark-sql_2.11"           % Version.spark
+
   val hadoopClient        = "org.apache.hadoop"           % "hadoop-client"            % Version.hadoop
 
   val avro                = "org.apache.avro"             % "avro"                     % "1.8.2"
