@@ -16,7 +16,8 @@ libraryDependencies ++= Seq(
   fs2Io,
   scalatest % Test,
   logging,
-  scaffeine
+  scaffeine,
+  sparkSQL % Test
 )
 
 mimaPreviousArtifacts := Set(

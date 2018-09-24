@@ -6,7 +6,8 @@ libraryDependencies ++= Seq(
   awsSdkS3,
   spire,
   scaffeine,
-  scalatest % Test
+  scalatest % Test,
+  sparkSQL % Test
 )
 
 fork in Test := false
