@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.FileUtil
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.serializer.KryoSerializer
 import org.scalatest._
 import org.scalatest.BeforeAndAfterAll
@@ -63,7 +64,7 @@ trait TestEnvironment extends BeforeAndAfterAll
   def setKryoRegistrator(conf: SparkConf): Unit =
     conf.set("spark.kryo.registrator", classOf[KryoRegistrator].getName)
 
-  lazy val _sc: SparkContext = {
+  lazy val _ssc: SparkSession = {
     System.setProperty("spark.driver.port", "0")
     System.setProperty("spark.hostPort", "0")
     System.setProperty("spark.ui.enabled", "false")
@@ -84,7 +85,7 @@ trait TestEnvironment extends BeforeAndAfterAll
       setKryoRegistrator(conf)
     }
 
-    val sparkContext = new SparkContext(conf)
+    val sparkContext = SparkSession.builder().config(conf).getOrCreate()
 
     System.clearProperty("spark.driver.port")
     System.clearProperty("spark.hostPort")
@@ -93,6 +94,9 @@ trait TestEnvironment extends BeforeAndAfterAll
     sparkContext
   }
 
+  lazy val _sc: SparkContext = _ssc.sparkContext
+
+  implicit def ssc: SparkSession = _ssc
   implicit def sc: SparkContext = _sc
 
   // get the name of the class which mixes in this trait
