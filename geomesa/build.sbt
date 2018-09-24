@@ -8,7 +8,8 @@ libraryDependencies ++= Seq(
   "org.locationtech.geomesa" %% "geomesa-utils" % Version.geomesa,
   sparkCore % Provided,
   spire,
-  scalatest % Test
+  scalatest % Test,
+  sparkSQL % Test
 )
 
 resolvers ++= Seq(

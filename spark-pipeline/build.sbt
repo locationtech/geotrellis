@@ -7,7 +7,8 @@ libraryDependencies ++= Seq(
   circeGenericExtras,
   circeParser,
   sparkCore % Provided,
-  scalatest % Test
+  scalatest % Test,
+  sparkSQL % Test
 )
 
 test in assembly := {}

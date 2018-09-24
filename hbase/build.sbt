@@ -12,7 +12,8 @@ libraryDependencies ++= Seq(
   "org.codehaus.jackson"  % "jackson-core-asl" % "1.9.13",
   sparkCore % Provided,
   spire,
-  scalatest % Test
+  scalatest % Test,
+  sparkSQL % Test
 )
 
 fork in Test := false
