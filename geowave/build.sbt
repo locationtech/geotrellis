@@ -43,7 +43,8 @@ libraryDependencies ++= Seq(
   "com.esotericsoftware" % "kryo-shaded" % "3.0.3",
   sparkCore % Provided,
   spire,
-  scalatest % Test
+  scalatest % Test,
+  sparkSQL % Test
 )
 
 resolvers ++= Seq(

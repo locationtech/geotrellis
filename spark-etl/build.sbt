@@ -4,7 +4,8 @@ name := "geotrellis-spark-etl"
 libraryDependencies ++= Seq(
   jsonSchemaValidator,
   sparkCore % Provided,
-  scalatest % Test
+  scalatest % Test,
+  sparkSQL % Test
 )
 
 test in assembly := {}
