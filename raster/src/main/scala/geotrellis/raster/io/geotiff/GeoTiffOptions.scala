@@ -39,7 +39,7 @@ case class GeoTiffOptions(
  * The companion object to [[GeoTiffOptions]]
  */
 object GeoTiffOptions {
-  val DEFAULT = GeoTiffOptions(Striped, NoCompression, ColorSpace.BlackIsZero, None, BandInterleave, None, Tiff)
+  val DEFAULT = GeoTiffOptions(Tiled, NoCompression, ColorSpace.BlackIsZero, None, BandInterleave, None, Tiff)
 
   /**
    * Creates a new instance of [[GeoTiffOptions]] with the given
