@@ -34,12 +34,12 @@ class GeoJsonSpec extends FlatSpec with Matchers {
 
   it should "go from simple Feature to String" in {
     val f = PointFeature(Point(1,1), "Data")
-    f.toGeoJson should equal ("""{"type":"Feature","geometry":{"type":"Point","coordinates":[1.0,1.0]},"properties":"Data"}""")
+    f.toGeoJson should equal ("""{"type":"Feature","geometry":{"type":"Point","coordinates":[1.0,1.0]},"bbox":[1.0,1.0,1.0,1.0],"properties":"Data"}""")
   }
 
   it should "go from simple Feature[Int] to String" in {
     val f = PointFeature(Point(1,1), 1)
-    f.toGeoJson should equal ("""{"type":"Feature","geometry":{"type":"Point","coordinates":[1.0,1.0]},"properties":1}""")
+    f.toGeoJson should equal ("""{"type":"Feature","geometry":{"type":"Point","coordinates":[1.0,1.0]},"bbox":[1.0,1.0,1.0,1.0],"properties":1}""")
   }
 
   it should "parse from string to Geometry" in {

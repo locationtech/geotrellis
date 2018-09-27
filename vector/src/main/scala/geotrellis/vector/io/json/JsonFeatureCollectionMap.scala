@@ -67,11 +67,22 @@ class JsonFeatureCollectionMap(features: List[JsValue] = Nil) {
     */
   def ++=[G <: Geometry, D: JsonWriter](featureMaps: Seq[(String, Feature[G, D])]) = addAll(featureMaps)
 
-  def toJson: JsValue =
-    JsObject(
-      "type" -> JsString("FeatureCollection"),
-      "features" -> JsArray(buffer.toVector)
-    )
+  def toJson: JsValue = {
+    val bboxOption = getAllGeometries().map(_._2.envelope).reduceOption(_ combine _)
+    bboxOption match {
+      case Some(bbox) =>
+        JsObject(
+          "type" -> JsString("FeatureCollection"),
+          "bbox" -> ExtentListWriter.write(bbox),
+          "features" -> JsArray(buffer.toVector)
+        )
+      case _ =>
+        JsObject(
+          "type" -> JsString("FeatureCollection"),
+          "features" -> JsArray(buffer.toVector)
+        )
+    }
+  }
 
   // This helper function is called below to grab the ID field for Map keys
   private def getFeatureID(js: JsValue): String = {
@@ -119,6 +130,13 @@ class JsonFeatureCollectionMap(features: List[JsValue] = Nil) {
   def getAllMultiPoints()    = getAll[MultiPoint]
   def getAllMultiLines()     = getAll[MultiLine]
   def getAllMultiPolygons()  = getAll[MultiPolygon]
+  def getAllGeometries(): Map[String, Geometry] =
+    getAllPoints() ++
+      getAllLines() ++
+      getAllPolygons() ++
+      getAllMultiPoints() ++
+      getAllMultiLines() ++
+      getAllMultiPolygons()
 
 }
 

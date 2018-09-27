@@ -32,6 +32,7 @@ class FeatureFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
     val body =
       """{
         |  "type": "Feature",
+        |  "bbox":[6.0,1.2,6.0,1.2],
         |  "geometry": {
         |    "type": "Point",
         |    "coordinates": [6.0, 1.2]
@@ -47,6 +48,7 @@ class FeatureFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
     val body =
       """{
         |  "type": "Feature",
+        |  "bbox":[1.0,2.0,1.0,3.0],
         |  "geometry": {
         |    "type": "LineString",
         |    "coordinates": [[1.0, 2.0], [1.0, 3.0]]
@@ -64,6 +66,7 @@ class FeatureFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
        |  "type": "FeatureCollection",
        |  "features": [{
        |    "type": "Feature",
+       |    "bbox":[1.0,2.0,1.0,3.0],
        |    "geometry": {
        |      "type": "LineString",
        |      "coordinates": [[1.0, 2.0], [1.0, 3.0]]
@@ -71,6 +74,7 @@ class FeatureFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
        |    "properties": 321
        |  }, {
        |    "type": "Feature",
+       |    "bbox":[6.0,1.2,6.0,1.2],
        |    "geometry": {
        |      "type": "Point",
        |      "coordinates": [6.0, 1.2]
@@ -175,6 +179,7 @@ class FeatureFormatsSpec extends FlatSpec with Matchers with GeoJsonSupport {
     val body =
       """{
         |  "type": "Feature",
+        |  "bbox":[1.0,44.0,1.0,44.0],
         |  "geometry": {
         |    "type": "Point",
         |    "coordinates": [1.0, 44.0]

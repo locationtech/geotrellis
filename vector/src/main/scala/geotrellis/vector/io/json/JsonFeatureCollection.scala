@@ -70,11 +70,22 @@ class JsonFeatureCollection(features: List[JsValue] = Nil) {
   /**
     * Carry out serialization on all buffered JsValue objects.
     */
-  def toJson: JsValue =
-    JsObject(
-      "type" -> JsString("FeatureCollection"),
-      "features" -> JsArray(buffer.toVector)
-    )
+  def toJson: JsValue = {
+    val bboxOption = getAllGeometries().map(_.envelope).reduceOption(_ combine _)
+    bboxOption match {
+      case Some(bbox) =>
+        JsObject(
+          "type" -> JsString("FeatureCollection"),
+          "bbox" -> ExtentListWriter.write(bbox),
+          "features" -> JsArray(buffer.toVector)
+        )
+      case _ =>
+        JsObject(
+          "type" -> JsString("FeatureCollection"),
+          "features" -> JsArray(buffer.toVector)
+        )
+    }
+  }
 
   /** This method locates the correct JsonFormat for F through implicit scope and
     * attempts to use it to parse each contained JsValue.
@@ -111,6 +122,13 @@ class JsonFeatureCollection(features: List[JsValue] = Nil) {
   def getAllMultiPoints()    = getAll[MultiPoint]
   def getAllMultiLines()     = getAll[MultiLine]
   def getAllMultiPolygons()  = getAll[MultiPolygon]
+  def getAllGeometries(): Vector[Geometry] =
+    getAllPoints() ++
+      getAllLines() ++
+      getAllPolygons() ++
+      getAllMultiPoints() ++
+      getAllMultiLines() ++
+      getAllMultiPolygons()
 
 }
 

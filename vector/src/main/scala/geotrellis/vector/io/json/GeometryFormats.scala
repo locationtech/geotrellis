@@ -135,6 +135,12 @@ trait GeometryFormats {
       }
   }
 
+  object ExtentListWriter extends RootJsonWriter[Extent] {
+    import spray.json.DefaultJsonProtocol._
+    def write(extent: Extent) =
+      List(extent.xmin, extent.ymin, extent.xmax, extent.ymax).toJson
+  }
+
   implicit object MultiPointFormat extends RootJsonFormat[MultiPoint] {
     override def read(json: JsValue): MultiPoint = json.asJsObject.getFields("type", "coordinates") match {
       case Seq(JsString("MultiPoint"), pointArray: JsArray) =>
