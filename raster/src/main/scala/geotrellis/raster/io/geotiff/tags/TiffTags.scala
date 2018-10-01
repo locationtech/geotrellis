@@ -446,7 +446,13 @@ case class TiffTags(
           i += 1
         }
 
-        Extent(minX, minY, maxX, maxY)
+        // fix an inverted extent, to behave more like GDAL
+        Extent(
+          math.min(minX, maxX),
+          math.min(minY, maxY),
+          math.max(minX, maxX),
+          math.max(minY, maxY)
+        )
     }
 
   private def getExtentFromModelFunction(func: Pixel3D => Pixel3D) = {
