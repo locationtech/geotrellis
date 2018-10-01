@@ -246,6 +246,7 @@ lazy val geotools = project
 lazy val geomesa = project
   .dependsOn(`spark-testkit` % Test, spark, geotools, accumulo)
   .settings(commonSettings)
+  .settings(crossScalaVersions := Seq(scalaVersion.value))
 
 lazy val geowave = project
   .dependsOn(
@@ -253,6 +254,7 @@ lazy val geowave = project
     `spark-testkit` % Test, geotools, accumulo
   )
   .settings(commonSettings)
+  .settings(crossScalaVersions := Seq(scalaVersion.value))
 
 lazy val shapefile = project
   .dependsOn(raster, `raster-testkit` % Test)
