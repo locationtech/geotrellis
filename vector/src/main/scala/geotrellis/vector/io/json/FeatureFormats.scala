@@ -33,6 +33,7 @@ trait FeatureFormats {
     JsObject(
       "type" -> JsString("Feature"),
       "geometry" -> GeometryFormat.write(obj.geom),
+      "bbox" -> ExtentListWriter.write(obj.envelope),
       "properties" -> obj.data.toJson
     )
   }
@@ -41,6 +42,7 @@ trait FeatureFormats {
     JsObject(
       "type" -> JsString("Feature"),
       "geometry" -> GeometryFormat.write(idFeature._2.geom),
+      "bbox" -> ExtentListWriter.write(idFeature._2.geom.envelope),
       "properties" -> idFeature._2.data.toJson,
       "id" -> JsString(idFeature._1)
     )

@@ -75,6 +75,7 @@ class JsonCrsSpec extends FlatSpec with Matchers with GeoJsonSupport {
     val body =
       """{
         |  "type": "Feature",
+        |  "bbox":[1.0,44.0,1.0,44.0],
         |  "geometry": {
         |    "type": "Point",
         |    "coordinates": [1.0, 44.0]
