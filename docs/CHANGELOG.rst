@@ -3,10 +3,34 @@ Changelog
 
 2.1.0
 -----
+*2018 Oct 2*
 
-Fixes
-^^^^^
+- ``gerotrellis.spark``
+
   - ``TileRDDReproject`` now works on RDD of ``TileFeature[T, D]`` (`#2803 <https://github.com/locationtech/geotrellis/pull/2803>`_).
+  - ``TileRDDReproject`` now uses ``Reproject.Options.errorThreshold`` value (`#2803 <https://github.com/locationtech/geotrellis/pull/2803>`_).
+
+- ``geotrellis.spark.testkit``
+
+  - ``TestEnvironment`` now includes ``SparkSession`` (`#2808 <https://github.com/locationtech/geotrellis/pull/2808>`_).
+
+- ``geotrellis.spark.etl``
+
+  - Add ``TemporalIngest`` main method (`#2709 <https://github.com/locationtech/geotrellis/pull/2709>`_).
+
+- ``geotrellis.raster``
+
+  - ``RasterRegionReproject`` defaults to approximate resampling for ``MultibandBandTile`` (`#2803 <https://github.com/locationtech/geotrellis/pull/2803>`_).
+  - ``Stitcher`` type class instance is now defined for ``TileFeature[T, D]`` (`#2803 <https://github.com/locationtech/geotrellis/pull/2803>`_).
+  - Fix ``GeoTiffSegment`` conversion to ``UByteCellType`` and ``UShortCellType`` (`#2794 <https://github.com/locationtech/geotrellis/pull/2794>`_).
+  - Fix ``GeoTiff[T]`` interpretation of ``AutoHigherResolution`` ``OverviewStrategy`` (`#2802 <https://github.com/locationtech/geotrellis/pull/2802>`_).
+  - ``GeoTiff[T].getClosestOverview`` method is now public (`#2804 <https://github.com/locationtech/geotrellis/pull/2804>`_).
+  - ``GeoTiffOptions.storageMethod`` now defaults to ``Tiled`` instead of ``Striped`` (`#2810 <https://github.com/locationtech/geotrellis/pull/2810>`_).
+  - GeoTiff ``TiffTags`` class can now read inverted extents (`#2812 <https://github.com/locationtech/geotrellis/pull/2812>`_).
+
+- ``geotrellis.vector``
+
+  - Add ``bbox`` field to all GeoJSON Features (`#2811 <https://github.com/locationtech/geotrellis/pull/2811>`_).
 
 
 2.0.0
