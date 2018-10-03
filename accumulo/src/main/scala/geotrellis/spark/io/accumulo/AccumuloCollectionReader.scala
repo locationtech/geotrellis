@@ -26,7 +26,7 @@ import org.apache.accumulo.core.data.{Range => AccumuloRange}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
-import cats.effect.IO
+import cats.effect._
 import cats.syntax.apply._
 
 import scala.concurrent.ExecutionContext
@@ -56,6 +56,7 @@ object AccumuloCollectionReader {
 
     val pool = Executors.newFixedThreadPool(threads)
     implicit val ec = ExecutionContext.fromExecutor(pool)
+    implicit val cs = IO.contextShift(ec)
 
     val range: fs2.Stream[IO, AccumuloRange] = fs2.Stream.fromIterator[IO, AccumuloRange](ranges)
 
@@ -77,8 +78,9 @@ object AccumuloCollectionReader {
     }
 
     try {
-      (range map read)
-        .join(threads)
+      range
+        .map(read)
+        .parJoin(threads)
         .compile
         .toVector
         .map(_.flatten)
