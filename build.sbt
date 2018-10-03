@@ -103,7 +103,6 @@ lazy val root = Project("geotrellis", file(".")).
   aggregate(
     accumulo,
     cassandra,
-    `doc-examples`,
     geomesa,
     geotools,
     geowave,
