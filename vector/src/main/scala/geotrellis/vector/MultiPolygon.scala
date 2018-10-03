@@ -17,9 +17,9 @@
 package geotrellis.vector
 
 import GeomFactory._
-import com.vividsolutions.jts.geom.TopologyException
+import org.locationtech.jts.geom.TopologyException
 
-import com.vividsolutions.jts.{geom => jts}
+import org.locationtech.jts.{geom => jts}
 
 import spire.syntax.cfor._
 

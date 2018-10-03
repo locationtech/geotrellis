@@ -22,7 +22,7 @@ import geotrellis.spark.tiling._
 import geotrellis.util._
 import geotrellis.vector._
 
-import com.vividsolutions.jts.geom.prep.{PreparedGeometry, PreparedGeometryFactory}
+import org.locationtech.jts.geom.prep.{PreparedGeometry, PreparedGeometryFactory}
 import org.apache.spark.rdd._
 
 /**

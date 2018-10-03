@@ -16,7 +16,7 @@
 
 package geotrellis.raster.distance
 
-import com.vividsolutions.jts.geom.Coordinate
+import org.locationtech.jts.geom.Coordinate
 
 import geotrellis.raster.{RasterExtent, Tile}
 import geotrellis.util.MethodExtensions

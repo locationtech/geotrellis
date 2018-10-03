@@ -17,7 +17,7 @@
 package geotrellis.vector
 
 import reflect.runtime.universe._
-import com.vividsolutions.jts.{geom => jts}
+import org.locationtech.jts.{geom => jts}
 
 import GeomFactory._
 

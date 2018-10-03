@@ -17,7 +17,7 @@
 package geotrellis.vector
 package prepared
 
-import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory
+import org.locationtech.jts.geom.prep.PreparedGeometryFactory
 
 /** This case class provides functionality corresponding to JTS' prepared geometries.
   * Prepared geometries carry out some computations which, in certain cases, provide significant

@@ -16,7 +16,7 @@
 
 package geotrellis.raster.vectorize
 
-import com.vividsolutions.jts.{geom => jts}
+import org.locationtech.jts.{geom => jts}
 import geotrellis.raster._
 import geotrellis.raster.testkit._
 import geotrellis.vector._

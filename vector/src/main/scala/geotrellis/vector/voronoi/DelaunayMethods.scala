@@ -21,7 +21,7 @@ import geotrellis.vector.mesh._
 import geotrellis.vector.Point
 import geotrellis.util.MethodExtensions
 
-import com.vividsolutions.jts.geom.Coordinate
+import org.locationtech.jts.geom.Coordinate
 
 
 trait DelaunayTriangulationPointMethods extends MethodExtensions[Traversable[Point]] {

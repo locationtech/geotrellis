@@ -16,8 +16,8 @@
 
 package geotrellis.vector.triangulation
 
-import com.vividsolutions.jts.algorithm.distance.{DistanceToPoint, PointPairDistance}
-import com.vividsolutions.jts.geom.Coordinate
+import org.locationtech.jts.algorithm.distance.{DistanceToPoint, PointPairDistance}
+import org.locationtech.jts.geom.Coordinate
 import geotrellis.vector.mesh.{HalfEdgeTable, IndexedPointSet}
 import geotrellis.vector.{Extent, MultiPolygon, Point, Polygon}
 

@@ -16,9 +16,9 @@
 
 package geotrellis.vector
 
-import com.vividsolutions.jts.{geom => jts}
+import org.locationtech.jts.{geom => jts}
 import GeomFactory._
-import com.vividsolutions.jts.geom.CoordinateSequence
+import org.locationtech.jts.geom.CoordinateSequence
 import spire.syntax.cfor._
 
 object Line {

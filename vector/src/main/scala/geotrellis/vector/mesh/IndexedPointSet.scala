@@ -16,7 +16,7 @@
 
 package geotrellis.vector.mesh
 
-import com.vividsolutions.jts.geom.Coordinate
+import org.locationtech.jts.geom.Coordinate
 import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
 import geotrellis.vector.Point
 

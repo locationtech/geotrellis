@@ -21,7 +21,6 @@ import geotrellis.vector._
 
 import org.scalatest._
 
-
 object SimpleFeatureToFeatureMethodsSpec {
   case class Foo(x: Int, y: String)
   implicit def mapToFoo(map: Map[String, Any]): Foo = Foo(42, "72")

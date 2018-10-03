@@ -19,10 +19,10 @@ package geotrellis.vector
 import geotrellis.util.LazyLogging
 import geotrellis.vector.conf.JtsConfig
 
-import com.vividsolutions.jts.geom
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequenceFactory
-import com.vividsolutions.jts.geom.{CoordinateSequenceFactory, GeometryFactory, PrecisionModel}
-import com.vividsolutions.jts.precision.GeometryPrecisionReducer
+import org.locationtech.jts.geom
+import org.locationtech.jts.geom.impl.CoordinateArraySequenceFactory
+import org.locationtech.jts.geom.{CoordinateSequenceFactory, GeometryFactory, PrecisionModel}
+import org.locationtech.jts.precision.GeometryPrecisionReducer
 
 object GeomFactory extends LazyLogging {
   val precisionType: String = JtsConfig.precisionType

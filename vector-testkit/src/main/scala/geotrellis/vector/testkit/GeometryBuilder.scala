@@ -17,9 +17,9 @@
 package geotrellis.vector.testkit
 
 import geotrellis.vector._
-import com.vividsolutions.jts.{geom => jts}
-import com.vividsolutions.jts.geom.util.SineStarFactory
-import com.vividsolutions.jts.util.GeometricShapeFactory
+import org.locationtech.jts.{geom => jts}
+import org.locationtech.jts.geom.util.SineStarFactory
+import org.locationtech.jts.util.GeometricShapeFactory
 
 object GeometryBuilder {
   implicit def builderToGeom[T <: Geometry](b: GeometryBuilder[T]): T = b.build

@@ -19,9 +19,9 @@ package geotrellis.vector.voronoi
 import geotrellis.vector._
 import geotrellis.vector.triangulation._
 
-import com.vividsolutions.jts.{ geom => jts }
-import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, MultiPoint, Polygon => JTSPolygon}
-import com.vividsolutions.jts.triangulate.{ConformingDelaunayTriangulationBuilder, DelaunayTriangulationBuilder}
+import org.locationtech.jts.{ geom => jts }
+import org.locationtech.jts.geom.{Coordinate, GeometryFactory, MultiPoint, Polygon => JTSPolygon}
+import org.locationtech.jts.triangulate.{ConformingDelaunayTriangulationBuilder, DelaunayTriangulationBuilder}
 import org.scalatest.{FunSpec, Matchers}
 import spire.syntax.cfor._
 

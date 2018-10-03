@@ -16,8 +16,8 @@
 
 package geotrellis.vector
 
-import com.vividsolutions.jts.{geom => jts}
-import com.vividsolutions.jts.algorithm.CGAlgorithms
+import org.locationtech.jts.{geom => jts}
+import org.locationtech.jts.algorithm.CGAlgorithms
 import GeomFactory._
 
 object Point {

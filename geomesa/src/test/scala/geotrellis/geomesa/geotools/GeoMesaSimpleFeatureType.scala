@@ -20,7 +20,7 @@ import geotrellis.spark.io.geomesa.conf.GeoMesaConfig
 import geotrellis.vector.Geometry
 import geotrellis.proj4.{WebMercator, CRS => GCRS}
 import com.github.blemale.scaffeine.{Cache, Scaffeine}
-import com.vividsolutions.jts.{geom => jts}
+import org.locationtech.jts.{geom => jts}
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder
 import org.opengis.feature.simple.SimpleFeatureType
 

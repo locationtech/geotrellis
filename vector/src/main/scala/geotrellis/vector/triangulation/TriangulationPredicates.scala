@@ -16,7 +16,7 @@
 
 package geotrellis.vector.triangulation
 
-import com.vividsolutions.jts.geom.Coordinate
+import org.locationtech.jts.geom.Coordinate
 import org.apache.commons.math3.linear._
 import geotrellis.vector.ShewchuksDeterminant
 import geotrellis.vector.RobustPredicates

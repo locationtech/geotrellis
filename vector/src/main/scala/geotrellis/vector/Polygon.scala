@@ -16,9 +16,9 @@
 
 package geotrellis.vector
 
-import com.vividsolutions.jts.geom.{CoordinateSequence, LinearRing, TopologyException}
-import com.vividsolutions.jts.operation.union._
-import com.vividsolutions.jts.{geom => jts}
+import org.locationtech.jts.geom.{CoordinateSequence, LinearRing, TopologyException}
+import org.locationtech.jts.operation.union._
+import org.locationtech.jts.{geom => jts}
 import geotrellis.vector.GeomFactory._
 
 import scala.collection.GenTraversable

@@ -22,7 +22,7 @@ import geotrellis.vector._
 import org.apache.accumulo.core.client.mock.MockInstance
 import org.scalatest._
 import org.scalatest.Matchers._
-import com.vividsolutions.jts.{geom => jts}
+import org.locationtech.jts.{geom => jts}
 import mil.nga.giat.geowave.core.geotime.ingest._
 import mil.nga.giat.geowave.core.store._
 import mil.nga.giat.geowave.core.store.query._

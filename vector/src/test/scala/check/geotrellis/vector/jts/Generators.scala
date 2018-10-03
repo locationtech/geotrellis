@@ -16,7 +16,7 @@
 
 package geotrellis.vector.check.jts
 
-import com.vividsolutions.jts.geom._
+import org.locationtech.jts.geom._
 import org.scalacheck.Gen._
 import org.scalacheck._
 

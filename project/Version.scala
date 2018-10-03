@@ -18,7 +18,7 @@ object Version {
   val geotrellis  = "2.0.0" + Environment.versionSuffix
   val scala       = "2.11.12"
   val crossScala  = Seq(scala, "2.12.7")
-  val geotools    = "17.1"
+  val geotools    = "20.0"
   val sprayJson   = "1.3.3"
   val monocle     = "1.5.1-cats"
   val spire       = "0.13.0"

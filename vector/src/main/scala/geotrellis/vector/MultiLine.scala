@@ -16,7 +16,7 @@
 
 package geotrellis.vector
 
-import com.vividsolutions.jts.{geom => jts}
+import org.locationtech.jts.{geom => jts}
 import geotrellis.vector.GeomFactory._
 import spire.syntax.cfor._
 

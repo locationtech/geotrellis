@@ -17,14 +17,9 @@
 package geotrellis.geotools
 
 import geotrellis.proj4.{LatLng, WebMercator}
-import geotrellis.raster._
 import geotrellis.vector._
 
-import org.geotools.data.shapefile._
 import org.scalatest._
-
-import scala.collection.JavaConverters._
-
 
 class GeometryToSimpleFeatureSpec
     extends FunSpec
