@@ -13,8 +13,14 @@ libraryDependencies ++= Seq(
   scalacheck % Test
 )
 
+
+import com.typesafe.tools.mima.core._
+
 mimaPreviousArtifacts := Set(
   "org.locationtech.geotrellis" %% "geotrellis-raster" % Version.previousVersion
+)
+mimaBinaryIssueFilters ++= Seq(
+  ProblemFilters.exclude[ReversedMissingMethodProblem]("geotrellis.raster")
 )
 
 sourceGenerators in Compile += (sourceManaged in Compile).map(Boilerplate.genRaster).taskValue
