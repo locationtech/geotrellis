@@ -17,32 +17,41 @@
 package geotrellis.raster.io.geotiff.reader
 
 import geotrellis.raster._
+import geotrellis.raster.io.geotiff.GeoTiffTestUtils.testDirPath
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.testkit._
 
-import spire.syntax.cfor._
 import org.scalatest._
 
 class JpegGeoTiffReaderSpec extends FunSpec
     with RasterMatchers
     with GeoTiffTestUtils {
 
-
   describe("Reading a geotiff with JPEG compression") {
-    it("should read jpeg compressed GeoTiff") {
+    it("should read and write jpeg compressed GeoTiff") {
       // TO USE: Download
       //  https://oin-hotosm.s3.amazonaws.com/5b437bcc2b6a08001185f94c/0/5b437bcc2b6a08001185f94d.tif
       // and call it "jpeg-test.tif" in the  raster/data/geotiff-test-files folder
       // run gdal_translate -co compression=deflate jpeg-test.tif jpeg-test-deflate.tif to create our expected.
 
-      val gt = GeoTiffReader.readMultiband(geoTiffPath(s"jpeg-test.tif"))
+      val gt = GeoTiffReader.readMultiband(geoTiffPath(s"jpeg-test-small.tif"))
       val actual = gt.tile.toArrayTile
-      val gt2 = GeoTiffReader.readMultiband(geoTiffPath(s"jpeg-test-deflate.tif"))
+      // gdal_translate jpeg-test-small.tif jpeg-test-small-uncompressed.tif
+      val gt2 = GeoTiffReader.readMultiband(geoTiffPath(s"jpeg-test-small-uncompressed.tif"))
       val expected = gt2.tile.toArrayTile
 
+      // val gt2 = GeoTiffReader.readMultiband(geoTiffPath(s"jpeg-test-deflate-small.tif"))
+      // val expected = gt2.tile.toArrayTile
+
+      /*val jpegTestWrittenPath = s"$testDirPath/jpeg-test-written.tif"
       GeoTiff(Raster(actual, gt.raster.extent), gt.crs).copy(
-        options=GeoTiffOptions.DEFAULT//.copy(colorSpace=6)
-      ).write("jpeg-test-written-t1.tif")
+        options=GeoTiffOptions.DEFAULT //.copy(colorSpace=6)
+      ).write(jpegTestWrittenPath)*/
+
+      // yes, this test looks a bit weird now
+      // val gt3 = GeoTiffReader.readMultiband(geoTiffPath(s"jpeg-test-written.tif"))
+      // val actualRead = gt3.tile.toArrayTile
+
       assertEqual(actual, expected)
     }
   }
