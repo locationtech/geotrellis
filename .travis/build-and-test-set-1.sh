@@ -10,5 +10,5 @@
   "project vectortile" test \
   "project geowave" compile test:compile \
   "project hbase" test \
-  "project geomesa" test \
+  "project geomesa" compile test:compile \
   "project cassandra" test || { exit 1; }
