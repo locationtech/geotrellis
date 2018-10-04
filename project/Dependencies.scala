@@ -17,7 +17,7 @@
 import sbt._
 
 object Dependencies {
-  val pureconfig          = "com.github.pureconfig"      %% "pureconfig"               % "0.9.1"
+  val pureconfig          = "com.github.pureconfig"      %% "pureconfig"               % "0.9.2"
   val logging             = "com.typesafe.scala-logging" %% "scala-logging"            % "3.9.0"
   val scalatest           = "org.scalatest"              %% "scalatest"                % "3.0.5"
   val scalacheck          = "org.scalacheck"             %% "scalacheck"               % "1.14.0"
@@ -26,18 +26,18 @@ object Dependencies {
   val monocleCore         = "com.github.julien-truffaut" %% "monocle-core"             % Version.monocle
   val monocleMacro        = "com.github.julien-truffaut" %% "monocle-macro"            % Version.monocle
 
-  val openCSV             = "com.opencsv"                 % "opencsv"                  % "3.9"
+  val openCSV             = "com.opencsv"                 % "opencsv"                  % "4.2"
 
-  val spire               = "org.spire-math"             %% "spire"                    % Version.spire
-  val spireMacro          = "org.spire-math"             %% "spire-macros"             % Version.spire
+  val spire               = "org.typelevel"             %% "spire"                    % Version.spire
+  val spireMacro          = "org.typelevel"             %% "spire-macros"             % Version.spire
 
   val sprayJson           = "io.spray"                   %% "spray-json"               % Version.sprayJson
 
   val apacheMath          = "org.apache.commons"          % "commons-math3"            % "3.6.1"
 
-  val chronoscala         = "jp.ne.opt"                  %% "chronoscala"              % "0.1.6"
+  val chronoscala         = "jp.ne.opt"                  %% "chronoscala"              % "0.2.1"
 
-  val awsSdkS3            = "com.amazonaws"               % "aws-java-sdk-s3"          % "1.11.319"
+  val awsSdkS3            = "com.amazonaws"               % "aws-java-sdk-s3"          % "1.11.421"
 
   val catsCore            = "org.typelevel"              %% "cats-core"                % "1.4.0"
   val catsEffect          = "org.typelevel"              %% "cats-effect"              % "1.0.0"
@@ -52,11 +52,11 @@ object Dependencies {
 
   val avro                = "org.apache.avro"             % "avro"                     % "1.8.2"
 
-  val slickPG             = "com.github.tminglei"        %% "slick-pg"                 % "0.15.0"
+  val slickPG             = "com.github.tminglei"        %% "slick-pg"                 % "0.16.3"
 
-  val parserCombinators   = "org.scala-lang.modules"     %% "scala-parser-combinators" % "1.1.0"
+  val parserCombinators   = "org.scala-lang.modules"     %% "scala-parser-combinators" % "1.1.1"
 
-  val jsonSchemaValidator = "com.networknt"               % "json-schema-validator"    % "0.1.19"
+  val jsonSchemaValidator = "com.networknt"               % "json-schema-validator"    % "0.1.23"
 
   val scaffeine           = "com.github.blemale"         %% "scaffeine"                % "2.5.0"
 
@@ -98,17 +98,19 @@ object Dependencies {
 
   val hbaseCommon         = "org.apache.hbase" % "hbase-common"         % Version.hbase
   val hbaseClient         = "org.apache.hbase" % "hbase-client"         % Version.hbase
+  val hbaseMapReduce      = "org.apache.hbase" % "hbase-mapreduce"      % Version.hbase
   val hbaseServer         = "org.apache.hbase" % "hbase-server"         % Version.hbase
   val hbaseHadoopCompact  = "org.apache.hbase" % "hbase-hadoop-compat"  % Version.hbase
   val hbaseHadoop2Compact = "org.apache.hbase" % "hbase-hadoop2-compat" % Version.hbase
   val hbaseMetrics        = "org.apache.hbase" % "hbase-metrics"        % Version.hbase
   val hbaseMetricsApi     = "org.apache.hbase" % "hbase-metrics-api"    % Version.hbase
+  val hbaseZooKeeper      = "org.apache.hbase" % "hbase-zookeeper"      % Version.hbase
 
   val jacksonCoreAsl      = "org.codehaus.jackson"         % "jackson-core-asl"        % "1.9.13"
 
   val uzaygezenCore       = "com.google.uzaygezen"         % "uzaygezen-core"          % "0.2"
 
-  val scalaj              = "org.scalaj"                  %% "scalaj-http"             % "2.4.0"
+  val scalaj              = "org.scalaj"                  %% "scalaj-http"             % "2.4.1"
 
   val scalapb             = "com.trueaccord.scalapb"      %% "scalapb-runtime"         % "0.6.0-pre4"
 }

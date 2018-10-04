@@ -256,16 +256,25 @@ object Settings {
     libraryDependencies ++= Seq(
       hbaseCommon exclude("javax.servlet", "servlet-api"),
       hbaseClient exclude("javax.servlet", "servlet-api"),
-      hbaseServer exclude ("org.mortbay.jetty", "servlet-api-2.5"),
+      hbaseMapReduce exclude("javax.servlet", "servlet-api"),
+      hbaseServer exclude("org.mortbay.jetty", "servlet-api-2.5"),
       hbaseHadoopCompact exclude("javax.servlet", "servlet-api"),
       hbaseHadoop2Compact exclude("javax.servlet", "servlet-api"),
       hbaseMetrics exclude("javax.servlet", "servlet-api"),
       hbaseMetricsApi exclude("javax.servlet", "servlet-api"),
+      hbaseZooKeeper exclude("javax.servlet", "servlet-api"),
       jacksonCoreAsl,
       sparkCore % Provided,
       spire,
       sparkSQL % Test,
       scalatest % Test
+    ),
+    /** https://github.com/lucidworks/spark-solr/issues/179 */
+    dependencyOverrides ++= Seq(
+      "com.fasterxml.jackson.core" % "jackson-core" % "2.6.5",
+      "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.5",
+      "com.fasterxml.jackson.core" % "jackson-annotations" % "2.6.5",
+      "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.5"
     ),
     initialCommands in console :=
       """

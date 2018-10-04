@@ -80,7 +80,7 @@ class GeometryCollection(
 
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */
   def normalized(): GeometryCollection = {
-    val geom = jtsGeom.clone.asInstanceOf[jts.GeometryCollection]
+    val geom = jtsGeom.copy.asInstanceOf[jts.GeometryCollection]
     geom.normalize
     GeometryCollection(geom)
   }

@@ -60,7 +60,7 @@ case class Line(jtsGeom: jts.LineString) extends Geometry
 
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */
   def normalized(): Line = {
-    val geom = jtsGeom.clone.asInstanceOf[jts.LineString]
+    val geom = jtsGeom.copy.asInstanceOf[jts.LineString]
     geom.normalize
     Line(geom)
   }

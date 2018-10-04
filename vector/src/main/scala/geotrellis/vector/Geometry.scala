@@ -74,7 +74,7 @@ trait Geometry extends Serializable {
   /** Returns this Geometry's vertices. */
   lazy val vertices: Array[Point] = {
     val vertices = for (i <- 0 until jtsGeom.getNumGeometries) yield {
-      Geometry(jtsGeom.getGeometryN(i).clone().asInstanceOf[jts.Geometry]).vertices
+      Geometry(jtsGeom.getGeometryN(i).copy).vertices
     }
 
     vertices.reduce(_ ++ _)

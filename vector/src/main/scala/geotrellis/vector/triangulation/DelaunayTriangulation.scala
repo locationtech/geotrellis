@@ -710,7 +710,7 @@ case class DelaunayTriangulation(
         (quadric, tris, None)
       }
       val pt = trans(vi)
-      val v = MatrixUtils.createRealVector(Array(pt.x, pt.y, pt.z, 1))
+      val v = MatrixUtils.createRealVector(Array(pt.getX, pt.getY, pt.getZ, 1))
       val score = v dotProduct ( quadric operate v)
       (score, vi, quadric, tris, bnd)
     }

@@ -101,7 +101,7 @@ class DissolveMethodsSpec extends FunSpec
 
     it("should maintain immutability over dissolve") {
       val s = List(Line((0, 0), (1, 1)), Line((2, 2), (3, 3)))
-      val expected = s.map(_.jtsGeom.clone)
+      val expected = s.map(_.jtsGeom.copy)
       val d = MultiLine(s).dissolve.as[MultiLine].get.lines
 
       val coord = d(0).jtsGeom.getCoordinate()

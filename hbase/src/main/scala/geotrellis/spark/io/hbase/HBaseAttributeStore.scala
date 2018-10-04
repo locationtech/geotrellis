@@ -42,9 +42,8 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
   //create the attribute table if it does not exist
   instance.withAdminDo { admin =>
     if (!admin.tableExists(attributeTableName)) {
-      val tableDesc = new HTableDescriptor(attributeTableName)
-      val headerColumnFamilyDesc = new HColumnDescriptor(AttributeStore.Fields.header)
-      tableDesc.addFamily(headerColumnFamilyDesc)
+      val headerColumnFamilyDesc = ColumnFamilyDescriptorBuilder.of(AttributeStore.Fields.header)
+      val tableDesc = TableDescriptorBuilder.newBuilder(attributeTableName).setColumnFamily(headerColumnFamilyDesc).build()
       admin.createTable(tableDesc)
     }
   }
@@ -54,12 +53,12 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
   def layerIdString(layerId: LayerId): String = s"${layerId.name}${SEP}${layerId.zoom}"
 
   private def addColumn(table: Table)(cf: String) =
-    if(!table.getTableDescriptor.hasFamily(cf))
-      instance.getAdmin.addColumn(attributeTableName, new HColumnDescriptor(cf))
+    if (!table.getDescriptor.hasColumnFamily(cf))
+      instance.getAdmin.addColumnFamily(attributeTableName, ColumnFamilyDescriptorBuilder.of(cf))
 
   private def fetch(layerId: Option[LayerId], attributeName: String): Vector[Result] =
     instance.withTableConnectionDo(attributeTableName) { table =>
-      if (table.getTableDescriptor.hasFamily(attributeName)) {
+      if (table.getDescriptor.hasColumnFamily(attributeName)) {
         val scan = new Scan()
         layerId.foreach { id =>
           scan.withStartRow(layerIdString(id), true)
@@ -79,7 +78,10 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
 
       attributeName match {
         case Some(attribute) =>
-          table.getTableDescriptor.removeFamily(attribute)
+          TableDescriptorBuilder
+            .newBuilder(table.getDescriptor)
+            .removeColumnFamily(attribute)
+            .build()
           clearCache(layerId, attribute)
         case None =>
           clearCache(layerId)
@@ -138,6 +140,6 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
   }
 
   def availableAttributes(layerId: LayerId): Seq[String] = instance.withTableConnectionDo(attributeTableName) {
-    _.getTableDescriptor.getFamiliesKeys.map(Bytes.toString).toSeq
+    _.getDescriptor.getColumnFamilyNames.map(Bytes.toString).toSeq
   }
 }
