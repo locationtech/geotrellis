@@ -22,7 +22,6 @@ import geotrellis.util._
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.services.s3.model.GetObjectRequest
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext, RecordReader}
-import org.apache.commons.io.IOUtils
 
 /** This is the base class for readers that will create key value pairs for object requests.
   * Subclass must extend [readObjectRequest] method to map from S3 object requests to (K,V) */
@@ -73,7 +72,7 @@ abstract class S3RecordReader[K, V](s3Client: S3Client) extends BaseS3RecordRead
   def readObjectRequest(objectRequest: GetObjectRequest): (K, V) = {
     val obj = s3Client.getObject(objectRequest)
     val inStream = obj.getObjectContent
-    val objectData = IOUtils.toByteArray(inStream)
+    val objectData = sun.misc.IOUtils.readFully(inStream, -1, true)
     inStream.close()
 
     read(objectRequest.getKey, objectData)

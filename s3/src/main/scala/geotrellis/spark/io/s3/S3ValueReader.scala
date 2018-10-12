@@ -26,7 +26,6 @@ import geotrellis.spark.io.index._
 
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.apache.avro.Schema
-import org.apache.commons.io.IOUtils
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
@@ -56,7 +55,7 @@ class S3ValueReader(
             throw new ValueNotFoundError(key, layerId)
         }
 
-      val bytes = IOUtils.toByteArray(is)
+      val bytes = sun.misc.IOUtils.readFully(is, -1, true)
       val recs = AvroEncoder.fromBinary(writerSchema, bytes)(KeyValueRecordCodec[K, V])
 
       recs

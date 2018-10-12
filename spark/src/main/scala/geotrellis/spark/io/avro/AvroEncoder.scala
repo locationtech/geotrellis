@@ -21,7 +21,6 @@ import java.util.zip.{InflaterInputStream, DeflaterOutputStream, Deflater}
 import org.apache.avro.generic._
 import org.apache.avro.io._
 import org.apache.avro._
-import org.apache.commons.io.IOUtils
 import org.apache.commons.io.output.ByteArrayOutputStream
 
 object AvroEncoder {
@@ -42,7 +41,7 @@ object AvroEncoder {
     val deflater = new java.util.zip.Inflater()
     val bytesIn = new ByteArrayInputStream(bytes)
     val in = new InflaterInputStream(bytesIn, deflater)
-    IOUtils.toByteArray(in)
+    sun.misc.IOUtils.readFully(in, -1, true)
   }
 
   def toBinary[T: AvroRecordCodec](thing: T): Array[Byte] =

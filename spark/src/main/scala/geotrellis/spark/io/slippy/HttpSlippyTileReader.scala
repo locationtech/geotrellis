@@ -22,7 +22,6 @@ import geotrellis.spark._
 import geotrellis.spark.io.slippy._
 import geotrellis.vector._
 
-import org.apache.commons.io.IOUtils._
 import org.apache.spark._
 import org.apache.spark.rdd._
 

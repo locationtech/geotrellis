@@ -20,7 +20,6 @@ import geotrellis.spark.io.s3._
 import geotrellis.util.LazyLogging
 import com.amazonaws.services.s3.model._
 import com.amazonaws.services.s3.internal.AmazonS3ExceptionBuilder
-import org.apache.commons.io.IOUtils
 import java.io.ByteArrayInputStream
 import java.util.concurrent.ConcurrentHashMap
 
@@ -133,7 +132,7 @@ class MockS3Client() extends S3Client with LazyLogging {
     val obj = getObject(getObjectRequest)
     val inStream = obj.getObjectContent
     try {
-      IOUtils.toByteArray(inStream)
+      sun.misc.IOUtils.readFully((inStream, -1, true)
     } finally {
       inStream.close()
     }
@@ -158,7 +157,7 @@ class MockS3Client() extends S3Client with LazyLogging {
     logger.debug(s"PUT ${r.getKey}")
     val bucket = getBucket(r.getBucketName)
     bucket.synchronized {
-      bucket.put(r.getKey, IOUtils.toByteArray(r.getInputStream))
+      bucket.put(r.getKey, sun.misc.IOUtils.readFully(r.getInputStream, -1, true))
     }
     new PutObjectResult()
   }
