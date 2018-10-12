@@ -52,6 +52,7 @@ import scala.reflect.ClassTag
   val defaultThreads: Int
   lazy val pool: ExecutorService = Executors.newFixedThreadPool(defaultThreads)
   implicit lazy val ec = ExecutionContext.fromExecutor(pool)
+  implicit val cs = IO.contextShift(ec)
 
   @experimental def shutdown: Unit = pool.shutdown()
 
@@ -91,8 +92,7 @@ import scala.reflect.ClassTag
       }
     }
 
-    (index map readRecord)
-      .join(defaultThreads)
+    (index flatMap readRecord)
       .compile
       .toVector.map(_.flatten.reduce(_ merge _))
       .unsafeRunSync()
@@ -120,8 +120,9 @@ import scala.reflect.ClassTag
       }
     }
 
-    (index map readRecord)
-      .join(defaultThreads)
+    index
+      .map(readRecord)
+      .parJoin(defaultThreads)
       .compile
       .toVector
       .unsafeRunSync()

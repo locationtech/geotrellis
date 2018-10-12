@@ -22,7 +22,7 @@ import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.util.KryoWrapper
 import geotrellis.spark.io.s3.conf.S3Config
 
-import cats.effect.IO
+import cats.effect.{IO, Timer}
 import cats.syntax.apply._
 import com.amazonaws.services.s3.model.{AmazonS3Exception, ObjectMetadata, PutObjectRequest, PutObjectResult}
 import org.apache.avro.Schema
@@ -85,6 +85,8 @@ trait S3RDDWriter {
 
         val pool = Executors.newFixedThreadPool(threads)
         implicit val ec = ExecutionContext.fromExecutor(pool)
+        implicit val timer: Timer[IO] = IO.timer(ec)
+        implicit val cs = IO.contextShift(ec)
 
         val rows: fs2.Stream[IO, (String, Vector[(K, V)])] =
           fs2.Stream.fromIterator[IO, (String, Vector[(K, V)])](
@@ -127,8 +129,11 @@ trait S3RDDWriter {
           }
         }
 
-        (rows flatMap elaborateRow flatMap rowToRequest map retire)
-          .join(threads)
+        rows
+          .flatMap(elaborateRow)
+          .flatMap(rowToRequest)
+          .map(retire)
+          .parJoin(threads)
           .compile
           .drain
           .unsafeRunSync()

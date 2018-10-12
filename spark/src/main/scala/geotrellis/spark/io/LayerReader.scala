@@ -22,7 +22,7 @@ import geotrellis.util._
 
 import org.apache.spark.rdd._
 import org.apache.spark.SparkContext
-import cats.effect.IO
+import cats.effect.{IO, Timer}
 import cats.syntax.apply._
 import spray.json._
 
@@ -111,7 +111,10 @@ object LayerReader {
     import geotrellis.spark.util.TaskUtils._
 
     val pool = Executors.newFixedThreadPool(threads)
+    // TODO: remove the implicit on ec and consider moving the implicit timer to method signature
     implicit val ec = ExecutionContext.fromExecutor(pool)
+    implicit val timer: Timer[IO] = IO.timer(ec)
+    implicit val cs = IO.contextShift(ec)
 
     val indices: Iterator[BigInt] = ranges.flatMap { case (start, end) =>
       (start to end).toIterator
@@ -124,11 +127,13 @@ object LayerReader {
     }
 
     try {
-      (index map readRecord)
-        .join(threads)
+      index
+        .map(readRecord)
+        .parJoin(threads)
         .compile
         .toVector
-        .unsafeRunSync.flatten
+        .unsafeRunSync
+        .flatten
     } finally pool.shutdown()
   }
 }
