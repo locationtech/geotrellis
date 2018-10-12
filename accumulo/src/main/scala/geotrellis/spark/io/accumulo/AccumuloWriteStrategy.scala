@@ -120,6 +120,8 @@ case class SocketWriteStrategy(
       if(partition.nonEmpty) {
         val pool = Executors.newFixedThreadPool(threads)
         implicit val ec = ExecutionContext.fromExecutor(pool)
+        implicit val cs = IO.contextShift(ec)
+
         val writer = instance.connector.createBatchWriter(table, kwConfig.value)
 
         try {
@@ -133,7 +135,11 @@ case class SocketWriteStrategy(
 
           val write = { (mutation: Mutation) => fs2.Stream eval IO.shift(ec) *> IO { writer.addMutation(mutation) } }
 
-          (mutations map write).join(threads).compile.drain.unsafeRunSync()
+          (mutations map write)
+            .parJoin(threads)
+            .compile
+            .drain
+            .unsafeRunSync()
         } finally {
           writer.close(); pool.shutdown()
         }

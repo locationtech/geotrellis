@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io
 
-import cats.effect.IO
+import cats.effect.{IO, Timer}
 import cats.syntax.apply._
 
 import scala.util.{Failure, Success, Try}
@@ -41,7 +41,10 @@ abstract class AsyncWriter[Client, V, E](threads: Int) extends Serializable {
     if (partition.isEmpty) return
 
     val pool = Executors.newFixedThreadPool(threads)
+    // TODO: remove the implicit on ec and consider moving the implicit timer to method signature
     implicit val ec = ExecutionContext.fromExecutor(pool)
+    implicit val timer: Timer[IO] = IO.timer(ec)
+    implicit val cs = IO.contextShift(ec)
 
     val rows: fs2.Stream[IO, (String, V)] = fs2.Stream.fromIterator[IO, (String, V)](partition)
 
@@ -67,15 +70,17 @@ abstract class AsyncWriter[Client, V, E](threads: Int) extends Serializable {
       fs2.Stream eval IO.shift(ec) *> encodeTask
     }
 
-
     def retire(row: (String, E)): fs2.Stream[IO, Try[Long]] = {
       val writeTask = IO(writeRecord(client, row._1, row._2))
       import geotrellis.spark.util.TaskUtils._
       fs2.Stream eval IO.shift(ec) *> retryFunc.fold(writeTask)(writeTask.retryEBO(_))
     }
 
-    (rows flatMap elaborateRow flatMap encode map retire)
-      .join(threads)
+    rows
+      .flatMap(elaborateRow)
+      .flatMap(encode)
+      .map(retire)
+      .parJoin(threads)
       .compile
       .toVector
       .unsafeRunSync()

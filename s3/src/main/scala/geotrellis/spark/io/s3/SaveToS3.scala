@@ -22,7 +22,7 @@ import geotrellis.spark.io.s3.conf.S3Config
 import com.amazonaws.services.s3.model.{ObjectMetadata, PutObjectRequest, PutObjectResult}
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.apache.spark.rdd.RDD
-import cats.effect.IO
+import cats.effect.{IO, Timer}
 import cats.syntax.apply._
 
 import scala.concurrent.ExecutionContext
@@ -87,6 +87,8 @@ object SaveToS3 {
 
       val pool = Executors.newFixedThreadPool(threads)
       implicit val ec = ExecutionContext.fromExecutor(pool)
+      implicit val timer: Timer[IO] = IO.timer(ec)
+      implicit val cs = IO.contextShift(ec)
 
       import geotrellis.spark.util.TaskUtils._
       val write: PutObjectRequest => fs2.Stream[IO, PutObjectResult] = { request =>
@@ -99,7 +101,12 @@ object SaveToS3 {
         }
       }
 
-      (requests map write).join(threads).compile.toVector.unsafeRunSync()
+      requests
+        .map(write)
+        .parJoin(threads)
+        .compile
+        .toVector
+        .unsafeRunSync()
       pool.shutdown()
     }
   }

@@ -116,6 +116,7 @@ object CassandraRDDWriter {
 
               val pool = Executors.newFixedThreadPool(threads)
               implicit val ec = ExecutionContext.fromExecutor(pool)
+              implicit val cs = IO.contextShift(ec)
 
               def elaborateRow(row: (BigInt, Vector[(K,V)])): fs2.Stream[IO, (BigInt, Vector[(K,V)])] = {
                 fs2.Stream eval IO.shift(ec) *> IO ({
@@ -148,8 +149,11 @@ object CassandraRDDWriter {
                 })
               }
 
-              val results = (rows flatMap elaborateRow flatMap rowToBytes map retire)
-                .join(threads)
+              val results = rows
+                .flatMap(elaborateRow)
+                .flatMap(rowToBytes)
+                .map(retire)
+                .parJoin(threads)
                 .onComplete {
                   fs2.Stream eval IO.shift(ec) *> IO {
                     session.closeAsync()
