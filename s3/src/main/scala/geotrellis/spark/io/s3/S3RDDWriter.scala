@@ -26,7 +26,6 @@ import cats.effect.{IO, Timer}
 import cats.syntax.apply._
 import com.amazonaws.services.s3.model.{AmazonS3Exception, ObjectMetadata, PutObjectRequest, PutObjectResult}
 import org.apache.avro.Schema
-import org.apache.commons.io.IOUtils
 import org.apache.spark.rdd.RDD
 
 import java.io.ByteArrayInputStream
@@ -98,7 +97,7 @@ trait S3RDDWriter {
             val (key, current) = row
             val updated = LayerWriter.updateRecords(mergeFunc, current, existing = {
               try {
-                val bytes = IOUtils.toByteArray(s3client.getObject(bucket, key).getObjectContent)
+                val bytes = sun.misc.IOUtils.readFully(s3client.getObject(bucket, key).getObjectContent, -1, true)
                 AvroEncoder.fromBinary(schema, bytes)(_recordCodec)
               } catch {
                 case e: AmazonS3Exception if e.getStatusCode == 404 => Vector.empty

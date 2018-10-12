@@ -17,12 +17,14 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.raster.render.Png
-import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 
 object HadoopPngReader {
-  def read(path: Path)(implicit sc: SparkContext): Png = read(path, sc.hadoopConfiguration)
-  def read(path: Path, conf: Configuration): Png = HdfsUtils.read(path, conf) { is => Png(IOUtils.toByteArray(is)) }
+  def read(path: Path)(implicit sc: SparkContext): Png =
+    read(path, sc.hadoopConfiguration)
+
+  def read(path: Path, conf: Configuration): Png =
+    HdfsUtils.read(path, conf) { is => Png(sun.misc.IOUtils.readFully(is, -1, true)) }
 }

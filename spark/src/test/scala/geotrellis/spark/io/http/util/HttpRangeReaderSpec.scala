@@ -20,9 +20,6 @@ import java.nio.file.{ Paths, Files }
 import java.nio.ByteBuffer
 import geotrellis.util._
 import spire.syntax.cfor._
-
-import org.apache.commons.io.IOUtils
-
 import org.scalatest._
 
 /** These tests require running the container defined in scripts/nginxTestHttp.sh */

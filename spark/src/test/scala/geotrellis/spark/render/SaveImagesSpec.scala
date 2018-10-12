@@ -27,7 +27,6 @@ import geotrellis.spark.testkit._
 import org.scalatest._
 import org.apache.hadoop.fs._
 import org.apache.hadoop.conf._
-import org.apache.commons.io.IOUtils
 import java.net.URI
 
 class SaveImagesSpec extends FunSpec with TestEnvironment {
@@ -35,7 +34,7 @@ class SaveImagesSpec extends FunSpec with TestEnvironment {
   val tmpdir = System.getProperty("java.io.tmpdir")
   val fs = FileSystem.get(new URI(tmpdir), new Configuration)
   def readFile(path: String): Array[Byte] = {
-    IOUtils.toByteArray(fs.open(new Path(path)))
+    sun.misc.IOUtils.readFully(fs.open(new Path(path)), -1, true)
   }
 
   describe("Saving of Rendered Tiles to Hadoop") {

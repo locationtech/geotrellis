@@ -24,7 +24,6 @@ import geotrellis.spark.io.s3.testkit._
 import spire.syntax.cfor._
 
 import com.amazonaws.services.s3.model._
-import org.apache.commons.io.IOUtils
 
 import org.scalatest._
 

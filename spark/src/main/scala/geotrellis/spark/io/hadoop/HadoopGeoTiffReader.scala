@@ -20,7 +20,6 @@ import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.io.geotiff.{MultibandGeoTiff, SinglebandGeoTiff}
 import geotrellis.vector.Extent
 
-import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
@@ -29,7 +28,7 @@ object HadoopGeoTiffReader {
   def readSingleband(path: Path)(implicit sc: SparkContext): SinglebandGeoTiff = readSingleband(path, streaming = false, None, sc.hadoopConfiguration)
   def readSingleband(path: Path, streaming: Boolean, extent: Option[Extent], conf: Configuration): SinglebandGeoTiff =
     HdfsUtils.read(path, conf) { is =>
-      val geoTiff = GeoTiffReader.readSingleband(IOUtils.toByteArray(is), streaming)
+      val geoTiff = GeoTiffReader.readSingleband(sun.misc.IOUtils.readFully(is, -1, true), streaming)
       extent match {
         case Some(e) => geoTiff.crop(e)
         case _ => geoTiff
@@ -39,7 +38,7 @@ object HadoopGeoTiffReader {
   def readMultiband(path: Path)(implicit sc: SparkContext): MultibandGeoTiff = readMultiband(path, streaming = false, None, sc.hadoopConfiguration)
   def readMultiband(path: Path, streaming: Boolean, extent: Option[Extent], conf: Configuration): MultibandGeoTiff =
     HdfsUtils.read(path, conf) { is =>
-      val geoTiff = GeoTiffReader.readMultiband(IOUtils.toByteArray(is), streaming)
+      val geoTiff = GeoTiffReader.readMultiband(sun.misc.IOUtils.readFully(is, -1, true), streaming)
       extent match {
         case Some(e) => geoTiff.crop(e)
         case _ => geoTiff

@@ -25,7 +25,6 @@ import geotrellis.spark.io.s3.conf.S3Config
 
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.apache.avro.Schema
-import org.apache.commons.io.IOUtils
 
 trait S3CollectionReader {
 
@@ -55,7 +54,7 @@ trait S3CollectionReader {
 
     LayerReader.njoin[K, V](ranges.toIterator, threads){ index: BigInt =>
       try {
-        val bytes = IOUtils.toByteArray(s3client.getObject(bucket, keyPath(index)).getObjectContent)
+        val bytes = sun.misc.IOUtils.readFully(s3client.getObject(bucket, keyPath(index)).getObjectContent)
         val recs = AvroEncoder.fromBinary(writerSchema.getOrElse(recordCodec.schema), bytes)(recordCodec)
         if (filterIndexOnly) recs
         else recs.filter { row => queryKeyBounds.includeKey(row._1) }
