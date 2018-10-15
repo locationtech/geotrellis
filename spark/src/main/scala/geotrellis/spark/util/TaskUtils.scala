@@ -29,16 +29,16 @@ object TaskUtils extends App {
     * @param  p  returns true for exceptions that trigger a backoff and retry
     */
 
-  implicit class IOBackoff[A](ioa: IO[A]) {
-    def retryEBO(p: (Throwable => Boolean))(implicit timer: Timer[IO]): IO[A] = {
-      def help(count: Int): IO[A] = {
+  implicit class IOBackoff[A, F[_]: Effect: Timer: Sync](ioa: F[A]) {
+    def retryEBO(p: (Throwable => Boolean)): F[A] = {
+      def help(count: Int): F[A] = {
         val base: Duration = 52.milliseconds
         val timeout = base * Random.nextInt(math.pow(2, count).toInt) // .extInt is [), implying -1
         val actualDelay = FiniteDuration(timeout.toMillis, MILLISECONDS)
 
         ioa.handleErrorWith { error =>
-          if(p(error)) IO.sleep(actualDelay) *> help(count + 1)
-          else IO.raiseError(error)
+          if(p(error)) implicitly[Timer[F]].sleep(actualDelay) *> help(count + 1)
+          else implicitly[Sync[F]].raiseError(error)
         }
       }
       help(0)
