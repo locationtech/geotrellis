@@ -38,7 +38,7 @@ class SlopeSpec extends FunSpec with TestEnvironment {
     }
 
     it("should update RDD cellType of DoubleConstantNoDataCellType") {
-      val tile = SinglebandGeoTiff(new File(inputHomeLocalPath, "aspect.tif").getPath).tile
+      val tile = SinglebandGeoTiff(new File(inputHomeLocalPath, "aspect.tif").getPath).tile.toArrayTile
 
       val (_, rasterRDD) = createTileLayerRDD(tile, 4, 3)
       val slopeRDD = rasterRDD.slope()

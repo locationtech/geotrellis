@@ -39,7 +39,7 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
   describe("TileRDDReproject") {
     val path = "raster/data/aspect.tif"
     val gt = SinglebandGeoTiff(path)
-    val originalRaster = gt.raster.resample(500, 500)
+    val originalRaster = gt.raster.mapTile(_.toArrayTile).resample(500, 500)
 
     // import geotrellis.raster.render._
     // val rainbow = ColorMap((0.0 to 360.0 by 1.0).map{ deg => (deg, HSV.toRGB(deg, 1.0, 1.0)) }.toMap)

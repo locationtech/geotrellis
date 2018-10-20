@@ -80,7 +80,7 @@ class TileLayerRDDFilterMethodsSpec extends FunSpec with TestEnvironment {
   describe("Spatial TileLayerRDD Filter Methods") {
     val path = "raster/data/aspect.tif"
     val gt = SinglebandGeoTiff(path)
-    val originalRaster = gt.raster.resample(500, 500)
+    val originalRaster = gt.raster.mapTile(_.toArrayTile).resample(500, 500)
     val (_, rdd) = createTileLayerRDD(originalRaster, 5, 5, gt.crs)
     val temporalRdd =
       rdd
