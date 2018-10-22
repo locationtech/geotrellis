@@ -55,7 +55,7 @@ trait TestEnvironment extends BeforeAndAfterAll
 { self: Suite with BeforeAndAfterAll =>
 
   /** Subclasses can override this to change the Spark master specification */
-  def sparkMaster = "local"
+  def sparkMaster = "local[2]"
 
   private lazy val afterAlls = mutable.ListBuffer[() => Unit]()
   def registerAfterAll(f: () => Unit): Unit =
