@@ -29,7 +29,7 @@ import java.io._
 
 class PartitionerSpec extends FunSpec with TestEnvironment {
 
-  val tile = SinglebandGeoTiff(new File(inputHomeLocalPath, "aspect.tif").getPath).tile
+  val tile = SinglebandGeoTiff(new File(inputHomeLocalPath, "aspect.tif").getPath).tile.toArrayTile
   val (_, rasterRDD) = createTileLayerRDD(tile, 4, 3)
 
   describe("Focal Partitioner Spec") {

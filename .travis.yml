@@ -33,10 +33,10 @@ before_script:
 
 jdk:
   - openjdk8
-  - oraclejdk8
 
 scala:
   - "2.11.12"
+  - "2.12.7"
 
 cache:
   directories:
