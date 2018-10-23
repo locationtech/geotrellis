@@ -9,8 +9,8 @@ set -o pipefail
 declare -r sbt_release_version="0.13.17"
 declare -r sbt_unreleased_version="0.13.17"
 
-declare -r latest_213="2.13.0-M4"
-declare -r latest_212="2.12.6"
+declare -r latest_213="2.13.0-M5"
+declare -r latest_212="2.12.7"
 declare -r latest_211="2.11.12"
 declare -r latest_210="2.10.7"
 declare -r latest_29="2.9.3"
