@@ -25,6 +25,7 @@ services:
   - postgresql
 
 before_script:
+  - ulimit -c unlimited -S
   - docker run -d --restart=always -p 9999:5432 -e POSTGRES_DB=slick_tests quay.io/azavea/postgis:0.1.0
   - docker run -d --restart=always --net=host -m 1G --memory-swap -1 --env="MAX_HEAP_SIZE=500M" --env="HEAP_NEWSIZE=100M" --env="CASSANDRA_LISTEN_ADDRESS=127.0.0.1" cassandra:latest
   - docker run -d --restart=always -p 8081:80 -v $(pwd)/spark/src/test/resources:/usr/share/nginx/html:ro nginx:stable
@@ -37,6 +38,11 @@ jdk:
 scala:
   - "2.11.12"
   - "2.12.7"
+
+before_cache:
+  # Cleanup the cached directories to avoid unnecessary cache updates
+  - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
+  - find $HOME/.sbt        -name "*.lock"               -print -delete
 
 cache:
   directories:
