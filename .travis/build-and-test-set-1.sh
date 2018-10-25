@@ -1,6 +1,6 @@
 #!/bin/bash
 
-./sbt -J-Xmx2G "++$TRAVIS_SCALA_VERSION" \
+./sbt "++$TRAVIS_SCALA_VERSION" \
   "project proj4" test \
   "project geotools" test \
   "project shapefile" test \
