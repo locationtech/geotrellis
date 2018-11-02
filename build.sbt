@@ -9,6 +9,7 @@ scalaVersion in ThisBuild := Version.scala
 lazy val commonSettings = Seq(
   version := Version.geotrellis,
   scalaVersion := Version.scala,
+  crossScalaVersions := Version.crossScala,
   description := Info.description,
   organization := "org.locationtech.geotrellis",
   licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
@@ -141,19 +142,16 @@ lazy val root = Project("geotrellis", file(".")).
 lazy val macros = project
   .settings(commonSettings)
   .settings(Settings.macros)
-  .settings(crossScalaVersions := Version.crossScala)
 
 lazy val vectortile = project
   .dependsOn(vector)
   .settings(commonSettings)
   .settings(Settings.vectortile)
-  .settings(crossScalaVersions := Version.crossScala)
 
 lazy val vector = project
   .dependsOn(proj4, util)
   .settings(commonSettings)
   .settings(Settings.vector)
-  .settings(crossScalaVersions := Version.crossScala)
   .settings(
     unmanagedClasspath in Test ++= (fullClasspath in (LocalProject("vector-testkit"), Compile)).value
   )
@@ -162,19 +160,16 @@ lazy val `vector-testkit` = project
   .dependsOn(raster % Provided, vector % Provided)
   .settings(commonSettings)
   .settings(Settings.`vector-testkit`)
-  .settings(crossScalaVersions := Version.crossScala)
 
 lazy val proj4 = project
   .settings(commonSettings)
   .settings(Settings.proj4)
-  .settings(crossScalaVersions := Version.crossScala)
   .settings(javacOptions ++= Seq("-encoding", "UTF-8"))
 
 lazy val raster = project
   .dependsOn(util, macros, vector)
   .settings(commonSettings)
   .settings(Settings.raster)
-  .settings(crossScalaVersions := Version.crossScala)
   .settings(
     unmanagedClasspath in Test ++= (fullClasspath in (LocalProject("raster-testkit"), Compile)).value
   )
@@ -186,12 +181,12 @@ lazy val `raster-testkit` = project
   .dependsOn(raster % Provided, vector % Provided)
   .settings(commonSettings)
   .settings(Settings.`raster-testkit`)
-  .settings(crossScalaVersions := Version.crossScala)
 
 lazy val slick = project
   .dependsOn(vector)
   .settings(commonSettings)
   .settings(Settings.slick)
+  .settings(crossScalaVersions := Seq(scalaVersion.value))
 
 lazy val spark = project
   .dependsOn(util, raster, `raster-testkit` % Test, `vector-testkit` % Test)
@@ -266,7 +261,6 @@ lazy val geotools = project
   )
   .settings(commonSettings)
   .settings(Settings.geotools)
-  .settings(crossScalaVersions := Version.crossScala)
 
 lazy val geomesa = project
   .dependsOn(`spark-testkit` % Test, spark, geotools, accumulo)
@@ -287,12 +281,10 @@ lazy val shapefile = project
   .dependsOn(raster, `raster-testkit` % Test)
   .settings(commonSettings)
   .settings(Settings.shapefile)
-  .settings(crossScalaVersions := Version.crossScala)
 
 lazy val util = project
   .settings(commonSettings)
   .settings(Settings.util)
-  .settings(crossScalaVersions := Version.crossScala)
 
 lazy val `doc-examples` = project
   .dependsOn(spark, s3, accumulo, cassandra, hbase, spark, `spark-testkit`, `spark-pipeline`)
