@@ -26,6 +26,7 @@ object Version {
   val cassandra   = "3.5.0"
   val hbase       = "1.4.4"
   val geomesa     = "2.0.1"
+  val geowave     = "0.9.3"
   val circe       = "0.9.3"
   val previousVersion = "1.1.0"
   lazy val hadoop = Environment.hadoopVersion
