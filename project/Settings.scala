@@ -270,12 +270,18 @@ object Settings {
       scalatest % Test
     ),
     /** https://github.com/lucidworks/spark-solr/issues/179 */
-    dependencyOverrides ++= Seq(
-      "com.fasterxml.jackson.core" % "jackson-core" % "2.6.5",
-      "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.5",
-      "com.fasterxml.jackson.core" % "jackson-annotations" % "2.6.5",
-      "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.5"
-    ),
+    dependencyOverrides ++= {
+      val deps = Seq(
+        "com.fasterxml.jackson.core" % "jackson-core" % "2.6.5",
+        "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.5",
+        "com.fasterxml.jackson.core" % "jackson-annotations" % "2.6.5"
+      )
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        // if Scala 2.12+ is used
+        case Some((2, scalaMajor)) if scalaMajor >= 12 => deps
+        case _ => deps :+ "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.5"
+      }
+    },
     initialCommands in console :=
       """
       import geotrellis.raster._
