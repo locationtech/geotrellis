@@ -19,18 +19,14 @@ package geotrellis.spark.io.hadoop
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
-import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop.formats._
-import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.RasterReader
-import geotrellis.util.{LazyLogging, StreamingByteReader}
 import geotrellis.vector._
 
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 

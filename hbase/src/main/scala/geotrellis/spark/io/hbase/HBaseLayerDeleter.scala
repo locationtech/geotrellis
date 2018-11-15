@@ -18,8 +18,8 @@ package geotrellis.spark.io.hbase
 
 import geotrellis.spark.LayerId
 import geotrellis.spark.io._
-import geotrellis.util.LazyLogging
 
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.hadoop.hbase.client._
 import org.apache.hadoop.hbase.filter.PrefixFilter
 

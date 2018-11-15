@@ -31,7 +31,6 @@ import geotrellis.spark.tiling._
 import geotrellis.spark.util._
 import geotrellis.util._
 import geotrellis.vector._
-import geotrellis.proj4.CRS
 import geotrellis.spark.pyramid.Pyramid
 
 import org.apache.hadoop.fs.Path

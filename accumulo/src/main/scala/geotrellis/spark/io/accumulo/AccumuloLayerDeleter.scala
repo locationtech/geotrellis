@@ -18,13 +18,11 @@ package geotrellis.spark.io.accumulo
 
 import geotrellis.spark.LayerId
 import geotrellis.spark.io._
-import geotrellis.util.LazyLogging
 
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.accumulo.core.client.{BatchWriterConfig, Connector}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.accumulo.core.data.{Range => AccumuloRange}
-import spray.json.JsonFormat
-import spray.json.DefaultJsonProtocol._
 
 import scala.collection.JavaConversions._
 

@@ -16,8 +16,7 @@
 
 package geotrellis.spark.io.s3
 
-import geotrellis.util.LazyLogging
-
+import com.typesafe.scalalogging.LazyLogging
 import com.amazonaws.auth._
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion
 import com.amazonaws.retry.PredefinedRetryPolicies

@@ -16,8 +16,7 @@
 
 package geotrellis.spark.io.hadoop
 
-import geotrellis.util.LazyLogging
-
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.hadoop.io.compress.CompressionCodecFactory
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._

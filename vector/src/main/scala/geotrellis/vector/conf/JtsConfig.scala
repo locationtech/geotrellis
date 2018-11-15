@@ -16,8 +16,7 @@
 
 package geotrellis.vector.conf
 
-import geotrellis.util.LazyLogging
-
+import com.typesafe.scalalogging.LazyLogging
 import org.locationtech.jts.geom.PrecisionModel
 import org.locationtech.jts.precision.GeometryPrecisionReducer
 

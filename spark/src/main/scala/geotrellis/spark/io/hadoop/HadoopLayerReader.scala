@@ -16,16 +16,12 @@
 
 package geotrellis.spark.io.hadoop
 
-import geotrellis.raster.{MultibandTile, Tile}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
-import geotrellis.spark.io.avro.codecs._
-import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.io.json._
 import geotrellis.util._
 
-import org.apache.avro.Schema
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD

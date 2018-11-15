@@ -18,14 +18,9 @@ package geotrellis.spark.io.file
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.AttributeStore.Fields
-import geotrellis.spark.io.index._
-import geotrellis.util.LazyLogging
 
-import spray.json.JsonFormat
-import org.apache.avro.Schema
+import com.typesafe.scalalogging.LazyLogging
 
-import scala.reflect.ClassTag
 import java.io.File
 
 class FileLayerDeleter(val attributeStore: FileAttributeStore) extends LazyLogging with LayerDeleter[LayerId] {

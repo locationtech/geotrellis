@@ -22,12 +22,13 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.file.{FileAttributeStore, KeyPathGenerator}
+import geotrellis.spark.io.file.conf.FileConfig
 import geotrellis.util._
+
+import com.typesafe.scalalogging.LazyLogging
 import spray.json.JsonFormat
 import java.net.URI
 import java.io.File
-
-import geotrellis.spark.io.file.conf.FileConfig
 
 import scala.reflect.ClassTag
 

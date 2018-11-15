@@ -16,9 +16,10 @@
 
 package geotrellis.spark.io.http.util
 
-import geotrellis.util.{RangeReader, LazyLogging}
+import geotrellis.util.RangeReader
 
 import scalaj.http.Http
+import com.typesafe.scalalogging.LazyLogging
 
 import java.net.{URL, URI}
 import scala.util.Try

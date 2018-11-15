@@ -16,9 +16,9 @@
 
 package geotrellis.vector.io.wkb
 
-import geotrellis.util.LazyLogging
 import geotrellis.vector._
 
+import com.typesafe.scalalogging.LazyLogging
 import org.locationtech.jts.io.WKBReader
 
 

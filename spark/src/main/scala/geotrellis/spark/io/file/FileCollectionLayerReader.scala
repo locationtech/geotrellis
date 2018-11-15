@@ -22,6 +22,7 @@ import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
 import geotrellis.util._
 
+import com.typesafe.scalalogging.LazyLogging
 import spray.json.JsonFormat
 
 import scala.reflect.ClassTag

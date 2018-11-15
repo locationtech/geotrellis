@@ -16,21 +16,16 @@
 
 package geotrellis.spark.io
 
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader.GeoTiffInfo
-import geotrellis.raster.io.geotiff.tags.TiffTags
-import geotrellis.util.LazyLogging
 import geotrellis.vector.Geometry
 import geotrellis.raster.GridBounds
 import geotrellis.raster.io.geotiff.GeoTiffSegmentLayoutTransform
 
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-import scala.collection.mutable
 import java.net.URI
-
 
 private [geotrellis] trait GeoTiffInfoReader extends LazyLogging {
   def geoTiffInfoRDD(implicit sc: SparkContext): RDD[String]

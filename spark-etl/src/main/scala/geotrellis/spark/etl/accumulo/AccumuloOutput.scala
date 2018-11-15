@@ -19,7 +19,8 @@ package geotrellis.spark.etl.accumulo
 import geotrellis.spark.etl.OutputPlugin
 import geotrellis.spark.etl.config.{AccumuloProfile, BackendProfile, EtlConf}
 import geotrellis.spark.io.accumulo.{AccumuloAttributeStore, AccumuloWriteStrategy, HdfsWriteStrategy, SocketWriteStrategy}
-import geotrellis.util.LazyLogging
+
+import com.typesafe.scalalogging.LazyLogging
 
 trait AccumuloOutput[K, V, M] extends OutputPlugin[K, V, M] with LazyLogging {
   val name = "accumulo"

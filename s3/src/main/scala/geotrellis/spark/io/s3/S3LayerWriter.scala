@@ -16,7 +16,6 @@
 
 package geotrellis.spark.io.s3
 
-import geotrellis.raster.{MultibandTile, Tile}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._
@@ -25,11 +24,9 @@ import geotrellis.spark.io.index._
 import geotrellis.spark.merge._
 import geotrellis.util._
 
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.rdd.RDD
-import org.apache.spark.SparkContext
-
 import com.amazonaws.services.s3.model.PutObjectRequest
-
 import spray.json._
 
 import scala.reflect._

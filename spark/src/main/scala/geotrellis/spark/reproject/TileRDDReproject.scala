@@ -31,15 +31,14 @@ import geotrellis.spark.tiling._
 import geotrellis.vector._
 import geotrellis.util._
 
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.rdd._
 import org.apache.spark._
 
 import scala.reflect.ClassTag
 
-object TileRDDReproject {
+object TileRDDReproject extends LazyLogging {
   import Reproject.Options
-
-  @transient private lazy val logger = LazyLogging(this)
 
   /** Reproject a set of buffered
     * @tparam           K           Key type; requires spatial component.

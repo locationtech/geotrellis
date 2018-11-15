@@ -26,8 +26,8 @@ import geotrellis.spark.io.s3._
 import geotrellis.spark.io.s3.conf.S3Config
 import geotrellis.util._
 
+import com.typesafe.scalalogging.LazyLogging
 import spray.json.JsonFormat
-
 import java.net.URI
 
 import scala.reflect.ClassTag

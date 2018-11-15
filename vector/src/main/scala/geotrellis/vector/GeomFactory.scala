@@ -16,12 +16,11 @@
 
 package geotrellis.vector
 
-import geotrellis.util.LazyLogging
 import geotrellis.vector.conf.JtsConfig
 
+import com.typesafe.scalalogging.LazyLogging
 import org.locationtech.jts.geom
-import org.locationtech.jts.geom.impl.CoordinateArraySequenceFactory
-import org.locationtech.jts.geom.{CoordinateSequenceFactory, GeometryFactory, PrecisionModel}
+import org.locationtech.jts.geom.{GeometryFactory, PrecisionModel}
 import org.locationtech.jts.precision.GeometryPrecisionReducer
 
 object GeomFactory extends LazyLogging {

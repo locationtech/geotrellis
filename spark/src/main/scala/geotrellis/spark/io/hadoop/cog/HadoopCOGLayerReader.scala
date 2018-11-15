@@ -25,6 +25,8 @@ import geotrellis.spark.io.index.Index
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.hadoop.conf.HadoopConfig
 import geotrellis.util._
+
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat

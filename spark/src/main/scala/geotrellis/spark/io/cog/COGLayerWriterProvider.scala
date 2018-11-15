@@ -16,9 +16,7 @@
 
 package geotrellis.spark.io.cog
 
-import geotrellis.spark._
 import geotrellis.spark.io._
-import org.apache.spark._
 import java.net.URI
 
 trait COGLayerWriterProvider {

@@ -23,9 +23,9 @@ import geotrellis.spark.io.index._
 import geotrellis.spark.merge._
 import geotrellis.util._
 
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.avro._
 import org.apache.spark.rdd.RDD
-
 import spray.json._
 
 import scala.reflect.ClassTag

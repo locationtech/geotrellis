@@ -16,8 +16,6 @@
 
 package geotrellis.spark.io.hadoop.cog
 
-import java.net.URI
-
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
@@ -30,11 +28,14 @@ import geotrellis.spark.io.cog.vrt.VRT.IndexedSimpleSource
 import geotrellis.spark.io.hadoop.{HadoopAttributeStore, HadoopLayerHeader, HdfsUtils, SerializableConfiguration}
 import geotrellis.spark.io.index._
 import geotrellis.util.ByteReader
+
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
 
 import scala.reflect.{ClassTag, classTag}
+
+import java.net.URI
 
 class HadoopCOGLayerWriter(
   rootPath: String,
