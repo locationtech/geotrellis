@@ -56,6 +56,8 @@ trait Implicits {
   implicit class ReprojectExtent(e: Extent) {
     def reproject(src: CRS, dest: CRS): Extent = Reproject(e, src, dest)
     def reproject(transform: Transform): Extent = Reproject(e, transform).envelope
+    def reprojectAsPolygon(src: CRS, dest: CRS, relErr: Double): Polygon = e.reprojectAsPolygon(Transform(src, dest), relErr)
+    def reprojectAsPolygon(transform: Transform, relErr: Double): Polygon = Reproject.reprojectExtentAsPolygon(e, transform, relErr)
   }
 
   implicit class ReprojectPolygonFeature[D](pf: PolygonFeature[D]) {
