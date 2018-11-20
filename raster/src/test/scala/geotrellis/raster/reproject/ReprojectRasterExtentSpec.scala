@@ -74,9 +74,9 @@ class ReprojectRasterExtentSpec extends FunSpec
       // println(formatExtent("GTA", rea))
       // println(formatExtent("EXP", ree))
 
-      actualExtent.toPolygon should matchGeom (expectedExtent.toPolygon, 1.0)
-      actualCols should be (expectedCols +- 1)
-      actualRows should be (expectedRows +- 1)
+      actualExtent.toPolygon should matchGeom (expectedExtent.toPolygon, 10.0)
+      actualCols should be (expectedCols +- 10)
+      actualRows should be (expectedRows +- 10)
     }
 
     it("should be in approximation to GDAL EPSG:32618 to EPSG:4326") {
@@ -97,8 +97,8 @@ class ReprojectRasterExtentSpec extends FunSpec
       // println(formatExtent("EXP", ree))
 
       actualExtent.toPolygon should matchGeom (expectedExtent.toPolygon, 1.0)
-      actualCols should be (expectedCols +- 1)
-      actualRows should be (expectedRows +- 1)
+      actualCols should be (expectedCols +- 10)
+      actualRows should be (expectedRows +- 10)
     }
 
     it("should have an extent that tightly covers the polygon reprojection of the source extent") {
