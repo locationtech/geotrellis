@@ -21,7 +21,7 @@ import geotrellis.raster.rasterize.polygon.PolygonRasterizer
 import geotrellis.raster.regiongroup.{RegionGroup, RegionGroupOptions}
 import geotrellis.vector._
 
-import com.vividsolutions.jts.geom
+import org.locationtech.jts.geom
 
 import scala.collection.mutable
 

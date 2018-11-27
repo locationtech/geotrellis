@@ -27,8 +27,8 @@ import geotrellis.vector.io.wkt.WKT
 
 import math.{max,min,round}
 
-import com.vividsolutions.jts.{geom => jts}
-import com.vividsolutions.jts.io.WKTReader
+import org.locationtech.jts.{geom => jts}
+import org.locationtech.jts.io.WKTReader
 import org.scalatest.FunSuite
 import scala.collection.mutable
 

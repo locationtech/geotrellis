@@ -21,7 +21,6 @@ import geotrellis.vector._
 
 import org.scalatest._
 
-
 object FeatureToSimpleFeatureMethodsSpec {
   case class Foo(x: Int, y: String)
   implicit def fooToSeq(foo: Foo): Seq[(String, Any)] = List((foo.y, foo.x))

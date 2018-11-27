@@ -23,7 +23,6 @@ import org.opengis.feature.simple.SimpleFeature
 
 import scala.reflect.ClassTag
 
-
 trait SimpleFeatureToGeometryMethods extends MethodExtensions[SimpleFeature] {
   def toGeometry[G <: Geometry : ClassTag](): G = {
     val feature = SimpleFeatureToFeature(self)

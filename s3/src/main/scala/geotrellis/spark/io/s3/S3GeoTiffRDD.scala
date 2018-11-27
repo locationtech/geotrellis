@@ -19,14 +19,13 @@ package geotrellis.spark.io.s3
 import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.spark._
-import geotrellis.spark.io.{GeoTiffInfoReader, RasterReader}
-import geotrellis.util.LazyLogging
+import geotrellis.spark.io.RasterReader
 import geotrellis.vector._
 
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import com.amazonaws.services.s3.model._
 
 import java.net.URI
 import java.nio.ByteBuffer

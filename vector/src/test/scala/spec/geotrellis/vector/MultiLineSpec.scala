@@ -16,7 +16,7 @@
 
 package geotrellis.vector
 
-import com.vividsolutions.jts.{geom=>jts}
+import org.locationtech.jts.{geom=>jts}
 
 import org.scalatest._
 
@@ -29,7 +29,7 @@ class MultiLineSpec extends FunSpec with Matchers {
           Line( (0.0, 3.0), (1.0, 1.0), (1.0, 2.0), (0.0, 3.0) )
         )
 
-      val expected = ml.jtsGeom.clone
+      val expected = ml.jtsGeom.copy
       ml.normalized
       ml.jtsGeom.equals(expected) should be (true)
     }
@@ -41,7 +41,7 @@ class MultiLineSpec extends FunSpec with Matchers {
           Line( (0.0, 3.0), (1.0, 1.0), (1.0, 2.0), (0.0, 3.0) )
         )
 
-      val expected = ml.jtsGeom.clone
+      val expected = ml.jtsGeom.copy
       val coords = ml.lines(0).jtsGeom.getCoordinates()
       coords(0).setCoordinate(coords(1))
       ml.jtsGeom.equals(expected) should be (true)

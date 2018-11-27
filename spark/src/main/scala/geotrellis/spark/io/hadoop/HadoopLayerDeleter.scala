@@ -18,14 +18,11 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.AttributeStore.Fields
-import geotrellis.util.LazyLogging
 
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark._
-import spray.json.JsonFormat
-import spray.json.DefaultJsonProtocol._
 
 class HadoopLayerDeleter(val attributeStore: AttributeStore, conf: Configuration) extends LazyLogging with LayerDeleter[LayerId] {
   def delete(id: LayerId): Unit = {

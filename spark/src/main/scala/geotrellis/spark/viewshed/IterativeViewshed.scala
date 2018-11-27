@@ -26,7 +26,7 @@ import geotrellis.spark.tiling._
 import geotrellis.util._
 import geotrellis.vector._
 
-import com.vividsolutions.jts.{ geom => jts }
+import org.locationtech.jts.{ geom => jts }
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
@@ -66,7 +66,7 @@ case class Viewpoint(
 object IterativeViewshed {
 
   implicit def coordinatesToPoints(points: Seq[jts.Coordinate]): Seq[Viewpoint] =
-    points.map({ p => Viewpoint(p.x, p.y, p.z, 0, -1.0, Double.NegativeInfinity) })
+    points.map({ p => Viewpoint(p.getX, p.getY, p.getZ, 0, -1.0, Double.NegativeInfinity) })
 
   private val logger = Logger.getLogger(IterativeViewshed.getClass)
 

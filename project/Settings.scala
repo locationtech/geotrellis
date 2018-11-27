@@ -163,7 +163,7 @@ object Settings {
       import geotrellis.geotools._
       import geotrellis.raster._
       import geotrellis.vector._
-      import com.vividsolutions.jts.{geom => jts}
+      import org.locationtech.jts.{geom => jts}
       import org.geotools.coverage.grid._
       import org.geotools.coverage.grid.io._
       import org.geotools.gce.geotiff._
@@ -256,17 +256,32 @@ object Settings {
     libraryDependencies ++= Seq(
       hbaseCommon exclude("javax.servlet", "servlet-api"),
       hbaseClient exclude("javax.servlet", "servlet-api"),
-      hbaseServer exclude ("org.mortbay.jetty", "servlet-api-2.5"),
+      hbaseMapReduce exclude("javax.servlet", "servlet-api"),
+      hbaseServer exclude("org.mortbay.jetty", "servlet-api-2.5"),
       hbaseHadoopCompact exclude("javax.servlet", "servlet-api"),
       hbaseHadoop2Compact exclude("javax.servlet", "servlet-api"),
       hbaseMetrics exclude("javax.servlet", "servlet-api"),
       hbaseMetricsApi exclude("javax.servlet", "servlet-api"),
+      hbaseZooKeeper exclude("javax.servlet", "servlet-api"),
       jacksonCoreAsl,
       sparkCore % Provided,
       spire,
       sparkSQL % Test,
       scalatest % Test
     ),
+    /** https://github.com/lucidworks/spark-solr/issues/179 */
+    dependencyOverrides ++= {
+      val deps = Seq(
+        "com.fasterxml.jackson.core" % "jackson-core" % "2.6.5",
+        "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.5",
+        "com.fasterxml.jackson.core" % "jackson-annotations" % "2.6.5"
+      )
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        // if Scala 2.12+ is used
+        case Some((2, scalaMajor)) if scalaMajor >= 12 => deps
+        case _ => deps :+ "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.5"
+      }
+    },
     initialCommands in console :=
       """
       import geotrellis.raster._

@@ -17,9 +17,9 @@
 package geotrellis.vector
 
 import GeomFactory._
-import com.vividsolutions.jts.geom.TopologyException
+import org.locationtech.jts.geom.TopologyException
 
-import com.vividsolutions.jts.{geom => jts}
+import org.locationtech.jts.{geom => jts}
 
 import spire.syntax.cfor._
 
@@ -51,7 +51,7 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
 
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */
   def normalized(): MultiPolygon = {
-    val geom = jtsGeom.clone.asInstanceOf[jts.MultiPolygon]
+    val geom = jtsGeom.copy.asInstanceOf[jts.MultiPolygon]
     geom.normalize
     MultiPolygon(geom)
   }
@@ -59,7 +59,7 @@ case class MultiPolygon(jtsGeom: jts.MultiPolygon) extends MultiGeometry
   /** Returns the Polygons contained in this MultiPolygon. */
   lazy val polygons: Array[Polygon] = {
     for (i <- 0 until jtsGeom.getNumGeometries) yield {
-      Polygon(jtsGeom.getGeometryN(i).clone.asInstanceOf[jts.Polygon])
+      Polygon(jtsGeom.getGeometryN(i).copy.asInstanceOf[jts.Polygon])
     }
   }.toArray
 

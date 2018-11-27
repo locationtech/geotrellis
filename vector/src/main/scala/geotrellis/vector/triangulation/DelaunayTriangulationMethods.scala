@@ -16,7 +16,7 @@
 
 package geotrellis.vector.triangulation
 
-import com.vividsolutions.jts.geom.Coordinate
+import org.locationtech.jts.geom.Coordinate
 
 import geotrellis.util.MethodExtensions
 import geotrellis.vector.MultiPoint

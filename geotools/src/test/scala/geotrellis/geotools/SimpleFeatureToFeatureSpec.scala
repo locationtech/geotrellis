@@ -16,14 +16,8 @@
 
 package geotrellis.geotools
 
-import geotrellis.raster._
-import geotrellis.vector._
-
 import org.geotools.data.shapefile._
 import org.scalatest._
-
-import scala.collection.JavaConverters._
-
 
 class SimpleFeatureToFeatureSpec
     extends FunSpec

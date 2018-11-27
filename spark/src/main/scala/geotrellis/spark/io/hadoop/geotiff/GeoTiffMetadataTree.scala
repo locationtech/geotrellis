@@ -22,7 +22,7 @@ import geotrellis.proj4.{CRS, WebMercator}
 import geotrellis.util.annotations.experimental
 
 import scala.collection.mutable
-import com.vividsolutions.jts.index.strtree.STRtree
+import org.locationtech.jts.index.strtree.STRtree
 import java.io._
 
 import collection.JavaConverters._

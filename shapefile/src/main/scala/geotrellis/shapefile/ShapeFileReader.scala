@@ -21,7 +21,7 @@ import geotrellis.vector._
 import org.geotools.data.simple._
 import org.opengis.feature.simple._
 import org.geotools.data.shapefile._
-import com.vividsolutions.jts.{geom => jts}
+import org.locationtech.jts.{geom => jts}
 
 import java.net.URL
 import java.io.File

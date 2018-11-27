@@ -28,6 +28,7 @@ import geotrellis.util._
 import geotrellis.util.annotations.experimental
 import geotrellis.vector.Extent
 
+import com.typesafe.scalalogging.LazyLogging
 import mil.nga.giat.geowave.adapter.raster.adapter.merge.RasterTileRowTransform
 import mil.nga.giat.geowave.adapter.raster.adapter.RasterDataAdapter
 import mil.nga.giat.geowave.core.geotime.index.dimension._
@@ -65,7 +66,6 @@ import spray.json._
 import mil.nga.giat.geowave.core.store.operations.remote.options.DataStorePluginOptions
 import mil.nga.giat.geowave.core.store.adapter.statistics.StatsCompositionTool
 import mil.nga.giat.geowave.core.store.data.VisibilityWriter
-
 
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental

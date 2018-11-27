@@ -2,7 +2,7 @@ package geotrellis.doc.examples.distance
 
 object EuclideanDistanceExamples {
   def `Demonstration of shortcomings of dense EuclideanDistance operation`: Unit = {
-    import com.vividsolutions.jts.geom.Coordinate
+    import org.locationtech.jts.geom.Coordinate
     import org.apache.spark.SparkContext
     import org.apache.spark.rdd.RDD
 

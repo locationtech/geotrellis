@@ -19,7 +19,7 @@ package geotrellis.spark.io.s3
 import geotrellis.spark.io.s3.util.S3RangeReader
 import geotrellis.util._
 
-import com.amazonaws.auth.AWSCredentials
+import com.typesafe.scalalogging.LazyLogging
 import com.amazonaws.services.s3.model.GetObjectRequest
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext, RecordReader}
 import org.apache.commons.io.IOUtils

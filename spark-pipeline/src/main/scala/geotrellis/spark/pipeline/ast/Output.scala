@@ -24,8 +24,9 @@ import geotrellis.spark._
 import geotrellis.spark.io.LayerWriter
 import geotrellis.spark.io.avro.AvroRecordCodec
 import geotrellis.spark.tiling.LayoutDefinition
-import geotrellis.util.{Component, GetComponent, LazyLogging}
+import geotrellis.util.{Component, GetComponent}
 
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
 

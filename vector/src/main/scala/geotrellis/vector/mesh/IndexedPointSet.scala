@@ -16,7 +16,7 @@
 
 package geotrellis.vector.mesh
 
-import com.vividsolutions.jts.geom.Coordinate
+import org.locationtech.jts.geom.Coordinate
 import geotrellis.util.Constants.{DOUBLE_EPSILON => EPSILON}
 import geotrellis.vector.Point
 
@@ -60,9 +60,9 @@ object IndexedPointSet {
   def apply(points: Array[Coordinate]): CompleteIndexedPointSet =
     new CompleteIndexedPointSet {
       def length = points.length
-      def getX(i: Int) = points(i).x
-      def getY(i: Int) = points(i).y
-      def getZ(i: Int) = points(i).z
+      def getX(i: Int) = points(i).getX
+      def getY(i: Int) = points(i).getY
+      def getZ(i: Int) = points(i).getZ
       override def getCoordinate(i: Int) = points(i)
     }
 
@@ -72,9 +72,9 @@ object IndexedPointSet {
   def apply(points: Int => Coordinate, len: Int): IndexedPointSet =
     new IndexedPointSet {
       def length = len
-      def getX(i: Int) = points(i).x
-      def getY(i: Int) = points(i).y
-      def getZ(i: Int) = points(i).z
+      def getX(i: Int) = points(i).getX
+      def getY(i: Int) = points(i).getY
+      def getZ(i: Int) = points(i).getZ
       override def getCoordinate(i: Int) = points(i)
     }
 

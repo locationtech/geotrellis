@@ -95,13 +95,13 @@ class DissolveMethodsSpec extends FunSpec
     it("should not throw exceptions when dissolving a multiline that throws a topology exception in JTS for .union call") {
       val testCaseLines = readFile("vector/data/topologyException.json")
       val testCaseMultiLine = MultiLine(testCaseLines)
-      an[com.vividsolutions.jts.geom.TopologyException] should be thrownBy { testCaseMultiLine.union }
+      an[org.locationtech.jts.geom.TopologyException] should be thrownBy { testCaseMultiLine.union }
       testCaseMultiLine.dissolve
     }
 
     it("should maintain immutability over dissolve") {
       val s = List(Line((0, 0), (1, 1)), Line((2, 2), (3, 3)))
-      val expected = s.map(_.jtsGeom.clone)
+      val expected = s.map(_.jtsGeom.copy)
       val d = MultiLine(s).dissolve.as[MultiLine].get.lines
 
       val coord = d(0).jtsGeom.getCoordinate()

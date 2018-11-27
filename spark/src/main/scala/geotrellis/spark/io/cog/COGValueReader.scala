@@ -17,7 +17,6 @@
 package geotrellis.spark.io.cog
 
 import geotrellis.raster._
-import geotrellis.raster.io.geotiff.GeoTiffMultibandTile
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.crop._
 import geotrellis.raster.resample._

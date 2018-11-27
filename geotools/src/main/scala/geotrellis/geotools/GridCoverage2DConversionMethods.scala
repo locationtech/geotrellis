@@ -19,13 +19,9 @@ package geotrellis.geotools
 import geotrellis.proj4.LatLng
 import geotrellis.raster._
 import geotrellis.util._
-import geotrellis.vector.Extent
 
 import org.geotools.coverage.grid._
-import org.geotools.resources.coverage.CoverageUtilities
 import spire.syntax.cfor._
-
-import java.awt.image.{Raster => AwtRaster, _}
 
 trait GridCoverage2DConversionMethods extends MethodExtensions[GridCoverage2D] {
   def toTile(bandIndex: Int): Tile =

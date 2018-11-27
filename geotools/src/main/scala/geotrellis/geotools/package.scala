@@ -23,7 +23,6 @@ import geotrellis.vector._
 import org.geotools.coverage.grid.GridCoverage2D
 import org.opengis.feature.simple.SimpleFeature
 
-
 package object geotools {
   implicit class withSinglebandRasterToGridCoverage2DMethods(val self: Raster[Tile]) extends MethodExtensions[Raster[Tile]]
       with SinglebandRasterToGridCoverage2DMethods

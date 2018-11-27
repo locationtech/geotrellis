@@ -24,12 +24,13 @@ import geotrellis.raster.io.geotiff.reader.TiffTagsReader
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index.{Index, KeyIndex, IndexRanges, MergeQueue}
-import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.util._
 import geotrellis.spark.util.KryoWrapper
+
 import org.apache.spark.rdd._
 import spray.json._
 import org.apache.spark.SparkContext
+
 import java.net.URI
 import java.util.ServiceLoader
 

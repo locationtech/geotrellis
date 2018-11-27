@@ -20,7 +20,7 @@ import geotrellis.vector._
 import geotrellis.vectortile.internal.ProtobufGeom
 import geotrellis.vectortile.internal.{vector_tile => vt}
 
-import com.vividsolutions.jts.geom.LineString
+import org.locationtech.jts.geom.LineString
 import java.lang.IllegalArgumentException
 import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer

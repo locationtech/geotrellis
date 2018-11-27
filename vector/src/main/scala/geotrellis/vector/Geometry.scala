@@ -16,8 +16,8 @@
 
 package geotrellis.vector
 
-import com.vividsolutions.jts.geom.{CoordinateSequence, TopologyException}
-import com.vividsolutions.jts.{geom => jts}
+import org.locationtech.jts.geom.{CoordinateSequence, TopologyException}
+import org.locationtech.jts.{geom => jts}
 import geotrellis.vector.GeomFactory._
 import spire.syntax.cfor._
 
@@ -74,7 +74,7 @@ trait Geometry extends Serializable {
   /** Returns this Geometry's vertices. */
   lazy val vertices: Array[Point] = {
     val vertices = for (i <- 0 until jtsGeom.getNumGeometries) yield {
-      Geometry(jtsGeom.getGeometryN(i).clone().asInstanceOf[jts.Geometry]).vertices
+      Geometry(jtsGeom.getGeometryN(i).copy).vertices
     }
 
     vertices.reduce(_ ++ _)

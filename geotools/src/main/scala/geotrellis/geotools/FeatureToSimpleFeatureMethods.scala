@@ -22,7 +22,6 @@ import geotrellis.vector._
 
 import org.opengis.feature.simple.SimpleFeature
 
-
 trait FeatureToSimpleFeatureMethods[G <: Geometry, T] extends MethodExtensions[Feature[G, T]] {
 
   def toSimpleFeature()(implicit transmute: T => Seq[(String, Any)]): SimpleFeature =

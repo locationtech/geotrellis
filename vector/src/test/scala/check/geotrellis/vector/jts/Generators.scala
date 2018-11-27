@@ -16,7 +16,7 @@
 
 package geotrellis.vector.check.jts
 
-import com.vividsolutions.jts.geom._
+import org.locationtech.jts.geom._
 import org.scalacheck.Gen._
 import org.scalacheck._
 
@@ -42,7 +42,7 @@ object Generators {
     for {
       size <- Gen.choose(1,100)
       coords <- Gen.containerOfN[Set,Coordinate](size,genCoordinate)
-    } yield { factory.createMultiPoint(coords.toArray) }
+    } yield { factory.createMultiPointFromCoords(coords.toArray) }
 
   lazy val genLongLineString:Gen[LineString] =
     for {
@@ -82,10 +82,10 @@ object Generators {
       subSet1 <- Gen.pick(subSize1,fullSet)
       subSet2 <- Gen.pick(subSize2,fullSet)
     } yield {
-      val polyOne = 
-        factory.createMultiPoint((subSet1 ++ sharedSet).toArray).convexHull.asInstanceOf[Polygon]
+      val polyOne =
+        factory.createMultiPointFromCoords((subSet1 ++ sharedSet).toArray).convexHull.asInstanceOf[Polygon]
       val polyTwo =
-        factory.createMultiPoint((subSet2 ++ sharedSet).toArray).convexHull.asInstanceOf[Polygon]
+        factory.createMultiPointFromCoords((subSet2 ++ sharedSet).toArray).convexHull.asInstanceOf[Polygon]
       polyOne.intersection(polyTwo).asInstanceOf[Polygon]
     }
 
@@ -116,8 +116,8 @@ object Generators {
       lineSize <- Gen.choose(2,size)
       coords <- Gen.containerOfN[Set,Coordinate](size,genCoordinate)
       lineCoords <- Gen.pick(lineSize,coords)
-    } yield { 
-      val mp = factory.createMultiPoint(coords.toArray) 
+    } yield {
+      val mp = factory.createMultiPointFromCoords(coords.toArray)
       val l = factory.createLineString(lineCoords.toArray)
       LineInMultiPoint(mp,l)
     }

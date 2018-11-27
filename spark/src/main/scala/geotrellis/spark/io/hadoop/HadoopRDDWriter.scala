@@ -24,20 +24,15 @@ import geotrellis.spark.io.hadoop.formats.FilterMapFileInputFormat
 import geotrellis.spark.io.index._
 import geotrellis.spark.partition._
 import geotrellis.spark.util._
-import geotrellis.util.LazyLogging
 
-import org.apache.avro.Schema
-import org.apache.hadoop.conf.Configuration
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io._
 import org.apache.spark.rdd._
+import org.apache.hadoop.conf.Configuration
 
 import scala.reflect._
 import scala.collection.mutable
-
-import java.io.{ObjectInputStream, ObjectOutputStream}
-import org.apache.hadoop.conf.Configuration
-
 
 object HadoopRDDWriter extends LazyLogging {
   /** Index innterval at which map files should store an offset into sequence file.

@@ -19,7 +19,7 @@ package geotrellis.vector.convexhull
 import geotrellis.util.MethodExtensions
 import geotrellis.vector._
 
-import com.vividsolutions.jts.{geom => jts}
+import org.locationtech.jts.{geom => jts}
 
 /** Trait used to implicitly extend [[Geometry]] instances with a convex hull method */
 trait ConvexHullMethods[G <: Geometry] extends MethodExtensions[G] {

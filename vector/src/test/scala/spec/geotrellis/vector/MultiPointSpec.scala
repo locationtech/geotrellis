@@ -16,7 +16,7 @@
 
 package geotrellis.vector
 
-import com.vividsolutions.jts.{geom=>jts}
+import org.locationtech.jts.{geom=>jts}
 
 import org.scalatest._
 
@@ -433,7 +433,7 @@ class MultiPointSpec extends FunSpec with Matchers {
 
     it ("should maintain immutability over normalization") {
       val mp = MultiPoint(Point(2,2), Point(1,1), Point(3,2), Point(1,1))
-      val expected = mp.jtsGeom.clone
+      val expected = mp.jtsGeom.copy
       mp.normalized
       mp.jtsGeom.equals(expected) should be (true)
     }
@@ -441,7 +441,7 @@ class MultiPointSpec extends FunSpec with Matchers {
     it ("should maintain immutability over points") {
       val mp = MultiPoint(Point(1,1), Point(2,2))
 
-      val expected = mp.jtsGeom.clone
+      val expected = mp.jtsGeom.copy
 
       val coord = mp.points(0).jtsGeom.getCoordinate()
       val newCoord = Point(5,5).jtsGeom.getCoordinate()

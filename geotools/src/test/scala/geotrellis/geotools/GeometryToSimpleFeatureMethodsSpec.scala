@@ -21,7 +21,6 @@ import geotrellis.vector._
 
 import org.scalatest._
 
-
 class GeometryToSimpleFeatureMethodsSpec
     extends FunSpec
     with Matchers {

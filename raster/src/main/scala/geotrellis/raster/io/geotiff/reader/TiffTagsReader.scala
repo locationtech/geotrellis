@@ -20,10 +20,13 @@ import geotrellis.raster.io.geotiff.tags._
 import geotrellis.raster.io.geotiff.tags.codes._
 import TagCodes._
 import TiffFieldType._
-import geotrellis.util.{ByteReader, Filesystem, LazyLogging}
+import geotrellis.util.{ByteReader, Filesystem}
 import geotrellis.raster.io.geotiff.util._
+
+import com.typesafe.scalalogging.LazyLogging
 import spire.syntax.cfor._
 import monocle.syntax.apply._
+
 import java.nio.{ByteBuffer, ByteOrder}
 
 object TiffTagsReader extends LazyLogging {

@@ -59,7 +59,7 @@ package geotrellis.vector;
  *   reasonable by a quick look at the code, but this needs to be more thoroughly analyzed.
  *
  * - Function orientationIndex is new and its contract is copied from
- *   com.vividsolutions.jts.algorithm.CGAlgorithms.orientationIndex so that the current implementation of that method
+ *   org.locationtech.jts.algorithm.CGAlgorithms.orientationIndex so that the current implementation of that method
  *   can be easily replaced.
  *
  * Some relevant comments in the original code has been kept untouched in its entirety. For more in-depth information

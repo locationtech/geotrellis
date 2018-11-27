@@ -22,7 +22,7 @@ import geotrellis.vector._
 
 import org.apache.spark._
 import org.apache.spark.rdd._
-import com.vividsolutions.jts.geom.Envelope
+import org.locationtech.jts.geom.Envelope
 
 import scala.reflect._
 

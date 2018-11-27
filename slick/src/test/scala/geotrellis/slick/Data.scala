@@ -16,7 +16,7 @@
 
 package geotrellis.slick
 
-import com.vividsolutions.jts.{geom => jts}
+import org.locationtech.jts.{geom => jts}
 import geotrellis.vector._
 import geotrellis.vector.io.wkt._
 

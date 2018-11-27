@@ -18,9 +18,6 @@ package geotrellis.raster.io.geotiff
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff.compression._
-import geotrellis.raster.io.geotiff.util._
-import geotrellis.raster.resample.ResampleMethod
-import geotrellis.raster.split._
 
 import com.typesafe.scalalogging.LazyLogging
 import spire.syntax.cfor._

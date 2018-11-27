@@ -16,7 +16,7 @@
 
 package geotrellis.vector.mesh
 
-import com.vividsolutions.jts.geom.Coordinate
+import org.locationtech.jts.geom.Coordinate
 
 /** Mutable, non-thread safe class to keep track of half edges
   * during Delaunay triangulation.

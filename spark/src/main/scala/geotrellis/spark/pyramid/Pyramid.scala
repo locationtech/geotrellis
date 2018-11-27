@@ -29,6 +29,7 @@ import geotrellis.raster.prototype._
 import geotrellis.util._
 import geotrellis.vector.Extent
 
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd._
 import org.apache.spark.storage.StorageLevel

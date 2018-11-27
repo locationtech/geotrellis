@@ -19,12 +19,9 @@ package geotrellis.geotools
 import geotrellis.vector._
 import geotrellis.proj4.CRS
 
-import com.vividsolutions.jts.{geom => jts}
+import org.locationtech.jts.{geom => jts}
 import org.geotools.feature.simple.{SimpleFeatureTypeBuilder, SimpleFeatureBuilder}
-import org.opengis.feature.simple.{SimpleFeatureType, SimpleFeature}
-
-import scala.collection.JavaConverters._
-
+import org.opengis.feature.simple.SimpleFeature
 
 object GeometryToSimpleFeature {
   val geometryField = "the_geom"

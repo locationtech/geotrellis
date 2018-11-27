@@ -23,14 +23,12 @@ import geotrellis.spark.LayerId
 import geotrellis.spark.util.KryoWrapper
 
 import org.apache.avro.Schema
-import org.apache.hadoop.hbase.client.{Put, Result, Scan}
-import org.apache.hadoop.hbase.filter.CompareFilter.CompareOp
-import org.apache.hadoop.hbase.filter.{BinaryComparator, FilterList, MultiRowRangeFilter, PrefixFilter, RowFilter}
-import org.apache.hadoop.hbase.{HColumnDescriptor, HTableDescriptor, TableName}
+import org.apache.hadoop.hbase.client._
+import org.apache.hadoop.hbase.filter._
+import org.apache.hadoop.hbase.{CompareOperator, TableName}
 import org.apache.spark.rdd.RDD
 
 import scala.collection.JavaConverters._
-
 
 object HBaseRDDWriter {
 
@@ -62,9 +60,8 @@ object HBaseRDDWriter {
     // create tile table if it does not exist
     instance.withAdminDo { admin =>
       if (!admin.tableExists(table)) {
-        val tableDesc = new HTableDescriptor(table: TableName)
-        val idsColumnFamilyDesc = new HColumnDescriptor(tilesCF)
-        tableDesc.addFamily(idsColumnFamilyDesc)
+        val idsColumnFamilyDesc = ColumnFamilyDescriptorBuilder.of(tilesCF)
+        val tableDesc = TableDescriptorBuilder.newBuilder(table: TableName).setColumnFamily(idsColumnFamilyDesc).build()
         admin.createTable(tableDesc)
       }
     }
@@ -90,7 +87,7 @@ object HBaseRDDWriter {
                 scan.addFamily(tilesCF)
                 val filter = new FilterList(
                   new PrefixFilter(HBaseRDDWriter.layerIdString(layerId)),
-                  new RowFilter(CompareOp.EQUAL, new BinaryComparator(HBaseKeyEncoder.encode(layerId, id))))
+                  new RowFilter(CompareOperator.EQUAL, new BinaryComparator(HBaseKeyEncoder.encode(layerId, id))))
                 scan.setFilter(filter)
                 val scanner = tableConnection.getScanner(scan)
                 val results: Vector[(K,V)] = scanner.iterator.asScala.toVector.flatMap{ result =>

@@ -16,11 +16,11 @@
 
 package geotrellis.raster.io.geotiff
 
-import com.typesafe.scalalogging.LazyLogging
 import geotrellis.util._
 import geotrellis.raster.io.geotiff.tags._
+
+import com.typesafe.scalalogging.LazyLogging
 import monocle.syntax.apply._
-import geotrellis.raster.io.geotiff.util._
 
 /**
   * LazySegmentBytes represents a lazy GeoTiff segments reader

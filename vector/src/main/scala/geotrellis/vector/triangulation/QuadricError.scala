@@ -16,7 +16,7 @@
 
 package geotrellis.vector.triangulation
 
-import com.vividsolutions.jts.geom.Coordinate
+import org.locationtech.jts.geom.Coordinate
 import geotrellis.vector.mesh.HalfEdge
 import org.apache.commons.math3.linear.MatrixUtils
 
@@ -28,14 +28,14 @@ object QuadricError {
       val pb = trans(b)
       val pc = trans(c)
 
-      val d1 = new Coordinate(pb.x - pa.x, pb.y - pa.y, pb.z - pa.z)
-      val d2 = new Coordinate(pc.x - pa.x, pc.y - pa.y, pc.z - pa.z)
+      val d1 = new Coordinate(pb.getX - pa.getX, pb.getY - pa.getY, pb.getZ - pa.getZ)
+      val d2 = new Coordinate(pc.getX - pa.getX, pc.getY - pa.getY, pc.getZ - pa.getZ)
       val normal = MatrixUtils.createRealVector(
-        Array(d1.y * d2.z - d1.z * d2.y,
-              d1.z * d2.x - d1.x * d2.z,
-              d1.x * d2.y - d1.y * d2.x)
+        Array(d1.getY * d2.getZ - d1.getZ * d2.getY,
+              d1.getZ * d2.getX - d1.getX * d2.getZ,
+              d1.getX * d2.getY - d1.getY * d2.getX)
       ).unitVector.toArray
-      val coeff = -(pa.x * normal(0) + pa.y * normal(1) + pa.z * normal(2))
+      val coeff = -(pa.getX * normal(0) + pa.getY * normal(1) + pa.getZ * normal(2))
 
       val plane = MatrixUtils.createRealVector(normal :+ coeff)
 
@@ -56,14 +56,14 @@ object QuadricError {
       val pa = trans(e.src)
       val pb = trans(e.vert)
 
-      val d1 = new Coordinate(pb.x - pa.x, pb.y - pa.y, pb.z - pa.z)
+      val d1 = new Coordinate(pb.getX - pa.getX, pb.getY - pa.getY, pb.getZ - pa.getZ)
       val d2 = new Coordinate(0, 0, 0.5)
       val normal = MatrixUtils.createRealVector(
-        Array(d1.y * d2.z - d1.z * d2.y,
-              d1.z * d2.x - d1.x * d2.z,
-              d1.x * d2.y - d1.y * d2.x)
+        Array(d1.getY * d2.getZ - d1.getZ * d2.getY,
+              d1.getZ * d2.getX - d1.getX * d2.getZ,
+              d1.getX * d2.getY - d1.getY * d2.getX)
       ).unitVector.toArray
-      val coeff = -(pa.x * normal(0) + pa.y * normal(1) + pa.z * normal(2))
+      val coeff = -(pa.getX * normal(0) + pa.getY * normal(1) + pa.getZ * normal(2))
 
       val plane = MatrixUtils.createRealVector(normal :+ coeff)
 

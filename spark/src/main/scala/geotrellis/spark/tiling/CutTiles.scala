@@ -23,13 +23,12 @@ import geotrellis.raster.resample._
 import geotrellis.spark._
 import geotrellis.util._
 
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag
 
-object CutTiles {
-  @transient private lazy val logger = LazyLogging(this)
-
+object CutTiles extends LazyLogging {
   def apply[
     K1: (? => TilerKeyMethods[K1, K2]),
     K2: SpatialComponent: ClassTag,

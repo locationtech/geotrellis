@@ -57,7 +57,7 @@ lazy val commonSettings = Seq(
     .filter(_.asFile.canRead)
     .map(Credentials(_)),
 
-  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.4" cross CrossVersion.binary),
+  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.8" cross CrossVersion.binary),
   addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.1" cross CrossVersion.full),
 
   pomExtra := (
@@ -75,7 +75,6 @@ lazy val commonSettings = Seq(
     </developers>),
 
   shellPrompt := { s => Project.extract(s).currentProject.id + " > " },
-  dependencyUpdatesFilter := moduleFilter(organization = "org.scala-lang"),
   resolvers ++= Seq(
     "geosolutions" at "http://maven.geo-solutions.it/",
     "osgeo" at "http://download.osgeo.org/webdav/geotools/"

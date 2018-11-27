@@ -27,8 +27,8 @@ import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.spark.tiling._
 import geotrellis.vector._
-import geotrellis.util.LazyLogging
 
+import com.typesafe.scalalogging.LazyLogging
 import _root_.io.circe.generic.extras.Configuration
 import _root_.io.circe._
 import _root_.io.circe.syntax._

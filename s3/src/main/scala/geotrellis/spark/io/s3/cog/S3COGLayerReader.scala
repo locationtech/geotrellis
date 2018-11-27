@@ -26,6 +26,7 @@ import geotrellis.spark.io.cog._
 import geotrellis.spark.io.index._
 import geotrellis.util._
 
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
 import java.net.URI

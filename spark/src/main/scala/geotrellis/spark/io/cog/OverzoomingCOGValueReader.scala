@@ -23,6 +23,7 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.tiling._
 import geotrellis.util._
+
 import spray.json._
 
 import scala.reflect._

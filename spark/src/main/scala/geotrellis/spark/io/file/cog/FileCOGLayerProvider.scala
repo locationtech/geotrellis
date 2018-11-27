@@ -20,7 +20,9 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.file._
+
 import org.apache.spark.SparkContext
+
 import java.net.URI
 import java.io.File
 

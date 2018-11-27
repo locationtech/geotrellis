@@ -19,7 +19,7 @@ package geotrellis.vector.affine
 import geotrellis.util.MethodExtensions
 import geotrellis.vector._
 
-import com.vividsolutions.jts.geom.util.AffineTransformation._
+import org.locationtech.jts.geom.util.AffineTransformation._
 
 /** Trait used to implicitly extend [[MultiLine]] instances with transformation methods */
 trait MultiLineTransformationMethods extends MethodExtensions[MultiLine] {

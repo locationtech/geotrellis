@@ -16,7 +16,7 @@
 
 package geotrellis.vector
 
-import com.vividsolutions.jts.{geom => jts}
+import org.locationtech.jts.{geom => jts}
 import scala.reflect._
 
 private[vector] trait GeometryResultMethods extends Serializable {

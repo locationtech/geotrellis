@@ -18,7 +18,7 @@ package geotrellis.vector
 
 import GeomFactory._
 
-import com.vividsolutions.jts.{geom => jts}
+import org.locationtech.jts.{geom => jts}
 
 import spire.syntax.cfor._
 
@@ -42,7 +42,7 @@ object MultiPoint {
   }
 
   def apply(ps: Traversable[(Double, Double)])(implicit d: DummyImplicit): MultiPoint =
-    MultiPoint(factory.createMultiPoint(ps.map { p => new jts.Coordinate(p._1, p._2) }.toArray))
+    MultiPoint(factory.createMultiPointFromCoords(ps.map { p => new jts.Coordinate(p._1, p._2) }.toArray))
 
   implicit def jts2MultiPoint(jtsGeom: jts.MultiPoint): MultiPoint = apply(jtsGeom)
 }
@@ -53,7 +53,7 @@ case class MultiPoint(jtsGeom: jts.MultiPoint) extends MultiGeometry
 
   /** Returns a unique representation of the geometry based on standard coordinate ordering. */
   def normalized(): MultiPoint = {
-    val geom = jtsGeom.clone.asInstanceOf[jts.MultiPoint]
+    val geom = jtsGeom.copy.asInstanceOf[jts.MultiPoint]
     geom.normalize
     MultiPoint(geom)
   }

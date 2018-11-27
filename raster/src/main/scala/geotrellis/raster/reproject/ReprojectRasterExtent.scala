@@ -20,7 +20,7 @@ import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.proj4._
 
-import com.vividsolutions.jts.densify.Densifier
+import org.locationtech.jts.densify.Densifier
 
 import spire.syntax.cfor._
 
@@ -48,7 +48,7 @@ object ReprojectRasterExtent {
     val threshold = math.min(xThreshold, yThreshold)
 
     // Densify the extent to get a more accurate reprojection
-    val denseGeom = Polygon(Densifier.densify(extent.toPolygon.jtsGeom, threshold).asInstanceOf[com.vividsolutions.jts.geom.Polygon])
+    val denseGeom = Polygon(Densifier.densify(extent.toPolygon.jtsGeom, threshold).asInstanceOf[org.locationtech.jts.geom.Polygon])
     denseGeom.reproject(transform).envelope
   }
 

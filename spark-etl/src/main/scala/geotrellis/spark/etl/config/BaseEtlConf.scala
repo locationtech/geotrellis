@@ -17,8 +17,8 @@
 package geotrellis.spark.etl.config
 
 import geotrellis.spark.etl.config.json._
-import geotrellis.util.LazyLogging
 
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.SparkContext
 import spray.json._
 
