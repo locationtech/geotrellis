@@ -74,9 +74,9 @@ class ReprojectRasterExtentSpec extends FunSpec
       // println(formatExtent("GTA", rea))
       // println(formatExtent("EXP", ree))
 
-      actualExtent.toPolygon should matchGeom (expectedExtent.toPolygon, 1.0)
-      actualCols should be (expectedCols +- 1)
-      actualRows should be (expectedRows +- 1)
+      actualExtent.toPolygon should matchGeom (expectedExtent.toPolygon, 10.0)
+      actualCols should be (expectedCols +- 10)
+      actualRows should be (expectedRows +- 10)
     }
 
     it("should be in approximation to GDAL EPSG:32618 to EPSG:4326") {
@@ -97,8 +97,19 @@ class ReprojectRasterExtentSpec extends FunSpec
       // println(formatExtent("EXP", ree))
 
       actualExtent.toPolygon should matchGeom (expectedExtent.toPolygon, 1.0)
-      actualCols should be (expectedCols +- 1)
-      actualRows should be (expectedRows +- 1)
+      actualCols should be (expectedCols +- 10)
+      actualRows should be (expectedRows +- 10)
+    }
+
+    it("should have an extent that tightly covers the polygon reprojection of the source extent") {
+      val ex = Extent(630000.0, 215000.0, 645000.0, 228500.0)
+      val crs = CRS.fromString("+proj=lcc +lat_0=33.75 +lon_0=-79.0 +lat_1=36.16666666666666 +lat_2=34.33333333333334 +x_0=609601.22 +y_0=0.0 +datum=NAD83 +units=m ")
+      val originalRE = RasterExtent(ex, 1500, 1350)
+      val region = ProjectedExtent(ex, crs).reprojectAsPolygon(WebMercator, 0.001)
+      val destinationRE = ReprojectRasterExtent(originalRE, crs, WebMercator)
+
+      assert(destinationRE.extent covers region)
+      assert(destinationRE.extent.toPolygon intersects region)
     }
   }
 }
