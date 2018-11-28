@@ -91,7 +91,7 @@ public final class AxisOrder implements Serializable {
 
     private final Axis x, y, z;
 
-    private AxisOrder(Axis x, Axis y, Axis z) {
+    private AxisOrder(AxisOrder.Axis x, AxisOrder.Axis y, AxisOrder.Axis z) {
         this.x = x;
         this.y = y;
         this.z = z;
