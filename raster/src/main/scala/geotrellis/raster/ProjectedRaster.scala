@@ -63,9 +63,10 @@ object ProjectedRaster {
   * The [[ProjectedRaster]] type.
   */
 case class ProjectedRaster[T <: CellGrid](raster: Raster[T], crs: CRS) {
-  def tile = raster.tile
-  def extent = raster.extent
-  def projectedExtent = ProjectedExtent(extent, crs)
-  def cols = raster.cols
-  def rows = raster.rows
+  def tile: T = raster.tile
+  def extent: Extent = raster.extent
+  def projectedExtent: ProjectedExtent = ProjectedExtent(extent, crs)
+  def cols: Int = raster.cols
+  def rows: Int = raster.rows
+  def mapTile[A <: CellGrid](f: T => A): ProjectedRaster[A] = this.copy(raster = raster.mapTile(f))
 }
