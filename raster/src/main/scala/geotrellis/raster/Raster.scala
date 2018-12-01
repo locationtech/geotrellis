@@ -16,9 +16,6 @@
 
 package geotrellis.raster
 
-import geotrellis.proj4.CRS
-import geotrellis.raster.reproject._
-import geotrellis.raster.resample._
 import geotrellis.vector._
 
 
@@ -33,6 +30,7 @@ object Raster {
     * Implicit conversion from a [[Tile]], Extent pair to a
     * [[Raster]].
     */
+  @deprecated("Implicit conversions considered unsafe", "2.1.1")
   implicit def tupToRaster(tup: (Tile, Extent)): Raster[Tile] =
     Raster(tup._1, tup._2)
 
@@ -40,18 +38,21 @@ object Raster {
     * Implicit conversion from an Extent, [[Tile]] pair to a
     * [[Raster]].
     */
+  @deprecated("Implicit conversions considered unsafe", "2.1.1")
   implicit def tupSwapToRaster(tup: (Extent, Tile)): Raster[Tile] =
     Raster(tup._2, tup._1)
 
   /**
     * Implicit conversion from a [[Raster]] to a PolygonFeature.
     */
+  @deprecated("Implicit conversions considered unsafe", "2.1.1")
   implicit def rasterToFeature[T <: CellGrid](r: Raster[T]): PolygonFeature[T] =
     r.asFeature
 
   /**
     * Implicit conversion from a PolygonFeature to a [[Raster]].
     */
+  @deprecated("Implicit conversions considered unsafe", "2.1.1")
   implicit def featureToRaster[T <: CellGrid](feature: PolygonFeature[T]): Raster[T] =
      apply(feature)
 }

@@ -42,7 +42,7 @@ class RasterizeReprojectSpec extends FunSpec
       val errTile = IntArrayTile.ofDim(reprojected.cols, reprojected.rows)
 
       reprojected.tile.foreach{ (px, py, v) =>
-        val (x, y) = reprojected.rasterExtent.gridToMap(px, py)
+        val (x, y) = reprojected.raster.rasterExtent.gridToMap(px, py)
         val (tx, ty) = trans(x, y)
         val dist = ex.distance(Point(tx, ty))
         if (dist > 1.2e-3) {
