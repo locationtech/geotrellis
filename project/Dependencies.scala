@@ -28,8 +28,8 @@ object Dependencies {
 
   val openCSV             = "com.opencsv"                 % "opencsv"                  % "4.2"
 
-  val spire               = "org.typelevel"             %% "spire"                    % Version.spire
-  val spireMacro          = "org.typelevel"             %% "spire-macros"             % Version.spire
+  val spire               = "org.spire-math"            %% "spire"                    % Version.spire
+  val spireMacro          = "org.spire-math"            %% "spire-macros"             % Version.spire
 
   val sprayJson           = "io.spray"                   %% "spray-json"               % Version.sprayJson
 
