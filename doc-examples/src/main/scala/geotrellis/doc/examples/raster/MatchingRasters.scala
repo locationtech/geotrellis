@@ -38,8 +38,6 @@ object MatchingRasters {
         .resample(raster1.raster.rasterExtent)
         .crop(areaOfInterest)
 
-    //.resample(ProjectedRaster.projectedToRaster(raster1).rasterExtent))(withTileMethods())
-
     val result = cropped1.tile * w1 + cropped2.tile * w2
   }
 
