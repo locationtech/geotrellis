@@ -558,6 +558,17 @@ class VectorizeSpec extends FunSpec
 
       toVector.length should be (4)
     }
+
+    it("should work for case when class is a single pixel in lower right") {
+      val bitTile = BitArrayTile.empty(3,2)
+      bitTile.set(2, 1, 1)
+      val features = bitTile.toVector(Extent(0,0,3,2))
+
+      def sameAs(p1: Polygon)(p2: Polygon) = p1.covers(p2) && p2.covers(p1)
+
+      assert(features.map(_.geom).exists(sameAs(Polygon((2,1),(3,1),(3,2),(0,2),(0,0),(2,0),(2,1)))))
+      assert(features.map(_.geom).exists(sameAs(Polygon((2,1),(3,1),(3,0),(2,0),(2,1)))))
+    }
   }
 
   describe("test case that has thrown topology exceptions in the past") {
