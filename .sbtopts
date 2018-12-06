@@ -1,5 +1,5 @@
--J-Xmx2g
--J-Xms2g
+-J-Xmx4G
+-J-Xms2G
 -J-Xss6M
 -Dfile.encoding=UTF8
 -Djava.awt.headless=true
