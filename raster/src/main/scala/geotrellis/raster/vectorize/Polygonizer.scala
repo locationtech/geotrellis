@@ -223,7 +223,7 @@ class Polygonizer(val r: Tile, rasterExtent: RasterExtent) {
       }
     }
 
-    if(direction == NOTFOUND && startCol < cols) {
+    if(direction == NOTFOUND && startCol + 1 < cols) {
       if(r.get(startCol + 1, startRow) == targetValue) {
         direction = RIGHT
       }
