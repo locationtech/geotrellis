@@ -1,6 +1,5 @@
 # See https://docs.travis-ci.com/user/reference/overview/#Virtualisation-Environment-vs-Operating-System
-sudo: false
-dist: trusty
+dist: xenial
 
 env:
   global:
