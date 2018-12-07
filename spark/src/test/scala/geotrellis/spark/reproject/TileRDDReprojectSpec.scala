@@ -101,10 +101,10 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
 
       // Account for tiles being a bit bigger then the actual result
       actual.extent.covers(expected.extent) should be (true)
-      actual.rasterExtent.extent.xmin should be (expected.rasterExtent.extent.xmin +- 0.00001)
-      actual.rasterExtent.extent.ymax should be (expected.rasterExtent.extent.ymax +- 0.00001)
-      actual.rasterExtent.cellwidth should be (expected.rasterExtent.cellwidth +- 0.00001)
-      actual.rasterExtent.cellheight should be (expected.rasterExtent.cellheight +- 0.00001)
+      actual.rasterExtent.extent.xmin should be (expected.raster.rasterExtent.extent.xmin +- 0.00001)
+      actual.rasterExtent.extent.ymax should be (expected.raster.rasterExtent.extent.ymax +- 0.00001)
+      actual.rasterExtent.cellwidth should be (expected.raster.rasterExtent.cellwidth +- 0.00001)
+      actual.rasterExtent.cellheight should be (expected.raster.rasterExtent.cellheight +- 0.00001)
 
       val expectedTile = expected.tile
       val actualTile = actual.tile
@@ -185,10 +185,10 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
 
       // Account for tiles being a bit bigger then the actual result
       actual.extent.covers(expected.extent) should be (true)
-      actual.rasterExtent.extent.xmin should be (expected.rasterExtent.extent.xmin +- 0.00001)
-      actual.rasterExtent.extent.ymax should be (expected.rasterExtent.extent.ymax +- 0.00001)
-      actual.rasterExtent.cellwidth should be (expected.rasterExtent.cellwidth +- 0.00001)
-      actual.rasterExtent.cellheight should be (expected.rasterExtent.cellheight +- 0.00001)
+      actual.rasterExtent.extent.xmin should be (expected.raster.rasterExtent.extent.xmin +- 0.00001)
+      actual.rasterExtent.extent.ymax should be (expected.raster.rasterExtent.extent.ymax +- 0.00001)
+      actual.rasterExtent.cellwidth should be (expected.raster.rasterExtent.cellwidth +- 0.00001)
+      actual.rasterExtent.cellheight should be (expected.raster.rasterExtent.cellheight +- 0.00001)
 
       val expectedTile = expected.tile
       val actualTile = actual.tile
@@ -266,10 +266,10 @@ class TileRDDReprojectSpec extends FunSpec with TestEnvironment {
 
       // Account for tiles being a bit bigger then the actual result
       actual.extent.covers(expected.extent) should be (true)
-      actual.rasterExtent.extent.xmin should be (expected.rasterExtent.extent.xmin +- 0.00001)
-      actual.rasterExtent.extent.ymax should be (expected.rasterExtent.extent.ymax +- 0.00001)
-      actual.rasterExtent.cellwidth should be (expected.rasterExtent.cellwidth +- 0.00001)
-      actual.rasterExtent.cellheight should be (expected.rasterExtent.cellheight +- 0.00001)
+      actual.rasterExtent.extent.xmin should be (expected.raster.rasterExtent.extent.xmin +- 0.00001)
+      actual.rasterExtent.extent.ymax should be (expected.raster.rasterExtent.extent.ymax +- 0.00001)
+      actual.rasterExtent.cellwidth should be (expected.raster.rasterExtent.cellwidth +- 0.00001)
+      actual.rasterExtent.cellheight should be (expected.raster.rasterExtent.cellheight +- 0.00001)
 
       val expectedTile = expected.tile
       val actualTile = actual.tile

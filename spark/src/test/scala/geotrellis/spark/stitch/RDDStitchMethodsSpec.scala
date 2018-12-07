@@ -110,24 +110,24 @@ class RDDStitchMethodsSpec extends FunSpec
       val extent = Extent(
         offset, offset, offset + tile.cols * scale, offset + tile.rows * scale
       )
-      val raster = ProjectedRaster(tile, extent, LatLng)
-      assert(raster.cellSize == CellSize(scale, scale))
+      val praster = ProjectedRaster(tile, extent, LatLng)
+      assert(praster.raster.cellSize == CellSize(scale, scale))
 
-      val layout = LayoutDefinition(raster.rasterExtent, size, size)
+      val layout = LayoutDefinition(praster.raster.rasterExtent, size, size)
       val kb = KeyBounds(
         SpatialKey(0, 0), SpatialKey(layout.layoutCols, layout.layoutRows)
       )
       val tlm = TileLayerMetadata(
-        raster.tile.cellType, layout, raster.extent, raster.crs, kb)
+        praster.tile.cellType, layout, praster.extent, praster.crs, kb)
 
-      val rdd = sc.makeRDD(Seq((raster.projectedExtent, raster.tile)))
+      val rdd = sc.makeRDD(Seq((praster.projectedExtent, praster.tile)))
 
       val tiled = TileLayerRDD(rdd.tileToLayout(tlm), tlm)
       val restitched: Tile = withSpatialTileRDDMethods(tiled).stitch().crop(tile.cols, tile.rows)
 
       assert(restitched.toArray() === tile.toArray(),
         s"""Expected:
-           |${raster.tile.asciiDraw()}
+           |${praster.tile.asciiDraw()}
            |
            |Stitched:
            |${restitched.asciiDraw()}

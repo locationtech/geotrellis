@@ -16,12 +16,9 @@
 
 package geotrellis.doc.examples.raster
 
-import geotrellis.proj4.CRS
 import geotrellis.raster._
-import geotrellis.vector.Extent
-import geotrellis.raster.io.geotiff._
 import geotrellis.raster.reproject.Reproject
-import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
+import geotrellis.vector.Extent
 
 object MatchingRasters {
   def `Matching two rasters of a different CRS so that you can perform operations between them. [1]` = {
@@ -38,7 +35,7 @@ object MatchingRasters {
     val cropped2 =
       raster2
         .reproject(raster1.crs).raster
-        .resample(raster1.rasterExtent)
+        .resample(raster1.raster.rasterExtent)
         .crop(areaOfInterest)
 
     val result = cropped1.tile * w1 + cropped2.tile * w2
@@ -53,7 +50,7 @@ object MatchingRasters {
     val (w1, w2): (Int, Int) = ???
 
     val options = Reproject.Options(
-      targetRasterExtent = Some(raster1.rasterExtent)
+      targetRasterExtent = Some(raster1.raster.rasterExtent)
     )
 
     val cropped1 =

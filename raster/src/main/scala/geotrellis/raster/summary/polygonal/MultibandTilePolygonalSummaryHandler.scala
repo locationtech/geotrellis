@@ -38,7 +38,7 @@ trait MultibandTilePolygonalSummaryHandler[T] extends PolygonalSummaryHandler[Po
     * intersection.  This falls through to the 'handlePartialMultibandTile'
     * handler.
     */
-  def handleIntersection(polygon: Polygon, feature: PolygonFeature[MultibandTile]) = handlePartialMultibandTile(feature, polygon)
+  def handleIntersection(polygon: Polygon, feature: PolygonFeature[MultibandTile]) = handlePartialMultibandTile(Raster(feature), polygon)
 
   /**
     * Given a [[Raster]] and an intersection polygon, "handle" the

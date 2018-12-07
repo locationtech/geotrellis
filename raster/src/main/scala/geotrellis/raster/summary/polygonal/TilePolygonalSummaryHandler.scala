@@ -38,7 +38,7 @@ trait TilePolygonalSummaryHandler[T] extends PolygonalSummaryHandler[Polygon, Ti
     * intersection.  This falls through to the 'handlePartialTile'
     * handler.
     */
-  def handleIntersection(polygon: Polygon, feature: PolygonFeature[Tile]) = handlePartialTile(feature, polygon)
+  def handleIntersection(polygon: Polygon, feature: PolygonFeature[Tile]) = handlePartialTile(Raster(feature), polygon)
 
   /**
     * Given a [[Raster]] and an intersection polygon, "handle" the
