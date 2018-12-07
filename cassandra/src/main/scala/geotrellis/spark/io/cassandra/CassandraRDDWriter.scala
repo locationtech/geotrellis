@@ -38,7 +38,7 @@ import java.util.concurrent.Executors
 import java.math.BigInteger
 
 import scala.concurrent.ExecutionContext
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 object CassandraRDDWriter {
   final val defaultThreadCount = CassandraConfig.threads.rdd.writeThreads
@@ -123,7 +123,7 @@ object CassandraRDDWriter {
                   val (key, current) = row
                   val updated = LayerWriter.updateRecords(mergeFunc, current, existing = {
                     val oldRow = session.execute(readStatement.bind(key: BigInteger))
-                    if (oldRow.nonEmpty) {
+                    if (oldRow.asScala.nonEmpty) {
                       val bytes = oldRow.one().getBytes("value").array()
                       val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
                       AvroEncoder.fromBinary(schema, bytes)(_recordCodec)

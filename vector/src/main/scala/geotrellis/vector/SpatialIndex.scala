@@ -16,7 +16,7 @@
 
 package geotrellis.vector
 
-import org.locationtech.jts.index.strtree.{STRtree, ItemDistance, ItemBoundable, AbstractNode}
+import org.locationtech.jts.index.strtree.{STRtree, ItemBoundable, AbstractNode}
 import org.locationtech.jts.index.strtree.ItemDistance
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
@@ -24,14 +24,12 @@ import org.locationtech.jts.geom.Envelope
 import org.locationtech.jts.operation.distance.DistanceOp
 
 import scala.collection.mutable
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 object SpatialIndex {
   def apply(points: Traversable[(Double, Double)]): SpatialIndex[(Double, Double)] = {
     val si = new SpatialIndex[(Double, Double)](Measure.Euclidean)
-    for(point <- points) {
-      si.insert(point, point._1, point._2)
-    }
+    for(point <- points) { si.insert(point, point._1, point._2) }
     si
   }
 
@@ -133,16 +131,16 @@ class SpatialIndex[T](val measure: Measure = Measure.Euclidean) extends Serializ
       if (kNNqueue.size < k || item.d < kNNqueue.head.d) {
         if (item.x.getLevel == 0) {
           // leaf node
-          item.x.getChildBoundables.map {
+          item.x.getChildBoundables.asScala.map {
             leafNode => rtreeLeafAsPQitem(leafNode.asInstanceOf[ItemBoundable])
           }.foreach(addToClosest)
         } else {
-          item.x.getChildBoundables.map {
+          item.x.getChildBoundables.asScala.map {
             subtree => rtreeNodeAsPQitem(subtree.asInstanceOf[AbstractNode])
           }.foreach(pq.enqueue(_))
         }
       }
-    } while (! pq.isEmpty )
+    } while (pq.nonEmpty)
 
     kNNqueue.toSeq.map{ _.x }
   }

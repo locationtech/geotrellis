@@ -70,8 +70,9 @@ abstract class CollectionLayerReader[ID] { self =>
 object CollectionLayerReader {
 
   def apply(attributeStore: AttributeStore, collectionReaderUri: URI): CollectionLayerReader[LayerId] = {
-    import scala.collection.JavaConversions._
-    ServiceLoader.load(classOf[CollectionLayerReaderProvider]).iterator()
+    import scala.collection.JavaConverters._
+    ServiceLoader.load(classOf[CollectionLayerReaderProvider])
+      .iterator().asScala
       .find(_.canProcess(collectionReaderUri))
       .getOrElse(throw new RuntimeException(s"Unable to find CollectionLayerReaderProvider for $collectionReaderUri"))
       .collectionLayerReader(collectionReaderUri, attributeStore)

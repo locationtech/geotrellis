@@ -26,7 +26,7 @@ import org.apache.hadoop.hbase.util.Bytes
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 object HBaseAttributeStore {
   def apply(instance: HBaseInstance): HBaseAttributeStore =
@@ -66,7 +66,7 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
         }
         scan.addFamily(attributeName)
         val scanner = table.getScanner(scan)
-        try scanner.iterator().toVector finally scanner.close()
+        try scanner.iterator().asScala.toVector finally scanner.close()
       } else Vector()
     }
 
@@ -129,17 +129,16 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
   def layerIds: Seq[LayerId] = instance.withTableConnectionDo(attributeTableName) { table =>
     val scanner = table.getScanner(new Scan())
     try {
-      scanner.iterator()
-        .map { kv: Result =>
-          val List(name, zoomStr) = Bytes.toString(kv.getRow).split(SEP).toList
-          LayerId(name, zoomStr.toInt)
-        }
+      scanner.iterator().asScala.map { kv: Result =>
+        val List(name, zoomStr) = Bytes.toString(kv.getRow).split(SEP).toList
+        LayerId(name, zoomStr.toInt)
+      }
         .toList
         .distinct
     } finally scanner.close()
   }
 
   def availableAttributes(layerId: LayerId): Seq[String] = instance.withTableConnectionDo(attributeTableName) {
-    _.getDescriptor.getColumnFamilyNames.map(Bytes.toString).toSeq
+    _.getDescriptor.getColumnFamilyNames.asScala.map(Bytes.toString).toSeq
   }
 }

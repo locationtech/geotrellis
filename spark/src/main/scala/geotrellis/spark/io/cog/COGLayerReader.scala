@@ -429,8 +429,9 @@ object COGLayerReader {
     * Find instances of [[COGLayerReaderProvider]] through Java SPI.
     */
   def apply(attributeStore: AttributeStore, layerReaderUri: URI)(implicit sc: SparkContext): COGLayerReader[LayerId] = {
-    import scala.collection.JavaConversions._
-    ServiceLoader.load(classOf[COGLayerReaderProvider]).iterator()
+    import scala.collection.JavaConverters._
+    ServiceLoader.load(classOf[COGLayerReaderProvider])
+      .iterator().asScala
       .find(_.canProcess(layerReaderUri))
       .getOrElse(throw new RuntimeException(s"Unable to find LayerReaderProvider for $layerReaderUri"))
       .layerReader(layerReaderUri, attributeStore, sc)

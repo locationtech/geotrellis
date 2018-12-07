@@ -20,9 +20,6 @@ import geotrellis.util.MethodExtensions
 
 import org.locationtech.jts.{geom => jts}
 
-import scala.collection.mutable
-import scala.collection.JavaConversions._
-
 package object vector extends SeqMethods
     with reproject.Implicits
     with triangulation.Implicits

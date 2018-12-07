@@ -44,8 +44,9 @@ trait ValueReader[ID] {
 object ValueReader {
 
   def apply(attributeStore: AttributeStore, valueReaderUri: URI): ValueReader[LayerId] = {
-    import scala.collection.JavaConversions._
-    ServiceLoader.load(classOf[ValueReaderProvider]).iterator()
+    import scala.collection.JavaConverters._
+    ServiceLoader.load(classOf[ValueReaderProvider])
+      .iterator().asScala
       .find(_.canProcess(valueReaderUri))
       .getOrElse(throw new RuntimeException(s"Unable to find ValueReaderProvider for $valueReaderUri"))
       .valueReader(valueReaderUri, attributeStore)

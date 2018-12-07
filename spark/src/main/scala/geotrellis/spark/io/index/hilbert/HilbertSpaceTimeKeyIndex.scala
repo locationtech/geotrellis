@@ -30,10 +30,9 @@ import com.google.uzaygezen.core.PlainFilterCombiner
 import com.google.uzaygezen.core.ZoomingSpaceVisitorAdapter
 import com.google.uzaygezen.core.ranges.LongRange
 import com.google.uzaygezen.core.ranges.LongRangeHome
-
 import com.google.common.base.Functions
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import spire.syntax.cfor._
 
 object HilbertSpaceTimeKeyIndex {
@@ -59,15 +58,7 @@ class HilbertSpaceTimeKeyIndex(
   val minKey = keyBounds.minKey.spatialKey
 
   @transient lazy val chc = {
-    val dimensionSpec =
-      new MultiDimensionalSpec(
-        List(
-          xResolution,
-          yResolution,
-          temporalResolution
-        ).map(new java.lang.Integer(_))
-      )
-
+    val dimensionSpec = new MultiDimensionalSpec(List(xResolution, yResolution, temporalResolution).map(new java.lang.Integer(_)).asJava)
     new CompactHilbertCurve(dimensionSpec)
   }
 
@@ -105,11 +96,11 @@ class HilbertSpaceTimeKeyIndex(
         LongRange.of(keyRange._1.spatialKey.col - minKey.col, keyRange._2.spatialKey.col - minKey.col + 1),
         LongRange.of(keyRange._1.spatialKey.row - minKey.row, keyRange._2.spatialKey.row - minKey.row + 1),
         LongRange.of(binTime(keyRange._1), binTime(keyRange._2) + 1)
-      )
+      ).asJava
 
     val  regionInspector: RegionInspector[LongRange, LongContent] =
       SimpleRegionInspector.create(
-        List(ranges),
+        List(ranges).asJava,
         new LongContent(1),
         Functions.identity[LongRange](),
         LongRangeHome.INSTANCE,

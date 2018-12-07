@@ -95,9 +95,10 @@ object AttributeStore {
    * This method uses instances of [[AttributeServiceProvider]] loaded through Java SPI.
    */
   def apply(uri: URI): AttributeStore = {
-    import scala.collection.JavaConversions._
+    import scala.collection.JavaConverters._
 
-    ServiceLoader.load(classOf[AttributeStoreProvider]).iterator()
+    ServiceLoader.load(classOf[AttributeStoreProvider])
+      .iterator().asScala
       .find(_.canProcess(uri))
       .getOrElse(throw new RuntimeException(s"Unable to find AttributeStoreProvider for $uri"))
       .attributeStore(uri)

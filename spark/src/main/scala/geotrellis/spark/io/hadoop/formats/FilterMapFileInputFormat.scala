@@ -25,7 +25,7 @@ import org.apache.hadoop.io._
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.lib.input._
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.reflect._
 
 object FilterMapFileInputFormat {
@@ -117,7 +117,7 @@ class FilterMapFileInputFormat() extends FileInputFormat[BigIntWritable, BytesWr
 
     val possibleMatches =
       FilterMapFileInputFormat
-        .mapFileRanges(dataFileStatus.map(_.getPath.getParent), conf)
+        .mapFileRanges(dataFileStatus.asScala.map(_.getPath.getParent), conf)
         .filter { case (file, iMin, iMax) =>
           // both file ranges and query ranges are sorted, use in-sync traversal
           while (it.hasNext && it.head._2 < iMin) it.next
@@ -127,7 +127,7 @@ class FilterMapFileInputFormat() extends FileInputFormat[BigIntWritable, BytesWr
         .map(_._1)
         .toSet
 
-    dataFileStatus.filter(s => possibleMatches contains s.getPath.getParent)
+    dataFileStatus.asScala.filter(s => possibleMatches contains s.getPath.getParent).asJava
   }
 
   override

@@ -56,7 +56,7 @@ import java.io.{ DataInputStream, DataOutputStream, File }
 import java.util.UUID
 import javax.imageio.ImageIO
 import javax.media.jai.{ ImageLayout, JAI }
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 import scala.reflect._
 import mil.nga.giat.geowave.core.store.util.DataStoreUtils
@@ -117,7 +117,7 @@ import mil.nga.giat.geowave.core.store.data.VisibilityWriter
         val gwMetadata = new java.util.HashMap[String, String](); gwMetadata.put("cellType", cellType)
 
         /* Produce mosaic from all of the tiles in this partition */
-        val sources = new java.util.ArrayList(pairs.map(geotrellisKvToGeotools))
+        val sources = new java.util.ArrayList(pairs.map(geotrellisKvToGeotools).asJavaCollection)
         val accumuloKvs = ListBuffer[Iterable[(Key, Value)]]()
 
         /* Objects for writing into GeoWave */
@@ -156,8 +156,8 @@ import mil.nga.giat.geowave.core.store.data.VisibilityWriter
               statsAggregator,
               DataStoreUtils.UNCONSTRAINED_VISIBILITY.asInstanceOf[VisibilityWriter[GridCoverage]])
 
-            adapter.convertToIndex(index, image).foreach({ i =>
-              val keyValues = kvGen.constructKeyValuePairs(adapter.getAdapterId.getBytes, i).toList
+            adapter.convertToIndex(index, image).asScala.foreach({ i =>
+              val keyValues = kvGen.constructKeyValuePairs(adapter.getAdapterId.getBytes, i).asScala.toList
               val keyValuePairs = keyValues.map({ kv => (kv.getKey, kv.getValue) })
               accumuloKvs += keyValuePairs
             })
@@ -232,12 +232,12 @@ import mil.nga.giat.geowave.core.store.data.VisibilityWriter
     ops.compact(tableName, null, null, true, true)
 
     // detach iterator
-    val iterators = ops.listIterators(tableName)
-    iterators.foreach({ kv =>
+    val iterators = ops.listIterators(tableName).asScala
+    iterators.foreach { kv =>
       if (kv._1.startsWith(RasterTileRowTransform.TRANSFORM_NAME)) {
         ops.removeIterator(tableName, kv._1, kv._2)
       }
-    })
+    }
   }
 }
 
