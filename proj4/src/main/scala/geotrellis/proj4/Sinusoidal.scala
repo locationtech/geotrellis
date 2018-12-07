@@ -17,7 +17,7 @@
 package geotrellis.proj4
 
 import geotrellis.proj4.CRS.ObjectNameToString
-import org.osgeo.proj4j.CoordinateReferenceSystem
+import org.locationtech.proj4j.CoordinateReferenceSystem
 
 /**
  * Sinusoidal projection, commonly used with MODIS-based data products.

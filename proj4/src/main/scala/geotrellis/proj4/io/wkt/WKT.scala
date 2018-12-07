@@ -19,7 +19,7 @@ package geotrellis.proj4.io.wkt
 import scala.io.Source
 
 object WKT {
-  private val wktResourcePath = "/geotrellis/proj4/wkt/epsg.properties"
+  private val wktResourcePath = "/proj4/wkt/epsg.properties"
   lazy val parsed: Map[Int, WktCS] = records.mapValues(WKTParser.apply)
   lazy val projections: Set[WktCS] = parsed.values.toSet
   lazy val records: Map[Int, String] = parseWktEpsgResource
@@ -72,7 +72,8 @@ object WKT {
   def withWktFile[T](f: Iterator[String] => T) = {
     val stream = getClass.getResourceAsStream(wktResourcePath)
     try {
-      f(Source.fromInputStream(stream).getLines())
+      val lines = Source.fromInputStream(stream).getLines()
+      f(lines)
     } finally {
       stream.close()
     }

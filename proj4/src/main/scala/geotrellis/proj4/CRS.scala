@@ -18,7 +18,7 @@ package geotrellis.proj4
 
 import geotrellis.proj4.io.wkt.WKT
 
-import org.osgeo.proj4j._
+import org.locationtech.proj4j._
 import com.github.blemale.scaffeine.Scaffeine
 
 import scala.io.Source
@@ -32,7 +32,7 @@ object CRS {
 
   //  new Memoize[String, Option[String]](readEpsgCodeFromFile)
   private val crsFactory = new CRSFactory
-  private val filePrefix = "/geotrellis/proj4/nad/"
+  private val filePrefix = "/proj4/nad/"
 
   /**
     * Creates a CoordinateReferenceSystem
@@ -128,7 +128,8 @@ object CRS {
     fromName(s"EPSG:$epsgCode")
 
   private def readEpsgCodeFromFile(proj4String: String): Option[String] = {
-    val stream = getClass.getResourceAsStream(s"${filePrefix}epsg")
+    val stream = crsFactory.getClass.getResourceAsStream(s"${filePrefix}epsg")
+    println(s"Reading: ${filePrefix}epsg")
     try {
       Source.fromInputStream(stream)
         .getLines

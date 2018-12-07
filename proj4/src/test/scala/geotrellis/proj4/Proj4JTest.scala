@@ -16,13 +16,13 @@
 
 package geotrellis.proj4
 
-import org.osgeo.proj4j._
+import org.locationtech.proj4j._
 
 import org.scalatest._
 
 /**
  * Tests from Proj4JS
- * 
+ *
  * @author Martin Davis (port by Rob Emanuele)
  *
  */
@@ -40,19 +40,19 @@ class Proj4JSTest extends FunSuite with BaseCoordinateTransformTest
     checkTransformFromGeo("EPSG:3411", -32.0, 48.0, 1070076.44, -4635010.27, 2)
     checkTransformFromGeo("EPSG:3573", 9.84375, 61.875, 2923052.02009, 1054885.46559, 0.1)
   }
-  
+
   ignore("xtestNotImplemented") {
     // gamma not implemented
     checkTransformFromGeo("EPSG:2057", -53.0, 5.0, -1.160832226E7, 1.828261223E7, 0.1)
     // somerc not implemented
     // PM not supported
-    checkTransformFromGeo("EPSG:27563", 3.005, 43.89, 653704.865208, 176887.660037, 0.1)    
+    checkTransformFromGeo("EPSG:27563", 3.005, 43.89, 653704.865208, 176887.660037, 0.1)
   }
-  
+
   test("LargeDiscrepancy") {
     // Proj4J matches PROJ.4
     checkTransformFromGeo("EPSG:2736", 34.0, -21.0, 603933.4, 7677505.64, 200)
-    
+
     // Proj4J matches PROJ.4
     checkTransformFromGeo("EPSG:26916", -86.6056, 34.579, 5110899.06, 10552971.81, 7000000)
 
@@ -65,7 +65,7 @@ class Proj4JSTest extends FunSuite with BaseCoordinateTransformTest
     // Proj4J matches PROJ.4
     checkTransformFromGeo("EPSG:21781", 8.23, 46.82, 660389.52, 185731.63, 200)
   }
-  
+
   ignore("xtestUnknownCRS") {
     checkTransformFromGeo("EPSG:102026", 40.0, 40.0, 3000242.4, 5092492.64, 0.1)
     checkTransformFromGeo("EPSG:42304", -99.84375, 48.515625, -358185.267976, -40271.099023, 0.1)

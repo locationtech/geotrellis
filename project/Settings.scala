@@ -216,7 +216,7 @@ object Settings {
       scalatest % Test
     ),
     resolvers ++= Seq(
-      // Resolver.mavenLocal,
+      Resolver.mavenLocal,
       Repositories.boundlessgeoRelease,
       Repositories.geosolutions,
       Repositories.geowaveRelease,
@@ -306,7 +306,9 @@ object Settings {
 
   lazy val proj4 = Seq(
     name := "geotrellis-proj4",
+    resolvers += Resolver.mavenLocal,
     libraryDependencies ++= Seq(
+      proj4j,
       openCSV,
       parserCombinators,
       scalatest % Test,
