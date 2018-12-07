@@ -16,12 +16,9 @@
 
 package geotrellis.vector
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
-import org.locationtech.jts.{geom => jts}
 import org.locationtech.jts.operation.union.CascadedPolygonUnion
-
-import geotrellis.vector._
 
 trait SeqMethods {
 
@@ -54,10 +51,8 @@ trait SeqMethods {
     val mp: MultiPolygon = MultiPolygon(polygons)
 
     def unionGeometries(): TwoDimensionsTwoDimensionsSeqUnionResult =
-      if(polygons.isEmpty)
-        NoResult
-      else
-        new CascadedPolygonUnion(polygons.map(geom => geom.jtsGeom).toSeq).union()
+      if(polygons.isEmpty) NoResult
+      else new CascadedPolygonUnion(polygons.map(geom => geom.jtsGeom).toSeq.asJava).union()
 
     def intersectionGeometries() = mp.intersection
     def differenceGeometries() = mp.difference
@@ -91,10 +86,8 @@ trait SeqMethods {
     val mp: MultiPolygon = MultiPolygon(multipolygons.map(_.polygons).flatten)
 
     def unionGeometries(): TwoDimensionsTwoDimensionsSeqUnionResult =
-      if(multipolygons.isEmpty)
-        NoResult
-      else
-        new CascadedPolygonUnion(mp.polygons.map(geom => geom.jtsGeom).toSeq).union
+      if(multipolygons.isEmpty) NoResult
+      else new CascadedPolygonUnion(mp.polygons.map(geom => geom.jtsGeom).toSeq.asJava).union
 
     def intersectionGeometries() = mp.intersection
     def differenceGeometries() = mp.difference

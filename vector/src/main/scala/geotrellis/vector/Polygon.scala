@@ -22,7 +22,7 @@ import org.locationtech.jts.{geom => jts}
 import geotrellis.vector.GeomFactory._
 
 import scala.collection.GenTraversable
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 object Polygon {
   implicit def jtsToPolygon(jtsGeom: jts.Polygon): Polygon =
@@ -277,9 +277,9 @@ case class Polygon(jtsGeom: jts.Polygon) extends Geometry
    */
   def union(g: TwoDimensions): TwoDimensionsTwoDimensionsUnionResult = g match {
     case p:Polygon =>
-      new CascadedPolygonUnion(Seq(this, p).map(_.jtsGeom)).union
+      new CascadedPolygonUnion(Seq(this, p).map(_.jtsGeom).asJava).union
     case mp:MultiPolygon =>
-      new CascadedPolygonUnion((this +: mp.polygons).map(_.jtsGeom).toSeq).union
+      new CascadedPolygonUnion((this +: mp.polygons).map(_.jtsGeom).toSeq.asJava).union
     case _ =>
       jtsGeom.union(g.jtsGeom)
   }

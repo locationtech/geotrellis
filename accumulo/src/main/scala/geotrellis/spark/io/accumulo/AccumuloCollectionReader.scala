@@ -30,7 +30,7 @@ import cats.effect._
 import cats.syntax.apply._
 
 import scala.concurrent.ExecutionContext
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
 import java.util.concurrent.Executors
@@ -66,7 +66,7 @@ object AccumuloCollectionReader {
       scanner.fetchColumnFamily(columnFamily)
       val result =
         scanner
-          .iterator
+          .iterator.asScala
           .map({ entry => AvroEncoder.fromBinary(writerSchema.getOrElse(codec.schema), entry.getValue.get)(codec) })
           .flatMap({ pairs: Vector[(K, V)] =>
             if (filterIndexOnly) pairs

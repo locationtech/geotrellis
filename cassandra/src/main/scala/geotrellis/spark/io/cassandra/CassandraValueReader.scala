@@ -27,7 +27,7 @@ import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
 import spray.json._
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
 import java.math.BigInteger
@@ -55,7 +55,7 @@ class CassandraValueReader(
 
     def read(key: K): V = instance.withSession { session =>
       val row = session.execute(statement.bind(keyIndex.toIndex(key): BigInteger)).all()
-      val tiles = row.map { entry =>
+      val tiles = row.asScala.map { entry =>
           AvroEncoder.fromBinary(writerSchema, entry.getBytes("value").array())(codec)
         }
         .flatMap { pairs: Vector[(K, V)] =>

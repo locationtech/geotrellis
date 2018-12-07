@@ -29,7 +29,7 @@ import com.datastax.driver.core.DataType._
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 object CassandraAttributeStore {
   def apply(instance: CassandraInstance, attributeKeyspace: String, attributeTable: String): CassandraAttributeStore =
@@ -124,9 +124,8 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeKeys
     val preparedStatement = session.prepare(query)
     session.execute(preparedStatement.bind(attributeName))
       .all
-      .map {
-        _.getString("value").parseJson.convertTo[(LayerId, T)]
-      }
+      .asScala
+      .map { _.getString("value").parseJson.convertTo[(LayerId, T)] }
       .toMap
   }
 
@@ -147,7 +146,7 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeKeys
         .where(eqs("layerId", layerIdString(layerId)))
         .and(eqs("name", AttributeStore.Fields.metadata))
 
-    session.execute(query).exists { key =>
+    session.execute(query).asScala.exists { key =>
       val List(name, zoomStr) = key.getString("layerId").split(SEP).toList
       layerId == LayerId(name, zoomStr.toInt)
     }
@@ -162,7 +161,7 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeKeys
       QueryBuilder.select.column("layerId")
         .from(attributeKeyspace, attributeTable)
 
-    session.execute(query).map { key =>
+    session.execute(query).asScala.map { key =>
       val List(name, zoomStr) = key.getString("layerId").split(SEP).toList
       LayerId(name, zoomStr.toInt)
     }
@@ -176,6 +175,6 @@ class CassandraAttributeStore(val instance: CassandraInstance, val attributeKeys
         .from(attributeKeyspace, attributeTable)
         .where(eqs("layerId", layerIdString(layerId)))
 
-    session.execute(query).map(_.getString("name")).toVector
+    session.execute(query).asScala.map(_.getString("name")).toVector
   }
 }

@@ -28,7 +28,7 @@ import org.apache.avro.Schema
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
 import java.math.BigInteger
@@ -70,7 +70,7 @@ object CassandraCollectionReader {
 
       LayerReader.njoin[K, V](ranges.toIterator, threads){ index: BigInt =>
         val row = session.execute(statement.bind(index: BigInteger))
-        if (row.nonEmpty) {
+        if (row.asScala.nonEmpty) {
           val bytes = row.one().getBytes("value").array()
           val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
           if (filterIndexOnly) recs

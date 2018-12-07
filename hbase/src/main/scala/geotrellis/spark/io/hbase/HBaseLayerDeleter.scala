@@ -23,7 +23,7 @@ import com.typesafe.scalalogging.LazyLogging
 import org.apache.hadoop.hbase.client._
 import org.apache.hadoop.hbase.filter.PrefixFilter
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 class HBaseLayerDeleter(val attributeStore: AttributeStore, instance: HBaseInstance) extends LazyLogging with LayerDeleter[LayerId] {
 
@@ -40,7 +40,7 @@ class HBaseLayerDeleter(val attributeStore: AttributeStore, instance: HBaseInsta
       instance.withTableConnectionDo(header.tileTable) { table =>
         val scanner = table.getScanner(scan)
         try {
-          scanner.iterator().foreach { kv =>
+          scanner.iterator().asScala.foreach { kv =>
             val delete = new Delete(kv.getRow)
             delete.addFamily(HBaseRDDWriter.tilesCF)
             list.add(delete)

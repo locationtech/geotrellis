@@ -29,7 +29,7 @@ import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
 
 import scala.annotation.tailrec
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
 class S3LayerCopier(
@@ -42,7 +42,7 @@ class S3LayerCopier(
 
   @tailrec
   final def copyListing(s3Client: S3Client, bucket: String, listing: ObjectListing, from: LayerId, to: LayerId): Unit = {
-    listing.getObjectSummaries.foreach { os =>
+    listing.getObjectSummaries.asScala.foreach { os =>
       val key = os.getKey
       s3Client.copyObject(bucket, key, destBucket, key.replace(s"${from.name}/${from.zoom}", s"${to.name}/${to.zoom}"))
     }

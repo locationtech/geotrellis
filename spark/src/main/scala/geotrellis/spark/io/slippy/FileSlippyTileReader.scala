@@ -16,26 +16,16 @@
 
 package geotrellis.spark.io.slippy
 
-import geotrellis.vector._
-import geotrellis.raster._
-import geotrellis.raster.io.geotiff._
 import geotrellis.spark._
-import geotrellis.spark.io.hadoop._
-import geotrellis.spark.io.hadoop.formats._
 import geotrellis.util.Filesystem
 
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.filefilter._
 import org.apache.spark._
 import org.apache.spark.rdd._
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.mapreduce.Job
-import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext}
-import org.apache.hadoop.fs.Path
 
 import java.io._
-import scala.collection.JavaConversions._
-
+import scala.collection.JavaConverters._
 
 class FileSlippyTileReader[T](uri: String, extensions: Seq[String] = Seq())(fromBytes: (SpatialKey, Array[Byte]) => T) extends SlippyTileReader[T] {
   import SlippyTileReader.TilePath
@@ -44,8 +34,8 @@ class FileSlippyTileReader[T](uri: String, extensions: Seq[String] = Seq())(from
     listFiles(new File(path))
 
   private def listFiles(file: File): Seq[File] =
-    if(extensions.isEmpty) { FileUtils.listFiles(file, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).toSeq }
-    else { FileUtils.listFiles(file, new SuffixFileFilter(extensions), TrueFileFilter.INSTANCE).toSeq }
+    if(extensions.isEmpty) { FileUtils.listFiles(file, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).asScala.toSeq }
+    else { FileUtils.listFiles(file, new SuffixFileFilter(extensions.asJava), TrueFileFilter.INSTANCE).asScala.toSeq }
 
   def read(zoom: Int, key: SpatialKey): T = {
     val dir = new File(uri, s"$zoom/${key.col}/")

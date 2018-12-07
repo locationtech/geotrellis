@@ -179,8 +179,9 @@ object LayerWriter extends LazyLogging {
    * Find instances of [[LayerWriterProvider]] through Java SPI.
    */
   def apply(attributeStore: AttributeStore, layerWriterUri: URI): LayerWriter[LayerId] = {
-    import scala.collection.JavaConversions._
-    ServiceLoader.load(classOf[LayerWriterProvider]).iterator()
+    import scala.collection.JavaConverters._
+    ServiceLoader.load(classOf[LayerWriterProvider])
+      .iterator().asScala
       .find(_.canProcess(layerWriterUri))
       .getOrElse(throw new RuntimeException(s"Unable to find LayerWriterProvider for $layerWriterUri"))
       .layerWriter(layerWriterUri, attributeStore)

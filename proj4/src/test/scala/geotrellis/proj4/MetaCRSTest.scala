@@ -20,14 +20,9 @@ import org.osgeo.proj4j._
 import org.osgeo.proj4j.util._
 
 import java.io.File
-import java.io.IOException
-import java.net.URISyntaxException
-import java.util.List
 
 import org.scalatest._
 import org.scalatest.matchers.{ BeMatcher, MatchResult }
-
-import scala.collection.JavaConversions._
 
 /**
  * Runs MetaCRS test files.

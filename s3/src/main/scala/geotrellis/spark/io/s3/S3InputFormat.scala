@@ -22,7 +22,7 @@ import com.typesafe.scalalogging.LazyLogging
 import com.amazonaws.regions._
 import com.amazonaws.services.s3.model.{ListObjectsRequest, S3ObjectSummary}
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.mapreduce.{InputFormat, Job, JobContext}
+import org.apache.hadoop.mapreduce.{InputFormat, InputSplit, Job, JobContext}
 
 import scala.util.matching.Regex
 
@@ -41,7 +41,7 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
     S3InputFormat.getS3Client(context)
 
   override def getSplits(context: JobContext) = {
-    import scala.collection.JavaConversions._
+    import scala.collection.JavaConverters._
 
     val conf = context.getConfiguration
     val anon = conf.get(ANONYMOUS)
@@ -178,7 +178,7 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
         }.toVector
     }
 
-    splits
+    (splits: Vector[org.apache.hadoop.mapreduce.InputSplit]).asJava
   }
 }
 

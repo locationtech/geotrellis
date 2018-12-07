@@ -51,12 +51,12 @@ class EuclideanDistanceSpec extends FunSpec
     val sample = Array.ofDim[Coordinate](n)
     var i = 0
     var site = proposal
-    while (site.z < 0) site = proposal
+    while (site.getZ < 0) site = proposal
 
     while (i < n) {
       val next = proposal
-      if (next.z > site.z || Random.nextDouble < next.z / site.z) {
-        // if (next.z > site.z)
+      if (next.getZ > site.getZ || Random.nextDouble < next.getZ / site.getZ) {
+        // if (next.getZ > site.getZ)
         //   print("↑")
         // else
         //   print("↓")
@@ -64,7 +64,7 @@ class EuclideanDistanceSpec extends FunSpec
         site = next
         i += 1
       } else {
-        // if (next.z < 0)
+        // if (next.getZ < 0)
         //   print("☠")
         // else
         //   print("-")

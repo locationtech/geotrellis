@@ -22,16 +22,13 @@ import geotrellis.spark.{LayerId, SpatialComponent}
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.spark.io.index.KeyIndex
 
 import org.apache.accumulo.core.data.{Range => ARange}
 import org.apache.accumulo.core.security.Authorizations
-import org.apache.avro.Schema
 import org.apache.hadoop.io.Text
 import spray.json._
-import spray.json.DefaultJsonProtocol._
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
 class AccumuloValueReader(
@@ -52,14 +49,9 @@ class AccumuloValueReader(
       scanner.setRange(new ARange(rowId(keyIndex.toIndex(key))))
       scanner.fetchColumnFamily(columnFamily(layerId))
 
-      val tiles = scanner.iterator
-        .map { entry =>
-          AvroEncoder.fromBinary(writerSchema, entry.getValue.get)(codec)
-        }
-        .flatMap { pairs: Vector[(K, V)] =>
-          pairs.filter(pair => pair._1 == key)
-        }
-        .toVector
+      val tiles = scanner.iterator.asScala
+        .map { entry => AvroEncoder.fromBinary(writerSchema, entry.getValue.get)(codec) }
+        .flatMap { pairs: Vector[(K, V)] => pairs.filter(pair => pair._1 == key) }.toVector
 
       if (tiles.isEmpty) {
         throw new ValueNotFoundError(key, layerId)

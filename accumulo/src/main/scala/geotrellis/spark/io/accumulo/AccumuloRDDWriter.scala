@@ -24,10 +24,8 @@ import geotrellis.spark.util.KryoWrapper
 import org.apache.accumulo.core.data.{Key, Range, Value}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.avro.Schema
-import org.apache.hadoop.io.Text
 import org.apache.spark.rdd.RDD
 
-import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 
 object AccumuloRDDWriter {

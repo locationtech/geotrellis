@@ -27,7 +27,7 @@ import org.apache.accumulo.core.security.Authorizations
 import org.apache.accumulo.core.data._
 import org.apache.hadoop.io.Text
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 object AccumuloAttributeStore {
   def apply(connector: Connector, attributeTable: String): AccumuloAttributeStore =
@@ -59,11 +59,9 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
   private def fetch(layerId: Option[LayerId], attributeName: String): Iterator[Value] = {
     val scanner = connector.createScanner(attributeTable, new Authorizations())
     try {
-      layerId.foreach { id =>
-        scanner.setRange(new Range(layerIdText(id)))
-      }
+      layerId.foreach { id => scanner.setRange(new Range(layerIdText(id))) }
       scanner.fetchColumnFamily(new Text(attributeName))
-      scanner.iterator.map(_.getValue)
+      scanner.iterator.asScala.map(_.getValue)
     } finally {
       scanner.close()
     }
@@ -76,7 +74,7 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
     val deleter = connector.createBatchDeleter(attributeTable, new Authorizations(), numThreads, config)
 
     try {
-      deleter.setRanges(List(new Range(layerIdText(layerId))))
+      deleter.setRanges(List(new Range(layerIdText(layerId))).asJava)
       attributeName.foreach { name =>
         deleter.fetchColumnFamily(new Text(name))
       }
@@ -128,7 +126,7 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
   def layerIds: Seq[LayerId] = {
     val scanner = connector.createScanner(attributeTable, new Authorizations())
     try {
-      scanner.iterator.map { kv =>
+      scanner.iterator.asScala.map { kv =>
         val Array(name, zoomStr) = kv.getKey.getRow.toString.split(SEP)
         LayerId(name, zoomStr.toInt)
       }
@@ -143,7 +141,7 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
     val scanner = connector.createScanner(attributeTable, new Authorizations())
     try {
       scanner.setRange(new Range(layerIdText(id)))
-      scanner.iterator.map(_.getKey.getColumnFamily.toString).toVector
+      scanner.iterator.asScala.map(_.getKey.getColumnFamily.toString).toVector
     } finally {
       scanner.close
     }

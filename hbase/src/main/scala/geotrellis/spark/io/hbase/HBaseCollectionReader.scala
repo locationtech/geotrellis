@@ -26,7 +26,7 @@ import org.apache.hadoop.hbase.client.Scan
 import org.apache.hadoop.hbase.filter.{FilterList, MultiRowRangeFilter, PrefixFilter}
 import org.apache.avro.Schema
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
 object HBaseCollectionReader {
@@ -70,7 +70,7 @@ object HBaseCollectionReader {
     instance.withTableConnectionDo(table) { tableConnection =>
       val scanner = tableConnection.getScanner(scan)
       try {
-        scanner.iterator().flatMap { row =>
+        scanner.iterator().asScala.flatMap { row =>
           val bytes = row.getValue(HBaseRDDWriter.tilesCF, "")
           val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
           if (filterIndexOnly) recs

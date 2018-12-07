@@ -27,7 +27,7 @@ import java.net.URL
 import java.io.File
 
 import scala.collection.mutable
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 object ShapeFileReader {
   implicit class SimpleFeatureWrapper(ft: SimpleFeature) {
@@ -38,7 +38,7 @@ object ShapeFileReader {
       }
 
     def attributeMap: Map[String, Object] =
-      ft.getProperties.drop(1).map { p =>
+      ft.getProperties.asScala.drop(1).map { p =>
         (p.getName.toString, ft.getAttribute(p.getName))
       }.toMap
 
