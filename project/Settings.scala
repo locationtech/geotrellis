@@ -306,7 +306,10 @@ object Settings {
 
   lazy val proj4 = Seq(
     name := "geotrellis-proj4",
-    resolvers += Resolver.mavenLocal,
+    resolvers ++= Seq(
+      Resolver.mavenLocal,
+      Repositories.locationtechSnapshots,
+      Repositories.locationtechReleases),
     libraryDependencies ++= Seq(
       proj4j,
       openCSV,

@@ -25,15 +25,17 @@ object WKT {
   lazy val records: Map[Int, String] = parseWktEpsgResource
 
   def parseWktEpsgResource(): Map[Int, String] = {
-    //read input from epsg.properties file
+    // read input from epsg.properties file
+    val EpsgRx = """(\d+)\=(.*)""".r
     WKT.withWktFile { lines =>
       val iter =
-        for (line <- lines) yield {
-          //split the line for parsing the wkt, aka remove code infront
-          val firstEquals = line.indexOf("=")
-          val code = line.substring(0, firstEquals).toInt
-          val wktString = line.substring(firstEquals + 1)
-          code -> wktString
+        for {
+          line <- lines if ! line.startsWith("#")
+          m <- EpsgRx.findFirstMatchIn(line)
+        } yield {
+          val code = m.group(1).toInt
+          val wkt = m.group(2)
+          (code, wkt)
         }
       iter.toMap
     }

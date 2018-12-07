@@ -129,7 +129,6 @@ object CRS {
 
   private def readEpsgCodeFromFile(proj4String: String): Option[String] = {
     val stream = crsFactory.getClass.getResourceAsStream(s"${filePrefix}epsg")
-    println(s"Reading: ${filePrefix}epsg")
     try {
       Source.fromInputStream(stream)
         .getLines
