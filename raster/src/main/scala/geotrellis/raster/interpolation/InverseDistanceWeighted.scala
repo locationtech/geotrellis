@@ -65,7 +65,9 @@ object InverseDistanceWeighted {
 
     if (!points.isEmpty) {
       val ewr2 = equalWeightRadius * equalWeightRadius
-      val radiusXY = radiusX * radiusY
+      val radiusXSquared = radiusX * radiusX
+      val radiusYSquared = radiusY * radiusY
+      val radiusXYSquared = radiusXSquared * radiusYSquared
 
       def idw(points: Traversable[PointFeature[D]], x: Double, y: Double, hasRadius: Boolean) = {
         var sum = 0.0
@@ -92,7 +94,7 @@ object InverseDistanceWeighted {
               (dX, dY)
             }
 
-          if (!hasRadius || radiusY * dX2 * dX2 + radiusX * dY2 * dY2 <= radiusXY ) {
+          if (!hasRadius || radiusYSquared * dX2 * dX2 + radiusXSquared * dY2 * dY2 <= radiusXYSquared ) {
             val data = point.data: Double
             if (d2 <= ewr2) {
               sampleSum += data

@@ -96,6 +96,44 @@ class InverseDistanceWeightedSpec extends FunSpec
       assert(result.tile.get(0, 0) === 15)
       assert(result.tile.get(3, 0) === 500)
     }
+
+    it ("uses points within an eliptical radius in raster units") {
+      val re = RasterExtent(Extent(0, 0, 1.0, 1.0), 10, 10)
+
+      val points = Seq(
+        PointFeature(Point(0.5, 0.5), 100)
+      )
+      val result = InverseDistanceWeighted(points, re, InverseDistanceWeighted.Options(radiusX = 0.4, radiusY = 0.2))
+
+      val allCells = for {
+        y <- 0.until(10)
+        x <- 0.until(10)
+      } yield (x, y)
+
+      val cellsWithinRadius = for {
+        (y, xValues) <- Seq(
+          (3, 2.to(7)),
+          (4, 1.to(8)),
+          (5, 1.to(8)),
+          (6, 2.to(7))
+        )
+        x <- xValues
+      } yield {
+        withClue(s"Has value at cell x=$x y=$y") {
+          result.tile.get(x, y) shouldEqual 100 +- 1
+        }
+        (x, y)
+      }
+
+      val noDataCells = allCells.toSet -- cellsWithinRadius.toSet
+      noDataCells.foreach {
+        case (x, y) => {
+          withClue(s"Nodata at cell x=$x y=$y") {
+            result.tile.get(x, y) shouldEqual Integer.MIN_VALUE
+          }
+        }
+      }
+    }
   }
 
   describe("interpolates double values") {
@@ -143,6 +181,44 @@ class InverseDistanceWeightedSpec extends FunSpec
 
       expected should be (result.tile.getDouble(0, 0) +- 0.001)
       c should be (result.tile.getDouble(3, 0) +- 0.001)
+    }
+
+    it("uses points within an eliptical radius in raster units") {
+      val re = RasterExtent(Extent(0, 0, 1.0, 1.0), 10, 10)
+
+      val points = Seq(
+        PointFeature(Point(0.5, 0.5), 100.29)
+      )
+      val result = InverseDistanceWeighted(points, re, InverseDistanceWeighted.Options(radiusX = 0.4, radiusY = 0.2, cellType = DoubleConstantNoDataCellType))
+
+      val allCells = for {
+        y <- 0.until(10)
+        x <- 0.until(10)
+      } yield (x, y)
+
+      val cellsWithinRadius = for {
+        (y, xValues) <- Seq(
+          (3, 2.to(7)),
+          (4, 1.to(8)),
+          (5, 1.to(8)),
+          (6, 2.to(7))
+        )
+        x <- xValues
+      } yield {
+        withClue(s"Has value at cell x=$x y=$y") {
+          result.tile.getDouble(x, y) shouldEqual 100.29 +- 0.001
+        }
+        (x, y)
+      }
+
+      val noDataCells = allCells.toSet -- cellsWithinRadius.toSet
+      noDataCells.foreach {
+        case (x, y) => {
+          withClue(s"Nodata at cell x=$x y=$y") {
+            result.tile.getDouble(x, y).isNaN shouldBe true
+          }
+        }
+      }
     }
   }
 }
