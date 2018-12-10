@@ -16,7 +16,7 @@
 
 package geotrellis.proj4
 
-import org.osgeo.proj4j._
+import org.locationtech.proj4j._
 
 import org.scalatest._
 
@@ -29,13 +29,13 @@ class RepeatedTransformTest extends FunSuite with Matchers {
 
     val ctf = new CoordinateTransformFactory()
     val transform = ctf.createTransform(src, dest)
-    
+
     val srcPt = new ProjCoordinate(0.899167, 51.357216)
     val destPt = new ProjCoordinate()
-   
+
     transform.transform(srcPt, destPt)
     // System.out.println(srcPt + " ==> " + destPt)
-    
+
     // do it again
     val destPt2 = new ProjCoordinate()
     transform.transform(srcPt, destPt2)

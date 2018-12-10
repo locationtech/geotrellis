@@ -38,7 +38,7 @@ object GenerateTestCases {
 
   def main(args: Array[String]): Unit = {
     val knownCodes =
-      loan(scala.io.Source.fromInputStream(getClass().getResourceAsStream("/geotrellis/proj4/nad/epsg"))) { source =>
+      loan(scala.io.Source.fromInputStream(getClass().getResourceAsStream("/proj4/nad/epsg"))) { source =>
         source.getLines
           .filter { _ startsWith "<" }
           .map { s => s.tail.take(s.indexOf('>') - 1) }
@@ -82,7 +82,7 @@ object GenerateTestCases {
             val dst = CRS.fromName(s"EPSG:$code")
             val tolerance = dst.proj4jCrs.getProjection.getUnits match {
               case null => 1
-              case u if Set(org.osgeo.proj4j.units.Units.DEGREES) contains u => 1e-6 * u.value
+              case u if Set(org.locationtech.proj4j.units.Units.DEGREES) contains u => 1e-6 * u.value
               case u => 0.1 * u.value
             }
             val tx = Transform(LatLng, dst)
@@ -92,7 +92,7 @@ object GenerateTestCases {
               else
                 ("failing", tolerance)
           } catch {
-            case _: org.osgeo.proj4j.Proj4jException => ("error", 0.01d)
+            case _: org.locationtech.proj4j.Proj4jException => ("error", 0.01d)
           }
 
         csvWriter.writeNext(writeLine(4326, code.toInt, method, (1, -1, 0), pt, tolerance))

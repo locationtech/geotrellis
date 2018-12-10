@@ -33,7 +33,6 @@ object Settings {
     val osgeo                 = "osgeo" at "http://download.osgeo.org/webdav/geotools/"
     val geowaveRelease        = "geowave-release" at "http://geowave-maven.s3-website-us-east-1.amazonaws.com/release"
     val geowaveSnapshot       = "geowave-snapshot" at "http://geowave-maven.s3-website-us-east-1.amazonaws.com/snapshot"
-
     val local                 = Resolver.file("local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
   }
 
@@ -120,8 +119,6 @@ object Settings {
       scalatest % Test
     ),
     resolvers ++= Seq(
-      Repositories.locationtechReleases,
-      Repositories.locationtechSnapshots,
       Repositories.boundlessgeo
     ),
     initialCommands in console :=
@@ -216,7 +213,7 @@ object Settings {
       scalatest % Test
     ),
     resolvers ++= Seq(
-      // Resolver.mavenLocal,
+      Resolver.mavenLocal,
       Repositories.boundlessgeoRelease,
       Repositories.geosolutions,
       Repositories.geowaveRelease,
@@ -306,7 +303,9 @@ object Settings {
 
   lazy val proj4 = Seq(
     name := "geotrellis-proj4",
+    resolvers ++= Seq(Resolver.mavenLocal),
     libraryDependencies ++= Seq(
+      proj4j,
       openCSV,
       parserCombinators,
       scalatest % Test,
