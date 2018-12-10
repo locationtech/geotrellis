@@ -566,7 +566,7 @@ class WKTParserTest extends FunSpec {
     }
   }
 
-  it("Should contain NAD27 / Polar Stereographic / CM=-98") {
+  it("Should contain NAD27 / Polar Stereographic / CM\\=-98") {
     import WKT._
     val datSpheroid = new Spheroid("Clarke 1866", 6378206.4, 294.978698213901, None)
     val toWgs84 = new ToWgs84(List(-9, 151, 185))
@@ -582,7 +582,7 @@ class WKTParserTest extends FunSpec {
     val param5 = new Parameter("false_northing",0)
     val unitField = new UnitField("Meter", 1, None)
     val auth = new Authority("EPSG", "42301")
-    val expected = new ProjCS("NAD27 / Polar Stereographic / CM=-98", geogcs, projection, Some(List(param1, param2, param3, param4, param5)), unitField, None, Some(auth))
+    val expected = new ProjCS("NAD27 / Polar Stereographic / CM\\=-98", geogcs, projection, Some(List(param1, param2, param3, param4, param5)), unitField, None, Some(auth))
     assert(contains(expected))
   }
 

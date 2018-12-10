@@ -24,7 +24,7 @@ object WKTParser extends RegexParsers {
 
   def symbol: Parser[String] = """[A-Za-z0-9_]+""".r
 
-  def string: Parser[String] = "\"" ~> """[A-Za-z=()/+ 0-9-&',.*?\_]+""".r <~ "\""
+  def string: Parser[String] = "\"" ~> """[A-Za-z=()/+ 0-9-&',.*?\_\\]+""".r <~ "\""
 
   def double: Parser[Double] =("""[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?""".r | """[-+]?[0-9]*\.?[0-9]+""".r) map (_.toDouble)
 

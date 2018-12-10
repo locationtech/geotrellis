@@ -16,14 +16,14 @@
 
 package geotrellis.proj4
 
-import org.osgeo.proj4j._
-import org.osgeo.proj4j.units.Angle
+import org.locationtech.proj4j._
+import org.locationtech.proj4j.units.Angle
 
 import org.scalatest._
 
 /**
   * Tests correctness and accuracy of Coordinate System transformations.
-  * 
+  *
   * @author Martin Davis (port by Rob Emanuele)
   */
 trait BaseCoordinateTransformTest extends Matchers
@@ -31,11 +31,11 @@ trait BaseCoordinateTransformTest extends Matchers
   // ~= 1 / (2Pi * Earth radius)
   // in code: 1.0 / (2.0 * Math.PI * 6378137.0)
   final val APPROX_METRE_IN_DEGREES = 2.0e-8
-  
+
   final val debug = true
-  
+
   val tester = new CoordinateTransformTester(false)
-  
+
   def p(pstr: String): ProjCoordinate = {
     val pord = pstr.split("\\s+")
     val p0 = Angle.parse(pord(0))
@@ -98,5 +98,5 @@ trait BaseCoordinateTransformTest extends Matchers
     inverseTolerance: Double) = {
     tester.checkTransform(cs1, x1, y1, cs2, x2, y2, tolerance, inverseTolerance, true) should be (true)
   }
-  
+
 }
