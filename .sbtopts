@@ -1,6 +1,7 @@
--J-Xmx4G
+-J-Xmx2G
 -J-Xms2G
--J-Xss6M
+-J-Xss2M
+-J-XX:+UseG1GC
 -Dfile.encoding=UTF8
 -Djava.awt.headless=true
 -Dsun.io.serialization.extendedDebugInfo=true
