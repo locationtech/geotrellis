@@ -1,7 +1,8 @@
 -J-Xmx2G
 -J-Xms2G
 -J-Xss2M
--J-XX:+UseG1GC
+-J-XX:MaxMetaspaceSize=2048M
+-J-XX:+CMSClassUnloadingEnabled
 -Dfile.encoding=UTF8
 -Djava.awt.headless=true
 -Dsun.io.serialization.extendedDebugInfo=true
