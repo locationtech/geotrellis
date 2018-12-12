@@ -27,14 +27,17 @@ object Transform {
 }
 
 object Proj4Transform {
-  def apply(src: CRS, dest: CRS): Transform = {
-    val t = new BasicCoordinateTransform(src.proj4jCrs, dest.proj4jCrs)
+  def apply(src: CRS, dest: CRS): Transform =
+    if(src == dest) {
+      (x: Double, y: Double) => (x, y)
+    } else {
+      val t = new BasicCoordinateTransform(src.proj4jCrs, dest.proj4jCrs)
 
-    { (x: Double, y: Double) =>
-      val srcP = new ProjCoordinate(x, y)
-      val destP = new ProjCoordinate
-      t.transform(srcP, destP)
-      (destP.x, destP.y)
+      { (x: Double, y: Double) =>
+        val srcP = new ProjCoordinate(x, y)
+        val destP = new ProjCoordinate
+        t.transform(srcP, destP)
+        (destP.x, destP.y)
+      }
     }
-  }
 }
