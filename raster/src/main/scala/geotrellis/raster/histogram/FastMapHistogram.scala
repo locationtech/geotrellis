@@ -365,7 +365,7 @@ class FastMapHistogram(_size: Int, _buckets: Array[Int], _counts: Array[Long], _
     * the histogram that would result from seeing all of the values
     * seen by the two antecedent histograms).
     */
-  def merge(histogram: Histogram[Int]): Histogram[Int] = {
+  def merge(histogram: Histogram[Int]): FastMapHistogram = {
     val total = FastMapHistogram()
 
     total.update(this); total.update(histogram)
