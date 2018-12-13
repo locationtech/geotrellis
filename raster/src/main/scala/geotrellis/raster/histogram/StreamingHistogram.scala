@@ -65,7 +65,7 @@ object StreamingHistogram {
     size: Int,
     minimumSeen: Double,
     maximumSeen: Double
-  ) =
+  ): StreamingHistogram =
     new StreamingHistogram(size, minimumSeen, maximumSeen)
 
   def apply(other: Histogram[Double]): StreamingHistogram = {
@@ -396,7 +396,7 @@ class StreamingHistogram(
     * the histogram that would result from seeing all of the values
     * seen by the two antecedent histograms).
     */
-  def merge(histogram: Histogram[Double]): Histogram[Double] = {
+  def merge(histogram: Histogram[Double]): StreamingHistogram = {
     val sh = StreamingHistogram(this.size, this._min, this._max)
     sh.countItems(this.buckets)
     histogram.foreach({ (item: Double, count: Long) => sh.countItem((item, count)) })
