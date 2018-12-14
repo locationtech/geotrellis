@@ -19,6 +19,8 @@ package geotrellis.spark
 import geotrellis.vector._
 import geotrellis.proj4._
 
+import org.locationtech.proj4j.UnsupportedParameterException
+
 /**
   * This package is concerned with translation of coordinates or extents between
   * geographic extents and the grid space represented by SpatialKey(col, row) coordinates,
@@ -37,6 +39,11 @@ package object tiling {
           Extent(-20037508.342789244, -20037508.342789244, 20037508.342789244, 20037508.342789244)
         case Sinusoidal =>
           Extent(-2.0015109355797417E7, -1.0007554677898709E7, 2.0015109355797417E7, 1.0007554677898709E7)
+        case c if c.proj4jCrs.getProjection.getName == "utm" =>
+          throw new UnsupportedParameterException(
+            s"Projection ${c.toProj4String} is not supported as a WorldExtent projection, " +
+            s"use a different projection for your purposes or use a different LayoutScheme."
+          )
         case _ =>
           WORLD_WSG84.reproject(LatLng, crs)
       }
