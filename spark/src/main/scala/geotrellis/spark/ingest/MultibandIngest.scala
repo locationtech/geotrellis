@@ -51,7 +51,7 @@ object MultibandIngest {
       case _ => sourceTiles.collectMetadata(FloatingLayoutScheme(256))
     }
 
-    val contextRdd = sourceTiles.tileToLayout(tileLayerMetadata, resampleMethod).cache()
+    val contextRdd = sourceTiles.tileToLayout(tileLayerMetadata, resampleMethod).persist(cacheLevel)
 
     val (zoom, tileLayerRdd) = (layoutScheme, maxZoom) match {
       case (layoutScheme: ZoomedLayoutScheme, Some(mz)) =>
