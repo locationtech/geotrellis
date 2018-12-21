@@ -274,6 +274,10 @@ fast, column-based NoSQL database. It is likely the most performant of
 our backends, although this has yet to be confirmed. To work with
 GeoTrellis, it requires an external Cassandra process to be running.
 
+The indexing strategy can be optimized for read-heavy or write-heavy loads by adjusting
+the partition strategy applied - see the reference.conf in the `geotrellis-cassandra`
+subproject on github for more details.
+
 .. note:: As of 2016 October 26, our Cassandra support is still relatively new.
 
 .. code:: scala
