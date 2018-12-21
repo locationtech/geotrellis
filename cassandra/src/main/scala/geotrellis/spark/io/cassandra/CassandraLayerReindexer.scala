@@ -78,9 +78,9 @@ class CassandraLayerReindexer(
     val layerCopier = CassandraLayerCopier(attributeStore, layerReader, layerWriter)
 
     layerWriter.write(tmpId, layerReader.read[K, V, M](id), keyIndex)
-    layerDeleter.delete(id)
+    layerDeleter.delete[K](id)
     layerCopier.copy[K, V, M](tmpId, id)
-    layerDeleter.delete(tmpId)
+    layerDeleter.delete[K](tmpId)
   }
 
   def reindex[
@@ -102,8 +102,8 @@ class CassandraLayerReindexer(
     val layerCopier = CassandraLayerCopier(attributeStore, layerReader, layerWriter)
 
     layerWriter.write(tmpId, layerReader.read[K, V, M](id), keyIndexMethod.createIndex(existingKeyIndex.keyBounds))
-    layerDeleter.delete(id)
+    layerDeleter.delete[K](id)
     layerCopier.copy[K, V, M](tmpId, id)
-    layerDeleter.delete(tmpId)
+    layerDeleter.delete[K](tmpId)
   }
 }

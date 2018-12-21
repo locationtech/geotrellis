@@ -22,23 +22,26 @@ import geotrellis.spark.io.avro.codecs._
 import geotrellis.spark.io.cassandra.conf.CassandraConfig
 import geotrellis.spark.LayerId
 import geotrellis.spark.util.KryoWrapper
-
 import com.datastax.driver.core.DataType._
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
-import com.datastax.driver.core.ResultSet
+import com.datastax.driver.core.{BoundStatement, PreparedStatement, ResultSet}
 import com.datastax.driver.core.schemabuilder.SchemaBuilder
 import cats.effect.IO
 import cats.syntax.apply._
 import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
-
 import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 import java.math.BigInteger
 
+import geotrellis.spark.io.index.KeyIndex
+import spire.math.Interval
+import spire.implicits._
+
 import scala.concurrent.ExecutionContext
 import scala.collection.JavaConverters._
+import scala.collection.immutable.VectorBuilder
 
 object CassandraRDDWriter {
   final val defaultThreadCount = CassandraConfig.threads.rdd.writeThreads
@@ -50,8 +53,9 @@ object CassandraRDDWriter {
     decomposeKey: K => BigInt,
     keyspace: String,
     table: String,
+    keyIndex: KeyIndex[K],
     threads: Int = defaultThreadCount
-  ): Unit = update(rdd, instance, layerId, decomposeKey, keyspace, table, None, None, threads)
+  ): Unit = update(rdd, instance, layerId, decomposeKey, keyspace, table, None, None, keyIndex, threads)
 
   private[cassandra] def update[K: AvroRecordCodec, V: AvroRecordCodec](
     raster: RDD[(K, V)],
@@ -62,6 +66,7 @@ object CassandraRDDWriter {
     table: String,
     writerSchema: Option[Schema],
     mergeFunc: Option[(V,V) => V],
+    keyIndex: KeyIndex[K],
     threads: Int = defaultThreadCount
   ): Unit = {
     implicit val sc = raster.sparkContext
@@ -70,34 +75,108 @@ object CassandraRDDWriter {
 
     instance.withSessionDo { session =>
       instance.ensureKeyspaceExists(keyspace, session)
-      session.execute(
-        SchemaBuilder.createTable(keyspace, table).ifNotExists()
-          .addPartitionKey("key", varint)
-          .addClusteringColumn("name", text)
-          .addClusteringColumn("zoom", cint)
-          .addColumn("value", blob)
-      )
+
+      instance.cassandraConfig.partitionStrategy match {
+        case conf.`Read-Optimized-Partitioner` =>
+          session.execute(
+            SchemaBuilder.createTable(keyspace, table).ifNotExists()
+              .addPartitionKey("name", text)
+              .addPartitionKey("zoom", cint)
+              .addPartitionKey("zoombin", cint)
+              .addClusteringColumn("key", varint)
+              .addColumn("value", blob)
+          )
+        case conf.`Write-Optimized-Partitioner` =>
+          session.execute(
+            SchemaBuilder.createTable(keyspace, table).ifNotExists()
+              .addPartitionKey("key", varint)
+              .addClusteringColumn("name", text)
+              .addClusteringColumn("zoom", cint)
+              .addColumn("value", blob)
+          )
+      }
     }
 
-    val readQuery =
-      QueryBuilder.select("value")
-        .from(keyspace, table)
-        .where(eqs("key", QueryBuilder.bindMarker()))
-        .and(eqs("name", layerId.name))
-        .and(eqs("zoom", layerId.zoom))
-        .toString
+    val readQuery = instance.cassandraConfig.partitionStrategy match {
+      case conf.`Read-Optimized-Partitioner` =>
+        QueryBuilder.select("value")
+          .from(keyspace, table)
+          .where(eqs("name", layerId.name))
+          .and(eqs("zoom", layerId.zoom))
+          .and(eqs("zoombin", QueryBuilder.bindMarker()))
+          .and(eqs("key", QueryBuilder.bindMarker()))
+          .toString
 
-    val writeQuery =
-      QueryBuilder
-        .insertInto(keyspace, table)
-        .value("name", layerId.name)
-        .value("zoom", layerId.zoom)
-        .value("key", QueryBuilder.bindMarker())
-        .value("value", QueryBuilder.bindMarker())
-        .toString
+      case conf.`Write-Optimized-Partitioner` =>
+        QueryBuilder.select("value")
+          .from(keyspace, table)
+          .where(eqs("key", QueryBuilder.bindMarker()))
+          .and(eqs("name", layerId.name))
+          .and(eqs("zoom", layerId.zoom))
+          .toString
+    }
+
+    val writeQuery = instance.cassandraConfig.partitionStrategy match {
+      case conf.`Read-Optimized-Partitioner` =>
+        QueryBuilder
+          .insertInto(keyspace, table)
+          .value("name", layerId.name)
+          .value("zoom", layerId.zoom)
+          .value("zoombin", QueryBuilder.bindMarker())
+          .value("key", QueryBuilder.bindMarker())
+          .value("value", QueryBuilder.bindMarker())
+          .toString
+
+      case conf.`Write-Optimized-Partitioner` =>
+        QueryBuilder
+          .insertInto(keyspace, table)
+          .value("name", layerId.name)
+          .value("zoom", layerId.zoom)
+          .value("key", QueryBuilder.bindMarker())
+          .value("value", QueryBuilder.bindMarker())
+          .toString
+    }
 
     val _recordCodec = KeyValueRecordCodec[K, V]
     val kwWriterSchema = KryoWrapper(writerSchema)
+
+    lazy val intervals: Vector[(Interval[BigInt], Int)] = {
+      val ranges = keyIndex.indexRanges(keyIndex.keyBounds)
+
+      val binRanges = ranges.toVector.map{ range =>
+        val vb = new VectorBuilder[Interval[BigInt]]()
+        cfor(range._1)(_ <= range._2, _ + instance.cassandraConfig.tilesPerPartition){ i =>
+          vb += Interval.openUpper(i, i + instance.cassandraConfig.tilesPerPartition)
+        }
+        vb.result()
+      }
+
+      binRanges.flatten.zipWithIndex
+    }
+
+    def zoomBin(key: BigInteger): java.lang.Integer = {
+      intervals.find{ case (interval, idx) => interval.contains(key) }.map {
+        _._2: java.lang.Integer
+      }.getOrElse(0: java.lang.Integer)
+    }
+
+    def bindRead(read: PreparedStatement, key: BigInteger): BoundStatement = {
+      instance.cassandraConfig.partitionStrategy match {
+        case conf.`Read-Optimized-Partitioner` =>
+          read.bind(zoomBin(key), key: BigInteger)
+        case conf.`Write-Optimized-Partitioner` =>
+          read.bind(key: BigInteger)
+      }
+    }
+
+    def bindWrite(write: PreparedStatement, id: BigInteger, value: ByteBuffer): BoundStatement = {
+      instance.cassandraConfig.partitionStrategy match {
+        case conf.`Read-Optimized-Partitioner` =>
+          write.bind(zoomBin(id), id: BigInteger, value)
+        case conf.`Write-Optimized-Partitioner` =>
+          write.bind(id: BigInteger, value)
+      }
+    }
 
     // Call groupBy with numPartitions; if called without that argument or a partitioner,
     // groupBy will reuse the partitioner on the parent RDD if it is set, which could be typed
@@ -122,7 +201,7 @@ object CassandraRDDWriter {
                 fs2.Stream eval IO.shift(ec) *> IO ({
                   val (key, current) = row
                   val updated = LayerWriter.updateRecords(mergeFunc, current, existing = {
-                    val oldRow = session.execute(readStatement.bind(key: BigInteger))
+                    val oldRow = session.execute(bindRead(readStatement, key: BigInteger))
                     if (oldRow.asScala.nonEmpty) {
                       val bytes = oldRow.one().getBytes("value").array()
                       val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
@@ -145,7 +224,7 @@ object CassandraRDDWriter {
               def retire(row: (BigInt, ByteBuffer)): fs2.Stream[IO, ResultSet] = {
                 val (id, value) = row
                 fs2.Stream eval IO.shift(ec) *> IO ({
-                  session.execute(writeStatement.bind(id: BigInteger, value))
+                  session.execute(bindWrite(writeStatement, id: BigInteger, value))
                 })
               }
 

@@ -47,9 +47,9 @@ abstract class GenericLayerReindexer[Header:JsonFormat](
     val tmpId = getTmpId(id)
 
     layerWriter.write(tmpId, layerReader.read[K, V, M](id), keyIndex)
-    layerDeleter.delete(id)
+    layerDeleter.delete[K](id)
     layerCopier.copy[K, V, M](tmpId, id)
-    layerDeleter.delete(tmpId)
+    layerDeleter.delete[K](tmpId)
   }
 
   def reindex[
@@ -62,9 +62,9 @@ abstract class GenericLayerReindexer[Header:JsonFormat](
 
     val index = attributeStore.readKeyIndex[K](id)
     layerWriter.write(tmpId, layerReader.read[K, V, M](id), keyIndexMethod.createIndex(index.keyBounds))
-    layerDeleter.delete(id)
+    layerDeleter.delete[K](id)
     layerCopier.copy[K, V, M](tmpId, id)
-    layerDeleter.delete(tmpId)
+    layerDeleter.delete[K](tmpId)
   }
 }
 

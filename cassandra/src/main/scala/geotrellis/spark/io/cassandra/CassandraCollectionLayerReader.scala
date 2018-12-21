@@ -45,7 +45,7 @@ class CassandraCollectionLayerReader(val attributeStore: AttributeStore, instanc
 
     val decompose = (bounds: KeyBounds[K]) => keyIndex.indexRanges(bounds)
 
-    val seq = CassandraCollectionReader.read[K, V](instance, header.keyspace, header.tileTable, id, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema))
+    val seq = CassandraCollectionReader.read[K, V](instance, header.keyspace, header.tileTable, id, queryKeyBounds, decompose, filterIndexOnly, Some(writerSchema), keyIndex)
     new ContextCollection(seq, layerMetadata)
   }
 }

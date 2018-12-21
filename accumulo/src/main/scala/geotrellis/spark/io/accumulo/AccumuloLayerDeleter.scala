@@ -16,19 +16,21 @@
 
 package geotrellis.spark.io.accumulo
 
-import geotrellis.spark.LayerId
+import geotrellis.spark.{Boundable, LayerId}
 import geotrellis.spark.io._
-
 import com.typesafe.scalalogging.LazyLogging
+import geotrellis.spark.io.avro.AvroRecordCodec
 import org.apache.accumulo.core.client.{BatchWriterConfig, Connector}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.accumulo.core.data.{Range => AccumuloRange}
+import spray.json.JsonFormat
 
 import scala.collection.JavaConverters._
+import scala.reflect.ClassTag
 
 class AccumuloLayerDeleter(val attributeStore: AttributeStore, connector: Connector) extends LazyLogging with LayerDeleter[LayerId] {
 
-  def delete(id: LayerId): Unit = {
+  def delete[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag](id: LayerId): Unit = {
     try {
       val header = attributeStore.readHeader[AccumuloLayerHeader](id)
       val numThreads = 1

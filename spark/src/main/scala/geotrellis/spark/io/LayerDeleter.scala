@@ -16,6 +16,12 @@
 
 package geotrellis.spark.io
 
+import geotrellis.spark.Boundable
+import geotrellis.spark.io.avro.AvroRecordCodec
+import spray.json.JsonFormat
+
+import scala.reflect.ClassTag
+
 trait LayerDeleter[ID] {
-  def delete(id: ID): Unit
+  def delete[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag](id: ID): Unit
 }

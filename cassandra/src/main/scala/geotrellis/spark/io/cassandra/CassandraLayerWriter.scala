@@ -78,7 +78,7 @@ class CassandraLayerWriter(
 
         val encodeKey = (key: K) => keyIndex.toIndex(key)
         attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, writerSchema)
-        CassandraRDDWriter.update(rdd, instance, id, encodeKey, keyspace, table, Some(writerSchema), mergeFunc)
+        CassandraRDDWriter.update(rdd, instance, id, encodeKey, keyspace, table, Some(writerSchema), mergeFunc, keyIndex)
 
       case None =>
         logger.warn(s"Skipping update with empty bounds for $id.")
@@ -106,7 +106,7 @@ class CassandraLayerWriter(
 
     try {
       attributeStore.writeLayerAttributes(id, header, metadata, keyIndex, schema)
-      CassandraRDDWriter.write(rdd, instance, id, encodeKey, keyspace, table)
+      CassandraRDDWriter.write(rdd, instance, id, encodeKey, keyspace, table, keyIndex = keyIndex)
     } catch {
       case e: Exception => throw new LayerWriteError(id).initCause(e)
     }

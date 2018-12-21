@@ -16,16 +16,19 @@
 
 package geotrellis.spark.io.s3
 
-import geotrellis.spark.LayerId
+import geotrellis.spark.{Boundable, LayerId}
 import geotrellis.spark.io._
-
 import com.typesafe.scalalogging.LazyLogging
+import geotrellis.spark.io.avro.AvroRecordCodec
+import spray.json.JsonFormat
+
+import scala.reflect.ClassTag
 
 class S3LayerDeleter(val attributeStore: AttributeStore) extends LazyLogging with LayerDeleter[LayerId] {
 
   def getS3Client: () => S3Client = () => S3Client.DEFAULT
 
-  def delete(id: LayerId): Unit = {
+  def delete[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag](id: LayerId): Unit = {
     try {
       val header = attributeStore.readHeader[S3LayerHeader](id)
       val bucket = header.bucket

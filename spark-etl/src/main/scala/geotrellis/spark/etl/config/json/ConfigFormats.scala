@@ -128,10 +128,35 @@ trait ConfigFormats {
       }
   }
 
+  implicit val cassandraPartitionStrategyFormat = new JsonFormat[CassandraPartitionStrategy]{
+    override def write(obj: CassandraPartitionStrategy): JsValue = {
+      obj match {
+        case `Write-Optimized-Partitioner` => JsString("write-optimized-partitioner")
+        case `Read-Optimized-Partitioner` => JsString("read-optimized-partitioner")
+      }
+    }
+
+    override def read(json: JsValue): CassandraPartitionStrategy = {
+      json match {
+        case JsString(s) =>
+          s match {
+            case "read-optimized-partitioner" => `Read-Optimized-Partitioner`
+            case "write-optimized-partitioner" => `Write-Optimized-Partitioner`
+            case x =>
+              throw new DeserializationException("Unrecognized Cassandra Partition Strategy: "+x)
+          }
+        case x =>
+          throw new DeserializationException(
+            "Cassandra Partition Strategy should have been of type JsString, but was: "+x.getClass.getSimpleName
+          )
+      }
+    }
+  }
+
   implicit val cassandraCollectionConfigFormat = jsonFormat1(CassandraCollectionConfig)
   implicit val cassandraRDDConfigFormat        = jsonFormat2(CassandraRDDConfig)
   implicit val cassandraThreadsConfigFormat    = jsonFormat2(CassandraThreadsConfig)
-  implicit val cassandraConfigFormat           = jsonFormat9(CassandraConfig.apply)
+  implicit val cassandraConfigFormat           = jsonFormat11(CassandraConfig.apply)
 
   implicit val accumuloProfileFormat  = jsonFormat7(AccumuloProfile)
   implicit val hbaseProfileFormat     = jsonFormat3(HBaseProfile)

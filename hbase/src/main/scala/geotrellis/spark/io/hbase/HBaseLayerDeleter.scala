@@ -16,18 +16,20 @@
 
 package geotrellis.spark.io.hbase
 
-import geotrellis.spark.LayerId
+import geotrellis.spark.{Boundable, LayerId}
 import geotrellis.spark.io._
-
 import com.typesafe.scalalogging.LazyLogging
+import geotrellis.spark.io.avro.AvroRecordCodec
 import org.apache.hadoop.hbase.client._
 import org.apache.hadoop.hbase.filter.PrefixFilter
+import spray.json.JsonFormat
 
 import scala.collection.JavaConverters._
+import scala.reflect.ClassTag
 
 class HBaseLayerDeleter(val attributeStore: AttributeStore, instance: HBaseInstance) extends LazyLogging with LayerDeleter[LayerId] {
 
-  def delete(id: LayerId): Unit = {
+  def delete[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag](id: LayerId): Unit = {
     try{
       val header = attributeStore.readHeader[HBaseLayerHeader](id)
 

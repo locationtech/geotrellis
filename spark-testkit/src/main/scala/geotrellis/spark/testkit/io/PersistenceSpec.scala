@@ -104,7 +104,7 @@ abstract class PersistenceSpec[
 
       it("should throw a layer deletion error if metadata required for deleting a layer's tiles is not found") {
         intercept[LayerDeleteError] {
-          deleter.delete(layerId)
+          deleter.delete[K](layerId)
         }
       }
 
@@ -146,7 +146,7 @@ abstract class PersistenceSpec[
       }
 
       it("should delete a layer") {
-        deleter.delete(deleteLayerId)
+        deleter.delete[K](deleteLayerId)
         intercept[LayerNotFoundError] {
           reader.read[K, V, M](deleteLayerId)
         }

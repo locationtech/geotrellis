@@ -15,6 +15,11 @@ to launch tests. Before running Cassandra tests, be sure, that a local
 Cassandra instance using Docker is provided
 [here](https://github.com/pomadchin/geotrellis/blob/feature/cassandra-nmr/scripts/cassandraTestDB.sh).
 
+One can also use [ccm](https://github.com/riptano/ccm) for running a Cassandra 
+cluster on localhost for testing purposes.  `ccm` helps to manage and join 
+nodes into a local cluster and can help in stress testing against a more real-world 
+cluster environment. 
+
 ### Mac OS X / Windows users
 
 Docker is not supported by Mac OS X / Windows natively, it is possible to

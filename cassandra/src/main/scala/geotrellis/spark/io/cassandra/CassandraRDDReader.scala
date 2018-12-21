@@ -20,13 +20,11 @@ import geotrellis.spark.{Boundable, KeyBounds, LayerId}
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
+import geotrellis.spark.io.index.{IndexRanges, KeyIndex, MergeQueue}
 import geotrellis.spark.io.cassandra.conf.CassandraConfig
 import geotrellis.spark.util.KryoWrapper
-
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
-
 import org.apache.avro.Schema
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -34,6 +32,12 @@ import org.apache.spark.rdd.RDD
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 import java.math.BigInteger
+
+import com.datastax.driver.core.{BoundStatement, PreparedStatement}
+import spire.math.Interval
+import spire.implicits._
+
+import scala.collection.immutable.VectorBuilder
 
 object CassandraRDDReader {
   final val defaultThreadCount = CassandraConfig.threads.rdd.readThreads
@@ -48,6 +52,7 @@ object CassandraRDDReader {
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
     numPartitions: Option[Int] = None,
+    keyIndex: KeyIndex[K],
     threads: Int = defaultThreadCount
   )(implicit sc: SparkContext): RDD[(K, V)] = {
     if (queryKeyBounds.isEmpty) return sc.emptyRDD[(K, V)]
@@ -63,12 +68,53 @@ object CassandraRDDReader {
 
     val bins = IndexRanges.bin(ranges, numPartitions.getOrElse(sc.defaultParallelism))
 
-    val query = QueryBuilder.select("value")
-      .from(keyspace, table)
-      .where(eqs("key", QueryBuilder.bindMarker()))
-      .and(eqs("name", layerId.name))
-      .and(eqs("zoom", layerId.zoom))
-      .toString
+    val query = instance.cassandraConfig.partitionStrategy match {
+      case conf.`Read-Optimized-Partitioner` =>
+        QueryBuilder.select("value")
+          .from(keyspace, table)
+          .where(eqs("name", layerId.name))
+          .and(eqs("zoom", layerId.zoom))
+          .and(eqs("zoombin", QueryBuilder.bindMarker()))
+          .and(eqs("key", QueryBuilder.bindMarker()))
+          .toString
+
+      case conf.`Write-Optimized-Partitioner` =>
+        QueryBuilder.select("value")
+          .from(keyspace, table)
+          .where(eqs("key", QueryBuilder.bindMarker()))
+          .and(eqs("name", layerId.name))
+          .and(eqs("zoom", layerId.zoom))
+          .toString
+    }
+
+    lazy val intervals: Vector[(Interval[BigInt], Int)] = {
+      val ranges = keyIndex.indexRanges(keyIndex.keyBounds)
+
+      val binRanges = ranges.toVector.map{ range =>
+        val vb = new VectorBuilder[Interval[BigInt]]()
+        cfor(range._1)(_ <= range._2, _ + instance.cassandraConfig.tilesPerPartition){ i =>
+          vb += Interval.openUpper(i, i + instance.cassandraConfig.tilesPerPartition)
+        }
+        vb.result()
+      }
+
+      binRanges.flatten.zipWithIndex
+    }
+
+    def zoomBin(key: BigInteger): java.lang.Integer = {
+      intervals.find{ case (interval, idx) => interval.contains(key) }.map {
+        _._2: java.lang.Integer
+      }.getOrElse(0: java.lang.Integer)
+    }
+
+    def bindQuery(statement: PreparedStatement, index: BigInteger): BoundStatement = {
+      instance.cassandraConfig.partitionStrategy match {
+        case conf.`Read-Optimized-Partitioner` =>
+          statement.bind(zoomBin(index), index)
+        case conf.`Write-Optimized-Partitioner` =>
+          statement.bind(index)
+      }
+    }
 
     sc.parallelize(bins, bins.size)
       .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
@@ -77,7 +123,7 @@ object CassandraRDDReader {
 
           val result = partition map { seq =>
             LayerReader.njoin[K, V](seq.iterator, threads) { index: BigInt =>
-              val row = session.execute(statement.bind(index: BigInteger))
+              val row = session.execute(bindQuery(statement, index: BigInteger))
               if (row.asScala.nonEmpty) {
                 val bytes = row.one().getBytes("value").array()
                 val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)

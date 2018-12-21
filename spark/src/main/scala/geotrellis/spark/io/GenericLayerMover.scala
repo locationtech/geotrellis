@@ -32,7 +32,7 @@ class GenericLayerMover[ID](layerCopier: LayerCopier[ID], layerDeleter: LayerDel
     M: JsonFormat: Component[?, Bounds[K]]
   ](from: ID, to: ID): Unit = {
     layerCopier.copy[K, V, M](from, to)
-    layerDeleter.delete(from)
+    layerDeleter.delete[K](from)
   }
 }
 

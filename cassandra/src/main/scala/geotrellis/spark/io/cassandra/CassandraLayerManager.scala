@@ -29,8 +29,8 @@ import scala.reflect.ClassTag
 
 class CassandraLayerManager(attributeStore: CassandraAttributeStore, instance: CassandraInstance)(implicit sc: SparkContext)
     extends LayerManager[LayerId]{
-  def delete(id: LayerId): Unit =
-    CassandraLayerDeleter(attributeStore, instance).delete(id)
+  def delete[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag](id: LayerId): Unit =
+    CassandraLayerDeleter(attributeStore, instance).delete[K](id)
 
   def copy[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,

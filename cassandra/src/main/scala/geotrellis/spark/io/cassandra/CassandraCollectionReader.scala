@@ -21,17 +21,21 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.io.cassandra.conf.CassandraConfig
-import geotrellis.spark.io.index.MergeQueue
+import geotrellis.spark.io.index.{KeyIndex, MergeQueue}
 import geotrellis.spark.util.KryoWrapper
-
 import org.apache.avro.Schema
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{eq => eqs}
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
-
 import java.math.BigInteger
+
+import com.datastax.driver.core.{BoundStatement, PreparedStatement}
+import spire.math.Interval
+import spire.implicits._
+
+import scala.collection.immutable.VectorBuilder
 
 object CassandraCollectionReader {
   final val defaultThreadCount = CassandraConfig.threads.collection.readThreads
@@ -45,6 +49,7 @@ object CassandraCollectionReader {
     decomposeBounds: KeyBounds[K] => Seq[(BigInt, BigInt)],
     filterIndexOnly: Boolean,
     writerSchema: Option[Schema] = None,
+    keyIndex: KeyIndex[K],
     threads: Int = defaultThreadCount
   ): Seq[(K, V)] = {
     if (queryKeyBounds.isEmpty) return Seq.empty[(K, V)]
@@ -58,18 +63,59 @@ object CassandraCollectionReader {
     else
       queryKeyBounds.flatMap(decomposeBounds)
 
-    val query = QueryBuilder.select("value")
-      .from(keyspace, table)
-      .where(eqs("key", QueryBuilder.bindMarker()))
-      .and(eqs("name", layerId.name))
-      .and(eqs("zoom", layerId.zoom))
-      .toString
+    val query = instance.cassandraConfig.partitionStrategy match {
+      case conf.`Read-Optimized-Partitioner` =>
+        QueryBuilder.select("value")
+          .from(keyspace, table)
+          .where(eqs("name", layerId.name))
+          .and(eqs("zoom", layerId.zoom))
+          .and(eqs("zoombin", QueryBuilder.bindMarker()))
+          .and(eqs("key", QueryBuilder.bindMarker()))
+          .toString
+
+      case conf.`Write-Optimized-Partitioner` =>
+        QueryBuilder.select("value")
+          .from(keyspace, table)
+          .where(eqs("key", QueryBuilder.bindMarker()))
+          .and(eqs("name", layerId.name))
+          .and(eqs("zoom", layerId.zoom))
+          .toString
+    }
+
+    lazy val intervals: Vector[(Interval[BigInt], Int)] = {
+      val ranges = keyIndex.indexRanges(keyIndex.keyBounds)
+
+      val binRanges = ranges.toVector.map{ range =>
+        val vb = new VectorBuilder[Interval[BigInt]]()
+        cfor(range._1)(_ <= range._2, _ + instance.cassandraConfig.tilesPerPartition){ i =>
+          vb += Interval.openUpper(i, i + instance.cassandraConfig.tilesPerPartition)
+        }
+        vb.result()
+      }
+
+      binRanges.flatten.zipWithIndex
+    }
+
+    def zoomBin(key: BigInteger): java.lang.Integer = {
+      intervals.find{ case (interval, idx) => interval.contains(key) }.map {
+        _._2: java.lang.Integer
+      }.getOrElse(0: java.lang.Integer)
+    }
+
+    def bindQuery(statement: PreparedStatement, index: BigInteger): BoundStatement = {
+      instance.cassandraConfig.partitionStrategy match {
+        case conf.`Read-Optimized-Partitioner` =>
+          statement.bind(zoomBin(index), index)
+        case conf.`Write-Optimized-Partitioner` =>
+          statement.bind(index)
+      }
+    }
 
     instance.withSessionDo { session =>
       val statement = session.prepare(query)
 
       LayerReader.njoin[K, V](ranges.toIterator, threads){ index: BigInt =>
-        val row = session.execute(statement.bind(index: BigInteger))
+        val row = session.execute(bindQuery(statement, index: BigInteger))
         if (row.asScala.nonEmpty) {
           val bytes = row.one().getBytes("value").array()
           val recs = AvroEncoder.fromBinary(kwWriterSchema.value.getOrElse(_recordCodec.schema), bytes)(_recordCodec)
