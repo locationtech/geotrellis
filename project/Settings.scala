@@ -119,7 +119,8 @@ object Settings {
       scalatest % Test
     ),
     resolvers ++= Seq(
-      Repositories.boundlessgeo
+      Repositories.boundlessgeo,
+      Repositories.locationtechReleases
     ),
     initialCommands in console :=
       """
