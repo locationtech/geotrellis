@@ -35,21 +35,22 @@ lazy val commonSettings = Seq(
   pomIncludeRepository := { _ => false },
 
   publishTo := {
-    val sonatype = "https://oss.sonatype.org/"
     val locationtech = "https://repo.locationtech.org/content/repositories"
-    if (isSnapshot.value) {
-      // Publish snapshots to LocationTech
-      Some("LocationTech Snapshot Repository" at s"${locationtech}/geotrellis-snapshots")
-    } else {
-      val milestoneRx = """-(M|RC)\d+$""".r
-      milestoneRx.findFirstIn(Version.geotrellis) match {
-        case Some(v) =>
-          // Public milestones to LocationTech
-          Some("LocationTech Release Repository" at s"${locationtech}/geotrellis-releases")
-        case None =>
-          // Publish releases to Sonatype
-          Some("Sonatype Release Repository" at s"${sonatype}service/local/staging/deploy/maven2")
-      }
+    val sonatype = "https://oss.sonatype.org/"
+
+    System.getProperty("release") match {
+      case "locationtech" if isSnapshot.value =>
+        Some("LocationTech Snapshot" at s"${locationtech}/geotrellis-snapshots")
+
+      case "locationtech" =>
+        Some("LocationTech Release" at s"${locationtech}/geotrellis-releases")
+
+      case "sonatype" =>
+        Some("Sonatype Release" at s"${sonatype}service/local/staging/deploy/maven2")
+
+      case str =>
+        println(s"Releaes To: $str")
+        None
     }
   },
 
