@@ -242,7 +242,6 @@ object TileLayerMetadata {
   ](rdd: RDD[(K, V)], scheme: LayoutScheme): (Int, TileLayerMetadata[K2]) = {
     val (extent, cellType, cellSize, bounds, crs) = collectMetadataWithCRS(rdd)
     val LayoutLevel(zoom, layout) = scheme.levelFor(extent, cellSize)
-    val GridBounds(colMin, rowMin, colMax, rowMax) = layout.mapTransform(extent)
     val kb = bounds.setSpatialBounds(KeyBounds(layout.mapTransform(extent)))
     (zoom, TileLayerMetadata(cellType, layout, extent, crs, kb))
   }
@@ -274,7 +273,6 @@ object TileLayerMetadata {
       case Some(zoom) => scheme.levelForZoom(maxZoom.get)
       case _ => scheme.levelFor(extent, cellSize)
     }
-    val GridBounds(colMin, rowMin, colMax, rowMax) = layout.mapTransform(extent)
     val kb = bounds.setSpatialBounds(KeyBounds(layout.mapTransform(extent)))
     (zoom, TileLayerMetadata(cellType, layout, extent, crs, kb))
   }

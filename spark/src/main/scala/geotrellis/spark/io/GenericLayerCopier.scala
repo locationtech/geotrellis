@@ -52,7 +52,7 @@ class GenericLayerCopier[Header: JsonFormat](
       attributeStore.copy(from, to)
       layerWriter.write(to, layerReader.read[K, V, M](from), keyIndex)
     } catch {
-      case e: Exception => new LayerCopyError(from, to).initCause(e)
+      case e: Exception => throw new LayerCopyError(from, to).initCause(e)
     }
   }
 }
