@@ -15,7 +15,7 @@
  */
 
 object Version {
-  val geotrellis  = "3.0.0" + Environment.versionSuffix
+  val geotrellis  = "2.2.0-SNAPSHOT"
   val scala       = "2.11.12"
   val crossScala  = Seq(scala, "2.12.7")
   val geotools    = "20.0"
@@ -25,7 +25,7 @@ object Version {
   val accumulo    = "1.9.2"
   val cassandra   = "3.6.0"
   val hbase       = "2.1.0"
-  val geomesa     = "2.0.2"
+  val geomesa     = "2.2.0"
   val geowave     = "0.9.3"
   val circe       = "0.10.0"
   val previousVersion = "1.1.0"

@@ -22,7 +22,7 @@ object Dependencies {
   val scalatest           = "org.scalatest"              %% "scalatest"                % "3.0.5"
   val scalacheck          = "org.scalacheck"             %% "scalacheck"               % "1.14.0"
   val jts                 = "org.locationtech.jts"        % "jts-core"                 % "1.16.0"
-  val proj4j              = "org.locationtech.proj4j"     % "proj4j"                   % "0.2.0"
+  val proj4j              = "org.locationtech.proj4j"     % "proj4j"                   % "1.0.0"
 
   val monocleCore         = "com.github.julien-truffaut" %% "monocle-core"             % Version.monocle
   val monocleMacro        = "com.github.julien-truffaut" %% "monocle-macro"            % Version.monocle
@@ -40,11 +40,11 @@ object Dependencies {
 
   val awsSdkS3            = "com.amazonaws"               % "aws-java-sdk-s3"          % "1.11.421"
 
-  val catsCore            = "org.typelevel"              %% "cats-core"                % "1.4.0"
-  val catsEffect          = "org.typelevel"              %% "cats-effect"              % "1.0.0"
+  val catsCore            = "org.typelevel"              %% "cats-core"                % "1.5.0"
+  val catsEffect          = "org.typelevel"              %% "cats-effect"              % "1.1.0"
 
-  val fs2Core             = "co.fs2"                     %% "fs2-core"                 % "1.0.0"
-  val fs2Io               = "co.fs2"                     %% "fs2-io"                   % "1.0.0"
+  val fs2Core             = "co.fs2"                     %% "fs2-core"                 % "1.0.2"
+  val fs2Io               = "co.fs2"                     %% "fs2-io"                   % "1.0.2"
 
   val sparkCore           = "org.apache.spark"           %% "spark-core"               % Version.spark
   val sparkSQL            = "org.apache.spark"           %% "spark-sql"                % Version.spark
