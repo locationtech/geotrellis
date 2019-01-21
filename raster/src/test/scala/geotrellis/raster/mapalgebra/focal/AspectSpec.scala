@@ -178,5 +178,18 @@ class AspectSpec extends FunSpec with Matchers with RasterMatchers with TileBuil
       var value = aR.getDouble(1, 1)
       (value - (-1.0)) should be < 0.000001
     }
+
+    it("should assign cellType-double's flat area to -1") {
+      val r = DoubleArrayTile(
+        Array[Double](
+          1.60205999132796, 1.60205999132796, 1.60205999132796,
+          1.60205999132796, 1.60205999132796, 1.60205999132796,
+          1.60205999132796, 1.60205999132796, 1.60205999132796), 3, 3)
+
+      val aR = r.aspect(CellSize(1, 1))
+
+      var value = aR.getDouble(1, 1)
+      (value - (-1.0)) should be < 0.000001
+    }
   }
 }

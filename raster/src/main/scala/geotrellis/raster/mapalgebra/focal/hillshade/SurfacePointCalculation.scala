@@ -37,13 +37,13 @@ class SurfacePoint() {
   var `dz/dy` = Double.NaN
 
   def aspectAzimuth() = {
-    if (`dz/dx` == 0 && `dz/dy` == 0) {
+    if (Math.abs(`dz/dx`) <= 1E-10 && Math.abs(`dz/dy`) <= 1E-10) {
       /* Flat area */
       -1.0
     } else {
       var aAzimuth = toDegrees(atan2(`dz/dy`, `dz/dx`) - Pi * 0.5)
       if (aAzimuth < 0) { aAzimuth += 360.0 }
-      if (aAzimuth == 360.0) { aAzimuth = 0.0 }
+      if (Math.abs(aAzimuth - 360.0) <= 1E-10) { aAzimuth = 0.0 }
       aAzimuth
     }
   }
