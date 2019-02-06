@@ -1,6 +1,37 @@
 Changelog
 =========
 
+2.2.0
+-----
+*2019 Jan 11*
+
+API Changes & Projects strucutre changes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- ``geotrellis.proj4j``
+
+  - **Change:** Extract Proj4J to org.locationtech.proj4j (`#2846 <https://github.com/locationtech/geotrellis/pull/2846>`_).
+
+Fixes & Updates
+^^^^^^^^^^^^^^^
+
+- Fix {Backend}LayerCopy exception handling (`#2860 <https://github.com/locationtech/geotrellis/pull/2860>`_).
+- Fix cache level in Ingest objects (`#2854 <https://github.com/locationtech/geotrellis/pull/2854>`_).
+- Catch a possible precision loss on reprojection to the same projection (`#2849 <https://github.com/locationtech/geotrellis/pull/2849>`_).
+- Make histogram.merge methods more specific (`#2852 <https://github.com/locationtech/geotrellis/pull/2852>`_).
+- Fixed elliptical radius check in IDW algorithm (`#2844 <https://github.com/locationtech/geotrellis/pull/2844>`_).
+- Replace all JavaConversions imports by JavaConverters (`#2843 <https://github.com/locationtech/geotrellis/pull/2843>`_).
+- Made implicit conversions to/from Raster and ProjectedRaster deprecated (`#2834 <https://github.com/locationtech/geotrellis/pull/2834>`_).
+- Fix vectorizer bug (`#2839 <https://github.com/locationtech/geotrellis/pull/2839>`_).
+- Added `mapTile` to `ProjectedRaster` (`#2830 <https://github.com/locationtech/geotrellis/pull/2830>`_).
+- Downgrade Avro version (`#2837 <https://github.com/locationtech/geotrellis/pull/2837>`_).
+- Fix error in `ReprojectRasterExtent` (`#2825 <https://github.com/locationtech/geotrellis/pull/2825>`_).
+- Dependency updates (`#2813 <https://github.com/locationtech/geotrellis/pull/2813>`_).
+- Bump Spark version up to 2.4 (`#2823 <https://github.com/locationtech/geotrellis/pull/2823>`_).
+- Use a local[2] mode inside TestEnvironment trait (`#2821 <https://github.com/locationtech/geotrellis/pull/2821>`_).
+- Make IO code agnostic about effects (`#2818 <https://github.com/locationtech/geotrellis/pull/2818>`_).
+- Make IO code agnostic about effects (`#2818 <https://github.com/locationtech/geotrellis/pull/2818>`_).
+
 2.1.0
 -----
 *2018 Oct 2*
