@@ -29,7 +29,7 @@ import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
 trait LayerManager[ID] {
-  def delete[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag](id: ID): Unit
+  def delete[K: ClassTag](id: ID): Unit
 
   def copy[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag,

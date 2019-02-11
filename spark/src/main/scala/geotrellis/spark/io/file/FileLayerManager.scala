@@ -32,7 +32,7 @@ import scala.reflect.ClassTag
 
 class FileLayerManager(attributeStore: FileAttributeStore)(implicit sc: SparkContext)
     extends LayerManager[LayerId] {
-  def delete[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag](id: LayerId): Unit =
+  def delete[K: ClassTag](id: LayerId): Unit =
     FileLayerDeleter(attributeStore).delete[K](id)
 
   def copy[

@@ -32,7 +32,7 @@ import scala.reflect.ClassTag
 
 class AccumuloLayerManager(attributeStore: AccumuloAttributeStore, instance: AccumuloInstance)(implicit sc: SparkContext)
     extends LayerManager[LayerId]{
-  def delete[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag](id: LayerId): Unit =
+  def delete[K: ClassTag](id: LayerId): Unit =
     AccumuloLayerDeleter(attributeStore, instance).delete[K](id)
 
   def copy[

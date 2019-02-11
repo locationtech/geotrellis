@@ -28,7 +28,7 @@ class S3LayerDeleter(val attributeStore: AttributeStore) extends LazyLogging wit
 
   def getS3Client: () => S3Client = () => S3Client.DEFAULT
 
-  def delete[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag](id: LayerId): Unit = {
+  def delete[K: ClassTag](id: LayerId): Unit = {
     try {
       val header = attributeStore.readHeader[S3LayerHeader](id)
       val bucket = header.bucket

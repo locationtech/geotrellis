@@ -28,7 +28,7 @@ import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
 class HadoopLayerDeleter(val attributeStore: AttributeStore, conf: Configuration) extends LazyLogging with LayerDeleter[LayerId] {
-  def delete[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag](id: LayerId): Unit = {
+  def delete[K: ClassTag](id: LayerId): Unit = {
     try {
       val header = attributeStore.readHeader[HadoopLayerHeader](id)
       HdfsUtils.deletePath(new Path(header.path), conf)

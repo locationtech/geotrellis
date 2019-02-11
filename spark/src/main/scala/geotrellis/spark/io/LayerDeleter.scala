@@ -23,5 +23,5 @@ import spray.json.JsonFormat
 import scala.reflect.ClassTag
 
 trait LayerDeleter[ID] {
-  def delete[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag](id: ID): Unit
+  def delete[K: ClassTag](id: ID): Unit
 }

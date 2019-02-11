@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
 
 class AccumuloLayerDeleter(val attributeStore: AttributeStore, connector: Connector) extends LazyLogging with LayerDeleter[LayerId] {
 
-  def delete[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag](id: LayerId): Unit = {
+  def delete[K: ClassTag](id: LayerId): Unit = {
     try {
       val header = attributeStore.readHeader[AccumuloLayerHeader](id)
       val numThreads = 1

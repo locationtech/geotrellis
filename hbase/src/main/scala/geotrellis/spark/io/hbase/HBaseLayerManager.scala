@@ -29,7 +29,7 @@ import scala.reflect.ClassTag
 
 class HBaseLayerManager(attributeStore: HBaseAttributeStore, instance: HBaseInstance)(implicit sc: SparkContext)
     extends LayerManager[LayerId]{
-  def delete[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag](id: LayerId): Unit =
+  def delete[K: ClassTag](id: LayerId): Unit =
     HBaseLayerDeleter(attributeStore, instance).delete[K](id)
 
   def copy[

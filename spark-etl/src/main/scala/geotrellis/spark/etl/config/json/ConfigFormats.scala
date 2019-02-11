@@ -128,11 +128,11 @@ trait ConfigFormats {
       }
   }
 
-  implicit val cassandraPartitionStrategyFormat = new JsonFormat[CassandraIndexStrategy]{
+  implicit val cassandraIndexStrategyFormat = new JsonFormat[CassandraIndexStrategy]{
     override def write(obj: CassandraIndexStrategy): JsValue = {
       obj match {
-        case WriteOptimized => JsString("write-optimized-partitioner")
-        case ReadOptimized => JsString("read-optimized-partitioner")
+        case WriteOptimized => JsString("writeoptimized")
+        case ReadOptimized => JsString("readoptimized")
       }
     }
 
@@ -140,14 +140,14 @@ trait ConfigFormats {
       json match {
         case JsString(s) =>
           s match {
-            case "read-optimized-partitioner" => ReadOptimized
-            case "write-optimized-partitioner" => WriteOptimized
+            case "readoptimized" => ReadOptimized
+            case "writeoptimized" => WriteOptimized
             case x =>
-              throw new DeserializationException("Unrecognized Cassandra Partition Strategy: "+x)
+              throw new DeserializationException("Unrecognized Cassandra Index Strategy: "+x)
           }
         case x =>
           throw new DeserializationException(
-            "Cassandra Partition Strategy should have been of type JsString, but was: "+x.getClass.getSimpleName
+            "Cassandra Index Strategy should have been of type JsString, but was: "+x.getClass.getSimpleName
           )
       }
     }

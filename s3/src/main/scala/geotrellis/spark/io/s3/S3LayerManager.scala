@@ -32,7 +32,7 @@ import scala.reflect.ClassTag
 
 class S3LayerManager(attributeStore: S3AttributeStore)(implicit sc: SparkContext)
     extends LayerManager[LayerId] {
-  def delete[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag](id: LayerId): Unit =
+  def delete[K: ClassTag](id: LayerId): Unit =
     S3LayerDeleter(attributeStore).delete[K](id)
 
   def copy[

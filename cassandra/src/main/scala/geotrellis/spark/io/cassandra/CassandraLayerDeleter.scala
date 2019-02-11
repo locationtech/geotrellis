@@ -35,7 +35,7 @@ import scala.reflect.ClassTag
 
 class CassandraLayerDeleter(val attributeStore: AttributeStore, instance: CassandraInstance) extends LazyLogging with LayerDeleter[LayerId] {
 
-  def delete[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag](id: LayerId): Unit = {
+  def delete[K: ClassTag](id: LayerId): Unit = {
     try {
       val header = attributeStore.readHeader[CassandraLayerHeader](id)
       val keyIndex = attributeStore.readKeyIndex[K](id)
