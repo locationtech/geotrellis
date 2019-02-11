@@ -47,61 +47,27 @@ class CassandraValueReader(
     val writerSchema = attributeStore.readSchema(layerId)
     val codec = KeyValueRecordCodec[K, V]
 
+    val indexStrategy = new CassandraIndexing[K](keyIndex, instance.cassandraConfig.tilesPerPartition)
+
+    lazy val query = indexStrategy.queryValueStatement(
+      instance.cassandraConfig.indexStrategy,
+      header.keyspace, header.tileTable,
+      layerId.name, layerId.zoom
+    )
+
     lazy val statement = instance.withSession{ session =>
-      instance.cassandraConfig.partitionStrategy match {
-        case conf.`Read-Optimized-Partitioner` =>
-          session.prepare(
-            QueryBuilder.select("value")
-              .from(header.keyspace, header.tileTable)
-              .where(eqs("name", layerId.name))
-              .and(eqs("zoom", layerId.zoom))
-              .and(eqs("zoombin", QueryBuilder.bindMarker()))
-              .and(eqs("key", QueryBuilder.bindMarker()))
-              .toString
-          )
-
-        case conf.`Write-Optimized-Partitioner` =>
-          session.prepare(
-            QueryBuilder.select("value")
-              .from(header.keyspace, header.tileTable)
-              .where(eqs("key", QueryBuilder.bindMarker()))
-              .and(eqs("name", layerId.name))
-              .and(eqs("zoom", layerId.zoom))
-          )
-      }
-    }
-
-    lazy val intervals: Vector[(Interval[BigInt], Int)] = {
-      val ranges = keyIndex.indexRanges(keyIndex.keyBounds)
-
-      val binRanges = ranges.toVector.map{ range =>
-        val vb = new VectorBuilder[Interval[BigInt]]()
-        cfor(range._1)(_ <= range._2, _ + instance.cassandraConfig.tilesPerPartition){ i =>
-          vb += Interval.openUpper(i, i + instance.cassandraConfig.tilesPerPartition)
-        }
-        vb.result()
-      }
-
-      binRanges.flatten.zipWithIndex
-    }
-
-    def zoomBin(key: BigInteger): java.lang.Integer = {
-      intervals.find{ case (interval, idx) => interval.contains(key) }.map {
-        _._2: java.lang.Integer
-      }.getOrElse(0: java.lang.Integer)
-    }
-
-    def bindQuery(statement: PreparedStatement, index: BigInteger): BoundStatement = {
-      instance.cassandraConfig.partitionStrategy match {
-        case conf.`Read-Optimized-Partitioner` =>
-          statement.bind(zoomBin(index), index)
-        case conf.`Write-Optimized-Partitioner` =>
-          statement.bind(index)
-      }
+      indexStrategy.prepareQuery(query)(session)
     }
 
     def read(key: K): V = instance.withSession { session =>
-      val row = session.execute(bindQuery(statement, keyIndex.toIndex(key): BigInteger)).all()
+      val bound = indexStrategy.bindQuery(
+        instance.cassandraConfig.indexStrategy,
+        statement,
+        keyIndex.toIndex(key): BigInteger
+      )
+
+      val row = session.execute(bound).all()
+
       val tiles = row.asScala.map { entry =>
           AvroEncoder.fromBinary(writerSchema, entry.getBytes("value").array())(codec)
         }

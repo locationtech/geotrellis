@@ -38,73 +38,30 @@ class CassandraLayerDeleter(val attributeStore: AttributeStore, instance: Cassan
   def delete[K: AvroRecordCodec: Boundable: JsonFormat: ClassTag](id: LayerId): Unit = {
     try {
       val header = attributeStore.readHeader[CassandraLayerHeader](id)
+      val keyIndex = attributeStore.readKeyIndex[K](id)
+      val indexStrategy = new CassandraIndexing[K](keyIndex, instance.cassandraConfig.tilesPerPartition)
 
-      val (squery, dquery) = instance.cassandraConfig.partitionStrategy match {
-        case conf.`Read-Optimized-Partitioner` =>
-          val squery = QueryBuilder.select("key", "zoombin")
-            .from(header.keyspace, header.tileTable).allowFiltering()
-            .where(eqs("name", id.name))
-            .and(eqs("zoom", id.zoom))
+      val squery = QueryBuilder.select("key")
+        .from(header.keyspace, header.tileTable).allowFiltering()
+        .where(eqs("name", id.name))
+        .and(eqs("zoom", id.zoom))
 
-          val dquery = QueryBuilder.delete()
-            .from(header.keyspace, header.tileTable)
-            .where(eqs("name", id.name))
-            .and(eqs("zoom", id.zoom))
-            .and(eqs("zoombin", QueryBuilder.bindMarker()))
-            .and(eqs("key", QueryBuilder.bindMarker()))
-
-          squery -> dquery
-
-        case conf.`Write-Optimized-Partitioner` =>
-          val squery = QueryBuilder.select("key")
-            .from(header.keyspace, header.tileTable).allowFiltering()
-            .where(eqs("name", id.name))
-            .and(eqs("zoom", id.zoom))
-
-          val dquery = QueryBuilder.delete()
-            .from(header.keyspace, header.tileTable)
-            .where(eqs("key", QueryBuilder.bindMarker()))
-            .and(eqs("name", id.name))
-            .and(eqs("zoom", id.zoom))
-
-          squery -> dquery
-      }
-
-      lazy val intervals: Vector[(Interval[BigInt], Int)] = {
-        val keyIndex = attributeStore.readKeyIndex[K](id)
-        val ranges = keyIndex.indexRanges(keyIndex.keyBounds)
-
-        val binRanges = ranges.toVector.map{ range =>
-          val vb = new VectorBuilder[Interval[BigInt]]()
-          cfor(range._1)(_ <= range._2, _ + instance.cassandraConfig.tilesPerPartition){ i =>
-            vb += Interval.openUpper(i, i + instance.cassandraConfig.tilesPerPartition)
-          }
-          vb.result()
-        }
-
-        binRanges.flatten.zipWithIndex
-      }
-
-      def zoomBin(key: BigInteger): java.lang.Integer = {
-        intervals.find{ case (interval, idx) => interval.contains(key) }.map {
-          _._2: java.lang.Integer
-        }.getOrElse(0: java.lang.Integer)
-      }
-
-      def bindQuery(statement: PreparedStatement, index: BigInteger): BoundStatement = {
-        instance.cassandraConfig.partitionStrategy match {
-          case conf.`Read-Optimized-Partitioner` =>
-            statement.bind(zoomBin(index), index)
-          case conf.`Write-Optimized-Partitioner` =>
-            statement.bind(index)
-        }
-      }
+      val dquery = indexStrategy.deleteStatement(
+        instance.cassandraConfig.indexStrategy,
+        header.keyspace, header.tileTable, id.name, id.zoom
+      )
 
       instance.withSessionDo { session =>
-        val statement = session.prepare(dquery)
+        val statement = indexStrategy.prepareQuery(dquery)(session)
 
-        session.execute(squery).all().asScala.map { entry =>
-          session.execute(bindQuery(statement, entry.getVarint("key")))
+        //NOTE: use `iterator()` when possible as opposed to `all()` since the latter forces
+        //      materialization of the entirety of the query results into on-heap memory.
+        session.execute(squery).iterator().asScala.map { entry =>
+          session.execute(indexStrategy.bindQuery(
+            instance.cassandraConfig.indexStrategy,
+            statement,
+            entry.getVarint("key")
+          ))
         }
       }
     } catch {

@@ -28,7 +28,7 @@ trait KeyIndex[K] extends Serializable {
 object KeyIndex {
   /**
    * Mapping KeyBounds of Extent to SFC ranges will often result in a
-   * set of non-contigrious ranges.  The indices excluded by these
+   * set of non-contiguous ranges.  The indices excluded by these
    * ranges should not be included in breaks calculation as they will
    * never be seen.
    */

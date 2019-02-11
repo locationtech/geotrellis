@@ -24,12 +24,11 @@ import org.apache.spark.SparkConf
 import org.scalatest._
 
 trait CassandraTestEnvironment extends TestEnvironment with LazyLogging { self: Suite =>
+  override def sparkMaster = "local[*]"
+
   override def setKryoRegistrator(conf: SparkConf) =
     conf.set("spark.kryo.registrator", classOf[KryoRegistrator].getName)
         .set("spark.kryo.registrationRequired", "false")
-
-  private var startTime: Long = 0
-  private var stopTime: Long = 0
 
   override def beforeAll = {
     super.beforeAll
@@ -42,12 +41,6 @@ trait CassandraTestEnvironment extends TestEnvironment with LazyLogging { self: 
         println("\u001b[0;33mA script for setting up the Cassandra environment necessary to run these tests can be found at scripts/cassandraTestDB.sh - requires a working docker setup\u001b[m")
         cancel
     }
-    startTime = System.currentTimeMillis()
-  }
-
-  override def afterAll = {
-    stopTime = System.currentTimeMillis()
-    logger.info("Execution Time: "+(stopTime - startTime)+"ms")
   }
 
   beforeAll()

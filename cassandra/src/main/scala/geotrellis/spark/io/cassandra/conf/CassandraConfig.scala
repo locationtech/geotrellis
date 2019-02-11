@@ -33,26 +33,27 @@ case class CassandraThreadsConfig(
   rdd: CassandraRDDConfig = CassandraRDDConfig()
 )
 
-sealed trait CassandraPartitionStrategy
+sealed trait CassandraIndexStrategy
 
 /**
-  * The default partition strategy.  Spreads tiles evenly across the Cassandra
+  * The default range query strategy.  Spreads tiles evenly across the Cassandra
   * cluster, but makes no attempt to leverage locality guarantees provided by
   * Space-Filling Curve index.  Efficient for heavy write loads, but probably
   * less efficient for bulk reads.
   */
-case object `Write-Optimized-Partitioner` extends CassandraPartitionStrategy
+case object WriteOptimized extends CassandraIndexStrategy
 
 /**
-  * The read-optimized partitioner will attempt to bin zoom levels
+  * The read-optimized query strategy will attempt to bin zoom levels
   * into intelligently sized chunks by range-binning the SFC index. May
   * be more efficient for workloads with high read/throughput requirements.
   * Be sure to also set 'tilesPerPartition' to something reasonable if using
   * this partitioning strategy.  "Reasonable" here will depend on the size
   * of the tiles you're storing and your Cassandra cluster's tolerance for
-  * large partition sizes.
+  * large partition sizes.  Be sure to stress test and tweak as necessary to
+  * find an appropriate value for your application.
   */
-case object `Read-Optimized-Partitioner` extends CassandraPartitionStrategy
+case object ReadOptimized extends CassandraIndexStrategy
 
 case class CassandraConfig(
   port: Int = 9042,
@@ -64,12 +65,12 @@ case class CassandraConfig(
   usedHostsPerRemoteDc: Int = 0,
   allowRemoteDCsForLocalConsistencyLevel: Boolean = false,
   threads: CassandraThreadsConfig = CassandraThreadsConfig(),
-  partitionStrategy: CassandraPartitionStrategy = `Write-Optimized-Partitioner`,
-  tilesPerPartition: Int = 1 //Has no effect unless Read-Optimized-Partitioner is used.
+  indexStrategy: CassandraIndexStrategy = WriteOptimized,
+  tilesPerPartition: Int = 1 //Has no effect unless Read-Optimized-Query is used.
 )
 
 object CassandraConfig extends CamelCaseConfig {
-  private implicit lazy val partitionStrategyHint = new EnumCoproductHint[CassandraPartitionStrategy]
+  private implicit lazy val indexStrategyHint = new EnumCoproductHint[CassandraIndexStrategy]
   lazy val conf: CassandraConfig = pureconfig.loadConfigOrThrow[CassandraConfig]("geotrellis.cassandra")
   implicit def cassandraConfigToClass(obj: CassandraConfig.type): CassandraConfig = conf
 }
