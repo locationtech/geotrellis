@@ -85,6 +85,8 @@ protected[cassandra] class CassandraIndexing[K](
             .addPartitionKey("zoombin", cint)
             .addClusteringColumn("key", varint)
             .addColumn("value", blob)
+            .withOptions()
+            .caching(KeyCaching.ALL, SchemaBuilder.rows(tilesPerPartition))
         )
 
       case conf.WriteOptimized =>

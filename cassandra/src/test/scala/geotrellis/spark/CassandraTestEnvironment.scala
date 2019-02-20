@@ -24,7 +24,7 @@ import org.apache.spark.SparkConf
 import org.scalatest._
 
 trait CassandraTestEnvironment extends TestEnvironment with LazyLogging { self: Suite =>
-  override def sparkMaster = "local[*]"
+  override def sparkMaster = s"local[${Math.max((Runtime.getRuntime.availableProcessors() / 2) - 1, 1)}]"
 
   override def setKryoRegistrator(conf: SparkConf) =
     conf.set("spark.kryo.registrator", classOf[KryoRegistrator].getName)
