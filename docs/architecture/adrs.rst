@@ -14,3 +14,4 @@ regarding GeoTrellis.
    IO Multi-threading <003-readers-writers-multithreading>
    Spark Streaming <004-spark-streaming>
    ETL Pipeline <005-etl-pipeline>
+   Cassandra backend performance <../cassandra-optimization>
