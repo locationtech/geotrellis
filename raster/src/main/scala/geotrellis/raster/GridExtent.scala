@@ -16,7 +16,7 @@
 
 package geotrellis.raster
 
-import geotrellis.vector.Extent
+import geotrellis.vector.{Extent, Point}
 
 import scala.math.{min, max, ceil}
 
@@ -62,10 +62,17 @@ class GridExtent(val extent: Extent, val cellwidth: Double, val cellheight: Doub
     * the given extent is covered, that lines up with the grid.
     */
   def createAlignedGridExtent(targetExtent: Extent): GridExtent = {
-    val xmin = extent.xmin + (math.floor((targetExtent.xmin - extent.xmin) / cellwidth) * cellwidth)
-    val xmax = extent.xmax - (math.floor((extent.xmax - targetExtent.xmax) / cellwidth) * cellwidth)
-    val ymin = extent.ymin + (math.floor((targetExtent.ymin - extent.ymin) / cellheight) * cellheight)
-    val ymax = extent.ymax - (math.floor((extent.ymax - targetExtent.ymax) / cellheight) * cellheight)
+    createAlignedGridExtent(targetExtent, extent.northWest)
+  }
+
+  def createAlignedGridExtent(targetExtent: Extent, alignmentPoint: Point): GridExtent = {
+    def push(x: Double): Double = math.ceil(math.abs(x)) * math.signum(x)
+    def quantize(reference: Double, actual: Double, unit: Double): Double = reference + push((actual - reference) / unit) * unit
+
+    val xmin = quantize(alignmentPoint.x, extent.xmin, cellwidth)
+    val xmax = quantize(alignmentPoint.x, extent.xmax, cellwidth)
+    val ymin = quantize(alignmentPoint.y, extent.ymin, cellheight)
+    val ymax = quantize(alignmentPoint.y, extent.ymax, cellheight)
 
     GridExtent(Extent(xmin, ymin, xmax, ymax), cellwidth, cellheight)
   }
@@ -74,8 +81,8 @@ class GridExtent(val extent: Extent, val cellwidth: Double, val cellheight: Doub
     * Tests if the grid is aligned to the extent.
     * This is true when the extent is evenly divided by cellheight and cellwidth.
     */
-  def isGridExtentAlligned(): Boolean = {
-    def isWhole(x: Double) = math.floor(x) == x
+  def isGridExtentAligned(): Boolean = {
+    def isWhole(x: Double) = math.abs(math.floor(x) - x) < geotrellis.util.Constants.DOUBLE_EPSILON
     isWhole((extent.xmax - extent.xmin) / cellwidth) && isWhole((extent.ymax - extent.ymin) / cellheight)
   }
 
