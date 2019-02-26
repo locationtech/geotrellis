@@ -54,25 +54,37 @@ class GridExtent(val extent: Extent, val cellwidth: Double, val cellheight: Doub
   }
 
   /**
-    * Returns a GridExtent that lines up with this grid' resolution
+    * Returns a GridExtent that lines up with this grid's resolution
     * and grid layout.
     *
-    * For example, the resulting GridExtent will not have the given
-    * extent, but will have the smallest extent such that the whole of
-    * the given extent is covered, that lines up with the grid.
+    * This function will generate an extent that lines up with the grid
+    * indicated by the GridExtent, having an origin at the upper-left corner
+    * of the extent, and grid cells having the size given by cellSize.
+    * The resulting GridExtent, in general, will not be equal to
+    * ``targetExtent``, but will have the smallest extent that lines up with
+    * the grid and also covers ``targetExtent``.
     */
   def createAlignedGridExtent(targetExtent: Extent): GridExtent = {
     createAlignedGridExtent(targetExtent, extent.northWest)
   }
 
+  /**
+    * Returns a GridExtent that with this grid's resolution.
+    *
+    * This function will generate an extent that lines up with a grid having
+    * an origin at the given point and grid cells of the size given by the
+    * cellSize of the GridExtent.  The resulting GridExtent, in general, will
+    * not be equal to ``targetExtent``, but will have the smallest extent
+    * that lines up with the grid and also covers ``targetExtent``.
+    */
   def createAlignedGridExtent(targetExtent: Extent, alignmentPoint: Point): GridExtent = {
-    def push(x: Double): Double = math.ceil(math.abs(x)) * math.signum(x)
-    def quantize(reference: Double, actual: Double, unit: Double): Double = reference + push((actual - reference) / unit) * unit
+    def left(reference: Double, actual: Double, unit: Double): Double = reference + math.floor((actual - reference) / unit) * unit
+    def right(reference: Double, actual: Double, unit: Double): Double = reference + math.ceil((actual - reference) / unit) * unit
 
-    val xmin = quantize(alignmentPoint.x, extent.xmin, cellwidth)
-    val xmax = quantize(alignmentPoint.x, extent.xmax, cellwidth)
-    val ymin = quantize(alignmentPoint.y, extent.ymin, cellheight)
-    val ymax = quantize(alignmentPoint.y, extent.ymax, cellheight)
+    val xmin = left(alignmentPoint.x, targetExtent.xmin, cellwidth)
+    val xmax = right(alignmentPoint.x, targetExtent.xmax, cellwidth)
+    val ymin = left(alignmentPoint.y, targetExtent.ymin, cellheight)
+    val ymax = right(alignmentPoint.y, targetExtent.ymax, cellheight)
 
     GridExtent(Extent(xmin, ymin, xmax, ymax), cellwidth, cellheight)
   }
