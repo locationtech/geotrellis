@@ -16,7 +16,7 @@
 
 package geotrellis.raster
 
-import geotrellis.vector.Extent
+import geotrellis.vector.{Extent, Point}
 
 import scala.math.{min, max, ceil}
 
@@ -54,18 +54,37 @@ class GridExtent(val extent: Extent, val cellwidth: Double, val cellheight: Doub
   }
 
   /**
-    * Returns a GridExtent that lines up with this grid' resolution
+    * Returns a GridExtent that lines up with this grid's resolution
     * and grid layout.
     *
-    * For example, the resulting GridExtent will not have the given
-    * extent, but will have the smallest extent such that the whole of
-    * the given extent is covered, that lines up with the grid.
+    * This function will generate an extent that lines up with the grid
+    * indicated by the GridExtent, having an origin at the upper-left corner
+    * of the extent, and grid cells having the size given by cellSize.
+    * The resulting GridExtent, in general, will not be equal to
+    * ``targetExtent``, but will have the smallest extent that lines up with
+    * the grid and also covers ``targetExtent``.
     */
   def createAlignedGridExtent(targetExtent: Extent): GridExtent = {
-    val xmin = extent.xmin + (math.floor((targetExtent.xmin - extent.xmin) / cellwidth) * cellwidth)
-    val xmax = extent.xmax - (math.floor((extent.xmax - targetExtent.xmax) / cellwidth) * cellwidth)
-    val ymin = extent.ymin + (math.floor((targetExtent.ymin - extent.ymin) / cellheight) * cellheight)
-    val ymax = extent.ymax - (math.floor((extent.ymax - targetExtent.ymax) / cellheight) * cellheight)
+    createAlignedGridExtent(targetExtent, extent.northWest)
+  }
+
+  /**
+    * Returns a GridExtent that with this grid's resolution.
+    *
+    * This function will generate an extent that lines up with a grid having
+    * an origin at the given point and grid cells of the size given by the
+    * cellSize of the GridExtent.  The resulting GridExtent, in general, will
+    * not be equal to ``targetExtent``, but will have the smallest extent
+    * that lines up with the grid and also covers ``targetExtent``.
+    */
+  def createAlignedGridExtent(targetExtent: Extent, alignmentPoint: Point): GridExtent = {
+    def left(reference: Double, actual: Double, unit: Double): Double = reference + math.floor((actual - reference) / unit) * unit
+    def right(reference: Double, actual: Double, unit: Double): Double = reference + math.ceil((actual - reference) / unit) * unit
+
+    val xmin = left(alignmentPoint.x, targetExtent.xmin, cellwidth)
+    val xmax = right(alignmentPoint.x, targetExtent.xmax, cellwidth)
+    val ymin = left(alignmentPoint.y, targetExtent.ymin, cellheight)
+    val ymax = right(alignmentPoint.y, targetExtent.ymax, cellheight)
 
     GridExtent(Extent(xmin, ymin, xmax, ymax), cellwidth, cellheight)
   }
@@ -74,8 +93,8 @@ class GridExtent(val extent: Extent, val cellwidth: Double, val cellheight: Doub
     * Tests if the grid is aligned to the extent.
     * This is true when the extent is evenly divided by cellheight and cellwidth.
     */
-  def isGridExtentAlligned(): Boolean = {
-    def isWhole(x: Double) = math.floor(x) == x
+  def isGridExtentAligned(): Boolean = {
+    def isWhole(x: Double) = math.abs(math.floor(x) - x) < geotrellis.util.Constants.DOUBLE_EPSILON
     isWhole((extent.xmax - extent.xmin) / cellwidth) && isWhole((extent.ymax - extent.ymin) / cellheight)
   }
 
