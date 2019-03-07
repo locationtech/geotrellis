@@ -41,10 +41,10 @@ trait RasterRegionReproject[T <: CellGrid] extends Serializable {
     * @param errorThreshold error threshold when using approximate row transformations in reprojection.
     */
   def regionReproject(raster: Raster[T], src: CRS, dest: CRS, rasterExtent: RasterExtent, region: Polygon, resampleMethod: ResampleMethod, errorThreshold: Double): Raster[T]
-  
+
   def regionReproject(raster: Raster[T], src: CRS, dest: CRS, rasterExtent: RasterExtent, region: Polygon, resampleMethod: ResampleMethod): Raster[T] =
     regionReproject(raster, src, dest, rasterExtent, region, resampleMethod, 0.125) // This default comes from GDAL 1.11 code
-  
+
 
   /** Reproject raster to a region that may partially intersect target raster extent.
     *
@@ -65,9 +65,9 @@ trait RasterRegionReproject[T <: CellGrid] extends Serializable {
     * @param errorThreshold error threshold when using approximate row transformations in reprojection.
     */
   def regionReprojectMutable(raster: Raster[T], src: CRS, dest: CRS, target: Raster[T], region: Polygon, resampleMethod: ResampleMethod, errorThreshold: Double): Raster[T]
-  
-  def regionReprojectMutable(raster: Raster[T], src: CRS, dest: CRS, target: Raster[T], region: Polygon, resampleMethod: ResampleMethod): Raster[T] = 
-    regionReprojectMutable(raster, src, dest, target, region, resampleMethod, 0.125) // This default comes from GDAL 1.11 code 
+
+  def regionReprojectMutable(raster: Raster[T], src: CRS, dest: CRS, target: Raster[T], region: Polygon, resampleMethod: ResampleMethod): Raster[T] =
+    regionReprojectMutable(raster, src, dest, target, region, resampleMethod, 0.125) // This default comes from GDAL 1.11 code
 
   @deprecated("Use regionReprojectMerge instead", "2.1")
   def mutableRegionReproject(target: T, raster: Raster[T], src: CRS, dest: CRS, rasterExtent: RasterExtent, region: Polygon, resampleMethod: ResampleMethod): Unit = {
@@ -78,9 +78,9 @@ trait RasterRegionReproject[T <: CellGrid] extends Serializable {
 
 object RasterRegionReproject {
   private def rowCoords(
-    destRegion: Polygon, 
-    destRasterExtent: RasterExtent, 
-    toSrcCrs: Transform, 
+    destRegion: Polygon,
+    destRasterExtent: RasterExtent,
+    toSrcCrs: Transform,
     errorThreshold: Double
   ): Int => (Array[Int], Array[Double], Array[Double]) = {
     val extent = destRasterExtent.extent
@@ -92,8 +92,8 @@ object RasterRegionReproject {
         RowTransform.exact(toSrcCrs)
 
     def scanlineCols(xmin: Double, xmax: Double): (Array[Int], Array[Double]) = {
-      val x0 = ((xmin - extent.xmin) / destRasterExtent.cellwidth + 0.5 - 1e-8).toInt
-      val x1 = ((xmax - extent.xmin) / destRasterExtent.cellwidth + 0.5 + 1e-8).toInt - 1
+      val x0 = ((xmin - extent.xmin) / destRasterExtent.cellwidth + 0.5 - 1e-6).toInt
+      val x1 = ((xmax - extent.xmin) / destRasterExtent.cellwidth + 0.5 + 1e-6).toInt - 1
       val locations = Array.ofDim[Int](x1 - x0 + 1)
       val result = Array.ofDim[Double](x1 - x0 + 1)
       cfor(x0)(_ <= x1, _ + 1){ i =>
@@ -153,12 +153,12 @@ object RasterRegionReproject {
 
   implicit val singlebandInstance = new RasterRegionReproject[Tile] {
     def regionReproject(
-      raster: Raster[Tile], 
-      src: CRS, 
-      dest: CRS, 
-      rasterExtent: RasterExtent, 
-      region: Polygon, 
-      resampleMethod: ResampleMethod, 
+      raster: Raster[Tile],
+      src: CRS,
+      dest: CRS,
+      rasterExtent: RasterExtent,
+      region: Polygon,
+      resampleMethod: ResampleMethod,
       errorThreshold: Double
     ): Raster[Tile] = {
       val buffer = ArrayTile.empty(raster.tile.cellType, rasterExtent.cols, rasterExtent.rows)
@@ -167,11 +167,11 @@ object RasterRegionReproject {
     }
 
     def regionReprojectMutable(
-      raster: Raster[Tile], 
-      src: CRS, 
-      dest: CRS, 
-      target: Raster[Tile], 
-      region: Polygon, 
+      raster: Raster[Tile],
+      src: CRS,
+      dest: CRS,
+      target: Raster[Tile],
+      region: Polygon,
       resampleMethod: ResampleMethod,
       errorThreshold: Double
     ): Raster[Tile] = {
@@ -182,13 +182,13 @@ object RasterRegionReproject {
     }
 
     private def reprojectToBuffer(
-      raster: Raster[Tile], 
-      src: CRS, 
-      dest: CRS, 
-      target: MutableArrayTile, 
-      rasterExtent: RasterExtent, 
-      region: Polygon, 
-      resampleMethod: ResampleMethod, 
+      raster: Raster[Tile],
+      src: CRS,
+      dest: CRS,
+      target: MutableArrayTile,
+      rasterExtent: RasterExtent,
+      region: Polygon,
+      resampleMethod: ResampleMethod,
       errorThreshold: Double
     ): Unit = {
       val trans = Proj4Transform(dest, src)
@@ -215,11 +215,11 @@ object RasterRegionReproject {
 
   implicit val multibandInstance = new RasterRegionReproject[MultibandTile] {
     def regionReproject(
-      raster: Raster[MultibandTile], 
-      src: CRS, 
-      dest: CRS, 
-      rasterExtent: RasterExtent, 
-      region: Polygon, 
+      raster: Raster[MultibandTile],
+      src: CRS,
+      dest: CRS,
+      rasterExtent: RasterExtent,
+      region: Polygon,
       resampleMethod: ResampleMethod,
       errorThreshold: Double
     ): Raster[MultibandTile] = {
@@ -232,11 +232,11 @@ object RasterRegionReproject {
     }
 
     def regionReprojectMutable(
-      raster: Raster[MultibandTile], 
-      src: CRS, 
-      dest: CRS, 
-      target: Raster[MultibandTile], 
-      region: Polygon, 
+      raster: Raster[MultibandTile],
+      src: CRS,
+      dest: CRS,
+      target: Raster[MultibandTile],
+      region: Polygon,
       resampleMethod: ResampleMethod,
       errorThreshold: Double
     ): Raster[MultibandTile] = {
@@ -252,18 +252,18 @@ object RasterRegionReproject {
 
     private def reprojectToBuffer(
       raster: Raster[MultibandTile],
-      src: CRS, 
-      dest: CRS, 
-      buffer: Array[MutableArrayTile], 
-      rasterExtent: RasterExtent, 
-      region: Polygon, 
+      src: CRS,
+      dest: CRS,
+      buffer: Array[MutableArrayTile],
+      rasterExtent: RasterExtent,
+      region: Polygon,
       resampleMethod: ResampleMethod,
       errorThreshold: Double
     ): Unit = {
       val trans = Proj4Transform(dest, src)
       val rowcoords = rowCoords(region, rasterExtent, trans, errorThreshold)
       val resampler: Array[Resample] = Array.ofDim[Resample](raster.tile.bandCount)
-      
+
       for (b <- 0 until raster.tile.bandCount) {
         val band: Tile = raster.tile.bands(b)
         resampler(b) = Resample(resampleMethod, band, raster.extent, raster.rasterExtent.cellSize)
@@ -291,19 +291,19 @@ object RasterRegionReproject {
     }
   }
 
-  implicit def TileFeatureRasterRegionReproject[T <: CellGrid : RasterRegionReproject, D: Monoid](implicit ev: T => TileMergeMethods[T]) = 
+  implicit def TileFeatureRasterRegionReproject[T <: CellGrid : RasterRegionReproject, D: Monoid](implicit ev: T => TileMergeMethods[T]) =
     new RasterRegionReproject[TileFeature[T, D]] {
       def regionReproject(
-        raster: Raster[TileFeature[T, D]], 
-        src: CRS, 
-        dest: CRS, 
-        rasterExtent: RasterExtent, 
-        region: Polygon, 
+        raster: Raster[TileFeature[T, D]],
+        src: CRS,
+        dest: CRS,
+        rasterExtent: RasterExtent,
+        region: Polygon,
         resampleMethod: ResampleMethod,
-        errorThreshold: Double 
+        errorThreshold: Double
       ): Raster[TileFeature[T, D]] = {
         val srcRaster: Raster[T] = raster.mapTile(_.tile)
-        val reprojected = implicitly[RasterRegionReproject[T]].regionReproject(srcRaster, src, dest, rasterExtent, region, resampleMethod, errorThreshold)      
+        val reprojected = implicitly[RasterRegionReproject[T]].regionReproject(srcRaster, src, dest, rasterExtent, region, resampleMethod, errorThreshold)
         new Raster[TileFeature[T, D]](TileFeature(reprojected.tile, raster.tile.data), raster.extent)
       }
 
@@ -315,12 +315,12 @@ object RasterRegionReproject {
         region: Polygon,
         resampleMethod: ResampleMethod,
         errorThreshold: Double
-      ): Raster[TileFeature[T, D]] = {  
+      ): Raster[TileFeature[T, D]] = {
         val srcRaster: Raster[T] = raster.mapTile(_.tile)
         val dstRaster: Raster[T] = target.mapTile(_.tile)
         val reprojected: Raster[T] = implicitly[RasterRegionReproject[T]].regionReprojectMutable(srcRaster, src, dest, dstRaster, region, resampleMethod, errorThreshold)
         val mergedData = Monoid[D].combine(target.tile.data, raster.tile.data)
-        reprojected.mapTile(TileFeature(_, mergedData))        
+        reprojected.mapTile(TileFeature(_, mergedData))
       }
-    } 
+    }
 }
