@@ -18,6 +18,7 @@ package geotrellis.spark.io.s3.conf
 
 import geotrellis.spark.io.hadoop.conf.CamelCaseConfig
 import geotrellis.spark.util.threadsFromString
+import pureconfig.generic.auto._
 
 case class S3CollectionConfig(read: String = "default") {
   def readThreads: Int = threadsFromString(read)

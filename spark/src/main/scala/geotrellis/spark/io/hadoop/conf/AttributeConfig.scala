@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.hadoop.conf
 
+import pureconfig.generic.auto._
+
 case class AttributeCachingConfig(
   expirationMinutes: Int = 60,
   maxSize: Int = 1000,
