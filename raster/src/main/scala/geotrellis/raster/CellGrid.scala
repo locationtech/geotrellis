@@ -20,6 +20,6 @@ package geotrellis.raster
 /**
   * A grid composed of cells with specific value types
   */
-trait CellGrid extends Grid {
+trait CellGrid extends Grid[Int] {
   def cellType: CellType
 }

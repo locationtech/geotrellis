@@ -21,7 +21,7 @@ import geotrellis.util.MethodExtensions
 
 import Split.Options
 
-trait SplitMethods[T <: Grid] extends MethodExtensions[T] {
+trait SplitMethods[T <: Grid[Int]] extends MethodExtensions[T] {
   /**
     * Splits this into an array of elements based on a TileLayout.
     * The array will be in row order form such that the top left element is first.

@@ -17,14 +17,14 @@
 package geotrellis.raster
 
 
-trait Grid extends Serializable {
-  def cols: Int
-  def rows: Int
+trait Grid[N] extends Serializable {
+  def cols: N
+  def rows: N
 
   /**
     * The size of the grid, e.g. cols * rows.
     */
-  def size = cols * rows
-  def dimensions: (Int, Int) = (cols, rows)
-  def gridBounds: GridBounds = GridBounds(0, 0, cols - 1, rows - 1)
+  def size: N = ??? // cols * rows
+  def dimensions: (N, N) = (cols, rows)
+  def gridBounds: GridBounds = ??? // GridBounds(0, 0, cols - 1, rows - 1)
 }
