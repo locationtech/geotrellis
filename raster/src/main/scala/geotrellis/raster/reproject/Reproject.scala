@@ -35,7 +35,7 @@ object Reproject {
   case class Options(
     method: ResampleMethod = NearestNeighbor,
     errorThreshold: Double = 0.125,
-    parentGridExtent: Option[GridExtent] = None,
+    parentGridExtent: Option[GridExtent[Long]] = None,
     targetRasterExtent: Option[RasterExtent] = None,
     targetCellSize: Option[CellSize] = None
   )

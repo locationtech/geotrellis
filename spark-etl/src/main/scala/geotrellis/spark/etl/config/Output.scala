@@ -62,7 +62,7 @@ case class Output(
 
   def getLayoutDefinition = (layoutExtent, cellSize, tileLayout) match {
     case (Some(le), Some(cs), Some(tl)) => throw new Exception("Can't specify both cell size and tile layout in ETL config")
-    case (Some(le), Some(cs), _) => LayoutDefinition(RasterExtent(le, cs), tileSize)
+    case (Some(le), Some(cs), _) => LayoutDefinition(RasterExtent(le, cs).withGridType[Long], tileSize)
     case (Some(le), _, Some(tl)) => LayoutDefinition(le, tl)
     case _ => throw new Exception("unsupported layout definition")
   }

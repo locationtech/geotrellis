@@ -72,7 +72,7 @@ case class RasterExtent(
   override val cellheight: Double,
   cols: Int,
   rows: Int
-) extends GridExtent(extent, cellwidth, cellheight) with Grid[Int] {
+) extends GridExtent[Int](extent, cellwidth, cellheight, cols, rows) with Grid[Int] {
 
   if (cols <= 0) throw GeoAttrsError(s"invalid cols: $cols")
   if (rows <= 0) throw GeoAttrsError(s"invalid rows: $rows")

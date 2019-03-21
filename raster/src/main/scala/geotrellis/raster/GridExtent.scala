@@ -19,15 +19,26 @@ package geotrellis.raster
 import geotrellis.vector.{Extent, Point}
 
 import scala.math.{min, max, ceil}
+import spire.math.Integral
 
 /**
   * Represents an abstract grid over geographic extent.
   * Critically while the number of cell rows and columns is implied by the constructor arguments,
   * they are intentionally not expressed to avoid Int overflow for large grids.
   */
-class GridExtent(val extent: Extent, val cellwidth: Double, val cellheight: Double) extends Serializable {
-  def this(extent: Extent, cellSize: CellSize) =
-    this(extent, cellSize.width, cellSize.height)
+class GridExtent[@specialized(Int, Long) N: Integral](
+  val extent: Extent,
+  val cellwidth: Double,
+  val cellheight: Double,
+  cols: N,
+  rows: N
+  ) extends Serializable {
+
+    def this(extent: Extent, cellSize: CellSize) = {
+      this(extent, cellSize.width, cellSize.height,
+        cols = integralFromLong(math.round(extent.width / cellSize.width).toLong),
+        rows = integralFromLong(math.round(extent.height / cellSize.height).toLong))
+    }
 
   def cellSize = CellSize(cellwidth, cellheight)
 
@@ -64,7 +75,7 @@ class GridExtent(val extent: Extent, val cellwidth: Double, val cellheight: Doub
     * ``targetExtent``, but will have the smallest extent that lines up with
     * the grid and also covers ``targetExtent``.
     */
-  def createAlignedGridExtent(targetExtent: Extent): GridExtent = {
+  def createAlignedGridExtent(targetExtent: Extent): GridExtent[N] = {
     createAlignedGridExtent(targetExtent, extent.northWest)
   }
 
@@ -77,7 +88,7 @@ class GridExtent(val extent: Extent, val cellwidth: Double, val cellheight: Doub
     * not be equal to ``targetExtent``, but will have the smallest extent
     * that lines up with the grid and also covers ``targetExtent``.
     */
-  def createAlignedGridExtent(targetExtent: Extent, alignmentPoint: Point): GridExtent = {
+  def createAlignedGridExtent(targetExtent: Extent, alignmentPoint: Point): GridExtent[N] = {
     def left(reference: Double, actual: Double, unit: Double): Double = reference + math.floor((actual - reference) / unit) * unit
     def right(reference: Double, actual: Double, unit: Double): Double = reference + math.ceil((actual - reference) / unit) * unit
 
@@ -85,8 +96,12 @@ class GridExtent(val extent: Extent, val cellwidth: Double, val cellheight: Doub
     val xmax = right(alignmentPoint.x, targetExtent.xmax, cellwidth)
     val ymin = left(alignmentPoint.y, targetExtent.ymin, cellheight)
     val ymax = right(alignmentPoint.y, targetExtent.ymax, cellheight)
+    val cols = math.round(extent.width / cellwidth).toLong
+    val rows = math.round(extent.height / cellheight).toLong
+    val ncols = integralFromLong(cols)
+    val nrows = integralFromLong(rows)
 
-    GridExtent(Extent(xmin, ymin, xmax, ymax), cellwidth, cellheight)
+    new GridExtent[N](Extent(xmin, ymin, xmax, ymax), cellwidth, cellheight, ncols, nrows)
   }
 
   /**
@@ -141,7 +156,8 @@ class GridExtent(val extent: Extent, val cellwidth: Double, val cellheight: Doub
   }
 
   override def equals(o: Any): Boolean = o match {
-    case other: GridExtent =>
+    case other: GridExtent[_] =>
+      // TODO: check if cols/rows are same type
       other.extent == extent && other.cellheight == cellheight && other.cellwidth == cellwidth
     case _ =>
       false
@@ -150,19 +166,23 @@ class GridExtent(val extent: Extent, val cellwidth: Double, val cellheight: Doub
   override def hashCode(): Int =
     (((31 + (if (extent == null) 0 else extent.hashCode)) * 31 + cellheight.toInt) * 31 + cellwidth.toInt)
 
-  override def toString(): String =
-    s"GridExtent($extent,$cellwidth,$cellheight)"
+  def withGridType[M: Integral]: GridExtent[M] = {
+    import spire.implicits._
+    val ncols = integralFromLong[M](cols.toLong)
+    val nrows = integralFromLong[M](cols.toLong)
+    new GridExtent[M](extent, cellwidth, cellheight, ncols, nrows)
+  }
 }
 
 
 object GridExtent {
-  def apply(extent: Extent, cellSize: CellSize): GridExtent =
-    new GridExtent(extent, cellSize.width, cellSize.height)
+  def apply(extent: Extent, cellSize: CellSize): GridExtent[Long] =
+    new GridExtent[Long](extent, cellSize)
 
-  def apply(extent: Extent, cellwidth: Double, cellheight: Double): GridExtent =
-    new GridExtent(extent, cellwidth, cellheight)
+  def apply(extent: Extent, cellwidth: Double, cellheight: Double): GridExtent[Long] =
+    new GridExtent[Long](extent, CellSize(cellwidth, cellheight))
 
-  def unapply(ge: GridExtent): Option[(Extent, Double, Double)] =
+  def unapply[N](ge: GridExtent[N]): Option[(Extent, Double, Double)] =
     if (ge != null)
       Some((ge.extent, ge.cellwidth, ge.cellheight))
     else
