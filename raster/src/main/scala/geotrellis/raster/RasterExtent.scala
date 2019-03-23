@@ -87,26 +87,6 @@ case class RasterExtent(
   }
 
   /**
-    * Convert map coordinate x to grid coordinate column.
-    */
-  final def mapXToGrid(x: Double): Int = math.floor(mapXToGridDouble(x)).toInt
-
-  /**
-    * Convert map coordinate x to grid coordinate column.
-    */
-  final def mapXToGridDouble(x: Double): Double = (x - extent.xmin) / cellwidth
-
-  /**
-    * Convert map coordinate y to grid coordinate row.
-    */
-  final def mapYToGrid(y: Double): Int = math.floor(mapYToGridDouble(y)).toInt
-
-  /**
-    * Convert map coordinate y to grid coordinate row.
-    */
-  final def mapYToGridDouble(y: Double): Double = (extent.ymax - y ) / cellheight
-
-  /**
     * Convert map coordinate tuple (x, y) to grid coordinates (col, row).
     */
   final def mapToGrid(mapCoord: (Double, Double)): (Int, Int) = {

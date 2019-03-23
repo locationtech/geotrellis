@@ -20,6 +20,7 @@ import geotrellis.vector.{Extent, Point}
 
 import scala.math.{min, max, ceil}
 import spire.math.Integral
+import spire.implicits._
 
 /**
   * Represents an abstract grid over geographic extent.
@@ -32,15 +33,81 @@ class GridExtent[@specialized(Int, Long) N: Integral](
   val cellheight: Double,
   cols: N,
   rows: N
-  ) extends Serializable {
+) extends Serializable {
 
-    def this(extent: Extent, cellSize: CellSize) = {
-      this(extent, cellSize.width, cellSize.height,
-        cols = integralFromLong(math.round(extent.width / cellSize.width).toLong),
-        rows = integralFromLong(math.round(extent.height / cellSize.height).toLong))
+  def this(extent: Extent, cellSize: CellSize) = {
+    this(extent, cellSize.width, cellSize.height,
+      cols = integralFromLong(math.round(extent.width / cellSize.width).toLong),
+      rows = integralFromLong(math.round(extent.height / cellSize.height).toLong))
+  }
+
+  /** Convert map coordinate x to grid coordinate column. */
+  final def mapXToGridDouble(x: Double): Double = (x - extent.xmin) / cellwidth
+
+  /** Convert map coordinate y to grid coordinate row. */
+  final def mapYToGridDouble(y: Double): Double = (extent.ymax - y ) / cellheight
+
+  /** Convert map coordinate x to grid coordinate column. */
+  final def mapXToGrid(x: Double): N = integralFromLong[N](mapXToGridDouble(x).toLong)
+
+  /** Convert map coordinate y to grid coordinate row. */
+  final def mapYToGrid(y: Double): N = integralFromLong[N](mapYToGridDouble(y).toLong)
+
+  // TODO: move this into constructor
+  def cellSize = CellSize(cellwidth, cellheight)
+
+  /**
+    * Gets the GridBounds aligned with this RasterExtent that is the
+    * smallest subgrid of containing all points within the extent. The
+    * extent is considered inclusive on it's north and west borders,
+    * exclusive on it's east and south borders.  See [[RasterExtent]]
+    * for a discussion of grid and extent boundary concepts.
+    *
+    * The 'clamp' flag determines whether or not to clamp the
+    * GridBounds to the RasterExtent; defaults to true. If false,
+    * GridBounds can contain negative values, or values outside of
+    * this RasterExtent's boundaries.
+    *
+    * @param     subExtent      The extent to get the grid bounds for
+    * @param     clamp          A boolean
+    */
+  def cellBoundsFor(subExtent: Extent, clamp: Boolean = true): CellBounds[N] = {
+    // West and North boundaries are a simple mapToGrid call.
+    val colMin: N = mapXToGrid(subExtent.xmin)
+    val rowMin: N = mapYToGrid(subExtent.ymax)
+
+    // If South East corner is on grid border lines, we want to still only include
+    // what is to the West and\or North of the point. However if the border point
+    // is not directly on a grid division, include the whole row and/or column that
+    // contains the point.
+    val colMax: N = integralFromLong[N]{
+      val colMaxDouble = mapXToGridDouble(subExtent.xmax)
+
+      if (math.abs(colMaxDouble - math.floor(colMaxDouble)) < RasterExtent.epsilon)
+        colMaxDouble.toLong - 1L
+      else
+        colMaxDouble.toLong
     }
 
-  def cellSize = CellSize(cellwidth, cellheight)
+    val rowMax: N = integralFromLong[N]{
+      val rowMaxDouble = mapYToGridDouble(subExtent.ymin)
+
+      if (math.abs(rowMaxDouble - math.floor(rowMaxDouble)) < RasterExtent.epsilon)
+        rowMaxDouble.toLong - 1L
+      else
+        rowMaxDouble.toLong
+    }
+
+
+    import spire.implicits._
+
+    if (clamp)
+      CellBounds(colMin, rowMin, colMax.min(cols - 1), rowMax.min(rows - 1))
+    else
+      CellBounds(colMin, rowMin, colMax, rowMax)
+  }
+
+
 
   /**
     *  Creates a RasterExtent out of this GridExtent.
@@ -137,7 +204,7 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     * @param  gridBounds  The extent to get the grid bounds for
     * @param  clamp       A boolean which controlls the clamping behvior
     */
-  def extentFor(gridBounds: GridBounds, clamp: Boolean = true): Extent = {
+  def extentFor(gridBounds: GridBounds, clamp: Boolean): Extent = {
     val xmin = gridBounds.colMin * cellwidth + extent.xmin
     val ymax = extent.ymax - (gridBounds.rowMin * cellheight)
     val xmax = xmin + (gridBounds.width * cellwidth)
@@ -154,6 +221,39 @@ class GridExtent[@specialized(Int, Long) N: Integral](
       Extent(xmin, ymin, xmax, ymax)
     }
   }
+
+  def extentFor(gridBounds: GridBounds): Extent = extentFor(gridBounds, clamp = true)
+
+  /**
+    * Gets the Extent that matches the grid bounds passed in, aligned
+    * with this RasterExtent.
+    *
+    * The 'clamp' parameter determines whether or not to clamp the
+    * Extent to the extent of this RasterExtent; defaults to true. If
+    * true, the returned extent will be contained by this
+    * RasterExtent's extent, if false, the Extent returned can be
+    * outside of this RasterExtent's extent.
+    *
+    * @param  cellBounds  The extent to get the grid bounds for
+    * @param  clamp       A boolean which controlls the clamping behvior
+    */
+    def extentFor(cellBounds: CellBounds[N], clamp: Boolean = true): Extent = {
+      val xmin: Double = cellBounds.colMin.toLong * cellwidth + extent.xmin
+      val ymax: Double = extent.ymax - (cellBounds.rowMin.toLong * cellheight)
+      val xmax: Double = xmin + (cellBounds.width.toLong * cellwidth)
+      val ymin: Double = ymax - (cellBounds.height.toLong * cellheight)
+
+      if(clamp) {
+        Extent(
+          max(min(xmin, extent.xmax), extent.xmin),
+          max(min(ymin, extent.ymax), extent.ymin),
+          max(min(xmax, extent.xmax), extent.xmin),
+          max(min(ymax, extent.ymax), extent.ymin)
+        )
+      } else {
+        Extent(xmin, ymin, xmax, ymax)
+      }
+    }
 
   override def equals(o: Any): Boolean = o match {
     case other: GridExtent[_] =>
