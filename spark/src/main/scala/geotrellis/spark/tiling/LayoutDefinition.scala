@@ -37,7 +37,7 @@ case class LayoutDefinition(override val extent: Extent, tileLayout: TileLayout)
   /** LayoutDefinition for tile bounds within this layout.
     * Resulting layout will line up with parent layout, but the (0,0) tile will be offset to region covered by bounds.
     */
-  def layoutForBounds(bounds: GridBounds): LayoutDefinition = {
+  def layoutForBounds(bounds: GridBounds[Int]): LayoutDefinition = {
     val subExtent: Extent = mapTransform.boundsToExtent(bounds)
     val subLayout: TileLayout = tileLayout.copy(
       layoutCols = bounds.width,

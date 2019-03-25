@@ -103,7 +103,7 @@ object Intersects {
   /** Define Intersects filter for GridBounds */
   implicit def forGridBounds[K: SpatialComponent: Boundable, M] =
     new LayerFilter[K, Intersects.type, GridBounds, M] {
-      def apply(metadata: M, kb: KeyBounds[K], bounds: GridBounds) = {
+      def apply(metadata: M, kb: KeyBounds[K], bounds: GridBounds[Int]) = {
         val queryBounds = KeyBounds(
           kb.minKey setComponent SpatialKey(bounds.colMin, bounds.rowMin),
           kb.maxKey setComponent SpatialKey(bounds.colMax, bounds.rowMax))

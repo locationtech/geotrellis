@@ -83,9 +83,9 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
     GridBounds(colMin, rowMin, colMax, rowMax)
   }
 
-  def boundsToExtent(gridBounds: GridBounds): Extent = apply(gridBounds)
+  def boundsToExtent(gridBounds: GridBounds[Int]): Extent = apply(gridBounds)
 
-  def apply(gridBounds: GridBounds): Extent = {
+  def apply(gridBounds: GridBounds[Int]): Extent = {
     val e1 = apply(gridBounds.colMin, gridBounds.rowMin)
     val e2 = apply(gridBounds.colMax, gridBounds.rowMax)
     e1.expandToInclude(e2)
@@ -131,7 +131,7 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
     )
 
   def multiLineToKeys(multiLine: MultiLine): Set[SpatialKey] = {
-    val bounds: GridBounds = extentToBounds(multiLine.envelope)
+    val bounds: GridBounds[Int] = extentToBounds(multiLine.envelope)
     val boundsExtent: Extent = boundsToExtent(bounds)
     val rasterExtent = RasterExtent(boundsExtent, bounds.width, bounds.height)
 
@@ -148,7 +148,7 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
 
   def multiPolygonToKeys(multiPolygon: MultiPolygon): Set[SpatialKey] = {
     val extent = multiPolygon.envelope
-    val bounds: GridBounds = extentToBounds(extent)
+    val bounds: GridBounds[Int] = extentToBounds(extent)
     val options = Rasterizer.Options(includePartial=true, sampleType=PixelIsArea)
     val boundsExtent: Extent = boundsToExtent(bounds)
     val rasterExtent = RasterExtent(boundsExtent, bounds.width, bounds.height)

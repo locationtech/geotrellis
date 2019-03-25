@@ -332,7 +332,7 @@ object TileRDDReproject extends LazyLogging {
     keyBounds: Option[KeyBounds[SpatialKey]]
   )(implicit sc: SparkContext): ReprojectSummary = {
     // Bounds of tiles we need to examine
-    val bounds: GridBounds = keyBounds match {
+    val bounds: GridBounds[Int] = keyBounds match {
       case Some(kb) =>
         kb.toGridBounds
       case None =>

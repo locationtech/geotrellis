@@ -21,7 +21,7 @@ import geotrellis.vector._
 import geotrellis.util.MethodExtensions
 
 class TileFeatureCropMethods[
-    T <: CellGrid : (? => TileCropMethods[T]), 
+    T <: CellGrid : (? => TileCropMethods[T]),
     D
   ](val self: TileFeature[T, D]) extends TileCropMethods[TileFeature[T, D]] {
   import Crop.Options
@@ -29,8 +29,8 @@ class TileFeatureCropMethods[
   def crop(srcExtent: Extent, extent: Extent, options: Options): TileFeature[T, D] =
     TileFeature(self.tile.crop(srcExtent, extent, options), self.data)
 
-  def crop(gb: GridBounds, options: Options): TileFeature[T, D] =
-    TileFeature(self.tile.crop(gb, options), self.data)
+  def crop(gridBounds: GridBounds[Int], options: Options): TileFeature[T, D] =
+    TileFeature(self.tile.crop(gridBounds, options), self.data)
 }
 
 class RasterTileFeatureCropMethods[
@@ -56,7 +56,7 @@ class RasterTileFeatureCropMethods[
     * Given a [[GridBounds]] and some cropping options, produce a new
     * [[Raster]].
     */
-  def crop(gb: GridBounds, options: Options): TileFeature[Raster[T], D] = {
-    TileFeature(self.tile.crop(gb, options), self.data)
+  def crop(gridBounds: GridBounds[Int], options: Options): TileFeature[Raster[T], D] = {
+    TileFeature(self.tile.crop(gridBounds, options), self.data)
   }
 }

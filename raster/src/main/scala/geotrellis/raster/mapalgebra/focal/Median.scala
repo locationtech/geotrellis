@@ -20,18 +20,18 @@ import geotrellis.raster._
 
 
 object Median {
-  def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds], target: TargetCell = TargetCell.All): FocalCalculation[Tile] = {
+  def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds[Int]], target: TargetCell = TargetCell.All): FocalCalculation[Tile] = {
     n match {
       case Square(ext) => new CellwiseMedianCalc(tile, n, bounds, ext, target)
       case _ => new CursorMedianCalc(tile, n, bounds, n.extent, target)
     }
   }
 
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds], target: TargetCell = TargetCell.All): Tile =
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds[Int]], target: TargetCell = TargetCell.All): Tile =
     calculation(tile, n, bounds, target).execute()
 }
 
-class CursorMedianCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], extent: Int, target: TargetCell)
+class CursorMedianCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds[Int]], extent: Int, target: TargetCell)
   extends CursorCalculation[Tile](r, n, bounds, target)
   with IntArrayTileResult
   with MedianModeCalculation
@@ -53,7 +53,7 @@ class CursorMedianCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], ext
   }
 }
 
-class CellwiseMedianCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], extent: Int, target: TargetCell)
+class CellwiseMedianCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds[Int]], extent: Int, target: TargetCell)
   extends CellwiseCalculation[Tile](r, n, bounds, target)
   with IntArrayTileResult
   with MedianModeCalculation

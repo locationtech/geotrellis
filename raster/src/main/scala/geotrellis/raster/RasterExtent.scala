@@ -127,51 +127,6 @@ case class RasterExtent(
   }
 
   /**
-    * Gets the GridBounds aligned with this RasterExtent that is the
-    * smallest subgrid of containing all points within the extent. The
-    * extent is considered inclusive on it's north and west borders,
-    * exclusive on it's east and south borders.  See [[RasterExtent]]
-    * for a discussion of grid and extent boundary concepts.
-    *
-    * The 'clamp' flag determines whether or not to clamp the
-    * GridBounds to the RasterExtent; defaults to true. If false,
-    * GridBounds can contain negative values, or values outside of
-    * this RasterExtent's boundaries.
-    *
-    * @param     subExtent      The extent to get the grid bounds for
-    * @param     clamp          A boolean
-    */
-  def gridBoundsFor(subExtent: Extent, clamp: Boolean = true): GridBounds = {
-    // West and North boundaries are a simple mapToGrid call.
-    val (colMin, rowMin) = mapToGrid(subExtent.xmin, subExtent.ymax)
-
-    // If South East corner is on grid border lines, we want to still only include
-    // what is to the West and\or North of the point. However if the border point
-    // is not directly on a grid division, include the whole row and/or column that
-    // contains the point.
-    val colMax = {
-      val colMaxDouble = mapXToGridDouble(subExtent.xmax)
-      if(math.abs(colMaxDouble - math.floor(colMaxDouble)) < RasterExtent.epsilon) colMaxDouble.toInt - 1
-      else colMaxDouble.toInt
-    }
-
-    val rowMax = {
-      val rowMaxDouble = mapYToGridDouble(subExtent.ymin)
-      if(math.abs(rowMaxDouble - math.floor(rowMaxDouble)) < RasterExtent.epsilon) rowMaxDouble.toInt - 1
-      else rowMaxDouble.toInt
-    }
-
-    if(clamp) {
-      GridBounds(math.min(math.max(colMin, 0), cols - 1),
-                 math.min(math.max(rowMin, 0), rows - 1),
-                 math.min(math.max(colMax, 0), cols - 1),
-                 math.min(math.max(rowMax, 0), rows - 1))
-    } else {
-      GridBounds(colMin, rowMin, colMax, rowMax)
-    }
-  }
-
-  /**
     * Combine two different [[RasterExtent]]s (which must have the
     * same cellsizes).  The result is a new extent at the same
     * resolution.
@@ -234,7 +189,7 @@ case class RasterExtent(
     * Returns a new [[RasterExtent]] which represents the GridBounds
     * in relation to this RasterExtent.
     */
-  def rasterExtentFor(gridBounds: GridBounds): RasterExtent = {
+  def rasterExtentFor(gridBounds: GridBounds[Int]): RasterExtent = {
     val (xminCenter, ymaxCenter) = gridToMap(gridBounds.colMin, gridBounds.rowMin)
     val (xmaxCenter, yminCenter) = gridToMap(gridBounds.colMax, gridBounds.rowMax)
     val (hcw, hch) = (cellwidth / 2, cellheight / 2)

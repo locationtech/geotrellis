@@ -198,7 +198,7 @@ case class KeyBounds[+K](
   def setSpatialBounds[B >: K](other: KeyBounds[SpatialKey])(implicit ev: SpatialComponent[B]): KeyBounds[B] =
     KeyBounds((minKey: B).setComponent(other.minKey), (maxKey: B).setComponent(other.maxKey))
 
-  def setSpatialBounds[B >: K](gb: GridBounds)(implicit ev: SpatialComponent[B]): KeyBounds[B] =
+  def setSpatialBounds[B >: K](gridBounds: GridBounds[Int])(implicit ev: SpatialComponent[B]): KeyBounds[B] =
     setSpatialBounds[B](KeyBounds(SpatialKey(gb.colMin, gb.rowMin), SpatialKey(gb.colMax, gb.rowMax)))
 
   def toOption: Option[KeyBounds[K]] = Some(this)
@@ -228,7 +228,7 @@ case class KeyBounds[+K](
 }
 
 object KeyBounds {
-  def apply(gridBounds: GridBounds): KeyBounds[SpatialKey] =
+  def apply(gridBounds: GridBounds[Int]): KeyBounds[SpatialKey] =
     KeyBounds(SpatialKey(gridBounds.colMin, gridBounds.rowMin), SpatialKey(gridBounds.colMax, gridBounds.rowMax))
 
   def includeKey[K: Boundable](seq: Seq[KeyBounds[K]], key: K) = {

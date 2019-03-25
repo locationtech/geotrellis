@@ -276,7 +276,7 @@ object GeoTiffMultibandTile {
     val segmentPixelCols = segmentLayout.tileLayout.tileCols
     val segmentPixelRows = segmentLayout.tileLayout.tileRows
 
-    val segments: Iterator[((Int, Int), MultibandTile)] = 
+    val segments: Iterator[((Int, Int), MultibandTile)] =
       for {
         windowRowMin <- Iterator.range(start = 0, end = tile.rows, step = segmentPixelRows)
         windowColMin <- Iterator.range(start = 0, end = tile.cols, step = segmentPixelCols)
@@ -495,7 +495,7 @@ abstract class GeoTiffMultibandTile(
    *
    * @param bounds Pixel bounds specifying the crop area.
    */
- def crop(bounds: GridBounds): ArrayMultibandTile =
+ def crop(bounds: GridBounds[Int]): ArrayMultibandTile =
    crop(bounds, (0 until bandCount).toArray)
 
   /**
@@ -506,7 +506,7 @@ abstract class GeoTiffMultibandTile(
    * @param  bandIndices       An array of band indexes.
    *
    */
- def crop(bounds: GridBounds, bandIndices: Array[Int]): ArrayMultibandTile = {
+ def crop(bounds: GridBounds[Int], bandIndices: Array[Int]): ArrayMultibandTile = {
    val iter = crop(List(bounds), bandIndices)
    if (iter.isEmpty) throw GeoAttrsError(s"No intersections of ${bounds} vs ${gridBounds}")
    else iter.next._2
@@ -517,7 +517,7 @@ abstract class GeoTiffMultibandTile(
     *
     * @param  windows  Pixel bounds specifying the crop areas
     */
-  def crop(windows: Seq[GridBounds]): Iterator[(GridBounds, ArrayMultibandTile)] =
+  def crop(windows: Seq[GridBounds[Int]]): Iterator[(GridBounds[Int], ArrayMultibandTile)] =
     crop(windows, (0 until bandCount).toArray)
 
   /**
@@ -529,11 +529,11 @@ abstract class GeoTiffMultibandTile(
     * @param  bandIndices       An array of band indexes.
     *
     */
-  def crop(windows: Seq[GridBounds], bandIndices: Array[Int]): Iterator[(GridBounds, ArrayMultibandTile)] = {
+  def crop(windows: Seq[GridBounds[Int]], bandIndices: Array[Int]): Iterator[(GridBounds[Int], ArrayMultibandTile)] = {
     val bandSubsetLength = bandIndices.length
 
     case class Chip(
-      window: GridBounds,
+      window: GridBounds[Int],
       bands: Array[MutableArrayTile],
       intersectingSegments: Int,
       var segmentsBurned: Int = 0

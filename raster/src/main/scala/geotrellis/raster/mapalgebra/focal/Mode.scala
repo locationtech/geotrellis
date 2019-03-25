@@ -26,19 +26,19 @@ import geotrellis.raster._
  *                  the data values will be rounded to integers.
  */
 object Mode {
-  def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None, target: TargetCell = TargetCell.All): FocalCalculation[Tile] = {
+  def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds[Int]] = None, target: TargetCell = TargetCell.All): FocalCalculation[Tile] = {
     n match {
       case Square(ext) => new CellwiseModeCalc(tile, n, bounds, ext, target)
       case _ => new CursorModeCalc(tile, n, bounds, n.extent, target)
     }
   }
 
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None, target: TargetCell = TargetCell.All): Tile =
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds[Int]] = None, target: TargetCell = TargetCell.All): Tile =
     calculation(tile, n, bounds, target).execute()
 }
 
 
-class CursorModeCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], extent: Int, target: TargetCell)
+class CursorModeCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds[Int]], extent: Int, target: TargetCell)
   extends CursorCalculation[Tile](r, n, bounds, target)
   with IntArrayTileResult
   with MedianModeCalculation
@@ -61,7 +61,7 @@ class CursorModeCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], exten
 }
 
 
-class CellwiseModeCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds], extent: Int, target: TargetCell)
+class CellwiseModeCalc(r: Tile, n: Neighborhood, bounds: Option[GridBounds[Int]], extent: Int, target: TargetCell)
   extends CellwiseCalculation[Tile](r, n, bounds, target)
   with IntArrayTileResult
   with MedianModeCalculation

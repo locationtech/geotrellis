@@ -18,70 +18,18 @@ package geotrellis.raster
 
 import scala.collection.mutable
 import spire.syntax.cfor._
-
-/**
-  * The companion object for the [[GridBounds]] type.
-  */
-object GridBounds {
-  /**
-    * Given a [[CellGrid]], produce the corresponding [[GridBounds]].
-    *
-    * @param  r  The given CellGrid
-    */
-  def apply(r: CellGrid): GridBounds =
-    GridBounds(0, 0, r.cols-1, r.rows-1)
-
-  /**
-    * Given a sequence of keys, return a [[GridBounds]] of minimal
-    * size which covers them.
-    *
-    * @param  keys  The sequence of keys to cover
-    */
-  def envelope(keys: Iterable[Product2[Int, Int]]): GridBounds = {
-    var colMin = Integer.MAX_VALUE
-    var colMax = Integer.MIN_VALUE
-    var rowMin = Integer.MAX_VALUE
-    var rowMax = Integer.MIN_VALUE
-
-    for (key <- keys) {
-      val col = key._1
-      val row = key._2
-      if (col < colMin) colMin = col
-      if (col > colMax) colMax = col
-      if (row < rowMin) rowMin = row
-      if (row > rowMax) rowMax = row
-    }
-    GridBounds(colMin, rowMin, colMax, rowMax)
-  }
-
-  /**
-    * Creates a sequence of distinct [[GridBounds]] out of a set of
-    * potentially overlapping grid bounds.
-    *
-    * @param  gridBounds  A traversable collection of GridBounds
-    */
-  def distinct(gridBounds: Traversable[GridBounds]): Seq[GridBounds] =
-    gridBounds.foldLeft(Seq[GridBounds]()) { (acc, bounds) =>
-      acc ++ acc.foldLeft(Seq(bounds)) { (cuts, bounds) =>
-        cuts.flatMap(_ - bounds)
-      }
-    }
-}
+import spire.math._
+import spire.implicits._
 
 /**
   * Represents grid coordinates of a subsection of a RasterExtent.
   * These coordinates are inclusive.
   */
-case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
-  def width = colMax - colMin + 1
-  def height = rowMax - rowMin + 1
-
+case class GridBounds[@specialized(Int, Long) N: Integral](colMin: N, rowMin: N, colMax: N, rowMax: N) {
+  def width: N = colMax - colMin + 1
+  def height: N = rowMax - rowMin + 1
   def size: Long = width.toLong * height.toLong
-
-  @deprecated("Use `size` instead.", "2.0")
-  def sizeLong: Long = width.toLong * height.toLong
-
-  def isEmpty = size == 0
+  def isEmpty: Boolean = size == 0
 
   /**
     * Return true if the present [[GridBounds]] contains the position
@@ -90,9 +38,8 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
     * @param  col  The column
     * @param  row  The row
     */
-  def contains(col: Int, row: Int): Boolean =
-    (colMin <= col && col <= colMax) &&
-    (rowMin <= row && row <= rowMax)
+  def contains(col: N, row: N): Boolean =
+    (colMin <= col && col <= colMax) && (rowMin <= row && row <= rowMax)
 
   /**
     * Returns true if the present [[GridBounds]] and the given one
@@ -100,7 +47,7 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
     *
     * @param  other  The other GridBounds
     */
-  def intersects(other: GridBounds): Boolean =
+  def intersects(other: GridBounds[N]): Boolean =
     !(colMax < other.colMin || other.colMax < colMin) &&
     !(rowMax < other.rowMin || other.rowMax < rowMin)
 
@@ -113,7 +60,7 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
    *
    * @param bufferSize The amount this GridBounds should be buffered by.
    */
-  def buffer(bufferSize: Int): GridBounds =
+  def buffer(bufferSize: Int): GridBounds[N] =
     buffer(bufferSize, bufferSize)
 
   /**
@@ -130,10 +77,10 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
    *                  then the resulting GridBounds can contain negative values outside
    *                  of the grid boundaries.
    */
-  def buffer(colBuffer: Int, rowBuffer: Int, clamp: Boolean = true): GridBounds =
+  def buffer(colBuffer: N, rowBuffer: N, clamp: Boolean = true): GridBounds[N] =
     GridBounds(
-      if (clamp) math.max(colMin - colBuffer, 0) else colMin - colBuffer,
-      if (clamp) math.max(rowMin - rowBuffer, 0) else rowMin - rowBuffer,
+      if (clamp) (colMin - colBuffer).max(0) else colMin - colBuffer,
+      if (clamp) (rowMin - rowBuffer).max(0) else rowMin - rowBuffer,
       colMax + colBuffer,
       rowMax + rowBuffer
     )
@@ -144,7 +91,7 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
    *
    * @param boundsOffset The amount the GridBounds should be shifted.
    */
-  def offset(boundsOffset: Int): GridBounds =
+  def offset(boundsOffset: N): GridBounds[N] =
     offset(boundsOffset, boundsOffset)
 
   /**
@@ -154,20 +101,15 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
    * @param colOffset The amount the cols should be shifted.
    * @param rowOffset The amount the rows should be shifted.
    */
-  def offset(colOffset: Int, rowOffset: Int): GridBounds =
-    GridBounds(
-      colMin + colOffset,
-      rowMin + rowOffset,
-      colMax + colOffset,
-      rowMax + rowOffset
-    )
+  def offset(colOffset: N, rowOffset: N): GridBounds[N] =
+    GridBounds(colMin + colOffset, rowMin + rowOffset, colMax + colOffset, rowMax + rowOffset)
 
   /**
     * Another name for the 'minus' method.
     *
     * @param  other  The other GridBounds
     */
-  def -(other: GridBounds): Seq[GridBounds] = minus(other)
+  def -(other: GridBounds[N]): Seq[GridBounds[N]] = minus(other)
 
   /**
     * Returns the difference of the present [[GridBounds]] and the
@@ -176,7 +118,7 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
     *
     * @param  other  The other GridBounds
     */
-  def minus(other: GridBounds): Seq[GridBounds] =
+  def minus(other: GridBounds[N]): Seq[GridBounds[N]] =
     if(!intersects(other)) {
       Seq(this)
     } else {
@@ -196,7 +138,7 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
         if(rowMax < other.rowMax) rowMax
         else other.rowMax
 
-      val result = mutable.ListBuffer[GridBounds]()
+      val result = mutable.ListBuffer[GridBounds[N]]()
       // Left cut
       if(colMin < overlapColMin) {
         result += GridBounds(colMin, rowMin, overlapColMin - 1, rowMax)
@@ -219,22 +161,22 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
       result
     }
 
-  /**
-    * Return the coordinates covered by the present [[GridBounds]].
-    */
-  def coordsIter: Iterator[(Int, Int)] = for {
-    row <- Iterator.range(0, height)
-    col <- Iterator.range(0, width)
-  } yield (col + colMin, row + rowMin)
+  // /**
+  //   * Return the coordinates covered by the present [[GridBounds]].
+  //   */
+  // def coordsIter: Iterator[(Int, Int)] = for {
+  //   row <- Iterator.range(0, height)
+  //   col <- Iterator.range(0, width)
+  // } yield (col + colMin, row + rowMin)
 
-  /**
-    * Return the intersection of the present [[GridBounds]] and the
-    * given [[CellGrid]].
-    *
-    * @param  cellGrid  The cellGrid to intersect with
-    */
-  def intersection(cellGrid: CellGrid): Option[GridBounds] =
-    intersection(GridBounds(cellGrid))
+  // /**
+  //   * Return the intersection of the present [[GridBounds]] and the
+  //   * given [[CellGrid]].
+  //   *
+  //   * @param  cellGrid  The cellGrid to intersect with
+  //   */
+  // def intersection(cellGrid: CellGrid): Option[GridBounds[N]] =
+  //   intersection(GridBounds(cellGrid))
 
   /**
     * Return the intersection of the present [[GridBounds]] and the
@@ -242,31 +184,29 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
     *
     * @param  other  The other GridBounds
     */
-  def intersection(other: GridBounds): Option[GridBounds] =
+  def intersection(other: GridBounds[N]): Option[GridBounds[N]] =
     if(!intersects(other)) {
       None
     } else {
       Some(
         GridBounds(
-          math.max(colMin, other.colMin),
-          math.max(rowMin, other.rowMin),
-          math.min(colMax, other.colMax),
-          math.min(rowMax, other.rowMax)
-        )
+          colMin max other.colMin,
+          rowMin max other.rowMin,
+          colMax min other.colMax,
+          rowMax min other.rowMax)
       )
     }
 
   /** Return the union of GridBounds. */
-  def combine(other: GridBounds): GridBounds =
+  def combine(other: GridBounds[N]): GridBounds[N] =
     GridBounds(
-      colMin = math.min(this.colMin, other.colMin),
-      rowMin = math.min(this.rowMin, other.rowMin),
-      colMax = math.max(this.colMax, other.colMax),
-      rowMax = math.max(this.rowMax, other.rowMax)
-    )
+      colMin = this.colMin min other.colMin,
+      rowMin = this.rowMin min other.rowMin,
+      colMax = this.colMax max other.colMax,
+      rowMax = this.rowMax max other.rowMax)
 
   /** Empty gridbounds contain nothing, though non empty gridbounds contains iteslf */
-  def contains(other: GridBounds): Boolean =
+  def contains(other: GridBounds[N]): Boolean =
     if(colMin == 0 && colMax == 0 && rowMin == 0 && rowMax == 0) false
     else
       other.colMin >= colMin &&
@@ -274,18 +214,69 @@ case class GridBounds(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int) {
       other.colMax <= colMax &&
       other.rowMax <= rowMax
 
-  /** Split into windows, covering original GridBounds */
-  def split(cols: Int, rows: Int): Iterator[GridBounds] = {
+  /** Split into windows, covering original CellBounds */
+  def split(cols: N, rows: N)(implicit ev: NumberTag[N]): Iterator[CellBounds[N]] = {
     for {
-      windowRowMin <- Iterator.range(start = rowMin, end = rowMax + 1, step = rows)
-      windowColMin <- Iterator.range(start = colMin, end = colMax + 1, step = cols)
+      windowRowMin <- Interval.closed(rowMin, rowMax).iterator(rows)
+      windowColMin <- Interval.closed(colMin, colMax).iterator(cols)
     } yield {
-      GridBounds(
+      CellBounds(
         colMin = windowColMin,
         rowMin = windowRowMin,
-        colMax = math.min(windowColMin + cols - 1, colMax),
-        rowMax = math.min(windowRowMin + rows - 1, rowMax)
+        colMax = Integral[N].min(windowColMin + cols - 1, colMax),
+        rowMax = Integral[N].min(windowRowMin + rows - 1, rowMax)
       )
     }
   }
 }
+
+
+/**
+  * The companion object for the [[GridBounds]] type.
+  */
+  object GridBounds {
+    /**
+      * Given a [[CellGrid]], produce the corresponding [[GridBounds]].
+      *
+      * @param  r  The given CellGrid
+      */
+    def apply(r: CellGrid): GridBounds[Int] =
+      GridBounds(0, 0, r.cols-1, r.rows-1)
+
+    /**
+      * Given a sequence of keys, return a [[GridBounds]] of minimal
+      * size which covers them.
+      *
+      * @param  keys  The sequence of keys to cover
+      */
+    // def envelope(keys: Iterable[Product2[Int, Int]]): GridBounds = {
+    //   var colMin = Integer.MAX_VALUE
+    //   var colMax = Integer.MIN_VALUE
+    //   var rowMin = Integer.MAX_VALUE
+    //   var rowMax = Integer.MIN_VALUE
+
+    //   for (key <- keys) {
+    //     val col = key._1
+    //     val row = key._2
+    //     if (col < colMin) colMin = col
+    //     if (col > colMax) colMax = col
+    //     if (row < rowMin) rowMin = row
+    //     if (row > rowMax) rowMax = row
+    //   }
+    //   GridBounds(colMin, rowMin, colMax, rowMax)
+    // }
+    // TODO: put this on TileBounds
+
+    /**
+      * Creates a sequence of distinct [[GridBounds]] out of a set of
+      * potentially overlapping grid bounds.
+      *
+      * @param  gridBounds  A traversable collection of GridBounds
+      */
+    def distinct[N](gridBounds: Traversable[GridBounds[N]]): Seq[GridBounds[N]] =
+      gridBounds.foldLeft(Seq[GridBounds[N]]()) { (acc, bounds) =>
+        acc ++ acc.foldLeft(Seq(bounds)) { (cuts, bounds) =>
+          cuts.flatMap(_ - bounds)
+        }
+      }
+  }

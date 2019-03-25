@@ -19,7 +19,7 @@ package geotrellis.raster.mapalgebra.focal
 import geotrellis.raster._
 
 object TileWithNeighbors {
-  def apply(r: Tile, neighbors: Seq[Option[Tile]]): (Tile, GridBounds) = 
+  def apply(r: Tile, neighbors: Seq[Option[Tile]]): (Tile, GridBounds[Int]) =
     if(neighbors.isEmpty) {
       (r, GridBounds(0, 0, r.cols-1, r.rows-1))
     } else {
@@ -33,13 +33,13 @@ object TileWithNeighbors {
       val s = neighbors(4)
       val se = neighbors(3)
 
-      val westCol = 
+      val westCol =
         if(Seq(nw, w, sw).flatten.isEmpty) 0 else 1
-      val eastCol = 
+      val eastCol =
         if(Seq(ne, e, se).flatten.isEmpty) 0 else 1
-      val northRow = 
+      val northRow =
         if(Seq(nw, n, ne).flatten.isEmpty) 0 else 1
-      val southRow = 
+      val southRow =
         if(Seq(sw, s, se).flatten.isEmpty) 0 else 1
 
       val tileCols = 1 + westCol + eastCol
@@ -54,7 +54,7 @@ object TileWithNeighbors {
       val rowMin = if(northRow == 0) 0 else (neighbors(0).get.rows)
       val rowMax = rowMin + r.rows - 1
 
-      val tiledTile = 
+      val tiledTile =
         CompositeTile(Seq(
           neighbors(7),
           neighbors(0),

@@ -37,10 +37,10 @@ object TargetCell {
  * a focal operation.
  */
 abstract class FocalCalculation[T](
-    val r: Tile, n: Neighborhood, analysisArea: Option[GridBounds], val target: TargetCell)
+    val r: Tile, n: Neighborhood, analysisArea: Option[GridBounds[Int]], val target: TargetCell)
   extends Resulting[T]
 {
-  val bounds: GridBounds = analysisArea.getOrElse(GridBounds(r))
+  val bounds: GridBounds[Int] = analysisArea.getOrElse(GridBounds(r))
 
   def execute(): T
 }
@@ -48,7 +48,7 @@ abstract class FocalCalculation[T](
 /**
  * A focal calculation that uses the Cursor focal strategy.
  */
-abstract class CursorCalculation[T](tile: Tile, n: Neighborhood, val analysisArea: Option[GridBounds], target: TargetCell)
+abstract class CursorCalculation[T](tile: Tile, n: Neighborhood, val analysisArea: Option[GridBounds[Int]], target: TargetCell)
   extends FocalCalculation[T](tile, n, analysisArea, target)
 {
   def traversalStrategy = TraversalStrategy.DEFAULT
@@ -85,7 +85,7 @@ abstract class CursorCalculation[T](tile: Tile, n: Neighborhood, val analysisAre
 /**
  * A focal calculation that uses the Cursor focal strategy.
  */
-abstract class KernelCalculation[T](tile: Tile, kernel: Kernel, val analysisArea: Option[GridBounds], target: TargetCell)
+abstract class KernelCalculation[T](tile: Tile, kernel: Kernel, val analysisArea: Option[GridBounds[Int]], target: TargetCell)
     extends FocalCalculation[T](tile, kernel, analysisArea, target)
 {
   // Benchmarking has declared ScanLineTraversalStrategy the unclear winner as a default (based on Convolve).
@@ -124,7 +124,7 @@ abstract class KernelCalculation[T](tile: Tile, kernel: Kernel, val analysisArea
  * A focal calculation that uses the Cellwise focal strategy
  */
 abstract class CellwiseCalculation[T] (
-    r: Tile, n: Neighborhood, analysisArea: Option[GridBounds], target: TargetCell)
+    r: Tile, n: Neighborhood, analysisArea: Option[GridBounds[Int]], target: TargetCell)
   extends FocalCalculation[T](r, n, analysisArea, target)
 {
   def traversalStrategy: Option[TraversalStrategy] = None

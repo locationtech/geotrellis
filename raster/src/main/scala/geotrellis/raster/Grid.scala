@@ -26,5 +26,5 @@ trait Grid[N] extends Serializable {
     */
   def size: N = ??? // cols * rows
   def dimensions: (N, N) = (cols, rows)
-  def gridBounds: GridBounds = ??? // GridBounds(0, 0, cols - 1, rows - 1)
+  def gridBounds: GridBounds[Int] = ??? // GridBounds(0, 0, cols - 1, rows - 1)
 }

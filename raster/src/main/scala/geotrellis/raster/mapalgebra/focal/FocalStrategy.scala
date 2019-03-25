@@ -41,7 +41,7 @@ object CursorStrategy {
   def execute[C <: Cursor](
     cursor: Cursor,
     calc: () => Unit,
-    analysisArea: GridBounds
+    analysisArea: GridBounds[Int]
   ): Unit = {
     execute(cursor, calc, analysisArea, TraversalStrategy.DEFAULT)
   }
@@ -49,7 +49,7 @@ object CursorStrategy {
   def execute(
     cursor: Cursor,
     calc: () => Unit,
-    analysisArea: GridBounds,
+    analysisArea: GridBounds[Int],
     traversalStrategy: TraversalStrategy
   ): Unit = {
     traversalStrategy match {
@@ -59,7 +59,7 @@ object CursorStrategy {
     }
   }
 
-  private def handleSpiralZag(analysisArea: GridBounds, cursor: Cursor, calc: () => Unit) = {
+  private def handleSpiralZag(analysisArea: GridBounds[Int], cursor: Cursor, calc: () => Unit) = {
     var colMax = analysisArea.colMax
     var rowMax = analysisArea.rowMax
     var colMin = analysisArea.colMin
@@ -138,7 +138,7 @@ object CursorStrategy {
     }
   }
 
-  private def handleZigZag(analysisArea: GridBounds, cursor: Cursor, calc: () => Unit) = {
+  private def handleZigZag(analysisArea: GridBounds[Int], cursor: Cursor, calc: () => Unit) = {
     val colMax = analysisArea.colMax
     val rowMax = analysisArea.rowMax
     val colMin = analysisArea.colMin
@@ -166,7 +166,7 @@ object CursorStrategy {
     }
   }
 
-  private def handleScanLine(analysisArea: GridBounds, cursor: Cursor, calc: () => Unit) = {
+  private def handleScanLine(analysisArea: GridBounds[Int], cursor: Cursor, calc: () => Unit) = {
     val colMax = analysisArea.colMax
     val rowMax = analysisArea.rowMax
     val colMin = analysisArea.colMin
@@ -197,10 +197,10 @@ object CursorStrategy {
  * but can only be used for Square or Circle neighborhoods.
  */
 object CellwiseStrategy {
-  def execute(r: Tile, n: Square, calc: CellwiseStrategyCalculation, analysisArea: GridBounds): Unit =
+  def execute(r: Tile, n: Square, calc: CellwiseStrategyCalculation, analysisArea: GridBounds[Int]): Unit =
     handleScanLine(r, n.extent, calc, analysisArea)
 
-  private def handleScanLine(r: Tile, n: Int, calc: CellwiseStrategyCalculation, analysisArea: GridBounds) = {
+  private def handleScanLine(r: Tile, n: Int, calc: CellwiseStrategyCalculation, analysisArea: GridBounds[Int]) = {
     val rowMin = analysisArea.rowMin
     val colMin = analysisArea.colMin
     val rowMax = analysisArea.rowMax

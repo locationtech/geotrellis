@@ -31,52 +31,52 @@ trait MultibandTileCropMethods extends TileCropMethods[MultibandTile] {
     * Given a [[GridBounds]], a sequence of bands indexes,  and some cropping options, crop the
     * [[MultibandTile]] and return a new MultibandTile that contains the target area and bands.
     */
-  def cropBands(gb: GridBounds, targetBands: Seq[Int], options: Options): MultibandTile = {
-    if (!gb.intersects(self.gridBounds)) throw GeoAttrsError(s"Grid bounds do not intersect: ${self.gridBounds} crop $gb")
+  def cropBands(gridBounds: GridBounds[Int], targetBands: Seq[Int], options: Options): MultibandTile = {
+    if (!gridBounds.intersects(self.gridBounds)) throw GeoAttrsError(s"Grid bounds do not intersect: ${self.gridBounds} crop $gridBounds")
     self match {
       case geotiffTile: GeoTiffMultibandTile =>
         val cropBounds =
-          if (options.clamp) gb.intersection(self).get
-          else gb
+          if (options.clamp) gridBounds.intersection(self.gridBounds).get
+          else gridBounds
         geotiffTile.crop(cropBounds, targetBands.toArray)
       case _ =>
         val croppedBands = Array.ofDim[Tile](targetBands.size)
         for (b <- targetBands) {
-          croppedBands(b) = self.band(b).crop(gb, options)
+          croppedBands(b) = self.band(b).crop(gridBounds, options)
         }
         ArrayMultibandTile(croppedBands)
     }
   }
 
-  def cropBands(gridBounds: Seq[GridBounds], targetBands: Seq[Int], options: Options): Iterator[(GridBounds, MultibandTile)] =
+  def cropBands(gridBounds: Seq[GridBounds[Int]], targetBands: Seq[Int], options: Options): Iterator[(GridBounds[Int], MultibandTile)] =
     self match {
       case geotiffTile: GeoTiffMultibandTile =>
-        val cropBounds: Seq[GridBounds] = gridBounds.map { gb =>
+        val cropBounds = gridBounds.map { gb =>
             if (!gb.intersects(self.gridBounds))
               throw GeoAttrsError(s"Grid bounds do not intersect: ${self.gridBounds} crop $gb")
 
-            if (options.clamp) gb.intersection(self).get
+            if (options.clamp) gb.intersection(self.gridBounds).get
             else gb
         }
         geotiffTile.crop(cropBounds, targetBands.toArray)
     }
 
-  def cropBands(gridBounds: Seq[GridBounds], targetBands: Seq[Int]): Iterator[(GridBounds, MultibandTile)] =
+  def cropBands(gridBounds: Seq[GridBounds[Int]], targetBands: Seq[Int]): Iterator[(GridBounds[Int], MultibandTile)] =
     cropBands(gridBounds, targetBands, Options.DEFAULT)
 
   /**
    * Crops this [[MultibandTile]] to the given region using methods
    * specified in the cropping options.
    */
-  def crop(gb: GridBounds, options: Options): MultibandTile =
-    cropBands(gb, 0 until self.bandCount, options)
+  def crop(gridBounds: GridBounds[Int], options: Options): MultibandTile =
+    cropBands(gridBounds, 0 until self.bandCount, options)
 
   /**
    * Crops this [[MultibandTile]] such that the output will contain
    * only the given region and bands specified.
    */
-  def cropBands(gb: GridBounds, targetBands: Seq[Int]): MultibandTile =
-    cropBands(gb, targetBands, Options.DEFAULT)
+  def cropBands(gridBounds: GridBounds[Int], targetBands: Seq[Int]): MultibandTile =
+    cropBands(gridBounds, targetBands, Options.DEFAULT)
 
 
   /**

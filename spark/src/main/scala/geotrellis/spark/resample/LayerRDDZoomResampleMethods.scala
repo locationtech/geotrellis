@@ -78,7 +78,7 @@ abstract class LayerRDDZoomResampleMethods[
   def resampleToZoom(
     sourceZoom: Int,
     targetZoom: Int ,
-    targetGridBounds: Option[GridBounds] = None,
+    targetGridBounds: Option[GridBounds[Int]] = None,
     method: ResampleMethod = NearestNeighbor
   ): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     ZoomResample(self, sourceZoom, targetZoom, targetGridBounds, method)

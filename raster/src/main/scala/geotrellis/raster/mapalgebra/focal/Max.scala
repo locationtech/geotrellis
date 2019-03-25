@@ -26,7 +26,7 @@ import geotrellis.raster._
  *                     the data values will be rounded to integers.
  */
 object Max {
-  def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None, target: TargetCell = TargetCell.All): FocalCalculation[Tile] = {
+  def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds[Int]] = None, target: TargetCell = TargetCell.All): FocalCalculation[Tile] = {
     if (tile.cellType.isFloatingPoint) {
       new CursorCalculation[Tile](tile, n, bounds, target)
         with ArrayTileResult
@@ -59,6 +59,6 @@ object Max {
     }
   }
 
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None, target: TargetCell = TargetCell.All): Tile =
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds[Int]] = None, target: TargetCell = TargetCell.All): Tile =
     calculation(tile, n, bounds, target).execute()
 }

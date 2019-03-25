@@ -47,7 +47,7 @@ object Cursor {
    *                      for extent and mask.
    * @param analysisArea  Analysis area
    */
-  def apply(r: Tile, n: Neighborhood, analysisArea: GridBounds): Cursor = {
+  def apply(r: Tile, n: Neighborhood, analysisArea: GridBounds[Int]): Cursor = {
     val result = new Cursor(r, analysisArea, n.extent)
     if(n.hasMask) { result.setMask(n.mask) }
     result
@@ -69,7 +69,7 @@ object Cursor {
  *                                   e.g. if the bounding box is 3x3, then
  *                                   the distance from center is 1.
  */
-class Cursor(r: Tile, analysisArea: GridBounds, val extent: Int) {
+class Cursor(r: Tile, analysisArea: GridBounds[Int], val extent: Int) {
   private val rows = r.rows
   private val cols = r.cols
 

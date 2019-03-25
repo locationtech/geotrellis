@@ -27,7 +27,7 @@ import spire.syntax.cfor._
  * @param      bounds       Optionla bounds of the analysis area that we are convolving.
  */
 object Convolve {
-  def calculation(tile: Tile, kernel: Kernel, bounds: Option[GridBounds] = None, target: TargetCell = TargetCell.All): KernelCalculation[Tile] = {
+  def calculation(tile: Tile, kernel: Kernel, bounds: Option[GridBounds[Int]] = None, target: TargetCell = TargetCell.All): KernelCalculation[Tile] = {
     if (tile.cellType.isFloatingPoint) {
       if(kernel.cellType.isFloatingPoint) {
         new KernelCalculation[Tile](tile, kernel, bounds, target) with ArrayTileResult {
@@ -91,6 +91,6 @@ object Convolve {
     }
   }
 
-  def apply(tile: Tile, kernel: Kernel, bounds: Option[GridBounds] = None, target: TargetCell = TargetCell.All): Tile =
+  def apply(tile: Tile, kernel: Kernel, bounds: Option[GridBounds[Int]] = None, target: TargetCell = TargetCell.All): Tile =
     calculation(tile, kernel, bounds, target).execute()
 }

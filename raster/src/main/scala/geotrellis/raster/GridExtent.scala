@@ -71,7 +71,7 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     * @param     subExtent      The extent to get the grid bounds for
     * @param     clamp          A boolean
     */
-  def cellBoundsFor(subExtent: Extent, clamp: Boolean = true): CellBounds[N] = {
+  def gridBoundsFor(subExtent: Extent, clamp: Boolean = true): GridBounds[N] = {
     // West and North boundaries are a simple mapToGrid call.
     val colMin: N = mapXToGrid(subExtent.xmin)
     val rowMin: N = mapYToGrid(subExtent.ymax)
@@ -102,9 +102,9 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     import spire.implicits._
 
     if (clamp)
-      CellBounds(colMin, rowMin, colMax.min(cols - 1), rowMax.min(rows - 1))
+      GridBounds(colMin, rowMin, colMax.min(cols - 1), rowMax.min(rows - 1))
     else
-      CellBounds(colMin, rowMin, colMax, rowMax)
+      GridBounds(colMin, rowMin, colMax, rowMax)
   }
 
 
@@ -204,7 +204,7 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     * @param  gridBounds  The extent to get the grid bounds for
     * @param  clamp       A boolean which controlls the clamping behvior
     */
-  def extentFor(gridBounds: GridBounds, clamp: Boolean): Extent = {
+  def extentFor(gridBounds: GridBounds[Int], clamp: Boolean): Extent = {
     val xmin = gridBounds.colMin * cellwidth + extent.xmin
     val ymax = extent.ymax - (gridBounds.rowMin * cellheight)
     val xmax = xmin + (gridBounds.width * cellwidth)
@@ -222,7 +222,7 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     }
   }
 
-  def extentFor(gridBounds: GridBounds): Extent = extentFor(gridBounds, clamp = true)
+  def extentFor(gridBounds: GridBounds[Int]): Extent = extentFor(gridBounds, clamp = true)
 
   /**
     * Gets the Extent that matches the grid bounds passed in, aligned

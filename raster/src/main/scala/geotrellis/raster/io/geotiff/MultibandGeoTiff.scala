@@ -67,7 +67,7 @@ case class MultibandGeoTiff(
     MultibandGeoTiff(raster.tile, raster.extent, this.crs, this.tags, this.options, this.overviews)
   }
 
-  def crop(gridBounds: GridBounds): MultibandGeoTiff =
+  def crop(gridBounds: GridBounds[Int]): MultibandGeoTiff =
     crop(gridBounds.colMin, gridBounds.rowMin, gridBounds.colMax, gridBounds.rowMax)
 
   def crop(subExtent: Extent, cellSize: CellSize, resampleMethod: ResampleMethod, strategy: OverviewStrategy): MultibandRaster =
@@ -75,7 +75,7 @@ case class MultibandGeoTiff(
       .crop(subExtent, Crop.Options(clamp = false))
       .resample(RasterExtent(subExtent, cellSize), resampleMethod, strategy)
 
-  def crop(windows: Seq[GridBounds]): Iterator[(GridBounds, MultibandTile)] = tile match {
+  def crop(windows: Seq[GridBounds[Int]]): Iterator[(GridBounds[Int], MultibandTile)] = tile match {
     case geotiffTile: GeoTiffMultibandTile => geotiffTile.crop(windows)
     case arrayTile: MultibandTile => arrayTile.crop(windows)
   }

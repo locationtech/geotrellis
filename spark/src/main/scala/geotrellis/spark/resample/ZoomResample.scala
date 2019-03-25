@@ -68,7 +68,7 @@ object ZoomResample {
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     sourceZoom: Int,
     targetZoom: Int,
-    targetGridBounds: Option[GridBounds] = None,
+    targetGridBounds: Option[GridBounds[Int]] = None,
     method: ResampleMethod = NearestNeighbor
   ): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] = {
     require(sourceZoom < targetZoom, "This resample call requires that the target zoom level be greater than the source zoom level")
@@ -86,7 +86,7 @@ object ZoomResample {
           resampleKeyBounds.toGridBounds.intersection(tgb) match {
             case Some(resampleGridBounds) => {
               val resampled: RDD[(K, V)] = rdd.flatMap { case (key, tile) =>
-                val gbaz: Option[GridBounds] =
+                val gbaz: Option[GridBounds[Int]] =
                   gridBoundsAtZoom(sourceZoom, key.getComponent[SpatialKey], targetZoom)
                     .intersection(resampleGridBounds)
 
