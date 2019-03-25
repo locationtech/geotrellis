@@ -19,7 +19,6 @@ package geotrellis.raster.interpolation
 import geotrellis.raster._
 import geotrellis.raster.mapalgebra.focal.Circle
 import geotrellis.vector._
-import geotrellis.vector.io._
 import geotrellis.vector.io.json.JsonFeatureCollection
 import geotrellis.raster.testkit._
 import spray.json.DefaultJsonProtocol._

@@ -19,12 +19,12 @@ package geotrellis.spark.io
 import geotrellis.raster._
 import geotrellis.spark._
 import geotrellis.vector._
+import geotrellis.vector.io.wkt.WKT
 import geotrellis.proj4._
 import geotrellis.spark.tiling._
 import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.testkit._
 import geotrellis.vector.io._
-import geotrellis.vector.io.wkt._
 
 import org.scalatest._
 

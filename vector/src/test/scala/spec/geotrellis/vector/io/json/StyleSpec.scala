@@ -17,7 +17,6 @@
 package geotrellis.vector.io.json
 
 import geotrellis.vector._
-import geotrellis.vector.io._
 
 import org.scalatest._
 

@@ -19,7 +19,6 @@ package geotrellis.raster.interpolation
 import geotrellis.raster._
 import geotrellis.vector.interpolation._
 import geotrellis.vector._
-import geotrellis.vector.io._
 import geotrellis.vector.io.json.JsonFeatureCollection
 import geotrellis.raster.testkit._
 

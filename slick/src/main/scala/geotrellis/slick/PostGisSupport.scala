@@ -17,8 +17,8 @@
 package geotrellis.slick
 
 import geotrellis.vector._
-import geotrellis.vector.io.wkb._
-import geotrellis.vector.io.wkt._
+import geotrellis.vector.io.wkt.WKT
+import geotrellis.vector.io.wkb.WKB
 
 import slick.ast.FieldSymbol
 import slick.driver.{JdbcDriver, PostgresDriver}
