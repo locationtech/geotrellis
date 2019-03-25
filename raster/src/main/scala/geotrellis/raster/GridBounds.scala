@@ -215,12 +215,12 @@ case class GridBounds[@specialized(Int, Long) N: Integral](colMin: N, rowMin: N,
       other.rowMax <= rowMax
 
   /** Split into windows, covering original CellBounds */
-  def split(cols: N, rows: N)(implicit ev: NumberTag[N]): Iterator[CellBounds[N]] = {
+  def split(cols: N, rows: N)(implicit ev: NumberTag[N]): Iterator[GridBounds[N]] = {
     for {
       windowRowMin <- Interval.closed(rowMin, rowMax).iterator(rows)
       windowColMin <- Interval.closed(colMin, colMax).iterator(cols)
     } yield {
-      CellBounds(
+      GridBounds(
         colMin = windowColMin,
         rowMin = windowRowMin,
         colMax = Integral[N].min(windowColMin + cols - 1, colMax),

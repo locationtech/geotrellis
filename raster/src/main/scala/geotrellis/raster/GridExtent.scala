@@ -201,43 +201,10 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     * RasterExtent's extent, if false, the Extent returned can be
     * outside of this RasterExtent's extent.
     *
-    * @param  gridBounds  The extent to get the grid bounds for
-    * @param  clamp       A boolean which controlls the clamping behvior
-    */
-  def extentFor(gridBounds: GridBounds[Int], clamp: Boolean): Extent = {
-    val xmin = gridBounds.colMin * cellwidth + extent.xmin
-    val ymax = extent.ymax - (gridBounds.rowMin * cellheight)
-    val xmax = xmin + (gridBounds.width * cellwidth)
-    val ymin = ymax - (gridBounds.height * cellheight)
-
-    if(clamp) {
-      Extent(
-        max(min(xmin, extent.xmax), extent.xmin),
-        max(min(ymin, extent.ymax), extent.ymin),
-        max(min(xmax, extent.xmax), extent.xmin),
-        max(min(ymax, extent.ymax), extent.ymin)
-      )
-    } else {
-      Extent(xmin, ymin, xmax, ymax)
-    }
-  }
-
-  def extentFor(gridBounds: GridBounds[Int]): Extent = extentFor(gridBounds, clamp = true)
-
-  /**
-    * Gets the Extent that matches the grid bounds passed in, aligned
-    * with this RasterExtent.
-    *
-    * The 'clamp' parameter determines whether or not to clamp the
-    * Extent to the extent of this RasterExtent; defaults to true. If
-    * true, the returned extent will be contained by this
-    * RasterExtent's extent, if false, the Extent returned can be
-    * outside of this RasterExtent's extent.
-    *
     * @param  cellBounds  The extent to get the grid bounds for
     * @param  clamp       A boolean which controlls the clamping behvior
     */
-    def extentFor(cellBounds: CellBounds[N], clamp: Boolean = true): Extent = {
+    def extentFor(cellBounds: GridBounds[N], clamp: Boolean = true): Extent = {
       val xmin: Double = cellBounds.colMin.toLong * cellwidth + extent.xmin
       val ymax: Double = extent.ymax - (cellBounds.rowMin.toLong * cellheight)
       val xmax: Double = xmin + (cellBounds.width.toLong * cellwidth)
