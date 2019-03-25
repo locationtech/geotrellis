@@ -32,7 +32,7 @@ object CollectionFocalOperation {
                                 (calc: (Tile, Option[GridBounds[Int]]) => Tile)(implicit d: DummyImplicit): Seq[(K, Tile)] =
     mapOverBufferedTiles(seq.bufferTiles(neighborhood.extent), neighborhood)(calc)
 
-  def apply[K: SpatialComponent](rdd: Seq[(K, Tile)], neighborhood: Neighborhood, layerBounds: GridBounds)
+  def apply[K: SpatialComponent](rdd: Seq[(K, Tile)], neighborhood: Neighborhood, layerBounds: TileBounds)
                                 (calc: (Tile, Option[GridBounds[Int]]) => Tile): Seq[(K, Tile)] =
     mapOverBufferedTiles(rdd.bufferTiles(neighborhood.extent, layerBounds), neighborhood)(calc)
 

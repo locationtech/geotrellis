@@ -183,7 +183,7 @@ object COGLayer {
               xmax = cogExtent.xmax - w,
               ymax = cogExtent.ymax - h)
           }
-          val cogTileBounds: GridBounds = maxZoomLayout.mapTransform.extentToBounds(centerToCenter)
+          val cogTileBounds: TileBounds = maxZoomLayout.mapTransform.extentToBounds(centerToCenter)
           val cogLayout: TileLayout = maxZoomLayout.layoutForBounds(cogTileBounds).tileLayout
 
           val segments = tiles.map { case (key, value) =>

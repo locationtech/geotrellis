@@ -255,4 +255,16 @@ package object raster
     if (integral.toLong(n) == x) n
     else throw new IllegalArgumentException(s"Value $x can not be represented by ${integral.getClass.getSimpleName}")
   }
+
+  private[raster] def integralIterator[@specialized(Int, Long) N: Integral](start: N, end: N, step: N): Iterator[N] = new Iterator[N] {
+    import spire.implicits._
+    require(start < end, s"start: $start >= end: $end")
+    private var nextValue = start
+    def hasNext: Boolean = nextValue < end
+    def next(): N = {
+      val ret = nextValue
+      nextValue = nextValue + step
+      ret
+    }
+  }
 }

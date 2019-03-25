@@ -24,9 +24,10 @@ import geotrellis.util._
 import geotrellis.vector.Extent
 
 import org.apache.spark.rdd.RDD
+import spire.implicits._
 
 object ZoomResample {
-  private def gridBoundsAtZoom(sourceZoom: Int, spatialKey: SpatialKey, targetZoom: Int): GridBounds = {
+  private def gridBoundsAtZoom(sourceZoom: Int, spatialKey: SpatialKey, targetZoom: Int): TileBounds = {
     val SpatialKey(col, row) = spatialKey
     val zoomDiff = targetZoom - sourceZoom
     val factor = math.pow(2, zoomDiff).toInt
@@ -68,7 +69,7 @@ object ZoomResample {
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     sourceZoom: Int,
     targetZoom: Int,
-    targetGridBounds: Option[GridBounds[Int]] = None,
+    targetGridBounds: Option[TileBounds] = None,
     method: ResampleMethod = NearestNeighbor
   ): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] = {
     require(sourceZoom < targetZoom, "This resample call requires that the target zoom level be greater than the source zoom level")

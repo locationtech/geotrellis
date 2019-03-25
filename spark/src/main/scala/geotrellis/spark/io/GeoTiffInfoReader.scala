@@ -47,7 +47,7 @@ private [geotrellis] trait GeoTiffInfoReader extends LazyLogging {
     maxSize: Int,
     partitionBytes: Long,
     geometry: Option[Geometry]
-  ): Array[Array[GridBounds]] = {
+  ): Array[Array[GridBounds[Int]]] = {
     val windows =
       geometry match {
         case Some(geometry) =>
@@ -69,7 +69,7 @@ private [geotrellis] trait GeoTiffInfoReader extends LazyLogging {
   )(
     implicit sc: SparkContext, rr: RasterReader[O, (I, V)]
   ): RDD[(K, V)] = {
-    val windows: RDD[(URI, Array[GridBounds])] =
+    val windows: RDD[(URI, Array[GridBounds[Int]])] =
       files.flatMap({ uri =>
         windowsByPartition(
           info = getGeoTiffInfo(uri.toString),

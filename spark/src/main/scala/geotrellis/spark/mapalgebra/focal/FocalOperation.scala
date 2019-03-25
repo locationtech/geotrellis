@@ -43,7 +43,7 @@ object FocalOperation {
   def apply[K: SpatialComponent: ClassTag](
     rdd: RDD[(K, Tile)],
     neighborhood: Neighborhood,
-    layerBounds: GridBounds,
+    layerBounds: TileBounds,
     partitioner: Option[Partitioner])
     (calc: (Tile, Option[GridBounds[Int]]) => Tile): RDD[(K, Tile)] =
       mapOverBufferedTiles(rdd.bufferTiles(neighborhood.extent, layerBounds, partitioner), neighborhood)(calc)

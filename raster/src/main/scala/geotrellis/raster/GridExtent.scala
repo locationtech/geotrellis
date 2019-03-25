@@ -19,7 +19,7 @@ package geotrellis.raster
 import geotrellis.vector.{Extent, Point}
 
 import scala.math.{min, max, ceil}
-import spire.math.Integral
+import spire.math.{Integral, NumberTag}
 import spire.implicits._
 
 /**
@@ -27,7 +27,7 @@ import spire.implicits._
   * Critically while the number of cell rows and columns is implied by the constructor arguments,
   * they are intentionally not expressed to avoid Int overflow for large grids.
   */
-class GridExtent[@specialized(Int, Long) N: Integral](
+class GridExtent[@specialized(Short, Int, Long) N: Integral](
   val extent: Extent,
   val cellwidth: Double,
   val cellheight: Double,
@@ -97,9 +97,6 @@ class GridExtent[@specialized(Int, Long) N: Integral](
       else
         rowMaxDouble.toLong
     }
-
-
-    import spire.implicits._
 
     if (clamp)
       GridBounds(colMin, rowMin, colMax.min(cols - 1), rowMax.min(rows - 1))

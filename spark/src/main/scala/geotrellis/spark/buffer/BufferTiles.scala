@@ -293,7 +293,7 @@ object BufferTiles {
   def apply[
   K: SpatialComponent,
   V <: CellGrid: Stitcher: (? => CropMethods[V])
-  ](seq: Seq[(K, V)], bufferSize: Int, layerBounds: GridBounds): Seq[(K, BufferedTile[V])] = {
+  ](seq: Seq[(K, V)], bufferSize: Int, layerBounds: TileBounds): Seq[(K, BufferedTile[V])] = {
     val bufferSizes = BufferSizes(bufferSize, bufferSize, bufferSize, bufferSize)
     val grouped: Seq[(K, Seq[(Direction, V)])] =
       seq
@@ -367,7 +367,7 @@ object BufferTiles {
   ](
     rdd: RDD[(K, V)],
     bufferSize: Int,
-    layerBounds: GridBounds
+    layerBounds: TileBounds
   ): RDD[(K, BufferedTile[V])] =
     apply(rdd, bufferSize, layerBounds, None)
 
@@ -395,7 +395,7 @@ object BufferTiles {
   ](
     rdd: RDD[(K, V)],
     bufferSize: Int,
-    layerBounds: GridBounds,
+    layerBounds: TileBounds,
     partitioner: Option[Partitioner]
   ): RDD[(K, BufferedTile[V])] =
     apply(

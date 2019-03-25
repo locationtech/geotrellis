@@ -128,7 +128,7 @@ case class COGLayerMetadata[K: SpatialComponent](
       keyBoundsForZoom(zoom)
     )
 
-  def getReadDefinitions(queryKeyBounds: Seq[KeyBounds[K]], zoom: Int): Seq[(ZoomRange, Seq[(SpatialKey, Int, GridBounds, Seq[(GridBounds, SpatialKey)])])] =
+  def getReadDefinitions(queryKeyBounds: Seq[KeyBounds[K]], zoom: Int): Seq[(ZoomRange, Seq[(SpatialKey, Int, TileBounds, Seq[(GridBounds[Int], SpatialKey)])])] =
     queryKeyBounds
       .map { _.toSpatial }
       .distinct // to avoid duplications because of the temporal component
@@ -139,39 +139,39 @@ case class COGLayerMetadata[K: SpatialComponent](
     * GridBounds to read from that COG, and the sequence of GridBounds -> Keys that that
     * file should be cropped by
     */
-  private [spark] def getReadDefinitions(queryKeyBounds: KeyBounds[SpatialKey], zoom: Int): (ZoomRange, Seq[(SpatialKey, Int, GridBounds, Seq[(GridBounds, SpatialKey)])]) = {
+  private [spark] def getReadDefinitions(queryKeyBounds: KeyBounds[SpatialKey], zoom: Int): (ZoomRange, Seq[(SpatialKey, Int, TileBounds, Seq[(GridBounds[Int], SpatialKey)])]) = {
     /** "Base" in this function means min zoom level and NOT the highest resolution */
     val zoomRange @ ZoomRange(minZoom, maxZoom) = zoomRangeFor(zoom)
     val (baseLayout, layout) = layoutForZoom(minZoom) -> layoutForZoom(zoom)
     val overviewIdx = maxZoom - zoom - 1
-    val queryGridBounds = queryKeyBounds.toGridBounds()
+    val queryTileBounds = queryKeyBounds.toGridBounds()
 
-    // queryGridBounds converted on a base zoom level
-    val baseQueryGridBounds = {
+    // queryTileBounds converted on a base zoom level
+    val baseQueryTileBounds = {
       val extentGridBounds =
         baseLayout
           .mapTransform
           .extentToBounds(extent)
 
-      val gridBounds =
+      val tileBounds =
         baseLayout
           .mapTransform.extentToBounds(
             layout
               .mapTransform
-              .boundsToExtent(queryGridBounds)
+              .boundsToExtent(queryTileBounds)
               .bufferByLayout(layout)
           )
 
       extentGridBounds
-        .intersection(gridBounds)
+        .intersection(tileBounds)
         .getOrElse(
           throw new Exception(
-            s"Entire layout grid bounds $extentGridBounds have no intersections to layer grid bounds $gridBounds"
+            s"Entire layout grid bounds $extentGridBounds have no intersections to layer grid bounds $tileBounds"
           )
         )
     }
 
-    val GridBounds(colMin, rowMin, colMax, rowMax) = baseQueryGridBounds
+    val GridBounds(colMin, rowMin, colMax, rowMax) = baseQueryTileBounds
 
     val seq =
       for {
@@ -184,7 +184,7 @@ case class COGLayerMetadata[K: SpatialComponent](
             .mapTransform
             .extentToBounds(queryKey.extent(baseLayout).bufferByLayout(layout))
 
-        val seq = queryGridBounds.intersection(layoutGridBounds) match {
+        val seq = queryTileBounds.intersection(layoutGridBounds) match {
           case Some(GridBounds(queryMinKeyCol, queryMinKeyRow, queryMaxKeyCol, queryMaxKeyRow)) =>
             for {
               qcol <- queryMinKeyCol to queryMaxKeyCol
@@ -210,7 +210,7 @@ case class COGLayerMetadata[K: SpatialComponent](
 
   /** Returns the ZoomRange and SpatialKey of the COG to be read for this key, index of overview, as well as the GridBounds to crop
     * that COG to */
-  private [spark] def getReadDefinition(key: SpatialKey, zoom: Int): (ZoomRange, SpatialKey, Int, GridBounds) = {
+  private [spark] def getReadDefinition(key: SpatialKey, zoom: Int): (ZoomRange, SpatialKey, Int, TileBounds) = {
     val zoomRange @ ZoomRange(minZoom, maxZoom) = zoomRangeFor(zoom)
     val overviewIdx = maxZoom - zoom - 1
 

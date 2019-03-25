@@ -25,7 +25,9 @@ import spire.implicits._
   * Represents grid coordinates of a subsection of a RasterExtent.
   * These coordinates are inclusive.
   */
-case class GridBounds[@specialized(Int, Long) N: Integral](colMin: N, rowMin: N, colMax: N, rowMax: N) {
+case class GridBounds[@specialized(Short, Int, Long) N: Integral](
+  colMin: N, rowMin: N, colMax: N, rowMax: N
+) {
   def width: N = colMax - colMin + 1
   def height: N = rowMax - rowMin + 1
   def size: Long = width.toLong * height.toLong
@@ -161,22 +163,14 @@ case class GridBounds[@specialized(Int, Long) N: Integral](colMin: N, rowMin: N,
       result
     }
 
-  // /**
-  //   * Return the coordinates covered by the present [[GridBounds]].
-  //   */
-  // def coordsIter: Iterator[(Int, Int)] = for {
-  //   row <- Iterator.range(0, height)
-  //   col <- Iterator.range(0, width)
-  // } yield (col + colMin, row + rowMin)
-
-  // /**
-  //   * Return the intersection of the present [[GridBounds]] and the
-  //   * given [[CellGrid]].
-  //   *
-  //   * @param  cellGrid  The cellGrid to intersect with
-  //   */
-  // def intersection(cellGrid: CellGrid): Option[GridBounds[N]] =
-  //   intersection(GridBounds(cellGrid))
+  /**
+    * Return the coordinates covered by the present [[GridBounds]].
+    */
+  def coordsIter: Iterator[(N, N)] =
+    for {
+      row <- integralIterator[N](rowMin, rowMax, 1)
+      col <- integralIterator[N](colMin, colMax, 1)
+    } yield (col, row)
 
   /**
     * Return the intersection of the present [[GridBounds]] and the
@@ -215,16 +209,16 @@ case class GridBounds[@specialized(Int, Long) N: Integral](colMin: N, rowMin: N,
       other.rowMax <= rowMax
 
   /** Split into windows, covering original CellBounds */
-  def split(cols: N, rows: N)(implicit ev: NumberTag[N]): Iterator[GridBounds[N]] = {
+  def split(cols: N, rows: N): Iterator[GridBounds[N]] = {
     for {
-      windowRowMin <- Interval.closed(rowMin, rowMax).iterator(rows)
-      windowColMin <- Interval.closed(colMin, colMax).iterator(cols)
+      windowRowMin <- integralIterator[N](rowMin, rowMax, rows)
+      windowColMin <- integralIterator[N](colMin, colMax, cols)
     } yield {
       GridBounds(
         colMin = windowColMin,
         rowMin = windowRowMin,
-        colMax = Integral[N].min(windowColMin + cols - 1, colMax),
-        rowMax = Integral[N].min(windowRowMin + rows - 1, rowMax)
+        colMax = (windowColMin + cols - 1).min(colMax),
+        rowMax = (windowRowMin + rows - 1).min(rowMax)
       )
     }
   }
@@ -249,23 +243,6 @@ case class GridBounds[@specialized(Int, Long) N: Integral](colMin: N, rowMin: N,
       *
       * @param  keys  The sequence of keys to cover
       */
-    // def envelope(keys: Iterable[Product2[Int, Int]]): GridBounds = {
-    //   var colMin = Integer.MAX_VALUE
-    //   var colMax = Integer.MIN_VALUE
-    //   var rowMin = Integer.MAX_VALUE
-    //   var rowMax = Integer.MIN_VALUE
-
-    //   for (key <- keys) {
-    //     val col = key._1
-    //     val row = key._2
-    //     if (col < colMin) colMin = col
-    //     if (col > colMax) colMax = col
-    //     if (row < rowMin) rowMin = row
-    //     if (row > rowMax) rowMax = row
-    //   }
-    //   GridBounds(colMin, rowMin, colMax, rowMax)
-    // }
-    // TODO: put this on TileBounds
 
     /**
       * Creates a sequence of distinct [[GridBounds]] out of a set of

@@ -80,4 +80,11 @@ object LayoutDefinition {
 
     LayoutDefinition(layoutExtent, layout)
   }
+
+  def apply(grid: RasterExtent, tileCols: Int, tileRows: Int): LayoutDefinition =
+    apply(grid.withGridType[Long], tileCols, tileRows)
+
+  def apply(grid: RasterExtent, tileSize: Int): LayoutDefinition =
+    apply(grid.withGridType[Long], tileSize, tileSize)
+
 }

@@ -198,8 +198,8 @@ case class KeyBounds[+K](
   def setSpatialBounds[B >: K](other: KeyBounds[SpatialKey])(implicit ev: SpatialComponent[B]): KeyBounds[B] =
     KeyBounds((minKey: B).setComponent(other.minKey), (maxKey: B).setComponent(other.maxKey))
 
-  def setSpatialBounds[B >: K](gridBounds: GridBounds[Int])(implicit ev: SpatialComponent[B]): KeyBounds[B] =
-    setSpatialBounds[B](KeyBounds(SpatialKey(gb.colMin, gb.rowMin), SpatialKey(gb.colMax, gb.rowMax)))
+  def setSpatialBounds[B >: K](gridBounds: TileBounds)(implicit ev: SpatialComponent[B]): KeyBounds[B] =
+    setSpatialBounds[B](KeyBounds(SpatialKey(gridBounds.colMin, gridBounds.rowMin), SpatialKey(gridBounds.colMax, gridBounds.rowMax)))
 
   def toOption: Option[KeyBounds[K]] = Some(this)
 
@@ -228,7 +228,7 @@ case class KeyBounds[+K](
 }
 
 object KeyBounds {
-  def apply(gridBounds: GridBounds[Int]): KeyBounds[SpatialKey] =
+  def apply(gridBounds: TileBounds): KeyBounds[SpatialKey] =
     KeyBounds(SpatialKey(gridBounds.colMin, gridBounds.rowMin), SpatialKey(gridBounds.colMax, gridBounds.rowMax))
 
   def includeKey[K: Boundable](seq: Seq[KeyBounds[K]], key: K) = {
@@ -248,7 +248,7 @@ object KeyBounds {
   implicit def keyBoundsToTuple[K](keyBounds: KeyBounds[K]): (K, K) = (keyBounds.minKey, keyBounds.maxKey)
 
   implicit class withSpatialComponentKeyBoundsMethods[K: SpatialComponent](val self: KeyBounds[K]) extends MethodExtensions[KeyBounds[K]] {
-    def toGridBounds(): GridBounds = {
+    def toGridBounds(): TileBounds = {
       val SpatialKey(minCol, minRow) = self.minKey.getComponent[SpatialKey]
       val SpatialKey(maxCol, maxRow) = self.maxKey.getComponent[SpatialKey]
       GridBounds(minCol, minRow, maxCol, maxRow)

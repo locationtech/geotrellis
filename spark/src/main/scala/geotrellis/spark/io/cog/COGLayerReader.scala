@@ -160,20 +160,20 @@ abstract class COGLayerReader[ID] extends Serializable {
 
   private def crop[V <: CellGrid: GeoTiffReader: ClassTag](
     geoTiff: GeoTiff[V],
-    gridBounds: Seq[GridBounds]
-  ): Iterator[(GridBounds, V)] =
+    gridBounds: Seq[GridBounds[Int]]
+  ): Iterator[(GridBounds[Int], V)] =
     geoTiff.crop(gridBounds)
 
   private def produceCropBands(
     targetBands: Seq[Int]
-  ): (GeoTiff[MultibandTile], Seq[GridBounds]) => Iterator[(GridBounds, Array[Option[Tile]])] =
-    (geoTiff: GeoTiff[MultibandTile], gridBounds: Seq[GridBounds]) => cropBands(geoTiff, gridBounds, targetBands)
+  ): (GeoTiff[MultibandTile], Seq[GridBounds[Int]]) => Iterator[(GridBounds[Int], Array[Option[Tile]])] =
+    (geoTiff: GeoTiff[MultibandTile], gridBounds: Seq[GridBounds[Int]]) => cropBands(geoTiff, gridBounds, targetBands)
 
   private def cropBands(
     geoTiff: GeoTiff[MultibandTile],
-    gridBounds: Seq[GridBounds],
+    gridBounds: Seq[GridBounds[Int]],
     bands: Seq[Int]
-  ): Iterator[(GridBounds, Array[Option[Tile]])] = {
+  ): Iterator[(GridBounds[Int], Array[Option[Tile]])] = {
     // We first must determine which bands are valid and which are not
     // before doing the crop in order to avoid band subsetting errors
     // and/or loading unneeded data.
@@ -187,13 +187,13 @@ abstract class COGLayerReader[ID] extends Serializable {
 
     val (targetBands, targetBandsIndexes) = targetBandsWithIndex.unzip
 
-    val croppedTilesWithGridBounds: Iterator[(GridBounds, Array[Tile])] =
+    val croppedTilesWithGridBounds: Iterator[(GridBounds[Int], Array[Tile])] =
       geoTiff
         .tile
         .cropBands(gridBounds, targetBands)
         .map { case (k, v) => k -> v.bands.toArray }
 
-    val croppedTilesWithBandIndexes: Iterator[(GridBounds, Array[(Int, Tile)])] =
+    val croppedTilesWithBandIndexes: Iterator[(GridBounds[Int], Array[(Int, Tile)])] =
       croppedTilesWithGridBounds
         .map { case (k, v) => k -> targetBandsIndexes.zip(v) }
 
@@ -232,7 +232,7 @@ abstract class COGLayerReader[ID] extends Serializable {
 
     val queryKeyBounds: Seq[KeyBounds[K]] = tileQuery(metadata)
 
-    val readDefinitions: Seq[(ZoomRange, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])])] =
+    val readDefinitions: Seq[(ZoomRange, Seq[(SpatialKey, Int, GridBounds[Int], Seq[(GridBounds[Int], SpatialKey)])])] =
       cogLayerMetadata.getReadDefinitions(queryKeyBounds, id.zoom)
 
     readDefinitions.headOption.map(_._1) match {
@@ -282,7 +282,7 @@ abstract class COGLayerReader[ID] extends Serializable {
 
     val queryKeyBounds: Seq[KeyBounds[K]] = tileQuery(metadata)
 
-    val readDefinitions: Seq[(ZoomRange, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])])] =
+    val readDefinitions: Seq[(ZoomRange, Seq[(SpatialKey, Int, GridBounds[Int], Seq[(GridBounds[Int], SpatialKey)])])] =
       cogLayerMetadata.getReadDefinitions(queryKeyBounds, id.zoom)
 
     readDefinitions.headOption.map(_._1) match {
@@ -321,8 +321,8 @@ abstract class COGLayerReader[ID] extends Serializable {
     metadata: TileLayerMetadata[K],
     baseKeyIndex: KeyIndex[K],
     queryKeyBounds: Seq[KeyBounds[K]],
-    readDefinitions: Map[SpatialKey, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])]],
-    readGeoTiff: (GeoTiff[V], Seq[GridBounds]) => Iterator[(GridBounds, R)],
+    readDefinitions: Map[SpatialKey, Seq[(SpatialKey, Int, GridBounds[Int], Seq[(GridBounds[Int], SpatialKey)])]],
+    readGeoTiff: (GeoTiff[V], Seq[GridBounds[Int]]) => Iterator[(GridBounds[Int], R)],
     numPartitions: Int,
     defaultThreads: Int
   )(implicit sc: SparkContext,
@@ -379,8 +379,8 @@ abstract class COGLayerReader[ID] extends Serializable {
   ](
      bins: Seq[Seq[(BigInt, BigInt)]],
      keyPath: BigInt => String, // keyPath
-     readDefinitions: Map[SpatialKey, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])]],
-     readGeoTiff: (GeoTiff[V], Seq[GridBounds]) => Iterator[(GridBounds, R)],
+     readDefinitions: Map[SpatialKey, Seq[(SpatialKey, Int, GridBounds[Int], Seq[(GridBounds[Int], SpatialKey)])]],
+     readGeoTiff: (GeoTiff[V], Seq[GridBounds[Int]]) => Iterator[(GridBounds[Int], R)],
      threads: Int
    )(implicit sc: SparkContext, getByteReader: URI => ByteReader): RDD[(K, R)] = {
     val kwFormat = KryoWrapper(implicitly[JsonFormat[K]])

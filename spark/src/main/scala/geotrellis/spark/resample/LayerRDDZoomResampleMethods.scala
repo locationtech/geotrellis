@@ -45,14 +45,14 @@ abstract class LayerRDDZoomResampleMethods[
   def resampleToZoom(
     sourceZoom: Int,
     targetZoom: Int,
-    targetGridBounds: GridBounds
+    targetGridBounds: TileBounds
   ): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     resampleToZoom(sourceZoom, targetZoom, Some(targetGridBounds), NearestNeighbor)
 
   def resampleToZoom(
     sourceZoom: Int,
     targetZoom: Int,
-    targetGridBounds: GridBounds,
+    targetGridBounds: TileBounds,
     method: ResampleMethod
   ): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     resampleToZoom(sourceZoom, targetZoom, Some(targetGridBounds), method)

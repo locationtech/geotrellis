@@ -37,12 +37,12 @@ class BufferTilesMethods[
   def bufferTiles(bufferSize: Int, partitioner: Option[Partitioner]): RDD[(K, BufferedTile[V])] =
     BufferTiles(self, bufferSize, partitioner)
 
-  def bufferTiles(bufferSize: Int, layerBounds: GridBounds): RDD[(K, BufferedTile[V])] =
+  def bufferTiles(bufferSize: Int, layerBounds: TileBounds): RDD[(K, BufferedTile[V])] =
     BufferTiles(self, bufferSize, layerBounds)
 
   def bufferTiles(
     bufferSize: Int,
-    layerBounds: GridBounds,
+    layerBounds: TileBounds,
     partitioner: Option[Partitioner]
   ): RDD[(K, BufferedTile[V])] =
     BufferTiles(self, bufferSize, layerBounds, partitioner)
