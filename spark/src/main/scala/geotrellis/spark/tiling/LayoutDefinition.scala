@@ -82,9 +82,9 @@ object LayoutDefinition {
   }
 
   def apply(grid: RasterExtent, tileCols: Int, tileRows: Int): LayoutDefinition =
-    apply(grid.withGridType[Long], tileCols, tileRows)
+    apply(grid.toGridType[Long], tileCols, tileRows)
 
   def apply(grid: RasterExtent, tileSize: Int): LayoutDefinition =
-    apply(grid.withGridType[Long], tileSize, tileSize)
+    apply(grid.toGridType[Long], tileSize, tileSize)
 
 }

@@ -38,7 +38,7 @@ object ReprojectRasterExtent {
 
     options.parentGridExtent match {
       case Some(parentGridExtent) =>
-        parentGridExtent.createAlignedGridExtent(newExtent).withGridType[N]
+        parentGridExtent.createAlignedGridExtent(newExtent).toGridType[N]
 
       case None =>
         val (pixelSizeX, pixelSizeY) =

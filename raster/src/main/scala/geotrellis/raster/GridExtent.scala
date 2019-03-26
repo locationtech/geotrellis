@@ -230,11 +230,8 @@ class GridExtent[@specialized(Short, Int, Long) N: Integral](
   override def hashCode(): Int =
     (((31 + (if (extent == null) 0 else extent.hashCode)) * 31 + cellheight.toInt) * 31 + cellwidth.toInt)
 
-  def withGridType[M: Integral]: GridExtent[M] = {
-    import spire.implicits._
-    val ncols = integralFromLong[M](cols.toLong)
-    val nrows = integralFromLong[M](cols.toLong)
-    new GridExtent[M](extent, cellwidth, cellheight, ncols, nrows)
+  def toGridType[M: Integral]: GridExtent[M] = {
+    new GridExtent[M](extent, cellwidth, cellheight, Integral[N].toType[M](cols), Integral[N].toType[M](rows))
   }
 }
 

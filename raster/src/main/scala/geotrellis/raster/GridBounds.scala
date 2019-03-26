@@ -222,6 +222,10 @@ case class GridBounds[@specialized(Short, Int, Long) N: Integral](
       )
     }
   }
+
+  def toGridType[M: Integral]: GridBounds[M] = {
+    new GridBounds[M](Integral[N].toType[M](colMin), Integral[N].toType[M](rowMin), Integral[N].toType[M](colMax), Integral[N].toType[M](rowMax))
+  }
 }
 
 
