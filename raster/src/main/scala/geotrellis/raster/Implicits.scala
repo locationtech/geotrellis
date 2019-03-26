@@ -21,6 +21,7 @@ trait Implicits
     with mapalgebra.local.Implicits
     with mapalgebra.zonal.Implicits
     with mask.Implicits
+    with matching.Implicits
     with merge.Implicits
     with prototype.Implicits
     with reproject.Implicits
@@ -45,7 +46,6 @@ trait Implicits
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with DelayedConversionTileMethods
       with mask.SinglebandTileMaskMethods
-      with matching.SinglebandMatchingMethods
       with merge.SinglebandTileMergeMethods
       with prototype.SinglebandTilePrototypeMethods
       with regiongroup.RegionGroupMethods
@@ -64,7 +64,6 @@ trait Implicits
   implicit class withMultibandTileMethods(val self: MultibandTile) extends MethodExtensions[MultibandTile]
       with DelayedConversionMultibandTileMethods
       with mask.MultibandTileMaskMethods
-      with matching.MultibandMatchingMethods
       with merge.MultibandTileMergeMethods
       with prototype.MultibandTilePrototypeMethods
       with render.MultibandColorMethods
