@@ -27,4 +27,6 @@ trait Implicits {
       Hillshade.indirect(aspect, slope, azimuth, altitude)
     }
   }
+
+  implicit class withTileHillshadeMethods(val self: Tile) extends HillshadeMethods
 }

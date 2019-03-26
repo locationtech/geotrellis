@@ -14,9 +14,12 @@ trait Implicits
     with density.Implicits
     with distance.Implicits
     with equalization.Implicits
-    with geotrellis.raster.mapalgebra.focal.hillshade.Implicits
     with hydrology.Implicits
     with interpolation.Implicits
+    with mapalgebra.focal.Implicits
+    with mapalgebra.focal.hillshade.Implicits
+    with mapalgebra.local.Implicits
+    with mapalgebra.zonal.Implicits
     with mask.Implicits
     with merge.Implicits
     with prototype.Implicits
@@ -41,10 +44,6 @@ trait Implicits
 
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with DelayedConversionTileMethods
-      with mapalgebra.focal.FocalMethods
-      with mapalgebra.focal.hillshade.HillshadeMethods
-      with mapalgebra.local.LocalMethods
-      with mapalgebra.zonal.ZonalMethods
       with mask.SinglebandTileMaskMethods
       with matching.SinglebandMatchingMethods
       with merge.SinglebandTileMergeMethods
@@ -85,9 +84,6 @@ trait Implicits
   implicit class withMultibandRasterMethods(val self: MultibandRaster) extends MethodExtensions[MultibandRaster]
       with reproject.MultibandRasterReprojectMethods
       with resample.MultibandRasterResampleMethods
-
-  implicit class withTileSeqMethods(val self: Traversable[Tile]) extends MethodExtensions[Traversable[Tile]]
-      with mapalgebra.local.LocalSeqMethods
 
   implicit class SinglebandRasterAnyRefMethods(val self: SinglebandRaster) extends AnyRef {
     def getValueAtPoint(point: Point): Int =
