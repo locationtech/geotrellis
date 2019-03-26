@@ -18,6 +18,8 @@ package geotrellis.raster.crop
 
 import geotrellis.raster._
 import geotrellis.vector._
+import geotrellis.util.MethodExtensions
+
 
 object Implicits extends Implicits
 
@@ -26,14 +28,15 @@ object Implicits extends Implicits
   * cropping to [[CellGrid]].
   */
 trait Implicits {
-  implicit class withExtentCropMethods[T <: CellGrid[Int]: (? => CropMethods[T])](self: Raster[T])
-      extends RasterCropMethods[T](self)
+  implicit class withTileRasterCropMethods(val self: Raster[Tile]) extends RasterCropMethods[Tile]
 
-  implicit class withTileFeatureCropMethods[
-    T <: CellGrid[Int]: (? => TileCropMethods[T]), D
-  ](self: TileFeature[T, D]) extends TileFeatureCropMethods[T, D](self)
+  implicit class withMultibandTileRasterCropMethods(val self: Raster[MultibandTile]) extends RasterCropMethods[MultibandTile]
 
-  implicit class withRasterTileFeatureCropMethods[
-    T <: CellGrid[Int] : (? => TileCropMethods[T]), D
-  ](self: TileFeature[Raster[T], D]) extends RasterTileFeatureCropMethods[T, D](self)
+  implicit class withTileFeatureCropMethods[D](val self: TileFeature[Tile, D]) extends TileFeatureCropMethods[D]
+
+  implicit class withRasterTileFeatureCropMethods[D](val self: TileFeature[Raster[Tile], D]) extends RasterTileFeatureCropMethods[D]
+
+  implicit class withMultibandTileFeatureCropMethods[D](val self: TileFeature[MultibandTile, D]) extends MultibandTileFeatureCropMethods[D]
+
+  implicit class withRasterMultibandTileFeatureCropMethods[D](val self: TileFeature[Raster[MultibandTile], D]) extends RasterMultibandTileFeatureCropMethods[D]
 }
