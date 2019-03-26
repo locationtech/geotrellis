@@ -67,7 +67,7 @@ object HBaseValueReader {
   ): Reader[K, V] =
     new HBaseValueReader(instance, attributeStore).reader[K, V](layerId)
 
-  def apply[K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid: AvroRecordCodec: ? => TileResampleMethods[V]](
+  def apply[K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]](
     instance: HBaseInstance,
     attributeStore: AttributeStore,
     layerId: LayerId,

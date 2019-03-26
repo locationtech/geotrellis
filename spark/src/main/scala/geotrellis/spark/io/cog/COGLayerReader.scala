@@ -63,24 +63,24 @@ abstract class COGLayerReader[ID] extends Serializable {
     */
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]]): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read(id, rasterQuery, defaultNumPartitions)
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read(id, new LayerQuery[K, TileLayerMetadata[K]], numPartitions)
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](id: ID): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read(id, defaultNumPartitions)
 
@@ -129,7 +129,7 @@ abstract class COGLayerReader[ID] extends Serializable {
   // TODO: Have this return a COGLayerReader
   def reader[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ]: Reader[ID, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new Reader[ID, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
       def read(id: ID): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
@@ -138,13 +138,13 @@ abstract class COGLayerReader[ID] extends Serializable {
 
   def query[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](layerId: ID): BoundLayerQuery[K, TileLayerMetadata[K], RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, read(layerId, _))
 
   def query[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](layerId: ID, numPartitions: Int): BoundLayerQuery[K, TileLayerMetadata[K], RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, read(layerId, _, numPartitions))
 
@@ -158,7 +158,7 @@ abstract class COGLayerReader[ID] extends Serializable {
   ](layerId: ID, targetBands: Seq[Int], numPartitions: Int): BoundLayerQuery[K, TileLayerMetadata[K], RDD[(K, Array[Option[Tile]])] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, readSubsetBands(layerId, targetBands, _, numPartitions))
 
-  private def crop[V <: CellGrid: GeoTiffReader: ClassTag](
+  private def crop[V <: CellGrid[Int]: GeoTiffReader: ClassTag](
     geoTiff: GeoTiff[V],
     gridBounds: Seq[GridBounds[Int]]
   ): Iterator[(GridBounds[Int], V)] =
@@ -209,7 +209,7 @@ abstract class COGLayerReader[ID] extends Serializable {
 
   def baseReadAllBands[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](
     id: LayerId,
     tileQuery: LayerQuery[K, TileLayerMetadata[K]],
@@ -312,7 +312,7 @@ abstract class COGLayerReader[ID] extends Serializable {
 
   private def baseRead[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag,
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag,
     R
   ](
     id: LayerId,
@@ -374,7 +374,7 @@ abstract class COGLayerReader[ID] extends Serializable {
 
   private def readLayer[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader,
+    V <: CellGrid[Int]: GeoTiffReader,
     R
   ](
      bins: Seq[Seq[(BigInt, BigInt)]],

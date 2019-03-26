@@ -57,7 +57,7 @@ import scala.reflect.ClassTag
   @experimental def shutdown: Unit = pool.shutdown()
 
   @experimental def read[
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](layerId: LayerId)(x: Int, y: Int)(implicit rep: Raster[V] => RasterReprojectMethods[Raster[V]],
                                                res: Raster[V] => RasterResampleMethods[Raster[V]],
                                                  m: Raster[V] => RasterMergeMethods[V]): Raster[V] = {
@@ -99,7 +99,7 @@ import scala.reflect.ClassTag
   }
 
   @experimental def readAll[
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](layerId: LayerId)(implicit rep: Raster[V] => RasterReprojectMethods[Raster[V]],
                                res: Raster[V] => RasterResampleMethods[Raster[V]]): Traversable[Raster[V]] = {
     val layout =

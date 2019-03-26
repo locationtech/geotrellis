@@ -36,8 +36,8 @@ trait ValueReader[ID] {
   def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: ID): Reader[K, V]
 
   def overzoomingReader[
-    K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, 
-    V <: CellGrid: AvroRecordCodec: ? => TileResampleMethods[V]
+    K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag,
+    V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]
   ](layerId: ID, resampleMethod: ResampleMethod = ResampleMethod.DEFAULT): Reader[K, V]
 }
 

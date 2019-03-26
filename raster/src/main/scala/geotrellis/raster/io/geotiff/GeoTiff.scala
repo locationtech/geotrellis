@@ -51,7 +51,7 @@ trait GeoTiffData {
  * Base trait of GeoTiff. Takes a tile that is of a type equal to or a subtype
  * of CellGrid
  */
-trait GeoTiff[T <: CellGrid] extends GeoTiffData {
+trait GeoTiff[T <: CellGrid[Int]] extends GeoTiffData {
   def tile: T
 
   def cols: Int = tile.cols

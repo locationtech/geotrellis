@@ -28,7 +28,7 @@ import geotrellis.raster._
  * @param widnowedRows: An Int that is max row size of the sub-tiles.
  * @return: An [[Iterator]] that conatins [[GeoTiff]]s of type T.
  */
-abstract class CropIterator[T <: CellGrid](geoTiff: GeoTiff[T],
+abstract class CropIterator[T <: CellGrid[Int]](geoTiff: GeoTiff[T],
   windowedCols: Int,
   windowedRows: Int) extends Iterator[GeoTiff[T]] {
 
@@ -40,7 +40,7 @@ abstract class CropIterator[T <: CellGrid](geoTiff: GeoTiff[T],
       wholeCols / windowedCols
     else
       wholeCols / windowedCols + 1
-  
+
   def rowIterations: Int =
     if (wholeRows % windowedRows == 0)
       wholeRows / windowedRows
@@ -49,7 +49,7 @@ abstract class CropIterator[T <: CellGrid](geoTiff: GeoTiff[T],
 
   var colCount: Int = 0
   var rowCount: Int = 0
- 
+
   var colMin: Int = 0
   var rowMin: Int = 0
 
@@ -58,7 +58,7 @@ abstract class CropIterator[T <: CellGrid](geoTiff: GeoTiff[T],
 
   private var overallColCount: Int = 1
   private var overallRowCount: Int = 1
-  
+
   def adjustValues: Unit = {
     if (colCount + 1 == colIterations) {
       colCount = 0
@@ -78,7 +78,7 @@ abstract class CropIterator[T <: CellGrid](geoTiff: GeoTiff[T],
     rowMax =
       math.min(windowedRows + (windowedRows * rowCount), wholeRows)
   }
-  
+
   def hasNext: Boolean =
     if (overallColCount <= colIterations || overallRowCount <= rowIterations) {
       true

@@ -45,7 +45,7 @@ class S3COGLayerWriter(
 
   def writeCOGLayer[
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](
     layerName: String,
     cogLayer: COGLayer[K, V],
@@ -128,7 +128,7 @@ object S3COGLayerWriter {
 }
 
 
-class S3COGAsyncWriter[V <: CellGrid: GeoTiffReader](
+class S3COGAsyncWriter[V <: CellGrid[Int]: GeoTiffReader](
   bucket: String,
   threads: Int,
   putObjectModifier: PutObjectRequest => PutObjectRequest

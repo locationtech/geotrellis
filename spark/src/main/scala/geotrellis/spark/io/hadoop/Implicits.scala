@@ -43,7 +43,7 @@ trait Implicits {
       HdfsUtils.write(path, conf) { _.write(self.bytes) }
   }
 
-  implicit class withGeoTiffHadoopWriteMethods[T <: CellGrid](val self: GeoTiff[T]) extends HadoopRasterMethods[GeoTiff[T]] {
+  implicit class withGeoTiffHadoopWriteMethods[T <: CellGrid[Int]](val self: GeoTiff[T]) extends HadoopRasterMethods[GeoTiff[T]] {
     def write(path: Path, conf: Configuration): Unit =
       HdfsUtils.write(path, conf) { new GeoTiffWriter(self, _).write() }
   }

@@ -47,7 +47,7 @@ class S3COGCollectionLayerReader(
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](id: LayerId, rasterQuery: LayerQuery[K, TileLayerMetadata[K]]) = {
     val header =
       try {

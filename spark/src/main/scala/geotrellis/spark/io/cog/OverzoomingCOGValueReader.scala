@@ -33,7 +33,7 @@ trait OverzoomingCOGValueReader extends COGValueReader[LayerId] {
 
   def overzoomingReader[
     K: JsonFormat: SpatialComponent: ClassTag,
-    V <: CellGrid: GeoTiffReader: ? => TileResampleMethods[V]
+    V <: CellGrid[Int]: GeoTiffReader: ? => TileResampleMethods[V]
   ](layerId: LayerId, resampleMethod: ResampleMethod): COGReader[K, V] = new COGReader[K, V] {
     val LayerId(layerName, requestedZoom) = layerId
     val maxAvailableZoom = attributeStore.layerIds.filter { case LayerId(name, _) => name == layerName }.map(_.zoom).max

@@ -27,7 +27,7 @@ import spire.syntax.cfor._
 import cats._
 
 
-trait RasterRegionReproject[T <: CellGrid] extends Serializable {
+trait RasterRegionReproject[T <: CellGrid[Int]] extends Serializable {
   /** Reproject raster to a region that may partially intersect target raster extent.
     *
     * Back-projects only the cells overlapping the destination region before sampling their value from the source raster.
@@ -291,7 +291,7 @@ object RasterRegionReproject {
     }
   }
 
-  implicit def TileFeatureRasterRegionReproject[T <: CellGrid : RasterRegionReproject, D: Monoid](implicit ev: T => TileMergeMethods[T]) =
+  implicit def TileFeatureRasterRegionReproject[T <: CellGrid[Int] : RasterRegionReproject, D: Monoid](implicit ev: T => TileMergeMethods[T]) =
     new RasterRegionReproject[TileFeature[T, D]] {
       def regionReproject(
         raster: Raster[TileFeature[T, D]],

@@ -42,7 +42,7 @@ import java.net.URI
 
 import scala.reflect._
 
-case class COGLayer[K, T <: CellGrid](
+case class COGLayer[K, T <: CellGrid[Int]](
   layers: Map[ZoomRange, RDD[(K, GeoTiff[T])]], // Construct lower zoom levels off of higher zoom levels
   metadata: COGLayerMetadata[K]
  )
@@ -62,7 +62,7 @@ object COGLayer {
     */
   def fromLayerRDD[
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,
-    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffBuilder
+    V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffBuilder
   ](
      rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
      baseZoom: Int,
@@ -139,7 +139,7 @@ object COGLayer {
 
   private def generateGeoTiffRDD[
     K: SpatialComponent: Ordering: JsonFormat: ClassTag,
-    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffBuilder
+    V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]: ? => TileCropMethods[V]: GeoTiffBuilder
   ](
      rdd: RDD[(K, V)],
      zoomRange: ZoomRange ,
@@ -209,7 +209,7 @@ object COGLayer {
       }
   }
 
-  def write[K: SpatialComponent: ClassTag, V <: CellGrid: ClassTag](cogs: RDD[(K, GeoTiff[V])])(keyIndex: KeyIndex[K], uri: URI): Unit = {
+  def write[K: SpatialComponent: ClassTag, V <: CellGrid[Int]: ClassTag](cogs: RDD[(K, GeoTiff[V])])(keyIndex: KeyIndex[K], uri: URI): Unit = {
     val conf = SerializableConfiguration(cogs.sparkContext.hadoopConfiguration)
     cogs.foreach { case (key, tiff) =>
       println(s"$key: ${uri.toString}/${keyIndex.toIndex(key)}.tiff")
@@ -221,7 +221,7 @@ object COGLayer {
     * Merge two COGs, may be used in COG layer update.
     * Merge will happen on per-segment basis, avoiding decompressing all segments at once.
     */
-  def mergeCOGs[V <: CellGrid: ? => CropMethods[V]: ? => TileMergeMethods[V]: GeoTiffBuilder](
+  def mergeCOGs[V <: CellGrid[Int]: ? => CropMethods[V]: ? => TileMergeMethods[V]: GeoTiffBuilder](
     previous: GeoTiff[V],
     update: GeoTiff[V]
   ): GeoTiff[V] = {

@@ -19,7 +19,7 @@ package geotrellis.raster.transform
 import geotrellis.raster.CellGrid
 import geotrellis.util.MethodExtensions
 
-trait TransformMethods[T <: CellGrid] extends MethodExtensions[T] {
+trait TransformMethods[T <: CellGrid[Int]] extends MethodExtensions[T] {
   def rotate90(n: Int): T
   def rotate180: T = rotate90(2)
   def rotate270: T = rotate90(3)

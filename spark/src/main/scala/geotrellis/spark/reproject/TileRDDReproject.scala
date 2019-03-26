@@ -54,7 +54,7 @@ object TileRDDReproject extends LazyLogging {
     */
   def apply[
     K: SpatialComponent: Boundable: ClassTag,
-    V <: CellGrid: ClassTag: RasterRegionReproject: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
+    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
     bufferedTiles: RDD[(K, BufferedTile[V])],
     metadata: TileLayerMetadata[K],
@@ -223,7 +223,7 @@ object TileRDDReproject extends LazyLogging {
     */
   def apply[
     K: SpatialComponent: Boundable: ClassTag,
-    V <: CellGrid: ClassTag: RasterRegionReproject: Stitcher: (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
+    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     destCrs: CRS,
@@ -303,7 +303,7 @@ object TileRDDReproject extends LazyLogging {
     */
   def apply[
     K: SpatialComponent: Boundable: ClassTag,
-    V <: CellGrid: ClassTag: RasterRegionReproject: Stitcher: (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
+    V <: CellGrid[Int]: ClassTag: RasterRegionReproject: Stitcher: (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     destCrs: CRS,

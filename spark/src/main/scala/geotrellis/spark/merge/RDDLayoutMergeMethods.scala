@@ -29,7 +29,7 @@ import scala.reflect.ClassTag
 
 class RDDLayoutMergeMethods[
   K: SpatialComponent: ClassTag,
-  V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
+  V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
   M: (? => LayoutDefinition)
 ](val self: RDD[(K, V)] with Metadata[M]) extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
 

@@ -35,12 +35,12 @@ abstract class COGCollectionLayerReader[ID] { self =>
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]]): Seq[(K, V)] with Metadata[TileLayerMetadata[K]]
 
   def baseRead[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](
     id: ID,
     tileQuery: LayerQuery[K, TileLayerMetadata[K]],
@@ -132,7 +132,7 @@ abstract class COGCollectionLayerReader[ID] { self =>
 
   def reader[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ]: Reader[ID, Seq[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new Reader[ID, Seq[(K, V)] with Metadata[TileLayerMetadata[K]]] {
       def read(id: ID): Seq[(K, V)] with Metadata[TileLayerMetadata[K]] =
@@ -141,13 +141,13 @@ abstract class COGCollectionLayerReader[ID] { self =>
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](id: ID): Seq[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read[K, V](id, new LayerQuery[K, TileLayerMetadata[K]])
 
   def query[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](layerId: ID): BoundLayerQuery[K, TileLayerMetadata[K], Seq[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, read[K, V](layerId, _))
 }
@@ -196,7 +196,7 @@ object COGCollectionLayerReader {
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader
+    V <: CellGrid[Int]: GeoTiffReader
   ](
      keyPath: BigInt => String, // keyPath
      pathExists: String => Boolean, // check the path above exists

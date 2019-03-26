@@ -23,7 +23,7 @@ import geotrellis.vector.Extent
 import geotrellis.util.MethodExtensions
 
 
-trait TileReprojectMethods[T <: CellGrid] extends MethodExtensions[T] {
+trait TileReprojectMethods[T <: CellGrid[Int]] extends MethodExtensions[T] {
   import Reproject.Options
 
   def reproject(srcExtent: Extent, targetRasterExtent: RasterExtent, transform: Transform, inverseTransform: Transform, options: Options): Raster[T]

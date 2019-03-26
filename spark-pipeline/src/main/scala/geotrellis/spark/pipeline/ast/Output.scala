@@ -37,7 +37,7 @@ trait Output[T] extends Node[T]
 object Output extends LazyLogging {
   def write[
     K: SpatialComponent : AvroRecordCodec : JsonFormat : ClassTag,
-    V <: CellGrid : AvroRecordCodec : ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
+    V <: CellGrid[Int] : AvroRecordCodec : ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]: JsonFormat : GetComponent[?, Bounds[K]]
   ](arg: JsonWrite)(tuples: Stream[(Int, RDD[(K, V)] with Metadata[M])]): Stream[(Int, RDD[(K, V)] with Metadata[M])] = {
     lazy val writer = LayerWriter(arg.uri)

@@ -27,7 +27,7 @@ import org.apache.spark.rdd._
 
 abstract class LayerRDDZoomResampleMethods[
   K: SpatialComponent,
-  V <: CellGrid: (? => TileResampleMethods[V])
+  V <: CellGrid[Int]: (? => TileResampleMethods[V])
 ](val self: RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) extends MethodExtensions[RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
   def resampleToZoom(
     sourceZoom: Int,

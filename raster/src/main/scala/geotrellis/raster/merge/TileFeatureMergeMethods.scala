@@ -22,7 +22,7 @@ import geotrellis.vector._
 import cats.Semigroup
 
 class TileFeatureMergeMethods[
-  T <: CellGrid : (? => TileMergeMethods[T]),
+  T <: CellGrid[Int] : (? => TileMergeMethods[T]),
   D : Semigroup
 ](val self: TileFeature[T, D]) extends TileMergeMethods[TileFeature[T, D]] {
   def merge(other: TileFeature[T, D], baseCol: Int, baseRow: Int): TileFeature[T, D] =
@@ -33,7 +33,7 @@ class TileFeatureMergeMethods[
 }
 
 class RasterTileFeatureMergeMethods[
-  T <: CellGrid : (? => TileMergeMethods[T]),
+  T <: CellGrid[Int] : (? => TileMergeMethods[T]),
   D : Semigroup
 ](self: TileFeature[Raster[T], D]) extends RasterMergeMethods[T](self.tile) {
   def merge(other: TileFeature[Raster[T], D]): TileFeature[Raster[T], D] =

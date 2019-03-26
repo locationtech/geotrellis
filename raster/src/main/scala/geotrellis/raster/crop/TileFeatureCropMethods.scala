@@ -21,7 +21,7 @@ import geotrellis.vector._
 import geotrellis.util.MethodExtensions
 
 class TileFeatureCropMethods[
-    T <: CellGrid : (? => TileCropMethods[T]),
+    T <: CellGrid[Int] : (? => TileCropMethods[T]),
     D
   ](val self: TileFeature[T, D]) extends TileCropMethods[TileFeature[T, D]] {
   import Crop.Options
@@ -34,7 +34,7 @@ class TileFeatureCropMethods[
 }
 
 class RasterTileFeatureCropMethods[
-    T <: CellGrid : (? => TileCropMethods[T]),
+    T <: CellGrid[Int] : (? => TileCropMethods[T]),
     D
   ](val self: TileFeature[Raster[T], D]) extends TileCropMethods[TileFeature[Raster[T], D]] {
   import Crop.Options

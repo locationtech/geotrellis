@@ -35,11 +35,11 @@ trait Implicits {
 
   implicit class withBufferTilesMethodsWrapper[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: Stitcher: ClassTag: (? => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: ClassTag: (? => CropMethods[V])
   ](self: RDD[(K, V)]) extends BufferTilesMethods[K, V](self)
 
   implicit class withCollectionsBufferTilesMethodsWrapper[
     K: SpatialComponent,
-    V <: CellGrid: Stitcher: (? => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: (? => CropMethods[V])
   ](self: Seq[(K, V)]) extends CollectionBufferTilesMethods[K, V](self)
 }

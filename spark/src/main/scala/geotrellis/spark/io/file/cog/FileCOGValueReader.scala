@@ -38,7 +38,7 @@ class FileCOGValueReader(
 
   def reader[
     K: JsonFormat : SpatialComponent : ClassTag,
-    V <: CellGrid : GeoTiffReader
+    V <: CellGrid[Int] : GeoTiffReader
   ](layerId: LayerId): COGReader[K, V] = {
     def keyPath(key: K, maxWidth: Int, baseKeyIndex: KeyIndex[K], zoomRange: ZoomRange): String =
       (KeyPathGenerator(catalogPath, s"${layerId.name}/${zoomRange.slug}", baseKeyIndex, maxWidth) andThen (_ ++ s".$Extension"))(key)
@@ -55,7 +55,7 @@ class FileCOGValueReader(
 object FileCOGValueReader {
   def apply[
     K: JsonFormat : SpatialComponent : ClassTag,
-    V <: CellGrid : GeoTiffReader
+    V <: CellGrid[Int] : GeoTiffReader
   ](attributeStore: AttributeStore, catalogPath: String, layerId: LayerId): Reader[K, V] =
     new FileCOGValueReader(attributeStore, catalogPath).reader(layerId)
 

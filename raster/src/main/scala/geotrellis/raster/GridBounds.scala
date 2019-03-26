@@ -30,7 +30,7 @@ case class GridBounds[@specialized(Short, Int, Long) N: Integral](
 ) {
   def width: N = colMax - colMin + 1
   def height: N = rowMax - rowMin + 1
-  def size: Long = width.toLong * height.toLong
+  def size: N = width * height
   def isEmpty: Boolean = size == 0
 
   /**
@@ -234,7 +234,7 @@ case class GridBounds[@specialized(Short, Int, Long) N: Integral](
       *
       * @param  r  The given CellGrid
       */
-    def apply(r: CellGrid): GridBounds[Int] =
+    def apply[N: Integral](r: CellGrid[N]): GridBounds[N] =
       GridBounds(0, 0, r.cols-1, r.rows-1)
 
     /**

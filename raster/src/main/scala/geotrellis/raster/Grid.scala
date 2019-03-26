@@ -16,15 +16,13 @@
 
 package geotrellis.raster
 
+import spire.math.Integral
+import spire.implicits._
 
-trait Grid[N] extends Serializable {
+abstract class Grid[N: Integral] extends Serializable {
   def cols: N
   def rows: N
-
-  /**
-    * The size of the grid, e.g. cols * rows.
-    */
-  def size: N = ??? // cols * rows
+  def size: N = cols * rows
   def dimensions: (N, N) = (cols, rows)
-  def gridBounds: GridBounds[Int] = ??? // GridBounds(0, 0, cols - 1, rows - 1)
+  def gridBounds: GridBounds[N] = GridBounds(0, 0, cols - 1, rows - 1)
 }

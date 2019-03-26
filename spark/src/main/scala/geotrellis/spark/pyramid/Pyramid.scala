@@ -39,7 +39,7 @@ import scala.reflect.ClassTag
 
 case class Pyramid[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V],
+    V <: CellGrid[Int]: ClassTag: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V],
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
 ](levels: Map[Int, RDD[(K, V)] with Metadata[M]]) {
   def apply(level: Int): RDD[(K, V)] with Metadata[M] = levels(level)
@@ -84,7 +84,7 @@ object Pyramid extends LazyLogging {
 
   def fromLayerReader[
     K: AvroRecordCodec: Boundable: JsonFormat: ClassTag: SpatialComponent,
-    V <: CellGrid: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V]: AvroRecordCodec: ClassTag,
+    V <: CellGrid[Int]: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V]: AvroRecordCodec: ClassTag,
     M: JsonFormat: Component[?, Bounds[K]]: Component[?, LayoutDefinition]
   ](layerName: String, layerReader: LayerReader[LayerId], maxZoom: Option[Int] = None, minZoom: Option[Int] = None): Pyramid[K, V, M] = {
     val zooms = layerReader.attributeStore.availableZoomLevels(layerName)
@@ -112,7 +112,7 @@ object Pyramid extends LazyLogging {
 
   def fromLayerRDD[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V],
+    V <: CellGrid[Int]: ClassTag: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V],
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
   ](rdd: RDD[(K, V)] with Metadata[M],
     thisZoom: Option[Int] = None,
@@ -156,7 +156,7 @@ object Pyramid extends LazyLogging {
     */
   def up[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V],
+    V <: CellGrid[Int]: ClassTag: ? => TilePrototypeMethods[V]: ? => TileMergeMethods[V],
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
   ](rdd: RDD[(K, V)] with Metadata[M],
     layoutScheme: LayoutScheme,
@@ -243,7 +243,7 @@ object Pyramid extends LazyLogging {
 
   def up[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
+    V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
   ](rdd: RDD[(K, V)] with Metadata[M],
     layoutScheme: LayoutScheme,
@@ -272,7 +272,7 @@ object Pyramid extends LazyLogging {
     */
   def levelStream[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
+    V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
   ](rdd: RDD[(K, V)] with Metadata[M],
     layoutScheme: LayoutScheme,
@@ -291,7 +291,7 @@ object Pyramid extends LazyLogging {
 
   def levelStream[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
+    V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
   ](rdd: RDD[(K, V)] with Metadata[M],
     layoutScheme: LayoutScheme,
@@ -302,7 +302,7 @@ object Pyramid extends LazyLogging {
 
   def levelStream[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
+    V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
   ](rdd: RDD[(K, V)] with Metadata[M],
     layoutScheme: LayoutScheme,
@@ -313,7 +313,7 @@ object Pyramid extends LazyLogging {
 
   def levelStream[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
+    V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
   ](rdd: RDD[(K, V)] with Metadata[M],
     layoutScheme: LayoutScheme,
@@ -323,7 +323,7 @@ object Pyramid extends LazyLogging {
 
   def upLevels[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
+    V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
   ](rdd: RDD[(K, V)] with Metadata[M],
     layoutScheme: LayoutScheme,
@@ -348,7 +348,7 @@ object Pyramid extends LazyLogging {
 
   def upLevels[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
+    V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
   ](rdd: RDD[(K, V)] with Metadata[M],
     layoutScheme: LayoutScheme,
@@ -359,7 +359,7 @@ object Pyramid extends LazyLogging {
 
   def upLevels[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
+    V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
   ](rdd: RDD[(K, V)] with Metadata[M],
     layoutScheme: LayoutScheme,
@@ -370,7 +370,7 @@ object Pyramid extends LazyLogging {
 
   def upLevels[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
+    V <: CellGrid[Int]: ClassTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V],
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
   ](rdd: RDD[(K, V)] with Metadata[M],
     layoutScheme: LayoutScheme,

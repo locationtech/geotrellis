@@ -28,7 +28,7 @@ import geotrellis.util._
 import org.apache.spark.rdd.RDD
 
 abstract class SpatialTileLayoutCollectionStitchMethods[
-  V <: CellGrid: Stitcher,
+  V <: CellGrid[Int]: Stitcher,
   M: GetComponent[?, LayoutDefinition]
 ] extends MethodExtensions[Seq[(SpatialKey, V)] with Metadata[M]] {
 
@@ -43,7 +43,7 @@ abstract class SpatialTileLayoutCollectionStitchMethods[
   }
 }
 
-abstract class SpatialTileCollectionStitchMethods[V <: CellGrid: Stitcher]
+abstract class SpatialTileCollectionStitchMethods[V <: CellGrid[Int]: Stitcher]
   extends MethodExtensions[Seq[(SpatialKey, V)]] {
 
   def stitch(): V = TileLayoutStitcher.stitch(self)._1

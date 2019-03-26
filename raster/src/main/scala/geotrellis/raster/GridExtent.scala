@@ -31,9 +31,9 @@ class GridExtent[@specialized(Short, Int, Long) N: Integral](
   val extent: Extent,
   val cellwidth: Double,
   val cellheight: Double,
-  cols: N,
-  rows: N
-) extends Serializable {
+  val cols: N,
+  val rows: N
+) extends Grid[N] with Serializable {
 
   def this(extent: Extent, cellSize: CellSize) = {
     this(extent, cellSize.width, cellSize.height,

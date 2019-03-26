@@ -72,7 +72,7 @@ object AccumuloValueReader {
   ): Reader[K, V] =
     new AccumuloValueReader(instance, attributeStore).reader[K, V](layerId)
 
-  def apply[K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid: AvroRecordCodec: ? => TileResampleMethods[V]](
+  def apply[K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]](
     instance: AccumuloInstance,
     attributeStore: AttributeStore,
     layerId: LayerId,

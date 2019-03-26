@@ -24,7 +24,7 @@ import geotrellis.util._
 import spire.syntax.cfor._
 
 
-trait GeoTiffBuilder[T <: CellGrid] extends Serializable {
+trait GeoTiffBuilder[T <: CellGrid[Int]] extends Serializable {
   /** Make GeoTiff Tile from component segments.
     * Missing segments will be substituted with NODATA.
     * Segments must be keyed relative to (0, 0) offset.
@@ -120,7 +120,7 @@ trait GeoTiffBuilder[T <: CellGrid] extends Serializable {
 }
 
 object GeoTiffBuilder {
-  def apply[T <: CellGrid: GeoTiffBuilder] = implicitly[GeoTiffBuilder[T]]
+  def apply[T <: CellGrid[Int]: GeoTiffBuilder] = implicitly[GeoTiffBuilder[T]]
 
   implicit val singlebandGeoTiffBuilder = new GeoTiffBuilder[Tile] {
     def makeTile(

@@ -70,10 +70,9 @@ case class RasterExtent(
   override val extent: Extent,
   override val cellwidth: Double,
   override val cellheight: Double,
-  cols: Int,
-  rows: Int
-) extends GridExtent[Int](extent, cellwidth, cellheight, cols, rows) with Grid[Int] {
-
+  override val cols: Int,
+  override val rows: Int
+) extends GridExtent[Int](extent, cellwidth, cellheight, cols, rows) {
   if (cols <= 0) throw GeoAttrsError(s"invalid cols: $cols")
   if (rows <= 0) throw GeoAttrsError(s"invalid rows: $rows")
 
@@ -226,12 +225,12 @@ object RasterExtent {
   /**
     * Create a new [[RasterExtent]] from a [[CellGrid]] and an Extent.
     */
-  def apply(tile: CellGrid, extent: Extent): RasterExtent =
+  def apply(tile: CellGrid[Int], extent: Extent): RasterExtent =
     apply(extent, tile.cols, tile.rows)
 
   /**
     * Create a new [[RasterExtent]] from an Extent and a [[CellGrid]].
     */
-  def apply(extent: Extent, tile: CellGrid): RasterExtent =
+  def apply(extent: Extent, tile: CellGrid[Int]): RasterExtent =
     apply(extent, tile.cols, tile.rows)
 }

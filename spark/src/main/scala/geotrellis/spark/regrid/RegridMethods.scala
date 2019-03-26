@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
 
 class RegridMethods[
   K: SpatialComponent: ClassTag,
-  V <: CellGrid: ClassTag: Stitcher: (? => CropMethods[V]),
+  V <: CellGrid[Int]: ClassTag: Stitcher: (? => CropMethods[V]),
   M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
 ](val self: RDD[(K, V)] with Metadata[M]) extends MethodExtensions[RDD[(K, V)] with Metadata[M]] {
 
@@ -38,4 +38,4 @@ class RegridMethods[
 
   def regrid(tileSize: Int): RDD[(K, V)] with Metadata[M] = Regrid(self, tileSize)
 
-}  
+}

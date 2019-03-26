@@ -64,7 +64,7 @@ object ZoomResample {
     */
   def apply[
     K: SpatialComponent,
-    V <: CellGrid: (? => TileResampleMethods[V])
+    V <: CellGrid[Int]: (? => TileResampleMethods[V])
   ](
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     sourceZoom: Int,

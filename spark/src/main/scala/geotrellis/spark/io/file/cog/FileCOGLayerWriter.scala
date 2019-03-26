@@ -40,7 +40,7 @@ class FileCOGLayerWriter(
   implicit def getByteReader(uri: String): ByteReader = byteReader(uri)
   def uriExists(uri: String): Boolean = { val f = new File(uri); f.exists() && f.isFile }
 
-  def writeCOGLayer[K: SpatialComponent: Ordering: JsonFormat: ClassTag, V <: CellGrid: GeoTiffReader: ClassTag](
+  def writeCOGLayer[K: SpatialComponent: Ordering: JsonFormat: ClassTag, V <: CellGrid[Int]: GeoTiffReader: ClassTag](
     layerName: String,
     cogLayer: COGLayer[K, V],
     keyIndexes: Map[ZoomRange, KeyIndex[K]],

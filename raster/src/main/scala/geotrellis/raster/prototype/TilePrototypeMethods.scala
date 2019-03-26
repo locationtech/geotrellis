@@ -24,7 +24,7 @@ import geotrellis.util.MethodExtensions
   * Methods that allow us to create a similar tile type from an
   * already existing tile.
   */
-trait TilePrototypeMethods[T <: CellGrid] extends MethodExtensions[T] {
+trait TilePrototypeMethods[T <: CellGrid[Int]] extends MethodExtensions[T] {
 
   /**
     * Given numbers of columns and rows, produce a new [[ArrayTile]]

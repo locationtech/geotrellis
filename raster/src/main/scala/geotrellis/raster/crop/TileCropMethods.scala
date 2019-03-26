@@ -23,7 +23,7 @@ import geotrellis.raster._
 /**
   * A trait guaranteeing extension methods for cropping [[Tile]]s.
   */
-trait TileCropMethods[T <: CellGrid] extends CropMethods[T] {
+trait TileCropMethods[T <: CellGrid[Int]] extends CropMethods[T] {
   import Crop.Options
 
   /**

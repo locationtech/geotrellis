@@ -29,6 +29,6 @@ object Implicits extends Implicits
 trait Implicits {
   implicit class withProjectedExtentRDDSplitMethods[
     K: Component[?, ProjectedExtent],
-    V <: CellGrid: (? => SplitMethods[V])
+    V <: CellGrid[Int]: (? => SplitMethods[V])
   ](val self: RDD[(K, V)]) extends ProjectedExtentRDDSplitMethods[K, V]
 }

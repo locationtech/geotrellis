@@ -119,7 +119,7 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[geotrellis.raster.CroppedTile])
     kryo.register(classOf[geotrellis.raster.Raster[_]])
     kryo.register(classOf[geotrellis.raster.RasterExtent])
-    kryo.register(classOf[geotrellis.raster.CellGrid])
+    kryo.register(classOf[geotrellis.raster.CellGrid[_]])
     kryo.register(classOf[geotrellis.raster.CellSize])
     kryo.register(classOf[geotrellis.raster.GridBounds[_]])
     kryo.register(classOf[geotrellis.raster.GridExtent[_]])

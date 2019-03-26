@@ -497,10 +497,10 @@ object GeoTiffReader {
       GeoTiffReader.readMultiband(byteReader, streaming)
   }
 
-  def apply[V <: CellGrid](implicit ev: GeoTiffReader[V]): GeoTiffReader[V] = ev
+  def apply[V <: CellGrid[Int]](implicit ev: GeoTiffReader[V]): GeoTiffReader[V] = ev
 }
 
-trait GeoTiffReader[V <: CellGrid] extends Serializable {
+trait GeoTiffReader[V <: CellGrid[Int]] extends Serializable {
   def read(byteReader: ByteReader, streaming: Boolean): GeoTiff[V]
 
   def read(bytes: Array[Byte]): GeoTiff[V] =
