@@ -11,8 +11,9 @@ object Implicits extends Implicits
 trait Implicits
     extends costdistance.Implicits
     with crop.Implicits
-    with distance.Implicits
     with density.Implicits
+    with distance.Implicits
+    with equalization.Implicits
     with geotrellis.raster.mapalgebra.focal.hillshade.Implicits
     with interpolation.Implicits
     with mask.Implicits
@@ -39,7 +40,6 @@ trait Implicits
 
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with DelayedConversionTileMethods
-      with equalization.SinglebandEqualizationMethods
       with hydrology.HydrologyMethods
       with mapalgebra.focal.FocalMethods
       with mapalgebra.focal.hillshade.HillshadeMethods
@@ -64,7 +64,6 @@ trait Implicits
 
   implicit class withMultibandTileMethods(val self: MultibandTile) extends MethodExtensions[MultibandTile]
       with DelayedConversionMultibandTileMethods
-      with equalization.MultibandEqualizationMethods
       with mask.MultibandTileMaskMethods
       with matching.MultibandMatchingMethods
       with merge.MultibandTileMergeMethods
