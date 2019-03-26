@@ -39,4 +39,8 @@ trait Implicits {
   implicit class withMultibandTileFeatureCropMethods[D](val self: TileFeature[MultibandTile, D]) extends MultibandTileFeatureCropMethods[D]
 
   implicit class withRasterMultibandTileFeatureCropMethods[D](val self: TileFeature[Raster[MultibandTile], D]) extends RasterMultibandTileFeatureCropMethods[D]
+
+  implicit class withTileCropMethods(val self: Tile) extends SinglebandTileCropMethods
+
+  implicit class withMultibandTileCropMethods(val self: MultibandTile) extends MultibandTileCropMethods
 }
