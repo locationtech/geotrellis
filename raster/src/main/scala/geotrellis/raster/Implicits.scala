@@ -9,7 +9,8 @@ import geotrellis.util.MethodExtensions
 object Implicits extends Implicits
 
 trait Implicits
-    extends crop.Implicits
+    extends costdistance.Implicits
+    with crop.Implicits
     with distance.Implicits
     with density.Implicits
     with geotrellis.raster.mapalgebra.focal.hillshade.Implicits
@@ -38,7 +39,6 @@ trait Implicits
 
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with DelayedConversionTileMethods
-      with costdistance.CostDistanceMethods
       with equalization.SinglebandEqualizationMethods
       with hydrology.HydrologyMethods
       with mapalgebra.focal.FocalMethods
