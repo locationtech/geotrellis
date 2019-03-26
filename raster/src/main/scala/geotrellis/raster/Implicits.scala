@@ -39,7 +39,6 @@ trait Implicits
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with DelayedConversionTileMethods
       with costdistance.CostDistanceMethods
-      with crop.SinglebandTileCropMethods
       with equalization.SinglebandEqualizationMethods
       with hydrology.HydrologyMethods
       with mapalgebra.focal.FocalMethods
@@ -65,7 +64,6 @@ trait Implicits
 
   implicit class withMultibandTileMethods(val self: MultibandTile) extends MethodExtensions[MultibandTile]
       with DelayedConversionMultibandTileMethods
-      with crop.MultibandTileCropMethods
       with equalization.MultibandEqualizationMethods
       with mask.MultibandTileMaskMethods
       with matching.MultibandMatchingMethods
