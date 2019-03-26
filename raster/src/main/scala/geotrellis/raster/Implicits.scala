@@ -15,6 +15,7 @@ trait Implicits
     with distance.Implicits
     with equalization.Implicits
     with geotrellis.raster.mapalgebra.focal.hillshade.Implicits
+    with hydrology.Implicits
     with interpolation.Implicits
     with mask.Implicits
     with merge.Implicits
@@ -40,7 +41,6 @@ trait Implicits
 
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with DelayedConversionTileMethods
-      with hydrology.HydrologyMethods
       with mapalgebra.focal.FocalMethods
       with mapalgebra.focal.hillshade.HillshadeMethods
       with mapalgebra.local.LocalMethods
