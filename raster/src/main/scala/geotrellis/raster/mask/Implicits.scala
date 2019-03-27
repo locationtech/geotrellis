@@ -23,13 +23,8 @@ import geotrellis.vector.Geometry
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withRasterMaskMethods[T <: CellGrid[Int]: (? => TileMaskMethods[T])](val self: Raster[T]) extends RasterMaskMethods[T] {
-    /**
-      * Masks this raster by the given Geometry.
-      */
-    def mask(geoms: Traversable[Geometry], options: Options): Raster[T] =
-      self.mapTile(_.mask(self.extent, geoms, options))
-  }
+  implicit class withSinglebandRasterMaskMethods(val self: Raster[Tile]) extends SinglebandRasterMaskMethods
+  implicit class withMultibandRasterMaskMethods(val self: Raster[MultibandTile]) extends MultibandRasterMaskMethods
 
   implicit class withSinglebandTileFeatureMaskMethods[D](val self: TileFeature[Tile, D]) extends SinglebandTileFeatureMaskMethods[D]
   implicit class withMultibandTileFeatureMaskMethods[D](val self: TileFeature[MultibandTile, D]) extends MultibandTileFeatureMaskMethods[D]

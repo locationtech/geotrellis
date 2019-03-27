@@ -45,7 +45,6 @@ trait Implicits
 
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with DelayedConversionTileMethods
-      with mask.SinglebandTileMaskMethods
       with merge.SinglebandTileMergeMethods
       with prototype.SinglebandTilePrototypeMethods
       with regiongroup.RegionGroupMethods
@@ -63,7 +62,6 @@ trait Implicits
 
   implicit class withMultibandTileMethods(val self: MultibandTile) extends MethodExtensions[MultibandTile]
       with DelayedConversionMultibandTileMethods
-      with mask.MultibandTileMaskMethods
       with merge.MultibandTileMergeMethods
       with prototype.MultibandTilePrototypeMethods
       with render.MultibandColorMethods
