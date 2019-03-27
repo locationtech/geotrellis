@@ -31,6 +31,8 @@ package object raster extends Implicits {
   type IntTileVisitor = macros.IntTileVisitor
   type DoubleTileVisitor = macros.DoubleTileVisitor
 
+  val CropOptions = crop.Crop.Options
+
   // Keep constant values in sync with macro functions
   @inline final val byteNODATA = Byte.MinValue
   @inline final val ubyteNODATA = 0.toByte
