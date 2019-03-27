@@ -45,6 +45,9 @@ package object vector extends SeqMethods
   type MultiPolygonFeature[+D] = Feature[MultiPolygon, D]
   type GeometryCollectionFeature[+D] = Feature[GeometryCollection, D]
 
+  val WKT = io.wkt.WKT
+  val WKB = io.wkb.WKB
+
   // MethodExtensions
 
   implicit class withPointMethod(val self: Point) extends MethodExtensions[Point]
