@@ -35,11 +35,16 @@ class GridExtent[@specialized(Short, Int, Long) N: Integral](
   val rows: N
 ) extends Grid[N] with Serializable {
 
-  def this(extent: Extent, cellSize: CellSize) = {
+  def this(extent: Extent, cols: N, rows: N) =
+    this(extent, (extent.width / cols.toDouble), (extent.height / rows.toDouble), cols, rows)
+
+  def this(extent: Extent, cellSize: CellSize) =
     this(extent, cellSize.width, cellSize.height,
       cols = integralFromLong(math.round(extent.width / cellSize.width).toLong),
       rows = integralFromLong(math.round(extent.height / cellSize.height).toLong))
-  }
+
+  // TODO: move this into constructor
+  def cellSize = CellSize(cellwidth, cellheight)
 
   /** Convert map coordinate x to grid coordinate column. */
   final def mapXToGridDouble(x: Double): Double = (x - extent.xmin) / cellwidth
@@ -53,8 +58,67 @@ class GridExtent[@specialized(Short, Int, Long) N: Integral](
   /** Convert map coordinate y to grid coordinate row. */
   final def mapYToGrid(y: Double): N = integralFromLong[N](mapYToGridDouble(y).toLong)
 
-  // TODO: move this into constructor
-  def cellSize = CellSize(cellwidth, cellheight)
+  /** Convert map coordinates (x, y) to grid coordinates (col, row). */
+  final def mapToGrid(x: Double, y: Double): (N, N) = {
+    val col = math.floor((x - extent.xmin) / cellwidth).toInt
+    val row = math.floor((extent.ymax - y) / cellheight).toInt
+    (col, row)
+  }
+
+  /** Convert map coordinate tuple (x, y) to grid coordinates (col, row). */
+  final def mapToGrid(mapCoord: (Double, Double)): (N, N) =
+    mapToGrid(x = mapCoord._1, mapCoord._2)
+
+  /** Convert a point to grid coordinates (col, row). */
+  final def mapToGrid(p: Point): (N, N) =
+    mapToGrid(p.x, p.y)
+
+  /** The map coordinate of a grid cell is the center point. */
+  final def gridToMap(col: N, row: N): (Double, Double) = {
+    val x = col.toDouble * cellwidth + extent.xmin + (cellwidth / 2)
+    val y = extent.ymax - (row.toDouble * cellheight) - (cellheight / 2)
+
+    (x, y)
+  }
+
+  /** For a give column, find the corresponding x-coordinate in the grid of the present [[GridExtent]]. */
+  final def gridColToMap(col: N): Double = {
+    col.toDouble * cellwidth + extent.xmin + (cellwidth / 2)
+  }
+
+  /** For a give row, find the corresponding y-coordinate in the grid of the present [[GridExtent]]. */
+  final def gridRowToMap(row: N): Double = {
+    extent.ymax - (row.toDouble * cellheight) - (cellheight / 2)
+  }
+
+    /**
+    * Returns a [[RasterExtent]] with the same extent, but a modified
+    * number of columns and rows based on the given cell height and
+    * width.
+    */
+    def withResolution(targetCellWidth: Double, targetCellHeight: Double): GridExtent[N] = {
+      val newCols = math.ceil((extent.xmax - extent.xmin) / targetCellWidth)
+      val newRows = math.ceil((extent.ymax - extent.ymin) / targetCellHeight)
+      new GridExtent(extent, targetCellWidth, targetCellHeight,
+        cols = Integral[N].fromDouble(newCols),
+        rows = Integral[N].fromDouble(newRows))
+    }
+
+  /**
+    * Returns a [[GridExtent]] with the same extent, but a modified
+    * number of columns and rows based on the given cell height and
+    * width.
+    */
+  def withResolution(cellSize: CellSize): GridExtent[N] =
+    withResolution(cellSize.width, cellSize.height)
+
+  /**
+   * Returns a [[GridExtent]] with the same extent and the given
+   * number of columns and rows.
+   */
+  def withDimensions(targetCols: N, targetRows: N): GridExtent[N] =
+    new GridExtent(extent, targetCols, targetRows)
+
 
   /**
     * Gets the GridBounds aligned with this RasterExtent that is the
@@ -103,8 +167,6 @@ class GridExtent[@specialized(Short, Int, Long) N: Integral](
     else
       GridBounds(colMin, rowMin, colMax, rowMax)
   }
-
-
 
   /**
     *  Creates a RasterExtent out of this GridExtent.
@@ -201,23 +263,23 @@ class GridExtent[@specialized(Short, Int, Long) N: Integral](
     * @param  cellBounds  The extent to get the grid bounds for
     * @param  clamp       A boolean which controlls the clamping behvior
     */
-    def extentFor(cellBounds: GridBounds[N], clamp: Boolean = true): Extent = {
-      val xmin: Double = cellBounds.colMin.toLong * cellwidth + extent.xmin
-      val ymax: Double = extent.ymax - (cellBounds.rowMin.toLong * cellheight)
-      val xmax: Double = xmin + (cellBounds.width.toLong * cellwidth)
-      val ymin: Double = ymax - (cellBounds.height.toLong * cellheight)
+  def extentFor(cellBounds: GridBounds[N], clamp: Boolean = true): Extent = {
+    val xmin: Double = cellBounds.colMin.toLong * cellwidth + extent.xmin
+    val ymax: Double = extent.ymax - (cellBounds.rowMin.toLong * cellheight)
+    val xmax: Double = xmin + (cellBounds.width.toLong * cellwidth)
+    val ymin: Double = ymax - (cellBounds.height.toLong * cellheight)
 
-      if(clamp) {
-        Extent(
-          max(min(xmin, extent.xmax), extent.xmin),
-          max(min(ymin, extent.ymax), extent.ymin),
-          max(min(xmax, extent.xmax), extent.xmin),
-          max(min(ymax, extent.ymax), extent.ymin)
-        )
-      } else {
-        Extent(xmin, ymin, xmax, ymax)
-      }
+    if(clamp) {
+      Extent(
+        max(min(xmin, extent.xmax), extent.xmin),
+        max(min(ymin, extent.ymax), extent.ymin),
+        max(min(xmax, extent.xmax), extent.xmin),
+        max(min(ymax, extent.ymax), extent.ymin)
+      )
+    } else {
+      Extent(xmin, ymin, xmax, ymax)
     }
+  }
 
   override def equals(o: Any): Boolean = o match {
     case other: GridExtent[_] =>

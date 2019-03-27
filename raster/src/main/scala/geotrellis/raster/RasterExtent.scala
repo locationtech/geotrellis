@@ -77,55 +77,6 @@ case class RasterExtent(
   if (rows <= 0) throw GeoAttrsError(s"invalid rows: $rows")
 
   /**
-    * Convert map coordinates (x, y) to grid coordinates (col, row).
-    */
-  final def mapToGrid(x: Double, y: Double): (Int, Int) = {
-    val col = math.floor((x - extent.xmin) / cellwidth).toInt
-    val row = math.floor((extent.ymax - y) / cellheight).toInt
-    (col, row)
-  }
-
-  /**
-    * Convert map coordinate tuple (x, y) to grid coordinates (col, row).
-    */
-  final def mapToGrid(mapCoord: (Double, Double)): (Int, Int) = {
-    val (x, y) = mapCoord
-    mapToGrid(x, y)
-  }
-
-  /**
-   * Convert a point to grid coordinates (col, row).
-   */
-  final def mapToGrid(p: Point): (Int, Int) =
-    mapToGrid(p.x, p.y)
-
-  /**
-    * The map coordinate of a grid cell is the center point.
-    */
-  final def gridToMap(col: Int, row: Int): (Double, Double) = {
-    val x = col * cellwidth + extent.xmin + (cellwidth / 2)
-    val y = extent.ymax - (row * cellheight) - (cellheight / 2)
-
-    (x, y)
-  }
-
-  /**
-    * For a give column, find the corresponding x-coordinate in the
-    * grid of the present [[RasterExtent]].
-    */
-  final def gridColToMap(col: Int): Double = {
-    col * cellwidth + extent.xmin + (cellwidth / 2)
-  }
-
-  /**
-    * For a give row, find the corresponding y-coordinate in the grid
-    * of the present [[RasterExtent]].
-    */
-  final def gridRowToMap(row: Int): Double = {
-    extent.ymax - (row * cellheight) - (cellheight / 2)
-  }
-
-  /**
     * Combine two different [[RasterExtent]]s (which must have the
     * same cellsizes).  The result is a new extent at the same
     * resolution.
@@ -148,7 +99,7 @@ case class RasterExtent(
     * number of columns and rows based on the given cell height and
     * width.
     */
-  def withResolution(targetCellWidth: Double, targetCellHeight: Double): RasterExtent = {
+  override def withResolution(targetCellWidth: Double, targetCellHeight: Double): RasterExtent = {
     val newCols = math.ceil((extent.xmax - extent.xmin) / targetCellWidth).toInt
     val newRows = math.ceil((extent.ymax - extent.ymin) / targetCellHeight).toInt
     RasterExtent(extent, targetCellWidth, targetCellHeight, newCols, newRows)
@@ -159,14 +110,14 @@ case class RasterExtent(
     * number of columns and rows based on the given cell height and
     * width.
     */
-  def withResolution(cellSize: CellSize): RasterExtent =
+  override def withResolution(cellSize: CellSize): RasterExtent =
     withResolution(cellSize.width, cellSize.height)
 
   /**
    * Returns a [[RasterExtent]] with the same extent and the given
    * number of columns and rows.
    */
-  def withDimensions(targetCols: Int, targetRows: Int): RasterExtent =
+  override def withDimensions(targetCols: Int, targetRows: Int): RasterExtent =
     RasterExtent(extent, targetCols, targetRows)
 
   /**
