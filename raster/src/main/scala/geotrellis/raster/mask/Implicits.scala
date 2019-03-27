@@ -31,8 +31,6 @@ trait Implicits {
       self.mapTile(_.mask(self.extent, geoms, options))
   }
 
-  implicit class withRasterTileFeatureMaskMethods[T <: CellGrid[Int]: (? => TileMaskMethods[T]), D](val self: TileFeature[Raster[T], D]) extends RasterTileFeatureMaskMethods[T, D](self)
-
-  implicit class withTileFeatureMaskMethods[T <: CellGrid[Int] : (? => TileMaskMethods[T]), D](override val self: TileFeature[T, D]) extends TileFeatureMaskMethods[T, D](self)
-
+  implicit class withSinglebandTileFeatureMaskMethods[D](val self: TileFeature[Tile, D]) extends SinglebandTileFeatureMaskMethods[D]
+  implicit class withMultibandTileFeatureMaskMethods[D](val self: TileFeature[MultibandTile, D]) extends MultibandTileFeatureMaskMethods[D]
 }
