@@ -30,7 +30,7 @@ abstract class MultibandTileFeatureCropMethods[D] extends CropMethods[TileFeatur
     TileFeature(self.tile.crop(gb, options), self.data)
 }
 
-abstract class RasterMultibandTileFeatureCropMethods[D] extends CropMethods[TileFeature[Raster[MultibandTile], D]] {
+abstract class MultibandRasterTileFeatureCropMethods[D] extends CropMethods[TileFeature[Raster[MultibandTile], D]] {
   import Crop.Options
 
   def crop(extent: Extent, options: Options): TileFeature[Raster[MultibandTile], D] = {
