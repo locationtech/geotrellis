@@ -33,4 +33,7 @@ trait Implicits {
 
   implicit class withSinglebandTileFeatureMaskMethods[D](val self: TileFeature[Tile, D]) extends SinglebandTileFeatureMaskMethods[D]
   implicit class withMultibandTileFeatureMaskMethods[D](val self: TileFeature[MultibandTile, D]) extends MultibandTileFeatureMaskMethods[D]
+
+  implicit class withSinglebandRasterTileFeatureMaskMethods[D](val self: TileFeature[Raster[Tile], D]) extends SinglebandRasterTileFeatureMaskMethods[D]
+  implicit class withMultibandRasterTileFeatureMaskMethods[D](val self: TileFeature[Raster[MultibandTile], D]) extends MultibandRasterTileFeatureMaskMethods[D]
 }
