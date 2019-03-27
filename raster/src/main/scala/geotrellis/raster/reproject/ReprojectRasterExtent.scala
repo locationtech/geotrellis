@@ -25,13 +25,22 @@ import org.locationtech.jts.densify.Densifier
 import spire.syntax.cfor._
 import spire.math.Integral
 
-/**
-  * This is a conceptual port of GDALSuggestedWarpOutput2, part of GDAL. Docstring paraphrased
-  * from that code.
-  */
+
 object ReprojectRasterExtent {
   import Reproject.Options
 
+  /** A resolution is computed with the intent that the length of the
+   * distance from the top left corner of the output imagery to the bottom right
+   * corner would represent the same number of pixels as in the source image.
+   * Note that if the image is somewhat rotated the diagonal taken isnt of the
+   * whole output bounding rectangle, but instead of the locations where the
+   * top/left and bottom/right corners transform.  The output pixel size is
+   * always square.  This is intended to approximately preserve the resolution
+   * of the input data in the output file.
+   *
+   * This is a conceptual port of GDALSuggestedWarpOutput2, part of GDAL.
+   * Docstring paraphrased from that code.
+   */
   def apply[N: Integral](ge: GridExtent[N], transform: Transform, options: Options): GridExtent[N] = {
     val extent = ge.extent
     val newExtent = extent.reprojectAsPolygon(transform, 0.001).envelope
@@ -78,15 +87,6 @@ object ReprojectRasterExtent {
   def apply[N: Integral](ge: GridExtent[N], src: CRS, dest: CRS): GridExtent[N] =
     apply(ge, src, dest, Options.DEFAULT)
 
-  /* A resolution is computed with the intent that the length of the
-   * distance from the top left corner of the output imagery to the bottom right
-   * corner would represent the same number of pixels as in the source image.
-   * Note that if the image is somewhat rotated the diagonal taken isnt of the
-   * whole output bounding rectangle, but instead of the locations where the
-   * top/left and bottom/right corners transform.  The output pixel size is
-   * always square.  This is intended to approximately preserve the resolution
-   * of the input data in the output file.
-   */
   def apply(re: RasterExtent, transform: Transform, options: Reproject.Options): RasterExtent =
     apply(re, transform, options).toRasterExtent
 
