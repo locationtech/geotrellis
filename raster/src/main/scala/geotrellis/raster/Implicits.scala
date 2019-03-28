@@ -16,6 +16,7 @@ trait Implicits
     with equalization.Implicits
     with hydrology.Implicits
     with interpolation.Implicits
+    with io.json.Implicits
     with mapalgebra.focal.Implicits
     with mapalgebra.focal.hillshade.Implicits
     with mapalgebra.local.Implicits
