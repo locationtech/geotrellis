@@ -20,6 +20,8 @@ import geotrellis.raster._
 import geotrellis.raster.rasterize._
 import geotrellis.vector._
 import geotrellis.spark.SpatialKey
+import spire.math.Integral
+import spire.implicits._
 
 /**
  * Defines tiled raster layout
@@ -53,7 +55,7 @@ object LayoutDefinition {
    * Since padding may be required on the lower/right tiles to preserve the original resolution of the
    * raster a new Extent is returned, covering the padding.
    */
-  def apply(grid: GridExtent[Long], tileSize: Int): LayoutDefinition =
+  def apply[N: Integral](grid: GridExtent[N], tileSize: Int): LayoutDefinition =
     apply(grid, tileSize, tileSize)
 
   /**
@@ -61,7 +63,7 @@ object LayoutDefinition {
    * Since padding may be required on the lower/right tiles to preserve the original resolution of the
    * raster a new Extent is returned, covering the padding.
    */
-  def apply(grid: GridExtent[Long], tileCols: Int, tileRows: Int): LayoutDefinition = {
+  def apply[N: Integral](grid: GridExtent[N], tileCols: Int, tileRows: Int): LayoutDefinition = {
     val extent = grid.extent
     val cellSize = grid.cellSize
     val totalPixelWidth = extent.width / cellSize.width
