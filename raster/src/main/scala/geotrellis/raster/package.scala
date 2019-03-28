@@ -36,6 +36,11 @@ package object raster extends Implicits {
   val ColorMapOptions = render.ColorMap.Options
   val SplitOptions = split.Split.Options
 
+  val IntHistogram = histogram.IntHistogram
+  val DoubleHistogram = histogram.DoubleHistogram
+  val FastMapHistogram = histogram.FastMapHistogram
+  val StreamingHistogram = histogram.StreamingHistogram
+
   val CellValue = rasterize.CellValue
 
   val ColorMap = render.ColorMap

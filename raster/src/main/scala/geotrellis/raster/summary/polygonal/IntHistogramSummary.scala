@@ -17,7 +17,7 @@
 package geotrellis.raster.summary.polygonal
 
 import geotrellis.raster._
-import geotrellis.raster.histogram._
+import geotrellis.raster.histogram.Histogram
 import geotrellis.raster.rasterize._
 import geotrellis.vector._
 
