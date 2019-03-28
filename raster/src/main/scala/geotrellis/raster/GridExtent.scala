@@ -36,6 +36,7 @@ class GridExtent[@specialized(Short, Int, Long) N: Integral](
 ) extends Grid[N] with Serializable {
   if (cols <= 0) throw GeoAttrsError(s"invalid cols: $cols")
   if (rows <= 0) throw GeoAttrsError(s"invalid rows: $rows")
+  if (cols*rows <= 0) throw GeoAttrsError(s"invalid size: ${rows*cols} cols: $cols rows: $rows")
 
   def this(extent: Extent, cols: N, rows: N) =
     this(extent, (extent.width / cols.toDouble), (extent.height / rows.toDouble), cols, rows)
