@@ -75,6 +75,23 @@ case class RasterExtent(
 ) extends GridExtent[Int](extent, cellwidth, cellheight, cols, rows) {
 
   /**
+    * Combine two different [[RasterExtent]]s (which must have the
+    * same cellsizes).  The result is a new extent at the same
+    * resolution.
+    */
+  def combine(that: RasterExtent): RasterExtent = {
+    if (cellwidth != that.cellwidth)
+      throw GeoAttrsError(s"illegal cellwidths: $cellwidth and ${that.cellwidth}")
+    if (cellheight != that.cellheight)
+      throw GeoAttrsError(s"illegal cellheights: $cellheight and ${that.cellheight}")
+
+    val newExtent = extent.combine(that.extent)
+    val newRows = ceil(newExtent.height / cellheight).toInt
+    val newCols = ceil(newExtent.width / cellwidth).toInt
+
+    new RasterExtent(newExtent, cellwidth, cellheight, newCols, newRows)
+  }
+  /**
     * Returns a [[RasterExtent]] with the same extent, but a modified
     * number of columns and rows based on the given cell height and
     * width.
