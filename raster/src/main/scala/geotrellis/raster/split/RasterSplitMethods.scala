@@ -28,3 +28,6 @@ abstract class RasterSplitMethods[T <: CellGrid[Int]: (? => SplitMethods[T])] ex
       .zip(self.tile.split(tileLayout, options))
       .map { case (re, tile) => Raster(tile, re.extent) }
 }
+
+abstract class SinglebandRasterSplitMethods extends RasterSplitMethods[Tile]
+abstract class MultibandRasterSplitMethods extends RasterSplitMethods[MultibandTile]

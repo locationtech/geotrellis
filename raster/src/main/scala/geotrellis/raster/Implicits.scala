@@ -39,7 +39,6 @@ trait Implicits
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with DelayedConversionTileMethods
       with merge.SinglebandTileMergeMethods
-      with split.SinglebandTileSplitMethods
       with summary.SinglebandTileSummaryMethods
       with vectorize.VectorizeMethods
       with viewshed.ViewshedMethods
@@ -47,7 +46,6 @@ trait Implicits
   implicit class withMultibandTileMethods(val self: MultibandTile) extends MethodExtensions[MultibandTile]
       with DelayedConversionMultibandTileMethods
       with merge.MultibandTileMergeMethods
-      with split.MultibandTileSplitMethods
       with summary.MultibandTileSummaryMethods
 
   implicit class withSinglebandRasterMethods(val self: SinglebandRaster) extends MethodExtensions[SinglebandRaster]

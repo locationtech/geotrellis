@@ -34,6 +34,7 @@ package object raster extends Implicits {
   val CropOptions = crop.Crop.Options
   val RasterizerOptions = rasterize.Rasterizer.Options
   val ColorMapOptions = render.ColorMap.Options
+  val SplitOptions = split.Split.Options
 
   val CellValue = rasterize.CellValue
 
