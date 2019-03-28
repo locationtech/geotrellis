@@ -25,7 +25,7 @@ import geotrellis.util.MethodExtensions
 /**
   * A class providing extension methods for merging rasters.
   */
-class RasterMergeMethods[T <: CellGrid[Int]: ? => TileMergeMethods[T]](val self: Raster[T]) extends MethodExtensions[Raster[T]] {
+abstract class RasterMergeMethods[T <: CellGrid: ? => TileMergeMethods[T]] extends MethodExtensions[Raster[T]] {
 
   /**
     * Merge this [[Raster]] with the other one.  All places in the
@@ -50,3 +50,6 @@ class RasterMergeMethods[T <: CellGrid[Int]: ? => TileMergeMethods[T]](val self:
   def merge(other: Raster[T]): Raster[T] =
     merge(other, NearestNeighbor)
 }
+
+trait SinglebandRasterMergeMethods extends RasterMergeMethods[Tile]
+trait MultibandRasterMergeMethods extends RasterMergeMethods[MultibandTile]

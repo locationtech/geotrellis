@@ -25,7 +25,7 @@ import geotrellis.vector.Extent
 /**
   * Trait guaranteeing extension methods for doing merge operations on [[Tile]]s.
   */
-trait TileMergeMethods[T] extends MethodExtensions[T] {
+abstract class TileMergeMethods[T <: CellGrid] extends MethodExtensions[T] {
 
   /**
     * Merge this [[Tile]] with the other one.  All places in the

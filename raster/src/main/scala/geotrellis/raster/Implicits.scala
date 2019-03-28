@@ -41,11 +41,9 @@ trait Implicits
 
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with DelayedConversionTileMethods
-      with merge.SinglebandTileMergeMethods
 
   implicit class withMultibandTileMethods(val self: MultibandTile) extends MethodExtensions[MultibandTile]
       with DelayedConversionMultibandTileMethods
-      with merge.MultibandTileMergeMethods
 
   implicit class SinglebandRasterAnyRefMethods(val self: SinglebandRaster) extends AnyRef {
     def getValueAtPoint(point: Point): Int =
