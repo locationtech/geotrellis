@@ -60,6 +60,8 @@ package object raster extends Implicits {
   val Min = resample.Min
   val Sum = resample.Sum
 
+  val Stitcher = stitch.Stitcher
+
   // Keep constant values in sync with macro functions
   @inline final val byteNODATA = Byte.MinValue
   @inline final val ubyteNODATA = 0.toByte
