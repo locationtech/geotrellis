@@ -18,12 +18,12 @@ package geotrellis.raster.transform
 
 import geotrellis.raster.{CellGrid, MultibandTile, Raster, Tile}
 
-object Implicits extends Implicits
 
-trait Implicits {
-  implicit class withTileTransformMethods(val self: Tile) extends TransformTileMethods
-  implicit class withMultibandTileTransformTileMethods(val self: MultibandTile) extends MultibandTileTransformMethods
-
-  implicit class withSinglebandRasterTransformMethods(val self: Raster[Tile]) extends SinglebandRasterTransformMethods
-  implicit class withMultibandRasterTransformMethods(val self: Raster[MultibandTile]) extends MultibandRasterTransformMethods
+abstract class RasterTransformMethods[T <: CellGrid: (? => TransformMethods[T])] extends TransformMethods[Raster[T]] {
+  def rotate90(n: Int = 1): Raster[T] = Raster(self.tile.rotate90(n), self.extent)
+  def flipVertical: Raster[T] = Raster(self.tile.flipVertical, self.extent)
+  def flipHorizontal: Raster[T] = Raster(self.tile.flipHorizontal, self.extent)
 }
+
+trait SinglebandRasterTransformMethods extends RasterTransformMethods[Tile]
+trait MultibandRasterTransformMethods extends RasterTransformMethods[MultibandTile]
