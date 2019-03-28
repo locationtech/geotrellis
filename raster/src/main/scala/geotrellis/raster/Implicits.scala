@@ -24,24 +24,13 @@ trait Implicits
     with matching.Implicits
     with merge.Implicits
     with prototype.Implicits
+    with rasterize.Implicits
     with reproject.Implicits
     with split.Implicits
     with summary.polygonal.Implicits
     with transform.Implicits {
 
   // Implicit method extension for core types
-
-  implicit class withRasterExtentRasterizeMethods(val self: RasterExtent) extends MethodExtensions[RasterExtent]
-      with rasterize.RasterExtentRasterizeMethods[RasterExtent]
-
-  implicit class withGeometryRasterizeMethods(val self : Geometry) extends MethodExtensions[Geometry]
-      with rasterize.GeometryRasterizeMethods
-
-  implicit class withFeatureIntRasterizeMethods(val self : Feature[Geometry, Int]) extends MethodExtensions[Feature[Geometry, Int]]
-      with rasterize.FeatureIntRasterizeMethods[Geometry]
-
-  implicit class withFeatureDoubleRasterizeMethods(val self : Feature[Geometry, Double]) extends MethodExtensions[Feature[Geometry, Double]]
-      with rasterize.FeatureDoubleRasterizeMethods[Geometry]
 
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with DelayedConversionTileMethods
