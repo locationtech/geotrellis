@@ -44,6 +44,21 @@ package object raster extends Implicits {
   val PngSettings = render.png.Settings
   val PngColorEncoding = render.png.PngColorEncoding
 
+  type ResampleMethod = resample.ResampleMethod
+
+  val NearestNeighbor = resample.NearestNeighbor
+  val Bilinear = resample.Bilinear
+  val CubicConvolution = resample.CubicConvolution
+  val CubcSpline = resample.CubicSpline
+  val Lanczos = resample.Lanczos
+
+  val Average = resample.Average
+  val Mode = resample.Mode
+  val Median = resample.Median
+  val Max = resample.Max
+  val Min = resample.Min
+  val Sum = resample.Sum
+
   // Keep constant values in sync with macro functions
   @inline final val byteNODATA = Byte.MinValue
   @inline final val ubyteNODATA = 0.toByte

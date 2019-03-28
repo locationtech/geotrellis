@@ -28,6 +28,7 @@ trait Implicits
     with regiongroup.Implicits
     with render.Implicits
     with reproject.Implicits
+    with resample.Implicits
     with split.Implicits
     with summary.polygonal.Implicits
     with transform.Implicits {
@@ -37,7 +38,6 @@ trait Implicits
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with DelayedConversionTileMethods
       with merge.SinglebandTileMergeMethods
-      with resample.SinglebandTileResampleMethods
       with sigmoidal.SinglebandSigmoidalMethods
       with split.SinglebandTileSplitMethods
       with summary.SinglebandTileSummaryMethods
@@ -47,17 +47,12 @@ trait Implicits
   implicit class withMultibandTileMethods(val self: MultibandTile) extends MethodExtensions[MultibandTile]
       with DelayedConversionMultibandTileMethods
       with merge.MultibandTileMergeMethods
-      with resample.MultibandTileResampleMethods
       with sigmoidal.MultibandSigmoidalMethods
       with split.MultibandTileSplitMethods
       with summary.MultibandTileSummaryMethods
 
   implicit class withSinglebandRasterMethods(val self: SinglebandRaster) extends MethodExtensions[SinglebandRaster]
-      with resample.SinglebandRasterResampleMethods
       with vectorize.SinglebandRasterVectorizeMethods
-
-  implicit class withMultibandRasterMethods(val self: MultibandRaster) extends MethodExtensions[MultibandRaster]
-      with resample.MultibandRasterResampleMethods
 
   implicit class SinglebandRasterAnyRefMethods(val self: SinglebandRaster) extends AnyRef {
     def getValueAtPoint(point: Point): Int =
