@@ -33,8 +33,16 @@ package object raster extends Implicits {
 
   val CropOptions = crop.Crop.Options
   val RasterizerOptions = rasterize.Rasterizer.Options
+  val ColorMapOptions = render.ColorMap.Options
 
   val CellValue = rasterize.CellValue
+
+  val ColorMap = render.ColorMap
+  val ColorMaps = render.ColorMaps
+  val ColorRamp = render.ColorRamp
+  val JpgSettings = render.jpg.Settings
+  val PngSettings = render.png.Settings
+  val PngColorEncoding = render.png.PngColorEncoding
 
   // Keep constant values in sync with macro functions
   @inline final val byteNODATA = Byte.MinValue

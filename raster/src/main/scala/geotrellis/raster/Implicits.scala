@@ -26,6 +26,7 @@ trait Implicits
     with prototype.Implicits
     with rasterize.Implicits
     with regiongroup.Implicits
+    with render.Implicits
     with reproject.Implicits
     with split.Implicits
     with summary.polygonal.Implicits
@@ -36,10 +37,6 @@ trait Implicits
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with DelayedConversionTileMethods
       with merge.SinglebandTileMergeMethods
-      with render.ColorMethods
-      with render.JpgRenderMethods
-      with render.PngRenderMethods
-      with render.AsciiRenderMethods
       with reproject.SinglebandTileReprojectMethods
       with resample.SinglebandTileResampleMethods
       with sigmoidal.SinglebandSigmoidalMethods
@@ -51,9 +48,6 @@ trait Implicits
   implicit class withMultibandTileMethods(val self: MultibandTile) extends MethodExtensions[MultibandTile]
       with DelayedConversionMultibandTileMethods
       with merge.MultibandTileMergeMethods
-      with render.MultibandColorMethods
-      with render.MultibandJpgRenderMethods
-      with render.MultibandPngRenderMethods
       with reproject.MultibandTileReprojectMethods
       with resample.MultibandTileResampleMethods
       with sigmoidal.MultibandSigmoidalMethods
