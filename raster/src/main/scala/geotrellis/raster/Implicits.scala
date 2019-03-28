@@ -29,6 +29,7 @@ trait Implicits
     with render.Implicits
     with reproject.Implicits
     with resample.Implicits
+    with sigmoidal.Implicits
     with split.Implicits
     with summary.polygonal.Implicits
     with transform.Implicits {
@@ -38,7 +39,6 @@ trait Implicits
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with DelayedConversionTileMethods
       with merge.SinglebandTileMergeMethods
-      with sigmoidal.SinglebandSigmoidalMethods
       with split.SinglebandTileSplitMethods
       with summary.SinglebandTileSummaryMethods
       with vectorize.VectorizeMethods
@@ -47,7 +47,6 @@ trait Implicits
   implicit class withMultibandTileMethods(val self: MultibandTile) extends MethodExtensions[MultibandTile]
       with DelayedConversionMultibandTileMethods
       with merge.MultibandTileMergeMethods
-      with sigmoidal.MultibandSigmoidalMethods
       with split.MultibandTileSplitMethods
       with summary.MultibandTileSummaryMethods
 
