@@ -34,14 +34,14 @@ trait Implicits
     with summary.Implicits
     with summary.polygonal.Implicits
     with transform.Implicits
-    with vectorize.Implicits {
+    with vectorize.Implicits
+    with viewshed.Implicits {
 
   // Implicit method extension for core types
 
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with DelayedConversionTileMethods
       with merge.SinglebandTileMergeMethods
-      with viewshed.ViewshedMethods
 
   implicit class withMultibandTileMethods(val self: MultibandTile) extends MethodExtensions[MultibandTile]
       with DelayedConversionMultibandTileMethods
