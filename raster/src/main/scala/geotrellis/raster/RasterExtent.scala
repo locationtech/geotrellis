@@ -73,26 +73,6 @@ case class RasterExtent(
   override val cols: Int,
   override val rows: Int
 ) extends GridExtent[Int](extent, cellwidth, cellheight, cols, rows) {
-  if (cols <= 0) throw GeoAttrsError(s"invalid cols: $cols")
-  if (rows <= 0) throw GeoAttrsError(s"invalid rows: $rows")
-
-  /**
-    * Combine two different [[RasterExtent]]s (which must have the
-    * same cellsizes).  The result is a new extent at the same
-    * resolution.
-    */
-  def combine (that: RasterExtent): RasterExtent = {
-    if (cellwidth != that.cellwidth)
-      throw GeoAttrsError(s"illegal cellwidths: $cellwidth and ${that.cellwidth}")
-    if (cellheight != that.cellheight)
-      throw GeoAttrsError(s"illegal cellheights: $cellheight and ${that.cellheight}")
-
-    val newExtent = extent.combine(that.extent)
-    val newRows = ceil(newExtent.height / cellheight).toInt
-    val newCols = ceil(newExtent.width / cellwidth).toInt
-
-    RasterExtent(newExtent, cellwidth, cellheight, newCols, newRows)
-  }
 
   /**
     * Returns a [[RasterExtent]] with the same extent, but a modified
@@ -120,20 +100,6 @@ case class RasterExtent(
   override def withDimensions(targetCols: Int, targetRows: Int): RasterExtent =
     RasterExtent(extent, targetCols, targetRows)
 
-  /**
-    * Adjusts a raster extent so that it can encompass the tile
-    * layout.  Will resample the extent, but keep the resolution, and
-    * preserve north and west borders
-    */
-  def adjustTo(tileLayout: TileLayout): RasterExtent = {
-    val totalCols = tileLayout.tileCols * tileLayout.layoutCols
-    val totalRows = tileLayout.tileRows * tileLayout.layoutRows
-
-    val resampledExtent = Extent(extent.xmin, extent.ymax - (cellheight*totalRows),
-                        extent.xmin + (cellwidth*totalCols), extent.ymax)
-
-    RasterExtent(resampledExtent, cellwidth, cellheight, totalCols, totalRows)
-  }
 
   /**
     * Returns a new [[RasterExtent]] which represents the GridBounds
@@ -152,8 +118,6 @@ case class RasterExtent(
   * The companion object for the [[RasterExtent]] type.
   */
 object RasterExtent {
-  final val epsilon = 0.0000001
-
   /**
     * Create a new [[RasterExtent]] from an Extent, a column, and a
     * row.
