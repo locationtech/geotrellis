@@ -139,3 +139,4 @@ Ready? `Setup a GeoTrellis development environment. <tutorials/setup.html>`__
    Architecture Decision Records <architecture/adrs>
    Proj4 Implementation <architecture/proj4-implementation>
    architecture/high-performance-scala
+   cassandra/cassandra-test.rst
