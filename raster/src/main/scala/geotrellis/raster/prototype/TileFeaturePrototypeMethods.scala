@@ -19,13 +19,16 @@ package geotrellis.raster.prototype
 import geotrellis.raster._
 import cats.Monoid
 
-class TileFeaturePrototypeMethods[
-  T <: CellGrid[Int] : (? => TilePrototypeMethods[T]),
+abstract class TileFeaturePrototypeMethods[
+  T <: CellGrid : (? => TilePrototypeMethods[T]),
   D: Monoid
-](val self: TileFeature[T, D]) extends TilePrototypeMethods[TileFeature[T, D]] {
+] extends TilePrototypeMethods[TileFeature[T, D]] {
   def prototype(cols: Int, rows: Int): TileFeature[T, D] =
     TileFeature(self.tile.prototype(cols, rows), Monoid[D].empty)
 
   def prototype(cellType: CellType, cols: Int, rows: Int): TileFeature[T, D] =
     TileFeature(self.tile.prototype(cellType, cols, rows), Monoid[D].empty)
 }
+
+abstract class SinglebandTileFeaturePrototypeMethods[D: Monoid] extends TileFeaturePrototypeMethods[Tile, D]
+abstract class MultibandTileFeaturePrototypeMethods[D: Monoid] extends TileFeaturePrototypeMethods[MultibandTile, D]
