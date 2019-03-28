@@ -23,6 +23,9 @@ import geotrellis.vector.Geometry
 object Implicits extends Implicits
 
 trait Implicits {
+  implicit class withSinglebandTileMaskMethods(val self: Tile) extends SinglebandTileMaskMethods
+  implicit class withMultibandTileMaskMethods(val self: MultibandTile) extends MultibandTileMaskMethods
+
   implicit class withSinglebandRasterMaskMethods(val self: Raster[Tile]) extends SinglebandRasterMaskMethods
   implicit class withMultibandRasterMaskMethods(val self: Raster[MultibandTile]) extends MultibandRasterMaskMethods
 
