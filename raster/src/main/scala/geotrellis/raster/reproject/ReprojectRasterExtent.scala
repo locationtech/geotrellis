@@ -88,7 +88,7 @@ object ReprojectRasterExtent {
     apply(ge, src, dest, Options.DEFAULT)
 
   def apply(re: RasterExtent, transform: Transform, options: Reproject.Options): RasterExtent =
-    apply(re, transform, options).toRasterExtent
+    apply(re: GridExtent[Int], transform, options).toRasterExtent
 
   def apply(re: RasterExtent, transform: Transform): RasterExtent =
     apply(re, transform, Options.DEFAULT)
