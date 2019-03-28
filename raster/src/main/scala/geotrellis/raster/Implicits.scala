@@ -25,6 +25,7 @@ trait Implicits
     with merge.Implicits
     with prototype.Implicits
     with rasterize.Implicits
+    with regiongroup.Implicits
     with reproject.Implicits
     with split.Implicits
     with summary.polygonal.Implicits
@@ -35,7 +36,6 @@ trait Implicits
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with DelayedConversionTileMethods
       with merge.SinglebandTileMergeMethods
-      with regiongroup.RegionGroupMethods
       with render.ColorMethods
       with render.JpgRenderMethods
       with render.PngRenderMethods
