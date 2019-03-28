@@ -21,16 +21,18 @@ import geotrellis.raster._
 object Implicits extends Implicits
 
 trait Implicits {
-  implicit class withProjectedRasterReprojectMethods[T <: CellGrid[Int]](self: ProjectedRaster[T])(implicit ev: Raster[T] => RasterReprojectMethods[Raster[T]])
-    extends ProjectedRasterReprojectMethods[T](self)
+  implicit class withSinglebandReprojectMethods(val self: Tile) extends SinglebandTileReprojectMethods
+  implicit class withMultibandReprojectMethods(val self: MultibandTile) extends MultibandTileReprojectMethods
 
-  implicit class withTileFeatureReprojectMethods[
-    T <: CellGrid[Int] : (? => TileReprojectMethods[T]),
-    D
-  ](self: TileFeature[T,D]) extends TileFeatureReprojectMethods[T, D](self)
+  implicit class withSinglebandRasterReprojectMethods(val self: Raster[Tile]) extends SinglebandRasterReprojectMethods
+  implicit class withMultibandRasterReprojectMethods(val self: Raster[MultibandTile]) extends MultibandRasterReprojectMethods
 
-  implicit class withRasterTileFeatureReprojectMethods[
-    T <: CellGrid[Int] : (? => TileReprojectMethods[T]),
-    D
-  ](self: TileFeature[Raster[T], D]) extends RasterTileFeatureReprojectMethods[T, D](self)
+  implicit class withSinglebandProjectedRasterReprojectMethods(val self: ProjectedRaster[Tile]) extends SinglebandProjectedRasterReprojectMethods
+  implicit class withMultibandProjectedRasterReprojectMethods(val self: ProjectedRaster[MultibandTile]) extends MultibandProjectedRasterReprojectMethods
+
+  implicit class withSinglebandTileFeatureReprojectMethods[D](val self: TileFeature[Tile, D]) extends SinglebandTileFeatureReprojectMethods[D]
+  implicit class withMultibandTileFeatureReprojectMethods[D](val self: TileFeature[MultibandTile, D]) extends MultibandTileFeatureReprojectMethods[D]
+
+  implicit class withSinglebandRasterTileFeatureReprojectMethods[D](val self: TileFeature[Raster[Tile], D]) extends SinglebandRasterTileFeatureReprojectMethods[D]
+  implicit class withMultibandRasterTileFeatureReprojectMethods[D](val self: TileFeature[Raster[MultibandTile], D]) extends MultibandRasterTileFeatureReprojectMethods[D]
 }

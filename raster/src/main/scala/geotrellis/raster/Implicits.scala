@@ -37,7 +37,6 @@ trait Implicits
   implicit class withTileMethods(val self: Tile) extends MethodExtensions[Tile]
       with DelayedConversionTileMethods
       with merge.SinglebandTileMergeMethods
-      with reproject.SinglebandTileReprojectMethods
       with resample.SinglebandTileResampleMethods
       with sigmoidal.SinglebandSigmoidalMethods
       with split.SinglebandTileSplitMethods
@@ -48,19 +47,16 @@ trait Implicits
   implicit class withMultibandTileMethods(val self: MultibandTile) extends MethodExtensions[MultibandTile]
       with DelayedConversionMultibandTileMethods
       with merge.MultibandTileMergeMethods
-      with reproject.MultibandTileReprojectMethods
       with resample.MultibandTileResampleMethods
       with sigmoidal.MultibandSigmoidalMethods
       with split.MultibandTileSplitMethods
       with summary.MultibandTileSummaryMethods
 
   implicit class withSinglebandRasterMethods(val self: SinglebandRaster) extends MethodExtensions[SinglebandRaster]
-      with reproject.SinglebandRasterReprojectMethods
       with resample.SinglebandRasterResampleMethods
       with vectorize.SinglebandRasterVectorizeMethods
 
   implicit class withMultibandRasterMethods(val self: MultibandRaster) extends MethodExtensions[MultibandRaster]
-      with reproject.MultibandRasterReprojectMethods
       with resample.MultibandRasterResampleMethods
 
   implicit class SinglebandRasterAnyRefMethods(val self: SinglebandRaster) extends AnyRef {
