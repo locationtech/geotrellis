@@ -367,4 +367,9 @@ object GridExtent {
     val ch = extent.height / grid.rows.toDouble
     new GridExtent[N](extent, cw, ch, grid.cols, grid.rows)
   }
+
+  /** RasterSource interface reads GridBounds[Long] but GridBounds[Int] abounds.
+   * Implicit conversions are evil, but this one is always safe and saves typing.
+   */
+  implicit def gridBoundsIntToLong(bounds: GridBounds[Int]): GridBounds[Long] = bounds.toGridType[Long]
 }
