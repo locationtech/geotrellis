@@ -168,8 +168,8 @@ case class GridBounds[@specialized(Short, Int, Long) N: Integral](
     */
   def coordsIter: Iterator[(N, N)] =
     for {
-      row <- integralIterator[N](rowMin, rowMax, 1)
-      col <- integralIterator[N](colMin, colMax, 1)
+      row <- integralIterator[N](rowMin, rowMax + 1, 1)
+      col <- integralIterator[N](colMin, colMax + 1, 1)
     } yield (col, row)
 
   /**
