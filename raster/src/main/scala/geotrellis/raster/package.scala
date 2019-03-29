@@ -67,6 +67,18 @@ package object raster extends Implicits {
     val Sum = resample.Sum
   }
 
+  type Neighborhood = mapalgebra.focal.Neighborhood
+
+  val TargetCell = mapalgebra.focal.TargetCell
+
+  object Neighborhoods {
+    val Square = mapalgebra.focal.Square
+    val Circle = mapalgebra.focal.Circle
+    val Nesw = mapalgebra.focal.Nesw
+    val Wedge = mapalgebra.focal.Wedge
+    val Annulus = mapalgebra.focal.Annulus
+  }
+
   val Stitcher = stitch.Stitcher
 
   // Keep constant values in sync with macro functions
