@@ -43,12 +43,19 @@ package object raster extends Implicits {
 
   val CellValue = rasterize.CellValue
 
+  type ColorMap = render.ColorMap
   val ColorMap = render.ColorMap
   val ColorMaps = render.ColorMaps
+
   val ColorRamp = render.ColorRamp
+  val ColorRamps = render.ColorRamps
+
   val JpgSettings = render.jpg.Settings
   val PngSettings = render.png.Settings
   val PngColorEncoding = render.png.PngColorEncoding
+
+  val RGB = render.RGB
+  val RGBA = render.RGBA
 
   type ResampleMethod = resample.ResampleMethod
 
@@ -69,6 +76,7 @@ package object raster extends Implicits {
 
   type Neighborhood = mapalgebra.focal.Neighborhood
 
+  type TargetCell = mapalgebra.focal.TargetCell
   val TargetCell = mapalgebra.focal.TargetCell
 
   object Neighborhoods {
