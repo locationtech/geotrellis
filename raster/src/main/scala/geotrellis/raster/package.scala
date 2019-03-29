@@ -52,18 +52,20 @@ package object raster extends Implicits {
 
   type ResampleMethod = resample.ResampleMethod
 
-  val NearestNeighbor = resample.NearestNeighbor
-  val Bilinear = resample.Bilinear
-  val CubicConvolution = resample.CubicConvolution
-  val CubcSpline = resample.CubicSpline
-  val Lanczos = resample.Lanczos
+  object ResampleMethods {
+    val NearestNeighbor = resample.NearestNeighbor
+    val Bilinear = resample.Bilinear
+    val CubicConvolution = resample.CubicConvolution
+    val CubcSpline = resample.CubicSpline
+    val Lanczos = resample.Lanczos
 
-  val Average = resample.Average
-  val Mode = resample.Mode
-  val Median = resample.Median
-  val Max = resample.Max
-  val Min = resample.Min
-  val Sum = resample.Sum
+    val Average = resample.Average
+    val Mode = resample.Mode
+    val Median = resample.Median
+    val Max = resample.Max
+    val Min = resample.Min
+    val Sum = resample.Sum
+  }
 
   val Stitcher = stitch.Stitcher
 
