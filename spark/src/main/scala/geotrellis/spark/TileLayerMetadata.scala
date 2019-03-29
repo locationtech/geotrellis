@@ -41,13 +41,13 @@ case class TileLayerMetadata[K](
   bounds: Bounds[K]
 ) {
   /** Transformations between tiling scheme and map references */
-  def mapTransform = layout.mapTransform
+  def mapTransform: MapKeyTransform = layout.mapTransform
   /** TileLayout of the layout */
-  def tileLayout = layout.tileLayout
+  def tileLayout: TileLayout = layout.tileLayout
   /** Full extent of the layout */
-  def layoutExtent = layout.extent
+  def layoutExtent: Extent = layout.extent
   /** GridBounds of data tiles in the layout */
-  def gridBounds = mapTransform(extent)
+  def tileBounds: TileBounds = mapTransform(extent)
 
   def combine(other: TileLayerMetadata[K])(implicit b: Boundable[K]): TileLayerMetadata[K] = {
     val combinedExtent       = extent combine other.extent

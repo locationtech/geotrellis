@@ -39,7 +39,7 @@ object CollectionFocalOperation {
   def apply[K: SpatialComponent](rasterCollection: TileLayerCollection[K], neighborhood: Neighborhood)
                                           (calc: (Tile, Option[GridBounds[Int]]) => Tile): TileLayerCollection[K] =
     rasterCollection.withContext { rdd =>
-      apply(rdd, neighborhood, rasterCollection.metadata.gridBounds)(calc)
+      apply(rdd, neighborhood, rasterCollection.metadata.tileBounds)(calc)
     }
 }
 

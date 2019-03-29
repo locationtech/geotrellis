@@ -51,7 +51,7 @@ object FocalOperation {
   def apply[K: SpatialComponent: ClassTag](rasterRDD: TileLayerRDD[K], neighborhood: Neighborhood, partitioner: Option[Partitioner])
       (calc: (Tile, Option[GridBounds[Int]]) => Tile): TileLayerRDD[K] =
     rasterRDD.withContext { rdd =>
-      apply(rdd, neighborhood, rasterRDD.metadata.gridBounds, partitioner)(calc)
+      apply(rdd, neighborhood, rasterRDD.metadata.tileBounds, partitioner)(calc)
     }
 }
 
