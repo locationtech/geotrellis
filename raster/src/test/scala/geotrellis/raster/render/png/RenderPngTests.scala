@@ -17,7 +17,7 @@
 package geotrellis.raster.render.png
 
 import geotrellis.raster._
-import geotrellis.raster.render._
+import geotrellis.raster.render.{RGB, RGBA, Png}
 import geotrellis.raster.testkit._
 
 import spire.syntax.cfor._
