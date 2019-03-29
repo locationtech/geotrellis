@@ -211,8 +211,8 @@ case class GridBounds[@specialized(Short, Int, Long) N: Integral](
   /** Split into windows, covering original CellBounds */
   def split(cols: N, rows: N): Iterator[GridBounds[N]] = {
     for {
-      windowRowMin <- integralIterator[N](rowMin, rowMax, rows)
-      windowColMin <- integralIterator[N](colMin, colMax, cols)
+      windowRowMin <- integralIterator[N](rowMin, rowMax + 1, rows)
+      windowColMin <- integralIterator[N](colMin, colMax + 1, cols)
     } yield {
       GridBounds(
         colMin = windowColMin,
