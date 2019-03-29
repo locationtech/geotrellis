@@ -75,10 +75,10 @@ class GridExtent[@specialized(Short, Int, Long) N: Integral](
   final def mapYToGridDouble(y: Double): Double = (extent.ymax - y ) / cellheight
 
   /** Convert map coordinate x to grid coordinate column. */
-  final def mapXToGrid(x: Double): N = integralFromLong[N](mapXToGridDouble(x).toLong)
+  final def mapXToGrid(x: Double): N = integralFromLong[N](math.floor(mapXToGridDouble(x)).toLong)
 
   /** Convert map coordinate y to grid coordinate row. */
-  final def mapYToGrid(y: Double): N = integralFromLong[N](mapYToGridDouble(y).toLong)
+  final def mapYToGrid(y: Double): N = integralFromLong[N](math.floor(mapYToGridDouble(y)).toLong)
 
   /** Convert map coordinates (x, y) to grid coordinates (col, row). */
   final def mapToGrid(x: Double, y: Double): (N, N) = {
@@ -183,7 +183,11 @@ class GridExtent[@specialized(Short, Int, Long) N: Integral](
     }
 
     if (clamp)
-      GridBounds(colMin, rowMin, colMax.min(cols - 1), rowMax.min(rows - 1))
+      GridBounds(
+        colMin = colMin.max(0).min(cols - 1),
+        rowMin = rowMin.max(0).min(rows - 1),
+        colMax = colMax.max(0).min(cols - 1),
+        rowMax = rowMax.max(0).min(rows - 1))
     else
       GridBounds(colMin, rowMin, colMax, rowMax)
   }
