@@ -348,17 +348,6 @@ object GridExtent {
   def apply(extent: Extent, cellwidth: Double, cellheight: Double): GridExtent[Long] =
     new GridExtent[Long](extent, CellSize(cellwidth, cellheight))
 
-  def apply(extent: Extent, cols: Int, rows: Int): GridExtent[Int] = {
-    val cw = extent.width / cols
-    val ch = extent.height / rows
-    new GridExtent[Int](extent, cw, ch, cols, rows)
-  }
-
-  def apply(extent: Extent, cols: Long, rows: Long): GridExtent[Long] = {
-    val cw = extent.width / cols
-    val ch = extent.height / rows
-    new GridExtent[Long](extent, cw, ch, cols, rows)
-  }
 
   def apply[N: Integral](grid: Grid[N], extent: Extent): GridExtent[N] = {
     val cw = extent.width / grid.cols.toDouble
