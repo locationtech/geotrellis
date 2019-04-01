@@ -18,7 +18,6 @@ package geotrellis.spark.io.s3
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
-import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.testkit.RasterMatchers
 import geotrellis.tiling._
 import geotrellis.spark._
