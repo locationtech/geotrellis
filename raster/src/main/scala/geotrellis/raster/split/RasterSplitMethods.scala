@@ -29,5 +29,5 @@ abstract class RasterSplitMethods[T <: CellGrid[Int]: (? => SplitMethods[T])] ex
       .map { case (re, tile) => Raster(tile, re.extent) }
 }
 
-abstract class SinglebandRasterSplitMethods extends RasterSplitMethods[Tile]
-abstract class MultibandRasterSplitMethods extends RasterSplitMethods[MultibandTile]
+trait SinglebandRasterSplitMethods extends RasterSplitMethods[Tile]
+trait MultibandRasterSplitMethods extends RasterSplitMethods[MultibandTile]
