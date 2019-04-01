@@ -37,6 +37,11 @@ class GridExtent[@specialized(Short, Int, Long) N: Integral](
   if (cols <= 0) throw GeoAttrsError(s"invalid cols: $cols")
   if (rows <= 0) throw GeoAttrsError(s"invalid rows: $rows")
   //if (cols*rows <= 0) throw GeoAttrsError(s"invalid size: ${rows*cols} cols: $cols rows: $rows")
+  require(
+    cols == Integral[N].fromDouble(math.round(extent.width / cellwidth)) &&
+    rows == Integral[N].fromDouble(math.round(extent.height / cellheight)),
+    s"$extent at $cellSize does not match $dimensions")
+
 
   def this(extent: Extent, cols: N, rows: N) =
     this(extent, (extent.width / cols.toDouble), (extent.height / rows.toDouble), cols, rows)
