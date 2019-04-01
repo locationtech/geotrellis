@@ -244,12 +244,13 @@ class GridExtent[@specialized(Short, Int, Long) N: Integral](
     val xmax = right(alignmentPoint.x, targetExtent.xmax, cellwidth)
     val ymin = left(alignmentPoint.y, targetExtent.ymin, cellheight)
     val ymax = right(alignmentPoint.y, targetExtent.ymax, cellheight)
-    val cols = math.round(extent.width / cellwidth).toLong
-    val rows = math.round(extent.height / cellheight).toLong
-    val ncols = integralFromLong(cols)
-    val nrows = integralFromLong(rows)
+    val alignedExtent = Extent(xmin, ymin, xmax, ymax)
+    val cols = math.round(alignedExtent.width / cellwidth)
+    val rows = math.round(alignedExtent.height / cellheight)
+    val ncols = Integral[N].fromDouble(cols)
+    val nrows = Integral[N].fromDouble(rows)
 
-    new GridExtent[N](Extent(xmin, ymin, xmax, ymax), cellwidth, cellheight, ncols, nrows)
+    new GridExtent[N](alignedExtent, cellwidth, cellheight, ncols, nrows)
   }
 
   /**
