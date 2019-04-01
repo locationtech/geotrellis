@@ -149,8 +149,8 @@ object RasterExtent {
     * Create a new [[RasterExtent]] from an Extent and a [[CellSize]].
     */
   def apply(extent: Extent, cellSize: CellSize): RasterExtent = {
-    val cols = (extent.width / cellSize.width).toInt
-    val rows = (extent.height / cellSize.height).toInt
+    val cols = math.round(extent.width / cellSize.width).toInt
+    val rows = math.round(extent.height / cellSize.height).toInt
     RasterExtent(extent, cellSize.width, cellSize.height, cols, rows)
   }
 
