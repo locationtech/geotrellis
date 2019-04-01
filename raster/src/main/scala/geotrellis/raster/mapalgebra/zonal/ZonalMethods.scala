@@ -18,7 +18,6 @@ package geotrellis.raster.mapalgebra.zonal
 
 import geotrellis.raster._
 import geotrellis.raster.summary._
-import geotrellis.raster.histogram._
 import geotrellis.util.MethodExtensions
 
 

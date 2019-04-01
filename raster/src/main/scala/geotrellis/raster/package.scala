@@ -39,6 +39,11 @@ package object raster extends Implicits {
   val IntHistogram = histogram.IntHistogram
   val DoubleHistogram = histogram.DoubleHistogram
   val FastMapHistogram = histogram.FastMapHistogram
+
+  // Is @specialized required here?
+  type Histogram[@specialized (Int, Double) T <: AnyVal] = histogram.Histogram[T]
+
+  type StreamingHistogram = histogram.StreamingHistogram
   val StreamingHistogram = histogram.StreamingHistogram
 
   val CellValue = rasterize.CellValue
