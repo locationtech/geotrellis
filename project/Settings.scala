@@ -320,7 +320,6 @@ object Settings {
     libraryDependencies ++= Seq(
       pureconfig,
       jts,
-      catsCore,
       spire,
       monocleCore,
       monocleMacro,
@@ -528,6 +527,8 @@ object Settings {
     libraryDependencies ++= Seq(
       jts,
       pureconfig,
+      catsCore,
+      simulacrum,
       sprayJson,
       apacheMath,
       spire,

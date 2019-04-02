@@ -16,6 +16,9 @@
 
 package geotrellis.vector
 
+import cats._
+import cats.implicits._
+
 /** A case class which represents a geometry with some metadata
   *
   * @tparam G A subtype of Geometry
@@ -23,25 +26,23 @@ package geotrellis.vector
   * @param geom An instance of G
   * @param data An instance of D
   */
-case class Feature[+G <: Geometry, +D](geom: G, data: D) {
-
-  /** Method for manipulating this class' geom
-    * @tparam T A subtype of Geometry
-    * @param f A function from G to T
-    */
-  def mapGeom[T <: Geometry](f: G => T): Feature[T, D] =
-    Feature(f(geom), data)
-
-  /** Method for manipulating this class' data
-    * @tparam T The type of the data expected
-    * @param f A function from D to T
-    */
-  def mapData[T](f: D => T): Feature[G, T] =
-    Feature(geom, f(data))
-}
+class Feature[+G <: Geometry, +D](val geom: G, val data: D)
 
 /** Feature companion object */
 object Feature {
+  def apply[G <: Geometry, D](geom: G, data: D) = new Feature(geom, data)
+
+  type FeatureGeometry[D] = ({ type Type[G <: Geometry] = Feature[G, D] })
+
+  implicit def featureHasGeometry[D] = new HasGeometry[FeatureGeometry[D]#Type] {
+    def geom[G <: Geometry](ft: Feature[G, D]): G = ft.geom
+    def mapGeom[G <: Geometry, T <: Geometry](ft: Feature[G, D])(fn: G => T): Feature[T, D] = Feature(fn(ft.geom), ft.data)
+  }
+
+  implicit def featureFunctor[G <: Geometry] = new Functor[Feature[G, ?]] {
+    override def map[A, B](feature: Feature[G, A])(f: A => B): Feature[G, B] = Feature(feature.geom, f(feature.data))
+  }
+
   implicit def featureToGeometry[G <: Geometry](f: Feature[G, _]): G = f.geom
 }
 

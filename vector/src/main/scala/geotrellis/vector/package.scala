@@ -19,11 +19,18 @@ package geotrellis
 import geotrellis.util.MethodExtensions
 
 import org.locationtech.jts.{geom => jts}
+import simulacrum._
 
 package object vector extends SeqMethods
     with reproject.Implicits
     with triangulation.Implicits
     with voronoi.Implicits {
+
+  @typeclass
+  trait HasGeometry[F[_ <: Geometry]] {
+    def geom[G <: Geometry](obj: F[G]): G
+    def mapGeom[G <: Geometry, T <: Geometry](obj: F[G])(fn: G => T): F[T]
+  }
 
   type PointFeature[+D] = Feature[Point, D]
   type LineFeature[+D] = Feature[Line, D]

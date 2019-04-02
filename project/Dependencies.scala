@@ -46,6 +46,8 @@ object Dependencies {
   val fs2Core             = "co.fs2"                     %% "fs2-core"                 % "1.0.0"
   val fs2Io               = "co.fs2"                     %% "fs2-io"                   % "1.0.0"
 
+  val simulacrum          = "com.github.mpilquist"       %% "simulacrum"               % "0.15.0"
+
   val sparkCore           = "org.apache.spark"           %% "spark-core"               % Version.spark
   val sparkSQL            = "org.apache.spark"           %% "spark-sql"                % Version.spark
 
