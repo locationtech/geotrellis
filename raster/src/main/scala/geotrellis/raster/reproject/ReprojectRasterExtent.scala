@@ -62,8 +62,8 @@ object ReprojectRasterExtent {
               (pixelSize, pixelSize)
           }
 
-        val newCols = (newExtent.width / pixelSizeX + 0.5).toInt//.toLong
-        val newRows = (newExtent.height / pixelSizeY + 0.5).toInt//.toLong
+        val newCols = (newExtent.width / pixelSizeX + 0.5).toLong
+        val newRows = (newExtent.height / pixelSizeY + 0.5).toLong
 
         //Adjust the extent to match the pixel size.
         val adjustedExtent = Extent(newExtent.xmin, newExtent.ymax - (pixelSizeY*newRows), newExtent.xmin + (pixelSizeX*newCols), newExtent.ymax)
