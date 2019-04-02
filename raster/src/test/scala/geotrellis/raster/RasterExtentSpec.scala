@@ -216,7 +216,7 @@ class RasterExtentSpec extends FunSpec with Matchers
 
     // Exploring a little more...
     it("reproduce bad grid bounds - another case") {
-      val re = RasterExtent(Extent(10.0, 30.0, 20.0, 40.0), 1.0, 1.0, 240, 240)
+      val re = RasterExtent(Extent(10.0, 30.0, 20.0, 40.0), 240, 240)
       val subExtent = Extent(11.0, 39.9999999999, 100.0, 60.0)
 
       val gb = re.gridBoundsFor(subExtent)
@@ -225,7 +225,7 @@ class RasterExtentSpec extends FunSpec with Matchers
 
     // Try negative side just for kicks
     it("reproduce bad grid bounds - third case") {
-      val re = RasterExtent(Extent(10.0, -40.0, 20.0, -30.0), 1.0, 1.0, 240, 240)
+      val re = RasterExtent(Extent(10.0, -40.0, 20.0, -30.0), 240, 240)
       val subExtent = Extent(11.0, -30.00000000001, 100.0, 60.0)
 
       val gb = re.gridBoundsFor(subExtent)
@@ -234,7 +234,7 @@ class RasterExtentSpec extends FunSpec with Matchers
 
     // Doesn't break with rowMin...
     it("reproduce bad grid bounds - rowMin") {
-      val re = RasterExtent(Extent(10.0, 30.0, 20.0, 40.0), 1.0, 1.0, 240, 240)
+      val re = RasterExtent(Extent(10.0, 30.0, 20.0, 40.0), 240, 240)
       val subExtent = Extent(9.9999999999, 40.0, 100.0, 60.0)
 
       val gb = re.gridBoundsFor(subExtent)
@@ -243,7 +243,7 @@ class RasterExtentSpec extends FunSpec with Matchers
 
     // Probably happens with colMax as well...
     it("reproduce bad grid bounds - colMax") {
-      val re = RasterExtent(Extent(10.0, 30.0, 20.0, 40.0), 1.0, 1.0, 240, 240)
+      val re = RasterExtent(Extent(10.0, 30.0, 20.0, 40.0), 240, 240)
       val subExtent = Extent(0.0, 30.0, 10.0000000001, 60.0)
 
       val gb = re.gridBoundsFor(subExtent)
