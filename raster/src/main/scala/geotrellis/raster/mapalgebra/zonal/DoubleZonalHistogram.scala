@@ -17,7 +17,6 @@
 package geotrellis.raster.mapalgebra.zonal
 
 import geotrellis.raster._
-import geotrellis.raster.histogram.{Histogram, MutableHistogram}
 
 import spire.syntax.cfor._
 
