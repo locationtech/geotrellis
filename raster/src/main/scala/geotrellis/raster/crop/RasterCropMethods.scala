@@ -38,8 +38,8 @@ abstract class RasterCropMethods[T <: CellGrid: (? => CropMethods[T])] extends C
     Raster(croppedTile, croppedExtent)
   }
 
-  /*
-   * Given an Extent, prodcue a cropped [[Raster]]
+  /**
+   * Given an Extent, produce a cropped [[Raster]].
    */
   def crop(extent: Extent): Raster[T] =
     crop(extent, Options.DEFAULT)

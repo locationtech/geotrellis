@@ -17,7 +17,7 @@
 package geotrellis.raster.mapalgebra.focal.hillshade
 
 import geotrellis.raster._
-import geotrellis.raster.mapalgebra.focal.{TargetCell, ShortArrayTileResult}
+import geotrellis.raster.mapalgebra.focal.ShortArrayTileResult
 import geotrellis.raster.mapalgebra.focal.Angles._
 
 import scala.math._
