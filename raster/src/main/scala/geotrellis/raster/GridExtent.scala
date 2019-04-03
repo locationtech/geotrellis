@@ -27,7 +27,7 @@ import spire.implicits._
   * Critically while the number of cell rows and columns is implied by the constructor arguments,
   * they are intentionally not expressed to avoid Int overflow for large grids.
   */
-class GridExtent[@specialized(Short, Int, Long) N: Integral](
+class GridExtent[@specialized(Int, Long) N: Integral](
   val extent: Extent,
   val cellwidth: Double,
   val cellheight: Double,
