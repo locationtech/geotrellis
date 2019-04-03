@@ -25,7 +25,7 @@ import spire.implicits._
   * Represents grid coordinates of a subsection of a RasterExtent.
   * These coordinates are inclusive.
   */
-case class GridBounds[@specialized(Short, Int, Long) N: Integral](
+case class GridBounds[@specialized(Int, Long) N: Integral](
   colMin: N, rowMin: N, colMax: N, rowMax: N
 ) {
   def width: N = colMax - colMin + 1
@@ -234,19 +234,18 @@ case class GridBounds[@specialized(Short, Int, Long) N: Integral](
   */
   object GridBounds {
     /**
-      * Given a [[CellGrid]], produce the corresponding [[GridBounds]].
+      * Given a [[Grid]], produce the corresponding [[GridBounds]].
       *
-      * @param  r  The given CellGrid
+      * @param  r  The given Grid
       */
-    def apply[N: Integral](r: CellGrid[N]): GridBounds[N] =
-      GridBounds(0, 0, r.cols-1, r.rows-1)
+    def apply[N: Integral](r: Grid[N]): GridBounds[N] =
+      GridBounds(0, 0, r.cols - 1, r.rows - 1)
 
-    /**
-      * Given a sequence of keys, return a [[GridBounds]] of minimal
-      * size which covers them.
-      *
-      * @param  keys  The sequence of keys to cover
-      */
+    def apply(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int): GridBounds[Int] =
+      new GridBounds[Int](colMin, rowMin, colMax, rowMax)
+
+    def apply(colMin: Long, rowMin: Long, colMax: Long, rowMax: Long): GridBounds[Long] =
+      new GridBounds[Long](colMin, rowMin, colMax, rowMax)
 
     /**
       * Creates a sequence of distinct [[GridBounds]] out of a set of
