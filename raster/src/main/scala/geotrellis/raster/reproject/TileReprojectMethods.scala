@@ -23,7 +23,7 @@ import geotrellis.vector.Extent
 import geotrellis.util.MethodExtensions
 
 
-trait TileReprojectMethods[T <: CellGrid] extends MethodExtensions[T] {
+trait TileReprojectMethods[T <: CellGrid[Int]] extends MethodExtensions[T] {
   import Reproject.Options
 
   def reproject(srcExtent: Extent, targetRasterExtent: RasterExtent, transform: Transform, inverseTransform: Transform, options: Options): Raster[T]
@@ -36,14 +36,14 @@ trait TileReprojectMethods[T <: CellGrid] extends MethodExtensions[T] {
   def reproject(srcExtent: Extent, src: CRS, dest: CRS): Raster[T] =
     reproject(srcExtent, src, dest, Options.DEFAULT)
 
-  def reproject(srcExtent: Extent, gridBounds: GridBounds, src: CRS, dest: CRS, options: Options): Raster[T]
+  def reproject(srcExtent: Extent, gridBounds: GridBounds[Int], src: CRS, dest: CRS, options: Options): Raster[T]
 
-  def reproject(srcExtent: Extent, gridBounds: GridBounds, src: CRS, dest: CRS): Raster[T] =
+  def reproject(srcExtent: Extent, gridBounds: GridBounds[Int], src: CRS, dest: CRS): Raster[T] =
     reproject(srcExtent, gridBounds, src, dest, Options.DEFAULT)
 
-  def reproject(srcExtent: Extent, gridBounds: GridBounds, transform: Transform, inverseTransform: Transform, options: Options): Raster[T]
+  def reproject(srcExtent: Extent, gridBounds: GridBounds[Int], transform: Transform, inverseTransform: Transform, options: Options): Raster[T]
 
-  def reproject(srcExtent: Extent, gridBounds: GridBounds, transform: Transform, inverseTransform: Transform): Raster[T] =
+  def reproject(srcExtent: Extent, gridBounds: GridBounds[Int], transform: Transform, inverseTransform: Transform): Raster[T] =
     reproject(srcExtent, gridBounds, transform, inverseTransform, Options.DEFAULT)
 
 }

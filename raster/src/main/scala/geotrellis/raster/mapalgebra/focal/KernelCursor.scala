@@ -19,7 +19,7 @@ package geotrellis.raster.mapalgebra.focal
 import geotrellis.raster._
 import geotrellis.macros._
 
-class KernelCursor(r: Tile, kernel: Kernel, analysisArea: GridBounds)
+class KernelCursor(r: Tile, kernel: Kernel, analysisArea: GridBounds[Int])
     extends Cursor(r, analysisArea, kernel.extent)
     with MacroIterableTile
     with Serializable {

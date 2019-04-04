@@ -32,7 +32,7 @@ object CutTiles extends LazyLogging {
   def apply[
     K1: (? => TilerKeyMethods[K1, K2]),
     K2: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
+    V <: CellGrid[Int]: ClassTag: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ] (
     rdd: RDD[(K1, V)],
     cellType: CellType,

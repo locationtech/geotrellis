@@ -116,7 +116,7 @@ class SurfacePoint() {
  * For edge cells, the neighborhood points that lie outside the extent of the raster
  * will be counted as having the same value as the focal point.
  */
-abstract class SurfacePointCalculation[T](r: Tile, n: Neighborhood, analysisArea: Option[GridBounds], val cellSize: CellSize, target: TargetCell = TargetCell.All)
+abstract class SurfacePointCalculation[T](r: Tile, n: Neighborhood, analysisArea: Option[GridBounds[Int]], val cellSize: CellSize, target: TargetCell = TargetCell.All)
   extends FocalCalculation[T](r, n, analysisArea, target)
 {
   // Use trait instead of Function3 to avoid boxing

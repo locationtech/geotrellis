@@ -102,7 +102,7 @@ trait Implicits
 
   implicit class withContextRDDMethods[
     K: ClassTag: SpatialComponent,
-    V <: CellGrid: ClassTag,
+    V <: CellGrid[Int]: ClassTag,
     M: GetComponent[?, LayoutDefinition]
   ](rdd: RDD[(K, V)] with Metadata[M]) extends ContextRDDMethods[K, V, M](rdd) {
 
@@ -155,13 +155,13 @@ trait Implicits
     }
   }
 
-  implicit class withCellGridLayoutRDDMethods[K: SpatialComponent: ClassTag, V <: CellGrid, M: GetComponent[?, LayoutDefinition]](val self: RDD[(K, V)] with Metadata[M])
+  implicit class withCellGridLayoutRDDMethods[K: SpatialComponent: ClassTag, V <: CellGrid[Int], M: GetComponent[?, LayoutDefinition]](val self: RDD[(K, V)] with Metadata[M])
       extends CellGridLayoutRDDMethods[K, V, M]
 
-  implicit class withCellGridLayoutCollectionMethods[K: SpatialComponent, V <: CellGrid, M: GetComponent[?, LayoutDefinition]](val self: Seq[(K, V)] with Metadata[M])
+  implicit class withCellGridLayoutCollectionMethods[K: SpatialComponent, V <: CellGrid[Int], M: GetComponent[?, LayoutDefinition]](val self: Seq[(K, V)] with Metadata[M])
     extends CellGridLayoutCollectionMethods[K, V, M]
 
-  implicit class withProjectedExtentRDDMethods[K: Component[?, ProjectedExtent], V <: CellGrid](val rdd: RDD[(K, V)]) {
+  implicit class withProjectedExtentRDDMethods[K: Component[?, ProjectedExtent], V <: CellGrid[Int]](val rdd: RDD[(K, V)]) {
     def toRasters: RDD[(K, Raster[V])] =
       rdd.mapPartitions({ partition =>
         partition.map { case (key, value) =>
@@ -238,7 +238,7 @@ trait Implicits
     def translate(spatialKey: SpatialKey) = spatialKey
   }
 
-  implicit class withCollectMetadataMethods[K1, V <: CellGrid](rdd: RDD[(K1, V)]) extends Serializable {
+  implicit class withCollectMetadataMethods[K1, V <: CellGrid[Int]](rdd: RDD[(K1, V)]) extends Serializable {
     /** The `Int` is the zoom level if ingested with the produced Metadata. */
     def collectMetadata[K2: Boundable: SpatialComponent](crs: CRS, layoutScheme: LayoutScheme)
         (implicit ev: K1 => TilerKeyMethods[K1, K2]): (Int, TileLayerMetadata[K2]) = {

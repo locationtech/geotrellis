@@ -267,7 +267,7 @@ object GeoTiffTile {
     val compressor = options.compression.createCompressor(segmentCount)
 
     val segmentBytes = Array.ofDim[Array[Byte]](segmentCount)
-    val segmentTiles =
+    val segmentTiles: Seq[Tile] =
       options.storageMethod match {
         case _: Tiled => tile.split(segmentLayout.tileLayout)
         case _: Striped => tile.split(segmentLayout.tileLayout, Split.Options(extend = false))
@@ -729,7 +729,7 @@ abstract class GeoTiffTile(
    *
    * @param bounds: Pixel bounds specifying the crop area
    */
-  def crop(bounds: GridBounds): MutableArrayTile = {
+  def crop(bounds: GridBounds[Int]): MutableArrayTile = {
     val iter = crop(List(bounds))
     if(iter.isEmpty) throw GeoAttrsError(s"No intersections of ${bounds} vs ${gridBounds}")
     else iter.next._2
@@ -740,9 +740,9 @@ abstract class GeoTiffTile(
     *
     * @param windows: Pixel bounds specifying the crop areas
     */
-  def crop(windows: Seq[GridBounds]): Iterator[(GridBounds, MutableArrayTile)] = {
+  def crop(windows: Seq[GridBounds[Int]]): Iterator[(GridBounds[Int], MutableArrayTile)] = {
     case class Chip(
-      window: GridBounds,
+      window: GridBounds[Int],
       tile: MutableArrayTile,
       intersectingSegments: Int,
       var segmentsBurned: Int = 0

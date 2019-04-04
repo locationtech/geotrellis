@@ -20,6 +20,7 @@ import geotrellis.vector.Point
 import geotrellis.macros.{ NoDataMacros, TypeConversionMacros }
 import geotrellis.vector.{Geometry, Feature}
 import geotrellis.util.MethodExtensions
+import spire.math.Integral
 
 package object raster
     extends crop.Implicits
@@ -241,5 +242,29 @@ package object raster
   object TileOrMultibandTile {
     implicit object TileWitness extends TileOrMultibandTile[Tile]
     implicit object MultibandTileWitness extends TileOrMultibandTile[MultibandTile]
+  }
+
+  /** Utility method that will type check if value of a long can be represented as instance of Integral */
+  private[raster] def integralFromLongOption[@specialized(Int, Long) N: Integral](x: Long)(implicit integral: Integral[N]): Option[N] = {
+    val n: N = integral.fromLong(x)
+    if (integral.toLong(n) == x) Some(n) else None
+  }
+
+  private[raster] def integralFromLong[@specialized(Int, Long) N: Integral](x: Long)(implicit integral: Integral[N]): N = {
+    val n = integral.fromInt(x.toInt)
+    if (integral.toLong(n) == x) n
+    else throw new IllegalArgumentException(s"Value $x can not be represented by ${integral.getClass.getSimpleName}")
+  }
+
+  private[raster] def integralIterator[@specialized(Int, Long) N: Integral](start: N, end: N, step: N): Iterator[N] = new Iterator[N] {
+    import spire.implicits._
+    require(start < end, s"start: $start >= end: $end")
+    private var nextValue = start
+    def hasNext: Boolean = nextValue < end
+    def next(): N = {
+      val ret = nextValue
+      nextValue = nextValue + step
+      ret
+    }
   }
 }

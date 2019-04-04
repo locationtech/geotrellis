@@ -45,17 +45,17 @@ trait RasterReprojectMethods[+T <: Raster[_]] extends MethodExtensions[T] {
 
   // Windowed
 
-  def reproject(gridBounds: GridBounds, src: CRS, dest: CRS, options: Options): T = {
+  def reproject(gridBounds: GridBounds[Int], src: CRS, dest: CRS, options: Options): T = {
     val transform = Transform(src, dest)
     val inverseTransform = Transform(dest, src)
 
     reproject(gridBounds, transform, inverseTransform, options)
   }
 
-  def reproject(gridBounds: GridBounds, src: CRS, dest: CRS): T =
+  def reproject(gridBounds: GridBounds[Int], src: CRS, dest: CRS): T =
     reproject(gridBounds, src, dest, Options.DEFAULT)
 
-  def reproject(gridBounds: GridBounds, transform: Transform, inverseTransform: Transform, options: Options): T = {
+  def reproject(gridBounds: GridBounds[Int], transform: Transform, inverseTransform: Transform, options: Options): T = {
     val rasterExtent = self.rasterExtent
     val windowExtent = rasterExtent.extentFor(gridBounds)
     val windowRasterExtent = RasterExtent(windowExtent, gridBounds.width, gridBounds.height)
@@ -65,6 +65,6 @@ trait RasterReprojectMethods[+T <: Raster[_]] extends MethodExtensions[T] {
     reproject(targetRasterExtent, transform, inverseTransform, options)
   }
 
-  def reproject(gridBounds: GridBounds, transform: Transform, inverseTransform: Transform): T =
+  def reproject(gridBounds: GridBounds[Int], transform: Transform, inverseTransform: Transform): T =
     reproject(gridBounds, transform, inverseTransform, Options.DEFAULT)
 }

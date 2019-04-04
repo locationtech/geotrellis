@@ -23,7 +23,7 @@ object Implicits extends Implicits
 
 trait Implicits {
   implicit class withTileFeaturePrototypeMethods[
-    T <: CellGrid : (? => TilePrototypeMethods[T]),
+    T <: CellGrid[Int] : (? => TilePrototypeMethods[T]),
     D: Monoid
   ](self: TileFeature[T, D]) extends TileFeaturePrototypeMethods[T, D](self)
 }

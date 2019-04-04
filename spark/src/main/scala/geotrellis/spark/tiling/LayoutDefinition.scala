@@ -20,13 +20,15 @@ import geotrellis.raster._
 import geotrellis.raster.rasterize._
 import geotrellis.vector._
 import geotrellis.spark.SpatialKey
+import spire.math.Integral
+import spire.implicits._
 
 /**
  * Defines tiled raster layout
  * @param extent      extent covered by the layout tiles, could be greater than extent of data in the layer
  * @param tileLayout  tile layout (tile cols, tile rows, tile pixel size)
  */
-case class LayoutDefinition(override val extent: Extent, tileLayout: TileLayout) extends GridExtent(extent, tileLayout.cellSize(extent)) {
+case class LayoutDefinition(override val extent: Extent, tileLayout: TileLayout) extends GridExtent[Long](extent, tileLayout.cellSize(extent)) {
   lazy val mapTransform = MapKeyTransform(extent, tileLayout.layoutDimensions)
 
   def tileCols = tileLayout.tileCols
@@ -37,7 +39,7 @@ case class LayoutDefinition(override val extent: Extent, tileLayout: TileLayout)
   /** LayoutDefinition for tile bounds within this layout.
     * Resulting layout will line up with parent layout, but the (0,0) tile will be offset to region covered by bounds.
     */
-  def layoutForBounds(bounds: GridBounds): LayoutDefinition = {
+  def layoutForBounds(bounds: GridBounds[Int]): LayoutDefinition = {
     val subExtent: Extent = mapTransform.boundsToExtent(bounds)
     val subLayout: TileLayout = tileLayout.copy(
       layoutCols = bounds.width,
@@ -53,7 +55,7 @@ object LayoutDefinition {
    * Since padding may be required on the lower/right tiles to preserve the original resolution of the
    * raster a new Extent is returned, covering the padding.
    */
-  def apply(grid: GridExtent, tileSize: Int): LayoutDefinition =
+  def apply[N: Integral](grid: GridExtent[N], tileSize: Int): LayoutDefinition =
     apply(grid, tileSize, tileSize)
 
   /**
@@ -61,7 +63,7 @@ object LayoutDefinition {
    * Since padding may be required on the lower/right tiles to preserve the original resolution of the
    * raster a new Extent is returned, covering the padding.
    */
-  def apply(grid: GridExtent, tileCols: Int, tileRows: Int): LayoutDefinition = {
+  def apply[N: Integral](grid: GridExtent[N], tileCols: Int, tileRows: Int): LayoutDefinition = {
     val extent = grid.extent
     val cellSize = grid.cellSize
     val totalPixelWidth = extent.width / cellSize.width
@@ -80,4 +82,11 @@ object LayoutDefinition {
 
     LayoutDefinition(layoutExtent, layout)
   }
+
+  def apply(grid: RasterExtent, tileCols: Int, tileRows: Int): LayoutDefinition =
+    apply(grid.toGridType[Long], tileCols, tileRows)
+
+  def apply(grid: RasterExtent, tileSize: Int): LayoutDefinition =
+    apply(grid.toGridType[Long], tileSize, tileSize)
+
 }

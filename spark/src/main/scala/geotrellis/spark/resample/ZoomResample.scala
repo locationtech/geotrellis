@@ -24,9 +24,10 @@ import geotrellis.util._
 import geotrellis.vector.Extent
 
 import org.apache.spark.rdd.RDD
+import spire.implicits._
 
 object ZoomResample {
-  private def gridBoundsAtZoom(sourceZoom: Int, spatialKey: SpatialKey, targetZoom: Int): GridBounds = {
+  private def gridBoundsAtZoom(sourceZoom: Int, spatialKey: SpatialKey, targetZoom: Int): TileBounds = {
     val SpatialKey(col, row) = spatialKey
     val zoomDiff = targetZoom - sourceZoom
     val factor = math.pow(2, zoomDiff).toInt
@@ -63,12 +64,12 @@ object ZoomResample {
     */
   def apply[
     K: SpatialComponent,
-    V <: CellGrid: (? => TileResampleMethods[V])
+    V <: CellGrid[Int]: (? => TileResampleMethods[V])
   ](
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
     sourceZoom: Int,
     targetZoom: Int,
-    targetGridBounds: Option[GridBounds] = None,
+    targetGridBounds: Option[TileBounds] = None,
     method: ResampleMethod = NearestNeighbor
   ): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] = {
     require(sourceZoom < targetZoom, "This resample call requires that the target zoom level be greater than the source zoom level")
@@ -86,7 +87,7 @@ object ZoomResample {
           resampleKeyBounds.toGridBounds.intersection(tgb) match {
             case Some(resampleGridBounds) => {
               val resampled: RDD[(K, V)] = rdd.flatMap { case (key, tile) =>
-                val gbaz: Option[GridBounds] =
+                val gbaz: Option[GridBounds[Int]] =
                   gridBoundsAtZoom(sourceZoom, key.getComponent[SpatialKey], targetZoom)
                     .intersection(resampleGridBounds)
 

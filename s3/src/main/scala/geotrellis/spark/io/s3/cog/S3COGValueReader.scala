@@ -40,7 +40,7 @@ class S3COGValueReader(
 
   def reader[
     K: JsonFormat: SpatialComponent : ClassTag,
-    V <: CellGrid: GeoTiffReader
+    V <: CellGrid[Int]: GeoTiffReader
   ](layerId: LayerId): COGReader[K, V] = {
     val header =
       try {
@@ -72,4 +72,3 @@ object S3COGValueReader {
       override def s3Client: S3Client = s3attributeStore.s3Client
     }
 }
-

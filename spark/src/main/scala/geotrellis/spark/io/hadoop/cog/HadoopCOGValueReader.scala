@@ -41,7 +41,7 @@ class HadoopCOGValueReader(
 
   def reader[
     K: JsonFormat: SpatialComponent: ClassTag,
-    V <: CellGrid: GeoTiffReader
+    V <: CellGrid[Int]: GeoTiffReader
   ](layerId: LayerId): COGReader[K, V] = {
 
     val header =
@@ -68,7 +68,7 @@ class HadoopCOGValueReader(
 object HadoopCOGValueReader {
   def apply[
     K: JsonFormat: SpatialComponent: ClassTag,
-    V <: CellGrid: GeoTiffReader
+    V <: CellGrid[Int]: GeoTiffReader
   ](attributeStore: HadoopAttributeStore, layerId: LayerId)(implicit sc: SparkContext): Reader[K, V] =
     new HadoopCOGValueReader(attributeStore, sc.hadoopConfiguration).reader[K, V](layerId)
 

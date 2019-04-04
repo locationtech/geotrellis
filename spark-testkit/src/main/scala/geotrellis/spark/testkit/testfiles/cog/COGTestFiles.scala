@@ -131,7 +131,7 @@ object COGTestFiles {
       TileLayerMetadata(cellType, LayoutDefinition(crs.worldExtent, tileLayout), extent, crs, keyBounds)
     }
 
-    val gridBounds = md.gridBounds
+    val gridBounds = md.tileBounds
     val tileLayout = md.tileLayout
 
     val spatialTestFile = layerName match {
@@ -175,7 +175,7 @@ object COGTestFiles {
       TileLayerMetadata(cellType, LayoutDefinition(crs.worldExtent, tileLayout), extent, crs, keyBounds)
     }
 
-    val gridBounds = md.gridBounds
+    val gridBounds = md.tileBounds
     val tileLayout = md.tileLayout
 
     val spaceTimeTestTiles = layerName match {

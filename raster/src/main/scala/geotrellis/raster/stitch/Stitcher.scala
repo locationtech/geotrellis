@@ -22,7 +22,7 @@ import cats.Semigroup
 /**
   * The Stitcher base trait.
   */
-trait Stitcher[T <: CellGrid] extends Serializable {
+trait Stitcher[T <: CellGrid[Int]] extends Serializable {
 
   /**
     * Stitch an Iterable of tile, corner pairs into a new tile with
@@ -108,7 +108,7 @@ object Stitcher {
   }
 
   implicit def tileFeatureStitcher[
-    T <: CellGrid: Stitcher, 
+    T <: CellGrid[Int]: Stitcher,
     D: Semigroup
   ]: Stitcher[TileFeature[T, D]] = new Stitcher[TileFeature[T, D]] {
     def stitch(pieces: Iterable[(TileFeature[T, D], (Int, Int))], cols: Int, rows: Int): TileFeature[T, D] = {
@@ -119,7 +119,7 @@ object Stitcher {
   }
 
   implicit class TileFeatureStitcher[
-    T <: CellGrid: Stitcher,
+    T <: CellGrid[Int]: Stitcher,
     D : Semigroup
   ](val self: TileFeature[T, D]) extends Stitcher[TileFeature[T, D]] {
     def stitch(pieces: Iterable[(TileFeature[T, D], (Int, Int))], cols: Int, rows: Int): TileFeature[T, D] = {

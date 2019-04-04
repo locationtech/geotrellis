@@ -29,7 +29,7 @@ trait Implicits {
     def flipHorizontal: MultibandTile = self.mapBands { (_, tile) => tile.flipHorizontal }
   }
 
-  implicit class withTransformRasterMethods[T <: CellGrid: ? => TransformMethods[T]](val self: Raster[T]) extends TransformMethods[Raster[T]] {
+  implicit class withTransformRasterMethods[T <: CellGrid[Int]: ? => TransformMethods[T]](val self: Raster[T]) extends TransformMethods[Raster[T]] {
     def rotate90(n: Int = 1): Raster[T] = Raster(self.tile.rotate90(n), self.extent)
     def flipVertical: Raster[T] = Raster(self.tile.flipVertical, self.extent)
     def flipHorizontal: Raster[T] = Raster(self.tile.flipHorizontal, self.extent)

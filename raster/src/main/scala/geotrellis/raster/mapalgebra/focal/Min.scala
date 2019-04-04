@@ -22,7 +22,7 @@ import geotrellis.raster._
  * Computes the minimum value of a neighborhood for a given raster
  */
 object Min {
-  def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None, target: TargetCell = TargetCell.All): FocalCalculation[Tile] = {
+  def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds[Int]] = None, target: TargetCell = TargetCell.All): FocalCalculation[Tile] = {
 
     if (tile.cellType.isFloatingPoint)
       new CursorCalculation[Tile](tile, n, bounds, target)
@@ -56,6 +56,6 @@ object Min {
       }
   }
 
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None, target: TargetCell = TargetCell.All): Tile =
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds[Int]] = None, target: TargetCell = TargetCell.All): Tile =
     calculation(tile, n, bounds, target).execute()
 }

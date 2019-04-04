@@ -54,7 +54,7 @@ package object spark extends Implicits {
       new ContextCollection(seq, metadata)
   }
 
-  type TileBounds = GridBounds
+  type TileBounds = GridBounds[Int]
 
   type SpatialComponent[K] = Component[K, SpatialKey]
   type TemporalComponent[K] = Component[K, TemporalKey]

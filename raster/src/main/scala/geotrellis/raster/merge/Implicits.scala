@@ -26,15 +26,15 @@ object Implicits extends Implicits
   * methods available.
   */
 trait Implicits {
-  implicit class withRasterMergeMethods[T <: CellGrid: ? => TileMergeMethods[T]](self: Raster[T]) extends RasterMergeMethods[T](self)
+  implicit class withRasterMergeMethods[T <: CellGrid[Int]: ? => TileMergeMethods[T]](self: Raster[T]) extends RasterMergeMethods[T](self)
 
   implicit class withTileFeatureMergeMethods[
-    T <: CellGrid: ? => TileMergeMethods[T],
+    T <: CellGrid[Int]: ? => TileMergeMethods[T],
     D: Semigroup
   ](self: TileFeature[T, D]) extends TileFeatureMergeMethods[T,D](self)
 
   implicit class withRasterTileFeatureMergeMethods[
-    T <: CellGrid: ? => TileMergeMethods[T],
+    T <: CellGrid[Int]: ? => TileMergeMethods[T],
     D: Semigroup
   ](self: TileFeature[Raster[T], D]) extends RasterTileFeatureMergeMethods[T,D](self)
 }

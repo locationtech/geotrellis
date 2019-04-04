@@ -29,7 +29,7 @@ import java.awt.image.DataBuffer
 import scala.collection.JavaConverters._
 import scala.math.{min, max}
 
-abstract class RasterToGridCoverage2DSpec[T <: CellGrid](implicit ev1: Raster[T] => ToGridCoverage2DMethods, ev2: ProjectedRaster[T] => ToGridCoverage2DMethods)
+abstract class RasterToGridCoverage2DSpec[T <: CellGrid[Int]](implicit ev1: Raster[T] => ToGridCoverage2DMethods, ev2: ProjectedRaster[T] => ToGridCoverage2DMethods)
     extends FunSpec
     with Matchers {
 

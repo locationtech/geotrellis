@@ -26,14 +26,14 @@ object Implicits extends Implicits
   * cropping to [[CellGrid]].
   */
 trait Implicits {
-  implicit class withExtentCropMethods[T <: CellGrid: (? => CropMethods[T])](self: Raster[T])
+  implicit class withExtentCropMethods[T <: CellGrid[Int]: (? => CropMethods[T])](self: Raster[T])
       extends RasterCropMethods[T](self)
 
   implicit class withTileFeatureCropMethods[
-    T <: CellGrid: (? => TileCropMethods[T]), D
+    T <: CellGrid[Int]: (? => TileCropMethods[T]), D
   ](self: TileFeature[T, D]) extends TileFeatureCropMethods[T, D](self)
 
   implicit class withRasterTileFeatureCropMethods[
-    T <: CellGrid : (? => TileCropMethods[T]), D
+    T <: CellGrid[Int] : (? => TileCropMethods[T]), D
   ](self: TileFeature[Raster[T], D]) extends RasterTileFeatureCropMethods[T, D](self)
 }

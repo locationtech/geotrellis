@@ -23,7 +23,7 @@ import spire.syntax.cfor._
 import Split.Options
 
 trait RasterExtentSplitMethods extends SplitMethods[RasterExtent] {
-  def split(tileLayout: TileLayout, options: Options): Array[RasterExtent] = {
+  def split(tileLayout: TileLayout, options: Options): Seq[RasterExtent] = {
     val tileCols = tileLayout.tileCols
     val tileRows = tileLayout.tileRows
 
@@ -48,6 +48,6 @@ trait RasterExtentSplitMethods extends SplitMethods[RasterExtent] {
       }
     }
 
-    splits
+    splits.toSeq
   }
 }

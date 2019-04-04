@@ -21,7 +21,7 @@ import geotrellis.util.MethodExtensions
 
 import Split.Options
 
-trait SplitMethods[T <: Grid] extends MethodExtensions[T] {
+trait SplitMethods[T <: Grid[Int]] extends MethodExtensions[T] {
   /**
     * Splits this into an array of elements based on a TileLayout.
     * The array will be in row order form such that the top left element is first.
@@ -30,7 +30,7 @@ trait SplitMethods[T <: Grid] extends MethodExtensions[T] {
     *
     * @return                      An array of T
     */
-  def split(tileLayout: TileLayout): Array[T] =
+  def split(tileLayout: TileLayout): Seq[T] =
     split(tileLayout, Options.DEFAULT)
 
   /**
@@ -42,7 +42,7 @@ trait SplitMethods[T <: Grid] extends MethodExtensions[T] {
     *
     * @return                      An array of T
     */
-  def split(tileLayout: TileLayout, options: Options): Array[T]
+  def split(tileLayout: TileLayout, options: Options): Seq[T]
 
   /**
     * Splits this into an array of elements based on a columns and rows to be in each tile.
@@ -54,7 +54,7 @@ trait SplitMethods[T <: Grid] extends MethodExtensions[T] {
     *
     * @return                      An array of T
     */
-  def split(cols: Int, rows: Int): Array[T] =
+  def split(cols: Int, rows: Int): Seq[T] =
     split(TileLayout(
             layoutCols = math.ceil(self.cols.toDouble / cols.toDouble).toInt,
             layoutRows = math.ceil(self.rows.toDouble / rows.toDouble).toInt,
@@ -70,5 +70,5 @@ trait SplitMethods[T <: Grid] extends MethodExtensions[T] {
     *
     * @return                      An array of T
     */
-  def split(cells: Int): Array[T] = split(cells, cells)
+  def split(cells: Int): Seq[T] = split(cells, cells)
 }

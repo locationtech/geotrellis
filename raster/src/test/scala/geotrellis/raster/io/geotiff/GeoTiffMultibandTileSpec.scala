@@ -798,7 +798,7 @@ class GeoTiffMultibandTileSpec extends FunSpec
       )
       val tiff = GeoTiffReader.geoTiffMultibandTile(info)
 
-      val windows: Array[GridBounds] = info
+      val windows: Array[GridBounds[Int]] = info
         .segmentLayout
         .listWindows(10)
         .map(_.buffer(5))

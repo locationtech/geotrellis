@@ -19,17 +19,183 @@ package geotrellis.raster
 import geotrellis.vector.{Extent, Point}
 
 import scala.math.{min, max, ceil}
+import spire.math.{Integral, NumberTag}
+import spire.implicits._
 
 /**
   * Represents an abstract grid over geographic extent.
   * Critically while the number of cell rows and columns is implied by the constructor arguments,
   * they are intentionally not expressed to avoid Int overflow for large grids.
   */
-class GridExtent(val extent: Extent, val cellwidth: Double, val cellheight: Double) extends Serializable {
+class GridExtent[@specialized(Int, Long) N: Integral](
+  val extent: Extent,
+  val cellwidth: Double,
+  val cellheight: Double,
+  val cols: N,
+  val rows: N
+) extends Grid[N] with Serializable {
+  if (cols <= 0) throw GeoAttrsError(s"invalid cols: $cols")
+  if (rows <= 0) throw GeoAttrsError(s"invalid rows: $rows")
+  //if (cols*rows <= 0) throw GeoAttrsError(s"invalid size: ${rows*cols} cols: $cols rows: $rows")
+  require(
+    cols == Integral[N].fromDouble(math.round(extent.width / cellwidth)) &&
+    rows == Integral[N].fromDouble(math.round(extent.height / cellheight)),
+    s"$extent at $cellSize does not match $dimensions")
+
+
+  def this(extent: Extent, cols: N, rows: N) =
+    this(extent, (extent.width / cols.toDouble), (extent.height / rows.toDouble), cols, rows)
+
   def this(extent: Extent, cellSize: CellSize) =
-    this(extent, cellSize.width, cellSize.height)
+    this(extent, cellSize.width, cellSize.height,
+      cols = integralFromLong(math.round(extent.width / cellSize.width).toLong),
+      rows = integralFromLong(math.round(extent.height / cellSize.height).toLong))
 
   def cellSize = CellSize(cellwidth, cellheight)
+
+  /**
+  * Combine two different [[RasterExtent]]s (which must have the
+  * same cellsizes).  The result is a new extent at the same
+  * resolution.
+  */
+  def combine (that: GridExtent[N]): GridExtent[N] = {
+    if (cellwidth != that.cellwidth)
+      throw GeoAttrsError(s"illegal cellwidths: $cellwidth and ${that.cellwidth}")
+    if (cellheight != that.cellheight)
+      throw GeoAttrsError(s"illegal cellheights: $cellheight and ${that.cellheight}")
+
+    val newExtent = extent.combine(that.extent)
+    val newRows = ceil(newExtent.height / cellheight)
+    val newCols = ceil(newExtent.width / cellwidth)
+
+    new GridExtent[N](newExtent, cellwidth, cellheight,
+      cols = Integral[N].fromDouble(newCols),
+      rows = Integral[N].fromDouble(newRows))
+  }
+
+  /** Convert map coordinate x to grid coordinate column. */
+  final def mapXToGridDouble(x: Double): Double = (x - extent.xmin) / cellwidth
+
+  /** Convert map coordinate y to grid coordinate row. */
+  final def mapYToGridDouble(y: Double): Double = (extent.ymax - y ) / cellheight
+
+  /** Convert map coordinate x to grid coordinate column. */
+  final def mapXToGrid(x: Double): N = integralFromLong[N](math.floor(mapXToGridDouble(x)).toLong)
+
+  /** Convert map coordinate y to grid coordinate row. */
+  final def mapYToGrid(y: Double): N = integralFromLong[N](math.floor(mapYToGridDouble(y)).toLong)
+
+  /** Convert map coordinates (x, y) to grid coordinates (col, row). */
+  final def mapToGrid(x: Double, y: Double): (N, N) = {
+    val col = math.floor((x - extent.xmin) / cellwidth).toInt
+    val row = math.floor((extent.ymax - y) / cellheight).toInt
+    (col, row)
+  }
+
+  /** Convert map coordinate tuple (x, y) to grid coordinates (col, row). */
+  final def mapToGrid(mapCoord: (Double, Double)): (N, N) =
+    mapToGrid(x = mapCoord._1, mapCoord._2)
+
+  /** Convert a point to grid coordinates (col, row). */
+  final def mapToGrid(p: Point): (N, N) =
+    mapToGrid(p.x, p.y)
+
+  /** The map coordinate of a grid cell is the center point. */
+  final def gridToMap(col: N, row: N): (Double, Double) = {
+    val x = col.toDouble * cellwidth + extent.xmin + (cellwidth / 2)
+    val y = extent.ymax - (row.toDouble * cellheight) - (cellheight / 2)
+    (x, y)
+  }
+
+  /** For a give column, find the corresponding x-coordinate in the grid of the present [[GridExtent]]. */
+  final def gridColToMap(col: N): Double = {
+    col.toDouble * cellwidth + extent.xmin + (cellwidth / 2)
+  }
+
+  /** For a give row, find the corresponding y-coordinate in the grid of the present [[GridExtent]]. */
+  final def gridRowToMap(row: N): Double = {
+    extent.ymax - (row.toDouble * cellheight) - (cellheight / 2)
+  }
+
+  /**
+  * Returns a [[RasterExtent]] with the same extent, but a modified
+  * number of columns and rows based on the given cell height and
+  * width.
+  */
+  def withResolution(targetCellWidth: Double, targetCellHeight: Double): GridExtent[N] = {
+    val newCols = math.ceil((extent.xmax - extent.xmin) / targetCellWidth)
+    val newRows = math.ceil((extent.ymax - extent.ymin) / targetCellHeight)
+    new GridExtent(extent, targetCellWidth, targetCellHeight,
+      cols = Integral[N].fromDouble(newCols),
+      rows = Integral[N].fromDouble(newRows))
+  }
+
+  /**
+    * Returns a [[GridExtent]] with the same extent, but a modified
+    * number of columns and rows based on the given cell height and
+    * width.
+    */
+  def withResolution(cellSize: CellSize): GridExtent[N] =
+    withResolution(cellSize.width, cellSize.height)
+
+  /**
+   * Returns a [[GridExtent]] with the same extent and the given
+   * number of columns and rows.
+   */
+  def withDimensions(targetCols: N, targetRows: N): GridExtent[N] =
+    new GridExtent(extent, targetCols, targetRows)
+
+  /**
+    * Gets the GridBounds aligned with this RasterExtent that is the
+    * smallest subgrid of containing all points within the extent. The
+    * extent is considered inclusive on it's north and west borders,
+    * exclusive on it's east and south borders.  See [[RasterExtent]]
+    * for a discussion of grid and extent boundary concepts.
+    *
+    * The 'clamp' flag determines whether or not to clamp the
+    * GridBounds to the RasterExtent; defaults to true. If false,
+    * GridBounds can contain negative values, or values outside of
+    * this RasterExtent's boundaries.
+    *
+    * @param     subExtent      The extent to get the grid bounds for
+    * @param     clamp          A boolean
+    */
+  def gridBoundsFor(subExtent: Extent, clamp: Boolean = true): GridBounds[N] = {
+    // West and North boundaries are a simple mapToGrid call.
+    val colMin: N = mapXToGrid(subExtent.xmin)
+    val rowMin: N = mapYToGrid(subExtent.ymax)
+
+    // If South East corner is on grid border lines, we want to still only include
+    // what is to the West and\or North of the point. However if the border point
+    // is not directly on a grid division, include the whole row and/or column that
+    // contains the point.
+    val colMax: N = integralFromLong[N]{
+      val colMaxDouble = mapXToGridDouble(subExtent.xmax)
+
+      if (math.abs(colMaxDouble - math.floor(colMaxDouble)) < GridExtent.epsilon)
+        colMaxDouble.toLong - 1L
+      else
+        colMaxDouble.toLong
+    }
+
+    val rowMax: N = integralFromLong[N]{
+      val rowMaxDouble = mapYToGridDouble(subExtent.ymin)
+
+      if (math.abs(rowMaxDouble - math.floor(rowMaxDouble)) < GridExtent.epsilon)
+        rowMaxDouble.toLong - 1L
+      else
+        rowMaxDouble.toLong
+    }
+
+    if (clamp)
+      GridBounds(
+        colMin = colMin.max(0).min(cols - 1),
+        rowMin = rowMin.max(0).min(rows - 1),
+        colMax = colMax.max(0).min(cols - 1),
+        rowMax = rowMax.max(0).min(rows - 1))
+    else
+      GridBounds(colMin, rowMin, colMax, rowMax)
+  }
 
   /**
     *  Creates a RasterExtent out of this GridExtent.
@@ -41,16 +207,14 @@ class GridExtent(val extent: Extent, val cellwidth: Double, val cellheight: Doub
     *       types.
     */
   def toRasterExtent(): RasterExtent = {
-    val targetCols = math.max(1L, math.round(extent.width / cellwidth).toLong)
-    val targetRows = math.max(1L, math.round(extent.height / cellheight).toLong)
-    if(targetCols > Int.MaxValue) {
-      throw new GeoAttrsError(s"Cannot convert GridExtent into a RasterExtent: number of columns exceeds maximum integer value ($targetCols > ${Int.MaxValue})")
+    if(cols > Int.MaxValue) {
+      throw new GeoAttrsError(s"Cannot convert GridExtent into a RasterExtent: number of columns exceeds maximum integer value ($cols > ${Int.MaxValue})")
     }
-    if(targetRows > Int.MaxValue) {
-      throw new GeoAttrsError(s"Cannot convert GridExtent into a RasterExtent: number of rows exceeds maximum integer value ($targetRows > ${Int.MaxValue})")
+    if(rows > Int.MaxValue) {
+      throw new GeoAttrsError(s"Cannot convert GridExtent into a RasterExtent: number of rows exceeds maximum integer value ($rows > ${Int.MaxValue})")
     }
 
-    RasterExtent(extent, cellwidth, cellheight, targetCols.toInt, targetRows.toInt)
+    RasterExtent(extent, cellwidth, cellheight, cols.toInt, rows.toInt)
   }
 
   /**
@@ -64,7 +228,7 @@ class GridExtent(val extent: Extent, val cellwidth: Double, val cellheight: Doub
     * ``targetExtent``, but will have the smallest extent that lines up with
     * the grid and also covers ``targetExtent``.
     */
-  def createAlignedGridExtent(targetExtent: Extent): GridExtent = {
+  def createAlignedGridExtent(targetExtent: Extent): GridExtent[N] = {
     createAlignedGridExtent(targetExtent, extent.northWest)
   }
 
@@ -77,7 +241,7 @@ class GridExtent(val extent: Extent, val cellwidth: Double, val cellheight: Doub
     * not be equal to ``targetExtent``, but will have the smallest extent
     * that lines up with the grid and also covers ``targetExtent``.
     */
-  def createAlignedGridExtent(targetExtent: Extent, alignmentPoint: Point): GridExtent = {
+  def createAlignedGridExtent(targetExtent: Extent, alignmentPoint: Point): GridExtent[N] = {
     def left(reference: Double, actual: Double, unit: Double): Double = reference + math.floor((actual - reference) / unit) * unit
     def right(reference: Double, actual: Double, unit: Double): Double = reference + math.ceil((actual - reference) / unit) * unit
 
@@ -85,8 +249,13 @@ class GridExtent(val extent: Extent, val cellwidth: Double, val cellheight: Doub
     val xmax = right(alignmentPoint.x, targetExtent.xmax, cellwidth)
     val ymin = left(alignmentPoint.y, targetExtent.ymin, cellheight)
     val ymax = right(alignmentPoint.y, targetExtent.ymax, cellheight)
+    val alignedExtent = Extent(xmin, ymin, xmax, ymax)
+    val cols = math.round(alignedExtent.width / cellwidth)
+    val rows = math.round(alignedExtent.height / cellheight)
+    val ncols = Integral[N].fromDouble(cols)
+    val nrows = Integral[N].fromDouble(rows)
 
-    GridExtent(Extent(xmin, ymin, xmax, ymax), cellwidth, cellheight)
+    new GridExtent[N](alignedExtent, cellwidth, cellheight, ncols, nrows)
   }
 
   /**
@@ -119,14 +288,14 @@ class GridExtent(val extent: Extent, val cellwidth: Double, val cellheight: Doub
     * RasterExtent's extent, if false, the Extent returned can be
     * outside of this RasterExtent's extent.
     *
-    * @param  gridBounds  The extent to get the grid bounds for
+    * @param  cellBounds  The extent to get the grid bounds for
     * @param  clamp       A boolean which controlls the clamping behvior
     */
-  def extentFor(gridBounds: GridBounds, clamp: Boolean = true): Extent = {
-    val xmin = gridBounds.colMin * cellwidth + extent.xmin
-    val ymax = extent.ymax - (gridBounds.rowMin * cellheight)
-    val xmax = xmin + (gridBounds.width * cellwidth)
-    val ymin = ymax - (gridBounds.height * cellheight)
+  def extentFor(cellBounds: GridBounds[N], clamp: Boolean = true): Extent = {
+    val xmin: Double = cellBounds.colMin.toLong * cellwidth + extent.xmin
+    val ymax: Double = extent.ymax - (cellBounds.rowMin.toLong * cellheight)
+    val xmax: Double = xmin + (cellBounds.width.toLong * cellwidth)
+    val ymin: Double = ymax - (cellBounds.height.toLong * cellheight)
 
     if(clamp) {
       Extent(
@@ -140,8 +309,28 @@ class GridExtent(val extent: Extent, val cellwidth: Double, val cellheight: Doub
     }
   }
 
+  /**
+  * Adjusts a raster extent so that it can encompass the tile
+  * layout.  Will resample the extent, but keep the resolution, and
+  * preserve north and west borders
+  */
+  def adjustTo(tileLayout: TileLayout): GridExtent[N] = {
+    val totalCols: Long = tileLayout.tileCols.toLong * tileLayout.layoutCols.toLong
+    val totalRows: Long = tileLayout.tileRows.toLong * tileLayout.layoutRows.toLong
+    val resampledExtent = Extent(
+      xmin = extent.xmin,
+      ymin = extent.ymax - (cellheight*totalRows),
+      xmax = extent.xmin + (cellwidth*totalCols),
+      ymax = extent.ymax)
+
+    new GridExtent[N](resampledExtent, cellwidth, cellheight,
+      cols = integralFromLong[N](totalCols),
+      rows = integralFromLong[N](totalRows))
+  }
+
   override def equals(o: Any): Boolean = o match {
-    case other: GridExtent =>
+    case other: GridExtent[_] =>
+      // TODO: check if cols/rows are same type
       other.extent == extent && other.cellheight == cellheight && other.cellwidth == cellwidth
     case _ =>
       false
@@ -150,21 +339,36 @@ class GridExtent(val extent: Extent, val cellwidth: Double, val cellheight: Doub
   override def hashCode(): Int =
     (((31 + (if (extent == null) 0 else extent.hashCode)) * 31 + cellheight.toInt) * 31 + cellwidth.toInt)
 
-  override def toString(): String =
-    s"GridExtent($extent,$cellwidth,$cellheight)"
+  def toGridType[M: Integral]: GridExtent[M] = {
+    new GridExtent[M](extent, cellwidth, cellheight, Integral[N].toType[M](cols), Integral[N].toType[M](rows))
+  }
 }
 
 
 object GridExtent {
-  def apply(extent: Extent, cellSize: CellSize): GridExtent =
-    new GridExtent(extent, cellSize.width, cellSize.height)
+  final val epsilon = 0.0000001
 
-  def apply(extent: Extent, cellwidth: Double, cellheight: Double): GridExtent =
-    new GridExtent(extent, cellwidth, cellheight)
+  def apply(extent: Extent, cellSize: CellSize): GridExtent[Long] =
+    new GridExtent[Long](extent, cellSize)
 
-  def unapply(ge: GridExtent): Option[(Extent, Double, Double)] =
-    if (ge != null)
-      Some((ge.extent, ge.cellwidth, ge.cellheight))
-    else
-      None
+  def apply(extent: Extent, cellwidth: Double, cellheight: Double): GridExtent[Long] =
+    new GridExtent[Long](extent, CellSize(cellwidth, cellheight))
+
+
+  def apply[N: Integral](grid: Grid[N], extent: Extent): GridExtent[N] = {
+    val cw = extent.width / grid.cols.toDouble
+    val ch = extent.height / grid.rows.toDouble
+    new GridExtent[N](extent, cw, ch, grid.cols, grid.rows)
+  }
+
+  def apply[N: Integral](extent: Extent, grid: Grid[N]): GridExtent[N] = {
+    val cw = extent.width / grid.cols.toDouble
+    val ch = extent.height / grid.rows.toDouble
+    new GridExtent[N](extent, cw, ch, grid.cols, grid.rows)
+  }
+
+  /** RasterSource interface reads GridBounds[Long] but GridBounds[Int] abounds.
+   * Implicit conversions are evil, but this one is always safe and saves typing.
+   */
+  implicit def gridBoundsIntToLong(bounds: GridBounds[Int]): GridBounds[Long] = bounds.toGridType[Long]
 }

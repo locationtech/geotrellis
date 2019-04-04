@@ -51,7 +51,7 @@ object MultibandTile {
     ArrayMultibandTile(bands)
 }
 
-trait MultibandTile extends CellGrid with MacroCombinableMultibandTile[Tile] with MacroCombineFunctions[Tile, MultibandTile] {
+trait MultibandTile extends CellGrid[Int] with MacroCombinableMultibandTile[Tile] with MacroCombineFunctions[Tile, MultibandTile] {
   def bandCount: Int
 
   /**

@@ -53,7 +53,7 @@ class HadoopCOGCollectionLayerReader(
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](id: LayerId, tileQuery: LayerQuery[K, TileLayerMetadata[K]]) = {
     def getKeyPath(zoomRange: ZoomRange, maxWidth: Int): BigInt => String =
       (index: BigInt) =>
@@ -84,4 +84,3 @@ object HadoopCOGCollectionLayerReader {
   def apply(rootPath: Path, conf: Configuration): HadoopCOGCollectionLayerReader =
     apply(HadoopAttributeStore(rootPath, conf))
 }
-

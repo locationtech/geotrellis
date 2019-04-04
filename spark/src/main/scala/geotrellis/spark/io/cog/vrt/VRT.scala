@@ -30,7 +30,7 @@ import scala.collection.JavaConverters._
 import scala.xml.{Elem, XML}
 
 case class VRT(
-  gridBounds: GridBounds,
+  gridBounds: GridBounds[Int],
   layout: LayoutDefinition,
   extent: Extent,
   cellType: CellType,
@@ -183,7 +183,7 @@ object VRT {
 
 
   def apply[K: SpatialComponent](metadata: TileLayerMetadata[K]): VRT = {
-    val gridBounds: GridBounds = metadata.bounds match {
+    val gridBounds: GridBounds[Int] = metadata.bounds match {
       case kb: KeyBounds[K] => kb.toGridBounds()
       case EmptyBounds => throw new Exception("Empty iterator, can't generate a COG.")
     }

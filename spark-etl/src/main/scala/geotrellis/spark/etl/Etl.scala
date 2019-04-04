@@ -55,7 +55,7 @@ object Etl {
   def ingest[
     I: Component[?, ProjectedExtent]: TypeTag: ? => TilerKeyMethods[I, K],
     K: SpatialComponent: Boundable: TypeTag,
-    V <: CellGrid: TypeTag: RasterRegionReproject: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
+    V <: CellGrid[Int]: TypeTag: RasterRegionReproject: Stitcher: (? => TileReprojectMethods[V]): (? => CropMethods[V]): (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V])
   ](
      args: Seq[String], modules: Seq[TypedModule] = Etl.defaultModules
    )(implicit sc: SparkContext) = {
@@ -103,7 +103,7 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
     * @tparam I Input key type
     * @tparam V Input raster value type
     */
-  def load[I: Component[?, ProjectedExtent]: TypeTag, V <: CellGrid: TypeTag]()(implicit sc: SparkContext): RDD[(I, V)] = {
+  def load[I: Component[?, ProjectedExtent]: TypeTag, V <: CellGrid[Int]: TypeTag]()(implicit sc: SparkContext): RDD[(I, V)] = {
     val plugin = {
       val plugins = combinedModule.findSubclassOf[InputPlugin[I, V]]
       if(plugins.isEmpty) sys.error(s"Unable to find input module for input key type '${typeTag[I].tpe.toString}' and tile type '${typeTag[V].tpe.toString}'")
@@ -139,7 +139,7 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
     */
   def tile[
     I: Component[?, ProjectedExtent]: (? => TilerKeyMethods[I, K]),
-    V <: CellGrid: RasterRegionReproject: Stitcher: ClassTag: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V]):
+    V <: CellGrid[Int]: RasterRegionReproject: Stitcher: ClassTag: (? => TileMergeMethods[V]): (? => TilePrototypeMethods[V]):
     (? => TileReprojectMethods[V]): (? => CropMethods[V]),
     K: SpatialComponent: Boundable: ClassTag
   ](rdd: RDD[(I, V)], method: ResampleMethod = output.resampleMethod): (Int, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]) = {
@@ -244,7 +244,7 @@ case class Etl(conf: EtlConf, @transient modules: Seq[TypedModule] = Etl.default
     */
   def save[
     K: SpatialComponent: TypeTag,
-    V <: CellGrid: TypeTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
+    V <: CellGrid[Int]: TypeTag: ? => TileMergeMethods[V]: ? => TilePrototypeMethods[V]
   ](
     id: LayerId,
     rdd: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],

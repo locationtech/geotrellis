@@ -19,7 +19,7 @@ package geotrellis.raster.mapalgebra.focal
 import geotrellis.raster._
 
 object Conway {
-  def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): FocalCalculation[Tile] = {
+  def calculation(tile: Tile, n: Neighborhood, bounds: Option[GridBounds[Int]] = None): FocalCalculation[Tile] = {
     new CellwiseCalculation[Tile](tile, n, bounds, TargetCell.All)
       with ByteArrayTileResult
     {
@@ -44,6 +44,6 @@ object Conway {
     }
   }
 
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds] = None): Tile =
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds[Int]] = None): Tile =
     calculation(tile, n, bounds).execute()
 }

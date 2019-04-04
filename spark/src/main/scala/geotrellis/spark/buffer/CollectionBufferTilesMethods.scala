@@ -27,12 +27,12 @@ import scala.reflect.ClassTag
 
 class CollectionBufferTilesMethods[
   K: SpatialComponent,
-  V <: CellGrid: Stitcher: (? => CropMethods[V])
+  V <: CellGrid[Int]: Stitcher: (? => CropMethods[V])
 ](val self: Seq[(K, V)]) extends MethodExtensions[Seq[(K, V)]] {
   def bufferTiles(bufferSize: Int): Seq[(K, BufferedTile[V])] =
     BufferTiles(self, bufferSize)
 
-  def bufferTiles(bufferSize: Int, layerBounds: GridBounds): Seq[(K, BufferedTile[V])] =
+  def bufferTiles(bufferSize: Int, layerBounds: TileBounds): Seq[(K, BufferedTile[V])] =
     BufferTiles(self, bufferSize, layerBounds)
 
   def bufferTiles(bufferSizesPerKey: Seq[(K, BufferSizes)]): Seq[(K, BufferedTile[V])] =

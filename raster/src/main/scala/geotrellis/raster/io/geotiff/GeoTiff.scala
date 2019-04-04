@@ -51,7 +51,7 @@ trait GeoTiffData {
  * Base trait of GeoTiff. Takes a tile that is of a type equal to or a subtype
  * of CellGrid
  */
-trait GeoTiff[T <: CellGrid] extends GeoTiffData {
+trait GeoTiff[T <: CellGrid[Int]] extends GeoTiffData {
   def tile: T
 
   def cols: Int = tile.cols
@@ -98,8 +98,8 @@ trait GeoTiff[T <: CellGrid] extends GeoTiffData {
   def crop(subExtent: Extent): GeoTiff[T]
   def crop(colMax: Int, rowMax: Int): GeoTiff[T]
   def crop(colMin: Int, rowMin: Int, colMax: Int, rowMax: Int): GeoTiff[T]
-  def crop(gridBounds: GridBounds): GeoTiff[T]
-  def crop(windows: Seq[GridBounds]): Iterator[(GridBounds, T)]
+  def crop(gridBounds: GridBounds[Int]): GeoTiff[T]
+  def crop(windows: Seq[GridBounds[Int]]): Iterator[(GridBounds[Int], T)]
 
   /** Return the best matching overview to the given cellSize, returns "this" if no overviews available. */
   def getClosestOverview(cellSize: CellSize, strategy: OverviewStrategy = AutoHigherResolution): GeoTiff[T] = {

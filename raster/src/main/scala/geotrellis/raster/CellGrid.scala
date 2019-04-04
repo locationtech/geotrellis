@@ -16,10 +16,11 @@
 
 package geotrellis.raster
 
+import spire.math.Integral
 
 /**
   * A grid composed of cells with specific value types
   */
-trait CellGrid extends Grid {
+abstract class CellGrid[N: Integral] extends Grid[N] {
   def cellType: CellType
 }

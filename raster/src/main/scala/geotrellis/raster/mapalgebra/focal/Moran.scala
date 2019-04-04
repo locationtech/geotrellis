@@ -37,7 +37,7 @@ import geotrellis.raster.histogram.FastMapHistogram
  *                        of a double typed Tile (FloatConstantNoDataCellType, DoubleConstantNoDataCellType).
  */
 object TileMoransICalculation {
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds], target: TargetCell = TargetCell.All): Tile = {
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds[Int]], target: TargetCell = TargetCell.All): Tile = {
     new CursorCalculation[Tile](tile, n, bounds, target)
       with DoubleArrayTileResult
     {
@@ -88,7 +88,7 @@ object TileMoransICalculation {
  *                        of a double typed Tile (FloatConstantNoDataCellType, DoubleConstantNoDataCellType).
  */
 object ScalarMoransICalculation {
-  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds]): Double = {
+  def apply(tile: Tile, n: Neighborhood, bounds: Option[GridBounds[Int]]): Double = {
     new CursorCalculation[Double](tile, n, bounds, TargetCell.All) {
       var mean: Double = 0
       var `stddev^2`: Double = 0

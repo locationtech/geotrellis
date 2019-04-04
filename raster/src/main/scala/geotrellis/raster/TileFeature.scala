@@ -23,12 +23,14 @@ package geotrellis.raster
   * @param  tile  The CellGrid-derived tile
   * @param  data  The additional metadata
   */
-case class TileFeature[+T <: CellGrid, D](tile: T, data: D) extends CellGrid {
+case class TileFeature[+T <: CellGrid[Int], D](tile: T, data: D) extends CellGrid[Int] {
   def cellType: CellType = tile.cellType
   def cols: Int = tile.cols
   def rows: Int = tile.rows
+  override def size: Int = tile.size
+  override def gridBounds: GridBounds[Int] = tile.gridBounds
 }
 
 object TileFeature {
-  implicit def tileFeatureToCellGrid[T <: CellGrid, D](tf: TileFeature[T, D]): T = tf.tile
+  implicit def tileFeatureToCellGrid[T <: CellGrid[Int], D](tf: TileFeature[T, D]): T = tf.tile
 }

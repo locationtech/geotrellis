@@ -44,7 +44,7 @@ import geotrellis.raster.mapalgebra.focal.Angles._
   */
 object Slope {
 
-  def apply(r: Tile, n: Neighborhood, bounds: Option[GridBounds], cs: CellSize, z: Double, target: TargetCell = TargetCell.All): Tile = {
+  def apply(r: Tile, n: Neighborhood, bounds: Option[GridBounds[Int]], cs: CellSize, z: Double, target: TargetCell = TargetCell.All): Tile = {
     new SurfacePointCalculation[Tile](r, n, bounds, cs, target)
       with DoubleArrayTileResult
     {

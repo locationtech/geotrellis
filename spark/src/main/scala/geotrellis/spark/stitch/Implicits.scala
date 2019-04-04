@@ -31,24 +31,24 @@ object Implicits extends Implicits
 
 trait Implicits {
   implicit class withSpatialTileLayoutRDDMethods[
-    V <: CellGrid: Stitcher,
+    V <: CellGrid[Int]: Stitcher,
     M: GetComponent[?, LayoutDefinition]
   ](
     val self: RDD[(SpatialKey, V)] with Metadata[M]
   ) extends SpatialTileLayoutRDDStitchMethods[V, M]
 
-  implicit class withSpatialTileRDDMethods[V <: CellGrid: Stitcher](
+  implicit class withSpatialTileRDDMethods[V <: CellGrid[Int]: Stitcher](
     val self: RDD[(SpatialKey, V)]
   ) extends SpatialTileRDDStitchMethods[V]
 
   implicit class withSpatialTileLayoutCollectionMethods[
-    V <: CellGrid: Stitcher,
+    V <: CellGrid[Int]: Stitcher,
     M: GetComponent[?, LayoutDefinition]
   ](
     val self: Seq[(SpatialKey, V)] with Metadata[M]
   ) extends SpatialTileLayoutCollectionStitchMethods[V, M]
 
-  implicit class withSpatialTileCollectionMethods[V <: CellGrid: Stitcher](
+  implicit class withSpatialTileCollectionMethods[V <: CellGrid[Int]: Stitcher](
     val self: Seq[(SpatialKey, V)]
   ) extends SpatialTileCollectionStitchMethods[V]
 }

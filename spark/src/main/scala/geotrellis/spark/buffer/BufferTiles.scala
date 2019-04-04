@@ -40,7 +40,7 @@ object BufferTiles {
   /** Collects tile neighbors by slicing the neighboring tiles to the given
     * buffer size
     */
-  def collectWithTileNeighbors[K: SpatialComponent, V <: CellGrid: (? => CropMethods[V])](
+  def collectWithTileNeighbors[K: SpatialComponent, V <: CellGrid[Int]: (? => CropMethods[V])](
     key: K,
     tile: V,
     includeKey: SpatialKey => Boolean,
@@ -92,7 +92,7 @@ object BufferTiles {
 
   def bufferWithNeighbors[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: Stitcher: ClassTag
+    V <: CellGrid[Int]: Stitcher: ClassTag
   ](rdd: RDD[(K, Iterable[(Direction, V)])]): RDD[(K, BufferedTile[V])] = {
     val r = rdd
       .flatMapValues { neighbors =>
@@ -145,7 +145,7 @@ object BufferTiles {
 
   def bufferWithNeighbors[
     K: SpatialComponent,
-    V <: CellGrid: Stitcher
+    V <: CellGrid[Int]: Stitcher
   ](seq: Seq[(K, Seq[(Direction, V)])]): Seq[(K, BufferedTile[V])] = {
     seq
       .flatMap { case (key, neighbors) =>
@@ -210,7 +210,7 @@ object BufferTiles {
     */
   def apply[
     K: SpatialComponent,
-    V <: CellGrid: Stitcher: (? => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: (? => CropMethods[V])
   ](rdd: Seq[(K, V)], bufferSize: Int): Seq[(K, BufferedTile[V])] =
   apply(rdd, bufferSize, GridBounds(Int.MinValue, Int.MinValue, Int.MaxValue, Int.MaxValue))
 
@@ -226,7 +226,7 @@ object BufferTiles {
     */
   def apply[
     K: SpatialComponent,
-    V <: CellGrid: Stitcher: (? => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: (? => CropMethods[V])
   ](seq: Seq[(K, V)], getBufferSizes: K => BufferSizes): Seq[(K, BufferedTile[V])] =
     apply(seq, seq.map { case (key, _) =>  key -> getBufferSizes(key) })
 
@@ -242,7 +242,7 @@ object BufferTiles {
     */
   def apply[
     K: SpatialComponent,
-    V <: CellGrid: Stitcher: (? => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: (? => CropMethods[V])
   ](seq: Seq[(K, V)], bufferSizesPerKey: Seq[(K, BufferSizes)]): Seq[(K, BufferedTile[V])] = {
     val surroundingBufferSizes: Seq[(K, Map[SpatialKey, BufferSizes])] = {
       val contributingKeys: Seq[(K, (SpatialKey, BufferSizes))] =
@@ -292,8 +292,8 @@ object BufferTiles {
     */
   def apply[
   K: SpatialComponent,
-  V <: CellGrid: Stitcher: (? => CropMethods[V])
-  ](seq: Seq[(K, V)], bufferSize: Int, layerBounds: GridBounds): Seq[(K, BufferedTile[V])] = {
+  V <: CellGrid[Int]: Stitcher: (? => CropMethods[V])
+  ](seq: Seq[(K, V)], bufferSize: Int, layerBounds: TileBounds): Seq[(K, BufferedTile[V])] = {
     val bufferSizes = BufferSizes(bufferSize, bufferSize, bufferSize, bufferSize)
     val grouped: Seq[(K, Seq[(Direction, V)])] =
       seq
@@ -317,7 +317,7 @@ object BufferTiles {
     */
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: Stitcher: ClassTag: (? => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: ClassTag: (? => CropMethods[V])
   ](
     rdd: RDD[(K, V)],
     bufferSize: Int
@@ -339,7 +339,7 @@ object BufferTiles {
     */
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: Stitcher: ClassTag: (? => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: ClassTag: (? => CropMethods[V])
   ](
     rdd: RDD[(K, V)],
     bufferSize: Int,
@@ -363,11 +363,11 @@ object BufferTiles {
     */
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: Stitcher: ClassTag: (? => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: ClassTag: (? => CropMethods[V])
   ](
     rdd: RDD[(K, V)],
     bufferSize: Int,
-    layerBounds: GridBounds
+    layerBounds: TileBounds
   ): RDD[(K, BufferedTile[V])] =
     apply(rdd, bufferSize, layerBounds, None)
 
@@ -391,11 +391,11 @@ object BufferTiles {
     */
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: Stitcher: ClassTag: (? => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: ClassTag: (? => CropMethods[V])
   ](
     rdd: RDD[(K, V)],
     bufferSize: Int,
-    layerBounds: GridBounds,
+    layerBounds: TileBounds,
     partitioner: Option[Partitioner]
   ): RDD[(K, BufferedTile[V])] =
     apply(
@@ -422,7 +422,7 @@ object BufferTiles {
     */
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: Stitcher: (? => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: (? => CropMethods[V])
   ](
     layer: RDD[(K, V)],
     getBufferSizes: K => BufferSizes
@@ -446,7 +446,7 @@ object BufferTiles {
     */
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: Stitcher: (? => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: (? => CropMethods[V])
   ](
     layer: RDD[(K, V)],
     getBufferSizes: K => BufferSizes,
@@ -470,7 +470,7 @@ object BufferTiles {
     */
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: Stitcher: (? => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: (? => CropMethods[V])
   ](layer: RDD[(K, V)],
     includeKey: K => Boolean,
     getBufferSizes: K => BufferSizes
@@ -496,7 +496,7 @@ object BufferTiles {
     */
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: Stitcher: (? => CropMethods[V])
+    V <: CellGrid[Int]: Stitcher: (? => CropMethods[V])
   ](layer: RDD[(K, V)],
     includeKey: K => Boolean,
     getBufferSizes: K => BufferSizes,

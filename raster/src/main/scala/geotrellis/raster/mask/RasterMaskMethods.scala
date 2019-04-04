@@ -25,7 +25,7 @@ import geotrellis.vector.{Geometry, Extent}
   * A trait containing extension methods related to masking of a
   * [[Raster]].
   */
-trait RasterMaskMethods[T <: CellGrid] extends MethodExtensions[Raster[T]] {
+trait RasterMaskMethods[T <: CellGrid[Int]] extends MethodExtensions[Raster[T]] {
   /**
     * Masks this raster by the given Geometry. Do not include polygon
     * exteriors.

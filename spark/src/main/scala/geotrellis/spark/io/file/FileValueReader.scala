@@ -71,7 +71,7 @@ object FileValueReader {
   ): Reader[K, V] =
     new FileValueReader(attributeStore, catalogPath).reader(layerId)
 
-  def apply[K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid: AvroRecordCodec: ? => TileResampleMethods[V]](
+  def apply[K: AvroRecordCodec: JsonFormat: SpatialComponent: ClassTag, V <: CellGrid[Int]: AvroRecordCodec: ? => TileResampleMethods[V]](
     attributeStore: AttributeStore,
     catalogPath: String,
     layerId: LayerId,

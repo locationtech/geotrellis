@@ -23,7 +23,7 @@ import spire.syntax.cfor._
 import Split.Options
 
 trait SinglebandTileSplitMethods extends SplitMethods[Tile] {
-  def split(tileLayout: TileLayout, options: Options): Array[Tile] = {
+  def split(tileLayout: TileLayout, options: Options): Seq[Tile] = {
     val tileCols = tileLayout.tileCols
     val tileRows = tileLayout.tileRows
 

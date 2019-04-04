@@ -90,8 +90,8 @@ trait Implicits extends HistogramJsonFormats {
       }
   }
 
-  implicit object GridBoundsFormat extends RootJsonFormat[GridBounds] {
-    def write(gridBounds: GridBounds) =
+  implicit def GridBoundsIntFormat = new RootJsonFormat[GridBounds[Int]] {
+    def write(gridBounds: GridBounds[Int]) =
       JsObject(
         "colMin" -> JsNumber(gridBounds.colMin),
         "rowMin" -> JsNumber(gridBounds.rowMin),
@@ -99,10 +99,28 @@ trait Implicits extends HistogramJsonFormats {
         "rowMax" -> JsNumber(gridBounds.rowMax)
       )
 
-    def read(value: JsValue): GridBounds =
+    def read(value: JsValue): GridBounds[Int] =
       value.asJsObject.getFields("colMin", "rowMin", "colMax", "rowMax") match {
         case Seq(JsNumber(colMin), JsNumber(rowMin), JsNumber(colMax), JsNumber(rowMax)) =>
           GridBounds(colMin.toInt, rowMin.toInt, colMax.toInt, rowMax.toInt)
+        case _ =>
+          throw new DeserializationException("GridBounds expected.")
+      }
+  }
+
+  implicit def GridBoundsLongFormat = new RootJsonFormat[GridBounds[Long]] {
+    def write(gridBounds: GridBounds[Long]) =
+      JsObject(
+        "colMin" -> JsNumber(gridBounds.colMin),
+        "rowMin" -> JsNumber(gridBounds.rowMin),
+        "colMax" -> JsNumber(gridBounds.colMax),
+        "rowMax" -> JsNumber(gridBounds.rowMax)
+      )
+
+    def read(value: JsValue): GridBounds[Long] =
+      value.asJsObject.getFields("colMin", "rowMin", "colMax", "rowMax") match {
+        case Seq(JsNumber(colMin), JsNumber(rowMin), JsNumber(colMax), JsNumber(rowMax)) =>
+          GridBounds(colMin.toLong, rowMin.toLong, colMax.toLong, rowMax.toLong)
         case _ =>
           throw new DeserializationException("GridBounds expected.")
       }

@@ -37,14 +37,14 @@ object Regrid {
 
     // let the interval be start to end, inclusive
     def intersect(that: Interval[N]) = {
-        Interval(if (ord.compare(this.start, that.start) > 0) this.start else that.start, 
+        Interval(if (ord.compare(this.start, that.start) > 0) this.start else that.start,
                  if (ord.compare(this.end, that.end) < 0) this.end else that.end)
     }
   }
 
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: Stitcher: (? => CropMethods[V]),
+    V <: CellGrid[Int]: ClassTag: Stitcher: (? => CropMethods[V]),
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
   ](layer: RDD[(K, V)] with Metadata[M], tileCols: Int, tileRows: Int): RDD[(K, V)] with Metadata[M] = {
     val md = layer.metadata
@@ -120,10 +120,10 @@ object Regrid {
 
               val xSpan: Interval[Long] = oldXrange intersect newXrange
               val ySpan: Interval[Long] = oldYrange intersect newYrange
-              newKey -> 
-                (oldTile.crop((xSpan.start - oldXstart).toInt, 
-                              (ySpan.start - oldYstart).toInt, 
-                              (xSpan.end - oldXstart).toInt, 
+              newKey ->
+                (oldTile.crop((xSpan.start - oldXstart).toInt,
+                              (ySpan.start - oldYstart).toInt,
+                              (xSpan.end - oldXstart).toInt,
                               (ySpan.end - oldYstart).toInt),
                  ((xSpan.start - newXrange.start).toInt, (ySpan.start - newYrange.start).toInt)
                 )
@@ -138,7 +138,7 @@ object Regrid {
 
   def apply[
     K: SpatialComponent: ClassTag,
-    V <: CellGrid: ClassTag: Stitcher: (? => CropMethods[V]),
+    V <: CellGrid[Int]: ClassTag: Stitcher: (? => CropMethods[V]),
     M: Component[?, LayoutDefinition]: Component[?, Bounds[K]]
   ](layer: RDD[(K, V)] with Metadata[M], tileSize: Int): RDD[(K, V)] with Metadata[M] = apply(layer, tileSize, tileSize)
 

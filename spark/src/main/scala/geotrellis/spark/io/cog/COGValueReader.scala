@@ -39,13 +39,13 @@ trait COGValueReader[ID] {
 
   def reader[
     K: JsonFormat : SpatialComponent : ClassTag,
-    V <: CellGrid : GeoTiffReader
+    V <: CellGrid[Int] : GeoTiffReader
   ](layerId: LayerId): COGReader[K, V]
 
   /** Produce a key value reader for a specific layer, prefetching layer metadata once at construction time */
   def baseReader[
     K: JsonFormat: SpatialComponent: ClassTag,
-    V <: CellGrid: GeoTiffReader
+    V <: CellGrid[Int]: GeoTiffReader
   ](
     layerId: ID,
     keyPath: (K, Int, KeyIndex[K], ZoomRange) => String, // Key, maxWidth, toIndex, zoomRange
@@ -121,7 +121,7 @@ trait COGValueReader[ID] {
 
   def overzoomingReader[
     K: JsonFormat: SpatialComponent: ClassTag,
-    V <: CellGrid: GeoTiffReader: ? => TileResampleMethods[V]
+    V <: CellGrid[Int]: GeoTiffReader: ? => TileResampleMethods[V]
   ](layerId: ID, resampleMethod: ResampleMethod = ResampleMethod.DEFAULT): COGReader[K, V]
 }
 

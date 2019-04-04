@@ -22,7 +22,7 @@ import geotrellis.util.MethodExtensions
 import geotrellis.vector._
 
 class TileFeatureMaskMethods[
-  T <: CellGrid : (? => TileMaskMethods[T]),
+  T <: CellGrid[Int] : (? => TileMaskMethods[T]),
   D
 ](val self: TileFeature[T, D]) extends TileMaskMethods[TileFeature[T, D]] {
   def localMask(mask: TileFeature[T, D], readMask: Int, writeMask: Int): TileFeature[T, D] =
@@ -42,7 +42,7 @@ class TileFeatureMaskMethods[
 }
 
 abstract class RasterTileFeatureMaskMethods[
-  T <: CellGrid : (? => TileMaskMethods[T]),
+  T <: CellGrid[Int] : (? => TileMaskMethods[T]),
   D
 ](self: TileFeature[Raster[T], D]) extends MethodExtensions[TileFeature[Raster[T], D]] {
   def mask(geom: Geometry): TileFeature[Raster[T], D] =

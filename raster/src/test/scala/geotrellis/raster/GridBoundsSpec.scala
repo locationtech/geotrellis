@@ -18,6 +18,7 @@ package geotrellis.raster
 
 import org.scalatest._
 import spire.syntax.cfor._
+import spire.implicits._
 
 class GridBoundsSpec extends FunSpec with Matchers{
   describe("GridBounds.minus") {

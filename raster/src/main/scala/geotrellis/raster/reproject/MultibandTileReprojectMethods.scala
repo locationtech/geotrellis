@@ -29,9 +29,9 @@ trait MultibandTileReprojectMethods extends TileReprojectMethods[MultibandTile] 
   def reproject(srcExtent: Extent, src: CRS, dest: CRS, options: Options): Raster[MultibandTile] =
     Raster(self, srcExtent).reproject(src, dest, options)
 
-  def reproject(srcExtent: Extent, gridBounds: GridBounds, src: CRS, dest: CRS, options: Options): Raster[MultibandTile] =
+  def reproject(srcExtent: Extent, gridBounds: GridBounds[Int], src: CRS, dest: CRS, options: Options): Raster[MultibandTile] =
     Raster(self, srcExtent).reproject(gridBounds, src, dest, options)
 
-  def reproject(srcExtent: Extent, gridBounds: GridBounds, transform: Transform, inverseTransform: Transform, options: Options): Raster[MultibandTile] =
+  def reproject(srcExtent: Extent, gridBounds: GridBounds[Int], transform: Transform, inverseTransform: Transform, options: Options): Raster[MultibandTile] =
     Raster(self, srcExtent).reproject(gridBounds, transform, inverseTransform, options)
 }

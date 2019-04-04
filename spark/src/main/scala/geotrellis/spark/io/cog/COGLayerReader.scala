@@ -63,24 +63,24 @@ abstract class COGLayerReader[ID] extends Serializable {
     */
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]], numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]]
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](id: ID, rasterQuery: LayerQuery[K, TileLayerMetadata[K]]): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read(id, rasterQuery, defaultNumPartitions)
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](id: ID, numPartitions: Int): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read(id, new LayerQuery[K, TileLayerMetadata[K]], numPartitions)
 
   def read[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](id: ID): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
     read(id, defaultNumPartitions)
 
@@ -129,7 +129,7 @@ abstract class COGLayerReader[ID] extends Serializable {
   // TODO: Have this return a COGLayerReader
   def reader[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ]: Reader[ID, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new Reader[ID, RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] {
       def read(id: ID): RDD[(K, V)] with Metadata[TileLayerMetadata[K]] =
@@ -138,13 +138,13 @@ abstract class COGLayerReader[ID] extends Serializable {
 
   def query[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](layerId: ID): BoundLayerQuery[K, TileLayerMetadata[K], RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, read(layerId, _))
 
   def query[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](layerId: ID, numPartitions: Int): BoundLayerQuery[K, TileLayerMetadata[K], RDD[(K, V)] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, read(layerId, _, numPartitions))
 
@@ -158,22 +158,22 @@ abstract class COGLayerReader[ID] extends Serializable {
   ](layerId: ID, targetBands: Seq[Int], numPartitions: Int): BoundLayerQuery[K, TileLayerMetadata[K], RDD[(K, Array[Option[Tile]])] with Metadata[TileLayerMetadata[K]]] =
     new BoundLayerQuery(new LayerQuery, readSubsetBands(layerId, targetBands, _, numPartitions))
 
-  private def crop[V <: CellGrid: GeoTiffReader: ClassTag](
+  private def crop[V <: CellGrid[Int]: GeoTiffReader: ClassTag](
     geoTiff: GeoTiff[V],
-    gridBounds: Seq[GridBounds]
-  ): Iterator[(GridBounds, V)] =
+    gridBounds: Seq[GridBounds[Int]]
+  ): Iterator[(GridBounds[Int], V)] =
     geoTiff.crop(gridBounds)
 
   private def produceCropBands(
     targetBands: Seq[Int]
-  ): (GeoTiff[MultibandTile], Seq[GridBounds]) => Iterator[(GridBounds, Array[Option[Tile]])] =
-    (geoTiff: GeoTiff[MultibandTile], gridBounds: Seq[GridBounds]) => cropBands(geoTiff, gridBounds, targetBands)
+  ): (GeoTiff[MultibandTile], Seq[GridBounds[Int]]) => Iterator[(GridBounds[Int], Array[Option[Tile]])] =
+    (geoTiff: GeoTiff[MultibandTile], gridBounds: Seq[GridBounds[Int]]) => cropBands(geoTiff, gridBounds, targetBands)
 
   private def cropBands(
     geoTiff: GeoTiff[MultibandTile],
-    gridBounds: Seq[GridBounds],
+    gridBounds: Seq[GridBounds[Int]],
     bands: Seq[Int]
-  ): Iterator[(GridBounds, Array[Option[Tile]])] = {
+  ): Iterator[(GridBounds[Int], Array[Option[Tile]])] = {
     // We first must determine which bands are valid and which are not
     // before doing the crop in order to avoid band subsetting errors
     // and/or loading unneeded data.
@@ -187,13 +187,13 @@ abstract class COGLayerReader[ID] extends Serializable {
 
     val (targetBands, targetBandsIndexes) = targetBandsWithIndex.unzip
 
-    val croppedTilesWithGridBounds: Iterator[(GridBounds, Array[Tile])] =
+    val croppedTilesWithGridBounds: Iterator[(GridBounds[Int], Array[Tile])] =
       geoTiff
         .tile
         .cropBands(gridBounds, targetBands)
         .map { case (k, v) => k -> v.bands.toArray }
 
-    val croppedTilesWithBandIndexes: Iterator[(GridBounds, Array[(Int, Tile)])] =
+    val croppedTilesWithBandIndexes: Iterator[(GridBounds[Int], Array[(Int, Tile)])] =
       croppedTilesWithGridBounds
         .map { case (k, v) => k -> targetBandsIndexes.zip(v) }
 
@@ -209,7 +209,7 @@ abstract class COGLayerReader[ID] extends Serializable {
 
   def baseReadAllBands[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag
   ](
     id: LayerId,
     tileQuery: LayerQuery[K, TileLayerMetadata[K]],
@@ -232,7 +232,7 @@ abstract class COGLayerReader[ID] extends Serializable {
 
     val queryKeyBounds: Seq[KeyBounds[K]] = tileQuery(metadata)
 
-    val readDefinitions: Seq[(ZoomRange, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])])] =
+    val readDefinitions: Seq[(ZoomRange, Seq[(SpatialKey, Int, GridBounds[Int], Seq[(GridBounds[Int], SpatialKey)])])] =
       cogLayerMetadata.getReadDefinitions(queryKeyBounds, id.zoom)
 
     readDefinitions.headOption.map(_._1) match {
@@ -282,7 +282,7 @@ abstract class COGLayerReader[ID] extends Serializable {
 
     val queryKeyBounds: Seq[KeyBounds[K]] = tileQuery(metadata)
 
-    val readDefinitions: Seq[(ZoomRange, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])])] =
+    val readDefinitions: Seq[(ZoomRange, Seq[(SpatialKey, Int, GridBounds[Int], Seq[(GridBounds[Int], SpatialKey)])])] =
       cogLayerMetadata.getReadDefinitions(queryKeyBounds, id.zoom)
 
     readDefinitions.headOption.map(_._1) match {
@@ -312,7 +312,7 @@ abstract class COGLayerReader[ID] extends Serializable {
 
   private def baseRead[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader: ClassTag,
+    V <: CellGrid[Int]: GeoTiffReader: ClassTag,
     R
   ](
     id: LayerId,
@@ -321,8 +321,8 @@ abstract class COGLayerReader[ID] extends Serializable {
     metadata: TileLayerMetadata[K],
     baseKeyIndex: KeyIndex[K],
     queryKeyBounds: Seq[KeyBounds[K]],
-    readDefinitions: Map[SpatialKey, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])]],
-    readGeoTiff: (GeoTiff[V], Seq[GridBounds]) => Iterator[(GridBounds, R)],
+    readDefinitions: Map[SpatialKey, Seq[(SpatialKey, Int, GridBounds[Int], Seq[(GridBounds[Int], SpatialKey)])]],
+    readGeoTiff: (GeoTiff[V], Seq[GridBounds[Int]]) => Iterator[(GridBounds[Int], R)],
     numPartitions: Int,
     defaultThreads: Int
   )(implicit sc: SparkContext,
@@ -374,13 +374,13 @@ abstract class COGLayerReader[ID] extends Serializable {
 
   private def readLayer[
     K: SpatialComponent: Boundable: JsonFormat: ClassTag,
-    V <: CellGrid: GeoTiffReader,
+    V <: CellGrid[Int]: GeoTiffReader,
     R
   ](
      bins: Seq[Seq[(BigInt, BigInt)]],
      keyPath: BigInt => String, // keyPath
-     readDefinitions: Map[SpatialKey, Seq[(SpatialKey, Int, TileBounds, Seq[(TileBounds, SpatialKey)])]],
-     readGeoTiff: (GeoTiff[V], Seq[GridBounds]) => Iterator[(GridBounds, R)],
+     readDefinitions: Map[SpatialKey, Seq[(SpatialKey, Int, GridBounds[Int], Seq[(GridBounds[Int], SpatialKey)])]],
+     readGeoTiff: (GeoTiff[V], Seq[GridBounds[Int]]) => Iterator[(GridBounds[Int], R)],
      threads: Int
    )(implicit sc: SparkContext, getByteReader: URI => ByteReader): RDD[(K, R)] = {
     val kwFormat = KryoWrapper(implicitly[JsonFormat[K]])

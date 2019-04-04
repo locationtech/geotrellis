@@ -39,7 +39,7 @@ object TileLayoutStitcher {
     *                       of the layout, and the width and height of that spatial key
     */
   def stitch[
-    V <: CellGrid: Stitcher
+    V <: CellGrid[Int]: Stitcher
   ](tiles: Traversable[(Product2[Int, Int], V)]): (V, (Int, Int), (Int, Int)) = {
     assert(tiles.size > 0, "Cannot stitch empty collection")
 
@@ -73,7 +73,7 @@ object TileLayoutStitcher {
 }
 
 abstract class SpatialTileLayoutRDDStitchMethods[
-  V <: CellGrid: Stitcher,
+  V <: CellGrid[Int]: Stitcher,
   M: GetComponent[?, LayoutDefinition]
 ] extends MethodExtensions[RDD[(SpatialKey, V)] with Metadata[M]] {
 
@@ -88,7 +88,7 @@ abstract class SpatialTileLayoutRDDStitchMethods[
   }
 }
 
-abstract class SpatialTileRDDStitchMethods[V <: CellGrid: Stitcher]
+abstract class SpatialTileRDDStitchMethods[V <: CellGrid[Int]: Stitcher]
   extends MethodExtensions[RDD[(SpatialKey, V)]] {
 
   def stitch(): V = {

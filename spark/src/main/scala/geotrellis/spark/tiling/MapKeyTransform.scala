@@ -54,9 +54,9 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
   lazy val tileWidth: Double = extent.width / layoutCols
   lazy val tileHeight: Double = extent.height / layoutRows
 
-  def extentToBounds(otherExtent: Extent): GridBounds = apply(otherExtent)
+  def extentToBounds(otherExtent: Extent): TileBounds = apply(otherExtent)
 
-  def apply(otherExtent: Extent): GridBounds = {
+  def apply(otherExtent: Extent): TileBounds = {
     val SpatialKey(colMin, rowMin) = apply(otherExtent.xmin, otherExtent.ymax)
 
     // For calculating GridBounds, the extent parameter is considered
@@ -83,9 +83,9 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
     GridBounds(colMin, rowMin, colMax, rowMax)
   }
 
-  def boundsToExtent(gridBounds: GridBounds): Extent = apply(gridBounds)
+  def boundsToExtent(gridBounds: TileBounds): Extent = apply(gridBounds)
 
-  def apply(gridBounds: GridBounds): Extent = {
+  def apply(gridBounds: TileBounds): Extent = {
     val e1 = apply(gridBounds.colMin, gridBounds.rowMin)
     val e2 = apply(gridBounds.colMax, gridBounds.rowMax)
     e1.expandToInclude(e2)
@@ -131,7 +131,7 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
     )
 
   def multiLineToKeys(multiLine: MultiLine): Set[SpatialKey] = {
-    val bounds: GridBounds = extentToBounds(multiLine.envelope)
+    val bounds: TileBounds = extentToBounds(multiLine.envelope)
     val boundsExtent: Extent = boundsToExtent(bounds)
     val rasterExtent = RasterExtent(boundsExtent, bounds.width, bounds.height)
 
@@ -148,7 +148,7 @@ class MapKeyTransform(val extent: Extent, val layoutCols: Int, val layoutRows: I
 
   def multiPolygonToKeys(multiPolygon: MultiPolygon): Set[SpatialKey] = {
     val extent = multiPolygon.envelope
-    val bounds: GridBounds = extentToBounds(extent)
+    val bounds: TileBounds = extentToBounds(extent)
     val options = Rasterizer.Options(includePartial=true, sampleType=PixelIsArea)
     val boundsExtent: Extent = boundsToExtent(bounds)
     val rasterExtent = RasterExtent(boundsExtent, bounds.width, bounds.height)

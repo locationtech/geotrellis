@@ -41,13 +41,13 @@ case class TileLayerMetadata[K](
   bounds: Bounds[K]
 ) {
   /** Transformations between tiling scheme and map references */
-  def mapTransform = layout.mapTransform
+  def mapTransform: MapKeyTransform = layout.mapTransform
   /** TileLayout of the layout */
-  def tileLayout = layout.tileLayout
+  def tileLayout: TileLayout = layout.tileLayout
   /** Full extent of the layout */
-  def layoutExtent = layout.extent
+  def layoutExtent: Extent = layout.extent
   /** GridBounds of data tiles in the layout */
-  def gridBounds = mapTransform(extent)
+  def tileBounds: TileBounds = mapTransform(extent)
 
   def combine(other: TileLayerMetadata[K])(implicit b: Boundable[K]): TileLayerMetadata[K] = {
     val combinedExtent       = extent combine other.extent
@@ -115,7 +115,7 @@ object TileLayerMetadata {
 
   private def collectMetadata[
     K: (? => TilerKeyMethods[K, K2]),
-    V <: CellGrid,
+    V <: CellGrid[Int],
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)]): (Extent, CellType, CellSize, KeyBounds[K2]) = {
     rdd
@@ -139,7 +139,7 @@ object TileLayerMetadata {
 
   private def collectMetadataWithCRS[
     K: GetComponent[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
-    V <: CellGrid,
+    V <: CellGrid[Int],
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)]): (Extent, CellType, CellSize, KeyBounds[K2], CRS) = {
     val (extent, cellType, cellSize, crsSet, bounds) =
@@ -171,7 +171,7 @@ object TileLayerMetadata {
     */
   def fromRDD[
     K: (? => TilerKeyMethods[K, K2]),
-    V <: CellGrid,
+    V <: CellGrid[Int],
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], crs: CRS, layout: LayoutDefinition): TileLayerMetadata[K2] = {
     val (extent, cellType, _, bounds) = collectMetadata(rdd)
@@ -185,7 +185,7 @@ object TileLayerMetadata {
     */
   def fromRDD[
     K: (? => TilerKeyMethods[K, K2]) ,
-    V <: CellGrid,
+    V <: CellGrid[Int],
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], crs: CRS, scheme: LayoutScheme): (Int, TileLayerMetadata[K2]) = {
     val (extent, cellType, cellSize, bounds) = collectMetadata(rdd)
@@ -201,7 +201,7 @@ object TileLayerMetadata {
     */
   def fromRDD[
     K: (? => TilerKeyMethods[K, K2]) ,
-    V <: CellGrid,
+    V <: CellGrid[Int],
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], crs: CRS, scheme: ZoomedLayoutScheme):
     (Int, TileLayerMetadata[K2]) =
@@ -214,7 +214,7 @@ object TileLayerMetadata {
     */
   def fromRDD[
     K: (? => TilerKeyMethods[K, K2]) ,
-    V <: CellGrid,
+    V <: CellGrid[Int],
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], crs: CRS, scheme: ZoomedLayoutScheme, maxZoom: Int):
     (Int, TileLayerMetadata[K2]) =
@@ -222,7 +222,7 @@ object TileLayerMetadata {
 
   private def _fromRDD[
     K: (? => TilerKeyMethods[K, K2]) ,
-    V <: CellGrid,
+    V <: CellGrid[Int],
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], crs: CRS, scheme: ZoomedLayoutScheme, maxZoom: Option[Int]):
     (Int, TileLayerMetadata[K2]) = {
@@ -237,7 +237,7 @@ object TileLayerMetadata {
 
   def fromRDD[
     K: GetComponent[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
-    V <: CellGrid,
+    V <: CellGrid[Int],
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], scheme: LayoutScheme): (Int, TileLayerMetadata[K2]) = {
     val (extent, cellType, cellSize, bounds, crs) = collectMetadataWithCRS(rdd)
@@ -248,7 +248,7 @@ object TileLayerMetadata {
 
   def fromRDD[
     K: GetComponent[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
-    V <: CellGrid,
+    V <: CellGrid[Int],
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)],  scheme: ZoomedLayoutScheme):
     (Int, TileLayerMetadata[K2]) =
@@ -256,7 +256,7 @@ object TileLayerMetadata {
 
   def fromRDD[
     K: GetComponent[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
-    V <: CellGrid,
+    V <: CellGrid[Int],
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], scheme: ZoomedLayoutScheme, maxZoom: Int):
     (Int, TileLayerMetadata[K2]) =
@@ -264,7 +264,7 @@ object TileLayerMetadata {
 
   private def _fromRDD[
     K: GetComponent[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
-    V <: CellGrid,
+    V <: CellGrid[Int],
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], scheme: ZoomedLayoutScheme, maxZoom: Option[Int]):
   (Int, TileLayerMetadata[K2]) = {
@@ -279,7 +279,7 @@ object TileLayerMetadata {
 
   def fromRDD[
     K: GetComponent[?, ProjectedExtent]: (? => TilerKeyMethods[K, K2]),
-    V <: CellGrid,
+    V <: CellGrid[Int],
     K2: SpatialComponent: Boundable
   ](rdd: RDD[(K, V)], layoutDefinition: LayoutDefinition): TileLayerMetadata[K2] = {
     val (extent, cellType, cellSize, bounds, crs) = collectMetadataWithCRS(rdd)
