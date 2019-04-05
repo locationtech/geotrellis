@@ -47,6 +47,9 @@ case class LayoutDefinition(override val extent: Extent, tileLayout: TileLayout)
 
     LayoutDefinition(subExtent, subLayout)
   }
+
+  override def toString: String =
+    s"""LayoutDefinition($extent, $cellSize,${layoutCols}x${layoutRows} tiles,${cols}x${rows} pixels)"""
 }
 
 object LayoutDefinition {

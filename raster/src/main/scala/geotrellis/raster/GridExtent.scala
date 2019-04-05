@@ -342,6 +342,9 @@ class GridExtent[@specialized(Int, Long) N: Integral](
   def toGridType[M: Integral]: GridExtent[M] = {
     new GridExtent[M](extent, cellwidth, cellheight, Integral[N].toType[M](cols), Integral[N].toType[M](rows))
   }
+
+  override def toString: String =
+    s"""GridExtent($extent,$cellSize,${cols}x${rows})"""
 }
 
 
