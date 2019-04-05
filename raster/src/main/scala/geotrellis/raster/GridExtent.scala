@@ -354,9 +354,6 @@ object GridExtent {
   def apply(extent: Extent, cellSize: CellSize): GridExtent[Long] =
     new GridExtent[Long](extent, cellSize)
 
-  def apply(extent: Extent, cellwidth: Double, cellheight: Double): GridExtent[Long] =
-    new GridExtent[Long](extent, CellSize(cellwidth, cellheight))
-
 
   def apply[N: Integral](grid: Grid[N], extent: Extent): GridExtent[N] = {
     val cw = extent.width / grid.cols.toDouble
