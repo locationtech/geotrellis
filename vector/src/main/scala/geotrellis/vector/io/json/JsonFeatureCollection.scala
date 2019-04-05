@@ -19,7 +19,6 @@ package geotrellis.vector.io.json
 import spray.json._
 
 import geotrellis.vector._
-import geotrellis.vector.io._
 import scala.util.{Try, Success, Failure}
 import scala.collection.mutable
 import scala.collection.immutable.VectorBuilder

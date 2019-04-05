@@ -23,7 +23,19 @@ import org.locationtech.jts.{geom => jts}
 package object vector extends SeqMethods
     with reproject.Implicits
     with triangulation.Implicits
-    with voronoi.Implicits {
+    with voronoi.Implicits
+    with io.json.Implicits
+    with io.wkt.Implicits
+    with io.wkb.Implicits {
+
+  /** The algorithms herein are all implemented in JTS, but the wrapper methods
+    * here make it straightforward to call them with geotrellis.vector classes.
+    */
+  implicit class withAnyGeometryMethods[G <: Geometry](val self: G) extends MethodExtensions[G]
+      with convexhull.ConvexHullMethods[G]
+      with densify.DensifyMethods[G]
+      with prepared.PreparedGeometryMethods[G]
+      with simplify.SimplifyMethods[G]
 
   type PointFeature[+D] = Feature[Point, D]
   type LineFeature[+D] = Feature[Line, D]
@@ -59,15 +71,6 @@ package object vector extends SeqMethods
 
   implicit class GeometryCollectionTransformations(val self: GeometryCollection) extends MethodExtensions[GeometryCollection]
       with affine.GeometryCollectionTransformationMethods
-
-  /** The algorithms herein are all implemented in JTS, but the wrapper methods
-    * here make it straightforward to call them with geotrellis.vector classes.
-    */
-  implicit class withAnyGeometryMethods[G <: Geometry](val self: G) extends MethodExtensions[G]
-      with convexhull.ConvexHullMethods[G]
-      with densify.DensifyMethods[G]
-      with prepared.PreparedGeometryMethods[G]
-      with simplify.SimplifyMethods[G]
 
   implicit def tupleOfIntToPoint(t: (Double, Double)): Point =
     Point(t._1,t._2)

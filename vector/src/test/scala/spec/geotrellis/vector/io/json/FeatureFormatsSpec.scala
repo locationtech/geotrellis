@@ -18,7 +18,6 @@ package geotrellis.vector.io.json
 
 import org.scalatest._
 import geotrellis.vector._
-import geotrellis.vector.io._
 
 import spray.json._
 import spray.json.DefaultJsonProtocol._

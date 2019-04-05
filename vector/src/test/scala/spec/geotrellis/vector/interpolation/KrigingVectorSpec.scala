@@ -16,7 +16,7 @@
 
 package geotrellis.vector.interpolation
 
-import geotrellis.vector.io._
+import geotrellis.vector._
 import geotrellis.vector.io.json.JsonFeatureCollection
 import geotrellis.vector.testkit._
 import geotrellis.vector._

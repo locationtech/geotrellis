@@ -17,7 +17,6 @@
 package geotrellis.vector.dissolve
 
 import geotrellis.vector._
-import geotrellis.vector.io._
 import geotrellis.vector.io.json.JsonFeatureCollection
 
 import spire.syntax.cfor._
