@@ -42,7 +42,6 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     rows == Integral[N].fromDouble(math.round(extent.height / cellheight)),
     s"$extent at $cellSize does not match $dimensions")
 
-
   def this(extent: Extent, cols: N, rows: N) =
     this(extent, (extent.width / cols.toDouble), (extent.height / rows.toDouble), cols, rows)
 
@@ -328,12 +327,17 @@ class GridExtent[@specialized(Int, Long) N: Integral](
       rows = Integral[N].fromLong(totalRows))
   }
 
-  override def equals(o: Any): Boolean = o match {
-    case other: GridExtent[_] =>
-      // TODO: check if cols/rows are same type
-      other.extent == extent && other.cellheight == cellheight && other.cellwidth == cellwidth
-    case _ =>
-      false
+  def canEqual(a: Any) = a.isInstanceOf[GridExtent[_]]
+
+  override def equals(that: Any): Boolean =
+    that match {
+      case that: GridExtent[_] =>
+        that.canEqual(this) &&
+        that.extent == this.extent &&
+        that.cellSize == this.cellSize &&
+        that.cols == this.cols &&
+        that.rows == this.rows
+      case _ => false
   }
 
   override def hashCode(): Int =
@@ -351,14 +355,14 @@ class GridExtent[@specialized(Int, Long) N: Integral](
 object GridExtent {
   final val epsilon = 0.0000001
 
-  def apply(extent: Extent, cellSize: CellSize): GridExtent[Long] =
-    new GridExtent[Long](extent, cellSize)
+  def apply[N: Integral](extent: Extent, cellSize: CellSize): GridExtent[N] = {
+    new GridExtent[N](extent, cellSize)
+  }
 
-
-  def apply[N: Integral](grid: Grid[N], extent: Extent): GridExtent[N] = {
-    val cw = extent.width / grid.cols.toDouble
-    val ch = extent.height / grid.rows.toDouble
-    new GridExtent[N](extent, cw, ch, grid.cols, grid.rows)
+  def apply[N: Integral](extent: Extent, cols: N, rows: N): GridExtent[N] = {
+    val cw = extent.width / cols.toDouble
+    val ch = extent.height / rows.toDouble
+    new GridExtent[N](extent, cw, ch, cols, rows)
   }
 
   def apply[N: Integral](extent: Extent, grid: Grid[N]): GridExtent[N] = {
