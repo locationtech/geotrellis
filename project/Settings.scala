@@ -430,7 +430,7 @@ object Settings {
     mimaPreviousArtifacts := Set(
       "org.locationtech.geotrellis" %% "geotrellis-spark" % Version.previousVersion
     ),
-    testOptions in Test += Tests.Argument("-oDF"),
+    testOptions in Test += Tests.Argument("-oD"),
     initialCommands in console :=
       """
       import geotrellis.raster._
