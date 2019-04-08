@@ -38,7 +38,7 @@ class RDDTimeSeriesMethodsSpec extends FunSpec
     val tile3 = IntConstantNoDataArrayTile(Array.fill[Int](25)(3), 5, 5)
     val tile4 = IntConstantNoDataArrayTile(Array.fill[Int](25)(4), 5, 5)
     val extent = Extent(0, 0, 10, 5)
-    val gridExtent = GridExtent(extent, 1, 1) // 10×5 pixels
+    val gridExtent = GridExtent[Long](extent, CellSize(1, 1)) // 10×5 pixels
     val layoutDefinition = LayoutDefinition(gridExtent, 10, 5)
     val bounds = Bounds(SpaceTimeKey(0, 0, 0), SpaceTimeKey(1, 0, 1))
     val tileLayerMetadata = TileLayerMetadata(

@@ -27,10 +27,19 @@ class LayoutDefinitionSpec extends FunSpec with Matchers {
       val e = Extent(-31.4569758,  27.6350020, 40.2053192,  80.7984255)
       val cs = CellSize(0.08332825, 0.08332825)
       val tileSize = 256
-      val ld = LayoutDefinition(GridExtent(e, cs), tileSize, tileSize)
-      val ld2 = LayoutDefinition(GridExtent(ld.extent, cs), ld.tileCols, ld.tileRows)
+      val ld = LayoutDefinition(GridExtent[Long](e, cs), tileSize, tileSize)
+      val ld2 = LayoutDefinition(GridExtent[Long](ld.extent, cs), ld.tileCols, ld.tileRows)
 
       ld2.extent should be (ld.extent)
+    }
+    val grid = GridExtent[Long](Extent(-180, -90, 180, 90), CellSize(0.001, 0.001))
+    val layout = LayoutDefinition(grid, 300, 300)
+
+    it("not equal its GridExtent") {
+      layout.cellSize shouldBe grid.cellSize
+      (layout.cols) shouldBe grid.cols
+      (layout.rows) shouldBe grid.rows
+      layout should not equal (grid)
     }
   }
 }

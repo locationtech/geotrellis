@@ -38,7 +38,7 @@ class RegridSpec extends FunSpec with TestEnvironment with RasterMatchers {
       }
     val rdd = sc.parallelize(tiles)
     val ex = Extent(0,0,12.8,9.6)
-    val ld = LayoutDefinition(GridExtent(ex, 0.1, 0.1), 32, 32)
+    val ld = LayoutDefinition(GridExtent[Long](ex, CellSize(0.1, 0.1)), 32, 32)
     val md = TileLayerMetadata[SpatialKey](IntConstantNoDataCellType,
                                            ld,
                                            ex,
@@ -57,7 +57,7 @@ class RegridSpec extends FunSpec with TestEnvironment with RasterMatchers {
       }
     val rdd = sc.parallelize(tiles)
     val ex = Extent(0,0,12.8,9.6)
-    val ld = LayoutDefinition(GridExtent(ex, 0.1, 0.1), 32, 32)
+    val ld = LayoutDefinition(GridExtent[Long](ex, CellSize(0.1, 0.1)), 32, 32)
     val md = TileLayerMetadata[SpaceTimeKey](IntConstantNoDataCellType,
                                              ld,
                                              ex,

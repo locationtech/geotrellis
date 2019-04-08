@@ -19,7 +19,7 @@ package geotrellis.raster
 import geotrellis.vector.{Extent, Point}
 
 import scala.math.{min, max, ceil}
-import spire.math.{Integral, NumberTag}
+import spire.math.{Integral}
 import spire.implicits._
 
 /**
@@ -36,20 +36,19 @@ class GridExtent[@specialized(Int, Long) N: Integral](
 ) extends Grid[N] with Serializable {
   if (cols <= 0) throw GeoAttrsError(s"invalid cols: $cols")
   if (rows <= 0) throw GeoAttrsError(s"invalid rows: $rows")
-  //if (cols*rows <= 0) throw GeoAttrsError(s"invalid size: ${rows*cols} cols: $cols rows: $rows")
+
   require(
     cols == Integral[N].fromDouble(math.round(extent.width / cellwidth)) &&
     rows == Integral[N].fromDouble(math.round(extent.height / cellheight)),
     s"$extent at $cellSize does not match $dimensions")
-
 
   def this(extent: Extent, cols: N, rows: N) =
     this(extent, (extent.width / cols.toDouble), (extent.height / rows.toDouble), cols, rows)
 
   def this(extent: Extent, cellSize: CellSize) =
     this(extent, cellSize.width, cellSize.height,
-      cols = integralFromLong(math.round(extent.width / cellSize.width).toLong),
-      rows = integralFromLong(math.round(extent.height / cellSize.height).toLong))
+      cols = Integral[N].fromDouble(math.round(extent.width / cellSize.width)),
+      rows = Integral[N].fromDouble(math.round(extent.height / cellSize.height)))
 
   def cellSize = CellSize(cellwidth, cellheight)
 
@@ -80,10 +79,10 @@ class GridExtent[@specialized(Int, Long) N: Integral](
   final def mapYToGridDouble(y: Double): Double = (extent.ymax - y ) / cellheight
 
   /** Convert map coordinate x to grid coordinate column. */
-  final def mapXToGrid(x: Double): N = integralFromLong[N](math.floor(mapXToGridDouble(x)).toLong)
+  final def mapXToGrid(x: Double): N = Integral[N].fromDouble(math.floor(mapXToGridDouble(x)))
 
   /** Convert map coordinate y to grid coordinate row. */
-  final def mapYToGrid(y: Double): N = integralFromLong[N](math.floor(mapYToGridDouble(y)).toLong)
+  final def mapYToGrid(y: Double): N = Integral[N].fromDouble(math.floor(mapYToGridDouble(y)))
 
   /** Convert map coordinates (x, y) to grid coordinates (col, row). */
   final def mapToGrid(x: Double, y: Double): (N, N) = {
@@ -169,7 +168,7 @@ class GridExtent[@specialized(Int, Long) N: Integral](
     // what is to the West and\or North of the point. However if the border point
     // is not directly on a grid division, include the whole row and/or column that
     // contains the point.
-    val colMax: N = integralFromLong[N]{
+    val colMax: N = Integral[N].fromLong{
       val colMaxDouble = mapXToGridDouble(subExtent.xmax)
 
       if (math.abs(colMaxDouble - math.floor(colMaxDouble)) < GridExtent.epsilon)
@@ -178,7 +177,7 @@ class GridExtent[@specialized(Int, Long) N: Integral](
         colMaxDouble.toLong
     }
 
-    val rowMax: N = integralFromLong[N]{
+    val rowMax: N = Integral[N].fromLong{
       val rowMaxDouble = mapYToGridDouble(subExtent.ymin)
 
       if (math.abs(rowMaxDouble - math.floor(rowMaxDouble)) < GridExtent.epsilon)
@@ -324,16 +323,21 @@ class GridExtent[@specialized(Int, Long) N: Integral](
       ymax = extent.ymax)
 
     new GridExtent[N](resampledExtent, cellwidth, cellheight,
-      cols = integralFromLong[N](totalCols),
-      rows = integralFromLong[N](totalRows))
+      cols = Integral[N].fromLong(totalCols),
+      rows = Integral[N].fromLong(totalRows))
   }
 
-  override def equals(o: Any): Boolean = o match {
-    case other: GridExtent[_] =>
-      // TODO: check if cols/rows are same type
-      other.extent == extent && other.cellheight == cellheight && other.cellwidth == cellwidth
-    case _ =>
-      false
+  def canEqual(a: Any) = a.isInstanceOf[GridExtent[_]]
+
+  override def equals(that: Any): Boolean =
+    that match {
+      case that: GridExtent[_] =>
+        that.canEqual(this) &&
+        that.extent == this.extent &&
+        that.cellSize == this.cellSize &&
+        that.cols == this.cols &&
+        that.rows == this.rows
+      case _ => false
   }
 
   override def hashCode(): Int =
@@ -342,23 +346,23 @@ class GridExtent[@specialized(Int, Long) N: Integral](
   def toGridType[M: Integral]: GridExtent[M] = {
     new GridExtent[M](extent, cellwidth, cellheight, Integral[N].toType[M](cols), Integral[N].toType[M](rows))
   }
+
+  override def toString: String =
+    s"""GridExtent($extent,$cellSize,${cols}x${rows})"""
 }
 
 
 object GridExtent {
   final val epsilon = 0.0000001
 
-  def apply(extent: Extent, cellSize: CellSize): GridExtent[Long] =
-    new GridExtent[Long](extent, cellSize)
+  def apply[N: Integral](extent: Extent, cellSize: CellSize): GridExtent[N] = {
+    new GridExtent[N](extent, cellSize)
+  }
 
-  def apply(extent: Extent, cellwidth: Double, cellheight: Double): GridExtent[Long] =
-    new GridExtent[Long](extent, CellSize(cellwidth, cellheight))
-
-
-  def apply[N: Integral](grid: Grid[N], extent: Extent): GridExtent[N] = {
-    val cw = extent.width / grid.cols.toDouble
-    val ch = extent.height / grid.rows.toDouble
-    new GridExtent[N](extent, cw, ch, grid.cols, grid.rows)
+  def apply[N: Integral](extent: Extent, cols: N, rows: N): GridExtent[N] = {
+    val cw = extent.width / cols.toDouble
+    val ch = extent.height / rows.toDouble
+    new GridExtent[N](extent, cw, ch, cols, rows)
   }
 
   def apply[N: Integral](extent: Extent, grid: Grid[N]): GridExtent[N] = {

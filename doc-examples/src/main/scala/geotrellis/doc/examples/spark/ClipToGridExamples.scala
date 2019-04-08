@@ -100,7 +100,7 @@ object ClipToGridExamples {
           (extent1.combine(extent2), height1 + height2, width1 + width2, count1 + count2)
         }
 
-    val gridExtent = GridExtent(extent, totalHeight / totalCount, totalWidth / totalCount)
+    val gridExtent = GridExtent[Long](extent, CellSize(totalHeight / totalCount, totalWidth / totalCount))
 
     // We then use this for to construct a LayoutDefinition, that represents "tiles"
     // that are 1x1.

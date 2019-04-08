@@ -42,7 +42,7 @@ class IterativeViewshedSpec extends FunSpec
       val rdd = {
         val tile = IntArrayTile(Array.fill[Int](25)(1), 5, 5)
         val extent = Extent(0, 0, 15, 15)
-        val gridExtent = GridExtent(extent, 1, 1) // 15×15 pixels
+        val gridExtent = GridExtent[Long](extent, CellSize(1, 1)) // 15×15 pixels
         val layoutDefinition = LayoutDefinition(gridExtent, 5)
         val bounds = Bounds(SpatialKey(0, 0), SpatialKey(2, 2))
         val tileLayerMetadata = TileLayerMetadata(IntCellType, layoutDefinition, extent, LatLng, bounds)
@@ -66,7 +66,7 @@ class IterativeViewshedSpec extends FunSpec
       val rdd = {
         val tile = IntArrayTile(Array.fill[Int](25)(1), 5, 5); tile.set(2, 2, 42)
         val extent = Extent(0, 0, 15, 15)
-        val gridExtent = GridExtent(extent, 1, 1) // 15×15 pixels
+        val gridExtent = GridExtent[Long](extent, CellSize(1, 1)) // 15×15 pixels
         val layoutDefinition = LayoutDefinition(gridExtent, 5)
         val bounds = Bounds(SpatialKey(0, 0), SpatialKey(2, 2))
         val tileLayerMetadata = TileLayerMetadata(IntCellType, layoutDefinition, extent, LatLng, bounds)
@@ -91,7 +91,7 @@ class IterativeViewshedSpec extends FunSpec
         val tile = IntArrayTile(Array.fill[Int](25)(1), 5, 5)
         val specialTile = IntArrayTile(Array.fill[Int](25)(1), 5, 5); specialTile.set(2,0,3) ; specialTile.set(2,4,107)
         val extent = Extent(0, 0, 15, 15)
-        val gridExtent = GridExtent(extent, 1, 1) // 15×15 pixels
+        val gridExtent = GridExtent[Long](extent, CellSize(1, 1)) // 15×15 pixels
         val layoutDefinition = LayoutDefinition(gridExtent, 5)
         val bounds = Bounds(SpatialKey(0, 0), SpatialKey(2, 2))
         val tileLayerMetadata = TileLayerMetadata(IntCellType, layoutDefinition, extent, LatLng, bounds)
@@ -125,7 +125,7 @@ class IterativeViewshedSpec extends FunSpec
       val rdd = {
         val tile = IntArrayTile(Array.fill[Int](25)(1), 5, 5)
         val extent = Extent(0, 0, 15, 15)
-        val gridExtent = GridExtent(extent, 1, 1) // 15×15 pixels
+        val gridExtent = GridExtent[Long](extent, CellSize(1, 1)) // 15×15 pixels
         val layoutDefinition = LayoutDefinition(gridExtent, 5)
         val bounds = Bounds(SpatialKey(0, 0), SpatialKey(2, 2))
         val tileLayerMetadata = TileLayerMetadata(IntCellType, layoutDefinition, extent, LatLng, bounds)
@@ -159,7 +159,7 @@ class IterativeViewshedSpec extends FunSpec
         )
         val tile = IntArrayTile(array, 5, 5)
         val extent = Extent(0, 0, 15, 15)
-        val gridExtent = GridExtent(extent, 1, 1) // 15×15 pixels
+        val gridExtent = GridExtent[Long](extent, CellSize(1, 1)) // 15×15 pixels
         val layoutDefinition = LayoutDefinition(gridExtent, 5)
         val bounds = Bounds(SpatialKey(0, 0), SpatialKey(2, 2))
         val tileLayerMetadata = TileLayerMetadata(IntCellType, layoutDefinition, extent, LatLng, bounds)

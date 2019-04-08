@@ -47,6 +47,25 @@ case class LayoutDefinition(override val extent: Extent, tileLayout: TileLayout)
 
     LayoutDefinition(subExtent, subLayout)
   }
+
+  override def toString: String =
+    s"""LayoutDefinition($extent,$cellSize,${layoutCols}x${layoutRows} tiles,${cols}x${rows} pixels)"""
+
+  override def canEqual(a: Any) = a.isInstanceOf[LayoutDefinition]
+
+  override def equals(that: Any): Boolean =
+    that match {
+      case that: LayoutDefinition =>
+        that.canEqual(this) &&
+        that.extent == this.extent &&
+        that.tileLayout == this.tileLayout
+      case _ => false
+  }
+
+  override def hashCode: Int =
+    ((31 +
+    (if (extent == null) 0 else extent.hashCode)) * 31 +
+    (if (tileLayout == null) 0 else tileLayout.hashCode) * 31)
 }
 
 object LayoutDefinition {

@@ -35,7 +35,7 @@ object FloatingLayoutScheme {
 
 class FloatingLayoutScheme(val tileCols: Int, val tileRows: Int) extends LayoutScheme {
   def levelFor(extent: Extent, cellSize: CellSize) =
-    0 -> LayoutDefinition(GridExtent(extent, cellSize), tileCols, tileRows)
+    0 -> LayoutDefinition(GridExtent[Long](extent, cellSize), tileCols, tileRows)
 
   // TODO: Fix type system so that there is no runtime error
   def zoomOut(level: LayoutLevel) =
