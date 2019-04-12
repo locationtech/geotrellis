@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Azavea
+ * Copyright 2019 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,7 @@
 package geotrellis.vectortile
 
 import geotrellis.vector._
-import geotrellis.vectortile.internal.ProtobufGeom
-import geotrellis.vectortile.internal.{vector_tile => vt}
 
-import org.locationtech.jts.geom.LineString
-import java.lang.IllegalArgumentException
 import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
 
@@ -353,7 +349,7 @@ package object internal {
   }
 
   /** Automatically convert mid-level Protobuf Values into a high-level [[Value]]. */
-  private[vectortile] implicit def protoVal(value: vt.Tile.Value): Value = {
+  private[vectortile] implicit def protoVal(value: vector_tile.Tile.Value): Value = {
     if (value.stringValue.isDefined) {
       VString(value.stringValue.get)
     } else if (value.floatValue.isDefined) {

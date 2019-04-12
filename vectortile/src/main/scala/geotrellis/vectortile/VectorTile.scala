@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Azavea
+ * Copyright 2019 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@ package geotrellis.vectortile
 
 import geotrellis.proj4.{LatLng, WebMercator}
 import geotrellis.vector._
-import geotrellis.vector.io._
-import geotrellis.vectortile.internal.{vector_tile => vt}
+import geotrellis.vectortile.internal._
 import geotrellis.util.annotations.experimental
 
 // --- //
@@ -47,7 +46,7 @@ import geotrellis.util.annotations.experimental
   */
 @experimental case class VectorTile(layers: Map[String, Layer], tileExtent: Extent) {
   /** Encode this VectorTile back into a mid-level Protobuf object. */
-  private def toProtobuf: vt.Tile = vt.Tile(layers = layers.values.map(_.toProtobuf).toSeq)
+  private def toProtobuf: vector_tile.Tile = vector_tile.Tile(layers = layers.values.map(_.toProtobuf).toSeq)
 
   /** Encode this VectorTile back into its original form of Protobuf bytes. */
   def toBytes: Array[Byte] = toProtobuf.toByteArray
@@ -74,7 +73,7 @@ ${layers.values.map(_.pretty).mkString}
 
 @experimental object VectorTile {
   /** Create a VectorTile from a low-level protobuf Tile type. */
-  private def fromPBTile(tile: vt.Tile, tileExtent: Extent): VectorTile = {
+  private def fromPBTile(tile: vector_tile.Tile, tileExtent: Extent): VectorTile = {
 
     val layers: Map[String, Layer] = tile.layers.map({ l =>
       val pbl = LazyLayer(l, tileExtent)
@@ -91,6 +90,6 @@ ${layers.values.map(_.pretty).mkString}
     * @param tileExtent The [[Extent]] of this tile, '''not''' the global extent.
     */
   def fromBytes(bytes: Array[Byte], tileExtent: Extent): VectorTile =
-    fromPBTile(vt.Tile.parseFrom(bytes), tileExtent)
+    fromPBTile(vector_tile.Tile.parseFrom(bytes), tileExtent)
 
 }

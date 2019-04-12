@@ -79,7 +79,7 @@ lazy val commonSettings = Seq(
     "geosolutions" at "http://maven.geo-solutions.it/",
     "osgeo" at "http://download.osgeo.org/webdav/geotools/"
   ),
-  headerLicense := Some(HeaderLicense.ALv2("2018", "Azavea")),
+  headerLicense := Some(HeaderLicense.ALv2("2019", "Azavea")),
   // preserve year of old headers
   headerMappings :=
     Map(FileType.scala -> CommentStyle.cStyleBlockComment.copy(commentCreator = new CommentCreator() {

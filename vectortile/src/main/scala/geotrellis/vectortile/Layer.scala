@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Azavea
+ * Copyright 2019 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,14 @@
 
 package geotrellis.vectortile
 
-import scala.collection.mutable.ListBuffer
-
+import geotrellis.vectortile.internal._
+import geotrellis.util.annotations.experimental
 import geotrellis.proj4.{LatLng, WebMercator}
 import geotrellis.vector._
-import geotrellis.vector.io._
-import geotrellis.vectortile.internal.{vector_tile => vt, _}
-import geotrellis.vectortile.internal.vector_tile.Tile.GeomType.{LINESTRING, POINT, POLYGON}
-import geotrellis.util.annotations.experimental
+
+import vector_tile.Tile.GeomType.{LINESTRING, POINT, POLYGON}
+
+import scala.collection.mutable.ListBuffer
 
 // --- //
 
@@ -78,7 +78,7 @@ import geotrellis.util.annotations.experimental
   }
 
   /** Encode this ProtobufLayer a mid-level Layer ready to be encoded as protobuf bytes. */
-  private[vectortile] def toProtobuf: vt.Tile.Layer = {
+  private[vectortile] def toProtobuf: vector_tile.Tile.Layer = {
     val pgp = implicitly[ProtobufGeom[Point, MultiPoint]]
     val pgl = implicitly[ProtobufGeom[Line, MultiLine]]
     val pgy = implicitly[ProtobufGeom[Polygon, MultiPolygon]]
@@ -109,7 +109,7 @@ import geotrellis.util.annotations.experimental
       multiPolygons.map(f => unfeature(keyMap, valMap, POLYGON, pgy.toCommands(Right(f.geom), tileExtent.northWest, resolution), f.data))
     ).flatten
 
-    vt.Tile.Layer(version, name, features, keys, values.map(_.toProtobuf), Some(tileWidth))
+    vector_tile.Tile.Layer(version, name, features, keys, values.map(_.toProtobuf), Some(tileWidth))
   }
 
   private def totalMeta: (Seq[String], Seq[Value]) = {
@@ -127,16 +127,16 @@ import geotrellis.util.annotations.experimental
   private def unfeature(
     keys: Map[String, Int],
     values: Map[Value, Int],
-    geomType: vt.Tile.GeomType,
+    geomType: vector_tile.Tile.GeomType,
     cmds: Seq[Command],
     data: Map[String, Value]
-  ): vt.Tile.Feature = {
+  ): vector_tile.Tile.Feature = {
     val tags = data.toSeq.foldRight(List.empty[Int]) { case (pair, acc) =>
       /* These `Option.get` _should_ never fail */
       keys.get(pair._1).get :: values.get(pair._2).get :: acc
     }
 
-    vt.Tile.Feature(None, tags, Some(geomType), Command.uncommands(cmds))
+    vector_tile.Tile.Feature(None, tags, Some(geomType), Command.uncommands(cmds))
   }
 
   /** Pretty-print this `Layer`. */
@@ -210,7 +210,7 @@ ${sortedMeta.map({ case (k,v) => s"            ${k}: ${v}"}).mkString("\n")}
   *
   */
 @experimental case class LazyLayer(
-  private val rawLayer: vt.Tile.Layer,
+  private val rawLayer: vector_tile.Tile.Layer,
   tileExtent: Extent
 ) extends Layer {
   /* Expected fields */
@@ -228,9 +228,9 @@ ${sortedMeta.map({ case (k,v) => s"            ${k}: ${v}"}).mkString("\n")}
    * their metadata.
    */
   private def geomStream[G1 <: Geometry, G2 <: MultiGeometry](
-    feats: ListBuffer[vt.Tile.Feature]
+    feats: ListBuffer[vector_tile.Tile.Feature]
   )(implicit protobufGeom: ProtobufGeom[G1, G2]): Stream[(Either[G1, G2], Map[String, Value])] = {
-    def loop(fs: ListBuffer[vt.Tile.Feature]): Stream[(Either[G1, G2], Map[String, Value])] = {
+    def loop(fs: ListBuffer[vector_tile.Tile.Feature]): Stream[(Either[G1, G2], Map[String, Value])] = {
       if (fs.isEmpty) {
         Stream.empty[(Either[G1, G2], Map[String, Value])]
       } else {
@@ -261,7 +261,7 @@ ${sortedMeta.map({ case (k,v) => s"            ${k}: ${v}"}).mkString("\n")}
    * Construct Feature-specific metadata from the key/value lists of
    * the parent layer.
    */
-  private def getMeta(keys: Seq[String], vals: Seq[vt.Tile.Value], tags: Seq[Int]): Map[String, Value] = {
+  private def getMeta(keys: Seq[String], vals: Seq[vector_tile.Tile.Value], tags: Seq[Int]): Map[String, Value] = {
     /* The Seqs passed in here are backed by [[Vector]] on the Protobuf
      * end of things.
      */
@@ -331,11 +331,11 @@ ${sortedMeta.map({ case (k,v) => s"            ${k}: ${v}"}).mkString("\n")}
    * `UNKNOWN` geometry types are ignored.
    */
   private def segregate(
-    features: Seq[vt.Tile.Feature]
-  ): (ListBuffer[vt.Tile.Feature], ListBuffer[vt.Tile.Feature], ListBuffer[vt.Tile.Feature]) = {
-    val points = new ListBuffer[vt.Tile.Feature]
-    val lines = new ListBuffer[vt.Tile.Feature]
-    val polys = new ListBuffer[vt.Tile.Feature]
+    features: Seq[vector_tile.Tile.Feature]
+  ): (ListBuffer[vector_tile.Tile.Feature], ListBuffer[vector_tile.Tile.Feature], ListBuffer[vector_tile.Tile.Feature]) = {
+    val points = new ListBuffer[vector_tile.Tile.Feature]
+    val lines = new ListBuffer[vector_tile.Tile.Feature]
+    val polys = new ListBuffer[vector_tile.Tile.Feature]
 
     features.foreach { f =>
       f.getType match {
