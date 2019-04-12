@@ -147,7 +147,7 @@ object S3Client {
   }
 
   def DEFAULT =
-    AmazonS3Client(new DefaultAWSCredentialsProviderChain(), defaultConfiguration)
+    AmazonS3Client(DefaultAWSCredentialsProviderChain.getInstance(), defaultConfiguration)
 
   def ANONYMOUS =
     AmazonS3Client(new AnonymousAWSCredentials(), defaultConfiguration)
