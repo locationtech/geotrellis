@@ -25,6 +25,8 @@ import spray.json.DefaultJsonProtocol._
 import org.apache.accumulo.core.client.{BatchWriterConfig, Connector}
 import org.apache.accumulo.core.security.Authorizations
 import org.apache.accumulo.core.data._
+import org.apache.accumulo.core.client.IteratorSetting
+import org.apache.accumulo.core.iterators.user.RegExFilter
 import org.apache.hadoop.io.Text
 
 import scala.collection.JavaConverters._
@@ -47,8 +49,7 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
   //create the attribute table if it does not exist
   {
     val ops = connector.tableOperations()
-    if (!ops.exists(attributeTable))
-      ops.create(attributeTable)
+    if (!ops.exists(attributeTable)) ops.create(attributeTable)
   }
 
   val SEP = "__.__"
@@ -62,9 +63,7 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
       layerId.foreach { id => scanner.setRange(new Range(layerIdText(id))) }
       scanner.fetchColumnFamily(new Text(attributeName))
       scanner.iterator.asScala.map(_.getValue)
-    } finally {
-      scanner.close()
-    }
+    } finally scanner.close()
   }
 
   private def delete(layerId: LayerId, attributeName: Option[String]): Unit = {
@@ -83,9 +82,7 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
         case Some(attribute) => clearCache(layerId, attribute)
         case None => clearCache(layerId)
       }
-    } finally {
-      deleter.close()
-    }
+    } finally deleter.close()
   }
 
   def read[T: JsonFormat](layerId: LayerId, attributeName: String): T = {
@@ -130,11 +127,9 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
         val Array(name, zoomStr) = kv.getKey.getRow.toString.split(SEP)
         LayerId(name, zoomStr.toInt)
       }
-      .toSeq
+      .toList
       .distinct
-    } finally {
-      scanner.close()
-    }
+    } finally scanner.close()
   }
 
   def availableAttributes(id: LayerId): Seq[String] = {
@@ -142,8 +137,22 @@ class AccumuloAttributeStore(val connector: Connector, val attributeTable: Strin
     try {
       scanner.setRange(new Range(layerIdText(id)))
       scanner.iterator.asScala.map(_.getKey.getColumnFamily.toString).toVector
-    } finally {
-      scanner.close
-    }
+    } finally scanner.close
+  }
+
+  override def availableZoomLevels(layerName: String): Seq[Int] = {
+    val scanner = connector.createScanner(attributeTable, new Authorizations())
+    try {
+      // 15 is a default priority from docs https://accumulo.apache.org/1.8/accumulo_user_manual.html#_setting_iterators_via_the_shell
+      val iter = new IteratorSetting(15, "AttributeStoreLayerNameFilter", classOf[RegExFilter])
+      RegExFilter.setRegexs(iter, s"${layerName}${SEP}.*", null, null, null, false)
+      scanner.addScanIterator(iter)
+      scanner.iterator.asScala.map { kv =>
+        val Array(_, zoomStr) = kv.getKey.getRow.toString.split(SEP)
+        zoomStr.toInt
+      }
+      .toList
+      .distinct
+    } finally scanner.close()
   }
 }
