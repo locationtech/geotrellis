@@ -22,7 +22,9 @@ import geotrellis.spark.io.hbase.conf.HBaseConfig
 
 import org.apache.hadoop.hbase._
 import org.apache.hadoop.hbase.client._
+import org.apache.hadoop.hbase.filter.{FilterList, RegexStringComparator, RowFilter}
 import org.apache.hadoop.hbase.util.Bytes
+
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
@@ -133,12 +135,27 @@ class HBaseAttributeStore(val instance: HBaseInstance, val attributeTable: Strin
         val List(name, zoomStr) = Bytes.toString(kv.getRow).split(SEP).toList
         LayerId(name, zoomStr.toInt)
       }
-        .toList
-        .distinct
+      .toList
+      .distinct
     } finally scanner.close()
   }
 
   def availableAttributes(layerId: LayerId): Seq[String] = instance.withTableConnectionDo(attributeTableName) {
     _.getDescriptor.getColumnFamilyNames.asScala.map(Bytes.toString).toSeq
+  }
+
+  override def availableZoomLevels(layerName: String): Seq[Int] = instance.withTableConnectionDo(attributeTableName) { table =>
+    val scan = new Scan()
+    val filter = new FilterList(new RowFilter(CompareOperator.EQUAL, new RegexStringComparator(s"${layerName}${SEP}.*")))
+    scan.setFilter(filter)
+    val scanner = table.getScanner(scan)
+    try {
+      scanner.iterator().asScala.map { kv: Result =>
+        val List(_, zoomStr) = Bytes.toString(kv.getRow).split(SEP).toList
+        zoomStr.toInt
+      }
+      .toList
+      .distinct
+    } finally scanner.close()
   }
 }
