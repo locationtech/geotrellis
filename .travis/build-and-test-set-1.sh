@@ -6,7 +6,6 @@
   "project shapefile" test \
   "project doc-examples" compile \
   "project vector" test \
-  "project slick" test \
   "project vectortile" test \
   "project geowave" compile test:compile \
   "project hbase" test \
