@@ -16,9 +16,10 @@
 
 package geotrellis.vectortile
 
+import geotrellis.vectortile.internal.PBTile
+
 import geotrellis.proj4.{LatLng, WebMercator}
 import geotrellis.vector._
-import geotrellis.vectortile.internal._
 import geotrellis.util.annotations.experimental
 
 // --- //
@@ -46,7 +47,7 @@ import geotrellis.util.annotations.experimental
   */
 @experimental case class VectorTile(layers: Map[String, Layer], tileExtent: Extent) {
   /** Encode this VectorTile back into a mid-level Protobuf object. */
-  private def toProtobuf: vector_tile.Tile = vector_tile.Tile(layers = layers.values.map(_.toProtobuf).toSeq)
+  private def toProtobuf: PBTile = PBTile(layers = layers.values.map(_.toProtobuf).toSeq)
 
   /** Encode this VectorTile back into its original form of Protobuf bytes. */
   def toBytes: Array[Byte] = toProtobuf.toByteArray
@@ -73,7 +74,7 @@ ${layers.values.map(_.pretty).mkString}
 
 @experimental object VectorTile {
   /** Create a VectorTile from a low-level protobuf Tile type. */
-  private def fromPBTile(tile: vector_tile.Tile, tileExtent: Extent): VectorTile = {
+  private def fromPBTile(tile: PBTile, tileExtent: Extent): VectorTile = {
 
     val layers: Map[String, Layer] = tile.layers.map({ l =>
       val pbl = LazyLayer(l, tileExtent)
@@ -90,6 +91,6 @@ ${layers.values.map(_.pretty).mkString}
     * @param tileExtent The [[Extent]] of this tile, '''not''' the global extent.
     */
   def fromBytes(bytes: Array[Byte], tileExtent: Extent): VectorTile =
-    fromPBTile(vector_tile.Tile.parseFrom(bytes), tileExtent)
+    fromPBTile(PBTile.parseFrom(bytes), tileExtent)
 
 }

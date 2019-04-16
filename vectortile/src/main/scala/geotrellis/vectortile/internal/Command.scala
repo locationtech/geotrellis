@@ -72,33 +72,33 @@ private[vectortile] object Command {
     @tailrec def work(cmds: Seq[Int], curr: ListBuffer[Command]): ListBuffer[Command] = cmds match {
       case Nil => curr
       case ns => parseCmd(ns.head) match {
-        case (1,count) => {
-          val (ps,rest) = ns.tail.splitAt(count * 2)
-          val res = new Array[(Int,Int)](count)
+        case (1, count) => {
+          val (ps, rest) = ns.tail.splitAt(count * 2)
+          val res = new Array[(Int, Int)](count)
           var i = 0
 
-          while(i < count) {
-            res.update(i, (unzig(ps(i*2)), unzig(ps(i*2+1))))
+          while (i < count) {
+            res.update(i, (unzig(ps(i * 2)), unzig(ps(i * 2 + 1))))
 
             i += 1
           }
 
           work(rest, curr += MoveTo(res))
         }
-        case (2,count) => {
-          val (ps,rest) = ns.tail.splitAt(count * 2)
-          val res = new Array[(Int,Int)](count)
+        case (2, count) => {
+          val (ps, rest) = ns.tail.splitAt(count * 2)
+          val res = new Array[(Int, Int)](count)
           var i = 0
 
-          while(i < count) {
-            res.update(i, (unzig(ps(i*2)), unzig(ps(i*2+1))))
+          while (i < count) {
+            res.update(i, (unzig(ps(i * 2)), unzig(ps(i * 2 + 1))))
 
             i += 1
           }
 
           work(rest, curr += LineTo(res))
         }
-        case (7,_) => work(ns.tail, curr += ClosePath)
+        case (7, _) => work(ns.tail, curr += ClosePath)
       }
     }
 

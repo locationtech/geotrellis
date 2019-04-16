@@ -17,11 +17,12 @@
 package geotrellis.vectortile
 
 import geotrellis.vectortile.internal._
+import geotrellis.vectortile.internal.PBTile._
+import geotrellis.vectortile.internal.PBTile.PBGeomType.{LINESTRING, POINT, POLYGON}
+
 import geotrellis.util.annotations.experimental
 import geotrellis.proj4.{LatLng, WebMercator}
 import geotrellis.vector._
-
-import vector_tile.Tile.GeomType.{LINESTRING, POINT, POLYGON}
 
 import scala.collection.mutable.ListBuffer
 
@@ -78,7 +79,7 @@ import scala.collection.mutable.ListBuffer
   }
 
   /** Encode this ProtobufLayer a mid-level Layer ready to be encoded as protobuf bytes. */
-  private[vectortile] def toProtobuf: vector_tile.Tile.Layer = {
+  private[vectortile] def toProtobuf: PBLayer = {
     val pgp = implicitly[ProtobufGeom[Point, MultiPoint]]
     val pgl = implicitly[ProtobufGeom[Line, MultiLine]]
     val pgy = implicitly[ProtobufGeom[Polygon, MultiPolygon]]
@@ -109,7 +110,7 @@ import scala.collection.mutable.ListBuffer
       multiPolygons.map(f => unfeature(keyMap, valMap, POLYGON, pgy.toCommands(Right(f.geom), tileExtent.northWest, resolution), f.data))
     ).flatten
 
-    vector_tile.Tile.Layer(version, name, features, keys, values.map(_.toProtobuf), Some(tileWidth))
+    PBLayer(version, name, features, keys, values.map(_.toProtobuf), Some(tileWidth))
   }
 
   private def totalMeta: (Seq[String], Seq[Value]) = {
@@ -117,9 +118,9 @@ import scala.collection.mutable.ListBuffer
     val fs: Seq[Feature[Geometry, Map[String, Value]]] = features
 
     /* Must be unique */
-    val keys: Seq[String] = fs.map(_.data.keys).flatten.distinct
+    val keys: Seq[String] = fs.flatMap(_.data.keys).distinct
 
-    val values: Seq[Value] = fs.map(_.data.values).flatten.distinct
+    val values: Seq[Value] = fs.flatMap(_.data.values).distinct
 
     (keys, values)
   }
@@ -127,16 +128,16 @@ import scala.collection.mutable.ListBuffer
   private def unfeature(
     keys: Map[String, Int],
     values: Map[Value, Int],
-    geomType: vector_tile.Tile.GeomType,
+    geomType: PBGeomType,
     cmds: Seq[Command],
     data: Map[String, Value]
-  ): vector_tile.Tile.Feature = {
+  ): PBFeature = {
     val tags = data.toSeq.foldRight(List.empty[Int]) { case (pair, acc) =>
-      /* These `Option.get` _should_ never fail */
-      keys.get(pair._1).get :: values.get(pair._2).get :: acc
+      /* These `Map.apply` _should_ never fail */
+      keys(pair._1) :: values(pair._2) :: acc
     }
 
-    vector_tile.Tile.Feature(None, tags, Some(geomType), Command.uncommands(cmds))
+    PBFeature(None, tags, Some(geomType), Command.uncommands(cmds))
   }
 
   /** Pretty-print this `Layer`. */
@@ -210,7 +211,7 @@ ${sortedMeta.map({ case (k,v) => s"            ${k}: ${v}"}).mkString("\n")}
   *
   */
 @experimental case class LazyLayer(
-  private val rawLayer: vector_tile.Tile.Layer,
+  private val rawLayer: PBLayer,
   tileExtent: Extent
 ) extends Layer {
   /* Expected fields */
@@ -228,9 +229,9 @@ ${sortedMeta.map({ case (k,v) => s"            ${k}: ${v}"}).mkString("\n")}
    * their metadata.
    */
   private def geomStream[G1 <: Geometry, G2 <: MultiGeometry](
-    feats: ListBuffer[vector_tile.Tile.Feature]
+    feats: ListBuffer[PBFeature]
   )(implicit protobufGeom: ProtobufGeom[G1, G2]): Stream[(Either[G1, G2], Map[String, Value])] = {
-    def loop(fs: ListBuffer[vector_tile.Tile.Feature]): Stream[(Either[G1, G2], Map[String, Value])] = {
+    def loop(fs: ListBuffer[PBFeature]): Stream[(Either[G1, G2], Map[String, Value])] = {
       if (fs.isEmpty) {
         Stream.empty[(Either[G1, G2], Map[String, Value])]
       } else {
@@ -261,7 +262,7 @@ ${sortedMeta.map({ case (k,v) => s"            ${k}: ${v}"}).mkString("\n")}
    * Construct Feature-specific metadata from the key/value lists of
    * the parent layer.
    */
-  private def getMeta(keys: Seq[String], vals: Seq[vector_tile.Tile.Value], tags: Seq[Int]): Map[String, Value] = {
+  private def getMeta(keys: Seq[String], vals: Seq[PBValue], tags: Seq[Int]): Map[String, Value] = {
     /* The Seqs passed in here are backed by [[Vector]] on the Protobuf
      * end of things.
      */
@@ -331,11 +332,11 @@ ${sortedMeta.map({ case (k,v) => s"            ${k}: ${v}"}).mkString("\n")}
    * `UNKNOWN` geometry types are ignored.
    */
   private def segregate(
-    features: Seq[vector_tile.Tile.Feature]
-  ): (ListBuffer[vector_tile.Tile.Feature], ListBuffer[vector_tile.Tile.Feature], ListBuffer[vector_tile.Tile.Feature]) = {
-    val points = new ListBuffer[vector_tile.Tile.Feature]
-    val lines = new ListBuffer[vector_tile.Tile.Feature]
-    val polys = new ListBuffer[vector_tile.Tile.Feature]
+    features: Seq[PBFeature]
+  ): (ListBuffer[PBFeature], ListBuffer[PBFeature], ListBuffer[PBFeature]) = {
+    val points = new ListBuffer[PBFeature]
+    val lines = new ListBuffer[PBFeature]
+    val polys = new ListBuffer[PBFeature]
 
     features.foreach { f =>
       f.getType match {

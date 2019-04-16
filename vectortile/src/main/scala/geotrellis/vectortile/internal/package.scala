@@ -16,6 +16,7 @@
 
 package geotrellis.vectortile
 
+import geotrellis.vectortile.internal.PBTile.PBValue
 import geotrellis.vector._
 
 import scala.annotation.tailrec
@@ -44,7 +45,6 @@ package object internal {
   private def expand(diffs: Array[(Int, Int)], curs: (Int, Int) = (0, 0)): ListBuffer[(Int, Int)] = {
     var cursor: (Int, Int) = curs
     val points = new ListBuffer[(Int, Int)]
-    var i = 0
 
     diffs.foreach({
       case (dx, dy) =>
@@ -349,7 +349,7 @@ package object internal {
   }
 
   /** Automatically convert mid-level Protobuf Values into a high-level [[Value]]. */
-  private[vectortile] implicit def protoVal(value: vector_tile.Tile.Value): Value = {
+  private[vectortile] implicit def protoVal(value: PBValue): Value = {
     if (value.stringValue.isDefined) {
       VString(value.stringValue.get)
     } else if (value.floatValue.isDefined) {
