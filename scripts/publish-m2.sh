@@ -14,7 +14,6 @@
       "project s3-testkit" +publishM2 \
       "project shapefile" +publishM2 \
       "project spark-pipeline" publishM2 \
-      "project slick" +publishM2 \
       "project spark" +publishM2 \
       "project spark-etl" +publishM2 \
       "project spark-testkit" +publishM2 \

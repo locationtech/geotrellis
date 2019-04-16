@@ -153,18 +153,6 @@ geotrellis-shapefile
 -  Read geometry and feature data from shapefiles into GeoTrellis types
    using GeoTools.
 
-geotrellis-slick
-----------------
-
-Adds PostGis support for `Slick <https://github.com/slick/slick>`__ use
-with GeoTrellis.
-
-*Provides:* ``geotrellis.slick.*``
-
--  Save and load geometry and feature data to and from PostGIS using the
-   slick scala database library.
--  Perform PostGIS ``ST_`` operations in PostGIS through scala.
-
 geotrellis-spark
 ----------------
 

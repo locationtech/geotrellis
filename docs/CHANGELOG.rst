@@ -5,12 +5,16 @@ Changelog
 -----
 *2019 Jan 11*
 
-API Changes & Projects strucutre changes
+API Changes & Project structure changes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - ``geotrellis.proj4j``
 
   - **Change:** Extract Proj4J to org.locationtech.proj4j (`#2846 <https://github.com/locationtech/geotrellis/pull/2846>`_).
+
+- ``geotrellis.slick``
+
+  - **Remove:**  ``geotrellis.slick`` has been removed. Slick support will now reside in `geotrellis-contrib`
 
 Fixes & Updates
 ^^^^^^^^^^^^^^^

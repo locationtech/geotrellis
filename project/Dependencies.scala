@@ -53,8 +53,6 @@ object Dependencies {
 
   val avro                = "org.apache.avro"             % "avro"                     % "1.7.7"
 
-  val slickPG             = "com.github.tminglei"        %% "slick-pg"                 % "0.16.3"
-
   val parserCombinators   = "org.scala-lang.modules"     %% "scala-parser-combinators" % "1.1.1"
 
   val jsonSchemaValidator = "com.networknt"               % "json-schema-validator"    % "0.1.23"
