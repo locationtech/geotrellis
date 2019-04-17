@@ -48,7 +48,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 import org.geotools.coverage.grid.GridCoverage2D
 import org.geotools.coverage.processing.CoverageProcessor
-import org.geotools.factory.{ GeoTools, Hints }
+import org.geotools.util.factory.{ GeoTools, Hints }
 import org.opengis.coverage.grid.GridCoverage
 import org.opengis.parameter.ParameterValueGroup
 

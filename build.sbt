@@ -57,7 +57,7 @@ lazy val commonSettings = Seq(
     .filter(_.asFile.canRead)
     .map(Credentials(_)),
 
-  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.8" cross CrossVersion.binary),
+  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.10" cross CrossVersion.binary),
   addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.1" cross CrossVersion.full),
 
   pomExtra := (
@@ -95,7 +95,7 @@ lazy val commonSettings = Seq(
           .map(year => newText.replace("2018", year))
           .getOrElse(newText)
       } } )),
-  scapegoatVersion in ThisBuild := "1.3.3",
+  scapegoatVersion in ThisBuild := "1.3.8",
   updateOptions := updateOptions.value.withGigahorse(false)
 )
 
