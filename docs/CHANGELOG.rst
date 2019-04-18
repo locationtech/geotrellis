@@ -1,6 +1,18 @@
 Changelog
 =========
 
+2.3.0
+-----
+*2019 Apr 18*
+
+Fixes & Updates
+^^^^^^^^^^^^^^^
+
+- Fix Accumulo and HBase AttributeStore performance (`#2899 <https://github.com/locationtech/geotrellis/pull/2899>`_).
+- Fix Cassandra AttributeStore performance (`#2901 <https://github.com/locationtech/geotrellis/pull/2901>`_).
+- Fix createAlignedGridExtent function actually to align to GridExtents (`#2878 <https://github.com/locationtech/geotrellis/pull/2878>`_).
+- Fix to rasterRegionReproject function (`#2880 <https://github.com/locationtech/geotrellis/pull/2880>`_).
+
 2.2.0
 -----
 *2019 Jan 11*
