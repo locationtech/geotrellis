@@ -8,6 +8,5 @@
   "project vectortile" test \
   "project hbase" test \
   "project cassandra" test || { exit 1; }
-  # "project slick" test
   # "project geomesa" test
   # "project geowave" compile test:compile

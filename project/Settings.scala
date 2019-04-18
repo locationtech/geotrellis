@@ -399,14 +399,6 @@ object Settings {
     fork in Test := false
   )
 
-  lazy val slick = Seq(
-    name := "geotrellis-slick",
-    libraryDependencies := Seq(
-      slickPG,
-      scalatest % Test
-    )
-  )
-
   lazy val spark = Seq(
     name := "geotrellis-spark",
     libraryDependencies ++= Seq(

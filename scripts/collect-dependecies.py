@@ -2,7 +2,6 @@ import os, re
 import subprocess
 
 projects = ["spark-etl",
-            "slick",
             "shapefile",
             "raster-testkit",
             "vector-testkit",

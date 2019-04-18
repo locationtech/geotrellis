@@ -11,6 +11,7 @@ project/plugins/target
 project/target
 target
 .ensime
+.metals/
 \#*#
 *~
 .#*
@@ -50,3 +51,4 @@ site/
 derby.log
 metastore_db/
 *.log
+

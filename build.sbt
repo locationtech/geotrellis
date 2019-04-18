@@ -115,7 +115,6 @@ lazy val root = Project("geotrellis", file(".")).
     s3,
     `s3-testkit`,
     shapefile,
-    slick,
     spark,
     `spark-etl`,
     `spark-pipeline`,
@@ -180,12 +179,6 @@ lazy val `raster-testkit` = project
   .dependsOn(raster % Provided, vector % Provided)
   .settings(commonSettings)
   .settings(Settings.`raster-testkit`)
-
-lazy val slick = project
-  .dependsOn(vector)
-  .settings(commonSettings)
-  .settings(Settings.slick)
-  .settings(crossScalaVersions := Seq(scalaVersion.value))
 
 lazy val spark = project
   .dependsOn(util, raster, `raster-testkit` % Test, `vector-testkit` % Test)
