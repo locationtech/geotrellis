@@ -75,7 +75,7 @@ class JsonFeatureCollectionMap(features: List[Json] = Nil) {
       case Some(bbox) =>
         Json.obj(
           "type" -> "FeatureCollection".asJson,
-          "bbox" -> extentListEncoder.write(bbox),
+          "bbox" -> Extent.listEncoder(bbox),
           "features" -> buffer.toVector.asJson
         )
       case _ =>

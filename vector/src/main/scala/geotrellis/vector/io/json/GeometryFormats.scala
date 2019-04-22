@@ -125,10 +125,6 @@ trait GeometryFormats {
       )
     }
 
-  object extentListEncoder {
-    def write(extent: Extent) =List(extent.xmin, extent.ymin, extent.xmax, extent.ymax).asJson
-  }
-
   implicit lazy val multiPointDecoder: Decoder[MultiPoint] =
     Decoder.decodeJson.emap { json: Json =>
       val c = json.hcursor

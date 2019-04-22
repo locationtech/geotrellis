@@ -61,18 +61,6 @@ trait Implicits extends LazyLogging {
       Either.catchNonFatal(Try(CRS.fromName(str)) getOrElse CRS.fromString(str)).leftMap(_ => "CRS")
     }
 
-  implicit val extentEncoder: Encoder[Extent] =
-    new Encoder[Extent] {
-      final def apply(extent: Extent): Json =
-        List(extent.xmin, extent.ymin, extent.xmax, extent.ymax).asJson
-    }
-  implicit val extentDecoder: Decoder[Extent] =
-    Decoder[Json] emap { js =>
-      (js.as[List[Double]]: Either[DecodingFailure, List[Double]]).map { case List(xmin, ymin, xmax, ymax) =>
-        Extent(xmin, ymin, xmax, ymax)
-      }.leftMap(_ => "Extent")
-    }
-
   implicit val tileLayoutEncoder: Encoder[TileLayout] = deriveEncoder
   implicit val tileLayoutDecoder: Decoder[TileLayout] = deriveDecoder
 

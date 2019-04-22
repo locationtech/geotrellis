@@ -17,12 +17,10 @@
 package geotrellis.raster.io.json
 
 import _root_.io.circe._
-import _root_.io.circe.syntax._
 import _root_.io.circe.generic.semiauto._
 import cats.syntax.either._
 
 import geotrellis.raster._
-import geotrellis.vector._
 
 object Implicits extends Implicits
 
@@ -33,18 +31,6 @@ trait Implicits extends HistogramJsonFormats {
   implicit val cellTypeDecoder: Decoder[CellType] =
     Decoder.decodeString.emap { str =>
       Either.catchNonFatal(CellType.fromName(str)).leftMap(_ => "Expected CellType")
-    }
-
-  implicit val extentEncoder: Encoder[Extent] =
-    new Encoder[Extent] {
-      def apply(extent: Extent): Json =
-        List(extent.xmin, extent.ymin, extent.xmax, extent.ymax).asJson
-    }
-  implicit val extentDecoder: Decoder[Extent] =
-    Decoder[Json] emap { js =>
-      js.as[List[Double]].map { case List(xmin, ymin, xmax, ymax) =>
-        Extent(xmin, ymin, xmax, ymax)
-      }.leftMap(_ => "Expected Extent")
     }
 
   implicit val tileLayoutEncoder: Encoder[TileLayout] = deriveEncoder
