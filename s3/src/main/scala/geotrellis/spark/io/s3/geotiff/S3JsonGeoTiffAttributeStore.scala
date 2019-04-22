@@ -20,8 +20,8 @@ import geotrellis.spark.io.s3.S3Client
 import geotrellis.spark.io.hadoop.geotiff._
 import geotrellis.util.annotations.experimental
 
-import com.amazonaws.services.s3.AmazonS3URI
-import com.amazonaws.services.s3.model.ObjectMetadata
+import software.amazon.awssdk.services.s3.AmazonS3URI
+import software.amazon.awssdk.services.s3.model.ObjectMetadata
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 

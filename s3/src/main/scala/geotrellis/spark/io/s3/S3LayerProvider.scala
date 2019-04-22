@@ -19,7 +19,7 @@ package geotrellis.spark.io.s3
 import geotrellis.spark._
 import geotrellis.spark.io._
 import org.apache.spark._
-import com.amazonaws.services.s3.AmazonS3URI
+import software.amazon.awssdk.services.s3.AmazonS3URI
 import java.net.URI
 
 /**

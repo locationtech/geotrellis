@@ -25,7 +25,7 @@ import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index._
 
-import com.amazonaws.services.s3.model.AmazonS3Exception
+import software.amazon.awssdk.services.s3.model.S3Exception
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import spray.json._
@@ -51,9 +51,9 @@ class S3ValueReader(
 
       val is =
         try {
-          s3Client.getObject(header.bucket, path).getObjectContent
+          s3Client.getObject(header.bucket, path).in
         } catch {
-          case e: AmazonS3Exception if e.getStatusCode == 404 =>
+          case e: S3Exception if e.statusCode == 404 =>
             throw new ValueNotFoundError(key, layerId)
         }
 

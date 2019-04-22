@@ -17,7 +17,7 @@
 package geotrellis.spark.io.s3
 
 import com.typesafe.scalalogging.LazyLogging
-import com.amazonaws.services.s3.model.S3ObjectSummary
+import software.amazon.awssdk.services.s3.model.S3ObjectSummary
 import org.apache.hadoop.io.Writable
 import org.apache.hadoop.mapreduce.InputSplit
 

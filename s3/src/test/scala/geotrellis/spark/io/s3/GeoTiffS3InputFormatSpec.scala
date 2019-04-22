@@ -25,7 +25,7 @@ import geotrellis.spark.io.s3.testkit._
 import geotrellis.spark.testkit.TestEnvironment
 
 import org.apache.hadoop.conf.Configuration
-import com.amazonaws.auth.AWSCredentials
+import software.amazon.awssdk.auth.AWSCredentials
 import org.apache.hadoop.mapreduce.{TaskAttemptContext, InputSplit}
 import org.scalatest._
 

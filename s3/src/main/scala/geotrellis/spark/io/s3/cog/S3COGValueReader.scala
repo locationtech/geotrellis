@@ -26,7 +26,7 @@ import geotrellis.spark.io.index._
 import geotrellis.spark.io.s3.{S3AttributeStore, S3Client, S3LayerHeader}
 import geotrellis.util._
 import spray.json._
-import com.amazonaws.services.s3.model.AmazonS3Exception
+import software.amazon.awssdk.services.s3.model.AmazonS3Exception
 
 import scala.reflect.ClassTag
 import java.net.URI

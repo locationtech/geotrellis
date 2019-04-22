@@ -22,7 +22,7 @@ import geotrellis.raster.Tile
 import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.vector.{Extent, ProjectedExtent}
 
-import com.amazonaws.auth.AWSCredentials
+import software.amazon.awssdk.auth.AWSCredentials
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce.{Job, RecordReader, TaskAttemptContext, InputSplit}
 import org.scalatest._

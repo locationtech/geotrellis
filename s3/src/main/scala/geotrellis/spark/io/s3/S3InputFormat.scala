@@ -19,8 +19,8 @@ package geotrellis.spark.io.s3
 import geotrellis.spark.io.hadoop._
 
 import com.typesafe.scalalogging.LazyLogging
-import com.amazonaws.regions._
-import com.amazonaws.services.s3.model.{ListObjectsRequest, S3ObjectSummary}
+import software.amazon.awssdk.regions._
+import software.amazon.awssdk.services.s3.model.{ListObjectsRequest, S3ObjectSummary}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce.{InputFormat, InputSplit, Job, JobContext}
 

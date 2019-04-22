@@ -21,8 +21,8 @@ import geotrellis.spark.io._
 
 import spray.json._
 import DefaultJsonProtocol._
-import com.amazonaws.services.s3.model.{ObjectMetadata, AmazonS3Exception}
-import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion
+import software.amazon.awssdk.services.s3.model.{ObjectMetadata, AmazonS3Exception}
+import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest.KeyVersion
 
 import scala.util.matching.Regex
 import scala.io.Source

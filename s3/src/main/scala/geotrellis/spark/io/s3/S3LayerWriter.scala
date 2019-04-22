@@ -27,7 +27,7 @@ import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.rdd.RDD
-import com.amazonaws.services.s3.model.PutObjectRequest
+import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import spray.json._
 
 import scala.reflect._

@@ -22,8 +22,8 @@ import geotrellis.util.annotations.experimental
 
 import spray.json._
 import spray.json.DefaultJsonProtocol._
-import com.amazonaws.services.s3.AmazonS3URI
-import com.amazonaws.services.s3.model.ObjectMetadata
+import software.amazon.awssdk.services.s3.AmazonS3URI
+import software.amazon.awssdk.services.s3.model.ObjectMetadata
 
 import java.io.ByteArrayInputStream
 import java.net.URI

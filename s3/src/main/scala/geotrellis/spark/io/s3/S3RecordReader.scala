@@ -20,7 +20,7 @@ import geotrellis.spark.io.s3.util.S3RangeReader
 import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging
-import com.amazonaws.services.s3.model.GetObjectRequest
+import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext, RecordReader}
 import org.apache.commons.io.IOUtils
 
@@ -49,7 +49,11 @@ abstract class BaseS3RecordReader[K, V](s3Client: S3Client) extends RecordReader
   def nextKeyValue(): Boolean = {
     if (keys.hasNext){
       val key = keys.next()
-      val (k, v) = readObjectRequest(new GetObjectRequest(bucket, key))
+      val request = GetObjectRequest.builder()
+        .bucket(bucket)
+        .key(key)
+        .build()
+      val (k, v) = readObjectRequest(request)
 
       curKey = k
       curValue = v
@@ -71,12 +75,11 @@ abstract class BaseS3RecordReader[K, V](s3Client: S3Client) extends RecordReader
   * Subclass must extend [read] method to map from S3 object bytes to (K,V) */
 abstract class S3RecordReader[K, V](s3Client: S3Client) extends BaseS3RecordReader[K, V](s3Client: S3Client) {
   def readObjectRequest(objectRequest: GetObjectRequest): (K, V) = {
-    val obj = s3Client.getObject(objectRequest)
-    val inStream = obj.getObjectContent
-    val objectData = IOUtils.toByteArray(inStream)
-    inStream.close()
+    val response = s3Client.getObject(objectRequest)
+    val objectData = IOUtils.toByteArray(response.in)
+    response.in.close()
 
-    read(objectRequest.getKey, objectData)
+    read(objectRequest.key, objectData)
   }
 
   def read(key: String, obj: Array[Byte]): (K, V)
@@ -89,7 +92,7 @@ abstract class StreamingS3RecordReader[K, V](s3Client: S3Client) extends BaseS3R
     val byteReader =
       StreamingByteReader(S3RangeReader(objectRequest, s3Client))
 
-    read(objectRequest.getKey, byteReader)
+    read(objectRequest.key, byteReader)
   }
 
   def read(key: String, byteReader: ByteReader): (K, V)

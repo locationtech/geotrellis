@@ -20,8 +20,8 @@ import geotrellis.tiling.SpatialKey
 import geotrellis.spark.LayerId
 import geotrellis.spark.io.s3.conf.S3Config
 
-import com.amazonaws.services.s3.model.{ObjectMetadata, PutObjectRequest, PutObjectResult}
-import com.amazonaws.services.s3.model.AmazonS3Exception
+import software.amazon.awssdk.services.s3.model.{PutObjectRequest, PutObjectResponse, S3Exception}
+import software.amazon.awssdk.core.sync.RequestBody
 import org.apache.spark.rdd.RDD
 import cats.effect.{IO, Timer}
 import cats.syntax.apply._
@@ -74,15 +74,19 @@ object SaveToS3 {
     }
 
     rdd.foreachPartition { partition =>
-      val s3Client = s3Maker()
-      val requests: fs2.Stream[IO, PutObjectRequest] =
-        fs2.Stream.fromIterator[IO, PutObjectRequest](
+      val s3client = s3Maker()
+      val requests: fs2.Stream[IO, (PutObjectRequest, RequestBody)] =
+        fs2.Stream.fromIterator[IO, (PutObjectRequest, RequestBody)](
           partition.map { case (key, bytes) =>
-            val metadata = new ObjectMetadata()
-            metadata.setContentLength(bytes.length)
-            val is = new ByteArrayInputStream(bytes)
             val (bucket, path) = keyToPrefix(key)
-            putObjectModifier(new PutObjectRequest(bucket, path, is, metadata))
+            val request = PutObjectRequest.builder()
+              .bucket(bucket)
+              .key(path)
+              .contentLength(bytes.length)
+              .build()
+            val requestBody = RequestBody.fromBytes(bytes)
+
+            (putObjectModifier(request), requestBody)
           }
         )
 
@@ -92,18 +96,19 @@ object SaveToS3 {
       implicit val cs = IO.contextShift(ec)
 
       import geotrellis.spark.util.TaskUtils._
-      val write: PutObjectRequest => fs2.Stream[IO, PutObjectResult] = { request =>
-        fs2.Stream eval IO.shift(ec) *> IO {
-          request.getInputStream.reset() // reset in case of retransmission to avoid 400 error
-          s3Client.putObject(request)
-        }.retryEBO {
-          case e: AmazonS3Exception if e.getStatusCode == 503 => true
-          case _ => false
+      val write: (PutObjectRequest, RequestBody) => fs2.Stream[IO, PutObjectResponse] =
+        (request, requestBody) => {
+          fs2.Stream eval IO.shift(ec) *> IO {
+            //request.getInputStream.reset() // reset in case of retransmission to avoid 400 error
+            s3client.putObject(request, requestBody)
+          }.retryEBO {
+            case e: S3Exception if e.statusCode == 503 => true
+            case _ => false
+          }
         }
-      }
 
       requests
-        .map(write)
+        .map(Function.tupled(write))
         .parJoin(threads)
         .compile
         .toVector

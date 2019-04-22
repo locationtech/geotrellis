@@ -21,7 +21,7 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.s3._
 import org.apache.spark._
-import com.amazonaws.services.s3.AmazonS3URI
+import software.amazon.awssdk.services.s3.AmazonS3URI
 import java.net.URI
 
 /**
@@ -38,6 +38,8 @@ class S3COGLayerProvider extends AttributeStoreProvider
   }
 
   def attributeStore(uri: URI): AttributeStore = {
+    // Need to use an alternative to AmazonS3URI
+    // https://github.com/aws/aws-sdk-java-v2/issues/860
     val s3Uri = new AmazonS3URI(uri)
     val prefix =
       Option(s3Uri.getKey) match {

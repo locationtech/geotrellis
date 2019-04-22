@@ -16,10 +16,11 @@
 
 package geotrellis.spark.io.s3
 
-import com.amazonaws.ClientConfiguration
-import com.amazonaws.auth._
-import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
-import com.amazonaws.services.s3.model._
+import software.amazon.awssdk.ClientConfiguration
+import software.amazon.awssdk.auth._
+import software.amazon.awssdk.services.s3.{AmazonS3, AmazonS3ClientBuilder}
+import software.amazon.awssdk.services.s3.S3Client
+
 import org.apache.commons.io.IOUtils
 
 import scala.collection.JavaConverters._
@@ -116,7 +117,7 @@ class AmazonS3Client(s3client: AmazonS3) extends S3Client {
   def getObjectMetadata(getObjectMetadataRequest: GetObjectMetadataRequest): ObjectMetadata =
     s3client.getObjectMetadata(getObjectMetadataRequest)
 
-  def setRegion(region: com.amazonaws.regions.Region): Unit = {
+  def setRegion(region: software.amazon.awssdk.regions.Region): Unit = {
     s3client.setRegion(region)
   }
 }

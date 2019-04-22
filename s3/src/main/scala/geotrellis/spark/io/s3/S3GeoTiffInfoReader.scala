@@ -23,8 +23,8 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.s3.util.S3RangeReader
 import geotrellis.util.ByteReader
 
-import com.amazonaws.services.s3.AmazonS3URI
-import com.amazonaws.services.s3.model.ListObjectsRequest
+import software.amazon.awssdk.services.s3.AmazonS3URI
+import software.amazon.awssdk.services.s3.model.ListObjectsRequest
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 

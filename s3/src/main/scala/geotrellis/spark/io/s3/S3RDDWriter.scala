@@ -24,7 +24,8 @@ import geotrellis.spark.io.s3.conf.S3Config
 
 import cats.effect.{IO, Timer}
 import cats.syntax.apply._
-import com.amazonaws.services.s3.model.{AmazonS3Exception, ObjectMetadata, PutObjectRequest, PutObjectResult}
+import software.amazon.awssdk.services.s3.model.{S3Exception, PutObjectRequest, PutObjectResponse}
+import software.amazon.awssdk.core.sync.RequestBody
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.rdd.RDD
@@ -101,30 +102,36 @@ trait S3RDDWriter {
                 val bytes = IOUtils.toByteArray(s3client.getObject(bucket, key).getObjectContent)
                 AvroEncoder.fromBinary(schema, bytes)(_recordCodec)
               } catch {
-                case e: AmazonS3Exception if e.getStatusCode == 404 => Vector.empty
+                case e: S3Exception if e.statusCode == 404 => Vector.empty
               }
             })
             (key, updated)
           })
         }
 
-        def rowToRequest(row: (String, Vector[(K,V)])): fs2.Stream[IO, PutObjectRequest] = {
+        def rowToRequest(row: (String, Vector[(K,V)])): fs2.Stream[IO, (PutObjectRequest, RequestBody)] = {
           fs2.Stream eval IO.shift(ec) *> IO ({
             val (key, kvs) = row
-            val bytes = AvroEncoder.toBinary(kvs)(_codec)
-            val metadata = new ObjectMetadata()
-            metadata.setContentLength(bytes.length)
-            val is = new ByteArrayInputStream(bytes)
-            putObjectModifier(new PutObjectRequest(bucket, key, is, metadata))
+            val contentBytes = AvroEncoder.toBinary(kvs)(_codec)
+            val request = PutObjectRequest.builder()
+              .bucket(bucket)
+              .key(key)
+              .contentLength(contentBytes.length)
+              .build()
+            val requestBody = RequestBody.fromBytes(contentBytes)
+
+            (putObjectModifier(request), requestBody)
           })
         }
 
-        def retire(request: PutObjectRequest): fs2.Stream[IO, PutObjectResult] = {
+        def retire(request: PutObjectRequest, requestBody: RequestBody): fs2.Stream[IO, PutObjectResponse] = {
           fs2.Stream eval IO.shift(ec) *> IO ({
-            request.getInputStream.reset() // reset in case of retransmission to avoid 400 error
-            s3client.putObject(request)
+            // No longer necessary?
+            // TODO: Verify the new behavior isn't susceptible to stream state issues
+            //request.getInputStream.reset() // reset in case of retransmission to avoid 400 error
+            s3client.putObject(request, requestBody)
           }).retryEBO {
-            case e: AmazonS3Exception if e.getStatusCode == 503 => true
+            case e: S3Exception if e.statusCode == 503 => true
             case _ => false
           }
         }
@@ -132,7 +139,7 @@ trait S3RDDWriter {
         rows
           .flatMap(elaborateRow)
           .flatMap(rowToRequest)
-          .map(retire)
+          .map(Function.tupled(retire))
           .parJoin(threads)
           .compile
           .drain

@@ -17,10 +17,10 @@
 package geotrellis.spark.io.s3
 
 import com.typesafe.scalalogging.LazyLogging
-import com.amazonaws.auth._
-import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion
-import com.amazonaws.retry.PredefinedRetryPolicies
-import com.amazonaws.services.s3.model._
+import software.amazon.awssdk.auth._
+import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest.KeyVersion
+import software.amazon.awssdk.retry.PredefinedRetryPolicies
+import software.amazon.awssdk.services.s3.model._
 
 import java.io.{InputStream, ByteArrayInputStream}
 import scala.annotation.tailrec
@@ -42,9 +42,9 @@ trait S3Client extends LazyLogging with Serializable {
 
   def listKeys(listObjectsRequest: ListObjectsRequest): Seq[String]
 
-  def getObject(getObjectRequest: GetObjectRequest): S3Object
+  def getObject(getObjectRequest: GetObjectRequest): ResponseInputStream[GetObjectResponse]
 
-  def putObject(putObjectRequest: PutObjectRequest): PutObjectResult
+  def putObject(putObjectRequest: PutObjectRequest, requestBody: RequestBody): PutObjectResponse
 
   def listNextBatchOfObjects(listing: ObjectListing): ObjectListing
 
@@ -69,8 +69,13 @@ trait S3Client extends LazyLogging with Serializable {
 
   def deleteObjects(deleteObjectsRequest: DeleteObjectsRequest): Unit
 
-  def getObject(bucketName: String, key: String): S3Object =
-    getObject(new GetObjectRequest(bucketName, key))
+  def getObject(bucketName: String, key: String): ResponseInputStream[GetObjectResponse] = {
+    val request = GetObjectResponse.builder()
+      .bucket(bucketName)
+      .key(key)
+      .build()
+    getObject(request)
+  }
 
   def deleteObjects(bucketName: String, keys: List[KeyVersion]): Unit = {
     val objectsDeleteRequest = new DeleteObjectsRequest(bucketName)
@@ -132,12 +137,14 @@ trait S3Client extends LazyLogging with Serializable {
       def next: S3ObjectSummary = iter.next
     }
 
-  def setRegion(region: com.amazonaws.regions.Region): Unit
+  def setRegion(region: software.amazon.awssdk.regions.Region): Unit
+
+  def utilities: S3Utilities
 }
 
 object S3Client {
   def defaultConfiguration = {
-    val config = new com.amazonaws.ClientConfiguration
+    val config = new software.amazon.awssdk.ClientConfiguration
     config.setMaxConnections(128)
     config.setMaxErrorRetry(16)
     config.setConnectionTimeout(100000)

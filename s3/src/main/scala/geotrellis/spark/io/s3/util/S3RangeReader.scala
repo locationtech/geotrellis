@@ -19,8 +19,8 @@ package geotrellis.spark.io.s3.util
 import geotrellis.spark.io.s3._
 import geotrellis.util.RangeReader
 
-import com.amazonaws.services.s3.AmazonS3URI
-import com.amazonaws.services.s3.model._
+import software.amazon.awssdk.services.s3.AmazonS3URI
+import software.amazon.awssdk.services.s3.model._
 
 import java.net.URI
 

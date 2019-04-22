@@ -30,7 +30,7 @@ import geotrellis.spark.io.cog.vrt.VRT
 import geotrellis.spark.io.cog.vrt.VRT.IndexedSimpleSource
 
 import spray.json.JsonFormat
-import com.amazonaws.services.s3.model.{AmazonS3Exception, ObjectMetadata, PutObjectRequest}
+import software.amazon.awssdk.services.s3.model.{AmazonS3Exception, ObjectMetadata, PutObjectRequest}
 import java.io.ByteArrayInputStream
 
 import scala.util.Try

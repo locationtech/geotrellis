@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io.s3
 
-import com.amazonaws.services.s3.model.GetObjectRequest
+import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.spark._
 import geotrellis.spark.testkit.TestEnvironment

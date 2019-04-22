@@ -25,7 +25,7 @@ import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.util.KryoWrapper
 
-import com.amazonaws.services.s3.model.AmazonS3Exception
+import software.amazon.awssdk.services.s3.model.S3Exception
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
@@ -75,10 +75,10 @@ trait S3RDDReader {
               if (filterIndexOnly) recs
               else recs.filter { row => includeKey(row._1) }
             } catch {
-              case e: AmazonS3Exception if e.getStatusCode == 404 => Vector.empty
+              case e: S3Exception if e.statusCode == 404 => Vector.empty
             }
           }) (backOffPredicate = {
-            case e: AmazonS3Exception if e.getStatusCode == 503 => true
+            case e: S3Exception if e.statusCode == 503 => true
             case _ => false
           })
         }
