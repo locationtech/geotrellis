@@ -17,6 +17,7 @@
 package geotrellis.spark.io.hadoop.conf
 
 import geotrellis.spark.util.threadsFromString
+import pureconfig.generic.auto._
 
 case class HadoopCollectionConfig(read: String = "default") {
   def readThreads: Int = threadsFromString(read)

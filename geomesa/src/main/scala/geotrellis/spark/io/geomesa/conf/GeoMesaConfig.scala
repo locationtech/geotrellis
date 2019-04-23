@@ -16,6 +16,8 @@
 
 package geotrellis.spark.io.geomesa.conf
 
+import pureconfig.generic.auto._
+
 case class GeoMesaConfig(featureTypeCacheSize: Int = 16)
 
 object GeoMesaConfig {
