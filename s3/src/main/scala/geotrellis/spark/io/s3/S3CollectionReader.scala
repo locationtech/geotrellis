@@ -24,7 +24,7 @@ import geotrellis.spark.io.index.MergeQueue
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.io.s3.conf.S3Config
 
-import software.amazon.awssdk.services.s3.model.AmazonS3Exception
+import software.amazon.awssdk.services.s3.model.S3Exception
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 
@@ -61,7 +61,7 @@ trait S3CollectionReader {
         if (filterIndexOnly) recs
         else recs.filter { row => queryKeyBounds.includeKey(row._1) }
       } catch {
-        case e: AmazonS3Exception if e.getStatusCode == 404 => Vector.empty
+        case e: AmazonS3Exception if e.statusCode == 404 => Vector.empty
       }
     }: Seq[(K, V)]
   }

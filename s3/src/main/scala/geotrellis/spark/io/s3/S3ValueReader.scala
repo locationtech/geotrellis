@@ -25,7 +25,8 @@ import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.index._
 
-import software.amazon.awssdk.services.s3.model.S3Exception
+import software.amazon.awssdk.services.s3.model.{S3Exception, GetObjectRequest}
+import software.amazon.awssdk.services.s3.S3Client
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import spray.json._
@@ -37,7 +38,9 @@ class S3ValueReader(
   val attributeStore: AttributeStore
 ) extends OverzoomingValueReader {
 
-  def s3Client: S3Client = S3Client.DEFAULT
+  def s3Client: S3Client =
+    // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
+    S3Client.create()
 
   def reader[K: AvroRecordCodec: JsonFormat: ClassTag, V: AvroRecordCodec](layerId: LayerId): Reader[K, V] = new Reader[K, V] {
     val header = attributeStore.readHeader[S3LayerHeader](layerId)
@@ -51,13 +54,19 @@ class S3ValueReader(
 
       val is =
         try {
-          s3Client.getObject(header.bucket, path).in
+          val request = GetObjectRequest.builder()
+            .bucket(header.bucket)
+            .key(path)
+            .build()
+
+          s3Client.getObject(request)
         } catch {
           case e: S3Exception if e.statusCode == 404 =>
             throw new ValueNotFoundError(key, layerId)
         }
 
       val bytes = IOUtils.toByteArray(is)
+      is.close()
       val recs = AvroEncoder.fromBinary(writerSchema, bytes)(KeyValueRecordCodec[K, V])
 
       recs

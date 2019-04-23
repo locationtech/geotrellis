@@ -26,16 +26,23 @@ import java.io.{InputStream, ByteArrayInputStream}
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 
-trait S3Client extends LazyLogging with Serializable {
+// TODO: BURN this
+trait dS3Client extends LazyLogging with Serializable {
 
   def doesBucketExist(bucket: String): Boolean
 
   def doesObjectExist(bucket: String, key: String): Boolean
 
-  def listObjects(listObjectsRequest: ListObjectsRequest): ObjectListing
+  def listObjects(listObjectsRequest: ListObjectsRequest): ListObjectsResponse
 
-  def listObjects(bucketName: String, prefix: String): ObjectListing =
-    listObjects(new ListObjectsRequest(bucketName, prefix, null, null, null))
+  def listObjects(bucketName: String, prefix: String): ListObjectsResponse = {
+    val request = ListObjectsRequest.builder()
+      .bucket(bucketName)
+      .key(prefix)
+      .maxKeys(maxKeys)
+      .build()
+    listObjects(request)
+  }
 
   def listKeys(bucketName: String, prefix: String): Seq[String] =
     listKeys(new ListObjectsRequest(bucketName, prefix, null, null, null))
@@ -83,8 +90,7 @@ trait S3Client extends LazyLogging with Serializable {
     deleteObjects(objectsDeleteRequest)
   }
 
-  def copyObject(sourceBucketName: String, sourceKey: String,
-    destinationBucketName: String, destinationKey: String): CopyObjectResult =
+  def copyObject(sourceBucketName: String, sourceKey: String, destinationBucketName: String, destinationKey: String): CopyObjectResult =
     copyObject(new CopyObjectRequest(sourceBucketName, sourceKey, destinationBucketName, destinationKey))
 
   def deleteObject(bucketName: String, key: String): Unit =
@@ -112,6 +118,22 @@ trait S3Client extends LazyLogging with Serializable {
     getObjectMetadata(new GetObjectMetadataRequest(bucketName, key))
 
   def getObjectMetadata(getObjectMetadataRequest: GetObjectMetadataRequest): ObjectMetadata
+
+  def listObjectsV2Paginator(bucketName: String, prefix: String, maxKeys: Int = 0): Iterator[S3Object] = {
+    val request = ListObjectsRequest.builder()
+      .bucket(bucketName)
+      .key(prefix)
+      .maxKeys(maxKeys)
+      .build()
+    listObjectsV2Paginator(request)
+  }
+
+  def listObjectsV2Paginator(listObjectsRequest: ListObjectsV2Request): Iterator[S3Object] =
+    listObjectsV2Paginator(listObjectsRequest)
+      .contents()
+      .asScala()
+
+  def listObjectsV2Paginator(listObjectsRequest: ListObjectsV2Request): ListObjectsV2Iterable
 
   def listObjectsIterator(bucketName: String, prefix: String, maxKeys: Int = 0): Iterator[S3ObjectSummary] =
     listObjectsIterator(new ListObjectsRequest(bucketName, prefix, null, null, if (maxKeys == 0) null else maxKeys))
@@ -142,7 +164,7 @@ trait S3Client extends LazyLogging with Serializable {
   def utilities: S3Utilities
 }
 
-object S3Client {
+object WrappedS3Client {
   def defaultConfiguration = {
     val config = new software.amazon.awssdk.ClientConfiguration
     config.setMaxConnections(128)

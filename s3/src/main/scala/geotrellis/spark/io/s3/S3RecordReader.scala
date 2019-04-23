@@ -21,6 +21,7 @@ import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
+import software.amazon.awssdk.services.s3.S3Client
 import org.apache.hadoop.mapreduce.{InputSplit, TaskAttemptContext, RecordReader}
 import org.apache.commons.io.IOUtils
 
@@ -76,8 +77,8 @@ abstract class BaseS3RecordReader[K, V](s3Client: S3Client) extends RecordReader
 abstract class S3RecordReader[K, V](s3Client: S3Client) extends BaseS3RecordReader[K, V](s3Client: S3Client) {
   def readObjectRequest(objectRequest: GetObjectRequest): (K, V) = {
     val response = s3Client.getObject(objectRequest)
-    val objectData = IOUtils.toByteArray(response.in)
-    response.in.close()
+    val objectData = IOUtils.toByteArray(response)
+    response.close()
 
     read(objectRequest.key, objectData)
   }

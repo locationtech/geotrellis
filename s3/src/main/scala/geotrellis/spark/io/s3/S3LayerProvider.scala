@@ -19,7 +19,8 @@ package geotrellis.spark.io.s3
 import geotrellis.spark._
 import geotrellis.spark.io._
 import org.apache.spark._
-import software.amazon.awssdk.services.s3.AmazonS3URI
+// TODO: fix this
+// import software.amazon.awssdk.services.s3.AmazonS3URI
 import java.net.URI
 
 /**
@@ -36,13 +37,16 @@ class S3LayerProvider extends AttributeStoreProvider
   }
 
   def attributeStore(uri: URI): AttributeStore = {
-    val s3Uri = new AmazonS3URI(uri)
+    //val s3Uri = new AmazonS3URI(uri)
+    val s3Uri = ???
+    val s3key = ???
+    val s3bucket = ???
     val prefix =
-      Option(s3Uri.getKey) match {
+      Option(s3key) match {
         case Some(s) => s
         case None => ""
       }
-    new S3AttributeStore(bucket = s3Uri.getBucket, prefix = prefix)
+    new S3AttributeStore(bucket = ???, prefix = prefix)
   }
 
   def layerReader(uri: URI, store: AttributeStore, sc: SparkContext): FilteringLayerReader[LayerId] = {
@@ -51,8 +55,11 @@ class S3LayerProvider extends AttributeStoreProvider
 
   def layerWriter(uri: URI, store: AttributeStore): LayerWriter[LayerId] = {
     // TODO: encoder ACL changes in putObjectModifier
-    val s3Uri = new AmazonS3URI(uri)
-    new S3LayerWriter(store, bucket = s3Uri.getBucket, keyPrefix = s3Uri.getKey)
+    // val s3Uri = new AmazonS3URI(uri)
+    val s3Uri = ???
+    val s3bucket = ???
+    val s3key = ???
+    new S3LayerWriter(store, bucket = s3bucket, keyPrefix = s3key)
   }
 
   def valueReader(uri: URI, store: AttributeStore): ValueReader[LayerId] = {

@@ -19,8 +19,10 @@ package geotrellis.spark.io.s3.util
 import geotrellis.spark.io.s3._
 import geotrellis.util.RangeReader
 
-import software.amazon.awssdk.services.s3.AmazonS3URI
+//TODO fix this
+//import software.amazon.awssdk.services.s3.AmazonS3URI
 import software.amazon.awssdk.services.s3.model._
+import software.amazon.awssdk.services.s3.S3Client
 
 import java.net.URI
 

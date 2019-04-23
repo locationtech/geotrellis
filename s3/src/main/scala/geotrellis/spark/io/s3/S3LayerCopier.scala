@@ -24,7 +24,8 @@ import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.json._
 import geotrellis.util._
 
-import software.amazon.awssdk.services.s3.model.ObjectListing
+import software.amazon.awssdk.services.s3.model.{S3Object, CopyObjectRequest, ListObjectsV2Request}
+import software.amazon.awssdk.services.s3.S3Client
 import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
 import spray.json.JsonFormat
@@ -39,15 +40,25 @@ class S3LayerCopier(
   destKeyPrefix: String
 ) extends LayerCopier[LayerId] {
 
-  def getS3Client: () => S3Client = () => S3Client.DEFAULT
+  def getS3Client: () => S3Client = () =>
+    // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
+    S3Client.create()
 
-  @tailrec
-  final def copyListing(s3Client: S3Client, bucket: String, listing: ObjectListing, from: LayerId, to: LayerId): Unit = {
-    listing.getObjectSummaries.asScala.foreach { os =>
-      val key = os.getKey
-      s3Client.copyObject(bucket, key, destBucket, key.replace(s"${from.name}/${from.zoom}", s"${to.name}/${to.zoom}"))
+  // Not necessary if this isn't recursive any longer due to the iterator handling *all* objects
+  // @tailrec
+  final def copyListing(s3Client: S3Client, bucket: String, listing: Iterable[S3Object], from: LayerId, to: LayerId): Unit = {
+    listing.foreach { s3obj =>
+      val request =
+        CopyObjectRequest.builder()
+          .copySource(bucket + "/" + s3obj.key)
+          .bucket(bucket)
+          .key(s3obj.key.replace(s"${from.name}/${from.zoom}", s"${to.name}/${to.zoom}"))
+          .build()
+
+      s3Client.copyObject(request)
     }
-    if (listing.isTruncated) copyListing(s3Client, bucket, s3Client.listNextBatchOfObjects(listing), from, to)
+    // Appears to no longer be necessary; TODO: remove
+    // if (listing.isTruncated) copyListing(s3Client, bucket, s3Client.listNextBatchOfObjects(listing), from, to)
   }
 
   def copy[
@@ -68,7 +79,17 @@ class S3LayerCopier(
     val prefix = header.key
     val s3Client = getS3Client()
 
-    copyListing(s3Client, bucket, s3Client.listObjects(bucket, prefix), from, to)
+    val listRequest =
+      ListObjectsV2Request.builder()
+        .bucket(bucket)
+        .prefix(prefix)
+        .build()
+    val objIter =
+      s3Client
+        .listObjectsV2Paginator(listRequest)
+        .contents
+        .asScala
+    copyListing(s3Client, bucket, objIter, from, to)
     attributeStore.copy(from, to)
     attributeStore.writeLayerAttributes(
       to, header.copy(

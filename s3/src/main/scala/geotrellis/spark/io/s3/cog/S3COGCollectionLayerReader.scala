@@ -27,6 +27,7 @@ import geotrellis.spark.io.s3._
 import geotrellis.spark.io.s3.conf.S3Config
 import geotrellis.util._
 
+import software.amazon.awssdk.services.s3.S3Client
 import com.typesafe.scalalogging.LazyLogging
 import spray.json.JsonFormat
 import java.net.URI
@@ -40,7 +41,9 @@ import scala.reflect.ClassTag
  */
 class S3COGCollectionLayerReader(
   val attributeStore: AttributeStore,
-  val getS3Client: () => S3Client = () => S3Client.DEFAULT,
+  val getS3Client: () => S3Client = () =>
+    // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
+    S3Client.create(),
   val defaultThreads: Int = S3COGCollectionLayerReader.defaultThreadCount
 ) extends COGCollectionLayerReader[LayerId] with LazyLogging {
 

@@ -24,7 +24,8 @@ import geotrellis.spark.io.s3.conf.S3Config
 
 import cats.effect.{IO, Timer}
 import cats.syntax.apply._
-import software.amazon.awssdk.services.s3.model.{S3Exception, PutObjectRequest, PutObjectResponse}
+import software.amazon.awssdk.services.s3.model.{S3Exception, PutObjectRequest, PutObjectResponse, GetObjectRequest}
+import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.core.sync.RequestBody
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
@@ -99,7 +100,13 @@ trait S3RDDWriter {
             val (key, current) = row
             val updated = LayerWriter.updateRecords(mergeFunc, current, existing = {
               try {
-                val bytes = IOUtils.toByteArray(s3client.getObject(bucket, key).getObjectContent)
+                val request = GetObjectRequest.builder()
+                  .bucket(bucket)
+                  .key(key)
+                  .build()
+
+                val is = s3client.getObject(request)
+                val bytes = IOUtils.toByteArray(is)
                 AvroEncoder.fromBinary(schema, bytes)(_recordCodec)
               } catch {
                 case e: S3Exception if e.statusCode == 404 => Vector.empty
@@ -152,5 +159,7 @@ trait S3RDDWriter {
 }
 
 object S3RDDWriter extends S3RDDWriter {
-  def getS3Client: () => S3Client = () => S3Client.DEFAULT
+  def getS3Client: () => S3Client = () =>
+    // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
+    S3Client.create()
 }

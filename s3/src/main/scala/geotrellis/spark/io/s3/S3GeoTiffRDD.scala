@@ -64,7 +64,7 @@ object S3GeoTiffRDD extends LazyLogging {
     *                       If [[None]], then 65536 byte chunks will be read in at a time.
     * @param delimiter      Delimiter to use for S3 objet listings. This provides a way to further define what files should
     *                       be read. If [[None]], then only the prefix will be used when determing which files to read.
-    * @param getS3Client    A function to instantiate an S3Client. Must be serializable.
+    * @param getS3Client    A function to instantiate an WrappedS3Client. Must be serializable.
     */
   case class Options(
     tiffExtensions: Seq[String] = Seq(".tif", ".TIF", ".tiff", ".TIFF"),
@@ -76,7 +76,7 @@ object S3GeoTiffRDD extends LazyLogging {
     partitionBytes: Option[Long] = Some(DefaultPartitionBytes),
     chunkSize: Option[Int] = None,
     delimiter: Option[String] = None,
-    getS3Client: () => S3Client = () => S3Client.DEFAULT
+    getS3Client: () => WrappedS3Client = () => WrappedS3Client.DEFAULT
   ) extends RasterReader.Options
 
   private val DefaultMaxTileSize = 256

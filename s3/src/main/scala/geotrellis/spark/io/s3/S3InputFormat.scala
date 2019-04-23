@@ -20,11 +20,13 @@ import geotrellis.spark.io.hadoop._
 
 import com.typesafe.scalalogging.LazyLogging
 import software.amazon.awssdk.regions._
-import software.amazon.awssdk.services.s3.model.{ListObjectsRequest, S3ObjectSummary}
+import software.amazon.awssdk.services.s3.model.{ListObjectsV2Request, S3Object}
+import software.amazon.awssdk.services.s3.S3Client
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce.{InputFormat, InputSplit, Job, JobContext}
 
 import scala.util.matching.Regex
+import scala.collection.JavaConverters._
 
 /** Reads keys from s3n URL using AWS Java SDK.
   * The number of keys per InputSplits are controlled by S3 pagination.
@@ -41,7 +43,6 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
     S3InputFormat.getS3Client(context)
 
   override def getSplits(context: JobContext) = {
-    import scala.collection.JavaConverters._
 
     val conf = context.getConfiguration
     val anon = conf.get(ANONYMOUS)
@@ -84,13 +85,18 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
 
     logger.info(s"Listing Splits: bucket=$bucket prefix=$prefix")
 
-    val request = new ListObjectsRequest()
-      .withBucketName(bucket)
-      .withPrefix(prefix)
-
-    delimiter match {
-      case Some(d) => request.setDelimiter(d)
-      case None => // pass
+    val request = delimiter match {
+      case Some(d) =>
+        ListObjectsV2Request.builder()
+          .bucket(bucket)
+          .prefix(prefix)
+          .delimiter(d)
+          .build()
+      case None =>
+        ListObjectsV2Request.builder()
+          .bucket(bucket)
+          .prefix(prefix)
+          .build()
     }
 
     def makeNewSplit =  {
@@ -101,20 +107,20 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
 
     var splits: Vector[S3InputSplit] = Vector(makeNewSplit)
 
-    val s3ObjectFilter: S3ObjectSummary => Boolean =
-      { obj =>
-        val key = obj.getKey
+    val s3ObjectIsTiff: S3Object => Boolean = { s3obj =>
+      val key = s3obj.key
 
-        val isDir = key.endsWith("/")
-        val isTiff =
-          if (extensions.isEmpty)
-            true
-          else {
-            extensions.map(key.endsWith).reduce(_ || _)
-          }
+      val isDir =
+        key.endsWith("/")
+      val isTiff =
+        if (extensions.isEmpty)
+          true
+        else {
+          extensions.map(key.endsWith).reduce(_ || _)
+        }
 
-        !isDir && isTiff
-      }
+      !isDir && isTiff
+    }
 
     if (null == partitionCountConf) {
       // By default attempt to make partitions the same size
@@ -137,23 +143,24 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
       logger.info(s"Building partitions, attempting to create them with size at most $maxSplitBytes bytes")
 
       s3client
-        .listObjectsIterator(request)
-        .filter(s3ObjectFilter)
-        .foreach { obj =>
-          val objSize = obj.getSize
+        .listObjectsV2Paginator(request)
+        .contents
+        .asScala
+        .filter(s3ObjectIsTiff)
+        .foreach { s3obj =>
           val curSplit =
-            if (objSize <= h2Cutoff) h3.last
-            else if ((h2Cutoff < objSize) && (objSize <= h1Cutoff)) h2.last
+            if (s3obj.size <= h2Cutoff) h3.last
+            else if ((h2Cutoff < s3obj.size) && (s3obj.size <= h1Cutoff)) h2.last
             else h1.last
           if (curSplit.getLength == 0)
-            curSplit.addKey(obj)
-          else if (curSplit.size + objSize <= maxSplitBytes)
-            curSplit.addKey(obj)
+            curSplit.addKey(s3obj)
+          else if (curSplit.size + s3obj.size <= maxSplitBytes)
+            curSplit.addKey(s3obj)
           else {
             val newSplit = makeNewSplit
-            newSplit.addKey(obj)
-            if (objSize <= h2Cutoff) h3 = h3 :+ newSplit
-            else if ((h2Cutoff < objSize) && (objSize <= h1Cutoff)) h2 = h2 :+ newSplit
+            newSplit.addKey(s3obj)
+            if (s3obj.size <= h2Cutoff) h3 = h3 :+ newSplit
+            else if ((h2Cutoff < s3obj.size) && (s3obj.size <= h1Cutoff)) h2 = h2 :+ newSplit
             else h1 = h1 :+ newSplit
           }
         }
@@ -163,8 +170,10 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
       logger.info(s"Building partitions of at most $partitionCount objects")
       val keys =
         s3client
-          .listObjectsIterator(request)
-          .filter(s3ObjectFilter)
+          .listObjectsV2Paginator(request)
+          .contents
+          .asScala
+          .filter(s3ObjectIsTiff)
           .toVector
 
       val groupCount = math.max(1, keys.length / partitionCount)
@@ -204,6 +213,7 @@ object S3InputFormat {
   private val slug = "[a-zA-Z0-9-.]+"
   val S3UrlRx = new Regex(s"""s3[an]?://(?:($idRx):($keyRx)@)?($slug)/{0,1}(.*)""", "aws_id", "aws_key", "bucket", "prefix")
 
+  // `S3Client`s are HEAVY. We need to avoid creating them as though they're free
   def setCreateS3Client(job: Job, createClient: () => S3Client): Unit =
     setCreateS3Client(job.getConfiguration, createClient)
 
@@ -213,7 +223,9 @@ object S3InputFormat {
   def getS3Client(job: JobContext): S3Client =
     job.getConfiguration.getSerializedOption[() => S3Client](CREATE_S3CLIENT) match {
       case Some(createS3Client) => createS3Client()
-      case None => S3Client.DEFAULT
+      case None =>
+        // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
+        S3Client.create()
     }
 
   def removeCreateS3Client(conf: Configuration): Unit =

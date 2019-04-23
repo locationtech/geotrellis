@@ -19,11 +19,17 @@ package geotrellis.spark.io.s3
 import geotrellis.spark.LayerId
 import geotrellis.spark.io._
 
+import software.amazon.awssdk.services.s3.model.{ListObjectsV2Request, DeleteObjectRequest}
+import software.amazon.awssdk.services.s3.S3Client
 import com.typesafe.scalalogging.LazyLogging
+
+import scala.collection.JavaConverters._
 
 class S3LayerDeleter(val attributeStore: AttributeStore) extends LazyLogging with LayerDeleter[LayerId] {
 
-  def getS3Client: () => S3Client = () => S3Client.DEFAULT
+  def getS3Client: () => S3Client = () =>
+    // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
+    S3Client.create()
 
   def delete(id: LayerId): Unit = {
     try {
@@ -31,8 +37,22 @@ class S3LayerDeleter(val attributeStore: AttributeStore) extends LazyLogging wit
       val bucket = header.bucket
       val prefix = header.key + "/"
       val s3Client = getS3Client()
+      val listRequest = ListObjectsV2Request.builder()
+        .bucket(bucket)
+        .prefix(prefix)
+        .build()
 
-      s3Client.deleteListing(bucket, s3Client.listObjects(bucket, prefix))
+      s3Client
+        .listObjectsV2Paginator(listRequest)
+        .contents
+        .asScala
+        .foreach { s3obj =>
+          val deleteRequest = DeleteObjectRequest.builder()
+            .bucket(bucket)
+            .key(s3obj.key)
+            .build()
+          s3Client.deleteObject(deleteRequest)
+        }
     } catch {
       case e: AttributeNotFoundError =>
         logger.info(s"Metadata for $id was not found. Any associated layer data (if any) will require manual deletion")

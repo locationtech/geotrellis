@@ -31,7 +31,7 @@ import org.apache.spark.rdd.RDD
 case class S3GeoTiffInfoReader(
   bucket: String,
   prefix: String,
-  getS3Client: () => S3Client = () => S3Client.DEFAULT,
+  getS3Client: () => WrappedS3Client = () => WrappedS3Client.DEFAULT,
   delimiter: Option[String] = None,
   streaming: Boolean = true,
   tiffExtensions: Seq[String] = S3GeoTiffRDD.Options.DEFAULT.tiffExtensions

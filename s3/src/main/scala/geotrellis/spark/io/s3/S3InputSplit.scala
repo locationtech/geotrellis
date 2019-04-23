@@ -17,7 +17,7 @@
 package geotrellis.spark.io.s3
 
 import com.typesafe.scalalogging.LazyLogging
-import software.amazon.awssdk.services.s3.model.S3ObjectSummary
+import software.amazon.awssdk.services.s3.model.S3Object
 import org.apache.hadoop.io.Writable
 import org.apache.hadoop.mapreduce.InputSplit
 
@@ -35,11 +35,10 @@ class S3InputSplit extends InputSplit with Writable with LazyLogging
   /** Combined size of objects in bytes */
   var size: Long = _
 
-  def addKey(obj: S3ObjectSummary): Long = {
-    val objSize = obj.getSize
-    size += objSize
-    keys = keys :+ obj.getKey
-    objSize
+  def addKey(s3obj: S3Object): Long = {
+    size += s3obj.size
+    keys = keys :+ s3obj.key
+    s3obj.size
   }
 
   override def getLength: Long = keys.length

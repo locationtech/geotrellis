@@ -26,6 +26,7 @@ import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.util.KryoWrapper
 
 import software.amazon.awssdk.services.s3.model.S3Exception
+import software.amazon.awssdk.services.s3.S3Client
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
@@ -77,7 +78,7 @@ trait S3RDDReader {
             } catch {
               case e: S3Exception if e.statusCode == 404 => Vector.empty
             }
-          }) (backOffPredicate = {
+          })({
             case e: S3Exception if e.statusCode == 503 => true
             case _ => false
           })
@@ -87,5 +88,7 @@ trait S3RDDReader {
 }
 
 object S3RDDReader extends S3RDDReader {
-  def getS3Client: () => S3Client = () => S3Client.DEFAULT
+  def getS3Client: () => S3Client = () =>
+    //https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
+    S3Client.create()
 }

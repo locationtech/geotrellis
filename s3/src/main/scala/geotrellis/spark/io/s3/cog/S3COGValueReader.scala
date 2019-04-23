@@ -23,10 +23,12 @@ import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
 import geotrellis.spark.io.index._
-import geotrellis.spark.io.s3.{S3AttributeStore, S3Client, S3LayerHeader}
+import geotrellis.spark.io.s3.{S3AttributeStore, S3LayerHeader}
 import geotrellis.util._
+
+import software.amazon.awssdk.services.s3.model.S3Exception
+import software.amazon.awssdk.services.s3.S3Client
 import spray.json._
-import software.amazon.awssdk.services.s3.model.AmazonS3Exception
 
 import scala.reflect.ClassTag
 import java.net.URI
@@ -35,7 +37,8 @@ class S3COGValueReader(
   val attributeStore: AttributeStore
 ) extends OverzoomingCOGValueReader {
 
-  def s3Client: S3Client = S3Client.DEFAULT
+  // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
+  def s3Client: S3Client = S3Client.create()
 
   implicit def getByteReader(uri: URI): ByteReader = byteReader(uri, s3Client)
 
@@ -60,7 +63,7 @@ class S3COGValueReader(
       keyPath,
       path => new URI(s"s3://${path}"),
       key => {
-        case e: AmazonS3Exception if e.getStatusCode == 404 =>
+        case e: S3Exception if e.statusCode == 404 =>
           throw new ValueNotFoundError(key, layerId)
       }
     )
