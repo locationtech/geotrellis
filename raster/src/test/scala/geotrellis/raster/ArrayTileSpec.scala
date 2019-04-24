@@ -166,7 +166,7 @@ class ArrayTileSpec extends FunSpec
     }
 
     it("should combine with non-standard tiles") {
-      withClue("IntArrayTile") {
+      withClue("constant IntArrayTile") {
         val at = IntArrayTile(Array.ofDim[Int](100*100).fill(50), 100, 100)
         val fauxTile = new DelegatingTile {
           override protected def delegate: Tile = IntConstantTile(0, 100, 100)
@@ -175,13 +175,36 @@ class ArrayTileSpec extends FunSpec
         assertEqual(at.combine(fauxTile)((z1, z2) => z1 + z2), at)
       }
 
-      withClue("DoubleArrayTile") {
+      withClue("constant DoubleArrayTile") {
         val at = DoubleArrayTile(Array.ofDim[Double](100*100).fill(50), 100, 100)
         val fauxTile = new DelegatingTile {
           override protected def delegate: Tile = DoubleConstantTile(0.0, 100, 100)
         }
 
         assertEqual(at.combineDouble(fauxTile)((z1, z2) => z1 + z2), at)
+      }
+
+      withClue("IntArrayTile with NoData") {
+        val at = injectNoData(4)(createConsecutiveTile(10))
+          .convert(DoubleUserDefinedNoDataCellType(98))
+        val twice = at * 2
+        val fauxTile = new DelegatingTile {
+          override protected def delegate: Tile = at
+        }
+
+        assertEqual(at.combine(fauxTile)((z1, z2) => z1 + z2), twice)
+      }
+
+      withClue("DoubleArrayTile with NoData") {
+        val at = injectNoData(4)(createValueTile(10, 10.2))
+          .convert(DoubleUserDefinedNoDataCellType(33.2))
+        val twice = at * 2
+        val fauxTile = new DelegatingTile {
+          override protected def delegate: Tile = at
+        }
+
+        assertEqual(at.combineDouble(fauxTile)((z1, z2) => z1 + z2), twice)
+        assertEqual(fauxTile.combineDouble(at)((z1, z2) => z1 + z2), twice)
       }
     }
   }
