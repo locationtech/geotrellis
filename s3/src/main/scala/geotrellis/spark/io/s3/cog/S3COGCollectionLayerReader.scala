@@ -74,7 +74,7 @@ class S3COGCollectionLayerReader(
       id              = id,
       tileQuery       = rasterQuery,
       getKeyPath      = getKeyPath,
-      pathExists      = { s3PathExists(_, getS3Client()) },
+      pathExists      = { s3ObjectExists(_, getS3Client()) },
       fullPath        = { path => new URI(s"s3://$path") },
       defaultThreads  = defaultThreads
     )

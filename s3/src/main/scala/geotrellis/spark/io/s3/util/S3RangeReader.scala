@@ -23,6 +23,8 @@ import geotrellis.util.RangeReader
 //import software.amazon.awssdk.services.s3.AmazonS3URI
 import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.services.s3.S3Client
+import org.apache.commons.io.IOUtils
+
 
 import java.net.URI
 
@@ -38,30 +40,49 @@ class S3RangeReader(
   request: GetObjectRequest,
   client: S3Client) extends RangeReader {
 
-  val metadata: ObjectMetadata =
-    client.getObjectMetadata(request.getBucketName, request.getKey)
+  val metadata: HeadObjectResponse = {
+    val headRequest = HeadObjectRequest.builder()
+      .bucket(request.bucket)
+      .key(request.key)
+      .build()
+    client.headObject(headRequest)
+  }
 
-  val totalLength: Long = metadata.getContentLength
+  val totalLength: Long = metadata.contentLength
 
-  def readClippedRange(start: Long, length: Int): Array[Byte] =
-    client.readRange(start, start + length, request)
+  def readClippedRange(start: Long, length: Int): Array[Byte] = {
+    val getRequest = GetObjectRequest.builder()
+      .bucket(request.bucket)
+      .key(request.key)
+      .range(s"bytes=${start}-${start + length}")
+      .build()
+
+    val is = client.getObject(getRequest)
+    val bytes = IOUtils.toByteArray(is)
+    is.close()
+    bytes
+  }
 }
 
 /** The companion object of [[S3RangeReader]] */
 object S3RangeReader {
 
-  def apply(s3address: String): S3RangeReader =
-    apply(new URI(s3address), AmazonS3Client())
-
   def apply(s3address: String, client: S3Client): S3RangeReader =
     apply(new URI(s3address), client)
 
+  // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
   def apply(uri: URI): S3RangeReader =
-    apply(uri, AmazonS3Client())
+    apply(uri, S3Client.create())
 
   def apply(uri: URI, client: S3Client): S3RangeReader = {
-    val s3uri = new AmazonS3URI(uri)
-    apply(new GetObjectRequest(s3uri.getBucket, s3uri.getKey), client)
+    //val s3uri = new AmazonS3URI(uri)
+    val bucket = ???
+    val key = ???
+    val request = GetObjectRequest.builder()
+      .bucket(bucket)
+      .key(key)
+      .build()
+    apply(request, client)
   }
 
   /**
@@ -72,8 +93,13 @@ object S3RangeReader {
    * @param client: The [[S3Client]] that retrieves the data.
    * @return A new instance of S3RangeReader.
    */
-  def apply(bucket: String, key: String, client: S3Client): S3RangeReader =
-    apply(new GetObjectRequest(bucket, key), client)
+  def apply(bucket: String, key: String, client: S3Client): S3RangeReader = {
+    val request = GetObjectRequest.builder()
+      .bucket(bucket)
+      .key(key)
+      .build()
+    apply(request, client)
+  }
 
   /**
    * Returns a new instance of S3RangeReader.

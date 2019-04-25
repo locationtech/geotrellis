@@ -21,16 +21,10 @@ import geotrellis.util.{ByteReader, StreamingByteReader}
 
 import software.amazon.awssdk.services.s3.S3Client
 
+import scala.util.{Try, Success, Failure}
 import java.net.URI
 
 package object cog {
-  def s3PathExists(str: String, s3Client: S3Client): Boolean = {
-    val arr = str.split("/").filterNot(_.isEmpty)
-    val bucket = arr.head
-    val prefix = arr.tail.mkString("/")
-    s3Client.doesObjectExist(bucket, prefix)
-  }
-
   def byteReader(uri: URI, s3Client: S3Client): ByteReader = {
     //val auri = new AmazonS3URI(uri)
     val bucket = ???

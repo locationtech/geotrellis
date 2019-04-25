@@ -17,6 +17,11 @@
 package geotrellis.spark.io
 
 import org.apache.spark.rdd.RDD
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.{NoSuchKeyException, HeadObjectRequest}
+
+import scala.util.{Try, Success, Failure}
+import java.net.URI
 
 package object s3 {
   private[s3]
@@ -26,4 +31,27 @@ package object s3 {
       .mkString("/")
 
   implicit class withSaveToS3Methods[K](rdd: RDD[(K, Array[Byte])]) extends SaveToS3Methods(rdd)
+
+  def s3ObjectExists(bucket: String, key: String, s3Client: S3Client): Boolean = {
+    val request = HeadObjectRequest.builder()
+      .bucket(bucket)
+      .key(key)
+      .build()
+    // If successful
+    val objectExists =
+      Try(s3Client.headObject(request))
+        .map(_ => true)
+        .recoverWith({ case nske: NoSuchKeyException => Success(false) })
+    objectExists match {
+      case Success(bool) => bool
+      case Failure(throwable) => throw throwable
+    }
+  }
+
+  def s3ObjectExists(path: String, s3Client: S3Client): Boolean = {
+    val arr = path.split("/").filterNot(_.isEmpty)
+    val bucket = arr.head
+    val key = arr.tail.mkString("/")
+    s3ObjectExists(bucket, key, s3Client)
+  }
 }

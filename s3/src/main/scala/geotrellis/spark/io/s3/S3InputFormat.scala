@@ -51,11 +51,6 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
     val bucket = conf.get(BUCKET)
     val prefix = conf.get(PREFIX)
     val crs = conf.get(CRS_VALUE)
-    val region: Option[Region] = {
-      val r = conf.get(REGION, null)
-      if(r != null) Some(Region.getRegion(Regions.fromName(r)))
-      else None
-    }
 
     val extensions: Array[String] = {
       val extensionsConf = conf.get(EXTENSIONS)
@@ -81,7 +76,6 @@ abstract class S3InputFormat[K, V] extends InputFormat[K,V] with LazyLogging {
       "Either PARTITION_COUNT or PARTITION_SIZE option may be set")
 
     val s3client: S3Client = getS3Client(context)
-    for (r <- region) s3client.setRegion(r)
 
     logger.info(s"Listing Splits: bucket=$bucket prefix=$prefix")
 
@@ -220,13 +214,29 @@ object S3InputFormat {
   def setCreateS3Client(conf: Configuration, createClient: () => S3Client): Unit =
     conf.setSerialized(CREATE_S3CLIENT, createClient)
 
-  def getS3Client(job: JobContext): S3Client =
-    job.getConfiguration.getSerializedOption[() => S3Client](CREATE_S3CLIENT) match {
-      case Some(createS3Client) => createS3Client()
+  def getS3Client(job: JobContext): S3Client = {
+    val conf = job.getConfiguration
+
+    val maybeRegion = {
+      val r = conf.get(REGION, null)
+      if (r != null) Some(Region.of(r))
+      else None
+    }
+    conf.getSerializedOption[() => S3Client](CREATE_S3CLIENT) match {
+      case Some(createS3Client) =>
+        createS3Client()
       case None =>
         // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-        S3Client.create()
+        maybeRegion match {
+          case Some(region) =>
+            S3Client.builder()
+              .region(region)
+              .build()
+          case None =>
+            S3Client.create()
+        }
     }
+  }
 
   def removeCreateS3Client(conf: Configuration): Unit =
     conf.unset(CREATE_S3CLIENT)

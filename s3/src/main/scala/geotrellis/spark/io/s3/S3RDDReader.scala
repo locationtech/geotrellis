@@ -25,8 +25,9 @@ import geotrellis.spark.io.index.{IndexRanges, MergeQueue}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.util.KryoWrapper
 
-import software.amazon.awssdk.services.s3.model.S3Exception
+import software.amazon.awssdk.services.s3.model.{S3Exception, GetObjectRequest}
 import software.amazon.awssdk.services.s3.S3Client
+
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
 import org.apache.spark.SparkContext
@@ -71,7 +72,13 @@ trait S3RDDReader {
         partition flatMap { seq =>
           LayerReader.njoinEBO[K, V](seq.toIterator, threads)({ index: BigInt =>
             try {
-              val bytes = IOUtils.toByteArray(s3client.getObject(bucket, keyPath(index)).getObjectContent)
+              val request = GetObjectRequest.builder()
+                .bucket(bucket)
+                .key(keyPath(index))
+                .build()
+              val is = s3client.getObject(request)
+              val bytes = IOUtils.toByteArray(is)
+              is.close()
               val recs = AvroEncoder.fromBinary(writerSchema, bytes)(_recordCodec)
               if (filterIndexOnly) recs
               else recs.filter { row => includeKey(row._1) }

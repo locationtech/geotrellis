@@ -6,6 +6,9 @@ scalaVersion := Version.scala
 
 scalaVersion in ThisBuild := Version.scala
 
+bloopExportJarClassifiers in Global := Some(Set("sources"))
+
+
 lazy val commonSettings = Seq(
   version := Version.geotrellis,
   scalaVersion := Version.scala,
@@ -17,6 +20,7 @@ lazy val commonSettings = Seq(
   scmInfo := Some(ScmInfo(
     url("https://github.com/locationtech/geotrellis"), "scm:git:git@github.com:locationtech/geotrellis.git"
   )),
+  javacOptions ++= Seq("-target", "1.8"),
   scalacOptions ++= Seq(
     "-deprecation",
     "-unchecked",
@@ -28,7 +32,8 @@ lazy val commonSettings = Seq(
     "-language:existentials",
     "-language:experimental.macros",
     "-feature",
-    "-Ypartial-unification" // Required by Cats
+    "-Ypartial-unification", // Required by Cats
+    "-target:jvm-1.8"
   ),
   publishMavenStyle := true,
   publishArtifact in Test := false,

@@ -24,18 +24,24 @@ import geotrellis.spark._
 import geotrellis.spark.io.s3._
 import geotrellis.util.Filesystem
 
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.{GetObjectRequest, ListObjectsV2Request, S3Object}
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.filefilter._
 import org.apache.spark._
 import org.apache.spark.rdd._
+import org.apache.commons.io.IOUtils
+
+import scala.collection.JavaConverters._
 import java.io.File
 
 
 class S3SlippyTileReader[T](uri: String)(fromBytes: (SpatialKey, Array[Byte]) => T) extends SlippyTileReader[T] {
   import SlippyTileReader.TilePath
 
-  val client = S3Client.DEFAULT
-  val getClient = () => S3Client.DEFAULT
+  // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
+  val client = S3Client.create()
+  val getClient = () => S3Client.create()
 
   val parsed = new java.net.URI(uri)
   val bucket = parsed.getHost
@@ -44,38 +50,69 @@ class S3SlippyTileReader[T](uri: String)(fromBytes: (SpatialKey, Array[Byte]) =>
     path.substring(1, path.length)
   }
 
-  def read(zoom: Int, key: SpatialKey): T = {
-    val s3key = new File(prefix, s"$zoom/${key.col}/${key.row}").getPath
+  def read(zoom: Int, spatialkey: SpatialKey): T = {
+    val s3key = new File(prefix, s"$zoom/${spatialkey.col}/${spatialkey.row}").getPath
 
-    client.listKeys(bucket, s3key) match {
-      case Seq() => sys.error(s"KeyNotFound: $s3key not found in bucket $bucket")
-      case Seq(tileKey) => fromBytes(key, client.readBytes(bucket, tileKey))
-      case _ => sys.error(s"Multiple keys found for prefix $s3key in bucket $bucket")
-    }
+    val listRequest = ListObjectsV2Request.builder()
+      .bucket(bucket)
+      .prefix(s3key)
+      .build()
+
+    val objectList: List[S3Object] = client.listObjectsV2(listRequest)
+      .contents
+      .asScala
+      .toList
+
+    objectList match {
+        case List() => sys.error(s"KeyNotFound: $s3key not found in bucket $bucket")
+        case List(s3obj) =>
+          val getRequest = GetObjectRequest.builder()
+            .bucket(bucket)
+            .key(s3obj.key)
+            .build()
+          val s3objStream = client.getObject(getRequest)
+          val bytes = IOUtils.toByteArray(s3objStream)
+          val t = fromBytes(spatialkey, bytes)
+          s3objStream.close()
+          t
+        case _ => sys.error(s"Multiple keys found for prefix $s3key in bucket $bucket")
+      }
   }
 
   def read(zoom: Int)(implicit sc: SparkContext): RDD[(SpatialKey, T)] = {
-    val keys = {
-      client.listKeys(bucket, new File(prefix, zoom.toString).getPath)
-        .map { key =>
-          key match {
-            case TilePath(x, y) => Some((SpatialKey(x.toInt, y.toInt), key))
+    val s3keys = {
+      val listRequest = ListObjectsV2Request.builder()
+        .bucket(bucket)
+        .prefix(new File(prefix, zoom.toString).getPath)
+        .build()
+      client.listObjectsV2Paginator(listRequest)
+        .contents
+        .asScala
+        .flatMap { s3obj =>
+          s3obj.key match {
+            case TilePath(x, y) => Some((SpatialKey(x.toInt, y.toInt), s3obj.key))
             case _ => None
           }
         }
-        .flatten
         .toSeq
     }
 
-    val numPartitions = math.min(keys.size, math.max(keys.size / 10, 50)).toInt
-    sc.parallelize(keys)
+    val numPartitions = math.min(s3keys.size, math.max(s3keys.size / 10, 50)).toInt
+    sc.parallelize(s3keys)
       .partitionBy(new HashPartitioner(numPartitions))
       .mapPartitions({ partition =>
         val client = getClient()
 
         partition.map { case (spatialKey, s3Key) =>
-
-          (spatialKey, fromBytes(spatialKey, client.readBytes(bucket, s3Key)))
+          val getRequest = GetObjectRequest.builder()
+            .bucket(bucket)
+            .key(s3Key)
+            .build()
+          val s3obj = client.getObject(getRequest)
+          val bytes = IOUtils.toByteArray(s3obj)
+          val t = fromBytes(spatialKey, bytes)
+          s3obj.close()
+          (spatialKey, t)
         }
       }, preservesPartitioning = true)
   }

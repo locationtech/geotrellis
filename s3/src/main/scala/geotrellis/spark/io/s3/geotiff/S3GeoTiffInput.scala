@@ -24,8 +24,9 @@ import geotrellis.util.annotations.experimental
 
 //import software.amazon.awssdk.services.s3.AmazonS3URI
 import software.amazon.awssdk.services.s3.S3Client
-import software.amazon.awssdk.services.s3.model.ListObjectsRequest
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
 
+import scala.collection.JavaConverters._
 import java.net.URI
 
 /**
@@ -52,36 +53,38 @@ import java.net.URI
     val regexp = pattern.r
 
     val objectRequest = if (recursive) {
-      ListObjectsRequest.builder()
+      ListObjectsV2Request.builder()
         .bucket(bucket)
         .prefix(prefix)
         .build()
     } else {
-      ListObjectsRequest.builder()
+      ListObjectsV2Request.builder()
         .bucket(bucket)
         .prefix(prefix)
         .delimiter("/")
         .build()
     }
 
-    s3Client.listKeys(objectRequest)
-      .flatMap { key =>
-        key match {
+    s3Client.listObjectsV2Paginator(objectRequest)
+      .contents
+      .asScala
+      .flatMap({ s3obj =>
+        s3obj.key match {
           case regexp(_*) => ??? // Some(new AmazonS3URI(s"s3://${s3Uri.getBucket}/${key}"))
           case _ => None
         }
-      }
-      .map { auri =>
+      }).map({ bucketAndKey: (String, String) =>
         val tiffTags = TiffTagsReader.read(StreamingByteReader(
           S3RangeReader(
-            bucket = auri.getBucket,
-            key = auri.getKey,
+            bucket = bucketAndKey._1,
+            key = bucketAndKey._2,
             client = getS3Client()
           )
         ))
 
-        GeoTiffMetadata(tiffTags.extent, tiffTags.crs, name, new URI(auri.toString))
-      }
+        val uri = new URI(???)
+        GeoTiffMetadata(tiffTags.extent, tiffTags.crs, name, uri)
+      })
       .toList
   }
 }

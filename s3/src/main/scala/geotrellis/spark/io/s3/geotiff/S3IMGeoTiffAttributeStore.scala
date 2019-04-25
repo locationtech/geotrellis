@@ -17,13 +17,14 @@
 package geotrellis.spark.io.s3.geotiff
 
 import geotrellis.spark.io.hadoop.geotiff._
-import geotrellis.spark.io.s3.S3Client
 import geotrellis.util.annotations.experimental
 
 import spray.json._
 import spray.json.DefaultJsonProtocol._
-import software.amazon.awssdk.services.s3.AmazonS3URI
-import software.amazon.awssdk.services.s3.model.ObjectMetadata
+// import software.amazon.awssdk.services.s3.AmazonS3URI
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.core.sync.RequestBody
+import software.amazon.awssdk.services.s3.model.PutObjectRequest
 
 import java.io.ByteArrayInputStream
 import java.net.URI
@@ -45,10 +46,14 @@ import java.net.URI
     name: String,
     uri: URI,
     pattern: String
-  ): InMemoryGeoTiffAttributeStore = apply(name, uri, pattern, true, () => S3Client.DEFAULT)
+  ): InMemoryGeoTiffAttributeStore = apply(name, uri, pattern, true, () =>
+    // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
+    S3Client.create())
 
   def apply(getDataFunction: () => List[GeoTiffMetadata]): InMemoryGeoTiffAttributeStore =
-    apply(getDataFunction, () => S3Client.DEFAULT)
+    apply(getDataFunction, () =>
+        // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
+        S3Client.create())
 
   def apply(
     getDataFunction: () => List[GeoTiffMetadata],
@@ -58,12 +63,17 @@ import java.net.URI
       lazy val metadataList = getDataFunction()
       def persist(uri: URI): Unit = {
         val s3Client = getS3Client()
-        val s3Path = new AmazonS3URI(uri)
+        val s3Path = ??? //new AmazonS3URI(uri)
+        val bucket = ???
+        val key = ???
         val data = metadataList
 
         val str = data.toJson.compactPrint
-        val is = new ByteArrayInputStream(str.getBytes("UTF-8"))
-        s3Client.putObject(s3Path.getBucket, s3Path.getKey, is, new ObjectMetadata())
+        val request = PutObjectRequest.builder()
+          .bucket(bucket)
+          .key(key)
+          .build()
+        s3Client.putObject(request, RequestBody.fromBytes(str.getBytes("UTF-8")))
       }
     }
 }

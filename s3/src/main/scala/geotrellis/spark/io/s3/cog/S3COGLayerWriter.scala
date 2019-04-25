@@ -140,7 +140,7 @@ class S3COGAsyncWriter[V <: CellGrid[Int]: GeoTiffReader](
   bucket: String,
   threads: Int,
   putObjectModifier: PutObjectRequest => PutObjectRequest
-) extends  AsyncWriter[S3Client, GeoTiff[V], PutObjectRequest](threads) {
+) extends  AsyncWriter[S3Client, GeoTiff[V], (PutObjectRequest, RequestBody)](threads) {
 
   def readRecord(
     client: S3Client,
