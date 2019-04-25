@@ -6,11 +6,11 @@
 
 set -o pipefail
 
-declare -r sbt_release_version="0.13.17"
-declare -r sbt_unreleased_version="0.13.17"
+declare -r sbt_release_version="1.2.8"
+declare -r sbt_unreleased_version="1.2.8"
 
-declare -r latest_213="2.13.0-M5"
-declare -r latest_212="2.12.7"
+declare -r latest_213="2.13.0-RC1"
+declare -r latest_212="2.12.8"
 declare -r latest_211="2.11.12"
 declare -r latest_210="2.10.7"
 declare -r latest_29="2.9.3"
@@ -43,11 +43,12 @@ declare -a extra_jvm_opts extra_sbt_opts
 
 echoerr () { echo >&2 "$@"; }
 vlog ()    { [[ -n "$verbose" ]] && echoerr "$@"; }
-die ()     { echo "Aborting: $@" ; exit 1; }
+die ()     { echo "Aborting: $*" ; exit 1; }
 
 setTrapExit () {
   # save stty and trap exit, to ensure echo is re-enabled if we are interrupted.
-  export SBT_STTY="$(stty -g 2>/dev/null)"
+  SBT_STTY="$(stty -g 2>/dev/null)"
+  export SBT_STTY
 
   # restore stty settings (echo in particular)
   onSbtRunnerExit() {
@@ -67,7 +68,7 @@ get_script_path () {
   local path="$1"
   [[ -L "$path" ]] || { echo "$path" ; return; }
 
-  local target="$(readlink "$path")"
+  local -r target="$(readlink "$path")"
   if [[ "${target:0:1}" == "/" ]]; then
     echo "$target"
   else
@@ -75,8 +76,10 @@ get_script_path () {
   fi
 }
 
-declare -r script_path="$(get_script_path "$BASH_SOURCE")"
-declare -r script_name="${script_path##*/}"
+script_path="$(get_script_path "${BASH_SOURCE[0]}")"
+declare -r script_path
+script_name="${script_path##*/}"
+declare -r script_name
 
 init_default_option_file () {
   local overriding_var="${!1}"
@@ -90,8 +93,8 @@ init_default_option_file () {
   echo "$default_file"
 }
 
-declare sbt_opts_file="$(init_default_option_file SBT_OPTS .sbtopts)"
-declare jvm_opts_file="$(init_default_option_file JVM_OPTS .jvmopts)"
+sbt_opts_file="$(init_default_option_file SBT_OPTS .sbtopts)"
+jvm_opts_file="$(init_default_option_file JVM_OPTS .jvmopts)"
 
 build_props_sbt () {
   [[ -r "$buildProps" ]] && \
@@ -142,9 +145,9 @@ addResidual () { vlog "[residual] arg = '$1'"  ; residual_args+=("$1"); }
 addResolver () { addSbt "set resolvers += $1"; }
 addDebugger () { addJava "-Xdebug" ; addJava "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=$1"; }
 setThisBuild () {
-  vlog "[addBuild] args = '$@'"
+  vlog "[addBuild] args = '$*'"
   local key="$1" && shift
-  addSbt "set $key in ThisBuild := $@"
+  addSbt "set $key in ThisBuild := $*"
 }
 setScalaVersion () {
   [[ "$1" == *"-SNAPSHOT" ]] && addResolver 'Resolver.sonatypeRepo("snapshots")'
@@ -159,7 +162,7 @@ setJavaHome () {
 }
 
 getJavaVersion() {
-  local str=$("$1" -version 2>&1 | grep -E -e '(java|openjdk) version' | awk '{ print $3 }' | tr -d '"')
+  local -r str=$("$1" -version 2>&1 | grep -E -e '(java|openjdk) version' | awk '{ print $3 }' | tr -d '"')
 
   # java -version on java8 says 1.8.x
   # but on 9 and 10 it's 9.x.y and 10.x.y.
@@ -191,14 +194,14 @@ checkJava() {
 }
 
 java_version () {
-  local version=$(getJavaVersion "$java_cmd")
+  local -r version=$(getJavaVersion "$java_cmd")
   vlog "Detected Java version: $version"
   echo "$version"
 }
 
 # MaxPermSize critical on pre-8 JVMs but incurs noisy warning on 8+
 default_jvm_opts () {
-  local v="$(java_version)"
+  local -r v="$(java_version)"
   if [[ $v -ge 8 ]]; then
     echo "$default_jvm_opts_common"
   else
@@ -240,11 +243,11 @@ execRunner () {
 
 jar_url ()  { make_url "$1"; }
 
-is_cygwin () [[ "$(uname -a)" == "CYGWIN"* ]]
+is_cygwin () { [[ "$(uname -a)" == "CYGWIN"* ]]; }
 
 jar_file () {
   is_cygwin \
-  && echo "$(cygpath -w $sbt_launch_dir/"$1"/sbt-launch.jar)" \
+  && cygpath -w "$sbt_launch_dir/$1/sbt-launch.jar" \
   || echo "$sbt_launch_dir/$1/sbt-launch.jar"
 }
 
@@ -420,7 +423,7 @@ process_args "$@"
 readConfigFile() {
   local end=false
   until $end; do
-    read || end=true
+    read -r || end=true
     [[ $REPLY =~ ^# ]] || [[ -z $REPLY ]] || echo "$REPLY"
   done < "$1"
 }
@@ -429,10 +432,10 @@ readConfigFile() {
 # can supply args to this runner
 if [[ -r "$sbt_opts_file" ]]; then
   vlog "Using sbt options defined in file $sbt_opts_file"
-  while read opt; do extra_sbt_opts+=("$opt"); done < <(readConfigFile "$sbt_opts_file")
+  while read -r opt; do extra_sbt_opts+=("$opt"); done < <(readConfigFile "$sbt_opts_file")
 elif [[ -n "$SBT_OPTS" && ! ("$SBT_OPTS" =~ ^@.*) ]]; then
   vlog "Using sbt options defined in variable \$SBT_OPTS"
-  extra_sbt_opts=( $SBT_OPTS )
+  IFS=" " read -r -a extra_sbt_opts <<< "$SBT_OPTS"
 else
   vlog "No extra sbt options have been defined"
 fi
@@ -452,18 +455,18 @@ checkJava
 setTraceLevel() {
   case "$sbt_version" in
     "0.7."* | "0.10."* | "0.11."* ) echoerr "Cannot set trace level in sbt version $sbt_version" ;;
-                                 *) setThisBuild traceLevel $trace_level ;;
+                                 *) setThisBuild traceLevel "$trace_level" ;;
   esac
 }
 
 # set scalacOptions if we were given any -S opts
-[[ ${#scalac_args[@]} -eq 0 ]] || addSbt "set scalacOptions in ThisBuild += \"${scalac_args[@]}\""
+[[ ${#scalac_args[@]} -eq 0 ]] || addSbt "set scalacOptions in ThisBuild += \"${scalac_args[*]}\""
 
 [[ -n "$sbt_explicit_version" && -z "$sbt_new" ]] && addJava "-Dsbt.version=$sbt_explicit_version"
 vlog "Detected sbt version $sbt_version"
 
 if [[ -n "$sbt_script" ]]; then
-  residual_args=( $sbt_script ${residual_args[@]} )
+  residual_args=( "$sbt_script" "${residual_args[@]}" )
 else
   # no args - alert them there's stuff in here
   (( argumentCount > 0 )) || {
@@ -484,6 +487,7 @@ EOM
 }
 
 # pick up completion if present; todo
+# shellcheck disable=SC1091
 [[ -r .sbt_completion.sh ]] && source .sbt_completion.sh
 
 # directory to store sbt launchers
@@ -518,13 +522,13 @@ fi
 
 if [[ -r "$jvm_opts_file" ]]; then
   vlog "Using jvm options defined in file $jvm_opts_file"
-  while read opt; do extra_jvm_opts+=("$opt"); done < <(readConfigFile "$jvm_opts_file")
+  while read -r opt; do extra_jvm_opts+=("$opt"); done < <(readConfigFile "$jvm_opts_file")
 elif [[ -n "$JVM_OPTS" && ! ("$JVM_OPTS" =~ ^@.*) ]]; then
   vlog "Using jvm options defined in \$JVM_OPTS variable"
-  extra_jvm_opts=( $JVM_OPTS )
+  IFS=" " read -r -a extra_jvm_opts <<< "$JVM_OPTS"
 else
   vlog "Using default jvm options"
-  extra_jvm_opts=( $(default_jvm_opts) )
+  IFS=" " read -r -a extra_jvm_opts <<< "$(default_jvm_opts)"
 fi
 
 # traceLevel is 0.12+
@@ -546,13 +550,12 @@ main () {
 # we're not going to print those lines anyway. We strip that bit of
 # line noise, but leave the other codes to preserve color.
 mainFiltered () {
-  local ansiOverwrite='\r\x1BM\x1B[2K'
-  local excludeRegex=$(egrep -v '^#|^$' ~/.sbtignore | paste -sd'|' -)
+  local -r excludeRegex=$(grep -E -v '^#|^$' ~/.sbtignore | paste -sd'|' -)
 
   echoLine () {
-    local line="$1"
-    local line1="$(echo "$line" | sed 's/\r\x1BM\x1B\[2K//g')"       # This strips the OverwriteLine code.
-    local line2="$(echo "$line1" | sed 's/\x1B\[[0-9;]*[JKmsu]//g')" # This strips all codes - we test regexes against this.
+    local -r line="$1"
+    local -r line1="${line//\r\x1BM\x1B\[2K//g}"       # This strips the OverwriteLine code.
+    local -r line2="${line1//\x1B\[[0-9;]*[JKmsu]//g}" # This strips all codes - we test regexes against this.
 
     if [[ $line2 =~ $excludeRegex ]]; then
       [[ -n $debugUs ]] && echo "[X] $line1"
@@ -569,7 +572,7 @@ mainFiltered () {
 # Obviously this is super ad hoc but I don't know how to improve on it. Testing whether
 # stdin is a terminal is useless because most of my use cases for this filtering are
 # exactly when I'm at a terminal, running sbt non-interactively.
-shouldFilter () { [[ -f ~/.sbtignore ]] && ! egrep -q '\b(shell|console|consoleProject)\b' <<<"${residual_args[@]}"; }
+shouldFilter () { [[ -f ~/.sbtignore ]] && ! grep -E -q '\b(shell|console|consoleProject)\b' <<<"${residual_args[@]}"; }
 
 # run sbt
 if shouldFilter; then mainFiltered; else main; fi

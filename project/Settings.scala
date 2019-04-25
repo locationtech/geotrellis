@@ -103,7 +103,8 @@ object Settings {
     libraryDependencies ++= Seq(
       sparkCore,
       logging,
-      scalatest % Test
+      scalatest % Test,
+      sparkSQL % Test
     )
   )
 
@@ -313,7 +314,9 @@ object Settings {
       scalatest % Test,
       scalacheck % Test,
       scaffeine
-    )
+    ),
+    // https://github.com/sbt/sbt/issues/4609
+    fork in Test := true
   )
 
   lazy val raster = Seq(
