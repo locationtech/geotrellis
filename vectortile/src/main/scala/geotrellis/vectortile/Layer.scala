@@ -79,7 +79,7 @@ import scala.collection.mutable.ListBuffer
   }
 
   /** Encode this ProtobufLayer a mid-level Layer ready to be encoded as protobuf bytes. */
-  private[vectortile] def toProtobuf: PBLayer = {
+  private[vectortile] def toProtobuf(normalize: Boolean = true): PBLayer = {
     val pgp = implicitly[ProtobufGeom[Point, MultiPoint]]
     val pgl = implicitly[ProtobufGeom[Line, MultiLine]]
     val pgy = implicitly[ProtobufGeom[Polygon, MultiPolygon]]
@@ -102,12 +102,12 @@ import scala.collection.mutable.ListBuffer
      *   points.map(f => unfeature(keys, values, f))
      */
     val features = Seq(
-      points.map(f => unfeature(keyMap, valMap, POINT, pgp.toCommands(Left(f.geom), tileExtent.northWest, resolution), f.data)),
-      multiPoints.map(f => unfeature(keyMap, valMap, POINT, pgp.toCommands(Right(f.geom), tileExtent.northWest, resolution), f.data)),
-      lines.map(f => unfeature(keyMap, valMap, LINESTRING, pgl.toCommands(Left(f.geom), tileExtent.northWest, resolution), f.data)),
-      multiLines.map(f => unfeature(keyMap, valMap, LINESTRING, pgl.toCommands(Right(f.geom), tileExtent.northWest, resolution), f.data)),
-      polygons.map(f => unfeature(keyMap, valMap, POLYGON, pgy.toCommands(Left(f.geom), tileExtent.northWest, resolution), f.data)),
-      multiPolygons.map(f => unfeature(keyMap, valMap, POLYGON, pgy.toCommands(Right(f.geom), tileExtent.northWest, resolution), f.data))
+      points.map(f => unfeature(keyMap, valMap, POINT, pgp.toCommands(Left(f.geom.normalize(normalize)), tileExtent.northWest, resolution), f.data)),
+      multiPoints.map(f => unfeature(keyMap, valMap, POINT, pgp.toCommands(Right(f.geom.normalize(normalize)), tileExtent.northWest, resolution), f.data)),
+      lines.map(f => unfeature(keyMap, valMap, LINESTRING, pgl.toCommands(Left(f.geom.normalize(normalize)), tileExtent.northWest, resolution), f.data)),
+      multiLines.map(f => unfeature(keyMap, valMap, LINESTRING, pgl.toCommands(Right(f.geom.normalize(normalize)), tileExtent.northWest, resolution), f.data)),
+      polygons.map(f => unfeature(keyMap, valMap, POLYGON, pgy.toCommands(Left(f.geom.normalize(normalize)), tileExtent.northWest, resolution), f.data)),
+      multiPolygons.map(f => unfeature(keyMap, valMap, POLYGON, pgy.toCommands(Right(f.geom.normalize(normalize)), tileExtent.northWest, resolution), f.data))
     ).flatten
 
     PBLayer(version, name, features, keys, values.map(_.toProtobuf), Some(tileWidth))

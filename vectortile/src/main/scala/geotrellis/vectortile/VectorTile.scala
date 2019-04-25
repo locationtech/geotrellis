@@ -45,9 +45,9 @@ import geotrellis.util.annotations.experimental
   * @constructor This is not meant to be called directly - see this class's
   * companion object for the available helper methods.
   */
-@experimental case class VectorTile(layers: Map[String, Layer], tileExtent: Extent) {
+@experimental case class VectorTile(layers: Map[String, Layer], tileExtent: Extent, normalize: Boolean = true) {
   /** Encode this VectorTile back into a mid-level Protobuf object. */
-  private def toProtobuf: PBTile = PBTile(layers = layers.values.map(_.toProtobuf).toSeq)
+  private def toProtobuf: PBTile = PBTile(layers = layers.values.map(_.toProtobuf(normalize)).toSeq)
 
   /** Encode this VectorTile back into its original form of Protobuf bytes. */
   def toBytes: Array[Byte] = toProtobuf.toByteArray

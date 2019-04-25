@@ -99,4 +99,11 @@ package geotrellis
   * @author cwoodbury@azavea.com
   * @version 2.1
   */
-package object vectortile {}
+
+import geotrellis.vector.Geometry
+
+package object vectortile {
+  implicit class withGeometryMethods[G <: Geometry](val self: G) extends AnyVal {
+    private[vectortile] def normalize(enabled: Boolean = true): G = { if(enabled) { self.jtsGeom.normalize() }; self }
+  }
+}
