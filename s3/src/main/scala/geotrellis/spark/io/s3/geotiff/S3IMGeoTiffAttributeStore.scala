@@ -21,10 +21,10 @@ import geotrellis.util.annotations.experimental
 
 import spray.json._
 import spray.json.DefaultJsonProtocol._
-// import software.amazon.awssdk.services.s3.AmazonS3URI
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
+import com.amazonaws.services.s3.AmazonS3URI
 
 import java.io.ByteArrayInputStream
 import java.net.URI
@@ -63,15 +63,13 @@ import java.net.URI
       lazy val metadataList = getDataFunction()
       def persist(uri: URI): Unit = {
         val s3Client = getS3Client()
-        val s3Path = ??? //new AmazonS3URI(uri)
-        val bucket = ???
-        val key = ???
+        val s3Path = new AmazonS3URI(uri)
         val data = metadataList
 
         val str = data.toJson.compactPrint
         val request = PutObjectRequest.builder()
-          .bucket(bucket)
-          .key(key)
+          .bucket(s3Path.getBucket())
+          .key(s3Path.getKey())
           .build()
         s3Client.putObject(request, RequestBody.fromBytes(str.getBytes("UTF-8")))
       }

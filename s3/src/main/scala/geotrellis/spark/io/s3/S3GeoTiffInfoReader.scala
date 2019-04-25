@@ -25,6 +25,7 @@ import geotrellis.util.ByteReader
 
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
+import com.amazonaws.services.s3.AmazonS3URI
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
@@ -69,10 +70,10 @@ case class S3GeoTiffInfoReader(
   }
 
   def getGeoTiffInfo(uri: String): GeoTiffInfo = {
-    val s3Uri = ??? // new AmazonS3URI(uri)
-    val bucket = ???
-    val key = ???
-    val ovrKey = ??? // s"${s3Uri.getKey}.ovr"
+    val s3Uri = new AmazonS3URI(uri)
+    val bucket = s3Uri.getBucket()
+    val key = s3Uri.getKey()
+    val ovrKey = s"${s3Uri.getKey}.ovr"
     val ovrReader: Option[ByteReader] =
       if (s3ObjectExists(bucket, ovrKey, getS3Client())) Some(S3RangeReader(bucket, ovrKey, getS3Client()))
       else None

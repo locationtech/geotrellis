@@ -20,20 +20,19 @@ import geotrellis.spark.io.s3.util.S3RangeReader
 import geotrellis.util.{ByteReader, StreamingByteReader}
 
 import software.amazon.awssdk.services.s3.S3Client
+import com.amazonaws.services.s3.AmazonS3URI
 
 import scala.util.{Try, Success, Failure}
 import java.net.URI
 
 package object cog {
   def byteReader(uri: URI, s3Client: S3Client): ByteReader = {
-    //val auri = new AmazonS3URI(uri)
-    val bucket = ???
-    val key = ???
+    val auri = new AmazonS3URI(uri)
 
     StreamingByteReader(
       S3RangeReader(
-        bucket = bucket,
-        key    = key,
+        bucket = auri.getBucket(),
+        key    = auri.getKey(),
         client = s3Client
       )
     )

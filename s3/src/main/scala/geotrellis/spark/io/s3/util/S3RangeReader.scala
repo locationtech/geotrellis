@@ -19,12 +19,10 @@ package geotrellis.spark.io.s3.util
 import geotrellis.spark.io.s3._
 import geotrellis.util.RangeReader
 
-//TODO fix this
-//import software.amazon.awssdk.services.s3.AmazonS3URI
-import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model._
+import com.amazonaws.services.s3.AmazonS3URI
 import org.apache.commons.io.IOUtils
-
 
 import java.net.URI
 
@@ -75,12 +73,10 @@ object S3RangeReader {
     apply(uri, S3Client.create())
 
   def apply(uri: URI, client: S3Client): S3RangeReader = {
-    //val s3uri = new AmazonS3URI(uri)
-    val bucket = ???
-    val key = ???
+    val s3Uri = new AmazonS3URI(uri)
     val request = GetObjectRequest.builder()
-      .bucket(bucket)
-      .key(key)
+      .bucket(s3Uri.getBucket())
+      .key(s3Uri.getKey())
       .build()
     apply(request, client)
   }

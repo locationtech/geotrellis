@@ -22,7 +22,7 @@ import geotrellis.spark.io.s3.util.S3RangeReader
 import geotrellis.util.StreamingByteReader
 import geotrellis.util.annotations.experimental
 
-//import software.amazon.awssdk.services.s3.AmazonS3URI
+import com.amazonaws.services.s3.AmazonS3URI
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
 
@@ -46,21 +46,18 @@ import java.net.URI
       // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
       S3Client.create()): List[GeoTiffMetadata] = {
     val s3Client = getS3Client()
-    // val s3Uri = new AmazonS3URI(uri)
-    val s3Uri = ???
-    val bucket = ???
-    val prefix = ???
+    val s3Uri = new AmazonS3URI(uri)
     val regexp = pattern.r
 
     val objectRequest = if (recursive) {
       ListObjectsV2Request.builder()
-        .bucket(bucket)
-        .prefix(prefix)
+        .bucket(s3Uri.getBucket())
+        .prefix(s3Uri.getKey())
         .build()
     } else {
       ListObjectsV2Request.builder()
-        .bucket(bucket)
-        .prefix(prefix)
+        .bucket(s3Uri.getBucket())
+        .prefix(s3Uri.getKey())
         .delimiter("/")
         .build()
     }
@@ -70,7 +67,7 @@ import java.net.URI
       .asScala
       .flatMap({ s3obj =>
         s3obj.key match {
-          case regexp(_*) => ??? // Some(new AmazonS3URI(s"s3://${s3Uri.getBucket}/${key}"))
+          case regexp(_*) => Some((s3Uri.getBucket(), s3obj.key))
           case _ => None
         }
       }).map({ bucketAndKey: (String, String) =>
@@ -82,7 +79,7 @@ import java.net.URI
           )
         ))
 
-        val uri = new URI(???)
+        val uri = new AmazonS3URI(s"s3://${bucketAndKey._1}/${bucketAndKey._2}").getURI()
         GeoTiffMetadata(tiffTags.extent, tiffTags.crs, name, uri)
       })
       .toList
