@@ -21,6 +21,7 @@ import geotrellis.vector._
 import geotrellis.raster._
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
+import geotrellis.tiling._
 import geotrellis.util._
 
 import org.apache.spark.rdd._

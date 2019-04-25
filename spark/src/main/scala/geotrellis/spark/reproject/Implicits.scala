@@ -22,6 +22,7 @@ import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.raster.reproject._
 import geotrellis.raster.stitch._
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.vector._
 import geotrellis.util._

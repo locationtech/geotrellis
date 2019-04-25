@@ -18,7 +18,7 @@ package geotrellis.spark.clip
 
 import geotrellis.raster.GridBounds
 import geotrellis.spark._
-import geotrellis.spark.tiling._
+import geotrellis.tiling._
 import geotrellis.util._
 import geotrellis.vector._
 

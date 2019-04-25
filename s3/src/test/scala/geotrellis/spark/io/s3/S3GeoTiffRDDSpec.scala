@@ -20,10 +20,10 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader._
 import geotrellis.raster.testkit.RasterMatchers
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io.s3.testkit._
 import geotrellis.spark.testkit.TestEnvironment
-import geotrellis.spark.tiling._
 import geotrellis.vector._
 
 import spire.syntax.cfor._

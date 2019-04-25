@@ -16,6 +16,7 @@
 
 package geotrellis.spark.timeseries
 
+import geotrellis.tiling.SpaceTimeKey
 import geotrellis.spark._
 
 import org.apache.spark.rdd.RDD

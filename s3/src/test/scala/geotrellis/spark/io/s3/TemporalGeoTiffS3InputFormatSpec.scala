@@ -18,8 +18,8 @@ package geotrellis.spark.io.s3
 
 import geotrellis.proj4.LatLng
 import geotrellis.raster._
+import geotrellis.tiling._
 import geotrellis.spark._
-import geotrellis.spark.tiling._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.ingest._
 import geotrellis.util.Filesystem

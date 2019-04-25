@@ -16,6 +16,7 @@
 
 package geotrellis.spark.partition
 
+import geotrellis.tiling.{SpatialKey, SpaceTimeKey}
 import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.index.zcurve.{Z3, Z2, ZSpatialKeyIndex}

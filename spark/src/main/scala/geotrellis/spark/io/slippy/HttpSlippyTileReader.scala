@@ -18,6 +18,7 @@ package geotrellis.spark.io.slippy
 
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
+import geotrellis.tiling.SpatialKey
 import geotrellis.spark._
 import geotrellis.spark.io.slippy._
 import geotrellis.vector._

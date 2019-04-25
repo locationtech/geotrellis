@@ -27,9 +27,9 @@ import geotrellis.raster.density._
 import geotrellis.raster.mapalgebra.focal._
 import geotrellis.raster.mapalgebra.local._
 import geotrellis.raster.testkit._
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.stitch._
-import geotrellis.spark.tiling._
 import geotrellis.vector._
 import geotrellis.spark.testkit._
 

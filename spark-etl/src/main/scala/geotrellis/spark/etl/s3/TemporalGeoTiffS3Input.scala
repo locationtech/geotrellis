@@ -17,6 +17,7 @@
 package geotrellis.spark.etl.s3
 
 import geotrellis.raster.Tile
+import geotrellis.tiling._
 import geotrellis.spark.io.s3._
 import geotrellis.spark._
 import geotrellis.spark.etl.config.EtlConf

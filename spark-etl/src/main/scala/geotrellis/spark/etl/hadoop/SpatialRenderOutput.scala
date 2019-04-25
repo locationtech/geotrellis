@@ -20,6 +20,7 @@ import java.math.BigInteger
 
 import geotrellis.raster.Tile
 import geotrellis.raster.render._
+import geotrellis.tiling._
 import geotrellis.spark.etl.OutputPlugin
 
 import geotrellis.spark.io.index.KeyIndexMethod

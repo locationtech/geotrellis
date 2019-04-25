@@ -16,8 +16,9 @@
 
 package geotrellis.spark.io.hadoop
 
+import geotrellis.tiling.SpatialKey
 import geotrellis.spark.render._
-import geotrellis.spark.{LayerId, SpatialKey}
+import geotrellis.spark.LayerId
 
 import java.net.URI
 import org.apache.hadoop.conf.Configuration

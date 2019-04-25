@@ -17,8 +17,8 @@
 package geotrellis.spark.mask
 
 import geotrellis.raster.mask.TileMaskMethods
+import geotrellis.tiling._
 import geotrellis.spark._
-import geotrellis.spark.tiling._
 import geotrellis.util._
 
 import org.apache.spark.rdd.RDD

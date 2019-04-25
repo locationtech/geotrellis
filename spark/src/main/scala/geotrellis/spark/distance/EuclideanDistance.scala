@@ -22,10 +22,10 @@ import org.apache.spark.rdd.RDD
 
 import geotrellis.raster._
 import geotrellis.raster.distance._
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.buffer.Direction
 import geotrellis.spark.buffer.Direction._
-import geotrellis.spark.tiling._
 import geotrellis.vector._
 import geotrellis.vector.triangulation._
 import geotrellis.vector.voronoi._

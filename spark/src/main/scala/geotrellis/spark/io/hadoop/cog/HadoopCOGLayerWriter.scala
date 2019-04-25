@@ -20,6 +20,7 @@ import geotrellis.raster._
 import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.writer.GeoTiffWriter
+import geotrellis.tiling.{SpatialComponent, Boundable}
 import geotrellis.spark._
 import geotrellis.spark.io.{InvalidLayerIdError, AttributeStore, COGLayerType}
 import geotrellis.spark.io.cog._

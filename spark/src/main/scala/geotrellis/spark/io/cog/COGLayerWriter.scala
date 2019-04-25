@@ -24,6 +24,7 @@ import geotrellis.raster.resample._
 import geotrellis.raster.crop._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.compression.{Compression, NoCompression}
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io.{AttributeNotFoundError, AttributeStore, LayerNotFoundError, LayerOutOfKeyBoundsError, Writer}
 import geotrellis.spark.io.index._

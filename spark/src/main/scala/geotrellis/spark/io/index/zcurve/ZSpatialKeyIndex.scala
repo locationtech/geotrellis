@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.index.zcurve
 
+import geotrellis.tiling.{SpatialKey, KeyBounds}
 import geotrellis.spark._
 import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.index.zcurve._

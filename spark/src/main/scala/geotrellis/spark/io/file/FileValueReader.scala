@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.file
 
+import geotrellis.tiling.SpatialComponent
 import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.spark._

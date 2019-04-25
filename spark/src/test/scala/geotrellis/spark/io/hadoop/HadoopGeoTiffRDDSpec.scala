@@ -18,6 +18,7 @@ package geotrellis.spark.io.hadoop
 
 import geotrellis.raster._
 import geotrellis.raster.testkit.RasterMatchers
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.testkit._

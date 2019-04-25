@@ -24,11 +24,11 @@ import geotrellis.raster.reproject._
 import geotrellis.raster.reproject.Reproject.{Options => RasterReprojectOptions}
 import geotrellis.raster.resample.ResampleMethod
 import geotrellis.raster.stitch.Stitcher
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.tiling._
 import geotrellis.spark.pyramid._
-import geotrellis.spark.tiling._
 import geotrellis.util._
 import geotrellis.vector._
 import geotrellis.spark.etl.config._

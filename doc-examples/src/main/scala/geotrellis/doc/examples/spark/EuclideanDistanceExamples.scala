@@ -9,15 +9,15 @@ object EuclideanDistanceExamples {
     import geotrellis.proj4._
     import geotrellis.raster._
     import geotrellis.raster.render._
+    import geotrellis.tiling.{SpatialKey, ZoomedLayoutScheme, LayoutLevel}
     import geotrellis.spark._
-    import geotrellis.spark.tiling._
     import geotrellis.vector._
 
-    // This examples show some problems that may arise when using the distribued 
-    // Euclidean distance operations on data that does not sufficiently cover 
+    // This examples show some problems that may arise when using the distribued
+    // Euclidean distance operations on data that does not sufficiently cover
     // the extent in question.  Run this test and look at the resulting schools.
-    // png; you'll notice the lower left hand corner has areas that are empty 
-    // and other areas showing discontinuous behavior because the points which 
+    // png; you'll notice the lower left hand corner has areas that are empty
+    // and other areas showing discontinuous behavior because the points which
     // define the Euclidean distance are too far away.
 
     val sc: SparkContext = ???

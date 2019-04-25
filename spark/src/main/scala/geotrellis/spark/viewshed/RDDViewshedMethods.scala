@@ -18,6 +18,7 @@ package geotrellis.spark.viewshed
 
 import geotrellis.raster.{Tile, DoubleArrayTile}
 import geotrellis.raster.viewshed.R2Viewshed._
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.util.MethodExtensions
 

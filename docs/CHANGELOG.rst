@@ -11,6 +11,36 @@ API Changes & Project structure changes
 
   - **Remove:**  ``geotrellis.slick`` has been removed. Slick support will now reside in `geotrellis-contrib` (`#2902 <https://github.com/locationtech/geotrellis/pull/2902>`_).
 
+- ``geotrellis.tiling``
+
+  - **New:** ``geotrellis.tiling`` is a new package where the tiling and key API will be contained.
+
+- ``geotrellis.spark``
+
+  - **Remove:** The following types have been moved from ``geotrellis.spark`` to the ``geotrellis.tiling`` package:
+    - ``SpatialKey``
+    - ``SpaceTimeKey``
+    - ``TemporalKey``
+    - ``Bounds``
+    - ``Boundable``
+    - ``EmptyBounds``
+    - ``KeyBounds``
+    - ``TemporalProjectedExtent``
+    - ``EmptyBoundsError``
+    - ``SpatialComponent``
+    - ``TemporalComponent``
+
+- ``geotrellis.spark.tiling``
+
+  - **Remove:** The following types have been moved from ``geotrellis.spark.tiling`` to the ``geotrellis.tiling`` package:
+    - ``LayoutDefinition``
+    - ``LayoutScheme``
+    - ``LayoutLevel``
+    - ``LocalLayoutScheme``
+    - ``FloatingLayoutScheme``
+    - ``ZoomedLayoutScheme``
+    - ``MapKeyTransform``
+
 Fixes & Updates
 ^^^^^^^^^^^^^^^
 

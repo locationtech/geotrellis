@@ -20,8 +20,8 @@ import org.locationtech.jts.geom.Coordinate
 import org.apache.spark.rdd.RDD
 
 import geotrellis.raster._
+import geotrellis.tiling._
 import geotrellis.spark._
-import geotrellis.spark.tiling._
 import geotrellis.util.MethodExtensions
 import geotrellis.vector.{Extent, MultiPoint, Point}
 

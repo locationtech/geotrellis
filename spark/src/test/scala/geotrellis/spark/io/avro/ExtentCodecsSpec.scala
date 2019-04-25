@@ -19,6 +19,7 @@ package geotrellis.spark.io.avro
 import org.scalatest._
 import geotrellis.proj4._
 import geotrellis.vector._
+import geotrellis.tiling._
 import geotrellis.spark._
 
 class ExtentCodecsSpec extends FunSpec with Matchers with AvroTools  {

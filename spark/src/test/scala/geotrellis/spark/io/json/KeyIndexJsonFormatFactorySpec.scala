@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.json
 
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io.index._
 

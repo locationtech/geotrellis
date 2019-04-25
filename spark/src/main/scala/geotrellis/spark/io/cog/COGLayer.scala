@@ -24,6 +24,7 @@ import geotrellis.raster.io.geotiff.compression.Compression
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.raster.resample.ResampleMethod
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.index.KeyIndex

@@ -21,10 +21,11 @@ import geotrellis.raster.io.geotiff._
 import geotrellis.vector._
 import geotrellis.proj4._
 import geotrellis.util._
-import geotrellis.spark.tiling._
+import geotrellis.tiling._
 import geotrellis.spark.ingest._
 import geotrellis.spark.crop._
 import geotrellis.spark.filter._
+import geotrellis.spark.tiling._
 import org.apache.spark.{Partitioner, SparkContext}
 import org.apache.spark.rdd._
 
@@ -266,5 +267,12 @@ trait Implicits
         (implicit ev: K1 => TilerKeyMethods[K1, K2], ev1: GetComponent[K1, ProjectedExtent]): TileLayerMetadata[K2] = {
       TileLayerMetadata.fromRDD[K1, V, K2](rdd, layout)
     }
+  }
+
+  implicit class withGetBoundsMethod[K: Boundable, V <: CellGrid[Int]](rdd: RDD[(K, V)]) {
+    def getBounds: Bounds[K] =
+      rdd
+        .map { case (k, tile) => Bounds(k, k) }
+        .fold(EmptyBounds) { _ combine  _ }
   }
 }

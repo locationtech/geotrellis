@@ -20,7 +20,7 @@ import geotrellis.spark.io.s3.cog.byteReader
 import geotrellis.spark.io.s3.conf.S3Config
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.io.geotiff.{AutoHigherResolution, OverviewStrategy}
-import geotrellis.spark.tiling.ZoomedLayoutScheme
+import geotrellis.tiling.ZoomedLayoutScheme
 import geotrellis.spark.io.hadoop.geotiff.{AttributeStore, GeoTiffLayerReader, GeoTiffMetadata}
 import geotrellis.util.ByteReader
 import geotrellis.util.annotations.experimental

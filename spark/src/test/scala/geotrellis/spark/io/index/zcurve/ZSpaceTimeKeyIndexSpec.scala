@@ -17,6 +17,7 @@
 package geotrellis.spark.io.index.zcurve
 
 import geotrellis.spark._
+import geotrellis.tiling._
 
 import org.scalatest._
 import scala.collection.immutable.TreeSet

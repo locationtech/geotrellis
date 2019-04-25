@@ -6,10 +6,10 @@ import geotrellis.proj4.WebMercator
 import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.raster.testkit._
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index.rowmajor._
-import geotrellis.spark.tiling._
 import geotrellis.spark.testkit._
 
 import java.io.File

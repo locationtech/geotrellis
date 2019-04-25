@@ -32,7 +32,7 @@ object Direction {
   // NOTE: This object is nested to facilitate the common pattern of calling
   // `import geotrellis.spark.buffer.Direction._` without namespace pollution
   object DirectionOp {
-    
+
     def opp(dir: Direction) = dir match {
       case Center => Center
       case Top => Bottom
@@ -62,7 +62,7 @@ object Direction {
       case BottomLeft  => (-1, 1)
       case Left        => (-1, 0)
       case TopLeft     => (-1,-1)
-    }    
+    }
   }
   /** Adapter method until Direction moves fully out of spark package */
   private[geotrellis] def convertDirection(input: Direction): geotrellis.util.Direction =

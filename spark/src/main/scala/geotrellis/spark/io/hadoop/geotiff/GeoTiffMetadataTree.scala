@@ -17,7 +17,7 @@
 package geotrellis.spark.io.hadoop.geotiff
 
 import geotrellis.vector.ProjectedExtent
-import geotrellis.spark.tiling._
+import geotrellis.tiling._
 import geotrellis.proj4.{CRS, WebMercator}
 import geotrellis.util.annotations.experimental
 

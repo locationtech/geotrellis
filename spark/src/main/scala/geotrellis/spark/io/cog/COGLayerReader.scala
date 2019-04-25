@@ -21,6 +21,7 @@ import geotrellis.raster.crop._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.reader.TiffTagsReader
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index.{Index, KeyIndex, IndexRanges, MergeQueue}

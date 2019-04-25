@@ -20,8 +20,8 @@ import geotrellis.raster._
 import geotrellis.raster.merge._
 import geotrellis.raster.prototype._
 import geotrellis.raster.stitch._
+import geotrellis.tiling._
 import geotrellis.vector.Extent
-import geotrellis.spark.tiling._
 import geotrellis.spark._
 import geotrellis.util._
 

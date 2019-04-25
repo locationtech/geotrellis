@@ -16,6 +16,7 @@
 
 package geotrellis.spark.mapalgebra.focal
 
+import geotrellis.tiling.SpatialComponent
 import geotrellis.spark._
 
 import reflect.ClassTag

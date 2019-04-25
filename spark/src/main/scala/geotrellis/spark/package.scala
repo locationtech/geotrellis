@@ -17,6 +17,7 @@
 package geotrellis
 
 import geotrellis.raster._
+import geotrellis.tiling._
 import geotrellis.util._
 
 import org.apache.spark.rdd._
@@ -53,9 +54,4 @@ package object spark extends Implicits {
     def apply[K](seq: Seq[(K, MultibandTile)], metadata: TileLayerMetadata[K]): MultibandTileLayerCollection[K] =
       new ContextCollection(seq, metadata)
   }
-
-  type TileBounds = GridBounds[Int]
-
-  type SpatialComponent[K] = Component[K, SpatialKey]
-  type TemporalComponent[K] = Component[K, TemporalKey]
 }

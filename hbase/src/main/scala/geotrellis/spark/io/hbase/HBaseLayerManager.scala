@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.hbase
 
+import geotrellis.tiling.{Boundable, Bounds}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro.AvroRecordCodec

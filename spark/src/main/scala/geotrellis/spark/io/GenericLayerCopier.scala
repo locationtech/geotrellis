@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io
 
+import geotrellis.tiling.{Bounds, Boundable}
 import geotrellis.spark._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index.KeyIndex

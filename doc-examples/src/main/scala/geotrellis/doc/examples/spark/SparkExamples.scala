@@ -19,6 +19,7 @@ package geotrellis.doc.examples.spark
 object SparkExamples {
   def `Using a SpaceTimeKey -> SpatialKey transformation to get summary information about tiles overlapping an area`: Unit = {
     import geotrellis.raster._
+    import geotrellis.tiling.{SpatialKey, SpaceTimeKey}
     import geotrellis.spark._
     import geotrellis.util._
 
@@ -41,9 +42,10 @@ object SparkExamples {
     import geotrellis.raster._
     import geotrellis.raster.io.geotiff._
     import geotrellis.raster.resample._
+    import geotrellis.tiling.{SpatialKey, SpaceTimeKey, FloatingLayoutScheme}
     import geotrellis.spark._
     import geotrellis.spark.io._
-    import geotrellis.spark.tiling._
+    import geotrellis.spark.tiling.Tiler
     import geotrellis.vector._
     import org.apache.spark.HashPartitioner
     import org.apache.spark.rdd.RDD
@@ -99,6 +101,7 @@ object SparkExamples {
 
   def `Applying a threshold and then median filter on multiband imagery in an RDD layer`: Unit = {
 
+    import geotrellis.tiling.SpaceTimeKey
     import geotrellis.spark._
     import geotrellis.raster._
     import geotrellis.raster.mapalgebra.focal.Square
@@ -127,6 +130,7 @@ object SparkExamples {
   def `Query region, mask by that region, compute max NDVI and save as a GeoTiff`: Unit = {
     import geotrellis.raster._
     import geotrellis.raster.io.geotiff._
+    import geotrellis.tiling.{SpatialKey, SpaceTimeKey}
     import geotrellis.spark._
     import geotrellis.spark.io._
     import geotrellis.util._

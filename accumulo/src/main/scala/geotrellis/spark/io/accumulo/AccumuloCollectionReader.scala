@@ -20,7 +20,7 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.accumulo.conf.AccumuloConfig
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.spark.{Boundable, KeyBounds}
+import geotrellis.tiling.{Boundable, KeyBounds}
 
 import org.apache.accumulo.core.data.{Range => AccumuloRange}
 import org.apache.accumulo.core.security.Authorizations

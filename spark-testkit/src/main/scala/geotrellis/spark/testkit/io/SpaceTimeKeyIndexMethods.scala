@@ -16,6 +16,7 @@
 
 package geotrellis.spark.testkit.io
 
+import geotrellis.tiling.SpaceTimeKey
 import java.time.ZonedDateTime
 
 import geotrellis.spark._

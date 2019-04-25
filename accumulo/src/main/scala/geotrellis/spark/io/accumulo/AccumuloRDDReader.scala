@@ -16,7 +16,7 @@
 
 package geotrellis.spark.io.accumulo
 
-import geotrellis.spark.{Boundable, KeyBounds}
+import geotrellis.tiling.{Boundable, KeyBounds}
 import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
 import geotrellis.spark.util.KryoWrapper

@@ -20,8 +20,8 @@ import geotrellis.proj4.LatLng
 import geotrellis.raster._
 import geotrellis.raster.costdistance.SimpleCostDistance
 import geotrellis.raster.rasterize.Rasterizer
+import geotrellis.tiling._
 import geotrellis.spark._
-import geotrellis.spark.tiling._
 import geotrellis.util._
 import geotrellis.vector._
 

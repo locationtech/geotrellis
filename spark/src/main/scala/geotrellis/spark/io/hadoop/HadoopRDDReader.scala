@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.hadoop
 
+import geotrellis.tiling.{Bounds, Boundable, KeyBounds}
 import geotrellis.spark._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.avro.codecs._

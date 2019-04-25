@@ -17,6 +17,7 @@
 package geotrellis.spark
 
 import geotrellis.raster._
+import geotrellis.tiling.SpatialComponent
 import geotrellis.util.MethodExtensions
 
 import org.apache.spark.rdd._
