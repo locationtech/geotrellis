@@ -22,16 +22,18 @@ import geotrellis.vector._
 import geotrellis.util.MethodExtensions
 
 abstract class TileFeatureReprojectMethods[
-  T <: CellGrid : (? => TileReprojectMethods[T]),
+  T <: CellGrid[Int]: (? => TileReprojectMethods[T]),
   D
 ] extends TileReprojectMethods[TileFeature[T, D]] {
   import Reproject.Options
 
-  def reproject(srcExtent: Extent,
-                targetRasterExtent: RasterExtent,
-                transform: Transform,
-                inverseTransform: Transform,
-                options: Options): Raster[TileFeature[T, D]] = {
+  def reproject(
+    srcExtent: Extent,
+    targetRasterExtent: RasterExtent,
+    transform: Transform,
+    inverseTransform: Transform,
+    options: Options
+  ): Raster[TileFeature[T, D]] = {
     val Raster(tile, extent) = self.tile.reproject(srcExtent, targetRasterExtent, transform, inverseTransform, options)
     Raster(TileFeature(tile, self.data), extent)
   }
@@ -46,11 +48,13 @@ abstract class TileFeatureReprojectMethods[
     Raster(TileFeature(tile, self.data), extent)
   }
 
-  def reproject(srcExtent: Extent,
-                gridBounds: GridBounds[Int],
-                transform: Transform,
-                inverseTransform: Transform,
-                options: Options): Raster[TileFeature[T, D]] = {
+  def reproject(
+    srcExtent: Extent,
+    gridBounds: GridBounds[Int],
+    transform: Transform,
+    inverseTransform: Transform,
+    options: Options
+  ): Raster[TileFeature[T, D]] = {
     val Raster(tile, extent) = self.tile.reproject(srcExtent, gridBounds, transform, inverseTransform, options)
     Raster(TileFeature(tile, self.data), extent)
   }

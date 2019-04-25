@@ -17,6 +17,7 @@
 package geotrellis
 
 import geotrellis.macros.{NoDataMacros, TypeConversionMacros}
+import spire.math.Integral
 
 
 package object raster extends Implicits {

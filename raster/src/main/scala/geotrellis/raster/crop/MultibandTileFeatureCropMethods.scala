@@ -26,7 +26,7 @@ abstract class MultibandTileFeatureCropMethods[D] extends CropMethods[TileFeatur
   def crop(srcExtent: Extent, extent: Extent, options: Options): TileFeature[MultibandTile, D] =
     TileFeature(self.tile.crop(srcExtent, extent, options), self.data)
 
-  def crop(gb: GridBounds, options: Options): TileFeature[MultibandTile, D] =
+  def crop(gb: GridBounds[Int], options: Options): TileFeature[MultibandTile, D] =
     TileFeature(self.tile.crop(gb, options), self.data)
 }
 
@@ -44,7 +44,7 @@ abstract class MultibandRasterTileFeatureCropMethods[D] extends CropMethods[Tile
     * Given a [[GridBounds]] and some cropping options, produce a new
     * [[Raster]].
     */
-  def crop(gb: GridBounds, options: Options): TileFeature[Raster[MultibandTile], D] = {
+  def crop(gb: GridBounds[Int], options: Options): TileFeature[Raster[MultibandTile], D] = {
     TileFeature(self.tile.crop(gb, options), self.data)
   }
 }

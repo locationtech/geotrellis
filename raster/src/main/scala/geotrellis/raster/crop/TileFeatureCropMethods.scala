@@ -26,7 +26,7 @@ abstract class TileFeatureCropMethods[D] extends CropMethods[TileFeature[Tile, D
   def crop(srcExtent: Extent, extent: Extent, options: Options): TileFeature[Tile, D] =
     TileFeature(self.tile.crop(srcExtent, extent, options), self.data)
 
-  def crop(gb: GridBounds, options: Options): TileFeature[Tile, D] =
+  def crop(gb: GridBounds[Int], options: Options): TileFeature[Tile, D] =
     TileFeature(self.tile.crop(gb, options), self.data)
 }
 
@@ -44,7 +44,7 @@ abstract class SinglebandRasterTileFeatureCropMethods[D] extends CropMethods[Til
     * Given a [[GridBounds]] and some cropping options, produce a new
     * [[Raster]].
     */
-  def crop(gb: GridBounds, options: Options): TileFeature[Raster[Tile], D] = {
+  def crop(gb: GridBounds[Int], options: Options): TileFeature[Raster[Tile], D] = {
     TileFeature(self.tile.crop(gb, options), self.data)
   }
 }

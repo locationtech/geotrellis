@@ -23,7 +23,7 @@ import geotrellis.util.MethodExtensions
 
 
 abstract class RasterTileFeatureReprojectMethods[
-  T <: CellGrid : (? => TileReprojectMethods[T]),
+  T <: CellGrid[Int]: (? => TileReprojectMethods[T]),
   D
 ] extends MethodExtensions[TileFeature[Raster[T], D]] {
   import Reproject.Options
@@ -40,16 +40,16 @@ abstract class RasterTileFeatureReprojectMethods[
   def reproject(src: CRS, dest: CRS): TileFeature[Raster[T], D] =
     reproject(src, dest, Options.DEFAULT)
 
-  def reproject(gridBounds: GridBounds, src: CRS, dest: CRS, options: Options): TileFeature[Raster[T], D] =
+  def reproject(gridBounds: GridBounds[Int], src: CRS, dest: CRS, options: Options): TileFeature[Raster[T], D] =
     TileFeature(self.tile.tile.reproject(self.tile.extent, gridBounds, src, dest, options), self.data)
 
-  def reproject(gridBounds: GridBounds, src: CRS, dest: CRS): TileFeature[Raster[T], D] =
+  def reproject(gridBounds: GridBounds[Int], src: CRS, dest: CRS): TileFeature[Raster[T], D] =
     reproject(gridBounds, src, dest, Options.DEFAULT)
 
-  def reproject(gridBounds: GridBounds, transform: Transform, inverseTransform: Transform, options: Options): TileFeature[Raster[T], D] =
+  def reproject(gridBounds: GridBounds[Int], transform: Transform, inverseTransform: Transform, options: Options): TileFeature[Raster[T], D] =
     TileFeature(self.tile.tile.reproject(self.tile.extent, gridBounds, transform, inverseTransform, options), self.data)
 
-  def reproject(gridBounds: GridBounds, transform: Transform, inverseTransform: Transform): TileFeature[Raster[T], D] =
+  def reproject(gridBounds: GridBounds[Int], transform: Transform, inverseTransform: Transform): TileFeature[Raster[T], D] =
     reproject(gridBounds, transform, inverseTransform, Options.DEFAULT)
 }
 
