@@ -7,6 +7,10 @@ Changelog
 API Changes & Project structure changes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+- ``geotrellis.s3``
+
+  - **Change**  Use the AWS S3 SDK v2 instead of v1 (`#2911 <https://github.com/locationtech/geotrellis/pull/2911>`_).
+
 - ``geotrellis.slick``
 
   - **Remove:**  ``geotrellis.slick`` has been removed. Slick support will now reside in `geotrellis-contrib` (`#2902 <https://github.com/locationtech/geotrellis/pull/2902>`_).
