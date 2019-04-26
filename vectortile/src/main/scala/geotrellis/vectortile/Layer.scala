@@ -80,14 +80,14 @@ import scala.collection.mutable.ListBuffer
 
   /**
     * Encode this ProtobufLayer a mid-level Layer ready to be encoded as protobuf bytes.
-    * @param forceWindClockwise is a parameter to force orient all Polygons and MultiPolygons
+    * @param forcePolygonWinding is a parameter to force orient all Polygons and MultiPolygons
     *                           clockwise, since it's a MapBox spec requirement:
     *                           Any polygon interior ring must be oriented with the winding order opposite that of their
     *                           parent exterior ring and all interior rings must directly follow the exterior ring to which they belong.
     *                           Exterior rings must be oriented clockwise and interior rings must be oriented counter-clockwise (when viewed in screen coordinates).
     *                           See https://docs.mapbox.com/vector-tiles/specification/#winding-order for mor details.
     **/
-  private[vectortile] def toProtobuf(forceWindClockwise: Boolean = true): PBLayer = {
+  private[vectortile] def toProtobuf(forcePolygonWinding: Boolean = true): PBLayer = {
     val pgp = implicitly[ProtobufGeom[Point, MultiPoint]]
     val pgl = implicitly[ProtobufGeom[Line, MultiLine]]
     val pgy = implicitly[ProtobufGeom[Polygon, MultiPolygon]]
@@ -115,11 +115,11 @@ import scala.collection.mutable.ListBuffer
       lines.map(f => unfeature(keyMap, valMap, LINESTRING, pgl.toCommands(Left(f.geom), tileExtent.northWest, resolution), f.data)),
       multiLines.map(f => unfeature(keyMap, valMap, LINESTRING, pgl.toCommands(Right(f.geom), tileExtent.northWest, resolution), f.data)),
       polygons.map { f =>
-        val geom = if(forceWindClockwise) f.geom.normalized else f.geom
+        val geom = if(forcePolygonWinding) f.geom.normalized else f.geom
         unfeature(keyMap, valMap, POLYGON, pgy.toCommands(Left(geom), tileExtent.northWest, resolution), f.data)
       },
       multiPolygons.map { f =>
-        val geom = if(forceWindClockwise) f.geom.normalized else f.geom
+        val geom = if(forcePolygonWinding) f.geom.normalized else f.geom
         unfeature(keyMap, valMap, POLYGON, pgy.toCommands(Right(geom), tileExtent.northWest, resolution), f.data)
       }
     ).flatten

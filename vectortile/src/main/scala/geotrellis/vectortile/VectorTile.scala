@@ -45,9 +45,9 @@ import geotrellis.util.annotations.experimental
   * @constructor This is not meant to be called directly - see this class's
   * companion object for the available helper methods.
   */
-@experimental case class VectorTile(layers: Map[String, Layer], tileExtent: Extent, forceWindClockwise: Boolean = true) {
+@experimental case class VectorTile(layers: Map[String, Layer], tileExtent: Extent, forcePolygonWinding: Boolean = true) {
   /** Encode this VectorTile back into a mid-level Protobuf object. */
-  private def toProtobuf: PBTile = PBTile(layers = layers.values.map(_.toProtobuf(forceWindClockwise)).toSeq)
+  private def toProtobuf: PBTile = PBTile(layers = layers.values.map(_.toProtobuf(forcePolygonWinding)).toSeq)
 
   /** Encode this VectorTile back into its original form of Protobuf bytes. */
   def toBytes: Array[Byte] = toProtobuf.toByteArray
@@ -74,7 +74,7 @@ ${layers.values.map(_.pretty).mkString}
 
 @experimental object VectorTile {
   /** Create a VectorTile from a low-level protobuf Tile type. */
-  private def fromPBTile(tile: PBTile, tileExtent: Extent, forceWindClockwise: Boolean = true): VectorTile = {
+  private def fromPBTile(tile: PBTile, tileExtent: Extent, forcePolygonWinding: Boolean = true): VectorTile = {
 
     val layers: Map[String, Layer] = tile.layers.map({ l =>
       val pbl = LazyLayer(l, tileExtent)
@@ -89,14 +89,14 @@ ${layers.values.map(_.pretty).mkString}
     *
     * @param bytes  Raw Protobuf bytes from a `.mvt` file or otherwise.
     * @param tileExtent The [[Extent]] of this tile, '''not''' the global extent.
-    * @param forceWindClockwise is a parameter to force orient all Polygons and MultiPolygons
+    * @param forcePolygonWinding is a parameter to force orient all Polygons and MultiPolygons
     *                           clockwise, since it's a MapBox spec requirement:
     *                           Any polygon interior ring must be oriented with the winding order opposite that of their
     *                           parent exterior ring and all interior rings must directly follow the exterior ring to which they belong.
     *                           Exterior rings must be oriented clockwise and interior rings must be oriented counter-clockwise (when viewed in screen coordinates).
     *                           See https://docs.mapbox.com/vector-tiles/specification/#winding-order for mor details.
     */
-  def fromBytes(bytes: Array[Byte], tileExtent: Extent, forceWindClockwise: Boolean = true): VectorTile =
-    fromPBTile(PBTile.parseFrom(bytes), tileExtent, forceWindClockwise)
+  def fromBytes(bytes: Array[Byte], tileExtent: Extent, forcePolygonWinding: Boolean = true): VectorTile =
+    fromPBTile(PBTile.parseFrom(bytes), tileExtent, forcePolygonWinding)
 
 }
