@@ -78,8 +78,16 @@ import scala.collection.mutable.ListBuffer
     ).flatten
   }
 
-  /** Encode this ProtobufLayer a mid-level Layer ready to be encoded as protobuf bytes. */
-  private[vectortile] def toProtobuf(normalize: Boolean = true): PBLayer = {
+  /**
+    * Encode this ProtobufLayer a mid-level Layer ready to be encoded as protobuf bytes.
+    * @param forceWindClockwise is a parameter to force orient all Polygons and MultiPolygons
+    *                           clockwise, since it's a MapBox spec requirement:
+    *                           Any polygon interior ring must be oriented with the winding order opposite that of their
+    *                           parent exterior ring and all interior rings must directly follow the exterior ring to which they belong.
+    *                           Exterior rings must be oriented clockwise and interior rings must be oriented counter-clockwise (when viewed in screen coordinates).
+    *                           See https://docs.mapbox.com/vector-tiles/specification/#winding-order for mor details.
+    **/
+  private[vectortile] def toProtobuf(forceWindClockwise: Boolean = true): PBLayer = {
     val pgp = implicitly[ProtobufGeom[Point, MultiPoint]]
     val pgl = implicitly[ProtobufGeom[Line, MultiLine]]
     val pgy = implicitly[ProtobufGeom[Polygon, MultiPolygon]]
@@ -102,12 +110,18 @@ import scala.collection.mutable.ListBuffer
      *   points.map(f => unfeature(keys, values, f))
      */
     val features = Seq(
-      points.map(f => unfeature(keyMap, valMap, POINT, pgp.toCommands(Left(f.geom.normalize(normalize)), tileExtent.northWest, resolution), f.data)),
-      multiPoints.map(f => unfeature(keyMap, valMap, POINT, pgp.toCommands(Right(f.geom.normalize(normalize)), tileExtent.northWest, resolution), f.data)),
-      lines.map(f => unfeature(keyMap, valMap, LINESTRING, pgl.toCommands(Left(f.geom.normalize(normalize)), tileExtent.northWest, resolution), f.data)),
-      multiLines.map(f => unfeature(keyMap, valMap, LINESTRING, pgl.toCommands(Right(f.geom.normalize(normalize)), tileExtent.northWest, resolution), f.data)),
-      polygons.map(f => unfeature(keyMap, valMap, POLYGON, pgy.toCommands(Left(f.geom.normalize(normalize)), tileExtent.northWest, resolution), f.data)),
-      multiPolygons.map(f => unfeature(keyMap, valMap, POLYGON, pgy.toCommands(Right(f.geom.normalize(normalize)), tileExtent.northWest, resolution), f.data))
+      points.map(f => unfeature(keyMap, valMap, POINT, pgp.toCommands(Left(f.geom), tileExtent.northWest, resolution), f.data)),
+      multiPoints.map(f => unfeature(keyMap, valMap, POINT, pgp.toCommands(Right(f.geom), tileExtent.northWest, resolution), f.data)),
+      lines.map(f => unfeature(keyMap, valMap, LINESTRING, pgl.toCommands(Left(f.geom), tileExtent.northWest, resolution), f.data)),
+      multiLines.map(f => unfeature(keyMap, valMap, LINESTRING, pgl.toCommands(Right(f.geom), tileExtent.northWest, resolution), f.data)),
+      polygons.map { f =>
+        val geom = if(forceWindClockwise) f.geom.normalized else f.geom
+        unfeature(keyMap, valMap, POLYGON, pgy.toCommands(Left(geom), tileExtent.northWest, resolution), f.data)
+      },
+      multiPolygons.map { f =>
+        val geom = if(forceWindClockwise) f.geom.normalized else f.geom
+        unfeature(keyMap, valMap, POLYGON, pgy.toCommands(Right(geom), tileExtent.northWest, resolution), f.data)
+      }
     ).flatten
 
     PBLayer(version, name, features, keys, values.map(_.toProtobuf), Some(tileWidth))
