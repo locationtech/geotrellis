@@ -1,6 +1,16 @@
 Changelog
 =========
 
+2.3.1
+-----
+*2019 Apr 26*
+
+Fixes & Updates
+^^^^^^^^^^^^^^^
+
+- Get the static DefaultAWSCredentialsProviderChain instance rather than constructing a new one every time (`#2895 <https://github.com/locationtech/geotrellis/pull/2895>`_).
+- Fix for improper handling of values in `ArrayTile.combine{Double}`'s default case (`#2908 <https://github.com/locationtech/geotrellis/pull/2908>`_).
+
 2.3.0
 -----
 *2019 Apr 18*
