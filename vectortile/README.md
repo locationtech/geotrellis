@@ -23,4 +23,4 @@ instructions for this library, see the Scaladocs.
 
 This codec uses [ScalaPB](https://github.com/scalapb/ScalaPB) to auto-generate
 its `.pbf -> Scala` bridge code. All auto-generated files are placed into the `src_managed` folder 
-during the `compilation` phase. The package name for the generated protocol is `vector_tile`. 
+during the `compilation` phase. The package name for the generated protocol is `geotrellis.vectortile.internal`. 
