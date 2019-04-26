@@ -22,6 +22,7 @@ import sbtassembly.AssemblyPlugin.autoImport.{MergeStrategy, assemblyMergeStrate
 import sbtassembly.AssemblyKeys._
 import sbtassembly.{PathList, ShadeRule}
 import com.typesafe.tools.mima.plugin.MimaKeys._
+import sbtprotoc.ProtocPlugin.autoImport.PB
 
 object Settings {
   object Repositories {
@@ -541,7 +542,11 @@ object Settings {
     name := "geotrellis-vectortile",
     libraryDependencies ++= Seq(
       scalatest % Test,
-      scalapb
+      scalapbRuntime % "protobuf"
+    ),
+    PB.protoSources in Compile := Seq(file("vectortile/data")),
+    PB.targets in Compile := Seq(
+      scalapb.gen(flatPackage = true, grpc = false) -> (sourceManaged in Compile).value
     )
   )
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Azavea
+ * Copyright 2019 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ package geotrellis
   *
   * ===Types===
   *
-  * The central type is the [[VectorTile]] class. Its companion object can
+  * The central type is the [[geotrellis.vectortile.VectorTile]] class. Its companion object can
   * be used to construct VectorTiles from raw byte data:
   *
   * {{{
@@ -82,7 +82,7 @@ package geotrellis
   * assumptions:
   *   - Geometries are implicitly encoded in ''some'' Coordinate Reference
   *     system. That is, there is no such thing as a "projectionless" VectorTile.
-  *     When decoding a VectorTile, we must provide a GeoTrellis [[Extent]] that
+  *     When decoding a VectorTile, we must provide a GeoTrellis [[geotrellis.vector.Extent]] that
   *     represents the Tile's area on a map.
   *     With this, the grid coordinates stored in the VectorTile's Geometry are
   *     shifted from their
@@ -99,4 +99,5 @@ package geotrellis
   * @author cwoodbury@azavea.com
   * @version 2.1
   */
-package object vectortile {}
+
+package object vectortile { }

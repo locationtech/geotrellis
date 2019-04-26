@@ -1,6 +1,23 @@
 Changelog
 =========
 
+3.0.0-SNAPSHOT
+-----
+
+API Changes & Project structure changes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- ``geotrellis.slick``
+
+  - **Remove:**  ``geotrellis.slick`` has been removed. Slick support will now reside in `geotrellis-contrib` (`#2902 <https://github.com/locationtech/geotrellis/pull/2902>`_).
+
+Fixes & Updates
+^^^^^^^^^^^^^^^
+
+- Update pureconfig to version 0.10.2 (`#2882 <https://github.com/locationtech/geotrellis/pull/2882>`_).
+- Update dependencies (`#2904 <https://github.com/locationtech/geotrellis/pull/2904>`_).
+- Bump ScalaPB version up with some API enhancements (`#2898 <https://github.com/locationtech/geotrellis/pull/2898>`_).
+
 2.3.0
 -----
 *2019 Apr 18*
@@ -23,10 +40,6 @@ API Changes & Project structure changes
 - ``geotrellis.proj4j``
 
   - **Change:** Extract Proj4J to org.locationtech.proj4j (`#2846 <https://github.com/locationtech/geotrellis/pull/2846>`_).
-
-- ``geotrellis.slick``
-
-  - **Remove:**  ``geotrellis.slick`` has been removed. Slick support will now reside in `geotrellis-contrib`
 
 Fixes & Updates
 ^^^^^^^^^^^^^^^

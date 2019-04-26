@@ -111,5 +111,5 @@ object Dependencies {
 
   val scalaj              = "org.scalaj"                  %% "scalaj-http"             % "2.4.1"
 
-  val scalapb             = "com.trueaccord.scalapb"      %% "scalapb-runtime"         % "0.6.0-pre4"
+  val scalapbRuntime      = "com.thesamet.scalapb"        %% "scalapb-runtime"         % scalapb.compiler.Version.scalapbVersion
 }

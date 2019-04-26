@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Azavea
+ * Copyright 2019 Azavea
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
 
 package geotrellis.vectortile
 
+import geotrellis.vectortile.internal.PBTile
+
 import geotrellis.proj4.{LatLng, WebMercator}
 import geotrellis.vector._
-import geotrellis.vector.io._
-import geotrellis.vectortile.internal.{vector_tile => vt}
 import geotrellis.util.annotations.experimental
 
 // --- //
@@ -45,9 +45,9 @@ import geotrellis.util.annotations.experimental
   * @constructor This is not meant to be called directly - see this class's
   * companion object for the available helper methods.
   */
-@experimental case class VectorTile(layers: Map[String, Layer], tileExtent: Extent) {
+@experimental case class VectorTile(layers: Map[String, Layer], tileExtent: Extent, forcePolygonWinding: Boolean = true) {
   /** Encode this VectorTile back into a mid-level Protobuf object. */
-  private def toProtobuf: vt.Tile = vt.Tile(layers = layers.values.map(_.toProtobuf).toSeq)
+  private def toProtobuf: PBTile = PBTile(layers = layers.values.map(_.toProtobuf(forcePolygonWinding)).toSeq)
 
   /** Encode this VectorTile back into its original form of Protobuf bytes. */
   def toBytes: Array[Byte] = toProtobuf.toByteArray
@@ -74,7 +74,7 @@ ${layers.values.map(_.pretty).mkString}
 
 @experimental object VectorTile {
   /** Create a VectorTile from a low-level protobuf Tile type. */
-  private def fromPBTile(tile: vt.Tile, tileExtent: Extent): VectorTile = {
+  private def fromPBTile(tile: PBTile, tileExtent: Extent, forcePolygonWinding: Boolean = true): VectorTile = {
 
     val layers: Map[String, Layer] = tile.layers.map({ l =>
       val pbl = LazyLayer(l, tileExtent)
@@ -89,8 +89,14 @@ ${layers.values.map(_.pretty).mkString}
     *
     * @param bytes  Raw Protobuf bytes from a `.mvt` file or otherwise.
     * @param tileExtent The [[Extent]] of this tile, '''not''' the global extent.
+    * @param forcePolygonWinding is a parameter to force orient all Polygons and MultiPolygons
+    *                           clockwise, since it's a MapBox spec requirement:
+    *                           Any polygon interior ring must be oriented with the winding order opposite that of their
+    *                           parent exterior ring and all interior rings must directly follow the exterior ring to which they belong.
+    *                           Exterior rings must be oriented clockwise and interior rings must be oriented counter-clockwise (when viewed in screen coordinates).
+    *                           See https://docs.mapbox.com/vector-tiles/specification/#winding-order for mor details.
     */
-  def fromBytes(bytes: Array[Byte], tileExtent: Extent): VectorTile =
-    fromPBTile(vt.Tile.parseFrom(bytes), tileExtent)
+  def fromBytes(bytes: Array[Byte], tileExtent: Extent, forcePolygonWinding: Boolean = true): VectorTile =
+    fromPBTile(PBTile.parseFrom(bytes), tileExtent, forcePolygonWinding)
 
 }
