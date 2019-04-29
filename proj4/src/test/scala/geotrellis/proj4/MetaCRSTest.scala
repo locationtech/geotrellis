@@ -33,7 +33,7 @@ class MetaCRSTest extends FunSuite with Matchers {
   val crsFactory = new CRSFactory
 
   test("MetaCRSExample") {
-    val file = new File("proj4/src/test/resources/TestData.csv")
+    val file = new File("src/test/resources/TestData.csv")
     val tests = MetaCRSTestFileReader.readTests(file)
     for (test <- tests) {
       test should be(passing)
@@ -41,7 +41,7 @@ class MetaCRSTest extends FunSuite with Matchers {
   }
 
   test("PROJ4_SPCS") {
-    val file = new File("proj4/src/test/resources/PROJ4_SPCS_EPSG_nad83.csv")
+    val file = new File("src/test/resources/PROJ4_SPCS_EPSG_nad83.csv")
     val tests = MetaCRSTestFileReader.readTests(file)
     for (test <- tests) {
       test should be(passing)
@@ -50,7 +50,7 @@ class MetaCRSTest extends FunSuite with Matchers {
 
   // TODO: update this test, started failing with switch from EPSG Database 8.6 to 9.2
   ignore("PROJ4_Empirical") {
-    val file = new File("proj4/src/test/resources/proj4-epsg.csv")
+    val file = new File("src/test/resources/proj4-epsg.csv")
     val tests = MetaCRSTestFileReader.readTests(file)
     for (test <- tests) {
       test.testMethod match {

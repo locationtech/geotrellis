@@ -27,7 +27,7 @@ import org.geotools.coverage.GridSampleDimension
 import org.geotools.coverage.grid._
 import org.geotools.geometry.Envelope2D
 import org.geotools.referencing.{CRS => GeoToolsCRS}
-import org.geotools.resources.coverage.CoverageUtilities
+import org.geotools.coverage.util.CoverageUtilities
 import org.geotools.util.NumberRange
 import org.opengis.coverage.SampleDimensionType
 import org.opengis.referencing.crs.CoordinateReferenceSystem

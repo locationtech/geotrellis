@@ -11,7 +11,6 @@
 ./sbt "project raster" publishLocal && \
 ./sbt "project raster-testkit" publishLocal && \
 ./sbt "project vectortile" publishLocal && \
-./sbt "project slick" publishLocal && \
 ./sbt "project spark" publishLocal && \
 ./sbt "project spark-testkit" publishLocal && \
 ./sbt "project shapefile" publishLocal && \

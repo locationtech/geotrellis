@@ -1,11 +1,40 @@
 Changelog
 =========
 
+3.0.0-SNAPSHOT
+-----
+
+API Changes & Project structure changes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- ``geotrellis.slick``
+
+  - **Remove:**  ``geotrellis.slick`` has been removed. Slick support will now reside in `geotrellis-contrib` (`#2902 <https://github.com/locationtech/geotrellis/pull/2902>`_).
+
+Fixes & Updates
+^^^^^^^^^^^^^^^
+
+- Update pureconfig to version 0.10.2 (`#2882 <https://github.com/locationtech/geotrellis/pull/2882>`_).
+- Update dependencies (`#2904 <https://github.com/locationtech/geotrellis/pull/2904>`_).
+- Bump ScalaPB version up with some API enhancements (`#2898 <https://github.com/locationtech/geotrellis/pull/2898>`_).
+
+2.3.0
+-----
+*2019 Apr 18*
+
+Fixes & Updates
+^^^^^^^^^^^^^^^
+
+- Fix Accumulo and HBase AttributeStore performance (`#2899 <https://github.com/locationtech/geotrellis/pull/2899>`_).
+- Fix Cassandra AttributeStore performance (`#2901 <https://github.com/locationtech/geotrellis/pull/2901>`_).
+- Fix createAlignedGridExtent function actually to align to GridExtents (`#2878 <https://github.com/locationtech/geotrellis/pull/2878>`_).
+- Fix to rasterRegionReproject function (`#2880 <https://github.com/locationtech/geotrellis/pull/2880>`_).
+
 2.2.0
 -----
 *2019 Jan 11*
 
-API Changes & Projects strucutre changes
+API Changes & Project structure changes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - ``geotrellis.proj4j``

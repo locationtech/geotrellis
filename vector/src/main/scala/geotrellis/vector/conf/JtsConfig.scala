@@ -19,6 +19,7 @@ package geotrellis.vector.conf
 import com.typesafe.scalalogging.LazyLogging
 import org.locationtech.jts.geom.PrecisionModel
 import org.locationtech.jts.precision.GeometryPrecisionReducer
+import pureconfig.generic.auto._
 
 case class Simplification(scale: Double = 1e12) {
   // 12 digits is maximum to avoid [[TopologyException]], see https://web.archive.org/web/20160226031453/http://tsusiatsoftware.net/jts/jts-faq/jts-faq.html#D9

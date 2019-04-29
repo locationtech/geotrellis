@@ -15,7 +15,6 @@
     && ./sbt "project geowave" publish-signed \
     && ./sbt "project geotools" publish-signed \
     && ./sbt "project shapefile" publish-signed \
-    && ./sbt "project slick" publish-signed \
     && ./sbt "project util" publish-signed \
     && ./sbt "project vectortile" publish-signed \
     && ./sbt "project raster-testkit" publish-signed \

@@ -77,7 +77,6 @@ resolvers ++= Seq(
 - `geotrellis-geomesa`: Experimental GeoMesa integration
 - `geotrellis-geowave`: Experimental GeoWave integration
 - `geotrellis-shapefile`: Read shapefiles into GeoTrellis data types via GeoTools
-- `geotrellis-slick`: Read vector data out of PostGIS via [LightBend Slick](http://slick.lightbend.com/)
 - `geotrellis-vectortile`: Experimental vector tile support, including reading and writing
 - `geotrellis-raster-testkit`: Testkit for testing geotrellis-raster types
 - `geotrellis-vector-testkit`: Testkit for testing geotrellis-vector types
@@ -274,11 +273,6 @@ This is a list of features contained in the GeoTrellis library. It is broken up 
 #### geotrellis-shapefile
 
 - Read geometry and feature data from shapefiles into GeoTrellis types using GeoTools.
-
-#### geotrellis-slick
-
-- Save and load geometry and feature data to and from PostGIS using the slick scala database library.
-- Perform PostGIS `ST_` operations in PostGIS through scala.
 
 ## Documentation
 

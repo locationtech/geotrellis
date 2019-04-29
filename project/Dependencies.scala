@@ -17,17 +17,17 @@
 import sbt._
 
 object Dependencies {
-  val pureconfig          = "com.github.pureconfig"      %% "pureconfig"               % "0.9.2"
+  val pureconfig          = "com.github.pureconfig"      %% "pureconfig"               % "0.10.2"
   val logging             = "com.typesafe.scala-logging" %% "scala-logging"            % "3.9.0"
-  val scalatest           = "org.scalatest"              %% "scalatest"                % "3.0.5"
+  val scalatest           = "org.scalatest"              %% "scalatest"                % "3.0.7"
   val scalacheck          = "org.scalacheck"             %% "scalacheck"               % "1.14.0"
-  val jts                 = "org.locationtech.jts"        % "jts-core"                 % "1.16.0"
-  val proj4j              = "org.locationtech.proj4j"     % "proj4j"                   % "0.2.0"
+  val jts                 = "org.locationtech.jts"        % "jts-core"                 % "1.16.1"
+  val proj4j              = "org.locationtech.proj4j"     % "proj4j"                   % "1.0.0"
 
   val monocleCore         = "com.github.julien-truffaut" %% "monocle-core"             % Version.monocle
   val monocleMacro        = "com.github.julien-truffaut" %% "monocle-macro"            % Version.monocle
 
-  val openCSV             = "com.opencsv"                 % "opencsv"                  % "4.2"
+  val openCSV             = "com.opencsv"                 % "opencsv"                  % "4.5"
 
   val spire               = "org.spire-math"            %% "spire"                    % Version.spire
   val spireMacro          = "org.spire-math"            %% "spire-macros"             % Version.spire
@@ -36,15 +36,15 @@ object Dependencies {
 
   val apacheMath          = "org.apache.commons"          % "commons-math3"            % "3.6.1"
 
-  val chronoscala         = "jp.ne.opt"                  %% "chronoscala"              % "0.2.1"
+  val chronoscala         = "jp.ne.opt"                  %% "chronoscala"              % "0.3.0"
 
-  val awsSdkS3            = "com.amazonaws"               % "aws-java-sdk-s3"          % "1.11.421"
+  val awsSdkS3            = "com.amazonaws"               % "aws-java-sdk-s3"          % "1.11.535"
 
-  val catsCore            = "org.typelevel"              %% "cats-core"                % "1.4.0"
-  val catsEffect          = "org.typelevel"              %% "cats-effect"              % "1.0.0"
+  val catsCore            = "org.typelevel"              %% "cats-core"                % "1.6.0"
+  val catsEffect          = "org.typelevel"              %% "cats-effect"              % "1.2.0"
 
-  val fs2Core             = "co.fs2"                     %% "fs2-core"                 % "1.0.0"
-  val fs2Io               = "co.fs2"                     %% "fs2-io"                   % "1.0.0"
+  val fs2Core             = "co.fs2"                     %% "fs2-core"                 % "1.0.4"
+  val fs2Io               = "co.fs2"                     %% "fs2-io"                   % "1.0.4"
 
   val sparkCore           = "org.apache.spark"           %% "spark-core"               % Version.spark
   val sparkSQL            = "org.apache.spark"           %% "spark-sql"                % Version.spark
@@ -53,13 +53,11 @@ object Dependencies {
 
   val avro                = "org.apache.avro"             % "avro"                     % "1.7.7"
 
-  val slickPG             = "com.github.tminglei"        %% "slick-pg"                 % "0.16.3"
-
-  val parserCombinators   = "org.scala-lang.modules"     %% "scala-parser-combinators" % "1.1.1"
+  val parserCombinators   = "org.scala-lang.modules"     %% "scala-parser-combinators" % "1.1.2"
 
   val jsonSchemaValidator = "com.networknt"               % "json-schema-validator"    % "0.1.23"
 
-  val scaffeine           = "com.github.blemale"         %% "scaffeine"                % "2.5.0"
+  val scaffeine           = "com.github.blemale"         %% "scaffeine"                % "2.6.0"
 
   val circeCore           = "io.circe"                   %% "circe-core"               % Version.circe
   val circeGeneric        = "io.circe"                   %% "circe-generic"            % Version.circe
@@ -113,5 +111,5 @@ object Dependencies {
 
   val scalaj              = "org.scalaj"                  %% "scalaj-http"             % "2.4.1"
 
-  val scalapb             = "com.trueaccord.scalapb"      %% "scalapb-runtime"         % "0.6.0-pre4"
+  val scalapbRuntime      = "com.thesamet.scalapb"        %% "scalapb-runtime"         % scalapb.compiler.Version.scalapbVersion
 }

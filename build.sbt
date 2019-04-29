@@ -57,7 +57,7 @@ lazy val commonSettings = Seq(
     .filter(_.asFile.canRead)
     .map(Credentials(_)),
 
-  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.8" cross CrossVersion.binary),
+  addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.10" cross CrossVersion.binary),
   addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.1" cross CrossVersion.full),
 
   pomExtra := (
@@ -79,7 +79,7 @@ lazy val commonSettings = Seq(
     "geosolutions" at "http://maven.geo-solutions.it/",
     "osgeo" at "http://download.osgeo.org/webdav/geotools/"
   ),
-  headerLicense := Some(HeaderLicense.ALv2("2018", "Azavea")),
+  headerLicense := Some(HeaderLicense.ALv2("2019", "Azavea")),
   // preserve year of old headers
   headerMappings :=
     Map(FileType.scala -> CommentStyle.cStyleBlockComment.copy(commentCreator = new CommentCreator() {
@@ -95,7 +95,7 @@ lazy val commonSettings = Seq(
           .map(year => newText.replace("2018", year))
           .getOrElse(newText)
       } } )),
-  scapegoatVersion in ThisBuild := "1.3.3",
+  scapegoatVersion in ThisBuild := "1.3.8",
   updateOptions := updateOptions.value.withGigahorse(false)
 )
 
@@ -115,7 +115,6 @@ lazy val root = Project("geotrellis", file(".")).
     s3,
     `s3-testkit`,
     shapefile,
-    slick,
     spark,
     `spark-etl`,
     `spark-pipeline`,
@@ -180,12 +179,6 @@ lazy val `raster-testkit` = project
   .dependsOn(raster % Provided, vector % Provided)
   .settings(commonSettings)
   .settings(Settings.`raster-testkit`)
-
-lazy val slick = project
-  .dependsOn(vector)
-  .settings(commonSettings)
-  .settings(Settings.slick)
-  .settings(crossScalaVersions := Seq(scalaVersion.value))
 
 lazy val spark = project
   .dependsOn(util, raster, `raster-testkit` % Test, `vector-testkit` % Test)

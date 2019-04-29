@@ -18,6 +18,7 @@ package geotrellis.spark.io.cassandra.conf
 
 import geotrellis.spark.io.hadoop.conf.CamelCaseConfig
 import geotrellis.spark.util._
+import pureconfig.generic.auto._
 
 case class CassandraCollectionConfig(read: String = "default") {
   def readThreads: Int = threadsFromString(read)
