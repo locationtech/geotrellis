@@ -20,22 +20,28 @@ import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.util.MethodExtensions
 
-
-abstract class SinglebandRasterTileFeatureCropMethods[D] extends CropMethods[TileFeature[Raster[Tile], D]] {
+abstract class RasterTileFeatureCropMethods[
+  T <: CellGrid[Int]: (? => TileCropMethods[T]),
+  D
+](implicit val ev: Raster[T] => RasterCropMethods[T]) extends CropMethods[TileFeature[Raster[T], D]] {
   import Crop.Options
 
-  def crop(extent: Extent, options: Options): TileFeature[Raster[Tile], D] = {
+  def crop(extent: Extent, options: Options): TileFeature[Raster[T], D] = {
     TileFeature(self.tile.crop(extent, options), self.data)
   }
 
-  def crop(srcExtent: Extent, extent: Extent, options: Options): TileFeature[Raster[Tile], D] =
+  def crop(srcExtent: Extent, extent: Extent, options: Options): TileFeature[Raster[T], D] =
     TileFeature(Raster(self.tile.tile.crop(srcExtent, extent, options), extent), self.data)
 
   /**
     * Given a [[GridBounds]] and some cropping options, produce a new
     * [[Raster]].
     */
-  def crop(gb: GridBounds[Int], options: Options): TileFeature[Raster[Tile], D] = {
+  def crop(gb: GridBounds[Int], options: Options): TileFeature[Raster[T], D] = {
     TileFeature(self.tile.crop(gb, options), self.data)
   }
 }
+
+
+abstract class SinglebandRasterTileFeatureCropMethods[D] extends RasterTileFeatureCropMethods[Tile, D]
+abstract class MultibandRasterTileFeatureCropMethods[D] extends RasterTileFeatureCropMethods[MultibandTile, D]
