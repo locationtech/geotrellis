@@ -23,15 +23,17 @@ import geotrellis.spark.io.s3.testkit._
 class S3AttributeStoreSpec extends AttributeStoreSpec {
   val bucket = "attribute-store-test-mock-bucket"
   val prefix = "catalog"
+  val client = MockS3Client()
+  S3TestUtils.createBucket(client, bucket)
 
   lazy val attributeStore = new S3AttributeStore(bucket, prefix) {
-    override val s3Client = new MockS3Client()
+    override def s3Client = MockS3Client()
   }
 
   it("should handle prefix with ending slash") {
     val bucket = "test-bucket"
     val prefix = "some/key/"
-    val as = new S3AttributeStore(bucket, prefix) { override val s3Client = new MockS3Client() }
+    val as = new S3AttributeStore(bucket, prefix) { override val s3Client = MockS3Client() }
 
     import S3AttributeStore.SEP
     as.attributePath(LayerId("testLayer", 0), "metadata") should be (s"some/key/_attributes/metadata${SEP}testLayer${SEP}0.json")

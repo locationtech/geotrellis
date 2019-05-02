@@ -20,7 +20,11 @@ import geotrellis.spark.io._
 import geotrellis.spark.io.s3._
 import geotrellis.spark.io.json._
 
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.regions.Region
 import spray.json._
+
+import java.net.URI
 
 class MockS3LayerWriter(
   attributeStore: AttributeStore,
@@ -29,8 +33,6 @@ class MockS3LayerWriter(
 ) extends S3LayerWriter(attributeStore, bucket, keyPrefix) {
   override def rddWriter =
     new S3RDDWriter {
-      def getS3Client = () => {
-        new MockS3Client()
-      }
+      def getS3Client = () => MockS3Client()
     }
 }

@@ -26,18 +26,22 @@ import geotrellis.util.Filesystem
 import geotrellis.spark.io.s3.testkit._
 import geotrellis.spark.testkit.TestEnvironment
 
+import software.amazon.awssdk.services.s3.model._
+import software.amazon.awssdk.core.sync.RequestBody
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.task._
+import org.scalatest._
 
 import java.time.ZoneOffset
 import java.nio.file.{Files,Paths}
 import java.time.format.DateTimeFormatter
 
-import org.scalatest._
-
 class TemporalGeoTiffS3InputFormatSpec extends FunSpec with Matchers with TestEnvironment {
   val layoutScheme = ZoomedLayoutScheme(LatLng)
+  val client = MockS3Client()
+  val bucket = this.getClass.getSimpleName.toLowerCase
+  S3TestUtils.createBucket(client, bucket)
 
   describe("SpaceTime GeoTiff S3 InputFormat") {
     it("should read the time from a file") {
@@ -46,7 +50,7 @@ class TemporalGeoTiffS3InputFormatSpec extends FunSpec with Matchers with TestEn
       val format = new TemporalGeoTiffS3InputFormat
       val conf = new Configuration(false)
 
-      S3InputFormat.setCreateS3Client(conf, () => new MockS3Client)
+      S3InputFormat.setCreateS3Client(conf, () => MockS3Client())
       TemporalGeoTiffS3InputFormat.setTimeTag(conf, "TIFFTAG_DATETIME")
       TemporalGeoTiffS3InputFormat.setTimeFormat(conf, "yyyy:MM:dd HH:mm:ss")
 
@@ -57,15 +61,19 @@ class TemporalGeoTiffS3InputFormatSpec extends FunSpec with Matchers with TestEn
       DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss").withZone(ZoneOffset.UTC).format(key.time) should be ("2015:03:25 18:01:04")
     }
 
-    val mockClient = new MockS3Client
     val testGeoTiffPath = "spark/src/test/resources/nex-geotiff/tasmax_amon_BCSD_rcp26_r1i1p1_CONUS_CCSM4_200601-201012-200601120000_0_0.tif"
     val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
-    mockClient.putObject(this.getClass.getSimpleName, "nex-geotiff/tasmax.tiff", geoTiffBytes)
+    val putReq = PutObjectRequest.builder()
+      .bucket(bucket)
+      .key("nex-geotiff/tasmax.tiff")
+      .build()
+    val putBody = RequestBody.fromBytes(geoTiffBytes)
+    client.putObject(putReq, putBody)
 
     it("should read GeoTiffs with ISO_TIME tag from S3") {
-      val url = s"s3n://${this.getClass.getSimpleName}/nex-geotiff/"
+      val url = s"s3n://${bucket}/nex-geotiff/"
       val job = sc.newJob("temporal-geotiff-ingest")
-      S3InputFormat.setCreateS3Client(job, () => new MockS3Client)
+      S3InputFormat.setCreateS3Client(job, () => MockS3Client())
       S3InputFormat.setUrl(job, url)
       S3InputFormat.setAnonymous(job)
       TemporalGeoTiffS3InputFormat.setTimeTag(job, "ISO_TIME")

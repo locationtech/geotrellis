@@ -26,7 +26,7 @@ import geotrellis.spark.io.index._
 import geotrellis.spark.io.s3.{S3AttributeStore, S3LayerHeader}
 import geotrellis.util._
 
-import software.amazon.awssdk.services.s3.model.S3Exception
+import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.services.s3.S3Client
 import spray.json._
 
@@ -51,6 +51,7 @@ class S3COGValueReader(
         attributeStore.readHeader[S3LayerHeader](LayerId(layerId.name, 0))
       } catch {
         case e: AttributeNotFoundError => throw new LayerNotFoundError(layerId).initCause(e)
+        case e: NoSuchBucketException => throw new LayerNotFoundError(layerId).initCause(e)
       }
 
     def keyPath(key: K, maxWidth: Int, baseKeyIndex: KeyIndex[K], zoomRange: ZoomRange): String =
@@ -73,6 +74,6 @@ class S3COGValueReader(
 object S3COGValueReader {
   def apply(s3attributeStore: S3AttributeStore): S3COGValueReader =
     new S3COGValueReader(s3attributeStore) {
-      override def s3Client: S3Client = s3attributeStore.s3Client
+      override def s3Client: S3Client = S3Client.create() //s3attributeStore.s3Client
     }
 }

@@ -38,7 +38,8 @@ class S3ValueReader(
   val attributeStore: AttributeStore
 ) extends OverzoomingValueReader {
 
-  def s3Client: S3Client =
+  @transient
+  lazy val s3Client: S3Client =
     // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
     S3Client.create()
 

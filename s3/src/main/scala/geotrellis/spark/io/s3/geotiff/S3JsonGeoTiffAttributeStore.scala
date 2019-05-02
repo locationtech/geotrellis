@@ -38,7 +38,8 @@ import scala.io.Source
   @experimental def readData(uri: URI, getS3Client: () => S3Client = () =>
       // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
       S3Client.create()): List[GeoTiffMetadata] = {
-    val s3Client = getS3Client()
+    @transient
+    lazy val s3Client = getS3Client()
     val s3Uri = new AmazonS3URI(uri)
     val request = GetObjectRequest.builder()
       .bucket(s3Uri.getBucket())
@@ -77,18 +78,17 @@ import scala.io.Source
       // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
       S3Client.create()
   ): JsonGeoTiffAttributeStore = {
-    val s3Client = getS3Client()
     val s3Uri = new AmazonS3URI(path)
     val data = S3GeoTiffInput.list(name, uri, pattern, recursive)
     // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-    val attributeStore = JsonGeoTiffAttributeStore(path, readDataAsTree(_, () => S3Client.create()))
+    val attributeStore = JsonGeoTiffAttributeStore(path, readDataAsTree(_, getS3Client))
 
     val str = data.toJson.compactPrint
     val request = PutObjectRequest.builder()
       .bucket(s3Uri.getBucket())
       .key(s3Uri.getKey())
       .build()
-    s3Client.putObject(request, RequestBody.fromBytes(str.getBytes("UTF-8")))
+    getS3Client().putObject(request, RequestBody.fromBytes(str.getBytes("UTF-8")))
 
     attributeStore
   }

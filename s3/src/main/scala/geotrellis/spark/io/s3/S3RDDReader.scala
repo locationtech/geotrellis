@@ -26,7 +26,7 @@ import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.util.KryoWrapper
 
 import software.amazon.awssdk.services.s3.model.{S3Exception, GetObjectRequest}
-import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.{S3Client, SerializableS3Client}
 
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
@@ -67,7 +67,7 @@ trait S3RDDReader {
 
     sc.parallelize(bins, bins.size)
       .mapPartitions { partition: Iterator[Seq[(BigInt, BigInt)]] =>
-        val s3client = _getS3Client()
+        val s3Client = _getS3Client()
         val writerSchema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
         partition flatMap { seq =>
           LayerReader.njoinEBO[K, V](seq.toIterator, threads)({ index: BigInt =>
@@ -76,7 +76,7 @@ trait S3RDDReader {
                 .bucket(bucket)
                 .key(keyPath(index))
                 .build()
-              val is = s3client.getObject(request)
+              val is = s3Client.getObject(request)
               val bytes = IOUtils.toByteArray(is)
               is.close()
               val recs = AvroEncoder.fromBinary(writerSchema, bytes)(_recordCodec)
@@ -95,7 +95,5 @@ trait S3RDDReader {
 }
 
 object S3RDDReader extends S3RDDReader {
-  def getS3Client: () => S3Client = () =>
-    //https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-    S3Client.create()
+  def getS3Client: () => S3Client = () => SerializableS3Client.default()
 }

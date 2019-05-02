@@ -30,7 +30,7 @@ import geotrellis.spark.io.cog.vrt.VRT
 import geotrellis.spark.io.cog.vrt.VRT.IndexedSimpleSource
 
 import software.amazon.awssdk.services.s3.model.{S3Exception, PutObjectRequest, GetObjectRequest}
-import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3._
 import software.amazon.awssdk.core.sync.RequestBody
 import spray.json.JsonFormat
 import org.apache.commons.io.IOUtils
@@ -45,7 +45,7 @@ class S3COGLayerWriter(
   keyPrefix: String,
   getS3Client: () => S3Client = () =>
     // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-    S3Client.create(),
+    SerializableS3Client.default(),
   threads: Int = S3RDDWriter.defaultThreadCount
 ) extends COGLayerWriter {
 
@@ -74,7 +74,8 @@ class S3COGLayerWriter(
 
     attributeStore.writeCOGLayerAttributes(layerId0, header, storageMetadata)
 
-    val s3Client = getS3Client() // for saving VRT from Accumulator
+    @transient
+    lazy val s3Client = getS3Client() // for saving VRT from Accumulator
 
     // Make S3COGAsyncWriter
     val asyncWriter = new S3COGAsyncWriter[V](bucket, 32, p => p)

@@ -23,6 +23,8 @@ import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index._
 import geotrellis.util._
 
+import software.amazon.awssdk.services.s3.model._
+import software.amazon.awssdk.services.s3.S3Client
 import spray.json.JsonFormat
 
 import scala.reflect.ClassTag
@@ -50,6 +52,7 @@ class S3CollectionLayerReader(val attributeStore: AttributeStore) extends Collec
       attributeStore.readLayerAttributes[S3LayerHeader, M, K](id)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(id).initCause(e)
+      case e: NoSuchBucketException => throw new LayerReadError(id).initCause(e)
     }
 
     val bucket = header.bucket

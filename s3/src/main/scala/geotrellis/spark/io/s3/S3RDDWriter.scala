@@ -25,7 +25,7 @@ import geotrellis.spark.io.s3.conf.S3Config
 import cats.effect.{IO, Timer}
 import cats.syntax.apply._
 import software.amazon.awssdk.services.s3.model.{S3Exception, PutObjectRequest, PutObjectResponse, GetObjectRequest}
-import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.{S3Client, SerializableS3Client}
 import software.amazon.awssdk.core.sync.RequestBody
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
@@ -82,7 +82,7 @@ trait S3RDDWriter {
       if(partition.nonEmpty) {
         import geotrellis.spark.util.TaskUtils._
         val getS3Client = _getS3Client
-        val s3client: S3Client = getS3Client()
+        val s3Client: S3Client = getS3Client()
         val schema = kwWriterSchema.value.getOrElse(_recordCodec.schema)
 
         val pool = Executors.newFixedThreadPool(threads)
@@ -105,7 +105,7 @@ trait S3RDDWriter {
                   .key(key)
                   .build()
 
-                val is = s3client.getObject(request)
+                val is = s3Client.getObject(request)
                 val bytes = IOUtils.toByteArray(is)
                 AvroEncoder.fromBinary(schema, bytes)(_recordCodec)
               } catch {
@@ -136,7 +136,7 @@ trait S3RDDWriter {
             // No longer necessary?
             // TODO: Verify the new behavior isn't susceptible to stream state issues
             //request.getInputStream.reset() // reset in case of retransmission to avoid 400 error
-            s3client.putObject(request, requestBody)
+            s3Client.putObject(request, requestBody)
           }).retryEBO {
             case e: S3Exception if e.statusCode == 503 => true
             case _ => false
@@ -159,7 +159,5 @@ trait S3RDDWriter {
 }
 
 object S3RDDWriter extends S3RDDWriter {
-  def getS3Client: () => S3Client = () =>
-    // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-    S3Client.create()
+  def getS3Client: () => S3Client = () => SerializableS3Client.default()
 }

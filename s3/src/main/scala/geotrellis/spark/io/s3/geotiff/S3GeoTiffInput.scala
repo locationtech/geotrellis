@@ -45,7 +45,8 @@ import java.net.URI
     getS3Client: () => S3Client = () =>
       // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
       S3Client.create()): List[GeoTiffMetadata] = {
-    val s3Client = getS3Client()
+    @transient
+    lazy val s3Client = getS3Client()
     val s3Uri = new AmazonS3URI(uri)
     val regexp = pattern.r
 

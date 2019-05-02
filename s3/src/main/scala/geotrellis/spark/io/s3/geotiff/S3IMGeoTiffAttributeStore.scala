@@ -62,7 +62,8 @@ import java.net.URI
     new InMemoryGeoTiffAttributeStore {
       lazy val metadataList = getDataFunction()
       def persist(uri: URI): Unit = {
-        val s3Client = getS3Client()
+        @transient
+        lazy val s3Client = getS3Client()
         val s3Path = new AmazonS3URI(uri)
         val data = metadataList
 

@@ -24,7 +24,7 @@ import geotrellis.spark.io.index.KeyIndex
 import geotrellis.spark.io.json._
 import geotrellis.util._
 
-import software.amazon.awssdk.services.s3.model.{S3Object, CopyObjectRequest, ListObjectsV2Request}
+import software.amazon.awssdk.services.s3.model._
 import software.amazon.awssdk.services.s3.S3Client
 import org.apache.avro.Schema
 import org.apache.spark.rdd.RDD
@@ -73,6 +73,7 @@ class S3LayerCopier(
       attributeStore.readLayerAttributes[S3LayerHeader, M, K](from)
     } catch {
       case e: AttributeNotFoundError => throw new LayerReadError(from).initCause(e)
+      case e: NoSuchBucketException => throw new LayerReadError(from).initCause(e)
     }
 
     val bucket = header.bucket

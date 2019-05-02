@@ -40,8 +40,10 @@ class S3SlippyTileReader[T](uri: String)(fromBytes: (SpatialKey, Array[Byte]) =>
   import SlippyTileReader.TilePath
 
   // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-  val client = S3Client.create()
   val getClient = () => S3Client.create()
+
+  @transient
+  lazy val client = getClient()
 
   val parsed = new java.net.URI(uri)
   val bucket = parsed.getHost

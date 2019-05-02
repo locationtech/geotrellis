@@ -155,8 +155,9 @@ class S3AttributeStore(val bucket: String, val prefix: String) extends BlobLayer
   def delete(layerId: LayerId): Unit = {
     val identifiers =
       layerKeys(layerId).map { key => ObjectIdentifier.builder().key(key).build() }
-    val deleteDefinition =
-      Delete.builder().objects(identifiers:_*).build()
+    val deleteDefinition = Delete.builder()
+      .objects(identifiers:_*)
+      .build()
     val deleteRequest = DeleteObjectsRequest.builder()
       .bucket(bucket)
       .delete(deleteDefinition)

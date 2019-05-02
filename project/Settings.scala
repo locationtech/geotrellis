@@ -273,14 +273,14 @@ object Settings {
     /** https://github.com/lucidworks/spark-solr/issues/179 */
     dependencyOverrides ++= {
       val deps = Seq(
-        "com.fasterxml.jackson.core" % "jackson-core" % "2.6.5",
-        "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.5",
-        "com.fasterxml.jackson.core" % "jackson-annotations" % "2.6.5"
+        "com.fasterxml.jackson.core" % "jackson-core" % "2.6.7",
+        "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.7",
+        "com.fasterxml.jackson.core" % "jackson-annotations" % "2.6.7"
       )
       CrossVersion.partialVersion(scalaVersion.value) match {
         // if Scala 2.12+ is used
         case Some((2, scalaMajor)) if scalaMajor >= 12 => deps
-        case _ => deps :+ "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.5"
+        case _ => deps :+ "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.7"
       }
     },
     initialCommands in console :=
@@ -368,6 +368,18 @@ object Settings {
       sparkSQL % Test,
       scalatest % Test
     ),
+    dependencyOverrides ++= {
+      val deps = Seq(
+        "com.fasterxml.jackson.core" % "jackson-core" % "2.6.7",
+        "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.7",
+        "com.fasterxml.jackson.core" % "jackson-annotations" % "2.6.7"
+      )
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        // if Scala 2.12+ is used
+        case Some((2, scalaMajor)) if scalaMajor >= 12 => deps
+        case _ => deps :+ "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.7"
+      }
+    },
     mimaPreviousArtifacts := Set(
       "org.locationtech.geotrellis" %% "geotrellis-s3" % Version.previousVersion
     ),
@@ -389,7 +401,19 @@ object Settings {
       awsSdkS3,
       spire,
       scalatest
-    )
+    ),
+    dependencyOverrides ++= {
+      val deps = Seq(
+        "com.fasterxml.jackson.core" % "jackson-core" % "2.6.7",
+        "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.7",
+        "com.fasterxml.jackson.core" % "jackson-annotations" % "2.6.7"
+      )
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        // if Scala 2.12+ is used
+        case Some((2, scalaMajor)) if scalaMajor >= 12 => deps
+        case _ => deps :+ "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.7"
+      }
+    }
   )
 
   lazy val shapefile = Seq(

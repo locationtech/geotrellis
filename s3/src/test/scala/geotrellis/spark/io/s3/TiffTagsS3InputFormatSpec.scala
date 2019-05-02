@@ -16,30 +16,39 @@
 
 package geotrellis.spark.io.s3
 
-import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import geotrellis.raster.io.geotiff.tags.TiffTags
 import geotrellis.spark._
 import geotrellis.spark.testkit.TestEnvironment
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.io.s3.testkit._
+
+import software.amazon.awssdk.services.s3.model._
+import software.amazon.awssdk.core.sync.RequestBody
 import org.scalatest._
 
 import java.nio.file.{Paths, Files}
 
 class TiffTagsS3InputFormatSpec extends FunSpec with Matchers with TestEnvironment {
-  implicit val mockClient = new MockS3Client()
+  val mockClient = MockS3Client()
+  val bucket = this.getClass.getSimpleName.toLowerCase
+  S3TestUtils.createBucket(mockClient, bucket)
   val testGeoTiffPath = "spark/src/test/resources/all-ones.tif"
   val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
-  mockClient.putObject(this.getClass.getSimpleName, "geotiff/all-ones.tif", geoTiffBytes)
+  val putReq = PutObjectRequest.builder()
+    .bucket(bucket)
+    .key("geotiff/all-ones.tif")
+    .build()
+  val putBody = RequestBody.fromBytes(geoTiffBytes)
+  mockClient.putObject(putReq, putBody)
 
   describe("TiffTagsS3InputFormat") {
-    val url = s"s3n://${this.getClass.getSimpleName}/geotiff"
+    val url = s"s3n://${bucket}/geotiff"
 
     it("should read GeoTiffs from S3") {
       val job = sc.newJob("tifftags-ingest")
       S3InputFormat.setUrl(job, url)
       S3InputFormat.setAnonymous(job)
-      S3InputFormat.setCreateS3Client(job, () => new MockS3Client)
+      S3InputFormat.setCreateS3Client(job, () => MockS3Client())
       val source = sc.newAPIHadoopRDD(
         job.getConfiguration,
         classOf[TiffTagsS3InputFormat],

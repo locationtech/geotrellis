@@ -25,33 +25,42 @@ import geotrellis.spark.io.s3.testkit._
 import geotrellis.spark.testkit.TestEnvironment
 
 import org.apache.hadoop.conf.Configuration
-import software.amazon.awssdk.auth.AWSCredentials
 import org.apache.hadoop.mapreduce.{TaskAttemptContext, InputSplit}
+import software.amazon.awssdk.services.s3.model._
+import software.amazon.awssdk.core.sync.RequestBody
 import org.scalatest._
 
 import java.nio.file.{Paths, Files}
 
 class GeoTiffS3InputFormatSpec extends FunSpec with TestEnvironment with Matchers {
 
-  val mockClient = new MockS3Client
+  val mockClient = MockS3Client()
+  val bucket = this.getClass.getSimpleName.toLowerCase
+  S3TestUtils.createBucket(mockClient, bucket)
+
   val testGeoTiffPath = "spark/src/test/resources/all-ones.tif"
   val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
-  mockClient.putObject(this.getClass.getSimpleName, "geotiff/all-ones.tif", geoTiffBytes)
+  val putReq = PutObjectRequest.builder()
+    .bucket(bucket)
+    .key("geotiff/all-ones.tif")
+    .build()
+  val putBody = RequestBody.fromBytes(geoTiffBytes)
+  mockClient.putObject(putReq, putBody)
 
   describe("GeoTiff S3 InputFormat") {
-    val url = s"s3n://${this.getClass.getSimpleName}/geotiff"
+    val url = s"s3n://${bucket}/geotiff"
 
     it("should read GeoTiffs from S3") {
       val job = sc.newJob("geotiff-ingest")
       S3InputFormat.setUrl(job, url)
 
-      S3InputFormat.setCreateS3Client(job, { () => new MockS3Client })
+      S3InputFormat.setCreateS3Client(job, { () => MockS3Client() })
 
       val source = sc.newAPIHadoopRDD(job.getConfiguration,
         classOf[GeoTiffS3InputFormat],
         classOf[ProjectedExtent],
         classOf[Tile])
-      source.map(x=>x).cache
+      source.map(x => x).cache
       val sourceCount = source.count
       sourceCount should not be (0)
       info(s"Source RDD count: ${sourceCount}")
@@ -60,7 +69,7 @@ class GeoTiffS3InputFormatSpec extends FunSpec with TestEnvironment with Matcher
     it("should set the CRS") {
       val job = sc.newJob("geotiff-ingest")
       S3InputFormat.setUrl(job, url)
-      S3InputFormat.setCreateS3Client(job, { () => new MockS3Client })
+      S3InputFormat.setCreateS3Client(job, { () => MockS3Client() })
       GeoTiffS3InputFormat.setCrs(job, WebMercator)
 
       val source = sc.newAPIHadoopRDD(job.getConfiguration,

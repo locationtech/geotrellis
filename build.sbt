@@ -6,9 +6,6 @@ scalaVersion := Version.scala
 
 scalaVersion in ThisBuild := Version.scala
 
-bloopExportJarClassifiers in Global := Some(Set("sources"))
-
-
 lazy val commonSettings = Seq(
   version := Version.geotrellis,
   scalaVersion := Version.scala,

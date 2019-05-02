@@ -18,13 +18,18 @@ package geotrellis.spark.io.s3.testkit
 
 import geotrellis.spark.io._
 import geotrellis.spark.io.s3._
+
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.regions.Region
 import org.apache.spark._
+
+import java.net.URI
 
 class MockS3CollectionLayerReader(
   attributeStore: AttributeStore
 )(implicit sc: SparkContext) extends S3CollectionLayerReader(attributeStore) {
   override def collectionReader =
     new S3CollectionReader {
-      def getS3Client = () => new MockS3Client()
+      def getS3Client = () => MockS3Client()
     }
 }

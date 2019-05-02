@@ -38,21 +38,22 @@ class COGS3SpatialSpec
 
   lazy val bucket = "mock-bucket"
   lazy val prefix = "catalog"
-
+  val client = MockS3Client()
+  S3TestUtils.createBucket(client, bucket)
   registerAfterAll { () =>
-    MockS3Client.reset()
+    S3TestUtils.cleanBucket(client, bucket)
   }
 
   lazy val attributeStore = new S3AttributeStore(bucket, prefix) {
-    override val s3Client = new MockS3Client()
+    override val s3Client = MockS3Client()
   }
 
   lazy val reader = S3COGLayerReader(attributeStore)
   lazy val creader = S3COGCollectionLayerReader(attributeStore)
   lazy val writer = S3COGLayerWriter(attributeStore)
   // TODO: implement and test all layer functions
-  // lazy val deleter = new S3LayerDeleter(attributeStore) { override val getS3Client = () => new MockS3Client() }
-  // lazy val copier  = new S3LayerCopier(attributeStore, bucket, prefix) { override val getS3Client = () => new MockS3Client }
+  // lazy val deleter = new S3LayerDeleter(attributeStore) { override val getS3Client = () => MockS3Client() }
+  // lazy val copier  = new S3LayerCopier(attributeStore, bucket, prefix) { override val getS3Client = () => MockS3Client() }
   // lazy val reindexer = GenericLayerReindexer[S3LayerHeader](attributeStore, reader, writer, deleter, copier)
   // lazy val mover = GenericLayerMover(copier, deleter)
   lazy val tiles = S3COGValueReader(attributeStore)

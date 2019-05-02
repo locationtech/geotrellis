@@ -28,6 +28,7 @@ import geotrellis.spark.io.s3.conf.S3Config
 import geotrellis.util._
 
 import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model._
 import com.typesafe.scalalogging.LazyLogging
 import spray.json.JsonFormat
 import java.net.URI
@@ -59,6 +60,7 @@ class S3COGCollectionLayerReader(
       } catch {
         // to follow GeoTrellis Layer Readers logic
         case e: AttributeNotFoundError => throw new LayerNotFoundError(id).initCause(e)
+        case e: NoSuchBucketException => throw new LayerNotFoundError(id).initCause(e)
       }
 
     val bucket = header.bucket
@@ -87,7 +89,7 @@ object S3COGCollectionLayerReader {
   def apply(attributeStore: S3AttributeStore): S3COGCollectionLayerReader =
     new S3COGCollectionLayerReader(
       attributeStore,
-      () => attributeStore.s3Client
+      () => S3Client.create() // attributeStore.s3Client
     )
 
   def apply(bucket: String, prefix: String): S3COGCollectionLayerReader =
