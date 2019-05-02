@@ -22,30 +22,22 @@ import geotrellis.util.MethodExtensions
 import geotrellis.vector._
 
 
-abstract class SinglebandRasterTileFeatureMaskMethods[D] extends MethodExtensions[TileFeature[Raster[Tile], D]] {
-  def mask(geom: Geometry): TileFeature[Raster[Tile], D] =
+abstract class RasterTileFeatureMaskMethods[
+  T <: CellGrid[Int]: (? => TileMaskMethods[T]),
+  D
+](implicit val ev: Raster[T] => RasterMaskMethods[T]) extends MethodExtensions[TileFeature[Raster[T], D]] {
+  def mask(geom: Geometry): TileFeature[Raster[T], D] =
     TileFeature(self.tile.mask(geom), self.data)
 
-  def mask(geom: Geometry, options: Rasterizer.Options): TileFeature[Raster[Tile], D] =
+  def mask(geom: Geometry, options: Rasterizer.Options): TileFeature[Raster[T], D] =
     TileFeature(self.tile.mask(geom, options), self.data)
 
-  def mask(geoms: Traversable[Geometry]): TileFeature[Raster[Tile], D] =
+  def mask(geoms: Traversable[Geometry]): TileFeature[Raster[T], D] =
     TileFeature(self.tile.mask(geoms), self.data)
 
-  def mask(geoms: Traversable[Geometry], options: Rasterizer.Options): TileFeature[Raster[Tile], D] =
+  def mask(geoms: Traversable[Geometry], options: Rasterizer.Options): TileFeature[Raster[T], D] =
     TileFeature(self.tile.mask(geoms, options), self.data)
 }
 
-abstract class MultibandRasterTileFeatureMaskMethods[D] extends MethodExtensions[TileFeature[Raster[MultibandTile], D]] {
-  def mask(geom: Geometry): TileFeature[Raster[MultibandTile], D] =
-    TileFeature(self.tile.mask(geom), self.data)
-
-  def mask(geom: Geometry, options: Rasterizer.Options): TileFeature[Raster[MultibandTile], D] =
-    TileFeature(self.tile.mask(geom, options), self.data)
-
-  def mask(geoms: Traversable[Geometry]): TileFeature[Raster[MultibandTile], D] =
-    TileFeature(self.tile.mask(geoms), self.data)
-
-  def mask(geoms: Traversable[Geometry], options: Rasterizer.Options): TileFeature[Raster[MultibandTile], D] =
-    TileFeature(self.tile.mask(geoms, options), self.data)
-}
+abstract class SinglebandRasterTileFeatureMaskMethods[D] extends RasterTileFeatureMaskMethods[Tile, D]
+abstract class MultibandRasterTileFeatureMaskMethods[D] extends RasterTileFeatureMaskMethods[MultibandTile, D]
