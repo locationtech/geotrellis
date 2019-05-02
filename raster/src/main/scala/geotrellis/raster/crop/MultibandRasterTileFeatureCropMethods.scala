@@ -20,15 +20,22 @@ import geotrellis.raster._
 import geotrellis.vector._
 import geotrellis.util.MethodExtensions
 
-abstract class TileFeatureCropMethods[T <: CellGrid[Int]: (? => TileCropMethods[T]), D] extends CropMethods[TileFeature[T, D]] {
+
+abstract class MultibandRasterTileFeatureCropMethods[D] extends CropMethods[TileFeature[Raster[MultibandTile], D]] {
   import Crop.Options
 
-  def crop(srcExtent: Extent, extent: Extent, options: Options): TileFeature[T, D] =
-    TileFeature(self.tile.crop(srcExtent, extent, options), self.data)
+  def crop(extent: Extent, options: Options): TileFeature[Raster[MultibandTile], D] = {
+    TileFeature(self.tile.crop(extent, options), self.data)
+  }
 
-  def crop(gb: GridBounds[Int], options: Options): TileFeature[T, D] =
+  def crop(srcExtent: Extent, extent: Extent, options: Options): TileFeature[Raster[MultibandTile], D] =
+    TileFeature(Raster(self.tile.tile.crop(srcExtent, extent, options), extent), self.data)
+
+  /**
+    * Given a [[GridBounds]] and some cropping options, produce a new
+    * [[Raster]].
+    */
+  def crop(gb: GridBounds[Int], options: Options): TileFeature[Raster[MultibandTile], D] = {
     TileFeature(self.tile.crop(gb, options), self.data)
+  }
 }
-
-trait SinglebandTileFeatureCropMethods[D] extends TileFeatureCropMethods[Tile, D]
-trait MultibandTileFeatureCropMethods[D] extends TileFeatureCropMethods[MultibandTile, D]
