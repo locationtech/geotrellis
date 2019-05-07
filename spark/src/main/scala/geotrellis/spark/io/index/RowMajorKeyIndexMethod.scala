@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.index
 
+import geotrellis.tiling.{KeyBounds, SpatialKey}
 import geotrellis.spark._
 import geotrellis.spark.io.index.rowmajor._
 

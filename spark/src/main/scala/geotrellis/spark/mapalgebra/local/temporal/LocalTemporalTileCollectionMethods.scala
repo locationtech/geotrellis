@@ -19,6 +19,7 @@ package geotrellis.spark.mapalgebra.local.temporal
 import java.time.ZonedDateTime
 
 import geotrellis.raster._
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.util.MethodExtensions
 

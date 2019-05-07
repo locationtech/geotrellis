@@ -16,7 +16,8 @@
 
 package geotrellis.spark.io.s3
 
-import geotrellis.spark.{LayerId, Boundable}
+import geotrellis.tiling.Boundable
+import geotrellis.spark.LayerId
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.index.KeyIndexMethod
 import geotrellis.spark.io._

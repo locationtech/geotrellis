@@ -101,7 +101,7 @@ object LandsatMultibandRDDExample {
 
       // From here, you could ingest the multiband layer.
       // But for a simple test, we will rescale the bands and write them out to a single GeoTiff
-      import geotrellis.spark.tiling.FloatingLayoutScheme
+      import geotrellis.tiling.{FloatingLayoutScheme, SpatialKey}
       import geotrellis.raster.io.geotiff.GeoTiff
 
       val (_, metadata) = sourceTiles.collectMetadata[SpatialKey](FloatingLayoutScheme(512))

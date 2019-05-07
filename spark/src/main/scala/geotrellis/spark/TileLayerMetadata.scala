@@ -18,8 +18,9 @@ package geotrellis.spark
 
 import geotrellis.proj4.CRS
 import geotrellis.raster._
-import geotrellis.spark.tiling._
+import geotrellis.tiling._
 import geotrellis.spark.ingest._
+import geotrellis.spark.tiling._
 import geotrellis.util._
 import geotrellis.vector.{ProjectedExtent, Extent}
 

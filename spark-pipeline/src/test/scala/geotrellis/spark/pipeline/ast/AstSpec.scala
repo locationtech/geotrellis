@@ -1,11 +1,11 @@
 package geotrellis.spark.pipeline.ast
 
+import geotrellis.tiling._
 import geotrellis.spark.pipeline._
 import geotrellis.spark.pipeline.json
 import geotrellis.spark.pipeline.json._
 import geotrellis.spark.pipeline.ast.untyped._
 import geotrellis.spark._
-import geotrellis.spark.tiling.{FloatingLayoutScheme, LayoutDefinition, LayoutScheme}
 import geotrellis.spark.testkit._
 
 import _root_.io.circe.syntax._

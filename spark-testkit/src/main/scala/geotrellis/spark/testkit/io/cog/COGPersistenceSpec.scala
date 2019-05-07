@@ -24,6 +24,7 @@ import geotrellis.raster.io.geotiff.compression.NoCompression
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.prototype.TilePrototypeMethods
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._

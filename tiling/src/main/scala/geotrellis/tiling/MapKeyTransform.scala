@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.tiling
+package geotrellis.tiling
 
-import geotrellis.spark._
 import geotrellis.raster._
 import geotrellis.raster.rasterize.{Rasterizer, Callback}
 import geotrellis.vector._

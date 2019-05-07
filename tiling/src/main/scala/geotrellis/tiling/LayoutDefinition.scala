@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package geotrellis.spark.tiling
+package geotrellis.tiling
 
 import geotrellis.raster._
 import geotrellis.raster.rasterize._
 import geotrellis.vector._
-import geotrellis.spark.SpatialKey
 import spire.math.Integral
 import spire.implicits._
 

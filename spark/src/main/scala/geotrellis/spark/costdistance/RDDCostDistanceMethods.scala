@@ -17,6 +17,7 @@
 package geotrellis.spark.costdistance
 
 import geotrellis.raster.{Tile, DoubleArrayTile}
+import geotrellis.tiling.SpatialKey
 import geotrellis.spark._
 import geotrellis.util.MethodExtensions
 import geotrellis.vector.Geometry

@@ -18,6 +18,7 @@ package geotrellis.spark.io.s3
 
 import geotrellis.proj4._
 import geotrellis.raster._
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io.RasterReader
 import geotrellis.vector._

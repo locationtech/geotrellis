@@ -19,6 +19,7 @@ package geotrellis.spark.buffer
 import geotrellis.raster._
 import geotrellis.raster.crop._
 import geotrellis.raster.stitch._
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.util.MethodExtensions
 

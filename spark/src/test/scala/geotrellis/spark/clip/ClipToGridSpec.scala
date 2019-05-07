@@ -17,6 +17,7 @@
 package geotrellis.spark.clip
 
 import geotrellis.raster.TileLayout
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.spark.testkit._

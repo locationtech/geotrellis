@@ -16,6 +16,7 @@
 
 package geotrellis.spark.testkit.testfiles
 
+import geotrellis.tiling.SpatialKey
 import geotrellis.spark._
 import geotrellis.raster._
 

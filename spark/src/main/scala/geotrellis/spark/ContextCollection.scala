@@ -16,6 +16,7 @@
 
 package geotrellis.spark
 
+
 object ContextCollection {
   def apply[K, V, M](sequence: Seq[(K, V)], metadata: M): Seq[(K, V)] with Metadata[M] =
     new ContextCollection(sequence, metadata)

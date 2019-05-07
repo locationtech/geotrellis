@@ -18,10 +18,10 @@ package geotrellis.spark.io.cog.vrt
 
 import geotrellis.raster.{CellType, GridBounds, RasterExtent}
 import geotrellis.spark.io.cog.vrt.VRT.{IndexedSimpleSource, SimpleSource, VRTRasterBand}
-import geotrellis.spark.{EmptyBounds, KeyBounds, SpatialComponent, TileLayerMetadata}
+import geotrellis.spark.TileLayerMetadata
 import geotrellis.vector.Extent
 import geotrellis.proj4.CRS
-import geotrellis.spark.tiling.LayoutDefinition
+import geotrellis.tiling._
 
 import org.apache.spark.util.CollectionAccumulator
 import java.io.{BufferedWriter, ByteArrayOutputStream, OutputStreamWriter}

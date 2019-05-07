@@ -8,11 +8,11 @@ import geotrellis.raster._
 import geotrellis.raster.distance.{EuclideanDistanceTile => RasterEuclideanDistance}
 import geotrellis.raster.render._
 import geotrellis.raster.testkit._
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.buffer.Direction
 import geotrellis.spark.buffer.Direction._
 import geotrellis.spark.testkit._
-import geotrellis.spark.tiling._
 import geotrellis.vector._
 import geotrellis.vector.triangulation._
 import geotrellis.vector.io.wkt.WKT

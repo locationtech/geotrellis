@@ -18,10 +18,10 @@ package geotrellis.spark.io
 
 import geotrellis.raster._
 import geotrellis.raster.resample._
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io.avro._
 import geotrellis.spark.io.json._
-import geotrellis.spark.tiling._
 import geotrellis.util._
 import spray.json._
 import scala.reflect._

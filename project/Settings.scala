@@ -58,9 +58,9 @@ object Settings {
       import geotrellis.raster._
       import geotrellis.vector._
       import geotrellis.proj4._
+      import geotrellis.tiling._
       import geotrellis.spark._
       import geotrellis.spark.util._
-      import geotrellis.spark.tiling._
       import geotrellis.spark.io.accumulo._
       """
   ) ++ noForkInTests
@@ -91,9 +91,9 @@ object Settings {
       import geotrellis.raster._
       import geotrellis.vector._
       import geotrellis.proj4._
+      import geotrellis.tiling._
       import geotrellis.spark._
       import geotrellis.spark.util._
-      import geotrellis.spark.tiling._
       import geotrellis.spark.io.cassandra._
       """
   ) ++ noForkInTests
@@ -130,9 +130,9 @@ object Settings {
       import geotrellis.raster._
       import geotrellis.vector._
       import geotrellis.proj4._
+      import geotrellis.tiling._
       import geotrellis.spark._
       import geotrellis.spark.util._
-      import geotrellis.spark.tiling._
       import geotrellis.spark.io.geomesa._
       """
   ) ++ noForkInTests
@@ -288,9 +288,9 @@ object Settings {
       import geotrellis.raster._
       import geotrellis.vector._
       import geotrellis.proj4._
+      mimport geotrellis.tiling._
       import geotrellis.spark._
       import geotrellis.spark.util._
-      import geotrellis.spark.tiling._
       import geotrellis.spark.io.hbase._
       """
   ) ++ noForkInTests
@@ -376,9 +376,9 @@ object Settings {
       import geotrellis.raster._
       import geotrellis.vector._
       import geotrellis.proj4._
+      import geotrellis.tiling._
       import geotrellis.spark._
       import geotrellis.spark.util._
-      import geotrellis.spark.tiling._
       """
   ) ++ noForkInTests
 
@@ -432,9 +432,9 @@ object Settings {
       import geotrellis.raster._
       import geotrellis.vector._
       import geotrellis.proj4._
+      import geotrellis.tiling._
       import geotrellis.spark._
       import geotrellis.spark.util._
-      import geotrellis.spark.tiling._
       """
   ) ++ noForkInTests
 
@@ -548,5 +548,22 @@ object Settings {
     PB.targets in Compile := Seq(
       scalapb.gen(flatPackage = true, grpc = false) -> (sourceManaged in Compile).value
     )
+  )
+
+  lazy val tiling = Seq(
+    name := "geotrellis-tiling",
+    libraryDependencies ++= Seq(
+      spire,
+      monocleCore,
+      monocleMacro,
+      chronoscala,
+      scalatest % Test
+    ),
+    initialCommands in console :=
+      """
+      import geotrellis.raster._
+      import geotrellis.vector._
+      import geotrellis.proj4._
+      """
   )
 }

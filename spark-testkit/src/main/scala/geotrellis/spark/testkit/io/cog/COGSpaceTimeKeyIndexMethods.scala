@@ -16,6 +16,7 @@
 
 package geotrellis.spark.testkit.io.cog
 
+import geotrellis.tiling.SpaceTimeKey
 import geotrellis.spark._
 import geotrellis.spark.io.index._
 

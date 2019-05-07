@@ -17,7 +17,7 @@
 package geotrellis.spark
 
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
-import geotrellis.spark.tiling.MapKeyTransform
+import geotrellis.tiling.{MapKeyTransform, KeyBounds}
 
 import com.typesafe.config.Config
 

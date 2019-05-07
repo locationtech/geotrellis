@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.cog
 
+import geotrellis.tiling._
 import geotrellis.raster.{GridBounds, Tile}
 import geotrellis.spark._
 import geotrellis.spark.io._

@@ -20,6 +20,7 @@ import geotrellis.proj4._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
+import geotrellis.tiling.TemporalProjectedExtent
 import geotrellis.spark._
 import geotrellis.util.{ByteReader, StreamingByteReader}
 import geotrellis.vector._

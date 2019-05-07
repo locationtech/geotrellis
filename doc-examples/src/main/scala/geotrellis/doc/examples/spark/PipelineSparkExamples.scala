@@ -3,6 +3,7 @@ package geotrellis.doc.examples.spark
 
 object PipelineSparkExamples {
   def `JSON example` = {
+    import geotrellis.tiling.SpatialKey
     import geotrellis.spark._
     import geotrellis.spark.pipeline._
     import geotrellis.spark.pipeline.ast._
@@ -97,8 +98,8 @@ object PipelineSparkExamples {
 
   def `Scala AST example` = {
     // the same example as above but written via Scala DSL
+    import geotrellis.tiling._
     import geotrellis.spark._
-    import geotrellis.spark.tiling._
     import geotrellis.spark.pipeline._
     import geotrellis.spark.pipeline.json._
     import geotrellis.spark.pipeline.json.read._

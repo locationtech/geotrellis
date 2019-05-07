@@ -19,8 +19,7 @@ package geotrellis.spark.io.index.rowmajor
 import scala.collection.immutable.TreeSet
 import org.scalatest._
 import geotrellis.spark.io.index.KeyIndex
-import geotrellis.spark.KeyBounds
-import geotrellis.spark.SpatialKey
+import geotrellis.tiling.{SpatialKey, KeyBounds}
 
 class RowMajorSpatialKeyIndexSpec extends FunSpec with Matchers{
 

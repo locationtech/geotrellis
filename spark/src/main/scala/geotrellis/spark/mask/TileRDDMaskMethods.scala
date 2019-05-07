@@ -18,8 +18,8 @@ package geotrellis.spark.mask
 
 import geotrellis.raster._
 import geotrellis.raster.mask._
+import geotrellis.tiling._
 import geotrellis.spark._
-import geotrellis.spark.tiling._
 import geotrellis.vector._
 import geotrellis.util._
 

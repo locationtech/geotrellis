@@ -17,6 +17,7 @@
 package geotrellis.spark.io.accumulo
 
 import geotrellis.raster.{Tile, TileFeature}
+import geotrellis.tiling.SpatialKey
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.index._

@@ -16,7 +16,8 @@
 
 package geotrellis.spark.io.s3
 
-import geotrellis.spark.{LayerId, SpatialKey}
+import geotrellis.tiling.SpatialKey
+import geotrellis.spark.LayerId
 import geotrellis.spark.io.s3.conf.S3Config
 
 import com.amazonaws.services.s3.model.{ObjectMetadata, PutObjectRequest, PutObjectResult}

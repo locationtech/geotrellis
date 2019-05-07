@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.accumulo
 
+import geotrellis.tiling.{Bounds, Boundable}
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.avro._

@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.slippy
 
+import geotrellis.tiling.SpatialKey
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
 

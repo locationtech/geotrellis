@@ -18,6 +18,7 @@ package geotrellis.spark.render
 
 import geotrellis.raster.Tile
 import geotrellis.raster.render._
+import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.util._
 

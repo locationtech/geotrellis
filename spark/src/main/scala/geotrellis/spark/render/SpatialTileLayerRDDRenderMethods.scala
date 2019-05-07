@@ -20,8 +20,8 @@ import geotrellis.proj4.CRS
 import geotrellis.raster.{Tile, MultibandTile}
 import geotrellis.raster.io.geotiff._
 import geotrellis.raster.render._
+import geotrellis.tiling._
 import geotrellis.spark._
-import geotrellis.spark.tiling.LayoutDefinition
 import geotrellis.util._
 
 import org.apache.spark.rdd.RDD

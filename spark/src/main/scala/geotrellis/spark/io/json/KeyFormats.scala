@@ -16,6 +16,7 @@
 
 package geotrellis.spark.io.json
 
+import geotrellis.tiling.{SpatialKey, SpaceTimeKey, KeyBounds, TemporalKey}
 import geotrellis.spark._
 
 import spray.json._
