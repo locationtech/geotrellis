@@ -90,8 +90,12 @@ object R2Viewshed extends Serializable {
     * @param  cols  The number of columns
     * @param  rows  The number of rows
     */
-  def generateEmptyViewshedTile(cols: Int, rows: Int) =
-    ArrayTile.empty(IntConstantNoDataCellType, cols, rows)
+  def generateEmptyViewshedTile(cols: Int, rows: Int, debug: Int = 0) = {
+    if (debug == 0)
+      ArrayTile.empty(IntConstantNoDataCellType, cols, rows)
+    else
+      IntArrayTile.fill(debug, cols, rows)
+  }
 
   /**
     * Given a direction of propagation, a packet of rays, and an angle
