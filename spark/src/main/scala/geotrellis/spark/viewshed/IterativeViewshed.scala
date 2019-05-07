@@ -199,6 +199,7 @@ object IterativeViewshed {
     * @param  curvature    Whether or not to take the curvature of the Earth into account
     * @param  operator     The aggregation operator to use (e.g. Or)
     * @param  epsilon      Rays within this many radians of horizontal (vertical) are considered to be horizontal (vertical)
+    * @param  scatter      Whether to allow light to move (one pixel) normal to the ray
     */
   def apply[K: (? => SpatialKey): ClassTag, V: (? => Tile)](
     elevation: RDD[(K, V)] with Metadata[TileLayerMetadata[K]],
@@ -206,7 +207,8 @@ object IterativeViewshed {
     maxDistance: Double,
     curvature: Boolean = true,
     operator: AggregationOperator = Or,
-    epsilon: Double = (1/math.Pi)
+    epsilon: Double = (1/math.Pi),
+    scatter: Boolean = true
   ): RDD[(K, Tile)] with Metadata[TileLayerMetadata[K]] = {
 
     val sparkContext = elevation.sparkContext
@@ -321,7 +323,9 @@ object IterativeViewshed {
               altitude = alt,
               operator = operator,
               cameraDirection = ang,
-              cameraFOV = fov
+              cameraFOV = fov,
+              epsilon = epsilon,
+              scatter = scatter
             )
           })
         case None =>
@@ -394,7 +398,8 @@ object IterativeViewshed {
                     altitude = alt,
                     cameraDirection = angle,
                     cameraFOV = fov,
-                    epsilon = epsilon
+                    epsilon = epsilon,
+                    scatter = scatter
                   )
                 }
                 i += 1;
