@@ -45,7 +45,7 @@ class S3COGLayerWriter(
   keyPrefix: String,
   getS3Client: () => S3Client = () =>
     // https://github.com/aws/aws-sdk-java-v2/blob/master/docs/BestPractices.md#reuse-sdk-client-if-possible
-    SerializableS3Client.default(),
+    S3Client.create(),
   threads: Int = S3RDDWriter.defaultThreadCount
 ) extends COGLayerWriter {
 

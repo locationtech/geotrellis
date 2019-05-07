@@ -40,6 +40,7 @@ class MockS3InputFormat extends S3InputFormat[ProjectedExtent, Array[Byte]] {
 
 class S3InputFormatSpec extends FunSpec with Matchers
 {
+
   describe("S3 InputFormat") {
 
     it("should parse the s3 url containing bucket name with dash") {
@@ -82,6 +83,7 @@ class S3InputFormatSpec extends FunSpec with Matchers
     }
 
     val mockClient = MockS3Client()
+    S3TestUtils.cleanBucket(mockClient, "s3-input-format")
     for (i <- 1 to 10) {
       val extent = Extent(i, i, i, i)
       val putReq = PutObjectRequest.builder()

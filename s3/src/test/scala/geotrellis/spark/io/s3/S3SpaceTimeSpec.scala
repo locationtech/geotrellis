@@ -46,7 +46,7 @@ class S3SpaceTimeSpec
   lazy val bucket = "mock-bucket"
   lazy val prefix = "catalog"
   val client = MockS3Client()
-  S3TestUtils.createBucket(client, bucket)
+  S3TestUtils.cleanBucket(client, bucket)
 
   lazy val attributeStore = new S3AttributeStore(bucket, prefix) {
     override def s3Client = MockS3Client()

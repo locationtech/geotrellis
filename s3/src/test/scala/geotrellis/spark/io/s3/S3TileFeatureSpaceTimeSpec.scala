@@ -40,7 +40,7 @@ class S3TileFeatureSpaceTimeSpec
   lazy val bucket = "mock-bucket"
   lazy val prefix = "catalog"
   val client = MockS3Client()
-  S3TestUtils.createBucket(client, bucket)
+  S3TestUtils.cleanBucket(client, bucket)
   registerAfterAll { () =>
     S3TestUtils.cleanBucket(client, bucket)
   }

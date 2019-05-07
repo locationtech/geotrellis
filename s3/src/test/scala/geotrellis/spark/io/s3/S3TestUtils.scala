@@ -20,33 +20,33 @@ import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model._
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 object S3TestUtils {
-  def createBucket(client: S3Client, name: String) = {
-    val createBucketReq =
-      CreateBucketRequest.builder()
-        .bucket(name)
-        .build()
-    client.createBucket(createBucketReq)
-  }
-
   def cleanBucket(client: S3Client, bucket: String) = {
-    val listObjectsReq =
-      ListObjectsV2Request.builder()
-        .bucket(bucket)
-        .build()
-    client.listObjectsV2Paginator(listObjectsReq)
-      .contents
-      .asScala
-      .foreach { s3obj =>
-        val deleteReq = DeleteObjectRequest.builder().bucket(bucket).key(s3obj.key).build()
-        client.deleteObject(deleteReq)
-      }
-    val deleteBucketReq =
-      DeleteBucketRequest.builder()
-        .bucket(bucket)
-        .build()
-    client.deleteBucket(deleteBucketReq)
-    createBucket(client, bucket)
+    try {
+      val listObjectsReq =
+        ListObjectsV2Request.builder()
+          .bucket(bucket)
+          .build()
+      client.listObjectsV2Paginator(listObjectsReq)
+        .contents
+        .asScala
+        .foreach { s3obj =>
+          val deleteReq = DeleteObjectRequest.builder().bucket(bucket).key(s3obj.key).build()
+          client.deleteObject(deleteReq)
+        }
+      val deleteBucketReq =
+        DeleteBucketRequest.builder()
+          .bucket(bucket)
+          .build()
+      client.deleteBucket(deleteBucketReq)
+    } finally {
+      val createBucketReq =
+        CreateBucketRequest.builder()
+          .bucket(bucket)
+          .build()
+      client.createBucket(createBucketReq)
+    }
   }
 }

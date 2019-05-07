@@ -53,7 +53,7 @@ class S3GeoTiffRDDSpec
   describe("S3GeoTiffRDD") {
     val mockClient = MockS3Client()
     val bucket = this.getClass.getSimpleName.toLowerCase
-    S3TestUtils.createBucket(mockClient, bucket)
+    S3TestUtils.cleanBucket(mockClient, bucket)
 
     it("should filter by geometry") {
       val key = "geoTiff/all-ones.tif"

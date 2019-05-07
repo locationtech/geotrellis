@@ -30,15 +30,16 @@ import org.apache.commons.io.IOUtils
 import org.scalatest._
 
 class S3RangeReaderSpec extends FunSpec with Matchers {
+  val bucket = this.getClass.getSimpleName.toLowerCase
   val mockClient = MockS3Client()
-  S3TestUtils.createBucket(mockClient, this.getClass.getSimpleName)
+  S3TestUtils.cleanBucket(mockClient, bucket)
 
   describe("S3RangeReader") {
     val testGeoTiffPath = "spark/src/test/resources/all-ones.tif"
     val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
 
     val putReq = PutObjectRequest.builder()
-      .bucket(this.getClass.getSimpleName)
+      .bucket(bucket)
       .key("geotiff/all-ones.tif")
       .build()
     val putBody = RequestBody.fromBytes(geoTiffBytes)
@@ -47,7 +48,7 @@ class S3RangeReaderSpec extends FunSpec with Matchers {
     val chunkSize = 20000
     val request =
       GetObjectRequest.builder()
-        .bucket(this.getClass.getSimpleName)
+        .bucket(bucket)
         .key("geotiff/all-ones.tif")
         .build()
     val rangeReader = S3RangeReader(request, mockClient)

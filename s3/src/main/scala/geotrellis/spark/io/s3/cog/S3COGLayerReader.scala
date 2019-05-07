@@ -44,7 +44,7 @@ import scala.reflect.ClassTag
  */
 class S3COGLayerReader(
   val attributeStore: AttributeStore,
-  val getS3Client: () => S3Client = () => SerializableS3Client.default(),
+  val getS3Client: () => S3Client = () => S3Client.create(),
   val defaultThreads: Int = S3COGLayerReader.defaultThreadCount
 )(@transient implicit val sc: SparkContext) extends COGLayerReader[LayerId] with LazyLogging {
 

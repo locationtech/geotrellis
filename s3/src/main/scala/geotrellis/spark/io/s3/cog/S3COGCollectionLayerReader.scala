@@ -89,7 +89,7 @@ object S3COGCollectionLayerReader {
   def apply(attributeStore: S3AttributeStore): S3COGCollectionLayerReader =
     new S3COGCollectionLayerReader(
       attributeStore,
-      () => S3Client.create() // attributeStore.s3Client
+      () => attributeStore.s3Client
     )
 
   def apply(bucket: String, prefix: String): S3COGCollectionLayerReader =

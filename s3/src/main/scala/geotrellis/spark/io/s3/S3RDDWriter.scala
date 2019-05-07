@@ -25,7 +25,7 @@ import geotrellis.spark.io.s3.conf.S3Config
 import cats.effect.{IO, Timer}
 import cats.syntax.apply._
 import software.amazon.awssdk.services.s3.model.{S3Exception, PutObjectRequest, PutObjectResponse, GetObjectRequest}
-import software.amazon.awssdk.services.s3.{S3Client, SerializableS3Client}
+import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.core.sync.RequestBody
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
@@ -159,5 +159,5 @@ trait S3RDDWriter {
 }
 
 object S3RDDWriter extends S3RDDWriter {
-  def getS3Client: () => S3Client = () => SerializableS3Client.default()
+  def getS3Client: () => S3Client = () => S3Client.create()
 }

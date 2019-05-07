@@ -26,7 +26,7 @@ import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.spark.util.KryoWrapper
 
 import software.amazon.awssdk.services.s3.model.{S3Exception, GetObjectRequest}
-import software.amazon.awssdk.services.s3.{S3Client, SerializableS3Client}
+import software.amazon.awssdk.services.s3.S3Client
 
 import org.apache.avro.Schema
 import org.apache.commons.io.IOUtils
@@ -95,5 +95,5 @@ trait S3RDDReader {
 }
 
 object S3RDDReader extends S3RDDReader {
-  def getS3Client: () => S3Client = () => SerializableS3Client.default()
+  def getS3Client: () => S3Client = () => S3Client.create()
 }

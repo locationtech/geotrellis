@@ -25,7 +25,7 @@ import org.scalatest._
 class S3LayerProviderSpec extends FunSpec with TestEnvironment {
   val uri = new java.net.URI("s3://fake-bucket/some-prefix")
   val client = MockS3Client()
-  S3TestUtils.createBucket(client, "fake-bucket")
+  S3TestUtils.cleanBucket(client, "fake-bucket")
   it("construct S3AttributeStore from URI"){
     val store = AttributeStore(uri)
     assert(store.isInstanceOf[S3AttributeStore])

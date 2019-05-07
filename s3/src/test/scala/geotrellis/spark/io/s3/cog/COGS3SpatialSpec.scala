@@ -29,6 +29,8 @@ import geotrellis.spark.testkit.io._
 import geotrellis.spark.testkit.io.cog._
 import geotrellis.spark.testkit.testfiles.cog._
 
+import software.amazon.awssdk.services.s3.S3Client
+
 class COGS3SpatialSpec
   extends COGPersistenceSpec[SpatialKey, Tile]
     with SpatialKeyIndexMethods
@@ -39,23 +41,26 @@ class COGS3SpatialSpec
   lazy val bucket = "mock-bucket"
   lazy val prefix = "catalog"
   val client = MockS3Client()
-  S3TestUtils.createBucket(client, bucket)
+  S3TestUtils.cleanBucket(client, bucket)
   registerAfterAll { () =>
     S3TestUtils.cleanBucket(client, bucket)
   }
 
   lazy val attributeStore = new S3AttributeStore(bucket, prefix) {
-    override val s3Client = MockS3Client()
+    @transient
+    override lazy val s3Client = MockS3Client()
   }
 
-  lazy val reader = S3COGLayerReader(attributeStore)
-  lazy val creader = S3COGCollectionLayerReader(attributeStore)
-  lazy val writer = S3COGLayerWriter(attributeStore)
+  lazy val reader = new S3COGLayerReader(attributeStore, () => MockS3Client())
+  lazy val creader = new S3COGCollectionLayerReader(attributeStore, () => MockS3Client())
+  lazy val writer = new S3COGLayerWriter(attributeStore, attributeStore.bucket, attributeStore.prefix, () => MockS3Client())
   // TODO: implement and test all layer functions
   // lazy val deleter = new S3LayerDeleter(attributeStore) { override val getS3Client = () => MockS3Client() }
   // lazy val copier  = new S3LayerCopier(attributeStore, bucket, prefix) { override val getS3Client = () => MockS3Client() }
   // lazy val reindexer = GenericLayerReindexer[S3LayerHeader](attributeStore, reader, writer, deleter, copier)
   // lazy val mover = GenericLayerMover(copier, deleter)
-  lazy val tiles = S3COGValueReader(attributeStore)
+  lazy val tiles = new S3COGValueReader(attributeStore) {
+      override def s3Client: S3Client = MockS3Client()
+  }
   lazy val sample = AllOnesTestFile
 }

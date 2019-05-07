@@ -31,7 +31,7 @@ import java.nio.file.{Paths, Files}
 class TiffTagsS3InputFormatSpec extends FunSpec with Matchers with TestEnvironment {
   val mockClient = MockS3Client()
   val bucket = this.getClass.getSimpleName.toLowerCase
-  S3TestUtils.createBucket(mockClient, bucket)
+  S3TestUtils.cleanBucket(mockClient, bucket)
   val testGeoTiffPath = "spark/src/test/resources/all-ones.tif"
   val geoTiffBytes = Files.readAllBytes(Paths.get(testGeoTiffPath))
   val putReq = PutObjectRequest.builder()

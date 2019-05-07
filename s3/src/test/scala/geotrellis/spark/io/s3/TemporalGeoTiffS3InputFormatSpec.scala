@@ -41,7 +41,7 @@ class TemporalGeoTiffS3InputFormatSpec extends FunSpec with Matchers with TestEn
   val layoutScheme = ZoomedLayoutScheme(LatLng)
   val client = MockS3Client()
   val bucket = this.getClass.getSimpleName.toLowerCase
-  S3TestUtils.createBucket(client, bucket)
+  S3TestUtils.cleanBucket(client, bucket)
 
   describe("SpaceTime GeoTiff S3 InputFormat") {
     it("should read the time from a file") {

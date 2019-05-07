@@ -74,6 +74,6 @@ class S3COGValueReader(
 object S3COGValueReader {
   def apply(s3attributeStore: S3AttributeStore): S3COGValueReader =
     new S3COGValueReader(s3attributeStore) {
-      override def s3Client: S3Client = S3Client.create() //s3attributeStore.s3Client
+      override def s3Client: S3Client = s3attributeStore.s3Client
     }
 }

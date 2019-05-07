@@ -26,7 +26,7 @@ import org.scalatest._
 
 class COGS3LayerProviderSpec extends FunSpec with TestEnvironment {
   val client = MockS3Client()
-  S3TestUtils.createBucket(client, "fake-bucket")
+  S3TestUtils.cleanBucket(client, "fake-bucket")
   val uri = new java.net.URI("s3://fake-bucket/some-prefix")
 
   it("construct S3COGLayerReader from URI") {
