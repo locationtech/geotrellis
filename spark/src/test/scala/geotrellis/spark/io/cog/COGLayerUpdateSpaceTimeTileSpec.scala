@@ -17,19 +17,22 @@
 package geotrellis.spark.io.cog
 
 import geotrellis.proj4.LatLng
+import geotrellis.vector._
+import geotrellis.tiling._
+import geotrellis.layers._
+import geotrellis.layers.cog._
 import geotrellis.raster._
 import geotrellis.raster.testkit._
 import geotrellis.raster.io.geotiff.GeoTiff
-import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.testkit._
 import geotrellis.spark.testkit.io._
 import geotrellis.spark.testkit.io.cog._
 import geotrellis.util._
-import geotrellis.vector._
 
 import java.time._
+
 
 trait COGLayerUpdateSpaceTimeTileSpec
     extends TileLayerRDDBuilders

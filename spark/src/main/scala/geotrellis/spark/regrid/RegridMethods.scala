@@ -16,6 +16,7 @@
 
 package geotrellis.spark.regrid
 
+import geotrellis.layers.Metadata
 import geotrellis.raster._
 import geotrellis.raster.crop._
 import geotrellis.raster.prototype._
@@ -23,7 +24,6 @@ import geotrellis.raster.stitch._
 import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.util._
-
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag

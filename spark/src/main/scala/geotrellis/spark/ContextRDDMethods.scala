@@ -16,6 +16,7 @@
 
 package geotrellis.spark
 
+import geotrellis.layers.Metadata
 import org.apache.spark.rdd._
 
 import scala.reflect._

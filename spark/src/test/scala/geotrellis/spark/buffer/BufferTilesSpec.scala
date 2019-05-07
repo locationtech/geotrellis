@@ -17,12 +17,13 @@
 package geotrellis.spark.buffer
 
 import geotrellis.tiling._
-import geotrellis.spark._
-import geotrellis.spark.io._
+import geotrellis.raster.buffer.BufferSizes
 import geotrellis.raster.crop._
-import geotrellis.raster.prototype._
 import geotrellis.raster.io.geotiff.SinglebandGeoTiff
 import geotrellis.raster.testkit._
+import geotrellis.layers.ContextCollection
+import geotrellis.layers.buffer.BufferTiles
+import geotrellis.spark._
 import geotrellis.spark.testkit._
 
 import org.scalatest.FunSpec
@@ -43,8 +44,8 @@ object BufferTilesSpec {
   }
 }
 
-class BufferTilesSpec extends FunSpec with TestEnvironment with RasterMatchers {
 
+class BufferTilesSpec extends FunSpec with TestEnvironment with RasterMatchers {
   describe("The BufferTiles functionality") {
     val path = "raster/data/aspect.tif"
     val gt = SinglebandGeoTiff(path)
@@ -53,26 +54,6 @@ class BufferTilesSpec extends FunSpec with TestEnvironment with RasterMatchers {
     val metadata = wholeRdd.metadata
     val wholeCollection = wholeRdd.toCollection
     val cmetadata = wholeCollection.metadata
-
-    it("should work when the RDD is a diagonal strip") {
-      val partialRdd = ContextRDD(wholeRdd.filter({ case (k, _) => k.col == k.row }), metadata)
-      BufferTiles(partialRdd, 1).count
-    }
-
-    it("should work when the RDD is a square minus the main diagonal") {
-      val partialRdd = ContextRDD(wholeRdd.filter({ case (k, _) => k.col != k.row }), metadata)
-      BufferTiles(partialRdd, 1).count
-    }
-
-    it("should work when the RDD is the other diagonal strip") {
-      val partialRdd = ContextRDD(wholeRdd.filter({ case (k, _) => k.col == (4- k.row) }), metadata)
-      BufferTiles(partialRdd, 1).count
-    }
-
-    it("should work when the RDD is a square minus the other diagonal") {
-      val partialRdd = ContextRDD(wholeRdd.filter({ case (k, _) => k.col != (4- k.row) }), metadata)
-      BufferTiles(partialRdd, 1).count
-    }
 
     it("should work when the Collection is a diagonal strip") {
       val partialCollection = ContextCollection(wholeCollection.filter({ case (k, _) => k.col == k.row }), cmetadata)
@@ -94,10 +75,30 @@ class BufferTilesSpec extends FunSpec with TestEnvironment with RasterMatchers {
       BufferTiles(partialCollection, 1).length
     }
 
+    it("should work when the RDD is a diagonal strip") {
+      val partialRdd = ContextRDD(wholeRdd.filter({ case (k, _) => k.col == k.row }), metadata)
+      BufferTilesRDD(partialRdd, 1).count
+    }
+
+    it("should work when the RDD is a square minus the main diagonal") {
+      val partialRdd = ContextRDD(wholeRdd.filter({ case (k, _) => k.col != k.row }), metadata)
+      BufferTilesRDD(partialRdd, 1).count
+    }
+
+    it("should work when the RDD is the other diagonal strip") {
+      val partialRdd = ContextRDD(wholeRdd.filter({ case (k, _) => k.col == (4- k.row) }), metadata)
+      BufferTilesRDD(partialRdd, 1).count
+    }
+
+    it("should work when the RDD is a square minus the other diagonal") {
+      val partialRdd = ContextRDD(wholeRdd.filter({ case (k, _) => k.col != (4- k.row) }), metadata)
+      BufferTilesRDD(partialRdd, 1).count
+    }
+
     it("the lightweight RDD version should work for the whole collection") {
       val bounds = metadata.bounds
 
-      val buffers = BufferTiles(ContextRDD(wholeRdd, metadata), { _: SpatialKey => BufferSizes(2,2,2,2) }).collect
+      val buffers = BufferTilesRDD(ContextRDD(wholeRdd, metadata), { _: SpatialKey => BufferSizes(2,2,2,2) }).collect
       val tile11 = buffers.find{ case (key, _) => key == SpatialKey(1, 1) }.get._2.tile
       val baseline = originalRaster.crop(98, 98, 201, 201, Crop.Options.DEFAULT)
       assertEqual(baseline.tile, tile11)
@@ -117,7 +118,7 @@ class BufferTilesSpec extends FunSpec with TestEnvironment with RasterMatchers {
         holey.update(x * 100, x * 100, blank)
       }
 
-      val buffers = BufferTiles(partialRdd, { _: SpatialKey => BufferSizes(2,2,2,2) }).collect
+      val buffers = BufferTilesRDD(partialRdd, { _: SpatialKey => BufferSizes(2,2,2,2) }).collect
       val tile11 = buffers.find{ case (key, _) => key == SpatialKey(2, 1) }.get._2.tile
       println(tile11)
       // Holey crop!

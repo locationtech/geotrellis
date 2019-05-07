@@ -16,18 +16,18 @@
 
 package geotrellis.spark.viewshed
 
+import geotrellis.layers.{Metadata, TileLayerMetadata}
 import geotrellis.proj4.LatLng
 import geotrellis.raster._
 import geotrellis.raster.rasterize.Rasterizer
 import geotrellis.raster.viewshed.R2Viewshed
 import geotrellis.raster.viewshed.R2Viewshed._
-import geotrellis.tiling.{SpatialKey, KeyBounds}
+import geotrellis.tiling.{KeyBounds, SpatialKey}
 import geotrellis.spark._
 import geotrellis.spark.tiling._
 import geotrellis.util._
 import geotrellis.vector._
-
-import org.locationtech.jts.{ geom => jts }
+import org.locationtech.jts.{geom => jts}
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext

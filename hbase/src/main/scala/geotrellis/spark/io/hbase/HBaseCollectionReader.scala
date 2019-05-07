@@ -16,13 +16,12 @@
 
 package geotrellis.spark.io.hbase
 
+import geotrellis.layers.LayerId
 import geotrellis.tiling.{Boundable, KeyBounds}
-import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
-import geotrellis.spark.io.index.MergeQueue
+import geotrellis.layers.io.avro.codecs.KeyValueRecordCodec
+import geotrellis.layers.io.avro.{AvroEncoder, AvroRecordCodec}
+import geotrellis.layers.io.index.MergeQueue
 import geotrellis.spark.util.KryoWrapper
-import geotrellis.spark.LayerId
-
 import org.apache.hadoop.hbase.client.Scan
 import org.apache.hadoop.hbase.filter.{FilterList, MultiRowRangeFilter, PrefixFilter}
 import org.apache.avro.Schema

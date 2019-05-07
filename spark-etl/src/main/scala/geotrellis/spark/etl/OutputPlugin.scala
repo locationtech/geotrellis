@@ -16,10 +16,10 @@
 
 package geotrellis.spark.etl
 
+import geotrellis.layers.io.Writer
+import geotrellis.layers.{LayerId, Metadata}
 import geotrellis.spark.etl.config.EtlConf
-import geotrellis.spark.{LayerId, Metadata}
-import geotrellis.spark.io.{AttributeStore, Writer}
-
+import geotrellis.spark.io.AttributeStore
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 

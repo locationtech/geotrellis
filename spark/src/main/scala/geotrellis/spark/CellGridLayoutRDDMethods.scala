@@ -16,10 +16,10 @@
 
 package geotrellis.spark
 
+import geotrellis.layers.Metadata
 import geotrellis.raster._
 import geotrellis.tiling._
 import geotrellis.util._
-
 import org.apache.spark.rdd._
 
 import scala.reflect.ClassTag

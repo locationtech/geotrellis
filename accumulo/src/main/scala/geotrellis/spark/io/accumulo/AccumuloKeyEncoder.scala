@@ -16,8 +16,8 @@
 
 package geotrellis.spark.io.accumulo
 
+import geotrellis.layers.LayerId
 import geotrellis.spark._
-
 import org.apache.accumulo.core.data.Key
 import org.apache.hadoop.io.Text
 

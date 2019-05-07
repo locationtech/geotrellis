@@ -16,13 +16,13 @@
 
 package geotrellis.spark.etl.cassandra
 
+import geotrellis.layers.TileLayerMetadata
 import geotrellis.raster.MultibandTile
 import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.etl.config.EtlConf
 import geotrellis.spark.io._
 import geotrellis.spark.io.cassandra.CassandraLayerWriter
-
 import org.apache.spark.SparkContext
 
 class MultibandSpaceTimeCassandraOutput extends CassandraOutput[SpaceTimeKey, MultibandTile, TileLayerMetadata[SpaceTimeKey]] {

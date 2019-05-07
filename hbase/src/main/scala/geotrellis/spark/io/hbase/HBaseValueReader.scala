@@ -16,14 +16,14 @@
 
 package geotrellis.spark.io.hbase
 
+import geotrellis.layers.LayerId
+import geotrellis.layers.io.{OverzoomingValueReader, Reader}
 import geotrellis.raster._
 import geotrellis.raster.resample._
 import geotrellis.tiling.SpatialComponent
-import geotrellis.spark.LayerId
 import geotrellis.spark.io._
-import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
-
+import geotrellis.layers.io.avro.codecs.KeyValueRecordCodec
+import geotrellis.layers.io.avro.{AvroEncoder, AvroRecordCodec}
 import org.apache.hadoop.hbase.client.Get
 import spray.json._
 

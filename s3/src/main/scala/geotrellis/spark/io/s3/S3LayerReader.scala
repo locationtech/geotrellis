@@ -19,11 +19,11 @@ package geotrellis.spark.io.s3
 import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.avro._
-import geotrellis.spark.io.index._
+import geotrellis.layers.io.avro._
+import geotrellis.layers.io.index._
 import geotrellis.util._
-
 import com.typesafe.scalalogging.LazyLogging
+import geotrellis.layers.LayerId
 import org.apache.spark.SparkContext
 import spray.json.JsonFormat
 

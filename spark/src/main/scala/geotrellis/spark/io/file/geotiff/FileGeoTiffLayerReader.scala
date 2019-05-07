@@ -16,16 +16,18 @@
 
 package geotrellis.spark.io.file.geotiff
 
+import geotrellis.tiling.ZoomedLayoutScheme
 import geotrellis.raster.resample.{NearestNeighbor, ResampleMethod}
 import geotrellis.raster.io.geotiff.{AutoHigherResolution, OverviewStrategy}
-import geotrellis.tiling.ZoomedLayoutScheme
+import geotrellis.layers.file._
+import geotrellis.layers.file.cog.byteReader
+import geotrellis.layers.file.conf.FileConfig
 import geotrellis.spark.io.hadoop.geotiff._
-import geotrellis.spark.io.file.cog.byteReader
 import geotrellis.util.ByteReader
 import geotrellis.util.annotations.experimental
+
 import java.net.URI
 
-import geotrellis.spark.io.file.conf.FileConfig
 
 /**
   * @define experimental <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>@experimental

@@ -17,9 +17,7 @@
 package geotrellis.spark.io.s3
 
 import geotrellis.tiling.SpatialKey
-import geotrellis.spark.LayerId
 import geotrellis.spark.io.s3.conf.S3Config
-
 import com.amazonaws.services.s3.model.{ObjectMetadata, PutObjectRequest, PutObjectResult}
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.apache.spark.rdd.RDD
@@ -27,10 +25,11 @@ import cats.effect.{IO, Timer}
 import cats.syntax.apply._
 
 import scala.concurrent.ExecutionContext
-
 import java.io.ByteArrayInputStream
 import java.util.concurrent.Executors
 import java.net.URI
+
+import geotrellis.layers.LayerId
 
 object SaveToS3 {
   final val defaultThreadCount = S3Config.threads.rdd.writeThreads
@@ -91,7 +90,7 @@ object SaveToS3 {
       implicit val timer: Timer[IO] = IO.timer(ec)
       implicit val cs = IO.contextShift(ec)
 
-      import geotrellis.spark.util.TaskUtils._
+      import geotrellis.layers.utils.TaskUtils._
       val write: PutObjectRequest => fs2.Stream[IO, PutObjectResult] = { request =>
         fs2.Stream eval IO.shift(ec) *> IO {
           request.getInputStream.reset() // reset in case of retransmission to avoid 400 error

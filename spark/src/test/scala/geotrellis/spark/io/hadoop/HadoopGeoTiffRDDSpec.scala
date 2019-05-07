@@ -16,16 +16,17 @@
 
 package geotrellis.spark.io.hadoop
 
+import geotrellis.vector._
+import geotrellis.vector.ProjectedExtent
+import geotrellis.tiling._
 import geotrellis.raster._
 import geotrellis.raster.testkit.RasterMatchers
-import geotrellis.tiling._
+import geotrellis.layers.hadoop.HdfsUtils
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.testkit._
 import geotrellis.spark.testkit.testfiles._
 import geotrellis.spark.tiling._
-import geotrellis.vector._
-import geotrellis.vector.ProjectedExtent
 
 import org.apache.hadoop.fs.Path
 import spire.syntax.cfor._

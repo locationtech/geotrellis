@@ -18,16 +18,17 @@ package geotrellis.spark.io.s3
 
 import geotrellis.spark._
 import geotrellis.spark.io._
-
 import spray.json._
 import DefaultJsonProtocol._
-import com.amazonaws.services.s3.model.{ObjectMetadata, AmazonS3Exception}
+import com.amazonaws.services.s3.model.{AmazonS3Exception, ObjectMetadata}
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion
 
 import scala.util.matching.Regex
 import scala.io.Source
 import java.nio.charset.Charset
 import java.io.ByteArrayInputStream
+
+import geotrellis.layers.LayerId
 
 /**
  * Stores and retrieves layer attributes in an S3 bucket in JSON format

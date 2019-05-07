@@ -16,10 +16,9 @@
 
 package geotrellis.spark.io.s3
 
-import geotrellis.spark.LayerId
 import geotrellis.spark.io._
-
 import com.typesafe.scalalogging.LazyLogging
+import geotrellis.layers.LayerId
 
 class S3LayerDeleter(val attributeStore: AttributeStore) extends LazyLogging with LayerDeleter[LayerId] {
 

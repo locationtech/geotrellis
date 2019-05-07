@@ -19,6 +19,7 @@ package geotrellis.spark.io.hadoop
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader
 import geotrellis.raster.io.geotiff.reader.GeoTiffReader.GeoTiffInfo
 import geotrellis.raster.io.geotiff.tags.TiffTags
+import geotrellis.layers.hadoop.{HdfsUtils, HdfsRangeReader, SerializableConfiguration}
 import geotrellis.spark.io._
 import geotrellis.spark.io.hadoop._
 import geotrellis.util.ByteReader
@@ -26,6 +27,7 @@ import geotrellis.util.ByteReader
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+
 
 case class HadoopGeoTiffInfoReader(
   path: String,

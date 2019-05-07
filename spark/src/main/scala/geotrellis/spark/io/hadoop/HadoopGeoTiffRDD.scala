@@ -17,15 +17,18 @@
 package geotrellis.spark.io.hadoop
 
 import geotrellis.proj4._
+import geotrellis.vector._
+import geotrellis.tiling._
 import geotrellis.raster._
 import geotrellis.raster.io.geotiff._
-import geotrellis.tiling._
+import geotrellis.layers.hadoop._
+import geotrellis.layers.hadoop.formats.{BinaryFileInputFormat, BytesFileInputFormat}
 import geotrellis.spark._
-import geotrellis.spark.io.hadoop.formats._
 import geotrellis.spark.io.RasterReader
-import geotrellis.vector._
+import geotrellis.spark.io.hadoop.formats._
 
 import com.typesafe.scalalogging.LazyLogging
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
@@ -33,6 +36,7 @@ import org.apache.spark.rdd.RDD
 
 import java.net.URI
 import java.nio.ByteBuffer
+
 
 
 /**

@@ -17,13 +17,12 @@
 package geotrellis.spark.io.kryo
 
 import org.apache.spark.serializer.{KryoRegistrator => SparkKryoRegistrator}
-
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.serializers._
 import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
-
 import java.util.{Comparator, TreeMap}
+
 
 /** Account for a bug in Kryo < 2.22 for serializing TreeMaps */
 class XTreeMapSerializer extends MapSerializer {
@@ -130,25 +129,25 @@ class KryoRegistrator extends SparkKryoRegistrator {
 
     kryo.register(classOf[geotrellis.tiling.SpatialKey])
     kryo.register(classOf[geotrellis.tiling.SpaceTimeKey])
-    kryo.register(classOf[geotrellis.spark.io.index.rowmajor.RowMajorSpatialKeyIndex])
-    kryo.register(classOf[geotrellis.spark.io.index.zcurve.ZSpatialKeyIndex])
-    kryo.register(classOf[geotrellis.spark.io.index.zcurve.ZSpaceTimeKeyIndex])
-    kryo.register(classOf[geotrellis.spark.io.index.hilbert.HilbertSpatialKeyIndex])
-    kryo.register(classOf[geotrellis.spark.io.index.hilbert.HilbertSpaceTimeKeyIndex])
+    kryo.register(classOf[geotrellis.layers.index.rowmajor.RowMajorSpatialKeyIndex])
+    kryo.register(classOf[geotrellis.layers.index.zcurve.ZSpatialKeyIndex])
+    kryo.register(classOf[geotrellis.layers.index.zcurve.ZSpaceTimeKeyIndex])
+    kryo.register(classOf[geotrellis.layers.index.hilbert.HilbertSpatialKeyIndex])
+    kryo.register(classOf[geotrellis.layers.index.hilbert.HilbertSpaceTimeKeyIndex])
     kryo.register(classOf[geotrellis.vector.ProjectedExtent])
     kryo.register(classOf[geotrellis.vector.Extent])
     kryo.register(classOf[geotrellis.proj4.CRS])
 
     // UnmodifiableCollectionsSerializer.registerSerializers(kryo)
-    kryo.register(geotrellis.spark.buffer.Direction.Center.getClass)
-    kryo.register(geotrellis.spark.buffer.Direction.Top.getClass)
-    kryo.register(geotrellis.spark.buffer.Direction.Bottom.getClass)
-    kryo.register(geotrellis.spark.buffer.Direction.Left.getClass)
-    kryo.register(geotrellis.spark.buffer.Direction.Right.getClass)
-    kryo.register(geotrellis.spark.buffer.Direction.TopLeft.getClass)
-    kryo.register(geotrellis.spark.buffer.Direction.TopRight.getClass)
-    kryo.register(geotrellis.spark.buffer.Direction.BottomLeft.getClass)
-    kryo.register(geotrellis.spark.buffer.Direction.BottomRight.getClass)
+    kryo.register(geotrellis.raster.buffer.Direction.Center.getClass)
+    kryo.register(geotrellis.raster.buffer.Direction.Top.getClass)
+    kryo.register(geotrellis.raster.buffer.Direction.Bottom.getClass)
+    kryo.register(geotrellis.raster.buffer.Direction.Left.getClass)
+    kryo.register(geotrellis.raster.buffer.Direction.Right.getClass)
+    kryo.register(geotrellis.raster.buffer.Direction.TopLeft.getClass)
+    kryo.register(geotrellis.raster.buffer.Direction.TopRight.getClass)
+    kryo.register(geotrellis.raster.buffer.Direction.BottomLeft.getClass)
+    kryo.register(geotrellis.raster.buffer.Direction.BottomRight.getClass)
 
     /* Exhaustive Registration */
     kryo.register(classOf[Array[Double]])
@@ -158,7 +157,7 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[Array[org.locationtech.jts.geom.Coordinate]])
     kryo.register(classOf[Array[org.locationtech.jts.geom.LinearRing]])
     kryo.register(classOf[Array[org.locationtech.jts.geom.Polygon]])
-    kryo.register(classOf[Array[geotrellis.spark.io.avro.AvroRecordCodec[Any]]])
+    kryo.register(classOf[Array[geotrellis.layers.avro.AvroRecordCodec[Any]]])
     kryo.register(classOf[Array[geotrellis.tiling.SpaceTimeKey]])
     kryo.register(classOf[Array[geotrellis.tiling.SpatialKey]])
     kryo.register(classOf[Array[geotrellis.vector.Feature[Any,Any]]])
@@ -191,11 +190,11 @@ class KryoRegistrator extends SparkKryoRegistrator {
     kryo.register(classOf[geotrellis.raster.ProjectedRaster[Any]])
     kryo.register(classOf[geotrellis.raster.TileLayout])
     kryo.register(classOf[geotrellis.tiling.TemporalProjectedExtent])
-    kryo.register(classOf[geotrellis.spark.buffer.BufferSizes])
-    kryo.register(classOf[geotrellis.spark.io.avro.AvroRecordCodec[Any]])
-    kryo.register(classOf[geotrellis.spark.io.avro.AvroUnionCodec[Any]])
-    kryo.register(classOf[geotrellis.spark.io.avro.codecs.KeyValueRecordCodec[Any,Any]])
-    kryo.register(classOf[geotrellis.spark.io.avro.codecs.TupleCodec[Any,Any]])
+    kryo.register(classOf[geotrellis.raster.buffer.BufferSizes])
+    kryo.register(classOf[geotrellis.layers.avro.AvroRecordCodec[Any]])
+    kryo.register(classOf[geotrellis.layers.avro.AvroUnionCodec[Any]])
+    kryo.register(classOf[geotrellis.layers.avro.codecs.KeyValueRecordCodec[Any,Any]])
+    kryo.register(classOf[geotrellis.layers.avro.codecs.TupleCodec[Any,Any]])
     kryo.register(classOf[geotrellis.tiling.KeyBounds[Any]])
     kryo.register(classOf[geotrellis.spark.knn.KNearestRDD.Ord[Any]])
     kryo.register(classOf[geotrellis.vector.Feature[Any,Any]])

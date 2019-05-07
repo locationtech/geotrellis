@@ -16,9 +16,13 @@
 
 package geotrellis.spark.io.file
 
+import geotrellis.layers._
+import geotrellis.layers.file.{FileAttributeStore, FileValueReader}
 import geotrellis.spark.io._
 import geotrellis.spark.testkit.TestEnvironment
+
 import org.scalatest._
+
 
 class FileLayerProviderSpec extends FunSpec with TestEnvironment {
   val uri = new java.net.URI("file:/tmp/catalog")
@@ -44,7 +48,7 @@ class FileLayerProviderSpec extends FunSpec with TestEnvironment {
 
   it("should be able to process a URI without a scheme") {
     val badURI = new java.net.URI("/tmp/catalog")
-    val provider = new FileLayerProvider
+    val provider = new FileSparkLayerProvider
 
     provider.canProcess(badURI) should be (true)
   }

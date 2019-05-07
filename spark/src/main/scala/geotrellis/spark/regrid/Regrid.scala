@@ -16,8 +16,8 @@
 
 package geotrellis.spark.regrid
 
+import geotrellis.layers.Metadata
 import org.apache.spark.rdd.RDD
-
 import geotrellis.raster._
 import geotrellis.raster.crop._
 import geotrellis.raster.prototype._

@@ -17,11 +17,12 @@
 package geotrellis.spark.pyramid
 
 import geotrellis.tiling._
+import geotrellis.layers.{LayerId, Metadata}
+import geotrellis.layers.avro._
+import geotrellis.layers.index.KeyIndexMethod
+import geotrellis.layers.json._
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.avro._
-import geotrellis.spark.io.index.KeyIndexMethod
-import geotrellis.spark.io.json._
 import geotrellis.spark.tiling._
 import geotrellis.raster._
 import geotrellis.raster.merge._
@@ -31,6 +32,7 @@ import geotrellis.util._
 import geotrellis.vector.Extent
 
 import com.typesafe.scalalogging.LazyLogging
+
 import org.apache.spark.Partitioner
 import org.apache.spark.rdd._
 import org.apache.spark.storage.StorageLevel

@@ -16,9 +16,9 @@
 
 package geotrellis.spark.equalization
 
+import geotrellis.layers.Metadata
 import geotrellis.raster._
 import geotrellis.spark._
-
 import org.apache.spark.rdd.RDD
 
 

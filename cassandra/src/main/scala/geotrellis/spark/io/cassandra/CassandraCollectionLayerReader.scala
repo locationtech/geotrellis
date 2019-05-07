@@ -16,12 +16,12 @@
 
 package geotrellis.spark.io.cassandra
 
+import geotrellis.layers.{ContextCollection, LayerId}
 import geotrellis.tiling.{Boundable, Bounds, EmptyBounds, KeyBounds}
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.avro._
+import geotrellis.layers.io.avro._
 import geotrellis.util._
-
 import spray.json._
 
 import scala.reflect._

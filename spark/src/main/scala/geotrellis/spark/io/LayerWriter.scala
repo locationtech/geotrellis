@@ -17,22 +17,25 @@
 package geotrellis.spark.io
 
 import geotrellis.tiling._
+import geotrellis.layers._
+import geotrellis.layers._
+import geotrellis.layers.avro._
+import geotrellis.layers.avro.codecs._
+import geotrellis.layers.index._
+import geotrellis.layers.merge.Mergable
 import geotrellis.spark._
-import geotrellis.spark.io.avro._
-import geotrellis.spark.io.avro.codecs._
-import geotrellis.spark.io.index._
-import geotrellis.spark.merge._
 import geotrellis.util._
 
 import com.typesafe.scalalogging.LazyLogging
+
 import org.apache.avro._
 import org.apache.spark.rdd.RDD
 import spray.json._
 
 import scala.reflect.ClassTag
-
 import java.util.ServiceLoader
 import java.net.URI
+
 
 trait LayerWriter[ID] {
   val attributeStore: AttributeStore

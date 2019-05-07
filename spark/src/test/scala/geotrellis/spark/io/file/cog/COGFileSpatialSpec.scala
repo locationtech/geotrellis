@@ -16,19 +16,21 @@
 
 package geotrellis.spark.io.file.cog
 
+import geotrellis.vector.Extent
+import geotrellis.tiling._
 import geotrellis.raster.{MultibandTile, Tile}
 import geotrellis.raster.io.geotiff._
-import geotrellis.tiling._
+import geotrellis.raster.testkit._
+import geotrellis.layers.LayerId
+import geotrellis.layers.file.cog._
+import geotrellis.layers.index._
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cog._
-import geotrellis.spark.io.index._
 import geotrellis.spark.testkit._
-import geotrellis.raster.testkit._
 import geotrellis.spark.testkit.io._
 import geotrellis.spark.testkit.io.cog._
 import geotrellis.spark.testkit.testfiles.cog.COGTestFiles
-import geotrellis.vector.Extent
 
 class COGFileSpatialSpec
   extends COGPersistenceSpec[SpatialKey, Tile]

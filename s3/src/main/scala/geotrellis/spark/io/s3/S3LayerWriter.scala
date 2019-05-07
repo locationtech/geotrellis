@@ -19,15 +19,16 @@ package geotrellis.spark.io.s3
 import geotrellis.tiling._
 import geotrellis.spark._
 import geotrellis.spark.io._
-import geotrellis.spark.io.avro._
-import geotrellis.spark.io.avro.codecs._
-import geotrellis.spark.io.index._
+import geotrellis.layers.io.avro._
+import geotrellis.layers.io.avro.codecs._
+import geotrellis.layers.io.index._
 import geotrellis.spark.merge._
 import geotrellis.util._
-
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.rdd.RDD
 import com.amazonaws.services.s3.model.PutObjectRequest
+import geotrellis.layers.merge.Mergable
+import geotrellis.layers.{LayerId, Metadata}
 import spray.json._
 
 import scala.reflect._

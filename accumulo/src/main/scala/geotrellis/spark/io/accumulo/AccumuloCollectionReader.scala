@@ -18,8 +18,8 @@ package geotrellis.spark.io.accumulo
 
 import geotrellis.spark.io._
 import geotrellis.spark.io.accumulo.conf.AccumuloConfig
-import geotrellis.spark.io.avro.codecs.KeyValueRecordCodec
-import geotrellis.spark.io.avro.{AvroEncoder, AvroRecordCodec}
+import geotrellis.layers.io.avro.codecs.KeyValueRecordCodec
+import geotrellis.layers.io.avro.{AvroEncoder, AvroRecordCodec}
 import geotrellis.tiling.{Boundable, KeyBounds}
 
 import org.apache.accumulo.core.data.{Range => AccumuloRange}

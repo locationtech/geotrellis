@@ -19,13 +19,12 @@ package geotrellis.spark.io.cassandra
 import geotrellis.spark._
 import geotrellis.spark.io._
 import geotrellis.spark.io.cassandra.conf.CassandraConfig
-
 import com.datastax.driver.core.ResultSet
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.{set, eq => eqs}
 import com.datastax.driver.core.schemabuilder.SchemaBuilder
 import com.datastax.driver.core.DataType._
-
+import geotrellis.layers.LayerId
 import spray.json._
 import spray.json.DefaultJsonProtocol._
 
