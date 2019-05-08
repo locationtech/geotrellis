@@ -1,6 +1,14 @@
 Changelog
 =========
 
+3.0.1-SNAPSHOT
+-----
+
+Fixes & Updates
+^^^^^^^^^^^^^^^
+
+- Artifacts in Viewshed have been addressed, the pixels/meter calculation has also been improved (`#2917 <https://github.com/locationtech/geotrellis/pull/2917>`_).
+
 3.0.0-SNAPSHOT
 -----
 
