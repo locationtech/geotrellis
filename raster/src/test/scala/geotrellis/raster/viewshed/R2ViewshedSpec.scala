@@ -60,7 +60,8 @@ class R2ViewshedSpec extends FunSpec
         resolution = 1,
         maxDistance = Double.PositiveInfinity,
         curvature = false,
-        operator = Or
+        operator = Or,
+        scatter = false
       )
 
       a should be (6)
@@ -98,7 +99,8 @@ class R2ViewshedSpec extends FunSpec
         resolution = 1,
         maxDistance = Double.PositiveInfinity,
         curvature = false,
-        operator = Or
+        operator = Or,
+        scatter = false
       )
 
       a should be (6)
@@ -136,7 +138,8 @@ class R2ViewshedSpec extends FunSpec
         resolution = 1,
         maxDistance = Double.PositiveInfinity,
         curvature = false,
-        operator = Or
+        operator = Or,
+        scatter = false
       )
 
       a should be (6)
@@ -174,7 +177,8 @@ class R2ViewshedSpec extends FunSpec
         resolution = 1,
         maxDistance = Double.PositiveInfinity,
         curvature = false,
-        operator = Or
+        operator = Or,
+        scatter = false
       )
 
       a should be (6)
@@ -209,10 +213,51 @@ class R2ViewshedSpec extends FunSpec
         curvature = false,
         operator = Or,
         cameraDirection = 0,
-        cameraFOV = math.cos(math.Pi/4)
+        cameraFOV = math.cos(math.Pi/4),
+        scatter = false
       )
 
       assertEqual(actual, expected)
+    }
+
+    // ---------------------------------
+
+    it("Sees more when scattering is enabled") {
+      val elevation = createTile(Array.fill(7 * 7)(1), 7, 7)
+      val noScatter = ArrayTile.empty(IntCellType, 7, 7)
+      val yesScatter = ArrayTile.empty(IntCellType, 7, 7)
+
+      R2Viewshed.compute(
+        elevation, noScatter,
+        3, 3, 1,
+        FromInside,
+        null,
+        { _ => },
+        resolution = 1,
+        maxDistance = Double.PositiveInfinity,
+        curvature = false,
+        operator = Or,
+        cameraDirection = 0,
+        cameraFOV = math.cos(math.Pi/4),
+        scatter = false
+      )
+
+      R2Viewshed.compute(
+        elevation, yesScatter,
+        3, 3, 1,
+        FromInside,
+        null,
+        { _ => },
+        resolution = 1,
+        maxDistance = Double.PositiveInfinity,
+        curvature = false,
+        operator = Or,
+        cameraDirection = 0,
+        cameraFOV = math.cos(math.Pi/4),
+        scatter = true
+      )
+
+      (noScatter.toArray.sum) should be < (yesScatter.toArray.sum)
     }
 
     // ---------------------------------
@@ -243,7 +288,8 @@ class R2ViewshedSpec extends FunSpec
         curvature = false,
         operator = Or,
         cameraDirection = 0,
-        cameraFOV = -1
+        cameraFOV = -1,
+        scatter = false
       )
 
       R2Viewshed.compute(
@@ -258,7 +304,8 @@ class R2ViewshedSpec extends FunSpec
         operator = Or,
         altitude = 2,
         cameraDirection = 0,
-        cameraFOV = -1
+        cameraFOV = -1,
+        scatter = false
       )
 
       R2Viewshed.compute(
@@ -273,7 +320,8 @@ class R2ViewshedSpec extends FunSpec
         operator = Or,
         altitude = 3,
         cameraDirection = 0,
-        cameraFOV = -1
+        cameraFOV = -1,
+        scatter = false
       )
 
       val lowCount = low.toArray.sum

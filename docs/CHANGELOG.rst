@@ -47,6 +47,7 @@ Fixes & Updates
 - Update pureconfig to version 0.10.2 (`#2882 <https://github.com/locationtech/geotrellis/pull/2882>`_).
 - Update dependencies (`#2904 <https://github.com/locationtech/geotrellis/pull/2904>`_).
 - Bump ScalaPB version up with some API enhancements (`#2898 <https://github.com/locationtech/geotrellis/pull/2898>`_).
+- Artifacts in Viewshed have been addressed, the pixels/meter calculation has also been improved (`#2917 <https://github.com/locationtech/geotrellis/pull/2917>`_).
 
 2.3.0
 -----
