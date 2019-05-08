@@ -21,16 +21,23 @@ import geotrellis.raster.summary.Statistics
 import geotrellis.raster.doubleNODATA
 import StreamingHistogram.{Bucket, Delta, DeltaCompare}
 
-import math.{abs, exp, min, max, sqrt}
-
+import math.{abs, exp, max, min, sqrt}
 import java.util.Comparator
 import java.util.TreeMap
+
+import cats.Monoid
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.{ListBuffer => MutableListBuffer}
 
 
 object StreamingHistogram {
+
+  implicit val streamingHistogramMonoid: Monoid[StreamingHistogram] =
+    new Monoid[StreamingHistogram] {
+      def empty: StreamingHistogram = StreamingHistogram()
+      def combine(x: StreamingHistogram, y: StreamingHistogram) = x.merge(y)
+    }
 
   case class Bucket(label: Double, count: Long) {
     def _1 = label

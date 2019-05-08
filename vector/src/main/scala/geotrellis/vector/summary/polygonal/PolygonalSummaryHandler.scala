@@ -20,9 +20,9 @@ package summary.polygonal
 /** Companion object to [[PolygonalSummaryHandler]] */
 object PolygonalSummaryHandler {
   def apply[G <: Geometry, D, T]
-    (handleContainsFn: Feature[G, D] => T)
-    (handleIntersectionFn: (Polygon, Feature[G, D]) => T)
-    (combineOpFn: (T, T) => T): PolygonalSummaryHandler[G, D, T] =
+  (handleContainsFn: Feature[G, D] => T)
+  (handleIntersectionFn: (Polygon, Feature[G, D]) => T)
+  (combineOpFn: (T, T) => T): PolygonalSummaryHandler[G, D, T] =
     new PolygonalSummaryHandler[G, D, T] {
       def handleContains(feature: Feature[G, D]): T = handleContainsFn(feature)
       def handleIntersection(polygon: Polygon, feature: Feature[G, D]): T = handleIntersectionFn(polygon, feature)
